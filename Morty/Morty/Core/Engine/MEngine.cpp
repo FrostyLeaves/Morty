@@ -6,8 +6,7 @@
 
 MEngine::MEngine()
 	: m_pRenderer(nullptr)
-	, m_nMaxFPS(60)
-	, m_fTickInterval(1.0f / 60)
+	, m_cTickInfo(60)
 {
 
 }
@@ -38,27 +37,6 @@ bool MEngine::Initialize()
 		pRenderer = nullptr;
 #endif
 	}
-
-
-	static float nTickTime = 0;
-	m_pView->SetTickFunction([=](float fDelta)
-	{
-		bool bTicked = false;
-		float tickInterval = 1.0f / m_nMaxFPS;
-		nTickTime += fDelta;
-		while (nTickTime > tickInterval)
-		{
-			nTickTime -= tickInterval;
-
-			this->Tick(tickInterval);
-			bTicked = true;
-		}
-		if (bTicked)
-		{
-			this->Render();
-		}
-		
-	});
 
 	m_pView->SetResizeCallback([=](const int& nWidth, const int& nHeight)
 	{
@@ -98,8 +76,9 @@ void MEngine::Release()
 
 void MEngine::Run()
 {
-	if (m_pView)
-		m_pView->Run();
+	m_cTickInfo.lPrevTickTime = MTimer::GetCurTime();
+
+	MainLoop();
 }
 
 void MEngine::Tick(float fDelta)
@@ -119,12 +98,41 @@ void MEngine::SetMaxFPS(const int& nFPS)
 {
 	if (nFPS > 0)
 	{
-		m_nMaxFPS = nFPS;
-		m_fTickInterval = 1.0f / m_nMaxFPS;
+		m_cTickInfo.nMaxFPS = nFPS;
+		m_cTickInfo.fTickInterval = 1.0f / m_cTickInfo.nMaxFPS;
 	}
 }
 
 MIRenderer* MEngine::GetRenderer()
 {
 	return m_pRenderer;
+}
+
+void MEngine::MainLoop()
+{
+	bool bLoop = true;
+	while (bLoop)
+	{
+		long long currentTime = MTimer::GetCurTime();
+
+		float lTimeDelta = (float)(currentTime - m_cTickInfo.lPrevTickTime) / 1000;
+
+		if (lTimeDelta >= m_cTickInfo.fTickInterval)
+		{
+			Tick(lTimeDelta);
+			Render();         
+			m_cTickInfo.lPrevTickTime = currentTime;
+		}
+		
+		bLoop = m_pView->MainLoop();
+	}
+}
+
+MEngine::TickInfo::TickInfo(int nFps)
+{
+	if (nFps == 0)
+		nFps = 60;
+	nMaxFPS = nFps;
+	fTickInterval = 1.0f / nFps;
+	lPrevTickTime = 0;
 }

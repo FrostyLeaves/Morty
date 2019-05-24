@@ -40,6 +40,9 @@
     <Filter Include="Core\Engine\Shader">
       <UniqueIdentifier>{ee8667d6-fd63-447c-a1d0-9393392a429a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scene">
+      <UniqueIdentifier>{7c8358e8-682e-4988-b275-80ed5e70e647}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

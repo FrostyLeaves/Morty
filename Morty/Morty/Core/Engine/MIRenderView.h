@@ -17,7 +17,6 @@ public:
     MIRenderView();
     virtual ~MIRenderView();
 
-	typedef std::function<void(float)> TickCallbackFunction;
 	typedef std::function<void(int, int)> ResizeCallback;
 
 public:
@@ -25,10 +24,9 @@ public:
 	virtual int GetViewWidth() = 0;
 	virtual int GetViewHeight() = 0;
 
-	virtual void SetTickFunction(const TickCallbackFunction& func) = 0;
 	virtual void SetResizeCallback(const ResizeCallback& func) = 0;
 
-	virtual void Run() = 0;
+	virtual bool MainLoop() = 0;
 
 private:
 

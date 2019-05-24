@@ -12,8 +12,6 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	engine.Run();
 
-//	while (!view.IsClosed());
-
 	return 0;
 }
 

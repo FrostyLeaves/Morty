@@ -32,10 +32,9 @@ public:
 	virtual int GetViewWidth() override { return m_nWidth; }
 	virtual int GetViewHeight() override { return m_nHeight; }
 
-	virtual void SetTickFunction(const TickCallbackFunction& func) override;
 	virtual void SetResizeCallback(const ResizeCallback& func) override;
 
-	virtual void Run() override;
+	virtual bool MainLoop() override;
 
 public:
 	static LRESULT CALLBACK ProcessFunction(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -53,7 +52,6 @@ protected:
 	long long m_lEnginePrevTickTime;
 	bool m_bIsClosed;
 
-	TickCallbackFunction m_pTickFunction;
 	ResizeCallback m_pResizeCallback;
 
 protected:

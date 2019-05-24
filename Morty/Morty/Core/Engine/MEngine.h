@@ -37,13 +37,24 @@ public:
 	
 
 
+protected:
+
+	void MainLoop();
+
 private:
 
 	MIRenderer* m_pRenderer;
 	MIRenderView* m_pView;
 
-	int m_nMaxFPS;
-	float m_fTickInterval;
+	struct TickInfo
+	{
+		int nMaxFPS;
+		float fTickInterval;
+		long long lPrevTickTime;
+
+		TickInfo(int nFps);
+
+	} m_cTickInfo;
 };
 
 

@@ -15,7 +15,6 @@ MWindowsRenderView::MWindowsRenderView()
 	, m_nWidth(640)
 	, m_nHeight(480)
 	, m_lEnginePrevTickTime(0)
-	, m_pTickFunction(nullptr)
 {
 
 }
@@ -81,37 +80,22 @@ bool MWindowsRenderView::Initialize(const char* svWindowName)
 	
 }
 
-void MWindowsRenderView::Run()
+bool MWindowsRenderView::MainLoop()
 {
-	m_lEnginePrevTickTime = MTimer::GetCurTime();
-
 	MSG msg = { 0 };
-	while (msg.message != WM_QUIT)
-	{
-		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-		//TODO
 
-		if (m_pTickFunction)
-		{
-			long long currentTime = MTimer::GetCurTime();
-			m_pTickFunction( (float)(currentTime - m_lEnginePrevTickTime) / 1000 );
-			m_lEnginePrevTickTime = currentTime;
-		}
+	if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
 	}
+
+	return msg.message != WM_QUIT;
 }
 
 void MWindowsRenderView::Release()
 {
 	s_tViewTable.erase(m_hwnd);
-}
-
-void MWindowsRenderView::SetTickFunction(const TickCallbackFunction& func)
-{
-	m_pTickFunction = func;
 }
 
 void MWindowsRenderView::SetResizeCallback(const ResizeCallback& func)
