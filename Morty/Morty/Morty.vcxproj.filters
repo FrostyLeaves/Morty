@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{4ccc3368-be06-4229-b5af-ffa966551f32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\2D">
+      <UniqueIdentifier>{aca0d9b9-5926-4f75-b265-eb59880fc6f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{788137e5-3eb8-4c19-8a30-66e4a92915d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Engine">
+      <UniqueIdentifier>{8d55da7e-fbed-407a-bcf0-62337267860e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Engine\DirectX11">
+      <UniqueIdentifier>{2f95c644-d58f-433f-a85f-c02aa4927994}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Engine\Windows">
+      <UniqueIdentifier>{98f7c35a-a893-4e5f-9e02-8aee8dcefb26}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Log">
+      <UniqueIdentifier>{975f177e-3d36-42fa-b7a7-ee7a83663643}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\Timer">
+      <UniqueIdentifier>{b1f1df1d-5d3e-49da-a014-ffdde85f37f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Engine\Shader">
+      <UniqueIdentifier>{ee8667d6-fd63-447c-a1d0-9393392a429a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\2D\MSprite.h">
+      <Filter>Core\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\MGlobal.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Engine\MEngine.h">
+      <Filter>Core\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Engine\MIRenderer.h">
+      <Filter>Core\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Engine\DirectX11\MDirectX11Renderer.h">
+      <Filter>Core\Engine\DirectX11</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Engine\MIRenderView.h">
+      <Filter>Core\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Engine\Windows\MWindowsRenderView.h">
+      <Filter>Core\Engine\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\MSingleInstance.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\MFunction.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Log\MLogManager.h">
+      <Filter>Core\Log</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\Timer\MTimer.h">
+      <Filter>Utility\Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Engine\Shader\MIShaderManager.h">
+      <Filter>Core\Engine\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\MString.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Engine\Shader\MIShader.h">
+      <Filter>Core\Engine\Shader</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Morty.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\2D\MSprite.cpp">
+      <Filter>Core\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Engine\MEngine.cpp">
+      <Filter>Core\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Engine\MIRenderer.cpp">
+      <Filter>Core\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Engine\DirectX11\MDirectX11Renderer.cpp">
+      <Filter>Core\Engine\DirectX11</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Engine\MIRenderView.cpp">
+      <Filter>Core\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Engine\Windows\MWindowsRenderView.cpp">
+      <Filter>Core\Engine\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Log\MLogManager.cpp">
+      <Filter>Core\Log</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility\Timer\MTimer.cpp">
+      <Filter>Utility\Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Engine\Shader\MIShaderManager.cpp">
+      <Filter>Core\Engine\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Engine\Shader\MIShader.cpp">
+      <Filter>Core\Engine\Shader</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
