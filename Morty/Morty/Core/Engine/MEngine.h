@@ -10,9 +10,11 @@
 #define _M_MENGINE_H_
 #include "MGlobal.h"
 
+#include <vector>
 
 class MIRenderer;
 class MIRenderView;
+class MNode;
 class MORTY_CLASS MEngine
 {
 public:
@@ -24,10 +26,12 @@ public:
 	virtual bool Initialize();
 	virtual void Release();
 
-	virtual void Run();
+	bool MainLoop();
 
 	virtual void Tick(float fDelta);
-	virtual void Render();
+
+
+	void CreateView();
 
 public:
 
@@ -39,12 +43,12 @@ public:
 
 protected:
 
-	void MainLoop();
 
 private:
 
 	MIRenderer* m_pRenderer;
-	MIRenderView* m_pView;
+	
+	std::vector<MIRenderView*> m_vView;
 
 	struct TickInfo
 	{

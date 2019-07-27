@@ -11,6 +11,7 @@
 #include "MGlobal.h"
 #include <functional>
 
+class MNode;
 class MORTY_CLASS MIRenderView
 {
 public:
@@ -28,7 +29,12 @@ public:
 
 	virtual bool MainLoop() = 0;
 
+	void SetRootNode(MNode* pNode);
+	MNode* GetRootNode(){ return m_pRootNode; }
+
 private:
+
+	MNode* m_pRootNode;
 
 };
 

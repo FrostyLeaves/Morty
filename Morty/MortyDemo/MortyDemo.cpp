@@ -9,9 +9,11 @@ int _tmain(int argc, _TCHAR* argv[])
 	MEngine engine;
 
 	engine.Initialize();
+	engine.CreateView();
 
-	engine.Run();
+	while (engine.MainLoop());
+
+	engine.Release();
 
 	return 0;
 }
-

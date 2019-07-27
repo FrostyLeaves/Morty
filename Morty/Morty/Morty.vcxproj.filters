@@ -96,6 +96,18 @@
     <ClInclude Include="Core\Engine\Shader\MIShader.h">
       <Filter>Core\Engine\Shader</Filter>
     </ClInclude>
+    <ClInclude Include="Core\MObject.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\MNode.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\M3DNode.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\M3DMeshInstance.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -136,6 +148,18 @@
     </ClCompile>
     <ClCompile Include="Core\Engine\Shader\MIShader.cpp">
       <Filter>Core\Engine\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\MObject.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\MNode.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\M3DNode.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\M3DMeshInstance.cpp">
+      <Filter>Scene</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

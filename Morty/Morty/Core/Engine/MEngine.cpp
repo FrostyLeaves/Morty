@@ -18,18 +18,12 @@ MEngine::~MEngine()
 
 bool MEngine::Initialize()
 {
-	MWindowsRenderView* pWindowsView = new MWindowsRenderView();
-	pWindowsView->Initialize("Morty");
-	
-	m_pView = pWindowsView;
 
 	if (nullptr == m_pRenderer)
 	{
 #if (RENDER_GRAPHICS == MORTY_DIRECTX_11)
 		MDirectX11Renderer* pDx11Renderer = new MDirectX11Renderer();
 		pDx11Renderer->Initialize();
-		pDx11Renderer->AddOutputWindow(m_pView);
-
 		m_pRenderer = pDx11Renderer;
 #elif (RENDER_GRAPHICS == MORTY_OPENGLES)
 		pRenderer = nullptr;
@@ -38,13 +32,28 @@ bool MEngine::Initialize()
 #endif
 	}
 
-	m_pView->SetResizeCallback([=](const int& nWidth, const int& nHeight)
-	{
-		this->Render();
-	});
-
-
+	
 	return true;
+}
+
+void MEngine::CreateView()
+{
+
+#if (RENDER_GRAPHICS == MORTY_DIRECTX_11)
+	if (MDirectX11Renderer* pRenderer = dynamic_cast<MDirectX11Renderer*>(m_pRenderer))
+	{
+		MWindowsRenderView* pWindowsView = new MWindowsRenderView();
+		pWindowsView->Initialize("Morty");
+		pRenderer->AddOutputView(pWindowsView);
+		pWindowsView->SetResizeCallback([=](const int& nWidth, const int& nHeight)
+		{
+			m_pRenderer->RenderNodeToView(pWindowsView->GetRootNode(), pWindowsView);
+		});
+
+		m_vView.push_back(pWindowsView);
+	}
+
+#endif
 }
 
 void MEngine::Release()
@@ -56,10 +65,10 @@ void MEngine::Release()
 		m_pRenderer = nullptr;
 	}
 
-	if (m_pView)
+	for (auto pView : m_vView)
 	{
 #if (RENDER_GRAPHICS == MORTY_DIRECTX_11)
-		if (MWindowsRenderView* pWindowsView = dynamic_cast<MWindowsRenderView*>(m_pView))
+		if (MWindowsRenderView* pWindowsView = dynamic_cast<MWindowsRenderView*>(pView))
 		{
 			pWindowsView->Release();
 		}
@@ -69,29 +78,16 @@ void MEngine::Release()
 		pRenderer = nullptr;
 #endif
 		
-		delete m_pView;
-		m_pView = nullptr;
+		delete pView;
+		pView = nullptr;
 	}
-}
 
-void MEngine::Run()
-{
-	m_cTickInfo.lPrevTickTime = MTimer::GetCurTime();
-
-	MainLoop();
+	m_vView.clear();
 }
 
 void MEngine::Tick(float fDelta)
 {
 
-}
-
-void MEngine::Render()
-{
-	if (m_pRenderer)
-	{
-		m_pRenderer->Render();
-	}
 }
 
 void MEngine::SetMaxFPS(const int& nFPS)
@@ -108,24 +104,38 @@ MIRenderer* MEngine::GetRenderer()
 	return m_pRenderer;
 }
 
-void MEngine::MainLoop()
+bool MEngine::MainLoop()
 {
-	bool bLoop = true;
-	while (bLoop)
+	long long currentTime = MTimer::GetCurTime();
+
+	if (0 == m_cTickInfo.lPrevTickTime)
+		m_cTickInfo.lPrevTickTime = currentTime;
+
+	float lTimeDelta = (float)(currentTime - m_cTickInfo.lPrevTickTime) / 1000;
+
+	if (lTimeDelta >= m_cTickInfo.fTickInterval)
 	{
-		long long currentTime = MTimer::GetCurTime();
-
-		float lTimeDelta = (float)(currentTime - m_cTickInfo.lPrevTickTime) / 1000;
-
-		if (lTimeDelta >= m_cTickInfo.fTickInterval)
-		{
-			Tick(lTimeDelta);
-			Render();         
-			m_cTickInfo.lPrevTickTime = currentTime;
-		}
-		
-		bLoop = m_pView->MainLoop();
+		Tick(lTimeDelta);
+		m_cTickInfo.lPrevTickTime = currentTime;
 	}
+
+	for (std::vector<MIRenderView*>::iterator iter = m_vView.begin(); iter != m_vView.end(); )
+	{
+		MIRenderView* pView = (*iter);
+		if (pView->MainLoop())
+		{
+			m_pRenderer->RenderNodeToView(pView->GetRootNode(), pView);
+			++iter;
+		}
+
+		else
+		{
+			m_pRenderer->RemoveOutputView(*iter);
+			iter = m_vView.erase(iter);
+		}
+	}
+
+	return !m_vView.empty();
 }
 
 MEngine::TickInfo::TickInfo(int nFps)

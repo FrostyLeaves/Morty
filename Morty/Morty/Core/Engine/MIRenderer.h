@@ -12,6 +12,7 @@
 
 class MIRenderView;
 class MIShader;
+class MNode;
 class MORTY_CLASS MIRenderer
 {
 public:
@@ -21,7 +22,10 @@ public:
 	virtual bool Initialize() = 0;
 	virtual void Release() = 0;
 
-	virtual void Render() = 0;
+	virtual void RenderNodeToView(MNode* pNode, MIRenderView* pView) = 0;
+
+	virtual void AddOutputView(MIRenderView* pView) = 0;
+	virtual void RemoveOutputView(MIRenderView* pView) = 0;
 
 };
 

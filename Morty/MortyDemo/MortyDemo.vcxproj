@@ -75,7 +75,8 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Build\Morty\$(Configuration)\</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>copy "$(SolutionDir)Build\Morty\$(Configuration)\Morty.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"</Command>
+      <Command>copy "$(SolutionDir)Build\Morty\$(Configuration)\Morty.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"
+copy "$(SolutionDir)Build\Math3D\$(Configuration)\Math3D.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"</Command>
     </PreBuildEvent>
     <PreLinkEvent>
       <Command>
@@ -106,7 +107,8 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Build\Morty\$(Configuration)\</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>copy "$(SolutionDir)Build\Morty\$(Configuration)\Morty.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"</Command>
+      <Command>copy "$(SolutionDir)Build\Morty\$(Configuration)\Morty.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"
+copy "$(SolutionDir)Build\Math3D\$(Configuration)\Math3D.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"</Command>
     </PreBuildEvent>
     <PreLinkEvent>
       <Command>

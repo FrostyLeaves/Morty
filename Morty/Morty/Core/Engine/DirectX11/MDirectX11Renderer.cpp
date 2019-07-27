@@ -13,22 +13,41 @@ MDirectX11Renderer::~MDirectX11Renderer()
 
 }
 
-void MDirectX11Renderer::AddOutputWindow(MIRenderView* pView)
+void MDirectX11Renderer::AddOutputView(MIRenderView* pView)
 {
-	MWindowsRenderView* pWindowView = dynamic_cast<MWindowsRenderView*>(pView);
+	if (MWindowsRenderView* pWindowView = dynamic_cast<MWindowsRenderView*>(pView))
+	{
 
-	ID3D11Texture2D* pBackBuffer = nullptr; 
+		ID3D11Texture2D* pBackBuffer = nullptr;
 
-	RenderTarget rt;
+		RenderTarget rt;
 
-	rt.hwnd = pWindowView->GetHWND();
-	rt.pSwapChain = this->CreateSwapChainForWindow(rt.hwnd);
-	rt.pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
+		rt.pRenderView = pWindowView;
+		rt.pSwapChain = this->CreateSwapChainForWindow(pWindowView->GetHWND());
+		rt.pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
 
-	m_pD3dDevice->CreateRenderTargetView(pBackBuffer, 0, &rt.pTargetView);
-	pBackBuffer->Release();
+		m_pD3dDevice->CreateRenderTargetView(pBackBuffer, 0, &rt.pTargetView);
+		pBackBuffer->Release();
 
-	m_vRenderTargets.push_back(rt);
+		m_vRenderTargets.push_back(rt);
+	}
+}
+
+void MDirectX11Renderer::RemoveOutputView(MIRenderView* pView)
+{
+	if (MWindowsRenderView* pWindowView = dynamic_cast<MWindowsRenderView*>(pView))
+	{
+		for (std::vector<RenderTarget>::iterator iter = m_vRenderTargets.begin(); iter != m_vRenderTargets.end(); ++iter)
+		{
+			if ((*iter).pRenderView == pWindowView)
+			{
+				(*iter).pSwapChain->Release();
+				(*iter).pTargetView->Release();
+				m_vRenderTargets.erase(iter);
+				break;
+			}
+		}
+	}
 }
 
 bool MDirectX11Renderer::InitDirectX11()
@@ -107,6 +126,13 @@ bool MDirectX11Renderer::Initialize()
 
 void MDirectX11Renderer::Release()
 {
+	for (auto target : m_vRenderTargets)
+	{
+		target.pSwapChain->Release();
+		target.pTargetView->Release();
+	}
+
+
 	if (m_pD3dContext)
 		m_pD3dContext->Release();
 
@@ -118,17 +144,32 @@ void MDirectX11Renderer::Release()
 
 }
 
-void MDirectX11Renderer::Render()
+void MDirectX11Renderer::RenderNodeToView(MNode* pNode, MIRenderView* pView)
 {
 	if (!m_pD3dContext)
 		return;
 
+
+	IDXGISwapChain* pSwapChain = nullptr;
+	ID3D11RenderTargetView* pTargetView = nullptr;
 	for (auto rt : m_vRenderTargets)
 	{
-		float clearColor[4] = { 0.0f, 0.0f, 0.25f, 1.0f };
-		m_pD3dContext->ClearRenderTargetView(rt.pTargetView, clearColor);
-		rt.pSwapChain->Present(0, 0);
+		if (rt.pRenderView == pView)
+		{
+			pSwapChain = rt.pSwapChain;
+			pTargetView = rt.pTargetView;
+			break;
+		}
 	}
+
+	if (pSwapChain == nullptr || pTargetView == nullptr)
+		return;
+
+
+
+	float clearColor[4] = { 0.0f, 0.0f, 0.25f, 1.0f };
+	m_pD3dContext->ClearRenderTargetView(pTargetView, clearColor);
+	pSwapChain->Present(0, 0);
 }
 
 IDXGISwapChain* MDirectX11Renderer::CreateSwapChainForWindow(HWND hWnd)

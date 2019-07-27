@@ -29,13 +29,14 @@ public:
 
 public:
 
-	void AddOutputWindow(MIRenderView* pView);
+	virtual void AddOutputView(MIRenderView* pView) override;
+	virtual void RemoveOutputView(MIRenderView* pView) override;
 
 	bool InitDirectX11();
 
 	virtual bool Initialize() override;
 	virtual void Release() override;
-	virtual void Render() override;
+	virtual void RenderNodeToView(MNode* pNode, MIRenderView* pView) override;
 
 protected:
 
@@ -51,7 +52,7 @@ protected:
 
 	struct RenderTarget
 	{
-		HWND hwnd;
+		MIRenderView* pRenderView;
 		IDXGISwapChain* pSwapChain;
 		ID3D11RenderTargetView* pTargetView;
 	};
