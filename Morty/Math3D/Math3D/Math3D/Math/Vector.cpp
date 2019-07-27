@@ -1,4 +1,4 @@
-#include "Vector.h"
+﻿#include "Vector.h"
 #include <cmath>
 #include <cassert>
 
@@ -22,6 +22,30 @@ Vector3::Vector3(const Vector3& vec3)
 	: x(vec3.x)
 	, y(vec3.y)
 	, z(vec3.z)
+{
+
+}
+
+Vector3::Vector3(const Vector2& vec2)
+	: x(vec2.x)
+	, y(vec2.y)
+	, z(0)
+{
+
+}
+
+Vector3::Vector3(const Vector2& vec2, const float& z)
+	: x(vec2.x)
+	, y(vec2.y)
+	, z(z)
+{
+
+}
+
+Vector3::Vector3(const Vector4& vec4)
+	: x(vec4.x)
+	, y(vec4.y)
+	, z(vec4.z)
 {
 
 }
@@ -63,6 +87,14 @@ const Vector3& Vector3::operator*=(const float& value)
 	return *this;
 }
 
+Vector3 Vector3::operator*(const Matrix4& mat4) const
+{
+	return Vector4(x, y, z, 1) * mat4;
+}
+Vector3 Vector3::operator* (const float& value) const
+{
+	return Vector3(x * value, y * value, z * value);
+}
 const Vector3& Vector3::operator/=(const float& value)
 {
 	*this = *this / value;
@@ -100,11 +132,6 @@ Vector3 Vector3::operator/(const float& value) const
 	assert(value != 0.0f);
 
 	return operator*(1.0f / value);
-}
-
-Vector3 Vector3::operator*(const float& value) const
-{
-	return Vector3(x * value, y * value, z * value);
 }
 
 Vector3 Vector3::operator+(const Vector3& value) const
@@ -159,11 +186,26 @@ Vector4 Vector4::operator*(const float& value) const
 	return Vector4(x * value, y * value, z * value, w * value);
 }
 
+Vector4 Vector4::operator*(const Matrix4& mat4) const
+{
+	return Vector4(x * mat4.m[0][0] + y * mat4.m[1][0] + z * mat4.m[2][0] + w * mat4.m[3][0], x * mat4.m[0][1] + y * mat4.m[1][1] + z * mat4.m[2][1] + w * mat4.m[3][1], x * mat4.m[0][2] + y * mat4.m[1][2] + z * mat4.m[2][2] + w * mat4.m[3][2], x * mat4.m[0][3] + y * mat4.m[1][3] + z * mat4.m[2][3] + w * mat4.m[3][3]);
+}
+
 Vector4 Vector4::operator/(const float& value) const
 {
 	assert(value != 0.0f);
 
 	return operator*(1.0f / value);
+}
+
+Vector4 Vector4::operator+(const Vector4& value) const
+{
+	return Vector4(x + value.x, y + value.y, z + value.z, w + value.w);
+}
+
+Vector4 Vector4::operator-(const Vector4& value) const
+{
+	return Vector4(x - value.x, y - value.y, z - value.z, w - value.w);
 }
 
 Vector2::Vector2()
@@ -185,4 +227,29 @@ Vector2::Vector2(const Vector3& vec3)
 	, y(vec3.y)
 {
 
+}
+
+float Vector2::Length() const
+{
+	return sqrtf(x * x + y * y);
+}
+
+Vector2 Vector2::operator*(const float& value) const
+{
+	return Vector2(x * value, y * value);
+}
+
+Vector2 Vector2::operator+(const Vector2& value) const
+{
+	return Vector2(x + value.x, y + value.y);
+}
+
+Vector2 Vector2::operator-(const Vector2& value) const
+{
+	return Vector2(x - value.x, y - value.y);
+}
+
+Vector2 Vector2::operator-(void) const
+{
+	return Vector2(-x, -y);
 }

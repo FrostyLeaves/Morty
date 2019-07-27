@@ -77,7 +77,7 @@ bool MWindowsRenderView::Initialize(const char* svWindowName)
 	ShowWindow(m_hwnd, SW_SHOW);
 	UpdateWindow(m_hwnd);
 
-	
+	return true;
 }
 
 bool MWindowsRenderView::MainLoop()

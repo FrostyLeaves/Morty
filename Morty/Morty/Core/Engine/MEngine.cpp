@@ -23,7 +23,6 @@ bool MEngine::Initialize()
 	{
 #if (RENDER_GRAPHICS == MORTY_DIRECTX_11)
 		MDirectX11Renderer* pDx11Renderer = new MDirectX11Renderer();
-		pDx11Renderer->Initialize();
 		m_pRenderer = pDx11Renderer;
 #elif (RENDER_GRAPHICS == MORTY_OPENGLES)
 		pRenderer = nullptr;
@@ -32,8 +31,13 @@ bool MEngine::Initialize()
 #endif
 	}
 
+	if (m_pRenderer->Initialize())
+		return true;
+
+	delete m_pRenderer;
+	m_pRenderer = nullptr;
 	
-	return true;
+	return false;
 }
 
 void MEngine::CreateView()

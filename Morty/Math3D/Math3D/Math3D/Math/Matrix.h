@@ -1,13 +1,14 @@
-#ifndef _MATRIX_H_
+﻿#ifndef _MATRIX_H_
 #define _MATRIX_H_
-
-#include "Vector.h"
 
 #ifndef MATH3D_EXPORTS
 #define MATH_IOE_DLL _declspec(dllimport)
 #else
 #define MATH_IOE_DLL _declspec(dllexport)
 #endif
+
+
+#include "Vector.h"
 
 class Matrix4;
 class MATH_IOE_DLL Matrix3
@@ -46,6 +47,9 @@ public:
 	Matrix4 operator / (const float& value) const;
 
 	bool operator == (const Matrix4& mat) const;
+
+	void Translation(const float& x, const float& y, const float& z);
+
 public:
 	float m[4][4];
 
@@ -54,8 +58,6 @@ private:
 	
 	float AlgebraicCofactor(const int& i, const int& j) const;
 };
-
-
 
 
 const Matrix4 IdentityMatrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);

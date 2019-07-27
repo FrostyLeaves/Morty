@@ -1,4 +1,4 @@
-#ifndef _QUATERNION_H_
+﻿#ifndef _QUATERNION_H_
 #define _QUATERNION_H_
 
 #ifndef MATH3D_EXPORTS
@@ -8,28 +8,7 @@
 #endif
 
 #include "Vector.h"
-
-
-class MATH_IOE_DLL EulerAngles
-{
-public:
-	EulerAngles();
-	EulerAngles(const float& heading, const float& pitch, const float& bank);
-
-public:
-
-	//y axis
-	float heading;
-	//x axis
-	float pitch;
-	//z axis
-	float bank;
-
-public:
-
-
-
-};
+#include "Matrix.h"
 
 class MATH_IOE_DLL Quaternion
 {
@@ -74,10 +53,13 @@ public:
 	float GetAngle();
 	Vector3 GetAxis();
 
+	Matrix4 GetMatrix();
+
 	static Quaternion Slerp(const Quaternion& quat1, Quaternion quat2, const float fSmooth);
 
 };
 
-extern const Quaternion UnitQuaternion;
+
+const Quaternion UnitQuaternion( 1, 0, 0, 0);
 
 #endif

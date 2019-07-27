@@ -1,8 +1,6 @@
-#include "Quaternion.h"
+﻿#include "Quaternion.h"
 #include <cmath>
 #include <cassert>
-
-const Quaternion UnitQuaternion(1, 0, 0, 0);
 
 Quaternion::Quaternion()
 	: w(1)
@@ -98,12 +96,11 @@ void Quaternion::RotateAxis(Vector3 axis, const float& fAngle)
 {
 	axis.Normalization();
 	float angleHalf = fAngle * 0.5f;
-	float sinAngleHalf = sin(angleHalf);
 
 	w = cos(angleHalf);
-	x = axis.x * sinAngleHalf;
-	y = axis.y * sinAngleHalf;
-	z = axis.z * sinAngleHalf;
+	x = axis.x * sin(angleHalf);
+	y = axis.y * sin(angleHalf);
+	z = axis.z * sin(angleHalf);
 }
 
 float Quaternion::Length() const
@@ -141,6 +138,24 @@ Vector3 Quaternion::GetAxis()
 
 }
 
+Matrix4 Quaternion::GetMatrix()
+{
+	float xx = x * x;
+	float yy = y * y;
+	float zz = z * z;
+	float xy = x * y;
+	float xz = x * z;
+	float yz = y * z;
+	float wx = w * x;
+	float wy = w * y;
+	float wz = w * z;
+
+	return Matrix4(1 - 2 * (yy + zz), 2 * (xy + wz), 2 * (xz - wy), 0,
+		2 * (xy - wz), 1 - 2 * (xx + zz), 2 * (yz + wx), 0,
+		2 * (xz + wy), 2 * (yz - wx), 1 - 2 * (xx + yy), 0,
+		0, 0, 0, 1);
+}
+
 Quaternion Quaternion::Slerp(const Quaternion& quat1, Quaternion quat2, const float fSmooth)
 {
 	if (fSmooth <= 0.0f)
@@ -174,20 +189,5 @@ Quaternion Quaternion::Slerp(const Quaternion& quat1, Quaternion quat2, const fl
 						quat1.x * k1 + quat2.x * k2,
 						quat1.y * k1 + quat2.y * k2,
 						quat1.z * k1 + quat2.z * k2);
-
-}
-
-EulerAngles::EulerAngles()
-	: heading(0)
-	, pitch(0)
-	, bank(0)
-{
-}
-
-EulerAngles::EulerAngles(const float& heading, const float& pitch, const float& bank)
-	: heading(heading)
-	, pitch(pitch)
-	, bank(bank)
-{
 
 }

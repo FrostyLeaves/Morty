@@ -80,7 +80,7 @@ bool MDirectX11Renderer::InitDirectX11()
 	unsigned int nTotalFeatureLevels = ARRAYSIZE(featureLevels);
 
 	HRESULT hr;
-	for (int driverTypeIndex = 0; driverTypeIndex < nTotalDriverTypes; ++driverTypeIndex)
+	for (unsigned int driverTypeIndex = 0; driverTypeIndex < nTotalDriverTypes; ++driverTypeIndex)
 	{
 		hr = D3D11CreateDevice(
 			0,										//默认显示适配器
@@ -113,6 +113,8 @@ bool MDirectX11Renderer::InitDirectX11()
 		DXTRACE_MSG("Failed to create the Direct3D device!");
 		return false;
 	}
+
+	return true;
 }
 
 bool MDirectX11Renderer::Initialize()

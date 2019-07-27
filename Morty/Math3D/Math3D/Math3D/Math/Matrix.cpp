@@ -1,4 +1,4 @@
-#include "Matrix.h"
+﻿#include "Matrix.h"
 
 
 Matrix4::Matrix4()
@@ -68,6 +68,13 @@ Matrix4 Matrix4::operator*(const float& value) const
 			result.m[i][j] = value * m[i][j];
 
 	return result;
+}
+
+void Matrix4::Translation(const float& x, const float& y, const float& z)
+{
+	m[3][0] = x;
+	m[3][1] = y;
+	m[3][2] = z;
 }
 
 Matrix4 Matrix4::operator/(const float& value) const
@@ -161,4 +168,9 @@ Matrix4 Matrix4::Inverse() const
 bool Matrix4::IsOrthogonal() const
 {
 	return IdentityMatrix == *this * this->Transposed();
+}
+
+Vector3 operator*(const Vector3& vec3, const Matrix4& mat4)
+{
+	return Vector3(vec3.x * mat4.m[0][0] + vec3.y * mat4.m[1][0] + vec3.z * mat4.m[2][0], vec3.x * mat4.m[0][1] + vec3.y * mat4.m[1][1] + vec3.z * mat4.m[2][1], vec3.x * mat4.m[0][2] + vec3.y * mat4.m[1][2] + vec3.z * mat4.m[2][2]);
 }

@@ -1,4 +1,4 @@
-#ifndef _VECTOR_H_
+﻿#ifndef _VECTOR_H_
 #define _VECTOR_H_
 
 #ifndef MATH3D_EXPORTS
@@ -7,8 +7,13 @@
 #define MATH_IOE_DLL _declspec(dllexport)
 #endif
 
+#include "Matrix.h"
+
 class Vector3;
 class Vector4;
+
+
+class Matrix4;
 
 class MATH_IOE_DLL Vector2
 {
@@ -16,6 +21,15 @@ public:
 	Vector2();
 	Vector2(const float& _x, const float& _y);
 	Vector2(const Vector3& vec3);
+
+	float Length() const;
+
+	Vector2 operator - (void) const;
+
+	Vector2 operator + (const Vector2& value) const;
+	Vector2 operator - (const Vector2& value) const;
+
+	Vector2 operator * (const float& value) const;
 
 public:
 	union
@@ -33,7 +47,10 @@ class MATH_IOE_DLL Vector3
 {
 public:
 	Vector3();
+	Vector3(const Vector2& vec2);
+	Vector3(const Vector2& vec2, const float& z);
 	Vector3(const Vector3& vec3);
+	Vector3(const Vector4& vec4);
 	Vector3(const float& x, const float& y, const float& z);
 
 	float Length() const;
@@ -57,6 +74,8 @@ public:
 	const Vector3& operator -= (const Vector3& value);
 
 	float operator * (const Vector3& value) const;
+
+	Vector3 operator* (const Matrix4& mat4) const;
 
 	Vector3 CrossProduct(const Vector3& value) const;
 
@@ -91,6 +110,11 @@ public:
 
 	Vector4 operator * (const float& value) const;
 	Vector4 operator / (const float& value) const;
+
+	Vector4 operator* (const Matrix4& mat4) const;
+
+	Vector4 operator + (const Vector4& value) const;
+	Vector4 operator - (const Vector4& value) const;
 
 public:
 	union
