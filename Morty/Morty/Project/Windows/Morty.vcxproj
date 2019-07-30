@@ -55,7 +55,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;MORTY_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(ProjectDir)Utility\Timer;$(ProjectDir)Utility;$(ProjectDir)Core;$(ProjectDir)Core\Engine;$(ProjectDir)Core\Log;$(ProjectDir)Core\Engine\DirectX11;$(ProjectDir)Core\Engine\Windows</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility\Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core\Engine;$(SolutionDir)Morty/Core\Log;$(SolutionDir)Morty/Core\Engine\DirectX11;$(SolutionDir)Morty/Core\Engine\Windows</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -76,7 +76,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;MORTY_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(ProjectDir)Utility\Timer;$(ProjectDir)Utility;$(ProjectDir)Core;$(ProjectDir)Core\Engine;$(ProjectDir)Core\Log;$(ProjectDir)Core\Engine\DirectX11;$(ProjectDir)Core\Engine\Windows</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility\Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core\Engine;$(SolutionDir)Morty/Core\Log;$(SolutionDir)Morty/Core\Engine\DirectX11;$(SolutionDir)Morty/Core\Engine\Windows</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -92,44 +92,44 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
+    <Text Include="../../ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Core\2D\MSprite.h" />
-    <ClInclude Include="Core\Engine\DirectX11\MDirectX11Renderer.h" />
-    <ClInclude Include="Core\Engine\MEngine.h" />
-    <ClInclude Include="Core\Engine\MIRenderer.h" />
-    <ClInclude Include="Core\Engine\MIRenderView.h" />
-    <ClInclude Include="Core\Engine\Shader\MIShader.h" />
-    <ClInclude Include="Core\Engine\Shader\MIShaderManager.h" />
-    <ClInclude Include="Core\Engine\Windows\MWindowsRenderView.h" />
-    <ClInclude Include="Core\Log\MLogManager.h" />
-    <ClInclude Include="Core\MNotifyManager.h" />
-    <ClInclude Include="Core\MObject.h" />
-    <ClInclude Include="Scene\M3DMeshInstance.h" />
-    <ClInclude Include="Scene\M3DNode.h" />
-    <ClInclude Include="Scene\MNode.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="targetver.h" />
-    <ClInclude Include="Utility\MFunction.h" />
-    <ClInclude Include="Utility\MGlobal.h" />
-    <ClInclude Include="Utility\MSingleInstance.h" />
-    <ClInclude Include="Utility\MString.h" />
-    <ClInclude Include="Utility\Timer\MTimer.h" />
+    <ClInclude Include="../../Core\2D\MSprite.h" />
+    <ClInclude Include="../../Core\Engine\DirectX11\MDirectX11Renderer.h" />
+    <ClInclude Include="../../Core\Engine\MEngine.h" />
+    <ClInclude Include="../../Core\Engine\MIRenderer.h" />
+    <ClInclude Include="../../Core\Engine\MIRenderView.h" />
+    <ClInclude Include="../../Core\Engine\Shader\MIShader.h" />
+    <ClInclude Include="../../Core\Engine\Shader\MIShaderManager.h" />
+    <ClInclude Include="../../Core\Engine\Windows\MWindowsRenderView.h" />
+    <ClInclude Include="../../Core\Log\MLogManager.h" />
+    <ClInclude Include="../../Core\MNotifyManager.h" />
+    <ClInclude Include="../../Core\MObject.h" />
+    <ClInclude Include="../../Scene\M3DMeshInstance.h" />
+    <ClInclude Include="../../Scene\M3DNode.h" />
+    <ClInclude Include="../../Scene\MNode.h" />
+    <ClInclude Include="../../stdafx.h" />
+    <ClInclude Include="../../targetver.h" />
+    <ClInclude Include="../../Utility\MFunction.h" />
+    <ClInclude Include="../../Utility\MGlobal.h" />
+    <ClInclude Include="../../Utility\MSingleInstance.h" />
+    <ClInclude Include="../../Utility\MString.h" />
+    <ClInclude Include="../../Utility\Timer\MTimer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Core\2D\MSprite.cpp" />
-    <ClCompile Include="Core\Engine\DirectX11\MDirectX11Renderer.cpp" />
-    <ClCompile Include="Core\Engine\MEngine.cpp" />
-    <ClCompile Include="Core\Engine\MIRenderer.cpp" />
-    <ClCompile Include="Core\Engine\MIRenderView.cpp" />
-    <ClCompile Include="Core\Engine\Shader\MIShader.cpp" />
-    <ClCompile Include="Core\Engine\Shader\MIShaderManager.cpp" />
-    <ClCompile Include="Core\Engine\Windows\MWindowsRenderView.cpp" />
-    <ClCompile Include="Core\Log\MLogManager.cpp" />
-    <ClCompile Include="Core\MNotifyManager.cpp" />
-    <ClCompile Include="Core\MObject.cpp" />
-    <ClCompile Include="dllmain.cpp">
+    <ClCompile Include="../../Core\2D\MSprite.cpp" />
+    <ClCompile Include="../../Core\Engine\DirectX11\MDirectX11Renderer.cpp" />
+    <ClCompile Include="../../Core\Engine\MEngine.cpp" />
+    <ClCompile Include="../../Core\Engine\MIRenderer.cpp" />
+    <ClCompile Include="../../Core\Engine\MIRenderView.cpp" />
+    <ClCompile Include="../../Core\Engine\Shader\MIShader.cpp" />
+    <ClCompile Include="../../Core\Engine\Shader\MIShaderManager.cpp" />
+    <ClCompile Include="../../Core\Engine\Windows\MWindowsRenderView.cpp" />
+    <ClCompile Include="../../Core\Log\MLogManager.cpp" />
+    <ClCompile Include="../../Core\MNotifyManager.cpp" />
+    <ClCompile Include="../../Core\MObject.cpp" />
+    <ClCompile Include="../../dllmain.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
@@ -137,15 +137,15 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Morty.cpp" />
-    <ClCompile Include="Scene\M3DMeshInstance.cpp" />
-    <ClCompile Include="Scene\M3DNode.cpp" />
-    <ClCompile Include="Scene\MNode.cpp" />
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="../../Morty.cpp" />
+    <ClCompile Include="../../Scene\M3DMeshInstance.cpp" />
+    <ClCompile Include="../../Scene\M3DNode.cpp" />
+    <ClCompile Include="../../Scene\MNode.cpp" />
+    <ClCompile Include="../../stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Utility\Timer\MTimer.cpp" />
+    <ClCompile Include="../../Utility\Timer\MTimer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

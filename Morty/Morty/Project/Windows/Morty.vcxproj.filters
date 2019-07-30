@@ -45,126 +45,126 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
+    <Text Include="../../ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
+    <ClInclude Include="../../stdafx.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="targetver.h">
+    <ClInclude Include="../../targetver.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Core\2D\MSprite.h">
+    <ClInclude Include="../../Core\2D\MSprite.h">
       <Filter>Core\2D</Filter>
     </ClInclude>
-    <ClInclude Include="Utility\MGlobal.h">
+    <ClInclude Include="../../Utility\MGlobal.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Engine\MEngine.h">
+    <ClInclude Include="../../Core\Engine\MEngine.h">
       <Filter>Core\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Engine\MIRenderer.h">
+    <ClInclude Include="../../Core\Engine\MIRenderer.h">
       <Filter>Core\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Engine\DirectX11\MDirectX11Renderer.h">
+    <ClInclude Include="../../Core\Engine\DirectX11\MDirectX11Renderer.h">
       <Filter>Core\Engine\DirectX11</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Engine\MIRenderView.h">
+    <ClInclude Include="../../Core\Engine\MIRenderView.h">
       <Filter>Core\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Engine\Windows\MWindowsRenderView.h">
+    <ClInclude Include="../../Core\Engine\Windows\MWindowsRenderView.h">
       <Filter>Core\Engine\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="Utility\MSingleInstance.h">
+    <ClInclude Include="../../Utility\MSingleInstance.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Utility\MFunction.h">
+    <ClInclude Include="../../Utility\MFunction.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Log\MLogManager.h">
+    <ClInclude Include="../../Core\Log\MLogManager.h">
       <Filter>Core\Log</Filter>
     </ClInclude>
-    <ClInclude Include="Utility\Timer\MTimer.h">
+    <ClInclude Include="../../Utility\Timer\MTimer.h">
       <Filter>Utility\Timer</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Engine\Shader\MIShaderManager.h">
+    <ClInclude Include="../../Core\Engine\Shader\MIShaderManager.h">
       <Filter>Core\Engine\Shader</Filter>
     </ClInclude>
-    <ClInclude Include="Utility\MString.h">
+    <ClInclude Include="../../Utility\MString.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Engine\Shader\MIShader.h">
+    <ClInclude Include="../../Core\Engine\Shader\MIShader.h">
       <Filter>Core\Engine\Shader</Filter>
     </ClInclude>
-    <ClInclude Include="Core\MObject.h">
+    <ClInclude Include="../../Core\MObject.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Scene\MNode.h">
+    <ClInclude Include="../../Scene\MNode.h">
       <Filter>Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Scene\M3DNode.h">
+    <ClInclude Include="../../Scene\M3DNode.h">
       <Filter>Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Scene\M3DMeshInstance.h">
+    <ClInclude Include="../../Scene\M3DMeshInstance.h">
       <Filter>Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Core\MNotifyManager.h">
+    <ClInclude Include="../../Core\MNotifyManager.h">
       <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="../../stdafx.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Morty.cpp">
+    <ClCompile Include="../../Morty.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="dllmain.cpp">
+    <ClCompile Include="../../dllmain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Core\2D\MSprite.cpp">
+    <ClCompile Include="../../Core\2D\MSprite.cpp">
       <Filter>Core\2D</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Engine\MEngine.cpp">
+    <ClCompile Include="../../Core\Engine\MEngine.cpp">
       <Filter>Core\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Engine\MIRenderer.cpp">
+    <ClCompile Include="../../Core\Engine\MIRenderer.cpp">
       <Filter>Core\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Engine\DirectX11\MDirectX11Renderer.cpp">
+    <ClCompile Include="../../Core\Engine\DirectX11\MDirectX11Renderer.cpp">
       <Filter>Core\Engine\DirectX11</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Engine\MIRenderView.cpp">
+    <ClCompile Include="../../Core\Engine\MIRenderView.cpp">
       <Filter>Core\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Engine\Windows\MWindowsRenderView.cpp">
+    <ClCompile Include="../../Core\Engine\Windows\MWindowsRenderView.cpp">
       <Filter>Core\Engine\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Log\MLogManager.cpp">
+    <ClCompile Include="../../Core\Log\MLogManager.cpp">
       <Filter>Core\Log</Filter>
     </ClCompile>
-    <ClCompile Include="Utility\Timer\MTimer.cpp">
+    <ClCompile Include="../../Utility\Timer\MTimer.cpp">
       <Filter>Utility\Timer</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Engine\Shader\MIShaderManager.cpp">
+    <ClCompile Include="../../Core\Engine\Shader\MIShaderManager.cpp">
       <Filter>Core\Engine\Shader</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Engine\Shader\MIShader.cpp">
+    <ClCompile Include="../../Core\Engine\Shader\MIShader.cpp">
       <Filter>Core\Engine\Shader</Filter>
     </ClCompile>
-    <ClCompile Include="Core\MObject.cpp">
+    <ClCompile Include="../../Core\MObject.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Scene\MNode.cpp">
+    <ClCompile Include="../../Scene\MNode.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
-    <ClCompile Include="Scene\M3DNode.cpp">
+    <ClCompile Include="../../Scene\M3DNode.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
-    <ClCompile Include="Scene\M3DMeshInstance.cpp">
+    <ClCompile Include="../../Scene\M3DMeshInstance.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
-    <ClCompile Include="Core\MNotifyManager.cpp">
+    <ClCompile Include="../../Core\MNotifyManager.cpp">
       <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
