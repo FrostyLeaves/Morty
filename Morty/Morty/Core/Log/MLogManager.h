@@ -22,6 +22,7 @@ public:
 	void Error(const char* svMessage, ...);
 	void Information(const char* svMessage, ...);
 	void Log(const char* svMessage, ...);
+	void Warning(const char* svMessage, ...);
 
 private:
 

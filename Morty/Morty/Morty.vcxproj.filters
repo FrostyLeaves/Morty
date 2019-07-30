@@ -108,6 +108,9 @@
     <ClInclude Include="Scene\M3DMeshInstance.h">
       <Filter>Scene</Filter>
     </ClInclude>
+    <ClInclude Include="Core\MNotifyManager.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -160,6 +163,9 @@
     </ClCompile>
     <ClCompile Include="Scene\M3DMeshInstance.cpp">
       <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\MNotifyManager.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

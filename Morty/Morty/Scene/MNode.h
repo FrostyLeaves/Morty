@@ -22,8 +22,6 @@ public:
 
 public:
 
-	virtual MNode* Create() = 0;
-
 	virtual MNode* GetParent() { return m_pParent; }
 
 	virtual bool AddNode(MNode* pNode);

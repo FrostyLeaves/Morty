@@ -4,6 +4,8 @@
 #define MORTY_CLASS __declspec(dllimport)
 #endif
 
+typedef unsigned long MObjectID;
+
 //gles
 #define MORTY_OPENGLES 1
 //directx11

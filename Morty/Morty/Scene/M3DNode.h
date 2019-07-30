@@ -20,9 +20,6 @@ public:
     M3DNode();
     virtual ~M3DNode();
 
-public:
-
-	virtual M3DNode* Create() override;
 
 private:
 

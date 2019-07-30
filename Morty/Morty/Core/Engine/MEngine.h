@@ -38,8 +38,6 @@ public:
 	void SetMaxFPS(const int& nFPS);
 
 	MIRenderer* GetRenderer();
-	
-
 
 protected:
 

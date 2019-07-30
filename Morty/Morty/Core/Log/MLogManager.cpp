@@ -40,3 +40,15 @@ void MLogManager::Log(const char* svMessage, ...)
 	printf("\n");
 	va_end(args);
 }
+
+void MLogManager::Warning(const char* svMessage, ...)
+{
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY |
+		FOREGROUND_RED | FOREGROUND_GREEN);
+
+	va_list args;
+	va_start(args, svMessage);
+	vprintf(svMessage, args);
+	printf("\n");
+	va_end(args);
+}

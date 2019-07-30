@@ -20,8 +20,6 @@ public:
 
 public:
 
-	virtual M3DMeshInstance* Create() override;
-
 	void Load(const char* svPath);
 
 private:

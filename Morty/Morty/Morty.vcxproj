@@ -104,6 +104,7 @@
     <ClInclude Include="Core\Engine\Shader\MIShaderManager.h" />
     <ClInclude Include="Core\Engine\Windows\MWindowsRenderView.h" />
     <ClInclude Include="Core\Log\MLogManager.h" />
+    <ClInclude Include="Core\MNotifyManager.h" />
     <ClInclude Include="Core\MObject.h" />
     <ClInclude Include="Scene\M3DMeshInstance.h" />
     <ClInclude Include="Scene\M3DNode.h" />
@@ -126,6 +127,7 @@
     <ClCompile Include="Core\Engine\Shader\MIShaderManager.cpp" />
     <ClCompile Include="Core\Engine\Windows\MWindowsRenderView.cpp" />
     <ClCompile Include="Core\Log\MLogManager.cpp" />
+    <ClCompile Include="Core\MNotifyManager.cpp" />
     <ClCompile Include="Core\MObject.cpp" />
     <ClCompile Include="dllmain.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>

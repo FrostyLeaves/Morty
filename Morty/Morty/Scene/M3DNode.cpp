@@ -10,10 +10,3 @@ M3DNode::~M3DNode()
 {
 
 }
-
-M3DNode* M3DNode::Create()
-{
-	M3DNode* pNode = new M3DNode();
-
-	return pNode;
-}
