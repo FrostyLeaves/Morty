@@ -1,4 +1,4 @@
-﻿/**
+/**
 * @File         MSingleInstance
 *
 * @Created      2019-05-12 22:09:30

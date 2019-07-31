@@ -1,6 +1,14 @@
-﻿#include "MEngine.h"
+#include "MEngine.h"
+#include "MIRenderer.h"
+#include "MIRenderView.h"
+#if (RENDER_GRAPHICS == MORTY_DIRECTX_11)
 #include "MDirectX11Renderer.h"
+#endif
+
+#ifdef MORTY_WIN
 #include "MWindowsRenderView.h"
+#endif
+
 #include "MTimer.h"
 
 
@@ -25,9 +33,9 @@ bool MEngine::Initialize()
 		MDirectX11Renderer* pDx11Renderer = new MDirectX11Renderer();
 		m_pRenderer = pDx11Renderer;
 #elif (RENDER_GRAPHICS == MORTY_OPENGLES)
-		pRenderer = nullptr;
+		m_pRenderer = nullptr;
 #else
-		pRenderer = nullptr;
+		m_pRenderer = nullptr;
 #endif
 	}
 
@@ -77,9 +85,9 @@ void MEngine::Release()
 			pWindowsView->Release();
 		}
 #elif (RENDER_GRAPHICS == MORTY_OPENGLES)
-		pRenderer = nullptr;
+		m_pRenderer = nullptr;
 #else
-		pRenderer = nullptr;
+		m_pRenderer = nullptr;
 #endif
 		
 		delete pView;
