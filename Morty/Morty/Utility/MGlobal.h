@@ -1,21 +1,21 @@
 #ifdef MORTY_EXPORTS
-    #ifdef __WINDOWS_
+#if defined(__WINDOWS_) || defined(_WINDOWS)
         #define MORTY_CLASS __declspec(dllexport)
     #else
         #define MORTY_CLASS
     #endif
 #else
-    #ifdef __WINDOWS_
+	#if defined(__WINDOWS_) || defined(_WINDOWS)
         #define MORTY_CLASS __declspec(dllimport)
     #else
         #define MORTY_CLASS
     #endif
 #endif
 
-#ifdef __WINDOWS_
-#define MORTY_WIN
+#if defined(__WINDOWS_) || defined(_WINDOWS)
+	#define MORTY_WIN
 #else
-#define MORTY_MAC
+	#define MORTY_MAC
 #endif
 
 typedef unsigned long MObjectID;

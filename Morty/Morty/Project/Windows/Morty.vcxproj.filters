@@ -43,6 +43,9 @@
     <Filter Include="Scene">
       <UniqueIdentifier>{7c8358e8-682e-4988-b275-80ed5e70e647}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Loader">
+      <UniqueIdentifier>{147256b2-2e9d-411f-b9b8-abe9868f374c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../ReadMe.txt" />
@@ -111,6 +114,12 @@
     <ClInclude Include="../../Core\MNotifyManager.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Loader\MResource.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Loader\MFBXLoader.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -166,6 +175,12 @@
     </ClCompile>
     <ClCompile Include="../../Core\MNotifyManager.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Loader\MFBXLoader.cpp">
+      <Filter>Loader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Loader\MResource.cpp">
+      <Filter>Loader</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

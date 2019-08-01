@@ -55,13 +55,14 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;MORTY_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility\Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core\Engine;$(SolutionDir)Morty/Core\Log;$(SolutionDir)Morty/Core\Engine\DirectX11;$(SolutionDir)Morty/Core\Engine\Windows</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/FBX_SDK/include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Engine/DirectX11;$(SolutionDir)Morty/Core/Engine/Windows</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;d3dx11.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Math3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build/Math3D/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;d3dx11.lib;libfbxsdk.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Math3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build/Math3D/$(Configuration);$(SolutionDir)ThirdParty/FBX_SDK/lib/vs2013/$(PlatformTarget)/$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>
@@ -76,15 +77,16 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;MORTY_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility\Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core\Engine;$(SolutionDir)Morty/Core\Log;$(SolutionDir)Morty/Core\Engine\DirectX11;$(SolutionDir)Morty/Core\Engine\Windows</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/FBX_SDK/include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Engine/DirectX11;$(SolutionDir)Morty/Core/Engine/Windows</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>d3d11.lib;d3dx11.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Math3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build/Math3D/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;d3dx11.lib;libfbxsdk.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Math3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build/Math3D/$(Configuration);$(SolutionDir)ThirdParty/FBX_SDK/lib/vs2013/$(PlatformTarget)/$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>
@@ -116,6 +118,8 @@
     <ClInclude Include="../../Utility\MSingleInstance.h" />
     <ClInclude Include="../../Utility\MString.h" />
     <ClInclude Include="../../Utility\Timer\MTimer.h" />
+    <ClInclude Include="..\..\Loader\MFBXLoader.h" />
+    <ClInclude Include="..\..\Loader\MResource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../Core\2D\MSprite.cpp" />
@@ -146,6 +150,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="../../Utility\Timer\MTimer.cpp" />
+    <ClCompile Include="..\..\Loader\MFBXLoader.cpp" />
+    <ClCompile Include="..\..\Loader\MResource.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
