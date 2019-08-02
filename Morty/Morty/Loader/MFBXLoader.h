@@ -13,6 +13,7 @@
  
 namespace fbxsdk{
 	class FbxManager;
+	class FbxScene;
 };
 
 
@@ -38,7 +39,7 @@ public:
 	};
 
 protected:
-	bool ImportFbxModel(FbxScene* pScene, const char* svImportFilePath);
+	bool ImportFbxModel(fbxsdk::FbxScene* pScene, const char* svImportFilePath);
 
 private:
 

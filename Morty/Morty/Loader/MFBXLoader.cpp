@@ -5,7 +5,8 @@
 
 using namespace FBXSDK_NAMESPACE;
 
-fbxsdk::FbxManager* m_pFBXSDKManager = nullptr;
+fbxsdk::FbxManager* MFBXLoader::m_pFBXSDKManager = nullptr;
+MFBXLoader::FBXSDKVersion MFBXLoader::m_cFBXSDKVersion;
 
 MFBXLoader::MFBXLoader()
 {
@@ -44,7 +45,7 @@ void MFBXLoader::Release()
 
 }
 
-bool MFBXLoader::ImportFbxModel(FbxScene* pScene, const char* svImportFilePath)
+bool MFBXLoader::ImportFbxModel(fbxsdk::FbxScene* pScene, const char* svImportFilePath)
 {
 	int nAnimStackCount;
 
