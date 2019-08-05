@@ -47,11 +47,11 @@ def main(argv):
     if (not os.path.isdir(path)) or not os.path.exists(path):
         os.makedirs(path)
 
-    fp = open(path + "\\" + className + ".h", "w")
+    fp = open(path + "/" + className + ".h", "w")
     fp.write(headerDocument(className))
     fp.close()
 
-    fp = open(path + "\\" + className + ".cpp", "w")
+    fp = open(path + "/" + className + ".cpp", "w")
     fp.write(scourceDocument(className))
     fp.close()
 

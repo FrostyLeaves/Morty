@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @File         MObject
  * 
  * @Created      2019-05-25 19:43:33
@@ -48,7 +48,7 @@ public:
 	virtual ~MObjectManager();
 
 	template<typename Object_TYPE>
-	Object_TYPE* CreateNode()
+	Object_TYPE* CreateObject()
 	{
 		Object_TYPE* pObject = new Object_TYPE();
 		if (!dynamic_cast<MObject*>(pObject))
@@ -64,7 +64,7 @@ public:
 		return pObject;
 	}
 
-	MObject* FindNode(const MObjectID& unID)
+	MObject* FindObject(const MObjectID& unID)
 	{
 		std::map<MObjectID, MObject*>::iterator iter = m_tObjects.find(unID);
 		if (iter == m_tObjects.end())
@@ -73,7 +73,7 @@ public:
 		return iter->second;
 	}
 
-	void RemoveNode(const MObjectID& unID)
+	void RemoveObject(const MObjectID& unID)
 	{
 		std::map<MObjectID, MObject*>::iterator iter = m_tObjects.find(unID);
 		if (iter != m_tObjects.end())

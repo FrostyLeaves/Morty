@@ -25,7 +25,27 @@
 		FAAD8CDD22F13CEE0013C358 /* MSingleInstance.h in Headers */ = {isa = PBXBuildFile; fileRef = FAAD8CD922F13CEE0013C358 /* MSingleInstance.h */; };
 		FAAD8CE122F13CFB0013C358 /* MTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = FAAD8CDF22F13CFB0013C358 /* MTimer.h */; };
 		FAAD8CE222F13CFB0013C358 /* MTimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAAD8CE022F13CFB0013C358 /* MTimer.cpp */; };
+		FAAD8CE822F3E5E60013C358 /* MResource.h in Headers */ = {isa = PBXBuildFile; fileRef = FAAD8CE422F3E5E60013C358 /* MResource.h */; };
+		FAAD8CE922F3E5E60013C358 /* MResource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAAD8CE522F3E5E60013C358 /* MResource.cpp */; };
+		FAAD8CEA22F3E5E60013C358 /* MFBXLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = FAAD8CE622F3E5E60013C358 /* MFBXLoader.h */; };
+		FAAD8CEB22F3E5E60013C358 /* MFBXLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAAD8CE722F3E5E60013C358 /* MFBXLoader.cpp */; };
+		FAAD8CEE22F3E7070013C358 /* MResourceModel.h in Headers */ = {isa = PBXBuildFile; fileRef = FAAD8CEC22F3E7070013C358 /* MResourceModel.h */; };
+		FAAD8CEF22F3E7070013C358 /* MResourceModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAAD8CED22F3E7070013C358 /* MResourceModel.cpp */; };
+		FACAC05022F826860059C5DF /* libfbxsdk.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACAC04E22F826860059C5DF /* libfbxsdk.a */; };
+		FACAC05122F826860059C5DF /* libfbxsdk.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FACAC04F22F826860059C5DF /* libfbxsdk.dylib */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		FAAD8CF722F4342E0013C358 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		FAAD8CBB22F13CAC0013C358 /* MObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MObject.h; path = ../../../../Core/MObject.h; sourceTree = "<group>"; };
@@ -46,6 +66,17 @@
 		FAAD8CD922F13CEE0013C358 /* MSingleInstance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MSingleInstance.h; path = ../../../../Utility/MSingleInstance.h; sourceTree = "<group>"; };
 		FAAD8CDF22F13CFB0013C358 /* MTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MTimer.h; path = ../../../../../Utility/Timer/MTimer.h; sourceTree = "<group>"; };
 		FAAD8CE022F13CFB0013C358 /* MTimer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MTimer.cpp; path = ../../../../../Utility/Timer/MTimer.cpp; sourceTree = "<group>"; };
+		FAAD8CE422F3E5E60013C358 /* MResource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MResource.h; path = ../../../../Loader/MResource.h; sourceTree = "<group>"; };
+		FAAD8CE522F3E5E60013C358 /* MResource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MResource.cpp; path = ../../../../Loader/MResource.cpp; sourceTree = "<group>"; };
+		FAAD8CE622F3E5E60013C358 /* MFBXLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MFBXLoader.h; path = ../../../../Loader/MFBXLoader.h; sourceTree = "<group>"; };
+		FAAD8CE722F3E5E60013C358 /* MFBXLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MFBXLoader.cpp; path = ../../../../Loader/MFBXLoader.cpp; sourceTree = "<group>"; };
+		FAAD8CEC22F3E7070013C358 /* MResourceModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MResourceModel.h; path = ../../../../Loader/MResourceModel.h; sourceTree = "<group>"; };
+		FAAD8CED22F3E7070013C358 /* MResourceModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MResourceModel.cpp; path = ../../../../Loader/MResourceModel.cpp; sourceTree = "<group>"; };
+		FAAD8CF122F419CD0013C358 /* libfbxsdk.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfbxsdk.dylib; path = ../../../ThirdParty/FBX_SDK/lib/clang/release/libfbxsdk.dylib; sourceTree = "<group>"; };
+		FAAD8CF322F41CCC0013C358 /* libfbxsdk.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfbxsdk.dylib; path = ../../../ThirdParty/FBX_SDK/lib/clang/debug/libfbxsdk.dylib; sourceTree = "<group>"; };
+		FAAD8CF422F41CCC0013C358 /* libfbxsdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfbxsdk.a; path = ../../../ThirdParty/FBX_SDK/lib/clang/debug/libfbxsdk.a; sourceTree = "<group>"; };
+		FACAC04E22F826860059C5DF /* libfbxsdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfbxsdk.a; path = "../../../../../../../Applications/Autodesk/FBX SDK/2019.0/lib/clang/release/libfbxsdk.a"; sourceTree = "<group>"; };
+		FACAC04F22F826860059C5DF /* libfbxsdk.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfbxsdk.dylib; path = "../../../../../../../Applications/Autodesk/FBX SDK/2019.0/lib/clang/release/libfbxsdk.dylib"; sourceTree = "<group>"; };
 		FAF92C1722F04C08000937C4 /* libMorty.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libMorty.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -54,6 +85,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FACAC05022F826860059C5DF /* libfbxsdk.a in Frameworks */,
+				FACAC05122F826860059C5DF /* libfbxsdk.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -63,6 +96,7 @@
 		FAAD8CB922F13C930013C358 /* Morty */ = {
 			isa = PBXGroup;
 			children = (
+				FAAD8CE322F3E5C40013C358 /* Loader */,
 				FAAD8CD522F13CDE0013C358 /* Utility */,
 				FAAD8CBA22F13CA00013C358 /* Core */,
 			);
@@ -125,11 +159,37 @@
 			path = Timer;
 			sourceTree = "<group>";
 		};
+		FAAD8CE322F3E5C40013C358 /* Loader */ = {
+			isa = PBXGroup;
+			children = (
+				FAAD8CE722F3E5E60013C358 /* MFBXLoader.cpp */,
+				FAAD8CE622F3E5E60013C358 /* MFBXLoader.h */,
+				FAAD8CED22F3E7070013C358 /* MResourceModel.cpp */,
+				FAAD8CEC22F3E7070013C358 /* MResourceModel.h */,
+				FAAD8CE522F3E5E60013C358 /* MResource.cpp */,
+				FAAD8CE422F3E5E60013C358 /* MResource.h */,
+			);
+			path = Loader;
+			sourceTree = "<group>";
+		};
+		FAAD8CF022F419CD0013C358 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				FACAC04E22F826860059C5DF /* libfbxsdk.a */,
+				FACAC04F22F826860059C5DF /* libfbxsdk.dylib */,
+				FAAD8CF422F41CCC0013C358 /* libfbxsdk.a */,
+				FAAD8CF322F41CCC0013C358 /* libfbxsdk.dylib */,
+				FAAD8CF122F419CD0013C358 /* libfbxsdk.dylib */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		FAF92C0E22F04C08000937C4 = {
 			isa = PBXGroup;
 			children = (
 				FAAD8CB922F13C930013C358 /* Morty */,
 				FAF92C1822F04C08000937C4 /* Products */,
+				FAAD8CF022F419CD0013C358 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -150,14 +210,17 @@
 			files = (
 				FAAD8CCA22F13CBF0013C358 /* MIRenderView.h in Headers */,
 				FAAD8CDD22F13CEE0013C358 /* MSingleInstance.h in Headers */,
+				FAAD8CE822F3E5E60013C358 /* MResource.h in Headers */,
 				FAAD8CDA22F13CEE0013C358 /* MString.h in Headers */,
 				FAAD8CBF22F13CAC0013C358 /* MObject.h in Headers */,
 				FAAD8CCD22F13CBF0013C358 /* MEngine.h in Headers */,
+				FAAD8CEA22F3E5E60013C358 /* MFBXLoader.h in Headers */,
 				FAAD8CDC22F13CEE0013C358 /* MFunction.h in Headers */,
 				FAAD8CC222F13CAC0013C358 /* MNotifyManager.h in Headers */,
 				FAAD8CDB22F13CEE0013C358 /* MGlobal.h in Headers */,
 				FAAD8CCF22F13CBF0013C358 /* MIRenderer.h in Headers */,
 				FAAD8CD422F13CD20013C358 /* MLogManager.h in Headers */,
+				FAAD8CEE22F3E7070013C358 /* MResourceModel.h in Headers */,
 				FAAD8CE122F13CFB0013C358 /* MTimer.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -172,6 +235,7 @@
 				FAF92C1322F04C08000937C4 /* Headers */,
 				FAF92C1422F04C08000937C4 /* Sources */,
 				FAF92C1522F04C08000937C4 /* Frameworks */,
+				FAAD8CF722F4342E0013C358 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -221,10 +285,13 @@
 				FAAD8CCC22F13CBF0013C358 /* MIRenderer.cpp in Sources */,
 				FAAD8CCB22F13CBF0013C358 /* MEngine.cpp in Sources */,
 				FAAD8CD322F13CD20013C358 /* MLogManager.cpp in Sources */,
+				FAAD8CE922F3E5E60013C358 /* MResource.cpp in Sources */,
 				FAAD8CC122F13CAC0013C358 /* MObject.cpp in Sources */,
+				FAAD8CEF22F3E7070013C358 /* MResourceModel.cpp in Sources */,
 				FAAD8CE222F13CFB0013C358 /* MTimer.cpp in Sources */,
 				FAAD8CC022F13CAC0013C358 /* MNotifyManager.cpp in Sources */,
 				FAAD8CCE22F13CBF0013C358 /* MIRenderView.cpp in Sources */,
+				FAAD8CEB22F3E5E60013C358 /* MFBXLoader.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -287,6 +354,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
+				VALID_ARCHS = "i386 x86_64";
 			};
 			name = Debug;
 		};
@@ -339,6 +407,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
+				VALID_ARCHS = "i386 x86_64";
 			};
 			name = Release;
 		};
@@ -367,7 +436,9 @@
 					"\"$(SRCROOT)/../../../Scene\"",
 					"\"$(SRCROOT)/../../../Utility\"",
 					"\"$(SRCROOT)/../../../Utility/Timer\"",
+					"\"/Applications/Autodesk/FBX SDK/2019.0/include\"",
 				);
+				LIBRARY_SEARCH_PATHS = "\"/Applications/Autodesk/FBX SDK/2019.0/lib/clang/debug\"";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -394,7 +465,9 @@
 					"\"$(SRCROOT)/../../../Scene\"",
 					"\"$(SRCROOT)/../../../Utility\"",
 					"\"$(SRCROOT)/../../../Utility/Timer\"",
+					"\"/Applications/Autodesk/FBX SDK/2019.0/include\"",
 				);
+				LIBRARY_SEARCH_PATHS = "\"/Applications/Autodesk/FBX SDK/2019.0/lib/clang/release\"";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -410,7 +483,7 @@
 				FAF92C2122F04C08000937C4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		FAF92C2222F04C08000937C4 /* Build configuration list for PBXNativeTarget "Morty" */ = {
 			isa = XCConfigurationList;
@@ -419,7 +492,7 @@
 				FAF92C2422F04C08000937C4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 	};
