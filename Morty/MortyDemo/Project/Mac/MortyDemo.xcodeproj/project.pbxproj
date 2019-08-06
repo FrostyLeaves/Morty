@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		FAF92C5A22F063B9000937C4 /* MortyDemo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF92C5922F063B9000937C4 /* MortyDemo.cpp */; };
+		FACAC0B522F995AF0059C5DF /* MortyDemo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACAC0B422F995AF0059C5DF /* MortyDemo.cpp */; };
 		FAF92C5B22F06668000937C4 /* libMorty.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FAF92C4F22F05D80000937C4 /* libMorty.dylib */; };
 		FAF92C5D22F0668F000937C4 /* libMorty.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = FAF92C4F22F05D80000937C4 /* libMorty.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -35,9 +35,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		FACAC0B422F995AF0059C5DF /* MortyDemo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MortyDemo.cpp; path = ../../MortyDemo.cpp; sourceTree = "<group>"; };
 		FAF92C4122F05CC5000937C4 /* MortyDemo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MortyDemo; sourceTree = BUILT_PRODUCTS_DIR; };
 		FAF92C4F22F05D80000937C4 /* libMorty.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; path = libMorty.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		FAF92C5922F063B9000937C4 /* MortyDemo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MortyDemo.cpp; path = ../../../MortyDemo.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,7 +55,7 @@
 		FAF92C3822F05CC5000937C4 = {
 			isa = PBXGroup;
 			children = (
-				FAF92C4322F05CC5000937C4 /* MortyDemo */,
+				FACAC0B422F995AF0059C5DF /* MortyDemo.cpp */,
 				FAF92C4222F05CC5000937C4 /* Products */,
 				FAF92C4E22F05D80000937C4 /* Frameworks */,
 			);
@@ -67,14 +67,6 @@
 				FAF92C4122F05CC5000937C4 /* MortyDemo */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		FAF92C4322F05CC5000937C4 /* MortyDemo */ = {
-			isa = PBXGroup;
-			children = (
-				FAF92C5922F063B9000937C4 /* MortyDemo.cpp */,
-			);
-			path = MortyDemo;
 			sourceTree = "<group>";
 		};
 		FAF92C4E22F05D80000937C4 /* Frameworks */ = {
@@ -142,7 +134,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FAF92C5A22F063B9000937C4 /* MortyDemo.cpp in Sources */,
+				FACAC0B522F995AF0059C5DF /* MortyDemo.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -278,7 +270,10 @@
 					"\"$(SRCROOT)/../../../Morty/Utility\"",
 					"\"$(SRCROOT)/../../../Morty/Utility/Timer\"",
 					"\"$(SRCROOT)/../../../Morty/Project/Mac/Morty/Morty\"",
+					"\"$(SRCROOT)/../../../Morty/ResourceLoader\"",
+					"\"$(SRCROOT)/../../../Morty/ResourceLoader/Model\"",
 				);
+				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../../../ThirdParty/Assimp/lib/mac\"";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -298,7 +293,10 @@
 					"\"$(SRCROOT)/../../../Morty/Utility\"",
 					"\"$(SRCROOT)/../../../Morty/Utility/Timer\"",
 					"\"$(SRCROOT)/../../../Morty/Project/Mac/Morty/Morty\"",
+					"\"$(SRCROOT)/../../../Morty/ResourceLoader\"",
+					"\"$(SRCROOT)/../../../Morty/ResourceLoader/Model\"",
 				);
+				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../../../ThirdParty/Assimp/lib/mac\"";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

@@ -4,8 +4,12 @@
 #include "stdafx.h"
 #include "MEngine.h"
 
+#include "MModelLoader.h"
+
 int main(int argc, char* argv[])
 {
+    
+    
 	MEngine engine;
 
 	engine.Initialize();

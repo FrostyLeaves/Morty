@@ -19,6 +19,7 @@
 #endif
 
 typedef unsigned long MObjectID;
+typedef unsigned long MResourceID;
 
 //gles
 #define MORTY_OPENGLES 1

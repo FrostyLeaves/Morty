@@ -9,6 +9,7 @@
 #ifndef _M_MOBJECT_H_
 #define _M_MOBJECT_H_
 #include "MGlobal.h"
+#include "MIDPool.h"
 
 #include <map>
 
@@ -27,18 +28,6 @@ private:
 	friend class MObjectManager;
 
 	MObjectID m_unObjectID;
-};
-
-class MObjectDB
-{
-public:
-
-	MObjectDB();
-
-	MObjectID GetNewID();
-
-private:
-	MObjectID m_unObjectIDPool;
 };
 
 class MObjectManager
@@ -83,8 +72,7 @@ public:
 	}
 
 private:
-	MObjectDB* m_pObjectDB;
-
+	MIDPool<MObjectID>* m_pObjectDB;
 
 	std::map<MObjectID, MObject*> m_tObjects;
 };

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @File         M3DMeshInstance
  * 
  * @Created      2019-05-26 16:13:55
@@ -11,6 +11,7 @@
 #include "MGlobal.h"
 
 #include "M3DNode.h"
+#include "MModelResource.h"
 
 class MORTY_CLASS M3DMeshInstance : public M3DNode
 {
@@ -20,7 +21,7 @@ public:
 
 public:
 
-	void Load(const char* svPath);
+	void Load(const MModelResource* pResource);
 
 private:
 
