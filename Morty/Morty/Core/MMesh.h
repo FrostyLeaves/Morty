@@ -32,7 +32,7 @@ public:
 
 private:
     
-    friend class MModelLoader;
+    friend class MModelResource;
     
     std::vector<Vertex> m_vVertices;
     std::vector<unsigned int> m_vIndices;

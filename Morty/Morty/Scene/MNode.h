@@ -30,6 +30,12 @@ public:
 	//Is Holder of pNode?
 	bool isHolderOf(MNode* pNode);
 
+
+	void Tick(const float& fDelta);
+
+	virtual void OnTick(const float& fDelta);
+	virtual void Render();
+
 private:
 
 	MNode* m_pParent;

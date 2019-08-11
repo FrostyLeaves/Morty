@@ -30,6 +30,7 @@ public:
 
 	virtual void Tick(float fDelta);
 
+	void SetRootNode(MNode* pNode);
 
 	void CreateView();
 
@@ -43,6 +44,8 @@ protected:
 
 
 private:
+
+	MNode* m_pRootNode;
 
 	MIRenderer* m_pRenderer;
 	

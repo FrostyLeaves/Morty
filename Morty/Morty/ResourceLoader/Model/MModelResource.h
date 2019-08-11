@@ -10,8 +10,12 @@
 #define _M_MODELMRESOURCE_H_
 #include "MGlobal.h"
 #include "MResource.h"
+#include "MString.h"
 
-
+class aiNode;
+class aiScene;
+class aiMesh;
+class MMesh;
 class MModel;
 class MORTY_CLASS MModelResource : public MResource
 {
@@ -19,7 +23,14 @@ public:
     MModelResource();
     virtual ~MModelResource();
 
-public:
+	const MModel* GetModelTemplate(){ return m_pModelTemplate; }
+
+protected:
+
+	virtual bool Load(const MString& strResourcePath);
+
+	void ProcessNode(aiNode* pNode, const aiScene* pScene, MModel* pModel);
+	void ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh* pMMesh);
 
 private:
     

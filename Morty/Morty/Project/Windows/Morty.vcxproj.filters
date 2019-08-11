@@ -43,8 +43,11 @@
     <Filter Include="Scene">
       <UniqueIdentifier>{7c8358e8-682e-4988-b275-80ed5e70e647}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Loader">
-      <UniqueIdentifier>{147256b2-2e9d-411f-b9b8-abe9868f374c}</UniqueIdentifier>
+    <Filter Include="ResourceLoader">
+      <UniqueIdentifier>{43de9fc2-30d7-4f25-bcf6-262a1b532422}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ResourceLoader\Model">
+      <UniqueIdentifier>{80441bef-12ff-4da1-89b0-96e49cc7e0f2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -108,17 +111,32 @@
     <ClInclude Include="../../Scene\M3DNode.h">
       <Filter>Scene</Filter>
     </ClInclude>
-    <ClInclude Include="../../Scene\M3DMeshInstance.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
     <ClInclude Include="../../Core\MNotifyManager.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Loader\MResource.h">
-      <Filter>Loader</Filter>
+    <ClInclude Include="..\..\ResourceLoader\MResource.h">
+      <Filter>ResourceLoader</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Loader\MFBXLoader.h">
-      <Filter>Loader</Filter>
+    <ClInclude Include="..\..\ResourceLoader\MResourceLoader.h">
+      <Filter>ResourceLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ResourceLoader\Model\MModelLoader.h">
+      <Filter>ResourceLoader\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ResourceLoader\Model\MModelResource.h">
+      <Filter>ResourceLoader\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\MMesh.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\MModel.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Scene\MMeshInstance.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ResourceLoader\MResourceManager.h">
+      <Filter>ResourceLoader</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -170,17 +188,32 @@
     <ClCompile Include="../../Scene\M3DNode.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
-    <ClCompile Include="../../Scene\M3DMeshInstance.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
     <ClCompile Include="../../Core\MNotifyManager.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Loader\MFBXLoader.cpp">
-      <Filter>Loader</Filter>
+    <ClCompile Include="..\..\ResourceLoader\MResource.cpp">
+      <Filter>ResourceLoader</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Loader\MResource.cpp">
-      <Filter>Loader</Filter>
+    <ClCompile Include="..\..\ResourceLoader\MResourceLoader.cpp">
+      <Filter>ResourceLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ResourceLoader\Model\MModelLoader.cpp">
+      <Filter>ResourceLoader\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ResourceLoader\Model\MModelResource.cpp">
+      <Filter>ResourceLoader\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\MMesh.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\MModel.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Scene\MMeshInstance.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ResourceLoader\MResourceManager.cpp">
+      <Filter>ResourceLoader</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

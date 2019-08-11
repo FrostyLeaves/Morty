@@ -21,9 +21,13 @@ public:
 
 public:
 
+protected:
+
+	void Clean();
+
 private:
     
-    friend class MModelLoader;
+    friend class MModelResource;
     
     std::vector<MMesh*> m_vMeshes;
     

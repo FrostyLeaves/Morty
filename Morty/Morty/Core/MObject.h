@@ -30,7 +30,7 @@ private:
 	MObjectID m_unObjectID;
 };
 
-class MObjectManager
+class MORTY_CLASS MObjectManager
 {
 public:
 	MObjectManager();

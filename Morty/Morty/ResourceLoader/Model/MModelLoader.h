@@ -9,14 +9,11 @@
 #ifndef _M_MMODELLOADER_H_
 #define _M_MMODELLOADER_H_
 #include "MGlobal.h"
+#include "MString.h"
 
 #include "MResourceLoader.h"
 
-class aiNode;
-class aiScene;
-class aiMesh;
-class MMesh;
-class MModel;
+
 class MORTY_CLASS MModelLoader : public MResourceLoader
 {
 public:
@@ -25,13 +22,9 @@ public:
 
 public:
     
-    virtual MResource* Load(const char* svPath);
+	virtual MResource* Load(const MString& svPath);
 
-protected:
-    void ProcessNode(aiNode* pNode, const aiScene* pScene, MModel* pModel);
-    
-    void ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh* pMMesh);
-    
+
 private:
 
 };

@@ -4,7 +4,9 @@
 #include "stdafx.h"
 #include "MEngine.h"
 
-#include "MModelLoader.h"
+#include "MObject.h"
+#include "MMeshInstance.h"
+#include "MResourceManager.h"
 
 int main(int argc, char* argv[])
 {
@@ -14,6 +16,16 @@ int main(int argc, char* argv[])
 
 	engine.Initialize();
 	engine.CreateView();
+
+
+
+	MResource* pResource = MResourceManager::GetInstance()->Load("D:/Sphere.fbx");
+
+	MObjectManager* pObjectManager = new MObjectManager();
+	MMeshInstance* pMeshIns = pObjectManager->CreateObject<MMeshInstance>();
+	pMeshIns->Load(pResource);
+
+	engine.SetRootNode(pMeshIns);
 
 	while (engine.MainLoop());
 

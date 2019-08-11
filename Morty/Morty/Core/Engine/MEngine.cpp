@@ -10,10 +10,12 @@
 #endif
 
 #include "MTimer.h"
+#include "MNode.h"
 
 
 MEngine::MEngine()
-	: m_pRenderer(nullptr)
+	: m_pRootNode(nullptr)
+	, m_pRenderer(nullptr)
 	, m_cTickInfo(60)
 {
 
@@ -99,7 +101,10 @@ void MEngine::Release()
 
 void MEngine::Tick(float fDelta)
 {
-
+	if (m_pRootNode)
+	{
+		m_pRootNode->Tick(fDelta);
+	}
 }
 
 void MEngine::SetMaxFPS(const int& nFPS)
@@ -136,7 +141,7 @@ bool MEngine::MainLoop()
 		MIRenderView* pView = (*iter);
 		if (pView->MainLoop())
 		{
-			m_pRenderer->RenderNodeToView(pView->GetRootNode(), pView);
+			m_pRenderer->RenderNodeToView(m_pRootNode, pView);
 			++iter;
 		}
 
@@ -148,6 +153,11 @@ bool MEngine::MainLoop()
 	}
 
 	return !m_vView.empty();
+}
+
+void MEngine::SetRootNode(MNode* pNode)
+{
+	m_pRootNode = pNode;
 }
 
 MEngine::TickInfo::TickInfo(int nFps)

@@ -52,3 +52,21 @@ bool MNode::isHolderOf(MNode* pNode)
 
 	return false;
 }
+
+void MNode::Tick(const float& fDelta)
+{
+	OnTick(fDelta);
+
+	for (MNode* pChild : m_vChildren)
+		pChild->Tick(fDelta);
+}
+
+void MNode::Render()
+{
+
+}
+
+void MNode::OnTick(const float& fDelta)
+{
+
+}

@@ -9,6 +9,7 @@
 #ifndef _M_MRESOURCELOADER_H_
 #define _M_MRESOURCELOADER_H_
 #include "MGlobal.h"
+#include "MString.h"
 
 class MResource;
 class MORTY_CLASS MResourceLoader
@@ -19,6 +20,8 @@ public:
 
 public:
 
+	virtual MResource* Load(const MString& svPath) = 0;
+	
 private:
 
 };

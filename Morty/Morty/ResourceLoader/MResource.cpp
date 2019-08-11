@@ -10,14 +10,3 @@ MResource::~MResource()
 {
 
 }
-        
-MResourceManager::MResourceManager()
-: m_pResourceDB(new MIDPool<MResourceID>())
-{
-    
-}
-
-MResourceManager::~MResourceManager()
-{
-    
-}

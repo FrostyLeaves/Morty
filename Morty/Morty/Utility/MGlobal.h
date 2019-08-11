@@ -26,4 +26,4 @@ typedef unsigned long MResourceID;
 //directx11
 #define MORTY_DIRECTX_11 2
 
-#define RENDER_GRAPHICS MORTY_OPENGLES
+#define RENDER_GRAPHICS MORTY_DIRECTX_11

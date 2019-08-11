@@ -66,17 +66,18 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Engine/DirectX11;$(SolutionDir)Morty/Core/Engine/Windows</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Engine/DirectX11;$(SolutionDir)Morty/Core/Engine/Windows;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Morty.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build\Morty\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Morty.lib;Math3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build\Morty\$(Configuration)\;$(SolutionDir)Build/Math3D/$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>copy "$(SolutionDir)Build\Morty\$(Configuration)\Morty.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"
-copy "$(SolutionDir)Build\Math3D\$(Configuration)\Math3D.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"</Command>
+      <Command>copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"
+copy "$(SolutionDir)Build\Math3D\$(Configuration)\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"
+copy "$(SolutionDir)ThirdParty\Assimp\lib\vs2013\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"</Command>
     </PreBuildEvent>
     <PreLinkEvent>
       <Command>
@@ -96,19 +97,20 @@ copy "$(SolutionDir)Build\Math3D\$(Configuration)\Math3D.dll" "$(SolutionDir)Bui
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Engine/DirectX11;$(SolutionDir)Morty/Core/Engine/Windows</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Engine/DirectX11;$(SolutionDir)Morty/Core/Engine/Windows;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Morty.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build\Morty\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Morty.lib;Math3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build\Morty\$(Configuration)\;$(SolutionDir)Build/Math3D/$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>copy "$(SolutionDir)Build\Morty\$(Configuration)\Morty.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"
-copy "$(SolutionDir)Build\Math3D\$(Configuration)\Math3D.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"</Command>
+      <Command>copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"
+copy "$(SolutionDir)Build\Math3D\$(Configuration)\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"
+copy "$(SolutionDir)ThirdParty\Assimp\lib\vs2013\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"</Command>
     </PreBuildEvent>
     <PreLinkEvent>
       <Command>

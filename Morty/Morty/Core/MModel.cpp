@@ -7,5 +7,13 @@ MModel::MModel()
 
 MModel::~MModel()
 {
-    
+	Clean();
+}
+
+void MModel::Clean()
+{
+	for (MMesh* pMesh : m_vMeshes)
+		delete pMesh;
+
+	m_vMeshes.clear();
 }
