@@ -28,9 +28,6 @@
     <Filter Include="Core\Engine\DirectX11">
       <UniqueIdentifier>{2f95c644-d58f-433f-a85f-c02aa4927994}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Core\Engine\Windows">
-      <UniqueIdentifier>{98f7c35a-a893-4e5f-9e02-8aee8dcefb26}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Core\Log">
       <UniqueIdentifier>{975f177e-3d36-42fa-b7a7-ee7a83663643}</UniqueIdentifier>
     </Filter>
@@ -77,9 +74,6 @@
     </ClInclude>
     <ClInclude Include="../../Core\Engine\MIRenderView.h">
       <Filter>Core\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Core\Engine\Windows\MWindowsRenderView.h">
-      <Filter>Core\Engine\Windows</Filter>
     </ClInclude>
     <ClInclude Include="../../Utility\MSingleInstance.h">
       <Filter>Utility</Filter>
@@ -138,6 +132,9 @@
     <ClInclude Include="..\..\ResourceLoader\MResourceManager.h">
       <Filter>ResourceLoader</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\Engine\DirectX11\MWindowsRenderView.h">
+      <Filter>Core\Engine\DirectX11</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -163,9 +160,6 @@
     </ClCompile>
     <ClCompile Include="../../Core\Engine\MIRenderView.cpp">
       <Filter>Core\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Core\Engine\Windows\MWindowsRenderView.cpp">
-      <Filter>Core\Engine\Windows</Filter>
     </ClCompile>
     <ClCompile Include="../../Core\Log\MLogManager.cpp">
       <Filter>Core\Log</Filter>
@@ -214,6 +208,9 @@
     </ClCompile>
     <ClCompile Include="..\..\ResourceLoader\MResourceManager.cpp">
       <Filter>ResourceLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Engine\DirectX11\MWindowsRenderView.cpp">
+      <Filter>Core\Engine\DirectX11</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

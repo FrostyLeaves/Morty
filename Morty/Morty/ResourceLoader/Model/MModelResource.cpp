@@ -61,9 +61,10 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, MModel* p
 
 void MModelResource::ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh* pMMesh)
 {
+	pMMesh->CreateVertices(pMesh->mNumVertices);
 	for (unsigned int i = 0; i < pMesh->mNumVertices; ++i)
 	{
-		MMesh::Vertex vertex;
+		MMesh::Vertex& vertex = pMMesh->m_vVertices[i];
 		vertex.position.x = pMesh->mVertices[i].x;
 		vertex.position.y = pMesh->mVertices[i].y;
 		vertex.position.z = pMesh->mVertices[i].z;
@@ -86,8 +87,10 @@ void MModelResource::ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh* pM
 		vertex.bitangent.y = pMesh->mBitangents[i].y;
 		vertex.bitangent.z = pMesh->mBitangents[i].z;
 
-		pMMesh->m_vVertices.push_back(vertex);
 	}
+
+	// TODO 写死3不安全，多个顶点组成一个面的模型会有危险。
+	pMMesh->CreateIndices(pMesh->mNumFaces, 3);
 
 	for (unsigned int i = 0; i < pMesh->mNumFaces; ++i)
 	{
@@ -95,7 +98,7 @@ void MModelResource::ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh* pM
 
 		for (unsigned int j = 0; j < face.mNumIndices; ++j)
 		{
-			pMMesh->m_vIndices.push_back(face.mIndices[j]);
+			pMMesh->m_vIndices[i * 3 + j] = face.mIndices[j];
 		}
 	}
 }

@@ -19,10 +19,8 @@ int main(int argc, char* argv[])
 
 
 
-	MResource* pResource = MResourceManager::GetInstance()->Load("D:/Sphere.fbx");
-
-	MObjectManager* pObjectManager = new MObjectManager();
-	MMeshInstance* pMeshIns = pObjectManager->CreateObject<MMeshInstance>();
+	MResource* pResource = engine.GetResourceManager()->Load("D:/Sphere.fbx");
+	MMeshInstance* pMeshIns = engine.GetObjectManager()->CreateObject<MMeshInstance>();
 	pMeshIns->Load(pResource);
 
 	engine.SetRootNode(pMeshIns);

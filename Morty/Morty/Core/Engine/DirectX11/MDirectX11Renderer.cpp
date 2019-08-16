@@ -1,6 +1,9 @@
 ﻿#include "MDirectX11Renderer.h"
 #include "MWindowsRenderView.h"
 
+const int DEFAULT_WIDTH = 800;
+const int DEFAULT_HEIGHT = 600;
+
 MDirectX11Renderer::MDirectX11Renderer()
 	: m_pD3dDevice(nullptr)
 	, m_pD3dContext(nullptr)
@@ -17,19 +20,10 @@ void MDirectX11Renderer::AddOutputView(MIRenderView* pView)
 {
 	if (MWindowsRenderView* pWindowView = dynamic_cast<MWindowsRenderView*>(pView))
 	{
-
-		ID3D11Texture2D* pBackBuffer = nullptr;
-
-		RenderTarget rt;
-
-		rt.pRenderView = pWindowView;
-		rt.pSwapChain = this->CreateSwapChainForWindow(pWindowView->GetHWND());
-		rt.pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
-
-		m_pD3dDevice->CreateRenderTargetView(pBackBuffer, 0, &rt.pTargetView);
-		pBackBuffer->Release();
-
+		RenderTarget rt = this->CreateRenderTargetForWindow(pView);
+		OnResize(rt, DEFAULT_WIDTH, DEFAULT_HEIGHT);
 		m_vRenderTargets.push_back(rt);
+
 	}
 }
 
@@ -43,6 +37,10 @@ void MDirectX11Renderer::RemoveOutputView(MIRenderView* pView)
 			{
 				(*iter).pSwapChain->Release();
 				(*iter).pTargetView->Release();
+				if (iter->pDepthStencilBuffer)
+					iter->pDepthStencilBuffer->Release();
+				if (iter->pDepthStencilView)
+					iter->pDepthStencilView->Release();
 				m_vRenderTargets.erase(iter);
 				break;
 			}
@@ -174,12 +172,23 @@ void MDirectX11Renderer::RenderNodeToView(MNode* pNode, MIRenderView* pView)
 	pSwapChain->Present(0, 0);
 }
 
-IDXGISwapChain* MDirectX11Renderer::CreateSwapChainForWindow(HWND hWnd)
+MDirectX11Renderer::RenderTarget MDirectX11Renderer::CreateRenderTargetForWindow(MIRenderView* pView)
 {
+	RenderTarget result;
+	MWindowsRenderView* pRenderView = dynamic_cast<MWindowsRenderView*>(pView);
+	if (nullptr == pRenderView)
+	{
+		return result;
+	}
+
+	HWND hWnd = pRenderView->GetHWND();
+
+
+
 	DXGI_SWAP_CHAIN_DESC sd;
 
-	sd.BufferDesc.Width = 800;
-	sd.BufferDesc.Height = 600;
+	sd.BufferDesc.Width = DEFAULT_WIDTH;
+	sd.BufferDesc.Height = DEFAULT_HEIGHT;
 	sd.BufferDesc.RefreshRate.Numerator = 60;
 	sd.BufferDesc.RefreshRate.Denominator = 1;
 	sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -207,8 +216,6 @@ IDXGISwapChain* MDirectX11Renderer::CreateSwapChainForWindow(HWND hWnd)
 	sd.Flags = 0;
 
 
-
-
 	IDXGIDevice* pDxgiDevice = nullptr;
 	m_pD3dDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)&pDxgiDevice);
 
@@ -225,6 +232,114 @@ IDXGISwapChain* MDirectX11Renderer::CreateSwapChainForWindow(HWND hWnd)
 	pDxgiAdapter->Release();
 	pDxgiFactory->Release();
 
+	result.pRenderView = pRenderView;
+	result.pSwapChain = pSwapChain;
 
-	return pSwapChain;
+	return result;
+}
+
+void MDirectX11Renderer::OnResize(MIRenderView* pView, const int& nWidth, const int& nHeight)
+{
+	for (auto& rt : m_vRenderTargets)
+	{
+		if (rt.pRenderView == pView)
+		{
+			OnResize(rt, nWidth, nHeight);
+			break;
+		}
+	}
+	
+	
+}
+
+void MDirectX11Renderer::OnResize(RenderTarget& rt, const int& nWidth, const int& nHeight)
+{
+	if (rt.pTargetView)
+	{
+		rt.pTargetView->Release();
+		rt.pTargetView = nullptr;
+	}
+
+	if (rt.pDepthStencilBuffer)
+	{
+		rt.pDepthStencilBuffer->Release();
+		rt.pDepthStencilBuffer = nullptr;
+	}
+
+	if (rt.pDepthStencilView)
+	{
+		rt.pDepthStencilView->Release();
+		rt.pDepthStencilView = nullptr;
+	}
+
+	// Resize the swap chain and recreate the render target view.
+	HRESULT hr;
+
+
+	hr = rt.pSwapChain->ResizeBuffers(1, nWidth, nHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+	if (FAILED(hr))
+	{
+		//TODO
+	}
+
+	ID3D11Texture2D* pBackBuffer = nullptr;
+	hr = rt.pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
+	if (FAILED(hr))
+	{
+
+	}
+
+	hr = m_pD3dDevice->CreateRenderTargetView(pBackBuffer, 0, &rt.pTargetView);
+	pBackBuffer->Release();
+	if (FAILED(hr))
+	{
+
+	}
+
+	// Create the depth/stencil buffer and view.
+
+	D3D11_TEXTURE2D_DESC depthStencilDesc;
+
+	depthStencilDesc.Width = nWidth;
+	depthStencilDesc.Height = nHeight;
+	depthStencilDesc.MipLevels = 1;
+	depthStencilDesc.ArraySize = 1;
+	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+	bool bEnable4xMsaa = false;
+
+	// Use 4X MSAA? --must match swap chain MSAA values.
+	if (bEnable4xMsaa)
+	{
+		depthStencilDesc.SampleDesc.Count = 4;
+		depthStencilDesc.SampleDesc.Quality = m_n4xMsaaQuality;
+	}
+	// No MSAA
+	else
+	{
+		depthStencilDesc.SampleDesc.Count = 1;
+		depthStencilDesc.SampleDesc.Quality = 0;
+	}
+
+	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthStencilDesc.CPUAccessFlags = 0;
+	depthStencilDesc.MiscFlags = 0;
+
+
+	hr = m_pD3dDevice->CreateTexture2D(&depthStencilDesc, 0, &rt.pDepthStencilBuffer);
+	if (FAILED(hr))
+	{
+
+	}
+
+	hr = m_pD3dDevice->CreateDepthStencilView(rt.pDepthStencilBuffer, 0, &rt.pDepthStencilView);
+	if (FAILED(hr))
+	{
+
+	}
+
+	// Bind the render target view and depth/stencil view to the pipeline.
+	m_pD3dContext->OMSetRenderTargets(1, &rt.pTargetView, rt.pDepthStencilView);
+
 }

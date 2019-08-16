@@ -9,11 +9,10 @@
 #ifndef _M_MMESH_H_
 #define _M_MMESH_H_
 #include "MGlobal.h"
-
 #include "Vector.h"
-
 #include <vector>
 
+class MVertexBuffer;
 class MORTY_CLASS MMesh
 {
 public:
@@ -30,13 +29,18 @@ public:
         Vector3 bitangent;
     };
 
+
+	void CreateVertices(const unsigned int& unSize);
+	void CreateIndices(const unsigned int& unSize, const unsigned int& unIndexSize);
+
 private:
     
     friend class MModelResource;
     
-    std::vector<Vertex> m_vVertices;
-    std::vector<unsigned int> m_vIndices;
+    Vertex* m_vVertices;
+    unsigned int* m_vIndices;
 
+	MVertexBuffer* pVertexBuffer;
 };
 
 

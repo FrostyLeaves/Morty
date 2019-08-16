@@ -13,9 +13,18 @@
 class MIRenderView;
 class MIShader;
 class MNode;
+
+
+class MMesh;
 class MORTY_CLASS MIRenderer
 {
 public:
+
+	class MVertexBuffer
+	{
+
+	};
+
 	MIRenderer(){};
 	virtual ~MIRenderer(){};
 
@@ -26,7 +35,10 @@ public:
 
 	virtual void AddOutputView(MIRenderView* pView) = 0;
 	virtual void RemoveOutputView(MIRenderView* pView) = 0;
+	virtual void OnResize(MIRenderView* pView, const int& nWidth, const int& nHeight) = 0;
 
+protected:
+	virtual MVertexBuffer* CreateVertexBuffer(MMesh* pMesh) = 0;
 };
 
 

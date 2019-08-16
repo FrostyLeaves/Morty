@@ -17,7 +17,7 @@
 
 class MResource;
 class MResourceLoader;
-class MORTY_CLASS MResourceManager : public MSingleInstance<MResourceManager>
+class MORTY_CLASS MResourceManager
 {
 public:
 	enum MEResourceType

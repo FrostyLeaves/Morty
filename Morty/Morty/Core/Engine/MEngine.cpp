@@ -11,19 +11,20 @@
 
 #include "MTimer.h"
 #include "MNode.h"
+#include "MResourceManager.h"
 
 
 MEngine::MEngine()
-	: m_pRootNode(nullptr)
+	: m_pObjectManager(nullptr)
+	, m_pResourceManager(nullptr)
+	, m_pRootNode(nullptr)
 	, m_pRenderer(nullptr)
 	, m_cTickInfo(60)
 {
-
 }
 
 MEngine::~MEngine()
 {
-
 }
 
 bool MEngine::Initialize()
@@ -41,13 +42,19 @@ bool MEngine::Initialize()
 #endif
 	}
 
-	if (m_pRenderer->Initialize())
-		return true;
+	if (!m_pRenderer->Initialize())
+	{
+		delete m_pRenderer;
+		m_pRenderer = nullptr;
+		return false;
+	}
 
-	delete m_pRenderer;
-	m_pRenderer = nullptr;
-	
-	return false;
+	m_pObjectManager = new MObjectManager();
+	m_pResourceManager = new MResourceManager();
+
+
+	return true;
+
 }
 
 void MEngine::CreateView()
@@ -61,6 +68,7 @@ void MEngine::CreateView()
 		pRenderer->AddOutputView(pWindowsView);
 		pWindowsView->SetResizeCallback([=](const int& nWidth, const int& nHeight)
 		{
+			m_pRenderer->OnResize(pWindowsView, nWidth, nHeight);
 			m_pRenderer->RenderNodeToView(pWindowsView->GetRootNode(), pWindowsView);
 		});
 
@@ -95,6 +103,9 @@ void MEngine::Release()
 		delete pView;
 		pView = nullptr;
 	}
+
+	delete m_pObjectManager;
+	delete m_pResourceManager;
 
 	m_vView.clear();
 }

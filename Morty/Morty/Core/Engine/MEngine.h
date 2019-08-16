@@ -14,6 +14,8 @@
 
 class MIRenderer;
 class MIRenderView;
+class MObjectManager;
+class MResourceManager;
 class MNode;
 class MORTY_CLASS MEngine
 {
@@ -34,6 +36,9 @@ public:
 
 	void CreateView();
 
+	MObjectManager* GetObjectManager() { return m_pObjectManager; }
+	MResourceManager* GetResourceManager() { return m_pResourceManager; }
+
 public:
 
 	void SetMaxFPS(const int& nFPS);
@@ -44,6 +49,9 @@ protected:
 
 
 private:
+
+	MObjectManager* m_pObjectManager;
+	MResourceManager* m_pResourceManager;
 
 	MNode* m_pRootNode;
 

@@ -1,6 +1,9 @@
 #include "MMeshInstance.h"
 #include "MModelResource.h"
 
+#include "MDirectX11Renderer.h"
+#include "MModelResource.h"
+
 MMeshInstance::MMeshInstance()
 	: M3DNode()
 {
@@ -30,5 +33,4 @@ void MMeshInstance::OnTick(const float& fDelta)
 
 void MMeshInstance::Render()
 {
-
 }

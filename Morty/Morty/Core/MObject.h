@@ -13,6 +13,7 @@
 
 #include <map>
 
+class MEngine;
 class MORTY_CLASS MObject
 {
 public:
@@ -28,6 +29,7 @@ private:
 	friend class MObjectManager;
 
 	MObjectID m_unObjectID;
+	MEngine* m_pEngine;
 };
 
 class MORTY_CLASS MObjectManager

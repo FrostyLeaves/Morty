@@ -2,6 +2,7 @@
 
 MObject::MObject()
 	: m_unObjectID(0)
+	, m_pEngine(nullptr)
 {
 
 }

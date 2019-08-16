@@ -23,7 +23,7 @@ public:
     MModelResource();
     virtual ~MModelResource();
 
-	const MModel* GetModelTemplate(){ return m_pModelTemplate; }
+	const MModel* GetModelTemplate() const { return m_pModelTemplate; }
 
 protected:
 

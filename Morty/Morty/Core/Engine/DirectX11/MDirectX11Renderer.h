@@ -31,6 +31,7 @@ public:
 
 	virtual void AddOutputView(MIRenderView* pView) override;
 	virtual void RemoveOutputView(MIRenderView* pView) override;
+	virtual void OnResize(MIRenderView* pView, const int& nWidth, const int& nHeight) override;
 
 	bool InitDirectX11();
 
@@ -40,7 +41,17 @@ public:
 
 protected:
 
-	IDXGISwapChain* CreateSwapChainForWindow(HWND hWnd);
+	struct RenderTarget
+	{
+		MIRenderView* pRenderView = nullptr;
+		IDXGISwapChain* pSwapChain = nullptr;
+		ID3D11RenderTargetView* pTargetView = nullptr;
+		ID3D11Texture2D* pDepthStencilBuffer = nullptr;
+		ID3D11DepthStencilView* pDepthStencilView = nullptr;
+	};
+
+	RenderTarget CreateRenderTargetForWindow(MIRenderView* pView);
+	void OnResize(RenderTarget& renderTarget, const int& nWidth, const int& nHeight);
 
 protected:
 	UINT m_n4xMsaaQuality;
@@ -50,12 +61,7 @@ protected:
 	ID3D11DeviceContext* m_pD3dContext;
 
 
-	struct RenderTarget
-	{
-		MIRenderView* pRenderView;
-		IDXGISwapChain* pSwapChain;
-		ID3D11RenderTargetView* pTargetView;
-	};
+	
 	std::vector<RenderTarget> m_vRenderTargets;
 };
 
