@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 
 
 
-	MResource* pResource = engine.GetResourceManager()->Load("D:/Sphere.fbx");
+	MResource* pResource = engine.GetResourceManager()->Load("D:/marie naked/head.fbx");
 	MMeshInstance* pMeshIns = engine.GetObjectManager()->CreateObject<MMeshInstance>();
 	pMeshIns->Load(pResource);
 

@@ -114,9 +114,6 @@
     <ClInclude Include="..\..\ResourceLoader\MResourceLoader.h">
       <Filter>ResourceLoader</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ResourceLoader\Model\MModelLoader.h">
-      <Filter>ResourceLoader\Model</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\ResourceLoader\Model\MModelResource.h">
       <Filter>ResourceLoader\Model</Filter>
     </ClInclude>
@@ -187,12 +184,6 @@
     </ClCompile>
     <ClCompile Include="..\..\ResourceLoader\MResource.cpp">
       <Filter>ResourceLoader</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ResourceLoader\MResourceLoader.cpp">
-      <Filter>ResourceLoader</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ResourceLoader\Model\MModelLoader.cpp">
-      <Filter>ResourceLoader\Model</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ResourceLoader\Model\MModelResource.cpp">
       <Filter>ResourceLoader\Model</Filter>

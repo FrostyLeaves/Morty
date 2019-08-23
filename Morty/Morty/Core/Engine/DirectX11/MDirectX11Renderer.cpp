@@ -343,3 +343,13 @@ void MDirectX11Renderer::OnResize(RenderTarget& rt, const int& nWidth, const int
 	m_pD3dContext->OMSetRenderTargets(1, &rt.pTargetView, rt.pDepthStencilView);
 
 }
+
+void MDirectX11Renderer::GenerateBuffer(MVertexBuffer** pVertexBuffer, MMesh* pMesh)
+{
+
+}
+
+void MDirectX11Renderer::DestroyBuffer(MVertexBuffer** pVertexBuffer)
+{
+
+}

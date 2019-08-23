@@ -19,14 +19,15 @@ public:
     MResource();
     virtual ~MResource();
 
-public:
+protected:
 
 	virtual bool Load(const MString& strResourcePath) = 0;
 
 private:
     
     friend class MResourceManager;
-    
+	friend class MResourceLoader;
+
     MResourceID m_unResourceID;
 
 };

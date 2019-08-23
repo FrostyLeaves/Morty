@@ -39,6 +39,10 @@ public:
 	virtual void Release() override;
 	virtual void RenderNodeToView(MNode* pNode, MIRenderView* pView) override;
 
+public:
+	virtual void GenerateBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh) override;
+	virtual void DestroyBuffer(MVertexBuffer** ppVertexBuffer) override;
+
 protected:
 
 	struct RenderTarget

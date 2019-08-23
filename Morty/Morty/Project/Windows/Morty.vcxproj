@@ -121,7 +121,6 @@
     <ClInclude Include="../../Utility\Timer\MTimer.h" />
     <ClInclude Include="..\..\Core\MMesh.h" />
     <ClInclude Include="..\..\Core\MModel.h" />
-    <ClInclude Include="..\..\ResourceLoader\Model\MModelLoader.h" />
     <ClInclude Include="..\..\ResourceLoader\Model\MModelResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MResourceLoader.h" />
@@ -158,10 +157,8 @@
     <ClCompile Include="../../Utility\Timer\MTimer.cpp" />
     <ClCompile Include="..\..\Core\MMesh.cpp" />
     <ClCompile Include="..\..\Core\MModel.cpp" />
-    <ClCompile Include="..\..\ResourceLoader\Model\MModelLoader.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Model\MModelResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MResource.cpp" />
-    <ClCompile Include="..\..\ResourceLoader\MResourceLoader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

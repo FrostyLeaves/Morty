@@ -1,9 +1,10 @@
 #include "MMesh.h"
+#include "MIRenderer.h"
 
 MMesh::MMesh()
 	: m_vVertices(nullptr)
 	, m_vIndices(nullptr)
-	, pVertexBuffer(nullptr)
+	, m_pVertexBuffer(nullptr)
 {
     
 }
@@ -43,4 +44,12 @@ void MMesh::CreateIndices(const unsigned int& unSize, const unsigned int& unInde
 		m_vIndices = new unsigned int[unSize * unIndexSize];
 	}
 
+}
+
+void MMesh::GenerateBuffer(MIRenderer* pRenderer)
+{
+	if (m_pVertexBuffer)
+		pRenderer->DestroyBuffer(&m_pVertexBuffer);
+
+	pRenderer->GenerateBuffer(&m_pVertexBuffer, this);
 }

@@ -34,8 +34,6 @@ protected:
 
 private:
     
-    friend class MModelLoader;
-    
     MModel* m_pModelTemplate;
 
 };

@@ -22,7 +22,7 @@ public:
 
 public:
 
-	bool Load(const MResource* pResource);
+	bool Load(MResource* pResource);
 
 
 	virtual void OnTick(const float& fDelta);
@@ -30,7 +30,7 @@ public:
 
 private:
 
-	const MModelResource* m_pResource;
+	MModelResource* m_pResource;
 
 };
 

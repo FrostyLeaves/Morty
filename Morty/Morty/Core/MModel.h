@@ -21,6 +21,8 @@ public:
 
 public:
 
+	const std::vector<MMesh*>& GetMeshes() const { return m_vMeshes; };
+
 protected:
 
 	void Clean();

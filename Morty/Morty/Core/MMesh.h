@@ -12,6 +12,7 @@
 #include "Vector.h"
 #include <vector>
 
+class MIRenderer;
 class MVertexBuffer;
 class MORTY_CLASS MMesh
 {
@@ -30,17 +31,20 @@ public:
     };
 
 
-	void CreateVertices(const unsigned int& unSize);
-	void CreateIndices(const unsigned int& unSize, const unsigned int& unIndexSize);
-
 private:
     
     friend class MModelResource;
-    
+
+	void CreateVertices(const unsigned int& unSize);
+	void CreateIndices(const unsigned int& unSize, const unsigned int& unIndexSize);
+
+	MVertexBuffer* GetBuffer() { return m_pVertexBuffer; }
+	void GenerateBuffer(MIRenderer* pRenderer);
+
     Vertex* m_vVertices;
     unsigned int* m_vIndices;
 
-	MVertexBuffer* pVertexBuffer;
+	MVertexBuffer* m_pVertexBuffer;
 };
 
 

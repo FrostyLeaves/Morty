@@ -1,15 +1,15 @@
 #include "MResourceManager.h"
-#include "MModelLoader.h"
 #include "MResource.h"
+#include "MModelResource.h"
+#include "MResourceLoader.h"
 
-
-#define REGISTER_RESOURCE_TYPE(Type, LoaderClass) \
-m_tResourceLoader[Type] = new LoaderClass();
+#define REGISTER_RESOURCE_TYPE(Type, ResourceClass) \
+m_tResourceLoader[Type] = new MResourceLoaderTemp<ResourceClass>();
 
 MResourceManager::MResourceManager()
 	: m_pResourceDB(new MIDPool<MResourceID>())
 {
-	REGISTER_RESOURCE_TYPE(MEResourceType::Model, MModelLoader);
+	REGISTER_RESOURCE_TYPE(MEResourceType::Model, MModelResource);
 }
 
 MResourceManager::~MResourceManager()
@@ -42,7 +42,7 @@ MResource* MResourceManager::Load(const MString& strResourcePath)
 
 	if (MResourceLoader* pLoader = m_tResourceLoader[GetResourceType(strResourcePath)])
 	{
-		pResource = pLoader->Load(strResourcePath);
+		pResource = pLoader->Load(this, strResourcePath);
 		m_tPathResources[strResourcePath] = pResource;
 	}
 
