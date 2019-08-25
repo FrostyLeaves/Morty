@@ -38,10 +38,9 @@ public:
 	virtual void GenerateBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh) = 0;
 	virtual void DestroyBuffer(MVertexBuffer** ppVertexBuffer) = 0;
 
-	virtual void Draw(MVertexBuffer* pBuffer) = 0;
+	virtual void Draw(MMesh* pMesh) = 0;
 
 protected:
-//	virtual MVertexBuffer* CreateVertexBuffer(MMesh* pMesh) = 0;
 };
 
 

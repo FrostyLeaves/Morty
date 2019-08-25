@@ -1,4 +1,4 @@
-/**
+ï»¿/**
  * @File         MVertex
  * 
  * @Created      2019-08-25 15:08:54
@@ -11,7 +11,9 @@
 #include "MGlobal.h"
 #include "Vector.h"
 
-//¶¥µã
+class MIRenderer;
+
+//é¡¶ç‚¹
 struct MVertex
 {
 public:
@@ -22,15 +24,20 @@ public:
 	Vector3 bitangent;
 };
 
-//¶¥µã»º´æ
+//é¡¶ç‚¹ç¼“å­˜
 class MVertexBuffer
 {
 public:
-	MVertexBuffer(){}
+	MVertexBuffer();
 	virtual ~MVertexBuffer(){}
+
+#if	RENDER_GRAPHICS == MORTY_DIRECTX_11
+	class ID3D11Buffer* m_pVertexBuffer;
+	class ID3D11Buffer* m_pIndexBuffer;
+#endif
 };
 
-//¶¥µã²¼¾Ö
+//é¡¶ç‚¹å¸ƒå±€
 class MVertexLayout
 {
 	MVertexLayout();

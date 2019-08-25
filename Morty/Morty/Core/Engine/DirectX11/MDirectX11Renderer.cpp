@@ -366,7 +366,7 @@ void MDirectX11Renderer::OnResize(RenderTarget& rt, const int& nWidth, const int
 
 } 
 
-void MDirectX11Renderer::GenerateBuffer(MVertexBuffer** pVertexBuffer, MMesh* pMesh)
+void MDirectX11Renderer::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh)
 {
 
 	D3D11_INPUT_ELEMENT_DESC desc[] = {
@@ -406,6 +406,11 @@ void MDirectX11Renderer::GenerateBuffer(MVertexBuffer** pVertexBuffer, MMesh* pM
 	ID3D11Buffer* pVB = nullptr;
 	hr = m_pD3dDevice->CreateBuffer(&bufferDesc, &subResourceData, &pVB);
 
+	if (FAILED(hr))
+	{
+
+	}
+
 	//UINT stride = sizeof(MVertex);
 	//UINT offset = 0;
 	//m_pD3dContext->IASetVertexBuffers(0, 1, &pVB, &stride, &offset);
@@ -423,21 +428,40 @@ void MDirectX11Renderer::GenerateBuffer(MVertexBuffer** pVertexBuffer, MMesh* pM
 	D3D11_SUBRESOURCE_DATA indicesData;
 	indicesData.pSysMem = pMesh->GetIndices();
 
-	ID3D11Buffer* pIndicesBuffer = nullptr;
-	hr = m_pD3dDevice->CreateBuffer(&indicesBufferDesc, &indicesData, &pIndicesBuffer);
+	ID3D11Buffer* pIB = nullptr;
+	hr = m_pD3dDevice->CreateBuffer(&indicesBufferDesc, &indicesData, &pIB);
+
+	if (FAILED(hr))
+	{
+
+	}
 
 	//m_pD3dContext->IASetIndexBuffer(pIndicesBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-	//
-	m_pD3dContext->DrawIndexed()
+	//m_pD3dContext->DrawIndexed()
+
+
+	*ppVertexBuffer = new MVertexBuffer();
+	(*ppVertexBuffer)->m_pVertexBuffer = pVB;
+	(*ppVertexBuffer)->m_pIndexBuffer = pIB;
 }
 
-void MDirectX11Renderer::DestroyBuffer(MVertexBuffer** pVertexBuffer)
+void MDirectX11Renderer::DestroyBuffer(MVertexBuffer** ppVertexBuffer)
 {
+	if ((*ppVertexBuffer)->m_pVertexBuffer)
+	{
+		(*ppVertexBuffer)->m_pVertexBuffer->Release();
+		(*ppVertexBuffer)->m_pVertexBuffer = nullptr;
+	}
 
+	if ((*ppVertexBuffer)->m_pIndexBuffer)
+	{
+		(*ppVertexBuffer)->m_pIndexBuffer->Release();
+		(*ppVertexBuffer)->m_pIndexBuffer = nullptr;
+	}
 }
 
-void MDirectX11Renderer::Draw(MVertexBuffer* pBuffer)
+void MDirectX11Renderer::Draw(MMesh* pMesh)
 {
 	m_pD3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 

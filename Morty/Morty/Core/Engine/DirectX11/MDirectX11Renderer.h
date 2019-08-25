@@ -43,7 +43,7 @@ public:
 	virtual void GenerateBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh) override;
 	virtual void DestroyBuffer(MVertexBuffer** ppVertexBuffer) override;
 
-	virtual void Draw(MVertexBuffer* pBuffer) override;
+	virtual void Draw(MMesh* pMesh) override;
 
 protected:
 
