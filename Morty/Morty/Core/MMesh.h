@@ -14,6 +14,7 @@
 
 class MIRenderer;
 class MVertexBuffer;
+class MVertex;
 class MORTY_CLASS MMesh
 {
 public:
@@ -21,16 +22,11 @@ public:
     virtual ~MMesh();
 
 public:
-    
-    struct Vertex{
-        Vector3 position;
-        Vector3 normal;
-        Vector2 texCoords;
-        Vector3 tangent;
-        Vector3 bitangent;
-    };
-
-
+	MVertexBuffer* GetBuffer() { return m_pVertexBuffer; }
+	unsigned int GetVerticesLength() { return m_unVerticesLength; }
+	unsigned int GetIndicesLength() { return m_unIndicesLength; }
+	MVertex* GetVertices(){ return m_vVertices; }
+	unsigned int* GetIndices(){ return m_vIndices; }
 private:
     
     friend class MModelResource;
@@ -38,11 +34,13 @@ private:
 	void CreateVertices(const unsigned int& unSize);
 	void CreateIndices(const unsigned int& unSize, const unsigned int& unIndexSize);
 
-	MVertexBuffer* GetBuffer() { return m_pVertexBuffer; }
+	
 	void GenerateBuffer(MIRenderer* pRenderer);
 
-    Vertex* m_vVertices;
+    MVertex* m_vVertices;
     unsigned int* m_vIndices;
+	unsigned int m_unVerticesLength;
+	unsigned int m_unIndicesLength;
 
 	MVertexBuffer* m_pVertexBuffer;
 };

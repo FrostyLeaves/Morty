@@ -1,6 +1,9 @@
 ﻿#include "MDirectX11Renderer.h"
 #include "MWindowsRenderView.h"
 
+#include "MVertex.h"
+#include "MMesh.h"
+
 const int DEFAULT_WIDTH = 800;
 const int DEFAULT_HEIGHT = 600;
 
@@ -120,6 +123,23 @@ bool MDirectX11Renderer::Initialize()
 	if (nullptr == m_pD3dDevice && false == InitDirectX11())
 		return false;
 
+	//光栅化状态块
+	D3D11_RASTERIZER_DESC mRasterizer;
+	ZeroMemory(&mRasterizer, sizeof(D3D11_RASTERIZER_DESC));
+	//实心模式，WIREFRAME是线框模式
+	mRasterizer.FillMode = D3D11_FILL_SOLID;
+	mRasterizer.CullMode = D3D11_CULL_BACK;
+	mRasterizer.FrontCounterClockwise = false;
+	mRasterizer.DepthClipEnable = true;
+
+	//TODO 如果在一个程序中，需要多种光栅化状态块来回切换，那么在初始化时就创建好，而不是切换的时候创建。
+
+	m_pRasterizerState = nullptr;
+	HRESULT hr = m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_pRasterizerState);
+
+	m_pD3dContext->RSSetState(m_pRasterizerState);
+
+
 	return true;
 
 }
@@ -132,6 +152,8 @@ void MDirectX11Renderer::Release()
 		target.pTargetView->Release();
 	}
 
+	if (m_pRasterizerState)
+		m_pRasterizerState->Release();
 
 	if (m_pD3dContext)
 		m_pD3dContext->Release();
@@ -342,14 +364,83 @@ void MDirectX11Renderer::OnResize(RenderTarget& rt, const int& nWidth, const int
 	// Bind the render target view and depth/stencil view to the pipeline.
 	m_pD3dContext->OMSetRenderTargets(1, &rt.pTargetView, rt.pDepthStencilView);
 
-}
+} 
 
 void MDirectX11Renderer::GenerateBuffer(MVertexBuffer** pVertexBuffer, MMesh* pMesh)
 {
 
+	D3D11_INPUT_ELEMENT_DESC desc[] = {
+
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORDS", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "Tangent", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+
+	};
+
+	
+	//TODO CreateInputLayout need a virtual shader.
+	ID3D11InputLayout* pInputLayout = nullptr;
+	HRESULT hr = m_pD3dDevice->CreateInputLayout(desc, sizeof(desc), nullptr, 0, &pInputLayout);
+
+
+	//m_pD3dContext->IASetInputLayout(pInputLayout);
+
+
+
+
+	//创建顶点缓冲
+	D3D11_BUFFER_DESC bufferDesc;
+
+	bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	bufferDesc.ByteWidth = pMesh->GetVerticesLength() * sizeof(MVertex);
+	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bufferDesc.CPUAccessFlags = 0;
+	bufferDesc.MiscFlags = 0;
+	bufferDesc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA subResourceData;
+	subResourceData.pSysMem = pMesh->GetVertices();
+
+	ID3D11Buffer* pVB = nullptr;
+	hr = m_pD3dDevice->CreateBuffer(&bufferDesc, &subResourceData, &pVB);
+
+	//UINT stride = sizeof(MVertex);
+	//UINT offset = 0;
+	//m_pD3dContext->IASetVertexBuffers(0, 1, &pVB, &stride, &offset);
+	
+
+	//创建索引缓冲
+	D3D11_BUFFER_DESC indicesBufferDesc;
+	indicesBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	indicesBufferDesc.ByteWidth = sizeof(unsigned int) * pMesh->GetIndicesLength();
+	indicesBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	indicesBufferDesc.CPUAccessFlags = 0;
+	indicesBufferDesc.MiscFlags = 0;
+	indicesBufferDesc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA indicesData;
+	indicesData.pSysMem = pMesh->GetIndices();
+
+	ID3D11Buffer* pIndicesBuffer = nullptr;
+	hr = m_pD3dDevice->CreateBuffer(&indicesBufferDesc, &indicesData, &pIndicesBuffer);
+
+	//m_pD3dContext->IASetIndexBuffer(pIndicesBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+	//
+	m_pD3dContext->DrawIndexed()
 }
 
 void MDirectX11Renderer::DestroyBuffer(MVertexBuffer** pVertexBuffer)
 {
+
+}
+
+void MDirectX11Renderer::Draw(MVertexBuffer* pBuffer)
+{
+	m_pD3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+
 
 }

@@ -132,6 +132,9 @@
     <ClInclude Include="..\..\Core\Engine\DirectX11\MWindowsRenderView.h">
       <Filter>Core\Engine\DirectX11</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\Engine\MVertex.h">
+      <Filter>Core\Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -202,6 +205,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\Engine\DirectX11\MWindowsRenderView.cpp">
       <Filter>Core\Engine\DirectX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Engine\MVertex.cpp">
+      <Filter>Core\Engine</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

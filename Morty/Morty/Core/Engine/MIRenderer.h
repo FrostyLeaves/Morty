@@ -14,17 +14,7 @@ class MIRenderView;
 class MIShader;
 class MNode;
 class MMesh;
-
-class MVertexBuffer
-{
-protected:
-
-	friend class MIRenderer;
-
-	MVertexBuffer(){}
-	virtual ~MVertexBuffer(){}
-};
-
+class MVertexBuffer;
 class MORTY_CLASS MIRenderer
 {
 public:
@@ -47,6 +37,8 @@ public:
 public:
 	virtual void GenerateBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh) = 0;
 	virtual void DestroyBuffer(MVertexBuffer** ppVertexBuffer) = 0;
+
+	virtual void Draw(MVertexBuffer* pBuffer) = 0;
 
 protected:
 //	virtual MVertexBuffer* CreateVertexBuffer(MMesh* pMesh) = 0;

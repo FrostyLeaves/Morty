@@ -1,5 +1,6 @@
 #include "MMesh.h"
 #include "MIRenderer.h"
+#include "MVertex.h"
 
 MMesh::MMesh()
 	: m_vVertices(nullptr)
@@ -27,7 +28,8 @@ void MMesh::CreateVertices(const unsigned int& unSize)
 
 	if (unSize > 0)
 	{
-		m_vVertices = new Vertex[unSize];
+		m_vVertices = new MVertex[unSize];
+		m_unVerticesLength = unSize;
 	}
 }
 
@@ -42,6 +44,7 @@ void MMesh::CreateIndices(const unsigned int& unSize, const unsigned int& unInde
 	if (unSize * unIndexSize > 0)
 	{
 		m_vIndices = new unsigned int[unSize * unIndexSize];
+		m_unIndicesLength = unSize * unIndexSize;
 	}
 
 }

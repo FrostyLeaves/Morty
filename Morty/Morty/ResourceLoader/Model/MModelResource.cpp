@@ -6,6 +6,7 @@
 #include "MModel.h"
 #include "MModelResource.h"
 #include "MResourceManager.h"
+#include "MVertex.h"
 
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
@@ -64,7 +65,7 @@ void MModelResource::ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh* pM
 	pMMesh->CreateVertices(pMesh->mNumVertices);
 	for (unsigned int i = 0; i < pMesh->mNumVertices; ++i)
 	{
-		MMesh::Vertex& vertex = pMMesh->m_vVertices[i];
+		MVertex& vertex = pMMesh->m_vVertices[i];
 		vertex.position.x = pMesh->mVertices[i].x;
 		vertex.position.y = pMesh->mVertices[i].y;
 		vertex.position.z = pMesh->mVertices[i].z;

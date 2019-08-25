@@ -108,6 +108,7 @@
     <ClInclude Include="../../Core\MNotifyManager.h" />
     <ClInclude Include="../../Core\MObject.h" />
     <ClInclude Include="..\..\Core\Engine\DirectX11\MWindowsRenderView.h" />
+    <ClInclude Include="..\..\Core\Engine\MVertex.h" />
     <ClInclude Include="..\..\ResourceLoader\MResourceManager.h" />
     <ClInclude Include="..\..\Scene\MMeshInstance.h" />
     <ClInclude Include="../../Scene\M3DNode.h" />
@@ -146,6 +147,7 @@
     </ClCompile>
     <ClCompile Include="../../Morty.cpp" />
     <ClCompile Include="..\..\Core\Engine\DirectX11\MWindowsRenderView.cpp" />
+    <ClCompile Include="..\..\Core\Engine\MVertex.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MResourceManager.cpp" />
     <ClCompile Include="..\..\Scene\MMeshInstance.cpp" />
     <ClCompile Include="../../Scene\M3DNode.cpp" />

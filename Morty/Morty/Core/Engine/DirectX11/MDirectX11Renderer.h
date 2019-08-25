@@ -19,7 +19,7 @@
 #include <vector>
 
 class MIRenderView;
-
+class MVertexBuffer;
 class MORTY_CLASS MDirectX11Renderer : public MIRenderer
 	, public MSingleInstance<MDirectX11Renderer>
 {
@@ -43,6 +43,8 @@ public:
 	virtual void GenerateBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh) override;
 	virtual void DestroyBuffer(MVertexBuffer** ppVertexBuffer) override;
 
+	virtual void Draw(MVertexBuffer* pBuffer) override;
+
 protected:
 
 	struct RenderTarget
@@ -52,6 +54,8 @@ protected:
 		ID3D11RenderTargetView* pTargetView = nullptr;
 		ID3D11Texture2D* pDepthStencilBuffer = nullptr;
 		ID3D11DepthStencilView* pDepthStencilView = nullptr;
+
+		D3D11_RASTERIZER_DESC mRasterizer;
 	};
 
 	RenderTarget CreateRenderTargetForWindow(MIRenderView* pView);
@@ -64,7 +68,7 @@ protected:
 	ID3D11Device* m_pD3dDevice;
 	ID3D11DeviceContext* m_pD3dContext;
 
-
+	ID3D11RasterizerState* m_pRasterizerState;
 	
 	std::vector<RenderTarget> m_vRenderTargets;
 };
