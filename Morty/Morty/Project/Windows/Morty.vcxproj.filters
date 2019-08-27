@@ -34,9 +34,6 @@
     <Filter Include="Utility\Timer">
       <UniqueIdentifier>{b1f1df1d-5d3e-49da-a014-ffdde85f37f0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Core\Engine\Shader">
-      <UniqueIdentifier>{ee8667d6-fd63-447c-a1d0-9393392a429a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Scene">
       <UniqueIdentifier>{7c8358e8-682e-4988-b275-80ed5e70e647}</UniqueIdentifier>
     </Filter>
@@ -45,6 +42,9 @@
     </Filter>
     <Filter Include="ResourceLoader\Model">
       <UniqueIdentifier>{80441bef-12ff-4da1-89b0-96e49cc7e0f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ResourceLoader\Shader">
+      <UniqueIdentifier>{b1a0b3cf-579e-41a5-9b07-f1e7b10e739c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -87,14 +87,8 @@
     <ClInclude Include="../../Utility\Timer\MTimer.h">
       <Filter>Utility\Timer</Filter>
     </ClInclude>
-    <ClInclude Include="../../Core\Engine\Shader\MIShaderManager.h">
-      <Filter>Core\Engine\Shader</Filter>
-    </ClInclude>
     <ClInclude Include="../../Utility\MString.h">
       <Filter>Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Core\Engine\Shader\MIShader.h">
-      <Filter>Core\Engine\Shader</Filter>
     </ClInclude>
     <ClInclude Include="../../Core\MObject.h">
       <Filter>Core</Filter>
@@ -135,6 +129,15 @@
     <ClInclude Include="..\..\Core\Engine\MVertex.h">
       <Filter>Core\Engine</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\ResourceLoader\Shader\MShaderResource.h">
+      <Filter>ResourceLoader\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\MShader.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\MMaterial.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -166,12 +169,6 @@
     </ClCompile>
     <ClCompile Include="../../Utility\Timer\MTimer.cpp">
       <Filter>Utility\Timer</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Core\Engine\Shader\MIShaderManager.cpp">
-      <Filter>Core\Engine\Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Core\Engine\Shader\MIShader.cpp">
-      <Filter>Core\Engine\Shader</Filter>
     </ClCompile>
     <ClCompile Include="../../Core\MObject.cpp">
       <Filter>Core</Filter>
@@ -208,6 +205,18 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\Engine\MVertex.cpp">
       <Filter>Core\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ResourceLoader\Shader\MShaderResource.cpp">
+      <Filter>ResourceLoader\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\MShader.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Utility\MGlobal.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\MMaterial.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

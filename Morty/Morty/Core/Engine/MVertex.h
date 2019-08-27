@@ -10,10 +10,15 @@
 #define _M_MVERTEX_H_
 #include "MGlobal.h"
 #include "Vector.h"
+#include <map>
 
+class MIRenderer;
 //顶点
 struct MVertex
 {
+public:
+	MVertex();
+
 public:
 	Vector3 position;
 	Vector3 normal;
@@ -26,18 +31,45 @@ public:
 class MVertexBuffer
 {
 public:
-	MVertexBuffer(){}
+	MVertexBuffer();
 	virtual ~MVertexBuffer(){}
+
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	class ID3D11Buffer* m_pVertexBuffer;
+	class ID3D11Buffer* m_pIndexBuffer;
+#elif RENDER_GRAPHICS == MORTY_OPENGLES
+
+#endif
 };
 
-//顶点布局
-class MVertexLayout
+//Shader
+class MShaderBuffer
 {
-	MVertexLayout();
-	virtual ~MVertexLayout(){}
+public:
+	MShaderBuffer();
+	virtual ~MShaderBuffer(){}
+};
 
-	void SetUseLayout(MIRenderer* pRenderer);
+class MVertexShaderBuffer : public MShaderBuffer
+{
+public:
+	MVertexShaderBuffer();
+	virtual ~MVertexShaderBuffer(){}
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	class ID3D11VertexShader* m_pVertexShader;
+#elif RENDER_GRAPHICS == MORTY_OPENGLES
+#endif
+};
 
+class MPixelShaderBuffer : public MShaderBuffer
+{
+public:
+	MPixelShaderBuffer();
+	virtual ~MPixelShaderBuffer(){}
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	class ID3D11PixelShader* m_pPixelShader;
+#elif RENDER_GRAPHICS == MORTY_OPENGLES
+#endif
 };
 
 

@@ -5,8 +5,13 @@
 #include "MEngine.h"
 
 #include "MObject.h"
+#include "MMaterial.h"
 #include "MMeshInstance.h"
 #include "MResourceManager.h"
+
+#include "MShader.h"
+#include "MVertex.h"
+#include "MIRenderer.h"
 
 int main(int argc, char* argv[])
 {
@@ -19,9 +24,20 @@ int main(int argc, char* argv[])
 
 
 
-	MResource* pResource = engine.GetResourceManager()->Load("D:/marie naked/head.fbx");
+	MResource* pResource = engine.GetResourceManager()->Load("D:/marie naked/testball.fbx");
 	MMeshInstance* pMeshIns = engine.GetObjectManager()->CreateObject<MMeshInstance>();
 	pMeshIns->Load(pResource);
+
+	MResource* pVSResource = engine.GetResourceManager()->Load("D:/marie naked/test_shader.mvs");
+	MResource* pPSResource = engine.GetResourceManager()->Load("D:/marie naked/test_shader.mps");
+
+	MShaderBuffer* pTestBuffer = nullptr;
+
+	MMaterial* pPass = new MMaterial();
+	pPass->LoadVertexShader(pVSResource);
+	pPass->LoadPixelShader(pPSResource);
+
+	pMeshIns->Test_SetMaterial(pPass);
 
 	engine.SetRootNode(pMeshIns);
 

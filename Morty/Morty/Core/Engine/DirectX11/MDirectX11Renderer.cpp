@@ -1,8 +1,14 @@
 ﻿#include "MDirectX11Renderer.h"
 #include "MWindowsRenderView.h"
+#include "MLogManager.h"
 
 #include "MVertex.h"
 #include "MMesh.h"
+#include "MShader.h"
+#include "MMaterial.h"
+#include "MMeshInstance.h"
+#include "MModelResource.h"
+#include "MModel.h"
 
 const int DEFAULT_WIDTH = 800;
 const int DEFAULT_HEIGHT = 600;
@@ -10,6 +16,7 @@ const int DEFAULT_HEIGHT = 600;
 MDirectX11Renderer::MDirectX11Renderer()
 	: m_pD3dDevice(nullptr)
 	, m_pD3dContext(nullptr)
+	, m_pVertexInputLayout(nullptr)
 {
 
 }
@@ -130,18 +137,80 @@ bool MDirectX11Renderer::Initialize()
 	mRasterizer.FillMode = D3D11_FILL_SOLID;
 	mRasterizer.CullMode = D3D11_CULL_BACK;
 	mRasterizer.FrontCounterClockwise = false;
-	mRasterizer.DepthClipEnable = true;
+	mRasterizer.DepthClipEnable = false;
 
 	//TODO 如果在一个程序中，需要多种光栅化状态块来回切换，那么在初始化时就创建好，而不是切换的时候创建。
 
 	m_pRasterizerState = nullptr;
 	HRESULT hr = m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_pRasterizerState);
+	if (FAILED(hr))
+	{
+		//TODO
+	}
 
 	m_pD3dContext->RSSetState(m_pRasterizerState);
 
+	//顶点数据Layout
+	D3D11_INPUT_ELEMENT_DESC desc[] = {
+
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORDS", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "Tangent", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+
+	};
+
+	ID3D10Blob* pErrorMessage = nullptr;
+	ID3D10Blob* pShaderBuffer = nullptr;
+
+	MString strVirtualShader = "struct VertexIn					\n\
+	{															\n\
+		float3 v1 : POSITION;									\n\
+		float3 v2 : NORMAL;										\n\
+		float2 v3 : TEXCOORDS;									\n\
+		float3 v4 : Tangent;									\n\
+		float3 v5 : BITANGENT;									\n\
+	};															\n\
+																//\n\
+	struct VertexOut											\n\
+	{															\n\
+		float4 PosH : SV_POSITION;								\n\
+		float Color : COLOR;									\n\
+	};															\n\
+																\n\
+	VertexOut VS(VertexIn vin)									\n\
+	{															\n\
+		VertexOut vout;											\n\
+		vout.PosH = float4(vin.v1, 1.0f);						\n\
+		return vout;											\n\
+	}";
+
+	hr = D3DX11CompileFromMemory(strVirtualShader.c_str(), strVirtualShader.size(), nullptr, nullptr, nullptr, "VS", "vs_5_0", 0, 0, nullptr, &pShaderBuffer, &pErrorMessage, nullptr);
+	if (FAILED(hr))
+	{
+		if (pErrorMessage)
+			MLogManager::GetInstance()->Error("Compile Shader Error: %s", pErrorMessage->GetBufferPointer());
+		else
+			MLogManager::GetInstance()->Error("Compile Shader Error: Can`t find file: virtual");
+
+		return false;
+	}
+	
+	//TODO 需要根据顶点数据自动创建出假的Shader，来骗过DX11的Shader-InputLayout验证，让它认为Layout合法。
+	hr = m_pD3dDevice->CreateInputLayout(desc, 5, pShaderBuffer->GetBufferPointer(), pShaderBuffer->GetBufferSize(), &m_pVertexInputLayout);
+	if (FAILED(hr))
+	{
+		//TODO
+	}
+
+	m_pD3dContext->IASetInputLayout(m_pVertexInputLayout);
+
+
+	//三角形解析顶点
+	m_pD3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	return true;
-
 }
 
 void MDirectX11Renderer::Release()
@@ -174,12 +243,15 @@ void MDirectX11Renderer::RenderNodeToView(MNode* pNode, MIRenderView* pView)
 
 	IDXGISwapChain* pSwapChain = nullptr;
 	ID3D11RenderTargetView* pTargetView = nullptr;
+
+	RenderTarget target;
 	for (auto rt : m_vRenderTargets)
 	{
 		if (rt.pRenderView == pView)
 		{
 			pSwapChain = rt.pSwapChain;
 			pTargetView = rt.pTargetView;
+			target = rt;
 			break;
 		}
 	}
@@ -188,10 +260,16 @@ void MDirectX11Renderer::RenderNodeToView(MNode* pNode, MIRenderView* pView)
 		return;
 
 
-
 	float clearColor[4] = { 0.0f, 0.0f, 0.25f, 1.0f };
+	m_pD3dContext->ClearDepthStencilView(target.pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 	m_pD3dContext->ClearRenderTargetView(pTargetView, clearColor);
+	m_pD3dContext->RSSetViewports(1, &target.mViewport);
+
+	Test_DrawNode(pNode);
 	pSwapChain->Present(0, 0);
+	
+
+
 }
 
 MDirectX11Renderer::RenderTarget MDirectX11Renderer::CreateRenderTargetForWindow(MIRenderView* pView)
@@ -256,6 +334,15 @@ MDirectX11Renderer::RenderTarget MDirectX11Renderer::CreateRenderTargetForWindow
 
 	result.pRenderView = pRenderView;
 	result.pSwapChain = pSwapChain;
+
+
+	D3D11_VIEWPORT& viewport = result.mViewport;
+	viewport.Width = DEFAULT_WIDTH;
+	viewport.Height = DEFAULT_HEIGHT;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
 
 	return result;
 }
@@ -364,32 +451,13 @@ void MDirectX11Renderer::OnResize(RenderTarget& rt, const int& nWidth, const int
 	// Bind the render target view and depth/stencil view to the pipeline.
 	m_pD3dContext->OMSetRenderTargets(1, &rt.pTargetView, rt.pDepthStencilView);
 
+	rt.mViewport.Width = nWidth;
+	rt.mViewport.Height = nHeight;
+
 } 
 
-void MDirectX11Renderer::GenerateBuffer(MVertexBuffer** pVertexBuffer, MMesh* pMesh)
+void MDirectX11Renderer::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh)
 {
-
-	D3D11_INPUT_ELEMENT_DESC desc[] = {
-
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORDS", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "Tangent", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-
-	};
-
-	
-	//TODO CreateInputLayout need a virtual shader.
-	ID3D11InputLayout* pInputLayout = nullptr;
-	HRESULT hr = m_pD3dDevice->CreateInputLayout(desc, sizeof(desc), nullptr, 0, &pInputLayout);
-
-
-	//m_pD3dContext->IASetInputLayout(pInputLayout);
-
-
-
-
 	//创建顶点缓冲
 	D3D11_BUFFER_DESC bufferDesc;
 
@@ -404,7 +472,11 @@ void MDirectX11Renderer::GenerateBuffer(MVertexBuffer** pVertexBuffer, MMesh* pM
 	subResourceData.pSysMem = pMesh->GetVertices();
 
 	ID3D11Buffer* pVB = nullptr;
-	hr = m_pD3dDevice->CreateBuffer(&bufferDesc, &subResourceData, &pVB);
+	HRESULT hr = m_pD3dDevice->CreateBuffer(&bufferDesc, &subResourceData, &pVB);
+	if (FAILED(hr))
+	{
+
+	}
 
 	//UINT stride = sizeof(MVertex);
 	//UINT offset = 0;
@@ -423,24 +495,194 @@ void MDirectX11Renderer::GenerateBuffer(MVertexBuffer** pVertexBuffer, MMesh* pM
 	D3D11_SUBRESOURCE_DATA indicesData;
 	indicesData.pSysMem = pMesh->GetIndices();
 
-	ID3D11Buffer* pIndicesBuffer = nullptr;
-	hr = m_pD3dDevice->CreateBuffer(&indicesBufferDesc, &indicesData, &pIndicesBuffer);
+	ID3D11Buffer* pIB = nullptr;
+	hr = m_pD3dDevice->CreateBuffer(&indicesBufferDesc, &indicesData, &pIB);
+	if (FAILED(hr))
+	{
+
+	}
 
 	//m_pD3dContext->IASetIndexBuffer(pIndicesBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-	//
-	m_pD3dContext->DrawIndexed()
+	//m_pD3dContext->DrawIndexed()
+
+	if (*ppVertexBuffer)
+	{
+		DestroyBuffer(ppVertexBuffer);
+	}
+	(*ppVertexBuffer) = new MVertexBuffer();
+	(*ppVertexBuffer)->m_pVertexBuffer = pVB;
+	(*ppVertexBuffer)->m_pIndexBuffer = pIB;
+
+
 }
 
-void MDirectX11Renderer::DestroyBuffer(MVertexBuffer** pVertexBuffer)
+void MDirectX11Renderer::DestroyBuffer(MVertexBuffer** ppVertexBuffer)
 {
+	if ((*ppVertexBuffer)->m_pVertexBuffer)
+	{
+		(*ppVertexBuffer)->m_pVertexBuffer->Release();
+		(*ppVertexBuffer)->m_pVertexBuffer = nullptr;
+	}
+	if ((*ppVertexBuffer)->m_pIndexBuffer)
+	{
+		(*ppVertexBuffer)->m_pIndexBuffer->Release();
+		(*ppVertexBuffer)->m_pIndexBuffer = nullptr;
+	}
+	delete *ppVertexBuffer;
+	*ppVertexBuffer = nullptr;
+}
+
+void MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial)
+{
+
+	if (nullptr == pMaterial)
+	{
+		//TODO 使用默认材质
+		return;
+	}
+
+	MShader* pVertexShader = pMaterial->GetVertexShader();
+	MShader* pPixelShader = pMaterial->GetPixelShader();
+
+	if (nullptr == pVertexShader || nullptr == pPixelShader)
+	{
+		//TODO 使用默认材质
+		return;
+	}
+
+	if (nullptr == pVertexShader->GetBuffer())
+	{
+		pVertexShader->CompileShader(this);
+	}
+	if (nullptr == pPixelShader->GetBuffer())
+	{
+		pPixelShader->CompileShader(this);
+	}
+
+
+	m_pD3dContext->VSSetShader(dynamic_cast<MVertexShaderBuffer*>(pVertexShader->GetBuffer())->m_pVertexShader, nullptr, 0);
+	m_pD3dContext->PSSetShader(dynamic_cast<MPixelShaderBuffer*>(pPixelShader->GetBuffer())->m_pPixelShader, nullptr, 0);
+}
+
+void MDirectX11Renderer::Test_DrawNode(MNode* pNode)
+{
+	MMeshInstance* pMeshIns = dynamic_cast<MMeshInstance*>(pNode);
+	if (pMeshIns)
+	{
+
+		SetUseMaterial(pMeshIns->Test_GetMaterial());
+
+		const std::vector<MMesh*>& vMeshes = pMeshIns->GetResource()->GetModelTemplate()->GetMeshes();
+
+		for (MMesh* pMesh : vMeshes)
+			Test_DrawMesh(pMesh);
+	}
+
+	for (MNode* pChild : pNode->GetChildren())
+		Test_DrawNode(pChild);
+}
+
+void MDirectX11Renderer::Test_DrawMesh(MMesh* pMesh)
+{
+	if (nullptr == pMesh->GetBuffer())
+		pMesh->GenerateBuffer(this);
+
+	MVertexBuffer* pBuffer = pMesh->GetBuffer();
+	
+	UINT stride = sizeof(MVertex);
+	UINT offset = 0;
+	m_pD3dContext->IASetVertexBuffers(0, 1, &pBuffer->m_pVertexBuffer, &stride, &offset);
+
+	m_pD3dContext->IASetIndexBuffer(pBuffer->m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+	m_pD3dContext->DrawIndexed(pMesh->GetIndicesLength(), 0, 0);
 
 }
 
-void MDirectX11Renderer::Draw(MVertexBuffer* pBuffer)
+void MDirectX11Renderer::CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType)
 {
-	m_pD3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	if (*ppShaderBuffer)
+	{
+		CleanShader(ppShaderBuffer);
+	}
 
+	UINT shaderFlags = 0;
+#if defined(DEBUG) || defined(_DEBUG)
+	shaderFlags |= D3D10_SHADER_DEBUG;
+	shaderFlags |= D3D10_SHADER_SKIP_OPTIMIZATION;
+#endif
+	ID3D10Blob* pErrorMessage = nullptr;
+	ID3D10Blob* pShaderBuffer = nullptr;
 
+	const char* svFuncName = eShaderType == MShader::MEShaderType::Vertex ? "VS" : "PS";
+	const char* svProFile = eShaderType == MShader::MEShaderType::Vertex ? "vs_5_0" : "ps_5_0";
 
+	HRESULT hr = D3DX11CompileFromFile(strShaderPath.c_str(), NULL, NULL, svFuncName, svProFile, shaderFlags, 0, nullptr, &pShaderBuffer, &pErrorMessage, nullptr);
+	if (FAILED(hr))
+	{
+		if (pErrorMessage)
+			MLogManager::GetInstance()->Error("Compile Shader Error: %s", pErrorMessage->GetBufferPointer());
+		else
+			MLogManager::GetInstance()->Error("Compile Shader Error: Can`t find file: %s", strShaderPath.c_str());
+
+		return;
+	}
+
+	if (eShaderType == MShader::MEShaderType::Vertex)
+	{
+		ID3D11VertexShader* pVertexShader = nullptr;
+		hr = m_pD3dDevice->CreateVertexShader(pShaderBuffer->GetBufferPointer(), pShaderBuffer->GetBufferSize(), nullptr, &pVertexShader);
+		if (FAILED(hr))
+		{
+			MLogManager::GetInstance()->Error("VertexShader is Error!");
+		}
+
+		pShaderBuffer->Release();
+		pShaderBuffer = nullptr;
+
+		MVertexShaderBuffer* pBuffer = new MVertexShaderBuffer();
+		pBuffer->m_pVertexShader = pVertexShader;
+		*ppShaderBuffer = pBuffer;
+	}
+	else
+	{
+		ID3D11PixelShader* pPixelShader = nullptr;
+		hr = m_pD3dDevice->CreatePixelShader(pShaderBuffer->GetBufferPointer(), pShaderBuffer->GetBufferSize(), nullptr, &pPixelShader);
+		if (FAILED(hr))
+		{
+			MLogManager::GetInstance()->Error("PixelShader is Error!");
+		}
+
+		pShaderBuffer->Release();
+		pShaderBuffer = nullptr;
+
+		MPixelShaderBuffer* pBuffer = new MPixelShaderBuffer();
+		pBuffer->m_pPixelShader= pPixelShader;
+		*ppShaderBuffer = pBuffer;
+	}
+
+}
+
+void MDirectX11Renderer::CleanShader(MShaderBuffer** ppShaderBuffer)
+{
+	if (MVertexShaderBuffer* pBuffer = dynamic_cast<MVertexShaderBuffer*>(*ppShaderBuffer))
+	{
+		if (pBuffer->m_pVertexShader)
+		{
+			pBuffer->m_pVertexShader->Release();
+			pBuffer->m_pVertexShader = nullptr;
+		}
+	}
+	else if (MPixelShaderBuffer* pBuffer = dynamic_cast<MPixelShaderBuffer*>(*ppShaderBuffer))
+	{
+		if (pBuffer->m_pPixelShader)
+		{
+			pBuffer->m_pPixelShader->Release();
+			pBuffer->m_pPixelShader = nullptr;
+		}
+	}
+
+	delete *ppShaderBuffer;
+	*ppShaderBuffer = nullptr;
 }

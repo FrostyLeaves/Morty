@@ -6,6 +6,7 @@ MMesh::MMesh()
 	: m_vVertices(nullptr)
 	, m_vIndices(nullptr)
 	, m_pVertexBuffer(nullptr)
+	, m_pMaterial(nullptr)
 {
     
 }
@@ -56,3 +57,8 @@ void MMesh::GenerateBuffer(MIRenderer* pRenderer)
 
 	pRenderer->GenerateBuffer(&m_pVertexBuffer, this);
 }
+
+// void MMesh::SetMaterial(MMaterial* pMaterial)
+// {
+// 	m_pMaterial = pMaterial;
+// }

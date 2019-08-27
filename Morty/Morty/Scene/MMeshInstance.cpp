@@ -7,6 +7,7 @@
 
 MMeshInstance::MMeshInstance()
 	: M3DNode()
+	, m_pMaterial(nullptr)
 {
 
 }
@@ -43,4 +44,9 @@ void MMeshInstance::Render()
 	{
 	}
 
+}
+
+void MMeshInstance::Test_SetMaterial(MMaterial* pMaterial)
+{
+	m_pMaterial = pMaterial;
 }

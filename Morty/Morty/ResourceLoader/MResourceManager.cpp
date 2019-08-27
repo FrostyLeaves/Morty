@@ -1,15 +1,25 @@
 #include "MResourceManager.h"
 #include "MResource.h"
 #include "MModelResource.h"
+#include "MShaderResource.h"
 #include "MResourceLoader.h"
 
-#define REGISTER_RESOURCE_TYPE(Type, ResourceClass) \
-m_tResourceLoader[Type] = new MResourceLoaderTemp<ResourceClass>();
+#include <vector>
+
+#define REGISTER_RESOURCE_TYPE(Type, ResourceClass, ...) \
+{ \
+m_tResourceLoader[Type] = new MResourceLoaderTemp<ResourceClass>(); \
+std::vector<MString> vSuffixList = {__VA_ARGS__}; \
+for (int i = 0; i < vSuffixList.size(); ++i) \
+m_tResSuffixToType[vSuffixList[i]] = Type; \
+} \
+
 
 MResourceManager::MResourceManager()
 	: m_pResourceDB(new MIDPool<MResourceID>())
 {
-	REGISTER_RESOURCE_TYPE(MEResourceType::Model, MModelResource);
+	REGISTER_RESOURCE_TYPE(MEResourceType::Model, MModelResource, "fbx", "obj" );
+	REGISTER_RESOURCE_TYPE(MEResourceType::Shader, MShaderResource, SUFFIX_VERTEX_SHADER, SUFFIX_PIXEL_SHADER );
 }
 
 MResourceManager::~MResourceManager()
@@ -24,12 +34,8 @@ MResourceManager::~MResourceManager()
 
 MResourceManager::MEResourceType MResourceManager::GetResourceType(const MString& strResourcePath)
 {
-	MString suffix = strResourcePath.substr(strResourcePath.find_last_of('.') + 1, strResourcePath.size());
-
-	if (suffix == "fbx")
-	{
-		return MEResourceType::Model;
-	}
+	MString suffix = MResource::GetSuffix(strResourcePath);
+	return m_tResSuffixToType[suffix];
 }
 
 MResource* MResourceManager::Load(const MString& strResourcePath)

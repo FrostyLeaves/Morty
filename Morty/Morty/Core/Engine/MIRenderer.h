@@ -9,12 +9,17 @@
 #ifndef _M_MIRENDERER_H_
 #define _M_MIRENDERER_H_
 #include "MGlobal.h"
+#include "MString.h"
 
 class MIRenderView;
 class MIShader;
 class MNode;
 class MMesh;
 class MVertexBuffer;
+class MShaderBuffer;
+class MShader;
+class MShaderResource;
+class MMaterial;
 class MORTY_CLASS MIRenderer
 {
 public:
@@ -38,10 +43,16 @@ public:
 	virtual void GenerateBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh) = 0;
 	virtual void DestroyBuffer(MVertexBuffer** ppVertexBuffer) = 0;
 
-	virtual void Draw(MVertexBuffer* pBuffer) = 0;
+	virtual void CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType) = 0;
+	virtual void CleanShader(MShaderBuffer** ppShader) = 0;
+
+	virtual void Test_DrawMesh(MMesh* pMesh) = 0;
 
 protected:
-//	virtual MVertexBuffer* CreateVertexBuffer(MMesh* pMesh) = 0;
+
+	//TODO 应该整成 SetUseMaterialInstance
+	virtual void SetUseMaterial(MMaterial* pMaterial) = 0;
+
 };
 
 

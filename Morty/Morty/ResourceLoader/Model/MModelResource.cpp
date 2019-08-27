@@ -80,14 +80,18 @@ void MModelResource::ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh* pM
 			vertex.texCoords.y = pMesh->mTextureCoords[0][i].y;
 		}
 
-		vertex.tangent.x = pMesh->mTangents[i].x;
-		vertex.tangent.y = pMesh->mTangents[i].y;
-		vertex.tangent.z = pMesh->mTangents[i].z;
-
-		vertex.bitangent.x = pMesh->mBitangents[i].x;
-		vertex.bitangent.y = pMesh->mBitangents[i].y;
-		vertex.bitangent.z = pMesh->mBitangents[i].z;
-
+		if (pMesh->mTangents)
+		{
+			vertex.tangent.x = pMesh->mTangents[i].x;
+			vertex.tangent.y = pMesh->mTangents[i].y;
+			vertex.tangent.z = pMesh->mTangents[i].z;
+		}
+		if (pMesh->mBitangents)
+		{
+			vertex.bitangent.x = pMesh->mBitangents[i].x;
+			vertex.bitangent.y = pMesh->mBitangents[i].y;
+			vertex.bitangent.z = pMesh->mBitangents[i].z;
+		}
 	}
 
 	// TODO 写死3不安全，多个顶点组成一个面的模型会有危险。

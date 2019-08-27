@@ -8,7 +8,6 @@
 
 #ifndef _M_MSTRING_H_
 #define _M_MSTRING_H_
-#include "MGlobal.h"
 
 #include <string>
 

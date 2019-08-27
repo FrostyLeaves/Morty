@@ -19,6 +19,8 @@ public:
     MResource();
     virtual ~MResource();
 
+	static MString GetSuffix(const MString& strPath);
+
 protected:
 
 	virtual bool Load(const MString& strResourcePath) = 0;

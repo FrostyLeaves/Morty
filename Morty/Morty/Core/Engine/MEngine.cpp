@@ -1,6 +1,8 @@
 #include "MEngine.h"
 #include "MIRenderer.h"
 #include "MIRenderView.h"
+
+#include "MLogManager.h"
 #if (RENDER_GRAPHICS == MORTY_DIRECTX_11)
 #include "MDirectX11Renderer.h"
 #endif
@@ -145,23 +147,27 @@ bool MEngine::MainLoop()
 	{
 		Tick(lTimeDelta);
 		m_cTickInfo.lPrevTickTime = currentTime;
+
+		MLogManager::GetInstance()->Log("fps: %f", 1.0f / lTimeDelta);
+
+		for (std::vector<MIRenderView*>::iterator iter = m_vView.begin(); iter != m_vView.end();)
+		{
+			MIRenderView* pView = (*iter);
+			if (pView->MainLoop())
+			{
+				m_pRenderer->RenderNodeToView(m_pRootNode, pView);
+				++iter;
+			}
+
+			else
+			{
+				m_pRenderer->RemoveOutputView(*iter);
+				iter = m_vView.erase(iter);
+			}
+		}
 	}
 
-	for (std::vector<MIRenderView*>::iterator iter = m_vView.begin(); iter != m_vView.end(); )
-	{
-		MIRenderView* pView = (*iter);
-		if (pView->MainLoop())
-		{
-			m_pRenderer->RenderNodeToView(m_pRootNode, pView);
-			++iter;
-		}
-
-		else
-		{
-			m_pRenderer->RemoveOutputView(*iter);
-			iter = m_vView.erase(iter);
-		}
-	}
+	
 
 	return !m_vView.empty();
 }

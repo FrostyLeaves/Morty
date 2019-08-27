@@ -23,6 +23,7 @@ public:
 public:
 
 	virtual MNode* GetParent() { return m_pParent; }
+	std::vector<MNode*>& GetChildren(){ return m_vChildren; }
 
 	virtual bool AddNode(MNode* pNode);
 	virtual bool RemoveNode(MNode* pNode);

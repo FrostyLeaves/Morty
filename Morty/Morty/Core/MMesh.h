@@ -15,6 +15,7 @@
 class MIRenderer;
 class MVertexBuffer;
 class MVertex;
+class MMaterial;
 class MORTY_CLASS MMesh
 {
 public:
@@ -27,6 +28,14 @@ public:
 	unsigned int GetIndicesLength() { return m_unIndicesLength; }
 	MVertex* GetVertices(){ return m_vVertices; }
 	unsigned int* GetIndices(){ return m_vIndices; }
+
+	void GenerateBuffer(MIRenderer* pRenderer);
+
+public:
+
+// 	void SetMaterial(MMaterial* pMaterial);
+// 	MMaterial* GetMaterial(){ return m_pMaterial; }
+
 private:
     
     friend class MModelResource;
@@ -34,15 +43,15 @@ private:
 	void CreateVertices(const unsigned int& unSize);
 	void CreateIndices(const unsigned int& unSize, const unsigned int& unIndexSize);
 
-	
-	void GenerateBuffer(MIRenderer* pRenderer);
-
     MVertex* m_vVertices;
     unsigned int* m_vIndices;
 	unsigned int m_unVerticesLength;
 	unsigned int m_unIndicesLength;
 
 	MVertexBuffer* m_pVertexBuffer;
+
+	MMaterial* m_pMaterial;
+
 };
 
 

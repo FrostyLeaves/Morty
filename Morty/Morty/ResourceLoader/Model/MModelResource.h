@@ -27,7 +27,7 @@ public:
 
 protected:
 
-	virtual bool Load(const MString& strResourcePath);
+	virtual bool Load(const MString& strResourcePath) override;
 
 	void ProcessNode(aiNode* pNode, const aiScene* pScene, MModel* pModel);
 	void ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh* pMMesh);

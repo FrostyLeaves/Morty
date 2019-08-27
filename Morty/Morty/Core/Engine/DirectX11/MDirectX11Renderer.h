@@ -43,7 +43,21 @@ public:
 	virtual void GenerateBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh) override;
 	virtual void DestroyBuffer(MVertexBuffer** ppVertexBuffer) override;
 
-	virtual void Draw(MVertexBuffer* pBuffer) override;
+	virtual void CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType) override;
+	virtual void CleanShader(MShaderBuffer** ppShaderBuffer) override;
+
+	virtual void Test_DrawMesh(MMesh* pMesh) override;
+
+	void Test_DrawNode(MNode* pNode);
+
+public:
+
+	ID3D11Device* GetDevice(){ return m_pD3dDevice; }
+	ID3D11DeviceContext* GetContext(){ return m_pD3dContext; }
+
+protected:
+
+	virtual void SetUseMaterial(MMaterial* pMaterial) override;
 
 protected:
 
@@ -54,7 +68,7 @@ protected:
 		ID3D11RenderTargetView* pTargetView = nullptr;
 		ID3D11Texture2D* pDepthStencilBuffer = nullptr;
 		ID3D11DepthStencilView* pDepthStencilView = nullptr;
-
+		D3D11_VIEWPORT mViewport;
 		D3D11_RASTERIZER_DESC mRasterizer;
 	};
 
@@ -67,6 +81,7 @@ protected:
 	D3D_FEATURE_LEVEL m_nFeatureLevel;
 	ID3D11Device* m_pD3dDevice;
 	ID3D11DeviceContext* m_pD3dContext;
+	ID3D11InputLayout* m_pVertexInputLayout;
 
 	ID3D11RasterizerState* m_pRasterizerState;
 	

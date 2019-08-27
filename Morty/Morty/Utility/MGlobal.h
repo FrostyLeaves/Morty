@@ -1,3 +1,7 @@
+#ifndef _M_GLOBAL_H_
+#define _M_GLOBAL_H_
+
+
 #ifdef MORTY_EXPORTS
 #if defined(__WINDOWS_) || defined(_WINDOWS)
         #define MORTY_CLASS __declspec(dllexport)
@@ -21,9 +25,24 @@
 typedef unsigned long MObjectID;
 typedef unsigned long MResourceID;
 
+
+
+
+
+
+//Asset
+extern const char* SUFFIX_VERTEX_SHADER;
+extern const char* SUFFIX_PIXEL_SHADER;
+
+
+
 //gles
 #define MORTY_OPENGLES 1
 //directx11
 #define MORTY_DIRECTX_11 2
 
 #define RENDER_GRAPHICS MORTY_DIRECTX_11
+
+
+
+#endif

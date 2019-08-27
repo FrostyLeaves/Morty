@@ -23,6 +23,7 @@ public:
 	enum MEResourceType
 	{
 		Model = 1,
+		Shader = 2,
 	};
 
 public:
@@ -59,6 +60,9 @@ private:
 	std::map<MString, MResource*> m_tPathResources;
 
 	MIDPool<MResourceID>* m_pResourceDB;
+
+
+	std::map<MString, MEResourceType> m_tResSuffixToType;
 };
 
 
