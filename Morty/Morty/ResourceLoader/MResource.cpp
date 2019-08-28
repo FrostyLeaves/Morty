@@ -2,6 +2,7 @@
 
 MResource::MResource()
 : m_unResourceID(0)
+, m_pResourceManager(nullptr)
 {
     
 }

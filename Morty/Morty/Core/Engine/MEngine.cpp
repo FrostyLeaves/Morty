@@ -148,7 +148,7 @@ bool MEngine::MainLoop()
 		Tick(lTimeDelta);
 		m_cTickInfo.lPrevTickTime = currentTime;
 
-		MLogManager::GetInstance()->Log("fps: %f", 1.0f / lTimeDelta);
+//		MLogManager::GetInstance()->Log("fps: %f", 1.0f / lTimeDelta);
 
 		for (std::vector<MIRenderView*>::iterator iter = m_vView.begin(); iter != m_vView.end();)
 		{

@@ -41,6 +41,7 @@ public:
 		}
 
 		pResource->m_unResourceID = m_pResourceDB->GetNewID();
+		pResource->m_pResourceManager = this;
 
 		m_tIDResources[pResource->m_unResourceID] = pResource;
 

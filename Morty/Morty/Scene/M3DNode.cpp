@@ -2,6 +2,7 @@
 
 M3DNode::M3DNode()
 	: MNode()
+	, m_m4Transform(IdentityMatrix)
 {
 
 }

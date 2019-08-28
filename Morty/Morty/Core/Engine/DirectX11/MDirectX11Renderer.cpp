@@ -137,7 +137,7 @@ bool MDirectX11Renderer::Initialize()
 	mRasterizer.FillMode = D3D11_FILL_SOLID;
 	mRasterizer.CullMode = D3D11_CULL_BACK;
 	mRasterizer.FrontCounterClockwise = false;
-	mRasterizer.DepthClipEnable = false;
+	mRasterizer.DepthClipEnable = true;
 
 	//TODO 如果在一个程序中，需要多种光栅化状态块来回切换，那么在初始化时就创建好，而不是切换的时候创建。
 
@@ -240,33 +240,27 @@ void MDirectX11Renderer::RenderNodeToView(MNode* pNode, MIRenderView* pView)
 	if (!m_pD3dContext)
 		return;
 
-
-	IDXGISwapChain* pSwapChain = nullptr;
-	ID3D11RenderTargetView* pTargetView = nullptr;
-
 	RenderTarget target;
 	for (auto rt : m_vRenderTargets)
 	{
 		if (rt.pRenderView == pView)
 		{
-			pSwapChain = rt.pSwapChain;
-			pTargetView = rt.pTargetView;
 			target = rt;
 			break;
 		}
 	}
 
-	if (pSwapChain == nullptr || pTargetView == nullptr)
+	if (target.pSwapChain == nullptr || target.pTargetView == nullptr)
 		return;
 
 
 	float clearColor[4] = { 0.0f, 0.0f, 0.25f, 1.0f };
 	m_pD3dContext->ClearDepthStencilView(target.pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
-	m_pD3dContext->ClearRenderTargetView(pTargetView, clearColor);
+	m_pD3dContext->ClearRenderTargetView(target.pTargetView, clearColor);
 	m_pD3dContext->RSSetViewports(1, &target.mViewport);
 
 	Test_DrawNode(pNode);
-	pSwapChain->Present(0, 0);
+	target.pSwapChain->Present(0, 0);
 	
 
 
@@ -441,6 +435,13 @@ void MDirectX11Renderer::OnResize(RenderTarget& rt, const int& nWidth, const int
 	{
 
 	}
+
+	//深度缓存视图
+	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
+	ZeroMemory(&descDSV, sizeof(descDSV));
+	descDSV.Format = depthStencilDesc.Format;
+	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDSV.Texture2D.MipSlice = 0;
 
 	hr = m_pD3dDevice->CreateDepthStencilView(rt.pDepthStencilBuffer, 0, &rt.pDepthStencilView);
 	if (FAILED(hr))

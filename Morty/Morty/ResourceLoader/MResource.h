@@ -12,7 +12,7 @@
 #include "MString.h"
 
 class MResourceLoader;
-
+class MResourceManager;
 class MORTY_CLASS MResource
 {
 public:
@@ -20,6 +20,8 @@ public:
     virtual ~MResource();
 
 	static MString GetSuffix(const MString& strPath);
+
+	MResourceManager* GetResourceManager(){ return m_pResourceManager; }
 
 protected:
 
@@ -31,6 +33,7 @@ private:
 	friend class MResourceLoader;
 
     MResourceID m_unResourceID;
+	MResourceManager* m_pResourceManager;
 
 };
 
