@@ -46,6 +46,9 @@
     <Filter Include="ResourceLoader\Shader">
       <UniqueIdentifier>{b1a0b3cf-579e-41a5-9b07-f1e7b10e739c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ResourceLoader\Texture">
+      <UniqueIdentifier>{88b6dfc2-811f-4c3e-9c02-86e82b58f133}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../ReadMe.txt" />
@@ -138,6 +141,15 @@
     <ClInclude Include="..\..\Core\MMaterial.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Scene\MCamera.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Scene\MSpatial.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ResourceLoader\Texture\MTextureResource.h">
+      <Filter>ResourceLoader\Texture</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -217,6 +229,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\MMaterial.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Scene\MCamera.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Scene\MSpatial.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ResourceLoader\Texture\MTextureResource.cpp">
+      <Filter>ResourceLoader\Texture</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

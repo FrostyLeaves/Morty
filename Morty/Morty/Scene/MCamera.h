@@ -9,9 +9,9 @@
 #ifndef _M_MCAMERA_H_
 #define _M_MCAMERA_H_
 #include "MGlobal.h"
+#include "M3DNode.h"
 
-
-class MORTY_CLASS MCamera
+class MORTY_CLASS MCamera : public M3DNode
 {
 public:
     MCamera();

@@ -6,12 +6,13 @@
 
 #include "MObject.h"
 #include "MMaterial.h"
-#include "MMeshInstance.h"
+#include "MSpatial.h"
 #include "MResourceManager.h"
 
 #include "MShader.h"
 #include "MVertex.h"
 #include "MIRenderer.h"
+#include "MMeshInstance.h"
 
 int main(int argc, char* argv[])
 {
@@ -24,9 +25,9 @@ int main(int argc, char* argv[])
 
 
 
-	MResource* pResource = engine.GetResourceManager()->Load("D:/marie naked/testball.fbx");
-	MMeshInstance* pMeshIns = engine.GetObjectManager()->CreateObject<MMeshInstance>();
-	pMeshIns->Load(pResource);
+	MResource* pResource = engine.GetResourceManager()->Load("D:/marie naked/xxxf.FBX");
+	MSpatial* pSpatial = engine.GetObjectManager()->CreateObject<MSpatial>();
+	pSpatial->Load(pResource);
 
 	MResource* pVSResource = engine.GetResourceManager()->Load("D:/marie naked/test_shader.mvs");
 	MResource* pPSResource = engine.GetResourceManager()->Load("D:/marie naked/test_shader.mps");
@@ -37,9 +38,13 @@ int main(int argc, char* argv[])
 	pPass->LoadVertexShader(pVSResource);
 	pPass->LoadPixelShader(pPSResource);
 
-	pMeshIns->Test_SetMaterial(pPass);
-
-	engine.SetRootNode(pMeshIns);
+	for (MNode* pChild : pSpatial->GetChildren())
+	{
+		MMeshInstance* pMeshIns = dynamic_cast<MMeshInstance*>(pChild);
+		pMeshIns->SetMaterial(pPass);
+	}
+	
+	engine.SetRootNode(pSpatial);
 
 	while (engine.MainLoop());
 

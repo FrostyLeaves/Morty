@@ -50,6 +50,12 @@ public:
 
 	void Test_DrawNode(MNode* pNode);
 
+	virtual void DrawCamera(MCamera* pCamera)override;
+
+	virtual void DrawNode(MNode* pNode, const Matrix4& m4CameraInv) override;
+
+	void DrawMesh(MMesh* pMesh, const Matrix4& m4CameraInv, const Matrix4& m4ParentMat);
+
 public:
 
 	ID3D11Device* GetDevice(){ return m_pD3dDevice; }

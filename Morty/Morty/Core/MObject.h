@@ -23,6 +23,7 @@ public:
 public:
 
 	MObjectID GetObjectID(){ return m_unObjectID; }
+	class MObjectManager* GetObjectManager();
 
 private:
 
@@ -38,6 +39,8 @@ public:
 	MObjectManager();
 	virtual ~MObjectManager();
 
+	void SetOwnerEngine(MEngine* pEngine);
+
 	template<typename Object_TYPE>
 	Object_TYPE* CreateObject()
 	{
@@ -49,6 +52,7 @@ public:
 		}
 
 		pObject->m_unObjectID = m_pObjectDB->GetNewID();
+		pObject->m_pEngine = m_pEngine;
 
 		m_tObjects[pObject->m_unObjectID] = pObject;
 
@@ -77,6 +81,8 @@ private:
 	MIDPool<MObjectID>* m_pObjectDB;
 
 	std::map<MObjectID, MObject*> m_tObjects;
+
+	MEngine* m_pEngine;
 };
 
 #endif

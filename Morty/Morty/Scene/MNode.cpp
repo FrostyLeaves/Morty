@@ -23,6 +23,18 @@ bool MNode::AddNode(MNode* pNode)
 	return true;
 }
 
+MNode* MNode::GetRootNode()
+{
+	MNode* pNode = this->GetParent();
+	if (nullptr == pNode)
+		return pNode;
+
+	while (pNode->GetParent())
+		pNode = pNode->GetParent();
+
+	return pNode;
+}
+
 bool MNode::RemoveNode(MNode* pNode)
 {
 	for (std::vector<MNode*>::iterator iter = m_vChildren.begin(); iter != m_vChildren.end(); ++iter)

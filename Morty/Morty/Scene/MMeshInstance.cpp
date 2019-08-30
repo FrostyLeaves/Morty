@@ -7,6 +7,7 @@
 
 MMeshInstance::MMeshInstance()
 	: M3DNode()
+	, m_pMesh(nullptr)
 	, m_pMaterial(nullptr)
 {
 
@@ -17,36 +18,17 @@ MMeshInstance::~MMeshInstance()
 
 }
 
-bool MMeshInstance::Load(MResource* pResource)
-{
-	if (m_pResource = dynamic_cast<MModelResource*>(pResource))
-	{
-		//Do smoething.
-		return true;
-	}
-
-	return false;
-}
-
 void MMeshInstance::OnTick(const float& fDelta)
 {
 
 }
 
-void MMeshInstance::Render()
-{
-	if (m_pResource == nullptr)
-		return;
-
-	const std::vector<MMesh*>& meshes = m_pResource->GetModelTemplate()->GetMeshes();
-
-	for (MMesh* pMesh : meshes)
-	{
-	}
-
-}
-
-void MMeshInstance::Test_SetMaterial(MMaterial* pMaterial)
+void MMeshInstance::SetMaterial(MMaterial* pMaterial)
 {
 	m_pMaterial = pMaterial;
+}
+
+void MMeshInstance::SetMesh(MMesh* pMesh)
+{
+	m_pMesh = pMesh;
 }

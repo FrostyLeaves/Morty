@@ -21,7 +21,7 @@ public:
 
 public:
 
-	const std::vector<MMesh*>& GetMeshes() const { return m_vMeshes; };
+	std::vector<MMesh*>& GetMeshes() { return m_vMeshes; };
 
 protected:
 

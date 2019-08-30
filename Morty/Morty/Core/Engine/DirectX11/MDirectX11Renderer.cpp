@@ -2,6 +2,8 @@
 #include "MWindowsRenderView.h"
 #include "MLogManager.h"
 
+#include "D3Dcompiler.h"
+
 #include "MVertex.h"
 #include "MMesh.h"
 #include "MShader.h"
@@ -9,6 +11,7 @@
 #include "MMeshInstance.h"
 #include "MModelResource.h"
 #include "MModel.h"
+#include "MCamera.h"
 
 const int DEFAULT_WIDTH = 800;
 const int DEFAULT_HEIGHT = 600;
@@ -137,7 +140,7 @@ bool MDirectX11Renderer::Initialize()
 	mRasterizer.FillMode = D3D11_FILL_SOLID;
 	mRasterizer.CullMode = D3D11_CULL_BACK;
 	mRasterizer.FrontCounterClockwise = false;
-	mRasterizer.DepthClipEnable = true;
+	mRasterizer.DepthClipEnable = true;//这个裁剪指的是平截头裁剪；
 
 	//TODO 如果在一个程序中，需要多种光栅化状态块来回切换，那么在初始化时就创建好，而不是切换的时候创建。
 
@@ -210,6 +213,10 @@ bool MDirectX11Renderer::Initialize()
 	//三角形解析顶点
 	m_pD3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+
+
+
+
 	return true;
 }
 
@@ -255,9 +262,12 @@ void MDirectX11Renderer::RenderNodeToView(MNode* pNode, MIRenderView* pView)
 
 
 	float clearColor[4] = { 0.0f, 0.0f, 0.25f, 1.0f };
-	m_pD3dContext->ClearDepthStencilView(target.pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
+	m_pD3dContext->ClearDepthStencilView(target.pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	m_pD3dContext->ClearRenderTargetView(target.pTargetView, clearColor);
 	m_pD3dContext->RSSetViewports(1, &target.mViewport);
+	m_pD3dContext->OMSetRenderTargets(1, &target.pTargetView, target.pDepthStencilView);
+
+	m_pD3dContext->OMSetDepthStencilState(nullptr, 0);
 
 	Test_DrawNode(pNode);
 	target.pSwapChain->Present(0, 0);
@@ -564,6 +574,7 @@ void MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial)
 
 	m_pD3dContext->VSSetShader(dynamic_cast<MVertexShaderBuffer*>(pVertexShader->GetBuffer())->m_pVertexShader, nullptr, 0);
 	m_pD3dContext->PSSetShader(dynamic_cast<MPixelShaderBuffer*>(pPixelShader->GetBuffer())->m_pPixelShader, nullptr, 0);
+
 }
 
 void MDirectX11Renderer::Test_DrawNode(MNode* pNode)
@@ -571,13 +582,8 @@ void MDirectX11Renderer::Test_DrawNode(MNode* pNode)
 	MMeshInstance* pMeshIns = dynamic_cast<MMeshInstance*>(pNode);
 	if (pMeshIns)
 	{
-
-		SetUseMaterial(pMeshIns->Test_GetMaterial());
-
-		const std::vector<MMesh*>& vMeshes = pMeshIns->GetResource()->GetModelTemplate()->GetMeshes();
-
-		for (MMesh* pMesh : vMeshes)
-			Test_DrawMesh(pMesh);
+		SetUseMaterial(pMeshIns->GetMaterial());
+		Test_DrawMesh(pMeshIns->GetMesh());
 	}
 
 	for (MNode* pChild : pNode->GetChildren())
@@ -599,6 +605,31 @@ void MDirectX11Renderer::Test_DrawMesh(MMesh* pMesh)
 
 	m_pD3dContext->DrawIndexed(pMesh->GetIndicesLength(), 0, 0);
 
+
+}
+
+void MDirectX11Renderer::DrawNode(MNode* pNode, const Matrix4& m4CameraInv)
+{
+	MMeshInstance* pMeshIns = dynamic_cast<MMeshInstance*>(pNode);
+	if (pMeshIns)
+	{
+		SetUseMaterial(pMeshIns->GetMaterial());
+		DrawMesh(pMeshIns->GetMesh(), m4CameraInv, pMeshIns->GetWorldTransform());
+	}
+
+	for (MNode* pChild : pNode->GetChildren())
+		DrawNode(pChild, m4CameraInv);
+}
+
+void MDirectX11Renderer::DrawMesh(MMesh* pMesh, const Matrix4& m4CameraInv, const Matrix4& m4ParentMat)
+{
+
+}
+
+void MDirectX11Renderer::DrawCamera(MCamera* pCamera)
+{
+	MNode* pRootNode = pCamera->GetRootNode();
+	Test_DrawNode(pRootNode);
 }
 
 void MDirectX11Renderer::CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType)
@@ -639,12 +670,40 @@ void MDirectX11Renderer::CompileShader(MShaderBuffer** ppShaderBuffer, const MSt
 			MLogManager::GetInstance()->Error("VertexShader is Error!");
 		}
 
+		ID3D11ShaderReflection* pReflector = nullptr;
+		D3DReflect(pShaderBuffer->GetBufferPointer(), pShaderBuffer->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&pReflector);
+
+		D3D11_SHADER_DESC shaderDesc;
+		pReflector->GetDesc(&shaderDesc);
+
+		for (int i = 0; i < shaderDesc.ConstantBuffers; ++i)
+		{
+			ID3D11ShaderReflectionConstantBuffer* pConstBuffer = pReflector->GetConstantBufferByIndex(i);
+			D3D11_SHADER_BUFFER_DESC bufferDesc;
+			pConstBuffer->GetDesc(&bufferDesc);
+
+			for (int j = 0; j < shaderDesc.BoundResources; ++j)
+			{
+				D3D11_SHADER_INPUT_BIND_DESC bindDesc;
+				pReflector->GetResourceBindingDesc(j, &bindDesc);
+				if (0 == strcmp(bufferDesc.Name, bindDesc.Name))
+				{
+
+
+
+					break;
+				}
+			}
+		}
+
+
 		pShaderBuffer->Release();
 		pShaderBuffer = nullptr;
 
 		MVertexShaderBuffer* pBuffer = new MVertexShaderBuffer();
 		pBuffer->m_pVertexShader = pVertexShader;
 		*ppShaderBuffer = pBuffer;
+
 	}
 	else
 	{

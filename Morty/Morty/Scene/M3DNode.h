@@ -20,11 +20,16 @@ public:
     M3DNode();
     virtual ~M3DNode();
 
+	Matrix4 GetWorldTransform();
+	Matrix4 GetRelativeTransform();
+
+	void UpdateWorldTransform();
 
 private:
 
-
 	Matrix4 m_m4Transform;
+	bool m_bWorldTransformDirty;
+	Matrix4 m_m4WorldTransform;
 };
 
 

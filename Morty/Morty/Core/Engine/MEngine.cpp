@@ -52,6 +52,8 @@ bool MEngine::Initialize()
 	}
 
 	m_pObjectManager = new MObjectManager();
+	m_pObjectManager->SetOwnerEngine(this);
+
 	m_pResourceManager = new MResourceManager();
 
 

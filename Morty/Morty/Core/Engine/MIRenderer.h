@@ -10,6 +10,7 @@
 #define _M_MIRENDERER_H_
 #include "MGlobal.h"
 #include "MString.h"
+#include "Matrix.h"
 
 class MIRenderView;
 class MIShader;
@@ -20,6 +21,7 @@ class MShaderBuffer;
 class MShader;
 class MShaderResource;
 class MMaterial;
+class MCamera;
 class MORTY_CLASS MIRenderer
 {
 public:
@@ -47,6 +49,10 @@ public:
 	virtual void CleanShader(MShaderBuffer** ppShader) = 0;
 
 	virtual void Test_DrawMesh(MMesh* pMesh) = 0;
+
+	virtual void DrawCamera(MCamera* pCamera) = 0;
+
+	virtual void DrawNode(MNode* pNode, const Matrix4& m4CameraInv) = 0;
 
 protected:
 

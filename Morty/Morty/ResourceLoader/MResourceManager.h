@@ -15,6 +15,7 @@
 
 #include <map>
 
+class MIRenderer;
 class MResource;
 class MResourceLoader;
 class MORTY_CLASS MResourceManager
@@ -64,6 +65,7 @@ private:
 
 
 	std::map<MString, MEResourceType> m_tResSuffixToType;
+
 };
 
 
