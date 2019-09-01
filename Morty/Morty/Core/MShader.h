@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @File         MShader
  * 
  * @Created      2019-08-26 21:24:51
@@ -10,6 +10,8 @@
 #define _M_MSHADER_H_
 #include "MGlobal.h"
 #include "MString.h"
+#include "MVertex.h"
+#include "MVariable.h"
 
 class MIRenderer;
 class MShaderBuffer;

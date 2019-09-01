@@ -3,6 +3,7 @@
 #include "MLogManager.h"
 
 #include "D3Dcompiler.h"
+#include "d3d11shader.h"
 
 #include "MVertex.h"
 #include "MMesh.h"
@@ -121,7 +122,7 @@ bool MDirectX11Renderer::InitDirectX11()
 
 	if (FAILED(hr))
 	{
-		DXTRACE_MSG("Failed to create the Direct3D device!");
+		MLogManager::GetInstance()->Error("Failed to create the Direct3D device!");
 		return false;
 	}
 
@@ -148,7 +149,13 @@ bool MDirectX11Renderer::Initialize()
 	HRESULT hr = m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_pRasterizerState);
 	if (FAILED(hr))
 	{
-		//TODO
+		MLogManager::GetInstance()->Error("Failed to create RasterizerState! Initialize return false.");
+		if (m_pRasterizerState)
+		{
+			m_pRasterizerState->Release();
+			m_pRasterizerState = nullptr;
+		}
+		return false;
 	}
 
 	m_pD3dContext->RSSetState(m_pRasterizerState);
@@ -168,26 +175,26 @@ bool MDirectX11Renderer::Initialize()
 	ID3D10Blob* pShaderBuffer = nullptr;
 
 	MString strVirtualShader = "struct VertexIn					\n\
-	{															\n\
-		float3 v1 : POSITION;									\n\
-		float3 v2 : NORMAL;										\n\
-		float2 v3 : TEXCOORDS;									\n\
-		float3 v4 : Tangent;									\n\
-		float3 v5 : BITANGENT;									\n\
-	};															\n\
-																//\n\
-	struct VertexOut											\n\
-	{															\n\
-		float4 PosH : SV_POSITION;								\n\
-		float Color : COLOR;									\n\
-	};															\n\
-																\n\
-	VertexOut VS(VertexIn vin)									\n\
-	{															\n\
-		VertexOut vout;											\n\
-		vout.PosH = float4(vin.v1, 1.0f);						\n\
-		return vout;											\n\
-	}";
+							   							   	{															\n\
+																									float3 v1 : POSITION;									\n\
+																																					float3 v2 : NORMAL;										\n\
+																																																			float2 v3 : TEXCOORDS;									\n\
+																																																																			float3 v4 : Tangent;									\n\
+																																																																																					float3 v5 : BITANGENT;									\n\
+																																																																																																								};															\n\
+																																																																																																																																											//\n\
+																																																																																																																																																																															struct VertexOut											\n\
+																																																																																																																																																																																																																				{															\n\
+																																																																																																																																																																																																																																																											float4 PosH : SV_POSITION;								\n\
+																																																																																																																																																																																																																																																																																																				float Color : COLOR;									\n\
+																																																																																																																																																																																																																																																																																																																																														};															\n\
+																																																																																																																																																																																																																																																																																																																																																																																																								\n\
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																			VertexOut VS(VertexIn vin)									\n\
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																															{															\n\
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																													VertexOut vout;											\n\
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																													vout.PosH = float4(vin.v1, 1.0f);						\n\
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																															return vout;											\n\
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																		}";
 
 	hr = D3DX11CompileFromMemory(strVirtualShader.c_str(), strVirtualShader.size(), nullptr, nullptr, nullptr, "VS", "vs_5_0", 0, 0, nullptr, &pShaderBuffer, &pErrorMessage, nullptr);
 	if (FAILED(hr))
@@ -195,16 +202,23 @@ bool MDirectX11Renderer::Initialize()
 		if (pErrorMessage)
 			MLogManager::GetInstance()->Error("Compile Shader Error: %s", pErrorMessage->GetBufferPointer());
 		else
-			MLogManager::GetInstance()->Error("Compile Shader Error: Can`t find file: virtual");
+			MLogManager::GetInstance()->Error("Compile Shader Error: Can`t find file: virtual shader");
 
 		return false;
 	}
-	
+
 	//TODO 需要根据顶点数据自动创建出假的Shader，来骗过DX11的Shader-InputLayout验证，让它认为Layout合法。
 	hr = m_pD3dDevice->CreateInputLayout(desc, 5, pShaderBuffer->GetBufferPointer(), pShaderBuffer->GetBufferSize(), &m_pVertexInputLayout);
 	if (FAILED(hr))
 	{
-		//TODO
+		MLogManager::GetInstance()->Error("Failed to create RasterizerState! Initialize return false.");
+		if (m_pVertexInputLayout)
+		{
+			m_pVertexInputLayout->Release();
+			m_pVertexInputLayout = nullptr;
+		}
+
+		return false;
 	}
 
 	m_pD3dContext->IASetInputLayout(m_pVertexInputLayout);
@@ -271,7 +285,7 @@ void MDirectX11Renderer::RenderNodeToView(MNode* pNode, MIRenderView* pView)
 
 	Test_DrawNode(pNode);
 	target.pSwapChain->Present(0, 0);
-	
+
 
 
 }
@@ -361,8 +375,8 @@ void MDirectX11Renderer::OnResize(MIRenderView* pView, const int& nWidth, const 
 			break;
 		}
 	}
-	
-	
+
+
 }
 
 void MDirectX11Renderer::OnResize(RenderTarget& rt, const int& nWidth, const int& nHeight)
@@ -392,21 +406,24 @@ void MDirectX11Renderer::OnResize(RenderTarget& rt, const int& nWidth, const int
 	hr = rt.pSwapChain->ResizeBuffers(1, nWidth, nHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
 	if (FAILED(hr))
 	{
-		//TODO
+		MLogManager::GetInstance()->Error("Failed to ResizeBuffers!");
+		return;
 	}
 
 	ID3D11Texture2D* pBackBuffer = nullptr;
 	hr = rt.pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
 	if (FAILED(hr))
 	{
-
+		MLogManager::GetInstance()->Error("Failed to GetBuffer!");
+		return;
 	}
 
 	hr = m_pD3dDevice->CreateRenderTargetView(pBackBuffer, 0, &rt.pTargetView);
 	pBackBuffer->Release();
 	if (FAILED(hr))
 	{
-
+		MLogManager::GetInstance()->Error("Failed to CreateRenderTargetView!");
+		return;
 	}
 
 	// Create the depth/stencil buffer and view.
@@ -443,7 +460,8 @@ void MDirectX11Renderer::OnResize(RenderTarget& rt, const int& nWidth, const int
 	hr = m_pD3dDevice->CreateTexture2D(&depthStencilDesc, 0, &rt.pDepthStencilBuffer);
 	if (FAILED(hr))
 	{
-
+		MLogManager::GetInstance()->Error("Failed to CreateTexture2D!");
+		return;
 	}
 
 	//深度缓存视图
@@ -456,7 +474,8 @@ void MDirectX11Renderer::OnResize(RenderTarget& rt, const int& nWidth, const int
 	hr = m_pD3dDevice->CreateDepthStencilView(rt.pDepthStencilBuffer, 0, &rt.pDepthStencilView);
 	if (FAILED(hr))
 	{
-
+		MLogManager::GetInstance()->Error("Failed to CreateDepthStencilView!");
+		return;
 	}
 
 	// Bind the render target view and depth/stencil view to the pipeline.
@@ -465,7 +484,7 @@ void MDirectX11Renderer::OnResize(RenderTarget& rt, const int& nWidth, const int
 	rt.mViewport.Width = nWidth;
 	rt.mViewport.Height = nHeight;
 
-} 
+}
 
 void MDirectX11Renderer::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh)
 {
@@ -486,13 +505,14 @@ void MDirectX11Renderer::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MMesh* p
 	HRESULT hr = m_pD3dDevice->CreateBuffer(&bufferDesc, &subResourceData, &pVB);
 	if (FAILED(hr))
 	{
-
+		MLogManager::GetInstance()->Error("Failed to CreateBuffer!");
+		return;
 	}
 
 	//UINT stride = sizeof(MVertex);
 	//UINT offset = 0;
 	//m_pD3dContext->IASetVertexBuffers(0, 1, &pVB, &stride, &offset);
-	
+
 
 	//创建索引缓冲
 	D3D11_BUFFER_DESC indicesBufferDesc;
@@ -510,7 +530,8 @@ void MDirectX11Renderer::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MMesh* p
 	hr = m_pD3dDevice->CreateBuffer(&indicesBufferDesc, &indicesData, &pIB);
 	if (FAILED(hr))
 	{
-
+		MLogManager::GetInstance()->Error("Failed to CreateBuffer!");
+		return;
 	}
 
 	//m_pD3dContext->IASetIndexBuffer(pIndicesBuffer, DXGI_FORMAT_R32_UINT, 0);
@@ -565,20 +586,34 @@ void MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial)
 	if (nullptr == pVertexShader->GetBuffer())
 	{
 		pVertexShader->CompileShader(this);
+		pMaterial->CompileVertexShaderParams();
 	}
 	if (nullptr == pPixelShader->GetBuffer())
 	{
 		pPixelShader->CompileShader(this);
+		pMaterial->CompilePixelShaderParams();
 	}
-
 
 	m_pD3dContext->VSSetShader(dynamic_cast<MVertexShaderBuffer*>(pVertexShader->GetBuffer())->m_pVertexShader, nullptr, 0);
 	m_pD3dContext->PSSetShader(dynamic_cast<MPixelShaderBuffer*>(pPixelShader->GetBuffer())->m_pPixelShader, nullptr, 0);
 
+
+	for (MShaderParam& param : pMaterial->GetVertexShaderParams())
+	{
+		UpdateShaderParam(param);
+	}
+
+	for (MShaderParam& param : pMaterial->GetPixelShaderParams())
+	{
+		UpdateShaderParam(param);
+	}
 }
 
 void MDirectX11Renderer::Test_DrawNode(MNode* pNode)
 {
+	if (nullptr == pNode)
+		return;
+
 	MMeshInstance* pMeshIns = dynamic_cast<MMeshInstance*>(pNode);
 	if (pMeshIns)
 	{
@@ -596,7 +631,7 @@ void MDirectX11Renderer::Test_DrawMesh(MMesh* pMesh)
 		pMesh->GenerateBuffer(this);
 
 	MVertexBuffer* pBuffer = pMesh->GetBuffer();
-	
+
 	UINT stride = sizeof(MVertex);
 	UINT offset = 0;
 	m_pD3dContext->IASetVertexBuffers(0, 1, &pBuffer->m_pVertexBuffer, &stride, &offset);
@@ -668,37 +703,8 @@ void MDirectX11Renderer::CompileShader(MShaderBuffer** ppShaderBuffer, const MSt
 		if (FAILED(hr))
 		{
 			MLogManager::GetInstance()->Error("VertexShader is Error!");
+			return;
 		}
-
-		ID3D11ShaderReflection* pReflector = nullptr;
-		D3DReflect(pShaderBuffer->GetBufferPointer(), pShaderBuffer->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&pReflector);
-
-		D3D11_SHADER_DESC shaderDesc;
-		pReflector->GetDesc(&shaderDesc);
-
-		for (int i = 0; i < shaderDesc.ConstantBuffers; ++i)
-		{
-			ID3D11ShaderReflectionConstantBuffer* pConstBuffer = pReflector->GetConstantBufferByIndex(i);
-			D3D11_SHADER_BUFFER_DESC bufferDesc;
-			pConstBuffer->GetDesc(&bufferDesc);
-
-			for (int j = 0; j < shaderDesc.BoundResources; ++j)
-			{
-				D3D11_SHADER_INPUT_BIND_DESC bindDesc;
-				pReflector->GetResourceBindingDesc(j, &bindDesc);
-				if (0 == strcmp(bufferDesc.Name, bindDesc.Name))
-				{
-
-
-
-					break;
-				}
-			}
-		}
-
-
-		pShaderBuffer->Release();
-		pShaderBuffer = nullptr;
 
 		MVertexShaderBuffer* pBuffer = new MVertexShaderBuffer();
 		pBuffer->m_pVertexShader = pVertexShader;
@@ -712,15 +718,92 @@ void MDirectX11Renderer::CompileShader(MShaderBuffer** ppShaderBuffer, const MSt
 		if (FAILED(hr))
 		{
 			MLogManager::GetInstance()->Error("PixelShader is Error!");
+			return;
 		}
 
-		pShaderBuffer->Release();
-		pShaderBuffer = nullptr;
-
 		MPixelShaderBuffer* pBuffer = new MPixelShaderBuffer();
-		pBuffer->m_pPixelShader= pPixelShader;
+		pBuffer->m_pPixelShader = pPixelShader;
 		*ppShaderBuffer = pBuffer;
 	}
+
+	if (*ppShaderBuffer)
+	{
+
+		ID3D11ShaderReflection* pReflector = nullptr;
+		D3DReflect(pShaderBuffer->GetBufferPointer(), pShaderBuffer->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&pReflector);
+
+		D3D11_SHADER_DESC shaderDesc;
+		pReflector->GetDesc(&shaderDesc);
+
+		for (int i = 0; i < shaderDesc.ConstantBuffers; ++i)
+		{
+			ID3D11ShaderReflectionConstantBuffer* pConstBuffer = pReflector->GetConstantBufferByIndex(i);
+			D3D11_SHADER_BUFFER_DESC bufferDesc;
+			pConstBuffer->GetDesc(&bufferDesc);
+
+			MStruct cbufferStruct;
+
+			for (int n = 0; n < bufferDesc.Variables; ++n)
+			{
+				D3D11_SHADER_VARIABLE_DESC varDesc;
+				ID3D11ShaderReflectionVariable* pVar = pConstBuffer->GetVariableByIndex(n);
+				pVar->GetDesc(&varDesc);
+				ID3D11ShaderReflectionType* pType = pVar->GetType();
+				D3D11_SHADER_TYPE_DESC typeDesc;
+				pType->GetDesc(&typeDesc);
+				cbufferStruct.AppendVariable(varDesc.Name, typeDesc.Name);
+			}
+
+
+			MShaderParam param;
+			param.strName = bufferDesc.Name;
+			param.var = MVariable(cbufferStruct);
+
+			(*ppShaderBuffer)->m_vShaderParamsTemplate.push_back(param);
+		}
+
+		for (int i = 0; i < shaderDesc.BoundResources; ++i)
+		{
+			D3D11_SHADER_INPUT_BIND_DESC bindDesc;
+			pReflector->GetResourceBindingDesc(i, &bindDesc);
+
+			for (MShaderParam& param : (*ppShaderBuffer)->m_vShaderParamsTemplate)
+			{
+				if (param.strName == bindDesc.Name)
+				{
+					ID3D11Buffer* pBuffer = nullptr;
+					D3D11_BUFFER_DESC bufferDesc;
+					bufferDesc.ByteWidth = param.var.GetSize();
+					bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+					bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+					bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_FLAG::D3D11_CPU_ACCESS_WRITE;
+					bufferDesc.MiscFlags = 0;
+					bufferDesc.StructureByteStride = 0;
+
+					D3D11_SUBRESOURCE_DATA sourceData;
+					sourceData.pSysMem = param.var.GetData();
+					sourceData.SysMemPitch = 0;
+					sourceData.SysMemSlicePitch = 0;
+
+
+					m_pD3dDevice->CreateBuffer(&bufferDesc, &sourceData, &pBuffer);
+					m_pD3dContext->VSSetConstantBuffers(bindDesc.BindPoint, bindDesc.BindCount, &pBuffer);
+
+					param.pBuffer = pBuffer;
+
+					break;
+				}
+			}
+
+			
+		}
+
+	}
+
+	pShaderBuffer->Release();
+	pShaderBuffer = nullptr;
+
+
 
 }
 
@@ -746,3 +829,21 @@ void MDirectX11Renderer::CleanShader(MShaderBuffer** ppShaderBuffer)
 	delete *ppShaderBuffer;
 	*ppShaderBuffer = nullptr;
 }
+
+void MDirectX11Renderer::UpdateShaderParam(MShaderParam& param)
+{
+	if (nullptr == param.pBuffer)
+		return;
+
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+
+	//  Disable GPU access to the vertex buffer data.
+	m_pD3dContext->Map(param.pBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	//  Update the vertex buffer here.
+
+	memcpy(mappedResource.pData, param.var.GetData(), param.var.GetSize());
+	//  Reenable GPU access to the vertex buffer data.
+	m_pD3dContext->Unmap(param.pBuffer, 0);
+}
+

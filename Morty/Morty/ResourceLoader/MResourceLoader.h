@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @File         MResourceLoader
  * 
  * @Created      2019-08-06 17:59:45
@@ -21,6 +21,7 @@ public:
 
 public:
 
+	virtual MResource* Create(MResourceManager* pManager) = 0;
 	virtual MResource* Load(MResourceManager* pManager, const MString& svPath) = 0;
 
 protected:
@@ -41,7 +42,12 @@ public:
 
 public:
 
-	virtual MResource* Load(MResourceManager* pManager, const MString& svPath)
+	virtual MResource* Create(MResourceManager* pManager) override
+	{
+		return pManager->CreateResource<RESOURCE_TYPE>();
+	}
+
+	virtual MResource* Load(MResourceManager* pManager, const MString& svPath) override
 	{
 		RESOURCE_TYPE* pResource = pManager->CreateResource<RESOURCE_TYPE>();
 		if (pResource)

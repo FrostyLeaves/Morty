@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @File         MResourceManager
  * 
  * @Created      2019-08-11 13:40:09
@@ -25,6 +25,7 @@ public:
 	{
 		Model = 1,
 		Shader = 2,
+		Material = 3,
 	};
 
 public:
@@ -52,6 +53,7 @@ public:
 	MEResourceType GetResourceType(const MString& strResourcePath);
 
 	MResource* Load(const MString& strResourcePath);
+	MResource* Create(const MEResourceType& eType);
 	void Reload(const MString& strResourcePath);
 
 private:

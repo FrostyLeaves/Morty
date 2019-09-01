@@ -11,6 +11,7 @@
 #include "MGlobal.h"
 #include "MString.h"
 #include "Matrix.h"
+#include "MVertex.h"
 
 class MIRenderView;
 class MIShader;
@@ -22,6 +23,7 @@ class MShader;
 class MShaderResource;
 class MMaterial;
 class MCamera;
+class MShaderParam;
 class MORTY_CLASS MIRenderer
 {
 public:
@@ -58,6 +60,7 @@ protected:
 
 	//TODO 应该整成 SetUseMaterialInstance
 	virtual void SetUseMaterial(MMaterial* pMaterial) = 0;
+	virtual void UpdateShaderParam(MShaderParam& param) = 0;
 
 };
 

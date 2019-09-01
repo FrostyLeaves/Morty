@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @File         MObject
  * 
  * @Created      2019-05-25 19:43:33
@@ -25,7 +25,7 @@ public:
 	MObjectID GetObjectID(){ return m_unObjectID; }
 	class MObjectManager* GetObjectManager();
 
-private:
+protected:
 
 	friend class MObjectManager;
 

@@ -1,4 +1,4 @@
-/**
+ï»¿/**
  * @File         MVertex
  * 
  * @Created      2019-08-25 15:08:54
@@ -10,10 +10,13 @@
 #define _M_MVERTEX_H_
 #include "MGlobal.h"
 #include "Vector.h"
+#include "MString.h"
+#include "MVariable.h"
 #include <map>
+#include <vector>
 
 class MIRenderer;
-//¶¥µã
+//é¡¶ç‚¹
 struct MVertex
 {
 public:
@@ -27,7 +30,7 @@ public:
 	Vector3 bitangent;
 };
 
-//¶¥µã»º´æ
+//é¡¶ç‚¹ç¼“å­˜
 class MVertexBuffer
 {
 public:
@@ -42,12 +45,28 @@ public:
 #endif
 };
 
+struct MShaderParam
+{
+	MString strName;
+	MVariable var;
+	bool bDirty;
+	
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	class ID3D11Buffer* pBuffer;
+#elif RENDER_GRAPHICS == MORTY_OPENGLES
+
+#endif
+};
+
 //Shader
 class MShaderBuffer
 {
 public:
 	MShaderBuffer();
 	virtual ~MShaderBuffer(){}
+
+
+	std::vector<MShaderParam> m_vShaderParamsTemplate;
 };
 
 class MVertexShaderBuffer : public MShaderBuffer

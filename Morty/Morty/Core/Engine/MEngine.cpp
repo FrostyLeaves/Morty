@@ -1,4 +1,4 @@
-#include "MEngine.h"
+﻿#include "MEngine.h"
 #include "MIRenderer.h"
 #include "MIRenderView.h"
 
@@ -55,7 +55,6 @@ bool MEngine::Initialize()
 	m_pObjectManager->SetOwnerEngine(this);
 
 	m_pResourceManager = new MResourceManager();
-
 
 	return true;
 
@@ -145,12 +144,12 @@ bool MEngine::MainLoop()
 
 	float lTimeDelta = (float)(currentTime - m_cTickInfo.lPrevTickTime) / 1000;
 
-	if (lTimeDelta >= m_cTickInfo.fTickInterval)
+//	if (lTimeDelta >= m_cTickInfo.fTickInterval)
 	{
 		Tick(lTimeDelta);
 		m_cTickInfo.lPrevTickTime = currentTime;
 
-//		MLogManager::GetInstance()->Log("fps: %f", 1.0f / lTimeDelta);
+		MLogManager::GetInstance()->Log("fps: %f", 1.0f / lTimeDelta);
 
 		for (std::vector<MIRenderView*>::iterator iter = m_vView.begin(); iter != m_vView.end();)
 		{
@@ -169,7 +168,7 @@ bool MEngine::MainLoop()
 		}
 	}
 
-	
+	Sleep(1000 / (m_cTickInfo.nMaxFPS + 10));
 
 	return !m_vView.empty();
 }

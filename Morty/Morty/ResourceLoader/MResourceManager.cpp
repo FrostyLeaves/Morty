@@ -1,7 +1,8 @@
-#include "MResourceManager.h"
+﻿#include "MResourceManager.h"
 #include "MResource.h"
 #include "MModelResource.h"
 #include "MShaderResource.h"
+#include "MMaterialResource.h"
 #include "MResourceLoader.h"
 
 #include <vector>
@@ -20,6 +21,7 @@ MResourceManager::MResourceManager()
 {
 	REGISTER_RESOURCE_TYPE(MEResourceType::Model, MModelResource, "fbx", "obj" );
 	REGISTER_RESOURCE_TYPE(MEResourceType::Shader, MShaderResource, SUFFIX_VERTEX_SHADER, SUFFIX_PIXEL_SHADER );
+	REGISTER_RESOURCE_TYPE(MEResourceType::Material, MMaterialResource, "mtl");
 }
 
 MResourceManager::~MResourceManager()
@@ -53,6 +55,16 @@ MResource* MResourceManager::Load(const MString& strResourcePath)
 	}
 
 	return pResource;
+}
+
+MResource* MResourceManager::Create(const MEResourceType& eType)
+{
+	if (MResourceLoader* pLoader = m_tResourceLoader[eType])
+	{
+		return pLoader->Create(this);
+	}
+
+	return nullptr;
 }
 
 void MResourceManager::Reload(const MString& strResourcePath)

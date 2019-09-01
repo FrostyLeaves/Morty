@@ -1,0 +1,31 @@
+
+cbuffer cbPerObject : register(b2)
+{
+    float4 testColor;
+}
+
+struct VS_IN
+{
+    float3 posL : POSITION;
+    float3 v2 : NORMAL;
+    float2 v3 : TEXCOORDS;
+    float3 v4 : Tangent;
+    float3 v5 : BITANGENT;
+};
+
+struct VS_OUT
+{
+    float4 posH : SV_POSITION;
+    float4 color : COLOR;
+};
+
+VS_OUT VS(VS_IN input)
+{
+    VS_OUT output;
+
+    output.posH = float4(input.posL, 1.0f);
+    output.posH.xyz = output.posH.xyz / 300.0f;
+    output.color = testColor;
+
+    return output;
+}

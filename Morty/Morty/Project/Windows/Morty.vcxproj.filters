@@ -16,9 +16,6 @@
     <Filter Include="Core">
       <UniqueIdentifier>{4ccc3368-be06-4229-b5af-ffa966551f32}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Core\2D">
-      <UniqueIdentifier>{aca0d9b9-5926-4f75-b265-eb59880fc6f3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Utility">
       <UniqueIdentifier>{788137e5-3eb8-4c19-8a30-66e4a92915d2}</UniqueIdentifier>
     </Filter>
@@ -49,6 +46,9 @@
     <Filter Include="ResourceLoader\Texture">
       <UniqueIdentifier>{88b6dfc2-811f-4c3e-9c02-86e82b58f133}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ResourceLoader\Material">
+      <UniqueIdentifier>{661e606d-e5e3-4840-8aa6-6c4c74804697}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../ReadMe.txt" />
@@ -59,9 +59,6 @@
     </ClInclude>
     <ClInclude Include="../../targetver.h">
       <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Core\2D\MSprite.h">
-      <Filter>Core\2D</Filter>
     </ClInclude>
     <ClInclude Include="../../Utility\MGlobal.h">
       <Filter>Utility</Filter>
@@ -150,6 +147,12 @@
     <ClInclude Include="..\..\ResourceLoader\Texture\MTextureResource.h">
       <Filter>ResourceLoader\Texture</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\Engine\MVariable.h">
+      <Filter>Core\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ResourceLoader\Material\MMaterialResource.h">
+      <Filter>ResourceLoader\Material</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -160,9 +163,6 @@
     </ClCompile>
     <ClCompile Include="../../dllmain.cpp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Core\2D\MSprite.cpp">
-      <Filter>Core\2D</Filter>
     </ClCompile>
     <ClCompile Include="../../Core\Engine\MEngine.cpp">
       <Filter>Core\Engine</Filter>
@@ -238,6 +238,12 @@
     </ClCompile>
     <ClCompile Include="..\..\ResourceLoader\Texture\MTextureResource.cpp">
       <Filter>ResourceLoader\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Engine\MVariable.cpp">
+      <Filter>Core\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ResourceLoader\Material\MMaterialResource.cpp">
+      <Filter>ResourceLoader\Material</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

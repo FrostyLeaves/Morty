@@ -1,5 +1,8 @@
-#include "MShader.h"
+﻿#include "MShader.h"
 #include "MIRenderer.h"
+#include "MVertex.h"
+
+#include <vector>
 
 MShader::MShader()
 {

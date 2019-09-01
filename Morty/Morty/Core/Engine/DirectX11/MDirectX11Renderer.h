@@ -64,6 +64,7 @@ public:
 protected:
 
 	virtual void SetUseMaterial(MMaterial* pMaterial) override;
+	virtual void UpdateShaderParam(MShaderParam& param) override;
 
 protected:
 
