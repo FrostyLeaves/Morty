@@ -72,7 +72,7 @@ void MEngine::CreateView()
 		pWindowsView->SetResizeCallback([=](const int& nWidth, const int& nHeight)
 		{
 			m_pRenderer->OnResize(pWindowsView, nWidth, nHeight);
-			m_pRenderer->RenderNodeToView(pWindowsView->GetRootNode(), pWindowsView);
+			m_pRenderer->RenderNodeToView(pWindowsView->GetRootNode(), pWindowsView->GetCamera(), pWindowsView);
 		});
 
 		m_vView.push_back(pWindowsView);
@@ -149,14 +149,14 @@ bool MEngine::MainLoop()
 		Tick(lTimeDelta);
 		m_cTickInfo.lPrevTickTime = currentTime;
 
-		MLogManager::GetInstance()->Log("fps: %f", 1.0f / lTimeDelta);
+//		MLogManager::GetInstance()->Log("fps: %f", 1.0f / lTimeDelta);
 
 		for (std::vector<MIRenderView*>::iterator iter = m_vView.begin(); iter != m_vView.end();)
 		{
 			MIRenderView* pView = (*iter);
 			if (pView->MainLoop())
 			{
-				m_pRenderer->RenderNodeToView(m_pRootNode, pView);
+				m_pRenderer->RenderNodeToView(m_pRootNode, pView->GetCamera(), pView);
 				++iter;
 			}
 

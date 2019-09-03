@@ -37,7 +37,7 @@ public:
 
 	virtual bool Initialize() override;
 	virtual void Release() override;
-	virtual void RenderNodeToView(MNode* pNode, MIRenderView* pView) override;
+	virtual void RenderNodeToView(MNode* pRootNode, MCamera* pNode, MIRenderView* pView) override;
 
 public:
 	virtual void GenerateBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh) override;
@@ -45,12 +45,6 @@ public:
 
 	virtual void CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType) override;
 	virtual void CleanShader(MShaderBuffer** ppShaderBuffer) override;
-
-	virtual void Test_DrawMesh(MMesh* pMesh) override;
-
-	void Test_DrawNode(MNode* pNode);
-
-	virtual void DrawCamera(MCamera* pCamera)override;
 
 	virtual void DrawNode(MNode* pNode, const Matrix4& m4CameraInv) override;
 

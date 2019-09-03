@@ -1,7 +1,3 @@
-cbuffer cbPerObject
-{
-    float4 testColor;
-}
 
 struct VS_OUT
 {

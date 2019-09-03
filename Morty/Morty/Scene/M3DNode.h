@@ -20,6 +20,12 @@ public:
     M3DNode();
     virtual ~M3DNode();
 
+
+	void SetPosition(const Vector3& pos);
+	Vector3 GetPosition();
+
+
+
 	Matrix4 GetWorldTransform();
 	Matrix4 GetRelativeTransform();
 

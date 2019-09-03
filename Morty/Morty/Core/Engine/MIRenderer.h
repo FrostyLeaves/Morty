@@ -36,7 +36,7 @@ public:
 	virtual bool Initialize() = 0;
 	virtual void Release() = 0;
 
-	virtual void RenderNodeToView(MNode* pNode, MIRenderView* pView) = 0;
+	virtual void RenderNodeToView(MNode* pRootNode, MCamera* pNode, MIRenderView* pView) = 0;
 
 	virtual void AddOutputView(MIRenderView* pView) = 0;
 	virtual void RemoveOutputView(MIRenderView* pView) = 0;
@@ -49,10 +49,6 @@ public:
 
 	virtual void CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType) = 0;
 	virtual void CleanShader(MShaderBuffer** ppShader) = 0;
-
-	virtual void Test_DrawMesh(MMesh* pMesh) = 0;
-
-	virtual void DrawCamera(MCamera* pCamera) = 0;
 
 	virtual void DrawNode(MNode* pNode, const Matrix4& m4CameraInv) = 0;
 

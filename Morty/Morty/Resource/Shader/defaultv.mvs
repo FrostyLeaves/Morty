@@ -1,8 +1,13 @@
 
 cbuffer cbPerObject : register(b2)
 {
-    float4 testColor;
-}
+    float4 TestColor;
+};
+
+cbuffer cbSpace : register(b3)
+{
+    float4x4 MatMVP;
+};
 
 struct VS_IN
 {
@@ -23,9 +28,8 @@ VS_OUT VS(VS_IN input)
 {
     VS_OUT output;
 
-    output.posH = float4(input.posL, 1.0f);
-    output.posH.xyz = output.posH.xyz / 300.0f;
-    output.color = testColor;
+    output.posH = mul(float4(input.posL, 1.0f), MatMVP);
+    output.color = TestColor;
 
     return output;
 }

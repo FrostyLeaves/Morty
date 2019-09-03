@@ -23,7 +23,7 @@ public:
 
 	MySpatial(){
 		m_fTime = 0.0f;
-		m_color = Vector4(1, 1, 1, 1);
+		m_color = Vector4(0.5, 0.5, 0.5, 1);
 	}
 
 
@@ -31,26 +31,24 @@ public:
 	{
 		m_fTime += fDelta;
 
-		m_color.x = sin(m_fTime) * 0.5f + 0.5f;
-		m_color.z = cos(m_fTime) * 0.5f + 0.5f;
-
-
+// 		m_color.x = sin(m_fTime) * 0.5f + 0.5f;
+// 		m_color.z = cos(m_fTime) * 0.5f + 0.5f;
 
 		for (MNode* pChild : this->GetChildren())
 		{
 			MMeshInstance* pMeshIns = dynamic_cast<MMeshInstance*>(pChild);
 			MMaterial* pMaterial = pMeshIns->GetMaterial();
 
-
 			std::vector<MShaderParam>& vParams = pMaterial->GetVertexShaderParams();
 			for (MShaderParam& param : vParams)
 			{
 				if (param.strName == "cbPerObject")
 				{
-					param.var.GetStruct()->SetMember("testColor", m_color);
+					param.var.GetStruct()->SetMember("TestColor", m_color);
 				}
 			}
 		}
+
 	}
 
 private:
@@ -69,8 +67,8 @@ int main(int argc, char* argv[])
 	engine.CreateView();
 
 	
-	MResource* pVSResource = engine.GetResourceManager()->Load("./Shader/default.mvs");
-	MResource* pPSResource = engine.GetResourceManager()->Load("./Shader/default.mps");
+	MResource* pVSResource = engine.GetResourceManager()->Load("./Shader/defaultv.mvs");
+	MResource* pPSResource = engine.GetResourceManager()->Load("./Shader/defaultp.mps");
 	MMaterialResource* pMaterialRes = dynamic_cast<MMaterialResource*>(engine.GetResourceManager()->Create(MResourceManager::MEResourceType::Material));
 	pMaterialRes->LoadVertexShader(pVSResource);
 	pMaterialRes->LoadPixelShader(pPSResource);
@@ -88,9 +86,11 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	MResource* pResource = engine.GetResourceManager()->Load("./Model/cat.fbx");
+	MResource* pResource = engine.GetResourceManager()->Load("./Model/box.fbx");
 	MSpatial* pSpatial = engine.GetObjectManager()->CreateObject<MySpatial>();
 	pSpatial->Load(pResource);
+	pSpatial->SetPosition(Vector3(0, 0, 100));
+
 	for (MNode* pChild : pSpatial->GetChildren())
 	{
 		MMeshInstance* pMeshIns = dynamic_cast<MMeshInstance*>(pChild);

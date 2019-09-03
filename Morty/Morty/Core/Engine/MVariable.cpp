@@ -9,7 +9,7 @@ MStruct::MStruct() : m_unByteSize(0)
 MStruct::~MStruct()
 {
 	if (m_pData)
-		delete m_pData;
+		delete[] m_pData;
 }
 
 void MStruct::AppendVariable(const MString& strName, const MVariable& var)
@@ -20,6 +20,10 @@ void MStruct::AppendVariable(const MString& strName, const MVariable& var)
 
 	m_vMember.push_back(sm);
 	m_unByteSize += var.GetSize();
+	if (m_pData)
+		delete[] m_pData;
+
+	m_pData = new unsigned char[m_unByteSize];
 }
 
 void MStruct::AppendVariable(const MString& strName, const MString& type)
@@ -31,10 +35,17 @@ void MStruct::AppendVariable(const MString& strName, const MString& type)
 	{
 		sm.var = MVariable(Vector4());
 	}
-
+	else if (type == "float4x4")
+	{
+		sm.var = MVariable(Matrix4());
+	}
 
 	m_vMember.push_back(sm);
 	m_unByteSize += sm.var.GetSize();
+	if (m_pData)
+		delete[] m_pData;
+
+	m_pData = new unsigned char[m_unByteSize];
 }
 
 void MStruct::SetMember(const MString& strName, const MVariable& var)
@@ -52,10 +63,9 @@ void MStruct::SetMember(const MString& strName, const MVariable& var)
 void* MStruct::GetData()
 {
 
-	if (m_pData)
-		delete[] m_pData;
+	if (nullptr == m_pData)
+		m_pData = new unsigned char[m_unByteSize];
 
-	m_pData = new unsigned char[m_unByteSize];
 	unsigned int offset = 0;
 	for (MStructMember& sm : m_vMember)
 	{
@@ -82,15 +92,16 @@ MStruct::MStruct(const MStruct& var)
 
 const MStruct& MStruct::operator=(const MStruct& var)
 {
-	m_unByteSize = var.m_unByteSize;
-	m_vMember.clear();
-	for (const MStructMember& sm : var.m_vMember)
+	if (m_unByteSize != var.m_unByteSize)
 	{
-		MStructMember nsm;
-		nsm.strName = sm.strName;
-		nsm.var = sm.var;
-		m_vMember.push_back(nsm);
+		if (m_pData)
+		{
+			delete[] m_pData;
+			m_pData = nullptr;
+		}
 	}
+	m_unByteSize = var.m_unByteSize;
+	m_vMember = var.m_vMember;
 	return var;
 }
 

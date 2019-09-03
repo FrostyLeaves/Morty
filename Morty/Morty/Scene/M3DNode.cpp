@@ -44,3 +44,13 @@ void M3DNode::UpdateWorldTransform()
 		}
 	}
 }
+
+void M3DNode::SetPosition(const Vector3& pos)
+{
+	m_m4Transform.SetTranslation(pos.x, pos.y, pos.z);
+}
+
+Vector3 M3DNode::GetPosition()
+{
+	return Vector3();
+}

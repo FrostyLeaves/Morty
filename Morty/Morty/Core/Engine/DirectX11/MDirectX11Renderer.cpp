@@ -14,8 +14,8 @@
 #include "MModel.h"
 #include "MCamera.h"
 
-const int DEFAULT_WIDTH = 800;
-const int DEFAULT_HEIGHT = 600;
+const int DEFAULT_WIDTH = 640;
+const int DEFAULT_HEIGHT = 480;
 
 MDirectX11Renderer::MDirectX11Renderer()
 	: m_pD3dDevice(nullptr)
@@ -139,7 +139,7 @@ bool MDirectX11Renderer::Initialize()
 	ZeroMemory(&mRasterizer, sizeof(D3D11_RASTERIZER_DESC));
 	//实心模式，WIREFRAME是线框模式
 	mRasterizer.FillMode = D3D11_FILL_SOLID;
-	mRasterizer.CullMode = D3D11_CULL_BACK;
+	mRasterizer.CullMode = D3D11_CULL_NONE;
 	mRasterizer.FrontCounterClockwise = false;
 	mRasterizer.DepthClipEnable = true;//这个裁剪指的是平截头裁剪；
 
@@ -256,7 +256,7 @@ void MDirectX11Renderer::Release()
 
 }
 
-void MDirectX11Renderer::RenderNodeToView(MNode* pNode, MIRenderView* pView)
+void MDirectX11Renderer::RenderNodeToView(MNode* pRootNode, MCamera* pCamera, MIRenderView* pView)
 {
 	if (!m_pD3dContext)
 		return;
@@ -283,7 +283,10 @@ void MDirectX11Renderer::RenderNodeToView(MNode* pNode, MIRenderView* pView)
 
 	m_pD3dContext->OMSetDepthStencilState(nullptr, 0);
 
-	Test_DrawNode(pNode);
+	Matrix4 camTransInv = IdentityMatrix;
+	if(pCamera)
+		camTransInv = pCamera->GetWorldTransform().Inverse();
+	DrawNode(pRootNode, camTransInv);
 	target.pSwapChain->Present(0, 0);
 
 
@@ -609,7 +612,7 @@ void MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial)
 	}
 }
 
-void MDirectX11Renderer::Test_DrawNode(MNode* pNode)
+void MDirectX11Renderer::DrawNode(MNode* pNode, const Matrix4& m4CameraInv)
 {
 	if (nullptr == pNode)
 		return;
@@ -617,15 +620,34 @@ void MDirectX11Renderer::Test_DrawNode(MNode* pNode)
 	MMeshInstance* pMeshIns = dynamic_cast<MMeshInstance*>(pNode);
 	if (pMeshIns)
 	{
-		SetUseMaterial(pMeshIns->GetMaterial());
-		Test_DrawMesh(pMeshIns->GetMesh());
+		MMaterial* pMaterial = pMeshIns->GetMaterial();
+		SetUseMaterial(pMaterial);
+
+		std::vector<MShaderParam>& vParams = pMaterial->GetVertexShaderParams();
+		for (MShaderParam& param : vParams)
+		{
+			if (param.strName == "cbSpace")
+			{
+				Matrix4 projMat = Matrix4::MatrixPerspectiveFovLH(45, 640.0 / 480.0, 0.01, 1000);
+
+				Matrix4 worldTrans = pMeshIns->GetWorldTransform();
+
+				MStruct* pSpaceStruct = param.var.GetStruct();
+				pSpaceStruct->SetMember("MatMVP", (worldTrans * m4CameraInv * projMat).Transposed());
+	
+				break;
+			}
+		}
+
+
+		DrawMesh(pMeshIns->GetMesh(), m4CameraInv, pMeshIns->GetWorldTransform());
 	}
 
 	for (MNode* pChild : pNode->GetChildren())
-		Test_DrawNode(pChild);
+		DrawNode(pChild, m4CameraInv);
 }
 
-void MDirectX11Renderer::Test_DrawMesh(MMesh* pMesh)
+void MDirectX11Renderer::DrawMesh(MMesh* pMesh, const Matrix4& m4CameraInv, const Matrix4& m4ParentMat)
 {
 	if (nullptr == pMesh->GetBuffer())
 		pMesh->GenerateBuffer(this);
@@ -640,31 +662,6 @@ void MDirectX11Renderer::Test_DrawMesh(MMesh* pMesh)
 
 	m_pD3dContext->DrawIndexed(pMesh->GetIndicesLength(), 0, 0);
 
-
-}
-
-void MDirectX11Renderer::DrawNode(MNode* pNode, const Matrix4& m4CameraInv)
-{
-	MMeshInstance* pMeshIns = dynamic_cast<MMeshInstance*>(pNode);
-	if (pMeshIns)
-	{
-		SetUseMaterial(pMeshIns->GetMaterial());
-		DrawMesh(pMeshIns->GetMesh(), m4CameraInv, pMeshIns->GetWorldTransform());
-	}
-
-	for (MNode* pChild : pNode->GetChildren())
-		DrawNode(pChild, m4CameraInv);
-}
-
-void MDirectX11Renderer::DrawMesh(MMesh* pMesh, const Matrix4& m4CameraInv, const Matrix4& m4ParentMat)
-{
-
-}
-
-void MDirectX11Renderer::DrawCamera(MCamera* pCamera)
-{
-	MNode* pRootNode = pCamera->GetRootNode();
-	Test_DrawNode(pRootNode);
 }
 
 void MDirectX11Renderer::CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType)

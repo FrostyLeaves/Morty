@@ -12,6 +12,7 @@
 #include <functional>
 
 class MNode;
+class MCamera;
 class MORTY_CLASS MIRenderView
 {
 public:
@@ -32,10 +33,13 @@ public:
 	void SetRootNode(MNode* pNode);
 	MNode* GetRootNode(){ return m_pRootNode; }
 
+	void SetCamera(MCamera* pCamera);
+	MCamera* GetCamera() { return m_pCamera; }
+
 private:
 
 	MNode* m_pRootNode;
-
+	MCamera* m_pCamera;
 };
 
 
