@@ -55,7 +55,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;MORTY_EXPORTS;__STDC_LIMIT_MACROS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Engine/DirectX11;$(SolutionDir)Morty/Core/Engine/Windows;$(SolutionDir)Morty/Scene</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Engine/DirectX11;$(SolutionDir)Morty/Core/Engine/Windows;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Scene</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -80,7 +80,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;MORTY_EXPORTS;__STDC_LIMIT_MACROS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Engine/DirectX11;$(SolutionDir)Morty/Core/Engine/Windows;$(SolutionDir)Morty/Scene</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Engine/DirectX11;$(SolutionDir)Morty/Core/Engine/Windows;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Scene</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -113,6 +113,7 @@
     <ClInclude Include="..\..\Core\Engine\DirectX11\MWindowsRenderView.h" />
     <ClInclude Include="..\..\Core\Engine\MVariable.h" />
     <ClInclude Include="..\..\Core\Engine\MVertex.h" />
+    <ClInclude Include="..\..\Core\Input\MInputManager.h" />
     <ClInclude Include="..\..\Core\MMaterial.h" />
     <ClInclude Include="..\..\Core\MShader.h" />
     <ClInclude Include="..\..\ResourceLoader\Material\MMaterialResource.h" />
@@ -157,6 +158,7 @@
     <ClCompile Include="..\..\Core\Engine\DirectX11\MWindowsRenderView.cpp" />
     <ClCompile Include="..\..\Core\Engine\MVariable.cpp" />
     <ClCompile Include="..\..\Core\Engine\MVertex.cpp" />
+    <ClCompile Include="..\..\Core\Input\MInputManager.cpp" />
     <ClCompile Include="..\..\Core\MMaterial.cpp" />
     <ClCompile Include="..\..\Core\MShader.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Material\MMaterialResource.cpp" />

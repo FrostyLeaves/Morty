@@ -49,6 +49,9 @@
     <Filter Include="ResourceLoader\Material">
       <UniqueIdentifier>{661e606d-e5e3-4840-8aa6-6c4c74804697}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\Input">
+      <UniqueIdentifier>{b417e77e-05f7-4ef6-a093-39de1ad61168}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../ReadMe.txt" />
@@ -153,6 +156,9 @@
     <ClInclude Include="..\..\ResourceLoader\Material\MMaterialResource.h">
       <Filter>ResourceLoader\Material</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\Input\MInputManager.h">
+      <Filter>Core\Input</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -244,6 +250,9 @@
     </ClCompile>
     <ClCompile Include="..\..\ResourceLoader\Material\MMaterialResource.cpp">
       <Filter>ResourceLoader\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Input\MInputManager.cpp">
+      <Filter>Core\Input</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

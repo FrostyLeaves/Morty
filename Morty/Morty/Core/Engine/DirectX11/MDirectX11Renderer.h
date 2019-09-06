@@ -40,8 +40,10 @@ public:
 	virtual void RenderNodeToView(MNode* pRootNode, MCamera* pNode, MIRenderView* pView) override;
 
 public:
-	virtual void GenerateBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh) override;
+	virtual void GenerateBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh, const bool& bModifiable = false) override;
 	virtual void DestroyBuffer(MVertexBuffer** ppVertexBuffer) override;
+	virtual void UploadBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh) override;
+
 
 	virtual void CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType) override;
 	virtual void CleanShader(MShaderBuffer** ppShaderBuffer) override;
@@ -59,6 +61,8 @@ protected:
 
 	virtual void SetUseMaterial(MMaterial* pMaterial) override;
 	virtual void UpdateShaderParam(MShaderParam& param) override;
+
+	ID3D11InputLayout* CreateInputLayout(D3D11_INPUT_ELEMENT_DESC desc[], const int& nLength);
 
 protected:
 

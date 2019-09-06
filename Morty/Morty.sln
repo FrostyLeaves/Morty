@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Math3D", "Math3D\Math3D\Math3D\Math3D.vcxproj", "{D0CCB623-555A-4973-9AF3-BBDFC487E41F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Morty", "Morty\Project\Windows\Morty.vcxproj", "{764F8CE3-C2C9-4A43-9C49-F4C8470722B9}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MortyDemo", "MortyDemo\Project\Windows\MortyDemo.vcxproj", "{67AAB01F-0C54-4713-AD80-80FB2F2B9A7B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MortyEditor", "MortyEditor\Project\Windows\MortyEditor\MortyEditor.vcxproj", "{294773F4-9471-420A-9E2B-B48E53F318E3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{67AAB01F-0C54-4713-AD80-80FB2F2B9A7B}.Debug|Win32.Build.0 = Debug|Win32
 		{67AAB01F-0C54-4713-AD80-80FB2F2B9A7B}.Release|Win32.ActiveCfg = Release|Win32
 		{67AAB01F-0C54-4713-AD80-80FB2F2B9A7B}.Release|Win32.Build.0 = Release|Win32
+		{294773F4-9471-420A-9E2B-B48E53F318E3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{294773F4-9471-420A-9E2B-B48E53F318E3}.Debug|Win32.Build.0 = Debug|Win32
+		{294773F4-9471-420A-9E2B-B48E53F318E3}.Release|Win32.ActiveCfg = Release|Win32
+		{294773F4-9471-420A-9E2B-B48E53F318E3}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

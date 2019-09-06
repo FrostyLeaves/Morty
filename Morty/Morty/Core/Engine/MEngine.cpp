@@ -15,10 +15,13 @@
 #include "MNode.h"
 #include "MResourceManager.h"
 
+#include "MInputManager.h"
+
 
 MEngine::MEngine()
 	: m_pObjectManager(nullptr)
 	, m_pResourceManager(nullptr)
+	, m_pInputManager(nullptr)
 	, m_pRootNode(nullptr)
 	, m_pRenderer(nullptr)
 	, m_cTickInfo(60)
@@ -56,29 +59,46 @@ bool MEngine::Initialize()
 
 	m_pResourceManager = new MResourceManager();
 
+	m_pInputManager = new MInputManager();
+
 	return true;
 
 }
 
-void MEngine::CreateView()
+MIRenderView* MEngine::CreateView()
 {
+
+	MIRenderView* pNewView = nullptr;
 
 #if (RENDER_GRAPHICS == MORTY_DIRECTX_11)
 	if (MDirectX11Renderer* pRenderer = dynamic_cast<MDirectX11Renderer*>(m_pRenderer))
 	{
 		MWindowsRenderView* pWindowsView = new MWindowsRenderView();
-		pWindowsView->Initialize("Morty");
-		pRenderer->AddOutputView(pWindowsView);
-		pWindowsView->SetResizeCallback([=](const int& nWidth, const int& nHeight)
-		{
-			m_pRenderer->OnResize(pWindowsView, nWidth, nHeight);
-			m_pRenderer->RenderNodeToView(pWindowsView->GetRootNode(), pWindowsView->GetCamera(), pWindowsView);
-		});
+		pWindowsView->Initialize(this, "Morty");
+		pWindowsView->m_pEngine = this;
+		AddView(pWindowsView);
 
-		m_vView.push_back(pWindowsView);
+		pNewView = pWindowsView;
 	}
 
 #endif
+
+
+
+	return pNewView;
+
+}
+
+void MEngine::AddView(MIRenderView* pView)
+{
+	m_pRenderer->AddOutputView(pView);
+	pView->SetResizeCallback([=](const int& nWidth, const int& nHeight)
+	{
+		m_pRenderer->OnResize(pView, nWidth, nHeight);
+		m_pRenderer->RenderNodeToView(pView->GetRootNode(), pView->GetCamera(), pView);
+	});
+
+	m_vView.push_back(pView);
 }
 
 void MEngine::Release()
@@ -109,6 +129,7 @@ void MEngine::Release()
 
 	delete m_pObjectManager;
 	delete m_pResourceManager;
+	delete m_pInputManager;
 
 	m_vView.clear();
 }

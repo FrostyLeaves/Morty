@@ -22,8 +22,8 @@ public:
     virtual ~MWindowsRenderView();
 
 public:
-	bool Initialize(const char* svWindowName);
-	void Release();
+	virtual bool Initialize(MEngine* pEngine, const char* svWindowName) override;
+	virtual void Release() override;
 
 	bool IsClosed(){ return m_bIsClosed; }
 

@@ -65,7 +65,7 @@ void MModelResource::ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh* pM
 	pMMesh->CreateVertices(pMesh->mNumVertices);
 	for (unsigned int i = 0; i < pMesh->mNumVertices; ++i)
 	{
-		MVertex& vertex = pMMesh->m_vVertices[i];
+		MVertex& vertex = pMMesh->GetVertices()[i];
 		vertex.position.x = pMesh->mVertices[i].x;
 		vertex.position.y = pMesh->mVertices[i].y;
 		vertex.position.z = pMesh->mVertices[i].z;
@@ -103,7 +103,7 @@ void MModelResource::ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh* pM
 
 		for (unsigned int j = 0; j < face.mNumIndices; ++j)
 		{
-			pMMesh->m_vIndices[i * 3 + j] = face.mIndices[j];
+			pMMesh->GetIndices()[i * 3 + j] = face.mIndices[j];
 		}
 	}
 }

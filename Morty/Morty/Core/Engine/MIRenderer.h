@@ -44,8 +44,9 @@ public:
 
 
 public:
-	virtual void GenerateBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh) = 0;
+	virtual void GenerateBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh, const bool& bModifiable = false) = 0;
 	virtual void DestroyBuffer(MVertexBuffer** ppVertexBuffer) = 0;
+	virtual void UploadBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh) = 0;
 
 	virtual void CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType) = 0;
 	virtual void CleanShader(MShaderBuffer** ppShader) = 0;

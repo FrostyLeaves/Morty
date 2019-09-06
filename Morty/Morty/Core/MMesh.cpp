@@ -2,11 +2,15 @@
 #include "MIRenderer.h"
 #include "MVertex.h"
 
-MMesh::MMesh()
+MMesh::MMesh(const bool& bModifiable/* = false*/)
 	: m_vVertices(nullptr)
 	, m_vIndices(nullptr)
 	, m_pVertexBuffer(nullptr)
-	, m_pMaterial(nullptr)
+	, m_bNeedGenerate(true)
+	, m_bNeedUpload(false)
+	, m_bModifiable(bModifiable)
+	, m_unVerticesArraySize(0)
+	, m_unIndicesArraySize(0)
 {
     
 }
@@ -21,33 +25,41 @@ MMesh::~MMesh()
 
 void MMesh::CreateVertices(const unsigned int& unSize)
 {
-	if (nullptr != m_vVertices)
+	if (m_unVerticesArraySize < unSize)
 	{
-		delete[] m_vVertices;
-		m_vVertices = nullptr;
+		if (nullptr != m_vVertices)
+		{
+			delete[] m_vVertices;
+			m_vVertices = nullptr;
+		}
+
+
+		m_vVertices = new MVertex[unSize];
+		m_unVerticesArraySize = unSize;
+
+		m_bNeedGenerate = true;
 	}
 
-	if (unSize > 0)
-	{
-		m_vVertices = new MVertex[unSize];
-		m_unVerticesLength = unSize;
-	}
+	m_unVerticesLength = unSize;
 }
 
 void MMesh::CreateIndices(const unsigned int& unSize, const unsigned int& unIndexSize)
 {
-	if (nullptr != m_vIndices)
+	if (m_unIndicesArraySize < unSize * unIndexSize)
 	{
-		delete[] m_vIndices;
-		m_vIndices = nullptr;
-	}
+		if (nullptr != m_vIndices)
+		{
+			delete[] m_vIndices;
+			m_vIndices = nullptr;
+		}
 
-	if (unSize * unIndexSize > 0)
-	{
 		m_vIndices = new unsigned int[unSize * unIndexSize];
-		m_unIndicesLength = unSize * unIndexSize;
+		m_unIndicesArraySize = unSize * unIndexSize;
+
+		m_bNeedGenerate = true;
 	}
 
+	m_unIndicesLength = unSize * unIndexSize;
 }
 
 void MMesh::GenerateBuffer(MIRenderer* pRenderer)
@@ -55,10 +67,13 @@ void MMesh::GenerateBuffer(MIRenderer* pRenderer)
 	if (m_pVertexBuffer)
 		pRenderer->DestroyBuffer(&m_pVertexBuffer);
 
-	pRenderer->GenerateBuffer(&m_pVertexBuffer, this);
+	pRenderer->GenerateBuffer(&m_pVertexBuffer, this, m_bModifiable);
+	m_bNeedGenerate = false;
 }
 
-// void MMesh::SetMaterial(MMaterial* pMaterial)
-// {
-// 	m_pMaterial = pMaterial;
-// }
+void MMesh::UploadBuffer(MIRenderer* pRenderer)
+{
+	pRenderer->UploadBuffer(&m_pVertexBuffer, this);
+
+	m_bNeedUpload = false;
+}

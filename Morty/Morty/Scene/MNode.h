@@ -38,7 +38,7 @@ public:
 	virtual void OnTick(const float& fDelta);
 	virtual void Render();
 
-private:
+protected:
 
 	MNode* m_pParent;
 	std::vector<MNode*> m_vChildren;

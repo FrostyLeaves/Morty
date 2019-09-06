@@ -5,6 +5,8 @@
 
 #include "MLogManager.h"
 #include "MTimer.h"
+#include "MEngine.h"
+#include "MInputManager.h"
 
 std::map<HWND, MWindowsRenderView*> MWindowsRenderView::s_tViewTable = std::map<HWND, MWindowsRenderView*>();
 HINSTANCE MWindowsRenderView::s_hInstance = 0;
@@ -46,19 +48,22 @@ bool MWindowsRenderView::RegisterClass()
 	return true;
 }
 
-bool MWindowsRenderView::Initialize(const char* svWindowName)
+bool MWindowsRenderView::Initialize(MEngine* pEngine, const char* svWindowName)
 {
 	if (false == s_bIsRegisterWindow && !RegisterClass())
 	{
 		MLogManager::GetInstance()->Error("Register class 'Morty' failed!");
 		return false;
-	}	
+	}
 
 	if (svWindowName == NULL)
 	{
 		MLogManager::GetInstance()->Error("Window name can`t be empty!");
 		return false;
 	}
+
+
+	m_pEngine = pEngine;
 
 	RECT rc = { 0, 0, m_nWidth, m_nHeight };
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, false);
@@ -124,8 +129,16 @@ LRESULT CALLBACK MWindowsRenderView::ProcessFunction(HWND hwnd, UINT message, WP
 		{
 			pView->m_pResizeCallback(LOWORD(lParam), HIWORD(lParam));
 		}
+		break;
 	}
-	break;
+	case WM_KEYDOWN:
+		if ((HIWORD(lParam) & KF_REPEAT) == 0)
+			pView->m_pEngine->GetInputManager()->Input(new MKeyBoardInputEvent(wParam, MKeyBoardInputEvent::KeyBoardDown));
+		break;
+
+	case WM_KEYUP:
+		pView->m_pEngine->GetInputManager()->Input(new MKeyBoardInputEvent(wParam, MKeyBoardInputEvent::KeyBoardUp));
+		break;
 
 	default:
 		return DefWindowProc(hwnd, message, wParam, lParam);

@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{67AAB01F-0C54-4713-AD80-80FB2F2B9A7B}</ProjectGuid>
+    <ProjectGuid>{294773F4-9471-420A-9E2B-B48E53F318E3}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>MortyDemo</RootNamespace>
+    <RootNamespace>MortyEditor</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -42,22 +42,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Build\$(ProjectName)\$(Configuration)\</OutDir>
-    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
-    <LibraryWPath>$(WindowsSDK_MetadataPath);</LibraryWPath>
-    <CustomBuildAfterTargets>
-    </CustomBuildAfterTargets>
-    <CustomBuildBeforeTargets>
-    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Build\$(ProjectName)\$(Configuration)\</OutDir>
-    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
-    <LibraryWPath>$(WindowsSDK_MetadataPath);</LibraryWPath>
-    <CustomBuildAfterTargets>
-    </CustomBuildAfterTargets>
-    <CustomBuildBeforeTargets>
-    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -66,27 +54,15 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Engine/DirectX11;$(SolutionDir)Morty/Core/Engine/Windows;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Material</AdditionalIncludeDirectories>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Engine/DirectX11;$(SolutionDir)Morty/Core/Engine/Windows;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)MortyEditor/ImGUI;$(SolutionDir)MortyEditor/Editor</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Morty.lib;Math3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Build\Morty\$(Configuration)\;$(SolutionDir)Build/Math3D/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Morty.lib;Math3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PreBuildEvent>
-      <Command>copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"
-copy "$(SolutionDir)Build\Math3D\$(Configuration)\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"
-copy "$(SolutionDir)ThirdParty\Assimp\lib\vs2013\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"</Command>
-    </PreBuildEvent>
-    <PreLinkEvent>
-      <Command>
-      </Command>
-    </PreLinkEvent>
-    <CustomBuildStep>
-      <Command>
-      </Command>
-    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -97,50 +73,46 @@ copy "$(SolutionDir)ThirdParty\Assimp\lib\vs2013\*.dll" "$(SolutionDir)Build\$(P
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Engine/DirectX11;$(SolutionDir)Morty/Core/Engine/Windows;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Material</AdditionalIncludeDirectories>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Engine/DirectX11;$(SolutionDir)Morty/Core/Engine/Windows;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)MortyEditor/ImGUI;$(SolutionDir)MortyEditor/Editor</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Morty.lib;Math3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Build\Morty\$(Configuration)\;$(SolutionDir)Build/Math3D/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Morty.lib;Math3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PreBuildEvent>
-      <Command>copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"
-copy "$(SolutionDir)Build\Math3D\$(Configuration)\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"
-copy "$(SolutionDir)ThirdParty\Assimp\lib\vs2013\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"</Command>
-    </PreBuildEvent>
-    <PreLinkEvent>
-      <Command>
-      </Command>
-    </PreLinkEvent>
-    <CustomBuildStep>
-      <Command>
-      </Command>
-    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="../../ReadMe.txt" />
+    <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="../../stdafx.h" />
-    <ClInclude Include="../../targetver.h" />
+    <ClInclude Include="..\..\..\Editor\GUINode.h" />
+    <ClInclude Include="..\..\..\Editor\MainEditor.h" />
+    <ClInclude Include="..\..\..\ImGUI\imconfig.h" />
+    <ClInclude Include="..\..\..\ImGUI\imgui.h" />
+    <ClInclude Include="..\..\..\ImGUI\imgui_impl_dx11.h" />
+    <ClInclude Include="..\..\..\ImGUI\imgui_impl_win32.h" />
+    <ClInclude Include="..\..\..\ImGUI\imgui_internal.h" />
+    <ClInclude Include="..\..\..\ImGUI\imstb_rectpack.h" />
+    <ClInclude Include="..\..\..\ImGUI\imstb_textedit.h" />
+    <ClInclude Include="..\..\..\ImGUI\imstb_truetype.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="../../MortyDemo.cpp" />
-    <ClCompile Include="../../stdafx.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="../../..\Morty\Morty.vcxproj">
-      <Project>{764f8ce3-c2c9-4a43-9c49-f4c8470722b9}</Project>
-      <Private>true</Private>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
-    </ProjectReference>
+    <ClCompile Include="..\..\..\Editor\GUINode.cpp" />
+    <ClCompile Include="..\..\..\Editor\MainEditor.cpp" />
+    <ClCompile Include="..\..\..\ImGUI\imgui.cpp" />
+    <ClCompile Include="..\..\..\ImGUI\imgui_demo.cpp" />
+    <ClCompile Include="..\..\..\ImGUI\imgui_draw.cpp" />
+    <ClCompile Include="..\..\..\ImGUI\imgui_impl_dx11.cpp" />
+    <ClCompile Include="..\..\..\ImGUI\imgui_impl_win32.cpp" />
+    <ClCompile Include="..\..\..\ImGUI\imgui_widgets.cpp" />
+    <ClCompile Include="MortyEditor.cpp" />
+    <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

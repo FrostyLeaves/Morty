@@ -20,7 +20,7 @@ class MORTY_CLASS MVariable
 {
 public:
 
-	enum MEVAR_TYPE
+	enum MEVariableType
 	{
 		ENone = 0,
 		EFloat = 1,
@@ -38,7 +38,7 @@ public:
 
 	void* GetData();
 	unsigned int GetSize() const;
-	MEVAR_TYPE GetType(){ return m_eType; }
+	MEVariableType GetType(){ return m_eType; }
 
 	MStruct* GetStruct() { return (MStruct*)m_pData; }
 
@@ -50,7 +50,7 @@ private:
 
 	void Clean();
 	unsigned char* m_pData;
-	MEVAR_TYPE m_eType;
+	MEVariableType m_eType;
 	unsigned int m_unByteSize;
 };
 

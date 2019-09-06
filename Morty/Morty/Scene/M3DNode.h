@@ -12,6 +12,7 @@
 
 #include "MNode.h"
 
+#include "Quaternion.h"
 #include "Matrix.h"
 
 class MORTY_CLASS M3DNode : public MNode
@@ -24,12 +25,16 @@ public:
 	void SetPosition(const Vector3& pos);
 	Vector3 GetPosition();
 
-
+	void SetRotation(const Quaternion& quat);
+	Quaternion GetRotation();
 
 	Matrix4 GetWorldTransform();
 	Matrix4 GetRelativeTransform();
 
 	void UpdateWorldTransform();
+
+protected:
+	void WorldTransformDirty();
 
 private:
 

@@ -16,10 +16,11 @@ class MIRenderer;
 class MVertexBuffer;
 class MVertex;
 class MMaterial;
+
 class MORTY_CLASS MMesh
 {
 public:
-    MMesh();
+    MMesh(const bool& bModifiable = false);
     virtual ~MMesh();
 
 public:
@@ -29,30 +30,33 @@ public:
 	MVertex* GetVertices(){ return m_vVertices; }
 	unsigned int* GetIndices(){ return m_vIndices; }
 
+	bool GetNeedGenerate() { return nullptr == m_pVertexBuffer || m_bNeedGenerate; }
+	bool GetNeedUpload(){ return m_bNeedUpload; }
+	void SetNeedUpload(){ m_bNeedUpload = true; }
+
 	void GenerateBuffer(MIRenderer* pRenderer);
+	void UploadBuffer(MIRenderer* pRenderer);
 
 public:
-
-// 	void SetMaterial(MMaterial* pMaterial);
-// 	MMaterial* GetMaterial(){ return m_pMaterial; }
-
-private:
     
-    friend class MModelResource;
-
 	void CreateVertices(const unsigned int& unSize);
 	void CreateIndices(const unsigned int& unSize, const unsigned int& unIndexSize);
+
+private:
 
     MVertex* m_vVertices;
     unsigned int* m_vIndices;
 	unsigned int m_unVerticesLength;
 	unsigned int m_unIndicesLength;
 
+	unsigned int m_unVerticesArraySize;
+	unsigned int m_unIndicesArraySize;
+
 	MVertexBuffer* m_pVertexBuffer;
 
-	MMaterial* m_pMaterial;
-
+	bool m_bNeedGenerate;
+	bool m_bNeedUpload;
+	bool m_bModifiable;
 };
-
 
 #endif

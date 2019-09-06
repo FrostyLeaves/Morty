@@ -30,6 +30,8 @@ VS_OUT VS(VS_IN input)
 
     output.posH = mul(float4(input.posL, 1.0f), MatMVP);
     output.color = TestColor;
+    output.color.r = input.v2.x;
+    output.color.g = input.v2.y;
 
     return output;
 }
