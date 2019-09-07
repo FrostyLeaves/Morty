@@ -21,7 +21,7 @@ bool MSpatial::Load(MResource* pResource)
 
 		MModel* pModel = pModelRes->GetModelTemplate();
 
-		for (MMesh* pMesh : pModel->GetMeshes())
+		for (MIMesh* pMesh : pModel->GetMeshes())
 		{
 			MMeshInstance* pMeshIns = GetObjectManager()->CreateObject<MMeshInstance>();
 			pMeshIns->SetMesh(pMesh);

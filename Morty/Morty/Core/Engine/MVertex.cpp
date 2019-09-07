@@ -28,6 +28,7 @@ MVertexShaderBuffer::MVertexShaderBuffer()
 {
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	m_pVertexShader = nullptr;
+	m_pInputLayout = nullptr;
 #elif RENDER_GRAPHICS == MORTY_OPENGLES
 #endif
 }
@@ -40,3 +41,10 @@ MPixelShaderBuffer::MPixelShaderBuffer()
 #endif
 }
 
+MInputLayout::MInputLayout()
+{
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	m_pInputLayout = nullptr;
+#elif RENDER_GRAPHICS == MORTY_OPENGLES
+#endif
+}

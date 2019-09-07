@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @File         MMeshInstance
  * 
  * @Created      2019-05-26 16:13:55
@@ -12,7 +12,7 @@
 
 #include "M3DNode.h"
 
-class MMesh;
+class MIMesh;
 class MMaterial;
 class MResource;
 class MModelResource;
@@ -24,8 +24,8 @@ public:
 
 public:
 
-	void SetMesh(MMesh* pMesh);
-	MMesh* GetMesh(){ return m_pMesh; }
+	void SetMesh(MIMesh* pMesh);
+	MIMesh* GetMesh(){ return m_pMesh; }
 
 	void SetMaterial(MMaterial* pMaterial);
 	MMaterial* GetMaterial(){ return m_pMaterial; }
@@ -34,7 +34,7 @@ public:
 
 private:
 
-	MMesh* m_pMesh;
+	MIMesh* m_pMesh;
 	MMaterial* m_pMaterial;
 };
 

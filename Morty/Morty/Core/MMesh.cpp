@@ -2,7 +2,7 @@
 #include "MIRenderer.h"
 #include "MVertex.h"
 
-MMesh::MMesh(const bool& bModifiable/* = false*/)
+MIMesh::MIMesh(const bool& bModifiable/* = false*/)
 	: m_vVertices(nullptr)
 	, m_vIndices(nullptr)
 	, m_pVertexBuffer(nullptr)
@@ -15,7 +15,7 @@ MMesh::MMesh(const bool& bModifiable/* = false*/)
     
 }
 
-MMesh::~MMesh()
+MIMesh::~MIMesh()
 {
 	if (nullptr != m_vVertices)
 		delete[] m_vVertices;
@@ -23,27 +23,7 @@ MMesh::~MMesh()
 		delete[] m_vIndices;
 }
 
-void MMesh::CreateVertices(const unsigned int& unSize)
-{
-	if (m_unVerticesArraySize < unSize)
-	{
-		if (nullptr != m_vVertices)
-		{
-			delete[] m_vVertices;
-			m_vVertices = nullptr;
-		}
-
-
-		m_vVertices = new MVertex[unSize];
-		m_unVerticesArraySize = unSize;
-
-		m_bNeedGenerate = true;
-	}
-
-	m_unVerticesLength = unSize;
-}
-
-void MMesh::CreateIndices(const unsigned int& unSize, const unsigned int& unIndexSize)
+void MIMesh::CreateIndices(const unsigned int& unSize, const unsigned int& unIndexSize)
 {
 	if (m_unIndicesArraySize < unSize * unIndexSize)
 	{
@@ -62,7 +42,7 @@ void MMesh::CreateIndices(const unsigned int& unSize, const unsigned int& unInde
 	m_unIndicesLength = unSize * unIndexSize;
 }
 
-void MMesh::GenerateBuffer(MIRenderer* pRenderer)
+void MIMesh::GenerateBuffer(MIRenderer* pRenderer)
 {
 	if (m_pVertexBuffer)
 		pRenderer->DestroyBuffer(&m_pVertexBuffer);
@@ -71,7 +51,7 @@ void MMesh::GenerateBuffer(MIRenderer* pRenderer)
 	m_bNeedGenerate = false;
 }
 
-void MMesh::UploadBuffer(MIRenderer* pRenderer)
+void MIMesh::UploadBuffer(MIRenderer* pRenderer)
 {
 	pRenderer->UploadBuffer(&m_pVertexBuffer, this);
 

@@ -30,6 +30,18 @@ public:
 	Vector3 bitangent;
 };
 
+class MInputLayout
+{
+public:
+	MInputLayout();
+	virtual ~MInputLayout(){}
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	class ID3D11InputLayout* m_pInputLayout;
+#elif RENDER_GRAPHICS == MORTY_OPENGLES
+
+#endif
+};
+
 //顶点缓存
 class MVertexBuffer
 {
@@ -76,6 +88,7 @@ public:
 	virtual ~MVertexShaderBuffer(){}
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	class ID3D11VertexShader* m_pVertexShader;
+	class ID3D11InputLayout* m_pInputLayout;
 #elif RENDER_GRAPHICS == MORTY_OPENGLES
 #endif
 };

@@ -39,6 +39,9 @@ public:
 public:
 	static LRESULT CALLBACK ProcessFunction(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+
+	virtual LRESULT CALLBACK ViewProcessFunction(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+
 protected:
 	static bool RegisterClass();
 

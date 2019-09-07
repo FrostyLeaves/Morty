@@ -173,9 +173,6 @@ bool MDirectX11Renderer::Initialize()
 
 	m_pVertexInputLayout = CreateInputLayout(desc, 5);
 
-	m_pD3dContext->IASetInputLayout(m_pVertexInputLayout);
-
-
 	//三角形解析顶点
 	m_pD3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -509,7 +506,7 @@ void MDirectX11Renderer::OnResize(RenderTarget& rt, const int& nWidth, const int
 
 }
 
-void MDirectX11Renderer::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh, const bool& bModifiable/* = false*/)
+void MDirectX11Renderer::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh, const bool& bModifiable/* = false*/)
 {
 	//创建顶点缓冲
 	D3D11_BUFFER_DESC bufferDesc;
@@ -524,7 +521,7 @@ void MDirectX11Renderer::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MMesh* p
 		bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 		bufferDesc.CPUAccessFlags = 0;
 	}
-	bufferDesc.ByteWidth = pMesh->GetVerticesLength() * sizeof(MVertex);
+	bufferDesc.ByteWidth = pMesh->GetVerticesLength() * pMesh->GetVertexStructSize();
 	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	
 	bufferDesc.MiscFlags = 0;
@@ -605,7 +602,7 @@ void MDirectX11Renderer::DestroyBuffer(MVertexBuffer** ppVertexBuffer)
 	*ppVertexBuffer = nullptr;
 }
 
-void MDirectX11Renderer::UploadBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh)
+void MDirectX11Renderer::UploadBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh)
 {
 	// Upload vertex/index data into a single contiguous GPU buffer
 	D3D11_MAPPED_SUBRESOURCE vtx_resource, idx_resource;
@@ -648,6 +645,14 @@ void MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial)
 	{
 		pPixelShader->CompileShader(this);
 		pMaterial->CompilePixelShaderParams();
+	}
+
+	if (MVertexShaderBuffer* pVertexShaderBuffer = dynamic_cast<MVertexShaderBuffer*>(pVertexShader->GetBuffer()))
+	{
+		if (pVertexShaderBuffer->m_pInputLayout)
+		{
+			m_pD3dContext->IASetInputLayout(pVertexShaderBuffer->m_pInputLayout);
+		}
 	}
 
 	m_pD3dContext->VSSetShader(dynamic_cast<MVertexShaderBuffer*>(pVertexShader->GetBuffer())->m_pVertexShader, nullptr, 0);
@@ -700,7 +705,7 @@ void MDirectX11Renderer::DrawNode(MNode* pNode, const Matrix4& m4CameraInv)
 		DrawNode(pChild, m4CameraInv);
 }
 
-void MDirectX11Renderer::DrawMesh(MMesh* pMesh, const Matrix4& m4CameraInv, const Matrix4& m4ParentMat)
+void MDirectX11Renderer::DrawMesh(MIMesh* pMesh, const Matrix4& m4CameraInv, const Matrix4& m4ParentMat)
 {
 	if (pMesh->GetNeedGenerate())
 		pMesh->GenerateBuffer(this);
@@ -710,7 +715,7 @@ void MDirectX11Renderer::DrawMesh(MMesh* pMesh, const Matrix4& m4CameraInv, cons
 
 	if (MVertexBuffer* pBuffer = pMesh->GetBuffer())
 	{
-		UINT stride = sizeof(MVertex);
+		UINT stride = pMesh->GetVertexStructSize();
 		UINT offset = 0;
 		m_pD3dContext->IASetVertexBuffers(0, 1, &pBuffer->m_pVertexBuffer, &stride, &offset);
 
@@ -788,6 +793,82 @@ void MDirectX11Renderer::CompileShader(MShaderBuffer** ppShaderBuffer, const MSt
 		D3D11_SHADER_DESC shaderDesc;
 		pReflector->GetDesc(&shaderDesc);
 
+
+		if (eShaderType == MShader::MEShaderType::Vertex)
+		{
+			unsigned int unByteOffset = 0;
+			D3D11_INPUT_ELEMENT_DESC* inputDesc = new D3D11_INPUT_ELEMENT_DESC[shaderDesc.InputParameters];
+			for (int i = 0; i < shaderDesc.InputParameters; ++i)
+			{
+				D3D11_SIGNATURE_PARAMETER_DESC paramDesc;
+				pReflector->GetInputParameterDesc(i, &paramDesc);
+
+				D3D11_INPUT_ELEMENT_DESC& inputElementDesc = inputDesc[i];
+				inputElementDesc.SemanticName = paramDesc.SemanticName;
+				inputElementDesc.SemanticIndex = paramDesc.SemanticIndex;
+				inputElementDesc.InputSlot = 0;
+				inputElementDesc.AlignedByteOffset = unByteOffset;
+				inputElementDesc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+				inputElementDesc.InstanceDataStepRate = 0;
+
+				if (paramDesc.Mask == 1){
+					if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32){
+						inputElementDesc.Format = DXGI_FORMAT_R32_UINT;
+					}
+					else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32){
+						inputElementDesc.Format = DXGI_FORMAT_R32_SINT;
+					}
+					else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32){
+						inputElementDesc.Format = DXGI_FORMAT_R32_FLOAT;
+					}
+					unByteOffset += 4;
+				}
+				else if (paramDesc.Mask <= 3){
+					if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32){
+						inputElementDesc.Format = DXGI_FORMAT_R32G32_UINT;
+					}
+					else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32){
+						inputElementDesc.Format = DXGI_FORMAT_R32G32_SINT;
+					}
+					else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32){
+						inputElementDesc.Format = DXGI_FORMAT_R32G32_FLOAT;
+					}
+					unByteOffset += 8;
+				}
+				else if (paramDesc.Mask <= 7){
+					if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32){
+						inputElementDesc.Format = DXGI_FORMAT_R32G32B32_UINT;
+					}
+					else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32){
+						inputElementDesc.Format = DXGI_FORMAT_R32G32B32_SINT;
+					}
+					else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32){
+						inputElementDesc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+					}
+					unByteOffset += 12;
+				}
+				else if (paramDesc.Mask <= 15){
+					if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32){
+						inputElementDesc.Format = DXGI_FORMAT_R32G32B32A32_UINT;
+					}
+					else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32){
+						inputElementDesc.Format = DXGI_FORMAT_R32G32B32A32_SINT;
+					}
+					else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32){
+						inputElementDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+					}
+					unByteOffset += 16;
+				}
+
+			}
+
+			if (MVertexShaderBuffer* pVertexShaderBuffer = dynamic_cast<MVertexShaderBuffer*>(*ppShaderBuffer))
+			{
+				pVertexShaderBuffer->m_pInputLayout = CreateInputLayout(inputDesc, shaderDesc.InputParameters);
+			}
+
+		}
+
 		for (int i = 0; i < shaderDesc.ConstantBuffers; ++i)
 		{
 			ID3D11ShaderReflectionConstantBuffer* pConstBuffer = pReflector->GetConstantBufferByIndex(i);
@@ -820,34 +901,40 @@ void MDirectX11Renderer::CompileShader(MShaderBuffer** ppShaderBuffer, const MSt
 			D3D11_SHADER_INPUT_BIND_DESC bindDesc;
 			pReflector->GetResourceBindingDesc(i, &bindDesc);
 
-			for (MShaderParam& param : (*ppShaderBuffer)->m_vShaderParamsTemplate)
+			if (bindDesc.Type == D3D_SHADER_INPUT_TYPE::D3D10_SIT_CBUFFER)
 			{
-				if (param.strName == bindDesc.Name)
+				for (MShaderParam& param : (*ppShaderBuffer)->m_vShaderParamsTemplate)
 				{
-					ID3D11Buffer* pBuffer = nullptr;
-					D3D11_BUFFER_DESC bufferDesc;
-					bufferDesc.ByteWidth = param.var.GetSize();
-					bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-					bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-					bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_FLAG::D3D11_CPU_ACCESS_WRITE;
-					bufferDesc.MiscFlags = 0;
-					bufferDesc.StructureByteStride = 0;
+					if (param.strName == bindDesc.Name)
+					{
+						ID3D11Buffer* pBuffer = nullptr;
+						D3D11_BUFFER_DESC bufferDesc;
+						bufferDesc.ByteWidth = param.var.GetSize();
+						bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+						bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+						bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_FLAG::D3D11_CPU_ACCESS_WRITE;
+						bufferDesc.MiscFlags = 0;
+						bufferDesc.StructureByteStride = 0;
 
-					D3D11_SUBRESOURCE_DATA sourceData;
-					sourceData.pSysMem = param.var.GetData();
-					sourceData.SysMemPitch = 0;
-					sourceData.SysMemSlicePitch = 0;
+						D3D11_SUBRESOURCE_DATA sourceData;
+						sourceData.pSysMem = param.var.GetData();
+						sourceData.SysMemPitch = 0;
+						sourceData.SysMemSlicePitch = 0;
 
 
-					m_pD3dDevice->CreateBuffer(&bufferDesc, &sourceData, &pBuffer);
-					m_pD3dContext->VSSetConstantBuffers(bindDesc.BindPoint, bindDesc.BindCount, &pBuffer);
+						m_pD3dDevice->CreateBuffer(&bufferDesc, &sourceData, &pBuffer);
+						m_pD3dContext->VSSetConstantBuffers(bindDesc.BindPoint, bindDesc.BindCount, &pBuffer);
 
-					param.pBuffer = pBuffer;
+						param.pBuffer = pBuffer;
 
-					break;
+						break;
+					}
 				}
 			}
+			else if (bindDesc.Type == D3D_SHADER_INPUT_TYPE::D3D10_SIT_SAMPLER)
+			{
 
+			}
 			
 		}
 

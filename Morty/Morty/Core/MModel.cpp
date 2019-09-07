@@ -1,4 +1,4 @@
-#include "MModel.h"
+﻿#include "MModel.h"
 
 MModel::MModel()
 {
@@ -12,7 +12,7 @@ MModel::~MModel()
 
 void MModel::Clean()
 {
-	for (MMesh* pMesh : m_vMeshes)
+	for (MIMesh* pMesh : m_vMeshes)
 		delete pMesh;
 
 	m_vMeshes.clear();

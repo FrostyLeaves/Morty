@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @File         MResourceModel
  * 
  * @Created      2019-08-02 11:35:22
@@ -11,11 +11,12 @@
 #include "MGlobal.h"
 #include "MResource.h"
 #include "MString.h"
+#include "MVertex.h"
+#include "MMesh.h"
 
 class aiNode;
 class aiScene;
 class aiMesh;
-class MMesh;
 class MModel;
 class MORTY_CLASS MModelResource : public MResource
 {
@@ -30,7 +31,7 @@ protected:
 	virtual bool Load(const MString& strResourcePath) override;
 
 	void ProcessNode(aiNode* pNode, const aiScene* pScene, MModel* pModel);
-	void ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh* pMMesh);
+	void ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertex>* pMMesh);
 
 private:
     

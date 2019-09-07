@@ -103,7 +103,7 @@ public:
 		}
 
 
-		MLogManager::GetInstance()->Log("Pos: %f,%f,%f", this->GetPosition().x, this->GetPosition().y, this->GetPosition().z);
+//		MLogManager::GetInstance()->Log("Pos: %f,%f,%f", this->GetPosition().x, this->GetPosition().y, this->GetPosition().z);
 	}
 
 

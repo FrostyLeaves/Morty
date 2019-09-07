@@ -89,7 +89,6 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Editor\GUINode.h" />
     <ClInclude Include="..\..\..\Editor\MainEditor.h" />
     <ClInclude Include="..\..\..\ImGUI\imconfig.h" />
     <ClInclude Include="..\..\..\ImGUI\imgui.h" />
@@ -103,7 +102,6 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Editor\GUINode.cpp" />
     <ClCompile Include="..\..\..\Editor\MainEditor.cpp" />
     <ClCompile Include="..\..\..\ImGUI\imgui.cpp" />
     <ClCompile Include="..\..\..\ImGUI\imgui_demo.cpp" />

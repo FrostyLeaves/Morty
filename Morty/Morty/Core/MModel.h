@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @File         MModel
  * 
  * @Created      2019-08-06 17:49:01
@@ -12,7 +12,7 @@
 
 #include <vector>
 
-class MMesh;
+class MIMesh;
 class MORTY_CLASS MModel
 {
 public:
@@ -21,7 +21,7 @@ public:
 
 public:
 
-	std::vector<MMesh*>& GetMeshes() { return m_vMeshes; };
+	std::vector<MIMesh*>& GetMeshes() { return m_vMeshes; };
 
 protected:
 
@@ -31,7 +31,7 @@ private:
     
     friend class MModelResource;
     
-    std::vector<MMesh*> m_vMeshes;
+	std::vector<MIMesh*> m_vMeshes;
     
 
 };

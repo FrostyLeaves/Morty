@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @File         MMesh
  * 
  * @Created      2019-08-06 17:29:47
@@ -17,35 +17,36 @@ class MVertexBuffer;
 class MVertex;
 class MMaterial;
 
-class MORTY_CLASS MMesh
+class MORTY_CLASS MIMesh
 {
 public:
-    MMesh(const bool& bModifiable = false);
-    virtual ~MMesh();
+	MIMesh(const bool& bModifiable = false);
+	virtual ~MIMesh();
+
+	virtual MVertexBuffer* GetBuffer() { return m_pVertexBuffer; }
+
+	virtual bool GetNeedGenerate(){ return nullptr == m_pVertexBuffer || m_bNeedGenerate; }
+	virtual bool GetNeedUpload() { return m_bNeedUpload; }
+	virtual void SetNeedUpload(){ m_bNeedUpload = true; }
+
+	virtual void GenerateBuffer(MIRenderer* pRenderer);
+	virtual void UploadBuffer(MIRenderer* pRenderer);
+	virtual unsigned int GetVerticesLength() { return m_unVerticesLength; }
+	virtual unsigned int GetIndicesLength() { return m_unIndicesLength; }
+	void* GetVertices() { return m_vVertices; }
+	virtual unsigned int* GetIndices() { return m_vIndices; }
+
+	virtual unsigned int GetVertexStructSize() = 0;
 
 public:
-	MVertexBuffer* GetBuffer() { return m_pVertexBuffer; }
-	unsigned int GetVerticesLength() { return m_unVerticesLength; }
-	unsigned int GetIndicesLength() { return m_unIndicesLength; }
-	MVertex* GetVertices(){ return m_vVertices; }
-	unsigned int* GetIndices(){ return m_vIndices; }
 
-	bool GetNeedGenerate() { return nullptr == m_pVertexBuffer || m_bNeedGenerate; }
-	bool GetNeedUpload(){ return m_bNeedUpload; }
-	void SetNeedUpload(){ m_bNeedUpload = true; }
+	virtual void CreateVertices(const unsigned int& unSize) = 0;
+	virtual void CreateIndices(const unsigned int& unSize, const unsigned int& unIndexSize);
 
-	void GenerateBuffer(MIRenderer* pRenderer);
-	void UploadBuffer(MIRenderer* pRenderer);
+protected:
 
-public:
-    
-	void CreateVertices(const unsigned int& unSize);
-	void CreateIndices(const unsigned int& unSize, const unsigned int& unIndexSize);
-
-private:
-
-    MVertex* m_vVertices;
-    unsigned int* m_vIndices;
+	void* m_vVertices;
+	unsigned int* m_vIndices;
 	unsigned int m_unVerticesLength;
 	unsigned int m_unIndicesLength;
 
@@ -57,6 +58,47 @@ private:
 	bool m_bNeedGenerate;
 	bool m_bNeedUpload;
 	bool m_bModifiable;
+};
+
+template <class VERTEX_TYPE>
+class MORTY_CLASS MMesh : public MIMesh
+{
+public:
+	MMesh(const bool& bModifiable = false)
+		: MIMesh(bModifiable){}
+	virtual ~MMesh(){}
+
+public:
+
+	virtual unsigned int GetVertexStructSize() override
+	{
+		return sizeof(VERTEX_TYPE);
+	}
+
+	virtual void CreateVertices(const unsigned int& unSize) override
+	{
+		if (m_unVerticesArraySize < unSize)
+		{
+			if (nullptr != m_vVertices)
+			{
+				delete[] m_vVertices;
+				m_vVertices = nullptr;
+			}
+
+
+			m_vVertices = new VERTEX_TYPE[unSize];
+			m_unVerticesArraySize = unSize;
+
+			m_bNeedGenerate = true;
+		}
+
+		m_unVerticesLength = unSize;
+	}
+
+	VERTEX_TYPE* GetVertices()
+	{
+		return static_cast<VERTEX_TYPE*>(m_vVertices);
+	}
 };
 
 #endif

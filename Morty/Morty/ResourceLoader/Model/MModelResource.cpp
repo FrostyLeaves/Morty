@@ -1,4 +1,4 @@
-#include "MModelResource.h"
+ï»¿#include "MModelResource.h"
 #include "MModel.h"
 
 #include "MLogManager.h"
@@ -49,7 +49,7 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, MModel* p
 	{
 		aiMesh* pMesh = pScene->mMeshes[pNode->mMeshes[i]];
 
-		MMesh* pMMesh = new MMesh();
+		MMesh<MVertex>* pMMesh = new MMesh<MVertex>();
 		ProcessMesh(pMesh, pScene, pMMesh);
 		m_pModelTemplate->m_vMeshes.push_back(pMMesh);
 	}
@@ -60,7 +60,7 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, MModel* p
 	}
 }
 
-void MModelResource::ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh* pMMesh)
+void MModelResource::ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertex>* pMMesh)
 {
 	pMMesh->CreateVertices(pMesh->mNumVertices);
 	for (unsigned int i = 0; i < pMesh->mNumVertices; ++i)
@@ -94,7 +94,7 @@ void MModelResource::ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh* pM
 		}
 	}
 
-	// TODO Ð´ËÀ3²»°²È«£¬¶à¸ö¶¥µã×é³ÉÒ»¸öÃæµÄÄ£ÐÍ»áÓÐÎ£ÏÕ¡£
+	// TODO å†™æ­»3ä¸å®‰å…¨ï¼Œå¤šä¸ªé¡¶ç‚¹ç»„æˆä¸€ä¸ªé¢çš„æ¨¡åž‹ä¼šæœ‰å±é™©ã€‚
 	pMMesh->CreateIndices(pMesh->mNumFaces, 3);
 
 	for (unsigned int i = 0; i < pMesh->mNumFaces; ++i)

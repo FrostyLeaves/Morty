@@ -1,4 +1,4 @@
-#include "MMeshInstance.h"
+﻿#include "MMeshInstance.h"
 #include "MModelResource.h"
 
 #include "MDirectX11Renderer.h"
@@ -28,7 +28,7 @@ void MMeshInstance::SetMaterial(MMaterial* pMaterial)
 	m_pMaterial = pMaterial;
 }
 
-void MMeshInstance::SetMesh(MMesh* pMesh)
+void MMeshInstance::SetMesh(MIMesh* pMesh)
 {
 	m_pMesh = pMesh;
 }

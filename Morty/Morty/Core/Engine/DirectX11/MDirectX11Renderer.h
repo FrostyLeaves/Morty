@@ -40,9 +40,9 @@ public:
 	virtual void RenderNodeToView(MNode* pRootNode, MCamera* pNode, MIRenderView* pView) override;
 
 public:
-	virtual void GenerateBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh, const bool& bModifiable = false) override;
+	virtual void GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh, const bool& bModifiable = false) override;
 	virtual void DestroyBuffer(MVertexBuffer** ppVertexBuffer) override;
-	virtual void UploadBuffer(MVertexBuffer** ppVertexBuffer, MMesh* pMesh) override;
+	virtual void UploadBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh) override;
 
 
 	virtual void CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType) override;
@@ -50,7 +50,7 @@ public:
 
 	virtual void DrawNode(MNode* pNode, const Matrix4& m4CameraInv) override;
 
-	void DrawMesh(MMesh* pMesh, const Matrix4& m4CameraInv, const Matrix4& m4ParentMat);
+	void DrawMesh(MIMesh* pMesh, const Matrix4& m4CameraInv, const Matrix4& m4ParentMat);
 
 public:
 

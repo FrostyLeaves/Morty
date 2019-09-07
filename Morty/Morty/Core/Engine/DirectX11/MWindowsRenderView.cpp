@@ -112,12 +112,20 @@ LRESULT CALLBACK MWindowsRenderView::ProcessFunction(HWND hwnd, UINT message, WP
 {
 	MWindowsRenderView* pView = s_tViewTable[hwnd];
 
+	if (pView)
+		return pView->ViewProcessFunction(hwnd, message, wParam, lParam);
+	return DefWindowProc(hwnd, message, wParam, lParam);
+}
+
+LRESULT CALLBACK MWindowsRenderView::ViewProcessFunction(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+
 	switch (message)
 	{
 	case WM_DESTROY:
 		PostQuitMessage(0);
-		pView->m_bIsClosed = true;
-		pView->Release();
+		m_bIsClosed = true;
+		Release();
 		break;
 	case WM_SIZE:
 	{
@@ -125,20 +133,20 @@ LRESULT CALLBACK MWindowsRenderView::ProcessFunction(HWND hwnd, UINT message, WP
 		HDC hDC;
 		hDC = BeginPaint(hwnd, &paintStruct);
 		EndPaint(hwnd, &paintStruct);
-		if (pView->m_pResizeCallback)
+		if (m_pResizeCallback)
 		{
-			pView->m_pResizeCallback(LOWORD(lParam), HIWORD(lParam));
+			m_pResizeCallback(LOWORD(lParam), HIWORD(lParam));
 		}
 		break;
 	}
-	case WM_KEYDOWN:
-		if ((HIWORD(lParam) & KF_REPEAT) == 0)
-			pView->m_pEngine->GetInputManager()->Input(new MKeyBoardInputEvent(wParam, MKeyBoardInputEvent::KeyBoardDown));
-		break;
-
-	case WM_KEYUP:
-		pView->m_pEngine->GetInputManager()->Input(new MKeyBoardInputEvent(wParam, MKeyBoardInputEvent::KeyBoardUp));
-		break;
+	// 	case WM_KEYDOWN:
+	// 		if ((HIWORD(lParam) & KF_REPEAT) == 0)
+	// 			m_pEngine->GetInputManager()->Input(new MKeyBoardInputEvent(wParam, MKeyBoardInputEvent::KeyBoardDown));
+	// 		break;
+	// 
+	// 	case WM_KEYUP:
+	// 		m_pEngine->GetInputManager()->Input(new MKeyBoardInputEvent(wParam, MKeyBoardInputEvent::KeyBoardUp));
+	// 		break;
 
 	default:
 		return DefWindowProc(hwnd, message, wParam, lParam);
