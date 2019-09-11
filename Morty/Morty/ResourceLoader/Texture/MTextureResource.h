@@ -11,6 +11,8 @@
 #include "MGlobal.h"
 #include "MResource.h"
 
+#include "MTexture.h"
+
 class MORTY_CLASS MTextureResource : public MResource
 {
 public:
@@ -22,6 +24,8 @@ protected:
 	virtual bool Load(const MString& strResourcePath) override;
 private:
 
+
+	MTexture* m_pTexture;
 };
 
 

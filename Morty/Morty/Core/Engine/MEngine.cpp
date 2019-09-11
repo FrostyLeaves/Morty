@@ -24,7 +24,7 @@ MEngine::MEngine()
 	, m_pInputManager(nullptr)
 	, m_pRootNode(nullptr)
 	, m_pRenderer(nullptr)
-	, m_cTickInfo(60)
+	, m_cTickInfo(120)
 {
 }
 
@@ -95,7 +95,6 @@ void MEngine::AddView(MIRenderView* pView)
 	pView->SetResizeCallback([=](const int& nWidth, const int& nHeight)
 	{
 		m_pRenderer->OnResize(pView, nWidth, nHeight);
-		m_pRenderer->RenderNodeToView(pView->GetRootNode(), pView->GetCamera(), pView);
 	});
 
 	m_vView.push_back(pView);

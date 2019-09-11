@@ -7,6 +7,7 @@
 #include "MTimer.h"
 #include "MEngine.h"
 #include "MInputManager.h"
+#include "MIRenderer.h"
 
 std::map<HWND, MWindowsRenderView*> MWindowsRenderView::s_tViewTable = std::map<HWND, MWindowsRenderView*>();
 HINSTANCE MWindowsRenderView::s_hInstance = 0;
@@ -127,16 +128,21 @@ LRESULT CALLBACK MWindowsRenderView::ViewProcessFunction(HWND hwnd, UINT message
 		m_bIsClosed = true;
 		Release();
 		break;
+
+	case WM_ERASEBKGND:
+		m_pEngine->GetRenderer()->RenderNodeToView(m_pRootNode, m_pCamera, this);
+		break;
 	case WM_SIZE:
 	{
-		PAINTSTRUCT paintStruct;
-		HDC hDC;
-		hDC = BeginPaint(hwnd, &paintStruct);
-		EndPaint(hwnd, &paintStruct);
+		m_nWidth = LOWORD(lParam);
+		m_nHeight = HIWORD(lParam);
+
 		if (m_pResizeCallback)
 		{
 			m_pResizeCallback(LOWORD(lParam), HIWORD(lParam));
 		}
+
+		return DefWindowProc(hwnd, message, wParam, lParam);
 		break;
 	}
 	// 	case WM_KEYDOWN:

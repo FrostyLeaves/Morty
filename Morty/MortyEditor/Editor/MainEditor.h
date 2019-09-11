@@ -25,15 +25,6 @@ public:
 protected:
 
 
-	void DrawGUI(class ImDrawData* pDrawData);
-
-
-	void InitImGUI();
-	bool InitImGUIDX11();
-
-
-
-	MMeshInstance* m_pMeshInstance;
 };
 
 

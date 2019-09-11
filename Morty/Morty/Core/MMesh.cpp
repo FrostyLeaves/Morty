@@ -53,7 +53,10 @@ void MIMesh::GenerateBuffer(MIRenderer* pRenderer)
 
 void MIMesh::UploadBuffer(MIRenderer* pRenderer)
 {
-	pRenderer->UploadBuffer(&m_pVertexBuffer, this);
+	if (m_bModifiable)
+		pRenderer->UploadBuffer(&m_pVertexBuffer, this);
+	else
+		GenerateBuffer(pRenderer);
 
 	m_bNeedUpload = false;
 }

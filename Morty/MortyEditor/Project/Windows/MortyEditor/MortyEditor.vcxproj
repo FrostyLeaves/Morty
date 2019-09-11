@@ -63,6 +63,11 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Build\Morty\$(Configuration)\;$(SolutionDir)Build/Math3D/$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalDependencies>Morty.lib;Math3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"
+copy "$(SolutionDir)Build\Math3D\$(Configuration)\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"
+copy "$(SolutionDir)ThirdParty\Assimp\lib\vs2013\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -81,9 +86,14 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build\Morty\$(Configuration)\;$(SolutionDir)Build/Math3D/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build\Morty\$(Configuration)\;$(SolutionDir)Build/Math3D/$(Configuration);$(DXSDK_DIR)/Lib/x86</AdditionalLibraryDirectories>
       <AdditionalDependencies>Morty.lib;Math3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"
+copy "$(SolutionDir)Build\Math3D\$(Configuration)\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"
+copy "$(SolutionDir)ThirdParty\Assimp\lib\vs2013\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

@@ -159,6 +159,9 @@
     <ClInclude Include="..\..\Core\Input\MInputManager.h">
       <Filter>Core\Input</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\MTexture.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -253,6 +256,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\Input\MInputManager.cpp">
       <Filter>Core\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\MTexture.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
