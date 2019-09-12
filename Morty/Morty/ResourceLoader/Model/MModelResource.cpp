@@ -51,7 +51,7 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, MModel* p
 
 		MMesh<MVertex>* pMMesh = new MMesh<MVertex>();
 		ProcessMesh(pMesh, pScene, pMMesh);
-		m_pModelTemplate->m_vMeshes.push_back(pMMesh);
+		m_pModelTemplate->GetMeshes().push_back(pMMesh);
 	}
 
 	for (unsigned int i = 0; i < pNode->mNumChildren; ++i)

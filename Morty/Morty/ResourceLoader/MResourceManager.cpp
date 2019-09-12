@@ -3,6 +3,7 @@
 #include "MModelResource.h"
 #include "MShaderResource.h"
 #include "MMaterialResource.h"
+#include "MTextureResource.h"
 #include "MResourceLoader.h"
 
 #include <vector>
@@ -22,6 +23,7 @@ MResourceManager::MResourceManager()
 	REGISTER_RESOURCE_TYPE(MEResourceType::Model, MModelResource, "fbx", "obj" );
 	REGISTER_RESOURCE_TYPE(MEResourceType::Shader, MShaderResource, SUFFIX_VERTEX_SHADER, SUFFIX_PIXEL_SHADER );
 	REGISTER_RESOURCE_TYPE(MEResourceType::Material, MMaterialResource, "mtl");
+	REGISTER_RESOURCE_TYPE(MEResourceType::Texture, MTextureResource, "png");
 }
 
 MResourceManager::~MResourceManager()

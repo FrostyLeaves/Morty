@@ -26,6 +26,7 @@ public:
 		Model = 1,
 		Shader = 2,
 		Material = 3,
+		Texture = 4,
 	};
 
 public:

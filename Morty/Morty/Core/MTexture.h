@@ -11,6 +11,8 @@
 #include "MGlobal.h"
 #include "Vector.h"
 
+class MIRenderer;
+class MTextureBuffer;
 class MORTY_CLASS MTexture
 {
 public:
@@ -24,12 +26,18 @@ public:
 
 	unsigned char* GetImageData(){ return m_pImageData; }
 
+	virtual void GenerateBuffer(MIRenderer* pRenderer);
+
+	MTextureBuffer* GetBuffer(){ return m_pTextureBuffer; }
+
 private:
 
 	unsigned char* m_pImageData;
 	Vector2 m_v2Size;
 
 	unsigned int m_unImageDataArraySize;
+
+	MTextureBuffer* m_pTextureBuffer;
 
 };
 

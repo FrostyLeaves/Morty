@@ -13,7 +13,7 @@ struct VS_IN
 {
     float3 posL : POSITION;
     float3 v2 : NORMAL;
-    float2 v3 : TEXCOORDS;
+    float2 uv : TEXCOORDS;
     float3 v4 : Tangent;
     float3 v5 : BITANGENT;
 };
@@ -21,7 +21,7 @@ struct VS_IN
 struct VS_OUT
 {
     float4 posH : SV_POSITION;
-    float4 color : COLOR;
+    float2 uv : UV;
 };
 
 VS_OUT VS(VS_IN input)
@@ -29,9 +29,7 @@ VS_OUT VS(VS_IN input)
     VS_OUT output;
 
     output.posH = mul(float4(input.posL, 1.0f), MatMVP);
-    output.color = TestColor;
-    output.color.r = input.v2.x;
-    output.color.g = input.v2.y;
+    output.uv = input.uv;
 
     return output;
 }

@@ -48,3 +48,18 @@ MInputLayout::MInputLayout()
 #elif RENDER_GRAPHICS == MORTY_OPENGLES
 #endif
 }
+
+MTextureBuffer::MTextureBuffer()
+{
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	m_pShaderResourceView = nullptr;
+#elif RENDER_GRAPHICS == MORTY_OPENGLES
+
+#endif
+
+}
+
+MTextureBuffer::~MTextureBuffer()
+{
+
+}

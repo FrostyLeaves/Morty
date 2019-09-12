@@ -16,6 +16,7 @@
 #include <vector>
 
 class MIRenderer;
+class MTexture;
 //顶点
 struct MVertex
 {
@@ -57,6 +58,20 @@ public:
 #endif
 };
 
+//纹理缓存
+class MTextureBuffer
+{
+public:
+	MTextureBuffer();
+	virtual ~MTextureBuffer();
+
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	class ID3D11ShaderResourceView* m_pShaderResourceView;
+#elif RENDER_GRAPHICS == MORTY_OPENGLES
+
+#endif
+};
+
 struct MShaderParam
 {
 	MString strName;
@@ -65,6 +80,21 @@ struct MShaderParam
 	
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	class ID3D11Buffer* pBuffer;
+	unsigned int unBindPoint;
+	unsigned int unBindCount;
+#elif RENDER_GRAPHICS == MORTY_OPENGLES
+
+#endif
+};
+
+struct MShaderTextureParam
+{
+	MString strName;
+	MTexture* pTexture;
+
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	unsigned int unBindPoint;
+	unsigned int unBindCount;
 #elif RENDER_GRAPHICS == MORTY_OPENGLES
 
 #endif
@@ -77,7 +107,7 @@ public:
 	MShaderBuffer();
 	virtual ~MShaderBuffer(){}
 
-
+	std::vector<MShaderTextureParam> m_vTextureParamsTemplate;
 	std::vector<MShaderParam> m_vShaderParamsTemplate;
 };
 

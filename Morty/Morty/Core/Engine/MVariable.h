@@ -13,6 +13,7 @@
 #include "Vector.h"
 #include "Matrix.h"
 #include <vector>
+#include <map>
 
 class MStruct;
 // 一个变量
@@ -26,7 +27,7 @@ public:
 		EFloat = 1,
 		EVector4 = 2,
 		EMatrix4 = 3,
-		EStruct = 4
+		EStruct = 4,
 	};
 
 	MVariable();
@@ -38,10 +39,11 @@ public:
 
 	void* GetData();
 	unsigned int GetSize() const;
-	MEVariableType GetType(){ return m_eType; }
+	MEVariableType GetType() const { return m_eType; }
 
-	MStruct* GetStruct() { return (MStruct*)m_pData; }
-
+	template <class T>
+	T* GetByType(){ return(T*)m_pData; }
+	
 	const MVariable& operator = (const MVariable& var);
 
 	~MVariable();
@@ -72,10 +74,12 @@ public:
 	void AppendVariable(const MString& strName, const MString& type);
 
 	void SetMember(const MString& strName, const MVariable& var);
+	MVariable* FindMember(const MString& strName);
 
 	unsigned int GetSize() const { return m_unByteSize; }
 	void* GetData();
 
+	std::map<MString, MVariable::MEVariableType> GetMemberTypeMap();
 
 	const MStruct& operator = (const MStruct& var);
 

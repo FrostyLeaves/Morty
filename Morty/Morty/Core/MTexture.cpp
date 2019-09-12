@@ -1,4 +1,5 @@
 #include "MTexture.h"
+#include "MIRenderer.h"
 
 MTexture::MTexture()
 	:m_pImageData(nullptr)
@@ -27,4 +28,12 @@ void MTexture::SetSize(const Vector2& v2Size)
 	}
 
 	m_v2Size = v2Size;
+}
+
+void MTexture::GenerateBuffer(MIRenderer* pRenderer)
+{
+	if (m_pTextureBuffer)
+		pRenderer->DestroyTexture(&m_pTextureBuffer);
+
+	pRenderer->GenerateTexture(&m_pTextureBuffer, this);
 }

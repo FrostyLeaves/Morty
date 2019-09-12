@@ -13,9 +13,12 @@
 #include "MModelResource.h"
 #include "MModel.h"
 #include "MCamera.h"
+#include "MTexture.h"
 
 const int DEFAULT_WIDTH = 640;
 const int DEFAULT_HEIGHT = 480;
+
+const bool bEnable4xMsaa = false;
 
 MDirectX11Renderer::MDirectX11Renderer()
 	: m_pD3dDevice(nullptr)
@@ -333,8 +336,6 @@ MDirectX11Renderer::RenderTarget MDirectX11Renderer::CreateRenderTargetForWindow
 	sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 	sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 
-	bool bEnable4xMsaa = false;
-
 	if (bEnable4xMsaa)
 	{
 		sd.SampleDesc.Count = 4;
@@ -455,8 +456,6 @@ void MDirectX11Renderer::OnResize(RenderTarget& rt, const int& nWidth, const int
 	depthStencilDesc.MipLevels = 1;
 	depthStencilDesc.ArraySize = 1;
 	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-
-	bool bEnable4xMsaa = false;
 
 	// Use 4X MSAA? --must match swap chain MSAA values.
 	if (bEnable4xMsaa)
@@ -586,6 +585,65 @@ void MDirectX11Renderer::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* 
 
 }
 
+void MDirectX11Renderer::GenerateTexture(MTextureBuffer** ppTextureBuffer, MTexture* pTexture)
+{
+	Vector2 size = pTexture->GetSize();
+	D3D11_TEXTURE2D_DESC desc;
+	ZeroMemory(&desc, sizeof(desc));
+	desc.Width = size.x;
+	desc.Height = size.y;
+	desc.MipLevels = 0;
+	desc.ArraySize = 1;
+	desc.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_SHADER_RESOURCE;
+	desc.CPUAccessFlags = 0;
+	desc.MiscFlags = 0;
+	desc.SampleDesc.Count = 1;
+	desc.SampleDesc.Quality = 0;
+
+	D3D11_SUBRESOURCE_DATA data;
+	data.pSysMem = pTexture->GetImageData();
+	data.SysMemPitch = size.x * 4;
+	data.SysMemSlicePitch = size.x * size.y * 4;
+
+	ID3D11Texture2D* pTextureBuffer = nullptr;
+	m_pD3dDevice->CreateTexture2D(&desc, &data, &pTextureBuffer);
+
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
+	ZeroMemory(&viewDesc, sizeof(viewDesc));
+	viewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	viewDesc.Texture2D.MostDetailedMip = 0;
+	viewDesc.Texture2D.MipLevels = -1;
+
+	ID3D11ShaderResourceView* pShaderResourceView = nullptr;
+	HRESULT hr = m_pD3dDevice->CreateShaderResourceView(pTextureBuffer, &viewDesc, &pShaderResourceView);
+
+	if (*ppTextureBuffer)
+		DestroyTexture(ppTextureBuffer);
+	
+	(*ppTextureBuffer) = new MTextureBuffer();
+
+	if (FAILED(hr))
+	{
+		if (pTextureBuffer)
+			pTextureBuffer->Release();
+		if (pShaderResourceView)
+			pShaderResourceView->Release();
+		
+		MLogManager::GetInstance()->Error("Create Texture Buffer Error.");
+	}
+	else
+	{
+		m_pD3dContext->GenerateMips(pShaderResourceView);
+		pTextureBuffer->Release();
+
+		(*ppTextureBuffer)->m_pShaderResourceView = pShaderResourceView;
+	}
+}
+
 void MDirectX11Renderer::DestroyBuffer(MVertexBuffer** ppVertexBuffer)
 {
 	if ((*ppVertexBuffer)->m_pVertexBuffer)
@@ -600,6 +658,18 @@ void MDirectX11Renderer::DestroyBuffer(MVertexBuffer** ppVertexBuffer)
 	}
 	delete *ppVertexBuffer;
 	*ppVertexBuffer = nullptr;
+}
+
+void MDirectX11Renderer::DestroyTexture(MTextureBuffer** ppTextureBuffer)
+{
+	if ((*ppTextureBuffer)->m_pShaderResourceView)
+	{
+		(*ppTextureBuffer)->m_pShaderResourceView->Release();
+		(*ppTextureBuffer)->m_pShaderResourceView = nullptr;
+	}
+
+	delete *ppTextureBuffer;
+	*ppTextureBuffer = nullptr;
 }
 
 void MDirectX11Renderer::UploadBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh)
@@ -662,12 +732,26 @@ void MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial)
 	for (MShaderParam& param : pMaterial->GetVertexShaderParams())
 	{
 		UpdateShaderParam(param);
+		m_pD3dContext->VSSetConstantBuffers(param.unBindPoint, param.unBindCount, &param.pBuffer);
 	}
 
 	for (MShaderParam& param : pMaterial->GetPixelShaderParams())
 	{
 		UpdateShaderParam(param);
+		m_pD3dContext->PSSetConstantBuffers(param.unBindPoint, param.unBindCount, &param.pBuffer);
 	}
+
+	for (MShaderTextureParam& param : pMaterial->GetPixelTextureParams())
+	{
+		if (param.pTexture)
+		{
+			if (nullptr == param.pTexture->GetBuffer())
+				param.pTexture->GenerateBuffer(this);
+
+			m_pD3dContext->PSSetShaderResources(param.unBindPoint, param.unBindCount, &(param.pTexture->GetBuffer()->m_pShaderResourceView));
+		}
+	}
+
 }
 
 void MDirectX11Renderer::DrawNode(MNode* pNode, const Matrix4& m4CameraInv)
@@ -690,7 +774,7 @@ void MDirectX11Renderer::DrawNode(MNode* pNode, const Matrix4& m4CameraInv)
 
 				Matrix4 worldTrans = pMeshIns->GetWorldTransform();
 
-				MStruct* pSpaceStruct = param.var.GetStruct();
+				MStruct* pSpaceStruct = param.var.GetByType<MStruct>();
 				pSpaceStruct->SetMember("MatMVP", (worldTrans * m4CameraInv * projMat).Transposed());
 	
 				break;
@@ -901,7 +985,7 @@ void MDirectX11Renderer::CompileShader(MShaderBuffer** ppShaderBuffer, const MSt
 			D3D11_SHADER_INPUT_BIND_DESC bindDesc;
 			pReflector->GetResourceBindingDesc(i, &bindDesc);
 
-			if (bindDesc.Type == D3D_SHADER_INPUT_TYPE::D3D10_SIT_CBUFFER)
+			if (D3D_SHADER_INPUT_TYPE::D3D_SIT_CBUFFER == bindDesc.Type)
 			{
 				for (MShaderParam& param : (*ppShaderBuffer)->m_vShaderParamsTemplate)
 				{
@@ -921,21 +1005,29 @@ void MDirectX11Renderer::CompileShader(MShaderBuffer** ppShaderBuffer, const MSt
 						sourceData.SysMemPitch = 0;
 						sourceData.SysMemSlicePitch = 0;
 
-
 						m_pD3dDevice->CreateBuffer(&bufferDesc, &sourceData, &pBuffer);
-						m_pD3dContext->VSSetConstantBuffers(bindDesc.BindPoint, bindDesc.BindCount, &pBuffer);
 
 						param.pBuffer = pBuffer;
-
+						param.unBindPoint = bindDesc.BindPoint;
+						param.unBindCount = bindDesc.BindCount;
+						
 						break;
 					}
 				}
 			}
-			else if (bindDesc.Type == D3D_SHADER_INPUT_TYPE::D3D10_SIT_SAMPLER)
+			else if (D3D_SHADER_INPUT_TYPE::D3D_SIT_TEXTURE == bindDesc.Type)
+			{
+				MShaderTextureParam param;
+				param.strName = bindDesc.Name;
+				param.pTexture = nullptr;
+				param.unBindPoint = bindDesc.BindPoint;
+				param.unBindCount = bindDesc.BindCount;
+				(*ppShaderBuffer)->m_vTextureParamsTemplate.push_back(param);
+			}
+			else if (D3D_SHADER_INPUT_TYPE::D3D_SIT_SAMPLER == bindDesc.Type)
 			{
 
 			}
-			
 		}
 
 	}

@@ -30,20 +30,31 @@ public:
 
 	std::vector<MShaderParam>& GetVertexShaderParams() { return m_vVertexShaderParams; }
 	std::vector<MShaderParam>& GetPixelShaderParams() { return m_vPixelShaderParams; }
+	std::vector<MShaderTextureParam>& GetPixelTextureParams(){ return m_vPixelTextureParams; }
 
 	void CompileVertexShaderParams();
 	void CompilePixelShaderParams();
 
+	void SetPixelParam(const MString& strName, const MVariable& variable);
 
 	bool Load(MResource* pResource);
+
+
+protected:
+
 
 private:
 
 	std::vector<MShaderParam> m_vVertexShaderParams;
 	std::vector<MShaderParam> m_vPixelShaderParams;
 
+	std::vector<MShaderTextureParam> m_vPixelTextureParams;
+
+
 
 	MMaterialResource* m_pResource;
+
+
 
 	MMaterial* m_pNextPass;
 

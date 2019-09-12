@@ -60,6 +60,20 @@ void MStruct::SetMember(const MString& strName, const MVariable& var)
 	}
 }
 
+MVariable* MStruct::FindMember(const MString& strName)
+{
+	for (MStructMember& mem : m_vMember)
+	{
+		if (mem.strName == strName)
+		{
+			return &mem.var;
+			break;
+		}
+	}
+
+	return nullptr;
+}
+
 void* MStruct::GetData()
 {
 

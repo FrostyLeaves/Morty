@@ -22,15 +22,13 @@ public:
 public:
 
 	std::vector<MIMesh*>& GetMeshes() { return m_vMeshes; };
+	void Clean();
 
 protected:
 
-	void Clean();
 
 private:
-    
-    friend class MModelResource;
-    
+  
 	std::vector<MIMesh*> m_vMeshes;
     
 

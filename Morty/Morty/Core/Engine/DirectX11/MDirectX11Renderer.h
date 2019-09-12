@@ -44,6 +44,8 @@ public:
 	virtual void DestroyBuffer(MVertexBuffer** ppVertexBuffer) override;
 	virtual void UploadBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh) override;
 
+	virtual void GenerateTexture(MTextureBuffer** ppTextureBuffer, MTexture* pTexture) override;
+	virtual void DestroyTexture(MTextureBuffer** ppTextureBuffer) override;
 
 	virtual void CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType) override;
 	virtual void CleanShader(MShaderBuffer** ppShaderBuffer) override;
@@ -52,15 +54,13 @@ public:
 
 	void DrawMesh(MIMesh* pMesh, const Matrix4& m4CameraInv, const Matrix4& m4ParentMat);
 
+	virtual void SetUseMaterial(MMaterial* pMaterial) override;
+	virtual void UpdateShaderParam(MShaderParam& param) override;
+
 public:
 
 	ID3D11Device* GetDevice(){ return m_pD3dDevice; }
 	ID3D11DeviceContext* GetContext(){ return m_pD3dContext; }
-
-protected:
-
-	virtual void SetUseMaterial(MMaterial* pMaterial) override;
-	virtual void UpdateShaderParam(MShaderParam& param) override;
 
 	ID3D11InputLayout* CreateInputLayout(D3D11_INPUT_ELEMENT_DESC desc[], const int& nLength);
 

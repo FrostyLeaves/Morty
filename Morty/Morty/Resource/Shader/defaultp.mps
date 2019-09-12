@@ -2,12 +2,14 @@
 struct VS_OUT
 {
     float4 posH : SV_POSITION;
-    float4 color : COLOR;
+    float2 uv : UV;
 };
 
+sampler sampler0;
+Texture2D texture0;
 
 float4 PS(VS_OUT input) : SV_Target
 {
-    return input.color;
+    return texture0.Sample(sampler0, input.uv);
 }
 

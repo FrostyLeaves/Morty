@@ -54,7 +54,7 @@ public:
 			{
 				if (param.strName == "cbPerObject")
 				{
-					param.var.GetStruct()->SetMember("TestColor", m_color);
+					param.var.GetByType<MStruct>()->SetMember("TestColor", m_color);
 				}
 			}
 		}
@@ -138,7 +138,7 @@ int main(int argc, char* argv[])
 	{
 		if (param.strName == "cbPerObject")
 		{
-			param.var.GetStruct()->SetMember("testColor", Vector4(1, 1, 1, 1));
+			param.var.GetByType<MStruct>()->SetMember("testColor", Vector4(1, 1, 1, 1));
 		}
 	}
 

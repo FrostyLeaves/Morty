@@ -4,6 +4,8 @@
 #include "MMaterialResource.h"
 #include "MEngine.h"
 
+#include "MVariable.h"
+
 MMaterial::MMaterial()
 	: m_pNextPass(nullptr)
 {
@@ -52,6 +54,30 @@ void MMaterial::CompilePixelShaderParams()
 	{
 		m_vPixelShaderParams.clear();
 		m_vPixelShaderParams = pPixelShader->GetBuffer()->m_vShaderParamsTemplate;
+		m_vPixelTextureParams = pPixelShader->GetBuffer()->m_vTextureParamsTemplate;
+	}
+}
+
+void MMaterial::SetPixelParam(const MString& strName, const MVariable& variable)
+{
+	for (MShaderParam& param : m_vPixelShaderParams)
+	{
+		if (param.strName == strName)
+		{
+			if (param.var.GetType() == variable.GetType())
+				param.var = variable;
+
+			break;
+		}
+		else if (param.var.GetType() == MVariable::EStruct)
+		{
+			MStruct* pStruct = param.var.GetByType<MStruct>();
+			if (MVariable* pVar = pStruct->FindMember(strName))
+			{
+				*pVar = variable;
+				break;
+			}
+		}
 	}
 }
 

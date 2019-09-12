@@ -45,10 +45,11 @@ public:
 
 protected:
 
+	friend class MEngine;
+
 	MNode* m_pRootNode;
 	MCamera* m_pCamera;
 
-	friend class MEngine;
 	MEngine* m_pEngine;
 
 };
