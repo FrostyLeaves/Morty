@@ -23,7 +23,7 @@ const bool bEnable4xMsaa = false;
 MDirectX11Renderer::MDirectX11Renderer()
 	: m_pD3dDevice(nullptr)
 	, m_pD3dContext(nullptr)
-	, m_pVertexInputLayout(nullptr)
+	, m_pDefaultSamplerState(nullptr)
 {
 
 }
@@ -163,25 +163,24 @@ bool MDirectX11Renderer::Initialize()
 
 	m_pD3dContext->RSSetState(m_pRasterizerState);
 
-	//顶点数据Layout
-	D3D11_INPUT_ELEMENT_DESC desc[] = {
-
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORDS", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "Tangent", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-
-	};
-
-	m_pVertexInputLayout = CreateInputLayout(desc, 5);
-
 	//三角形解析顶点
 	m_pD3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 
+	//创建纹理采样状态
+	D3D11_SAMPLER_DESC sampDesc;
+	ZeroMemory(&sampDesc, sizeof(sampDesc));
+	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	sampDesc.MinLOD = 0;
+	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	hr = m_pD3dDevice->CreateSamplerState(&sampDesc, &m_pDefaultSamplerState);
 
 
+	InitDefaultResource();
 
 	return true;
 }
@@ -303,7 +302,8 @@ void MDirectX11Renderer::RenderNodeToView(MNode* pRootNode, MCamera* pCamera, MI
 	Matrix4 camTransInv = IdentityMatrix;
 	if(pCamera)
 		camTransInv = pCamera->GetWorldTransform().Inverse();
-	DrawNode(pRootNode, camTransInv);
+	Matrix4 projMat = Matrix4::MatrixPerspectiveFovLH(45, (float)pView->GetViewWidth() / pView->GetViewHeight(), 0.10f, 500);
+	DrawNode(pRootNode, camTransInv * projMat);
 
 	pView->OnRenderEnd();
 
@@ -311,6 +311,22 @@ void MDirectX11Renderer::RenderNodeToView(MNode* pRootNode, MCamera* pCamera, MI
 
 
 
+}
+
+void MDirectX11Renderer::InitDefaultResource()
+{
+	m_pDefaultTexture = new MTexture();
+	m_pDefaultTexture->SetSize(Vector2(1, 1));
+	m_pDefaultTexture->GetImageData()[0] = 0;
+	m_pDefaultTexture->GetImageData()[1] = 0;
+	m_pDefaultTexture->GetImageData()[2] = 0;
+	m_pDefaultTexture->GetImageData()[3] = 255;
+	m_pDefaultTexture->GenerateBuffer(this);
+}
+
+void MDirectX11Renderer::ReleaseDefaultResource()
+{
+	//TODO
 }
 
 MDirectX11Renderer::RenderTarget MDirectX11Renderer::CreateRenderTargetForWindow(MIRenderView* pView)
@@ -500,8 +516,8 @@ void MDirectX11Renderer::OnResize(RenderTarget& rt, const int& nWidth, const int
 	// Bind the render target view and depth/stencil view to the pipeline.
 	m_pD3dContext->OMSetRenderTargets(1, &rt.pTargetView, rt.pDepthStencilView);
 
-	rt.mViewport.Width = nWidth;
-	rt.mViewport.Height = nHeight;
+	rt.mViewport.Width = (float)nWidth;
+	rt.mViewport.Height = (float)nHeight;
 
 }
 
@@ -585,38 +601,50 @@ void MDirectX11Renderer::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* 
 
 }
 
-void MDirectX11Renderer::GenerateTexture(MTextureBuffer** ppTextureBuffer, MTexture* pTexture)
+void MDirectX11Renderer::GenerateTexture(MTextureBuffer** ppTextureBuffer, MTexture* pTexture, const bool& bGenerateMipmap)
 {
 	Vector2 size = pTexture->GetSize();
 	D3D11_TEXTURE2D_DESC desc;
 	ZeroMemory(&desc, sizeof(desc));
-	desc.Width = size.x;
-	desc.Height = size.y;
-	desc.MipLevels = 0;
+	desc.Width = (unsigned int)size.x;
+	desc.Height = (unsigned int)size.y;
+	desc.MipLevels = bGenerateMipmap ? 0 : 1;
 	desc.ArraySize = 1;
 	desc.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_SHADER_RESOURCE;
+	desc.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_RENDER_TARGET | D3D11_BIND_FLAG::D3D11_BIND_SHADER_RESOURCE;
 	desc.CPUAccessFlags = 0;
-	desc.MiscFlags = 0;
+	desc.MiscFlags = D3D11_RESOURCE_MISC_FLAG::D3D11_RESOURCE_MISC_GENERATE_MIPS;
 	desc.SampleDesc.Count = 1;
 	desc.SampleDesc.Quality = 0;
 
-	D3D11_SUBRESOURCE_DATA data;
-	data.pSysMem = pTexture->GetImageData();
-	data.SysMemPitch = size.x * 4;
-	data.SysMemSlicePitch = size.x * size.y * 4;
 
 	ID3D11Texture2D* pTextureBuffer = nullptr;
-	m_pD3dDevice->CreateTexture2D(&desc, &data, &pTextureBuffer);
 
+	if (bGenerateMipmap)
+	{
+		m_pD3dDevice->CreateTexture2D(&desc, nullptr, &pTextureBuffer);
+		pTextureBuffer->GetDesc(&desc);
+		m_pD3dContext->UpdateSubresource(pTextureBuffer, 0, nullptr, pTexture->GetImageData(), (unsigned int)size.x * 4, 0);
+
+	}
+	else
+	{
+		D3D11_SUBRESOURCE_DATA data;
+		data.pSysMem = pTexture->GetImageData();
+		data.SysMemPitch = (unsigned int)size.x * 4;
+		data.SysMemSlicePitch = (unsigned int)size.x * size.y * 4;
+		m_pD3dDevice->CreateTexture2D(&desc, &data, &pTextureBuffer);
+	}
+
+	
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
 	ZeroMemory(&viewDesc, sizeof(viewDesc));
 	viewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	viewDesc.Texture2D.MostDetailedMip = 0;
-	viewDesc.Texture2D.MipLevels = -1;
+	viewDesc.Texture2D.MipLevels = bGenerateMipmap ? -1 : 1;
 
 	ID3D11ShaderResourceView* pShaderResourceView = nullptr;
 	HRESULT hr = m_pD3dDevice->CreateShaderResourceView(pTextureBuffer, &viewDesc, &pShaderResourceView);
@@ -637,7 +665,10 @@ void MDirectX11Renderer::GenerateTexture(MTextureBuffer** ppTextureBuffer, MText
 	}
 	else
 	{
-		m_pD3dContext->GenerateMips(pShaderResourceView);
+		if (bGenerateMipmap)
+		{
+			m_pD3dContext->GenerateMips(pShaderResourceView);
+		}
 		pTextureBuffer->Release();
 
 		(*ppTextureBuffer)->m_pShaderResourceView = pShaderResourceView;
@@ -750,6 +781,15 @@ void MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial)
 
 			m_pD3dContext->PSSetShaderResources(param.unBindPoint, param.unBindCount, &(param.pTexture->GetBuffer()->m_pShaderResourceView));
 		}
+		else
+		{
+			m_pD3dContext->PSSetShaderResources(param.unBindPoint, param.unBindCount, &(m_pDefaultTexture->GetBuffer()->m_pShaderResourceView));
+		}
+	}
+
+	for (MShaderSampleParam& param : pMaterial->GetPixelShader()->GetBuffer()->m_vSampleParamsTemplate)
+	{
+		m_pD3dContext->PSSetSamplers(param.unBindPoint, param.unBindCount, &m_pDefaultSamplerState);
 	}
 
 }
@@ -759,29 +799,36 @@ void MDirectX11Renderer::DrawNode(MNode* pNode, const Matrix4& m4CameraInv)
 	if (nullptr == pNode)
 		return;
 
+	if (false == pNode->GetVisible())
+		return;
+
 	MMeshInstance* pMeshIns = dynamic_cast<MMeshInstance*>(pNode);
 	if (pMeshIns)
 	{
 		MMaterial* pMaterial = pMeshIns->GetMaterial();
-		SetUseMaterial(pMaterial);
+		
 
 		std::vector<MShaderParam>& vParams = pMaterial->GetVertexShaderParams();
 		for (MShaderParam& param : vParams)
 		{
 			if (param.strName == "cbSpace")
 			{
-				Matrix4 projMat = Matrix4::MatrixPerspectiveFovLH(45, 640.0 / 480.0, 0.01, 1000);
-
 				Matrix4 worldTrans = pMeshIns->GetWorldTransform();
 
+				//Transposed and Inverse. but hlsl has been transporsed.
+				Matrix3 matNormal(worldTrans.Inverse(), 3, 3);
+
 				MStruct* pSpaceStruct = param.var.GetByType<MStruct>();
-				pSpaceStruct->SetMember("MatMVP", (worldTrans * m4CameraInv * projMat).Transposed());
-	
+				pSpaceStruct->SetMember("MatWorld", worldTrans.Transposed());
+				pSpaceStruct->SetMember("MatCamProj", m4CameraInv.Transposed());
+
+				pSpaceStruct->SetMember("MatNormal", matNormal);
+				
 				break;
 			}
 		}
 
-
+		SetUseMaterial(pMaterial);
 		DrawMesh(pMeshIns->GetMesh(), m4CameraInv, pMeshIns->GetWorldTransform());
 	}
 
@@ -882,7 +929,7 @@ void MDirectX11Renderer::CompileShader(MShaderBuffer** ppShaderBuffer, const MSt
 		{
 			unsigned int unByteOffset = 0;
 			D3D11_INPUT_ELEMENT_DESC* inputDesc = new D3D11_INPUT_ELEMENT_DESC[shaderDesc.InputParameters];
-			for (int i = 0; i < shaderDesc.InputParameters; ++i)
+			for (unsigned int i = 0; i < shaderDesc.InputParameters; ++i)
 			{
 				D3D11_SIGNATURE_PARAMETER_DESC paramDesc;
 				pReflector->GetInputParameterDesc(i, &paramDesc);
@@ -953,7 +1000,7 @@ void MDirectX11Renderer::CompileShader(MShaderBuffer** ppShaderBuffer, const MSt
 
 		}
 
-		for (int i = 0; i < shaderDesc.ConstantBuffers; ++i)
+		for (unsigned int i = 0; i < shaderDesc.ConstantBuffers; ++i)
 		{
 			ID3D11ShaderReflectionConstantBuffer* pConstBuffer = pReflector->GetConstantBufferByIndex(i);
 			D3D11_SHADER_BUFFER_DESC bufferDesc;
@@ -961,7 +1008,7 @@ void MDirectX11Renderer::CompileShader(MShaderBuffer** ppShaderBuffer, const MSt
 
 			MStruct cbufferStruct;
 
-			for (int n = 0; n < bufferDesc.Variables; ++n)
+			for (unsigned int n = 0; n < bufferDesc.Variables; ++n)
 			{
 				D3D11_SHADER_VARIABLE_DESC varDesc;
 				ID3D11ShaderReflectionVariable* pVar = pConstBuffer->GetVariableByIndex(n);
@@ -980,7 +1027,7 @@ void MDirectX11Renderer::CompileShader(MShaderBuffer** ppShaderBuffer, const MSt
 			(*ppShaderBuffer)->m_vShaderParamsTemplate.push_back(param);
 		}
 
-		for (int i = 0; i < shaderDesc.BoundResources; ++i)
+		for (unsigned int i = 0; i < shaderDesc.BoundResources; ++i)
 		{
 			D3D11_SHADER_INPUT_BIND_DESC bindDesc;
 			pReflector->GetResourceBindingDesc(i, &bindDesc);
@@ -991,9 +1038,10 @@ void MDirectX11Renderer::CompileShader(MShaderBuffer** ppShaderBuffer, const MSt
 				{
 					if (param.strName == bindDesc.Name)
 					{
+						unsigned int unParamDataSize = param.var.GetSize();
 						ID3D11Buffer* pBuffer = nullptr;
 						D3D11_BUFFER_DESC bufferDesc;
-						bufferDesc.ByteWidth = param.var.GetSize();
+						bufferDesc.ByteWidth = unParamDataSize % 16 ? ((unParamDataSize / 16) + 1) * 16 : unParamDataSize;
 						bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 						bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 						bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_FLAG::D3D11_CPU_ACCESS_WRITE;
@@ -1026,7 +1074,11 @@ void MDirectX11Renderer::CompileShader(MShaderBuffer** ppShaderBuffer, const MSt
 			}
 			else if (D3D_SHADER_INPUT_TYPE::D3D_SIT_SAMPLER == bindDesc.Type)
 			{
+				MShaderSampleParam param;
+				param.unBindPoint = bindDesc.BindPoint;
+				param.unBindCount = bindDesc.BindCount;
 
+				(*ppShaderBuffer)->m_vSampleParamsTemplate.push_back(param);
 			}
 		}
 

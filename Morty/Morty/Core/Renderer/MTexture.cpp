@@ -1,10 +1,11 @@
-#include "MTexture.h"
+﻿#include "MTexture.h"
 #include "MIRenderer.h"
 
 MTexture::MTexture()
 	:m_pImageData(nullptr)
 	, m_v2Size(0, 0)
 	, m_unImageDataArraySize(0)
+	, m_pTextureBuffer(nullptr)
 {
 
 }
@@ -23,7 +24,7 @@ void MTexture::SetSize(const Vector2& v2Size)
 			delete[] m_pImageData;
 		}
 
-		m_unImageDataArraySize = v2Size.x * v2Size.y * 4;
+		m_unImageDataArraySize = (unsigned int)v2Size.x * v2Size.y * 4;
 		m_pImageData = new unsigned char[m_unImageDataArraySize];
 	}
 

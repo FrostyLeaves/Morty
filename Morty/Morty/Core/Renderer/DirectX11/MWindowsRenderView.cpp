@@ -145,14 +145,14 @@ LRESULT CALLBACK MWindowsRenderView::ViewProcessFunction(HWND hwnd, UINT message
 		return DefWindowProc(hwnd, message, wParam, lParam);
 		break;
 	}
-	// 	case WM_KEYDOWN:
-	// 		if ((HIWORD(lParam) & KF_REPEAT) == 0)
-	// 			m_pEngine->GetInputManager()->Input(new MKeyBoardInputEvent(wParam, MKeyBoardInputEvent::KeyBoardDown));
-	// 		break;
-	// 
-	// 	case WM_KEYUP:
-	// 		m_pEngine->GetInputManager()->Input(new MKeyBoardInputEvent(wParam, MKeyBoardInputEvent::KeyBoardUp));
-	// 		break;
+	case WM_KEYDOWN:
+		if ((HIWORD(lParam) & KF_REPEAT) == 0)
+			m_pEngine->GetInputManager()->Input(new MKeyBoardInputEvent(wParam, MKeyBoardInputEvent::KeyBoardDown));
+		break;
+
+	case WM_KEYUP:
+		m_pEngine->GetInputManager()->Input(new MKeyBoardInputEvent(wParam, MKeyBoardInputEvent::KeyBoardUp));
+		break;
 
 	default:
 		return DefWindowProc(hwnd, message, wParam, lParam);

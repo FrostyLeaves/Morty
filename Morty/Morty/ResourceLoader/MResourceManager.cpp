@@ -12,7 +12,7 @@
 { \
 m_tResourceLoader[Type] = new MResourceLoaderTemp<ResourceClass>(); \
 std::vector<MString> vSuffixList = {__VA_ARGS__}; \
-for (int i = 0; i < vSuffixList.size(); ++i) \
+for (unsigned int i = 0; i < vSuffixList.size(); ++i) \
 m_tResSuffixToType[vSuffixList[i]] = Type; \
 } \
 
@@ -20,10 +20,10 @@ m_tResSuffixToType[vSuffixList[i]] = Type; \
 MResourceManager::MResourceManager()
 	: m_pResourceDB(new MIDPool<MResourceID>())
 {
-	REGISTER_RESOURCE_TYPE(MEResourceType::Model, MModelResource, "fbx", "obj" );
+	REGISTER_RESOURCE_TYPE(MEResourceType::Model, MModelResource, "fbx", "obj", "dae" );
 	REGISTER_RESOURCE_TYPE(MEResourceType::Shader, MShaderResource, SUFFIX_VERTEX_SHADER, SUFFIX_PIXEL_SHADER );
 	REGISTER_RESOURCE_TYPE(MEResourceType::Material, MMaterialResource, "mtl");
-	REGISTER_RESOURCE_TYPE(MEResourceType::Texture, MTextureResource, "png");
+	REGISTER_RESOURCE_TYPE(MEResourceType::Texture, MTextureResource, "png", "bmp", "tga");
 }
 
 MResourceManager::~MResourceManager()
@@ -42,18 +42,23 @@ MResourceManager::MEResourceType MResourceManager::GetResourceType(const MString
 	return m_tResSuffixToType[suffix];
 }
 
-MResource* MResourceManager::Load(const MString& strResourcePath)
+MResource* MResourceManager::Load(const MString& strResourcePath, const MEResourceType& eType/* = MEResourceType::Default*/)
 {
 	std::map<MString, MResource*>::iterator iter = m_tPathResources.find(strResourcePath);
 	if (iter != m_tPathResources.end())
 		return iter->second;
 
 	MResource* pResource = nullptr;
+	MResourceLoader* pLoader = nullptr;
+	if (MEResourceType::Default != eType)
+		pLoader = m_tResourceLoader[eType];
+	else
+		pLoader = m_tResourceLoader[GetResourceType(strResourcePath)];
 
-	if (MResourceLoader* pLoader = m_tResourceLoader[GetResourceType(strResourcePath)])
+	if (pLoader)
 	{
-		pResource = pLoader->Load(this, strResourcePath);
-		m_tPathResources[strResourcePath] = pResource;
+		if(pResource = pLoader->Load(this, strResourcePath))
+			m_tPathResources[strResourcePath] = pResource;
 	}
 
 	return pResource;

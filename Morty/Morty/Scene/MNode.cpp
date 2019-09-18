@@ -3,6 +3,7 @@
 MNode::MNode()
 	: MObject()
 	, m_pParent(nullptr)
+	, m_bVisible(true)
 {
 
 }
@@ -10,6 +11,11 @@ MNode::MNode()
 MNode::~MNode()
 {
 
+}
+
+void MNode::SetVisible(const bool& bVisible)
+{
+	m_bVisible = bVisible;
 }
 
 bool MNode::AddNode(MNode* pNode)
@@ -33,6 +39,20 @@ MNode* MNode::GetRootNode()
 		pNode = pNode->GetParent();
 
 	return pNode;
+}
+
+MNode* MNode::FindFirstChildByName(const MString& strName)
+{
+	for (MNode* pNode : m_vChildren)
+	{
+		if (pNode->m_strName == strName)
+			return pNode;
+
+		if (MNode* pFindResult = pNode->FindFirstChildByName(strName))
+			return pFindResult;
+	}
+
+	return nullptr;
 }
 
 bool MNode::RemoveNode(MNode* pNode)

@@ -1,4 +1,4 @@
-#ifndef _M_GLOBAL_H_
+﻿#ifndef _M_GLOBAL_H_
 #define _M_GLOBAL_H_
 
 
@@ -21,6 +21,8 @@
 #else
 	#define MORTY_MAC
 #endif
+
+#pragma warnind( disable: 4251 )
 
 typedef unsigned long MObjectID;
 typedef unsigned long MResourceID;

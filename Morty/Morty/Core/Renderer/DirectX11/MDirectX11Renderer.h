@@ -39,12 +39,15 @@ public:
 	virtual void Release() override;
 	virtual void RenderNodeToView(MNode* pRootNode, MCamera* pNode, MIRenderView* pView) override;
 
+	virtual void InitDefaultResource() override;
+	virtual void ReleaseDefaultResource() override;
+
 public:
 	virtual void GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh, const bool& bModifiable = false) override;
 	virtual void DestroyBuffer(MVertexBuffer** ppVertexBuffer) override;
 	virtual void UploadBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh) override;
 
-	virtual void GenerateTexture(MTextureBuffer** ppTextureBuffer, MTexture* pTexture) override;
+	virtual void GenerateTexture(MTextureBuffer** ppTextureBuffer, MTexture* pTexture, const bool& bGenerateMipmap) override;
 	virtual void DestroyTexture(MTextureBuffer** ppTextureBuffer) override;
 
 	virtual void CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType) override;
@@ -86,7 +89,8 @@ protected:
 	D3D_FEATURE_LEVEL m_nFeatureLevel;
 	ID3D11Device* m_pD3dDevice;
 	ID3D11DeviceContext* m_pD3dContext;
-	ID3D11InputLayout* m_pVertexInputLayout;
+
+	ID3D11SamplerState* m_pDefaultSamplerState;
 
 	ID3D11RasterizerState* m_pRasterizerState;
 	

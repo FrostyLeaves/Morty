@@ -1,18 +1,15 @@
 
-cbuffer cbPerObject : register(b2)
+cbuffer cbSpace
 {
-    float4 TestColor;
-};
-
-cbuffer cbSpace : register(b3)
-{
-    float4x4 MatMVP;
+    float4x4 MatWorld;
+    float4x4 MatCamProj;
+    float3x3 MatNormal;
 };
 
 struct VS_IN
 {
-    float3 posL : POSITION;
-    float3 v2 : NORMAL;
+    float3 pos : POSITION;
+    float3 normal : NORMAL;
     float2 uv : TEXCOORDS;
     float3 v4 : Tangent;
     float3 v5 : BITANGENT;
@@ -20,16 +17,23 @@ struct VS_IN
 
 struct VS_OUT
 {
-    float4 posH : SV_POSITION;
+    float4 pos : SV_POSITION;
     float2 uv : UV;
+
+    float3 normal : NORMAL;
+    float3 worldPos : WORLDPOS;
 };
 
 VS_OUT VS(VS_IN input)
 {
     VS_OUT output;
 
-    output.posH = mul(float4(input.posL, 1.0f), MatMVP);
-    output.uv = input.uv;
+    output.pos = mul(float4(input.pos, 1.0f), mul(MatWorld, MatCamProj));
+    output.uv.x = input.uv.x;
+    output.uv.y = 1.0 - input.uv.y;
+
+    output.normal = mul(input.normal, MatNormal);
+    output.worldPos = mul(float4(input.pos, 1.0f), MatWorld).xyz;
 
     return output;
 }

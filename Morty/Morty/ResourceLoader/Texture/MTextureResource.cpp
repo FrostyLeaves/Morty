@@ -1,4 +1,4 @@
-#include "MTextureResource.h"
+﻿#include "MTextureResource.h"
 #include <tchar.h>
 
 #include "ximage.h"
@@ -32,7 +32,8 @@ std::wstring s2ws(const std::string &s)
 bool MTextureResource::Load(const MString& strResourcePath)
 {
 	CxImage image;
-	image.Load(strResourcePath.c_str());
+	if (false == image.Load(strResourcePath.c_str()))
+		return false;
 	
 	unsigned int unWidth = image.GetWidth();
 	unsigned int unHeight = image.GetHeight();
@@ -41,8 +42,20 @@ bool MTextureResource::Load(const MString& strResourcePath)
 
 	unsigned char* pData = m_pTexture->GetImageData();
 
-	int dataSize = unWidth * unHeight * 4;
- 	image.Encode2RGBA(pData, dataSize, false);
+	for (int x = 0; x < unWidth; ++x)
+	{
+		for (int y = 0; y < unHeight; ++y)
+		{
+			RGBQUAD color = image.GetPixelColor(x, y, true);
+			pData[(y * unWidth + x) * 4 + 0] = color.rgbRed;
+			pData[(y * unWidth + x) * 4 + 1] = color.rgbGreen;
+			pData[(y * unWidth + x) * 4 + 2] = color.rgbBlue;
+			pData[(y * unWidth + x) * 4 + 3] = color.rgbReserved;
+		}
+	}
+
+// 	int dataSize = unWidth * unHeight * 4;
+//  	image.Encode2RGBA(pData, dataSize, false);
 
 
 	return true;

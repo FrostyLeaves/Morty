@@ -48,7 +48,6 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, MModel* p
 	for (unsigned int i = 0; i < pNode->mNumMeshes; ++i)
 	{
 		aiMesh* pMesh = pScene->mMeshes[pNode->mMeshes[i]];
-
 		MMesh<MVertex>* pMMesh = new MMesh<MVertex>();
 		ProcessMesh(pMesh, pScene, pMMesh);
 		m_pModelTemplate->GetMeshes().push_back(pMMesh);
@@ -70,11 +69,13 @@ void MModelResource::ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh<MVe
 		vertex.position.y = pMesh->mVertices[i].y;
 		vertex.position.z = pMesh->mVertices[i].z;
 
-		vertex.normal.x = pMesh->mNormals[i].x;
-		vertex.normal.y = pMesh->mNormals[i].y;
-		vertex.normal.z = pMesh->mNormals[i].z;
-
-		if (pMesh->mTextureCoords[0])
+		if (pMesh->mNormals)
+		{
+			vertex.normal.x = pMesh->mNormals[i].x;
+			vertex.normal.y = pMesh->mNormals[i].y;
+			vertex.normal.z = pMesh->mNormals[i].z;
+		}
+		if (pMesh->mTextureCoords)
 		{
 			vertex.texCoords.x = pMesh->mTextureCoords[0][i].x;
 			vertex.texCoords.y = pMesh->mTextureCoords[0][i].y;

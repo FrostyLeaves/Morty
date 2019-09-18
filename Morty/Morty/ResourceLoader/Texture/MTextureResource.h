@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @File         MTextureResource
  * 
  * @Created      2019-08-29 16:35:04
@@ -18,6 +18,8 @@ class MORTY_CLASS MTextureResource : public MResource
 public:
     MTextureResource();
     virtual ~MTextureResource();
+
+	MTexture* GetTextureTemplate(){ return m_pTexture; }
 
 protected:
 

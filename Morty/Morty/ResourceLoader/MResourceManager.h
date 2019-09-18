@@ -23,6 +23,7 @@ class MORTY_CLASS MResourceManager
 public:
 	enum MEResourceType
 	{
+		Default = 0,
 		Model = 1,
 		Shader = 2,
 		Material = 3,
@@ -53,7 +54,7 @@ public:
 
 	MEResourceType GetResourceType(const MString& strResourcePath);
 
-	MResource* Load(const MString& strResourcePath);
+	MResource* Load(const MString& strResourcePath, const MEResourceType& eType = MEResourceType::Default);
 	MResource* Create(const MEResourceType& eType);
 	void Reload(const MString& strResourcePath);
 

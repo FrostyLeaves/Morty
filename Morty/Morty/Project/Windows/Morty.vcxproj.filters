@@ -22,9 +22,6 @@
     <Filter Include="Core\Engine">
       <UniqueIdentifier>{8d55da7e-fbed-407a-bcf0-62337267860e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Core\Engine\DirectX11">
-      <UniqueIdentifier>{2f95c644-d58f-433f-a85f-c02aa4927994}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Core\Log">
       <UniqueIdentifier>{975f177e-3d36-42fa-b7a7-ee7a83663643}</UniqueIdentifier>
     </Filter>
@@ -52,6 +49,12 @@
     <Filter Include="Core\Input">
       <UniqueIdentifier>{b417e77e-05f7-4ef6-a093-39de1ad61168}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\Renderer">
+      <UniqueIdentifier>{3fe0734a-8871-4da6-9dff-23baddc4ca52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Renderer\DirectX11">
+      <UniqueIdentifier>{0964fd1a-5c4b-40b1-a3e0-813c467d273b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../ReadMe.txt" />
@@ -68,12 +71,6 @@
     </ClInclude>
     <ClInclude Include="../../Core\Engine\MEngine.h">
       <Filter>Core\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Core\Engine\MIRenderer.h">
-      <Filter>Core\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Core\Engine\DirectX11\MDirectX11Renderer.h">
-      <Filter>Core\Engine\DirectX11</Filter>
     </ClInclude>
     <ClInclude Include="../../Core\Engine\MIRenderView.h">
       <Filter>Core\Engine</Filter>
@@ -102,9 +99,6 @@
     <ClInclude Include="../../Scene\M3DNode.h">
       <Filter>Scene</Filter>
     </ClInclude>
-    <ClInclude Include="../../Core\MNotifyManager.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\ResourceLoader\MResource.h">
       <Filter>ResourceLoader</Filter>
     </ClInclude>
@@ -113,9 +107,6 @@
     </ClInclude>
     <ClInclude Include="..\..\ResourceLoader\Model\MModelResource.h">
       <Filter>ResourceLoader\Model</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Core\MMesh.h">
-      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\MModel.h">
       <Filter>Core</Filter>
@@ -126,17 +117,8 @@
     <ClInclude Include="..\..\ResourceLoader\MResourceManager.h">
       <Filter>ResourceLoader</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Core\Engine\DirectX11\MWindowsRenderView.h">
-      <Filter>Core\Engine\DirectX11</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Core\Engine\MVertex.h">
-      <Filter>Core\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\ResourceLoader\Shader\MShaderResource.h">
       <Filter>ResourceLoader\Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Core\MShader.h">
-      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\MMaterial.h">
       <Filter>Core</Filter>
@@ -150,16 +132,37 @@
     <ClInclude Include="..\..\ResourceLoader\Texture\MTextureResource.h">
       <Filter>ResourceLoader\Texture</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Core\Engine\MVariable.h">
-      <Filter>Core\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\ResourceLoader\Material\MMaterialResource.h">
       <Filter>ResourceLoader\Material</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Input\MInputManager.h">
       <Filter>Core\Input</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Core\MTexture.h">
+    <ClInclude Include="..\..\Core\Renderer\MIRenderer.h">
+      <Filter>Core\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\DirectX11\MDirectX11Renderer.h">
+      <Filter>Core\Renderer\DirectX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\DirectX11\MWindowsRenderView.h">
+      <Filter>Core\Renderer\DirectX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\MVariable.h">
+      <Filter>Core\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\MVertex.h">
+      <Filter>Core\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\MMesh.h">
+      <Filter>Core\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\MShader.h">
+      <Filter>Core\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\MTexture.h">
+      <Filter>Core\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\MIScene.h">
       <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
@@ -175,12 +178,6 @@
     </ClCompile>
     <ClCompile Include="../../Core\Engine\MEngine.cpp">
       <Filter>Core\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Core\Engine\MIRenderer.cpp">
-      <Filter>Core\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Core\Engine\DirectX11\MDirectX11Renderer.cpp">
-      <Filter>Core\Engine\DirectX11</Filter>
     </ClCompile>
     <ClCompile Include="../../Core\Engine\MIRenderView.cpp">
       <Filter>Core\Engine</Filter>
@@ -200,17 +197,11 @@
     <ClCompile Include="../../Scene\M3DNode.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
-    <ClCompile Include="../../Core\MNotifyManager.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ResourceLoader\MResource.cpp">
       <Filter>ResourceLoader</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ResourceLoader\Model\MModelResource.cpp">
       <Filter>ResourceLoader\Model</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Core\MMesh.cpp">
-      <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Core\MModel.cpp">
       <Filter>Core</Filter>
@@ -221,17 +212,8 @@
     <ClCompile Include="..\..\ResourceLoader\MResourceManager.cpp">
       <Filter>ResourceLoader</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Core\Engine\DirectX11\MWindowsRenderView.cpp">
-      <Filter>Core\Engine\DirectX11</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Core\Engine\MVertex.cpp">
-      <Filter>Core\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ResourceLoader\Shader\MShaderResource.cpp">
       <Filter>ResourceLoader\Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Core\MShader.cpp">
-      <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Utility\MGlobal.cpp">
       <Filter>Utility</Filter>
@@ -248,17 +230,41 @@
     <ClCompile Include="..\..\ResourceLoader\Texture\MTextureResource.cpp">
       <Filter>ResourceLoader\Texture</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Core\Engine\MVariable.cpp">
-      <Filter>Core\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ResourceLoader\Material\MMaterialResource.cpp">
       <Filter>ResourceLoader\Material</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Core\Input\MInputManager.cpp">
       <Filter>Core\Input</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Core\MTexture.cpp">
+    <ClCompile Include="..\..\Core\Renderer\MIRenderer.cpp">
+      <Filter>Core\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\DirectX11\MDirectX11Renderer.cpp">
+      <Filter>Core\Renderer\DirectX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\DirectX11\MWindowsRenderView.cpp">
+      <Filter>Core\Renderer\DirectX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\MVariable.cpp">
+      <Filter>Core\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\MVertex.cpp">
+      <Filter>Core\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\MMesh.cpp">
+      <Filter>Core\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\MShader.cpp">
+      <Filter>Core\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\MTexture.cpp">
+      <Filter>Core\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\MIScene.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
 </Project>

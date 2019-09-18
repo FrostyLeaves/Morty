@@ -100,6 +100,16 @@ struct MShaderTextureParam
 #endif
 };
 
+struct MShaderSampleParam
+{
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	unsigned int unBindPoint;
+	unsigned int unBindCount;
+#elif RENDER_GRAPHICS == MORTY_OPENGLES
+
+#endif
+};
+
 //Shader
 class MShaderBuffer
 {
@@ -107,6 +117,7 @@ public:
 	MShaderBuffer();
 	virtual ~MShaderBuffer(){}
 
+	std::vector<MShaderSampleParam> m_vSampleParamsTemplate;
 	std::vector<MShaderTextureParam> m_vTextureParamsTemplate;
 	std::vector<MShaderParam> m_vShaderParamsTemplate;
 };

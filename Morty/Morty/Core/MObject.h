@@ -25,6 +25,8 @@ public:
 	MObjectID GetObjectID(){ return m_unObjectID; }
 	class MObjectManager* GetObjectManager();
 
+	virtual void OnCreated() {};
+
 protected:
 
 	friend class MObjectManager;
@@ -56,6 +58,8 @@ public:
 
 		m_tObjects[pObject->m_unObjectID] = pObject;
 
+		pObject->OnCreated();
+
 		return pObject;
 	}
 
@@ -73,6 +77,7 @@ public:
 		std::map<MObjectID, MObject*>::iterator iter = m_tObjects.find(unID);
 		if (iter != m_tObjects.end())
 		{
+			delete iter->second;
 			m_tObjects.erase(iter);
 		}
 	}

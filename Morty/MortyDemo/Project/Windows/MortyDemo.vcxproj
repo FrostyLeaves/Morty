@@ -66,7 +66,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Engine/DirectX11;$(SolutionDir)Morty/Core/Engine/Windows;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Material</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/ResourceLoader/Texture</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -97,7 +97,7 @@ copy "$(SolutionDir)ThirdParty\Assimp\lib\vs2013\*.dll" "$(SolutionDir)Build\$(P
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Engine/DirectX11;$(SolutionDir)Morty/Core/Engine/Windows;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Material</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/ResourceLoader/Texture</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

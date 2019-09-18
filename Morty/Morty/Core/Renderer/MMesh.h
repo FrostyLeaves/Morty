@@ -14,7 +14,7 @@
 
 class MIRenderer;
 class MVertexBuffer;
-class MVertex;
+struct MVertex;
 class MMaterial;
 
 class MORTY_CLASS MIMesh

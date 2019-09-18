@@ -92,13 +92,16 @@ bool MMaterial::Load(MResource* pResource)
 		if (pVertexShader && nullptr == pVertexShader->GetBuffer())
 		{
 			pVertexShader->CompileShader(m_pEngine->GetRenderer());
-			CompileVertexShaderParams();
+			
 		}
 		if (pPixelShader && nullptr == pPixelShader->GetBuffer())
 		{
 			pPixelShader->CompileShader(m_pEngine->GetRenderer());
-			CompilePixelShaderParams();
+			
 		}
+
+		CompileVertexShaderParams();
+		CompilePixelShaderParams();
 
 		//Do smoething.
 		return true;
