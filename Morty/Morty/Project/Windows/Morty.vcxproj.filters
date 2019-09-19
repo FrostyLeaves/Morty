@@ -55,6 +55,9 @@
     <Filter Include="Core\Renderer\DirectX11">
       <UniqueIdentifier>{0964fd1a-5c4b-40b1-a3e0-813c467d273b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scene\Light">
+      <UniqueIdentifier>{9dcf4d1f-a31f-447f-a127-4f1eb1a113d2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../ReadMe.txt" />
@@ -165,6 +168,18 @@
     <ClInclude Include="..\..\Core\MIScene.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Scene\Light\MILight.h">
+      <Filter>Scene\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Scene\Light\MPointLight.h">
+      <Filter>Scene\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Scene\Light\MSpotLight.h">
+      <Filter>Scene\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Scene\Light\MDirectionalLight.h">
+      <Filter>Scene\Light</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -262,6 +277,18 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\MIScene.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Scene\Light\MILight.cpp">
+      <Filter>Scene\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Scene\Light\MPointLight.cpp">
+      <Filter>Scene\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Scene\Light\MSpotLight.cpp">
+      <Filter>Scene\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Scene\Light\MDirectionalLight.cpp">
+      <Filter>Scene\Light</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -55,7 +55,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;MORTY_EXPORTS;__STDC_LIMIT_MACROS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/ResourceLoader/Texture;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Scene</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/ResourceLoader/Texture;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/Scene/Light</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -81,7 +81,7 @@ copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\Mor
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;MORTY_EXPORTS;__STDC_LIMIT_MACROS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/ResourceLoader/Texture;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Scene</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/ResourceLoader/Texture;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/Scene/Light</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -124,6 +124,10 @@ copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\Mor
     <ClInclude Include="..\..\ResourceLoader\MResourceManager.h" />
     <ClInclude Include="..\..\ResourceLoader\Shader\MShaderResource.h" />
     <ClInclude Include="..\..\ResourceLoader\Texture\MTextureResource.h" />
+    <ClInclude Include="..\..\Scene\Light\MDirectionalLight.h" />
+    <ClInclude Include="..\..\Scene\Light\MILight.h" />
+    <ClInclude Include="..\..\Scene\Light\MPointLight.h" />
+    <ClInclude Include="..\..\Scene\Light\MSpotLight.h" />
     <ClInclude Include="..\..\Scene\MCamera.h" />
     <ClInclude Include="..\..\Scene\MMeshInstance.h" />
     <ClInclude Include="../../Scene\M3DNode.h" />
@@ -170,6 +174,10 @@ copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\Mor
     <ClCompile Include="..\..\ResourceLoader\MResourceManager.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Shader\MShaderResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Texture\MTextureResource.cpp" />
+    <ClCompile Include="..\..\Scene\Light\MDirectionalLight.cpp" />
+    <ClCompile Include="..\..\Scene\Light\MILight.cpp" />
+    <ClCompile Include="..\..\Scene\Light\MPointLight.cpp" />
+    <ClCompile Include="..\..\Scene\Light\MSpotLight.cpp" />
     <ClCompile Include="..\..\Scene\MCamera.cpp" />
     <ClCompile Include="..\..\Scene\MMeshInstance.cpp" />
     <ClCompile Include="../../Scene\M3DNode.cpp" />

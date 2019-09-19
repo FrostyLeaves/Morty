@@ -20,9 +20,6 @@ public:
 
 public:
 
-	virtual void SetLightColor(const Vector3& color) = 0;
-	virtual Vector3 GetLightColor() = 0;
-
 private:
 
 };
