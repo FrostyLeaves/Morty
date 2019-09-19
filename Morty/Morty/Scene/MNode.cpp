@@ -1,8 +1,12 @@
 ﻿#include "MNode.h"
+#include "MIScene.h"
+
+#include <queue>
 
 MNode::MNode()
 	: MObject()
 	, m_pParent(nullptr)
+	, m_pScene(nullptr)
 	, m_bVisible(true)
 {
 
@@ -20,12 +24,37 @@ void MNode::SetVisible(const bool& bVisible)
 
 bool MNode::AddNode(MNode* pNode)
 {
-	if (isHolderOf(pNode))
+	if (pNode->isHolderOf(this))
 		return false;
+
+	for (MNode* pChildNode : GetChildren())
+	{
+		if (pChildNode == pNode)
+			return false;
+	}
 
 	m_vChildren.push_back(pNode);
 	pNode->m_pParent = this;
+	
+	//different scene.
+	if (pNode->m_pScene != m_pScene)
+	{
+		std::queue<MNode*> que;
+		que.push(pNode);
 
+		while (!que.empty())
+		{
+			MNode* pFrontNode = que.front();
+			que.pop();
+
+			for (MNode* pChildNode : pFrontNode->GetChildren())
+				que.push(pChildNode);
+	
+			if (pFrontNode->m_pScene = m_pScene)
+				m_pScene->OnAddNode(pNode);
+		}
+	}
+	
 	return true;
 }
 

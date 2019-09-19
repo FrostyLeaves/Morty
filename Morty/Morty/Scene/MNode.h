@@ -14,6 +14,7 @@
 
 #include <vector>
 
+class MIScene;
 class MORTY_CLASS MNode : public MObject
 {
 public:
@@ -52,6 +53,7 @@ public:
 protected:
 
 	MNode* m_pParent;
+	MIScene* m_pScene;
 	std::vector<MNode*> m_vChildren;;
 
 	MString m_strName;

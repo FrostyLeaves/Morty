@@ -33,6 +33,10 @@ public:
 
 	void UpdateWorldTransform();
 
+public:
+
+	virtual bool AddNode(MNode* pNode) override;
+
 protected:
 	void WorldTransformDirty();
 

@@ -25,6 +25,7 @@ public:
 	MObjectID GetObjectID(){ return m_unObjectID; }
 	class MObjectManager* GetObjectManager();
 
+protected:
 	virtual void OnCreated() {};
 
 protected:

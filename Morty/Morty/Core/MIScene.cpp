@@ -2,6 +2,7 @@
 #include "MEngine.h"
 #include "MCamera.h"
 
+
 MIScene::MIScene()
 	: MObject()
 	, m_pRootNode(nullptr)
@@ -15,6 +16,12 @@ void MIScene::OnCreated()
 {
 	//Init Default Camera.
 	m_pDefaultCamera = m_pEngine->GetObjectManager()->CreateObject<MCamera>();
+}
+
+void MIScene::OnAddNode(MNode* pNode)
+{
+	
+
 }
 
 MIScene::~MIScene()

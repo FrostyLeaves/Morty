@@ -45,6 +45,16 @@ void M3DNode::UpdateWorldTransform()
 	}
 }
 
+bool M3DNode::AddNode(MNode* pNode)
+{
+	if (false == MNode::AddNode(pNode))
+		return false;
+
+	m_bWorldTransformDirty = true;
+
+	return true;
+}
+
 void M3DNode::SetPosition(const Vector3& pos)
 {
 	m_m4Transform.SetTranslation(pos.x, pos.y, pos.z);

@@ -26,7 +26,10 @@ public:
 
 	MCamera* GetCamera();
 
-public:
+
+	void OnAddNode(MNode* pNode);
+
+protected:
 	virtual void OnCreated() override;
 
 private:
