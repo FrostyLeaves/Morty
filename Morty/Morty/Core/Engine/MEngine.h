@@ -12,6 +12,7 @@
 
 #include <vector>
 
+class MIDevice;
 class MIRenderer;
 class MIRenderView;
 class MObjectManager;
@@ -46,7 +47,8 @@ public:
 
 	void SetMaxFPS(const int& nFPS);
 
-	MIRenderer* GetRenderer();
+	MIDevice* GetDevice() { return m_pDevice; }
+	MIRenderer* GetRenderer() { return m_pRenderer; }
 
 protected:
 
@@ -60,6 +62,7 @@ private:
 
 	MNode* m_pRootNode;
 
+	MIDevice* m_pDevice;
 	MIRenderer* m_pRenderer;
 	
 	std::vector<MIRenderView*> m_vView;

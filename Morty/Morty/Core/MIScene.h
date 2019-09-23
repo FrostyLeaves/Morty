@@ -10,9 +10,17 @@
 #define _M_MISCENE_H_
 #include "MGlobal.h"
 #include "MObject.h"
+#include "Matrix.h"
+
+#include <vector>
 
 class MNode;
 class MCamera;
+class MSkyBox;
+class MDirectionalLight;
+class MPointLight;
+class MIRenderer;
+class MIRenderView;
 class MORTY_CLASS MIScene : public MObject
 {
 public:
@@ -28,9 +36,18 @@ public:
 
 
 	void OnAddNode(MNode* pNode);
+	void OnRemoveNode(MNode* pNode);
+
+
+	virtual void Render(MIRenderer* pRenderer, MIRenderView* pRenderView);
+
+public:
+	virtual void OnCreated() override;
 
 protected:
-	virtual void OnCreated() override;
+
+	void DrawNode(MIRenderer* pRenderer, MNode* pNode);
+	void DrawSkyBox(MIRenderer* pRenderer);
 
 private:
 
@@ -38,6 +55,12 @@ private:
 	MCamera* m_pUsingCamera;
 	MCamera* m_pDefaultCamera;
 
+	MSkyBox* m_pSkyBox;
+
+	Matrix4 m_m4CameraInvProj;
+
+	std::vector<MDirectionalLight*> m_vDirectionalLight;
+	std::vector<MPointLight*> m_vPointLight;
 };
 
 

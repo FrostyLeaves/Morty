@@ -30,7 +30,7 @@ VS_OUT VS(VS_IN input)
 
     output.pos = mul(float4(input.pos, 1.0f), mul(MatWorld, MatCamProj));
     output.uv.x = input.uv.x;
-    output.uv.y = 1.0 - input.uv.y;
+    output.uv.y = input.uv.y;
 
     output.normal = mul(input.normal, MatNormal);
     output.worldPos = mul(float4(input.pos, 1.0f), MatWorld).xyz;

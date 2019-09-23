@@ -130,7 +130,7 @@ LRESULT CALLBACK MWindowsRenderView::ViewProcessFunction(HWND hwnd, UINT message
 		break;
 
 	case WM_ERASEBKGND:
-		m_pEngine->GetRenderer()->RenderNodeToView(m_pRootNode, m_pCamera, this);
+		m_pEngine->GetRenderer()->RenderSceneToView(GetScene(), this);
 		break;
 	case WM_SIZE:
 	{
@@ -153,6 +153,14 @@ LRESULT CALLBACK MWindowsRenderView::ViewProcessFunction(HWND hwnd, UINT message
 	case WM_KEYUP:
 		m_pEngine->GetInputManager()->Input(new MKeyBoardInputEvent(wParam, MKeyBoardInputEvent::KeyBoardUp));
 		break;
+
+	case WM_MOUSEMOVE:
+	{
+		int x = LOWORD(lParam);
+		int y = HIWORD(lParam);
+		m_pEngine->GetInputManager()->Input(new MMouseInputEvent(Vector2(x, y)));
+		break;
+	}
 
 	default:
 		return DefWindowProc(hwnd, message, wParam, lParam);

@@ -1,12 +1,13 @@
 ﻿#include "MModelResource.h"
-#include "MModel.h"
 
 #include "MLogManager.h"
 #include "MMesh.h"
-#include "MModel.h"
 #include "MModelResource.h"
 #include "MResourceManager.h"
 #include "MVertex.h"
+
+#include "MIDevice.h"
+#include "MEngine.h"
 
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
@@ -14,20 +15,28 @@
 
 MModelResource::MModelResource()
 : MResource()
-, m_pModelTemplate(nullptr)
+, m_vMeshes()
 {
-    m_pModelTemplate = new MModel();
 }
 
 MModelResource::~MModelResource()
 {
-	delete m_pModelTemplate;
+	for (MIMesh* pMesh : m_vMeshes)
+	{
+		pMesh->DestroyBuffer(m_pEngine->GetDevice());
+		delete pMesh;
+	}
+	m_vMeshes.clear();
 }
 
 bool MModelResource::Load(const MString& strResourcePath)
 {
-	
-	m_pModelTemplate->Clean();
+	for (MIMesh* pMesh : m_vMeshes)
+	{
+		pMesh->DestroyBuffer(m_pEngine->GetDevice());
+		delete pMesh;
+	}
+	m_vMeshes.clear();
 
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(strResourcePath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
@@ -38,24 +47,24 @@ bool MModelResource::Load(const MString& strResourcePath)
 		return false;
 	}
 
-	ProcessNode(scene->mRootNode, scene, m_pModelTemplate);
+	ProcessNode(scene->mRootNode, scene);
 
 }
 
 
-void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, MModel* pModel)
+void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene)
 {
 	for (unsigned int i = 0; i < pNode->mNumMeshes; ++i)
 	{
 		aiMesh* pMesh = pScene->mMeshes[pNode->mMeshes[i]];
 		MMesh<MVertex>* pMMesh = new MMesh<MVertex>();
 		ProcessMesh(pMesh, pScene, pMMesh);
-		m_pModelTemplate->GetMeshes().push_back(pMMesh);
+		m_vMeshes.push_back(pMMesh);
 	}
 
 	for (unsigned int i = 0; i < pNode->mNumChildren; ++i)
 	{
-		ProcessNode(pNode->mChildren[i], pScene, pModel);
+		ProcessNode(pNode->mChildren[i], pScene);
 	}
 }
 

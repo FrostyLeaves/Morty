@@ -11,8 +11,9 @@
 #include "MGlobal.h"
 #include <functional>
 
-class MNode;
-class MCamera;
+#include "Vector.h"
+
+class MIScene;
 class MEngine;
 class MORTY_CLASS MIRenderView
 {
@@ -37,18 +38,14 @@ public:
 	virtual void OnRenderBegin() {}
 	virtual void OnRenderEnd() {}
 
-	void SetRootNode(MNode* pNode);
-	MNode* GetRootNode(){ return m_pRootNode; }
+	void SetScene(MIScene* pScene) { m_pScene = pScene; }
+	MIScene* GetScene(){ return m_pScene; }
 
-	void SetCamera(MCamera* pCamera);
-	MCamera* GetCamera() { return m_pCamera; }
 
 protected:
 
 	friend class MEngine;
-
-	MNode* m_pRootNode;
-	MCamera* m_pCamera;
+	MIScene* m_pScene;
 
 	MEngine* m_pEngine;
 

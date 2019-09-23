@@ -1,5 +1,7 @@
 ﻿#include "MTexture.h"
-#include "MIRenderer.h"
+#include "MIDevice.h"
+
+#include "MLogManager.h"
 
 MTexture::MTexture()
 	:m_pImageData(nullptr)
@@ -31,10 +33,62 @@ void MTexture::SetSize(const Vector2& v2Size)
 	m_v2Size = v2Size;
 }
 
-void MTexture::GenerateBuffer(MIRenderer* pRenderer)
+void MTexture::GenerateBuffer(MIDevice* pDevice)
 {
 	if (m_pTextureBuffer)
-		pRenderer->DestroyTexture(&m_pTextureBuffer);
+		pDevice->DestroyTexture(&m_pTextureBuffer);
 
-	pRenderer->GenerateTexture(&m_pTextureBuffer, this);
+	pDevice->GenerateTexture(&m_pTextureBuffer, this);
+}
+
+void MTexture::DestroyTexture(MIDevice* pDevice)
+{
+	if (m_pTextureBuffer)
+		pDevice->DestroyTexture(&m_pTextureBuffer);
+}
+
+MTextureCube::MTextureCube()
+	: m_v2Size(0, 0)
+	, m_pTextureBuffer(nullptr)
+{
+	memset(m_vTexture, 0, sizeof(MTexture*) * 6);
+}
+
+MTextureCube::~MTextureCube()
+{
+
+}
+
+void MTextureCube::GenerateBuffer(MIDevice* pDevice)
+{
+	if (m_pTextureBuffer)
+		pDevice->DestroyTexture(&m_pTextureBuffer);
+
+	pDevice->GenerateTextureCube(&m_pTextureBuffer, m_vTexture, false);
+}
+
+void MTextureCube::DestroyTexture(MIDevice* pDevice)
+{
+	if (m_pTextureBuffer)
+		pDevice->DestroyTexture(&m_pTextureBuffer);
+}
+
+void MTextureCube::SetTextures(MTexture* vTexture[6])
+{
+	m_v2Size = vTexture[0]->GetSize();
+
+	for (int i = 0; i < 6; ++i)
+	{
+		if (m_v2Size != vTexture[i]->GetSize())
+		{
+			MLogManager::GetInstance()->Error("Can`t Use Different Size Textures.");
+			return;
+		}
+		m_vTexture[i] = vTexture[i];
+	}
+}
+
+void MTextureCube::SetTexture(MTexture* pTexture, const MECubeFace& eFace)
+{
+	m_vTexture[eFace] = pTexture;
 }

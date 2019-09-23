@@ -62,7 +62,7 @@ void MStruct::AppendVariable(const MString& strName, const MString& type)
 	}
 	else if (type == "float3x3")
 	{
-		sm.var = MVariable(Matrix3(IdentityMatrix, 3, 3));
+		sm.var = MVariable(Matrix3());
 	}
 	else if (type == "float4x4")
 	{

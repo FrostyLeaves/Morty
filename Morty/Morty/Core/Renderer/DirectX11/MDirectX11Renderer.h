@@ -20,11 +20,11 @@
 
 class MIRenderView;
 class MVertexBuffer;
+class MDirectX11Device;
 class MORTY_CLASS MDirectX11Renderer : public MIRenderer
-	, public MSingleInstance<MDirectX11Renderer>
 {
 public:
-    MDirectX11Renderer();
+    MDirectX11Renderer(MDirectX11Device* pDevice);
     virtual ~MDirectX11Renderer();
 
 public:
@@ -33,39 +33,20 @@ public:
 	virtual void RemoveOutputView(MIRenderView* pView) override;
 	virtual void OnResize(MIRenderView* pView, const int& nWidth, const int& nHeight) override;
 
-	bool InitDirectX11();
-
 	virtual bool Initialize() override;
 	virtual void Release() override;
-	virtual void RenderNodeToView(MNode* pRootNode, MCamera* pNode, MIRenderView* pView) override;
+	virtual void RenderSceneToView(MIScene* pScene, MIRenderView* pView) override;
 
 	virtual void InitDefaultResource() override;
 	virtual void ReleaseDefaultResource() override;
 
 public:
-	virtual void GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh, const bool& bModifiable = false) override;
-	virtual void DestroyBuffer(MVertexBuffer** ppVertexBuffer) override;
-	virtual void UploadBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh) override;
-
-	virtual void GenerateTexture(MTextureBuffer** ppTextureBuffer, MTexture* pTexture, const bool& bGenerateMipmap) override;
-	virtual void DestroyTexture(MTextureBuffer** ppTextureBuffer) override;
-
-	virtual void CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType) override;
-	virtual void CleanShader(MShaderBuffer** ppShaderBuffer) override;
-
-	virtual void DrawNode(MNode* pNode, const Matrix4& m4CameraInv) override;
-
-	void DrawMesh(MIMesh* pMesh, const Matrix4& m4CameraInv, const Matrix4& m4ParentMat);
+	virtual void DrawMesh(MIMesh* pMesh) override;
 
 	virtual void SetUseMaterial(MMaterial* pMaterial) override;
 	virtual void UpdateShaderParam(MShaderParam& param) override;
 
 public:
-
-	ID3D11Device* GetDevice(){ return m_pD3dDevice; }
-	ID3D11DeviceContext* GetContext(){ return m_pD3dContext; }
-
-	ID3D11InputLayout* CreateInputLayout(D3D11_INPUT_ELEMENT_DESC desc[], const int& nLength);
 
 protected:
 
@@ -84,17 +65,16 @@ protected:
 	void OnResize(RenderTarget& renderTarget, const int& nWidth, const int& nHeight);
 
 protected:
-	UINT m_n4xMsaaQuality;
-	D3D_DRIVER_TYPE m_nDriverType;
-	D3D_FEATURE_LEVEL m_nFeatureLevel;
-	ID3D11Device* m_pD3dDevice;
-	ID3D11DeviceContext* m_pD3dContext;
-
 	ID3D11SamplerState* m_pDefaultSamplerState;
+	ID3D11SamplerState* m_pAnisotropicFilterSamplerState;
+
+	ID3D11DepthStencilState* m_pDepthStencilState;
 
 	ID3D11RasterizerState* m_pRasterizerState;
 	
 	std::vector<RenderTarget> m_vRenderTargets;
+
+	MDirectX11Device* m_pDevice;
 };
 
 

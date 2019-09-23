@@ -16,7 +16,8 @@
 #include <vector>
 
 class MIRenderer;
-class MTexture;
+class MITexture;
+class MTextureCube;
 //顶点
 struct MVertex
 {
@@ -76,7 +77,6 @@ struct MShaderParam
 {
 	MString strName;
 	MVariable var;
-	bool bDirty;
 	
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	class ID3D11Buffer* pBuffer;
@@ -87,10 +87,17 @@ struct MShaderParam
 #endif
 };
 
+enum METextureType
+{
+	ETexture2D = 1,
+	ETextureCube = 2,
+};
+
 struct MShaderTextureParam
 {
 	MString strName;
-	MTexture* pTexture;
+	MITexture* pTexture;
+	METextureType eType;
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	unsigned int unBindPoint;

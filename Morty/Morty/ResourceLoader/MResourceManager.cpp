@@ -19,6 +19,7 @@ m_tResSuffixToType[vSuffixList[i]] = Type; \
 
 MResourceManager::MResourceManager()
 	: m_pResourceDB(new MIDPool<MResourceID>())
+	, m_pEngine(nullptr)
 {
 	REGISTER_RESOURCE_TYPE(MEResourceType::Model, MModelResource, "fbx", "obj", "dae" );
 	REGISTER_RESOURCE_TYPE(MEResourceType::Shader, MShaderResource, SUFFIX_VERTEX_SHADER, SUFFIX_PIXEL_SHADER );
@@ -78,5 +79,8 @@ void MResourceManager::Reload(const MString& strResourcePath)
 {
 	std::map<MString, MResource*>::iterator iter = m_tPathResources.find(strResourcePath);
 	if (iter != m_tPathResources.end())
+	{
 		iter->second->Load(strResourcePath);
+		iter->second->OnReload();
+	}
 }

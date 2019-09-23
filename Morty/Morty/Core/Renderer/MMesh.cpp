@@ -1,5 +1,5 @@
 ﻿#include "MMesh.h"
-#include "MIRenderer.h"
+#include "MIDevice.h"
 #include "MVertex.h"
 
 MIMesh::MIMesh(const bool& bModifiable/* = false*/)
@@ -42,21 +42,27 @@ void MIMesh::CreateIndices(const unsigned int& unSize, const unsigned int& unInd
 	m_unIndicesLength = unSize * unIndexSize;
 }
 
-void MIMesh::GenerateBuffer(MIRenderer* pRenderer)
+void MIMesh::GenerateBuffer(MIDevice* pDevice)
 {
 	if (m_pVertexBuffer)
-		pRenderer->DestroyBuffer(&m_pVertexBuffer);
+		pDevice->DestroyBuffer(&m_pVertexBuffer);
 
-	pRenderer->GenerateBuffer(&m_pVertexBuffer, this, m_bModifiable);
+	pDevice->GenerateBuffer(&m_pVertexBuffer, this, m_bModifiable);
 	m_bNeedGenerate = false;
 }
 
-void MIMesh::UploadBuffer(MIRenderer* pRenderer)
+void MIMesh::UploadBuffer(MIDevice* pDevice)
 {
 	if (m_bModifiable)
-		pRenderer->UploadBuffer(&m_pVertexBuffer, this);
+		pDevice->UploadBuffer(&m_pVertexBuffer, this);
 	else
-		GenerateBuffer(pRenderer);
+		GenerateBuffer(pDevice);
 
 	m_bNeedUpload = false;
+}
+
+void MIMesh::DestroyBuffer(MIDevice* pDevice)
+{
+	if (m_pVertexBuffer)
+		pDevice->DestroyBuffer(&m_pVertexBuffer);
 }

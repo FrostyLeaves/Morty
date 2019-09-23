@@ -1,7 +1,7 @@
-#include "MInputManager.h"
+﻿#include "MInputManager.h"
 
 unsigned int MMouseInputEvent::s_unMouseDownButton = 0;
-Vector2 MMouseInputEvent::m_v2MousePosition(0, 0);
+Vector2 MMouseInputEvent::s_v2MousePosition(-1, -1);
 bool MKeyBoardInputEvent::s_vKeyDownMap[256] = { 0 };
 
 MInputEvent::MInputEvent()
@@ -27,6 +27,22 @@ MMouseInputEvent::MMouseInputEvent(const MEMouseDownButton& eMouseDownButton, co
 	}
 
 	m_eInputType = eInputType;
+
+	m_v2MousePositionAddition = Vector2(0, 0);
+}
+
+MMouseInputEvent::MMouseInputEvent(const Vector2& v2MousePosition)
+	: m_eInputType(MEMouseInputType::MouseMove)
+{
+	if (s_v2MousePosition.x != -1 && s_v2MousePosition.y != -1)
+	{
+		m_v2MousePositionAddition = v2MousePosition - s_v2MousePosition;
+	}
+	else
+	{
+		m_v2MousePositionAddition = Vector2(0, 0);
+	}
+	s_v2MousePosition = v2MousePosition;
 }
 
 MKeyBoardInputEvent::MKeyBoardInputEvent(const unsigned int& unKeyIndex, const MEKeyBoardInputType& eInputType)

@@ -3,18 +3,34 @@
 #include "MShader.h"
 
 MMaterialResource::MMaterialResource()
+	: m_pVertexShader(nullptr)
+	, m_pPixelShader(nullptr)
+	, m_pVertexResource(nullptr)
+	, m_pPixelResource(nullptr)
 {
 
 }
 
 MMaterialResource::~MMaterialResource()
 {
+	m_pVertexShader = nullptr;
+	m_pPixelShader = nullptr;
 
+	if (m_pVertexResource)
+	{
+		delete m_pVertexResource;
+		m_pVertexResource = nullptr;
+	}
+	if (m_pPixelResource)
+	{
+		delete m_pPixelResource;
+		m_pPixelResource = nullptr;
+	}
 }
 
 bool MMaterialResource::Load(const MString& strResourcePath)
 {
-
+	//TODO 
 	return false;
 }
 
@@ -24,7 +40,14 @@ bool MMaterialResource::LoadVertexShader(MResource* pResource)
 	{
 		if (MShader::MEShaderType::Vertex == pShaderResource->GetShaderTemplate()->GetType())
 		{
-			m_pVertexShader = pShaderResource;
+			m_pVertexShader = pShaderResource->GetShaderTemplate();
+			if (m_pVertexResource)
+				delete m_pVertexResource;
+			m_pVertexResource = new MResourceHolder(pResource);
+			m_pVertexResource->SetResChangedCallback([this](){
+				OnReload();
+			});
+
 			return true;
 		}
 	}
@@ -38,7 +61,13 @@ bool MMaterialResource::LoadPixelShader(MResource* pResource)
 	{
 		if (MShader::MEShaderType::Pixel == pShaderResource->GetShaderTemplate()->GetType())
 		{
-			m_pPixelShader = pShaderResource;
+			m_pPixelShader = pShaderResource->GetShaderTemplate();
+			if (m_pPixelResource)
+				delete m_pPixelResource;
+			m_pPixelResource = new MResourceHolder(pResource);
+			m_pPixelResource->SetResChangedCallback([this](){
+				OnReload();
+			});
 			return true;
 		}
 	}

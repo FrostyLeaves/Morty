@@ -1,6 +1,5 @@
 ﻿#include "MSpatial.h"
 #include "MModelResource.h"
-#include "MModel.h"
 #include "MMeshInstance.h"
 
 MSpatial::MSpatial()
@@ -19,9 +18,7 @@ bool MSpatial::Load(MResource* pResource)
 	{
 		m_pResource = pResource;
 
-		MModel* pModel = pModelRes->GetModelTemplate();
-
-		for (MIMesh* pMesh : pModel->GetMeshes())
+		for (MIMesh* pMesh : pModelRes->GetMeshes())
 		{
 			MMeshInstance* pMeshIns = GetObjectManager()->CreateObject<MMeshInstance>();
 			pMeshIns->SetMesh(pMesh);

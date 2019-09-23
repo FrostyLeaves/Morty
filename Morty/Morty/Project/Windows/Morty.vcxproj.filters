@@ -111,9 +111,6 @@
     <ClInclude Include="..\..\ResourceLoader\Model\MModelResource.h">
       <Filter>ResourceLoader\Model</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Core\MModel.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Scene\MMeshInstance.h">
       <Filter>Scene</Filter>
     </ClInclude>
@@ -180,6 +177,18 @@
     <ClInclude Include="..\..\Scene\Light\MDirectionalLight.h">
       <Filter>Scene\Light</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\MIDevice.h">
+      <Filter>Core\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\DirectX11\MDirectX11Device.h">
+      <Filter>Core\Renderer\DirectX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\MSkyBox.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ResourceLoader\Texture\MTextureCubeResource.h">
+      <Filter>ResourceLoader\Texture</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -217,9 +226,6 @@
     </ClCompile>
     <ClCompile Include="..\..\ResourceLoader\Model\MModelResource.cpp">
       <Filter>ResourceLoader\Model</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Core\MModel.cpp">
-      <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Scene\MMeshInstance.cpp">
       <Filter>Scene</Filter>
@@ -289,6 +295,18 @@
     </ClCompile>
     <ClCompile Include="..\..\Scene\Light\MDirectionalLight.cpp">
       <Filter>Scene\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\MIDevice.cpp">
+      <Filter>Core\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\DirectX11\MDirectX11Device.cpp">
+      <Filter>Core\Renderer\DirectX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\MSkyBox.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ResourceLoader\Texture\MTextureCubeResource.cpp">
+      <Filter>ResourceLoader\Texture</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

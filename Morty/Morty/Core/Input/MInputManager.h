@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @File         MInputManager
  * 
  * @Created      2019-09-03 18:22:20
@@ -49,10 +49,16 @@ public:
 
 	MMouseInputEvent(const MEMouseDownButton& eMouseDownButton, const MEMouseInputType& eInputType);
 
+	MMouseInputEvent(const Vector2& v2MousePosition);
+
+	Vector2 GetMouseAddition(){ return m_v2MousePositionAddition; }
+		
 protected:
 
+	Vector2 m_v2MousePositionAddition;
+
 	static unsigned int s_unMouseDownButton;
-	static Vector2 m_v2MousePosition;
+	static Vector2 s_v2MousePosition;
 
 	MEMouseInputType m_eInputType;
 

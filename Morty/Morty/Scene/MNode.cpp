@@ -22,6 +22,31 @@ void MNode::SetVisible(const bool& bVisible)
 	m_bVisible = bVisible;
 }
 
+void MNode::SetAttachedScene(MIScene* pScene)
+{
+	//different scene.
+	if (this->m_pScene != pScene)
+	{
+		std::queue<MNode*> que;
+		que.push(this);
+
+		while (!que.empty())
+		{
+			MNode* pFrontNode = que.front();
+			que.pop();
+
+			for (MNode* pChildNode : pFrontNode->GetChildren())
+				que.push(pChildNode);
+
+			if (pFrontNode->m_pScene)
+				pFrontNode->m_pScene->OnRemoveNode(pFrontNode);
+
+			if (pFrontNode->m_pScene = pScene)
+				pScene->OnAddNode(pFrontNode);
+		}
+	}
+}
+
 bool MNode::AddNode(MNode* pNode)
 {
 	if (pNode->isHolderOf(this))
@@ -36,24 +61,8 @@ bool MNode::AddNode(MNode* pNode)
 	m_vChildren.push_back(pNode);
 	pNode->m_pParent = this;
 	
-	//different scene.
-	if (pNode->m_pScene != m_pScene)
-	{
-		std::queue<MNode*> que;
-		que.push(pNode);
-
-		while (!que.empty())
-		{
-			MNode* pFrontNode = que.front();
-			que.pop();
-
-			for (MNode* pChildNode : pFrontNode->GetChildren())
-				que.push(pChildNode);
-	
-			if (pFrontNode->m_pScene = m_pScene)
-				m_pScene->OnAddNode(pNode);
-		}
-	}
+	//Update Attached Scene.
+	pNode->SetAttachedScene(m_pScene);
 	
 	return true;
 }
@@ -92,6 +101,9 @@ bool MNode::RemoveNode(MNode* pNode)
 		{
 			pNode->m_pParent = nullptr;
 			m_vChildren.erase(iter);
+
+			pNode->SetAttachedScene(nullptr);
+
 			return true;
 		}
 	}

@@ -25,12 +25,14 @@ public:
     MMaterial();
     virtual ~MMaterial();
 
-	MShader* GetVertexShader();
-	MShader* GetPixelShader();
+	MShader* GetVertexShader(){ return m_pVertexShader; }
+	MShader* GetPixelShader() { return m_pPxielShader; }
 
 	std::vector<MShaderParam>& GetVertexShaderParams() { return m_vVertexShaderParams; }
 	std::vector<MShaderParam>& GetPixelShaderParams() { return m_vPixelShaderParams; }
 	std::vector<MShaderTextureParam>& GetPixelTextureParams(){ return m_vPixelTextureParams; }
+
+	void SetPixelTexutreParam(const MString& strName, MResource* pTexResource);
 
 	void CompileVertexShaderParams();
 	void CompilePixelShaderParams();
@@ -39,9 +41,11 @@ public:
 
 	bool Load(MResource* pResource);
 
+	void Unload();
 
 protected:
 
+	void CleanTextureParams();
 
 private:
 
@@ -49,14 +53,12 @@ private:
 	std::vector<MShaderParam> m_vPixelShaderParams;
 
 	std::vector<MShaderTextureParam> m_vPixelTextureParams;
+	std::vector<MResourceHolder*> m_vPixelTextureResHolder;
 
+	MResourceHolder* m_pMaterialResource;
+	MShader* m_pVertexShader;
+	MShader* m_pPxielShader;
 
-
-	MMaterialResource* m_pResource;
-
-
-
-	MMaterial* m_pNextPass;
 
 };
 

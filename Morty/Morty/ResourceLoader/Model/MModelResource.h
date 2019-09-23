@@ -24,18 +24,18 @@ public:
     MModelResource();
     virtual ~MModelResource();
 
-	MModel* GetModelTemplate() { return m_pModelTemplate; }
+	std::vector<MIMesh*>& GetMeshes() { return m_vMeshes; };
 
 protected:
 
 	virtual bool Load(const MString& strResourcePath) override;
 
-	void ProcessNode(aiNode* pNode, const aiScene* pScene, MModel* pModel);
+	void ProcessNode(aiNode* pNode, const aiScene* pScene);
 	void ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertex>* pMMesh);
 
 private:
     
-    MModel* m_pModelTemplate;
+	std::vector<MIMesh*> m_vMeshes;
 
 };
 

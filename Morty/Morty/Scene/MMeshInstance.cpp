@@ -3,7 +3,6 @@
 
 #include "MDirectX11Renderer.h"
 #include "MModelResource.h"
-#include "MModel.h"
 
 MMeshInstance::MMeshInstance()
 	: M3DNode()

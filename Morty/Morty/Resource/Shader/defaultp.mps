@@ -8,7 +8,14 @@ struct VS_OUT
     float3 worldPos : WORLDPOS;
 };
 
-sampler sampler0;
+sampler sampler0
+{
+    Filter = MIN_MAG_MIP_LINEAR;
+    AddressU = Wrap;
+    AddressV = Wrap;
+    AddressW = Wrap;
+};
+
 Texture2D texture0;
 
 

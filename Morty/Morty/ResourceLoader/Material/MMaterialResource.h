@@ -11,6 +11,7 @@
 #include "MGlobal.h"
 #include "MResource.h"
 
+class MShader;
 class MShaderResource;
 class MORTY_CLASS MMaterialResource : public MResource
 {
@@ -18,12 +19,11 @@ public:
     MMaterialResource();
     virtual ~MMaterialResource();
 
-	MShaderResource* GetVertexShaderResource() { return m_pVertexShader; }
-	MShaderResource* GetPixelShaderResource() { return m_pPixelShader; }
+	MShader* GetVertexShader() { return m_pVertexShader; }
+	MShader* GetPixelShader() { return m_pPixelShader; }
 
 	bool LoadVertexShader(MResource* pResource);
 	bool LoadPixelShader(MResource* pResource);
-
 
 protected:
 
@@ -32,8 +32,11 @@ protected:
 private:
 
 
-	MShaderResource* m_pVertexShader;
-	MShaderResource* m_pPixelShader;
+	MShader* m_pVertexShader;
+	MShader* m_pPixelShader;
+
+	MResourceHolder* m_pVertexResource;
+	MResourceHolder* m_pPixelResource;
 
 };
 

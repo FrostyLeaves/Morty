@@ -12,7 +12,7 @@
 #include "Vector.h"
 #include <vector>
 
-class MIRenderer;
+class MIDevice;
 class MVertexBuffer;
 struct MVertex;
 class MMaterial;
@@ -29,8 +29,9 @@ public:
 	virtual bool GetNeedUpload() { return m_bNeedUpload; }
 	virtual void SetNeedUpload(){ m_bNeedUpload = true; }
 
-	virtual void GenerateBuffer(MIRenderer* pRenderer);
-	virtual void UploadBuffer(MIRenderer* pRenderer);
+	virtual void GenerateBuffer(MIDevice* pDevice);
+	virtual void UploadBuffer(MIDevice* pDevice);
+	virtual void DestroyBuffer(MIDevice* pDevice);
 	virtual unsigned int GetVerticesLength() { return m_unVerticesLength; }
 	virtual unsigned int GetIndicesLength() { return m_unIndicesLength; }
 	void* GetVertices() { return m_vVertices; }

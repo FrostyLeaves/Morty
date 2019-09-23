@@ -4,6 +4,7 @@
 
 #include "MLogManager.h"
 #if (RENDER_GRAPHICS == MORTY_DIRECTX_11)
+#include "MDirectX11Device.h"
 #include "MDirectX11Renderer.h"
 #endif
 
@@ -23,6 +24,7 @@ MEngine::MEngine()
 	, m_pResourceManager(nullptr)
 	, m_pInputManager(nullptr)
 	, m_pRootNode(nullptr)
+	, m_pDevice(nullptr)
 	, m_pRenderer(nullptr)
 	, m_cTickInfo(120)
 {
@@ -38,7 +40,11 @@ bool MEngine::Initialize()
 	if (nullptr == m_pRenderer)
 	{
 #if (RENDER_GRAPHICS == MORTY_DIRECTX_11)
-		MDirectX11Renderer* pDx11Renderer = new MDirectX11Renderer();
+		MDirectX11Device* pDevice = new MDirectX11Device();
+		pDevice->Initialize();
+		m_pDevice = pDevice;
+
+		MDirectX11Renderer* pDx11Renderer = new MDirectX11Renderer(pDevice);
 		m_pRenderer = pDx11Renderer;
 #elif (RENDER_GRAPHICS == MORTY_OPENGLES)
 		m_pRenderer = nullptr;
@@ -58,6 +64,7 @@ bool MEngine::Initialize()
 	m_pObjectManager->SetOwnerEngine(this);
 
 	m_pResourceManager = new MResourceManager();
+	m_pResourceManager->SetOwnerEngine(this);
 
 	m_pInputManager = new MInputManager();
 
@@ -109,6 +116,13 @@ void MEngine::Release()
 		m_pRenderer = nullptr;
 	}
 
+	if (m_pDevice)
+	{
+		m_pDevice->Release();
+		delete m_pDevice;
+		m_pDevice = nullptr;
+	}
+
 	for (auto pView : m_vView)
 	{
 #if (RENDER_GRAPHICS == MORTY_DIRECTX_11)
@@ -150,11 +164,6 @@ void MEngine::SetMaxFPS(const int& nFPS)
 	}
 }
 
-MIRenderer* MEngine::GetRenderer()
-{
-	return m_pRenderer;
-}
-
 bool MEngine::MainLoop()
 {
 	long long currentTime = MTimer::GetCurTime();
@@ -176,7 +185,7 @@ bool MEngine::MainLoop()
 			MIRenderView* pView = (*iter);
 			if (pView->MainLoop())
 			{
-				m_pRenderer->RenderNodeToView(m_pRootNode, pView->GetCamera(), pView);
+				m_pRenderer->RenderSceneToView(pView->GetScene(), pView);
 				++iter;
 			}
 

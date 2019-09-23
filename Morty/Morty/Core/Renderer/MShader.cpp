@@ -1,5 +1,5 @@
 ﻿#include "MShader.h"
-#include "MIRenderer.h"
+#include "MIDevice.h"
 #include "MVertex.h"
 
 #include <vector>
@@ -9,9 +9,14 @@ MShader::MShader()
 	m_pShaderBuffer = nullptr;
 }
 
-void MShader::CompileShader(MIRenderer* pRenderer)
+void MShader::CompileShader(MIDevice* pDevice)
 {
-	pRenderer->CompileShader(&m_pShaderBuffer, m_strShaderPath, m_eShaderType);
+	pDevice->CompileShader(&m_pShaderBuffer, m_strShaderPath, m_eShaderType);
+}
+
+void MShader::CleanShader(MIDevice* pDevice)
+{
+	pDevice->CleanShader(&m_pShaderBuffer);
 }
 
 MShader::~MShader()

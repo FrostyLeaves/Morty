@@ -15,6 +15,7 @@
 
 #include <map>
 
+class MEngine;
 class MIRenderer;
 class MResource;
 class MResourceLoader;
@@ -34,6 +35,8 @@ public:
 	MResourceManager();
 	virtual ~MResourceManager();
 
+	void SetOwnerEngine(MEngine* pEngine) { m_pEngine = pEngine; }
+
 	template<typename Resource_TYPE>
 	Resource_TYPE* CreateResource()
 	{
@@ -45,7 +48,7 @@ public:
 		}
 
 		pResource->m_unResourceID = m_pResourceDB->GetNewID();
-		pResource->m_pResourceManager = this;
+		pResource->m_pEngine = m_pEngine;
 
 		m_tIDResources[pResource->m_unResourceID] = pResource;
 
@@ -66,10 +69,9 @@ private:
 	std::map<MString, MResource*> m_tPathResources;
 
 	MIDPool<MResourceID>* m_pResourceDB;
-
-
 	std::map<MString, MEResourceType> m_tResSuffixToType;
 
+	MEngine* m_pEngine;
 };
 
 

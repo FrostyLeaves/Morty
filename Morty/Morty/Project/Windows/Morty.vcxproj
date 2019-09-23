@@ -112,8 +112,11 @@ copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\Mor
     <ClInclude Include="..\..\Core\Input\MInputManager.h" />
     <ClInclude Include="..\..\Core\MIScene.h" />
     <ClInclude Include="..\..\Core\MMaterial.h" />
+    <ClInclude Include="..\..\Core\MSkyBox.h" />
+    <ClInclude Include="..\..\Core\Renderer\DirectX11\MDirectX11Device.h" />
     <ClInclude Include="..\..\Core\Renderer\DirectX11\MDirectX11Renderer.h" />
     <ClInclude Include="..\..\Core\Renderer\DirectX11\MWindowsRenderView.h" />
+    <ClInclude Include="..\..\Core\Renderer\MIDevice.h" />
     <ClInclude Include="..\..\Core\Renderer\MIRenderer.h" />
     <ClInclude Include="..\..\Core\Renderer\MMesh.h" />
     <ClInclude Include="..\..\Core\Renderer\MShader.h" />
@@ -124,6 +127,7 @@ copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\Mor
     <ClInclude Include="..\..\ResourceLoader\MResourceManager.h" />
     <ClInclude Include="..\..\ResourceLoader\Shader\MShaderResource.h" />
     <ClInclude Include="..\..\ResourceLoader\Texture\MTextureResource.h" />
+    <ClInclude Include="..\..\ResourceLoader\Texture\MTextureCubeResource.h" />
     <ClInclude Include="..\..\Scene\Light\MDirectionalLight.h" />
     <ClInclude Include="..\..\Scene\Light\MILight.h" />
     <ClInclude Include="..\..\Scene\Light\MPointLight.h" />
@@ -139,7 +143,6 @@ copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\Mor
     <ClInclude Include="../../Utility\MSingleInstance.h" />
     <ClInclude Include="../../Utility\MString.h" />
     <ClInclude Include="../../Utility\Timer\MTimer.h" />
-    <ClInclude Include="..\..\Core\MModel.h" />
     <ClInclude Include="..\..\ResourceLoader\Model\MModelResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MResourceLoader.h" />
@@ -162,8 +165,11 @@ copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\Mor
     <ClCompile Include="..\..\Core\Input\MInputManager.cpp" />
     <ClCompile Include="..\..\Core\MIScene.cpp" />
     <ClCompile Include="..\..\Core\MMaterial.cpp" />
+    <ClCompile Include="..\..\Core\MSkyBox.cpp" />
+    <ClCompile Include="..\..\Core\Renderer\DirectX11\MDirectX11Device.cpp" />
     <ClCompile Include="..\..\Core\Renderer\DirectX11\MDirectX11Renderer.cpp" />
     <ClCompile Include="..\..\Core\Renderer\DirectX11\MWindowsRenderView.cpp" />
+    <ClCompile Include="..\..\Core\Renderer\MIDevice.cpp" />
     <ClCompile Include="..\..\Core\Renderer\MIRenderer.cpp" />
     <ClCompile Include="..\..\Core\Renderer\MMesh.cpp" />
     <ClCompile Include="..\..\Core\Renderer\MShader.cpp" />
@@ -174,6 +180,7 @@ copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\Mor
     <ClCompile Include="..\..\ResourceLoader\MResourceManager.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Shader\MShaderResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Texture\MTextureResource.cpp" />
+    <ClCompile Include="..\..\ResourceLoader\Texture\MTextureCubeResource.cpp" />
     <ClCompile Include="..\..\Scene\Light\MDirectionalLight.cpp" />
     <ClCompile Include="..\..\Scene\Light\MILight.cpp" />
     <ClCompile Include="..\..\Scene\Light\MPointLight.cpp" />
@@ -187,7 +194,6 @@ copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\Mor
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="../../Utility\Timer\MTimer.cpp" />
-    <ClCompile Include="..\..\Core\MModel.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Model\MModelResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MResource.cpp" />
     <ClCompile Include="..\..\Scene\MSpatial.cpp" />

@@ -1,4 +1,4 @@
-/**
+﻿/**
 * @File         MSingleInstance
 *
 * @Created      2019-05-12 22:09:30
@@ -18,6 +18,9 @@ public:
 		static T inst;
 		return &inst;
 	}
+
+	virtual bool Initialize() { return true; }
+	virtual void Release() {}
 };
 
 

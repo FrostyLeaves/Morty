@@ -13,7 +13,7 @@
 #include "MVertex.h"
 #include "MVariable.h"
 
-class MIRenderer;
+class MIDevice;
 class MShaderBuffer;
 class MORTY_CLASS MShader
 {
@@ -28,7 +28,8 @@ public:
     MShader();
     virtual ~MShader();
 
-	void CompileShader(MIRenderer* pRenderer);
+	void CompileShader(MIDevice* pDevice);
+	void CleanShader(MIDevice* pDevice);
 	MShaderBuffer* GetBuffer() { return m_pShaderBuffer; }
 	const MEShaderType GetType() const { return m_eShaderType; }
 

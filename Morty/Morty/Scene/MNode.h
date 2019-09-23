@@ -52,6 +52,11 @@ public:
 
 protected:
 
+	friend class MIScene;
+	void SetAttachedScene(MIScene* pScene);
+
+protected:
+
 	MNode* m_pParent;
 	MIScene* m_pScene;
 	std::vector<MNode*> m_vChildren;;

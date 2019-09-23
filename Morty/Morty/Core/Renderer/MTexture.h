@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @File         MTexture
  * 
  * @Created      2019-09-11 16:12:31
@@ -11,9 +11,25 @@
 #include "MGlobal.h"
 #include "Vector.h"
 
-class MIRenderer;
+//TODO : Dynamic Update Texture and TextureCube.
+
+class MIDevice;
 class MTextureBuffer;
-class MORTY_CLASS MTexture
+class MORTY_CLASS MITexture
+{
+public:
+	MITexture(){}
+	virtual ~MITexture(){}
+
+public:
+
+	virtual Vector2 GetSize() = 0;
+	virtual MTextureBuffer* GetBuffer() = 0;
+	virtual void GenerateBuffer(MIDevice* pDevice) = 0;
+	virtual void DestroyTexture(MIDevice* pDevice) = 0;
+};
+
+class MORTY_CLASS MTexture : public MITexture
 {
 public:
     MTexture();
@@ -22,13 +38,14 @@ public:
 public:
 
 	void SetSize(const Vector2& v2Size);
-	Vector2 GetSize() { return m_v2Size; }
+	virtual Vector2 GetSize() override { return m_v2Size; }
 
 	unsigned char* GetImageData(){ return m_pImageData; }
 
-	virtual void GenerateBuffer(MIRenderer* pRenderer);
+	virtual void GenerateBuffer(MIDevice* pDevice) override;
+	virtual void DestroyTexture(MIDevice* pDevice) override;
 
-	MTextureBuffer* GetBuffer(){ return m_pTextureBuffer; }
+	virtual MTextureBuffer* GetBuffer() override { return m_pTextureBuffer; }
 
 private:
 
@@ -39,6 +56,40 @@ private:
 
 	MTextureBuffer* m_pTextureBuffer;
 
+};
+
+class MORTY_CLASS MTextureCube : public MITexture
+{
+public:
+	MTextureCube();
+	virtual ~MTextureCube();
+
+	enum MECubeFace
+	{
+		ERight = 0,
+		ELeft = 1,
+		ETop = 2,
+		EBottom = 3,
+		EFront = 4,
+		EBack = 5,
+	};
+
+public:
+
+	virtual Vector2 GetSize() override { return m_v2Size; }
+
+	virtual void GenerateBuffer(MIDevice* pDevice) override;
+	virtual void DestroyTexture(MIDevice* pDevice) override;
+
+	virtual MTextureBuffer* GetBuffer() override { return m_pTextureBuffer; }
+
+	void SetTextures(MTexture* vTexture[6]);
+	void SetTexture(MTexture* pTexture, const MECubeFace& eFace);
+
+private:
+	Vector2 m_v2Size;
+	MTexture* m_vTexture[6];
+	MTextureBuffer* m_pTextureBuffer;
 };
 
 
