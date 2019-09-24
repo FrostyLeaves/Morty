@@ -17,6 +17,7 @@ MTextureCubeResource::MTextureCubeResource()
 
 MTextureCubeResource::~MTextureCubeResource()
 {
+	m_pTextureCube->DestroyTexture(m_pEngine->GetDevice());
 	delete m_pTextureCube;
 	m_pTextureCube = nullptr;
 

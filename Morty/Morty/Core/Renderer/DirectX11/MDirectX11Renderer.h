@@ -18,6 +18,7 @@
 
 #include <vector>
 
+class MIViewport;
 class MIRenderView;
 class MVertexBuffer;
 class MDirectX11Device;
@@ -29,13 +30,15 @@ public:
 
 public:
 
+public:
+
 	virtual void AddOutputView(MIRenderView* pView) override;
 	virtual void RemoveOutputView(MIRenderView* pView) override;
 	virtual void OnResize(MIRenderView* pView, const int& nWidth, const int& nHeight) override;
 
 	virtual bool Initialize() override;
 	virtual void Release() override;
-	virtual void RenderSceneToView(MIScene* pScene, MIRenderView* pView) override;
+	virtual void RenderViewportToView(MIViewport* pViewport, MIRenderView* pView) override;
 
 	virtual void InitDefaultResource() override;
 	virtual void ReleaseDefaultResource() override;
@@ -66,11 +69,13 @@ protected:
 
 protected:
 	ID3D11SamplerState* m_pDefaultSamplerState;
-	ID3D11SamplerState* m_pAnisotropicFilterSamplerState;
+//	ID3D11SamplerState* m_pAnisotropicFilterSamplerState;
 
 	ID3D11DepthStencilState* m_pDepthStencilState;
 
-	ID3D11RasterizerState* m_pRasterizerState;
+	ID3D11RasterizerState* m_pRasterizerState_Wireframe_CullNone;
+	ID3D11RasterizerState* m_pRasterizerState_Solid_CullNone;
+	ID3D11RasterizerState* m_pRasterizerState_Solid_CullBack;
 	
 	std::vector<RenderTarget> m_vRenderTargets;
 

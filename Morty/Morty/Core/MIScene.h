@@ -21,6 +21,7 @@ class MDirectionalLight;
 class MPointLight;
 class MIRenderer;
 class MIRenderView;
+class MIViewport;
 class MORTY_CLASS MIScene : public MObject
 {
 public:
@@ -32,35 +33,31 @@ public:
 	virtual void SetRootNode(MNode* pRootNode);
 	MNode* GetRootNode() { return m_pRootNode; }
 
-	MCamera* GetCamera();
-
-
 	void OnAddNode(MNode* pNode);
 	void OnRemoveNode(MNode* pNode);
 
 
-	virtual void Render(MIRenderer* pRenderer, MIRenderView* pRenderView);
-
 public:
+	virtual void Render(MIRenderer* pRenderer, MIViewport* pViewport);
+
 	virtual void OnCreated() override;
+
+	void SetAttachedViewport(MIViewport* pViewport);
 
 protected:
 
-	void DrawNode(MIRenderer* pRenderer, MNode* pNode);
-	void DrawSkyBox(MIRenderer* pRenderer);
+	void DrawNode(MIRenderer* pRenderer, MIViewport* pViewport, MNode* pNode);
+	void DrawSkyBox(MIRenderer* pRenderer, MIViewport* pViewport);
 
 private:
 
 	MNode* m_pRootNode;
-	MCamera* m_pUsingCamera;
-	MCamera* m_pDefaultCamera;
-
 	MSkyBox* m_pSkyBox;
-
-	Matrix4 m_m4CameraInvProj;
 
 	std::vector<MDirectionalLight*> m_vDirectionalLight;
 	std::vector<MPointLight*> m_vPointLight;
+
+	MIViewport* m_pAttachedViewport;
 };
 
 

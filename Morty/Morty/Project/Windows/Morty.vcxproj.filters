@@ -189,6 +189,9 @@
     <ClInclude Include="..\..\ResourceLoader\Texture\MTextureCubeResource.h">
       <Filter>ResourceLoader\Texture</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\MIViewport.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -307,6 +310,9 @@
     </ClCompile>
     <ClCompile Include="..\..\ResourceLoader\Texture\MTextureCubeResource.cpp">
       <Filter>ResourceLoader\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\MIViewport.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

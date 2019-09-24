@@ -1,7 +1,7 @@
 ﻿// MortyDemo.cpp : 瀹氫箟鎺у埗鍙板簲鐢ㄧ▼搴忕殑鍏ュ彛鐐广€?
 //
 
-//#include <vld.h>
+#include "vld.h"
 
 #include "stdafx.h"
 #include "MEngine.h"
@@ -23,6 +23,7 @@
 #include "MIRenderView.h"
 #include "MCamera.h"
 #include "MIScene.h"
+#include "MIViewport.h"
 
 
 #include "Quaternion.h"
@@ -178,7 +179,7 @@ int main(int argc, char* argv[])
 	MIScene* pScene = engine.GetObjectManager()->CreateObject<MIScene>();
 	pScene->SetRootNode(pRootNode);
 
-	engine.CreateView()->SetScene(pScene);
+	engine.CreateView()->GetViewport()->SetScene(pScene);
 
 
 	MInputListener* pListener = new MInputListener();

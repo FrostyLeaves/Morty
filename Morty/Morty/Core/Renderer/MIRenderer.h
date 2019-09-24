@@ -25,7 +25,7 @@ class MMaterial;
 class MCamera;
 struct MShaderParam;
 class MTexture;
-class MIScene;
+class MIViewport;
 class MORTY_CLASS MIRenderer
 {
 public:
@@ -33,10 +33,24 @@ public:
 	MIRenderer();;
 	virtual ~MIRenderer(){};
 
+public:
+
+	enum MERasterizerType
+	{
+		EWireframe = 1,
+		ESolid = 2,
+		ECullBack = 4,
+		ECullNone = 8,
+	};
+
+	virtual void SetRasterizerType(const MERasterizerType& eType) { m_eRasterizerType = eType; }
+
+public:
+
 	virtual bool Initialize() = 0;
 	virtual void Release() = 0;
 
-	virtual void RenderSceneToView(MIScene* pScene, MIRenderView* pView) = 0;
+	virtual void RenderViewportToView(MIViewport* pViewport, MIRenderView* pView) = 0;
 
 	virtual void AddOutputView(MIRenderView* pView) = 0;
 	virtual void RemoveOutputView(MIRenderView* pView) = 0;
@@ -56,6 +70,8 @@ public:
 
 protected:
 	MTexture* m_pDefaultTexture;
+
+	unsigned int m_eRasterizerType;
 };
 
 

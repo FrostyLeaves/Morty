@@ -41,6 +41,8 @@ public:
 	void SetName(const MString& strName) { m_strName = strName; }
 	MString GetName(){ return m_strName; }
 
+	MIScene* GetScene(){ return m_pScene; }
+
 	//Is Holder of pNode?
 	bool isHolderOf(MNode* pNode);
 
@@ -49,6 +51,23 @@ public:
 
 	virtual void OnTick(const float& fDelta);
 	virtual void Render();
+
+public:
+
+	template <class T>
+	T* FindFirstChildByType()
+	{
+		for (MNode* pNode : m_vChildren)
+		{
+			if (dynamic_cast<T*>(pNode))
+				return dynamic_cast<T*>(pNode);
+
+			if (T* pFindResult = pNode->FindFirstChildByType<T>())
+				return pFindResult;
+		}
+
+		return nullptr;
+	}
 
 protected:
 

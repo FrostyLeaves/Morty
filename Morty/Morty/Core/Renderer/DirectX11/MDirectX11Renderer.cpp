@@ -11,18 +11,21 @@
 #include "MShader.h"
 #include "MMaterial.h"
 #include "MMesh.h"
-#include "MIScene.h"
+#include "MIViewport.h"
 
 const int DEFAULT_WIDTH = 640;
 const int DEFAULT_HEIGHT = 480;
 
-const bool bEnable4xMsaa = false;
+const bool bEnable4xMsaa = true;
 
 MDirectX11Renderer::MDirectX11Renderer(MDirectX11Device* pDevice)
 	: m_pDevice(pDevice)
 	, m_pDefaultSamplerState(nullptr)
-	, m_pAnisotropicFilterSamplerState(nullptr)
+//	, m_pAnisotropicFilterSamplerState(nullptr)
 	, m_pDepthStencilState(nullptr)
+	, m_pRasterizerState_Wireframe_CullNone(nullptr)
+	, m_pRasterizerState_Solid_CullNone(nullptr)
+	, m_pRasterizerState_Solid_CullBack(nullptr)
 {
 
 }
@@ -72,26 +75,26 @@ bool MDirectX11Renderer::Initialize()
 	ZeroMemory(&mRasterizer, sizeof(D3D11_RASTERIZER_DESC));
 	//实心模式，WIREFRAME是线框模式
 	mRasterizer.FillMode = D3D11_FILL_SOLID;
-	mRasterizer.CullMode = D3D11_CULL_NONE;
+	mRasterizer.CullMode = D3D11_CULL_BACK;
 	mRasterizer.FrontCounterClockwise = false;
 	mRasterizer.DepthClipEnable = true;//这个裁剪指的是平截头裁剪；
 
-	//TODO 如果在一个程序中，需要多种光栅化状态块来回切换，那么在初始化时就创建好，而不是切换的时候创建。
-
-	m_pRasterizerState = nullptr;
-	HRESULT hr = m_pDevice->m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_pRasterizerState);
+	HRESULT hr = m_pDevice->m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_pRasterizerState_Solid_CullBack);
 	if (FAILED(hr))
 	{
 		MLogManager::GetInstance()->Error("Failed to create RasterizerState! Initialize return false.");
-		if (m_pRasterizerState)
+		if (m_pRasterizerState_Solid_CullNone)
 		{
-			m_pRasterizerState->Release();
-			m_pRasterizerState = nullptr;
+			m_pRasterizerState_Solid_CullNone->Release();
+			m_pRasterizerState_Solid_CullNone = nullptr;
 		}
 		return false;
 	}
 
-	m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState);
+	mRasterizer.CullMode = D3D11_CULL_NONE;
+	m_pDevice->m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_pRasterizerState_Solid_CullNone);
+	mRasterizer.FillMode = D3D11_FILL_WIREFRAME;
+	m_pDevice->m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_pRasterizerState_Wireframe_CullNone);
 
 	//三角形解析顶点
 	m_pDevice->m_pD3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -109,8 +112,8 @@ bool MDirectX11Renderer::Initialize()
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	hr = m_pDevice->m_pD3dDevice->CreateSamplerState(&sampDesc, &m_pDefaultSamplerState);
 
-	sampDesc.Filter = D3D11_FILTER_ANISOTROPIC;
-	hr = m_pDevice->m_pD3dDevice->CreateSamplerState(&sampDesc, &m_pAnisotropicFilterSamplerState);
+// 	sampDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+// 	hr = m_pDevice->m_pD3dDevice->CreateSamplerState(&sampDesc, &m_pAnisotropicFilterSamplerState);
 
 
 	//深度状态
@@ -144,14 +147,36 @@ void MDirectX11Renderer::Release()
 		target.pDepthStencilView->Release();
 	}
 
-	if (m_pRasterizerState)
-		m_pRasterizerState->Release();
-
+	if (m_pRasterizerState_Solid_CullBack)
+	{
+		m_pRasterizerState_Solid_CullBack->Release();
+		m_pRasterizerState_Solid_CullBack = nullptr;
+	}
+	if (m_pRasterizerState_Solid_CullNone)
+	{
+		m_pRasterizerState_Solid_CullNone->Release();
+		m_pRasterizerState_Solid_CullNone = nullptr;
+	}
+	if (m_pRasterizerState_Wireframe_CullNone)
+	{
+		m_pRasterizerState_Wireframe_CullNone->Release();
+		m_pRasterizerState_Wireframe_CullNone = nullptr;
+	}
+	if (m_pDepthStencilState)
+	{
+		m_pDepthStencilState->Release();
+		m_pDepthStencilState = nullptr;
+	}
 	if (m_pDefaultSamplerState)
+	{
 		m_pDefaultSamplerState->Release();
+		m_pDefaultSamplerState = nullptr;
+	}
+
+	ReleaseDefaultResource();
 }
 
-void MDirectX11Renderer::RenderSceneToView(MIScene* pScene, MIRenderView* pView)
+void MDirectX11Renderer::RenderViewportToView(MIViewport* pViewport, MIRenderView* pView)
 {
 	if (!m_pDevice->m_pD3dContext)
 		return;
@@ -177,12 +202,20 @@ void MDirectX11Renderer::RenderSceneToView(MIScene* pScene, MIRenderView* pView)
 	m_pDevice->m_pD3dContext->OMSetRenderTargets(1, &target.pTargetView, target.pDepthStencilView);
 	m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_pDepthStencilState, 0);
 
-	pView->OnRenderBegin();
 
+	if (m_eRasterizerType & MERasterizerType::EWireframe)
+		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Wireframe_CullNone);
+	else if (m_eRasterizerType & MERasterizerType::ECullNone)
+		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullNone);
+	else
+		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullBack);
 	
-	if (MIScene* pScene = pView->GetScene())
+
+	pView->OnRenderBegin();
+	
+	if (MIViewport* pViewport= pView->GetViewport())
 	{
-		pScene->Render(this, pView);
+		pViewport->Render(this);
 	}
 
 
@@ -480,7 +513,7 @@ void MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial)
 
 	for (MShaderSampleParam& param : pMaterial->GetPixelShader()->GetBuffer()->m_vSampleParamsTemplate)
 	{
-		m_pDevice->m_pD3dContext->PSSetSamplers(param.unBindPoint, param.unBindCount, &m_pAnisotropicFilterSamplerState);
+		m_pDevice->m_pD3dContext->PSSetSamplers(param.unBindPoint, param.unBindCount, &m_pDefaultSamplerState);
 	}
 }
 

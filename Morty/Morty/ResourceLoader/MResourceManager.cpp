@@ -33,8 +33,15 @@ MResourceManager::~MResourceManager()
 	{
 		delete iter->second;
 	}
-
 	m_tResourceLoader.clear();
+	for (std::map<MResourceID, MResource*>::iterator iter = m_tIDResources.begin(); iter != m_tIDResources.end(); ++iter)
+	{
+		delete iter->second;
+	}
+	m_tIDResources.clear();
+	m_tPathResources.clear();
+
+	delete m_pResourceDB;
 }
 
 MResourceManager::MEResourceType MResourceManager::GetResourceType(const MString& strResourcePath)

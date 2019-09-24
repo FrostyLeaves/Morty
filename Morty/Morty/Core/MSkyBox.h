@@ -11,6 +11,8 @@
 #include "MGlobal.h"
 #include "MObject.h"
 
+#include "MMesh.h"
+
 class MResource;
 class MResourceHolder;
 class MTextureCubeResource;
@@ -33,7 +35,7 @@ public:
 public:
 
 private:
-
+	MMesh<Vector3>* m_pBoxMesh;
 	MMeshInstance* m_pMeshInstance;
 
 	MTextureCube* m_pTextureCube;

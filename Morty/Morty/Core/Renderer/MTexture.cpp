@@ -56,7 +56,6 @@ MTextureCube::MTextureCube()
 
 MTextureCube::~MTextureCube()
 {
-
 }
 
 void MTextureCube::GenerateBuffer(MIDevice* pDevice)

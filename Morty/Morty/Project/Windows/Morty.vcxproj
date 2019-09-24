@@ -111,6 +111,7 @@ copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\Mor
     <ClInclude Include="../../Core\MObject.h" />
     <ClInclude Include="..\..\Core\Input\MInputManager.h" />
     <ClInclude Include="..\..\Core\MIScene.h" />
+    <ClInclude Include="..\..\Core\MIViewport.h" />
     <ClInclude Include="..\..\Core\MMaterial.h" />
     <ClInclude Include="..\..\Core\MSkyBox.h" />
     <ClInclude Include="..\..\Core\Renderer\DirectX11\MDirectX11Device.h" />
@@ -164,6 +165,7 @@ copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\Mor
     <ClCompile Include="../../Morty.cpp" />
     <ClCompile Include="..\..\Core\Input\MInputManager.cpp" />
     <ClCompile Include="..\..\Core\MIScene.cpp" />
+    <ClCompile Include="..\..\Core\MIViewport.cpp" />
     <ClCompile Include="..\..\Core\MMaterial.cpp" />
     <ClCompile Include="..\..\Core\MSkyBox.cpp" />
     <ClCompile Include="..\..\Core\Renderer\DirectX11\MDirectX11Device.cpp" />

@@ -9,9 +9,11 @@ MResource::MResource()
 
 MResource::~MResource()
 {
-
+	for (MResourceHolder* pHolder : m_vHolder)
+	{
+		pHolder->m_pResource = nullptr;
+	}
 }
-
 
 MString MResource::GetSuffix(const MString& strPath)
 {

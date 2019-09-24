@@ -11,24 +11,27 @@
 #include "MMaterial.h"
 #include "MIRenderer.h"
 #include "MIRenderView.h"
+#include "MIViewport.h"
 
 MIScene::MIScene()
 	: MObject()
 	, m_pRootNode(nullptr)
-	, m_pUsingCamera(nullptr)
-	, m_pDefaultCamera(nullptr)
 	, m_pSkyBox(nullptr)
-	, m_m4CameraInvProj(IdentityMatrix)
+	, m_pAttachedViewport(nullptr)
 {
 	
 }
 
 void MIScene::OnCreated()
 {
-	//Init Default Camera.
-	m_pDefaultCamera = m_pEngine->GetObjectManager()->CreateObject<MCamera>();
+	MObject::OnCreated();
 
 	m_pSkyBox = m_pEngine->GetObjectManager()->CreateObject<MSkyBox>();
+}
+
+void MIScene::SetAttachedViewport(MIViewport* pViewport)
+{
+	m_pAttachedViewport = pViewport;
 }
 
 void MIScene::OnAddNode(MNode* pNode)
@@ -38,12 +41,6 @@ void MIScene::OnAddNode(MNode* pNode)
 
 	else if (MPointLight* pPotLight = dynamic_cast<MPointLight*>(pNode))
 		m_vPointLight.push_back(pPotLight);
-
-	else if (MCamera* pCamera = dynamic_cast<MCamera*>(pNode))
-	{
-		if (nullptr == m_pUsingCamera)
-			m_pUsingCamera = pCamera;
-	}
 }
 
 void MIScene::OnRemoveNode(MNode* pNode)
@@ -63,7 +60,7 @@ void MIScene::OnRemoveNode(MNode* pNode)
 	}
 }
 
-void MIScene::DrawNode(MIRenderer* pRenderer, MNode* pNode)
+void MIScene::DrawNode(MIRenderer* pRenderer, MIViewport* pViewport, MNode* pNode)
 {
 	if (nullptr == pNode)
 		return;
@@ -89,7 +86,7 @@ void MIScene::DrawNode(MIRenderer* pRenderer, MNode* pNode)
 
 				MStruct* pSpaceStruct = param.var.GetByType<MStruct>();
 				pSpaceStruct->SetMember("MatWorld", worldTrans.Transposed());
-				pSpaceStruct->SetMember("MatCamProj", m_m4CameraInvProj.Transposed());
+				pSpaceStruct->SetMember("MatCamProj", pViewport->GetCameraInverseProjection().Transposed());
 
 				pSpaceStruct->SetMember("MatNormal", matNormal);
 				break;
@@ -106,7 +103,7 @@ void MIScene::DrawNode(MIRenderer* pRenderer, MNode* pNode)
 				param.var.GetByType<MStruct>()->SetMember("DiffuseLightPos", Vector3(100, 100, 200));
 				param.var.GetByType<MStruct>()->SetMember("DiffuseLightColor", Vector3(1, 1, 1));
 
-				param.var.GetByType<MStruct>()->SetMember("CameraWorldPos", GetCamera()->GetPosition());
+				param.var.GetByType<MStruct>()->SetMember("CameraWorldPos", pViewport->GetCamera()->GetPosition());
 				break;
 			}
 		}
@@ -116,10 +113,10 @@ void MIScene::DrawNode(MIRenderer* pRenderer, MNode* pNode)
 	}
 
 	for (MNode* pChild : pNode->GetChildren())
-		DrawNode(pRenderer, pChild);
+		DrawNode(pRenderer, pViewport, pChild);
 }
 
-void MIScene::DrawSkyBox(MIRenderer* pRenderer)
+void MIScene::DrawSkyBox(MIRenderer* pRenderer, MIViewport* pViewport)
 {
 	if (m_pSkyBox)
 	{
@@ -133,10 +130,10 @@ void MIScene::DrawSkyBox(MIRenderer* pRenderer)
 				{
 					MStruct* pSpaceStruct = param.var.GetByType<MStruct>();
 					Matrix4 mat(IdentityMatrix);
-					Vector3 camPos = GetCamera()->GetPosition();
+					Vector3 camPos = pViewport->GetCamera()->GetPosition();
 					mat.SetTranslation(camPos.x, camPos.y, camPos.z);
 					pSpaceStruct->SetMember("MatWorld", mat.Transposed());
-					pSpaceStruct->SetMember("MatCamProj", m_m4CameraInvProj.Transposed());
+					pSpaceStruct->SetMember("MatCamProj", pViewport->GetCameraInverseProjection().Transposed());
 					break;
 				}
 			}
@@ -147,18 +144,11 @@ void MIScene::DrawSkyBox(MIRenderer* pRenderer)
 	}
 }
 
-void MIScene::Render(MIRenderer* pRenderer, MIRenderView* pRenderView)
+void MIScene::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 {
-	//Get Camera Inverse.
-	MCamera* pCamera = GetCamera();
-	Matrix4 projMat = Matrix4::MatrixPerspectiveFovLH(45, (float)pRenderView->GetViewWidth() / pRenderView->GetViewHeight(), pCamera->GetZNear(), pCamera->GetZFar());
-	m_m4CameraInvProj = GetCamera()->GetWorldTransform().Inverse() * projMat;
-
 	//Draw
-	DrawNode(pRenderer, m_pRootNode);
-
-
-	DrawSkyBox(pRenderer);
+	DrawNode(pRenderer, pViewport, m_pRootNode);
+	DrawSkyBox(pRenderer, pViewport);
 }
 
 MIScene::~MIScene()
@@ -173,11 +163,4 @@ void MIScene::SetRootNode(MNode* pRootNode)
 	{
 		pRootNode->SetAttachedScene(this);
 	}
-}
-
-MCamera* MIScene::GetCamera()
-{
-	if (m_pUsingCamera)
-		return m_pUsingCamera;
-	return m_pDefaultCamera;
 }

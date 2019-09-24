@@ -30,6 +30,13 @@ MObjectManager::MObjectManager()
 
 MObjectManager::~MObjectManager()
 {
+	for (std::map<MObjectID, MObject*>::iterator iter = m_tObjects.begin(); iter != m_tObjects.end(); ++iter)
+	{
+		delete iter->second;
+	}
+
+	m_tObjects.clear();
+
 	delete m_pObjectDB;
 }
 

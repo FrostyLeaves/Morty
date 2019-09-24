@@ -1,6 +1,7 @@
 ﻿#include "MEngine.h"
 #include "MIRenderer.h"
 #include "MIRenderView.h"
+#include "MIViewport.h"
 
 #include "MLogManager.h"
 #if (RENDER_GRAPHICS == MORTY_DIRECTX_11)
@@ -26,7 +27,7 @@ MEngine::MEngine()
 	, m_pRootNode(nullptr)
 	, m_pDevice(nullptr)
 	, m_pRenderer(nullptr)
-	, m_cTickInfo(120)
+	, m_cTickInfo(60)
 {
 }
 
@@ -90,7 +91,8 @@ MIRenderView* MEngine::CreateView()
 
 #endif
 
-
+	MIViewport* pViewport = GetObjectManager()->CreateObject<MIViewport>();
+	pNewView->SetViewport(pViewport);
 
 	return pNewView;
 
@@ -102,6 +104,8 @@ void MEngine::AddView(MIRenderView* pView)
 	pView->SetResizeCallback([=](const int& nWidth, const int& nHeight)
 	{
 		m_pRenderer->OnResize(pView, nWidth, nHeight);
+
+		pView->GetViewport()->SetSize(Vector2(nWidth, nHeight));
 	});
 
 	m_vView.push_back(pView);
@@ -114,13 +118,6 @@ void MEngine::Release()
 		m_pRenderer->Release();
 		delete m_pRenderer;
 		m_pRenderer = nullptr;
-	}
-
-	if (m_pDevice)
-	{
-		m_pDevice->Release();
-		delete m_pDevice;
-		m_pDevice = nullptr;
 	}
 
 	for (auto pView : m_vView)
@@ -140,11 +137,18 @@ void MEngine::Release()
 		pView = nullptr;
 	}
 
+	m_vView.clear();
+
 	delete m_pObjectManager;
 	delete m_pResourceManager;
 	delete m_pInputManager;
 
-	m_vView.clear();
+	if (m_pDevice)
+	{
+		m_pDevice->Release();
+		delete m_pDevice;
+		m_pDevice = nullptr;
+	}
 }
 
 void MEngine::Tick(float fDelta)
@@ -185,7 +189,7 @@ bool MEngine::MainLoop()
 			MIRenderView* pView = (*iter);
 			if (pView->MainLoop())
 			{
-				m_pRenderer->RenderSceneToView(pView->GetScene(), pView);
+				m_pRenderer->RenderViewportToView(pView->GetViewport(), pView);
 				++iter;
 			}
 

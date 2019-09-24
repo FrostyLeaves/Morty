@@ -79,6 +79,12 @@ bool MDirectX11Device::InitDirectX11()
 
 			pD3dDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m_n4xMsaaQuality);
 
+			if (m_n4xMsaaQuality > 0)
+			{
+				//we can set quality is the number that less then the value but can`t equal it.
+				m_n4xMsaaQuality = m_n4xMsaaQuality - 1;
+			}
+
 			return true;
 		}
 	}
@@ -107,6 +113,20 @@ void MDirectX11Device::Release()
 		m_pD3dContext->Release();
 		m_pD3dContext = nullptr;
 	}
+
+// #if defined(DEBUG) || defined(_DEBUG)
+// 	ID3D11Debug *d3dDebug;
+// 	HRESULT hr = m_pD3dDevice->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(&d3dDebug));
+// 	if (SUCCEEDED(hr))
+// 	{
+// 		hr = d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+// 	}
+// 	if (d3dDebug != nullptr)
+// 	{
+// 		d3dDebug->Release();
+// 		d3dDebug = nullptr;
+// 	}
+// #endif
 
 	if (m_pD3dDevice)
 	{

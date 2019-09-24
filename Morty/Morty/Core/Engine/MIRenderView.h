@@ -13,7 +13,7 @@
 
 #include "Vector.h"
 
-class MIScene;
+class MIViewport;
 class MEngine;
 class MORTY_CLASS MIRenderView
 {
@@ -38,14 +38,14 @@ public:
 	virtual void OnRenderBegin() {}
 	virtual void OnRenderEnd() {}
 
-	void SetScene(MIScene* pScene) { m_pScene = pScene; }
-	MIScene* GetScene(){ return m_pScene; }
+	void SetViewport(MIViewport* pViewport);
+	MIViewport* GetViewport(){ return m_pViewport; }
 
 
 protected:
 
 	friend class MEngine;
-	MIScene* m_pScene;
+	MIViewport* m_pViewport;
 
 	MEngine* m_pEngine;
 

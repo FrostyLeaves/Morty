@@ -13,6 +13,7 @@
 
 MSkyBox::MSkyBox()
 	: MObject()
+	, m_pBoxMesh(nullptr)
 	, m_pTextureCube(nullptr)
 	, m_pTextureCubeResource(nullptr)
 {
@@ -21,6 +22,11 @@ MSkyBox::MSkyBox()
 
 MSkyBox::~MSkyBox()
 {
+	if (m_pBoxMesh)
+	{
+		m_pBoxMesh->DestroyBuffer(m_pEngine->GetDevice());
+	}
+
 	if (m_pTextureCubeResource)
 	{
 		delete m_pTextureCubeResource;
@@ -80,20 +86,20 @@ void MSkyBox::OnCreated()
 
 	m_pMeshInstance = m_pEngine->GetObjectManager()->CreateObject<MMeshInstance>();
 
-	MMesh<Vector3>* pMesh = new MMesh<Vector3>();
+	m_pBoxMesh = new MMesh<Vector3>();
 
-	pMesh->CreateVertices(8);
-	pMesh->CreateIndices(12, 3);
+	m_pBoxMesh->CreateVertices(8);
+	m_pBoxMesh->CreateIndices(12, 3);
 
-	pMesh->GetVertices()[0] = Vector3(-1.0, -1.0, 1.0);
-	pMesh->GetVertices()[1] = Vector3(-1.0, 1.0, 1.0);
-	pMesh->GetVertices()[2] = Vector3(1.0, 1.0, 1.0);
- 	pMesh->GetVertices()[3] = Vector3(1.0, -1.0, 1.0);
+	m_pBoxMesh->GetVertices()[0] = Vector3(-1.0, -1.0, 1.0);
+	m_pBoxMesh->GetVertices()[1] = Vector3(-1.0, 1.0, 1.0);
+	m_pBoxMesh->GetVertices()[2] = Vector3(1.0, 1.0, 1.0);
+	m_pBoxMesh->GetVertices()[3] = Vector3(1.0, -1.0, 1.0);
 
-	pMesh->GetVertices()[4] = Vector3(-1.0, -1.0, -1.0);
-	pMesh->GetVertices()[5] = Vector3(-1.0, 1.0, -1.0);
-	pMesh->GetVertices()[6] = Vector3(1.0, 1.0, -1.0);
-	pMesh->GetVertices()[7] = Vector3(1.0, -1.0, -1.0);
+	m_pBoxMesh->GetVertices()[4] = Vector3(-1.0, -1.0, -1.0);
+	m_pBoxMesh->GetVertices()[5] = Vector3(-1.0, 1.0, -1.0);
+	m_pBoxMesh->GetVertices()[6] = Vector3(1.0, 1.0, -1.0);
+	m_pBoxMesh->GetVertices()[7] = Vector3(1.0, -1.0, -1.0);
 	
 	float indexs[] = {
 		3, 2, 6,
@@ -115,10 +121,10 @@ void MSkyBox::OnCreated()
  		4, 6, 7,//back
 	};
 
-	for (int i = 0; i < pMesh->GetIndicesLength(); ++i)
-		pMesh->GetIndices()[i] = indexs[i];
+	for (int i = 0; i < m_pBoxMesh->GetIndicesLength(); ++i)
+		m_pBoxMesh->GetIndices()[i] = indexs[i];
 
-	m_pMeshInstance->SetMesh(pMesh);
+	m_pMeshInstance->SetMesh(m_pBoxMesh);
 
 	m_pMeshInstance->SetMaterial(pMaterial);
 }
