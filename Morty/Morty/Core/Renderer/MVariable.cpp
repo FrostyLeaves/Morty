@@ -1,104 +1,20 @@
 ﻿#include "MVariable.h"
 
-unsigned int MStruct::s_unPackSize = 16;
+unsigned int MContainer::s_unPackSize = 16;
 
-MStruct::MStruct() : m_unByteSize(0)
+MContainer::MContainer() : m_unByteSize(0)
 , m_pData(nullptr)
 {
 
 }
 
-MStruct::~MStruct()
+MContainer::~MContainer()
 {
 	if (m_pData)
 		delete[] m_pData;
 }
 
-void MStruct::AppendStructMember(MStructMember& mem)
-{
-	unsigned int unRemainder = m_unByteSize % s_unPackSize;
-	if (unRemainder != 0 && (s_unPackSize - unRemainder) > mem.var.GetSize())
-	{
-		mem.unBeginOffset = m_unByteSize;
-		m_vMember.push_back(mem);
-	}
-	else
-	{
-		if (unRemainder != 0)
-			m_unByteSize = (m_unByteSize / s_unPackSize + 1) * s_unPackSize;
-
-		mem.unBeginOffset = m_unByteSize;
-		m_vMember.push_back(mem);
-		m_unByteSize += mem.var.GetSize();
-	}
-
-	if (m_pData)
-		delete[] m_pData;
-
-	m_pData = new unsigned char[m_unByteSize];
-}
-
-void MStruct::AppendVariable(const MString& strName, const MVariable& var)
-{
-	MStructMember sm;
-	sm.strName = strName;
-	sm.var = var;
-
-	AppendStructMember(sm);
-}
-
-void MStruct::AppendVariable(const MString& strName, const MString& type)
-{
-	MStructMember sm;
-	sm.strName = strName;
-	
-	if (type == "float4")
-	{
-		sm.var = MVariable(Vector4());
-	}
-	else if (type == "float3")
-	{
-		sm.var = MVariable(Vector3());
-	}
-	else if (type == "float3x3")
-	{
-		sm.var = MVariable(Matrix3());
-	}
-	else if (type == "float4x4")
-	{
-		sm.var = MVariable(Matrix4());
-	}
-
-	AppendStructMember(sm);
-}
-
-void MStruct::SetMember(const MString& strName, const MVariable& var)
-{
-	for (MStructMember& mem : m_vMember)
-	{
-		if (mem.strName == strName)
-		{
-			mem.var = var;
-			break;
-		}
-	}
-}
-
-MVariable* MStruct::FindMember(const MString& strName)
-{
-	for (MStructMember& mem : m_vMember)
-	{
-		if (mem.strName == strName)
-		{
-			return &mem.var;
-			break;
-		}
-	}
-
-	return nullptr;
-}
-
-void* MStruct::GetData()
+void* MContainer::GetData()
 {
 
 	if (nullptr == m_pData)
@@ -112,7 +28,7 @@ void* MStruct::GetData()
 	return m_pData;
 }
 
-MStruct::MStruct(const MStruct& var)
+MContainer::MContainer(const MContainer& var)
 {
 	m_pData = nullptr;
 	m_unByteSize = var.m_unByteSize;
@@ -129,7 +45,7 @@ MStruct::MStruct(const MStruct& var)
 	}
 }
 
-const MStruct& MStruct::operator=(const MStruct& var)
+const MContainer& MContainer::operator=(const MContainer& var)
 {
 	if (m_unByteSize != var.m_unByteSize)
 	{
@@ -192,6 +108,12 @@ MVariable::MVariable(const MStruct& var)
 	m_eType = EStruct;
 }
 
+MVariable::MVariable(const MVariantArray& var)
+{
+	m_pData = (unsigned char*)(new MVariantArray(var));
+	m_eType = EArray;
+}
+
 MVariable::MVariable()
 	: m_pData(nullptr)
 	, m_eType(ENone)
@@ -202,7 +124,7 @@ MVariable::MVariable()
 
 void* MVariable::GetData()
 {
-	if (EStruct == m_eType)
+	if (EStruct == m_eType || EArray == m_eType)
 		return ((MStruct*)(m_pData))->GetData();
 
 	return m_pData;
@@ -210,7 +132,7 @@ void* MVariable::GetData()
 
 unsigned int MVariable::GetSize() const
 {
-	if (EStruct == m_eType)
+	if (EStruct == m_eType || EArray == m_eType)
 		return ((MStruct*)(m_pData))->GetSize();
 
 	return m_unByteSize;
@@ -224,6 +146,11 @@ MVariable::MVariable(const MVariable& var)
 	{
 		m_pData = (unsigned char*)(new MStruct());
 		*((MStruct*)m_pData) = *((MStruct*)var.m_pData);
+	}
+	else if (EArray == var.m_eType)
+	{
+		m_pData = (unsigned char*)(new MVariantArray());
+		*((MVariantArray*)m_pData) = *((MVariantArray*)var.m_pData);
 	}
 	else
 	{
@@ -241,6 +168,11 @@ const MVariable& MVariable::operator=(const MVariable& var)
 	{
 		m_pData = (unsigned char*)(new MStruct());
 		*((MStruct*)m_pData) = *((MStruct*)var.m_pData);
+	}
+	else if (EArray == var.m_eType)
+	{
+		m_pData = (unsigned char*)(new MVariantArray());
+		*((MVariantArray*)m_pData) = *((MVariantArray*)var.m_pData);
 	}
 	else
 	{
@@ -262,6 +194,8 @@ void MVariable::Clean()
 	{
 		if (EStruct == m_eType)
 			delete ((MStruct*)m_pData);
+		else if (EArray == m_eType)
+			delete ((MVariantArray*)m_pData);
 		else
 			delete[] m_pData;
 
@@ -269,4 +203,106 @@ void MVariable::Clean()
 		m_unByteSize = 0;
 		m_pData = nullptr;
 	}
+}
+
+void MContainer::AppendStructMember(MStructMember& mem)
+{
+	unsigned int unRemainder = m_unByteSize % s_unPackSize;
+	if (unRemainder != 0 && (s_unPackSize - unRemainder) > mem.var.GetSize())
+	{
+		mem.unBeginOffset = m_unByteSize;
+		m_vMember.push_back(mem);
+	}
+	else
+	{
+		if (unRemainder != 0)
+			m_unByteSize = (m_unByteSize / s_unPackSize + 1) * s_unPackSize;
+
+		mem.unBeginOffset = m_unByteSize;
+		m_vMember.push_back(mem);
+		m_unByteSize += mem.var.GetSize();
+	}
+
+	if (m_pData)
+		delete[] m_pData;
+
+	m_pData = new unsigned char[m_unByteSize];
+}
+
+void MStruct::AppendVariable(const MString& strName, const MVariable& var)
+{
+	MStructMember sm;
+	sm.strName = strName;
+	sm.var = var;
+
+	AppendStructMember(sm);
+}
+// 
+// void MStruct::AppendVariable(const MString& strName, const MString& type)
+// {
+// 	MStructMember sm;
+// 	sm.strName = strName;
+// 
+// 	if (type == "float4")
+// 	{
+// 		sm.var = MVariable(Vector4());
+// 	}
+// 	else if (type == "float3")
+// 	{
+// 		sm.var = MVariable(Vector3());
+// 	}
+// 	else if (type == "float3x3")
+// 	{
+// 		sm.var = MVariable(Matrix3());
+// 	}
+// 	else if (type == "float4x4")
+// 	{
+// 		sm.var = MVariable(Matrix4());
+// 	}
+// 
+// 	AppendStructMember(sm);
+// }
+
+void MStruct::SetMember(const MString& strName, const MVariable& var)
+{
+	for (MStructMember& mem : m_vMember)
+	{
+		if (mem.strName == strName)
+		{
+			mem.var = var;
+			break;
+		}
+	}
+}
+
+MVariable* MStruct::FindMember(const MString& strName)
+{
+	for (MStructMember& mem : m_vMember)
+	{
+		if (mem.strName == strName)
+		{
+			return &mem.var;
+			break;
+		}
+	}
+
+	return nullptr;
+}
+
+void MVariantArray::AppendVariable(const MVariable& var)
+{
+	MStructMember sm;
+	sm.strName = "";
+	sm.var = var;
+
+	AppendStructMember(sm);
+}
+
+MVariable& MVariantArray::operator[](const unsigned int& unIndex)
+{
+	if (0 <= unIndex && unIndex < m_vMember.size())
+		return m_vMember[unIndex].var;
+
+	static MVariable uselessVar;
+	return uselessVar;
 }

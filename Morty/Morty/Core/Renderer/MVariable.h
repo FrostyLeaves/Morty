@@ -18,6 +18,7 @@
 #include <map>
 
 class MStruct;
+class MVariantArray;
 
 class MORTY_CLASS MVariable
 {
@@ -32,6 +33,7 @@ public:
 		EMatrix3 = 4,
 		EMatrix4 = 5,
 		EStruct = 6,
+		EArray = 7
 	};
 
 	MVariable();
@@ -41,6 +43,7 @@ public:
 	MVariable(const Matrix3& var);
 	MVariable(const Matrix4& var);
 	MVariable(const MStruct& var);
+	MVariable(const MVariantArray& var);
 	MVariable(const MVariable& var);
 
 	void* GetData();
@@ -62,13 +65,12 @@ private:
 	unsigned int m_unByteSize;
 };
 
-
-class MORTY_CLASS MStruct
+class MContainer
 {
 public:
-	MStruct();
-	MStruct(const MStruct& var);
-	~MStruct();
+	MContainer();
+	MContainer(const MContainer& var);
+	virtual ~MContainer();
 
 	struct MStructMember
 	{
@@ -77,31 +79,47 @@ public:
 		unsigned int unBeginOffset;
 	};
 
-	void AppendVariable(const MString& strName, const MVariable& var);
-	void AppendVariable(const MString& strName, const MString& type);
-
-	void SetMember(const MString& strName, const MVariable& var);
-	MVariable* FindMember(const MString& strName);
-
 	unsigned int GetSize() const { return m_unByteSize; }
 	void* GetData();
 
-	std::map<MString, MVariable::MEVariableType> GetMemberTypeMap();
-
-	const MStruct& operator = (const MStruct& var);
+	const MContainer& operator = (const MContainer& var);
 
 protected:
 
 	void AppendStructMember(MStructMember& mem);
 
-private:
+protected:
 
 	unsigned int m_unByteSize;
 	unsigned char* m_pData;
 	std::vector<MStructMember> m_vMember;
 
-
 	static unsigned int s_unPackSize;
+};
+
+class MORTY_CLASS MStruct : public MContainer
+{
+public:
+	MStruct():MContainer() {}
+	virtual ~MStruct() {}
+
+
+	void AppendVariable(const MString& strName, const MVariable& var);
+//	void AppendVariable(const MString& strName, const MString& type);
+
+	void SetMember(const MString& strName, const MVariable& var);
+	MVariable* FindMember(const MString& strName);
+};
+
+class MORTY_CLASS MVariantArray : public MContainer
+{
+public:
+	MVariantArray() :MContainer() {}
+	virtual ~MVariantArray() {}
+
+	void AppendVariable(const MVariable& var);
+
+	MVariable& operator[](const unsigned int& unIndex);
 };
 
 #endif

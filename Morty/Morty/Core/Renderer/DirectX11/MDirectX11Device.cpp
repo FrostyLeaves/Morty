@@ -570,6 +570,7 @@ void MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 
 		for (unsigned int i = 0; i < shaderDesc.ConstantBuffers; ++i)
 		{
+
 			ID3D11ShaderReflectionConstantBuffer* pConstBuffer = pReflector->GetConstantBufferByIndex(i);
 			D3D11_SHADER_BUFFER_DESC bufferDesc;
 			pConstBuffer->GetDesc(&bufferDesc);
@@ -582,9 +583,7 @@ void MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 				ID3D11ShaderReflectionVariable* pVar = pConstBuffer->GetVariableByIndex(n);
 				pVar->GetDesc(&varDesc);
 				ID3D11ShaderReflectionType* pType = pVar->GetType();
-				D3D11_SHADER_TYPE_DESC typeDesc;
-				pType->GetDesc(&typeDesc);
-				cbufferStruct.AppendVariable(varDesc.Name, typeDesc.Name);
+				cbufferStruct.AppendVariable(varDesc.Name, GenerateVariableByBuffer(pType));
 			}
 
 
@@ -764,4 +763,69 @@ ID3D11InputLayout* MDirectX11Device::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC 
 	pShaderBuffer->Release();
 
 	return pVertexInputLayout;
+}
+
+MVariable MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType* pReflectionType)
+{
+	MVariable variable;
+
+	D3D11_SHADER_TYPE_DESC typeDesc;
+	pReflectionType->GetDesc(&typeDesc);
+
+	
+	if (typeDesc.Members > 0)
+	{
+		//Is a struct.
+		MStruct mryStruct;
+
+		for (unsigned int i = 0; i < typeDesc.Members; ++i)
+		{
+			ID3D11ShaderReflectionType* pMemberType = pReflectionType->GetMemberTypeByIndex(i);
+			MString strName = pReflectionType->GetMemberTypeName(i);
+
+			D3D11_SHADER_TYPE_DESC childTypeDesc;
+			pMemberType->GetDesc(&childTypeDesc);
+
+			mryStruct.AppendVariable(strName, GenerateVariableByBuffer(pMemberType));
+		}
+
+
+		variable = mryStruct;
+	}
+	else
+	{
+		//Is a Variant.
+		MString type = typeDesc.Name;
+
+		if (type == "float4")
+		{
+			variable = MVariable(Vector4());
+		}
+		else if (type == "float3")
+		{
+			variable = MVariable(Vector3());
+		}
+		else if (type == "float3x3")
+		{
+			variable = MVariable(Matrix3());
+		}
+		else if (type == "float4x4")
+		{
+			variable = MVariable(Matrix4());
+		}
+
+	}
+
+	if (typeDesc.Elements > 0)
+	{
+		//Is an array.
+		MVariantArray array;
+
+		for (unsigned int i = 0; i < typeDesc.Elements; ++i)
+			array.AppendVariable(variable);
+
+		return array;
+	}
+
+	return variable;
 }

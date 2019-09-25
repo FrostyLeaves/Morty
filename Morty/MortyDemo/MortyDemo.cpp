@@ -1,7 +1,7 @@
 ﻿// MortyDemo.cpp : 瀹氫箟鎺у埗鍙板簲鐢ㄧ▼搴忕殑鍏ュ彛鐐广€?
 //
 
-#include "vld.h"
+/*#include "vld.h"*/
 
 #include "stdafx.h"
 #include "MEngine.h"
@@ -127,7 +127,6 @@ public:
 
 int main(int argc, char* argv[])
 {
-
 	MEngine engine;
 
 	engine.Initialize();

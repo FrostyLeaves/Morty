@@ -10,6 +10,7 @@
 #define _M_MDIRECTX11DEVICE_H_
 #include "MGlobal.h"
 #include "MIDevice.h"
+#include "MVariable.h"
 
 #include <d3d11.h>
 #include <D3DX11.h>
@@ -39,6 +40,8 @@ public:
 	virtual void CleanShader(MShaderBuffer** ppShaderBuffer) override;
 
 	ID3D11InputLayout* CreateInputLayout(D3D11_INPUT_ELEMENT_DESC desc[], const int& nLength);
+
+	MVariable GenerateVariableByBuffer(class ID3D11ShaderReflectionType* pReflectionType);
 
 	ID3D11Device* m_pD3dDevice;
 	ID3D11DeviceContext* m_pD3dContext;

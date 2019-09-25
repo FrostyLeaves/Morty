@@ -43,7 +43,7 @@ public:
 		ECullNone = 8,
 	};
 
-	virtual void SetRasterizerType(const MERasterizerType& eType) { m_eRasterizerType = eType; }
+	virtual void SetRasterizerType(const unsigned int& eType) { m_eRasterizerType = eType; }
 
 public:
 

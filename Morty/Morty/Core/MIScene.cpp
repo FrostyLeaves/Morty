@@ -118,6 +118,8 @@ void MIScene::DrawNode(MIRenderer* pRenderer, MIViewport* pViewport, MNode* pNod
 
 void MIScene::DrawSkyBox(MIRenderer* pRenderer, MIViewport* pViewport)
 {
+	pRenderer->SetRasterizerType(MIRenderer::MERasterizerType::ESolid | MIRenderer::MERasterizerType::ECullNone);
+
 	if (m_pSkyBox)
 	{
 		if (MMeshInstance* pMeshIns = m_pSkyBox->GetMeshInstance())
