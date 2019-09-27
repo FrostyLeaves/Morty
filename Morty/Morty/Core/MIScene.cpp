@@ -131,9 +131,11 @@ void MIScene::DrawSkyBox(MIRenderer* pRenderer, MIViewport* pViewport)
 				if (param.strName == "cbSpace")
 				{
 					MStruct* pSpaceStruct = param.var.GetByType<MStruct>();
-					Matrix4 mat(IdentityMatrix);
+					Matrix4 mat(Matrix4::IdentityMatrix);
 					Vector3 camPos = pViewport->GetCamera()->GetPosition();
-					mat.SetTranslation(camPos.x, camPos.y, camPos.z);
+					mat.m[3][0] = camPos.x;
+					mat.m[3][1] = camPos.y;
+					mat.m[3][2] = camPos.z;
 					pSpaceStruct->SetMember("MatWorld", mat.Transposed());
 					pSpaceStruct->SetMember("MatCamProj", pViewport->GetCameraInverseProjection().Transposed());
 					break;

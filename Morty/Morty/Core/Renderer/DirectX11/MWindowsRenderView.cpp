@@ -66,7 +66,10 @@ bool MWindowsRenderView::Initialize(MEngine* pEngine, const char* svWindowName)
 
 	m_pEngine = pEngine;
 
-	RECT rc = { 0, 0, m_nWidth, m_nHeight };
+	int nScreenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
+	int nScreenHeight = GetSystemMetrics(SM_CYFULLSCREEN);
+
+	RECT rc = { (nScreenWidth - m_nWidth) * 0.5, (nScreenHeight - m_nHeight) * 0.5, (nScreenWidth + m_nWidth) * 0.5, (nScreenHeight + m_nHeight) * 0.5 };
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, false);
 
 	m_hwnd = CreateWindow("Morty", svWindowName, WS_OVERLAPPEDWINDOW, 0, 0, rc.right - rc.left, rc.bottom - rc.top, NULL, NULL, s_hInstance, NULL);
@@ -159,6 +162,27 @@ LRESULT CALLBACK MWindowsRenderView::ViewProcessFunction(HWND hwnd, UINT message
 		int x = LOWORD(lParam);
 		int y = HIWORD(lParam);
 		m_pEngine->GetInputManager()->Input(new MMouseInputEvent(Vector2(x, y)));
+		break;
+	}
+
+	case WM_LBUTTONDOWN:
+	{
+		m_pEngine->GetInputManager()->Input(new MMouseInputEvent(MMouseInputEvent::MEMouseDownButton::LeftButton, MMouseInputEvent::MEMouseInputType::ButtonDown));
+		break;
+	}
+	case WM_LBUTTONUP:
+	{
+		m_pEngine->GetInputManager()->Input(new MMouseInputEvent(MMouseInputEvent::MEMouseDownButton::LeftButton, MMouseInputEvent::MEMouseInputType::ButtonUp));
+		break;
+	}
+	case WM_RBUTTONDOWN:
+	{
+		m_pEngine->GetInputManager()->Input(new MMouseInputEvent(MMouseInputEvent::MEMouseDownButton::RightButton, MMouseInputEvent::MEMouseInputType::ButtonDown));
+		break;
+	}
+	case WM_RBUTTONUP:
+	{
+		m_pEngine->GetInputManager()->Input(new MMouseInputEvent(MMouseInputEvent::MEMouseDownButton::RightButton, MMouseInputEvent::MEMouseInputType::ButtonUp));
 		break;
 	}
 

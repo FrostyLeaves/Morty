@@ -52,9 +52,12 @@ public:
 	MMouseInputEvent(const Vector2& v2MousePosition);
 
 	Vector2 GetMouseAddition(){ return m_v2MousePositionAddition; }
+	MEMouseDownButton GetButton(){ return m_eEventButton; }
+	MEMouseInputType GetType(){ return m_eInputType; }
 		
 protected:
 
+	MEMouseDownButton m_eEventButton;
 	Vector2 m_v2MousePositionAddition;
 
 	static unsigned int s_unMouseDownButton;

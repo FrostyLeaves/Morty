@@ -39,12 +39,14 @@ public:
 
 	virtual void Render(MIRenderer* pRenderer);
 
-
 	Matrix4 GetCameraInverseProjection(){ return m_m4CameraInvProj; }
 
 protected:
-
 	void SetValidCamera(MCamera* pCamera);
+
+
+	static Matrix4 MatrixPerspectiveFovLH(const float& fFovYZAngle, const float& fScreenAspect, const float& fScreenNear, const float& fScreenFar);
+	
 
 private:
 

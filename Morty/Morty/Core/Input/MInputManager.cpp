@@ -16,6 +16,7 @@ MInputEvent::~MInputEvent()
 }
 
 MMouseInputEvent::MMouseInputEvent(const MEMouseDownButton& eMouseDownButton, const MEMouseInputType& eInputType)
+	: m_eEventButton(eMouseDownButton)
 {
 	if (MEMouseInputType::ButtonDown == eInputType)
 	{
@@ -32,7 +33,8 @@ MMouseInputEvent::MMouseInputEvent(const MEMouseDownButton& eMouseDownButton, co
 }
 
 MMouseInputEvent::MMouseInputEvent(const Vector2& v2MousePosition)
-	: m_eInputType(MEMouseInputType::MouseMove)
+	: m_eEventButton(MEMouseDownButton::NoneButton)
+	, m_eInputType(MEMouseInputType::MouseMove)
 {
 	if (s_v2MousePosition.x != -1 && s_v2MousePosition.y != -1)
 	{
@@ -87,6 +89,9 @@ void MInputManager::Input(MInputEvent* pEvent)
 			pListener->m_function(pEvent);
 		}
 	}
+
+	delete pEvent;
+	pEvent = nullptr;
 }
 
 void MInputManager::AddListener(MInputListener* pListener)

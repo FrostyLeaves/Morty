@@ -43,8 +43,8 @@ public:
 	{
 		m_fTime += fDelta;
 
-		Quaternion quat = Quaternion(Vector3(1, 0, 0), 3.14 / 2 * 3);
-		Quaternion quatb(Vector3(0, 1, 0), 0.5f * m_fTime);
+		Quaternion quat = Quaternion(Vector3(1, 0, 0), -90);
+		Quaternion quatb(Vector3(0, 1, 0), 10 * m_fTime);
 		this->SetRotation(quat * quatb);
 
 	}
@@ -67,7 +67,7 @@ public:
 		m_bD = false;
 		m_bQ = false;
 		m_bE = false;
-		m_bLB = false;
+		m_bRB = false;
 	}
 
 	virtual void OnTick(const float& fDelta)
@@ -77,34 +77,40 @@ public:
 
 		if (true == m_bW)
 		{
-			this->SetPosition(this->GetPosition() + Vector3(0, 0, speed * fDelta));
+			this->SetPosition(this->GetPosition() + GetFront() * speed * fDelta);
 		}
 		if (true == m_bS)
 		{
-			this->SetPosition(this->GetPosition() + Vector3(0, 0, -speed * fDelta));
+			this->SetPosition(this->GetPosition() + GetFront() * -speed * fDelta);
 		}
 		if (true == m_bA)
 		{
-			this->SetPosition(this->GetPosition() + Vector3(-speed * fDelta, 0, 0));
+			this->SetPosition(this->GetPosition() + GetRight() * -speed * fDelta);
 		}
 		if (true == m_bD)
 		{
-			this->SetPosition(this->GetPosition() + Vector3(speed * fDelta, 0, 0));
+			this->SetPosition(this->GetPosition() + GetRight() * speed * fDelta);
 		}
 		if (true == m_bQ)
 		{
-			this->SetPosition(this->GetPosition() + Vector3(0, -speed * fDelta ,0));
+			this->SetPosition(this->GetPosition() + GetUp() * -speed * fDelta);
 		}
 		if (true == m_bE)
 		{
-			this->SetPosition(this->GetPosition() + Vector3(0, speed * fDelta, 0));
+			this->SetPosition(this->GetPosition() + GetUp() * speed * fDelta);
 		}
 
-		if (m_bLB && (m_v2MouseAddi.x != 0 || m_v2MouseAddi.y != 0))
+		if (m_bRB && (m_v2MouseAddi.x != 0 || m_v2MouseAddi.y != 0))
 		{
-			m_v3Rotate.x += 0.02f * m_v2MouseAddi.x;
-			m_v3Rotate.y += 0.02f * m_v2MouseAddi.y;
-			SetRotation(Quaternion(Vector3(0, 1, 0), m_v3Rotate.x) * Quaternion(Vector3(1, 0, 0), m_v3Rotate.y));
+
+			Vector3 up = Vector3(0, 1, 0);
+			SetRotation(GetRotation() * Quaternion(up, m_v2MouseAddi.x));
+
+			Vector3 right = GetRight();
+			SetRotation(GetRotation() * Quaternion(right, m_v2MouseAddi.y));
+
+
+
 			m_v2MouseAddi = Vector2(0, 0);
 		}
 	}
@@ -117,10 +123,9 @@ public:
 	bool m_bQ;
 	bool m_bE;
 
-	bool m_bLB;
+	bool m_bRB;
 
 	Vector2 m_v2MouseAddi;
-	Vector3 m_v3Rotate;
 
 
 };
@@ -168,7 +173,7 @@ int main(int argc, char* argv[])
 		pMeshIns->SetMaterial(pMaterial);
 	}
 
-	pRootNode->AddNode(pSpatial);
+	//pRootNode->AddNode(pSpatial);
 
 
 	MyCamera* pCamera = engine.GetObjectManager()->CreateObject<MyCamera>();
@@ -210,17 +215,22 @@ int main(int argc, char* argv[])
 			{
 				pCamera->m_bE = pKeyInput->GetType() == MKeyBoardInputEvent::KeyBoardDown;
 			}
-			if (pKeyInput->GetKey() == 'X')
-			{
-				pCamera->m_bLB = pKeyInput->GetType() == MKeyBoardInputEvent::KeyBoardDown;
-			}
 		}
 
 		else if (MMouseInputEvent* pMouseInput = dynamic_cast<MMouseInputEvent*>(pEvent))
 		{
-			Vector2 addi = pMouseInput->GetMouseAddition();
-
-			pCamera->m_v2MouseAddi = addi;
+			if (pMouseInput->GetType() == MMouseInputEvent::MouseMove)
+			{
+				Vector2 addi = pMouseInput->GetMouseAddition();
+				pCamera->m_v2MouseAddi = addi;
+			}
+			else
+			{
+				if (pMouseInput->GetButton() == MMouseInputEvent::MEMouseDownButton::RightButton)
+				{
+					pCamera->m_bRB = pMouseInput->GetType() == MMouseInputEvent::ButtonDown;
+				}
+			}
 		}
 
 	};

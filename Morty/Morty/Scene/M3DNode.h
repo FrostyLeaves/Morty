@@ -13,7 +13,7 @@
 #include "MNode.h"
 
 #include "Quaternion.h"
-#include "Matrix.h"
+#include "MTransform.h"
 
 class MORTY_CLASS M3DNode : public MNode
 {
@@ -29,19 +29,26 @@ public:
 	Quaternion GetRotation();
 
 	Matrix4 GetWorldTransform();
-	Matrix4 GetRelativeTransform();
+	Matrix4 GetLocalTransform();
 
 	void UpdateWorldTransform();
+
+	Vector3 GetUp() { return m_transform.GetUp(); }
+	Vector3 GetFront() { return m_transform.GetFront(); }
+	Vector3 GetRight() { return m_transform.GetRight(); }
 
 public:
 
 	virtual bool AddNode(MNode* pNode) override;
 
 protected:
-	void WorldTransformDirty();
+	static void WorldTransformDirty(MNode* pNode);
+	void LocalTransformDirty();
 
 private:
 
+	MTransform m_transform;
+	bool m_bLocalTransformDirty;
 	Matrix4 m_m4Transform;
 	bool m_bWorldTransformDirty;
 	Matrix4 m_m4WorldTransform;

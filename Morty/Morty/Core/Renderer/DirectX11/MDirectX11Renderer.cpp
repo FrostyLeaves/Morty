@@ -96,9 +96,6 @@ bool MDirectX11Renderer::Initialize()
 	mRasterizer.FillMode = D3D11_FILL_WIREFRAME;
 	m_pDevice->m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_pRasterizerState_Wireframe_CullNone);
 
-	//三角形解析顶点
-	m_pDevice->m_pD3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
 
 	//创建纹理采样状态
 	D3D11_SAMPLER_DESC sampDesc;
@@ -118,12 +115,9 @@ bool MDirectX11Renderer::Initialize()
 
 	//深度状态
 	D3D11_DEPTH_STENCIL_DESC dsDesc;
-	// 允许使用深度值一致的像素进行替换的深度/模板状态
-	// 该状态用于绘制天空盒，因为深度值为1.0时默认无法通过深度测试
 	dsDesc.DepthEnable = true;
 	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-
 	dsDesc.StencilEnable = false;
 
 	m_pDevice->m_pD3dDevice->CreateDepthStencilState(&dsDesc, &m_pDepthStencilState);
@@ -203,6 +197,10 @@ void MDirectX11Renderer::RenderViewportToView(MIViewport* pViewport, MIRenderVie
 	m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_pDepthStencilState, 0);
 
 
+	//三角形解析顶点
+	m_pDevice->m_pD3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	//切换渲染状态
 	if (m_eRasterizerType & MERasterizerType::EWireframe)
 		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Wireframe_CullNone);
 	else if (m_eRasterizerType & MERasterizerType::ECullNone)
@@ -241,8 +239,6 @@ void MDirectX11Renderer::InitDefaultResource()
 
 void MDirectX11Renderer::ReleaseDefaultResource()
 {
-	//TODO
-
 	if (m_pDefaultTexture)
 	{
 		m_pDefaultTexture->DestroyTexture(m_pDevice);
