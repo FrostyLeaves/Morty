@@ -28,7 +28,7 @@ void MIViewport::Render(MIRenderer* pRenderer)
 	//Update Camera and Projection Matrix.
 	MCamera* pCamera = GetCamera();
 	Matrix4 projMat = MatrixPerspectiveFovLH(45, m_v2Size.x / m_v2Size.y, pCamera->GetZNear(), pCamera->GetZFar());
-	m_m4CameraInvProj = pCamera->GetWorldTransform().Inverse() * projMat;
+	m_m4CameraInvProj = projMat * pCamera->GetWorldTransform().Inverse();
 
 	m_pScene->Render(pRenderer, this);
 }
@@ -102,8 +102,8 @@ Matrix4 MIViewport::MatrixPerspectiveFovLH(const float& fFovYZAngle, const float
 	mProjMatrix.m[0][0] = s1;
 	mProjMatrix.m[1][1] = s2;
 	mProjMatrix.m[2][2] = a;
-	mProjMatrix.m[3][2] = b;
-	mProjMatrix.m[2][3] = 1.0f;
+	mProjMatrix.m[2][3] = b;
+	mProjMatrix.m[3][2] = 1.0f;
 
 	return mProjMatrix;
 }

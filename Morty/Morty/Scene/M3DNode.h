@@ -34,7 +34,7 @@ public:
 	void UpdateWorldTransform();
 
 	Vector3 GetUp() { return m_transform.GetUp(); }
-	Vector3 GetFront() { return m_transform.GetFront(); }
+	Vector3 GetForward() { return m_transform.GetForward(); }
 	Vector3 GetRight() { return m_transform.GetRight(); }
 
 public:

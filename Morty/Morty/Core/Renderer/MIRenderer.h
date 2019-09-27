@@ -63,7 +63,6 @@ public:
 public:
 
 	virtual void DrawMesh(MIMesh* pMesh) = 0;
-	virtual void DrawLine(const Vector3& v3Begin, const Vector3& v3End, const Vector3& v3Color) = 0;
 
 	virtual void SetUseMaterial(MMaterial* pMaterial) = 0;
 	virtual void UpdateShaderParam(MShaderParam& param) = 0;

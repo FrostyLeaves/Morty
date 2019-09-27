@@ -11,7 +11,7 @@
 #include "MGlobal.h"
 #include "MString.h"
 #include "MVertex.h"
-#include "MVariable.h"
+#include "MVariant.h"
 
 class MIDevice;
 class MShaderBuffer;

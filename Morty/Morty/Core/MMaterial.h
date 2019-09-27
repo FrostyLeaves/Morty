@@ -37,7 +37,7 @@ public:
 	void CompileVertexShaderParams();
 	void CompilePixelShaderParams();
 
-	void SetPixelParam(const MString& strName, const MVariable& variable);
+	void SetPixelParam(const MString& strName, const Variant& variable);
 
 	bool Load(MResource* pResource);
 

@@ -6,7 +6,7 @@
 #include "MTextureCubeResource.h"
 #include "MEngine.h"
 
-#include "MVariable.h"
+#include "MVariant.h"
 
 MMaterial::MMaterial()
 	: m_pMaterialResource(nullptr)
@@ -83,7 +83,7 @@ void MMaterial::CompilePixelShaderParams()
 	}
 }
 
-void MMaterial::SetPixelParam(const MString& strName, const MVariable& variable)
+void MMaterial::SetPixelParam(const MString& strName, const Variant& variable)
 {
 	for (MShaderParam& param : m_vPixelShaderParams)
 	{
@@ -94,10 +94,10 @@ void MMaterial::SetPixelParam(const MString& strName, const MVariable& variable)
 
 			break;
 		}
-		else if (param.var.GetType() == MVariable::EStruct)
+		else if (param.var.GetType() == Variant::EStruct)
 		{
 			MStruct* pStruct = param.var.GetByType<MStruct>();
-			if (MVariable* pVar = pStruct->FindMember(strName))
+			if (Variant* pVar = pStruct->FindMember(strName))
 			{
 				*pVar = variable;
 				break;

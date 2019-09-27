@@ -1,5 +1,5 @@
 ﻿/**
- * @File         MVariable
+ * @File         Variant
  * 
  * @Created      2019-09-01 02:09:49
  *
@@ -8,8 +8,8 @@
  * Only For Shader.
 **/
 
-#ifndef _M_MVARIABLE_H_
-#define _M_MVARIABLE_H_
+#ifndef _M_VARIANT_H_
+#define _M_VARIANT_H_
 #include "MGlobal.h"
 #include "MString.h"
 #include "Vector.h"
@@ -20,7 +20,7 @@
 class MStruct;
 class MVariantArray;
 
-class MORTY_CLASS MVariable
+class MORTY_CLASS Variant
 {
 public:
 
@@ -36,15 +36,15 @@ public:
 		EArray = 7
 	};
 
-	MVariable();
-	MVariable(const float& var);
-	MVariable(const Vector3& var);
-	MVariable(const Vector4& var);
-	MVariable(const Matrix3& var);
-	MVariable(const Matrix4& var);
-	MVariable(const MStruct& var);
-	MVariable(const MVariantArray& var);
-	MVariable(const MVariable& var);
+	Variant();
+	Variant(const float& var);
+	Variant(const Vector3& var);
+	Variant(const Vector4& var);
+	Variant(const Matrix3& var);
+	Variant(const Matrix4& var);
+	Variant(const MStruct& var);
+	Variant(const MVariantArray& var);
+	Variant(const Variant& var);
 
 	void* GetData();
 	unsigned int GetSize() const;
@@ -53,9 +53,9 @@ public:
 	template <class T>
 	T* GetByType(){ return(T*)m_pData; }
 	
-	const MVariable& operator = (const MVariable& var);
+	const Variant& operator = (const Variant& var);
 
-	~MVariable();
+	~Variant();
 
 private:
 
@@ -75,7 +75,7 @@ public:
 	struct MStructMember
 	{
 		MString strName;
-		MVariable var;
+		Variant var;
 		unsigned int unBeginOffset;
 	};
 
@@ -104,11 +104,11 @@ public:
 	virtual ~MStruct() {}
 
 
-	void AppendVariable(const MString& strName, const MVariable& var);
-//	void AppendVariable(const MString& strName, const MString& type);
+	void AppendVariant(const MString& strName, const Variant& var);
+//	void AppendVariant(const MString& strName, const MString& type);
 
-	void SetMember(const MString& strName, const MVariable& var);
-	MVariable* FindMember(const MString& strName);
+	void SetMember(const MString& strName, const Variant& var);
+	Variant* FindMember(const MString& strName);
 };
 
 class MORTY_CLASS MVariantArray : public MContainer
@@ -117,9 +117,9 @@ public:
 	MVariantArray() :MContainer() {}
 	virtual ~MVariantArray() {}
 
-	void AppendVariable(const MVariable& var);
+	void AppendVariant(const Variant& var);
 
-	MVariable& operator[](const unsigned int& unIndex);
+	Variant& operator[](const unsigned int& unIndex);
 };
 
 #endif

@@ -147,9 +147,6 @@
     <ClInclude Include="..\..\Core\Renderer\DirectX11\MWindowsRenderView.h">
       <Filter>Core\Renderer\DirectX11</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Core\Renderer\MVariable.h">
-      <Filter>Core\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Core\Renderer\MVertex.h">
       <Filter>Core\Renderer</Filter>
     </ClInclude>
@@ -194,6 +191,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Core\MTransform.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\MVariant.h">
+      <Filter>Core\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -272,9 +272,6 @@
     <ClCompile Include="..\..\Core\Renderer\DirectX11\MWindowsRenderView.cpp">
       <Filter>Core\Renderer\DirectX11</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Core\Renderer\MVariable.cpp">
-      <Filter>Core\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\MVertex.cpp">
       <Filter>Core\Renderer</Filter>
     </ClCompile>
@@ -319,6 +316,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\MTransform.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\MVariant.cpp">
+      <Filter>Core\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -21,7 +21,7 @@ Matrix4 M3DNode::GetWorldTransform()
 	if (m_bWorldTransformDirty)
 		UpdateWorldTransform();
 	
-	return m_m4WorldTransform * GetLocalTransform();
+	return GetLocalTransform() * m_m4WorldTransform;
 }
 
 Matrix4 M3DNode::GetLocalTransform()
@@ -51,7 +51,7 @@ void M3DNode::UpdateWorldTransform()
 		{
 			if (M3DNode* p3DNode = dynamic_cast<M3DNode*>(pNode))
 			{
-				m_m4WorldTransform = p3DNode->GetWorldTransform() * m_m4WorldTransform;
+				m_m4WorldTransform = m_m4WorldTransform * p3DNode->GetWorldTransform();
 				return;
 			}
 		}

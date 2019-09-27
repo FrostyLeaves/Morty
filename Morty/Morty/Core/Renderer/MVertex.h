@@ -11,7 +11,7 @@
 #include "MGlobal.h"
 #include "Vector.h"
 #include "MString.h"
-#include "MVariable.h"
+#include "MVariant.h"
 #include <map>
 #include <vector>
 
@@ -76,7 +76,7 @@ public:
 struct MShaderParam
 {
 	MString strName;
-	MVariable var;
+	Variant var;
 	
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	class ID3D11Buffer* pBuffer;

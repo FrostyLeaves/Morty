@@ -10,7 +10,7 @@
 #include "MMaterial.h"
 #include "MSpatial.h"
 #include "MResourceManager.h"
-#include "MVariable.h"
+#include "MVariant.h"
 #include "MMaterialResource.h"
 #include "MTexture.h"
 #include "MTextureResource.h"
@@ -77,11 +77,11 @@ public:
 
 		if (true == m_bW)
 		{
-			this->SetPosition(this->GetPosition() + GetFront() * speed * fDelta);
+			this->SetPosition(this->GetPosition() + GetForward() * speed * fDelta);
 		}
 		if (true == m_bS)
 		{
-			this->SetPosition(this->GetPosition() + GetFront() * -speed * fDelta);
+			this->SetPosition(this->GetPosition() + GetForward() * -speed * fDelta);
 		}
 		if (true == m_bA)
 		{
@@ -104,10 +104,10 @@ public:
 		{
 
 			Vector3 up = Vector3(0, 1, 0);
-			SetRotation(GetRotation() * Quaternion(up, m_v2MouseAddi.x));
+			SetRotation(GetRotation() * Quaternion(up, m_v2MouseAddi.x * 0.25f));
 
 			Vector3 right = GetRight();
-			SetRotation(GetRotation() * Quaternion(right, m_v2MouseAddi.y));
+			SetRotation(GetRotation() * Quaternion(right, m_v2MouseAddi.y * 0.25f));
 
 
 
@@ -173,7 +173,7 @@ int main(int argc, char* argv[])
 		pMeshIns->SetMaterial(pMaterial);
 	}
 
-	//pRootNode->AddNode(pSpatial);
+	pRootNode->AddNode(pSpatial);
 
 
 	MyCamera* pCamera = engine.GetObjectManager()->CreateObject<MyCamera>();

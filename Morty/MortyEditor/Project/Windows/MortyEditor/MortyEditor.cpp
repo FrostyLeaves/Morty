@@ -18,7 +18,7 @@
 #include "MMaterial.h"
 #include "MSpatial.h"
 #include "MResourceManager.h"
-#include "MVariable.h"
+#include "Variant.h"
 #include "MMaterialResource.h"
 
 #include "MShader.h"

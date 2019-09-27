@@ -583,13 +583,13 @@ void MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 				ID3D11ShaderReflectionVariable* pVar = pConstBuffer->GetVariableByIndex(n);
 				pVar->GetDesc(&varDesc);
 				ID3D11ShaderReflectionType* pType = pVar->GetType();
-				cbufferStruct.AppendVariable(varDesc.Name, GenerateVariableByBuffer(pType));
+				cbufferStruct.AppendVariant(varDesc.Name, GenerateVariableByBuffer(pType));
 			}
 
 
 			MShaderParam param;
 			param.strName = bufferDesc.Name;
-			param.var = MVariable(cbufferStruct);
+			param.var = Variant(cbufferStruct);
 
 			(*ppShaderBuffer)->m_vShaderParamsTemplate.push_back(param);
 		}
@@ -765,9 +765,9 @@ ID3D11InputLayout* MDirectX11Device::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC 
 	return pVertexInputLayout;
 }
 
-MVariable MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType* pReflectionType)
+Variant MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType* pReflectionType)
 {
-	MVariable variable;
+	Variant variable;
 
 	D3D11_SHADER_TYPE_DESC typeDesc;
 	pReflectionType->GetDesc(&typeDesc);
@@ -786,7 +786,7 @@ MVariable MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType*
 			D3D11_SHADER_TYPE_DESC childTypeDesc;
 			pMemberType->GetDesc(&childTypeDesc);
 
-			mryStruct.AppendVariable(strName, GenerateVariableByBuffer(pMemberType));
+			mryStruct.AppendVariant(strName, GenerateVariableByBuffer(pMemberType));
 		}
 
 
@@ -799,19 +799,19 @@ MVariable MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType*
 
 		if (type == "float4")
 		{
-			variable = MVariable(Vector4());
+			variable = Variant(Vector4());
 		}
 		else if (type == "float3")
 		{
-			variable = MVariable(Vector3());
+			variable = Variant(Vector3());
 		}
 		else if (type == "float3x3")
 		{
-			variable = MVariable(Matrix3());
+			variable = Variant(Matrix3());
 		}
 		else if (type == "float4x4")
 		{
-			variable = MVariable(Matrix4());
+			variable = Variant(Matrix4());
 		}
 
 	}
@@ -822,7 +822,7 @@ MVariable MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType*
 		MVariantArray array;
 
 		for (unsigned int i = 0; i < typeDesc.Elements; ++i)
-			array.AppendVariable(variable);
+			array.AppendVariant(variable);
 
 		return array;
 	}

@@ -10,6 +10,7 @@
 #define _M_MTRANSFORM_H_
 #include "MGlobal.h"
 #include "Vector.h"
+#include "Matrix.h"
 #include "Quaternion.h"
 
 class MORTY_CLASS MTransform
@@ -31,9 +32,9 @@ public:
 
 	Matrix4 GetMatrix();
 
-	Vector3 GetUp() { return Vector3(0, 1, 0) * m_qtRotation.GetMatrix(); }
-	Vector3 GetFront() { return Vector3(0, 0, 1) * m_qtRotation.GetMatrix(); }
-	Vector3 GetRight() { return Vector3(1, 0, 0) * m_qtRotation.GetMatrix(); }
+	Vector3 GetUp() { return Matrix4(m_qtRotation) * Vector3(0, 1, 0); }
+	Vector3 GetForward() { return Matrix4(m_qtRotation) * Vector3(0, 0, 1); }
+	Vector3 GetRight() { return Matrix4(m_qtRotation) * Vector3(1, 0, 0); }
 
 private:
 

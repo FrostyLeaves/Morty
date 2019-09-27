@@ -82,11 +82,11 @@ void MIScene::DrawNode(MIRenderer* pRenderer, MIViewport* pViewport, MNode* pNod
 				Matrix4 worldTrans = pMeshIns->GetWorldTransform();
 
 				//Transposed and Inverse. but hlsl has been transporsed.
-				Matrix3 matNormal(worldTrans.Inverse(), 3, 3);
+				Matrix3 matNormal(worldTrans.Transposed().Inverse(), 3, 3);
 
 				MStruct* pSpaceStruct = param.var.GetByType<MStruct>();
-				pSpaceStruct->SetMember("MatWorld", worldTrans.Transposed());
-				pSpaceStruct->SetMember("MatCamProj", pViewport->GetCameraInverseProjection().Transposed());
+				pSpaceStruct->SetMember("MatWorld", worldTrans);
+				pSpaceStruct->SetMember("MatCamProj", pViewport->GetCameraInverseProjection());
 
 				pSpaceStruct->SetMember("MatNormal", matNormal);
 				break;
@@ -133,11 +133,11 @@ void MIScene::DrawSkyBox(MIRenderer* pRenderer, MIViewport* pViewport)
 					MStruct* pSpaceStruct = param.var.GetByType<MStruct>();
 					Matrix4 mat(Matrix4::IdentityMatrix);
 					Vector3 camPos = pViewport->GetCamera()->GetPosition();
-					mat.m[3][0] = camPos.x;
-					mat.m[3][1] = camPos.y;
-					mat.m[3][2] = camPos.z;
-					pSpaceStruct->SetMember("MatWorld", mat.Transposed());
-					pSpaceStruct->SetMember("MatCamProj", pViewport->GetCameraInverseProjection().Transposed());
+					mat.m[0][3] = camPos.x;
+					mat.m[1][3] = camPos.y;
+					mat.m[2][3] = camPos.z;
+					pSpaceStruct->SetMember("MatWorld", mat);
+					pSpaceStruct->SetMember("MatCamProj", pViewport->GetCameraInverseProjection());
 					break;
 				}
 			}
