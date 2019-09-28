@@ -14,9 +14,9 @@
 #include "MVertex.h"
 #include "MMesh.h"
 
-class aiNode;
-class aiScene;
-class aiMesh;
+struct aiNode;
+struct aiScene;
+struct aiMesh;
 class MModel;
 class MORTY_CLASS MModelResource : public MResource
 {

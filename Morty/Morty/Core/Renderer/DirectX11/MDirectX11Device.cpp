@@ -1,7 +1,8 @@
 ﻿#include "MDirectX11Device.h"
 
-#include "D3Dcompiler.h"
-#include "d3d11shader.h"
+#include <d3dcommon.h>
+#include <D3Dcompiler.h>
+#include <d3d11shader.h>
 
 #include "MLogManager.h"
 #include "MMesh.h"

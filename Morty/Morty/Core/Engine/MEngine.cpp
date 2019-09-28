@@ -27,7 +27,7 @@ MEngine::MEngine()
 	, m_pRootNode(nullptr)
 	, m_pDevice(nullptr)
 	, m_pRenderer(nullptr)
-	, m_cTickInfo(60)
+	, m_cTickInfo(50)
 {
 }
 
@@ -177,12 +177,12 @@ bool MEngine::MainLoop()
 
 	float lTimeDelta = (float)(currentTime - m_cTickInfo.lPrevTickTime) / 1000;
 
-//	if (lTimeDelta >= m_cTickInfo.fTickInterval)
+	if (lTimeDelta >= m_cTickInfo.fTickInterval)
 	{
+//		MLogManager::GetInstance()->Log("fps: %f", 1.0f / lTimeDelta);
+
 		Tick(lTimeDelta);
 		m_cTickInfo.lPrevTickTime = currentTime;
-
-//		MLogManager::GetInstance()->Log("fps: %f", 1.0f / lTimeDelta);
 
 		for (std::vector<MIRenderView*>::iterator iter = m_vView.begin(); iter != m_vView.end();)
 		{
@@ -199,9 +199,13 @@ bool MEngine::MainLoop()
 				iter = m_vView.erase(iter);
 			}
 		}
-	}
 
-	Sleep(1000 / (m_cTickInfo.nMaxFPS + 10));
+		int nTime = (int)(m_cTickInfo.fTickInterval * 1000) * 0.75 - (MTimer::GetCurTime() - currentTime);
+		if (nTime > 0)
+		{
+			Sleep(nTime);
+		}
+	}
 
 	return !m_vView.empty();
 }

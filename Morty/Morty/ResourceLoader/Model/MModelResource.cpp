@@ -49,6 +49,7 @@ bool MModelResource::Load(const MString& strResourcePath)
 
 	ProcessNode(scene->mRootNode, scene);
 
+	return true;
 }
 
 

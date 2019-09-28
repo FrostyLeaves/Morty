@@ -74,20 +74,41 @@ void M3DNode::SetPosition(const Vector3& pos)
 	LocalTransformDirty();
 }
 
-Vector3 M3DNode::GetPosition()
-{
-	return m_transform.GetPosition();
-}
-
 void M3DNode::SetRotation(const Quaternion& quat)
 {
 	m_transform.SetRotation(quat);
 	LocalTransformDirty();
 }
 
-Quaternion M3DNode::GetRotation()
+void M3DNode::SetScale(const Vector3& scale)
 {
-	return m_transform.GetRotation();
+	m_transform.SetScale(scale);
+	LocalTransformDirty();
+}
+
+void M3DNode::LookAt(const Vector3& v3TargetWorldPos, Vector3 v3UpDir)
+{
+	Vector3 v3WorldPos = GetPosition();
+
+	Vector3 v3Forward = v3TargetWorldPos - v3WorldPos;
+	v3Forward.Normalization();
+	v3UpDir.Normalization();
+
+	Vector3 v3RightDir = v3UpDir.CrossProduct(v3Forward);
+	v3RightDir.Normalization();
+	v3UpDir = v3Forward.CrossProduct(v3RightDir);
+	v3UpDir.Normalization();
+
+	Matrix4 rotate( v3RightDir.x, v3RightDir.y, v3RightDir.z, 0,
+					v3UpDir.x, v3UpDir.y, v3UpDir.z, 0 ,
+					v3Forward.x, v3Forward.y, v3Forward.z, 0,
+					0, 0, 0, 1);
+	rotate = rotate.Transposed();
+
+	Quaternion quat = rotate.GetRotation();
+	quat.Normalize();
+	m_transform.SetRotation(quat);
+	LocalTransformDirty();
 }
 
 void M3DNode::WorldTransformDirty(MNode* pNode)

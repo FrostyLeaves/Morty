@@ -28,9 +28,6 @@
 
 #include "Quaternion.h"
 
-#include "Renderer/DirectX11/MDirectX11Device.h"
-
-
 class MySpatial : public MSpatial
 {
 public:
@@ -67,6 +64,7 @@ public:
 		m_bD = false;
 		m_bQ = false;
 		m_bE = false;
+		m_bL = false;
 		m_bRB = false;
 	}
 
@@ -100,7 +98,11 @@ public:
 			this->SetPosition(this->GetPosition() + GetUp() * speed * fDelta);
 		}
 
-		if (m_bRB && (m_v2MouseAddi.x != 0 || m_v2MouseAddi.y != 0))
+		if (m_bL)
+		{
+			LookAt(static_cast<M3DNode*>(GetRootNode()->FindFirstChildByName("Teaport"))->GetPosition(), Vector3(0, 1, 0));
+		}
+		else if (m_bRB && (m_v2MouseAddi.x != 0 || m_v2MouseAddi.y != 0))
 		{
 
 			Vector3 up = Vector3(0, 1, 0);
@@ -108,8 +110,6 @@ public:
 
 			Vector3 right = GetRight();
 			SetRotation(GetRotation() * Quaternion(right, m_v2MouseAddi.y * 0.25f));
-
-
 
 			m_v2MouseAddi = Vector2(0, 0);
 		}
@@ -122,6 +122,7 @@ public:
 	bool m_bD;
 	bool m_bQ;
 	bool m_bE;
+	bool m_bL;
 
 	bool m_bRB;
 
@@ -143,6 +144,7 @@ int main(int argc, char* argv[])
 	MSpatial* pSpatial = engine.GetObjectManager()->CreateObject<MySpatial>();
 	pSpatial->Load(pResource);
 	pSpatial->SetPosition(Vector3(0, -20, 200));
+	pSpatial->SetName("Teaport");
 
 
 	for (int i = 0; i < pSpatial->GetChildren().size(); ++i)
@@ -214,6 +216,10 @@ int main(int argc, char* argv[])
 			if (pKeyInput->GetKey() == 'E')
 			{
 				pCamera->m_bE = pKeyInput->GetType() == MKeyBoardInputEvent::KeyBoardDown;
+			}
+			if (pKeyInput->GetKey() == 'L')
+			{
+				pCamera->m_bL = pKeyInput->GetType() == MKeyBoardInputEvent::KeyBoardDown;
 			}
 		}
 

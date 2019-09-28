@@ -23,10 +23,15 @@ public:
 
 
 	void SetPosition(const Vector3& pos);
-	Vector3 GetPosition();
+	Vector3 GetPosition() { return m_transform.GetPosition(); }
 
 	void SetRotation(const Quaternion& quat);
-	Quaternion GetRotation();
+	Quaternion GetRotation(){ return m_transform.GetRotation(); }
+
+	void SetScale(const Vector3& scale);
+	Vector3 GetScale() { return m_transform.GetScale(); }
+
+	void LookAt(const Vector3& v3TargetWorldPos, Vector3 v3UpDir);
 
 	Matrix4 GetWorldTransform();
 	Matrix4 GetLocalTransform();
