@@ -93,6 +93,41 @@ MNode* MNode::FindFirstChildByName(const MString& strName)
 	return nullptr;
 }
 
+std::vector<MNode*> MNode::FindChildrenByName(const MString& strName)
+{
+	std::vector<MNode*> vResult;
+	FindChildrenByName(strName, vResult);
+	return vResult;
+}
+
+void MNode::FindChildrenByName(const MString& strName, std::vector<MNode*>& vNodes)
+{
+	for (MNode* pNode : m_vChildren)
+	{
+		if (pNode->m_strName == strName)
+			vNodes.push_back(pNode);
+		pNode->FindChildrenByName(strName, vNodes);
+	}
+}
+
+std::vector<MNode*> MNode::FindChildrenByFunc(const SearchNodeFunction& func)
+{
+	std::vector<MNode*> vResult;
+	if (func)
+		FindChildrenByFunc(func, vResult);
+	return vResult;
+}
+
+void MNode::FindChildrenByFunc(const SearchNodeFunction& func, std::vector<MNode*>& vNodes)
+{
+	for (MNode* pNode : m_vChildren)
+	{
+		if(func(pNode))
+			vNodes.push_back(pNode);
+		pNode->FindChildrenByFunc(func, vNodes);
+	}
+}
+
 bool MNode::RemoveNode(MNode* pNode)
 {
 	for (std::vector<MNode*>::iterator iter = m_vChildren.begin(); iter != m_vChildren.end(); ++iter)

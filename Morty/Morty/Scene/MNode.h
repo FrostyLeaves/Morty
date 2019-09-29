@@ -13,6 +13,7 @@
 #include "MString.h"
 
 #include <vector>
+#include <functional>
 
 class MIScene;
 class MORTY_CLASS MNode : public MObject
@@ -20,6 +21,8 @@ class MORTY_CLASS MNode : public MObject
 public:
     MNode();
     virtual ~MNode();
+
+	typedef std::function<bool(MNode*)> SearchNodeFunction;
 
 public:
 
@@ -34,6 +37,8 @@ public:
 	MNode* GetRootNode();
 
 	MNode* FindFirstChildByName(const MString& strName);
+	std::vector<MNode*> FindChildrenByName(const MString& strName);
+	std::vector<MNode*> FindChildrenByFunc(const SearchNodeFunction& func);
 
 	virtual bool AddNode(MNode* pNode);
 	virtual bool RemoveNode(MNode* pNode);
@@ -69,7 +74,27 @@ public:
 		return nullptr;
 	}
 
+	template <class T>
+	T* FindChildrenByType()
+	{
+		std::vector<T*> vResult;
+		FindChildrenByType<T>(vResult);
+		return vResult;
+	}
+
 protected:
+	template <class T>
+	void FindChildrenByType(std::vector<T*>& vNodes)
+	{
+		for (MNode* pNode : m_vChildren)
+		{
+			if (dynamic_cast<T*>(pNode))
+				vNodes.push_back(static_cast<T*>(pNode));
+			pNode->FindChildrenByType<T>(vNodes);
+		}
+	}
+	void FindChildrenByName(const MString& strName, std::vector<MNode*>& vNodes);
+	void FindChildrenByFunc(const SearchNodeFunction& func, std::vector<MNode*>& vNodes);
 
 	friend class MIScene;
 	void SetAttachedScene(MIScene* pScene);

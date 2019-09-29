@@ -24,6 +24,8 @@ public:
 
 	void SetPosition(const Vector3& pos);
 	Vector3 GetPosition() { return m_transform.GetPosition(); }
+	void SetWorldPosition(const Vector3& pos);
+	Vector3 GetWorldPosition();
 
 	void SetRotation(const Quaternion& quat);
 	Quaternion GetRotation(){ return m_transform.GetRotation(); }
@@ -33,10 +35,9 @@ public:
 
 	void LookAt(const Vector3& v3TargetWorldPos, Vector3 v3UpDir);
 
+	Matrix4 GetParentWorldTransform();
 	Matrix4 GetWorldTransform();
 	Matrix4 GetLocalTransform();
-
-	void UpdateWorldTransform();
 
 	Vector3 GetUp() { return m_transform.GetUp(); }
 	Vector3 GetForward() { return m_transform.GetForward(); }
@@ -46,6 +47,8 @@ public:
 
 	virtual bool AddNode(MNode* pNode) override;
 
+public:
+	void UpdateWorldTransform();
 protected:
 	static void WorldTransformDirty(MNode* pNode);
 	void LocalTransformDirty();

@@ -26,7 +26,7 @@ bool MSpatial::Load(MResource* pResource)
 		}
 
 
-		//Do smoething.
+		//Do something.
 		return true;
 	}
 
