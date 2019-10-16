@@ -29,6 +29,7 @@ public:
 
 	void SetVisible(const bool& bVisible);
 	bool GetVisible() { return m_bVisible; }
+	bool GetVisibleRecursively() { return m_bVisibleRecursively; }
 
 public:
 
@@ -99,6 +100,8 @@ protected:
 	friend class MIScene;
 	void SetAttachedScene(MIScene* pScene);
 
+	void UpdateVisibleRecursively();
+
 protected:
 
 	MNode* m_pParent;
@@ -107,6 +110,7 @@ protected:
 
 	MString m_strName;
 
+	bool m_bVisibleRecursively;
 	bool m_bVisible;
 };
 

@@ -58,6 +58,9 @@
     <Filter Include="Scene\Light">
       <UniqueIdentifier>{9dcf4d1f-a31f-447f-a127-4f1eb1a113d2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\Organizer">
+      <UniqueIdentifier>{b4cfd318-6f5c-411e-a670-47ab5b74580a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../ReadMe.txt" />
@@ -159,9 +162,6 @@
     <ClInclude Include="..\..\Core\Renderer\MTexture.h">
       <Filter>Core\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Core\MIScene.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Scene\Light\MILight.h">
       <Filter>Scene\Light</Filter>
     </ClInclude>
@@ -194,6 +194,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Core\Renderer\MVariant.h">
       <Filter>Core\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Organizer\MIScene.h">
+      <Filter>Core\Organizer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -284,9 +287,6 @@
     <ClCompile Include="..\..\Core\Renderer\MTexture.cpp">
       <Filter>Core\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Core\MIScene.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Scene\Light\MILight.cpp">
       <Filter>Scene\Light</Filter>
     </ClCompile>
@@ -319,6 +319,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\MVariant.cpp">
       <Filter>Core\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Organizer\MIScene.cpp">
+      <Filter>Core\Organizer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

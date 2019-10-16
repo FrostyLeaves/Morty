@@ -22,6 +22,8 @@ class MPointLight;
 class MIRenderer;
 class MIRenderView;
 class MIViewport;
+class MMaterial;
+class MMeshInstance;
 class MORTY_CLASS MIScene : public MObject
 {
 public:
@@ -33,11 +35,16 @@ public:
 	virtual void SetRootNode(MNode* pRootNode);
 	MNode* GetRootNode() { return m_pRootNode; }
 
-	void OnAddNode(MNode* pNode);
-	void OnRemoveNode(MNode* pNode);
-
-
 public:
+
+	//节点接入场景时进行的操作
+	void OnNodeEnter(MNode* pNode);
+	//节点退出场景时进行的操作
+	void OnNodeExit(MNode* pNode);
+
+	void RecordMeshInstance(MMeshInstance* pMeshInstance);
+	void CancelRecordMeshInstance(MMeshInstance* pMeshInstance);
+
 	virtual void Render(MIRenderer* pRenderer, MIViewport* pViewport);
 
 	virtual void OnCreated() override;
@@ -46,7 +53,7 @@ public:
 
 protected:
 
-	void DrawNode(MIRenderer* pRenderer, MIViewport* pViewport, MNode* pNode);
+	void DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport);
 	void DrawSkyBox(MIRenderer* pRenderer, MIViewport* pViewport);
 
 private:
@@ -56,6 +63,13 @@ private:
 
 	std::vector<MDirectionalLight*> m_vDirectionalLight;
 	std::vector<MPointLight*> m_vPointLight;
+
+	struct MaterialMeshInsGroup
+	{
+		MMaterial* pMat;
+		std::vector<MMeshInstance*> vMeshIns;
+	};
+	std::vector<MaterialMeshInsGroup*> m_vMatMeshInsGroup;
 
 	MIViewport* m_pAttachedViewport;
 };

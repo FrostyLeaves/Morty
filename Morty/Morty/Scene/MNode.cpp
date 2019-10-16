@@ -7,6 +7,7 @@ MNode::MNode()
 	: MObject()
 	, m_pParent(nullptr)
 	, m_pScene(nullptr)
+	, m_bVisibleRecursively(true)
 	, m_bVisible(true)
 {
 
@@ -17,9 +18,27 @@ MNode::~MNode()
 
 }
 
+void MNode::UpdateVisibleRecursively()
+{
+	bool bParentVisible = m_pParent ? m_pParent->m_bVisibleRecursively : true;
+
+	m_bVisibleRecursively = bParentVisible & m_bVisible;
+	for (MNode* pChild : m_vChildren)
+		pChild->UpdateVisibleRecursively();
+}
+
 void MNode::SetVisible(const bool& bVisible)
 {
+	if (m_bVisible == bVisible)
+		return;
+
 	m_bVisible = bVisible;
+
+	bool bParentVisible = m_pParent ? m_pParent->m_bVisibleRecursively : true;
+
+	if ((bParentVisible & bVisible) != m_bVisibleRecursively)
+		UpdateVisibleRecursively();
+
 }
 
 void MNode::SetAttachedScene(MIScene* pScene)
@@ -39,10 +58,10 @@ void MNode::SetAttachedScene(MIScene* pScene)
 				que.push(pChildNode);
 
 			if (pFrontNode->m_pScene)
-				pFrontNode->m_pScene->OnRemoveNode(pFrontNode);
+				pFrontNode->m_pScene->OnNodeExit(pFrontNode);
 
 			if (pFrontNode->m_pScene = pScene)
-				pScene->OnAddNode(pFrontNode);
+				pScene->OnNodeEnter(pFrontNode);
 		}
 	}
 }

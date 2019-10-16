@@ -47,10 +47,11 @@ public:
 	virtual void DrawMesh(MIMesh* pMesh) override;
 
 	virtual void SetUseMaterial(MMaterial* pMaterial) override;
-	virtual void UpdateShaderParam(MShaderParam& param) override;
+	virtual void UpdateMaterialParam() override;
+	virtual void UpdateMaterialResource() override;
 
 public:
-
+	void UpdateShaderParam(MShaderParam& param);
 protected:
 
 	struct RenderTarget
@@ -80,6 +81,8 @@ protected:
 	std::vector<RenderTarget> m_vRenderTargets;
 
 	MDirectX11Device* m_pDevice;
+
+	MMaterial* m_pUsingMaterial;
 };
 
 

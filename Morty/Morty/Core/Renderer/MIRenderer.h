@@ -65,7 +65,8 @@ public:
 	virtual void DrawMesh(MIMesh* pMesh) = 0;
 
 	virtual void SetUseMaterial(MMaterial* pMaterial) = 0;
-	virtual void UpdateShaderParam(MShaderParam& param) = 0;
+	virtual void UpdateMaterialParam() = 0;
+	virtual void UpdateMaterialResource() = 0;
 
 
 protected:

@@ -26,6 +26,7 @@ MDirectX11Renderer::MDirectX11Renderer(MDirectX11Device* pDevice)
 	, m_pRasterizerState_Wireframe_CullNone(nullptr)
 	, m_pRasterizerState_Solid_CullNone(nullptr)
 	, m_pRasterizerState_Solid_CullBack(nullptr)
+	, m_pUsingMaterial(nullptr)
 {
 
 }
@@ -441,6 +442,8 @@ void MDirectX11Renderer::OnResize(RenderTarget& rt, const int& nWidth, const int
 
 void MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial)
 {
+	if (m_pUsingMaterial == pMaterial)
+		return;
 
 	if (nullptr == pMaterial)
 	{
@@ -456,6 +459,8 @@ void MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial)
 		//TODO 使用默认材质
 		return;
 	}
+
+	m_pUsingMaterial = pMaterial;
 
 	if (nullptr == pVertexShader->GetBuffer())
 	{
@@ -479,38 +484,6 @@ void MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial)
 	m_pDevice->m_pD3dContext->VSSetShader(dynamic_cast<MVertexShaderBuffer*>(pVertexShader->GetBuffer())->m_pVertexShader, nullptr, 0);
 	m_pDevice->m_pD3dContext->PSSetShader(dynamic_cast<MPixelShaderBuffer*>(pPixelShader->GetBuffer())->m_pPixelShader, nullptr, 0);
 
-
-	for (MShaderParam& param : pMaterial->GetVertexShaderParams())
-	{
-		UpdateShaderParam(param);
-		m_pDevice->m_pD3dContext->VSSetConstantBuffers(param.unBindPoint, param.unBindCount, &param.pBuffer);
-	}
-
-	for (MShaderParam& param : pMaterial->GetPixelShaderParams())
-	{
-		UpdateShaderParam(param);
-		m_pDevice->m_pD3dContext->PSSetConstantBuffers(param.unBindPoint, param.unBindCount, &param.pBuffer);
-	}
-
-	for (MShaderTextureParam& param : pMaterial->GetPixelTextureParams())
-	{
-		if (param.pTexture)
-		{
-			if (nullptr == param.pTexture->GetBuffer())
-				param.pTexture->GenerateBuffer(m_pDevice);
-
-			m_pDevice->m_pD3dContext->PSSetShaderResources(param.unBindPoint, param.unBindCount, &(param.pTexture->GetBuffer()->m_pShaderResourceView));
-		}
-		else
-		{
-			m_pDevice->m_pD3dContext->PSSetShaderResources(param.unBindPoint, param.unBindCount, &(m_pDefaultTexture->GetBuffer()->m_pShaderResourceView));
-		}
-	}
-
-	for (MShaderSampleParam& param : pMaterial->GetPixelShader()->GetBuffer()->m_vSampleParamsTemplate)
-	{
-		m_pDevice->m_pD3dContext->PSSetSamplers(param.unBindPoint, param.unBindCount, &m_pDefaultSamplerState);
-	}
 }
 
 void MDirectX11Renderer::DrawMesh(MIMesh* pMesh)
@@ -530,6 +503,51 @@ void MDirectX11Renderer::DrawMesh(MIMesh* pMesh)
 		m_pDevice->m_pD3dContext->IASetIndexBuffer(pBuffer->m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 		m_pDevice->m_pD3dContext->DrawIndexed(pMesh->GetIndicesLength(), 0, 0);
+	}
+}
+
+void MDirectX11Renderer::UpdateMaterialParam()
+{
+	if (!m_pUsingMaterial)
+		return;
+
+	for (MShaderParam& param : m_pUsingMaterial->GetVertexShaderParams())
+	{
+		UpdateShaderParam(param);
+		m_pDevice->m_pD3dContext->VSSetConstantBuffers(param.unBindPoint, param.unBindCount, &param.pBuffer);
+	}
+
+	for (MShaderParam& param : m_pUsingMaterial->GetPixelShaderParams())
+	{
+		UpdateShaderParam(param);
+		m_pDevice->m_pD3dContext->PSSetConstantBuffers(param.unBindPoint, param.unBindCount, &param.pBuffer);
+	}
+
+}
+
+void MDirectX11Renderer::UpdateMaterialResource()
+{
+	if (!m_pUsingMaterial)
+		return;
+
+	for (MShaderTextureParam& param : m_pUsingMaterial->GetPixelTextureParams())
+	{
+		if (param.pTexture)
+		{
+			if (nullptr == param.pTexture->GetBuffer())
+				param.pTexture->GenerateBuffer(m_pDevice);
+
+			m_pDevice->m_pD3dContext->PSSetShaderResources(param.unBindPoint, param.unBindCount, &(param.pTexture->GetBuffer()->m_pShaderResourceView));
+		}
+		else
+		{
+			m_pDevice->m_pD3dContext->PSSetShaderResources(param.unBindPoint, param.unBindCount, &(m_pDefaultTexture->GetBuffer()->m_pShaderResourceView));
+		}
+	}
+
+	for (MShaderSampleParam& param : m_pUsingMaterial->GetPixelShader()->GetBuffer()->m_vSampleParamsTemplate)
+	{
+		m_pDevice->m_pD3dContext->PSSetSamplers(param.unBindPoint, param.unBindCount, &m_pDefaultSamplerState);
 	}
 }
 
