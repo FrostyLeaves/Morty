@@ -10,6 +10,10 @@
 #include "MTexture.h"
 #include "MShader.h"
 
+#ifndef D3D_COMPILE_STANDARD_FILE_INCLUDE
+#define D3D_COMPILE_STANDARD_FILE_INCLUDE ((ID3DInclude*)(UINT_PTR)1)
+#endif
+
 MDirectX11Device::MDirectX11Device()
 	: MIDevice()
 	, m_pD3dDevice(nullptr)
@@ -443,7 +447,7 @@ void MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 	const char* svFuncName = eShaderType == MShader::MEShaderType::Vertex ? "VS" : "PS";
 	const char* svProFile = eShaderType == MShader::MEShaderType::Vertex ? "vs_5_0" : "ps_5_0";
 
-	HRESULT hr = D3DX11CompileFromFile(strShaderPath.c_str(), NULL, NULL, svFuncName, svProFile, shaderFlags, 0, nullptr, &pShaderBuffer, &pErrorMessage, nullptr);
+	HRESULT hr = D3DX11CompileFromFile(strShaderPath.c_str(), NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, svFuncName, svProFile, shaderFlags, 0, nullptr, &pShaderBuffer, &pErrorMessage, nullptr);
 	if (FAILED(hr))
 	{
 		if (pErrorMessage)

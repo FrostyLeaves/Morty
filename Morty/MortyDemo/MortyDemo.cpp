@@ -165,7 +165,7 @@ int main(int argc, char* argv[])
 
 		if (MResource* pTexResource = engine.GetResourceManager()->Load("./Model/teaport.png"))
 		{
-			pMaterial->SetPixelTexutreParam("texture0", pTexResource);
+			pMaterial->SetPixelTexutreParam("U_mat.texDiffuse", pTexResource);
 		}
 
 		std::vector<MShaderParam>& vParams = pMaterial->GetVertexShaderParams();
