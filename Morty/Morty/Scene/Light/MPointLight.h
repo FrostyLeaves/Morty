@@ -11,7 +11,9 @@
 #include "MGlobal.h"
 #include "MILight.h"
 
-class MORTY_CLASS MPointLight : MILight
+#include "Vector.h"
+
+class MORTY_CLASS MPointLight : public MILight
 {
 public:
     MPointLight();
@@ -19,8 +21,19 @@ public:
 
 public:
 
-private:
+	void SetAmbientColor(const ColorRGB& color) { m_f3Ambient = color; }
+	ColorRGB GetAmbientColor() { return m_f3Ambient; }
 
+	void SetDiffuseColor(const ColorRGB& color) { m_f3Diffuse = color; }
+	ColorRGB GetDiffuseColor() { return m_f3Diffuse; }
+
+	void SetSpecularColor(const ColorRGB& color) { m_f3Specular = color; }
+	ColorRGB GetSpecularColor() { return m_f3Specular; }
+
+private:
+	ColorRGB m_f3Ambient;
+	ColorRGB m_f3Diffuse;
+	ColorRGB m_f3Specular;
 };
 
 

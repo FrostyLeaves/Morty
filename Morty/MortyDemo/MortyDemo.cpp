@@ -24,6 +24,7 @@
 #include "MCamera.h"
 #include "MIScene.h"
 #include "MIViewport.h"
+#include "MPointLight.h"
 
 
 #include "Quaternion.h"
@@ -70,6 +71,7 @@ public:
 
 	virtual void OnTick(const float& fDelta)
 	{
+		MPointLight* pLight = static_cast<MPointLight*>(GetRootNode()->FindFirstChildByName("Light"));
 
 		const float speed = 50;
 
@@ -97,7 +99,20 @@ public:
 		{
 			this->SetPosition(this->GetPosition() + GetUp() * speed * fDelta);
 		}
-
+		if (true == m_bN)
+		{
+			//pLight->SetPosition(pLight->GetPosition() - Vector3(speed * fDelta, 0, 0));
+			pLight->SetAmbientColor(pLight->GetDiffuseColor() + ColorRGB(1, 1, 1) * fDelta);
+			pLight->SetDiffuseColor(pLight->GetDiffuseColor() + ColorRGB(1, 0, 1) * fDelta);
+			pLight->SetSpecularColor(pLight->GetDiffuseColor() + ColorRGB(1, 1, 1) * fDelta);
+		}
+		if (true == m_bM)
+		{
+			//pLight->SetPosition(pLight->GetPosition() + Vector3(speed * fDelta, 0, 0));
+			pLight->SetAmbientColor(pLight->GetDiffuseColor() - ColorRGB(1, 1, 1) * fDelta);
+			pLight->SetDiffuseColor(pLight->GetDiffuseColor() - ColorRGB(1, 0, 1) * fDelta);
+			pLight->SetSpecularColor(pLight->GetDiffuseColor() - ColorRGB(1, 1, 1) * fDelta);
+		}
 		if (m_bL)
 		{
 			LookAt(static_cast<M3DNode*>(GetRootNode()->FindFirstChildByName("Teaport"))->GetPosition(), GetUp());
@@ -113,6 +128,7 @@ public:
 
 			m_v2MouseAddi = Vector2(0, 0);
 		}
+
 	}
 
 
@@ -123,6 +139,8 @@ public:
 	bool m_bQ;
 	bool m_bE;
 	bool m_bL;
+	bool m_bN;
+	bool m_bM;
 
 	bool m_bRB;
 
@@ -166,6 +184,21 @@ int main(int argc, char* argv[])
 		if (MResource* pTexResource = engine.GetResourceManager()->Load("./Model/teaport.png"))
 		{
 			pMaterial->SetPixelTexutreParam("U_mat.texDiffuse", pTexResource);
+		//	pMaterial->SetPixelTexutreParam("U_mat.texSpecular", pTexResource);
+		}
+
+		for(MShaderParam& param : pMaterial->GetPixelShaderParams())
+		{
+			if (param.strName == "cbMaterial")
+			{
+				if (MStruct* pStruct = param.var.GetByType<MStruct>())
+				{
+					if (MStruct* pMat = pStruct->FindMember("U_mat")->GetByType<MStruct>())
+					{
+						pMat->SetMember("fShininess", 1.0f);
+					}
+				}
+			}
 		}
 
 		std::vector<MShaderParam>& vParams = pMaterial->GetVertexShaderParams();
@@ -177,6 +210,10 @@ int main(int argc, char* argv[])
 
 	pRootNode->AddNode(pSpatial);
 
+	MPointLight* pLight = engine.GetObjectManager()->CreateObject<MPointLight>();
+	pLight->SetName("Light");
+	pLight->SetPosition(Vector3(10, 10, 200));
+	pRootNode->AddNode(pLight);
 
 	MyCamera* pCamera = engine.GetObjectManager()->CreateObject<MyCamera>();
 	pCamera->SetName("Camera");
@@ -220,6 +257,14 @@ int main(int argc, char* argv[])
 			if (pKeyInput->GetKey() == 'L')
 			{
 				pCamera->m_bL = pKeyInput->GetType() == MKeyBoardInputEvent::KeyBoardDown;
+			}
+			if (pKeyInput->GetKey() == 'N')
+			{
+				pCamera->m_bN = pKeyInput->GetType() == MKeyBoardInputEvent::KeyBoardDown;
+			}
+			if (pKeyInput->GetKey() == 'M')
+			{
+				pCamera->m_bM = pKeyInput->GetType() == MKeyBoardInputEvent::KeyBoardDown;
 			}
 		}
 

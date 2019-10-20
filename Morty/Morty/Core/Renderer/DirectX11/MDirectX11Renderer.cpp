@@ -190,7 +190,7 @@ void MDirectX11Renderer::RenderViewportToView(MIViewport* pViewport, MIRenderVie
 		return;
 
 
-	float clearColor[4] = { 0.0f, 0.0f, 0.25f, 1.0f };
+	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	m_pDevice->m_pD3dContext->ClearDepthStencilView(target.pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	m_pDevice->m_pD3dContext->ClearRenderTargetView(target.pTargetView, clearColor);
 	m_pDevice->m_pD3dContext->RSSetViewports(1, &target.mViewport);

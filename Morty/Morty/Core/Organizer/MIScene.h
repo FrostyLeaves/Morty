@@ -37,6 +37,10 @@ public:
 
 public:
 
+	void FindActivePointLights(const Vector3& v3WorldPosition, std::vector<MPointLight*>& vPointLights);
+public:
+
+
 	//节点接入场景时进行的操作
 	void OnNodeEnter(MNode* pNode);
 	//节点退出场景时进行的操作
@@ -50,6 +54,7 @@ public:
 	virtual void OnCreated() override;
 
 	void SetAttachedViewport(MIViewport* pViewport);
+
 
 protected:
 

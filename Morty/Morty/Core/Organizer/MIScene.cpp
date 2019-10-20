@@ -13,6 +13,8 @@
 #include "MIRenderView.h"
 #include "MIViewport.h"
 
+#include <algorithm>
+
 MIScene::MIScene()
 	: MObject()
 	, m_pRootNode(nullptr)
@@ -32,6 +34,46 @@ void MIScene::OnCreated()
 void MIScene::SetAttachedViewport(MIViewport* pViewport)
 {
 	m_pAttachedViewport = pViewport;
+}
+
+void MIScene::FindActivePointLights(const Vector3& v3WorldPosition, std::vector<MPointLight*>& vPointLights)
+{
+	auto compareFunc = [v3WorldPosition](MPointLight* a, MPointLight* b) {
+		return (a->GetWorldPosition() - v3WorldPosition).Length() < (b->GetWorldPosition() - v3WorldPosition).Length();
+	};
+
+	if (m_vPointLight.size() <= vPointLights.size())
+	{
+		std::copy(m_vPointLight.begin(), m_vPointLight.end(), vPointLights.begin());
+	}
+	else if (vPointLights.size() * 2 < m_vPointLight.size())
+	{
+		std::fill(vPointLights.begin(), vPointLights.end(), nullptr);
+		for (MPointLight* pLight : m_vPointLight)
+		{
+			for (std::vector<MPointLight*>::iterator iter = vPointLights.begin(); iter != vPointLights.end(); ++iter)
+			{
+				if (*iter == nullptr)
+				{
+					(*iter) = pLight;
+					break;
+				}
+				else if (compareFunc(pLight, *iter))
+				{
+					for (std::vector<MPointLight*>::iterator nextIter = vPointLights.end() - 1; nextIter != iter; --nextIter)
+						(*nextIter) = *(nextIter - 1);
+					(*iter) = pLight;
+					break;
+				}
+			}
+		}
+	}
+	else
+	{
+		std::sort(m_vPointLight.begin(), m_vPointLight.end(), compareFunc);
+		std::copy(m_vPointLight.begin(), m_vPointLight.begin() + vPointLights.size(), vPointLights.begin());
+	}
+	
 }
 
 void MIScene::OnNodeEnter(MNode* pNode)
@@ -124,6 +166,9 @@ void MIScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
 			if(!pMeshIns->GetVisibleRecursively())
 				continue;
 
+			std::vector<MPointLight*> vActivePointLights(4);
+			FindActivePointLights(pMeshIns->GetWorldPosition(), vActivePointLights);
+
 			std::vector<MShaderParam>& vVtxParams = pMaterial->GetVertexShaderParams();
 			for (MShaderParam& param : vVtxParams)
 			{
@@ -146,15 +191,37 @@ void MIScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
 			std::vector<MShaderParam>& vPixParams = pMaterial->GetPixelShaderParams();
 			for (MShaderParam& param : vPixParams)
 			{
-				if (param.strName == "cbLight")
+				if (param.strName == "cbLights")
 				{
-					param.var.GetByType<MStruct>()->SetMember("AmbientLightColor", Vector3(1, 1, 1));
+					Variant* varPointLights = param.var.GetByType<MStruct>()->FindMember("U_pointLights");
+					if (varPointLights)
+					{
+						MVariantArray& vPointLights = *varPointLights->GetByType<MVariantArray>();
+						for (unsigned int i = 0; i < vPointLights.GetMemberCount(); ++i)
+						{
+							if (MStruct* pPointLight = vPointLights[i].GetByType<MStruct>())
+							{
+								if (MPointLight* pLight = vActivePointLights[i])
+								{
+									pPointLight->SetMember("f3WorldPosition", pLight->GetWorldPosition());
+									pPointLight->SetMember("f3Ambient", pLight->GetAmbientColor());
+									pPointLight->SetMember("f3Diffuse", pLight->GetDiffuseColor());
+									pPointLight->SetMember("f3Specular", pLight->GetSpecularColor());
 
-					param.var.GetByType<MStruct>()->SetMember("DiffuseLightPos", Vector3(100, 100, 200));
-					param.var.GetByType<MStruct>()->SetMember("DiffuseLightColor", Vector3(1, 1, 1));
-
-					param.var.GetByType<MStruct>()->SetMember("CameraWorldPos", pViewport->GetCamera()->GetPosition());
-					break;
+									pPointLight->SetMember("fConstant", 1.0f);
+									pPointLight->SetMember("fLinear", 0.022f);
+									pPointLight->SetMember("fQuadratic", 0.0019f);
+								}
+							}
+						}
+					}
+				}
+				else if (param.strName == "cbWorldInfo")
+				{
+					if (MStruct* pStruct = param.var.GetByType<MStruct>())
+					{
+						pStruct->SetMember("U_f3CameraWorldPos", pViewport->GetCamera()->GetWorldPosition());
+					}
 				}
 			}
 
@@ -201,7 +268,7 @@ void MIScene::DrawSkyBox(MIRenderer* pRenderer, MIViewport* pViewport)
 void MIScene::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 {
 	DrawMeshInstance(pRenderer, pViewport);
-	DrawSkyBox(pRenderer, pViewport);
+//	DrawSkyBox(pRenderer, pViewport);
 }
 
 MIScene::~MIScene()
