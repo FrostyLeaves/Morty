@@ -772,7 +772,7 @@ ID3D11InputLayout* MDirectX11Device::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC 
 
 Variant MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType* pReflectionType)
 {
-	Variant variable;
+	Variant var;
 
 	D3D11_SHADER_TYPE_DESC typeDesc;
 	pReflectionType->GetDesc(&typeDesc);
@@ -795,28 +795,36 @@ Variant MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType* p
 		}
 
 
-		variable = mryStruct;
+		var = mryStruct;
 	}
 	else
 	{
 		//Is a Variant.
 		MString type = typeDesc.Name;
 
-		if (type == "float4")
+		if (type == "float")
 		{
-			variable = Variant(Vector4());
+			var = Variant(0.0f);
+		}
+		else if (type == "float4")
+		{
+			var = Variant(Vector4());
 		}
 		else if (type == "float3")
 		{
-			variable = Variant(Vector3());
+			var = Variant(Vector3());
 		}
 		else if (type == "float3x3")
 		{
-			variable = Variant(Matrix3());
+			var = Variant(Matrix3());
 		}
 		else if (type == "float4x4")
 		{
-			variable = Variant(Matrix4());
+			var = Variant(Matrix4());
+		}
+		else
+		{
+			MLogManager::GetInstance()->Error("GenerateVariableByBuffer: Undefined type :%s", type);
 		}
 
 	}
@@ -827,10 +835,10 @@ Variant MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType* p
 		MVariantArray array;
 
 		for (unsigned int i = 0; i < typeDesc.Elements; ++i)
-			array.AppendVariant(variable);
+			array.AppendVariant(var);
 
 		return array;
 	}
 
-	return variable;
+	return var;
 }

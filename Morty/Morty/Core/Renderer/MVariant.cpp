@@ -11,7 +11,10 @@ MContainer::MContainer() : m_unByteSize(0)
 MContainer::~MContainer()
 {
 	if (m_pData)
+	{
 		delete[] m_pData;
+		m_pData = nullptr;
+	}
 }
 
 void* MContainer::GetData()
@@ -212,6 +215,7 @@ void MContainer::AppendStructMember(MStructMember& mem)
 	{
 		mem.unBeginOffset = m_unByteSize;
 		m_vMember.push_back(mem);
+		m_unByteSize += mem.var.GetSize();
 	}
 	else
 	{
