@@ -29,6 +29,8 @@
 
 #include "Quaternion.h"
 
+#include "MainEditor.h"
+
 class MySpatial : public MSpatial
 {
 public:
@@ -222,7 +224,14 @@ int main(int argc, char* argv[])
 	MIScene* pScene = engine.GetObjectManager()->CreateObject<MIScene>();
 	pScene->SetRootNode(pRootNode);
 
-	engine.CreateView()->GetViewport()->SetScene(pScene);
+
+	MainEditor* pWindowsView = new MainEditor();
+	pWindowsView->Initialize(&engine, "Morty");
+	engine.AddView(pWindowsView);
+
+	MIViewport* pViewport = engine.GetObjectManager()->CreateObject<MIViewport>();
+	pWindowsView->SetViewport(pViewport);
+	pViewport->SetScene(pScene);
 
 
 	MInputListener* pListener = new MInputListener();

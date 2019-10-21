@@ -66,7 +66,7 @@ protected:
 	};
 
 	RenderTarget CreateRenderTargetForWindow(MIRenderView* pView);
-	void OnResize(RenderTarget& renderTarget, const int& nWidth, const int& nHeight);
+	void OnResize(RenderTarget& renderTarget, int nWidth, int nHeight);
 
 protected:
 	ID3D11SamplerState* m_pDefaultSamplerState;

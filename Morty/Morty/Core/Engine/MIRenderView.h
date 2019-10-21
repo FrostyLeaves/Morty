@@ -31,6 +31,9 @@ public:
 	virtual int GetViewWidth() = 0;
 	virtual int GetViewHeight() = 0;
 
+	virtual Vector2 GetRenderRectTopLeft() { return VECTOR2_ZERO; }
+	virtual Vector2 GetRenderRectSize() { return Vector2(GetViewWidth(), GetViewHeight()); }
+
 	virtual void SetResizeCallback(const ResizeCallback& func) = 0;
 
 	virtual bool MainLoop() = 0;

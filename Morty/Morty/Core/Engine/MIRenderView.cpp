@@ -17,6 +17,6 @@ void MIRenderView::SetViewport(MIViewport* pViewport)
 {
 	if (m_pViewport = pViewport)
 	{
-		m_pViewport->SetSize(Vector2(GetViewWidth(), GetViewHeight()));
+		m_pViewport->SetSize(GetRenderRectSize());
 	}
 }

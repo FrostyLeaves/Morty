@@ -129,7 +129,6 @@ LRESULT CALLBACK MWindowsRenderView::ViewProcessFunction(HWND hwnd, UINT message
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		m_bIsClosed = true;
-		Release();
 		break;
 
 	case WM_ERASEBKGND:

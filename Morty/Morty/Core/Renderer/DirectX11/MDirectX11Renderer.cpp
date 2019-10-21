@@ -335,8 +335,13 @@ void MDirectX11Renderer::OnResize(MIRenderView* pView, const int& nWidth, const 
 
 }
 
-void MDirectX11Renderer::OnResize(RenderTarget& rt, const int& nWidth, const int& nHeight)
+void MDirectX11Renderer::OnResize(RenderTarget& rt, int nWidth, int nHeight)
 {
+	if (nWidth < 1)
+		nWidth = 1;
+	if (nHeight < 1)
+		nHeight = 1;
+
 	if (rt.pTargetView)
 	{
 		rt.pTargetView->Release();
@@ -418,12 +423,12 @@ void MDirectX11Renderer::OnResize(RenderTarget& rt, const int& nWidth, const int
 		return;
 	}
 
-	//深度缓存视图
-	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
-	ZeroMemory(&descDSV, sizeof(descDSV));
-	descDSV.Format = depthStencilDesc.Format;
-	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	descDSV.Texture2D.MipSlice = 0;
+// 	//深度缓存视图
+// 	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
+// 	ZeroMemory(&descDSV, sizeof(descDSV));
+// 	descDSV.Format = depthStencilDesc.Format;
+// 	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+// 	descDSV.Texture2D.MipSlice = 0;
 
 	hr = m_pDevice->m_pD3dDevice->CreateDepthStencilView(rt.pDepthStencilBuffer, 0, &rt.pDepthStencilView);
 	if (FAILED(hr))
@@ -435,8 +440,13 @@ void MDirectX11Renderer::OnResize(RenderTarget& rt, const int& nWidth, const int
 	// Bind the render target view and depth/stencil view to the pipeline.
 	m_pDevice->m_pD3dContext->OMSetRenderTargets(1, &rt.pTargetView, rt.pDepthStencilView);
 
-	rt.mViewport.Width = (float)nWidth;
-	rt.mViewport.Height = (float)nHeight;
+	Vector2 v2TopLeft = rt.pRenderView->GetRenderRectTopLeft();
+	Vector2 v2Size = rt.pRenderView->GetRenderRectSize();
+	rt.mViewport.TopLeftX = v2TopLeft.x;
+	rt.mViewport.TopLeftY = v2TopLeft.y;
+
+	rt.mViewport.Width = v2Size.x > 0 ? v2Size.x : 0;
+	rt.mViewport.Height = v2Size.y > 0 ? v2Size.y : 0;
 
 }
 

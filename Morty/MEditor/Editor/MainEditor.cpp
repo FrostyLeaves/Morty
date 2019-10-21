@@ -5,7 +5,7 @@
 #include "imgui_impl_dx11.h"
 
 
-#include "MDirectX11Renderer.h"
+#include "MDirectX11Device.h"
 #include "MEngine.h"
 #include "MResourceManager.h"
 #include "MObject.h"
@@ -39,11 +39,11 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 
 	ImGui::StyleColorsDark();
 
-	MDirectX11Renderer* pRenderer = dynamic_cast<MDirectX11Renderer*>(m_pEngine->GetRenderer());
+	MDirectX11Device* pDevice = dynamic_cast<MDirectX11Device*>(m_pEngine->GetDevice());
 
 	// Setup Platform/Renderer bindings
 	ImGui_ImplWin32_Init(GetHWND());
-	ImGui_ImplDX11_Init(pRenderer->GetDevice(), pRenderer->GetContext());
+	ImGui_ImplDX11_Init(pDevice->m_pD3dDevice, pDevice->m_pD3dContext);
 
 
 }
@@ -74,12 +74,8 @@ void MainEditor::OnRenderEnd()
 
 	// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
 	{
-		static float f = 0.0f;
-		static int counter = 0;
-
 		ImGui::SetNextWindowPos(ImVec2(0, 0));
 		ImGui::SetNextWindowSize(ImVec2(GetViewWidth(), GetViewHeight()));
-
 		ImGui::Begin("Morty");
 
 
@@ -89,22 +85,20 @@ void MainEditor::OnRenderEnd()
 		ImGui::End();
 	}
 
-	// 3. Show another simple window.
-	if (show_another_window)
-	{
-		ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-		ImGui::Text("Hello from another window!");
-		if (ImGui::Button("Close Me"))
-			show_another_window = false;
-		ImGui::End();
-	}
-
 	// Rendering
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
+}
 
+Vector2 MainEditor::GetRenderRectTopLeft()
+{
+	return Vector2(0 + 100, 0);
+}
 
+Vector2 MainEditor::GetRenderRectSize()
+{
+	return Vector2(m_nWidth - 200, m_nHeight);
 }
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

@@ -100,12 +100,14 @@ MIRenderView* MEngine::CreateView()
 
 void MEngine::AddView(MIRenderView* pView)
 {
+	pView->m_pEngine = this;
+
 	m_pRenderer->AddOutputView(pView);
 	pView->SetResizeCallback([=](const int& nWidth, const int& nHeight)
 	{
 		m_pRenderer->OnResize(pView, nWidth, nHeight);
 
-		pView->GetViewport()->SetSize(Vector2(nWidth, nHeight));
+		pView->GetViewport()->SetSize(pView->GetRenderRectSize());
 	});
 
 	m_vView.push_back(pView);
@@ -122,16 +124,7 @@ void MEngine::Release()
 
 	for (auto pView : m_vView)
 	{
-#if (RENDER_GRAPHICS == MORTY_DIRECTX_11)
-		if (MWindowsRenderView* pWindowsView = dynamic_cast<MWindowsRenderView*>(pView))
-		{
-			pWindowsView->Release();
-		}
-#elif (RENDER_GRAPHICS == MORTY_OPENGLES)
-		m_pRenderer = nullptr;
-#else
-		m_pRenderer = nullptr;
-#endif
+		pView->Release();
 		
 		delete pView;
 		pView = nullptr;
@@ -192,11 +185,14 @@ bool MEngine::MainLoop()
 				m_pRenderer->RenderViewportToView(pView->GetViewport(), pView);
 				++iter;
 			}
-
 			else
 			{
 				m_pRenderer->RemoveOutputView(*iter);
 				iter = m_vView.erase(iter);
+				
+				pView->Release();
+				delete pView;
+				pView = nullptr;
 			}
 		}
 

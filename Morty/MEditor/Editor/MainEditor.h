@@ -18,6 +18,8 @@ public:
 
 	virtual void OnRenderEnd() override;
 
+	virtual Vector2 GetRenderRectTopLeft();
+	virtual Vector2 GetRenderRectSize();
 
 public:
 	virtual LRESULT CALLBACK ViewProcessFunction(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) override;
