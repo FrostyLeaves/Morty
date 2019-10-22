@@ -8,6 +8,7 @@
 #include "MEngine.h"
 #include "MInputManager.h"
 #include "MIRenderer.h"
+#include "MIViewport.h"
 
 std::map<HWND, MWindowsRenderView*> MWindowsRenderView::s_tViewTable = std::map<HWND, MWindowsRenderView*>();
 HINSTANCE MWindowsRenderView::s_hInstance = 0;
@@ -89,6 +90,16 @@ bool MWindowsRenderView::Initialize(MEngine* pEngine, const char* svWindowName)
 	return true;
 }
 
+void MWindowsRenderView::OnResize(const int& nWidth, const int& nHeight)
+{
+	m_pEngine->GetRenderer()->OnResize(this, nWidth, nHeight);
+
+	for (MIViewport* pViewport : m_vViewport)
+	{
+		pViewport->SetSize(Vector2(nWidth, nHeight));
+	}
+}
+
 bool MWindowsRenderView::MainLoop()
 {
 	MSG msg = { 0 };
@@ -105,11 +116,6 @@ bool MWindowsRenderView::MainLoop()
 void MWindowsRenderView::Release()
 {
 	s_tViewTable.erase(m_hwnd);
-}
-
-void MWindowsRenderView::SetResizeCallback(const ResizeCallback& func)
-{
-	m_pResizeCallback = func;
 }
 
 LRESULT CALLBACK MWindowsRenderView::ProcessFunction(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -132,17 +138,11 @@ LRESULT CALLBACK MWindowsRenderView::ViewProcessFunction(HWND hwnd, UINT message
 		break;
 
 	case WM_ERASEBKGND:
-		m_pEngine->GetRenderer()->RenderViewportToView(GetViewport(), this);
+		m_pEngine->GetRenderer()->RenderToView(this);
 		break;
 	case WM_SIZE:
 	{
-		m_nWidth = LOWORD(lParam);
-		m_nHeight = HIWORD(lParam);
-
-		if (m_pResizeCallback)
-		{
-			m_pResizeCallback(LOWORD(lParam), HIWORD(lParam));
-		}
+		OnResize(LOWORD(lParam), HIWORD(lParam));
 
 		return DefWindowProc(hwnd, message, wParam, lParam);
 		break;

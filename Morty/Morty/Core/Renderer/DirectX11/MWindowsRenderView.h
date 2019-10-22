@@ -32,7 +32,7 @@ public:
 	virtual int GetViewWidth() override { return m_nWidth; }
 	virtual int GetViewHeight() override { return m_nHeight; }
 
-	virtual void SetResizeCallback(const ResizeCallback& func) override;
+	virtual void OnResize(const int& nWidth, const int& nHeight) override;
 
 	virtual bool MainLoop() override;
 
@@ -54,8 +54,6 @@ protected:
 
 	long long m_lEnginePrevTickTime;
 	bool m_bIsClosed;
-
-	ResizeCallback m_pResizeCallback;
 
 protected:
 	static HINSTANCE s_hInstance;

@@ -10,6 +10,7 @@
 #define _M_MIRENDERVIEW_H_
 #include "MGlobal.h"
 #include <functional>
+#include <vector>
 
 #include "Vector.h"
 
@@ -31,24 +32,22 @@ public:
 	virtual int GetViewWidth() = 0;
 	virtual int GetViewHeight() = 0;
 
-	virtual Vector2 GetRenderRectTopLeft() { return VECTOR2_ZERO; }
-	virtual Vector2 GetRenderRectSize() { return Vector2(GetViewWidth(), GetViewHeight()); }
-
-	virtual void SetResizeCallback(const ResizeCallback& func) = 0;
+	virtual void OnResize(const int& nWidth, const int& nHeight) = 0;
 
 	virtual bool MainLoop() = 0;
 
 	virtual void OnRenderBegin() {}
 	virtual void OnRenderEnd() {}
 
-	void SetViewport(MIViewport* pViewport);
-	MIViewport* GetViewport(){ return m_pViewport; }
+	void AppendViewport(MIViewport* pViewport);
+	void RemoveViewport(MIViewport* pViewport);
+	std::vector<MIViewport*>& GetViewports(){ return m_vViewport; }
 
 
 protected:
 
 	friend class MEngine;
-	MIViewport* m_pViewport;
+	std::vector<MIViewport*> m_vViewport;
 
 	MEngine* m_pEngine;
 

@@ -92,7 +92,7 @@ MIRenderView* MEngine::CreateView()
 #endif
 
 	MIViewport* pViewport = GetObjectManager()->CreateObject<MIViewport>();
-	pNewView->SetViewport(pViewport);
+	pNewView->AppendViewport(pViewport);
 
 	return pNewView;
 
@@ -103,12 +103,6 @@ void MEngine::AddView(MIRenderView* pView)
 	pView->m_pEngine = this;
 
 	m_pRenderer->AddOutputView(pView);
-	pView->SetResizeCallback([=](const int& nWidth, const int& nHeight)
-	{
-		m_pRenderer->OnResize(pView, nWidth, nHeight);
-
-		pView->GetViewport()->SetSize(pView->GetRenderRectSize());
-	});
 
 	m_vView.push_back(pView);
 }
@@ -182,7 +176,7 @@ bool MEngine::MainLoop()
 			MIRenderView* pView = (*iter);
 			if (pView->MainLoop())
 			{
-				m_pRenderer->RenderViewportToView(pView->GetViewport(), pView);
+				m_pRenderer->RenderToView(pView);
 				++iter;
 			}
 			else

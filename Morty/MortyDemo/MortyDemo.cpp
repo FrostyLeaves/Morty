@@ -221,17 +221,11 @@ int main(int argc, char* argv[])
 	pCamera->SetName("Camera");
 	pRootNode->AddNode(pCamera);
 
-	MIScene* pScene = engine.GetObjectManager()->CreateObject<MIScene>();
-	pScene->SetRootNode(pRootNode);
+	MainEditor* pEditorView = new MainEditor();
+	pEditorView->Initialize(&engine, "Morty");
+	engine.AddView(pEditorView);
 
-
-	MainEditor* pWindowsView = new MainEditor();
-	pWindowsView->Initialize(&engine, "Morty");
-	engine.AddView(pWindowsView);
-
-	MIViewport* pViewport = engine.GetObjectManager()->CreateObject<MIViewport>();
-	pWindowsView->SetViewport(pViewport);
-	pViewport->SetScene(pScene);
+	pEditorView->SetEditorNode(pRootNode);
 
 
 	MInputListener* pListener = new MInputListener();

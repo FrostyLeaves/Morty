@@ -7,16 +7,21 @@
 
 #include "MDirectX11Device.h"
 #include "MEngine.h"
+#include "MIRenderer.h"
+#include "MIViewport.h"
 #include "MResourceManager.h"
 #include "MObject.h"
 #include "MMaterialResource.h"
 #include "MMaterial.h"
 #include "MMeshInstance.h"
 #include "MMesh.h"
+#include "MIScene.h"
 
 #include "Matrix.h"
 
 MainEditor::MainEditor()
+	: MWindowsRenderView()
+	, m_pScene(nullptr)
 {
 
 }
@@ -24,6 +29,11 @@ MainEditor::MainEditor()
 MainEditor::~MainEditor()
 {
 
+}
+
+void MainEditor::SetEditorNode(MNode* pNode)
+{
+	m_pScene->SetRootNode(pNode);
 }
 
 bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
@@ -46,6 +56,15 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	ImGui_ImplDX11_Init(pDevice->m_pD3dDevice, pDevice->m_pD3dContext);
 
 
+	m_pScene = m_pEngine->GetObjectManager()->CreateObject<MIScene>();
+	MIViewport* pViewport = m_pEngine->GetObjectManager()->CreateObject<MIViewport>();
+	AppendViewport(pViewport);
+
+	pViewport->SetScene(m_pScene);
+
+	m_vViewport[0]->SetLeftTop(Vector2(100, 0));
+	m_vViewport[0]->SetSize(Vector2(GetViewWidth() - 200, GetViewHeight()));
+
 }
 
 void MainEditor::Release()
@@ -56,6 +75,22 @@ void MainEditor::Release()
 	ImGui::DestroyContext();
 
 	MWindowsRenderView::Release();
+}
+
+void MainEditor::OnResize(const int& nWidth, const int& nHeight)
+{
+	m_pEngine->GetRenderer()->OnResize(this, nWidth, nHeight);
+
+
+	if (m_vViewport.empty())
+		return;
+
+	m_nWidth = nWidth;
+	m_nHeight = nHeight;
+
+	m_vViewport[0]->SetLeftTop(Vector2(100, 0));
+	m_vViewport[0]->SetSize(Vector2(nWidth - 200, nHeight));
+
 }
 
 void MainEditor::OnRenderEnd()
@@ -75,11 +110,18 @@ void MainEditor::OnRenderEnd()
 	// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
 	{
 		ImGui::SetNextWindowPos(ImVec2(0, 0));
+		bool bMortyOpened = true;
+		ImGui::SetNextItemOpen(bMortyOpened);
 		ImGui::SetNextWindowSize(ImVec2(GetViewWidth(), GetViewHeight()));
-		ImGui::Begin("Morty");
+		ImGui::Begin("Morty", &bMortyOpened, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
 
+		bool bInfoOpened = true;
 
+		ImGui::BeginChildFrame(ImGui::GetID("Morty"), ImVec2(150, 30), ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
 
+		ImGui::Text("FPS: %.2f", ImGui::GetIO().Framerate);
+
+		ImGui::End();
 
 
 		ImGui::End();
@@ -89,16 +131,6 @@ void MainEditor::OnRenderEnd()
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
-}
-
-Vector2 MainEditor::GetRenderRectTopLeft()
-{
-	return Vector2(0 + 100, 0);
-}
-
-Vector2 MainEditor::GetRenderRectSize()
-{
-	return Vector2(m_nWidth - 200, m_nHeight);
 }
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

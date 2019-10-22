@@ -38,7 +38,7 @@ public:
 
 	virtual bool Initialize() override;
 	virtual void Release() override;
-	virtual void RenderViewportToView(MIViewport* pViewport, MIRenderView* pView) override;
+	virtual void RenderToView(MIRenderView* pView) override;
 
 	virtual void InitDefaultResource() override;
 	virtual void ReleaseDefaultResource() override;
@@ -61,7 +61,6 @@ protected:
 		ID3D11RenderTargetView* pTargetView = nullptr;
 		ID3D11Texture2D* pDepthStencilBuffer = nullptr;
 		ID3D11DepthStencilView* pDepthStencilView = nullptr;
-		D3D11_VIEWPORT mViewport;
 		D3D11_RASTERIZER_DESC mRasterizer;
 	};
 

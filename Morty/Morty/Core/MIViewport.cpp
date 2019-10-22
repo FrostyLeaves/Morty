@@ -8,6 +8,8 @@ MIViewport::MIViewport()
 	, m_pUserCamera(nullptr)
 	, m_pDefaultCamera(nullptr)
 	, m_m4CameraInvProj(Matrix4::IdentityMatrix)
+	, m_v2LeftTop(0,0)
+	, m_v2Size(0, 0)
 {
 
 }
@@ -72,11 +74,6 @@ void MIViewport::SetValidCamera(MCamera* pCamera)
 MCamera* MIViewport::GetCamera()
 {
 	return m_pUserCamera ? m_pUserCamera : m_pDefaultCamera;
-}
-
-void MIViewport::SetSize(const Vector2& v2Size)
-{
-	m_v2Size = v2Size;
 }
 
 Matrix4 MIViewport::MatrixPerspectiveFovLH(const float& fFovYZAngle, const float& fScreenAspect, const float& fScreenNear, const float& fScreenFar)

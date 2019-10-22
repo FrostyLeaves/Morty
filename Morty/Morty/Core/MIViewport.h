@@ -30,8 +30,14 @@ public:
 	void SetCamera(MCamera* pCamera);
 	MCamera* GetCamera();
 
-	void SetSize(const Vector2& v2Size);
+	void SetLeftTop(const Vector2& v2LeftTop) { m_v2LeftTop = v2LeftTop; }
+	Vector2 GetLeftTop() { return m_v2LeftTop; }
+	void SetSize(const Vector2& v2Size) { m_v2Size = v2Size; }
 	Vector2 GetSize(){ return m_v2Size; }
+	float GetLeft() { return m_v2LeftTop.x; }
+	float GetTop() { return m_v2LeftTop.y; }
+	float GetWidth() { return m_v2Size.x; }
+	float GetHeight() { return m_v2Size.y; }
 
 
 public:
@@ -55,6 +61,7 @@ private:
 	MCamera* m_pUserCamera;
 	MCamera* m_pDefaultCamera;
 
+	Vector2 m_v2LeftTop;
 	Vector2 m_v2Size;
 
 	Matrix4 m_m4CameraInvProj;

@@ -3,7 +3,8 @@
 
 #include "MWindowsRenderView.h"
 
-
+class MNode;
+class MIScene;
 class MMeshInstance;
 class MainEditor : public MWindowsRenderView
 {
@@ -13,19 +14,22 @@ public:
 	virtual ~MainEditor();
 
 
+	void SetEditorNode(MNode* pNode);
+
+
 	virtual bool Initialize(MEngine* pEngine, const char* svWindowName) override;
 	virtual void Release() override;
 
-	virtual void OnRenderEnd() override;
+	virtual void OnResize(const int& nWidth, const int& nHeight) override;
 
-	virtual Vector2 GetRenderRectTopLeft();
-	virtual Vector2 GetRenderRectSize();
+	virtual void OnRenderEnd() override;
 
 public:
 	virtual LRESULT CALLBACK ViewProcessFunction(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) override;
 
 protected:
 
+	MIScene* m_pScene;
 
 };
 

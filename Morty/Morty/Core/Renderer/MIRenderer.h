@@ -50,7 +50,7 @@ public:
 	virtual bool Initialize() = 0;
 	virtual void Release() = 0;
 
-	virtual void RenderViewportToView(MIViewport* pViewport, MIRenderView* pView) = 0;
+	virtual void RenderToView(MIRenderView* pView) = 0;
 
 	virtual void AddOutputView(MIRenderView* pView) = 0;
 	virtual void RemoveOutputView(MIRenderView* pView) = 0;

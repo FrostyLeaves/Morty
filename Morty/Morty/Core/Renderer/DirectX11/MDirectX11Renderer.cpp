@@ -171,7 +171,7 @@ void MDirectX11Renderer::Release()
 	ReleaseDefaultResource();
 }
 
-void MDirectX11Renderer::RenderViewportToView(MIViewport* pViewport, MIRenderView* pView)
+void MDirectX11Renderer::RenderToView(MIRenderView* pView)
 {
 	if (!m_pDevice->m_pD3dContext)
 		return;
@@ -193,7 +193,6 @@ void MDirectX11Renderer::RenderViewportToView(MIViewport* pViewport, MIRenderVie
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	m_pDevice->m_pD3dContext->ClearDepthStencilView(target.pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	m_pDevice->m_pD3dContext->ClearRenderTargetView(target.pTargetView, clearColor);
-	m_pDevice->m_pD3dContext->RSSetViewports(1, &target.mViewport);
 	m_pDevice->m_pD3dContext->OMSetRenderTargets(1, &target.pTargetView, target.pDepthStencilView);
 	m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_pDepthStencilState, 0);
 
@@ -212,8 +211,17 @@ void MDirectX11Renderer::RenderViewportToView(MIViewport* pViewport, MIRenderVie
 
 	pView->OnRenderBegin();
 	
-	if (MIViewport* pViewport= pView->GetViewport())
+	for (MIViewport* pViewport : pView->GetViewports())
 	{
+		static D3D11_VIEWPORT viewport;
+		viewport.Width = pViewport->GetWidth();
+		viewport.Height = pViewport->GetHeight();
+		viewport.MinDepth = 0.0f;
+		viewport.MaxDepth = 1.0f;
+		viewport.TopLeftX = pViewport->GetLeft();
+		viewport.TopLeftY = pViewport->GetTop();
+	
+		m_pDevice->m_pD3dContext->RSSetViewports(1, &viewport);
 		pViewport->Render(this);
 	}
 
@@ -309,14 +317,6 @@ MDirectX11Renderer::RenderTarget MDirectX11Renderer::CreateRenderTargetForWindow
 	result.pRenderView = pRenderView;
 	result.pSwapChain = pSwapChain;
 
-
-	D3D11_VIEWPORT& viewport = result.mViewport;
-	viewport.Width = DEFAULT_WIDTH;
-	viewport.Height = DEFAULT_HEIGHT;
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-	viewport.TopLeftX = 0.0f;
-	viewport.TopLeftY = 0.0f;
 
 	return result;
 }
@@ -439,14 +439,6 @@ void MDirectX11Renderer::OnResize(RenderTarget& rt, int nWidth, int nHeight)
 
 	// Bind the render target view and depth/stencil view to the pipeline.
 	m_pDevice->m_pD3dContext->OMSetRenderTargets(1, &rt.pTargetView, rt.pDepthStencilView);
-
-	Vector2 v2TopLeft = rt.pRenderView->GetRenderRectTopLeft();
-	Vector2 v2Size = rt.pRenderView->GetRenderRectSize();
-	rt.mViewport.TopLeftX = v2TopLeft.x;
-	rt.mViewport.TopLeftY = v2TopLeft.y;
-
-	rt.mViewport.Width = v2Size.x > 0 ? v2Size.x : 0;
-	rt.mViewport.Height = v2Size.y > 0 ? v2Size.y : 0;
 
 }
 
