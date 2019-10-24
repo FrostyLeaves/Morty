@@ -193,7 +193,7 @@ void MIScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
 			{
 				if (param.strName == "cbLights")
 				{
-					Variant* varPointLights = param.var.GetByType<MStruct>()->FindMember("U_pointLights");
+					MVariant* varPointLights = param.var.GetByType<MStruct>()->FindMember("U_pointLights");
 					if (varPointLights)
 					{
 						MVariantArray& vPointLights = *varPointLights->GetByType<MVariantArray>();

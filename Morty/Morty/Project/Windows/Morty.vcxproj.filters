@@ -61,6 +61,9 @@
     <Filter Include="Core\Organizer">
       <UniqueIdentifier>{b4cfd318-6f5c-411e-a670-47ab5b74580a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utility\Json">
+      <UniqueIdentifier>{fd6a0b8d-981a-4fa2-8113-4e15398be760}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../ReadMe.txt" />
@@ -198,6 +201,12 @@
     <ClInclude Include="..\..\Core\Organizer\MIScene.h">
       <Filter>Core\Organizer</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\ResourceLoader\MFileHelper.h">
+      <Filter>ResourceLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Utility\Json\MJson.h">
+      <Filter>Utility\Json</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -322,6 +331,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\Organizer\MIScene.cpp">
       <Filter>Core\Organizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ResourceLoader\MFileHelper.cpp">
+      <Filter>ResourceLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Utility\Json\MJson.cpp">
+      <Filter>Utility\Json</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

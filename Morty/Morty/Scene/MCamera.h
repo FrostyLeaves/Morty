@@ -14,6 +14,7 @@
 class MORTY_CLASS MCamera : public M3DNode
 {
 public:
+	M_OBJECT(MCamera);
     MCamera();
     virtual ~MCamera();
 

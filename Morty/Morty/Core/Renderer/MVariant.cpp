@@ -63,7 +63,23 @@ const MContainer& MContainer::operator=(const MContainer& var)
 	return var;
 }
 
-Variant::Variant(const float& var)
+MVariant::MVariant(const bool& var)
+{
+	m_pData = (new unsigned char[sizeof(bool) * 1]);
+	memcpy(m_pData, &var, sizeof(bool) * 1);
+	m_eType = EBool;
+	m_unByteSize = sizeof(bool);
+}
+
+MVariant::MVariant(const int& var)
+{
+	m_pData = (new unsigned char[sizeof(int) * 1]);
+	memcpy(m_pData, &var, sizeof(int) * 1);
+	m_eType = EInt;
+	m_unByteSize = sizeof(int);
+}
+
+MVariant::MVariant(const float& var)
 {
 	m_pData = (new unsigned char[sizeof(float) * 1]);
 	memcpy(m_pData, &var, sizeof(float) * 1);
@@ -71,7 +87,7 @@ Variant::Variant(const float& var)
 	m_unByteSize = sizeof(float);
 }
 
-Variant::Variant(const Vector3& var)
+MVariant::MVariant(const Vector3& var)
 {
 	m_pData = (new unsigned char[sizeof(float) * 3]);
 	memcpy(m_pData, var.m, sizeof(float) * 3);
@@ -79,7 +95,7 @@ Variant::Variant(const Vector3& var)
 	m_unByteSize = sizeof(float) * 3;
 }
 
-Variant::Variant(const Vector4& var)
+MVariant::MVariant(const Vector4& var)
 {
 	m_pData = (new unsigned char[sizeof(float) * 4]);
 	memcpy(m_pData, var.m, sizeof(float) * 4);
@@ -87,7 +103,7 @@ Variant::Variant(const Vector4& var)
 	m_unByteSize = sizeof(float) * 4;
 }
 
-Variant::Variant(const Matrix3& var)
+MVariant::MVariant(const Matrix3& var)
 {
 	m_pData = (new unsigned char[sizeof(float) * 12]);
 	memcpy(m_pData + 0, var.m[0], sizeof(float) * 3);
@@ -97,7 +113,7 @@ Variant::Variant(const Matrix3& var)
 	m_unByteSize = sizeof(float) * 4 * 3;
 }
 
-Variant::Variant(const Matrix4& var)
+MVariant::MVariant(const Matrix4& var)
 {
 	m_pData = (new unsigned char[sizeof(float) * 16]);
 	memcpy(m_pData, var.m, sizeof(float) * 16);
@@ -105,19 +121,19 @@ Variant::Variant(const Matrix4& var)
 	m_unByteSize = sizeof(float) * 16;
 }
 
-Variant::Variant(const MStruct& var)
+MVariant::MVariant(const MStruct& var)
 {
 	m_pData = (unsigned char*)(new MStruct(var));
 	m_eType = EStruct;
 }
 
-Variant::Variant(const MVariantArray& var)
+MVariant::MVariant(const MVariantArray& var)
 {
 	m_pData = (unsigned char*)(new MVariantArray(var));
 	m_eType = EArray;
 }
 
-Variant::Variant()
+MVariant::MVariant()
 	: m_pData(nullptr)
 	, m_eType(ENone)
 	, m_unByteSize(0)
@@ -125,7 +141,14 @@ Variant::Variant()
 
 }
 
-void* Variant::GetData()
+MVariant::MVariant(const MString& var)
+{
+	m_pData = (unsigned char*)new MString(var);
+	m_eType = EString;
+	m_unByteSize = 0;
+}
+
+void* MVariant::GetData()
 {
 	if (EStruct == m_eType || EArray == m_eType)
 		return ((MStruct*)(m_pData))->GetData();
@@ -133,7 +156,7 @@ void* Variant::GetData()
 	return m_pData;
 }
 
-unsigned int Variant::GetSize() const
+unsigned int MVariant::GetSize() const
 {
 	if (EStruct == m_eType || EArray == m_eType)
 		return ((MStruct*)(m_pData))->GetSize();
@@ -141,7 +164,7 @@ unsigned int Variant::GetSize() const
 	return m_unByteSize;
 }
 
-Variant::Variant(const Variant& var)
+MVariant::MVariant(const MVariant& var)
 {
 	m_eType = var.m_eType;
 	m_unByteSize = var.GetSize();
@@ -155,6 +178,10 @@ Variant::Variant(const Variant& var)
 		m_pData = (unsigned char*)(new MVariantArray());
 		*((MVariantArray*)m_pData) = *((MVariantArray*)var.m_pData);
 	}
+	else if (EString == var.m_eType)
+	{
+		m_pData = (unsigned char*)(new MString(*((MString*)var.m_pData)));
+	}
 	else
 	{
 		m_pData = new unsigned char[var.m_unByteSize];
@@ -162,7 +189,7 @@ Variant::Variant(const Variant& var)
 	}
 }
 
-const Variant& Variant::operator=(const Variant& var)
+const MVariant& MVariant::operator=(const MVariant& var)
 {
 	Clean();
 	m_eType = var.m_eType;
@@ -176,6 +203,10 @@ const Variant& Variant::operator=(const Variant& var)
 	{
 		m_pData = (unsigned char*)(new MVariantArray());
 		*((MVariantArray*)m_pData) = *((MVariantArray*)var.m_pData);
+	}
+	else if (EString == var.m_eType)
+	{
+		m_pData = (unsigned char*)(new MString(*((MString*)var.m_pData)));
 	}
 	else
 	{
@@ -186,12 +217,12 @@ const Variant& Variant::operator=(const Variant& var)
 	return var;
 }
 
-Variant::~Variant()
+MVariant::~MVariant()
 {
 	Clean();
 }
 
-void Variant::Clean()
+void MVariant::Clean()
 {
 	if (ENone != m_eType)
 	{
@@ -199,6 +230,8 @@ void Variant::Clean()
 			delete ((MStruct*)m_pData);
 		else if (EArray == m_eType)
 			delete ((MVariantArray*)m_pData);
+		else if (EString == m_eType)
+			delete ((MString*)m_pData);
 		else
 			delete[] m_pData;
 
@@ -233,7 +266,7 @@ void MContainer::AppendStructMember(MStructMember& mem)
 	m_pData = new unsigned char[m_unByteSize];
 }
 
-void MStruct::AppendVariant(const MString& strName, const Variant& var)
+void MStruct::AppendMVariant(const MString& strName, const MVariant& var)
 {
 	MStructMember sm;
 	sm.strName = strName;
@@ -242,32 +275,32 @@ void MStruct::AppendVariant(const MString& strName, const Variant& var)
 	AppendStructMember(sm);
 }
 // 
-// void MStruct::AppendVariant(const MString& strName, const MString& type)
+// void MStruct::AppendMVariant(const MString& strName, const MString& type)
 // {
 // 	MStructMember sm;
 // 	sm.strName = strName;
 // 
 // 	if (type == "float4")
 // 	{
-// 		sm.var = Variant(Vector4());
+// 		sm.var = MVariant(Vector4());
 // 	}
 // 	else if (type == "float3")
 // 	{
-// 		sm.var = Variant(Vector3());
+// 		sm.var = MVariant(Vector3());
 // 	}
 // 	else if (type == "float3x3")
 // 	{
-// 		sm.var = Variant(Matrix3());
+// 		sm.var = MVariant(Matrix3());
 // 	}
 // 	else if (type == "float4x4")
 // 	{
-// 		sm.var = Variant(Matrix4());
+// 		sm.var = MVariant(Matrix4());
 // 	}
 // 
 // 	AppendStructMember(sm);
 // }
 
-void MStruct::SetMember(const MString& strName, const Variant& var)
+void MStruct::SetMember(const MString& strName, const MVariant& var)
 {
 	for (MStructMember& mem : m_vMember)
 	{
@@ -279,7 +312,7 @@ void MStruct::SetMember(const MString& strName, const Variant& var)
 	}
 }
 
-Variant* MStruct::FindMember(const MString& strName)
+MVariant* MStruct::FindMember(const MString& strName)
 {
 	for (MStructMember& mem : m_vMember)
 	{
@@ -293,7 +326,7 @@ Variant* MStruct::FindMember(const MString& strName)
 	return nullptr;
 }
 
-void MVariantArray::AppendVariant(const Variant& var)
+void MVariantArray::AppendMVariant(const MVariant& var)
 {
 	MStructMember sm;
 	sm.strName = "";
@@ -302,11 +335,11 @@ void MVariantArray::AppendVariant(const Variant& var)
 	AppendStructMember(sm);
 }
 
-Variant& MVariantArray::operator[](const unsigned int& unIndex)
+MVariant& MVariantArray::operator[](const unsigned int& unIndex)
 {
 	if (0 <= unIndex && unIndex < m_vMember.size())
 		return m_vMember[unIndex].var;
 
-	static Variant uselessVar;
+	static MVariant uselessVar;
 	return uselessVar;
 }

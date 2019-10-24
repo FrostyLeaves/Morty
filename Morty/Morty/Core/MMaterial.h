@@ -22,6 +22,7 @@ class MMaterialResource;
 class MORTY_CLASS MMaterial : public MObject
 {
 public:
+	M_OBJECT(MMaterial);
     MMaterial();
     virtual ~MMaterial();
 
@@ -37,7 +38,7 @@ public:
 	void CompileVertexShaderParams();
 	void CompilePixelShaderParams();
 
-	void SetPixelParam(const MString& strName, const Variant& variable);
+	void SetPixelParam(const MString& strName, const MVariant& variable);
 
 	bool Load(MResource* pResource);
 

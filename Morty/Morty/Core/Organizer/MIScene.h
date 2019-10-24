@@ -27,6 +27,7 @@ class MMeshInstance;
 class MORTY_CLASS MIScene : public MObject
 {
 public:
+	M_OBJECT(MIScene);
     MIScene();
     virtual ~MIScene();
 

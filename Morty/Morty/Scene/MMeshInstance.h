@@ -19,6 +19,7 @@ class MModelResource;
 class MORTY_CLASS MMeshInstance : public M3DNode
 {
 public:
+	M_OBJECT(MMeshInstance);
     MMeshInstance();
     virtual ~MMeshInstance();
 

@@ -54,6 +54,9 @@
     <ClInclude Include="..\..\..\Editor\MainEditor.h">
       <Filter>Editor</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Editor\PropertyView.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MEditor.cpp">
@@ -81,6 +84,9 @@
       <Filter>ImGUI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Editor\MainEditor.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Editor\PropertyView.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
   </ItemGroup>

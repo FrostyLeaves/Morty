@@ -14,6 +14,7 @@
 class MORTY_CLASS MDirectionalLight : public MILight
 {
 public:
+	M_OBJECT(MDirectionalLight);
     MDirectionalLight();
     virtual ~MDirectionalLight();
 

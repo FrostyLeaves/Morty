@@ -41,7 +41,7 @@ public:
 
 	ID3D11InputLayout* CreateInputLayout(D3D11_INPUT_ELEMENT_DESC desc[], const int& nLength);
 
-	Variant GenerateVariableByBuffer(class ID3D11ShaderReflectionType* pReflectionType);
+	MVariant GenerateVariableByBuffer(class ID3D11ShaderReflectionType* pReflectionType);
 
 	ID3D11Device* m_pD3dDevice;
 	ID3D11DeviceContext* m_pD3dContext;

@@ -57,7 +57,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;MORTY_EXPORTS;__STDC_LIMIT_MACROS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/ResourceLoader/Texture;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Organizer;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/Scene/Light</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/ResourceLoader/Texture;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Organizer;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/Scene/Light</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -82,7 +82,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;MORTY_EXPORTS;__STDC_LIMIT_MACROS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/ResourceLoader/Texture;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Organizer;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/Scene/Light</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/ResourceLoader/Texture;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Organizer;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/Scene/Light</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -126,6 +126,7 @@
     <ClInclude Include="..\..\Core\Renderer\MVariant.h" />
     <ClInclude Include="..\..\Core\Renderer\MVertex.h" />
     <ClInclude Include="..\..\ResourceLoader\Material\MMaterialResource.h" />
+    <ClInclude Include="..\..\ResourceLoader\MFileHelper.h" />
     <ClInclude Include="..\..\ResourceLoader\MResourceManager.h" />
     <ClInclude Include="..\..\ResourceLoader\Shader\MShaderResource.h" />
     <ClInclude Include="..\..\ResourceLoader\Texture\MTextureResource.h" />
@@ -149,6 +150,7 @@
     <ClInclude Include="..\..\ResourceLoader\MResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MResourceLoader.h" />
     <ClInclude Include="..\..\Scene\MSpatial.h" />
+    <ClInclude Include="..\..\Utility\Json\MJson.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../Core\Engine\MEngine.cpp" />
@@ -181,6 +183,7 @@
     <ClCompile Include="..\..\Core\Renderer\MVariant.cpp" />
     <ClCompile Include="..\..\Core\Renderer\MVertex.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Material\MMaterialResource.cpp" />
+    <ClCompile Include="..\..\ResourceLoader\MFileHelper.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MResourceManager.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Shader\MShaderResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Texture\MTextureResource.cpp" />
@@ -201,6 +204,7 @@
     <ClCompile Include="..\..\ResourceLoader\Model\MModelResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MResource.cpp" />
     <ClCompile Include="..\..\Scene\MSpatial.cpp" />
+    <ClCompile Include="..\..\Utility\Json\MJson.cpp" />
     <ClCompile Include="..\..\Utility\MGlobal.cpp" />
   </ItemGroup>
   <ItemGroup>

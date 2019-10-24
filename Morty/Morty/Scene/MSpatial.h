@@ -15,6 +15,7 @@ class MResource;
 class MORTY_CLASS MSpatial : public M3DNode
 {
 public:
+	M_OBJECT(MSpatial);
     MSpatial();
     virtual ~MSpatial();
 

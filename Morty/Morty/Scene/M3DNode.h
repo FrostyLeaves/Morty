@@ -18,6 +18,7 @@
 class MORTY_CLASS M3DNode : public MNode
 {
 public:
+	M_OBJECT(M3DNode);
     M3DNode();
     virtual ~M3DNode();
 

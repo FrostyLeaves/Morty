@@ -14,6 +14,7 @@
 class MORTY_CLASS MSpotLight : public MILight
 {
 public:
+	M_OBJECT(MSpotLight);
     MSpotLight();
     virtual ~MSpotLight();
 

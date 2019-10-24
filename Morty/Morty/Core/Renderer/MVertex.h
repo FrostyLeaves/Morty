@@ -76,7 +76,7 @@ public:
 struct MShaderParam
 {
 	MString strName;
-	Variant var;
+	MVariant var;
 	
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	class ID3D11Buffer* pBuffer;
