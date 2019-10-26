@@ -19,9 +19,14 @@
 
 #include "Matrix.h"
 
+#include "NodeTreeView.h"
+#include "PropertyView.h"
+
 MainEditor::MainEditor()
 	: MWindowsRenderView()
 	, m_pScene(nullptr)
+	, m_pNodeTreeView(new NodeTreeView())
+	, m_pPropertyView(new PropertyView())
 {
 
 }
@@ -34,6 +39,7 @@ MainEditor::~MainEditor()
 void MainEditor::SetEditorNode(MNode* pNode)
 {
 	m_pScene->SetRootNode(pNode);
+	m_pNodeTreeView->SetRootNode(pNode);
 }
 
 bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
@@ -62,8 +68,8 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 
 	pViewport->SetScene(m_pScene);
 
-	m_vViewport[0]->SetLeftTop(Vector2(100, 0));
-	m_vViewport[0]->SetSize(Vector2(GetViewWidth() - 200, GetViewHeight()));
+	m_vViewport[0]->SetLeftTop(Vector2(GetViewWidth() * 0.25f, 0));
+	m_vViewport[0]->SetSize(Vector2(GetViewWidth() * 0.5f, GetViewHeight()));
 
 }
 
@@ -88,8 +94,8 @@ void MainEditor::OnResize(const int& nWidth, const int& nHeight)
 	m_nWidth = nWidth;
 	m_nHeight = nHeight;
 
-	m_vViewport[0]->SetLeftTop(Vector2(100, 0));
-	m_vViewport[0]->SetSize(Vector2(nWidth - 200, nHeight));
+	m_vViewport[0]->SetLeftTop(Vector2(nWidth * 0.25f, 0));
+	m_vViewport[0]->SetSize(Vector2(nWidth - m_nWidth * 0.5f, nHeight));
 
 }
 
@@ -113,17 +119,33 @@ void MainEditor::OnRenderEnd()
 		bool bMortyOpened = true;
 		ImGui::SetNextItemOpen(bMortyOpened);
 		ImGui::SetNextWindowSize(ImVec2(GetViewWidth(), GetViewHeight()));
-		ImGui::Begin("Morty", &bMortyOpened, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
-
-		bool bInfoOpened = true;
-
-		ImGui::BeginChildFrame(ImGui::GetID("Morty"), ImVec2(150, 30), ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
-
-		ImGui::Text("FPS: %.2f", ImGui::GetIO().Framerate);
-
-		ImGui::End();
+		if (ImGui::Begin("Morty", &bMortyOpened, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground))
+		{
+			ImGui::SameLine();
 
 
+			ImGui::BeginChild("Child1", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.25f, 0), false);
+			m_pNodeTreeView->Render();
+			ImGui::EndChild();
+
+
+			ImGui::SameLine();
+
+
+			if (ImGui::BeginChild("Child2", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, 0), false))
+			{
+				ImGui::Text("FPS: %.2f", ImGui::GetIO().Framerate);
+
+			}
+			ImGui::EndChild();
+
+
+			ImGui::SameLine();
+
+			ImGui::BeginChild("Child3", ImVec2(0, 0), false);
+				m_pNodeTreeView->Render();
+			ImGui::EndChild();
+		}
 		ImGui::End();
 	}
 

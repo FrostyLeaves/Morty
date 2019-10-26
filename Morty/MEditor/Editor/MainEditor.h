@@ -6,6 +6,8 @@
 class MNode;
 class MIScene;
 class MMeshInstance;
+class NodeTreeView;
+class PropertyView;
 class MainEditor : public MWindowsRenderView
 {
 public:
@@ -30,7 +32,8 @@ public:
 protected:
 
 	MIScene* m_pScene;
-
+	NodeTreeView* m_pNodeTreeView;
+	PropertyView* m_pPropertyView;
 };
 
 

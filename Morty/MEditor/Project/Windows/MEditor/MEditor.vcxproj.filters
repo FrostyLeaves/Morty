@@ -57,6 +57,9 @@
     <ClInclude Include="..\..\..\Editor\PropertyView.h">
       <Filter>Editor</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Editor\NodeTreeView.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MEditor.cpp">
@@ -87,6 +90,9 @@
       <Filter>Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Editor\PropertyView.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Editor\NodeTreeView.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
   </ItemGroup>

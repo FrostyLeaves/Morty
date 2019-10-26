@@ -1,0 +1,58 @@
+#include "NodeTreeView.h"
+
+#include "imgui.h"
+#include "imgui_impl_win32.h"
+#include "imgui_impl_dx11.h"
+
+#include "MNode.h"
+
+NodeTreeView::NodeTreeView()
+	: m_pRootNode(nullptr)
+	, m_unSelectedObjectID(0)
+{
+
+}
+
+NodeTreeView::~NodeTreeView()
+{
+
+}
+
+void NodeTreeView::SetRootNode(MNode* pNode)
+{
+	m_pRootNode = pNode;
+}
+
+void NodeTreeView::Render()
+{
+	if(m_pRootNode)
+	{
+		ImGui::Unindent(ImGui::GetTreeNodeToLabelSpacing());
+		RenderNode(m_pRootNode);
+		ImGui::Indent(ImGui::GetTreeNodeToLabelSpacing());
+	}
+}
+
+void NodeTreeView::RenderNode(MNode* pNode)
+{
+	ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+	if (pNode->GetChildren().empty())
+		node_flags |= ImGuiTreeNodeFlags_Leaf;
+
+	if (m_unSelectedObjectID == pNode->GetObjectID())
+		node_flags |= ImGuiTreeNodeFlags_Selected;
+
+	bool bOpened = ImGui::TreeNodeEx(pNode, node_flags, pNode->GetName().c_str());
+	if (ImGui::IsItemClicked())
+	{
+		m_unSelectedObjectID = pNode->GetObjectID();
+	}
+	if (bOpened)
+	{
+		for (MNode* pChild : pNode->GetChildren())
+			RenderNode(pChild);
+
+		ImGui::TreePop();
+	}
+}
+
