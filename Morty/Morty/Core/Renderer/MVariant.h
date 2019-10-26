@@ -1,5 +1,5 @@
 ﻿/**
- * @File         Variant
+ * @File         MVariant
  * 
  * @Created      2019-09-01 02:09:49
  *
@@ -20,31 +20,37 @@
 class MStruct;
 class MVariantArray;
 
-class MORTY_CLASS Variant
+class MORTY_CLASS MVariant
 {
 public:
 
 	enum MEVariableType
 	{
 		ENone = 0,
-		EFloat = 1,
-		EVector3 = 2,
-		EVector4 = 3,
-		EMatrix3 = 4,
-		EMatrix4 = 5,
-		EStruct = 6,
-		EArray = 7
+		EBool = 1,
+		EInt = 2,
+		EFloat = 3,
+		EVector3 = 4,
+		EVector4 = 5,
+		EMatrix3 = 6,
+		EMatrix4 = 7,
+		EStruct = 8,
+		EArray = 9,
+		EString = 10		//Not for shader.
 	};
 
-	Variant();
-	Variant(const float& var);
-	Variant(const Vector3& var);
-	Variant(const Vector4& var);
-	Variant(const Matrix3& var);
-	Variant(const Matrix4& var);
-	Variant(const MStruct& var);
-	Variant(const MVariantArray& var);
-	Variant(const Variant& var);
+	MVariant();
+	MVariant(const bool& var);
+	MVariant(const int& var);
+	MVariant(const float& var);
+	MVariant(const Vector3& var);
+	MVariant(const Vector4& var);
+	MVariant(const Matrix3& var);
+	MVariant(const Matrix4& var);
+	MVariant(const MStruct& var);
+	MVariant(const MVariantArray& var);
+	MVariant(const MVariant& var);
+	MVariant(const MString& var);
 
 	void* GetData();
 	unsigned int GetSize() const;
@@ -53,9 +59,9 @@ public:
 	template <class T>
 	T* GetByType(){ return(T*)m_pData; }
 	
-	const Variant& operator = (const Variant& var);
+	const MVariant& operator = (const MVariant& var);
 
-	~Variant();
+	~MVariant();
 
 private:
 
@@ -75,7 +81,7 @@ public:
 	struct MStructMember
 	{
 		MString strName;
-		Variant var;
+		MVariant var;
 		unsigned int unBeginOffset;
 	};
 
@@ -105,11 +111,11 @@ public:
 	virtual ~MStruct() {}
 
 
-	void AppendVariant(const MString& strName, const Variant& var);
-//	void AppendVariant(const MString& strName, const MString& type);
+	void AppendMVariant(const MString& strName, const MVariant& var);
+//	void AppendMVariant(const MString& strName, const MString& type);
 
-	void SetMember(const MString& strName, const Variant& var);
-	Variant* FindMember(const MString& strName);
+	void SetMember(const MString& strName, const MVariant& var);
+	MVariant* FindMember(const MString& strName);
 };
 
 class MORTY_CLASS MVariantArray : public MContainer
@@ -118,9 +124,9 @@ public:
 	MVariantArray() :MContainer() {}
 	virtual ~MVariantArray() {}
 
-	void AppendVariant(const Variant& var);
+	void AppendMVariant(const MVariant& var);
 
-	Variant& operator[](const unsigned int& unIndex);
+	MVariant& operator[](const unsigned int& unIndex);
 };
 
 #endif

@@ -153,6 +153,7 @@ public:
 
 int main(int argc, char* argv[])
 {
+
 	MEngine engine;
 
 	engine.Initialize();
@@ -160,6 +161,7 @@ int main(int argc, char* argv[])
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
 	pRootNode->SetName("RootNode");
 
+	MString name = pRootNode->GetObjectClassName();
 
 	MResource* pResource = engine.GetResourceManager()->Load("./Model/teaport.fbx");
 	MSpatial* pSpatial = engine.GetObjectManager()->CreateObject<MySpatial>();

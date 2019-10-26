@@ -83,7 +83,7 @@ void MMaterial::CompilePixelShaderParams()
 	}
 }
 
-void MMaterial::SetPixelParam(const MString& strName, const Variant& variable)
+void MMaterial::SetPixelParam(const MString& strName, const MVariant& variable)
 {
 	for (MShaderParam& param : m_vPixelShaderParams)
 	{
@@ -94,10 +94,10 @@ void MMaterial::SetPixelParam(const MString& strName, const Variant& variable)
 
 			break;
 		}
-		else if (param.var.GetType() == Variant::EStruct)
+		else if (param.var.GetType() == MVariant::EStruct)
 		{
 			MStruct* pStruct = param.var.GetByType<MStruct>();
-			if (Variant* pVar = pStruct->FindMember(strName))
+			if (MVariant* pVar = pStruct->FindMember(strName))
 			{
 				*pVar = variable;
 				break;

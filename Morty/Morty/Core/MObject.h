@@ -10,13 +10,21 @@
 #define _M_MOBJECT_H_
 #include "MGlobal.h"
 #include "MIDPool.h"
+#include "MString.h"
 
 #include <map>
+
+#define M_OBJECT(CLASSNAME) \
+virtual MString GetObjectClassName() { \
+	static MString strClassName(#CLASSNAME); \
+	return strClassName; \
+}
 
 class MEngine;
 class MORTY_CLASS MObject
 {
 public:
+	M_OBJECT(MObject);
     MObject();
     virtual ~MObject();
 

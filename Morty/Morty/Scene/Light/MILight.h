@@ -15,6 +15,7 @@
 class MORTY_CLASS MILight : public M3DNode
 {
 public:
+	M_OBJECT(MILight);
     MILight();
     virtual ~MILight();
 

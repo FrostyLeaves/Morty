@@ -588,13 +588,13 @@ void MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 				ID3D11ShaderReflectionVariable* pVar = pConstBuffer->GetVariableByIndex(n);
 				pVar->GetDesc(&varDesc);
 				ID3D11ShaderReflectionType* pType = pVar->GetType();
-				cbufferStruct.AppendVariant(varDesc.Name, GenerateVariableByBuffer(pType));
+				cbufferStruct.AppendMVariant(varDesc.Name, GenerateVariableByBuffer(pType));
 			}
 
 
 			MShaderParam param;
 			param.strName = bufferDesc.Name;
-			param.var = Variant(cbufferStruct);
+			param.var = MVariant(cbufferStruct);
 
 			(*ppShaderBuffer)->m_vShaderParamsTemplate.push_back(param);
 		}
@@ -770,9 +770,9 @@ ID3D11InputLayout* MDirectX11Device::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC 
 	return pVertexInputLayout;
 }
 
-Variant MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType* pReflectionType)
+MVariant MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType* pReflectionType)
 {
-	Variant var;
+	MVariant var;
 
 	D3D11_SHADER_TYPE_DESC typeDesc;
 	pReflectionType->GetDesc(&typeDesc);
@@ -791,7 +791,7 @@ Variant MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType* p
 			D3D11_SHADER_TYPE_DESC childTypeDesc;
 			pMemberType->GetDesc(&childTypeDesc);
 
-			mryStruct.AppendVariant(strName, GenerateVariableByBuffer(pMemberType));
+			mryStruct.AppendMVariant(strName, GenerateVariableByBuffer(pMemberType));
 		}
 
 
@@ -799,28 +799,36 @@ Variant MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType* p
 	}
 	else
 	{
-		//Is a Variant.
+		//Is a MVariant.
 		MString type = typeDesc.Name;
 
-		if (type == "float")
+		if (type == "bool")
 		{
-			var = Variant(0.0f);
+			var = MVariant(false);
+		}
+		else if (type == "int")
+		{
+			var = MVariant(0);
+		}
+		else if (type == "float")
+		{
+			var = MVariant(0.0f);
 		}
 		else if (type == "float4")
 		{
-			var = Variant(Vector4());
+			var = MVariant(Vector4());
 		}
 		else if (type == "float3")
 		{
-			var = Variant(Vector3());
+			var = MVariant(Vector3());
 		}
 		else if (type == "float3x3")
 		{
-			var = Variant(Matrix3());
+			var = MVariant(Matrix3());
 		}
 		else if (type == "float4x4")
 		{
-			var = Variant(Matrix4());
+			var = MVariant(Matrix4());
 		}
 		else
 		{
@@ -835,7 +843,7 @@ Variant MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType* p
 		MVariantArray array;
 
 		for (unsigned int i = 0; i < typeDesc.Elements; ++i)
-			array.AppendVariant(var);
+			array.AppendMVariant(var);
 
 		return array;
 	}

@@ -21,6 +21,7 @@ class MMeshInstance;
 class MORTY_CLASS MSkyBox : public MObject
 {
 public:
+	M_OBJECT(MSkyBox);
     MSkyBox();
     virtual ~MSkyBox();
 

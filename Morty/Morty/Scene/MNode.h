@@ -19,6 +19,7 @@ class MIScene;
 class MORTY_CLASS MNode : public MObject
 {
 public:
+	M_OBJECT(MNode);
     MNode();
     virtual ~MNode();
 

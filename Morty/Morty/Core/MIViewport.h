@@ -19,6 +19,8 @@ class MIRenderer;
 class MORTY_CLASS MIViewport : public MObject
 {
 public:
+	M_OBJECT(MIViewport);
+
 	MIViewport();
 	virtual ~MIViewport();
 
