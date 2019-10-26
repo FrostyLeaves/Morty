@@ -158,6 +158,7 @@ int main(int argc, char* argv[])
 	engine.Initialize();
 
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
+	pRootNode->SetName("RootNode");
 
 
 	MResource* pResource = engine.GetResourceManager()->Load("./Model/teaport.fbx");
