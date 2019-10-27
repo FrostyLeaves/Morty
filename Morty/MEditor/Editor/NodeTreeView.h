@@ -3,6 +3,7 @@
 
 #include "MGlobal.h"
 
+class MObject;
 class MNode;
 class NodeTreeView
 {
@@ -15,6 +16,8 @@ public:
 	void SetRootNode(MNode* pObject);
 
 	void Render();
+
+	MObject* GetSelectionNode();
 
 protected:
 

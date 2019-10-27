@@ -166,7 +166,7 @@ bool MEngine::MainLoop()
 
 	if (lTimeDelta >= m_cTickInfo.fTickInterval)
 	{
-//		MLogManager::GetInstance()->Log("fps: %f", 1.0f / lTimeDelta);
+		MLogManager::GetInstance()->Log("fps: %f", 1.0f / lTimeDelta);
 
 		Tick(lTimeDelta);
 		m_cTickInfo.lPrevTickTime = currentTime;

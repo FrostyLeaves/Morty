@@ -105,14 +105,14 @@ public:
 		{
 			//pLight->SetPosition(pLight->GetPosition() - Vector3(speed * fDelta, 0, 0));
 			pLight->SetAmbientColor(pLight->GetDiffuseColor() + ColorRGB(1, 1, 1) * fDelta);
-			pLight->SetDiffuseColor(pLight->GetDiffuseColor() + ColorRGB(1, 0, 1) * fDelta);
+			pLight->SetDiffuseColor(pLight->GetDiffuseColor() + ColorRGB(1, 1, 1) * fDelta);
 			pLight->SetSpecularColor(pLight->GetDiffuseColor() + ColorRGB(1, 1, 1) * fDelta);
 		}
 		if (true == m_bM)
 		{
 			//pLight->SetPosition(pLight->GetPosition() + Vector3(speed * fDelta, 0, 0));
 			pLight->SetAmbientColor(pLight->GetDiffuseColor() - ColorRGB(1, 1, 1) * fDelta);
-			pLight->SetDiffuseColor(pLight->GetDiffuseColor() - ColorRGB(1, 0, 1) * fDelta);
+			pLight->SetDiffuseColor(pLight->GetDiffuseColor() - ColorRGB(1, 1, 1) * fDelta);
 			pLight->SetSpecularColor(pLight->GetDiffuseColor() - ColorRGB(1, 1, 1) * fDelta);
 		}
 		if (m_bL)
@@ -161,7 +161,6 @@ int main(int argc, char* argv[])
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
 	pRootNode->SetName("RootNode");
 
-	MString name = pRootNode->GetObjectClassName();
 
 	MResource* pResource = engine.GetResourceManager()->Load("./Model/teaport.fbx");
 	MSpatial* pSpatial = engine.GetObjectManager()->CreateObject<MySpatial>();

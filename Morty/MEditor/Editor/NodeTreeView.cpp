@@ -33,6 +33,19 @@ void NodeTreeView::Render()
 	}
 }
 
+MObject* NodeTreeView::GetSelectionNode()
+{
+	if (m_pRootNode)
+	{
+		if (MObject * pObject = m_pRootNode->GetObjectManager()->FindObject(m_unSelectedObjectID))
+		{
+			return pObject;
+		}
+	}
+
+	return nullptr;
+}
+
 void NodeTreeView::RenderNode(MNode* pNode)
 {
 	ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;

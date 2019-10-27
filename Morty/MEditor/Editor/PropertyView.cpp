@@ -16,8 +16,5 @@ PropertyView::~PropertyView()
 void PropertyView::SetEditorObject(MObject* pObject)
 {
 	m_pEditorObject = pObject;
-//	MString strClassName = pObject->GetClassName();
-
-
 }
 

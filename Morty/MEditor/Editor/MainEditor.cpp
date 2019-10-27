@@ -94,65 +94,102 @@ void MainEditor::OnResize(const int& nWidth, const int& nHeight)
 	m_nWidth = nWidth;
 	m_nHeight = nHeight;
 
-	m_vViewport[0]->SetLeftTop(Vector2(nWidth * 0.25f, 0));
-	m_vViewport[0]->SetSize(Vector2(nWidth - m_nWidth * 0.5f, nHeight));
 
 }
 
-void MainEditor::OnRenderEnd()
+void MainEditor::OnRenderBegin()
 {
-
-	// Our state
-	static bool show_demo_window = true;
-	static bool show_another_window = false;
-	static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-
 	// Start the Dear ImGui frame
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
+
+	ImGuiStyle& style = ImGui::GetStyle();
+	ImGui::StyleColorsLight(&style);
+	style.WindowRounding = 0.0f;
+
 	// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
 	{
+		ImGuiWindowFlags unWindowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
 		ImGui::SetNextWindowPos(ImVec2(0, 0));
 		bool bMortyOpened = true;
 		ImGui::SetNextItemOpen(bMortyOpened);
 		ImGui::SetNextWindowSize(ImVec2(GetViewWidth(), GetViewHeight()));
-		if (ImGui::Begin("Morty", &bMortyOpened, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground))
+		if (ImGui::Begin("Morty", &bMortyOpened, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
 		{
-			ImGui::SameLine();
+			// 主窗口可用大小
+			ImVec2 v2RegionAvail = ImGui::GetContentRegionAvail();
+			v2RegionAvail.x -= style.ItemSpacing.x * 2;
+			
+			//子窗口可用大小
+			float fWidgetWidth = v2RegionAvail.x * 0.25f;
+			if (fWidgetWidth > 300.0f)
+				fWidgetWidth = 300.0f;
 
 
-			ImGui::BeginChild("Child1", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.25f, 0), false);
-			m_pNodeTreeView->Render();
+
+			if (ImGui::BeginChild("NodeTree", ImVec2(fWidgetWidth, v2RegionAvail.y), false, unWindowFlags))
+			{
+				m_pNodeTreeView->Render();
+			}
 			ImGui::EndChild();
 
-
 			ImGui::SameLine();
 
 
-			if (ImGui::BeginChild("Child2", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, 0), false))
+			if (ImGui::BeginChild("Render", ImVec2(v2RegionAvail.x - fWidgetWidth * 2, v2RegionAvail.y), false, unWindowFlags))
 			{
-				ImGui::Text("FPS: %.2f", ImGui::GetIO().Framerate);
+				ImVec2 v2RenderViewPos = ImGui::GetWindowPos();
+				ImVec2 v2RenderViewSize = ImGui::GetWindowSize();
 
+				m_vViewport[0]->SetLeftTop(Vector2(v2RenderViewPos.x, v2RenderViewPos.y));
+				m_vViewport[0]->SetSize(Vector2(v2RenderViewSize.x, v2RenderViewSize.y));
 			}
 			ImGui::EndChild();
 
 
 			ImGui::SameLine();
 
-			ImGui::BeginChild("Child3", ImVec2(0, 0), false);
-				m_pNodeTreeView->Render();
+			if (ImGui::BeginChild("Property", ImVec2(fWidgetWidth, v2RegionAvail.y), false, unWindowFlags))
+			{
+				if (MNode * pNode = dynamic_cast<MNode*>(m_pNodeTreeView->GetSelectionNode()))
+				{
+					ImGui::Text(pNode->GetName().c_str());
+				}
+			}
 			ImGui::EndChild();
 		}
 		ImGui::End();
+
 	}
 
 	// Rendering
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
+}
+
+void MainEditor::OnRenderEnd()
+{	
+// 	// Start the Dear ImGui frame
+// 	ImGui_ImplDX11_NewFrame();
+// 	ImGui_ImplWin32_NewFrame();
+// 	ImGui::NewFrame();
+// 
+// 	bool bChild1Opened = true;
+// 	if (ImGui::Begin("Info", &bChild1Opened, ImVec2(150, 30), false, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground))
+// 	{
+// 
+// 		ImGui::SetWindowPos(ImVec2(GetViewWidth() * 0.25f + 10, 10));
+// 		ImGui::Text("FPS: %d", (int)(ImGui::GetIO().Framerate / 2.0f));
+// 
+// 	}
+// 	ImGui::End();
+// 
+// 	// Rendering
+// 	ImGui::Render();
+// 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

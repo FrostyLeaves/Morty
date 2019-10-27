@@ -24,6 +24,7 @@ public:
 
 	virtual void OnResize(const int& nWidth, const int& nHeight) override;
 
+	virtual void OnRenderBegin() override;
 	virtual void OnRenderEnd() override;
 
 public:
@@ -34,6 +35,9 @@ protected:
 	MIScene* m_pScene;
 	NodeTreeView* m_pNodeTreeView;
 	PropertyView* m_pPropertyView;
+
+	Vector2 m_v2RenderViewPos;
+	Vector2 m_v2RenderViewSize;
 };
 
 
