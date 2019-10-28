@@ -14,6 +14,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Demo", "MortyDemo\Project\W
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MEditor", "MEditor\Project\Windows\MEditor\MEditor.vcxproj", "{0C78AF3F-B308-47D7-9892-AAB501954925}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D0CCB623-555A-4973-9AF3-BBDFC487E41F} = {D0CCB623-555A-4973-9AF3-BBDFC487E41F}
+		{764F8CE3-C2C9-4A43-9C49-F4C8470722B9} = {764F8CE3-C2C9-4A43-9C49-F4C8470722B9}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
