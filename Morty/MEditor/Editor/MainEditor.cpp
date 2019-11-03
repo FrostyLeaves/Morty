@@ -16,6 +16,7 @@
 #include "MMeshInstance.h"
 #include "MMesh.h"
 #include "MIScene.h"
+#include "MCamera.h"
 
 #include "Matrix.h"
 
@@ -28,7 +29,8 @@ MainEditor::MainEditor()
 	, m_pNodeTreeView(new NodeTreeView())
 	, m_pPropertyView(new PropertyView())
 {
-
+	m_nWidth = 800.0f;
+	m_nHeight = 480.0f;
 }
 
 MainEditor::~MainEditor()
@@ -40,6 +42,8 @@ void MainEditor::SetEditorNode(MNode* pNode)
 {
 	m_pScene->SetRootNode(pNode);
 	m_pNodeTreeView->SetRootNode(pNode);
+
+	m_vViewport[0]->SetCamera(pNode->FindFirstChildByType<MCamera>());
 }
 
 bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
@@ -67,9 +71,6 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	AppendViewport(pViewport);
 
 	pViewport->SetScene(m_pScene);
-
-	m_vViewport[0]->SetLeftTop(Vector2(GetViewWidth() * 0.25f, 0));
-	m_vViewport[0]->SetSize(Vector2(GetViewWidth() * 0.5f, GetViewHeight()));
 
 }
 
@@ -123,13 +124,16 @@ void MainEditor::OnRenderBegin()
 			v2RegionAvail.x -= style.ItemSpacing.x * 2;
 			
 			//子窗口可用大小
-			float fWidgetWidth = v2RegionAvail.x * 0.25f;
-			if (fWidgetWidth > 300.0f)
-				fWidgetWidth = 300.0f;
+			float fNodeTreeWidth = v2RegionAvail.x * 0.25f;
+			float fPropertyWidth = v2RegionAvail.x * 0.35f;
+			if (fNodeTreeWidth > 200.0f)
+				fNodeTreeWidth = 200.0f;
+			if (fPropertyWidth > 400.0f)
+				fPropertyWidth = 400.0f;
 
 
 
-			if (ImGui::BeginChild("NodeTree", ImVec2(fWidgetWidth, v2RegionAvail.y), false, unWindowFlags))
+			if (ImGui::BeginChild("NodeTree", ImVec2(fNodeTreeWidth, v2RegionAvail.y), false, unWindowFlags))
 			{
 				m_pNodeTreeView->Render();
 			}
@@ -138,7 +142,7 @@ void MainEditor::OnRenderBegin()
 			ImGui::SameLine();
 
 
-			if (ImGui::BeginChild("Render", ImVec2(v2RegionAvail.x - fWidgetWidth * 2, v2RegionAvail.y), false, unWindowFlags))
+			if (ImGui::BeginChild("Render", ImVec2(v2RegionAvail.x - fNodeTreeWidth - fPropertyWidth, v2RegionAvail.y), false, unWindowFlags))
 			{
 				ImVec2 v2RenderViewPos = ImGui::GetWindowPos();
 				ImVec2 v2RenderViewSize = ImGui::GetWindowSize();
@@ -151,12 +155,14 @@ void MainEditor::OnRenderBegin()
 
 			ImGui::SameLine();
 
-			if (ImGui::BeginChild("Property", ImVec2(fWidgetWidth, v2RegionAvail.y), false, unWindowFlags))
+			if (ImGui::BeginChild("Property", ImVec2(fPropertyWidth, v2RegionAvail.y), false, unWindowFlags))
 			{
 				if (MNode * pNode = dynamic_cast<MNode*>(m_pNodeTreeView->GetSelectionNode()))
 				{
 					ImGui::Text(pNode->GetName().c_str());
 				}
+				m_pPropertyView->SetEditorObject(m_pNodeTreeView->GetSelectionNode());
+				m_pPropertyView->Render();
 			}
 			ImGui::EndChild();
 		}

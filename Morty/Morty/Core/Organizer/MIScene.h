@@ -54,8 +54,9 @@ public:
 
 	virtual void OnCreated() override;
 
-	void SetAttachedViewport(MIViewport* pViewport);
-
+	void AddAttachedViewport(MIViewport* pViewport);
+	void RemoveAttachedViewport(MIViewport* pViewport);
+	std::vector<MIViewport*> GetViewports() { return m_vViewports; }
 
 protected:
 
@@ -77,7 +78,7 @@ private:
 	};
 	std::vector<MaterialMeshInsGroup*> m_vMatMeshInsGroup;
 
-	MIViewport* m_pAttachedViewport;
+	std::vector<MIViewport*> m_vViewports;
 };
 
 

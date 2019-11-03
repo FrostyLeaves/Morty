@@ -14,6 +14,21 @@ MIViewport::MIViewport()
 
 }
 
+MIViewport::~MIViewport()
+{
+// 	if (m_pDefaultCamera)
+// 	{
+// 		m_pEngine->GetObjectManager()->RemoveObject(m_pDefaultCamera->GetObjectID());
+// 		m_pDefaultCamera = nullptr;
+// 	}
+// 
+// 	if (m_pScene)
+// 	{
+// 		m_pScene->RemoveAttachedViewport(this);
+// 		m_pScene = nullptr;
+// 	}
+}
+
 void MIViewport::OnCreated()
 {
 	MObject::OnCreated();
@@ -35,17 +50,19 @@ void MIViewport::Render(MIRenderer* pRenderer)
 	m_pScene->Render(pRenderer, this);
 }
 
-MIViewport::~MIViewport()
-{
-
-}
-
 void MIViewport::SetScene(MIScene* pScene)
 {
-	m_pScene = pScene;
+	if (m_pScene == pScene)
+		return;
+
 	if (m_pScene)
-	{
-		m_pScene->SetAttachedViewport(this);
+		m_pScene->RemoveAttachedViewport(this);
+
+	m_pScene = pScene;
+
+	if (pScene)
+	{		
+		m_pScene->AddAttachedViewport(this);
 		if (MNode* pRootNode = m_pScene->GetRootNode())
 		{
 			MCamera* pCamera = pRootNode->FindFirstChildByType<MCamera>();

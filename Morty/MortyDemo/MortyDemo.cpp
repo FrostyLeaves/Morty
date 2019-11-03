@@ -41,11 +41,11 @@ public:
 
 	virtual void OnTick(const float& fDelta)
 	{
-		m_fTime += fDelta;
-
-		Quaternion quat = Quaternion(Vector3(1, 0, 0), -90);
-		Quaternion quatb(Vector3(0, 1, 0), 10 * m_fTime);
-		this->SetRotation(quat * quatb);
+// 		m_fTime += fDelta;
+// 
+// 		Quaternion quat = Quaternion(Vector3(1, 0, 0), -90);
+// 		Quaternion quatb(Vector3(0, 1, 0), 10 * m_fTime);
+// 		this->SetRotation(quat * quatb);
 
 	}
 
@@ -119,17 +119,17 @@ public:
 		{
 			LookAt(static_cast<M3DNode*>(GetRootNode()->FindFirstChildByName("Teaport"))->GetPosition(), GetUp());
 		}
-		else if (m_bRB && (m_v2MouseAddi.x != 0 || m_v2MouseAddi.y != 0))
-		{
-
-			Vector3 up = Vector3(0, 1, 0);
-			SetRotation(GetRotation() * Quaternion(up, m_v2MouseAddi.x * 0.25f));
-
-			Vector3 right = GetRight();
-			SetRotation(GetRotation() * Quaternion(right, m_v2MouseAddi.y * 0.25f));
-
-			m_v2MouseAddi = Vector2(0, 0);
-		}
+// 		else if (m_bRB && (m_v2MouseAddi.x != 0 || m_v2MouseAddi.y != 0))
+// 		{
+// 
+// 			Vector3 up = Vector3(0, 1, 0);
+// 			SetRotation(GetRotation() * Quaternion(up, m_v2MouseAddi.x * 0.25f));
+// 
+// 			Vector3 right = GetRight();
+// 			SetRotation(GetRotation() * Quaternion(right, m_v2MouseAddi.y * 0.25f));
+// 
+// 			m_v2MouseAddi = Vector2(0, 0);
+// 		}
 
 	}
 
@@ -167,7 +167,6 @@ int main(int argc, char* argv[])
 	pSpatial->Load(pResource);
 	pSpatial->SetPosition(Vector3(0, -20, 200));
 	pSpatial->SetName("Teaport");
-
 
 	for (int i = 0; i < pSpatial->GetChildren().size(); ++i)
 	{
@@ -229,7 +228,6 @@ int main(int argc, char* argv[])
 
 	pEditorView->SetEditorNode(pRootNode);
 
-
 	MInputListener* pListener = new MInputListener();
 	pListener->m_function = [&](MInputEvent* pEvent){
 
@@ -275,10 +273,18 @@ int main(int argc, char* argv[])
 
 		else if (MMouseInputEvent* pMouseInput = dynamic_cast<MMouseInputEvent*>(pEvent))
 		{
-			if (pMouseInput->GetType() == MMouseInputEvent::MouseMove)
+			if (pMouseInput->GetType() == MMouseInputEvent::MouseMove && pCamera->m_bRB)
 			{
 				Vector2 addi = pMouseInput->GetMouseAddition();
 				pCamera->m_v2MouseAddi = addi;
+
+				Vector3 up = Vector3(0, 1, 0);
+				pCamera->SetRotation(pCamera->GetRotation()* Quaternion(up, pCamera->m_v2MouseAddi.x * 0.25f));
+
+				Vector3 right = pCamera->GetRight();
+				pCamera->SetRotation(pCamera->GetRotation()* Quaternion(right, pCamera->m_v2MouseAddi.y * 0.25f));
+
+				pCamera->m_v2MouseAddi = Vector2(0, 0);
 			}
 			else
 			{

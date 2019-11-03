@@ -34,6 +34,10 @@ public:
 	void SetScale(const Vector3& scale);
 	Vector3 GetScale() { return m_transform.GetScale(); }
 
+	void SetTransform(const MTransform& trans);
+	MTransform GetTransform() { return m_transform; }
+	
+
 	void LookAt(const Vector3& v3TargetWorldPos, Vector3 v3UpDir);
 
 	Matrix4 GetParentWorldTransform();

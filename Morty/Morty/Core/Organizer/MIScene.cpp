@@ -19,7 +19,7 @@ MIScene::MIScene()
 	: MObject()
 	, m_pRootNode(nullptr)
 	, m_pSkyBox(nullptr)
-	, m_pAttachedViewport(nullptr)
+	, m_vViewports()
 {
 	
 }
@@ -31,9 +31,24 @@ void MIScene::OnCreated()
 	m_pSkyBox = m_pEngine->GetObjectManager()->CreateObject<MSkyBox>();
 }
 
-void MIScene::SetAttachedViewport(MIViewport* pViewport)
+void MIScene::AddAttachedViewport(MIViewport* pViewport)
 {
-	m_pAttachedViewport = pViewport;
+	for (MIViewport* pv : m_vViewports)
+		if (pv == pViewport)
+			return;
+
+	m_vViewports.push_back(pViewport);
+
+
+}
+
+void MIScene::RemoveAttachedViewport(MIViewport* pViewport)
+{
+	std::vector<MIViewport*>::iterator iter = std::find(m_vViewports.begin(), m_vViewports.end(), pViewport);
+	if (iter != m_vViewports.end())
+	{
+		m_vViewports.erase(iter);
+	}
 }
 
 void MIScene::FindActivePointLights(const Vector3& v3WorldPosition, std::vector<MPointLight*>& vPointLights)

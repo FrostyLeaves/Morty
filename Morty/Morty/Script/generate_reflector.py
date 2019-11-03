@@ -1,9 +1,12 @@
 #coding:UTF-8
 import sys, getopt, os, time
+import clang.cindex
 
 
 def record_reflector(headerFile):
-    print(headerFile)
+    index = clang.cindex.Index.create()
+    tu = index.parse(headerFile)
+    tu.
 
 
 def main(argv):

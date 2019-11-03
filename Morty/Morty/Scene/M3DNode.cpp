@@ -26,7 +26,7 @@ Matrix4 M3DNode::GetParentWorldTransform()
 
 Matrix4 M3DNode::GetWorldTransform()
 {
-	return GetLocalTransform() * GetParentWorldTransform();
+	return GetParentWorldTransform() * GetLocalTransform();
 }
 
 Matrix4 M3DNode::GetLocalTransform()
@@ -99,6 +99,12 @@ void M3DNode::SetRotation(const Quaternion& quat)
 void M3DNode::SetScale(const Vector3& scale)
 {
 	m_transform.SetScale(scale);
+	LocalTransformDirty();
+}
+
+void M3DNode::SetTransform(const MTransform& trans)
+{
+	m_transform = trans;
 	LocalTransformDirty();
 }
 

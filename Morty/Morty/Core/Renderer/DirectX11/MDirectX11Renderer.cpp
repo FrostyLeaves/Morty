@@ -41,7 +41,7 @@ void MDirectX11Renderer::AddOutputView(MIRenderView* pView)
 	if (MWindowsRenderView* pWindowView = dynamic_cast<MWindowsRenderView*>(pView))
 	{
 		RenderTarget rt = this->CreateRenderTargetForWindow(pView);
-		OnResize(rt, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+		OnResize(rt, pView->GetViewWidth(), pView->GetViewHeight());
 		m_vRenderTargets.push_back(rt);
 
 	}
@@ -271,8 +271,8 @@ MDirectX11Renderer::RenderTarget MDirectX11Renderer::CreateRenderTargetForWindow
 
 	DXGI_SWAP_CHAIN_DESC sd;
 
-	sd.BufferDesc.Width = DEFAULT_WIDTH;
-	sd.BufferDesc.Height = DEFAULT_HEIGHT;
+	sd.BufferDesc.Width = pView->GetViewWidth() > 0 ? pView->GetViewWidth() : 1;
+	sd.BufferDesc.Height = pView->GetViewHeight() > 0 ? pView->GetViewHeight() : 1;
 	sd.BufferDesc.RefreshRate.Numerator = 60;
 	sd.BufferDesc.RefreshRate.Denominator = 1;
 	sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;

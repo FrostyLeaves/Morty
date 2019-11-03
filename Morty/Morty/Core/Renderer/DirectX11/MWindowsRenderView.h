@@ -55,6 +55,8 @@ protected:
 	long long m_lEnginePrevTickTime;
 	bool m_bIsClosed;
 
+
+
 protected:
 	static HINSTANCE s_hInstance;
 	static std::map<HWND, MWindowsRenderView*> s_tViewTable;

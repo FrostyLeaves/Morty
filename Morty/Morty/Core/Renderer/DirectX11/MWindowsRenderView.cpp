@@ -9,6 +9,7 @@
 #include "MInputManager.h"
 #include "MIRenderer.h"
 #include "MIViewport.h"
+#include "MTimer.h"
 
 std::map<HWND, MWindowsRenderView*> MWindowsRenderView::s_tViewTable = std::map<HWND, MWindowsRenderView*>();
 HINSTANCE MWindowsRenderView::s_hInstance = 0;
@@ -110,6 +111,20 @@ bool MWindowsRenderView::MainLoop()
 		DispatchMessage(&msg);
 	}
 
+
+	//TODO 多个窗口不能共用InputManager
+	static POINT point;
+	POINT newPoint;
+	TCHAR s[10];
+	GetCursorPos(&newPoint);
+	ScreenToClient(m_hwnd, &newPoint);
+
+	if (point.x != newPoint.x || point.y != newPoint.y)
+	{
+		m_pEngine->GetInputManager()->Input(new MMouseInputEvent(Vector2(newPoint.x, newPoint.y)));
+		point = newPoint;
+	}
+
 	return msg.message != WM_QUIT;
 }
 
@@ -149,20 +164,14 @@ LRESULT CALLBACK MWindowsRenderView::ViewProcessFunction(HWND hwnd, UINT message
 	}
 	case WM_KEYDOWN:
 		if ((HIWORD(lParam) & KF_REPEAT) == 0)
+		{
 			m_pEngine->GetInputManager()->Input(new MKeyBoardInputEvent(wParam, MKeyBoardInputEvent::KeyBoardDown));
+		}
 		break;
 
 	case WM_KEYUP:
 		m_pEngine->GetInputManager()->Input(new MKeyBoardInputEvent(wParam, MKeyBoardInputEvent::KeyBoardUp));
 		break;
-
-	case WM_MOUSEMOVE:
-	{
-		int x = LOWORD(lParam);
-		int y = HIWORD(lParam);
-		m_pEngine->GetInputManager()->Input(new MMouseInputEvent(Vector2(x, y)));
-		break;
-	}
 
 	case WM_LBUTTONDOWN:
 	{
