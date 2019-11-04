@@ -64,6 +64,12 @@
     <Filter Include="Utility\Json">
       <UniqueIdentifier>{fd6a0b8d-981a-4fa2-8113-4e15398be760}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\Painter">
+      <UniqueIdentifier>{b8c6faf7-c485-4355-9e69-ffded7c17c4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\Type">
+      <UniqueIdentifier>{e08e5bb9-81a9-47bc-86cc-96a1a131e038}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../ReadMe.txt" />
@@ -207,6 +213,18 @@
     <ClInclude Include="..\..\Utility\Json\MJson.h">
       <Filter>Utility\Json</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\Painter\MPainter.h">
+      <Filter>Core\Painter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Utility\MColor.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Utility\Type\MColor.h">
+      <Filter>Utility\Type</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Utility\Type\MType.h">
+      <Filter>Utility\Type</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -337,6 +355,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Utility\Json\MJson.cpp">
       <Filter>Utility\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Painter\MPainter.cpp">
+      <Filter>Core\Painter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Utility\Type\MColor.cpp">
+      <Filter>Utility\Type</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

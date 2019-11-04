@@ -22,19 +22,19 @@ public:
 
 public:
 
-	void SetAmbientColor(const ColorRGB& color) { m_f3Ambient = color; }
-	ColorRGB GetAmbientColor() { return m_f3Ambient; }
+	void SetAmbientColor(const MColor& color) { m_f3Ambient = color; }
+	MColor GetAmbientColor() { return m_f3Ambient; }
 
-	void SetDiffuseColor(const ColorRGB& color) { m_f3Diffuse = color; }
-	ColorRGB GetDiffuseColor() { return m_f3Diffuse; }
+	void SetDiffuseColor(const MColor& color) { m_f3Diffuse = color; }
+	MColor GetDiffuseColor() { return m_f3Diffuse; }
 
-	void SetSpecularColor(const ColorRGB& color) { m_f3Specular = color; }
-	ColorRGB GetSpecularColor() { return m_f3Specular; }
+	void SetSpecularColor(const MColor& color) { m_f3Specular = color; }
+	MColor GetSpecularColor() { return m_f3Specular; }
 
 private:
-	ColorRGB m_f3Ambient;
-	ColorRGB m_f3Diffuse;
-	ColorRGB m_f3Specular;
+	MColor m_f3Ambient;
+	MColor m_f3Diffuse;
+	MColor m_f3Specular;
 };
 
 

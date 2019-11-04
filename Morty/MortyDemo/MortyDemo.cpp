@@ -104,16 +104,16 @@ public:
 		if (true == m_bN)
 		{
 			//pLight->SetPosition(pLight->GetPosition() - Vector3(speed * fDelta, 0, 0));
-			pLight->SetAmbientColor(pLight->GetDiffuseColor() + ColorRGB(1, 1, 1) * fDelta);
-			pLight->SetDiffuseColor(pLight->GetDiffuseColor() + ColorRGB(1, 1, 1) * fDelta);
-			pLight->SetSpecularColor(pLight->GetDiffuseColor() + ColorRGB(1, 1, 1) * fDelta);
+			pLight->SetAmbientColor(pLight->GetDiffuseColor() + MColor(1, 1, 1) * fDelta);
+			pLight->SetDiffuseColor(pLight->GetDiffuseColor() + MColor(1, 1, 1) * fDelta);
+			pLight->SetSpecularColor(pLight->GetDiffuseColor() + MColor(1, 1, 1) * fDelta);
 		}
 		if (true == m_bM)
 		{
 			//pLight->SetPosition(pLight->GetPosition() + Vector3(speed * fDelta, 0, 0));
-			pLight->SetAmbientColor(pLight->GetDiffuseColor() - ColorRGB(1, 1, 1) * fDelta);
-			pLight->SetDiffuseColor(pLight->GetDiffuseColor() - ColorRGB(1, 1, 1) * fDelta);
-			pLight->SetSpecularColor(pLight->GetDiffuseColor() - ColorRGB(1, 1, 1) * fDelta);
+			pLight->SetAmbientColor(pLight->GetDiffuseColor() - MColor(1, 1, 1) * fDelta);
+			pLight->SetDiffuseColor(pLight->GetDiffuseColor() - MColor(1, 1, 1) * fDelta);
+			pLight->SetSpecularColor(pLight->GetDiffuseColor() - MColor(1, 1, 1) * fDelta);
 		}
 		if (m_bL)
 		{

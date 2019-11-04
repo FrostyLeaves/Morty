@@ -219,9 +219,9 @@ void MIScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
 								if (MPointLight* pLight = vActivePointLights[i])
 								{
 									pPointLight->SetMember("f3WorldPosition", pLight->GetWorldPosition());
-									pPointLight->SetMember("f3Ambient", pLight->GetAmbientColor());
-									pPointLight->SetMember("f3Diffuse", pLight->GetDiffuseColor());
-									pPointLight->SetMember("f3Specular", pLight->GetSpecularColor());
+									pPointLight->SetMember("f3Ambient", pLight->GetAmbientColor().ToVector3());
+									pPointLight->SetMember("f3Diffuse", pLight->GetDiffuseColor().ToVector3());
+									pPointLight->SetMember("f3Specular", pLight->GetSpecularColor().ToVector3());
 
 									pPointLight->SetMember("fConstant", 1.0f);
 									pPointLight->SetMember("fLinear", 0.022f);

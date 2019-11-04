@@ -1,6 +1,8 @@
 ﻿#ifndef _M_GLOBAL_H_
 #define _M_GLOBAL_H_
 
+//Type
+#include "MType.h"
 
 #ifdef MORTY_EXPORTS
 #if defined(__WINDOWS_) || defined(_WINDOWS)
@@ -27,15 +29,9 @@
 typedef unsigned long MObjectID;
 typedef unsigned long MResourceID;
 
-
-
-
-
-
 //Asset
 extern const char* SUFFIX_VERTEX_SHADER;
 extern const char* SUFFIX_PIXEL_SHADER;
-
 
 
 //gles
