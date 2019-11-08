@@ -176,39 +176,40 @@ void MDirectX11Renderer::RenderToView(MIRenderView* pView)
 	if (!m_pDevice->m_pD3dContext)
 		return;
 
-	RenderTarget target;
-	for (auto rt : m_vRenderTargets)
+	RenderTarget* pTarget = nullptr;
+	for (RenderTarget& rt : m_vRenderTargets)
 	{
 		if (rt.pRenderView == pView)
 		{
-			target = rt;
+			pTarget = &rt;
 			break;
 		}
 	}
 
-	if (target.pSwapChain == nullptr || target.pTargetView == nullptr)
+	if (nullptr == pTarget || nullptr == pTarget->pSwapChain || nullptr == pTarget->pTargetView)
 		return;
 
 
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	m_pDevice->m_pD3dContext->ClearDepthStencilView(target.pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-	m_pDevice->m_pD3dContext->ClearRenderTargetView(target.pTargetView, clearColor);
-	m_pDevice->m_pD3dContext->OMSetRenderTargets(1, &target.pTargetView, target.pDepthStencilView);
+	m_pDevice->m_pD3dContext->ClearDepthStencilView(pTarget->pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	m_pDevice->m_pD3dContext->ClearRenderTargetView(pTarget->pTargetView, clearColor);
+	m_pDevice->m_pD3dContext->OMSetRenderTargets(1, &pTarget->pTargetView, pTarget->pDepthStencilView);
 	m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_pDepthStencilState, 0);
 
 
 	//三角形解析顶点
 	m_pDevice->m_pD3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	//切换渲染状态
-	if (m_eRasterizerType & MERasterizerType::EWireframe)
-		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Wireframe_CullNone);
-	else if (m_eRasterizerType & MERasterizerType::ECullNone)
-		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullNone);
-	else
-		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullBack);
-	
+// 	//切换渲染状态
+// 	if (m_eRasterizerType & MERasterizerType::EWireframe)
+// 		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Wireframe_CullNone);
+// 	else if (m_eRasterizerType & MERasterizerType::ECullNone)
+// 		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullNone);
+// 	else
+// 		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullBack);
 
+	m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullNone);
+	
 	pView->OnRenderBegin();
 	
 	for (MIViewport* pViewport : pView->GetViewports())
@@ -228,7 +229,7 @@ void MDirectX11Renderer::RenderToView(MIRenderView* pView)
 
 	pView->OnRenderEnd();
 
-	target.pSwapChain->Present(0, 0);
+	pTarget->pSwapChain->Present(0, 0);
 
 
 

@@ -110,17 +110,17 @@ void M3DNode::SetTransform(const MTransform& trans)
 
 void M3DNode::LookAt(const Vector3& v3TargetWorldPos, Vector3 v3UpDir)
 {
-	v3UpDir.Normalization();
+	v3UpDir.Normalize();
 	Vector3 v3WorldPos = GetWorldPosition();
 
 	Vector3 v3Forward = v3TargetWorldPos - v3WorldPos;
-	v3Forward.Normalization();
+	v3Forward.Normalize();
 
 	Vector3 v3RightDir = v3UpDir.CrossProduct(v3Forward);
-	v3RightDir.Normalization();
+	v3RightDir.Normalize();
 
 	v3UpDir = v3Forward.CrossProduct(v3RightDir);
-	v3UpDir.Normalization();
+	v3UpDir.Normalize();
 
 	Matrix4 matRotate( v3RightDir.x, v3UpDir.x, v3Forward.x, 0,
 					v3RightDir.y, v3UpDir.y, v3Forward.y, 0 ,

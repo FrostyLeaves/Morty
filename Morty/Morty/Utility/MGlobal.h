@@ -1,9 +1,6 @@
 ﻿#ifndef _M_GLOBAL_H_
 #define _M_GLOBAL_H_
 
-//Type
-#include "MType.h"
-
 #ifdef MORTY_EXPORTS
 #if defined(__WINDOWS_) || defined(_WINDOWS)
         #define MORTY_CLASS __declspec(dllexport)

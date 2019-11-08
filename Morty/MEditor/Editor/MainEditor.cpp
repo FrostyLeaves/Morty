@@ -135,7 +135,7 @@ void MainEditor::OnRenderBegin()
 
 			if (ImGui::BeginChild("NodeTree", ImVec2(fNodeTreeWidth, v2RegionAvail.y), false, unWindowFlags))
 			{
-				m_pNodeTreeView->Render();
+//				m_pNodeTreeView->Render();
 			}
 			ImGui::EndChild();
 
@@ -157,12 +157,12 @@ void MainEditor::OnRenderBegin()
 
 			if (ImGui::BeginChild("Property", ImVec2(fPropertyWidth, v2RegionAvail.y), false, unWindowFlags))
 			{
-				if (MNode * pNode = dynamic_cast<MNode*>(m_pNodeTreeView->GetSelectionNode()))
-				{
-					ImGui::Text(pNode->GetName().c_str());
-				}
-				m_pPropertyView->SetEditorObject(m_pNodeTreeView->GetSelectionNode());
-				m_pPropertyView->Render();
+// 				if (MNode * pNode = dynamic_cast<MNode*>(m_pNodeTreeView->GetSelectionNode()))
+// 				{
+// 					ImGui::Text(pNode->GetName().c_str());
+// 				}
+// 				m_pPropertyView->SetEditorObject(m_pNodeTreeView->GetSelectionNode());
+// 				m_pPropertyView->Render();
 			}
 			ImGui::EndChild();
 		}

@@ -86,7 +86,6 @@ public:
 				m_vVertices = nullptr;
 			}
 
-
 			m_vVertices = new VERTEX_TYPE[unSize];
 			m_unVerticesArraySize = unSize;
 

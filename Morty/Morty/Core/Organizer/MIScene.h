@@ -62,6 +62,7 @@ protected:
 
 	void DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport);
 	void DrawSkyBox(MIRenderer* pRenderer, MIViewport* pViewport);
+	void DrawPainter(MIRenderer* pRenderer, MIViewport* pViewport);
 
 private:
 

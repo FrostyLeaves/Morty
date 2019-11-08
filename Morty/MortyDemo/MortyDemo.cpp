@@ -5,6 +5,7 @@
 
 #include "stdafx.h"
 #include "MEngine.h"
+#include "MColor.h"
 
 #include "MObject.h"
 #include "MMaterial.h"
@@ -75,7 +76,7 @@ public:
 	{
 		MPointLight* pLight = static_cast<MPointLight*>(GetRootNode()->FindFirstChildByName("Light"));
 
-		const float speed = 50;
+		const float speed = 25;
 
 		if (true == m_bW)
 		{
@@ -104,16 +105,16 @@ public:
 		if (true == m_bN)
 		{
 			//pLight->SetPosition(pLight->GetPosition() - Vector3(speed * fDelta, 0, 0));
-			pLight->SetAmbientColor(pLight->GetDiffuseColor() + MColor(1, 1, 1) * fDelta);
-			pLight->SetDiffuseColor(pLight->GetDiffuseColor() + MColor(1, 1, 1) * fDelta);
-			pLight->SetSpecularColor(pLight->GetDiffuseColor() + MColor(1, 1, 1) * fDelta);
+			pLight->SetAmbientColor(pLight->GetDiffuseColor().ToVector3() + MColor(1, 1, 1).ToVector3() * fDelta);
+			pLight->SetDiffuseColor(pLight->GetDiffuseColor().ToVector3() + MColor(1, 1, 1).ToVector3() * fDelta);
+			pLight->SetSpecularColor(pLight->GetDiffuseColor().ToVector3() + MColor(1, 1, 1).ToVector3() * fDelta);
 		}
 		if (true == m_bM)
 		{
 			//pLight->SetPosition(pLight->GetPosition() + Vector3(speed * fDelta, 0, 0));
-			pLight->SetAmbientColor(pLight->GetDiffuseColor() - MColor(1, 1, 1) * fDelta);
-			pLight->SetDiffuseColor(pLight->GetDiffuseColor() - MColor(1, 1, 1) * fDelta);
-			pLight->SetSpecularColor(pLight->GetDiffuseColor() - MColor(1, 1, 1) * fDelta);
+			pLight->SetAmbientColor(pLight->GetDiffuseColor().ToVector3() - MColor(1, 1, 1).ToVector3() * fDelta);
+			pLight->SetDiffuseColor(pLight->GetDiffuseColor().ToVector3() - MColor(1, 1, 1).ToVector3() * fDelta);
+			pLight->SetSpecularColor(pLight->GetDiffuseColor().ToVector3() - MColor(1, 1, 1).ToVector3() * fDelta);
 		}
 		if (m_bL)
 		{
@@ -165,7 +166,7 @@ int main(int argc, char* argv[])
 	MResource* pResource = engine.GetResourceManager()->Load("./Model/teaport.fbx");
 	MSpatial* pSpatial = engine.GetObjectManager()->CreateObject<MySpatial>();
 	pSpatial->Load(pResource);
-	pSpatial->SetPosition(Vector3(0, -20, 200));
+	pSpatial->SetPosition(Vector3(0, 0, 0));
 	pSpatial->SetName("Teaport");
 
 	for (int i = 0; i < pSpatial->GetChildren().size(); ++i)

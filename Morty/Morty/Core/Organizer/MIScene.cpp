@@ -279,11 +279,78 @@ void MIScene::DrawSkyBox(MIRenderer* pRenderer, MIViewport* pViewport)
 		
 	}
 }
+#include "MPainter.h"
+#include "MResourceManager.h"
+#include "MMaterialResource.h"
+void MIScene::DrawPainter(MIRenderer* pRenderer, MIViewport* pViewport)
+{
+	static MPainter* TestPainter = new MPainter();
+
+
+	TestPainter->SetAttachedViewport(pViewport);
+
+	static MMaterial* TestMaterial = nullptr;
+	if (nullptr == TestMaterial)
+	{
+		TestMaterial = m_pEngine->GetObjectManager()->CreateObject<MMaterial>();
+		MResource* pVSResource = m_pEngine->GetResourceManager()->Load("./Shader/draw.mvs");
+		MResource* pPSResource = m_pEngine->GetResourceManager()->Load("./Shader/draw.mps");
+		MMaterialResource* pMaterialRes = dynamic_cast<MMaterialResource*>(m_pEngine->GetResourceManager()->Create(MResourceManager::MEResourceType::Material));
+		pMaterialRes->LoadVertexShader(pVSResource);
+		pMaterialRes->LoadPixelShader(pPSResource);
+
+		TestMaterial->Load(pMaterialRes);
+	}
+
+	pRenderer->SetUseMaterial(TestMaterial);
+	pRenderer->UpdateMaterialParam();
+
+
+	MIMesh* pMesh = nullptr;
+	
+	if (pMesh = TestPainter->GetMesh2DLine(Vector3(0, 0, 0), Vector3(10, 0, 0), MColor(1, 0, 0, 1), 1.0f))
+	{
+		pRenderer->DrawMesh(pMesh);
+		delete pMesh;
+	}
+
+	if (pMesh = TestPainter->GetMesh2DLine(Vector3(0, 0, 0), Vector3(0, 10, 0), MColor(1, 0, 0, 1), 1.0f))
+	{
+		pRenderer->DrawMesh(pMesh);
+		delete pMesh;
+	}
+
+	if (pMesh = TestPainter->GetMesh2DLine(Vector3(0, 0, 0), Vector3(0, 0, 10), MColor(1, 0, 0, 1), 1.0f))
+	{
+		pRenderer->DrawMesh(pMesh);
+		delete pMesh;
+	}
+
+	if (pMesh = TestPainter->GetMesh2DLine(Vector3(10, 10, 10), Vector3(0, 10, 10), MColor(0, 1, 0, 1), 1.0f))
+	{
+		pRenderer->DrawMesh(pMesh);
+		delete pMesh;
+	}
+
+	if (pMesh = TestPainter->GetMesh2DLine(Vector3(10, 10, 10), Vector3(10, 0, 10), MColor(0, 1, 0, 1), 1.0f))
+	{
+		pRenderer->DrawMesh(pMesh);
+		delete pMesh;
+	}
+
+	if (pMesh = TestPainter->GetMesh2DLine(Vector3(10, 10, 10), Vector3(10, 10, 0), MColor(0, 1, 0, 1), 1.0f))
+	{
+		pRenderer->DrawMesh(pMesh);
+		delete pMesh;
+	}
+
+}
 
 void MIScene::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 {
-	DrawMeshInstance(pRenderer, pViewport);
-	DrawSkyBox(pRenderer, pViewport);
+	DrawPainter(pRenderer, pViewport);
+//	DrawMeshInstance(pRenderer, pViewport);
+//	DrawSkyBox(pRenderer, pViewport);
 }
 
 MIScene::~MIScene()

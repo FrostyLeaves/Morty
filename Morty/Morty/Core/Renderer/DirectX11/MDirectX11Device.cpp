@@ -3,6 +3,7 @@
 #include <d3dcommon.h>
 #include <D3Dcompiler.h>
 #include <d3d11shader.h>
+#include <DxErr.h>
 
 #include "MLogManager.h"
 #include "MMesh.h"
@@ -89,8 +90,10 @@ bool MDirectX11Device::InitDirectX11()
 				//we can set quality is the number that less then the value but can`t equal it.
 				m_n4xMsaaQuality = m_n4xMsaaQuality - 1;
 			}
-
 			return true;
+		}
+		else
+		{
 		}
 	}
 

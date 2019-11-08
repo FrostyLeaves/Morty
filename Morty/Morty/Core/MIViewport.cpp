@@ -29,6 +29,21 @@ MIViewport::~MIViewport()
 // 	}
 }
 
+Vector3 MIViewport::ConvertWorldPositionTo2D(const Vector3& v3WorldPos)
+{
+	UpdateMatrix();
+
+	Vector4 pos = m_m4CameraInvProj * Vector4(v3WorldPos, 1.0f);
+	
+	if (fabs(pos.w) > 1e-6)
+	{
+		pos.x /= pos.w;
+		pos.y /= pos.w;
+	}
+
+	return pos;
+}	
+
 void MIViewport::OnCreated()
 {
 	MObject::OnCreated();
@@ -37,16 +52,17 @@ void MIViewport::OnCreated()
 	m_pDefaultCamera = m_pEngine->GetObjectManager()->CreateObject<MCamera>();
 }
 
+void MIViewport::SetSize(const Vector2& v2Size)
+{
+	m_v2Size = v2Size;
+}
+
 void MIViewport::Render(MIRenderer* pRenderer)
 {
 	if (nullptr == m_pScene)
 		return;
 
-	//Update Camera and Projection Matrix.
-	MCamera* pCamera = GetCamera();
-	Matrix4 projMat = MatrixPerspectiveFovLH(45, m_v2Size.x / m_v2Size.y, pCamera->GetZNear(), pCamera->GetZFar());
-	m_m4CameraInvProj = projMat * pCamera->GetWorldTransform().Inverse();
-
+	UpdateMatrix();
 	m_pScene->Render(pRenderer, this);
 }
 
@@ -86,6 +102,14 @@ void MIViewport::SetCamera(MCamera* pCamera)
 void MIViewport::SetValidCamera(MCamera* pCamera)
 {
 	m_pUserCamera = pCamera;
+}
+
+void MIViewport::UpdateMatrix()
+{
+	//Update Camera and Projection Matrix.
+	MCamera* pCamera = GetCamera();
+	Matrix4 projMat = MatrixPerspectiveFovLH(45, m_v2Size.x / m_v2Size.y, pCamera->GetZNear(), pCamera->GetZFar());
+	m_m4CameraInvProj = projMat * pCamera->GetWorldTransform().Inverse();
 }
 
 MCamera* MIViewport::GetCamera()

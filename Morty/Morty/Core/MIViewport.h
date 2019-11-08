@@ -15,6 +15,7 @@
 
 class MIScene;
 class MCamera;
+class MPainter;
 class MIRenderer;
 class MORTY_CLASS MIViewport : public MObject
 {
@@ -34,12 +35,17 @@ public:
 
 	void SetLeftTop(const Vector2& v2LeftTop) { m_v2LeftTop = v2LeftTop; }
 	Vector2 GetLeftTop() { return m_v2LeftTop; }
-	void SetSize(const Vector2& v2Size) { m_v2Size = v2Size; }
+
+	void SetSize(const Vector2& v2Size);
 	Vector2 GetSize(){ return m_v2Size; }
+
 	float GetLeft() { return m_v2LeftTop.x; }
 	float GetTop() { return m_v2LeftTop.y; }
 	float GetWidth() { return m_v2Size.x; }
 	float GetHeight() { return m_v2Size.y; }
+
+
+	Vector3 ConvertWorldPositionTo2D(const Vector3& v3WorldPos);
 
 
 public:
@@ -52,6 +58,7 @@ public:
 protected:
 	void SetValidCamera(MCamera* pCamera);
 
+	void UpdateMatrix();
 
 	static Matrix4 MatrixPerspectiveFovLH(const float& fFovYZAngle, const float& fScreenAspect, const float& fScreenNear, const float& fScreenFar);
 	
