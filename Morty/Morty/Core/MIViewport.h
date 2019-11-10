@@ -17,6 +17,7 @@ class MIScene;
 class MCamera;
 class MPainter;
 class MIRenderer;
+class MInputEvent;
 class MORTY_CLASS MIViewport : public MObject
 {
 public:
@@ -52,6 +53,8 @@ public:
 	virtual void OnCreated() override;
 
 	virtual void Render(MIRenderer* pRenderer);
+
+	virtual void Input(MInputEvent* pEvent);
 
 	Matrix4 GetCameraInverseProjection(){ return m_m4CameraInvProj; }
 

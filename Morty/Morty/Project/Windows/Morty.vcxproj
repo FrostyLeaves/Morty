@@ -115,6 +115,7 @@
     <ClInclude Include="..\..\Core\MSkyBox.h" />
     <ClInclude Include="..\..\Core\MTransform.h" />
     <ClInclude Include="..\..\Core\Organizer\MIScene.h" />
+    <ClInclude Include="..\..\Core\Organizer\MTransformCoord.h" />
     <ClInclude Include="..\..\Core\Painter\MPainter.h" />
     <ClInclude Include="..\..\Core\Renderer\DirectX11\MDirectX11Device.h" />
     <ClInclude Include="..\..\Core\Renderer\DirectX11\MDirectX11Renderer.h" />
@@ -176,6 +177,7 @@
     <ClCompile Include="..\..\Core\MSkyBox.cpp" />
     <ClCompile Include="..\..\Core\MTransform.cpp" />
     <ClCompile Include="..\..\Core\Organizer\MIScene.cpp" />
+    <ClCompile Include="..\..\Core\Organizer\MTransformCoord.cpp" />
     <ClCompile Include="..\..\Core\Painter\MPainter.cpp" />
     <ClCompile Include="..\..\Core\Renderer\DirectX11\MDirectX11Device.cpp" />
     <ClCompile Include="..\..\Core\Renderer\DirectX11\MDirectX11Renderer.cpp" />

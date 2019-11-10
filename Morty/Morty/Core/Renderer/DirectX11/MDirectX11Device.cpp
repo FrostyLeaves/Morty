@@ -723,6 +723,9 @@ ID3D11InputLayout* MDirectX11Device::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC 
 		MString strType;
 		switch (desc[i].Format)
 		{
+		case DXGI_FORMAT_R32G32B32A32_FLOAT:
+			strType = "float4";
+			break;
 		case DXGI_FORMAT_R32G32B32_FLOAT:
 			strType = "float3";
 			break;

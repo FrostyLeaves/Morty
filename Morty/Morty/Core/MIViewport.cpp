@@ -66,6 +66,13 @@ void MIViewport::Render(MIRenderer* pRenderer)
 	m_pScene->Render(pRenderer, this);
 }
 
+void MIViewport::Input(MInputEvent* pEvent)
+{
+	if(m_pScene)
+	{
+	}
+}
+
 void MIViewport::SetScene(MIScene* pScene)
 {
 	if (m_pScene == pScene)

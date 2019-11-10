@@ -225,6 +225,9 @@
     <ClInclude Include="..\..\Utility\Type\MType.h">
       <Filter>Utility\Type</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\Organizer\MTransformCoord.h">
+      <Filter>Core\Organizer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -361,6 +364,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Utility\Type\MColor.cpp">
       <Filter>Utility\Type</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Organizer\MTransformCoord.cpp">
+      <Filter>Core\Organizer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

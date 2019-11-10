@@ -12,62 +12,47 @@
 #include "MObject.h"
 #include "Vector.h"
 #include "MType.h"
+#include "MMesh.h"
 #include <vector>
 
-class MIMesh;
 class MIViewport;
-class MORTY_CLASS MPaintCollage
+
+struct MPainterVertex
+{
+	Vector2 pos;
+	Vector4 color;
+};
+
+class MORTY_CLASS MIPainterShape
 {
 public:
-	MPaintCollage();
-	~MPaintCollage();
+	MIPainterShape() {}
+	virtual ~MIPainterShape() {}
 
-	void Clean();
+	virtual unsigned int GetVertexCount() = 0;
+	virtual unsigned int GetIndexCount() = 0;
 
-	//设置线的颜色
-	void SetLineColor(const MColor& color) { m_lineColor = color; }
-	void SetFillColor(const MColor& color) { m_fillColor = color; }
-	void SetLineWidth(const float& fWidth) { m_fLineWidth = fWidth; }
+	virtual MMesh<MPainterVertex>* FillData(MIViewport* pViewport) = 0;
+};
 
-	void Draw2DLine(const Vector3& v3Begin, const Vector3& v3End);
+class MORTY_CLASS MPainter2DLine : public MIPainterShape
+{
+public:
+	MPainter2DLine(const Vector3& v3Begin, const Vector3& v3End, const MColor& lineColor, const float& fThickness = 1.0f)
+		: m_v3Begin(v3Begin), m_v3End(v3End), m_lineColor(lineColor), m_fThickness(fThickness) {}
+
+	virtual ~MPainter2DLine() {}
+
+	virtual unsigned int GetVertexCount() override { return 4; }
+	virtual unsigned int GetIndexCount() override { return 6; }
+
+	virtual MMesh<MPainterVertex>* FillData(MIViewport* pViewport) override;
 
 public:
-	MIMesh* GetRenderMesh(MIViewport* pViewport);
-// 
-// 	void DrawRect(const Vector3& v3Center, const Vector3& v3Normal, const float& fWidth, const float& fHeight);
-// 
-// 	void DrawCircle(const Vector3& v3Center, const Vector3& v3Up, const Vector3& v3Normal, const float& fRadius, const float& fAngle = 360.0f);
-
-protected:
-
+	Vector3 m_v3Begin;
+	Vector3 m_v3End;
 	MColor m_lineColor;
-	MColor m_fillColor;;
-	float m_fLineWidth;
+	float m_fThickness;
 };
-
-class MORTY_CLASS MPainter : public MObject
-{
-	struct MPainterVertex { Vector2 pos; Vector4 color; };
-public:
-    MPainter();
-    virtual ~MPainter();
-
-public:
-
-
-	MIMesh* GetMesh2DLine(const Vector3& v3Begin, const Vector3& v3End, const MColor& lineColor, const float& fThickness = 1.0f);
-
-	void DrawCollage(MPaintCollage& collage);
-
-
-public:
-
-	void SetAttachedViewport(MIViewport* pViewport);
-
-private:
-
-	MIViewport* m_pViewport;
-};
-
 
 #endif

@@ -24,6 +24,7 @@ class MIRenderView;
 class MIViewport;
 class MMaterial;
 class MMeshInstance;
+class MTransformCoord3D;
 class MORTY_CLASS MIScene : public MObject
 {
 public:
@@ -68,6 +69,7 @@ private:
 
 	MNode* m_pRootNode;
 	MSkyBox* m_pSkyBox;
+	MTransformCoord3D* m_pTransformCoord3D;
 
 	std::vector<MDirectionalLight*> m_vDirectionalLight;
 	std::vector<MPointLight*> m_vPointLight;
