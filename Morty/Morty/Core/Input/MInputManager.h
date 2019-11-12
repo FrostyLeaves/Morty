@@ -51,6 +51,7 @@ public:
 
 	MMouseInputEvent(const Vector2& v2MousePosition);
 
+	Vector2 GetMosuePosition() { return s_v2MousePosition; }
 	Vector2 GetMouseAddition(){ return m_v2MousePositionAddition; }
 	MEMouseDownButton GetButton(){ return m_eEventButton; }
 	MEMouseInputType GetType(){ return m_eInputType; }

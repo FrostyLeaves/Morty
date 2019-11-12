@@ -46,8 +46,9 @@ public:
 	float GetHeight() { return m_v2Size.y; }
 
 
-	Vector3 ConvertWorldPositionTo2D(const Vector3& v3WorldPos);
+	bool ConvertWorldPositionTo2D(const Vector3& v3WorldPos, Vector2& v2Result);
 
+	bool ConvertWorldLineToNormalizedDevice(const Vector3& v3Pos1, const Vector3& v3Pos2, Vector3& v3Rst1, Vector3& v3Rst2);
 
 public:
 	virtual void OnCreated() override;

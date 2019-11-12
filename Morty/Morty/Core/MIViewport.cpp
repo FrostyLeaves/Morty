@@ -29,20 +29,70 @@ MIViewport::~MIViewport()
 // 	}
 }
 
-Vector3 MIViewport::ConvertWorldPositionTo2D(const Vector3& v3WorldPos)
+bool MIViewport::ConvertWorldPositionTo2D(const Vector3& v3WorldPos, Vector2& v2Result)
 {
 	UpdateMatrix();
 
 	Vector4 pos = m_m4CameraInvProj * Vector4(v3WorldPos, 1.0f);
-	
+
 	if (fabs(pos.w) > 1e-6)
 	{
 		pos.x /= pos.w;
 		pos.y /= pos.w;
 	}
 
-	return pos;
+	v2Result = Vector2((pos.x + 1.0) * 0.5 * GetWidth(), (pos.y + 1.0) * 0.5 * GetHeight());
+
+	return pos.z >= GetCamera()->GetZNear();
 }	
+
+bool  MIViewport::ConvertWorldLineToNormalizedDevice(const Vector3& v3Pos1, const Vector3& v3Pos2, Vector3& v3Rst1, Vector3& v3Rst2)
+{
+	UpdateMatrix();
+
+	Vector4 v4Pos1 = m_m4CameraInvProj * Vector4(v3Pos1, 1.0f);
+	Vector4 v4Pos2 = m_m4CameraInvProj * Vector4(v3Pos2, 1.0f);
+
+	if (fabs(v4Pos1.w) > 1e-6)
+	{
+		v4Pos1.x /= v4Pos1.w;
+		v4Pos1.y /= v4Pos1.w;
+	}
+
+	if (fabs(v4Pos2.w) > 1e-6)
+	{
+		v4Pos2.x /= v4Pos2.w;
+		v4Pos2.y /= v4Pos2.w;
+	}
+
+	float znear = GetCamera()->GetZNear();
+
+	if (v4Pos1.z < znear && v4Pos2.z < znear)
+	{
+		return false;
+	}
+	else if (v4Pos1.z >= znear&& v4Pos2.z >= znear)
+	{
+		v3Rst1 = v4Pos1;
+		v3Rst2 = v4Pos2;
+	}
+	else if (v4Pos1.z < znear && v4Pos2.z >= znear)
+	{
+		Vector3 dir = (v4Pos1 - v4Pos2);
+		dir.Normalize();
+		v3Rst2 = v4Pos2;
+		v3Rst1 = v3Rst2 + dir * (znear - v4Pos2.z) / dir.z;
+	}
+	else
+	{
+		Vector3 dir = (v4Pos2 - v4Pos1);
+		dir.Normalize();
+		v3Rst1 = v4Pos1;
+		v3Rst2 = v3Rst1 + dir * (znear - v4Pos1.z) / dir.z;
+	}
+
+	return true;
+}
 
 void MIViewport::OnCreated()
 {

@@ -26,6 +26,7 @@ MIScene::MIScene()
 	
 }
 
+#include "MInputManager.h"
 void MIScene::OnCreated()
 {
 	MObject::OnCreated();
@@ -33,6 +34,13 @@ void MIScene::OnCreated()
 	m_pSkyBox = m_pEngine->GetObjectManager()->CreateObject<MSkyBox>();
 
 	m_pTransformCoord3D = m_pEngine->GetObjectManager()->CreateObject<MTransformCoord3D>();
+
+	MInputListener* pListener = new MInputListener();
+	pListener->m_function = [&](MInputEvent* pEvent) {
+		m_pTransformCoord3D->Input(pEvent, m_vViewports[0]);
+	};
+
+	m_pEngine->GetInputManager()->AddListener(pListener);
 }
 
 void MIScene::AddAttachedViewport(MIViewport* pViewport)
@@ -295,8 +303,8 @@ void MIScene::DrawPainter(MIRenderer* pRenderer, MIViewport* pViewport)
 void MIScene::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 {
 	DrawPainter(pRenderer, pViewport);
-	DrawMeshInstance(pRenderer, pViewport);
-	DrawSkyBox(pRenderer, pViewport);
+// 	DrawMeshInstance(pRenderer, pViewport);
+// 	DrawSkyBox(pRenderer, pViewport);
 }
 
 MIScene::~MIScene()

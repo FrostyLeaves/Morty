@@ -16,6 +16,7 @@ class M3DNode;
 class MIRenderer;
 class MIViewport;
 class MInputEvent;
+class MIMesh;
 class MORTY_CLASS MITransformCoord
 {
 public:
@@ -31,6 +32,14 @@ class MORTY_CLASS MTransformCoord3D : public MITransformCoord, public MObject
 {
 public:
 
+	enum class MECoordHoverType
+	{
+		None = 0,
+		X = 1,
+		Y = 2,
+		Z = 3,
+	};
+
 	MTransformCoord3D();
 	virtual ~MTransformCoord3D();
 
@@ -43,6 +52,10 @@ public:
 private:
 
 	M3DNode* m_pTargetNode;
+	MECoordHoverType m_eCoordHoverType;
+
+
+	MIMesh* m_pCoordRenderCache;
 };
 
 
