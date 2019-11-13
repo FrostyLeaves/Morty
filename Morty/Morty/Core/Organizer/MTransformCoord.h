@@ -40,6 +40,13 @@ public:
 		Z = 3,
 	};
 
+	enum class MECoordMoveType
+	{
+		X = 1,
+		Y = 2,
+		Z = 4,
+	};
+
 	MTransformCoord3D();
 	virtual ~MTransformCoord3D();
 
@@ -49,11 +56,13 @@ public:
 	bool Input(MInputEvent* pEvent, MIViewport* pViewport);
 	void Render(MIRenderer* pRenderer, MIViewport* pViewport);
 
+protected:
+
 private:
 
 	M3DNode* m_pTargetNode;
 	MECoordHoverType m_eCoordHoverType;
-
+	unsigned int m_eCoordMoveType;
 
 	MIMesh* m_pCoordRenderCache;
 };

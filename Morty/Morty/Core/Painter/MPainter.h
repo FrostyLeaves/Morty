@@ -39,7 +39,7 @@ public:
 class MORTY_CLASS MPainter2DLine : public MIPainterShape
 {
 public:
-	MPainter2DLine(const Vector3& v3Begin, const Vector3& v3End, const MColor& lineColor, const float& fThickness = 1.0f)
+	MPainter2DLine(const Vector3& v3Begin, const Vector3& v3End, const MColor& lineColor,const float& fThickness = 1.0f)
 		: m_v3Begin(v3Begin), m_v3End(v3End), m_lineColor(lineColor), m_fThickness(fThickness) {}
 
 	virtual ~MPainter2DLine() {}
@@ -49,6 +49,9 @@ public:
 
 	virtual bool FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh) override;
 	virtual bool TouchTest(const Vector2& pos, MIViewport* pViewport) override;
+
+	Vector2 GetDirection2D(MIViewport* pViewport);
+	float GetLength2D(MIViewport* pViewport);
 
 public:
 	Vector3 m_v3Begin;

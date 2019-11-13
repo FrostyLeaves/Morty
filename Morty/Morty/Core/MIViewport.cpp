@@ -29,7 +29,7 @@ MIViewport::~MIViewport()
 // 	}
 }
 
-bool MIViewport::ConvertWorldPositionTo2D(const Vector3& v3WorldPos, Vector2& v2Result)
+bool MIViewport::ConvertWorldPositionToViewport(const Vector3& v3WorldPos, Vector2& v2Result)
 {
 	UpdateMatrix();
 
@@ -45,6 +45,22 @@ bool MIViewport::ConvertWorldPositionTo2D(const Vector3& v3WorldPos, Vector2& v2
 
 	return pos.z >= GetCamera()->GetZNear();
 }	
+
+void MIViewport::ConvertViewportPositionToWorld(const Vector2& v2ViewportPos, const float& fDepth, Vector3& v3Result)
+{
+	UpdateMatrix();
+
+	Matrix4 mat = m_m4CameraInvProj.Inverse();
+
+	float x = (v2ViewportPos.x / GetWidth()) * 2.0f - 1.0f;
+	float y = (v2ViewportPos.y / GetHeight()) * 2.0f - 1.0f;
+
+	Vector3 pos = mat * Vector4(x, y, GetCamera()->GetZNear(), 1);
+	Vector3 dir = pos - GetCamera()->GetWorldPosition();
+	dir.Normalize();
+
+	v3Result = pos + dir * fDepth;
+}
 
 bool  MIViewport::ConvertWorldLineToNormalizedDevice(const Vector3& v3Pos1, const Vector3& v3Pos2, Vector3& v3Rst1, Vector3& v3Rst2)
 {

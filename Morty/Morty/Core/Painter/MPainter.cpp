@@ -3,12 +3,43 @@
 #include "MIViewport.h"
 #include "MCamera.h"
 
+
+Vector2 MPainter2DLine::GetDirection2D(MIViewport* pViewport)
+{
+	Vector3 v2Begin2D, v2End2D;
+	if (false == pViewport->ConvertWorldLineToNormalizedDevice(m_v3Begin, m_v3End, v2Begin2D, v2End2D))
+		return Vector2(0,0);
+
+	Vector2 dir = v2End2D - v2Begin2D;
+	dir.Normalize();
+
+	return dir;
+}
+
+float MPainter2DLine::GetLength2D(MIViewport* pViewport)
+{
+
+	Vector3 v2Begin2D, v2End2D;
+	if (false == pViewport->ConvertWorldLineToNormalizedDevice(m_v3Begin, m_v3End, v2Begin2D, v2End2D))
+		return 0;
+
+	v2Begin2D = (v2Begin2D + Vector2(1.0, 1.0)) * 0.5;
+	v2Begin2D.x *= pViewport->GetWidth();
+	v2Begin2D.y *= pViewport->GetHeight();
+	v2Begin2D.z = 0;
+
+	v2End2D = (v2End2D + Vector2(1.0, 1.0)) * 0.5;
+	v2End2D.x *= pViewport->GetWidth();
+	v2End2D.y *= pViewport->GetHeight();
+	v2End2D.z = 0;
+
+	return (v2End2D - v2Begin2D).Length();
+}
+
 bool MPainter2DLine::FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh)
 {
 	if (nullptr == pViewport)
 		return false;
-
-	float fHalfThickness = m_fThickness * 0.5f;
 
 	Vector3 v2Begin2D, v2End2D;
 	if (false == pViewport->ConvertWorldLineToNormalizedDevice(m_v3Begin, m_v3End, v2Begin2D, v2End2D))
@@ -26,20 +57,20 @@ bool MPainter2DLine::FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh
 	mesh.CreateVertices(GetVertexCount());
 	mesh.CreateIndices(GetIndexCount(), 1);
 
-	mesh.GetVertices()[0].pos.x = v2Begin2D.x + v2Normal.x * -fHalfThickness / pViewport->GetSize().x;
-	mesh.GetVertices()[0].pos.y = v2Begin2D.y + v2Normal.y * -fHalfThickness / pViewport->GetSize().y;
+	mesh.GetVertices()[0].pos.x = v2Begin2D.x + v2Normal.x * -m_fThickness / pViewport->GetSize().x;
+	mesh.GetVertices()[0].pos.y = v2Begin2D.y + v2Normal.y * -m_fThickness / pViewport->GetSize().y;
 	mesh.GetVertices()[0].color = m_lineColor.ToVector4();
 
-	mesh.GetVertices()[1].pos.x = v2Begin2D.x + v2Normal.x * fHalfThickness / pViewport->GetSize().x;
-	mesh.GetVertices()[1].pos.y = v2Begin2D.y + v2Normal.y * fHalfThickness / pViewport->GetSize().y;
+	mesh.GetVertices()[1].pos.x = v2Begin2D.x + v2Normal.x * m_fThickness / pViewport->GetSize().x;
+	mesh.GetVertices()[1].pos.y = v2Begin2D.y + v2Normal.y * m_fThickness / pViewport->GetSize().y;
 	mesh.GetVertices()[1].color = m_lineColor.ToVector4();
 
-	mesh.GetVertices()[2].pos.x = v2End2D.x + v2Normal.x * -fHalfThickness / pViewport->GetSize().x;
-	mesh.GetVertices()[2].pos.y = v2End2D.y + v2Normal.y * -fHalfThickness / pViewport->GetSize().y;
+	mesh.GetVertices()[2].pos.x = v2End2D.x + v2Normal.x * -m_fThickness / pViewport->GetSize().x;
+	mesh.GetVertices()[2].pos.y = v2End2D.y + v2Normal.y * -m_fThickness / pViewport->GetSize().y;
 	mesh.GetVertices()[2].color = m_lineColor.ToVector4();
 
-	mesh.GetVertices()[3].pos.x = v2End2D.x + v2Normal.x * fHalfThickness / pViewport->GetSize().x;
-	mesh.GetVertices()[3].pos.y = v2End2D.y + v2Normal.y * fHalfThickness / pViewport->GetSize().y;
+	mesh.GetVertices()[3].pos.x = v2End2D.x + v2Normal.x * m_fThickness / pViewport->GetSize().x;
+	mesh.GetVertices()[3].pos.y = v2End2D.y + v2Normal.y * m_fThickness / pViewport->GetSize().y;
 	mesh.GetVertices()[3].color = m_lineColor.ToVector4();
 
 	static unsigned int const indices[] = {
@@ -72,10 +103,12 @@ bool MPainter2DLine::TouchTest(const Vector2& pos, MIViewport* pViewport)
 	v2End2D.x *= pViewport->GetWidth();
 	v2End2D.y *= pViewport->GetHeight();
 
-
 	float fValue = ((v2End2D.x - v2Begin2D.x) * (pos.x - v2Begin2D.x) + (v2End2D.y - v2Begin2D.y) * (pos.y - v2Begin2D.y)) / ((v2End2D.x - v2Begin2D.x) * (v2End2D.x - v2Begin2D.x) + (v2End2D.y - v2Begin2D.y) * (v2End2D.y - v2Begin2D.y));
-	Vector2 v2Projection = v2Begin2D + (v2End2D - v2Begin2D) * fValue;
 
+	if (0.0f > fValue || fValue > 1.0f)
+		return false;
+
+	Vector2 v2Projection = v2Begin2D + (v2End2D - v2Begin2D) * fValue;
 	if ((pos - v2Projection).Length() <= fHalfThickness)
 		return true;
 

@@ -107,7 +107,7 @@ void MainEditor::OnRenderBegin()
 
 
 	ImGuiStyle& style = ImGui::GetStyle();
-	ImGui::StyleColorsLight(&style);
+//	ImGui::StyleColorsLight(&style);
 	style.WindowRounding = 0.0f;
 
 	// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
