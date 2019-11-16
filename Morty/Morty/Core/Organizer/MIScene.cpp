@@ -295,9 +295,6 @@ void MIScene::DrawSkyBox(MIRenderer* pRenderer, MIViewport* pViewport)
 void MIScene::DrawPainter(MIRenderer* pRenderer, MIViewport* pViewport)
 {
 	m_pTransformCoord3D->Render(pRenderer, pViewport);
-
-
-	m_pTransformCoord3D->SetTarget3DNode(m_pRootNode->FindFirstChildByName("Teaport"));
 }
 
 void MIScene::Render(MIRenderer* pRenderer, MIViewport* pViewport)

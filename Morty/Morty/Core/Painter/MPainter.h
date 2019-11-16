@@ -39,6 +39,7 @@ public:
 class MORTY_CLASS MPainter2DLine : public MIPainterShape
 {
 public:
+	MPainter2DLine(): m_v3Begin(), m_v3End(), m_lineColor(), m_fThickness(1.0f) {}
 	MPainter2DLine(const Vector3& v3Begin, const Vector3& v3End, const MColor& lineColor,const float& fThickness = 1.0f)
 		: m_v3Begin(v3Begin), m_v3End(v3End), m_lineColor(lineColor), m_fThickness(fThickness) {}
 

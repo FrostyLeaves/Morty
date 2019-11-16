@@ -181,7 +181,7 @@ void MIViewport::UpdateMatrix()
 {
 	//Update Camera and Projection Matrix.
 	MCamera* pCamera = GetCamera();
-	Matrix4 projMat = MatrixPerspectiveFovLH(45, m_v2Size.x / m_v2Size.y, pCamera->GetZNear(), pCamera->GetZFar());
+	Matrix4 projMat = MatrixPerspectiveFovLH(20, m_v2Size.x / m_v2Size.y, pCamera->GetZNear(), pCamera->GetZFar());
 	m_m4CameraInvProj = projMat * pCamera->GetWorldTransform().Inverse();
 }
 

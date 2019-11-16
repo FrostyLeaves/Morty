@@ -17,6 +17,7 @@
 #include "MMesh.h"
 #include "MIScene.h"
 #include "MCamera.h"
+#include "MTransformCoord.h"
 
 #include "Matrix.h"
 
@@ -162,6 +163,7 @@ void MainEditor::OnRenderBegin()
 					ImGui::Text(pNode->GetName().c_str());
 				}
 				m_pPropertyView->SetEditorObject(m_pNodeTreeView->GetSelectionNode());
+				m_pScene->GetTransformCoord()->SetTarget3DNode(dynamic_cast<MNode*>(m_pNodeTreeView->GetSelectionNode()));
 				m_pPropertyView->Render();
 			}
 			ImGui::EndChild();

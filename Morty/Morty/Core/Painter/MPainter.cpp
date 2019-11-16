@@ -54,6 +54,9 @@ bool MPainter2DLine::FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh
 		v2Normal.Normalize();
 	}
 
+	Vector2 v2Dir = v2End2D - v2Begin2D;
+	v2Dir.Normalize();
+
 	mesh.CreateVertices(GetVertexCount());
 	mesh.CreateIndices(GetIndexCount(), 1);
 

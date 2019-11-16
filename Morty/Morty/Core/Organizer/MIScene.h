@@ -59,6 +59,8 @@ public:
 	void RemoveAttachedViewport(MIViewport* pViewport);
 	std::vector<MIViewport*> GetViewports() { return m_vViewports; }
 
+	MTransformCoord3D* GetTransformCoord() { return m_pTransformCoord3D; }
+
 protected:
 
 	void DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport);

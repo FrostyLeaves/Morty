@@ -7,6 +7,7 @@
 #include "MMaterial.h"
 #include "MResourceManager.h"
 #include "MMaterialResource.h"
+#include "MIViewport.h"
 
 #include "MInputManager.h"
 
@@ -32,33 +33,15 @@ MTransformCoord3D::~MTransformCoord3D()
 
 void MTransformCoord3D::SetTarget3DNode(MNode* pNode)
 {
-	m_pTargetNode = dynamic_cast<M3DNode*>(pNode);
-}
-// 
-// bool Segment(const Vector2& a, const Vector2& b, const Vector2& m, const Vector2& n)
-// {
-// 	float sABM = (a.x - m.x) * (b.y - m.y) - (a.y - m.y) * (b.x - m.x);
-// 	if (fabs(sABM) < 1e-6)
-// 		return true;	
-// 
-// 	float sABN = (a.x - n.x) * (b.y - n.y) - (a.y - n.y) * (b.x - n.x);
-// 	if (fabs(sABN) < 1e-6)
-// 		return true;
-// 
-// 	if (sABM * sABN > 0)
-// 		return false;
-// 
-// 	float sAMN = (m.x - a.x) * (n.y - a.y) - (m.y - a.y) * (n.x - a.x);
-// 
-// 	float sBMN = sAMN + sABM - sABN;
-// 	if (sAMN * sBMN >= 0)
-// 		return false;
-// 
-// 	return true;
-// }
+	if (m_pTargetNode == dynamic_cast<M3DNode*>(pNode))
+		return;
 
-#include "MIViewport.h"
-#include "MLogManager.h"
+	m_pTargetNode = dynamic_cast<M3DNode*>(pNode);
+
+// 	m_eCoordHoverType = MECoordHoverType::None;
+// 	m_eCoordMoveType = 0;
+}
+
 bool MTransformCoord3D::Input(MInputEvent* pEvent, MIViewport* pViewport)
 {
 	MMouseInputEvent* pMouseEvent = dynamic_cast<MMouseInputEvent*>(pEvent);
@@ -70,11 +53,9 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MIViewport* pViewport)
 
 	m_eCoordHoverType = MECoordHoverType::None;
 
-	MPainter2DLine lines[] = {
-	MPainter2DLine(m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition(), m_pTargetNode->GetParentWorldTransform() * (m_pTargetNode->GetPosition() + Vector3(10, 0, 0)), MColor(1, 0, 0, 1), 6.0f),
-	MPainter2DLine(m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition(), m_pTargetNode->GetParentWorldTransform() * (m_pTargetNode->GetPosition() + Vector3(0, 10, 0)), MColor(0, 1, 0, 1), 6.0f),
-	MPainter2DLine(m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition(), m_pTargetNode->GetParentWorldTransform() * (m_pTargetNode->GetPosition() + Vector3(0, 0, 10)), MColor(30.0f / 255.0f, 144.0f / 255.0f, 1, 1), 6.0f)
-	};
+	MPainter2DLine lines[3];
+	GetTranslationLines(lines);
+
 	Vector2 pos = pMouseEvent->GetMosuePosition() - pViewport->GetLeftTop();
 	pos.y = pViewport->GetHeight() - pos.y;
 	for (int i = 0; i < 3; ++i)
@@ -142,22 +123,27 @@ void MTransformCoord3D::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 	pRenderer->SetUseMaterial(TestMaterial);
 	pRenderer->UpdateMaterialParam();
 
-	MPainter2DLine lines[] = {
-	MPainter2DLine(m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition(), m_pTargetNode->GetParentWorldTransform() * (m_pTargetNode->GetPosition() + Vector3(10, 0, 0)), MColor(1, 0, 0, 1), 6.0f),
-	MPainter2DLine(m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition(), m_pTargetNode->GetParentWorldTransform() * (m_pTargetNode->GetPosition() + Vector3(0, 10, 0)), MColor(0, 1, 0, 1), 6.0f),
-	MPainter2DLine(m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition(), m_pTargetNode->GetParentWorldTransform() * (m_pTargetNode->GetPosition() + Vector3(0, 0, 10)), MColor(30.0f / 255.0f, 144.0f / 255.0f, 1, 1), 6.0f)
-	};
+	MPainter2DLine lines[3];
+	GetTranslationLines(lines);
 
 	if (m_eCoordHoverType != MECoordHoverType::None)
 	{
 		lines[(int)m_eCoordHoverType - 1].m_lineColor = MColor(1, 1, 1, 1);
 	}
 
-	for (int i = 0; i < 3; ++i)
+	for (int i = 2; i >= 0; --i)
 	{
 		if (lines[i].FillData(pViewport, *static_cast<MMesh<MPainterVertex>*>(m_pCoordRenderCache)))
 		{
 			pRenderer->DrawMesh(m_pCoordRenderCache);
 		}
 	}
+}
+
+void MTransformCoord3D::GetTranslationLines(MPainter2DLine* lines)
+{
+
+	lines[0] = MPainter2DLine(m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition(), m_pTargetNode->GetParentWorldTransform() * (m_pTargetNode->GetPosition() + Vector3(10, 0, 0)), MColor(240.0f / 255.0f, 48.0f / 255.0f, 48.0f / 255.0f, 1), 4.0f);
+	lines[1] = MPainter2DLine(m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition(), m_pTargetNode->GetParentWorldTransform() * (m_pTargetNode->GetPosition() + Vector3(0, 10, 0)), MColor(60.0f / 255.0f, 179.0f / 255.0f, 113.0f / 255.0f, 1), 4.0f);
+	lines[2] = MPainter2DLine(m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition(), m_pTargetNode->GetParentWorldTransform() * (m_pTargetNode->GetPosition() + Vector3(0, 0, 10)), MColor(30.0f / 255.0f, 144.0f / 255.0f, 1, 1), 4.0f);
 }

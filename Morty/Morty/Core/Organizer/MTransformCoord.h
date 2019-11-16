@@ -58,6 +58,8 @@ public:
 
 protected:
 
+	void GetTranslationLines(class MPainter2DLine* lines);
+
 private:
 
 	M3DNode* m_pTargetNode;
