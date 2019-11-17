@@ -188,11 +188,6 @@ void MNode::Tick(const float& fDelta)
 		pChild->Tick(fDelta);
 }
 
-void MNode::Render()
-{
-
-}
-
 void MNode::OnTick(const float& fDelta)
 {
 

@@ -131,18 +131,21 @@ bool PropertyView::EditTransform(MTransform& trans, unsigned int& unID)
 	Vector3 old = rotate;
 	if (EditVector3(rotate))
 	{
+
 		if (rotate.x != old.x)
 		{
-			quat = quat * Quaternion(trans.GetRight(), rotate.x - old.x);
+			quat = quat * Quaternion(Vector3(1,0,0), rotate.x - old.x);
 		}
 		if (rotate.y != old.y)
 		{
-			quat = quat * Quaternion(trans.GetUp(), rotate.y - old.y);
+			quat = quat * Quaternion(Vector3(0, 1, 0), rotate.y - old.y);
 		}
 		if (rotate.z != old.z)
 		{
-			quat = quat * Quaternion(trans.GetForward(), rotate.z - old.z);
+			quat = quat * Quaternion(Vector3(0, 0, 1), rotate.z - old.z);
 		}
+// 		quat.SetEulerAngle(rotate);
+// 		quat.Normalize();
 		trans.SetRotation(quat);
 		bModify = true;
 	}

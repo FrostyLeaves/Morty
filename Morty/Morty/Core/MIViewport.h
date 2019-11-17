@@ -18,6 +18,7 @@ class MCamera;
 class MPainter;
 class MIRenderer;
 class MInputEvent;
+class MInputManager;
 class MORTY_CLASS MIViewport : public MObject
 {
 public:
@@ -45,6 +46,7 @@ public:
 	float GetWidth() { return m_v2Size.x; }
 	float GetHeight() { return m_v2Size.y; }
 
+	
 
 	bool ConvertWorldPositionToViewport(const Vector3& v3WorldPos, Vector2& v2Result);
 
@@ -68,7 +70,6 @@ protected:
 
 	static Matrix4 MatrixPerspectiveFovLH(const float& fFovYZAngle, const float& fScreenAspect, const float& fScreenNear, const float& fScreenFar);
 	
-
 private:
 
 	MIScene* m_pScene;

@@ -57,7 +57,6 @@ public:
 	void Tick(const float& fDelta);
 
 	virtual void OnTick(const float& fDelta);
-	virtual void Render();
 
 public:
 

@@ -1,5 +1,6 @@
 #include "MTransformCoord.h"
 #include "M3DNode.h"
+#include "MLogManager.h"
 
 #include "MEngine.h"
 #include "MIRenderer.h"
@@ -37,9 +38,6 @@ void MTransformCoord3D::SetTarget3DNode(MNode* pNode)
 		return;
 
 	m_pTargetNode = dynamic_cast<M3DNode*>(pNode);
-
-// 	m_eCoordHoverType = MECoordHoverType::None;
-// 	m_eCoordMoveType = 0;
 }
 
 bool MTransformCoord3D::Input(MInputEvent* pEvent, MIViewport* pViewport)
@@ -51,20 +49,15 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MIViewport* pViewport)
 	if (nullptr == m_pTargetNode)
 		return false;
 
-	m_eCoordHoverType = MECoordHoverType::None;
-
 	MPainter2DLine lines[3];
 	GetTranslationLines(lines);
 
-	Vector2 pos = pMouseEvent->GetMosuePosition() - pViewport->GetLeftTop();
-	pos.y = pViewport->GetHeight() - pos.y;
-	for (int i = 0; i < 3; ++i)
+	if (pMouseEvent->GetButton() == MMouseInputEvent::LeftButton)
 	{
-		if (lines[i].TouchTest(pos, pViewport))
-		{
-			m_eCoordHoverType = (MECoordHoverType)(i + 1);
-			break;
-		}
+		if (pMouseEvent->GetType() == MMouseInputEvent::ButtonDown)
+			m_eCoordMoveType = 1 << (int)m_eCoordHoverType - 1;
+		else
+			m_eCoordMoveType = 0;
 	}
 	
 	if (m_eCoordMoveType != 0)
@@ -81,23 +74,31 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MIViewport* pViewport)
 				float value = addi * dir / dir.Length();
 				Vector3 addiPosition(0, 0, 0);
 				float fLength = lines[i].GetLength2D(pViewport);
-				if (fLength > 1e-6)
-				{
-					addiPosition.m[i] = value / fLength * 10;
-					m_pTargetNode->SetPosition(m_pTargetNode->GetPosition() + addiPosition);
-				}
+				
+				if (fLength < 1) fLength = 1.0f;
+				addiPosition.m[i] = value / fLength * 10;
+				m_pTargetNode->SetPosition(m_pTargetNode->GetPosition() + addiPosition);
+				
 			}
 			unMoveType *= 2;
 		}		
 	}
-
-	if (pMouseEvent->GetButton() == MMouseInputEvent::LeftButton)
+	else
 	{
-		if (pMouseEvent->GetType() == MMouseInputEvent::ButtonDown)
-			m_eCoordMoveType = pow(2, (double)m_eCoordHoverType - 1);
-		else
-			m_eCoordMoveType = 0;
+		m_eCoordHoverType = MECoordHoverType::None;
+
+		Vector2 pos = pMouseEvent->GetMosuePosition() - pViewport->GetLeftTop();
+		pos.y = pViewport->GetHeight() - pos.y;
+		for (int i = 0; i < 3; ++i)
+		{
+			if (lines[i].TouchTest(pos, pViewport))
+			{
+				m_eCoordHoverType = (MECoordHoverType)(i + 1);
+				break;
+			}
+		}
 	}
+
 
 	return MECoordHoverType::None != m_eCoordHoverType;
 }

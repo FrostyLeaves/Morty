@@ -12,13 +12,12 @@
 
 #include <vector>
 
+class MNode;
 class MIDevice;
 class MIRenderer;
 class MIRenderView;
 class MObjectManager;
 class MResourceManager;
-class MInputManager;
-class MNode;
 class MORTY_CLASS MEngine
 {
 public:
@@ -41,7 +40,6 @@ public:
 
 	MObjectManager* GetObjectManager() { return m_pObjectManager; }
 	MResourceManager* GetResourceManager() { return m_pResourceManager; }
-	MInputManager* GetInputManager(){ return m_pInputManager; }
 
 public:
 
@@ -57,8 +55,6 @@ private:
 
 	MObjectManager* m_pObjectManager;
 	MResourceManager* m_pResourceManager;
-
-	MInputManager* m_pInputManager;
 
 	MNode* m_pRootNode;
 

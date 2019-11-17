@@ -23,7 +23,6 @@
 MEngine::MEngine()
 	: m_pObjectManager(nullptr)
 	, m_pResourceManager(nullptr)
-	, m_pInputManager(nullptr)
 	, m_pRootNode(nullptr)
 	, m_pDevice(nullptr)
 	, m_pRenderer(nullptr)
@@ -66,8 +65,6 @@ bool MEngine::Initialize()
 
 	m_pResourceManager = new MResourceManager();
 	m_pResourceManager->SetOwnerEngine(this);
-
-	m_pInputManager = new MInputManager();
 
 	return true;
 
@@ -128,7 +125,6 @@ void MEngine::Release()
 
 	delete m_pObjectManager;
 	delete m_pResourceManager;
-	delete m_pInputManager;
 
 	if (m_pDevice)
 	{
@@ -166,7 +162,7 @@ bool MEngine::MainLoop()
 
 	if (lTimeDelta >= m_cTickInfo.fTickInterval)
 	{
-		MLogManager::GetInstance()->Log("fps: %f", 1.0f / lTimeDelta);
+//		MLogManager::GetInstance()->Log("fps: %f", 1.0f / lTimeDelta);
 
 		Tick(lTimeDelta);
 		m_cTickInfo.lPrevTickTime = currentTime;

@@ -2,6 +2,7 @@
 #include "MIScene.h"
 #include "MCamera.h"
 #include "MEngine.h"
+#include "MInputManager.h"
 
 MIViewport::MIViewport()
 	: m_pScene(nullptr)
@@ -134,8 +135,9 @@ void MIViewport::Render(MIRenderer* pRenderer)
 
 void MIViewport::Input(MInputEvent* pEvent)
 {
-	if(m_pScene)
+	if (m_pScene)
 	{
+		m_pScene->Input(pEvent, this);
 	}
 }
 

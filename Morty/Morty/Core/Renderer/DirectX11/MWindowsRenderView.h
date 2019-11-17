@@ -12,6 +12,7 @@
 #include "MIRenderView.h"
 
 #include <map>
+#include <vector>
 #include <windows.h>
 
 
@@ -37,6 +38,21 @@ public:
 	virtual bool MainLoop() override;
 
 public:
+
+	enum class MEKeyState
+	{
+		DOWN = 1,
+		UP = 2,
+	};
+	struct MKeyState
+	{
+		unsigned int unKey;
+		MEKeyState eState;
+	};
+
+	void KeyBoardChanged(const unsigned int& unKey, const MEKeyState& eState);
+	void MouseBtnChanged(const unsigned int& unMouseBtn, const MEKeyState& eState);
+
 	static LRESULT CALLBACK ProcessFunction(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 
@@ -55,7 +71,8 @@ protected:
 	long long m_lEnginePrevTickTime;
 	bool m_bIsClosed;
 
-
+	std::vector<MKeyState> m_vKeyQueue;
+	std::vector<MKeyState> m_vMouseBtnQueue;
 
 protected:
 	static HINSTANCE s_hInstance;

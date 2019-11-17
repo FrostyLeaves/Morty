@@ -111,8 +111,6 @@ bool MWindowsRenderView::MainLoop()
 		DispatchMessage(&msg);
 	}
 
-
-	//TODO 多个窗口不能共用InputManager
 	static POINT point;
 	POINT newPoint;
 	TCHAR s[10];
@@ -121,9 +119,50 @@ bool MWindowsRenderView::MainLoop()
 
 	if (point.x != newPoint.x || point.y != newPoint.y)
 	{
-		m_pEngine->GetInputManager()->Input(new MMouseInputEvent(Vector2(newPoint.x, newPoint.y)));
+		for (MIViewport* pViewport : m_vViewport)
+		{
+			MMouseInputEvent event(Vector2(newPoint.x, newPoint.y));
+			pViewport->Input(&event);
+		}
 		point = newPoint;
 	}
+
+	for (const MKeyState& state : m_vKeyQueue)
+	{
+		for (MIViewport* pViewport : m_vViewport)
+		{
+			if (state.eState == MEKeyState::DOWN)
+			{
+				MKeyBoardInputEvent event(state.unKey, MKeyBoardInputEvent::MEKeyBoardInputType::KeyBoardDown);
+				pViewport->Input(&event);
+			}
+			else if (state.eState == MEKeyState::UP)
+			{
+				MKeyBoardInputEvent event(state.unKey, MKeyBoardInputEvent::MEKeyBoardInputType::KeyBoardUp);
+				pViewport->Input(&event);
+			}
+		}
+	}
+
+	for (const MKeyState& state : m_vMouseBtnQueue)
+	{
+		for (MIViewport* pViewport : m_vViewport)
+		{
+			if (state.eState == MEKeyState::DOWN)
+			{
+				MMouseInputEvent event((MMouseInputEvent::MEMouseDownButton)state.unKey, MMouseInputEvent::MEMouseInputType::ButtonDown);
+				pViewport->Input(&event);
+			}
+			else if (state.eState == MEKeyState::UP)
+			{
+				MMouseInputEvent event((MMouseInputEvent::MEMouseDownButton)state.unKey, MMouseInputEvent::MEMouseInputType::ButtonUp);
+				pViewport->Input(&event);
+			}
+		}
+	}
+
+	m_vKeyQueue.clear();
+	m_vMouseBtnQueue.clear();
 
 	return msg.message != WM_QUIT;
 }
@@ -131,6 +170,22 @@ bool MWindowsRenderView::MainLoop()
 void MWindowsRenderView::Release()
 {
 	s_tViewTable.erase(m_hwnd);
+}
+
+void MWindowsRenderView::KeyBoardChanged(const unsigned int& unKey, const MEKeyState& eState)
+{
+	MKeyState state;
+	state.unKey = unKey;
+	state.eState = eState;
+	m_vKeyQueue.push_back(state);
+}
+
+void MWindowsRenderView::MouseBtnChanged(const unsigned int& unMouseBtn, const MEKeyState& eState)
+{
+	MKeyState state;
+	state.unKey = unMouseBtn;
+	state.eState = eState;
+	m_vMouseBtnQueue.push_back(state);
 }
 
 LRESULT CALLBACK MWindowsRenderView::ProcessFunction(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -165,32 +220,32 @@ LRESULT CALLBACK MWindowsRenderView::ViewProcessFunction(HWND hwnd, UINT message
 	case WM_KEYDOWN:
 		if ((HIWORD(lParam) & KF_REPEAT) == 0)
 		{
-			m_pEngine->GetInputManager()->Input(new MKeyBoardInputEvent(wParam, MKeyBoardInputEvent::KeyBoardDown));
+			KeyBoardChanged(wParam, MEKeyState::DOWN);
 		}
 		break;
 
 	case WM_KEYUP:
-		m_pEngine->GetInputManager()->Input(new MKeyBoardInputEvent(wParam, MKeyBoardInputEvent::KeyBoardUp));
+		KeyBoardChanged(wParam, MEKeyState::UP);
 		break;
 
 	case WM_LBUTTONDOWN:
 	{
-		m_pEngine->GetInputManager()->Input(new MMouseInputEvent(MMouseInputEvent::MEMouseDownButton::LeftButton, MMouseInputEvent::MEMouseInputType::ButtonDown));
+		MouseBtnChanged(MMouseInputEvent::MEMouseDownButton::LeftButton, MEKeyState::DOWN);
 		break;
 	}
 	case WM_LBUTTONUP:
 	{
-		m_pEngine->GetInputManager()->Input(new MMouseInputEvent(MMouseInputEvent::MEMouseDownButton::LeftButton, MMouseInputEvent::MEMouseInputType::ButtonUp));
+		MouseBtnChanged(MMouseInputEvent::MEMouseDownButton::LeftButton, MEKeyState::UP);
 		break;
 	}
 	case WM_RBUTTONDOWN:
 	{
-		m_pEngine->GetInputManager()->Input(new MMouseInputEvent(MMouseInputEvent::MEMouseDownButton::RightButton, MMouseInputEvent::MEMouseInputType::ButtonDown));
+		MouseBtnChanged(MMouseInputEvent::MEMouseDownButton::RightButton, MEKeyState::DOWN);
 		break;
 	}
 	case WM_RBUTTONUP:
 	{
-		m_pEngine->GetInputManager()->Input(new MMouseInputEvent(MMouseInputEvent::MEMouseDownButton::RightButton, MMouseInputEvent::MEMouseInputType::ButtonUp));
+		MouseBtnChanged(MMouseInputEvent::MEMouseDownButton::RightButton, MEKeyState::UP);
 		break;
 	}
 

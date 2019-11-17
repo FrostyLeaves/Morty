@@ -14,6 +14,7 @@
 #include <vector>
 #include <functional>
 
+class MIViewport;
 class MORTY_CLASS MInputEvent
 {
 public:
@@ -94,7 +95,7 @@ protected:
 class MORTY_CLASS MInputListener
 {
 public:
-	typedef std::function<void(MInputEvent*)> MInputEventFunction;
+	typedef std::function<void(MInputEvent*, MIViewport*)> MInputEventFunction;
 
 	MInputListener();
 
@@ -110,8 +111,7 @@ public:
 
 public:
 
-	void Input(MInputEvent* pEvent);
-
+	void Input(MInputEvent* pEvent, MIViewport* pViewport);
 
 	void AddListener(MInputListener* pListener);
 	void RemoveListener(MInputListener* pListener);

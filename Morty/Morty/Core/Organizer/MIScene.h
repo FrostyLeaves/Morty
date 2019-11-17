@@ -20,6 +20,7 @@ class MSkyBox;
 class MDirectionalLight;
 class MPointLight;
 class MIRenderer;
+class MInputEvent;
 class MIRenderView;
 class MIViewport;
 class MMaterial;
@@ -42,7 +43,6 @@ public:
 	void FindActivePointLights(const Vector3& v3WorldPosition, std::vector<MPointLight*>& vPointLights);
 public:
 
-
 	//节点接入场景时进行的操作
 	void OnNodeEnter(MNode* pNode);
 	//节点退出场景时进行的操作
@@ -52,6 +52,8 @@ public:
 	void CancelRecordMeshInstance(MMeshInstance* pMeshInstance);
 
 	virtual void Render(MIRenderer* pRenderer, MIViewport* pViewport);
+
+	virtual void Input(MInputEvent* pEvent, MIViewport* pViewport);
 
 	virtual void OnCreated() override;
 

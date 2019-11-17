@@ -80,13 +80,13 @@ MInputManager::~MInputManager()
 	m_vListenerList.clear();
 }
 
-void MInputManager::Input(MInputEvent* pEvent)
+void MInputManager::Input(MInputEvent* pEvent, MIViewport* pViewport)
 {
 	for (MInputListener* pListener : m_vListenerList)
 	{
 		if (pListener->m_function)
 		{
-			pListener->m_function(pEvent);
+			pListener->m_function(pEvent, pViewport);
 		}
 	}
 
