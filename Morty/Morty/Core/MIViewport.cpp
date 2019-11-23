@@ -63,7 +63,7 @@ void MIViewport::ConvertViewportPositionToWorld(const Vector2& v2ViewportPos, co
 	v3Result = pos + dir * fDepth;
 }
 
-bool  MIViewport::ConvertWorldLineToNormalizedDevice(const Vector3& v3Pos1, const Vector3& v3Pos2, Vector3& v3Rst1, Vector3& v3Rst2)
+bool  MIViewport::ConvertWorldLineToNormalizedDevice(const Vector3& v3Pos1, const Vector3& v3Pos2, Vector2& v3Rst1, Vector2& v3Rst2)
 {
 	UpdateMatrix();
 

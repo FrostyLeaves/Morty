@@ -157,12 +157,24 @@ int main(int argc, char* argv[])
 
 	Quaternion qqq;
 
-	qqq.x = 0.3214;
-	qqq.y = 0.1170;
-	qqq.z = 0.3214;
-	qqq.w = 0.8830;
+	qqq.x = 0.1;
+	qqq.y = 0.2;
+	qqq.z = 0.3;
+	qqq.w = 0.6;
+	qqq.Normalize();
+
+//	qqq.SetEulerAngle(Vector3(30, 120, 45));
+
+	Quaternion ooo; 
+	ooo.SetEulerAngle(Vector3(30 - 180.0f , 180.0f - 120, 45 - 180.0f));
 
 	Vector3  v = qqq.GetEulerAngle();
+	Vector3 n = ooo.GetEulerAngle();
+
+	Quaternion xxx;
+	xxx.SetEulerAngle(v);
+	xxx.Normalize();
+	Vector3 w = xxx.GetEulerAngle();
 
 	qqq.x = 0.1176;
 	qqq.y = 0.5428;

@@ -1,14 +1,17 @@
 ﻿#include "MMaterialResource.h"
 #include "MShaderResource.h"
+#include "MEngine.h"
 #include "MShader.h"
+#include "MMaterial.h"
 
 MMaterialResource::MMaterialResource()
 	: m_pVertexShader(nullptr)
 	, m_pPixelShader(nullptr)
 	, m_pVertexResource(nullptr)
 	, m_pPixelResource(nullptr)
+	, m_pMaterial(nullptr)
 {
-
+	
 }
 
 MMaterialResource::~MMaterialResource()
@@ -26,12 +29,23 @@ MMaterialResource::~MMaterialResource()
 		delete m_pPixelResource;
 		m_pPixelResource = nullptr;
 	}
+// 	if (m_pMaterial)
+// 	{		//TODO: Circular reference!
+// 		delete m_pMaterial;
+// 		m_pMaterial = nullptr;
+// 	}
 }
 
 bool MMaterialResource::Load(const MString& strResourcePath)
 {
 	//TODO 
 	return false;
+}
+
+void MMaterialResource::OnCreated()
+{
+	m_pMaterial = m_pEngine->GetObjectManager()->CreateObject<MMaterial>();
+	m_pMaterial->Load(this);
 }
 
 bool MMaterialResource::LoadVertexShader(MResource* pResource)
@@ -48,6 +62,7 @@ bool MMaterialResource::LoadVertexShader(MResource* pResource)
 				OnReload();
 			});
 
+			OnReload();
 			return true;
 		}
 	}
@@ -68,6 +83,8 @@ bool MMaterialResource::LoadPixelShader(MResource* pResource)
 			m_pPixelResource->SetResChangedCallback([this](){
 				OnReload();
 			});
+
+			OnReload();
 			return true;
 		}
 	}

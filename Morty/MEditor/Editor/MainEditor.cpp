@@ -163,7 +163,9 @@ void MainEditor::OnRenderBegin()
 					ImGui::Text(pNode->GetName().c_str());
 				}
 				m_pPropertyView->SetEditorObject(m_pNodeTreeView->GetSelectionNode());
-				m_pScene->GetTransformCoord()->SetTarget3DNode(dynamic_cast<MNode*>(m_pNodeTreeView->GetSelectionNode()));
+				MNode* pNode = m_pScene->GetRootNode()->FindFirstChildByName("Teaport");
+				//dynamic_cast<MNode*>(m_pNodeTreeView->GetSelectionNode())
+				m_pScene->GetTransformCoord()->SetTarget3DNode(pNode);
 				m_pPropertyView->Render();
 			}
 			ImGui::EndChild();

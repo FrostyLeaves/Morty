@@ -39,11 +39,7 @@ public:
 
 public:
 
-	enum class MEKeyState
-	{
-		DOWN = 1,
-		UP = 2,
-	};
+	
 	struct MKeyState
 	{
 		unsigned int unKey;

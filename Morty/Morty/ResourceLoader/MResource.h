@@ -41,9 +41,14 @@ public:
 
 //	MResourceManager* GetResourceManager(){ return m_pResourceManager; }
 
+public:
+
+	virtual void OnCreated() {}
+
 protected:
 
 	virtual bool Load(const MString& strResourcePath) = 0;
+	
 	void OnReload();
 
 protected:

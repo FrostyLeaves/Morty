@@ -50,7 +50,7 @@ public:
 
 	MMouseInputEvent(const MEMouseDownButton& eMouseDownButton, const MEMouseInputType& eInputType);
 
-	MMouseInputEvent(const Vector2& v2MousePosition);
+	MMouseInputEvent(const Vector2& v2MousePosition, const Vector2& v2MousePositionAddition);
 
 	Vector2 GetMosuePosition() { return s_v2MousePosition; }
 	Vector2 GetMouseAddition(){ return m_v2MousePositionAddition; }
@@ -72,24 +72,18 @@ protected:
 class MORTY_CLASS MKeyBoardInputEvent : public MInputEvent
 {
 public:
-	enum MEKeyBoardInputType
-	{
-		KeyBoardDown = 1,
-		KeyBoardUp = 2,
-	};
 
-
-	MKeyBoardInputEvent(const unsigned int& unKeyIndex, const MEKeyBoardInputType& eInputType);
+	MKeyBoardInputEvent(const unsigned int& unKeyIndex, const MEKeyState& eInputType);
 
 	unsigned int GetKey() { return m_unKeyIndex; }
-	MEKeyBoardInputType GetType(){ return m_eInputType; }
+	MEKeyState GetType(){ return m_eInputType; }
 
 protected:
 
 	static bool s_vKeyDownMap[256];
 
 	unsigned int m_unKeyIndex;
-	MEKeyBoardInputType m_eInputType;
+	MEKeyState m_eInputType;
 };
 
 class MORTY_CLASS MInputListener

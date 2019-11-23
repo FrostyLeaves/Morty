@@ -11,6 +11,7 @@
 #include "MGlobal.h"
 #include "MResource.h"
 
+class MMaterial;
 class MShader;
 class MShaderResource;
 class MORTY_CLASS MMaterialResource : public MResource
@@ -25,6 +26,11 @@ public:
 	bool LoadVertexShader(MResource* pResource);
 	bool LoadPixelShader(MResource* pResource);
 
+	MMaterial* GetMaterialTemplate() { return m_pMaterial; }
+
+public:
+	virtual void OnCreated() override;
+
 protected:
 
 	virtual bool Load(const MString& strResourcePath) override;
@@ -38,6 +44,7 @@ private:
 	MResourceHolder* m_pVertexResource;
 	MResourceHolder* m_pPixelResource;
 
+	MMaterial* m_pMaterial;
 };
 
 

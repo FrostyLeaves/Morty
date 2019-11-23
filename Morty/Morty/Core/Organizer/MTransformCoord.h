@@ -10,6 +10,7 @@
 #define _M_MTRANSFORMCOORD_H_
 #include "MGlobal.h"
 #include "MObject.h"
+#include "Vector.h"
 
 class MNode;
 class M3DNode;
@@ -58,9 +59,11 @@ public:
 
 protected:
 
-	void GetTranslationLines(class MPainter2DLine* lines);
+	void GetTranslationLines(class MPainter2DLine* lines, bool* vValid, MIViewport* pViewport);
 
 private:
+
+	const Vector3 m_vDirection[3];
 
 	M3DNode* m_pTargetNode;
 	MECoordHoverType m_eCoordHoverType;

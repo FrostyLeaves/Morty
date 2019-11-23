@@ -52,6 +52,8 @@ public:
 
 		m_tIDResources[pResource->m_unResourceID] = pResource;
 
+		pResource->OnCreated();
+
 		return pResource;
 	}
 

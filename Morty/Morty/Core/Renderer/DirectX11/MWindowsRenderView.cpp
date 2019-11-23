@@ -111,7 +111,7 @@ bool MWindowsRenderView::MainLoop()
 		DispatchMessage(&msg);
 	}
 
-	static POINT point;
+	static POINT point = { -1, -1 };
 	POINT newPoint;
 	TCHAR s[10];
 	GetCursorPos(&newPoint);
@@ -119,45 +119,42 @@ bool MWindowsRenderView::MainLoop()
 
 	if (point.x != newPoint.x || point.y != newPoint.y)
 	{
+		Vector2 v2Addi;
+		if (point.x == -1 && point.y == -1)
+			v2Addi = Vector2(0, 0);
+		else
+			v2Addi = Vector2(newPoint.x - point.x, newPoint.y - point.y);
+
+		MMouseInputEvent event(Vector2(newPoint.x, newPoint.y), v2Addi);
+
+
 		for (MIViewport* pViewport : m_vViewport)
 		{
-			MMouseInputEvent event(Vector2(newPoint.x, newPoint.y));
-			pViewport->Input(&event);
+			MMouseInputEvent eventClone(event);
+			pViewport->Input(&eventClone);
 		}
 		point = newPoint;
 	}
 
 	for (const MKeyState& state : m_vKeyQueue)
 	{
+		MKeyBoardInputEvent event(state.unKey, state.eState);
+
 		for (MIViewport* pViewport : m_vViewport)
 		{
-			if (state.eState == MEKeyState::DOWN)
-			{
-				MKeyBoardInputEvent event(state.unKey, MKeyBoardInputEvent::MEKeyBoardInputType::KeyBoardDown);
-				pViewport->Input(&event);
-			}
-			else if (state.eState == MEKeyState::UP)
-			{
-				MKeyBoardInputEvent event(state.unKey, MKeyBoardInputEvent::MEKeyBoardInputType::KeyBoardUp);
-				pViewport->Input(&event);
-			}
+			MKeyBoardInputEvent eventClone(event);
+			pViewport->Input(&eventClone);
 		}
 	}
 
 	for (const MKeyState& state : m_vMouseBtnQueue)
 	{
+		MMouseInputEvent event((MMouseInputEvent::MEMouseDownButton)state.unKey, state.eState == MEKeyState::DOWN ? MMouseInputEvent::MEMouseInputType::ButtonDown : MMouseInputEvent::MEMouseInputType::ButtonUp);
+
 		for (MIViewport* pViewport : m_vViewport)
 		{
-			if (state.eState == MEKeyState::DOWN)
-			{
-				MMouseInputEvent event((MMouseInputEvent::MEMouseDownButton)state.unKey, MMouseInputEvent::MEMouseInputType::ButtonDown);
-				pViewport->Input(&event);
-			}
-			else if (state.eState == MEKeyState::UP)
-			{
-				MMouseInputEvent event((MMouseInputEvent::MEMouseDownButton)state.unKey, MMouseInputEvent::MEMouseInputType::ButtonUp);
-				pViewport->Input(&event);
-			}
+			MMouseInputEvent eventClone(event);
+			pViewport->Input(&event);
 		}
 	}
 

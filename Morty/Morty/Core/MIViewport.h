@@ -52,7 +52,7 @@ public:
 
 	void ConvertViewportPositionToWorld(const Vector2& v2ViewportPos, const float& fDepth, Vector3& v3Result);
 
-	bool ConvertWorldLineToNormalizedDevice(const Vector3& v3Pos1, const Vector3& v3Pos2, Vector3& v3Rst1, Vector3& v3Rst2);
+	bool ConvertWorldLineToNormalizedDevice(const Vector3& v3Pos1, const Vector3& v3Pos2, Vector2& v3Rst1, Vector2& v3Rst2);
 
 public:
 	virtual void OnCreated() override;

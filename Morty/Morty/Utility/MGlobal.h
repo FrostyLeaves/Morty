@@ -39,5 +39,11 @@ extern const char* SUFFIX_PIXEL_SHADER;
 #define RENDER_GRAPHICS MORTY_DIRECTX_11
 
 
+enum class MEKeyState
+{
+	DOWN = 1,
+	UP = 2,
+};
+
 
 #endif

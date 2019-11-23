@@ -32,27 +32,20 @@ MMouseInputEvent::MMouseInputEvent(const MEMouseDownButton& eMouseDownButton, co
 	m_v2MousePositionAddition = Vector2(0, 0);
 }
 
-MMouseInputEvent::MMouseInputEvent(const Vector2& v2MousePosition)
+MMouseInputEvent::MMouseInputEvent(const Vector2& v2MousePosition, const Vector2& v2MousePositionAddition)
 	: m_eEventButton(MEMouseDownButton::NoneButton)
 	, m_eInputType(MEMouseInputType::MouseMove)
 {
-	if (s_v2MousePosition.x != -1 && s_v2MousePosition.y != -1)
-	{
-		m_v2MousePositionAddition = v2MousePosition - s_v2MousePosition;
-	}
-	else
-	{
-		m_v2MousePositionAddition = Vector2(0, 0);
-	}
+	m_v2MousePositionAddition = v2MousePositionAddition;
 	s_v2MousePosition = v2MousePosition;
 }
 
-MKeyBoardInputEvent::MKeyBoardInputEvent(const unsigned int& unKeyIndex, const MEKeyBoardInputType& eInputType)
+MKeyBoardInputEvent::MKeyBoardInputEvent(const unsigned int& unKeyIndex, const MEKeyState& eInputType)
 	: m_unKeyIndex(0)
 {
 	if (unKeyIndex < 256)
 	{
-		s_vKeyDownMap[unKeyIndex] = MEKeyBoardInputType::KeyBoardDown == eInputType;
+		s_vKeyDownMap[unKeyIndex] = MEKeyState::DOWN == eInputType;
 
 		m_unKeyIndex = unKeyIndex;
 

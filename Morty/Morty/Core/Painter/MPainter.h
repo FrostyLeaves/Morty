@@ -39,9 +39,9 @@ public:
 class MORTY_CLASS MPainter2DLine : public MIPainterShape
 {
 public:
-	MPainter2DLine(): m_v3Begin(), m_v3End(), m_lineColor(), m_fThickness(1.0f) {}
-	MPainter2DLine(const Vector3& v3Begin, const Vector3& v3End, const MColor& lineColor,const float& fThickness = 1.0f)
-		: m_v3Begin(v3Begin), m_v3End(v3End), m_lineColor(lineColor), m_fThickness(fThickness) {}
+	MPainter2DLine(): m_v2Begin(), m_v2End(), m_lineColor(), m_fThickness(1.0f) {}
+	MPainter2DLine(const Vector2& v2Begin, const Vector2& v2End, const MColor& lineColor,const float& fThickness = 1.0f) : MIPainterShape()
+		, m_v2Begin(v2Begin), m_v2End(v2End), m_lineColor(lineColor), m_fThickness(fThickness) {}
 
 	virtual ~MPainter2DLine() {}
 
@@ -55,10 +55,33 @@ public:
 	float GetLength2D(MIViewport* pViewport);
 
 public:
-	Vector3 m_v3Begin;
-	Vector3 m_v3End;
+	Vector2 m_v2Begin;
+	Vector2 m_v2End;
 	MColor m_lineColor;
 	float m_fThickness;
 };
+
+// class MORTY_CLASS MPainterRect : public MIPainterShape
+// {
+// public:
+// 	MPainterRect() :m_v3Center(), m_v3Normal(), m_rectColor(), m_fWidth(), m_fHeight() {}
+// 	MPainterRect(const Vector3& v3Center, const Vector3& v3Normal, const MColor& rectColor, const float& fWidth, const float& fHeight) : MIPainterShape()
+// 		, m_v3Center(v3Center), m_v3Normal(v3Normal), m_rectColor(rectColor), m_fWidth(fWidth), m_fHeight(fHeight) {}
+// 
+// 	virtual ~MPainterRect() {}
+// 
+// 	virtual unsigned int GetVertexCount() override { return 4; }
+// 	virtual unsigned int GetIndexCount() override { return 6; }
+// 
+// 	virtual bool FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh) override;
+// 	virtual bool TouchTest(const Vector2& pos, MIViewport* pViewport) override;
+// 
+// public:
+// 	Vector3 m_v3Center;
+// 	Vector3 m_v3Normal;
+// 	MColor m_rectColor;
+// 	float m_fWidth;
+// 	float m_fHeight;
+// };
 
 #endif
