@@ -10,6 +10,7 @@
 #define _M_MWINDOWSRENDERVIEW_H_
 #include "MGlobal.h"
 #include "MIRenderView.h"
+#include "MString.h"
 
 #include <map>
 #include <vector>
@@ -36,6 +37,8 @@ public:
 	virtual void OnResize(const int& nWidth, const int& nHeight) override;
 
 	virtual bool MainLoop() override;
+
+	void SetWindowTitle(const MString& strTilte);
 
 public:
 

@@ -163,7 +163,7 @@ int main(int argc, char* argv[])
 	qqq.w = 0.6;
 	qqq.Normalize();
 
-//	qqq.SetEulerAngle(Vector3(30, 120, 45));
+	qqq.SetEulerAngle(Vector3(30, 120, 45));
 
 	Quaternion ooo; 
 	ooo.SetEulerAngle(Vector3(30 - 180.0f , 180.0f - 120, 45 - 180.0f));

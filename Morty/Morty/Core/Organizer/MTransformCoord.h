@@ -11,6 +11,7 @@
 #include "MGlobal.h"
 #include "MObject.h"
 #include "Vector.h"
+#include "MColor.h"
 
 class MNode;
 class M3DNode;
@@ -61,9 +62,13 @@ protected:
 
 	void GetTranslationLines(class MPainter2DLine* lines, bool* vValid, MIViewport* pViewport);
 
+	void GetTranslationRects(class MPainter2DRect* rects, MIViewport* pViewport);
+
 private:
 
 	const Vector3 m_vDirection[3];
+	const MColor m_vColor[3];
+	Vector3 m_vMouseDownDirLength2D[3];
 
 	M3DNode* m_pTargetNode;
 	MECoordHoverType m_eCoordHoverType;

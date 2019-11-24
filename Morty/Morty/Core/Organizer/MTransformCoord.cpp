@@ -15,6 +15,7 @@
 MTransformCoord3D::MTransformCoord3D()
 	: MITransformCoord()
 	, m_vDirection{Vector3(1, 0, 0), Vector3(0, 1, 0),Vector3(0, 0, 1)}
+	, m_vColor{ MColor(240.0f / 255.0f, 48.0f / 255.0f, 48.0f / 255.0f, 0.5f), MColor(60.0f / 255.0f, 179.0f / 255.0f, 113.0f / 255.0f, 0.5f), MColor(30.0f / 255.0f, 144.0f / 255.0f, 1, 0.5f) }
 	, m_pTargetNode(nullptr)
 	, m_eCoordHoverType(MECoordHoverType::None)
 	, m_eCoordMoveType(0)
@@ -50,14 +51,40 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MIViewport* pViewport)
 	if (nullptr == m_pTargetNode)
 		return false;
 
-	MPainter2DLine lines[3];
 	bool vVaild[3];
+	MPainter2DLine lines[3];
 	GetTranslationLines(lines, vVaild, pViewport);
 
 	if (pMouseEvent->GetButton() == MMouseInputEvent::LeftButton)
 	{
 		if (pMouseEvent->GetType() == MMouseInputEvent::ButtonDown)
+		{
 			m_eCoordMoveType = 1 << (int)m_eCoordHoverType - 1;
+
+			Vector2 pos1, pos2;
+			Vector3 v3Origin = m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition();
+
+			for (int i = 0; i < 3; ++i)
+			{
+				if (m_eCoordMoveType & 1 << i)
+				{
+					pViewport->ConvertWorldLineToNormalizedDevice(v3Origin, v3Origin + m_vDirection[i], pos1, pos2);
+					pos1 = (pos1 + Vector2(1.0, 1.0)) * 0.5;
+					pos1.x *= pViewport->GetWidth();
+					pos1.y *= pViewport->GetHeight();
+
+					pos2 = (pos2 + Vector2(1.0, 1.0)) * 0.5;
+					pos2.x *= pViewport->GetWidth();
+					pos2.y *= pViewport->GetHeight();
+
+					m_vMouseDownDirLength2D[i] = pos2 - pos1;
+					m_vMouseDownDirLength2D[i].Normalize();
+					m_vMouseDownDirLength2D[i].z = (pos2 - pos1).Length();
+
+					break;
+				}
+			}
+		}
 		else
 			m_eCoordMoveType = 0;
 	}
@@ -69,28 +96,18 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MIViewport* pViewport)
 
 		Vector3 v3Origin = m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition();
 		
-
 		int unMoveAxisType = 1;
 		for (int i = 0; i < 3; ++i)
 		{
 			if (m_eCoordMoveType & unMoveAxisType)
 			{
-				Vector2 dir = lines[i].GetDirection2D(pViewport);
-				float value = addi * dir / dir.Length();
+				const Vector2& dir = m_vMouseDownDirLength2D[i];
+				float fLength = m_vMouseDownDirLength2D[i].z;
+
+				float value = addi * dir / 1.0f;
 				Vector3 addiPosition(0, 0, 0);
-				
-				Vector2 pos1, pos2;
-				pViewport->ConvertWorldLineToNormalizedDevice(v3Origin, v3Origin + m_vDirection[i], pos1, pos2);
-				pos1 = (pos1 + Vector2(1.0, 1.0)) * 0.5;
-				pos1.x *= pViewport->GetWidth();
-				pos1.y *= pViewport->GetHeight();
 
-				pos2 = (pos2 + Vector2(1.0, 1.0)) * 0.5;
-				pos2.x *= pViewport->GetWidth();
-				pos2.y *= pViewport->GetHeight();
-				float fLength = (pos2 - pos1).Length();
-
-				if (fLength < 1) fLength = 1.0f;
+				if (fLength < 1.0f) fLength = 1.0f;
 				addiPosition.m[i] = value / fLength;
 				m_pTargetNode->SetPosition(m_pTargetNode->GetPosition() + addiPosition);
 			}
@@ -154,20 +171,29 @@ void MTransformCoord3D::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 			pRenderer->DrawMesh(m_pCoordRenderCache);
 		}
 	}
+
+	static MMesh<MPainterVertex> testRectVtx(true);
+
+	MPainter2DRect rects[3];
+	GetTranslationRects(rects, pViewport);
+	for (int i = 0; i < 3; ++i)
+	{
+		if (rects[i].FillData(pViewport, testRectVtx))
+			pRenderer->DrawMesh(&testRectVtx);
+	}
+
+	
 }
 
 void MTransformCoord3D::GetTranslationLines(MPainter2DLine* lines, bool* vValid, MIViewport* pViewport)
 {
 	Vector3 v3Origin = m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition();
-	Vector3 v3Right = v3Origin + Vector3(10, 0, 0);
-	Vector3 v3Up = v3Origin + Vector3(0, 10, 0);
-	Vector3 v3Forward = v3Origin + Vector3(0, 0, 10);
 
-	float fMaxLength = 0.0f;
+	float fMaxLength = 0.0001f;
 	Vector2 rit1, rit2, up1, up2, fwd1, fwd2;
-	vValid[0] = pViewport->ConvertWorldLineToNormalizedDevice(v3Origin, v3Right, rit1, rit2);
-	vValid[1] = pViewport->ConvertWorldLineToNormalizedDevice(v3Origin, v3Up, up1, up2);
-	vValid[2] = pViewport->ConvertWorldLineToNormalizedDevice(v3Origin, v3Forward, fwd1, fwd2);
+	vValid[0] = pViewport->ConvertWorldLineToNormalizedDevice(v3Origin, v3Origin + m_vDirection[0] * 10, rit1, rit2);
+	vValid[1] = pViewport->ConvertWorldLineToNormalizedDevice(v3Origin, v3Origin + m_vDirection[1] * 10, up1, up2);
+	vValid[2] = pViewport->ConvertWorldLineToNormalizedDevice(v3Origin, v3Origin + m_vDirection[2] * 10, fwd1, fwd2);
 
 	if (vValid[0] && fMaxLength < (rit2 - rit1).Length())
 		fMaxLength = (rit2 - rit1).Length();
@@ -176,22 +202,28 @@ void MTransformCoord3D::GetTranslationLines(MPainter2DLine* lines, bool* vValid,
 	if (vValid[2] && fMaxLength < (fwd2 - fwd1).Length())
 		fMaxLength = (fwd2 - fwd1).Length();
 
-	if (fMaxLength < 1e-6)
-		fMaxLength = 1.0f;
-
 	if (vValid[0])
 	{
-		rit2 = rit1 + (rit2 - rit1) * 0.5f / fMaxLength;
-		lines[0] = MPainter2DLine(rit1, rit2, MColor(240.0f / 255.0f, 48.0f / 255.0f, 48.0f / 255.0f, 1), 4.0f);
+		rit2 = rit1 + (rit2 - rit1) * (200.0f / pViewport->GetHeight()) / fMaxLength;
+		lines[0] = MPainter2DLine(rit1, rit2, m_vColor[0], 6.0f);
 	}
 	if (vValid[1])
 	{
-		up2 = up1 + (up2 - up1) * 0.5f / fMaxLength;
-		lines[1] = MPainter2DLine(up1, up2, MColor(60.0f / 255.0f, 179.0f / 255.0f, 113.0f / 255.0f, 1), 4.0f);
+		up2 = up1 + (up2 - up1) * (200.0f / pViewport->GetHeight()) / fMaxLength;
+		lines[1] = MPainter2DLine(up1, up2, m_vColor[1], 6.0f);
 	}
 	if (vValid[2])
 	{
-		fwd2 = fwd1 + (fwd2 - fwd1) * 0.5f / fMaxLength;
-		lines[2] = MPainter2DLine(fwd1, fwd2, MColor(30.0f / 255.0f, 144.0f / 255.0f, 1, 1), 4.0f);
+		fwd2 = fwd1 + (fwd2 - fwd1) * (200.0f / pViewport->GetHeight()) / fMaxLength;
+		lines[2] = MPainter2DLine(fwd1, fwd2, m_vColor[2], 6.0f);
 	}
+}
+
+void MTransformCoord3D::GetTranslationRects(class MPainter2DRect* rects, MIViewport* pViewport)
+{
+	Vector3 v3Origin = m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition();
+
+	rects[0] = MPainter2DRect(v3Origin + Vector3(0, 5, 5), Vector3(1, 0, 0), Vector3(0, 1, 0), m_vColor[0], 3, 3);
+	rects[1] = MPainter2DRect(v3Origin + Vector3(5, 0, 5), Vector3(0, 1, 0), Vector3(0, 0, 1), m_vColor[1], 3, 3);
+	rects[2] = MPainter2DRect(v3Origin + Vector3(5, 5, 0), Vector3(0, 0, 1), Vector3(1, 0, 0), m_vColor[2], 3, 3);
 }

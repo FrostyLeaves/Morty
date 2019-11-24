@@ -107,6 +107,15 @@ void MIScene::OnNodeEnter(MNode* pNode)
 
 	else if (MMeshInstance * pMeshIns = dynamic_cast<MMeshInstance*>(pNode))
 		RecordMeshInstance(pMeshIns);
+
+	else if (MCamera* pCamera = dynamic_cast<MCamera*>(pNode))
+	{
+		for (MIViewport* pViewport : m_vViewports)
+		{
+			if (pViewport->IsUseDefaultCamera())
+				pViewport->SetCamera(pCamera);
+		}
+	}
 }
 
 void MIScene::OnNodeExit(MNode* pNode)
@@ -127,6 +136,16 @@ void MIScene::OnNodeExit(MNode* pNode)
 
 	else if (MMeshInstance * pMeshIns = dynamic_cast<MMeshInstance*>(pNode))
 		CancelRecordMeshInstance(pMeshIns);
+
+	else if (MCamera* pCamera = dynamic_cast<MCamera*>(pNode))
+	{
+		for (MIViewport* pViewport : m_vViewports)
+		{
+			if (pViewport->GetCamera() == pCamera)
+				pViewport->SetCamera(nullptr);
+		}
+	}
+
 }
 
 void MIScene::RecordMeshInstance(MMeshInstance* pMeshInstance)

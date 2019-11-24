@@ -43,8 +43,6 @@ void MainEditor::SetEditorNode(MNode* pNode)
 {
 	m_pScene->SetRootNode(pNode);
 	m_pNodeTreeView->SetRootNode(pNode);
-
-	m_vViewport[0]->SetCamera(pNode->FindFirstChildByType<MCamera>());
 }
 
 bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
@@ -107,6 +105,11 @@ void MainEditor::OnRenderBegin()
 	ImGui::NewFrame();
 
 
+	char svWindowTitle[32];
+	sprintf_s(svWindowTitle, "Morty FPS: %d", (int)round(m_pEngine->GetInstantFPS()));
+	SetWindowTitle(svWindowTitle);
+
+
 	ImGuiStyle& style = ImGui::GetStyle();
 //	ImGui::StyleColorsLight(&style);
 	style.WindowRounding = 0.0f;
@@ -132,10 +135,8 @@ void MainEditor::OnRenderBegin()
 			if (fPropertyWidth > 400.0f)
 				fPropertyWidth = 400.0f;
 
-
-
 			if (ImGui::BeginChild("NodeTree", ImVec2(fNodeTreeWidth, v2RegionAvail.y), false, unWindowFlags))
-			{
+			{		
 				m_pNodeTreeView->Render();
 			}
 			ImGui::EndChild();
@@ -163,16 +164,18 @@ void MainEditor::OnRenderBegin()
 					ImGui::Text(pNode->GetName().c_str());
 				}
 				m_pPropertyView->SetEditorObject(m_pNodeTreeView->GetSelectionNode());
-				MNode* pNode = m_pScene->GetRootNode()->FindFirstChildByName("Teaport");
-				//dynamic_cast<MNode*>(m_pNodeTreeView->GetSelectionNode())
+				//MNode* pNode = m_pScene->GetRootNode()->FindFirstChildByName("Teaport");
+				MNode* pNode = dynamic_cast<MNode*>(m_pNodeTreeView->GetSelectionNode());
 				m_pScene->GetTransformCoord()->SetTarget3DNode(pNode);
 				m_pPropertyView->Render();
 			}
 			ImGui::EndChild();
 		}
+
 		ImGui::End();
 
 	}
+
 
 	// Rendering
 	ImGui::Render();
@@ -182,24 +185,7 @@ void MainEditor::OnRenderBegin()
 
 void MainEditor::OnRenderEnd()
 {	
-// 	// Start the Dear ImGui frame
-// 	ImGui_ImplDX11_NewFrame();
-// 	ImGui_ImplWin32_NewFrame();
-// 	ImGui::NewFrame();
-// 
-// 	bool bChild1Opened = true;
-// 	if (ImGui::Begin("Info", &bChild1Opened, ImVec2(150, 30), false, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground))
-// 	{
-// 
-// 		ImGui::SetWindowPos(ImVec2(GetViewWidth() * 0.25f + 10, 10));
-// 		ImGui::Text("FPS: %d", (int)(ImGui::GetIO().Framerate / 2.0f));
-// 
-// 	}
-// 	ImGui::End();
-// 
-// 	// Rendering
-// 	ImGui::Render();
-// 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
 }
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

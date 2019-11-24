@@ -164,6 +164,11 @@ bool MWindowsRenderView::MainLoop()
 	return msg.message != WM_QUIT;
 }
 
+void MWindowsRenderView::SetWindowTitle(const MString& strTilte)
+{
+	SetWindowText(m_hwnd, strTilte.c_str());
+}
+
 void MWindowsRenderView::Release()
 {
 	s_tViewTable.erase(m_hwnd);

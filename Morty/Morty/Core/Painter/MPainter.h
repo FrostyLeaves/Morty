@@ -61,27 +61,27 @@ public:
 	float m_fThickness;
 };
 
-// class MORTY_CLASS MPainterRect : public MIPainterShape
-// {
-// public:
-// 	MPainterRect() :m_v3Center(), m_v3Normal(), m_rectColor(), m_fWidth(), m_fHeight() {}
-// 	MPainterRect(const Vector3& v3Center, const Vector3& v3Normal, const MColor& rectColor, const float& fWidth, const float& fHeight) : MIPainterShape()
-// 		, m_v3Center(v3Center), m_v3Normal(v3Normal), m_rectColor(rectColor), m_fWidth(fWidth), m_fHeight(fHeight) {}
-// 
-// 	virtual ~MPainterRect() {}
-// 
-// 	virtual unsigned int GetVertexCount() override { return 4; }
-// 	virtual unsigned int GetIndexCount() override { return 6; }
-// 
-// 	virtual bool FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh) override;
-// 	virtual bool TouchTest(const Vector2& pos, MIViewport* pViewport) override;
-// 
-// public:
-// 	Vector3 m_v3Center;
-// 	Vector3 m_v3Normal;
-// 	MColor m_rectColor;
-// 	float m_fWidth;
-// 	float m_fHeight;
-// };
+class MORTY_CLASS MPainter2DRect : public MIPainterShape
+{
+public:
+	MPainter2DRect() :m_v3Center(), m_v3Normal(), m_v3Up(), m_rectColor(), m_fWidth(), m_fHeight() {}
+	MPainter2DRect(const Vector3& v3Center, const Vector3& v3Normal, const Vector3& v3Up, const MColor& rectColor, const float& fWidth, const float& fHeight);
+
+	virtual ~MPainter2DRect() {}
+
+	virtual unsigned int GetVertexCount() override { return 4; }
+	virtual unsigned int GetIndexCount() override { return 6; }
+
+	virtual bool FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh) override;
+	virtual bool TouchTest(const Vector2& pos, MIViewport* pViewport) override;
+
+public:
+	Vector3 m_v3Center;
+	Vector3 m_v3Normal;
+	Vector3 m_v3Up;
+	MColor m_rectColor;
+	float m_fWidth;
+	float m_fHeight;
+};
 
 #endif

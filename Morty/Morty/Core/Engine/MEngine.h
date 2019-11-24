@@ -44,6 +44,7 @@ public:
 public:
 
 	void SetMaxFPS(const int& nFPS);
+	float GetInstantFPS() { return 1.0f / m_cTickInfo.fTimeDelta; }
 
 	MIDevice* GetDevice() { return m_pDevice; }
 	MIRenderer* GetRenderer() { return m_pRenderer; }
@@ -67,6 +68,7 @@ private:
 	{
 		int nMaxFPS;
 		float fTickInterval;
+		float fTimeDelta;
 		long long lPrevTickTime;
 
 		TickInfo(int nFps);

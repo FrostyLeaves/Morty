@@ -5,6 +5,8 @@
 #include "MString.h"
 #include "MTransform.h"
 
+#include <map>
+
 class MObject;
 class M3DNode;
 class PropertyView
@@ -21,19 +23,23 @@ public:
 
 protected:
 
-	bool ShowNodeBegin(const MString& strNodeName, unsigned int& unID);
+	bool ShowNodeBegin(const MString& strNodeName);
 	void ShowNodeEnd();
 
-	void ShowValueBegin(const MString& strValueName, unsigned int& unID);
+	void ShowValueBegin(const MString& strValueName);
 	void ShowValueEnd();
 
-	bool EditM3DNode(M3DNode* pNode, unsigned int& unID);
+	bool EditM3DNode(M3DNode* pNode);
 
 	bool EditVector3(Vector3& value);
-	bool EditTransform(MTransform& trans, unsigned int& unID);
+	bool EditTransform(MTransform& trans);
+
+	unsigned int GetID(const MString& strItemName);
 
 private:
 	MObject* m_pEditorObject;
+	unsigned int m_unItemIDPool;
+	std::map<MString, unsigned int> m_tItemID;
 };
 
 

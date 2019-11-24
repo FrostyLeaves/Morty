@@ -30,7 +30,7 @@ MIViewport::~MIViewport()
 // 	}
 }
 
-bool MIViewport::ConvertWorldPositionToViewport(const Vector3& v3WorldPos, Vector2& v2Result)
+bool MIViewport::ConvertWorldPointToViewport(const Vector3& v3WorldPos, Vector2& v2Result)
 {
 	UpdateMatrix();
 
@@ -47,7 +47,7 @@ bool MIViewport::ConvertWorldPositionToViewport(const Vector3& v3WorldPos, Vecto
 	return pos.z >= GetCamera()->GetZNear();
 }	
 
-void MIViewport::ConvertViewportPositionToWorld(const Vector2& v2ViewportPos, const float& fDepth, Vector3& v3Result)
+void MIViewport::ConvertViewportPointToWorld(const Vector2& v2ViewportPos, const float& fDepth, Vector3& v3Result)
 {
 	UpdateMatrix();
 
@@ -84,29 +84,29 @@ bool  MIViewport::ConvertWorldLineToNormalizedDevice(const Vector3& v3Pos1, cons
 
 	float znear = GetCamera()->GetZNear();
 
-	if (v4Pos1.z < znear && v4Pos2.z < znear)
-	{
+	v3Rst1 = v4Pos1;
+	v3Rst2 = v4Pos2;
+
+	if (v4Pos1.z < znear || v4Pos2.z < znear)
 		return false;
-	}
-	else if (v4Pos1.z >= znear&& v4Pos2.z >= znear)
+
+	return true;
+}
+
+bool MIViewport::ConvertWorldPointToNormalizedDevice(const Vector3& v3Pos, Vector2& v2Rst)
+{
+	UpdateMatrix();
+
+	Vector4 v4Rst = m_m4CameraInvProj * Vector4(v3Pos, 1.0f);
+	if (fabs(v4Rst.w) > 1e-6)
 	{
-		v3Rst1 = v4Pos1;
-		v3Rst2 = v4Pos2;
+		v4Rst.x /= v4Rst.w;
+		v4Rst.y /= v4Rst.w;
 	}
-	else if (v4Pos1.z < znear && v4Pos2.z >= znear)
-	{
-		Vector3 dir = (v4Pos1 - v4Pos2);
-		dir.Normalize();
-		v3Rst2 = v4Pos2;
-		v3Rst1 = v3Rst2 + dir * (znear - v4Pos2.z) / dir.z;
-	}
-	else
-	{
-		Vector3 dir = (v4Pos2 - v4Pos1);
-		dir.Normalize();
-		v3Rst1 = v4Pos1;
-		v3Rst2 = v3Rst1 + dir * (znear - v4Pos1.z) / dir.z;
-	}
+
+	v2Rst = v4Rst;
+	if (v4Rst.z < GetCamera()->GetZNear())
+		return false;
 
 	return true;
 }

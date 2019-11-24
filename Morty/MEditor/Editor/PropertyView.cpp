@@ -7,6 +7,7 @@
 
 PropertyView::PropertyView()
 	: m_pEditorObject(nullptr)
+	, m_unItemIDPool(0)
 {
 
 }
@@ -32,7 +33,7 @@ void PropertyView::Render()
 	
 	unsigned int unID = 0;
 	
-	EditM3DNode(dynamic_cast<M3DNode*>(m_pEditorObject), unID);
+	EditM3DNode(dynamic_cast<M3DNode*>(m_pEditorObject));
 
 	ImGui::Columns(1);
 	ImGui::Separator();
@@ -41,11 +42,11 @@ void PropertyView::Render()
 
 }
 
-bool PropertyView::ShowNodeBegin(const MString& strNodeName, unsigned int& unID)
+bool PropertyView::ShowNodeBegin(const MString& strNodeName)
 {
-	ImGui::PushID(unID);
+	ImGui::PushID(GetID(strNodeName));
 	ImGui::AlignTextToFramePadding();  
-	if (bool node_open = ImGui::TreeNode("Object", "%s", strNodeName.c_str()))
+	if (bool node_open = ImGui::TreeNodeEx("Object", ImGuiTreeNodeFlags_DefaultOpen, "%s", strNodeName.c_str()))
 	{
 		ImGui::NextColumn();
 		ImGui::AlignTextToFramePadding();
@@ -65,9 +66,9 @@ void PropertyView::ShowNodeEnd()
 	ImGui::PopID();
 }
 
-void PropertyView::ShowValueBegin(const MString& strValueName, unsigned int& unID)
+void PropertyView::ShowValueBegin(const MString& strValueName)
 {
-	ImGui::PushID(unID);
+	ImGui::PushID(GetID(strValueName));
 	ImGui::AlignTextToFramePadding();
 	ImGui::TreeNodeEx(strValueName.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet);
 	ImGui::NextColumn();
@@ -80,15 +81,15 @@ void PropertyView::ShowValueEnd()
 	ImGui::PopID();
 }
 
-bool PropertyView::EditM3DNode(M3DNode* pNode, unsigned int& unID)
+bool PropertyView::EditM3DNode(M3DNode* pNode)
 {
 	if (nullptr == pNode)
 		return false;
 
-	if (ShowNodeBegin("3DNode", ++unID))
+	if (ShowNodeBegin("3DNode"))
 	{
 		MTransform trans = pNode->GetTransform();
-		if (EditTransform(trans, ++unID))
+		if (EditTransform(trans))
 		{
 			pNode->SetTransform(trans);
 		}
@@ -104,10 +105,10 @@ bool PropertyView::EditVector3(Vector3& value)
 	return ImGui::DragFloat3("", value.m);
 }
 
-bool PropertyView::EditTransform(MTransform& trans, unsigned int& unID)
+bool PropertyView::EditTransform(MTransform& trans)
 {
 	bool bModify = false;
-	ShowValueBegin("Position", ++unID);
+	ShowValueBegin("Position");
 	Vector3 position = trans.GetPosition();
 	if (EditVector3(position))
 	{
@@ -116,7 +117,7 @@ bool PropertyView::EditTransform(MTransform& trans, unsigned int& unID)
 	}
 	ShowValueEnd();
 
-	ShowValueBegin("Scale", ++unID);
+	ShowValueBegin("Scale");
 	Vector3 scale = trans.GetScale();
 	if (EditVector3(scale))
 	{
@@ -125,16 +126,16 @@ bool PropertyView::EditTransform(MTransform& trans, unsigned int& unID)
 	}
 	ShowValueEnd();
 
-	ShowValueBegin("Rotate", ++unID);
+	ShowValueBegin("Rotate");
 	Quaternion quat = trans.GetRotation();
 	Vector3 rotate = quat.GetEulerAngle();
 	Vector3 old = rotate;
 	if (EditVector3(rotate))
 	{
-		if (rotate.x > 89.9999f)
-			rotate.x = 89.9999f;
-		else if (rotate.x < -89.9999f)
-			rotate.x = -89.9999f;
+		if (rotate.x > 90.0f)
+			rotate.x = 90.0f;
+		else if (rotate.x < -90.0f)
+			rotate.x = -90.0f;
 
 		quat.SetEulerAngle(rotate);
 		quat.Normalize();
@@ -145,5 +146,15 @@ bool PropertyView::EditTransform(MTransform& trans, unsigned int& unID)
 	ShowValueEnd();
 
 	return bModify;
+}
+
+unsigned int PropertyView::GetID(const MString& strItemName)
+{
+	unsigned int unID = m_tItemID[strItemName];
+	if (unID != 0)
+		return unID;
+	
+	m_tItemID[strItemName] = ++m_unItemIDPool;
+	return m_unItemIDPool;
 }
 

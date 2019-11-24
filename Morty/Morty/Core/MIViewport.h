@@ -34,6 +34,7 @@ public:
 
 	void SetCamera(MCamera* pCamera);
 	MCamera* GetCamera();
+	bool IsUseDefaultCamera() { return nullptr == m_pUserCamera; }
 
 	void SetLeftTop(const Vector2& v2LeftTop) { m_v2LeftTop = v2LeftTop; }
 	Vector2 GetLeftTop() { return m_v2LeftTop; }
@@ -48,11 +49,13 @@ public:
 
 	
 
-	bool ConvertWorldPositionToViewport(const Vector3& v3WorldPos, Vector2& v2Result);
+	bool ConvertWorldPointToViewport(const Vector3& v3WorldPos, Vector2& v2Result);
 
-	void ConvertViewportPositionToWorld(const Vector2& v2ViewportPos, const float& fDepth, Vector3& v3Result);
+	void ConvertViewportPointToWorld(const Vector2& v2ViewportPos, const float& fDepth, Vector3& v3Result);
 
 	bool ConvertWorldLineToNormalizedDevice(const Vector3& v3Pos1, const Vector3& v3Pos2, Vector2& v3Rst1, Vector2& v3Rst2);
+
+	bool ConvertWorldPointToNormalizedDevice(const Vector3& v3Pos, Vector2& v2Rst);
 
 public:
 	virtual void OnCreated() override;

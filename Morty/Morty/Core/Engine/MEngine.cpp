@@ -158,13 +158,14 @@ bool MEngine::MainLoop()
 	if (0 == m_cTickInfo.lPrevTickTime)
 		m_cTickInfo.lPrevTickTime = currentTime;
 
-	float lTimeDelta = (float)(currentTime - m_cTickInfo.lPrevTickTime) / 1000;
+	float fTimeDelta = (float)(currentTime - m_cTickInfo.lPrevTickTime) / 1000;
 
-	if (lTimeDelta >= m_cTickInfo.fTickInterval)
+	if (fTimeDelta >= m_cTickInfo.fTickInterval)
 	{
+		m_cTickInfo.fTimeDelta = fTimeDelta;
 //		MLogManager::GetInstance()->Log("fps: %f", 1.0f / lTimeDelta);
 
-		Tick(lTimeDelta);
+		Tick(fTimeDelta);
 		m_cTickInfo.lPrevTickTime = currentTime;
 
 		for (std::vector<MIRenderView*>::iterator iter = m_vView.begin(); iter != m_vView.end();)

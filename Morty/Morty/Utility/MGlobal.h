@@ -23,6 +23,7 @@
 
 #pragma warnind( disable: 4251 )
 
+
 typedef unsigned long MObjectID;
 typedef unsigned long MResourceID;
 
