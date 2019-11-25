@@ -57,9 +57,7 @@ public:
 
 protected:
 
-	void GetTranslationLines(class MPainter2DLine* lines, class MPainter2DRect* rects, bool* vValid, int* vOrder, MIViewport* pViewport);
-
-	void GetTranslationRects(class MPainter2DRect* rects, MIViewport* pViewport);
+	void GetTranslationShapes(class MPainter2DLine* lines, class MPainter2DRect* rects, bool* vValid, int* vOrder, MIViewport* pViewport);
 
 private:
 

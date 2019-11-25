@@ -1,4 +1,7 @@
 #include "MTransformCoord.h"
+
+#include <algorithm>
+
 #include "M3DNode.h"
 #include "MLogManager.h"
 
@@ -58,7 +61,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MIViewport* pViewport)
 	int vOrder[3];
 	MPainter2DLine lines[3];
 	MPainter2DRect rects[3];
-	GetTranslationLines(lines, rects, vVaild, vOrder, pViewport);
+	GetTranslationShapes(lines, rects, vVaild, vOrder, pViewport);
 
 	if (pMouseEvent->GetButton() == MMouseInputEvent::LeftButton)
 	{
@@ -173,7 +176,7 @@ void MTransformCoord3D::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 	int vOrder[3];
 	MPainter2DLine lines[3];
 	MPainter2DRect rects[3];
-	GetTranslationLines(lines, rects, vVaild, vOrder, pViewport);
+	GetTranslationShapes(lines, rects, vVaild, vOrder, pViewport);
 
 	if (m_eCoordHoverType != MECoordHoverType::None)
 	{
@@ -206,8 +209,8 @@ void MTransformCoord3D::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 
 	
 }
-#include <algorithm>
-void MTransformCoord3D::GetTranslationLines(MPainter2DLine* lines, class MPainter2DRect* rects, bool* vValid, int* vOrder, MIViewport* pViewport)
+
+void MTransformCoord3D::GetTranslationShapes(MPainter2DLine* lines, class MPainter2DRect* rects, bool* vValid, int* vOrder, MIViewport* pViewport)
 {
 	Vector3 v3Origin = m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition();
 	Vector3 v3EndPoint[3] = {
@@ -215,7 +218,6 @@ void MTransformCoord3D::GetTranslationLines(MPainter2DLine* lines, class MPainte
 		v3Origin + m_vDirection[1] * 10,
 		v3Origin + m_vDirection[2] * 10
 	};
-
 
 	float fMaxLength = 0.0001f;
 	Vector2 rit1, rit2, up1, up2, fwd1, fwd2;
@@ -274,13 +276,4 @@ void MTransformCoord3D::GetTranslationLines(MPainter2DLine* lines, class MPainte
 		{
 			return (v3EndPoint[a].z < v3EndPoint[b].z);
 		});
-}
-
-void MTransformCoord3D::GetTranslationRects(class MPainter2DRect* rects, MIViewport* pViewport)
-{
-	Vector3 v3Origin = m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition();
-
-// 	rects[0] = MPainter2DRect(v3Origin + Vector3(0, 5, 5), Vector3(1, 0, 0), Vector3(0, 1, 0), m_vColor[0], 3, 3);
-// 	rects[1] = MPainter2DRect(v3Origin + Vector3(5, 0, 5), Vector3(0, 1, 0), Vector3(0, 0, 1), m_vColor[1], 3, 3);
-// 	rects[2] = MPainter2DRect(v3Origin + Vector3(5, 5, 0), Vector3(0, 0, 1), Vector3(1, 0, 0), m_vColor[2], 3, 3);
 }
