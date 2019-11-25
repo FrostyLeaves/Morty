@@ -312,8 +312,8 @@ void MIScene::DrawPainter(MIRenderer* pRenderer, MIViewport* pViewport)
 
 void MIScene::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 {
+	DrawMeshInstance(pRenderer, pViewport);
 	DrawPainter(pRenderer, pViewport);
- 	DrawMeshInstance(pRenderer, pViewport);
 // 	DrawSkyBox(pRenderer, pViewport);
 }
 

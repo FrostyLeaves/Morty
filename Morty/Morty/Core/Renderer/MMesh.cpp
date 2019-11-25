@@ -42,6 +42,27 @@ void MIMesh::CreateIndices(const unsigned int& unSize, const unsigned int& unInd
 	m_unIndicesLength = unSize * unIndexSize;
 }
 
+void MIMesh::ResizeIndices(const unsigned int& unSize, const unsigned int& unIndexSize)
+{
+	if (m_unIndicesArraySize < unSize * unIndexSize)
+	{
+		unsigned int* indices = new unsigned int[unSize * unIndexSize];
+		
+		if (nullptr != m_vIndices)
+		{
+			memcpy(indices, m_vIndices, m_unIndicesLength * sizeof(unsigned int));
+			delete[] m_vIndices;
+		}
+
+		m_vIndices = indices;
+		m_unIndicesArraySize = unSize * unIndexSize;
+
+		m_bNeedGenerate = true;
+	}
+
+	m_unIndicesLength = unSize * unIndexSize;
+}
+
 void MIMesh::GenerateBuffer(MIDevice* pDevice)
 {
 	if (m_pVertexBuffer)

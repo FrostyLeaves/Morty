@@ -61,13 +61,55 @@ public:
 	float m_fThickness;
 };
 
+class MORTY_CLASS MPainter2DTriangle : public MIPainterShape
+{
+public:
+	MPainter2DTriangle() : m_vPoint(), m_triangleColor() {}
+	MPainter2DTriangle(const Vector2& point0, const Vector2& point1, const Vector2& point2, const MColor& color) : MIPainterShape()
+		, m_vPoint{ point0, point1, point2 }, m_triangleColor(color) {}
+
+	virtual ~MPainter2DTriangle() {}
+
+	virtual unsigned int GetVertexCount() override { return 3; }
+	virtual unsigned int GetIndexCount() override { return 3; }
+
+	virtual bool FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh) override;
+	virtual bool TouchTest(const Vector2& pos, MIViewport* pViewport) override;
+
+
+public:
+	Vector2 m_vPoint[3];
+	MColor m_triangleColor;
+};
+
 class MORTY_CLASS MPainter2DRect : public MIPainterShape
 {
 public:
-	MPainter2DRect() :m_v3Center(), m_v3Normal(), m_v3Up(), m_rectColor(), m_fWidth(), m_fHeight() {}
-	MPainter2DRect(const Vector3& v3Center, const Vector3& v3Normal, const Vector3& v3Up, const MColor& rectColor, const float& fWidth, const float& fHeight);
+	MPainter2DRect() : m_vPoint(), m_rectColor() {}
+	MPainter2DRect(const Vector2& point0, const Vector2& point1, const Vector2& point2, const Vector2& point3, const MColor& color) : MIPainterShape()
+		, m_vPoint{ point0, point1, point2, point3 }, m_rectColor(color) {}
 
 	virtual ~MPainter2DRect() {}
+
+	virtual unsigned int GetVertexCount() override { return 4; }
+	virtual unsigned int GetIndexCount() override { return 6; }
+
+	virtual bool FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh) override;
+	virtual bool TouchTest(const Vector2& pos, MIViewport* pViewport) override;
+
+
+public:
+	Vector2 m_vPoint[4];
+	MColor m_rectColor;
+};
+
+class MORTY_CLASS MPainter2DRect3D : public MIPainterShape
+{
+public:
+	MPainter2DRect3D() :m_v3Center(), m_v3Normal(), m_v3Up(), m_rectColor(), m_fWidth(), m_fHeight() {}
+	MPainter2DRect3D(const Vector3& v3Center, const Vector3& v3Normal, const Vector3& v3Up, const MColor& rectColor, const float& fWidth, const float& fHeight);
+
+	virtual ~MPainter2DRect3D() {}
 
 	virtual unsigned int GetVertexCount() override { return 4; }
 	virtual unsigned int GetIndexCount() override { return 6; }

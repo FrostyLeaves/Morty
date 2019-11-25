@@ -39,14 +39,11 @@ public:
 		None = 0,
 		X = 1,
 		Y = 2,
-		Z = 3,
-	};
-
-	enum class MECoordMoveType
-	{
-		X = 1,
-		Y = 2,
+		XY = 3,
 		Z = 4,
+		XZ = 5,
+		YZ = 6,
+		XYZ = 7
 	};
 
 	MTransformCoord3D();
@@ -60,7 +57,7 @@ public:
 
 protected:
 
-	void GetTranslationLines(class MPainter2DLine* lines, bool* vValid, MIViewport* pViewport);
+	void GetTranslationLines(class MPainter2DLine* lines, class MPainter2DRect* rects, bool* vValid, int* vOrder, MIViewport* pViewport);
 
 	void GetTranslationRects(class MPainter2DRect* rects, MIViewport* pViewport);
 
@@ -72,7 +69,7 @@ private:
 
 	M3DNode* m_pTargetNode;
 	MECoordHoverType m_eCoordHoverType;
-	unsigned int m_eCoordMoveType;
+	MECoordHoverType m_eCoordMoveType;
 
 	MIMesh* m_pCoordRenderCache;
 };

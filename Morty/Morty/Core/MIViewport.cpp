@@ -30,21 +30,20 @@ MIViewport::~MIViewport()
 // 	}
 }
 
-bool MIViewport::ConvertWorldPointToViewport(const Vector3& v3WorldPos, Vector2& v2Result)
+bool MIViewport::ConvertWorldPointToViewport(const Vector3& v3WorldPos, Vector3& v2Result)
 {
 	UpdateMatrix();
 
 	Vector4 pos = m_m4CameraInvProj * Vector4(v3WorldPos, 1.0f);
-
+	float z = pos.z;
 	if (fabs(pos.w) > 1e-6)
 	{
-		pos.x /= pos.w;
-		pos.y /= pos.w;
+		pos /= pos.w;
 	}
 
-	v2Result = Vector2((pos.x + 1.0) * 0.5 * GetWidth(), (pos.y + 1.0) * 0.5 * GetHeight());
+	v2Result = Vector3((pos.x + 1.0) * 0.5 * GetWidth(), (pos.y + 1.0) * 0.5 * GetHeight(), pos.z);
 
-	return pos.z >= GetCamera()->GetZNear();
+	return z >= GetCamera()->GetZNear();
 }	
 
 void MIViewport::ConvertViewportPointToWorld(const Vector2& v2ViewportPos, const float& fDepth, Vector3& v3Result)

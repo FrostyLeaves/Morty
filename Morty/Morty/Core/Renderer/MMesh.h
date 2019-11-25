@@ -43,6 +43,7 @@ public:
 
 	virtual void CreateVertices(const unsigned int& unSize) = 0;
 	virtual void CreateIndices(const unsigned int& unSize, const unsigned int& unIndexSize);
+	virtual void ResizeIndices(const unsigned int& unSize, const unsigned int& unIndexSize);
 
 protected:
 
@@ -87,6 +88,26 @@ public:
 			}
 
 			m_vVertices = new VERTEX_TYPE[unSize];
+			m_unVerticesArraySize = unSize;
+
+			m_bNeedGenerate = true;
+		}
+
+		m_unVerticesLength = unSize;
+	}
+
+	void ResizeVertices(const unsigned int& unSize)
+	{
+		if (m_unVerticesArraySize < unSize)
+		{
+			VERTEX_TYPE vertices = new VERTEX_TYPE[unSize];
+			if (nullptr != m_vVertices)
+			{
+				memcpy(vertices, m_vVertices, m_unVerticesLength * sizeof(VERTEX_TYPE));
+				delete[] m_vVertices;
+			}
+
+			m_vVertices = vertices;
 			m_unVerticesArraySize = unSize;
 
 			m_bNeedGenerate = true;

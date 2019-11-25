@@ -19,7 +19,11 @@ PropertyView::~PropertyView()
 
 void PropertyView::SetEditorObject(MObject* pObject)
 {
+	if (m_pEditorObject == pObject)
+		return;
+
 	m_pEditorObject = pObject;
+	m_tTempValue.clear();
 }
 
 void PropertyView::Render()
@@ -100,9 +104,12 @@ bool PropertyView::EditM3DNode(M3DNode* pNode)
 	return true;
 }
 
-bool PropertyView::EditVector3(Vector3& value)
+bool PropertyView::EditVector3(Vector3& value, const float& fSpeed, const float& fMin, const float& fMax)
 {
-	return ImGui::DragFloat3("", value.m);
+	if (value.x == -0.0f) value.x = 0.0f;
+	if (value.y == -0.0f) value.y = 0.0f;
+	if (value.z == -0.0f) value.z = 0.0f;
+	return ImGui::DragFloat3("", value.m, fSpeed, fMin, fMax);
 }
 
 bool PropertyView::EditTransform(MTransform& trans)
@@ -127,16 +134,11 @@ bool PropertyView::EditTransform(MTransform& trans)
 	ShowValueEnd();
 
 	ShowValueBegin("Rotate");
-	Quaternion quat = trans.GetRotation();
-	Vector3 rotate = quat.GetEulerAngle();
-	Vector3 old = rotate;
-	if (EditVector3(rotate))
-	{
-		if (rotate.x > 90.0f)
-			rotate.x = 90.0f;
-		else if (rotate.x < -90.0f)
-			rotate.x = -90.0f;
+	Vector3& rotate = GetTempValue<Vector3>("Rotate", trans.GetRotation().GetEulerAngle());
 
+	if (EditVector3(rotate, 1.0f, -360.0f, 360.0f))
+	{
+		Quaternion quat;
 		quat.SetEulerAngle(rotate);
 		quat.Normalize();
 		trans.SetRotation(quat);
