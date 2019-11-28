@@ -310,11 +310,71 @@ void MIScene::DrawPainter(MIRenderer* pRenderer, MIViewport* pViewport)
 	m_pTransformCoord3D->Render(pRenderer, pViewport);
 }
 
+#include "MSpatial.h"
+#include "MBounds.h"
+#include "MModelResource.h"
+#include "MPainter.h"
+void MIScene::DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MSpatial* pSpatial)
+{
+	MModelResource* pModelResource = dynamic_cast<MModelResource*>(pSpatial->GetResource());
+	MBoundsOBB* pObb = pModelResource->GetOBB();
+
+	Matrix4 worldTrans = pSpatial->GetWorldTransform();
+
+
+	Vector3& obmin = pObb->m_v3MinPoint;
+	Vector3& obmax = pObb->m_v3MaxPoint;
+
+	Vector3 list[] = {
+		worldTrans* pObb->ConvertFromOBB(Vector3(obmin.x, obmin.y, obmin.z)),
+		worldTrans * pObb->ConvertFromOBB(Vector3(obmax.x, obmin.y, obmin.z)),
+		worldTrans * pObb->ConvertFromOBB(Vector3(obmax.x, obmax.y, obmin.z)),
+		worldTrans * pObb->ConvertFromOBB(Vector3(obmin.x, obmax.y, obmin.z)),
+
+		worldTrans* pObb->ConvertFromOBB(Vector3(obmin.x, obmin.y, obmax.z)),
+		worldTrans * pObb->ConvertFromOBB(Vector3(obmax.x, obmin.y, obmax.z)),
+		worldTrans * pObb->ConvertFromOBB(Vector3(obmax.x, obmax.y, obmax.z)),
+		worldTrans * pObb->ConvertFromOBB(Vector3(obmin.x, obmax.y, obmax.z)),
+	};
+
+	Vector2 begin, end;
+	for (int j = 0; j < 4; ++j)
+	{
+		for(int i = 0; i < 2; ++ i)
+		{
+			if (pViewport->ConvertWorldLineToNormalizedDevice(list[j + i * 4], list[(j + 1) % 4 + i * 4], begin, end))
+			{
+				MPainter2DLine line(begin, end, MColor(1, 1, 1, 1), 4.0f);
+
+				MMesh<MPainterVertex> meshs;
+				line.FillData(pViewport, meshs);
+
+				pRenderer->DrawMesh(&meshs);
+			}
+		}
+
+		if (pViewport->ConvertWorldLineToNormalizedDevice(list[j], list[(j + 4)], begin, end))
+		{
+			MPainter2DLine line(begin, end, MColor(1, 1, 1, 1), 4.0f);
+
+			MMesh<MPainterVertex> meshs;
+			line.FillData(pViewport, meshs);
+
+			pRenderer->DrawMesh(&meshs);
+		}
+	}
+
+}
+
 void MIScene::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 {
-	DrawMeshInstance(pRenderer, pViewport);
 	DrawPainter(pRenderer, pViewport);
 // 	DrawSkyBox(pRenderer, pViewport);
+
+	MSpatial* pSpat = dynamic_cast<MSpatial*>(m_pRootNode->FindFirstChildByName("Teaport"));
+	DrawBoundingBox(pRenderer, pViewport, pSpat);
+
+	DrawMeshInstance(pRenderer, pViewport);
 }
 
 void MIScene::Input(MInputEvent* pEvent, MIViewport* pViewport)

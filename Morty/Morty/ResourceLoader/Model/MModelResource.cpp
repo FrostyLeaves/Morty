@@ -9,6 +9,8 @@
 #include "MIDevice.h"
 #include "MEngine.h"
 
+#include "MBounds.h"
+
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
@@ -16,6 +18,7 @@
 MModelResource::MModelResource()
 : MResource()
 , m_vMeshes()
+, m_pBoundsOBB(nullptr)
 {
 }
 
@@ -27,6 +30,25 @@ MModelResource::~MModelResource()
 		delete pMesh;
 	}
 	m_vMeshes.clear();
+}
+
+MBoundsOBB* MModelResource::GetOBB()
+{
+	std::vector<Vector3> vPoints;
+	if (nullptr == m_pBoundsOBB)
+	{
+		for (MMesh<MVertex>* pMesh : m_vMeshes)
+		{
+			for (unsigned int i = 0; i < pMesh->GetVerticesLength(); ++i)
+			{
+				vPoints.push_back(pMesh->GetVertices()[i].position);
+			}
+		}
+
+		m_pBoundsOBB = new MBoundsOBB(vPoints);
+	}
+
+	return m_pBoundsOBB;
 }
 
 bool MModelResource::Load(const MString& strResourcePath)
@@ -52,7 +74,6 @@ bool MModelResource::Load(const MString& strResourcePath)
 	return true;
 }
 
-
 void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene)
 {
 	for (unsigned int i = 0; i < pNode->mNumMeshes; ++i)
@@ -67,6 +88,7 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene)
 	{
 		ProcessNode(pNode->mChildren[i], pScene);
 	}
+
 }
 
 void MModelResource::ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertex>* pMMesh)

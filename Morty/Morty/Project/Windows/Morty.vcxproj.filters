@@ -228,6 +228,9 @@
     <ClInclude Include="..\..\Core\Organizer\MTransformCoord.h">
       <Filter>Core\Organizer</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\MBounds.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -367,6 +370,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\Organizer\MTransformCoord.cpp">
       <Filter>Core\Organizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\MBounds.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -18,13 +18,16 @@ struct aiNode;
 struct aiScene;
 struct aiMesh;
 class MModel;
+class MBoundsOBB;
 class MORTY_CLASS MModelResource : public MResource
 {
 public:
     MModelResource();
     virtual ~MModelResource();
 
-	std::vector<MIMesh*>& GetMeshes() { return m_vMeshes; };
+	std::vector<MMesh<MVertex>*>& GetMeshes() { return m_vMeshes; };
+
+	MBoundsOBB* GetOBB();
 
 protected:
 
@@ -35,7 +38,8 @@ protected:
 
 private:
     
-	std::vector<MIMesh*> m_vMeshes;
+	std::vector<MMesh<MVertex>*> m_vMeshes;
+	MBoundsOBB* m_pBoundsOBB;
 
 };
 

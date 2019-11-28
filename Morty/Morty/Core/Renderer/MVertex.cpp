@@ -5,9 +5,6 @@
 
 #endif
 
-MVertex::MVertex()
-{
-}
 
 MVertexBuffer::MVertexBuffer()
 {

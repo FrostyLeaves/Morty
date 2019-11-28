@@ -7,6 +7,9 @@
 #include "MEngine.h"
 #include "MColor.h"
 
+#include "MVertex.h"
+#include "MMesh.h"
+
 #include "MObject.h"
 #include "MMaterial.h"
 #include "MSpatial.h"
@@ -26,6 +29,8 @@
 #include "MIScene.h"
 #include "MIViewport.h"
 #include "MPointLight.h"
+
+#include "MBounds.h"
 
 
 #include "Quaternion.h"
@@ -154,6 +159,19 @@ public:
 
 int main(int argc, char* argv[])
 {
+
+// 	Vector3 pos[3] = {
+// 		{ 1, 1, 1 }, { 1, 9, 13 }, {9, 6, 7}
+// 	};
+// 	std::vector <MMesh<MVertex>*> vMesh;
+// 	MMesh<MVertex>* ptest = new MMesh<MVertex>();
+// 	vMesh.push_back(ptest);
+// 
+// 	ptest->CreateVertices(3);
+// 	for (int i = 0; i < 3; ++i)
+// 		ptest->GetVertices()[i].position = pos[i];
+// 
+// 	MBoundsOBB obb(vMesh);
 
 	Quaternion qqq;
 

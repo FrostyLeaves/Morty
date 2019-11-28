@@ -22,7 +22,7 @@ class MTextureCube;
 struct MVertex
 {
 public:
-	MVertex();
+	MVertex() {}
 
 public:
 	Vector3 position;
