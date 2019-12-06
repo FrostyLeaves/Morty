@@ -12,7 +12,7 @@
 
 #include "MObject.h"
 #include "MMaterial.h"
-#include "MSpatial.h"
+#include "MModelInstance.h"
 #include "MResourceManager.h"
 #include "MVariant.h"
 #include "MMaterialResource.h"
@@ -37,7 +37,7 @@
 
 #include "MainEditor.h"
 
-class MySpatial : public MSpatial
+class MySpatial : public MModelInstance
 {
 public:
 
@@ -209,8 +209,8 @@ int main(int argc, char* argv[])
 	pRootNode->SetName("RootNode");
 
 
-	MResource* pResource = engine.GetResourceManager()->Load("./Model/teaport.fbx");
-	MSpatial* pSpatial = engine.GetObjectManager()->CreateObject<MySpatial>();
+	MResource* pResource = engine.GetResourceManager()->Load("./Model/cat_rigged.fbx");
+	MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MySpatial>();
 	pSpatial->Load(pResource);
 	pSpatial->SetPosition(Vector3(0, 0, 0));
 	pSpatial->SetName("Teaport");
@@ -245,7 +245,7 @@ int main(int argc, char* argv[])
 				{
 					if (MStruct* pMat = pStruct->FindMember("U_mat")->GetByType<MStruct>())
 					{
-						pMat->SetMember("fShininess", 1.0f);
+						pMat->SetMember("fShininess", 10.0f);
 					}
 				}
 			}

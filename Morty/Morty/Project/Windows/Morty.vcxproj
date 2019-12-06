@@ -57,7 +57,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;MORTY_EXPORTS;__STDC_LIMIT_MACROS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/Eigen;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Type;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/ResourceLoader/Texture;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Organizer;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/Scene/Light</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/Eigen;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Type;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/ResourceLoader/Texture;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Organizer;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/Scene/Light;$(SolutionDir)Morty/Scene/Model</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -82,7 +82,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;MORTY_EXPORTS;__STDC_LIMIT_MACROS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/Eigen;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Type;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/ResourceLoader/Texture;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Organizer;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/Scene/Light</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/Eigen;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Type;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/ResourceLoader/Texture;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Organizer;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/Scene/Light;$(SolutionDir)Morty/Scene/Model</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -113,6 +113,7 @@
     <ClInclude Include="..\..\Core\MBounds.h" />
     <ClInclude Include="..\..\Core\MIViewport.h" />
     <ClInclude Include="..\..\Core\MMaterial.h" />
+    <ClInclude Include="..\..\Core\MSkeleton.h" />
     <ClInclude Include="..\..\Core\MSkyBox.h" />
     <ClInclude Include="..\..\Core\MTransform.h" />
     <ClInclude Include="..\..\Core\Organizer\MIScene.h" />
@@ -139,7 +140,6 @@
     <ClInclude Include="..\..\Scene\Light\MPointLight.h" />
     <ClInclude Include="..\..\Scene\Light\MSpotLight.h" />
     <ClInclude Include="..\..\Scene\MCamera.h" />
-    <ClInclude Include="..\..\Scene\MMeshInstance.h" />
     <ClInclude Include="../../Scene\M3DNode.h" />
     <ClInclude Include="../../Scene\MNode.h" />
     <ClInclude Include="../../stdafx.h" />
@@ -152,7 +152,8 @@
     <ClInclude Include="..\..\ResourceLoader\Model\MModelResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MResourceLoader.h" />
-    <ClInclude Include="..\..\Scene\MSpatial.h" />
+    <ClInclude Include="..\..\Scene\Model\MMeshInstance.h" />
+    <ClInclude Include="..\..\Scene\Model\MModelInstance.h" />
     <ClInclude Include="..\..\Utility\Json\MJson.h" />
     <ClInclude Include="..\..\Utility\MColor.h" />
     <ClInclude Include="..\..\Utility\Type\MColor.h" />
@@ -176,6 +177,7 @@
     <ClCompile Include="..\..\Core\MBounds.cpp" />
     <ClCompile Include="..\..\Core\MIViewport.cpp" />
     <ClCompile Include="..\..\Core\MMaterial.cpp" />
+    <ClCompile Include="..\..\Core\MSkeleton.cpp" />
     <ClCompile Include="..\..\Core\MSkyBox.cpp" />
     <ClCompile Include="..\..\Core\MTransform.cpp" />
     <ClCompile Include="..\..\Core\Organizer\MIScene.cpp" />
@@ -202,7 +204,6 @@
     <ClCompile Include="..\..\Scene\Light\MPointLight.cpp" />
     <ClCompile Include="..\..\Scene\Light\MSpotLight.cpp" />
     <ClCompile Include="..\..\Scene\MCamera.cpp" />
-    <ClCompile Include="..\..\Scene\MMeshInstance.cpp" />
     <ClCompile Include="../../Scene\M3DNode.cpp" />
     <ClCompile Include="../../Scene\MNode.cpp" />
     <ClCompile Include="../../stdafx.cpp">
@@ -212,7 +213,8 @@
     <ClCompile Include="../../Utility\Timer\MTimer.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Model\MModelResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MResource.cpp" />
-    <ClCompile Include="..\..\Scene\MSpatial.cpp" />
+    <ClCompile Include="..\..\Scene\Model\MMeshInstance.cpp" />
+    <ClCompile Include="..\..\Scene\Model\MModelInstance.cpp" />
     <ClCompile Include="..\..\Utility\Json\MJson.cpp" />
     <ClCompile Include="..\..\Utility\MGlobal.cpp" />
     <ClCompile Include="..\..\Utility\Type\MColor.cpp" />

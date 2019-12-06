@@ -9,6 +9,7 @@
 #ifndef _M_MLOGMANAGER_H_
 #define _M_MLOGMANAGER_H_
 #include "MGlobal.h"
+#include "MString.h"
 #include "MSingleInstance.h"
 
 class MORTY_CLASS MLogManager : public MSingleInstance<MLogManager>

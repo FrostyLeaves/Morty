@@ -310,11 +310,11 @@ void MIScene::DrawPainter(MIRenderer* pRenderer, MIViewport* pViewport)
 	m_pTransformCoord3D->Render(pRenderer, pViewport);
 }
 
-#include "MSpatial.h"
+#include "MModelInstance.h"
 #include "MBounds.h"
 #include "MModelResource.h"
 #include "MPainter.h"
-void MIScene::DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MSpatial* pSpatial)
+void MIScene::DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MModelInstance* pSpatial)
 {
 	MModelResource* pModelResource = dynamic_cast<MModelResource*>(pSpatial->GetResource());
 	MBoundsOBB* pObb = pModelResource->GetOBB();
@@ -369,11 +369,9 @@ void MIScene::DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MSpa
 void MIScene::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 {
 	DrawPainter(pRenderer, pViewport);
-// 	DrawSkyBox(pRenderer, pViewport);
-
-	MSpatial* pSpat = dynamic_cast<MSpatial*>(m_pRootNode->FindFirstChildByName("Teaport"));
+	MModelInstance* pSpat = dynamic_cast<MModelInstance*>(m_pRootNode->FindFirstChildByName("Teaport"));
 	DrawBoundingBox(pRenderer, pViewport, pSpat);
-
+ 	DrawSkyBox(pRenderer, pViewport);
 	DrawMeshInstance(pRenderer, pViewport);
 }
 

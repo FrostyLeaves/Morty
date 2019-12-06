@@ -10,6 +10,7 @@
 #include "MEngine.h"
 
 #include "MBounds.h"
+#include "MSkeleton.h"
 
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
@@ -19,11 +20,24 @@ MModelResource::MModelResource()
 : MResource()
 , m_vMeshes()
 , m_pBoundsOBB(nullptr)
+, m_pSkeleton(nullptr)
 {
 }
 
 MModelResource::~MModelResource()
 {
+	if (m_pBoundsOBB)
+	{
+		delete m_pBoundsOBB;
+		m_pBoundsOBB = nullptr;
+	}
+
+	if (m_pSkeleton)
+	{
+		delete m_pSkeleton;
+		m_pSkeleton = nullptr;
+	}
+
 	for (MIMesh* pMesh : m_vMeshes)
 	{
 		pMesh->DestroyBuffer(m_pEngine->GetDevice());
@@ -58,7 +72,14 @@ bool MModelResource::Load(const MString& strResourcePath)
 		pMesh->DestroyBuffer(m_pEngine->GetDevice());
 		delete pMesh;
 	}
-	m_vMeshes.clear();
+	m_vMeshes.clear(); 
+
+	if (m_pSkeleton)
+	{
+		delete m_pSkeleton;
+		m_pSkeleton = nullptr;
+	}
+	m_pSkeleton = new MSkeleton();
 
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(strResourcePath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
@@ -70,6 +91,7 @@ bool MModelResource::Load(const MString& strResourcePath)
 	}
 
 	ProcessNode(scene->mRootNode, scene);
+	BindBones(scene->mRootNode, scene);
 
 	return true;
 }
@@ -81,6 +103,7 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene)
 		aiMesh* pMesh = pScene->mMeshes[pNode->mMeshes[i]];
 		MMesh<MVertex>* pMMesh = new MMesh<MVertex>();
 		ProcessMesh(pMesh, pScene, pMMesh);
+		RecordBones(pMesh, pScene);
 		m_vMeshes.push_back(pMMesh);
 	}
 
@@ -88,7 +111,6 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene)
 	{
 		ProcessNode(pNode->mChildren[i], pScene);
 	}
-
 }
 
 void MModelResource::ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertex>* pMMesh)
@@ -138,5 +160,55 @@ void MModelResource::ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh<MVe
 		{
 			pMMesh->GetIndices()[i * 3 + j] = face.mIndices[j];
 		}
+	}
+}
+
+void MModelResource::RecordBones(aiMesh* pMesh, const aiScene* pScene)
+{
+	for (unsigned int i = 0; i < pMesh->mNumBones; ++i)
+	{
+		if (aiBone* pBone = pMesh->mBones[i])
+		{
+			MString strBoneName(pBone->mName.data); 
+			MBone* pMBone = m_pSkeleton->FindBoneByName(strBoneName);
+			if (nullptr == pBone)
+				pMBone = m_pSkeleton->AppendBone(strBoneName);
+			
+			for (unsigned int wgtIndex = 0; wgtIndex < pBone->mNumWeights; ++wgtIndex)
+			{
+				aiVertexWeight wgt = pBone->mWeights[wgtIndex];
+	///			MLogManager::GetInstance()->Log("VertexID: %d", wgt.mVertexId);
+			}
+		}
+	}
+}
+
+void MModelResource::BindBones(aiNode* pNode, const aiScene* pScene, MBone* pParent/* = nullptr*/)
+{
+	MBone* pMBone = nullptr;
+	if (pMBone = m_pSkeleton->FindBoneByName(pNode->mName.data))
+	{
+		if (pParent)
+		{
+			pMBone->unParentIndex = pParent->unIndex;
+			pParent->vChildrenIndices.push_back(pMBone->unIndex);
+		}
+		else
+		{
+			pMBone->unParentIndex = MBone::InvalidIndex;
+		}
+	}
+
+	for (unsigned int i = 0; i < pNode->mNumChildren; ++i)
+	{
+		BindBones(pNode->mChildren[i], pScene, pMBone);
+	}
+}
+
+void MModelResource::ProcessAnimation(const aiScene* pScene)
+{
+	for (int i = 0; i < pScene->mNumAnimations; ++i)
+	{
+		aiAnimation* pAnimation = pScene->mAnimations[i];
 	}
 }
