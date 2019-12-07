@@ -27,10 +27,10 @@
 typedef unsigned long MObjectID;
 typedef unsigned long MResourceID;
 
+
 //Asset
 extern const char* SUFFIX_VERTEX_SHADER;
 extern const char* SUFFIX_PIXEL_SHADER;
-
 
 //gles
 #define MORTY_OPENGLES 1

@@ -1,0 +1,27 @@
+#include "modelHeader.hlsl"
+
+struct VS_IN
+{
+    float3 pos : POSITION;
+    float3 normal : NORMAL;
+    float2 uv : TEXCOORDS;
+    float3 v4 : Tangent;
+    float3 v5 : BITANGENT;
+
+    int bonesID[MBONES_PER_VERTEX] : BONES_ID;
+    int bonesWeight[MBONES_PER_VERTEX] : BONES_WEIGHT;
+};
+
+VS_OUT VS(VS_IN input)
+{
+    VS_OUT output;
+
+    output.pos = mul(float4(input.pos, 1.0f), mul(U_matWorld, U_matCamProj));
+    output.uv.x = input.uv.x;
+    output.uv.y = input.uv.y;
+
+    output.normal = mul(input.normal, U_matNormal);
+    output.worldPos = mul(float4(input.pos, 1.0f), U_matWorld).xyz;
+
+    return output;
+}

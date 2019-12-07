@@ -51,23 +51,15 @@ MBone* MSkeleton::AppendBone(const MString& strName)
 MSkeletonInstance::MSkeletonInstance(MSkeleton& templateSke)
 	: m_pSkeletonTemplate(&templateSke)
 {
-	 m_pSkeletonTemplate->CopyAllBones(m_vAllBones);
 }
 
 MSkeletonInstance::MSkeletonInstance(const MSkeletonInstance& instance)
 	: m_pSkeletonTemplate(instance.m_pSkeletonTemplate)
 {
-	m_pSkeletonTemplate->CopyAllBones(m_vAllBones);
 }
 
 MBone* MSkeletonInstance::FindBoneByName(const MString& strName)
 {
-	auto iter = m_pSkeletonTemplate->GetBonesMap().find(strName);
-	if (iter != m_pSkeletonTemplate->GetBonesMap().cend())
-	{
-		return m_vAllBones[iter->second];
-	}
-
-	return nullptr;
+	return m_pSkeletonTemplate->FindBoneByName(strName);
 }
 

@@ -237,6 +237,9 @@
     <ClInclude Include="..\..\Core\MSkeleton.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\MRenderStructure.h">
+      <Filter>Core\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -307,9 +310,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\DirectX11\MWindowsRenderView.cpp">
       <Filter>Core\Renderer\DirectX11</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Core\Renderer\MVertex.cpp">
-      <Filter>Core\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\MMesh.cpp">
       <Filter>Core\Renderer</Filter>
@@ -382,6 +382,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\MSkeleton.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\MRenderStructure.cpp">
+      <Filter>Core\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

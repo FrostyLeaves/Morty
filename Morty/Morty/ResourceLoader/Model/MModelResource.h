@@ -24,16 +24,15 @@ class MSkeleton;
 class MORTY_CLASS MModelResource : public MResource
 {
 public:
-	enum MEModelType
-	{
-		MStaticModel = 1,
-		MAnimationModel = 2,
+	enum MEModelVertexType {
+		Normal = 0,
+		Skeleton = 1,
 	};
 public:
     MModelResource();
     virtual ~MModelResource();
 
-	std::vector<MMesh<MVertex>*>& GetMeshes() { return m_vMeshes; };
+	const std::vector<MIMesh*>* GetMeshes() { return &m_vMeshes; };
 
 	MBoundsOBB* GetOBB();
 
@@ -42,18 +41,20 @@ protected:
 	virtual bool Load(const MString& strResourcePath) override;
 
 	void ProcessNode(aiNode* pNode, const aiScene* pScene);
-	void ProcessMesh(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertex>* pMMesh);
+	void ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertex>* pMMesh);
+	void ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh);
+	void ProcessMeshIndices(aiMesh* pMesh, const aiScene* pScene, MIMesh* pMMesh);
 
-	void RecordBones(aiMesh* pMesh, const aiScene* pScene);
+	void RecordBones(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh);
 	void BindBones(aiNode* pNode, const aiScene* pScene, MBone* pParent = nullptr);
 
 	void ProcessAnimation(const aiScene* pScene);
 private:
     
-	std::vector<MMesh<MVertex>*> m_vMeshes;
+	std::vector<MIMesh*> m_vMeshes;
+	std::vector<MEModelVertexType> m_vVertexTypes;
 	MBoundsOBB* m_pBoundsOBB;
 	MSkeleton* m_pSkeleton;
 };
-
 
 #endif

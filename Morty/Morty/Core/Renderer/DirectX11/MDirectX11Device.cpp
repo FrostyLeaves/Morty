@@ -8,12 +8,9 @@
 #include "MLogManager.h"
 #include "MMesh.h"
 #include "MVertex.h"
+#include "MRenderStructure.h"
 #include "MTexture.h"
 #include "MShader.h"
-
-#ifndef D3D_COMPILE_STANDARD_FILE_INCLUDE
-#define D3D_COMPILE_STANDARD_FILE_INCLUDE ((ID3DInclude*)(UINT_PTR)1)
-#endif
 
 MDirectX11Device::MDirectX11Device()
 	: MIDevice()
@@ -450,7 +447,13 @@ void MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 	const char* svFuncName = eShaderType == MShader::MEShaderType::Vertex ? "VS" : "PS";
 	const char* svProFile = eShaderType == MShader::MEShaderType::Vertex ? "vs_5_0" : "ps_5_0";
 
-	HRESULT hr = D3DX11CompileFromFile(strShaderPath.c_str(), NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, svFuncName, svProFile, shaderFlags, 0, nullptr, &pShaderBuffer, &pErrorMessage, nullptr);
+
+	MString strBonesPerVertex = MStringHelper::ToString(MBONES_PER_VERTEX);
+
+	D3D_SHADER_MACRO macro[] = {
+		"MBONES_PER_VERTEX", strBonesPerVertex.c_str(), nullptr, nullptr
+		};
+	HRESULT hr = D3DX11CompileFromFile(strShaderPath.c_str(), macro, nullptr, svFuncName, svProFile, shaderFlags, 0, nullptr, &pShaderBuffer, &pErrorMessage, nullptr);
 	if (FAILED(hr))
 	{
 		if (pErrorMessage)
@@ -721,6 +724,10 @@ ID3D11InputLayout* MDirectX11Device::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC 
 	for (int i = 0; i < nLength; ++i)
 	{
 		MString strType;
+		if (i < nLength - 1 && MString(desc[i].SemanticName) == MString(desc[i + 1].SemanticName))
+		{
+			continue;
+		}
 		switch (desc[i].Format)
 		{
 		case DXGI_FORMAT_R32G32B32A32_FLOAT:
@@ -732,16 +739,21 @@ ID3D11InputLayout* MDirectX11Device::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC 
 		case DXGI_FORMAT_R32G32_FLOAT:
 			strType = "float2";
 			break;
+		case DXGI_FORMAT_R32_SINT:
+			strType = "int";
+			break;
 		default:
 			strType = "float";
 			break;
 		}
 
-		strVirtualShader += strType + "    v_" + std::to_string(i) + " : " + desc[i].SemanticName + " ; \n";
+		strVirtualShader += strType + "    v_" + MStringHelper::ToString(i);
+		if (desc[i].SemanticIndex > 0)
+			strVirtualShader += "[" + MStringHelper::ToString(desc[i].SemanticIndex + 1) + "]";
+		strVirtualShader += MString(" : ") + desc[i].SemanticName + " ; \n";
 	}
 
 	strVirtualShader += strVirtualShaderBack;
-
 	HRESULT hr = D3DX11CompileFromMemory(strVirtualShader.c_str(), strVirtualShader.size(), nullptr, nullptr, nullptr, "VS", "vs_5_0", 0, 0, nullptr, &pShaderBuffer, &pErrorMessage, nullptr);
 	if (FAILED(hr))
 	{

@@ -20,7 +20,7 @@ bool MModelInstance::Load(MResource* pResource)
 
 		int index = 0;
 		char svIndexx[16];
-		for (MIMesh* pMesh : pModelRes->GetMeshes())
+		for (MIMesh* pMesh : *pModelRes->GetMeshes())
 		{
 			MMeshInstance* pMeshIns = GetObjectManager()->CreateObject<MMeshInstance>();
 			pMeshIns->SetMesh(pMesh);

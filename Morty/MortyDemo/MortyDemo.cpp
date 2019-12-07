@@ -209,7 +209,7 @@ int main(int argc, char* argv[])
 	pRootNode->SetName("RootNode");
 
 
-	MResource* pResource = engine.GetResourceManager()->Load("./Model/cat_rigged.fbx");
+	MResource* pResource = engine.GetResourceManager()->Load("./Model/teaport.fbx");
 	MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MySpatial>();
 	pSpatial->Load(pResource);
 	pSpatial->SetPosition(Vector3(0, 0, 0));
@@ -222,8 +222,8 @@ int main(int argc, char* argv[])
 
 		MMeshInstance* pMeshIns = dynamic_cast<MMeshInstance*>(pChild);
 
-		MResource* pVSResource = engine.GetResourceManager()->Load("./Shader/defaultv.mvs");
-		MResource* pPSResource = engine.GetResourceManager()->Load("./Shader/defaultp.mps");
+		MResource* pVSResource = engine.GetResourceManager()->Load("./Shader/animationModel.mvs");
+		MResource* pPSResource = engine.GetResourceManager()->Load("./Shader/model.mps");
 		MMaterialResource* pMaterialRes = dynamic_cast<MMaterialResource*>(engine.GetResourceManager()->Create(MResourceManager::MEResourceType::Material));
 		pMaterialRes->LoadVertexShader(pVSResource);
 		pMaterialRes->LoadPixelShader(pPSResource);
@@ -250,11 +250,6 @@ int main(int argc, char* argv[])
 				}
 			}
 		}
-
-		std::vector<MShaderParam>& vParams = pMaterial->GetVertexShaderParams();
-
-
-
 		pMeshIns->SetMaterial(pMaterial);
 	}
 

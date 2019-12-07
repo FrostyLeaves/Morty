@@ -53,7 +53,6 @@ public:
 
 private:
 	MSkeleton* m_pSkeletonTemplate;
-	std::vector<MBone*> m_vAllBones;
 };
 
 

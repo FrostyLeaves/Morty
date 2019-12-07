@@ -10,7 +10,7 @@
 #define _M_MMATERIAL_H_
 #include "MGlobal.h"
 #include "MResource.h"
-#include "MVertex.h"
+#include "MRenderStructure.h"
 #include "MObject.h"
 
 #include <vector>

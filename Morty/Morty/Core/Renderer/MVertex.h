@@ -11,20 +11,14 @@
 #include "MGlobal.h"
 #include "Vector.h"
 #include "MString.h"
-#include "MVariant.h"
-#include <map>
-#include <vector>
 
-class MIRenderer;
-class MITexture;
-class MTextureCube;
+
+//Bones number per Vertex.
+#define MBONES_PER_VERTEX (4)
+
 //顶点
 struct MVertex
 {
-public:
-	MVertex() {}
-
-public:
 	Vector3 position;
 	Vector3 normal;
 	Vector2 texCoords;
@@ -32,125 +26,22 @@ public:
 	Vector3 bitangent;
 };
 
-class MInputLayout
+//带骨骼顶点
+struct MVertexWithBones
 {
-public:
-	MInputLayout();
-	virtual ~MInputLayout(){}
-#if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	class ID3D11InputLayout* m_pInputLayout;
-#elif RENDER_GRAPHICS == MORTY_OPENGLES
+	MVertexWithBones()
+		: bonesID{0}
+		, bonesWeight{0}
+	{
+	}
+	Vector3 position;
+	Vector3 normal;
+	Vector2 texCoords;
+	Vector3 tangent;
+	Vector3 bitangent;
 
-#endif
+	int bonesID[MBONES_PER_VERTEX];
+	int bonesWeight[MBONES_PER_VERTEX];
 };
-
-//顶点缓存
-class MVertexBuffer
-{
-public:
-	MVertexBuffer();
-	virtual ~MVertexBuffer(){}
-
-#if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	class ID3D11Buffer* m_pVertexBuffer;
-	class ID3D11Buffer* m_pIndexBuffer;
-#elif RENDER_GRAPHICS == MORTY_OPENGLES
-
-#endif
-};
-
-//纹理缓存
-class MTextureBuffer
-{
-public:
-	MTextureBuffer();
-	virtual ~MTextureBuffer();
-
-#if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	class ID3D11ShaderResourceView* m_pShaderResourceView;
-#elif RENDER_GRAPHICS == MORTY_OPENGLES
-
-#endif
-};
-
-struct MShaderParam
-{
-	MString strName;
-	MVariant var;
-	
-#if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	class ID3D11Buffer* pBuffer;
-	unsigned int unBindPoint;
-	unsigned int unBindCount;
-#elif RENDER_GRAPHICS == MORTY_OPENGLES
-
-#endif
-};
-
-enum METextureType
-{
-	ETexture2D = 1,
-	ETextureCube = 2,
-};
-
-struct MShaderTextureParam
-{
-	MString strName;
-	MITexture* pTexture;
-	METextureType eType;
-
-#if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	unsigned int unBindPoint;
-	unsigned int unBindCount;
-#elif RENDER_GRAPHICS == MORTY_OPENGLES
-
-#endif
-};
-
-struct MShaderSampleParam
-{
-#if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	unsigned int unBindPoint;
-	unsigned int unBindCount;
-#elif RENDER_GRAPHICS == MORTY_OPENGLES
-
-#endif
-};
-
-//Shader
-class MShaderBuffer
-{
-public:
-	MShaderBuffer();
-	virtual ~MShaderBuffer(){}
-
-	std::vector<MShaderSampleParam> m_vSampleParamsTemplate;
-	std::vector<MShaderTextureParam> m_vTextureParamsTemplate;
-	std::vector<MShaderParam> m_vShaderParamsTemplate;
-};
-
-class MVertexShaderBuffer : public MShaderBuffer
-{
-public:
-	MVertexShaderBuffer();
-	virtual ~MVertexShaderBuffer(){}
-#if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	class ID3D11VertexShader* m_pVertexShader;
-	class ID3D11InputLayout* m_pInputLayout;
-#elif RENDER_GRAPHICS == MORTY_OPENGLES
-#endif
-};
-
-class MPixelShaderBuffer : public MShaderBuffer
-{
-public:
-	MPixelShaderBuffer();
-	virtual ~MPixelShaderBuffer(){}
-#if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	class ID3D11PixelShader* m_pPixelShader;
-#elif RENDER_GRAPHICS == MORTY_OPENGLES
-#endif
-};
-
 
 #endif

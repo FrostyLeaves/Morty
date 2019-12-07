@@ -166,11 +166,10 @@ void MIScene::RecordMeshInstance(MMeshInstance* pMeshInstance)
 		pGroup = *iter;
 	}
 
-	for (MMeshInstance* pMeshIns : pGroup->vMeshIns)
-	{
-		if (pMeshIns == pMeshInstance)
-			return;
-	}
+	std::vector<MMeshInstance*>::iterator it = find(pGroup->vMeshIns.begin(), pGroup->vMeshIns.end(), pMeshInstance);
+	if (it != pGroup->vMeshIns.end())
+		return;
+
 	pGroup->vMeshIns.push_back(pMeshInstance);
 }
 
@@ -220,10 +219,10 @@ void MIScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
 					Matrix3 matNormal(worldTrans.Transposed().Inverse(), 3, 3);
 
 					MStruct* pSpaceStruct = param.var.GetByType<MStruct>();
-					pSpaceStruct->SetMember("MatWorld", worldTrans);
-					pSpaceStruct->SetMember("MatCamProj", pViewport->GetCameraInverseProjection());
+					pSpaceStruct->SetMember("U_matWorld", worldTrans);
+					pSpaceStruct->SetMember("U_matCamProj", pViewport->GetCameraInverseProjection());
 
-					pSpaceStruct->SetMember("MatNormal", matNormal);
+					pSpaceStruct->SetMember("U_matNormal", matNormal);
 					break;
 				}
 			}
@@ -368,10 +367,10 @@ void MIScene::DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MMod
 
 void MIScene::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 {
-	DrawPainter(pRenderer, pViewport);
+//	DrawPainter(pRenderer, pViewport);
 	MModelInstance* pSpat = dynamic_cast<MModelInstance*>(m_pRootNode->FindFirstChildByName("Teaport"));
-	DrawBoundingBox(pRenderer, pViewport, pSpat);
- 	DrawSkyBox(pRenderer, pViewport);
+//	DrawBoundingBox(pRenderer, pViewport, pSpat);
+// 	DrawSkyBox(pRenderer, pViewport);
 	DrawMeshInstance(pRenderer, pViewport);
 }
 
