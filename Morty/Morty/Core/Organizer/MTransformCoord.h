@@ -29,7 +29,6 @@ public:
 
 };
 
-
 class MORTY_CLASS MTransformCoord3D : public MITransformCoord, public MObject
 {
 public:
@@ -50,7 +49,6 @@ public:
 	virtual ~MTransformCoord3D();
 
 	void SetTarget3DNode(MNode* pNode);
-
 
 	bool Input(MInputEvent* pEvent, MIViewport* pViewport);
 	void Render(MIRenderer* pRenderer, MIViewport* pViewport);

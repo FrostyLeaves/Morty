@@ -19,7 +19,7 @@ class MIViewport;
 
 struct MPainterVertex
 {
-	Vector2 pos;
+	Vector3 pos;
 	Vector4 color;
 };
 
@@ -61,27 +61,6 @@ public:
 	float m_fThickness;
 };
 
-class MORTY_CLASS MPainter2DTriangle : public MIPainterShape
-{
-public:
-	MPainter2DTriangle() : m_vPoint(), m_triangleColor() {}
-	MPainter2DTriangle(const Vector2& point0, const Vector2& point1, const Vector2& point2, const MColor& color) : MIPainterShape()
-		, m_vPoint{ point0, point1, point2 }, m_triangleColor(color) {}
-
-	virtual ~MPainter2DTriangle() {}
-
-	virtual unsigned int GetVertexCount() override { return 3; }
-	virtual unsigned int GetIndexCount() override { return 3; }
-
-	virtual bool FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh) override;
-	virtual bool TouchTest(const Vector2& pos, MIViewport* pViewport) override;
-
-
-public:
-	Vector2 m_vPoint[3];
-	MColor m_triangleColor;
-};
-
 class MORTY_CLASS MPainter2DRect : public MIPainterShape
 {
 public:
@@ -103,13 +82,14 @@ public:
 	MColor m_rectColor;
 };
 
-class MORTY_CLASS MPainter2DRect3D : public MIPainterShape
+class MORTY_CLASS MPainter2DLine3D : public MIPainterShape
 {
 public:
-	MPainter2DRect3D() :m_v3Center(), m_v3Normal(), m_v3Up(), m_rectColor(), m_fWidth(), m_fHeight() {}
-	MPainter2DRect3D(const Vector3& v3Center, const Vector3& v3Normal, const Vector3& v3Up, const MColor& rectColor, const float& fWidth, const float& fHeight);
+	MPainter2DLine3D() : m_v3Begin(), m_v3End(), m_lineColor(), m_fThickness(1.0f) {}
+	MPainter2DLine3D(const Vector3& v3Begin, const Vector3& v3End, const MColor& color, const float& fTickness) : MIPainterShape()
+		, m_v3Begin(v3Begin), m_v3End(v3End), m_lineColor(color), m_fThickness(fTickness) {}
 
-	virtual ~MPainter2DRect3D() {}
+	virtual ~MPainter2DLine3D() {}
 
 	virtual unsigned int GetVertexCount() override { return 4; }
 	virtual unsigned int GetIndexCount() override { return 6; }
@@ -117,13 +97,14 @@ public:
 	virtual bool FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh) override;
 	virtual bool TouchTest(const Vector2& pos, MIViewport* pViewport) override;
 
+
 public:
-	Vector3 m_v3Center;
-	Vector3 m_v3Normal;
-	Vector3 m_v3Up;
-	MColor m_rectColor;
-	float m_fWidth;
-	float m_fHeight;
+
+	Vector3 m_v3Begin;
+	Vector3 m_v3End;
+
+	MColor m_lineColor;
+	float m_fThickness;
 };
 
 #endif

@@ -314,27 +314,55 @@ void MIScene::DrawPainter(MIRenderer* pRenderer, MIViewport* pViewport)
 #include "MBounds.h"
 #include "MModelResource.h"
 #include "MPainter.h"
+#include "MEngine.h"
+#include "MResourceManager.h"
+#include "MMaterialResource.h"
 void MIScene::DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MSpatial* pSpatial)
 {
+	static MMaterial* TestMaterial = nullptr;
+	if (nullptr == TestMaterial)
+	{
+		MResource* pVSResource = m_pEngine->GetResourceManager()->Load("./Shader/draw3D.mvs");
+		MResource* pPSResource = m_pEngine->GetResourceManager()->Load("./Shader/draw3D.mps");
+		MMaterialResource* pMaterialRes = dynamic_cast<MMaterialResource*>(m_pEngine->GetResourceManager()->Create(MResourceManager::MEResourceType::Material));
+		pMaterialRes->LoadVertexShader(pVSResource);
+		pMaterialRes->LoadPixelShader(pPSResource);
+
+		TestMaterial = pMaterialRes->GetMaterialTemplate();
+	}
+
+	std::vector<MShaderParam>& vVtxParams = TestMaterial->GetVertexShaderParams();
+	for (MShaderParam& param : vVtxParams)
+	{
+		if (param.strName == "cbSpace")
+		{
+			MStruct* pSpaceStruct = param.var.GetByType<MStruct>();
+			pSpaceStruct->SetMember("MatCamProj", pViewport->GetCameraInverseProjection());
+			break;
+		}
+	}
+
+	pRenderer->SetUseMaterial(TestMaterial);
+	pRenderer->UpdateMaterialParam();
+
+
 	MModelResource* pModelResource = dynamic_cast<MModelResource*>(pSpatial->GetResource());
 	MBoundsOBB* pObb = pModelResource->GetOBB();
 
-	Matrix4 worldTrans = pSpatial->GetWorldTransform();
-
-
+	Matrix4 mat4World = pSpatial->GetWorldTransform();
 	Vector3& obmin = pObb->m_v3MinPoint;
 	Vector3& obmax = pObb->m_v3MaxPoint;
 
 	Vector3 list[] = {
-		worldTrans* pObb->ConvertFromOBB(Vector3(obmin.x, obmin.y, obmin.z)),
-		worldTrans * pObb->ConvertFromOBB(Vector3(obmax.x, obmin.y, obmin.z)),
-		worldTrans * pObb->ConvertFromOBB(Vector3(obmax.x, obmax.y, obmin.z)),
-		worldTrans * pObb->ConvertFromOBB(Vector3(obmin.x, obmax.y, obmin.z)),
+		mat4World * pObb->ConvertFromOBB(Vector3(obmin.x, obmin.y, obmin.z)),
+		mat4World* pObb->ConvertFromOBB(Vector3(obmax.x, obmin.y, obmin.z)),
+		mat4World* pObb->ConvertFromOBB(Vector3(obmax.x, obmax.y, obmin.z)),
+		mat4World* pObb->ConvertFromOBB(Vector3(obmin.x, obmax.y, obmin.z)),
 
-		worldTrans* pObb->ConvertFromOBB(Vector3(obmin.x, obmin.y, obmax.z)),
-		worldTrans * pObb->ConvertFromOBB(Vector3(obmax.x, obmin.y, obmax.z)),
-		worldTrans * pObb->ConvertFromOBB(Vector3(obmax.x, obmax.y, obmax.z)),
-		worldTrans * pObb->ConvertFromOBB(Vector3(obmin.x, obmax.y, obmax.z)),
+		mat4World* pObb->ConvertFromOBB(Vector3(obmin.x, obmin.y, obmax.z)),
+		mat4World* pObb->ConvertFromOBB(Vector3(obmax.x, obmin.y, obmax.z)),
+		mat4World* pObb->ConvertFromOBB(Vector3(obmax.x, obmax.y, obmax.z)),
+		mat4World* pObb->ConvertFromOBB(Vector3(obmin.x, obmax.y, obmax.z)),
 	};
 
 	Vector2 begin, end;
@@ -342,28 +370,26 @@ void MIScene::DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MSpa
 	{
 		for(int i = 0; i < 2; ++ i)
 		{
-			if (pViewport->ConvertWorldLineToNormalizedDevice(list[j + i * 4], list[(j + 1) % 4 + i * 4], begin, end))
+			MPainter2DLine3D line(list[j + i * 4], list[(j + 1) % 4 + i * 4], MColor(1, 1, 1, 1), 1.0f);
+
+			MMesh<MPainterVertex> meshs;
+			if (line.FillData(pViewport, meshs))
 			{
-				MPainter2DLine line(begin, end, MColor(1, 1, 1, 1), 4.0f);
-
-				MMesh<MPainterVertex> meshs;
-				line.FillData(pViewport, meshs);
-
 				pRenderer->DrawMesh(&meshs);
+				meshs.DestroyBuffer(m_pEngine->GetDevice());
 			}
 		}
 
-		if (pViewport->ConvertWorldLineToNormalizedDevice(list[j], list[(j + 4)], begin, end))
+		MPainter2DLine3D line(list[j], list[(j + 4)], MColor(1, 1, 1, 1), 1.0f);
+		MMesh<MPainterVertex> meshs;
+		if (line.FillData(pViewport, meshs))
 		{
-			MPainter2DLine line(begin, end, MColor(1, 1, 1, 1), 4.0f);
-
-			MMesh<MPainterVertex> meshs;
-			line.FillData(pViewport, meshs);
-
 			pRenderer->DrawMesh(&meshs);
+			meshs.DestroyBuffer(m_pEngine->GetDevice());
 		}
 	}
 
+	pRenderer->UpdateMaterialParam();
 }
 
 void MIScene::Render(MIRenderer* pRenderer, MIViewport* pViewport)

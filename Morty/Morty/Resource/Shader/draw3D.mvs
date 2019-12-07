@@ -1,3 +1,8 @@
+cbuffer cbSpace
+{
+    float4x4 MatCamProj;
+};
+
 struct VS_IN
 {
     float3 pos : POSITION;
@@ -14,9 +19,7 @@ VS_OUT VS(VS_IN input)
 {
     VS_OUT output;
 
-    output.pos.xy = input.pos.xy;
-    output.pos.w = 1.0f;
-    output.pos.z = 0.0f;
+    output.pos = mul(float4(input.pos, 1.0f), MatCamProj);
     output.color = input.color;
 
     return output;

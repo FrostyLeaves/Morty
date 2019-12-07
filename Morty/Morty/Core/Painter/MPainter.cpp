@@ -107,51 +107,6 @@ bool MPainter2DLine::TouchTest(const Vector2& pos, MIViewport* pViewport)
 	return false;
 }
 
-bool MPainter2DTriangle::FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh)
-{
-	if (nullptr == pViewport)
-		return false;
-
-	mesh.CreateVertices(GetVertexCount());
-	mesh.CreateIndices(GetIndexCount(), 1);
-
-	Vector4 color = m_triangleColor.ToVector4();
-	for (int i = 0; i < 3; ++i)
-	{
-		mesh.GetVertices()[i].pos = m_vPoint[i];
-		mesh.GetVertices()[i].color = color;
-	}
-
-	static unsigned int const indices[] = {
-		0, 1, 2
-	};
-
-	memcpy(mesh.GetIndices(), &indices, 1 * 3 * sizeof(unsigned int));
-
-	mesh.SetNeedUpload();
-	return true;
-}
-
-bool MPainter2DTriangle::TouchTest(const Vector2& pos, MIViewport* pViewport)
-{
-	Vector2 normalPos = pos;
-	normalPos.x /= pViewport->GetWidth();
-	normalPos.y /= pViewport->GetHeight();
-	normalPos = normalPos * 2 - Vector2(1.0, 1.0);
-
-	float sn01 = (m_vPoint[0] - normalPos).CrossProduct(m_vPoint[1] - normalPos);
-	float sn12 = (m_vPoint[1] - normalPos).CrossProduct(m_vPoint[2] - normalPos);
-	float sn20 = (m_vPoint[2] - normalPos).CrossProduct(m_vPoint[0] - normalPos);
-
-	if ((sn01 * sn20) > 0 && (sn01 * sn12) > 0)
-		return true;
-
-	if (fabsf(sn01 * sn20 * sn12) < 1e-6)
-		return true;
-
-	return false;
-}
-
 bool MPainter2DRect::FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh)
 {
 	if (nullptr == pViewport)
@@ -199,55 +154,42 @@ bool MPainter2DRect::TouchTest(const Vector2& pos, MIViewport* pViewport)
 	return false;
 }
 
-MPainter2DRect3D::MPainter2DRect3D(const Vector3& v3Center, const Vector3& v3Normal, const Vector3& v3Up, const MColor& rectColor, const float& fWidth, const float& fHeight) : MIPainterShape()
-, m_v3Center(v3Center), m_v3Normal(v3Normal), m_v3Up(v3Up), m_rectColor(rectColor), m_fWidth(fWidth), m_fHeight(fHeight)
-{
-	m_v3Normal.Normalize();
-	m_v3Up.Normalize();
-}
-
-bool MPainter2DRect3D::FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh)
+bool MPainter2DLine3D::FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh)
 {
 	if (nullptr == pViewport)
 		return false;
 
-	Vector2 v2Center;
-	if (false == pViewport->ConvertWorldPointToNormalizedDevice(m_v3Center, v2Center))
+	Vector3 v3CameraWorldPosition = pViewport->GetCamera()->GetWorldPosition();
+	Vector3 v3Center = (m_v3Begin + m_v3End) * 0.5;
+	Vector3 v3Normal = (v3CameraWorldPosition - v3Center).CrossProduct(m_v3End - m_v3Begin);
+	v3Normal.Normalize();
+
+	Vector3 v2Center, v2Nab;
+	if (false == pViewport->ConvertWorldPointToViewport(v3Center, v2Center))
 		return false;
-
-	float fHalfWidth = m_fWidth * 0.5;
-	float fHalfHeight = m_fHeight * 0.5;
+	if (false == pViewport->ConvertWorldPointToViewport(v3Center + v3Normal, v2Nab))
+		return false;
 	
-	Vector3 v3Right = m_v3Normal.CrossProduct(m_v3Up);
-	v3Right.Normalize();
-
-	Vector3 v3Pos[4] = {
-		m_v3Center - v3Right * fHalfWidth - m_v3Up * fHalfHeight,
-		m_v3Center - v3Right * fHalfWidth + m_v3Up * fHalfHeight,
-		m_v3Center + v3Right * fHalfWidth - m_v3Up * fHalfHeight,
-		m_v3Center + v3Right * fHalfWidth + m_v3Up * fHalfHeight,
-	};
-	
-	Vector2 v2Pos[4];
-	for (int i = 0; i < 4; ++i)
-	{
-		if (false == pViewport->ConvertWorldPointToNormalizedDevice(v3Pos[i], v2Pos[i]))
-			return false;
-	}
+	Vector3 v3Thick3D = v3Normal * (m_fThickness / (v2Nab - v2Center).Length());
 
 	mesh.CreateVertices(GetVertexCount());
 	mesh.CreateIndices(GetIndexCount(), 1);
 
-	Vector4 color = m_rectColor.ToVector4();
-	for (int i = 0; i < 4; ++i)
-	{
-		mesh.GetVertices()[i].pos = v2Pos[i];
-		mesh.GetVertices()[i].color = color;
-	}
+	mesh.GetVertices()[0].pos = m_v3Begin - v3Thick3D;
+	mesh.GetVertices()[0].color = m_lineColor.ToVector4();
+
+	mesh.GetVertices()[1].pos = m_v3Begin + v3Thick3D;
+	mesh.GetVertices()[1].color = m_lineColor.ToVector4();
+
+	mesh.GetVertices()[2].pos = m_v3End + v3Thick3D;
+	mesh.GetVertices()[2].color = m_lineColor.ToVector4();
+
+	mesh.GetVertices()[3].pos = m_v3End - v3Thick3D;
+	mesh.GetVertices()[3].color = m_lineColor.ToVector4();
 
 	static unsigned int const indices[] = {
 		0, 1, 2,
-		1, 3, 2
+		0, 2, 3
 	};
 
 	memcpy(mesh.GetIndices(), &indices, 2 * 3 * sizeof(unsigned int));
@@ -256,7 +198,7 @@ bool MPainter2DRect3D::FillData(MIViewport* pViewport, MMesh<MPainterVertex>& me
 	return true;
 }
 
-bool MPainter2DRect3D::TouchTest(const Vector2& pos, MIViewport* pViewport)
+bool MPainter2DLine3D::TouchTest(const Vector2& pos, MIViewport* pViewport)
 {
 	return false;
 }
