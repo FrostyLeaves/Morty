@@ -1,4 +1,4 @@
-﻿#include "MVertex.h"
+﻿#include "MRenderStructure.h"
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 #include "MDirectX11Renderer.h"
 #elif RENDER_GRAPHICS == MORTY_OPENGLES

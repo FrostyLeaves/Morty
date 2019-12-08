@@ -13,4 +13,11 @@
 
 typedef std::string MString;
 
+
+class MStringHelper
+{
+public:
+	static MString ToString(const int& value) { return std::to_string(value); }
+};
+
 #endif

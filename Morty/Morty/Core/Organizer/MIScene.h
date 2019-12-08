@@ -15,7 +15,7 @@
 #include <vector>
 
 class MNode;
-class MSpatial;
+class MModelInstance;
 class MCamera;
 class MSkyBox;
 class MDirectionalLight;
@@ -69,7 +69,7 @@ protected:
 	void DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport);
 	void DrawSkyBox(MIRenderer* pRenderer, MIViewport* pViewport);
 	void DrawPainter(MIRenderer* pRenderer, MIViewport* pViewport);
-	void DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MSpatial* pSpatial);
+	void DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MModelInstance* pSpatial);
 
 private:
 

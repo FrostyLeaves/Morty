@@ -12,7 +12,7 @@
 
 #include "MObject.h"
 #include "MMaterial.h"
-#include "MSpatial.h"
+#include "MModelInstance.h"
 #include "MResourceManager.h"
 #include "MVariant.h"
 #include "MMaterialResource.h"
@@ -37,7 +37,7 @@
 
 #include "MainEditor.h"
 
-class MySpatial : public MSpatial
+class MySpatial : public MModelInstance
 {
 public:
 
@@ -210,7 +210,7 @@ int main(int argc, char* argv[])
 
 
 	MResource* pResource = engine.GetResourceManager()->Load("./Model/teaport.fbx");
-	MSpatial* pSpatial = engine.GetObjectManager()->CreateObject<MySpatial>();
+	MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MySpatial>();
 	pSpatial->Load(pResource);
 	pSpatial->SetPosition(Vector3(0, 0, 0));
 	pSpatial->SetName("Teaport");
@@ -222,8 +222,8 @@ int main(int argc, char* argv[])
 
 		MMeshInstance* pMeshIns = dynamic_cast<MMeshInstance*>(pChild);
 
-		MResource* pVSResource = engine.GetResourceManager()->Load("./Shader/defaultv.mvs");
-		MResource* pPSResource = engine.GetResourceManager()->Load("./Shader/defaultp.mps");
+		MResource* pVSResource = engine.GetResourceManager()->Load("./Shader/animationModel.mvs");
+		MResource* pPSResource = engine.GetResourceManager()->Load("./Shader/model.mps");
 		MMaterialResource* pMaterialRes = dynamic_cast<MMaterialResource*>(engine.GetResourceManager()->Create(MResourceManager::MEResourceType::Material));
 		pMaterialRes->LoadVertexShader(pVSResource);
 		pMaterialRes->LoadPixelShader(pPSResource);
@@ -245,16 +245,11 @@ int main(int argc, char* argv[])
 				{
 					if (MStruct* pMat = pStruct->FindMember("U_mat")->GetByType<MStruct>())
 					{
-						pMat->SetMember("fShininess", 1.0f);
+						pMat->SetMember("fShininess", 10.0f);
 					}
 				}
 			}
 		}
-
-		std::vector<MShaderParam>& vParams = pMaterial->GetVertexShaderParams();
-
-
-
 		pMeshIns->SetMaterial(pMaterial);
 	}
 

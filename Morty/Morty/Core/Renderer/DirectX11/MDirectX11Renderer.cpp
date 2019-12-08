@@ -12,6 +12,7 @@
 #include "MMaterial.h"
 #include "MMesh.h"
 #include "MIViewport.h"
+#include "MRenderStructure.h"
 
 const int DEFAULT_WIDTH = 640;
 const int DEFAULT_HEIGHT = 480;

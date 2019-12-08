@@ -70,6 +70,9 @@
     <Filter Include="Utility\Type">
       <UniqueIdentifier>{e08e5bb9-81a9-47bc-86cc-96a1a131e038}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scene\Model">
+      <UniqueIdentifier>{e9d638bd-a4d1-4b01-9e95-548d4ac08c9f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../ReadMe.txt" />
@@ -123,9 +126,6 @@
     <ClInclude Include="..\..\ResourceLoader\Model\MModelResource.h">
       <Filter>ResourceLoader\Model</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Scene\MMeshInstance.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\ResourceLoader\MResourceManager.h">
       <Filter>ResourceLoader</Filter>
     </ClInclude>
@@ -136,9 +136,6 @@
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Scene\MCamera.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Scene\MSpatial.h">
       <Filter>Scene</Filter>
     </ClInclude>
     <ClInclude Include="..\..\ResourceLoader\Texture\MTextureResource.h">
@@ -231,6 +228,18 @@
     <ClInclude Include="..\..\Core\MBounds.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Scene\Model\MMeshInstance.h">
+      <Filter>Scene\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Scene\Model\MModelInstance.h">
+      <Filter>Scene\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\MSkeleton.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\MRenderStructure.h">
+      <Filter>Core\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -269,9 +278,6 @@
     <ClCompile Include="..\..\ResourceLoader\Model\MModelResource.cpp">
       <Filter>ResourceLoader\Model</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Scene\MMeshInstance.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ResourceLoader\MResourceManager.cpp">
       <Filter>ResourceLoader</Filter>
     </ClCompile>
@@ -285,9 +291,6 @@
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Scene\MCamera.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Scene\MSpatial.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ResourceLoader\Texture\MTextureResource.cpp">
@@ -307,9 +310,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\DirectX11\MWindowsRenderView.cpp">
       <Filter>Core\Renderer\DirectX11</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Core\Renderer\MVertex.cpp">
-      <Filter>Core\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\MMesh.cpp">
       <Filter>Core\Renderer</Filter>
@@ -373,6 +373,18 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\MBounds.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Scene\Model\MModelInstance.cpp">
+      <Filter>Scene\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Scene\Model\MMeshInstance.cpp">
+      <Filter>Scene\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\MSkeleton.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\MRenderStructure.cpp">
+      <Filter>Core\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
