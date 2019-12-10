@@ -120,12 +120,12 @@ MBoundsOBB::MBoundsOBB(const std::vector<Vector3>& vPoints)
 	m_v3HalfLength = (v3MaxPoint - v3MinPoint) * 0.5;
 }
 
-Vector3 MBoundsOBB::ConvertToOBB(const Vector3& v3Pos)
+Vector3 MBoundsOBB::ConvertToOBB(const Vector3& v3Pos) const
 {
 	return v3Pos * m_matEigVectors;
 }
 
-Vector3 MBoundsOBB::ConvertFromOBB(const Vector3& v3Pos)
+Vector3 MBoundsOBB::ConvertFromOBB(const Vector3& v3Pos) const
 {
 	return v3Pos * m_matEigVectors.Inverse();
 }

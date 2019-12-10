@@ -448,10 +448,12 @@ void MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 	const char* svProFile = eShaderType == MShader::MEShaderType::Vertex ? "vs_5_0" : "ps_5_0";
 
 
-	MString strBonesPerVertex = MStringHelper::ToString(MBONES_PER_VERTEX);
-
+	const MString strBonesPerVertex = MStringHelper::ToString(MBONES_PER_VERTEX);
+	const MString strBonesMaxNumber = MStringHelper::ToString(MBONES_MAX_NUMBER);
 	D3D_SHADER_MACRO macro[] = {
-		"MBONES_PER_VERTEX", strBonesPerVertex.c_str(), nullptr, nullptr
+		"MBONES_PER_VERTEX", strBonesPerVertex.c_str(),
+		"MBONES_MAX_NUMBER", strBonesMaxNumber.c_str(),
+		nullptr, nullptr
 		};
 	HRESULT hr = D3DX11CompileFromFile(strShaderPath.c_str(), macro, nullptr, svFuncName, svProFile, shaderFlags, 0, nullptr, &pShaderBuffer, &pErrorMessage, nullptr);
 	if (FAILED(hr))

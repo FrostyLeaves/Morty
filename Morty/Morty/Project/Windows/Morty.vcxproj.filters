@@ -73,6 +73,9 @@
     <Filter Include="Scene\Model">
       <UniqueIdentifier>{e9d638bd-a4d1-4b01-9e95-548d4ac08c9f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\Animation">
+      <UniqueIdentifier>{5a652039-0639-4502-90e5-62f17aafea2a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../ReadMe.txt" />
@@ -240,6 +243,15 @@
     <ClInclude Include="..\..\Core\Renderer\MRenderStructure.h">
       <Filter>Core\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\Animation\MIAnimation.h">
+      <Filter>Core\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Animation\MSkeletalAnimation.h">
+      <Filter>Core\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Utility\MMath.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -385,6 +397,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\MRenderStructure.cpp">
       <Filter>Core\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Animation\MIAnimation.cpp">
+      <Filter>Core\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Animation\MSkeletalAnimation.cpp">
+      <Filter>Core\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Utility\MMath.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

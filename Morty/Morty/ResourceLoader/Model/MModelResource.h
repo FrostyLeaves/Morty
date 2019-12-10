@@ -14,6 +14,8 @@
 #include "MVertex.h"
 #include "MMesh.h"
 
+#include <map>
+
 struct aiNode;
 struct aiScene;
 struct aiMesh;
@@ -21,6 +23,7 @@ class MModel;
 class MBone;
 class MBoundsOBB;
 class MSkeleton;
+class MSkeletalAnimation;
 class MORTY_CLASS MModelResource : public MResource
 {
 public:
@@ -33,8 +36,9 @@ public:
     virtual ~MModelResource();
 
 	const std::vector<MIMesh*>* GetMeshes() { return &m_vMeshes; };
-
-	MBoundsOBB* GetOBB();
+	const MSkeleton* GetSkeleton() { return m_pSkeleton; }
+	const MBoundsOBB* GetOBB();
+	const std::map<MString, MSkeletalAnimation*>* GetAnimations() { return &m_tSkeletalAnimation; }
 
 protected:
 
@@ -46,15 +50,19 @@ protected:
 	void ProcessMeshIndices(aiMesh* pMesh, const aiScene* pScene, MIMesh* pMMesh);
 
 	void RecordBones(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh);
+	void ProcessBones(const aiScene* pScene);
 	void BindBones(aiNode* pNode, const aiScene* pScene, MBone* pParent = nullptr);
 
 	void ProcessAnimation(const aiScene* pScene);
+
 private:
     
 	std::vector<MIMesh*> m_vMeshes;
 	std::vector<MEModelVertexType> m_vVertexTypes;
 	MBoundsOBB* m_pBoundsOBB;
 	MSkeleton* m_pSkeleton;
+
+	std::map<MString, MSkeletalAnimation*> m_tSkeletalAnimation;
 };
 
 #endif

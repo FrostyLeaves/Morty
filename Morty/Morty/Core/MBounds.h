@@ -33,8 +33,8 @@ public:
 
 	MBoundsOBB(const std::vector<Vector3>& vPoints);
 	
-	Vector3 ConvertToOBB(const Vector3& v3Pos);
-	Vector3 ConvertFromOBB(const Vector3& v3Pos);
+	Vector3 ConvertToOBB(const Vector3& v3Pos) const;
+	Vector3 ConvertFromOBB(const Vector3& v3Pos) const;
 
 public:
 	Vector3 m_v3MinPoint;

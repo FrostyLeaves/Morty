@@ -66,3 +66,8 @@ cbuffer cbWorldInfo
 {
     float3 U_f3CameraWorldPos;
 };
+
+cbuffer cbAnimation
+{
+    float4x4 U_vBonesMatrix[MBONES_MAX_NUMBER];
+};

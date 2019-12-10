@@ -1,4 +1,5 @@
 #include "MSkeleton.h"
+#include <algorithm>
 
 const unsigned int MBone::InvalidIndex = -1;
 
@@ -45,21 +46,74 @@ MBone* MSkeleton::AppendBone(const MString& strName)
 	m_vAllBones.push_back(pBone);
 	pBone->strName = strName;
 	pBone->unIndex = m_vAllBones.size() - 1;
+	pBone->unParentIndex = MBone::InvalidIndex;
+	m_tBonesMap[strName] = pBone->unIndex;
 	return pBone;
 }
 
-MSkeletonInstance::MSkeletonInstance(MSkeleton& templateSke)
-	: m_pSkeletonTemplate(&templateSke)
+void MSkeleton::SortByDeep()
 {
+	std::vector<int> map(m_vAllBones.size());
+	std::vector<MBone*> vBones = m_vAllBones;
+	std::map<MBone*, int> tDeep;
+
+	for (MBone* pBone : m_vAllBones)
+	{
+		int deep = 0;
+		MBone* pParent = pBone;
+		while (pParent->unParentIndex != MBone::InvalidIndex)
+		{
+			pParent = m_vAllBones[pParent->unParentIndex];
+			++deep;
+		}
+
+		tDeep[pBone] = deep;
+	}
+
+	std::sort(vBones.begin(), vBones.end(), [&tDeep](MBone* a, MBone* b) { return tDeep[a] < tDeep[b]; });
+
+	for (unsigned int i = 0; i < vBones.size(); ++i)
+		map[vBones[i]->unIndex] = i;
+
+	for (unsigned int i = 0; i < vBones.size(); ++i)
+	{
+		MBone* pBone = vBones[i];
+		pBone->unIndex = map[pBone->unIndex];
+		for (unsigned int& index : pBone->vChildrenIndices)
+			index = map[index];
+	}
+
+	m_vAllBones = vBones;
+}
+
+MSkeletonInstance::MSkeletonInstance(const MSkeleton* templateSke)
+	: m_pSkeletonTemplate(templateSke)
+{
+	m_vAllBones = m_pSkeletonTemplate->GetAllBones();
 }
 
 MSkeletonInstance::MSkeletonInstance(const MSkeletonInstance& instance)
 	: m_pSkeletonTemplate(instance.m_pSkeletonTemplate)
 {
+	m_vAllBones = m_pSkeletonTemplate->GetAllBones();
 }
 
 MBone* MSkeletonInstance::FindBoneByName(const MString& strName)
 {
+	MBone* pBoneTemp = m_pSkeletonTemplate->FindBoneByName(strName);
+	if (nullptr == pBoneTemp)
+		return nullptr;
+
+	return m_vAllBones[pBoneTemp->unIndex];
+}
+
+const MBone* MSkeletonInstance::FindBoneTemplateByName(const MString& strName)
+{
 	return m_pSkeletonTemplate->FindBoneByName(strName);
+}
+
+const MBone* MSkeletonInstance::GetBoneTemplateByIndex(const unsigned int& unIndex)
+{
+	return m_pSkeletonTemplate->GetAllBones()[unIndex];
 }
 

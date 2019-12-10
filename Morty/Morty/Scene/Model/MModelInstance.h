@@ -13,6 +13,8 @@
 
 class MResource;
 class MModelResource;
+class MSkeletonInstance;
+class MIAnimController;
 class MORTY_CLASS MModelInstance : public M3DNode
 {
 public:
@@ -25,10 +27,21 @@ public:
 	bool Load(MResource* pResource);
 
 	MModelResource* GetResource(){ return m_pResource; }
+	MSkeletonInstance* GetSkeleton() { return m_pSkeleton; }
+	
+public:
+	bool SetPlayAnimation(const MString& strAnimationName);
+
+public:
+
+	virtual void Tick(const float& fDelta) override;
 
 private:
 
+	MSkeletonInstance* m_pSkeleton;
 	MModelResource* m_pResource;
+
+	MIAnimController* m_pCurrentAnimationController;
 };
 
 #endif

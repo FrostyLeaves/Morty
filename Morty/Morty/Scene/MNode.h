@@ -54,7 +54,7 @@ public:
 	bool isHolderOf(MNode* pNode);
 
 
-	void Tick(const float& fDelta);
+	virtual void Tick(const float& fDelta);
 
 	virtual void OnTick(const float& fDelta);
 

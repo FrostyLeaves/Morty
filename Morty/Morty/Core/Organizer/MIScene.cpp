@@ -14,6 +14,9 @@
 #include "MIViewport.h"
 #include "MTransformCoord.h"
 
+#include "MModelInstance.h"
+#include "MSkeleton.h"
+
 #include <algorithm>
 
 MIScene::MIScene()
@@ -223,7 +226,24 @@ void MIScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
 					pSpaceStruct->SetMember("U_matCamProj", pViewport->GetCameraInverseProjection());
 
 					pSpaceStruct->SetMember("U_matNormal", matNormal);
-					break;
+				}
+				else if (param.strName == "cbAnimation")
+				{
+					if (MModelInstance* pModel = dynamic_cast<MModelInstance*>(pMeshIns->GetParent()))
+					{
+						MStruct* pAnimationStruct = param.var.GetByType<MStruct>();
+						MVariant* pVariant = pAnimationStruct->FindMember("U_vBonesMatrix");
+						MVariantArray* pBonesArray = pVariant->GetByType<MVariantArray>();
+
+						const std::vector<MBone*>& bones = pModel->GetSkeleton()->GetAllBones();
+						unsigned int size = bones.size();
+						if (size > MBONES_MAX_NUMBER)
+							size = MBONES_MAX_NUMBER;
+						for (unsigned int i = 0; i < size; ++i)
+						{
+							(*pBonesArray)[i] = bones[i]->GetTransformInModelWorld();
+						}
+					}
 				}
 			}
 
@@ -346,11 +366,11 @@ void MIScene::DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MMod
 
 
 	MModelResource* pModelResource = dynamic_cast<MModelResource*>(pSpatial->GetResource());
-	MBoundsOBB* pObb = pModelResource->GetOBB();
+	const MBoundsOBB* pObb = pModelResource->GetOBB();
 
 	Matrix4 mat4World = pSpatial->GetWorldTransform();
-	Vector3& obmin = pObb->m_v3MinPoint;
-	Vector3& obmax = pObb->m_v3MaxPoint;
+	const Vector3& obmin = pObb->m_v3MinPoint;
+	const Vector3& obmax = pObb->m_v3MaxPoint;
 
 	Vector3 list[] = {
 		mat4World * pObb->ConvertFromOBB(Vector3(obmin.x, obmin.y, obmin.z)),
@@ -393,11 +413,11 @@ void MIScene::DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MMod
 
 void MIScene::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 {
-//	DrawPainter(pRenderer, pViewport);
+	DrawPainter(pRenderer, pViewport);
 	MModelInstance* pSpat = dynamic_cast<MModelInstance*>(m_pRootNode->FindFirstChildByName("Teaport"));
-//	DrawBoundingBox(pRenderer, pViewport, pSpat);
-// 	DrawSkyBox(pRenderer, pViewport);
+	DrawBoundingBox(pRenderer, pViewport, pSpat);
 	DrawMeshInstance(pRenderer, pViewport);
+	DrawSkyBox(pRenderer, pViewport);
 }
 
 void MIScene::Input(MInputEvent* pEvent, MIViewport* pViewport)

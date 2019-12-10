@@ -15,8 +15,14 @@ struct VS_IN
 VS_OUT VS(VS_IN input)
 {
     VS_OUT output;
+    float4x4 matBoneTransform = float4x4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+    for (int i = 0; i < MBONES_PER_VERTEX; ++i)
+    {
+        matBoneTransform += U_vBonesMatrix[input.bonesID[i]] * input.bonesWeight[i];
+    }
 
-    output.pos = mul(float4(input.pos, 1.0f), mul(U_matWorld, U_matCamProj));
+    float4 posFromBones = mul(float4(input.pos, 1.0f), matBoneTransform);
+    output.pos = mul(posFromBones, mul(U_matWorld, U_matCamProj));
     output.uv.x = input.uv.x;
     output.uv.y = input.uv.y;
 

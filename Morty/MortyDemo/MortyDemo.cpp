@@ -29,6 +29,8 @@
 #include "MIScene.h"
 #include "MIViewport.h"
 #include "MPointLight.h"
+#include "MModelResource.h"
+#include "MSkeletalAnimation.h"
 
 #include "MBounds.h"
 
@@ -47,6 +49,7 @@ public:
 
 	virtual void OnTick(const float& fDelta)
 	{
+		MModelInstance::OnTick(fDelta);
 // 		m_fTime += fDelta;
 // 
 // 		Quaternion quat = Quaternion(Vector3(1, 0, 0), -90);
@@ -209,7 +212,7 @@ int main(int argc, char* argv[])
 	pRootNode->SetName("RootNode");
 
 
-	MResource* pResource = engine.GetResourceManager()->Load("./Model/teaport.fbx");
+	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->Load("./Model/cat_rigged.fbx"));
 	MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MySpatial>();
 	pSpatial->Load(pResource);
 	pSpatial->SetPosition(Vector3(0, 0, 0));
@@ -254,6 +257,9 @@ int main(int argc, char* argv[])
 	}
 
 	pRootNode->AddNode(pSpatial);
+
+	pSpatial->SetPlayAnimation("Armature|ArmatureAction");
+
 
 	MPointLight* pLight = engine.GetObjectManager()->CreateObject<MPointLight>();
 	pLight->SetName("Light");
