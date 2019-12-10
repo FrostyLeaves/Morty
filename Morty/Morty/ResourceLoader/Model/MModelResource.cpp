@@ -251,10 +251,11 @@ void MModelResource::RecordBones(aiMesh* pMesh, const aiScene* pScene, MMesh<MVe
 			MString strBoneName(pBone->mName.data); 
 			MBone* pMBone = m_pSkeleton->FindBoneByName(strBoneName);
 			if (nullptr == pMBone)
+			{
 				pMBone = m_pSkeleton->AppendBone(strBoneName);
+				CopyMatrix4(&pMBone->m_matOffsetMatrix, &pBone->mOffsetMatrix);
+			}
 
-			CopyMatrix4(&pMBone->m_matOffsetMatrix, &pBone->mOffsetMatrix);
-		
 			for (unsigned int wgtIndex = 0; wgtIndex < pBone->mNumWeights; ++wgtIndex)
 			{
 				aiVertexWeight wgt = pBone->mWeights[wgtIndex];
@@ -266,6 +267,7 @@ void MModelResource::RecordBones(aiMesh* pMesh, const aiScene* pScene, MMesh<MVe
 					{
 						vertex.bonesID[boneIndex] = pMBone->unIndex;
 						vertex.bonesWeight[boneIndex] = wgt.mWeight;
+						break;
 					}
 				}
 			}
@@ -276,7 +278,59 @@ void MModelResource::RecordBones(aiMesh* pMesh, const aiScene* pScene, MMesh<MVe
 void MModelResource::ProcessBones(const aiScene* pScene)
 {
 	BindBones(pScene->mRootNode, pScene);
-	m_pSkeleton->SortByDeep();
+
+	std::vector<int> map(m_pSkeleton->m_vAllBones.size());
+	std::vector<MBone*> vBones = m_pSkeleton->m_vAllBones;
+	std::map<MBone*, int> tDeep;
+
+	for (MBone* pBone : m_pSkeleton->m_vAllBones)
+	{
+		int deep = 0;
+		MBone* pParent = pBone;
+		while (pParent->unParentIndex != MBone::InvalidIndex)
+		{
+			pParent = m_pSkeleton->m_vAllBones[pParent->unParentIndex];
+			++deep;
+		}
+
+		tDeep[pBone] = deep;
+	}
+
+	std::sort(vBones.begin(), vBones.end(), [&tDeep](MBone* a, MBone* b) { return tDeep[a] < tDeep[b]; });
+
+	for (unsigned int i = 0; i < vBones.size(); ++i)
+		map[vBones[i]->unIndex] = i;
+
+	for (unsigned int i = 0; i < vBones.size(); ++i)
+	{
+		MBone* pBone = vBones[i];
+		pBone->unIndex = map[pBone->unIndex];
+		for (unsigned int& index : pBone->vChildrenIndices)
+			index = map[index];
+	}
+
+	for (auto& iter : m_pSkeleton->m_tBonesMap)
+		iter.second = map[iter.second];
+
+	m_pSkeleton->m_vAllBones = vBones;
+
+	for (MIMesh* pMesh : m_vMeshes)
+	{
+		if (MMesh<MVertexWithBones>* pMMesh = dynamic_cast<MMesh<MVertexWithBones>*>(pMesh))
+		{
+			for (unsigned int i = 0; i < pMMesh->GetVerticesLength(); ++i)
+			{
+				MVertexWithBones& vertex = pMMesh->GetVertices()[i];
+				for (unsigned int boneIndex = 0; boneIndex < MBONES_PER_VERTEX; ++boneIndex)
+				{
+					if (0 != vertex.bonesWeight[boneIndex])
+					{
+						vertex.bonesID[boneIndex] = map[vertex.bonesID[boneIndex]];
+					}
+				}
+			}
+		}
+	}
 }
 
 void MModelResource::BindBones(aiNode* pNode, const aiScene* pScene, MBone* pParent/* = nullptr*/)

@@ -212,7 +212,7 @@ int main(int argc, char* argv[])
 	pRootNode->SetName("RootNode");
 
 
-	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->Load("./Model/cat_rigged.fbx"));
+	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->Load("./Model/Pikachu.fbx"));
 	MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MySpatial>();
 	pSpatial->Load(pResource);
 	pSpatial->SetPosition(Vector3(0, 0, 0));
@@ -258,7 +258,7 @@ int main(int argc, char* argv[])
 
 	pRootNode->AddNode(pSpatial);
 
-	pSpatial->SetPlayAnimation("Armature|ArmatureAction");
+	pSpatial->SetPlayAnimation("Armature|Walk");
 
 
 	MPointLight* pLight = engine.GetObjectManager()->CreateObject<MPointLight>();

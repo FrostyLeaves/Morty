@@ -42,7 +42,7 @@ struct MVertexWithBones
 	Vector3 bitangent;
 
 	int bonesID[MBONES_PER_VERTEX];
-	int bonesWeight[MBONES_PER_VERTEX];
+	float bonesWeight[MBONES_PER_VERTEX];
 };
 
 #endif

@@ -46,7 +46,7 @@ bool MSkeletalAnimation::FindTransform(const float& fTime, MSkeletalAnimNode* pA
 	Vector3 v3Position, v3Scale;
 	Quaternion quatRotation;
 
-	for (unsigned int i = 0; i < pAnimNode->m_unPositionKeysNum; ++i)
+	for (unsigned int i = pAnimNode->m_unPositionKeysNum - 1; i >= 0; --i)
 	{
 		const MSkeletalAnimNode::MAnimNodeKey<Vector3>& curkey = pAnimNode->m_vPositionKeys[i];
 		if (fTime >= curkey.mTime)
@@ -59,7 +59,7 @@ bool MSkeletalAnimation::FindTransform(const float& fTime, MSkeletalAnimNode* pA
 			{
 				const MSkeletalAnimNode::MAnimNodeKey<Vector3>& nextKey = pAnimNode->m_vPositionKeys[i + 1];
 				if (nextKey.mTime - curkey.mTime > 1e-6)
-					v3Position = MMath::Lerp(curkey.mValue, nextKey.mValue, (fTime - curkey.mTime) / (nextKey.mTime - curkey.mTime));
+					v3Position = curkey.mValue;// MMath::Lerp(curkey.mValue, nextKey.mValue, (fTime - curkey.mTime) / (nextKey.mTime - curkey.mTime));
 				else
 					v3Position = nextKey.mValue;
 			}
@@ -68,7 +68,7 @@ bool MSkeletalAnimation::FindTransform(const float& fTime, MSkeletalAnimNode* pA
 		}
 	}
 
-	for (unsigned int i = 0; i < pAnimNode->m_unRotationKeysNum; ++i)
+	for (unsigned int i = pAnimNode->m_unRotationKeysNum - 1; i >= 0; --i)
 	{
 		const MSkeletalAnimNode::MAnimNodeKey<Quaternion>& curkey = pAnimNode->m_vRotationKeys[i];
 		if (fTime >= curkey.mTime)
@@ -81,7 +81,7 @@ bool MSkeletalAnimation::FindTransform(const float& fTime, MSkeletalAnimNode* pA
 			{
 				const MSkeletalAnimNode::MAnimNodeKey<Quaternion>& nextKey = pAnimNode->m_vRotationKeys[i + 1];
 				if (nextKey.mTime - curkey.mTime > 1e-6)
-					quatRotation = Quaternion::Slerp(curkey.mValue, nextKey.mValue, (fTime - curkey.mTime) / (nextKey.mTime - curkey.mTime));
+					quatRotation = curkey.mValue;// Quaternion::Slerp(curkey.mValue, nextKey.mValue, (fTime - curkey.mTime) / (nextKey.mTime - curkey.mTime));
 				else
 					quatRotation = nextKey.mValue;
 			}
@@ -90,7 +90,7 @@ bool MSkeletalAnimation::FindTransform(const float& fTime, MSkeletalAnimNode* pA
 		}
 	}
 
-	for (unsigned int i = 0; i < pAnimNode->m_unScalingKeysNum; ++i)
+	for (unsigned int i = pAnimNode->m_unScalingKeysNum - 1; i >= 0; --i)
 	{
 		const MSkeletalAnimNode::MAnimNodeKey<Vector3>& curkey = pAnimNode->m_vScalingKeys[i];
 		if (fTime >= curkey.mTime)
@@ -103,7 +103,7 @@ bool MSkeletalAnimation::FindTransform(const float& fTime, MSkeletalAnimNode* pA
 			{
 				const MSkeletalAnimNode::MAnimNodeKey<Vector3>& nextKey = pAnimNode->m_vScalingKeys[i + 1];
 				if (nextKey.mTime - curkey.mTime > 1e-6)
-					v3Scale = MMath::Lerp(curkey.mValue, nextKey.mValue, (fTime - curkey.mTime) / (nextKey.mTime - curkey.mTime));
+					v3Scale = curkey.mValue;// MMath::Lerp(curkey.mValue, nextKey.mValue, (fTime - curkey.mTime) / (nextKey.mTime - curkey.mTime));
 				else
 					v3Scale = nextKey.mValue;
 			}
@@ -187,7 +187,7 @@ void MSkeletalAnimController::Update(const float& fDelta)
 
 	if (MEAnimControllerState::EPlay == m_eState)
 	{
-		m_fTime += fDelta;
+		m_fTime += fDelta * 5.0f;
 		if (m_fTime >= m_pAnimation->GetDuration())
 		{
 			if (m_bLoop)

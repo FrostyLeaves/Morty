@@ -83,6 +83,9 @@ void MSkeleton::SortByDeep()
 			index = map[index];
 	}
 
+	for (auto& iter : m_tBonesMap)
+		iter.second = map[iter.second];
+
 	m_vAllBones = vBones;
 }
 

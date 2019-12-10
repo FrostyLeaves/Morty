@@ -49,6 +49,7 @@ public:
 	const std::vector<MBone*>& GetAllBones() const { return m_vAllBones; }
 
 private:
+	friend class MModelResource;
 	std::map<MString, unsigned int> m_tBonesMap;
 	std::vector<MBone*> m_vAllBones;
 };
