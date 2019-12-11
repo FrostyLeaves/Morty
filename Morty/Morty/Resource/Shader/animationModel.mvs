@@ -15,7 +15,7 @@ struct VS_IN
 VS_OUT VS(VS_IN input)
 {
     VS_OUT output;
-    float4x4 matBoneTransform = float4x4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+    float4x4 matBoneTransform;
     float fWeight = 1.0f;
     for (int i = 0; i < MBONES_PER_VERTEX; ++i)
     {

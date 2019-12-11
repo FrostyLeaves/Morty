@@ -4,7 +4,8 @@
 MSkeletalAnimation::MSkeletalAnimation()
 	: m_pSkeletonTemplate(nullptr)
 	, m_strName()
-	, m_fDuration(0.0f)
+	, m_fTicksDuration(0.0f)
+	, m_fTicksPerSecond(25.0f)
 {
 
 }
@@ -58,8 +59,8 @@ bool MSkeletalAnimation::FindTransform(const float& fTime, MSkeletalAnimNode* pA
 			else
 			{
 				const MSkeletalAnimNode::MAnimNodeKey<Vector3>& nextKey = pAnimNode->m_vPositionKeys[i + 1];
-				if (nextKey.mTime - curkey.mTime > 1e-6)
-					v3Position = curkey.mValue;// MMath::Lerp(curkey.mValue, nextKey.mValue, (fTime - curkey.mTime) / (nextKey.mTime - curkey.mTime));
+				if (nextKey.mTime - curkey.mTime > 1e-6f)
+					v3Position = MMath::Lerp(curkey.mValue, nextKey.mValue, (fTime - curkey.mTime) / (nextKey.mTime - curkey.mTime));
 				else
 					v3Position = nextKey.mValue;
 			}
@@ -80,8 +81,8 @@ bool MSkeletalAnimation::FindTransform(const float& fTime, MSkeletalAnimNode* pA
 			else
 			{
 				const MSkeletalAnimNode::MAnimNodeKey<Quaternion>& nextKey = pAnimNode->m_vRotationKeys[i + 1];
-				if (nextKey.mTime - curkey.mTime > 1e-6)
-					quatRotation = curkey.mValue;// Quaternion::Slerp(curkey.mValue, nextKey.mValue, (fTime - curkey.mTime) / (nextKey.mTime - curkey.mTime));
+				if (nextKey.mTime - curkey.mTime > 1e-6f)
+					quatRotation = Quaternion::Slerp(curkey.mValue, nextKey.mValue, (fTime - curkey.mTime) / (nextKey.mTime - curkey.mTime));
 				else
 					quatRotation = nextKey.mValue;
 			}
@@ -102,8 +103,8 @@ bool MSkeletalAnimation::FindTransform(const float& fTime, MSkeletalAnimNode* pA
 			else
 			{
 				const MSkeletalAnimNode::MAnimNodeKey<Vector3>& nextKey = pAnimNode->m_vScalingKeys[i + 1];
-				if (nextKey.mTime - curkey.mTime > 1e-6)
-					v3Scale = curkey.mValue;// MMath::Lerp(curkey.mValue, nextKey.mValue, (fTime - curkey.mTime) / (nextKey.mTime - curkey.mTime));
+				if (nextKey.mTime - curkey.mTime > 1e-6f)
+					v3Scale = MMath::Lerp(curkey.mValue, nextKey.mValue, (fTime - curkey.mTime) / (nextKey.mTime - curkey.mTime));
 				else
 					v3Scale = nextKey.mValue;
 			}
@@ -123,7 +124,7 @@ MSkeletalAnimController::MSkeletalAnimController()
 	: m_pSkeletonIns(nullptr)
 	, m_pAnimation(nullptr)
 	, m_bInitialized(false)
-	, m_fTime(0.0f)
+	, m_fTicks(0.0f)
 	, m_eState(MIAnimController::MEAnimControllerState::EStop)
 	, m_bLoop(false)
 {
@@ -187,24 +188,24 @@ void MSkeletalAnimController::Update(const float& fDelta)
 
 	if (MEAnimControllerState::EPlay == m_eState)
 	{
-		m_fTime += fDelta * 5.0f;
-		if (m_fTime >= m_pAnimation->GetDuration())
+		m_fTicks += m_pAnimation->GetTicksPerSecond() * fDelta;
+		if (m_fTicks >= m_pAnimation->GetTicksDuration())
 		{
 			if (m_bLoop)
 			{
-				m_fTime = fmodf(m_fTime, m_pAnimation->GetDuration());
-				m_pAnimation->Update(fmodf(m_fTime, m_pAnimation->GetDuration()), m_pSkeletonIns);
+				m_fTicks = fmodf(m_fTicks, m_pAnimation->GetTicksDuration());
+				m_pAnimation->Update(fmodf(m_fTicks, m_pAnimation->GetTicksDuration()), m_pSkeletonIns);
 			}
 			else
 			{
-				m_fTime = m_pAnimation->GetDuration();
-				m_pAnimation->Update(fmodf(m_fTime, m_pAnimation->GetDuration()), m_pSkeletonIns);
+				m_fTicks = m_pAnimation->GetTicksDuration();
+				m_pAnimation->Update(fmodf(m_fTicks, m_pAnimation->GetTicksDuration()), m_pSkeletonIns);
 				this->Stop();
 			}
 		}
 		else
 		{
-			m_pAnimation->Update(m_fTime, m_pSkeletonIns);
+			m_pAnimation->Update(m_fTicks, m_pSkeletonIns);
 		}
 	}
 }

@@ -49,8 +49,10 @@ protected:
 	void ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh);
 	void ProcessMeshIndices(aiMesh* pMesh, const aiScene* pScene, MIMesh* pMMesh);
 
-	void RecordBones(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh);
+	void BindVertexAndBones(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh);
+
 	void ProcessBones(const aiScene* pScene);
+	void RecordBones(aiNode* pNode, const aiScene* pScene);
 	void BindBones(aiNode* pNode, const aiScene* pScene, MBone* pParent = nullptr);
 
 	void ProcessAnimation(const aiScene* pScene);

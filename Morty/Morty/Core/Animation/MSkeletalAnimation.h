@@ -52,7 +52,8 @@ public:
 	MSkeleton* GetSkeletonTemplate() { return m_pSkeletonTemplate; }
 
 	MString GetName() { return m_strName; }
-	float GetDuration() { return m_fDuration; }
+	float GetTicksDuration() { return m_fTicksDuration; }
+	float GetTicksPerSecond() { return m_fTicksPerSecond; }
 
 	void Update(const float& fTime, MSkeletonInstance* pSkeletonIns);
 
@@ -66,7 +67,8 @@ private:
 	MSkeleton* m_pSkeletonTemplate;
 
 	MString m_strName;
-	float m_fDuration;
+	float m_fTicksDuration;
+	float m_fTicksPerSecond;
 };
 
 class MORTY_CLASS MSkeletalAnimController : public MIAnimController
@@ -89,7 +91,7 @@ private:
 	MSkeletalAnimation* m_pAnimation;
 	bool m_bInitialized;
 
-	float m_fTime;
+	float m_fTicks;
 	MEAnimControllerState m_eState;
 	bool m_bLoop;
 };

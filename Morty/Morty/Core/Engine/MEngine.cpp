@@ -26,7 +26,7 @@ MEngine::MEngine()
 	, m_pRootNode(nullptr)
 	, m_pDevice(nullptr)
 	, m_pRenderer(nullptr)
-	, m_cTickInfo(50)
+	, m_cTickInfo(5000)
 {
 }
 

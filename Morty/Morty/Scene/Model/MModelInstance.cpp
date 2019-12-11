@@ -4,6 +4,8 @@
 #include "MSkeleton.h"
 #include "MSkeletalAnimation.h"
 
+#include "MEngine.h"
+
 MModelInstance::MModelInstance()
 	: m_pResource(nullptr)
 	, m_pSkeleton(nullptr)

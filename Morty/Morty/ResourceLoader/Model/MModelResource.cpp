@@ -88,6 +88,18 @@ const MBoundsOBB* MModelResource::GetOBB()
 	return m_pBoundsOBB;
 }
 
+void loadMaterialTextures(aiMaterial* mat, const aiTextureType& type, const MString& strTypeName)
+{
+	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
+	{
+		aiString str;
+		mat->GetTexture(type, i, &str);
+
+		int a = 0;
+		++a;
+	}
+}
+
 bool MModelResource::Load(const MString& strResourcePath)
 {
 	for (MIMesh* pMesh : m_vMeshes)
@@ -113,11 +125,18 @@ bool MModelResource::Load(const MString& strResourcePath)
 		return false;
 	}
 
-	ProcessNode(scene->mRootNode, scene);
 	ProcessBones(scene);
-	
+	ProcessNode(scene->mRootNode, scene);
 	ProcessAnimation(scene);
 
+	
+	for (unsigned int i = 0; i < scene->mNumMaterials; ++i)
+	{
+		loadMaterialTextures(scene->mMaterials[i], aiTextureType_DIFFUSE, "texture_diffuse");
+		loadMaterialTextures(scene->mMaterials[i], aiTextureType_SPECULAR, "texture_diffuse");
+		loadMaterialTextures(scene->mMaterials[i], aiTextureType_HEIGHT, "texture_diffuse");
+		loadMaterialTextures(scene->mMaterials[i], aiTextureType_AMBIENT, "texture_diffuse");
+	}
 	return true;
 }
 
@@ -132,7 +151,7 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene)
 			MMesh<MVertexWithBones>* pMMesh = new MMesh<MVertexWithBones>();
 			ProcessMeshVertices(pMesh, pScene, pMMesh);
 			ProcessMeshIndices(pMesh, pScene, pMMesh);
-			RecordBones(pMesh, pScene, pMMesh);
+			BindVertexAndBones(pMesh, pScene, pMMesh);
 			m_vMeshes.push_back(pMMesh);
 			m_vVertexTypes.push_back(MEModelVertexType::Skeleton);
 		}
@@ -242,32 +261,28 @@ void MModelResource::ProcessMeshIndices(aiMesh* pMesh, const aiScene* pScene, MI
 	}
 }
 
-void MModelResource::RecordBones(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh)
+void MModelResource::BindVertexAndBones(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh)
 {
 	for (unsigned int i = 0; i < pMesh->mNumBones; ++i)
 	{
 		if (aiBone* pBone = pMesh->mBones[i])
 		{
 			MString strBoneName(pBone->mName.data); 
-			MBone* pMBone = m_pSkeleton->FindBoneByName(strBoneName);
-			if (nullptr == pMBone)
+			if (MBone* pMBone = m_pSkeleton->FindBoneByName(strBoneName))
 			{
-				pMBone = m_pSkeleton->AppendBone(strBoneName);
-				CopyMatrix4(&pMBone->m_matOffsetMatrix, &pBone->mOffsetMatrix);
-			}
-
-			for (unsigned int wgtIndex = 0; wgtIndex < pBone->mNumWeights; ++wgtIndex)
-			{
-				aiVertexWeight wgt = pBone->mWeights[wgtIndex];
-				MVertexWithBones& vertex = pMMesh->GetVertices()[wgt.mVertexId];
-
-				for (unsigned int boneIndex = 0; boneIndex < MBONES_PER_VERTEX; ++boneIndex)
+				for (unsigned int wgtIndex = 0; wgtIndex < pBone->mNumWeights; ++wgtIndex)
 				{
-					if (0 == vertex.bonesWeight[boneIndex])
+					aiVertexWeight wgt = pBone->mWeights[wgtIndex];
+					MVertexWithBones& vertex = pMMesh->GetVertices()[wgt.mVertexId];
+
+					for (unsigned int boneIndex = 0; boneIndex < MBONES_PER_VERTEX; ++boneIndex)
 					{
-						vertex.bonesID[boneIndex] = pMBone->unIndex;
-						vertex.bonesWeight[boneIndex] = wgt.mWeight;
-						break;
+						if (0 == vertex.bonesWeight[boneIndex])
+						{
+							vertex.bonesID[boneIndex] = pMBone->unIndex;
+							vertex.bonesWeight[boneIndex] = wgt.mWeight;
+							break;
+						}
 					}
 				}
 			}
@@ -275,62 +290,40 @@ void MModelResource::RecordBones(aiMesh* pMesh, const aiScene* pScene, MMesh<MVe
 	}
 }
 
-void MModelResource::ProcessBones(const aiScene* pScene)
+void MModelResource::RecordBones(aiNode* pNode, const aiScene* pScene)
 {
-	BindBones(pScene->mRootNode, pScene);
-
-	std::vector<int> map(m_pSkeleton->m_vAllBones.size());
-	std::vector<MBone*> vBones = m_pSkeleton->m_vAllBones;
-	std::map<MBone*, int> tDeep;
-
-	for (MBone* pBone : m_pSkeleton->m_vAllBones)
+	for (unsigned int i = 0; i < pNode->mNumMeshes; ++i)
 	{
-		int deep = 0;
-		MBone* pParent = pBone;
-		while (pParent->unParentIndex != MBone::InvalidIndex)
+		aiMesh* pMesh = pScene->mMeshes[pNode->mMeshes[i]];
+		if (pMesh->HasBones())
 		{
-			pParent = m_pSkeleton->m_vAllBones[pParent->unParentIndex];
-			++deep;
-		}
-
-		tDeep[pBone] = deep;
-	}
-
-	std::sort(vBones.begin(), vBones.end(), [&tDeep](MBone* a, MBone* b) { return tDeep[a] < tDeep[b]; });
-
-	for (unsigned int i = 0; i < vBones.size(); ++i)
-		map[vBones[i]->unIndex] = i;
-
-	for (unsigned int i = 0; i < vBones.size(); ++i)
-	{
-		MBone* pBone = vBones[i];
-		pBone->unIndex = map[pBone->unIndex];
-		for (unsigned int& index : pBone->vChildrenIndices)
-			index = map[index];
-	}
-
-	for (auto& iter : m_pSkeleton->m_tBonesMap)
-		iter.second = map[iter.second];
-
-	m_pSkeleton->m_vAllBones = vBones;
-
-	for (MIMesh* pMesh : m_vMeshes)
-	{
-		if (MMesh<MVertexWithBones>* pMMesh = dynamic_cast<MMesh<MVertexWithBones>*>(pMesh))
-		{
-			for (unsigned int i = 0; i < pMMesh->GetVerticesLength(); ++i)
+			for (unsigned int i = 0; i < pMesh->mNumBones; ++i)
 			{
-				MVertexWithBones& vertex = pMMesh->GetVertices()[i];
-				for (unsigned int boneIndex = 0; boneIndex < MBONES_PER_VERTEX; ++boneIndex)
+				if (aiBone* pBone = pMesh->mBones[i])
 				{
-					if (0 != vertex.bonesWeight[boneIndex])
+					MString strBoneName(pBone->mName.data);
+					MBone* pMBone = m_pSkeleton->FindBoneByName(strBoneName);
+					if (nullptr == pMBone)
 					{
-						vertex.bonesID[boneIndex] = map[vertex.bonesID[boneIndex]];
+						pMBone = m_pSkeleton->AppendBone(strBoneName);
+						CopyMatrix4(&pMBone->m_matOffsetMatrix, &pBone->mOffsetMatrix);
 					}
 				}
 			}
 		}
 	}
+
+	for (unsigned int i = 0; i < pNode->mNumChildren; ++i)
+	{
+		RecordBones(pNode->mChildren[i], pScene);
+	}
+}
+
+void MModelResource::ProcessBones(const aiScene* pScene)
+{
+	RecordBones(pScene->mRootNode, pScene);
+	BindBones(pScene->mRootNode, pScene);
+	m_pSkeleton->SortByDeep();
 }
 
 void MModelResource::BindBones(aiNode* pNode, const aiScene* pScene, MBone* pParent/* = nullptr*/)
@@ -370,7 +363,9 @@ void MModelResource::ProcessAnimation(const aiScene* pScene)
 		m_tSkeletalAnimation[pAnimation->mName.C_Str()] = pMAnimation;
 
 		pMAnimation->m_strName = pAnimation->mName.C_Str();
-		pMAnimation->m_fDuration = pAnimation->mDuration;
+		pMAnimation->m_fTicksDuration = pAnimation->mDuration;
+		if(pAnimation->mTicksPerSecond > 0.0f)
+			pMAnimation->m_fTicksPerSecond = pAnimation->mTicksPerSecond;
 
 		for (unsigned int chanIndex = 0; chanIndex < pAnimation->mNumChannels; ++chanIndex)
 		{

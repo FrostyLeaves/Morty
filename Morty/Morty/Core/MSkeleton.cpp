@@ -79,6 +79,8 @@ void MSkeleton::SortByDeep()
 	{
 		MBone* pBone = vBones[i];
 		pBone->unIndex = map[pBone->unIndex];
+		if (MBone::InvalidIndex != pBone->unParentIndex)
+			pBone->unParentIndex = map[pBone->unParentIndex];
 		for (unsigned int& index : pBone->vChildrenIndices)
 			index = map[index];
 	}
