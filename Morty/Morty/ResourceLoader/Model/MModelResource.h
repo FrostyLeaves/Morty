@@ -39,6 +39,7 @@ public:
 	const MSkeleton* GetSkeleton() { return m_pSkeleton; }
 	const MBoundsOBB* GetOBB();
 	const std::map<MString, MSkeletalAnimation*>* GetAnimations() { return &m_tSkeletalAnimation; }
+	const std::vector<MString>* GetAnimationsName() { return &m_vSkeletalAnimation; }
 
 protected:
 
@@ -64,6 +65,7 @@ private:
 	MBoundsOBB* m_pBoundsOBB;
 	MSkeleton* m_pSkeleton;
 
+	std::vector<MString> m_vSkeletalAnimation;
 	std::map<MString, MSkeletalAnimation*> m_tSkeletalAnimation;
 };
 

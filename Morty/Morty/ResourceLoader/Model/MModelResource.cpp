@@ -113,6 +113,8 @@ bool MModelResource::Load(const MString& strResourcePath)
 	{
 		delete m_pSkeleton;
 		m_pSkeleton = nullptr;
+		m_vSkeletalAnimation.clear();
+		m_tSkeletalAnimation.clear();
 	}
 	m_pSkeleton = new MSkeleton();
 
@@ -360,6 +362,7 @@ void MModelResource::ProcessAnimation(const aiScene* pScene)
 		pMAnimation->m_vSkeletalAnimNodes.resize(pAnimation->mNumChannels);// init by nullptr
 
 		//Record
+		m_vSkeletalAnimation.push_back(pAnimation->mName.C_Str());
 		m_tSkeletalAnimation[pAnimation->mName.C_Str()] = pMAnimation;
 
 		pMAnimation->m_strName = pAnimation->mName.C_Str();

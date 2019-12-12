@@ -258,8 +258,16 @@ int main(int argc, char* argv[])
 
 	pRootNode->AddNode(pSpatial);
 
-	pSpatial->SetPlayAnimation("Armature|Walk");
-
+	
+	if (MModelResource* pModelResource = pSpatial->GetResource())
+	{
+		if(pSpatial->SetPlayAnimation((*pModelResource->GetAnimationsName())[9]))
+		{
+			MIAnimController* pController = pSpatial->GetSkeletalAnimationController();
+			pController->SetLoop(true);
+			pController->Play();
+		}	
+	}
 
 	MPointLight* pLight = engine.GetObjectManager()->CreateObject<MPointLight>();
 	pLight->SetName("Light");
@@ -276,77 +284,6 @@ int main(int argc, char* argv[])
 
 	pEditorView->SetEditorNode(pRootNode);
 
-// 	MInputListener* pListener = new MInputListener();
-// 	pListener->m_function = [&](MInputEvent* pEvent){
-// 
-// 		if (MKeyBoardInputEvent* pKeyInput = dynamic_cast<MKeyBoardInputEvent*>(pEvent))
-// 		{
-// 			if (pKeyInput->GetKey() == 'W')
-// 			{
-// 				pCamera->m_bW = pKeyInput->GetType() == MKeyBoardInputEvent::KeyBoardDown;
-// 			}
-// 			if (pKeyInput->GetKey() == 'S')
-// 			{
-// 				pCamera->m_bS = pKeyInput->GetType() == MKeyBoardInputEvent::KeyBoardDown;
-// 			}
-// 			if (pKeyInput->GetKey() == 'A')
-// 			{
-// 				pCamera->m_bA = pKeyInput->GetType() == MKeyBoardInputEvent::KeyBoardDown;
-// 			}
-// 			if (pKeyInput->GetKey() == 'D')
-// 			{
-// 				pCamera->m_bD = pKeyInput->GetType() == MKeyBoardInputEvent::KeyBoardDown;
-// 			}
-// 			if (pKeyInput->GetKey() == 'Q')
-// 			{
-// 				pCamera->m_bQ = pKeyInput->GetType() == MKeyBoardInputEvent::KeyBoardDown;
-// 			}
-// 			if (pKeyInput->GetKey() == 'E')
-// 			{
-// 				pCamera->m_bE = pKeyInput->GetType() == MKeyBoardInputEvent::KeyBoardDown;
-// 			}
-// 			if (pKeyInput->GetKey() == 'L')
-// 			{
-// 				pCamera->m_bL = pKeyInput->GetType() == MKeyBoardInputEvent::KeyBoardDown;
-// 			}
-// 			if (pKeyInput->GetKey() == 'N')
-// 			{
-// 				pCamera->m_bN = pKeyInput->GetType() == MKeyBoardInputEvent::KeyBoardDown;
-// 			}
-// 			if (pKeyInput->GetKey() == 'M')
-// 			{
-// 				pCamera->m_bM = pKeyInput->GetType() == MKeyBoardInputEvent::KeyBoardDown;
-// 			}
-// 		}
-// 
-// 		else if (MMouseInputEvent* pMouseInput = dynamic_cast<MMouseInputEvent*>(pEvent))
-// 		{
-// 			if (pMouseInput->GetType() == MMouseInputEvent::MouseMove && pCamera->m_bRB)
-// 			{
-// 				Vector2 addi = pMouseInput->GetMouseAddition();
-// 				pCamera->m_v2MouseAddi = addi;
-// 
-// 				Vector3 up = Vector3(0, 1, 0);
-// 				pCamera->SetRotation(pCamera->GetRotation()* Quaternion(up, pCamera->m_v2MouseAddi.x * 0.25f));
-// 
-// 				Vector3 right = pCamera->GetRight();
-// 				pCamera->SetRotation(pCamera->GetRotation()* Quaternion(right, pCamera->m_v2MouseAddi.y * 0.25f));
-// 
-// 				pCamera->m_v2MouseAddi = Vector2(0, 0);
-// 			}
-// 			else
-// 			{
-// 				if (pMouseInput->GetButton() == MMouseInputEvent::MEMouseDownButton::RightButton)
-// 				{
-// 					pCamera->m_bRB = pMouseInput->GetType() == MMouseInputEvent::ButtonDown;
-// 				}
-// 			}
-// 		}
-// 
-// 	};
-// 
-// 	engine.GetInputManager()->AddListener(pListener);
-	
 	engine.SetRootNode(pRootNode);
 	
 	while (engine.MainLoop());

@@ -31,6 +31,7 @@ public:
 	
 public:
 	bool SetPlayAnimation(const MString& strAnimationName);
+	MIAnimController* GetSkeletalAnimationController() { return m_pCurrentAnimationController; }
 
 public:
 

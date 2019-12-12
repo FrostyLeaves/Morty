@@ -15,7 +15,7 @@
 
 #include "MTimer.h"
 #include "MNode.h"
-#include "MResourceManager.h"
+#include "MResourceManager.h"  
 
 #include "MInputManager.h"
 
@@ -26,7 +26,7 @@ MEngine::MEngine()
 	, m_pRootNode(nullptr)
 	, m_pDevice(nullptr)
 	, m_pRenderer(nullptr)
-	, m_cTickInfo(5000)
+	, m_cTickInfo(50)
 {
 }
 

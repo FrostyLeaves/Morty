@@ -36,13 +36,12 @@ bool MModelInstance::Load(MResource* pResource)
 		m_pResource = pModelRes;
 
 		int index = 0;
-		char svIndexx[16];
 		for (MIMesh* pMesh : *pModelRes->GetMeshes())
 		{
 			MMeshInstance* pMeshIns = GetObjectManager()->CreateObject<MMeshInstance>();
 			pMeshIns->SetMesh(pMesh);
-			itoa(index, svIndexx, 10);
-			pMeshIns->SetName(MString("Mesh_") + svIndexx);
+			pMeshIns->SetName(MString("Mesh_") + MStringHelper::ToString(index));
+			++index;
 			AddNode(pMeshIns);
 		}
 
@@ -70,13 +69,8 @@ bool MModelInstance::SetPlayAnimation(const MString& strAnimationName)
 	{
 		m_pCurrentAnimationController = pController;
 
-		//Test
-		pController->SetLoop(true);
-		pController->Play();
-
 		return true;
 	}
-
 
 	return false;
 }
