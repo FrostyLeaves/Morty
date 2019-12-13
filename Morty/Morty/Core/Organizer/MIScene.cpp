@@ -239,9 +239,19 @@ void MIScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
 						unsigned int size = bones.size();
 						if (size > MBONES_MAX_NUMBER)
 							size = MBONES_MAX_NUMBER;
-						for (unsigned int i = 0; i < size; ++i)
+						if (pModel->GetSkeletalAnimationController())
 						{
-							(*pBonesArray)[i] = bones[i]->GetTransformInModelWorld();
+							for (unsigned int i = 0; i < size; ++i)
+							{
+								(*pBonesArray)[i] = bones[i]->GetTransformInModelWorld();
+							}
+						}
+						else
+						{
+							for (unsigned int i = 0; i < size; ++i)
+							{
+								(*pBonesArray)[i] = Matrix4::IdentityMatrix;
+							}
 						}
 					}
 				}
@@ -417,7 +427,7 @@ void MIScene::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 	MModelInstance* pSpat = dynamic_cast<MModelInstance*>(m_pRootNode->FindFirstChildByName("Teaport"));
 	DrawBoundingBox(pRenderer, pViewport, pSpat);
 	DrawMeshInstance(pRenderer, pViewport);
-	DrawSkyBox(pRenderer, pViewport);
+//	DrawSkyBox(pRenderer, pViewport);
 }
 
 void MIScene::Input(MInputEvent* pEvent, MIViewport* pViewport)

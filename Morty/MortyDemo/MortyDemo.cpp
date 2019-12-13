@@ -212,7 +212,7 @@ int main(int argc, char* argv[])
 	pRootNode->SetName("RootNode");
 
 
-	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->Load("./Model/Pikachu.fbx"));
+	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->Load("./Model/teaport.fbx"));
 	MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MySpatial>();
 	pSpatial->Load(pResource);
 	pSpatial->SetPosition(Vector3(0, 0, 0));
@@ -259,15 +259,15 @@ int main(int argc, char* argv[])
 	pRootNode->AddNode(pSpatial);
 
 	
-	if (MModelResource* pModelResource = pSpatial->GetResource())
-	{
-		if(pSpatial->SetPlayAnimation((*pModelResource->GetAnimationsName())[9]))
-		{
-			MIAnimController* pController = pSpatial->GetSkeletalAnimationController();
-			pController->SetLoop(true);
-			pController->Play();
-		}	
-	}
+// 	if (MModelResource* pModelResource = pSpatial->GetResource())
+// 	{
+// 		if(pSpatial->SetPlayAnimation((*pModelResource->GetAnimationsName())[9]))
+// 		{
+// 			MIAnimController* pController = pSpatial->GetSkeletalAnimationController();
+// 			pController->SetLoop(true);
+// 			pController->Play();
+// 		}	
+// 	}
 
 	MPointLight* pLight = engine.GetObjectManager()->CreateObject<MPointLight>();
 	pLight->SetName("Light");

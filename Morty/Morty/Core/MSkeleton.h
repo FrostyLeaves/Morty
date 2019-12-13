@@ -18,6 +18,9 @@ class MORTY_CLASS MBone
 {
 public:
 	static const unsigned int InvalidIndex;
+
+public:
+	MBone();
 public:
 	MString strName;
 	unsigned int unIndex;
