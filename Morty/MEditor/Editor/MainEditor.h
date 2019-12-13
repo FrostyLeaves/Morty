@@ -5,7 +5,7 @@
 
 class MNode;
 class MIScene;
-class MMeshInstance;
+class MStaticMeshInstance;
 class NodeTreeView;
 class PropertyView;
 class MainEditor : public MWindowsRenderView

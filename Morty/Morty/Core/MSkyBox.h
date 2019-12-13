@@ -17,7 +17,7 @@ class MResource;
 class MResourceHolder;
 class MTextureCubeResource;
 class MTextureCube;
-class MMeshInstance;
+class MStaticMeshInstance;
 class MORTY_CLASS MSkyBox : public MObject
 {
 public:
@@ -31,13 +31,13 @@ public:
 
 	virtual void OnCreated() override;
 
-	MMeshInstance* GetMeshInstance(){ return m_pMeshInstance; }
+	MStaticMeshInstance* GetMeshInstance(){ return m_pMeshInstance; }
 
 public:
 
 private:
 	MMesh<Vector3>* m_pBoxMesh;
-	MMeshInstance* m_pMeshInstance;
+	MStaticMeshInstance* m_pMeshInstance;
 
 	MTextureCube* m_pTextureCube;
 	MResourceHolder* m_pTextureCubeResource;

@@ -51,6 +51,7 @@ public:
 
 protected:
 
+	bool InitializeDefaultResource();
 
 private:
 

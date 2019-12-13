@@ -25,7 +25,7 @@ class MInputEvent;
 class MIRenderView;
 class MIViewport;
 class MMaterial;
-class MMeshInstance;
+class MIMeshInstance;
 class MTransformCoord3D;
 class MORTY_CLASS MIScene : public MObject
 {
@@ -49,8 +49,8 @@ public:
 	//节点退出场景时进行的操作
 	void OnNodeExit(MNode* pNode);
 
-	void RecordMeshInstance(MMeshInstance* pMeshInstance);
-	void CancelRecordMeshInstance(MMeshInstance* pMeshInstance);
+	void RecordMeshInstance(MIMeshInstance* pMeshInstance);
+	void CancelRecordMeshInstance(MIMeshInstance* pMeshInstance);
 
 	virtual void Render(MIRenderer* pRenderer, MIViewport* pViewport);
 
@@ -83,7 +83,7 @@ private:
 	struct MaterialMeshInsGroup
 	{
 		MMaterial* pMat;
-		std::vector<MMeshInstance*> vMeshIns;
+		std::vector<MIMeshInstance*> vMeshIns;
 	};
 	std::vector<MaterialMeshInsGroup*> m_vMatMeshInsGroup;
 

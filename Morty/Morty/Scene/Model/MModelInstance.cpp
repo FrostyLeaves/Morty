@@ -1,6 +1,7 @@
 ﻿#include "MModelInstance.h"
 #include "MModelResource.h"
-#include "MMeshInstance.h"
+#include "MStaticMeshInstance.h"
+#include "MSkinnedMeshInstance.h"
 #include "MSkeleton.h"
 #include "MSkeletalAnimation.h"
 
@@ -38,11 +39,19 @@ bool MModelInstance::Load(MResource* pResource)
 		int index = 0;
 		for (MIMesh* pMesh : *pModelRes->GetMeshes())
 		{
-			MMeshInstance* pMeshIns = GetObjectManager()->CreateObject<MMeshInstance>();
+			MIMeshInstance* pMeshIns = nullptr;
+			if (pModelRes->GetMeshVertexType(index) == MModelResource::Normal)
+				pMeshIns = GetObjectManager()->CreateObject<MStaticMeshInstance>();
+			else
+				pMeshIns = GetObjectManager()->CreateObject<MSkinnedMeshInstance>();
+			
 			pMeshIns->SetMesh(pMesh);
 			pMeshIns->SetName(MString("Mesh_") + MStringHelper::ToString(index));
-			++index;
 			AddNode(pMeshIns);
+
+			pMeshIns->SetMaterial(pModelRes->GetMeshDefaultMaterial(index));
+
+			++index;
 		}
 
 		m_pSkeleton = new MSkeletonInstance(pModelRes->GetSkeleton());

@@ -7,7 +7,7 @@
 #include "MMaterialResource.h"
 #include "MMaterial.h"
 #include "MTextureResource.h"
-#include "MMeshInstance.h"
+#include "MStaticMeshInstance.h"
 
 #include "MMesh.h"
 
@@ -84,7 +84,7 @@ void MSkyBox::OnCreated()
 	std::vector<MShaderTextureParam>& vTexParams = pMaterial->GetPixelTextureParams();
 	pMaterial->SetPixelTexutreParam("SkyTexCube", pTextureCubeRes);
 
-	m_pMeshInstance = m_pEngine->GetObjectManager()->CreateObject<MMeshInstance>();
+	m_pMeshInstance = m_pEngine->GetObjectManager()->CreateObject<MStaticMeshInstance>();
 
 	m_pBoxMesh = new MMesh<Vector3>();
 

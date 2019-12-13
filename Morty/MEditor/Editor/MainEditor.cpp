@@ -13,7 +13,7 @@
 #include "MObject.h"
 #include "MMaterialResource.h"
 #include "MMaterial.h"
-#include "MMeshInstance.h"
+#include "MIMeshInstance.h"
 #include "MMesh.h"
 #include "MIScene.h"
 #include "MCamera.h"

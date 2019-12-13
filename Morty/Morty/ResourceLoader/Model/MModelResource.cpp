@@ -9,6 +9,9 @@
 #include "MIDevice.h"
 #include "MEngine.h"
 
+#include "MMaterial.h"
+#include "MMaterialResource.h"
+
 #include "MBounds.h"
 #include "MSkeleton.h"
 #include "MSkeletalAnimation.h"
@@ -28,7 +31,6 @@ void CopyMatrix4(Matrix4* matdest, aiMatrix4x4* matsour)
 		}
 	}
 }
-
 
 MModelResource::MModelResource()
 : MResource()
@@ -88,6 +90,16 @@ const MBoundsOBB* MModelResource::GetOBB()
 	return m_pBoundsOBB;
 }
 
+MModelResource::MEMeshVertexType MModelResource::GetMeshVertexType(const unsigned int& unIndex)
+{
+	return unIndex < m_vVertexTypes.size() ? m_vVertexTypes[unIndex] : MEMeshVertexType::Normal;
+}
+
+MMaterial* MModelResource::GetMeshDefaultMaterial(const unsigned int& unIndex)
+{
+	return unIndex < m_vDefaultMaterial.size() ? m_vDefaultMaterial[unIndex] : nullptr;
+}
+
 void loadMaterialTextures(aiMaterial* mat, const aiTextureType& type, const MString& strTypeName)
 {
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
@@ -130,15 +142,15 @@ bool MModelResource::Load(const MString& strResourcePath)
 	ProcessBones(scene);
 	ProcessNode(scene->mRootNode, scene);
 	ProcessAnimation(scene);
-
+	ProcessMaterial(scene);
 	
-	for (unsigned int i = 0; i < scene->mNumMaterials; ++i)
-	{
-		loadMaterialTextures(scene->mMaterials[i], aiTextureType_DIFFUSE, "texture_diffuse");
-		loadMaterialTextures(scene->mMaterials[i], aiTextureType_SPECULAR, "texture_diffuse");
-		loadMaterialTextures(scene->mMaterials[i], aiTextureType_HEIGHT, "texture_diffuse");
-		loadMaterialTextures(scene->mMaterials[i], aiTextureType_AMBIENT, "texture_diffuse");
-	}
+// 	for (unsigned int i = 0; i < scene->mNumMaterials; ++i)
+// 	{
+// 		loadMaterialTextures(scene->mMaterials[i], aiTextureType_DIFFUSE, "texture_diffuse");
+// 		loadMaterialTextures(scene->mMaterials[i], aiTextureType_SPECULAR, "texture_diffuse");
+// 		loadMaterialTextures(scene->mMaterials[i], aiTextureType_HEIGHT, "texture_diffuse");
+// 		loadMaterialTextures(scene->mMaterials[i], aiTextureType_AMBIENT, "texture_diffuse");
+// 	}
 	return true;
 }
 
@@ -155,7 +167,8 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene)
 			ProcessMeshIndices(pMesh, pScene, pMMesh);
 			BindVertexAndBones(pMesh, pScene, pMMesh);
 			m_vMeshes.push_back(pMMesh);
-			m_vVertexTypes.push_back(MEModelVertexType::Skeleton);
+			m_vVertexTypes.push_back(MEMeshVertexType::Skeleton);
+			m_vDefaultMaterial.push_back(nullptr);
 		}
 		else
 		{
@@ -163,7 +176,8 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene)
 			ProcessMeshVertices(pMesh, pScene, pMMesh);
 			ProcessMeshIndices(pMesh, pScene, pMMesh);
 			m_vMeshes.push_back(pMMesh);
-			m_vVertexTypes.push_back(MEModelVertexType::Normal);
+			m_vVertexTypes.push_back(MEMeshVertexType::Normal);
+			m_vDefaultMaterial.push_back(nullptr);
 		}
 	}
 
@@ -424,6 +438,51 @@ void MModelResource::ProcessAnimation(const aiScene* pScene)
 					}
 				}
 			}
+		}
+	}
+}
+
+void MModelResource::ProcessMaterial(const aiScene* pScene)
+{
+	//TODO read model file material...
+
+	MMaterialResource* pStaticMeshMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_STATIC);
+	MMaterialResource* pSkinnedMeshMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SKINNED);
+
+	for (unsigned int i = 0; i < m_vVertexTypes.size(); ++i)
+	{
+		if (m_vVertexTypes[i] == MEMeshVertexType::Normal)
+		{
+			m_vDefaultMaterial[i] = m_pEngine->GetObjectManager()->CreateObject<MMaterial>();
+			m_vDefaultMaterial[i]->Load(pStaticMeshMaterial);
+			m_vDefaultMaterial[i];
+		}
+		else if(m_vVertexTypes[i] == MEMeshVertexType::Skeleton)
+		{
+			m_vDefaultMaterial[i] = m_pEngine->GetObjectManager()->CreateObject<MMaterial>();
+			m_vDefaultMaterial[i]->Load(pSkinnedMeshMaterial);
+		}
+
+
+		//Test Data, need read from file.
+		for (MShaderParam& param : m_vDefaultMaterial[i]->GetPixelShaderParams())
+		{
+			if (param.strName == "cbMaterial")
+			{
+				if (MStruct* pStruct = param.var.GetByType<MStruct>())
+				{
+					if (MStruct* pMat = pStruct->FindMember("U_mat")->GetByType<MStruct>())
+					{
+						pMat->SetMember("fShininess", 32.0f);
+					}
+				}
+			}
+		}
+
+		if (MResource* pTexResource = m_pEngine->GetResourceManager()->Load("./Model/teaport.png"))
+		{
+			m_vDefaultMaterial[i]->SetPixelTexutreParam("U_mat.texDiffuse", pTexResource);
+		//	pMaterial->SetPixelTexutreParam("U_mat.texSpecular", pTexResource);
 		}
 	}
 }

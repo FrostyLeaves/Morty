@@ -231,9 +231,6 @@
     <ClInclude Include="..\..\Core\MBounds.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Scene\Model\MMeshInstance.h">
-      <Filter>Scene\Model</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Scene\Model\MModelInstance.h">
       <Filter>Scene\Model</Filter>
     </ClInclude>
@@ -251,6 +248,15 @@
     </ClInclude>
     <ClInclude Include="..\..\Utility\MMath.h">
       <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Scene\Model\MStaticMeshInstance.h">
+      <Filter>Scene\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Scene\Model\MIMeshInstance.h">
+      <Filter>Scene\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Scene\Model\MSkinnedMeshInstance.h">
+      <Filter>Scene\Model</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -389,9 +395,6 @@
     <ClCompile Include="..\..\Scene\Model\MModelInstance.cpp">
       <Filter>Scene\Model</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Scene\Model\MMeshInstance.cpp">
-      <Filter>Scene\Model</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Core\MSkeleton.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -406,6 +409,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Utility\MMath.cpp">
       <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Scene\Model\MStaticMeshInstance.cpp">
+      <Filter>Scene\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Scene\Model\MIMeshInstance.cpp">
+      <Filter>Scene\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Scene\Model\MSkinnedMeshInstance.cpp">
+      <Filter>Scene\Model</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

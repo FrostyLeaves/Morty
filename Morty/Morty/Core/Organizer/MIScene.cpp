@@ -6,7 +6,7 @@
 #include "MDirectionalLight.h"
 #include "MPointLight.h"
 
-#include "MMeshInstance.h"
+#include "MStaticMeshInstance.h"
 #include "MVertex.h"
 #include "MMaterial.h"
 #include "MIRenderer.h"
@@ -108,7 +108,7 @@ void MIScene::OnNodeEnter(MNode* pNode)
 	else if (MPointLight * pPotLight = dynamic_cast<MPointLight*>(pNode))
 		m_vPointLight.push_back(pPotLight);
 
-	else if (MMeshInstance * pMeshIns = dynamic_cast<MMeshInstance*>(pNode))
+	else if (MStaticMeshInstance * pMeshIns = dynamic_cast<MStaticMeshInstance*>(pNode))
 		RecordMeshInstance(pMeshIns);
 
 	else if (MCamera* pCamera = dynamic_cast<MCamera*>(pNode))
@@ -137,7 +137,7 @@ void MIScene::OnNodeExit(MNode* pNode)
 			m_vPointLight.erase(iter);
 	}
 
-	else if (MMeshInstance * pMeshIns = dynamic_cast<MMeshInstance*>(pNode))
+	else if (MStaticMeshInstance * pMeshIns = dynamic_cast<MStaticMeshInstance*>(pNode))
 		CancelRecordMeshInstance(pMeshIns);
 
 	else if (MCamera* pCamera = dynamic_cast<MCamera*>(pNode))
@@ -151,7 +151,7 @@ void MIScene::OnNodeExit(MNode* pNode)
 
 }
 
-void MIScene::RecordMeshInstance(MMeshInstance* pMeshInstance)
+void MIScene::RecordMeshInstance(MIMeshInstance* pMeshInstance)
 {
 	if (!pMeshInstance->GetMaterial())
 		return;
@@ -169,14 +169,14 @@ void MIScene::RecordMeshInstance(MMeshInstance* pMeshInstance)
 		pGroup = *iter;
 	}
 
-	std::vector<MMeshInstance*>::iterator it = find(pGroup->vMeshIns.begin(), pGroup->vMeshIns.end(), pMeshInstance);
+	std::vector<MIMeshInstance*>::iterator it = find(pGroup->vMeshIns.begin(), pGroup->vMeshIns.end(), pMeshInstance);
 	if (it != pGroup->vMeshIns.end())
 		return;
 
 	pGroup->vMeshIns.push_back(pMeshInstance);
 }
 
-void MIScene::CancelRecordMeshInstance(MMeshInstance* pMeshInstance)
+void MIScene::CancelRecordMeshInstance(MIMeshInstance* pMeshInstance)
 {
 	if (!pMeshInstance->GetMaterial())
 		return;
@@ -188,7 +188,7 @@ void MIScene::CancelRecordMeshInstance(MMeshInstance* pMeshInstance)
 	
 	MaterialMeshInsGroup* pGroup = *iter;
 
-	std::vector<MMeshInstance*>::iterator it = find(pGroup->vMeshIns.begin(), pGroup->vMeshIns.end(), pMeshInstance);
+	std::vector<MIMeshInstance*>::iterator it = find(pGroup->vMeshIns.begin(), pGroup->vMeshIns.end(), pMeshInstance);
 	if (it != pGroup->vMeshIns.end())
 		pGroup->vMeshIns.erase(it);
 }
@@ -203,7 +203,7 @@ void MIScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
 		//更新纹理资源，纹理资源只更新一次，节省性能
 		pRenderer->UpdateMaterialResource();
 
-		for (MMeshInstance* pMeshIns : pGroup->vMeshIns)
+		for (MIMeshInstance* pMeshIns : pGroup->vMeshIns)
 		{
 			if(!pMeshIns->GetVisibleRecursively())
 				continue;
@@ -284,6 +284,16 @@ void MIScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
 							}
 						}
 					}
+					if (MVariant* pDirectionLight = param.var.GetByType<MStruct>()->FindMember("U_dirLight"))
+					{
+						if (MStruct* pLightStruct = pDirectionLight->GetByType<MStruct>())
+						{
+							pLightStruct->SetMember("f3Direction", Vector3(0.0f, -1.0f, 0.0f));
+							pLightStruct->SetMember("f3Ambient", Vector3(0.1f, 0.1f, 0.1f));
+							pLightStruct->SetMember("f3Diffuse", Vector3(0.1f, 0.1f, 0.1f));
+							pLightStruct->SetMember("f3Specular", Vector3(0.1f, 0.1f, 0.1f));
+						}
+					}
 				}
 				else if (param.strName == "cbWorldInfo")
 				{
@@ -306,7 +316,7 @@ void MIScene::DrawSkyBox(MIRenderer* pRenderer, MIViewport* pViewport)
 
 	if (m_pSkyBox)
 	{
-		if (MMeshInstance* pMeshIns = m_pSkyBox->GetMeshInstance())
+		if (MStaticMeshInstance* pMeshIns = m_pSkyBox->GetMeshInstance())
 		{
 			MMaterial* pMaterial = pMeshIns->GetMaterial();
 			std::vector<MShaderParam>& vVtxParams = pMaterial->GetVertexShaderParams();

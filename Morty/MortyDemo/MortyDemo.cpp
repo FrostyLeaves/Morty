@@ -21,7 +21,7 @@
 
 #include "MShader.h"
 #include "MVertex.h"
-#include "MMeshInstance.h"
+#include "MIMeshInstance.h"
 #include "MInputManager.h"
 #include "MLogManager.h"
 #include "MIRenderView.h"
@@ -162,48 +162,6 @@ public:
 
 int main(int argc, char* argv[])
 {
-
-// 	Vector3 pos[3] = {
-// 		{ 1, 1, 1 }, { 1, 9, 13 }, {9, 6, 7}
-// 	};
-// 	std::vector <MMesh<MVertex>*> vMesh;
-// 	MMesh<MVertex>* ptest = new MMesh<MVertex>();
-// 	vMesh.push_back(ptest);
-// 
-// 	ptest->CreateVertices(3);
-// 	for (int i = 0; i < 3; ++i)
-// 		ptest->GetVertices()[i].position = pos[i];
-// 
-// 	MBoundsOBB obb(vMesh);
-
-	Quaternion qqq;
-
-	qqq.x = 0.1;
-	qqq.y = 0.2;
-	qqq.z = 0.3;
-	qqq.w = 0.6;
-	qqq.Normalize();
-
-	qqq.SetEulerAngle(Vector3(30, 120, 45));
-
-	Quaternion ooo; 
-	ooo.SetEulerAngle(Vector3(30 - 180.0f , 180.0f - 120, 45 - 180.0f));
-
-	Vector3  v = qqq.GetEulerAngle();
-	Vector3 n = ooo.GetEulerAngle();
-
-	Quaternion xxx;
-	xxx.SetEulerAngle(v);
-	xxx.Normalize();
-	Vector3 w = xxx.GetEulerAngle();
-
-	qqq.x = 0.1176;
-	qqq.y = 0.5428;
-	qqq.z = 0.1176;
-	qqq.w = 0.8232;
-
-	v = qqq.GetEulerAngle();
-
 	MEngine engine;
 
 	engine.Initialize();
@@ -217,44 +175,6 @@ int main(int argc, char* argv[])
 	pSpatial->Load(pResource);
 	pSpatial->SetPosition(Vector3(0, 0, 0));
 	pSpatial->SetName("Teaport");
-
-	for (int i = 0; i < pSpatial->GetChildren().size(); ++i)
-	{
-
-		MNode* pChild = pSpatial->GetChildren()[i];
-
-		MMeshInstance* pMeshIns = dynamic_cast<MMeshInstance*>(pChild);
-
-		MResource* pVSResource = engine.GetResourceManager()->Load("./Shader/animationModel.mvs");
-		MResource* pPSResource = engine.GetResourceManager()->Load("./Shader/model.mps");
-		MMaterialResource* pMaterialRes = dynamic_cast<MMaterialResource*>(engine.GetResourceManager()->Create(MResourceManager::MEResourceType::Material));
-		pMaterialRes->LoadVertexShader(pVSResource);
-		pMaterialRes->LoadPixelShader(pPSResource);
-
-		MMaterial* pMaterial = engine.GetObjectManager()->CreateObject<MMaterial>();
-		pMaterial->Load(pMaterialRes);
-
-		if (MResource* pTexResource = engine.GetResourceManager()->Load("./Model/teaport.png"))
-		{
-			pMaterial->SetPixelTexutreParam("U_mat.texDiffuse", pTexResource);
-		//	pMaterial->SetPixelTexutreParam("U_mat.texSpecular", pTexResource);
-		}
-
-		for(MShaderParam& param : pMaterial->GetPixelShaderParams())
-		{
-			if (param.strName == "cbMaterial")
-			{
-				if (MStruct* pStruct = param.var.GetByType<MStruct>())
-				{
-					if (MStruct* pMat = pStruct->FindMember("U_mat")->GetByType<MStruct>())
-					{
-						pMat->SetMember("fShininess", 10.0f);
-					}
-				}
-			}
-		}
-		pMeshIns->SetMaterial(pMaterial);
-	}
 
 	pRootNode->AddNode(pSpatial);
 

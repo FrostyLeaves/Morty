@@ -1,29 +1,24 @@
-﻿#include "MMeshInstance.h"
+﻿#include "MStaticMeshInstance.h"
 #include "MModelResource.h"
 #include "MIScene.h"
 
 #include "MDirectX11Renderer.h"
 #include "MModelResource.h"
 
-MMeshInstance::MMeshInstance()
-	: M3DNode()
+MStaticMeshInstance::MStaticMeshInstance()
+	: MIMeshInstance()
 	, m_pMesh(nullptr)
 	, m_pMaterial(nullptr)
 {
 
 }
 
-MMeshInstance::~MMeshInstance()
+MStaticMeshInstance::~MStaticMeshInstance()
 {
 
 }
 
-void MMeshInstance::OnTick(const float& fDelta)
-{
-
-}
-
-void MMeshInstance::SetMaterial(MMaterial* pMaterial)
+void MStaticMeshInstance::SetMaterial(MMaterial* pMaterial)
 {
 	if (m_pScene)
 		m_pScene->CancelRecordMeshInstance(this);
@@ -33,8 +28,8 @@ void MMeshInstance::SetMaterial(MMaterial* pMaterial)
 	if(m_pScene)
 		m_pScene->RecordMeshInstance(this);
 }
-
-void MMeshInstance::SetMesh(MIMesh* pMesh)
+ 
+void MStaticMeshInstance::SetMesh(MIMesh* pMesh)
 {
 	m_pMesh = pMesh;
 }

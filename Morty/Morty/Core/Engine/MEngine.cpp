@@ -16,6 +16,7 @@
 #include "MTimer.h"
 #include "MNode.h"
 #include "MResourceManager.h"  
+#include "MMaterialResource.h"
 
 #include "MInputManager.h"
 
@@ -65,6 +66,8 @@ bool MEngine::Initialize()
 
 	m_pResourceManager = new MResourceManager();
 	m_pResourceManager->SetOwnerEngine(this);
+
+	InitializeDefaultResource();
 
 	return true;
 
@@ -149,6 +152,24 @@ void MEngine::SetMaxFPS(const int& nFPS)
 		m_cTickInfo.nMaxFPS = nFPS;
 		m_cTickInfo.fTickInterval = 1.0f / m_cTickInfo.nMaxFPS;
 	}
+}
+
+bool MEngine::InitializeDefaultResource()
+{
+	MResource* pStaticVSResource = GetResourceManager()->Load("./Shader/staticModel.mvs");
+	MResource* pSkinnedVSResource = GetResourceManager()->Load("./Shader/animationModel.mvs");
+	MResource* pMeshPSResource = GetResourceManager()->Load("./Shader/model.mps");
+
+	MMaterialResource* pStaticMeshMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_STATIC);
+	MMaterialResource* pSkinnedMeshMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SKINNED);
+	pStaticMeshMaterialRes->LoadVertexShader(pStaticVSResource);
+	pStaticMeshMaterialRes->LoadPixelShader(pMeshPSResource);
+
+	pSkinnedMeshMaterialRes->LoadVertexShader(pSkinnedVSResource);
+	pSkinnedMeshMaterialRes->LoadPixelShader(pMeshPSResource);
+
+
+	return true;
 }
 
 bool MEngine::MainLoop()

@@ -27,7 +27,7 @@ class MSkeletalAnimation;
 class MORTY_CLASS MModelResource : public MResource
 {
 public:
-	enum MEModelVertexType {
+	enum MEMeshVertexType {
 		Normal = 0,
 		Skeleton = 1,
 	};
@@ -40,6 +40,9 @@ public:
 	const MBoundsOBB* GetOBB();
 	const std::map<MString, MSkeletalAnimation*>* GetAnimations() { return &m_tSkeletalAnimation; }
 	const std::vector<MString>* GetAnimationsName() { return &m_vSkeletalAnimation; }
+
+	MEMeshVertexType GetMeshVertexType(const unsigned int& unIndex);
+	MMaterial* GetMeshDefaultMaterial(const unsigned int& unIndex);
 
 protected:
 
@@ -58,10 +61,15 @@ protected:
 
 	void ProcessAnimation(const aiScene* pScene);
 
+	void ProcessMaterial(const aiScene* pScene);
+
 private:
     
 	std::vector<MIMesh*> m_vMeshes;
-	std::vector<MEModelVertexType> m_vVertexTypes;
+	std::vector<MEMeshVertexType> m_vVertexTypes;
+
+	std::vector<MMaterial*> m_vDefaultMaterial;
+
 	MBoundsOBB* m_pBoundsOBB;
 	MSkeleton* m_pSkeleton;
 

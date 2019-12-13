@@ -46,7 +46,7 @@ float4 PS(VS_OUT input) : SV_Target
     
     float3 f3Color = f3DiffColor * 0.1f;
 
-    //f3Color += CalcDirectionLight(U_dirLight, f3CameraDir, f3Normal, f3DiffColor, f3SpecColor);
+    f3Color += CalcDirectionLight(U_dirLight, f3CameraDir, f3Normal, f3DiffColor, f3SpecColor);
     f3Color += CalcPointLight(U_pointLights[0], f3CameraDir, f3Normal, input.worldPos, f3DiffColor, f3SpecColor);
     //f3Color += CalcPointLight(U_pointLights[1], f3CameraDir, f3Normal, input.worldPos, f3DiffColor, f3SpecColor);
     //f3Color += CalcPointLight(U_pointLights[2], f3CameraDir, f3Normal, input.worldPos, f3DiffColor, f3SpecColor);

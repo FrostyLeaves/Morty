@@ -57,9 +57,22 @@ public:
 		return pResource;
 	}
 
+	template<typename Resource_TYPE>
+	Resource_TYPE* LoadVirtualResource(const MString& strResourcePath)
+	{
+		if (MResource* pResource = m_tPathResources[strResourcePath])
+			return dynamic_cast<Resource_TYPE*>(pResource);
+
+		Resource_TYPE* pResource = CreateResource<Resource_TYPE>();
+		m_tPathResources[strResourcePath] = pResource;
+
+		return pResource;
+	}
+
 	MEResourceType GetResourceType(const MString& strResourcePath);
 
 	MResource* Load(const MString& strResourcePath, const MEResourceType& eType = MEResourceType::Default);
+
 	MResource* Create(const MEResourceType& eType);
 	void Reload(const MString& strResourcePath);
 
@@ -75,7 +88,5 @@ private:
 
 	MEngine* m_pEngine;
 };
-
-
 
 #endif
