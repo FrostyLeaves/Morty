@@ -29,5 +29,4 @@ private:
 
 };
 
-
 #endif

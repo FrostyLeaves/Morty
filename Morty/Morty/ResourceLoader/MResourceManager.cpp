@@ -20,6 +20,7 @@ m_tResSuffixToType[vSuffixList[i]] = Type; \
 MResourceManager::MResourceManager()
 	: m_pResourceDB(new MIDPool<MResourceID>())
 	, m_pEngine(nullptr)
+	, m_bReloadEnabled(false)
 {
 	REGISTER_RESOURCE_TYPE(MEResourceType::Model, MModelResource, "fbx", "obj", "dae" );
 	REGISTER_RESOURCE_TYPE(MEResourceType::Shader, MShaderResource, SUFFIX_VERTEX_SHADER, SUFFIX_PIXEL_SHADER );
@@ -34,11 +35,11 @@ MResourceManager::~MResourceManager()
 		delete iter->second;
 	}
 	m_tResourceLoader.clear();
-	for (std::map<MResourceID, MResource*>::iterator iter = m_tIDResources.begin(); iter != m_tIDResources.end(); ++iter)
+	for (std::map<MString, MResource*>::iterator iter = m_tPathResources.begin(); iter != m_tPathResources.end(); ++iter)
 	{
 		delete iter->second;
 	}
-	m_tIDResources.clear();
+//	m_tIDResources.clear();
 	m_tPathResources.clear();
 
 	delete m_pResourceDB;
@@ -50,7 +51,7 @@ MResourceManager::MEResourceType MResourceManager::GetResourceType(const MString
 	return m_tResSuffixToType[suffix];
 }
 
-MResource* MResourceManager::Load(const MString& strResourcePath, const MEResourceType& eType/* = MEResourceType::Default*/)
+MResource* MResourceManager::LoadResource(const MString& strResourcePath, const MEResourceType& eType/* = MEResourceType::Default*/)
 {
 	std::map<MString, MResource*>::iterator iter = m_tPathResources.find(strResourcePath);
 	if (iter != m_tPathResources.end())
@@ -72,6 +73,20 @@ MResource* MResourceManager::Load(const MString& strResourcePath, const MEResour
 	return pResource;
 }
 
+void MResourceManager::UnloadResource(const MString& strResourcePath)
+{
+	std::map<MString, MResource*>::iterator iter = m_tPathResources.find(strResourcePath);
+	if (iter == m_tPathResources.end())
+		return;
+
+// 	std::map<MResourceID, MResource*>::iterator iditer = m_tIDResources.find(iter->second->m_unResourceID);
+// 	if (iditer != m_tIDResources.end())
+// 		m_tIDResources.erase(iditer);
+
+	delete iter->second;
+	m_tPathResources.erase(iter);
+}
+
 MResource* MResourceManager::Create(const MEResourceType& eType)
 {
 	if (MResourceLoader* pLoader = m_tResourceLoader[eType])
@@ -84,10 +99,13 @@ MResource* MResourceManager::Create(const MEResourceType& eType)
 
 void MResourceManager::Reload(const MString& strResourcePath)
 {
-	std::map<MString, MResource*>::iterator iter = m_tPathResources.find(strResourcePath);
-	if (iter != m_tPathResources.end())
+	if (GetReloadEnabled())
 	{
-		iter->second->Load(strResourcePath);
-		iter->second->OnReload();
+		std::map<MString, MResource*>::iterator iter = m_tPathResources.find(strResourcePath);
+		if (iter != m_tPathResources.end())
+		{
+			iter->second->Load(strResourcePath);
+			iter->second->OnReload();
+		}
 	}
 }

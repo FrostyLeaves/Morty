@@ -23,6 +23,12 @@ public:
     MNode();
     virtual ~MNode();
 
+	enum MENodeChildType
+	{
+		MENormal = 0,
+		MEFixed = 1,
+	};
+
 	typedef std::function<bool(MNode*)> SearchNodeFunction;
 
 public:
@@ -36,14 +42,13 @@ public:
 
 	virtual MNode* GetParent() { return m_pParent; }
 	std::vector<MNode*>& GetChildren(){ return m_vChildren; }
+	std::vector<MNode*>& GetFixedChildren() { return m_vFixedChildren; }
 	MNode* GetRootNode();
 
 	MNode* FindFirstChildByName(const MString& strName);
 	std::vector<MNode*> FindChildrenByName(const MString& strName);
 	std::vector<MNode*> FindChildrenByFunc(const SearchNodeFunction& func);
 
-	virtual bool AddNode(MNode* pNode);
-	virtual bool RemoveNode(MNode* pNode);
 
 	void SetName(const MString& strName) { m_strName = strName; }
 	MString GetName(){ return m_strName; }
@@ -53,10 +58,16 @@ public:
 	//Is Holder of pNode?
 	bool isHolderOf(MNode* pNode);
 
-
-	virtual void Tick(const float& fDelta);
-
 	virtual void OnTick(const float& fDelta);
+
+	bool AddNode(MNode* pNode) { return AddNodeImpl(pNode, MENodeChildType::MENormal); }
+	bool RemoveNode(MNode* pNode) { return RemoveNodeImpl(pNode, MENodeChildType::MENormal); }
+
+public:
+	virtual bool AddNodeImpl(MNode* pNode, const MENodeChildType& etype);
+	virtual bool RemoveNodeImpl(MNode* pNode, const MENodeChildType& etype);
+	void RemoveAllNodeImpl(const MENodeChildType& etype);
+	virtual void Tick(const float& fDelta);
 
 public:
 
@@ -106,7 +117,8 @@ protected:
 
 	MNode* m_pParent;
 	MIScene* m_pScene;
-	std::vector<MNode*> m_vChildren;;
+	std::vector<MNode*> m_vChildren;
+	std::vector<MNode*> m_vFixedChildren;
 
 	MString m_strName;
 

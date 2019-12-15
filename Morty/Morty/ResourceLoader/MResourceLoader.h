@@ -53,7 +53,10 @@ public:
 		if (pResource)
 		{
 			if (ResourceLoad(pResource, svPath))
+			{
+				pResource->m_strResourcePath = svPath;
 				return pResource;
+			}
 			delete pResource;
 		}
 		return nullptr;

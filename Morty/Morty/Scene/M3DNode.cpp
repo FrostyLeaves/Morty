@@ -63,9 +63,9 @@ void M3DNode::UpdateWorldTransform()
 	}
 }
 
-bool M3DNode::AddNode(MNode* pNode)
+bool M3DNode::AddNodeImpl(MNode* pNode, const MENodeChildType& etype)
 {
-	if (false == MNode::AddNode(pNode))
+	if (false == MNode::AddNodeImpl(pNode, etype))
 		return false;
 
 	WorldTransformDirty(pNode);
@@ -147,6 +147,11 @@ void M3DNode::WorldTransformDirty(MNode* pNode)
 	{
 		WorldTransformDirty(pChildNode);
 	}
+
+	for (MNode* pChildNode : pNode->GetFixedChildren())
+	{
+		WorldTransformDirty(pChildNode);
+	}
 }
 
 void M3DNode::LocalTransformDirty()
@@ -155,6 +160,8 @@ void M3DNode::LocalTransformDirty()
 		return;
 
 	m_bLocalTransformDirty = true;
+	for (MNode* pChildNode : m_vFixedChildren)
+		WorldTransformDirty(pChildNode);
 	for (MNode* pChildNode : m_vChildren)
 		WorldTransformDirty(pChildNode);
 }

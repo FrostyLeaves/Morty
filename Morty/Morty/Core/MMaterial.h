@@ -9,6 +9,7 @@
 #ifndef _M_MMATERIAL_H_
 #define _M_MMATERIAL_H_
 #include "MGlobal.h"
+#include "MRefCounter.h"
 #include "MResource.h"
 #include "MRenderStructure.h"
 #include "MObject.h"
@@ -19,7 +20,7 @@ class MShader;
 class MResource;
 class MShaderResource;
 class MMaterialResource;
-class MORTY_CLASS MMaterial : public MObject
+class MORTY_CLASS MMaterial : public MObject, public MRefCounter
 {
 public:
 	M_OBJECT(MMaterial);
@@ -44,18 +45,19 @@ public:
 
 	void Unload();
 
-protected:
-
 	void CleanTextureParams();
 
 private:
 
+	//Shader Params
 	std::vector<MShaderParam> m_vVertexShaderParams;
 	std::vector<MShaderParam> m_vPixelShaderParams;
 
+	//Texture
 	std::vector<MShaderTextureParam> m_vPixelTextureParams;
 	std::vector<MResourceHolder*> m_vPixelTextureResHolder;
 
+	//Material
 	MResourceHolder* m_pMaterialResource;
 	MShader* m_pVertexShader;
 	MShader* m_pPxielShader;

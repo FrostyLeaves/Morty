@@ -1,4 +1,6 @@
 ﻿#include "MResource.h"
+#include "MEngine.h"
+#include "MResourceManager.h"
 
 MResource::MResource()
 : m_unResourceID(0)
@@ -27,6 +29,19 @@ MString MResource::GetSuffix(const MString& strPath)
 	return suffix;
 }
 
+MResourceManager* MResource::GetResourceManager()
+{
+	return m_pEngine->GetResourceManager();
+}
+
+void MResource::OnReferenceZero()
+{
+	if (!m_strResourcePath.empty())
+	{
+		GetResourceManager()->UnloadResource(m_strResourcePath);
+	}
+}
+
 void MResource::OnReload()
 {
 	for (MResourceHolder* pHolder : m_vHolder)
@@ -40,20 +55,24 @@ MResourceHolder::MResourceHolder(MResource* pResource)
 	: m_funcReloadCallback(nullptr)
 	, m_pResource(pResource)
 {
-	if (m_pResource)
+	if (m_pResource && m_pResource->GetResourceManager()->GetReloadEnabled())
 	{
+		m_pResource->AddRef();
 		m_pResource->m_vHolder.push_back(this);
 	}
 }
 
 MResourceHolder::~MResourceHolder()
 {
-	if (m_pResource)
+	if (m_pResource && m_pResource->GetResourceManager()->GetReloadEnabled())
 	{
 		std::vector<MResourceHolder*>::iterator iter = std::find(m_pResource->m_vHolder.begin(), m_pResource->m_vHolder.end(), this);
 		if (m_pResource->m_vHolder.end() != iter)
 		{
 			m_pResource->m_vHolder.erase(iter);
 		}
+
+		m_pResource->SubRef();
+
 	}
 }

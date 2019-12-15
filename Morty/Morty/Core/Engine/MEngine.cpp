@@ -15,8 +15,11 @@
 
 #include "MTimer.h"
 #include "MNode.h"
+#include "MMaterial.h"
 #include "MResourceManager.h"  
 #include "MMaterialResource.h"
+#include "MTextureResource.h"
+#include "MTextureCubeResource.h"
 
 #include "MInputManager.h"
 
@@ -67,6 +70,10 @@ bool MEngine::Initialize()
 	m_pResourceManager = new MResourceManager();
 	m_pResourceManager->SetOwnerEngine(this);
 
+	//允许资源重加载
+	m_pResourceManager->SetReloadEnabled(true);
+	
+	//初始化默认资源
 	InitializeDefaultResource();
 
 	return true;
@@ -156,20 +163,63 @@ void MEngine::SetMaxFPS(const int& nFPS)
 
 bool MEngine::InitializeDefaultResource()
 {
-	MResource* pStaticVSResource = GetResourceManager()->Load("./Shader/staticModel.mvs");
-	MResource* pSkinnedVSResource = GetResourceManager()->Load("./Shader/animationModel.mvs");
-	MResource* pMeshPSResource = GetResourceManager()->Load("./Shader/model.mps");
+	MResource* pStaticVSResource = GetResourceManager()->LoadResource("./Shader/staticModel.mvs");
+	MResource* pSkinnedVSResource = GetResourceManager()->LoadResource("./Shader/animationModel.mvs");
+	MResource* pMeshPSResource = GetResourceManager()->LoadResource("./Shader/model.mps");
 
 	MMaterialResource* pStaticMeshMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_STATIC);
-	MMaterialResource* pSkinnedMeshMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SKINNED);
 	pStaticMeshMaterialRes->LoadVertexShader(pStaticVSResource);
 	pStaticMeshMaterialRes->LoadPixelShader(pMeshPSResource);
 
+	MMaterialResource* pSkinnedMeshMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SKINNED);
 	pSkinnedMeshMaterialRes->LoadVertexShader(pSkinnedVSResource);
 	pSkinnedMeshMaterialRes->LoadPixelShader(pMeshPSResource);
 
+	MResource* pDraw2DVSResource = GetResourceManager()->LoadResource("./Shader/draw.mvs");
+	MResource* pDraw2DPSResource = GetResourceManager()->LoadResource("./Shader/draw.mps");
+	MMaterialResource* pDraw2DMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW2D);
+	pDraw2DMaterialRes->LoadVertexShader(pDraw2DVSResource);
+	pDraw2DMaterialRes->LoadPixelShader(pDraw2DPSResource);
+
+	MResource* pDraw3DVSResource = GetResourceManager()->LoadResource("./Shader/draw3D.mvs");
+	MResource* pDraw3DPSResource = GetResourceManager()->LoadResource("./Shader/draw3D.mps");
+	MMaterialResource* pDraw3DMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW3D);
+	pDraw3DMaterialRes->LoadVertexShader(pDraw3DVSResource);
+	pDraw3DMaterialRes->LoadPixelShader(pDraw3DPSResource);
+
+	MResource* pSkyBoxVSResource = GetResourceManager()->LoadResource("./Shader/skybox.mvs");
+	MResource* pSkyBoxPSResource = GetResourceManager()->LoadResource("./Shader/skybox.mps");
+	MMaterialResource* pSkyBoxMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SKYBOX);
+	pSkyBoxMaterialRes->LoadVertexShader(pSkyBoxVSResource);
+	pSkyBoxMaterialRes->LoadPixelShader(pSkyBoxPSResource);
+
+	static MString vTexturePath[6] = {
+		"ashcanyon_rt.tga",
+		"ashcanyon_lf.tga",
+		"ashcanyon_up.tga",
+		"ashcanyon_dn.tga",
+		"ashcanyon_ft.tga",
+		"ashcanyon_bk.tga",
+	};
+
+	MTextureResource* vTextureRes[6];
+	for (int i = 0; i < 6; ++i)
+	{
+		vTextureRes[i] = static_cast<MTextureResource*>(GetResourceManager()->LoadResource("./Texture/skybox/" + vTexturePath[i]));
+	}
+
+	MTextureCubeResource* pTextureCubeRes = GetResourceManager()->CreateResource<MTextureCubeResource>();
+	pTextureCubeRes->SetTextures(vTextureRes);
+
+	std::vector<MShaderTextureParam>& vTexParams = pSkyBoxMaterialRes->GetMaterialTemplate()->GetPixelTextureParams();
+	pSkyBoxMaterialRes->GetMaterialTemplate()->SetPixelTexutreParam("SkyTexCube", pTextureCubeRes);
 
 	return true;
+}
+
+void MEngine::ReleaseDefaultResource()
+{
+
 }
 
 bool MEngine::MainLoop()

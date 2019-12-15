@@ -170,7 +170,7 @@ int main(int argc, char* argv[])
 	pRootNode->SetName("RootNode");
 
 
-	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->Load("./Model/teaport.fbx"));
+	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/teaport.fbx"));
 	MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MySpatial>();
 	pSpatial->Load(pResource);
 	pSpatial->SetPosition(Vector3(0, 0, 0));

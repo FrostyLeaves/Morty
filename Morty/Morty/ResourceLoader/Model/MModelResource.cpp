@@ -479,7 +479,7 @@ void MModelResource::ProcessMaterial(const aiScene* pScene)
 			}
 		}
 
-		if (MResource* pTexResource = m_pEngine->GetResourceManager()->Load("./Model/teaport.png"))
+		if (MResource* pTexResource = m_pEngine->GetResourceManager()->LoadResource("./Model/teaport.png"))
 		{
 			m_vDefaultMaterial[i]->SetPixelTexutreParam("U_mat.texDiffuse", pTexResource);
 		//	pMaterial->SetPixelTexutreParam("U_mat.texSpecular", pTexResource);

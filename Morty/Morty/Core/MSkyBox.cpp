@@ -54,35 +54,10 @@ bool MSkyBox::Load(MResource* pResource)
 
 void MSkyBox::OnCreated()
 {
-	MResource* pVSResource = m_pEngine->GetResourceManager()->Load("./Shader/skybox.mvs");
-	MResource* pPSResource = m_pEngine->GetResourceManager()->Load("./Shader/skybox.mps");
-	MMaterialResource* pMaterialRes = dynamic_cast<MMaterialResource*>(m_pEngine->GetResourceManager()->Create(MResourceManager::MEResourceType::Material));
-	pMaterialRes->LoadVertexShader(pVSResource);
-	pMaterialRes->LoadPixelShader(pPSResource);
+	MMaterialResource* pMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SKYBOX);
+	MMaterial* pMaterial = pMaterialRes->GetMaterialTemplate();
 
-	MMaterial* pMaterial = m_pEngine->GetObjectManager()->CreateObject<MMaterial>();
-	pMaterial->Load(pMaterialRes);
-
-	static MString vTexturePath[6] = {
-		"ashcanyon_rt.tga",
-		"ashcanyon_lf.tga",
-		"ashcanyon_up.tga",
-		"ashcanyon_dn.tga",
-		"ashcanyon_ft.tga",
-		"ashcanyon_bk.tga",
-	};
-
-	MTextureResource* vTextureRes[6];
-	for (int i = 0; i < 6; ++i)
-	{
-		vTextureRes[i] = static_cast<MTextureResource*>(m_pEngine->GetResourceManager()->Load("./Texture/skybox/" + vTexturePath[i]));
-	}
-
-	MTextureCubeResource* pTextureCubeRes = m_pEngine->GetResourceManager()->CreateResource<MTextureCubeResource>();
-	pTextureCubeRes->SetTextures(vTextureRes);
-
-	std::vector<MShaderTextureParam>& vTexParams = pMaterial->GetPixelTextureParams();
-	pMaterial->SetPixelTexutreParam("SkyTexCube", pTextureCubeRes);
+	
 
 	m_pMeshInstance = m_pEngine->GetObjectManager()->CreateObject<MStaticMeshInstance>();
 
@@ -101,7 +76,7 @@ void MSkyBox::OnCreated()
 	m_pBoxMesh->GetVertices()[6] = Vector3(1.0, 1.0, -1.0);
 	m_pBoxMesh->GetVertices()[7] = Vector3(1.0, -1.0, -1.0);
 	
-	float indexs[] = {
+	const float const indexs[] = {
 		3, 2, 6,
 		3, 6, 7,//right
 

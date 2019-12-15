@@ -52,6 +52,7 @@ public:
 protected:
 
 	bool InitializeDefaultResource();
+	void ReleaseDefaultResource();
 
 private:
 

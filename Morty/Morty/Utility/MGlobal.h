@@ -31,9 +31,15 @@ typedef unsigned long MResourceID;
 //Asset
 extern const char* SUFFIX_VERTEX_SHADER;
 extern const char* SUFFIX_PIXEL_SHADER;
-
+//Default Asset
 extern const char* DEFAULT_MATERIAL_STATIC;
 extern const char* DEFAULT_MATERIAL_SKINNED;
+extern const char* DEFAULT_MATERIAL_DRAW2D;
+extern const char* DEFAULT_MATERIAL_DRAW3D;
+extern const char* DEFAULT_MATERIAL_SKYBOX;
+//
+
+
 
 //gles
 #define MORTY_OPENGLES 1

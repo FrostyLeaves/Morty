@@ -8,7 +8,7 @@
 #include "MEngine.h"
 
 MModelInstance::MModelInstance()
-	: m_pResource(nullptr)
+	: m_pModelResource(nullptr)
 	, m_pSkeleton(nullptr)
 	, m_pCurrentAnimationController(nullptr)
 {
@@ -28,50 +28,77 @@ MModelInstance::~MModelInstance()
 		delete m_pCurrentAnimationController;
 		m_pCurrentAnimationController = nullptr;
 	}
+
+	if (m_pModelResource)
+	{
+		delete m_pModelResource;
+		m_pModelResource = nullptr;
+	}
 }
 
 bool MModelInstance::Load(MResource* pResource)
 {
 	if (MModelResource* pModelRes = dynamic_cast<MModelResource*>(pResource))
 	{
-		m_pResource = pModelRes;
+		auto UseResourceFunction = [this]() {
+			if (MModelResource* pModelResource = static_cast<MModelResource*>(m_pModelResource->GetResource()))
+			{
+				SetRemoveAnimation();
+				if (m_pSkeleton)
+				{
+					delete m_pSkeleton;
+					m_pSkeleton = nullptr;
+				}
+				RemoveAllNodeImpl(MENodeChildType::MEFixed);
+				
 
-		int index = 0;
-		for (MIMesh* pMesh : *pModelRes->GetMeshes())
-		{
-			MIMeshInstance* pMeshIns = nullptr;
-			if (pModelRes->GetMeshVertexType(index) == MModelResource::Normal)
-				pMeshIns = GetObjectManager()->CreateObject<MStaticMeshInstance>();
-			else
-				pMeshIns = GetObjectManager()->CreateObject<MSkinnedMeshInstance>();
-			
-			pMeshIns->SetMesh(pMesh);
-			pMeshIns->SetName(MString("Mesh_") + MStringHelper::ToString(index));
-			AddNode(pMeshIns);
+				int index = 0;
+				for (MIMesh* pMesh : *pModelResource->GetMeshes())
+				{
+					MIMeshInstance* pMeshIns = nullptr;
+					if (pModelResource->GetMeshVertexType(index) == MModelResource::Normal)
+						pMeshIns = GetObjectManager()->CreateObject<MStaticMeshInstance>();
+					else
+						pMeshIns = GetObjectManager()->CreateObject<MSkinnedMeshInstance>();
 
-			pMeshIns->SetMaterial(pModelRes->GetMeshDefaultMaterial(index));
+					pMeshIns->SetMesh(pMesh);
+					pMeshIns->SetName(MString("Mesh_") + MStringHelper::ToString(index));
+					AddNodeImpl(pMeshIns, MENodeChildType::MEFixed);
+					//AddNodeImpl(pMeshIns, MENodeChildType::MENormal);
 
-			++index;
-		}
+					pMeshIns->SetMaterial(pModelResource->GetMeshDefaultMaterial(index));
 
-		m_pSkeleton = new MSkeletonInstance(pModelRes->GetSkeleton());
+					++index;
+				}
 
-		//Do something.
+				m_pSkeleton = new MSkeletonInstance(pModelResource->GetSkeleton());
+			}
+	
+		};
+
+		m_pModelResource = new MResourceHolder(pModelRes);
+		m_pModelResource->SetResChangedCallback(UseResourceFunction);
+
+		UseResourceFunction();
+
 		return true;
 	}
 
 	return false;
 }
 
+MModelResource* MModelInstance::GetResource()
+{
+	if (nullptr == m_pModelResource)
+		return nullptr;
+	return static_cast<MModelResource*>(m_pModelResource->GetResource());
+}
+
 bool MModelInstance::SetPlayAnimation(const MString& strAnimationName)
 {
-	if (m_pCurrentAnimationController)
-	{
-		delete m_pCurrentAnimationController;
-		m_pCurrentAnimationController = nullptr;
-	}
+	SetRemoveAnimation();
 
-	MSkeletalAnimation* pAnimation = (*m_pResource->GetAnimations()).at(strAnimationName);
+	MSkeletalAnimation* pAnimation = (*static_cast<MModelResource*>(m_pModelResource->GetResource())->GetAnimations()).at(strAnimationName);
 
 	MSkeletalAnimController* pController = new MSkeletalAnimController();
 	if (pController->Initialize(m_pSkeleton, pAnimation))
@@ -82,6 +109,15 @@ bool MModelInstance::SetPlayAnimation(const MString& strAnimationName)
 	}
 
 	return false;
+}
+
+void MModelInstance::SetRemoveAnimation()
+{
+	if (m_pCurrentAnimationController)
+	{
+		delete m_pCurrentAnimationController;
+		m_pCurrentAnimationController = nullptr;
+	}
 }
 
 void MModelInstance::Tick(const float& fDelta)

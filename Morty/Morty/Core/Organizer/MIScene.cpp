@@ -13,6 +13,13 @@
 #include "MIRenderView.h"
 #include "MIViewport.h"
 #include "MTransformCoord.h"
+#include "MModelInstance.h"
+#include "MBounds.h"
+#include "MModelResource.h"
+#include "MPainter.h"
+#include "MEngine.h"
+#include "MResourceManager.h"
+#include "MMaterialResource.h"
 
 #include "MModelInstance.h"
 #include "MSkeleton.h"
@@ -349,28 +356,12 @@ void MIScene::DrawPainter(MIRenderer* pRenderer, MIViewport* pViewport)
 	m_pTransformCoord3D->Render(pRenderer, pViewport);
 }
 
-#include "MModelInstance.h"
-#include "MBounds.h"
-#include "MModelResource.h"
-#include "MPainter.h"
-#include "MEngine.h"
-#include "MResourceManager.h"
-#include "MMaterialResource.h"
 void MIScene::DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MModelInstance* pSpatial)
 {
-	static MMaterial* TestMaterial = nullptr;
-	if (nullptr == TestMaterial)
-	{
-		MResource* pVSResource = m_pEngine->GetResourceManager()->Load("./Shader/draw3D.mvs");
-		MResource* pPSResource = m_pEngine->GetResourceManager()->Load("./Shader/draw3D.mps");
-		MMaterialResource* pMaterialRes = dynamic_cast<MMaterialResource*>(m_pEngine->GetResourceManager()->Create(MResourceManager::MEResourceType::Material));
-		pMaterialRes->LoadVertexShader(pVSResource);
-		pMaterialRes->LoadPixelShader(pPSResource);
+	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW3D);
+	MMaterial* pMaterial = pDraw3DMaterialRes->GetMaterialTemplate();
 
-		TestMaterial = pMaterialRes->GetMaterialTemplate();
-	}
-
-	std::vector<MShaderParam>& vVtxParams = TestMaterial->GetVertexShaderParams();
+	std::vector<MShaderParam>& vVtxParams = pMaterial->GetVertexShaderParams();
 	for (MShaderParam& param : vVtxParams)
 	{
 		if (param.strName == "cbSpace")
@@ -381,9 +372,8 @@ void MIScene::DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MMod
 		}
 	}
 
-	pRenderer->SetUseMaterial(TestMaterial);
+	pRenderer->SetUseMaterial(pMaterial);
 	pRenderer->UpdateMaterialParam();
-
 
 	MModelResource* pModelResource = dynamic_cast<MModelResource*>(pSpatial->GetResource());
 	const MBoundsOBB* pObb = pModelResource->GetOBB();

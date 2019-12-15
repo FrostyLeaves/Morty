@@ -50,7 +50,7 @@ public:
 		pResource->m_unResourceID = m_pResourceDB->GetNewID();
 		pResource->m_pEngine = m_pEngine;
 
-		m_tIDResources[pResource->m_unResourceID] = pResource;
+	//	m_tIDResources[pResource->m_unResourceID] = pResource;
 
 		pResource->OnCreated();
 
@@ -71,22 +71,27 @@ public:
 
 	MEResourceType GetResourceType(const MString& strResourcePath);
 
-	MResource* Load(const MString& strResourcePath, const MEResourceType& eType = MEResourceType::Default);
+	MResource* LoadResource(const MString& strResourcePath, const MEResourceType& eType = MEResourceType::Default);
+	void UnloadResource(const MString& strResourcePath);
 
 	MResource* Create(const MEResourceType& eType);
 	void Reload(const MString& strResourcePath);
 
+	void SetReloadEnabled(const bool& bReloadEnabled) { m_bReloadEnabled = bReloadEnabled; }
+	bool GetReloadEnabled() { return m_bReloadEnabled; }
 private:
 
 	std::map<MEResourceType, MResourceLoader*> m_tResourceLoader;
 
-	std::map<MResourceID, MResource*> m_tIDResources;
+//	std::map<MResourceID, MResource*> m_tIDResources;
 	std::map<MString, MResource*> m_tPathResources;
 
 	MIDPool<MResourceID>* m_pResourceDB;
 	std::map<MString, MEResourceType> m_tResSuffixToType;
 
 	MEngine* m_pEngine;
+
+	bool m_bReloadEnabled;
 };
 
 #endif

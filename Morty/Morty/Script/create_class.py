@@ -39,6 +39,7 @@ def scourceDocument(className):
 def main(argv):
 
     if len(argv) != 2:
+        print("len(argv) == " + str(len(argv)))
         return
 
     path = argv[0]
@@ -57,3 +58,4 @@ def main(argv):
 
 if __name__ == "__main__":
    main(sys.argv[1:])
+   input('input:')

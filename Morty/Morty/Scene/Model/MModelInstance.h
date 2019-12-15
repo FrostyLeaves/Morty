@@ -10,6 +10,7 @@
 #define _M_MMODELINSTANCE_H_
 #include "MGlobal.h"
 #include "M3DNode.h"
+#include "MResource.h"
 
 class MResource;
 class MModelResource;
@@ -26,11 +27,12 @@ public:
 
 	bool Load(MResource* pResource);
 
-	MModelResource* GetResource(){ return m_pResource; }
+	MModelResource* GetResource();
 	MSkeletonInstance* GetSkeleton() { return m_pSkeleton; }
 	
 public:
 	bool SetPlayAnimation(const MString& strAnimationName);
+	void SetRemoveAnimation();
 	MIAnimController* GetSkeletalAnimationController() { return m_pCurrentAnimationController; }
 
 public:
@@ -40,7 +42,7 @@ public:
 private:
 
 	MSkeletonInstance* m_pSkeleton;
-	MModelResource* m_pResource;
+	MResourceHolder* m_pModelResource;
 
 	MIAnimController* m_pCurrentAnimationController;
 };

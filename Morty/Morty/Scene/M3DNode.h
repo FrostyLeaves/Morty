@@ -49,10 +49,7 @@ public:
 	Vector3 GetRight() { return m_transform.GetRight(); }
 
 public:
-
-	virtual bool AddNode(MNode* pNode) override;
-
-public:
+	virtual bool AddNodeImpl(MNode* pNode, const MENodeChildType& etype) override;
 	void UpdateWorldTransform();
 protected:
 	static void WorldTransformDirty(MNode* pNode);

@@ -23,6 +23,8 @@ void MNode::UpdateVisibleRecursively()
 	bool bParentVisible = m_pParent ? m_pParent->m_bVisibleRecursively : true;
 
 	m_bVisibleRecursively = bParentVisible & m_bVisible;
+	for (MNode* pChild : m_vFixedChildren)
+		pChild->UpdateVisibleRecursively();
 	for (MNode* pChild : m_vChildren)
 		pChild->UpdateVisibleRecursively();
 }
@@ -56,6 +58,8 @@ void MNode::SetAttachedScene(MIScene* pScene)
 
 			for (MNode* pChildNode : pFrontNode->GetChildren())
 				que.push(pChildNode);
+			for (MNode* pChildNode : pFrontNode->GetFixedChildren())
+				que.push(pChildNode);
 
 			if (pFrontNode->m_pScene)
 				pFrontNode->m_pScene->OnNodeExit(pFrontNode);
@@ -66,18 +70,20 @@ void MNode::SetAttachedScene(MIScene* pScene)
 	}
 }
 
-bool MNode::AddNode(MNode* pNode)
+bool MNode::AddNodeImpl(MNode* pNode, const MENodeChildType& etype)
 {
 	if (pNode->isHolderOf(this))
 		return false;
 
-	for (MNode* pChildNode : GetChildren())
+	std::vector<MNode*>& children = etype == MENodeChildType::MEFixed ? m_vFixedChildren : m_vChildren;
+
+	for (MNode* pChildNode : children)
 	{
 		if (pChildNode == pNode)
 			return false;
 	}
 
-	m_vChildren.push_back(pNode);
+	children.push_back(pNode);
 	pNode->m_pParent = this;
 	
 	//Update Attached Scene.
@@ -147,14 +153,16 @@ void MNode::FindChildrenByFunc(const SearchNodeFunction& func, std::vector<MNode
 	}
 }
 
-bool MNode::RemoveNode(MNode* pNode)
+bool MNode::RemoveNodeImpl(MNode* pNode, const MENodeChildType& etype)
 {
-	for (std::vector<MNode*>::iterator iter = m_vChildren.begin(); iter != m_vChildren.end(); ++iter)
+	std::vector<MNode*>& children = etype == MENodeChildType::MEFixed ? m_vFixedChildren : m_vChildren;
+
+	for (std::vector<MNode*>::iterator iter = children.begin(); iter != children.end(); ++iter)
 	{
 		if (*iter == pNode)
 		{
 			pNode->m_pParent = nullptr;
-			m_vChildren.erase(iter);
+			children.erase(iter);
 
 			pNode->SetAttachedScene(nullptr);
 
@@ -163,6 +171,13 @@ bool MNode::RemoveNode(MNode* pNode)
 	}
 
 	return false;
+}
+
+void MNode::RemoveAllNodeImpl(const MENodeChildType& etype)
+{
+	std::vector<MNode*>& children = etype == MENodeChildType::MEFixed ? m_vFixedChildren : m_vChildren;
+
+	children.clear();
 }
 
 bool MNode::isHolderOf(MNode* pNode)
@@ -183,6 +198,9 @@ bool MNode::isHolderOf(MNode* pNode)
 void MNode::Tick(const float& fDelta)
 {
 	OnTick(fDelta);
+
+	for (MNode* pChild : m_vFixedChildren)
+		pChild->Tick(fDelta);
 
 	for (MNode* pChild : m_vChildren)
 		pChild->Tick(fDelta);

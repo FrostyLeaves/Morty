@@ -10,6 +10,7 @@
 #define _M_MRESOURCE_H_
 #include "MGlobal.h"
 #include "MString.h"
+#include "MRefCounter.h"
 
 #include <vector>
 #include <functional>
@@ -19,19 +20,7 @@ class MResourceManager;
 class MResourceHolder;
 class MEngine;
 
-
-// #define SUB_RESOURCE( RES_NAME, RES_TYPE ) \
-// private : RES_TYPE* m_pSubRes_##RES_NAME;	\
-// RES_TYPE* Get##RES_NAME(){ return m_pSubRes_##RES_NAME; } \
-// public : void Load##RES_NAME(MResource* pResource) { \
-// 	if (RES_TYPE* pTypeResource = dynamic_cast<RES_TYPE*>(pResource)) { \
-// 		m_pSubRes_##RES_NAME = pTypeResource; \
-// 	} \
-// } \
-// 		
-
-
-class MORTY_CLASS MResource
+class MORTY_CLASS MResource : public MRefCounter
 {
 public:
     MResource();
@@ -39,7 +28,7 @@ public:
 
 	static MString GetSuffix(const MString& strPath);
 
-//	MResourceManager* GetResourceManager(){ return m_pResourceManager; }
+	MResourceManager* GetResourceManager();
 
 public:
 
@@ -48,6 +37,8 @@ public:
 protected:
 
 	virtual bool Load(const MString& strResourcePath) = 0;
+
+	virtual void OnReferenceZero() override;
 	
 	void OnReload();
 
@@ -57,6 +48,7 @@ protected:
 	friend class MResourceLoader;
 	friend class MResourceHolder;
 
+	MString m_strResourcePath;
     MResourceID m_unResourceID;
 	MEngine* m_pEngine;
 

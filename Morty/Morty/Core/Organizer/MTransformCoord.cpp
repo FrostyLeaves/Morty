@@ -157,19 +157,10 @@ void MTransformCoord3D::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 	if (nullptr == m_pTargetNode)
 		return;
 
-	static MMaterial* TestMaterial = nullptr;
-	if (nullptr == TestMaterial)
-	{
-		MResource* pVSResource = m_pEngine->GetResourceManager()->Load("./Shader/draw.mvs");
-		MResource* pPSResource = m_pEngine->GetResourceManager()->Load("./Shader/draw.mps");
-		MMaterialResource* pMaterialRes = dynamic_cast<MMaterialResource*>(m_pEngine->GetResourceManager()->Create(MResourceManager::MEResourceType::Material));
-		pMaterialRes->LoadVertexShader(pVSResource);
-		pMaterialRes->LoadPixelShader(pPSResource);
+	MMaterialResource* pMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW2D);
+	MMaterial* pMaterial = pMaterialRes->GetMaterialTemplate();
 
-		TestMaterial = pMaterialRes->GetMaterialTemplate();
-	}
-
-	pRenderer->SetUseMaterial(TestMaterial);
+	pRenderer->SetUseMaterial(pMaterial);
 	pRenderer->UpdateMaterialParam();
 
 	bool vVaild[3];
@@ -198,13 +189,11 @@ void MTransformCoord3D::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 		}
 	}
 
-	static MMesh<MPainterVertex> testRectVtx(true);
-
 	for (int oi = 0; oi < 3; ++oi)
 	{
 		int i = vOrder[oi];
-		if (vVaild[(i +1)%3] && vVaild[(i+2)%3] && rects[i].FillData(pViewport, testRectVtx))
-			pRenderer->DrawMesh(&testRectVtx);
+		if (vVaild[(i +1)%3] && vVaild[(i+2)%3] && rects[i].FillData(pViewport, *static_cast<MMesh<MPainterVertex>*>(m_pCoordRenderCache)))
+			pRenderer->DrawMesh(m_pCoordRenderCache);
 	}
 
 	
