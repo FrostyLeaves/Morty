@@ -28,7 +28,13 @@ protected:
 
 	bool ResourceLoad(MResource* pResource, const MString& svPath)
 	{
-		return pResource->Load(svPath);
+		if (pResource->Load(svPath))
+		{
+			pResource->m_strResourcePath = svPath;
+			return true;
+		}
+		pResource->m_strResourcePath = "";
+		return false;
 	}
 
 };
@@ -54,7 +60,6 @@ public:
 		{
 			if (ResourceLoad(pResource, svPath))
 			{
-				pResource->m_strResourcePath = svPath;
 				return pResource;
 			}
 			delete pResource;

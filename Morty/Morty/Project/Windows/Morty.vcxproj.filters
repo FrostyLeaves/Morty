@@ -76,6 +76,9 @@
     <Filter Include="Core\Animation">
       <UniqueIdentifier>{5a652039-0639-4502-90e5-62f17aafea2a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\RefCounter">
+      <UniqueIdentifier>{19731f6b-b282-4cee-81d4-f8e02a069348}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../ReadMe.txt" />
@@ -258,6 +261,9 @@
     <ClInclude Include="..\..\Scene\Model\MSkinnedMeshInstance.h">
       <Filter>Scene\Model</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\RefCounter\MRefCounter.h">
+      <Filter>Core\RefCounter</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -418,6 +424,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Scene\Model\MSkinnedMeshInstance.cpp">
       <Filter>Scene\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\RefCounter\MRefCounter.cpp">
+      <Filter>Core\RefCounter</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

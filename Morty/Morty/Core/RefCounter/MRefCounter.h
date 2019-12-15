@@ -32,7 +32,7 @@ public:
 	}
 
 protected:
-	virtual void OnReferenceZero() { delete this; }
+	virtual void OnReferenceZero();
 
 private:
 	unsigned int m_unReferenceNumber;
