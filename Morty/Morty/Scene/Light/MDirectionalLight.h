@@ -10,6 +10,7 @@
 #define _M_MDIRECTIONALLIGHT_H_
 #include "MGlobal.h"
 #include "MILight.h"
+#include "MColor.h"
 
 class MORTY_CLASS MDirectionalLight : public MILight
 {
@@ -23,13 +24,21 @@ public:
 	void SetDirection(const Vector3& v3Direction);
 	Vector3 GetDirection() { return m_v3Direction; }
 
-	void SetColor(const Vector3& v3Color);
-	Vector3 GetColor(){ return m_v3Color; }
+	void SetAmbientColor(const MColor& color) { m_f3Ambient = color; }
+	MColor GetAmbientColor() { return m_f3Ambient; }
+
+	void SetDiffuseColor(const MColor& color) { m_f3Diffuse = color; }
+	MColor GetDiffuseColor() { return m_f3Diffuse; }
+
+	void SetSpecularColor(const MColor& color) { m_f3Specular = color; }
+	MColor GetSpecularColor() { return m_f3Specular; }
 
 private:
 
 	Vector3 m_v3Direction;
-	Vector3 m_v3Color;
+	MColor m_f3Ambient;
+	MColor m_f3Diffuse;
+	MColor m_f3Specular;
 
 };
 

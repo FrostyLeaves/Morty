@@ -19,7 +19,11 @@ MResource::~MResource()
 
 MString MResource::GetSuffix(const MString& strPath)
 {
-	MString suffix = strPath.substr(strPath.find_last_of('.') + 1, strPath.size());
+	size_t index = strPath.find_last_of('.');
+	if (index >= strPath.size())
+		return "";
+
+	MString suffix = strPath.substr(index + 1, strPath.size());
 	for (char& c : suffix)
 	{
 		if ('A' <= c && c <= 'Z')

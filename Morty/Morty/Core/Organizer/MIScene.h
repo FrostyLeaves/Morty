@@ -41,6 +41,7 @@ public:
 
 public:
 
+	MDirectionalLight* FindActiveDirectionLight();
 	void FindActivePointLights(const Vector3& v3WorldPosition, std::vector<MPointLight*>& vPointLights);
 public:
 

@@ -27,8 +27,8 @@ void MStaticMeshInstance::SetMaterial(MMaterial* pMaterial)
 	if (m_pMaterial)
 		m_pMaterial->SubRef();
 
-	m_pMaterial = pMaterial;
-	m_pMaterial->AddRef();
+	if(m_pMaterial = pMaterial)
+		m_pMaterial->AddRef();
 
 	if(m_pScene)
 		m_pScene->RecordMeshInstance(this);

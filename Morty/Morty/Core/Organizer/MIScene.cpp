@@ -67,6 +67,14 @@ void MIScene::RemoveAttachedViewport(MIViewport* pViewport)
 	}
 }
 
+MDirectionalLight* MIScene::FindActiveDirectionLight()
+{
+	if (m_vDirectionalLight.empty())
+		return nullptr;
+
+	return m_vDirectionalLight.back();
+}
+
 void MIScene::FindActivePointLights(const Vector3& v3WorldPosition, std::vector<MPointLight*>& vPointLights)
 {
 	auto compareFunc = [v3WorldPosition](MPointLight* a, MPointLight* b) {
@@ -163,7 +171,7 @@ void MIScene::RecordMeshInstance(MIMeshInstance* pMeshInstance)
 	if (!pMeshInstance->GetMaterial())
 		return;
 
-	std::vector<MaterialMeshInsGroup*>::iterator iter = std::lower_bound(m_vMatMeshInsGroup.begin(), m_vMatMeshInsGroup.end(), pMeshInstance->GetMaterial(), [](MaterialMeshInsGroup* a, MMaterial* b) {return a->pMat < b; });
+	std::vector<MaterialMeshInsGroup*>::iterator iter = std::lower_bound(m_vMatMeshInsGroup.begin(), m_vMatMeshInsGroup.end(), pMeshInstance, [](MaterialMeshInsGroup* a, MIMeshInstance* b) {return a->pMat < b->GetMaterial(); });
 	MaterialMeshInsGroup* pGroup = nullptr;
 	if (iter == m_vMatMeshInsGroup.end())
 	{
@@ -210,6 +218,38 @@ void MIScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
 		//更新纹理资源，纹理资源只更新一次，节省性能
 		pRenderer->UpdateMaterialResource();
 
+
+		MDirectionalLight* pDirectionalLight = FindActiveDirectionLight();
+
+		std::vector<MShaderParam>& vVtxParams = pMaterial->GetVertexShaderParams();
+		std::vector<MShaderParam>& vPixParams = pMaterial->GetPixelShaderParams();
+		for (MShaderParam& param : vPixParams)
+		{
+			if (param.strName == "cbLights")
+			{
+				if (pDirectionalLight)
+				{
+					if (MVariant* pDirectionLight = param.var.GetByType<MStruct>()->FindMember("U_dirLight"))
+					{
+						if (MStruct* pLightStruct = pDirectionLight->GetByType<MStruct>())
+						{
+							pLightStruct->SetMember("f3Direction", pDirectionalLight->GetDirection());
+							pLightStruct->SetMember("f3Ambient", pDirectionalLight->GetAmbientColor().ToVector3());
+							pLightStruct->SetMember("f3Diffuse", pDirectionalLight->GetDiffuseColor().ToVector3());
+							pLightStruct->SetMember("f3Specular", pDirectionalLight->GetSpecularColor().ToVector3());
+						}
+					}
+				}
+			}
+			else if (param.strName == "cbWorldInfo")
+			{
+				if (MStruct* pStruct = param.var.GetByType<MStruct>())
+				{
+					pStruct->SetMember("U_f3CameraWorldPos", pViewport->GetCamera()->GetWorldPosition());
+				}
+			}
+		}
+
 		for (MIMeshInstance* pMeshIns : pGroup->vMeshIns)
 		{
 			if(!pMeshIns->GetVisibleRecursively())
@@ -218,7 +258,6 @@ void MIScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
 			std::vector<MPointLight*> vActivePointLights(4);
 			FindActivePointLights(pMeshIns->GetWorldPosition(), vActivePointLights);
 
-			std::vector<MShaderParam>& vVtxParams = pMaterial->GetVertexShaderParams();
 			for (MShaderParam& param : vVtxParams)
 			{
 				if (param.strName == "cbSpace")
@@ -264,7 +303,7 @@ void MIScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
 				}
 			}
 
-			std::vector<MShaderParam>& vPixParams = pMaterial->GetPixelShaderParams();
+			
 			for (MShaderParam& param : vPixParams)
 			{
 				if (param.strName == "cbLights")
@@ -289,16 +328,6 @@ void MIScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
 									pPointLight->SetMember("fQuadratic", 0.0019f);
 								}
 							}
-						}
-					}
-					if (MVariant* pDirectionLight = param.var.GetByType<MStruct>()->FindMember("U_dirLight"))
-					{
-						if (MStruct* pLightStruct = pDirectionLight->GetByType<MStruct>())
-						{
-							pLightStruct->SetMember("f3Direction", Vector3(0.0f, -1.0f, 0.0f));
-							pLightStruct->SetMember("f3Ambient", Vector3(0.1f, 0.1f, 0.1f));
-							pLightStruct->SetMember("f3Diffuse", Vector3(0.1f, 0.1f, 0.1f));
-							pLightStruct->SetMember("f3Specular", Vector3(0.1f, 0.1f, 0.1f));
 						}
 					}
 				}
