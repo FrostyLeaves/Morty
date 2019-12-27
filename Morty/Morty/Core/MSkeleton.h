@@ -3,7 +3,7 @@
  * 
  * @Created      2019-12-03 16:27:14
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MSKELETON_H_

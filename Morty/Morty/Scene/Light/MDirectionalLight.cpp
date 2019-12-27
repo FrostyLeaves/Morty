@@ -1,5 +1,7 @@
 #include "MDirectionalLight.h"
 
+MTypeIdentifierImplement(MDirectionalLight, MILight)
+
 MDirectionalLight::MDirectionalLight()
 	: MILight()
 	, m_v3Direction(0.0f, 0.0f, 1.0f)
@@ -13,9 +15,4 @@ MDirectionalLight::MDirectionalLight()
 MDirectionalLight::~MDirectionalLight()
 {
 
-}
-
-void MDirectionalLight::SetDirection(const Vector3& v3Direction)
-{
-	m_v3Direction = v3Direction;
 }

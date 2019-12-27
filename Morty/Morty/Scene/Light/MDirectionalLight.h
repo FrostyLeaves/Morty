@@ -3,7 +3,7 @@
  * 
  * @Created      2019-09-19 17:45:15
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MDIRECTIONALLIGHT_H_
@@ -21,8 +21,17 @@ public:
 
 public:
 
-	void SetDirection(const Vector3& v3Direction);
+	void SetDirection(const Vector3& v3Direction)
+	{
+		m_v3Direction = v3Direction;
+	}
+
 	Vector3 GetDirection() { return m_v3Direction; }
+
+	Vector3 GetWorldDirection()
+	{
+		return GetWorldTransform() * m_v3Direction;
+	}
 
 	void SetAmbientColor(const MColor& color) { m_f3Ambient = color; }
 	MColor GetAmbientColor() { return m_f3Ambient; }

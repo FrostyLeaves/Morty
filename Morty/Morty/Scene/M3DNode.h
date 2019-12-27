@@ -3,7 +3,7 @@
  * 
  * @Created      2019-05-25 19:54:30
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_M3DNODE_H_
@@ -37,7 +37,6 @@ public:
 	void SetTransform(const MTransform& trans);
 	MTransform GetTransform() { return m_transform; }
 	
-
 	void LookAt(const Vector3& v3TargetWorldPos, Vector3 v3UpDir);
 
 	Matrix4 GetParentWorldTransform();

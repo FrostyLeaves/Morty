@@ -182,7 +182,7 @@ void MSkeletalAnimController::SetLoop(const bool& bLoop)
 	m_bLoop = bLoop;
 }
 
-void MSkeletalAnimController::Update(const float& fDelta)
+void MSkeletalAnimController::Update(const float& fDelta, const bool& bAnimStep)
 {
 	if (!m_bInitialized) return;
 
@@ -194,18 +194,21 @@ void MSkeletalAnimController::Update(const float& fDelta)
 			if (m_bLoop)
 			{
 				m_fTicks = fmodf(m_fTicks, m_pAnimation->GetTicksDuration());
-				m_pAnimation->Update(fmodf(m_fTicks, m_pAnimation->GetTicksDuration()), m_pSkeletonIns);
+				if (bAnimStep)
+					m_pAnimation->Update(fmodf(m_fTicks, m_pAnimation->GetTicksDuration()), m_pSkeletonIns);
 			}
 			else
 			{
 				m_fTicks = m_pAnimation->GetTicksDuration();
-				m_pAnimation->Update(fmodf(m_fTicks, m_pAnimation->GetTicksDuration()), m_pSkeletonIns);
+				if (bAnimStep)
+					m_pAnimation->Update(fmodf(m_fTicks, m_pAnimation->GetTicksDuration()), m_pSkeletonIns);
 				this->Stop();
 			}
 		}
 		else
 		{
-			m_pAnimation->Update(m_fTicks, m_pSkeletonIns);
+			if (bAnimStep)
+				m_pAnimation->Update(m_fTicks, m_pSkeletonIns);
 		}
 	}
 }

@@ -3,7 +3,7 @@
  * 
  * @Created      2019-12-15 18:09:30
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MREFCOUNTER_H_

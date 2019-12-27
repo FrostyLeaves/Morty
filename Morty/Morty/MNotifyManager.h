@@ -3,7 +3,7 @@
  * 
  * @Created      2019-07-29 20:26:33
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MNOTIFY_MANAGER_H_

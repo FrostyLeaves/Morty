@@ -3,7 +3,7 @@
  * 
  * @Created      2019-09-03 18:22:20
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MINPUTMANAGER_H_
@@ -85,34 +85,5 @@ protected:
 	unsigned int m_unKeyIndex;
 	MEKeyState m_eInputType;
 };
-
-class MORTY_CLASS MInputListener
-{
-public:
-	typedef std::function<void(MInputEvent*, MIViewport*)> MInputEventFunction;
-
-	MInputListener();
-
-	MInputEventFunction m_function;
-
-};
-
-class MORTY_CLASS MInputManager
-{
-public:
-    MInputManager();
-    virtual ~MInputManager();
-
-public:
-
-	void Input(MInputEvent* pEvent, MIViewport* pViewport);
-
-	void AddListener(MInputListener* pListener);
-	void RemoveListener(MInputListener* pListener);
-
-private:
-	std::vector<MInputListener*> m_vListenerList;
-};
-
 
 #endif

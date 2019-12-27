@@ -207,9 +207,6 @@
     <ClInclude Include="..\..\Core\Renderer\MVariant.h">
       <Filter>Core\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Core\Organizer\MIScene.h">
-      <Filter>Core\Organizer</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\ResourceLoader\MFileHelper.h">
       <Filter>ResourceLoader</Filter>
     </ClInclude>
@@ -263,6 +260,15 @@
     </ClInclude>
     <ClInclude Include="..\..\Core\RefCounter\MRefCounter.h">
       <Filter>Core\RefCounter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Organizer\MScene.h">
+      <Filter>Core\Organizer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Utility\MTypedClass.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Scene\MInputNode.h">
+      <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -377,9 +383,6 @@
     <ClCompile Include="..\..\Core\Renderer\MVariant.cpp">
       <Filter>Core\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Core\Organizer\MIScene.cpp">
-      <Filter>Core\Organizer</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ResourceLoader\MFileHelper.cpp">
       <Filter>ResourceLoader</Filter>
     </ClCompile>
@@ -427,6 +430,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\RefCounter\MRefCounter.cpp">
       <Filter>Core\RefCounter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Organizer\MScene.cpp">
+      <Filter>Core\Organizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Utility\MTypedClass.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Scene\MInputNode.cpp">
+      <Filter>Scene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

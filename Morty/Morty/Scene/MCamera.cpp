@@ -1,9 +1,16 @@
 ﻿#include "MCamera.h"
 #include "MLogManager.h"
 
+MTypeIdentifierImplement(MCamera, M3DNode)
+
 MCamera::MCamera()
-	: m_fZNear(10.0f)
+	: M3DNode()
+	, m_fFov(40.0f)
+	, m_fZNear(10.0f)
 	, m_fZFar(500.0f)
+	, m_fWidth(100.0f)
+	, m_fHeight(100.0f)
+	, m_eCameraType(MECameraType::EPerspective)
 {
 
 }
@@ -11,6 +18,11 @@ MCamera::MCamera()
 MCamera::~MCamera()
 {
 
+}
+
+void MCamera::SetFov(const float& fFov)
+{
+	m_fFov = fFov;
 }
 
 void MCamera::SetZNear(const float& fZNear)

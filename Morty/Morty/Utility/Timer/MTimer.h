@@ -3,7 +3,7 @@
  * 
  * @Created      2019-05-19 23:44:18
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MTIMER_H_

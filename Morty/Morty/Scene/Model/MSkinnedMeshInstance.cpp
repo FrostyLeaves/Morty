@@ -1,6 +1,8 @@
 #include "MSkinnedMeshInstance.h"
-#include "MIScene.h"
+#include "MScene.h"
 #include "MMaterial.h"
+
+MTypeIdentifierImplement(MSkinnedMeshInstance, MIMeshInstance)
 
 MSkinnedMeshInstance::MSkinnedMeshInstance()
 	: MIMeshInstance()

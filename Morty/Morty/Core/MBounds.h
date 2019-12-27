@@ -3,7 +3,7 @@
  * 
  * @Created      2019-11-26 12:23:04
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MBOUNDS_H_
@@ -24,7 +24,14 @@ public:
 
 class MORTY_CLASS MBoundsAABB
 {
+public:
+	MBoundsAABB(const std::vector<Vector3>& vPoints);
 
+public:
+	Vector3 m_v3CenterPoint;
+	Vector3 m_v3HalfLength;
+	Vector3 m_v3MinPoint;
+	Vector3 m_v3MaxPoint;
 };
 
 class MORTY_CLASS MBoundsOBB

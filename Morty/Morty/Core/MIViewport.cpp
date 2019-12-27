@@ -1,14 +1,20 @@
 ﻿#include "MIViewport.h"
-#include "MIScene.h"
+#include "MScene.h"
 #include "MCamera.h"
 #include "MEngine.h"
 #include "MInputManager.h"
 
+#include "MBounds.h"
+
+MTypeIdentifierImplement(MIViewport, MObject)
+
 MIViewport::MIViewport()
-	: m_pScene(nullptr)
+	: MObject()
+	, m_pScene(nullptr)
 	, m_pUserCamera(nullptr)
 	, m_pDefaultCamera(nullptr)
 	, m_m4CameraInvProj(Matrix4::IdentityMatrix)
+	, m_bCameraInvProjMatrixUpdated(false)
 	, m_v2LeftTop(0,0)
 	, m_v2Size(0, 0)
 {
@@ -128,8 +134,15 @@ void MIViewport::Render(MIRenderer* pRenderer)
 	if (nullptr == m_pScene)
 		return;
 
+
 	UpdateMatrix();
+	m_bCameraInvProjMatrixUpdated = true;
+	
+	
 	m_pScene->Render(pRenderer, this);
+	
+	
+	m_bCameraInvProjMatrixUpdated = false;
 }
 
 void MIViewport::Input(MInputEvent* pEvent)
@@ -140,7 +153,63 @@ void MIViewport::Input(MInputEvent* pEvent)
 	}
 }
 
-void MIViewport::SetScene(MIScene* pScene)
+void MIViewport::GetCameraFrustum(Vector3& v3NearTopLeft, Vector3& v3NearTopRight, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft, Vector3& v3FarTopLeft, Vector3& v3FarTopRight, Vector3& v3FarBottomRight, Vector3& v3FarBottomLeft)
+{
+	UpdateMatrix();
+
+	MCamera* pCamera = GetCamera();
+	float fZNear = pCamera->GetZNear();
+	float fZFar = pCamera->GetZFar();
+	if (MCamera::EPerspective == pCamera->GetCameraType())
+	{
+		float fAspect = GetWidth() / GetHeight();
+		float fHalfHeightDivideZ = (pCamera->GetFov() * 0.5f * M_PI / 180.0f);
+		float fHalfWidthDivideZ = fHalfHeightDivideZ * fAspect;
+
+		Matrix4 localToWorld = pCamera->GetWorldTransform();
+
+		std::vector<Vector3> points(8);
+		v3NearTopLeft = localToWorld * (Vector3(-fHalfWidthDivideZ, +fHalfHeightDivideZ, 1) * fZNear);
+		v3NearTopRight = localToWorld * (Vector3(+fHalfWidthDivideZ, +fHalfHeightDivideZ, 1) * fZNear);
+		v3NearBottomLeft = localToWorld * (Vector3(-fHalfWidthDivideZ, -fHalfHeightDivideZ, 1) * fZNear);
+		v3NearBottomRight = localToWorld * (Vector3(+fHalfWidthDivideZ, -fHalfHeightDivideZ, 1) * fZNear);
+
+		v3FarTopLeft = localToWorld * (Vector3(-fHalfWidthDivideZ, +fHalfHeightDivideZ, 1) * fZFar);
+		v3FarTopRight = localToWorld * (Vector3(+fHalfWidthDivideZ, +fHalfHeightDivideZ, 1) * fZFar);
+		v3FarBottomLeft = localToWorld * (Vector3(-fHalfWidthDivideZ, -fHalfHeightDivideZ, 1) * fZFar);
+		v3FarBottomRight = localToWorld * (Vector3(+fHalfWidthDivideZ, -fHalfHeightDivideZ, 1) * fZFar);
+	}
+	else
+	{
+		std::vector<Vector3> points(8);
+
+		Vector3 v3CameraPosition = pCamera->GetWorldPosition();
+		float fHalfWidth = pCamera->GetWidth() * 0.5f;
+		float fHalfHeight = pCamera->GetHeight() * 0.5f;
+
+		Matrix4 localToWorld = pCamera->GetWorldTransform();
+
+		v3NearTopLeft = localToWorld * Vector3(-fHalfWidth, +fHalfHeight, fZNear);
+		v3NearTopRight = localToWorld * Vector3(+fHalfWidth, +fHalfHeight, fZNear);
+		v3NearBottomLeft = localToWorld * Vector3(-fHalfWidth, -fHalfHeight, fZNear);
+		v3NearBottomRight = localToWorld * Vector3(+fHalfWidth, -fHalfHeight, fZNear);
+
+		v3FarTopLeft = localToWorld * Vector3(-fHalfWidth, +fHalfHeight, fZFar);
+		v3FarTopRight = localToWorld * Vector3(+fHalfWidth, +fHalfHeight, fZFar);
+		v3FarBottomLeft = localToWorld * Vector3(-fHalfWidth, -fHalfHeight, fZFar);
+		v3FarBottomRight = localToWorld * Vector3(+fHalfWidth, -fHalfHeight, fZFar);
+	}
+}
+
+MBoundsAABB* MIViewport::GetFrustumAABB()
+{
+	std::vector<Vector3> points(8);
+	GetCameraFrustum(points[0], points[1], points[2], points[3], points[4], points[5], points[6], points[7]);
+
+	return new MBoundsAABB(points);
+}
+
+void MIViewport::SetScene(MScene* pScene)
 {
 	if (m_pScene == pScene)
 		return;
@@ -180,9 +249,15 @@ void MIViewport::SetValidCamera(MCamera* pCamera)
 
 void MIViewport::UpdateMatrix()
 {
+	if (m_bCameraInvProjMatrixUpdated)
+		return;
+
 	//Update Camera and Projection Matrix.
 	MCamera* pCamera = GetCamera();
-	Matrix4 projMat = MatrixPerspectiveFovLH(20, m_v2Size.x / m_v2Size.y, pCamera->GetZNear(), pCamera->GetZFar());
+	Matrix4 projMat = pCamera->GetCameraType() == MCamera::EPerspective
+		? MatrixPerspectiveFovLH(pCamera->GetFov() * 0.5f, m_v2Size.x / m_v2Size.y, pCamera->GetZNear(), pCamera->GetZFar())
+		: MatrixOrthoOffCenterLH(-pCamera->GetWidth() * 0.5f, pCamera->GetWidth() * 0.5f, pCamera->GetHeight() * 0.5f, -pCamera->GetHeight() * 0.5f, pCamera->GetZNear(), pCamera->GetZFar());
+
 	m_m4CameraInvProj = projMat * pCamera->GetWorldTransform().Inverse();
 }
 
@@ -195,15 +270,11 @@ Matrix4 MIViewport::MatrixPerspectiveFovLH(const float& fFovYZAngle, const float
 {
 
 	Matrix4 mProjMatrix;
-
 	//清除为0
 	ZeroMemory(&mProjMatrix.m, sizeof(mProjMatrix.m));
 
 	//度数转化为弧度
-	float angle = fFovYZAngle / 180.0f * M_PI;
-
-	//半角
-	angle /= 2.0f;
+	float angle = fFovYZAngle * M_PI / 180.0f;
 
 	//求出各类参数
 	float s1 = 1 / (fScreenAspect*(float)tan(angle));
@@ -218,4 +289,14 @@ Matrix4 MIViewport::MatrixPerspectiveFovLH(const float& fFovYZAngle, const float
 	mProjMatrix.m[3][2] = 1.0f;
 
 	return mProjMatrix;
+}
+
+Matrix4 MIViewport::MatrixOrthoOffCenterLH(const float& fLeft, const float& fRight, const float& fTop, const float& fBottom, const float& fNear, const float& fFar)
+{
+	//warning, (fLeft >> fRight) and (fTop >> fBottom) and (fFar >> fNear)
+	return Matrix4(2 / (fRight - fLeft), 0, 0, (fLeft + fRight) / (fLeft - fRight),
+		0, 2 / (fTop - fBottom), 0, (fTop + fBottom) / (fBottom - fTop),
+		0, 0, 1 / (fFar - fNear), fNear / (fNear - fFar),
+		0,  0,  0,  1
+	);
 }

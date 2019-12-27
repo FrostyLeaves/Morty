@@ -1,7 +1,9 @@
 ﻿#include "MNode.h"
-#include "MIScene.h"
+#include "MScene.h"
 
 #include <queue>
+
+MTypeIdentifierImplement(MNode, MObject)
 
 MNode::MNode()
 	: MObject()
@@ -43,7 +45,7 @@ void MNode::SetVisible(const bool& bVisible)
 
 }
 
-void MNode::SetAttachedScene(MIScene* pScene)
+void MNode::SetAttachedScene(MScene* pScene)
 {
 	//different scene.
 	if (this->m_pScene != pScene)
@@ -75,7 +77,7 @@ bool MNode::AddNodeImpl(MNode* pNode, const MENodeChildType& etype)
 	if (pNode->isHolderOf(this))
 		return false;
 
-	std::vector<MNode*>& children = etype == MENodeChildType::MEFixed ? m_vFixedChildren : m_vChildren;
+	std::vector<MNode*>& children = etype == MENodeChildType::EFixed ? m_vFixedChildren : m_vChildren;
 
 	for (MNode* pChildNode : children)
 	{
@@ -155,7 +157,7 @@ void MNode::FindChildrenByFunc(const SearchNodeFunction& func, std::vector<MNode
 
 bool MNode::RemoveNodeImpl(MNode* pNode, const MENodeChildType& etype)
 {
-	std::vector<MNode*>& children = etype == MENodeChildType::MEFixed ? m_vFixedChildren : m_vChildren;
+	std::vector<MNode*>& children = etype == MENodeChildType::EFixed ? m_vFixedChildren : m_vChildren;
 
 	for (std::vector<MNode*>::iterator iter = children.begin(); iter != children.end(); ++iter)
 	{
@@ -175,7 +177,7 @@ bool MNode::RemoveNodeImpl(MNode* pNode, const MENodeChildType& etype)
 
 void MNode::RemoveAllNodeImpl(const MENodeChildType& etype)
 {
-	std::vector<MNode*>& children = etype == MENodeChildType::MEFixed ? m_vFixedChildren : m_vChildren;
+	std::vector<MNode*>& children = etype == MENodeChildType::EFixed ? m_vFixedChildren : m_vChildren;
 
 	children.clear();
 }

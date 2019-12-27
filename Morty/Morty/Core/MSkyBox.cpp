@@ -11,6 +11,8 @@
 
 #include "MMesh.h"
 
+MTypeIdentifierImplement(MSkyBox, MObject)
+
 MSkyBox::MSkyBox()
 	: MObject()
 	, m_pBoxMesh(nullptr)

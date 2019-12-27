@@ -3,7 +3,7 @@
  * 
  * @Created      2019-05-25 19:43:33
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MOBJECT_H_
@@ -11,17 +11,18 @@
 #include "MGlobal.h"
 #include "MIDPool.h"
 #include "MString.h"
+#include "MTypedClass.h"
 
 #include <map>
 
 #define M_OBJECT(CLASSNAME) \
+MTypedClassSign; \
 virtual MString GetObjectClassName() { \
-	static MString strClassName(#CLASSNAME); \
-	return strClassName; \
-}
+	return GetTypeIdentifier()->m_strName; \
+} 
 
 class MEngine;
-class MORTY_CLASS MObject
+class MORTY_CLASS MObject : public MTypedClass
 {
 public:
 	M_OBJECT(MObject);

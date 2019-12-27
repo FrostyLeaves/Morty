@@ -118,7 +118,7 @@
     <ClInclude Include="..\..\Core\MSkeleton.h" />
     <ClInclude Include="..\..\Core\MSkyBox.h" />
     <ClInclude Include="..\..\Core\MTransform.h" />
-    <ClInclude Include="..\..\Core\Organizer\MIScene.h" />
+    <ClInclude Include="..\..\Core\Organizer\MScene.h" />
     <ClInclude Include="..\..\Core\Organizer\MTransformCoord.h" />
     <ClInclude Include="..\..\Core\Painter\MPainter.h" />
     <ClInclude Include="..\..\Core\RefCounter\MRefCounter.h" />
@@ -156,6 +156,7 @@
     <ClInclude Include="..\..\ResourceLoader\Model\MModelResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MResourceLoader.h" />
+    <ClInclude Include="..\..\Scene\MInputNode.h" />
     <ClInclude Include="..\..\Scene\Model\MSkinnedMeshInstance.h" />
     <ClInclude Include="..\..\Scene\Model\MIMeshInstance.h" />
     <ClInclude Include="..\..\Scene\Model\MStaticMeshInstance.h" />
@@ -163,6 +164,7 @@
     <ClInclude Include="..\..\Utility\Json\MJson.h" />
     <ClInclude Include="..\..\Utility\MColor.h" />
     <ClInclude Include="..\..\Utility\MMath.h" />
+    <ClInclude Include="..\..\Utility\MTypedClass.h" />
     <ClInclude Include="..\..\Utility\Type\MColor.h" />
     <ClInclude Include="..\..\Utility\Type\MType.h" />
   </ItemGroup>
@@ -189,7 +191,7 @@
     <ClCompile Include="..\..\Core\MSkeleton.cpp" />
     <ClCompile Include="..\..\Core\MSkyBox.cpp" />
     <ClCompile Include="..\..\Core\MTransform.cpp" />
-    <ClCompile Include="..\..\Core\Organizer\MIScene.cpp" />
+    <ClCompile Include="..\..\Core\Organizer\MScene.cpp" />
     <ClCompile Include="..\..\Core\Organizer\MTransformCoord.cpp" />
     <ClCompile Include="..\..\Core\Painter\MPainter.cpp" />
     <ClCompile Include="..\..\Core\RefCounter\MRefCounter.cpp" />
@@ -223,6 +225,7 @@
     <ClCompile Include="../../Utility\Timer\MTimer.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Model\MModelResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MResource.cpp" />
+    <ClCompile Include="..\..\Scene\MInputNode.cpp" />
     <ClCompile Include="..\..\Scene\Model\MSkinnedMeshInstance.cpp" />
     <ClCompile Include="..\..\Scene\Model\MIMeshInstance.cpp" />
     <ClCompile Include="..\..\Scene\Model\MStaticMeshInstance.cpp" />
@@ -230,6 +233,7 @@
     <ClCompile Include="..\..\Utility\Json\MJson.cpp" />
     <ClCompile Include="..\..\Utility\MGlobal.cpp" />
     <ClCompile Include="..\..\Utility\MMath.cpp" />
+    <ClCompile Include="..\..\Utility\MTypedClass.cpp" />
     <ClCompile Include="..\..\Utility\Type\MColor.cpp" />
   </ItemGroup>
   <ItemGroup>

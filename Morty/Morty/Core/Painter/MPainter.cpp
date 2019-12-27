@@ -2,7 +2,7 @@
 #include "MMesh.h"
 #include "MIViewport.h"
 #include "MCamera.h"
-
+#include <algorithm>
 
 Vector2 MPainter2DLine::GetDirection2D(MIViewport* pViewport)
 {
@@ -37,6 +37,13 @@ bool MPainter2DLine::FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh
 
 	Vector2 v2Begin2D = m_v2Begin;
 	Vector2 v2End2D = m_v2End;
+
+	if (v2Begin2D.x > v2End2D.x || (v2Begin2D.x == v2End2D.x && v2Begin2D.y < v2End2D.y))
+	{
+		Vector2 temp = v2Begin2D;
+		v2Begin2D = v2End2D;
+		v2End2D = temp;
+	}
 
 	Vector2 v2Normal = v2End2D - v2Begin2D;
 	if (fabs(v2Normal.x) < 0.0001)
@@ -122,12 +129,21 @@ bool MPainter2DRect::FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh
 		mesh.GetVertices()[i].color = color;
 	}
 
-	static unsigned int const indices[] = {
+	static unsigned int const indices_front[] = {
 		0, 1, 2,
-		0, 2, 3
+		0, 2, 3,
 	};
 
-	memcpy(mesh.GetIndices(), &indices, 2 * 3 * sizeof(unsigned int));
+	static unsigned int const indices_back[] = {
+		0, 2, 1,
+		0, 3, 2,
+	};
+
+	if ((m_vPoint[1] - m_vPoint[0]).CrossProduct(m_vPoint[2] - m_vPoint[0]) < 0)
+		memcpy(mesh.GetIndices(), &indices_front, 2 * 3 * sizeof(unsigned int));
+	else
+		memcpy(mesh.GetIndices(), &indices_back, 2 * 3 * sizeof(unsigned int));
+
 
 	mesh.SetNeedUpload();
 	return true;
@@ -188,8 +204,8 @@ bool MPainter2DLine3D::FillData(MIViewport* pViewport, MMesh<MPainterVertex>& me
 	mesh.GetVertices()[3].color = m_lineColor.ToVector4();
 
 	static unsigned int const indices[] = {
-		0, 1, 2,
-		0, 2, 3
+		0, 2, 1,
+		0, 3, 2
 	};
 
 	memcpy(mesh.GetIndices(), &indices, 2 * 3 * sizeof(unsigned int));

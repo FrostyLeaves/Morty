@@ -3,7 +3,7 @@
  * 
  * @Created      2019-12-09 22:37:59
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MIANIMATION_H_
@@ -38,7 +38,7 @@ public:
 	virtual void Stop() = 0;
 	virtual void SetLoop(const bool& bLoop) = 0;
 
-	virtual void Update(const float& fDelta) = 0;
+	virtual void Update(const float& fDelta, const bool& bAnimStep) = 0;
 
 };
 

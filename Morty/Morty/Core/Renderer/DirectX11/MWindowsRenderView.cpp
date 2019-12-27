@@ -255,6 +255,5 @@ LRESULT CALLBACK MWindowsRenderView::ViewProcessFunction(HWND hwnd, UINT message
 		return DefWindowProc(hwnd, message, wParam, lParam);
 	}
 
-
 	return 0;
 }

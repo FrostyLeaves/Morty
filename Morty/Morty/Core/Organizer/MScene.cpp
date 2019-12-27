@@ -1,4 +1,4 @@
-﻿#include "MIScene.h"
+﻿#include "MScene.h"
 #include "MEngine.h"
 #include "MCamera.h"
 #include "MSkyBox.h"
@@ -20,13 +20,16 @@
 #include "MEngine.h"
 #include "MResourceManager.h"
 #include "MMaterialResource.h"
+#include "MInputNode.h"
 
 #include "MModelInstance.h"
 #include "MSkeleton.h"
 
 #include <algorithm>
 
-MIScene::MIScene()
+MTypeIdentifierImplement(MScene, MObject)
+
+MScene::MScene()
 	: MObject()
 	, m_pRootNode(nullptr)
 	, m_pSkyBox(nullptr)
@@ -37,7 +40,7 @@ MIScene::MIScene()
 }
 
 #include "MInputManager.h"
-void MIScene::OnCreated()
+void MScene::OnCreated()
 {
 	MObject::OnCreated();
 
@@ -47,7 +50,7 @@ void MIScene::OnCreated()
 
 }
 
-void MIScene::AddAttachedViewport(MIViewport* pViewport)
+void MScene::AddAttachedViewport(MIViewport* pViewport)
 {
 	for (MIViewport* pv : m_vViewports)
 		if (pv == pViewport)
@@ -58,7 +61,7 @@ void MIScene::AddAttachedViewport(MIViewport* pViewport)
 
 }
 
-void MIScene::RemoveAttachedViewport(MIViewport* pViewport)
+void MScene::RemoveAttachedViewport(MIViewport* pViewport)
 {
 	std::vector<MIViewport*>::iterator iter = std::find(m_vViewports.begin(), m_vViewports.end(), pViewport);
 	if (iter != m_vViewports.end())
@@ -67,7 +70,7 @@ void MIScene::RemoveAttachedViewport(MIViewport* pViewport)
 	}
 }
 
-MDirectionalLight* MIScene::FindActiveDirectionLight()
+MDirectionalLight* MScene::FindActiveDirectionLight()
 {
 	if (m_vDirectionalLight.empty())
 		return nullptr;
@@ -75,7 +78,7 @@ MDirectionalLight* MIScene::FindActiveDirectionLight()
 	return m_vDirectionalLight.back();
 }
 
-void MIScene::FindActivePointLights(const Vector3& v3WorldPosition, std::vector<MPointLight*>& vPointLights)
+void MScene::FindActivePointLights(const Vector3& v3WorldPosition, std::vector<MPointLight*>& vPointLights)
 {
 	auto compareFunc = [v3WorldPosition](MPointLight* a, MPointLight* b) {
 		return (a->GetWorldPosition() - v3WorldPosition).Length() < (b->GetWorldPosition() - v3WorldPosition).Length();
@@ -115,18 +118,18 @@ void MIScene::FindActivePointLights(const Vector3& v3WorldPosition, std::vector<
 	
 }
 
-void MIScene::OnNodeEnter(MNode* pNode)
+void MScene::OnNodeEnter(MNode* pNode)
 {
-	if (MDirectionalLight * pDirLight = dynamic_cast<MDirectionalLight*>(pNode))
+	if (MDirectionalLight* pDirLight = pNode->DynamicCast<MDirectionalLight>())
 		m_vDirectionalLight.push_back(pDirLight);
 
-	else if (MPointLight * pPotLight = dynamic_cast<MPointLight*>(pNode))
+	else if (MPointLight* pPotLight = pNode->DynamicCast<MPointLight>())
 		m_vPointLight.push_back(pPotLight);
 
-	else if (MStaticMeshInstance * pMeshIns = dynamic_cast<MStaticMeshInstance*>(pNode))
+	else if (MStaticMeshInstance* pMeshIns = pNode->DynamicCast<MStaticMeshInstance>())
 		RecordMeshInstance(pMeshIns);
 
-	else if (MCamera* pCamera = dynamic_cast<MCamera*>(pNode))
+	else if (MCamera* pCamera = pNode->DynamicCast<MCamera>())
 	{
 		for (MIViewport* pViewport : m_vViewports)
 		{
@@ -134,28 +137,31 @@ void MIScene::OnNodeEnter(MNode* pNode)
 				pViewport->SetCamera(pCamera);
 		}
 	}
+
+	else if (MInputNode* pInputNode = pNode->DynamicCast<MInputNode>())
+		RecordInputNode(pInputNode);
 }
 
-void MIScene::OnNodeExit(MNode* pNode)
+void MScene::OnNodeExit(MNode* pNode)
 {
-	if (MDirectionalLight* pDirLight = dynamic_cast<MDirectionalLight*>(pNode))
+	if (MDirectionalLight* pDirLight = pNode->DynamicCast<MDirectionalLight>())
 	{
 		std::vector<MDirectionalLight*>::iterator iter = std::find(m_vDirectionalLight.begin(), m_vDirectionalLight.end(), pDirLight);
 		if(m_vDirectionalLight.end() != iter)
 			m_vDirectionalLight.erase(iter);
 	}
 
-	else if (MPointLight* pPotLight = dynamic_cast<MPointLight*>(pNode))
+	else if (MPointLight* pPotLight = pNode->DynamicCast<MPointLight>())
 	{
 		std::vector<MPointLight*>::iterator iter = std::find(m_vPointLight.begin(), m_vPointLight.end(), pPotLight);
 		if (m_vPointLight.end() != iter)
 			m_vPointLight.erase(iter);
 	}
 
-	else if (MStaticMeshInstance * pMeshIns = dynamic_cast<MStaticMeshInstance*>(pNode))
+	else if (MStaticMeshInstance * pMeshIns = pNode->DynamicCast<MStaticMeshInstance>())
 		CancelRecordMeshInstance(pMeshIns);
 
-	else if (MCamera* pCamera = dynamic_cast<MCamera*>(pNode))
+	else if (MCamera* pCamera = pNode->DynamicCast<MCamera>())
 	{
 		for (MIViewport* pViewport : m_vViewports)
 		{
@@ -164,20 +170,29 @@ void MIScene::OnNodeExit(MNode* pNode)
 		}
 	}
 
+	else if (MInputNode* pInputNode = pNode->DynamicCast<MInputNode>())
+		CancelRecordInputNode(pInputNode);
 }
 
-void MIScene::RecordMeshInstance(MIMeshInstance* pMeshInstance)
+void MScene::RecordMeshInstance(MIMeshInstance* pMeshInstance)
 {
 	if (!pMeshInstance->GetMaterial())
 		return;
 
-	std::vector<MaterialMeshInsGroup*>::iterator iter = std::lower_bound(m_vMatMeshInsGroup.begin(), m_vMatMeshInsGroup.end(), pMeshInstance, [](MaterialMeshInsGroup* a, MIMeshInstance* b) {return a->pMat < b->GetMaterial(); });
+	MMaterial* pMaterial = pMeshInstance->GetMaterial();
+	std::vector<MaterialMeshInsGroup*>::iterator iter = std::lower_bound(m_vMatMeshInsGroup.begin(), m_vMatMeshInsGroup.end(), pMaterial, [](MaterialMeshInsGroup* a, MMaterial* b) {return a->pMat < b; });
 	MaterialMeshInsGroup* pGroup = nullptr;
 	if (iter == m_vMatMeshInsGroup.end())
 	{
 		pGroup = new MaterialMeshInsGroup();
 		pGroup->pMat = pMeshInstance->GetMaterial();
 		m_vMatMeshInsGroup.push_back(pGroup);
+	}
+	else if ((*iter)->pMat != pMaterial)
+	{
+			pGroup = new MaterialMeshInsGroup();
+			pGroup->pMat = pMeshInstance->GetMaterial();
+			m_vMatMeshInsGroup.insert(iter, pGroup);
 	}
 	else
 	{
@@ -191,7 +206,7 @@ void MIScene::RecordMeshInstance(MIMeshInstance* pMeshInstance)
 	pGroup->vMeshIns.push_back(pMeshInstance);
 }
 
-void MIScene::CancelRecordMeshInstance(MIMeshInstance* pMeshInstance)
+void MScene::CancelRecordMeshInstance(MIMeshInstance* pMeshInstance)
 {
 	if (!pMeshInstance->GetMaterial())
 		return;
@@ -208,7 +223,34 @@ void MIScene::CancelRecordMeshInstance(MIMeshInstance* pMeshInstance)
 		pGroup->vMeshIns.erase(it);
 }
 
-void MIScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
+void MScene::RecordInputNode(MInputNode* pInputNode)
+{
+	std::vector<MInputNode*>::iterator iter = std::lower_bound(m_vInputNodes.begin(), m_vInputNodes.end(), pInputNode, [](MInputNode* a, MInputNode* b) {return a->GetObjectID() < b->GetObjectID(); });
+	if (iter == m_vInputNodes.end())
+	{
+		m_vInputNodes.push_back(pInputNode);
+	}
+	else
+	{
+		m_vInputNodes.insert(iter, pInputNode);
+	}
+}
+
+void MScene::CancelRecordInputNode(MInputNode* pInputNode)
+{
+	std::vector<MInputNode*>::iterator iter = std::lower_bound(m_vInputNodes.begin(), m_vInputNodes.end(), pInputNode, [](MInputNode* a, MInputNode* b) {return a->GetObjectID() < b->GetObjectID(); });
+	if (iter == m_vInputNodes.end())
+		return;
+
+	m_vInputNodes.erase(iter);
+}
+
+void MScene::GenerateShadowMap()
+{
+
+}
+
+void MScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
 {
 	for (MaterialMeshInsGroup* pGroup : m_vMatMeshInsGroup)
 	{
@@ -346,7 +388,7 @@ void MIScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
 	}
 }
 
-void MIScene::DrawSkyBox(MIRenderer* pRenderer, MIViewport* pViewport)
+void MScene::DrawSkyBox(MIRenderer* pRenderer, MIViewport* pViewport)
 {
 	pRenderer->SetRasterizerType(MIRenderer::MERasterizerType::ESolid | MIRenderer::MERasterizerType::ECullNone);
 
@@ -380,12 +422,12 @@ void MIScene::DrawSkyBox(MIRenderer* pRenderer, MIViewport* pViewport)
 	}
 }
 
-void MIScene::DrawPainter(MIRenderer* pRenderer, MIViewport* pViewport)
+void MScene::DrawPainter(MIRenderer* pRenderer, MIViewport* pViewport)
 {
 	m_pTransformCoord3D->Render(pRenderer, pViewport);
 }
 
-void MIScene::DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MModelInstance* pSpatial)
+void MScene::DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MModelInstance* pSpatial)
 {
 	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW3D);
 	MMaterial* pMaterial = pDraw3DMaterialRes->GetMaterialTemplate();
@@ -413,14 +455,14 @@ void MIScene::DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MMod
 
 	Vector3 list[] = {
 		mat4World * pObb->ConvertFromOBB(Vector3(obmin.x, obmin.y, obmin.z)),
-		mat4World* pObb->ConvertFromOBB(Vector3(obmax.x, obmin.y, obmin.z)),
-		mat4World* pObb->ConvertFromOBB(Vector3(obmax.x, obmax.y, obmin.z)),
-		mat4World* pObb->ConvertFromOBB(Vector3(obmin.x, obmax.y, obmin.z)),
+		mat4World * pObb->ConvertFromOBB(Vector3(obmax.x, obmin.y, obmin.z)),
+		mat4World * pObb->ConvertFromOBB(Vector3(obmax.x, obmax.y, obmin.z)),
+		mat4World * pObb->ConvertFromOBB(Vector3(obmin.x, obmax.y, obmin.z)),
 
-		mat4World* pObb->ConvertFromOBB(Vector3(obmin.x, obmin.y, obmax.z)),
-		mat4World* pObb->ConvertFromOBB(Vector3(obmax.x, obmin.y, obmax.z)),
-		mat4World* pObb->ConvertFromOBB(Vector3(obmax.x, obmax.y, obmax.z)),
-		mat4World* pObb->ConvertFromOBB(Vector3(obmin.x, obmax.y, obmax.z)),
+		mat4World * pObb->ConvertFromOBB(Vector3(obmin.x, obmin.y, obmax.z)),
+		mat4World * pObb->ConvertFromOBB(Vector3(obmax.x, obmin.y, obmax.z)),
+		mat4World * pObb->ConvertFromOBB(Vector3(obmax.x, obmax.y, obmax.z)),
+		mat4World * pObb->ConvertFromOBB(Vector3(obmin.x, obmax.y, obmax.z)),
 	};
 
 	Vector2 begin, end;
@@ -446,30 +488,85 @@ void MIScene::DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MMod
 			meshs.DestroyBuffer(m_pEngine->GetDevice());
 		}
 	}
-
-	pRenderer->UpdateMaterialParam();
 }
 
-void MIScene::Render(MIRenderer* pRenderer, MIViewport* pViewport)
+void MScene::DrawCameraFrustum(MIRenderer* pRenderer, MIViewport* pViewport, MCamera* pCamera)
 {
+	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW3D);
+	MMaterial* pMaterial = pDraw3DMaterialRes->GetMaterialTemplate();
+
+	std::vector<MShaderParam>& vVtxParams = pMaterial->GetVertexShaderParams();
+	for (MShaderParam& param : vVtxParams)
+	{
+		if (param.strName == "cbSpace")
+		{
+			MStruct* pSpaceStruct = param.var.GetByType<MStruct>();
+			pSpaceStruct->SetMember("MatCamProj", pViewport->GetCameraInverseProjection());
+			break;
+		}
+	}
+
+	pRenderer->SetUseMaterial(pMaterial);
+	pRenderer->UpdateMaterialParam();
+
+	Vector3 list[8];
+	pViewport->GetCameraFrustum(list[0], list[1], list[2], list[3], list[4], list[5], list[6], list[7]);
+
+
+	Vector2 begin, end;
+	for (int j = 0; j < 4; ++j)
+	{
+		for (int i = 0; i < 2; ++i)
+		{
+			MPainter2DLine3D line(list[j + i * 4], list[(j + 1) % 4 + i * 4], MColor(i == 0 ? 0 : 1, 1, 1, 1), 1.0f);
+
+			MMesh<MPainterVertex> meshs;
+			if (line.FillData(pViewport, meshs))
+			{
+				pRenderer->DrawMesh(&meshs);
+				meshs.DestroyBuffer(m_pEngine->GetDevice());
+			}
+		}
+
+		MPainter2DLine3D line(list[j], list[(j + 4)], MColor(1, 1, 1, 1), 1.0f);
+		MMesh<MPainterVertex> meshs;
+		if (line.FillData(pViewport, meshs))
+		{
+			pRenderer->DrawMesh(&meshs);
+			meshs.DestroyBuffer(m_pEngine->GetDevice());
+		}
+	}
+
+}
+
+void MScene::Render(MIRenderer* pRenderer, MIViewport* pViewport)
+{
+	GenerateShadowMap();
 	DrawPainter(pRenderer, pViewport);
 	MModelInstance* pSpat = dynamic_cast<MModelInstance*>(m_pRootNode->FindFirstChildByName("Teaport"));
+	DrawCameraFrustum(pRenderer, pViewport, pViewport->GetCamera());
 	DrawBoundingBox(pRenderer, pViewport, pSpat);
 	DrawMeshInstance(pRenderer, pViewport);
 //	DrawSkyBox(pRenderer, pViewport);
 }
 
-void MIScene::Input(MInputEvent* pEvent, MIViewport* pViewport)
+void MScene::Input(MInputEvent* pEvent, MIViewport* pViewport)
 {
 	m_pTransformCoord3D->Input(pEvent, pViewport);
+
+	for (MInputNode* pNode : m_vInputNodes)
+	{
+		if (pNode->Input(pEvent, pViewport))
+			break;
+	}
 }
 
-MIScene::~MIScene()
+MScene::~MScene()
 {
 
 }
 
-void MIScene::SetRootNode(MNode* pRootNode)
+void MScene::SetRootNode(MNode* pRootNode)
 {
 	m_pRootNode = pRootNode;
 	if (pRootNode)

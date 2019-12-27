@@ -3,7 +3,7 @@
  * 
  * @Created      2019-05-13 00:31:54
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MFUNCTION_H_

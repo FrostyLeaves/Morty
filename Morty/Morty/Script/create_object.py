@@ -12,29 +12,43 @@ headerTemaplateString = """/**
 #ifndef _M_{0}_H_
 #define _M_{0}_H_
 #include "MGlobal.h"
+#include "MObject.h"
 
-
-class MORTY_CLASS {1}
+class MORTY_CLASS {1} : public MObject
 {{
 public:
+	M_OBJECT({1});
     {1}();
     virtual ~{1}();
 
 public:
 
 private:
-
 }};
 
-
 #endif
+"""
+
+sourceTemaplateString = """#include "{0}.h"
+
+MTypeIdentifierImplement({0}, MObject)
+
+{0}::{0}()
+    : MObject()
+{{
+}}
+
+{0}::~{0}()
+{{
+}}
+
 """
 
 def headerDocument(className):
     return headerTemaplateString.format(className.upper(), className, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), "Pobrecito" )
 
 def scourceDocument(className):
-    return '#include "{0}.h"'.format(className)
+    return sourceTemaplateString.format(className)
 
 def main(argv):
 

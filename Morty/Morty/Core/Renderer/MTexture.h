@@ -3,7 +3,7 @@
  * 
  * @Created      2019-09-11 16:12:31
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MTEXTURE_H_

@@ -1,6 +1,8 @@
 ﻿#include "MObject.h"
 #include "MEngine.h"
 
+MTypeIdentifierImplement(MObject, MTypedClass)
+
 MObject::MObject()
 	: m_unObjectID(0)
 	, m_pEngine(nullptr)

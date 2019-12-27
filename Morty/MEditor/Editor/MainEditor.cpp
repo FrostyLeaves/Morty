@@ -15,7 +15,7 @@
 #include "MMaterial.h"
 #include "MIMeshInstance.h"
 #include "MMesh.h"
-#include "MIScene.h"
+#include "MScene.h"
 #include "MCamera.h"
 #include "MTransformCoord.h"
 
@@ -65,7 +65,7 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	ImGui_ImplDX11_Init(pDevice->m_pD3dDevice, pDevice->m_pD3dContext);
 
 
-	m_pScene = m_pEngine->GetObjectManager()->CreateObject<MIScene>();
+	m_pScene = m_pEngine->GetObjectManager()->CreateObject<MScene>();
 	MIViewport* pViewport = m_pEngine->GetObjectManager()->CreateObject<MIViewport>();
 	AppendViewport(pViewport);
 

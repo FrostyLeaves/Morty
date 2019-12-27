@@ -3,7 +3,7 @@
  * 
  * @Created      2019-05-12 21:49:13
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MIRENDERER_H_

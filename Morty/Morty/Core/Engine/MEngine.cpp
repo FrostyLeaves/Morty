@@ -231,32 +231,35 @@ bool MEngine::MainLoop()
 
 	float fTimeDelta = (float)(currentTime - m_cTickInfo.lPrevTickTime) / 1000;
 
+	for (std::vector<MIRenderView*>::iterator iter = m_vView.begin(); iter != m_vView.end();)
+	{
+		MIRenderView* pView = (*iter);
+		if (!pView->MainLoop())
+		{
+			m_pRenderer->RemoveOutputView(*iter);
+			iter = m_vView.erase(iter);
+
+			pView->Release();
+			delete pView;
+			pView = nullptr;
+		}
+		else
+		{
+			++iter;
+		}
+	}
+
 	if (fTimeDelta >= m_cTickInfo.fTickInterval)
 	{
 		m_cTickInfo.fTimeDelta = fTimeDelta;
-//		MLogManager::GetInstance()->Log("fps: %f", 1.0f / lTimeDelta);
 
+		//Tick
 		Tick(fTimeDelta);
 		m_cTickInfo.lPrevTickTime = currentTime;
 
-		for (std::vector<MIRenderView*>::iterator iter = m_vView.begin(); iter != m_vView.end();)
-		{
-			MIRenderView* pView = (*iter);
-			if (pView->MainLoop())
-			{
-				m_pRenderer->RenderToView(pView);
-				++iter;
-			}
-			else
-			{
-				m_pRenderer->RemoveOutputView(*iter);
-				iter = m_vView.erase(iter);
-				
-				pView->Release();
-				delete pView;
-				pView = nullptr;
-			}
-		}
+		//Render
+		for (MIRenderView* pView : m_vView)
+			m_pRenderer->RenderToView(pView);		
 
 		int nTime = (int)(m_cTickInfo.fTickInterval * 1000) * 0.75 - (MTimer::GetCurTime() - currentTime);
 		if (nTime > 0)

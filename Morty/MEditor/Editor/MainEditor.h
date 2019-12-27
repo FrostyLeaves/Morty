@@ -4,7 +4,7 @@
 #include "MWindowsRenderView.h"
 
 class MNode;
-class MIScene;
+class MScene;
 class MStaticMeshInstance;
 class NodeTreeView;
 class PropertyView;
@@ -32,7 +32,7 @@ public:
 
 protected:
 
-	MIScene* m_pScene;
+	MScene* m_pScene;
 	NodeTreeView* m_pNodeTreeView;
 	PropertyView* m_pPropertyView;
 

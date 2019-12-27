@@ -3,7 +3,7 @@
  * 
  * @Created      2019-12-7 16:36:40
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MRENDERSTRUCTURE_H_

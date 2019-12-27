@@ -15,7 +15,7 @@ MBoundsOBB::MBoundsOBB(const std::vector<Vector3>& vPoints)
 	float cov_xz = 0;
 	float cov_yz = 0;
 
-	for (const Vector3 pos : vPoints)
+	for (const Vector3& pos : vPoints)
 	{
 		v3Average += pos;
 	}
@@ -46,20 +46,6 @@ MBoundsOBB::MBoundsOBB(const std::vector<Vector3>& vPoints)
 
 	Eigen::Matrix3d matTemp = es.pseudoEigenvectors();
 	Eigen::Matrix3d matEigVectors = matTemp.transpose();
-
-/*
-	matEigVectors.col(0).normalize();
-	double temp;
-	for (std::size_t k = 0; k != matEigVectors.cols() - 1; ++k)
-	{
-		for (std::size_t j = 0; j != k + 1; ++j)
-		{
-			temp = matEigVectors.col(j).transpose() * matEigVectors.col(k + 1);
-			matEigVectors.col(k + 1) -= matEigVectors.col(j) * temp;
-		}
-		matEigVectors.col(k + 1).normalize();
-	}
-*/
 
 	for (int i = 0; i < 3; ++i)
 	{
@@ -128,4 +114,29 @@ Vector3 MBoundsOBB::ConvertToOBB(const Vector3& v3Pos) const
 Vector3 MBoundsOBB::ConvertFromOBB(const Vector3& v3Pos) const
 {
 	return v3Pos * m_matEigVectors.Inverse();
+}
+
+MBoundsAABB::MBoundsAABB(const std::vector<Vector3>& vPoints)
+	: m_v3MaxPoint(-FLT_MAX, -FLT_MAX, -FLT_MAX)
+	, m_v3MinPoint(FLT_MAX, FLT_MAX, FLT_MAX)
+{
+	for (const Vector3& pos : vPoints)
+	{
+		if (m_v3MinPoint.x > pos.x)
+			m_v3MinPoint.x = pos.x;
+		if (m_v3MinPoint.y > pos.y)
+			m_v3MinPoint.y = pos.y;
+		if (m_v3MinPoint.z > pos.z)
+			m_v3MinPoint.z = pos.z;
+
+		if (m_v3MaxPoint.x < pos.x)
+			m_v3MaxPoint.x = pos.x;
+		if (m_v3MaxPoint.y < pos.y)
+			m_v3MaxPoint.y = pos.y;
+		if (m_v3MaxPoint.z < pos.z)
+			m_v3MaxPoint.z = pos.z;
+	}
+
+	m_v3CenterPoint = (m_v3MinPoint + m_v3MaxPoint) * 0.5f;
+	m_v3HalfLength = (m_v3MaxPoint - m_v3MinPoint) * 0.5f;
 }

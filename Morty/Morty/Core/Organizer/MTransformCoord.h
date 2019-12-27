@@ -3,7 +3,7 @@
  * 
  * @Created      2019-11-09 21:25:24
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MTRANSFORMCOORD_H_

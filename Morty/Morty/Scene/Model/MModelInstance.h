@@ -3,7 +3,7 @@
  * 
  * @Created      2019-08-29 20:54:27
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MMODELINSTANCE_H_
@@ -15,7 +15,7 @@
 class MResource;
 class MModelResource;
 class MSkeletonInstance;
-class MIAnimController;
+class MSkeletalAnimController;
 class MORTY_CLASS MModelInstance : public M3DNode
 {
 public:
@@ -33,18 +33,20 @@ public:
 public:
 	bool SetPlayAnimation(const MString& strAnimationName);
 	void SetRemoveAnimation();
-	MIAnimController* GetSkeletalAnimationController() { return m_pCurrentAnimationController; }
+	MSkeletalAnimController* GetSkeletalAnimationController() { return m_pCurrentAnimationController; }
 
 public:
 
 	virtual void Tick(const float& fDelta) override;
+
+	virtual void SetVisible(const bool& bVisible) override;
 
 private:
 
 	MSkeletonInstance* m_pSkeleton;
 	MResourceHolder* m_pModelResource;
 
-	MIAnimController* m_pCurrentAnimationController;
+	MSkeletalAnimController* m_pCurrentAnimationController;
 };
 
 #endif

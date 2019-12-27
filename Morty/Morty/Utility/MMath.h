@@ -3,7 +3,7 @@
  * 
  * @Created      2019-12-10 12:42:08
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MMATH_H_

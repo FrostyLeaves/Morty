@@ -3,7 +3,7 @@
  * 
  * @Created      2019-11-04 23:01:32
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MCOLOR_H_

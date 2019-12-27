@@ -3,7 +3,7 @@
  * 
  * @Created      2019-09-24 22:20:10
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MIVIEWPORT_H_
@@ -13,11 +13,12 @@
 #include "Vector.h"
 #include "Matrix.h"
 
-class MIScene;
+class MScene;
 class MCamera;
 class MPainter;
 class MIRenderer;
 class MInputEvent;
+class MBoundsAABB;
 class MInputManager;
 class MORTY_CLASS MIViewport : public MObject
 {
@@ -29,8 +30,8 @@ public:
 
 public:
 
-	void SetScene(MIScene* pScene);
-	MIScene* GetScene(){ return m_pScene; }
+	void SetScene(MScene* pScene);
+	MScene* GetScene(){ return m_pScene; }
 
 	void SetCamera(MCamera* pCamera);
 	MCamera* GetCamera();
@@ -66,16 +67,22 @@ public:
 
 	Matrix4 GetCameraInverseProjection(){ return m_m4CameraInvProj; }
 
+	void GetCameraFrustum(Vector3& v3NearTopLeft, Vector3& v3NearTopRight, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft, Vector3& v3FarTopLeft, Vector3& v3FarTopRight, Vector3& v3FarBottomRight, Vector3& v3FarBottomLeft);
+	MBoundsAABB* GetFrustumAABB();
 protected:
 	void SetValidCamera(MCamera* pCamera);
 
 	void UpdateMatrix();
 
 	static Matrix4 MatrixPerspectiveFovLH(const float& fFovYZAngle, const float& fScreenAspect, const float& fScreenNear, const float& fScreenFar);
-	
+	static Matrix4 MatrixOrthoOffCenterLH(const float& fLeft, const float& fRight, const float& fTop, const float& fBottom, const float& fNear, const float& fFar);
+
+
+
+
 private:
 
-	MIScene* m_pScene;
+	MScene* m_pScene;
 	
 	MCamera* m_pUserCamera;
 	MCamera* m_pDefaultCamera;
@@ -84,6 +91,7 @@ private:
 	Vector2 m_v2Size;
 
 	Matrix4 m_m4CameraInvProj;
+	bool m_bCameraInvProjMatrixUpdated;
 };
 
 

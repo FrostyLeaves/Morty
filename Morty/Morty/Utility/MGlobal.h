@@ -2,20 +2,20 @@
 #define _M_GLOBAL_H_
 
 #ifdef MORTY_EXPORTS
-#if defined(__WINDOWS_) || defined(_WINDOWS)
+#if defined(__WINDOWS_) || defined(_WINDOWS) || defined(WIN32)
         #define MORTY_CLASS __declspec(dllexport)
     #else
         #define MORTY_CLASS
     #endif
 #else
-	#if defined(__WINDOWS_) || defined(_WINDOWS)
+	#if defined(__WINDOWS_) || defined(_WINDOWS) || defined(WIN32)
         #define MORTY_CLASS __declspec(dllimport)
     #else
         #define MORTY_CLASS
     #endif
 #endif
 
-#if defined(__WINDOWS_) || defined(_WINDOWS)
+#if defined(__WINDOWS_) || defined(_WINDOWS) || defined(WIN32)
 	#define MORTY_WIN
 #else
 	#define MORTY_MAC

@@ -3,7 +3,7 @@
  * 
  * @Created      2019-08-02 11:35:22
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MODELMRESOURCE_H_

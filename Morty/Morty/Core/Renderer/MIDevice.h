@@ -3,7 +3,7 @@
  * 
  * @Created      2019-09-21 23:08:49
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MIDEVICE_H_

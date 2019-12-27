@@ -3,7 +3,7 @@
  * 
  * @Created      2019-12-13 20:24:34
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_SKINNEDMESHINSTANCE_H_

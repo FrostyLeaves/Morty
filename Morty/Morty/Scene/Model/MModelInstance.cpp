@@ -7,8 +7,11 @@
 
 #include "MEngine.h"
 
+MTypeIdentifierImplement(MModelInstance, M3DNode)
+
 MModelInstance::MModelInstance()
-	: m_pModelResource(nullptr)
+	: M3DNode()
+	, m_pModelResource(nullptr)
 	, m_pSkeleton(nullptr)
 	, m_pCurrentAnimationController(nullptr)
 {
@@ -49,7 +52,7 @@ bool MModelInstance::Load(MResource* pResource)
 					delete m_pSkeleton;
 					m_pSkeleton = nullptr;
 				}
-				RemoveAllNodeImpl(MENodeChildType::MEFixed);
+				RemoveAllNodeImpl(MENodeChildType::EFixed);
 				
 
 				int index = 0;
@@ -63,8 +66,7 @@ bool MModelInstance::Load(MResource* pResource)
 
 					pMeshIns->SetMesh(pMesh);
 					pMeshIns->SetName(MString("Mesh_") + MStringHelper::ToString(index));
-					AddNodeImpl(pMeshIns, MENodeChildType::MEFixed);
-					//AddNodeImpl(pMeshIns, MENodeChildType::MENormal);
+					AddNodeImpl(pMeshIns, MENodeChildType::EFixed);
 
 					pMeshIns->SetMaterial(pModelResource->GetMeshDefaultMaterial(index));
 
@@ -126,6 +128,11 @@ void MModelInstance::Tick(const float& fDelta)
 
 	if (m_pCurrentAnimationController)
 	{
-		m_pCurrentAnimationController->Update(fDelta);
+		m_pCurrentAnimationController->Update(fDelta, GetVisibleRecursively());
 	}
+}
+
+void MModelInstance::SetVisible(const bool& bVisible)
+{
+	M3DNode::SetVisible(bVisible);
 }

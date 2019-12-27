@@ -3,7 +3,7 @@
  * 
  * @Created      2019-05-12 21:52:30
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MDIRECTX11RENDERER_H_

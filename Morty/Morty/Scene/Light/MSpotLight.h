@@ -3,7 +3,7 @@
  * 
  * @Created      2019-09-19 17:48:28
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MSPOTLIGHT_H_

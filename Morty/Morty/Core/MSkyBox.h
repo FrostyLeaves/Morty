@@ -3,7 +3,7 @@
  * 
  * @Created      2019-09-22 01:39:38
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MSKYBOX_H_

@@ -3,7 +3,7 @@
  * 
  * @Created      2019-12-09 22:38:06
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MSKELETALANIMATION_H_
@@ -85,7 +85,7 @@ public:
 	virtual void Pause() override;
 	virtual void Stop() override;
 	virtual void SetLoop(const bool& bLoop) override;
-	virtual void Update(const float& fDelta) override;
+	virtual void Update(const float& fDelta, const bool& bAnimStep = true) override;
 private:
 	MSkeletonInstance* m_pSkeletonIns;
 	MSkeletalAnimation* m_pAnimation;

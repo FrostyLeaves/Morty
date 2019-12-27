@@ -3,7 +3,7 @@
  * 
  * @Created      2019-08-25 15:08:54
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MVERTEX_H_

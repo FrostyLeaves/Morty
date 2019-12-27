@@ -3,7 +3,7 @@
  * 
  * @Created      2019-08-27 19:22:28
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MMATERIAL_H_

@@ -8,8 +8,11 @@
 
 #include "MVariant.h"
 
+MTypeIdentifierImplement(MMaterial, MObject)
+
 MMaterial::MMaterial()
-	: m_pMaterialResource(nullptr)
+	: MObject()
+	, m_pMaterialResource(nullptr)
 	, m_pVertexShader(nullptr)
 	, m_pPxielShader(nullptr)
 {

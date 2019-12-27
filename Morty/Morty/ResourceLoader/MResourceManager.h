@@ -3,7 +3,7 @@
  * 
  * @Created      2019-08-11 13:40:09
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MRESOURCEMANAGER_H_

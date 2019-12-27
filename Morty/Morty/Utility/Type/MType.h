@@ -3,7 +3,7 @@
  * 
  * @Created      2019-11-04 23:06:48
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
 #ifndef _M_MTYPE_

@@ -1,17 +1,18 @@
 ﻿/**
- * @File         MIScene
+ * @File         MScene
  * 
  * @Created      2019-09-19 00:32:56
  *
- * @Author       Morty
+ * @Author       Pobrecito
 **/
 
-#ifndef _M_MISCENE_H_
-#define _M_MISCENE_H_
+#ifndef _M_MSCENE_H_
+#define _M_MSCENE_H_
 #include "MGlobal.h"
 #include "MObject.h"
 #include "Matrix.h"
 
+#include <functional>
 #include <vector>
 
 class MNode;
@@ -27,12 +28,13 @@ class MIViewport;
 class MMaterial;
 class MIMeshInstance;
 class MTransformCoord3D;
-class MORTY_CLASS MIScene : public MObject
+class MInputNode;
+class MORTY_CLASS MScene : public MObject
 {
 public:
-	M_OBJECT(MIScene);
-    MIScene();
-    virtual ~MIScene();
+	M_OBJECT(MScene);
+    MScene();
+    virtual ~MScene();
 
 public:
 
@@ -53,6 +55,9 @@ public:
 	void RecordMeshInstance(MIMeshInstance* pMeshInstance);
 	void CancelRecordMeshInstance(MIMeshInstance* pMeshInstance);
 
+	void RecordInputNode(MInputNode* pInputNode);
+	void CancelRecordInputNode(MInputNode* pInputNode);
+
 	virtual void Render(MIRenderer* pRenderer, MIViewport* pViewport);
 
 	virtual void Input(MInputEvent* pEvent, MIViewport* pViewport);
@@ -67,10 +72,13 @@ public:
 
 protected:
 
+	void GenerateShadowMap();
+
 	void DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport);
 	void DrawSkyBox(MIRenderer* pRenderer, MIViewport* pViewport);
 	void DrawPainter(MIRenderer* pRenderer, MIViewport* pViewport);
 	void DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MModelInstance* pSpatial);
+	void DrawCameraFrustum(MIRenderer* pRenderer, MIViewport* pViewport, MCamera* pCamera);
 
 private:
 
@@ -89,6 +97,9 @@ private:
 	std::vector<MaterialMeshInsGroup*> m_vMatMeshInsGroup;
 
 	std::vector<MIViewport*> m_vViewports;
+
+
+	std::vector<MInputNode*> m_vInputNodes;
 };
 
 

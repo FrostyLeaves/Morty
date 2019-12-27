@@ -208,9 +208,9 @@ void MDirectX11Renderer::RenderToView(MIRenderView* pView)
 // 		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullNone);
 // 	else
 // 		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullBack);
-
-	m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullNone);
 	
+	m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullBack);
+
 	pView->OnRenderBegin();
 	
 	for (MIViewport* pViewport : pView->GetViewports())
