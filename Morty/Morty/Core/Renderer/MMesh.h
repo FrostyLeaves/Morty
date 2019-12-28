@@ -43,7 +43,14 @@ public:
 
 	virtual void CreateVertices(const unsigned int& unSize) = 0;
 	virtual void CreateIndices(const unsigned int& unSize, const unsigned int& unIndexSize);
+	virtual void ResizeVertices(const unsigned int& unSize) = 0;
 	virtual void ResizeIndices(const unsigned int& unSize, const unsigned int& unIndexSize);
+
+	virtual void Clean()
+	{
+		ResizeVertices(0);
+		ResizeIndices(0, 1);
+	}
 
 protected:
 
@@ -96,11 +103,11 @@ public:
 		m_unVerticesLength = unSize;
 	}
 
-	void ResizeVertices(const unsigned int& unSize)
+	virtual void ResizeVertices(const unsigned int& unSize) override
 	{
 		if (m_unVerticesArraySize < unSize)
 		{
-			VERTEX_TYPE vertices = new VERTEX_TYPE[unSize];
+			VERTEX_TYPE* vertices = new VERTEX_TYPE[unSize];
 			if (nullptr != m_vVertices)
 			{
 				memcpy(vertices, m_vVertices, m_unVerticesLength * sizeof(VERTEX_TYPE));

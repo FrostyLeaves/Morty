@@ -185,18 +185,22 @@ void MTransformCoord3D::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 		int i = vOrder[oi];
 		if (vVaild[i] && lines[i].FillData(pViewport, *static_cast<MMesh<MPainterVertex>*>(m_pCoordRenderCache)))
 		{
-			pRenderer->DrawMesh(m_pCoordRenderCache);
 		}
 	}
 
 	for (int oi = 0; oi < 3; ++oi)
 	{
 		int i = vOrder[oi];
-		if (vVaild[(i +1)%3] && vVaild[(i+2)%3] && rects[i].FillData(pViewport, *static_cast<MMesh<MPainterVertex>*>(m_pCoordRenderCache)))
-			pRenderer->DrawMesh(m_pCoordRenderCache);
+		if (vVaild[(i + 1) % 3] && vVaild[(i + 2) % 3] && rects[i].FillData(pViewport, *static_cast<MMesh<MPainterVertex>*>(m_pCoordRenderCache)))
+		{
+		}
 	}
 
-	
+	if (m_pCoordRenderCache->GetIndicesLength() > 0)
+	{
+		pRenderer->DrawMesh(m_pCoordRenderCache);
+		m_pCoordRenderCache->Clean();
+	}
 }
 
 void MTransformCoord3D::GetTranslationShapes(MPainter2DLine* lines, class MPainter2DRect* rects, bool* vValid, int* vOrder, MIViewport* pViewport)

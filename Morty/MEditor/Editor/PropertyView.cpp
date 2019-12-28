@@ -54,7 +54,7 @@ bool PropertyView::ShowNodeBegin(const MString& strNodeName)
 	{
 		ImGui::NextColumn();
 		ImGui::AlignTextToFramePadding();
-		ImGui::Text("my sailor is rich");
+		//ImGui::Text("0.0");
 		ImGui::NextColumn();
 
 		return true;
@@ -90,7 +90,7 @@ bool PropertyView::EditM3DNode(M3DNode* pNode)
 	if (nullptr == pNode)
 		return false;
 
-	if (ShowNodeBegin("3DNode"))
+	if (ShowNodeBegin("Transform"))
 	{
 		MTransform trans = pNode->GetTransform();
 		if (EditTransform(trans))

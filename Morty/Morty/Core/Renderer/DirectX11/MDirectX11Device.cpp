@@ -142,6 +142,12 @@ void MDirectX11Device::Release()
 
 void MDirectX11Device::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh, const bool& bModifiable/* = false*/)
 {
+	if (pMesh->GetIndicesLength() <= 0)
+	{
+		ppVertexBuffer = nullptr;
+		return;
+	}
+
 	//创建顶点缓冲
 	D3D11_BUFFER_DESC bufferDesc;
 

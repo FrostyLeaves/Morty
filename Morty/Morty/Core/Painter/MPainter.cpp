@@ -54,31 +54,35 @@ bool MPainter2DLine::FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh
 		v2Normal.Normalize();
 	}
 
-	mesh.CreateVertices(GetVertexCount());
-	mesh.CreateIndices(GetIndexCount(), 1);
+	unsigned int unVerticesLength = mesh.GetVerticesLength();
+	unsigned int unIndicesLength = mesh.GetIndicesLength();
 
-	mesh.GetVertices()[0].pos.x = v2Begin2D.x + v2Normal.x * -m_fThickness / pViewport->GetSize().x;
-	mesh.GetVertices()[0].pos.y = v2Begin2D.y + v2Normal.y * -m_fThickness / pViewport->GetSize().y;
-	mesh.GetVertices()[0].color = m_lineColor.ToVector4();
+	mesh.ResizeVertices(unVerticesLength + GetVertexCount());
+	mesh.ResizeIndices(unIndicesLength + GetIndexCount(), 1);
 
-	mesh.GetVertices()[1].pos.x = v2Begin2D.x + v2Normal.x * m_fThickness / pViewport->GetSize().x;
-	mesh.GetVertices()[1].pos.y = v2Begin2D.y + v2Normal.y * m_fThickness / pViewport->GetSize().y;
-	mesh.GetVertices()[1].color = m_lineColor.ToVector4();
+	mesh.GetVertices()[unVerticesLength + 0].pos.x = v2Begin2D.x + v2Normal.x * -m_fThickness / pViewport->GetSize().x;
+	mesh.GetVertices()[unVerticesLength + 0].pos.y = v2Begin2D.y + v2Normal.y * -m_fThickness / pViewport->GetSize().y;
+	mesh.GetVertices()[unVerticesLength + 0].color = m_lineColor.ToVector4();
 
-	mesh.GetVertices()[2].pos.x = v2End2D.x + v2Normal.x * -m_fThickness / pViewport->GetSize().x;
-	mesh.GetVertices()[2].pos.y = v2End2D.y + v2Normal.y * -m_fThickness / pViewport->GetSize().y;
-	mesh.GetVertices()[2].color = m_lineColor.ToVector4();
+	mesh.GetVertices()[unVerticesLength + 1].pos.x = v2Begin2D.x + v2Normal.x * m_fThickness / pViewport->GetSize().x;
+	mesh.GetVertices()[unVerticesLength + 1].pos.y = v2Begin2D.y + v2Normal.y * m_fThickness / pViewport->GetSize().y;
+	mesh.GetVertices()[unVerticesLength + 1].color = m_lineColor.ToVector4();
 
-	mesh.GetVertices()[3].pos.x = v2End2D.x + v2Normal.x * m_fThickness / pViewport->GetSize().x;
-	mesh.GetVertices()[3].pos.y = v2End2D.y + v2Normal.y * m_fThickness / pViewport->GetSize().y;
-	mesh.GetVertices()[3].color = m_lineColor.ToVector4();
+	mesh.GetVertices()[unVerticesLength + 2].pos.x = v2End2D.x + v2Normal.x * -m_fThickness / pViewport->GetSize().x;
+	mesh.GetVertices()[unVerticesLength + 2].pos.y = v2End2D.y + v2Normal.y * -m_fThickness / pViewport->GetSize().y;
+	mesh.GetVertices()[unVerticesLength + 2].color = m_lineColor.ToVector4();
+
+	mesh.GetVertices()[unVerticesLength + 3].pos.x = v2End2D.x + v2Normal.x * m_fThickness / pViewport->GetSize().x;
+	mesh.GetVertices()[unVerticesLength + 3].pos.y = v2End2D.y + v2Normal.y * m_fThickness / pViewport->GetSize().y;
+	mesh.GetVertices()[unVerticesLength + 3].color = m_lineColor.ToVector4();
 
 	static unsigned int const indices[] = {
 		0, 1, 2,
 		1, 3, 2
 	};
 
-	memcpy(mesh.GetIndices(), &indices, 2 * 3 * sizeof(unsigned int));
+	for (unsigned int i = 0; i < 6; ++i)
+		mesh.GetIndices()[unIndicesLength + i] = unVerticesLength + indices[i];
 
 	mesh.SetNeedUpload();
 	return true;
@@ -119,14 +123,17 @@ bool MPainter2DRect::FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh
 	if (nullptr == pViewport)
 		return false;
 
-	mesh.CreateVertices(GetVertexCount());
-	mesh.CreateIndices(GetIndexCount(), 1);
+	unsigned int unVerticesLength = mesh.GetVerticesLength();
+	unsigned int unIndicesLength = mesh.GetIndicesLength();
+
+	mesh.ResizeVertices(unVerticesLength + GetVertexCount());
+	mesh.ResizeIndices(unIndicesLength + GetIndexCount(), 1);
 
 	Vector4 color = m_rectColor.ToVector4();
 	for (int i = 0; i < 4; ++i)
 	{
-		mesh.GetVertices()[i].pos = m_vPoint[i];
-		mesh.GetVertices()[i].color = color;
+		mesh.GetVertices()[unVerticesLength + i].pos = m_vPoint[i];
+		mesh.GetVertices()[unVerticesLength + i].color = color;
 	}
 
 	static unsigned int const indices_front[] = {
@@ -140,10 +147,15 @@ bool MPainter2DRect::FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh
 	};
 
 	if ((m_vPoint[1] - m_vPoint[0]).CrossProduct(m_vPoint[2] - m_vPoint[0]) < 0)
-		memcpy(mesh.GetIndices(), &indices_front, 2 * 3 * sizeof(unsigned int));
+	{
+		for (unsigned int i = 0; i < 6; ++i)
+			mesh.GetIndices()[unIndicesLength + i] = unVerticesLength + indices_front[i];
+	}
 	else
-		memcpy(mesh.GetIndices(), &indices_back, 2 * 3 * sizeof(unsigned int));
-
+	{
+		for (unsigned int i = 0; i < 6; ++i)
+			mesh.GetIndices()[unIndicesLength + i] = unVerticesLength + indices_back[i];
+	}
 
 	mesh.SetNeedUpload();
 	return true;
@@ -188,27 +200,32 @@ bool MPainter2DLine3D::FillData(MIViewport* pViewport, MMesh<MPainterVertex>& me
 	
 	Vector3 v3Thick3D = v3Normal * (m_fThickness / (v2Nab - v2Center).Length());
 
-	mesh.CreateVertices(GetVertexCount());
-	mesh.CreateIndices(GetIndexCount(), 1);
 
-	mesh.GetVertices()[0].pos = m_v3Begin - v3Thick3D;
-	mesh.GetVertices()[0].color = m_lineColor.ToVector4();
+	unsigned int unVerticesLength = mesh.GetVerticesLength();
+	unsigned int unIndicesLength = mesh.GetIndicesLength();
 
-	mesh.GetVertices()[1].pos = m_v3Begin + v3Thick3D;
-	mesh.GetVertices()[1].color = m_lineColor.ToVector4();
+	mesh.ResizeVertices(unVerticesLength + GetVertexCount());
+	mesh.ResizeIndices(unIndicesLength + GetIndexCount(), 1);
 
-	mesh.GetVertices()[2].pos = m_v3End + v3Thick3D;
-	mesh.GetVertices()[2].color = m_lineColor.ToVector4();
+	mesh.GetVertices()[unVerticesLength + 0].pos = m_v3Begin - v3Thick3D;
+	mesh.GetVertices()[unVerticesLength + 0].color = m_lineColor.ToVector4();
 
-	mesh.GetVertices()[3].pos = m_v3End - v3Thick3D;
-	mesh.GetVertices()[3].color = m_lineColor.ToVector4();
+	mesh.GetVertices()[unVerticesLength + 1].pos = m_v3Begin + v3Thick3D;
+	mesh.GetVertices()[unVerticesLength + 1].color = m_lineColor.ToVector4();
+
+	mesh.GetVertices()[unVerticesLength + 2].pos = m_v3End + v3Thick3D;
+	mesh.GetVertices()[unVerticesLength + 2].color = m_lineColor.ToVector4();
+
+	mesh.GetVertices()[unVerticesLength + 3].pos = m_v3End - v3Thick3D;
+	mesh.GetVertices()[unVerticesLength + 3].color = m_lineColor.ToVector4();
 
 	static unsigned int const indices[] = {
 		0, 2, 1,
 		0, 3, 2
 	};
 
-	memcpy(mesh.GetIndices(), &indices, 2 * 3 * sizeof(unsigned int));
+	for (unsigned int i = 0; i < 6; ++i)
+		mesh.GetIndices()[unIndicesLength + i] = unVerticesLength + indices[i];
 
 	mesh.SetNeedUpload();
 	return true;

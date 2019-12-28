@@ -5,6 +5,8 @@
 MIMesh::MIMesh(const bool& bModifiable/* = false*/)
 	: m_vVertices(nullptr)
 	, m_vIndices(nullptr)
+	, m_unVerticesLength(0)
+	, m_unIndicesLength(0)
 	, m_pVertexBuffer(nullptr)
 	, m_bNeedGenerate(true)
 	, m_bNeedUpload(false)
