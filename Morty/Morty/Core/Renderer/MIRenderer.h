@@ -26,6 +26,8 @@ class MCamera;
 struct MShaderParam;
 class MTexture;
 class MIViewport;
+class MIRenderTarget;
+class MRenderTargetTexture;
 class MORTY_CLASS MIRenderer
 {
 public:
@@ -50,12 +52,12 @@ public:
 	virtual bool Initialize() = 0;
 	virtual void Release() = 0;
 
-	virtual void RenderToView(MIRenderView* pView) = 0;
+	virtual void SetRenderTarget(MIRenderTarget* pRenderTarget) = 0;
+	virtual void SetViewport(MIViewport* pViewport) = 0;
+	virtual void Render() = 0;
 
 	virtual void AddOutputView(MIRenderView* pView) = 0;
 	virtual void RemoveOutputView(MIRenderView* pView) = 0;
-	virtual void OnResize(MIRenderView* pView, const int& nWidth, const int& nHeight) = 0;
-
 
 	virtual void InitDefaultResource() = 0;
 	virtual void ReleaseDefaultResource() = 0;

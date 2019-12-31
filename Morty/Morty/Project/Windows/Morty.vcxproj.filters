@@ -270,6 +270,15 @@
     <ClInclude Include="..\..\Scene\MInputNode.h">
       <Filter>Scene</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\DirectX11\MWindowsDX11RenderTarget.h">
+      <Filter>Core\Renderer\DirectX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\MIRenderTarget.h">
+      <Filter>Core\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\MTextureRenderTarget.h">
+      <Filter>Core\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -439,6 +448,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Scene\MInputNode.cpp">
       <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\DirectX11\MWindowsDX11RenderTarget.cpp">
+      <Filter>Core\Renderer\DirectX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\MIRenderTarget.cpp">
+      <Filter>Core\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\MTextureRenderTarget.cpp">
+      <Filter>Core\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

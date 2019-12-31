@@ -16,6 +16,7 @@
 
 class MIViewport;
 class MEngine;
+class MIRenderTarget;
 class MORTY_CLASS MIRenderView
 {
 public:
@@ -43,6 +44,8 @@ public:
 	void RemoveViewport(MIViewport* pViewport);
 	std::vector<MIViewport*>& GetViewports(){ return m_vViewport; }
 
+	MIRenderTarget* GetRenderTarget() { return m_pRenderTarget; }
+	virtual void SetRenderTarget(MIRenderTarget* pRenderTarget) {m_pRenderTarget = pRenderTarget;}
 
 protected:
 
@@ -51,6 +54,7 @@ protected:
 
 	MEngine* m_pEngine;
 
+	MIRenderTarget* m_pRenderTarget;
 };
 
 

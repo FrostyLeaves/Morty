@@ -11,6 +11,10 @@
 #include "MRenderStructure.h"
 #include "MTexture.h"
 #include "MShader.h"
+#include "MIRenderTarget.h"
+
+const bool bEnable4xMsaa = true;
+
 
 MDirectX11Device::MDirectX11Device()
 	: MIDevice()
@@ -294,8 +298,8 @@ void MDirectX11Device::GenerateTexture(MTextureBuffer** ppTextureBuffer, MTextur
 		{
 			m_pD3dContext->GenerateMips(pShaderResourceView);
 		}
-		pTextureBuffer->Release();
 
+		(*ppTextureBuffer)->m_pTextureBuffer = pTextureBuffer;
 		(*ppTextureBuffer)->m_pShaderResourceView = pShaderResourceView;
 	}
 }
@@ -385,8 +389,8 @@ void MDirectX11Device::GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTe
 		{
 			m_pD3dContext->GenerateMips(pShaderResourceView);
 		}
-		pTextureBuffer->Release();
-
+		
+		(*ppTextureBuffer)->m_pTextureBuffer = pTextureBuffer;
 		(*ppTextureBuffer)->m_pShaderResourceView = pShaderResourceView;
 	}
 }
@@ -409,6 +413,11 @@ void MDirectX11Device::DestroyBuffer(MVertexBuffer** ppVertexBuffer)
 
 void MDirectX11Device::DestroyTexture(MTextureBuffer** ppTextureBuffer)
 {
+	if ((*ppTextureBuffer)->m_pTextureBuffer)
+	{
+		(*ppTextureBuffer)->m_pTextureBuffer->Release();
+		(*ppTextureBuffer)->m_pTextureBuffer = nullptr;
+	}
 	if ((*ppTextureBuffer)->m_pShaderResourceView)
 	{
 		(*ppTextureBuffer)->m_pShaderResourceView->Release();
@@ -794,6 +803,98 @@ ID3D11InputLayout* MDirectX11Device::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC 
 	pShaderBuffer->Release();
 
 	return pVertexInputLayout;
+}
+
+bool MDirectX11Device::GenerateRenderTarget(MIRenderTarget* pRenderTarget, int nWidth, int nHeight)
+{
+	if (nullptr == pRenderTarget->m_pBackBuffer)
+		return false;
+
+	if (nWidth < 1)
+		nWidth = 1;
+	if (nHeight < 1)
+		nHeight = 1;
+
+	// Resize the swap chain and recreate the render target view.
+	HRESULT hr;
+
+	hr = m_pD3dDevice->CreateRenderTargetView(pRenderTarget->m_pBackBuffer, 0, &pRenderTarget->m_pTargetView);
+	if (FAILED(hr))
+	{
+		MLogManager::GetInstance()->Error("Failed to CreateRenderTargetView!");
+		return false;
+	}
+
+	// Create the depth/stencil buffer and view.
+
+	D3D11_TEXTURE2D_DESC depthStencilDesc;
+
+	depthStencilDesc.Width = nWidth;
+	depthStencilDesc.Height = nHeight;
+	depthStencilDesc.MipLevels = 1;
+	depthStencilDesc.ArraySize = 1;
+	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+	// Use 4X MSAA? --must match swap chain MSAA values.
+	if (bEnable4xMsaa)
+	{
+		depthStencilDesc.SampleDesc.Count = 4;
+		depthStencilDesc.SampleDesc.Quality = m_n4xMsaaQuality;
+	}
+	// No MSAA
+	else
+	{
+		depthStencilDesc.SampleDesc.Count = 1;
+		depthStencilDesc.SampleDesc.Quality = 0;
+	}
+
+	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthStencilDesc.CPUAccessFlags = 0;
+	depthStencilDesc.MiscFlags = 0;
+
+	hr = m_pD3dDevice->CreateTexture2D(&depthStencilDesc, 0, &pRenderTarget->m_pDepthStencilBuffer);
+	if (FAILED(hr))
+	{
+		MLogManager::GetInstance()->Error("Failed to CreateTexture2D!");
+		return false;
+	}
+
+	hr = m_pD3dDevice->CreateDepthStencilView(pRenderTarget->m_pDepthStencilBuffer, 0, &pRenderTarget->m_pDepthStencilView);
+	if (FAILED(hr))
+	{
+		MLogManager::GetInstance()->Error("Failed to CreateDepthStencilView!");
+		return false;
+	}
+
+	return true;
+}
+
+void MDirectX11Device::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
+{
+	if (pRenderTarget->m_pBackBuffer)
+	{
+		pRenderTarget->m_pBackBuffer->Release();
+		pRenderTarget->m_pBackBuffer = nullptr;
+	}
+	if (pRenderTarget->m_pTargetView)
+	{
+		pRenderTarget->m_pTargetView->Release();
+		pRenderTarget->m_pTargetView = nullptr;
+	}
+
+	if (pRenderTarget->m_pDepthStencilBuffer)
+	{
+		pRenderTarget->m_pDepthStencilBuffer->Release();
+		pRenderTarget->m_pDepthStencilBuffer = nullptr;
+	}
+
+	if (pRenderTarget->m_pDepthStencilView)
+	{
+		pRenderTarget->m_pDepthStencilView->Release();
+		pRenderTarget->m_pDepthStencilView = nullptr;
+	}
+
 }
 
 MVariant MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType* pReflectionType)

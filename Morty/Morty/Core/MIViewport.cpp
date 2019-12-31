@@ -23,12 +23,12 @@ MIViewport::MIViewport()
 
 MIViewport::~MIViewport()
 {
-// 	if (m_pDefaultCamera)
-// 	{
-// 		m_pEngine->GetObjectManager()->RemoveObject(m_pDefaultCamera->GetObjectID());
-// 		m_pDefaultCamera = nullptr;
-// 	}
-// 
+	if (m_pDefaultCamera)
+	{
+		m_pEngine->GetObjectManager()->RemoveObject(m_pDefaultCamera->GetObjectID());
+		m_pDefaultCamera = nullptr;
+	}
+
 // 	if (m_pScene)
 // 	{
 // 		m_pScene->RemoveAttachedViewport(this);

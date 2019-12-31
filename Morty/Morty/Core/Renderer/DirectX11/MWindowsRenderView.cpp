@@ -10,6 +10,7 @@
 #include "MIRenderer.h"
 #include "MIViewport.h"
 #include "MTimer.h"
+#include "MIRenderTarget.h"
 
 std::map<HWND, MWindowsRenderView*> MWindowsRenderView::s_tViewTable = std::map<HWND, MWindowsRenderView*>();
 HINSTANCE MWindowsRenderView::s_hInstance = 0;
@@ -93,11 +94,29 @@ bool MWindowsRenderView::Initialize(MEngine* pEngine, const char* svWindowName)
 
 void MWindowsRenderView::OnResize(const int& nWidth, const int& nHeight)
 {
-	m_pEngine->GetRenderer()->OnResize(this, nWidth, nHeight);
+	if(m_pRenderTarget)
+		m_pRenderTarget->OnResize(nWidth, nHeight);
 
 	for (MIViewport* pViewport : m_vViewport)
 	{
 		pViewport->SetSize(Vector2(nWidth, nHeight));
+	}
+}
+
+void MWindowsRenderView::SetRenderTarget(MIRenderTarget* pRenderTarget)
+{
+	MIRenderView::SetRenderTarget(pRenderTarget);
+	if (m_pRenderTarget)
+	{
+		m_pRenderTarget->m_funcRenderFunction = [this](MIRenderer* pRenderer) {
+			OnRenderBegin();
+			for (MIViewport* pViewport : m_vViewport)
+			{
+				pRenderer->SetViewport(pViewport);
+				pViewport->Render(pRenderer);
+			}
+			OnRenderEnd();
+		};
 	}
 }
 
@@ -210,7 +229,7 @@ LRESULT CALLBACK MWindowsRenderView::ViewProcessFunction(HWND hwnd, UINT message
 		break;
 
 	case WM_ERASEBKGND:
-		m_pEngine->GetRenderer()->RenderToView(this);
+		m_pEngine->RenderToView(this);
 		break;
 	case WM_SIZE:
 	{

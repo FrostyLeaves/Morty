@@ -41,6 +41,9 @@ public:
 
 	ID3D11InputLayout* CreateInputLayout(D3D11_INPUT_ELEMENT_DESC desc[], const int& nLength);
 
+	virtual bool GenerateRenderTarget(MIRenderTarget* pRenderTarget, int nWidth, int nHeight) override;
+	virtual void DestroyRenderTarget(MIRenderTarget* pRenderTarget) override;
+
 	MVariant GenerateVariableByBuffer(class ID3D11ShaderReflectionType* pReflectionType);
 
 	ID3D11Device* m_pD3dDevice;

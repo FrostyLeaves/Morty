@@ -90,7 +90,7 @@ public:
 		{
 			if (nullptr != m_vVertices)
 			{
-				delete[] m_vVertices;
+				delete[] (VERTEX_TYPE*)m_vVertices;
 				m_vVertices = nullptr;
 			}
 
@@ -111,7 +111,7 @@ public:
 			if (nullptr != m_vVertices)
 			{
 				memcpy(vertices, m_vVertices, m_unVerticesLength * sizeof(VERTEX_TYPE));
-				delete[] m_vVertices;
+				delete[](VERTEX_TYPE*)m_vVertices;
 			}
 
 			m_vVertices = vertices;

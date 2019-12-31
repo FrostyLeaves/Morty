@@ -259,7 +259,7 @@ bool MEngine::MainLoop()
 
 		//Render
 		for (MIRenderView* pView : m_vView)
-			m_pRenderer->RenderToView(pView);		
+			RenderToView(pView);
 
 		int nTime = (int)(m_cTickInfo.fTickInterval * 1000) * 0.75 - (MTimer::GetCurTime() - currentTime);
 		if (nTime > 0)
@@ -270,6 +270,15 @@ bool MEngine::MainLoop()
 
 	return !m_vView.empty();
 }
+void MEngine::RenderToView(MIRenderView* pView)
+{
+	if (MIRenderTarget* pRenderTarget = pView->GetRenderTarget())
+	{
+		m_pRenderer->SetRenderTarget(pRenderTarget);
+		m_pRenderer->Render();
+	}
+}
+
 
 void MEngine::SetRootNode(MNode* pNode)
 {

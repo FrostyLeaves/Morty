@@ -16,6 +16,7 @@ class MIMesh;
 class MTextureBuffer;
 class MTexture;
 class MShaderBuffer;
+class MIRenderTarget;
 class MORTY_CLASS MIDevice
 {
 public:
@@ -38,6 +39,8 @@ public:
 	virtual void CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType) = 0;
 	virtual void CleanShader(MShaderBuffer** ppShader) = 0;
 
+	virtual bool GenerateRenderTarget(MIRenderTarget* pRenderTarget, int nWidth, int nHeight) = 0;
+	virtual void DestroyRenderTarget(MIRenderTarget* pRenderTarget) = 0;
 };
 
 #endif

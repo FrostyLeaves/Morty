@@ -38,6 +38,8 @@ public:
 	MIRenderView* CreateView();
 	void AddView(MIRenderView* pView);
 
+	void RenderToView(MIRenderView* pView);
+
 	MObjectManager* GetObjectManager() { return m_pObjectManager; }
 	MResourceManager* GetResourceManager() { return m_pResourceManager; }
 

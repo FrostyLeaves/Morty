@@ -18,6 +18,7 @@
 
 #include <vector>
 
+class MIRenderTarget;
 class MIViewport;
 class MIRenderView;
 class MVertexBuffer;
@@ -34,11 +35,13 @@ public:
 
 	virtual void AddOutputView(MIRenderView* pView) override;
 	virtual void RemoveOutputView(MIRenderView* pView) override;
-	virtual void OnResize(MIRenderView* pView, const int& nWidth, const int& nHeight) override;
 
 	virtual bool Initialize() override;
 	virtual void Release() override;
-	virtual void RenderToView(MIRenderView* pView) override;
+
+	virtual void SetRenderTarget(MIRenderTarget* pRenderTarget) override { m_pRenderTarget = pRenderTarget; }
+	virtual void SetViewport(MIViewport* pViewport) override;
+	virtual void Render() override;
 
 	virtual void InitDefaultResource() override;
 	virtual void ReleaseDefaultResource() override;
@@ -54,19 +57,6 @@ public:
 	void UpdateShaderParam(MShaderParam& param);
 protected:
 
-	struct RenderTarget
-	{
-		MIRenderView* pRenderView = nullptr;
-		IDXGISwapChain* pSwapChain = nullptr;
-		ID3D11RenderTargetView* pTargetView = nullptr;
-		ID3D11Texture2D* pDepthStencilBuffer = nullptr;
-		ID3D11DepthStencilView* pDepthStencilView = nullptr;
-		D3D11_RASTERIZER_DESC mRasterizer;
-	};
-
-	RenderTarget CreateRenderTargetForWindow(MIRenderView* pView);
-	void OnResize(RenderTarget& renderTarget, int nWidth, int nHeight);
-
 protected:
 	ID3D11SamplerState* m_pDefaultSamplerState;
 //	ID3D11SamplerState* m_pAnisotropicFilterSamplerState;
@@ -77,11 +67,9 @@ protected:
 	ID3D11RasterizerState* m_pRasterizerState_Solid_CullNone;
 	ID3D11RasterizerState* m_pRasterizerState_Solid_CullBack;
 	
-	std::vector<RenderTarget> m_vRenderTargets;
-
 	MDirectX11Device* m_pDevice;
-
 	MMaterial* m_pUsingMaterial;
+	MIRenderTarget* m_pRenderTarget;
 };
 
 

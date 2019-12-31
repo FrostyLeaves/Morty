@@ -35,7 +35,7 @@ public:
 	virtual int GetViewHeight() override { return m_nHeight; }
 
 	virtual void OnResize(const int& nWidth, const int& nHeight) override;
-
+	virtual void SetRenderTarget(MIRenderTarget* pRenderTarget) override;
 	virtual bool MainLoop() override;
 
 	void SetWindowTitle(const MString& strTilte);

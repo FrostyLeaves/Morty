@@ -18,6 +18,7 @@
 #include "MScene.h"
 #include "MCamera.h"
 #include "MTransformCoord.h"
+#include "MIRenderTarget.h"
 
 #include "Matrix.h"
 
@@ -85,8 +86,7 @@ void MainEditor::Release()
 
 void MainEditor::OnResize(const int& nWidth, const int& nHeight)
 {
-	m_pEngine->GetRenderer()->OnResize(this, nWidth, nHeight);
-
+	MWindowsRenderView::OnResize(nWidth, nHeight);
 
 	if (m_vViewport.empty())
 		return;

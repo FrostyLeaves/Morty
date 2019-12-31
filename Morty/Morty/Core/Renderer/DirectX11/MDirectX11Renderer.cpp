@@ -6,12 +6,14 @@
 #include "d3d11shader.h"
 
 #include "MDirectX11Device.h"
+#include "MWindowsDX11RenderTarget.h"
 
 #include "MTexture.h"
 #include "MShader.h"
 #include "MMaterial.h"
 #include "MMesh.h"
 #include "MIViewport.h"
+#include "MIRenderTarget.h"
 #include "MRenderStructure.h"
 
 const int DEFAULT_WIDTH = 640;
@@ -28,6 +30,7 @@ MDirectX11Renderer::MDirectX11Renderer(MDirectX11Device* pDevice)
 	, m_pRasterizerState_Solid_CullNone(nullptr)
 	, m_pRasterizerState_Solid_CullBack(nullptr)
 	, m_pUsingMaterial(nullptr)
+	, m_pRenderTarget(nullptr)
 {
 
 }
@@ -41,32 +44,21 @@ void MDirectX11Renderer::AddOutputView(MIRenderView* pView)
 {
 	if (MWindowsRenderView* pWindowView = dynamic_cast<MWindowsRenderView*>(pView))
 	{
-		RenderTarget rt = this->CreateRenderTargetForWindow(pView);
-		OnResize(rt, pView->GetViewWidth(), pView->GetViewHeight());
-		m_vRenderTargets.push_back(rt);
+		MWindowsDX11RenderTarget* pRenderTarget = MWindowsDX11RenderTarget::CreateForView(m_pDevice, pWindowView);
+		pView->SetRenderTarget(pRenderTarget);
 
 	}
 }
 
 void MDirectX11Renderer::RemoveOutputView(MIRenderView* pView)
 {
-	if (MWindowsRenderView* pWindowView = dynamic_cast<MWindowsRenderView*>(pView))
-	{
-		for (std::vector<RenderTarget>::iterator iter = m_vRenderTargets.begin(); iter != m_vRenderTargets.end(); ++iter)
-		{
-			if ((*iter).pRenderView == pWindowView)
-			{
-				(*iter).pSwapChain->Release();
-				(*iter).pTargetView->Release();
-				if (iter->pDepthStencilBuffer)
-					iter->pDepthStencilBuffer->Release();
-				if (iter->pDepthStencilView)
-					iter->pDepthStencilView->Release();
-				m_vRenderTargets.erase(iter);
-				break;
-			}
-		}
-	}
+	MIRenderTarget* pRenderTarget = pView->GetRenderTarget();
+
+	if (m_pRenderTarget == pRenderTarget)
+		SetRenderTarget(nullptr);
+
+	pView->SetRenderTarget(nullptr);
+	delete pRenderTarget;
 }
 
 bool MDirectX11Renderer::Initialize()
@@ -135,13 +127,6 @@ bool MDirectX11Renderer::Initialize()
 
 void MDirectX11Renderer::Release()
 {
-	for (auto target : m_vRenderTargets)
-	{
-		target.pSwapChain->Release();
-		target.pTargetView->Release();
-		target.pDepthStencilBuffer->Release();
-		target.pDepthStencilView->Release();
-	}
 
 	if (m_pRasterizerState_Solid_CullBack)
 	{
@@ -172,68 +157,35 @@ void MDirectX11Renderer::Release()
 	ReleaseDefaultResource();
 }
 
-void MDirectX11Renderer::RenderToView(MIRenderView* pView)
+void MDirectX11Renderer::SetViewport(MIViewport* pViewport)
 {
-	if (!m_pDevice->m_pD3dContext)
-		return;
+	static D3D11_VIEWPORT viewport;
+	viewport.Width = pViewport->GetWidth();
+	viewport.Height = pViewport->GetHeight();
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	viewport.TopLeftX = pViewport->GetLeft();
+	viewport.TopLeftY = pViewport->GetTop();
 
-	RenderTarget* pTarget = nullptr;
-	for (RenderTarget& rt : m_vRenderTargets)
-	{
-		if (rt.pRenderView == pView)
-		{
-			pTarget = &rt;
-			break;
-		}
-	}
+	m_pDevice->m_pD3dContext->RSSetViewports(1, &viewport);
+}
 
-	if (nullptr == pTarget || nullptr == pTarget->pSwapChain || nullptr == pTarget->pTargetView)
-		return;
-
-
-	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	m_pDevice->m_pD3dContext->ClearDepthStencilView(pTarget->pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-	m_pDevice->m_pD3dContext->ClearRenderTargetView(pTarget->pTargetView, clearColor);
-	m_pDevice->m_pD3dContext->OMSetRenderTargets(1, &pTarget->pTargetView, pTarget->pDepthStencilView);
+void MDirectX11Renderer::Render()
+{
 	m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_pDepthStencilState, 0);
-
+	//切换渲染状态
+	if (m_eRasterizerType & MERasterizerType::EWireframe)
+		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Wireframe_CullNone);
+	else if (m_eRasterizerType & MERasterizerType::ECullNone)
+		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullNone);
+	else
+		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullBack);
 
 	//三角形解析顶点
 	m_pDevice->m_pD3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-// 	//切换渲染状态
-// 	if (m_eRasterizerType & MERasterizerType::EWireframe)
-// 		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Wireframe_CullNone);
-// 	else if (m_eRasterizerType & MERasterizerType::ECullNone)
-// 		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullNone);
-// 	else
-// 		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullBack);
-	
-	m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullBack);
-
-	pView->OnRenderBegin();
-	
-	for (MIViewport* pViewport : pView->GetViewports())
-	{
-		static D3D11_VIEWPORT viewport;
-		viewport.Width = pViewport->GetWidth();
-		viewport.Height = pViewport->GetHeight();
-		viewport.MinDepth = 0.0f;
-		viewport.MaxDepth = 1.0f;
-		viewport.TopLeftX = pViewport->GetLeft();
-		viewport.TopLeftY = pViewport->GetTop();
-	
-		m_pDevice->m_pD3dContext->RSSetViewports(1, &viewport);
-		pViewport->Render(this);
-	}
-
-
-	pView->OnRenderEnd();
-
-	pTarget->pSwapChain->Present(0, 0);
-
-
-
+	m_pRenderTarget->OnReadyRenderState();
+	m_pRenderTarget->OnRender(this);
 }
 
 void MDirectX11Renderer::InitDefaultResource()
@@ -256,192 +208,6 @@ void MDirectX11Renderer::ReleaseDefaultResource()
 		delete m_pDefaultTexture;
 		m_pDefaultTexture = nullptr;
 	}
-}
-
-MDirectX11Renderer::RenderTarget MDirectX11Renderer::CreateRenderTargetForWindow(MIRenderView* pView)
-{
-	RenderTarget result;
-	MWindowsRenderView* pRenderView = dynamic_cast<MWindowsRenderView*>(pView);
-	if (nullptr == pRenderView)
-	{
-		return result;
-	}
-
-	HWND hWnd = pRenderView->GetHWND();
-
-
-
-	DXGI_SWAP_CHAIN_DESC sd;
-
-	sd.BufferDesc.Width = pView->GetViewWidth() > 0 ? pView->GetViewWidth() : 1;
-	sd.BufferDesc.Height = pView->GetViewHeight() > 0 ? pView->GetViewHeight() : 1;
-	sd.BufferDesc.RefreshRate.Numerator = 60;
-	sd.BufferDesc.RefreshRate.Denominator = 1;
-	sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-
-	if (bEnable4xMsaa)
-	{
-		sd.SampleDesc.Count = 4;
-		sd.SampleDesc.Quality = m_pDevice->m_n4xMsaaQuality;
-	}
-	else
-	{
-		sd.SampleDesc.Count = 1;
-		sd.SampleDesc.Quality = 0;
-	}
-
-	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	sd.BufferCount = 1;
-	sd.OutputWindow = hWnd;
-	sd.Windowed = true;
-	sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-	sd.Flags = 0;
-
-
-	IDXGIDevice* pDxgiDevice = nullptr;
-	m_pDevice->m_pD3dDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)&pDxgiDevice);
-
-	IDXGIAdapter* pDxgiAdapter = nullptr;
-	pDxgiDevice->GetParent(__uuidof(IDXGIAdapter), (void**)&pDxgiAdapter);
-
-	IDXGIFactory* pDxgiFactory = nullptr;
-	pDxgiAdapter->GetParent(__uuidof(IDXGIFactory), (void**)&pDxgiFactory);
-
-	IDXGISwapChain* pSwapChain = nullptr;
-	pDxgiFactory->CreateSwapChain(m_pDevice->m_pD3dDevice, &sd, &pSwapChain);
-
-	pDxgiDevice->Release();
-	pDxgiAdapter->Release();
-	pDxgiFactory->Release();
-
-	result.pRenderView = pRenderView;
-	result.pSwapChain = pSwapChain;
-
-
-	return result;
-}
-
-void MDirectX11Renderer::OnResize(MIRenderView* pView, const int& nWidth, const int& nHeight)
-{
-	for (auto& rt : m_vRenderTargets)
-	{
-		if (rt.pRenderView == pView)
-		{
-			OnResize(rt, nWidth, nHeight);
-			break;
-		}
-	}
-
-
-}
-
-void MDirectX11Renderer::OnResize(RenderTarget& rt, int nWidth, int nHeight)
-{
-	if (nWidth < 1)
-		nWidth = 1;
-	if (nHeight < 1)
-		nHeight = 1;
-
-	if (rt.pTargetView)
-	{
-		rt.pTargetView->Release();
-		rt.pTargetView = nullptr;
-	}
-
-	if (rt.pDepthStencilBuffer)
-	{
-		rt.pDepthStencilBuffer->Release();
-		rt.pDepthStencilBuffer = nullptr;
-	}
-
-	if (rt.pDepthStencilView)
-	{
-		rt.pDepthStencilView->Release();
-		rt.pDepthStencilView = nullptr;
-	}
-
-	// Resize the swap chain and recreate the render target view.
-	HRESULT hr;
-
-
-	hr = rt.pSwapChain->ResizeBuffers(1, nWidth, nHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
-	if (FAILED(hr))
-	{
-		MLogManager::GetInstance()->Error("Failed to ResizeBuffers!");
-		return;
-	}
-
-	ID3D11Texture2D* pBackBuffer = nullptr;
-	hr = rt.pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
-	if (FAILED(hr))
-	{
-		MLogManager::GetInstance()->Error("Failed to GetBuffer!");
-		return;
-	}
-
-	hr = m_pDevice->m_pD3dDevice->CreateRenderTargetView(pBackBuffer, 0, &rt.pTargetView);
-	pBackBuffer->Release();
-	if (FAILED(hr))
-	{
-		MLogManager::GetInstance()->Error("Failed to CreateRenderTargetView!");
-		return;
-	}
-
-	// Create the depth/stencil buffer and view.
-
-	D3D11_TEXTURE2D_DESC depthStencilDesc;
-
-	depthStencilDesc.Width = nWidth;
-	depthStencilDesc.Height = nHeight;
-	depthStencilDesc.MipLevels = 1;
-	depthStencilDesc.ArraySize = 1;
-	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-
-	// Use 4X MSAA? --must match swap chain MSAA values.
-	if (bEnable4xMsaa)
-	{
-		depthStencilDesc.SampleDesc.Count = 4;
-		depthStencilDesc.SampleDesc.Quality = m_pDevice->m_n4xMsaaQuality;
-	}
-	// No MSAA
-	else
-	{
-		depthStencilDesc.SampleDesc.Count = 1;
-		depthStencilDesc.SampleDesc.Quality = 0;
-	}
-
-	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
-	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	depthStencilDesc.CPUAccessFlags = 0;
-	depthStencilDesc.MiscFlags = 0;
-
-
-	hr = m_pDevice->m_pD3dDevice->CreateTexture2D(&depthStencilDesc, 0, &rt.pDepthStencilBuffer);
-	if (FAILED(hr))
-	{
-		MLogManager::GetInstance()->Error("Failed to CreateTexture2D!");
-		return;
-	}
-
-// 	//深度缓存视图
-// 	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
-// 	ZeroMemory(&descDSV, sizeof(descDSV));
-// 	descDSV.Format = depthStencilDesc.Format;
-// 	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-// 	descDSV.Texture2D.MipSlice = 0;
-
-	hr = m_pDevice->m_pD3dDevice->CreateDepthStencilView(rt.pDepthStencilBuffer, 0, &rt.pDepthStencilView);
-	if (FAILED(hr))
-	{
-		MLogManager::GetInstance()->Error("Failed to CreateDepthStencilView!");
-		return;
-	}
-
-	// Bind the render target view and depth/stencil view to the pipeline.
-	m_pDevice->m_pD3dContext->OMSetRenderTargets(1, &rt.pTargetView, rt.pDepthStencilView);
-
 }
 
 void MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial)

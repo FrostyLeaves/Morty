@@ -4,6 +4,7 @@
 MIRenderView::MIRenderView()
 	: m_pEngine(nullptr)
 	, m_vViewport()
+	, m_pRenderTarget(nullptr)
 {
 
 }

@@ -163,6 +163,7 @@ int main(int argc, char* argv[])
 	pRootNode->AddNode(pCamera);
 
 	MInputNode* pInputNode = engine.GetObjectManager()->CreateObject<MInputNode>();
+	pInputNode->SetName("InputNode");
 	pCamera->AddNode(pInputNode);
 
 	pInputNode->SetInputCallback([&pCamera](MInputEvent* pEvent, MIViewport* pViewport) {
