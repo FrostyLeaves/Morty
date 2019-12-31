@@ -30,6 +30,7 @@
 #include "MScene.h"
 #include "MIViewport.h"
 #include "MPointLight.h"
+#include "MDirectionalLight.h"
 #include "MModelResource.h"
 #include "MSkeletalAnimation.h"
 #include "MTypedClass.h"
@@ -157,6 +158,10 @@ int main(int argc, char* argv[])
 	pLight->SetName("Light");
 	pLight->SetPosition(Vector3(10, 10, 200));
 	pRootNode->AddNode(pLight);
+
+	MDirectionalLight* pDirLight = engine.GetObjectManager()->CreateObject<MDirectionalLight>();
+	pDirLight->SetName("DirLight");
+	pRootNode->AddNode(pDirLight);
 
 	MyCamera* pCamera = engine.GetObjectManager()->CreateObject<MyCamera>();
 	pCamera->SetName("Camera");
