@@ -3,8 +3,6 @@
 #include "MDirectX11Device.h"
 #include "MLogManager.h"
 
-const bool bEnable4xMsaa = true;
-
 MWindowsDX11RenderTarget::MWindowsDX11RenderTarget(MDirectX11Device* pDevice) : MIRenderTarget()
 	,m_pDevice(pDevice), m_pSwapChain(nullptr), m_funcRenderFunction(nullptr)
 {
@@ -62,7 +60,7 @@ MWindowsDX11RenderTarget* MWindowsDX11RenderTarget::CreateForView(MDirectX11Devi
 	sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 	sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 
-	if (bEnable4xMsaa)
+	if (pDevice->m_bEnable4xMsaa)
 	{
 		sd.SampleDesc.Count = 4;
 		sd.SampleDesc.Quality = pDevice->m_n4xMsaaQuality;

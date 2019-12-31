@@ -13,8 +13,6 @@
 #include "MShader.h"
 #include "MIRenderTarget.h"
 
-const bool bEnable4xMsaa = true;
-
 
 MDirectX11Device::MDirectX11Device()
 	: MIDevice()
@@ -836,7 +834,7 @@ bool MDirectX11Device::GenerateRenderTarget(MIRenderTarget* pRenderTarget, int n
 	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	// Use 4X MSAA? --must match swap chain MSAA values.
-	if (bEnable4xMsaa)
+	if (m_bEnable4xMsaa)
 	{
 		depthStencilDesc.SampleDesc.Count = 4;
 		depthStencilDesc.SampleDesc.Quality = m_n4xMsaaQuality;
