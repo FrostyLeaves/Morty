@@ -11,27 +11,27 @@
 #include "MGlobal.h"
 #include "MString.h"
 
-#define MTypedClassSign \
+#define MTypedClassSign(Class) \
 public: \
-	static const class MTypeIdentifier* s_pTypeIdentifier; \
-	virtual const class MTypeIdentifier* GetTypeIdentifier() { return s_pTypeIdentifier; }
+	static MTypeIdentifierConstPointer& GetClassTypeIdentifier(); \
+	virtual MTypeIdentifierConstPointer& GetTypeIdentifier() { return Class::GetClassTypeIdentifier(); }
 
 
 
 #define MTypeIdentifierImplement(Class, BaseClass) \
-    const class MTypeIdentifier* Class::s_pTypeIdentifier = new MTypeIdentifier(#Class, BaseClass::s_pTypeIdentifier);
+    MTypeIdentifierConstPointer& Class::GetClassTypeIdentifier() { \
+		static const MTypeIdentifier* pTypeIdentifier = new MTypeIdentifier(#Class, BaseClass::GetClassTypeIdentifier()); \
+		return pTypeIdentifier; \
+	}
 
 
-class MORTY_CLASS MTypeIdentifier
+class MTypeIdentifier
 {
 public:
 	MTypeIdentifier(const MString& strName, const MTypeIdentifier* pBaseTypeIdentifier) : m_strName(strName)
 		, m_pBaseTypeIdentifier(pBaseTypeIdentifier)
 		, m_unDeep(pBaseTypeIdentifier == nullptr ? 0 : pBaseTypeIdentifier->m_unDeep + 1) {}
 	~MTypeIdentifier() {}
-
-public:
-	const MTypeIdentifier* GetBaseRTTI() const { return m_pBaseTypeIdentifier; }
 
 public:
 	const MString m_strName;
@@ -41,23 +41,26 @@ private:
 
 };
 
-class MORTY_CLASS MTypedClass
+typedef const MTypeIdentifier* MTypeIdentifierConstPointer;
+
+class MTypedClass
 {
 public:
 	MTypedClass() {};
 	virtual ~MTypedClass() {}
 
-	MTypedClassSign
+	MTypedClassSign(MTypedClass)
 
-	template <class T>
+		template <class T>
 	T* DynamicCast()
 	{
 		if (nullptr == this) return nullptr;
-		const MTypeIdentifier* pRTTI = GetTypeIdentifier();
-		for (int i = pRTTI->m_unDeep - T::s_pTypeIdentifier->m_unDeep; i > 0; --i)
-			pRTTI = pRTTI->m_pBaseTypeIdentifier;
+		MTypeIdentifierConstPointer& pTypeIdent = GetTypeIdentifier();
+		MTypeIdentifierConstPointer& pClassIdent = T::GetClassTypeIdentifier();
+		for (int i = pTypeIdent->m_unDeep - pClassIdent->m_unDeep; i > 0; --i)
+			pTypeIdent = pTypeIdent->m_pBaseTypeIdentifier;
 
-		if (pRTTI == T::s_pTypeIdentifier)
+		if (pTypeIdent == pClassIdent)
 			return (T*)(this);
 		return nullptr;
 	}

@@ -126,7 +126,7 @@ void MScene::OnNodeEnter(MNode* pNode)
 	else if (MPointLight* pPotLight = pNode->DynamicCast<MPointLight>())
 		m_vPointLight.push_back(pPotLight);
 
-	else if (MStaticMeshInstance* pMeshIns = pNode->DynamicCast<MStaticMeshInstance>())
+	else if (MIMeshInstance* pMeshIns = pNode->DynamicCast<MIMeshInstance>())
 		RecordMeshInstance(pMeshIns);
 
 	else if (MCamera* pCamera = pNode->DynamicCast<MCamera>())
@@ -547,7 +547,7 @@ void MScene::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 	DrawCameraFrustum(pRenderer, pViewport, pViewport->GetCamera());
 	DrawBoundingBox(pRenderer, pViewport, pSpat);
 	DrawMeshInstance(pRenderer, pViewport);
-//	DrawSkyBox(pRenderer, pViewport);
+	//DrawSkyBox(pRenderer, pViewport);
 }
 
 void MScene::Input(MInputEvent* pEvent, MIViewport* pViewport)

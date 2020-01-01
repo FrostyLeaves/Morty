@@ -1,3 +1,7 @@
 #include "MTypedClass.h"
 
-const MTypeIdentifier* MTypedClass::s_pTypeIdentifier(new const MTypeIdentifier("MTypedClass", nullptr));
+MTypeIdentifierConstPointer& MTypedClass::GetClassTypeIdentifier()
+{
+	static const MTypeIdentifier* pTypeIdentifier = new MTypeIdentifier("MTypedClass", nullptr);
+	return pTypeIdentifier;
+}

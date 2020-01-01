@@ -16,6 +16,7 @@ class MMaterial;
 class MORTY_CLASS MIMeshInstance : public M3DNode
 {
 public:
+	M_OBJECT(MIMeshInstance);
     MIMeshInstance();
     virtual ~MIMeshInstance();
 

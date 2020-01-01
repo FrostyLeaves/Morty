@@ -16,7 +16,7 @@
 #include <map>
 
 #define M_OBJECT(CLASSNAME) \
-MTypedClassSign; \
+MTypedClassSign(CLASSNAME); \
 virtual MString GetObjectClassName() { \
 	return GetTypeIdentifier()->m_strName; \
 } 
