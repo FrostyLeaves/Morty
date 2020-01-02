@@ -22,16 +22,6 @@ MTextureRenderTarget* MTextureRenderTarget::CreateForTexture(MIDevice* pDevice, 
 	return pRenderTarget;
 }
 
-void MTextureRenderTarget::OnReadyRenderState()
-{
-
-}
-
-void MTextureRenderTarget::OnRecoverRenderState()
-{
-
-}
-
 void MTextureRenderTarget::OnResize(int nWidth, int nHeight)
 {
 	m_pDevice->DestroyRenderTarget(this);

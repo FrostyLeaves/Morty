@@ -29,8 +29,8 @@ MDirectX11Renderer::MDirectX11Renderer(MDirectX11Device* pDevice)
 	, m_pRasterizerState_Wireframe_CullNone(nullptr)
 	, m_pRasterizerState_Solid_CullNone(nullptr)
 	, m_pRasterizerState_Solid_CullBack(nullptr)
+	, m_pRasterizerState_Solid_CullFront(nullptr)
 	, m_pUsingMaterial(nullptr)
-	, m_pRenderTarget(nullptr)
 {
 
 }
@@ -53,9 +53,6 @@ void MDirectX11Renderer::AddOutputView(MIRenderView* pView)
 void MDirectX11Renderer::RemoveOutputView(MIRenderView* pView)
 {
 	MIRenderTarget* pRenderTarget = pView->GetRenderTarget();
-
-	if (m_pRenderTarget == pRenderTarget)
-		SetRenderTarget(nullptr);
 
 	pView->SetRenderTarget(nullptr);
 	delete pRenderTarget;
@@ -85,6 +82,8 @@ bool MDirectX11Renderer::Initialize()
 		return false;
 	}
 
+	mRasterizer.CullMode = D3D11_CULL_FRONT;
+	m_pDevice->m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_pRasterizerState_Solid_CullFront);
 	mRasterizer.CullMode = D3D11_CULL_NONE;
 	m_pDevice->m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_pRasterizerState_Solid_CullNone);
 	mRasterizer.FillMode = D3D11_FILL_WIREFRAME;
@@ -115,10 +114,11 @@ bool MDirectX11Renderer::Initialize()
 	dsDesc.StencilEnable = false;
 
 	m_pDevice->m_pD3dDevice->CreateDepthStencilState(&dsDesc, &m_pDepthStencilState);
-
 	m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_pDepthStencilState, 0);
 
 
+	//三角形解析顶点
+	m_pDevice->m_pD3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	InitDefaultResource();
 
@@ -127,7 +127,11 @@ bool MDirectX11Renderer::Initialize()
 
 void MDirectX11Renderer::Release()
 {
-
+	if (m_pRasterizerState_Solid_CullFront)
+	{
+		m_pRasterizerState_Solid_CullFront->Release();
+		m_pRasterizerState_Solid_CullFront = nullptr;
+	}
 	if (m_pRasterizerState_Solid_CullBack)
 	{
 		m_pRasterizerState_Solid_CullBack->Release();
@@ -170,34 +174,48 @@ void MDirectX11Renderer::SetViewport(MIViewport* pViewport)
 	m_pDevice->m_pD3dContext->RSSetViewports(1, &viewport);
 }
 
-void MDirectX11Renderer::Render()
+void MDirectX11Renderer::Render(MIRenderTarget* pRenderTarget)
 {
-	m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_pDepthStencilState, 0);
-	//切换渲染状态
-	if (m_eRasterizerType & MERasterizerType::EWireframe)
-		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Wireframe_CullNone);
-	else if (m_eRasterizerType & MERasterizerType::ECullNone)
-		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullNone);
-	else
-		m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullBack);
+	if (pRenderTarget)
+	{
+		if (!m_pDevice || !m_pDevice->m_pD3dContext)
+			return;
 
-	//三角形解析顶点
-	m_pDevice->m_pD3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		m_pDevice->m_pD3dContext->ClearDepthStencilView(pRenderTarget->m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		m_pDevice->m_pD3dContext->ClearRenderTargetView(pRenderTarget->m_pTargetView, clearColor);
 
-	m_pRenderTarget->OnReadyRenderState();
-	m_pRenderTarget->OnRender(this);
+
+		m_vRenderTargets.push(pRenderTarget);
+		RecoverRenderTarget(pRenderTarget);
+		pRenderTarget->OnRender(this);
+		m_vRenderTargets.pop();
+
+
+		//恢复上一个渲染目标的状态
+		if (!m_vRenderTargets.empty())
+			RecoverRenderTarget(m_vRenderTargets.top());
+	}
+
+}
+
+void MDirectX11Renderer::RecoverRenderTarget(MIRenderTarget* pRenderTarget)
+{
+	//warning! Material may has been switched.
+
+
+	m_pDevice->m_pD3dContext->OMSetRenderTargets(1, &pRenderTarget->m_pTargetView, pRenderTarget->m_pDepthStencilView);
 }
 
 void MDirectX11Renderer::InitDefaultResource()
 {
 	m_pDefaultTexture = new MTexture();
-	m_pDefaultTexture->SetSize(Vector2(1, 1));
-	m_pDefaultTexture->GetImageData()[0] = 0;
-	m_pDefaultTexture->GetImageData()[1] = 0;
-	m_pDefaultTexture->GetImageData()[2] = 0;
+	m_pDefaultTexture->SetSize(Vector2(2, 2));
+	m_pDefaultTexture->GetImageData()[0] = 255;
+	m_pDefaultTexture->GetImageData()[1] = 255;
+	m_pDefaultTexture->GetImageData()[2] = 255;
 	m_pDefaultTexture->GetImageData()[3] = 255;
 	m_pDefaultTexture->GenerateBuffer(m_pDevice);
-
 }
 
 void MDirectX11Renderer::ReleaseDefaultResource()
@@ -210,15 +228,15 @@ void MDirectX11Renderer::ReleaseDefaultResource()
 	}
 }
 
-void MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial)
+bool MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial)
 {
 	if (m_pUsingMaterial == pMaterial)
-		return;
+		return true;
 
 	if (nullptr == pMaterial)
 	{
 		//TODO 使用默认材质
-		return;
+		return false;
 	}
 
 	MShader* pVertexShader = pMaterial->GetVertexShader();
@@ -226,22 +244,15 @@ void MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial)
 
 	if (nullptr == pVertexShader || nullptr == pPixelShader)
 	{
-		//TODO 使用默认材质
-		return;
+		return false;
 	}
 
 	m_pUsingMaterial = pMaterial;
 
 	if (nullptr == pVertexShader->GetBuffer())
-	{
-		pVertexShader->CompileShader(m_pDevice);
-		pMaterial->CompileVertexShaderParams();
-	}
+		return false;
 	if (nullptr == pPixelShader->GetBuffer())
-	{
-		pPixelShader->CompileShader(m_pDevice);
-		pMaterial->CompilePixelShaderParams();
-	}
+		return false;
 
 	if (MVertexShaderBuffer* pVertexShaderBuffer = dynamic_cast<MVertexShaderBuffer*>(pVertexShader->GetBuffer()))
 	{
@@ -254,6 +265,22 @@ void MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial)
 	m_pDevice->m_pD3dContext->VSSetShader(dynamic_cast<MVertexShaderBuffer*>(pVertexShader->GetBuffer())->m_pVertexShader, nullptr, 0);
 	m_pDevice->m_pD3dContext->PSSetShader(dynamic_cast<MPixelShaderBuffer*>(pPixelShader->GetBuffer())->m_pPixelShader, nullptr, 0);
 
+
+	if (m_eRasterizerType != pMaterial->GetRenderState())
+	{
+		//切换渲染状态
+		m_eRasterizerType = pMaterial->GetRenderState();
+
+		if (m_eRasterizerType & MERasterizerType::EWireframe)
+			m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Wireframe_CullNone);
+		else if (m_eRasterizerType & MERasterizerType::ECullBack)
+			m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullBack);
+		else if (m_eRasterizerType & MERasterizerType::ECullFront)
+			m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullFront);
+		else 
+			m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullNone);
+	}
+	return true;
 }
 
 void MDirectX11Renderer::DrawMesh(MIMesh* pMesh)

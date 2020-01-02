@@ -442,7 +442,7 @@ void MDirectX11Device::UploadBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMes
 	m_pD3dContext->Unmap((*ppVertexBuffer)->m_pIndexBuffer, 0);
 }
 
-void MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType)
+bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType)
 {
 	if (*ppShaderBuffer)
 	{
@@ -476,7 +476,7 @@ void MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 		else
 			MLogManager::GetInstance()->Error("Compile Shader Error: Can`t find file: %s", strShaderPath.c_str());
 
-		return;
+		return false;
 	}
 
 	if (eShaderType == MShader::MEShaderType::Vertex)
@@ -486,7 +486,7 @@ void MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 		if (FAILED(hr))
 		{
 			MLogManager::GetInstance()->Error("VertexShader is Error!");
-			return;
+			return false;
 		}
 
 		MVertexShaderBuffer* pBuffer = new MVertexShaderBuffer();
@@ -501,7 +501,7 @@ void MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 		if (FAILED(hr))
 		{
 			MLogManager::GetInstance()->Error("PixelShader is Error!");
-			return;
+			return false;
 		}
 
 		MPixelShaderBuffer* pBuffer = new MPixelShaderBuffer();
@@ -687,7 +687,7 @@ void MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 	pShaderBuffer = nullptr;
 
 
-
+	return true;
 }
 
 void MDirectX11Device::CleanShader(MShaderBuffer** ppShaderBuffer)

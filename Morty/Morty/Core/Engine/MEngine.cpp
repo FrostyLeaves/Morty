@@ -274,8 +274,7 @@ void MEngine::RenderToView(MIRenderView* pView)
 {
 	if (MIRenderTarget* pRenderTarget = pView->GetRenderTarget())
 	{
-		m_pRenderer->SetRenderTarget(pRenderTarget);
-		m_pRenderer->Render();
+		m_pRenderer->Render(pRenderTarget);
 	}
 }
 

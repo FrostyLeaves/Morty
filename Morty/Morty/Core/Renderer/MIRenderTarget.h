@@ -24,10 +24,6 @@ public:
 	MIRenderTarget();
 	virtual ~MIRenderTarget() {}
 
-	//×¼±¸äÖÈ¾×´Ì¬
-	virtual void OnReadyRenderState() = 0;
-	//»Ö¸´äÖÈ¾×´Ì¬
-	virtual void OnRecoverRenderState() = 0;
 	virtual void OnResize(int nWidth, int nHeight) = 0;
 
 	virtual void OnRender(MIRenderer* pRenderer) { m_funcRenderFunction(pRenderer); }

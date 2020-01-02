@@ -48,7 +48,7 @@ protected:
 
 	virtual bool Load(const MString& strResourcePath) override;
 
-	void ProcessNode(aiNode* pNode, const aiScene* pScene);
+	void ProcessNode(aiNode* pNode, const aiScene* pScene, std::vector<unsigned int>& vMaterialIndices);
 	void ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertex>* pMMesh);
 	void ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh);
 	void ProcessMeshIndices(aiMesh* pMesh, const aiScene* pScene, MIMesh* pMMesh);
@@ -61,7 +61,7 @@ protected:
 
 	void ProcessAnimation(const aiScene* pScene);
 
-	void ProcessMaterial(const aiScene* pScene);
+	void ProcessMaterial(const aiScene* pScene, std::vector<unsigned int>& vMaterialIndices);
 
 private:
     

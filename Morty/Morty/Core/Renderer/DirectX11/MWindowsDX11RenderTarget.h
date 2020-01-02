@@ -26,8 +26,6 @@ public:
 	MWindowsDX11RenderTarget(MDirectX11Device* pDevice);
 	~MWindowsDX11RenderTarget();
 
-	virtual void OnReadyRenderState() override;
-	virtual void OnRecoverRenderState() override;
 	virtual void OnResize(int nWidth, int nHeight) override;
 	virtual void OnRender(MIRenderer* pRenderer) override;
 

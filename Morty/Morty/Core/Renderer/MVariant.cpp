@@ -244,7 +244,7 @@ void MVariant::Clean()
 void MContainer::AppendStructMember(MStructMember& mem)
 {
 	unsigned int unRemainder = m_unByteSize % s_unPackSize;
-	if (unRemainder != 0 && (s_unPackSize - unRemainder) > mem.var.GetSize())
+	if (unRemainder != 0 && (s_unPackSize - unRemainder) >= mem.var.GetSize())
 	{
 		mem.unBeginOffset = m_unByteSize;
 		m_vMember.push_back(mem);

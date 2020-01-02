@@ -256,7 +256,8 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
 	{
 		MMaterial* pMaterial = pGroup->pMat;
 		//使用材质
-		pRenderer->SetUseMaterial(pMaterial);
+		if(!pRenderer->SetUseMaterial(pMaterial))
+			continue;
 		//更新纹理资源，纹理资源只更新一次，节省性能
 		pRenderer->UpdateMaterialResource();
 
@@ -413,10 +414,12 @@ void MScene::DrawSkyBox(MIRenderer* pRenderer, MIViewport* pViewport)
 					break;
 				}
 			}
-			pRenderer->SetUseMaterial(pMaterial);
-			pRenderer->UpdateMaterialParam();
-			pRenderer->UpdateMaterialResource();
-			pRenderer->DrawMesh(pMeshIns->GetMesh());
+			if (pRenderer->SetUseMaterial(pMaterial))
+			{
+				pRenderer->UpdateMaterialParam();
+				pRenderer->UpdateMaterialResource();
+				pRenderer->DrawMesh(pMeshIns->GetMesh());
+			}
 		}
 		
 	}
@@ -431,6 +434,8 @@ void MScene::DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MMode
 {
 	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW3D);
 	MMaterial* pMaterial = pDraw3DMaterialRes->GetMaterialTemplate();
+	if (!pRenderer->SetUseMaterial(pMaterial))
+		return;
 
 	std::vector<MShaderParam>& vVtxParams = pMaterial->GetVertexShaderParams();
 	for (MShaderParam& param : vVtxParams)
@@ -443,7 +448,6 @@ void MScene::DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MMode
 		}
 	}
 
-	pRenderer->SetUseMaterial(pMaterial);
 	pRenderer->UpdateMaterialParam();
 
 	MModelResource* pModelResource = dynamic_cast<MModelResource*>(pSpatial->GetResource());
@@ -494,6 +498,8 @@ void MScene::DrawCameraFrustum(MIRenderer* pRenderer, MIViewport* pViewport, MCa
 {
 	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW3D);
 	MMaterial* pMaterial = pDraw3DMaterialRes->GetMaterialTemplate();
+	if (!pRenderer->SetUseMaterial(pMaterial))
+		return;
 
 	std::vector<MShaderParam>& vVtxParams = pMaterial->GetVertexShaderParams();
 	for (MShaderParam& param : vVtxParams)
@@ -506,7 +512,6 @@ void MScene::DrawCameraFrustum(MIRenderer* pRenderer, MIViewport* pViewport, MCa
 		}
 	}
 
-	pRenderer->SetUseMaterial(pMaterial);
 	pRenderer->UpdateMaterialParam();
 
 	Vector3 list[8];

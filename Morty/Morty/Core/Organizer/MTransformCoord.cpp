@@ -160,7 +160,9 @@ void MTransformCoord3D::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 	MMaterialResource* pMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW2D);
 	MMaterial* pMaterial = pMaterialRes->GetMaterialTemplate();
 
-	pRenderer->SetUseMaterial(pMaterial);
+	if (!pRenderer->SetUseMaterial(pMaterial))
+		return;
+
 	pRenderer->UpdateMaterialParam();
 
 	bool vVaild[3];

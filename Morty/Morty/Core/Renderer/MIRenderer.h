@@ -43,6 +43,7 @@ public:
 		ESolid = 2,
 		ECullBack = 4,
 		ECullNone = 8,
+		ECullFront = 16,
 	};
 
 	virtual void SetRasterizerType(const unsigned int& eType) { m_eRasterizerType = eType; }
@@ -52,9 +53,9 @@ public:
 	virtual bool Initialize() = 0;
 	virtual void Release() = 0;
 
-	virtual void SetRenderTarget(MIRenderTarget* pRenderTarget) = 0;
 	virtual void SetViewport(MIViewport* pViewport) = 0;
-	virtual void Render() = 0;
+	virtual void Render(MIRenderTarget* pRenderTarget) = 0;
+	virtual void RecoverRenderTarget(MIRenderTarget* pRenderTarget) = 0;
 
 	virtual void AddOutputView(MIRenderView* pView) = 0;
 	virtual void RemoveOutputView(MIRenderView* pView) = 0;
@@ -66,7 +67,7 @@ public:
 
 	virtual void DrawMesh(MIMesh* pMesh) = 0;
 
-	virtual void SetUseMaterial(MMaterial* pMaterial) = 0;
+	virtual bool SetUseMaterial(MMaterial* pMaterial) = 0;
 	virtual void UpdateMaterialParam() = 0;
 	virtual void UpdateMaterialResource() = 0;
 

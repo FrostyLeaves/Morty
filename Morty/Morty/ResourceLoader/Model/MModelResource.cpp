@@ -139,22 +139,18 @@ bool MModelResource::Load(const MString& strResourcePath)
 		return false;
 	}
 
+	//顶点数组对应的材质索引
+	std::vector<unsigned int> vMaterialIndices;
+
 	ProcessBones(scene);
-	ProcessNode(scene->mRootNode, scene);
+	ProcessNode(scene->mRootNode, scene, vMaterialIndices);
 	ProcessAnimation(scene);
-	ProcessMaterial(scene);
+	ProcessMaterial(scene, vMaterialIndices);
 	
-// 	for (unsigned int i = 0; i < scene->mNumMaterials; ++i)
-// 	{
-// 		loadMaterialTextures(scene->mMaterials[i], aiTextureType_DIFFUSE, "texture_diffuse");
-// 		loadMaterialTextures(scene->mMaterials[i], aiTextureType_SPECULAR, "texture_diffuse");
-// 		loadMaterialTextures(scene->mMaterials[i], aiTextureType_HEIGHT, "texture_diffuse");
-// 		loadMaterialTextures(scene->mMaterials[i], aiTextureType_AMBIENT, "texture_diffuse");
-// 	}
 	return true;
 }
 
-void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene)
+void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vector<unsigned int>& vMaterialIndices)
 {
 	for (unsigned int i = 0; i < pNode->mNumMeshes; ++i)
 	{
@@ -168,6 +164,7 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene)
 			BindVertexAndBones(pMesh, pScene, pMMesh);
 			m_vMeshes.push_back(pMMesh);
 			m_vVertexTypes.push_back(MEMeshVertexType::Skeleton);
+			vMaterialIndices.push_back(pMesh->mMaterialIndex);
 			m_vDefaultMaterial.push_back(nullptr);
 		}
 		else
@@ -177,13 +174,14 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene)
 			ProcessMeshIndices(pMesh, pScene, pMMesh);
 			m_vMeshes.push_back(pMMesh);
 			m_vVertexTypes.push_back(MEMeshVertexType::Normal);
+			vMaterialIndices.push_back(pMesh->mMaterialIndex);
 			m_vDefaultMaterial.push_back(nullptr);
 		}
 	}
 
 	for (unsigned int i = 0; i < pNode->mNumChildren; ++i)
 	{
-		ProcessNode(pNode->mChildren[i], pScene);
+		ProcessNode(pNode->mChildren[i], pScene, vMaterialIndices);
 	}
 }
 
@@ -442,9 +440,9 @@ void MModelResource::ProcessAnimation(const aiScene* pScene)
 	}
 }
 
-void MModelResource::ProcessMaterial(const aiScene* pScene)
+void MModelResource::ProcessMaterial(const aiScene* pScene, std::vector<unsigned int>& vMaterialIndices)
 {
-	//TODO read model file material...
+	aiString strAmbient("$clr.ambient"), strDiffuse("$clr.diffuse"), strSpecular("$clr.specular"), strShininess("$mat.shininess");
 
 	MMaterialResource* pStaticMeshMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_STATIC);
 	MMaterialResource* pSkinnedMeshMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SKINNED);
@@ -455,7 +453,6 @@ void MModelResource::ProcessMaterial(const aiScene* pScene)
 		{
 			m_vDefaultMaterial[i] = m_pEngine->GetObjectManager()->CreateObject<MMaterial>();
 			m_vDefaultMaterial[i]->Load(pStaticMeshMaterial);
-			m_vDefaultMaterial[i];
 		}
 		else if(m_vVertexTypes[i] == MEMeshVertexType::Skeleton)
 		{
@@ -463,7 +460,27 @@ void MModelResource::ProcessMaterial(const aiScene* pScene)
 			m_vDefaultMaterial[i]->Load(pSkinnedMeshMaterial);
 		}
 
+		unsigned int unMaterialIndex = vMaterialIndices[i];
 
+		if(unMaterialIndex >= pScene->mNumMaterials)
+			continue;
+
+		aiMaterial* pMaterial = pScene->mMaterials[unMaterialIndex];
+
+		Vector3 v3Ambient(1.0f, 1.0f, 1.0f), v3Diffuse(1.0f, 1.0f, 1.0f), v3Specular(1.0f, 1.0f, 1.0f);
+		float fShininess = 32.0f;
+		for (int n = 0; n < pMaterial->mNumProperties; ++n)
+		{
+			aiMaterialProperty* prop =  pMaterial->mProperties[n];
+			if (prop->mKey == strAmbient)
+				memcpy(v3Ambient.m, prop->mData, sizeof(Vector3));
+			else if (prop->mKey == strDiffuse)
+				memcpy(v3Diffuse.m, prop->mData, sizeof(Vector3));
+			else if (prop->mKey == strSpecular)
+				memcpy(v3Specular.m, prop->mData, sizeof(Vector3));
+			else if (prop->mKey == strShininess)
+				memcpy(&fShininess, prop->mData, sizeof(float));
+		}
 		//Test Data, need read from file.
 		for (MShaderParam& param : m_vDefaultMaterial[i]->GetPixelShaderParams())
 		{
@@ -473,7 +490,10 @@ void MModelResource::ProcessMaterial(const aiScene* pScene)
 				{
 					if (MStruct* pMat = pStruct->FindMember("U_mat")->GetByType<MStruct>())
 					{
-						pMat->SetMember("fShininess", 32.0f);
+						pMat->SetMember("f3Ambient", v3Ambient);
+						pMat->SetMember("f3Diffuse", v3Diffuse);
+						pMat->SetMember("f3Specular", v3Specular);
+						pMat->SetMember("fShininess", fShininess);
 					}
 				}
 			}

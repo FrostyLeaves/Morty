@@ -41,11 +41,15 @@ public:
 
 	void SetPixelParam(const MString& strName, const MVariant& variable);
 
+	void SetRenderState(unsigned int& eType) { m_eRenderState = eType; }
+	unsigned int GetRenderState() { return m_eRenderState; }
+
 	bool Load(MResource* pResource);
 
 	void Unload();
 
 	void CleanTextureParams();
+
 
 private:
 
@@ -62,7 +66,7 @@ private:
 	MShader* m_pVertexShader;
 	MShader* m_pPxielShader;
 
-
+	unsigned int m_eRenderState;
 };
 
 

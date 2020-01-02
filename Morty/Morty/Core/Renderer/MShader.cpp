@@ -5,13 +5,14 @@
 #include <vector>
 
 MShader::MShader()
+	: m_pShaderBuffer(nullptr)
+	, m_eShaderType(None)
 {
-	m_pShaderBuffer = nullptr;
 }
 
-void MShader::CompileShader(MIDevice* pDevice)
+bool MShader::CompileShader(MIDevice* pDevice)
 {
-	pDevice->CompileShader(&m_pShaderBuffer, m_strShaderPath, m_eShaderType);
+	return pDevice->CompileShader(&m_pShaderBuffer, m_strShaderPath, m_eShaderType);
 }
 
 void MShader::CleanShader(MIDevice* pDevice)

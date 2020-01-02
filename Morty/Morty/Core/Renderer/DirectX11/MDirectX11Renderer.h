@@ -16,7 +16,7 @@
 #include <D3DX11.h>
 #include <DxErr.h>
 
-#include <vector>
+#include <stack>
 
 class MIRenderTarget;
 class MIViewport;
@@ -39,9 +39,9 @@ public:
 	virtual bool Initialize() override;
 	virtual void Release() override;
 
-	virtual void SetRenderTarget(MIRenderTarget* pRenderTarget) override { m_pRenderTarget = pRenderTarget; }
 	virtual void SetViewport(MIViewport* pViewport) override;
-	virtual void Render() override;
+	virtual void Render(MIRenderTarget* pRenderTarget) override;
+	virtual void RecoverRenderTarget(MIRenderTarget* pRenderTarget) override;
 
 	virtual void InitDefaultResource() override;
 	virtual void ReleaseDefaultResource() override;
@@ -49,7 +49,7 @@ public:
 public:
 	virtual void DrawMesh(MIMesh* pMesh) override;
 
-	virtual void SetUseMaterial(MMaterial* pMaterial) override;
+	virtual bool SetUseMaterial(MMaterial* pMaterial) override;
 	virtual void UpdateMaterialParam() override;
 	virtual void UpdateMaterialResource() override;
 
@@ -66,10 +66,12 @@ protected:
 	ID3D11RasterizerState* m_pRasterizerState_Wireframe_CullNone;
 	ID3D11RasterizerState* m_pRasterizerState_Solid_CullNone;
 	ID3D11RasterizerState* m_pRasterizerState_Solid_CullBack;
+	ID3D11RasterizerState* m_pRasterizerState_Solid_CullFront;
 	
 	MDirectX11Device* m_pDevice;
 	MMaterial* m_pUsingMaterial;
-	MIRenderTarget* m_pRenderTarget;
+
+	std::stack<MIRenderTarget*> m_vRenderTargets;
 };
 
 

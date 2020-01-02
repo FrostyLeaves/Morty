@@ -20,10 +20,6 @@ public:
     virtual ~MTextureRenderTarget();
 
 public:
-	//×¼±¸äÖÈ¾×´Ì¬
-	virtual void OnReadyRenderState() override;
-	//»Ö¸´äÖÈ¾×´Ì¬
-	virtual void OnRecoverRenderState() override;
 	virtual void OnResize(int nWidth, int nHeight) override;
 
 	static MTextureRenderTarget* CreateForTexture(MIDevice* pDevice, const unsigned int& unWidth, const unsigned int& unHeight);

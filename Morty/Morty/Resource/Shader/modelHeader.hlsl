@@ -11,6 +11,9 @@ struct Material
 {
     Texture2D texDiffuse;
     Texture2D texSpecular;
+    float3 f3Ambient;
+    float3 f3Diffuse;
+    float3 f3Specular;
     float fShininess;
 };
 

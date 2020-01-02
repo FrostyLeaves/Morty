@@ -21,26 +21,6 @@ MWindowsDX11RenderTarget::~MWindowsDX11RenderTarget()
 	}
 }
 
-void MWindowsDX11RenderTarget::OnReadyRenderState()
-{
-	if (!m_pDevice || !m_pDevice->m_pD3dContext)
-		return;
-
-	if (nullptr == m_pDepthStencilView || nullptr == m_pTargetView)
-		return;
-
-	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	m_pDevice->m_pD3dContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-	m_pDevice->m_pD3dContext->ClearRenderTargetView(m_pTargetView, clearColor);
-
-	OnRecoverRenderState();
-}
-
-void MWindowsDX11RenderTarget::OnRecoverRenderState()
-{
-	m_pDevice->m_pD3dContext->OMSetRenderTargets(1, &m_pTargetView, m_pDepthStencilView);
-}
-
 MWindowsDX11RenderTarget* MWindowsDX11RenderTarget::CreateForView(MDirectX11Device* pDevice, MWindowsRenderView* pView)
 {
 	if (nullptr == pDevice)

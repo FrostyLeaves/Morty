@@ -20,6 +20,7 @@ class MORTY_CLASS MShader
 public:
 	enum MEShaderType
 	{
+		None = 0,
 		Vertex = 1,
 		Pixel = 2
 	};
@@ -28,7 +29,7 @@ public:
     MShader();
     virtual ~MShader();
 
-	void CompileShader(MIDevice* pDevice);
+	bool CompileShader(MIDevice* pDevice);
 	void CleanShader(MIDevice* pDevice);
 	MShaderBuffer* GetBuffer() { return m_pShaderBuffer; }
 	const MEShaderType GetType() const { return m_eShaderType; }

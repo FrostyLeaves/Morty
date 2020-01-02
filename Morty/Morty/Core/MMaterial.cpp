@@ -5,6 +5,7 @@
 #include "MTextureResource.h"
 #include "MTextureCubeResource.h"
 #include "MEngine.h"
+#include "MIRenderer.h"
 
 #include "MVariant.h"
 
@@ -15,6 +16,7 @@ MMaterial::MMaterial()
 	, m_pMaterialResource(nullptr)
 	, m_pVertexShader(nullptr)
 	, m_pPxielShader(nullptr)
+	, m_eRenderState(MIRenderer::ESolid | MIRenderer::ECullBack)
 {
 
 }
@@ -122,16 +124,19 @@ bool MMaterial::Load(MResource* pResource)
 
 		if (m_pVertexShader && nullptr == m_pVertexShader->GetBuffer())
 		{
-			m_pVertexShader->CompileShader(m_pEngine->GetDevice());
-
+			if (!m_pVertexShader->CompileShader(m_pEngine->GetDevice()))
+				return false;
 		}
 		if (m_pPxielShader && nullptr == m_pPxielShader->GetBuffer())
 		{
-			m_pPxielShader->CompileShader(m_pEngine->GetDevice());
+			if (!m_pPxielShader->CompileShader(m_pEngine->GetDevice()))
+				return false;
 		}
 
 		CompileVertexShaderParams();
 		CompilePixelShaderParams();
+
+		return true;
 	};
 
 	if (MMaterialResource* pMaterialRes = dynamic_cast<MMaterialResource*>(pResource))
@@ -141,10 +146,7 @@ bool MMaterial::Load(MResource* pResource)
 		m_pMaterialResource = new MResourceHolder(pResource);
 		m_pMaterialResource->SetResChangedCallback(UseResourceFunction);
 
-		UseResourceFunction();
-
-		//Do smoething.
-		return true;
+		return UseResourceFunction();
 	}
 
 	return false;
