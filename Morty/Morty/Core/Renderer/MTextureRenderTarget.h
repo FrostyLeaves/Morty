@@ -12,21 +12,42 @@
 #include "MIRenderTarget.h"
 
 class MIDevice;
-class MITexture;
+class MViewport;
+class MTexture;
+class MRenderDepthTexture;
 class MORTY_CLASS MTextureRenderTarget : public MIRenderTarget
 {
+public:
+	enum METextureRenderTargetType
+	{
+		ERenderNone = 0,
+		ERenderBack = 1,
+		ERenderDepth = 2,
+	};
 public:
 	MTextureRenderTarget(MIDevice* m_pDevice);
     virtual ~MTextureRenderTarget();
 
 public:
-	virtual void OnResize(int nWidth, int nHeight) override;
 
-	static MTextureRenderTarget* CreateForTexture(MIDevice* pDevice, const unsigned int& unWidth, const unsigned int& unHeight);
+	void SetSourceViewport(MViewport* pViewport) { m_pViewport = pViewport; }
+	MViewport* GetSourceViewport() { return m_pViewport; }
 
+
+	unsigned int GetRenderTargetType() { return m_eRenderTargetType; }
+
+public:
+	virtual void OnResize(const unsigned int& unWidth, const unsigned int& unHeight) override;
+
+	static MTextureRenderTarget* CreateForTexture(MIDevice* pDevice, const unsigned int& eRenderTargetType, const unsigned int& unWidth, const unsigned int& unHeight);
+
+public:
+	MTexture* m_pBackTexture;
+	MRenderDepthTexture* m_pDepthTexture;
 private:
 	MIDevice* m_pDevice;
-	MITexture* m_pTargetTexture;
+	MViewport* m_pViewport;
+	unsigned int m_eRenderTargetType;
 };
 
 #endif

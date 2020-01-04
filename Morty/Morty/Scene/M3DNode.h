@@ -47,6 +47,11 @@ public:
 	Vector3 GetForward() { return m_transform.GetForward(); }
 	Vector3 GetRight() { return m_transform.GetRight(); }
 
+	Vector3 GetWorldUp();
+	Vector3 GetWorldForward();
+	Vector3 GetWorldRight();
+
+
 public:
 	virtual bool AddNodeImpl(MNode* pNode, const MENodeChildType& etype) override;
 	void UpdateWorldTransform();

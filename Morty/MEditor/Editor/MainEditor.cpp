@@ -8,7 +8,7 @@
 #include "MDirectX11Device.h"
 #include "MEngine.h"
 #include "MIRenderer.h"
-#include "MIViewport.h"
+#include "MViewport.h"
 #include "MResourceManager.h"
 #include "MObject.h"
 #include "MMaterialResource.h"
@@ -67,7 +67,7 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 
 
 	m_pScene = m_pEngine->GetObjectManager()->CreateObject<MScene>();
-	MIViewport* pViewport = m_pEngine->GetObjectManager()->CreateObject<MIViewport>();
+	MViewport* pViewport = m_pEngine->GetObjectManager()->CreateObject<MViewport>();
 	AppendViewport(pViewport);
 
 	pViewport->SetScene(m_pScene);
@@ -137,7 +137,7 @@ void MainEditor::OnRenderBegin()
 
 			if (ImGui::BeginChild("NodeTree", ImVec2(fNodeTreeWidth, v2RegionAvail.y), false, unWindowFlags))
 			{		
-//				m_pNodeTreeView->Render();
+				m_pNodeTreeView->Render();
 			}
 			ImGui::EndChild();
 
@@ -167,7 +167,7 @@ void MainEditor::OnRenderBegin()
 				//MNode* pNode = m_pScene->GetRootNode()->FindFirstChildByName("Teaport");
 				MNode* pNode = dynamic_cast<MNode*>(m_pNodeTreeView->GetSelectionNode());
 				m_pScene->GetTransformCoord()->SetTarget3DNode(pNode);
-//				m_pPropertyView->Render();
+				m_pPropertyView->Render();
 			}
 			ImGui::EndChild();
 		}

@@ -19,7 +19,7 @@
 #include <stack>
 
 class MIRenderTarget;
-class MIViewport;
+class MViewport;
 class MIRenderView;
 class MVertexBuffer;
 class MDirectX11Device;
@@ -39,7 +39,7 @@ public:
 	virtual bool Initialize() override;
 	virtual void Release() override;
 
-	virtual void SetViewport(MIViewport* pViewport) override;
+	virtual void SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth) override;
 	virtual void Render(MIRenderTarget* pRenderTarget) override;
 	virtual void RecoverRenderTarget(MIRenderTarget* pRenderTarget) override;
 
@@ -59,6 +59,7 @@ protected:
 
 protected:
 	ID3D11SamplerState* m_pDefaultSamplerState;
+	ID3D11SamplerState* m_pDepthTextureSamplerState;
 //	ID3D11SamplerState* m_pAnisotropicFilterSamplerState;
 
 	ID3D11DepthStencilState* m_pDepthStencilState;

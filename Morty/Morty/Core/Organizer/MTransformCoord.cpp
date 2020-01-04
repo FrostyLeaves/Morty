@@ -11,7 +11,7 @@
 #include "MMaterial.h"
 #include "MResourceManager.h"
 #include "MMaterialResource.h"
-#include "MIViewport.h"
+#include "MViewport.h"
 
 #include "MInputManager.h"
 
@@ -48,7 +48,7 @@ void MTransformCoord3D::SetTarget3DNode(MNode* pNode)
 	m_pTargetNode = dynamic_cast<M3DNode*>(pNode);
 }
 
-bool MTransformCoord3D::Input(MInputEvent* pEvent, MIViewport* pViewport)
+bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 {
 	MMouseInputEvent* pMouseEvent = dynamic_cast<MMouseInputEvent*>(pEvent);
 	if (nullptr == pMouseEvent)
@@ -152,7 +152,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MIViewport* pViewport)
 	return MECoordHoverType::None != m_eCoordHoverType;
 }
 
-void MTransformCoord3D::Render(MIRenderer* pRenderer, MIViewport* pViewport)
+void MTransformCoord3D::Render(MIRenderer* pRenderer, MViewport* pViewport)
 {
 	if (nullptr == m_pTargetNode)
 		return;
@@ -205,7 +205,7 @@ void MTransformCoord3D::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 	}
 }
 
-void MTransformCoord3D::GetTranslationShapes(MPainter2DLine* lines, class MPainter2DRect* rects, bool* vValid, int* vOrder, MIViewport* pViewport)
+void MTransformCoord3D::GetTranslationShapes(MPainter2DLine* lines, class MPainter2DRect* rects, bool* vValid, int* vOrder, MViewport* pViewport)
 {
 	Vector3 v3Origin = m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition();
 	Vector3 v3EndPoint[3] = {

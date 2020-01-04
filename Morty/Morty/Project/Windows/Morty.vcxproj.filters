@@ -198,9 +198,6 @@
     <ClInclude Include="..\..\ResourceLoader\Texture\MTextureCubeResource.h">
       <Filter>ResourceLoader\Texture</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Core\MIViewport.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Core\MTransform.h">
       <Filter>Core</Filter>
     </ClInclude>
@@ -270,14 +267,17 @@
     <ClInclude Include="..\..\Scene\MInputNode.h">
       <Filter>Scene</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Core\Renderer\DirectX11\MWindowsDX11RenderTarget.h">
-      <Filter>Core\Renderer\DirectX11</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Core\Renderer\MIRenderTarget.h">
       <Filter>Core\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Renderer\MTextureRenderTarget.h">
       <Filter>Core\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\DirectX11\MDirectX11RenderTarget.h">
+      <Filter>Core\Renderer\DirectX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\MViewport.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -383,9 +383,6 @@
     <ClCompile Include="..\..\ResourceLoader\Texture\MTextureCubeResource.cpp">
       <Filter>ResourceLoader\Texture</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Core\MIViewport.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Core\MTransform.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -449,14 +446,17 @@
     <ClCompile Include="..\..\Scene\MInputNode.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Core\Renderer\DirectX11\MWindowsDX11RenderTarget.cpp">
-      <Filter>Core\Renderer\DirectX11</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\MIRenderTarget.cpp">
       <Filter>Core\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\MTextureRenderTarget.cpp">
       <Filter>Core\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\DirectX11\MDirectX11RenderTarget.cpp">
+      <Filter>Core\Renderer\DirectX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\MViewport.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

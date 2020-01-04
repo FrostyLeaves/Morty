@@ -61,6 +61,20 @@ public:
 #endif
 };
 
+//用于渲染深度的纹理缓存
+class MDepthTextureBuffer : public MTextureBuffer
+{
+public:
+	MDepthTextureBuffer();
+	virtual ~MDepthTextureBuffer() {}
+
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	struct ID3D11DepthStencilView* m_pDepthStencilView;
+#elif RENDER_GRAPHICS == MORTY_OPENGLES
+
+#endif
+};
+
 struct MShaderParam
 {
 	MString strName;
@@ -97,6 +111,7 @@ struct MShaderTextureParam
 
 struct MShaderSampleParam
 {
+	MString strName;
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	unsigned int unBindPoint;
 	unsigned int unBindCount;

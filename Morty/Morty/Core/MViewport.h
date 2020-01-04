@@ -6,8 +6,8 @@
  * @Author       Pobrecito
 **/
 
-#ifndef _M_MIVIEWPORT_H_
-#define _M_MIVIEWPORT_H_
+#ifndef _M_MVIEWPORT_H_
+#define _M_MVIEWPORT_H_
 #include "MGlobal.h"
 #include "MObject.h"
 #include "Vector.h"
@@ -20,13 +20,15 @@ class MIRenderer;
 class MInputEvent;
 class MBoundsAABB;
 class MInputManager;
-class MORTY_CLASS MIViewport : public MObject
+class MPointLight;
+class MDirectionalLight;
+class MORTY_CLASS MViewport : public MObject
 {
 public:
-	M_OBJECT(MIViewport);
+	M_OBJECT(MViewport);
 
-	MIViewport();
-	virtual ~MIViewport();
+	MViewport();
+	virtual ~MViewport();
 
 public:
 
@@ -48,8 +50,6 @@ public:
 	float GetWidth() { return m_v2Size.x; }
 	float GetHeight() { return m_v2Size.y; }
 
-	
-
 	bool ConvertWorldPointToViewport(const Vector3& v3WorldPos, Vector3& v3Result);
 
 	void ConvertViewportPointToWorld(const Vector2& v2ViewportPos, const float& fDepth, Vector3& v3Result);
@@ -66,6 +66,9 @@ public:
 	virtual void Input(MInputEvent* pEvent);
 
 	Matrix4 GetCameraInverseProjection(){ return m_m4CameraInvProj; }
+
+	Matrix4 GetLightInverseProjection(MPointLight* pLight);
+	Matrix4 GetLightInverseProjection(MDirectionalLight* pLight);
 
 	void GetCameraFrustum(Vector3& v3NearTopLeft, Vector3& v3NearTopRight, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft, Vector3& v3FarTopLeft, Vector3& v3FarTopRight, Vector3& v3FarBottomRight, Vector3& v3FarBottomLeft);
 	MBoundsAABB* GetFrustumAABB();

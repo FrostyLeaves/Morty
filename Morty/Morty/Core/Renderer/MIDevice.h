@@ -14,9 +14,11 @@
 class MVertexBuffer;
 class MIMesh;
 class MTextureBuffer;
+class MDepthTextureBuffer;
 class MTexture;
 class MShaderBuffer;
 class MIRenderTarget;
+class MTextureRenderTarget;
 class MORTY_CLASS MIDevice
 {
 public:
@@ -36,11 +38,17 @@ public:
 	virtual void GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTexture* vTexture[6], const bool& bGenerateMipmap = true) = 0;
 	virtual void DestroyTexture(MTextureBuffer** ppTextureBuffer) = 0;
 
+	virtual void GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const unsigned int& unWidth, const unsigned int& unHeight) = 0;
+	virtual void DestroyDepthTexture(MDepthTextureBuffer** ppTextureBuffer) = 0;
+
 	virtual bool CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType) = 0;
 	virtual void CleanShader(MShaderBuffer** ppShader) = 0;
 
-	virtual bool GenerateRenderTarget(MIRenderTarget* pRenderTarget, int nWidth, int nHeight) = 0;
+	virtual bool GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsigned int nWidth, unsigned int nHeight) = 0;
 	virtual void DestroyRenderTarget(MIRenderTarget* pRenderTarget) = 0;
+
+	virtual bool GenerateRenderTarget(MTextureRenderTarget* pRenderTarget, unsigned int nWidth, unsigned int nHeight) = 0;
+	virtual void DestroyRenderTarget(MTextureRenderTarget* pRenderTarget) = 0;
 };
 
 #endif

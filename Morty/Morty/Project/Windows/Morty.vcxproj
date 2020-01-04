@@ -113,7 +113,7 @@
     <ClInclude Include="..\..\Core\Animation\MSkeletalAnimation.h" />
     <ClInclude Include="..\..\Core\Input\MInputManager.h" />
     <ClInclude Include="..\..\Core\MBounds.h" />
-    <ClInclude Include="..\..\Core\MIViewport.h" />
+    <ClInclude Include="..\..\Core\MViewport.h" />
     <ClInclude Include="..\..\Core\MMaterial.h" />
     <ClInclude Include="..\..\Core\MSkeleton.h" />
     <ClInclude Include="..\..\Core\MSkyBox.h" />
@@ -124,7 +124,7 @@
     <ClInclude Include="..\..\Core\RefCounter\MRefCounter.h" />
     <ClInclude Include="..\..\Core\Renderer\DirectX11\MDirectX11Device.h" />
     <ClInclude Include="..\..\Core\Renderer\DirectX11\MDirectX11Renderer.h" />
-    <ClInclude Include="..\..\Core\Renderer\DirectX11\MWindowsDX11RenderTarget.h" />
+    <ClInclude Include="..\..\Core\Renderer\DirectX11\MDirectX11RenderTarget.h" />
     <ClInclude Include="..\..\Core\Renderer\DirectX11\MWindowsRenderView.h" />
     <ClInclude Include="..\..\Core\Renderer\MIDevice.h" />
     <ClInclude Include="..\..\Core\Renderer\MIRenderer.h" />
@@ -189,7 +189,7 @@
     <ClCompile Include="..\..\Core\Animation\MSkeletalAnimation.cpp" />
     <ClCompile Include="..\..\Core\Input\MInputManager.cpp" />
     <ClCompile Include="..\..\Core\MBounds.cpp" />
-    <ClCompile Include="..\..\Core\MIViewport.cpp" />
+    <ClCompile Include="..\..\Core\MViewport.cpp" />
     <ClCompile Include="..\..\Core\MMaterial.cpp" />
     <ClCompile Include="..\..\Core\MSkeleton.cpp" />
     <ClCompile Include="..\..\Core\MSkyBox.cpp" />
@@ -200,7 +200,7 @@
     <ClCompile Include="..\..\Core\RefCounter\MRefCounter.cpp" />
     <ClCompile Include="..\..\Core\Renderer\DirectX11\MDirectX11Device.cpp" />
     <ClCompile Include="..\..\Core\Renderer\DirectX11\MDirectX11Renderer.cpp" />
-    <ClCompile Include="..\..\Core\Renderer\DirectX11\MWindowsDX11RenderTarget.cpp" />
+    <ClCompile Include="..\..\Core\Renderer\DirectX11\MDirectX11RenderTarget.cpp" />
     <ClCompile Include="..\..\Core\Renderer\DirectX11\MWindowsRenderView.cpp" />
     <ClCompile Include="..\..\Core\Renderer\MIDevice.cpp" />
     <ClCompile Include="..\..\Core\Renderer\MIRenderer.cpp" />

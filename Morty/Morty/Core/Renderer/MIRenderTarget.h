@@ -24,16 +24,14 @@ public:
 	MIRenderTarget();
 	virtual ~MIRenderTarget() {}
 
-	virtual void OnResize(int nWidth, int nHeight) = 0;
+	virtual void OnResize(const unsigned int& nWidth, const unsigned int& nHeight) = 0;
 
 	virtual void OnRender(MIRenderer* pRenderer) { m_funcRenderFunction(pRenderer); }
 	std::function<void(MIRenderer*)> m_funcRenderFunction;
 
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	ID3D11Texture2D* m_pBackBuffer;
 	ID3D11RenderTargetView* m_pTargetView;
-	ID3D11Texture2D* m_pDepthStencilBuffer;
 	ID3D11DepthStencilView* m_pDepthStencilView;
 #elif RENDER_GRAPHICS == MORTY_OPENGLES
 

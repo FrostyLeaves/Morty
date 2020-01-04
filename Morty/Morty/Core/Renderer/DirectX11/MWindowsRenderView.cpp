@@ -8,7 +8,7 @@
 #include "MEngine.h"
 #include "MInputManager.h"
 #include "MIRenderer.h"
-#include "MIViewport.h"
+#include "MViewport.h"
 #include "MTimer.h"
 #include "MIRenderTarget.h"
 
@@ -97,7 +97,7 @@ void MWindowsRenderView::OnResize(const int& nWidth, const int& nHeight)
 	if(m_pRenderTarget)
 		m_pRenderTarget->OnResize(nWidth, nHeight);
 
-	for (MIViewport* pViewport : m_vViewport)
+	for (MViewport* pViewport : m_vViewport)
 	{
 		pViewport->SetSize(Vector2(nWidth, nHeight));
 	}
@@ -110,9 +110,8 @@ void MWindowsRenderView::SetRenderTarget(MIRenderTarget* pRenderTarget)
 	{
 		m_pRenderTarget->m_funcRenderFunction = [this](MIRenderer* pRenderer) {
 			OnRenderBegin();
-			for (MIViewport* pViewport : m_vViewport)
+			for (MViewport* pViewport : m_vViewport)
 			{
-				pRenderer->SetViewport(pViewport);
 				pViewport->Render(pRenderer);
 			}
 			OnRenderEnd();
@@ -147,7 +146,7 @@ bool MWindowsRenderView::MainLoop()
 		MMouseInputEvent event(Vector2(newPoint.x, newPoint.y), v2Addi);
 
 
-		for (MIViewport* pViewport : m_vViewport)
+		for (MViewport* pViewport : m_vViewport)
 		{
 			MMouseInputEvent eventClone(event);
 			pViewport->Input(&eventClone);
@@ -159,7 +158,7 @@ bool MWindowsRenderView::MainLoop()
 	{
 		MKeyBoardInputEvent event(state.unKey, state.eState);
 
-		for (MIViewport* pViewport : m_vViewport)
+		for (MViewport* pViewport : m_vViewport)
 		{
 			MKeyBoardInputEvent eventClone(event);
 			pViewport->Input(&eventClone);
@@ -170,7 +169,7 @@ bool MWindowsRenderView::MainLoop()
 	{
 		MMouseInputEvent event((MMouseInputEvent::MEMouseDownButton)state.unKey, state.eState == MEKeyState::DOWN ? MMouseInputEvent::MEMouseInputType::ButtonDown : MMouseInputEvent::MEMouseInputType::ButtonUp);
 
-		for (MIViewport* pViewport : m_vViewport)
+		for (MViewport* pViewport : m_vViewport)
 		{
 			MMouseInputEvent eventClone(event);
 			pViewport->Input(&event);

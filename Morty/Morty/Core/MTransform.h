@@ -32,6 +32,8 @@ public:
 
 	Matrix4 GetMatrix();
 
+	Matrix4 GetMatrixScale();
+
 	Vector3 GetUp() { return Matrix4(m_qtRotation) * Vector3(0, 1, 0); }
 	Vector3 GetForward() { return Matrix4(m_qtRotation) * Vector3(0, 0, 1); }
 	Vector3 GetRight() { return Matrix4(m_qtRotation) * Vector3(1, 0, 0); }

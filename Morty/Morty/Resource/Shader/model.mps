@@ -38,6 +38,7 @@ float3 CalcPointLight(PointLight pointLight, float3 f3CameraDir, float3 f3Normal
 
 float4 PS(VS_OUT input) : SV_Target
 {
+    
     float4 f3AmbiColor = U_mat.texDiffuse.Sample(U_defaultSampler, input.uv);
     float4 f3DiffColor = f3AmbiColor;
     float4 f3SpecColor = U_mat.texSpecular.Sample(U_defaultSampler, input.uv);
@@ -47,11 +48,32 @@ float4 PS(VS_OUT input) : SV_Target
     
     float3 f3Color = f3DiffColor * 0.1f;
 
-    f3Color += CalcDirectionLight(U_dirLight, f3CameraDir, f3Normal, f3AmbiColor, f3DiffColor, f3SpecColor);
-    f3Color += CalcPointLight(U_pointLights[0], f3CameraDir, f3Normal, input.worldPos, f3AmbiColor, f3DiffColor, f3SpecColor);
-    //f3Color += CalcPointLight(U_pointLights[1], f3CameraDir, f3Normal, input.worldPos, f3AmbiColor, f3DiffColor, f3SpecColor);
-    //f3Color += CalcPointLight(U_pointLights[2], f3CameraDir, f3Normal, input.worldPos, f3AmbiColor, f3DiffColor, f3SpecColor);
-    //f3Color += CalcPointLight(U_pointLights[3], f3CameraDir, f3Normal, input.worldPos, f3AmbiColor, f3DiffColor, f3SpecColor);
+    // Compute texture coordinates for the current point's location on the shadow map.
+    float2 shadowTexCoords;
+    shadowTexCoords.x = 0.5f + (input.lightSpacePos.x / input.lightSpacePos.w * 0.5f);
+    shadowTexCoords.y = 0.5f - (input.lightSpacePos.y / input.lightSpacePos.w * 0.5f);
+    float pixelDepth = input.lightSpacePos.z / input.lightSpacePos.w;
+
+    float lighting = 1;
+
+    float3 f3LightDir = normalize(-U_dirLight.f3Direction);
+    float NdotL = dot(f3Normal, f3LightDir);
+    float margin = acos(saturate(NdotL));
+    float epsilon = 0.0005 / margin;
+    epsilon = clamp(epsilon, 0, 0.05);
+
+
+
+    lighting = float(U_mat.texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy, pixelDepth - epsilon));
+
+    if(lighting != 0)
+    {
+        f3Color += CalcDirectionLight(U_dirLight, f3CameraDir, f3Normal, f3AmbiColor, f3DiffColor, f3SpecColor);
+        f3Color += CalcPointLight(U_pointLights[0], f3CameraDir, f3Normal, input.worldPos, f3AmbiColor, f3DiffColor, f3SpecColor);
+        //f3Color += CalcPointLight(U_pointLights[1], f3CameraDir, f3Normal, input.worldPos, f3AmbiColor, f3DiffColor, f3SpecColor);
+        //f3Color += CalcPointLight(U_pointLights[2], f3CameraDir, f3Normal, input.worldPos, f3AmbiColor, f3DiffColor, f3SpecColor);
+        //f3Color += CalcPointLight(U_pointLights[3], f3CameraDir, f3Normal, input.worldPos, f3AmbiColor, f3DiffColor, f3SpecColor);
+    }
     
     return float4(f3Color, 1.0f);
 }

@@ -36,18 +36,21 @@ public:
 	virtual void GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTexture* vTexture[6], const bool& bGenerateMipmap) override;
 	virtual void DestroyTexture(MTextureBuffer** ppTextureBuffer) override;
 
+	virtual void GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const unsigned int& unWidth, const unsigned int& unHeight) override;
+	virtual void DestroyDepthTexture(MDepthTextureBuffer** ppTextureBuffer) override;
+
 	virtual bool CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType) override;
 	virtual void CleanShader(MShaderBuffer** ppShaderBuffer) override;
 
 	ID3D11InputLayout* CreateInputLayout(D3D11_INPUT_ELEMENT_DESC desc[], const int& nLength);
 
-	virtual bool GenerateRenderTarget(MIRenderTarget* pRenderTarget, int nWidth, int nHeight) override;
+	virtual bool GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsigned int nWidth, unsigned int nHeight) override;
 	virtual void DestroyRenderTarget(MIRenderTarget* pRenderTarget) override;
 
+	virtual bool GenerateRenderTarget(MTextureRenderTarget* pRenderTarget, unsigned int nWidth, unsigned int nHeight) override;
+	virtual void DestroyRenderTarget(MTextureRenderTarget* pRenderTarget) override;
+
 	MVariant GenerateVariableByBuffer(class ID3D11ShaderReflectionType* pReflectionType);
-
-
-
 
 	bool m_bEnable4xMsaa = true;
 

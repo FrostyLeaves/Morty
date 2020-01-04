@@ -37,6 +37,7 @@ extern const char* DEFAULT_MATERIAL_SKINNED;
 extern const char* DEFAULT_MATERIAL_DRAW2D;
 extern const char* DEFAULT_MATERIAL_DRAW3D;
 extern const char* DEFAULT_MATERIAL_SKYBOX;
+extern const char* DEFAULT_MATERIAL_SHADOW;
 //
 
 

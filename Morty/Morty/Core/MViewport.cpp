@@ -1,14 +1,16 @@
-﻿#include "MIViewport.h"
+﻿#include "MViewport.h"
 #include "MScene.h"
 #include "MCamera.h"
 #include "MEngine.h"
+#include "MIRenderer.h"
 #include "MInputManager.h"
 
 #include "MBounds.h"
+#include "MDirectionalLight.h"
 
-MTypeIdentifierImplement(MIViewport, MObject)
+MTypeIdentifierImplement(MViewport, MObject)
 
-MIViewport::MIViewport()
+MViewport::MViewport()
 	: MObject()
 	, m_pScene(nullptr)
 	, m_pUserCamera(nullptr)
@@ -21,7 +23,7 @@ MIViewport::MIViewport()
 
 }
 
-MIViewport::~MIViewport()
+MViewport::~MViewport()
 {
 	if (m_pDefaultCamera)
 	{
@@ -36,7 +38,7 @@ MIViewport::~MIViewport()
 // 	}
 }
 
-bool MIViewport::ConvertWorldPointToViewport(const Vector3& v3WorldPos, Vector3& v2Result)
+bool MViewport::ConvertWorldPointToViewport(const Vector3& v3WorldPos, Vector3& v2Result)
 {
 	UpdateMatrix();
 
@@ -52,7 +54,7 @@ bool MIViewport::ConvertWorldPointToViewport(const Vector3& v3WorldPos, Vector3&
 	return z >= GetCamera()->GetZNear();
 }	
 
-void MIViewport::ConvertViewportPointToWorld(const Vector2& v2ViewportPos, const float& fDepth, Vector3& v3Result)
+void MViewport::ConvertViewportPointToWorld(const Vector2& v2ViewportPos, const float& fDepth, Vector3& v3Result)
 {
 	UpdateMatrix();
 
@@ -68,7 +70,7 @@ void MIViewport::ConvertViewportPointToWorld(const Vector2& v2ViewportPos, const
 	v3Result = pos + dir * fDepth;
 }
 
-bool  MIViewport::ConvertWorldLineToNormalizedDevice(const Vector3& v3Pos1, const Vector3& v3Pos2, Vector2& v3Rst1, Vector2& v3Rst2)
+bool  MViewport::ConvertWorldLineToNormalizedDevice(const Vector3& v3Pos1, const Vector3& v3Pos2, Vector2& v3Rst1, Vector2& v3Rst2)
 {
 	UpdateMatrix();
 
@@ -98,7 +100,7 @@ bool  MIViewport::ConvertWorldLineToNormalizedDevice(const Vector3& v3Pos1, cons
 	return true;
 }
 
-bool MIViewport::ConvertWorldPointToNormalizedDevice(const Vector3& v3Pos, Vector2& v2Rst)
+bool MViewport::ConvertWorldPointToNormalizedDevice(const Vector3& v3Pos, Vector2& v2Rst)
 {
 	UpdateMatrix();
 
@@ -116,7 +118,7 @@ bool MIViewport::ConvertWorldPointToNormalizedDevice(const Vector3& v3Pos, Vecto
 	return true;
 }
 
-void MIViewport::OnCreated()
+void MViewport::OnCreated()
 {
 	MObject::OnCreated();
 
@@ -124,12 +126,12 @@ void MIViewport::OnCreated()
 	m_pDefaultCamera = m_pEngine->GetObjectManager()->CreateObject<MCamera>();
 }
 
-void MIViewport::SetSize(const Vector2& v2Size)
+void MViewport::SetSize(const Vector2& v2Size)
 {
 	m_v2Size = v2Size;
 }
 
-void MIViewport::Render(MIRenderer* pRenderer)
+void MViewport::Render(MIRenderer* pRenderer)
 {
 	if (nullptr == m_pScene)
 		return;
@@ -138,14 +140,13 @@ void MIViewport::Render(MIRenderer* pRenderer)
 	UpdateMatrix();
 	m_bCameraInvProjMatrixUpdated = true;
 	
-	
 	m_pScene->Render(pRenderer, this);
 	
 	
 	m_bCameraInvProjMatrixUpdated = false;
 }
 
-void MIViewport::Input(MInputEvent* pEvent)
+void MViewport::Input(MInputEvent* pEvent)
 {
 	if (m_pScene)
 	{
@@ -153,7 +154,52 @@ void MIViewport::Input(MInputEvent* pEvent)
 	}
 }
 
-void MIViewport::GetCameraFrustum(Vector3& v3NearTopLeft, Vector3& v3NearTopRight, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft, Vector3& v3FarTopLeft, Vector3& v3FarTopRight, Vector3& v3FarBottomRight, Vector3& v3FarBottomLeft)
+Matrix4 MViewport::GetLightInverseProjection(MPointLight* pLight)
+{
+	return Matrix4::IdentityMatrix;
+}
+
+Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight)
+{
+	Matrix4 matLightInv(pLight->GetTransform().GetRotation());
+	matLightInv = matLightInv.Inverse();
+
+	std::vector<Vector3> points(8);
+	GetCameraFrustum(points[0], points[1], points[2], points[3], points[4], points[5], points[6], points[7]);
+
+	Vector3 v3Min(FLT_MAX, FLT_MAX, FLT_MAX);
+	Vector3 v3Max(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+	Vector3 v3Forwrad = pLight->GetWorldForward();
+	Vector3 v3Up = pLight->GetWorldUp();
+	Vector3 v3Right = pLight->GetWorldRight();
+
+	Vector3 v3Origin(FLT_MAX * 0.5f, FLT_MAX * 0.5f, FLT_MAX * 0.5f);
+
+	for (unsigned int i = 0; i < 8; ++i)
+	{
+		Vector3 pos = matLightInv * points[i];
+		if (v3Min.x > pos.x)
+			v3Min.x = pos.x;
+		if (v3Min.y > pos.y)
+			v3Min.y = pos.y;
+		if (v3Min.z > pos.z)
+			v3Min.z = pos.z;
+		if (v3Max.x < pos.x)
+			v3Max.x = pos.x;
+		if (v3Max.y < pos.y)
+			v3Max.y = pos.y;
+		if (v3Max.z < pos.z)
+			v3Max.z = pos.z;
+	}
+
+	//float value = 10;
+	Matrix4 projMat = MatrixOrthoOffCenterLH(v3Min.x, v3Max.x, v3Max.y, v3Min.y, v3Min.z, v3Max.z);
+	//Matrix4 projMat = MatrixOrthoOffCenterLH(-value, value, value, -value, -value, value);
+	return projMat * matLightInv;
+}
+
+void MViewport::GetCameraFrustum(Vector3& v3NearTopLeft, Vector3& v3NearTopRight, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft, Vector3& v3FarTopLeft, Vector3& v3FarTopRight, Vector3& v3FarBottomRight, Vector3& v3FarBottomLeft)
 {
 	UpdateMatrix();
 
@@ -201,7 +247,7 @@ void MIViewport::GetCameraFrustum(Vector3& v3NearTopLeft, Vector3& v3NearTopRigh
 	}
 }
 
-MBoundsAABB* MIViewport::GetFrustumAABB()
+MBoundsAABB* MViewport::GetFrustumAABB()
 {
 	std::vector<Vector3> points(8);
 	GetCameraFrustum(points[0], points[1], points[2], points[3], points[4], points[5], points[6], points[7]);
@@ -209,7 +255,7 @@ MBoundsAABB* MIViewport::GetFrustumAABB()
 	return new MBoundsAABB(points);
 }
 
-void MIViewport::SetScene(MScene* pScene)
+void MViewport::SetScene(MScene* pScene)
 {
 	if (m_pScene == pScene)
 		return;
@@ -230,7 +276,7 @@ void MIViewport::SetScene(MScene* pScene)
 	}
 }
 
-void MIViewport::SetCamera(MCamera* pCamera)
+void MViewport::SetCamera(MCamera* pCamera)
 {
 	if (m_pScene && pCamera->GetScene() == m_pScene)
 	{
@@ -242,12 +288,12 @@ void MIViewport::SetCamera(MCamera* pCamera)
 	}
 }
 
-void MIViewport::SetValidCamera(MCamera* pCamera)
+void MViewport::SetValidCamera(MCamera* pCamera)
 {
 	m_pUserCamera = pCamera;
 }
 
-void MIViewport::UpdateMatrix()
+void MViewport::UpdateMatrix()
 {
 	if (m_bCameraInvProjMatrixUpdated)
 		return;
@@ -261,12 +307,12 @@ void MIViewport::UpdateMatrix()
 	m_m4CameraInvProj = projMat * pCamera->GetWorldTransform().Inverse();
 }
 
-MCamera* MIViewport::GetCamera()
+MCamera* MViewport::GetCamera()
 {
 	return m_pUserCamera ? m_pUserCamera : m_pDefaultCamera;
 }
 
-Matrix4 MIViewport::MatrixPerspectiveFovLH(const float& fFovYZAngle, const float& fScreenAspect, const float& fScreenNear, const float& fScreenFar)
+Matrix4 MViewport::MatrixPerspectiveFovLH(const float& fFovYZAngle, const float& fScreenAspect, const float& fScreenNear, const float& fScreenFar)
 {
 
 	Matrix4 mProjMatrix;
@@ -291,7 +337,7 @@ Matrix4 MIViewport::MatrixPerspectiveFovLH(const float& fFovYZAngle, const float
 	return mProjMatrix;
 }
 
-Matrix4 MIViewport::MatrixOrthoOffCenterLH(const float& fLeft, const float& fRight, const float& fTop, const float& fBottom, const float& fNear, const float& fFar)
+Matrix4 MViewport::MatrixOrthoOffCenterLH(const float& fLeft, const float& fRight, const float& fTop, const float& fBottom, const float& fNear, const float& fFar)
 {
 	//warning, (fLeft >> fRight) and (fTop >> fBottom) and (fFar >> fNear)
 	return Matrix4(2 / (fRight - fLeft), 0, 0, (fLeft + fRight) / (fLeft - fRight),

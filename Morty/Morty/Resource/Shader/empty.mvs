@@ -1,0 +1,9 @@
+#include "modelHeader.hlsl"
+
+VS_OUT_EMPTY VS(VS_IN_EMPTY input)
+{
+    VS_OUT_EMPTY output;
+
+    output.pos = mul(float4(input.pos, 1.0f), mul(U_matWorld, U_matCamProj));
+    return output;
+}

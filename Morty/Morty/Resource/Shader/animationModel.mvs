@@ -32,5 +32,7 @@ VS_OUT VS(VS_IN input)
     output.normal = mul(input.normal, U_matNormal);
     output.worldPos = mul(float4(input.pos, 1.0f), U_matWorld).xyz;
 
+    output.lightSpacePos = mul(float4(input.pos, 1.0f), mul(U_matWorld, U_matLightProj));
+
     return output;
 }

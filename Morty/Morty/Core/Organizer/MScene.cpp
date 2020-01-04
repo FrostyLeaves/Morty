@@ -11,7 +11,7 @@
 #include "MMaterial.h"
 #include "MIRenderer.h"
 #include "MIRenderView.h"
-#include "MIViewport.h"
+#include "MViewport.h"
 #include "MTransformCoord.h"
 #include "MModelInstance.h"
 #include "MBounds.h"
@@ -21,6 +21,8 @@
 #include "MResourceManager.h"
 #include "MMaterialResource.h"
 #include "MInputNode.h"
+#include "MTexture.h"
+#include "MTextureRenderTarget.h"
 
 #include "MModelInstance.h"
 #include "MSkeleton.h"
@@ -34,6 +36,7 @@ MScene::MScene()
 	, m_pRootNode(nullptr)
 	, m_pSkyBox(nullptr)
 	, m_pTransformCoord3D(nullptr)
+	, m_pShadowDepthMapRenderTarget(nullptr)
 	, m_vViewports()
 {
 	
@@ -48,11 +51,63 @@ void MScene::OnCreated()
 
 	m_pTransformCoord3D = m_pEngine->GetObjectManager()->CreateObject<MTransformCoord3D>();
 
+	InitShadowMapRenderTarget();
 }
 
-void MScene::AddAttachedViewport(MIViewport* pViewport)
+void MScene::InitShadowMapRenderTarget()
 {
-	for (MIViewport* pv : m_vViewports)
+	if (m_pShadowDepthMapRenderTarget)
+		return;
+
+	MMaterialResource* pShadowMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW);
+	MMaterial* pMaterial = pShadowMaterialRes->GetMaterialTemplate();
+
+	int nSize = 2048;
+	m_pShadowDepthMapRenderTarget = MTextureRenderTarget::CreateForTexture(m_pEngine->GetDevice(), MTextureRenderTarget::ERenderDepth, nSize, nSize);
+	m_pShadowDepthMapRenderTarget->m_funcRenderFunction = [=](MIRenderer* pRenderer)
+	{
+		pRenderer->SetViewport(0.0f, 0.0f, nSize, nSize, 0.0f, 1.0f);
+		pRenderer->SetUseMaterial(pMaterial);
+
+		MStruct* pSpaceStruct = nullptr;
+		std::vector<MShaderParam>& vVtxParams = pMaterial->GetVertexShaderParams();
+		for (MShaderParam& param : vVtxParams)
+		{
+			if (param.strName == "cbSpace")
+			{
+				pSpaceStruct = param.var.GetByType<MStruct>();
+				break;
+			}
+		}
+
+		if (nullptr == pSpaceStruct)
+			return;
+
+		MDirectionalLight* pLight = FindActiveDirectionLight();
+		MViewport* pViewport = m_pShadowDepthMapRenderTarget->GetSourceViewport();
+		Matrix4 matLightInvProj = pViewport->GetLightInverseProjection(pLight);
+
+		pSpaceStruct->SetMember("U_matCamProj", matLightInvProj);
+		for (MaterialMeshInsGroup* pGroup : m_vMatMeshInsGroup)
+		{
+			for (MIMeshInstance* pMeshIns : pGroup->vMeshIns)
+			{
+				Matrix4 worldTrans = pMeshIns->GetWorldTransform();
+
+				pSpaceStruct->SetMember("U_matWorld", worldTrans);
+
+				pRenderer->UpdateMaterialParam();
+				pRenderer->DrawMesh(pMeshIns->GetMesh());
+			}
+		}
+
+	};
+
+}
+
+void MScene::AddAttachedViewport(MViewport* pViewport)
+{
+	for (MViewport* pv : m_vViewports)
 		if (pv == pViewport)
 			return;
 
@@ -61,9 +116,9 @@ void MScene::AddAttachedViewport(MIViewport* pViewport)
 
 }
 
-void MScene::RemoveAttachedViewport(MIViewport* pViewport)
+void MScene::RemoveAttachedViewport(MViewport* pViewport)
 {
-	std::vector<MIViewport*>::iterator iter = std::find(m_vViewports.begin(), m_vViewports.end(), pViewport);
+	std::vector<MViewport*>::iterator iter = std::find(m_vViewports.begin(), m_vViewports.end(), pViewport);
 	if (iter != m_vViewports.end())
 	{
 		m_vViewports.erase(iter);
@@ -131,7 +186,7 @@ void MScene::OnNodeEnter(MNode* pNode)
 
 	else if (MCamera* pCamera = pNode->DynamicCast<MCamera>())
 	{
-		for (MIViewport* pViewport : m_vViewports)
+		for (MViewport* pViewport : m_vViewports)
 		{
 			if (pViewport->IsUseDefaultCamera())
 				pViewport->SetCamera(pCamera);
@@ -163,7 +218,7 @@ void MScene::OnNodeExit(MNode* pNode)
 
 	else if (MCamera* pCamera = pNode->DynamicCast<MCamera>())
 	{
-		for (MIViewport* pViewport : m_vViewports)
+		for (MViewport* pViewport : m_vViewports)
 		{
 			if (pViewport->GetCamera() == pCamera)
 				pViewport->SetCamera(nullptr);
@@ -245,19 +300,42 @@ void MScene::CancelRecordInputNode(MInputNode* pInputNode)
 	m_vInputNodes.erase(iter);
 }
 
-void MScene::GenerateShadowMap()
+void MScene::GenerateShadowMap(MIRenderer* pRenderer, MViewport* pViewport)
 {
+	if (nullptr == m_pShadowDepthMapRenderTarget)
+		return;
 
+	m_pShadowDepthMapRenderTarget->SetSourceViewport(pViewport);
+
+	pRenderer->SetRasterizerType(MIRenderer::ESolid | MIRenderer::ECullFront);
+
+	pRenderer->Render(m_pShadowDepthMapRenderTarget);
 }
 
-void MScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
+void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 {
+
+	pRenderer->SetRasterizerType(MIRenderer::ESolid | MIRenderer::ECullBack);
+
+	MDirectionalLight* pLight = FindActiveDirectionLight();
+	Matrix4 matLightInvProj = pViewport->GetLightInverseProjection(pLight);
+
 	for (MaterialMeshInsGroup* pGroup : m_vMatMeshInsGroup)
 	{
 		MMaterial* pMaterial = pGroup->pMat;
 		//使用材质
 		if(!pRenderer->SetUseMaterial(pMaterial))
 			continue;
+		
+		std::vector<MShaderTextureParam>& vPixTexParams = pMaterial->GetPixelTextureParams();
+		for (MShaderTextureParam& param : vPixTexParams)
+		{
+			if (param.strName == "U_mat.texShadowMap")
+			{
+				param.pTexture = m_pShadowDepthMapRenderTarget->m_pDepthTexture;
+				break;
+			}
+		}
 		//更新纹理资源，纹理资源只更新一次，节省性能
 		pRenderer->UpdateMaterialResource();
 
@@ -276,7 +354,7 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
 					{
 						if (MStruct* pLightStruct = pDirectionLight->GetByType<MStruct>())
 						{
-							pLightStruct->SetMember("f3Direction", pDirectionalLight->GetDirection());
+							pLightStruct->SetMember("f3Direction", pDirectionalLight->GetWorldDirection());
 							pLightStruct->SetMember("f3Ambient", pDirectionalLight->GetAmbientColor().ToVector3());
 							pLightStruct->SetMember("f3Diffuse", pDirectionalLight->GetDiffuseColor().ToVector3());
 							pLightStruct->SetMember("f3Specular", pDirectionalLight->GetSpecularColor().ToVector3());
@@ -313,6 +391,7 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
 					MStruct* pSpaceStruct = param.var.GetByType<MStruct>();
 					pSpaceStruct->SetMember("U_matWorld", worldTrans);
 					pSpaceStruct->SetMember("U_matCamProj", pViewport->GetCameraInverseProjection());
+					pSpaceStruct->SetMember("U_matLightProj", matLightInvProj);
 
 					pSpaceStruct->SetMember("U_matNormal", matNormal);
 				}
@@ -389,7 +468,7 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport)
 	}
 }
 
-void MScene::DrawSkyBox(MIRenderer* pRenderer, MIViewport* pViewport)
+void MScene::DrawSkyBox(MIRenderer* pRenderer, MViewport* pViewport)
 {
 	pRenderer->SetRasterizerType(MIRenderer::MERasterizerType::ESolid | MIRenderer::MERasterizerType::ECullNone);
 
@@ -425,12 +504,12 @@ void MScene::DrawSkyBox(MIRenderer* pRenderer, MIViewport* pViewport)
 	}
 }
 
-void MScene::DrawPainter(MIRenderer* pRenderer, MIViewport* pViewport)
+void MScene::DrawPainter(MIRenderer* pRenderer, MViewport* pViewport)
 {
 	m_pTransformCoord3D->Render(pRenderer, pViewport);
 }
 
-void MScene::DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MModelInstance* pSpatial)
+void MScene::DrawBoundingBox(MIRenderer* pRenderer, MViewport* pViewport, MModelInstance* pSpatial)
 {
 	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW3D);
 	MMaterial* pMaterial = pDraw3DMaterialRes->GetMaterialTemplate();
@@ -494,7 +573,7 @@ void MScene::DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MMode
 	}
 }
 
-void MScene::DrawCameraFrustum(MIRenderer* pRenderer, MIViewport* pViewport, MCamera* pCamera)
+void MScene::DrawCameraFrustum(MIRenderer* pRenderer, MViewport* pViewport, MCamera* pCamera)
 {
 	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW3D);
 	MMaterial* pMaterial = pDraw3DMaterialRes->GetMaterialTemplate();
@@ -544,9 +623,12 @@ void MScene::DrawCameraFrustum(MIRenderer* pRenderer, MIViewport* pViewport, MCa
 
 }
 
-void MScene::Render(MIRenderer* pRenderer, MIViewport* pViewport)
+void MScene::Render(MIRenderer* pRenderer, MViewport* pViewport)
 {
-	GenerateShadowMap();
+	GenerateShadowMap(pRenderer, pViewport);
+
+	Vector2 v2LeftTop = pViewport->GetLeftTop();
+	pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, pViewport->GetWidth(), pViewport->GetHeight(), 0.0f, 1.0f);
 	DrawPainter(pRenderer, pViewport);
 	MModelInstance* pSpat = dynamic_cast<MModelInstance*>(m_pRootNode->FindFirstChildByName("Teaport"));
 	DrawCameraFrustum(pRenderer, pViewport, pViewport->GetCamera());
@@ -555,7 +637,7 @@ void MScene::Render(MIRenderer* pRenderer, MIViewport* pViewport)
 	//DrawSkyBox(pRenderer, pViewport);
 }
 
-void MScene::Input(MInputEvent* pEvent, MIViewport* pViewport)
+void MScene::Input(MInputEvent* pEvent, MViewport* pViewport)
 {
 	m_pTransformCoord3D->Input(pEvent, pViewport);
 
@@ -568,7 +650,11 @@ void MScene::Input(MInputEvent* pEvent, MIViewport* pViewport)
 
 MScene::~MScene()
 {
-
+	if (m_pShadowDepthMapRenderTarget)
+	{
+		delete m_pShadowDepthMapRenderTarget;
+		m_pShadowDepthMapRenderTarget = nullptr;
+	}
 }
 
 void MScene::SetRootNode(MNode* pRootNode)

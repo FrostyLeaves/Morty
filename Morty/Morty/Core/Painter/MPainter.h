@@ -15,7 +15,7 @@
 #include "MMesh.h"
 #include <vector>
 
-class MIViewport;
+class MViewport;
 
 struct MPainterVertex
 {
@@ -32,8 +32,8 @@ public:
 	virtual unsigned int GetVertexCount() = 0;
 	virtual unsigned int GetIndexCount() = 0;
 
-	virtual bool FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh) = 0;
-	virtual bool TouchTest(const Vector2& pos, MIViewport* pViewport) { return false; }
+	virtual bool FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh) = 0;
+	virtual bool TouchTest(const Vector2& pos, MViewport* pViewport) { return false; }
 };
 
 class MORTY_CLASS MPainter2DLine : public MIPainterShape
@@ -48,11 +48,11 @@ public:
 	virtual unsigned int GetVertexCount() override { return 4; }
 	virtual unsigned int GetIndexCount() override { return 6; }
 
-	virtual bool FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh) override;
-	virtual bool TouchTest(const Vector2& pos, MIViewport* pViewport) override;
+	virtual bool FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh) override;
+	virtual bool TouchTest(const Vector2& pos, MViewport* pViewport) override;
 
-	Vector2 GetDirection2D(MIViewport* pViewport);
-	float GetLength2D(MIViewport* pViewport);
+	Vector2 GetDirection2D(MViewport* pViewport);
+	float GetLength2D(MViewport* pViewport);
 
 public:
 	Vector2 m_v2Begin;
@@ -73,8 +73,8 @@ public:
 	virtual unsigned int GetVertexCount() override { return 4; }
 	virtual unsigned int GetIndexCount() override { return 6; }
 
-	virtual bool FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh) override;
-	virtual bool TouchTest(const Vector2& pos, MIViewport* pViewport) override;
+	virtual bool FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh) override;
+	virtual bool TouchTest(const Vector2& pos, MViewport* pViewport) override;
 
 
 public:
@@ -94,8 +94,8 @@ public:
 	virtual unsigned int GetVertexCount() override { return 4; }
 	virtual unsigned int GetIndexCount() override { return 6; }
 
-	virtual bool FillData(MIViewport* pViewport, MMesh<MPainterVertex>& mesh) override;
-	virtual bool TouchTest(const Vector2& pos, MIViewport* pViewport) override;
+	virtual bool FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh) override;
+	virtual bool TouchTest(const Vector2& pos, MViewport* pViewport) override;
 
 
 public:

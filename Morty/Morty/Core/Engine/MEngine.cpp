@@ -1,7 +1,7 @@
 ﻿#include "MEngine.h"
 #include "MIRenderer.h"
 #include "MIRenderView.h"
-#include "MIViewport.h"
+#include "MViewport.h"
 
 #include "MLogManager.h"
 #if (RENDER_GRAPHICS == MORTY_DIRECTX_11)
@@ -98,7 +98,7 @@ MIRenderView* MEngine::CreateView()
 
 #endif
 
-	MIViewport* pViewport = GetObjectManager()->CreateObject<MIViewport>();
+	MViewport* pViewport = GetObjectManager()->CreateObject<MViewport>();
 	pNewView->AppendViewport(pViewport);
 
 	return pNewView;
@@ -213,6 +213,13 @@ bool MEngine::InitializeDefaultResource()
 
 	std::vector<MShaderTextureParam>& vTexParams = pSkyBoxMaterialRes->GetMaterialTemplate()->GetPixelTextureParams();
 	pSkyBoxMaterialRes->GetMaterialTemplate()->SetPixelTexutreParam("SkyTexCube", pTextureCubeRes);
+
+
+	MResource* pEmptyVSResource = GetResourceManager()->LoadResource("./Shader/empty.mvs");
+	MResource* pEmptyPSResource = GetResourceManager()->LoadResource("./Shader/empty.mps");
+	MMaterialResource* pShadowMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW);
+	pShadowMaterialRes->LoadVertexShader(pEmptyVSResource);
+	pShadowMaterialRes->LoadPixelShader(pEmptyPSResource);
 
 	return true;
 }

@@ -1,5 +1,6 @@
 ﻿#include "MTexture.h"
 #include "MIDevice.h"
+#include "MRenderStructure.h"
 
 #include "MLogManager.h"
 
@@ -90,4 +91,31 @@ void MTextureCube::SetTextures(MTexture* vTexture[6])
 void MTextureCube::SetTexture(MTexture* pTexture, const MECubeFace& eFace)
 {
 	m_vTexture[eFace] = pTexture;
+}
+
+MRenderDepthTexture::MRenderDepthTexture()
+	: MITexture()
+	, m_v2Size(0,0)
+	, m_pTextureBuffer(nullptr)
+{
+
+}
+
+MTextureBuffer* MRenderDepthTexture::GetBuffer()
+{
+	return m_pTextureBuffer;
+}
+
+void MRenderDepthTexture::GenerateBuffer(MIDevice* pDevice)
+{
+	if (m_pTextureBuffer)
+		pDevice->DestroyDepthTexture(&m_pTextureBuffer);
+
+	pDevice->GenerateDepthTexture(&m_pTextureBuffer, m_v2Size.x, m_v2Size.y);
+}
+
+void MRenderDepthTexture::DestroyTexture(MIDevice* pDevice)
+{
+	if (m_pTextureBuffer)
+		pDevice->DestroyDepthTexture(&m_pTextureBuffer);
 }

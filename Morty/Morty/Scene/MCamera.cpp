@@ -8,8 +8,8 @@ MCamera::MCamera()
 	, m_fFov(40.0f)
 	, m_fZNear(10.0f)
 	, m_fZFar(500.0f)
-	, m_fWidth(100.0f)
-	, m_fHeight(100.0f)
+	, m_fWidth(50)
+	, m_fHeight(50)
 	, m_eCameraType(MECameraType::EPerspective)
 {
 

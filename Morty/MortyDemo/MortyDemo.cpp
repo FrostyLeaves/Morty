@@ -28,7 +28,7 @@
 #include "MIRenderView.h"
 #include "MCamera.h"
 #include "MScene.h"
-#include "MIViewport.h"
+#include "MViewport.h"
 #include "MPointLight.h"
 #include "MDirectionalLight.h"
 #include "MModelResource.h"
@@ -101,10 +101,9 @@ public:
 		{
 
 			Vector3 up = Vector3(0, 1, 0);
-			SetRotation(GetRotation() * Quaternion(up, m_v2MouseAddi.x * 0.25f));
 
 			Vector3 right = GetRight();
-			SetRotation(GetRotation() * Quaternion(right, m_v2MouseAddi.y * 0.25f));
+			SetRotation(GetRotation() * Quaternion(up, m_v2MouseAddi.x * 0.25f) * Quaternion(right, m_v2MouseAddi.y * 0.25f));
 
 			m_v2MouseAddi = Vector2(0, 0);
 		}
@@ -130,7 +129,7 @@ int main(int argc, char* argv[])
 	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/teaport.fbx"));
 	MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
 	pSpatial->Load(pResource);
-	pSpatial->SetPosition(Vector3(0, 0, 0));
+	pSpatial->SetPosition(Vector3(0, 0, 50));
 	pSpatial->SetName("Teaport");
 
 	pRootNode->AddNode(pSpatial);
@@ -138,12 +137,11 @@ int main(int argc, char* argv[])
 	MModelResource* pPikachuResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/Pikachu.fbx"));
 	MModelInstance* pPikachu = engine.GetObjectManager()->CreateObject<MModelInstance>();
 	pPikachu->Load(pPikachuResource);
-	pPikachu->SetPosition(Vector3(0, 0, 0));
+	pPikachu->SetPosition(Vector3(0, 0, 10));
 	pPikachu->SetName("Pikachu");
 
 	pRootNode->AddNode(pPikachu);
 
-	
 	if (MModelResource* pModelResource = pPikachu->GetResource())
 	{
 		if(pPikachu->SetPlayAnimation((*pModelResource->GetAnimationsName())[2]))
@@ -171,7 +169,7 @@ int main(int argc, char* argv[])
 	pInputNode->SetName("InputNode");
 	pCamera->AddNode(pInputNode);
 
-	pInputNode->SetInputCallback([&pCamera](MInputEvent* pEvent, MIViewport* pViewport) {
+	pInputNode->SetInputCallback([&pCamera](MInputEvent* pEvent, MViewport* pViewport) {
 
 		if (MKeyBoardInputEvent* pKeyInput = dynamic_cast<MKeyBoardInputEvent*>(pEvent))
 		{

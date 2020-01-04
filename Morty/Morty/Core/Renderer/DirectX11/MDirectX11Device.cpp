@@ -12,6 +12,8 @@
 #include "MTexture.h"
 #include "MShader.h"
 #include "MIRenderTarget.h"
+#include "MTextureRenderTarget.h"
+#include "MDirectX11RenderTarget.h"
 
 
 MDirectX11Device::MDirectX11Device()
@@ -426,6 +428,74 @@ void MDirectX11Device::DestroyTexture(MTextureBuffer** ppTextureBuffer)
 	*ppTextureBuffer = nullptr;
 }
 
+void MDirectX11Device::GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const unsigned int& unWidth, const unsigned int& unHeight)
+{
+	if (*ppTextureBuffer)
+		DestroyDepthTexture(ppTextureBuffer);
+
+	ID3D11Texture2D* pTexture2D = nullptr;
+	ID3D11DepthStencilView* pDepthStencilView = nullptr;
+	ID3D11ShaderResourceView* pShaderResourceView = nullptr;
+
+	D3D11_TEXTURE2D_DESC desc;
+	ZeroMemory(&desc, sizeof(D3D11_TEXTURE2D_DESC));
+	desc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+	desc.MipLevels = 1;
+	desc.ArraySize = 1;
+	desc.SampleDesc.Count = 1;
+	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL;
+	desc.Height = unWidth;
+	desc.Width = unHeight;
+
+	HRESULT hr = m_pD3dDevice->CreateTexture2D(&desc, nullptr, &pTexture2D);
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
+	ZeroMemory(&shaderResourceViewDesc, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
+	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	shaderResourceViewDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+	shaderResourceViewDesc.Texture2D.MipLevels = 1;
+
+	hr = m_pD3dDevice->CreateShaderResourceView(pTexture2D, &shaderResourceViewDesc, &pShaderResourceView);
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
+	ZeroMemory(&depthStencilViewDesc, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
+	depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	depthStencilViewDesc.Texture2D.MipSlice = 0;
+
+	hr = m_pD3dDevice->CreateDepthStencilView(pTexture2D, &depthStencilViewDesc, &pDepthStencilView);
+
+
+
+	(*ppTextureBuffer) = new MDepthTextureBuffer();
+	(*ppTextureBuffer)->m_pTextureBuffer = pTexture2D;
+	(*ppTextureBuffer)->m_pShaderResourceView = pShaderResourceView;
+	(*ppTextureBuffer)->m_pDepthStencilView = pDepthStencilView;
+
+}
+
+void MDirectX11Device::DestroyDepthTexture(MDepthTextureBuffer** ppTextureBuffer)
+{
+	if ((*ppTextureBuffer)->m_pTextureBuffer)
+	{
+		(*ppTextureBuffer)->m_pTextureBuffer->Release();
+		(*ppTextureBuffer)->m_pTextureBuffer = nullptr;
+	}
+	if ((*ppTextureBuffer)->m_pShaderResourceView)
+	{
+		(*ppTextureBuffer)->m_pShaderResourceView->Release();
+		(*ppTextureBuffer)->m_pShaderResourceView = nullptr;
+	}
+	if ((*ppTextureBuffer)->m_pDepthStencilView)
+	{
+		(*ppTextureBuffer)->m_pDepthStencilView->Release();
+		(*ppTextureBuffer)->m_pDepthStencilView = nullptr;
+	}
+
+	delete* ppTextureBuffer;
+	*ppTextureBuffer = nullptr;
+}
+
 void MDirectX11Device::UploadBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh)
 {
 	// Upload vertex/index data into a single contiguous GPU buffer
@@ -674,6 +744,7 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 			else if (D3D_SHADER_INPUT_TYPE::D3D_SIT_SAMPLER == bindDesc.Type)
 			{
 				MShaderSampleParam param;
+				param.strName = bindDesc.Name;
 				param.unBindPoint = bindDesc.BindPoint;
 				param.unBindCount = bindDesc.BindCount;
 
@@ -803,9 +874,10 @@ ID3D11InputLayout* MDirectX11Device::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC 
 	return pVertexInputLayout;
 }
 
-bool MDirectX11Device::GenerateRenderTarget(MIRenderTarget* pRenderTarget, int nWidth, int nHeight)
+bool MDirectX11Device::GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsigned int nWidth, unsigned int nHeight)
 {
-	if (nullptr == pRenderTarget->m_pBackBuffer)
+	MDirectX11RenderTarget* pDxRenderTarget = dynamic_cast<MDirectX11RenderTarget*>(pRenderTarget);
+	if (nullptr == pDxRenderTarget)
 		return false;
 
 	if (nWidth < 1)
@@ -816,12 +888,26 @@ bool MDirectX11Device::GenerateRenderTarget(MIRenderTarget* pRenderTarget, int n
 	// Resize the swap chain and recreate the render target view.
 	HRESULT hr;
 
-	hr = m_pD3dDevice->CreateRenderTargetView(pRenderTarget->m_pBackBuffer, 0, &pRenderTarget->m_pTargetView);
+
+	ID3D11Texture2D* pBackBuffer = nullptr;
+	ID3D11Texture2D* pDepthStencilBuffer = nullptr;
+
+
+	hr = pDxRenderTarget->m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
+	if (FAILED(hr) || nullptr == pBackBuffer)
+	{
+		MLogManager::GetInstance()->Error("Failed to GetBuffer!");
+		return false;
+	}
+
+	hr = m_pD3dDevice->CreateRenderTargetView(pBackBuffer, 0, &pRenderTarget->m_pTargetView);
+	pBackBuffer->Release();
 	if (FAILED(hr))
 	{
 		MLogManager::GetInstance()->Error("Failed to CreateRenderTargetView!");
 		return false;
 	}
+
 
 	// Create the depth/stencil buffer and view.
 
@@ -851,14 +937,15 @@ bool MDirectX11Device::GenerateRenderTarget(MIRenderTarget* pRenderTarget, int n
 	depthStencilDesc.CPUAccessFlags = 0;
 	depthStencilDesc.MiscFlags = 0;
 
-	hr = m_pD3dDevice->CreateTexture2D(&depthStencilDesc, 0, &pRenderTarget->m_pDepthStencilBuffer);
+	hr = m_pD3dDevice->CreateTexture2D(&depthStencilDesc, 0, &pDepthStencilBuffer);
 	if (FAILED(hr))
 	{
 		MLogManager::GetInstance()->Error("Failed to CreateTexture2D!");
 		return false;
 	}
 
-	hr = m_pD3dDevice->CreateDepthStencilView(pRenderTarget->m_pDepthStencilBuffer, 0, &pRenderTarget->m_pDepthStencilView);
+	hr = m_pD3dDevice->CreateDepthStencilView(pDepthStencilBuffer, 0, &pRenderTarget->m_pDepthStencilView);
+	pDepthStencilBuffer->Release();
 	if (FAILED(hr))
 	{
 		MLogManager::GetInstance()->Error("Failed to CreateDepthStencilView!");
@@ -868,23 +955,46 @@ bool MDirectX11Device::GenerateRenderTarget(MIRenderTarget* pRenderTarget, int n
 	return true;
 }
 
+bool MDirectX11Device::GenerateRenderTarget(MTextureRenderTarget* pRenderTarget, unsigned int unWidth, unsigned int unHeight)
+{
+	unsigned int eRenderTargetType = pRenderTarget->GetRenderTargetType();
+
+	if (MTextureRenderTarget::ERenderBack & eRenderTargetType)
+	{
+		//TODO
+	}
+
+	if (MTextureRenderTarget::ERenderDepth & eRenderTargetType)
+	{
+		pRenderTarget->m_pDepthTexture->GenerateBuffer(this);
+		if(MDepthTextureBuffer* pBuffer = dynamic_cast<MDepthTextureBuffer*>(pRenderTarget->m_pDepthTexture->GetBuffer()))
+			pRenderTarget->m_pDepthStencilView = pBuffer->m_pDepthStencilView;
+	}
+
+
+	return true;
+}
+
+void MDirectX11Device::DestroyRenderTarget(MTextureRenderTarget* pRenderTarget)
+{
+	if (pRenderTarget->m_pBackTexture)
+	{
+		pRenderTarget->m_pBackTexture->DestroyTexture(this);
+		pRenderTarget->m_pTargetView = nullptr;
+	}
+	if (pRenderTarget->m_pDepthTexture)
+	{
+		pRenderTarget->m_pDepthTexture->DestroyTexture(this);
+		pRenderTarget->m_pDepthStencilView = nullptr;
+	}
+}
+
 void MDirectX11Device::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
 {
-	if (pRenderTarget->m_pBackBuffer)
-	{
-		pRenderTarget->m_pBackBuffer->Release();
-		pRenderTarget->m_pBackBuffer = nullptr;
-	}
 	if (pRenderTarget->m_pTargetView)
 	{
 		pRenderTarget->m_pTargetView->Release();
 		pRenderTarget->m_pTargetView = nullptr;
-	}
-
-	if (pRenderTarget->m_pDepthStencilBuffer)
-	{
-		pRenderTarget->m_pDepthStencilBuffer->Release();
-		pRenderTarget->m_pDepthStencilBuffer = nullptr;
 	}
 
 	if (pRenderTarget->m_pDepthStencilView)

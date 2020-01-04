@@ -16,7 +16,7 @@
 class MNode;
 class M3DNode;
 class MIRenderer;
-class MIViewport;
+class MViewport;
 class MInputEvent;
 class MIMesh;
 class MORTY_CLASS MITransformCoord
@@ -50,12 +50,12 @@ public:
 
 	void SetTarget3DNode(MNode* pNode);
 
-	bool Input(MInputEvent* pEvent, MIViewport* pViewport);
-	void Render(MIRenderer* pRenderer, MIViewport* pViewport);
+	bool Input(MInputEvent* pEvent, MViewport* pViewport);
+	void Render(MIRenderer* pRenderer, MViewport* pViewport);
 
 protected:
 
-	void GetTranslationShapes(class MPainter2DLine* lines, class MPainter2DRect* rects, bool* vValid, int* vOrder, MIViewport* pViewport);
+	void GetTranslationShapes(class MPainter2DLine* lines, class MPainter2DRect* rects, bool* vValid, int* vOrder, MViewport* pViewport);
 
 private:
 

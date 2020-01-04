@@ -14,7 +14,7 @@
 #include <vector>
 #include <functional>
 
-class MIViewport;
+class MViewport;
 class MORTY_CLASS MInputEvent
 {
 public:

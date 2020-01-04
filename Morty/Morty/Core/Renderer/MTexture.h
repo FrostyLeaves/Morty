@@ -15,6 +15,7 @@
 
 class MIDevice;
 class MTextureBuffer;
+class MDepthTextureBuffer;
 class MORTY_CLASS MITexture
 {
 public:
@@ -92,5 +93,22 @@ private:
 	MTextureBuffer* m_pTextureBuffer;
 };
 
+class MORTY_CLASS MRenderDepthTexture : public MITexture
+{
+public:
+	MRenderDepthTexture();
+	virtual ~MRenderDepthTexture() {}
 
+public:
+
+	void SetSize(const Vector2& v2Size) { m_v2Size = v2Size; }
+	virtual Vector2 GetSize() override { return m_v2Size; }
+	virtual MTextureBuffer* GetBuffer() override;
+	virtual void GenerateBuffer(MIDevice* pDevice) override;
+	virtual void DestroyTexture(MIDevice* pDevice) override;
+		
+private:
+	Vector2 m_v2Size;
+	MDepthTextureBuffer* m_pTextureBuffer;
+};
 #endif

@@ -6,13 +6,13 @@
 #include "d3d11shader.h"
 
 #include "MDirectX11Device.h"
-#include "MWindowsDX11RenderTarget.h"
+#include "MDirectX11RenderTarget.h"
 
 #include "MTexture.h"
 #include "MShader.h"
 #include "MMaterial.h"
 #include "MMesh.h"
-#include "MIViewport.h"
+#include "MViewport.h"
 #include "MIRenderTarget.h"
 #include "MRenderStructure.h"
 
@@ -24,6 +24,7 @@ const bool bEnable4xMsaa = true;
 MDirectX11Renderer::MDirectX11Renderer(MDirectX11Device* pDevice)
 	: m_pDevice(pDevice)
 	, m_pDefaultSamplerState(nullptr)
+	, m_pDepthTextureSamplerState(nullptr)
 //	, m_pAnisotropicFilterSamplerState(nullptr)
 	, m_pDepthStencilState(nullptr)
 	, m_pRasterizerState_Wireframe_CullNone(nullptr)
@@ -44,7 +45,7 @@ void MDirectX11Renderer::AddOutputView(MIRenderView* pView)
 {
 	if (MWindowsRenderView* pWindowView = dynamic_cast<MWindowsRenderView*>(pView))
 	{
-		MWindowsDX11RenderTarget* pRenderTarget = MWindowsDX11RenderTarget::CreateForView(m_pDevice, pWindowView);
+		MDirectX11RenderTarget* pRenderTarget = MDirectX11RenderTarget::CreateForView(m_pDevice, pWindowView);
 		pView->SetRenderTarget(pRenderTarget);
 
 	}
@@ -117,6 +118,24 @@ bool MDirectX11Renderer::Initialize()
 	m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_pDepthStencilState, 0);
 
 
+	D3D11_SAMPLER_DESC comparisonSamplerDesc;
+	ZeroMemory(&comparisonSamplerDesc, sizeof(D3D11_SAMPLER_DESC));
+	comparisonSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	comparisonSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	comparisonSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	comparisonSamplerDesc.BorderColor[0] = 1.0f;
+	comparisonSamplerDesc.BorderColor[1] = 1.0f;
+	comparisonSamplerDesc.BorderColor[2] = 1.0f;
+	comparisonSamplerDesc.BorderColor[3] = 1.0f;
+	comparisonSamplerDesc.MinLOD = 0.f;
+	comparisonSamplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	comparisonSamplerDesc.MipLODBias = 0.f;
+	comparisonSamplerDesc.MaxAnisotropy = 0;
+	comparisonSamplerDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+	comparisonSamplerDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_POINT;
+	m_pDevice->m_pD3dDevice->CreateSamplerState(&comparisonSamplerDesc, &m_pDepthTextureSamplerState);
+
+
 	//三角形解析顶点
 	m_pDevice->m_pD3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -157,19 +176,24 @@ void MDirectX11Renderer::Release()
 		m_pDefaultSamplerState->Release();
 		m_pDefaultSamplerState = nullptr;
 	}
+	if (m_pDepthTextureSamplerState)
+	{
+		m_pDepthTextureSamplerState->Release();
+		m_pDepthTextureSamplerState = nullptr;
+	}
 
 	ReleaseDefaultResource();
 }
 
-void MDirectX11Renderer::SetViewport(MIViewport* pViewport)
+void MDirectX11Renderer::SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth)
 {
 	static D3D11_VIEWPORT viewport;
-	viewport.Width = pViewport->GetWidth();
-	viewport.Height = pViewport->GetHeight();
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-	viewport.TopLeftX = pViewport->GetLeft();
-	viewport.TopLeftY = pViewport->GetTop();
+	viewport.Width = fWidth;
+	viewport.Height = fHeight;
+	viewport.MinDepth = fMinDepth;
+	viewport.MaxDepth = fMaxDepth;
+	viewport.TopLeftX = fX;
+	viewport.TopLeftY = fY;
 
 	m_pDevice->m_pD3dContext->RSSetViewports(1, &viewport);
 }
@@ -182,8 +206,10 @@ void MDirectX11Renderer::Render(MIRenderTarget* pRenderTarget)
 			return;
 
 		float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-		m_pDevice->m_pD3dContext->ClearDepthStencilView(pRenderTarget->m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-		m_pDevice->m_pD3dContext->ClearRenderTargetView(pRenderTarget->m_pTargetView, clearColor);
+		if(pRenderTarget->m_pDepthStencilView)
+			m_pDevice->m_pD3dContext->ClearDepthStencilView(pRenderTarget->m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		if(pRenderTarget->m_pTargetView)
+			m_pDevice->m_pD3dContext->ClearRenderTargetView(pRenderTarget->m_pTargetView, clearColor);
 
 
 		m_vRenderTargets.push(pRenderTarget);
@@ -203,8 +229,10 @@ void MDirectX11Renderer::RecoverRenderTarget(MIRenderTarget* pRenderTarget)
 {
 	//warning! Material may has been switched.
 
-
-	m_pDevice->m_pD3dContext->OMSetRenderTargets(1, &pRenderTarget->m_pTargetView, pRenderTarget->m_pDepthStencilView);
+	if(pRenderTarget->m_pTargetView)
+		m_pDevice->m_pD3dContext->OMSetRenderTargets(1, &pRenderTarget->m_pTargetView, pRenderTarget->m_pDepthStencilView);
+	else
+		m_pDevice->m_pD3dContext->OMSetRenderTargets(0, nullptr, pRenderTarget->m_pDepthStencilView);
 }
 
 void MDirectX11Renderer::InitDefaultResource()
@@ -344,7 +372,10 @@ void MDirectX11Renderer::UpdateMaterialResource()
 
 	for (MShaderSampleParam& param : m_pUsingMaterial->GetPixelShader()->GetBuffer()->m_vSampleParamsTemplate)
 	{
-		m_pDevice->m_pD3dContext->PSSetSamplers(param.unBindPoint, param.unBindCount, &m_pDefaultSamplerState);
+		if (param.strName == "U_defaultSampler")
+			m_pDevice->m_pD3dContext->PSSetSamplers(param.unBindPoint, param.unBindCount, &m_pDefaultSamplerState);
+		else if (param.strName == "U_shadowMapSampler")
+			m_pDevice->m_pD3dContext->PSSetSamplers(param.unBindPoint, param.unBindCount, &m_pDepthTextureSamplerState);
 	}
 }
 

@@ -12,7 +12,7 @@ MInputNode::~MInputNode()
 {
 }
 
-bool MInputNode::Input(MInputEvent* pEvent, MIViewport* pViewport)
+bool MInputNode::Input(MInputEvent* pEvent, MViewport* pViewport)
 {
 	if (m_funcInputCallback)
 		return m_funcInputCallback(pEvent, pViewport);

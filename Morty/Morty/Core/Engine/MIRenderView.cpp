@@ -1,5 +1,5 @@
 ﻿#include "MIRenderView.h"
-#include "MIViewport.h"
+#include "MViewport.h"
 
 MIRenderView::MIRenderView()
 	: m_pEngine(nullptr)
@@ -14,18 +14,18 @@ MIRenderView::~MIRenderView()
 
 }
 
-void MIRenderView::AppendViewport(MIViewport* pViewport)
+void MIRenderView::AppendViewport(MViewport* pViewport)
 {
-	for (MIViewport* pvp : m_vViewport)
+	for (MViewport* pvp : m_vViewport)
 		if (pViewport == pvp)
 			return;
 
 	m_vViewport.push_back(pViewport);
 }
 
-void MIRenderView::RemoveViewport(MIViewport* pViewport)
+void MIRenderView::RemoveViewport(MViewport* pViewport)
 {
-	std::vector<MIViewport*>::iterator iter = std::find(m_vViewport.begin(), m_vViewport.end(), pViewport);
+	std::vector<MViewport*>::iterator iter = std::find(m_vViewport.begin(), m_vViewport.end(), pViewport);
 	if (iter != m_vViewport.end())
 		m_vViewport.erase(iter);
 }

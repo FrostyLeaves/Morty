@@ -1,15 +1,15 @@
-#include "MWindowsDX11RenderTarget.h"
+#include "MDirectX11RenderTarget.h"
 #include "MWindowsRenderView.h"
 #include "MDirectX11Device.h"
 #include "MLogManager.h"
 
-MWindowsDX11RenderTarget::MWindowsDX11RenderTarget(MDirectX11Device* pDevice) : MIRenderTarget()
+MDirectX11RenderTarget::MDirectX11RenderTarget(MDirectX11Device* pDevice) : MIRenderTarget()
 	,m_pDevice(pDevice), m_pSwapChain(nullptr), m_funcRenderFunction(nullptr)
 {
 
 }
 
-MWindowsDX11RenderTarget::~MWindowsDX11RenderTarget()
+MDirectX11RenderTarget::~MDirectX11RenderTarget()
 {
 	if (m_pDevice)
 		m_pDevice->DestroyRenderTarget(this);
@@ -21,13 +21,13 @@ MWindowsDX11RenderTarget::~MWindowsDX11RenderTarget()
 	}
 }
 
-MWindowsDX11RenderTarget* MWindowsDX11RenderTarget::CreateForView(MDirectX11Device* pDevice, MWindowsRenderView* pView)
+MDirectX11RenderTarget* MDirectX11RenderTarget::CreateForView(MDirectX11Device* pDevice, MWindowsRenderView* pView)
 {
 	if (nullptr == pDevice)
 		return nullptr;
 
 	HWND hWnd = pView->GetHWND();
-	MWindowsDX11RenderTarget* pRenderTarget = new MWindowsDX11RenderTarget(pDevice);
+	MDirectX11RenderTarget* pRenderTarget = new MDirectX11RenderTarget(pDevice);
 
 
 	DXGI_SWAP_CHAIN_DESC sd;
@@ -77,45 +77,39 @@ MWindowsDX11RenderTarget* MWindowsDX11RenderTarget::CreateForView(MDirectX11Devi
 
 	pRenderTarget->m_pSwapChain = pSwapChain;
 
-	pRenderTarget->OnResize(pView->GetViewWidth(), pView->GetViewHeight());
+	unsigned int unWidth = pView->GetViewWidth();
+	unsigned int unHeight = pView->GetViewHeight();
+	pRenderTarget->OnResize(unWidth, unHeight);
 	return pRenderTarget;
 }
 
-void MWindowsDX11RenderTarget::OnResize(int nWidth, int nHeight)
+void MDirectX11RenderTarget::OnResize(const unsigned int& unWidth, const unsigned int& unHeight)
 {
 	if (nullptr == m_pDevice)
 		return;
 
-	if (nWidth < 1)
-		nWidth = 1;
-	if (nHeight < 1)
-		nHeight = 1;
+	unsigned int unSafeWidth = unWidth;
+	unsigned int unSafeHeight = unHeight;
+
+	if (unSafeWidth < 1)
+		unSafeWidth = 1;
+	if (unSafeHeight < 1)
+		unSafeHeight = 1;
 
 	m_pDevice->DestroyRenderTarget(this);
 
 	HRESULT hr;
-	hr = m_pSwapChain->ResizeBuffers(1, nWidth, nHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+	hr = m_pSwapChain->ResizeBuffers(1, unSafeWidth, unSafeHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
 	if (FAILED(hr))
 	{
 		MLogManager::GetInstance()->Error("Failed to ResizeBuffers!");
 		return;
 	}
 
-	ID3D11Texture2D* pBackBuffer = nullptr;
-	hr = m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
-	if (FAILED(hr))
-	{
-		MLogManager::GetInstance()->Error("Failed to GetBuffer!");
-		return;
-	}
-
-	
-	this->m_pBackBuffer = pBackBuffer;
-
-	m_pDevice->GenerateRenderTarget(this, nWidth, nHeight);
+	m_pDevice->GenerateRenderTarget(this, unSafeWidth, unSafeHeight);
 }
 
-void MWindowsDX11RenderTarget::OnRender(MIRenderer* pRenderer)
+void MDirectX11RenderTarget::OnRender(MIRenderer* pRenderer)
 {
 	MIRenderTarget::OnRender(pRenderer);
 	m_pSwapChain->Present(0, 0);

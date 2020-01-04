@@ -25,7 +25,7 @@ class MMaterial;
 class MCamera;
 struct MShaderParam;
 class MTexture;
-class MIViewport;
+class MViewport;
 class MIRenderTarget;
 class MRenderTargetTexture;
 class MORTY_CLASS MIRenderer
@@ -53,7 +53,7 @@ public:
 	virtual bool Initialize() = 0;
 	virtual void Release() = 0;
 
-	virtual void SetViewport(MIViewport* pViewport) = 0;
+	virtual void SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth) = 0;
 	virtual void Render(MIRenderTarget* pRenderTarget) = 0;
 	virtual void RecoverRenderTarget(MIRenderTarget* pRenderTarget) = 0;
 

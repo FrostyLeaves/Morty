@@ -24,11 +24,12 @@ class MPointLight;
 class MIRenderer;
 class MInputEvent;
 class MIRenderView;
-class MIViewport;
+class MViewport;
 class MMaterial;
 class MIMeshInstance;
 class MTransformCoord3D;
 class MInputNode;
+class MTextureRenderTarget;
 class MORTY_CLASS MScene : public MObject
 {
 public:
@@ -58,33 +59,36 @@ public:
 	void RecordInputNode(MInputNode* pInputNode);
 	void CancelRecordInputNode(MInputNode* pInputNode);
 
-	virtual void Render(MIRenderer* pRenderer, MIViewport* pViewport);
+	virtual void Render(MIRenderer* pRenderer, MViewport* pViewport);
 
-	virtual void Input(MInputEvent* pEvent, MIViewport* pViewport);
+	virtual void Input(MInputEvent* pEvent, MViewport* pViewport);
 
 	virtual void OnCreated() override;
 
-	void AddAttachedViewport(MIViewport* pViewport);
-	void RemoveAttachedViewport(MIViewport* pViewport);
-	std::vector<MIViewport*> GetViewports() { return m_vViewports; }
+	void AddAttachedViewport(MViewport* pViewport);
+	void RemoveAttachedViewport(MViewport* pViewport);
+	std::vector<MViewport*> GetViewports() { return m_vViewports; }
 
 	MTransformCoord3D* GetTransformCoord() { return m_pTransformCoord3D; }
+	
+	void InitShadowMapRenderTarget();
 
 protected:
 
-	void GenerateShadowMap();
+	void GenerateShadowMap(MIRenderer* pRenderer, MViewport* pViewport);
 
-	void DrawMeshInstance(MIRenderer* pRenderer, MIViewport* pViewport);
-	void DrawSkyBox(MIRenderer* pRenderer, MIViewport* pViewport);
-	void DrawPainter(MIRenderer* pRenderer, MIViewport* pViewport);
-	void DrawBoundingBox(MIRenderer* pRenderer, MIViewport* pViewport, MModelInstance* pSpatial);
-	void DrawCameraFrustum(MIRenderer* pRenderer, MIViewport* pViewport, MCamera* pCamera);
+	void DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport);
+	void DrawSkyBox(MIRenderer* pRenderer, MViewport* pViewport);
+	void DrawPainter(MIRenderer* pRenderer, MViewport* pViewport);
+	void DrawBoundingBox(MIRenderer* pRenderer, MViewport* pViewport, MModelInstance* pSpatial);
+	void DrawCameraFrustum(MIRenderer* pRenderer, MViewport* pViewport, MCamera* pCamera);
 
 private:
 
 	MNode* m_pRootNode;
 	MSkyBox* m_pSkyBox;
 	MTransformCoord3D* m_pTransformCoord3D;
+	MTextureRenderTarget* m_pShadowDepthMapRenderTarget;
 
 	std::vector<MDirectionalLight*> m_vDirectionalLight;
 	std::vector<MPointLight*> m_vPointLight;
@@ -96,7 +100,7 @@ private:
 	};
 	std::vector<MaterialMeshInsGroup*> m_vMatMeshInsGroup;
 
-	std::vector<MIViewport*> m_vViewports;
+	std::vector<MViewport*> m_vViewports;
 
 
 	std::vector<MInputNode*> m_vInputNodes;

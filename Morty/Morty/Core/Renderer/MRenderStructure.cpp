@@ -49,7 +49,20 @@ MInputLayout::MInputLayout()
 MTextureBuffer::MTextureBuffer()
 {
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	m_pTextureBuffer = nullptr;
 	m_pShaderResourceView = nullptr;
+#elif RENDER_GRAPHICS == MORTY_OPENGLES
+
+#endif
+
+}
+
+MDepthTextureBuffer::MDepthTextureBuffer()
+{
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	m_pTextureBuffer = nullptr;
+	m_pShaderResourceView = nullptr;
+	m_pDepthStencilView = nullptr;
 #elif RENDER_GRAPHICS == MORTY_OPENGLES
 
 #endif

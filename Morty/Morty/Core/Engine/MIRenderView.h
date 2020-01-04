@@ -14,7 +14,7 @@
 
 #include "Vector.h"
 
-class MIViewport;
+class MViewport;
 class MEngine;
 class MIRenderTarget;
 class MORTY_CLASS MIRenderView
@@ -40,9 +40,9 @@ public:
 	virtual void OnRenderBegin() {}
 	virtual void OnRenderEnd() {}
 
-	void AppendViewport(MIViewport* pViewport);
-	void RemoveViewport(MIViewport* pViewport);
-	std::vector<MIViewport*>& GetViewports(){ return m_vViewport; }
+	void AppendViewport(MViewport* pViewport);
+	void RemoveViewport(MViewport* pViewport);
+	std::vector<MViewport*>& GetViewports(){ return m_vViewport; }
 
 	MIRenderTarget* GetRenderTarget() { return m_pRenderTarget; }
 	virtual void SetRenderTarget(MIRenderTarget* pRenderTarget) {m_pRenderTarget = pRenderTarget;}
@@ -50,7 +50,7 @@ public:
 protected:
 
 	friend class MEngine;
-	std::vector<MIViewport*> m_vViewport;
+	std::vector<MViewport*> m_vViewport;
 
 	MEngine* m_pEngine;
 

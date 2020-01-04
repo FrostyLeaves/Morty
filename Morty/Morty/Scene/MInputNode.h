@@ -12,7 +12,7 @@
 #include "MNode.h"
 
 class MInputEvent;
-class MIViewport;
+class MViewport;
 class MORTY_CLASS MInputNode : public MNode
 {
 public:
@@ -20,13 +20,13 @@ public:
     MInputNode();
     virtual ~MInputNode();
 
-	typedef std::function<bool(MInputEvent*, MIViewport*)> MInputCallback;
+	typedef std::function<bool(MInputEvent*, MViewport*)> MInputCallback;
 
 public:
 
 	void SetInputCallback(const MInputCallback& func) { m_funcInputCallback = func; }
 
-	virtual bool Input(MInputEvent* pEvent, MIViewport* pViewport);
+	virtual bool Input(MInputEvent* pEvent, MViewport* pViewport);
 
 private:
 

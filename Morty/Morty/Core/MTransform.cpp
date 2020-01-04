@@ -29,3 +29,13 @@ Matrix4 MTransform::GetMatrix()
 
 	return matmove * matrota * matscal;
 }
+
+Matrix4 MTransform::GetMatrixScale()
+{
+	Matrix4 matscal = Matrix4::IdentityMatrix;
+	matscal.m[0][0] = m_v3Scale.x;
+	matscal.m[1][1] = m_v3Scale.y;
+	matscal.m[2][2] = m_v3Scale.z;
+
+	return matscal;
+}

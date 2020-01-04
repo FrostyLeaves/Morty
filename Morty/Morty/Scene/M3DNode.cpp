@@ -65,6 +65,21 @@ void M3DNode::UpdateWorldTransform()
 	}
 }
 
+Vector3 M3DNode::GetWorldUp()
+{
+	return GetParentWorldTransform() * m_transform.GetUp();
+}
+
+Vector3 M3DNode::GetWorldForward()
+{
+	return GetParentWorldTransform() * m_transform.GetForward();
+}
+
+Vector3 M3DNode::GetWorldRight()
+{
+	return GetParentWorldTransform() * m_transform.GetRight();
+}
+
 bool M3DNode::AddNodeImpl(MNode* pNode, const MENodeChildType& etype)
 {
 	if (false == MNode::AddNodeImpl(pNode, etype))

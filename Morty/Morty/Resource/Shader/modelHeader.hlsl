@@ -5,12 +5,25 @@ struct VS_OUT
 
     float3 normal : NORMAL;
     float3 worldPos : WORLDPOS;
+
+    float4 lightSpacePos : LIGHTSPACEPOS;
+};
+
+struct VS_IN_EMPTY
+{
+    float3 pos : POSITION;
+};
+
+struct VS_OUT_EMPTY
+{
+    float4 pos : SV_POSITION;
 };
 
 struct Material
 {
     Texture2D texDiffuse;
     Texture2D texSpecular;
+    Texture2D texShadowMap;
     float3 f3Ambient;
     float3 f3Diffuse;
     float3 f3Specular;
@@ -39,18 +52,14 @@ struct PointLight
 
 };
 
-sampler U_defaultSampler
-{
-    Filter = MIN_MAG_MIP_LINEAR;
-    AddressU = Wrap;
-    AddressV = Wrap;
-    AddressW = Wrap;
-};
+sampler U_defaultSampler;
+SamplerComparisonState U_shadowMapSampler;
 
 cbuffer cbSpace
 {
     float4x4 U_matWorld;
     float4x4 U_matCamProj;
+    float4x4 U_matLightProj;
     float3x3 U_matNormal;
 };
 
