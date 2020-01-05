@@ -165,16 +165,30 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight)
 	matLightInv = matLightInv.Inverse();
 
 	std::vector<Vector3> points(8);
-	GetCameraFrustum(points[0], points[1], points[2], points[3], points[4], points[5], points[6], points[7]);
+
+	MBoundsAABB* pBounds = m_pScene->GetSceneAABB();
+	MCamera* pCamera = GetCamera();
+
+	Matrix4 matCameraInv = pCamera->GetWorldTransform().Inverse();
+	pBounds->GetPoints(points);
+	float fZValidNear = FLT_MAX, fZValidFar = 0;
+
+	for (unsigned int i = 0; i < 8; ++i)
+	{
+		float z = (matCameraInv * points[i]).z;
+		if (fZValidNear > z)
+			fZValidNear = z;
+		if (fZValidFar < z)
+			fZValidFar = z;
+	}
+	if (fZValidNear > pCamera->GetZNear())
+		fZValidNear = pCamera->GetZNear();
+
+//	GetCameraFrustum(GetCamera(), fZValidNear, fZValidFar, points[0], points[1], points[2], points[3], points[4], points[5], points[6], points[7]);
+
 
 	Vector3 v3Min(FLT_MAX, FLT_MAX, FLT_MAX);
 	Vector3 v3Max(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-
-	Vector3 v3Forwrad = pLight->GetWorldForward();
-	Vector3 v3Up = pLight->GetWorldUp();
-	Vector3 v3Right = pLight->GetWorldRight();
-
-	Vector3 v3Origin(FLT_MAX * 0.5f, FLT_MAX * 0.5f, FLT_MAX * 0.5f);
 
 	for (unsigned int i = 0; i < 8; ++i)
 	{
@@ -193,19 +207,14 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight)
 			v3Max.z = pos.z;
 	}
 
-	//float value = 10;
 	Matrix4 projMat = MatrixOrthoOffCenterLH(v3Min.x, v3Max.x, v3Max.y, v3Min.y, v3Min.z, v3Max.z);
-	//Matrix4 projMat = MatrixOrthoOffCenterLH(-value, value, value, -value, -value, value);
 	return projMat * matLightInv;
 }
 
-void MViewport::GetCameraFrustum(Vector3& v3NearTopLeft, Vector3& v3NearTopRight, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft, Vector3& v3FarTopLeft, Vector3& v3FarTopRight, Vector3& v3FarBottomRight, Vector3& v3FarBottomLeft)
+void MViewport::GetCameraFrustum(MCamera* pCamera, const float& fZNear, const float& fZFar, Vector3& v3NearTopLeft, Vector3& v3NearTopRight, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft, Vector3& v3FarTopLeft, Vector3& v3FarTopRight, Vector3& v3FarBottomRight, Vector3& v3FarBottomLeft)
 {
 	UpdateMatrix();
 
-	MCamera* pCamera = GetCamera();
-	float fZNear = pCamera->GetZNear();
-	float fZFar = pCamera->GetZFar();
 	if (MCamera::EPerspective == pCamera->GetCameraType())
 	{
 		float fAspect = GetWidth() / GetHeight();
@@ -245,6 +254,12 @@ void MViewport::GetCameraFrustum(Vector3& v3NearTopLeft, Vector3& v3NearTopRight
 		v3FarBottomLeft = localToWorld * Vector3(-fHalfWidth, -fHalfHeight, fZFar);
 		v3FarBottomRight = localToWorld * Vector3(+fHalfWidth, -fHalfHeight, fZFar);
 	}
+}
+
+void MViewport::GetCameraFrustum(Vector3& v3NearTopLeft, Vector3& v3NearTopRight, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft, Vector3& v3FarTopLeft, Vector3& v3FarTopRight, Vector3& v3FarBottomRight, Vector3& v3FarBottomLeft)
+{
+	MCamera* pCamera = GetCamera();
+	GetCameraFrustum(pCamera, pCamera->GetZNear(), pCamera->GetZFar(), v3NearTopLeft, v3NearTopRight, v3NearBottomRight, v3NearBottomLeft, v3FarTopLeft, v3FarTopRight, v3FarBottomRight,  v3FarBottomLeft);
 }
 
 MBoundsAABB* MViewport::GetFrustumAABB()

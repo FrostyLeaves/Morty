@@ -59,20 +59,22 @@ float4 PS(VS_OUT input) : SV_Target
     float3 f3LightDir = normalize(-U_dirLight.f3Direction);
     float NdotL = dot(f3Normal, f3LightDir);
     float margin = acos(saturate(NdotL));
-    float epsilon = 0.0005 / margin;
-    epsilon = clamp(epsilon, 0, 0.05);
 
-
-
-    lighting = float(U_mat.texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy, pixelDepth - epsilon));
-
-    if(lighting != 0)
+    if (NdotL > 0)
     {
-        f3Color += CalcDirectionLight(U_dirLight, f3CameraDir, f3Normal, f3AmbiColor, f3DiffColor, f3SpecColor);
-        f3Color += CalcPointLight(U_pointLights[0], f3CameraDir, f3Normal, input.worldPos, f3AmbiColor, f3DiffColor, f3SpecColor);
-        //f3Color += CalcPointLight(U_pointLights[1], f3CameraDir, f3Normal, input.worldPos, f3AmbiColor, f3DiffColor, f3SpecColor);
-        //f3Color += CalcPointLight(U_pointLights[2], f3CameraDir, f3Normal, input.worldPos, f3AmbiColor, f3DiffColor, f3SpecColor);
-        //f3Color += CalcPointLight(U_pointLights[3], f3CameraDir, f3Normal, input.worldPos, f3AmbiColor, f3DiffColor, f3SpecColor);
+        float epsilon = 0.0005 / margin;
+        epsilon = clamp(epsilon, 0.005, 0.01);
+
+        lighting = float(U_mat.texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy, pixelDepth - epsilon));
+
+        if(lighting > 0)
+        {
+            f3Color += CalcDirectionLight(U_dirLight, f3CameraDir, f3Normal, f3AmbiColor, f3DiffColor, f3SpecColor);
+            f3Color += CalcPointLight(U_pointLights[0], f3CameraDir, f3Normal, input.worldPos, f3AmbiColor, f3DiffColor, f3SpecColor);
+            //f3Color += CalcPointLight(U_pointLights[1], f3CameraDir, f3Normal, input.worldPos, f3AmbiColor, f3DiffColor, f3SpecColor);
+            //f3Color += CalcPointLight(U_pointLights[2], f3CameraDir, f3Normal, input.worldPos, f3AmbiColor, f3DiffColor, f3SpecColor);
+            //f3Color += CalcPointLight(U_pointLights[3], f3CameraDir, f3Normal, input.worldPos, f3AmbiColor, f3DiffColor, f3SpecColor);
+        }
     }
     
     return float4(f3Color, 1.0f);

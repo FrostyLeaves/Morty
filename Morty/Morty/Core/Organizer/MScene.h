@@ -30,6 +30,7 @@ class MIMeshInstance;
 class MTransformCoord3D;
 class MInputNode;
 class MTextureRenderTarget;
+class MBoundsAABB;
 class MORTY_CLASS MScene : public MObject
 {
 public:
@@ -73,6 +74,8 @@ public:
 	
 	void InitShadowMapRenderTarget();
 
+	MBoundsAABB* GetSceneAABB();
+
 protected:
 
 	void GenerateShadowMap(MIRenderer* pRenderer, MViewport* pViewport);
@@ -99,6 +102,8 @@ private:
 		std::vector<MIMeshInstance*> vMeshIns;
 	};
 	std::vector<MaterialMeshInsGroup*> m_vMatMeshInsGroup;
+
+	std::vector<MModelInstance*> m_vModelInstances;
 
 	std::vector<MViewport*> m_vViewports;
 

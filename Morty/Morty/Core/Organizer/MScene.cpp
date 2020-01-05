@@ -23,6 +23,7 @@
 #include "MInputNode.h"
 #include "MTexture.h"
 #include "MTextureRenderTarget.h"
+#include "MModelInstance.h"
 
 #include "MModelInstance.h"
 #include "MSkeleton.h"
@@ -105,6 +106,35 @@ void MScene::InitShadowMapRenderTarget()
 
 }
 
+MBoundsAABB* MScene::GetSceneAABB()
+{
+	Vector3 v3Min(+FLT_MAX, +FLT_MAX, +FLT_MAX);
+	Vector3 v3Max(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+	for (MModelInstance* pModelIns : m_vModelInstances)
+	{
+		Matrix4 matWorld = pModelIns->GetWorldTransform();
+		const MBoundsOBB *pBounds = pModelIns->GetResource()->GetOBB();
+		Vector3 v3ModelMin = matWorld * pBounds->ConvertFromOBB(pBounds->m_v3MinPoint);
+		Vector3 v3ModelMax = matWorld * pBounds->ConvertFromOBB(pBounds->m_v3MaxPoint);
+
+		if (v3Min.x > v3ModelMin.x)
+			v3Min.x = v3ModelMin.x;
+		if (v3Min.y > v3ModelMin.y)
+			v3Min.y = v3ModelMin.y;
+		if (v3Min.z > v3ModelMin.z)
+			v3Min.z = v3ModelMin.z;
+		if (v3Max.x < v3ModelMax.x)
+			v3Max.x = v3ModelMax.x;
+		if (v3Max.y < v3ModelMax.y)
+			v3Max.y = v3ModelMax.y;
+		if (v3Max.z < v3ModelMax.z)
+			v3Max.z = v3ModelMax.z;
+	}
+
+	return new MBoundsAABB({ v3Min , v3Max });
+}
+
 void MScene::AddAttachedViewport(MViewport* pViewport)
 {
 	for (MViewport* pv : m_vViewports)
@@ -175,7 +205,10 @@ void MScene::FindActivePointLights(const Vector3& v3WorldPosition, std::vector<M
 
 void MScene::OnNodeEnter(MNode* pNode)
 {
-	if (MDirectionalLight* pDirLight = pNode->DynamicCast<MDirectionalLight>())
+	if (MModelInstance* pModelIns = pNode->DynamicCast<MModelInstance>())
+		m_vModelInstances.push_back(pModelIns);
+
+	else if (MDirectionalLight* pDirLight = pNode->DynamicCast<MDirectionalLight>())
 		m_vDirectionalLight.push_back(pDirLight);
 
 	else if (MPointLight* pPotLight = pNode->DynamicCast<MPointLight>())
@@ -199,7 +232,14 @@ void MScene::OnNodeEnter(MNode* pNode)
 
 void MScene::OnNodeExit(MNode* pNode)
 {
-	if (MDirectionalLight* pDirLight = pNode->DynamicCast<MDirectionalLight>())
+	if (MModelInstance* pModelIns = pNode->DynamicCast<MModelInstance>())
+	{
+		std::vector<MModelInstance*>::iterator iter = std::find(m_vModelInstances.begin(), m_vModelInstances.end(), pModelIns);
+		if (m_vModelInstances.end() != iter)
+			m_vModelInstances.erase(iter);
+	}
+
+	else if (MDirectionalLight* pDirLight = pNode->DynamicCast<MDirectionalLight>())
 	{
 		std::vector<MDirectionalLight*>::iterator iter = std::find(m_vDirectionalLight.begin(), m_vDirectionalLight.end(), pDirLight);
 		if(m_vDirectionalLight.end() != iter)

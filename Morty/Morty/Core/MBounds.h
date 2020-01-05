@@ -27,6 +27,8 @@ class MORTY_CLASS MBoundsAABB
 public:
 	MBoundsAABB(const std::vector<Vector3>& vPoints);
 
+	void GetPoints(std::vector<Vector3>& vPoints);
+
 public:
 	Vector3 m_v3CenterPoint;
 	Vector3 m_v3HalfLength;

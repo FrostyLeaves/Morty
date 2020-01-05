@@ -140,3 +140,18 @@ MBoundsAABB::MBoundsAABB(const std::vector<Vector3>& vPoints)
 	m_v3CenterPoint = (m_v3MinPoint + m_v3MaxPoint) * 0.5f;
 	m_v3HalfLength = (m_v3MaxPoint - m_v3MinPoint) * 0.5f;
 }
+
+void MBoundsAABB::GetPoints(std::vector<Vector3>& vPoints)
+{
+	vPoints.resize(8);
+
+	vPoints[0] = m_v3CenterPoint + Vector3(+m_v3HalfLength.x, +m_v3HalfLength.y, -m_v3HalfLength.z);
+	vPoints[1] = m_v3CenterPoint + Vector3(+m_v3HalfLength.x, +m_v3HalfLength.y, +m_v3HalfLength.z);
+	vPoints[2] = m_v3CenterPoint + Vector3(+m_v3HalfLength.x, -m_v3HalfLength.y, +m_v3HalfLength.z);
+	vPoints[3] = m_v3CenterPoint + Vector3(+m_v3HalfLength.x, -m_v3HalfLength.y, -m_v3HalfLength.z);
+
+	vPoints[4] = m_v3CenterPoint + Vector3(-m_v3HalfLength.x, +m_v3HalfLength.y, -m_v3HalfLength.z);
+	vPoints[5] = m_v3CenterPoint + Vector3(-m_v3HalfLength.x, +m_v3HalfLength.y, +m_v3HalfLength.z);
+	vPoints[6] = m_v3CenterPoint + Vector3(-m_v3HalfLength.x, -m_v3HalfLength.y, +m_v3HalfLength.z);
+	vPoints[7] = m_v3CenterPoint + Vector3(-m_v3HalfLength.x, -m_v3HalfLength.y, -m_v3HalfLength.z);
+}
