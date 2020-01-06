@@ -164,18 +164,19 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight)
 	Matrix4 matLightInv(pLight->GetTransform().GetRotation());
 	matLightInv = matLightInv.Inverse();
 
-	std::vector<Vector3> points(8);
+	std::vector<Vector3> vSceneBoundsPoints(8);
+	std::vector<Vector3> vCameraBoundsPoints(8);
 
 	MBoundsAABB* pBounds = m_pScene->GetSceneAABB();
 	MCamera* pCamera = GetCamera();
 
 	Matrix4 matCameraInv = pCamera->GetWorldTransform().Inverse();
-	pBounds->GetPoints(points);
+	pBounds->GetPoints(vSceneBoundsPoints);
 	float fZValidNear = FLT_MAX, fZValidFar = 0;
 
 	for (unsigned int i = 0; i < 8; ++i)
 	{
-		float z = (matCameraInv * points[i]).z;
+		float z = (matCameraInv * vSceneBoundsPoints[i]).z;
 		if (fZValidNear > z)
 			fZValidNear = z;
 		if (fZValidFar < z)
@@ -184,28 +185,63 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight)
 	if (fZValidNear > pCamera->GetZNear())
 		fZValidNear = pCamera->GetZNear();
 
-//	GetCameraFrustum(GetCamera(), fZValidNear, fZValidFar, points[0], points[1], points[2], points[3], points[4], points[5], points[6], points[7]);
+	GetCameraFrustum(GetCamera(), fZValidNear, fZValidFar, vCameraBoundsPoints[0], vCameraBoundsPoints[1], vCameraBoundsPoints[2], vCameraBoundsPoints[3], vCameraBoundsPoints[4], vCameraBoundsPoints[5], vCameraBoundsPoints[6], vCameraBoundsPoints[7]);
 
 
-	Vector3 v3Min(FLT_MAX, FLT_MAX, FLT_MAX);
-	Vector3 v3Max(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+	Vector3 v3SceneMin(FLT_MAX, FLT_MAX, FLT_MAX);
+	Vector3 v3SceneMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
 	for (unsigned int i = 0; i < 8; ++i)
 	{
-		Vector3 pos = matLightInv * points[i];
-		if (v3Min.x > pos.x)
-			v3Min.x = pos.x;
-		if (v3Min.y > pos.y)
-			v3Min.y = pos.y;
-		if (v3Min.z > pos.z)
-			v3Min.z = pos.z;
-		if (v3Max.x < pos.x)
-			v3Max.x = pos.x;
-		if (v3Max.y < pos.y)
-			v3Max.y = pos.y;
-		if (v3Max.z < pos.z)
-			v3Max.z = pos.z;
+		Vector3 pos = matLightInv * vSceneBoundsPoints[i];
+		if (v3SceneMin.x > pos.x)
+			v3SceneMin.x = pos.x;
+		if (v3SceneMin.y > pos.y)
+			v3SceneMin.y = pos.y;
+		if (v3SceneMin.z > pos.z)
+			v3SceneMin.z = pos.z;
+		if (v3SceneMax.x < pos.x)
+			v3SceneMax.x = pos.x;
+		if (v3SceneMax.y < pos.y)
+			v3SceneMax.y = pos.y;
+		if (v3SceneMax.z < pos.z)
+			v3SceneMax.z = pos.z;
 	}
+
+	Vector3 v3CameraMin(FLT_MAX, FLT_MAX, FLT_MAX);
+	Vector3 v3CameraMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+	for (unsigned int i = 0; i < 8; ++i)
+	{
+		Vector3 pos = matLightInv * vCameraBoundsPoints[i];
+		if (v3CameraMin.x > pos.x)
+			v3CameraMin.x = pos.x;
+		if (v3CameraMin.y > pos.y)
+			v3CameraMin.y = pos.y;
+		if (v3CameraMin.z > pos.z)
+			v3CameraMin.z = pos.z;
+		if (v3CameraMax.x < pos.x)
+			v3CameraMax.x = pos.x;
+		if (v3CameraMax.y < pos.y)
+			v3CameraMax.y = pos.y;
+		if (v3CameraMax.z < pos.z)
+			v3CameraMax.z = pos.z;
+	}
+
+	Vector3 v3Min = v3SceneMin, v3Max = v3SceneMax;
+	if (v3Min.x < v3CameraMin.x)
+		v3Min.x = v3CameraMin.x;
+	if (v3Min.y < v3CameraMin.y)
+		v3Min.y = v3CameraMin.y;
+	if (v3Min.z < v3CameraMin.z)
+		v3Min.z = v3CameraMin.z;
+	if (v3Max.x < v3CameraMin.x)
+		v3Max.x = v3CameraMin.x;
+	if (v3Max.y < v3CameraMin.y)
+		v3Max.y = v3CameraMin.y;
+	if (v3Max.z < v3CameraMin.z)
+		v3Max.z = v3CameraMin.z;
+
 
 	Matrix4 projMat = MatrixOrthoOffCenterLH(v3Min.x, v3Max.x, v3Max.y, v3Min.y, v3Min.z, v3Max.z);
 	return projMat * matLightInv;
