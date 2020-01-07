@@ -220,6 +220,8 @@ bool MEngine::InitializeDefaultResource()
 	MMaterialResource* pShadowMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW);
 	pShadowMaterialRes->LoadVertexShader(pEmptyVSResource);
 	pShadowMaterialRes->LoadPixelShader(pEmptyPSResource);
+	unsigned int unShadowRenderState = MIRenderer::ESolid | MIRenderer::ECullFront;
+	pShadowMaterialRes->GetMaterialTemplate()->SetRenderState(unShadowRenderState);
 
 	return true;
 }

@@ -143,15 +143,20 @@ bool MModelResource::Load(const MString& strResourcePath)
 	std::vector<unsigned int> vMaterialIndices;
 
 	ProcessBones(scene);
-	ProcessNode(scene->mRootNode, scene, vMaterialIndices);
+	Matrix4 matRootRotation = Matrix4::IdentityMatrix;
+	ProcessNode(scene->mRootNode, scene, vMaterialIndices, matRootRotation);
 	ProcessAnimation(scene);
 	ProcessMaterial(scene, vMaterialIndices);
 	
 	return true;
 }
 
-void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vector<unsigned int>& vMaterialIndices)
+void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vector<unsigned int>& vMaterialIndices, const Matrix4& matParentRotation)
 {
+	Matrix4 matRotation;
+	CopyMatrix4(&matRotation, &pNode->mTransformation);
+	matRotation = matParentRotation * matRotation.GetRotatePart();
+
 	for (unsigned int i = 0; i < pNode->mNumMeshes; ++i)
 	{
 		aiMesh* pMesh = pScene->mMeshes[pNode->mMeshes[i]];
@@ -159,7 +164,7 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vect
 		if (pMesh->HasBones())
 		{
 			MMesh<MVertexWithBones>* pMMesh = new MMesh<MVertexWithBones>();
-			ProcessMeshVertices(pMesh, pScene, pMMesh);
+			ProcessMeshVertices(pMesh, pScene, pMMesh, matRotation);
 			ProcessMeshIndices(pMesh, pScene, pMMesh);
 			BindVertexAndBones(pMesh, pScene, pMMesh);
 			m_vMeshes.push_back(pMMesh);
@@ -170,7 +175,7 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vect
 		else
 		{
 			MMesh<MVertex>* pMMesh = new MMesh<MVertex>();
-			ProcessMeshVertices(pMesh, pScene, pMMesh);
+			ProcessMeshVertices(pMesh, pScene, pMMesh, matRotation);
 			ProcessMeshIndices(pMesh, pScene, pMMesh);
 			m_vMeshes.push_back(pMMesh);
 			m_vVertexTypes.push_back(MEMeshVertexType::Normal);
@@ -181,11 +186,11 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vect
 
 	for (unsigned int i = 0; i < pNode->mNumChildren; ++i)
 	{
-		ProcessNode(pNode->mChildren[i], pScene, vMaterialIndices);
+		ProcessNode(pNode->mChildren[i], pScene, vMaterialIndices, matRotation);
 	}
 }
 
-void MModelResource::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertex>* pMMesh)
+void MModelResource::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertex>* pMMesh, const Matrix4& matRotation)
 {
 	pMMesh->CreateVertices(pMesh->mNumVertices);
 	for (unsigned int i = 0; i < pMesh->mNumVertices; ++i)
@@ -195,11 +200,15 @@ void MModelResource::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, M
 		vertex.position.y = pMesh->mVertices[i].y;
 		vertex.position.z = pMesh->mVertices[i].z;
 
+		vertex.position = matRotation * vertex.position;
+
 		if (pMesh->mNormals)
 		{
 			vertex.normal.x = pMesh->mNormals[i].x;
 			vertex.normal.y = pMesh->mNormals[i].y;
 			vertex.normal.z = pMesh->mNormals[i].z;
+
+			vertex.normal = matRotation * vertex.normal;
 		}
 		if (pMesh->mTextureCoords)
 		{
@@ -212,17 +221,21 @@ void MModelResource::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, M
 			vertex.tangent.x = pMesh->mTangents[i].x;
 			vertex.tangent.y = pMesh->mTangents[i].y;
 			vertex.tangent.z = pMesh->mTangents[i].z;
+
+			vertex.tangent = matRotation * vertex.tangent;
 		}
 		if (pMesh->mBitangents)
 		{
 			vertex.bitangent.x = pMesh->mBitangents[i].x;
 			vertex.bitangent.y = pMesh->mBitangents[i].y;
 			vertex.bitangent.z = pMesh->mBitangents[i].z;
+
+			vertex.bitangent = matRotation * vertex.bitangent;
 		}
 	}
 }
 
-void MModelResource::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh)
+void MModelResource::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh, const Matrix4& matRotation)
 {
 	pMMesh->CreateVertices(pMesh->mNumVertices);
 	for (unsigned int i = 0; i < pMesh->mNumVertices; ++i)
@@ -232,11 +245,15 @@ void MModelResource::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, M
 		vertex.position.y = pMesh->mVertices[i].y;
 		vertex.position.z = pMesh->mVertices[i].z;
 
+		vertex.position = matRotation * vertex.position;
+
 		if (pMesh->mNormals)
 		{
 			vertex.normal.x = pMesh->mNormals[i].x;
 			vertex.normal.y = pMesh->mNormals[i].y;
 			vertex.normal.z = pMesh->mNormals[i].z;
+
+			vertex.normal = matRotation * vertex.normal;
 		}
 		if (pMesh->mTextureCoords)
 		{
@@ -249,12 +266,16 @@ void MModelResource::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, M
 			vertex.tangent.x = pMesh->mTangents[i].x;
 			vertex.tangent.y = pMesh->mTangents[i].y;
 			vertex.tangent.z = pMesh->mTangents[i].z;
+
+			vertex.tangent = matRotation * vertex.tangent;
 		}
 		if (pMesh->mBitangents)
 		{
 			vertex.bitangent.x = pMesh->mBitangents[i].x;
 			vertex.bitangent.y = pMesh->mBitangents[i].y;
 			vertex.bitangent.z = pMesh->mBitangents[i].z;
+
+			vertex.bitangent = matRotation * vertex.bitangent;
 		}
 	}
 }

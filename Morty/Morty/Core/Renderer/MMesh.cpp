@@ -76,7 +76,7 @@ void MIMesh::GenerateBuffer(MIDevice* pDevice)
 
 void MIMesh::UploadBuffer(MIDevice* pDevice)
 {
-	if (m_bModifiable)
+	if (m_bModifiable && m_pVertexBuffer)
 		pDevice->UploadBuffer(&m_pVertexBuffer, this);
 	else
 		GenerateBuffer(pDevice);

@@ -115,21 +115,8 @@ MBoundsAABB* MScene::GetSceneAABB()
 	{
 		Matrix4 matWorld = pModelIns->GetWorldTransform();
 		const MBoundsOBB *pBounds = pModelIns->GetResource()->GetOBB();
-		Vector3 v3ModelMin = matWorld * pBounds->ConvertFromOBB(pBounds->m_v3MinPoint);
-		Vector3 v3ModelMax = matWorld * pBounds->ConvertFromOBB(pBounds->m_v3MaxPoint);
-
-		if (v3Min.x > v3ModelMin.x)
-			v3Min.x = v3ModelMin.x;
-		if (v3Min.y > v3ModelMin.y)
-			v3Min.y = v3ModelMin.y;
-		if (v3Min.z > v3ModelMin.z)
-			v3Min.z = v3ModelMin.z;
-		if (v3Max.x < v3ModelMax.x)
-			v3Max.x = v3ModelMax.x;
-		if (v3Max.y < v3ModelMax.y)
-			v3Max.y = v3ModelMax.y;
-		if (v3Max.z < v3ModelMax.z)
-			v3Max.z = v3ModelMax.z;
+		MBoundsAABB aabb(matWorld, *pBounds);
+		aabb.UnionMinMax(v3Min, v3Max);
 	}
 
 	return new MBoundsAABB({ v3Min , v3Max });
@@ -346,8 +333,6 @@ void MScene::GenerateShadowMap(MIRenderer* pRenderer, MViewport* pViewport)
 		return;
 
 	m_pShadowDepthMapRenderTarget->SetSourceViewport(pViewport);
-
-	pRenderer->SetRasterizerType(MIRenderer::ESolid | MIRenderer::ECullFront);
 
 	pRenderer->Render(m_pShadowDepthMapRenderTarget);
 }
@@ -670,8 +655,8 @@ void MScene::Render(MIRenderer* pRenderer, MViewport* pViewport)
 	Vector2 v2LeftTop = pViewport->GetLeftTop();
 	pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, pViewport->GetWidth(), pViewport->GetHeight(), 0.0f, 1.0f);
 	DrawPainter(pRenderer, pViewport);
-	MModelInstance* pSpat = dynamic_cast<MModelInstance*>(m_pRootNode->FindFirstChildByName("Teaport"));
-	DrawCameraFrustum(pRenderer, pViewport, pViewport->GetCamera());
+	MModelInstance* pSpat = dynamic_cast<MModelInstance*>(m_pRootNode->FindFirstChildByName("Pikachu"));
+//	DrawCameraFrustum(pRenderer, pViewport, pViewport->GetCamera());
 	DrawBoundingBox(pRenderer, pViewport, pSpat);
 	DrawMeshInstance(pRenderer, pViewport);
 	//DrawSkyBox(pRenderer, pViewport);

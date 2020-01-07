@@ -141,6 +141,29 @@ MBoundsAABB::MBoundsAABB(const std::vector<Vector3>& vPoints)
 	m_v3HalfLength = (m_v3MaxPoint - m_v3MinPoint) * 0.5f;
 }
 
+MBoundsAABB::MBoundsAABB(const Matrix4& matWorld, const MBoundsOBB& obb)
+{
+	Vector3 v3ModelCenter = matWorld * obb.ConvertFromOBB(obb.m_v3CenterPoint);
+	Vector3 v3ModelHalf = matWorld * obb.ConvertFromOBB(obb.m_v3HalfLength);
+	v3ModelHalf = Vector3(fabs(v3ModelHalf.x), fabs(v3ModelHalf.y), fabs(v3ModelHalf.z));
+
+	if (m_v3MinPoint.x > v3ModelCenter.x - v3ModelHalf.x)
+		m_v3MinPoint.x = v3ModelCenter.x - v3ModelHalf.x;
+	if (m_v3MinPoint.y > v3ModelCenter.y - v3ModelHalf.y)
+		m_v3MinPoint.y = v3ModelCenter.y - v3ModelHalf.y;
+	if (m_v3MinPoint.z > v3ModelCenter.z - v3ModelHalf.z)
+		m_v3MinPoint.z = v3ModelCenter.z - v3ModelHalf.z;
+	if (m_v3MaxPoint.x < v3ModelCenter.x + v3ModelHalf.x)
+		m_v3MaxPoint.x = v3ModelCenter.x + v3ModelHalf.x;
+	if (m_v3MaxPoint.y < v3ModelCenter.y + v3ModelHalf.y)
+		m_v3MaxPoint.y = v3ModelCenter.y + v3ModelHalf.y;
+	if (m_v3MaxPoint.z < v3ModelCenter.z + v3ModelHalf.z)
+		m_v3MaxPoint.z = v3ModelCenter.z + v3ModelHalf.z;
+
+	m_v3CenterPoint = (m_v3MinPoint + m_v3MaxPoint) * 0.5f;
+	m_v3HalfLength = (m_v3MaxPoint - m_v3MinPoint) * 0.5f;
+}
+
 void MBoundsAABB::GetPoints(std::vector<Vector3>& vPoints)
 {
 	vPoints.resize(8);
@@ -154,4 +177,22 @@ void MBoundsAABB::GetPoints(std::vector<Vector3>& vPoints)
 	vPoints[5] = m_v3CenterPoint + Vector3(-m_v3HalfLength.x, +m_v3HalfLength.y, +m_v3HalfLength.z);
 	vPoints[6] = m_v3CenterPoint + Vector3(-m_v3HalfLength.x, -m_v3HalfLength.y, +m_v3HalfLength.z);
 	vPoints[7] = m_v3CenterPoint + Vector3(-m_v3HalfLength.x, -m_v3HalfLength.y, -m_v3HalfLength.z);
+}
+
+void MBoundsAABB::UnionMinMax(Vector3& v3Min, Vector3& v3Max)
+{
+
+	if (v3Min.x > m_v3MinPoint.x)
+		v3Min.x = m_v3MinPoint.x;
+	if (v3Min.y > m_v3MinPoint.y)
+		v3Min.y = m_v3MinPoint.y;
+	if (v3Min.z > m_v3MinPoint.z)
+		v3Min.z = m_v3MinPoint.z;
+
+	if (v3Max.x < m_v3MaxPoint.x)
+		v3Max.x = m_v3MaxPoint.x;
+	if (v3Max.y < m_v3MaxPoint.y)
+		v3Max.y = m_v3MaxPoint.y;
+	if (v3Max.z < m_v3MaxPoint.z)
+		v3Max.z = m_v3MaxPoint.z;
 }

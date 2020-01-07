@@ -10,6 +10,21 @@
 
 MTypeIdentifierImplement(MViewport, MObject)
 
+#define Vector3Intersection(a, b, p) {\
+	if ((a).x > (p).x)			\
+		(a).x = (p).x;			\
+	if ((a).y > (p).y)			\
+		(a).y = (p).y;			\
+	if ((a).z > (p).z)			\
+		(a).z = (p).z;			\
+	if ((b).x < (p).x)			\
+		(b).x = (p).x;			\
+	if ((b).y < (p).y)			\
+		(b).y = (p).y;			\
+	if ((b).z < (p).z)			\
+		(b).z = (p).z;			\
+}
+
 MViewport::MViewport()
 	: MObject()
 	, m_pScene(nullptr)
@@ -182,11 +197,8 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight)
 		if (fZValidFar < z)
 			fZValidFar = z;
 	}
-	if (fZValidNear > pCamera->GetZNear())
-		fZValidNear = pCamera->GetZNear();
 
-	GetCameraFrustum(GetCamera(), fZValidNear, fZValidFar, vCameraBoundsPoints[0], vCameraBoundsPoints[1], vCameraBoundsPoints[2], vCameraBoundsPoints[3], vCameraBoundsPoints[4], vCameraBoundsPoints[5], vCameraBoundsPoints[6], vCameraBoundsPoints[7]);
-
+	GetCameraFrustum(GetCamera(), fZValidNear, fZValidFar, vCameraBoundsPoints);
 
 	Vector3 v3SceneMin(FLT_MAX, FLT_MAX, FLT_MAX);
 	Vector3 v3SceneMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
@@ -194,18 +206,7 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight)
 	for (unsigned int i = 0; i < 8; ++i)
 	{
 		Vector3 pos = matLightInv * vSceneBoundsPoints[i];
-		if (v3SceneMin.x > pos.x)
-			v3SceneMin.x = pos.x;
-		if (v3SceneMin.y > pos.y)
-			v3SceneMin.y = pos.y;
-		if (v3SceneMin.z > pos.z)
-			v3SceneMin.z = pos.z;
-		if (v3SceneMax.x < pos.x)
-			v3SceneMax.x = pos.x;
-		if (v3SceneMax.y < pos.y)
-			v3SceneMax.y = pos.y;
-		if (v3SceneMax.z < pos.z)
-			v3SceneMax.z = pos.z;
+		Vector3Intersection(v3SceneMin, v3SceneMax, pos)
 	}
 
 	Vector3 v3CameraMin(FLT_MAX, FLT_MAX, FLT_MAX);
@@ -214,18 +215,7 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight)
 	for (unsigned int i = 0; i < 8; ++i)
 	{
 		Vector3 pos = matLightInv * vCameraBoundsPoints[i];
-		if (v3CameraMin.x > pos.x)
-			v3CameraMin.x = pos.x;
-		if (v3CameraMin.y > pos.y)
-			v3CameraMin.y = pos.y;
-		if (v3CameraMin.z > pos.z)
-			v3CameraMin.z = pos.z;
-		if (v3CameraMax.x < pos.x)
-			v3CameraMax.x = pos.x;
-		if (v3CameraMax.y < pos.y)
-			v3CameraMax.y = pos.y;
-		if (v3CameraMax.z < pos.z)
-			v3CameraMax.z = pos.z;
+		Vector3Intersection(v3CameraMin, v3CameraMax,pos)
 	}
 
 	Vector3 v3Min = v3SceneMin, v3Max = v3SceneMax;
@@ -235,13 +225,12 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight)
 		v3Min.y = v3CameraMin.y;
 	if (v3Min.z < v3CameraMin.z)
 		v3Min.z = v3CameraMin.z;
-	if (v3Max.x < v3CameraMin.x)
-		v3Max.x = v3CameraMin.x;
-	if (v3Max.y < v3CameraMin.y)
-		v3Max.y = v3CameraMin.y;
-	if (v3Max.z < v3CameraMin.z)
-		v3Max.z = v3CameraMin.z;
-
+	if (v3Max.x > v3CameraMax.x)
+		v3Max.x = v3CameraMax.x;
+	if (v3Max.y > v3CameraMax.y)
+		v3Max.y = v3CameraMax.y;
+	if (v3Max.z > v3CameraMax.z)
+		v3Max.z = v3CameraMax.z;
 
 	Matrix4 projMat = MatrixOrthoOffCenterLH(v3Min.x, v3Max.x, v3Max.y, v3Min.y, v3Min.z, v3Max.z);
 	return projMat * matLightInv;
@@ -296,6 +285,11 @@ void MViewport::GetCameraFrustum(Vector3& v3NearTopLeft, Vector3& v3NearTopRight
 {
 	MCamera* pCamera = GetCamera();
 	GetCameraFrustum(pCamera, pCamera->GetZNear(), pCamera->GetZFar(), v3NearTopLeft, v3NearTopRight, v3NearBottomRight, v3NearBottomLeft, v3FarTopLeft, v3FarTopRight, v3FarBottomRight,  v3FarBottomLeft);
+}
+
+void MViewport::GetCameraFrustum(MCamera* pCamera, const float& fZNear, const float& fZFar, std::vector<Vector3>& vPoints)
+{
+	GetCameraFrustum(pCamera, fZNear, fZFar, vPoints[0], vPoints[1], vPoints[2], vPoints[3], vPoints[4], vPoints[5], vPoints[6], vPoints[7]);
 }
 
 MBoundsAABB* MViewport::GetFrustumAABB()

@@ -22,12 +22,17 @@ public:
 public:
 };
 
+class MBoundsOBB;
 class MORTY_CLASS MBoundsAABB
 {
 public:
 	MBoundsAABB(const std::vector<Vector3>& vPoints);
+	MBoundsAABB(const Matrix4& matWorld, const MBoundsOBB& obb);
 
 	void GetPoints(std::vector<Vector3>& vPoints);
+
+	//更新v3min和v3max，以让v3min-v3max的范围包括该Bounds，即取并集
+	void UnionMinMax(Vector3& v3min, Vector3& v3max);
 
 public:
 	Vector3 m_v3CenterPoint;
