@@ -40,7 +40,7 @@ extern const char* DEFAULT_MATERIAL_SKYBOX;
 extern const char* DEFAULT_MATERIAL_SHADOW;
 //
 
-
+typedef unsigned char MByte;
 
 //gles
 #define MORTY_OPENGLES 1

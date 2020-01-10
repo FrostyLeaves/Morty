@@ -111,12 +111,15 @@ MBoundsAABB* MScene::GetSceneAABB()
 	Vector3 v3Min(+FLT_MAX, +FLT_MAX, +FLT_MAX);
 	Vector3 v3Max(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
-	for (MModelInstance* pModelIns : m_vModelInstances)
+	for (MaterialMeshInsGroup* pGroup : m_vMatMeshInsGroup)
 	{
-		Matrix4 matWorld = pModelIns->GetWorldTransform();
-		const MBoundsOBB *pBounds = pModelIns->GetResource()->GetOBB();
-		MBoundsAABB aabb(matWorld, *pBounds);
-		aabb.UnionMinMax(v3Min, v3Max);
+		for (MIMeshInstance* pMeshIns : pGroup->vMeshIns)
+		{
+			Matrix4 matWorld = pMeshIns->GetWorldTransform();
+			const MBoundsOBB* pBounds = pMeshIns->GetBoundsOBB();
+			MBoundsAABB aabb(matWorld, *pBounds);
+			aabb.UnionMinMax(v3Min, v3Max);
+		}
 	}
 
 	return new MBoundsAABB({ v3Min , v3Max });
@@ -554,8 +557,7 @@ void MScene::DrawBoundingBox(MIRenderer* pRenderer, MViewport* pViewport, MModel
 
 	pRenderer->UpdateMaterialParam();
 
-	MModelResource* pModelResource = dynamic_cast<MModelResource*>(pSpatial->GetResource());
-	const MBoundsOBB* pObb = pModelResource->GetOBB();
+	const MBoundsOBB* pObb = pSpatial->GetBoundsOBB();
 
 	Matrix4 mat4World = pSpatial->GetWorldTransform();
 	const Vector3& obmin = pObb->m_v3MinPoint;

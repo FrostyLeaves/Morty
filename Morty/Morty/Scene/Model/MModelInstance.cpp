@@ -53,27 +53,40 @@ bool MModelInstance::Load(MResource* pResource)
 					m_pSkeleton = nullptr;
 				}
 				RemoveAllNodeImpl(MENodeChildType::EFixed);
-				
+
+				//Create SkeletonInstance
+				m_pSkeleton = new MSkeletonInstance(pModelResource->GetSkeleton());
 
 				int index = 0;
+
+				//初始化Mesh的旋转矩阵
+				const std::vector<Matrix4>& vMeshesRotationMatrix = *pModelResource->GetMeshesRotationMatrix();
+				const std::vector<MBoundsOBB*>& vMeshesDefaultOBB = *pModelResource->GetMeshesDefaultOBB();
 				for (MIMesh* pMesh : *pModelResource->GetMeshes())
 				{
 					MIMeshInstance* pMeshIns = nullptr;
 					if (pModelResource->GetMeshVertexType(index) == MModelResource::Normal)
 						pMeshIns = GetObjectManager()->CreateObject<MStaticMeshInstance>();
 					else
-						pMeshIns = GetObjectManager()->CreateObject<MSkinnedMeshInstance>();
-
+					{
+						MSkinnedMeshInstance* pSkinnedMeshIns = GetObjectManager()->CreateObject<MSkinnedMeshInstance>();
+						pSkinnedMeshIns->SetSkeletonInstance(m_pSkeleton);
+						pMeshIns = pSkinnedMeshIns;
+					}
+						
 					pMeshIns->SetMesh(pMesh);
+					pMeshIns->SetDefaultOBB(vMeshesDefaultOBB[index]);
+					pMeshIns->SetRotation(vMeshesRotationMatrix[index].GetRotation());
+
 					pMeshIns->SetName(MString("Mesh_") + MStringHelper::ToString(index));
 					AddNodeImpl(pMeshIns, MENodeChildType::EFixed);
+					pMeshIns->SetAttachedModelInstance(this);
 
 					pMeshIns->SetMaterial(pModelResource->GetMeshDefaultMaterial(index));
 
 					++index;
 				}
 
-				m_pSkeleton = new MSkeletonInstance(pModelResource->GetSkeleton());
 			}
 	
 		};
@@ -94,6 +107,11 @@ MModelResource* MModelInstance::GetResource()
 	if (nullptr == m_pModelResource)
 		return nullptr;
 	return static_cast<MModelResource*>(m_pModelResource->GetResource());
+}
+
+MBoundsOBB* MModelInstance::GetBoundsOBB()
+{
+	return nullptr;
 }
 
 bool MModelInstance::SetPlayAnimation(const MString& strAnimationName)

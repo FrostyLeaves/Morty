@@ -9,6 +9,8 @@
 #ifndef _M_MSTATICMESHINSTANCE_H_
 #define _M_MSTATICMESHINSTANCE_H_
 #include "MGlobal.h"
+#include "MVertex.h"
+#include "MMesh.h"
 
 #include "MIMeshInstance.h"
 
@@ -23,18 +25,29 @@ public:
     MStaticMeshInstance();
     virtual ~MStaticMeshInstance();
 
+	virtual void SetMaterial(MMaterial* pMaterial) override;
+	virtual MMaterial* GetMaterial() override { return m_pMaterial; }
+
+	virtual MBoundsOBB* GetBoundsOBB() override;
+
 public:
 
 	virtual void SetMesh(MIMesh* pMesh) override;
 	virtual MIMesh* GetMesh() override { return m_pMesh; }
 
-	virtual void SetMaterial(MMaterial* pMaterial) override;
-	virtual MMaterial* GetMaterial() override { return m_pMaterial; }
+	virtual void SetDefaultOBB(MBoundsOBB* pBoundsOBB) override { m_pDefaultBoundsOBB = pBoundsOBB; }
+	virtual MBoundsOBB* GetDefaultOBB() override { return m_pDefaultBoundsOBB; }
+
+protected:
+	virtual void LocalTransformDirty() override;
 
 private:
 
-	MIMesh* m_pMesh;
+	MMesh<MVertex>* m_pMesh;
 	MMaterial* m_pMaterial;
+	MBoundsOBB* m_pDefaultBoundsOBB;
+	MBoundsOBB* m_pBoundsOBB;
+	bool m_bBoundsOBBDirty;
 };
 
 

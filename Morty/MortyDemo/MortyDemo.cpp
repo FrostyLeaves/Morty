@@ -142,15 +142,15 @@ int main(int argc, char* argv[])
 
 	pRootNode->AddNode(pPikachu);
 
-// 	if (MModelResource* pModelResource = pPikachu->GetResource())
-// 	{
-// 		if(pPikachu->SetPlayAnimation((*pModelResource->GetAnimationsName())[2]))
-// 		{
-// 			MIAnimController* pController = pPikachu->GetSkeletalAnimationController();
-// 			pController->SetLoop(true);
-// 			pController->Play();
-// 		}	
-// 	}
+	if (MModelResource* pModelResource = pPikachu->GetResource())
+	{
+		if(pPikachu->SetPlayAnimation((*pModelResource->GetAnimationsName())[2]))
+		{
+			MIAnimController* pController = pPikachu->GetSkeletalAnimationController();
+			pController->SetLoop(true);
+			pController->Play();
+		}	
+	}
 
 	MPointLight* pLight = engine.GetObjectManager()->CreateObject<MPointLight>();
 	pLight->SetName("Light");

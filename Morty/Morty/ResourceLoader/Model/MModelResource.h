@@ -35,9 +35,10 @@ public:
     MModelResource();
     virtual ~MModelResource();
 
-	const std::vector<MIMesh*>* GetMeshes() { return &m_vMeshes; };
+	const std::vector<MIMesh*>* GetMeshes() { return &m_vMeshes; }
+	const std::vector<MBoundsOBB*>* GetMeshesDefaultOBB() { return &m_vMeshesOBB; }
+	const std::vector<Matrix4>* GetMeshesRotationMatrix() { return &m_vMeshesRotationMatrix; }
 	const MSkeleton* GetSkeleton() { return m_pSkeleton; }
-	const MBoundsOBB* GetOBB();
 	const std::map<MString, MSkeletalAnimation*>* GetAnimations() { return &m_tSkeletalAnimation; }
 	const std::vector<MString>* GetAnimationsName() { return &m_vSkeletalAnimation; }
 
@@ -66,11 +67,12 @@ protected:
 private:
     
 	std::vector<MIMesh*> m_vMeshes;
+	std::vector<Matrix4> m_vMeshesRotationMatrix;
+	std::vector<MBoundsOBB*> m_vMeshesOBB;
 	std::vector<MEMeshVertexType> m_vVertexTypes;
 
 	std::vector<MMaterial*> m_vDefaultMaterial;
 
-	MBoundsOBB* m_pBoundsOBB;
 	MSkeleton* m_pSkeleton;
 
 	std::vector<MString> m_vSkeletalAnimation;

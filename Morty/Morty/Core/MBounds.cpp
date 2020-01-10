@@ -3,9 +3,13 @@
 #include "Eigenvalues"
 #include "Matrix.h"
 
-MBoundsOBB::MBoundsOBB(const std::vector<Vector3>& vPoints)
+MBoundsOBB::MBoundsOBB(const Vector3* vPoints, const unsigned int& unArrayLength)
 {
-	unsigned int unVertCount = vPoints.size();
+	SetPoints((MByte*)vPoints, unArrayLength, 0, sizeof(Vector3));
+}
+
+void MBoundsOBB::SetPoints(const MByte* vPoints, const unsigned int& unArrayLength, const unsigned int& unOffset, const unsigned int& unDataSize)
+{
 	Vector3 v3Average;
 
 	float cov_xx = 0;
@@ -15,15 +19,21 @@ MBoundsOBB::MBoundsOBB(const std::vector<Vector3>& vPoints)
 	float cov_xz = 0;
 	float cov_yz = 0;
 
-	for (const Vector3& pos : vPoints)
+	const MByte* pointer = nullptr;
+
+	pointer = vPoints;
+	for(unsigned int i = 0; i < unArrayLength; ++i, pointer += unDataSize)
 	{
+		const Vector3& pos = *(Vector3*)(vPoints + unOffset);
 		v3Average += pos;
 	}
 
-	v3Average /= unVertCount;
+	v3Average /= unArrayLength;
 
-	for (const Vector3& pos : vPoints)
+	pointer = vPoints;
+	for (unsigned int i = 0; i < unArrayLength; ++i, pointer += unDataSize)
 	{
+		const Vector3& pos = *(Vector3*)(vPoints + unOffset);
 		cov_xx += (pos.x - v3Average.x) * (pos.x - v3Average.x);
 		cov_yy += (pos.y - v3Average.y) * (pos.y - v3Average.y);
 		cov_zz += (pos.z - v3Average.z) * (pos.z - v3Average.z);
@@ -31,13 +41,13 @@ MBoundsOBB::MBoundsOBB(const std::vector<Vector3>& vPoints)
 		cov_xz += (pos.x - v3Average.x) * (pos.z - v3Average.z);
 		cov_yz += (pos.y - v3Average.y) * (pos.z - v3Average.z);
 	}
-	
-	cov_xx /= (unVertCount);
-	cov_yy /= (unVertCount);
-	cov_zz /= (unVertCount);
-	cov_xy /= (unVertCount);
-	cov_xz /= (unVertCount);
-	cov_yz /= (unVertCount);
+
+	cov_xx /= (unArrayLength);
+	cov_yy /= (unArrayLength);
+	cov_zz /= (unArrayLength);
+	cov_xy /= (unArrayLength);
+	cov_xz /= (unArrayLength);
+	cov_yz /= (unArrayLength);
 
 
 	Eigen::Matrix3d matCov;
@@ -56,14 +66,18 @@ MBoundsOBB::MBoundsOBB(const std::vector<Vector3>& vPoints)
 	}
 
 	Vector3 v3MinPoint, v3MaxPoint;
-	for (const Vector3& pos : vPoints)
+	pointer = vPoints;
+	for (unsigned int i = 0; i < unArrayLength; ++i, pointer += unDataSize)
 	{
+		const Vector3& pos = *(Vector3*)(vPoints + unOffset);
 		v3MinPoint = v3MaxPoint = pos * m_matEigVectors;
 		break;
 	}
 
-	for (const Vector3& pos : vPoints)
+	pointer = vPoints;
+	for (unsigned int i = 0; i < unArrayLength; ++i, pointer += unDataSize)
 	{
+		const Vector3& pos = *(Vector3*)(vPoints + unOffset);
 		Vector3 mp = pos * m_matEigVectors;
 
 		if (v3MaxPoint.x < mp.x)

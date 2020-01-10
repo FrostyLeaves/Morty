@@ -33,6 +33,34 @@ MString MResource::GetSuffix(const MString& strPath)
 	return suffix;
 }
 
+MString MResource::GetFolder(const MString& strPath)
+{
+	MString strRegularPath = strPath;
+	for (MString::reverse_iterator iter = strRegularPath.rbegin(); iter != strRegularPath.rend(); ++iter)
+	{
+		if (*iter == '\\' || *iter == '/')
+		{
+			return MString(strRegularPath.begin(), iter.base() - 1);
+		}
+	}
+
+	return MString();
+}
+
+MString MResource::GetFileName(const MString& strPath)
+{
+	MString strRegularPath = strPath;
+	for (MString::reverse_iterator iter = strRegularPath.rbegin(); iter != strRegularPath.rend(); ++iter)
+	{
+		if (*iter == '\\' || *iter == '/')
+		{
+			return MString(iter.base(), strRegularPath.end());
+		}
+	}
+
+	return strPath;
+}
+
 MResourceManager* MResource::GetResourceManager()
 {
 	return m_pEngine->GetResourceManager();

@@ -57,7 +57,7 @@ public:
 	void UpdateWorldTransform();
 protected:
 	static void WorldTransformDirty(MNode* pNode);
-	void LocalTransformDirty();
+	virtual void LocalTransformDirty();
 
 private:
 

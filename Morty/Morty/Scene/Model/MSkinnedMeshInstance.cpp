@@ -8,6 +8,8 @@ MSkinnedMeshInstance::MSkinnedMeshInstance()
 	: MIMeshInstance()
 	, m_pMesh(nullptr)
 	, m_pMaterial(nullptr)
+	, m_pDefaultBoundsOBB(nullptr)
+	, m_pSkeletonInstance(nullptr)
 {
 
 }
@@ -30,6 +32,11 @@ void MSkinnedMeshInstance::SetMaterial(MMaterial* pMaterial)
 
 	if (m_pScene)
 		m_pScene->RecordMeshInstance(this);
+}
+
+MBoundsOBB* MSkinnedMeshInstance::GetBoundsOBB()
+{
+	return nullptr;
 }
 
 void MSkinnedMeshInstance::SetMesh(MIMesh* pMesh)

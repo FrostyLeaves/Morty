@@ -35,19 +35,12 @@ void CopyMatrix4(Matrix4* matdest, aiMatrix4x4* matsour)
 MModelResource::MModelResource()
 : MResource()
 , m_vMeshes()
-, m_pBoundsOBB(nullptr)
 , m_pSkeleton(nullptr)
 {
 }
 
 MModelResource::~MModelResource()
 {
-	if (m_pBoundsOBB)
-	{
-		delete m_pBoundsOBB;
-		m_pBoundsOBB = nullptr;
-	}
-
 	if (m_pSkeleton)
 	{
 		delete m_pSkeleton;
@@ -59,35 +52,12 @@ MModelResource::~MModelResource()
 		pMesh->DestroyBuffer(m_pEngine->GetDevice());
 		delete pMesh;
 	}
+
+	for (MBoundsOBB* pBounds : m_vMeshesOBB)
+		delete pBounds;
+
+	m_vMeshesOBB.clear();
 	m_vMeshes.clear();
-}
-
-const MBoundsOBB* MModelResource::GetOBB()
-{
-	std::vector<Vector3> vPoints;
-	if (nullptr == m_pBoundsOBB)
-	{
-		for (MIMesh* pMesh : m_vMeshes)
-		{
-			if (MMesh<MVertex>* pMeshIns = dynamic_cast<MMesh<MVertex>*>(pMesh))
-			{
-				for (unsigned int i = 0; i < pMesh->GetVerticesLength(); ++i)
-				{
-					vPoints.push_back(pMeshIns->GetVertices()[i].position);
-				}
-			}
-			else if(MMesh<MVertexWithBones>* pMeshIns = dynamic_cast<MMesh<MVertexWithBones>*>(pMesh))
-			{
-				for (unsigned int i = 0; i < pMesh->GetVerticesLength(); ++i)
-				{
-					vPoints.push_back(pMeshIns->GetVertices()[i].position);
-				}
-			}
-		}
-		m_pBoundsOBB = new MBoundsOBB(vPoints);
-	}
-
-	return m_pBoundsOBB;
 }
 
 MModelResource::MEMeshVertexType MModelResource::GetMeshVertexType(const unsigned int& unIndex)
@@ -98,18 +68,6 @@ MModelResource::MEMeshVertexType MModelResource::GetMeshVertexType(const unsigne
 MMaterial* MModelResource::GetMeshDefaultMaterial(const unsigned int& unIndex)
 {
 	return unIndex < m_vDefaultMaterial.size() ? m_vDefaultMaterial[unIndex] : nullptr;
-}
-
-void loadMaterialTextures(aiMaterial* mat, const aiTextureType& type, const MString& strTypeName)
-{
-	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
-	{
-		aiString str;
-		mat->GetTexture(type, i, &str);
-
-		int a = 0;
-		++a;
-	}
 }
 
 bool MModelResource::Load(const MString& strResourcePath)
@@ -168,9 +126,14 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vect
 			ProcessMeshIndices(pMesh, pScene, pMMesh);
 			BindVertexAndBones(pMesh, pScene, pMMesh);
 			m_vMeshes.push_back(pMMesh);
+			m_vMeshesRotationMatrix.push_back(matRotation);
 			m_vVertexTypes.push_back(MEMeshVertexType::Skeleton);
 			vMaterialIndices.push_back(pMesh->mMaterialIndex);
 			m_vDefaultMaterial.push_back(nullptr);
+
+			MBoundsOBB* pObb = new MBoundsOBB();
+			pObb->SetPoints((const MByte*)pMMesh->GetVertices(), pMMesh->GetVerticesLength(), 0, pMMesh->GetVertexStructSize());
+			m_vMeshesOBB.push_back(pObb);
 		}
 		else
 		{
@@ -178,9 +141,14 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vect
 			ProcessMeshVertices(pMesh, pScene, pMMesh, matRotation);
 			ProcessMeshIndices(pMesh, pScene, pMMesh);
 			m_vMeshes.push_back(pMMesh);
+			m_vMeshesRotationMatrix.push_back(matRotation);
 			m_vVertexTypes.push_back(MEMeshVertexType::Normal);
 			vMaterialIndices.push_back(pMesh->mMaterialIndex);
 			m_vDefaultMaterial.push_back(nullptr);
+
+			MBoundsOBB* pObb = new MBoundsOBB();
+			pObb->SetPoints((const MByte*)pMMesh->GetVertices(), pMMesh->GetVerticesLength(), 0, pMMesh->GetVertexStructSize());
+			m_vMeshesOBB.push_back(pObb);
 		}
 	}
 
@@ -200,7 +168,7 @@ void MModelResource::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, M
 		vertex.position.y = pMesh->mVertices[i].y;
 		vertex.position.z = pMesh->mVertices[i].z;
 
-		vertex.position = matRotation * vertex.position;
+	//	vertex.position = matRotation * vertex.position;
 
 		if (pMesh->mNormals)
 		{
@@ -208,7 +176,7 @@ void MModelResource::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, M
 			vertex.normal.y = pMesh->mNormals[i].y;
 			vertex.normal.z = pMesh->mNormals[i].z;
 
-			vertex.normal = matRotation * vertex.normal;
+	//		vertex.normal = matRotation * vertex.normal;
 		}
 		if (pMesh->mTextureCoords)
 		{
@@ -222,7 +190,7 @@ void MModelResource::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, M
 			vertex.tangent.y = pMesh->mTangents[i].y;
 			vertex.tangent.z = pMesh->mTangents[i].z;
 
-			vertex.tangent = matRotation * vertex.tangent;
+	//		vertex.tangent = matRotation * vertex.tangent;
 		}
 		if (pMesh->mBitangents)
 		{
@@ -230,7 +198,7 @@ void MModelResource::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, M
 			vertex.bitangent.y = pMesh->mBitangents[i].y;
 			vertex.bitangent.z = pMesh->mBitangents[i].z;
 
-			vertex.bitangent = matRotation * vertex.bitangent;
+	//		vertex.bitangent = matRotation * vertex.bitangent;
 		}
 	}
 }
@@ -245,7 +213,7 @@ void MModelResource::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, M
 		vertex.position.y = pMesh->mVertices[i].y;
 		vertex.position.z = pMesh->mVertices[i].z;
 
-		vertex.position = matRotation * vertex.position;
+	//	vertex.position = matRotation * vertex.position;
 
 		if (pMesh->mNormals)
 		{
@@ -253,7 +221,7 @@ void MModelResource::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, M
 			vertex.normal.y = pMesh->mNormals[i].y;
 			vertex.normal.z = pMesh->mNormals[i].z;
 
-			vertex.normal = matRotation * vertex.normal;
+	//		vertex.normal = matRotation * vertex.normal;
 		}
 		if (pMesh->mTextureCoords)
 		{
@@ -267,7 +235,7 @@ void MModelResource::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, M
 			vertex.tangent.y = pMesh->mTangents[i].y;
 			vertex.tangent.z = pMesh->mTangents[i].z;
 
-			vertex.tangent = matRotation * vertex.tangent;
+	//		vertex.tangent = matRotation * vertex.tangent;
 		}
 		if (pMesh->mBitangents)
 		{
@@ -275,7 +243,7 @@ void MModelResource::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, M
 			vertex.bitangent.y = pMesh->mBitangents[i].y;
 			vertex.bitangent.z = pMesh->mBitangents[i].z;
 
-			vertex.bitangent = matRotation * vertex.bitangent;
+	//		vertex.bitangent = matRotation * vertex.bitangent;
 		}
 	}
 }
@@ -490,6 +458,8 @@ void MModelResource::ProcessMaterial(const aiScene* pScene, std::vector<unsigned
 
 		Vector3 v3Ambient(1.0f, 1.0f, 1.0f), v3Diffuse(1.0f, 1.0f, 1.0f), v3Specular(1.0f, 1.0f, 1.0f);
 		float fShininess = 32.0f;
+		MString strTexPath;
+
 		for (int n = 0; n < pMaterial->mNumProperties; ++n)
 		{
 			aiMaterialProperty* prop =  pMaterial->mProperties[n];
@@ -520,10 +490,18 @@ void MModelResource::ProcessMaterial(const aiScene* pScene, std::vector<unsigned
 			}
 		}
 
-		if (MResource* pTexResource = m_pEngine->GetResourceManager()->LoadResource("./Model/teaport.png"))
+		MString strResourceFolder = MResource::GetFolder(m_strResourcePath);
+
+		aiString strDiffuseTextureFile;
+		pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &strDiffuseTextureFile);
+		MString strDiffuseFileName = MResource::GetFileName(MString(strDiffuseTextureFile.C_Str()));
+
+		if (!strDiffuseFileName.empty())
 		{
-			m_vDefaultMaterial[i]->SetPixelTexutreParam("U_mat.texDiffuse", pTexResource);
-		//	pMaterial->SetPixelTexutreParam("U_mat.texSpecular", pTexResource);
+			if (MResource* pTexResource = m_pEngine->GetResourceManager()->LoadResource(strResourceFolder + "/tex/" + strDiffuseFileName))
+			{
+				m_vDefaultMaterial[i]->SetPixelTexutreParam("U_mat.texDiffuse", pTexResource);
+			}
 		}
 	}
 }

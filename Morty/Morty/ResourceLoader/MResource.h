@@ -27,6 +27,8 @@ public:
     virtual ~MResource();
 
 	static MString GetSuffix(const MString& strPath);
+	static MString GetFolder(const MString& strPath);
+	static MString GetFileName(const MString& strPath);
 
 	MResourceManager* GetResourceManager();
 

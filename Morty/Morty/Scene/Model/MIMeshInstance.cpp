@@ -4,6 +4,7 @@ MTypeIdentifierImplement(MIMeshInstance, M3DNode)
 
 MIMeshInstance::MIMeshInstance()
 	: M3DNode()
+	, m_pModelInstance(nullptr)
 {
 
 }

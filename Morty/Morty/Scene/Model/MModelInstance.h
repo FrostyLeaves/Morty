@@ -13,6 +13,7 @@
 #include "MResource.h"
 
 class MResource;
+class MBoundsOBB;
 class MModelResource;
 class MSkeletonInstance;
 class MSkeletalAnimController;
@@ -29,6 +30,8 @@ public:
 
 	MModelResource* GetResource();
 	MSkeletonInstance* GetSkeleton() { return m_pSkeleton; }
+
+	MBoundsOBB* GetBoundsOBB();
 	
 public:
 	bool SetPlayAnimation(const MString& strAnimationName);

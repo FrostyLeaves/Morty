@@ -44,11 +44,19 @@ public:
 class MORTY_CLASS MBoundsOBB
 {
 public:
-
-	MBoundsOBB(const std::vector<Vector3>& vPoints);
+	MBoundsOBB() {}
+	MBoundsOBB(const Vector3* vPoints, const unsigned int& unArrayLength);
 	
 	Vector3 ConvertToOBB(const Vector3& v3Pos) const;
 	Vector3 ConvertFromOBB(const Vector3& v3Pos) const;
+
+	void SetPoints(const void* vPoints, const unsigned int& unArrayLength, const unsigned int& unOffset, const unsigned int& unDataSize)
+	{
+		SetPoints((const MByte*)vPoints, unArrayLength, unOffset, unDataSize);
+	}
+
+	void SetPoints(const MByte* vPoints, const unsigned int& unArrayLength, const unsigned int& unOffset, const unsigned int& unDataSize);
+	
 
 public:
 	Vector3 m_v3MinPoint;

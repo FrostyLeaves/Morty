@@ -28,11 +28,10 @@ protected:
 
 	bool ResourceLoad(MResource* pResource, const MString& svPath)
 	{
+		pResource->m_strResourcePath = svPath;
 		if (pResource->Load(svPath))
-		{
-			pResource->m_strResourcePath = svPath;
 			return true;
-		}
+
 		pResource->m_strResourcePath = "";
 		return false;
 	}

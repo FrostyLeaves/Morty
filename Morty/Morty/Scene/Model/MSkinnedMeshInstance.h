@@ -15,6 +15,7 @@ class MIMesh;
 class MMaterial;
 class MResource;
 class MModelResource;
+class MSkeletonInstance;
 class MORTY_CLASS MSkinnedMeshInstance : public MIMeshInstance
 {
 public:
@@ -22,18 +23,27 @@ public:
     MSkinnedMeshInstance();
     virtual ~MSkinnedMeshInstance();
 
+	virtual void SetMaterial(MMaterial* pMaterial) override;
+	virtual MMaterial* GetMaterial() override { return m_pMaterial; }
+
+	virtual MBoundsOBB* GetBoundsOBB() override;
+
 public:
 
 	virtual void SetMesh(MIMesh* pMesh) override;
 	virtual MIMesh* GetMesh() override { return m_pMesh; }
 
-	virtual void SetMaterial(MMaterial* pMaterial) override;
-	virtual MMaterial* GetMaterial() override { return m_pMaterial; }
+	virtual void SetDefaultOBB(MBoundsOBB* pBoundsOBB) override { m_pDefaultBoundsOBB = pBoundsOBB; }
+	virtual MBoundsOBB* GetDefaultOBB() override { return m_pDefaultBoundsOBB; }
+
+	virtual void SetSkeletonInstance(MSkeletonInstance* pSkeletonIns) { m_pSkeletonInstance = pSkeletonIns; }
 
 private:
 
 	MIMesh* m_pMesh;
 	MMaterial* m_pMaterial;
+	MBoundsOBB* m_pDefaultBoundsOBB;
+	MSkeletonInstance* m_pSkeletonInstance;
 };
 
 
