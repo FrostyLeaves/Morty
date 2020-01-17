@@ -56,7 +56,9 @@ public:
 	virtual bool AddNodeImpl(MNode* pNode, const MENodeChildType& etype) override;
 	void UpdateWorldTransform();
 protected:
-	static void WorldTransformDirty(MNode* pNode);
+	static void WorldTransformDirtyRecursively(MNode* pNode);
+
+	virtual void WorldTransformDirty();
 	virtual void LocalTransformDirty();
 
 private:

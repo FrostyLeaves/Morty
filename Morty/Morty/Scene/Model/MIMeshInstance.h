@@ -14,6 +14,7 @@
 class MIMesh;
 class MMaterial;
 class MBoundsOBB;
+class MBoundsAABB;
 class MModelInstance;
 class MORTY_CLASS MIMeshInstance : public M3DNode
 {
@@ -26,14 +27,11 @@ public:
 	virtual void SetMaterial(MMaterial* pMaterial) = 0;
 	virtual MMaterial* GetMaterial() = 0;
 
-	virtual MBoundsOBB* GetBoundsOBB() = 0;
+	virtual MBoundsAABB* GetBoundsAABB() = 0;
 
 public:
 	virtual void SetMesh(MIMesh* pMesh) = 0;
 	virtual MIMesh* GetMesh() = 0;
-
-	virtual void SetDefaultOBB(MBoundsOBB* pBoundsOBB) = 0;
-	virtual MBoundsOBB* GetDefaultOBB() = 0;
 
 	void SetAttachedModelInstance(MModelInstance* pModelIns) { m_pModelInstance = pModelIns; }
 	MModelInstance* GetAttachedModelInstance() { return m_pModelInstance; }

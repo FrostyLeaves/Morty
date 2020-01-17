@@ -43,9 +43,9 @@ MTextureRenderTarget* MTextureRenderTarget::CreateForTexture(MIDevice* pDevice, 
 
 void MTextureRenderTarget::OnResize(const unsigned int& nWidth, const unsigned int& nHeight)
 {
-	if (m_pBackTexture)
+	if (m_pBackTexture && (m_eRenderTargetType & METextureRenderTargetType::ERenderBack))
 		m_pBackTexture->SetSize(Vector2(nWidth, nHeight));
-	if (m_pDepthTexture)
+	if (m_pDepthTexture && (m_eRenderTargetType & METextureRenderTargetType::ERenderDepth))
 		m_pDepthTexture->SetSize(Vector2(nWidth, nHeight));
 
 	m_pDevice->DestroyRenderTarget(this);

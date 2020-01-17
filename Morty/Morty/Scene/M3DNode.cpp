@@ -85,7 +85,7 @@ bool M3DNode::AddNodeImpl(MNode* pNode, const MENodeChildType& etype)
 	if (false == MNode::AddNodeImpl(pNode, etype))
 		return false;
 
-	WorldTransformDirty(pNode);
+	WorldTransformDirtyRecursively(pNode);
 
 	return true;
 }
@@ -150,25 +150,30 @@ void M3DNode::LookAt(const Vector3& v3TargetWorldPos, Vector3 v3UpDir)
 	LocalTransformDirty();
 }
 
-void M3DNode::WorldTransformDirty(MNode* pNode)
+void M3DNode::WorldTransformDirtyRecursively(MNode* pNode)
 {
 	if (M3DNode* p3DNode = dynamic_cast<M3DNode*>(pNode))
 	{
 		if (p3DNode->m_bWorldTransformDirty)
 			return;
-			
-		p3DNode->m_bWorldTransformDirty = true;
+
+		p3DNode->WorldTransformDirty();
 	}
 
 	for (MNode* pChildNode : pNode->GetChildren())
 	{
-		WorldTransformDirty(pChildNode);
+		WorldTransformDirtyRecursively(pChildNode);
 	}
 
 	for (MNode* pChildNode : pNode->GetFixedChildren())
 	{
-		WorldTransformDirty(pChildNode);
+		WorldTransformDirtyRecursively(pChildNode);
 	}
+}
+
+void M3DNode::WorldTransformDirty()
+{
+	m_bWorldTransformDirty = true;
 }
 
 void M3DNode::LocalTransformDirty()
@@ -178,7 +183,7 @@ void M3DNode::LocalTransformDirty()
 
 	m_bLocalTransformDirty = true;
 	for (MNode* pChildNode : m_vFixedChildren)
-		WorldTransformDirty(pChildNode);
+		WorldTransformDirtyRecursively(pChildNode);
 	for (MNode* pChildNode : m_vChildren)
-		WorldTransformDirty(pChildNode);
+		WorldTransformDirtyRecursively(pChildNode);
 }

@@ -14,6 +14,8 @@
 #include <vector>
 #include <map>
 
+class MBoundsOBB;
+
 class MORTY_CLASS MBone
 {
 public:

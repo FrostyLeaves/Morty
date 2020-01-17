@@ -63,6 +63,9 @@ void NodeTreeView::RenderNode(MNode* pNode)
 		for (MNode* pChild : pNode->GetChildren())
 			RenderNode(pChild);
 
+		for (MNode* pChild : pNode->GetFixedChildren())
+			RenderNode(pChild);
+
 		ImGui::TreePop();
 	}
 }

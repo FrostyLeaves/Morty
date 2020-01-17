@@ -4,6 +4,7 @@
 #include "MSkinnedMeshInstance.h"
 #include "MSkeleton.h"
 #include "MSkeletalAnimation.h"
+#include "MBounds.h"
 
 #include "MEngine.h"
 
@@ -11,9 +12,11 @@ MTypeIdentifierImplement(MModelInstance, M3DNode)
 
 MModelInstance::MModelInstance()
 	: M3DNode()
+	, m_pBoundsAABB(nullptr)
 	, m_pModelResource(nullptr)
 	, m_pSkeleton(nullptr)
 	, m_pCurrentAnimationController(nullptr)
+	, m_bDrawBoundingBox(false)
 {
 
 }
@@ -36,6 +39,12 @@ MModelInstance::~MModelInstance()
 	{
 		delete m_pModelResource;
 		m_pModelResource = nullptr;
+	}
+
+	if (m_pBoundsAABB)
+	{
+		delete m_pBoundsAABB;
+		m_pBoundsAABB = nullptr;
 	}
 }
 
@@ -66,16 +75,20 @@ bool MModelInstance::Load(MResource* pResource)
 				{
 					MIMeshInstance* pMeshIns = nullptr;
 					if (pModelResource->GetMeshVertexType(index) == MModelResource::Normal)
-						pMeshIns = GetObjectManager()->CreateObject<MStaticMeshInstance>();
+					{
+						MStaticMeshInstance* pStaticMeshIns = GetObjectManager()->CreateObject<MStaticMeshInstance>();
+						pStaticMeshIns->SetDefaultOBB(vMeshesDefaultOBB[index]);
+						pMeshIns = pStaticMeshIns;
+					}
 					else
 					{
 						MSkinnedMeshInstance* pSkinnedMeshIns = GetObjectManager()->CreateObject<MSkinnedMeshInstance>();
+						pSkinnedMeshIns->SetDefaultOBB(vMeshesDefaultOBB[index]);
 						pSkinnedMeshIns->SetSkeletonInstance(m_pSkeleton);
 						pMeshIns = pSkinnedMeshIns;
 					}
 						
 					pMeshIns->SetMesh(pMesh);
-					pMeshIns->SetDefaultOBB(vMeshesDefaultOBB[index]);
 					pMeshIns->SetRotation(vMeshesRotationMatrix[index].GetRotation());
 
 					pMeshIns->SetName(MString("Mesh_") + MStringHelper::ToString(index));
@@ -86,7 +99,6 @@ bool MModelInstance::Load(MResource* pResource)
 
 					++index;
 				}
-
 			}
 	
 		};
@@ -109,9 +121,24 @@ MModelResource* MModelInstance::GetResource()
 	return static_cast<MModelResource*>(m_pModelResource->GetResource());
 }
 
-MBoundsOBB* MModelInstance::GetBoundsOBB()
+MBoundsAABB* MModelInstance::GetBoundsAABB()
 {
-	return nullptr;
+	Vector3 v3Min, v3Max;
+	v3Min = v3Max = GetWorldPosition();
+	
+	for (MNode* pNode : m_vFixedChildren)
+	{
+		if (MIMeshInstance* pMeshIns = dynamic_cast<MIMeshInstance*>(pNode))
+		{
+			pMeshIns->GetBoundsAABB()->UnionMinMax(v3Min, v3Max);
+		}
+	}
+
+	if (nullptr == m_pBoundsAABB)
+		m_pBoundsAABB = new MBoundsAABB();
+
+	m_pBoundsAABB->SetMinMax(v3Min, v3Max);
+	return m_pBoundsAABB;
 }
 
 bool MModelInstance::SetPlayAnimation(const MString& strAnimationName)

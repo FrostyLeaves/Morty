@@ -115,14 +115,18 @@ MBoundsAABB* MScene::GetSceneAABB()
 	{
 		for (MIMeshInstance* pMeshIns : pGroup->vMeshIns)
 		{
-			Matrix4 matWorld = pMeshIns->GetWorldTransform();
-			const MBoundsOBB* pBounds = pMeshIns->GetBoundsOBB();
-			MBoundsAABB aabb(matWorld, *pBounds);
-			aabb.UnionMinMax(v3Min, v3Max);
+			if (pMeshIns->GetVisibleRecursively())
+			{
+				const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
+				pBounds->UnionMinMax(v3Min, v3Max);
+			}
 		}
 	}
 
-	return new MBoundsAABB({ v3Min , v3Max });
+	MBoundsAABB* pResult = new MBoundsAABB();
+	pResult->SetMinMax(v3Min, v3Max);
+
+	return pResult;
 }
 
 void MScene::AddAttachedViewport(MViewport* pViewport)
@@ -342,9 +346,6 @@ void MScene::GenerateShadowMap(MIRenderer* pRenderer, MViewport* pViewport)
 
 void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 {
-
-	pRenderer->SetRasterizerType(MIRenderer::ESolid | MIRenderer::ECullBack);
-
 	MDirectionalLight* pLight = FindActiveDirectionLight();
 	Matrix4 matLightInvProj = pViewport->GetLightInverseProjection(pLight);
 
@@ -382,7 +383,7 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 					{
 						if (MStruct* pLightStruct = pDirectionLight->GetByType<MStruct>())
 						{
-							pLightStruct->SetMember("f3Direction", pDirectionalLight->GetWorldDirection());
+							pLightStruct->SetMember("f3Direction", pDirectionalLight->GetDirection());
 							pLightStruct->SetMember("f3Ambient", pDirectionalLight->GetAmbientColor().ToVector3());
 							pLightStruct->SetMember("f3Diffuse", pDirectionalLight->GetDiffuseColor().ToVector3());
 							pLightStruct->SetMember("f3Specular", pDirectionalLight->GetSpecularColor().ToVector3());
@@ -496,6 +497,17 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 	}
 }
 
+void MScene::DrawModelInstance(MIRenderer* pRenderer, MViewport* pViewport)
+{
+	for (MModelInstance* pModelIns : m_vModelInstances)
+	{
+		if (pModelIns->GetDrawBoundingBox())
+		{
+			DrawBoundingBox(pRenderer, pViewport, pModelIns);
+		}
+	}
+}
+
 void MScene::DrawSkyBox(MIRenderer* pRenderer, MViewport* pViewport)
 {
 	pRenderer->SetRasterizerType(MIRenderer::MERasterizerType::ESolid | MIRenderer::MERasterizerType::ECullNone);
@@ -537,7 +549,7 @@ void MScene::DrawPainter(MIRenderer* pRenderer, MViewport* pViewport)
 	m_pTransformCoord3D->Render(pRenderer, pViewport);
 }
 
-void MScene::DrawBoundingBox(MIRenderer* pRenderer, MViewport* pViewport, MModelInstance* pSpatial)
+void MScene::DrawBoundingBox(MIRenderer* pRenderer, MViewport* pViewport, MModelInstance* pModelIns)
 {
 	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW3D);
 	MMaterial* pMaterial = pDraw3DMaterialRes->GetMaterialTemplate();
@@ -557,22 +569,21 @@ void MScene::DrawBoundingBox(MIRenderer* pRenderer, MViewport* pViewport, MModel
 
 	pRenderer->UpdateMaterialParam();
 
-	const MBoundsOBB* pObb = pSpatial->GetBoundsOBB();
+	const MBoundsAABB* pAABB = pModelIns->GetBoundsAABB();
 
-	Matrix4 mat4World = pSpatial->GetWorldTransform();
-	const Vector3& obmin = pObb->m_v3MinPoint;
-	const Vector3& obmax = pObb->m_v3MaxPoint;
+	const Vector3& obmin = pAABB->m_v3MinPoint;
+	const Vector3& obmax = pAABB->m_v3MaxPoint;
 
 	Vector3 list[] = {
-		mat4World * pObb->ConvertFromOBB(Vector3(obmin.x, obmin.y, obmin.z)),
-		mat4World * pObb->ConvertFromOBB(Vector3(obmax.x, obmin.y, obmin.z)),
-		mat4World * pObb->ConvertFromOBB(Vector3(obmax.x, obmax.y, obmin.z)),
-		mat4World * pObb->ConvertFromOBB(Vector3(obmin.x, obmax.y, obmin.z)),
+		Vector3(obmin.x, obmin.y, obmin.z),
+		Vector3(obmax.x, obmin.y, obmin.z),
+		Vector3(obmax.x, obmax.y, obmin.z),
+		Vector3(obmin.x, obmax.y, obmin.z),
 
-		mat4World * pObb->ConvertFromOBB(Vector3(obmin.x, obmin.y, obmax.z)),
-		mat4World * pObb->ConvertFromOBB(Vector3(obmax.x, obmin.y, obmax.z)),
-		mat4World * pObb->ConvertFromOBB(Vector3(obmax.x, obmax.y, obmax.z)),
-		mat4World * pObb->ConvertFromOBB(Vector3(obmin.x, obmax.y, obmax.z)),
+		Vector3(obmin.x, obmin.y, obmax.z),
+		Vector3(obmax.x, obmin.y, obmax.z),
+		Vector3(obmax.x, obmax.y, obmax.z),
+		Vector3(obmin.x, obmax.y, obmax.z),
 	};
 
 	Vector2 begin, end;
@@ -657,11 +668,8 @@ void MScene::Render(MIRenderer* pRenderer, MViewport* pViewport)
 	Vector2 v2LeftTop = pViewport->GetLeftTop();
 	pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, pViewport->GetWidth(), pViewport->GetHeight(), 0.0f, 1.0f);
 	DrawPainter(pRenderer, pViewport);
-	MModelInstance* pSpat = dynamic_cast<MModelInstance*>(m_pRootNode->FindFirstChildByName("Pikachu"));
-//	DrawCameraFrustum(pRenderer, pViewport, pViewport->GetCamera());
-	DrawBoundingBox(pRenderer, pViewport, pSpat);
 	DrawMeshInstance(pRenderer, pViewport);
-	//DrawSkyBox(pRenderer, pViewport);
+	DrawModelInstance(pRenderer, pViewport);
 }
 
 void MScene::Input(MInputEvent* pEvent, MViewport* pViewport)

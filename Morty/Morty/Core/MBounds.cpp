@@ -2,6 +2,7 @@
 #include "Dense"
 #include "Eigenvalues"
 #include "Matrix.h"
+#include "MMath.h"
 
 MBoundsOBB::MBoundsOBB(const Vector3* vPoints, const unsigned int& unArrayLength)
 {
@@ -24,7 +25,7 @@ void MBoundsOBB::SetPoints(const MByte* vPoints, const unsigned int& unArrayLeng
 	pointer = vPoints;
 	for(unsigned int i = 0; i < unArrayLength; ++i, pointer += unDataSize)
 	{
-		const Vector3& pos = *(Vector3*)(vPoints + unOffset);
+		const Vector3& pos = *(Vector3*)(pointer + unOffset);
 		v3Average += pos;
 	}
 
@@ -33,7 +34,7 @@ void MBoundsOBB::SetPoints(const MByte* vPoints, const unsigned int& unArrayLeng
 	pointer = vPoints;
 	for (unsigned int i = 0; i < unArrayLength; ++i, pointer += unDataSize)
 	{
-		const Vector3& pos = *(Vector3*)(vPoints + unOffset);
+		const Vector3& pos = *(Vector3*)(pointer + unOffset);
 		cov_xx += (pos.x - v3Average.x) * (pos.x - v3Average.x);
 		cov_yy += (pos.y - v3Average.y) * (pos.y - v3Average.y);
 		cov_zz += (pos.z - v3Average.z) * (pos.z - v3Average.z);
@@ -69,7 +70,7 @@ void MBoundsOBB::SetPoints(const MByte* vPoints, const unsigned int& unArrayLeng
 	pointer = vPoints;
 	for (unsigned int i = 0; i < unArrayLength; ++i, pointer += unDataSize)
 	{
-		const Vector3& pos = *(Vector3*)(vPoints + unOffset);
+		const Vector3& pos = *(Vector3*)(pointer + unOffset);
 		v3MinPoint = v3MaxPoint = pos * m_matEigVectors;
 		break;
 	}
@@ -77,7 +78,7 @@ void MBoundsOBB::SetPoints(const MByte* vPoints, const unsigned int& unArrayLeng
 	pointer = vPoints;
 	for (unsigned int i = 0; i < unArrayLength; ++i, pointer += unDataSize)
 	{
-		const Vector3& pos = *(Vector3*)(vPoints + unOffset);
+		const Vector3& pos = *(Vector3*)(pointer + unOffset);
 		Vector3 mp = pos * m_matEigVectors;
 
 		if (v3MaxPoint.x < mp.x)
@@ -131,9 +132,23 @@ Vector3 MBoundsOBB::ConvertFromOBB(const Vector3& v3Pos) const
 }
 
 MBoundsAABB::MBoundsAABB(const std::vector<Vector3>& vPoints)
-	: m_v3MaxPoint(-FLT_MAX, -FLT_MAX, -FLT_MAX)
-	, m_v3MinPoint(FLT_MAX, FLT_MAX, FLT_MAX)
 {
+	SetPoints(vPoints);
+}
+
+void MBoundsAABB::SetMinMax(const Vector3& v3Min, const Vector3& v3Max)
+{
+	m_v3MinPoint = v3Min;
+	m_v3MaxPoint = v3Max;
+
+	m_v3CenterPoint = (m_v3MinPoint + m_v3MaxPoint) * 0.5f;
+	m_v3HalfLength = (m_v3MaxPoint - m_v3MinPoint) * 0.5f;
+}
+
+void MBoundsAABB::SetPoints(const std::vector<Vector3>& vPoints)
+{
+	m_v3MaxPoint = Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+	m_v3MinPoint = Vector3(FLT_MAX, FLT_MAX, FLT_MAX);
 	for (const Vector3& pos : vPoints)
 	{
 		if (m_v3MinPoint.x > pos.x)
@@ -155,10 +170,14 @@ MBoundsAABB::MBoundsAABB(const std::vector<Vector3>& vPoints)
 	m_v3HalfLength = (m_v3MaxPoint - m_v3MinPoint) * 0.5f;
 }
 
-MBoundsAABB::MBoundsAABB(const Matrix4& matWorld, const MBoundsOBB& obb)
+void MBoundsAABB::SetBoundsOBB(const Vector3& v3Origin, const Matrix4& matWorld, const MBoundsOBB& obb)
 {
+	m_v3MaxPoint = v3Origin;
+	m_v3MinPoint = v3Origin;
+
 	Vector3 v3ModelCenter = matWorld * obb.ConvertFromOBB(obb.m_v3CenterPoint);
-	Vector3 v3ModelHalf = matWorld * obb.ConvertFromOBB(obb.m_v3HalfLength);
+	Matrix4 matScaleAndRotation = MMath::GetScaleAndRotation(matWorld);
+	Vector3 v3ModelHalf = matScaleAndRotation * obb.ConvertFromOBB(obb.m_v3HalfLength);
 	v3ModelHalf = Vector3(fabs(v3ModelHalf.x), fabs(v3ModelHalf.y), fabs(v3ModelHalf.z));
 
 	if (m_v3MinPoint.x > v3ModelCenter.x - v3ModelHalf.x)
@@ -193,7 +212,7 @@ void MBoundsAABB::GetPoints(std::vector<Vector3>& vPoints)
 	vPoints[7] = m_v3CenterPoint + Vector3(-m_v3HalfLength.x, -m_v3HalfLength.y, -m_v3HalfLength.z);
 }
 
-void MBoundsAABB::UnionMinMax(Vector3& v3Min, Vector3& v3Max)
+void MBoundsAABB::UnionMinMax(Vector3& v3Min, Vector3& v3Max) const
 {
 
 	if (v3Min.x > m_v3MinPoint.x)

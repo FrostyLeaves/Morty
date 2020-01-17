@@ -14,6 +14,7 @@
 
 class MResource;
 class MBoundsOBB;
+class MBoundsAABB;
 class MModelResource;
 class MSkeletonInstance;
 class MSkeletalAnimController;
@@ -31,8 +32,13 @@ public:
 	MModelResource* GetResource();
 	MSkeletonInstance* GetSkeleton() { return m_pSkeleton; }
 
-	MBoundsOBB* GetBoundsOBB();
-	
+	MBoundsAABB* GetBoundsAABB();
+
+	virtual void SetVisible(const bool& bVisible) override;
+
+	void SetDrawBoundingBox(const bool& bDrawable) { m_bDrawBoundingBox = bDrawable; }
+	bool GetDrawBoundingBox() { return m_bDrawBoundingBox; }
+
 public:
 	bool SetPlayAnimation(const MString& strAnimationName);
 	void SetRemoveAnimation();
@@ -42,14 +48,16 @@ public:
 
 	virtual void Tick(const float& fDelta) override;
 
-	virtual void SetVisible(const bool& bVisible) override;
+
 
 private:
-
+	MBoundsAABB* m_pBoundsAABB;
 	MSkeletonInstance* m_pSkeleton;
 	MResourceHolder* m_pModelResource;
 
 	MSkeletalAnimController* m_pCurrentAnimationController;
+
+	bool m_bDrawBoundingBox;
 };
 
 #endif

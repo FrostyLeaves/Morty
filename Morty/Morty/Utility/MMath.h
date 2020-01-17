@@ -9,7 +9,7 @@
 #ifndef _M_MMATH_H_
 #define _M_MMATH_H_
 #include "MGlobal.h"
-
+#include "Matrix.h"
 
 class MORTY_CLASS MMath
 {
@@ -21,6 +21,9 @@ public:
 		fSmooth = fSmooth < 0 ? 0 : fSmooth > 1.0f ? 1.0f : fSmooth;
 		return a * (1 - fSmooth) + b * (fSmooth);
 	}
+
+
+	static Matrix4 GetScaleAndRotation(const Matrix4& mat);
 
 private:
 

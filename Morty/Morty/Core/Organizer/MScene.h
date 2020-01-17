@@ -81,9 +81,10 @@ protected:
 	void GenerateShadowMap(MIRenderer* pRenderer, MViewport* pViewport);
 
 	void DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport);
+	void DrawModelInstance(MIRenderer* pRenderer, MViewport* pViewport);
 	void DrawSkyBox(MIRenderer* pRenderer, MViewport* pViewport);
 	void DrawPainter(MIRenderer* pRenderer, MViewport* pViewport);
-	void DrawBoundingBox(MIRenderer* pRenderer, MViewport* pViewport, MModelInstance* pSpatial);
+	void DrawBoundingBox(MIRenderer* pRenderer, MViewport* pViewport, MModelInstance* pModelIns);
 	void DrawCameraFrustum(MIRenderer* pRenderer, MViewport* pViewport, MCamera* pCamera);
 
 private:
@@ -104,9 +105,7 @@ private:
 	std::vector<MaterialMeshInsGroup*> m_vMatMeshInsGroup;
 
 	std::vector<MModelInstance*> m_vModelInstances;
-
 	std::vector<MViewport*> m_vViewports;
-
 
 	std::vector<MInputNode*> m_vInputNodes;
 };

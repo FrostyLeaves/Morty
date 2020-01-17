@@ -30,7 +30,7 @@ public:
 
 	Vector3 GetWorldDirection()
 	{
-		return GetWorldTransform() * m_v3Direction;
+		return GetWorldTransform().GetRotatePart() * m_v3Direction;
 	}
 
 	void SetAmbientColor(const MColor& color) { m_f3Ambient = color; }

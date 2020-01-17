@@ -2,6 +2,8 @@
 #include "MScene.h"
 #include "MMaterial.h"
 
+#include "MBounds.h"
+
 MTypeIdentifierImplement(MSkinnedMeshInstance, MIMeshInstance)
 
 MSkinnedMeshInstance::MSkinnedMeshInstance()
@@ -10,6 +12,8 @@ MSkinnedMeshInstance::MSkinnedMeshInstance()
 	, m_pMaterial(nullptr)
 	, m_pDefaultBoundsOBB(nullptr)
 	, m_pSkeletonInstance(nullptr)
+	, m_pBoundsAABB(nullptr)
+	, m_bBoundsAABBDirty(true)
 {
 
 }
@@ -34,12 +38,44 @@ void MSkinnedMeshInstance::SetMaterial(MMaterial* pMaterial)
 		m_pScene->RecordMeshInstance(this);
 }
 
-MBoundsOBB* MSkinnedMeshInstance::GetBoundsOBB()
+MBoundsAABB* MSkinnedMeshInstance::GetBoundsAABB()
 {
-	return nullptr;
+	//TODO get the Bounding Box by skeleton instance.
+
+	if (nullptr == m_pBoundsAABB)
+		m_pBoundsAABB = new MBoundsAABB();
+
+	if (m_bBoundsAABBDirty)
+	{
+		Matrix4 matWorldTrans = GetWorldTransform();
+		Vector3 v3Position = GetWorldPosition();
+		m_pBoundsAABB->SetBoundsOBB(v3Position, matWorldTrans, *m_pDefaultBoundsOBB);
+		m_bBoundsAABBDirty = false;
+	}
+
+	return m_pBoundsAABB;
 }
 
 void MSkinnedMeshInstance::SetMesh(MIMesh* pMesh)
 {
 	m_pMesh = pMesh;
+}
+
+void MSkinnedMeshInstance::UpdateSkeletonBoundsOBB()
+{
+	
+}
+
+void MSkinnedMeshInstance::WorldTransformDirty()
+{
+	MIMeshInstance::WorldTransformDirty();
+
+	m_bBoundsAABBDirty = true;
+}
+
+void MSkinnedMeshInstance::LocalTransformDirty()
+{
+	MIMeshInstance::LocalTransformDirty();
+
+	m_bBoundsAABBDirty = true;
 }
