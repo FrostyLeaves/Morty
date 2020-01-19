@@ -19,6 +19,9 @@
     <Filter Include="Editor">
       <UniqueIdentifier>{cca2a86d-456d-483d-8c58-71dd1b7fee59}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Editor\Property">
+      <UniqueIdentifier>{9e194d8d-2794-48d6-8db5-4babb8d9f770}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -60,6 +63,18 @@
     <ClInclude Include="..\..\..\Editor\NodeTreeView.h">
       <Filter>Editor</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Editor\Property\PropertyBase.h">
+      <Filter>Editor\Property</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Editor\Property\PropertyM3DNode.h">
+      <Filter>Editor\Property</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Editor\Property\PropertyMPointLight.h">
+      <Filter>Editor\Property</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Editor\Property\PropertyMCamera.h">
+      <Filter>Editor\Property</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MEditor.cpp">
@@ -94,6 +109,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Editor\NodeTreeView.cpp">
       <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Editor\Property\PropertyBase.cpp">
+      <Filter>Editor\Property</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

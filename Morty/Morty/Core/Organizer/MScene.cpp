@@ -43,7 +43,6 @@ MScene::MScene()
 	
 }
 
-#include "MInputManager.h"
 void MScene::OnCreated()
 {
 	MObject::OnCreated();
@@ -203,11 +202,14 @@ void MScene::OnNodeEnter(MNode* pNode)
 		m_vModelInstances.push_back(pModelIns);
 
 	else if (MDirectionalLight* pDirLight = pNode->DynamicCast<MDirectionalLight>())
+	{
 		m_vDirectionalLight.push_back(pDirLight);
+	}
 
 	else if (MPointLight* pPotLight = pNode->DynamicCast<MPointLight>())
+	{
 		m_vPointLight.push_back(pPotLight);
-
+	}
 	else if (MIMeshInstance* pMeshIns = pNode->DynamicCast<MIMeshInstance>())
 		RecordMeshInstance(pMeshIns);
 

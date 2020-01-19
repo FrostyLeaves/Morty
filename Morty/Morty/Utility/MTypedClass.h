@@ -13,16 +13,16 @@
 
 #define MTypedClassSign(Class) \
 public: \
-	static MTypeIdentifierConstPointer& GetClassTypeIdentifier(); \
-	virtual MTypeIdentifierConstPointer& GetTypeIdentifier() { return Class::GetClassTypeIdentifier(); }
+	static MTypeIdentifierConstPointer GetClassTypeIdentifier(); \
+	virtual MTypeIdentifierConstPointer GetTypeIdentifier() { return Class::GetClassTypeIdentifier(); };
 
 
 
 #define MTypeIdentifierImplement(Class, BaseClass) \
-    MTypeIdentifierConstPointer& Class::GetClassTypeIdentifier() { \
-		static const MTypeIdentifier* pTypeIdentifier = new MTypeIdentifier(#Class, BaseClass::GetClassTypeIdentifier()); \
-		return pTypeIdentifier; \
-	}
+    MTypeIdentifierConstPointer Class::GetClassTypeIdentifier() { \
+		static const MTypeIdentifier typeIdentifier(#Class, BaseClass::GetClassTypeIdentifier()); \
+		return &typeIdentifier; \
+	} \
 
 
 class MTypeIdentifier
@@ -55,8 +55,8 @@ public:
 	T* DynamicCast()
 	{
 		if (nullptr == this) return nullptr;
-		MTypeIdentifierConstPointer& pTypeIdent = GetTypeIdentifier();
-		MTypeIdentifierConstPointer& pClassIdent = T::GetClassTypeIdentifier();
+		MTypeIdentifierConstPointer pTypeIdent = GetTypeIdentifier();
+		MTypeIdentifierConstPointer pClassIdent = T::GetClassTypeIdentifier();
 		for (int i = pTypeIdent->m_unDeep - pClassIdent->m_unDeep; i > 0; --i)
 			pTypeIdent = pTypeIdent->m_pBaseTypeIdentifier;
 

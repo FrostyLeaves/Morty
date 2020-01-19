@@ -127,12 +127,19 @@ int main(int argc, char* argv[])
 
 
 	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/teaport.fbx"));
-	MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
-	pSpatial->Load(pResource);
-	pSpatial->SetPosition(Vector3(0, 0, 50));
-	pSpatial->SetName("Teaport");
 
-	pRootNode->AddNode(pSpatial);
+	for (int i = 0; i < 1; ++i)
+	{
+		char svName[16];
+		sprintf_s(svName, "Teaport_%d", i);
+
+		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
+		pSpatial->Load(pResource);
+		pSpatial->SetPosition(Vector3(0, 0, 50));
+		pSpatial->SetName(svName);
+
+		pRootNode->AddNode(pSpatial);
+	}
 
 	MModelResource* pPikachuResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/Pikachu.fbx"));
 	MModelInstance* pPikachu = engine.GetObjectManager()->CreateObject<MModelInstance>();
@@ -162,6 +169,7 @@ int main(int argc, char* argv[])
 	pRootNode->AddNode(pDirLight);
 
 	MyCamera* pCamera = engine.GetObjectManager()->CreateObject<MyCamera>();
+	pCamera->SetPosition(Vector3(0, 1000, 0));
 	pCamera->SetName("Camera");
 	pRootNode->AddNode(pCamera);
 

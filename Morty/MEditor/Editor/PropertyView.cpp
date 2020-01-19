@@ -5,16 +5,31 @@
 #include "MObject.h"
 #include "M3DNode.h"
 
+#include "PropertyM3DNode.h"
+#include "PropertyMCamera.h"
+#include "PropertyMPointLight.h"
+
+#define REGISTER_PROPERTY( CLASS_NAME ) \
+	m_tCreatePropertyFactory[#CLASS_NAME] = []() {return new Property##CLASS_NAME(); };
+
 PropertyView::PropertyView()
 	: m_pEditorObject(nullptr)
-	, m_unItemIDPool(0)
+	, m_vPropertyList()
 {
-
+	REGISTER_PROPERTY(M3DNode);
+	REGISTER_PROPERTY(MCamera);
+	REGISTER_PROPERTY(MPointLight);
 }
 
 PropertyView::~PropertyView()
 {
+	for (PropertyBase* pPropertyBase : m_vPropertyList)
+	{
+		if(pPropertyBase)
+			delete pPropertyBase;
+	}
 
+	m_vPropertyList.clear();
 }
 
 void PropertyView::SetEditorObject(MObject* pObject)
@@ -23,7 +38,8 @@ void PropertyView::SetEditorObject(MObject* pObject)
 		return;
 
 	m_pEditorObject = pObject;
-	m_tTempValue.clear();
+
+	CreatePropertyList(pObject);
 }
 
 void PropertyView::Render()
@@ -36,127 +52,45 @@ void PropertyView::Render()
 	ImGui::Separator();
 	
 	unsigned int unID = 0;
-	
-	EditM3DNode(dynamic_cast<M3DNode*>(m_pEditorObject));
+
+	EditObject(m_pEditorObject);
 
 	ImGui::Columns(1);
 	ImGui::Separator();
 	ImGui::PopStyleVar();
 
-
 }
 
-bool PropertyView::ShowNodeBegin(const MString& strNodeName)
+void PropertyView::EditObject(MObject* pObject)
 {
-	ImGui::PushID(GetID(strNodeName));
-	ImGui::AlignTextToFramePadding();  
-	if (bool node_open = ImGui::TreeNodeEx("Object", ImGuiTreeNodeFlags_DefaultOpen, "%s", strNodeName.c_str()))
+	for (PropertyBase* pPropertyBase : m_vPropertyList)
 	{
-		ImGui::NextColumn();
-		ImGui::AlignTextToFramePadding();
-		//ImGui::Text("0.0");
-		ImGui::NextColumn();
-
-		return true;
-	}
-
-	ImGui::PopID();
-	return false;
-}
-
-void PropertyView::ShowNodeEnd()
-{
-	ImGui::TreePop();
-	ImGui::PopID();
-}
-
-void PropertyView::ShowValueBegin(const MString& strValueName)
-{
-	ImGui::PushID(GetID(strValueName));
-	ImGui::AlignTextToFramePadding();
-	ImGui::TreeNodeEx(strValueName.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet);
-	ImGui::NextColumn();
-	ImGui::SetNextItemWidth(-1);
-}
-
-void PropertyView::ShowValueEnd()
-{
-	ImGui::NextColumn();
-	ImGui::PopID();
-}
-
-bool PropertyView::EditM3DNode(M3DNode* pNode)
-{
-	if (nullptr == pNode)
-		return false;
-
-	if (ShowNodeBegin("Transform"))
-	{
-		MTransform trans = pNode->GetTransform();
-		if (EditTransform(trans))
+		if (pPropertyBase)
 		{
-			pNode->SetTransform(trans);
+			pPropertyBase->EditObject(pObject);
+		}
+	}
+}
+
+void PropertyView::CreatePropertyList(MObject* pObject)
+{
+	for (PropertyBase* pPropertyBase : m_vPropertyList)
+	{
+		if(pPropertyBase)
+			delete pPropertyBase;
+	}
+	m_vPropertyList.clear();
+
+	MTypeIdentifierConstPointer pointer = pObject->GetTypeIdentifier();
+	MString name = pObject->GetObjectClassName();
+
+	while (pointer)
+	{
+		if (auto func = m_tCreatePropertyFactory[pointer->m_strName])
+		{
+			m_vPropertyList.push_front(func());
 		}
 
-		ShowNodeEnd();
+		pointer = pointer->m_pBaseTypeIdentifier;
 	}
-
-	return true;
 }
-
-bool PropertyView::EditVector3(Vector3& value, const float& fSpeed, const float& fMin, const float& fMax)
-{
-	if (value.x == -0.0f) value.x = 0.0f;
-	if (value.y == -0.0f) value.y = 0.0f;
-	if (value.z == -0.0f) value.z = 0.0f;
-	return ImGui::DragFloat3("", value.m, fSpeed, fMin, fMax);
-}
-
-bool PropertyView::EditTransform(MTransform& trans)
-{
-	bool bModify = false;
-	ShowValueBegin("Position");
-	Vector3 position = trans.GetPosition();
-	if (EditVector3(position))
-	{
-		trans.SetPosition(position);
-		bModify = true;
-	}
-	ShowValueEnd();
-
-	ShowValueBegin("Scale");
-	Vector3 scale = trans.GetScale();
-	if (EditVector3(scale))
-	{
-		trans.SetScale(scale);
-		bModify = true;
-	}
-	ShowValueEnd();
-
-	ShowValueBegin("Rotate");
-	Vector3& rotate = GetTempValue<Vector3>("Rotate", trans.GetRotation().GetEulerAngle());
-
-	if (EditVector3(rotate, 1.0f, -360.0f, 360.0f))
-	{
-		Quaternion quat;
-		quat.SetEulerAngle(rotate);
-		quat.Normalize();
-		trans.SetRotation(quat);
-
-		bModify = true;
-	}
-	ShowValueEnd();
-
-	return bModify;
-}
-
-unsigned int PropertyView::GetID(const MString& strItemName)
-{
-	unsigned int unID = m_tItemID[strItemName];
-	if (unID != 0)
-		return unID;
-	
-	m_tItemID[strItemName] = ++m_unItemIDPool;
-	return m_unItemIDPool;
-}
-

@@ -36,6 +36,9 @@ public:
 	float GetZNear(){ return m_fZNear; }
 	float GetZFar(){ return m_fZFar; }
 
+	void SetZNearFar(const Vector2& fZNearFar) { SetZNear(fZNearFar.x); SetZFar(fZNearFar.y); }
+	Vector2 GetZNearFar() { return Vector2(GetZNear(), GetZFar()); }
+
 	//Orthographic
 	void SetWidth(const float& fWidth) { m_fWidth = fWidth; }
 	float GetWidth() { return m_fWidth; }
