@@ -9,3 +9,4 @@ const char* DEFAULT_MATERIAL_DRAW2D = "DefMatDraw2D";
 const char* DEFAULT_MATERIAL_DRAW3D = "DefMatDraw3D";
 const char* DEFAULT_MATERIAL_SKYBOX = "DefMatSkyBox";
 const char* DEFAULT_MATERIAL_SHADOW = "DefMatShadow";
+const char* DEFAULT_MATERIAL_SHADOW_ANIM = "DefMatShadowAnim";

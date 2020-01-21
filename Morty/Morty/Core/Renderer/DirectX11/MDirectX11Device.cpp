@@ -15,7 +15,6 @@
 #include "MTextureRenderTarget.h"
 #include "MDirectX11RenderTarget.h"
 
-
 MDirectX11Device::MDirectX11Device()
 	: MIDevice()
 	, m_pD3dDevice(nullptr)
@@ -182,11 +181,6 @@ void MDirectX11Device::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pM
 		return;
 	}
 
-	//UINT stride = sizeof(MVertex);
-	//UINT offset = 0;
-	//m_pD3dContext->IASetVertexBuffers(0, 1, &pVB, &stride, &offset);
-
-
 	//创建索引缓冲
 	D3D11_BUFFER_DESC indicesBufferDesc;
 	if (bModifiable)
@@ -214,10 +208,6 @@ void MDirectX11Device::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pM
 		MLogManager::GetInstance()->Error("Failed to CreateBuffer!");
 		return;
 	}
-
-	//m_pD3dContext->IASetIndexBuffer(pIndicesBuffer, DXGI_FORMAT_R32_UINT, 0);
-
-	//m_pD3dContext->DrawIndexed()
 
 	if (*ppVertexBuffer)
 	{
@@ -687,6 +677,19 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 			param.strName = bufferDesc.Name;
 			param.var = MVariant(cbufferStruct);
 
+			if (param.strName == "cbSpace")
+				param.unCode = SHADER_PARAM_CODE_SPACE;
+			else if (param.strName == "cbMaterial")
+				param.unCode = SHADER_PARAM_CODE_MATERIAL;
+			else if (param.strName == "cbLights")
+				param.unCode = SHADER_PARAM_CODE_LIGHT;
+			else if (param.strName == "cbWorldInfo")
+				param.unCode = SHADER_PARAM_CODE_WORLDINFO;
+			else if (param.strName == "cbAnimation")
+				param.unCode = SHADER_PARAM_CODE_ANIMATION;
+			else
+				param.unCode = SHADER_PARAM_CODE_DEFAULT;
+
 			(*ppShaderBuffer)->m_vShaderParamsTemplate.push_back(param);
 		}
 
@@ -701,24 +704,6 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 				{
 					if (param.strName == bindDesc.Name)
 					{
-						unsigned int unParamDataSize = param.var.GetSize();
-						ID3D11Buffer* pBuffer = nullptr;
-						D3D11_BUFFER_DESC bufferDesc;
-						bufferDesc.ByteWidth = unParamDataSize % 16 ? ((unParamDataSize / 16) + 1) * 16 : unParamDataSize;
-						bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-						bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-						bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_FLAG::D3D11_CPU_ACCESS_WRITE;
-						bufferDesc.MiscFlags = 0;
-						bufferDesc.StructureByteStride = 0;
-
-						D3D11_SUBRESOURCE_DATA sourceData;
-						sourceData.pSysMem = param.var.GetData();
-						sourceData.SysMemPitch = 0;
-						sourceData.SysMemSlicePitch = 0;
-
-						m_pD3dDevice->CreateBuffer(&bufferDesc, &sourceData, &pBuffer);
-
-						param.pBuffer = pBuffer;
 						param.unBindPoint = bindDesc.BindPoint;
 						param.unBindCount = bindDesc.BindCount;
 
@@ -786,12 +771,6 @@ void MDirectX11Device::CleanShader(MShaderBuffer** ppShaderBuffer)
 			pBuffer->m_pPixelShader->Release();
 			pBuffer->m_pPixelShader = nullptr;
 		}
-	}
-
-	for (MShaderParam& param : (*ppShaderBuffer)->m_vShaderParamsTemplate)
-	{
-		param.pBuffer->Release();
-		param.pBuffer = nullptr;
 	}
 
 	delete *ppShaderBuffer;
@@ -1003,6 +982,39 @@ void MDirectX11Device::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
 		pRenderTarget->m_pDepthStencilView = nullptr;
 	}
 
+}
+
+bool MDirectX11Device::GenerateShaderParamBuffer(MShaderParam* pParam)
+{
+	if (pParam->pBuffer)
+		DestroyShaderParamBuffer(pParam);
+	
+	unsigned int unParamDataSize = pParam->var.GetSize();
+	ID3D11Buffer* pBuffer = nullptr;
+	D3D11_BUFFER_DESC bufferDesc;
+	bufferDesc.ByteWidth = unParamDataSize % 16 ? ((unParamDataSize / 16) + 1) * 16 : unParamDataSize;
+	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_FLAG::D3D11_CPU_ACCESS_WRITE;
+	bufferDesc.MiscFlags = 0;
+	bufferDesc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA sourceData;
+	sourceData.pSysMem = pParam->var.GetData();
+	sourceData.SysMemPitch = 0;
+	sourceData.SysMemSlicePitch = 0;
+
+	m_pD3dDevice->CreateBuffer(&bufferDesc, &sourceData, &pBuffer);
+
+	pParam->pBuffer = pBuffer;
+
+	return true;
+}
+
+void MDirectX11Device::DestroyShaderParamBuffer(MShaderParam* pParam)
+{
+	pParam->pBuffer->Release();
+	pParam->pBuffer = nullptr;
 }
 
 MVariant MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType* pReflectionType)

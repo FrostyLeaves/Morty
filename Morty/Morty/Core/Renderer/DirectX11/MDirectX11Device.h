@@ -50,6 +50,9 @@ public:
 	virtual bool GenerateRenderTarget(MTextureRenderTarget* pRenderTarget, unsigned int nWidth, unsigned int nHeight) override;
 	virtual void DestroyRenderTarget(MTextureRenderTarget* pRenderTarget) override;
 
+	virtual bool GenerateShaderParamBuffer(MShaderParam* pParam) override;
+	virtual void DestroyShaderParamBuffer(MShaderParam* pParam) override;
+
 	MVariant GenerateVariableByBuffer(class ID3D11ShaderReflectionType* pReflectionType);
 
 	bool m_bEnable4xMsaa = true;

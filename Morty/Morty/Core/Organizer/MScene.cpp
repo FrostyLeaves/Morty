@@ -60,47 +60,123 @@ void MScene::InitShadowMapRenderTarget()
 		return;
 
 	MMaterialResource* pShadowMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW);
-	MMaterial* pMaterial = pShadowMaterialRes->GetMaterialTemplate();
+	MMaterial* pStaticMaterial = pShadowMaterialRes->GetMaterialTemplate();
+
+	MMaterialResource* pShadowWithAnimMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_ANIM);
+	MMaterial* pAnimMaterial = pShadowWithAnimMaterialRes->GetMaterialTemplate();
 
 	int nSize = 2048;
 	m_pShadowDepthMapRenderTarget = MTextureRenderTarget::CreateForTexture(m_pEngine->GetDevice(), MTextureRenderTarget::ERenderDepth, nSize, nSize);
 	m_pShadowDepthMapRenderTarget->m_funcRenderFunction = [=](MIRenderer* pRenderer)
 	{
 		pRenderer->SetViewport(0.0f, 0.0f, nSize, nSize, 0.0f, 1.0f);
-		pRenderer->SetUseMaterial(pMaterial);
-
-		MStruct* pSpaceStruct = nullptr;
-		std::vector<MShaderParam>& vVtxParams = pMaterial->GetVertexShaderParams();
-		for (MShaderParam& param : vVtxParams)
+		
 		{
-			if (param.strName == "cbSpace")
+			pRenderer->SetUseMaterial(pStaticMaterial);
+			MShaderParam* pSpaceParam = nullptr;
+			std::vector<MShaderParam>& vVtxParams = pStaticMaterial->GetVertexShaderParams();
+			for (MShaderParam& param : vVtxParams)
 			{
-				pSpaceStruct = param.var.GetByType<MStruct>();
-				break;
+				if (param.unCode == SHADER_PARAM_CODE_SPACE)
+				{
+					pSpaceParam = &param;
+					break;
+				}
+			}
+
+			if (nullptr == pSpaceParam)
+				return;
+
+			MDirectionalLight* pLight = FindActiveDirectionLight();
+			MViewport* pViewport = m_pShadowDepthMapRenderTarget->GetSourceViewport();
+			Matrix4 matLightInvProj = pViewport->GetLightInverseProjection(pLight);
+
+			MStruct* pSpaceStruct = pSpaceParam->var.GetByType<MStruct>();
+			pSpaceStruct->SetMember("U_matCamProj", matLightInvProj);
+
+			for (MModelInstance* pModelIns : m_vStaticModelInstances)
+			{
+				for (MNode* pChild : pModelIns->GetFixedChildren())
+				{
+					if (MIMeshInstance* pMeshIns = pChild->DynamicCast<MIMeshInstance>())
+					{
+						Matrix4 worldTrans = pMeshIns->GetWorldTransform();
+
+						pSpaceStruct->SetMember("U_matWorld", worldTrans);
+						pSpaceParam->SetDirty();
+
+						pRenderer->UpdateMaterialParam();
+						pRenderer->DrawMesh(pMeshIns->GetMesh());
+					}
+				}
 			}
 		}
 
-		if (nullptr == pSpaceStruct)
-			return;
 
-		MDirectionalLight* pLight = FindActiveDirectionLight();
-		MViewport* pViewport = m_pShadowDepthMapRenderTarget->GetSourceViewport();
-		Matrix4 matLightInvProj = pViewport->GetLightInverseProjection(pLight);
-
-		pSpaceStruct->SetMember("U_matCamProj", matLightInvProj);
-		for (MaterialMeshInsGroup* pGroup : m_vMatMeshInsGroup)
 		{
-			for (MIMeshInstance* pMeshIns : pGroup->vMeshIns)
+			pRenderer->SetUseMaterial(pAnimMaterial);
+
+
+			MShaderParam* pSpaceParam = nullptr;
+			MShaderParam* pAnimationParam = nullptr;
+			std::vector<MShaderParam>& vVtxParams = pAnimMaterial->GetVertexShaderParams();
+			for (MShaderParam& param : vVtxParams)
 			{
-				Matrix4 worldTrans = pMeshIns->GetWorldTransform();
+				if (param.unCode == SHADER_PARAM_CODE_SPACE)
+				{
+					pSpaceParam = &param;
+				}
+				else if (param.unCode == SHADER_PARAM_CODE_ANIMATION)
+				{
+					pAnimationParam = &param;
+				}
+			}
 
-				pSpaceStruct->SetMember("U_matWorld", worldTrans);
+			if (nullptr == pSpaceParam || nullptr == pAnimationParam)
+				return;
 
-				pRenderer->UpdateMaterialParam();
-				pRenderer->DrawMesh(pMeshIns->GetMesh());
+			MDirectionalLight* pLight = FindActiveDirectionLight();
+			MViewport* pViewport = m_pShadowDepthMapRenderTarget->GetSourceViewport();
+			Matrix4 matLightInvProj = pViewport->GetLightInverseProjection(pLight);
+
+			MStruct* pSpaceStruct = pSpaceParam->var.GetByType<MStruct>();
+			MStruct* pAnimationStruct = pAnimationParam->var.GetByType<MStruct>();
+			pSpaceStruct->SetMember("U_matCamProj", matLightInvProj);
+
+			for (MModelInstance* pModelIns : m_vAnimationModelInstances)
+			{
+				if (MSkeletonInstance* pSkeleton = pModelIns->GetSkeleton())
+				{
+					MVariant* pVariant = pAnimationStruct->FindMember("U_vBonesMatrix");
+					MVariantArray* pBonesArray = pVariant->GetByType<MVariantArray>();
+
+					const std::vector<MBone*>& bones = pSkeleton->GetAllBones();
+					unsigned int size = bones.size();
+					if (size > MBONES_MAX_NUMBER)
+						size = MBONES_MAX_NUMBER;
+					for (unsigned int i = 0; i < size; ++i)
+					{
+						(*pBonesArray)[i] = bones[i]->GetTransformInModelWorld();
+					}
+
+					pAnimationParam->SetDirty();
+ 				}
+
+				for (MNode* pChild : pModelIns->GetFixedChildren())
+				{
+					if (MIMeshInstance* pMeshIns = pChild->DynamicCast<MIMeshInstance>())
+					{
+						Matrix4 worldTrans = pMeshIns->GetWorldTransform();
+
+						pSpaceStruct->SetMember("U_matWorld", worldTrans);
+						pSpaceParam->SetDirty();
+
+						pRenderer->UpdateMaterialParam();
+						pRenderer->DrawMesh(pMeshIns->GetMesh());
+					}
+				}
 			}
 		}
-
 	};
 
 }
@@ -199,7 +275,13 @@ void MScene::FindActivePointLights(const Vector3& v3WorldPosition, std::vector<M
 void MScene::OnNodeEnter(MNode* pNode)
 {
 	if (MModelInstance* pModelIns = pNode->DynamicCast<MModelInstance>())
-		m_vModelInstances.push_back(pModelIns);
+	{
+		if (pModelIns->GetSkeleton())
+			m_vAnimationModelInstances.push_back(pModelIns);
+		else
+			m_vStaticModelInstances.push_back(pModelIns);
+
+	}
 
 	else if (MDirectionalLight* pDirLight = pNode->DynamicCast<MDirectionalLight>())
 	{
@@ -230,9 +312,18 @@ void MScene::OnNodeExit(MNode* pNode)
 {
 	if (MModelInstance* pModelIns = pNode->DynamicCast<MModelInstance>())
 	{
-		std::vector<MModelInstance*>::iterator iter = std::find(m_vModelInstances.begin(), m_vModelInstances.end(), pModelIns);
-		if (m_vModelInstances.end() != iter)
-			m_vModelInstances.erase(iter);
+		if (pModelIns->GetSkeleton())
+		{
+			std::vector<MModelInstance*>::iterator iter = std::find(m_vAnimationModelInstances.begin(), m_vAnimationModelInstances.end(), pModelIns);
+			if (m_vAnimationModelInstances.end() != iter)
+				m_vAnimationModelInstances.erase(iter);
+		}
+		else
+		{
+			std::vector<MModelInstance*>::iterator iter = std::find(m_vStaticModelInstances.begin(), m_vStaticModelInstances.end(), pModelIns);
+			if (m_vStaticModelInstances.end() != iter)
+				m_vStaticModelInstances.erase(iter);
+		}
 	}
 
 	else if (MDirectionalLight* pDirLight = pNode->DynamicCast<MDirectionalLight>())
@@ -377,7 +468,7 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 		std::vector<MShaderParam>& vPixParams = pMaterial->GetPixelShaderParams();
 		for (MShaderParam& param : vPixParams)
 		{
-			if (param.strName == "cbLights")
+			if (param.unCode == SHADER_PARAM_CODE_LIGHT)
 			{
 				if (pDirectionalLight)
 				{
@@ -392,13 +483,17 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 						}
 					}
 				}
+
+				param.SetDirty();
 			}
-			else if (param.strName == "cbWorldInfo")
+			else if (param.unCode == SHADER_PARAM_CODE_WORLDINFO)
 			{
 				if (MStruct* pStruct = param.var.GetByType<MStruct>())
 				{
 					pStruct->SetMember("U_f3CameraWorldPos", pViewport->GetCamera()->GetWorldPosition());
 				}
+
+				param.SetDirty();
 			}
 		}
 
@@ -412,7 +507,7 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 
 			for (MShaderParam& param : vVtxParams)
 			{
-				if (param.strName == "cbSpace")
+				if (param.unCode == SHADER_PARAM_CODE_SPACE)
 				{
 					Matrix4 worldTrans = pMeshIns->GetWorldTransform();
 
@@ -425,8 +520,10 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 					pSpaceStruct->SetMember("U_matLightProj", matLightInvProj);
 
 					pSpaceStruct->SetMember("U_matNormal", matNormal);
+
+					param.SetDirty();
 				}
-				else if (param.strName == "cbAnimation")
+				else if (param.unCode == SHADER_PARAM_CODE_ANIMATION)
 				{
 					if (MModelInstance* pModel = dynamic_cast<MModelInstance*>(pMeshIns->GetParent()))
 					{
@@ -438,20 +535,12 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 						unsigned int size = bones.size();
 						if (size > MBONES_MAX_NUMBER)
 							size = MBONES_MAX_NUMBER;
-						if (pModel->GetSkeletalAnimationController())
+						for (unsigned int i = 0; i < size; ++i)
 						{
-							for (unsigned int i = 0; i < size; ++i)
-							{
-								(*pBonesArray)[i] = bones[i]->GetTransformInModelWorld();
-							}
+							(*pBonesArray)[i] = bones[i]->GetTransformInModelWorld();
 						}
-						else
-						{
-							for (unsigned int i = 0; i < size; ++i)
-							{
-								(*pBonesArray)[i] = Matrix4::IdentityMatrix;
-							}
-						}
+
+						param.SetDirty();
 					}
 				}
 			}
@@ -459,7 +548,7 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 			
 			for (MShaderParam& param : vPixParams)
 			{
-				if (param.strName == "cbLights")
+				if (param.unCode == SHADER_PARAM_CODE_LIGHT)
 				{
 					MVariant* varPointLights = param.var.GetByType<MStruct>()->FindMember("U_pointLights");
 					if (varPointLights)
@@ -483,13 +572,17 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 							}
 						}
 					}
+
+					param.SetDirty();
 				}
-				else if (param.strName == "cbWorldInfo")
+				else if (param.unCode == SHADER_PARAM_CODE_WORLDINFO)
 				{
 					if (MStruct* pStruct = param.var.GetByType<MStruct>())
 					{
 						pStruct->SetMember("U_f3CameraWorldPos", pViewport->GetCamera()->GetWorldPosition());
 					}
+
+					param.SetDirty();
 				}
 			}
 
@@ -501,7 +594,15 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 
 void MScene::DrawModelInstance(MIRenderer* pRenderer, MViewport* pViewport)
 {
-	for (MModelInstance* pModelIns : m_vModelInstances)
+	for (MModelInstance* pModelIns : m_vStaticModelInstances)
+	{
+		if (pModelIns->GetDrawBoundingBox())
+		{
+			DrawBoundingBox(pRenderer, pViewport, pModelIns);
+		}
+	}
+
+	for (MModelInstance* pModelIns : m_vAnimationModelInstances)
 	{
 		if (pModelIns->GetDrawBoundingBox())
 		{
@@ -522,7 +623,7 @@ void MScene::DrawSkyBox(MIRenderer* pRenderer, MViewport* pViewport)
 			std::vector<MShaderParam>& vVtxParams = pMaterial->GetVertexShaderParams();
 			for (MShaderParam& param : vVtxParams)
 			{
-				if (param.strName == "cbSpace")
+				if (param.unCode == SHADER_PARAM_CODE_SPACE)
 				{
 					MStruct* pSpaceStruct = param.var.GetByType<MStruct>();
 					Matrix4 mat(Matrix4::IdentityMatrix);
@@ -561,7 +662,7 @@ void MScene::DrawBoundingBox(MIRenderer* pRenderer, MViewport* pViewport, MModel
 	std::vector<MShaderParam>& vVtxParams = pMaterial->GetVertexShaderParams();
 	for (MShaderParam& param : vVtxParams)
 	{
-		if (param.strName == "cbSpace")
+		if (param.unCode == SHADER_PARAM_CODE_SPACE)
 		{
 			MStruct* pSpaceStruct = param.var.GetByType<MStruct>();
 			pSpaceStruct->SetMember("MatCamProj", pViewport->GetCameraInverseProjection());
@@ -623,7 +724,7 @@ void MScene::DrawCameraFrustum(MIRenderer* pRenderer, MViewport* pViewport, MCam
 	std::vector<MShaderParam>& vVtxParams = pMaterial->GetVertexShaderParams();
 	for (MShaderParam& param : vVtxParams)
 	{
-		if (param.strName == "cbSpace")
+		if (param.unCode == SHADER_PARAM_CODE_SPACE)
 		{
 			MStruct* pSpaceStruct = param.var.GetByType<MStruct>();
 			pSpaceStruct->SetMember("MatCamProj", pViewport->GetCameraInverseProjection());

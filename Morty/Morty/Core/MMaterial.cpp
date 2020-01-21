@@ -5,6 +5,7 @@
 #include "MTextureResource.h"
 #include "MTextureCubeResource.h"
 #include "MEngine.h"
+#include "MIDevice.h"
 #include "MIRenderer.h"
 
 #include "MVariant.h"
@@ -70,8 +71,14 @@ void MMaterial::CompileVertexShaderParams()
 {
 	if (m_pVertexShader && m_pVertexShader->GetBuffer())
 	{
+		for (MShaderParam& param : m_vVertexShaderParams)
+			m_pEngine->GetDevice()->DestroyShaderParamBuffer(&param);
 		m_vVertexShaderParams.clear();
+
 		m_vVertexShaderParams = m_pVertexShader->GetBuffer()->m_vShaderParamsTemplate;
+
+		for (MShaderParam& param : m_vVertexShaderParams)
+			m_pEngine->GetDevice()->GenerateShaderParamBuffer(&param);
 	}
 }
 
@@ -81,10 +88,16 @@ void MMaterial::CompilePixelShaderParams()
 	{
 		CleanTextureParams();
 
+		for (MShaderParam& param : m_vPixelShaderParams)
+			m_pEngine->GetDevice()->DestroyShaderParamBuffer(&param);
 		m_vPixelShaderParams.clear();
+
 		m_vPixelShaderParams = m_pPxielShader->GetBuffer()->m_vShaderParamsTemplate;
 		m_vPixelTextureParams = m_pPxielShader->GetBuffer()->m_vTextureParamsTemplate;
 		m_vPixelTextureResHolder.resize(m_vPixelTextureParams.size(), nullptr);
+
+		for (MShaderParam& param : m_vPixelShaderParams)
+			m_pEngine->GetDevice()->GenerateShaderParamBuffer(&param);
 	}
 }
 
@@ -155,6 +168,16 @@ bool MMaterial::Load(MResource* pResource)
 void MMaterial::Unload()
 {
 	CleanTextureParams();
+
+	for (MShaderParam& param : m_vVertexShaderParams)
+	{
+		m_pEngine->GetDevice()->DestroyShaderParamBuffer(&param);
+	}
+
+	for (MShaderParam& param : m_vPixelShaderParams)
+	{
+		m_pEngine->GetDevice()->DestroyShaderParamBuffer(&param);
+	}
 
 	m_vVertexShaderParams.clear();
 	m_vPixelShaderParams.clear();

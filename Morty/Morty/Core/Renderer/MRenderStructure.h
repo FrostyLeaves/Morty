@@ -77,8 +77,14 @@ public:
 
 struct MShaderParam
 {
+	MShaderParam();
+
 	MString strName;
+	unsigned unCode;
 	MVariant var;
+	bool bDirty;
+
+	void SetDirty() { bDirty = true; }
 	
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	class ID3D11Buffer* pBuffer;

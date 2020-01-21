@@ -16,6 +16,7 @@
 #include "Matrix.h"
 #include <vector>
 #include <map>
+#include <unordered_map>  
 
 class MStruct;
 class MVariantArray;
@@ -93,7 +94,7 @@ public:
 
 protected:
 
-	void AppendStructMember(MStructMember& mem);
+	unsigned int AppendStructMember(MStructMember& mem);
 
 protected:
 
@@ -112,10 +113,12 @@ public:
 
 
 	void AppendMVariant(const MString& strName, const MVariant& var);
-//	void AppendMVariant(const MString& strName, const MString& type);
 
 	void SetMember(const MString& strName, const MVariant& var);
 	MVariant* FindMember(const MString& strName);
+
+protected:
+	std::unordered_map< MString, unsigned int> m_tVariantMap;
 };
 
 class MORTY_CLASS MVariantArray : public MContainer

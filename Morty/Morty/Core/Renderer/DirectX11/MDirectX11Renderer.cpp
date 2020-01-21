@@ -338,13 +338,15 @@ void MDirectX11Renderer::UpdateMaterialParam()
 
 	for (MShaderParam& param : m_pUsingMaterial->GetVertexShaderParams())
 	{
-		UpdateShaderParam(param);
+		if(param.bDirty)
+			UpdateShaderParam(param);
 		m_pDevice->m_pD3dContext->VSSetConstantBuffers(param.unBindPoint, param.unBindCount, &param.pBuffer);
 	}
 
 	for (MShaderParam& param : m_pUsingMaterial->GetPixelShaderParams())
 	{
-		UpdateShaderParam(param);
+		if(param.bDirty)
+			UpdateShaderParam(param);
 		m_pDevice->m_pD3dContext->PSSetConstantBuffers(param.unBindPoint, param.unBindCount, &param.pBuffer);
 	}
 
@@ -394,5 +396,7 @@ void MDirectX11Renderer::UpdateShaderParam(MShaderParam& param)
 	memcpy(mappedResource.pData, param.var.GetData(), param.var.GetSize());
 	//  Reenable GPU access to the vertex buffer data.
 	m_pDevice->m_pD3dContext->Unmap(param.pBuffer, 0);
+
+	param.bDirty = false;
 }
 

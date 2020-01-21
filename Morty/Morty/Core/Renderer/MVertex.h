@@ -21,6 +21,7 @@
 struct MVertex
 {
 	Vector3 position;
+
 	Vector3 normal;
 	Vector2 texCoords;
 	Vector3 tangent;
@@ -36,13 +37,15 @@ struct MVertexWithBones
 	{
 	}
 	Vector3 position;
+
+	int bonesID[MBONES_PER_VERTEX];
+	float bonesWeight[MBONES_PER_VERTEX];
+
 	Vector3 normal;
 	Vector2 texCoords;
 	Vector3 tangent;
 	Vector3 bitangent;
 
-	int bonesID[MBONES_PER_VERTEX];
-	float bonesWeight[MBONES_PER_VERTEX];
 };
 
 #endif

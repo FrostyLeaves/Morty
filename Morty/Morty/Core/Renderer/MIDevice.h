@@ -19,6 +19,7 @@ class MTexture;
 class MShaderBuffer;
 class MIRenderTarget;
 class MTextureRenderTarget;
+struct MShaderParam;
 class MORTY_CLASS MIDevice
 {
 public:
@@ -49,6 +50,9 @@ public:
 
 	virtual bool GenerateRenderTarget(MTextureRenderTarget* pRenderTarget, unsigned int nWidth, unsigned int nHeight) = 0;
 	virtual void DestroyRenderTarget(MTextureRenderTarget* pRenderTarget) = 0;
+
+	virtual bool GenerateShaderParamBuffer(MShaderParam* pParam) = 0;
+	virtual void DestroyShaderParamBuffer(MShaderParam* pParam) = 0;
 };
 
 #endif

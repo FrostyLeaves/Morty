@@ -63,8 +63,11 @@ bool MModelInstance::Load(MResource* pResource)
 				}
 				RemoveAllNodeImpl(MENodeChildType::EFixed);
 
-				//Create SkeletonInstance
-				m_pSkeleton = new MSkeletonInstance(pModelResource->GetSkeleton());
+				if (!pModelResource->GetSkeleton()->GetAllBones().empty())
+				{
+					//Create SkeletonInstance
+					m_pSkeleton = new MSkeletonInstance(pModelResource->GetSkeleton());
+				}
 
 				int index = 0;
 

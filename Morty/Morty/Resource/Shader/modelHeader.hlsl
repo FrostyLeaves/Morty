@@ -14,6 +14,14 @@ struct VS_IN_EMPTY
     float3 pos : POSITION;
 };
 
+struct VS_IN_ANIM
+{
+    float3 pos : POSITION;
+
+    int bonesID[MBONES_PER_VERTEX] : BONES_ID;
+    float bonesWeight[MBONES_PER_VERTEX] : BONES_WEIGHT;
+};
+
 struct VS_OUT_EMPTY
 {
     float4 pos : SV_POSITION;

@@ -73,3 +73,19 @@ MTextureBuffer::~MTextureBuffer()
 {
 
 }
+
+MShaderParam::MShaderParam()
+	: strName()
+	, unCode(SHADER_PARAM_CODE_DEFAULT)
+	, var()
+	, bDirty(true)
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	, pBuffer(nullptr)
+	, unBindPoint(0)
+	, unBindCount(0)
+#elif RENDER_GRAPHICS == MORTY_OPENGLES
+
+#endif
+{
+
+}

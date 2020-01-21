@@ -475,7 +475,7 @@ void MModelResource::ProcessMaterial(const aiScene* pScene, std::vector<unsigned
 		//Test Data, need read from file.
 		for (MShaderParam& param : m_vDefaultMaterial[i]->GetPixelShaderParams())
 		{
-			if (param.strName == "cbMaterial")
+			if (param.unCode == SHADER_PARAM_CODE_MATERIAL)
 			{
 				if (MStruct* pStruct = param.var.GetByType<MStruct>())
 				{

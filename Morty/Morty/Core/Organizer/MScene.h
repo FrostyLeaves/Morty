@@ -104,7 +104,9 @@ private:
 	};
 	std::vector<MaterialMeshInsGroup*> m_vMatMeshInsGroup;
 
-	std::vector<MModelInstance*> m_vModelInstances;
+	std::vector<MModelInstance*> m_vStaticModelInstances;
+	std::vector<MModelInstance*> m_vAnimationModelInstances;
+
 	std::vector<MViewport*> m_vViewports;
 
 	std::vector<MInputNode*> m_vInputNodes;

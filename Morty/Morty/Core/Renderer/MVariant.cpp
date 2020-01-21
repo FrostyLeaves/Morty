@@ -241,13 +241,15 @@ void MVariant::Clean()
 	}
 }
 
-void MContainer::AppendStructMember(MStructMember& mem)
+unsigned int MContainer::AppendStructMember(MStructMember& mem)
 {
+	unsigned int unIndex = 0;
 	unsigned int unRemainder = m_unByteSize % s_unPackSize;
 	if (unRemainder != 0 && (s_unPackSize - unRemainder) >= mem.var.GetSize())
 	{
 		mem.unBeginOffset = m_unByteSize;
 		m_vMember.push_back(mem);
+		unIndex = m_vMember.size() - 1;
 		m_unByteSize += mem.var.GetSize();
 	}
 	else
@@ -257,6 +259,7 @@ void MContainer::AppendStructMember(MStructMember& mem)
 
 		mem.unBeginOffset = m_unByteSize;
 		m_vMember.push_back(mem);
+		unIndex = m_vMember.size() - 1;
 		m_unByteSize += mem.var.GetSize();
 	}
 
@@ -264,6 +267,8 @@ void MContainer::AppendStructMember(MStructMember& mem)
 		delete[] m_pData;
 
 	m_pData = new unsigned char[m_unByteSize];
+
+	return unIndex;
 }
 
 void MStruct::AppendMVariant(const MString& strName, const MVariant& var)
@@ -272,55 +277,26 @@ void MStruct::AppendMVariant(const MString& strName, const MVariant& var)
 	sm.strName = strName;
 	sm.var = var;
 
-	AppendStructMember(sm);
+	m_tVariantMap[strName] = AppendStructMember(sm);
 }
-// 
-// void MStruct::AppendMVariant(const MString& strName, const MString& type)
-// {
-// 	MStructMember sm;
-// 	sm.strName = strName;
-// 
-// 	if (type == "float4")
-// 	{
-// 		sm.var = MVariant(Vector4());
-// 	}
-// 	else if (type == "float3")
-// 	{
-// 		sm.var = MVariant(Vector3());
-// 	}
-// 	else if (type == "float3x3")
-// 	{
-// 		sm.var = MVariant(Matrix3());
-// 	}
-// 	else if (type == "float4x4")
-// 	{
-// 		sm.var = MVariant(Matrix4());
-// 	}
-// 
-// 	AppendStructMember(sm);
-// }
 
 void MStruct::SetMember(const MString& strName, const MVariant& var)
 {
-	for (MStructMember& mem : m_vMember)
+	std::unordered_map<MString, unsigned int>::iterator iter = m_tVariantMap.find(strName);
+	if (iter != m_tVariantMap.end())
 	{
-		if (mem.strName == strName)
-		{
-			mem.var = var;
-			break;
-		}
+		MStructMember& mem = m_vMember[iter->second];
+		mem.var = var;
 	}
 }
 
 MVariant* MStruct::FindMember(const MString& strName)
 {
-	for (MStructMember& mem : m_vMember)
+	std::unordered_map<MString, unsigned int>::iterator iter = m_tVariantMap.find(strName);
+	if (iter != m_tVariantMap.end())
 	{
-		if (mem.strName == strName)
-		{
-			return &mem.var;
-			break;
-		}
+		MStructMember& mem = m_vMember[iter->second];
+		return &mem.var;
 	}
 
 	return nullptr;

@@ -26,6 +26,7 @@
 
 typedef unsigned long MObjectID;
 typedef unsigned long MResourceID;
+typedef unsigned char MByte;
 
 
 //Asset
@@ -38,9 +39,17 @@ extern const char* DEFAULT_MATERIAL_DRAW2D;
 extern const char* DEFAULT_MATERIAL_DRAW3D;
 extern const char* DEFAULT_MATERIAL_SKYBOX;
 extern const char* DEFAULT_MATERIAL_SHADOW;
+extern const char* DEFAULT_MATERIAL_SHADOW_ANIM;
+
+
+const unsigned int SHADER_PARAM_CODE_DEFAULT = 0;
+const unsigned int SHADER_PARAM_CODE_SPACE = 1;
+const unsigned int SHADER_PARAM_CODE_MATERIAL = 2;
+const unsigned int SHADER_PARAM_CODE_LIGHT = 3;
+const unsigned int SHADER_PARAM_CODE_WORLDINFO = 4;
+const unsigned int SHADER_PARAM_CODE_ANIMATION = 5;
 //
 
-typedef unsigned char MByte;
 
 //gles
 #define MORTY_OPENGLES 1
