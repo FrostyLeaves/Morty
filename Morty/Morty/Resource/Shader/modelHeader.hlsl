@@ -63,7 +63,7 @@ struct PointLight
 sampler U_defaultSampler;
 SamplerComparisonState U_shadowMapSampler;
 
-cbuffer cbSpace
+cbuffer MORTY_ENGINE_cbSpace
 {
     float4x4 U_matWorld;
     float4x4 U_matCamProj;
@@ -76,18 +76,18 @@ cbuffer cbMaterial
     Material U_mat;
 };
 
-cbuffer cbLights
+cbuffer MORTY_ENGINE_cbLights
 {
     DirectionLight U_dirLight;
     PointLight U_pointLights[4];
 };
 
-cbuffer cbWorldInfo
+cbuffer MORTY_ENGINE_cbWorldInfo
 {
     float3 U_f3CameraWorldPos;
 };
 
-cbuffer cbAnimation
+cbuffer MORTY_ENGINE_cbAnimation
 {
     float4x4 U_vBonesMatrix[MBONES_MAX_NUMBER];
 };

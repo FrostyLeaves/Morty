@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -175,6 +175,9 @@
     <ClInclude Include="..\..\..\Editor\Property\PropertyBase.h" />
     <ClInclude Include="..\..\..\Editor\Property\PropertyM3DNode.h" />
     <ClInclude Include="..\..\..\Editor\Property\PropertyMCamera.h" />
+    <ClInclude Include="..\..\..\Editor\Property\PropertyMDirectionalLight.h" />
+    <ClInclude Include="..\..\..\Editor\Property\PropertyMIMeshInstance.h" />
+    <ClInclude Include="..\..\..\Editor\Property\PropertyModelInstance.h" />
     <ClInclude Include="..\..\..\Editor\Property\PropertyMPointLight.h" />
     <ClInclude Include="..\..\..\ImGUI\imconfig.h" />
     <ClInclude Include="..\..\..\ImGUI\imgui.h" />

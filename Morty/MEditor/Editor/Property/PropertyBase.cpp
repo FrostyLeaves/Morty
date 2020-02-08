@@ -1,5 +1,7 @@
 #include "PropertyBase.h"
 
+#include "MMaterial.h"
+
 #include "imgui.h"
 
 unsigned int PropertyBase::m_unItemIDPool = 0;
@@ -64,10 +66,15 @@ bool PropertyBase::EditVector2(Vector2& value, const float& fSpeed /*= 1.0f*/, c
 
 bool PropertyBase::EditVector3(Vector3& value, const float& fSpeed, const float& fMin, const float& fMax)
 {
-	if (value.x == -0.0f) value.x = 0.0f;
-	if (value.y == -0.0f) value.y = 0.0f;
-	if (value.z == -0.0f) value.z = 0.0f;
-	return ImGui::DragFloat3("", value.m, fSpeed, fMin, fMax);
+	return EditVector3(value.m, fSpeed, fMin, fMax);
+}
+
+bool PropertyBase::EditVector3(float* pValue, const float& fSpeed /*= 1.0f*/, const float& fMin /*= 0.0f*/, const float& fMax /*= 0.0f*/)
+{
+	if (pValue[0] == -0.0f) pValue[0] = 0.0f;
+	if (pValue[1] == -0.0f) pValue[1] = 0.0f;
+	if (pValue[2] == -0.0f) pValue[2] = 0.0f;
+	return ImGui::DragFloat3("", pValue, fSpeed, fMin, fMax);
 }
 
 bool PropertyBase::EditMTransform(MTransform& trans)
@@ -131,6 +138,80 @@ bool PropertyBase::EditEnum(const std::vector<MString>& select, unsigned int& in
 	}
 
 	return false;
+}
+
+bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
+{
+	bool bModified = false;
+
+	switch (value.GetType())
+	{
+	case MVariant::EBool:
+		ShowValueBegin(strVariantName);
+		bModified |= Editbool(*value.GetByType<bool>());
+		ShowValueEnd();
+		break;
+
+	case MVariant::EFloat:
+	case MVariant::EInt:
+		ShowValueBegin(strVariantName);
+		bModified |= Editfloat(*value.GetByType<float>());
+		ShowValueEnd();
+		break;
+
+	case MVariant::EVector3:
+		ShowValueBegin(strVariantName);
+		bModified |= EditVector3(value.GetByType<float>());
+		ShowValueEnd();
+		break;
+
+	case MVariant::EArray:
+	case MVariant::EStruct:
+	if(ShowNodeBegin(strVariantName))
+	{
+		MContainer* pStruct = value.GetByType<MContainer>();
+		unsigned int unCount = pStruct->GetMemberCount();
+		for (unsigned int i = 0; i < unCount; ++i)
+		{
+			if (MContainer::MStructMember* pMember = pStruct->GetMember(i))
+			{
+				bModified |= EditMVariant(pMember->strName.empty() ? MStringHelper::ToString(i) : pMember->strName, pMember->var);
+			}
+		}
+
+		ShowNodeEnd();
+		break;
+	}
+
+	case MVariant::ENone:
+	default:
+		break;
+	}
+
+	return bModified;
+}
+
+bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
+{
+	bool bModified = false;
+
+	{
+		std::vector<MShaderParam>& vParams = pMaterial->GetPixelShaderParams();
+		for (MShaderParam& param : vParams)
+		{
+			if (param.strName.compare(0, 13, "MORTY_ENGINE_"))
+			{
+				if (EditMVariant(param.strName, param.var))
+				{
+					param.SetDirty();
+					bModified = true;
+				}
+			}
+		}
+	}
+
+
+	return bModified;
 }
 
 bool PropertyBase::EditMColor(MColor& value)

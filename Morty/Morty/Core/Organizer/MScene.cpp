@@ -65,11 +65,10 @@ void MScene::InitShadowMapRenderTarget()
 	MMaterialResource* pShadowWithAnimMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_ANIM);
 	MMaterial* pAnimMaterial = pShadowWithAnimMaterialRes->GetMaterialTemplate();
 
-	int nSize = 2048;
-	m_pShadowDepthMapRenderTarget = MTextureRenderTarget::CreateForTexture(m_pEngine->GetDevice(), MTextureRenderTarget::ERenderDepth, nSize, nSize);
+	m_pShadowDepthMapRenderTarget = MTextureRenderTarget::CreateForTexture(m_pEngine->GetDevice(), MTextureRenderTarget::ERenderDepth, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE);
 	m_pShadowDepthMapRenderTarget->m_funcRenderFunction = [=](MIRenderer* pRenderer)
 	{
-		pRenderer->SetViewport(0.0f, 0.0f, nSize, nSize, 0.0f, 1.0f);
+		pRenderer->SetViewport(0.0f, 0.0f, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE, 0.0f, 1.0f);
 		
 		{
 			pRenderer->SetUseMaterial(pStaticMaterial);
@@ -439,8 +438,8 @@ void MScene::GenerateShadowMap(MIRenderer* pRenderer, MViewport* pViewport)
 
 void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 {
-	MDirectionalLight* pLight = FindActiveDirectionLight();
-	Matrix4 matLightInvProj = pViewport->GetLightInverseProjection(pLight);
+	MDirectionalLight* pDirectionalLight = FindActiveDirectionLight();
+	Matrix4 matLightInvProj = pViewport->GetLightInverseProjection(pDirectionalLight);
 
 	for (MaterialMeshInsGroup* pGroup : m_vMatMeshInsGroup)
 	{
@@ -462,7 +461,6 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 		pRenderer->UpdateMaterialResource();
 
 
-		MDirectionalLight* pDirectionalLight = FindActiveDirectionLight();
 
 		std::vector<MShaderParam>& vVtxParams = pMaterial->GetVertexShaderParams();
 		std::vector<MShaderParam>& vPixParams = pMaterial->GetPixelShaderParams();
@@ -476,7 +474,7 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 					{
 						if (MStruct* pLightStruct = pDirectionLight->GetByType<MStruct>())
 						{
-							pLightStruct->SetMember("f3Direction", pDirectionalLight->GetDirection());
+							pLightStruct->SetMember("f3Direction", pDirectionalLight->GetWorldDirection());
 							pLightStruct->SetMember("f3Ambient", pDirectionalLight->GetAmbientColor().ToVector3());
 							pLightStruct->SetMember("f3Diffuse", pDirectionalLight->GetDiffuseColor().ToVector3());
 							pLightStruct->SetMember("f3Specular", pDirectionalLight->GetSpecularColor().ToVector3());

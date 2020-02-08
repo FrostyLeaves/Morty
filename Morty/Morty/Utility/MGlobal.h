@@ -50,6 +50,8 @@ const unsigned int SHADER_PARAM_CODE_WORLDINFO = 4;
 const unsigned int SHADER_PARAM_CODE_ANIMATION = 5;
 //
 
+extern const unsigned int MSHADOW_TEXTURE_SIZE;
+
 
 //gles
 #define MORTY_OPENGLES 1

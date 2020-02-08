@@ -10,6 +10,7 @@
 #include <map>
 
 class MObject;
+class MMaterial;
 class PropertyBase
 {
 public:
@@ -29,8 +30,12 @@ public:
 	bool Editfloat(float& value, const float& fSpeed = 1.0f, const float& fMin = 0.0f, const float& fMax = 0.0f);
 	bool EditVector2(Vector2& value, const float& fSpeed = 1.0f, const float& fMin = 0.0f, const float& fMax = 0.0f);
 	bool EditVector3(Vector3& value, const float& fSpeed = 1.0f, const float& fMin = 0.0f, const float& fMax = 0.0f);
+	bool EditVector3(float* pValue, const float& fSpeed = 1.0f, const float& fMin = 0.0f, const float& fMax = 0.0f);
 	bool EditMTransform(MTransform& trans);
 	bool EditEnum(const std::vector<MString>& select, unsigned int& index);
+
+	bool EditMVariant(const MString& strVariantName, MVariant& value);
+	bool EditMMaterial(MMaterial* pMaterial);
 
 	bool EditMColor(MColor& value);
 

@@ -169,7 +169,7 @@ int main(int argc, char* argv[])
 	pRootNode->AddNode(pDirLight);
 
 	MyCamera* pCamera = engine.GetObjectManager()->CreateObject<MyCamera>();
-	pCamera->SetPosition(Vector3(0, 1000, 0));
+	pCamera->SetPosition(Vector3(0, 10, 0));
 	pCamera->SetName("Camera");
 	pRootNode->AddNode(pCamera);
 

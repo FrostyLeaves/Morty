@@ -1,4 +1,4 @@
-cbuffer cbSpace
+cbuffer MORTY_ENGINE_cbSpace
 {
     float4x4 MatWorld;
     float4x4 MatCamProj;

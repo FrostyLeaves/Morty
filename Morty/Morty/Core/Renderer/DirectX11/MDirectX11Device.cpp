@@ -523,11 +523,15 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 
 	const MString strBonesPerVertex = MStringHelper::ToString(MBONES_PER_VERTEX);
 	const MString strBonesMaxNumber = MStringHelper::ToString(MBONES_MAX_NUMBER);
+	const MString strShadowTextureSize = MStringHelper::ToString(MSHADOW_TEXTURE_SIZE);
+
 	D3D_SHADER_MACRO macro[] = {
 		"MBONES_PER_VERTEX", strBonesPerVertex.c_str(),
 		"MBONES_MAX_NUMBER", strBonesMaxNumber.c_str(),
+		"MSHADOW_TEXTURE_SIZE", strShadowTextureSize.c_str(),
 		nullptr, nullptr
 		};
+
 	HRESULT hr = D3DX11CompileFromFile(strShaderPath.c_str(), macro, nullptr, svFuncName, svProFile, shaderFlags, 0, nullptr, &pShaderBuffer, &pErrorMessage, nullptr);
 	if (FAILED(hr))
 	{
@@ -677,15 +681,15 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 			param.strName = bufferDesc.Name;
 			param.var = MVariant(cbufferStruct);
 
-			if (param.strName == "cbSpace")
+			if (param.strName == "MORTY_ENGINE_cbSpace")
 				param.unCode = SHADER_PARAM_CODE_SPACE;
 			else if (param.strName == "cbMaterial")
 				param.unCode = SHADER_PARAM_CODE_MATERIAL;
-			else if (param.strName == "cbLights")
+			else if (param.strName == "MORTY_ENGINE_cbLights")
 				param.unCode = SHADER_PARAM_CODE_LIGHT;
-			else if (param.strName == "cbWorldInfo")
+			else if (param.strName == "MORTY_ENGINE_cbWorldInfo")
 				param.unCode = SHADER_PARAM_CODE_WORLDINFO;
-			else if (param.strName == "cbAnimation")
+			else if (param.strName == "MORTY_ENGINE_cbAnimation")
 				param.unCode = SHADER_PARAM_CODE_ANIMATION;
 			else
 				param.unCode = SHADER_PARAM_CODE_DEFAULT;

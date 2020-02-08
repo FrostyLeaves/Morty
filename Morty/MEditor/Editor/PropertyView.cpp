@@ -8,6 +8,8 @@
 #include "PropertyM3DNode.h"
 #include "PropertyMCamera.h"
 #include "PropertyMPointLight.h"
+#include "PropertyMDirectionalLight.h"
+#include "PropertyMIMeshInstance.h"
 
 #define REGISTER_PROPERTY( CLASS_NAME ) \
 	m_tCreatePropertyFactory[#CLASS_NAME] = []() {return new Property##CLASS_NAME(); };
@@ -19,6 +21,8 @@ PropertyView::PropertyView()
 	REGISTER_PROPERTY(M3DNode);
 	REGISTER_PROPERTY(MCamera);
 	REGISTER_PROPERTY(MPointLight);
+	REGISTER_PROPERTY(MDirectionalLight);
+	REGISTER_PROPERTY(MIMeshInstance);
 }
 
 PropertyView::~PropertyView()

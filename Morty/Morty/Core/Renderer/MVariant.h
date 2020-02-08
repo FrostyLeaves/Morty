@@ -88,6 +88,8 @@ public:
 
 	unsigned int GetSize() const { return m_unByteSize; }
 	void* GetData();
+
+	MStructMember* GetMember(const unsigned int& unIndex) { return unIndex < m_vMember.size() ? &m_vMember[unIndex] : nullptr; }
 	unsigned int GetMemberCount() { return m_vMember.size(); }
 
 	const MContainer& operator = (const MContainer& var);

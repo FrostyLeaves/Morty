@@ -75,6 +75,15 @@
     <ClInclude Include="..\..\..\Editor\Property\PropertyMCamera.h">
       <Filter>Editor\Property</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Editor\Property\PropertyModelInstance.h">
+      <Filter>Editor\Property</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Editor\Property\PropertyMIMeshInstance.h">
+      <Filter>Editor\Property</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Editor\Property\PropertyMDirectionalLight.h">
+      <Filter>Editor\Property</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MEditor.cpp">
