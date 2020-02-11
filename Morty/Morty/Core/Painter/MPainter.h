@@ -65,8 +65,7 @@ class MORTY_CLASS MPainter2DRect : public MIPainterShape
 {
 public:
 	MPainter2DRect() : m_vPoint(), m_rectColor() {}
-	MPainter2DRect(const Vector2& point0, const Vector2& point1, const Vector2& point2, const Vector2& point3, const MColor& color) : MIPainterShape()
-		, m_vPoint{ point0, point1, point2, point3 }, m_rectColor(color) {}
+	MPainter2DRect(const Vector2& point0, const Vector2& point1, const Vector2& point2, const Vector2& point3, const MColor& color);
 
 	virtual ~MPainter2DRect() {}
 

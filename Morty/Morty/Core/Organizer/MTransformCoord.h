@@ -59,8 +59,8 @@ protected:
 
 private:
 
-	const Vector3 m_vDirection[3];
-	const MColor m_vColor[3];
+	static const Vector3 m_vDirection[3];
+	static const MColor m_vColor[3];
 	Vector3 m_vMouseDownDirLength2D[3];
 
 	M3DNode* m_pTargetNode;

@@ -37,6 +37,8 @@ public:
 	virtual void Pause() = 0;
 	virtual void Stop() = 0;
 	virtual void SetLoop(const bool& bLoop) = 0;
+	virtual bool GetLoop() = 0;
+	virtual MEAnimControllerState GetState() = 0;
 
 	virtual void Update(const float& fDelta, const bool& bAnimStep) = 0;
 

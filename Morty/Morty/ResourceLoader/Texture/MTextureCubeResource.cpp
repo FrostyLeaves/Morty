@@ -46,6 +46,7 @@ void MTextureCubeResource::SetTextures(MTextureResource* vTexs[6])
 			m_vTextures[i] = new MResourceHolder(vTexs[i]);
 			m_vTextures[i]->SetResChangedCallback([this](){
 				//TODO update TexturesCube.
+				return true;
 			});
 
 			m_pTextureCube->SetTexture(vTexs[i]->GetTextureTemplate(), MTextureCube::MECubeFace(i));

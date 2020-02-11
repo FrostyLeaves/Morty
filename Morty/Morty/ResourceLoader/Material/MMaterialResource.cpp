@@ -60,6 +60,7 @@ bool MMaterialResource::LoadVertexShader(MResource* pResource)
 			m_pVertexResource = new MResourceHolder(pResource);
 			m_pVertexResource->SetResChangedCallback([this](){
 				OnReload();
+				return true;
 			});
 
 			OnReload();
@@ -82,6 +83,7 @@ bool MMaterialResource::LoadPixelShader(MResource* pResource)
 			m_pPixelResource = new MResourceHolder(pResource);
 			m_pPixelResource->SetResChangedCallback([this](){
 				OnReload();
+				return true;
 			});
 
 			OnReload();

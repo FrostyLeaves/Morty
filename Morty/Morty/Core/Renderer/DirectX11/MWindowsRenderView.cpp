@@ -96,11 +96,6 @@ void MWindowsRenderView::OnResize(const int& nWidth, const int& nHeight)
 {
 	if(m_pRenderTarget)
 		m_pRenderTarget->OnResize(nWidth, nHeight);
-
-	for (MViewport* pViewport : m_vViewport)
-	{
-		pViewport->SetSize(Vector2(nWidth, nHeight));
-	}
 }
 
 void MWindowsRenderView::SetRenderTarget(MIRenderTarget* pRenderTarget)

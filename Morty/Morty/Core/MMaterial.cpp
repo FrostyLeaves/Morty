@@ -38,11 +38,15 @@ void MMaterial::SetPixelTexutreParam(const MString& strName, MResource* pResourc
 			{
 				if (MTextureResource* pTexResource = dynamic_cast<MTextureResource*>(pResource))
 				{
+					MResourceHolder* pNewHolder = new MResourceHolder(pResource);
+
 					if (m_vPixelTextureResHolder[i])
 						delete m_vPixelTextureResHolder[i];
-					m_vPixelTextureResHolder[i] = new MResourceHolder(pResource);
+
+					m_vPixelTextureResHolder[i] = pNewHolder;
 					m_vPixelTextureResHolder[i]->SetResChangedCallback([&param, &pTexResource](){
 						param.pTexture = pTexResource->GetTextureTemplate();
+						return true;
 					});
 
 					param.pTexture = pTexResource->GetTextureTemplate();
@@ -57,11 +61,14 @@ void MMaterial::SetPixelTexutreParam(const MString& strName, MResource* pResourc
 					m_vPixelTextureResHolder[i] = new MResourceHolder(pResource);
 					m_vPixelTextureResHolder[i]->SetResChangedCallback([&param, &pTexResource](){
 						param.pTexture = pTexResource->GetTextureCubeTemplate();
+						return true;
 					});
 
 					param.pTexture = pTexResource->GetTextureCubeTemplate();
 				}
 			}
+
+			break;
 		}
 	}
 	
@@ -124,7 +131,7 @@ void MMaterial::SetPixelParam(const MString& strName, const MVariant& variable)
 	}
 }
 
-bool MMaterial::Load(MResource* pResource)
+bool MMaterial::Load(MMaterialResource* pResource)
 {
 	Unload();
 
@@ -163,6 +170,11 @@ bool MMaterial::Load(MResource* pResource)
 	}
 
 	return false;
+}
+
+MResource* MMaterial::GetResource()
+{
+	return m_pMaterialResource->GetResource();
 }
 
 void MMaterial::Unload()

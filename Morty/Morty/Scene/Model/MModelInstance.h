@@ -21,6 +21,8 @@ class MSkeletalAnimController;
 class MORTY_CLASS MModelInstance : public M3DNode
 {
 public:
+
+public:
 	M_OBJECT(MModelInstance);
     MModelInstance();
     virtual ~MModelInstance();
@@ -38,6 +40,8 @@ public:
 
 	void SetDrawBoundingBox(const bool& bDrawable) { m_bDrawBoundingBox = bDrawable; }
 	bool GetDrawBoundingBox() { return m_bDrawBoundingBox; }
+
+
 
 public:
 	bool SetPlayAnimation(const MString& strAnimationName);

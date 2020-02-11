@@ -97,7 +97,7 @@ void MainEditor::OnResize(const int& nWidth, const int& nHeight)
 
 }
 
-void MainEditor::OnRenderBegin()
+void MainEditor::OnRenderEnd()
 {
 	// Start the Dear ImGui frame
 	ImGui_ImplDX11_NewFrame();
@@ -111,32 +111,31 @@ void MainEditor::OnRenderBegin()
 
 
 	ImGuiStyle& style = ImGui::GetStyle();
-//	ImGui::StyleColorsLight(&style);
+	//ImGui::StyleColorsLight(&style);
 	style.WindowRounding = 0.0f;
+	style.WindowPadding = ImVec2(2.0f, 2.0f);
+	style.ItemSpacing.x = 2.0f;
 
-	// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+	ImVec4 bgColor = style.Colors[ImGuiCol_WindowBg];
+	style.Colors[ImGuiCol_ChildWindowBg] = bgColor;
+	
 	{
-		ImGuiWindowFlags unWindowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
+		ImGuiWindowFlags unWindowFlags = 0;
 		ImGui::SetNextWindowPos(ImVec2(0, 0));
 		bool bMortyOpened = true;
 		ImGui::SetNextItemOpen(bMortyOpened);
 		ImGui::SetNextWindowSize(ImVec2(GetViewWidth(), GetViewHeight()));
-		if (ImGui::Begin("Morty", &bMortyOpened, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
+		if (ImGui::Begin("Morty", &bMortyOpened, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize))
 		{
 			// 主窗口可用大小
 			ImVec2 v2RegionAvail = ImGui::GetContentRegionAvail();
-			v2RegionAvail.x -= style.ItemSpacing.x * 2;
 			
 			//子窗口可用大小
-			float fNodeTreeWidth = v2RegionAvail.x * 0.25f;
-			float fPropertyWidth = v2RegionAvail.x * 0.35f;
-			if (fNodeTreeWidth > 200.0f)
-				fNodeTreeWidth = 200.0f;
-			if (fPropertyWidth > 400.0f)
-				fPropertyWidth = 400.0f;
+			static float fNodeTreeWidth = v2RegionAvail.x * 0.25f;
+			static float fPropertyWidth = v2RegionAvail.x * 0.4f;
 
-			if (ImGui::BeginChild("NodeTree", ImVec2(fNodeTreeWidth, v2RegionAvail.y), false, unWindowFlags))
-			{		
+			if (ImGui::BeginChild("NodeTree", ImVec2(fNodeTreeWidth, v2RegionAvail.y), true, unWindowFlags))
+			{	
 				m_pNodeTreeView->Render();
 			}
 			ImGui::EndChild();
@@ -144,7 +143,7 @@ void MainEditor::OnRenderBegin()
 			ImGui::SameLine();
 
 
-			if (ImGui::BeginChild("Render", ImVec2(v2RegionAvail.x - fNodeTreeWidth - fPropertyWidth, v2RegionAvail.y), false, unWindowFlags))
+			if (ImGui::BeginChild("Render", ImVec2(v2RegionAvail.x - fNodeTreeWidth - fPropertyWidth, v2RegionAvail.y), false, unWindowFlags | ImGuiWindowFlags_NoBackground))
 			{
 				ImVec2 v2RenderViewPos = ImGui::GetWindowPos();
 				ImVec2 v2RenderViewSize = ImGui::GetWindowSize();
@@ -157,14 +156,13 @@ void MainEditor::OnRenderBegin()
 
 			ImGui::SameLine();
 
-			if (ImGui::BeginChild("Property", ImVec2(fPropertyWidth, v2RegionAvail.y), false, unWindowFlags))
+			if (ImGui::BeginChild("Property", ImVec2(fPropertyWidth, v2RegionAvail.y), true, unWindowFlags))
 			{
 				if (MNode * pNode = dynamic_cast<MNode*>(m_pNodeTreeView->GetSelectionNode()))
 				{
 					ImGui::Text(pNode->GetName().c_str());
 				}
 				m_pPropertyView->SetEditorObject(m_pNodeTreeView->GetSelectionNode());
-				//MNode* pNode = m_pScene->GetRootNode()->FindFirstChildByName("Teaport");
 				MNode* pNode = dynamic_cast<MNode*>(m_pNodeTreeView->GetSelectionNode());
 				m_pScene->GetTransformCoord()->SetTarget3DNode(pNode);
 				m_pPropertyView->Render();
@@ -172,10 +170,10 @@ void MainEditor::OnRenderBegin()
 			ImGui::EndChild();
 		}
 
+
 		ImGui::End();
 
 	}
-
 
 	// Rendering
 	ImGui::Render();
@@ -183,7 +181,7 @@ void MainEditor::OnRenderBegin()
 
 }
 
-void MainEditor::OnRenderEnd()
+void MainEditor::OnRenderBegin()
 {	
 
 }

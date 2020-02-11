@@ -32,6 +32,7 @@ public:
 public:
 
 	MObjectID GetObjectID(){ return m_unObjectID; }
+	MEngine* GetEngine() { return m_pEngine; }
 	class MObjectManager* GetObjectManager();
 
 public:

@@ -95,19 +95,25 @@ bool MModelInstance::Load(MResource* pResource)
 					pMeshIns->SetRotation(vMeshesRotationMatrix[index].GetRotation());
 
 					pMeshIns->SetName(MString("Mesh_") + MStringHelper::ToString(index));
-					AddNodeImpl(pMeshIns, MENodeChildType::EFixed);
+					pMeshIns->SetMaterial(pModelResource->GetMeshDefaultMaterial(index));
 					pMeshIns->SetAttachedModelInstance(this);
 
-					pMeshIns->SetMaterial(pModelResource->GetMeshDefaultMaterial(index));
+					AddNodeImpl(pMeshIns, MENodeChildType::EFixed);
 
 					++index;
 				}
 			}
 	
+			return true;
 		};
 
-		m_pModelResource = new MResourceHolder(pModelRes);
-		m_pModelResource->SetResChangedCallback(UseResourceFunction);
+		MResourceHolder* pNewHolder = new MResourceHolder(pModelRes);
+		pNewHolder->SetResChangedCallback(UseResourceFunction);
+
+		if (m_pModelResource)
+			delete m_pModelResource;
+
+		m_pModelResource = pNewHolder;
 
 		UseResourceFunction();
 
@@ -174,7 +180,7 @@ void MModelInstance::Tick(const float& fDelta)
 {
 	M3DNode::Tick(fDelta);
 
-	if (m_pCurrentAnimationController)
+	if (m_pCurrentAnimationController && m_pCurrentAnimationController->GetState() == MIAnimController::EPlay)
 	{
 		m_pCurrentAnimationController->Update(fDelta, GetVisibleRecursively());
 	}

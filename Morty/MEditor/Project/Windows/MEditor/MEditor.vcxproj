@@ -29,13 +29,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -90,10 +90,10 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;MSVC;__STDC_LIMIT_MACROS;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Type;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/ResourceLoader/Texture;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/RefCounter;$(SolutionDir)Morty/Core/Organizer;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/Scene/Light;$(SolutionDir)Morty/Scene/Model;$(SolutionDir)MEditor/ImGUI;$(SolutionDir)MEditor/Editor/Property</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/dirent;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Type;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/ResourceLoader/Texture;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/RefCounter;$(SolutionDir)Morty/Core/Organizer;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Core/Animation;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/Scene/Light;$(SolutionDir)Morty/Scene/Model;$(SolutionDir)MEditor/ImGUI;$(SolutionDir)MEditor/ImGUI/ImGuiFileDialog;$(SolutionDir)MEditor/Editor/Property</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -130,10 +130,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;MSVC;__STDC_LIMIT_MACROS;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Type;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/ResourceLoader/Texture;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/RefCounter;$(SolutionDir)Morty/Core/Organizer;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/Scene/Light;$(SolutionDir)Morty/Scene/Model;$(SolutionDir)MEditor/ImGUI;$(SolutionDir)MEditor/Editor/Property</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/dirent;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Type;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/ResourceLoader/Texture;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/RefCounter;$(SolutionDir)Morty/Core/Organizer;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Core/Animation;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/Scene/Light;$(SolutionDir)Morty/Scene/Model;$(SolutionDir)MEditor/ImGUI;$(SolutionDir)MEditor/ImGUI/ImGuiFileDialog;$(SolutionDir)MEditor/Editor/Property</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -177,10 +177,12 @@
     <ClInclude Include="..\..\..\Editor\Property\PropertyMCamera.h" />
     <ClInclude Include="..\..\..\Editor\Property\PropertyMDirectionalLight.h" />
     <ClInclude Include="..\..\..\Editor\Property\PropertyMIMeshInstance.h" />
-    <ClInclude Include="..\..\..\Editor\Property\PropertyModelInstance.h" />
+    <ClInclude Include="..\..\..\Editor\Property\PropertyMModelInstance.h" />
     <ClInclude Include="..\..\..\Editor\Property\PropertyMPointLight.h" />
     <ClInclude Include="..\..\..\ImGUI\imconfig.h" />
     <ClInclude Include="..\..\..\ImGUI\imgui.h" />
+    <ClInclude Include="..\..\..\ImGUI\ImGuiFileDialog\ImGuiFileDialog.h" />
+    <ClInclude Include="..\..\..\ImGUI\ImGuiFileDialog\ImGuiFileDialogConfig.h" />
     <ClInclude Include="..\..\..\ImGUI\imgui_impl_dx11.h" />
     <ClInclude Include="..\..\..\ImGUI\imgui_impl_win32.h" />
     <ClInclude Include="..\..\..\ImGUI\imgui_internal.h" />
@@ -195,7 +197,9 @@
     <ClCompile Include="..\..\..\Editor\NodeTreeView.cpp" />
     <ClCompile Include="..\..\..\Editor\PropertyView.cpp" />
     <ClCompile Include="..\..\..\Editor\Property\PropertyBase.cpp" />
+    <ClCompile Include="..\..\..\Editor\Property\PropertyMModelInstance.cpp" />
     <ClCompile Include="..\..\..\ImGUI\imgui.cpp" />
+    <ClCompile Include="..\..\..\ImGUI\ImGuiFileDialog\ImGuiFileDialog.cpp" />
     <ClCompile Include="..\..\..\ImGUI\imgui_demo.cpp" />
     <ClCompile Include="..\..\..\ImGUI\imgui_draw.cpp" />
     <ClCompile Include="..\..\..\ImGUI\imgui_impl_dx11.cpp" />

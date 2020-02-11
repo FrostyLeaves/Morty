@@ -32,9 +32,9 @@ struct MVertex
 struct MVertexWithBones
 {
 	MVertexWithBones()
-		: bonesID{0}
-		, bonesWeight{0}
 	{
+		memset(bonesID, 0, sizeof(bonesID));
+		memset(bonesWeight, 0, sizeof(bonesID));
 	}
 	Vector3 position;
 

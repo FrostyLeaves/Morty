@@ -3,6 +3,7 @@
 
 MSkeletalAnimation::MSkeletalAnimation()
 	: m_pSkeletonTemplate(nullptr)
+	, m_unIndex(0)
 	, m_strName()
 	, m_fTicksDuration(0.0f)
 	, m_fTicksPerSecond(25.0f)
@@ -186,7 +187,7 @@ void MSkeletalAnimController::Update(const float& fDelta, const bool& bAnimStep)
 {
 	if (!m_bInitialized) return;
 
-	if (MEAnimControllerState::EPlay == m_eState)
+	//if (MEAnimControllerState::EPlay == m_eState)
 	{
 		m_fTicks += m_pAnimation->GetTicksPerSecond() * fDelta;
 		if (m_fTicks >= m_pAnimation->GetTicksDuration())
@@ -211,4 +212,25 @@ void MSkeletalAnimController::Update(const float& fDelta, const bool& bAnimStep)
 				m_pAnimation->Update(m_fTicks, m_pSkeletonIns);
 		}
 	}
+}
+
+void MSkeletalAnimController::SetPercent(const float& fPercent)
+{
+	if (nullptr == m_pAnimation)
+		return;
+
+	if (fPercent <= 0.0f)
+		m_fTicks = 0.0f;
+	else if (fPercent >= 100.0f)
+		m_fTicks = m_pAnimation->GetTicksDuration();
+	else
+		m_fTicks = m_pAnimation->GetTicksDuration() * fPercent / 100.0f;
+}	
+
+float MSkeletalAnimController::GetPercent()
+{
+	if (nullptr == m_pAnimation)
+		return 0.0f;
+
+	return m_fTicks / m_pAnimation->GetTicksDuration() * 100.0f;
 }

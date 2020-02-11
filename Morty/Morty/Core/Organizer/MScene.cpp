@@ -95,8 +95,14 @@ void MScene::InitShadowMapRenderTarget()
 
 			for (MModelInstance* pModelIns : m_vStaticModelInstances)
 			{
+				if (!pModelIns->GetVisibleRecursively())
+					continue;
+
 				for (MNode* pChild : pModelIns->GetFixedChildren())
 				{
+					if(!pChild->GetVisibleRecursively())
+						continue;
+
 					if (MIMeshInstance* pMeshIns = pChild->DynamicCast<MIMeshInstance>())
 					{
 						Matrix4 worldTrans = pMeshIns->GetWorldTransform();
@@ -144,6 +150,9 @@ void MScene::InitShadowMapRenderTarget()
 
 			for (MModelInstance* pModelIns : m_vAnimationModelInstances)
 			{
+				if (!pModelIns->GetVisibleRecursively())
+					continue;
+
 				if (MSkeletonInstance* pSkeleton = pModelIns->GetSkeleton())
 				{
 					MVariant* pVariant = pAnimationStruct->FindMember("U_vBonesMatrix");
@@ -163,6 +172,9 @@ void MScene::InitShadowMapRenderTarget()
 
 				for (MNode* pChild : pModelIns->GetFixedChildren())
 				{
+					if (!pChild->GetVisibleRecursively())
+						continue;
+
 					if (MIMeshInstance* pMeshIns = pChild->DynamicCast<MIMeshInstance>())
 					{
 						Matrix4 worldTrans = pMeshIns->GetWorldTransform();
@@ -339,7 +351,7 @@ void MScene::OnNodeExit(MNode* pNode)
 			m_vPointLight.erase(iter);
 	}
 
-	else if (MStaticMeshInstance * pMeshIns = pNode->DynamicCast<MStaticMeshInstance>())
+	else if (MIMeshInstance* pMeshIns = pNode->DynamicCast<MIMeshInstance>())
 		CancelRecordMeshInstance(pMeshIns);
 
 	else if (MCamera* pCamera = pNode->DynamicCast<MCamera>())
@@ -402,6 +414,9 @@ void MScene::CancelRecordMeshInstance(MIMeshInstance* pMeshInstance)
 	std::vector<MIMeshInstance*>::iterator it = find(pGroup->vMeshIns.begin(), pGroup->vMeshIns.end(), pMeshInstance);
 	if (it != pGroup->vMeshIns.end())
 		pGroup->vMeshIns.erase(it);
+
+	if (pGroup->vMeshIns.empty())
+		m_vMatMeshInsGroup.erase(iter);
 }
 
 void MScene::RecordInputNode(MInputNode* pInputNode)
@@ -434,6 +449,7 @@ void MScene::GenerateShadowMap(MIRenderer* pRenderer, MViewport* pViewport)
 	m_pShadowDepthMapRenderTarget->SetSourceViewport(pViewport);
 
 	pRenderer->Render(m_pShadowDepthMapRenderTarget);
+
 }
 
 void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)

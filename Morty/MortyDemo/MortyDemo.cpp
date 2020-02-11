@@ -139,6 +139,16 @@ int main(int argc, char* argv[])
 		pSpatial->SetName(svName);
 
 		pRootNode->AddNode(pSpatial);
+// 
+// 		if (MModelResource* pModelResource = pSpatial->GetResource())
+// 		{
+// 			if (pSpatial->SetPlayAnimation((*pModelResource->GetAnimationsName())[0]))
+// 			{
+// 				MIAnimController* pController = pSpatial->GetSkeletalAnimationController();
+// 				pController->SetLoop(true);
+// 				pController->Play();
+// 			}
+// 		}
 	}
 
 	MModelResource* pPikachuResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/Pikachu.fbx"));

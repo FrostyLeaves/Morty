@@ -47,7 +47,7 @@ MObject* NodeTreeView::GetSelectionNode()
 void NodeTreeView::RenderNode(MNode* pNode)
 {
 	ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-	if (pNode->GetChildren().empty())
+	if (pNode->GetChildren().size() + pNode->GetFixedChildren().size() == 0)
 		node_flags |= ImGuiTreeNodeFlags_Leaf;
 
 	if (m_unSelectedObjectID == pNode->GetObjectID())

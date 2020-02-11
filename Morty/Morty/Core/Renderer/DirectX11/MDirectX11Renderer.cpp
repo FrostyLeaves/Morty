@@ -205,11 +205,10 @@ void MDirectX11Renderer::Render(MIRenderTarget* pRenderTarget)
 		if (!m_pDevice || !m_pDevice->m_pD3dContext)
 			return;
 
-		float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 		if(pRenderTarget->m_pDepthStencilView)
 			m_pDevice->m_pD3dContext->ClearDepthStencilView(pRenderTarget->m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		if(pRenderTarget->m_pTargetView)
-			m_pDevice->m_pD3dContext->ClearRenderTargetView(pRenderTarget->m_pTargetView, clearColor);
+			m_pDevice->m_pD3dContext->ClearRenderTargetView(pRenderTarget->m_pTargetView, pRenderTarget->m_backgroundColor.m);
 
 
 		m_vRenderTargets.push(pRenderTarget);

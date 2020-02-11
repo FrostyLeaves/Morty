@@ -179,6 +179,9 @@ void MNode::RemoveAllNodeImpl(const MENodeChildType& etype)
 {
 	std::vector<MNode*>& children = etype == MENodeChildType::EFixed ? m_vFixedChildren : m_vChildren;
 
+	for (MNode* pChild : children)
+		pChild->SetAttachedScene(nullptr);
+
 	children.clear();
 }
 

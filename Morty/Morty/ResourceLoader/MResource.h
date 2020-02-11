@@ -32,6 +32,8 @@ public:
 
 	MResourceManager* GetResourceManager();
 
+	MString GetResourcePath() { return m_strResourcePath; }
+
 public:
 
 	virtual void OnCreated() {}
@@ -61,7 +63,7 @@ protected:
 class MORTY_CLASS MResourceHolder
 {
 public:
-	typedef std::function<void()> MResChangedFunction;
+	typedef std::function<bool()> MResChangedFunction;
 public :
 	MResourceHolder(MResource* pResource);
 	virtual ~MResourceHolder();

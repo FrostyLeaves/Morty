@@ -1,8 +1,11 @@
 #include "PropertyBase.h"
 
 #include "MMaterial.h"
+#include "MResource.h"
+#include "MResourceManager.h"
 
 #include "imgui.h"
+#include "ImGuiFileDialog.h"
 
 unsigned int PropertyBase::m_unItemIDPool = 0;
 std::map<MString, unsigned int> PropertyBase::m_tItemID = std::map<MString, unsigned int>();
@@ -21,6 +24,8 @@ bool PropertyBase::ShowNodeBegin(const MString& strNodeName)
 		return true;
 	}
 
+	ImGui::NextColumn();
+	ImGui::NextColumn();
 	ImGui::PopID();
 	return false;
 }
@@ -117,6 +122,9 @@ bool PropertyBase::EditMTransform(MTransform& trans)
 
 bool PropertyBase::EditEnum(const std::vector<MString>& select, unsigned int& index)
 {
+	if (index >= select.size())
+		return false;
+
 	unsigned int unNewIndex = index;
 	if (ImGui::BeginCombo("", select[index].c_str())) {
 
@@ -210,8 +218,126 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 		}
 	}
 
+	{
+		std::vector<MShaderTextureParam>& vParams = pMaterial->GetPixelTextureParams();
+		std::vector<MResourceHolder*>& vResources =  pMaterial->GetPixelTextures();
+		for (unsigned int i = 0; i < vParams.size(); ++i)
+		{
+			MString strDlgName = "file_dlg_" + MStringHelper::ToString(i);
+
+			MShaderTextureParam& param = vParams[i];
+
+			ShowValueBegin(param.strName);
+			MResource* pResource = vResources[i] ? vResources[i]->GetResource() : nullptr;
+
+			EditMResource(strDlgName, pResource, MResourceManager::MEResourceType::Texture, [&param, &pMaterial](const MString& strNewFilePath) {
+
+				MResource* pNewResource = pMaterial->GetResource()->GetResourceManager()->LoadResource(strNewFilePath);
+
+				pMaterial->SetPixelTexutreParam(param.strName, pNewResource);
+			});
+
+// 			MResource* pResource = nullptr;
+// 			MString strButtonLabel;
+// 			MString strResourcePathName;
+// 			if (vResources[i] && (pResource = vResources[i]->GetResource()))
+// 			{
+// 				strResourcePathName = pResource->GetResourcePath();
+// 				strButtonLabel = pResource->GetFileName(strResourcePathName);
+// 			}
+// 			else
+// 			{
+// 				strButtonLabel = strResourcePathName = "null";
+// 			}
+// 
+// 			bool bButtonDown = ImGui::Button(strButtonLabel.c_str(), ImVec2(ImGui::GetContentRegionAvailWidth(), 0));
+// 			if (ImGui::IsItemHovered())
+// 				ImGui::SetTooltip(strResourcePathName.c_str());
+// 
+// 			if (bButtonDown)
+// 			{
+// 				if (pResource)
+// 					ImGuiFileDialog::Instance()->OpenDialog(strDlgName, "Choose Texture", ".png\0.jpg\0.tga\0\0", pResource->GetFolder(strResourcePathName), strButtonLabel, "");
+// 				else
+// 					ImGuiFileDialog::Instance()->OpenDialog(strDlgName, "Choose Texture", ".png\0.jpg\0.tga\0\0", ".");
+// 			}
+// 			if (ImGuiFileDialog::Instance()->FileDialog(strDlgName))
+// 			{
+// 				if (ImGuiFileDialog::Instance()->IsOk == true)
+// 				{
+// 					std::string filePathName = ImGuiFileDialog::Instance()->GetFilepathName();
+// 					std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+// 
+// 					MResource* pNewResource = pMaterial->GetResource()->GetResourceManager()->LoadResource(filePathName);
+// 
+// 					pMaterial->SetPixelTexutreParam(param.strName, pNewResource);
+// 				}
+// 				ImGuiFileDialog::Instance()->CloseDialog(strDlgName);
+// 			}
+			ShowValueEnd();
+
+		}
+	}
+
 
 	return bModified;
+}
+
+void PropertyBase::EditMResource(const MString& strDlgID, MResource* pResource, const MResourceManager::MEResourceType& eResourceType, std::function<void(const MString & strNewFilePath)> funcLoadResource)
+{
+	static const char* vTitleList[] = {
+		"Default",
+		"Model",
+		"Shader",
+		"Material",
+		"Texture",
+	};
+
+	static const char* vFilterList[] = {
+		"\0\0",
+		".fbx\0.obj\0.dae\0\0",
+		".mvs\0.mps\0\0",
+		"\0\0",
+		".png\0.jpg\0.tga\0\0",
+	};
+
+	MString strButtonLabel;
+	MString strResourcePathName;
+	if (pResource)
+	{
+		strResourcePathName = pResource->GetResourcePath();
+		strButtonLabel = pResource->GetFileName(strResourcePathName);
+	}
+	else
+	{
+		strButtonLabel = strResourcePathName = "null";
+	}
+
+	bool bButtonDown = ImGui::Button(strButtonLabel.c_str(), ImVec2(ImGui::GetContentRegionAvailWidth(), 0));
+	if (ImGui::IsItemHovered())
+		ImGui::SetTooltip(strResourcePathName.c_str());
+
+	if (bButtonDown)
+	{
+		if (pResource)
+			ImGuiFileDialog::Instance()->OpenDialog(strDlgID, vTitleList[eResourceType], vFilterList[eResourceType], pResource->GetFolder(strResourcePathName), strButtonLabel, MString(""));
+		else
+			ImGuiFileDialog::Instance()->OpenDialog(strDlgID, vTitleList[eResourceType], vFilterList[eResourceType], ".");
+	}
+
+	if (ImGuiFileDialog::Instance()->FileDialog(strDlgID))
+	{
+		if (ImGuiFileDialog::Instance()->IsOk == true)
+		{
+			if (funcLoadResource)
+			{
+				std::string filePathName = ImGuiFileDialog::Instance()->GetFilepathName();
+				funcLoadResource(filePathName);
+			}
+		}
+		ImGuiFileDialog::Instance()->CloseDialog(strDlgID);
+	}
+
 }
 
 bool PropertyBase::EditMColor(MColor& value)

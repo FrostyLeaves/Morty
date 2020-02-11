@@ -4,7 +4,7 @@ VS_OUT_EMPTY VS(VS_IN_ANIM input)
 {
     VS_OUT_EMPTY output;
 
-    float4x4 matBoneTransform;
+    float4x4 matBoneTransform = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     float fWeight = 1.0f;
     for (int i = 0; i < MBONES_PER_VERTEX; ++i)
     {

@@ -51,6 +51,7 @@ public:
 
 	MSkeleton* GetSkeletonTemplate() { return m_pSkeletonTemplate; }
 
+	unsigned int GetIndex() { return m_unIndex; }
 	MString GetName() { return m_strName; }
 	float GetTicksDuration() { return m_fTicksDuration; }
 	float GetTicksPerSecond() { return m_fTicksPerSecond; }
@@ -66,6 +67,7 @@ private:
 	std::vector<MSkeletalAnimNode*> m_vSkeletalAnimNodes;
 	MSkeleton* m_pSkeletonTemplate;
 
+	unsigned int m_unIndex;
 	MString m_strName;
 	float m_fTicksDuration;
 	float m_fTicksPerSecond;
@@ -85,7 +87,16 @@ public:
 	virtual void Pause() override;
 	virtual void Stop() override;
 	virtual void SetLoop(const bool& bLoop) override;
+	virtual bool GetLoop() override { return m_bLoop; }
 	virtual void Update(const float& fDelta, const bool& bAnimStep = true) override;
+
+	//range 0.0f ~ 100.0f
+	virtual void SetPercent(const float& fPercent);
+	virtual float GetPercent();
+
+	virtual MEAnimControllerState GetState() override { return m_eState; }
+
+	MSkeletalAnimation* GetAnimation() { return m_pAnimation; }
 private:
 	MSkeletonInstance* m_pSkeletonIns;
 	MSkeletalAnimation* m_pAnimation;

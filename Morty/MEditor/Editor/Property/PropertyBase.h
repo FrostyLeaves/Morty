@@ -6,11 +6,14 @@
 #include "MVariant.h"
 #include "MTransform.h"
 #include "MColor.h"
+#include "MResourceManager.h"
 
 #include <map>
+#include <functional>
 
 class MObject;
 class MMaterial;
+class MResource;
 class PropertyBase
 {
 public:
@@ -26,6 +29,7 @@ public:
 	void ShowValueBegin(const MString& strValueName);
 	void ShowValueEnd();
 
+	//normal
 	bool Editbool(bool& value);
 	bool Editfloat(float& value, const float& fSpeed = 1.0f, const float& fMin = 0.0f, const float& fMax = 0.0f);
 	bool EditVector2(Vector2& value, const float& fSpeed = 1.0f, const float& fMin = 0.0f, const float& fMax = 0.0f);
@@ -33,11 +37,14 @@ public:
 	bool EditVector3(float* pValue, const float& fSpeed = 1.0f, const float& fMin = 0.0f, const float& fMax = 0.0f);
 	bool EditMTransform(MTransform& trans);
 	bool EditEnum(const std::vector<MString>& select, unsigned int& index);
-
-	bool EditMVariant(const MString& strVariantName, MVariant& value);
-	bool EditMMaterial(MMaterial* pMaterial);
-
 	bool EditMColor(MColor& value);
+
+	bool EditMMaterial(MMaterial* pMaterial);
+	void EditMResource(const MString& strDlgID, MResource* pResource, const MResourceManager::MEResourceType& eResourceType, std::function<void(const MString& strNewFilePath)> funcLoadResource);
+
+	//auto call ShowValue/ShowNode
+	bool EditMVariant(const MString& strVariantName, MVariant& value);
+
 
 	unsigned int GetID(const MString& strItemName);
 

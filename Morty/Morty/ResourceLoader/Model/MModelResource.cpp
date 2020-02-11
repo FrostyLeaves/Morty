@@ -90,7 +90,6 @@ bool MModelResource::Load(const MString& strResourcePath)
 
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(strResourcePath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_FixInfacingNormals | aiProcess_ConvertToLeftHanded);
-	unsigned int* p = scene->mRootNode->mMeshes;
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
 	{
 		MLogManager::GetInstance()->Error("ERROR::ASSIMP:: %s", importer.GetErrorString());
@@ -180,8 +179,11 @@ void MModelResource::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, M
 		}
 		if (pMesh->mTextureCoords)
 		{
-			vertex.texCoords.x = pMesh->mTextureCoords[0][i].x;
-			vertex.texCoords.y = pMesh->mTextureCoords[0][i].y;
+			if (pMesh->mTextureCoords[0])
+			{
+				vertex.texCoords.x = pMesh->mTextureCoords[0][i].x;
+				vertex.texCoords.y = pMesh->mTextureCoords[0][i].y;
+			}
 		}
 
 		if (pMesh->mTangents)
@@ -366,6 +368,7 @@ void MModelResource::ProcessAnimation(const aiScene* pScene)
 		m_vSkeletalAnimation.push_back(pAnimation->mName.C_Str());
 		m_tSkeletalAnimation[pAnimation->mName.C_Str()] = pMAnimation;
 
+		pMAnimation->m_unIndex = i;
 		pMAnimation->m_strName = pAnimation->mName.C_Str();
 		pMAnimation->m_fTicksDuration = pAnimation->mDuration;
 		if(pAnimation->mTicksPerSecond > 0.0f)

@@ -12,6 +12,8 @@ public:
 		if (M3DNode* pNode = pObject->DynamicCast<M3DNode>())
 		{
 			PROPERTY_NODE_EDIT(pNode, "transform", MTransform, GetTransform, SetTransform);
+
+			PROPERTY_VALUE_EDIT(pNode, "Visible", bool, GetVisible, SetVisible);
 		}
 	}
 };

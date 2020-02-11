@@ -11,7 +11,7 @@ float3 CalcDirectionLight(DirectionLight dirLight, float3 f3CameraDir, float3 f3
     float3 fReflectDir = reflect(-f3LightDir, f3Normal);
     float fSpec = pow(max(dot(f3CameraDir, fReflectDir), 0.0f), U_mat.fShininess);
 
-    return float3(  //dirLight.f3Ambient * U_mat.f3Ambient * f3AmbiColor + 
+    return float3(  dirLight.f3Ambient * U_mat.f3Ambient * f3AmbiColor + 
                     dirLight.f3Diffuse * U_mat.f3Diffuse * fDiff * f3DiffColor + 
                     dirLight.f3Specular * U_mat.f3Specular * fSpec * f3SpecColor
                 );
@@ -30,7 +30,7 @@ float3 CalcPointLight(PointLight pointLight, float3 f3CameraDir, float3 f3Normal
     float fDistance = length(pointLight.f3WorldPosition - f3WorldPixelPosition);
     float fAttenuation = 1.0f / (1.0f + pointLight.fLinear * fDistance + pointLight.fQuadratic * fDistance * fDistance);
 
-    return float3(  //pointLight.f3Ambient * U_mat.f3Ambient * f3AmbiColor + 
+    return float3(  pointLight.f3Ambient * U_mat.f3Ambient * f3AmbiColor + 
                     pointLight.f3Diffuse * U_mat.f3Diffuse * fDiff * f3DiffColor + 
                     pointLight.f3Specular * U_mat.f3Specular * fSpec * f3SpecColor
                 ) * fAttenuation;
@@ -73,7 +73,7 @@ float4 PS(VS_OUT input) : SV_Target
     float3 f3Normal = normalize(input.normal);
 
     
-    float3 f3Color = f3AmbiColor * 0.1f;
+    float3 f3Color = U_mat.f3Ambient * f3AmbiColor * 0.1f;
     float shadow = ShadowCalculation(input);
     
 

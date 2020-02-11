@@ -18,10 +18,12 @@
 #define MOVE(pos, from, to, percent) ((pos) + ((to) - (from)) * percent)
 #define TEMP(a, b, temp) {temp = a; a = b; b = temp;}
 
+const Vector3 MTransformCoord3D::m_vDirection[3] = { Vector3(1, 0, 0), Vector3(0, 1, 0), Vector3(0, 0, 1) };
+const MColor MTransformCoord3D::m_vColor[3] = { MColor(240.0f / 255.0f, 48.0f / 255.0f, 48.0f / 255.0f, 0.5f), MColor(60.0f / 255.0f, 179.0f / 255.0f, 113.0f / 255.0f, 0.5f), MColor(30.0f / 255.0f, 144.0f / 255.0f, 1, 0.5f) };
+
+
 MTransformCoord3D::MTransformCoord3D()
 	: MITransformCoord()
-	, m_vDirection{Vector3(1, 0, 0), Vector3(0, 1, 0),Vector3(0, 0, 1)}
-	, m_vColor{ MColor(240.0f / 255.0f, 48.0f / 255.0f, 48.0f / 255.0f, 0.5f), MColor(60.0f / 255.0f, 179.0f / 255.0f, 113.0f / 255.0f, 0.5f), MColor(30.0f / 255.0f, 144.0f / 255.0f, 1, 0.5f) }
 	, m_pTargetNode(nullptr)
 	, m_eCoordHoverType(MECoordHoverType::None)
 	, m_eCoordMoveType(MECoordHoverType::None)
@@ -267,7 +269,7 @@ void MTransformCoord3D::GetTranslationShapes(MPainter2DLine* lines, class MPaint
 	pViewport->ConvertWorldPointToViewport(v3EndPoint[1], v3EndPoint[1]);
 	pViewport->ConvertWorldPointToViewport(v3EndPoint[2], v3EndPoint[2]);
 
-	std::sort(vOrder, vOrder + 3, [v3EndPoint](int a, int b)
+	std::sort(vOrder, vOrder + 3, [&v3EndPoint](int a, int b)
 		{
 			return (v3EndPoint[a].z < v3EndPoint[b].z);
 		});

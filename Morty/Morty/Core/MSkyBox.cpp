@@ -46,6 +46,7 @@ bool MSkyBox::Load(MResource* pResource)
 		m_pTextureCubeResource = new MResourceHolder(pResource);
 		m_pTextureCubeResource->SetResChangedCallback([this](){
 			m_pTextureCube = static_cast<MTextureCubeResource*>(m_pTextureCubeResource->GetResource())->GetTextureCubeTemplate();
+			return true;
 		});
 
 		return true;

@@ -19,6 +19,14 @@ class MModelInstance;
 class MORTY_CLASS MIMeshInstance : public M3DNode
 {
 public:
+	enum MEShadowType
+	{
+		ENone = 0,
+		EOnlyDirectional = 1,
+		EAllLights = 2,
+	};
+
+public:
 	M_OBJECT(MIMeshInstance);
     MIMeshInstance();
     virtual ~MIMeshInstance();

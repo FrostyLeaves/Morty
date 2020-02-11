@@ -2,7 +2,9 @@
 #define _PROPERTY_MIMESHINSTANCE_H_
 
 #include "PropertyM3DNode.h"
+#include "MMaterial.h"
 #include "MIMeshInstance.h"
+
 
 class PropertyMIMeshInstance : public PropertyM3DNode
 {
@@ -13,6 +15,12 @@ public:
 		{
 			if (ShowNodeBegin("Material"))
 			{
+				MMaterial* pMaterial = pNode->GetMaterial();
+
+				
+				
+
+
 				EditMMaterial(pNode->GetMaterial());
 
 				ShowNodeEnd();

@@ -17,6 +17,8 @@
 #include <DxErr.h>
 #endif
 
+#include "MColor.h"
+
 class MIRenderer;
 class MORTY_CLASS MIRenderTarget
 {
@@ -36,6 +38,8 @@ public:
 #elif RENDER_GRAPHICS == MORTY_OPENGLES
 
 #endif
+
+	MColor m_backgroundColor;
 
 };
 

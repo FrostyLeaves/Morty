@@ -17,7 +17,6 @@
 #include <vector>
 
 class MShader;
-class MResource;
 class MShaderResource;
 class MMaterialResource;
 class MORTY_CLASS MMaterial : public MObject, public MRefCounter
@@ -33,6 +32,7 @@ public:
 	std::vector<MShaderParam>& GetVertexShaderParams() { return m_vVertexShaderParams; }
 	std::vector<MShaderParam>& GetPixelShaderParams() { return m_vPixelShaderParams; }
 	std::vector<MShaderTextureParam>& GetPixelTextureParams(){ return m_vPixelTextureParams; }
+	std::vector< MResourceHolder*>& GetPixelTextures() { return m_vPixelTextureResHolder; }
 
 	void SetPixelTexutreParam(const MString& strName, MResource* pTexResource);
 
@@ -44,7 +44,8 @@ public:
 	void SetRenderState(unsigned int& eType) { m_eRenderState = eType; }
 	unsigned int GetRenderState() { return m_eRenderState; }
 
-	bool Load(MResource* pResource);
+	bool Load(MMaterialResource* pResource);
+	MResource* GetResource();
 
 	void Unload();
 

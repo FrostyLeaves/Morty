@@ -118,6 +118,15 @@ bool MPainter2DLine::TouchTest(const Vector2& pos, MViewport* pViewport)
 	return false;
 }
 
+MPainter2DRect::MPainter2DRect(const Vector2& point0, const Vector2& point1, const Vector2& point2, const Vector2& point3, const MColor& color) : MIPainterShape()
+, m_rectColor(color)
+{
+	m_vPoint[0] = point0;
+	m_vPoint[1] = point1;
+	m_vPoint[2] = point2;
+	m_vPoint[3] = point3;
+}
+
 bool MPainter2DRect::FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh)
 {
 	if (nullptr == pViewport)
