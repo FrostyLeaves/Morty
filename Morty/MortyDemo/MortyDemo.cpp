@@ -126,30 +126,19 @@ int main(int argc, char* argv[])
 	pRootNode->SetName("RootNode");
 
 
-	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/teaport.fbx"));
+	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/Ground.fbx"));
 
-	for (int i = 0; i < 1; ++i)
-	{
-		char svName[16];
-		sprintf_s(svName, "Teaport_%d", i);
+	MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
+	pSpatial->Load(pResource);
+	pSpatial->SetPosition(Vector3(0, 0, 0));
+	pSpatial->SetName("Ground");
 
-		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
-		pSpatial->Load(pResource);
-		pSpatial->SetPosition(Vector3(0, 0, 50));
-		pSpatial->SetName(svName);
+	pRootNode->AddNode(pSpatial);
 
-		pRootNode->AddNode(pSpatial);
-// 
-// 		if (MModelResource* pModelResource = pSpatial->GetResource())
-// 		{
-// 			if (pSpatial->SetPlayAnimation((*pModelResource->GetAnimationsName())[0]))
-// 			{
-// 				MIAnimController* pController = pSpatial->GetSkeletalAnimationController();
-// 				pController->SetLoop(true);
-// 				pController->Play();
-// 			}
-// 		}
-	}
+	pSpatial->SetRotation(Quaternion(Vector3(0, 1, 0), 90.0f));
+//	pSpatial->SetScale(Vector3(0.01, 0.01, 0.01));
+//	pSpatial->GetFixedChildren()[15]->SetVisible(false);
+
 
 	MModelResource* pPikachuResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/Pikachu.fbx"));
 	MModelInstance* pPikachu = engine.GetObjectManager()->CreateObject<MModelInstance>();
@@ -179,7 +168,7 @@ int main(int argc, char* argv[])
 	pRootNode->AddNode(pDirLight);
 
 	MyCamera* pCamera = engine.GetObjectManager()->CreateObject<MyCamera>();
-	pCamera->SetPosition(Vector3(0, 10, 0));
+	pCamera->SetPosition(Vector3(0, 10, -100));
 	pCamera->SetName("Camera");
 	pRootNode->AddNode(pCamera);
 

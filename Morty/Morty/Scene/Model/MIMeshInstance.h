@@ -35,6 +35,9 @@ public:
 	virtual void SetMaterial(MMaterial* pMaterial) = 0;
 	virtual MMaterial* GetMaterial() = 0;
 
+	void SetShadowType(const MEShadowType& eType) { m_eShadowType = eType; }
+	MEShadowType GetShadowType() { return m_eShadowType; }
+
 	virtual MBoundsAABB* GetBoundsAABB() = 0;
 
 public:
@@ -46,6 +49,7 @@ public:
 
 private:
 	MModelInstance* m_pModelInstance;
+	MEShadowType m_eShadowType;
 };
 
 #endif

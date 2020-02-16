@@ -14,6 +14,7 @@
 class MObject;
 class MMaterial;
 class MResource;
+class MTextureBuffer;
 class PropertyBase
 {
 public:
@@ -41,6 +42,8 @@ public:
 
 	bool EditMMaterial(MMaterial* pMaterial);
 	void EditMResource(const MString& strDlgID, MResource* pResource, const MResourceManager::MEResourceType& eResourceType, std::function<void(const MString& strNewFilePath)> funcLoadResource);
+
+	void ShowTexture(MTextureBuffer* pTextureBuffer);
 
 	//auto call ShowValue/ShowNode
 	bool EditMVariant(const MString& strVariantName, MVariant& value);

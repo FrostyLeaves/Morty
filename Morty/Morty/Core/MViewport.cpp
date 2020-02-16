@@ -179,60 +179,58 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight)
 	Matrix4 matLightInv(pLight->GetTransform().GetRotation());
 	matLightInv = matLightInv.Inverse();
 
-	std::vector<Vector3> vSceneBoundsPoints(8);
-	std::vector<Vector3> vCameraBoundsPoints(8);
-
-	MBoundsAABB* pBounds = m_pScene->GetSceneAABB();
 	MCamera* pCamera = GetCamera();
-
 	Matrix4 matCameraInv = pCamera->GetWorldTransform().Inverse();
-	pBounds->GetPoints(vSceneBoundsPoints);
-	float fZValidNear = FLT_MAX, fZValidFar = 0;
 
+	MBoundsAABB* pBounds = m_pScene->GetDirectionalShadowSceneAABB();
+
+	std::vector<Vector3> vSceneBoundsPoints(8);
+	pBounds->GetPoints(vSceneBoundsPoints);
+
+	//计算相机的有效ZNear和ZFar.
+	float fSceneMinZNear = FLT_MAX, fSceneMaxZFar = -FLT_MAX;
 	for (unsigned int i = 0; i < 8; ++i)
 	{
 		float z = (matCameraInv * vSceneBoundsPoints[i]).z;
-		if (fZValidNear > z)
-			fZValidNear = z;
-		if (fZValidFar < z)
-			fZValidFar = z;
-	}
 
+		if (fSceneMinZNear > z)
+			fSceneMinZNear = z;
+		if (fSceneMaxZFar < z)
+			fSceneMaxZFar = z;
+	}
+	float fZValidNear = fSceneMinZNear > pCamera->GetZNear() ? fSceneMinZNear : pCamera->GetZNear();
+	float fZValidFar = fSceneMaxZFar < pCamera->GetZFar() ? fSceneMaxZFar : pCamera->GetZFar();
+
+	//获取相机视椎体在方向光Camera内的最小和最大X、Y值
+	std::vector<Vector3> vCameraBoundsPoints(8);
 	GetCameraFrustum(GetCamera(), fZValidNear, fZValidFar, vCameraBoundsPoints);
 
-	Vector3 v3SceneMin(FLT_MAX, FLT_MAX, FLT_MAX);
-	Vector3 v3SceneMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-
-	for (unsigned int i = 0; i < 8; ++i)
-	{
-		Vector3 pos = matLightInv * vSceneBoundsPoints[i];
-		Vector3Intersection(v3SceneMin, v3SceneMax, pos)
-	}
-
-	Vector3 v3CameraMin(FLT_MAX, FLT_MAX, FLT_MAX);
-	Vector3 v3CameraMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-
+	Vector2 v3CameraMin(FLT_MAX, FLT_MAX);
+	Vector2 v3CameraMax(-FLT_MAX, -FLT_MAX);
 	for (unsigned int i = 0; i < 8; ++i)
 	{
 		Vector3 pos = matLightInv * vCameraBoundsPoints[i];
-		Vector3Intersection(v3CameraMin, v3CameraMax,pos)
+		if (v3CameraMin.x > pos.x) v3CameraMin.x = pos.x;
+		if (v3CameraMin.y > pos.y) v3CameraMin.y = pos.y;
+
+		if (v3CameraMax.x < pos.x) v3CameraMax.x = pos.x;
+		if (v3CameraMax.y < pos.y) v3CameraMax.y = pos.y;
 	}
 
-	Vector3 v3Min = v3SceneMin, v3Max = v3SceneMax;
-	if (v3Min.x < v3CameraMin.x)
-		v3Min.x = v3CameraMin.x;
-	if (v3Min.y < v3CameraMin.y)
-		v3Min.y = v3CameraMin.y;
-	if (v3Min.z < v3CameraMin.z)
-		v3Min.z = v3CameraMin.z;
-	if (v3Max.x > v3CameraMax.x)
-		v3Max.x = v3CameraMax.x;
-	if (v3Max.y > v3CameraMax.y)
-		v3Max.y = v3CameraMax.y;
-	if (v3Max.z > v3CameraMax.z)
-		v3Max.z = v3CameraMax.z;
 
-	Matrix4 projMat = MatrixOrthoOffCenterLH(v3Min.x, v3Max.x, v3Max.y, v3Min.y, v3Min.z, v3Max.z);
+	//计算Scene的AABB盒在方向光Camera内的最小和最大Z值
+	float fSceneMinZ = FLT_MAX, fSceneMaxZ = -FLT_MAX;
+	for (unsigned int i = 0; i < 8; ++i)
+	{
+		Vector3 pos = matLightInv * vSceneBoundsPoints[i];
+		if (fSceneMinZ > pos.z)
+			fSceneMinZ = pos.z;
+		if (fSceneMaxZ < pos.z)
+			fSceneMaxZ = pos.z;
+	}
+
+
+	Matrix4 projMat = MatrixOrthoOffCenterLH(v3CameraMin.x, v3CameraMax.x, v3CameraMax.y, v3CameraMin.y, fSceneMinZ, fSceneMaxZ);
 	return projMat * matLightInv;
 }
 
@@ -248,7 +246,6 @@ void MViewport::GetCameraFrustum(MCamera* pCamera, const float& fZNear, const fl
 
 		Matrix4 localToWorld = pCamera->GetWorldTransform();
 
-		std::vector<Vector3> points(8);
 		v3NearTopLeft = localToWorld * (Vector3(-fHalfWidthDivideZ, +fHalfHeightDivideZ, 1) * fZNear);
 		v3NearTopRight = localToWorld * (Vector3(+fHalfWidthDivideZ, +fHalfHeightDivideZ, 1) * fZNear);
 		v3NearBottomLeft = localToWorld * (Vector3(-fHalfWidthDivideZ, -fHalfHeightDivideZ, 1) * fZNear);
@@ -261,8 +258,6 @@ void MViewport::GetCameraFrustum(MCamera* pCamera, const float& fZNear, const fl
 	}
 	else
 	{
-		std::vector<Vector3> points(8);
-
 		Vector3 v3CameraPosition = pCamera->GetWorldPosition();
 		float fHalfWidth = pCamera->GetWidth() * 0.5f;
 		float fHalfHeight = pCamera->GetHeight() * 0.5f;

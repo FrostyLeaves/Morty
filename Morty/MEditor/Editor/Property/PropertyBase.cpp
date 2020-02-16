@@ -2,6 +2,7 @@
 
 #include "MMaterial.h"
 #include "MResource.h"
+#include "MTextureResource.h"
 #include "MResourceManager.h"
 
 #include "imgui.h"
@@ -237,43 +238,11 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 				pMaterial->SetPixelTexutreParam(param.strName, pNewResource);
 			});
 
-// 			MResource* pResource = nullptr;
-// 			MString strButtonLabel;
-// 			MString strResourcePathName;
-// 			if (vResources[i] && (pResource = vResources[i]->GetResource()))
-// 			{
-// 				strResourcePathName = pResource->GetResourcePath();
-// 				strButtonLabel = pResource->GetFileName(strResourcePathName);
-// 			}
-// 			else
-// 			{
-// 				strButtonLabel = strResourcePathName = "null";
-// 			}
-// 
-// 			bool bButtonDown = ImGui::Button(strButtonLabel.c_str(), ImVec2(ImGui::GetContentRegionAvailWidth(), 0));
-// 			if (ImGui::IsItemHovered())
-// 				ImGui::SetTooltip(strResourcePathName.c_str());
-// 
-// 			if (bButtonDown)
-// 			{
-// 				if (pResource)
-// 					ImGuiFileDialog::Instance()->OpenDialog(strDlgName, "Choose Texture", ".png\0.jpg\0.tga\0\0", pResource->GetFolder(strResourcePathName), strButtonLabel, "");
-// 				else
-// 					ImGuiFileDialog::Instance()->OpenDialog(strDlgName, "Choose Texture", ".png\0.jpg\0.tga\0\0", ".");
-// 			}
-// 			if (ImGuiFileDialog::Instance()->FileDialog(strDlgName))
-// 			{
-// 				if (ImGuiFileDialog::Instance()->IsOk == true)
-// 				{
-// 					std::string filePathName = ImGuiFileDialog::Instance()->GetFilepathName();
-// 					std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
-// 
-// 					MResource* pNewResource = pMaterial->GetResource()->GetResourceManager()->LoadResource(filePathName);
-// 
-// 					pMaterial->SetPixelTexutreParam(param.strName, pNewResource);
-// 				}
-// 				ImGuiFileDialog::Instance()->CloseDialog(strDlgName);
-// 			}
+			if (param.pTexture)
+			{
+				ShowTexture(param.pTexture->GetBuffer());
+			}
+
 			ShowValueEnd();
 
 		}
@@ -337,7 +306,17 @@ void PropertyBase::EditMResource(const MString& strDlgID, MResource* pResource, 
 		}
 		ImGuiFileDialog::Instance()->CloseDialog(strDlgID);
 	}
+}
 
+void PropertyBase::ShowTexture(MTextureBuffer* pTextureBuffer)
+{
+	if (pTextureBuffer)
+	{
+		if (pTextureBuffer->m_pShaderResourceView)
+		{
+			ImGui::Image(pTextureBuffer->m_pShaderResourceView, ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::GetContentRegionAvailWidth()));
+		}
+	}
 }
 
 bool PropertyBase::EditMColor(MColor& value)

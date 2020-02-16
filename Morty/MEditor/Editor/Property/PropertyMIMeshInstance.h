@@ -16,12 +16,16 @@ public:
 			if (ShowNodeBegin("Material"))
 			{
 				MMaterial* pMaterial = pNode->GetMaterial();
-
-				
-				
-
-
 				EditMMaterial(pNode->GetMaterial());
+
+				ShowValueBegin("ShadowType");
+				MIMeshInstance::MEShadowType eType = pNode->GetShadowType();
+				unsigned int unSelected = (unsigned int)eType;
+				if (EditEnum({ "None", "OnlyDirection", "AllLights" }, unSelected))
+				{
+					pNode->SetShadowType((MIMeshInstance::MEShadowType)unSelected);
+				}
+				ShowValueEnd();
 
 				ShowNodeEnd();
 			}

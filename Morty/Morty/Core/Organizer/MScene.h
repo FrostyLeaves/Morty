@@ -74,7 +74,9 @@ public:
 	
 	void InitShadowMapRenderTarget();
 
-	MBoundsAABB* GetSceneAABB();
+	MBoundsAABB* GetDirectionalShadowSceneAABB();
+
+	MTextureRenderTarget* GetShadowRenderTarget(){ return m_pShadowDepthMapRenderTarget; }
 
 protected:
 

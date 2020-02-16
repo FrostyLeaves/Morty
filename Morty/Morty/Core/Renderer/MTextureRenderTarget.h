@@ -33,6 +33,7 @@ public:
 	void SetSourceViewport(MViewport* pViewport) { m_pViewport = pViewport; }
 	MViewport* GetSourceViewport() { return m_pViewport; }
 
+	MRenderDepthTexture* GetDepthTexture(){ return m_pDepthTexture; }
 
 	unsigned int GetRenderTargetType() { return m_eRenderTargetType; }
 

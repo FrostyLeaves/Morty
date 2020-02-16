@@ -192,7 +192,7 @@ void MScene::InitShadowMapRenderTarget()
 
 }
 
-MBoundsAABB* MScene::GetSceneAABB()
+MBoundsAABB* MScene::GetDirectionalShadowSceneAABB()
 {
 	Vector3 v3Min(+FLT_MAX, +FLT_MAX, +FLT_MAX);
 	Vector3 v3Max(-FLT_MAX, -FLT_MAX, -FLT_MAX);
@@ -201,7 +201,7 @@ MBoundsAABB* MScene::GetSceneAABB()
 	{
 		for (MIMeshInstance* pMeshIns : pGroup->vMeshIns)
 		{
-			if (pMeshIns->GetVisibleRecursively())
+			if (pMeshIns->GetShadowType() != MIMeshInstance::ENone && pMeshIns->GetVisibleRecursively())
 			{
 				const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
 				pBounds->UnionMinMax(v3Min, v3Max);
