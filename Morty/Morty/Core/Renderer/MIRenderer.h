@@ -60,9 +60,6 @@ public:
 	virtual void AddOutputView(MIRenderView* pView) = 0;
 	virtual void RemoveOutputView(MIRenderView* pView) = 0;
 
-	virtual void InitDefaultResource() = 0;
-	virtual void ReleaseDefaultResource() = 0;
-
 public:
 
 	virtual void DrawMesh(MIMesh* pMesh) = 0;
@@ -73,8 +70,6 @@ public:
 
 
 protected:
-	MTexture* m_pDefaultTexture;
-
 	unsigned int m_eRasterizerType;
 };
 

@@ -105,9 +105,21 @@ void MainEditor::OnRenderEnd()
 	ImGui::NewFrame();
 
 
+
+	float fFps = m_pEngine->GetInstantFPS();
+	static float sTotalFps = 0, sCountFps;
+	sTotalFps += fFps;
+	++sCountFps;
+
 	char svWindowTitle[32];
-	sprintf_s(svWindowTitle, "Morty FPS: %d", (int)round(m_pEngine->GetInstantFPS()));
+	sprintf_s(svWindowTitle, "Morty FPS: %d", (int)round(sTotalFps / sCountFps));
 	SetWindowTitle(svWindowTitle);
+
+	if (sCountFps > 500)
+	{
+		sCountFps = 0;
+		sTotalFps = 0;
+	}
 
 
 	ImGuiStyle& style = ImGui::GetStyle();

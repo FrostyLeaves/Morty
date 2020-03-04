@@ -36,7 +36,7 @@ bool MDirectX11Device::InitDirectX11()
 	UINT nCreateDeviceFlags = 0;
 
 #if defined(DEBUG) || defined(_DEBUG)
-	nCreateDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+//	nCreateDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
 	D3D_FEATURE_LEVEL nFeatureLevel;
@@ -681,8 +681,10 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 			param.strName = bufferDesc.Name;
 			param.var = MVariant(cbufferStruct);
 
-			if (param.strName == "MORTY_ENGINE_cbSpace")
-				param.unCode = SHADER_PARAM_CODE_SPACE;
+			if (param.strName == "MORTY_ENGINE_cbMeshMatrix")
+				param.unCode = SHADER_PARAM_CODE_MESH_MATRIX;
+			else if (param.strName == "MORTY_ENGINE_cbWorldMatrix")
+				param.unCode = SHADER_PARAM_CODE_WORLD_MATRIX;
 			else if (param.strName == "cbMaterial")
 				param.unCode = SHADER_PARAM_CODE_MATERIAL;
 			else if (param.strName == "MORTY_ENGINE_cbLights")
@@ -720,7 +722,7 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 				MShaderTextureParam param;
 				param.strName = bindDesc.Name;
 				param.pTexture = nullptr;
-				
+
 				if (D3D11_SRV_DIMENSION_TEXTURECUBE == bindDesc.Dimension)
 					param.eType = ETextureCube;
 				else
@@ -728,6 +730,12 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 
 				param.unBindPoint = bindDesc.BindPoint;
 				param.unBindCount = bindDesc.BindCount;
+
+				if (param.strName == "U_texShadowMap")
+					param.unCode = SHADER_PARAM_CODE_SHADOW_MAP;
+				else
+					param.unCode = SHADER_PARAM_CODE_DEFAULT;
+
 				(*ppShaderBuffer)->m_vTextureParamsTemplate.push_back(param);
 			}
 			else if (D3D_SHADER_INPUT_TYPE::D3D_SIT_SAMPLER == bindDesc.Type)
@@ -736,6 +744,11 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 				param.strName = bindDesc.Name;
 				param.unBindPoint = bindDesc.BindPoint;
 				param.unBindCount = bindDesc.BindCount;
+
+				if (param.strName == "U_defaultSampler")
+					param.unCode = SHADER_PARAM_CODE_DEFAULT_SAMPLER;
+				else if (param.strName == "U_shadowMapSampler")
+					param.unCode = SHADER_PARAM_CODE_SHADOW_SAMPLER;
 
 				(*ppShaderBuffer)->m_vSampleParamsTemplate.push_back(param);
 			}

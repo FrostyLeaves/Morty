@@ -43,9 +43,6 @@ public:
 	virtual void Render(MIRenderTarget* pRenderTarget) override;
 	virtual void RecoverRenderTarget(MIRenderTarget* pRenderTarget) override;
 
-	virtual void InitDefaultResource() override;
-	virtual void ReleaseDefaultResource() override;
-
 public:
 	virtual void DrawMesh(MIMesh* pMesh) override;
 
@@ -71,6 +68,7 @@ protected:
 	
 	MDirectX11Device* m_pDevice;
 	MMaterial* m_pUsingMaterial;
+	MIRenderTarget* m_pCurrentRenderTarget;
 
 	std::stack<MIRenderTarget*> m_vRenderTargets;
 };

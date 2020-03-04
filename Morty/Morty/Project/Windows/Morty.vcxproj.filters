@@ -279,6 +279,9 @@
     <ClInclude Include="..\..\Core\MViewport.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\Organizer\MShadowTextureRenderTarget.h">
+      <Filter>Core\Organizer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -457,6 +460,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\MViewport.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Organizer\MShadowTextureRenderTarget.cpp">
+      <Filter>Core\Organizer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

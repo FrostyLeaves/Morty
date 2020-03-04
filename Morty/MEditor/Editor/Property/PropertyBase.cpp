@@ -57,6 +57,18 @@ bool PropertyBase::Editbool(bool& value)
 	return ImGui::Checkbox("", &value);
 }
 
+bool PropertyBase::Editbool(float& value)
+{
+	bool bBool = value > 1e-6;
+	if (ImGui::Checkbox("", &bBool))
+	{
+		value = bBool ? 1.0f : 0.0f;
+		return true;
+	}
+
+	return false;
+}
+
 bool PropertyBase::Editfloat(float& value, const float& fSpeed, const float& fMin, const float& fMax)
 {
 	if (value == -0.0f) value = 0.0f;
@@ -157,20 +169,20 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
 	{
 	case MVariant::EBool:
 		ShowValueBegin(strVariantName);
-		bModified |= Editbool(*value.GetByType<bool>());
+		bModified |= Editbool(*value.GetInt());
 		ShowValueEnd();
 		break;
 
 	case MVariant::EFloat:
 	case MVariant::EInt:
 		ShowValueBegin(strVariantName);
-		bModified |= Editfloat(*value.GetByType<float>());
+		bModified |= Editfloat(*value.GetFloat());
 		ShowValueEnd();
 		break;
 
 	case MVariant::EVector3:
 		ShowValueBegin(strVariantName);
-		bModified |= EditVector3(value.GetByType<float>());
+		bModified |= EditVector3(value.GetFloat());
 		ShowValueEnd();
 		break;
 
@@ -178,7 +190,7 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
 	case MVariant::EStruct:
 	if(ShowNodeBegin(strVariantName))
 	{
-		MContainer* pStruct = value.GetByType<MContainer>();
+		MContainer* pStruct = value.GetContainer();
 		unsigned int unCount = pStruct->GetMemberCount();
 		for (unsigned int i = 0; i < unCount; ++i)
 		{
@@ -224,9 +236,11 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 		std::vector<MResourceHolder*>& vResources =  pMaterial->GetPixelTextures();
 		for (unsigned int i = 0; i < vParams.size(); ++i)
 		{
-			MString strDlgName = "file_dlg_" + MStringHelper::ToString(i);
-
 			MShaderTextureParam& param = vParams[i];
+			if (param.unCode != 0)
+				continue;
+
+			MString strDlgName = "file_dlg_" + MStringHelper::ToString(i);
 
 			ShowValueBegin(param.strName);
 			MResource* pResource = vResources[i] ? vResources[i]->GetResource() : nullptr;
@@ -283,7 +297,7 @@ void PropertyBase::EditMResource(const MString& strDlgID, MResource* pResource, 
 	}
 
 	bool bButtonDown = ImGui::Button(strButtonLabel.c_str(), ImVec2(ImGui::GetContentRegionAvailWidth(), 0));
-	if (ImGui::IsItemHovered())
+	if (ImGui::IsItemHovered() && !strResourcePathName.empty())
 		ImGui::SetTooltip(strResourcePathName.c_str());
 
 	if (bButtonDown)

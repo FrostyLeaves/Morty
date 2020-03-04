@@ -10,6 +10,7 @@
 #define _M_MTEXTURE_H_
 #include "MGlobal.h"
 #include "Vector.h"
+#include "MColor.h"
 
 //TODO : Dynamic Update Texture and TextureCube.
 
@@ -42,6 +43,8 @@ public:
 	virtual Vector2 GetSize() override { return m_v2Size; }
 
 	unsigned char* GetImageData(){ return m_pImageData; }
+
+	void FillColor(const MColor& color);
 
 	virtual void GenerateBuffer(MIDevice* pDevice) override;
 	virtual void DestroyTexture(MIDevice* pDevice) override;

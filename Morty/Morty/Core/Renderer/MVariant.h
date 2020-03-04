@@ -18,6 +18,7 @@
 #include <map>
 #include <unordered_map>  
 
+class MContainer;
 class MStruct;
 class MVariantArray;
 
@@ -57,9 +58,14 @@ public:
 	unsigned int GetSize() const;
 	MEVariableType GetType() const { return m_eType; }
 
-	template <class T>
-	T* GetByType(){ return(T*)m_pData; }
-	
+	float* GetInt() { return (float*)m_pData; }
+	int* GetBool() { return (int*)m_pData; }
+	float* GetFloat() { return (float*)m_pData; }
+
+	MStruct* GetStruct() { return (MStruct*)m_pData; }
+	MVariantArray* GetArray() { return (MVariantArray*)m_pData; }
+	MContainer* GetContainer() { return (MContainer*)m_pData; }
+
 	const MVariant& operator = (const MVariant& var);
 
 	~MVariant();

@@ -32,6 +32,7 @@ MDirectX11Renderer::MDirectX11Renderer(MDirectX11Device* pDevice)
 	, m_pRasterizerState_Solid_CullBack(nullptr)
 	, m_pRasterizerState_Solid_CullFront(nullptr)
 	, m_pUsingMaterial(nullptr)
+	, m_pCurrentRenderTarget(nullptr)
 {
 
 }
@@ -46,8 +47,6 @@ void MDirectX11Renderer::AddOutputView(MIRenderView* pView)
 	if (MWindowsRenderView* pWindowView = dynamic_cast<MWindowsRenderView*>(pView))
 	{
 		MDirectX11RenderTarget* pRenderTarget = MDirectX11RenderTarget::CreateForView(m_pDevice, pWindowView);
-		pView->SetRenderTarget(pRenderTarget);
-
 	}
 }
 
@@ -139,8 +138,6 @@ bool MDirectX11Renderer::Initialize()
 	//三角形解析顶点
 	m_pDevice->m_pD3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	InitDefaultResource();
-
 	return true;
 }
 
@@ -181,8 +178,6 @@ void MDirectX11Renderer::Release()
 		m_pDepthTextureSamplerState->Release();
 		m_pDepthTextureSamplerState = nullptr;
 	}
-
-	ReleaseDefaultResource();
 }
 
 void MDirectX11Renderer::SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth)
@@ -228,30 +223,15 @@ void MDirectX11Renderer::RecoverRenderTarget(MIRenderTarget* pRenderTarget)
 {
 	//warning! Material may has been switched.
 
-	if(pRenderTarget->m_pTargetView)
-		m_pDevice->m_pD3dContext->OMSetRenderTargets(1, &pRenderTarget->m_pTargetView, pRenderTarget->m_pDepthStencilView);
-	else
-		m_pDevice->m_pD3dContext->OMSetRenderTargets(0, nullptr, pRenderTarget->m_pDepthStencilView);
-}
-
-void MDirectX11Renderer::InitDefaultResource()
-{
-	m_pDefaultTexture = new MTexture();
-	m_pDefaultTexture->SetSize(Vector2(2, 2));
-	m_pDefaultTexture->GetImageData()[0] = 255;
-	m_pDefaultTexture->GetImageData()[1] = 255;
-	m_pDefaultTexture->GetImageData()[2] = 255;
-	m_pDefaultTexture->GetImageData()[3] = 255;
-	m_pDefaultTexture->GenerateBuffer(m_pDevice);
-}
-
-void MDirectX11Renderer::ReleaseDefaultResource()
-{
-	if (m_pDefaultTexture)
+	if (m_pCurrentRenderTarget != pRenderTarget)
 	{
-		m_pDefaultTexture->DestroyTexture(m_pDevice);
-		delete m_pDefaultTexture;
-		m_pDefaultTexture = nullptr;
+		m_pUsingMaterial = nullptr;
+		m_pCurrentRenderTarget = pRenderTarget;
+
+		if (pRenderTarget->m_pTargetView)
+			m_pDevice->m_pD3dContext->OMSetRenderTargets(1, &pRenderTarget->m_pTargetView, pRenderTarget->m_pDepthStencilView);
+		else
+			m_pDevice->m_pD3dContext->OMSetRenderTargets(0, nullptr, pRenderTarget->m_pDepthStencilView);
 	}
 }
 
@@ -292,7 +272,7 @@ bool MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial)
 	m_pDevice->m_pD3dContext->VSSetShader(dynamic_cast<MVertexShaderBuffer*>(pVertexShader->GetBuffer())->m_pVertexShader, nullptr, 0);
 	m_pDevice->m_pD3dContext->PSSetShader(dynamic_cast<MPixelShaderBuffer*>(pPixelShader->GetBuffer())->m_pPixelShader, nullptr, 0);
 
-
+	
 	if (m_eRasterizerType != pMaterial->GetRenderState())
 	{
 		//切换渲染状态
@@ -361,21 +341,19 @@ void MDirectX11Renderer::UpdateMaterialResource()
 		if (param.pTexture)
 		{
 			if (nullptr == param.pTexture->GetBuffer())
+			{
 				param.pTexture->GenerateBuffer(m_pDevice);
+			}
 
 			m_pDevice->m_pD3dContext->PSSetShaderResources(param.unBindPoint, param.unBindCount, &(param.pTexture->GetBuffer()->m_pShaderResourceView));
-		}
-		else
-		{
-			m_pDevice->m_pD3dContext->PSSetShaderResources(param.unBindPoint, param.unBindCount, &(m_pDefaultTexture->GetBuffer()->m_pShaderResourceView));
 		}
 	}
 
 	for (MShaderSampleParam& param : m_pUsingMaterial->GetPixelShader()->GetBuffer()->m_vSampleParamsTemplate)
 	{
-		if (param.strName == "U_defaultSampler")
+		if (param.unCode == SHADER_PARAM_CODE_DEFAULT_SAMPLER)
 			m_pDevice->m_pD3dContext->PSSetSamplers(param.unBindPoint, param.unBindCount, &m_pDefaultSamplerState);
-		else if (param.strName == "U_shadowMapSampler")
+		else if (param.unCode == SHADER_PARAM_CODE_SHADOW_SAMPLER)
 			m_pDevice->m_pD3dContext->PSSetSamplers(param.unBindPoint, param.unBindCount, &m_pDepthTextureSamplerState);
 	}
 }

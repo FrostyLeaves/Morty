@@ -176,6 +176,9 @@ Matrix4 MViewport::GetLightInverseProjection(MPointLight* pLight)
 
 Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight)
 {
+	if (nullptr == pLight)
+		return Matrix4::IdentityMatrix;
+
 	Matrix4 matLightInv(pLight->GetTransform().GetRotation());
 	matLightInv = matLightInv.Inverse();
 

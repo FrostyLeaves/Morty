@@ -36,9 +36,8 @@ float3 CalcPointLight(PointLight pointLight, float3 f3CameraDir, float3 f3Normal
                 ) * fAttenuation;
 }
 
-float ShadowCalculation(VS_OUT input)
+float ShadowCalculation(VS_OUT input, float3 f3Normal)
 {
-    float3 f3Normal = normalize(input.normal);
     float2 shadowTexCoords;
     shadowTexCoords.x = 0.5f + (input.lightSpacePos.x / input.lightSpacePos.w * 0.5f);
     shadowTexCoords.y = 0.5f - (input.lightSpacePos.y / input.lightSpacePos.w * 0.5f);
@@ -48,8 +47,11 @@ float ShadowCalculation(VS_OUT input)
 
     float pixelDepth = input.lightSpacePos.z / input.lightSpacePos.w;
 
+    float NdotL = 0.0f;
     float3 f3LightDir = normalize(-U_dirLight.f3Direction);
-    float NdotL = dot(f3Normal, f3LightDir);
+
+    NdotL = dot(f3Normal, f3LightDir);
+    
     float margin = acos(saturate(NdotL));
 
     if (NdotL > 0)
@@ -61,17 +63,19 @@ float ShadowCalculation(VS_OUT input)
         
         float lighting = 0.0f;
 
-        lighting += float(U_mat.texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy + float2(0, 0), pixelDepth - epsilon));
-        lighting += float(U_mat.texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy + float2(0, offset), pixelDepth - epsilon));
-        lighting += float(U_mat.texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy + float2(0, -offset), pixelDepth - epsilon));
-        lighting += float(U_mat.texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy + float2(offset, 0), pixelDepth - epsilon));
-        lighting += float(U_mat.texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy + float2(offset, offset), pixelDepth - epsilon));
-        lighting += float(U_mat.texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy + float2(offset, -offset), pixelDepth - epsilon));
-        lighting += float(U_mat.texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy + float2(-offset, 0), pixelDepth - epsilon));
-        lighting += float(U_mat.texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy + float2(-offset, offset), pixelDepth - epsilon));
-        lighting += float(U_mat.texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy + float2(-offset, -offset), pixelDepth - epsilon));
+        float fLightTop = 0.0f;
+        fLightTop += float(U_texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy + float2(-offset, -offset), pixelDepth - epsilon));
+        fLightTop += float(U_texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy + float2(offset, -offset), pixelDepth - epsilon));
+        fLightTop *= 0.5f;
 
-        return lighting / 9.0f;
+        float fLightBom = 0.0f;
+        fLightBom += float(U_texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy + float2(-offset, offset), pixelDepth - epsilon));
+        fLightBom += float(U_texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy + float2(offset, offset), pixelDepth - epsilon));
+        fLightBom *= 0.5f;
+
+        lighting = (fLightTop + fLightBom) * 0.5f;
+
+        return lighting;
     }
 
     return 0.0f;
@@ -83,15 +87,33 @@ float4 PS(VS_OUT input) : SV_Target
     float4 f3AmbiColor = U_mat.texDiffuse.Sample(U_defaultSampler, input.uv);
     float4 f3DiffColor = f3AmbiColor;
     float4 f3SpecColor = U_mat.texSpecular.Sample(U_defaultSampler, input.uv);
-    float3 f3CameraDir = normalize(U_f3CameraWorldPos - input.worldPos);
-    float3 f3Normal = normalize(input.normal);
+    
+    float3 f3CameraDir = normalize(U_f3CameraPosition - input.worldPos);
+    float3 f3Normal = float3(0.0f, 0.0f, 0.0f);
+    if (U_mat.bUseNormalTex > 0.5f)
+    {
+        f3Normal = U_mat.texNormal.Sample(U_defaultSampler, input.uv);
+        f3Normal = f3Normal.rgb * 2.0f - 1.0f;
+        f3Normal = normalize(f3Normal);
+
+        float3 T = normalize(input.tangent);
+        float3 B = normalize(input.bitangent);
+        float3 N = normalize(input.normal);
+        float3x3 TBN = float3x3(T,B,N);
+
+        f3Normal = mul(f3Normal, TBN);
+    }
+    else
+    {
+        f3Normal = normalize(input.normal);
+    }
 
     float3 f3Color = U_mat.f3Ambient * f3AmbiColor * 0.1f;
-    float shadow = ShadowCalculation(input);
+    float shadow = ShadowCalculation(input, f3Normal);
     
 
     f3Color += shadow * CalcDirectionLight(U_dirLight, f3CameraDir, f3Normal, f3AmbiColor, f3DiffColor, f3SpecColor);
-    f3Color += shadow * CalcPointLight(U_pointLights[0], f3CameraDir, f3Normal, input.worldPos, f3AmbiColor, f3DiffColor, f3SpecColor);
+    f3Color += CalcPointLight(U_pointLights[0], f3CameraDir, f3Normal, input.worldPos, f3AmbiColor, f3DiffColor, f3SpecColor);
     
     return float4(f3Color, 1.0f);
 }

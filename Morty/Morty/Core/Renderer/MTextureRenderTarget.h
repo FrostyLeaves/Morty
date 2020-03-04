@@ -25,7 +25,7 @@ public:
 		ERenderDepth = 2,
 	};
 public:
-	MTextureRenderTarget(MIDevice* m_pDevice);
+	MTextureRenderTarget();
     virtual ~MTextureRenderTarget();
 
 public:
@@ -45,7 +45,7 @@ public:
 public:
 	MTexture* m_pBackTexture;
 	MRenderDepthTexture* m_pDepthTexture;
-private:
+protected:
 	MIDevice* m_pDevice;
 	MViewport* m_pViewport;
 	unsigned int m_eRenderTargetType;

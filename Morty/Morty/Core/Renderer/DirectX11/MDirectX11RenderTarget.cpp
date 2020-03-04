@@ -2,9 +2,10 @@
 #include "MWindowsRenderView.h"
 #include "MDirectX11Device.h"
 #include "MLogManager.h"
+#include "MViewport.h"
 
 MDirectX11RenderTarget::MDirectX11RenderTarget(MDirectX11Device* pDevice) : MIRenderTarget()
-	,m_pDevice(pDevice), m_pSwapChain(nullptr), m_funcRenderFunction(nullptr)
+	,m_pDevice(pDevice), m_pSwapChain(nullptr), m_pView(nullptr)
 {
 
 }
@@ -80,6 +81,11 @@ MDirectX11RenderTarget* MDirectX11RenderTarget::CreateForView(MDirectX11Device* 
 	unsigned int unWidth = pView->GetViewWidth();
 	unsigned int unHeight = pView->GetViewHeight();
 	pRenderTarget->OnResize(unWidth, unHeight);
+
+
+	pRenderTarget->m_pView = pView;
+	pView->SetRenderTarget(pRenderTarget);
+
 	return pRenderTarget;
 }
 
@@ -98,6 +104,7 @@ void MDirectX11RenderTarget::OnResize(const unsigned int& unWidth, const unsigne
 
 	m_pDevice->DestroyRenderTarget(this);
 
+
 	HRESULT hr;
 	hr = m_pSwapChain->ResizeBuffers(1, unSafeWidth, unSafeHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
 	if (FAILED(hr))
@@ -111,6 +118,16 @@ void MDirectX11RenderTarget::OnResize(const unsigned int& unWidth, const unsigne
 
 void MDirectX11RenderTarget::OnRender(MIRenderer* pRenderer)
 {
-	MIRenderTarget::OnRender(pRenderer);
+	if (nullptr == m_pView)
+		return;
+
+	m_pView->OnRenderBegin();
+	for (MViewport* pViewport : m_pView->GetViewports())
+	{
+		pViewport->Render(pRenderer);
+	}
+	m_pView->OnRenderEnd();
+
+
 	m_pSwapChain->Present(0, 0);
 }

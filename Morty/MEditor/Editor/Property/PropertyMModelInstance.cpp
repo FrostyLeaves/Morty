@@ -8,6 +8,7 @@ void PropertyMModelInstance::EditAnimation(MModelInstance* pNode)
 	if (MModelResource* pModelResource = pNode->GetResource())
 	{
 		MSkeletalAnimController* pController = pNode->GetSkeletalAnimationController();
+		const std::vector<MString>& vAnimationsList = *pModelResource->GetAnimationsName();
 
 		unsigned int unCurrentAnimationIndex = 0;
 		if (pController)
@@ -17,11 +18,14 @@ void PropertyMModelInstance::EditAnimation(MModelInstance* pNode)
 				unCurrentAnimationIndex = pAnimation->GetIndex();
 			}
 		}
-
-		const std::vector<MString>& vAnimationsList = *pModelResource->GetAnimationsName();
-
 		if (!vAnimationsList.empty())
 		{
+			if (!pController)
+			{
+				pNode->SetPlayAnimation((*pModelResource->GetAnimationsName())[unCurrentAnimationIndex]);
+				pController = pNode->GetSkeletalAnimationController();
+			}
+
 			ShowValueBegin("Animations");
 			if (EditEnum(vAnimationsList, unCurrentAnimationIndex))
 			{

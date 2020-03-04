@@ -54,11 +54,13 @@ bool MTextureResource::Load(const MString& strResourcePath)
 	unsigned char* tempData = nullptr;
  	bool result = image.Encode2RGBA(tempData, dataSize, true);
 
-	if (result)
-	{
-		memcpy(pData, tempData, dataSize);
-		return true;
-	}
+	if (false == result)
+		return false;
+	
+	memcpy(pData, tempData, dataSize);
+	m_pTexture->GenerateBuffer(m_pEngine->GetDevice());
 
+	image.FreeMemory(tempData);
+	
 	return true;
 }

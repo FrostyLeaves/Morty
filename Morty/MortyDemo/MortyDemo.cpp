@@ -125,38 +125,62 @@ int main(int argc, char* argv[])
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
 	pRootNode->SetName("RootNode");
 
-
+	
 	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/Ground.fbx"));
 
-	MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
-	pSpatial->Load(pResource);
-	pSpatial->SetPosition(Vector3(0, 0, 0));
-	pSpatial->SetName("Ground");
-
-	pRootNode->AddNode(pSpatial);
-
-	pSpatial->SetRotation(Quaternion(Vector3(0, 1, 0), 90.0f));
-//	pSpatial->SetScale(Vector3(0.01, 0.01, 0.01));
-//	pSpatial->GetFixedChildren()[15]->SetVisible(false);
-
-
-	MModelResource* pPikachuResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/Pikachu.fbx"));
-	MModelInstance* pPikachu = engine.GetObjectManager()->CreateObject<MModelInstance>();
-	pPikachu->Load(pPikachuResource);
-	pPikachu->SetPosition(Vector3(0, 0, 10));
-	pPikachu->SetName("Pikachu");
-
-	pRootNode->AddNode(pPikachu);
-
-	if (MModelResource* pModelResource = pPikachu->GetResource())
+	for (int i = 0; i < 1; ++i)
 	{
-		if(pPikachu->SetPlayAnimation((*pModelResource->GetAnimationsName())[2]))
-		{
-			MIAnimController* pController = pPikachu->GetSkeletalAnimationController();
-			pController->SetLoop(true);
-			pController->Play();
-		}	
+		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
+		pSpatial->Load(pResource);
+		pSpatial->SetPosition(Vector3(0, 0, i * 10));
+		pSpatial->SetName("Ground");
+
+		pRootNode->AddNode(pSpatial);
+
+		pSpatial->SetRotation(Quaternion(Vector3(0, 1, 0), 90.0f));
 	}
+
+// 
+// 	
+// 	MString textureID[] = {"005","003","007","004","014","008","002","015","019"};
+// 
+// 	MModelResource* pPikachuResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/gun/model.dae"));
+// 	for (int i = 0; i < 9; ++i)
+// 	{
+// 		MMaterial* pMaterial = pPikachuResource->GetMeshDefaultMaterial(i);
+// 		std::vector<MShaderTextureParam>& vParams = pMaterial->GetPixelTextureParams();
+// 
+// 		MResource* pDiffuseRes = engine.GetResourceManager()->LoadResource("./Model/gun/tex/Material." + textureID[i] + "_albedo.jpg");
+// 		MResource* pNormalMapRes = engine.GetResourceManager()->LoadResource("./Model/gun/tex/Material." + textureID[i] + "_normal.png");
+// 
+// 		pMaterial->SetPixelTexutreParam("U_mat.texDiffuse", pDiffuseRes);
+// 		pMaterial->SetPixelTexutreParam("U_mat.texNormal", pNormalMapRes);
+// 
+// 		for (MShaderParam& param : pMaterial->GetPixelShaderParams())
+// 		{
+// 			if (param.unCode == SHADER_PARAM_CODE_MATERIAL)
+// 			{
+// 				MStruct* pStruct = param.var.GetStruct()->FindMember("U_mat")->GetStruct();
+// 				pStruct->SetMember("bUseNormalTex", true);
+// 				
+// 				param.SetDirty();
+// 				continue;
+// 			}
+// 		}
+// 	}
+// 	
+// 	MModelInstance* pPikachu = engine.GetObjectManager()->CreateObject<MModelInstance>();
+// 	pPikachu->Load(pPikachuResource);
+// 	pPikachu->SetPosition(Vector3(0, 0, 10));
+// 	pPikachu->SetScale(Vector3(10, 10, 10));
+// 	pPikachu->SetName("Pikachu");
+// 
+// 	
+// 
+// 	pRootNode->AddNode(pPikachu);
+// 
+// 	
+
 
 	MPointLight* pLight = engine.GetObjectManager()->CreateObject<MPointLight>();
 	pLight->SetName("Light");
@@ -166,6 +190,7 @@ int main(int argc, char* argv[])
 	MDirectionalLight* pDirLight = engine.GetObjectManager()->CreateObject<MDirectionalLight>();
 	pDirLight->SetName("DirLight");
 	pRootNode->AddNode(pDirLight);
+	//pDirLight->SetRotation(Quaternion(Vector3(1,0,0), -90.0f));
 
 	MyCamera* pCamera = engine.GetObjectManager()->CreateObject<MyCamera>();
 	pCamera->SetPosition(Vector3(0, 10, -100));
@@ -203,14 +228,27 @@ int main(int argc, char* argv[])
 	MainEditor* pEditorView = new MainEditor();
 	pEditorView->Initialize(&engine, "Morty");
 	engine.AddView(pEditorView);
-
 	pEditorView->SetEditorNode(pRootNode);
 
+// 	MScene* pScene = engine.GetObjectManager()->CreateObject<MScene>();
+// 	pScene->SetRootNode(pRootNode);
+// 	MWindowsRenderView* pView = new MWindowsRenderView();
+// 	pView->Initialize(&engine, "Morty");
+// 	MViewport* pViewport = engine.GetObjectManager()->CreateObject<MViewport>();
+// 	pView->AppendViewport(pViewport);
+// 	pViewport->SetSize(Vector2(pView->GetViewWidth(), pView->GetViewWidth()));
+// 	pViewport->SetScene(pScene);
+//	engine.AddView(pView);
+
+
 	engine.SetRootNode(pRootNode);
+
 	
 	while (engine.MainLoop());
 
 	engine.Release();
 
+
+	system("PAUSE");
 	return 0;
 }

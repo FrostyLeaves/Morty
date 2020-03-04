@@ -3,9 +3,9 @@
 #include "MRenderStructure.h"
 #include "MTexture.h"
 
-MTextureRenderTarget::MTextureRenderTarget(MIDevice* m_pDevice)
+MTextureRenderTarget::MTextureRenderTarget()
 	: MIRenderTarget()
-	, m_pDevice(m_pDevice)
+	, m_pDevice(nullptr)
 	, m_pViewport(nullptr)
 	, m_pBackTexture(new MTexture())
 	, m_pDepthTexture(new MRenderDepthTexture())
@@ -34,7 +34,8 @@ MTextureRenderTarget::~MTextureRenderTarget()
 
 MTextureRenderTarget* MTextureRenderTarget::CreateForTexture(MIDevice* pDevice, const unsigned int& eRenderTargetType, const unsigned int& unWidth, const unsigned int& unHeight)
 {
-	MTextureRenderTarget* pRenderTarget = new MTextureRenderTarget(pDevice);
+	MTextureRenderTarget* pRenderTarget = new MTextureRenderTarget();
+	pRenderTarget->m_pDevice = pDevice;
 	pRenderTarget->m_eRenderTargetType = eRenderTargetType;
 	pRenderTarget->OnResize(unWidth, unHeight);
 

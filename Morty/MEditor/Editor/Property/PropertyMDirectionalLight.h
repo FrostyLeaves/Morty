@@ -5,7 +5,7 @@
 #include "MDirectionalLight.h"
 
 #include "MScene.h"
-#include "MTextureRenderTarget.h"
+#include "MShadowTextureRenderTarget.h"
 #include "MTexture.h"
 #include "MRenderStructure.h"
 
@@ -26,7 +26,7 @@ public:
 
 				ShowValueBegin("ShadowMap");
 				MScene* pScene = pNode->GetScene();
-				if (MTextureRenderTarget* pShadowTextureRt = pScene->GetShadowRenderTarget())
+				if (MShadowTextureRenderTarget* pShadowTextureRt = pScene->GetShadowRenderTarget())
 				{
 					if (MRenderDepthTexture* pDepthTexture = pShadowTextureRt->GetDepthTexture())
 					{

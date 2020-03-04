@@ -11,6 +11,7 @@
 
 #include "MMaterial.h"
 #include "MMaterialResource.h"
+#include "MTextureResource.h"
 
 #include "MBounds.h"
 #include "MSkeleton.h"
@@ -476,35 +477,55 @@ void MModelResource::ProcessMaterial(const aiScene* pScene, std::vector<unsigned
 				memcpy(&fShininess, prop->mData, sizeof(float));
 		}
 		//Test Data, need read from file.
+		MStruct* pMaterialStruct = nullptr;
 		for (MShaderParam& param : m_vDefaultMaterial[i]->GetPixelShaderParams())
 		{
 			if (param.unCode == SHADER_PARAM_CODE_MATERIAL)
 			{
-				if (MStruct* pStruct = param.var.GetByType<MStruct>())
+				if (MStruct* pStruct = param.var.GetStruct())
 				{
-					if (MStruct* pMat = pStruct->FindMember("U_mat")->GetByType<MStruct>())
+					if (MStruct* pMat = pStruct->FindMember("U_mat")->GetStruct())
 					{
+						pMaterialStruct = pMat;
+
 						pMat->SetMember("f3Ambient", v3Ambient);
 						pMat->SetMember("f3Diffuse", v3Diffuse);
 						pMat->SetMember("f3Specular", v3Specular);
 						pMat->SetMember("fShininess", fShininess);
+						pMat->SetMember("bUseNormalTex", false);
 					}
 				}
+
+				continue;
 			}
 		}
 
 		MString strResourceFolder = MResource::GetFolder(m_strResourcePath);
 
-		aiString strDiffuseTextureFile;
+		aiString strDiffuseTextureFile, strNormalTextureFile;
 		pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &strDiffuseTextureFile);
+		pMaterial->GetTexture(aiTextureType_NORMALS, 0, &strNormalTextureFile);
 		MString strDiffuseFileName = MResource::GetFileName(MString(strDiffuseTextureFile.C_Str()));
+		MString strNormalFileName = MResource::GetFileName(MString(strNormalTextureFile.C_Str()));
+
+		MResource* pDiffuseTexRes = nullptr;
+		MResource* pNormalMapRes = nullptr;
 
 		if (!strDiffuseFileName.empty())
+			pDiffuseTexRes = m_pEngine->GetResourceManager()->LoadResource(strResourceFolder + "/tex/" + strDiffuseFileName);
+		else
+			pDiffuseTexRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_WHITE);
+
+		if (!strNormalFileName.empty())
 		{
-			if (MResource* pTexResource = m_pEngine->GetResourceManager()->LoadResource(strResourceFolder + "/tex/" + strDiffuseFileName))
-			{
-				m_vDefaultMaterial[i]->SetPixelTexutreParam("U_mat.texDiffuse", pTexResource);
-			}
+			pNormalMapRes = m_pEngine->GetResourceManager()->LoadResource(strResourceFolder + "/tex/" + strNormalFileName);
+			pMaterialStruct->SetMember("bUseNormalTex", true);
 		}
+		else
+			pNormalMapRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_NORMALMAP);
+
+		m_vDefaultMaterial[i]->SetPixelTexutreParam("U_mat.texDiffuse", pDiffuseTexRes);
+		m_vDefaultMaterial[i]->SetPixelTexutreParam("U_mat.texNormal", pNormalMapRes);
+
 	}
 }

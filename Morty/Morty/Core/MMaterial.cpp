@@ -121,7 +121,7 @@ void MMaterial::SetPixelParam(const MString& strName, const MVariant& variable)
 		}
 		else if (param.var.GetType() == MVariant::EStruct)
 		{
-			MStruct* pStruct = param.var.GetByType<MStruct>();
+			MStruct* pStruct = param.var.GetStruct();
 			if (MVariant* pVar = pStruct->FindMember(strName))
 			{
 				*pVar = variable;

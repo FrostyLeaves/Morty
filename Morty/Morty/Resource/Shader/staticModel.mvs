@@ -1,14 +1,5 @@
 #include "modelHeader.hlsl"
 
-struct VS_IN
-{
-    float3 pos : POSITION;
-    float3 normal : NORMAL;
-    float2 uv : TEXCOORDS;
-    float3 v4 : Tangent;
-    float3 v5 : BITANGENT;
-};
-
 VS_OUT VS(VS_IN input)
 {
     VS_OUT output;
@@ -21,6 +12,9 @@ VS_OUT VS(VS_IN input)
     output.worldPos = mul(float4(input.pos, 1.0f), U_matWorld).xyz;
 
     output.lightSpacePos = mul(float4(input.pos, 1.0f), mul(U_matWorld, U_matLightProj));
+
+    output.tangent = input.tangent;
+    output.bitangent = input.bitangent;
 
     return output;
 }

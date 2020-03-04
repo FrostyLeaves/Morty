@@ -23,9 +23,9 @@ struct MVertex
 	Vector3 position;
 
 	Vector3 normal;
-	Vector2 texCoords;
 	Vector3 tangent;
 	Vector3 bitangent;
+	Vector2 texCoords;
 };
 
 //带骨骼顶点
@@ -42,9 +42,9 @@ struct MVertexWithBones
 	float bonesWeight[MBONES_PER_VERTEX];
 
 	Vector3 normal;
-	Vector2 texCoords;
 	Vector3 tangent;
 	Vector3 bitangent;
+	Vector2 texCoords;
 
 };
 

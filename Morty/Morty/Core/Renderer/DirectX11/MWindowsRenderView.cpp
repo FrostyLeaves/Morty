@@ -101,17 +101,6 @@ void MWindowsRenderView::OnResize(const int& nWidth, const int& nHeight)
 void MWindowsRenderView::SetRenderTarget(MIRenderTarget* pRenderTarget)
 {
 	MIRenderView::SetRenderTarget(pRenderTarget);
-	if (m_pRenderTarget)
-	{
-		m_pRenderTarget->m_funcRenderFunction = [this](MIRenderer* pRenderer) {
-			OnRenderBegin();
-			for (MViewport* pViewport : m_vViewport)
-			{
-				pViewport->Render(pRenderer);
-			}
-			OnRenderEnd();
-		};
-	}
 }
 
 bool MWindowsRenderView::MainLoop()

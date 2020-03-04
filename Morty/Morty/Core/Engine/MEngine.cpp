@@ -30,7 +30,7 @@ MEngine::MEngine()
 	, m_pRootNode(nullptr)
 	, m_pDevice(nullptr)
 	, m_pRenderer(nullptr)
-	, m_cTickInfo(50)
+	, m_cTickInfo(3000)
 {
 }
 
@@ -146,6 +146,7 @@ void MEngine::Release()
 
 void MEngine::Tick(float fDelta)
 {
+//	MLogManager::GetInstance()->Log("fps:  %d", (int)(1.0f / fDelta));
 	if (m_pRootNode)
 	{
 		m_pRootNode->Tick(fDelta);
@@ -193,26 +194,26 @@ bool MEngine::InitializeDefaultResource()
 	pSkyBoxMaterialRes->LoadVertexShader(pSkyBoxVSResource);
 	pSkyBoxMaterialRes->LoadPixelShader(pSkyBoxPSResource);
 
-	static MString vTexturePath[6] = {
-		"ashcanyon_rt.tga",
-		"ashcanyon_lf.tga",
-		"ashcanyon_up.tga",
-		"ashcanyon_dn.tga",
-		"ashcanyon_ft.tga",
-		"ashcanyon_bk.tga",
-	};
-
-	MTextureResource* vTextureRes[6];
-	for (int i = 0; i < 6; ++i)
-	{
-		vTextureRes[i] = static_cast<MTextureResource*>(GetResourceManager()->LoadResource("./Texture/skybox/" + vTexturePath[i]));
-	}
-
-	MTextureCubeResource* pTextureCubeRes = GetResourceManager()->CreateResource<MTextureCubeResource>();
-	pTextureCubeRes->SetTextures(vTextureRes);
-
-	std::vector<MShaderTextureParam>& vTexParams = pSkyBoxMaterialRes->GetMaterialTemplate()->GetPixelTextureParams();
-	pSkyBoxMaterialRes->GetMaterialTemplate()->SetPixelTexutreParam("SkyTexCube", pTextureCubeRes);
+// 	static MString vTexturePath[6] = {
+// 		"ashcanyon_rt.tga",
+// 		"ashcanyon_lf.tga",
+// 		"ashcanyon_up.tga",
+// 		"ashcanyon_dn.tga",
+// 		"ashcanyon_ft.tga",
+// 		"ashcanyon_bk.tga",
+// 	};
+// 
+// 	MTextureResource* vTextureRes[6];
+// 	for (int i = 0; i < 6; ++i)
+// 	{
+// 		vTextureRes[i] = static_cast<MTextureResource*>(GetResourceManager()->LoadResource("./Texture/skybox/" + vTexturePath[i]));
+// 	}
+// 
+// 	MTextureCubeResource* pTextureCubeRes = GetResourceManager()->CreateResource<MTextureCubeResource>();
+// 	pTextureCubeRes->SetTextures(vTextureRes);
+// 
+// 	std::vector<MShaderTextureParam>& vTexParams = pSkyBoxMaterialRes->GetMaterialTemplate()->GetPixelTextureParams();
+// 	pSkyBoxMaterialRes->GetMaterialTemplate()->SetPixelTexutreParam("SkyTexCube", pTextureCubeRes);
 
 
 	MResource* pEmptyVSResource = GetResourceManager()->LoadResource("./Shader/empty.mvs");
@@ -228,6 +229,24 @@ bool MEngine::InitializeDefaultResource()
 	pShadowWithAnimMaterialRes->LoadVertexShader(pAnimVSResource);
 	pShadowWithAnimMaterialRes->LoadPixelShader(pEmptyPSResource);
 	pShadowWithAnimMaterialRes->GetMaterialTemplate()->SetRenderState(unShadowRenderState);
+
+
+
+	MTextureResource* pWhiteTextureRes = GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_WHITE);
+	MTexture* pWhiteTexture = pWhiteTextureRes->GetTextureTemplate();
+	pWhiteTexture->SetSize(Vector2(1, 1));
+	pWhiteTexture->FillColor(MColor(1, 1, 1, 1));
+
+	MTextureResource* pBlackTextureRes = GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_BLACK);
+	MTexture* pBlackTexture = pBlackTextureRes->GetTextureTemplate();
+	pBlackTexture->SetSize(Vector2(1, 1));
+	pBlackTexture->FillColor(MColor(0, 0, 0, 1));
+
+	MTextureResource* pNormalMapRes = GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_NORMALMAP);
+	MTexture* pNormalMap = pNormalMapRes->GetTextureTemplate();
+	pNormalMap->SetSize(Vector2(1, 1));
+	pNormalMap->FillColor(MColor(0.5f, 0.5f, 1, 1));
+
 
 	return true;
 }

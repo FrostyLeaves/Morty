@@ -11,4 +11,8 @@ const char* DEFAULT_MATERIAL_SKYBOX = "DefMatSkyBox";
 const char* DEFAULT_MATERIAL_SHADOW = "DefMatShadow";
 const char* DEFAULT_MATERIAL_SHADOW_ANIM = "DefMatShadowAnim";
 
-const unsigned int MSHADOW_TEXTURE_SIZE = 512;
+const char* DEFAULT_TEXTURE_WHITE = "DefTexWhite";
+const char* DEFAULT_TEXTURE_BLACK = "DefTexBlack";
+const char* DEFAULT_TEXTURE_NORMALMAP = "DefTexNormalMap";
+
+const unsigned int MSHADOW_TEXTURE_SIZE = 2048;

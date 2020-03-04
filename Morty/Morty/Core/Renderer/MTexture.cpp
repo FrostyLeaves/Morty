@@ -15,7 +15,11 @@ MTexture::MTexture()
 
 MTexture::~MTexture()
 {
-
+	if (nullptr != m_pImageData)
+	{
+		delete[] m_pImageData;
+		m_pImageData = nullptr;
+	}
 }
 
 void MTexture::SetSize(const Vector2& v2Size)
@@ -29,9 +33,29 @@ void MTexture::SetSize(const Vector2& v2Size)
 
 		m_unImageDataArraySize = (unsigned int)v2Size.x * v2Size.y * 4;
 		m_pImageData = new unsigned char[m_unImageDataArraySize];
+		memset(m_pImageData, 255, m_unImageDataArraySize * sizeof(unsigned char));
 	}
 
 	m_v2Size = v2Size;
+}
+
+void MTexture::FillColor(const MColor& color) 
+{
+	const unsigned int r = (unsigned int)(color.r * 255.0f);
+	const unsigned int g = (unsigned int)(color.g * 255.0f);
+	const unsigned int b = (unsigned int)(color.b * 255.0f);
+	const unsigned int a = (unsigned int)(color.a * 255.0f);
+
+	if (m_pImageData)
+	{
+		for (unsigned int i = 0; i < m_unImageDataArraySize; i += 4)
+		{
+			m_pImageData[i] = r;
+			m_pImageData[i + 1] = g;
+			m_pImageData[i + 2] = b;
+			m_pImageData[i + 3] = a;
+		}
+	}
 }
 
 void MTexture::GenerateBuffer(MIDevice* pDevice)
@@ -40,6 +64,13 @@ void MTexture::GenerateBuffer(MIDevice* pDevice)
 		pDevice->DestroyTexture(&m_pTextureBuffer);
 
 	pDevice->GenerateTexture(&m_pTextureBuffer, this);
+
+	if (nullptr != m_pImageData)
+	{
+		delete[] m_pImageData;
+		m_pImageData = nullptr;
+		m_unImageDataArraySize = 0;
+	}
 }
 
 void MTexture::DestroyTexture(MIDevice* pDevice)

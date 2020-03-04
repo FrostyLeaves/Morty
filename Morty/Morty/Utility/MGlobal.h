@@ -41,13 +41,20 @@ extern const char* DEFAULT_MATERIAL_SKYBOX;
 extern const char* DEFAULT_MATERIAL_SHADOW;
 extern const char* DEFAULT_MATERIAL_SHADOW_ANIM;
 
+extern const char* DEFAULT_TEXTURE_WHITE;
+extern const char* DEFAULT_TEXTURE_BLACK;
+extern const char* DEFAULT_TEXTURE_NORMALMAP;
 
 const unsigned int SHADER_PARAM_CODE_DEFAULT = 0;
-const unsigned int SHADER_PARAM_CODE_SPACE = 1;
-const unsigned int SHADER_PARAM_CODE_MATERIAL = 2;
-const unsigned int SHADER_PARAM_CODE_LIGHT = 3;
-const unsigned int SHADER_PARAM_CODE_WORLDINFO = 4;
-const unsigned int SHADER_PARAM_CODE_ANIMATION = 5;
+const unsigned int SHADER_PARAM_CODE_MESH_MATRIX = 1;
+const unsigned int SHADER_PARAM_CODE_WORLD_MATRIX = 2;
+const unsigned int SHADER_PARAM_CODE_MATERIAL = 3;
+const unsigned int SHADER_PARAM_CODE_LIGHT = 4;
+const unsigned int SHADER_PARAM_CODE_WORLDINFO = 5;
+const unsigned int SHADER_PARAM_CODE_ANIMATION = 6;
+const unsigned int SHADER_PARAM_CODE_SHADOW_MAP = 7;
+const unsigned int SHADER_PARAM_CODE_DEFAULT_SAMPLER = 8;
+const unsigned int SHADER_PARAM_CODE_SHADOW_SAMPLER = 9;
 //
 
 extern const unsigned int MSHADOW_TEXTURE_SIZE;

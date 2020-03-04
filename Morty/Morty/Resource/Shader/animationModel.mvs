@@ -1,20 +1,6 @@
 #include "modelHeader.hlsl"
 
-struct VS_IN
-{
-    float3 pos : POSITION;
-
-    int bonesID[MBONES_PER_VERTEX] : BONES_ID;
-    float bonesWeight[MBONES_PER_VERTEX] : BONES_WEIGHT;
-    
-    float3 normal : NORMAL;
-    float2 uv : TEXCOORDS;
-    float3 v4 : Tangent;
-    float3 v5 : BITANGENT;
-
-};
-
-VS_OUT VS(VS_IN input)
+VS_OUT VS(VS_IN_ANIM input)
 {
     VS_OUT output;
     float4x4 matBoneTransform = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};

@@ -29,15 +29,14 @@ public:
 	virtual void OnResize(const unsigned int& nWidth, const unsigned int& nHeight) override;
 	virtual void OnRender(MIRenderer* pRenderer) override;
 
-
-	std::function<void(MIRenderer*)> m_funcRenderFunction;
-
 	static MDirectX11RenderTarget* CreateForView(MDirectX11Device* pDevice, MWindowsRenderView* pView);
 
 public:
 	IDXGISwapChain* m_pSwapChain;
 private:
 	MDirectX11Device* m_pDevice;
+	MWindowsRenderView* m_pView;
+
 };
 
 

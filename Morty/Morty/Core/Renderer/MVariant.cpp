@@ -65,10 +65,10 @@ const MContainer& MContainer::operator=(const MContainer& var)
 
 MVariant::MVariant(const bool& var)
 {
-	m_pData = (new unsigned char[sizeof(bool) * 1]);
-	memcpy(m_pData, &var, sizeof(bool) * 1);
+	m_pData = (new unsigned char[sizeof(float) * 1]);
+	*(float*)(m_pData) = (var ? 1.0f : 0.0f);
 	m_eType = EBool;
-	m_unByteSize = sizeof(bool);
+	m_unByteSize = sizeof(float);
 }
 
 MVariant::MVariant(const int& var)

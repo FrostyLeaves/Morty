@@ -23,7 +23,6 @@ public:
 	Vector3 ToVector3() const { return Vector3(r, g, b); }
 	Vector4 ToVector4() const { return Vector4(r, g, b, a); }
 
-
 public:
 
 	union

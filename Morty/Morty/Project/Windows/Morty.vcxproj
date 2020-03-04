@@ -19,13 +19,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -119,6 +119,7 @@
     <ClInclude Include="..\..\Core\MSkyBox.h" />
     <ClInclude Include="..\..\Core\MTransform.h" />
     <ClInclude Include="..\..\Core\Organizer\MScene.h" />
+    <ClInclude Include="..\..\Core\Organizer\MShadowTextureRenderTarget.h" />
     <ClInclude Include="..\..\Core\Organizer\MTransformCoord.h" />
     <ClInclude Include="..\..\Core\Painter\MPainter.h" />
     <ClInclude Include="..\..\Core\RefCounter\MRefCounter.h" />
@@ -195,6 +196,7 @@
     <ClCompile Include="..\..\Core\MSkyBox.cpp" />
     <ClCompile Include="..\..\Core\MTransform.cpp" />
     <ClCompile Include="..\..\Core\Organizer\MScene.cpp" />
+    <ClCompile Include="..\..\Core\Organizer\MShadowTextureRenderTarget.cpp" />
     <ClCompile Include="..\..\Core\Organizer\MTransformCoord.cpp" />
     <ClCompile Include="..\..\Core\Painter\MPainter.cpp" />
     <ClCompile Include="..\..\Core\RefCounter\MRefCounter.cpp" />

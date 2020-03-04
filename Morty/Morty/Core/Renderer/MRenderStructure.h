@@ -80,7 +80,7 @@ struct MShaderParam
 	MShaderParam();
 
 	MString strName;
-	unsigned unCode;
+	unsigned int unCode;
 	MVariant var;
 	bool bDirty;
 
@@ -104,6 +104,7 @@ enum METextureType
 struct MShaderTextureParam
 {
 	MString strName;
+	unsigned int unCode;
 	MITexture* pTexture;
 	METextureType eType;
 
@@ -118,6 +119,7 @@ struct MShaderTextureParam
 struct MShaderSampleParam
 {
 	MString strName;
+	unsigned int unCode;
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	unsigned int unBindPoint;
 	unsigned int unBindCount;
