@@ -105,7 +105,7 @@ void MResourceManager::Reload(const MString& strResourcePath)
 		if (iter != m_tPathResources.end())
 		{
 			iter->second->Load(strResourcePath);
-			iter->second->OnReload();
+			iter->second->OnReload(MResource::EResReloadType::EDefault);
 		}
 	}
 }

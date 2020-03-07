@@ -44,7 +44,7 @@ void MMaterial::SetVertexTexutreParam(const MString& strName, MResource* pResour
 						delete m_vVertexTextureResHolder[i];
 
 					m_vVertexTextureResHolder[i] = pNewHolder;
-					m_vVertexTextureResHolder[i]->SetResChangedCallback([&param, &pTexResource]() {
+					m_vVertexTextureResHolder[i]->SetResChangedCallback([&param, &pTexResource](const unsigned int& eReloadType) {
 						param.pTexture = pTexResource->GetTextureTemplate();
 						return true;
 						});
@@ -59,7 +59,7 @@ void MMaterial::SetVertexTexutreParam(const MString& strName, MResource* pResour
 					if (m_vVertexTextureResHolder[i])
 						delete m_vVertexTextureResHolder[i];
 					m_vVertexTextureResHolder[i] = new MResourceHolder(pResource);
-					m_vVertexTextureResHolder[i]->SetResChangedCallback([&param, &pTexResource]() {
+					m_vVertexTextureResHolder[i]->SetResChangedCallback([&param, &pTexResource](const unsigned int& eReloadType) {
 						param.pTexture = pTexResource->GetTextureCubeTemplate();
 						return true;
 						});
@@ -90,7 +90,7 @@ void MMaterial::SetPixelTexutreParam(const MString& strName, MResource* pResourc
 						delete m_vPixelTextureResHolder[i];
 
 					m_vPixelTextureResHolder[i] = pNewHolder;
-					m_vPixelTextureResHolder[i]->SetResChangedCallback([&param, &pTexResource](){
+					m_vPixelTextureResHolder[i]->SetResChangedCallback([&param, &pTexResource](const unsigned int& eReloadType){
 						param.pTexture = pTexResource->GetTextureTemplate();
 						return true;
 					});
@@ -105,7 +105,7 @@ void MMaterial::SetPixelTexutreParam(const MString& strName, MResource* pResourc
 					if (m_vPixelTextureResHolder[i])
 						delete m_vPixelTextureResHolder[i];
 					m_vPixelTextureResHolder[i] = new MResourceHolder(pResource);
-					m_vPixelTextureResHolder[i]->SetResChangedCallback([&param, &pTexResource](){
+					m_vPixelTextureResHolder[i]->SetResChangedCallback([&param, &pTexResource](const unsigned int& eReloadType){
 						param.pTexture = pTexResource->GetTextureCubeTemplate();
 						return true;
 					});
@@ -165,7 +165,7 @@ bool MMaterial::Load(MMaterialResource* pResource)
 {
 	Unload();
 
-	auto UseResourceFunction = [this](){
+	auto UseResourceFunction = [this](const unsigned int& eReloadType){
 		if (MMaterialResource* pMatResource = static_cast<MMaterialResource*>(m_pMaterialResource->GetResource()))
 		{
 			m_pVertexShader = pMatResource->GetVertexShader();
@@ -183,8 +183,10 @@ bool MMaterial::Load(MMaterialResource* pResource)
 				return false;
 		}
 
-		CompileVertexShaderParams();
-		CompilePixelShaderParams();
+		if(MMaterialResource::EResReloadType::EPixel != eReloadType)
+			CompileVertexShaderParams();
+		if (MMaterialResource::EResReloadType::EVertex != eReloadType)
+			CompilePixelShaderParams();
 
 		return true;
 	};
@@ -196,7 +198,7 @@ bool MMaterial::Load(MMaterialResource* pResource)
 		m_pMaterialResource = new MResourceHolder(pResource);
 		m_pMaterialResource->SetResChangedCallback(UseResourceFunction);
 
-		return UseResourceFunction();
+		return UseResourceFunction(MResource::EResReloadType::EDefault);
 	}
 
 	return false;
@@ -242,7 +244,7 @@ void MMaterial::RecompileShaderParams(std::vector<MShaderParam>& vParams, std::v
 
 	for (MShaderParam& param : vParamsTemp)
 	{
-		if (param.unCode == SHADER_PARAM_CODE_DEFAULT || param.unCode == SHADER_PARAM_CODE_MATERIAL)
+		if (param.unCode > SHADER_PARAM_CODE_AUTO_UPDATE)
 		{
 			for (MShaderParam& oldParam : vParams)
 			{

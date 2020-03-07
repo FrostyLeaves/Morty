@@ -58,12 +58,12 @@ bool MMaterialResource::LoadVertexShader(MResource* pResource)
 			if (m_pVertexResource)
 				delete m_pVertexResource;
 			m_pVertexResource = new MResourceHolder(pResource);
-			m_pVertexResource->SetResChangedCallback([this](){
-				OnReload();
+			m_pVertexResource->SetResChangedCallback([this](const unsigned int& eReloadType){
+				OnReload(EResReloadType::EVertex);
 				return true;
 			});
 
-			OnReload();
+			OnReload(EResReloadType::EVertex);
 			return true;
 		}
 	}
@@ -81,12 +81,12 @@ bool MMaterialResource::LoadPixelShader(MResource* pResource)
 			if (m_pPixelResource)
 				delete m_pPixelResource;
 			m_pPixelResource = new MResourceHolder(pResource);
-			m_pPixelResource->SetResChangedCallback([this](){
-				OnReload();
+			m_pPixelResource->SetResChangedCallback([this](const unsigned int& eReloadType){
+				OnReload(EResReloadType::EPixel);
 				return true;
 			});
 
-			OnReload();
+			OnReload(EResReloadType::EPixel);
 			return true;
 		}
 	}

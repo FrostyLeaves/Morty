@@ -52,7 +52,7 @@ bool MModelInstance::Load(MResource* pResource)
 {
 	if (MModelResource* pModelRes = dynamic_cast<MModelResource*>(pResource))
 	{
-		auto UseResourceFunction = [this]() {
+		auto UseResourceFunction = [this](const unsigned int& eReloadType) {
 			if (MModelResource* pModelResource = static_cast<MModelResource*>(m_pModelResource->GetResource()))
 			{
 				SetRemoveAnimation();
@@ -115,7 +115,7 @@ bool MModelInstance::Load(MResource* pResource)
 
 		m_pModelResource = pNewHolder;
 
-		UseResourceFunction();
+		UseResourceFunction(MResource::EResReloadType::EDefault);
 
 		return true;
 	}

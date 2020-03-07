@@ -89,3 +89,32 @@ MShaderParam::MShaderParam()
 {
 
 }
+
+MShaderTextureParam::MShaderTextureParam()
+	: strName()
+	, unCode(SHADER_PARAM_CODE_DEFAULT)
+	, pTexture(nullptr)
+	, eType(METextureType::ETexture2D)
+
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	, unBindPoint(0)
+	, unBindCount(0)
+#elif RENDER_GRAPHICS == MORTY_OPENGLES
+
+#endif
+{
+
+}
+
+MShaderSampleParam::MShaderSampleParam()
+	: strName()
+	, unCode(SHADER_PARAM_CODE_DEFAULT)
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	, unBindPoint(0)
+	, unBindCount(0)
+#elif RENDER_GRAPHICS == MORTY_OPENGLES
+
+#endif
+{
+
+}

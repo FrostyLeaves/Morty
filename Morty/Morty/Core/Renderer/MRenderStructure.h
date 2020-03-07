@@ -103,6 +103,8 @@ enum METextureType
 
 struct MShaderTextureParam
 {
+	MShaderTextureParam();
+
 	MString strName;
 	unsigned int unCode;
 	MITexture* pTexture;
@@ -118,6 +120,7 @@ struct MShaderTextureParam
 
 struct MShaderSampleParam
 {
+	MShaderSampleParam();
 	MString strName;
 	unsigned int unCode;
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11

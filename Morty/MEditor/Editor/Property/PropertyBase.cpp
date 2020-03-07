@@ -276,7 +276,7 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 		for (unsigned int i = 0; i < vParams.size(); ++i)
 		{
 			MShaderTextureParam& param = vParams[i];
-			if (param.unCode != 0)
+			if (param.unCode <= SHADER_PARAM_CODE_AUTO_UPDATE)
 				continue;
 
 			MString strDlgName = "file_dlg_vs_" + MStringHelper::ToString(i);
@@ -307,7 +307,7 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 		for (unsigned int i = 0; i < vParams.size(); ++i)
 		{
 			MShaderTextureParam& param = vParams[i];
-			if (param.unCode != 0)
+			if (param.unCode <= SHADER_PARAM_CODE_AUTO_UPDATE)
 				continue;
 
 			MString strDlgName = "file_dlg_ps_" + MStringHelper::ToString(i);

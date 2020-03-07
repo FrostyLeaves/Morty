@@ -20,7 +20,7 @@ VS_OUT VS(VS_IN_ANIM input)
     output.worldPos = mul(float4(input.pos, 1.0f), U_matWorld).xyz;
     output.dirLightSpacePos = mul(float4(input.pos, 1.0f), mul(U_matWorld, U_matLightProj));
 
-#ifdef MCALC_NORMAL_IN_VS
+#if MCALC_NORMAL_IN_VS
 
     float3 f3ToCameraDir = normalize(U_f3CameraPosition - output.worldPos);
 

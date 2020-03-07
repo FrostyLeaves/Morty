@@ -93,7 +93,7 @@ float4 PS(VS_OUT input) : SV_Target
         f3Normal = normalize(f3Normal);
         
 //如果在VS处理Normal
-#ifdef MCALC_NORMAL_IN_VS
+#if MCALC_NORMAL_IN_VS
         //使用法线贴图， 法向量在切线空间， CameraDir也在切线空间
         
         f3CameraDir = input.toCameraDirTangentSpace;

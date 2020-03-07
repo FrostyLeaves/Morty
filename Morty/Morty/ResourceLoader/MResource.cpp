@@ -74,12 +74,12 @@ void MResource::OnReferenceZero()
 	}
 }
 
-void MResource::OnReload()
+void MResource::OnReload(const unsigned int& eReloadType)
 {
 	for (MResourceHolder* pHolder : m_vHolder)
 	{
 		if (pHolder->m_funcReloadCallback)
-			pHolder->m_funcReloadCallback();
+			pHolder->m_funcReloadCallback(eReloadType);
 	}
 }
 

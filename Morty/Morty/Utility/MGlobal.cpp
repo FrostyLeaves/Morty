@@ -16,3 +16,5 @@ const char* DEFAULT_TEXTURE_BLACK = "DefTexBlack";
 const char* DEFAULT_TEXTURE_NORMALMAP = "DefTexNormalMap";
 
 const unsigned int MSHADOW_TEXTURE_SIZE = 2048;
+
+const bool MCALC_NORMAL_IN_VS = false;

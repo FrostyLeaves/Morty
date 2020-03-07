@@ -23,6 +23,13 @@ class MEngine;
 class MORTY_CLASS MResource : public MRefCounter
 {
 public:
+	enum EResReloadType
+	{
+		EDefault = 0,
+
+		EUserDef = 1000,
+	};
+public:
     MResource();
     virtual ~MResource();
 
@@ -44,7 +51,7 @@ protected:
 
 	virtual void OnReferenceZero() override;
 	
-	void OnReload();
+	void OnReload(const unsigned int& eReloadType = EResReloadType::EDefault);
 
 protected:
     
@@ -63,7 +70,8 @@ protected:
 class MORTY_CLASS MResourceHolder
 {
 public:
-	typedef std::function<bool()> MResChangedFunction;
+	
+	typedef std::function<bool(const unsigned int& eReloadType)> MResChangedFunction;
 public :
 	MResourceHolder(MResource* pResource);
 	MResourceHolder(const MResourceHolder& cHolder);

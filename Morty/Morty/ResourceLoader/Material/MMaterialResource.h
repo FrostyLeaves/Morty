@@ -17,6 +17,12 @@ class MShaderResource;
 class MORTY_CLASS MMaterialResource : public MResource
 {
 public:
+	enum EResReloadType
+	{
+		EVertex = MResource::EResReloadType::EUserDef + 1,
+		EPixel = MResource::EResReloadType::EUserDef + 2,
+	};
+public:
     MMaterialResource();
     virtual ~MMaterialResource();
 

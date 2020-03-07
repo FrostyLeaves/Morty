@@ -529,7 +529,7 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 		"MBONES_PER_VERTEX", strBonesPerVertex.c_str(),
 		"MBONES_MAX_NUMBER", strBonesMaxNumber.c_str(),
 		"MSHADOW_TEXTURE_SIZE", strShadowTextureSize.c_str(),
-		"MCALC_NORMAL_IN_VS", "true",
+		"MCALC_NORMAL_IN_VS", MCALC_NORMAL_IN_VS ? "true" : "false",
 		nullptr, nullptr
 		};
 
@@ -694,8 +694,6 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 				param.unCode = SHADER_PARAM_CODE_WORLDINFO;
 			else if (param.strName == "MORTY_ENGINE_cbAnimation")
 				param.unCode = SHADER_PARAM_CODE_ANIMATION;
-			else if (param.strName == "cbMaterial_VS")
-				param.unCode = SHADER_PARAM_CODE_MATERIAL_VS;
 			else
 				param.unCode = SHADER_PARAM_CODE_DEFAULT;
 
