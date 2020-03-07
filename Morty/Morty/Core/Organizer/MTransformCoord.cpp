@@ -173,6 +173,9 @@ void MTransformCoord3D::Render(MIRenderer* pRenderer, MViewport* pViewport)
 	MPainter2DRect rects[3];
 	GetTranslationShapes(lines, rects, vVaild, vOrder, pViewport);
 
+	if (false == (vVaild[0] && vVaild[1] && vVaild[2]))
+		return;
+
 	if (m_eCoordHoverType != MECoordHoverType::None)
 	{
 		for (int i : vOrder)

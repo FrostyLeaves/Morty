@@ -94,6 +94,17 @@ MResourceHolder::MResourceHolder(MResource* pResource)
 	}
 }
 
+MResourceHolder::MResourceHolder(const MResourceHolder& cHolder)
+	: m_funcReloadCallback(cHolder.m_funcReloadCallback)
+	, m_pResource(cHolder.m_pResource)
+{
+	if (m_pResource && m_pResource->GetResourceManager()->GetReloadEnabled())
+	{
+		m_pResource->AddRef();
+		m_pResource->m_vHolder.push_back(this);
+	}
+}
+
 MResourceHolder::~MResourceHolder()
 {
 	if (m_pResource && m_pResource->GetResourceManager()->GetReloadEnabled())

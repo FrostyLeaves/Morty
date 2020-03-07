@@ -55,6 +55,7 @@ const unsigned int SHADER_PARAM_CODE_ANIMATION = 6;
 const unsigned int SHADER_PARAM_CODE_SHADOW_MAP = 7;
 const unsigned int SHADER_PARAM_CODE_DEFAULT_SAMPLER = 8;
 const unsigned int SHADER_PARAM_CODE_SHADOW_SAMPLER = 9;
+const unsigned int SHADER_PARAM_CODE_MATERIAL_VS = 10;
 //
 
 extern const unsigned int MSHADOW_TEXTURE_SIZE;

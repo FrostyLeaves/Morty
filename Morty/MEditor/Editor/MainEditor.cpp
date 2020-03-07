@@ -99,27 +99,21 @@ void MainEditor::OnResize(const int& nWidth, const int& nHeight)
 
 void MainEditor::OnRenderEnd()
 {
+	static int nFps = 0;
+	int nCurFps = (int)round(m_pEngine->GetInstantFPS() / 5) * 5;
+	if (nFps != nCurFps)
+	{
+		nFps = nCurFps;
+
+		char svWindowTitle[32];
+		sprintf_s(svWindowTitle, "Morty FPS: %d", nFps);
+		SetWindowTitle(svWindowTitle);
+	}
+
 	// Start the Dear ImGui frame
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
-
-
-
-	float fFps = m_pEngine->GetInstantFPS();
-	static float sTotalFps = 0, sCountFps;
-	sTotalFps += fFps;
-	++sCountFps;
-
-	char svWindowTitle[32];
-	sprintf_s(svWindowTitle, "Morty FPS: %d", (int)round(sTotalFps / sCountFps));
-	SetWindowTitle(svWindowTitle);
-
-	if (sCountFps > 500)
-	{
-		sCountFps = 0;
-		sTotalFps = 0;
-	}
 
 
 	ImGuiStyle& style = ImGui::GetStyle();

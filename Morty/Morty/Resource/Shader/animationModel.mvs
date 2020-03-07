@@ -17,10 +17,30 @@ VS_OUT VS(VS_IN_ANIM input)
     output.uv.x = input.uv.x;
     output.uv.y = input.uv.y;
 
-    output.normal = mul(input.normal, U_matNormal);
     output.worldPos = mul(float4(input.pos, 1.0f), U_matWorld).xyz;
+    output.dirLightSpacePos = mul(float4(input.pos, 1.0f), mul(U_matWorld, U_matLightProj));
 
-    output.lightSpacePos = mul(float4(input.pos, 1.0f), mul(U_matWorld, U_matLightProj));
+#ifdef MCALC_NORMAL_IN_VS
+
+    float3 f3ToCameraDir = normalize(U_f3CameraPosition - output.worldPos);
+
+    float3 T = mul(input.tangent, U_matNormal);
+    float3 N = mul(input.normal, U_matNormal);
+    float3 B = cross(T, N);
+    float3x3 TBN = float3x3(T,B,N);
+    TBN = transpose(TBN);//正交矩阵的转置矩阵==逆矩阵
+
+    output.dirLightDirTangentSpace = normalize(mul(U_f3DirectionLight , TBN));
+    output.toCameraDirTangentSpace = normalize(mul(f3ToCameraDir, TBN));
+
+    output.normal = normalize(mul(input.normal, U_matNormal));
+#else
+
+    output.normal = normalize(mul(input.normal, U_matNormal));
+    output.tangent = normalize(mul(input.tangent, U_matNormal));
+    output.bitangent = normalize(cross(output.tangent, output.normal));
+
+#endif
 
     return output;
 }

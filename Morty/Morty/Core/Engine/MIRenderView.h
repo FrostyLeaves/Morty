@@ -35,7 +35,7 @@ public:
 
 	virtual void OnResize(const int& nWidth, const int& nHeight) = 0;
 
-	virtual bool MainLoop() = 0;
+	virtual bool MainLoop(const float& fDelta) = 0;
 
 	virtual void OnRenderBegin() {}
 	virtual void OnRenderEnd() {}

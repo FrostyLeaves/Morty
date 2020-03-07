@@ -15,7 +15,9 @@ public:
 		{
 			if (ShowNodeBegin("Material"))
 			{
+				
 				MMaterial* pMaterial = pNode->GetMaterial();
+
 				EditMMaterial(pNode->GetMaterial());
 
 				ShowValueBegin("ShadowType");

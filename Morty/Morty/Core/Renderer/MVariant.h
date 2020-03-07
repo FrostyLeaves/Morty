@@ -63,12 +63,17 @@ public:
 	float* GetFloat() { return (float*)m_pData; }
 
 	MStruct* GetStruct() { return (MStruct*)m_pData; }
+	const MStruct* GetStruct() const { return (const MStruct*)m_pData; }
 	MVariantArray* GetArray() { return (MVariantArray*)m_pData; }
+	const MVariantArray* GetArray() const { return (const MVariantArray*)m_pData; }
 	MContainer* GetContainer() { return (MContainer*)m_pData; }
 
 	const MVariant& operator = (const MVariant& var);
 
 	~MVariant();
+
+	//从另一个var合并过来值
+	void MergeFrom(const MVariant& var);
 
 private:
 
@@ -96,9 +101,12 @@ public:
 	void* GetData();
 
 	MStructMember* GetMember(const unsigned int& unIndex) { return unIndex < m_vMember.size() ? &m_vMember[unIndex] : nullptr; }
-	unsigned int GetMemberCount() { return m_vMember.size(); }
+	const MStructMember* GetMember(const unsigned int& unIndex) const { return unIndex < m_vMember.size() ? &m_vMember[unIndex] : nullptr; }
+	unsigned int GetMemberCount() const { return m_vMember.size(); }
 
 	const MContainer& operator = (const MContainer& var);
+
+	MVariant& operator[](const unsigned int& unIndex);
 
 protected:
 
@@ -124,6 +132,7 @@ public:
 
 	void SetMember(const MString& strName, const MVariant& var);
 	MVariant* FindMember(const MString& strName);
+	const MVariant* FindMember(const MString& strName) const;
 
 protected:
 	std::unordered_map< MString, unsigned int> m_tVariantMap;
@@ -137,7 +146,6 @@ public:
 
 	void AppendMVariant(const MVariant& var);
 
-	MVariant& operator[](const unsigned int& unIndex);
 };
 
 #endif

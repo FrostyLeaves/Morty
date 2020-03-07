@@ -175,23 +175,33 @@ void MBoundsAABB::SetBoundsOBB(const Vector3& v3Origin, const Matrix4& matWorld,
 	m_v3MaxPoint = v3Origin;
 	m_v3MinPoint = v3Origin;
 
-	Vector3 v3ModelCenter = matWorld * obb.ConvertFromOBB(obb.m_v3CenterPoint);
-	Matrix4 matScaleAndRotation = MMath::GetScaleAndRotation(matWorld);
-	Vector3 v3ModelHalf = matScaleAndRotation * obb.ConvertFromOBB(obb.m_v3HalfLength);
-	v3ModelHalf = Vector3(fabs(v3ModelHalf.x), fabs(v3ModelHalf.y), fabs(v3ModelHalf.z));
+	Vector3 points[8] = {
+		matWorld * obb.ConvertFromOBB(Vector3(obb.m_v3MinPoint.x, obb.m_v3MaxPoint.y, obb.m_v3MaxPoint.z)),
+		matWorld * obb.ConvertFromOBB(Vector3(obb.m_v3MinPoint.x, obb.m_v3MaxPoint.y, obb.m_v3MinPoint.z)),
+		matWorld * obb.ConvertFromOBB(Vector3(obb.m_v3MinPoint.x, obb.m_v3MinPoint.y, obb.m_v3MinPoint.z)),
+		matWorld * obb.ConvertFromOBB(Vector3(obb.m_v3MinPoint.x, obb.m_v3MinPoint.y, obb.m_v3MaxPoint.z)),
+		matWorld * obb.ConvertFromOBB(Vector3(obb.m_v3MaxPoint.x, obb.m_v3MaxPoint.y, obb.m_v3MaxPoint.z)),
+		matWorld * obb.ConvertFromOBB(Vector3(obb.m_v3MaxPoint.x, obb.m_v3MaxPoint.y, obb.m_v3MinPoint.z)),
+		matWorld * obb.ConvertFromOBB(Vector3(obb.m_v3MaxPoint.x, obb.m_v3MinPoint.y, obb.m_v3MinPoint.z)),
+		matWorld * obb.ConvertFromOBB(Vector3(obb.m_v3MaxPoint.x, obb.m_v3MinPoint.y, obb.m_v3MaxPoint.z)),
+	};
 
-	if (m_v3MinPoint.x > v3ModelCenter.x - v3ModelHalf.x)
-		m_v3MinPoint.x = v3ModelCenter.x - v3ModelHalf.x;
-	if (m_v3MinPoint.y > v3ModelCenter.y - v3ModelHalf.y)
-		m_v3MinPoint.y = v3ModelCenter.y - v3ModelHalf.y;
-	if (m_v3MinPoint.z > v3ModelCenter.z - v3ModelHalf.z)
-		m_v3MinPoint.z = v3ModelCenter.z - v3ModelHalf.z;
-	if (m_v3MaxPoint.x < v3ModelCenter.x + v3ModelHalf.x)
-		m_v3MaxPoint.x = v3ModelCenter.x + v3ModelHalf.x;
-	if (m_v3MaxPoint.y < v3ModelCenter.y + v3ModelHalf.y)
-		m_v3MaxPoint.y = v3ModelCenter.y + v3ModelHalf.y;
-	if (m_v3MaxPoint.z < v3ModelCenter.z + v3ModelHalf.z)
-		m_v3MaxPoint.z = v3ModelCenter.z + v3ModelHalf.z;
+	for (unsigned int i = 0; i < 8; ++i)
+	{
+		if (m_v3MaxPoint.x < points[i].x)
+			m_v3MaxPoint.x = points[i].x;
+		if (m_v3MaxPoint.y < points[i].y)
+			m_v3MaxPoint.y = points[i].y;
+		if (m_v3MaxPoint.z < points[i].z)
+			m_v3MaxPoint.z = points[i].z;
+
+		if (m_v3MinPoint.x > points[i].x)
+			m_v3MinPoint.x = points[i].x;
+		if (m_v3MinPoint.y > points[i].y)
+			m_v3MinPoint.y = points[i].y;
+		if (m_v3MinPoint.z > points[i].z)
+			m_v3MinPoint.z = points[i].z;
+	}
 
 	m_v3CenterPoint = (m_v3MinPoint + m_v3MaxPoint) * 0.5f;
 	m_v3HalfLength = (m_v3MaxPoint - m_v3MinPoint) * 0.5f;

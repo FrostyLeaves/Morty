@@ -519,13 +519,14 @@ void MModelResource::ProcessMaterial(const aiScene* pScene, std::vector<unsigned
 		if (!strNormalFileName.empty())
 		{
 			pNormalMapRes = m_pEngine->GetResourceManager()->LoadResource(strResourceFolder + "/tex/" + strNormalFileName);
-			pMaterialStruct->SetMember("bUseNormalTex", true);
+			if (pMaterialStruct)
+				pMaterialStruct->SetMember("bUseNormalTex", true);
+
 		}
 		else
 			pNormalMapRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_NORMALMAP);
 
 		m_vDefaultMaterial[i]->SetPixelTexutreParam("U_mat.texDiffuse", pDiffuseTexRes);
 		m_vDefaultMaterial[i]->SetPixelTexutreParam("U_mat.texNormal", pNormalMapRes);
-
 	}
 }

@@ -101,8 +101,9 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 	{
 		pRenderer->SetUseMaterial(m_pStaticMaterial);
 
-
-		m_pStaticWorldParam->var.GetStruct()->SetMember("U_matCamProj", matLightInvProj);
+		MStruct& cWorldStruct = *m_pStaticWorldParam->var.GetStruct();
+		MStruct& cMeshStruct = *m_pStaticMeshParam->var.GetStruct();
+		cWorldStruct[0] = matLightInvProj;
 		m_pStaticWorldParam->SetDirty();
 
 		for (MModelInstance* pModelIns : *m_pScene->GetStaticModels())
@@ -119,7 +120,7 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 				{
 					Matrix4 worldTrans = pMeshIns->GetWorldTransform();
 
-					m_pStaticMeshParam->var.GetStruct()->SetMember("U_matWorld", worldTrans);
+					cMeshStruct[0] = worldTrans;
 					m_pStaticMeshParam->SetDirty();
 
 					pRenderer->UpdateMaterialParam();
@@ -133,7 +134,9 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 	{
 		pRenderer->SetUseMaterial(m_pAnimMaterial);
 
-		m_pAnimWorldParam->var.GetStruct()->SetMember("U_matCamProj", matLightInvProj);
+		MStruct& cWorldStruct = *m_pAnimWorldParam->var.GetStruct();
+		MStruct& cMeshStruct = *m_pAnimMeshParam->var.GetStruct();
+		cWorldStruct[0] = matLightInvProj;
 		m_pAnimWorldParam->SetDirty();
 
 		for (MModelInstance* pModelIns : *m_pScene->GetAnimationalModels())
@@ -144,8 +147,8 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 			if (MSkeletonInstance* pSkeleton = pModelIns->GetSkeleton())
 			{
 				
-				MVariant* pVariant = m_pAnimBonesParam->var.GetStruct()->FindMember("U_vBonesMatrix");
-				MVariantArray* pBonesArray = pVariant->GetArray() ;
+				MVariant& cVariant = (*m_pAnimBonesParam->var.GetStruct())[0];
+				MVariantArray& cBonesArray = *cVariant.GetArray();
 
 				const std::vector<MBone*>& bones = pSkeleton->GetAllBones();
 				unsigned int size = bones.size();
@@ -153,7 +156,7 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 					size = MBONES_MAX_NUMBER;
 				for (unsigned int i = 0; i < size; ++i)
 				{
-					(*pBonesArray)[i] = bones[i]->GetTransformInModelWorld();
+					cBonesArray[i] = bones[i]->GetTransformInModelWorld();
 				}
 
 				m_pAnimBonesParam->SetDirty();
@@ -168,7 +171,7 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 				{
 					Matrix4 worldTrans = pMeshIns->GetWorldTransform();
 
-					m_pAnimMeshParam->var.GetStruct()->SetMember("U_matWorld", worldTrans);
+					cMeshStruct[0] = worldTrans;
 					m_pAnimMeshParam->SetDirty();
 
 					pRenderer->UpdateMaterialParam();

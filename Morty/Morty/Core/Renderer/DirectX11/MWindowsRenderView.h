@@ -36,7 +36,7 @@ public:
 
 	virtual void OnResize(const int& nWidth, const int& nHeight) override;
 	virtual void SetRenderTarget(MIRenderTarget* pRenderTarget) override;
-	virtual bool MainLoop() override;
+	virtual bool MainLoop(const float& fDelta) override;
 
 	void SetWindowTitle(const MString& strTilte);
 
@@ -60,6 +60,8 @@ public:
 protected:
 	static bool RegisterClass();
 
+	void CheckInputEvent();
+
 protected:
 	HWND m_hwnd;
 
@@ -72,6 +74,8 @@ protected:
 
 	std::vector<MKeyState> m_vKeyQueue;
 	std::vector<MKeyState> m_vMouseBtnQueue;
+
+	float m_fCheckInputDelta;
 
 protected:
 	static HINSTANCE s_hInstance;

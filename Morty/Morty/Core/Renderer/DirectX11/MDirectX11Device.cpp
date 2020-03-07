@@ -495,7 +495,7 @@ void MDirectX11Device::UploadBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMes
 	if (m_pD3dContext->Map((*ppVertexBuffer)->m_pIndexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &idx_resource) != S_OK)
 		return;
 
-	memcpy(vtx_resource.pData, pMesh->GetVertices(), pMesh->GetVerticesLength() * sizeof(MVertex));
+	memcpy(vtx_resource.pData, pMesh->GetVertices(), pMesh->GetVerticesLength() * pMesh->GetVertexStructSize());
 	memcpy(idx_resource.pData, pMesh->GetIndices(), sizeof(unsigned int) * pMesh->GetIndicesLength());
 
 	m_pD3dContext->Unmap((*ppVertexBuffer)->m_pVertexBuffer, 0);
@@ -529,6 +529,7 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 		"MBONES_PER_VERTEX", strBonesPerVertex.c_str(),
 		"MBONES_MAX_NUMBER", strBonesMaxNumber.c_str(),
 		"MSHADOW_TEXTURE_SIZE", strShadowTextureSize.c_str(),
+		"MCALC_NORMAL_IN_VS", "true",
 		nullptr, nullptr
 		};
 
@@ -693,6 +694,8 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 				param.unCode = SHADER_PARAM_CODE_WORLDINFO;
 			else if (param.strName == "MORTY_ENGINE_cbAnimation")
 				param.unCode = SHADER_PARAM_CODE_ANIMATION;
+			else if (param.strName == "cbMaterial_VS")
+				param.unCode = SHADER_PARAM_CODE_MATERIAL_VS;
 			else
 				param.unCode = SHADER_PARAM_CODE_DEFAULT;
 

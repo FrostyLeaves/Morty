@@ -3,6 +3,7 @@
 #include "MMaterial.h"
 #include "MResource.h"
 #include "MTextureResource.h"
+#include "MMaterialResource.h"
 #include "MResourceManager.h"
 
 #include "imgui.h"
@@ -217,6 +218,29 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 	bool bModified = false;
 
 	{
+		if (MMaterialResource* pResource = dynamic_cast<MMaterialResource*>(pMaterial->GetResource()))
+		{
+			ShowValueBegin("VS");
+			if (ImGui::Button("Reload Vertex Shader", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+			{
+				MString strResPath = pResource->GetVertexShaderResource()->GetResourcePath();
+				pResource->GetResourceManager()->Reload(strResPath);
+			}
+			ShowValueEnd();
+
+			ShowValueBegin("PS");
+			if (ImGui::Button("Reload Pixel Shader", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+			{
+				MString strResPath = pResource->GetPixelShaderResource()->GetResourcePath();
+				pResource->GetResourceManager()->Reload(strResPath);
+			}
+			ShowValueEnd();
+		}
+	}
+
+
+
+	{
 		std::vector<MShaderParam>& vParams = pMaterial->GetPixelShaderParams();
 		for (MShaderParam& param : vParams)
 		{
@@ -232,6 +256,52 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 	}
 
 	{
+		std::vector<MShaderParam>& vParams = pMaterial->GetVertexShaderParams();
+		for (MShaderParam& param : vParams)
+		{
+			if (param.strName.compare(0, 13, "MORTY_ENGINE_"))
+			{
+				if (EditMVariant(param.strName, param.var))
+				{
+					param.SetDirty();
+					bModified = true;
+				}
+			}
+		}
+	}
+
+	{
+		std::vector<MShaderTextureParam>& vParams = pMaterial->GetVertexTextureParams();
+		std::vector<MResourceHolder*>& vResources = pMaterial->GetVertexTextures();
+		for (unsigned int i = 0; i < vParams.size(); ++i)
+		{
+			MShaderTextureParam& param = vParams[i];
+			if (param.unCode != 0)
+				continue;
+
+			MString strDlgName = "file_dlg_vs_" + MStringHelper::ToString(i);
+
+			ShowValueBegin(param.strName);
+			MResource* pResource = vResources[i] ? vResources[i]->GetResource() : nullptr;
+
+			EditMResource(strDlgName, pResource, MResourceManager::MEResourceType::Texture, [&param, &pMaterial](const MString& strNewFilePath) {
+
+				MResource* pNewResource = pMaterial->GetResource()->GetResourceManager()->LoadResource(strNewFilePath);
+
+				pMaterial->SetPixelTexutreParam(param.strName, pNewResource);
+				});
+
+			if (param.pTexture)
+			{
+				ShowTexture(param.pTexture->GetBuffer());
+			}
+
+			ShowValueEnd();
+
+		}
+	}
+
+	{
 		std::vector<MShaderTextureParam>& vParams = pMaterial->GetPixelTextureParams();
 		std::vector<MResourceHolder*>& vResources =  pMaterial->GetPixelTextures();
 		for (unsigned int i = 0; i < vParams.size(); ++i)
@@ -240,7 +310,7 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 			if (param.unCode != 0)
 				continue;
 
-			MString strDlgName = "file_dlg_" + MStringHelper::ToString(i);
+			MString strDlgName = "file_dlg_ps_" + MStringHelper::ToString(i);
 
 			ShowValueBegin(param.strName);
 			MResource* pResource = vResources[i] ? vResources[i]->GetResource() : nullptr;

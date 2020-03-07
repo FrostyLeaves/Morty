@@ -222,6 +222,56 @@ MVariant::~MVariant()
 	Clean();
 }
 
+void MVariant::MergeFrom(const MVariant& var)
+{
+	if (GetType() != var.GetType())
+		return;
+
+	switch (GetType())
+	{
+		case MVariant::EStruct:
+		{
+			MStruct& cStruct = *GetStruct();
+			const MStruct& cSource = *var.GetStruct();
+
+			for (unsigned int i = 0; i < cStruct.GetMemberCount(); ++i)
+			{
+				MContainer::MStructMember* pMem = cStruct.GetMember(i);
+				if (const MVariant* pSourceChildVar = cSource.FindMember(pMem->strName))
+					pMem->var.MergeFrom(*pSourceChildVar);
+			}
+			break;
+		}
+
+		case MVariant::EArray:
+		{
+			MVariantArray& cArray = *GetArray();
+			const MVariantArray& cSource = *var.GetArray();
+
+			unsigned int unSize = cArray.GetMemberCount();
+			if (unSize > cSource.GetMemberCount()) unSize = cSource.GetMemberCount();
+
+			for (unsigned int i = 0; i < unSize; ++i)
+			{
+				MContainer::MStructMember* pMem = cArray.GetMember(i);
+				const MContainer::MStructMember* pSourceMem = cSource.GetMember(i);
+				pMem->var.MergeFrom(pSourceMem->var);
+			}
+
+			break;
+		}
+
+		case MVariant::ENone:
+			break;
+
+		default:
+		
+			*this = var;
+			break;
+
+	}
+}
+
 void MVariant::Clean()
 {
 	if (ENone != m_eType)
@@ -302,6 +352,18 @@ MVariant* MStruct::FindMember(const MString& strName)
 	return nullptr;
 }
 
+const MVariant* MStruct::FindMember(const MString& strName) const
+{
+	std::unordered_map<MString, unsigned int>::const_iterator iter = m_tVariantMap.find(strName);
+	if (iter != m_tVariantMap.end())
+	{
+		const MStructMember& mem = m_vMember[iter->second];
+		return &mem.var;
+	}
+
+	return nullptr;
+}
+
 void MVariantArray::AppendMVariant(const MVariant& var)
 {
 	MStructMember sm;
@@ -311,7 +373,7 @@ void MVariantArray::AppendMVariant(const MVariant& var)
 	AppendStructMember(sm);
 }
 
-MVariant& MVariantArray::operator[](const unsigned int& unIndex)
+MVariant& MContainer::operator[](const unsigned int& unIndex)
 {
 	if (0 <= unIndex && unIndex < m_vMember.size())
 		return m_vMember[unIndex].var;

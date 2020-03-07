@@ -30,7 +30,7 @@ MEngine::MEngine()
 	, m_pRootNode(nullptr)
 	, m_pDevice(nullptr)
 	, m_pRenderer(nullptr)
-	, m_cTickInfo(3000)
+	, m_cTickInfo(60)
 {
 }
 
@@ -267,8 +267,8 @@ bool MEngine::MainLoop()
 
 	for (std::vector<MIRenderView*>::iterator iter = m_vView.begin(); iter != m_vView.end();)
 	{
-		MIRenderView* pView = (*iter);
-		if (!pView->MainLoop())
+		MIRenderView* pView = *iter;
+		if (!pView->MainLoop(fTimeDelta))
 		{
 			m_pRenderer->RemoveOutputView(*iter);
 			iter = m_vView.erase(iter);
@@ -283,7 +283,7 @@ bool MEngine::MainLoop()
 		}
 	}
 
-	if (fTimeDelta >= m_cTickInfo.fTickInterval)
+	if (fTimeDelta - m_cTickInfo.fTickInterval  >= 0)
 	{
 		m_cTickInfo.fTimeDelta = fTimeDelta;
 

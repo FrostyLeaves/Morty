@@ -349,6 +349,14 @@ void MDirectX11Renderer::UpdateMaterialResource()
 		}
 	}
 
+	for (MShaderSampleParam& param : m_pUsingMaterial->GetVertexShader()->GetBuffer()->m_vSampleParamsTemplate)
+	{
+		if (param.unCode == SHADER_PARAM_CODE_DEFAULT_SAMPLER)
+			m_pDevice->m_pD3dContext->PSSetSamplers(param.unBindPoint, param.unBindCount, &m_pDefaultSamplerState);
+		else if (param.unCode == SHADER_PARAM_CODE_SHADOW_SAMPLER)
+			m_pDevice->m_pD3dContext->PSSetSamplers(param.unBindPoint, param.unBindCount, &m_pDepthTextureSamplerState);
+	}
+
 	for (MShaderSampleParam& param : m_pUsingMaterial->GetPixelShader()->GetBuffer()->m_vSampleParamsTemplate)
 	{
 		if (param.unCode == SHADER_PARAM_CODE_DEFAULT_SAMPLER)

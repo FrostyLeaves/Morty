@@ -364,9 +364,22 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 		{
 			if (param.unCode == SHADER_PARAM_CODE_WORLD_MATRIX)
 			{
-				MStruct* pStruct = param.var.GetStruct();
-				pStruct->SetMember("U_matCamProj", pViewport->GetCameraInverseProjection());
-				pStruct->SetMember("U_matLightProj", matLightInvProj);
+				MStruct& cStruct = *param.var.GetStruct();
+				cStruct[0] = pViewport->GetCameraInverseProjection();
+				cStruct[1] = matLightInvProj;
+
+				param.SetDirty();
+				continue;
+			}
+
+			else if (param.unCode == SHADER_PARAM_CODE_WORLDINFO)
+			{
+				if (pDirectionalLight)
+				{
+					(*param.var.GetStruct())[0] = pDirectionalLight->GetWorldDirection();
+				}
+
+				(*param.var.GetStruct())[1] = pViewport->GetCamera()->GetWorldPosition();
 
 				param.SetDirty();
 				continue;
@@ -381,14 +394,13 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 			{
 				if (pDirectionalLight)
 				{
-					if (MVariant* pDirectionLight = param.var.GetStruct()->FindMember("U_dirLight"))
+					MVariant& cDirectionLight = (*param.var.GetStruct())[0];
 					{
-						if (MStruct* pLightStruct = pDirectionLight->GetStruct())
+						MStruct& cLightStruct = *cDirectionLight.GetStruct();
 						{
-							pLightStruct->SetMember("f3Direction", pDirectionalLight->GetWorldDirection());
-							pLightStruct->SetMember("f3Ambient", pDirectionalLight->GetAmbientColor().ToVector3());
-							pLightStruct->SetMember("f3Diffuse", pDirectionalLight->GetDiffuseColor().ToVector3());
-							pLightStruct->SetMember("f3Specular", pDirectionalLight->GetSpecularColor().ToVector3());
+							cLightStruct[0] = pDirectionalLight->GetAmbientColor().ToVector3();
+							cLightStruct[1] = pDirectionalLight->GetDiffuseColor().ToVector3();
+							cLightStruct[2] = pDirectionalLight->GetSpecularColor().ToVector3();
 						}
 					}
 				}
@@ -399,13 +411,14 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 			}
 			else if (param.unCode == SHADER_PARAM_CODE_WORLDINFO)
 			{
-				if (MStruct* pStruct = param.var.GetStruct())
+				if (pDirectionalLight)
 				{
-					pStruct->SetMember("U_f3CameraPosition", pViewport->GetCamera()->GetWorldPosition());
+					(*param.var.GetStruct())[0] = pDirectionalLight->GetWorldDirection();
 				}
 
-				param.SetDirty();
+				(*param.var.GetStruct())[1] = pViewport->GetCamera()->GetWorldPosition();
 
+				param.SetDirty();
 				continue;
 			}
 		}
@@ -427,9 +440,9 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 					//Transposed and Inverse.
 					Matrix3 matNormal(worldTrans.Transposed().Inverse(), 3, 3);
 
-					MStruct* pSpaceStruct = param.var.GetStruct();
-					pSpaceStruct->SetMember("U_matWorld", worldTrans);
-					pSpaceStruct->SetMember("U_matNormal", matNormal);
+					MStruct& cStruct = *param.var.GetStruct();
+					cStruct[0] = worldTrans;
+					cStruct[1] = matNormal;
 
 					param.SetDirty();
 					continue;
@@ -438,9 +451,11 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 				{
 					if (MModelInstance* pModel = dynamic_cast<MModelInstance*>(pMeshIns->GetParent()))
 					{
-						MStruct* pAnimationStruct = param.var.GetStruct();
-						MVariant* pVariant = pAnimationStruct->FindMember("U_vBonesMatrix");
-						MVariantArray* pBonesArray = pVariant->GetArray() ;
+						if (nullptr == pModel->GetSkeleton())
+							continue;
+
+						MStruct& cAnimationStruct = *param.var.GetStruct();
+						MVariantArray& cBonesArray = *cAnimationStruct[0].GetArray() ;
 
 						const std::vector<MBone*>& bones = pModel->GetSkeleton()->GetAllBones();
 						unsigned int size = bones.size();
@@ -448,7 +463,7 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 							size = MBONES_MAX_NUMBER;
 						for (unsigned int i = 0; i < size; ++i)
 						{
-							(*pBonesArray)[i] = bones[i]->GetTransformInModelWorld();
+							cBonesArray[i] = bones[i]->GetTransformInModelWorld();
 						}
 
 						param.SetDirty();
@@ -460,25 +475,23 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 			{
 				if (param.unCode == SHADER_PARAM_CODE_LIGHT)
 				{
-					MVariant* varPointLights = param.var.GetStruct()->FindMember("U_pointLights");
-					if (varPointLights)
+					MVariant& varPointLights = (*param.var.GetStruct())[1];
 					{
-						MVariantArray& vPointLights = *varPointLights->GetArray() ;
+						MVariantArray& vPointLights = *varPointLights.GetArray() ;
 						for (unsigned int i = 0; i < vPointLights.GetMemberCount(); ++i)
 						{
-							if (MStruct* pPointLight = vPointLights[i].GetStruct())
+							if (MPointLight* pLight = vActivePointLights[i])
 							{
-								if (MPointLight* pLight = vActivePointLights[i])
-								{
-									pPointLight->SetMember("f3WorldPosition", pLight->GetWorldPosition());
-									pPointLight->SetMember("f3Ambient", pLight->GetAmbientColor().ToVector3());
-									pPointLight->SetMember("f3Diffuse", pLight->GetDiffuseColor().ToVector3());
-									pPointLight->SetMember("f3Specular", pLight->GetSpecularColor().ToVector3());
+								MStruct& cPointLight = *vPointLights[i].GetStruct();
+								cPointLight[0] = pLight->GetWorldPosition();
+								cPointLight[1] = pLight->GetAmbientColor().ToVector3();
+								cPointLight[2] = pLight->GetDiffuseColor().ToVector3();
+								cPointLight[3] = pLight->GetSpecularColor().ToVector3();
 
-									pPointLight->SetMember("fConstant", 1.0f);
-									pPointLight->SetMember("fLinear", 0.022f);
-									pPointLight->SetMember("fQuadratic", 0.0019f);
-								}
+								cPointLight[4] = 1.0f;
+								cPointLight[5] = 0.022f;
+								cPointLight[6] = 0.0019f;
+								
 							}
 						}
 					}
@@ -527,21 +540,21 @@ void MScene::DrawSkyBox(MIRenderer* pRenderer, MViewport* pViewport)
 			{
 				if (param.unCode == SHADER_PARAM_CODE_MESH_MATRIX)
 				{
-					MStruct* pSpaceStruct = param.var.GetStruct();
+					MStruct& cStruct = *param.var.GetStruct();
 					Matrix4 mat(Matrix4::IdentityMatrix);
 					Vector3 camPos = pViewport->GetCamera()->GetPosition();
 					mat.m[0][3] = camPos.x;
 					mat.m[1][3] = camPos.y;
 					mat.m[2][3] = camPos.z;
-					pSpaceStruct->SetMember("MatWorld", mat);
+					cStruct[0] = mat;
 					
 					param.SetDirty();
 					continue;
 				}
 				else if (param.unCode == SHADER_PARAM_CODE_WORLD_MATRIX)
 				{
-					MStruct* pSpaceStruct = param.var.GetStruct();
-					pSpaceStruct->SetMember("MatCamProj", pViewport->GetCameraInverseProjection());
+					MStruct& cStruct = *param.var.GetStruct();
+					cStruct[0] = pViewport->GetCameraInverseProjection();
 
 					param.SetDirty();
 					continue;
@@ -575,8 +588,8 @@ void MScene::DrawBoundingBox(MIRenderer* pRenderer, MViewport* pViewport, MModel
 	{
 		if (param.unCode == SHADER_PARAM_CODE_WORLD_MATRIX)
 		{
-			MStruct* pSpaceStruct = param.var.GetStruct();
-			pSpaceStruct->SetMember("MatCamProj", pViewport->GetCameraInverseProjection());
+			MStruct& cStruct = *param.var.GetStruct();
+			cStruct[0] = pViewport->GetCameraInverseProjection();
 			
 			param.SetDirty();
 			continue;
@@ -639,8 +652,8 @@ void MScene::DrawCameraFrustum(MIRenderer* pRenderer, MViewport* pViewport, MCam
 	{
 		if (param.unCode == SHADER_PARAM_CODE_WORLD_MATRIX)
 		{
-			MStruct* pSpaceStruct = param.var.GetStruct();
-			pSpaceStruct->SetMember("MatCamProj", pViewport->GetCameraInverseProjection());
+			MStruct& cStruct = *param.var.GetStruct();
+			cStruct[0] = pViewport->GetCameraInverseProjection();
 			param.SetDirty();
 			continue;
 		}

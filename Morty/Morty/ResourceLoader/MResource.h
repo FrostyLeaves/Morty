@@ -66,6 +66,7 @@ public:
 	typedef std::function<bool()> MResChangedFunction;
 public :
 	MResourceHolder(MResource* pResource);
+	MResourceHolder(const MResourceHolder& cHolder);
 	virtual ~MResourceHolder();
 
 	MResource* GetResource(){ return m_pResource; }

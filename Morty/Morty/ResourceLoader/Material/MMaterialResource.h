@@ -26,6 +26,9 @@ public:
 	bool LoadVertexShader(MResource* pResource);
 	bool LoadPixelShader(MResource* pResource);
 
+	MResource* GetVertexShaderResource() { return m_pVertexResource ? m_pVertexResource->GetResource() : nullptr; }
+	MResource* GetPixelShaderResource() { return m_pPixelResource ? m_pPixelResource->GetResource() : nullptr; }
+
 	MMaterial* GetMaterialTemplate() { return m_pMaterial; }
 
 public:

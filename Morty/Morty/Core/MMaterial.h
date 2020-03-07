@@ -31,9 +31,12 @@ public:
 
 	std::vector<MShaderParam>& GetVertexShaderParams() { return m_vVertexShaderParams; }
 	std::vector<MShaderParam>& GetPixelShaderParams() { return m_vPixelShaderParams; }
-	std::vector<MShaderTextureParam>& GetPixelTextureParams(){ return m_vPixelTextureParams; }
+	std::vector<MShaderTextureParam>& GetVertexTextureParams() { return m_vVertexTextureParams; }
+	std::vector<MShaderTextureParam>& GetPixelTextureParams() { return m_vPixelTextureParams; }
+	std::vector< MResourceHolder*>& GetVertexTextures() { return m_vVertexTextureResHolder; }
 	std::vector< MResourceHolder*>& GetPixelTextures() { return m_vPixelTextureResHolder; }
 
+	void SetVertexTexutreParam(const MString& strName, MResource* pTexResource);
 	void SetPixelTexutreParam(const MString& strName, MResource* pTexResource);
 
 	void CompileVertexShaderParams();
@@ -49,14 +52,22 @@ public:
 
 	void Unload();
 
-	void CleanTextureParams();
+protected:
 
+	void RecompileShaderParams(std::vector<MShaderParam>& vParams, std::vector<MShaderParam> vNewParams);
+	void RecompileShaderTextureParam(std::vector<MShaderTextureParam>& vParams, std::vector<MResourceHolder*>& vResHolders, std::vector<MShaderTextureParam> vNewParams);
+
+	void CleanTextureParams();
 
 private:
 
 	//Shader Params
 	std::vector<MShaderParam> m_vVertexShaderParams;
 	std::vector<MShaderParam> m_vPixelShaderParams;
+
+	//Texture
+	std::vector<MShaderTextureParam> m_vVertexTextureParams;
+	std::vector<MResourceHolder*> m_vVertexTextureResHolder;
 
 	//Texture
 	std::vector<MShaderTextureParam> m_vPixelTextureParams;
@@ -68,7 +79,7 @@ private:
 	MShader* m_pPxielShader;
 
 	unsigned int m_eRenderState;
-};
 
+};
 
 #endif

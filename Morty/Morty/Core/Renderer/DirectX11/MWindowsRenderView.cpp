@@ -21,6 +21,7 @@ MWindowsRenderView::MWindowsRenderView()
 	, m_nWidth(640)
 	, m_nHeight(480)
 	, m_lEnginePrevTickTime(0)
+	, m_fCheckInputDelta(0.0f)
 {
 
 }
@@ -50,6 +51,59 @@ bool MWindowsRenderView::RegisterClass()
 
 	s_bIsRegisterWindow = true;
 	return true;
+}
+
+void MWindowsRenderView::CheckInputEvent()
+{
+	static POINT point = { -1, -1 };
+	POINT newPoint;
+	TCHAR s[10];
+	GetCursorPos(&newPoint);
+	ScreenToClient(m_hwnd, &newPoint);
+
+	if (point.x != newPoint.x || point.y != newPoint.y)
+	{
+		Vector2 v2Addi;
+		if (point.x == -1 && point.y == -1)
+			v2Addi = Vector2(0, 0);
+		else
+			v2Addi = Vector2(newPoint.x - point.x, newPoint.y - point.y);
+
+		MMouseInputEvent event(Vector2(newPoint.x, newPoint.y), v2Addi);
+
+
+		for (MViewport* pViewport : m_vViewport)
+		{
+			MMouseInputEvent eventClone(event);
+			pViewport->Input(&eventClone);
+		}
+		point = newPoint;
+	}
+
+	for (const MKeyState& state : m_vKeyQueue)
+	{
+		MKeyBoardInputEvent event(state.unKey, state.eState);
+
+		for (MViewport* pViewport : m_vViewport)
+		{
+			MKeyBoardInputEvent eventClone(event);
+			pViewport->Input(&eventClone);
+		}
+	}
+
+	for (const MKeyState& state : m_vMouseBtnQueue)
+	{
+		MMouseInputEvent event((MMouseInputEvent::MEMouseDownButton)state.unKey, state.eState == MEKeyState::DOWN ? MMouseInputEvent::MEMouseInputType::ButtonDown : MMouseInputEvent::MEMouseInputType::ButtonUp);
+
+		for (MViewport* pViewport : m_vViewport)
+		{
+			MMouseInputEvent eventClone(event);
+			pViewport->Input(&event);
+		}
+	}
+
+	m_vKeyQueue.clear();
+	m_vMouseBtnQueue.clear();
 }
 
 bool MWindowsRenderView::Initialize(MEngine* pEngine, const char* svWindowName)
@@ -103,7 +157,7 @@ void MWindowsRenderView::SetRenderTarget(MIRenderTarget* pRenderTarget)
 	MIRenderView::SetRenderTarget(pRenderTarget);
 }
 
-bool MWindowsRenderView::MainLoop()
+bool MWindowsRenderView::MainLoop(const float& fDelta)
 {
 	MSG msg = { 0 };
 
@@ -113,55 +167,13 @@ bool MWindowsRenderView::MainLoop()
 		DispatchMessage(&msg);
 	}
 
-	static POINT point = { -1, -1 };
-	POINT newPoint;
-	TCHAR s[10];
-	GetCursorPos(&newPoint);
-	ScreenToClient(m_hwnd, &newPoint);
+	m_fCheckInputDelta += fDelta;
 
-	if (point.x != newPoint.x || point.y != newPoint.y)
+	if (m_fCheckInputDelta > 1.0f / 30.0f)
 	{
-		Vector2 v2Addi;
-		if (point.x == -1 && point.y == -1)
-			v2Addi = Vector2(0, 0);
-		else
-			v2Addi = Vector2(newPoint.x - point.x, newPoint.y - point.y);
-
-		MMouseInputEvent event(Vector2(newPoint.x, newPoint.y), v2Addi);
-
-
-		for (MViewport* pViewport : m_vViewport)
-		{
-			MMouseInputEvent eventClone(event);
-			pViewport->Input(&eventClone);
-		}
-		point = newPoint;
+		m_fCheckInputDelta -= 1.0f / 30.0f;
+		CheckInputEvent();
 	}
-
-	for (const MKeyState& state : m_vKeyQueue)
-	{
-		MKeyBoardInputEvent event(state.unKey, state.eState);
-
-		for (MViewport* pViewport : m_vViewport)
-		{
-			MKeyBoardInputEvent eventClone(event);
-			pViewport->Input(&eventClone);
-		}
-	}
-
-	for (const MKeyState& state : m_vMouseBtnQueue)
-	{
-		MMouseInputEvent event((MMouseInputEvent::MEMouseDownButton)state.unKey, state.eState == MEKeyState::DOWN ? MMouseInputEvent::MEMouseInputType::ButtonDown : MMouseInputEvent::MEMouseInputType::ButtonUp);
-
-		for (MViewport* pViewport : m_vViewport)
-		{
-			MMouseInputEvent eventClone(event);
-			pViewport->Input(&event);
-		}
-	}
-
-	m_vKeyQueue.clear();
-	m_vMouseBtnQueue.clear();
 
 	return msg.message != WM_QUIT;
 }
