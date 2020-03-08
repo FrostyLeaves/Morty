@@ -141,6 +141,12 @@ public:
 	std::vector<MShaderSampleParam> m_vSampleParamsTemplate;
 	std::vector<MShaderTextureParam> m_vTextureParamsTemplate;
 	std::vector<MShaderParam> m_vShaderParamsTemplate;
+
+	static MShaderParam* GetSharedParam(const unsigned int& unCode);
+
+	static std::vector<MShaderSampleParam> s_vSampleParams;
+	static std::vector<MShaderTextureParam> s_vTextureParams;
+	static std::vector<MShaderParam> s_vShaderParams;
 };
 
 class MVertexShaderBuffer : public MShaderBuffer
@@ -153,6 +159,7 @@ public:
 	class ID3D11InputLayout* m_pInputLayout;
 #elif RENDER_GRAPHICS == MORTY_OPENGLES
 #endif
+
 };
 
 class MPixelShaderBuffer : public MShaderBuffer
@@ -164,6 +171,7 @@ public:
 	class ID3D11PixelShader* m_pPixelShader;
 #elif RENDER_GRAPHICS == MORTY_OPENGLES
 #endif
+
 };
 
 

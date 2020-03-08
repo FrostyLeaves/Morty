@@ -282,6 +282,9 @@
     <ClInclude Include="..\..\Core\Organizer\MShadowTextureRenderTarget.h">
       <Filter>Core\Organizer</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Utility\MRenderStatistics.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -463,6 +466,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\Organizer\MShadowTextureRenderTarget.cpp">
       <Filter>Core\Organizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Utility\MRenderStatistics.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

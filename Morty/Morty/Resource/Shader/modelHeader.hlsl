@@ -14,6 +14,9 @@ struct VS_OUT
     float3 normal : NORMAL;
     float3 dirLightDirTangentSpace : DIRLIGHT_TANGENT;
     float3 toCameraDirTangentSpace : CAMERADIR_TANGENT;
+
+    float3 pointLightDirTangentSpace[MPOINT_LIGHT_MAX_NUMBER] : POINTLIGHT_TANGENT;
+
 #else
     float3 normal : NORMAL;
     float3 tangent : Tangent;

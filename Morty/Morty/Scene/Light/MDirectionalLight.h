@@ -33,9 +33,6 @@ public:
 		return GetWorldTransform().GetRotatePart() * m_v3Direction;
 	}
 
-	void SetAmbientColor(const MColor& color) { m_f3Ambient = color; }
-	MColor GetAmbientColor() { return m_f3Ambient; }
-
 	void SetDiffuseColor(const MColor& color) { m_f3Diffuse = color; }
 	MColor GetDiffuseColor() { return m_f3Diffuse; }
 
@@ -45,7 +42,6 @@ public:
 private:
 
 	Vector3 m_v3Direction;
-	MColor m_f3Ambient;
 	MColor m_f3Diffuse;
 	MColor m_f3Specular;
 

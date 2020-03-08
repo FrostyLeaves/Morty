@@ -53,6 +53,7 @@ public:
 
 	virtual bool GenerateShaderParamBuffer(MShaderParam* pParam) = 0;
 	virtual void DestroyShaderParamBuffer(MShaderParam* pParam) = 0;
+
 };
 
 #endif

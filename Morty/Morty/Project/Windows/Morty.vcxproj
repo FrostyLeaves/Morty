@@ -168,6 +168,7 @@
     <ClInclude Include="..\..\Utility\Json\MJson.h" />
     <ClInclude Include="..\..\Utility\MColor.h" />
     <ClInclude Include="..\..\Utility\MMath.h" />
+    <ClInclude Include="..\..\Utility\MRenderStatistics.h" />
     <ClInclude Include="..\..\Utility\MTypedClass.h" />
     <ClInclude Include="..\..\Utility\Type\MColor.h" />
     <ClInclude Include="..\..\Utility\Type\MType.h" />
@@ -241,6 +242,7 @@
     <ClCompile Include="..\..\Utility\Json\MJson.cpp" />
     <ClCompile Include="..\..\Utility\MGlobal.cpp" />
     <ClCompile Include="..\..\Utility\MMath.cpp" />
+    <ClCompile Include="..\..\Utility\MRenderStatistics.cpp" />
     <ClCompile Include="..\..\Utility\MTypedClass.cpp" />
     <ClCompile Include="..\..\Utility\Type\MColor.cpp" />
   </ItemGroup>

@@ -25,6 +25,12 @@ VS_OUT VS(VS_IN input)
     output.dirLightDirTangentSpace = normalize(mul(U_f3DirectionLight , TBN));
     output.toCameraDirTangentSpace = normalize(mul(f3ToCameraDir, TBN));
 
+    for(int i = 0; i < MPOINT_LIGHT_MAX_NUMBER; ++i)
+    {
+        float3 f3PointLightDir = U_pointLights[i].f3WorldPosition - output.worldPos;
+        output.pointLightDirTangentSpace[i] = normalize(mul(f3PointLightDir, TBN));
+    }
+
     output.normal = normalize(mul(input.normal, U_matNormal));
 #else
 

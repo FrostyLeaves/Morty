@@ -19,7 +19,6 @@ public:
 		{
 			if (ShowNodeBegin("Light"))
 			{
-				PROPERTY_VALUE_EDIT(pNode, "Ambient", MColor, GetAmbientColor, SetAmbientColor);
 				PROPERTY_VALUE_EDIT(pNode, "Diffuse", MColor, GetDiffuseColor, SetDiffuseColor);
 				PROPERTY_VALUE_EDIT(pNode, "Specular", MColor, GetSpecularColor, SetSpecularColor);
 

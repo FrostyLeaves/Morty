@@ -45,17 +45,21 @@ extern const char* DEFAULT_TEXTURE_WHITE;
 extern const char* DEFAULT_TEXTURE_BLACK;
 extern const char* DEFAULT_TEXTURE_NORMALMAP;
 
-const unsigned int SHADER_PARAM_CODE_MESH_MATRIX = 1;
-const unsigned int SHADER_PARAM_CODE_WORLD_MATRIX = 2;
-const unsigned int SHADER_PARAM_CODE_LIGHT = 4;
-const unsigned int SHADER_PARAM_CODE_WORLDINFO = 5;
-const unsigned int SHADER_PARAM_CODE_ANIMATION = 6;
-const unsigned int SHADER_PARAM_CODE_SHADOW_MAP = 7;
-const unsigned int SHADER_PARAM_CODE_DEFAULT_SAMPLER = 8;
-const unsigned int SHADER_PARAM_CODE_SHADOW_SAMPLER = 9;
+const unsigned int SHADER_PARAM_CODE_MESH_MATRIX = 0;
+const unsigned int SHADER_PARAM_CODE_WORLD_MATRIX = 1;
+const unsigned int SHADER_PARAM_CODE_ANIMATION = 2;
+const unsigned int SHADER_PARAM_CODE_LIGHT = 3;
+const unsigned int SHADER_PARAM_CODE_WORLDINFO = 4;
+const unsigned int MINTERNAL_SHADER_CBUFFER_NUMBER = 5;
 
-const unsigned int SHADER_PARAM_CODE_AUTO_UPDATE = 100;//100以内的非0参数交由引擎更新
+const unsigned int SHADER_PARAM_CODE_SHADOW_MAP = 0;
+const unsigned int MINTERNAL_SHADER_TEXTURE_NUMBER = 1;
 
+const unsigned int SHADER_PARAM_CODE_DEFAULT_SAMPLER = 0;
+const unsigned int SHADER_PARAM_CODE_SHADOW_SAMPLER = 1;
+const unsigned int MINTERNAL_SHADER_SAMPLER_NUMBER = 2;
+
+const unsigned int SHADER_PARAM_CODE_AUTO_UPDATE = 100;
 const unsigned int SHADER_PARAM_CODE_MATERIAL = 101;
 
 const unsigned int SHADER_PARAM_CODE_DEFAULT = 1000;
@@ -63,6 +67,8 @@ const unsigned int SHADER_PARAM_CODE_DEFAULT = 1000;
 
 //Shadowmap size
 extern const unsigned int MSHADOW_TEXTURE_SIZE;
+
+extern const unsigned int MPOINT_LIGHT_MAX_NUMBER;
 
 extern const bool MCALC_NORMAL_IN_VS;
 
@@ -73,6 +79,8 @@ extern const bool MCALC_NORMAL_IN_VS;
 
 #define RENDER_GRAPHICS MORTY_DIRECTX_11
 
+
+#define MORTY_RENDER_DATA_STATISTICS true
 
 enum class MEKeyState
 {

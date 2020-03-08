@@ -42,12 +42,8 @@ private:
 	MMaterial* m_pStaticMaterial;
 	MMaterial* m_pAnimMaterial;
 
-    MShaderParam* m_pStaticMeshParam;
-    MShaderParam* m_pAnimMeshParam;
-
-	MShaderParam* m_pStaticWorldParam;
-	MShaderParam* m_pAnimWorldParam;
-
+    MShaderParam* m_pMeshParam;
+	MShaderParam* m_pWorldParam;
     MShaderParam* m_pAnimBonesParam;
 };
 

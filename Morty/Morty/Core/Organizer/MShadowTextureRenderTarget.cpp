@@ -18,13 +18,11 @@ MTypeIdentifierImplement(MShadowTextureRenderTarget, MObject)
 MShadowTextureRenderTarget::MShadowTextureRenderTarget()
 	: MTextureRenderTarget()
 	, m_pScene(nullptr)
-	, m_pStaticMeshParam(nullptr)
-	, m_pAnimMeshParam(nullptr)
-	, m_pStaticWorldParam(nullptr)
-	, m_pAnimWorldParam(nullptr)
-	, m_pAnimBonesParam(nullptr)
 	, m_pStaticMaterial(nullptr)
 	, m_pAnimMaterial(nullptr)
+	, m_pMeshParam(nullptr)
+	, m_pWorldParam(nullptr)
+	, m_pAnimBonesParam(nullptr)
 {
 
 }
@@ -41,46 +39,7 @@ void MShadowTextureRenderTarget::OnCreated()
 
 	MMaterialResource* pShadowWithAnimMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_ANIM);
 	m_pAnimMaterial = pShadowWithAnimMaterialRes->GetMaterialTemplate();
-
-	{
-		std::vector<MShaderParam>& vVtxParams = m_pStaticMaterial->GetVertexShaderParams();
-		for (MShaderParam& param : vVtxParams)
-		{
-			if (param.unCode == SHADER_PARAM_CODE_MESH_MATRIX)
-			{
-				m_pStaticMeshParam = &param;
-				continue;
-			}
-			else if (param.unCode == SHADER_PARAM_CODE_WORLD_MATRIX)
-			{
-				m_pStaticWorldParam = &param;
-				continue;
-			}
-		}
-	}
-
-	{
-		std::vector<MShaderParam>& vVtxParams = m_pAnimMaterial->GetVertexShaderParams();
-		for (MShaderParam& param : vVtxParams)
-		{
-			if (param.unCode == SHADER_PARAM_CODE_MESH_MATRIX)
-			{
-				m_pAnimMeshParam = &param;
-				continue;
-			}
-			else if (param.unCode == SHADER_PARAM_CODE_WORLD_MATRIX)
-			{
-				m_pAnimWorldParam = &param;
-				continue;
-			}
-			else if (param.unCode == SHADER_PARAM_CODE_ANIMATION)
-			{
-				m_pAnimBonesParam = &param;
-				continue;
-			}
-		}
-	}
-
+	
 	m_pDevice = m_pEngine->GetDevice();
 	m_eRenderTargetType = MTextureRenderTarget::ERenderDepth;
 
@@ -92,19 +51,27 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 	if (nullptr == m_pScene)
 		return;
 
+	if (nullptr == m_pMeshParam)
+		m_pMeshParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
+	if (nullptr == m_pWorldParam)
+		m_pWorldParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_WORLD_MATRIX);
+	if (nullptr == m_pAnimBonesParam)
+		m_pAnimBonesParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_ANIMATION);
+
 	pRenderer->SetViewport(0.0f, 0.0f, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE, 0.0f, 1.0f);
 
 	MDirectionalLight* pLight = m_pScene->FindActiveDirectionLight();
 	MViewport* pViewport = GetSourceViewport();
 	Matrix4 matLightInvProj = pViewport->GetLightInverseProjection(pLight);
 
+	MStruct& cWorldStruct = *m_pWorldParam->var.GetStruct();
+	MStruct& cMeshStruct = *m_pMeshParam->var.GetStruct();
+	cWorldStruct[0] = matLightInvProj;
+	m_pWorldParam->SetDirty();
+	pRenderer->SetVertexShaderParam(*m_pWorldParam);
+
 	{
 		pRenderer->SetUseMaterial(m_pStaticMaterial);
-
-		MStruct& cWorldStruct = *m_pStaticWorldParam->var.GetStruct();
-		MStruct& cMeshStruct = *m_pStaticMeshParam->var.GetStruct();
-		cWorldStruct[0] = matLightInvProj;
-		m_pStaticWorldParam->SetDirty();
 
 		for (MModelInstance* pModelIns : *m_pScene->GetStaticModels())
 		{
@@ -121,7 +88,8 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 					Matrix4 worldTrans = pMeshIns->GetWorldTransform();
 
 					cMeshStruct[0] = worldTrans;
-					m_pStaticMeshParam->SetDirty();
+					m_pMeshParam->SetDirty();
+					pRenderer->SetVertexShaderParam(*m_pMeshParam);
 
 					pRenderer->UpdateMaterialParam();
 					pRenderer->DrawMesh(pMeshIns->GetMesh());
@@ -130,15 +98,8 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 		}
 	}
 
-
+	
 	{
-		pRenderer->SetUseMaterial(m_pAnimMaterial);
-
-		MStruct& cWorldStruct = *m_pAnimWorldParam->var.GetStruct();
-		MStruct& cMeshStruct = *m_pAnimMeshParam->var.GetStruct();
-		cWorldStruct[0] = matLightInvProj;
-		m_pAnimWorldParam->SetDirty();
-
 		for (MModelInstance* pModelIns : *m_pScene->GetAnimationalModels())
 		{
 			if (!pModelIns->GetVisibleRecursively())
@@ -160,6 +121,7 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 				}
 
 				m_pAnimBonesParam->SetDirty();
+				pRenderer->SetVertexShaderParam(*m_pAnimBonesParam);
 			}
 
 			for (MNode* pChild : pModelIns->GetFixedChildren())
@@ -172,7 +134,8 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 					Matrix4 worldTrans = pMeshIns->GetWorldTransform();
 
 					cMeshStruct[0] = worldTrans;
-					m_pAnimMeshParam->SetDirty();
+					m_pMeshParam->SetDirty();
+					pRenderer->SetVertexShaderParam(*m_pMeshParam);
 
 					pRenderer->UpdateMaterialParam();
 					pRenderer->DrawMesh(pMeshIns->GetMesh());

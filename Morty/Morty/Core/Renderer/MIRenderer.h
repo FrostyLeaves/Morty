@@ -12,6 +12,7 @@
 #include "MString.h"
 #include "Matrix.h"
 #include "MVertex.h"
+#include "MRenderStructure.h"
 
 class MIRenderView;
 class MIShader;
@@ -68,6 +69,12 @@ public:
 	virtual void UpdateMaterialParam() = 0;
 	virtual void UpdateMaterialResource() = 0;
 
+public:
+	virtual void SetVertexShaderParam(MShaderParam& param) = 0;
+	virtual void SetPixelShaderParam(MShaderParam& param) = 0;
+
+	virtual void SetVertexShaderTexture(MShaderTextureParam& param) = 0;
+	virtual void SetPixelShaderTexture(MShaderTextureParam& param) = 0;
 
 protected:
 	unsigned int m_eRasterizerType;

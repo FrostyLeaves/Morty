@@ -25,6 +25,8 @@
 #include "NodeTreeView.h"
 #include "PropertyView.h"
 
+#include "MRenderStatistics.h"
+
 MainEditor::MainEditor()
 	: MWindowsRenderView()
 	, m_pScene(nullptr)
@@ -131,10 +133,16 @@ void MainEditor::OnRenderEnd()
 		bool bMortyOpened = true;
 		ImGui::SetNextItemOpen(bMortyOpened);
 		ImGui::SetNextWindowSize(ImVec2(GetViewWidth(), GetViewHeight()));
+
+		float fHeight = 0;
 		if (ImGui::Begin("Morty", &bMortyOpened, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize))
 		{
 			// 主窗口可用大小
 			ImVec2 v2RegionAvail = ImGui::GetContentRegionAvail();
+
+			fHeight = v2RegionAvail.y * 0.2f;
+
+			v2RegionAvail.y -= (fHeight + 4.0f);
 			
 			//子窗口可用大小
 			static float fNodeTreeWidth = v2RegionAvail.x * 0.25f;
@@ -175,12 +183,18 @@ void MainEditor::OnRenderEnd()
 			}
 			ImGui::EndChild();
 		}
+		ImGui::BeginChild("Test", ImVec2(0, fHeight));
+#if MORTY_RENDER_DATA_STATISTICS
+		ImGui::Text("Vertex Count: %d", MRenderStatistics::GetInstance()->unVertexCount);
+#endif
+		ImGui::EndChild();
 
 
 		ImGui::End();
 
 	}
 
+	
 	// Rendering
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());

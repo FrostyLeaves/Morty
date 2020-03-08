@@ -1,6 +1,7 @@
 ﻿#include "MShader.h"
 #include "MIDevice.h"
 #include "MVertex.h"
+#include "MRenderStructure.h"
 
 #include <vector>
 
@@ -12,7 +13,10 @@ MShader::MShader()
 
 bool MShader::CompileShader(MIDevice* pDevice)
 {
-	return pDevice->CompileShader(&m_pShaderBuffer, m_strShaderPath, m_eShaderType);
+	if (false == pDevice->CompileShader(&m_pShaderBuffer, m_strShaderPath, m_eShaderType))
+		return false;
+
+	return true;
 }
 
 void MShader::CleanShader(MIDevice* pDevice)

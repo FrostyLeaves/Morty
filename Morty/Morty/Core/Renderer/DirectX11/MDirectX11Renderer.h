@@ -10,6 +10,7 @@
 #define _M_MDIRECTX11RENDERER_H_
 #include "MGlobal.h"
 #include "MIRenderer.h"
+#include "MRenderStructure.h"
 #include "MSingleInstance.h"
 
 #include <d3d11.h>
@@ -52,6 +53,13 @@ public:
 
 public:
 	void UpdateShaderParam(MShaderParam& param);
+
+	virtual void SetVertexShaderParam(MShaderParam& param) override;
+	virtual void SetPixelShaderParam(MShaderParam& param) override;
+
+	virtual void SetVertexShaderTexture(MShaderTextureParam& param) override;
+	virtual void SetPixelShaderTexture(MShaderTextureParam& param) override;
+
 protected:
 
 protected:

@@ -524,12 +524,14 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 	const MString strBonesPerVertex = MStringHelper::ToString(MBONES_PER_VERTEX);
 	const MString strBonesMaxNumber = MStringHelper::ToString(MBONES_MAX_NUMBER);
 	const MString strShadowTextureSize = MStringHelper::ToString(MSHADOW_TEXTURE_SIZE);
+	const MString strPointLightMaxNumber = MStringHelper::ToString(MPOINT_LIGHT_MAX_NUMBER);
 
 	D3D_SHADER_MACRO macro[] = {
 		"MBONES_PER_VERTEX", strBonesPerVertex.c_str(),
 		"MBONES_MAX_NUMBER", strBonesMaxNumber.c_str(),
 		"MSHADOW_TEXTURE_SIZE", strShadowTextureSize.c_str(),
 		"MCALC_NORMAL_IN_VS", MCALC_NORMAL_IN_VS ? "true" : "false",
+		"MPOINT_LIGHT_MAX_NUMBER", strPointLightMaxNumber.c_str(),
 		nullptr, nullptr
 		};
 
@@ -659,47 +661,6 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 
 		}
 
-		for (unsigned int i = 0; i < shaderDesc.ConstantBuffers; ++i)
-		{
-
-			ID3D11ShaderReflectionConstantBuffer* pConstBuffer = pReflector->GetConstantBufferByIndex(i);
-			D3D11_SHADER_BUFFER_DESC bufferDesc;
-			pConstBuffer->GetDesc(&bufferDesc);
-
-			MStruct cbufferStruct;
-
-			for (unsigned int n = 0; n < bufferDesc.Variables; ++n)
-			{
-				D3D11_SHADER_VARIABLE_DESC varDesc;
-				ID3D11ShaderReflectionVariable* pVar = pConstBuffer->GetVariableByIndex(n);
-				pVar->GetDesc(&varDesc);
-				ID3D11ShaderReflectionType* pType = pVar->GetType();
-				cbufferStruct.AppendMVariant(varDesc.Name, GenerateVariableByBuffer(pType));
-			}
-
-
-			MShaderParam param;
-			param.strName = bufferDesc.Name;
-			param.var = MVariant(cbufferStruct);
-
-			if (param.strName == "MORTY_ENGINE_cbMeshMatrix")
-				param.unCode = SHADER_PARAM_CODE_MESH_MATRIX;
-			else if (param.strName == "MORTY_ENGINE_cbWorldMatrix")
-				param.unCode = SHADER_PARAM_CODE_WORLD_MATRIX;
-			else if (param.strName == "cbMaterial")
-				param.unCode = SHADER_PARAM_CODE_MATERIAL;
-			else if (param.strName == "MORTY_ENGINE_cbLights")
-				param.unCode = SHADER_PARAM_CODE_LIGHT;
-			else if (param.strName == "MORTY_ENGINE_cbWorldInfo")
-				param.unCode = SHADER_PARAM_CODE_WORLDINFO;
-			else if (param.strName == "MORTY_ENGINE_cbAnimation")
-				param.unCode = SHADER_PARAM_CODE_ANIMATION;
-			else
-				param.unCode = SHADER_PARAM_CODE_DEFAULT;
-
-			(*ppShaderBuffer)->m_vShaderParamsTemplate.push_back(param);
-		}
-
 		for (unsigned int i = 0; i < shaderDesc.BoundResources; ++i)
 		{
 			D3D11_SHADER_INPUT_BIND_DESC bindDesc;
@@ -707,16 +668,62 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 
 			if (D3D_SHADER_INPUT_TYPE::D3D_SIT_CBUFFER == bindDesc.Type)
 			{
-				for (MShaderParam& param : (*ppShaderBuffer)->m_vShaderParamsTemplate)
+				MShaderParam param;
+				param.strName = bindDesc.Name;
+				param.unBindPoint = bindDesc.BindPoint;
+				param.unBindCount = bindDesc.BindCount;
+
+				if (param.strName == "_M_E_cbMeshMatrix")
+					param.unCode = SHADER_PARAM_CODE_MESH_MATRIX;
+				else if (param.strName == "_M_E_cbWorldMatrix")
+					param.unCode = SHADER_PARAM_CODE_WORLD_MATRIX;
+				else if (param.strName == "cbMaterial")
+					param.unCode = SHADER_PARAM_CODE_MATERIAL;
+				else if (param.strName == "_M_E_cbLights")
+					param.unCode = SHADER_PARAM_CODE_LIGHT;
+				else if (param.strName == "_M_E_cbWorldInfo")
+					param.unCode = SHADER_PARAM_CODE_WORLDINFO;
+				else if (param.strName == "_M_E_cbAnimation")
+					param.unCode = SHADER_PARAM_CODE_ANIMATION;
+				else
+					param.unCode = SHADER_PARAM_CODE_DEFAULT;
+
+
+				for (unsigned int i = 0; i < shaderDesc.ConstantBuffers; ++i)
 				{
-					if (param.strName == bindDesc.Name)
+					ID3D11ShaderReflectionConstantBuffer* pConstBuffer = pReflector->GetConstantBufferByIndex(i);
+					D3D11_SHADER_BUFFER_DESC bufferDesc;
+					pConstBuffer->GetDesc(&bufferDesc);
+
+					if (bufferDesc.Name == param.strName)
 					{
-						param.unBindPoint = bindDesc.BindPoint;
-						param.unBindCount = bindDesc.BindCount;
+						param.var = MStruct();
+						MStruct& cbufferStruct = *param.var.GetStruct();
+						for (unsigned int n = 0; n < bufferDesc.Variables; ++n)
+						{
+							D3D11_SHADER_VARIABLE_DESC varDesc;
+							ID3D11ShaderReflectionVariable* pVar = pConstBuffer->GetVariableByIndex(n);
+							pVar->GetDesc(&varDesc);
+							ID3D11ShaderReflectionType* pType = pVar->GetType();
+							cbufferStruct.AppendMVariant(varDesc.Name, GenerateVariableByBuffer(pType));
+						}
 
 						break;
 					}
+
 				}
+				
+				if (param.unBindPoint < MINTERNAL_SHADER_CBUFFER_NUMBER)
+				{
+					if ((*ppShaderBuffer)->s_vShaderParams.size() <= param.unBindPoint)
+						(*ppShaderBuffer)->s_vShaderParams.resize(param.unBindPoint + 1);
+
+					GenerateShaderParamBuffer(&param);
+					(*ppShaderBuffer)->s_vShaderParams[param.unBindPoint] = param;
+				}
+				else
+					(*ppShaderBuffer)->m_vShaderParamsTemplate.push_back(param);
+
 			}
 			else if (D3D_SHADER_INPUT_TYPE::D3D_SIT_TEXTURE == bindDesc.Type)
 			{
@@ -737,7 +744,14 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 				else
 					param.unCode = SHADER_PARAM_CODE_DEFAULT;
 
-				(*ppShaderBuffer)->m_vTextureParamsTemplate.push_back(param);
+				if (param.unBindPoint < MINTERNAL_SHADER_TEXTURE_NUMBER)
+				{
+					if ((*ppShaderBuffer)->s_vTextureParams.size() <= param.unBindPoint)
+						(*ppShaderBuffer)->s_vTextureParams.resize(param.unBindPoint + 1);
+					(*ppShaderBuffer)->s_vTextureParams[param.unBindPoint] = param;
+				}
+				else
+					(*ppShaderBuffer)->m_vTextureParamsTemplate.push_back(param);
 			}
 			else if (D3D_SHADER_INPUT_TYPE::D3D_SIT_SAMPLER == bindDesc.Type)
 			{
@@ -751,10 +765,16 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 				else if (param.strName == "U_shadowMapSampler")
 					param.unCode = SHADER_PARAM_CODE_SHADOW_SAMPLER;
 
-				(*ppShaderBuffer)->m_vSampleParamsTemplate.push_back(param);
+				if (param.unBindPoint < MINTERNAL_SHADER_SAMPLER_NUMBER)
+				{
+					if ((*ppShaderBuffer)->s_vSampleParams.size() <= param.unBindPoint)
+						(*ppShaderBuffer)->s_vSampleParams.resize(param.unBindPoint + 1);
+					(*ppShaderBuffer)->s_vSampleParams[param.unBindPoint] = param;
+				}
+				else
+					(*ppShaderBuffer)->m_vSampleParamsTemplate.push_back(param);
 			}
 		}
-
 	}
 
 	pShaderBuffer->Release();

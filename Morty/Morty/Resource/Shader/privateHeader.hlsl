@@ -42,7 +42,6 @@ struct VS_IN_ANIM
 
 struct DirectionLight
 {
-    float3 f3Ambient;
     float3 f3Diffuse;
     float3 f3Specular;
 };
@@ -51,7 +50,6 @@ struct PointLight
 {
     float3 f3WorldPosition;
 
-    float3 f3Ambient;
     float3 f3Diffuse;
     float3 f3Specular;
 
@@ -61,21 +59,21 @@ struct PointLight
 
 };
 
-sampler U_defaultSampler;
-SamplerComparisonState U_shadowMapSampler;
+sampler U_defaultSampler : register(s0);
+SamplerComparisonState U_shadowMapSampler : register(s1);
 
 //Shadowmap
-Texture2D U_texShadowMap;
+Texture2D U_texShadowMap : register(t0);
 
 //VS    per mesh
-cbuffer MORTY_ENGINE_cbMeshMatrix
+cbuffer _M_E_cbMeshMatrix : register(b0)
 {
     float4x4 U_matWorld;
     float3x3 U_matNormal;
 };
 
 //VS    per render
-cbuffer MORTY_ENGINE_cbWorldMatrix
+cbuffer _M_E_cbWorldMatrix : register(b1)
 {
     float4x4 U_matCamProj;
     float4x4 U_matLightProj;
@@ -83,21 +81,23 @@ cbuffer MORTY_ENGINE_cbWorldMatrix
 
 
 //VS    with bones
-cbuffer MORTY_ENGINE_cbAnimation
+cbuffer _M_E_cbAnimation : register(b2)
 {
     float4x4 U_vBonesMatrix[MBONES_MAX_NUMBER];
 };
 
 //PS    per mesh
-cbuffer MORTY_ENGINE_cbLights
+cbuffer _M_E_cbLights : register(b3)
 {
     DirectionLight U_dirLight;
-    PointLight U_pointLights[4];
+    PointLight U_pointLights[MPOINT_LIGHT_MAX_NUMBER];
 };
 
 //PS
-cbuffer MORTY_ENGINE_cbWorldInfo
+cbuffer _M_E_cbWorldInfo : register(b4)
 {
     float3 U_f3DirectionLight;
     float3 U_f3CameraPosition;
+
+  //  float3 U_vPointLightPosition[MPOINT_LIGHT_MAX_NUMBER];
 };

@@ -34,6 +34,11 @@ public:
 	MShaderBuffer* GetBuffer() { return m_pShaderBuffer; }
 	const MEShaderType GetType() const { return m_eShaderType; }
 
+protected:
+
+//	static MShaderBuffer s_cInternalVertexBuffer;
+//	static MShaderBuffer s_cInternalPixelBuffer;
+
 private:
 
 	friend class MShaderResource;

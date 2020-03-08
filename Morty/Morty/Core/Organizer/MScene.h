@@ -85,6 +85,8 @@ protected:
 
 	void GenerateShadowMap(MIRenderer* pRenderer, MViewport* pViewport);
 
+	void UpdateShaderSharedParams(MIRenderer* pRenderer, MViewport* pViewport);
+
 	void DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport);
 	void DrawModelInstance(MIRenderer* pRenderer, MViewport* pViewport);
 	void DrawSkyBox(MIRenderer* pRenderer, MViewport* pViewport);

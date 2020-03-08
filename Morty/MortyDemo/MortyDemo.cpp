@@ -42,6 +42,8 @@
 
 #include "MainEditor.h"
 
+#include "MShaderResource.h"
+
 class MyCamera : public MCamera
 {
 public:
@@ -82,14 +84,12 @@ public:
 		if (true == m_tKeyBoardDown['N'])
 		{
 			//pLight->SetPosition(pLight->GetPosition() - Vector3(speed * fDelta, 0, 0));
-			pLight->SetAmbientColor(pLight->GetDiffuseColor().ToVector3() + MColor(1, 1, 1).ToVector3() * fDelta);
 			pLight->SetDiffuseColor(pLight->GetDiffuseColor().ToVector3() + MColor(1, 1, 1).ToVector3() * fDelta);
 			pLight->SetSpecularColor(pLight->GetDiffuseColor().ToVector3() + MColor(1, 1, 1).ToVector3() * fDelta);
 		}
 		if (true == m_tKeyBoardDown['M'])
 		{
 			//pLight->SetPosition(pLight->GetPosition() + Vector3(speed * fDelta, 0, 0));
-			pLight->SetAmbientColor(pLight->GetDiffuseColor().ToVector3() - MColor(1, 1, 1).ToVector3() * fDelta);
 			pLight->SetDiffuseColor(pLight->GetDiffuseColor().ToVector3() - MColor(1, 1, 1).ToVector3() * fDelta);
 			pLight->SetSpecularColor(pLight->GetDiffuseColor().ToVector3() - MColor(1, 1, 1).ToVector3() * fDelta);
 		}
@@ -140,7 +140,8 @@ int main(int argc, char* argv[])
 // 		pSpatial->SetRotation(Quaternion(Vector3(0, 1, 0), 90.0f));
 // 	}
 
-
+	MShaderResource* pTestShader = dynamic_cast<MShaderResource*>(engine.GetResourceManager()->LoadResource("./Shader/test.mvs"));
+	pTestShader->GetShaderTemplate()->CompileShader(engine.GetDevice());
 	
 	MString textureID[] = {"005","003","007","004","014","008","002","015","019"};
 

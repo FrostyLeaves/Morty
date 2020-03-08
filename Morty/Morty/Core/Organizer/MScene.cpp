@@ -28,6 +28,10 @@
 #include "MModelInstance.h"
 #include "MSkeleton.h"
 
+#if MORTY_RENDER_DATA_STATISTICS
+#include "MRenderStatistics.h"
+#endif
+
 #include "MShadowTextureRenderTarget.h"
 
 #include <algorithm>
@@ -326,16 +330,101 @@ void MScene::GenerateShadowMap(MIRenderer* pRenderer, MViewport* pViewport)
 	if (nullptr == m_pShadowDepthMapRenderTarget)
 		return;
 
-	m_pShadowDepthMapRenderTarget->SetSourceViewport(pViewport);
+	//如果当前有Shader使用了ShadowMap，那么进行ShadowMap的更新
+	if (SHADER_PARAM_CODE_SHADOW_MAP < MShaderBuffer::s_vTextureParams.size())
+	{
+		MShaderTextureParam& shadowParam = MShaderBuffer::s_vTextureParams[SHADER_PARAM_CODE_SHADOW_MAP];
+		if (SHADER_PARAM_CODE_SHADOW_MAP == shadowParam.unCode)
+		{
+			m_pShadowDepthMapRenderTarget->SetSourceViewport(pViewport);
+			pRenderer->Render(m_pShadowDepthMapRenderTarget);
 
-	pRenderer->Render(m_pShadowDepthMapRenderTarget);
+			shadowParam.pTexture = m_pShadowDepthMapRenderTarget->m_pDepthTexture;
+			pRenderer->SetPixelShaderTexture(shadowParam);
+		}
+	}
+		
+}
 
+void MScene::UpdateShaderSharedParams(MIRenderer* pRenderer, MViewport* pViewport)
+{
+	MDirectionalLight* pDirectionalLight = FindActiveDirectionLight();
+	Matrix4 matLightInvProj = pViewport->GetLightInverseProjection(pDirectionalLight);
+
+	if (MShaderParam* pWorldMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_WORLD_MATRIX))
+	{
+		MStruct& cStruct = *pWorldMatrixParam->var.GetStruct();
+		cStruct[0] = pViewport->GetCameraInverseProjection();
+		cStruct[1] = matLightInvProj;
+
+		pWorldMatrixParam->SetDirty();
+		pRenderer->SetVertexShaderParam(*pWorldMatrixParam);
+	}
+
+	if (MShaderParam* pWorldInfoParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_WORLDINFO))
+	{
+		if (pDirectionalLight)
+		{
+			(*pWorldInfoParam->var.GetStruct())[0] = pDirectionalLight->GetWorldDirection();
+		}
+
+		(*pWorldInfoParam->var.GetStruct())[1] = pViewport->GetCamera()->GetWorldPosition();
+
+		pWorldInfoParam->SetDirty();
+		pRenderer->SetVertexShaderParam(*pWorldInfoParam);
+		pWorldInfoParam->SetDirty();
+		pRenderer->SetPixelShaderParam(*pWorldInfoParam);
+	}
+
+	if (MShaderParam* pLightParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_LIGHT))
+	{
+		if (pDirectionalLight)
+		{
+			MVariant& cDirectionLight = (*pLightParam->var.GetStruct())[0];
+			{
+				MStruct& cLightStruct = *cDirectionLight.GetStruct();
+				{
+					cLightStruct[0] = pDirectionalLight->GetDiffuseColor().ToVector3();
+					cLightStruct[1] = pDirectionalLight->GetSpecularColor().ToVector3();
+				}
+			}
+		}
+
+		MVariant& varPointLights = (*pLightParam->var.GetStruct())[1];
+		{
+			std::vector<MPointLight*> vActivePointLights(4);
+			FindActivePointLights(pViewport->GetCamera()->GetWorldPosition(), vActivePointLights);
+
+			MVariantArray& vPointLights = *varPointLights.GetArray();
+			for (unsigned int i = 0; i < vPointLights.GetMemberCount(); ++i)
+			{
+				if (MPointLight* pLight = vActivePointLights[i])
+				{
+					MStruct& cPointLight = *vPointLights[i].GetStruct();
+					cPointLight[0] = pLight->GetWorldPosition();
+					cPointLight[1] = pLight->GetDiffuseColor().ToVector3();
+					cPointLight[2] = pLight->GetSpecularColor().ToVector3();
+
+					cPointLight[3] = 1.0f;
+					cPointLight[4] = 0.022f;
+					cPointLight[5] = 0.0019f;
+
+				}
+			}
+		}
+
+		pLightParam->SetDirty();
+		pRenderer->SetPixelShaderParam(*pLightParam);
+	}
 }
 
 void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 {
-	MDirectionalLight* pDirectionalLight = FindActiveDirectionLight();
-	Matrix4 matLightInvProj = pViewport->GetLightInverseProjection(pDirectionalLight);
+	MShaderParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
+	if (nullptr == pMeshMatrixParam)
+		return;
+
+	MShaderParam* pAnimationParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_ANIMATION);
 
 	for (MaterialMeshInsGroup* pGroup : m_vMatMeshInsGroup)
 	{
@@ -344,163 +433,47 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 		if(!pRenderer->SetUseMaterial(pMaterial))
 			continue;
 		
-		//纹理资源
-		std::vector<MShaderTextureParam>& vPixTexParams = pMaterial->GetPixelTextureParams();
-		for (MShaderTextureParam& param : vPixTexParams)
-		{
-			if (param.unCode == SHADER_PARAM_CODE_SHADOW_MAP)
-			{
-				param.pTexture = m_pShadowDepthMapRenderTarget->m_pDepthTexture;
-				break;
-			}
-		}
-		//更新纹理资源，纹理资源只更新一次，节省性能
+		//更新材质的纹理资源，最好移到Material的更新
 		pRenderer->UpdateMaterialResource();
-
-
-		//VS常量
-		std::vector<MShaderParam>& vVtxParams = pMaterial->GetVertexShaderParams();
-		for (MShaderParam& param : vVtxParams)
-		{
-			if (param.unCode == SHADER_PARAM_CODE_WORLD_MATRIX)
-			{
-				MStruct& cStruct = *param.var.GetStruct();
-				cStruct[0] = pViewport->GetCameraInverseProjection();
-				cStruct[1] = matLightInvProj;
-
-				param.SetDirty();
-				continue;
-			}
-
-			else if (param.unCode == SHADER_PARAM_CODE_WORLDINFO)
-			{
-				if (pDirectionalLight)
-				{
-					(*param.var.GetStruct())[0] = pDirectionalLight->GetWorldDirection();
-				}
-
-				(*param.var.GetStruct())[1] = pViewport->GetCamera()->GetWorldPosition();
-
-				param.SetDirty();
-				continue;
-			}
-		}
-		
-		//PS常量
-		std::vector<MShaderParam>& vPixParams = pMaterial->GetPixelShaderParams();
-		for (MShaderParam& param : vPixParams)
-		{
-			if (param.unCode == SHADER_PARAM_CODE_LIGHT)
-			{
-				if (pDirectionalLight)
-				{
-					MVariant& cDirectionLight = (*param.var.GetStruct())[0];
-					{
-						MStruct& cLightStruct = *cDirectionLight.GetStruct();
-						{
-							cLightStruct[0] = pDirectionalLight->GetAmbientColor().ToVector3();
-							cLightStruct[1] = pDirectionalLight->GetDiffuseColor().ToVector3();
-							cLightStruct[2] = pDirectionalLight->GetSpecularColor().ToVector3();
-						}
-					}
-				}
-
-				param.SetDirty();
-
-				continue;
-			}
-			else if (param.unCode == SHADER_PARAM_CODE_WORLDINFO)
-			{
-				if (pDirectionalLight)
-				{
-					(*param.var.GetStruct())[0] = pDirectionalLight->GetWorldDirection();
-				}
-
-				(*param.var.GetStruct())[1] = pViewport->GetCamera()->GetWorldPosition();
-
-				param.SetDirty();
-				continue;
-			}
-		}
 
 		for (MIMeshInstance* pMeshIns : pGroup->vMeshIns)
 		{
 			if(!pMeshIns->GetVisibleRecursively())
 				continue;
 
-			std::vector<MPointLight*> vActivePointLights(4);
-			FindActivePointLights(pMeshIns->GetWorldPosition(), vActivePointLights);
+			Matrix4 worldTrans = pMeshIns->GetWorldTransform();
+			//Transposed and Inverse.
+			Matrix3 matNormal(worldTrans.Transposed().Inverse(), 3, 3);
 
-			for (MShaderParam& param : vVtxParams)
+			MStruct& cStruct = *pMeshMatrixParam->var.GetStruct();
+			cStruct[0] = worldTrans;
+			cStruct[1] = matNormal;
+
+			pMeshMatrixParam->SetDirty();
+			pRenderer->SetVertexShaderParam(*pMeshMatrixParam);
+	
+			if (MModelInstance* pModel = dynamic_cast<MModelInstance*>(pMeshIns->GetParent()))
 			{
-				if (param.unCode == SHADER_PARAM_CODE_MESH_MATRIX)
+				if (pAnimationParam && pModel->GetSkeleton())
 				{
-					Matrix4 worldTrans = pMeshIns->GetWorldTransform();
 
-					//Transposed and Inverse.
-					Matrix3 matNormal(worldTrans.Transposed().Inverse(), 3, 3);
+					MStruct& cAnimationStruct = *pAnimationParam->var.GetStruct();
+					MVariantArray& cBonesArray = *cAnimationStruct[0].GetArray();
 
-					MStruct& cStruct = *param.var.GetStruct();
-					cStruct[0] = worldTrans;
-					cStruct[1] = matNormal;
+					const std::vector<MBone*>& bones = pModel->GetSkeleton()->GetAllBones();
+					unsigned int size = bones.size();
+					if (size > MBONES_MAX_NUMBER) size = MBONES_MAX_NUMBER;
 
-					param.SetDirty();
-					continue;
-				}
-				else if (param.unCode == SHADER_PARAM_CODE_ANIMATION)
-				{
-					if (MModelInstance* pModel = dynamic_cast<MModelInstance*>(pMeshIns->GetParent()))
+					for (unsigned int i = 0; i < size; ++i)
 					{
-						if (nullptr == pModel->GetSkeleton())
-							continue;
-
-						MStruct& cAnimationStruct = *param.var.GetStruct();
-						MVariantArray& cBonesArray = *cAnimationStruct[0].GetArray() ;
-
-						const std::vector<MBone*>& bones = pModel->GetSkeleton()->GetAllBones();
-						unsigned int size = bones.size();
-						if (size > MBONES_MAX_NUMBER)
-							size = MBONES_MAX_NUMBER;
-						for (unsigned int i = 0; i < size; ++i)
-						{
-							cBonesArray[i] = bones[i]->GetTransformInModelWorld();
-						}
-
-						param.SetDirty();
-					}
-				}
-			}
-
-			for (MShaderParam& param : vPixParams)
-			{
-				if (param.unCode == SHADER_PARAM_CODE_LIGHT)
-				{
-					MVariant& varPointLights = (*param.var.GetStruct())[1];
-					{
-						MVariantArray& vPointLights = *varPointLights.GetArray() ;
-						for (unsigned int i = 0; i < vPointLights.GetMemberCount(); ++i)
-						{
-							if (MPointLight* pLight = vActivePointLights[i])
-							{
-								MStruct& cPointLight = *vPointLights[i].GetStruct();
-								cPointLight[0] = pLight->GetWorldPosition();
-								cPointLight[1] = pLight->GetAmbientColor().ToVector3();
-								cPointLight[2] = pLight->GetDiffuseColor().ToVector3();
-								cPointLight[3] = pLight->GetSpecularColor().ToVector3();
-
-								cPointLight[4] = 1.0f;
-								cPointLight[5] = 0.022f;
-								cPointLight[6] = 0.0019f;
-								
-							}
-						}
+						cBonesArray[i] = bones[i]->GetTransformInModelWorld();
 					}
 
-					param.SetDirty();
-					continue;
+					pAnimationParam->SetDirty();
+					pRenderer->SetVertexShaderParam(*pAnimationParam);
 				}
 			}
-
+			
 			pRenderer->UpdateMaterialParam();
 			pRenderer->DrawMesh(pMeshIns->GetMesh());
 		}
@@ -693,10 +666,18 @@ void MScene::DrawCameraFrustum(MIRenderer* pRenderer, MViewport* pViewport, MCam
 
 void MScene::Render(MIRenderer* pRenderer, MViewport* pViewport)
 {
+#if MORTY_RENDER_DATA_STATISTICS
+	MRenderStatistics::GetInstance()->unVertexCount = 0;
+#endif
+
+
+
 	GenerateShadowMap(pRenderer, pViewport);
 
 	Vector2 v2LeftTop = pViewport->GetLeftTop();
 	pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, pViewport->GetWidth(), pViewport->GetHeight(), 0.0f, 1.0f);
+
+	UpdateShaderSharedParams(pRenderer, pViewport);
 	DrawPainter(pRenderer, pViewport);
 	DrawMeshInstance(pRenderer, pViewport);
 	DrawModelInstance(pRenderer, pViewport);
