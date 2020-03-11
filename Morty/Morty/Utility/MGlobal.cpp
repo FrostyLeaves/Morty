@@ -17,6 +17,7 @@ const char* DEFAULT_TEXTURE_NORMALMAP = "DefTexNormalMap";
 
 const unsigned int MSHADOW_TEXTURE_SIZE = 2048;
 
-const unsigned int MPOINT_LIGHT_MAX_NUMBER = 4;
+const unsigned int MPOINT_LIGHT_MAX_NUMBER = 8;
+const unsigned int MPOINT_LIGHT_PIXEL_NUMBER = 4;
 
 const bool MCALC_NORMAL_IN_VS = true;

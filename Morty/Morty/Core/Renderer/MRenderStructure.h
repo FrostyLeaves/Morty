@@ -75,12 +75,21 @@ public:
 #endif
 };
 
+enum MEShaderParamType
+{
+	EVertex = 1,
+	EPixel = 2,
+	EBoth = 3,
+};
+
 struct MShaderParam
 {
 	MShaderParam();
 
 	MString strName;
 	unsigned int unCode;
+	unsigned int  eType;
+
 	MVariant var;
 	bool bDirty;
 
@@ -107,6 +116,7 @@ struct MShaderTextureParam
 
 	MString strName;
 	unsigned int unCode;
+	unsigned int  eShaderType;
 	MITexture* pTexture;
 	METextureType eType;
 
@@ -123,6 +133,7 @@ struct MShaderSampleParam
 	MShaderSampleParam();
 	MString strName;
 	unsigned int unCode;
+	unsigned int  eType;
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	unsigned int unBindPoint;
 	unsigned int unBindCount;
@@ -138,15 +149,15 @@ public:
 	MShaderBuffer();
 	virtual ~MShaderBuffer(){}
 
-	std::vector<MShaderSampleParam> m_vSampleParamsTemplate;
-	std::vector<MShaderTextureParam> m_vTextureParamsTemplate;
-	std::vector<MShaderParam> m_vShaderParamsTemplate;
+	std::vector<MShaderSampleParam*> m_vSampleParamsTemplate;
+	std::vector<MShaderTextureParam*> m_vTextureParamsTemplate;
+	std::vector<MShaderParam*> m_vShaderParamsTemplate;
 
 	static MShaderParam* GetSharedParam(const unsigned int& unCode);
 
-	static std::vector<MShaderSampleParam> s_vSampleParams;
-	static std::vector<MShaderTextureParam> s_vTextureParams;
-	static std::vector<MShaderParam> s_vShaderParams;
+	static std::vector<MShaderSampleParam*> s_vSampleParams;
+	static std::vector<MShaderTextureParam*> s_vTextureParams;
+	static std::vector<MShaderParam*> s_vShaderParams;
 };
 
 class MVertexShaderBuffer : public MShaderBuffer

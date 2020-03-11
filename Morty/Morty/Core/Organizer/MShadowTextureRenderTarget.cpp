@@ -70,76 +70,49 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 	m_pWorldParam->SetDirty();
 	pRenderer->SetVertexShaderParam(*m_pWorldParam);
 
+	for (MModelInstance* pModelIns : *m_pScene->GetModelInstances())
 	{
-		pRenderer->SetUseMaterial(m_pStaticMaterial);
+		if (!pModelIns->GetVisibleRecursively())
+			continue;
 
-		for (MModelInstance* pModelIns : *m_pScene->GetStaticModels())
+		if (!pModelIns->GetGenerateDirLightShadow())
+			continue;
+
+		if (MSkeletonInstance* pSkeleton = pModelIns->GetSkeleton())
 		{
-			if (!pModelIns->GetVisibleRecursively())
-				continue;
 
-			for (MNode* pChild : pModelIns->GetFixedChildren())
+			MVariant& cVariant = (*m_pAnimBonesParam->var.GetStruct())[0];
+			MVariantArray& cBonesArray = *cVariant.GetArray();
+
+			const std::vector<MBone*>& bones = pSkeleton->GetAllBones();
+			unsigned int size = bones.size();
+			if (size > MBONES_MAX_NUMBER)
+				size = MBONES_MAX_NUMBER;
+			for (unsigned int i = 0; i < size; ++i)
 			{
-				if (!pChild->GetVisibleRecursively())
-					continue;
-
-				if (MIMeshInstance* pMeshIns = pChild->DynamicCast<MIMeshInstance>())
-				{
-					Matrix4 worldTrans = pMeshIns->GetWorldTransform();
-
-					cMeshStruct[0] = worldTrans;
-					m_pMeshParam->SetDirty();
-					pRenderer->SetVertexShaderParam(*m_pMeshParam);
-
-					pRenderer->UpdateMaterialParam();
-					pRenderer->DrawMesh(pMeshIns->GetMesh());
-				}
+				cBonesArray[i] = bones[i]->GetTransformInModelWorld();
 			}
+
+			m_pAnimBonesParam->SetDirty();
+			pRenderer->SetVertexShaderParam(*m_pAnimBonesParam);
 		}
-	}
 
-	
-	{
-		for (MModelInstance* pModelIns : *m_pScene->GetAnimationalModels())
+		for (MNode* pChild : pModelIns->GetFixedChildren())
 		{
-			if (!pModelIns->GetVisibleRecursively())
+			if (!pChild->GetVisibleRecursively())
 				continue;
 
-			if (MSkeletonInstance* pSkeleton = pModelIns->GetSkeleton())
+			if (MIMeshInstance* pMeshIns = pChild->DynamicCast<MIMeshInstance>())
 			{
-				
-				MVariant& cVariant = (*m_pAnimBonesParam->var.GetStruct())[0];
-				MVariantArray& cBonesArray = *cVariant.GetArray();
 
-				const std::vector<MBone*>& bones = pSkeleton->GetAllBones();
-				unsigned int size = bones.size();
-				if (size > MBONES_MAX_NUMBER)
-					size = MBONES_MAX_NUMBER;
-				for (unsigned int i = 0; i < size; ++i)
-				{
-					cBonesArray[i] = bones[i]->GetTransformInModelWorld();
-				}
+				Matrix4 worldTrans = pMeshIns->GetWorldTransform();
 
-				m_pAnimBonesParam->SetDirty();
-				pRenderer->SetVertexShaderParam(*m_pAnimBonesParam);
-			}
+				cMeshStruct[0] = worldTrans;
+				m_pMeshParam->SetDirty();
+				pRenderer->SetVertexShaderParam(*m_pMeshParam);
 
-			for (MNode* pChild : pModelIns->GetFixedChildren())
-			{
-				if (!pChild->GetVisibleRecursively())
-					continue;
-
-				if (MIMeshInstance* pMeshIns = pChild->DynamicCast<MIMeshInstance>())
-				{
-					Matrix4 worldTrans = pMeshIns->GetWorldTransform();
-
-					cMeshStruct[0] = worldTrans;
-					m_pMeshParam->SetDirty();
-					pRenderer->SetVertexShaderParam(*m_pMeshParam);
-
-					pRenderer->UpdateMaterialParam();
-					pRenderer->DrawMesh(pMeshIns->GetMesh());
-				}
+				pRenderer->UpdateMaterialParam();
+				pRenderer->DrawMesh(pMeshIns->GetMesh());
 			}
 		}
 	}

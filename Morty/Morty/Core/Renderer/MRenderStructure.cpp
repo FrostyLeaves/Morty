@@ -21,16 +21,16 @@ MShaderParam* MShaderBuffer::GetSharedParam(const unsigned int& unCode)
 	if (unCode >= s_vShaderParams.size())
 		return nullptr;
 
-	if (unCode != s_vShaderParams[unCode].unCode)
+	if (unCode != s_vShaderParams[unCode]->unCode)
 		return nullptr;
 
 	//TODO 返回的指针可能被外部长期持有，当容器进行remove操作时，成员可能被析构，导致外部持有的指针失效。有空把容器类型改为存指针的容器。
-	return &s_vShaderParams[unCode];
+	return s_vShaderParams[unCode];
 }
 
-std::vector<MShaderSampleParam> MShaderBuffer::s_vSampleParams = std::vector<MShaderSampleParam>();
-std::vector<MShaderTextureParam> MShaderBuffer::s_vTextureParams = std::vector<MShaderTextureParam>();
-std::vector<MShaderParam> MShaderBuffer::s_vShaderParams = std::vector<MShaderParam>();
+std::vector<MShaderSampleParam*> MShaderBuffer::s_vSampleParams = std::vector<MShaderSampleParam*>();
+std::vector<MShaderTextureParam*> MShaderBuffer::s_vTextureParams = std::vector<MShaderTextureParam*>();
+std::vector<MShaderParam*> MShaderBuffer::s_vShaderParams = std::vector<MShaderParam*>();
 
 MShaderBuffer::MShaderBuffer()
 {

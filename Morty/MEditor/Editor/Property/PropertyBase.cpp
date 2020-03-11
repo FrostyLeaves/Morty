@@ -241,41 +241,23 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 
 
 	{
-		std::vector<MShaderParam>& vParams = pMaterial->GetPixelShaderParams();
-		for (MShaderParam& param : vParams)
+		std::vector<MShaderParam*>& vParams = *pMaterial->GetShaderParams();
+		for (MShaderParam* pParam : vParams)
 		{
-			if (param.strName.compare(0, 13, "MORTY_ENGINE_"))
+			if (EditMVariant(pParam->strName, pParam->var))
 			{
-				if (EditMVariant(param.strName, param.var))
-				{
-					param.SetDirty();
-					bModified = true;
-				}
+				pParam->SetDirty();
+				bModified = true;
 			}
 		}
 	}
 
 	{
-		std::vector<MShaderParam>& vParams = pMaterial->GetVertexShaderParams();
-		for (MShaderParam& param : vParams)
-		{
-			if (param.strName.compare(0, 13, "MORTY_ENGINE_"))
-			{
-				if (EditMVariant(param.strName, param.var))
-				{
-					param.SetDirty();
-					bModified = true;
-				}
-			}
-		}
-	}
-
-	{
-		std::vector<MShaderTextureParam>& vParams = pMaterial->GetVertexTextureParams();
-		std::vector<MResourceHolder*>& vResources = pMaterial->GetVertexTextures();
+		std::vector<MShaderTextureParam*>& vParams = *pMaterial->GetTextureParams();
+		std::vector<MResourceHolder*>& vResources = *pMaterial->GetTextures();
 		for (unsigned int i = 0; i < vParams.size(); ++i)
 		{
-			MShaderTextureParam& param = vParams[i];
+			MShaderTextureParam& param = *vParams[i];
 			if (param.unCode <= SHADER_PARAM_CODE_AUTO_UPDATE)
 				continue;
 
@@ -288,7 +270,7 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 
 				MResource* pNewResource = pMaterial->GetResource()->GetResourceManager()->LoadResource(strNewFilePath);
 
-				pMaterial->SetPixelTexutreParam(param.strName, pNewResource);
+				pMaterial->SetTexutreParam(param.strName, pNewResource);
 				});
 
 			if (param.pTexture)
@@ -302,11 +284,11 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 	}
 
 	{
-		std::vector<MShaderTextureParam>& vParams = pMaterial->GetPixelTextureParams();
-		std::vector<MResourceHolder*>& vResources =  pMaterial->GetPixelTextures();
+		std::vector<MShaderTextureParam*>& vParams = *pMaterial->GetTextureParams();
+		std::vector<MResourceHolder*>& vResources =  *pMaterial->GetTextures();
 		for (unsigned int i = 0; i < vParams.size(); ++i)
 		{
-			MShaderTextureParam& param = vParams[i];
+			MShaderTextureParam& param = *vParams[i];
 			if (param.unCode <= SHADER_PARAM_CODE_AUTO_UPDATE)
 				continue;
 
@@ -319,7 +301,7 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 
 				MResource* pNewResource = pMaterial->GetResource()->GetResourceManager()->LoadResource(strNewFilePath);
 
-				pMaterial->SetPixelTexutreParam(param.strName, pNewResource);
+				pMaterial->SetTexutreParam(param.strName, pNewResource);
 			});
 
 			if (param.pTexture)

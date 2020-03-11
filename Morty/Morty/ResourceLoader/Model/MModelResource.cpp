@@ -478,11 +478,11 @@ void MModelResource::ProcessMaterial(const aiScene* pScene, std::vector<unsigned
 		}
 		//Test Data, need read from file.
 		MStruct* pMaterialStruct = nullptr;
-		for (MShaderParam& param : m_vDefaultMaterial[i]->GetPixelShaderParams())
+		for (MShaderParam* pParam : *m_vDefaultMaterial[i]->GetShaderParams())
 		{
-			if (param.unCode == SHADER_PARAM_CODE_MATERIAL)
+			if (pParam->unCode == SHADER_PARAM_CODE_MATERIAL)
 			{
-				if (MStruct* pStruct = param.var.GetStruct())
+				if (MStruct* pStruct = pParam->var.GetStruct())
 				{
 					if (MStruct* pMat = pStruct->FindMember("U_mat")->GetStruct())
 					{
@@ -526,7 +526,7 @@ void MModelResource::ProcessMaterial(const aiScene* pScene, std::vector<unsigned
 		else
 			pNormalMapRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_NORMALMAP);
 
-		m_vDefaultMaterial[i]->SetPixelTexutreParam("U_mat.texDiffuse", pDiffuseTexRes);
-		m_vDefaultMaterial[i]->SetPixelTexutreParam("U_mat.texNormal", pNormalMapRes);
+		m_vDefaultMaterial[i]->SetTexutreParam("U_mat.texDiffuse", pDiffuseTexRes);
+		m_vDefaultMaterial[i]->SetTexutreParam("U_mat.texNormal", pNormalMapRes);
 	}
 }

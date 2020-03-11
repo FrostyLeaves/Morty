@@ -287,3 +287,4 @@ iOSInjectionProject/
 # End of https://www.gitignore.io/api/swift,xcode,Cobjective-c,osx
 Morty/Debug
 Morty/.vs/
+Morty/Morty/Resource/Model/

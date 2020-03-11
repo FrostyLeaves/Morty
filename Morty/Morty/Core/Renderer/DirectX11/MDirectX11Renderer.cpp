@@ -327,14 +327,12 @@ void MDirectX11Renderer::UpdateMaterialParam()
 	if (!m_pUsingMaterial)
 		return;
 
-	for (MShaderParam& param : m_pUsingMaterial->GetVertexShaderParams())
+	for (MShaderParam* pParam : *m_pUsingMaterial->GetShaderParams())
 	{
-		SetVertexShaderParam(param);
-	}
-
-	for (MShaderParam& param : m_pUsingMaterial->GetPixelShaderParams())
-	{
-		SetPixelShaderParam(param);
+		if(MEShaderParamType::EVertex & pParam->eType)
+			SetVertexShaderParam(*pParam);
+		if (MEShaderParamType::EPixel & pParam->eType)
+			SetPixelShaderParam(*pParam);
 	}
 
 }
@@ -344,9 +342,13 @@ void MDirectX11Renderer::UpdateMaterialResource()
 	if (!m_pUsingMaterial)
 		return;
 
-	for (MShaderTextureParam& param : m_pUsingMaterial->GetPixelTextureParams())
-		SetPixelShaderTexture(param);
-
+	for (MShaderTextureParam* pParam : *m_pUsingMaterial->GetTextureParams())
+	{
+		if (MEShaderParamType::EVertex & pParam->eShaderType)
+			SetVertexShaderTexture(*pParam);
+		if (MEShaderParamType::EPixel & pParam->eShaderType)
+			SetPixelShaderTexture(*pParam);
+	}
 }
 
 void MDirectX11Renderer::UpdateShaderParam(MShaderParam& param)

@@ -171,11 +171,7 @@ void MScene::OnNodeEnter(MNode* pNode)
 {
 	if (MModelInstance* pModelIns = pNode->DynamicCast<MModelInstance>())
 	{
-		if (pModelIns->GetSkeleton())
-			m_vAnimationalModelInstances.push_back(pModelIns);
-		else
-			m_vStaticModelInstances.push_back(pModelIns);
-
+		m_vModelInstances.push_back(pModelIns);
 	}
 
 	else if (MDirectionalLight* pDirLight = pNode->DynamicCast<MDirectionalLight>())
@@ -207,18 +203,9 @@ void MScene::OnNodeExit(MNode* pNode)
 {
 	if (MModelInstance* pModelIns = pNode->DynamicCast<MModelInstance>())
 	{
-		if (pModelIns->GetSkeleton())
-		{
-			std::vector<MModelInstance*>::iterator iter = std::find(m_vAnimationalModelInstances.begin(), m_vAnimationalModelInstances.end(), pModelIns);
-			if (m_vAnimationalModelInstances.end() != iter)
-				m_vAnimationalModelInstances.erase(iter);
-		}
-		else
-		{
-			std::vector<MModelInstance*>::iterator iter = std::find(m_vStaticModelInstances.begin(), m_vStaticModelInstances.end(), pModelIns);
-			if (m_vStaticModelInstances.end() != iter)
-				m_vStaticModelInstances.erase(iter);
-		}
+		std::vector<MModelInstance*>::iterator iter = std::find(m_vModelInstances.begin(), m_vModelInstances.end(), pModelIns);
+		if (m_vModelInstances.end() != iter)
+			m_vModelInstances.erase(iter);
 	}
 
 	else if (MDirectionalLight* pDirLight = pNode->DynamicCast<MDirectionalLight>())
@@ -333,14 +320,14 @@ void MScene::GenerateShadowMap(MIRenderer* pRenderer, MViewport* pViewport)
 	//如果当前有Shader使用了ShadowMap，那么进行ShadowMap的更新
 	if (SHADER_PARAM_CODE_SHADOW_MAP < MShaderBuffer::s_vTextureParams.size())
 	{
-		MShaderTextureParam& shadowParam = MShaderBuffer::s_vTextureParams[SHADER_PARAM_CODE_SHADOW_MAP];
-		if (SHADER_PARAM_CODE_SHADOW_MAP == shadowParam.unCode)
+		MShaderTextureParam* pShadowParam = MShaderBuffer::s_vTextureParams[SHADER_PARAM_CODE_SHADOW_MAP];
+		if (SHADER_PARAM_CODE_SHADOW_MAP == pShadowParam->unCode)
 		{
 			m_pShadowDepthMapRenderTarget->SetSourceViewport(pViewport);
 			pRenderer->Render(m_pShadowDepthMapRenderTarget);
 
-			shadowParam.pTexture = m_pShadowDepthMapRenderTarget->m_pDepthTexture;
-			pRenderer->SetPixelShaderTexture(shadowParam);
+			pShadowParam->pTexture = m_pShadowDepthMapRenderTarget->m_pDepthTexture;
+			pRenderer->SetPixelShaderTexture(*pShadowParam);
 		}
 	}
 		
@@ -391,9 +378,11 @@ void MScene::UpdateShaderSharedParams(MIRenderer* pRenderer, MViewport* pViewpor
 		}
 
 		MVariant& varPointLights = (*pLightParam->var.GetStruct())[1];
+		MVariant& varValidPointLights = (*pLightParam->var.GetStruct())[2];
 		{
-			std::vector<MPointLight*> vActivePointLights(4);
+			std::vector<MPointLight*> vActivePointLights(MPOINT_LIGHT_MAX_NUMBER);
 			FindActivePointLights(pViewport->GetCamera()->GetWorldPosition(), vActivePointLights);
+			varValidPointLights = (int)MPOINT_LIGHT_MAX_NUMBER;
 
 			MVariantArray& vPointLights = *varPointLights.GetArray();
 			for (unsigned int i = 0; i < vPointLights.GetMemberCount(); ++i)
@@ -410,9 +399,16 @@ void MScene::UpdateShaderSharedParams(MIRenderer* pRenderer, MViewport* pViewpor
 					cPointLight[5] = 0.0019f;
 
 				}
+				else
+				{
+					varValidPointLights = (int)i;
+				}
 			}
 		}
 
+
+		pLightParam->SetDirty();
+		pRenderer->SetVertexShaderParam(*pLightParam);
 		pLightParam->SetDirty();
 		pRenderer->SetPixelShaderParam(*pLightParam);
 	}
@@ -482,15 +478,7 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 
 void MScene::DrawModelInstance(MIRenderer* pRenderer, MViewport* pViewport)
 {
-	for (MModelInstance* pModelIns : m_vStaticModelInstances)
-	{
-		if (pModelIns->GetDrawBoundingBox())
-		{
-			DrawBoundingBox(pRenderer, pViewport, pModelIns);
-		}
-	}
-
-	for (MModelInstance* pModelIns : m_vAnimationalModelInstances)
+	for (MModelInstance* pModelIns : m_vModelInstances)
 	{
 		if (pModelIns->GetDrawBoundingBox())
 		{
@@ -508,35 +496,33 @@ void MScene::DrawSkyBox(MIRenderer* pRenderer, MViewport* pViewport)
 		if (MStaticMeshInstance* pMeshIns = m_pSkyBox->GetMeshInstance())
 		{
 			MMaterial* pMaterial = pMeshIns->GetMaterial();
-			std::vector<MShaderParam>& vVtxParams = pMaterial->GetVertexShaderParams();
-			for (MShaderParam& param : vVtxParams)
-			{
-				if (param.unCode == SHADER_PARAM_CODE_MESH_MATRIX)
-				{
-					MStruct& cStruct = *param.var.GetStruct();
-					Matrix4 mat(Matrix4::IdentityMatrix);
-					Vector3 camPos = pViewport->GetCamera()->GetPosition();
-					mat.m[0][3] = camPos.x;
-					mat.m[1][3] = camPos.y;
-					mat.m[2][3] = camPos.z;
-					cStruct[0] = mat;
-					
-					param.SetDirty();
-					continue;
-				}
-				else if (param.unCode == SHADER_PARAM_CODE_WORLD_MATRIX)
-				{
-					MStruct& cStruct = *param.var.GetStruct();
-					cStruct[0] = pViewport->GetCameraInverseProjection();
 
-					param.SetDirty();
-					continue;
-				}
+			if (MShaderParam* pMeshParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX))
+			{
+				MStruct& cStruct = *pMeshParam->var.GetStruct();
+				Matrix4 mat(Matrix4::IdentityMatrix);
+				Vector3 camPos = pViewport->GetCamera()->GetPosition();
+				mat.m[0][3] = camPos.x;
+				mat.m[1][3] = camPos.y;
+				mat.m[2][3] = camPos.z;
+				cStruct[0] = mat;
+
+				pMeshParam->SetDirty();
+				pRenderer->SetVertexShaderParam(*pMeshParam);
 			}
+			if (MShaderParam* pWorldParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX))
+			{
+				MStruct& cStruct = *pWorldParam->var.GetStruct();
+				cStruct[0] = pViewport->GetCameraInverseProjection();
+
+				pWorldParam->SetDirty();
+				pRenderer->SetVertexShaderParam(*pWorldParam);
+			}
+
 			if (pRenderer->SetUseMaterial(pMaterial))
 			{
-				pRenderer->UpdateMaterialParam();
 				pRenderer->UpdateMaterialResource();
+				pRenderer->UpdateMaterialParam();
 				pRenderer->DrawMesh(pMeshIns->GetMesh());
 			}
 		}
@@ -556,19 +542,15 @@ void MScene::DrawBoundingBox(MIRenderer* pRenderer, MViewport* pViewport, MModel
 	if (!pRenderer->SetUseMaterial(pMaterial))
 		return;
 
-	std::vector<MShaderParam>& vVtxParams = pMaterial->GetVertexShaderParams();
-	for (MShaderParam& param : vVtxParams)
+	if (MShaderParam* pWorldParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX))
 	{
-		if (param.unCode == SHADER_PARAM_CODE_WORLD_MATRIX)
-		{
-			MStruct& cStruct = *param.var.GetStruct();
-			cStruct[0] = pViewport->GetCameraInverseProjection();
-			
-			param.SetDirty();
-			continue;
-		}
-	}
+		MStruct& cStruct = *pWorldParam->var.GetStruct();
+		cStruct[0] = pViewport->GetCameraInverseProjection();
 
+		pWorldParam->SetDirty();
+		pRenderer->SetVertexShaderParam(*pWorldParam);
+	}
+		
 	pRenderer->UpdateMaterialParam();
 
 	const MBoundsAABB* pAABB = pModelIns->GetBoundsAABB();
@@ -620,16 +602,13 @@ void MScene::DrawCameraFrustum(MIRenderer* pRenderer, MViewport* pViewport, MCam
 	if (!pRenderer->SetUseMaterial(pMaterial))
 		return;
 
-	std::vector<MShaderParam>& vVtxParams = pMaterial->GetVertexShaderParams();
-	for (MShaderParam& param : vVtxParams)
+	if (MShaderParam* pWorldParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX))
 	{
-		if (param.unCode == SHADER_PARAM_CODE_WORLD_MATRIX)
-		{
-			MStruct& cStruct = *param.var.GetStruct();
-			cStruct[0] = pViewport->GetCameraInverseProjection();
-			param.SetDirty();
-			continue;
-		}
+		MStruct& cStruct = *pWorldParam->var.GetStruct();
+		cStruct[0] = pViewport->GetCameraInverseProjection();
+
+		pWorldParam->SetDirty();
+		pRenderer->SetVertexShaderParam(*pWorldParam);
 	}
 
 	pRenderer->UpdateMaterialParam();
@@ -669,8 +648,6 @@ void MScene::Render(MIRenderer* pRenderer, MViewport* pViewport)
 #if MORTY_RENDER_DATA_STATISTICS
 	MRenderStatistics::GetInstance()->unVertexCount = 0;
 #endif
-
-
 
 	GenerateShadowMap(pRenderer, pViewport);
 

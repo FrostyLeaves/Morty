@@ -86,14 +86,15 @@ cbuffer _M_E_cbAnimation : register(b2)
     float4x4 U_vBonesMatrix[MBONES_MAX_NUMBER];
 };
 
-//PS    per mesh
+//PS    per render
 cbuffer _M_E_cbLights : register(b3)
 {
     DirectionLight U_dirLight;
     PointLight U_pointLights[MPOINT_LIGHT_MAX_NUMBER];
+    int U_nValidPointLightsNumber;
 };
 
-//PS
+//VS & PS    per render
 cbuffer _M_E_cbWorldInfo : register(b4)
 {
     float3 U_f3DirectionLight;

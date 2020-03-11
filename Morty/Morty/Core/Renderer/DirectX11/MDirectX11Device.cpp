@@ -525,6 +525,7 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 	const MString strBonesMaxNumber = MStringHelper::ToString(MBONES_MAX_NUMBER);
 	const MString strShadowTextureSize = MStringHelper::ToString(MSHADOW_TEXTURE_SIZE);
 	const MString strPointLightMaxNumber = MStringHelper::ToString(MPOINT_LIGHT_MAX_NUMBER);
+	const MString strPointLightPixelNumber = MStringHelper::ToString(MPOINT_LIGHT_PIXEL_NUMBER);
 
 	D3D_SHADER_MACRO macro[] = {
 		"MBONES_PER_VERTEX", strBonesPerVertex.c_str(),
@@ -532,6 +533,7 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 		"MSHADOW_TEXTURE_SIZE", strShadowTextureSize.c_str(),
 		"MCALC_NORMAL_IN_VS", MCALC_NORMAL_IN_VS ? "true" : "false",
 		"MPOINT_LIGHT_MAX_NUMBER", strPointLightMaxNumber.c_str(),
+		"MPOINT_LIGHT_PIXEL_NUMBER", strPointLightPixelNumber.c_str(),
 		nullptr, nullptr
 		};
 
@@ -668,25 +670,26 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 
 			if (D3D_SHADER_INPUT_TYPE::D3D_SIT_CBUFFER == bindDesc.Type)
 			{
-				MShaderParam param;
-				param.strName = bindDesc.Name;
-				param.unBindPoint = bindDesc.BindPoint;
-				param.unBindCount = bindDesc.BindCount;
+				MShaderParam* pParam = new MShaderParam();
+				pParam->eType = MShader::MEShaderType::Vertex == eShaderType ? MEShaderParamType::EVertex : MEShaderParamType::EPixel;
+				pParam->strName = bindDesc.Name;
+				pParam->unBindPoint = bindDesc.BindPoint;
+				pParam->unBindCount = bindDesc.BindCount;
 
-				if (param.strName == "_M_E_cbMeshMatrix")
-					param.unCode = SHADER_PARAM_CODE_MESH_MATRIX;
-				else if (param.strName == "_M_E_cbWorldMatrix")
-					param.unCode = SHADER_PARAM_CODE_WORLD_MATRIX;
-				else if (param.strName == "cbMaterial")
-					param.unCode = SHADER_PARAM_CODE_MATERIAL;
-				else if (param.strName == "_M_E_cbLights")
-					param.unCode = SHADER_PARAM_CODE_LIGHT;
-				else if (param.strName == "_M_E_cbWorldInfo")
-					param.unCode = SHADER_PARAM_CODE_WORLDINFO;
-				else if (param.strName == "_M_E_cbAnimation")
-					param.unCode = SHADER_PARAM_CODE_ANIMATION;
+				if (pParam->strName == "_M_E_cbMeshMatrix")
+					pParam->unCode = SHADER_PARAM_CODE_MESH_MATRIX;
+				else if (pParam->strName == "_M_E_cbWorldMatrix")
+					pParam->unCode = SHADER_PARAM_CODE_WORLD_MATRIX;
+				else if (pParam->strName == "cbMaterial")
+					pParam->unCode = SHADER_PARAM_CODE_MATERIAL;
+				else if (pParam->strName == "_M_E_cbLights")
+					pParam->unCode = SHADER_PARAM_CODE_LIGHT;
+				else if (pParam->strName == "_M_E_cbWorldInfo")
+					pParam->unCode = SHADER_PARAM_CODE_WORLDINFO;
+				else if (pParam->strName == "_M_E_cbAnimation")
+					pParam->unCode = SHADER_PARAM_CODE_ANIMATION;
 				else
-					param.unCode = SHADER_PARAM_CODE_DEFAULT;
+					pParam->unCode = SHADER_PARAM_CODE_DEFAULT;
 
 
 				for (unsigned int i = 0; i < shaderDesc.ConstantBuffers; ++i)
@@ -695,10 +698,10 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 					D3D11_SHADER_BUFFER_DESC bufferDesc;
 					pConstBuffer->GetDesc(&bufferDesc);
 
-					if (bufferDesc.Name == param.strName)
+					if (bufferDesc.Name == pParam->strName)
 					{
-						param.var = MStruct();
-						MStruct& cbufferStruct = *param.var.GetStruct();
+						pParam->var = MStruct();
+						MStruct& cbufferStruct = *pParam->var.GetStruct();
 						for (unsigned int n = 0; n < bufferDesc.Variables; ++n)
 						{
 							D3D11_SHADER_VARIABLE_DESC varDesc;
@@ -713,66 +716,76 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 
 				}
 				
-				if (param.unBindPoint < MINTERNAL_SHADER_CBUFFER_NUMBER)
+				if (pParam->unBindPoint < MINTERNAL_SHADER_CBUFFER_NUMBER)
 				{
-					if ((*ppShaderBuffer)->s_vShaderParams.size() <= param.unBindPoint)
-						(*ppShaderBuffer)->s_vShaderParams.resize(param.unBindPoint + 1);
+					if ((*ppShaderBuffer)->s_vShaderParams.size() <= pParam->unBindPoint)
+						(*ppShaderBuffer)->s_vShaderParams.resize(pParam->unBindPoint + 1);
 
-					GenerateShaderParamBuffer(&param);
-					(*ppShaderBuffer)->s_vShaderParams[param.unBindPoint] = param;
+					if (nullptr == (*ppShaderBuffer)->s_vShaderParams[pParam->unBindPoint])
+					{
+						GenerateShaderParamBuffer(pParam);
+						(*ppShaderBuffer)->s_vShaderParams[pParam->unBindPoint] = pParam;
+					}
 				}
 				else
-					(*ppShaderBuffer)->m_vShaderParamsTemplate.push_back(param);
+					(*ppShaderBuffer)->m_vShaderParamsTemplate.push_back(pParam);
 
 			}
 			else if (D3D_SHADER_INPUT_TYPE::D3D_SIT_TEXTURE == bindDesc.Type)
 			{
-				MShaderTextureParam param;
-				param.strName = bindDesc.Name;
-				param.pTexture = nullptr;
+				MShaderTextureParam* pParam = new MShaderTextureParam();
+				pParam->strName = bindDesc.Name;
+				pParam->pTexture = nullptr;
 
 				if (D3D11_SRV_DIMENSION_TEXTURECUBE == bindDesc.Dimension)
-					param.eType = ETextureCube;
+					pParam->eType = ETextureCube;
 				else
-					param.eType = ETexture2D;
+					pParam->eType = ETexture2D;
 
-				param.unBindPoint = bindDesc.BindPoint;
-				param.unBindCount = bindDesc.BindCount;
+				pParam->unBindPoint = bindDesc.BindPoint;
+				pParam->unBindCount = bindDesc.BindCount;
 
-				if (param.strName == "U_texShadowMap")
-					param.unCode = SHADER_PARAM_CODE_SHADOW_MAP;
+				if (pParam->strName == "U_texShadowMap")
+					pParam->unCode = SHADER_PARAM_CODE_SHADOW_MAP;
 				else
-					param.unCode = SHADER_PARAM_CODE_DEFAULT;
+					pParam->unCode = SHADER_PARAM_CODE_DEFAULT;
 
-				if (param.unBindPoint < MINTERNAL_SHADER_TEXTURE_NUMBER)
+				if (pParam->unBindPoint < MINTERNAL_SHADER_TEXTURE_NUMBER)
 				{
-					if ((*ppShaderBuffer)->s_vTextureParams.size() <= param.unBindPoint)
-						(*ppShaderBuffer)->s_vTextureParams.resize(param.unBindPoint + 1);
-					(*ppShaderBuffer)->s_vTextureParams[param.unBindPoint] = param;
+					if ((*ppShaderBuffer)->s_vTextureParams.size() <= pParam->unBindPoint)
+						(*ppShaderBuffer)->s_vTextureParams.resize(pParam->unBindPoint + 1);
+					if (nullptr == (*ppShaderBuffer)->s_vTextureParams[pParam->unBindPoint])
+					{
+						(*ppShaderBuffer)->s_vTextureParams[pParam->unBindPoint] = pParam;
+					}
 				}
 				else
-					(*ppShaderBuffer)->m_vTextureParamsTemplate.push_back(param);
+					(*ppShaderBuffer)->m_vTextureParamsTemplate.push_back(pParam);
 			}
 			else if (D3D_SHADER_INPUT_TYPE::D3D_SIT_SAMPLER == bindDesc.Type)
 			{
-				MShaderSampleParam param;
-				param.strName = bindDesc.Name;
-				param.unBindPoint = bindDesc.BindPoint;
-				param.unBindCount = bindDesc.BindCount;
+				MShaderSampleParam* pParam = new MShaderSampleParam();
+				pParam->strName = bindDesc.Name;
+				pParam->unBindPoint = bindDesc.BindPoint;
+				pParam->unBindCount = bindDesc.BindCount;
 
-				if (param.strName == "U_defaultSampler")
-					param.unCode = SHADER_PARAM_CODE_DEFAULT_SAMPLER;
-				else if (param.strName == "U_shadowMapSampler")
-					param.unCode = SHADER_PARAM_CODE_SHADOW_SAMPLER;
+				if (pParam->strName == "U_defaultSampler")
+					pParam->unCode = SHADER_PARAM_CODE_DEFAULT_SAMPLER;
+				else if (pParam->strName == "U_shadowMapSampler")
+					pParam->unCode = SHADER_PARAM_CODE_SHADOW_SAMPLER;
 
-				if (param.unBindPoint < MINTERNAL_SHADER_SAMPLER_NUMBER)
+				if (pParam->unBindPoint < MINTERNAL_SHADER_SAMPLER_NUMBER)
 				{
-					if ((*ppShaderBuffer)->s_vSampleParams.size() <= param.unBindPoint)
-						(*ppShaderBuffer)->s_vSampleParams.resize(param.unBindPoint + 1);
-					(*ppShaderBuffer)->s_vSampleParams[param.unBindPoint] = param;
+					if ((*ppShaderBuffer)->s_vSampleParams.size() <= pParam->unBindPoint)
+						(*ppShaderBuffer)->s_vSampleParams.resize(pParam->unBindPoint + 1);
+
+					if (nullptr == (*ppShaderBuffer)->s_vSampleParams[pParam->unBindPoint])
+					{
+						(*ppShaderBuffer)->s_vSampleParams[pParam->unBindPoint] = pParam;
+					}
 				}
 				else
-					(*ppShaderBuffer)->m_vSampleParamsTemplate.push_back(param);
+					(*ppShaderBuffer)->m_vSampleParamsTemplate.push_back(pParam);
 			}
 		}
 	}

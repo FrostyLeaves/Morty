@@ -42,6 +42,9 @@ public:
 	bool GetDrawBoundingBox() { return m_bDrawBoundingBox; }
 
 
+	void SetGenerateDirLightShadow(const bool& bGenerate) { m_bGenerateDirLightShadow = bGenerate; }
+	bool GetGenerateDirLightShadow() const { return m_bGenerateDirLightShadow; }
+
 
 public:
 	bool SetPlayAnimation(const MString& strAnimationName);
@@ -62,6 +65,7 @@ private:
 	MSkeletalAnimController* m_pCurrentAnimationController;
 
 	bool m_bDrawBoundingBox;
+	bool m_bGenerateDirLightShadow;
 };
 
 #endif

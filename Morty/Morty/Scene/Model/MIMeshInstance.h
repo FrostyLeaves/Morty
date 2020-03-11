@@ -50,6 +50,7 @@ public:
 private:
 	MModelInstance* m_pModelInstance;
 	MEShadowType m_eShadowType;
+
 };
 
 #endif

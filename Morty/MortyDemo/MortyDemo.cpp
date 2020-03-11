@@ -139,32 +139,30 @@ int main(int argc, char* argv[])
 // 
 // 		pSpatial->SetRotation(Quaternion(Vector3(0, 1, 0), 90.0f));
 // 	}
-
-	MShaderResource* pTestShader = dynamic_cast<MShaderResource*>(engine.GetResourceManager()->LoadResource("./Shader/test.mvs"));
-	pTestShader->GetShaderTemplate()->CompileShader(engine.GetDevice());
-	
+// 
+// 	MShaderResource* pTestShader = dynamic_cast<MShaderResource*>(engine.GetResourceManager()->LoadResource("./Shader/test.mvs"));
+// 	pTestShader->GetShaderTemplate()->CompileShader(engine.GetDevice());
+// 	
 	MString textureID[] = {"005","003","007","004","014","008","002","015","019"};
 
 	MModelResource* pPikachuResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/gun/model.dae"));
 	for (int i = 0; i < 9; ++i)
 	{
 		MMaterial* pMaterial = pPikachuResource->GetMeshDefaultMaterial(i);
-		std::vector<MShaderTextureParam>& vParams = pMaterial->GetPixelTextureParams();
-
 		MResource* pDiffuseRes = engine.GetResourceManager()->LoadResource("./Model/gun/tex/Material." + textureID[i] + "_albedo.jpg");
 		MResource* pNormalMapRes = engine.GetResourceManager()->LoadResource("./Model/gun/tex/Material." + textureID[i] + "_normal.png");
 
-		pMaterial->SetPixelTexutreParam("U_mat.texDiffuse", pDiffuseRes);
-		pMaterial->SetPixelTexutreParam("U_mat.texNormal", pNormalMapRes);
+		pMaterial->SetTexutreParam("U_mat.texDiffuse", pDiffuseRes);
+		pMaterial->SetTexutreParam("U_mat.texNormal", pNormalMapRes);
 
-		for (MShaderParam& param : pMaterial->GetPixelShaderParams())
+		for (MShaderParam* pParam : *pMaterial->GetShaderParams())
 		{
-			if (param.unCode == SHADER_PARAM_CODE_MATERIAL)
+			if (pParam->unCode == SHADER_PARAM_CODE_MATERIAL)
 			{
-				MStruct* pStruct = param.var.GetStruct()->FindMember("U_mat")->GetStruct();
+				MStruct* pStruct = pParam->var.GetStruct()->FindMember("U_mat")->GetStruct();
 				pStruct->SetMember("bUseNormalTex", true);
 				
-				param.SetDirty();
+				pParam->SetDirty();
 				continue;
 			}
 		}
@@ -172,22 +170,22 @@ int main(int argc, char* argv[])
 	
 	MModelInstance* pPikachu = engine.GetObjectManager()->CreateObject<MModelInstance>();
 	pPikachu->Load(pPikachuResource);
+	pPikachu->SetGenerateDirLightShadow(true);
 	pPikachu->SetPosition(Vector3(0, 0, 10));
 	pPikachu->SetScale(Vector3(10, 10, 10));
 	pPikachu->SetName("Pikachu");
-
-	
 
 	pRootNode->AddNode(pPikachu);
 
 	
 
-
-	MPointLight* pLight = engine.GetObjectManager()->CreateObject<MPointLight>();
-	pLight->SetName("Light");
-	pLight->SetPosition(Vector3(10, 10, 200));
-	pRootNode->AddNode(pLight);
-
+	for (unsigned int i = 0; i < 8; ++i)
+	{
+		MPointLight* pLight = engine.GetObjectManager()->CreateObject<MPointLight>();
+		pLight->SetName("Light");
+		pLight->SetPosition(Vector3(10, 10, 200));
+		pRootNode->AddNode(pLight);
+	}
 	MDirectionalLight* pDirLight = engine.GetObjectManager()->CreateObject<MDirectionalLight>();
 	pDirLight->SetName("DirLight");
 	pRootNode->AddNode(pDirLight);

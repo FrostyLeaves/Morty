@@ -8,7 +8,7 @@ struct VS_OUT_EMPTY
 struct VS_OUT
 {
     float4 pos : SV_POSITION;
-    float2 uv : UV;
+    float2 uv : TEXCOORD;
 
 #if MCALC_NORMAL_IN_VS
     float3 normal : NORMAL;
@@ -16,14 +16,15 @@ struct VS_OUT
     float3 toCameraDirTangentSpace : CAMERADIR_TANGENT;
 
     float3 pointLightDirTangentSpace[MPOINT_LIGHT_MAX_NUMBER] : POINTLIGHT_TANGENT;
-
 #else
     float3 normal : NORMAL;
     float3 tangent : Tangent;
     float3 bitangent : BITANGENT;
 #endif 
 
-    float3 worldPos : WORLDPOS;
+    float3 vertexPointLight : VERTEXX_POINT_LIGHT;
+
+    float3 worldPos : POSITION;
 
     float4 dirLightSpacePos : DIRLIGHTSPACEPOS;
 };
@@ -45,3 +46,30 @@ cbuffer cbMaterial
 {
     Material U_mat;
 };
+
+
+
+
+
+
+
+
+
+
+
+
+float3 CalcPointLight(PointLight pointLight, float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3WorldPixelPosition, float3 f3DiffColor, float3 f3SpecColor)
+{
+
+    float fDiff = max(dot(f3Normal, f3LightDir), 0.0f);
+
+    float3 fReflectDir = reflect(-f3LightDir, f3Normal);
+    float fSpec = pow(max(dot(f3CameraDir, fReflectDir), 0.0f), U_mat.fShininess);
+
+    float fDistance = length(pointLight.f3WorldPosition - f3WorldPixelPosition);
+    float fAttenuation = 1.0f / (1.0f + pointLight.fLinear * fDistance + pointLight.fQuadratic * fDistance * fDistance);
+
+    return float3(     pointLight.f3Diffuse * U_mat.f3Diffuse * fDiff * f3DiffColor
+                     + pointLight.f3Specular * U_mat.f3Specular * fSpec * f3SpecColor
+                ) * fAttenuation;
+}

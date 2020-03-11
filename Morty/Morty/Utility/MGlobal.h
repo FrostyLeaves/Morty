@@ -69,6 +69,7 @@ const unsigned int SHADER_PARAM_CODE_DEFAULT = 1000;
 extern const unsigned int MSHADOW_TEXTURE_SIZE;
 
 extern const unsigned int MPOINT_LIGHT_MAX_NUMBER;
+extern const unsigned int MPOINT_LIGHT_PIXEL_NUMBER;
 
 extern const bool MCALC_NORMAL_IN_VS;
 

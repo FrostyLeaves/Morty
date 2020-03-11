@@ -78,8 +78,7 @@ public:
 
 	MShadowTextureRenderTarget* GetShadowRenderTarget(){ return m_pShadowDepthMapRenderTarget; }
 
-	std::vector<MModelInstance*>* GetStaticModels() { return &m_vStaticModelInstances; }
-	std::vector<MModelInstance*>* GetAnimationalModels() { return &m_vAnimationalModelInstances; }
+	std::vector<MModelInstance*>* GetModelInstances() { return &m_vModelInstances; }
 
 protected:
 
@@ -111,8 +110,7 @@ private:
 	};
 	std::vector<MaterialMeshInsGroup*> m_vMatMeshInsGroup;
 
-	std::vector<MModelInstance*> m_vStaticModelInstances;
-	std::vector<MModelInstance*> m_vAnimationalModelInstances;
+	std::vector<MModelInstance*> m_vModelInstances;
 
 	std::vector<MViewport*> m_vViewports;
 
