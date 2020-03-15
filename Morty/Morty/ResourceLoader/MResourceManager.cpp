@@ -73,6 +73,7 @@ MResource* MResourceManager::LoadResource(const MString& strResourcePath, const 
 	return pResource;
 }
 
+
 void MResourceManager::UnloadResource(const MString& strResourcePath)
 {
 	std::map<MString, MResource*>::iterator iter = m_tPathResources.find(strResourcePath);

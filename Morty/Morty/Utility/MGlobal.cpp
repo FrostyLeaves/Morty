@@ -20,4 +20,7 @@ const unsigned int MSHADOW_TEXTURE_SIZE = 2048;
 const unsigned int MPOINT_LIGHT_MAX_NUMBER = 8;
 const unsigned int MPOINT_LIGHT_PIXEL_NUMBER = 4;
 
+extern const unsigned int MSPOT_LIGHT_MAX_NUMBER = 8;
+extern const unsigned int MSPOT_LIGHT_PIXEL_NUMBER = 4;
+
 const bool MCALC_NORMAL_IN_VS = true;

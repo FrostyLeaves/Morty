@@ -30,6 +30,7 @@
 #include "MScene.h"
 #include "MViewport.h"
 #include "MPointLight.h"
+#include "MSpotLight.h"
 #include "MDirectionalLight.h"
 #include "MModelResource.h"
 #include "MSkeletalAnimation.h"
@@ -128,17 +129,18 @@ int main(int argc, char* argv[])
 	
 	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/Ground.fbx"));
 
-// 	for (int i = 0; i < 1; ++i)
-// 	{
-// 		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
-// 		pSpatial->Load(pResource);
-// 		pSpatial->SetPosition(Vector3(0, 0, i * 10));
-// 		pSpatial->SetName("Ground");
-// 
-// 		pRootNode->AddNode(pSpatial);
-// 
-// 		pSpatial->SetRotation(Quaternion(Vector3(0, 1, 0), 90.0f));
-// 	}
+	for (int i = 0; i < 2; ++i)
+	{
+		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
+		pSpatial->Load(pResource);
+		pSpatial->SetPosition(Vector3(0, 0, i * 50));
+		pSpatial->SetScale(Vector3(1, 10, 5));
+		pSpatial->SetName("Ground");
+
+		pRootNode->AddNode(pSpatial);
+
+		pSpatial->SetRotation(Quaternion(Vector3(0, 1, 0), 90.0f));
+	}
 // 
 // 	MShaderResource* pTestShader = dynamic_cast<MShaderResource*>(engine.GetResourceManager()->LoadResource("./Shader/test.mvs"));
 // 	pTestShader->GetShaderTemplate()->CompileShader(engine.GetDevice());
@@ -177,19 +179,25 @@ int main(int argc, char* argv[])
 
 	pRootNode->AddNode(pPikachu);
 
-	
+	for (unsigned int i = 0; i < 1; ++i)
+	{
+		MSpotLight* pLight = engine.GetObjectManager()->CreateObject<MSpotLight>();
+		pLight->SetName("Spot Light");
+		pLight->SetPosition(Vector3(0, 0, 10000));
+		pRootNode->AddNode(pLight);
+	}
 
-	for (unsigned int i = 0; i < 8; ++i)
+	for (unsigned int i = 0; i < 1; ++i)
 	{
 		MPointLight* pLight = engine.GetObjectManager()->CreateObject<MPointLight>();
 		pLight->SetName("Light");
-		pLight->SetPosition(Vector3(10, 10, 200));
+		pLight->SetPosition(Vector3(0, 0, 10000));
 		pRootNode->AddNode(pLight);
 	}
+
 	MDirectionalLight* pDirLight = engine.GetObjectManager()->CreateObject<MDirectionalLight>();
 	pDirLight->SetName("DirLight");
 	pRootNode->AddNode(pDirLight);
-	//pDirLight->SetRotation(Quaternion(Vector3(1,0,0), -90.0f));
 
 	MyCamera* pCamera = engine.GetObjectManager()->CreateObject<MyCamera>();
 	pCamera->SetPosition(Vector3(0, 10, -100));

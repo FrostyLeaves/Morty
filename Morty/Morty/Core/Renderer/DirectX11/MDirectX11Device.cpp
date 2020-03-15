@@ -526,6 +526,8 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 	const MString strShadowTextureSize = MStringHelper::ToString(MSHADOW_TEXTURE_SIZE);
 	const MString strPointLightMaxNumber = MStringHelper::ToString(MPOINT_LIGHT_MAX_NUMBER);
 	const MString strPointLightPixelNumber = MStringHelper::ToString(MPOINT_LIGHT_PIXEL_NUMBER);
+	const MString strSpotLightMaxNumber = MStringHelper::ToString(MSPOT_LIGHT_MAX_NUMBER);
+	const MString strSpotLightPixelNumber = MStringHelper::ToString(MSPOT_LIGHT_PIXEL_NUMBER);
 
 	D3D_SHADER_MACRO macro[] = {
 		"MBONES_PER_VERTEX", strBonesPerVertex.c_str(),
@@ -534,6 +536,8 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 		"MCALC_NORMAL_IN_VS", MCALC_NORMAL_IN_VS ? "true" : "false",
 		"MPOINT_LIGHT_MAX_NUMBER", strPointLightMaxNumber.c_str(),
 		"MPOINT_LIGHT_PIXEL_NUMBER", strPointLightPixelNumber.c_str(),
+		"MSPOT_LIGHT_MAX_NUMBER", strSpotLightMaxNumber.c_str(),
+		"MSPOT_LIGHT_PIXEL_NUMBER", strSpotLightPixelNumber.c_str(),
 		nullptr, nullptr
 		};
 

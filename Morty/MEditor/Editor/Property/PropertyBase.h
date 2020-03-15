@@ -90,5 +90,14 @@ if (ShowNodeBegin(KEY_NAME))	{ \
 	ShowValueEnd();	\
 }
 
+#define PROPERTY_VALUE_EDIT_SPEED_MIN_MAX( NODE, KEY_NAME, TYPE, GET_FUNC, SET_FUNC, SPEED, MIN_VAR, MAX_VAR) \
+	ShowValueBegin(KEY_NAME); {\
+	TYPE value = NODE->##GET_FUNC(); \
+	if (Edit##TYPE(value, SPEED, MIN_VAR, MAX_VAR)) {\
+		NODE->##SET_FUNC(value);	\
+	} \
+	ShowValueEnd();	\
+}
+
 
 #endif

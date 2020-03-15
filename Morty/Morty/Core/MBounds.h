@@ -28,6 +28,8 @@ class MORTY_CLASS MBoundsAABB
 public:
 	MBoundsAABB() {}
 	MBoundsAABB(const std::vector<Vector3>& vPoints);
+	MBoundsAABB(const MBoundsAABB& aabb, const Matrix4& matWorld);
+	MBoundsAABB(const std::vector<Vector3>& vPoints, const Matrix4& matWorld);
 
 	void SetMinMax(const Vector3& v3Min, const Vector3& v3Max);
 	void SetPoints(const std::vector<Vector3>& vPoints);
@@ -37,6 +39,8 @@ public:
 
 	//更新v3min和v3max，以让v3min-v3max的范围包括该Bounds，即取并集
 	void UnionMinMax(Vector3& v3min, Vector3& v3max) const;
+
+	bool IsIntersect(const MBoundsAABB& aabb) const;
 
 public:
 	Vector3 m_v3CenterPoint;

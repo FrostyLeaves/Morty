@@ -101,6 +101,12 @@ void MainEditor::OnResize(const int& nWidth, const int& nHeight)
 
 void MainEditor::OnRenderEnd()
 {
+// 	if (true)
+// 	{
+// 		m_vViewport[0]->SetLeftTop(Vector2(0, 0));
+// 		m_vViewport[0]->SetSize(Vector2(m_nWidth, m_nHeight));
+// 		return;
+// 	}
 	static int nFps = 0;
 	int nCurFps = (int)round(m_pEngine->GetInstantFPS() / 5) * 5;
 	if (nFps != nCurFps)
@@ -137,6 +143,15 @@ void MainEditor::OnRenderEnd()
 		float fHeight = 0;
 		if (ImGui::Begin("Morty", &bMortyOpened, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize))
 		{
+			if (ImGui::BeginMenuBar())
+			{
+				if (ImGui::BeginMenu("ShadowMap"))
+				{
+					ImGui::EndMenu();
+				}
+
+				ImGui::EndMenuBar();
+			}
 			// 主窗口可用大小
 			ImVec2 v2RegionAvail = ImGui::GetContentRegionAvail();
 

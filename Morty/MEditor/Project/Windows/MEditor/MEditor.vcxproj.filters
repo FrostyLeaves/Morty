@@ -93,6 +93,9 @@
     <ClInclude Include="..\..\..\Editor\Property\PropertyMModelInstance.h">
       <Filter>Editor\Property</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Editor\Property\PropertyMSpotLight.h">
+      <Filter>Editor\Property</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MEditor.cpp">

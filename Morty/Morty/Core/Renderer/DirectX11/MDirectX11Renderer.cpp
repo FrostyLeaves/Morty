@@ -36,7 +36,7 @@ MDirectX11Renderer::MDirectX11Renderer(MDirectX11Device* pDevice)
 	, m_pRasterizerState_Solid_CullBack(nullptr)
 	, m_pRasterizerState_Solid_CullFront(nullptr)
 	, m_pUsingMaterial(nullptr)
-	, m_pCurrentRenderTarget(nullptr)
+//	, m_pCurrentRenderTarget(nullptr)
 {
 
 }
@@ -231,10 +231,12 @@ void MDirectX11Renderer::RecoverRenderTarget(MIRenderTarget* pRenderTarget)
 {
 	//warning! Material may has been switched.
 
-	if (m_pCurrentRenderTarget != pRenderTarget)
+
+	//warning, this could be changed by outer.so can`t do this.
+	//if (m_pCurrentRenderTarget != pRenderTarget)
 	{
 		m_pUsingMaterial = nullptr;
-		m_pCurrentRenderTarget = pRenderTarget;
+		//m_pCurrentRenderTarget = pRenderTarget;
 
 		if (pRenderTarget->m_pTargetView)
 			m_pDevice->m_pD3dContext->OMSetRenderTargets(1, &pRenderTarget->m_pTargetView, pRenderTarget->m_pDepthStencilView);

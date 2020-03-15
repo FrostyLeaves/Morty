@@ -21,6 +21,9 @@ MShaderParam* MShaderBuffer::GetSharedParam(const unsigned int& unCode)
 	if (unCode >= s_vShaderParams.size())
 		return nullptr;
 
+	if (nullptr == s_vShaderParams[unCode])
+		return nullptr;
+
 	if (unCode != s_vShaderParams[unCode]->unCode)
 		return nullptr;
 

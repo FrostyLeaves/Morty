@@ -104,8 +104,28 @@ void MDirectX11RenderTarget::OnResize(const unsigned int& unWidth, const unsigne
 
 	m_pDevice->DestroyRenderTarget(this);
 
-
 	HRESULT hr;
+// 
+// 	DXGI_SWAP_CHAIN_DESC desc;
+// 	m_pSwapChain->GetDesc(&desc);
+// 	DXGI_MODE_DESC mode_desc;
+// 	ZeroMemory(&mode_desc, sizeof(mode_desc));
+// 
+// 	mode_desc.Width = desc.BufferDesc.Width;
+// 	mode_desc.Height = desc.BufferDesc.Height;
+// 	mode_desc.RefreshRate.Numerator = desc.BufferDesc.RefreshRate.Numerator;
+// 	mode_desc.RefreshRate.Denominator = desc.BufferDesc.RefreshRate.Denominator;
+// 	mode_desc.Format = desc.BufferDesc.Format;
+// 	mode_desc.Scaling = desc.BufferDesc.Scaling;
+// 
+// 	hr = m_pSwapChain->ResizeTarget(&mode_desc);
+// 	if (FAILED(hr))
+// 	{
+// 		MLogManager::GetInstance()->Error("Failed to ResizeTarget!");
+// 		return;
+// 	}
+// 	m_pSwapChain->SetFullscreenState(true, nullptr);
+
 	hr = m_pSwapChain->ResizeBuffers(1, unSafeWidth, unSafeHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
 	if (FAILED(hr))
 	{

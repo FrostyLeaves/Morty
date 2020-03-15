@@ -8,6 +8,7 @@
 #include "PropertyM3DNode.h"
 #include "PropertyMCamera.h"
 #include "PropertyMPointLight.h"
+#include "PropertyMSpotLight.h"
 #include "PropertyMDirectionalLight.h"
 #include "PropertyMModelInstance.h"
 #include "PropertyMIMeshInstance.h"
@@ -22,6 +23,7 @@ PropertyView::PropertyView()
 	REGISTER_PROPERTY(M3DNode);
 	REGISTER_PROPERTY(MCamera);
 	REGISTER_PROPERTY(MPointLight);
+	REGISTER_PROPERTY(MSpotLight);
 	REGISTER_PROPERTY(MDirectionalLight);
 	REGISTER_PROPERTY(MModelInstance);
 	REGISTER_PROPERTY(MIMeshInstance);

@@ -61,6 +61,8 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 	pRenderer->SetViewport(0.0f, 0.0f, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE, 0.0f, 1.0f);
 
 	MDirectionalLight* pLight = m_pScene->FindActiveDirectionLight();
+	if (nullptr == pLight)
+		return;
 	MViewport* pViewport = GetSourceViewport();
 	Matrix4 matLightInvProj = pViewport->GetLightInverseProjection(pLight);
 
@@ -80,7 +82,6 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 
 		if (MSkeletonInstance* pSkeleton = pModelIns->GetSkeleton())
 		{
-
 			MVariant& cVariant = (*m_pAnimBonesParam->var.GetStruct())[0];
 			MVariantArray& cBonesArray = *cVariant.GetArray();
 
@@ -95,6 +96,12 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 
 			m_pAnimBonesParam->SetDirty();
 			pRenderer->SetVertexShaderParam(*m_pAnimBonesParam);
+
+			pRenderer->SetUseMaterial(m_pAnimMaterial);
+		}
+		else
+		{
+			pRenderer->SetUseMaterial(m_pStaticMaterial);
 		}
 
 		for (MNode* pChild : pModelIns->GetFixedChildren())

@@ -71,6 +71,9 @@ extern const unsigned int MSHADOW_TEXTURE_SIZE;
 extern const unsigned int MPOINT_LIGHT_MAX_NUMBER;
 extern const unsigned int MPOINT_LIGHT_PIXEL_NUMBER;
 
+extern const unsigned int MSPOT_LIGHT_MAX_NUMBER;
+extern const unsigned int MSPOT_LIGHT_PIXEL_NUMBER;
+
 extern const bool MCALC_NORMAL_IN_VS;
 
 //gles

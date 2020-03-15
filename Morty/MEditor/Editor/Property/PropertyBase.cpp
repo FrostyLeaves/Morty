@@ -283,38 +283,6 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 		}
 	}
 
-	{
-		std::vector<MShaderTextureParam*>& vParams = *pMaterial->GetTextureParams();
-		std::vector<MResourceHolder*>& vResources =  *pMaterial->GetTextures();
-		for (unsigned int i = 0; i < vParams.size(); ++i)
-		{
-			MShaderTextureParam& param = *vParams[i];
-			if (param.unCode <= SHADER_PARAM_CODE_AUTO_UPDATE)
-				continue;
-
-			MString strDlgName = "file_dlg_ps_" + MStringHelper::ToString(i);
-
-			ShowValueBegin(param.strName);
-			MResource* pResource = vResources[i] ? vResources[i]->GetResource() : nullptr;
-
-			EditMResource(strDlgName, pResource, MResourceManager::MEResourceType::Texture, [&param, &pMaterial](const MString& strNewFilePath) {
-
-				MResource* pNewResource = pMaterial->GetResource()->GetResourceManager()->LoadResource(strNewFilePath);
-
-				pMaterial->SetTexutreParam(param.strName, pNewResource);
-			});
-
-			if (param.pTexture)
-			{
-				ShowTexture(param.pTexture->GetBuffer());
-			}
-
-			ShowValueEnd();
-
-		}
-	}
-
-
 	return bModified;
 }
 

@@ -59,6 +59,16 @@ struct PointLight
 
 };
 
+struct SpotLight
+{
+    float3 f3WorldPosition;
+    float fHalfInnerCutOff;
+    float3 f3Direction;
+    float fHalfOuterCutOff;
+    float3 f3Diffuse;
+    float3 f3Specular;
+};
+
 sampler U_defaultSampler : register(s0);
 SamplerComparisonState U_shadowMapSampler : register(s1);
 
@@ -91,7 +101,10 @@ cbuffer _M_E_cbLights : register(b3)
 {
     DirectionLight U_dirLight;
     PointLight U_pointLights[MPOINT_LIGHT_MAX_NUMBER];
+    SpotLight U_spotLights[MSPOT_LIGHT_MAX_NUMBER];
+    bool U_bDirectionLightEnabled;
     int U_nValidPointLightsNumber;
+    int U_nValidSpotLightsNumber;
 };
 
 //VS & PS    per render

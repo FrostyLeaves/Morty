@@ -136,6 +136,34 @@ MBoundsAABB::MBoundsAABB(const std::vector<Vector3>& vPoints)
 	SetPoints(vPoints);
 }
 
+MBoundsAABB::MBoundsAABB(const MBoundsAABB& aabb, const Matrix4& matWorld)
+{
+	Vector3 a = matWorld * Vector3(aabb.m_v3CenterPoint.x + aabb.m_v3HalfLength.x, aabb.m_v3CenterPoint.y + aabb.m_v3HalfLength.y, aabb.m_v3CenterPoint.z + aabb.m_v3HalfLength.z);
+	Vector3 b = matWorld * Vector3(aabb.m_v3CenterPoint.x - aabb.m_v3HalfLength.x, aabb.m_v3CenterPoint.y - aabb.m_v3HalfLength.y, aabb.m_v3CenterPoint.z - aabb.m_v3HalfLength.z);
+
+	std::vector<Vector3> vPoints = {
+		Vector3(a.x, a.y, a.z),
+		Vector3(a.x, a.y, b.z),
+		Vector3(a.x, b.y, a.z),
+		Vector3(a.x, b.y, b.z),
+		Vector3(b.x, a.y, a.z),
+		Vector3(b.x, a.y, b.z),
+		Vector3(b.x, b.y, a.z),
+		Vector3(b.x, b.y, b.z),
+	};
+	
+	SetPoints(vPoints);
+}
+
+MBoundsAABB::MBoundsAABB(const std::vector<Vector3>& vPoints, const Matrix4& matWorld)
+{
+	std::vector<Vector3> vWorldPoints(vPoints.size());
+	for (unsigned int i = 0; i < vPoints.size(); ++i)
+		vWorldPoints[i] = matWorld * vPoints[i];
+
+	SetPoints(vPoints);
+}
+
 void MBoundsAABB::SetMinMax(const Vector3& v3Min, const Vector3& v3Max)
 {
 	m_v3MinPoint = v3Min;
@@ -238,4 +266,13 @@ void MBoundsAABB::UnionMinMax(Vector3& v3Min, Vector3& v3Max) const
 		v3Max.y = m_v3MaxPoint.y;
 	if (v3Max.z < m_v3MaxPoint.z)
 		v3Max.z = m_v3MaxPoint.z;
+}
+
+bool MBoundsAABB::IsIntersect(const MBoundsAABB& aabb) const
+{
+	bool bXIntersect = (aabb.m_v3MinPoint.x <= m_v3MaxPoint.x) && (m_v3MinPoint.x <= aabb.m_v3MaxPoint.x);
+	bool bYIntersect = (aabb.m_v3MinPoint.y <= m_v3MaxPoint.y) && (m_v3MinPoint.y <= aabb.m_v3MaxPoint.y);
+	bool bZIntersect = (aabb.m_v3MinPoint.z <= m_v3MaxPoint.z) && (m_v3MinPoint.z <= aabb.m_v3MaxPoint.z);
+
+	return bXIntersect && bYIntersect && bZIntersect;
 }

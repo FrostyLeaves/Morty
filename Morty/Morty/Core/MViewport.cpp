@@ -25,6 +25,9 @@ MTypeIdentifierImplement(MViewport, MObject)
 		(b).z = (p).z;			\
 }
 
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
 MViewport::MViewport()
 	: MObject()
 	, m_pScene(nullptr)
@@ -179,16 +182,16 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight)
 	if (nullptr == pLight)
 		return Matrix4::IdentityMatrix;
 
-	Matrix4 matLightInv(pLight->GetTransform().GetRotation());
-	matLightInv = matLightInv.Inverse();
+	Matrix4 matLight(pLight->GetTransform().GetRotation());
+	Matrix4 matLightInv = matLight.Inverse();
 
 	MCamera* pCamera = GetCamera();
 	Matrix4 matCameraInv = pCamera->GetWorldTransform().Inverse();
 
-	MBoundsAABB* pBounds = m_pScene->GetDirectionalShadowSceneAABB();
-
+	MBoundsAABB cShadowAABB, cSceneAABB;
+	m_pScene->GetSceneAABB(cSceneAABB, this);	//TODO 这个SceneAABB需要获取到被裁切后的
 	std::vector<Vector3> vSceneBoundsPoints(8);
-	pBounds->GetPoints(vSceneBoundsPoints);
+	cSceneAABB.GetPoints(vSceneBoundsPoints);
 
 	//计算相机的有效ZNear和ZFar.
 	float fSceneMinZNear = FLT_MAX, fSceneMaxZFar = -FLT_MAX;
@@ -204,36 +207,62 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight)
 	float fZValidNear = fSceneMinZNear > pCamera->GetZNear() ? fSceneMinZNear : pCamera->GetZNear();
 	float fZValidFar = fSceneMaxZFar < pCamera->GetZFar() ? fSceneMaxZFar : pCamera->GetZFar();
 
+// 	float fZValidNear = fSceneMinZNear ;
+// 	float fZValidFar = fSceneMaxZFar ;
+
 	//获取相机视椎体在方向光Camera内的最小和最大X、Y值
 	std::vector<Vector3> vCameraBoundsPoints(8);
-	GetCameraFrustum(GetCamera(), fZValidNear, fZValidFar, vCameraBoundsPoints);
+	GetCameraFrustum(GetCamera(), fZValidNear, MAX(fZValidNear, fZValidFar), vCameraBoundsPoints);
 
-	Vector2 v3CameraMin(FLT_MAX, FLT_MAX);
-	Vector2 v3CameraMax(-FLT_MAX, -FLT_MAX);
+	MBoundsAABB aabbCameraFrustum(vCameraBoundsPoints);
+	aabbCameraFrustum.GetPoints(vCameraBoundsPoints);
+
+	Vector3 v3CameraMin(FLT_MAX, FLT_MAX, FLT_MAX);
+	Vector3 v3CameraMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 	for (unsigned int i = 0; i < 8; ++i)
 	{
 		Vector3 pos = matLightInv * vCameraBoundsPoints[i];
 		if (v3CameraMin.x > pos.x) v3CameraMin.x = pos.x;
 		if (v3CameraMin.y > pos.y) v3CameraMin.y = pos.y;
+		if (v3CameraMin.z > pos.z) v3CameraMin.z = pos.z;
 
 		if (v3CameraMax.x < pos.x) v3CameraMax.x = pos.x;
 		if (v3CameraMax.y < pos.y) v3CameraMax.y = pos.y;
+		if (v3CameraMax.z < pos.z) v3CameraMax.z = pos.z;
 	}
 
+	m_pScene->GetDirectionalShadowSceneAABB(cShadowAABB);	//TODO 这个SceneAABB需要获取到被裁切后的
+	std::vector<Vector3> vShadowModelBoundsPoints(8);
+	cShadowAABB.GetPoints(vShadowModelBoundsPoints);
 
 	//计算Scene的AABB盒在方向光Camera内的最小和最大Z值
-	float fSceneMinZ = FLT_MAX, fSceneMaxZ = -FLT_MAX;
+	Vector3 v3SceneMin(FLT_MAX, FLT_MAX, FLT_MAX);
+	Vector3 v3SceneMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 	for (unsigned int i = 0; i < 8; ++i)
 	{
-		Vector3 pos = matLightInv * vSceneBoundsPoints[i];
-		if (fSceneMinZ > pos.z)
-			fSceneMinZ = pos.z;
-		if (fSceneMaxZ < pos.z)
-			fSceneMaxZ = pos.z;
+		Vector3 pos = matLightInv * vShadowModelBoundsPoints[i];
+		if (v3SceneMin.x > pos.x) v3SceneMin.x = pos.x;
+		if (v3SceneMin.y > pos.y) v3SceneMin.y = pos.y;
+		if (v3SceneMin.z > pos.z) v3SceneMin.z = pos.z;
+
+		if (v3SceneMax.x < pos.x) v3SceneMax.x = pos.x;
+		if (v3SceneMax.y < pos.y) v3SceneMax.y = pos.y;
+		if (v3SceneMax.z < pos.z) v3SceneMax.z = pos.z;
 	}
+	
+	//x和y取视椎体和SceneAABB的交集， zMin取SceneAABB的，因为相机后面的模型也会生成Shadow
+	//zMax取交集，超过视椎体的Shadow不需要渲染。
 
+	//TODO 在获取到所有生成Shadow的模型的AABB时，如果进行了在光照空间中的剔除（使用视椎体在LightSpace的AABB在WorldSpace中的AABB来做裁切），那么ShadowMap的利用率会达到最大。
+	Matrix4 projMat = MatrixOrthoOffCenterLH(
+		MAX(v3CameraMin.x, v3SceneMin.x),
+		MIN(v3CameraMax.x, v3SceneMax.x),
+		MIN(v3CameraMax.y, v3SceneMax.y),
+		MAX(v3CameraMin.y, v3SceneMin.y),
+		v3SceneMin.z,
+		MIN(v3CameraMax.z, v3SceneMax.z)
+	);
 
-	Matrix4 projMat = MatrixOrthoOffCenterLH(v3CameraMin.x, v3CameraMax.x, v3CameraMax.y, v3CameraMin.y, fSceneMinZ, fSceneMaxZ);
 	return projMat * matLightInv;
 }
 

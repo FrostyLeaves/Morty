@@ -32,35 +32,26 @@ bool MTextureResource::Load(const MString& strResourcePath)
 
 	unsigned char* pData = m_pTexture->GetImageData();
 
-// 	for (int x = 0; x < unWidth; ++x)
-// 	{
-// 		for (int y = 0; y < unHeight; ++y)
-// 		{
-// 			RGBQUAD color = image.GetPixelColor(unWidth - 1 - x, unHeight - 1 - y, true);
-// 			pData[(y * unWidth + x) * 4 + 0] = color.rgbRed;
-// 			pData[(y * unWidth + x) * 4 + 1] = color.rgbGreen;
-// 			pData[(y * unWidth + x) * 4 + 2] = color.rgbBlue;
-// 			pData[(y * unWidth + x) * 4 + 3] = color.rgbReserved;
-// 		}
-// 	}
-
 	if (!image.AlphaIsValid())
 	{
 		image.AlphaCreate();
 		image.AlphaSet(255);
 	}
 
-	int dataSize = unWidth * unHeight * 4;
-	unsigned char* tempData = nullptr;
- 	bool result = image.Encode2RGBA(tempData, dataSize, true);
+	for (int x = 0; x < unWidth; ++x)
+	{
+		for (int y = 0; y < unHeight; ++y)
+		{
+			RGBQUAD color = image.GetPixelColor(x, unHeight - 1 - y, true);
+			pData[(y * unWidth + x) * 4 + 0] = color.rgbRed;
+			pData[(y * unWidth + x) * 4 + 1] = color.rgbGreen;
+			pData[(y * unWidth + x) * 4 + 2] = color.rgbBlue;
+			pData[(y * unWidth + x) * 4 + 3] = color.rgbReserved;
+		}
+	}
 
-	if (false == result)
-		return false;
-	
-	memcpy(pData, tempData, dataSize);
 	m_pTexture->GenerateBuffer(m_pEngine->GetDevice());
 
-	image.FreeMemory(tempData);
 	
 	return true;
 }

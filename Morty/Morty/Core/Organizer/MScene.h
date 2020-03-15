@@ -21,6 +21,7 @@ class MCamera;
 class MSkyBox;
 class MDirectionalLight;
 class MPointLight;
+class MSpotLight;
 class MIRenderer;
 class MInputEvent;
 class MIRenderView;
@@ -47,6 +48,7 @@ public:
 
 	MDirectionalLight* FindActiveDirectionLight();
 	void FindActivePointLights(const Vector3& v3WorldPosition, std::vector<MPointLight*>& vPointLights);
+	void FindActiveSpotLights(const Vector3& v3WorldPosition, std::vector<MSpotLight*>& vPointLights);
 public:
 
 	//节点接入场景时进行的操作
@@ -74,11 +76,13 @@ public:
 	
 	void InitShadowMapRenderTarget();
 
-	MBoundsAABB* GetDirectionalShadowSceneAABB();
+	void GetSceneAABB(MBoundsAABB& cSceneAABB);
+	void GetSceneAABB(MBoundsAABB& cSceneAABB, MViewport* pViewport);
+	void GetDirectionalShadowSceneAABB(MBoundsAABB& cShadowAABB);
 
 	MShadowTextureRenderTarget* GetShadowRenderTarget(){ return m_pShadowDepthMapRenderTarget; }
 
-	std::vector<MModelInstance*>* GetModelInstances() { return &m_vModelInstances; }
+	std::vector<MModelInstance*>* GetModelInstances() { return &m_vModelInstance; }
 
 protected:
 
@@ -95,13 +99,20 @@ protected:
 
 private:
 
+#define MSCENE_TYPED_VECTOR( TYPE) \
+	std::vector<M##TYPE*> m_v##TYPE;
+
+
 	MNode* m_pRootNode;
 	MSkyBox* m_pSkyBox;
 	MTransformCoord3D* m_pTransformCoord3D;
 	MShadowTextureRenderTarget* m_pShadowDepthMapRenderTarget;
 
-	std::vector<MDirectionalLight*> m_vDirectionalLight;
-	std::vector<MPointLight*> m_vPointLight;
+	MSCENE_TYPED_VECTOR(DirectionalLight);
+	MSCENE_TYPED_VECTOR(PointLight);
+	MSCENE_TYPED_VECTOR(SpotLight);
+	MSCENE_TYPED_VECTOR(InputNode);
+	MSCENE_TYPED_VECTOR(ModelInstance);
 
 	struct MaterialMeshInsGroup
 	{
@@ -109,13 +120,8 @@ private:
 		std::vector<MIMeshInstance*> vMeshIns;
 	};
 	std::vector<MaterialMeshInsGroup*> m_vMatMeshInsGroup;
-
-	std::vector<MModelInstance*> m_vModelInstances;
-
 	std::vector<MViewport*> m_vViewports;
 
-	std::vector<MInputNode*> m_vInputNodes;
 };
-
 
 #endif

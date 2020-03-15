@@ -179,6 +179,7 @@
     <ClInclude Include="..\..\..\Editor\Property\PropertyMIMeshInstance.h" />
     <ClInclude Include="..\..\..\Editor\Property\PropertyMModelInstance.h" />
     <ClInclude Include="..\..\..\Editor\Property\PropertyMPointLight.h" />
+    <ClInclude Include="..\..\..\Editor\Property\PropertyMSpotLight.h" />
     <ClInclude Include="..\..\..\ImGUI\imconfig.h" />
     <ClInclude Include="..\..\..\ImGUI\imgui.h" />
     <ClInclude Include="..\..\..\ImGUI\ImGuiFileDialog\ImGuiFileDialog.h" />

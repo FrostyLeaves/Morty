@@ -76,7 +76,7 @@ protected:
 	
 	MDirectX11Device* m_pDevice;
 	MMaterial* m_pUsingMaterial;
-	MIRenderTarget* m_pCurrentRenderTarget;
+	//MIRenderTarget* m_pCurrentRenderTarget;
 
 	std::stack<MIRenderTarget*> m_vRenderTargets;
 };

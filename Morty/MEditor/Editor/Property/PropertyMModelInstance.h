@@ -19,6 +19,7 @@ public:
 			{
 
 				PROPERTY_VALUE_EDIT(pNode, "Bounding", bool, GetDrawBoundingBox, SetDrawBoundingBox);
+				PROPERTY_VALUE_EDIT(pNode, "DirShadow", bool, GetGenerateDirLightShadow, SetGenerateDirLightShadow);
 
 
 				MModelResource* pResource = pNode->GetResource();
