@@ -127,57 +127,16 @@ int main(int argc, char* argv[])
 	pRootNode->SetName("RootNode");
 
 	
-	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/Ground.fbx"));
+	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/plant.obj"));
 
-	for (int i = 0; i < 2; ++i)
+	for (int i = 0; i < 1; ++i)
 	{
 		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
 		pSpatial->Load(pResource);
-		pSpatial->SetPosition(Vector3(0, 0, i * 50));
-		pSpatial->SetScale(Vector3(1, 10, 5));
 		pSpatial->SetName("Ground");
-
 		pRootNode->AddNode(pSpatial);
-
-		pSpatial->SetRotation(Quaternion(Vector3(0, 1, 0), 90.0f));
 	}
-// 
-// 	MShaderResource* pTestShader = dynamic_cast<MShaderResource*>(engine.GetResourceManager()->LoadResource("./Shader/test.mvs"));
-// 	pTestShader->GetShaderTemplate()->CompileShader(engine.GetDevice());
-// 	
-	MString textureID[] = {"005","003","007","004","014","008","002","015","019"};
 
-	MModelResource* pPikachuResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/gun/model.dae"));
-	for (int i = 0; i < 9; ++i)
-	{
-		MMaterial* pMaterial = pPikachuResource->GetMeshDefaultMaterial(i);
-		MResource* pDiffuseRes = engine.GetResourceManager()->LoadResource("./Model/gun/tex/Material." + textureID[i] + "_albedo.jpg");
-		MResource* pNormalMapRes = engine.GetResourceManager()->LoadResource("./Model/gun/tex/Material." + textureID[i] + "_normal.png");
-
-		pMaterial->SetTexutreParam("U_mat.texDiffuse", pDiffuseRes);
-		pMaterial->SetTexutreParam("U_mat.texNormal", pNormalMapRes);
-
-		for (MShaderParam* pParam : *pMaterial->GetShaderParams())
-		{
-			if (pParam->unCode == SHADER_PARAM_CODE_MATERIAL)
-			{
-				MStruct* pStruct = pParam->var.GetStruct()->FindMember("U_mat")->GetStruct();
-				pStruct->SetMember("bUseNormalTex", true);
-				
-				pParam->SetDirty();
-				continue;
-			}
-		}
-	}
-	
-	MModelInstance* pPikachu = engine.GetObjectManager()->CreateObject<MModelInstance>();
-	pPikachu->Load(pPikachuResource);
-	pPikachu->SetGenerateDirLightShadow(true);
-	pPikachu->SetPosition(Vector3(0, 0, 10));
-	pPikachu->SetScale(Vector3(10, 10, 10));
-	pPikachu->SetName("Pikachu");
-
-	pRootNode->AddNode(pPikachu);
 
 	for (unsigned int i = 0; i < 1; ++i)
 	{

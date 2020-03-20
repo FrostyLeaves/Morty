@@ -554,7 +554,11 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 			}
 			
 			pRenderer->UpdateMaterialParam();
-			pRenderer->DrawMesh(pMeshIns->GetMesh());
+
+			if (MStaticMeshInstance* pTest = pMeshIns->DynamicCast<MStaticMeshInstance>())
+				pRenderer->DrawMesh(pTest->GetMesh(pTest->GetDetailLevel()));
+			else
+				pRenderer->DrawMesh(pMeshIns->GetMesh());
 		}
 	}
 }
@@ -723,7 +727,7 @@ void MScene::Render(MIRenderer* pRenderer, MViewport* pViewport)
 	DrawPainter(pRenderer, pViewport);
 	DrawMeshInstance(pRenderer, pViewport);
 	DrawModelInstance(pRenderer, pViewport);
-	DrawCameraFrustum(pRenderer, pViewport, pViewport->GetCamera());
+	//DrawCameraFrustum(pRenderer, pViewport, pViewport->GetCamera());
 }
 
 void MScene::Input(MInputEvent* pEvent, MViewport* pViewport)

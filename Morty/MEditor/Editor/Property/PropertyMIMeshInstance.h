@@ -3,7 +3,7 @@
 
 #include "PropertyM3DNode.h"
 #include "MMaterial.h"
-#include "MIMeshInstance.h"
+#include "MStaticMeshInstance.h"
 
 
 class PropertyMIMeshInstance : public PropertyM3DNode
@@ -28,6 +28,12 @@ public:
 					pNode->SetShadowType((MIMeshInstance::MEShadowType)unSelected);
 				}
 				ShowValueEnd();
+
+				if (MStaticMeshInstance* pTest = pNode->DynamicCast<MStaticMeshInstance>())
+				{
+					PROPERTY_VALUE_EDIT_SPEED_MIN_MAX(pTest, "LOD", float, GetDetailLevel, SetDetailLevel, 1, 1, 10);
+				}
+
 
 				ShowNodeEnd();
 			}

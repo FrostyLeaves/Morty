@@ -285,6 +285,9 @@
     <ClInclude Include="..\..\Utility\MRenderStatistics.h">
       <Filter>Utility</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\ResourceLoader\Model\MModelDetailLevel.h">
+      <Filter>ResourceLoader\Model</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -469,6 +472,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Utility\MRenderStatistics.cpp">
       <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ResourceLoader\Model\MModelDetailLevel.cpp">
+      <Filter>ResourceLoader\Model</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

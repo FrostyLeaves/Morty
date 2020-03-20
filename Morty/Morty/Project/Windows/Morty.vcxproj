@@ -139,6 +139,7 @@
     <ClInclude Include="..\..\Core\Renderer\MVertex.h" />
     <ClInclude Include="..\..\ResourceLoader\Material\MMaterialResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MFileHelper.h" />
+    <ClInclude Include="..\..\ResourceLoader\Model\MModelDetailLevel.h" />
     <ClInclude Include="..\..\ResourceLoader\MResourceManager.h" />
     <ClInclude Include="..\..\ResourceLoader\Shader\MShaderResource.h" />
     <ClInclude Include="..\..\ResourceLoader\Texture\MTextureResource.h" />
@@ -216,6 +217,7 @@
     <ClCompile Include="..\..\Core\Renderer\MVariant.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Material\MMaterialResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MFileHelper.cpp" />
+    <ClCompile Include="..\..\ResourceLoader\Model\MModelDetailLevel.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MResourceManager.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Shader\MShaderResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Texture\MTextureResource.cpp" />

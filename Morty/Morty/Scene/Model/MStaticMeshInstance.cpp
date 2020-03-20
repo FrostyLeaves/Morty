@@ -5,6 +5,7 @@
 
 #include "MDirectX11Renderer.h"
 #include "MModelResource.h"
+#include "MModelDetailLevel.h"
 
 #include "MBounds.h"
 
@@ -17,6 +18,7 @@ MStaticMeshInstance::MStaticMeshInstance()
 	, m_pDefaultBoundsOBB(nullptr)
 	, m_pBoundsAABB(nullptr)
 	, m_bBoundsAABBDirty(true)
+	, m_unDetailLevel(5)
 {
 
 }
@@ -64,6 +66,18 @@ MBoundsAABB* MStaticMeshInstance::GetBoundsAABB()
 void MStaticMeshInstance::SetMesh(MIMesh* pMesh)
 {
 	m_pMesh = dynamic_cast<MMesh<MVertex>*>(pMesh);
+	if (m_pMesh)
+	{
+		m_pMeshDetailMap = new MMeshDetailMap(m_pMesh);
+	}
+}
+
+MIMesh* MStaticMeshInstance::GetMesh(const unsigned int& unDetailLevel)
+{
+	if (nullptr == m_pMeshDetailMap || unDetailLevel == 10)
+		return GetMesh();
+
+	m_pMeshDetailMap->GetLevel(unDetailLevel);
 }
 
 void MStaticMeshInstance::WorldTransformDirty()

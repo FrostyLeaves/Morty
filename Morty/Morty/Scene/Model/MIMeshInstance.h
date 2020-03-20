@@ -43,6 +43,7 @@ public:
 public:
 	virtual void SetMesh(MIMesh* pMesh) = 0;
 	virtual MIMesh* GetMesh() = 0;
+	virtual MIMesh* GetMesh(const unsigned int& unDetailLevel) { return GetMesh(); }
 
 	void SetAttachedModelInstance(MModelInstance* pModelIns) { m_pModelInstance = pModelIns; }
 	MModelInstance* GetAttachedModelInstance() { return m_pModelInstance; }

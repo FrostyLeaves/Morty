@@ -32,12 +32,16 @@ public:
 	virtual void GenerateBuffer(MIDevice* pDevice);
 	virtual void UploadBuffer(MIDevice* pDevice);
 	virtual void DestroyBuffer(MIDevice* pDevice);
-	virtual unsigned int GetVerticesLength() { return m_unVerticesLength; }
-	virtual unsigned int GetIndicesLength() { return m_unIndicesLength; }
+	virtual unsigned int GetVerticesLength() const { return m_unVerticesLength; }
+	virtual unsigned int GetIndicesLength()  const { return m_unIndicesLength; }
 	void* GetVertices() { return m_vVertices; }
+	const void* GetVertices() const { return m_vVertices; }
+	virtual const unsigned int* GetIndices() const { return m_vIndices; }
 	virtual unsigned int* GetIndices() { return m_vIndices; }
 
-	virtual unsigned int GetVertexStructSize() = 0;
+	virtual unsigned int GetVertexStructSize() const = 0;
+
+	virtual MIMesh* Copy(const bool& bModifiable = false) const = 0;
 
 public:
 
@@ -77,9 +81,20 @@ public:
 		: MIMesh(bModifiable){}
 	virtual ~MMesh(){}
 
+	virtual MIMesh* Copy(const bool& bModifiable = false) const override
+	{
+		MMesh<VERTEX_TYPE>* pNewMesh = new MMesh<VERTEX_TYPE>(bModifiable);
+		pNewMesh->ResizeIndices(GetIndicesLength(), 1);
+		pNewMesh->ResizeVertices(GetVerticesLength());
+
+		memcpy(pNewMesh->m_vIndices, m_vIndices, m_unIndicesLength * sizeof(unsigned int));
+		memcpy(pNewMesh->m_vVertices, m_vVertices, m_unVerticesLength * sizeof(VERTEX_TYPE));
+
+		return pNewMesh;
+	}
 public:
 
-	virtual unsigned int GetVertexStructSize() override
+	virtual unsigned int GetVertexStructSize() const override
 	{
 		return sizeof(VERTEX_TYPE);
 	}

@@ -79,6 +79,9 @@ public :
 
 	MResource* GetResource(){ return m_pResource; }
 
+template <class T>
+	T* GetResource() { return dynamic_cast<T*>(m_pResource); }
+
 	void SetResChangedCallback(const MResChangedFunction& function)
 	{
 		m_funcReloadCallback = function;
