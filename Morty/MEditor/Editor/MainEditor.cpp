@@ -200,7 +200,7 @@ void MainEditor::OnRenderEnd()
 		}
 		ImGui::BeginChild("Test", ImVec2(0, fHeight));
 #if MORTY_RENDER_DATA_STATISTICS
-		ImGui::Text("Vertex Count: %d", MRenderStatistics::GetInstance()->unVertexCount);
+		ImGui::Text("Face Count: %d", MRenderStatistics::GetInstance()->unFaceCount);
 #endif
 		ImGui::EndChild();
 

@@ -76,6 +76,9 @@ extern const unsigned int MSPOT_LIGHT_PIXEL_NUMBER;
 
 extern const bool MCALC_NORMAL_IN_VS;
 
+
+extern const unsigned int MMESH_LOD_LEVEL_RANGE;
+
 //gles
 #define MORTY_OPENGLES 1
 //directx11

@@ -4,6 +4,7 @@
 #include "MSkinnedMeshInstance.h"
 #include "MSkeleton.h"
 #include "MSkeletalAnimation.h"
+#include "MModelMeshData.h"
 #include "MBounds.h"
 
 #include "MEngine.h"
@@ -73,30 +74,26 @@ bool MModelInstance::Load(MResource* pResource)
 				int index = 0;
 
 				//初始化Mesh的旋转矩阵
-				const std::vector<Matrix4>& vMeshesRotationMatrix = *pModelResource->GetMeshesRotationMatrix();
-				const std::vector<MBoundsOBB*>& vMeshesDefaultOBB = *pModelResource->GetMeshesDefaultOBB();
-				for (MIMesh* pMesh : *pModelResource->GetMeshes())
+				for (MModelMeshData* pMeshData : *pModelResource->GetMeshes())
 				{
-					MIMeshInstance* pMeshIns = nullptr;
-					if (pModelResource->GetMeshVertexType(index) == MModelResource::Normal)
+					MIModelMeshInstance* pMeshIns = nullptr;
+					if (pMeshData->GetMeshVertexType() == MModelMeshData::Normal)
 					{
 						MStaticMeshInstance* pStaticMeshIns = GetObjectManager()->CreateObject<MStaticMeshInstance>();
-						pStaticMeshIns->SetDefaultOBB(vMeshesDefaultOBB[index]);
+						pStaticMeshIns->SetMeshData(pMeshData);
 						pMeshIns = pStaticMeshIns;
 					}
 					else
 					{
 						MSkinnedMeshInstance* pSkinnedMeshIns = GetObjectManager()->CreateObject<MSkinnedMeshInstance>();
-						pSkinnedMeshIns->SetDefaultOBB(vMeshesDefaultOBB[index]);
 						pSkinnedMeshIns->SetSkeletonInstance(m_pSkeleton);
+						pSkinnedMeshIns->SetMeshData(pMeshData);
 						pMeshIns = pSkinnedMeshIns;
 					}
 						
-					pMeshIns->SetMesh(pMesh);
-					pMeshIns->SetRotation(vMeshesRotationMatrix[index].GetRotation());
+					pMeshIns->SetRotation(pMeshData->GetMeshesRotationMatrix()->GetRotation());
 
 					pMeshIns->SetName(MString("Mesh_") + MStringHelper::ToString(index));
-					pMeshIns->SetMaterial(pModelResource->GetMeshDefaultMaterial(index));
 					pMeshIns->SetAttachedModelInstance(this);
 
 					AddNodeImpl(pMeshIns, MENodeChildType::EFixed);

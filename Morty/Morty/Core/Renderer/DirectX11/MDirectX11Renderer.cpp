@@ -319,7 +319,7 @@ void MDirectX11Renderer::DrawMesh(MIMesh* pMesh)
 		m_pDevice->m_pD3dContext->DrawIndexed(pMesh->GetIndicesLength(), 0, 0);
 
 #if MORTY_RENDER_DATA_STATISTICS
-		MRenderStatistics::GetInstance()->unVertexCount += pMesh->GetIndicesLength();
+		MRenderStatistics::GetInstance()->unFaceCount += pMesh->GetIndicesLength() / 3;
 #endif
 	}
 }

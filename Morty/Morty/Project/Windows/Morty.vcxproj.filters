@@ -285,8 +285,14 @@
     <ClInclude Include="..\..\Utility\MRenderStatistics.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ResourceLoader\Model\MModelDetailLevel.h">
+    <ClInclude Include="..\..\ResourceLoader\Model\MModelMeshData.h">
       <Filter>ResourceLoader\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ResourceLoader\Model\MMeshDetailMap.h">
+      <Filter>ResourceLoader\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Scene\Model\MIModelMeshInstance.h">
+      <Filter>Scene\Model</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -473,8 +479,14 @@
     <ClCompile Include="..\..\Utility\MRenderStatistics.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ResourceLoader\Model\MModelDetailLevel.cpp">
+    <ClCompile Include="..\..\ResourceLoader\Model\MModelMeshData.cpp">
       <Filter>ResourceLoader\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ResourceLoader\Model\MMeshDetailMap.cpp">
+      <Filter>ResourceLoader\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Scene\Model\MIModelMeshInstance.cpp">
+      <Filter>Scene\Model</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,90 +1,22 @@
-﻿#include "MModelDetailLevel.h"
+﻿#include "MMeshDetailMap.h"
 #include "MModelResource.h"
 #include "MLogManager.h"
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b) )
 #define MAX(a, b) ((a) > (b) ? (a) : (b) )
 
-int testa = 0;
-int testb = 0;
-
-
-MModelLodFactory::MModelLodFactory()
-	: m_pResource(nullptr)
-	, m_bInitialized(false)
-{
-
-}
-
-MModelLodFactory::~MModelLodFactory()
-{
-	if (m_pResource)
-	{
-		delete m_pResource;
-	}
-}
-
-void MModelLodFactory::Load(MModelResource* pModelResource)
-{
-	if (m_pResource)
-		delete m_pResource;
-
-	auto LoadFunc = [this](const unsigned int& eReloadType) {
-		m_bInitialized = false;
-		return true;
-	};
-
-	m_pResource = new MResourceHolder(pModelResource);
-	m_pResource->SetResChangedCallback(LoadFunc);
-
-	LoadFunc(MResource::EResReloadType::EDefault);
-}
-
-bool MModelLodFactory::InitWithResource()
-{
-	if (m_bInitialized)
-		return true;
-
-	// TODO
-
-	MModelResource* pResource = m_pResource->GetResource<MModelResource>();
-	
-	const std::vector<MIMesh*>* pMeshes = pResource->GetMeshes();
-	m_vMeshDetailLevel.resize(pMeshes->size());
-	for (unsigned int i = 0; i < pMeshes->size(); ++i)
-	{
-		m_vMeshDetailLevel[i] = new MMeshDetailMap((*pMeshes)[i]);
-	}
-
-	m_bInitialized = true;
-	return true;
-}
-
-MIMesh* MModelLodFactory::CreateLevel(const unsigned int& unIndex, const unsigned int& unPercent)
-{
-	if (false == m_bInitialized && false == InitWithResource())
-		return nullptr;
-
-	std::vector<MIMesh*>& vCahce = m_vCacheMeshes[unIndex];
-	if (vCahce.size() > unPercent && vCahce[unPercent] != nullptr)
-		return vCahce[unPercent];
-
-	MMeshDetailMap* pDetailMap = m_vMeshDetailLevel[unIndex];
-	unsigned int unVertexNumber = (float)unPercent * pDetailMap->m_pMesh->GetVerticesLength();
-
-	MIMesh* pMesh = pDetailMap->CreateLevel(unVertexNumber);
-	if (vCahce.size() < unPercent + 1)
-		vCahce.resize(unPercent + 1);
-	vCahce[unPercent] = pMesh;
-
-	return pMesh;
-}
-
-MMeshDetailMap::MMeshDetailMap(const MIMesh* pMesh)
-	: m_pMesh(pMesh)
+MMeshDetailMap::MMeshDetailMap()
+	: m_pMesh(nullptr)
 	, m_pSortVertices(nullptr)
-	, m_vMeshesCache(10)
+	, m_vMeshesCache(MMESH_LOD_LEVEL_RANGE)
 {
+	
+}
+
+void MMeshDetailMap::BindMesh(const MIMesh* pMesh)
+{
+	m_pMesh = pMesh;
+
 	const MByte* pVertices = (MByte*)pMesh->GetVertices();
 	const unsigned int* vIndices = pMesh->GetIndices();
 	unsigned int unVertexSize = pMesh->GetVertexStructSize();
@@ -112,7 +44,6 @@ MMeshDetailMap::MMeshDetailMap(const MIMesh* pMesh)
 		pFace->vIndices[1] = vVertices[vIndices[i + 1]];
 		pFace->vIndices[2] = vVertices[vIndices[i + 2]];
 		ComputeNormal(pFace);
-		m_vFaces.push_back(pFace);
 
 		for (unsigned int n = i; n < i + 3; ++n)
 		{
@@ -133,29 +64,16 @@ MMeshDetailMap::MMeshDetailMap(const MIMesh* pMesh)
 	for (Vertex* pVertex : vVertices)
 		UpdateCollapse(pVertex);
 
-	int xxx = 0;
-	for (Vertex* p : vVertices)
+	while (!vVertices.empty())
 	{
-		if (p->vFaces.size() == 1)
-			xxx++;
-	}
-
-	MLogManager::GetInstance()->Log(" all:  %d  %d", vVertices.size(), xxx);
-	while(!vVertices.empty())
-	{
-		unsigned xxx = 0;
-		for (Vertex* pVtx : vVertices)
-			if (pVtx->pCollapseVertex)
-				++xxx;
-		MLogManager::GetInstance()->Log(" count:  %d", xxx);
 		Vertex* pVertex = GetMinCollapseCostVertex(vVertices);
 		m_vIndexToMap[pVertex->unVertexIndex] = vVertices.size() - 1;
 		m_vMap[vVertices.size() - 1] = (pVertex->pCollapseVertex) ? pVertex->pCollapseVertex->unVertexIndex : -1;
 		if (pVertex->pCollapseVertex)
 			Collapse(pVertex, pVertex->pCollapseVertex);
-		
+
 		EraseFirst(vVertices, pVertex);
-		Unuse(pVertex);
+		//Unuse(pVertex);
 		delete pVertex;
 	}
 
@@ -212,11 +130,11 @@ MIMesh* MMeshDetailMap::CreateLevel(const unsigned int& unVertexNumber)
 MIMesh* MMeshDetailMap::GetLevel(unsigned int unLevel)
 {
 	if (unLevel < 1) unLevel = 1;
-	if (unLevel > 10) unLevel = 10;
+	if (unLevel > MMESH_LOD_LEVEL_RANGE) unLevel = MMESH_LOD_LEVEL_RANGE;
 
 	if (m_vMeshesCache[unLevel] == nullptr)
 	{
-		unsigned int unVertexNumber = m_pMesh->GetVerticesLength() * (float)unLevel / 10;
+		unsigned int unVertexNumber = m_pMesh->GetVerticesLength() * (float)unLevel / MMESH_LOD_LEVEL_RANGE;
 		m_vMeshesCache[unLevel] = CreateLevel(unVertexNumber);
 	}
 
@@ -244,8 +162,6 @@ void MMeshDetailMap::Unuse(Face* pFace)
 			UpdateNeighbor(pFace->vIndices[i], pFace->vIndices[j]);
 		}
 	}
-
-	EraseFirst(m_vFaces, pFace);
 }
 
 void MMeshDetailMap::Clean()
@@ -332,8 +248,11 @@ float MMeshDetailMap::GetCollapseCost(Vertex* pFrom, Vertex* pTo)
 		float mincurv = 1;
 		for (Face* pSideFace : vSides)
 		{
-			float dotprod = pFromFace->v3Normal * pSideFace->v3Normal;
-			mincurv = MIN(mincurv, (1 - dotprod) / 2.0f);
+			if (pFromFace != pSideFace)
+			{
+				float dotprod = pFromFace->v3Normal * pSideFace->v3Normal;
+				mincurv = MAX(mincurv, (1 - dotprod) / 2.0f);
+			}
 		}
 		curvature = MAX(curvature, mincurv);
 	}

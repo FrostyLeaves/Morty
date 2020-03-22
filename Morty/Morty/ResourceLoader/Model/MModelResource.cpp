@@ -5,6 +5,7 @@
 #include "MModelResource.h"
 #include "MResourceManager.h"
 #include "MVertex.h"
+#include "MModelMeshData.h"
 
 #include "MIDevice.h"
 #include "MEngine.h"
@@ -48,37 +49,23 @@ MModelResource::~MModelResource()
 		m_pSkeleton = nullptr;
 	}
 
-	for (MIMesh* pMesh : m_vMeshes)
+	for (MModelMeshData* pMesh : m_vMeshes)
 	{
-		pMesh->DestroyBuffer(m_pEngine->GetDevice());
+		pMesh->m_pMesh->DestroyBuffer(GetEngine()->GetDevice());
+		delete pMesh->m_pMesh;
+		delete pMesh->m_pBoundsOBB;
+
 		delete pMesh;
 	}
-
-	for (MBoundsOBB* pBounds : m_vMeshesOBB)
-		delete pBounds;
-
-	m_vMeshesOBB.clear();
+	
 	m_vMeshes.clear();
-}
-
-MModelResource::MEMeshVertexType MModelResource::GetMeshVertexType(const unsigned int& unIndex)
-{
-	return unIndex < m_vVertexTypes.size() ? m_vVertexTypes[unIndex] : MEMeshVertexType::Normal;
-}
-
-MMaterial* MModelResource::GetMeshDefaultMaterial(const unsigned int& unIndex)
-{
-	return unIndex < m_vDefaultMaterial.size() ? m_vDefaultMaterial[unIndex] : nullptr;
 }
 
 bool MModelResource::Load(const MString& strResourcePath)
 {
-	for (MIMesh* pMesh : m_vMeshes)
-	{
-		pMesh->DestroyBuffer(m_pEngine->GetDevice());
+	for (MModelMeshData* pMesh : m_vMeshes)
 		delete pMesh;
-	}
-	m_vMeshes.clear(); 
+	m_vMeshes.clear();
 
 	if (m_pSkeleton)
 	{
@@ -125,30 +112,37 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vect
 			ProcessMeshVertices(pMesh, pScene, pMMesh, matRotation);
 			ProcessMeshIndices(pMesh, pScene, pMMesh);
 			BindVertexAndBones(pMesh, pScene, pMMesh);
-			m_vMeshes.push_back(pMMesh);
-			m_vMeshesRotationMatrix.push_back(matRotation);
-			m_vVertexTypes.push_back(MEMeshVertexType::Skeleton);
 			vMaterialIndices.push_back(pMesh->mMaterialIndex);
-			m_vDefaultMaterial.push_back(nullptr);
 
 			MBoundsOBB* pObb = new MBoundsOBB();
 			pObb->SetPoints((const MByte*)pMMesh->GetVertices(), pMMesh->GetVerticesLength(), 0, pMMesh->GetVertexStructSize());
-			m_vMeshesOBB.push_back(pObb);
+			
+
+			MModelMeshData* pMeshData = new MModelMeshData();
+			pMeshData->m_pMesh = pMMesh;
+			pMeshData->m_eVertexType = MModelMeshData::Skeleton;
+			pMeshData->m_matRotationMatrix = matRotation;
+			pMeshData->m_pBoundsOBB = pObb;
+
+			m_vMeshes.push_back(pMeshData);
 		}
 		else
 		{
 			MMesh<MVertex>* pMMesh = new MMesh<MVertex>();
 			ProcessMeshVertices(pMesh, pScene, pMMesh, matRotation);
 			ProcessMeshIndices(pMesh, pScene, pMMesh);
-			m_vMeshes.push_back(pMMesh);
-			m_vMeshesRotationMatrix.push_back(matRotation);
-			m_vVertexTypes.push_back(MEMeshVertexType::Normal);
 			vMaterialIndices.push_back(pMesh->mMaterialIndex);
-			m_vDefaultMaterial.push_back(nullptr);
 
 			MBoundsOBB* pObb = new MBoundsOBB();
 			pObb->SetPoints((const MByte*)pMMesh->GetVertices(), pMMesh->GetVerticesLength(), 0, pMMesh->GetVertexStructSize());
-			m_vMeshesOBB.push_back(pObb);
+
+			MModelMeshData* pMeshData = new MModelMeshData();
+			pMeshData->m_pMesh = pMMesh;
+			pMeshData->m_eVertexType = MModelMeshData::Normal;
+			pMeshData->m_matRotationMatrix = matRotation;
+			pMeshData->m_pBoundsOBB = pObb;
+
+			m_vMeshes.push_back(pMeshData);
 		}
 	}
 
@@ -440,33 +434,31 @@ void MModelResource::ProcessMaterial(const aiScene* pScene, std::vector<unsigned
 	MMaterialResource* pStaticMeshMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_STATIC);
 	MMaterialResource* pSkinnedMeshMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SKINNED);
 
-	for (unsigned int i = 0; i < m_vVertexTypes.size(); ++i)
+	for (unsigned int i = 0; i < m_vMeshes.size(); ++i)
 	{
-		if (m_vVertexTypes[i] == MEMeshVertexType::Normal)
-		{
-			m_vDefaultMaterial[i] = m_pEngine->GetObjectManager()->CreateObject<MMaterial>();
-			m_vDefaultMaterial[i]->Load(pStaticMeshMaterial);
-		}
-		else if(m_vVertexTypes[i] == MEMeshVertexType::Skeleton)
-		{
-			m_vDefaultMaterial[i] = m_pEngine->GetObjectManager()->CreateObject<MMaterial>();
-			m_vDefaultMaterial[i]->Load(pSkinnedMeshMaterial);
-		}
+		MModelMeshData* pMeshData = m_vMeshes[i];
+		MMaterial* pMaterial = m_pEngine->GetObjectManager()->CreateObject<MMaterial>();
+		pMeshData->m_pMaterial = pMaterial;
+
+		if (pMeshData->GetMeshVertexType() == MModelMeshData::Normal)
+			pMeshData->m_pMaterial->Load(pStaticMeshMaterial);
+		else if(pMeshData->GetMeshVertexType() == MModelMeshData::Skeleton)
+			pMeshData->m_pMaterial->Load(pSkinnedMeshMaterial);
 
 		unsigned int unMaterialIndex = vMaterialIndices[i];
 
 		if(unMaterialIndex >= pScene->mNumMaterials)
 			continue;
 
-		aiMaterial* pMaterial = pScene->mMaterials[unMaterialIndex];
+		aiMaterial* pAiMaterial = pScene->mMaterials[unMaterialIndex];
 
 		Vector3 v3Ambient(1.0f, 1.0f, 1.0f), v3Diffuse(1.0f, 1.0f, 1.0f), v3Specular(1.0f, 1.0f, 1.0f);
 		float fShininess = 32.0f;
 		MString strTexPath;
 
-		for (int n = 0; n < pMaterial->mNumProperties; ++n)
+		for (int n = 0; n < pAiMaterial->mNumProperties; ++n)
 		{
-			aiMaterialProperty* prop =  pMaterial->mProperties[n];
+			aiMaterialProperty* prop = pAiMaterial->mProperties[n];
 			if (prop->mKey == strAmbient)
 				memcpy(v3Ambient.m, prop->mData, sizeof(Vector3));
 			else if (prop->mKey == strDiffuse)
@@ -478,7 +470,7 @@ void MModelResource::ProcessMaterial(const aiScene* pScene, std::vector<unsigned
 		}
 		//Test Data, need read from file.
 		MStruct* pMaterialStruct = nullptr;
-		for (MShaderParam* pParam : *m_vDefaultMaterial[i]->GetShaderParams())
+		for (MShaderParam* pParam : *pMaterial->GetShaderParams())
 		{
 			if (pParam->unCode == SHADER_PARAM_CODE_MATERIAL)
 			{
@@ -503,8 +495,8 @@ void MModelResource::ProcessMaterial(const aiScene* pScene, std::vector<unsigned
 		MString strResourceFolder = MResource::GetFolder(m_strResourcePath);
 
 		aiString strDiffuseTextureFile, strNormalTextureFile;
-		pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &strDiffuseTextureFile);
-		pMaterial->GetTexture(aiTextureType_NORMALS, 0, &strNormalTextureFile);
+		pAiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &strDiffuseTextureFile);
+		pAiMaterial->GetTexture(aiTextureType_NORMALS, 0, &strNormalTextureFile);
 		MString strDiffuseFileName = MResource::GetFileName(MString(strDiffuseTextureFile.C_Str()));
 		MString strNormalFileName = MResource::GetFileName(MString(strNormalTextureFile.C_Str()));
 
@@ -526,7 +518,7 @@ void MModelResource::ProcessMaterial(const aiScene* pScene, std::vector<unsigned
 		else
 			pNormalMapRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_NORMALMAP);
 
-		m_vDefaultMaterial[i]->SetTexutreParam("U_mat.texDiffuse", pDiffuseTexRes);
-		m_vDefaultMaterial[i]->SetTexutreParam("U_mat.texNormal", pNormalMapRes);
+		pMaterial->SetTexutreParam("U_mat.texDiffuse", pDiffuseTexRes);
+		pMaterial->SetTexutreParam("U_mat.texNormal", pNormalMapRes);
 	}
 }

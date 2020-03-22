@@ -14,6 +14,7 @@
 #include "MMesh.h"
 
 class MResource;
+class MModelMeshData;
 class MResourceHolder;
 class MTextureCubeResource;
 class MTextureCube;
@@ -37,6 +38,7 @@ public:
 
 private:
 	MMesh<Vector3>* m_pBoxMesh;
+	MModelMeshData* m_pMeshData;
 	MStaticMeshInstance* m_pMeshInstance;
 
 	MTextureCube* m_pTextureCube;

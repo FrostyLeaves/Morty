@@ -5,20 +5,18 @@
 
 #include "MDirectX11Renderer.h"
 #include "MModelResource.h"
-#include "MModelDetailLevel.h"
+#include "MModelMeshData.h"
 
 #include "MBounds.h"
 
-MTypeIdentifierImplement(MStaticMeshInstance, MIMeshInstance)
+MTypeIdentifierImplement(MStaticMeshInstance, MIModelMeshInstance)
 
 MStaticMeshInstance::MStaticMeshInstance()
-	: MIMeshInstance()
+	: MIModelMeshInstance()
 	, m_pMesh(nullptr)
 	, m_pMaterial(nullptr)
-	, m_pDefaultBoundsOBB(nullptr)
 	, m_pBoundsAABB(nullptr)
 	, m_bBoundsAABBDirty(true)
-	, m_unDetailLevel(5)
 {
 
 }
@@ -56,28 +54,29 @@ MBoundsAABB* MStaticMeshInstance::GetBoundsAABB()
 	{
 		Matrix4 matWorldTrans = GetWorldTransform();
 		Vector3 v3Position = GetWorldPosition();
-		m_pBoundsAABB->SetBoundsOBB(v3Position, matWorldTrans, *m_pDefaultBoundsOBB);
+		m_pBoundsAABB->SetBoundsOBB(v3Position, matWorldTrans, *m_pMesh->GetMeshesDefaultOBB());
 		m_bBoundsAABBDirty = false;
 	}
 
 	return m_pBoundsAABB;
 }
 
-void MStaticMeshInstance::SetMesh(MIMesh* pMesh)
+void MStaticMeshInstance::SetMeshData(MModelMeshData* pMeshData)
 {
-	m_pMesh = dynamic_cast<MMesh<MVertex>*>(pMesh);
-	if (m_pMesh)
-	{
-		m_pMeshDetailMap = new MMeshDetailMap(m_pMesh);
-	}
+	m_pMesh = pMeshData;
+	SetMaterial(pMeshData->GetDefaultMaterial());
 }
 
 MIMesh* MStaticMeshInstance::GetMesh(const unsigned int& unDetailLevel)
 {
-	if (nullptr == m_pMeshDetailMap || unDetailLevel == 10)
-		return GetMesh();
+	if (unDetailLevel == MMESH_LOD_LEVEL_RANGE)
+		return m_pMesh->GetMesh();
+	else return m_pMesh->GetLevelMesh(unDetailLevel);
+}
 
-	m_pMeshDetailMap->GetLevel(unDetailLevel);
+MIMesh* MStaticMeshInstance::GetMesh()
+{
+	return m_pMesh->GetMesh();
 }
 
 void MStaticMeshInstance::WorldTransformDirty()

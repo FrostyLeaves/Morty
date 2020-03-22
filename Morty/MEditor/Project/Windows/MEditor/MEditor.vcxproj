@@ -176,7 +176,7 @@
     <ClInclude Include="..\..\..\Editor\Property\PropertyM3DNode.h" />
     <ClInclude Include="..\..\..\Editor\Property\PropertyMCamera.h" />
     <ClInclude Include="..\..\..\Editor\Property\PropertyMDirectionalLight.h" />
-    <ClInclude Include="..\..\..\Editor\Property\PropertyMIMeshInstance.h" />
+    <ClInclude Include="..\..\..\Editor\Property\PropertyMIModelMeshInstance.h" />
     <ClInclude Include="..\..\..\Editor\Property\PropertyMModelInstance.h" />
     <ClInclude Include="..\..\..\Editor\Property\PropertyMPointLight.h" />
     <ClInclude Include="..\..\..\Editor\Property\PropertyMSpotLight.h" />
@@ -194,6 +194,7 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\Morty\Utility\MGlobal.cpp" />
     <ClCompile Include="..\..\..\Editor\MainEditor.cpp" />
     <ClCompile Include="..\..\..\Editor\NodeTreeView.cpp" />
     <ClCompile Include="..\..\..\Editor\PropertyView.cpp" />

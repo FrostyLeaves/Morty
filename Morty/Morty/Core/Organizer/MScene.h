@@ -27,7 +27,7 @@ class MInputEvent;
 class MIRenderView;
 class MViewport;
 class MMaterial;
-class MIMeshInstance;
+class MIModelMeshInstance;
 class MTransformCoord3D;
 class MInputNode;
 class MShadowTextureRenderTarget;
@@ -56,8 +56,8 @@ public:
 	//节点退出场景时进行的操作
 	void OnNodeExit(MNode* pNode);
 
-	void RecordMeshInstance(MIMeshInstance* pMeshInstance);
-	void CancelRecordMeshInstance(MIMeshInstance* pMeshInstance);
+	void RecordMeshInstance(MIModelMeshInstance* pMeshInstance);
+	void CancelRecordMeshInstance(MIModelMeshInstance* pMeshInstance);
 
 	void RecordInputNode(MInputNode* pInputNode);
 	void CancelRecordInputNode(MInputNode* pInputNode);
@@ -117,7 +117,7 @@ private:
 	struct MaterialMeshInsGroup
 	{
 		MMaterial* pMat;
-		std::vector<MIMeshInstance*> vMeshIns;
+		std::vector<MIModelMeshInstance*> vMeshIns;
 	};
 	std::vector<MaterialMeshInsGroup*> m_vMatMeshInsGroup;
 	std::vector<MViewport*> m_vViewports;

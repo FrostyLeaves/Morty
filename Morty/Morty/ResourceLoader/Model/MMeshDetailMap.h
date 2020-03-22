@@ -38,8 +38,10 @@ public:
 	};
 
 public:
-	MMeshDetailMap(const MIMesh* pMesh);
+	MMeshDetailMap();
 	virtual ~MMeshDetailMap() {}
+
+	void BindMesh(const MIMesh* pMesh);
 
 	MIMesh* CreateLevel(const unsigned int& unIndexNumber);
 	MIMesh* GetLevel(unsigned int unLevel);
@@ -87,7 +89,6 @@ void EraseFirst(std::vector<T>& vector, const T& value)
 
 	std::vector<unsigned int> m_vIndexToMap;
 	std::vector<int> m_vMap;
-	std::vector<Face*> m_vFaces;
 
 	MByte* m_pSortVertices;
 
@@ -95,31 +96,5 @@ void EraseFirst(std::vector<T>& vector, const T& value)
 
 	std::vector<MIMesh*> m_vMeshesCache;
 };
-
-class MORTY_CLASS MModelLodFactory
-{
-public:
-
-	MModelLodFactory();
-	virtual ~MModelLodFactory();
-
-public:
-
-	void Load(MModelResource* pModelResource);
-	
-	bool InitWithResource();
-
-	//range[0, 100]
-	MIMesh* CreateLevel(const unsigned int& unIndex, const unsigned int& unPercent);
-
-private:
-	MResourceHolder* m_pResource;
-	bool m_bInitialized;
-
-	std::vector<MMeshDetailMap*> m_vMeshDetailLevel;
-
-	std::vector<std::vector<MIMesh*>> m_vCacheMeshes;
-};
-
 
 #endif

@@ -17,7 +17,7 @@ class MORTY_CLASS MRenderStatistics
 public:
 	static MRenderStatistics* GetInstance();
 public:
-	unsigned int unVertexCount;
+	unsigned int unFaceCount;
 };
 
 #endif

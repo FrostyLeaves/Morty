@@ -12,14 +12,14 @@
 #include "MVertex.h"
 #include "MMesh.h"
 
-#include "MIMeshInstance.h"
+#include "MIModelMeshInstance.h"
 
 class MIMesh;
 class MMaterial;
 class MResource;
 class MMeshDetailMap;
 class MModelResource;
-class MORTY_CLASS MStaticMeshInstance : public MIMeshInstance
+class MORTY_CLASS MStaticMeshInstance : public MIModelMeshInstance
 {
 public:
 	M_OBJECT(MStaticMeshInstance);
@@ -33,15 +33,9 @@ public:
 
 public:
 
-	void SetDetailLevel(const unsigned int& unLevel) { m_unDetailLevel = unLevel; }
-	unsigned int GetDetailLevel() { return m_unDetailLevel; }
-
-	virtual void SetMesh(MIMesh* pMesh) override;
-	virtual MIMesh* GetMesh() override { return m_pMesh; }
+	virtual void SetMeshData(MModelMeshData* pMeshData);
+	virtual MIMesh* GetMesh() override;
 	virtual MIMesh* GetMesh(const unsigned int& unDetailLevel) override;
-
-	virtual void SetDefaultOBB(MBoundsOBB* pBoundsOBB) { m_pDefaultBoundsOBB = pBoundsOBB; }
-	virtual MBoundsOBB* GetDefaultOBB() { return m_pDefaultBoundsOBB; }
 
 protected:
 	virtual void WorldTransformDirty() override;
@@ -49,14 +43,10 @@ protected:
 
 private:
 
-	MMesh<MVertex>* m_pMesh;
+	MModelMeshData* m_pMesh;
 	MMaterial* m_pMaterial;
-	MBoundsOBB* m_pDefaultBoundsOBB;
 	MBoundsAABB* m_pBoundsAABB;
 	bool m_bBoundsAABBDirty;
-	unsigned int m_unDetailLevel;
-
-	MMeshDetailMap* m_pMeshDetailMap;
 };
 
 

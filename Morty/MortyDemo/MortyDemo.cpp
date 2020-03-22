@@ -33,6 +33,7 @@
 #include "MSpotLight.h"
 #include "MDirectionalLight.h"
 #include "MModelResource.h"
+#include "MModelMeshData.h"
 #include "MSkeletalAnimation.h"
 #include "MTypedClass.h"
 
@@ -56,43 +57,31 @@ public:
 	{
 		MPointLight* pLight = static_cast<MPointLight*>(GetRootNode()->FindFirstChildByName("Light"));
 
-		const float speed = 25;
+		const float speed = 16;
 		
 		if (true == m_tKeyBoardDown['W'])
 		{
-			this->SetPosition(this->GetPosition() + GetForward() * speed * fDelta);
+			m_v3MoveSpeed += GetForward() * speed * fDelta;
 		}
 		if (true == m_tKeyBoardDown['S'])
 		{
-			this->SetPosition(this->GetPosition() + GetForward() * -speed * fDelta);
+			m_v3MoveSpeed += GetForward() * -speed * fDelta;
 		}
 		if (true == m_tKeyBoardDown['A'])
 		{
-			this->SetPosition(this->GetPosition() + GetRight() * -speed * fDelta);
+			m_v3MoveSpeed += GetRight() * -speed * fDelta;
 		}
 		if (true == m_tKeyBoardDown['D'])
 		{
-			this->SetPosition(this->GetPosition() + GetRight() * speed * fDelta);
+			m_v3MoveSpeed += GetRight() * speed * fDelta;
 		}
 		if (true == m_tKeyBoardDown['Q'])
 		{
-			this->SetPosition(this->GetPosition() + GetUp() * -speed * fDelta);
+			m_v3MoveSpeed += Vector3(0, 1, 0) * -speed * fDelta;
 		}
 		if (true == m_tKeyBoardDown['E'])
 		{
-			this->SetPosition(this->GetPosition() + GetUp() * speed * fDelta);
-		}
-		if (true == m_tKeyBoardDown['N'])
-		{
-			//pLight->SetPosition(pLight->GetPosition() - Vector3(speed * fDelta, 0, 0));
-			pLight->SetDiffuseColor(pLight->GetDiffuseColor().ToVector3() + MColor(1, 1, 1).ToVector3() * fDelta);
-			pLight->SetSpecularColor(pLight->GetDiffuseColor().ToVector3() + MColor(1, 1, 1).ToVector3() * fDelta);
-		}
-		if (true == m_tKeyBoardDown['M'])
-		{
-			//pLight->SetPosition(pLight->GetPosition() + Vector3(speed * fDelta, 0, 0));
-			pLight->SetDiffuseColor(pLight->GetDiffuseColor().ToVector3() - MColor(1, 1, 1).ToVector3() * fDelta);
-			pLight->SetSpecularColor(pLight->GetDiffuseColor().ToVector3() - MColor(1, 1, 1).ToVector3() * fDelta);
+			m_v3MoveSpeed += Vector3(0, 1, 0) * speed * fDelta;
 		}
 		if (m_tKeyBoardDown['L'])
 		{
@@ -109,10 +98,22 @@ public:
 			m_v2MouseAddi = Vector2(0, 0);
 		}
 
+		float fLength = m_v3MoveSpeed.Length();
+		if (fLength > speed)
+		{
+			m_v3MoveSpeed.Normalize();
+			m_v3MoveSpeed = m_v3MoveSpeed * speed;
+		}
+
+		SetPosition(GetPosition() + m_v3MoveSpeed);
+		m_v3MoveSpeed = m_v3MoveSpeed * 0.8f;
+
 	}
 
 	std::map<unsigned int, bool> m_tKeyBoardDown;
 	Vector2 m_v2MouseAddi;
+
+	Vector3 m_v3MoveSpeed;
 
 
 };
@@ -127,16 +128,54 @@ int main(int argc, char* argv[])
 	pRootNode->SetName("RootNode");
 
 	
-	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/plant.obj"));
+// 	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/hero.fbx"));
+// 
+// 	for (int i = 0; i < 1; ++i)
+// 	{
+// 		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
+// 		pSpatial->Load(pResource);
+// 		pSpatial->SetPosition(Vector3(0, 0, i * 50));
+// 		pSpatial->SetScale(Vector3(1, 10, 5));
+// 		pSpatial->SetName("Ground");
+// 
+// 		pRootNode->AddNode(pSpatial);
+// 
+// 		pSpatial->SetRotation(Quaternion(Vector3(0, 1, 0), 90.0f));
+// 	}
 
-	for (int i = 0; i < 1; ++i)
+	MString textureID[] = {"005","003","007","004","014","008","002","015","019"};
+
+	MModelResource* pPikachuResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/gun/model.dae"));
+	for (int i = 0; i < 9; ++i)
 	{
-		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
-		pSpatial->Load(pResource);
-		pSpatial->SetName("Ground");
-		pRootNode->AddNode(pSpatial);
-	}
+		MMaterial* pMaterial = (*pPikachuResource->GetMeshes())[i]->GetDefaultMaterial();
+		MResource* pDiffuseRes = engine.GetResourceManager()->LoadResource("./Model/gun/tex/Material." + textureID[i] + "_albedo.jpg");
+		MResource* pNormalMapRes = engine.GetResourceManager()->LoadResource("./Model/gun/tex/Material." + textureID[i] + "_normal.png");
 
+		pMaterial->SetTexutreParam("U_mat.texDiffuse", pDiffuseRes);
+		pMaterial->SetTexutreParam("U_mat.texNormal", pNormalMapRes);
+
+		for (MShaderParam* pParam : *pMaterial->GetShaderParams())
+		{
+			if (pParam->unCode == SHADER_PARAM_CODE_MATERIAL)
+			{
+				MStruct* pStruct = pParam->var.GetStruct()->FindMember("U_mat")->GetStruct();
+				pStruct->SetMember("bUseNormalTex", true);
+				
+				pParam->SetDirty();
+				continue;
+			}
+		}
+	}
+	
+	MModelInstance* pPikachu = engine.GetObjectManager()->CreateObject<MModelInstance>();
+	pPikachu->Load(pPikachuResource);
+	pPikachu->SetGenerateDirLightShadow(true);
+	pPikachu->SetPosition(Vector3(0, 0, 10));
+	pPikachu->SetScale(Vector3(10, 10, 10));
+	pPikachu->SetName("Pikachu");
+
+	pRootNode->AddNode(pPikachu);
 
 	for (unsigned int i = 0; i < 1; ++i)
 	{

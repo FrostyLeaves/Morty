@@ -10,14 +10,14 @@
 #define _M_SKINNEDMESHINSTANCE_H_
 #include "MGlobal.h"
 #include "MVertex.h"
-#include "MIMeshInstance.h"
+#include "MIModelMeshInstance.h"
 
 class MIMesh;
 class MMaterial;
 class MResource;
 class MModelResource;
 class MSkeletonInstance;
-class MORTY_CLASS MSkinnedMeshInstance : public MIMeshInstance
+class MORTY_CLASS MSkinnedMeshInstance : public MIModelMeshInstance
 {
 public:
 	M_OBJECT(MSkinnedMeshInstance);
@@ -31,13 +31,11 @@ public:
 
 public:
 
-	virtual void SetMesh(MIMesh* pMesh) override;
-	virtual MIMesh* GetMesh() override { return m_pMesh; }
+	virtual void SetMeshData(MModelMeshData* pMeshData);
+	virtual MIMesh* GetMesh() override;
+	virtual MIMesh* GetMesh(const unsigned int& unDetailLevel) override;
 
 	virtual void SetSkeletonInstance(MSkeletonInstance* pSkeletonIns) { m_pSkeletonInstance = pSkeletonIns; }
-
- 	virtual void SetDefaultOBB(MBoundsOBB* pBoundsOBB) { m_pDefaultBoundsOBB = pBoundsOBB; }
- 	virtual MBoundsOBB* GetDefaultOBB() { return m_pDefaultBoundsOBB; }
 
 protected:
 
@@ -48,9 +46,8 @@ protected:
 	virtual void LocalTransformDirty() override;
 private:
 
-	MIMesh* m_pMesh;
+	MModelMeshData* m_pMesh;
 	MMaterial* m_pMaterial;
-	MBoundsOBB* m_pDefaultBoundsOBB;
 	MBoundsAABB* m_pBoundsAABB;
 	bool m_bBoundsAABBDirty;
 	MSkeletonInstance* m_pSkeletonInstance;

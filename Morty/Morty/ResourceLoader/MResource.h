@@ -37,6 +37,8 @@ public:
 	static MString GetFolder(const MString& strPath);
 	static MString GetFileName(const MString& strPath);
 
+	MEngine* GetEngine() { return m_pEngine; }
+
 	MResourceManager* GetResourceManager();
 
 	MString GetResourcePath() { return m_strResourcePath; }

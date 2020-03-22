@@ -145,9 +145,9 @@ void MScene::GetDirectionalShadowSceneAABB(MBoundsAABB& cShadowAABB)
 
 	for (MaterialMeshInsGroup* pGroup : m_vMatMeshInsGroup)
 	{
-		for (MIMeshInstance* pMeshIns : pGroup->vMeshIns)
+		for (MIModelMeshInstance* pMeshIns : pGroup->vMeshIns)
 		{
-			if (pMeshIns->GetShadowType() != MIMeshInstance::ENone && pMeshIns->GetVisibleRecursively())
+			if (pMeshIns->GetShadowType() != MIModelMeshInstance::ENone && pMeshIns->GetVisibleRecursively())
 			{
 				if (MModelInstance* pModel = pMeshIns->GetAttachedModelInstance())
 				{
@@ -246,7 +246,7 @@ void MScene::FindActiveSpotLights(const Vector3& v3WorldPosition, std::vector<MS
 
 void MScene::OnNodeEnter(MNode* pNode)
 {
-	if (MIMeshInstance* pMeshIns = pNode->DynamicCast<MIMeshInstance>())
+	if (MIModelMeshInstance* pMeshIns = pNode->DynamicCast<MIModelMeshInstance>())
 		RecordMeshInstance(pMeshIns);
 MSCENE_ON_NODE_ENTER(ModelInstance)
 MSCENE_ON_NODE_ENTER(DirectionalLight)
@@ -267,7 +267,7 @@ MSCENE_ON_NODE_ENTER(SpotLight)
 
 void MScene::OnNodeExit(MNode* pNode)
 {
-	if (MIMeshInstance* pMeshIns = pNode->DynamicCast<MIMeshInstance>())
+	if (MIModelMeshInstance* pMeshIns = pNode->DynamicCast<MIModelMeshInstance>())
 		CancelRecordMeshInstance(pMeshIns);
 MSCENE_ON_NODE_EXIT(ModelInstance)
 MSCENE_ON_NODE_EXIT(DirectionalLight)
@@ -286,7 +286,7 @@ MSCENE_ON_NODE_ENTER(SpotLight)
 		CancelRecordInputNode(pInputNode);
 }
 
-void MScene::RecordMeshInstance(MIMeshInstance* pMeshInstance)
+void MScene::RecordMeshInstance(MIModelMeshInstance* pMeshInstance)
 {
 	if (!pMeshInstance->GetMaterial())
 		return;
@@ -311,14 +311,14 @@ void MScene::RecordMeshInstance(MIMeshInstance* pMeshInstance)
 		pGroup = *iter;
 	}
 
-	std::vector<MIMeshInstance*>::iterator it = find(pGroup->vMeshIns.begin(), pGroup->vMeshIns.end(), pMeshInstance);
+	std::vector<MIModelMeshInstance*>::iterator it = find(pGroup->vMeshIns.begin(), pGroup->vMeshIns.end(), pMeshInstance);
 	if (it != pGroup->vMeshIns.end())
 		return;
 
 	pGroup->vMeshIns.push_back(pMeshInstance);
 }
 
-void MScene::CancelRecordMeshInstance(MIMeshInstance* pMeshInstance)
+void MScene::CancelRecordMeshInstance(MIModelMeshInstance* pMeshInstance)
 {
 	if (!pMeshInstance->GetMaterial())
 		return;
@@ -330,7 +330,7 @@ void MScene::CancelRecordMeshInstance(MIMeshInstance* pMeshInstance)
 	
 	MaterialMeshInsGroup* pGroup = *iter;
 
-	std::vector<MIMeshInstance*>::iterator it = find(pGroup->vMeshIns.begin(), pGroup->vMeshIns.end(), pMeshInstance);
+	std::vector<MIModelMeshInstance*>::iterator it = find(pGroup->vMeshIns.begin(), pGroup->vMeshIns.end(), pMeshInstance);
 	if (it != pGroup->vMeshIns.end())
 		pGroup->vMeshIns.erase(it);
 
@@ -515,7 +515,7 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 		//更新材质的纹理资源，最好移到Material的更新
 		pRenderer->UpdateMaterialResource();
 
-		for (MIMeshInstance* pMeshIns : pGroup->vMeshIns)
+		for (MIModelMeshInstance* pMeshIns : pGroup->vMeshIns)
 		{
 			if(!pMeshIns->GetVisibleRecursively())
 				continue;
@@ -554,11 +554,7 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 			}
 			
 			pRenderer->UpdateMaterialParam();
-
-			if (MStaticMeshInstance* pTest = pMeshIns->DynamicCast<MStaticMeshInstance>())
-				pRenderer->DrawMesh(pTest->GetMesh(pTest->GetDetailLevel()));
-			else
-				pRenderer->DrawMesh(pMeshIns->GetMesh());
+			pRenderer->DrawMesh(pMeshIns->GetMesh(pMeshIns->GetDetailLevel()));
 		}
 	}
 }
@@ -715,7 +711,7 @@ void MScene::DrawCameraFrustum(MIRenderer* pRenderer, MViewport* pViewport, MCam
 void MScene::Render(MIRenderer* pRenderer, MViewport* pViewport)
 {
 #if MORTY_RENDER_DATA_STATISTICS
-	MRenderStatistics::GetInstance()->unVertexCount = 0;
+	MRenderStatistics::GetInstance()->unFaceCount = 0;
 #endif
 
 	GenerateShadowMap(pRenderer, pViewport);

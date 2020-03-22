@@ -139,7 +139,8 @@
     <ClInclude Include="..\..\Core\Renderer\MVertex.h" />
     <ClInclude Include="..\..\ResourceLoader\Material\MMaterialResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MFileHelper.h" />
-    <ClInclude Include="..\..\ResourceLoader\Model\MModelDetailLevel.h" />
+    <ClInclude Include="..\..\ResourceLoader\Model\MMeshDetailMap.h" />
+    <ClInclude Include="..\..\ResourceLoader\Model\MModelMeshData.h" />
     <ClInclude Include="..\..\ResourceLoader\MResourceManager.h" />
     <ClInclude Include="..\..\ResourceLoader\Shader\MShaderResource.h" />
     <ClInclude Include="..\..\ResourceLoader\Texture\MTextureResource.h" />
@@ -162,6 +163,7 @@
     <ClInclude Include="..\..\ResourceLoader\MResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MResourceLoader.h" />
     <ClInclude Include="..\..\Scene\MInputNode.h" />
+    <ClInclude Include="..\..\Scene\Model\MIModelMeshInstance.h" />
     <ClInclude Include="..\..\Scene\Model\MSkinnedMeshInstance.h" />
     <ClInclude Include="..\..\Scene\Model\MIMeshInstance.h" />
     <ClInclude Include="..\..\Scene\Model\MStaticMeshInstance.h" />
@@ -217,7 +219,8 @@
     <ClCompile Include="..\..\Core\Renderer\MVariant.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Material\MMaterialResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MFileHelper.cpp" />
-    <ClCompile Include="..\..\ResourceLoader\Model\MModelDetailLevel.cpp" />
+    <ClCompile Include="..\..\ResourceLoader\Model\MMeshDetailMap.cpp" />
+    <ClCompile Include="..\..\ResourceLoader\Model\MModelMeshData.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MResourceManager.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Shader\MShaderResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Texture\MTextureResource.cpp" />
@@ -237,6 +240,7 @@
     <ClCompile Include="..\..\ResourceLoader\Model\MModelResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MResource.cpp" />
     <ClCompile Include="..\..\Scene\MInputNode.cpp" />
+    <ClCompile Include="..\..\Scene\Model\MIModelMeshInstance.cpp" />
     <ClCompile Include="..\..\Scene\Model\MSkinnedMeshInstance.cpp" />
     <ClCompile Include="..\..\Scene\Model\MIMeshInstance.cpp" />
     <ClCompile Include="..\..\Scene\Model\MStaticMeshInstance.cpp" />

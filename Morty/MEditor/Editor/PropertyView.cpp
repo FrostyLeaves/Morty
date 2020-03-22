@@ -11,7 +11,7 @@
 #include "PropertyMSpotLight.h"
 #include "PropertyMDirectionalLight.h"
 #include "PropertyMModelInstance.h"
-#include "PropertyMIMeshInstance.h"
+#include "PropertyMIModelMeshInstance.h"
 
 #define REGISTER_PROPERTY( CLASS_NAME ) \
 	m_tCreatePropertyFactory[#CLASS_NAME] = []() {return new Property##CLASS_NAME(); };
@@ -26,7 +26,7 @@ PropertyView::PropertyView()
 	REGISTER_PROPERTY(MSpotLight);
 	REGISTER_PROPERTY(MDirectionalLight);
 	REGISTER_PROPERTY(MModelInstance);
-	REGISTER_PROPERTY(MIMeshInstance);
+	REGISTER_PROPERTY(MIModelMeshInstance);
 }
 
 PropertyView::~PropertyView()

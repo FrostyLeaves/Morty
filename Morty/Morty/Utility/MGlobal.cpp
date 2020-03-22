@@ -24,3 +24,6 @@ extern const unsigned int MSPOT_LIGHT_MAX_NUMBER = 8;
 extern const unsigned int MSPOT_LIGHT_PIXEL_NUMBER = 4;
 
 const bool MCALC_NORMAL_IN_VS = true;
+
+
+const unsigned int MMESH_LOD_LEVEL_RANGE = 10;

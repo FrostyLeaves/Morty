@@ -19,31 +19,23 @@
 struct aiNode;
 struct aiScene;
 struct aiMesh;
-class MModel;
 class MBone;
-class MBoundsOBB;
+class MModel;
 class MSkeleton;
+class MModelMeshData;
 class MSkeletalAnimation;
 class MORTY_CLASS MModelResource : public MResource
 {
 public:
-	enum MEMeshVertexType {
-		Normal = 0,
-		Skeleton = 1,
-	};
+	
 public:
     MModelResource();
     virtual ~MModelResource();
 
-	const std::vector<MIMesh*>* GetMeshes() { return &m_vMeshes; }
-	const std::vector<MBoundsOBB*>* GetMeshesDefaultOBB() { return &m_vMeshesOBB; }
-	const std::vector<Matrix4>* GetMeshesRotationMatrix() { return &m_vMeshesRotationMatrix; }
 	const MSkeleton* GetSkeleton() { return m_pSkeleton; }
+	const std::vector<MModelMeshData*>* GetMeshes() { return &m_vMeshes; }
 	const std::map<MString, MSkeletalAnimation*>* GetAnimations() { return &m_tSkeletalAnimation; }
 	const std::vector<MString>* GetAnimationsName() { return &m_vSkeletalAnimation; }
-
-	MEMeshVertexType GetMeshVertexType(const unsigned int& unIndex);
-	MMaterial* GetMeshDefaultMaterial(const unsigned int& unIndex);
 
 protected:
 
@@ -66,12 +58,7 @@ protected:
 
 private:
     
-	std::vector<MIMesh*> m_vMeshes;
-	std::vector<Matrix4> m_vMeshesRotationMatrix;
-	std::vector<MBoundsOBB*> m_vMeshesOBB;
-	std::vector<MEMeshVertexType> m_vVertexTypes;
-
-	std::vector<MMaterial*> m_vDefaultMaterial;
+	std::vector<MModelMeshData*> m_vMeshes;
 
 	MSkeleton* m_pSkeleton;
 
