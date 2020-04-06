@@ -11,6 +11,8 @@
 #include "MGlobal.h"
 #include "Matrix.h"
 
+#include <random>
+
 class MORTY_CLASS MMath
 {
 public:
@@ -25,7 +27,12 @@ public:
 
 	static Matrix4 GetScaleAndRotation(const Matrix4& mat);
 
+	static float Rand_0_1();
+	static int RandInt(const int& nMin, const int& nMax);
+
 private:
+
+	static std::default_random_engine s_randomEngine;
 
 };
 

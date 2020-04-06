@@ -11,6 +11,7 @@
 #include "MGlobal.h"
 #include "MMesh.h"
 #include "MVertex.h"
+#include "Vector.h"
 #include <vector>
 
 class MORTY_CLASS MIBounds
@@ -20,6 +21,7 @@ public:
 	virtual ~MIBounds() {}
 
 public:
+
 };
 
 class MBoundsOBB;
@@ -75,5 +77,21 @@ public:
 	Matrix3 m_matEigVectors;
 };
 
+class MORTY_CLASS MBoundsSphere
+{
+public:
+	MBoundsSphere();
+	MBoundsSphere(const Vector3& v3CenterPoint, const float& fRadius);
+	MBoundsSphere(const std::vector<Vector3>& vPoints);;
+
+	void SetPoints(const std::vector<Vector3>& vPoints, const bool& bBetter = false);
+
+	bool IsContain(const Vector3& pos);
+
+public:
+
+	Vector3 m_v3CenterPoint;
+	float m_fRadius;
+};
 
 #endif

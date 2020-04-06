@@ -30,6 +30,7 @@ public:
 	MModelMeshData();
     virtual ~MModelMeshData();
 
+	MString GetMeshName() { return m_strName; }
 	MEMeshVertexType GetMeshVertexType(){ return m_eVertexType; }
 	void SetMesh(MIMesh* pMesh) { m_pMesh = pMesh; }
 	MIMesh* GetMesh() { return m_pMesh; }
@@ -45,6 +46,7 @@ private:
 
 	friend class MModelResource;
     
+	MString m_strName;
 	MEMeshVertexType m_eVertexType;
 	MIMesh* m_pMesh;
 	Matrix4 m_matRotationMatrix;

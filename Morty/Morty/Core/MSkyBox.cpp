@@ -15,6 +15,7 @@ MTypeIdentifierImplement(MSkyBox, MObject)
 
 MSkyBox::MSkyBox()
 	: MObject()
+	, m_pMeshData(nullptr)
 	, m_pBoxMesh(nullptr)
 	, m_pTextureCube(nullptr)
 	, m_pTextureCubeResource(nullptr)

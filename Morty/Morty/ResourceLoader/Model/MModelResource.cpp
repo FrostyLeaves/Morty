@@ -117,8 +117,8 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vect
 			MBoundsOBB* pObb = new MBoundsOBB();
 			pObb->SetPoints((const MByte*)pMMesh->GetVertices(), pMMesh->GetVerticesLength(), 0, pMMesh->GetVertexStructSize());
 			
-
 			MModelMeshData* pMeshData = new MModelMeshData();
+			pMeshData->m_strName = pNode->mName.C_Str();
 			pMeshData->m_pMesh = pMMesh;
 			pMeshData->m_eVertexType = MModelMeshData::Skeleton;
 			pMeshData->m_matRotationMatrix = matRotation;
@@ -137,6 +137,7 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vect
 			pObb->SetPoints((const MByte*)pMMesh->GetVertices(), pMMesh->GetVerticesLength(), 0, pMMesh->GetVertexStructSize());
 
 			MModelMeshData* pMeshData = new MModelMeshData();
+			pMeshData->m_strName = pNode->mName.C_Str();
 			pMeshData->m_pMesh = pMMesh;
 			pMeshData->m_eVertexType = MModelMeshData::Normal;
 			pMeshData->m_matRotationMatrix = matRotation;

@@ -71,8 +71,6 @@ bool MModelInstance::Load(MResource* pResource)
 					m_pSkeleton = new MSkeletonInstance(pModelResource->GetSkeleton());
 				}
 
-				int index = 0;
-
 				//初始化Mesh的旋转矩阵
 				for (MModelMeshData* pMeshData : *pModelResource->GetMeshes())
 				{
@@ -93,12 +91,10 @@ bool MModelInstance::Load(MResource* pResource)
 						
 					pMeshIns->SetRotation(pMeshData->GetMeshesRotationMatrix()->GetRotation());
 
-					pMeshIns->SetName(MString("Mesh_") + MStringHelper::ToString(index));
+					pMeshIns->SetName(pMeshData->GetMeshName());
 					pMeshIns->SetAttachedModelInstance(this);
 
 					AddNodeImpl(pMeshIns, MENodeChildType::EFixed);
-
-					++index;
 				}
 			}
 	
