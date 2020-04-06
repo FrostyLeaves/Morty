@@ -1,11 +1,13 @@
-﻿#include "MMeshDetailMap.h"
+﻿#include "MMultiLevelMesh.h"
 #include "MModelResource.h"
 #include "MLogManager.h"
+
+#include "MFunction.h"
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b) )
 #define MAX(a, b) ((a) > (b) ? (a) : (b) )
 
-MMeshDetailMap::MMeshDetailMap()
+MMultiLevelMesh::MMultiLevelMesh()
 	: m_pMesh(nullptr)
 	, m_pSortVertices(nullptr)
 	, m_vMeshesCache(MMESH_LOD_LEVEL_RANGE)
@@ -13,7 +15,7 @@ MMeshDetailMap::MMeshDetailMap()
 	
 }
 
-void MMeshDetailMap::BindMesh(const MIMesh* pMesh)
+void MMultiLevelMesh::BindMesh(const MIMesh* pMesh)
 {
 	m_pMesh = pMesh;
 
@@ -48,14 +50,14 @@ void MMeshDetailMap::BindMesh(const MIMesh* pMesh)
 		for (unsigned int n = i; n < i + 3; ++n)
 		{
 			Vertex* pVtx1 = vVertices[vIndices[n]];
-			UnionPushBack(pVtx1->vFaces, pFace);
+			UNION_PUSH_BACK_VECTOR(pVtx1->vFaces, pFace);
 			for (unsigned int m = n + 1; m < i + 3; ++m)
 			{
 				Vertex* pVtx2 = vVertices[vIndices[m]];
 				if (pVtx1 != pVtx2)
 				{
-					UnionPushBack(pVtx1->vNeighbor, pVtx2);
-					UnionPushBack(pVtx2->vNeighbor, pVtx1);
+					UNION_PUSH_BACK_VECTOR(pVtx1->vNeighbor, pVtx2);
+					UNION_PUSH_BACK_VECTOR(pVtx2->vNeighbor, pVtx1);
 				}
 			}
 		}
@@ -72,8 +74,7 @@ void MMeshDetailMap::BindMesh(const MIMesh* pMesh)
 		if (pVertex->pCollapseVertex)
 			Collapse(pVertex, pVertex->pCollapseVertex);
 
-		EraseFirst(vVertices, pVertex);
-		//Unuse(pVertex);
+		ERASE_FIRST_VECTOR(vVertices, pVertex);
 		delete pVertex;
 	}
 
@@ -89,7 +90,7 @@ void MMeshDetailMap::BindMesh(const MIMesh* pMesh)
 	}
 }
 
-MIMesh* MMeshDetailMap::CreateLevel(const unsigned int& unVertexNumber)
+MIMesh* MMultiLevelMesh::CreateLevel(const unsigned int& unVertexNumber)
 {
 	const unsigned int* vIndices = m_pMesh->GetIndices();
 	unsigned int unVertexSize = m_pMesh->GetVertexStructSize();
@@ -127,7 +128,7 @@ MIMesh* MMeshDetailMap::CreateLevel(const unsigned int& unVertexNumber)
 	return pMesh;
 }
 
-MIMesh* MMeshDetailMap::GetLevel(unsigned int unLevel)
+MIMesh* MMultiLevelMesh::GetLevel(unsigned int unLevel)
 {
 	if (unLevel < 1) unLevel = 1;
 	if (unLevel > MMESH_LOD_LEVEL_RANGE) unLevel = MMESH_LOD_LEVEL_RANGE;
@@ -141,19 +142,19 @@ MIMesh* MMeshDetailMap::GetLevel(unsigned int unLevel)
 	return m_vMeshesCache[unLevel];
 }
 
-void MMeshDetailMap::Unuse(Vertex* pVertex)
+void MMultiLevelMesh::Unuse(Vertex* pVertex)
 {
 	for (Vertex* pNeighbor : pVertex->vNeighbor)
 	{
-		EraseFirst(pNeighbor->vNeighbor, pVertex);
-		EraseFirst(pVertex->vNeighbor, pNeighbor);
+		ERASE_FIRST_VECTOR(pNeighbor->vNeighbor, pVertex);
+		ERASE_FIRST_VECTOR(pVertex->vNeighbor, pNeighbor);
 	}
 }
 
-void MMeshDetailMap::Unuse(Face* pFace)
+void MMultiLevelMesh::Unuse(Face* pFace)
 {
 	for (unsigned int i = 0; i < 3; ++i)
-		EraseFirst(pFace->vIndices[i]->vFaces, pFace);
+		ERASE_FIRST_VECTOR(pFace->vIndices[i]->vFaces, pFace);
 	
 	for (unsigned int i = 0; i < 3; ++i)
 	{
@@ -164,17 +165,17 @@ void MMeshDetailMap::Unuse(Face* pFace)
 	}
 }
 
-void MMeshDetailMap::Clean()
+void MMultiLevelMesh::Clean()
 {
 
 }
 
-bool MMeshDetailMap::HasVertex(Face* pFace, Vertex* pVertex)
+bool MMultiLevelMesh::HasVertex(Face* pFace, Vertex* pVertex)
 {
 	return pFace->vIndices[0] == pVertex || pFace->vIndices[1] == pVertex || pFace->vIndices[2] == pVertex;
 }
 
-void MMeshDetailMap::ReplaceVertex(Face* pFace, Vertex* pFrom, Vertex* pTo)
+void MMultiLevelMesh::ReplaceVertex(Face* pFace, Vertex* pFrom, Vertex* pTo)
 {
 	//Remove vertex from face
 	for (unsigned int i = 0; i < 3; ++i)
@@ -184,10 +185,10 @@ void MMeshDetailMap::ReplaceVertex(Face* pFace, Vertex* pFrom, Vertex* pTo)
 	}
 
 	//Remove face from vertex
-	EraseFirst(pFrom->vFaces, pFace);
+	ERASE_FIRST_VECTOR(pFrom->vFaces, pFace);
 
 	//Add face to vertex
-	UnionPushBack(pTo->vFaces, pFace);
+	UNION_PUSH_BACK_VECTOR(pTo->vFaces, pFace);
 
 	for (unsigned int i = 0; i < 3; ++i)
 	{
@@ -203,23 +204,23 @@ void MMeshDetailMap::ReplaceVertex(Face* pFace, Vertex* pFrom, Vertex* pTo)
 	ComputeNormal(pFace);
 }
 
-void MMeshDetailMap::UpdateNeighbor(Vertex* pVtx1, Vertex* pVtx2)
+void MMultiLevelMesh::UpdateNeighbor(Vertex* pVtx1, Vertex* pVtx2)
 {
 	for (Face* pFace : pVtx1->vFaces)
 	{
 		if (HasVertex(pFace, pVtx2))
 		{
-			UnionPushBack(pVtx1->vNeighbor, pVtx2);
-			UnionPushBack(pVtx2->vNeighbor, pVtx1);
+			UNION_PUSH_BACK_VECTOR(pVtx1->vNeighbor, pVtx2);
+			UNION_PUSH_BACK_VECTOR(pVtx2->vNeighbor, pVtx1);
 			return;
 		}
 	}
 
-	EraseFirst(pVtx1->vNeighbor, pVtx2);
-	EraseFirst(pVtx2->vNeighbor, pVtx1);
+	ERASE_FIRST_VECTOR(pVtx1->vNeighbor, pVtx2);
+	ERASE_FIRST_VECTOR(pVtx2->vNeighbor, pVtx1);
 }
 
-void MMeshDetailMap::ComputeNormal(Face* pFace)
+void MMultiLevelMesh::ComputeNormal(Face* pFace)
 {
 	Vector3& v0 = pFace->vIndices[0]->pos;
 	Vector3& v1 = pFace->vIndices[1]->pos;
@@ -229,7 +230,7 @@ void MMeshDetailMap::ComputeNormal(Face* pFace)
 	pFace->v3Normal.Normalize();
 }
 
-float MMeshDetailMap::GetCollapseCost(Vertex* pFrom, Vertex* pTo)
+float MMultiLevelMesh::GetCollapseCost(Vertex* pFrom, Vertex* pTo)
 {
 	float edgelength = (pFrom->pos - pTo->pos).Length();
 	float curvature = 0;
@@ -260,7 +261,7 @@ float MMeshDetailMap::GetCollapseCost(Vertex* pFrom, Vertex* pTo)
 	return edgelength * curvature;
 }
 
-void MMeshDetailMap::UpdateCollapse(Vertex* pVertex)
+void MMultiLevelMesh::UpdateCollapse(Vertex* pVertex)
 {
 	if (pVertex->vNeighbor.empty())
 	{
@@ -281,7 +282,7 @@ void MMeshDetailMap::UpdateCollapse(Vertex* pVertex)
 	}
 }
 
-void MMeshDetailMap::Collapse(Vertex* pFrom, Vertex* pTo)
+void MMultiLevelMesh::Collapse(Vertex* pFrom, Vertex* pTo)
 {
 	std::vector<Vertex*> tmp = pFrom->vNeighbor;
 
@@ -307,7 +308,7 @@ void MMeshDetailMap::Collapse(Vertex* pFrom, Vertex* pTo)
 	}
 }
 
-MMeshDetailMap::Vertex* MMeshDetailMap::GetMinCollapseCostVertex(std::vector<Vertex*>& vVertices)
+MMultiLevelMesh::Vertex* MMultiLevelMesh::GetMinCollapseCostVertex(std::vector<Vertex*>& vVertices)
 {
 	Vertex* pMinVertex = vVertices[0];
 	for (Vertex* pVertex : vVertices)

@@ -5,14 +5,14 @@
 #include "MModelResource.h"
 #include "MResourceManager.h"
 #include "MVertex.h"
-#include "MModelMeshData.h"
+#include "MModelMeshStruct.h"
 
 #include "MIDevice.h"
 #include "MEngine.h"
 
 #include "MMaterial.h"
-#include "MMaterialResource.h"
-#include "MTextureResource.h"
+#include "Material/MMaterialResource.h"
+#include "Texture/MTextureResource.h"
 
 #include "MBounds.h"
 #include "MSkeleton.h"
@@ -49,7 +49,7 @@ MModelResource::~MModelResource()
 		m_pSkeleton = nullptr;
 	}
 
-	for (MModelMeshData* pMesh : m_vMeshes)
+	for (MModelMeshStruct* pMesh : m_vMeshes)
 	{
 		pMesh->m_pMesh->DestroyBuffer(GetEngine()->GetDevice());
 		delete pMesh->m_pMesh;
@@ -63,7 +63,7 @@ MModelResource::~MModelResource()
 
 bool MModelResource::Load(const MString& strResourcePath)
 {
-	for (MModelMeshData* pMesh : m_vMeshes)
+	for (MModelMeshStruct* pMesh : m_vMeshes)
 		delete pMesh;
 	m_vMeshes.clear();
 
@@ -116,13 +116,15 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vect
 
 			MBoundsOBB* pObb = new MBoundsOBB();
 			pObb->SetPoints((const MByte*)pMMesh->GetVertices(), pMMesh->GetVerticesLength(), 0, pMMesh->GetVertexStructSize());
-			
 
-			MModelMeshData* pMeshData = new MModelMeshData();
+			MBoundsSphere* pSphere = new MBoundsSphere(*pObb);
+
+			MModelMeshStruct* pMeshData = new MModelMeshStruct();
 			pMeshData->m_pMesh = pMMesh;
-			pMeshData->m_eVertexType = MModelMeshData::Skeleton;
+			pMeshData->m_eVertexType = MModelMeshStruct::Skeleton;
 			pMeshData->m_matRotationMatrix = matRotation;
 			pMeshData->m_pBoundsOBB = pObb;
+			pMeshData->m_pBoundsSphere = pSphere;
 
 			m_vMeshes.push_back(pMeshData);
 		}
@@ -136,11 +138,14 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vect
 			MBoundsOBB* pObb = new MBoundsOBB();
 			pObb->SetPoints((const MByte*)pMMesh->GetVertices(), pMMesh->GetVerticesLength(), 0, pMMesh->GetVertexStructSize());
 
-			MModelMeshData* pMeshData = new MModelMeshData();
+			MBoundsSphere* pSphere = new MBoundsSphere(*pObb);
+
+			MModelMeshStruct* pMeshData = new MModelMeshStruct();
 			pMeshData->m_pMesh = pMMesh;
-			pMeshData->m_eVertexType = MModelMeshData::Normal;
+			pMeshData->m_eVertexType = MModelMeshStruct::Normal;
 			pMeshData->m_matRotationMatrix = matRotation;
 			pMeshData->m_pBoundsOBB = pObb;
+			pMeshData->m_pBoundsSphere = pSphere;
 
 			m_vMeshes.push_back(pMeshData);
 		}
@@ -436,13 +441,13 @@ void MModelResource::ProcessMaterial(const aiScene* pScene, std::vector<unsigned
 
 	for (unsigned int i = 0; i < m_vMeshes.size(); ++i)
 	{
-		MModelMeshData* pMeshData = m_vMeshes[i];
+		MModelMeshStruct* pMeshData = m_vMeshes[i];
 		MMaterial* pMaterial = m_pEngine->GetObjectManager()->CreateObject<MMaterial>();
 		pMeshData->m_pMaterial = pMaterial;
 
-		if (pMeshData->GetMeshVertexType() == MModelMeshData::Normal)
+		if (pMeshData->GetMeshVertexType() == MModelMeshStruct::Normal)
 			pMeshData->m_pMaterial->Load(pStaticMeshMaterial);
-		else if(pMeshData->GetMeshVertexType() == MModelMeshData::Skeleton)
+		else if(pMeshData->GetMeshVertexType() == MModelMeshStruct::Skeleton)
 			pMeshData->m_pMaterial->Load(pSkinnedMeshMaterial);
 
 		unsigned int unMaterialIndex = vMaterialIndices[i];

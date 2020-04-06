@@ -28,9 +28,6 @@
     <Filter Include="Utility\Timer">
       <UniqueIdentifier>{b1f1df1d-5d3e-49da-a014-ffdde85f37f0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Scene">
-      <UniqueIdentifier>{7c8358e8-682e-4988-b275-80ed5e70e647}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ResourceLoader">
       <UniqueIdentifier>{43de9fc2-30d7-4f25-bcf6-262a1b532422}</UniqueIdentifier>
     </Filter>
@@ -55,12 +52,6 @@
     <Filter Include="Core\Renderer\DirectX11">
       <UniqueIdentifier>{0964fd1a-5c4b-40b1-a3e0-813c467d273b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Scene\Light">
-      <UniqueIdentifier>{9dcf4d1f-a31f-447f-a127-4f1eb1a113d2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\Organizer">
-      <UniqueIdentifier>{b4cfd318-6f5c-411e-a670-47ab5b74580a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Utility\Json">
       <UniqueIdentifier>{fd6a0b8d-981a-4fa2-8113-4e15398be760}</UniqueIdentifier>
     </Filter>
@@ -70,14 +61,26 @@
     <Filter Include="Utility\Type">
       <UniqueIdentifier>{e08e5bb9-81a9-47bc-86cc-96a1a131e038}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Scene\Model">
-      <UniqueIdentifier>{e9d638bd-a4d1-4b01-9e95-548d4ac08c9f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Core\Animation">
       <UniqueIdentifier>{5a652039-0639-4502-90e5-62f17aafea2a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Core\RefCounter">
       <UniqueIdentifier>{19731f6b-b282-4cee-81d4-f8e02a069348}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Organizer">
+      <UniqueIdentifier>{146e23af-89a9-4708-a04d-3077677cc39f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Organizer\System">
+      <UniqueIdentifier>{bc9b7cc4-783b-496a-a3d2-c06f9c19825e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Organizer\Node">
+      <UniqueIdentifier>{43643836-230b-433f-bf75-2642d05af951}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Organizer\Node\Light">
+      <UniqueIdentifier>{30cc7896-292c-4b77-935c-0fde5911ed4e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Organizer\Node\Model">
+      <UniqueIdentifier>{036880c0-7683-4d55-945c-7f180909f727}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -117,12 +120,6 @@
     <ClInclude Include="../../Core\MObject.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="../../Scene\MNode.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Scene\M3DNode.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\ResourceLoader\MResource.h">
       <Filter>ResourceLoader</Filter>
     </ClInclude>
@@ -140,9 +137,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Core\MMaterial.h">
       <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Scene\MCamera.h">
-      <Filter>Scene</Filter>
     </ClInclude>
     <ClInclude Include="..\..\ResourceLoader\Texture\MTextureResource.h">
       <Filter>ResourceLoader\Texture</Filter>
@@ -174,18 +168,6 @@
     <ClInclude Include="..\..\Core\Renderer\MTexture.h">
       <Filter>Core\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Scene\Light\MILight.h">
-      <Filter>Scene\Light</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Scene\Light\MPointLight.h">
-      <Filter>Scene\Light</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Scene\Light\MSpotLight.h">
-      <Filter>Scene\Light</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Scene\Light\MDirectionalLight.h">
-      <Filter>Scene\Light</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Core\Renderer\MIDevice.h">
       <Filter>Core\Renderer</Filter>
     </ClInclude>
@@ -213,23 +195,14 @@
     <ClInclude Include="..\..\Core\Painter\MPainter.h">
       <Filter>Core\Painter</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Utility\MColor.h">
-      <Filter>Utility</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Utility\Type\MColor.h">
       <Filter>Utility\Type</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Utility\Type\MType.h">
       <Filter>Utility\Type</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Core\Organizer\MTransformCoord.h">
-      <Filter>Core\Organizer</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Core\MBounds.h">
       <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Scene\Model\MModelInstance.h">
-      <Filter>Scene\Model</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\MSkeleton.h">
       <Filter>Core</Filter>
@@ -246,26 +219,11 @@
     <ClInclude Include="..\..\Utility\MMath.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Scene\Model\MStaticMeshInstance.h">
-      <Filter>Scene\Model</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Scene\Model\MIMeshInstance.h">
-      <Filter>Scene\Model</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Scene\Model\MSkinnedMeshInstance.h">
-      <Filter>Scene\Model</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Core\RefCounter\MRefCounter.h">
       <Filter>Core\RefCounter</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Core\Organizer\MScene.h">
-      <Filter>Core\Organizer</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Utility\MTypedClass.h">
       <Filter>Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Scene\MInputNode.h">
-      <Filter>Scene</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Renderer\MIRenderTarget.h">
       <Filter>Core\Renderer</Filter>
@@ -279,20 +237,65 @@
     <ClInclude Include="..\..\Core\MViewport.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Core\Organizer\MShadowTextureRenderTarget.h">
-      <Filter>Core\Organizer</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Utility\MRenderStatistics.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ResourceLoader\Model\MModelMeshData.h">
+    <ClInclude Include="..\..\ResourceLoader\Model\MMultiLevelMesh.h">
       <Filter>ResourceLoader\Model</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ResourceLoader\Model\MMeshDetailMap.h">
+    <ClInclude Include="..\..\ResourceLoader\Model\MModelMeshStruct.h">
       <Filter>ResourceLoader\Model</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Scene\Model\MIModelMeshInstance.h">
-      <Filter>Scene\Model</Filter>
+    <ClInclude Include="..\..\Organizer\MScene.h">
+      <Filter>Organizer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Organizer\MShadowTextureRenderTarget.h">
+      <Filter>Organizer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Organizer\MTransformCoord.h">
+      <Filter>Organizer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Organizer\System\MISystem.h">
+      <Filter>Organizer\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Organizer\Node\M3DNode.h">
+      <Filter>Organizer\Node</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Organizer\Node\MCamera.h">
+      <Filter>Organizer\Node</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Organizer\Node\MInputNode.h">
+      <Filter>Organizer\Node</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Organizer\Node\MNode.h">
+      <Filter>Organizer\Node</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Organizer\Node\Light\MILight.h">
+      <Filter>Organizer\Node\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Organizer\Node\Light\MPointLight.h">
+      <Filter>Organizer\Node\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Organizer\Node\Light\MSpotLight.h">
+      <Filter>Organizer\Node\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Organizer\Node\Light\MDirectionalLight.h">
+      <Filter>Organizer\Node\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Organizer\Node\Model\MIModelMeshInstance.h">
+      <Filter>Organizer\Node\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Organizer\Node\Model\MModelInstance.h">
+      <Filter>Organizer\Node\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Organizer\Node\Model\MSkinnedMeshInstance.h">
+      <Filter>Organizer\Node\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Organizer\Node\Model\MStaticMeshInstance.h">
+      <Filter>Organizer\Node\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Organizer\Node\Model\MIMeshInstance.h">
+      <Filter>Organizer\Node\Model</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -320,12 +323,6 @@
     <ClCompile Include="../../Core\MObject.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="../../Scene\MNode.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Scene\M3DNode.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ResourceLoader\MResource.cpp">
       <Filter>ResourceLoader</Filter>
     </ClCompile>
@@ -343,9 +340,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\MMaterial.cpp">
       <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Scene\MCamera.cpp">
-      <Filter>Scene</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ResourceLoader\Texture\MTextureResource.cpp">
       <Filter>ResourceLoader\Texture</Filter>
@@ -373,18 +367,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\MTexture.cpp">
       <Filter>Core\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Scene\Light\MILight.cpp">
-      <Filter>Scene\Light</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Scene\Light\MPointLight.cpp">
-      <Filter>Scene\Light</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Scene\Light\MSpotLight.cpp">
-      <Filter>Scene\Light</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Scene\Light\MDirectionalLight.cpp">
-      <Filter>Scene\Light</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\MIDevice.cpp">
       <Filter>Core\Renderer</Filter>
@@ -416,14 +398,8 @@
     <ClCompile Include="..\..\Utility\Type\MColor.cpp">
       <Filter>Utility\Type</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Core\Organizer\MTransformCoord.cpp">
-      <Filter>Core\Organizer</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Core\MBounds.cpp">
       <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Scene\Model\MModelInstance.cpp">
-      <Filter>Scene\Model</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Core\MSkeleton.cpp">
       <Filter>Core</Filter>
@@ -440,26 +416,11 @@
     <ClCompile Include="..\..\Utility\MMath.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Scene\Model\MStaticMeshInstance.cpp">
-      <Filter>Scene\Model</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Scene\Model\MIMeshInstance.cpp">
-      <Filter>Scene\Model</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Scene\Model\MSkinnedMeshInstance.cpp">
-      <Filter>Scene\Model</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Core\RefCounter\MRefCounter.cpp">
       <Filter>Core\RefCounter</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Core\Organizer\MScene.cpp">
-      <Filter>Core\Organizer</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Utility\MTypedClass.cpp">
       <Filter>Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Scene\MInputNode.cpp">
-      <Filter>Scene</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\MIRenderTarget.cpp">
       <Filter>Core\Renderer</Filter>
@@ -473,20 +434,65 @@
     <ClCompile Include="..\..\Core\MViewport.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Core\Organizer\MShadowTextureRenderTarget.cpp">
-      <Filter>Core\Organizer</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Utility\MRenderStatistics.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ResourceLoader\Model\MModelMeshData.cpp">
+    <ClCompile Include="..\..\ResourceLoader\Model\MMultiLevelMesh.cpp">
       <Filter>ResourceLoader\Model</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ResourceLoader\Model\MMeshDetailMap.cpp">
+    <ClCompile Include="..\..\ResourceLoader\Model\MModelMeshStruct.cpp">
       <Filter>ResourceLoader\Model</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Scene\Model\MIModelMeshInstance.cpp">
-      <Filter>Scene\Model</Filter>
+    <ClCompile Include="..\..\Organizer\MScene.cpp">
+      <Filter>Organizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\MShadowTextureRenderTarget.cpp">
+      <Filter>Organizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\MTransformCoord.cpp">
+      <Filter>Organizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\System\MISystem.cpp">
+      <Filter>Organizer\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\Node\M3DNode.cpp">
+      <Filter>Organizer\Node</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\Node\MCamera.cpp">
+      <Filter>Organizer\Node</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\Node\MInputNode.cpp">
+      <Filter>Organizer\Node</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\Node\MNode.cpp">
+      <Filter>Organizer\Node</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\Node\Light\MPointLight.cpp">
+      <Filter>Organizer\Node\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\Node\Light\MSpotLight.cpp">
+      <Filter>Organizer\Node\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\Node\Light\MDirectionalLight.cpp">
+      <Filter>Organizer\Node\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\Node\Light\MILight.cpp">
+      <Filter>Organizer\Node\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\Node\Model\MModelInstance.cpp">
+      <Filter>Organizer\Node\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\Node\Model\MSkinnedMeshInstance.cpp">
+      <Filter>Organizer\Node\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\Node\Model\MStaticMeshInstance.cpp">
+      <Filter>Organizer\Node\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\Node\Model\MIMeshInstance.cpp">
+      <Filter>Organizer\Node\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\Node\Model\MIModelMeshInstance.cpp">
+      <Filter>Organizer\Node\Model</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

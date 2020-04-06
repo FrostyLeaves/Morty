@@ -1,5 +1,5 @@
 ﻿/**
- * @File         MModelDetailLevel
+ * @File         MMultiLevelMesh
  * 
  * @Created      2020-03-19 21:32:09
  *
@@ -8,15 +8,13 @@
  * https://github.com/melax/sandbox
 **/
 
-#ifndef _M_MODELDETAILLEVEL_H_
-#define _M_MODELLEVELDETAIL_H_
+#ifndef _M_MMULTILEVELMESH_H_
+#define _M_MMULTILEVELMESH_H_
 #include "MMesh.h"
 #include "MResource.h"
 #include <vector>
 
-class MModelResource;
-
-class MORTY_CLASS MMeshDetailMap
+class MORTY_CLASS MMultiLevelMesh
 {
 public:
 	struct Face;
@@ -38,15 +36,15 @@ public:
 	};
 
 public:
-	MMeshDetailMap();
-	virtual ~MMeshDetailMap() {}
+	MMultiLevelMesh();
+	virtual ~MMultiLevelMesh() {}
 
 	void BindMesh(const MIMesh* pMesh);
-
-	MIMesh* CreateLevel(const unsigned int& unIndexNumber);
 	MIMesh* GetLevel(unsigned int unLevel);
 
 protected:
+
+	MIMesh* CreateLevel(const unsigned int& unIndexNumber);
 
 	void Unuse(Vertex* pVertex);
 	void Unuse(Face* pFace);
@@ -65,27 +63,6 @@ protected:
 	Vertex* GetMinCollapseCostVertex(std::vector<Vertex*>& vVertices);
 
 public:
-
-template<typename T>
-void UnionPushBack(std::vector<T>& vector, const T& value)
-{
-	for (T& v : vector)
-		if (v == value) return;
-	vector.push_back(value);
-}
-
-template<typename T>
-void EraseFirst(std::vector<T>& vector, const T& value)
-{
-	for (std::vector<T>::iterator iter = vector.begin(); iter != vector.end(); ++iter)
-	{
-		if (*iter == value)
-		{
-			vector.erase(iter);
-			return;
-		}
-	}
-}
 
 	std::vector<unsigned int> m_vIndexToMap;
 	std::vector<int> m_vMap;

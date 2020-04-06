@@ -5,7 +5,7 @@
 #include "Vector.h"
 #include "MVariant.h"
 #include "MTransform.h"
-#include "MColor.h"
+#include "Type/MColor.h"
 #include "MResourceManager.h"
 
 #include <map>

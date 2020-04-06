@@ -11,7 +11,7 @@
 #include "MGlobal.h"
 #include "MObject.h"
 #include "Vector.h"
-#include "MColor.h"
+#include "Type/MColor.h"
 
 class MNode;
 class M3DNode;

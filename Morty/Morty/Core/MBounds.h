@@ -75,5 +75,18 @@ public:
 	Matrix3 m_matEigVectors;
 };
 
+class MORTY_CLASS MBoundsSphere
+{
+public:
+	MBoundsSphere();
+	MBoundsSphere(const Vector3* vPoints, const unsigned int& unArrayLength);
+	MBoundsSphere(const MBoundsAABB& aabb);
+	MBoundsSphere(const MBoundsOBB& obb);
+
+public:
+
+	Vector3 m_v3CenterPoint;
+	float m_fRadius;
+};
 
 #endif

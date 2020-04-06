@@ -10,7 +10,7 @@
 #define _M_MDIRECTIONALLIGHT_H_
 #include "MGlobal.h"
 #include "MILight.h"
-#include "MColor.h"
+#include "Type/MColor.h"
 
 class MORTY_CLASS MDirectionalLight : public MILight
 {

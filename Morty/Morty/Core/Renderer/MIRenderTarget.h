@@ -17,7 +17,7 @@
 #include <DxErr.h>
 #endif
 
-#include "MColor.h"
+#include "Type/MColor.h"
 
 class MIRenderer;
 class MORTY_CLASS MIRenderTarget

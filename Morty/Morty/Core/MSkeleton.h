@@ -79,5 +79,4 @@ private:
 	std::vector<MBone*> m_vAllBones;
 };
 
-
 #endif

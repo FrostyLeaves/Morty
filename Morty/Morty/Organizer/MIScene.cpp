@@ -3,32 +3,30 @@
 #include "MCamera.h"
 #include "MSkyBox.h"
 
-#include "MDirectionalLight.h"
-#include "MPointLight.h"
-#include "MSpotLight.h"
+#include "Light/MDirectionalLight.h"
+#include "Light/MPointLight.h"
+#include "Light/MSpotLight.h"
 
-#include "MStaticMeshInstance.h"
+#include "Model/MStaticMeshInstance.h"
 #include "MVertex.h"
 #include "MMaterial.h"
 #include "MIRenderer.h"
 #include "MIRenderView.h"
 #include "MViewport.h"
 #include "MTransformCoord.h"
-#include "MModelInstance.h"
+#include "Model/MModelInstance.h"
 #include "MBounds.h"
-#include "MModelResource.h"
+#include "Model/MModelResource.h"
 #include "MPainter.h"
 #include "MEngine.h"
 #include "MResourceManager.h"
-#include "MMaterialResource.h"
+#include "Material/MMaterialResource.h"
 #include "MInputNode.h"
 #include "MTexture.h"
 #include "MTextureRenderTarget.h"
-#include "MModelInstance.h"
 
-#include "MModelInstance.h"
 #include "MSkeleton.h"
-#include "MTextureResource.h"
+#include "Texture/MTextureResource.h"
 
 #if MORTY_RENDER_DATA_STATISTICS
 #include "MRenderStatistics.h"
@@ -231,7 +229,6 @@ void MScene::FindActivePointLights(const Vector3& v3WorldPosition, std::vector<M
 		std::sort(m_vPointLight.begin(), m_vPointLight.end(), compareFunc);
 		std::copy(m_vPointLight.begin(), m_vPointLight.begin() + vPointLights.size(), vPointLights.begin());
 	}
-	
 }
 
 void MScene::FindActiveSpotLights(const Vector3& v3WorldPosition, std::vector<MSpotLight*>& vSpotLights)
@@ -248,11 +245,6 @@ void MScene::OnNodeEnter(MNode* pNode)
 {
 	if (MIModelMeshInstance* pMeshIns = pNode->DynamicCast<MIModelMeshInstance>())
 		RecordMeshInstance(pMeshIns);
-MSCENE_ON_NODE_ENTER(ModelInstance)
-MSCENE_ON_NODE_ENTER(DirectionalLight)
-MSCENE_ON_NODE_ENTER(PointLight)
-MSCENE_ON_NODE_ENTER(SpotLight)
-
 	else if (MCamera* pCamera = pNode->DynamicCast<MCamera>())
 	{
 		for (MViewport* pViewport : m_vViewports)
@@ -261,19 +253,18 @@ MSCENE_ON_NODE_ENTER(SpotLight)
 				pViewport->SetCamera(pCamera);
 		}
 	}
-	else if (MInputNode* pInputNode = pNode->DynamicCast<MInputNode>())
-		RecordInputNode(pInputNode);
+
+MSCENE_ON_NODE_ENTER(ModelInstance)
+MSCENE_ON_NODE_ENTER(DirectionalLight)
+MSCENE_ON_NODE_ENTER(PointLight)
+MSCENE_ON_NODE_ENTER(SpotLight)
+MSCENE_ON_NODE_ENTER(InputNode)
 }
 
 void MScene::OnNodeExit(MNode* pNode)
 {
 	if (MIModelMeshInstance* pMeshIns = pNode->DynamicCast<MIModelMeshInstance>())
 		CancelRecordMeshInstance(pMeshIns);
-MSCENE_ON_NODE_EXIT(ModelInstance)
-MSCENE_ON_NODE_EXIT(DirectionalLight)
-MSCENE_ON_NODE_EXIT(PointLight)
-MSCENE_ON_NODE_ENTER(SpotLight)
-
 	else if (MCamera* pCamera = pNode->DynamicCast<MCamera>())
 	{
 		for (MViewport* pViewport : m_vViewports)
@@ -282,8 +273,12 @@ MSCENE_ON_NODE_ENTER(SpotLight)
 				pViewport->SetCamera(nullptr);
 		}
 	}
-	else if (MInputNode* pInputNode = pNode->DynamicCast<MInputNode>())
-		CancelRecordInputNode(pInputNode);
+
+MSCENE_ON_NODE_EXIT(ModelInstance)
+MSCENE_ON_NODE_EXIT(DirectionalLight)
+MSCENE_ON_NODE_EXIT(PointLight)
+MSCENE_ON_NODE_EXIT(SpotLight)
+MSCENE_ON_NODE_EXIT(InputNode)
 }
 
 void MScene::RecordMeshInstance(MIModelMeshInstance* pMeshInstance)
@@ -335,29 +330,11 @@ void MScene::CancelRecordMeshInstance(MIModelMeshInstance* pMeshInstance)
 		pGroup->vMeshIns.erase(it);
 
 	if (pGroup->vMeshIns.empty())
+	{
 		m_vMatMeshInsGroup.erase(iter);
-}
-
-void MScene::RecordInputNode(MInputNode* pInputNode)
-{
-	std::vector<MInputNode*>::iterator iter = std::lower_bound(m_vInputNode.begin(), m_vInputNode.end(), pInputNode, [](MInputNode* a, MInputNode* b) {return a->GetObjectID() < b->GetObjectID(); });
-	if (iter == m_vInputNode.end())
-	{
-		m_vInputNode.push_back(pInputNode);
+		delete pGroup;
+		pGroup = nullptr;
 	}
-	else
-	{
-		m_vInputNode.insert(iter, pInputNode);
-	}
-}
-
-void MScene::CancelRecordInputNode(MInputNode* pInputNode)
-{
-	std::vector<MInputNode*>::iterator iter = std::lower_bound(m_vInputNode.begin(), m_vInputNode.end(), pInputNode, [](MInputNode* a, MInputNode* b) {return a->GetObjectID() < b->GetObjectID(); });
-	if (iter == m_vInputNode.end())
-		return;
-
-	m_vInputNode.erase(iter);
 }
 
 void MScene::GenerateShadowMap(MIRenderer* pRenderer, MViewport* pViewport)
@@ -724,6 +701,14 @@ void MScene::Render(MIRenderer* pRenderer, MViewport* pViewport)
 	DrawMeshInstance(pRenderer, pViewport);
 	DrawModelInstance(pRenderer, pViewport);
 	//DrawCameraFrustum(pRenderer, pViewport, pViewport->GetCamera());
+}
+
+void MScene::Tick(const float& fDelta)
+{
+	if (m_pRootNode)
+	{
+		m_pRootNode->Tick(fDelta);
+	}
 }
 
 void MScene::Input(MInputEvent* pEvent, MViewport* pViewport)

@@ -1,5 +1,5 @@
 ﻿#include "MMaterialResource.h"
-#include "MShaderResource.h"
+#include "Shader/MShaderResource.h"
 #include "MEngine.h"
 #include "MShader.h"
 #include "MMaterial.h"

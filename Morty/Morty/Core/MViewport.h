@@ -98,7 +98,7 @@ private:
 	Vector2 m_v2Size;
 
 	Matrix4 m_m4CameraInvProj;
-	bool m_bCameraInvProjMatrixUpdated;
+	bool m_bCameraInvProjMatrixLocked;
 };
 
 

@@ -5,35 +5,35 @@
 
 #include "stdafx.h"
 #include "MEngine.h"
-#include "MColor.h"
+#include "Type/MColor.h"
 
 #include "MVertex.h"
 #include "MMesh.h"
 
 #include "MObject.h"
 #include "MMaterial.h"
-#include "MModelInstance.h"
+#include "Model/MModelInstance.h"
+#include "Model/MIMeshInstance.h"
+#include "Model/MModelResource.h"
+#include "Model/MModelMeshStruct.h"
 #include "MResourceManager.h"
 #include "MVariant.h"
-#include "MMaterialResource.h"
+#include "Material/MMaterialResource.h"
+#include "Texture/MTextureResource.h"
 #include "MTexture.h"
-#include "MTextureResource.h"
 #include "MInputNode.h"
 
 #include "MShader.h"
 #include "MVertex.h"
-#include "MIMeshInstance.h"
 #include "MInputManager.h"
 #include "MLogManager.h"
 #include "MIRenderView.h"
 #include "MCamera.h"
 #include "MScene.h"
 #include "MViewport.h"
-#include "MPointLight.h"
-#include "MSpotLight.h"
-#include "MDirectionalLight.h"
-#include "MModelResource.h"
-#include "MModelMeshData.h"
+#include "Light/MPointLight.h"
+#include "Light/MSpotLight.h"
+#include "Light/MDirectionalLight.h"
 #include "MSkeletalAnimation.h"
 #include "MTypedClass.h"
 
@@ -44,7 +44,7 @@
 
 #include "MainEditor.h"
 
-#include "MShaderResource.h"
+#include "Shader/MShaderResource.h"
 
 class MyCamera : public MCamera
 {
@@ -245,10 +245,6 @@ int main(int argc, char* argv[])
 // 	pViewport->SetScene(pScene);
 //	engine.AddView(pView);
 
-
-	engine.SetRootNode(pRootNode);
-
-	
 	while (engine.MainLoop());
 
 	engine.Release();

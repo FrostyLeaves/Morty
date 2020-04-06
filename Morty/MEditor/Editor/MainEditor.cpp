@@ -11,9 +11,9 @@
 #include "MViewport.h"
 #include "MResourceManager.h"
 #include "MObject.h"
-#include "MMaterialResource.h"
+#include "Material/MMaterialResource.h"
 #include "MMaterial.h"
-#include "MIMeshInstance.h"
+#include "Model/MIMeshInstance.h"
 #include "MMesh.h"
 #include "MScene.h"
 #include "MCamera.h"
@@ -50,7 +50,6 @@ void MainEditor::SetEditorNode(MNode* pNode)
 
 bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 {
-
 	if (!MWindowsRenderView::Initialize(pEngine, svWindowName))
 		return false;
 
@@ -71,9 +70,8 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	m_pScene = m_pEngine->GetObjectManager()->CreateObject<MScene>();
 	MViewport* pViewport = m_pEngine->GetObjectManager()->CreateObject<MViewport>();
 	AppendViewport(pViewport);
-
 	pViewport->SetScene(m_pScene);
-
+	m_pEngine->SetScene(m_pScene);
 }
 
 void MainEditor::Release()

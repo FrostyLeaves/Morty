@@ -11,7 +11,7 @@
 #include "MGlobal.h"
 #include "MObject.h"
 #include "Vector.h"
-#include "MType.h"
+#include "Type/MType.h"
 #include "MMesh.h"
 #include <vector>
 

@@ -10,7 +10,7 @@
 #include "MPainter.h"
 #include "MMaterial.h"
 #include "MResourceManager.h"
-#include "MMaterialResource.h"
+#include "Material/MMaterialResource.h"
 #include "MViewport.h"
 
 #include "MInputManager.h"
@@ -64,6 +64,10 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 	MPainter2DLine lines[3];
 	MPainter2DRect rects[3];
 	GetTranslationShapes(lines, rects, vVaild, vOrder, pViewport);
+
+
+
+
 
 	if (pMouseEvent->GetButton() == MMouseInputEvent::LeftButton)
 	{

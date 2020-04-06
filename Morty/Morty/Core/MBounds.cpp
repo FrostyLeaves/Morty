@@ -276,3 +276,27 @@ bool MBoundsAABB::IsIntersect(const MBoundsAABB& aabb) const
 
 	return bXIntersect && bYIntersect && bZIntersect;
 }
+
+MBoundsSphere::MBoundsSphere()
+	: m_v3CenterPoint()
+	, m_fRadius(0.0f)
+{
+
+}
+
+MBoundsSphere::MBoundsSphere(const Vector3* vPoints, const unsigned int& unArrayLength)
+{
+	// TODO
+}
+
+MBoundsSphere::MBoundsSphere(const MBoundsAABB& aabb)
+{
+	m_v3CenterPoint = aabb.m_v3CenterPoint;
+	m_fRadius = aabb.m_v3HalfLength.Length();
+}
+
+MBoundsSphere::MBoundsSphere(const MBoundsOBB& obb)
+{
+	m_v3CenterPoint = obb.ConvertFromOBB(obb.m_v3CenterPoint);
+	m_fRadius = obb.m_v3HalfLength.Length();
+}

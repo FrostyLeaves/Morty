@@ -2,7 +2,7 @@
 #define _PROPERTY_MDIRECTIONALLIGHT_H_
 
 #include "PropertyBase.h"
-#include "MDirectionalLight.h"
+#include "Light/MDirectionalLight.h"
 
 
 

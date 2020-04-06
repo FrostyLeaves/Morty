@@ -1,21 +1,23 @@
 ﻿#include "MSkyBox.h"
 
-#include "MTextureCubeResource.h"
+#include "Texture/MTextureCubeResource.h"
 
 #include "MEngine.h"
 #include "MResourceManager.h"
-#include "MMaterialResource.h"
+#include "Material/MMaterialResource.h"
 #include "MMaterial.h"
-#include "MTextureResource.h"
-#include "MStaticMeshInstance.h"
+#include "Texture/MTextureResource.h"
+#include "Model/MModelMeshStruct.h"
 
-#include "MModelMeshData.h"
+#include "Node/Model/MStaticMeshInstance.h"
+
 
 MTypeIdentifierImplement(MSkyBox, MObject)
 
 MSkyBox::MSkyBox()
 	: MObject()
 	, m_pBoxMesh(nullptr)
+	, m_pMeshData(nullptr)
 	, m_pTextureCube(nullptr)
 	, m_pTextureCubeResource(nullptr)
 {
@@ -110,9 +112,9 @@ void MSkyBox::OnCreated()
 	for (int i = 0; i < m_pBoxMesh->GetIndicesLength(); ++i)
 		m_pBoxMesh->GetIndices()[i] = indexs[i];
 
-	MModelMeshData* pMeshData = new MModelMeshData();
-	pMeshData->SetMesh(m_pBoxMesh);
-	m_pMeshInstance->SetMeshData(pMeshData);
+	m_pMeshData = new MModelMeshStruct();
+	m_pMeshData->SetMesh(m_pBoxMesh);
+	m_pMeshInstance->SetMeshData(m_pMeshData);
 
 	m_pMeshInstance->SetMaterial(pMaterial);
 }
