@@ -47,7 +47,7 @@ public:
 			return nullptr;
 		}
 
-		pResource->m_unResourceID = m_pResourceDB->GetNewID();
+		pResource->m_unResourceID = m_ResourceDB.GetNewID();
 		pResource->m_pEngine = m_pEngine;
 
 		pResource->OnCreated();

@@ -57,11 +57,19 @@ protected:
 
 	void GetTranslationShapes(class MPainter2DLine* lines, class MPainter2DRect* rects, bool* vValid, int* vOrder, MViewport* pViewport);
 
+	unsigned int GetAxisIndex(const MECoordHoverType& eType);
+	
+
+	bool GetIntersection(const Vector3& v3Origin, const Vector3& v3Direction, const Vector3& v3PlaneOrigin, const Vector3& v3PlaneNormal);
+
 private:
 
 	static const Vector3 m_vDirection[3];
 	static const MColor m_vColor[3];
-	Vector3 m_vMouseDownDirLength2D[3];
+	Vector3 m_v3NormalizedDirection;
+	Vector3 m_v3TransformOrigin;
+	Vector3 m_v3PlaneNormal;
+
 
 	M3DNode* m_pTargetNode;
 	MECoordHoverType m_eCoordHoverType;

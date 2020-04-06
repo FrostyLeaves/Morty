@@ -12,6 +12,7 @@
 #include "MResourceManager.h"
 #include "Material/MMaterialResource.h"
 #include "MViewport.h"
+#include "MCamera.h"
 
 #include "MInputManager.h"
 
@@ -66,35 +67,50 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 	GetTranslationShapes(lines, rects, vVaild, vOrder, pViewport);
 
 
-
-
-
 	if (pMouseEvent->GetButton() == MMouseInputEvent::LeftButton)
 	{
 		if (pMouseEvent->GetType() == MMouseInputEvent::ButtonDown)
 		{
 			m_eCoordMoveType = m_eCoordHoverType;
 
-			Vector2 pos1, pos2;
-			Vector3 v3Origin = m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition();
+			
+			m_v3TransformOrigin = m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition();
+			const Vector3& v3Origin = m_v3TransformOrigin;
 
-			for (int i : vOrder)
+			switch (m_eCoordMoveType)
 			{
-				if ((int)m_eCoordMoveType & 1 << i)
-				{
-					pViewport->ConvertWorldLineToNormalizedDevice(v3Origin, v3Origin + m_vDirection[i], pos1, pos2);
-					pos1 = (pos1 + Vector2(1.0, 1.0)) * 0.5;
-					pos1.x *= pViewport->GetWidth();
-					pos1.y *= pViewport->GetHeight();
+			case MECoordHoverType::X:
+			case MECoordHoverType::Y:
+			case MECoordHoverType::Z:
+			{
+				unsigned int i = GetAxisIndex(m_eCoordMoveType);
 
-					pos2 = (pos2 + Vector2(1.0, 1.0)) * 0.5;
-					pos2.x *= pViewport->GetWidth();
-					pos2.y *= pViewport->GetHeight();
+				Vector2 pos1, pos2;
+				pViewport->ConvertWorldLineToNormalizedDevice(v3Origin, v3Origin + m_vDirection[i], pos1, pos2);
+				pos1 = (pos1 + Vector2(1.0, 1.0)) * 0.5;
+				pos1.x *= pViewport->GetWidth();
+				pos1.y *= pViewport->GetHeight();
 
-					m_vMouseDownDirLength2D[i] = pos2 - pos1;
-					m_vMouseDownDirLength2D[i].Normalize();
-					m_vMouseDownDirLength2D[i].z = (pos2 - pos1).Length();
-				}
+				pos2 = (pos2 + Vector2(1.0, 1.0)) * 0.5;
+				pos2.x *= pViewport->GetWidth();
+				pos2.y *= pViewport->GetHeight();
+
+				m_v3NormalizedDirection = pos2 - pos1;
+				break;
+			}
+
+			case MECoordHoverType::XY:
+			case MECoordHoverType::XZ:
+			case MECoordHoverType::YZ:
+			{
+
+
+				
+				break;
+			}
+
+			default:
+				break;
 			}
 		}
 		else
@@ -108,22 +124,43 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 
 		Vector3 v3Origin = m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition();
 		
-		for (int i : vOrder)
+		switch (m_eCoordMoveType)
 		{
-			int unMoveAxisType = 1 << i;
-			if ((int)m_eCoordMoveType & unMoveAxisType)
-			{
-				const Vector2& dir = m_vMouseDownDirLength2D[i];
-				float fLength = m_vMouseDownDirLength2D[i].z;
-				
-				float value = addi * dir / 1.0f;
-				Vector3 addiPosition(0, 0, 0);
+		case MECoordHoverType::X:
+		case MECoordHoverType::Y:
+		case MECoordHoverType::Z:
+		{
+			unsigned int i = GetAxisIndex(m_eCoordMoveType);
+			
+			Vector3 addiPosition(0, 0, 0);
 
-				if (fLength < 1.0f) fLength = 1.0f;
-				addiPosition.m[i] = value / fLength;
-				m_pTargetNode->SetPosition(m_pTargetNode->GetPosition() + addiPosition);
-			}
+			float fLength = m_v3NormalizedDirection.Length();
+			if (fLength < 1e-6) fLength = 1.0f;
+
+			addiPosition.m[i] = Vector3(addi, 0.0f) * m_v3NormalizedDirection / (fLength * fLength);
+			m_pTargetNode->SetPosition(m_pTargetNode->GetPosition() + addiPosition);
+
+			break;
 		}
+
+		case MECoordHoverType::XY:
+		case MECoordHoverType::XZ:
+		case MECoordHoverType::YZ:
+		{
+			Vector3 v3CameraPos = pViewport->GetCamera()->GetWorldPosition();
+
+			unsigned int i = GetAxisIndex((MECoordHoverType)((int)MECoordHoverType::XYZ ^ (int)m_eCoordMoveType));
+
+			GetIntersection(v3CameraPos,)
+
+
+			break;
+		}
+
+		default:
+			break;
+		}
+
 	}
 	else	//е§дкаќЭЃ
 	{
@@ -280,4 +317,33 @@ void MTransformCoord3D::GetTranslationShapes(MPainter2DLine* lines, class MPaint
 		{
 			return (v3EndPoint[a].z < v3EndPoint[b].z);
 		});
+}
+
+unsigned int MTransformCoord3D::GetAxisIndex(const MECoordHoverType& eType)
+{
+	switch (eType)
+	{
+	case MECoordHoverType::X:
+		return 0;
+	case MECoordHoverType::Y:
+		return 1;
+	case MECoordHoverType::Z:
+		return 2;
+	default:
+		return 3;
+	}
+}
+
+bool MTransformCoord3D::GetIntersection(const Vector3& v3Origin, const Vector3& v3Direction, const Vector3& v3PlaneOrigin, const Vector3& v3PlaneNormal)
+{
+	Vector3 v3Result;
+
+	float fLength = (v3PlaneNormal * v3PlaneOrigin - v3PlaneNormal * v3Origin) / (v3PlaneNormal * v3Direction);
+
+	if (fLength < 0.0f)
+		return false;
+
+	v3Result = v3Origin + v3Direction * fLength;
+
+	return true;
 }
