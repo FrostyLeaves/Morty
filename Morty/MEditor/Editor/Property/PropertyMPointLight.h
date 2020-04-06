@@ -2,7 +2,7 @@
 #define _PROPERTY_MPOINTLIGHT_H_
 
 #include "PropertyBase.h"
-#include "MPointLight.h"
+#include "Light/MPointLight.h"
 
 class PropertyMPointLight : public PropertyBase
 {

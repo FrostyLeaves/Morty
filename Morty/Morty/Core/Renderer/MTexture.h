@@ -10,7 +10,7 @@
 #define _M_MTEXTURE_H_
 #include "MGlobal.h"
 #include "Vector.h"
-#include "MColor.h"
+#include "Type/MColor.h"
 
 //TODO : Dynamic Update Texture and TextureCube.
 

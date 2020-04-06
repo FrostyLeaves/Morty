@@ -2,8 +2,8 @@
 
 #include "MMaterial.h"
 #include "MResource.h"
-#include "MTextureResource.h"
-#include "MMaterialResource.h"
+#include "Texture/MTextureResource.h"
+#include "Material/MMaterialResource.h"
 #include "MResourceManager.h"
 
 #include "imgui.h"

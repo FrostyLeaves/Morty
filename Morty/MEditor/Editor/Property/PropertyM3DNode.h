@@ -5,7 +5,7 @@
 #include "M3DNode.h"
 
 #include "imgui.h"
-#include "MDirectionalLight.h"
+#include "Light/MDirectionalLight.h"
 #include "MScene.h"
 #include "MShadowTextureRenderTarget.h"
 #include "MTexture.h"

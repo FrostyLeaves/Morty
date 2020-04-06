@@ -57,7 +57,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;MORTY_EXPORTS;__STDC_LIMIT_MACROS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/Eigen;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Type;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/ResourceLoader/Texture;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/RefCounter;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Organizer;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Core/Animation;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/Scene/Light;$(SolutionDir)Morty/Scene/Model</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/Eigen;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/Organizer;$(SolutionDir)Morty/Organizer/System;$(SolutionDir)Morty/Organizer/Node;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/RefCounter;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Core/Animation</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -82,7 +82,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;MORTY_EXPORTS;__STDC_LIMIT_MACROS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/Eigen;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility/Type;$(SolutionDir)Morty/Utility/Timer;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/ResourceLoader/Model;$(SolutionDir)Morty/ResourceLoader/Shader;$(SolutionDir)Morty/ResourceLoader/Material;$(SolutionDir)Morty/ResourceLoader/Texture;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/RefCounter;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Organizer;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Core/Animation;$(SolutionDir)Morty/Scene;$(SolutionDir)Morty/Scene/Light;$(SolutionDir)Morty/Scene/Model</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/Eigen;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/Organizer;$(SolutionDir)Morty/Organizer/System;$(SolutionDir)Morty/Organizer/Node;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/RefCounter;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Core/Animation</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -118,9 +118,6 @@
     <ClInclude Include="..\..\Core\MSkeleton.h" />
     <ClInclude Include="..\..\Core\MSkyBox.h" />
     <ClInclude Include="..\..\Core\MTransform.h" />
-    <ClInclude Include="..\..\Core\Organizer\MScene.h" />
-    <ClInclude Include="..\..\Core\Organizer\MShadowTextureRenderTarget.h" />
-    <ClInclude Include="..\..\Core\Organizer\MTransformCoord.h" />
     <ClInclude Include="..\..\Core\Painter\MPainter.h" />
     <ClInclude Include="..\..\Core\RefCounter\MRefCounter.h" />
     <ClInclude Include="..\..\Core\Renderer\DirectX11\MDirectX11Device.h" />
@@ -137,21 +134,31 @@
     <ClInclude Include="..\..\Core\Renderer\MTexture.h" />
     <ClInclude Include="..\..\Core\Renderer\MVariant.h" />
     <ClInclude Include="..\..\Core\Renderer\MVertex.h" />
+    <ClInclude Include="..\..\Organizer\MScene.h" />
+    <ClInclude Include="..\..\Organizer\MShadowTextureRenderTarget.h" />
+    <ClInclude Include="..\..\Organizer\MTransformCoord.h" />
+    <ClInclude Include="..\..\Organizer\Node\Light\MDirectionalLight.h" />
+    <ClInclude Include="..\..\Organizer\Node\Light\MILight.h" />
+    <ClInclude Include="..\..\Organizer\Node\Light\MPointLight.h" />
+    <ClInclude Include="..\..\Organizer\Node\Light\MSpotLight.h" />
+    <ClInclude Include="..\..\Organizer\Node\M3DNode.h" />
+    <ClInclude Include="..\..\Organizer\Node\MCamera.h" />
+    <ClInclude Include="..\..\Organizer\Node\MInputNode.h" />
+    <ClInclude Include="..\..\Organizer\Node\MNode.h" />
+    <ClInclude Include="..\..\Organizer\Node\Model\MIMeshInstance.h" />
+    <ClInclude Include="..\..\Organizer\Node\Model\MIModelMeshInstance.h" />
+    <ClInclude Include="..\..\Organizer\Node\Model\MModelInstance.h" />
+    <ClInclude Include="..\..\Organizer\Node\Model\MSkinnedMeshInstance.h" />
+    <ClInclude Include="..\..\Organizer\Node\Model\MStaticMeshInstance.h" />
+    <ClInclude Include="..\..\Organizer\System\MISystem.h" />
     <ClInclude Include="..\..\ResourceLoader\Material\MMaterialResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MFileHelper.h" />
-    <ClInclude Include="..\..\ResourceLoader\Model\MMeshDetailMap.h" />
-    <ClInclude Include="..\..\ResourceLoader\Model\MModelMeshData.h" />
+    <ClInclude Include="..\..\ResourceLoader\Model\MMultiLevelMesh.h" />
+    <ClInclude Include="..\..\ResourceLoader\Model\MModelMeshStruct.h" />
     <ClInclude Include="..\..\ResourceLoader\MResourceManager.h" />
     <ClInclude Include="..\..\ResourceLoader\Shader\MShaderResource.h" />
     <ClInclude Include="..\..\ResourceLoader\Texture\MTextureResource.h" />
     <ClInclude Include="..\..\ResourceLoader\Texture\MTextureCubeResource.h" />
-    <ClInclude Include="..\..\Scene\Light\MDirectionalLight.h" />
-    <ClInclude Include="..\..\Scene\Light\MILight.h" />
-    <ClInclude Include="..\..\Scene\Light\MPointLight.h" />
-    <ClInclude Include="..\..\Scene\Light\MSpotLight.h" />
-    <ClInclude Include="..\..\Scene\MCamera.h" />
-    <ClInclude Include="../../Scene\M3DNode.h" />
-    <ClInclude Include="../../Scene\MNode.h" />
     <ClInclude Include="../../stdafx.h" />
     <ClInclude Include="../../targetver.h" />
     <ClInclude Include="../../Utility\MFunction.h" />
@@ -162,14 +169,7 @@
     <ClInclude Include="..\..\ResourceLoader\Model\MModelResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MResourceLoader.h" />
-    <ClInclude Include="..\..\Scene\MInputNode.h" />
-    <ClInclude Include="..\..\Scene\Model\MIModelMeshInstance.h" />
-    <ClInclude Include="..\..\Scene\Model\MSkinnedMeshInstance.h" />
-    <ClInclude Include="..\..\Scene\Model\MIMeshInstance.h" />
-    <ClInclude Include="..\..\Scene\Model\MStaticMeshInstance.h" />
-    <ClInclude Include="..\..\Scene\Model\MModelInstance.h" />
     <ClInclude Include="..\..\Utility\Json\MJson.h" />
-    <ClInclude Include="..\..\Utility\MColor.h" />
     <ClInclude Include="..\..\Utility\MMath.h" />
     <ClInclude Include="..\..\Utility\MRenderStatistics.h" />
     <ClInclude Include="..\..\Utility\MTypedClass.h" />
@@ -199,9 +199,6 @@
     <ClCompile Include="..\..\Core\MSkeleton.cpp" />
     <ClCompile Include="..\..\Core\MSkyBox.cpp" />
     <ClCompile Include="..\..\Core\MTransform.cpp" />
-    <ClCompile Include="..\..\Core\Organizer\MScene.cpp" />
-    <ClCompile Include="..\..\Core\Organizer\MShadowTextureRenderTarget.cpp" />
-    <ClCompile Include="..\..\Core\Organizer\MTransformCoord.cpp" />
     <ClCompile Include="..\..\Core\Painter\MPainter.cpp" />
     <ClCompile Include="..\..\Core\RefCounter\MRefCounter.cpp" />
     <ClCompile Include="..\..\Core\Renderer\DirectX11\MDirectX11Device.cpp" />
@@ -217,21 +214,31 @@
     <ClCompile Include="..\..\Core\Renderer\MShader.cpp" />
     <ClCompile Include="..\..\Core\Renderer\MTexture.cpp" />
     <ClCompile Include="..\..\Core\Renderer\MVariant.cpp" />
+    <ClCompile Include="..\..\Organizer\MScene.cpp" />
+    <ClCompile Include="..\..\Organizer\MShadowTextureRenderTarget.cpp" />
+    <ClCompile Include="..\..\Organizer\MTransformCoord.cpp" />
+    <ClCompile Include="..\..\Organizer\Node\Light\MDirectionalLight.cpp" />
+    <ClCompile Include="..\..\Organizer\Node\Light\MILight.cpp" />
+    <ClCompile Include="..\..\Organizer\Node\Light\MPointLight.cpp" />
+    <ClCompile Include="..\..\Organizer\Node\Light\MSpotLight.cpp" />
+    <ClCompile Include="..\..\Organizer\Node\M3DNode.cpp" />
+    <ClCompile Include="..\..\Organizer\Node\MCamera.cpp" />
+    <ClCompile Include="..\..\Organizer\Node\MInputNode.cpp" />
+    <ClCompile Include="..\..\Organizer\Node\MNode.cpp" />
+    <ClCompile Include="..\..\Organizer\Node\Model\MIMeshInstance.cpp" />
+    <ClCompile Include="..\..\Organizer\Node\Model\MIModelMeshInstance.cpp" />
+    <ClCompile Include="..\..\Organizer\Node\Model\MModelInstance.cpp" />
+    <ClCompile Include="..\..\Organizer\Node\Model\MSkinnedMeshInstance.cpp" />
+    <ClCompile Include="..\..\Organizer\Node\Model\MStaticMeshInstance.cpp" />
+    <ClCompile Include="..\..\Organizer\System\MISystem.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Material\MMaterialResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MFileHelper.cpp" />
-    <ClCompile Include="..\..\ResourceLoader\Model\MMeshDetailMap.cpp" />
-    <ClCompile Include="..\..\ResourceLoader\Model\MModelMeshData.cpp" />
+    <ClCompile Include="..\..\ResourceLoader\Model\MMultiLevelMesh.cpp" />
+    <ClCompile Include="..\..\ResourceLoader\Model\MModelMeshStruct.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MResourceManager.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Shader\MShaderResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Texture\MTextureResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Texture\MTextureCubeResource.cpp" />
-    <ClCompile Include="..\..\Scene\Light\MDirectionalLight.cpp" />
-    <ClCompile Include="..\..\Scene\Light\MILight.cpp" />
-    <ClCompile Include="..\..\Scene\Light\MPointLight.cpp" />
-    <ClCompile Include="..\..\Scene\Light\MSpotLight.cpp" />
-    <ClCompile Include="..\..\Scene\MCamera.cpp" />
-    <ClCompile Include="../../Scene\M3DNode.cpp" />
-    <ClCompile Include="../../Scene\MNode.cpp" />
     <ClCompile Include="../../stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -239,12 +246,6 @@
     <ClCompile Include="../../Utility\Timer\MTimer.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Model\MModelResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MResource.cpp" />
-    <ClCompile Include="..\..\Scene\MInputNode.cpp" />
-    <ClCompile Include="..\..\Scene\Model\MIModelMeshInstance.cpp" />
-    <ClCompile Include="..\..\Scene\Model\MSkinnedMeshInstance.cpp" />
-    <ClCompile Include="..\..\Scene\Model\MIMeshInstance.cpp" />
-    <ClCompile Include="..\..\Scene\Model\MStaticMeshInstance.cpp" />
-    <ClCompile Include="..\..\Scene\Model\MModelInstance.cpp" />
     <ClCompile Include="..\..\Utility\Json\MJson.cpp" />
     <ClCompile Include="..\..\Utility\MGlobal.cpp" />
     <ClCompile Include="..\..\Utility\MMath.cpp" />

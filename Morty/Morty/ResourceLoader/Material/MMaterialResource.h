@@ -46,7 +46,6 @@ protected:
 
 private:
 
-
 	MShader* m_pVertexShader;
 	MShader* m_pPixelShader;
 

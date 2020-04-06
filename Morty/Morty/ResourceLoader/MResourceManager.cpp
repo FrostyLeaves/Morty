@@ -1,10 +1,12 @@
 ﻿#include "MResourceManager.h"
 #include "MResource.h"
-#include "MModelResource.h"
-#include "MShaderResource.h"
-#include "MMaterialResource.h"
-#include "MTextureResource.h"
+#include "Model/MModelResource.h"
+#include "Shader/MShaderResource.h"
+#include "Material/MMaterialResource.h"
+#include "Texture/MTextureResource.h"
 #include "MResourceLoader.h"
+
+#include "MFunction.h"
 
 #include <vector>
 
@@ -18,7 +20,7 @@ m_tResSuffixToType[vSuffixList[i]] = Type; \
 
 
 MResourceManager::MResourceManager()
-	: m_pResourceDB(new MIDPool<MResourceID>())
+	: m_ResourceDB()
 	, m_pEngine(nullptr)
 	, m_bReloadEnabled(false)
 {
@@ -30,19 +32,8 @@ MResourceManager::MResourceManager()
 
 MResourceManager::~MResourceManager()
 {
-	for (std::map<MEResourceType, MResourceLoader*>::iterator iter = m_tResourceLoader.begin(); iter != m_tResourceLoader.end(); ++iter)
-	{
-		delete iter->second;
-	}
-	m_tResourceLoader.clear();
-	for (std::map<MString, MResource*>::iterator iter = m_tPathResources.begin(); iter != m_tPathResources.end(); ++iter)
-	{
-		delete iter->second;
-	}
-//	m_tIDResources.clear();
-	m_tPathResources.clear();
-
-	delete m_pResourceDB;
+	DELETE_CLEAR_MAP(m_tResourceLoader);
+	DELETE_CLEAR_MAP(m_tPathResources);
 }
 
 MResourceManager::MEResourceType MResourceManager::GetResourceType(const MString& strResourcePath)
@@ -79,10 +70,6 @@ void MResourceManager::UnloadResource(const MString& strResourcePath)
 	std::map<MString, MResource*>::iterator iter = m_tPathResources.find(strResourcePath);
 	if (iter == m_tPathResources.end())
 		return;
-
-// 	std::map<MResourceID, MResource*>::iterator iditer = m_tIDResources.find(iter->second->m_unResourceID);
-// 	if (iditer != m_tIDResources.end())
-// 		m_tIDResources.erase(iditer);
 
 	delete iter->second;
 	m_tPathResources.erase(iter);

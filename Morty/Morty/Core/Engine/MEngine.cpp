@@ -13,13 +13,14 @@
 #include "MWindowsRenderView.h"
 #endif
 
-#include "MTimer.h"
+#include "Timer/MTimer.h"
 #include "MNode.h"
+#include "MScene.h"
 #include "MMaterial.h"
 #include "MResourceManager.h"  
-#include "MMaterialResource.h"
-#include "MTextureResource.h"
-#include "MTextureCubeResource.h"
+#include "Material/MMaterialResource.h"
+#include "Texture/MTextureResource.h"
+#include "Texture/MTextureCubeResource.h"
 
 #include "MInputManager.h"
 
@@ -27,7 +28,7 @@
 MEngine::MEngine()
 	: m_pObjectManager(nullptr)
 	, m_pResourceManager(nullptr)
-	, m_pRootNode(nullptr)
+	, m_pScene(nullptr)
 	, m_pDevice(nullptr)
 	, m_pRenderer(nullptr)
 	, m_cTickInfo(60)
@@ -147,9 +148,9 @@ void MEngine::Release()
 void MEngine::Tick(float fDelta)
 {
 //	MLogManager::GetInstance()->Log("fps:  %d", (int)(1.0f / fDelta));
-	if (m_pRootNode)
+	if (m_pScene)
 	{
-		m_pRootNode->Tick(fDelta);
+		m_pScene->Tick(fDelta);
 	}
 }
 
@@ -313,9 +314,9 @@ void MEngine::RenderToView(MIRenderView* pView)
 }
 
 
-void MEngine::SetRootNode(MNode* pNode)
+void MEngine::SetScene(MScene* pScene)
 {
-	m_pRootNode = pNode;
+	m_pScene = pScene;
 }
 
 MEngine::TickInfo::TickInfo(int nFps)

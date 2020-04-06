@@ -1,9 +1,9 @@
-﻿#include "MModelMeshData.h"
+﻿#include "MModelMeshStruct.h"
 #include "MModelResource.h"
 #include "MEngine.h"
-#include "MMeshDetailMap.h"
+#include "MMultiLevelMesh.h"
 
-MModelMeshData::MModelMeshData()
+MModelMeshStruct::MModelMeshStruct()
 	: m_eVertexType(MEMeshVertexType::Normal)
 	, m_pMesh(nullptr)
 	, m_matRotationMatrix(Matrix4::IdentityMatrix)
@@ -19,17 +19,17 @@ MModelMeshData::MModelMeshData()
 	}
 }
 
-MModelMeshData::~MModelMeshData()
+MModelMeshStruct::~MModelMeshStruct()
 {
 }
 
-MIMesh* MModelMeshData::GetLevelMesh(const unsigned int unLevel)
+MIMesh* MModelMeshStruct::GetLevelMesh(const unsigned int unLevel)
 {
 	if (m_pMesh)
 	{
 		if (nullptr == m_pMeshDetailMap)
 		{
-			m_pMeshDetailMap = new MMeshDetailMap();
+			m_pMeshDetailMap = new MMultiLevelMesh();
 			m_pMeshDetailMap->BindMesh(m_pMesh);
 		}
 

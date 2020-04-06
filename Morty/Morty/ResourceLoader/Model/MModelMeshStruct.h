@@ -1,13 +1,13 @@
 ﻿/**
- * @File         MModelMeshData
+ * @File         MModelMeshStruct
  * 
  * @Created      2020-03-21 18:22:36
  *
  * @Author       Pobrecito
 **/
 
-#ifndef _M_MODELMESHDATA_H_
-#define _M_MODELMESHDATA_H_
+#ifndef _M_MODELMESHSTRUCT_H_
+#define _M_MODELMESHSTRUCT_H_
 #include "MGlobal.h"
 #include "MString.h"
 #include "MMesh.h"
@@ -16,10 +16,11 @@
 
 class MIMesh;
 class MBoundsOBB;
+class MBoundsSphere;
 class MSkeleton;
-class MMeshDetailMap;
+class MMultiLevelMesh;
 class MModelResource;
-class MORTY_CLASS MModelMeshData
+class MORTY_CLASS MModelMeshStruct
 {
 public:
 	enum MEMeshVertexType {
@@ -27,8 +28,8 @@ public:
 		Skeleton = 1,
 	};
 public:
-	MModelMeshData();
-    virtual ~MModelMeshData();
+	MModelMeshStruct();
+    virtual ~MModelMeshStruct();
 
 	MString GetMeshName() { return m_strName; }
 	MEMeshVertexType GetMeshVertexType(){ return m_eVertexType; }
@@ -51,10 +52,11 @@ private:
 	MIMesh* m_pMesh;
 	Matrix4 m_matRotationMatrix;
 	MBoundsOBB* m_pBoundsOBB;
+	MBoundsSphere* m_pBoundsSphere;
 	MMaterial* m_pMaterial;
 	MModelResource* m_pResource;
 
-	MMeshDetailMap* m_pMeshDetailMap;
+	MMultiLevelMesh* m_pMeshDetailMap;
 };
 
 #endif

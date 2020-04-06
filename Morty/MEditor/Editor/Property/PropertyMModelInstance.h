@@ -2,8 +2,8 @@
 #define _PROPERTY_MMODELINSTANCE_H_
 
 #include "PropertyM3DNode.h"
-#include "MModelInstance.h"
-#include "MModelResource.h"
+#include "Model/MModelInstance.h"
+#include "Model/MModelResource.h"
 
 #include "MEngine.h"
 #include "MResourceManager.h"

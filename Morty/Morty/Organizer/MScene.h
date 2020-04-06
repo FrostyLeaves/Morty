@@ -59,11 +59,9 @@ public:
 	void RecordMeshInstance(MIModelMeshInstance* pMeshInstance);
 	void CancelRecordMeshInstance(MIModelMeshInstance* pMeshInstance);
 
-	void RecordInputNode(MInputNode* pInputNode);
-	void CancelRecordInputNode(MInputNode* pInputNode);
-
 	virtual void Render(MIRenderer* pRenderer, MViewport* pViewport);
 
+	virtual void Tick(const float& fDelta);
 	virtual void Input(MInputEvent* pEvent, MViewport* pViewport);
 
 	virtual void OnCreated() override;

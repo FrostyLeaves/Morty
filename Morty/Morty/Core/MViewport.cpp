@@ -6,7 +6,7 @@
 #include "MInputManager.h"
 
 #include "MBounds.h"
-#include "MDirectionalLight.h"
+#include "Node/Light/MDirectionalLight.h"
 
 MTypeIdentifierImplement(MViewport, MObject)
 
@@ -34,7 +34,7 @@ MViewport::MViewport()
 	, m_pUserCamera(nullptr)
 	, m_pDefaultCamera(nullptr)
 	, m_m4CameraInvProj(Matrix4::IdentityMatrix)
-	, m_bCameraInvProjMatrixUpdated(false)
+	, m_bCameraInvProjMatrixLocked(false)
 	, m_v2LeftTop(0,0)
 	, m_v2Size(0, 0)
 {
@@ -156,12 +156,11 @@ void MViewport::Render(MIRenderer* pRenderer)
 
 
 	UpdateMatrix();
-	m_bCameraInvProjMatrixUpdated = true;
+	m_bCameraInvProjMatrixLocked = true;
 	
 	m_pScene->Render(pRenderer, this);
 	
-	
-	m_bCameraInvProjMatrixUpdated = false;
+	m_bCameraInvProjMatrixLocked = false;
 }
 
 void MViewport::Input(MInputEvent* pEvent)
@@ -367,7 +366,7 @@ void MViewport::SetValidCamera(MCamera* pCamera)
 
 void MViewport::UpdateMatrix()
 {
-	if (m_bCameraInvProjMatrixUpdated)
+	if (m_bCameraInvProjMatrixLocked)
 		return;
 
 	//Update Camera and Projection Matrix.

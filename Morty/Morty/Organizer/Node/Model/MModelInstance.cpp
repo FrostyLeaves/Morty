@@ -4,7 +4,7 @@
 #include "MSkinnedMeshInstance.h"
 #include "MSkeleton.h"
 #include "MSkeletalAnimation.h"
-#include "MModelMeshData.h"
+#include "MModelMeshStruct.h"
 #include "MBounds.h"
 
 #include "MEngine.h"
@@ -72,10 +72,10 @@ bool MModelInstance::Load(MResource* pResource)
 				}
 
 				//初始化Mesh的旋转矩阵
-				for (MModelMeshData* pMeshData : *pModelResource->GetMeshes())
+				for (MModelMeshStruct* pMeshData : *pModelResource->GetMeshes())
 				{
 					MIModelMeshInstance* pMeshIns = nullptr;
-					if (pMeshData->GetMeshVertexType() == MModelMeshData::Normal)
+					if (pMeshData->GetMeshVertexType() == MModelMeshStruct::Normal)
 					{
 						MStaticMeshInstance* pStaticMeshIns = GetObjectManager()->CreateObject<MStaticMeshInstance>();
 						pStaticMeshIns->SetMeshData(pMeshData);

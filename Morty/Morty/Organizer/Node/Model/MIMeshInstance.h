@@ -15,7 +15,7 @@ class MIMesh;
 class MMaterial;
 class MBoundsOBB;
 class MBoundsAABB;
-class MModelMeshData;
+class MModelMeshStruct;
 class MModelInstance;
 class MORTY_CLASS MIMeshInstance : public M3DNode
 {

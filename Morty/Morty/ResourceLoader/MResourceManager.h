@@ -47,10 +47,8 @@ public:
 			return nullptr;
 		}
 
-		pResource->m_unResourceID = m_pResourceDB->GetNewID();
+		pResource->m_unResourceID = m_ResourceDB.GetNewID();
 		pResource->m_pEngine = m_pEngine;
-
-	//	m_tIDResources[pResource->m_unResourceID] = pResource;
 
 		pResource->OnCreated();
 
@@ -83,10 +81,9 @@ private:
 
 	std::map<MEResourceType, MResourceLoader*> m_tResourceLoader;
 
-//	std::map<MResourceID, MResource*> m_tIDResources;
 	std::map<MString, MResource*> m_tPathResources;
 
-	MIDPool<MResourceID>* m_pResourceDB;
+	MIDPool<MResourceID> m_ResourceDB;
 	std::map<MString, MEResourceType> m_tResSuffixToType;
 
 	MEngine* m_pEngine;

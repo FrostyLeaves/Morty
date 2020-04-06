@@ -1,16 +1,16 @@
 #include "MShadowTextureRenderTarget.h"
 #include "MEngine.h"
 #include "MResourceManager.h"
-#include "MMaterialResource.h"
+#include "Material/MMaterialResource.h"
 
 #include "MIRenderer.h"
 #include "MMaterial.h"
 #include "MScene.h"
 #include "MViewport.h"
 
-#include "MModelInstance.h"
+#include "Model/MModelInstance.h"
+#include "Model/MSkinnedMeshInstance.h"
 #include "MSkeleton.h"
-#include "MSkinnedMeshInstance.h"
 
 
 MTypeIdentifierImplement(MShadowTextureRenderTarget, MObject)

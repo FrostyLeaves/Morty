@@ -1,29 +1,35 @@
-#include "MSkinnedMeshInstance.h"
+﻿#include "MStaticMeshInstance.h"
+#include "Model/MModelResource.h"
 #include "MScene.h"
 #include "MMaterial.h"
-#include "MModelMeshData.h"
+
+#include "Model/MModelResource.h"
+#include "Model/MModelMeshStruct.h"
 
 #include "MBounds.h"
 
-MTypeIdentifierImplement(MSkinnedMeshInstance, MIModelMeshInstance)
+MTypeIdentifierImplement(MStaticMeshInstance, MIModelMeshInstance)
 
-MSkinnedMeshInstance::MSkinnedMeshInstance()
+MStaticMeshInstance::MStaticMeshInstance()
 	: MIModelMeshInstance()
 	, m_pMesh(nullptr)
 	, m_pMaterial(nullptr)
-	, m_pSkeletonInstance(nullptr)
 	, m_pBoundsAABB(nullptr)
 	, m_bBoundsAABBDirty(true)
 {
 
 }
 
-MSkinnedMeshInstance::~MSkinnedMeshInstance()
+MStaticMeshInstance::~MStaticMeshInstance()
 {
-
+	if (m_pBoundsAABB)
+	{
+		delete m_pBoundsAABB;
+		m_pBoundsAABB = nullptr;
+	}
 }
 
-void MSkinnedMeshInstance::SetMaterial(MMaterial* pMaterial)
+void MStaticMeshInstance::SetMaterial(MMaterial* pMaterial)
 {
 	if (m_pScene)
 		m_pScene->CancelRecordMeshInstance(this);
@@ -34,14 +40,12 @@ void MSkinnedMeshInstance::SetMaterial(MMaterial* pMaterial)
 	if(m_pMaterial = pMaterial)
 		m_pMaterial->AddRef();
 
-	if (m_pScene)
+	if(m_pScene)
 		m_pScene->RecordMeshInstance(this);
 }
-
-MBoundsAABB* MSkinnedMeshInstance::GetBoundsAABB()
+ 
+MBoundsAABB* MStaticMeshInstance::GetBoundsAABB()
 {
-	//TODO get the Bounding Box by skeleton instance.
-
 	if (nullptr == m_pBoundsAABB)
 		m_pBoundsAABB = new MBoundsAABB();
 
@@ -56,37 +60,32 @@ MBoundsAABB* MSkinnedMeshInstance::GetBoundsAABB()
 	return m_pBoundsAABB;
 }
 
-void MSkinnedMeshInstance::SetMeshData(MModelMeshData* pMeshData)
+void MStaticMeshInstance::SetMeshData(MModelMeshStruct* pMeshData)
 {
 	m_pMesh = pMeshData;
 	SetMaterial(pMeshData->GetDefaultMaterial());
 }
 
-MIMesh* MSkinnedMeshInstance::GetMesh(const unsigned int& unDetailLevel)
+MIMesh* MStaticMeshInstance::GetMesh(const unsigned int& unDetailLevel)
 {
 	if (unDetailLevel == MMESH_LOD_LEVEL_RANGE)
 		return m_pMesh->GetMesh();
 	else return m_pMesh->GetLevelMesh(unDetailLevel);
 }
 
-MIMesh* MSkinnedMeshInstance::GetMesh()
+MIMesh* MStaticMeshInstance::GetMesh()
 {
 	return m_pMesh->GetMesh();
 }
 
-void MSkinnedMeshInstance::UpdateSkeletonBoundsOBB()
-{
-	
-}
-
-void MSkinnedMeshInstance::WorldTransformDirty()
+void MStaticMeshInstance::WorldTransformDirty()
 {
 	MIMeshInstance::WorldTransformDirty();
 
 	m_bBoundsAABBDirty = true;
 }
 
-void MSkinnedMeshInstance::LocalTransformDirty()
+void MStaticMeshInstance::LocalTransformDirty()
 {
 	MIMeshInstance::LocalTransformDirty();
 

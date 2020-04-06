@@ -10,7 +10,7 @@
 #define _M_MPOINTLIGHT_H_
 #include "MGlobal.h"
 #include "MILight.h"
-#include "MType.h"
+#include "Type/MType.h"
 #include "Vector.h"
 
 class MORTY_CLASS MPointLight : public MILight

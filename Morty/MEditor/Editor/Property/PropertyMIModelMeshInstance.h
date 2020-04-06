@@ -3,7 +3,7 @@
 
 #include "PropertyM3DNode.h"
 #include "MMaterial.h"
-#include "MIModelMeshInstance.h"
+#include "Model/MIModelMeshInstance.h"
 
 
 class PropertyMIModelMeshInstance : public PropertyM3DNode

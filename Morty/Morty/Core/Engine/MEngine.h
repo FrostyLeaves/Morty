@@ -13,6 +13,7 @@
 #include <vector>
 
 class MNode;
+class MScene;
 class MIDevice;
 class MIRenderer;
 class MIRenderView;
@@ -33,7 +34,7 @@ public:
 
 	virtual void Tick(float fDelta);
 
-	void SetRootNode(MNode* pNode);
+	void SetScene(MScene* pScene);
 
 	MIRenderView* CreateView();
 	void AddView(MIRenderView* pView);
@@ -61,7 +62,7 @@ private:
 	MObjectManager* m_pObjectManager;
 	MResourceManager* m_pResourceManager;
 
-	MNode* m_pRootNode;
+	MScene* m_pScene;
 
 	MIDevice* m_pDevice;
 	MIRenderer* m_pRenderer;
