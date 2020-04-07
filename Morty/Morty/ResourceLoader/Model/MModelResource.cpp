@@ -122,7 +122,7 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vect
 			pMeshData->m_eVertexType = MModelMeshStruct::Skeleton;
 			pMeshData->m_matRotationMatrix = matRotation;
 			pMeshData->m_pBoundsOBB = pObb;
-			pMeshData->m_pBoundsSphere = pSphere;
+		//	pMeshData->m_pBoundsSphere = pSphere;
 
 			m_vMeshes.push_back(pMeshData);
 		}
@@ -142,7 +142,7 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vect
 			pMeshData->m_eVertexType = MModelMeshStruct::Normal;
 			pMeshData->m_matRotationMatrix = matRotation;
 			pMeshData->m_pBoundsOBB = pObb;
-			pMeshData->m_pBoundsSphere = pSphere;
+		//	pMeshData->m_pBoundsSphere = pSphere;
 
 			m_vMeshes.push_back(pMeshData);
 		}

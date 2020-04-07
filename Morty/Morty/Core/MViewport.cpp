@@ -81,7 +81,8 @@ void MViewport::ConvertViewportPointToWorld(const Vector2& v2ViewportPos, const 
 	float x = (v2ViewportPos.x / GetWidth()) * 2.0f - 1.0f;
 	float y = (v2ViewportPos.y / GetHeight()) * 2.0f - 1.0f;
 
-	Vector3 pos = mat * Vector4(x, y, GetCamera()->GetZNear(), 1);
+	Vector4 pos4 = mat * Vector4(x, y, GetCamera()->GetZNear(), 1.0f);
+	Vector3 pos = pos4 / pos4.w;
 	Vector3 dir = pos - GetCamera()->GetWorldPosition();
 	dir.Normalize();
 

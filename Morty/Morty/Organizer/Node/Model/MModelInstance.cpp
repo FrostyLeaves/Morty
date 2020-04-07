@@ -1,10 +1,10 @@
 ﻿#include "MModelInstance.h"
-#include "MModelResource.h"
+#include "Model/MModelMeshStruct.h"
+#include "Model/MModelResource.h"
 #include "MStaticMeshInstance.h"
 #include "MSkinnedMeshInstance.h"
 #include "MSkeleton.h"
 #include "MSkeletalAnimation.h"
-#include "MModelMeshStruct.h"
 #include "MBounds.h"
 
 #include "MEngine.h"
