@@ -37,6 +37,7 @@ public:
 	MIMesh* GetMesh() { return m_pMesh; }
 	MIMesh* GetLevelMesh(const unsigned int unLevel);
 	const MBoundsOBB* GetMeshesDefaultOBB() { return m_pBoundsOBB; }
+	const MBoundsSphere* GetMeshesDefaultSphere() { return m_pBoundsSphere; }
 	const Matrix4* GetMeshesRotationMatrix() { return &m_matRotationMatrix; }
 	MMaterial* GetDefaultMaterial() { return m_pMaterial; }
 	MModelResource* GetModelResource() { return m_pResource; }

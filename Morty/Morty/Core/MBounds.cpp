@@ -375,6 +375,21 @@ void MBoundsSphere::SetPoints(const std::vector<Vector3>& vPoints, const bool& b
 	}
 }
 
+void MBoundsSphere::SetPoints(const MByte* vPoints, const unsigned int& unArrayLength, const unsigned int& unOffset, const unsigned int& unDataSize)
+{
+	MPointsSphere sphere;
+
+	std::vector<Vector3> vPointArray(unArrayLength);
+	for (unsigned int i = 0; i < unArrayLength; ++i, vPoints += unDataSize)
+	{
+		vPointArray[i] = *(Vector3*)(vPoints + unOffset);
+	}
+
+	sphere.SetPoints(vPointArray);
+
+	*this = sphere.GetMinSurroundBall();
+}
+
 bool MBoundsSphere::IsContain(const Vector3& pos)
 {
 	return (pos - m_v3CenterPoint).Length() <= m_fRadius;

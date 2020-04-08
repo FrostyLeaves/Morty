@@ -12,8 +12,8 @@ MSkinnedMeshInstance::MSkinnedMeshInstance()
 	, m_pMesh(nullptr)
 	, m_pMaterial(nullptr)
 	, m_pSkeletonInstance(nullptr)
-	, m_pBoundsAABB(nullptr)
 	, m_bBoundsAABBDirty(true)
+	, m_bBoundsSphereDirty(true)
 {
 
 }
@@ -42,18 +42,36 @@ MBoundsAABB* MSkinnedMeshInstance::GetBoundsAABB()
 {
 	//TODO get the Bounding Box by skeleton instance.
 
-	if (nullptr == m_pBoundsAABB)
-		m_pBoundsAABB = new MBoundsAABB();
-
 	if (m_bBoundsAABBDirty)
 	{
 		Matrix4 matWorldTrans = GetWorldTransform();
 		Vector3 v3Position = GetWorldPosition();
-		m_pBoundsAABB->SetBoundsOBB(v3Position, matWorldTrans, *m_pMesh->GetMeshesDefaultOBB());
+		m_BoundsAABB.SetBoundsOBB(v3Position, matWorldTrans, *m_pMesh->GetMeshesDefaultOBB());
 		m_bBoundsAABBDirty = false;
 	}
 
-	return m_pBoundsAABB;
+	return &m_BoundsAABB;
+}
+
+MBoundsSphere* MSkinnedMeshInstance::GetBoundsSphere()
+{
+	if (m_bBoundsSphereDirty)
+	{
+		m_BoundsSphere = *m_pMesh->GetMeshesDefaultSphere();
+
+		m_BoundsSphere.m_v3CenterPoint = GetWorldPosition();
+
+		Vector3 v3Scale = GetScale();
+		float fMaxScale = v3Scale.x;
+		if (fMaxScale < v3Scale.y) fMaxScale = v3Scale.y;
+		if (fMaxScale < v3Scale.z) fMaxScale = v3Scale.z;
+
+		m_BoundsSphere.m_fRadius *= fMaxScale;
+
+		m_bBoundsSphereDirty = false;
+	}
+
+	return &m_BoundsSphere;
 }
 
 void MSkinnedMeshInstance::SetMeshData(MModelMeshStruct* pMeshData)

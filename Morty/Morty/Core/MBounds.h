@@ -82,9 +82,17 @@ class MORTY_CLASS MBoundsSphere
 public:
 	MBoundsSphere();
 	MBoundsSphere(const Vector3& v3CenterPoint, const float& fRadius);
-	MBoundsSphere(const std::vector<Vector3>& vPoints);;
+	MBoundsSphere(const std::vector<Vector3>& vPoints);
 
 	void SetPoints(const std::vector<Vector3>& vPoints, const bool& bBetter = false);
+
+	void SetPoints(const void* vPoints, const unsigned int& unArrayLength, const unsigned int& unOffset, const unsigned int& unDataSize)
+	{
+		SetPoints((const MByte*)vPoints, unArrayLength, unOffset, unDataSize);
+	}
+
+	void SetPoints(const MByte* vPoints, const unsigned int& unArrayLength, const unsigned int& unOffset, const unsigned int& unDataSize);
+
 
 	bool IsContain(const Vector3& pos);
 

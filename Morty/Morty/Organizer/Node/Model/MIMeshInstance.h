@@ -10,11 +10,10 @@
 #define _M_MIMESHINSTANCE_H_
 #include "MGlobal.h"
 #include "M3DNode.h"
+#include "MBounds.h"
 
 class MIMesh;
 class MMaterial;
-class MBoundsOBB;
-class MBoundsAABB;
 class MModelMeshStruct;
 class MModelInstance;
 class MORTY_CLASS MIMeshInstance : public M3DNode
@@ -30,6 +29,7 @@ public:
 	virtual MMaterial* GetMaterial() = 0;
 
 	virtual MBoundsAABB* GetBoundsAABB() = 0;
+	virtual MBoundsSphere* GetBoundsSphere() = 0;
 
 public:
 	virtual MIMesh* GetMesh() = 0;

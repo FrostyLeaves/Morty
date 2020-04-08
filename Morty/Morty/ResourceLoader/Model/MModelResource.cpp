@@ -115,14 +115,16 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vect
 			vMaterialIndices.push_back(pMesh->mMaterialIndex);
 
 			MBoundsOBB* pObb = new MBoundsOBB();
+			MBoundsSphere* pSphere = new MBoundsSphere();
 			pObb->SetPoints((const MByte*)pMMesh->GetVertices(), pMMesh->GetVerticesLength(), 0, pMMesh->GetVertexStructSize());
+			pSphere->SetPoints((const MByte*)pMMesh->GetVertices(), pMMesh->GetVerticesLength(), 0, pMMesh->GetVertexStructSize());
 
 			MModelMeshStruct* pMeshData = new MModelMeshStruct();
 			pMeshData->m_pMesh = pMMesh;
 			pMeshData->m_eVertexType = MModelMeshStruct::Skeleton;
 			pMeshData->m_matRotationMatrix = matRotation;
 			pMeshData->m_pBoundsOBB = pObb;
-		//	pMeshData->m_pBoundsSphere = pSphere;
+			pMeshData->m_pBoundsSphere = pSphere;
 
 			m_vMeshes.push_back(pMeshData);
 		}
@@ -134,7 +136,9 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vect
 			vMaterialIndices.push_back(pMesh->mMaterialIndex);
 
 			MBoundsOBB* pObb = new MBoundsOBB();
+			MBoundsSphere* pSphere = new MBoundsSphere();
 			pObb->SetPoints((const MByte*)pMMesh->GetVertices(), pMMesh->GetVerticesLength(), 0, pMMesh->GetVertexStructSize());
+			pSphere->SetPoints((const MByte*)pMMesh->GetVertices(), pMMesh->GetVerticesLength(), 0, pMMesh->GetVertexStructSize());
 
 			MModelMeshStruct* pMeshData = new MModelMeshStruct();
 			pMeshData->m_strName = pNode->mName.C_Str();
@@ -142,10 +146,11 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vect
 			pMeshData->m_eVertexType = MModelMeshStruct::Normal;
 			pMeshData->m_matRotationMatrix = matRotation;
 			pMeshData->m_pBoundsOBB = pObb;
-		//	pMeshData->m_pBoundsSphere = pSphere;
+			pMeshData->m_pBoundsSphere = pSphere;
 
 			m_vMeshes.push_back(pMeshData);
 		}
+
 	}
 
 	for (unsigned int i = 0; i < pNode->mNumChildren; ++i)

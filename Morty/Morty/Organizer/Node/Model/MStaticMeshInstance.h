@@ -30,6 +30,7 @@ public:
 	virtual MMaterial* GetMaterial() override { return m_pMaterial; }
 
 	virtual MBoundsAABB* GetBoundsAABB() override;
+	virtual MBoundsSphere* GetBoundsSphere() override;
 
 public:
 
@@ -45,8 +46,10 @@ private:
 
 	MModelMeshStruct* m_pMesh;
 	MMaterial* m_pMaterial;
-	MBoundsAABB* m_pBoundsAABB;
+	MBoundsAABB m_BoundsAABB;
+	MBoundsSphere m_BoundsSphere;
 	bool m_bBoundsAABBDirty;
+	bool m_bBoundsSphereDirty;
 };
 
 
