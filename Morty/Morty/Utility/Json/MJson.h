@@ -18,7 +18,8 @@ public:
     MJson();
     virtual ~MJson();
 
-	static MVariant JsonToMVariant(const MString& strJson);
+	static void JsonToMVariant(const MString& strJson, MVariant& variant);
+	static void MVariantToJson(const MVariant& var, MString& strJson);
 
 public:
 

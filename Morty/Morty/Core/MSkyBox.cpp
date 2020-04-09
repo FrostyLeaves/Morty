@@ -5,7 +5,6 @@
 #include "MEngine.h"
 #include "MResourceManager.h"
 #include "Material/MMaterialResource.h"
-#include "MMaterial.h"
 #include "Texture/MTextureResource.h"
 #include "Model/MModelMeshStruct.h"
 
@@ -69,7 +68,7 @@ bool MSkyBox::Load(MResource* pResource)
 void MSkyBox::OnCreated()
 {
 	MMaterialResource* pMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SKYBOX);
-	MMaterial* pMaterial = pMaterialRes->GetMaterialTemplate();
+	MMaterial* pMaterial = pMaterialRes;
 
 	
 

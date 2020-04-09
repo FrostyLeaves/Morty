@@ -40,9 +40,6 @@
     <Filter Include="ResourceLoader\Texture">
       <UniqueIdentifier>{88b6dfc2-811f-4c3e-9c02-86e82b58f133}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ResourceLoader\Material">
-      <UniqueIdentifier>{661e606d-e5e3-4840-8aa6-6c4c74804697}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Core\Input">
       <UniqueIdentifier>{b417e77e-05f7-4ef6-a093-39de1ad61168}</UniqueIdentifier>
     </Filter>
@@ -81,6 +78,9 @@
     </Filter>
     <Filter Include="Organizer\Node\Model">
       <UniqueIdentifier>{036880c0-7683-4d55-945c-7f180909f727}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ResourceLoader\Material">
+      <UniqueIdentifier>{d3c7e605-aab8-4478-956f-fe272c4fd098}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -140,9 +140,6 @@
     </ClInclude>
     <ClInclude Include="..\..\ResourceLoader\Texture\MTextureResource.h">
       <Filter>ResourceLoader\Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\ResourceLoader\Material\MMaterialResource.h">
-      <Filter>ResourceLoader\Material</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Input\MInputManager.h">
       <Filter>Core\Input</Filter>
@@ -297,6 +294,9 @@
     <ClInclude Include="..\..\Organizer\Node\Model\MIMeshInstance.h">
       <Filter>Organizer\Node\Model</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\ResourceLoader\Material\MMaterialResource.h">
+      <Filter>ResourceLoader\Material</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -343,9 +343,6 @@
     </ClCompile>
     <ClCompile Include="..\..\ResourceLoader\Texture\MTextureResource.cpp">
       <Filter>ResourceLoader\Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ResourceLoader\Material\MMaterialResource.cpp">
-      <Filter>ResourceLoader\Material</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Core\Input\MInputManager.cpp">
       <Filter>Core\Input</Filter>

@@ -12,13 +12,12 @@
 
 #include <algorithm>
 
-MTypeIdentifierImplement(MMaterial, MObject)
-
 MMaterial::MMaterial()
-	: MObject()
-	, m_pMaterialResource(nullptr)
+	: MResource()
+	, m_pVertexResource(nullptr)
+	, m_pPixelResource(nullptr)
 	, m_pVertexShader(nullptr)
-	, m_pPxielShader(nullptr)
+	, m_pPixelShader(nullptr)
 	, m_eRenderState(MIRenderer::ESolid | MIRenderer::ECullBack)
 {
 
@@ -87,58 +86,113 @@ void MMaterial::CompileShaderParams(const MEShaderParamType& eType)
 
 		if (MEShaderParamType::EVertex != eType)
 		{
-			RecompileShaderParams(m_vShaderParams, m_pPxielShader->GetBuffer()->m_vShaderParamsTemplate, MEShaderParamType::EPixel);
-			RecompileShaderTextureParam(m_vTextureParams, m_vTextureResHolder, m_pPxielShader->GetBuffer()->m_vTextureParamsTemplate, MEShaderParamType::EPixel);
+			RecompileShaderParams(m_vShaderParams, m_pPixelShader->GetBuffer()->m_vShaderParamsTemplate, MEShaderParamType::EPixel);
+			RecompileShaderTextureParam(m_vTextureParams, m_vTextureResHolder, m_pPixelShader->GetBuffer()->m_vTextureParamsTemplate, MEShaderParamType::EPixel);
 		}
 	}
 }
 
-bool MMaterial::Load(MMaterialResource* pResource)
+void MMaterial::Encode(MString& strCode)
 {
-	Unload();
+	strCode.clear();
 
-	auto UseResourceFunction = [this](const unsigned int& eReloadType){
-		if (MMaterialResource* pMatResource = static_cast<MMaterialResource*>(m_pMaterialResource->GetResource()))
-		{
-			m_pVertexShader = pMatResource->GetVertexShader();
-			m_pPxielShader = pMatResource->GetPixelShader();
-		}
+	MStruct material;
+	material.SetMember("VS", m_pVertexResource->GetResource()->GetResourcePath());
+	material.SetMember("PS", m_pPixelResource->GetResource()->GetResourcePath());
+	material.SetMember("RenderState", static_cast<int>(m_eRenderState));
 
-		if (m_pVertexShader && nullptr == m_pVertexShader->GetBuffer())
-		{
-			if (!m_pVertexShader->CompileShader(m_pEngine->GetDevice()))
-				return false;
-		}
-		if (m_pPxielShader && nullptr == m_pPxielShader->GetBuffer())
-		{
-			if (!m_pPxielShader->CompileShader(m_pEngine->GetDevice()))
-				return false;
-		}
-
-		if(MMaterialResource::EResReloadType::EPixel != eReloadType)
-			CompileShaderParams(MEShaderParamType::EVertex);
-		if (MMaterialResource::EResReloadType::EVertex != eReloadType)
-			CompileShaderParams(MEShaderParamType::EPixel);
-
-		return true;
-	};
-
-	if (MMaterialResource* pMaterialRes = dynamic_cast<MMaterialResource*>(pResource))
+	MVariantArray vTextures;
+	for (MResourceHolder* pTexResource : m_vTextureResHolder)
 	{
-		if (m_pMaterialResource)
-			delete m_pMaterialResource;
-		m_pMaterialResource = new MResourceHolder(pResource);
-		m_pMaterialResource->SetResChangedCallback(UseResourceFunction);
+		if (pTexResource && pTexResource->GetResource())
+			vTextures.AppendMVariant(pTexResource->GetResource()->GetResourcePath());
+		else
+			vTextures.AppendMVariant("");
+	}
 
-		return UseResourceFunction(MResource::EResReloadType::EDefault);
+	material.SetMember("textures", vTextures);
+
+	MVariantArray vParams;
+	for (MShaderParam* param : m_vShaderParams)
+		vParams.AppendMVariant(param->var);
+
+	material.SetMember("params", vParams);
+
+	MVariant variant(material);
+}
+
+void MMaterial::Decode(MString& strCode)
+{
+
+}
+
+bool MMaterial::LoadVertexShader(MResource* pResource)
+{
+	if (MShaderResource* pShaderResource = dynamic_cast<MShaderResource*>(pResource))
+	{
+		if (MShader::MEShaderType::Vertex == pShaderResource->GetShaderTemplate()->GetType())
+		{
+			m_pVertexShader = pShaderResource->GetShaderTemplate();
+			if (m_pVertexShader && nullptr == m_pVertexShader->GetBuffer())
+			{
+				if (!m_pVertexShader->CompileShader(m_pEngine->GetDevice()))
+				{
+					m_pVertexShader = nullptr;
+					return false;
+				}
+			}
+
+
+			if (m_pVertexResource)
+				delete m_pVertexResource;
+			m_pVertexResource = new MResourceHolder(pResource);
+			m_pVertexResource->SetResChangedCallback([this](const unsigned int& eReloadType) {
+				CompileShaderParams(MEShaderParamType::EVertex);
+				OnReload();
+				return true;
+				});
+
+			CompileShaderParams(MEShaderParamType::EVertex);
+			OnReload();
+			return true;
+		}
 	}
 
 	return false;
 }
 
-MResource* MMaterial::GetResource()
+bool MMaterial::LoadPixelShader(MResource* pResource)
 {
-	return m_pMaterialResource->GetResource();
+	if (MShaderResource* pShaderResource = dynamic_cast<MShaderResource*>(pResource))
+	{
+		if (MShader::MEShaderType::Pixel == pShaderResource->GetShaderTemplate()->GetType())
+		{
+			m_pPixelShader = pShaderResource->GetShaderTemplate();
+			if (m_pPixelShader && nullptr == m_pPixelShader->GetBuffer())
+			{
+				if (!m_pPixelShader->CompileShader(m_pEngine->GetDevice()))
+				{
+					m_pPixelShader = nullptr;
+					return false;
+				}
+			}
+
+			if (m_pPixelResource)
+				delete m_pPixelResource;
+			m_pPixelResource = new MResourceHolder(pResource);
+			m_pPixelResource->SetResChangedCallback([this](const unsigned int& eReloadType) {
+				CompileShaderParams(MEShaderParamType::EPixel);
+				OnReload();
+				return true;
+				});
+
+			CompileShaderParams(MEShaderParamType::EPixel);
+			OnReload();
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void MMaterial::Unload()
@@ -153,15 +207,42 @@ void MMaterial::Unload()
 
 	m_vShaderParams.clear();
 
-	if (m_pMaterialResource)
+	if (m_pVertexResource)
 	{
-		delete m_pMaterialResource;
-		m_pMaterialResource = nullptr;
+		delete m_pVertexResource;
+		m_pVertexResource = nullptr;
+	}
+
+	if (m_pPixelResource)
+	{
+		delete m_pPixelResource;
+		m_pPixelResource = nullptr;
 	}
 
 	m_pVertexShader = nullptr;
-	m_pPxielShader = nullptr;
+	m_pPixelShader = nullptr;
 
+}
+
+const MMaterial& MMaterial::operator=(const MMaterial& mat)
+{
+	//Material
+	MResourceHolder* m_pVertexResource = new MResourceHolder(*mat.m_pVertexResource);
+	MResourceHolder* m_pPixelResource = new MResourceHolder(*mat.m_pPixelResource);
+
+	MShader* m_pVertexShader = mat.m_pVertexShader;
+	MShader* m_pPixelShader = mat.m_pPixelShader;
+
+	unsigned int m_eRenderState = mat.m_eRenderState;
+
+	CompileShaderParams(MEShaderParamType::EBoth);
+
+	return *this;
+}
+
+bool MMaterial::Load(const MString& strResourcePath)
+{
+	return false;
 }
 
 void MMaterial::RecompileShaderParams(std::vector<MShaderParam*>& vParams, std::vector<MShaderParam*>& vNewParams, const MEShaderParamType& eType)
@@ -211,66 +292,6 @@ void MMaterial::RecompileShaderParams(std::vector<MShaderParam*>& vParams, std::
 		}
 	}
 
-
-	/*
-	std::vector<MShaderParam*> vParamsTemp(vNewParams.size());
-	for (unsigned int i = vNewParams.size() - 1; i >= 0; --i)
-	{
-		vParamsTemp[i] = new MShaderParam();
-		*vParamsTemp[i] = *vNewParams[i];
-	}
-
-	auto funcSortFunc = [](MShaderParam* p1, MShaderParam* p2) {
-		return p1->strName < p2->strName;
-	};
-
-	std::sort(vParams.begin(), vParams.end(), funcSortFunc);
-	std::sort(vParamsTemp.begin(), vParamsTemp.end(), funcSortFunc);
-
-	unsigned int paramsSize = vParams.size();
-	unsigned int paramsTempSize = vParamsTemp.size();
-
-	unsigned int i = 0;
-	for (unsigned int j = 0; j < paramsTempSize; ++j)
-	{
-		while (i < paramsSize && vParams[i]->strName < vParamsTemp[j]->strName)
-		{
-			MShaderParam* pParam = new MShaderParam();
-			*pParam = *vParams[i];
-			vParamsTemp.push_back(pParam);
-;
-			++i;
-		}
-
-		if (i >= paramsSize)
-			break;
-
-		if (vParams[i]->strName == vParamsTemp[j]->strName)
-		{
-			vParamsTemp[j]->var.MergeFrom(vParams[i]->var);
-			vParamsTemp[j]->eType |= vParams[i]->eType;
-		}
-
-		vParamsTemp[j]->pBuffer = nullptr;
-	}
-
-	while (i < paramsSize)
-	{
-		vParamsTemp.push_back(vParams[i]);
-		++i;
-	}
-
-	for (MShaderParam* pParam : vParams)
-	{
-		m_pEngine->GetDevice()->DestroyShaderParamBuffer(pParam);
-		delete pParam;
-	}
-
-	vParams = vParamsTemp;
-
-	for (MShaderParam* pParam : vParams)
-		m_pEngine->GetDevice()->GenerateShaderParamBuffer(pParam);
-	*/
 }
 
 void MMaterial::RecompileShaderTextureParam(std::vector<MShaderTextureParam*>& vParams, std::vector<MResourceHolder*>& vResHolders, std::vector<MShaderTextureParam*>& vNewParams, const MEShaderParamType& eType)

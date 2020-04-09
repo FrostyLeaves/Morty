@@ -231,7 +231,6 @@
     <ClCompile Include="..\..\Organizer\Node\Model\MSkinnedMeshInstance.cpp" />
     <ClCompile Include="..\..\Organizer\Node\Model\MStaticMeshInstance.cpp" />
     <ClCompile Include="..\..\Organizer\System\MISystem.cpp" />
-    <ClCompile Include="..\..\ResourceLoader\Material\MMaterialResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MFileHelper.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Model\MMultiLevelMesh.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Model\MModelMeshStruct.cpp" />

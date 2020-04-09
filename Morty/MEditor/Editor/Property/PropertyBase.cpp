@@ -170,7 +170,7 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
 	{
 	case MVariant::EBool:
 		ShowValueBegin(strVariantName);
-		bModified |= Editbool(*value.GetInt());
+		bModified |= Editbool(*value.GetFloat());
 		ShowValueEnd();
 		break;
 
@@ -218,7 +218,7 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 	bool bModified = false;
 
 	{
-		if (MMaterialResource* pResource = dynamic_cast<MMaterialResource*>(pMaterial->GetResource()))
+		if (MMaterialResource* pResource = pMaterial)
 		{
 			ShowValueBegin("VS");
 			if (ImGui::Button("Reload Vertex Shader", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
@@ -261,14 +261,14 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 			if (param.unCode <= SHADER_PARAM_CODE_AUTO_UPDATE)
 				continue;
 
-			MString strDlgName = "file_dlg_vs_" + MStringHelper::ToString(i);
+			MString strDlgName = "file_dlg_tex_" + MStringHelper::ToString(i);
 
 			ShowValueBegin(param.strName);
 			MResource* pResource = vResources[i] ? vResources[i]->GetResource() : nullptr;
 
 			EditMResource(strDlgName, pResource, MResourceManager::MEResourceType::Texture, [&param, &pMaterial](const MString& strNewFilePath) {
 
-				MResource* pNewResource = pMaterial->GetResource()->GetResourceManager()->LoadResource(strNewFilePath);
+				MResource* pNewResource = pMaterial->GetResourceManager()->LoadResource(strNewFilePath);
 
 				pMaterial->SetTexutreParam(param.strName, pNewResource);
 				});

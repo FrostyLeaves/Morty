@@ -71,6 +71,8 @@ void MResourceManager::UnloadResource(const MString& strResourcePath)
 	if (iter == m_tPathResources.end())
 		return;
 
+	iter->second->OnRelease();
+
 	delete iter->second;
 	m_tPathResources.erase(iter);
 }

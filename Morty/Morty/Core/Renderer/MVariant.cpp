@@ -148,7 +148,7 @@ MVariant::MVariant(const MString& var)
 	m_unByteSize = 0;
 }
 
-void* MVariant::GetData()
+void* MVariant::GetData() const
 {
 	if (EStruct == m_eType || EArray == m_eType)
 		return ((MStruct*)(m_pData))->GetData();

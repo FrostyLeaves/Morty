@@ -235,7 +235,7 @@ void MTransformCoord3D::Render(MIRenderer* pRenderer, MViewport* pViewport)
 		return;
 
 	MMaterialResource* pMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW2D);
-	MMaterial* pMaterial = pMaterialRes->GetMaterialTemplate();
+	MMaterial* pMaterial = pMaterialRes;
 
 	if (!pRenderer->SetUseMaterial(pMaterial))
 		return;

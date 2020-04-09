@@ -54,13 +54,16 @@ public:
 	MVariant(const MVariant& var);
 	MVariant(const MString& var);
 
-	void* GetData();
+	void* GetData() const;
 	unsigned int GetSize() const;
 	MEVariableType GetType() const { return m_eType; }
 
-	float* GetInt() { return (float*)m_pData; }
-	int* GetBool() { return (int*)m_pData; }
-	float* GetFloat() { return (float*)m_pData; }
+	bool IsTrue() const { return *((float*)m_pData) >= 0.5f; }
+
+	int* GetInt() const { return (int*)m_pData; }
+	int* GetBool() const { return (int*)m_pData; }
+	float* GetFloat() const { return (float*)m_pData; }
+	MString* GetString() const { return (MString*)m_pData; }
 
 	MStruct* GetStruct() { return (MStruct*)m_pData; }
 	const MStruct* GetStruct() const { return (const MStruct*)m_pData; }

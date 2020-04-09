@@ -10,7 +10,6 @@
 #include "MIDevice.h"
 #include "MEngine.h"
 
-#include "MMaterial.h"
 #include "Material/MMaterialResource.h"
 #include "Texture/MTextureResource.h"
 
@@ -444,13 +443,13 @@ void MModelResource::ProcessMaterial(const aiScene* pScene, std::vector<unsigned
 	for (unsigned int i = 0; i < m_vMeshes.size(); ++i)
 	{
 		MModelMeshStruct* pMeshData = m_vMeshes[i];
-		MMaterial* pMaterial = m_pEngine->GetObjectManager()->CreateObject<MMaterial>();
+		MMaterialResource* pMaterial = m_pEngine->GetResourceManager()->CreateResource<MMaterialResource>();
 		pMeshData->m_pMaterial = pMaterial;
 
 		if (pMeshData->GetMeshVertexType() == MModelMeshStruct::Normal)
-			pMeshData->m_pMaterial->Load(pStaticMeshMaterial);
+			*pMeshData->m_pMaterial = *pStaticMeshMaterial;
 		else if(pMeshData->GetMeshVertexType() == MModelMeshStruct::Skeleton)
-			pMeshData->m_pMaterial->Load(pSkinnedMeshMaterial);
+			*pMeshData->m_pMaterial = *pSkinnedMeshMaterial;
 
 		unsigned int unMaterialIndex = vMaterialIndices[i];
 

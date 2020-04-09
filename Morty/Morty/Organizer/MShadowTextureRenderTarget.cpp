@@ -35,10 +35,10 @@ MShadowTextureRenderTarget::~MShadowTextureRenderTarget()
 void MShadowTextureRenderTarget::OnCreated()
 {
 	MMaterialResource* pShadowMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW);
-	m_pStaticMaterial = pShadowMaterialRes->GetMaterialTemplate();
+	m_pStaticMaterial = pShadowMaterialRes;
 
 	MMaterialResource* pShadowWithAnimMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_ANIM);
-	m_pAnimMaterial = pShadowWithAnimMaterialRes->GetMaterialTemplate();
+	m_pAnimMaterial = pShadowWithAnimMaterialRes;
 	
 	m_pDevice = m_pEngine->GetDevice();
 	m_eRenderTargetType = MTextureRenderTarget::ERenderDepth;

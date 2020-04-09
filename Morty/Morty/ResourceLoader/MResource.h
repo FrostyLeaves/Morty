@@ -46,6 +46,13 @@ public:
 public:
 
 	virtual void OnCreated() {}
+	virtual void OnRelease() {}
+
+	virtual void Decode(MString& strCode) {}
+	virtual void Encode(MString& strCode) {}
+
+	virtual bool Save() { return true; }
+	virtual bool SaveTo() { return true; }
 
 protected:
 

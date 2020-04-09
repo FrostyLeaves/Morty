@@ -213,8 +213,8 @@ bool MEngine::InitializeDefaultResource()
 // 	MTextureCubeResource* pTextureCubeRes = GetResourceManager()->CreateResource<MTextureCubeResource>();
 // 	pTextureCubeRes->SetTextures(vTextureRes);
 // 
-// 	std::vector<MShaderTextureParam>& vTexParams = pSkyBoxMaterialRes->GetMaterialTemplate()->GetPixelTextureParams();
-// 	pSkyBoxMaterialRes->GetMaterialTemplate()->SetPixelTexutreParam("SkyTexCube", pTextureCubeRes);
+// 	std::vector<MShaderTextureParam>& vTexParams = pSkyBoxMaterialRes->GetPixelTextureParams();
+// 	pSkyBoxMaterialRes->SetPixelTexutreParam("SkyTexCube", pTextureCubeRes);
 
 
 	MResource* pEmptyVSResource = GetResourceManager()->LoadResource("./Shader/empty.mvs");
@@ -224,12 +224,12 @@ bool MEngine::InitializeDefaultResource()
 	MMaterialResource* pShadowMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW);
 	pShadowMaterialRes->LoadVertexShader(pEmptyVSResource);
 	pShadowMaterialRes->LoadPixelShader(pEmptyPSResource);
-	pShadowMaterialRes->GetMaterialTemplate()->SetRenderState(unShadowRenderState);
+	pShadowMaterialRes->SetRenderState(unShadowRenderState);
 
 	MMaterialResource* pShadowWithAnimMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_ANIM);
 	pShadowWithAnimMaterialRes->LoadVertexShader(pAnimVSResource);
 	pShadowWithAnimMaterialRes->LoadPixelShader(pEmptyPSResource);
-	pShadowWithAnimMaterialRes->GetMaterialTemplate()->SetRenderState(unShadowRenderState);
+	pShadowWithAnimMaterialRes->SetRenderState(unShadowRenderState);
 
 
 

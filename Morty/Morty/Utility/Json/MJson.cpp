@@ -18,40 +18,109 @@ MJson::~MJson()
 
 }
 
-MVariant JsonValueToMVariant(Value* pValue)
+void JsonValueToMVariant(Value* pValue, MVariant& variant)
 {
-	if (pValue->IsNull())
-		return MVariant();
 	if (pValue->IsString())
-		return MVariant(MString(pValue->GetString()));
-	if (pValue->IsBool())
-		return MVariant(pValue->GetBool());
-	if (pValue->IsInt())
-		return MVariant(pValue->GetInt());
-	if (pValue->IsFloat())
-		return MVariant(pValue->GetFloat());
+		variant = MVariant(MString(pValue->GetString()));
+	else if (pValue->IsBool())
+		variant = MVariant(pValue->GetBool());
+	else if (pValue->IsInt())
+		variant = MVariant(pValue->GetInt());
+	else if (pValue->IsFloat())
+		variant = MVariant(pValue->GetFloat());
 
-	if (pValue->IsObject())
+	else if (pValue->IsObject())
 	{
 		MStruct sut;
 		for (Value::MemberIterator iter = pValue->MemberBegin(); iter != pValue->MemberEnd(); ++iter)
-			sut.AppendMVariant(iter->name.GetString(), JsonValueToMVariant(&(iter->value)));
-		return MVariant(sut);
+		{
+			MVariant child;
+			JsonValueToMVariant(&(iter->value), child);
+			sut.AppendMVariant(iter->name.GetString(), child);
+		}
+		variant = MVariant(sut);
 	}
 
-	if (pValue->IsArray())
+	else if (pValue->IsArray())
 	{
 		Value value = pValue->GetArray();
 		MVariantArray sut;
 		for (Value::MemberIterator iter = value.MemberBegin(); iter != value.MemberEnd(); ++iter)
-			sut.AppendMVariant(JsonValueToMVariant(&iter->value));
-		return MVariant(sut);
+		{
+			MVariant child;
+			JsonValueToMVariant(&iter->value, child);
+			sut.AppendMVariant(child);
+		}
+		variant = MVariant(sut);
 	}
 
-	return MVariant();
+	else
+		variant = MVariant();
 }
 
-MVariant MJson::JsonToMVariant(const MString& strJson)
+void MVariantToJsonValue(const MVariant& var, Value* pValue, Document& doc)
+{
+	switch (var.GetType())
+	{
+	case MVariant::EBool:
+		pValue->SetBool(var.IsTrue());
+		break;
+
+	case MVariant::EFloat:
+		pValue->SetFloat(*var.GetFloat());
+		break;
+
+	case MVariant::EInt:
+		pValue->SetInt(*var.GetInt());
+		break;
+
+	case MVariant::EString:
+		pValue->SetString((*var.GetString()).c_str(), doc.GetAllocator());
+		break;
+
+	case MVariant::EStruct:
+	{
+		const MStruct* pStruct = var.GetStruct();
+		for (unsigned int i = 0; i < pStruct->GetMemberCount(); ++i)
+		{
+			const MStruct::MStructMember* pMember = pStruct->GetMember(i);
+
+			pValue->SetObject();
+
+			Value name;
+			name.SetString(pMember->strName.c_str(), doc.GetAllocator());
+			Value value;
+			MVariantToJsonValue(pMember->var, &value, doc);
+			pValue->AddMember(name, value, doc.GetAllocator());
+
+		}
+		break;
+	}
+
+	case MVariant::EArray:
+	{
+		const MVariantArray* pArray = var.GetArray();
+		for (unsigned int i = 0; i < pArray->GetMemberCount(); ++i)
+		{
+			const MVariantArray::MStructMember* pMember = pArray->GetMember(i);
+
+			pValue->SetArray();
+
+			Value value;
+			MVariantToJsonValue(pMember->var, &value, doc);
+
+			pValue->PushBack(value, doc.GetAllocator());
+		}
+	}
+
+	case MVariant::ENone:
+	default:
+		pValue->SetNull();
+		break;
+	}
+}
+
+void MJson::JsonToMVariant(const MString& strJson, MVariant& variant)
 {
 	Document doc;
 	doc.Parse(strJson.c_str());
@@ -59,9 +128,22 @@ MVariant MJson::JsonToMVariant(const MString& strJson)
 	if (doc.HasParseError())
 	{
 		MLogManager::GetInstance()->Error("Json Error Code : %d", doc.GetParseError());
-		return MVariant();
+		variant = MVariant();
+		return;
 	}
 
-	return JsonValueToMVariant(&doc);
+	 JsonValueToMVariant(&doc, variant);
 
+}
+
+void MJson::MVariantToJson(const MVariant& var, MString& strJson)
+{
+	Document doc;
+	MVariantToJsonValue(var, &doc, doc);
+
+	rapidjson::StringBuffer buffer;
+	rapidjson::Writer<StringBuffer> writer(buffer);
+	doc.Accept(writer);
+
+	strJson = buffer.GetString();
 }

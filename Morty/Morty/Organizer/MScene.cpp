@@ -78,10 +78,8 @@ void MScene::InitShadowMapRenderTarget()
 		return;
 
 	MMaterialResource* pShadowMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW);
-	MMaterial* pStaticMaterial = pShadowMaterialRes->GetMaterialTemplate();
 
 	MMaterialResource* pShadowWithAnimMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_ANIM);
-	MMaterial* pAnimMaterial = pShadowWithAnimMaterialRes->GetMaterialTemplate();
 
 	m_pShadowDepthMapRenderTarget = m_pEngine->GetObjectManager()->CreateObject<MShadowTextureRenderTarget>();
 
@@ -598,7 +596,7 @@ void MScene::DrawPainter(MIRenderer* pRenderer, MViewport* pViewport)
 void MScene::DrawBoundingBox(MIRenderer* pRenderer, MViewport* pViewport, MModelInstance* pModelIns)
 {
 	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW3D);
-	MMaterial* pMaterial = pDraw3DMaterialRes->GetMaterialTemplate();
+	MMaterial* pMaterial = pDraw3DMaterialRes;
 	if (!pRenderer->SetUseMaterial(pMaterial))
 		return;
 		
@@ -649,7 +647,7 @@ void MScene::DrawBoundingBox(MIRenderer* pRenderer, MViewport* pViewport, MModel
 void MScene::DrawCameraFrustum(MIRenderer* pRenderer, MViewport* pViewport, MCamera* pCamera)
 {
 	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW3D);
-	MMaterial* pMaterial = pDraw3DMaterialRes->GetMaterialTemplate();
+	MMaterial* pMaterial = pDraw3DMaterialRes;
 	if (!pRenderer->SetUseMaterial(pMaterial))
 		return;
 
