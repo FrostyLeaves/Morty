@@ -22,7 +22,6 @@ public:
     M3DNode();
     virtual ~M3DNode();
 
-
 	void SetPosition(const Vector3& pos);
 	Vector3 GetPosition() { return m_transform.GetPosition(); }
 	void SetWorldPosition(const Vector3& pos);
@@ -40,6 +39,7 @@ public:
 	void LookAt(const Vector3& v3TargetWorldPos, Vector3 v3UpDir);
 
 	Matrix4 GetParentWorldTransform();
+	Matrix4 GetWorldToLocalTransform();
 	Matrix4 GetWorldTransform();
 	Matrix4 GetLocalTransform();
 
@@ -64,10 +64,12 @@ protected:
 private:
 
 	MTransform m_transform;
-	bool m_bLocalTransformDirty;
 	Matrix4 m_m4Transform;
-	bool m_bWorldTransformDirty;
 	Matrix4 m_m4WorldTransform;
+	Matrix4 m_m4WorldToLocalTransform;
+	bool m_bLocalTransformDirty;
+	bool m_bWorldTransformDirty;
+	bool m_bWorldToLocalTransform;
 };
 
 

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "MMath.h"
 #include "M3DNode.h"
 #include "MLogManager.h"
 
@@ -74,7 +75,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 			m_eCoordMoveType = m_eCoordHoverType;
 
 			
-			m_v3TransformOrigin = m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition();
+			m_v3TransformOrigin = m_pTargetNode->GetWorldTransform() * Vector3(0, 0, 0);
 			const Vector3& v3Origin = m_v3TransformOrigin;
 
 			switch (m_eCoordMoveType)
@@ -114,10 +115,10 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 				v3RayDir.Normalize();
 
 				unsigned int i = GetAxisIndex((MECoordHoverType)((int)MECoordHoverType::XYZ ^ (int)m_eCoordMoveType));
-				Vector3 v3PlaneNormal =/* m_pTargetNode->GetParentWorldTransform() * */m_vDirection[i];
+				Vector3 v3PlaneNormal = m_vDirection[i];
 				v3PlaneNormal.Normalize();
 
-				GetIntersection(v3CameraPos, v3RayDir, v3Origin, v3PlaneNormal, m_v3PlaneHitPoint);
+				MMath::RayToPlane(v3CameraPos, v3RayDir, v3Origin, v3PlaneNormal, m_v3PlaneHitPoint);
 
 				break;
 			}
@@ -135,7 +136,10 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 		Vector2 addi = pMouseEvent->GetMouseAddition();
 		addi.y = -addi.y;
 
-		Vector3 v3Origin = m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition();
+		Vector3 v3Origin = m_pTargetNode->GetWorldTransform() * Vector3(0, 0, 0);
+
+//		m_pTargetNode->GetWorldTransform()
+
 		
 		switch (m_eCoordMoveType)
 		{
@@ -147,8 +151,8 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 			
 			Vector3 addiPosition(0, 0, 0);
 
-			addiPosition.m[i] = Projection(Vector3(addi, 0.0f), m_v3NormalizedDirection);
-			m_pTargetNode->SetPosition(m_pTargetNode->GetPosition() + addiPosition);
+			addiPosition.m[i] = MMath::Projection(Vector3(addi, 0.0f), m_v3NormalizedDirection);
+			m_pTargetNode->SetWorldPosition(m_pTargetNode->GetWorldPosition() + addiPosition);
 
 			break;
 		}
@@ -168,11 +172,11 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 			v3RayDir.Normalize();
 
 			unsigned int i = GetAxisIndex((MECoordHoverType)((int)MECoordHoverType::XYZ ^ (int)m_eCoordMoveType));
-			Vector3 v3PlaneNormal = /*m_pTargetNode->GetParentWorldTransform() * */m_vDirection[i];
+			Vector3 v3PlaneNormal = m_vDirection[i];
 			v3PlaneNormal.Normalize();
 
 			Vector3 v3NewHitPoint;
-			if (GetIntersection(v3CameraPos, v3RayDir, v3Origin, v3PlaneNormal, v3NewHitPoint))
+			if (MMath::RayToPlane(v3CameraPos, v3RayDir, v3Origin, v3PlaneNormal, v3NewHitPoint))
 			{
 				Vector3 v3Dir = v3NewHitPoint - m_v3PlaneHitPoint;
 
@@ -180,8 +184,8 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 				{
 					if (n & (unsigned int)m_eCoordMoveType)
 					{
-						float fLength = Projection(v3Dir, m_vDirection[i]);
-						m_pTargetNode->SetPosition(m_pTargetNode->GetPosition() + m_vDirection[i] * fLength);
+						float fLength = MMath::Projection(v3Dir, m_vDirection[i]);
+						m_pTargetNode->SetWorldPosition(m_pTargetNode->GetWorldPosition() + m_vDirection[i] * fLength);
 					}
 				}
 
@@ -366,25 +370,4 @@ unsigned int MTransformCoord3D::GetAxisIndex(const MECoordHoverType& eType)
 	default:
 		return 3;
 	}
-}
-
-bool MTransformCoord3D::GetIntersection(const Vector3& v3Origin, const Vector3& v3Direction, const Vector3& v3PlaneOrigin, const Vector3& v3PlaneNormal, Vector3& v3HitPoint)
-{
-	float fLength = (v3PlaneNormal * v3PlaneOrigin - v3PlaneNormal * v3Origin) / (v3PlaneNormal * v3Direction);
-
-	if (-1e-6 < fLength&& fLength < 1e-6)
-		return false;
-
-	v3HitPoint = v3Origin + v3Direction * fLength;
-
-	return true;
-}
-
-float MTransformCoord3D::Projection(const Vector3& v3Sour, const Vector3& v3Dest)
-{
-	float fLength = v3Dest.Length();
-	if (fLength < 1e-6)
-		return 0.0f;
-
-	return (v3Sour * v3Dest) / fLength / fLength;
 }

@@ -45,7 +45,6 @@ public:
 	void SetGenerateDirLightShadow(const bool& bGenerate) { m_bGenerateDirLightShadow = bGenerate; }
 	bool GetGenerateDirLightShadow() const { return m_bGenerateDirLightShadow; }
 
-
 public:
 	bool SetPlayAnimation(const MString& strAnimationName);
 	void SetRemoveAnimation();

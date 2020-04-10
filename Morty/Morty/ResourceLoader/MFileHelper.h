@@ -19,6 +19,8 @@ public:
 
 public:
 
+	static bool WriteString(const MString& strFilePath, const MString& strData);
+
 	
 private:
 

@@ -59,12 +59,6 @@ protected:
 
 	unsigned int GetAxisIndex(const MECoordHoverType& eType);
 	
-
-	bool GetIntersection(const Vector3& v3Origin, const Vector3& v3Direction, const Vector3& v3PlaneOrigin, const Vector3& v3PlaneNormal, Vector3& v3HitPoint);
-
-
-	float Projection(const Vector3& v3Sour, const Vector3& v3Dest);
-
 private:
 
 	static const Vector3 m_vDirection[3];

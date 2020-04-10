@@ -476,11 +476,11 @@ void MModelResource::ProcessMaterial(const aiScene* pScene, std::vector<unsigned
 		}
 		//Test Data, need read from file.
 		MStruct* pMaterialStruct = nullptr;
-		for (MShaderParam* pParam : *pMaterial->GetShaderParams())
+		for (MShaderParam& param : *pMaterial->GetShaderParams())
 		{
-			if (pParam->unCode == SHADER_PARAM_CODE_MATERIAL)
+			if (param.unCode == SHADER_PARAM_CODE_MATERIAL)
 			{
-				if (MStruct* pStruct = pParam->var.GetStruct())
+				if (MStruct* pStruct = param.var.GetStruct())
 				{
 					if (MStruct* pMat = pStruct->FindMember("U_mat")->GetStruct())
 					{

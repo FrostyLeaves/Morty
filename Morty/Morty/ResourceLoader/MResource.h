@@ -52,7 +52,7 @@ public:
 	virtual void Encode(MString& strCode) {}
 
 	virtual bool Save() { return true; }
-	virtual bool SaveTo() { return true; }
+	virtual bool SaveTo(const MString& strResourcePath);
 
 protected:
 

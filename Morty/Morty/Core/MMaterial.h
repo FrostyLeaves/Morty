@@ -27,8 +27,8 @@ public:
 	MShader* GetVertexShader(){ return m_pVertexShader; }
 	MShader* GetPixelShader() { return m_pPixelShader; }
 
-	std::vector<MShaderParam*>* GetShaderParams() { return &m_vShaderParams; }
-	std::vector<MShaderTextureParam*>* GetTextureParams() { return &m_vTextureParams; }
+	std::vector<MShaderParam>* GetShaderParams() { return &m_vShaderParams; }
+	std::vector<MShaderTextureParam>* GetTextureParams() { return &m_vTextureParams; }
 	std::vector< MResourceHolder*>* GetTextures() { return &m_vTextureResHolder; }
 
 	void SetTexutreParam(const MString& strName, MResource* pTexResource);
@@ -58,18 +58,18 @@ protected:
 
 	virtual bool Load(const MString& strResourcePath) override;
 
-	void RecompileShaderParams(std::vector<MShaderParam*>& vParams, std::vector<MShaderParam*>& vNewParams, const MEShaderParamType& eType);
-	void RecompileShaderTextureParam(std::vector<MShaderTextureParam*>& vParams, std::vector<MResourceHolder*>& vResHolders, std::vector<MShaderTextureParam*>& vNewParams, const MEShaderParamType& eType);
+	void RecompileShaderParams(std::vector<MShaderParam>& vParams, std::vector<MShaderParam*>& vNewParams, const MEShaderParamType& eType);
+	void RecompileShaderTextureParam(std::vector<MShaderTextureParam>& vParams, std::vector<MResourceHolder*>& vResHolders, std::vector<MShaderTextureParam*>& vNewParams, const MEShaderParamType& eType);
 
 	void CleanTextureParams();
 
 private:
 
 	//Shader Params
-	std::vector<MShaderParam*> m_vShaderParams;
+	std::vector<MShaderParam> m_vShaderParams;
 
 	//Texture
-	std::vector<MShaderTextureParam*> m_vTextureParams;
+	std::vector<MShaderTextureParam> m_vTextureParams;
 	std::vector<MResourceHolder*> m_vTextureResHolder;
 
 	//Material

@@ -27,6 +27,7 @@ class MInputEvent;
 class MIRenderView;
 class MViewport;
 class MMaterial;
+class MIMeshInstance;
 class MIModelMeshInstance;
 class MTransformCoord3D;
 class MInputNode;
@@ -93,6 +94,7 @@ protected:
 	void DrawSkyBox(MIRenderer* pRenderer, MViewport* pViewport);
 	void DrawPainter(MIRenderer* pRenderer, MViewport* pViewport);
 	void DrawBoundingBox(MIRenderer* pRenderer, MViewport* pViewport, MModelInstance* pModelIns);
+	void DrawBoundingSphere(MIRenderer* pRenderer, MViewport* pViewport, MIMeshInstance* pModelIns);
 	void DrawCameraFrustum(MIRenderer* pRenderer, MViewport* pViewport, MCamera* pCamera);
 
 private:

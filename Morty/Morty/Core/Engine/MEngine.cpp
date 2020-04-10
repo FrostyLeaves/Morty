@@ -195,6 +195,10 @@ bool MEngine::InitializeDefaultResource()
 	pSkyBoxMaterialRes->LoadVertexShader(pSkyBoxVSResource);
 	pSkyBoxMaterialRes->LoadPixelShader(pSkyBoxPSResource);
 
+	MResource* pSphereResource = GetResourceManager()->LoadResource("./Model/Sphere.fbx");
+
+
+
 // 	static MString vTexturePath[6] = {
 // 		"ashcanyon_rt.tga",
 // 		"ashcanyon_lf.tga",

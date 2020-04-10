@@ -58,7 +58,7 @@ MBoundsSphere* MStaticMeshInstance::GetBoundsSphere()
 	{
 		m_BoundsSphere = *m_pMesh->GetMeshesDefaultSphere();
 
-		m_BoundsSphere.m_v3CenterPoint = GetWorldPosition();
+		m_BoundsSphere.m_v3CenterPoint += GetWorldPosition();
 
 		Vector3 v3Scale = GetScale();
 		float fMaxScale = v3Scale.x;

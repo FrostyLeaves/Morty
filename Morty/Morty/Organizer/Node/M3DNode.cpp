@@ -5,10 +5,12 @@ MTypeIdentifierImplement(M3DNode, MNode)
 M3DNode::M3DNode()
 	: MNode()
 	, m_transform()
-	, m_bLocalTransformDirty(true)
 	, m_m4Transform(Matrix4::IdentityMatrix)
-	, m_bWorldTransformDirty(true)
 	, m_m4WorldTransform(Matrix4::IdentityMatrix)
+	, m_m4WorldToLocalTransform(Matrix4::IdentityMatrix)
+	, m_bLocalTransformDirty(true)
+	, m_bWorldTransformDirty(true)
+	, m_bWorldToLocalTransform(true)
 {
 
 }
@@ -24,6 +26,18 @@ Matrix4 M3DNode::GetParentWorldTransform()
 		UpdateWorldTransform();
 
 	return m_m4WorldTransform;
+}
+
+Matrix4 M3DNode::GetWorldToLocalTransform()
+{
+	if (m_bWorldToLocalTransform)
+	{
+		m_bWorldToLocalTransform = false;
+
+		m_m4WorldToLocalTransform = GetParentWorldTransform().Inverse();
+	}
+
+	return m_m4WorldToLocalTransform;
 }
 
 Matrix4 M3DNode::GetWorldTransform()
@@ -58,7 +72,7 @@ void M3DNode::UpdateWorldTransform()
 		{
 			if (M3DNode* p3DNode = dynamic_cast<M3DNode*>(pNode))
 			{
-				m_m4WorldTransform = m_m4WorldTransform * p3DNode->GetWorldTransform();
+				m_m4WorldTransform = p3DNode->GetWorldTransform();
 				return;
 			}
 		}
@@ -98,8 +112,9 @@ void M3DNode::SetPosition(const Vector3& pos)
 
 void M3DNode::SetWorldPosition(const Vector3& pos)
 {
-	Vector3 v3LocalPos = pos - GetWorldPosition();
-	SetPosition(v3LocalPos);
+	Vector3 localPos = GetWorldToLocalTransform() * pos;
+
+	SetPosition(localPos);
 }
 
 Vector3 M3DNode::GetWorldPosition()
@@ -174,6 +189,7 @@ void M3DNode::WorldTransformDirtyRecursively(MNode* pNode)
 void M3DNode::WorldTransformDirty()
 {
 	m_bWorldTransformDirty = true;
+	m_bWorldToLocalTransform = true;
 }
 
 void M3DNode::LocalTransformDirty()

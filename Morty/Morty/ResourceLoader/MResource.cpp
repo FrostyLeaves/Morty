@@ -1,6 +1,7 @@
 ﻿#include "MResource.h"
 #include "MEngine.h"
 #include "MResourceManager.h"
+#include "MFileHelper.h"
 
 MResource::MResource()
 : m_unResourceID(0)
@@ -64,6 +65,14 @@ MString MResource::GetFileName(const MString& strPath)
 MResourceManager* MResource::GetResourceManager()
 {
 	return m_pEngine->GetResourceManager();
+}
+
+bool MResource::SaveTo(const MString& strResourcePath)
+{
+	MString strCode;
+	Encode(strCode);
+
+	return MFileHelper::WriteString(strResourcePath, strCode);
 }
 
 void MResource::OnReferenceZero()

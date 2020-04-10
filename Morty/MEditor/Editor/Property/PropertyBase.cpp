@@ -241,23 +241,23 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 
 
 	{
-		std::vector<MShaderParam*>& vParams = *pMaterial->GetShaderParams();
-		for (MShaderParam* pParam : vParams)
+		std::vector<MShaderParam>& vParams = *pMaterial->GetShaderParams();
+		for (MShaderParam& param : vParams)
 		{
-			if (EditMVariant(pParam->strName, pParam->var))
+			if (EditMVariant(param.strName, param.var))
 			{
-				pParam->SetDirty();
+				param.SetDirty();
 				bModified = true;
 			}
 		}
 	}
 
 	{
-		std::vector<MShaderTextureParam*>& vParams = *pMaterial->GetTextureParams();
+		std::vector<MShaderTextureParam>& vParams = *pMaterial->GetTextureParams();
 		std::vector<MResourceHolder*>& vResources = *pMaterial->GetTextures();
 		for (unsigned int i = 0; i < vParams.size(); ++i)
 		{
-			MShaderTextureParam& param = *vParams[i];
+			MShaderTextureParam& param = vParams[i];
 			if (param.unCode <= SHADER_PARAM_CODE_AUTO_UPDATE)
 				continue;
 

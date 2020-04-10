@@ -27,8 +27,21 @@ public:
 
 	static Matrix4 GetScaleAndRotation(const Matrix4& mat);
 
+	//射线和平面求交点
+	static bool RayToPlane(const Vector3& v3RayOrigin, const Vector3& v3RayDirection, const Vector3& v3PlaneOrigin, const Vector3& v3PlaneNormal, Vector3& v3HitPoint);
+
+	//投影
+	static float Projection(const Vector3& v3Sour, const Vector3& v3Dest);
+
+
+
+
+
 	static float Rand_0_1();
 	static int RandInt(const int& nMin, const int& nMax);
+
+
+
 
 private:
 

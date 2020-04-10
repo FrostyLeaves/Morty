@@ -8,6 +8,11 @@
 #include "Light/MSpotLight.h"
 
 #include "Model/MStaticMeshInstance.h"
+#include "Model/MModelMeshStruct.h"
+#include "Model/MIModelMeshInstance.h"
+
+#include "Material/MMaterialResource.h"
+
 #include "MVertex.h"
 #include "MMaterial.h"
 #include "MIRenderer.h"
@@ -540,7 +545,16 @@ void MScene::DrawModelInstance(MIRenderer* pRenderer, MViewport* pViewport)
 	{
 		if (pModelIns->GetDrawBoundingBox())
 		{
-			DrawBoundingBox(pRenderer, pViewport, pModelIns);
+			//DrawBoundingBox(pRenderer, pViewport, pModelIns);
+
+			for (MNode* pChild : pModelIns->GetFixedChildren())
+			{
+				if (MIModelMeshInstance* pMeshIns = dynamic_cast<MIModelMeshInstance*>(pChild))
+				{
+					DrawBoundingSphere(pRenderer, pViewport, pMeshIns);
+					break;
+				}
+			}
 		}
 	}
 }
@@ -640,6 +654,54 @@ void MScene::DrawBoundingBox(MIRenderer* pRenderer, MViewport* pViewport, MModel
 		{
 			pRenderer->DrawMesh(&meshs);
 			meshs.DestroyBuffer(m_pEngine->GetDevice());
+		}
+	}
+}
+
+void MScene::DrawBoundingSphere(MIRenderer* pRenderer, MViewport* pViewport, MIMeshInstance* pMeshIns)
+{
+	MResource* pSphereResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere.fbx");
+	MMaterialResource* pStaticMeshMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_STATIC);
+
+	MMaterial& mat = *pStaticMeshMaterialRes;
+	unsigned int unType = MIRenderer::EWireframe | MIRenderer::ECullNone;
+	mat.SetRenderState(unType);
+
+
+	MShaderParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
+	if (nullptr == pMeshMatrixParam)
+		return;
+
+	if (!pRenderer->SetUseMaterial(pStaticMeshMaterialRes))
+		return;
+
+
+	MTransform trans;
+	if(MBoundsSphere* pSphere = pMeshIns->GetBoundsSphere())
+	{
+		float fScale = pSphere->m_fRadius / 8.0f;
+		trans.SetPosition(pSphere->m_v3CenterPoint);
+		trans.SetScale(Vector3(fScale, fScale, fScale));
+	}
+
+	Matrix4 worldTrans = trans.GetMatrix();
+
+	//Transposed and Inverse.
+	Matrix3 matNormal(worldTrans.Transposed().Inverse(), 3, 3);
+
+	MStruct& cStruct = *pMeshMatrixParam->var.GetStruct();
+	cStruct[0] = worldTrans;
+	cStruct[1] = matNormal;
+
+	pMeshMatrixParam->SetDirty();
+	pRenderer->SetVertexShaderParam(*pMeshMatrixParam);
+
+
+	if (MModelResource* pModelResource = dynamic_cast<MModelResource*>(pSphereResource))
+	{
+		for (MModelMeshStruct* pMeshData : *pModelResource->GetMeshes())
+		{
+			pRenderer->DrawMesh(pMeshData->GetMesh());
 		}
 	}
 }

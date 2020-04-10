@@ -4,12 +4,11 @@
 #include <string>
 
 #include "MLogManager.h"
-#include "MTimer.h"
+#include "Timer/MTimer.h"
 #include "MEngine.h"
 #include "MInputManager.h"
 #include "MIRenderer.h"
 #include "MViewport.h"
-#include "MTimer.h"
 #include "MIRenderTarget.h"
 
 std::map<HWND, MWindowsRenderView*> MWindowsRenderView::s_tViewTable = std::map<HWND, MWindowsRenderView*>();

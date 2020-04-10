@@ -13,6 +13,27 @@ Matrix4 MMath::GetScaleAndRotation(const Matrix4& mat)
 	return result;
 }
 
+bool MMath::RayToPlane(const Vector3& v3RayOrigin, const Vector3& v3RayDirection, const Vector3& v3PlaneOrigin, const Vector3& v3PlaneNormal, Vector3& v3HitPoint)
+{
+	float fLength = (v3PlaneNormal * v3PlaneOrigin - v3PlaneNormal * v3RayOrigin) / (v3PlaneNormal * v3RayDirection);
+
+	if (-1e-6 < fLength && fLength < 1e-6)
+		return false;
+
+	v3HitPoint = v3RayOrigin + v3RayDirection * fLength;
+
+	return true;
+}
+
+float MMath::Projection(const Vector3& v3Sour, const Vector3& v3Dest)
+{
+	float fLength = v3Dest.Length();
+	if (fLength < 1e-6)
+		return 0.0f;
+
+	return (v3Sour * v3Dest) / fLength / fLength;
+}
+
 float MMath::Rand_0_1()
 {
 	std::uniform_real_distribution<float> randomUniform(0, 1);

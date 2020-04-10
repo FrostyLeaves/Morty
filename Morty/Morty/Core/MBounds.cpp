@@ -385,9 +385,10 @@ void MBoundsSphere::SetPoints(const MByte* vPoints, const unsigned int& unArrayL
 		vPointArray[i] = *(Vector3*)(vPoints + unOffset);
 	}
 
-	sphere.SetPoints(vPointArray);
+	SetPoints(vPointArray, true);
 
-	*this = sphere.GetMinSurroundBall();
+//	sphere.SetPoints(vPointArray);
+//	*this = sphere.GetMinSurroundBall();
 }
 
 bool MBoundsSphere::IsContain(const Vector3& pos)
@@ -403,7 +404,7 @@ void MPointsSphere::RandomSwap()
 	Vector3 v3Temp;
 	for (unsigned int i = 0; i < unSize; ++i)
 	{
-		unIndex = MMath::RandInt(0, unSize);
+		unIndex = MMath::RandInt(0, unSize - 1);
 
 		v3Temp = m_vPoints[i];
 		m_vPoints[i] = m_vPoints[unIndex];
