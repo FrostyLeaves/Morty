@@ -34,9 +34,6 @@ public:
 	static float Projection(const Vector3& v3Sour, const Vector3& v3Dest);
 
 
-
-
-
 	static float Rand_0_1();
 	static int RandInt(const int& nMin, const int& nMax);
 

@@ -385,10 +385,7 @@ void MBoundsSphere::SetPoints(const MByte* vPoints, const unsigned int& unArrayL
 		vPointArray[i] = *(Vector3*)(vPoints + unOffset);
 	}
 
-	SetPoints(vPointArray, true);
-
-//	sphere.SetPoints(vPointArray);
-//	*this = sphere.GetMinSurroundBall();
+	SetPoints(vPointArray, false);
 }
 
 bool MBoundsSphere::IsContain(const Vector3& pos)
@@ -432,7 +429,7 @@ MBoundsSphere MPointsSphere::GetMinSurroundBall(const unsigned int& idx1)
 {
 	MBoundsSphere sphere(m_vPoints[idx1], 0);
 
-	for (unsigned int i = 1; i < idx1; ++i)
+	for (unsigned int i = 0; i < idx1; ++i)
 	{
 		if (!sphere.IsContain(m_vPoints[i])) {
 			sphere = GetMinSurroundBall(idx1, i);
@@ -449,19 +446,19 @@ MBoundsSphere MPointsSphere::GetMinSurroundBall(const unsigned int& idx1, const 
 	for (unsigned int i = 1; i < idx2; ++i)
 	{
 		if (!sphere.IsContain(m_vPoints[i])) {
-			sphere = GetMinSurroundBall(idx1, idx2, i);
+			sphere = GetMinSurroundBall(idx1, idx2, i);// i idx1 idx2
 		}
 
 	}
 	return sphere;
 }
-
+		
 MBoundsSphere MPointsSphere::GetMinSurroundBall(const unsigned int& idx1, const unsigned int& idx2, const unsigned int& idx3)
 {
 	MBoundsSphere sphere;
 
 	Vector3 v3Center = (m_vPoints[idx1] + m_vPoints[idx2] + m_vPoints[idx3]) / 3.0f;
-	float fRadius = (m_vPoints[idx1] - sphere.m_v3CenterPoint).Length();
+	float fRadius = (m_vPoints[idx2] - sphere.m_v3CenterPoint).Length();
 	
 
 	for (unsigned int i = 0; i < idx3; ++i)
@@ -469,7 +466,7 @@ MBoundsSphere MPointsSphere::GetMinSurroundBall(const unsigned int& idx1, const 
 		if (!sphere.IsContain(m_vPoints[i]))
 		{
 			Vector3 v3NewCenter = GetBallCenter(m_vPoints[i], m_vPoints[idx1], m_vPoints[idx2], m_vPoints[idx3]);
-			float fNewRadius = (v3NewCenter - m_vPoints[idx1]).Length();
+			float fNewRadius = (v3NewCenter - m_vPoints[idx2]).Length();
 			if (fNewRadius > fRadius)
 			{
 				v3Center = v3NewCenter;

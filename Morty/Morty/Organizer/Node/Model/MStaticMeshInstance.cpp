@@ -2,6 +2,7 @@
 #include "Model/MModelResource.h"
 #include "MScene.h"
 #include "MMaterial.h"
+#include "MMath.h"
 
 #include "Model/MModelResource.h"
 #include "Model/MModelMeshStruct.h"
@@ -58,9 +59,11 @@ MBoundsSphere* MStaticMeshInstance::GetBoundsSphere()
 	{
 		m_BoundsSphere = *m_pMesh->GetMeshesDefaultSphere();
 
-		m_BoundsSphere.m_v3CenterPoint += GetWorldPosition();
+		m_BoundsSphere.m_v3CenterPoint = GetWorldTransform() * m_BoundsSphere.m_v3CenterPoint;
+		Matrix4 matScale = MMath::GetScaleAndRotation(GetWorldTransform());
 
-		Vector3 v3Scale = GetScale();
+		Vector3 v3Scale = matScale * Vector3(1, 1, 1);
+
 		float fMaxScale = v3Scale.x;
 		if (fMaxScale < v3Scale.y) fMaxScale = v3Scale.y;
 		if (fMaxScale < v3Scale.z) fMaxScale = v3Scale.z;
@@ -96,6 +99,7 @@ void MStaticMeshInstance::WorldTransformDirty()
 	MIMeshInstance::WorldTransformDirty();
 
 	m_bBoundsAABBDirty = true;
+	m_bBoundsSphereDirty = true;
 }
 
 void MStaticMeshInstance::LocalTransformDirty()

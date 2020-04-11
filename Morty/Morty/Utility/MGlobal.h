@@ -96,4 +96,8 @@ enum class MEKeyState
 };
 
 
+
+
+#include "MLogManager.h"
+
 #endif
