@@ -545,18 +545,22 @@ void MScene::DrawModelInstance(MIRenderer* pRenderer, MViewport* pViewport)
 	{
 		if (pModelIns->GetDrawBoundingBox())
 		{
-			//DrawBoundingBox(pRenderer, pViewport, pModelIns);
+			DrawBoundingBox(pRenderer, pViewport, pModelIns);
+		}
 
-			for (MNode* pChild : pModelIns->GetFixedChildren())
+		for (MNode* pChild : pModelIns->GetFixedChildren())
+		{
+			if (MIModelMeshInstance* pMeshIns = dynamic_cast<MIModelMeshInstance*>(pChild))
 			{
-				if (MIModelMeshInstance* pMeshIns = dynamic_cast<MIModelMeshInstance*>(pChild))
+				if (pMeshIns->GetDrawBoundingSphere())
 				{
 					DrawBoundingSphere(pRenderer, pViewport, pMeshIns);
-					break;
 				}
 			}
 		}
 	}
+
+	
 }
 
 void MScene::DrawSkyBox(MIRenderer* pRenderer, MViewport* pViewport)
@@ -667,7 +671,6 @@ void MScene::DrawBoundingSphere(MIRenderer* pRenderer, MViewport* pViewport, MIM
 	unsigned int unType = MIRenderer::EWireframe | MIRenderer::ECullNone;
 	mat.SetRenderState(unType);
 
-
 	MShaderParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
 	if (nullptr == pMeshMatrixParam)
 		return;
@@ -675,11 +678,10 @@ void MScene::DrawBoundingSphere(MIRenderer* pRenderer, MViewport* pViewport, MIM
 	if (!pRenderer->SetUseMaterial(pStaticMeshMaterialRes))
 		return;
 
-
 	MTransform trans;
 	if(MBoundsSphere* pSphere = pMeshIns->GetBoundsSphere())
 	{
-		float fScale = pSphere->m_fRadius / 8.0f;
+		float fScale = pSphere->m_fRadius / 3.8f;
 		trans.SetPosition(pSphere->m_v3CenterPoint);
 		trans.SetScale(Vector3(fScale, fScale, fScale));
 	}
@@ -695,7 +697,6 @@ void MScene::DrawBoundingSphere(MIRenderer* pRenderer, MViewport* pViewport, MIM
 
 	pMeshMatrixParam->SetDirty();
 	pRenderer->SetVertexShaderParam(*pMeshMatrixParam);
-
 
 	if (MModelResource* pModelResource = dynamic_cast<MModelResource*>(pSphereResource))
 	{

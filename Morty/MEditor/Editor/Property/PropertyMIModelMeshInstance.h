@@ -13,9 +13,15 @@ public:
 	{
 		if (MIModelMeshInstance* pNode = pObject->DynamicCast<MIModelMeshInstance>())
 		{
+			if (ShowNodeBegin("Model Mesh"))
+			{
+				PROPERTY_VALUE_EDIT(pNode, "Draw Bounding", bool, GetDrawBoundingSphere, SetDrawBoundingSphere);
+
+				ShowNodeEnd();
+			}
+
 			if (ShowNodeBegin("Material"))
 			{
-				
 				MMaterial* pMaterial = pNode->GetMaterial();
 
 				EditMMaterial(pNode->GetMaterial());

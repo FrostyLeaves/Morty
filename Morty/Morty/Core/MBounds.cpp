@@ -3,6 +3,7 @@
 #include "Eigenvalues"
 #include "Matrix.h"
 #include "MMath.h"
+#include "Timer/MTimer.h"
 
 MBoundsOBB::MBoundsOBB(const Vector3* vPoints, const unsigned int& unArrayLength)
 {
@@ -305,12 +306,6 @@ MBoundsSphere::MBoundsSphere(const Vector3& v3CenterPoint, const float& fRadius)
 
 }
 
-
-MBoundsSphere::MBoundsSphere(const std::vector<Vector3>& vPoints)
-{
-	SetPoints(vPoints);
-}
-
 MBoundsSphere::MBoundsSphere()
 	: m_v3CenterPoint()
 	, m_fRadius(0.0f)
@@ -318,74 +313,59 @@ MBoundsSphere::MBoundsSphere()
 
 }
 
-void MBoundsSphere::SetPoints(const std::vector<Vector3>& vPoints, const bool& bBetter/* = false*/)
-{
-	if (bBetter)
-	{
-		MPointsSphere sphere;
-		sphere.SetPoints(vPoints);
-
-		*this = sphere.GetMinSurroundBall();
-	}
-	else
-	{
-		Vector3 v3Min(FLT_MAX, FLT_MAX, FLT_MAX);
-		Vector3 v3Max(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-
-		for (const Vector3& pos : vPoints)
-		{
-			if (v3Min.x > pos.x)
-				v3Min.x = pos.x;
-			if (v3Min.y > pos.y)
-				v3Min.y = pos.y;
-			if (v3Min.z > pos.z)
-				v3Min.z = pos.z;
-
-			if (v3Max.x < pos.x)
-				v3Max.x = pos.x;
-			if (v3Max.y < pos.y)
-				v3Max.y = pos.y;
-			if (v3Max.z < pos.z)
-				v3Max.z = pos.z;
-		}
-
-		m_v3CenterPoint = (v3Max + v3Min) * 0.5f;
-
-		Vector3 v3Length = v3Max - v3Min;
-		if (v3Length.x >= v3Length.y && v3Length.x >= v3Length.z)
-			m_fRadius = v3Length.x * 0.5f;
-		else if (v3Length.y >= v3Length.z)
-			m_fRadius = v3Length.y * 0.5f;
-		else
-			m_fRadius = v3Length.z * 0.5f;
-
-		float fLength = 0.0f;
-		Vector3 direct;
-		for (const Vector3& pos : vPoints)
-		{
-			fLength = (pos - m_v3CenterPoint).Length();
-			if (fLength > m_fRadius)
-			{
-				direct = pos - m_v3CenterPoint;
-				direct.Normalize();
-				m_v3CenterPoint = (m_v3CenterPoint + direct * (fLength - m_fRadius) * 0.5f);
-				m_fRadius = (fLength + m_fRadius) * 0.5f;
-			}
-		}
-	}
-}
-
 void MBoundsSphere::SetPoints(const MByte* vPoints, const unsigned int& unArrayLength, const unsigned int& unOffset, const unsigned int& unDataSize)
 {
-	MPointsSphere sphere;
+	
+	Vector3 v3Min(FLT_MAX, FLT_MAX, FLT_MAX);
+	Vector3 v3Max(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
-	std::vector<Vector3> vPointArray(unArrayLength);
-	for (unsigned int i = 0; i < unArrayLength; ++i, vPoints += unDataSize)
+	const MByte* vPointer = vPoints;
+	for (unsigned int i = 0; i < unArrayLength; ++i, vPointer += unDataSize)
 	{
-		vPointArray[i] = *(Vector3*)(vPoints + unOffset);
+		const Vector3& pos = *(Vector3*)(vPointer + unOffset);
+		if (v3Min.x > pos.x)
+			v3Min.x = pos.x;
+		if (v3Min.y > pos.y)
+			v3Min.y = pos.y;
+		if (v3Min.z > pos.z)
+			v3Min.z = pos.z;
+
+		if (v3Max.x < pos.x)
+			v3Max.x = pos.x;
+		if (v3Max.y < pos.y)
+			v3Max.y = pos.y;
+		if (v3Max.z < pos.z)
+			v3Max.z = pos.z;
 	}
 
-	SetPoints(vPointArray, false);
+	m_v3CenterPoint = (v3Max + v3Min) * 0.5f;
+
+	Vector3 v3Length = v3Max - v3Min;
+	if (v3Length.x >= v3Length.y && v3Length.x >= v3Length.z)
+		m_fRadius = v3Length.x * 0.5f;
+	else if (v3Length.y >= v3Length.z)
+		m_fRadius = v3Length.y * 0.5f;
+	else
+		m_fRadius = v3Length.z * 0.5f;
+
+	float fLength = 0.0f;
+	Vector3 direct;
+
+	vPointer = vPoints;
+	for (unsigned int i = 0; i < unArrayLength; ++i, vPointer += unDataSize)
+	{
+		const Vector3& pos = *(Vector3*)(vPointer + unOffset);
+
+		fLength = (pos - m_v3CenterPoint).Length();
+		if (fLength > m_fRadius)
+		{
+			direct = pos - m_v3CenterPoint;
+			direct.Normalize();
+			m_v3CenterPoint = (m_v3CenterPoint + direct * (fLength - m_fRadius) * 0.5f);
+			m_fRadius = (fLength + m_fRadius) * 0.5f;
+		}
+	}
+
 }
 
 bool MBoundsSphere::IsContain(const Vector3& pos)

@@ -130,54 +130,54 @@ int main(int argc, char* argv[])
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
 	pRootNode->SetName("RootNode");
 
-	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/ground.fbx"));
+// 	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/ground.fbx"));
+// 
+// 	for (int i = 0; i < 1; ++i)
+// 	{
+// 		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
+// 		pSpatial->Load(pResource);
+// 		pSpatial->SetPosition(Vector3(0, 0, i * 50));
+// 		pSpatial->SetScale(Vector3(1, 1, 1));
+// 		pSpatial->SetName("Ground");
+// 
+// 		pRootNode->AddNode(pSpatial);
+// 
+// 		pSpatial->SetRotation(Quaternion(Vector3(0, 1, 0), 90.0f));
+// 	}
 
-	for (int i = 0; i < 1; ++i)
+	MString textureID[] = {"005","003","007","004","014","008","002","015","019"};
+
+	MModelResource* pPikachuResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/gun/model.dae"));
+	for (int i = 0; i < 9; ++i)
 	{
-		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
-		pSpatial->Load(pResource);
-		pSpatial->SetPosition(Vector3(0, 0, i * 50));
-		pSpatial->SetScale(Vector3(1, 1, 1));
-		pSpatial->SetName("Ground");
+		MMaterial* pMaterial = (*pPikachuResource->GetMeshes())[i]->GetDefaultMaterial();
+		MResource* pDiffuseRes = engine.GetResourceManager()->LoadResource("./Model/gun/tex/Material." + textureID[i] + "_albedo.jpg");
+		MResource* pNormalMapRes = engine.GetResourceManager()->LoadResource("./Model/gun/tex/Material." + textureID[i] + "_normal.png");
 
-		pRootNode->AddNode(pSpatial);
+		pMaterial->SetTexutreParam("U_mat.texDiffuse", pDiffuseRes);
+		pMaterial->SetTexutreParam("U_mat.texNormal", pNormalMapRes);
 
-		pSpatial->SetRotation(Quaternion(Vector3(0, 1, 0), 90.0f));
+		for (MShaderParam& param : *pMaterial->GetShaderParams())
+		{
+			if (param.unCode == SHADER_PARAM_CODE_MATERIAL)
+			{
+				MStruct* pStruct = param.var.GetStruct()->FindMember("U_mat")->GetStruct();
+				pStruct->SetMember("bUseNormalTex", true);
+
+				param.SetDirty();
+				continue;
+			}
+		}
 	}
 
-// 	MString textureID[] = {"005","003","007","004","014","008","002","015","019"};
-// 
-// 	MModelResource* pPikachuResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/gun/model.dae"));
-// 	for (int i = 0; i < 9; ++i)
-// 	{
-// 		MMaterial* pMaterial = (*pPikachuResource->GetMeshes())[i]->GetDefaultMaterial();
-// 		MResource* pDiffuseRes = engine.GetResourceManager()->LoadResource("./Model/gun/tex/Material." + textureID[i] + "_albedo.jpg");
-// 		MResource* pNormalMapRes = engine.GetResourceManager()->LoadResource("./Model/gun/tex/Material." + textureID[i] + "_normal.png");
-// 
-// 		pMaterial->SetTexutreParam("U_mat.texDiffuse", pDiffuseRes);
-// 		pMaterial->SetTexutreParam("U_mat.texNormal", pNormalMapRes);
-// 
-// 		for (MShaderParam& param : *pMaterial->GetShaderParams())
-// 		{
-// 			if (param.unCode == SHADER_PARAM_CODE_MATERIAL)
-// 			{
-// 				MStruct* pStruct = param.var.GetStruct()->FindMember("U_mat")->GetStruct();
-// 				pStruct->SetMember("bUseNormalTex", true);
-// 
-// 				param.SetDirty();
-// 				continue;
-// 			}
-// 		}
-// 	}
-// 
-// 	MModelInstance* pPikachu = engine.GetObjectManager()->CreateObject<MModelInstance>();
-// 	pPikachu->Load(pPikachuResource);
-// 	pPikachu->SetGenerateDirLightShadow(true);
-// 	pPikachu->SetPosition(Vector3(0, 0, 10));
-// 	pPikachu->SetScale(Vector3(10, 10, 10));
-// 	pPikachu->SetName("Pikachu");
-// 
-// 	pRootNode->AddNode(pPikachu);
+	MModelInstance* pPikachu = engine.GetObjectManager()->CreateObject<MModelInstance>();
+	pPikachu->Load(pPikachuResource);
+	pPikachu->SetGenerateDirLightShadow(true);
+	pPikachu->SetPosition(Vector3(0, 0, 10));
+	pPikachu->SetScale(Vector3(10, 10, 10));
+	pPikachu->SetName("Pikachu");
+
+	pRootNode->AddNode(pPikachu);
 
 	for (unsigned int i = 0; i < 1; ++i)
 	{

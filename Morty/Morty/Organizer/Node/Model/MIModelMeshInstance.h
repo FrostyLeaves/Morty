@@ -36,10 +36,15 @@ public:
 	void SetAttachedModelInstance(MModelInstance* pModelIns) { m_pModelInstance = pModelIns; }
 	MModelInstance* GetAttachedModelInstance() { return m_pModelInstance; }
 
+	void SetDrawBoundingSphere(const bool& bDrawable) { m_bDrawBoundingSphere = bDrawable; }
+	bool GetDrawBoundingSphere() { return m_bDrawBoundingSphere; }
+
 private:
 	MEShadowType m_eShadowType;
 	MModelInstance* m_pModelInstance;
 	unsigned int m_unDetailLevel;
+
+	bool m_bDrawBoundingSphere;
 };
 
 #endif

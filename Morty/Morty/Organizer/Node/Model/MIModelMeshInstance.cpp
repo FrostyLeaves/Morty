@@ -7,6 +7,7 @@ MIModelMeshInstance::MIModelMeshInstance()
 	, m_eShadowType(MEShadowType::EOnlyDirectional)
 	, m_pModelInstance(nullptr)
 	, m_unDetailLevel(MMESH_LOD_LEVEL_RANGE)
+	, m_bDrawBoundingSphere(false)
 {
 
 }
