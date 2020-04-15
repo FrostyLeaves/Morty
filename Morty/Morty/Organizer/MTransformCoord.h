@@ -68,7 +68,6 @@ private:
 	Vector3 m_v3TransformOrigin;
 	Vector3 m_v3PlaneNormal;
 
-
 	M3DNode* m_pTargetNode;
 	MECoordHoverType m_eCoordHoverType;
 	MECoordHoverType m_eCoordMoveType;

@@ -200,8 +200,9 @@ int main(int argc, char* argv[])
 	pRootNode->AddNode(pDirLight);
 
 	MyCamera* pCamera = engine.GetObjectManager()->CreateObject<MyCamera>();
-	pCamera->SetPosition(Vector3(0, 10, -100));
+	//pCamera->SetPosition(Vector3(0, 10, -100));
 	pCamera->SetName("Camera");
+	pCamera->SetZNearFar(Vector2(10, 100));
 	pRootNode->AddNode(pCamera);
 
 	MInputNode* pInputNode = engine.GetObjectManager()->CreateObject<MInputNode>();

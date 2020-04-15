@@ -37,6 +37,7 @@ MViewport::MViewport()
 	, m_bCameraInvProjMatrixLocked(false)
 	, m_v2LeftTop(0,0)
 	, m_v2Size(0, 0)
+	, m_cameraFrustum()
 {
 
 }
@@ -155,8 +156,8 @@ void MViewport::Render(MIRenderer* pRenderer)
 	if (nullptr == m_pScene)
 		return;
 
-
 	UpdateMatrix();
+	m_cameraFrustum.UpdateFromViewport(*this);
 	m_bCameraInvProjMatrixLocked = true;
 	
 	m_pScene->Render(pRenderer, this);
@@ -379,7 +380,7 @@ void MViewport::UpdateMatrix()
 	m_m4CameraInvProj = projMat * pCamera->GetWorldTransform().Inverse();
 }
 
-MCamera* MViewport::GetCamera()
+MCamera* MViewport::GetCamera() const
 {
 	return m_pUserCamera ? m_pUserCamera : m_pDefaultCamera;
 }

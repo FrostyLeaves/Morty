@@ -113,6 +113,8 @@
     <ClInclude Include="..\..\Core\Animation\MSkeletalAnimation.h" />
     <ClInclude Include="..\..\Core\Input\MInputManager.h" />
     <ClInclude Include="..\..\Core\MBounds.h" />
+    <ClInclude Include="..\..\Core\MCameraFrustum.h" />
+    <ClInclude Include="..\..\Core\MPlane.h" />
     <ClInclude Include="..\..\Core\MViewport.h" />
     <ClInclude Include="..\..\Core\MMaterial.h" />
     <ClInclude Include="..\..\Core\MSkeleton.h" />
@@ -194,6 +196,8 @@
     <ClCompile Include="..\..\Core\Animation\MSkeletalAnimation.cpp" />
     <ClCompile Include="..\..\Core\Input\MInputManager.cpp" />
     <ClCompile Include="..\..\Core\MBounds.cpp" />
+    <ClCompile Include="..\..\Core\MCameraFrustum.cpp" />
+    <ClCompile Include="..\..\Core\MPlane.cpp" />
     <ClCompile Include="..\..\Core\MViewport.cpp" />
     <ClCompile Include="..\..\Core\MMaterial.cpp" />
     <ClCompile Include="..\..\Core\MSkeleton.cpp" />

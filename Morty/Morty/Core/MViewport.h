@@ -13,6 +13,8 @@
 #include "Vector.h"
 #include "Matrix.h"
 
+#include "MCameraFrustum.h"
+
 #include <vector>
 
 class MScene;
@@ -38,14 +40,14 @@ public:
 	MScene* GetScene(){ return m_pScene; }
 
 	void SetCamera(MCamera* pCamera);
-	MCamera* GetCamera();
+	MCamera* GetCamera() const;
 	bool IsUseDefaultCamera() { return nullptr == m_pUserCamera; }
 
 	void SetLeftTop(const Vector2& v2LeftTop) { m_v2LeftTop = v2LeftTop; }
 	Vector2 GetLeftTop() { return m_v2LeftTop; }
 
 	void SetSize(const Vector2& v2Size);
-	Vector2 GetSize(){ return m_v2Size; }
+	Vector2 GetSize() const { return m_v2Size; }
 
 	float GetLeft() { return m_v2LeftTop.x; }
 	float GetTop() { return m_v2LeftTop.y; }
@@ -67,7 +69,7 @@ public:
 
 	virtual void Input(MInputEvent* pEvent);
 
-	Matrix4 GetCameraInverseProjection(){ return m_m4CameraInvProj; }
+	const Matrix4& GetCameraInverseProjection() const { return m_m4CameraInvProj; }
 
 	Matrix4 GetLightInverseProjection(MPointLight* pLight);
 	Matrix4 GetLightInverseProjection(MDirectionalLight* pLight);
@@ -76,13 +78,15 @@ public:
 	void GetCameraFrustum(MCamera* pCamera, const float& fZNear, const float& fZFar, Vector3& v3NearTopLeft, Vector3& v3NearTopRight, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft, Vector3& v3FarTopLeft, Vector3& v3FarTopRight, Vector3& v3FarBottomRight, Vector3& v3FarBottomLeft);
 	void GetCameraFrustum(Vector3& v3NearTopLeft, Vector3& v3NearTopRight, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft, Vector3& v3FarTopLeft, Vector3& v3FarTopRight, Vector3& v3FarBottomRight, Vector3& v3FarBottomLeft);
 	MBoundsAABB* GetFrustumAABB();
+
+	static Matrix4 MatrixPerspectiveFovLH(const float& fFovYZAngle, const float& fScreenAspect, const float& fScreenNear, const float& fScreenFar);
+	static Matrix4 MatrixOrthoOffCenterLH(const float& fLeft, const float& fRight, const float& fTop, const float& fBottom, const float& fNear, const float& fFar);
+
+
 protected:
 	void SetValidCamera(MCamera* pCamera);
 
 	void UpdateMatrix();
-
-	static Matrix4 MatrixPerspectiveFovLH(const float& fFovYZAngle, const float& fScreenAspect, const float& fScreenNear, const float& fScreenFar);
-	static Matrix4 MatrixOrthoOffCenterLH(const float& fLeft, const float& fRight, const float& fTop, const float& fBottom, const float& fNear, const float& fFar);
 
 
 
@@ -99,6 +103,8 @@ private:
 
 	Matrix4 m_m4CameraInvProj;
 	bool m_bCameraInvProjMatrixLocked;
+
+	MCameraFrustum m_cameraFrustum;
 };
 
 

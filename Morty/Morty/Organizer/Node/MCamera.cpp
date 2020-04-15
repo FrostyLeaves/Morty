@@ -48,3 +48,4 @@ void MCamera::SetZFar(const float& fZFar)
 		m_fZFar = fZFar;
 	}
 }
+

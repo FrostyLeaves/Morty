@@ -297,6 +297,12 @@
     <ClInclude Include="..\..\ResourceLoader\Material\MMaterialResource.h">
       <Filter>ResourceLoader\Material</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\MCameraFrustum.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\MPlane.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -490,6 +496,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Organizer\Node\Model\MIModelMeshInstance.cpp">
       <Filter>Organizer\Node\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\MCameraFrustum.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\MPlane.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

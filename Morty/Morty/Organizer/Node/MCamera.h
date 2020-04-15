@@ -45,6 +45,7 @@ public:
 	void SetHeight(const float& fHeight) { m_fHeight = fHeight; }
 	float GetHeight() { return m_fHeight; }
 
+
 private:
 
 	MECameraType m_eCameraType;
@@ -55,6 +56,7 @@ private:
 
 	float m_fWidth;
 	float m_fHeight;
+
 
 };
 
