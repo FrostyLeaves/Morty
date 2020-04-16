@@ -190,7 +190,7 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight)
 	Matrix4 matCameraInv = pCamera->GetWorldTransform().Inverse();
 
 	MBoundsAABB cShadowAABB, cSceneAABB;
-	m_pScene->GetSceneAABB(cSceneAABB, this);	//TODO 这个SceneAABB需要获取到被裁切后的
+	m_pScene->GetSceneAABB(cSceneAABB, this);
 	std::vector<Vector3> vSceneBoundsPoints(8);
 	cSceneAABB.GetPoints(vSceneBoundsPoints);
 
@@ -254,7 +254,6 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight)
 	//x和y取视椎体和SceneAABB的交集， zMin取SceneAABB的，因为相机后面的模型也会生成Shadow
 	//zMax取交集，超过视椎体的Shadow不需要渲染。
 
-	//TODO 在获取到所有生成Shadow的模型的AABB时，如果进行了在光照空间中的剔除（使用视椎体在LightSpace的AABB在WorldSpace中的AABB来做裁切），那么ShadowMap的利用率会达到最大。
 	Matrix4 projMat = MatrixOrthoOffCenterLH(
 		MAX(v3CameraMin.x, v3SceneMin.x),
 		MIN(v3CameraMax.x, v3SceneMax.x),

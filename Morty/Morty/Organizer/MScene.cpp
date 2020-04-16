@@ -116,11 +116,6 @@ void MScene::GetSceneAABB(MBoundsAABB& cSceneAABB, MViewport* pViewport)
 	Vector3 v3ShadowMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
 	Vector3 v3ShadowMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
-	MCamera* pCamera = pViewport->GetCamera();
-	std::vector<Vector3> vPoints(8);
-	pViewport->GetCameraFrustum(pCamera, pCamera->GetZNear(), pCamera->GetZFar(), vPoints);
-	MBoundsAABB aabb(vPoints);
-
 	for (MaterialMeshInsGroup* pGroup : m_vMatMeshInsGroup)
 	{
 		for (MIMeshInstance* pMeshIns : pGroup->vMeshIns)
@@ -128,7 +123,7 @@ void MScene::GetSceneAABB(MBoundsAABB& cSceneAABB, MViewport* pViewport)
 			if (pMeshIns->GetVisibleRecursively())
 			{
 				const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
-				if (aabb.IsIntersect(*pBounds))
+				if (pViewport->GetCameraFrustum()->ContainTest(*pBounds) != MCameraFrustum::EOUTSIDE)
 				{
 					pBounds->UnionMinMax(v3ShadowMin, v3ShadowMax);
 				}
