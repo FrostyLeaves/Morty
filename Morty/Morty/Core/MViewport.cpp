@@ -232,7 +232,7 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight)
 		if (v3CameraMax.z < pos.z) v3CameraMax.z = pos.z;
 	}
 
-	m_pScene->GetDirectionalShadowSceneAABB(cShadowAABB);	//TODO 这个SceneAABB需要获取到被裁切后的
+	m_pScene->GetDirectionalShadowSceneAABB(this, pLight->GetWorldDirection(), cShadowAABB);	//TODO 这个SceneAABB需要获取到被裁切后的
 	std::vector<Vector3> vShadowModelBoundsPoints(8);
 	cShadowAABB.GetPoints(vShadowModelBoundsPoints);
 

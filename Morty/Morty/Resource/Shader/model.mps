@@ -55,7 +55,6 @@ float4 PS(VS_OUT input) : SV_Target
 {
     
     float4 f3AmbiColor = U_mat.texDiffuse.Sample(U_defaultSampler, input.uv);
-    return f3AmbiColor;
 
     float4 f3DiffColor = f3AmbiColor;
     float4 f3SpecColor = f3AmbiColor;//U_mat.texSpecular.Sample(U_defaultSampler, input.uv);

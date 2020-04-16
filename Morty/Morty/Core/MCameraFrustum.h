@@ -19,8 +19,9 @@ public:
 	enum MEContainType
 	{
 		EOUTSIDE = 0,	//在外部
-		EINSIDE = 1,	//包含
-		EINTERSECT = 2,	//交叉
+		ENOTOUTSIDE = 1,//不在外部
+		EINSIDE = 3,	//包含
+		EINTERSECT = 5,	//交叉
 	};
 
 
@@ -31,11 +32,13 @@ public:
 
 	void UpdateFromViewport(const MViewport& viewport);
 
-protected:
-
 	MEContainType ContainTest(const Vector3& position);
 	MEContainType ContainTest(const MBoundsAABB& aabb);
 	MEContainType ContainTest(const MBoundsSphere& sphere);
+
+	MEContainType ContainTest(const MBoundsAABB& aabb, const Vector3& v3Direction);
+
+protected:
 
 	MPlane m_vPlanes[6];
 

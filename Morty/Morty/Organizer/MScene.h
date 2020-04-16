@@ -77,7 +77,7 @@ public:
 
 	void GetSceneAABB(MBoundsAABB& cSceneAABB);
 	void GetSceneAABB(MBoundsAABB& cSceneAABB, MViewport* pViewport);
-	void GetDirectionalShadowSceneAABB(MBoundsAABB& cShadowAABB);
+	void GetDirectionalShadowSceneAABB(MViewport* pViewport, const Vector3& v3LightDir, MBoundsAABB& cShadowAABB);
 
 	MShadowTextureRenderTarget* GetShadowRenderTarget(){ return m_pShadowDepthMapRenderTarget; }
 

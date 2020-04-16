@@ -54,6 +54,8 @@ public:
 	float GetWidth() { return m_v2Size.x; }
 	float GetHeight() { return m_v2Size.y; }
 
+	MCameraFrustum* GetCameraFrustum() { return &m_cameraFrustum; }
+
 	bool ConvertWorldPointToViewport(const Vector3& v3WorldPos, Vector3& v3Result);
 
 	void ConvertViewportPointToWorld(const Vector2& v2ViewportPos, const float& fDepth, Vector3& v3Result);

@@ -19,5 +19,5 @@ bool MPlane::IsOnFront(const Vector3& position)
 
 float MPlane::GetDistance(const Vector3& position)
 {
-	return (position * m_v3ABC) + m_fD;
+	return ((position * m_v3ABC) + m_fD) / m_v3ABC.Length();
 }

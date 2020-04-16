@@ -18,19 +18,18 @@ MCameraFrustum::~MCameraFrustum()
 void MCameraFrustum::UpdateFromViewport(const MViewport& viewport)
 {
 	Matrix4 m4 = viewport.GetCameraInverseProjection();
-	m4.Inverse();
 
 	Vector4 c0 = m4.Row(0);
 	Vector4 c1 = m4.Row(1);
 	Vector4 c2 = m4.Row(2);
 	Vector4 c3 = m4.Row(3);
 	
-	m_vPlanes[0].m_v4Plane = c3 + c0;	//Left
-	m_vPlanes[1].m_v4Plane = c3 - c0;	//Right
-	m_vPlanes[2].m_v4Plane = c3 - c1;	//Up
-	m_vPlanes[3].m_v4Plane = c3 + c1;	//Down
-	m_vPlanes[4].m_v4Plane = c2;		//Near
-	m_vPlanes[5].m_v4Plane = c3 - c2;	//Far
+	m_vPlanes[0].m_v4Plane = -c3 - c0;	//Left
+	m_vPlanes[1].m_v4Plane = c0 - c3;	//Right
+	m_vPlanes[2].m_v4Plane = c1 - c3;	//Up
+	m_vPlanes[3].m_v4Plane = -c3 - c1;	//Down
+	m_vPlanes[4].m_v4Plane = -c2;		//Near
+	m_vPlanes[5].m_v4Plane = c2 - c3;	//Far
 
 	for (unsigned int i = 0; i < 6; ++i)
 	{
@@ -116,5 +115,39 @@ MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const MBoundsAABB& aab
 		return MEContainType::EINTERSECT;
 	
 	return MEContainType::EINSIDE;
+}
+
+MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const MBoundsAABB& aabb, const Vector3& v3Direction)
+{
+	Vector3 v3NVertex, v3PVertex;
+
+	const Vector3& v3Max = aabb.m_v3MaxPoint;
+	const Vector3& v3Min = aabb.m_v3MinPoint;
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		const Vector3& v3Normal = m_vPlanes[i].m_v3ABC;
+
+		if (v3Direction * v3Normal >= 0.0f)
+		{
+			for (unsigned int n = 0; n < 3; ++n)
+			{
+				if (v3Normal.m[n] > 0.0f)
+				{
+					v3NVertex.m[n] = v3Min.m[n];
+					v3PVertex.m[n] = v3Max.m[n];
+				}
+				else
+				{
+					v3NVertex.m[n] = v3Max.m[n];
+					v3PVertex.m[n] = v3Min.m[n];
+				}
+			}
+
+			if (m_vPlanes[i].IsOnFront(v3NVertex))
+				return MEContainType::EOUTSIDE;
+		}
+	}
+
+	return MEContainType::ENOTOUTSIDE;
 }
 

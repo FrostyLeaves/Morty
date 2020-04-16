@@ -139,7 +139,7 @@ void MScene::GetSceneAABB(MBoundsAABB& cSceneAABB, MViewport* pViewport)
 	cSceneAABB.SetMinMax(v3ShadowMin, v3ShadowMax);
 }
 
-void MScene::GetDirectionalShadowSceneAABB(MBoundsAABB& cShadowAABB)
+void MScene::GetDirectionalShadowSceneAABB(MViewport* pViewport, const Vector3& v3LightDir, MBoundsAABB& cShadowAABB)
 {
 	Vector3 v3ShadowMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
 	Vector3 v3ShadowMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
@@ -155,6 +155,7 @@ void MScene::GetDirectionalShadowSceneAABB(MBoundsAABB& cShadowAABB)
 					if (pModel->GetGenerateDirLightShadow())
 					{
 						const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
+						if (pViewport->GetCameraFrustum()->ContainTest(*pBounds, v3LightDir) != MCameraFrustum::EOUTSIDE)
 						{
 							pBounds->UnionMinMax(v3ShadowMin, v3ShadowMax);
 						}
@@ -498,6 +499,9 @@ void MScene::DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport)
 		for (MIModelMeshInstance* pMeshIns : pGroup->vMeshIns)
 		{
 			if(!pMeshIns->GetVisibleRecursively())
+				continue;
+
+			if(MCameraFrustum::EOUTSIDE == pViewport->GetCameraFrustum()->ContainTest(*pMeshIns->GetBoundsAABB()))
 				continue;
 
 			Matrix4 worldTrans = pMeshIns->GetWorldTransform();

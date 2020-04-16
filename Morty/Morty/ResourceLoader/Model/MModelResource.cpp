@@ -524,7 +524,7 @@ void MModelResource::ProcessMaterial(const aiScene* pScene, std::vector<unsigned
 		else
 			pNormalMapRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_NORMALMAP);
 
-		pMaterial->SetTexutreParam("U_mat.texDiffuse", pDiffuseTexRes);
-		pMaterial->SetTexutreParam("U_mat.texNormal", pNormalMapRes);
+		pMaterial->SetTexutreParam(SHADER_PARAM_NAME_DIFFUSE, pDiffuseTexRes);
+		pMaterial->SetTexutreParam(SHADER_PARAM_NAME_NORMAL, pNormalMapRes);
 	}
 }

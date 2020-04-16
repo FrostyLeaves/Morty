@@ -45,6 +45,9 @@ extern const char* DEFAULT_TEXTURE_WHITE;
 extern const char* DEFAULT_TEXTURE_BLACK;
 extern const char* DEFAULT_TEXTURE_NORMALMAP;
 
+extern const char* SHADER_PARAM_NAME_DIFFUSE;
+extern const char* SHADER_PARAM_NAME_NORMAL;
+
 const unsigned int SHADER_PARAM_CODE_MESH_MATRIX = 0;
 const unsigned int SHADER_PARAM_CODE_WORLD_MATRIX = 1;
 const unsigned int SHADER_PARAM_CODE_ANIMATION = 2;
@@ -63,6 +66,7 @@ const unsigned int SHADER_PARAM_CODE_AUTO_UPDATE = 100;
 const unsigned int SHADER_PARAM_CODE_MATERIAL = 101;
 
 const unsigned int SHADER_PARAM_CODE_DEFAULT = 1000;
+
 
 
 //Shadowmap size
