@@ -67,14 +67,6 @@ MResourceManager* MResource::GetResourceManager()
 	return m_pEngine->GetResourceManager();
 }
 
-bool MResource::SaveTo(const MString& strResourcePath)
-{
-	MString strCode;
-	Encode(strCode);
-
-	return MFileHelper::WriteString(strResourcePath, strCode);
-}
-
 void MResource::OnReferenceZero()
 {
 	if (!m_strResourcePath.empty())

@@ -102,7 +102,6 @@ private:
 #define MSCENE_TYPED_VECTOR( TYPE) \
 	std::vector<M##TYPE*> m_v##TYPE;
 
-
 	MNode* m_pRootNode;
 	MSkyBox* m_pSkyBox;
 	MTransformCoord3D* m_pTransformCoord3D;

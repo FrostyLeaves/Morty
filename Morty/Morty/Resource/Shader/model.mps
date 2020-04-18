@@ -129,6 +129,6 @@ float4 PS(VS_OUT input) : SV_Target
     }
 
 
-    return float4(f3Color, 1.0f);
+    return float4(f3Color, 0.25f);
 }
 

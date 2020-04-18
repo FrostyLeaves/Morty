@@ -73,6 +73,9 @@ protected:
 	ID3D11RasterizerState* m_pRasterizerState_Solid_CullNone;
 	ID3D11RasterizerState* m_pRasterizerState_Solid_CullBack;
 	ID3D11RasterizerState* m_pRasterizerState_Solid_CullFront;
+
+	ID3D11BlendState* m_pBlendState_Default;
+	ID3D11BlendState* m_pBlendState_Transparent;
 	
 	MDirectX11Device* m_pDevice;
 	MMaterial* m_pUsingMaterial;

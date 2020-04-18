@@ -193,7 +193,7 @@ MDirectionalLight* MScene::FindActiveDirectionLight()
 
 void MScene::FindActivePointLights(const Vector3& v3WorldPosition, std::vector<MPointLight*>& vPointLights)
 {
-	auto compareFunc = [v3WorldPosition](MPointLight* a, MPointLight* b) {
+	static auto compareFunc = [v3WorldPosition](MPointLight* a, MPointLight* b) {
 		return (a->GetWorldPosition() - v3WorldPosition).Length() < (b->GetWorldPosition() - v3WorldPosition).Length();
 	};
 

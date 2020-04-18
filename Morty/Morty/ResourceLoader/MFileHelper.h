@@ -21,7 +21,8 @@ public:
 
 	static bool WriteString(const MString& strFilePath, const MString& strData);
 
-	
+	static bool ReadString(const MString& strFilePath, MString& strData);
+
 private:
 
 };

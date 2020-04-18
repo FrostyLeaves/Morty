@@ -51,8 +51,8 @@ public:
 	virtual void Decode(MString& strCode) {}
 	virtual void Encode(MString& strCode) {}
 
-	virtual bool Save() { return true; }
-	virtual bool SaveTo(const MString& strResourcePath);
+	virtual bool Save() { return SaveTo(m_strResourcePath); }
+	virtual bool SaveTo(const MString& strResourcePath) { return true; }
 
 protected:
 

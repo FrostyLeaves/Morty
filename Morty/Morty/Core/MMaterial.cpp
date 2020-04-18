@@ -7,6 +7,8 @@
 #include "MEngine.h"
 #include "MIDevice.h"
 #include "MIRenderer.h"
+#include "MFileHelper.h"
+#include "MResourceManager.h"
 
 #include "MVariant.h"
 #include "Json/MJson.h"
@@ -20,6 +22,7 @@ MMaterial::MMaterial()
 	, m_pVertexShader(nullptr)
 	, m_pPixelShader(nullptr)
 	, m_eRenderState(MIRenderer::ESolid | MIRenderer::ECullBack)
+	, m_eBlendState(MIRenderer::ETransparent)
 {
 
 }
@@ -87,6 +90,14 @@ void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)
 	} 
 }
 
+void MMaterial::SetTexutreParam(const unsigned int& unIndex, MResource* pTexResource)
+{
+	if (unIndex >= m_vTextureParams.size())
+		return;
+
+	SetTexutreParam(m_vTextureParams[unIndex].strName, pTexResource);
+}
+
 void MMaterial::CompileShaderParams(const MEShaderParamType& eType)
 {
 	if (m_pVertexShader && m_pVertexShader->GetBuffer())
@@ -114,20 +125,25 @@ void MMaterial::Encode(MString& strCode)
 	material.AppendMVariant("PS", m_pPixelResource->GetResource()->GetResourcePath());
 	material.AppendMVariant("RenderState", static_cast<int>(m_eRenderState));
 
-	MVariantArray vTextures;
-	for (MResourceHolder* pTexResource : m_vTextureResHolder)
+	MStruct vTextures;
+	for (unsigned int i = 0 ; i < m_vTextureResHolder.size(); ++i)
 	{
+		MResourceHolder* pTexResource = m_vTextureResHolder[i];
+		MShaderTextureParam& param = m_vTextureParams[i];
+
 		if (pTexResource && pTexResource->GetResource())
-			vTextures.AppendMVariant(pTexResource->GetResource()->GetResourcePath());
+			vTextures.AppendMVariant(param.strName, pTexResource->GetResource()->GetResourcePath());
 		else
-			vTextures.AppendMVariant("");
+			vTextures.AppendMVariant(param.strName, "");
 	}
 
 	material.AppendMVariant("textures", vTextures);
 
-	MVariantArray vParams;
+	MStruct vParams;
 	for (MShaderParam param : m_vShaderParams)
-		vParams.AppendMVariant(param.var);
+	{
+		vParams.AppendMVariant(param.strName, param.var);
+	}
 
 	material.AppendMVariant("params", vParams);
 
@@ -139,7 +155,74 @@ void MMaterial::Encode(MString& strCode)
 
 void MMaterial::Decode(MString& strCode)
 {
+	MResourceManager* pManager = m_pEngine->GetResourceManager();
 
+	MVariant variant;
+	MJson::MVariantToJson(variant, strCode);
+
+	MStruct& material = *variant.GetStruct();
+
+	MVariant* pVS = material.FindMember("VS");
+	MVariant* pPS = material.FindMember("PS");
+	MVariant* pRenderState = material.FindMember("RenderState");
+	MVariant* pTextures = material.FindMember("textures");
+	MVariant* pParams = material.FindMember("params");
+
+	if (nullptr == pVS) return;
+	if (nullptr == pPS) return;
+	if (nullptr == pRenderState) return;
+	if (nullptr == pTextures) return;
+	if (nullptr == pParams) return;
+
+	MResource* pVSRes = pManager->LoadResource(*pVS->GetString());
+	MResource* pPsRes = pManager->LoadResource(*pPS->GetString());
+
+	LoadVertexShader(pVSRes);
+	LoadPixelShader(pPsRes);
+
+	unsigned int unState = *pRenderState->GetInt();
+	SetRenderState(unState);
+
+	MStruct& textures = *pTextures->GetStruct();
+	for (unsigned int i = 0; i < textures.GetMemberCount(); ++i)
+	{
+		MStruct::MStructMember* pMember = textures.GetMember(i);
+		MResource* pTextureRes = pManager->LoadResource(*pMember->var.GetString());
+		SetTexutreParam(pMember->strName, pTextureRes);
+	}
+
+	MStruct& params = *pParams->GetStruct();
+	for (unsigned int i = 0; i < params.GetMemberCount(); ++i)
+	{
+		MStruct::MStructMember* pMember = params.GetMember(i);
+		for (unsigned int j = 0; j < m_vShaderParams.size(); ++j)
+		{
+			if (m_vShaderParams[j].strName == pMember->strName)
+			{
+				m_vShaderParams[i].var.MergeFrom(pMember->var);
+				break;
+			}
+		}
+	}
+}
+
+bool MMaterial::SaveTo(const MString& strResourcePath)
+{
+	MString strCode;
+	Encode(strCode);
+
+	return MFileHelper::WriteString(strResourcePath, strCode);
+}
+
+bool MMaterial::Load(const MString& strResourcePath)
+{
+	MString strCode;
+	if (!MFileHelper::ReadString(strResourcePath, strCode))
+		return false;
+
+	Decode(strCode);
+
+	return true;
 }
 
 bool MMaterial::LoadVertexShader(MResource* pResource)
@@ -271,11 +354,6 @@ const MMaterial& MMaterial::operator=(const MMaterial& mat)
 	}
 
 	return *this;
-}
-
-bool MMaterial::Load(const MString& strResourcePath)
-{
-	return false;
 }
 
 void MMaterial::RecompileShaderParams(std::vector<MShaderParam>& vParams, std::vector<MShaderParam*>& vNewParams, const MEShaderParamType& eType)

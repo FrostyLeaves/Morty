@@ -47,6 +47,12 @@ public:
 		ECullFront = 16,
 	};
 
+	enum MEBlendType
+	{
+		ENormal = 1,
+		ETransparent =2,
+	};
+
 	virtual void SetRasterizerType(const unsigned int& eType) { m_eRasterizerType = eType; }
 
 public:
@@ -78,6 +84,7 @@ public:
 
 protected:
 	unsigned int m_eRasterizerType;
+	unsigned int m_eBlendType;
 };
 
 

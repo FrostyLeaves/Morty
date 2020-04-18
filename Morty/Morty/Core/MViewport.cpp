@@ -290,7 +290,6 @@ void MViewport::GetCameraFrustum(MCamera* pCamera, const float& fZNear, const fl
 	}
 	else
 	{
-		Vector3 v3CameraPosition = pCamera->GetWorldPosition();
 		float fHalfWidth = pCamera->GetWidth() * 0.5f;
 		float fHalfHeight = pCamera->GetHeight() * 0.5f;
 
@@ -317,14 +316,6 @@ void MViewport::GetCameraFrustum(Vector3& v3NearTopLeft, Vector3& v3NearTopRight
 void MViewport::GetCameraFrustum(MCamera* pCamera, const float& fZNear, const float& fZFar, std::vector<Vector3>& vPoints)
 {
 	GetCameraFrustum(pCamera, fZNear, fZFar, vPoints[0], vPoints[1], vPoints[2], vPoints[3], vPoints[4], vPoints[5], vPoints[6], vPoints[7]);
-}
-
-MBoundsAABB* MViewport::GetFrustumAABB()
-{
-	std::vector<Vector3> points(8);
-	GetCameraFrustum(points[0], points[1], points[2], points[3], points[4], points[5], points[6], points[7]);
-
-	return new MBoundsAABB(points);
 }
 
 void MViewport::SetScene(MScene* pScene)

@@ -94,6 +94,42 @@ bool MDirectX11Renderer::Initialize()
 	m_pDevice->m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_pRasterizerState_Wireframe_CullNone);
 
 
+
+	//混合状态块
+	D3D11_BLEND_DESC mBlendDesc;
+	mBlendDesc.AlphaToCoverageEnable = false;
+	mBlendDesc.IndependentBlendEnable = false;
+
+	D3D11_RENDER_TARGET_BLEND_DESC& mRTDesc = mBlendDesc.RenderTarget[0];
+	mRTDesc.BlendEnable = true;
+	mRTDesc.DestBlend = D3D11_BLEND_ZERO;
+	mRTDesc.DestBlendAlpha = D3D11_BLEND_ZERO;
+
+	mRTDesc.SrcBlend = D3D11_BLEND_ONE;
+	mRTDesc.SrcBlendAlpha = D3D11_BLEND_ONE;
+
+	mRTDesc.BlendOp = D3D11_BLEND_OP_ADD;
+	mRTDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+
+	mRTDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	//使用CreateBlendState函数创建blendstate
+	m_pDevice->m_pD3dDevice->CreateBlendState(&mBlendDesc, &m_pBlendState_Default);
+
+
+	mRTDesc.DestBlend = D3D11_BLEND_ONE;
+	mRTDesc.DestBlendAlpha = D3D11_BLEND_INV_DEST_ALPHA;
+	
+	mRTDesc.SrcBlend = D3D11_BLEND_ONE;
+	mRTDesc.SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
+
+	mRTDesc.BlendOp = D3D11_BLEND_OP_ADD;
+	mRTDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+
+	m_pDevice->m_pD3dDevice->CreateBlendState(&mBlendDesc, &m_pBlendState_Transparent);
+
+
 	//创建纹理采样状态
 	D3D11_SAMPLER_DESC sampDesc;
 	ZeroMemory(&sampDesc, sizeof(sampDesc));
@@ -297,6 +333,18 @@ bool MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial)
 		else 
 			m_pDevice->m_pD3dContext->RSSetState(m_pRasterizerState_Solid_CullNone);
 	}
+
+
+	if (m_eBlendType != pMaterial->GetBlendState())
+	{
+		m_eBlendType = pMaterial->GetBlendState();
+
+		if (MEBlendType::ENormal == m_eBlendType)
+			m_pDevice->m_pD3dContext->OMSetBlendState(m_pBlendState_Default, nullptr, 0xffffffff);
+		else if (MEBlendType::ETransparent == m_eBlendType)
+			m_pDevice->m_pD3dContext->OMSetBlendState(m_pBlendState_Transparent, nullptr, 0xffffffff);
+	}
+
 	return true;
 }
 

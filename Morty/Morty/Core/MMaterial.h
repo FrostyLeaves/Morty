@@ -32,9 +32,13 @@ public:
 	std::vector< MResourceHolder*>* GetTextures() { return &m_vTextureResHolder; }
 
 	void SetTexutreParam(const MString& strName, MResource* pTexResource);
+	void SetTexutreParam(const unsigned int& unIndex, MResource* pTexResource);
 
-	void SetRenderState(unsigned int& eType) { m_eRenderState = eType; }
+	void SetRenderState(const unsigned int& eType) { m_eRenderState = eType; }
 	unsigned int GetRenderState() { return m_eRenderState; }
+
+	void SetBlendState(const unsigned int& eType) { m_eBlendState = eType; }
+	unsigned int GetBlendState() { return m_eBlendState; }
 
 	bool LoadVertexShader(MResource* pResource);
 	bool LoadPixelShader(MResource* pResource);
@@ -53,6 +57,8 @@ public:
 
 	virtual void Encode(MString& strCode) override;
 	virtual void Decode(MString& strCode) override;
+
+	virtual bool SaveTo(const MString& strResourcePath) override;
 
 protected:
 
@@ -80,6 +86,7 @@ private:
 	MShader* m_pPixelShader;
 
 	unsigned int m_eRenderState;
+	unsigned int m_eBlendState;
 };
 
 #endif
