@@ -113,15 +113,12 @@ bool MDirectX11Renderer::Initialize()
 
 	mRTDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
-	float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	//使用CreateBlendState函数创建blendstate
 	m_pDevice->m_pD3dDevice->CreateBlendState(&mBlendDesc, &m_pBlendState_Default);
 
-
-	mRTDesc.DestBlend = D3D11_BLEND_ONE;
-	mRTDesc.DestBlendAlpha = D3D11_BLEND_INV_DEST_ALPHA;
+	mRTDesc.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	mRTDesc.DestBlendAlpha = D3D11_BLEND_ZERO;
 	
-	mRTDesc.SrcBlend = D3D11_BLEND_ONE;
+	mRTDesc.SrcBlend = D3D11_BLEND_SRC_ALPHA;
 	mRTDesc.SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
 
 	mRTDesc.BlendOp = D3D11_BLEND_OP_ADD;
