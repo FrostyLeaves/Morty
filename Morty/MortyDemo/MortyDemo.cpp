@@ -132,20 +132,20 @@ int main(int argc, char* argv[])
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
 	pRootNode->SetName("RootNode");
 
-// 	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/girl/butterfly.fbx"));
-// 
-// 	for (int i = 0; i < 1; ++i)
-// 	{
-// 		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
-// 		pSpatial->Load(pResource);
-// 		pSpatial->SetPosition(Vector3(0, 0, i * 50 + 100));
-// 		pSpatial->SetScale(Vector3(1, 1, 1));
-// 		pSpatial->SetName("Ground");
-// 
-// 		pRootNode->AddNode(pSpatial);
-// 
-// 	//	pSpatial->SetRotation(Quaternion(Vector3(0, 1, 0), 90.0f));
-// 	}
+	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/girl/butterfly.fbx"));
+
+	for (int i = 0; i < 1; ++i)
+	{
+		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
+		pSpatial->Load(pResource);
+		pSpatial->SetPosition(Vector3(0, 0, i * 50 + 100));
+		pSpatial->SetScale(Vector3(1, 1, 1));
+		pSpatial->SetName("Ground");
+
+		pRootNode->AddNode(pSpatial);
+
+	//	pSpatial->SetRotation(Quaternion(Vector3(0, 1, 0), 90.0f));
+	}
 
 	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/ground.fbx"));
 
