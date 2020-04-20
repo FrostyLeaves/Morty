@@ -303,6 +303,9 @@
     <ClInclude Include="..\..\Core\MPlane.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Organizer\System\MRenderSystem.h">
+      <Filter>Organizer\System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -502,6 +505,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\MPlane.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\System\MRenderSystem.cpp">
+      <Filter>Organizer\System</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

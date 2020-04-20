@@ -71,8 +71,8 @@ void MSkyBox::OnCreated()
 	MMaterial* pMaterial = pMaterialRes;
 
 	
-
-	m_pMeshInstance = m_pEngine->GetObjectManager()->CreateObject<MStaticMeshInstance>();
+	MStaticMeshInstance* pMeshIns = m_pEngine->GetObjectManager()->CreateObject<MStaticMeshInstance>();
+	m_pMeshInstance = pMeshIns;
 
 	m_pBoxMesh = new MMesh<Vector3>();
 
@@ -114,7 +114,6 @@ void MSkyBox::OnCreated()
 
 	m_pMeshData = new MModelMeshStruct();
 	m_pMeshData->SetMesh(m_pBoxMesh);
-	m_pMeshInstance->SetMeshData(m_pMeshData);
-
-	m_pMeshInstance->SetMaterial(pMaterial);
+	pMeshIns->SetMeshData(m_pMeshData);
+	pMeshIns->SetMaterial(pMaterial);
 }

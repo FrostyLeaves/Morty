@@ -16,12 +16,14 @@
 #include "Model/MIMeshInstance.h"
 #include "Model/MModelResource.h"
 #include "Model/MModelMeshStruct.h"
+#include "Model/MIModelMeshInstance.h"
 #include "MResourceManager.h"
 #include "MVariant.h"
 #include "Material/MMaterialResource.h"
 #include "Texture/MTextureResource.h"
 #include "MTexture.h"
 #include "MInputNode.h"
+#include "MIRenderer.h"
 
 #include "MShader.h"
 #include "MVertex.h"
@@ -155,6 +157,23 @@ int main(int argc, char* argv[])
 		pSpatial->SetScale(Vector3(1, 1, 1));
 		pSpatial->SetName("Ground");
 
+		for (MNode* pNode : pSpatial->GetFixedChildren())
+		{
+			if (MIModelMeshInstance* pMeshIns = pNode->DynamicCast<MIModelMeshInstance>())
+			{
+				MMaterial* pMaterial = pMeshIns->GetMaterial();
+
+				MMaterial* pNewMaterial = engine.GetResourceManager()->CreateResource<MMaterialResource>();
+
+				*pNewMaterial = *pMaterial;
+
+				unsigned int unBlendState = (unsigned int)MIRenderer::ENormal;
+				pNewMaterial->SetBlendState(unBlendState);
+
+				pMeshIns->SetMaterial(pNewMaterial);
+			}
+		}
+
 		pRootNode->AddNode(pSpatial);
 
 	//	pSpatial->SetRotation(Quaternion(Vector3(0, 1, 0), 90.0f));
@@ -172,6 +191,9 @@ int main(int argc, char* argv[])
 		pMaterial->SetTexutreParam(SHADER_PARAM_NAME_DIFFUSE, pDiffuseRes);
 		pMaterial->SetTexutreParam(SHADER_PARAM_NAME_NORMAL, pNormalMapRes);
 
+		unsigned int unBlendState = (unsigned int)MIRenderer::ETransparent;
+		pMaterial->SetBlendState(unBlendState);
+
 		for (MShaderParam& param : *pMaterial->GetShaderParams())
 		{
 			if (param.unCode == SHADER_PARAM_CODE_MATERIAL)
@@ -185,7 +207,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	for (unsigned int i = 0; i < 2; ++i)
+	for (unsigned int i = 0; i < 1; ++i)
 	{
 		MModelInstance* pPikachu = engine.GetObjectManager()->CreateObject<MModelInstance>();
 		pPikachu->Load(pPikachuResource);

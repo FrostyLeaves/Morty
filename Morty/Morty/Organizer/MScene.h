@@ -33,6 +33,7 @@ class MTransformCoord3D;
 class MInputNode;
 class MShadowTextureRenderTarget;
 class MBoundsAABB;
+class MISystem;
 class MORTY_CLASS MScene : public MObject
 {
 public:
@@ -50,6 +51,11 @@ public:
 	MDirectionalLight* FindActiveDirectionLight();
 	void FindActivePointLights(const Vector3& v3WorldPosition, std::vector<MPointLight*>& vPointLights);
 	void FindActiveSpotLights(const Vector3& v3WorldPosition, std::vector<MSpotLight*>& vPointLights);
+
+	MSkyBox* GetSkyBox() { return m_pSkyBox; }
+	MTransformCoord3D* GetTransformCoord() { return m_pTransformCoord3D; }
+	MShadowTextureRenderTarget* GetShadowRenderTarget() { return m_pShadowDepthMapRenderTarget; }
+
 public:
 
 	//节点接入场景时进行的操作
@@ -60,9 +66,9 @@ public:
 	void RecordMeshInstance(MIModelMeshInstance* pMeshInstance);
 	void CancelRecordMeshInstance(MIModelMeshInstance* pMeshInstance);
 
+	virtual void Tick(const float& fDelta);
 	virtual void Render(MIRenderer* pRenderer, MViewport* pViewport);
 
-	virtual void Tick(const float& fDelta);
 	virtual void Input(MInputEvent* pEvent, MViewport* pViewport);
 
 	virtual void OnCreated() override;
@@ -71,31 +77,14 @@ public:
 	void RemoveAttachedViewport(MViewport* pViewport);
 	std::vector<MViewport*> GetViewports() { return m_vViewports; }
 
-	MTransformCoord3D* GetTransformCoord() { return m_pTransformCoord3D; }
-	
-	void InitShadowMapRenderTarget();
-
 	void GetSceneAABB(MBoundsAABB& cSceneAABB);
 	void GetSceneAABB(MBoundsAABB& cSceneAABB, MViewport* pViewport);
 	void GetDirectionalShadowSceneAABB(MViewport* pViewport, const Vector3& v3LightDir, MBoundsAABB& cShadowAABB);
-
-	MShadowTextureRenderTarget* GetShadowRenderTarget(){ return m_pShadowDepthMapRenderTarget; }
 
 	std::vector<MModelInstance*>* GetModelInstances() { return &m_vModelInstance; }
 
 protected:
 
-	void GenerateShadowMap(MIRenderer* pRenderer, MViewport* pViewport);
-
-	void UpdateShaderSharedParams(MIRenderer* pRenderer, MViewport* pViewport);
-
-	void DrawMeshInstance(MIRenderer* pRenderer, MViewport* pViewport);
-	void DrawModelInstance(MIRenderer* pRenderer, MViewport* pViewport);
-	void DrawSkyBox(MIRenderer* pRenderer, MViewport* pViewport);
-	void DrawPainter(MIRenderer* pRenderer, MViewport* pViewport);
-	void DrawBoundingBox(MIRenderer* pRenderer, MViewport* pViewport, MModelInstance* pModelIns);
-	void DrawBoundingSphere(MIRenderer* pRenderer, MViewport* pViewport, MIMeshInstance* pModelIns);
-	void DrawCameraFrustum(MIRenderer* pRenderer, MViewport* pViewport, MCamera* pCamera);
 
 private:
 
@@ -120,7 +109,7 @@ private:
 	};
 	std::vector<MaterialMeshInsGroup*> m_vMatMeshInsGroup;
 	std::vector<MViewport*> m_vViewports;
-
+	std::vector<MISystem*> m_vSystems;
 };
 
 #endif
