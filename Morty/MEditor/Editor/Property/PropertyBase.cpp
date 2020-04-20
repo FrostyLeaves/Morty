@@ -238,7 +238,16 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 		}
 	}
 
+	{
 
+		ShowValueBegin("Blend");
+		unsigned int unBlendState = pMaterial->GetBlendState() - 1;
+		if (EditEnum({ "Normal", "Transparent" }, unBlendState))
+		{
+			pMaterial->SetBlendState(unBlendState + 1);
+		}
+		ShowValueEnd();
+	}
 
 	{
 		std::vector<MShaderParam>& vParams = *pMaterial->GetShaderParams();

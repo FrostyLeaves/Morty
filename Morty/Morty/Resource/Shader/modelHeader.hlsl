@@ -36,6 +36,7 @@ struct Material
     Texture2D texNormal;
     Texture2D texSpecular;
     float3 f3Ambient;
+    float fAlphaFactor;
     float3 f3Diffuse;
     float3 f3Specular;
     float fShininess;

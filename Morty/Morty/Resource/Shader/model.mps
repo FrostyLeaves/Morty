@@ -98,6 +98,7 @@ float4 PS(VS_OUT input) : SV_Target
 
 
     float3 f3Color = U_mat.f3Ambient * f3AmbiColor.xyz * 0.1f;
+    float fAlpha = U_mat.fAlphaFactor * f3AmbiColor.w;
 
     if(U_bDirectionLightEnabled > 0.5f)
     {
@@ -129,6 +130,6 @@ float4 PS(VS_OUT input) : SV_Target
     }
 
 
-    return float4(f3Color, 0.25f);
+    return float4(f3Color, fAlpha);
 }
 

@@ -347,6 +347,8 @@ bool MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial, const bool& bUpdat
 	if (bUpdateResources)
 	{
 		UpdateMaterialResource();
+		UpdateMaterialParam();
+
 	}
 
 	return true;

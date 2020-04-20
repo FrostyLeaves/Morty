@@ -266,7 +266,7 @@ void MRenderSystem::DrawMeshInstance(MRenderInfo& info)
 	{
 		MMaterial* pMaterial = pMeshIns->GetMaterial();
 
-		if(!info.pRenderer->SetUseMaterial(pMaterial))
+		if(!info.pRenderer->SetUseMaterial(pMaterial, true))
 			continue;
 
 		DrawMeshInstance(info.pRenderer, pMeshIns, pMeshMatrixParam, pAnimationParam);
@@ -307,8 +307,6 @@ void MRenderSystem::DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pM
 			pRenderer->SetVertexShaderParam(*pAnimationParam);
 		}
 	}
-
-	pRenderer->UpdateMaterialParam();
 
 	unsigned int unMeshLevel = 0;
 	if (MIModelMeshInstance* pModelMeshIns = pMeshInstance->DynamicCast<MIModelMeshInstance>())
