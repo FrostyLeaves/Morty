@@ -11,33 +11,51 @@
 #include "MGlobal.h"
 #include "MTextureRenderTarget.h"
 
+#include <vector>
+
 #include "MObject.h"
 
-class MScene;
 class MStruct;
-class MShaderParam;
 class MMaterial;
+class MShaderParam;
+class MIMeshInstance;
+class MSkeletonInstance;
+
+struct MShadowRenderGroup
+{
+	MSkeletonInstance* pSkeletonInstance;
+	std::vector<MIMeshInstance*> vMeshInstances;
+};
+
+
 class MORTY_CLASS MShadowTextureRenderTarget : public MObject, public MTextureRenderTarget
 {
 public:
     M_OBJECT(MShadowTextureRenderTarget)
+
+	
+
 public:
     MShadowTextureRenderTarget();
     virtual ~MShadowTextureRenderTarget();
 
 public:
 
+	void Render(MIRenderer* pRenderer, const Matrix4& m4InvProj, std::vector<MShadowRenderGroup>* pGroup);
+
     virtual void OnCreated() override;
 
     virtual void OnRender(MIRenderer* pRenderer) override;
 
-    void SetScene(MScene* pScene) { m_pScene = pScene; }
+	void SetLightInvProjMatrix(const Matrix4& m4InvProj) { m_m4LightInvProj = m4InvProj; }
+	void SetSourceMeshes(std::vector<MShadowRenderGroup>* pGroup) { m_pShadowRenderGroup = pGroup; }
 
 private:
 
-    MScene* m_pScene;
-
 private:
+
+	Matrix4 m_m4LightInvProj;
+	std::vector<MShadowRenderGroup>* m_pShadowRenderGroup;
 
 	MMaterial* m_pStaticMaterial;
 	MMaterial* m_pAnimMaterial;
@@ -45,6 +63,7 @@ private:
     MShaderParam* m_pMeshParam;
 	MShaderParam* m_pWorldParam;
     MShaderParam* m_pAnimBonesParam;
+
 };
 
 

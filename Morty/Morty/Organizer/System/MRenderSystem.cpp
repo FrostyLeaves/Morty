@@ -13,12 +13,15 @@
 
 #include "MCamera.h"
 #include "MSkyBox.h"
+#include "MSkeleton.h"
 #include "Model/MModelInstance.h"
+#include "Model/MIMeshInstance.h"
 #include "Model/MIModelMeshInstance.h"
 #include "Light/MSpotLight.h"
 #include "Light/MPointLight.h"
 #include "Light/MDirectionalLight.h"
 
+#include "MSkeleton.h"
 #include "Material/MMaterialResource.h"
 #include "Model/MModelResource.h"
 #include "Model/MModelMeshStruct.h"
@@ -28,7 +31,6 @@ MTypeIdentifierImplement(MRenderSystem, MISystem)
 
 MRenderSystem::MRenderSystem()
 	: MISystem()
-	, m_pScene(nullptr)
 {
 }
 
@@ -36,14 +38,12 @@ MRenderSystem::~MRenderSystem()
 {
 }
 
-void MRenderSystem::Initialize(MScene* pScene)
+void MRenderSystem::Initialize()
 {
-	m_pScene = pScene;
 }
 
 void MRenderSystem::Release()
 {
-	m_pScene = nullptr;
 }
 
 void MRenderSystem::Tick(const float& fDelta)
@@ -51,17 +51,19 @@ void MRenderSystem::Tick(const float& fDelta)
 
 }
 
-void MRenderSystem::Render(MIRenderer* pRenderer, MViewport* pViewport)
+void MRenderSystem::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene)
 {
-    if (nullptr == m_pScene)
-        return;
 
 	MRenderInfo info;
 
 	info.pRenderer = pRenderer;
 	info.pViewport = pViewport;
+	info.pScene = pScene;
 
+	GenerateRenderGroup(info);
 	GenerateShadowMap(info);
+
+
 
 	Vector2 v2LeftTop = pViewport->GetLeftTop();
 	pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, pViewport->GetWidth(), pViewport->GetHeight(), 0.0f, 1.0f);
@@ -74,8 +76,35 @@ void MRenderSystem::Render(MIRenderer* pRenderer, MViewport* pViewport)
 
 void MRenderSystem::GenerateShadowMap(MRenderInfo& info)
 {
-	MShadowTextureRenderTarget* pShadowRenderTarget = m_pScene->GetShadowRenderTarget();
-	if (nullptr == pShadowRenderTarget || nullptr == m_pScene->FindActiveDirectionLight())
+	info.pDirectionalLight = info.pScene->FindActiveDirectionLight();
+
+	info.pScene->GetDirectionalShadowSceneAABB(info.pViewport, info.pDirectionalLight->GetWorldDirection(), info.cShadowRenderAABB);
+
+	Matrix4 matLightInvProj = info.pViewport->GetLightInverseProjection(info.pDirectionalLight, info.cMeshRenderAABB, info.cShadowRenderAABB);
+
+	std::vector<MModelInstance*>& vModels = *info.pScene->GetAllModelInstance();
+	for (MModelInstance* pModelIns : vModels)
+	{
+		if (pModelIns->GetVisibleRecursively() && pModelIns->GetGenerateDirLightShadow())
+		{
+			info.vShadowGroup.push_back(MShadowRenderGroup());
+			MShadowRenderGroup& group = info.vShadowGroup.back();
+			group.pSkeletonInstance = pModelIns->GetSkeleton();
+
+			for (MNode* pChild : pModelIns->GetFixedChildren())
+			{
+				if (MIMeshInstance* pMeshIns = pChild->DynamicCast<MIMeshInstance>())
+				{
+					if(pMeshIns->GetVisible() && pMeshIns->GetGenerateDirLightShadow())
+						group.vMeshInstances.push_back(pMeshIns);
+				}
+			}
+
+		}
+	}
+
+	MShadowTextureRenderTarget* pShadowRenderTarget = info.pScene->GetShadowRenderTarget();
+	if (nullptr == pShadowRenderTarget || nullptr == info.pScene->FindActiveDirectionLight())
 	{
 		return;
 	}
@@ -85,8 +114,8 @@ void MRenderSystem::GenerateShadowMap(MRenderInfo& info)
 		MShaderTextureParam* pShadowParam = MShaderBuffer::s_vTextureParams[SHADER_PARAM_CODE_SHADOW_MAP];
 		if (SHADER_PARAM_CODE_SHADOW_MAP == pShadowParam->unCode)
 		{
-			pShadowRenderTarget->SetSourceViewport(info.pViewport);
-			info.pRenderer->Render(pShadowRenderTarget);
+			pShadowRenderTarget->Render(info.pRenderer, matLightInvProj, &info.vShadowGroup);
+
 			pShadowParam->pTexture = pShadowRenderTarget->m_pDepthTexture;
 			info.pRenderer->SetPixelShaderTexture(*pShadowParam);
 		}
@@ -96,17 +125,17 @@ void MRenderSystem::GenerateShadowMap(MRenderInfo& info)
 
 void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 {
-	MDirectionalLight* pDirectionalLight = m_pScene->FindActiveDirectionLight();
-	Matrix4 matLightInvProj = pViewport->GetLightInverseProjection(pDirectionalLight);
+	MDirectionalLight* pDirectionalLight = info.pScene->FindActiveDirectionLight();
+	Matrix4 matLightInvProj = info.pViewport->GetLightInverseProjection(pDirectionalLight, info.cMeshRenderAABB, info.cShadowRenderAABB);
 
 	if (MShaderParam* pWorldMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_WORLD_MATRIX))
 	{
 		MStruct& cStruct = *pWorldMatrixParam->var.GetStruct();
-		cStruct[0] = pViewport->GetCameraInverseProjection();
+		cStruct[0] = info.pViewport->GetCameraInverseProjection();
 		cStruct[1] = matLightInvProj;
 
 		pWorldMatrixParam->SetDirty();
-		pRenderer->SetVertexShaderParam(*pWorldMatrixParam);
+		info.pRenderer->SetVertexShaderParam(*pWorldMatrixParam);
 	}
 
 	if (MShaderParam* pWorldInfoParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_WORLDINFO))
@@ -116,12 +145,12 @@ void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 			(*pWorldInfoParam->var.GetStruct())[0] = pDirectionalLight->GetWorldDirection();
 		}
 
-		(*pWorldInfoParam->var.GetStruct())[1] = pViewport->GetCamera()->GetWorldPosition();
+		(*pWorldInfoParam->var.GetStruct())[1] = info.pViewport->GetCamera()->GetWorldPosition();
 
 		pWorldInfoParam->SetDirty();
-		pRenderer->SetVertexShaderParam(*pWorldInfoParam);
+		info.pRenderer->SetVertexShaderParam(*pWorldInfoParam);
 		pWorldInfoParam->SetDirty();
-		pRenderer->SetPixelShaderParam(*pWorldInfoParam);
+		info.pRenderer->SetPixelShaderParam(*pWorldInfoParam);
 	}
 
 	if (MShaderParam* pLightParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_LIGHT))
@@ -148,7 +177,7 @@ void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 		MVariant& varValidPointLights = (*pLightParam->var.GetStruct())[4];
 		{
 			std::vector<MPointLight*> vActivePointLights(MPOINT_LIGHT_MAX_NUMBER);
-			m_pScene->FindActivePointLights(pViewport->GetCamera()->GetWorldPosition(), vActivePointLights);
+			info.pScene->FindActivePointLights(info.pViewport->GetCamera()->GetWorldPosition(), vActivePointLights);
 			varValidPointLights = (int)MPOINT_LIGHT_MAX_NUMBER;
 
 			MVariantArray& vPointLights = *varPointLights.GetArray();
@@ -160,6 +189,7 @@ void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 					cPointLight[0] = pLight->GetWorldPosition();
 					cPointLight[1] = pLight->GetDiffuseColor().ToVector3();
 					cPointLight[2] = pLight->GetSpecularColor().ToVector3();
+
 
 					cPointLight[3] = 1.0f;
 					cPointLight[4] = 0.022f;
@@ -177,7 +207,7 @@ void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 		MVariant& varValidSpotLights = (*pLightParam->var.GetStruct())[5];
 		{
 			std::vector<MSpotLight*> vActiveSpotLights(MSPOT_LIGHT_MAX_NUMBER);
-			m_pScene->FindActiveSpotLights(pViewport->GetCamera()->GetWorldPosition(), vActiveSpotLights);
+			info.pScene->FindActiveSpotLights(info.pViewport->GetCamera()->GetWorldPosition(), vActiveSpotLights);
 			varValidSpotLights = (int)MSPOT_LIGHT_MAX_NUMBER;
 
 			MVariantArray& vSpotLights = *varSpotLights.GetArray();
@@ -204,84 +234,95 @@ void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 		}
 
 		pLightParam->SetDirty();
-		pRenderer->SetVertexShaderParam(*pLightParam);
+		info.pRenderer->SetVertexShaderParam(*pLightParam);
 		pLightParam->SetDirty();
-		pRenderer->SetPixelShaderParam(*pLightParam);
+		info.pRenderer->SetPixelShaderParam(*pLightParam);
 	}
 }
 
 void MRenderSystem::DrawMeshInstance(MRenderInfo& info)
 {
-// 	MShaderParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
-// 	if (nullptr == pMeshMatrixParam)
-// 		return;
-// 
-// 	MShaderParam* pAnimationParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_ANIMATION);
-// 
-// 	for (MaterialMeshInsGroup* pGroup : m_vMatMeshInsGroup)
-// 	{
-// 		MMaterial* pMaterial = pGroup->pMat;
-// 		//使用材质
-// 		if (!pRenderer->SetUseMaterial(pMaterial))
-// 			continue;
-// 
-// 		//更新材质的纹理资源，最好移到Material的更新
-// 		pRenderer->UpdateMaterialResource();
-// 
-// 		for (MIModelMeshInstance* pMeshIns : pGroup->vMeshIns)
-// 		{
-// 			if (!pMeshIns->GetVisibleRecursively())
-// 				continue;
-// 
-// 			if (MCameraFrustum::EOUTSIDE == pViewport->GetCameraFrustum()->ContainTest(*pMeshIns->GetBoundsAABB()))
-// 				continue;
-// 
-// 			Matrix4 worldTrans = pMeshIns->GetWorldTransform();
-// 			//Transposed and Inverse.
-// 			Matrix3 matNormal(worldTrans.Transposed().Inverse(), 3, 3);
-// 
-// 			MStruct& cStruct = *pMeshMatrixParam->var.GetStruct();
-// 			cStruct[0] = worldTrans;
-// 			cStruct[1] = matNormal;
-// 
-// 			pMeshMatrixParam->SetDirty();
-// 			pRenderer->SetVertexShaderParam(*pMeshMatrixParam);
-// 
-// 			if (MModelInstance* pModel = dynamic_cast<MModelInstance*>(pMeshIns->GetParent()))
-// 			{
-// 				if (pAnimationParam && pModel->GetSkeleton())
-// 				{
-// 
-// 					MStruct& cAnimationStruct = *pAnimationParam->var.GetStruct();
-// 					MVariantArray& cBonesArray = *cAnimationStruct[0].GetArray();
-// 
-// 					const std::vector<MBone*>& bones = pModel->GetSkeleton()->GetAllBones();
-// 					unsigned int size = bones.size();
-// 					if (size > MBONES_MAX_NUMBER) size = MBONES_MAX_NUMBER;
-// 
-// 					for (unsigned int i = 0; i < size; ++i)
-// 					{
-// 						cBonesArray[i] = bones[i]->GetTransformInModelWorld();
-// 					}
-// 
-// 					pAnimationParam->SetDirty();
-// 					pRenderer->SetVertexShaderParam(*pAnimationParam);
-// 				}
-// 			}
-// 
-// 			pRenderer->UpdateMaterialParam();
-// 			pRenderer->DrawMesh(pMeshIns->GetMesh(pMeshIns->GetDetailLevel()));
-// 		}
-// 	}
+	MShaderParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
+	if (nullptr == pMeshMatrixParam)
+		return;
+
+	MShaderParam* pAnimationParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_ANIMATION);
+
+	for (MMaterialRenderGroup& group : info.vMaterialRenderGroup)
+	{
+		MMaterial* pMaterial = group.pMaterial;
+		//使用材质
+		if (!info.pRenderer->SetUseMaterial(pMaterial, true))
+			continue;
+
+		for (MIMeshInstance* pMeshIns : group.vMeshInstainces)
+		{
+			DrawMeshInstance(info.pRenderer, pMeshIns, pMeshMatrixParam, pAnimationParam);
+		}
+	}
+
+
+	for (MIMeshInstance* pMeshIns : info.vTransparentRenderGroup)
+	{
+		MMaterial* pMaterial = pMeshIns->GetMaterial();
+
+		if(!info.pRenderer->SetUseMaterial(pMaterial))
+			continue;
+
+		DrawMeshInstance(info.pRenderer, pMeshIns, pMeshMatrixParam, pAnimationParam);
+	}
+}
+
+void MRenderSystem::DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pMeshInstance, MShaderParam*& pMeshMatrixParam, MShaderParam*& pAnimationParam)
+{
+	Matrix4 worldTrans = pMeshInstance->GetWorldTransform();
+	//Transposed and Inverse.
+	Matrix3 matNormal(worldTrans.Transposed().Inverse(), 3, 3);
+
+	MStruct& cStruct = *pMeshMatrixParam->var.GetStruct();
+	cStruct[0] = worldTrans;
+	cStruct[1] = matNormal;
+
+	pMeshMatrixParam->SetDirty();
+	pRenderer->SetVertexShaderParam(*pMeshMatrixParam);
+
+	if (MModelInstance* pModel = dynamic_cast<MModelInstance*>(pMeshInstance->GetParent()))
+	{
+		if (pAnimationParam && pModel->GetSkeleton())
+		{
+
+			MStruct& cAnimationStruct = *pAnimationParam->var.GetStruct();
+			MVariantArray& cBonesArray = *cAnimationStruct[0].GetArray();
+
+			const std::vector<MBone*>& bones = pModel->GetSkeleton()->GetAllBones();
+			unsigned int size = bones.size();
+			if (size > MBONES_MAX_NUMBER) size = MBONES_MAX_NUMBER;
+
+			for (unsigned int i = 0; i < size; ++i)
+			{
+				cBonesArray[i] = bones[i]->GetTransformInModelWorld();
+			}
+
+			pAnimationParam->SetDirty();
+			pRenderer->SetVertexShaderParam(*pAnimationParam);
+		}
+	}
+
+	pRenderer->UpdateMaterialParam();
+
+	unsigned int unMeshLevel = 0;
+	if (MIModelMeshInstance* pModelMeshIns = pMeshInstance->DynamicCast<MIModelMeshInstance>())
+		unMeshLevel = pModelMeshIns->GetDetailLevel();
+	pRenderer->DrawMesh(pMeshInstance->GetMesh(unMeshLevel));
 }
 
 void MRenderSystem::DrawModelInstance(MRenderInfo& info)
 {
-	for (MModelInstance* pModelIns : *m_pScene->GetModelInstances())
+	for (MModelInstance* pModelIns : *info.pScene->GetAllModelInstance())
 	{
 		if (pModelIns->GetDrawBoundingBox())
 		{
-			DrawBoundingBox(pRenderer, pViewport, pModelIns);
+			DrawBoundingBox(info, pModelIns);
 		}
 
 		for (MNode* pChild : pModelIns->GetFixedChildren())
@@ -290,7 +331,7 @@ void MRenderSystem::DrawModelInstance(MRenderInfo& info)
 			{
 				if (pMeshIns->GetDrawBoundingSphere())
 				{
-					DrawBoundingSphere(pRenderer, pViewport, pMeshIns);
+					DrawBoundingSphere(info, pMeshIns);
 				}
 			}
 		}
@@ -301,9 +342,9 @@ void MRenderSystem::DrawModelInstance(MRenderInfo& info)
 
 void MRenderSystem::DrawSkyBox(MRenderInfo& info)
 {
-	pRenderer->SetRasterizerType(MIRenderer::MERasterizerType::ESolid | MIRenderer::MERasterizerType::ECullNone);
+	info.pRenderer->SetRasterizerType(MIRenderer::MERasterizerType::ESolid | MIRenderer::MERasterizerType::ECullNone);
 
-	MSkyBox* pSkyBox = m_pScene->GetSkyBox();
+	MSkyBox* pSkyBox = info.pScene->GetSkyBox();
 
 	if (pSkyBox)
 	{
@@ -315,29 +356,29 @@ void MRenderSystem::DrawSkyBox(MRenderInfo& info)
 			{
 				MStruct& cStruct = *pMeshParam->var.GetStruct();
 				Matrix4 mat(Matrix4::IdentityMatrix);
-				Vector3 camPos = pViewport->GetCamera()->GetPosition();
+				Vector3 camPos = info.pViewport->GetCamera()->GetPosition();
 				mat.m[0][3] = camPos.x;
 				mat.m[1][3] = camPos.y;
 				mat.m[2][3] = camPos.z;
 				cStruct[0] = mat;
 
 				pMeshParam->SetDirty();
-				pRenderer->SetVertexShaderParam(*pMeshParam);
+				info.pRenderer->SetVertexShaderParam(*pMeshParam);
 			}
 			if (MShaderParam* pWorldParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX))
 			{
 				MStruct& cStruct = *pWorldParam->var.GetStruct();
-				cStruct[0] = pViewport->GetCameraInverseProjection();
+				cStruct[0] = info.pViewport->GetCameraInverseProjection();
 
 				pWorldParam->SetDirty();
-				pRenderer->SetVertexShaderParam(*pWorldParam);
+				info.pRenderer->SetVertexShaderParam(*pWorldParam);
 			}
 
-			if (pRenderer->SetUseMaterial(pMaterial))
+			if (info.pRenderer->SetUseMaterial(pMaterial))
 			{
-				pRenderer->UpdateMaterialResource();
-				pRenderer->UpdateMaterialParam();
-				pRenderer->DrawMesh(pMeshIns->GetMesh());
+				info.pRenderer->UpdateMaterialResource();
+				info.pRenderer->UpdateMaterialParam();
+				info.pRenderer->DrawMesh(pMeshIns->GetMesh());
 			}
 		}
 
@@ -346,18 +387,18 @@ void MRenderSystem::DrawSkyBox(MRenderInfo& info)
 
 void MRenderSystem::DrawPainter(MRenderInfo& info)
 {
-	MTransformCoord3D* pTransformCoord = m_pScene->GetTransformCoord();
-	pTransformCoord->Render(pRenderer, pViewport);
+	MTransformCoord3D* pTransformCoord = info.pScene->GetTransformCoord();
+	pTransformCoord->Render(info.pRenderer, info.pViewport);
 }
 
 void MRenderSystem::DrawBoundingBox(MRenderInfo& info, MModelInstance* pModelIns)
 {
 	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW3D);
 	MMaterial* pMaterial = pDraw3DMaterialRes;
-	if (!pRenderer->SetUseMaterial(pMaterial))
+	if (!info.pRenderer->SetUseMaterial(pMaterial))
 		return;
 
-	pRenderer->UpdateMaterialParam();
+	info.pRenderer->UpdateMaterialParam();
 
 	const MBoundsAABB* pAABB = pModelIns->GetBoundsAABB();
 
@@ -384,18 +425,18 @@ void MRenderSystem::DrawBoundingBox(MRenderInfo& info, MModelInstance* pModelIns
 			MPainter2DLine3D line(list[j + i * 4], list[(j + 1) % 4 + i * 4], MColor(1, 1, 1, 1), 1.0f);
 
 			MMesh<MPainterVertex> meshs;
-			if (line.FillData(pViewport, meshs))
+			if (line.FillData(info.pViewport, meshs))
 			{
-				pRenderer->DrawMesh(&meshs);
+				info.pRenderer->DrawMesh(&meshs);
 				meshs.DestroyBuffer(m_pEngine->GetDevice());
 			}
 		}
 
 		MPainter2DLine3D line(list[j], list[(j + 4)], MColor(1, 1, 1, 1), 1.0f);
 		MMesh<MPainterVertex> meshs;
-		if (line.FillData(pViewport, meshs))
+		if (line.FillData(info.pViewport, meshs))
 		{
-			pRenderer->DrawMesh(&meshs);
+			info.pRenderer->DrawMesh(&meshs);
 			meshs.DestroyBuffer(m_pEngine->GetDevice());
 		}
 	}
@@ -414,7 +455,7 @@ void MRenderSystem::DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pMeshI
 	if (nullptr == pMeshMatrixParam)
 		return;
 
-	if (!pRenderer->SetUseMaterial(pStaticMeshMaterialRes))
+	if (!info.pRenderer->SetUseMaterial(pStaticMeshMaterialRes))
 		return;
 
 	MTransform trans;
@@ -435,13 +476,13 @@ void MRenderSystem::DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pMeshI
 	cStruct[1] = matNormal;
 
 	pMeshMatrixParam->SetDirty();
-	pRenderer->SetVertexShaderParam(*pMeshMatrixParam);
+	info.pRenderer->SetVertexShaderParam(*pMeshMatrixParam);
 
 	if (MModelResource* pModelResource = dynamic_cast<MModelResource*>(pSphereResource))
 	{
 		for (MModelMeshStruct* pMeshData : *pModelResource->GetMeshes())
 		{
-			pRenderer->DrawMesh(pMeshData->GetMesh());
+			info.pRenderer->DrawMesh(pMeshData->GetMesh());
 		}
 	}
 }
@@ -450,14 +491,14 @@ void MRenderSystem::DrawCameraFrustum(MRenderInfo& info, MCamera* pCamera)
 {
 	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW3D);
 	MMaterial* pMaterial = pDraw3DMaterialRes;
-	if (!pRenderer->SetUseMaterial(pMaterial))
+	if (!info.pRenderer->SetUseMaterial(pMaterial))
 		return;
 
-	pRenderer->UpdateMaterialParam();
+	info.pRenderer->UpdateMaterialParam();
 
 
 	Vector3 list[8];
-	pViewport->GetCameraFrustum(list[0], list[1], list[2], list[3], list[4], list[5], list[6], list[7]);
+	info.pViewport->GetCameraFrustum(list[0], list[1], list[2], list[3], list[4], list[5], list[6], list[7]);
 
 	Vector2 begin, end;
 	for (int j = 0; j < 4; ++j)
@@ -467,20 +508,98 @@ void MRenderSystem::DrawCameraFrustum(MRenderInfo& info, MCamera* pCamera)
 			MPainter2DLine3D line(list[j + i * 4], list[(j + 1) % 4 + i * 4], MColor(i == 0 ? 0 : 1, 1, 1, 1), 1.0f);
 
 			MMesh<MPainterVertex> meshs;
-			if (line.FillData(pViewport, meshs))
+			if (line.FillData(info.pViewport, meshs))
 			{
-				pRenderer->DrawMesh(&meshs);
+				info.pRenderer->DrawMesh(&meshs);
 				meshs.DestroyBuffer(m_pEngine->GetDevice());
 			}
 		}
 
 		MPainter2DLine3D line(list[j], list[(j + 4)], MColor(1, 1, 1, 1), 1.0f);
 		MMesh<MPainterVertex> meshs;
-		if (line.FillData(pViewport, meshs))
+		if (line.FillData(info.pViewport, meshs))
 		{
-			pRenderer->DrawMesh(&meshs);
+			info.pRenderer->DrawMesh(&meshs);
 			meshs.DestroyBuffer(m_pEngine->GetDevice());
 		}
 	}
 
+}
+
+void MRenderSystem::GenerateRenderGroup(MRenderInfo& info)
+{
+	std::vector<MIModelMeshInstance*>& meshes = *info.pScene->GetAllIModelMeshInstance();
+
+	Vector3 v3BoundsMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
+	Vector3 v3BoundsMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+	for (MIModelMeshInstance* pMeshIns : meshes)
+	{
+		if(!pMeshIns->GetVisibleRecursively())
+			continue;
+
+		if (MCameraFrustum::EOUTSIDE == info.pViewport->GetCameraFrustum()->ContainTest(*pMeshIns->GetBoundsAABB()))
+			continue;
+
+		RecordMeshInstance(info, pMeshIns);
+
+		const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
+		pBounds->UnionMinMax(v3BoundsMin, v3BoundsMax);
+	}
+
+	info.cMeshRenderAABB.SetMinMax(v3BoundsMin, v3BoundsMax);
+}
+
+void MRenderSystem::RecordMeshInstance(MRenderInfo& info, MIMeshInstance* pMeshInstance)
+{
+	if (!pMeshInstance->GetMaterial())
+		return;
+
+	MIMeshInstance::MERenderOrderType eOrderType = pMeshInstance->GetRenderOrderType();
+
+	if (MIMeshInstance::EAutoOrder == eOrderType)
+	{
+		if (pMeshInstance->GetMaterial()->GetBlendState() == MIRenderer::ETransparent)
+			eOrderType = MIMeshInstance::EOrderByTransparent;
+		else
+			eOrderType = MIMeshInstance::EOrderByMaterial;
+	}
+
+	if (MIMeshInstance::EOrderByMaterial == eOrderType)
+	{
+
+		MMaterial* pMaterial = pMeshInstance->GetMaterial();
+
+		if (pMaterial->GetBlendState() == MIRenderer::ENormal)
+		{
+
+			std::vector<MMaterialRenderGroup>& vGroup = info.vMaterialRenderGroup;
+
+			std::vector<MMaterialRenderGroup>::iterator iter = std::lower_bound(vGroup.begin(), vGroup.end(), pMaterial, [](const MMaterialRenderGroup& a, MMaterial* b) {return a.pMaterial < b; });
+			if (iter == vGroup.end())
+			{
+				vGroup.push_back(MMaterialRenderGroup());
+				iter = vGroup.end() - 1;
+				iter->pMaterial = pMeshInstance->GetMaterial();
+			}
+			else if (iter->pMaterial != pMaterial)
+			{
+				MMaterialRenderGroup group;
+				group.pMaterial = pMeshInstance->GetMaterial();
+				iter = vGroup.insert(iter, group);
+			}
+
+			MMaterialRenderGroup& group = *iter;
+
+			group.vMeshInstainces.push_back(pMeshInstance);
+		}
+	}
+	else if (MIMeshInstance::EOrderByTransparent == eOrderType)
+	{
+		std::vector<MIMeshInstance*>& vGroup = info.vTransparentRenderGroup;
+		
+		std::vector<MIMeshInstance*>::iterator iter = std::lower_bound(vGroup.begin(), vGroup.end(), pMeshInstance, [](MIMeshInstance* a, MIMeshInstance* b) {return a->GetWorldPosition().z > b->GetWorldPosition().z; });
+
+		vGroup.insert(iter, pMeshInstance);
+	}
 }

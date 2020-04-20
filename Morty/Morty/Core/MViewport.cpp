@@ -178,7 +178,7 @@ Matrix4 MViewport::GetLightInverseProjection(MPointLight* pLight)
 	return Matrix4::IdentityMatrix;
 }
 
-Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight)
+Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight, const MBoundsAABB& cMeshRenderAABB, const MBoundsAABB& cShadowRenderAABB)
 {
 	if (nullptr == pLight)
 		return Matrix4::IdentityMatrix;
@@ -190,7 +190,7 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight)
 	Matrix4 matCameraInv = pCamera->GetWorldTransform().Inverse();
 
 	MBoundsAABB cShadowAABB, cSceneAABB;
-	m_pScene->GetSceneAABB(cSceneAABB, this);
+	m_pScene->GetSceneRenderMeshAABB(cSceneAABB, this);
 	std::vector<Vector3> vSceneBoundsPoints(8);
 	cSceneAABB.GetPoints(vSceneBoundsPoints);
 
@@ -207,9 +207,6 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight)
 	}
 	float fZValidNear = fSceneMinZNear > pCamera->GetZNear() ? fSceneMinZNear : pCamera->GetZNear();
 	float fZValidFar = fSceneMaxZFar < pCamera->GetZFar() ? fSceneMaxZFar : pCamera->GetZFar();
-
-// 	float fZValidNear = fSceneMinZNear ;
-// 	float fZValidFar = fSceneMaxZFar ;
 
 	//获取相机视椎体在方向光Camera内的最小和最大X、Y值
 	std::vector<Vector3> vCameraBoundsPoints(8);
@@ -232,7 +229,7 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight)
 		if (v3CameraMax.z < pos.z) v3CameraMax.z = pos.z;
 	}
 
-	m_pScene->GetDirectionalShadowSceneAABB(this, pLight->GetWorldDirection(), cShadowAABB);	//TODO 这个SceneAABB需要获取到被裁切后的
+	m_pScene->GetDirectionalShadowSceneAABB(this, pLight->GetWorldDirection(), cShadowAABB);
 	std::vector<Vector3> vShadowModelBoundsPoints(8);
 	cShadowAABB.GetPoints(vShadowModelBoundsPoints);
 

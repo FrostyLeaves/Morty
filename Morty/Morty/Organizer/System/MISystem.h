@@ -11,6 +11,7 @@
 #include "MGlobal.h"
 #include "MObject.h"
 
+class MScene;
 class MViewport;
 class MIRenderer;
 class MORTY_CLASS MISystem : public MObject
@@ -23,7 +24,7 @@ public:
 public:
 
     virtual void Tick(const float& fDelta) {};
-    virtual void Render(MIRenderer* pRenderer, MViewport* pViewport) {};
+    virtual void Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene) {};
 
 private:
 };

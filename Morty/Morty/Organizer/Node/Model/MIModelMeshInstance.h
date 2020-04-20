@@ -39,12 +39,16 @@ public:
 	void SetDrawBoundingSphere(const bool& bDrawable) { m_bDrawBoundingSphere = bDrawable; }
 	bool GetDrawBoundingSphere() { return m_bDrawBoundingSphere; }
 
+	void SetGenerateDirLightShadow(const bool& bGenerate) { m_bGenerateDirLightShadow = bGenerate; }
+	bool GetGenerateDirLightShadow() const;
+
 private:
 	MEShadowType m_eShadowType;
 	MModelInstance* m_pModelInstance;
 	unsigned int m_unDetailLevel;
 
 	bool m_bDrawBoundingSphere;
+	bool m_bGenerateDirLightShadow;
 };
 
 #endif

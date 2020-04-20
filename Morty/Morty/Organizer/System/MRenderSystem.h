@@ -10,14 +10,43 @@
 #define _M_MRENDERSYSTEM_H_
 #include "MGlobal.h"
 #include "MISystem.h"
+#include "MBounds.h"
+#include "MShadowTextureRenderTarget.h"
+
+#include <vector>
 
 class MScene;
 class MCamera;
 class MIMeshInstance;
 class MModelInstance;
-
+class MSkeletonInstance;
+class MDirectionalLight;
+class MIModelMeshInstance;
 class MORTY_CLASS MRenderSystem : public MISystem
 {
+public:
+	struct MMaterialRenderGroup
+	{
+		MMaterial* pMaterial;
+		std::vector<MIMeshInstance*> vMeshInstainces;
+	};
+
+	struct MRenderInfo
+	{
+		MIRenderer* pRenderer;
+		MViewport* pViewport;
+		MScene* pScene;
+
+		MDirectionalLight* pDirectionalLight;
+
+		MBoundsAABB cShadowRenderAABB;
+		MBoundsAABB cMeshRenderAABB;
+
+		std::vector<MMaterialRenderGroup> vMaterialRenderGroup;
+		std::vector<MIMeshInstance*> vTransparentRenderGroup;
+		std::vector<MShadowRenderGroup> vShadowGroup;
+	};
+
 public:
 	M_OBJECT(MRenderSystem);
     MRenderSystem();
@@ -25,25 +54,21 @@ public:
 
 public:
 
-	void Initialize(MScene* pScene);
+	void Initialize();
 	void Release();
 
 
     virtual void Tick(const float& fDelta) override;
-    virtual void Render(MIRenderer* pRenderer, MViewport* pViewport) override;
+    virtual void Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene) override;
 
 protected:
 
-
-	struct MRenderInfo
-	{
-		MIRenderer* pRenderer;
-		MViewport* pViewport;
-	};
-
+	void GenerateRenderGroup(MRenderInfo& info);
 	void GenerateShadowMap(MRenderInfo& info);
 	void UpdateShaderSharedParams(MRenderInfo& info);
 	void DrawMeshInstance(MRenderInfo& info);
+
+
 	void DrawModelInstance(MRenderInfo& info);
 	void DrawSkyBox(MRenderInfo& info);
 	void DrawPainter(MRenderInfo& info);
@@ -51,9 +76,13 @@ protected:
 	void DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pModelIns);
 	void DrawCameraFrustum(MRenderInfo& info, MCamera* pCamera);
 
-private:
 
-	MScene* m_pScene;
+protected:
+
+	void DrawMeshInstance(MIRenderer* &pRenderer, MIMeshInstance* &pMeshInstance, MShaderParam* &pMeshMatrixParam, MShaderParam* &pAnimationParam);
+
+	void RecordMeshInstance(MRenderInfo& info, MIMeshInstance* pMeshInstance);
+
 };
 
 #endif

@@ -17,7 +17,8 @@ MTypeIdentifierImplement(MShadowTextureRenderTarget, MObject)
 
 MShadowTextureRenderTarget::MShadowTextureRenderTarget()
 	: MTextureRenderTarget()
-	, m_pScene(nullptr)
+	, m_m4LightInvProj(Matrix4::IdentityMatrix)
+	, m_pShadowRenderGroup(nullptr)
 	, m_pStaticMaterial(nullptr)
 	, m_pAnimMaterial(nullptr)
 	, m_pMeshParam(nullptr)
@@ -30,6 +31,17 @@ MShadowTextureRenderTarget::MShadowTextureRenderTarget()
 MShadowTextureRenderTarget::~MShadowTextureRenderTarget()
 {
 
+}
+
+void MShadowTextureRenderTarget::Render(MIRenderer* pRenderer, const Matrix4& m4InvProj, std::vector<MShadowRenderGroup>* pGroup)
+{
+	SetLightInvProjMatrix(m4InvProj);
+
+	SetSourceMeshes(pGroup);
+
+	pRenderer->Render(this);
+
+	SetSourceMeshes(nullptr);
 }
 
 void MShadowTextureRenderTarget::OnCreated()
@@ -48,7 +60,7 @@ void MShadowTextureRenderTarget::OnCreated()
 
 void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 {
-	if (nullptr == m_pScene)
+	if (nullptr == m_pShadowRenderGroup)
 		return;
 
 	if (nullptr == m_pMeshParam)
@@ -60,27 +72,15 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 
 	pRenderer->SetViewport(0.0f, 0.0f, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE, 0.0f, 1.0f);
 
-	MDirectionalLight* pLight = m_pScene->FindActiveDirectionLight();
-	if (nullptr == pLight)
-		return;
-	MViewport* pViewport = GetSourceViewport();
-	Matrix4 matLightInvProj = pViewport->GetLightInverseProjection(pLight);
-
 	MStruct& cWorldStruct = *m_pWorldParam->var.GetStruct();
 	MStruct& cMeshStruct = *m_pMeshParam->var.GetStruct();
-	cWorldStruct[0] = matLightInvProj;
+	cWorldStruct[0] = m_m4LightInvProj;
 	m_pWorldParam->SetDirty();
 	pRenderer->SetVertexShaderParam(*m_pWorldParam);
 
-	for (MModelInstance* pModelIns : *m_pScene->GetModelInstances())
+	for (MShadowRenderGroup& group : *m_pShadowRenderGroup)
 	{
-		if (!pModelIns->GetVisibleRecursively())
-			continue;
-
-		if (!pModelIns->GetGenerateDirLightShadow())
-			continue;
-
-		if (MSkeletonInstance* pSkeleton = pModelIns->GetSkeleton())
+		if (MSkeletonInstance* pSkeleton = group.pSkeletonInstance)
 		{
 			MVariant& cVariant = (*m_pAnimBonesParam->var.GetStruct())[0];
 			MVariantArray& cBonesArray = *cVariant.GetArray();
@@ -104,23 +104,18 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 			pRenderer->SetUseMaterial(m_pStaticMaterial);
 		}
 
-		for (MNode* pChild : pModelIns->GetFixedChildren())
+		for (MIMeshInstance* pMeshIns : group.vMeshInstances)
 		{
-			if (!pChild->GetVisibleRecursively())
-				continue;
+			Matrix4 worldTrans = pMeshIns->GetWorldTransform();
 
-			if (MIMeshInstance* pMeshIns = pChild->DynamicCast<MIMeshInstance>())
-			{
+			cMeshStruct[0] = worldTrans;
+			m_pMeshParam->SetDirty();
+			pRenderer->SetVertexShaderParam(*m_pMeshParam);
 
-				Matrix4 worldTrans = pMeshIns->GetWorldTransform();
+			pRenderer->UpdateMaterialParam();
+			pRenderer->DrawMesh(pMeshIns->GetMesh());
 
-				cMeshStruct[0] = worldTrans;
-				m_pMeshParam->SetDirty();
-				pRenderer->SetVertexShaderParam(*m_pMeshParam);
-
-				pRenderer->UpdateMaterialParam();
-				pRenderer->DrawMesh(pMeshIns->GetMesh());
-			}
 		}
+
 	}
 }

@@ -71,7 +71,7 @@ public:
 
 	virtual void DrawMesh(MIMesh* pMesh) = 0;
 
-	virtual bool SetUseMaterial(MMaterial* pMaterial) = 0;
+	virtual bool SetUseMaterial(MMaterial* pMaterial, const bool& bUpdateResources = false) = 0;
 	virtual void UpdateMaterialParam() = 0;
 	virtual void UpdateMaterialResource() = 0;
 

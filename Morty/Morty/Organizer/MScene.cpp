@@ -73,58 +73,27 @@ void MScene::OnCreated()
 	MObject::OnCreated();
 
 	m_pSkyBox = m_pEngine->GetObjectManager()->CreateObject<MSkyBox>();
-
 	m_pTransformCoord3D = m_pEngine->GetObjectManager()->CreateObject<MTransformCoord3D>();
 
-	
-	MMaterialResource* pShadowMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW);
-	MMaterialResource* pShadowWithAnimMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_ANIM);
-
 	m_pShadowDepthMapRenderTarget = m_pEngine->GetObjectManager()->CreateObject<MShadowTextureRenderTarget>();
-	m_pShadowDepthMapRenderTarget->SetScene(this);
 
 	MRenderSystem* pRenderSystem = m_pEngine->GetObjectManager()->CreateObject<MRenderSystem>();
 	m_vSystems.push_back(pRenderSystem);
-
-	pRenderSystem->Initialize(this);
 }
 
-void MScene::GetSceneAABB(MBoundsAABB& cSceneAABB)
+void MScene::GetSceneRenderMeshAABB(MBoundsAABB& cSceneAABB, MViewport* pViewport)
 {
 	Vector3 v3ShadowMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
 	Vector3 v3ShadowMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
-	for (MaterialMeshInsGroup* pGroup : m_vMatMeshInsGroup)
+	for (MIModelMeshInstance* pMeshIns : m_vIModelMeshInstance)
 	{
-		for (MIMeshInstance* pMeshIns : pGroup->vMeshIns)
+		if (pMeshIns->GetVisibleRecursively())
 		{
-			if (pMeshIns->GetVisibleRecursively())
+			const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
+			if (pViewport->GetCameraFrustum()->ContainTest(*pBounds) != MCameraFrustum::EOUTSIDE)
 			{
-				const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
 				pBounds->UnionMinMax(v3ShadowMin, v3ShadowMax);
-			}
-		}
-	}
-
-	cSceneAABB.SetMinMax(v3ShadowMin, v3ShadowMax);
-}
-
-void MScene::GetSceneAABB(MBoundsAABB& cSceneAABB, MViewport* pViewport)
-{
-	Vector3 v3ShadowMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
-	Vector3 v3ShadowMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-
-	for (MaterialMeshInsGroup* pGroup : m_vMatMeshInsGroup)
-	{
-		for (MIMeshInstance* pMeshIns : pGroup->vMeshIns)
-		{
-			if (pMeshIns->GetVisibleRecursively())
-			{
-				const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
-				if (pViewport->GetCameraFrustum()->ContainTest(*pBounds) != MCameraFrustum::EOUTSIDE)
-				{
-					pBounds->UnionMinMax(v3ShadowMin, v3ShadowMax);
-				}
 			}
 		}
 	}
@@ -137,23 +106,14 @@ void MScene::GetDirectionalShadowSceneAABB(MViewport* pViewport, const Vector3& 
 	Vector3 v3ShadowMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
 	Vector3 v3ShadowMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
-	for (MaterialMeshInsGroup* pGroup : m_vMatMeshInsGroup)
+	for (MIModelMeshInstance* pMeshIns : m_vIModelMeshInstance)
 	{
-		for (MIModelMeshInstance* pMeshIns : pGroup->vMeshIns)
+		if (pMeshIns->GetShadowType() != MIModelMeshInstance::ENone && pMeshIns->GetVisibleRecursively() && pMeshIns->GetGenerateDirLightShadow())
 		{
-			if (pMeshIns->GetShadowType() != MIModelMeshInstance::ENone && pMeshIns->GetVisibleRecursively())
+			const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
+			if (pViewport->GetCameraFrustum()->ContainTest(*pBounds, v3LightDir) != MCameraFrustum::EOUTSIDE)
 			{
-				if (MModelInstance* pModel = pMeshIns->GetAttachedModelInstance())
-				{
-					if (pModel->GetGenerateDirLightShadow())
-					{
-						const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
-						if (pViewport->GetCameraFrustum()->ContainTest(*pBounds, v3LightDir) != MCameraFrustum::EOUTSIDE)
-						{
-							pBounds->UnionMinMax(v3ShadowMin, v3ShadowMax);
-						}
-					}
-				}
+				pBounds->UnionMinMax(v3ShadowMin, v3ShadowMax);
 			}
 		}
 	}
@@ -240,9 +200,7 @@ void MScene::FindActiveSpotLights(const Vector3& v3WorldPosition, std::vector<MS
 
 void MScene::OnNodeEnter(MNode* pNode)
 {
-	if (MIModelMeshInstance* pMeshIns = pNode->DynamicCast<MIModelMeshInstance>())
-		RecordMeshInstance(pMeshIns);
-	else if (MCamera* pCamera = pNode->DynamicCast<MCamera>())
+	if (MCamera* pCamera = pNode->DynamicCast<MCamera>())
 	{
 		for (MViewport* pViewport : m_vViewports)
 		{
@@ -251,6 +209,7 @@ void MScene::OnNodeEnter(MNode* pNode)
 		}
 	}
 
+MSCENE_ON_NODE_ENTER(IModelMeshInstance)
 MSCENE_ON_NODE_ENTER(ModelInstance)
 MSCENE_ON_NODE_ENTER(DirectionalLight)
 MSCENE_ON_NODE_ENTER(PointLight)
@@ -260,9 +219,7 @@ MSCENE_ON_NODE_ENTER(InputNode)
 
 void MScene::OnNodeExit(MNode* pNode)
 {
-	if (MIModelMeshInstance* pMeshIns = pNode->DynamicCast<MIModelMeshInstance>())
-		CancelRecordMeshInstance(pMeshIns);
-	else if (MCamera* pCamera = pNode->DynamicCast<MCamera>())
+	if (MCamera* pCamera = pNode->DynamicCast<MCamera>())
 	{
 		for (MViewport* pViewport : m_vViewports)
 		{
@@ -271,67 +228,12 @@ void MScene::OnNodeExit(MNode* pNode)
 		}
 	}
 
+MSCENE_ON_NODE_EXIT(IModelMeshInstance)
 MSCENE_ON_NODE_EXIT(ModelInstance)
 MSCENE_ON_NODE_EXIT(DirectionalLight)
 MSCENE_ON_NODE_EXIT(PointLight)
 MSCENE_ON_NODE_EXIT(SpotLight)
 MSCENE_ON_NODE_EXIT(InputNode)
-}
-
-void MScene::RecordMeshInstance(MIModelMeshInstance* pMeshInstance)
-{
-	if (!pMeshInstance->GetMaterial())
-		return;
-
-	MMaterial* pMaterial = pMeshInstance->GetMaterial();
-	std::vector<MaterialMeshInsGroup*>::iterator iter = std::lower_bound(m_vMatMeshInsGroup.begin(), m_vMatMeshInsGroup.end(), pMaterial, [](MaterialMeshInsGroup* a, MMaterial* b) {return a->pMat < b; });
-	MaterialMeshInsGroup* pGroup = nullptr;
-	if (iter == m_vMatMeshInsGroup.end())
-	{
-		pGroup = new MaterialMeshInsGroup();
-		pGroup->pMat = pMeshInstance->GetMaterial();
-		m_vMatMeshInsGroup.push_back(pGroup);
-	}
-	else if ((*iter)->pMat != pMaterial)
-	{
-			pGroup = new MaterialMeshInsGroup();
-			pGroup->pMat = pMeshInstance->GetMaterial();
-			m_vMatMeshInsGroup.insert(iter, pGroup);
-	}
-	else
-	{
-		pGroup = *iter;
-	}
-
-	std::vector<MIModelMeshInstance*>::iterator it = find(pGroup->vMeshIns.begin(), pGroup->vMeshIns.end(), pMeshInstance);
-	if (it != pGroup->vMeshIns.end())
-		return;
-
-	pGroup->vMeshIns.push_back(pMeshInstance);
-}
-
-void MScene::CancelRecordMeshInstance(MIModelMeshInstance* pMeshInstance)
-{
-	if (!pMeshInstance->GetMaterial())
-		return;
-
-	MMaterial* pMaterial = pMeshInstance->GetMaterial();
-	std::vector<MaterialMeshInsGroup*>::iterator iter = std::lower_bound(m_vMatMeshInsGroup.begin(), m_vMatMeshInsGroup.end(), pMaterial, [](MaterialMeshInsGroup* a, MMaterial* b) {return a->pMat < b; });
-	if (iter == m_vMatMeshInsGroup.end())
-		return;
-	
-	MaterialMeshInsGroup* pGroup = *iter;
-
-	std::vector<MIModelMeshInstance*>::iterator it = find(pGroup->vMeshIns.begin(), pGroup->vMeshIns.end(), pMeshInstance);
-	if (it != pGroup->vMeshIns.end())
-		pGroup->vMeshIns.erase(it);
-
-	if (pGroup->vMeshIns.empty())
-	{
-		m_vMatMeshInsGroup.erase(iter);
-		delete pGroup;
-		pGroup = nullptr;
-	}
 }
 
 void MScene::Render(MIRenderer* pRenderer, MViewport* pViewport)
@@ -342,7 +244,7 @@ void MScene::Render(MIRenderer* pRenderer, MViewport* pViewport)
 
 	for (MISystem* pSystem : m_vSystems)
 	{
-		pSystem->Render(pRenderer, pViewport);
+		pSystem->Render(pRenderer, pViewport, this);
 	}
 }
 
@@ -382,3 +284,59 @@ void MScene::SetRootNode(MNode* pRootNode)
 		pRootNode->SetAttachedScene(this);
 	}
 }
+// 
+// void MScene::RecordMeshInstance(MIModelMeshInstance* pMeshInstance)
+// {
+// 	if (!pMeshInstance->GetMaterial())
+// 		return;
+// 
+// 	MMaterial* pMaterial = pMeshInstance->GetMaterial();
+// 	std::vector<MaterialMeshInsGroup*>::iterator iter = std::lower_bound(m_vRenderMeshGroup.begin(), m_vRenderMeshGroup.end(), pMaterial, [](MaterialMeshInsGroup* a, MMaterial* b) {return a->pMat < b; });
+// 	MaterialMeshInsGroup* pGroup = nullptr;
+// 	if (iter == m_vRenderMeshGroup.end())
+// 	{
+// 		pGroup = new MaterialMeshInsGroup();
+// 		pGroup->pMat = pMeshInstance->GetMaterial();
+// 		m_vRenderMeshGroup.push_back(pGroup);
+// 	}
+// 	else if ((*iter)->pMat != pMaterial)
+// 	{
+// 			pGroup = new MaterialMeshInsGroup();
+// 			pGroup->pMat = pMeshInstance->GetMaterial();
+// 			m_vRenderMeshGroup.insert(iter, pGroup);
+// 	}
+// 	else
+// 	{
+// 		pGroup = *iter;
+// 	}
+// 
+// 	std::vector<MIModelMeshInstance*>::iterator it = find(pGroup->vMeshIns.begin(), pGroup->vMeshIns.end(), pMeshInstance);
+// 	if (it != pGroup->vMeshIns.end())
+// 		return;
+// 
+// 	pGroup->vMeshIns.push_back(pMeshInstance);
+// }
+// 
+// void MScene::CancelRecordMeshInstance(MIModelMeshInstance* pMeshInstance)
+// {
+// 	if (!pMeshInstance->GetMaterial())
+// 		return;
+// 
+// 	MMaterial* pMaterial = pMeshInstance->GetMaterial();
+// 	std::vector<MaterialMeshInsGroup*>::iterator iter = std::lower_bound(m_vRenderMeshGroup.begin(), m_vRenderMeshGroup.end(), pMaterial, [](MaterialMeshInsGroup* a, MMaterial* b) {return a->pMat < b; });
+// 	if (iter == m_vRenderMeshGroup.end())
+// 		return;
+// 	
+// 	MaterialMeshInsGroup* pGroup = *iter;
+// 
+// 	std::vector<MIModelMeshInstance*>::iterator it = find(pGroup->vMeshIns.begin(), pGroup->vMeshIns.end(), pMeshInstance);
+// 	if (it != pGroup->vMeshIns.end())
+// 		pGroup->vMeshIns.erase(it);
+// 
+// 	if (pGroup->vMeshIns.empty())
+// 	{
+// 		m_vRenderMeshGroup.erase(iter);
+// 		delete pGroup;
+// 		pGroup = nullptr;
+// 	}
+// }

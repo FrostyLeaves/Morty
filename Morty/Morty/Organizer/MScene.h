@@ -58,38 +58,36 @@ public:
 
 public:
 
+	virtual void Tick(const float& fDelta);
+	virtual void Render(MIRenderer* pRenderer, MViewport* pViewport);
+	virtual void Input(MInputEvent* pEvent, MViewport* pViewport);
+
+	virtual void OnCreated() override;
+
+
 	//节点接入场景时进行的操作
 	void OnNodeEnter(MNode* pNode);
 	//节点退出场景时进行的操作
 	void OnNodeExit(MNode* pNode);
 
-	void RecordMeshInstance(MIModelMeshInstance* pMeshInstance);
-	void CancelRecordMeshInstance(MIModelMeshInstance* pMeshInstance);
-
-	virtual void Tick(const float& fDelta);
-	virtual void Render(MIRenderer* pRenderer, MViewport* pViewport);
-
-	virtual void Input(MInputEvent* pEvent, MViewport* pViewport);
-
-	virtual void OnCreated() override;
-
 	void AddAttachedViewport(MViewport* pViewport);
 	void RemoveAttachedViewport(MViewport* pViewport);
 	std::vector<MViewport*> GetViewports() { return m_vViewports; }
 
-	void GetSceneAABB(MBoundsAABB& cSceneAABB);
-	void GetSceneAABB(MBoundsAABB& cSceneAABB, MViewport* pViewport);
+	void GetSceneRenderMeshAABB(MBoundsAABB& cSceneAABB, MViewport* pViewport);
 	void GetDirectionalShadowSceneAABB(MViewport* pViewport, const Vector3& v3LightDir, MBoundsAABB& cShadowAABB);
 
-	std::vector<MModelInstance*>* GetModelInstances() { return &m_vModelInstance; }
+// 	void RecordMeshInstance(MIModelMeshInstance* pMeshInstance);
+// 	void CancelRecordMeshInstance(MIModelMeshInstance* pMeshInstance);
 
 protected:
 
 
 private:
 
-#define MSCENE_TYPED_VECTOR( TYPE) \
-	std::vector<M##TYPE*> m_v##TYPE;
+#define MSCENE_TYPED_VECTOR( TYPE ) \
+	public: std::vector<M##TYPE*>* GetAll##TYPE() {return &m_v##TYPE;} \
+	private: std::vector<M##TYPE*> m_v##TYPE;
 
 	MNode* m_pRootNode;
 	MSkyBox* m_pSkyBox;
@@ -100,14 +98,9 @@ private:
 	MSCENE_TYPED_VECTOR(PointLight);
 	MSCENE_TYPED_VECTOR(SpotLight);
 	MSCENE_TYPED_VECTOR(InputNode);
+	MSCENE_TYPED_VECTOR(IModelMeshInstance);
 	MSCENE_TYPED_VECTOR(ModelInstance);
 
-	struct MaterialMeshInsGroup
-	{
-		MMaterial* pMat;
-		std::vector<MIModelMeshInstance*> vMeshIns;
-	};
-	std::vector<MaterialMeshInsGroup*> m_vMatMeshInsGroup;
 	std::vector<MViewport*> m_vViewports;
 	std::vector<MISystem*> m_vSystems;
 };

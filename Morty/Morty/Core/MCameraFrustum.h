@@ -36,6 +36,7 @@ public:
 	MEContainType ContainTest(const MBoundsAABB& aabb);
 	MEContainType ContainTest(const MBoundsSphere& sphere);
 
+	//只对某个方向指向的视锥体截面做测试
 	MEContainType ContainTest(const MBoundsAABB& aabb, const Vector3& v3Direction);
 
 protected:

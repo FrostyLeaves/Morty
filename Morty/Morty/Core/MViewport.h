@@ -74,7 +74,7 @@ public:
 	const Matrix4& GetCameraInverseProjection() const { return m_m4CameraInvProj; }
 
 	Matrix4 GetLightInverseProjection(MPointLight* pLight);
-	Matrix4 GetLightInverseProjection(MDirectionalLight* pLight);
+	Matrix4 GetLightInverseProjection(MDirectionalLight* pLight, const MBoundsAABB& cMeshRenderAABB, const MBoundsAABB& cShadowRenderAABB);
 
 	void GetCameraFrustum(MCamera* pCamera, const float& fZNear, const float& fZFar, std::vector<Vector3>& vPoints);
 	void GetCameraFrustum(MCamera* pCamera, const float& fZNear, const float& fZFar, Vector3& v3NearTopLeft, Vector3& v3NearTopRight, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft, Vector3& v3FarTopLeft, Vector3& v3FarTopRight, Vector3& v3FarBottomRight, Vector3& v3FarBottomLeft);

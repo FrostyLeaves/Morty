@@ -278,7 +278,7 @@ void MDirectX11Renderer::RecoverRenderTarget(MIRenderTarget* pRenderTarget)
 	}
 }
 
-bool MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial)
+bool MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial, const bool& bUpdateResources/* = false*/)
 {
 	if (m_pUsingMaterial == pMaterial)
 		return true;
@@ -340,6 +340,13 @@ bool MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial)
 			m_pDevice->m_pD3dContext->OMSetBlendState(m_pBlendState_Default, nullptr, 0xffffffff);
 		else if (MEBlendType::ETransparent == m_eBlendType)
 			m_pDevice->m_pD3dContext->OMSetBlendState(m_pBlendState_Transparent, nullptr, 0xffffffff);
+	}
+
+
+	//更新材质使用的资源
+	if (bUpdateResources)
+	{
+		UpdateMaterialResource();
 	}
 
 	return true;

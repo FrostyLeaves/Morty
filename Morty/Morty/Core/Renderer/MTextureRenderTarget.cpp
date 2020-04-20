@@ -6,7 +6,6 @@
 MTextureRenderTarget::MTextureRenderTarget()
 	: MIRenderTarget()
 	, m_pDevice(nullptr)
-	, m_pViewport(nullptr)
 	, m_pBackTexture(new MTexture())
 	, m_pDepthTexture(new MRenderDepthTexture())
 	, m_eRenderTargetType(ERenderNone)

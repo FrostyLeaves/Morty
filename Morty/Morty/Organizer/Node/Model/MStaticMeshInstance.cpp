@@ -27,17 +27,11 @@ MStaticMeshInstance::~MStaticMeshInstance()
 
 void MStaticMeshInstance::SetMaterial(MMaterial* pMaterial)
 {
-	if (m_pScene)
-		m_pScene->CancelRecordMeshInstance(this);
-
 	if (m_pMaterial)
 		m_pMaterial->SubRef();
 
 	if(m_pMaterial = pMaterial)
 		m_pMaterial->AddRef();
-
-	if(m_pScene)
-		m_pScene->RecordMeshInstance(this);
 }
  
 MBoundsAABB* MStaticMeshInstance::GetBoundsAABB()

@@ -22,7 +22,7 @@ MMaterial::MMaterial()
 	, m_pVertexShader(nullptr)
 	, m_pPixelShader(nullptr)
 	, m_eRenderState(MIRenderer::ESolid | MIRenderer::ECullBack)
-	, m_eBlendState(MIRenderer::ETransparent)
+	, m_eBlendState(MIRenderer::ENormal)
 {
 
 }

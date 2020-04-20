@@ -41,7 +41,6 @@ public:
 	void SetDrawBoundingBox(const bool& bDrawable) { m_bDrawBoundingBox = bDrawable; }
 	bool GetDrawBoundingBox() { return m_bDrawBoundingBox; }
 
-
 	void SetGenerateDirLightShadow(const bool& bGenerate) { m_bGenerateDirLightShadow = bGenerate; }
 	bool GetGenerateDirLightShadow() const { return m_bGenerateDirLightShadow; }
 

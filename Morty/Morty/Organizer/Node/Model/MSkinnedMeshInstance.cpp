@@ -25,17 +25,11 @@ MSkinnedMeshInstance::~MSkinnedMeshInstance()
 
 void MSkinnedMeshInstance::SetMaterial(MMaterial* pMaterial)
 {
-	if (m_pScene)
-		m_pScene->CancelRecordMeshInstance(this);
-
 	if (m_pMaterial)
 		m_pMaterial->SubRef();
 
 	if(m_pMaterial = pMaterial)
 		m_pMaterial->AddRef();
-
-	if (m_pScene)
-		m_pScene->RecordMeshInstance(this);
 }
 
 MBoundsAABB* MSkinnedMeshInstance::GetBoundsAABB()
