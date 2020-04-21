@@ -189,10 +189,8 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight, const MB
 	MCamera* pCamera = GetCamera();
 	Matrix4 matCameraInv = pCamera->GetWorldTransform().Inverse();
 
-	MBoundsAABB cShadowAABB, cSceneAABB;
-	m_pScene->GetSceneRenderMeshAABB(cSceneAABB, this);
 	std::vector<Vector3> vSceneBoundsPoints(8);
-	cSceneAABB.GetPoints(vSceneBoundsPoints);
+	cMeshRenderAABB.GetPoints(vSceneBoundsPoints);
 
 	//计算相机的有效ZNear和ZFar.
 	float fSceneMinZNear = FLT_MAX, fSceneMaxZFar = -FLT_MAX;
@@ -229,9 +227,8 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight, const MB
 		if (v3CameraMax.z < pos.z) v3CameraMax.z = pos.z;
 	}
 
-	m_pScene->GetDirectionalShadowSceneAABB(this, pLight->GetWorldDirection(), cShadowAABB);
 	std::vector<Vector3> vShadowModelBoundsPoints(8);
-	cShadowAABB.GetPoints(vShadowModelBoundsPoints);
+	cShadowRenderAABB.GetPoints(vShadowModelBoundsPoints);
 
 	//计算Scene的AABB盒在方向光Camera内的最小和最大Z值
 	Vector3 v3SceneMin(FLT_MAX, FLT_MAX, FLT_MAX);

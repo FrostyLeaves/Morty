@@ -74,6 +74,18 @@ public:
 	const Matrix4& GetCameraInverseProjection() const { return m_m4CameraInvProj; }
 
 	Matrix4 GetLightInverseProjection(MPointLight* pLight);
+
+	
+	//************************************
+	// Method:    GetLightInverseProjection
+	// FullName:  MViewport::GetLightInverseProjection
+	// Access:    public 
+	// Returns:   Matrix4
+	// Qualifier:
+	// Parameter: MDirectionalLight * pLight				方向光
+	// Parameter: const MBoundsAABB & cMeshRenderAABB		所有响应光照的Mesh的AABB
+	// Parameter: const MBoundsAABB & cShadowRenderAABB		所有产生阴影的Mesh的AABB
+	//************************************
 	Matrix4 GetLightInverseProjection(MDirectionalLight* pLight, const MBoundsAABB& cMeshRenderAABB, const MBoundsAABB& cShadowRenderAABB);
 
 	void GetCameraFrustum(MCamera* pCamera, const float& fZNear, const float& fZFar, std::vector<Vector3>& vPoints);

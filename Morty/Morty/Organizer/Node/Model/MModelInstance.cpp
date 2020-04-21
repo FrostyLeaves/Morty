@@ -18,7 +18,7 @@ MModelInstance::MModelInstance()
 	, m_pSkeleton(nullptr)
 	, m_pCurrentAnimationController(nullptr)
 	, m_bDrawBoundingBox(false)
-	, m_bGenerateDirLightShadow(false)
+	, m_bGenerateDirLightShadow(true)
 {
 
 }

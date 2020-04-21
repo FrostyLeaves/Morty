@@ -38,6 +38,7 @@ public:
 		MScene* pScene;
 
 		MDirectionalLight* pDirectionalLight;
+		Matrix4 m4DirLightInvProj;
 
 		MBoundsAABB cShadowRenderAABB;
 		MBoundsAABB cMeshRenderAABB;

@@ -3,6 +3,7 @@
 #include "Texture/MTextureCubeResource.h"
 
 #include "MEngine.h"
+#include "MIRenderer.h"
 #include "MResourceManager.h"
 #include "Material/MMaterialResource.h"
 #include "Texture/MTextureResource.h"
@@ -70,9 +71,11 @@ void MSkyBox::OnCreated()
 	MMaterialResource* pMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SKYBOX);
 	MMaterial* pMaterial = pMaterialRes;
 
-	
 	MStaticMeshInstance* pMeshIns = m_pEngine->GetObjectManager()->CreateObject<MStaticMeshInstance>();
 	m_pMeshInstance = pMeshIns;
+
+
+	pMaterial->SetRenderState(MIRenderer::MERasterizerType::ESolid | MIRenderer::MERasterizerType::ECullNone);
 
 	m_pBoxMesh = new MMesh<Vector3>();
 

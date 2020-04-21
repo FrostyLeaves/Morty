@@ -51,7 +51,6 @@ public:
 	Vector3 GetWorldForward();
 	Vector3 GetWorldRight();
 
-
 public:
 	virtual bool AddNodeImpl(MNode* pNode, const MENodeChildType& etype) override;
 	void UpdateWorldTransform();

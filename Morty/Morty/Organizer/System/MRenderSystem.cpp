@@ -64,7 +64,6 @@ void MRenderSystem::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* 
 	GenerateShadowMap(info);
 
 
-
 	Vector2 v2LeftTop = pViewport->GetLeftTop();
 	pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, pViewport->GetWidth(), pViewport->GetHeight(), 0.0f, 1.0f);
 
@@ -77,10 +76,12 @@ void MRenderSystem::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* 
 void MRenderSystem::GenerateShadowMap(MRenderInfo& info)
 {
 	info.pDirectionalLight = info.pScene->FindActiveDirectionLight();
+	Vector3 v3LightDir = info.pDirectionalLight->GetWorldDirection();
 
-	info.pScene->GetDirectionalShadowSceneAABB(info.pViewport, info.pDirectionalLight->GetWorldDirection(), info.cShadowRenderAABB);
+	info.m4DirLightInvProj = info.pViewport->GetLightInverseProjection(info.pDirectionalLight, info.cMeshRenderAABB, info.cShadowRenderAABB);
 
-	Matrix4 matLightInvProj = info.pViewport->GetLightInverseProjection(info.pDirectionalLight, info.cMeshRenderAABB, info.cShadowRenderAABB);
+	Vector3 v3ShadowMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
+	Vector3 v3ShadowMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
 	std::vector<MModelInstance*>& vModels = *info.pScene->GetAllModelInstance();
 	for (MModelInstance* pModelIns : vModels)
@@ -95,13 +96,23 @@ void MRenderSystem::GenerateShadowMap(MRenderInfo& info)
 			{
 				if (MIMeshInstance* pMeshIns = pChild->DynamicCast<MIMeshInstance>())
 				{
-					if(pMeshIns->GetVisible() && pMeshIns->GetGenerateDirLightShadow())
+					if (pMeshIns->GetVisible() && pMeshIns->GetGenerateDirLightShadow())
+					{
 						group.vMeshInstances.push_back(pMeshIns);
+
+						const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
+						if (info.pViewport->GetCameraFrustum()->ContainTest(*pBounds, v3LightDir) != MCameraFrustum::EOUTSIDE)
+						{
+							pBounds->UnionMinMax(v3ShadowMin, v3ShadowMax);
+						}
+					}
 				}
 			}
 
 		}
 	}
+
+	info.cShadowRenderAABB.SetMinMax(v3ShadowMin, v3ShadowMax);
 
 	MShadowTextureRenderTarget* pShadowRenderTarget = info.pScene->GetShadowRenderTarget();
 	if (nullptr == pShadowRenderTarget || nullptr == info.pScene->FindActiveDirectionLight())
@@ -114,7 +125,7 @@ void MRenderSystem::GenerateShadowMap(MRenderInfo& info)
 		MShaderTextureParam* pShadowParam = MShaderBuffer::s_vTextureParams[SHADER_PARAM_CODE_SHADOW_MAP];
 		if (SHADER_PARAM_CODE_SHADOW_MAP == pShadowParam->unCode)
 		{
-			pShadowRenderTarget->Render(info.pRenderer, matLightInvProj, &info.vShadowGroup);
+			pShadowRenderTarget->Render(info.pRenderer, info.m4DirLightInvProj, &info.vShadowGroup);
 
 			pShadowParam->pTexture = pShadowRenderTarget->m_pDepthTexture;
 			info.pRenderer->SetPixelShaderTexture(*pShadowParam);
@@ -125,14 +136,12 @@ void MRenderSystem::GenerateShadowMap(MRenderInfo& info)
 
 void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 {
-	MDirectionalLight* pDirectionalLight = info.pScene->FindActiveDirectionLight();
-	Matrix4 matLightInvProj = info.pViewport->GetLightInverseProjection(pDirectionalLight, info.cMeshRenderAABB, info.cShadowRenderAABB);
 
 	if (MShaderParam* pWorldMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_WORLD_MATRIX))
 	{
 		MStruct& cStruct = *pWorldMatrixParam->var.GetStruct();
 		cStruct[0] = info.pViewport->GetCameraInverseProjection();
-		cStruct[1] = matLightInvProj;
+		cStruct[1] = info.m4DirLightInvProj;
 
 		pWorldMatrixParam->SetDirty();
 		info.pRenderer->SetVertexShaderParam(*pWorldMatrixParam);
@@ -140,9 +149,9 @@ void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 
 	if (MShaderParam* pWorldInfoParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_WORLDINFO))
 	{
-		if (pDirectionalLight)
+		if (info.pDirectionalLight)
 		{
-			(*pWorldInfoParam->var.GetStruct())[0] = pDirectionalLight->GetWorldDirection();
+			(*pWorldInfoParam->var.GetStruct())[0] = info.pDirectionalLight->GetWorldDirection();
 		}
 
 		(*pWorldInfoParam->var.GetStruct())[1] = info.pViewport->GetCamera()->GetWorldPosition();
@@ -156,15 +165,15 @@ void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 	if (MShaderParam* pLightParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_LIGHT))
 	{
 		MVariant& varDirLightEnable = (*pLightParam->var.GetStruct())[3];
-		if (pDirectionalLight)
+		if (info.pDirectionalLight)
 		{
 			varDirLightEnable = true;
 			MVariant& varDirectionLight = (*pLightParam->var.GetStruct())[0];
 			{
 				MStruct& cLightStruct = *varDirectionLight.GetStruct();
 				{
-					cLightStruct[0] = pDirectionalLight->GetDiffuseColor().ToVector3();
-					cLightStruct[1] = pDirectionalLight->GetSpecularColor().ToVector3();
+					cLightStruct[0] = info.pDirectionalLight->GetDiffuseColor().ToVector3();
+					cLightStruct[1] = info.pDirectionalLight->GetSpecularColor().ToVector3();
 				}
 			}
 		}
@@ -340,8 +349,6 @@ void MRenderSystem::DrawModelInstance(MRenderInfo& info)
 
 void MRenderSystem::DrawSkyBox(MRenderInfo& info)
 {
-	info.pRenderer->SetRasterizerType(MIRenderer::MERasterizerType::ESolid | MIRenderer::MERasterizerType::ECullNone);
-
 	MSkyBox* pSkyBox = info.pScene->GetSkyBox();
 
 	if (pSkyBox)
@@ -363,19 +370,9 @@ void MRenderSystem::DrawSkyBox(MRenderInfo& info)
 				pMeshParam->SetDirty();
 				info.pRenderer->SetVertexShaderParam(*pMeshParam);
 			}
-			if (MShaderParam* pWorldParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX))
-			{
-				MStruct& cStruct = *pWorldParam->var.GetStruct();
-				cStruct[0] = info.pViewport->GetCameraInverseProjection();
 
-				pWorldParam->SetDirty();
-				info.pRenderer->SetVertexShaderParam(*pWorldParam);
-			}
-
-			if (info.pRenderer->SetUseMaterial(pMaterial))
+			if (info.pRenderer->SetUseMaterial(pMaterial, true))
 			{
-				info.pRenderer->UpdateMaterialResource();
-				info.pRenderer->UpdateMaterialParam();
 				info.pRenderer->DrawMesh(pMeshIns->GetMesh());
 			}
 		}
@@ -465,13 +462,8 @@ void MRenderSystem::DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pMeshI
 	}
 
 	Matrix4 worldTrans = trans.GetMatrix();
-
-	//Transposed and Inverse.
-	Matrix3 matNormal(worldTrans.Transposed().Inverse(), 3, 3);
-
 	MStruct& cStruct = *pMeshMatrixParam->var.GetStruct();
 	cStruct[0] = worldTrans;
-	cStruct[1] = matNormal;
 
 	pMeshMatrixParam->SetDirty();
 	info.pRenderer->SetVertexShaderParam(*pMeshMatrixParam);

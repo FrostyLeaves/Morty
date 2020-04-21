@@ -322,6 +322,8 @@ void MMaterial::Unload()
 
 const MMaterial& MMaterial::operator=(const MMaterial& mat)
 {
+	Unload();
+
 	//Material
 	m_pVertexResource = new MResourceHolder(*mat.m_pVertexResource);
 	m_pPixelResource = new MResourceHolder(*mat.m_pPixelResource);
@@ -335,10 +337,10 @@ const MMaterial& MMaterial::operator=(const MMaterial& mat)
 	for (unsigned int i = 0; i < mat.m_vShaderParams.size(); ++i)
 	{
 		m_vShaderParams[i] = mat.m_vShaderParams[i];
+		m_vShaderParams[i].pBuffer = nullptr;
+
+		m_pEngine->GetDevice()->GenerateShaderParamBuffer(&m_vShaderParams[i]);
 	}
-
-
-	CleanTextureParams();
 
 	m_vTextureParams.resize(mat.m_vTextureParams.size());
 	for (unsigned int i = 0; i < mat.m_vTextureParams.size(); ++i)

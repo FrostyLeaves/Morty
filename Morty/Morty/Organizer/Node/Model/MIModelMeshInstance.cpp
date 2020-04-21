@@ -9,7 +9,7 @@ MIModelMeshInstance::MIModelMeshInstance()
 	, m_pModelInstance(nullptr)
 	, m_unDetailLevel(MMESH_LOD_LEVEL_RANGE)
 	, m_bDrawBoundingSphere(false)
-	, m_bGenerateDirLightShadow(false)
+	, m_bGenerateDirLightShadow(true)
 {
 
 }

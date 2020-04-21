@@ -101,26 +101,6 @@ void MScene::GetSceneRenderMeshAABB(MBoundsAABB& cSceneAABB, MViewport* pViewpor
 	cSceneAABB.SetMinMax(v3ShadowMin, v3ShadowMax);
 }
 
-void MScene::GetDirectionalShadowSceneAABB(MViewport* pViewport, const Vector3& v3LightDir, MBoundsAABB& cShadowAABB)
-{
-	Vector3 v3ShadowMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
-	Vector3 v3ShadowMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-
-	for (MIModelMeshInstance* pMeshIns : m_vIModelMeshInstance)
-	{
-		if (pMeshIns->GetShadowType() != MIModelMeshInstance::ENone && pMeshIns->GetVisibleRecursively() && pMeshIns->GetGenerateDirLightShadow())
-		{
-			const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
-			if (pViewport->GetCameraFrustum()->ContainTest(*pBounds, v3LightDir) != MCameraFrustum::EOUTSIDE)
-			{
-				pBounds->UnionMinMax(v3ShadowMin, v3ShadowMax);
-			}
-		}
-	}
-
-	cShadowAABB.SetMinMax(v3ShadowMin, v3ShadowMax);
-}
-
 void MScene::AddAttachedViewport(MViewport* pViewport)
 {
 	for (MViewport* pv : m_vViewports)

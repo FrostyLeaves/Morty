@@ -75,8 +75,6 @@ public:
 	std::vector<MViewport*> GetViewports() { return m_vViewports; }
 
 	void GetSceneRenderMeshAABB(MBoundsAABB& cSceneAABB, MViewport* pViewport);
-	void GetDirectionalShadowSceneAABB(MViewport* pViewport, const Vector3& v3LightDir, MBoundsAABB& cShadowAABB);
-
 // 	void RecordMeshInstance(MIModelMeshInstance* pMeshInstance);
 // 	void CancelRecordMeshInstance(MIModelMeshInstance* pMeshInstance);
 

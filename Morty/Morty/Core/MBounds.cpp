@@ -236,7 +236,7 @@ void MBoundsAABB::SetBoundsOBB(const Vector3& v3Origin, const Matrix4& matWorld,
 	m_v3HalfLength = (m_v3MaxPoint - m_v3MinPoint) * 0.5f;
 }
 
-void MBoundsAABB::GetPoints(std::vector<Vector3>& vPoints)
+void MBoundsAABB::GetPoints(std::vector<Vector3>& vPoints) const
 {
 	vPoints.resize(8);
 
