@@ -69,36 +69,21 @@ void MWindowsRenderView::CheckInputEvent()
 			v2Addi = Vector2(newPoint.x - point.x, newPoint.y - point.y);
 
 		MMouseInputEvent event(Vector2(newPoint.x, newPoint.y), v2Addi);
-
-
-		for (MViewport* pViewport : m_vViewport)
-		{
-			MMouseInputEvent eventClone(event);
-			pViewport->Input(&eventClone);
-		}
+		Input(&event);
+		
 		point = newPoint;
 	}
 
 	for (const MKeyState& state : m_vKeyQueue)
 	{
 		MKeyBoardInputEvent event(state.unKey, state.eState);
-
-		for (MViewport* pViewport : m_vViewport)
-		{
-			MKeyBoardInputEvent eventClone(event);
-			pViewport->Input(&eventClone);
-		}
+		Input(&event);
 	}
 
 	for (const MKeyState& state : m_vMouseBtnQueue)
 	{
 		MMouseInputEvent event((MMouseInputEvent::MEMouseDownButton)state.unKey, state.eState == MEKeyState::DOWN ? MMouseInputEvent::MEMouseInputType::ButtonDown : MMouseInputEvent::MEMouseInputType::ButtonUp);
-
-		for (MViewport* pViewport : m_vViewport)
-		{
-			MMouseInputEvent eventClone(event);
-			pViewport->Input(&event);
-		}
+		Input(&event);
 	}
 
 	m_vKeyQueue.clear();
@@ -142,6 +127,8 @@ bool MWindowsRenderView::Initialize(MEngine* pEngine, const char* svWindowName)
 	ShowWindow(m_hwnd, SW_SHOW);
 	UpdateWindow(m_hwnd);
 
+	m_pEngine->GetRenderer()->AddOutputView(this);
+
 	return true;
 }
 
@@ -182,8 +169,21 @@ void MWindowsRenderView::SetWindowTitle(const MString& strTilte)
 	SetWindowText(m_hwnd, strTilte.c_str());
 }
 
+void MWindowsRenderView::Input(MInputEvent* pEvent)
+{
+	for (MViewport* pViewport : m_vViewport)
+	{
+		pViewport->Input(pEvent);
+	}
+}
+
 void MWindowsRenderView::Release()
 {
+	if (m_pRenderTarget)
+	{
+		delete m_pRenderTarget;
+		m_pRenderTarget = nullptr;
+	}
 	s_tViewTable.erase(m_hwnd);
 }
 

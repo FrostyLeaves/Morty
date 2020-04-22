@@ -28,7 +28,7 @@ public:
 
 	virtual void OnResize(const unsigned int& nWidth, const unsigned int& nHeight) = 0;
 
-	virtual void OnRender(MIRenderer* pRenderer) { m_funcRenderFunction(pRenderer); }
+	virtual void OnRender(MIRenderer* pRenderer) { if(m_funcRenderFunction) m_funcRenderFunction(pRenderer); }
 	std::function<void(MIRenderer*)> m_funcRenderFunction;
 
 

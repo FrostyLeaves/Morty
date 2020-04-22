@@ -14,6 +14,7 @@
 class MVertexBuffer;
 class MIMesh;
 class MTextureBuffer;
+class MRenderTextureBuffer;
 class MDepthTextureBuffer;
 class MTexture;
 class MShaderBuffer;
@@ -38,6 +39,9 @@ public:
 	virtual void GenerateTexture(MTextureBuffer** ppTextureBuffer, MTexture* pTexture, const bool& bGeneerateMipmap = true) = 0;
 	virtual void GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTexture* vTexture[6], const bool& bGenerateMipmap = true) = 0;
 	virtual void DestroyTexture(MTextureBuffer** ppTextureBuffer) = 0;
+
+	virtual void GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const unsigned int& unWidth, const unsigned& unHeight) = 0;
+	virtual void DestroyRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer) = 0;
 
 	virtual void GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const unsigned int& unWidth, const unsigned int& unHeight) = 0;
 	virtual void DestroyDepthTexture(MDepthTextureBuffer** ppTextureBuffer) = 0;

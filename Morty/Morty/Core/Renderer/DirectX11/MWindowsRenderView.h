@@ -40,6 +40,8 @@ public:
 
 	void SetWindowTitle(const MString& strTilte);
 
+	virtual void Input(MInputEvent* pEvent) override;
+
 public:
 
 	

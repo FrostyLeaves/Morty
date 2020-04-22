@@ -6,7 +6,7 @@
 MTextureRenderTarget::MTextureRenderTarget()
 	: MIRenderTarget()
 	, m_pDevice(nullptr)
-	, m_pBackTexture(new MTexture())
+	, m_pBackTexture(new MRenderTargetTexture())
 	, m_pDepthTexture(new MRenderDepthTexture())
 	, m_eRenderTargetType(ERenderNone)
 {

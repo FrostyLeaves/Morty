@@ -109,9 +109,6 @@ MIRenderView* MEngine::CreateView()
 void MEngine::AddView(MIRenderView* pView)
 {
 	pView->m_pEngine = this;
-
-	m_pRenderer->AddOutputView(pView);
-
 	m_vView.push_back(pView);
 }
 
@@ -275,7 +272,6 @@ bool MEngine::MainLoop()
 		MIRenderView* pView = *iter;
 		if (!pView->MainLoop(fTimeDelta))
 		{
-			m_pRenderer->RemoveOutputView(*iter);
 			iter = m_vView.erase(iter);
 
 			pView->Release();

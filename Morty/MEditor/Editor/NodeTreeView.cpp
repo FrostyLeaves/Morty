@@ -46,12 +46,15 @@ MObject* NodeTreeView::GetSelectionNode()
 
 void NodeTreeView::RenderNode(MNode* pNode)
 {
-	ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+	ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_FramePadding;
 	if (pNode->GetChildren().size() + pNode->GetFixedChildren().size() == 0)
 		node_flags |= ImGuiTreeNodeFlags_Leaf;
+	else if (pNode == m_pRootNode)
+		node_flags |= ImGuiTreeNodeFlags_DefaultOpen;
 
 	if (m_unSelectedObjectID == pNode->GetObjectID())
 		node_flags |= ImGuiTreeNodeFlags_Selected;
+
 
 	bool bOpened = ImGui::TreeNodeEx(pNode, node_flags, pNode->GetName().c_str());
 	if (ImGui::IsItemClicked())

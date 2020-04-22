@@ -16,6 +16,7 @@
 
 class MIDevice;
 class MTextureBuffer;
+class MRenderTextureBuffer;
 class MDepthTextureBuffer;
 class MORTY_CLASS MITexture
 {
@@ -27,7 +28,7 @@ public:
 
 	virtual Vector2 GetSize() = 0;
 	virtual MTextureBuffer* GetBuffer() = 0;
-	virtual void GenerateBuffer(MIDevice* pDevice) = 0;
+	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = true) = 0;
 	virtual void DestroyTexture(MIDevice* pDevice) = 0;
 };
 
@@ -46,7 +47,7 @@ public:
 
 	void FillColor(const MColor& color);
 
-	virtual void GenerateBuffer(MIDevice* pDevice) override;
+	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = true) override;
 	virtual void DestroyTexture(MIDevice* pDevice) override;
 
 	virtual MTextureBuffer* GetBuffer() override { return m_pTextureBuffer; }
@@ -82,7 +83,7 @@ public:
 
 	virtual Vector2 GetSize() override { return m_v2Size; }
 
-	virtual void GenerateBuffer(MIDevice* pDevice) override;
+	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = true) override;
 	virtual void DestroyTexture(MIDevice* pDevice) override;
 
 	virtual MTextureBuffer* GetBuffer() override { return m_pTextureBuffer; }
@@ -96,6 +97,25 @@ private:
 	MTextureBuffer* m_pTextureBuffer;
 };
 
+class MORTY_CLASS MRenderTargetTexture : public MITexture
+{
+public:
+	MRenderTargetTexture();
+	virtual ~MRenderTargetTexture() {}
+
+public:
+
+	void SetSize(const Vector2& v2Size) { m_v2Size = v2Size; }
+	virtual Vector2 GetSize() override { return m_v2Size; }
+	virtual MTextureBuffer* GetBuffer() override;
+	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = true) override;
+	virtual void DestroyTexture(MIDevice* pDevice) override;
+
+private:
+	Vector2 m_v2Size;
+	MRenderTextureBuffer* m_pTextureBuffer;
+};
+
 class MORTY_CLASS MRenderDepthTexture : public MITexture
 {
 public:
@@ -107,7 +127,7 @@ public:
 	void SetSize(const Vector2& v2Size) { m_v2Size = v2Size; }
 	virtual Vector2 GetSize() override { return m_v2Size; }
 	virtual MTextureBuffer* GetBuffer() override;
-	virtual void GenerateBuffer(MIDevice* pDevice) override;
+	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = true) override;
 	virtual void DestroyTexture(MIDevice* pDevice) override;
 		
 private:

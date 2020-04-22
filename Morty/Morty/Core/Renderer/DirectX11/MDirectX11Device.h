@@ -36,6 +36,9 @@ public:
 	virtual void GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTexture* vTexture[6], const bool& bGenerateMipmap) override;
 	virtual void DestroyTexture(MTextureBuffer** ppTextureBuffer) override;
 
+	virtual void GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const unsigned int& unWidth, const unsigned& unHeight) override;
+	virtual void DestroyRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer) override;
+
 	virtual void GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const unsigned int& unWidth, const unsigned int& unHeight) override;
 	virtual void DestroyDepthTexture(MDepthTextureBuffer** ppTextureBuffer) override;
 

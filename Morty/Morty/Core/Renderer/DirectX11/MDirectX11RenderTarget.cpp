@@ -148,6 +148,5 @@ void MDirectX11RenderTarget::OnRender(MIRenderer* pRenderer)
 	}
 	m_pView->OnRenderEnd();
 
-
 	m_pSwapChain->Present(0, 0);
 }

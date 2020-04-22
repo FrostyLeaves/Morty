@@ -58,12 +58,12 @@ void MTexture::FillColor(const MColor& color)
 	}
 }
 
-void MTexture::GenerateBuffer(MIDevice* pDevice)
+void MTexture::GenerateBuffer(MIDevice* pDevice, const bool& bMipmap/* = true*/)
 {
 	if (m_pTextureBuffer)
 		pDevice->DestroyTexture(&m_pTextureBuffer);
 
-	pDevice->GenerateTexture(&m_pTextureBuffer, this);
+	pDevice->GenerateTexture(&m_pTextureBuffer, this, bMipmap);
 
 	if (nullptr != m_pImageData)
 	{
@@ -90,12 +90,12 @@ MTextureCube::~MTextureCube()
 {
 }
 
-void MTextureCube::GenerateBuffer(MIDevice* pDevice)
+void MTextureCube::GenerateBuffer(MIDevice* pDevice, const bool& bMipmap/* = true*/)
 {
 	if (m_pTextureBuffer)
 		pDevice->DestroyTexture(&m_pTextureBuffer);
 
-	pDevice->GenerateTextureCube(&m_pTextureBuffer, m_vTexture, false);
+	pDevice->GenerateTextureCube(&m_pTextureBuffer, m_vTexture, bMipmap);
 }
 
 void MTextureCube::DestroyTexture(MIDevice* pDevice)
@@ -124,6 +124,33 @@ void MTextureCube::SetTexture(MTexture* pTexture, const MECubeFace& eFace)
 	m_vTexture[eFace] = pTexture;
 }
 
+MRenderTargetTexture::MRenderTargetTexture()
+	: MITexture()
+	, m_v2Size(0, 0)
+	, m_pTextureBuffer(nullptr)
+{
+
+}
+
+MTextureBuffer* MRenderTargetTexture::GetBuffer()
+{
+	return m_pTextureBuffer;
+}
+
+void MRenderTargetTexture::GenerateBuffer(MIDevice* pDevice, const bool& bMipmap /*= true*/)
+{
+	if (m_pTextureBuffer)
+		pDevice->DestroyRenderTextureBuffer(&m_pTextureBuffer);
+
+	pDevice->GenerateRenderTextureBuffer(&m_pTextureBuffer, m_v2Size.x, m_v2Size.y);
+}
+
+void MRenderTargetTexture::DestroyTexture(MIDevice* pDevice)
+{
+	if (m_pTextureBuffer)
+		pDevice->DestroyRenderTextureBuffer(&m_pTextureBuffer);
+}
+
 MRenderDepthTexture::MRenderDepthTexture()
 	: MITexture()
 	, m_v2Size(0,0)
@@ -137,7 +164,7 @@ MTextureBuffer* MRenderDepthTexture::GetBuffer()
 	return m_pTextureBuffer;
 }
 
-void MRenderDepthTexture::GenerateBuffer(MIDevice* pDevice)
+void MRenderDepthTexture::GenerateBuffer(MIDevice* pDevice, const bool& bMipmap/* = true*/)
 {
 	if (m_pTextureBuffer)
 		pDevice->DestroyDepthTexture(&m_pTextureBuffer);

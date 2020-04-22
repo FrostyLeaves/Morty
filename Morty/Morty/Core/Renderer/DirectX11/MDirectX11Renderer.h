@@ -35,7 +35,6 @@ public:
 public:
 
 	virtual void AddOutputView(MIRenderView* pView) override;
-	virtual void RemoveOutputView(MIRenderView* pView) override;
 
 	virtual bool Initialize() override;
 	virtual void Release() override;

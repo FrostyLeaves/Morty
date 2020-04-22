@@ -14,8 +14,9 @@
 
 #include "Vector.h"
 
-class MViewport;
 class MEngine;
+class MViewport;
+class MInputEvent;
 class MIRenderTarget;
 class MORTY_CLASS MIRenderView
 {
@@ -36,6 +37,8 @@ public:
 	virtual void OnResize(const int& nWidth, const int& nHeight) = 0;
 
 	virtual bool MainLoop(const float& fDelta) = 0;
+
+	virtual void Input(MInputEvent* pEvent) = 0;
 
 	virtual void OnRenderBegin() {}
 	virtual void OnRenderEnd() {}

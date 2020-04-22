@@ -219,7 +219,7 @@ MSCENE_ON_NODE_EXIT(InputNode)
 void MScene::Render(MIRenderer* pRenderer, MViewport* pViewport)
 {
 #if MORTY_RENDER_DATA_STATISTICS
-	MRenderStatistics::GetInstance()->unFaceCount = 0;
+	MRenderStatistics::GetInstance()->unTriangleCount = 0;
 #endif
 
 	for (MISystem* pSystem : m_vSystems)

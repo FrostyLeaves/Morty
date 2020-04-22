@@ -14,6 +14,7 @@
 class MIDevice;
 class MViewport;
 class MTexture;
+class MRenderTargetTexture;
 class MRenderDepthTexture;
 class MORTY_CLASS MTextureRenderTarget : public MIRenderTarget
 {
@@ -40,7 +41,7 @@ public:
 	static MTextureRenderTarget* CreateForTexture(MIDevice* pDevice, const unsigned int& eRenderTargetType, const unsigned int& unWidth, const unsigned int& unHeight);
 
 public:
-	MTexture* m_pBackTexture;
+	MRenderTargetTexture* m_pBackTexture;
 	MRenderDepthTexture* m_pDepthTexture;
 protected:
 	MIDevice* m_pDevice;

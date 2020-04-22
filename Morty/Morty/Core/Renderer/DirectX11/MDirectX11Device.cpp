@@ -36,7 +36,7 @@ bool MDirectX11Device::InitDirectX11()
 	UINT nCreateDeviceFlags = 0;
 
 #if defined(DEBUG) || defined(_DEBUG)
-//	nCreateDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+	nCreateDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
 	D3D_FEATURE_LEVEL nFeatureLevel;
@@ -222,6 +222,8 @@ void MDirectX11Device::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pM
 
 void MDirectX11Device::GenerateTexture(MTextureBuffer** ppTextureBuffer, MTexture* pTexture, const bool& bGenerateMipmap)
 {
+	HRESULT hr;
+
 	Vector2 size = pTexture->GetSize();
 	D3D11_TEXTURE2D_DESC desc;
 	ZeroMemory(&desc, sizeof(desc));
@@ -256,8 +258,6 @@ void MDirectX11Device::GenerateTexture(MTextureBuffer** ppTextureBuffer, MTextur
 		m_pD3dDevice->CreateTexture2D(&desc, &data, &pTextureBuffer);
 	}
 
-
-
 	D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
 	ZeroMemory(&viewDesc, sizeof(viewDesc));
 	viewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -266,7 +266,7 @@ void MDirectX11Device::GenerateTexture(MTextureBuffer** ppTextureBuffer, MTextur
 	viewDesc.Texture2D.MipLevels = bGenerateMipmap ? -1 : 1;
 
 	ID3D11ShaderResourceView* pShaderResourceView = nullptr;
-	HRESULT hr = m_pD3dDevice->CreateShaderResourceView(pTextureBuffer, &viewDesc, &pShaderResourceView);
+	hr = m_pD3dDevice->CreateShaderResourceView(pTextureBuffer, &viewDesc, &pShaderResourceView);
 
 	if (*ppTextureBuffer)
 		DestroyTexture(ppTextureBuffer);
@@ -418,6 +418,110 @@ void MDirectX11Device::DestroyTexture(MTextureBuffer** ppTextureBuffer)
 	*ppTextureBuffer = nullptr;
 }
 
+void MDirectX11Device::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const unsigned int& unWidth, const unsigned& unHeight)
+{
+	HRESULT hr;
+
+	D3D11_TEXTURE2D_DESC desc;
+	ZeroMemory(&desc, sizeof(desc));
+	desc.Width = unWidth;
+	desc.Height = unHeight;
+	desc.MipLevels = 1;
+	desc.ArraySize = 1;
+	desc.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_RENDER_TARGET | D3D11_BIND_FLAG::D3D11_BIND_SHADER_RESOURCE;
+	desc.CPUAccessFlags = 0;
+	desc.MiscFlags = D3D11_RESOURCE_MISC_FLAG::D3D11_RESOURCE_MISC_GENERATE_MIPS;
+
+	// Use 4X MSAA? --must match swap chain MSAA values.
+	if (m_bEnable4xMsaa)
+	{
+		desc.SampleDesc.Count = 4;
+		desc.SampleDesc.Quality = m_n4xMsaaQuality;
+	}
+	else
+	{
+		desc.SampleDesc.Count = 1;
+		desc.SampleDesc.Quality = 0;
+	}
+
+	ID3D11Texture2D* pTextureBuffer = nullptr;
+
+	hr = m_pD3dDevice->CreateTexture2D(&desc, nullptr, &pTextureBuffer);
+
+	D3D11_RENDER_TARGET_VIEW_DESC rd;
+	ZeroMemory(&rd, sizeof(rd));
+	rd.Format = desc.Format;
+	if (m_bEnable4xMsaa)
+		rd.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
+	else
+		rd.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	rd.Texture2D.MipSlice = 0;
+
+	ID3D11RenderTargetView* pRenderTargetView = nullptr;
+	hr = m_pD3dDevice->CreateRenderTargetView(pTextureBuffer, &rd, &pRenderTargetView);
+	if (FAILED(hr)) {
+		return;
+	}
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
+	ZeroMemory(&viewDesc, sizeof(viewDesc));
+	viewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	if (m_bEnable4xMsaa)
+		viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
+	else
+		viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	viewDesc.Texture2D.MostDetailedMip = 0;
+	viewDesc.Texture2D.MipLevels = 1;
+
+	ID3D11ShaderResourceView* pShaderResourceView = nullptr;
+	hr = m_pD3dDevice->CreateShaderResourceView(pTextureBuffer, &viewDesc, &pShaderResourceView);
+
+	if (*ppTextureBuffer)
+		DestroyRenderTextureBuffer(ppTextureBuffer);
+
+	(*ppTextureBuffer) = new MRenderTextureBuffer();
+
+	if (FAILED(hr))
+	{
+		if (pTextureBuffer)
+			pTextureBuffer->Release();
+		if (pShaderResourceView)
+			pShaderResourceView->Release();
+
+		MLogManager::GetInstance()->Error("Create Texture Buffer Error.");
+	}
+	else
+	{
+		(*ppTextureBuffer)->m_pTextureBuffer = pTextureBuffer;
+		(*ppTextureBuffer)->m_pShaderResourceView = pShaderResourceView;
+		(*ppTextureBuffer)->m_pRenderTargetView = pRenderTargetView;
+	}
+}
+
+void MDirectX11Device::DestroyRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer)
+{
+	if ((*ppTextureBuffer)->m_pTextureBuffer)
+	{
+		(*ppTextureBuffer)->m_pTextureBuffer->Release();
+		(*ppTextureBuffer)->m_pTextureBuffer = nullptr;
+	}
+	if ((*ppTextureBuffer)->m_pShaderResourceView)
+	{
+		(*ppTextureBuffer)->m_pShaderResourceView->Release();
+		(*ppTextureBuffer)->m_pShaderResourceView = nullptr;
+	}
+	if ((*ppTextureBuffer)->m_pRenderTargetView)
+	{
+		(*ppTextureBuffer)->m_pRenderTargetView->Release();
+		(*ppTextureBuffer)->m_pRenderTargetView = nullptr;
+	}
+
+	delete* ppTextureBuffer;
+	*ppTextureBuffer = nullptr;
+}
+
 void MDirectX11Device::GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const unsigned int& unWidth, const unsigned int& unHeight)
 {
 	if (*ppTextureBuffer)
@@ -432,16 +536,30 @@ void MDirectX11Device::GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffe
 	desc.Format = DXGI_FORMAT_R24G8_TYPELESS;
 	desc.MipLevels = 1;
 	desc.ArraySize = 1;
-	desc.SampleDesc.Count = 1;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL;
-	desc.Height = unWidth;
-	desc.Width = unHeight;
+	desc.Width = unWidth;
+	desc.Height = unHeight;
+
+	if (m_bEnable4xMsaa)
+	{
+		desc.SampleDesc.Count = 4;
+		desc.SampleDesc.Quality = m_n4xMsaaQuality;
+	}
+	else
+	{
+		desc.SampleDesc.Count = 1;
+		desc.SampleDesc.Quality = 0;
+	}
 
 	HRESULT hr = m_pD3dDevice->CreateTexture2D(&desc, nullptr, &pTexture2D);
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
 	ZeroMemory(&shaderResourceViewDesc, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
-	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+
+	if (m_bEnable4xMsaa)
+		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
+	else
+		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	shaderResourceViewDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
 	shaderResourceViewDesc.Texture2D.MipLevels = 1;
 
@@ -450,7 +568,10 @@ void MDirectX11Device::GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffe
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
 	ZeroMemory(&depthStencilViewDesc, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
 	depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	if (m_bEnable4xMsaa)
+		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+	else
+		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	depthStencilViewDesc.Texture2D.MipSlice = 0;
 
 	hr = m_pD3dDevice->CreateDepthStencilView(pTexture2D, &depthStencilViewDesc, &pDepthStencilView);
@@ -953,6 +1074,11 @@ bool MDirectX11Device::GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsig
 	depthStencilDesc.ArraySize = 1;
 	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
+	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthStencilDesc.CPUAccessFlags = 0;
+	depthStencilDesc.MiscFlags = 0;
+
 	// Use 4X MSAA? --must match swap chain MSAA values.
 	if (m_bEnable4xMsaa)
 	{
@@ -966,10 +1092,6 @@ bool MDirectX11Device::GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsig
 		depthStencilDesc.SampleDesc.Quality = 0;
 	}
 
-	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
-	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	depthStencilDesc.CPUAccessFlags = 0;
-	depthStencilDesc.MiscFlags = 0;
 
 	hr = m_pD3dDevice->CreateTexture2D(&depthStencilDesc, 0, &pDepthStencilBuffer);
 	if (FAILED(hr))
@@ -995,12 +1117,14 @@ bool MDirectX11Device::GenerateRenderTarget(MTextureRenderTarget* pRenderTarget,
 
 	if (MTextureRenderTarget::ERenderBack & eRenderTargetType)
 	{
-		//TODO
+		pRenderTarget->m_pBackTexture->GenerateBuffer(this, false);
+		if (MRenderTextureBuffer* pBuffer = dynamic_cast<MRenderTextureBuffer*>(pRenderTarget->m_pBackTexture->GetBuffer()))
+			pRenderTarget->m_pTargetView = pBuffer->m_pRenderTargetView;
 	}
 
 	if (MTextureRenderTarget::ERenderDepth & eRenderTargetType)
 	{
-		pRenderTarget->m_pDepthTexture->GenerateBuffer(this);
+		pRenderTarget->m_pDepthTexture->GenerateBuffer(this, false);
 		if(MDepthTextureBuffer* pBuffer = dynamic_cast<MDepthTextureBuffer*>(pRenderTarget->m_pDepthTexture->GetBuffer()))
 			pRenderTarget->m_pDepthStencilView = pBuffer->m_pDepthStencilView;
 	}
@@ -1019,7 +1143,7 @@ void MDirectX11Device::DestroyRenderTarget(MTextureRenderTarget* pRenderTarget)
 	if (pRenderTarget->m_pDepthTexture)
 	{
 		pRenderTarget->m_pDepthTexture->DestroyTexture(this);
-		pRenderTarget->m_pDepthStencilView = nullptr;
+		pRenderTarget->m_pDepthStencilView = nullptr;		//Thie StencilView will be Released by pDepthTexture
 	}
 }
 

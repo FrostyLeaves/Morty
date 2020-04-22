@@ -129,7 +129,6 @@ float4 PS(VS_OUT input) : SV_Target
         f3Color += CalcSpotLight(U_spotLights[i], f3CameraDir, f3LightDir, f3Normal, input.worldPos, f3DiffColor, f3SpecColor);
     }
 
-
     return float4(f3Color, fAlpha);
 }
 

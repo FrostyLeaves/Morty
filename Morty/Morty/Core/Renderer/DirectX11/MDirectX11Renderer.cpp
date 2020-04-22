@@ -50,16 +50,8 @@ void MDirectX11Renderer::AddOutputView(MIRenderView* pView)
 {
 	if (MWindowsRenderView* pWindowView = dynamic_cast<MWindowsRenderView*>(pView))
 	{
-		MDirectX11RenderTarget* pRenderTarget = MDirectX11RenderTarget::CreateForView(m_pDevice, pWindowView);
+		MDirectX11RenderTarget::CreateForView(m_pDevice, pWindowView);
 	}
-}
-
-void MDirectX11Renderer::RemoveOutputView(MIRenderView* pView)
-{
-	MIRenderTarget* pRenderTarget = pView->GetRenderTarget();
-
-	pView->SetRenderTarget(nullptr);
-	delete pRenderTarget;
 }
 
 bool MDirectX11Renderer::Initialize()
@@ -103,13 +95,13 @@ bool MDirectX11Renderer::Initialize()
 	D3D11_RENDER_TARGET_BLEND_DESC& mRTDesc = mBlendDesc.RenderTarget[0];
 	mRTDesc.BlendEnable = true;
 	mRTDesc.DestBlend = D3D11_BLEND_ZERO;
-	mRTDesc.DestBlendAlpha = D3D11_BLEND_ZERO;
+	mRTDesc.DestBlendAlpha = D3D11_BLEND_ONE;
 
 	mRTDesc.SrcBlend = D3D11_BLEND_ONE;
 	mRTDesc.SrcBlendAlpha = D3D11_BLEND_ONE;
 
 	mRTDesc.BlendOp = D3D11_BLEND_OP_ADD;
-	mRTDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	mRTDesc.BlendOpAlpha = D3D11_BLEND_OP_MAX;
 
 	mRTDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
@@ -126,6 +118,7 @@ bool MDirectX11Renderer::Initialize()
 
 	m_pDevice->m_pD3dDevice->CreateBlendState(&mBlendDesc, &m_pBlendState_Transparent);
 
+	m_pDevice->m_pD3dContext->OMSetBlendState(m_pBlendState_Default, nullptr, 0xffffffff);
 
 	//创建纹理采样状态
 	D3D11_SAMPLER_DESC sampDesc;
@@ -246,7 +239,6 @@ void MDirectX11Renderer::Render(MIRenderTarget* pRenderTarget)
 		if(pRenderTarget->m_pTargetView)
 			m_pDevice->m_pD3dContext->ClearRenderTargetView(pRenderTarget->m_pTargetView, pRenderTarget->m_backgroundColor.m);
 
-
 		m_vRenderTargets.push(pRenderTarget);
 		RecoverRenderTarget(pRenderTarget);
 		pRenderTarget->OnRender(this);
@@ -274,7 +266,7 @@ void MDirectX11Renderer::RecoverRenderTarget(MIRenderTarget* pRenderTarget)
 		if (pRenderTarget->m_pTargetView)
 			m_pDevice->m_pD3dContext->OMSetRenderTargets(1, &pRenderTarget->m_pTargetView, pRenderTarget->m_pDepthStencilView);
 		else
-			m_pDevice->m_pD3dContext->OMSetRenderTargets(0, nullptr, pRenderTarget->m_pDepthStencilView);
+			m_pDevice->m_pD3dContext->OMSetRenderTargets(0, nullptr, nullptr);
 	}
 }
 
@@ -373,7 +365,7 @@ void MDirectX11Renderer::DrawMesh(MIMesh* pMesh)
 		m_pDevice->m_pD3dContext->DrawIndexed(pMesh->GetIndicesLength(), 0, 0);
 
 #if MORTY_RENDER_DATA_STATISTICS
-		MRenderStatistics::GetInstance()->unFaceCount += pMesh->GetIndicesLength() / 3;
+		MRenderStatistics::GetInstance()->unTriangleCount += pMesh->GetIndicesLength() / 3;
 #endif
 	}
 }

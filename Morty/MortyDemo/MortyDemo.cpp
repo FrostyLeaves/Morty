@@ -209,7 +209,7 @@ int main(int argc, char* argv[])
 	pRootNode->AddNode(pDirLight);
 
 	MyCamera* pCamera = engine.GetObjectManager()->CreateObject<MyCamera>();
-	pCamera->SetPosition(Vector3(0, 10, -300));
+	pCamera->SetPosition(Vector3(0, 10, -30));
 	pCamera->SetName("Camera");
 	pCamera->SetZNearFar(Vector2(10, 500));
 	pCamera->LookAt(Vector3(0, 0, 0), Vector3(0, 1, 0));

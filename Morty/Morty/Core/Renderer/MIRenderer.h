@@ -65,7 +65,6 @@ public:
 	virtual void RecoverRenderTarget(MIRenderTarget* pRenderTarget) = 0;
 
 	virtual void AddOutputView(MIRenderView* pView) = 0;
-	virtual void RemoveOutputView(MIRenderView* pView) = 0;
 
 public:
 

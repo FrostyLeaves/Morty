@@ -76,6 +76,17 @@ MTextureBuffer::MTextureBuffer()
 
 }
 
+MRenderTextureBuffer::MRenderTextureBuffer()
+{
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	m_pTextureBuffer = nullptr;
+	m_pShaderResourceView = nullptr;
+	m_pRenderTargetView = nullptr;
+#elif RENDER_GRAPHICS == MORTY_OPENGLES
+
+#endif
+}
+
 MDepthTextureBuffer::MDepthTextureBuffer()
 {
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
