@@ -38,6 +38,8 @@ public:
 public:
 	virtual void OnResize(const unsigned int& unWidth, const unsigned int& unHeight) override;
 
+	virtual void Release(MIDevice* pDevice) override;
+
 	static MTextureRenderTarget* CreateForTexture(MIDevice* pDevice, const unsigned int& eRenderTargetType, const unsigned int& unWidth, const unsigned int& unHeight);
 
 public:

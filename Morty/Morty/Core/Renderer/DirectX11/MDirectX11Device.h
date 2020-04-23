@@ -58,7 +58,7 @@ public:
 
 	MVariant GenerateVariableByBuffer(class ID3D11ShaderReflectionType* pReflectionType);
 
-	bool m_bEnable4xMsaa = true;
+	bool m_bEnable4xMsaa;
 
 	ID3D11Device* m_pD3dDevice;
 	ID3D11DeviceContext* m_pD3dContext;

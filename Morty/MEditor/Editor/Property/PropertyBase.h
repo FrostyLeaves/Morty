@@ -22,7 +22,7 @@ public:
 	PropertyBase() {}
 	virtual ~PropertyBase() {};
 
-	virtual void EditObject(MObject* pObject) = 0;
+	virtual void EditObject(MObject* pObject) {};
 
 	bool ShowNodeBegin(const MString& strNodeName);
 	void ShowNodeEnd();

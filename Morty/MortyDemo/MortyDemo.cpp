@@ -176,7 +176,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	for (unsigned int i = 0; i < 1; ++i)
+	for (unsigned int i = 0; i < 2; ++i)
 	{
 		MModelInstance* pPikachu = engine.GetObjectManager()->CreateObject<MModelInstance>();
 		pPikachu->Load(pPikachuResource);
@@ -258,7 +258,16 @@ int main(int argc, char* argv[])
 // 	pViewport->SetScene(pScene);
 //	engine.AddView(pView);
 
+// 	MWindowsRenderView* pTestView = new MWindowsRenderView();
+// 	pTestView->Initialize(&engine, "Test");
+// 	engine.AddView(pTestView);
+// 	MViewport* pViewport = engine.GetObjectManager()->CreateObject<MViewport>();
+// 	pViewport->SetScene(pEditorView->GetScene());
+// 	pViewport->SetSize(Vector2(pTestView->GetViewWidth(), pTestView->GetViewWidth()));
+// 	pTestView->AppendViewport(pViewport);
+
 	while (engine.MainLoop());
+
 
 	engine.Release();
 

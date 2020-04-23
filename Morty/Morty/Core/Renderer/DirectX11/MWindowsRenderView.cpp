@@ -181,6 +181,7 @@ void MWindowsRenderView::Release()
 {
 	if (m_pRenderTarget)
 	{
+		m_pRenderTarget->Release(m_pEngine->GetDevice());
 		delete m_pRenderTarget;
 		m_pRenderTarget = nullptr;
 	}

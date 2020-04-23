@@ -12,14 +12,7 @@ MDirectX11RenderTarget::MDirectX11RenderTarget(MDirectX11Device* pDevice) : MIRe
 
 MDirectX11RenderTarget::~MDirectX11RenderTarget()
 {
-	if (m_pDevice)
-		m_pDevice->DestroyRenderTarget(this);
-
-	if (m_pSwapChain)
-	{
-		m_pSwapChain->Release();
-		m_pSwapChain = nullptr;
-	}
+	Release(m_pDevice);
 }
 
 MDirectX11RenderTarget* MDirectX11RenderTarget::CreateForView(MDirectX11Device* pDevice, MWindowsRenderView* pView)
@@ -29,7 +22,6 @@ MDirectX11RenderTarget* MDirectX11RenderTarget::CreateForView(MDirectX11Device* 
 
 	HWND hWnd = pView->GetHWND();
 	MDirectX11RenderTarget* pRenderTarget = new MDirectX11RenderTarget(pDevice);
-
 
 	DXGI_SWAP_CHAIN_DESC sd;
 
@@ -149,4 +141,14 @@ void MDirectX11RenderTarget::OnRender(MIRenderer* pRenderer)
 	m_pView->OnRenderEnd();
 
 	m_pSwapChain->Present(0, 0);
+}
+
+void MDirectX11RenderTarget::Release(MIDevice* pDevice)
+{
+	m_pDevice->DestroyRenderTarget(this);
+	if (m_pSwapChain)
+	{
+		m_pSwapChain->Release();
+		m_pSwapChain = nullptr;
+	}
 }

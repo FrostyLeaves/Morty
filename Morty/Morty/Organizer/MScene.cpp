@@ -3,6 +3,7 @@
 #include "MCamera.h"
 #include "MSkyBox.h"
 
+#include "MIDevice.h"
 #include "MISystem.h"
 #include "MRenderSystem.h"
 
@@ -218,10 +219,6 @@ MSCENE_ON_NODE_EXIT(InputNode)
 
 void MScene::Render(MIRenderer* pRenderer, MViewport* pViewport)
 {
-#if MORTY_RENDER_DATA_STATISTICS
-	MRenderStatistics::GetInstance()->unTriangleCount = 0;
-#endif
-
 	for (MISystem* pSystem : m_vSystems)
 	{
 		pSystem->Render(pRenderer, pViewport, this);
@@ -251,6 +248,8 @@ MScene::~MScene()
 {
 	if (m_pShadowDepthMapRenderTarget)
 	{
+		m_pEngine->GetDevice()->DestroyRenderTarget(m_pShadowDepthMapRenderTarget);
+
 		m_pEngine->GetObjectManager()->RemoveObject(m_pShadowDepthMapRenderTarget->GetObjectID());
 		m_pShadowDepthMapRenderTarget = nullptr;
 	}

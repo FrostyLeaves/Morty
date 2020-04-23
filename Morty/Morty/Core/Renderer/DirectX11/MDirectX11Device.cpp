@@ -17,6 +17,7 @@
 
 MDirectX11Device::MDirectX11Device()
 	: MIDevice()
+	, m_bEnable4xMsaa(true)
 	, m_pD3dDevice(nullptr)
 	, m_pD3dContext(nullptr)
 	, m_n4xMsaaQuality(0)
@@ -122,19 +123,19 @@ void MDirectX11Device::Release()
 		m_pD3dContext = nullptr;
 	}
 
-// #if defined(DEBUG) || defined(_DEBUG)
-// 	ID3D11Debug *d3dDebug;
-// 	HRESULT hr = m_pD3dDevice->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(&d3dDebug));
-// 	if (SUCCEEDED(hr))
-// 	{
-// 		hr = d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-// 	}
-// 	if (d3dDebug != nullptr)
-// 	{
-// 		d3dDebug->Release();
-// 		d3dDebug = nullptr;
-// 	}
-// #endif
+#if defined(DEBUG) || defined(_DEBUG)
+	ID3D11Debug *d3dDebug;
+	HRESULT hr = m_pD3dDevice->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(&d3dDebug));
+	if (SUCCEEDED(hr))
+	{
+		hr = d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+	}
+	if (d3dDebug != nullptr)
+	{
+		d3dDebug->Release();
+		d3dDebug = nullptr;
+	}
+#endif
 
 	if (m_pD3dDevice)
 	{
@@ -435,16 +436,16 @@ void MDirectX11Device::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppText
 	desc.MiscFlags = D3D11_RESOURCE_MISC_FLAG::D3D11_RESOURCE_MISC_GENERATE_MIPS;
 
 	// Use 4X MSAA? --must match swap chain MSAA values.
-	if (m_bEnable4xMsaa)
-	{
-		desc.SampleDesc.Count = 4;
-		desc.SampleDesc.Quality = m_n4xMsaaQuality;
-	}
-	else
-	{
+// 	if (m_bEnable4xMsaa)
+// 	{
+// 		desc.SampleDesc.Count = 4;
+// 		desc.SampleDesc.Quality = m_n4xMsaaQuality;
+// 	}
+// 	else
+// 	{
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
-	}
+//	}
 
 	ID3D11Texture2D* pTextureBuffer = nullptr;
 
@@ -453,11 +454,13 @@ void MDirectX11Device::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppText
 	D3D11_RENDER_TARGET_VIEW_DESC rd;
 	ZeroMemory(&rd, sizeof(rd));
 	rd.Format = desc.Format;
-	if (m_bEnable4xMsaa)
-		rd.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
-	else
+// 	if (m_bEnable4xMsaa)
+// 		rd.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
+// 	else
+// 	{
 		rd.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-	rd.Texture2D.MipSlice = 0;
+		rd.Texture2D.MipSlice = 0;
+//	}
 
 	ID3D11RenderTargetView* pRenderTargetView = nullptr;
 	hr = m_pD3dDevice->CreateRenderTargetView(pTextureBuffer, &rd, &pRenderTargetView);
@@ -468,12 +471,18 @@ void MDirectX11Device::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppText
 	D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
 	ZeroMemory(&viewDesc, sizeof(viewDesc));
 	viewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	if (m_bEnable4xMsaa)
-		viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
-	else
+// 	if (m_bEnable4xMsaa)
+// 	{
+// 		viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
+// 		viewDesc.Texture2D.MostDetailedMip = 0;
+// 		viewDesc.Texture2D.MipLevels = desc.MipLevels;
+// 	}
+// 	else
+// 	{
 		viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	viewDesc.Texture2D.MostDetailedMip = 0;
-	viewDesc.Texture2D.MipLevels = 1;
+		viewDesc.Texture2D.MostDetailedMip = 0;
+		viewDesc.Texture2D.MipLevels = 1;
+//	}
 
 	ID3D11ShaderResourceView* pShaderResourceView = nullptr;
 	hr = m_pD3dDevice->CreateShaderResourceView(pTextureBuffer, &viewDesc, &pShaderResourceView);
@@ -540,39 +549,43 @@ void MDirectX11Device::GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffe
 	desc.Width = unWidth;
 	desc.Height = unHeight;
 
-	if (m_bEnable4xMsaa)
-	{
-		desc.SampleDesc.Count = 4;
-		desc.SampleDesc.Quality = m_n4xMsaaQuality;
-	}
-	else
-	{
+// 	if (m_bEnable4xMsaa)
+// 	{
+// 		desc.SampleDesc.Count = 4;
+// 		desc.SampleDesc.Quality = m_n4xMsaaQuality;
+// 	}
+// 	else
+// 	{
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
-	}
+//	}
 
 	HRESULT hr = m_pD3dDevice->CreateTexture2D(&desc, nullptr, &pTexture2D);
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
 	ZeroMemory(&shaderResourceViewDesc, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
 
-	if (m_bEnable4xMsaa)
-		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
-	else
+// 	if (m_bEnable4xMsaa)
+// 		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
+// 	else
+// 	{
 		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		shaderResourceViewDesc.Texture2D.MipLevels = 1;
+//	}
 	shaderResourceViewDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
-	shaderResourceViewDesc.Texture2D.MipLevels = 1;
 
 	hr = m_pD3dDevice->CreateShaderResourceView(pTexture2D, &shaderResourceViewDesc, &pShaderResourceView);
 
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
 	ZeroMemory(&depthStencilViewDesc, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
 	depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	if (m_bEnable4xMsaa)
-		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
-	else
+// 	if (m_bEnable4xMsaa)
+// 		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+// 	else
+// 	{
 		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	depthStencilViewDesc.Texture2D.MipSlice = 0;
+		depthStencilViewDesc.Texture2D.MipSlice = 0;
+//	}
 
 	hr = m_pD3dDevice->CreateDepthStencilView(pTexture2D, &depthStencilViewDesc, &pDepthStencilView);
 

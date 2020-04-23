@@ -22,7 +22,7 @@ class MIRenderTarget;
 class MTextureRenderTarget;
 struct MShaderParam;
 class MORTY_CLASS MIDevice
-{
+{;
 public:
 	MIDevice() {}
 	virtual ~MIDevice() {}

@@ -26,18 +26,24 @@
 
 #include "NodeTreeView.h"
 #include "PropertyView.h"
+#include "MaterialView.h"
 
 #include "MRenderStatistics.h"
+#include "MInputManager.h"
 
 MainEditor::MainEditor()
 	: MWindowsRenderView()
 	, m_pScene(nullptr)
 	, m_pNodeTreeView(new NodeTreeView())
 	, m_pPropertyView(new PropertyView())
+	, m_pMaterialView(new MaterialView())
+	, m_unTriangleCount(0)
 	, m_bShowMessage(true)
 	, m_bShowNodeTree(true)
 	, m_bShowProperty(true)
 	, m_bShowRenderView(true)
+	, m_bShowMaterial(false)
+	, m_pTextureRenderTarget(nullptr)
 {
 	m_nWidth = 800.0f;
 	m_nHeight = 480.0f;
@@ -61,16 +67,20 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	ImGui::StyleColorsDark();
 
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.WindowRounding = 0.0f;
+	style.WindowPadding = ImVec2(2.0f, 2.0f);
+	style.ItemSpacing.x = 2.0f;
+
+	ImVec4 bgColor = style.Colors[ImGuiCol_WindowBg];
+	style.Colors[ImGuiCol_ChildWindowBg] = bgColor;
+
+	io.ConfigWindowsMoveFromTitleBarOnly = true;
+
 	//Setup Window
 	if (!MWindowsRenderView::Initialize(pEngine, svWindowName))
 		return false;
 
-// 	if (MIRenderTarget* pOldRenderTarget = GetRenderTarget())
-// 	{
-// 		delete pOldRenderTarget;
-// 		pOldRenderTarget = nullptr;
-// 	}
-// 
 
 
 	MDirectX11Device* pDevice = dynamic_cast<MDirectX11Device*>(m_pEngine->GetDevice());
@@ -84,13 +94,15 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 
 	m_pRenderViewport = m_pEngine->GetObjectManager()->CreateObject<MViewport>();
 	m_pRenderViewport->SetScene(m_pScene);
-	m_pRenderTarget = MTextureRenderTarget::CreateForTexture(m_pEngine->GetDevice(), MTextureRenderTarget::ERenderBack | MTextureRenderTarget::ERenderDepth, GetViewWidth(), GetViewHeight());
-	m_pRenderTarget->m_backgroundColor = MColor(0, 0, 0, 1);
-	m_pRenderTarget->m_funcRenderFunction = [this](MIRenderer* pRenderer)
+	m_pTextureRenderTarget = MTextureRenderTarget::CreateForTexture(m_pEngine->GetDevice(), MTextureRenderTarget::ERenderBack | MTextureRenderTarget::ERenderDepth, GetViewWidth(), GetViewHeight());
+	m_pTextureRenderTarget->m_backgroundColor = MColor(0, 0, 0, 1);
+	m_pTextureRenderTarget->m_funcRenderFunction = [this](MIRenderer* pRenderer)
 	{
-		m_pRenderViewport->Render(pRenderer);
+		if (m_bShowRenderView)
+		{
+			m_pRenderViewport->Render(pRenderer);
+		}
 	};
-
 }
 
 void MainEditor::Release()
@@ -99,6 +111,13 @@ void MainEditor::Release()
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
+
+	if (m_pTextureRenderTarget)
+	{
+		m_pTextureRenderTarget->Release(m_pEngine->GetDevice());
+		delete m_pTextureRenderTarget;
+		m_pTextureRenderTarget = nullptr;
+	}
 
 	MWindowsRenderView::Release();
 }
@@ -116,6 +135,11 @@ void MainEditor::OnResize(const int& nWidth, const int& nHeight)
 
 void MainEditor::Input(MInputEvent* pEvent)
 {
+	if (MMouseInputEvent* pMouseEvent = dynamic_cast<MMouseInputEvent*>(pEvent))
+	{
+		MMouseInputEvent event(*pMouseEvent);
+
+	}
 	m_pRenderViewport->Input(pEvent);
 }
 
@@ -125,71 +149,11 @@ void MainEditor::OnRenderEnd()
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
-
-	ImGuiStyle& style = ImGui::GetStyle();
-	style.WindowRounding = 0.0f;
-	style.WindowPadding = ImVec2(2.0f, 2.0f);
-	style.ItemSpacing.x = 2.0f;
 	
-	ImVec4 bgColor = style.Colors[ImGuiCol_WindowBg];
-	style.Colors[ImGuiCol_ChildWindowBg] = bgColor;
-	
-	ImVec2 v2RenderViewSize;
-	{
-		if (ImGui::Begin("Render", &m_bShowRenderView, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground))
-		{
-			ImVec2 v2RenderViewPos = ImGui::GetWindowPos();
-			v2RenderViewSize = ImGui::GetWindowSize();
-
-			v2RenderViewPos.x += style.WindowPadding.x;
-
-			v2RenderViewSize.x -= style.WindowPadding.x * 2.0f;
-			v2RenderViewSize.y -= (style.WindowPadding.y * 2.0f + ImGui::GetItemRectSize().y);
-
-
-			if (m_pRenderViewport->GetSize().x != v2RenderViewSize.x || m_pRenderViewport->GetSize().y != v2RenderViewSize.y)
-			{
-				m_pRenderTarget->OnResize(v2RenderViewSize.x, v2RenderViewSize.y);
-				m_pRenderViewport->SetSize(Vector2(v2RenderViewSize.x, v2RenderViewSize.y));
-			}
-
-			if (m_pRenderTarget)
-			{
-				if (m_pRenderTarget->m_pBackTexture)
-				{
-					if (MTextureBuffer* pBuffer = m_pRenderTarget->m_pBackTexture->GetBuffer())
-					{
-						ImGui::Image(pBuffer->m_pShaderResourceView, v2RenderViewSize);
-					}
-				}
-			}
-		}
-		ImGui::End();
-	}
-
-	{
-		if (ImGui::Begin("Scene", &m_bShowNodeTree))
-		{
-			m_pNodeTreeView->Render();
-		}
-		ImGui::End();
-	}
-
-	{
-		if (ImGui::Begin("Property", &m_bShowProperty))
-		{
-			MNode* pNode = nullptr;
-			if (pNode = dynamic_cast<MNode*>(m_pNodeTreeView->GetSelectionNode()))
-			{
-				ImGui::Text(pNode->GetName().c_str());
-			}
-			m_pPropertyView->SetEditorObject(pNode);
-			m_pScene->GetTransformCoord()->SetTarget3DNode(pNode);
-			m_pPropertyView->Render();
-		}
-		ImGui::End();
-	}
-
+	ShowMenu();
+	ShowRenderView();
+	ShowNodeTree();
+	ShowProperty();
 	ShowMessage();
 	
 	// Rendering
@@ -213,6 +177,98 @@ void MainEditor::SetRenderTarget(MIRenderTarget* pRenderTarget)
 	}
 }
 
+void MainEditor::ShowMenu()
+{
+	if (ImGui::BeginMainMenuBar())
+	{
+		if (ImGui::BeginMenu("View"))
+		{
+			if (ImGui::MenuItem("Render", "", &m_bShowRenderView)) {}
+			if (ImGui::MenuItem("NodeTree", "", &m_bShowNodeTree)) {}
+			if (ImGui::MenuItem("Property", "", &m_bShowProperty)) {}
+			if (ImGui::MenuItem("Message", "", &m_bShowMessage)) {}
+			
+			ImGui::EndMenu();
+		}
+		
+		ImGui::EndMainMenuBar();
+	}
+}
+
+void MainEditor::ShowRenderView()
+{
+	if (ImGui::Begin("Render", &m_bShowRenderView, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground))
+	{
+		ImGuiStyle& style = ImGui::GetStyle();
+
+		ImVec2 v2RenderViewPos = ImGui::GetWindowPos();
+		ImVec2 v2RenderViewSize = ImGui::GetWindowSize();
+
+		v2RenderViewPos.x += style.WindowPadding.x;
+		v2RenderViewPos.y += ImGui::GetItemRectSize().y;
+
+		v2RenderViewSize.x -= style.WindowPadding.x * 2.0f;
+		v2RenderViewSize.y -= (style.WindowPadding.y * 2.0f + ImGui::GetItemRectSize().y * 2.0f);
+
+
+		if (m_pTextureRenderTarget)
+		{
+			m_pRenderViewport->SetScreenPosition(Vector2(v2RenderViewPos.x, v2RenderViewPos.y));
+
+			if (m_pRenderViewport->GetSize().x != v2RenderViewSize.x || m_pRenderViewport->GetSize().y != v2RenderViewSize.y)
+			{
+				m_pTextureRenderTarget->OnResize(v2RenderViewSize.x, v2RenderViewSize.y);
+				m_pRenderViewport->SetSize(Vector2(v2RenderViewSize.x, v2RenderViewSize.y));
+			}
+
+			if (m_pTextureRenderTarget)
+			{
+				if (m_pTextureRenderTarget->m_pBackTexture)
+				{
+					if (MTextureBuffer* pBuffer = m_pTextureRenderTarget->m_pBackTexture->GetBuffer())
+					{
+						ImGui::Image(pBuffer->m_pShaderResourceView, v2RenderViewSize);
+					}
+				}
+			}
+		}
+	}
+	ImGui::End();
+}
+
+void MainEditor::ShowNodeTree()
+{
+	if (ImGui::Begin("Scene", &m_bShowNodeTree))
+	{
+		m_pNodeTreeView->Render();
+	}
+	ImGui::End();
+}
+
+void MainEditor::ShowProperty()
+{
+	if (ImGui::Begin("Property", &m_bShowProperty))
+	{
+		MNode* pNode = nullptr;
+		if (pNode = dynamic_cast<MNode*>(m_pNodeTreeView->GetSelectionNode()))
+		{
+			ImGui::Text(pNode->GetName().c_str());
+		}
+		m_pPropertyView->SetEditorObject(pNode);
+		m_pScene->GetTransformCoord()->SetTarget3DNode(pNode);
+		m_pPropertyView->Render();
+	}
+	ImGui::End();
+}
+
+void MainEditor::ShowMaterial()
+{
+	if (ImGui::Begin("Material", &m_bShowMaterial))
+	{
+		m_pMaterialView->Render();
+	}
+}
+
 void MainEditor::ShowMessage()
 {
 	const float DISTANCE = 10.0f;
@@ -230,7 +286,7 @@ void MainEditor::ShowMessage()
 		int nCurrentFps = (int)round(m_pEngine->GetInstantFPS() / 5) * 5;
 		ImGui::Text("FPS: %d", nCurrentFps);
 #if MORTY_RENDER_DATA_STATISTICS
-		ImGui::Text("Triangle Count: %d", MRenderStatistics::GetInstance()->unTriangleCount);
+		ImGui::Text("Triangle Count: %d", m_unTriangleCount);
 #endif
 
 		if (ImGui::BeginPopupContextWindow())
@@ -249,7 +305,14 @@ void MainEditor::ShowMessage()
 
 void MainEditor::OnRenderBegin()
 {	
-	m_pEngine->GetRenderer()->Render(m_pRenderTarget);
+#if MORTY_RENDER_DATA_STATISTICS
+	MRenderStatistics::GetInstance()->unTriangleCount = 0;
+#endif
+	if (m_pTextureRenderTarget)
+	{
+		m_pEngine->GetRenderer()->Render(m_pTextureRenderTarget);
+	}
+	m_unTriangleCount = MRenderStatistics::GetInstance()->unTriangleCount;
 }
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

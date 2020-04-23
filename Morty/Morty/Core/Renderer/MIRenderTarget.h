@@ -19,10 +19,12 @@
 
 #include "Type/MColor.h"
 
+class MIDevice;
 class MIRenderer;
 class MORTY_CLASS MIRenderTarget
 {
 public:
+
 	MIRenderTarget();
 	virtual ~MIRenderTarget() {}
 
@@ -31,6 +33,7 @@ public:
 	virtual void OnRender(MIRenderer* pRenderer) { if(m_funcRenderFunction) m_funcRenderFunction(pRenderer); }
 	std::function<void(MIRenderer*)> m_funcRenderFunction;
 
+	virtual void Release(MIDevice* pDevice) = 0;
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	ID3D11RenderTargetView* m_pTargetView;
@@ -40,6 +43,7 @@ public:
 #endif
 
 	MColor m_backgroundColor;
+
 
 };
 

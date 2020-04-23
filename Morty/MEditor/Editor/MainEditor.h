@@ -8,6 +8,7 @@ class MScene;
 class MStaticMeshInstance;
 class NodeTreeView;
 class PropertyView;
+class MaterialView;
 class MainEditor : public MWindowsRenderView
 {
 public:
@@ -17,7 +18,7 @@ public:
 
 
 	void SetEditorNode(MNode* pNode);
-
+	MScene* GetScene() { return m_pScene; }
 
 	virtual bool Initialize(MEngine* pEngine, const char* svWindowName) override;
 	virtual void Release() override;
@@ -30,8 +31,15 @@ public:
 	virtual void OnRenderEnd() override;
 
 	virtual void SetRenderTarget(MIRenderTarget* pRenderTarget) override;
+
 public:
 
+	void ShowMenu();
+
+	void ShowRenderView();
+	void ShowNodeTree();
+	void ShowProperty();
+	void ShowMaterial();
 	void ShowMessage();
 
 public:
@@ -42,17 +50,20 @@ protected:
 	MScene* m_pScene;
 	NodeTreeView* m_pNodeTreeView;
 	PropertyView* m_pPropertyView;
-	class MTextureRenderTarget* m_pRenderTarget;
+	MaterialView* m_pMaterialView;
+	class MTextureRenderTarget* m_pTextureRenderTarget;
 	class MViewport* m_pRenderViewport;
 
 	Vector2 m_v2RenderViewPos;
 	Vector2 m_v2RenderViewSize;
 
+	unsigned int m_unTriangleCount;
 
 	bool m_bShowMessage;
 	bool m_bShowNodeTree;
 	bool m_bShowProperty;
 	bool m_bShowRenderView;
+	bool m_bShowMaterial;
 };
 
 

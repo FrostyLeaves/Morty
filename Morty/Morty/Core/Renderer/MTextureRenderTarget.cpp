@@ -15,20 +15,7 @@ MTextureRenderTarget::MTextureRenderTarget()
 
 MTextureRenderTarget::~MTextureRenderTarget()
 {
-	m_pDevice->DestroyRenderTarget(this);
-
-	if (m_pBackTexture)
-	{
-		delete m_pBackTexture;
-		m_pBackTexture = nullptr;
-	}
-
-	if (m_pDepthTexture)
-	{
-		delete m_pDepthTexture;
-		m_pDepthTexture = nullptr;
-	}
-
+	Release(m_pDevice);
 }
 
 MTextureRenderTarget* MTextureRenderTarget::CreateForTexture(MIDevice* pDevice, const unsigned int& eRenderTargetType, const unsigned int& unWidth, const unsigned int& unHeight)
@@ -51,4 +38,23 @@ void MTextureRenderTarget::OnResize(const unsigned int& nWidth, const unsigned i
 	m_pDevice->DestroyRenderTarget(this);
 
 	m_pDevice->GenerateRenderTarget(this, nWidth, nHeight);
+}
+
+void MTextureRenderTarget::Release(MIDevice* pDevice)
+{
+	pDevice->DestroyRenderTarget(this);
+
+	if (m_pBackTexture)
+	{
+		m_pBackTexture->DestroyTexture(pDevice);
+		delete m_pBackTexture;
+		m_pBackTexture = nullptr;
+	}
+
+	if (m_pDepthTexture)
+	{
+		m_pDepthTexture->DestroyTexture(pDevice);
+		delete m_pDepthTexture;
+		m_pDepthTexture = nullptr;
+	}
 }

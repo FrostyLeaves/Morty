@@ -78,8 +78,6 @@ void MRenderSystem::GenerateShadowMap(MRenderInfo& info)
 	info.pDirectionalLight = info.pScene->FindActiveDirectionLight();
 	Vector3 v3LightDir = info.pDirectionalLight->GetWorldDirection();
 
-	info.m4DirLightInvProj = info.pViewport->GetLightInverseProjection(info.pDirectionalLight, info.cMeshRenderAABB, info.cShadowRenderAABB);
-
 	Vector3 v3ShadowMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
 	Vector3 v3ShadowMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
@@ -113,6 +111,10 @@ void MRenderSystem::GenerateShadowMap(MRenderInfo& info)
 	}
 
 	info.cShadowRenderAABB.SetMinMax(v3ShadowMin, v3ShadowMax);
+
+
+	info.m4DirLightInvProj = info.pViewport->GetLightInverseProjection(info.pDirectionalLight, info.cMeshRenderAABB, info.cShadowRenderAABB);
+
 
 	MShadowTextureRenderTarget* pShadowRenderTarget = info.pScene->GetShadowRenderTarget();
 	if (nullptr == pShadowRenderTarget || nullptr == info.pScene->FindActiveDirectionLight())

@@ -29,6 +29,8 @@ public:
 	virtual void OnResize(const unsigned int& nWidth, const unsigned int& nHeight) override;
 	virtual void OnRender(MIRenderer* pRenderer) override;
 
+	virtual void Release(MIDevice* pDevice) override;
+
 	static MDirectX11RenderTarget* CreateForView(MDirectX11Device* pDevice, MWindowsRenderView* pView);
 
 public:

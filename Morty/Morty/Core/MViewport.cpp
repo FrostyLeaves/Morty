@@ -37,6 +37,8 @@ MViewport::MViewport()
 	, m_bCameraInvProjMatrixLocked(false)
 	, m_v2LeftTop(0,0)
 	, m_v2Size(0, 0)
+	, m_v2ScreenPosition(0, 0)
+	, m_v2ScreenScale(1, 1)
 	, m_cameraFrustum()
 {
 
@@ -136,6 +138,11 @@ bool MViewport::ConvertWorldPointToNormalizedDevice(const Vector3& v3Pos, Vector
 		return false;
 
 	return true;
+}
+
+Vector2 MViewport::ConvertScreenPointToViewport(const Vector2& v2Point)
+{
+	return Vector2((v2Point.x - m_v2ScreenPosition.x) * m_v2ScreenScale.x, (v2Point.y - m_v2ScreenPosition.y) * m_v2ScreenScale.y);
 }
 
 void MViewport::OnCreated()

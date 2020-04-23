@@ -64,6 +64,8 @@ public:
 
 	bool ConvertWorldPointToNormalizedDevice(const Vector3& v3Pos, Vector2& v2Rst);
 
+	Vector2 ConvertScreenPointToViewport(const Vector2& v2Point);
+
 public:
 	virtual void OnCreated() override;
 
@@ -96,6 +98,10 @@ public:
 	static Matrix4 MatrixOrthoOffCenterLH(const float& fLeft, const float& fRight, const float& fTop, const float& fBottom, const float& fNear, const float& fFar);
 
 
+	void SetScreenPosition(const Vector2& v2Position) { m_v2ScreenPosition = v2Position; }
+	void SetScreenScale(const Vector2& v2Scale) { m_v2ScreenScale = v2Scale; }
+
+
 protected:
 	void SetValidCamera(MCamera* pCamera);
 
@@ -113,6 +119,9 @@ private:
 
 	Vector2 m_v2LeftTop;
 	Vector2 m_v2Size;
+
+	Vector2 m_v2ScreenPosition;
+	Vector2 m_v2ScreenScale;
 
 	Matrix4 m_m4CameraInvProj;
 	bool m_bCameraInvProjMatrixLocked;

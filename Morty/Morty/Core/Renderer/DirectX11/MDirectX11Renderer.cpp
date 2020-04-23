@@ -66,6 +66,9 @@ bool MDirectX11Renderer::Initialize()
 	mRasterizer.FrontCounterClockwise = false;
 	mRasterizer.DepthClipEnable = true;//这个裁剪指的是平截头裁剪；
 
+	if(m_pDevice->m_bEnable4xMsaa)
+		mRasterizer.MultisampleEnable = true;
+
 	HRESULT hr = m_pDevice->m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_pRasterizerState_Solid_CullBack);
 	if (FAILED(hr))
 	{
@@ -168,6 +171,8 @@ bool MDirectX11Renderer::Initialize()
 	//三角形解析顶点
 	m_pDevice->m_pD3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+	m_pDevice->m_pD3dContext->VSSetSamplers(0, 0, &m_pDefaultSamplerState);
+	m_pDevice->m_pD3dContext->VSSetSamplers(1, 1, &m_pDepthTextureSamplerState);
 	m_pDevice->m_pD3dContext->PSSetSamplers(0, 0, &m_pDefaultSamplerState);
 	m_pDevice->m_pD3dContext->PSSetSamplers(1, 1, &m_pDepthTextureSamplerState);
 
@@ -211,6 +216,16 @@ void MDirectX11Renderer::Release()
 	{
 		m_pDepthTextureSamplerState->Release();
 		m_pDepthTextureSamplerState = nullptr;
+	}
+	if (m_pBlendState_Default)
+	{
+		m_pBlendState_Default->Release();
+		m_pBlendState_Default = nullptr;
+	}
+	if (m_pBlendState_Transparent)
+	{
+		m_pBlendState_Transparent->Release();
+		m_pBlendState_Transparent = nullptr;
 	}
 }
 
@@ -266,7 +281,7 @@ void MDirectX11Renderer::RecoverRenderTarget(MIRenderTarget* pRenderTarget)
 		if (pRenderTarget->m_pTargetView)
 			m_pDevice->m_pD3dContext->OMSetRenderTargets(1, &pRenderTarget->m_pTargetView, pRenderTarget->m_pDepthStencilView);
 		else
-			m_pDevice->m_pD3dContext->OMSetRenderTargets(0, nullptr, nullptr);
+			m_pDevice->m_pD3dContext->OMSetRenderTargets(0, nullptr, pRenderTarget->m_pDepthStencilView);
 	}
 }
 

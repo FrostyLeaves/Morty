@@ -107,7 +107,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 				Vector3 v3CameraPos = pViewport->GetCamera()->GetWorldPosition();
 
 				Vector3 v3RayDir;
-				Vector2 pos = pMouseEvent->GetMosuePosition() - pViewport->GetLeftTop();
+				Vector2 pos = pViewport->ConvertScreenPointToViewport(pMouseEvent->GetMosuePosition());
 				pos.y = pViewport->GetHeight() - pos.y;
 
 				pViewport->ConvertViewportPointToWorld(pos, 1.0f, v3RayDir);
@@ -164,7 +164,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 			Vector3 v3CameraPos = pViewport->GetCamera()->GetWorldPosition();
 			
 			Vector3 v3RayDir;
-			Vector2 pos = pMouseEvent->GetMosuePosition() - pViewport->GetLeftTop();
+			Vector2 pos = pViewport->ConvertScreenPointToViewport(pMouseEvent->GetMosuePosition());
 			pos.y = pViewport->GetHeight() - pos.y;
 			
 			pViewport->ConvertViewportPointToWorld(pos, 1.0f, v3RayDir);
@@ -204,7 +204,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 	{
 		m_eCoordHoverType = MECoordHoverType::None;
 
-		Vector2 pos = pMouseEvent->GetMosuePosition() - pViewport->GetLeftTop();
+		Vector2 pos = pViewport->ConvertScreenPointToViewport(pMouseEvent->GetMosuePosition());
 		pos.y = pViewport->GetHeight() - pos.y;
 		for (int i : vOrder)
 		{
