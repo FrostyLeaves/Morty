@@ -23,6 +23,7 @@ class MSkeletonInstance;
 
 struct MShadowRenderGroup
 {
+	MShadowRenderGroup() :pSkeletonInstance(nullptr) {}
 	MSkeletonInstance* pSkeletonInstance;
 	std::vector<MIMeshInstance*> vMeshInstances;
 };

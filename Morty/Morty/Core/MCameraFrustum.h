@@ -30,7 +30,7 @@ public:
 
 public:
 
-	void UpdateFromViewport(const MViewport& viewport);
+	void UpdateFromCameraInvProj(const Matrix4& m4CameraInvProj);
 
 	MEContainType ContainTest(const Vector3& position);
 	MEContainType ContainTest(const MBoundsAABB& aabb);

@@ -197,7 +197,10 @@ void MainEditor::ShowMenu()
 
 void MainEditor::ShowRenderView()
 {
-	if (ImGui::Begin("Render", &m_bShowRenderView, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground))
+	if (!m_bShowRenderView)
+		return;
+
+	if (ImGui::Begin("Render", &m_bShowRenderView, ImGuiWindowFlags_NoCollapse))
 	{
 		ImGuiStyle& style = ImGui::GetStyle();
 
@@ -211,16 +214,14 @@ void MainEditor::ShowRenderView()
 		v2RenderViewSize.y -= (style.WindowPadding.y * 2.0f + ImGui::GetItemRectSize().y * 2.0f);
 
 
+		m_v2RenderViewPos.x = v2RenderViewPos.x;
+		m_v2RenderViewPos.y = v2RenderViewPos.y;
+
+		m_v2RenderViewSize.x = v2RenderViewSize.x;
+		m_v2RenderViewSize.y = v2RenderViewSize.y;
+
 		if (m_pTextureRenderTarget)
 		{
-			m_pRenderViewport->SetScreenPosition(Vector2(v2RenderViewPos.x, v2RenderViewPos.y));
-
-			if (m_pRenderViewport->GetSize().x != v2RenderViewSize.x || m_pRenderViewport->GetSize().y != v2RenderViewSize.y)
-			{
-				m_pTextureRenderTarget->OnResize(v2RenderViewSize.x, v2RenderViewSize.y);
-				m_pRenderViewport->SetSize(Vector2(v2RenderViewSize.x, v2RenderViewSize.y));
-			}
-
 			if (m_pTextureRenderTarget)
 			{
 				if (m_pTextureRenderTarget->m_pBackTexture)
@@ -238,6 +239,9 @@ void MainEditor::ShowRenderView()
 
 void MainEditor::ShowNodeTree()
 {
+	if (!m_bShowNodeTree)
+		return;
+
 	if (ImGui::Begin("Scene", &m_bShowNodeTree))
 	{
 		m_pNodeTreeView->Render();
@@ -247,6 +251,9 @@ void MainEditor::ShowNodeTree()
 
 void MainEditor::ShowProperty()
 {
+	if (!m_bShowProperty)
+		return;
+
 	if (ImGui::Begin("Property", &m_bShowProperty))
 	{
 		MNode* pNode = nullptr;
@@ -263,6 +270,9 @@ void MainEditor::ShowProperty()
 
 void MainEditor::ShowMaterial()
 {
+	if (!m_bShowMaterial)
+		return;
+
 	if (ImGui::Begin("Material", &m_bShowMaterial))
 	{
 		m_pMaterialView->Render();
@@ -271,11 +281,15 @@ void MainEditor::ShowMaterial()
 
 void MainEditor::ShowMessage()
 {
+	if (!m_bShowMessage)
+		return;
+
 	const float DISTANCE = 10.0f;
 	static int corner = -1;
-	ImGuiIO& io = ImGui::GetIO();
 	if (corner != -1)
 	{
+		ImGuiIO& io = ImGui::GetIO();
+
 		ImVec2 window_pos = ImVec2((corner & 1) ? io.DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? io.DisplaySize.y - DISTANCE : DISTANCE);
 		ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
 		ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
@@ -310,6 +324,14 @@ void MainEditor::OnRenderBegin()
 #endif
 	if (m_pTextureRenderTarget)
 	{
+		m_pRenderViewport->SetScreenPosition(Vector2(m_v2RenderViewPos.x, m_v2RenderViewPos.y));
+
+		if (m_pRenderViewport->GetSize().x != m_v2RenderViewSize.x || m_pRenderViewport->GetSize().y != m_v2RenderViewSize.y)
+		{
+			m_pTextureRenderTarget->OnResize(m_v2RenderViewSize.x, m_v2RenderViewSize.y);
+			m_pRenderViewport->SetSize(Vector2(m_v2RenderViewSize.x, m_v2RenderViewSize.y));
+		}
+
 		m_pEngine->GetRenderer()->Render(m_pTextureRenderTarget);
 	}
 	m_unTriangleCount = MRenderStatistics::GetInstance()->unTriangleCount;

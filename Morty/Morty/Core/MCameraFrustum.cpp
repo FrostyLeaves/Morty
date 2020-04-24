@@ -15,9 +15,9 @@ MCameraFrustum::~MCameraFrustum()
 {
 }
 
-void MCameraFrustum::UpdateFromViewport(const MViewport& viewport)
+void MCameraFrustum::UpdateFromCameraInvProj(const Matrix4& m4CameraInvProj)
 {
-	Matrix4 m4 = viewport.GetCameraInverseProjection();
+	const Matrix4& m4 = m4CameraInvProj;
 
 	Vector4 c0 = m4.Row(0);
 	Vector4 c1 = m4.Row(1);

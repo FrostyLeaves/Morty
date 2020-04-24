@@ -164,7 +164,7 @@ void MViewport::Render(MIRenderer* pRenderer)
 		return;
 
 	UpdateMatrix();
-	m_cameraFrustum.UpdateFromViewport(*this);
+	m_cameraFrustum.UpdateFromCameraInvProj(this->GetCameraInverseProjection());
 	m_bCameraInvProjMatrixLocked = true;
 	
 	m_pScene->Render(pRenderer, this);

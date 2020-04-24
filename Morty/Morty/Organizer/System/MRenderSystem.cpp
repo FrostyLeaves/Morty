@@ -81,14 +81,26 @@ void MRenderSystem::GenerateShadowMap(MRenderInfo& info)
 	Vector3 v3ShadowMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
 	Vector3 v3ShadowMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
+
+	info.vShadowGroup.push_back(MShadowRenderGroup());
+
 	std::vector<MModelInstance*>& vModels = *info.pScene->GetAllModelInstance();
 	for (MModelInstance* pModelIns : vModels)
 	{
 		if (pModelIns->GetVisibleRecursively() && pModelIns->GetGenerateDirLightShadow())
 		{
-			info.vShadowGroup.push_back(MShadowRenderGroup());
-			MShadowRenderGroup& group = info.vShadowGroup.back();
-			group.pSkeletonInstance = pModelIns->GetSkeleton();
+			MShadowRenderGroup* pGroup = nullptr;
+			if (pModelIns->GetSkeleton())
+			{
+				info.vShadowGroup.push_back(MShadowRenderGroup());
+				pGroup = &info.vShadowGroup.back();
+				pGroup->pSkeletonInstance = pModelIns->GetSkeleton();
+			}
+			else
+			{
+				pGroup = &info.vShadowGroup.front();
+			}
+			MShadowRenderGroup& group = *pGroup;
 
 			for (MNode* pChild : pModelIns->GetFixedChildren())
 			{
@@ -96,25 +108,21 @@ void MRenderSystem::GenerateShadowMap(MRenderInfo& info)
 				{
 					if (pMeshIns->GetVisible() && pMeshIns->GetGenerateDirLightShadow())
 					{
-						group.vMeshInstances.push_back(pMeshIns);
-
 						const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
 						if (info.pViewport->GetCameraFrustum()->ContainTest(*pBounds, v3LightDir) != MCameraFrustum::EOUTSIDE)
 						{
+							group.vMeshInstances.push_back(pMeshIns);
 							pBounds->UnionMinMax(v3ShadowMin, v3ShadowMax);
 						}
 					}
 				}
 			}
-
 		}
 	}
 
 	info.cShadowRenderAABB.SetMinMax(v3ShadowMin, v3ShadowMax);
 
-
 	info.m4DirLightInvProj = info.pViewport->GetLightInverseProjection(info.pDirectionalLight, info.cMeshRenderAABB, info.cShadowRenderAABB);
-
 
 	MShadowTextureRenderTarget* pShadowRenderTarget = info.pScene->GetShadowRenderTarget();
 	if (nullptr == pShadowRenderTarget || nullptr == info.pScene->FindActiveDirectionLight())
