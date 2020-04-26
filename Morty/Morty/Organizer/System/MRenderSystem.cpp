@@ -40,10 +40,12 @@ MRenderSystem::~MRenderSystem()
 
 void MRenderSystem::Initialize()
 {
+
 }
 
 void MRenderSystem::Release()
 {
+
 }
 
 void MRenderSystem::Tick(const float& fDelta)
@@ -63,7 +65,6 @@ void MRenderSystem::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* 
 	GenerateRenderGroup(info);
 	GenerateShadowMap(info);
 
-
 	Vector2 v2LeftTop = pViewport->GetLeftTop();
 	pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, pViewport->GetWidth(), pViewport->GetHeight(), 0.0f, 1.0f);
 
@@ -76,6 +77,9 @@ void MRenderSystem::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* 
 void MRenderSystem::GenerateShadowMap(MRenderInfo& info)
 {
 	info.pDirectionalLight = info.pScene->FindActiveDirectionLight();
+	if (nullptr == info.pDirectionalLight)
+		return;
+
 	Vector3 v3LightDir = info.pDirectionalLight->GetWorldDirection();
 
 	Vector3 v3ShadowMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
@@ -197,7 +201,7 @@ void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 		{
 			std::vector<MPointLight*> vActivePointLights(MPOINT_LIGHT_MAX_NUMBER);
 			info.pScene->FindActivePointLights(info.pViewport->GetCamera()->GetWorldPosition(), vActivePointLights);
-			varValidPointLights = (int)MPOINT_LIGHT_MAX_NUMBER;
+			varValidPointLights = 0;
 
 			MVariantArray& vPointLights = *varPointLights.GetArray();
 			for (unsigned int i = 0; i < vPointLights.GetMemberCount(); ++i)
@@ -214,11 +218,9 @@ void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 					cPointLight[4] = 0.022f;
 					cPointLight[5] = 0.0019f;
 
+					varValidPointLights = (int)i + 1;
 				}
-				else
-				{
-					varValidPointLights = (int)i;
-				}
+				else break;
 			}
 		}
 
@@ -227,7 +229,7 @@ void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 		{
 			std::vector<MSpotLight*> vActiveSpotLights(MSPOT_LIGHT_MAX_NUMBER);
 			info.pScene->FindActiveSpotLights(info.pViewport->GetCamera()->GetWorldPosition(), vActiveSpotLights);
-			varValidSpotLights = (int)MSPOT_LIGHT_MAX_NUMBER;
+			varValidSpotLights = 0;
 
 			MVariantArray& vSpotLights = *varSpotLights.GetArray();
 			for (unsigned int i = 0; i < vSpotLights.GetMemberCount(); ++i)
@@ -244,11 +246,9 @@ void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 					cSpotLight[4] = pLight->GetDiffuseColor().ToVector3();
 					cSpotLight[5] = pLight->GetSpecularColor().ToVector3();
 
+					varValidSpotLights = (int)i + 1;
 				}
-				else
-				{
-					varValidSpotLights = (int)i;
-				}
+				else break;
 			}
 		}
 

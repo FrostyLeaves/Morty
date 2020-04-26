@@ -103,6 +103,9 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 			m_pRenderViewport->Render(pRenderer);
 		}
 	};
+
+
+	m_pMaterialView->Initialize(m_pEngine);
 }
 
 void MainEditor::Release()
@@ -151,6 +154,7 @@ void MainEditor::OnRenderEnd()
 	ImGui::NewFrame();
 	
 	ShowMenu();
+	ShowMaterial();
 	ShowRenderView();
 	ShowNodeTree();
 	ShowProperty();
@@ -186,6 +190,7 @@ void MainEditor::ShowMenu()
 			if (ImGui::MenuItem("Render", "", &m_bShowRenderView)) {}
 			if (ImGui::MenuItem("NodeTree", "", &m_bShowNodeTree)) {}
 			if (ImGui::MenuItem("Property", "", &m_bShowProperty)) {}
+			if (ImGui::MenuItem("Material", "", &m_bShowMaterial)) {}
 			if (ImGui::MenuItem("Message", "", &m_bShowMessage)) {}
 			
 			ImGui::EndMenu();
@@ -212,7 +217,6 @@ void MainEditor::ShowRenderView()
 
 		v2RenderViewSize.x -= style.WindowPadding.x * 2.0f;
 		v2RenderViewSize.y -= (style.WindowPadding.y * 2.0f + ImGui::GetItemRectSize().y * 2.0f);
-
 
 		m_v2RenderViewPos.x = v2RenderViewPos.x;
 		m_v2RenderViewPos.y = v2RenderViewPos.y;
@@ -277,6 +281,8 @@ void MainEditor::ShowMaterial()
 	{
 		m_pMaterialView->Render();
 	}
+
+	ImGui::End();
 }
 
 void MainEditor::ShowMessage()
@@ -335,6 +341,17 @@ void MainEditor::OnRenderBegin()
 		m_pEngine->GetRenderer()->Render(m_pTextureRenderTarget);
 	}
 	m_unTriangleCount = MRenderStatistics::GetInstance()->unTriangleCount;
+
+
+
+	if (m_pMaterialView && m_bShowMaterial)
+	{
+		if (MIMeshInstance* pMeshIns = m_pNodeTreeView->GetSelectionNode()->DynamicCast<MIMeshInstance>())
+		{
+			m_pMaterialView->SetMaterial(pMeshIns->GetMaterial());
+		}
+		m_pMaterialView->UpdateMaterialTexture();
+	}
 }
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

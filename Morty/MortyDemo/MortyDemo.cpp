@@ -241,8 +241,6 @@ int main(int argc, char* argv[])
 		return false;
 	});
 
-
-
 	MainEditor* pEditorView = new MainEditor();
 	pEditorView->Initialize(&engine, "Morty");
 	engine.AddView(pEditorView);

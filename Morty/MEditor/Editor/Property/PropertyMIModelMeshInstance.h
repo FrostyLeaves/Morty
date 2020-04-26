@@ -16,16 +16,13 @@ public:
 			if (ShowNodeBegin("Model Mesh"))
 			{
 				PROPERTY_VALUE_EDIT(pNode, "Draw Bounding", bool, GetDrawBoundingSphere, SetDrawBoundingSphere);
+				PROPERTY_VALUE_EDIT(pNode, "DirShadow", bool, GetGenerateDirLightShadow, SetGenerateDirLightShadow);
 
 				ShowNodeEnd();
 			}
 
-			if (ShowNodeBegin("Material"))
+			if (ShowNodeBegin("Render"))
 			{
-				MMaterial* pMaterial = pNode->GetMaterial();
-
-				EditMMaterial(pNode->GetMaterial());
-
 				ShowValueBegin("ShadowType");
 				MIModelMeshInstance::MEShadowType eType = pNode->GetShadowType();
 				unsigned int unSelected = (unsigned int)eType;
@@ -35,9 +32,7 @@ public:
 				}
 				ShowValueEnd();
 
-				
 				PROPERTY_VALUE_EDIT_SPEED_MIN_MAX(pNode, "LOD", float, GetDetailLevel, SetDetailLevel, 1, 1, MMESH_LOD_LEVEL_RANGE);
-				
 
 
 				ShowNodeEnd();

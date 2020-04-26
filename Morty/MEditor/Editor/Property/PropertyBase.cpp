@@ -353,11 +353,22 @@ void PropertyBase::EditMResource(const MString& strDlgID, MResource* pResource, 
 
 void PropertyBase::ShowTexture(MTextureBuffer* pTextureBuffer)
 {
+	const float fMaxImageSize = 200;
 	if (pTextureBuffer)
 	{
 		if (pTextureBuffer->m_pShaderResourceView)
 		{
-			ImGui::Image(pTextureBuffer->m_pShaderResourceView, ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::GetContentRegionAvailWidth()));
+			float fImageWidth = ImGui::GetContentRegionAvailWidth();
+			if (fImageWidth > fMaxImageSize)
+			{
+				ImGui::Spacing();
+				ImGui::SameLine((fImageWidth - fMaxImageSize) * 0.5f);
+				ImGui::Image(pTextureBuffer->m_pShaderResourceView, ImVec2(fMaxImageSize, fMaxImageSize));
+			}
+			else
+			{
+				ImGui::Image(pTextureBuffer->m_pShaderResourceView, ImVec2(fImageWidth, fImageWidth));
+			}
 		}
 	}
 }
