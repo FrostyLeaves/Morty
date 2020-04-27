@@ -64,10 +64,11 @@ public:
 
 	bool ConvertWorldPointToNormalizedDevice(const Vector3& v3Pos, Vector2& v2Rst);
 
-	Vector2 ConvertScreenPointToViewport(const Vector2& v2Point);
+	bool ConvertScreenPointToViewport(const Vector2& v2Point, Vector2& v2Result);
 
 public:
 	virtual void OnCreated() override;
+	virtual void OnDelete() override;
 
 	virtual void Render(MIRenderer* pRenderer);
 

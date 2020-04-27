@@ -33,7 +33,6 @@ public:
 
 public:
 
-
 	virtual void SetVisible(const bool& bVisible);
 	bool GetVisible() { return m_bVisible; }
 	bool GetVisibleRecursively() { return m_bVisibleRecursively; }
@@ -61,13 +60,16 @@ public:
 	virtual void OnTick(const float& fDelta);
 
 	bool AddNode(MNode* pNode) { return AddNodeImpl(pNode, MENodeChildType::ENormal); }
-	bool RemoveNode(MNode* pNode) { return RemoveNodeImpl(pNode, MENodeChildType::ENormal); }
+	bool RemoveNode(MNode* pNode) { return !m_bDeleteMark && RemoveNodeImpl(pNode, MENodeChildType::ENormal); }
 
 public:
 	virtual bool AddNodeImpl(MNode* pNode, const MENodeChildType& etype);
 	virtual bool RemoveNodeImpl(MNode* pNode, const MENodeChildType& etype);
-	void RemoveAllNodeImpl(const MENodeChildType& etype);
+	void RemoveAllNodeImpl(const MENodeChildType& etype, const float& bDelete = false);
 	virtual void Tick(const float& fDelta);
+
+
+	virtual void OnDelete() override;
 
 public:
 

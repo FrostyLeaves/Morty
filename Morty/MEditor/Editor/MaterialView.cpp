@@ -17,7 +17,8 @@
 #include "imgui.h"
 
 MaterialView::MaterialView()
-	: m_pResource(nullptr)
+	: IBaseView()
+	, m_pResource(nullptr)
 	, m_pMaterial(nullptr)
 {
 
@@ -143,4 +144,16 @@ void MaterialView::Initialize(MEngine* pEngine)
 void MaterialView::Release()
 {
 	//TODO Release RenderTarget and Viewport
+	MObjectManager* pObjManager = m_pEngine->GetObjectManager();
+
+	m_pScene->DeleteLater();
+	m_pScene = nullptr;
+
+	m_pRenderViewport->DeleteLater();
+	m_pRenderViewport = nullptr;
+}
+
+void MaterialView::Input(MInputEvent* pEvent)
+{
+	m_pRenderViewport->Input(pEvent);
 }

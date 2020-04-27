@@ -5,7 +5,8 @@
 #include "MNode.h"
 
 NodeTreeView::NodeTreeView()
-	: m_pRootNode(nullptr)
+	: IBaseView()
+	, m_pRootNode(nullptr)
 	, m_unSelectedObjectID(0)
 {
 
@@ -29,6 +30,21 @@ void NodeTreeView::Render()
 		RenderNode(m_pRootNode);
 		ImGui::Indent(ImGui::GetTreeNodeToLabelSpacing());
 	}
+}
+
+void NodeTreeView::Initialize(MEngine* pEngine)
+{
+
+}
+
+void NodeTreeView::Release()
+{
+
+}
+
+void NodeTreeView::Input(MInputEvent* pEvent)
+{
+
 }
 
 MObject* NodeTreeView::GetSelectionNode()

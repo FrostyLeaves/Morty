@@ -1,5 +1,6 @@
 #include "MShadowTextureRenderTarget.h"
 #include "MEngine.h"
+#include "MIDevice.h"
 #include "MResourceManager.h"
 #include "Material/MMaterialResource.h"
 
@@ -56,6 +57,13 @@ void MShadowTextureRenderTarget::OnCreated()
 	m_eRenderTargetType = MTextureRenderTarget::ERenderDepth;
 
 	OnResize(MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE);
+}
+
+void MShadowTextureRenderTarget::OnDelete()
+{
+	Release(m_pDevice);
+
+	Super::OnDelete();
 }
 
 void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)

@@ -61,7 +61,7 @@ public:
 			{
 				return pResource;
 			}
-			delete pResource;
+			pManager->UnloadResource(pResource);
 		}
 		return nullptr;
 	}

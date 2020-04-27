@@ -99,6 +99,12 @@
     <ClInclude Include="..\..\..\Editor\MaterialView.h">
       <Filter>Editor</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Editor\IBaseView.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Editor\ResourceView.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MEditor.cpp">
@@ -147,6 +153,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Editor\MaterialView.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Editor\ResourceView.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
   </ItemGroup>

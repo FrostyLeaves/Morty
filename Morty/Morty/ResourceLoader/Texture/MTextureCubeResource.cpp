@@ -4,13 +4,14 @@
 #include "MEngine.h"
 
 #include "MTextureResource.h"
+#include "MResourceManager.h"
 
 MTextureCubeResource::MTextureCubeResource()
 	: MResource()
 	, m_pTextureCube(nullptr)
 	, m_vTextures()
 {
-
+	m_unResourceType = MResourceManager::MEResourceType::Texture;
 	m_pTextureCube = new MTextureCube();
 	memset(m_vTextures, 0, sizeof(MResourceHolder*) * 6);
 }

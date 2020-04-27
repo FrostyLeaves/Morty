@@ -1,6 +1,8 @@
 #ifndef _PROPERTY_VIEW_H_
 #define _PROPERTY_VIEW_H_
 
+#include "IBaseView.h"
+
 #include "Vector.h"
 #include "MString.h"
 #include "MTransform.h"
@@ -13,7 +15,7 @@
 class MObject;
 class M3DNode;
 class PropertyBase;
-class PropertyView
+class PropertyView : public IBaseView
 {
 public:
 	PropertyView();
@@ -23,7 +25,13 @@ public:
 public:
 	void SetEditorObject(MObject* pObject);
 
-	void Render();
+	virtual void Render() override;
+
+	virtual void Initialize(MEngine* pEngine) override;
+	virtual void Release() override;
+
+	virtual void Input(MInputEvent* pEvent) override;
+
 
 protected:
 

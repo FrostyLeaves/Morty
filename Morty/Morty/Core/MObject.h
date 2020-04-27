@@ -22,6 +22,7 @@ virtual MString GetObjectClassName() { \
 } 
 
 class MEngine;
+class MObjectManager;
 class MORTY_CLASS MObject : public MTypedClass
 {
 public:
@@ -33,17 +34,22 @@ public:
 
 	MObjectID GetObjectID(){ return m_unObjectID; }
 	MEngine* GetEngine() { return m_pEngine; }
-	class MObjectManager* GetObjectManager();
+	MObjectManager* GetObjectManager();
+
+
+	void DeleteLater();
 
 public:
 	virtual void OnCreated() {};
+	virtual void OnDelete() {};
 
 protected:
 
 	friend class MObjectManager;
 
-	MObjectID m_unObjectID;
-	MEngine* m_pEngine;
+	MObjectID	m_unObjectID;
+	MEngine*	m_pEngine;
+	bool		m_bDeleteMark;
 };
 
 class MORTY_CLASS MObjectManager
@@ -88,6 +94,7 @@ public:
 		std::map<MObjectID, MObject*>::iterator iter = m_tObjects.find(unID);
 		if (iter != m_tObjects.end())
 		{
+			iter->second->OnDelete();
 			delete iter->second;
 			m_tObjects.erase(iter);
 		}

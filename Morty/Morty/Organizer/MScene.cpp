@@ -82,6 +82,33 @@ void MScene::OnCreated()
 	m_vSystems.push_back(pRenderSystem);
 }
 
+void MScene::OnDelete()
+{
+	if (m_pSkyBox)
+	{
+		m_pSkyBox->DeleteLater();
+		m_pSkyBox = nullptr;
+	}
+
+	if (m_pShadowDepthMapRenderTarget)
+	{
+		m_pShadowDepthMapRenderTarget->DeleteLater();
+		m_pShadowDepthMapRenderTarget = nullptr;
+	}
+
+	for (MISystem* pSystem : m_vSystems)
+		pSystem->DeleteLater();
+
+	m_vSystems.clear();
+
+	Super::OnDelete();
+}
+
+void MScene::CleanAllNodes()
+{
+
+}
+
 void MScene::GetSceneRenderMeshAABB(MBoundsAABB& cSceneAABB, MViewport* pViewport)
 {
 	Vector3 v3ShadowMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
@@ -246,13 +273,7 @@ void MScene::Input(MInputEvent* pEvent, MViewport* pViewport)
 
 MScene::~MScene()
 {
-	if (m_pShadowDepthMapRenderTarget)
-	{
-		m_pEngine->GetDevice()->DestroyRenderTarget(m_pShadowDepthMapRenderTarget);
-
-		m_pEngine->GetObjectManager()->RemoveObject(m_pShadowDepthMapRenderTarget->GetObjectID());
-		m_pShadowDepthMapRenderTarget = nullptr;
-	}
+	
 }
 
 void MScene::SetRootNode(MNode* pRootNode)

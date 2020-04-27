@@ -72,6 +72,11 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 	{
 		if (pMouseEvent->GetType() == MMouseInputEvent::ButtonDown)
 		{
+			Vector2 v2ViewportPos;
+			if (false == pViewport->ConvertScreenPointToViewport(pMouseEvent->GetMosuePosition(), v2ViewportPos))
+				return false;
+			v2ViewportPos.y = pViewport->GetHeight() - v2ViewportPos.y;
+
 			m_eCoordMoveType = m_eCoordHoverType;
 
 			
@@ -107,10 +112,9 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 				Vector3 v3CameraPos = pViewport->GetCamera()->GetWorldPosition();
 
 				Vector3 v3RayDir;
-				Vector2 pos = pViewport->ConvertScreenPointToViewport(pMouseEvent->GetMosuePosition());
-				pos.y = pViewport->GetHeight() - pos.y;
+				v2ViewportPos.y = pViewport->GetHeight() - v2ViewportPos.y;
 
-				pViewport->ConvertViewportPointToWorld(pos, 1.0f, v3RayDir);
+				pViewport->ConvertViewportPointToWorld(v2ViewportPos, 1.0f, v3RayDir);
 				v3RayDir = v3RayDir - v3CameraPos;
 				v3RayDir.Normalize();
 
@@ -164,10 +168,12 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 			Vector3 v3CameraPos = pViewport->GetCamera()->GetWorldPosition();
 			
 			Vector3 v3RayDir;
-			Vector2 pos = pViewport->ConvertScreenPointToViewport(pMouseEvent->GetMosuePosition());
-			pos.y = pViewport->GetHeight() - pos.y;
-			
-			pViewport->ConvertViewportPointToWorld(pos, 1.0f, v3RayDir);
+
+			Vector2 v2ViewportPos;
+			pViewport->ConvertScreenPointToViewport(pMouseEvent->GetMosuePosition(), v2ViewportPos);
+			v2ViewportPos.y = pViewport->GetHeight() - v2ViewportPos.y;
+
+			pViewport->ConvertViewportPointToWorld(v2ViewportPos, 1.0f, v3RayDir);
 			v3RayDir = v3RayDir - v3CameraPos;
 			v3RayDir.Normalize();
 
@@ -203,12 +209,13 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 	else	//е§дкаќЭЃ
 	{
 		m_eCoordHoverType = MECoordHoverType::None;
+		Vector2 v2ViewportPos;
+		pViewport->ConvertScreenPointToViewport(pMouseEvent->GetMosuePosition(), v2ViewportPos);
+		v2ViewportPos.y = pViewport->GetHeight() - v2ViewportPos.y;
 
-		Vector2 pos = pViewport->ConvertScreenPointToViewport(pMouseEvent->GetMosuePosition());
-		pos.y = pViewport->GetHeight() - pos.y;
 		for (int i : vOrder)
 		{
-			if (vVaild[i] && lines[i].TouchTest(pos, pViewport))
+			if (vVaild[i] && lines[i].TouchTest(v2ViewportPos, pViewport))
 			{
 				m_eCoordHoverType = (MECoordHoverType)(1 << (i));
 				break;
@@ -220,7 +227,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 			for (int oi =2; oi >= 0; --oi)
 			{
 				int i = vOrder[oi];
-				if (vVaild[(i + 1) % 3] && vVaild[(i + 2) % 3] && rects[i].TouchTest(pos, pViewport))
+				if (vVaild[(i + 1) % 3] && vVaild[(i + 2) % 3] && rects[i].TouchTest(v2ViewportPos, pViewport))
 				{
 					m_eCoordHoverType = (MECoordHoverType)(1 << ((i + 1) % 3) | 1 << ((i + 2) % 3));
 					break;

@@ -45,6 +45,7 @@ public:
 	void Render(MIRenderer* pRenderer, const Matrix4& m4InvProj, std::vector<MShadowRenderGroup>* pGroup);
 
     virtual void OnCreated() override;
+	virtual void OnDelete() override;
 
     virtual void OnRender(MIRenderer* pRenderer) override;
 

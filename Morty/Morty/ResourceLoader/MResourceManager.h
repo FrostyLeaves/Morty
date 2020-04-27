@@ -49,10 +49,12 @@ public:
 
 		pResource->m_unResourceID = m_ResourceDB.GetNewID();
 		pResource->m_pEngine = m_pEngine;
+		m_tResources[pResource->m_unResourceID] = pResource;
 
 		pResource->OnCreated();
 
 		return pResource;
+
 	}
 
 	template<typename Resource_TYPE>
@@ -70,17 +72,21 @@ public:
 	MEResourceType GetResourceType(const MString& strResourcePath);
 
 	MResource* LoadResource(const MString& strResourcePath, const MEResourceType& eType = MEResourceType::Default);
-	void UnloadResource(const MString& strResourcePath);
-
-	MResource* Create(const MEResourceType& eType);
+	void UnloadResource(MResource* pResource);
+	
 	void Reload(const MString& strResourcePath);
 
 	void SetReloadEnabled(const bool& bReloadEnabled) { m_bReloadEnabled = bReloadEnabled; }
 	bool GetReloadEnabled() { return m_bReloadEnabled; }
+
+
+	std::map<MResourceID, MResource*>* GetAllResources() { return &m_tResources; }
+
 private:
 
 	std::map<MEResourceType, MResourceLoader*> m_tResourceLoader;
 
+	std::map<MResourceID, MResource*> m_tResources;
 	std::map<MString, MResource*> m_tPathResources;
 
 	MIDPool<MResourceID> m_ResourceDB;

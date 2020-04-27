@@ -2,9 +2,11 @@
 #include "MShader.h"
 #include "MEngine.h"
 #include "MIDevice.h"
+#include "MResourceManager.h"
 
 MShaderResource::MShaderResource()
 {
+	m_unResourceType = MResourceManager::MEResourceType::Shader;
 	m_pShaderTemplate = new MShader();
 }
 

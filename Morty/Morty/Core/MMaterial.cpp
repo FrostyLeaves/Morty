@@ -24,7 +24,7 @@ MMaterial::MMaterial()
 	, m_eRenderState(MIRenderer::ESolid | MIRenderer::ECullBack)
 	, m_eBlendState(MIRenderer::ENormal)
 {
-
+	m_unResourceType = MResourceManager::MEResourceType::Material;
 }
 
 MMaterial::~MMaterial()

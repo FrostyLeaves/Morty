@@ -50,41 +50,35 @@ MResource* MResourceManager::LoadResource(const MString& strResourcePath, const 
 
 	MResource* pResource = nullptr;
 	MResourceLoader* pLoader = nullptr;
-	if (MEResourceType::Default != eType)
-		pLoader = m_tResourceLoader[eType];
-	else
-		pLoader = m_tResourceLoader[GetResourceType(strResourcePath)];
+	MEResourceType eResourceType = eType;
+	if (MEResourceType::Default == eResourceType)
+		eResourceType = GetResourceType(strResourcePath);
 
-	if (pLoader)
+	if (pLoader = m_tResourceLoader[eResourceType])
 	{
-		if(pResource = pLoader->Load(this, strResourcePath))
+		if (pResource = pLoader->Load(this, strResourcePath))
+		{
 			m_tPathResources[strResourcePath] = pResource;
+		}
 	}
 
 	return pResource;
 }
 
-
-void MResourceManager::UnloadResource(const MString& strResourcePath)
+void MResourceManager::UnloadResource(MResource* pResource)
 {
-	std::map<MString, MResource*>::iterator iter = m_tPathResources.find(strResourcePath);
-	if (iter == m_tPathResources.end())
+	if (nullptr == pResource)
 		return;
 
-	iter->second->OnRelease();
-
-	delete iter->second;
-	m_tPathResources.erase(iter);
-}
-
-MResource* MResourceManager::Create(const MEResourceType& eType)
-{
-	if (MResourceLoader* pLoader = m_tResourceLoader[eType])
+	if (!pResource->GetResourcePath().empty())
 	{
-		return pLoader->Create(this);
+		m_tPathResources.erase(pResource->GetResourcePath());
 	}
 
-	return nullptr;
+	m_tResources.erase(pResource->GetResourceID());
+
+	pResource->OnRelease();
+	delete pResource;
 }
 
 void MResourceManager::Reload(const MString& strResourcePath)

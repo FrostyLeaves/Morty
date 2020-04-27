@@ -46,17 +46,6 @@ MViewport::MViewport()
 
 MViewport::~MViewport()
 {
-	if (m_pDefaultCamera)
-	{
-		m_pEngine->GetObjectManager()->RemoveObject(m_pDefaultCamera->GetObjectID());
-		m_pDefaultCamera = nullptr;
-	}
-
-// 	if (m_pScene)
-// 	{
-// 		m_pScene->RemoveAttachedViewport(this);
-// 		m_pScene = nullptr;
-// 	}
 }
 
 bool MViewport::ConvertWorldPointToViewport(const Vector3& v3WorldPos, Vector3& v2Result)
@@ -140,9 +129,12 @@ bool MViewport::ConvertWorldPointToNormalizedDevice(const Vector3& v3Pos, Vector
 	return true;
 }
 
-Vector2 MViewport::ConvertScreenPointToViewport(const Vector2& v2Point)
+bool MViewport::ConvertScreenPointToViewport(const Vector2& v2Point, Vector2& v2Result)
 {
-	return Vector2((v2Point.x - m_v2ScreenPosition.x) * m_v2ScreenScale.x, (v2Point.y - m_v2ScreenPosition.y) * m_v2ScreenScale.y);
+	v2Result.x = (v2Point.x - m_v2ScreenPosition.x) * m_v2ScreenScale.x;
+	v2Result.y =(v2Point.y - m_v2ScreenPosition.y)* m_v2ScreenScale.y;
+
+	return v2Result.x >= 0.0f && v2Result.y >= 0.0f && v2Result.x <= m_v2Size.x && v2Result.y <= m_v2Size.y;
 }
 
 void MViewport::OnCreated()
@@ -151,6 +143,22 @@ void MViewport::OnCreated()
 
 	//Init Default Camera.
 	m_pDefaultCamera = m_pEngine->GetObjectManager()->CreateObject<MCamera>();
+}
+
+void MViewport::OnDelete()
+{
+	if (m_pDefaultCamera)
+	{
+		m_pDefaultCamera->DeleteLater();
+		m_pDefaultCamera = nullptr;
+	}
+
+	if (m_pScene)
+	{
+		m_pScene = nullptr;
+	}
+
+	Super::OnDelete();
 }
 
 void MViewport::SetSize(const Vector2& v2Size)

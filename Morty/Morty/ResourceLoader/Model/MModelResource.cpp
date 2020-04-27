@@ -38,6 +38,7 @@ MModelResource::MModelResource()
 , m_vMeshes()
 , m_pSkeleton(nullptr)
 {
+	m_unResourceType = MResourceManager::MEResourceType::Model;
 }
 
 MModelResource::~MModelResource()

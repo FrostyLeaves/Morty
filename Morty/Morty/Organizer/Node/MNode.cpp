@@ -175,12 +175,23 @@ bool MNode::RemoveNodeImpl(MNode* pNode, const MENodeChildType& etype)
 	return false;
 }
 
-void MNode::RemoveAllNodeImpl(const MENodeChildType& etype)
+void MNode::RemoveAllNodeImpl(const MENodeChildType& etype, const float& bDelete/* = false*/)
 {
 	std::vector<MNode*>& children = etype == MENodeChildType::EFixed ? m_vFixedChildren : m_vChildren;
 
-	for (MNode* pChild : children)
-		pChild->SetAttachedScene(nullptr);
+	if (bDelete)
+	{
+		for (MNode* pChild : children)
+			pChild->DeleteLater();
+	}
+	else
+	{
+		for (MNode* pChild : children)
+		{
+			pChild->m_pParent = nullptr;
+			pChild->SetAttachedScene(nullptr);
+		}
+	}
 
 	children.clear();
 }
@@ -202,6 +213,8 @@ bool MNode::isHolderOf(MNode* pNode)
 
 void MNode::Tick(const float& fDelta)
 {
+	if (m_bDeleteMark) return;
+
 	OnTick(fDelta);
 
 	for (MNode* pChild : m_vFixedChildren)
@@ -209,6 +222,18 @@ void MNode::Tick(const float& fDelta)
 
 	for (MNode* pChild : m_vChildren)
 		pChild->Tick(fDelta);
+}
+
+void MNode::OnDelete()
+{
+	// remove from parent [and scene]
+	if (m_pParent)
+		m_pParent->RemoveNode(this);
+
+	RemoveAllNodeImpl(MENodeChildType::ENormal, true);
+	RemoveAllNodeImpl(MENodeChildType::EFixed, true);
+
+	Super::OnDelete();
 }
 
 void MNode::OnTick(const float& fDelta)

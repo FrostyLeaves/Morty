@@ -19,6 +19,7 @@ public: \
 
 
 #define MTypeIdentifierImplement(Class, BaseClass) \
+typedef BaseClass Super; \
     MTypeIdentifierConstPointer Class::GetClassTypeIdentifier() { \
 		static const MTypeIdentifier typeIdentifier(#Class, BaseClass::GetClassTypeIdentifier()); \
 		return &typeIdentifier; \

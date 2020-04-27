@@ -37,6 +37,9 @@ public:
 	static MString GetFolder(const MString& strPath);
 	static MString GetFileName(const MString& strPath);
 
+	MResourceID GetResourceID() const { return m_unResourceID; }
+	unsigned int GetType() const { return m_unResourceType; }
+
 	MEngine* GetEngine() { return m_pEngine; }
 
 	MResourceManager* GetResourceManager();
@@ -70,6 +73,7 @@ protected:
 
 	MString m_strResourcePath;
     MResourceID m_unResourceID;
+	unsigned int m_unResourceType;
 	MEngine* m_pEngine;
 
 	std::vector<MResourceHolder*> m_vHolder;

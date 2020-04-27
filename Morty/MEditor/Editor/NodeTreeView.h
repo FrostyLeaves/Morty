@@ -1,11 +1,11 @@
 #ifndef _NODE_TREE_VIEW_H_
 #define _NODE_TREE_VIEW_H_
 
-#include "MGlobal.h"
+#include "IBaseView.h"
 
 class MObject;
 class MNode;
-class NodeTreeView
+class NodeTreeView : public IBaseView
 {
 public:
 	NodeTreeView();
@@ -15,7 +15,13 @@ public:
 public:
 	void SetRootNode(MNode* pObject);
 
-	void Render();
+	virtual void Render() override;
+
+	virtual void Initialize(MEngine* pEngine) override;
+	virtual void Release() override;
+
+	virtual void Input(MInputEvent* pEvent) override;
+
 
 	MObject* GetSelectionNode();
 

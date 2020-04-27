@@ -27,6 +27,7 @@
 #include "NodeTreeView.h"
 #include "PropertyView.h"
 #include "MaterialView.h"
+#include "ResourceView.h"
 
 #include "MRenderStatistics.h"
 #include "MInputManager.h"
@@ -37,12 +38,15 @@ MainEditor::MainEditor()
 	, m_pNodeTreeView(new NodeTreeView())
 	, m_pPropertyView(new PropertyView())
 	, m_pMaterialView(new MaterialView())
+	, m_pResourceView(new ResourceView())
 	, m_unTriangleCount(0)
 	, m_bShowMessage(true)
 	, m_bShowNodeTree(true)
 	, m_bShowProperty(true)
 	, m_bShowRenderView(true)
 	, m_bShowMaterial(false)
+	, m_bShowResource(false)
+	, m_pRenderViewport(nullptr)
 	, m_pTextureRenderTarget(nullptr)
 {
 	m_nWidth = 800.0f;
@@ -104,12 +108,21 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 		}
 	};
 
+	m_vChildView.push_back(m_pNodeTreeView);
+	m_vChildView.push_back(m_pPropertyView);
+	m_vChildView.push_back(m_pMaterialView);
+	m_vChildView.push_back(m_pResourceView);
 
-	m_pMaterialView->Initialize(m_pEngine);
+	for (IBaseView* pChild : m_vChildView)
+		pChild->Initialize(pEngine);
 }
 
 void MainEditor::Release()
 {
+	for (IBaseView* pChild : m_vChildView)
+		pChild->Release();
+
+
 	// Cleanup
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
@@ -159,7 +172,8 @@ void MainEditor::OnRenderEnd()
 	ShowNodeTree();
 	ShowProperty();
 	ShowMessage();
-	
+	ShowResource();
+
 	// Rendering
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -191,6 +205,7 @@ void MainEditor::ShowMenu()
 			if (ImGui::MenuItem("NodeTree", "", &m_bShowNodeTree)) {}
 			if (ImGui::MenuItem("Property", "", &m_bShowProperty)) {}
 			if (ImGui::MenuItem("Material", "", &m_bShowMaterial)) {}
+			if (ImGui::MenuItem("Resource", "", &m_bShowResource)) {}
 			if (ImGui::MenuItem("Message", "", &m_bShowMessage)) {}
 			
 			ImGui::EndMenu();
@@ -320,6 +335,19 @@ void MainEditor::ShowMessage()
 			ImGui::EndPopup();
 		}
 	}
+	ImGui::End();
+}
+
+void MainEditor::ShowResource()
+{
+	if (!m_bShowResource)
+		return;
+
+	if (ImGui::Begin("Resource", &m_bShowResource))
+	{
+		m_pResourceView->Render();
+	}
+
 	ImGui::End();
 }
 

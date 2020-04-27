@@ -6,6 +6,7 @@ MTypeIdentifierImplement(MObject, MTypedClass)
 MObject::MObject()
 	: m_unObjectID(0)
 	, m_pEngine(nullptr)
+	, m_bDeleteMark(false)
 {
 
 }
@@ -21,6 +22,15 @@ class MObjectManager* MObject::GetObjectManager()
 		return nullptr;
 
 	return m_pEngine->GetObjectManager();
+}
+
+void MObject::DeleteLater()
+{
+	if (!m_bDeleteMark)
+	{
+		m_bDeleteMark = true;
+		m_pEngine->GetObjectManager()->RemoveObject(m_unObjectID);
+	}
 }
 
 MObjectManager::MObjectManager()

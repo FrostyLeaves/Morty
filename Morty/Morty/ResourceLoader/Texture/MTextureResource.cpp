@@ -1,4 +1,5 @@
 ﻿#include "MTextureResource.h"
+#include "MResourceManager.h"
 
 #include "MIDevice.h"
 #include "MEngine.h"
@@ -6,7 +7,9 @@
 #include "ximage.h"
 
 MTextureResource::MTextureResource()
+	:MResource()
 {
+	m_unResourceType = MResourceManager::MEResourceType::Texture;
 	m_pTexture = new MTexture();
 }
 

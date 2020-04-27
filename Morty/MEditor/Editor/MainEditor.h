@@ -6,9 +6,11 @@
 class MNode;
 class MScene;
 class MStaticMeshInstance;
+class IBaseView;
 class NodeTreeView;
 class PropertyView;
 class MaterialView;
+class ResourceView;
 class MainEditor : public MWindowsRenderView
 {
 public:
@@ -41,6 +43,7 @@ public:
 	void ShowProperty();
 	void ShowMaterial();
 	void ShowMessage();
+	void ShowResource();
 
 public:
 	virtual LRESULT CALLBACK ViewProcessFunction(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) override;
@@ -51,6 +54,10 @@ protected:
 	NodeTreeView* m_pNodeTreeView;
 	PropertyView* m_pPropertyView;
 	MaterialView* m_pMaterialView;
+	ResourceView* m_pResourceView;
+
+	std::vector<IBaseView*> m_vChildView;
+
 	class MTextureRenderTarget* m_pTextureRenderTarget;
 	class MViewport* m_pRenderViewport;
 
@@ -64,6 +71,7 @@ protected:
 	bool m_bShowProperty;
 	bool m_bShowRenderView;
 	bool m_bShowMaterial;
+	bool m_bShowResource;
 };
 
 

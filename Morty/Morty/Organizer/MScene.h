@@ -63,7 +63,9 @@ public:
 	virtual void Input(MInputEvent* pEvent, MViewport* pViewport);
 
 	virtual void OnCreated() override;
+	virtual void OnDelete() override;
 
+	void CleanAllNodes();
 
 	//节点接入场景时进行的操作
 	void OnNodeEnter(MNode* pNode);

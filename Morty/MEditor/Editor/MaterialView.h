@@ -1,15 +1,17 @@
 #ifndef _MATERIAL_VIEW_H_
 #define _MATERIAL_VIEW_H_
 
-#include "MGlobal.h"
+#include "IBaseView.h"
+
 #include "MResource.h"
 #include "Property/PropertyBase.h"
 
 class MScene;
 class MEngine;
 class MMaterial;
+class MInputEvent;
 class MIMeshInstance;
-class MaterialView
+class MaterialView : public IBaseView
 {
 public:
 	MaterialView();
@@ -21,10 +23,12 @@ public:
 
 	void UpdateMaterialTexture();
 
-	void Render();
+	virtual void Render() override;
 
-	void Initialize(MEngine* pEngine);
-	void Release();
+	virtual void Initialize(MEngine* pEngine) override;
+	virtual void Release() override;
+
+	virtual void Input(MInputEvent* pEvent) override;
 
 protected:
 

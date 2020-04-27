@@ -17,7 +17,8 @@
 	m_tCreatePropertyFactory[#CLASS_NAME] = []() {return new Property##CLASS_NAME(); };
 
 PropertyView::PropertyView()
-	: m_pEditorObject(nullptr)
+	: IBaseView()
+	, m_pEditorObject(nullptr)
 	, m_vPropertyList()
 {
 	REGISTER_PROPERTY(M3DNode);
@@ -66,6 +67,21 @@ void PropertyView::Render()
 	ImGui::Columns(1);
 	ImGui::Separator();
 	ImGui::PopStyleVar();
+
+}
+
+void PropertyView::Initialize(MEngine* pEngine)
+{
+
+}
+
+void PropertyView::Release()
+{
+
+}
+
+void PropertyView::Input(MInputEvent* pEvent)
+{
 
 }
 

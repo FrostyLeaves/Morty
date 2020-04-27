@@ -5,6 +5,7 @@
 
 MResource::MResource()
 : m_unResourceID(0)
+, m_unResourceType(0)
 , m_pEngine(nullptr)
 {
     
@@ -71,9 +72,9 @@ void MResource::OnReferenceZero()
 {
 	if (!m_strResourcePath.empty())
 	{
-		GetResourceManager()->UnloadResource(m_strResourcePath);
+		GetResourceManager()->UnloadResource(this);
 	}
-}
+} 
 
 void MResource::OnReload(const unsigned int& eReloadType)
 {
