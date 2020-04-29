@@ -54,11 +54,30 @@ MModelResource::~MModelResource()
 		pMesh->m_pMesh->DestroyBuffer(GetEngine()->GetDevice());
 		delete pMesh->m_pMesh;
 		delete pMesh->m_pBoundsOBB;
+		delete pMesh->m_pBoundsSphere;
+
+		if (pMesh->m_pMaterial)
+		{
+			pMesh->m_pMaterial->SubRef();
+		}
 
 		delete pMesh;
 	}
-	
+
 	m_vMeshes.clear();
+}
+
+void MModelResource::OnDelete()
+{
+	for (MModelMeshStruct* pMesh : m_vMeshes)
+	{
+		if (pMesh->m_pMaterial)
+		{
+			pMesh->m_pMaterial->SubRef();
+		}
+	}
+
+	MResource::OnDelete();
 }
 
 bool MModelResource::Load(const MString& strResourcePath)
@@ -451,6 +470,8 @@ void MModelResource::ProcessMaterial(const aiScene* pScene, std::vector<unsigned
 			*pMeshData->m_pMaterial = *pStaticMeshMaterial;
 		else if(pMeshData->GetMeshVertexType() == MModelMeshStruct::Skeleton)
 			*pMeshData->m_pMaterial = *pSkinnedMeshMaterial;
+
+		pMeshData->m_pMaterial->AddRef();
 
 		unsigned int unMaterialIndex = vMaterialIndices[i];
 

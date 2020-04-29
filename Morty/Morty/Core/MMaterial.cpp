@@ -17,8 +17,8 @@
 
 MMaterial::MMaterial()
 	: MResource()
-	, m_pVertexResource(nullptr)
-	, m_pPixelResource(nullptr)
+	, m_VertexResource(nullptr)
+	, m_PixelResource(nullptr)
 	, m_pVertexShader(nullptr)
 	, m_pPixelShader(nullptr)
 	, m_eRenderState(MIRenderer::ESolid | MIRenderer::ECullBack)
@@ -29,7 +29,8 @@ MMaterial::MMaterial()
 
 MMaterial::~MMaterial()
 {
-	Unload();
+	CleanTextureParams();
+	CleanShaderParams();
 }
 
 void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)
@@ -60,14 +61,8 @@ void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)
 			{
 				if (MTextureResource* pTexResource = dynamic_cast<MTextureResource*>(pResource))
 				{
-					MResourceHolder* pNewHolder = new MResourceHolder(pResource);
-
-					if (m_vTextureResHolder[i])
-						delete m_vTextureResHolder[i];
-
-					m_vTextureResHolder[i] = pNewHolder;
-
-					m_vTextureResHolder[i]->SetResChangedCallback(funcResChangedFunction);
+					m_vTextureResKeeper[i].SetResource(pResource);
+					m_vTextureResKeeper[i].SetResChangedCallback(funcResChangedFunction);
 
 					param.pTexture = pTexResource->GetTextureTemplate();
 				}
@@ -76,10 +71,8 @@ void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)
 			{
 				if (MTextureCubeResource* pTexResource = dynamic_cast<MTextureCubeResource*>(pResource))
 				{
-					if (m_vTextureResHolder[i])
-						delete m_vTextureResHolder[i];
-					m_vTextureResHolder[i] = new MResourceHolder(pResource);
-					m_vTextureResHolder[i]->SetResChangedCallback(funcResChangedFunction);
+					m_vTextureResKeeper[i].SetResource(pTexResource);
+					m_vTextureResKeeper[i].SetResChangedCallback(funcResChangedFunction);
 
 					param.pTexture = pTexResource->GetTextureCubeTemplate();
 				}
@@ -105,13 +98,13 @@ void MMaterial::CompileShaderParams(const MEShaderParamType& eType)
 		if (MEShaderParamType::EPixel != eType)
 		{
 			RecompileShaderParams(m_vShaderParams, m_pVertexShader->GetBuffer()->m_vShaderParamsTemplate, MEShaderParamType::EVertex);
-			RecompileShaderTextureParam(m_vTextureParams, m_vTextureResHolder, m_pVertexShader->GetBuffer()->m_vTextureParamsTemplate, MEShaderParamType::EVertex);
+			RecompileShaderTextureParam(m_vTextureParams, m_vTextureResKeeper, m_pVertexShader->GetBuffer()->m_vTextureParamsTemplate, MEShaderParamType::EVertex);
 		}
 
 		if (MEShaderParamType::EVertex != eType)
 		{
 			RecompileShaderParams(m_vShaderParams, m_pPixelShader->GetBuffer()->m_vShaderParamsTemplate, MEShaderParamType::EPixel);
-			RecompileShaderTextureParam(m_vTextureParams, m_vTextureResHolder, m_pPixelShader->GetBuffer()->m_vTextureParamsTemplate, MEShaderParamType::EPixel);
+			RecompileShaderTextureParam(m_vTextureParams, m_vTextureResKeeper, m_pPixelShader->GetBuffer()->m_vTextureParamsTemplate, MEShaderParamType::EPixel);
 		}
 	}
 }
@@ -121,18 +114,18 @@ void MMaterial::Encode(MString& strCode)
 	strCode.clear();
 
 	MStruct material;
-	material.AppendMVariant("VS", m_pVertexResource->GetResource()->GetResourcePath());
-	material.AppendMVariant("PS", m_pPixelResource->GetResource()->GetResourcePath());
+	material.AppendMVariant("VS", m_VertexResource.GetResource()->GetResourcePath());
+	material.AppendMVariant("PS", m_PixelResource.GetResource()->GetResourcePath());
 	material.AppendMVariant("RenderState", static_cast<int>(m_eRenderState));
 
 	MStruct vTextures;
-	for (unsigned int i = 0 ; i < m_vTextureResHolder.size(); ++i)
+	for (unsigned int i = 0 ; i < m_vTextureResKeeper.size(); ++i)
 	{
-		MResourceHolder* pTexResource = m_vTextureResHolder[i];
+		MResourceKeeper& texResource = m_vTextureResKeeper[i];
 		MShaderTextureParam& param = m_vTextureParams[i];
 
-		if (pTexResource && pTexResource->GetResource())
-			vTextures.AppendMVariant(param.strName, pTexResource->GetResource()->GetResourcePath());
+		if (texResource.GetResource())
+			vTextures.AppendMVariant(param.strName, texResource.GetResource()->GetResourcePath());
 		else
 			vTextures.AppendMVariant(param.strName, "");
 	}
@@ -242,10 +235,8 @@ bool MMaterial::LoadVertexShader(MResource* pResource)
 			}
 
 
-			if (m_pVertexResource)
-				delete m_pVertexResource;
-			m_pVertexResource = new MResourceHolder(pResource);
-			m_pVertexResource->SetResChangedCallback([this](const unsigned int& eReloadType) {
+			m_VertexResource.SetResource(pResource);
+			m_VertexResource.SetResChangedCallback([this](const unsigned int& eReloadType) {
 				CompileShaderParams(MEShaderParamType::EVertex);
 				OnReload();
 				return true;
@@ -276,10 +267,8 @@ bool MMaterial::LoadPixelShader(MResource* pResource)
 				}
 			}
 
-			if (m_pPixelResource)
-				delete m_pPixelResource;
-			m_pPixelResource = new MResourceHolder(pResource);
-			m_pPixelResource->SetResChangedCallback([this](const unsigned int& eReloadType) {
+			m_PixelResource.SetResource(pResource);
+			m_PixelResource.SetResChangedCallback([this](const unsigned int& eReloadType) {
 				CompileShaderParams(MEShaderParamType::EPixel);
 				OnReload();
 				return true;
@@ -294,30 +283,25 @@ bool MMaterial::LoadPixelShader(MResource* pResource)
 	return false;
 }
 
-void MMaterial::Unload()
+void MMaterial::OnDelete()
 {
-	CleanTextureParams();
-
-	for (MShaderParam& param : m_vShaderParams)
-		m_pEngine->GetDevice()->DestroyShaderParamBuffer(&param);
-
-	m_vShaderParams.clear();
-
-	if (m_pVertexResource)
-	{
-		delete m_pVertexResource;
-		m_pVertexResource = nullptr;
-	}
-
-	if (m_pPixelResource)
-	{
-		delete m_pPixelResource;
-		m_pPixelResource = nullptr;
-	}
-
+	m_VertexResource.SetResource(nullptr);
+	m_PixelResource.SetResource(nullptr);
 	m_pVertexShader = nullptr;
 	m_pPixelShader = nullptr;
 
+	MResource::OnDelete();
+}
+
+void MMaterial::Unload()
+{
+	CleanTextureParams();
+	CleanShaderParams();
+	
+	m_VertexResource.SetResource(nullptr);
+	m_PixelResource.SetResource(nullptr);
+	m_pVertexShader = nullptr;
+	m_pPixelShader = nullptr;
 }
 
 const MMaterial& MMaterial::operator=(const MMaterial& mat)
@@ -325,8 +309,8 @@ const MMaterial& MMaterial::operator=(const MMaterial& mat)
 	Unload();
 
 	//Material
-	m_pVertexResource = new MResourceHolder(*mat.m_pVertexResource);
-	m_pPixelResource = new MResourceHolder(*mat.m_pPixelResource);
+	m_VertexResource = mat.m_VertexResource;
+	m_PixelResource = mat.m_PixelResource;
 
 	m_pVertexShader = mat.m_pVertexShader;
 	m_pPixelShader = mat.m_pPixelShader;
@@ -348,11 +332,10 @@ const MMaterial& MMaterial::operator=(const MMaterial& mat)
 		m_vTextureParams[i] = mat.m_vTextureParams[i];
 	}
 
-	m_vTextureResHolder.resize(mat.m_vTextureResHolder.size(), nullptr);
-	for (unsigned int i = 0; i < mat.m_vTextureResHolder.size(); ++i)
+	m_vTextureResKeeper.resize(mat.m_vTextureResKeeper.size());
+	for (unsigned int i = 0; i < mat.m_vTextureResKeeper.size(); ++i)
 	{
-		if (mat.m_vTextureResHolder[i])
-			m_vTextureResHolder[i] = new MResourceHolder(*mat.m_vTextureResHolder[i]);
+		m_vTextureResKeeper[i] = mat.m_vTextureResKeeper[i];
 	}
 
 	return *this;
@@ -406,7 +389,7 @@ void MMaterial::RecompileShaderParams(std::vector<MShaderParam>& vParams, std::v
 
 }
 
-void MMaterial::RecompileShaderTextureParam(std::vector<MShaderTextureParam>& vParams, std::vector<MResourceHolder*>& vResHolders, std::vector<MShaderTextureParam*>& vNewParams, const MEShaderParamType& eType)
+void MMaterial::RecompileShaderTextureParam(std::vector<MShaderTextureParam>& vParams, std::vector<MResourceKeeper>& vResHolders, std::vector<MShaderTextureParam*>& vNewParams, const MEShaderParamType& eType)
 {
 	for (unsigned int i = 0; i < vParams.size();)
 	{
@@ -416,9 +399,8 @@ void MMaterial::RecompileShaderTextureParam(std::vector<MShaderTextureParam>& vP
 
 		if (0 == param.eType)
 		{
-			delete vResHolders[i];
-			vResHolders[i] = nullptr;
-
+			vResHolders[i].SetResource(nullptr);
+		
 			vParams.erase(vParams.begin() + i);
 			vResHolders.erase(vResHolders.begin() + i);
 		}
@@ -444,7 +426,7 @@ void MMaterial::RecompileShaderTextureParam(std::vector<MShaderTextureParam>& vP
 			param = *vNewParams[j];
 			param.eShaderType = eType;
 			vParams.push_back(param);
-			vResHolders.push_back(nullptr);
+			vResHolders.push_back(MResourceKeeper());
 		}
 	}
 
@@ -454,10 +436,17 @@ void MMaterial::CleanTextureParams()
 {
 	m_vTextureParams.clear();
 
-	for (MResourceHolder* pHolder : m_vTextureResHolder)
+	for (MResourceKeeper& keeper : m_vTextureResKeeper)
 	{
-		if (pHolder)
-			delete pHolder;
+		keeper.SetResource(nullptr);
 	}
-	m_vTextureResHolder.clear();
+	m_vTextureResKeeper.clear();
+}
+
+void MMaterial::CleanShaderParams()
+{
+	for (MShaderParam& param : m_vShaderParams)
+		m_pEngine->GetDevice()->DestroyShaderParamBuffer(&param);
+
+	m_vShaderParams.clear();
 }

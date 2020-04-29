@@ -13,6 +13,7 @@
 #include "MString.h"
 #include "MTypedClass.h"
 
+#include <vector>
 #include <map>
 
 #define M_OBJECT(CLASSNAME) \
@@ -91,14 +92,10 @@ public:
 
 	void RemoveObject(const MObjectID& unID)
 	{
-		std::map<MObjectID, MObject*>::iterator iter = m_tObjects.find(unID);
-		if (iter != m_tObjects.end())
-		{
-			iter->second->OnDelete();
-			delete iter->second;
-			m_tObjects.erase(iter);
-		}
+		m_vRemoveObjects.push_back(unID);
 	}
+
+	void CleanRemoveObject();
 
 private:
 	MIDPool<MObjectID>* m_pObjectDB;
@@ -106,6 +103,8 @@ private:
 	std::map<MObjectID, MObject*> m_tObjects;
 
 	MEngine* m_pEngine;
+
+	std::vector<MObjectID> m_vRemoveObjects;
 };
 
 #endif

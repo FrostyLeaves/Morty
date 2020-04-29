@@ -35,17 +35,17 @@
 MainEditor::MainEditor()
 	: MWindowsRenderView()
 	, m_pScene(nullptr)
-	, m_pNodeTreeView(new NodeTreeView())
-	, m_pPropertyView(new PropertyView())
-	, m_pMaterialView(new MaterialView())
-	, m_pResourceView(new ResourceView())
+	, m_pNodeTreeView(nullptr)
+	, m_pPropertyView(nullptr)
+	, m_pMaterialView(nullptr)
+	, m_pResourceView(nullptr)
 	, m_unTriangleCount(0)
 	, m_bShowMessage(true)
 	, m_bShowNodeTree(true)
 	, m_bShowProperty(true)
-	, m_bShowRenderView(true)
+	, m_bShowRenderView(false)
 	, m_bShowMaterial(false)
-	, m_bShowResource(false)
+	, m_bShowResource(true)
 	, m_pRenderViewport(nullptr)
 	, m_pTextureRenderTarget(nullptr)
 {
@@ -108,6 +108,12 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 		}
 	};
 
+
+	m_pNodeTreeView = new NodeTreeView();
+	m_pPropertyView = new PropertyView();
+	m_pMaterialView = new MaterialView();
+	m_pResourceView = new ResourceView();
+
 	m_vChildView.push_back(m_pNodeTreeView);
 	m_vChildView.push_back(m_pPropertyView);
 	m_vChildView.push_back(m_pMaterialView);
@@ -120,8 +126,12 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 void MainEditor::Release()
 {
 	for (IBaseView* pChild : m_vChildView)
+	{
 		pChild->Release();
+		delete pChild;
+	}
 
+	m_vChildView.clear();
 
 	// Cleanup
 	ImGui_ImplDX11_Shutdown();

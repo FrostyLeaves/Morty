@@ -23,6 +23,10 @@ public:
 
 	MShader* GetShaderTemplate() { return m_pShaderTemplate; }
 
+public:
+
+	virtual void OnDelete() override;
+
 protected:
 
 	virtual bool Load(const MString& strResourcePath) override;

@@ -22,6 +22,8 @@ public:
 
 public:
 
+	unsigned int GetRefNumber() { return m_unReferenceNumber; }
+
 	void AddRef() { ++m_unReferenceNumber; }
 
 	void SubRef()

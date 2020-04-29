@@ -12,15 +12,16 @@ MModelMeshStruct::MModelMeshStruct()
 	, m_pResource(nullptr)
 	, m_pMeshDetailMap(nullptr)
 {
+	
+}
+
+MModelMeshStruct::~MModelMeshStruct()
+{
 	if (m_pMeshDetailMap)
 	{
 		delete m_pMeshDetailMap;
 		m_pMeshDetailMap = nullptr;
 	}
-}
-
-MModelMeshStruct::~MModelMeshStruct()
-{
 }
 
 MIMesh* MModelMeshStruct::GetLevelMesh(const unsigned int unLevel)

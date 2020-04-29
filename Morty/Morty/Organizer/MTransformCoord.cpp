@@ -26,7 +26,7 @@ const MColor MTransformCoord3D::m_vColor[3] = { MColor(240.0f / 255.0f, 48.0f / 
 
 MTransformCoord3D::MTransformCoord3D()
 	: MITransformCoord()
-	, m_pTargetNode(nullptr)
+	, m_unSelectedID(M_INVALID_OBJECT_ID)
 	, m_eCoordHoverType(MECoordHoverType::None)
 	, m_eCoordMoveType(MECoordHoverType::None)
 	, m_pCoordRenderCache(new MMesh<MPainterVertex>(true))
@@ -46,10 +46,10 @@ MTransformCoord3D::~MTransformCoord3D()
 
 void MTransformCoord3D::SetTarget3DNode(MNode* pNode)
 {
-	if (m_pTargetNode == dynamic_cast<M3DNode*>(pNode))
-		return;
-
-	m_pTargetNode = dynamic_cast<M3DNode*>(pNode);
+	if (pNode)
+		m_unSelectedID = pNode->GetObjectID();
+	else
+		m_unSelectedID = M_INVALID_OBJECT_ID;
 }
 
 bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
@@ -58,8 +58,13 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 	if (nullptr == pMouseEvent)
 		return false;
 
-	if (nullptr == m_pTargetNode)
+	if (M_INVALID_OBJECT_ID == m_unSelectedID)
 		return false;
+
+	M3DNode* pTargetNode = m_pEngine->GetObjectManager()->FindObject(m_unSelectedID)->DynamicCast<M3DNode>();
+	if (nullptr == pTargetNode)
+		return false;
+
 
 	bool vVaild[3];
 	int vOrder[3];
@@ -80,7 +85,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 			m_eCoordMoveType = m_eCoordHoverType;
 
 			
-			m_v3TransformOrigin = m_pTargetNode->GetWorldTransform() * Vector3(0, 0, 0);
+			m_v3TransformOrigin = pTargetNode->GetWorldTransform() * Vector3(0, 0, 0);
 			const Vector3& v3Origin = m_v3TransformOrigin;
 
 			switch (m_eCoordMoveType)
@@ -140,7 +145,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 		Vector2 addi = pMouseEvent->GetMouseAddition();
 		addi.y = -addi.y;
 
-		Vector3 v3Origin = m_pTargetNode->GetWorldTransform() * Vector3(0, 0, 0);
+		Vector3 v3Origin = pTargetNode->GetWorldTransform() * Vector3(0, 0, 0);
 
 //		m_pTargetNode->GetWorldTransform()
 
@@ -156,7 +161,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 			Vector3 addiPosition(0, 0, 0);
 
 			addiPosition.m[i] = MMath::Projection(Vector3(addi, 0.0f), m_v3NormalizedDirection);
-			m_pTargetNode->SetWorldPosition(m_pTargetNode->GetWorldPosition() + addiPosition);
+			pTargetNode->SetWorldPosition(pTargetNode->GetWorldPosition() + addiPosition);
 
 			break;
 		}
@@ -191,7 +196,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 					if (n & (unsigned int)m_eCoordMoveType)
 					{
 						float fLength = MMath::Projection(v3Dir, m_vDirection[i]);
-						m_pTargetNode->SetWorldPosition(m_pTargetNode->GetWorldPosition() + m_vDirection[i] * fLength);
+						pTargetNode->SetWorldPosition(pTargetNode->GetWorldPosition() + m_vDirection[i] * fLength);
 					}
 				}
 
@@ -242,7 +247,10 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 
 void MTransformCoord3D::Render(MIRenderer* pRenderer, MViewport* pViewport)
 {
-	if (nullptr == m_pTargetNode)
+	if (M_INVALID_OBJECT_ID == m_unSelectedID)
+		return;
+	M3DNode* pTargetNode = m_pEngine->GetObjectManager()->FindObject(m_unSelectedID)->DynamicCast<M3DNode>();
+	if (nullptr == pTargetNode)
 		return;
 
 	MMaterialResource* pMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW2D);
@@ -298,7 +306,13 @@ void MTransformCoord3D::Render(MIRenderer* pRenderer, MViewport* pViewport)
 
 void MTransformCoord3D::GetTranslationShapes(MPainter2DLine* lines, class MPainter2DRect* rects, bool* vValid, int* vOrder, MViewport* pViewport)
 {
-	Vector3 v3Origin = m_pTargetNode->GetParentWorldTransform() * m_pTargetNode->GetPosition();
+	if (M_INVALID_OBJECT_ID == m_unSelectedID)
+		return;
+	M3DNode* pTargetNode = m_pEngine->GetObjectManager()->FindObject(m_unSelectedID)->DynamicCast<M3DNode>();
+	if (nullptr == pTargetNode)
+		return;
+
+	Vector3 v3Origin = pTargetNode->GetParentWorldTransform() * pTargetNode->GetPosition();
 	Vector3 v3EndPoint[3] = {
 		v3Origin + m_vDirection[0] * 10,
 		v3Origin + m_vDirection[1] * 10,

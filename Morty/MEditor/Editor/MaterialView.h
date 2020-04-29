@@ -17,7 +17,6 @@ public:
 	MaterialView();
 	virtual ~MaterialView();
 
-
 public:
 	void SetMaterial(MMaterial* pMaterial);
 
@@ -33,7 +32,7 @@ public:
 protected:
 
 private:
-	MResourceHolder* m_pResource;
+	MResourceKeeper m_Resource;
 	MMaterial* m_pMaterial;
 	PropertyBase m_propertyBase;
 

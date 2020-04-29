@@ -30,9 +30,11 @@ protected:
 	void RenderNode(MNode* pNode);
 
 private:
-	MNode* m_pRootNode;
+	MObjectID m_unRootNodeID;
 
 	MObjectID m_unSelectedObjectID;
+
+	MEngine* m_pEngine;
 };
 
 

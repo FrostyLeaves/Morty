@@ -88,6 +88,13 @@ MIMesh* MStaticMeshInstance::GetMesh()
 	return m_pMesh->GetMesh();
 }
 
+void MStaticMeshInstance::OnDelete()
+{
+	SetMaterial(nullptr);
+
+	Super::OnDelete();
+}
+
 void MStaticMeshInstance::WorldTransformDirty()
 {
 	MIMeshInstance::WorldTransformDirty();

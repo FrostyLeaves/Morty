@@ -17,8 +17,9 @@
 
 class MResourceLoader;
 class MResourceManager;
-class MResourceHolder;
+class MResourceKeeper;
 class MEngine;
+class MObject;
 
 class MORTY_CLASS MResource : public MRefCounter
 {
@@ -49,7 +50,7 @@ public:
 public:
 
 	virtual void OnCreated() {}
-	virtual void OnRelease() {}
+	virtual void OnDelete() {}
 
 	virtual void Decode(MString& strCode) {}
 	virtual void Encode(MString& strCode) {}
@@ -69,28 +70,32 @@ protected:
     
     friend class MResourceManager;
 	friend class MResourceLoader;
-	friend class MResourceHolder;
+	friend class MResourceKeeper;
 
 	MString m_strResourcePath;
     MResourceID m_unResourceID;
 	unsigned int m_unResourceType;
 	MEngine* m_pEngine;
 
-	std::vector<MResourceHolder*> m_vHolder;
+	std::vector<MResourceKeeper*> m_vHolder;
 
 };
 
-class MORTY_CLASS MResourceHolder
+class MORTY_CLASS MResourceKeeper
 {
 public:
 	
 	typedef std::function<bool(const unsigned int& eReloadType)> MResChangedFunction;
-public :
-	MResourceHolder(MResource* pResource);
-	MResourceHolder(const MResourceHolder& cHolder);
-	virtual ~MResourceHolder();
+public:
+	MResourceKeeper();
+	MResourceKeeper(MResource* pResource);
+	MResourceKeeper(const MResourceKeeper& cHolder);
+	virtual ~MResourceKeeper();
 
+	void SetResource(MResource* pResource);
 	MResource* GetResource(){ return m_pResource; }
+
+	const MResourceKeeper& operator = (const MResourceKeeper& keeper);
 
 template <class T>
 	T* GetResource() { return dynamic_cast<T*>(m_pResource); }

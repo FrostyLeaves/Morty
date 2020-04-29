@@ -29,7 +29,7 @@ void ResourceView::Render()
 	};
 
 
-	ImGui::Columns(3);
+	ImGui::Columns(4);
 
 	MResourceManager* pResManager = m_pEngine->GetResourceManager();
 
@@ -42,15 +42,11 @@ void ResourceView::Render()
 		auto iter = resources.begin();
 		for (int i = 0; i < clipper.DisplayStart; ++i)
 		{
-			if (iter == resources.end())
-				break;
 			++iter;
 		}
 
 		for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
 		{
-			if (iter == resources.end())
-				break;
 			MResource* pResource = iter->second;
 			ImGui::Text("%lu", pResource->GetResourceID());
 			ImGui::NextColumn();
@@ -58,6 +54,9 @@ void ResourceView::Render()
 			ImGui::NextColumn();
 			ImGui::Text(pResource->GetResourcePath().c_str());
 			ImGui::NextColumn();
+			ImGui::Text("%u", pResource->GetRefNumber());
+			ImGui::NextColumn();
+
 			++iter;
 		}
 	}

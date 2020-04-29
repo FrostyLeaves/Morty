@@ -134,6 +134,9 @@ void MEngine::Release()
 	delete m_pObjectManager;
 	delete m_pResourceManager;
 
+
+	ReleaseDefaultResource();
+
 	if (m_pDevice)
 	{
 		m_pDevice->Release();
@@ -149,6 +152,8 @@ void MEngine::Tick(float fDelta)
 	{
 		m_pScene->Tick(fDelta);
 	}
+
+	m_pObjectManager->CleanRemoveObject();
 }
 
 void MEngine::SetMaxFPS(const int& nFPS)
@@ -255,7 +260,11 @@ bool MEngine::InitializeDefaultResource()
 
 void MEngine::ReleaseDefaultResource()
 {
-
+	for (MShaderParam* param : MShaderBuffer::s_vShaderParams)
+	{
+		if(param)
+			GetDevice()->DestroyShaderParamBuffer(param);
+	}
 }
 
 bool MEngine::MainLoop()

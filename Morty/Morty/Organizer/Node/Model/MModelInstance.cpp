@@ -14,7 +14,7 @@ MTypeIdentifierImplement(MModelInstance, M3DNode)
 MModelInstance::MModelInstance()
 	: M3DNode()
 	, m_pBoundsAABB(nullptr)
-	, m_pModelResource(nullptr)
+	, m_ModelResource(nullptr)
 	, m_pSkeleton(nullptr)
 	, m_pCurrentAnimationController(nullptr)
 	, m_bDrawBoundingBox(false)
@@ -37,11 +37,7 @@ MModelInstance::~MModelInstance()
 		m_pCurrentAnimationController = nullptr;
 	}
 
-	if (m_pModelResource)
-	{
-		delete m_pModelResource;
-		m_pModelResource = nullptr;
-	}
+	m_ModelResource.SetResource(nullptr);
 
 	if (m_pBoundsAABB)
 	{
@@ -55,15 +51,9 @@ bool MModelInstance::Load(MResource* pResource)
 	if (MModelResource* pModelRes = dynamic_cast<MModelResource*>(pResource))
 	{
 		auto UseResourceFunction = [this](const unsigned int& eReloadType) {
-			if (MModelResource* pModelResource = static_cast<MModelResource*>(m_pModelResource->GetResource()))
+			if (MModelResource* pModelResource = static_cast<MModelResource*>(m_ModelResource.GetResource()))
 			{
-				SetRemoveAnimation();
-				if (m_pSkeleton)
-				{
-					delete m_pSkeleton;
-					m_pSkeleton = nullptr;
-				}
-				RemoveAllNodeImpl(MENodeChildType::EFixed);
+				ClearSkeletonAndMesh();
 
 				if (!pModelResource->GetSkeleton()->GetAllBones().empty())
 				{
@@ -101,13 +91,8 @@ bool MModelInstance::Load(MResource* pResource)
 			return true;
 		};
 
-		MResourceHolder* pNewHolder = new MResourceHolder(pModelRes);
-		pNewHolder->SetResChangedCallback(UseResourceFunction);
-
-		if (m_pModelResource)
-			delete m_pModelResource;
-
-		m_pModelResource = pNewHolder;
+		m_ModelResource.SetResource(pModelRes);
+		m_ModelResource.SetResChangedCallback(UseResourceFunction);
 
 		UseResourceFunction(MResource::EResReloadType::EDefault);
 
@@ -117,11 +102,27 @@ bool MModelInstance::Load(MResource* pResource)
 	return false;
 }
 
+void MModelInstance::ClearSkeletonAndMesh()
+{
+	SetRemoveAnimation();
+	if (m_pSkeleton)
+	{
+		delete m_pSkeleton;
+		m_pSkeleton = nullptr;
+	}
+	RemoveAllNodeImpl(MENodeChildType::EFixed, true);
+}
+
+void MModelInstance::Unload()
+{
+	ClearSkeletonAndMesh();
+
+	m_ModelResource.SetResource(nullptr);
+}
+
 MModelResource* MModelInstance::GetResource()
 {
-	if (nullptr == m_pModelResource)
-		return nullptr;
-	return static_cast<MModelResource*>(m_pModelResource->GetResource());
+	return static_cast<MModelResource*>(m_ModelResource.GetResource());
 }
 
 MBoundsAABB* MModelInstance::GetBoundsAABB()
@@ -148,7 +149,7 @@ bool MModelInstance::SetPlayAnimation(const MString& strAnimationName)
 {
 	SetRemoveAnimation();
 
-	MSkeletalAnimation* pAnimation = (*static_cast<MModelResource*>(m_pModelResource->GetResource())->GetAnimations()).at(strAnimationName);
+	MSkeletalAnimation* pAnimation = (*static_cast<MModelResource*>(m_ModelResource.GetResource())->GetAnimations()).at(strAnimationName);
 
 	MSkeletalAnimController* pController = new MSkeletalAnimController();
 	if (pController->Initialize(m_pSkeleton, pAnimation))
@@ -178,6 +179,14 @@ void MModelInstance::Tick(const float& fDelta)
 	{
 		m_pCurrentAnimationController->Update(fDelta, GetVisibleRecursively());
 	}
+}
+
+void MModelInstance::OnDelete()
+{
+	Unload();
+
+
+	Super::OnDelete();
 }
 
 void MModelInstance::SetVisible(const bool& bVisible)

@@ -116,7 +116,7 @@ protected:
 	void UpdateVisibleRecursively();
 
 protected:
-
+	MENodeChildType m_eChildType;
 	MNode* m_pParent;
 	MScene* m_pScene;
 	std::vector<MNode*> m_vChildren;

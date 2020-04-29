@@ -263,7 +263,7 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 
 	{
 		std::vector<MShaderTextureParam>& vParams = *pMaterial->GetTextureParams();
-		std::vector<MResourceHolder*>& vResources = *pMaterial->GetTextures();
+		std::vector<MResourceKeeper>& vResources = *pMaterial->GetTextures();
 		for (unsigned int i = 0; i < vParams.size(); ++i)
 		{
 			MShaderTextureParam& param = vParams[i];
@@ -273,7 +273,7 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 			MString strDlgName = "file_dlg_tex_" + MStringHelper::ToString(i);
 
 			ShowValueBegin(param.strName);
-			MResource* pResource = vResources[i] ? vResources[i]->GetResource() : nullptr;
+			MResource* pResource = vResources[i].GetResource();
 
 			EditMResource(strDlgName, pResource, MResourceManager::MEResourceType::Texture, [&param, &pMaterial](const MString& strNewFilePath) {
 

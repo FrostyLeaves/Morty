@@ -37,6 +37,11 @@ public:
 	const std::map<MString, MSkeletalAnimation*>* GetAnimations() { return &m_tSkeletalAnimation; }
 	const std::vector<MString>* GetAnimationsName() { return &m_vSkeletalAnimation; }
 
+
+public:
+
+	virtual void OnDelete() override;
+
 protected:
 
 	virtual bool Load(const MString& strResourcePath) override;

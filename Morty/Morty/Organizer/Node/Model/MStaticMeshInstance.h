@@ -38,6 +38,10 @@ public:
 	virtual MIMesh* GetMesh() override;
 	virtual MIMesh* GetMesh(const unsigned int& unDetailLevel) override;
 
+public:
+
+	virtual void OnDelete() override;
+
 protected:
 	virtual void WorldTransformDirty() override;
 	virtual void LocalTransformDirty() override;
@@ -51,6 +55,5 @@ private:
 	bool m_bBoundsAABBDirty;
 	bool m_bBoundsSphereDirty;
 };
-
 
 #endif

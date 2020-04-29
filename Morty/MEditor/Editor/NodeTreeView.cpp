@@ -1,12 +1,15 @@
 #include "NodeTreeView.h"
 
+#include "MEngine.h"
+#include "MObject.h"
+
 #include "imgui.h"
 
 #include "MNode.h"
 
 NodeTreeView::NodeTreeView()
 	: IBaseView()
-	, m_pRootNode(nullptr)
+	, m_unRootNodeID(M_INVALID_OBJECT_ID)
 	, m_unSelectedObjectID(0)
 {
 
@@ -19,22 +22,25 @@ NodeTreeView::~NodeTreeView()
 
 void NodeTreeView::SetRootNode(MNode* pNode)
 {
-	m_pRootNode = pNode;
+	if (pNode)
+		m_unRootNodeID = pNode->GetObjectID();
+	else
+		m_unRootNodeID = M_INVALID_OBJECT_ID;
 }
 
 void NodeTreeView::Render()
 {
-	if(m_pRootNode)
+	if(MNode* pRootNode = m_pEngine->GetObjectManager()->FindObject(m_unRootNodeID)->DynamicCast<MNode>())
 	{
 		ImGui::Unindent(ImGui::GetTreeNodeToLabelSpacing());
-		RenderNode(m_pRootNode);
+		RenderNode(pRootNode);
 		ImGui::Indent(ImGui::GetTreeNodeToLabelSpacing());
 	}
 }
 
 void NodeTreeView::Initialize(MEngine* pEngine)
 {
-
+	m_pEngine = pEngine;
 }
 
 void NodeTreeView::Release()
@@ -49,12 +55,9 @@ void NodeTreeView::Input(MInputEvent* pEvent)
 
 MObject* NodeTreeView::GetSelectionNode()
 {
-	if (m_pRootNode)
+	if (MObject* pObject = m_pEngine->GetObjectManager()->FindObject(m_unSelectedObjectID))
 	{
-		if (MObject * pObject = m_pRootNode->GetObjectManager()->FindObject(m_unSelectedObjectID))
-		{
-			return pObject;
-		}
+		return pObject;
 	}
 
 	return nullptr;
@@ -65,7 +68,7 @@ void NodeTreeView::RenderNode(MNode* pNode)
 	ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_FramePadding;
 	if (pNode->GetChildren().size() + pNode->GetFixedChildren().size() == 0)
 		node_flags |= ImGuiTreeNodeFlags_Leaf;
-	else if (pNode == m_pRootNode)
+	else if (pNode->GetObjectID() == m_unRootNodeID)
 		node_flags |= ImGuiTreeNodeFlags_DefaultOpen;
 
 	if (m_unSelectedObjectID == pNode->GetObjectID())
@@ -73,6 +76,15 @@ void NodeTreeView::RenderNode(MNode* pNode)
 
 
 	bool bOpened = ImGui::TreeNodeEx(pNode, node_flags, pNode->GetName().c_str());
+	if (ImGui::BeginPopupContextItem())
+	{
+		if (ImGui::Selectable("Delete"))
+		{
+			pNode->DeleteLater();
+		}
+		ImGui::EndPopup();
+	}
+
 	if (ImGui::IsItemClicked())
 	{
 		m_unSelectedObjectID = pNode->GetObjectID();

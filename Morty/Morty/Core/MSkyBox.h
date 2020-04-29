@@ -12,10 +12,9 @@
 #include "MObject.h"
 
 #include "MMesh.h"
+#include "MResource.h"
 
-class MResource;
 class MModelMeshStruct;
-class MResourceHolder;
 class MTextureCubeResource;
 class MTextureCube;
 class MIMeshInstance;
@@ -42,7 +41,7 @@ private:
 	MIMeshInstance* m_pMeshInstance;
 
 	MTextureCube* m_pTextureCube;
-	MResourceHolder* m_pTextureCubeResource;
+	MResourceKeeper m_TextureCubeResource;
 
 };
 

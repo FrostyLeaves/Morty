@@ -37,6 +37,10 @@ public:
 
 	virtual void SetSkeletonInstance(MSkeletonInstance* pSkeletonIns) { m_pSkeletonInstance = pSkeletonIns; }
 
+public:
+
+	virtual void OnDelete() override;
+
 protected:
 
 	void UpdateSkeletonBoundsOBB();

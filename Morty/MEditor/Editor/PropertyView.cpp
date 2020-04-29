@@ -46,9 +46,10 @@ void PropertyView::SetEditorObject(MObject* pObject)
 	if (m_pEditorObject == pObject)
 		return;
 
-	m_pEditorObject = pObject;
-
-	CreatePropertyList(pObject);
+	if (m_pEditorObject = pObject)
+	{
+		CreatePropertyList(pObject);
+	}
 }
 
 void PropertyView::Render()

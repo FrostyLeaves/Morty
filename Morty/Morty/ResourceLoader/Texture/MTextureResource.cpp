@@ -17,6 +17,12 @@ MTextureResource::~MTextureResource()
 {
 	m_pTexture->DestroyTexture(m_pEngine->GetDevice());
 	delete m_pTexture;
+	m_pTexture = nullptr;
+}
+
+void MTextureResource::OnDelete()
+{
+	MResource::OnDelete();
 }
 
 bool MTextureResource::Load(const MString& strResourcePath)

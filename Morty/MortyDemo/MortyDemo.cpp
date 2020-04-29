@@ -1,7 +1,7 @@
 ﻿// MortyDemo.cpp : 瀹氫箟鎺у埗鍙板簲鐢ㄧ▼搴忕殑鍏ュ彛鐐广€?
 //
 
-/*#include "vld.h"*/
+#include "vld.h"
 
 #include "stdafx.h"
 #include "MEngine.h"
@@ -131,7 +131,7 @@ int main(int argc, char* argv[])
 
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
 	pRootNode->SetName("RootNode");
-
+	
 	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/ground.fbx"));
 
 	for (int i = 0; i < 1; ++i)
@@ -176,7 +176,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	for (unsigned int i = 0; i < 2; ++i)
+	for (unsigned int i = 0; i < 1; ++i)
 	{
 		MModelInstance* pPikachu = engine.GetObjectManager()->CreateObject<MModelInstance>();
 		pPikachu->Load(pPikachuResource);

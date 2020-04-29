@@ -13,7 +13,7 @@
 
 class MTextureCube;
 class MTextureResource;
-class MResourceHolder;
+class MResourceKeeper;
 class MORTY_CLASS MTextureCubeResource : public MResource
 {
 public:
@@ -24,6 +24,10 @@ public:
 
 	MTextureCube* GetTextureCubeTemplate(){ return m_pTextureCube; }
 
+public:
+
+	virtual void OnDelete() override;
+
 protected:
 
 	virtual bool Load(const MString& strResourcePath) override;
@@ -32,7 +36,7 @@ private:
 
 	MTextureCube* m_pTextureCube;
 
-	MResourceHolder* m_vTextures[6];
+	MResourceKeeper m_vTextures[6];
 };
 
 

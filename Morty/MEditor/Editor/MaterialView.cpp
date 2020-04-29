@@ -18,7 +18,7 @@
 
 MaterialView::MaterialView()
 	: IBaseView()
-	, m_pResource(nullptr)
+	, m_Resource()
 	, m_pMaterial(nullptr)
 {
 
@@ -26,11 +26,7 @@ MaterialView::MaterialView()
 
 MaterialView::~MaterialView()
 {
-	if (m_pResource)
-	{
-		SetMaterial(nullptr);
-	}
-	m_pMaterial = nullptr;
+	SetMaterial(nullptr);
 }
 
 void MaterialView::SetMaterial(MMaterial* pMaterial)
@@ -38,23 +34,13 @@ void MaterialView::SetMaterial(MMaterial* pMaterial)
 	if (m_pMaterial == pMaterial)
 		return;
 
-	if (m_pResource)
-	{
-		if (m_pResource->GetResource() == pMaterial)
-			return;
-		else
-		{
-			delete m_pResource;
-			m_pResource = nullptr;
-			m_pMaterial = nullptr;
-		}
-	}
+	if (m_Resource.GetResource() == pMaterial)
+		return;
 
-	m_pResource = new MResourceHolder(pMaterial);
+	m_Resource.SetResource(pMaterial);
 	m_pMaterial = pMaterial;
 
 	m_pMeshInstance->SetMaterial(pMaterial);
-
 }
 
 void MaterialView::UpdateMaterialTexture()

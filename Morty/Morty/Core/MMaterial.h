@@ -29,7 +29,7 @@ public:
 
 	std::vector<MShaderParam>* GetShaderParams() { return &m_vShaderParams; }
 	std::vector<MShaderTextureParam>* GetTextureParams() { return &m_vTextureParams; }
-	std::vector< MResourceHolder*>* GetTextures() { return &m_vTextureResHolder; }
+	std::vector< MResourceKeeper>* GetTextures() { return &m_vTextureResKeeper; }
 
 	void SetTexutreParam(const MString& strName, MResource* pTexResource);
 	void SetTexutreParam(const unsigned int& unIndex, MResource* pTexResource);
@@ -43,11 +43,13 @@ public:
 	bool LoadVertexShader(MResource* pResource);
 	bool LoadPixelShader(MResource* pResource);
 
-	MResource* GetVertexShaderResource() { return m_pVertexResource ? m_pVertexResource->GetResource() : nullptr; }
-	MResource* GetPixelShaderResource() { return m_pPixelResource ? m_pPixelResource->GetResource() : nullptr; }
+	MResource* GetVertexShaderResource() { return m_VertexResource.GetResource(); }
+	MResource* GetPixelShaderResource() { return m_VertexResource.GetResource(); }
 
 	
 public:
+
+	virtual void OnDelete() override;
 
 	void Unload();
 
@@ -65,9 +67,10 @@ protected:
 	virtual bool Load(const MString& strResourcePath) override;
 
 	void RecompileShaderParams(std::vector<MShaderParam>& vParams, std::vector<MShaderParam*>& vNewParams, const MEShaderParamType& eType);
-	void RecompileShaderTextureParam(std::vector<MShaderTextureParam>& vParams, std::vector<MResourceHolder*>& vResHolders, std::vector<MShaderTextureParam*>& vNewParams, const MEShaderParamType& eType);
+	void RecompileShaderTextureParam(std::vector<MShaderTextureParam>& vParams, std::vector<MResourceKeeper>& vResHolders, std::vector<MShaderTextureParam*>& vNewParams, const MEShaderParamType& eType);
 
 	void CleanTextureParams();
+	void CleanShaderParams();
 
 private:
 
@@ -76,11 +79,11 @@ private:
 
 	//Texture
 	std::vector<MShaderTextureParam> m_vTextureParams;
-	std::vector<MResourceHolder*> m_vTextureResHolder;
+	std::vector<MResourceKeeper> m_vTextureResKeeper;
 
 	//Material
-	MResourceHolder* m_pVertexResource;
-	MResourceHolder* m_pPixelResource;
+	MResourceKeeper m_VertexResource;
+	MResourceKeeper m_PixelResource;
 
 	MShader* m_pVertexShader;
 	MShader* m_pPixelShader;

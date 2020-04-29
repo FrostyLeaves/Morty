@@ -14,6 +14,13 @@ MShaderResource::~MShaderResource()
 {
 	m_pShaderTemplate->CleanShader(m_pEngine->GetDevice());
 	delete m_pShaderTemplate;
+	m_pShaderTemplate = nullptr;
+
+}
+
+void MShaderResource::OnDelete()
+{
+	MResource::OnDelete();
 }
 
 bool MShaderResource::Load(const MString& strResourcePath)

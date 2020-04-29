@@ -227,6 +227,9 @@ MSCENE_ON_NODE_ENTER(InputNode)
 
 void MScene::OnNodeExit(MNode* pNode)
 {
+	if (m_pRootNode == pNode)
+		m_pRootNode = nullptr;
+
 	if (MCamera* pCamera = pNode->DynamicCast<MCamera>())
 	{
 		for (MViewport* pViewport : m_vViewports)
@@ -278,8 +281,15 @@ MScene::~MScene()
 
 void MScene::SetRootNode(MNode* pRootNode)
 {
-	m_pRootNode = pRootNode;
-	if (pRootNode)
+	if (m_pRootNode == pRootNode)
+		return;
+
+	if (m_pRootNode)
+	{
+		m_pRootNode->SetAttachedScene(nullptr);
+	}
+;
+	if (m_pRootNode = pRootNode)
 	{
 		pRootNode->SetAttachedScene(this);
 	}

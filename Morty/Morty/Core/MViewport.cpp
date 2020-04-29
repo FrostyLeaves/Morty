@@ -350,7 +350,7 @@ void MViewport::SetScene(MScene* pScene)
 
 void MViewport::SetCamera(MCamera* pCamera)
 {
-	if (m_pScene && pCamera->GetScene() == m_pScene)
+	if (m_pScene && pCamera && pCamera->GetScene() == m_pScene)
 	{
 		SetValidCamera(pCamera);
 	}

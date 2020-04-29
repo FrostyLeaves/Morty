@@ -7,6 +7,7 @@ MTypeIdentifierImplement(MNode, MObject)
 
 MNode::MNode()
 	: MObject()
+	, m_eChildType(MENodeChildType::ENormal)
 	, m_pParent(nullptr)
 	, m_pScene(nullptr)
 	, m_bVisibleRecursively(true)
@@ -87,6 +88,7 @@ bool MNode::AddNodeImpl(MNode* pNode, const MENodeChildType& etype)
 
 	children.push_back(pNode);
 	pNode->m_pParent = this;
+	pNode->m_eChildType = etype;
 	
 	//Update Attached Scene.
 	pNode->SetAttachedScene(m_pScene);
@@ -182,7 +184,11 @@ void MNode::RemoveAllNodeImpl(const MENodeChildType& etype, const float& bDelete
 	if (bDelete)
 	{
 		for (MNode* pChild : children)
+		{
+			pChild->m_pParent = nullptr;
+			pChild->SetAttachedScene(nullptr);
 			pChild->DeleteLater();
+		}
 	}
 	else
 	{
@@ -227,8 +233,10 @@ void MNode::Tick(const float& fDelta)
 void MNode::OnDelete()
 {
 	// remove from parent [and scene]
-	if (m_pParent)
-		m_pParent->RemoveNode(this);
+	if (m_pParent && !m_pParent->m_bDeleteMark)
+		m_pParent->RemoveNodeImpl(this, m_eChildType);
+	else if (m_pScene) // as root node
+		this->SetAttachedScene(nullptr);
 
 	RemoveAllNodeImpl(MENodeChildType::ENormal, true);
 	RemoveAllNodeImpl(MENodeChildType::EFixed, true);

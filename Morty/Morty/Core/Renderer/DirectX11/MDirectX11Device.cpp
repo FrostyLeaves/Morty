@@ -940,6 +940,11 @@ void MDirectX11Device::CleanShader(MShaderBuffer** ppShaderBuffer)
 	if (nullptr == *ppShaderBuffer)
 		return;
 
+// 	for (MShaderParam* param : (*ppShaderBuffer)->m_vShaderParamsTemplate)
+// 	{
+// 		DestroyShaderParamBuffer(param);
+// 	}
+
 	if (MVertexShaderBuffer* pBuffer = dynamic_cast<MVertexShaderBuffer*>(*ppShaderBuffer))
 	{
 		if (pBuffer->m_pVertexShader)

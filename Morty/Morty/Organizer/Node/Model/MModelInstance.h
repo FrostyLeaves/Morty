@@ -12,7 +12,6 @@
 #include "M3DNode.h"
 #include "MResource.h"
 
-class MResource;
 class MBoundsOBB;
 class MBoundsAABB;
 class MModelResource;
@@ -30,6 +29,8 @@ public:
 public:
 
 	bool Load(MResource* pResource);
+	void ClearSkeletonAndMesh();
+	void Unload();
 
 	MModelResource* GetResource();
 	MSkeletonInstance* GetSkeleton() { return m_pSkeleton; }
@@ -52,13 +53,13 @@ public:
 public:
 
 	virtual void Tick(const float& fDelta) override;
-
+	virtual void OnDelete() override;
 
 
 private:
 	MBoundsAABB* m_pBoundsAABB;
 	MSkeletonInstance* m_pSkeleton;
-	MResourceHolder* m_pModelResource;
+	MResourceKeeper m_ModelResource;
 
 	MSkeletalAnimController* m_pCurrentAnimationController;
 

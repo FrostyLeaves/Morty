@@ -20,6 +20,10 @@ public:
     virtual ~MTextureResource();
 
 	MTexture* GetTextureTemplate(){ return m_pTexture; }
+	
+public:
+
+	virtual void OnDelete() override;
 
 protected:
 

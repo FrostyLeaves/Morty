@@ -37,7 +37,6 @@ MObjectManager::MObjectManager()
 	: m_pObjectDB(new MIDPool<MObjectID>())
 	, m_pEngine(nullptr)
 {
-
 }
 
 MObjectManager::~MObjectManager()
@@ -55,4 +54,22 @@ MObjectManager::~MObjectManager()
 void MObjectManager::SetOwnerEngine(MEngine* pEngine)
 {
 	m_pEngine = pEngine;
+}
+
+void MObjectManager::CleanRemoveObject()
+{
+	while (!m_vRemoveObjects.empty())
+	{
+		const MObjectID& unID = m_vRemoveObjects.back();
+		m_vRemoveObjects.pop_back();
+
+		std::map<MObjectID, MObject*>::iterator iter = m_tObjects.find(unID);
+		if (iter != m_tObjects.end())
+		{
+			iter->second->OnDelete();
+			delete iter->second;
+			m_tObjects.erase(iter);
+		}
+	}
+
 }

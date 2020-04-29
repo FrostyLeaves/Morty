@@ -13,7 +13,7 @@ MTextureCubeResource::MTextureCubeResource()
 {
 	m_unResourceType = MResourceManager::MEResourceType::Texture;
 	m_pTextureCube = new MTextureCube();
-	memset(m_vTextures, 0, sizeof(MResourceHolder*) * 6);
+	memset(m_vTextures, 0, sizeof(MResourceKeeper*) * 6);
 }
 
 MTextureCubeResource::~MTextureCubeResource()
@@ -21,31 +21,28 @@ MTextureCubeResource::~MTextureCubeResource()
 	m_pTextureCube->DestroyTexture(m_pEngine->GetDevice());
 	delete m_pTextureCube;
 	m_pTextureCube = nullptr;
+}
 
+void MTextureCubeResource::OnDelete()
+{
 	for (int i = 0; i < 6; ++i)
 	{
-		if (m_vTextures[i])
-		{
-			delete m_vTextures[i];
-			m_vTextures[i] = nullptr;
-		}
+		m_vTextures[i].SetResource(nullptr);
 	}
+
+	MResource::OnDelete();
 }
 
 void MTextureCubeResource::SetTextures(MTextureResource* vTexs[6])
 {
 	for (int i = 0; i < 6; ++i)
 	{
-		if (m_vTextures[i])
-		{
-			delete m_vTextures[i];
-			m_vTextures[i] = nullptr;
-		}
+		m_vTextures[i].SetResource(nullptr);
 
 		if (vTexs[i])
 		{
-			m_vTextures[i] = new MResourceHolder(vTexs[i]);
-			m_vTextures[i]->SetResChangedCallback([this](const unsigned int& eReloadType){
+			m_vTextures[i].SetResource(vTexs[i]);
+			m_vTextures[i].SetResChangedCallback([this](const unsigned int& eReloadType){
 				//TODO update TexturesCube.
 				return true;
 			});

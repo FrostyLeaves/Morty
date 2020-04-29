@@ -43,7 +43,7 @@ public:
 
 public:
 
-	virtual void SetRootNode(MNode* pRootNode);
+	virtual void SetRootNode(MNode* pNode);
 	MNode* GetRootNode() { return m_pRootNode; }
 
 public:

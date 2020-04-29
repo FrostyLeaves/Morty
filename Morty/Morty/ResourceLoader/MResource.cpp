@@ -13,7 +13,7 @@ MResource::MResource()
 
 MResource::~MResource()
 {
-	for (MResourceHolder* pHolder : m_vHolder)
+	for (MResourceKeeper* pHolder : m_vHolder)
 	{
 		pHolder->m_pResource = nullptr;
 	}
@@ -70,54 +70,68 @@ MResourceManager* MResource::GetResourceManager()
 
 void MResource::OnReferenceZero()
 {
-	if (!m_strResourcePath.empty())
-	{
-		GetResourceManager()->UnloadResource(this);
-	}
+	GetResourceManager()->UnloadResource(this);
 } 
 
 void MResource::OnReload(const unsigned int& eReloadType)
 {
-	for (MResourceHolder* pHolder : m_vHolder)
+	for (MResourceKeeper* pHolder : m_vHolder)
 	{
 		if (pHolder->m_funcReloadCallback)
 			pHolder->m_funcReloadCallback(eReloadType);
 	}
 }
 
-MResourceHolder::MResourceHolder(MResource* pResource)
+MResourceKeeper::MResourceKeeper()
 	: m_funcReloadCallback(nullptr)
-	, m_pResource(pResource)
+	, m_pResource(nullptr)
 {
-	if (m_pResource && m_pResource->GetResourceManager()->GetReloadEnabled())
-	{
-		m_pResource->AddRef();
-		m_pResource->m_vHolder.push_back(this);
-	}
+
 }
 
-MResourceHolder::MResourceHolder(const MResourceHolder& cHolder)
+MResourceKeeper::MResourceKeeper(MResource* pResource)
+	: m_funcReloadCallback(nullptr)
+	, m_pResource(nullptr)
+{
+	SetResource(pResource);
+}
+
+MResourceKeeper::MResourceKeeper(const MResourceKeeper& cHolder)
 	: m_funcReloadCallback(cHolder.m_funcReloadCallback)
-	, m_pResource(cHolder.m_pResource)
+	, m_pResource(nullptr)
 {
-	if (m_pResource && m_pResource->GetResourceManager()->GetReloadEnabled())
-	{
-		m_pResource->AddRef();
-		m_pResource->m_vHolder.push_back(this);
-	}
+	SetResource(cHolder.m_pResource);
 }
 
-MResourceHolder::~MResourceHolder()
+MResourceKeeper::~MResourceKeeper()
 {
-	if (m_pResource && m_pResource->GetResourceManager()->GetReloadEnabled())
+	SetResource(nullptr);
+}
+
+void MResourceKeeper::SetResource(MResource* pResource)
+{
+	if (m_pResource)
 	{
-		std::vector<MResourceHolder*>::iterator iter = std::find(m_pResource->m_vHolder.begin(), m_pResource->m_vHolder.end(), this);
+		std::vector<MResourceKeeper*>::iterator iter = std::find(m_pResource->m_vHolder.begin(), m_pResource->m_vHolder.end(), this);
 		if (m_pResource->m_vHolder.end() != iter)
 		{
 			m_pResource->m_vHolder.erase(iter);
 		}
 
 		m_pResource->SubRef();
-
 	}
+	
+	if (m_pResource = pResource)
+	{
+		m_pResource->AddRef();
+		m_pResource->m_vHolder.push_back(this);
+	}
+}
+
+const MResourceKeeper& MResourceKeeper::operator=(const MResourceKeeper& keeper)
+{
+	m_funcReloadCallback = keeper.m_funcReloadCallback;
+	SetResource(keeper.m_pResource);
+
+	return keeper;
 }

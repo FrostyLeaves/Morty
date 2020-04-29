@@ -33,7 +33,7 @@ MResourceManager::MResourceManager()
 MResourceManager::~MResourceManager()
 {
 	DELETE_CLEAR_MAP(m_tResourceLoader);
-	DELETE_CLEAR_MAP(m_tPathResources);
+	DELETE_CLEAR_MAP(m_tResources);
 }
 
 MResourceManager::MEResourceType MResourceManager::GetResourceType(const MString& strResourcePath)
@@ -77,7 +77,7 @@ void MResourceManager::UnloadResource(MResource* pResource)
 
 	m_tResources.erase(pResource->GetResourceID());
 
-	pResource->OnRelease();
+	pResource->OnDelete();
 	delete pResource;
 }
 

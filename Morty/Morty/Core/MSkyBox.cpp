@@ -20,7 +20,7 @@ MSkyBox::MSkyBox()
 	, m_pMeshInstance(nullptr)
 	, m_pBoxMesh(nullptr)
 	, m_pTextureCube(nullptr)
-	, m_pTextureCubeResource(nullptr)
+	, m_TextureCubeResource(nullptr)
 {
 
 }
@@ -40,23 +40,16 @@ MSkyBox::~MSkyBox()
 		m_pBoxMesh = nullptr;
 	}
 
-	if (m_pTextureCubeResource)
-	{
-		delete m_pTextureCubeResource;
-		m_pTextureCubeResource = nullptr;
-	}
+	m_TextureCubeResource.SetResource(nullptr);
 }
 
 bool MSkyBox::Load(MResource* pResource)
 {
 	if (MTextureCubeResource* pCubeRes = dynamic_cast<MTextureCubeResource*>(pResource))
 	{
-		if (m_pTextureCubeResource)
-			delete m_pTextureCubeResource;
-
-		m_pTextureCubeResource = new MResourceHolder(pResource);
-		m_pTextureCubeResource->SetResChangedCallback([this](const unsigned int& eReloadType){
-			m_pTextureCube = static_cast<MTextureCubeResource*>(m_pTextureCubeResource->GetResource())->GetTextureCubeTemplate();
+		m_TextureCubeResource.SetResource(pResource);
+		m_TextureCubeResource.SetResChangedCallback([this](const unsigned int& eReloadType){
+			m_pTextureCube = static_cast<MTextureCubeResource*>(m_TextureCubeResource.GetResource())->GetTextureCubeTemplate();
 			return true;
 		});
 
