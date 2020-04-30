@@ -76,6 +76,23 @@ MTextureBuffer::MTextureBuffer()
 
 }
 
+// void* MTextureBuffer::GetResourceView()
+// {
+// #if RENDER_GRAPHICS == MORTY_DIRECTX_11
+// 	return m_pShaderResourceView;
+// #elif RENDER_GRAPHICS == MORTY_OPENGLES
+// 	return nullptr;
+// #else
+// 	return nullptr;
+// #endif
+// }
+
+
+MTextureBuffer::~MTextureBuffer()
+{
+
+}
+
 MRenderTextureBuffer::MRenderTextureBuffer()
 {
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
@@ -96,11 +113,6 @@ MDepthTextureBuffer::MDepthTextureBuffer()
 #elif RENDER_GRAPHICS == MORTY_OPENGLES
 
 #endif
-
-}
-
-MTextureBuffer::~MTextureBuffer()
-{
 
 }
 

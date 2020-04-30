@@ -2,6 +2,7 @@
 #define _MATERIAL_VIEW_H_
 
 #include "IBaseView.h"
+#include "SceneTexture.h"
 
 #include "MResource.h"
 #include "Property/PropertyBase.h"
@@ -36,18 +37,11 @@ private:
 	MMaterial* m_pMaterial;
 	PropertyBase m_propertyBase;
 
-	MScene* m_pScene;
 	MEngine* m_pEngine;
 	MIMeshInstance* m_pMeshInstance;
 
-	class MTextureRenderTarget* m_pTextureRenderTarget;
-	class MViewport* m_pRenderViewport;
+
+	SceneTexture m_SceneTexture;
 };
-
-
-
-
-
-
 
 #endif

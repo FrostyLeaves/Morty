@@ -183,6 +183,7 @@
     <ClInclude Include="..\..\..\Editor\Property\PropertyMPointLight.h" />
     <ClInclude Include="..\..\..\Editor\Property\PropertyMSpotLight.h" />
     <ClInclude Include="..\..\..\Editor\ResourceView.h" />
+    <ClInclude Include="..\..\..\Editor\SceneTexture.h" />
     <ClInclude Include="..\..\..\ImGUI\imconfig.h" />
     <ClInclude Include="..\..\..\ImGUI\imgui.h" />
     <ClInclude Include="..\..\..\ImGUI\ImGuiFileDialog\ImGuiFileDialog.h" />
@@ -205,6 +206,7 @@
     <ClCompile Include="..\..\..\Editor\Property\PropertyBase.cpp" />
     <ClCompile Include="..\..\..\Editor\Property\PropertyMModelInstance.cpp" />
     <ClCompile Include="..\..\..\Editor\ResourceView.cpp" />
+    <ClCompile Include="..\..\..\Editor\SceneTexture.cpp" />
     <ClCompile Include="..\..\..\ImGUI\imgui.cpp" />
     <ClCompile Include="..\..\..\ImGUI\ImGuiFileDialog\ImGuiFileDialog.cpp" />
     <ClCompile Include="..\..\..\ImGUI\imgui_demo.cpp" />

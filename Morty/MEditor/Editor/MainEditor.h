@@ -1,6 +1,7 @@
 ﻿#ifndef _MAIN_EDITOR_H_
 #define _MAIN_EDITOR_H_
 
+#include "SceneTexture.h"
 #include "MWindowsRenderView.h"
 
 class MNode;
@@ -20,7 +21,7 @@ public:
 
 
 	void SetEditorNode(MNode* pNode);
-	MScene* GetScene() { return m_pScene; }
+	MScene* GetScene() { return m_SceneTexture.GetScene(); }
 
 	virtual bool Initialize(MEngine* pEngine, const char* svWindowName) override;
 	virtual void Release() override;
@@ -50,16 +51,12 @@ public:
 
 protected:
 
-	MScene* m_pScene;
 	NodeTreeView* m_pNodeTreeView;
 	PropertyView* m_pPropertyView;
 	MaterialView* m_pMaterialView;
 	ResourceView* m_pResourceView;
 
 	std::vector<IBaseView*> m_vChildView;
-
-	class MTextureRenderTarget* m_pTextureRenderTarget;
-	class MViewport* m_pRenderViewport;
 
 	Vector2 m_v2RenderViewPos;
 	Vector2 m_v2RenderViewSize;
@@ -72,6 +69,9 @@ protected:
 	bool m_bShowRenderView;
 	bool m_bShowMaterial;
 	bool m_bShowResource;
+
+
+	SceneTexture m_SceneTexture;
 };
 
 

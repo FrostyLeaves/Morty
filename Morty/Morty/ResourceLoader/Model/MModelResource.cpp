@@ -383,8 +383,8 @@ void MModelResource::ProcessAnimation(const aiScene* pScene)
 		aiAnimation* pAnimation = pScene->mAnimations[i];
 		MSkeletalAnimation* pMAnimation = new MSkeletalAnimation();
 		pMAnimation->m_pSkeletonTemplate = m_pSkeleton;
-		pMAnimation->m_vSkeletalAnimNodes.resize(pAnimation->mNumChannels);// init by nullptr
-
+//		pMAnimation->m_vSkeletalAnimNodes.resize(pAnimation->mNumChannels);// init by nullptr
+		pMAnimation->m_vSkeletalAnimNodes.resize(m_pSkeleton->GetAllBones().size());
 		//Record
 		m_vSkeletalAnimation.push_back(pAnimation->mName.C_Str());
 		m_tSkeletalAnimation[pAnimation->mName.C_Str()] = pMAnimation;

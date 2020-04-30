@@ -89,6 +89,8 @@ MIMesh* MSkinnedMeshInstance::GetMesh()
 void MSkinnedMeshInstance::OnDelete()
 {
 	SetMaterial(nullptr);
+
+	Super::OnDelete();
 }
 
 void MSkinnedMeshInstance::UpdateSkeletonBoundsOBB()

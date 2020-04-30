@@ -23,7 +23,10 @@ void MSkeletalAnimation::Update(const float& fTime, MSkeletonInstance* pSkeleton
 	for (unsigned int i = 0; i < bones.size(); ++i)
 	{
 		MBone* pBone = bones[i];
-		MSkeletalAnimNode* pAnimNode = m_vSkeletalAnimNodes[i];
+// 		if(pBone->unIndex >= m_vSkeletalAnimNodes.size())
+// 			continue;
+
+		MSkeletalAnimNode* pAnimNode = m_vSkeletalAnimNodes[pBone->unIndex];
 		Matrix4 matLocalTrans;
 		MTransform trans;
 		if (pAnimNode && FindTransform(fTime, pAnimNode, trans))

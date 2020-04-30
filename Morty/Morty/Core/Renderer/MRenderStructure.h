@@ -53,6 +53,16 @@ public:
 	MTextureBuffer();
 	virtual ~MTextureBuffer();
 
+	void* GetResourceView() {
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	return m_pShaderResourceView;
+#elif RENDER_GRAPHICS == MORTY_OPENGLES
+	return nullptr;
+#else
+	return nullptr;
+#endif
+	}
+
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	struct ID3D11Texture2D* m_pTextureBuffer;
 	class ID3D11ShaderResourceView* m_pShaderResourceView;

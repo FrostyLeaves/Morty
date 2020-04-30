@@ -26,7 +26,6 @@ MaterialView::MaterialView()
 
 MaterialView::~MaterialView()
 {
-	SetMaterial(nullptr);
 }
 
 void MaterialView::SetMaterial(MMaterial* pMaterial)
@@ -45,30 +44,19 @@ void MaterialView::SetMaterial(MMaterial* pMaterial)
 
 void MaterialView::UpdateMaterialTexture()
 {
-	m_pEngine->GetRenderer()->Render(m_pTextureRenderTarget);
+	m_SceneTexture.UpdateTexture();
 }
 
 void MaterialView::Render()
 {
 	if (m_pMaterial)
 	{
-		if (m_pTextureRenderTarget)
+		if (ImTextureID texid = m_SceneTexture.GetTexture())
 		{
-			if (m_pTextureRenderTarget)
-			{
-				if (m_pTextureRenderTarget->m_pBackTexture)
-				{
-					if (MTextureBuffer* pBuffer = m_pTextureRenderTarget->m_pBackTexture->GetBuffer())
-					{
-						float fImageSize = ImGui::GetContentRegionAvail().x;
-						ImGui::SameLine(fImageSize * 0.25f);
-						ImGui::Image(pBuffer->m_pShaderResourceView, ImVec2(fImageSize * 0.5f, fImageSize * 0.5f));
-					}
-				}
-			}
+			float fImageSize = ImGui::GetContentRegionAvail().x;
+			ImGui::SameLine(fImageSize * 0.25f);
+			ImGui::Image(texid, ImVec2(fImageSize * 0.5f, fImageSize * 0.5f));
 		}
-
-
 	}
 	if (m_pMaterial)
 	{
@@ -88,22 +76,15 @@ void MaterialView::Render()
 
 void MaterialView::Initialize(MEngine* pEngine)
 {
+	m_SceneTexture.Initialize(pEngine);
+
 	m_pEngine = pEngine;
 
-	//Setup Render
-	m_pScene = m_pEngine->GetObjectManager()->CreateObject<MScene>();
+	MScene* pScene = m_SceneTexture.GetScene();
+	MNode* pRootNode = pScene->GetRootNode();
 
-	m_pRenderViewport = pEngine->GetObjectManager()->CreateObject<MViewport>();
-	m_pRenderViewport->SetScene(m_pScene);
-	m_pRenderViewport->SetSize(Vector2(256, 256));
-	m_pTextureRenderTarget = MTextureRenderTarget::CreateForTexture(m_pEngine->GetDevice(), MTextureRenderTarget::ERenderBack | MTextureRenderTarget::ERenderDepth, 256, 256);
-	m_pTextureRenderTarget->m_backgroundColor = MColor(0, 0, 0, 1);
-	m_pTextureRenderTarget->m_funcRenderFunction = [this](MIRenderer* pRenderer)
-	{
-		m_pRenderViewport->Render(pRenderer);
-	};
-
-	M3DNode* pRootNode = m_pEngine->GetObjectManager()->CreateObject<M3DNode>();
+	MCamera* pCamera = m_SceneTexture.GetViewport()->GetCamera();
+	pCamera->SetPosition(Vector3(0, 0, -20));
 
 	MResource* pResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere.fbx");
 
@@ -120,26 +101,16 @@ void MaterialView::Initialize(MEngine* pEngine)
 	Quaternion quat;
 	quat.SetEulerAngle(Vector3(-45, 45, 0));
 	pDirLight->SetRotation(Quaternion(quat));
-
-	m_pScene->SetRootNode(pRootNode);
-
-	MCamera* pCamera = m_pRenderViewport->GetCamera();
-	pCamera->SetPosition(Vector3(0, 0, -20));
 }
 
 void MaterialView::Release()
 {
-	//TODO Release RenderTarget and Viewport
-	MObjectManager* pObjManager = m_pEngine->GetObjectManager();
+	SetMaterial(nullptr);
 
-	m_pScene->DeleteLater();
-	m_pScene = nullptr;
-
-	m_pRenderViewport->DeleteLater();
-	m_pRenderViewport = nullptr;
+	m_SceneTexture.Release();
 }
 
 void MaterialView::Input(MInputEvent* pEvent)
 {
-	m_pRenderViewport->Input(pEvent);
+	m_SceneTexture.GetViewport()->Input(pEvent);
 }
