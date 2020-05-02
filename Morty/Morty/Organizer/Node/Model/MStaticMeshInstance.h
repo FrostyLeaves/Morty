@@ -11,6 +11,7 @@
 #include "MGlobal.h"
 #include "MVertex.h"
 #include "MMesh.h"
+#include "MResource.h"
 
 #include "MIModelMeshInstance.h"
 
@@ -27,7 +28,7 @@ public:
     virtual ~MStaticMeshInstance();
 
 	virtual void SetMaterial(MMaterial* pMaterial) override;
-	virtual MMaterial* GetMaterial() override { return m_pMaterial; }
+	virtual MMaterial* GetMaterial() override;
 
 	virtual MBoundsAABB* GetBoundsAABB() override;
 	virtual MBoundsSphere* GetBoundsSphere() override;
@@ -49,7 +50,7 @@ protected:
 private:
 
 	MModelMeshStruct* m_pMesh;
-	MMaterial* m_pMaterial;
+	MResourceKeeper m_Material;
 	MBoundsAABB m_BoundsAABB;
 	MBoundsSphere m_BoundsSphere;
 	bool m_bBoundsAABBDirty;

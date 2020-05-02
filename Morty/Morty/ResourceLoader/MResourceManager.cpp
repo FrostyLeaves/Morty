@@ -26,7 +26,7 @@ MResourceManager::MResourceManager()
 {
 	REGISTER_RESOURCE_TYPE(MEResourceType::Model, MModelResource, "fbx", "obj", "dae", "blend" );
 	REGISTER_RESOURCE_TYPE(MEResourceType::Shader, MShaderResource, SUFFIX_VERTEX_SHADER, SUFFIX_PIXEL_SHADER );
-	REGISTER_RESOURCE_TYPE(MEResourceType::Material, MMaterialResource, "mtl");
+	REGISTER_RESOURCE_TYPE(MEResourceType::Material, MMaterialResource, SUFFIX_MATERIAL);
 	REGISTER_RESOURCE_TYPE(MEResourceType::Texture, MTextureResource, "png", "bmp", "tga", "jpg");
 }
 

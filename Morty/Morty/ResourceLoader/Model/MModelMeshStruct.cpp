@@ -8,7 +8,7 @@ MModelMeshStruct::MModelMeshStruct()
 	, m_pMesh(nullptr)
 	, m_matRotationMatrix(Matrix4::IdentityMatrix)
 	, m_pBoundsOBB(nullptr)
-	, m_pMaterial(nullptr)
+	, m_MaterialKeeper()
 	, m_pResource(nullptr)
 	, m_pMeshDetailMap(nullptr)
 {

@@ -13,9 +13,9 @@ MResource::MResource()
 
 MResource::~MResource()
 {
-	for (MResourceKeeper* pHolder : m_vHolder)
+	for (MResourceKeeper* pKeeper : m_vKeeper)
 	{
-		pHolder->m_pResource = nullptr;
+		pKeeper->m_pResource = nullptr;
 	}
 }
 
@@ -68,6 +68,30 @@ MResourceManager* MResource::GetResourceManager()
 	return m_pEngine->GetResourceManager();
 }
 
+void MResource::ReplaceFrom(MResource* pResource)
+{
+	if (pResource->GetType() != GetType())
+		return;
+
+	std::vector<MResourceKeeper*> keeps = m_vKeeper;
+	m_vKeeper.clear();
+
+	for (MResourceKeeper* pKeeper : keeps)
+	{
+		//pKeeper->SetResource(pResource);
+
+		pKeeper->m_pResource = pResource;
+		pResource->AddRef();
+		pResource->m_vKeeper.push_back(pKeeper);
+
+		if (pKeeper->m_funcReloadCallback)
+		{
+			pKeeper->m_funcReloadCallback(EResReloadType::EDefault);
+		}
+		this->SubRef();
+	}
+}
+
 void MResource::OnReferenceZero()
 {
 	GetResourceManager()->UnloadResource(this);
@@ -75,10 +99,10 @@ void MResource::OnReferenceZero()
 
 void MResource::OnReload(const unsigned int& eReloadType)
 {
-	for (MResourceKeeper* pHolder : m_vHolder)
+	for (MResourceKeeper* pKeeper : m_vKeeper)
 	{
-		if (pHolder->m_funcReloadCallback)
-			pHolder->m_funcReloadCallback(eReloadType);
+		if (pKeeper->m_funcReloadCallback)
+			pKeeper->m_funcReloadCallback(eReloadType);
 	}
 }
 
@@ -112,10 +136,10 @@ void MResourceKeeper::SetResource(MResource* pResource)
 {
 	if (m_pResource)
 	{
-		std::vector<MResourceKeeper*>::iterator iter = std::find(m_pResource->m_vHolder.begin(), m_pResource->m_vHolder.end(), this);
-		if (m_pResource->m_vHolder.end() != iter)
+		std::vector<MResourceKeeper*>::iterator iter = std::find(m_pResource->m_vKeeper.begin(), m_pResource->m_vKeeper.end(), this);
+		if (m_pResource->m_vKeeper.end() != iter)
 		{
-			m_pResource->m_vHolder.erase(iter);
+			m_pResource->m_vKeeper.erase(iter);
 		}
 
 		m_pResource->SubRef();
@@ -124,7 +148,7 @@ void MResourceKeeper::SetResource(MResource* pResource)
 	if (m_pResource = pResource)
 	{
 		m_pResource->AddRef();
-		m_pResource->m_vHolder.push_back(this);
+		m_pResource->m_vKeeper.push_back(this);
 	}
 }
 

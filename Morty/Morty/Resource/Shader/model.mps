@@ -98,7 +98,13 @@ float4 PS(VS_OUT input) : SV_Target
 
 
     float3 f3Color = U_mat.f3Ambient * f3AmbiColor.xyz * 0.1f;
-    float fAlpha = U_mat.fAlphaFactor * f3AmbiColor.w;
+    float fAlpha = U_mat.fAlphaFactor;// * f3AmbiColor.w;
+
+    if (U_mat.bUseTransparentTex > 0.5f)
+    {
+        float4 transparentColor = U_mat.texTransparent.Sample(U_defaultSampler, input.uv);
+        //fAlpha *= transparentColor.a;
+    }
 
     if(U_bDirectionLightEnabled > 0.5f)
     {

@@ -4,6 +4,7 @@ const MObjectID M_INVALID_OBJECT_ID = -1;
 
 const char* SUFFIX_VERTEX_SHADER = "mvs";
 const char* SUFFIX_PIXEL_SHADER = "mps";
+const char* SUFFIX_MATERIAL = "matl";
 
 const char* DEFAULT_MATERIAL_STATIC = "DefMatStatic";
 const char* DEFAULT_MATERIAL_SKINNED = "DefMatSkinned";

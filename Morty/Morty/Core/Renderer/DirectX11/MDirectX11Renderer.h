@@ -66,12 +66,10 @@ protected:
 	ID3D11SamplerState* m_pDepthTextureSamplerState;
 //	ID3D11SamplerState* m_pAnisotropicFilterSamplerState;
 
-	ID3D11DepthStencilState* m_pDepthStencilState;
+	ID3D11DepthStencilState* m_pDepthStencilState_Default;
+	ID3D11DepthStencilState* m_pDepthStencilState_Transparent;
 
-	ID3D11RasterizerState* m_pRasterizerState_Wireframe_CullNone;
-	ID3D11RasterizerState* m_pRasterizerState_Solid_CullNone;
-	ID3D11RasterizerState* m_pRasterizerState_Solid_CullBack;
-	ID3D11RasterizerState* m_pRasterizerState_Solid_CullFront;
+	std::vector<ID3D11RasterizerState*> m_vRasterizerState;
 
 	ID3D11BlendState* m_pBlendState_Default;
 	ID3D11BlendState* m_pBlendState_Transparent;

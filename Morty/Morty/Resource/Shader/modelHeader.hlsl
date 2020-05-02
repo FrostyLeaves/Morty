@@ -35,12 +35,14 @@ struct Material
     Texture2D texDiffuse;
     Texture2D texNormal;
     Texture2D texSpecular;
+    Texture2D texTransparent;
     float3 f3Ambient;
     float fAlphaFactor;
     float3 f3Diffuse;
+    bool bUseNormalTex;
     float3 f3Specular;
     float fShininess;
-    bool bUseNormalTex;
+    bool bUseTransparentTex;
 };
 
 //PS

@@ -33,6 +33,7 @@ extern const MObjectID M_INVALID_OBJECT_ID;
 //Asset
 extern const char* SUFFIX_VERTEX_SHADER;
 extern const char* SUFFIX_PIXEL_SHADER;
+extern const char* SUFFIX_MATERIAL;
 //Default Asset
 extern const char* DEFAULT_MATERIAL_STATIC;
 extern const char* DEFAULT_MATERIAL_SKINNED;

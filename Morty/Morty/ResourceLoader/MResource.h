@@ -58,6 +58,9 @@ public:
 	virtual bool Save() { return SaveTo(m_strResourcePath); }
 	virtual bool SaveTo(const MString& strResourcePath) { return true; }
 
+	virtual void CopyFrom(const MResource* pResource) {}
+
+	void ReplaceFrom(MResource* pResource);
 protected:
 
 	virtual bool Load(const MString& strResourcePath) = 0;
@@ -77,7 +80,7 @@ protected:
 	unsigned int m_unResourceType;
 	MEngine* m_pEngine;
 
-	std::vector<MResourceKeeper*> m_vHolder;
+	std::vector<MResourceKeeper*> m_vKeeper;
 
 };
 

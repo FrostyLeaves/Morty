@@ -13,6 +13,7 @@
 #include "Model/MModelResource.h"
 #include "Model/MModelInstance.h"
 #include "MResourceManager.h"
+#include "Material/MMaterialResource.h"
 
 #include "imgui.h"
 
@@ -60,11 +61,35 @@ void MaterialView::Render()
 	}
 	if (m_pMaterial)
 	{
+
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
 		ImGui::Columns(2);
 		ImGui::Separator();
 
 		unsigned int unID = 0;
+
+		static auto MaterialLoadFunc = [&](const MString& strNewFilePath) {
+
+			if (m_pMaterial->GetResourcePath() == strNewFilePath)
+			{
+				m_pEngine->GetResourceManager()->Reload(strNewFilePath);
+			}
+			else if (MMaterialResource* pNewResource = dynamic_cast<MMaterialResource*>(m_pEngine->GetResourceManager()->LoadResource(strNewFilePath)))
+			{
+				m_pMaterial->ReplaceFrom(pNewResource);
+				m_pMaterial = pNewResource;
+			}
+		};
+
+		m_propertyBase.ShowValueBegin("Load");
+		m_propertyBase.EditMResource("material_file_dlg", m_pMaterial, MResourceManager::MEResourceType::Material, MaterialLoadFunc);
+		m_propertyBase.ShowValueEnd();
+
+		m_propertyBase.ShowValueBegin("Save");
+		m_propertyBase.EditSaveMResource("material_save_dlg", m_pMaterial);
+		m_propertyBase.ShowValueEnd();
+
+
 
 		m_propertyBase.EditMMaterial(m_pMaterial);
 

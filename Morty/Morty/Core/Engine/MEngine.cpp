@@ -226,16 +226,15 @@ bool MEngine::InitializeDefaultResource()
 	MResource* pEmptyVSResource = GetResourceManager()->LoadResource("./Shader/empty.mvs");
 	MResource* pAnimVSResource = GetResourceManager()->LoadResource("./Shader/empty_anim.mvs");
 	MResource* pEmptyPSResource = GetResourceManager()->LoadResource("./Shader/empty.mps");
-	unsigned int unShadowRenderState = MIRenderer::ESolid | MIRenderer::ECullFront;
 	MMaterialResource* pShadowMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW);
 	pShadowMaterialRes->LoadVertexShader(pEmptyVSResource);
 	pShadowMaterialRes->LoadPixelShader(pEmptyPSResource);
-	pShadowMaterialRes->SetRenderState(unShadowRenderState);
+	pShadowMaterialRes->SetRasterizerType(MERasterizerType::ECullFront);
 
 	MMaterialResource* pShadowWithAnimMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_ANIM);
 	pShadowWithAnimMaterialRes->LoadVertexShader(pAnimVSResource);
 	pShadowWithAnimMaterialRes->LoadPixelShader(pEmptyPSResource);
-	pShadowWithAnimMaterialRes->SetRenderState(unShadowRenderState);
+	pShadowWithAnimMaterialRes->SetRasterizerType(MERasterizerType::ECullFront);
 
 
 

@@ -11,6 +11,7 @@
 #include "MGlobal.h"
 #include "MString.h"
 #include "MMesh.h"
+#include "MResource.h"
 
 #include <map>
 
@@ -39,7 +40,7 @@ public:
 	const MBoundsOBB* GetMeshesDefaultOBB() { return m_pBoundsOBB; }
 	const MBoundsSphere* GetMeshesDefaultSphere() { return m_pBoundsSphere; }
 	const Matrix4* GetMeshesRotationMatrix() { return &m_matRotationMatrix; }
-	MMaterial* GetDefaultMaterial() { return m_pMaterial; }
+	MResource* GetDefaultMaterial() { return m_MaterialKeeper.GetResource(); }
 	MModelResource* GetModelResource() { return m_pResource; }
 
 protected:
@@ -54,7 +55,7 @@ private:
 	Matrix4 m_matRotationMatrix;
 	MBoundsOBB* m_pBoundsOBB;
 	MBoundsSphere* m_pBoundsSphere;
-	MMaterial* m_pMaterial;
+	MResourceKeeper m_MaterialKeeper;
 	MModelResource* m_pResource;
 
 	MMultiLevelMesh* m_pMeshDetailMap;

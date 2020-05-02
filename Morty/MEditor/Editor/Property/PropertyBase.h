@@ -42,7 +42,8 @@ public:
 	bool EditMColor(MColor& value);
 
 	bool EditMMaterial(MMaterial* pMaterial);
-	void EditMResource(const MString& strDlgID, MResource* pResource, const MResourceManager::MEResourceType& eResourceType, std::function<void(const MString& strNewFilePath)> funcLoadResource);
+	void EditMResource(const MString& strDlgID, MResource* pResource, const MResourceManager::MEResourceType& eResourceType, const std::function<void(const MString& strNewFilePath)>& funcLoadResource);
+	void EditSaveMResource(const MString& stringID, MResource* pResource);
 
 	void ShowTexture(MTextureBuffer* pTextureBuffer);
 

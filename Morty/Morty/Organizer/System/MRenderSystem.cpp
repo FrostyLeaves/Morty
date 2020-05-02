@@ -26,6 +26,8 @@
 #include "Model/MModelResource.h"
 #include "Model/MModelMeshStruct.h"
 
+#include <algorithm>
+
 
 MTypeIdentifierImplement(MRenderSystem, MISystem)
 
@@ -453,8 +455,7 @@ void MRenderSystem::DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pMeshI
 	MMaterialResource* pStaticMeshMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_STATIC);
 
 	MMaterial& mat = *pStaticMeshMaterialRes;
-	unsigned int unType = MIRenderer::EWireframe | MIRenderer::ECullNone;
-	mat.SetRenderState(unType);
+	mat.SetRasterizerType(MERasterizerType::ECullNone);
 
 	MShaderParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
 	if (nullptr == pMeshMatrixParam)
@@ -559,7 +560,7 @@ void MRenderSystem::RecordMeshInstance(MRenderInfo& info, MIMeshInstance* pMeshI
 
 	if (MIMeshInstance::EAutoOrder == eOrderType)
 	{
-		if (pMeshInstance->GetMaterial()->GetBlendState() == MIRenderer::ETransparent)
+		if (pMeshInstance->GetMaterial()->GetMaterialType() == MEMaterialType::ETransparent)
 			eOrderType = MIMeshInstance::EOrderByTransparent;
 		else
 			eOrderType = MIMeshInstance::EOrderByMaterial;
@@ -570,7 +571,7 @@ void MRenderSystem::RecordMeshInstance(MRenderInfo& info, MIMeshInstance* pMeshI
 
 		MMaterial* pMaterial = pMeshInstance->GetMaterial();
 
-		if (pMaterial->GetBlendState() == MIRenderer::ENormal)
+		if (pMaterial->GetMaterialType() == MEMaterialType::EDefault)
 		{
 
 			std::vector<MMaterialRenderGroup>& vGroup = info.vMaterialRenderGroup;

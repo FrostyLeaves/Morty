@@ -14,7 +14,6 @@ MTypeIdentifierImplement(MStaticMeshInstance, MIModelMeshInstance)
 MStaticMeshInstance::MStaticMeshInstance()
 	: MIModelMeshInstance()
 	, m_pMesh(nullptr)
-	, m_pMaterial(nullptr)
 	, m_bBoundsAABBDirty(true)
 	, m_bBoundsSphereDirty(true)
 {
@@ -27,13 +26,14 @@ MStaticMeshInstance::~MStaticMeshInstance()
 
 void MStaticMeshInstance::SetMaterial(MMaterial* pMaterial)
 {
-	if (m_pMaterial)
-		m_pMaterial->SubRef();
-
-	if(m_pMaterial = pMaterial)
-		m_pMaterial->AddRef();
+	m_Material.SetResource(pMaterial);
 }
  
+MMaterial* MStaticMeshInstance::GetMaterial()
+{
+	return dynamic_cast<MMaterial*>(m_Material.GetResource());
+}
+
 MBoundsAABB* MStaticMeshInstance::GetBoundsAABB()
 {
 	if (m_bBoundsAABBDirty)
@@ -73,7 +73,9 @@ MBoundsSphere* MStaticMeshInstance::GetBoundsSphere()
 void MStaticMeshInstance::SetMeshData(MModelMeshStruct* pMeshData)
 {
 	m_pMesh = pMeshData;
-	SetMaterial(pMeshData->GetDefaultMaterial());
+
+	MMaterial* pMaterial = dynamic_cast<MMaterial*>(pMeshData->GetDefaultMaterial());
+	SetMaterial(pMaterial);
 }
 
 MIMesh* MStaticMeshInstance::GetMesh(const unsigned int& unDetailLevel)

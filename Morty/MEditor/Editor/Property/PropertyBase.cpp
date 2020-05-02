@@ -1,5 +1,6 @@
 #include "PropertyBase.h"
 
+#include "MIRenderer.h"
 #include "MMaterial.h"
 #include "MResource.h"
 #include "Texture/MTextureResource.h"
@@ -11,6 +12,22 @@
 
 unsigned int PropertyBase::m_unItemIDPool = 0;
 std::map<MString, unsigned int> PropertyBase::m_tItemID = std::map<MString, unsigned int>();
+
+static const char* vTitleList[] = {
+		"Default",
+		"Model",
+		"Shader",
+		"Material",
+		"Texture",
+};
+
+static const char* vFilterList[] = {
+	"\0\0",
+	".fbx\0.obj\0.dae\0\0",
+	".mvs\0.mps\0\0",
+	".matl\0\0",
+	".png\0.jpg\0.tga\0\0",
+};
 
 bool PropertyBase::ShowNodeBegin(const MString& strNodeName)
 {
@@ -239,12 +256,21 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 	}
 
 	{
-
-		ShowValueBegin("Blend");
-		unsigned int unBlendState = pMaterial->GetBlendState() - 1;
-		if (EditEnum({ "Normal", "Transparent" }, unBlendState))
+		ShowValueBegin("Cull");
+		unsigned int nCullType = pMaterial->GetRasterizerType();
+		if (EditEnum({ "Wireframe", "CullNone", "CullBack", "ECullFront" }, nCullType))
 		{
-			pMaterial->SetBlendState(unBlendState + 1);
+			pMaterial->SetRasterizerType(MERasterizerType(nCullType));
+		}
+		ShowValueEnd();
+	}
+
+	{
+		ShowValueBegin("Type");
+		unsigned int nMaterialType = pMaterial->GetMaterialType();
+		if (EditEnum({ "Default", "Transparent" }, nMaterialType))
+		{
+			pMaterial->SetMaterialType((MEMaterialType)nMaterialType);
 		}
 		ShowValueEnd();
 	}
@@ -295,23 +321,8 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 	return bModified;
 }
 
-void PropertyBase::EditMResource(const MString& strDlgID, MResource* pResource, const MResourceManager::MEResourceType& eResourceType, std::function<void(const MString & strNewFilePath)> funcLoadResource)
+void PropertyBase::EditMResource(const MString& strDlgID, MResource* pResource, const MResourceManager::MEResourceType& eResourceType, const std::function<void(const MString & strNewFilePath)>& funcLoadResource)
 {
-	static const char* vTitleList[] = {
-		"Default",
-		"Model",
-		"Shader",
-		"Material",
-		"Texture",
-	};
-
-	static const char* vFilterList[] = {
-		"\0\0",
-		".fbx\0.obj\0.dae\0\0",
-		".mvs\0.mps\0\0",
-		"\0\0",
-		".png\0.jpg\0.tga\0\0",
-	};
 
 	MString strButtonLabel;
 	MString strResourcePathName;
@@ -348,6 +359,45 @@ void PropertyBase::EditMResource(const MString& strDlgID, MResource* pResource, 
 			}
 		}
 		ImGuiFileDialog::Instance()->CloseDialog(strDlgID);
+	}
+}
+
+void PropertyBase::EditSaveMResource(const MString& stringID, MResource* pResource)
+{
+	if (pResource)
+	{
+		MString strResourcePathName = pResource->GetResourcePath();
+		MString strButtonLabel = pResource->GetFileName(strResourcePathName);
+
+		float fWidth = ImGui::GetContentRegionAvailWidth();
+
+		if (ImGui::Button("Save", ImVec2(fWidth * 0.5f, 0)))
+			pResource->Save();
+
+		ImGui::SameLine();
+
+		bool bButtonDown = ImGui::Button("Save To", ImVec2(fWidth * 0.5f, 0));
+		if (ImGui::IsItemHovered() && !strResourcePathName.empty())
+			ImGui::SetTooltip(strResourcePathName.c_str());
+
+		if (bButtonDown)
+		{
+			ImGuiFileDialog::Instance()->OpenDialog(stringID, vTitleList[pResource->GetType()], vFilterList[pResource->GetType()], pResource->GetFolder(strResourcePathName), strButtonLabel, MString(""));
+		}
+
+		if (ImGuiFileDialog::Instance()->FileDialog(stringID))
+		{
+			if (ImGuiFileDialog::Instance()->IsOk == true)
+			{
+				std::string filePathName = ImGuiFileDialog::Instance()->GetFilepathName();
+				pResource->SaveTo(filePathName);
+			}
+			ImGuiFileDialog::Instance()->CloseDialog(stringID);
+		}
+	}
+	else
+	{
+		ImGui::Text("null");
 	}
 }
 

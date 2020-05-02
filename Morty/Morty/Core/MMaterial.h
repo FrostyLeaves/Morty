@@ -13,6 +13,7 @@
 #include "MResource.h"
 #include "MRenderStructure.h"
 #include "MResource.h"
+#include "MIRenderer.h"
 
 #include <vector>
 
@@ -34,11 +35,11 @@ public:
 	void SetTexutreParam(const MString& strName, MResource* pTexResource);
 	void SetTexutreParam(const unsigned int& unIndex, MResource* pTexResource);
 
-	void SetRenderState(const unsigned int& eType) { m_eRenderState = eType; }
-	unsigned int GetRenderState() { return m_eRenderState; }
+	void SetRasterizerType(const MERasterizerType& eType) { m_eRasterizerType = eType; }
+	MERasterizerType GetRasterizerType() const { return m_eRasterizerType; }
 
-	void SetBlendState(const unsigned int& eType) { m_eBlendState = eType; }
-	unsigned int GetBlendState() { return m_eBlendState; }
+	void SetMaterialType(const MEMaterialType& eType) { m_eMaterialType = eType; }
+	MEMaterialType GetMaterialType() const { return m_eMaterialType; }
 
 	bool LoadVertexShader(MResource* pResource);
 	bool LoadPixelShader(MResource* pResource);
@@ -55,7 +56,7 @@ public:
 
 	void CompileShaderParams(const MEShaderParamType& eType);
 
-	const MMaterial& operator= (const MMaterial& mat);
+	virtual void CopyFrom(const MResource* pResource) override;
 
 	virtual void Encode(MString& strCode) override;
 	virtual void Decode(MString& strCode) override;
@@ -88,8 +89,8 @@ private:
 	MShader* m_pVertexShader;
 	MShader* m_pPixelShader;
 
-	unsigned int m_eRenderState;
-	unsigned int m_eBlendState;
+	MERasterizerType m_eRasterizerType;
+	MEMaterialType m_eMaterialType;
 };
 
 #endif

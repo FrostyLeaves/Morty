@@ -64,6 +64,7 @@ public:
 			return dynamic_cast<Resource_TYPE*>(pResource);
 
 		Resource_TYPE* pResource = CreateResource<Resource_TYPE>();
+		pResource->m_strResourcePath = strResourcePath;
 		m_tPathResources[strResourcePath] = pResource;
 
 		return pResource;

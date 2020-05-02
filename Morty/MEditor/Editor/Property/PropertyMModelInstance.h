@@ -22,16 +22,18 @@ public:
 				PROPERTY_VALUE_EDIT(pNode, "DirShadow", bool, GetGenerateDirLightShadow, SetGenerateDirLightShadow);
 
 
-				MModelResource* pResource = pNode->GetResource();
-				ShowValueBegin("Resource");
-				EditMResource("model_file_dlg", pResource, MResourceManager::MEResourceType::Model, [&pNode](const MString& strNewFilePath) {
+				static auto ModelLoadFunc = [&pNode](const MString& strNewFilePath) {
 
 					if (MResource* pNewResource = pNode->GetEngine()->GetResourceManager()->LoadResource(strNewFilePath))
 					{
 						pNode->Load(pNewResource);
 					}
 
-				});
+				};
+
+				MModelResource* pResource = pNode->GetResource();
+				ShowValueBegin("Resource");
+				EditMResource("model_file_dlg", pResource, MResourceManager::MEResourceType::Model, ModelLoadFunc);
 
 				ShowValueEnd();
 

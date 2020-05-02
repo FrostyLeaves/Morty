@@ -55,12 +55,6 @@ MModelResource::~MModelResource()
 		delete pMesh->m_pMesh;
 		delete pMesh->m_pBoundsOBB;
 		delete pMesh->m_pBoundsSphere;
-
-		if (pMesh->m_pMaterial)
-		{
-			pMesh->m_pMaterial->SubRef();
-		}
-
 		delete pMesh;
 	}
 
@@ -71,10 +65,7 @@ void MModelResource::OnDelete()
 {
 	for (MModelMeshStruct* pMesh : m_vMeshes)
 	{
-		if (pMesh->m_pMaterial)
-		{
-			pMesh->m_pMaterial->SubRef();
-		}
+		pMesh->m_MaterialKeeper.SetResource(nullptr);
 	}
 
 	MResource::OnDelete();
@@ -464,14 +455,12 @@ void MModelResource::ProcessMaterial(const aiScene* pScene, std::vector<unsigned
 	{
 		MModelMeshStruct* pMeshData = m_vMeshes[i];
 		MMaterialResource* pMaterial = m_pEngine->GetResourceManager()->CreateResource<MMaterialResource>();
-		pMeshData->m_pMaterial = pMaterial;
+		pMeshData->m_MaterialKeeper.SetResource(pMaterial);
 
 		if (pMeshData->GetMeshVertexType() == MModelMeshStruct::Normal)
-			*pMeshData->m_pMaterial = *pStaticMeshMaterial;
+			pMaterial->CopyFrom(pStaticMeshMaterial);
 		else if(pMeshData->GetMeshVertexType() == MModelMeshStruct::Skeleton)
-			*pMeshData->m_pMaterial = *pSkinnedMeshMaterial;
-
-		pMeshData->m_pMaterial->AddRef();
+			pMaterial->CopyFrom(pSkinnedMeshMaterial);
 
 		unsigned int unMaterialIndex = vMaterialIndices[i];
 

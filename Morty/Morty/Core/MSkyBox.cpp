@@ -68,7 +68,7 @@ void MSkyBox::OnCreated()
 	m_pMeshInstance = pMeshIns;
 
 
-	pMaterial->SetRenderState(MIRenderer::MERasterizerType::ESolid | MIRenderer::MERasterizerType::ECullNone);
+	pMaterial->SetRasterizerType(MERasterizerType::ECullNone);
 
 	m_pBoxMesh = new MMesh<Vector3>();
 

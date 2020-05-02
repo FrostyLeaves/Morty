@@ -10,7 +10,7 @@ MTypeIdentifierImplement(MSkinnedMeshInstance, MIModelMeshInstance)
 MSkinnedMeshInstance::MSkinnedMeshInstance()
 	: MIModelMeshInstance()
 	, m_pMesh(nullptr)
-	, m_pMaterial(nullptr)
+	, m_Material()
 	, m_pSkeletonInstance(nullptr)
 	, m_bBoundsAABBDirty(true)
 	, m_bBoundsSphereDirty(true)
@@ -25,11 +25,12 @@ MSkinnedMeshInstance::~MSkinnedMeshInstance()
 
 void MSkinnedMeshInstance::SetMaterial(MMaterial* pMaterial)
 {
-	if (m_pMaterial)
-		m_pMaterial->SubRef();
+	m_Material.SetResource(pMaterial);
+}
 
-	if(m_pMaterial = pMaterial)
-		m_pMaterial->AddRef();
+MMaterial* MSkinnedMeshInstance::GetMaterial()
+{
+	return dynamic_cast<MMaterial*>(m_Material.GetResource());
 }
 
 MBoundsAABB* MSkinnedMeshInstance::GetBoundsAABB()
@@ -71,7 +72,9 @@ MBoundsSphere* MSkinnedMeshInstance::GetBoundsSphere()
 void MSkinnedMeshInstance::SetMeshData(MModelMeshStruct* pMeshData)
 {
 	m_pMesh = pMeshData;
-	SetMaterial(pMeshData->GetDefaultMaterial());
+	
+	MMaterial* pMaterial = dynamic_cast<MMaterial*>(pMeshData->GetDefaultMaterial());
+	SetMaterial(pMaterial);
 }
 
 MIMesh* MSkinnedMeshInstance::GetMesh(const unsigned int& unDetailLevel)

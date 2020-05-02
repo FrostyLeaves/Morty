@@ -14,6 +14,24 @@
 #include "MVertex.h"
 #include "MRenderStructure.h"
 
+
+enum MERasterizerType
+{
+	EWireframe = 0,
+	ECullNone,
+	ECullBack,
+	ECullFront,
+
+	ERasterizerEnd
+};
+
+enum MEMaterialType
+{
+	EDefault = 0,
+	ETransparent = 1,
+};
+
+
 class MIRenderView;
 class MIShader;
 class MNode;
@@ -37,21 +55,6 @@ public:
 	virtual ~MIRenderer(){};
 
 public:
-
-	enum MERasterizerType
-	{
-		EWireframe = 1,
-		ESolid = 2,
-		ECullBack = 4,
-		ECullNone = 8,
-		ECullFront = 16,
-	};
-
-	enum MEBlendType
-	{
-		ENormal = 1,
-		ETransparent =2,
-	};
 
 	virtual void SetRasterizerType(const unsigned int& eType) { m_eRasterizerType = eType; }
 
@@ -83,7 +86,7 @@ public:
 
 protected:
 	unsigned int m_eRasterizerType;
-	unsigned int m_eBlendType;
+	unsigned int m_eMaterialType;
 };
 
 
