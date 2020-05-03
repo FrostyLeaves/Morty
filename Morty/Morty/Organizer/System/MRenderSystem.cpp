@@ -62,6 +62,7 @@ void MRenderSystem::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* 
 
 	info.pRenderer = pRenderer;
 	info.pViewport = pViewport;
+	info.pCamera = pViewport->GetCamera();
 	info.pScene = pScene;
 
 	GenerateRenderGroup(info);
@@ -269,19 +270,18 @@ void MRenderSystem::DrawMeshInstance(MRenderInfo& info)
 
 	MShaderParam* pAnimationParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_ANIMATION);
 
-	for (MMaterialRenderGroup& group : info.vMaterialRenderGroup)
+	for (MMaterialGroup& group : info.vMaterialRenderGroup)
 	{
-		MMaterial* pMaterial = group.pMaterial;
+		MMaterial* pMaterial = group.m_pMaterial;
 		//Ê¹ÓÃ²ÄÖÊ
 		if (!info.pRenderer->SetUseMaterial(pMaterial, true))
 			continue;
 
-		for (MIMeshInstance* pMeshIns : group.vMeshInstainces)
+		for (MIMeshInstance* pMeshIns : group.m_vMeshInstances)
 		{
 			DrawMeshInstance(info.pRenderer, pMeshIns, pMeshMatrixParam, pAnimationParam);
 		}
 	}
-
 
 	for (MIMeshInstance* pMeshIns : info.vTransparentRenderGroup)
 	{
@@ -329,10 +329,7 @@ void MRenderSystem::DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pM
 		}
 	}
 
-	unsigned int unMeshLevel = 0;
-	if (MIModelMeshInstance* pModelMeshIns = pMeshInstance->DynamicCast<MIModelMeshInstance>())
-		unMeshLevel = pModelMeshIns->GetDetailLevel();
-	pRenderer->DrawMesh(pMeshInstance->GetMesh(unMeshLevel));
+	pRenderer->DrawMesh(pMeshInstance->GetMesh());
 }
 
 void MRenderSystem::DrawModelInstance(MRenderInfo& info)
@@ -529,73 +526,82 @@ void MRenderSystem::DrawCameraFrustum(MRenderInfo& info, MCamera* pCamera)
 
 void MRenderSystem::GenerateRenderGroup(MRenderInfo& info)
 {
-	std::vector<MIModelMeshInstance*>& meshes = *info.pScene->GetAllIModelMeshInstance();
-
 	Vector3 v3BoundsMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
 	Vector3 v3BoundsMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
-	for (MIModelMeshInstance* pMeshIns : meshes)
+	for (MMaterialGroup* pGroups : *info.pScene->GetMaterialGroups())
 	{
-		if(!pMeshIns->GetVisibleRecursively())
+		info.vMaterialRenderGroup.push_back(MMaterialGroup());
+		MMaterialGroup& group = info.vMaterialRenderGroup.back();
+		group.m_pMaterial = pGroups->m_pMaterial;
+
+		for (MIMeshInstance* pMeshIns : pGroups->m_vMeshInstances)
+		{
+			if (!pMeshIns->GetVisibleRecursively())
+				continue;
+
+			if (MCameraFrustum::EOUTSIDE == info.pViewport->GetCameraFrustum()->ContainTest(*pMeshIns->GetBoundsAABB()))
+				continue;
+
+			group.m_vMeshInstances.push_back(pMeshIns);
+
+			const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
+			pBounds->UnionMinMax(v3BoundsMin, v3BoundsMax);
+		}
+	}
+
+	Vector3 v3CameraPos = info.pCamera->GetWorldPosition();
+
+	for (MIMeshInstance* pMeshIns : *info.pScene->GetZOrderGroups())
+	{
+		if (!pMeshIns->GetVisibleRecursively())
 			continue;
 
 		if (MCameraFrustum::EOUTSIDE == info.pViewport->GetCameraFrustum()->ContainTest(*pMeshIns->GetBoundsAABB()))
 			continue;
 
-		RecordMeshInstance(info, pMeshIns);
+		std::vector<MIMeshInstance*>::iterator iter = std::lower_bound(info.vTransparentRenderGroup.begin(), info.vTransparentRenderGroup.end(), pMeshIns,
+			[v3CameraPos](MIMeshInstance* a, MIMeshInstance* b)
+			{
+				return (a->GetWorldPosition() - v3CameraPos).Length() > (b->GetWorldPosition() - v3CameraPos).Length();
+			});
+		info.vTransparentRenderGroup.insert(iter, pMeshIns);
 
 		const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
 		pBounds->UnionMinMax(v3BoundsMin, v3BoundsMax);
 	}
+
 
 	info.cMeshRenderAABB.SetMinMax(v3BoundsMin, v3BoundsMax);
 }
 
 void MRenderSystem::RecordMeshInstance(MRenderInfo& info, MIMeshInstance* pMeshInstance)
 {
-	if (!pMeshInstance->GetMaterial())
-		return;
+	MMaterial* pMaterial = pMeshInstance->GetMaterial();
 
-	MIMeshInstance::MERenderOrderType eOrderType = pMeshInstance->GetRenderOrderType();
-
-	if (MIMeshInstance::EAutoOrder == eOrderType)
+	if (pMaterial->GetMaterialType() == MEMaterialType::EDefault)
 	{
-		if (pMeshInstance->GetMaterial()->GetMaterialType() == MEMaterialType::ETransparent)
-			eOrderType = MIMeshInstance::EOrderByTransparent;
-		else
-			eOrderType = MIMeshInstance::EOrderByMaterial;
-	}
+		std::vector<MMaterialGroup>& vGroup = info.vMaterialRenderGroup;
 
-	if (MIMeshInstance::EOrderByMaterial == eOrderType)
-	{
-
-		MMaterial* pMaterial = pMeshInstance->GetMaterial();
-
-		if (pMaterial->GetMaterialType() == MEMaterialType::EDefault)
+		std::vector<MMaterialGroup>::iterator iter = std::lower_bound(vGroup.begin(), vGroup.end(), pMaterial, [](const MMaterialGroup& a, MMaterial* b) {return a.m_pMaterial < b; });
+		if (iter == vGroup.end())
 		{
-
-			std::vector<MMaterialRenderGroup>& vGroup = info.vMaterialRenderGroup;
-
-			std::vector<MMaterialRenderGroup>::iterator iter = std::lower_bound(vGroup.begin(), vGroup.end(), pMaterial, [](const MMaterialRenderGroup& a, MMaterial* b) {return a.pMaterial < b; });
-			if (iter == vGroup.end())
-			{
-				vGroup.push_back(MMaterialRenderGroup());
-				iter = vGroup.end() - 1;
-				iter->pMaterial = pMeshInstance->GetMaterial();
-			}
-			else if (iter->pMaterial != pMaterial)
-			{
-				MMaterialRenderGroup group;
-				group.pMaterial = pMeshInstance->GetMaterial();
-				iter = vGroup.insert(iter, group);
-			}
-
-			MMaterialRenderGroup& group = *iter;
-
-			group.vMeshInstainces.push_back(pMeshInstance);
+			vGroup.push_back(MMaterialGroup());
+			iter = vGroup.end() - 1;
+			iter->m_pMaterial = pMeshInstance->GetMaterial();
 		}
+		else if (iter->m_pMaterial != pMaterial)
+		{
+			MMaterialGroup group;
+			group.m_pMaterial = pMeshInstance->GetMaterial();
+			iter = vGroup.insert(iter, group);
+		}
+
+		MMaterialGroup& group = *iter;
+
+		group.m_vMeshInstances.push_back(pMeshInstance);
 	}
-	else if (MIMeshInstance::EOrderByTransparent == eOrderType)
+	else if (pMaterial->GetMaterialType() == MEMaterialType::ETransparent)
 	{
 		std::vector<MIMeshInstance*>& vGroup = info.vTransparentRenderGroup;
 		

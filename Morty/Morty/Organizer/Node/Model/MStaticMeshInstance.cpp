@@ -85,11 +85,6 @@ MIMesh* MStaticMeshInstance::GetMesh(const unsigned int& unDetailLevel)
 	else return m_pMesh->GetLevelMesh(unDetailLevel);
 }
 
-MIMesh* MStaticMeshInstance::GetMesh()
-{
-	return m_pMesh->GetMesh();
-}
-
 void MStaticMeshInstance::OnDelete()
 {
 	SetMaterial(nullptr);

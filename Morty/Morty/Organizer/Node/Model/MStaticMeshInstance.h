@@ -36,7 +36,7 @@ public:
 public:
 
 	virtual void SetMeshData(MModelMeshStruct* pMeshData);
-	virtual MIMesh* GetMesh() override;
+	virtual MIMesh* GetMesh() override { return GetMesh(GetDetailLevel()); }
 	virtual MIMesh* GetMesh(const unsigned int& unDetailLevel) override;
 
 public:

@@ -84,11 +84,6 @@ MIMesh* MSkinnedMeshInstance::GetMesh(const unsigned int& unDetailLevel)
 	else return m_pMesh->GetLevelMesh(unDetailLevel);
 }
 
-MIMesh* MSkinnedMeshInstance::GetMesh()
-{
-	return m_pMesh->GetMesh();
-}
-
 void MSkinnedMeshInstance::OnDelete()
 {
 	SetMaterial(nullptr);

@@ -11,6 +11,7 @@
 #include "MGlobal.h"
 #include "MISystem.h"
 #include "MBounds.h"
+#include "MMaterialGroup.h"
 #include "MShadowTextureRenderTarget.h"
 
 #include <vector>
@@ -25,16 +26,12 @@ class MIModelMeshInstance;
 class MORTY_CLASS MRenderSystem : public MISystem
 {
 public:
-	struct MMaterialRenderGroup
-	{
-		MMaterial* pMaterial;
-		std::vector<MIMeshInstance*> vMeshInstainces;
-	};
 
 	struct MRenderInfo
 	{
 		MIRenderer* pRenderer;
 		MViewport* pViewport;
+		MCamera* pCamera;
 		MScene* pScene;
 
 		MDirectionalLight* pDirectionalLight;
@@ -43,7 +40,7 @@ public:
 		MBoundsAABB cShadowRenderAABB;
 		MBoundsAABB cMeshRenderAABB;
 
-		std::vector<MMaterialRenderGroup> vMaterialRenderGroup;
+		std::vector<MMaterialGroup> vMaterialRenderGroup;
 		std::vector<MIMeshInstance*> vTransparentRenderGroup;
 		std::vector<MShadowRenderGroup> vShadowGroup;
 	};

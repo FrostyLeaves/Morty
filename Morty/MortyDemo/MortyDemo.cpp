@@ -1,7 +1,9 @@
 // MortyDemo.cpp : 定义控制台应用程序的入口点
 //
 
+#ifdef _DEBUG
 #include "vld.h"
+#endif
 
 #include "stdafx.h"
 #include "MEngine.h"
@@ -150,16 +152,15 @@ int main(int argc, char* argv[])
 
 	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/nfsq/model.dae"));
 
-	for (int i = 0; i < 1; ++i)
+	for (int i = 0; i < 640; ++i)
 	{
 		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
 		pSpatial->Load(pResource);
-		pSpatial->SetPosition(Vector3(0, 0, -i * 50));
+		pSpatial->SetPosition(Vector3((i / 6) * 12, 0, -(i % 6) * 12));
 		pSpatial->SetScale(Vector3(10, 10, 10));
 		pSpatial->SetName("Ground");
 
 		pRootNode->AddNode(pSpatial);
-
 	}
 
 

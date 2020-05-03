@@ -12,6 +12,8 @@
 #include "MObject.h"
 #include "Matrix.h"
 
+#include "MMaterialGroup.h"
+
 #include <functional>
 #include <vector>
 
@@ -56,6 +58,9 @@ public:
 	MTransformCoord3D* GetTransformCoord() { return m_pTransformCoord3D; }
 	MShadowTextureRenderTarget* GetShadowRenderTarget() { return m_pShadowDepthMapRenderTarget; }
 
+
+	std::vector<MMaterialGroup*>* GetMaterialGroups() { return &m_vMaterialOrderGroups; }
+	std::vector<MIMeshInstance*>* GetZOrderGroups() { return &m_vZOrderGroups; }
 public:
 
 	virtual void Tick(const float& fDelta);
@@ -77,8 +82,15 @@ public:
 	std::vector<MViewport*> GetViewports() { return m_vViewports; }
 
 	void GetSceneRenderMeshAABB(MBoundsAABB& cSceneAABB, MViewport* pViewport);
-// 	void RecordMeshInstance(MIModelMeshInstance* pMeshInstance);
-// 	void CancelRecordMeshInstance(MIModelMeshInstance* pMeshInstance);
+
+	void RecordMeshInstance(MIMeshInstance* pMeshInstance);
+	void CancelRecordMeshInstance(MIMeshInstance* pMeshInstance);
+
+	void InsertMaterialGroup(MIMeshInstance* pMeshInstance);
+	void RemoveMaterialGroup(MIMeshInstance* pMeshInstance);
+
+	void InsertZOrderGroup(MIMeshInstance* pMeshInstance);
+	void RemoveZOrderGroup(MIMeshInstance* pMeshInstance);
 
 protected:
 
@@ -98,8 +110,11 @@ private:
 	MSCENE_TYPED_VECTOR(PointLight);
 	MSCENE_TYPED_VECTOR(SpotLight);
 	MSCENE_TYPED_VECTOR(InputNode);
-	MSCENE_TYPED_VECTOR(IModelMeshInstance);
 	MSCENE_TYPED_VECTOR(ModelInstance);
+	MSCENE_TYPED_VECTOR(IModelMeshInstance);
+
+	std::vector<MMaterialGroup*> m_vMaterialOrderGroups;
+	std::vector<MIMeshInstance*> m_vZOrderGroups;
 
 	std::vector<MViewport*> m_vViewports;
 	std::vector<MISystem*> m_vSystems;

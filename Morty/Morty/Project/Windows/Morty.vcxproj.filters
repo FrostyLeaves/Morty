@@ -306,6 +306,9 @@
     <ClInclude Include="..\..\Organizer\System\MRenderSystem.h">
       <Filter>Organizer\System</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Organizer\MMaterialGroup.h">
+      <Filter>Organizer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -508,6 +511,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Organizer\System\MRenderSystem.cpp">
       <Filter>Organizer\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\MMaterialGroup.cpp">
+      <Filter>Organizer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

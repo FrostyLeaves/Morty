@@ -42,16 +42,12 @@ public:
 	virtual bool GetGenerateDirLightShadow() const = 0;
 
 
-	MERenderOrderType GetRenderOrderType() { return m_eRenderOrderType; }
-	void SetRenderOrderType(const MERenderOrderType& eType) { m_eRenderOrderType = eType; }
 
 public:
 	virtual MIMesh* GetMesh() = 0;
 	virtual MIMesh* GetMesh(const unsigned int& unDetailLevel) = 0;
 
 private:
-
-	MERenderOrderType m_eRenderOrderType;
 };
 
 #endif
