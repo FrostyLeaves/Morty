@@ -93,3 +93,13 @@ void MResourceManager::Reload(const MString& strResourcePath)
 		}
 	}
 }
+
+MResource* MResourceManager::FindResourceByID(const MResourceID& unID)
+{
+	std::map<MResourceID, MResource*>::iterator iter = m_tResources.find(unID);
+
+	if (iter == m_tResources.end())
+		return nullptr;
+
+	return iter->second;
+}

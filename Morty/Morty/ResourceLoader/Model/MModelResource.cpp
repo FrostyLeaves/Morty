@@ -502,6 +502,7 @@ void MModelResource::ProcessMaterial(const aiScene* pScene, std::vector<unsigned
 						pMat->SetMember("f3Specular", v3Specular);
 						pMat->SetMember("fShininess", fShininess);
 						pMat->SetMember("bUseNormalTex", false);
+						pMat->SetMember("fAlphaFactor", 1.0f);
 					}
 				}
 

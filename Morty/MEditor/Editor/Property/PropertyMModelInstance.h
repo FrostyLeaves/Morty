@@ -8,6 +8,8 @@
 #include "MEngine.h"
 #include "MResourceManager.h"
 
+#include "NotifyManager.h"
+
 class PropertyMModelInstance : public PropertyM3DNode
 {
 public:

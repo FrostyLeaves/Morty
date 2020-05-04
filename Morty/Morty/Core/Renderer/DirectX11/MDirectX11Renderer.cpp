@@ -148,7 +148,7 @@ bool MDirectX11Renderer::Initialize()
 	m_pDevice->m_pD3dDevice->CreateDepthStencilState(&dsDesc, &m_pDepthStencilState_Default);
 	m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_pDepthStencilState_Default, 0);
 
-	dsDesc.DepthEnable = false;
+	dsDesc.DepthEnable = true;
 	dsDesc.StencilEnable = false;
 	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
 

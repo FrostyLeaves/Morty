@@ -274,6 +274,12 @@ char ImGuiFileDialog::DirectoryNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
 char ImGuiFileDialog::SearchBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
 int ImGuiFileDialog::FilterIndex = 0;
 
+ImGuiFileDialog* ImGuiFileDialog::Instance()
+{
+	static ImGuiFileDialog _instance;
+	return &_instance;
+}
+
 ImGuiFileDialog::ImGuiFileDialog()
 {
 	m_AnyWindowsHovered = false;

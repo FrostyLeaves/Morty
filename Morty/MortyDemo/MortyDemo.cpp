@@ -47,6 +47,7 @@
 #include "Quaternion.h"
 
 #include "MainEditor.h"
+#include "NotifyManager.h"
 
 #include "Shader/MShaderResource.h"
 
@@ -125,6 +126,7 @@ public:
 
 };
 
+
 int main(int argc, char* argv[])
 {
 
@@ -152,7 +154,7 @@ int main(int argc, char* argv[])
 
 	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/nfsq/model.dae"));
 
-	for (int i = 0; i < 640; ++i)
+	for (int i = 0; i < 1; ++i)
 	{
 		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
 		pSpatial->Load(pResource);
@@ -282,6 +284,7 @@ int main(int argc, char* argv[])
 
 	engine.Release();
 
+	NotifyManager::GetInstance()->UnRegisterAll();
 
 	system("PAUSE");
 	return 0;

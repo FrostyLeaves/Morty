@@ -87,11 +87,7 @@ private:
 	std::string dlg_userString;
 
 public:
-	static ImGuiFileDialog* Instance()
-	{
-		static auto *_instance = new ImGuiFileDialog();
-		return _instance;
-	}
+	static ImGuiFileDialog* Instance();
 
 protected:
 	ImGuiFileDialog(); // Prevent construction

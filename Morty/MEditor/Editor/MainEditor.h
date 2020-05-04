@@ -1,6 +1,7 @@
 ﻿#ifndef _MAIN_EDITOR_H_
 #define _MAIN_EDITOR_H_
 
+#include "MVariant.h"
 #include "SceneTexture.h"
 #include "MWindowsRenderView.h"
 
@@ -34,6 +35,12 @@ public:
 	virtual void OnRenderEnd() override;
 
 	virtual void SetRenderTarget(MIRenderTarget* pRenderTarget) override;
+
+
+public:
+
+	void Notify_Edit_Material(const MVariant& var);
+
 
 public:
 

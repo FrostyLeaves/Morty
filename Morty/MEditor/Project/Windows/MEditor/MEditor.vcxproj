@@ -173,6 +173,7 @@
     <ClInclude Include="..\..\..\Editor\MainEditor.h" />
     <ClInclude Include="..\..\..\Editor\MaterialView.h" />
     <ClInclude Include="..\..\..\Editor\NodeTreeView.h" />
+    <ClInclude Include="..\..\..\Editor\NotifyManager.h" />
     <ClInclude Include="..\..\..\Editor\PropertyView.h" />
     <ClInclude Include="..\..\..\Editor\Property\PropertyBase.h" />
     <ClInclude Include="..\..\..\Editor\Property\PropertyM3DNode.h" />
@@ -202,6 +203,7 @@
     <ClCompile Include="..\..\..\Editor\MainEditor.cpp" />
     <ClCompile Include="..\..\..\Editor\MaterialView.cpp" />
     <ClCompile Include="..\..\..\Editor\NodeTreeView.cpp" />
+    <ClCompile Include="..\..\..\Editor\NotifyManager.cpp" />
     <ClCompile Include="..\..\..\Editor\PropertyView.cpp" />
     <ClCompile Include="..\..\..\Editor\Property\PropertyBase.cpp" />
     <ClCompile Include="..\..\..\Editor\Property\PropertyMModelInstance.cpp" />

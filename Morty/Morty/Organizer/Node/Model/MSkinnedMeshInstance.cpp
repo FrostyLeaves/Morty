@@ -15,7 +15,7 @@ MSkinnedMeshInstance::MSkinnedMeshInstance()
 	, m_bBoundsAABBDirty(true)
 	, m_bBoundsSphereDirty(true)
 {
-
+	
 }
 
 MSkinnedMeshInstance::~MSkinnedMeshInstance()

@@ -1,6 +1,6 @@
 #include "MGlobal.h"
 
-const MObjectID M_INVALID_OBJECT_ID = -1;
+const int M_INVALID_OBJECT_ID = -1;
 
 const char* SUFFIX_VERTEX_SHADER = "mvs";
 const char* SUFFIX_PIXEL_SHADER = "mps";

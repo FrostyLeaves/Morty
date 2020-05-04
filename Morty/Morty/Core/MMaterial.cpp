@@ -274,26 +274,28 @@ bool MMaterial::LoadVertexShader(MResource* pResource)
 	{
 		if (MShader::MEShaderType::Vertex == pShaderResource->GetShaderTemplate()->GetType())
 		{
-			m_pVertexShader = pShaderResource->GetShaderTemplate();
-			if (m_pVertexShader && nullptr == m_pVertexShader->GetBuffer())
-			{
-				if (!m_pVertexShader->CompileShader(m_pEngine->GetDevice()))
+			auto LoadFunc = [this](const unsigned int& eReloadType) {
+
+				m_pVertexShader = dynamic_cast<MShaderResource*>(m_VertexResource.GetResource())->GetShaderTemplate();
+				if (m_pVertexShader && nullptr == m_pVertexShader->GetBuffer())
 				{
-					m_pVertexShader = nullptr;
-					return false;
+					if (!m_pVertexShader->CompileShader(m_pEngine->GetDevice()))
+					{
+						m_pVertexShader = nullptr;
+						return false;
+					}
 				}
-			}
 
-
-			m_VertexResource.SetResource(pResource);
-			m_VertexResource.SetResChangedCallback([this](const unsigned int& eReloadType) {
 				CompileShaderParams(MEShaderParamType::EVertex);
 				OnReload();
 				return true;
-				});
+			};
 
-			CompileShaderParams(MEShaderParamType::EVertex);
-			OnReload();
+
+			m_VertexResource.SetResource(pResource);
+			m_VertexResource.SetResChangedCallback(LoadFunc);
+
+			LoadFunc(0);
 			return true;
 		}
 	}
@@ -307,25 +309,25 @@ bool MMaterial::LoadPixelShader(MResource* pResource)
 	{
 		if (MShader::MEShaderType::Pixel == pShaderResource->GetShaderTemplate()->GetType())
 		{
-			m_pPixelShader = pShaderResource->GetShaderTemplate();
-			if (m_pPixelShader && nullptr == m_pPixelShader->GetBuffer())
-			{
-				if (!m_pPixelShader->CompileShader(m_pEngine->GetDevice()))
+			auto LoadFunc = [this](const unsigned int& eReloadType) {
+				m_pPixelShader = dynamic_cast<MShaderResource*>(m_PixelResource.GetResource())->GetShaderTemplate();
+				if (m_pPixelShader && nullptr == m_pPixelShader->GetBuffer())
 				{
-					m_pPixelShader = nullptr;
-					return false;
+					if (!m_pPixelShader->CompileShader(m_pEngine->GetDevice()))
+					{
+						m_pPixelShader = nullptr;
+						return false;
+					}
 				}
-			}
-
-			m_PixelResource.SetResource(pResource);
-			m_PixelResource.SetResChangedCallback([this](const unsigned int& eReloadType) {
 				CompileShaderParams(MEShaderParamType::EPixel);
 				OnReload();
 				return true;
-				});
+			};
 
-			CompileShaderParams(MEShaderParamType::EPixel);
-			OnReload();
+			m_PixelResource.SetResource(pResource);
+			m_PixelResource.SetResChangedCallback(LoadFunc);
+
+			LoadFunc(0);
 			return true;
 		}
 	}

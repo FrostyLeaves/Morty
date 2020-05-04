@@ -108,6 +108,9 @@
     <ClInclude Include="..\..\..\Editor\SceneTexture.h">
       <Filter>Editor</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Editor\NotifyManager.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MEditor.cpp">
@@ -162,6 +165,9 @@
       <Filter>Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Editor\SceneTexture.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Editor\NotifyManager.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
   </ItemGroup>

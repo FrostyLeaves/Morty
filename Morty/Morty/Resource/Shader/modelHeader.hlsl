@@ -42,6 +42,7 @@ struct Material
     bool bUseNormalTex;
     float3 f3Specular;
     float fShininess;
+    bool bUseSpecularTex;
     bool bUseTransparentTex;
 };
 

@@ -329,7 +329,10 @@ void PropertyBase::EditMResource(const MString& strDlgID, MResource* pResource, 
 	if (pResource)
 	{
 		strResourcePathName = pResource->GetResourcePath();
-		strButtonLabel = pResource->GetFileName(strResourcePathName);
+		if (strResourcePathName.empty())
+			strButtonLabel = "raw";
+		else
+			strButtonLabel = pResource->GetFileName(strResourcePathName);
 	}
 	else
 	{

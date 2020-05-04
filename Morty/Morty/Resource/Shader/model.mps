@@ -57,8 +57,13 @@ float4 PS(VS_OUT input) : SV_Target
     float4 f3AmbiColor = U_mat.texDiffuse.Sample(U_defaultSampler, input.uv);
 
     float4 f3DiffColor = f3AmbiColor;
-    float4 f3SpecColor = f3AmbiColor;//U_mat.texSpecular.Sample(U_defaultSampler, input.uv);
+    float4 f3SpecColor = f3AmbiColor;
     
+    if (U_mat.bUseSpecularTex > 0.5f)
+    {
+        f3SpecColor = U_mat.texSpecular.Sample(U_defaultSampler, input.uv);
+    }
+
     float3 f3Normal = float3(0.0f, 0.0f, -1.0f);
     float3 f3CameraDir = float3(0.0f, 0.0f, 1.0f);
     float3 f3DirLightDir = float3(0.0f, 0.0f, 1.0f);
@@ -103,8 +108,10 @@ float4 PS(VS_OUT input) : SV_Target
     if (U_mat.bUseTransparentTex > 0.5f)
     {
         float4 transparentColor = U_mat.texTransparent.Sample(U_defaultSampler, input.uv);
-        //fAlpha *= transparentColor.a;
+        fAlpha *= transparentColor.a;
     }
+
+    clip(fAlpha - 0.1f);
 
     if(U_bDirectionLightEnabled > 0.5f)
     {

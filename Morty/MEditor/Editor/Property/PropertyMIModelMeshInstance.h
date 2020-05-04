@@ -21,6 +21,41 @@ public:
 				ShowNodeEnd();
 			}
 
+			if (ShowNodeBegin("Material"))
+			{
+				ShowValueBegin("Load");
+
+				MMaterial* pMaterial = pNode->GetMaterial();
+				EditMResource("material_file_dlg", pMaterial, MResourceManager::Material, [pNode](const MString& strNewFilePath) {
+					if (MMaterial* pMaterial = dynamic_cast<MMaterial*>(pNode->GetEngine()->GetResourceManager()->LoadResource(strNewFilePath)))
+					{
+						pNode->SetMaterial(pMaterial);
+					};
+					});
+
+				ShowValueEnd();
+
+				ShowValueBegin("Save");
+				EditSaveMResource("material_save_dlg", pMaterial);
+				ShowValueEnd();
+
+
+				ShowValueBegin("Instance");
+				if (ImGui::Button("Edit Material"))
+				{
+					int nResID = M_INVALID_OBJECT_ID;
+					if (pNode->GetMaterial())
+						nResID = pNode->GetMaterial()->GetResourceID();
+
+					NotifyManager::GetInstance()->SendNotify("Edit Material", nResID);
+				}
+				ShowValueEnd();
+
+
+
+				ShowNodeEnd();
+			}
+
 			if (ShowNodeBegin("Render"))
 			{
 				ShowValueBegin("ShadowType");
@@ -37,6 +72,8 @@ public:
 
 				ShowNodeEnd();
 			}
+
+
 		}
 	}
 };

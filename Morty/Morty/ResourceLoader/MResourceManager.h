@@ -81,6 +81,8 @@ public:
 	bool GetReloadEnabled() { return m_bReloadEnabled; }
 
 
+	MResource* FindResourceByID(const MResourceID& unID);
+
 	std::map<MResourceID, MResource*>* GetAllResources() { return &m_tResources; }
 
 private:

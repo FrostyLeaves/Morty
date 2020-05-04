@@ -32,6 +32,8 @@
 #include "MRenderStatistics.h"
 #include "MInputManager.h"
 
+#include "NotifyManager.h"
+
 MainEditor::MainEditor()
 	: MWindowsRenderView()
 	, m_pNodeTreeView(nullptr)
@@ -106,6 +108,8 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 
 	for (IBaseView* pChild : m_vChildView)
 		pChild->Initialize(pEngine);
+
+	NotifyManager::GetInstance()->RegisterNotify("Edit Material", this, NOTIFY_FUNC(this, MainEditor::Notify_Edit_Material));
 }
 
 void MainEditor::Release()
@@ -183,6 +187,21 @@ void MainEditor::SetRenderTarget(MIRenderTarget* pRenderTarget)
 		v4BackgroundColor.z = (v4BackgroundColor.z + 0.5f) * 0.5f;
 		GetRenderTarget()->m_backgroundColor = MColor(v4BackgroundColor.x, v4BackgroundColor.y, v4BackgroundColor.z, v4BackgroundColor.w);
 	}
+}
+
+void MainEditor::Notify_Edit_Material(const MVariant& var)
+{
+	if (var.GetType() == MVariant::EInt)
+	{
+		int unResID = *var.GetInt();
+		MResource* pResource = m_pEngine->GetResourceManager()->FindResourceByID(unResID);
+		if (MMaterial* pMaterial = dynamic_cast<MMaterial*>(pResource))
+		{
+			m_bShowMaterial = true;
+			m_pMaterialView->SetMaterial(pMaterial);
+		}
+	}
+
 }
 
 void MainEditor::ShowMenu()
