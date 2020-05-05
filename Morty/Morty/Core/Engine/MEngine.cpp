@@ -51,7 +51,7 @@ bool MEngine::Initialize()
 
 		MDirectX11Renderer* pDx11Renderer = new MDirectX11Renderer(pDevice);
 		m_pRenderer = pDx11Renderer;
-#elif (RENDER_GRAPHICS == MORTY_OPENGLES)
+#elif (RENDER_GRAPHICS == MORTY_VULKAN)
 		m_pRenderer = nullptr;
 #else
 		m_pRenderer = nullptr;
@@ -200,27 +200,25 @@ bool MEngine::InitializeDefaultResource()
 	MResource* pSphereResource = GetResourceManager()->LoadResource("./Model/Sphere.fbx");
 
 
+	const MString vTexturePath[6] = {
+		"ashcanyon_lf.tga",
+		"ashcanyon_rt.tga",
+		"ashcanyon_up.tga",
+		"ashcanyon_dn.tga",
+		"ashcanyon_ft.tga",
+		"ashcanyon_bk.tga",
+	};
 
-// 	static MString vTexturePath[6] = {
-// 		"ashcanyon_rt.tga",
-// 		"ashcanyon_lf.tga",
-// 		"ashcanyon_up.tga",
-// 		"ashcanyon_dn.tga",
-// 		"ashcanyon_ft.tga",
-// 		"ashcanyon_bk.tga",
-// 	};
-// 
-// 	MTextureResource* vTextureRes[6];
-// 	for (int i = 0; i < 6; ++i)
-// 	{
-// 		vTextureRes[i] = static_cast<MTextureResource*>(GetResourceManager()->LoadResource("./Texture/skybox/" + vTexturePath[i]));
-// 	}
-// 
-// 	MTextureCubeResource* pTextureCubeRes = GetResourceManager()->CreateResource<MTextureCubeResource>();
-// 	pTextureCubeRes->SetTextures(vTextureRes);
-// 
-// 	std::vector<MShaderTextureParam>& vTexParams = pSkyBoxMaterialRes->GetPixelTextureParams();
-// 	pSkyBoxMaterialRes->SetPixelTexutreParam("SkyTexCube", pTextureCubeRes);
+	MTextureResource* vTextureRes[6];
+	for (int i = 0; i < 6; ++i)
+	{
+		vTextureRes[i] = static_cast<MTextureResource*>(GetResourceManager()->LoadResource("./Texture/skybox/" + vTexturePath[i]));
+	}
+
+	MTextureCubeResource* pTextureCubeRes = GetResourceManager()->CreateResource<MTextureCubeResource>();
+	pTextureCubeRes->SetTextures(vTextureRes);
+
+	pSkyBoxMaterialRes->SetTexutreParam("SkyTexCube", pTextureCubeRes);
 
 
 	MResource* pEmptyVSResource = GetResourceManager()->LoadResource("./Shader/empty.mvs");

@@ -35,13 +35,8 @@ public:
 
 				ShowValueEnd();
 
-				ShowValueBegin("Save");
-				EditSaveMResource("material_save_dlg", pMaterial);
-				ShowValueEnd();
-
-
 				ShowValueBegin("Instance");
-				if (ImGui::Button("Edit Material"))
+				if (ImGui::Button("Edit Material", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 				{
 					int nResID = M_INVALID_OBJECT_ID;
 					if (pNode->GetMaterial())

@@ -86,7 +86,7 @@ extern const bool MCALC_NORMAL_IN_VS;
 extern const unsigned int MMESH_LOD_LEVEL_RANGE;
 
 //gles
-#define MORTY_OPENGLES 1
+#define MORTY_VULKAN 1
 //directx11
 #define MORTY_DIRECTX_11 2
 

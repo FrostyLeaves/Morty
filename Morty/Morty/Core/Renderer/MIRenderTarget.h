@@ -38,7 +38,7 @@ public:
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	ID3D11RenderTargetView* m_pTargetView;
 	ID3D11DepthStencilView* m_pDepthStencilView;
-#elif RENDER_GRAPHICS == MORTY_OPENGLES
+#elif RENDER_GRAPHICS == MORTY_VULKAN
 
 #endif
 

@@ -26,7 +26,7 @@ public:
 	virtual ~MInputLayout(){}
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	class ID3D11InputLayout* m_pInputLayout;
-#elif RENDER_GRAPHICS == MORTY_OPENGLES
+#elif RENDER_GRAPHICS == MORTY_VULKAN
 
 #endif
 };
@@ -41,7 +41,7 @@ public:
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	class ID3D11Buffer* m_pVertexBuffer;
 	class ID3D11Buffer* m_pIndexBuffer;
-#elif RENDER_GRAPHICS == MORTY_OPENGLES
+#elif RENDER_GRAPHICS == MORTY_VULKAN
 
 #endif
 };
@@ -56,7 +56,7 @@ public:
 	void* GetResourceView() {
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	return m_pShaderResourceView;
-#elif RENDER_GRAPHICS == MORTY_OPENGLES
+#elif RENDER_GRAPHICS == MORTY_VULKAN
 	return nullptr;
 #else
 	return nullptr;
@@ -66,7 +66,7 @@ public:
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	struct ID3D11Texture2D* m_pTextureBuffer;
 	class ID3D11ShaderResourceView* m_pShaderResourceView;
-#elif RENDER_GRAPHICS == MORTY_OPENGLES
+#elif RENDER_GRAPHICS == MORTY_VULKAN
 
 #endif
 };
@@ -80,7 +80,7 @@ public:
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	struct ID3D11RenderTargetView* m_pRenderTargetView;
-#elif RENDER_GRAPHICS == MORTY_OPENGLES
+#elif RENDER_GRAPHICS == MORTY_VULKAN
 
 #endif
 };
@@ -94,7 +94,7 @@ public:
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	struct ID3D11DepthStencilView* m_pDepthStencilView;
-#elif RENDER_GRAPHICS == MORTY_OPENGLES
+#elif RENDER_GRAPHICS == MORTY_VULKAN
 
 #endif
 };
@@ -123,7 +123,7 @@ struct MShaderParam
 	class ID3D11Buffer* pBuffer;
 	unsigned int unBindPoint;
 	unsigned int unBindCount;
-#elif RENDER_GRAPHICS == MORTY_OPENGLES
+#elif RENDER_GRAPHICS == MORTY_VULKAN
 
 #endif
 };
@@ -147,7 +147,7 @@ struct MShaderTextureParam
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	unsigned int unBindPoint;
 	unsigned int unBindCount;
-#elif RENDER_GRAPHICS == MORTY_OPENGLES
+#elif RENDER_GRAPHICS == MORTY_VULKAN
 
 #endif
 };
@@ -161,7 +161,7 @@ struct MShaderSampleParam
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	unsigned int unBindPoint;
 	unsigned int unBindCount;
-#elif RENDER_GRAPHICS == MORTY_OPENGLES
+#elif RENDER_GRAPHICS == MORTY_VULKAN
 
 #endif
 };
@@ -192,7 +192,7 @@ public:
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	class ID3D11VertexShader* m_pVertexShader;
 	class ID3D11InputLayout* m_pInputLayout;
-#elif RENDER_GRAPHICS == MORTY_OPENGLES
+#elif RENDER_GRAPHICS == MORTY_VULKAN
 #endif
 
 };
@@ -204,7 +204,7 @@ public:
 	virtual ~MPixelShaderBuffer(){}
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	class ID3D11PixelShader* m_pPixelShader;
-#elif RENDER_GRAPHICS == MORTY_OPENGLES
+#elif RENDER_GRAPHICS == MORTY_VULKAN
 #endif
 
 };

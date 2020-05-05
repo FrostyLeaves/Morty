@@ -7,6 +7,7 @@
 #include "MViewport.h"
 #include "MTexture.h"
 #include "MShadowTextureRenderTarget.h"
+#include "MTransparentRenderTarget.h"
 
 #include "MPainter.h"
 #include "MTransformCoord.h"
@@ -65,16 +66,17 @@ void MRenderSystem::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* 
 	info.pCamera = pViewport->GetCamera();
 	info.pScene = pScene;
 
-	GenerateRenderGroup(info);
-	GenerateShadowMap(info);
-
-	Vector2 v2LeftTop = pViewport->GetLeftTop();
-	pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, pViewport->GetWidth(), pViewport->GetHeight(), 0.0f, 1.0f);
-
-	UpdateShaderSharedParams(info);
+ 	GenerateRenderGroup(info);
+ 	GenerateShadowMap(info);
+ 
+ 	Vector2 v2LeftTop = pViewport->GetLeftTop();
+ 	pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, pViewport->GetWidth(), pViewport->GetHeight(), 0.0f, 1.0f);
+ 
+ 	UpdateShaderSharedParams(info);
 	DrawPainter(info);
 	DrawMeshInstance(info);
 	DrawModelInstance(info);
+	DrawSkyBox(info);
 }
 
 void MRenderSystem::GenerateShadowMap(MRenderInfo& info)
@@ -283,15 +285,35 @@ void MRenderSystem::DrawMeshInstance(MRenderInfo& info)
 		}
 	}
 
-	for (MIMeshInstance* pMeshIns : info.vTransparentRenderGroup)
-	{
-		MMaterial* pMaterial = pMeshIns->GetMaterial();
+// 	for (MIMeshInstance* pMeshIns : info.vTransparentRenderGroup)
+// 	{
+// 		MMaterial* pMaterial = pMeshIns->GetMaterial();
+// 
+// 		if(!info.pRenderer->SetUseMaterial(pMaterial, true))
+// 			continue;
+// 
+// 		DrawMeshInstance(info.pRenderer, pMeshIns, pMeshMatrixParam, pAnimationParam);
+// 	}
 
-		if(!info.pRenderer->SetUseMaterial(pMaterial, true))
-			continue;
 
-		DrawMeshInstance(info.pRenderer, pMeshIns, pMeshMatrixParam, pAnimationParam);
-	}
+// 	if (MTransparentRenderTarget* pTransparentRT = info.pScene->GetTransparentRenderTarget())
+// 	{
+// 		int nRenderCount = pTransparentRT->GetLevelNumber();
+// 
+// 		MDepthTextureBuffer* pDepthTextureBuffer = nullptr;
+// 
+// 		for (int i = 0; i < nRenderCount; ++i)
+// 		{
+// 			pTransparentRT->SetCurrentLevel(i);
+// 
+// 
+// 
+// 			info.pRenderer->Render(pTransparentRT);
+// 
+// 
+// 			pTransparentRT->CopyToDepthTextureBuffer()
+// 		}
+// 	}
 }
 
 void MRenderSystem::DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pMeshInstance, MShaderParam*& pMeshMatrixParam, MShaderParam*& pAnimationParam)
@@ -370,7 +392,7 @@ void MRenderSystem::DrawSkyBox(MRenderInfo& info)
 			{
 				MStruct& cStruct = *pMeshParam->var.GetStruct();
 				Matrix4 mat(Matrix4::IdentityMatrix);
-				Vector3 camPos = info.pViewport->GetCamera()->GetPosition();
+				Vector3 camPos = info.pViewport->GetCamera()->GetWorldPosition();
 				mat.m[0][3] = camPos.x;
 				mat.m[1][3] = camPos.y;
 				mat.m[2][3] = camPos.z;
@@ -529,30 +551,8 @@ void MRenderSystem::GenerateRenderGroup(MRenderInfo& info)
 	Vector3 v3BoundsMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
 	Vector3 v3BoundsMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
-	for (MMaterialGroup* pGroups : *info.pScene->GetMaterialGroups())
-	{
-		info.vMaterialRenderGroup.push_back(MMaterialGroup());
-		MMaterialGroup& group = info.vMaterialRenderGroup.back();
-		group.m_pMaterial = pGroups->m_pMaterial;
 
-		for (MIMeshInstance* pMeshIns : pGroups->m_vMeshInstances)
-		{
-			if (!pMeshIns->GetVisibleRecursively())
-				continue;
-
-			if (MCameraFrustum::EOUTSIDE == info.pViewport->GetCameraFrustum()->ContainTest(*pMeshIns->GetBoundsAABB()))
-				continue;
-
-			group.m_vMeshInstances.push_back(pMeshIns);
-
-			const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
-			pBounds->UnionMinMax(v3BoundsMin, v3BoundsMax);
-		}
-	}
-
-	Vector3 v3CameraPos = info.pCamera->GetWorldPosition();
-
-	for (MIMeshInstance* pMeshIns : *info.pScene->GetZOrderGroups())
+	for (MIMeshInstance* pMeshIns : *info.pScene->GetAllIModelMeshInstance())
 	{
 		if (!pMeshIns->GetVisibleRecursively())
 			continue;
@@ -560,17 +560,53 @@ void MRenderSystem::GenerateRenderGroup(MRenderInfo& info)
 		if (MCameraFrustum::EOUTSIDE == info.pViewport->GetCameraFrustum()->ContainTest(*pMeshIns->GetBoundsAABB()))
 			continue;
 
-		std::vector<MIMeshInstance*>::iterator iter = std::lower_bound(info.vTransparentRenderGroup.begin(), info.vTransparentRenderGroup.end(), pMeshIns,
-			[v3CameraPos](MIMeshInstance* a, MIMeshInstance* b)
-			{
-				return (a->GetWorldPosition() - v3CameraPos).Length() > (b->GetWorldPosition() - v3CameraPos).Length();
-			});
-		info.vTransparentRenderGroup.insert(iter, pMeshIns);
+		RecordMeshInstance(info, pMeshIns);
 
 		const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
 		pBounds->UnionMinMax(v3BoundsMin, v3BoundsMax);
 	}
 
+// 	for (MMaterialGroup* pGroups : *info.pScene->GetMaterialGroups())
+// 	{
+// 		info.vMaterialRenderGroup.push_back(MMaterialGroup());
+// 		MMaterialGroup& group = info.vMaterialRenderGroup.back();
+// 		group.m_pMaterial = pGroups->m_pMaterial;
+// 
+// 		for (MIMeshInstance* pMeshIns : pGroups->m_vMeshInstances)
+// 		{
+// 			if (!pMeshIns->GetVisibleRecursively())
+// 				continue;
+// 
+// 			if (MCameraFrustum::EOUTSIDE == info.pViewport->GetCameraFrustum()->ContainTest(*pMeshIns->GetBoundsAABB()))
+// 				continue;
+// 
+// 			group.m_vMeshInstances.push_back(pMeshIns);
+// 
+// 			const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
+// 			pBounds->UnionMinMax(v3BoundsMin, v3BoundsMax);
+// 		}
+// 	}
+// 
+// 	Vector3 v3CameraPos = info.pCamera->GetWorldPosition();
+// 
+// 	for (MIMeshInstance* pMeshIns : *info.pScene->GetZOrderGroups())
+// 	{
+// 		if (!pMeshIns->GetVisibleRecursively())
+// 			continue;
+// 
+// 		if (MCameraFrustum::EOUTSIDE == info.pViewport->GetCameraFrustum()->ContainTest(*pMeshIns->GetBoundsAABB()))
+// 			continue;
+// 
+// 		std::vector<MIMeshInstance*>::iterator iter = std::lower_bound(info.vTransparentRenderGroup.begin(), info.vTransparentRenderGroup.end(), pMeshIns,
+// 			[v3CameraPos](MIMeshInstance* a, MIMeshInstance* b)
+// 			{
+// 				return (a->GetWorldPosition() - v3CameraPos).Length() > (b->GetWorldPosition() - v3CameraPos).Length();
+// 			});
+// 		info.vTransparentRenderGroup.insert(iter, pMeshIns);
+// 
+// 		const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
+// 		pBounds->UnionMinMax(v3BoundsMin, v3BoundsMax);
+// 	}
 
 	info.cMeshRenderAABB.SetMinMax(v3BoundsMin, v3BoundsMax);
 }

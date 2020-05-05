@@ -108,7 +108,9 @@ bool MDirectX11Renderer::Initialize()
 
 
 	m_pDevice->m_pD3dDevice->CreateBlendState(&mBlendDesc, &m_pBlendState_Default);
-
+	
+	mRTDesc.BlendEnable = true;
+	mRTDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 	mRTDesc.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
 	mRTDesc.DestBlendAlpha = D3D11_BLEND_ONE;
 	

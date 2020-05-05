@@ -65,12 +65,12 @@ void MTexture::GenerateBuffer(MIDevice* pDevice, const bool& bMipmap/* = true*/)
 
 	pDevice->GenerateTexture(&m_pTextureBuffer, this, bMipmap);
 
-	if (nullptr != m_pImageData)
-	{
-		delete[] m_pImageData;
-		m_pImageData = nullptr;
-		m_unImageDataArraySize = 0;
-	}
+// 	if (nullptr != m_pImageData)
+// 	{
+// 		delete[] m_pImageData;
+// 		m_pImageData = nullptr;
+// 		m_unImageDataArraySize = 0;
+// 	}
 }
 
 void MTexture::DestroyTexture(MIDevice* pDevice)
@@ -95,7 +95,7 @@ void MTextureCube::GenerateBuffer(MIDevice* pDevice, const bool& bMipmap/* = tru
 	if (m_pTextureBuffer)
 		pDevice->DestroyTexture(&m_pTextureBuffer);
 
-	pDevice->GenerateTextureCube(&m_pTextureBuffer, m_vTexture, bMipmap);
+	pDevice->GenerateTextureCube(&m_pTextureBuffer, m_vTexture, false/*bMipmap*/); //TODO Fix TextureCube Mipmap
 }
 
 void MTextureCube::DestroyTexture(MIDevice* pDevice)

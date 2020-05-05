@@ -237,6 +237,10 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 	{
 		if (MMaterialResource* pResource = pMaterial)
 		{
+			ShowValueBegin("Save");
+			EditSaveMResource("material_save_dlg", pMaterial);
+			ShowValueEnd();
+
 			ShowValueBegin("VS");
 			if (ImGui::Button("Reload Vertex Shader", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 			{

@@ -140,6 +140,7 @@
     <ClInclude Include="..\..\Organizer\MScene.h" />
     <ClInclude Include="..\..\Organizer\MShadowTextureRenderTarget.h" />
     <ClInclude Include="..\..\Organizer\MTransformCoord.h" />
+    <ClInclude Include="..\..\Organizer\MTransparentRenderTarget.h" />
     <ClInclude Include="..\..\Organizer\Node\Light\MDirectionalLight.h" />
     <ClInclude Include="..\..\Organizer\Node\Light\MILight.h" />
     <ClInclude Include="..\..\Organizer\Node\Light\MPointLight.h" />
@@ -224,6 +225,7 @@
     <ClCompile Include="..\..\Organizer\MScene.cpp" />
     <ClCompile Include="..\..\Organizer\MShadowTextureRenderTarget.cpp" />
     <ClCompile Include="..\..\Organizer\MTransformCoord.cpp" />
+    <ClCompile Include="..\..\Organizer\MTransparentRenderTarget.cpp" />
     <ClCompile Include="..\..\Organizer\Node\Light\MDirectionalLight.cpp" />
     <ClCompile Include="..\..\Organizer\Node\Light\MILight.cpp" />
     <ClCompile Include="..\..\Organizer\Node\Light\MPointLight.cpp" />
