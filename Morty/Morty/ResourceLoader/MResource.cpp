@@ -3,6 +3,8 @@
 #include "MResourceManager.h"
 #include "MFileHelper.h"
 
+MTypeIdentifierImplement(MResource, MTypedClass)
+
 MResource::MResource()
 : m_unResourceID(0)
 , m_unResourceType(0)

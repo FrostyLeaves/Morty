@@ -1081,50 +1081,9 @@ bool MDirectX11Device::GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsig
 		return false;
 	}
 
-
-	// Create the depth/stencil buffer and view.
-
-	D3D11_TEXTURE2D_DESC depthStencilDesc;
-
-	depthStencilDesc.Width = nWidth;
-	depthStencilDesc.Height = nHeight;
-	depthStencilDesc.MipLevels = 1;
-	depthStencilDesc.ArraySize = 1;
-	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-
-	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
-	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	depthStencilDesc.CPUAccessFlags = 0;
-	depthStencilDesc.MiscFlags = 0;
-
-	// Use 4X MSAA? --must match swap chain MSAA values.
-	if (m_bEnable4xMsaa)
-	{
-		depthStencilDesc.SampleDesc.Count = 4;
-		depthStencilDesc.SampleDesc.Quality = m_n4xMsaaQuality;
-	}
-	// No MSAA
-	else
-	{
-		depthStencilDesc.SampleDesc.Count = 1;
-		depthStencilDesc.SampleDesc.Quality = 0;
-	}
-
-
-	hr = m_pD3dDevice->CreateTexture2D(&depthStencilDesc, 0, &pDepthStencilBuffer);
-	if (FAILED(hr))
-	{
-		MLogManager::GetInstance()->Error("Failed to CreateTexture2D!");
-		return false;
-	}
-
-	hr = m_pD3dDevice->CreateDepthStencilView(pDepthStencilBuffer, 0, &pRenderTarget->m_pDepthStencilView);
-	pDepthStencilBuffer->Release();
-	if (FAILED(hr))
-	{
-		MLogManager::GetInstance()->Error("Failed to CreateDepthStencilView!");
-		return false;
-	}
+	pDxRenderTarget->m_pDepthTexture->GenerateBuffer(this, false);
+	if (MDepthTextureBuffer* pBuffer = dynamic_cast<MDepthTextureBuffer*>(pDxRenderTarget->m_pDepthTexture->GetBuffer()))
+		pDxRenderTarget->m_pDepthStencilView = pBuffer->m_pDepthStencilView;
 
 	return true;
 }
@@ -1147,7 +1106,6 @@ bool MDirectX11Device::GenerateRenderTarget(MTextureRenderTarget* pRenderTarget,
 			pRenderTarget->m_pDepthStencilView = pBuffer->m_pDepthStencilView;
 	}
 
-
 	return true;
 }
 
@@ -1167,16 +1125,20 @@ void MDirectX11Device::DestroyRenderTarget(MTextureRenderTarget* pRenderTarget)
 
 void MDirectX11Device::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
 {
-	if (pRenderTarget->m_pTargetView)
+	MDirectX11RenderTarget* pDxRenderTarget = dynamic_cast<MDirectX11RenderTarget*>(pRenderTarget);
+	if (nullptr == pDxRenderTarget)
+		return;
+
+	if (pDxRenderTarget->m_pTargetView)
 	{
-		pRenderTarget->m_pTargetView->Release();
-		pRenderTarget->m_pTargetView = nullptr;
+		pDxRenderTarget->m_pTargetView->Release();
+		pDxRenderTarget->m_pTargetView = nullptr;
 	}
 
-	if (pRenderTarget->m_pDepthStencilView)
+	if (pDxRenderTarget->m_pDepthTexture)
 	{
-		pRenderTarget->m_pDepthStencilView->Release();
-		pRenderTarget->m_pDepthStencilView = nullptr;
+		pDxRenderTarget->m_pDepthTexture->DestroyTexture(this);
+		pDxRenderTarget->m_pDepthStencilView = nullptr;		//Thie StencilView will be Released by pDepthTexture
 	}
 
 }

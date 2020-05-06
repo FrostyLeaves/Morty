@@ -28,7 +28,9 @@ enum MERasterizerType
 enum MEMaterialType
 {
 	EDefault = 0,
-	ETransparent = 1,
+	ETransparent,
+
+	EMaterialTypeEnd,
 };
 
 

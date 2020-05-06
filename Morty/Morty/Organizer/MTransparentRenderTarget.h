@@ -10,6 +10,7 @@
 #define _M_MTRANSPARENTRENDERTARGET_H_
 #include "MGlobal.h"
 #include "MObject.h"
+#include "MResource.h"
 #include "MTextureRenderTarget.h"
 
 #include "MMaterialGroup.h"
@@ -27,25 +28,22 @@ public:
 	virtual void OnDelete() override;
 
 	virtual void OnRender(MIRenderer* pRenderer) override;
-
     
     void CopyFromDepthTextureBuffer(MDepthTextureBuffer* pBuffer);
     void CopyToDepthTextureBuffer(MDepthTextureBuffer* pBuffer);
 
+
+    void SetSceneDepthTexture(MRenderDepthTexture* pDepthTexture) { m_pSceneDepthTexture = pDepthTexture; }
+    void SetPrevLevelRenderTarget(MTransparentRenderTarget* pRenderTarget) { m_pPrevLevelRenderTarget = pRenderTarget; }
     void SetSourceMeshes(std::vector<MMaterialGroup>* pGroup) { m_pTransparentMeshes = pGroup; }
-
-
-    void SetCurrentLevel(const int& nLevel) { m_nCurLevel = nLevel; }
-    int GetCurrentLevel() { return m_nCurLevel; }
-    int GetLevelNumber() { return m_nLevelNumber; }
 
 private:
 
-    int m_nCurLevel;
-    int m_nLevelNumber;
+    MResourceKeeper m_Material;
 
+    MRenderDepthTexture* m_pSceneDepthTexture;
+    MTransparentRenderTarget* m_pPrevLevelRenderTarget;
     std::vector<MMaterialGroup>* m_pTransparentMeshes;
-
 };
 
 #endif

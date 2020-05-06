@@ -57,4 +57,6 @@ void MTextureRenderTarget::Release(MIDevice* pDevice)
 		delete m_pDepthTexture;
 		m_pDepthTexture = nullptr;
 	}
+
+//	MIRenderTarget::Release(pDevice);
 }

@@ -16,7 +16,8 @@ HINSTANCE MWindowsRenderView::s_hInstance = 0;
 bool MWindowsRenderView::s_bIsRegisterWindow = false;
 
 MWindowsRenderView::MWindowsRenderView()
-	: m_bIsClosed(false)
+	: MIRenderView()
+	, m_bIsClosed(false)
 	, m_nWidth(640)
 	, m_nHeight(480)
 	, m_lEnginePrevTickTime(0)

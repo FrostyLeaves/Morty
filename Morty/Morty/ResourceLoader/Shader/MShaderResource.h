@@ -16,6 +16,7 @@ class MShader;
 class MORTY_CLASS MShaderResource : public MResource
 {
 public:
+	M_RESOURCE(MShaderResource)
     MShaderResource();
     virtual ~MShaderResource();
 

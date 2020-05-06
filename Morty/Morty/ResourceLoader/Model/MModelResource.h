@@ -27,8 +27,7 @@ class MSkeletalAnimation;
 class MORTY_CLASS MModelResource : public MResource
 {
 public:
-	
-public:
+	M_RESOURCE(MModelResource)
     MModelResource();
     virtual ~MModelResource();
 

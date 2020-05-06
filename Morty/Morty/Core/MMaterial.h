@@ -22,6 +22,7 @@ class MShaderResource;
 class MORTY_CLASS MMaterial : public MResource
 {
 public:
+	M_RESOURCE(MMaterial)
     MMaterial();
     virtual ~MMaterial();
 

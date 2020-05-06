@@ -21,6 +21,7 @@
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
 
+MTypeIdentifierImplement(MModelResource, MResource)
 
 void CopyMatrix4(Matrix4* matdest, aiMatrix4x4* matsour)
 {

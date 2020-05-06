@@ -11,6 +11,7 @@
 #include "MGlobal.h"
 #include "MString.h"
 #include "MRefCounter.h"
+#include "MTypedClass.h"
 
 #include <vector>
 #include <functional>
@@ -21,8 +22,12 @@ class MResourceKeeper;
 class MEngine;
 class MObject;
 
-class MORTY_CLASS MResource : public MRefCounter
+#define M_RESOURCE(CLASSNAME) \
+MTypedClassSign(CLASSNAME)
+
+class MORTY_CLASS MResource : public MRefCounter, public MTypedClass
 {
+	M_RESOURCE(MResource)
 public:
 	enum EResReloadType
 	{
@@ -101,7 +106,7 @@ public:
 	const MResourceKeeper& operator = (const MResourceKeeper& keeper);
 
 template <class T>
-	T* GetResource() { return dynamic_cast<T*>(m_pResource); }
+	T* GetResource() { return m_pResource->DynamicCast<T>(); }
 
 	void SetResChangedCallback(const MResChangedFunction& function)
 	{

@@ -33,6 +33,7 @@ MDirectX11Renderer::MDirectX11Renderer(MDirectX11Device* pDevice)
 	, m_pDepthStencilState_Default(nullptr)
 	, m_pDepthStencilState_Transparent(nullptr)
 	, m_vRasterizerState()
+	, m_vBlendState()
 	, m_pUsingMaterial(nullptr)
 //	, m_pCurrentRenderTarget(nullptr)
 {
@@ -88,6 +89,8 @@ bool MDirectX11Renderer::Initialize()
 	m_pDevice->m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_vRasterizerState[MERasterizerType::EWireframe]);
 
 
+
+	m_vBlendState.resize(MEMaterialType::EMaterialTypeEnd);
 	//混合状态块
 	D3D11_BLEND_DESC mBlendDesc;
 	mBlendDesc.AlphaToCoverageEnable = false;
@@ -107,7 +110,7 @@ bool MDirectX11Renderer::Initialize()
 	mRTDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
 
 
-	m_pDevice->m_pD3dDevice->CreateBlendState(&mBlendDesc, &m_pBlendState_Default);
+	m_pDevice->m_pD3dDevice->CreateBlendState(&mBlendDesc, &m_vBlendState[MEMaterialType::EDefault]);
 	
 	mRTDesc.BlendEnable = true;
 	mRTDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
@@ -120,9 +123,9 @@ bool MDirectX11Renderer::Initialize()
 	mRTDesc.BlendOp = D3D11_BLEND_OP_ADD;
 	mRTDesc.BlendOpAlpha = D3D11_BLEND_OP_MAX;
 
-	m_pDevice->m_pD3dDevice->CreateBlendState(&mBlendDesc, &m_pBlendState_Transparent);
+	m_pDevice->m_pD3dDevice->CreateBlendState(&mBlendDesc, &m_vBlendState[MEMaterialType::ETransparent]);
 
-	m_pDevice->m_pD3dContext->OMSetBlendState(m_pBlendState_Default, nullptr, 0xffffffff);
+	m_pDevice->m_pD3dContext->OMSetBlendState(m_vBlendState[MEMaterialType::EDefault], nullptr, 0xffffffff);
 
 	//创建纹理采样状态
 	D3D11_SAMPLER_DESC sampDesc;
@@ -197,6 +200,14 @@ void MDirectX11Renderer::Release()
 			pRasterizerState = nullptr;
 		}
 	}
+	for (ID3D11BlendState* pBlendState : m_vBlendState)
+	{
+		if (pBlendState)
+		{
+			pBlendState->Release();
+			pBlendState = nullptr;
+		}
+	}
 	if (m_pDepthStencilState_Default)
 	{
 		m_pDepthStencilState_Default->Release();
@@ -216,16 +227,6 @@ void MDirectX11Renderer::Release()
 	{
 		m_pDepthTextureSamplerState->Release();
 		m_pDepthTextureSamplerState = nullptr;
-	}
-	if (m_pBlendState_Default)
-	{
-		m_pBlendState_Default->Release();
-		m_pBlendState_Default = nullptr;
-	}
-	if (m_pBlendState_Transparent)
-	{
-		m_pBlendState_Transparent->Release();
-		m_pBlendState_Transparent = nullptr;
 	}
 }
 
@@ -333,15 +334,14 @@ bool MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial, const bool& bUpdat
 	if (m_eMaterialType != pMaterial->GetMaterialType())
 	{
 		m_eMaterialType = pMaterial->GetMaterialType();
+		m_pDevice->m_pD3dContext->OMSetBlendState(m_vBlendState[m_eMaterialType], nullptr, 0xffffffff);
 
 		if (MEMaterialType::EDefault == m_eMaterialType)
 		{
-			m_pDevice->m_pD3dContext->OMSetBlendState(m_pBlendState_Default, nullptr, 0xffffffff);
 			m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_pDepthStencilState_Default, 0);
 		}
 		else if (MEMaterialType::ETransparent == m_eMaterialType)
 		{
-			m_pDevice->m_pD3dContext->OMSetBlendState(m_pBlendState_Transparent, nullptr, 0xffffffff);
 			m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_pDepthStencilState_Transparent, 0);
 		}
 	}

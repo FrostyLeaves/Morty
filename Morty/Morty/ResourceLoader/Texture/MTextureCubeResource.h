@@ -17,6 +17,7 @@ class MResourceKeeper;
 class MORTY_CLASS MTextureCubeResource : public MResource
 {
 public:
+	M_RESOURCE(MTextureCubeResource)
 	MTextureCubeResource();
 	virtual ~MTextureCubeResource();
 

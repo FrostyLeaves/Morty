@@ -4,6 +4,8 @@
 #include "MIDevice.h"
 #include "MResourceManager.h"
 
+MTypeIdentifierImplement(MShaderResource, MResource)
+
 MShaderResource::MShaderResource()
 {
 	m_unResourceType = MResourceManager::MEResourceType::Shader;

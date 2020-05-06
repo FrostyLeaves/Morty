@@ -16,6 +16,7 @@
 class MORTY_CLASS MTextureResource : public MResource
 {
 public:
+	M_RESOURCE(MTextureResource)
     MTextureResource();
     virtual ~MTextureResource();
 

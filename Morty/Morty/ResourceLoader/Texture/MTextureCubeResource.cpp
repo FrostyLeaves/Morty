@@ -6,6 +6,8 @@
 #include "MTextureResource.h"
 #include "MResourceManager.h"
 
+MTypeIdentifierImplement(MTextureCubeResource, MResource)
+
 MTextureCubeResource::MTextureCubeResource()
 	: MResource()
 	, m_pTextureCube(nullptr)

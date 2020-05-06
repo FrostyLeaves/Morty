@@ -15,6 +15,8 @@
 
 #include <algorithm>
 
+MTypeIdentifierImplement(MMaterial, MResource)
+
 MMaterial::MMaterial()
 	: MResource()
 	, m_VertexResource(nullptr)

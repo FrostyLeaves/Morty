@@ -3,11 +3,15 @@
 #include "MDirectX11Device.h"
 #include "MLogManager.h"
 #include "MViewport.h"
+#include "MTexture.h"
 
-MDirectX11RenderTarget::MDirectX11RenderTarget(MDirectX11Device* pDevice) : MIRenderTarget()
-	,m_pDevice(pDevice), m_pSwapChain(nullptr), m_pView(nullptr)
+MDirectX11RenderTarget::MDirectX11RenderTarget(MDirectX11Device* pDevice)
+	: MIRenderTarget()
+	, m_pSwapChain(nullptr)
+	, m_pDevice(pDevice)
+	, m_pView(nullptr)
+	, m_pDepthTexture(new MRenderDepthTexture())
 {
-
 }
 
 MDirectX11RenderTarget::~MDirectX11RenderTarget()
@@ -126,6 +130,9 @@ void MDirectX11RenderTarget::OnResize(const unsigned int& unWidth, const unsigne
 	}
 
 	m_pDevice->GenerateRenderTarget(this, unSafeWidth, unSafeHeight);
+
+
+//	MIRenderTarget::OnResize(unWidth, unHeight);
 }
 
 void MDirectX11RenderTarget::OnRender(MIRenderer* pRenderer)
@@ -151,4 +158,12 @@ void MDirectX11RenderTarget::Release(MIDevice* pDevice)
 		m_pSwapChain->Release();
 		m_pSwapChain = nullptr;
 	}
+	if (m_pDepthTexture)
+	{
+		m_pDepthTexture->DestroyTexture(pDevice);
+		delete m_pDepthTexture;
+		m_pDepthTexture = nullptr;
+	}
+
+//	MTextureRenderTarget::Release(pDevice);
 }

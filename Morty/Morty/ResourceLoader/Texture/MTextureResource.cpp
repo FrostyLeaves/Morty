@@ -6,6 +6,8 @@
 
 #include "ximage.h"
 
+MTypeIdentifierImplement(MTextureResource, MResource)
+
 MTextureResource::MTextureResource()
 	:MResource()
 {

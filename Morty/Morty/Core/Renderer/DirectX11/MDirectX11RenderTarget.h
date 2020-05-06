@@ -20,6 +20,7 @@
 class MIRenderer;
 class MWindowsRenderView;
 class MDirectX11Device;
+class MRenderDepthTexture;
 class MORTY_CLASS MDirectX11RenderTarget : public MIRenderTarget
 {
 public:
@@ -35,6 +36,7 @@ public:
 
 public:
 	IDXGISwapChain* m_pSwapChain;
+	MRenderDepthTexture* m_pDepthTexture;
 private:
 	MDirectX11Device* m_pDevice;
 	MWindowsRenderView* m_pView;

@@ -70,9 +70,7 @@ protected:
 	ID3D11DepthStencilState* m_pDepthStencilState_Transparent;
 
 	std::vector<ID3D11RasterizerState*> m_vRasterizerState;
-
-	ID3D11BlendState* m_pBlendState_Default;
-	ID3D11BlendState* m_pBlendState_Transparent;
+	std::vector<ID3D11BlendState*> m_vBlendState;
 	
 	MDirectX11Device* m_pDevice;
 	MMaterial* m_pUsingMaterial;
