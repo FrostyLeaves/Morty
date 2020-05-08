@@ -15,7 +15,7 @@
 #include "MRenderStructure.h"
 
 
-enum MERasterizerType
+enum class MERasterizerType
 {
 	EWireframe = 0,
 	ECullNone,
@@ -25,10 +25,27 @@ enum MERasterizerType
 	ERasterizerEnd
 };
 
-enum MEMaterialType
+enum class MEBlendType
 {
 	EDefault = 0,
 	ETransparent,
+
+	EBlendTypeEnd,
+};
+
+enum class MEDepthStencilType
+{
+	EDefault = 0,
+	EReadNotWrite,
+
+	EDepthTypeEnd,
+};
+
+enum class MEMaterialType
+{
+	EDefault = 0,
+	ETransparent,
+	EDepthPeeling,
 
 	EMaterialTypeEnd,
 };
@@ -58,7 +75,7 @@ public:
 
 public:
 
-	virtual void SetRasterizerType(const unsigned int& eType) { m_eRasterizerType = eType; }
+	virtual void SetRasterizerType(const MERasterizerType& eType) { m_eRasterizerType = eType; }
 
 public:
 
@@ -87,8 +104,8 @@ public:
 	virtual void SetPixelShaderTexture(MShaderTextureParam& param) = 0;
 
 protected:
-	unsigned int m_eRasterizerType;
-	unsigned int m_eMaterialType;
+	MERasterizerType m_eRasterizerType;
+	MEMaterialType m_eMaterialType;
 };
 
 

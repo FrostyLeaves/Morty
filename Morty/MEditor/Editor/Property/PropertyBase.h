@@ -38,7 +38,7 @@ public:
 	bool EditVector3(Vector3& value, const float& fSpeed = 1.0f, const float& fMin = 0.0f, const float& fMax = 0.0f);
 	bool EditVector3(float* pValue, const float& fSpeed = 1.0f, const float& fMin = 0.0f, const float& fMax = 0.0f);
 	bool EditMTransform(MTransform& trans);
-	bool EditEnum(const std::vector<MString>& select, unsigned int& index);
+	bool EditEnum(const std::vector<MString>& select, int& index);
 	bool EditMColor(MColor& value);
 
 	bool EditMMaterial(MMaterial* pMaterial);

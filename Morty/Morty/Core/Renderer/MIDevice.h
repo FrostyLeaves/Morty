@@ -10,6 +10,7 @@
 #define _M_MIDEVICE_H_
 #include "MGlobal.h"
 #include "MString.h"
+#include "MShaderMacro.h"
 
 class MVertexBuffer;
 class MIMesh;
@@ -46,7 +47,7 @@ public:
 	virtual void GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const unsigned int& unWidth, const unsigned int& unHeight) = 0;
 	virtual void DestroyDepthTexture(MDepthTextureBuffer** ppTextureBuffer) = 0;
 
-	virtual bool CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType) = 0;
+	virtual bool CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType, const MShaderMacro& macro) = 0;
 	virtual void CleanShader(MShaderBuffer** ppShader) = 0;
 
 	virtual bool GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsigned int nWidth, unsigned int nHeight) = 0;

@@ -42,7 +42,7 @@ public:
 	virtual void GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const unsigned int& unWidth, const unsigned int& unHeight) override;
 	virtual void DestroyDepthTexture(MDepthTextureBuffer** ppTextureBuffer) override;
 
-	virtual bool CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType) override;
+	virtual bool CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType, const MShaderMacro& macro) override;
 	virtual void CleanShader(MShaderBuffer** ppShaderBuffer) override;
 
 	ID3D11InputLayout* CreateInputLayout(D3D11_INPUT_ELEMENT_DESC desc[], const int& nLength);

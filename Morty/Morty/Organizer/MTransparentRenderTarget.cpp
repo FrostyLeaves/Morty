@@ -21,10 +21,6 @@ MTransparentRenderTarget::~MTransparentRenderTarget()
 void MTransparentRenderTarget::OnCreated()
 {
 	m_pDevice = m_pEngine->GetDevice();
-
-	MMaterial* pMaterial = m_Material.GetResource<MMaterial>();
-    pMaterial->SetRasterizerType(MERasterizerType::ECullNone);
-
 }
 
 void MTransparentRenderTarget::OnDelete()
@@ -34,17 +30,20 @@ void MTransparentRenderTarget::OnDelete()
 
 void MTransparentRenderTarget::OnRender(MIRenderer* pRenderer)
 {
-    MMaterial* pMaterial = m_Material.GetResource<MMaterial>();
-
-
-    std::vector<MShaderTextureParam>& vTextureParams = *pMaterial->GetTextureParams();
-
-    for (MShaderTextureParam& param : vTextureParams)
+    for (MMaterialGroup& group : *m_pTransparentMeshes)
     {
-        if (param.strName == "FrontDepth")
-        {
-            param.pTexture = m_pPrevLevelRenderTarget->GetDepthTexture();
-        }
+        MMaterial* pMaterial = group.m_pMaterial;
+
+		std::vector<MShaderTextureParam>& vTextureParams = *pMaterial->GetTextureParams();
+
+		for (MShaderTextureParam& param : vTextureParams)
+		{
+			if (param.strName == "FrontDepth")
+			{
+				param.pTexture = m_pPrevLevelRenderTarget->GetDepthTexture();
+			}
+		}
+
     }
 }
 

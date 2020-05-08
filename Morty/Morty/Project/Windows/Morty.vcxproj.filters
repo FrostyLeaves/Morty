@@ -312,6 +312,9 @@
     <ClInclude Include="..\..\Organizer\MTransparentRenderTarget.h">
       <Filter>Organizer</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\MShaderMacro.h">
+      <Filter>Core\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -520,6 +523,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Organizer\MTransparentRenderTarget.cpp">
       <Filter>Organizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\MShaderMacro.cpp">
+      <Filter>Core\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

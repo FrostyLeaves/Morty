@@ -40,5 +40,4 @@ void ERASE_FIRST_VECTOR(std::vector<T>& vector, const T& value)
 	}
 }
 
-
 #endif

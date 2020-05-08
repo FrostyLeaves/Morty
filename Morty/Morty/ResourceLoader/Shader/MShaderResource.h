@@ -10,9 +10,12 @@
 #define _M_MSHADERRESOURCE_H_
 #include "MGlobal.h"
 
-#include "MResource.h"
+#include <map>
 
-class MShader;
+#include "MResource.h"
+#include "MShader.h"
+
+
 class MORTY_CLASS MShaderResource : public MResource
 {
 public:
@@ -22,7 +25,10 @@ public:
 
 public:
 
-	MShader* GetShaderTemplate() { return m_pShaderTemplate; }
+    MShader* GetShaderByIndex(const int& nIndex);
+    int FindShaderByMacroParam(const MShaderMacro& macro);
+
+    MShader::MEShaderType GetShaderType() { return m_eShaderType; }
 
 public:
 
@@ -34,7 +40,11 @@ protected:
 
 private:
 
-	MShader* m_pShaderTemplate;
+    MShader::MEShaderType m_eShaderType;
+    MString m_strShaderPath;
+
+    std::vector<MShader*> m_vShaders;
+
 
 private:
 

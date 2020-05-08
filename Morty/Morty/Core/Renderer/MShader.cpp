@@ -13,7 +13,7 @@ MShader::MShader()
 
 bool MShader::CompileShader(MIDevice* pDevice)
 {
-	if (false == pDevice->CompileShader(&m_pShaderBuffer, m_strShaderPath, m_eShaderType))
+	if (false == pDevice->CompileShader(&m_pShaderBuffer, m_strShaderPath, m_eShaderType, m_ShaderMacro))
 		return false;
 
 	return true;

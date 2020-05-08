@@ -15,7 +15,7 @@ public:
 			{
 				ShowValueBegin("Type");
 				MCamera::MECameraType eType = pNode->GetCameraType();
-				unsigned int unSelected = eType == MCamera::EPerspective ? 0 : 1;
+				int unSelected = eType == MCamera::EPerspective ? 0 : 1;
 				if (EditEnum({ "Perspective", "Orthographic" }, unSelected))
 				{
 					pNode->SetCameraType(unSelected == 0 ? MCamera::EPerspective : MCamera::EOrthographic);

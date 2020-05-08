@@ -151,7 +151,7 @@ bool PropertyBase::EditMTransform(MTransform& trans)
 	return bModify;
 }
 
-bool PropertyBase::EditEnum(const std::vector<MString>& select, unsigned int& index)
+bool PropertyBase::EditEnum(const std::vector<MString>& select, int& index)
 {
 	if (index >= select.size())
 		return false;
@@ -261,7 +261,7 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 
 	{
 		ShowValueBegin("Cull");
-		unsigned int nCullType = pMaterial->GetRasterizerType();
+		int nCullType = (int)pMaterial->GetRasterizerType();
 		if (EditEnum({ "Wireframe", "CullNone", "CullBack", "ECullFront" }, nCullType))
 		{
 			pMaterial->SetRasterizerType(MERasterizerType(nCullType));
@@ -271,7 +271,7 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 
 	{
 		ShowValueBegin("Type");
-		unsigned int nMaterialType = pMaterial->GetMaterialType();
+		int nMaterialType = (int)pMaterial->GetMaterialType();
 		if (EditEnum({ "Default", "Transparent" }, nMaterialType))
 		{
 			pMaterial->SetMaterialType((MEMaterialType)nMaterialType);

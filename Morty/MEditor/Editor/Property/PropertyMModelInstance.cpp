@@ -10,30 +10,30 @@ void PropertyMModelInstance::EditAnimation(MModelInstance* pNode)
 		MSkeletalAnimController* pController = pNode->GetSkeletalAnimationController();
 		const std::vector<MString>& vAnimationsList = *pModelResource->GetAnimationsName();
 
-		unsigned int unCurrentAnimationIndex = 0;
+		int nCurrentAnimationIndex = 0;
 		if (pController)
 		{
 			if (MSkeletalAnimation* pAnimation = pController->GetAnimation())
 			{
-				unCurrentAnimationIndex = pAnimation->GetIndex();
+				nCurrentAnimationIndex = pAnimation->GetIndex();
 			}
 		}
 		if (!vAnimationsList.empty())
 		{
 			if (!pController)
 			{
-				pNode->SetPlayAnimation((*pModelResource->GetAnimationsName())[unCurrentAnimationIndex]);
+				pNode->SetPlayAnimation((*pModelResource->GetAnimationsName())[nCurrentAnimationIndex]);
 				pController = pNode->GetSkeletalAnimationController();
 			}
 
 			ShowValueBegin("Animations");
-			if (EditEnum(vAnimationsList, unCurrentAnimationIndex))
+			if (EditEnum(vAnimationsList, nCurrentAnimationIndex))
 			{
 				bool bLoop = pController->GetLoop();
 				float fPercent = pController->GetPercent();
 				MIAnimController::MEAnimControllerState state = pController->GetState();
 
-				pNode->SetPlayAnimation((*pModelResource->GetAnimationsName())[unCurrentAnimationIndex]);
+				pNode->SetPlayAnimation((*pModelResource->GetAnimationsName())[nCurrentAnimationIndex]);
 				pController = pNode->GetSkeletalAnimationController();
 
 				pController->SetLoop(bLoop);

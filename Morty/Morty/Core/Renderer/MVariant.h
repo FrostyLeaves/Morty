@@ -108,6 +108,7 @@ public:
 	unsigned int GetMemberCount() const { return m_vMember.size(); }
 
 	const MContainer& operator = (const MContainer& var);
+	bool operator == (const MContainer& var) const;
 
 	MVariant& operator[](const unsigned int& unIndex);
 

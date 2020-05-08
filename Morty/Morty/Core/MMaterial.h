@@ -14,6 +14,7 @@
 #include "MRenderStructure.h"
 #include "MResource.h"
 #include "MIRenderer.h"
+#include "MShaderMacro.h"
 
 #include <vector>
 
@@ -74,6 +75,8 @@ protected:
 	void CleanTextureParams();
 	void CleanShaderParams();
 
+	void UpdateShaderMacro();
+
 private:
 
 	//Shader Params
@@ -92,6 +95,11 @@ private:
 
 	MERasterizerType m_eRasterizerType;
 	MEMaterialType m_eMaterialType;
+
+
+	int m_nVertexShaderIndex;
+	int m_nPixelShaderIndex;
+	MShaderMacro m_ShaderMacro;
 };
 
 #endif

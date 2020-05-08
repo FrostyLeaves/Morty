@@ -66,11 +66,9 @@ protected:
 	ID3D11SamplerState* m_pDepthTextureSamplerState;
 //	ID3D11SamplerState* m_pAnisotropicFilterSamplerState;
 
-	ID3D11DepthStencilState* m_pDepthStencilState_Default;
-	ID3D11DepthStencilState* m_pDepthStencilState_Transparent;
-
 	std::vector<ID3D11RasterizerState*> m_vRasterizerState;
 	std::vector<ID3D11BlendState*> m_vBlendState;
+	std::vector<ID3D11DepthStencilState*> m_vDepthStencilState;
 	
 	MDirectX11Device* m_pDevice;
 	MMaterial* m_pUsingMaterial;

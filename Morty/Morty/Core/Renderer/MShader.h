@@ -12,6 +12,7 @@
 #include "MString.h"
 #include "MVertex.h"
 #include "MVariant.h"
+#include "MShaderMacro.h"
 
 class MIDevice;
 class MShaderBuffer;
@@ -37,6 +38,7 @@ public:
 private:
 
 	friend class MShaderResource;
+	MShaderMacro m_ShaderMacro;
 	MString m_strShaderPath;
 	MEShaderType m_eShaderType;
 

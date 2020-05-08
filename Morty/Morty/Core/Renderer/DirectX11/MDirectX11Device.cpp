@@ -636,7 +636,7 @@ void MDirectX11Device::UploadBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMes
 	m_pD3dContext->Unmap((*ppVertexBuffer)->m_pIndexBuffer, 0);
 }
 
-bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType)
+bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType, const MShaderMacro& shaderMacro)
 {
 	if (*ppShaderBuffer)
 	{
@@ -663,7 +663,7 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 	const MString strSpotLightMaxNumber = MStringHelper::ToString(MSPOT_LIGHT_MAX_NUMBER);
 	const MString strSpotLightPixelNumber = MStringHelper::ToString(MSPOT_LIGHT_PIXEL_NUMBER);
 
-	D3D_SHADER_MACRO macro[] = {
+	static const D3D_SHADER_MACRO macro[] = {
 		"MBONES_PER_VERTEX", strBonesPerVertex.c_str(),
 		"MBONES_MAX_NUMBER", strBonesMaxNumber.c_str(),
 		"MSHADOW_TEXTURE_SIZE", strShadowTextureSize.c_str(),
@@ -675,7 +675,26 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 		nullptr, nullptr
 		};
 
-	HRESULT hr = D3DX11CompileFromFile(strShaderPath.c_str(), macro, nullptr, svFuncName, svProFile, shaderFlags, 0, nullptr, &pShaderBuffer, &pErrorMessage, nullptr);
+	unsigned int unDefaultMacroSize = 9;
+
+	D3D_SHADER_MACRO* vShaderMacro = new D3D_SHADER_MACRO[unDefaultMacroSize + shaderMacro.m_vMacroParams.size()];
+	memcpy(vShaderMacro, macro, unDefaultMacroSize * sizeof(D3D_SHADER_MACRO));
+
+	for (unsigned int i = 0; i < shaderMacro.m_vMacroParams.size(); ++i)
+	{
+		const std::pair<MString, MString>& param = shaderMacro.m_vMacroParams[i];
+		vShaderMacro[unDefaultMacroSize - 1 + i].Name = param.first.c_str();
+		vShaderMacro[unDefaultMacroSize - 1 + i].Definition = param.second.c_str();
+	}
+
+	unsigned int unEndIndex = unDefaultMacroSize + shaderMacro.m_vMacroParams.size() - 1;
+	vShaderMacro[unEndIndex].Name = nullptr;
+	vShaderMacro[unEndIndex].Definition = nullptr;
+
+	HRESULT hr = D3DX11CompileFromFile(strShaderPath.c_str(), vShaderMacro, nullptr, svFuncName, svProFile, shaderFlags, 0, nullptr, &pShaderBuffer, &pErrorMessage, nullptr);
+	delete[] vShaderMacro; 
+	vShaderMacro = nullptr;
+
 	if (FAILED(hr))
 	{
 		if (pErrorMessage)

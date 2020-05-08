@@ -29,9 +29,7 @@ MDirectX11Renderer::MDirectX11Renderer(MDirectX11Device* pDevice)
 	: m_pDevice(pDevice)
 	, m_pDefaultSamplerState(nullptr)
 	, m_pDepthTextureSamplerState(nullptr)
-//	, m_pAnisotropicFilterSamplerState(nullptr)
-	, m_pDepthStencilState_Default(nullptr)
-	, m_pDepthStencilState_Transparent(nullptr)
+	, m_vDepthStencilState()
 	, m_vRasterizerState()
 	, m_vBlendState()
 	, m_pUsingMaterial(nullptr)
@@ -68,29 +66,29 @@ bool MDirectX11Renderer::Initialize()
 	if(m_pDevice->m_bEnable4xMsaa)
 		mRasterizer.MultisampleEnable = true;
 
-	m_vRasterizerState.resize(MERasterizerType::ERasterizerEnd);
-	HRESULT hr = m_pDevice->m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_vRasterizerState[MERasterizerType::ECullBack]);
+	m_vRasterizerState.resize((int)MERasterizerType::ERasterizerEnd);
+	HRESULT hr = m_pDevice->m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_vRasterizerState[(int)MERasterizerType::ECullBack]);
 	if (FAILED(hr))
 	{
 		MLogManager::GetInstance()->Error("Failed to create RasterizerState! Initialize return false.");
-		if (m_vRasterizerState[MERasterizerType::ECullBack])
+		if (m_vRasterizerState[(int)MERasterizerType::ECullBack])
 		{
-			m_vRasterizerState[MERasterizerType::ECullBack]->Release();
-			m_vRasterizerState[MERasterizerType::ECullBack] = nullptr;
+			m_vRasterizerState[(int)MERasterizerType::ECullBack]->Release();
+			m_vRasterizerState[(int)MERasterizerType::ECullBack] = nullptr;
 		}
 		return false;
 	}
 
 	mRasterizer.CullMode = D3D11_CULL_FRONT;
-	m_pDevice->m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_vRasterizerState[MERasterizerType::ECullFront]);
+	m_pDevice->m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_vRasterizerState[(int)MERasterizerType::ECullFront]);
 	mRasterizer.CullMode = D3D11_CULL_NONE;
-	m_pDevice->m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_vRasterizerState[MERasterizerType::ECullNone]);
+	m_pDevice->m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_vRasterizerState[(int)MERasterizerType::ECullNone]);
 	mRasterizer.FillMode = D3D11_FILL_WIREFRAME;
-	m_pDevice->m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_vRasterizerState[MERasterizerType::EWireframe]);
+	m_pDevice->m_pD3dDevice->CreateRasterizerState(&mRasterizer, &m_vRasterizerState[(int)MERasterizerType::EWireframe]);
 
 
 
-	m_vBlendState.resize(MEMaterialType::EMaterialTypeEnd);
+	m_vBlendState.resize((int)MEMaterialType::EMaterialTypeEnd);
 	//混合状态块
 	D3D11_BLEND_DESC mBlendDesc;
 	mBlendDesc.AlphaToCoverageEnable = false;
@@ -110,7 +108,7 @@ bool MDirectX11Renderer::Initialize()
 	mRTDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
 
 
-	m_pDevice->m_pD3dDevice->CreateBlendState(&mBlendDesc, &m_vBlendState[MEMaterialType::EDefault]);
+	m_pDevice->m_pD3dDevice->CreateBlendState(&mBlendDesc, &m_vBlendState[(int)MEBlendType::EDefault]);
 	
 	mRTDesc.BlendEnable = true;
 	mRTDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
@@ -123,9 +121,9 @@ bool MDirectX11Renderer::Initialize()
 	mRTDesc.BlendOp = D3D11_BLEND_OP_ADD;
 	mRTDesc.BlendOpAlpha = D3D11_BLEND_OP_MAX;
 
-	m_pDevice->m_pD3dDevice->CreateBlendState(&mBlendDesc, &m_vBlendState[MEMaterialType::ETransparent]);
+	m_pDevice->m_pD3dDevice->CreateBlendState(&mBlendDesc, &m_vBlendState[(int)MEBlendType::ETransparent]);
 
-	m_pDevice->m_pD3dContext->OMSetBlendState(m_vBlendState[MEMaterialType::EDefault], nullptr, 0xffffffff);
+	m_pDevice->m_pD3dContext->OMSetBlendState(m_vBlendState[(int)MEBlendType::EDefault], nullptr, 0xffffffff);
 
 	//创建纹理采样状态
 	D3D11_SAMPLER_DESC sampDesc;
@@ -143,6 +141,7 @@ bool MDirectX11Renderer::Initialize()
 // 	hr = m_pDevice->m_pD3dDevice->CreateSamplerState(&sampDesc, &m_pAnisotropicFilterSamplerState);
 
 
+	m_vDepthStencilState.resize((int)MEDepthStencilType::EDepthTypeEnd);
 	//深度状态
 	D3D11_DEPTH_STENCIL_DESC dsDesc;
 	dsDesc.DepthEnable = true;
@@ -150,14 +149,14 @@ bool MDirectX11Renderer::Initialize()
 	dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	dsDesc.StencilEnable = false;
 
-	m_pDevice->m_pD3dDevice->CreateDepthStencilState(&dsDesc, &m_pDepthStencilState_Default);
-	m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_pDepthStencilState_Default, 0);
+	m_pDevice->m_pD3dDevice->CreateDepthStencilState(&dsDesc, &m_vDepthStencilState[(int)MEDepthStencilType::EDefault]);
+	m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::EDefault], 0);
 
 	dsDesc.DepthEnable = true;
 	dsDesc.StencilEnable = false;
 	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
 
-	m_pDevice->m_pD3dDevice->CreateDepthStencilState(&dsDesc, &m_pDepthStencilState_Transparent);
+	m_pDevice->m_pD3dDevice->CreateDepthStencilState(&dsDesc, &m_vDepthStencilState[(int)MEDepthStencilType::EReadNotWrite]);
 
 
 	D3D11_SAMPLER_DESC comparisonSamplerDesc;
@@ -208,15 +207,13 @@ void MDirectX11Renderer::Release()
 			pBlendState = nullptr;
 		}
 	}
-	if (m_pDepthStencilState_Default)
+	for (ID3D11DepthStencilState* pDepthStencilState : m_vDepthStencilState)
 	{
-		m_pDepthStencilState_Default->Release();
-		m_pDepthStencilState_Default = nullptr;
-	}
-	if (m_pDepthStencilState_Transparent)
-	{
-		m_pDepthStencilState_Transparent->Release();
-		m_pDepthStencilState_Transparent = nullptr;
+		if (pDepthStencilState)
+		{
+			pDepthStencilState->Release();
+			pDepthStencilState = nullptr;
+		}
 	}
 	if (m_pDefaultSamplerState)
 	{
@@ -328,21 +325,27 @@ bool MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial, const bool& bUpdat
 	{
 		//切换渲染状态
 		m_eRasterizerType = pMaterial->GetRasterizerType();
-		m_pDevice->m_pD3dContext->RSSetState(m_vRasterizerState[m_eRasterizerType]);
+		m_pDevice->m_pD3dContext->RSSetState(m_vRasterizerState[(int)m_eRasterizerType]);
 	}
 
 	if (m_eMaterialType != pMaterial->GetMaterialType())
 	{
 		m_eMaterialType = pMaterial->GetMaterialType();
-		m_pDevice->m_pD3dContext->OMSetBlendState(m_vBlendState[m_eMaterialType], nullptr, 0xffffffff);
 
 		if (MEMaterialType::EDefault == m_eMaterialType)
 		{
-			m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_pDepthStencilState_Default, 0);
+			m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::EDefault], 0);
+			m_pDevice->m_pD3dContext->OMSetBlendState(m_vBlendState[(int)MEBlendType::EDefault], nullptr, 0xffffffff);
 		}
 		else if (MEMaterialType::ETransparent == m_eMaterialType)
 		{
-			m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_pDepthStencilState_Transparent, 0);
+			m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::EReadNotWrite], 0);
+			m_pDevice->m_pD3dContext->OMSetBlendState(m_vBlendState[(int)MEBlendType::ETransparent], nullptr, 0xffffffff);
+		}
+		else if (MEMaterialType::EDepthPeeling == m_eMaterialType)
+		{
+			m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::EReadNotWrite], 0);
+			m_pDevice->m_pD3dContext->OMSetBlendState(m_vBlendState[(int)MEBlendType::EDefault], nullptr, 0xffffffff);
 		}
 	}
 
@@ -389,9 +392,9 @@ void MDirectX11Renderer::UpdateMaterialParam()
 
 	for (MShaderParam& param : *m_pUsingMaterial->GetShaderParams())
 	{
-		if(MEShaderParamType::EVertex & param.eType)
+		if((int)MEShaderParamType::EVertex & param.eType)
 			SetVertexShaderParam(param);
-		if (MEShaderParamType::EPixel & param.eType)
+		if ((int)MEShaderParamType::EPixel & param.eType)
 			SetPixelShaderParam(param);
 	}
 
@@ -404,9 +407,9 @@ void MDirectX11Renderer::UpdateMaterialResource()
 
 	for (MShaderTextureParam& param : *m_pUsingMaterial->GetTextureParams())
 	{
-		if (MEShaderParamType::EVertex & param.eShaderType)
+		if ((int)MEShaderParamType::EVertex & param.eShaderType)
 			SetVertexShaderTexture(param);
-		if (MEShaderParamType::EPixel & param.eShaderType)
+		if ((int)MEShaderParamType::EPixel & param.eShaderType)
 			SetPixelShaderTexture(param);
 	}
 }

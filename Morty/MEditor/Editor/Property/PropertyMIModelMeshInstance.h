@@ -55,7 +55,7 @@ public:
 			{
 				ShowValueBegin("ShadowType");
 				MIModelMeshInstance::MEShadowType eType = pNode->GetShadowType();
-				unsigned int unSelected = (unsigned int)eType;
+				int unSelected = (int)eType;
 				if (EditEnum({ "None", "OnlyDirection", "AllLights" }, unSelected))
 				{
 					pNode->SetShadowType((MIModelMeshInstance::MEShadowType)unSelected);

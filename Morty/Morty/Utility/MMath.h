@@ -37,8 +37,13 @@ public:
 	static float Rand_0_1();
 	static int RandInt(const int& nMin, const int& nMax);
 
-
-
+	template <typename T>
+	static T Clamp(const T& value, const T& min, const T& max)
+	{
+		if (value < min) return min;
+		if (value > max) return max;
+		return value;
+	}
 
 private:
 

@@ -25,6 +25,9 @@ MMaterial::MMaterial()
 	, m_pPixelShader(nullptr)
 	, m_eRasterizerType(MERasterizerType::ECullBack)
 	, m_eMaterialType(MEMaterialType::EDefault)
+	, m_nVertexShaderIndex(0)
+	, m_nPixelShaderIndex(0)
+	, m_ShaderMacro()
 {
 	m_unResourceType = MResourceManager::MEResourceType::Material;
 }
@@ -274,11 +277,15 @@ bool MMaterial::LoadVertexShader(MResource* pResource)
 {
 	if (MShaderResource* pShaderResource = dynamic_cast<MShaderResource*>(pResource))
 	{
-		if (MShader::MEShaderType::Vertex == pShaderResource->GetShaderTemplate()->GetType())
+		if (MShader::MEShaderType::Vertex == pShaderResource->GetShaderType())
 		{
 			auto LoadFunc = [this](const unsigned int& eReloadType) {
+				MShaderResource* pShaderResource = m_VertexResource.GetResource()->DynamicCast<MShaderResource>();
+				if (nullptr == pShaderResource)
+					return false;
 
-				m_pVertexShader = dynamic_cast<MShaderResource*>(m_VertexResource.GetResource())->GetShaderTemplate();
+				m_nVertexShaderIndex = pShaderResource->FindShaderByMacroParam(m_ShaderMacro);
+				m_pVertexShader = pShaderResource->GetShaderByIndex(m_nVertexShaderIndex);
 				if (m_pVertexShader && nullptr == m_pVertexShader->GetBuffer())
 				{
 					if (!m_pVertexShader->CompileShader(m_pEngine->GetDevice()))
@@ -309,10 +316,15 @@ bool MMaterial::LoadPixelShader(MResource* pResource)
 {
 	if (MShaderResource* pShaderResource = dynamic_cast<MShaderResource*>(pResource))
 	{
-		if (MShader::MEShaderType::Pixel == pShaderResource->GetShaderTemplate()->GetType())
+		if (MShader::MEShaderType::Pixel == pShaderResource->GetShaderType())
 		{
 			auto LoadFunc = [this](const unsigned int& eReloadType) {
-				m_pPixelShader = dynamic_cast<MShaderResource*>(m_PixelResource.GetResource())->GetShaderTemplate();
+				MShaderResource* pShaderResource = m_PixelResource.GetResource()->DynamicCast<MShaderResource>();
+				if (nullptr == pShaderResource)
+					return false;
+
+				m_nPixelShaderIndex = pShaderResource->FindShaderByMacroParam(m_ShaderMacro);
+				m_pPixelShader = pShaderResource->GetShaderByIndex(m_nPixelShaderIndex);
 				if (m_pPixelShader && nullptr == m_pPixelShader->GetBuffer())
 				{
 					if (!m_pPixelShader->CompileShader(m_pEngine->GetDevice()))
@@ -466,4 +478,9 @@ void MMaterial::CleanShaderParams()
 		m_pEngine->GetDevice()->DestroyShaderParamBuffer(&param);
 
 	m_vShaderParams.clear();
+}
+
+void MMaterial::UpdateShaderMacro()
+{
+
 }
