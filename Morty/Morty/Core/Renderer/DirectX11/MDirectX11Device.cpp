@@ -654,40 +654,24 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 	const char* svFuncName = eShaderType == MShader::MEShaderType::Vertex ? "VS" : "PS";
 	const char* svProFile = eShaderType == MShader::MEShaderType::Vertex ? "vs_5_0" : "ps_5_0";
 
+	unsigned int unGlobalMacroSize = shaderMacro.s_vGlobalMacroParams.size();
+	unsigned int unShaderMacroSize = shaderMacro.m_vMacroParams.size();
+	unsigned int unEndIndex = unGlobalMacroSize + unShaderMacroSize;
+	D3D_SHADER_MACRO* vShaderMacro = new D3D_SHADER_MACRO[unEndIndex + 1];
 
-	const MString strBonesPerVertex = MStringHelper::ToString(MBONES_PER_VERTEX);
-	const MString strBonesMaxNumber = MStringHelper::ToString(MBONES_MAX_NUMBER);
-	const MString strShadowTextureSize = MStringHelper::ToString(MSHADOW_TEXTURE_SIZE);
-	const MString strPointLightMaxNumber = MStringHelper::ToString(MPOINT_LIGHT_MAX_NUMBER);
-	const MString strPointLightPixelNumber = MStringHelper::ToString(MPOINT_LIGHT_PIXEL_NUMBER);
-	const MString strSpotLightMaxNumber = MStringHelper::ToString(MSPOT_LIGHT_MAX_NUMBER);
-	const MString strSpotLightPixelNumber = MStringHelper::ToString(MSPOT_LIGHT_PIXEL_NUMBER);
-
-	static const D3D_SHADER_MACRO macro[] = {
-		"MBONES_PER_VERTEX", strBonesPerVertex.c_str(),
-		"MBONES_MAX_NUMBER", strBonesMaxNumber.c_str(),
-		"MSHADOW_TEXTURE_SIZE", strShadowTextureSize.c_str(),
-		"MCALC_NORMAL_IN_VS", MCALC_NORMAL_IN_VS ? "true" : "false",
-		"MPOINT_LIGHT_MAX_NUMBER", strPointLightMaxNumber.c_str(),
-		"MPOINT_LIGHT_PIXEL_NUMBER", strPointLightPixelNumber.c_str(),
-		"MSPOT_LIGHT_MAX_NUMBER", strSpotLightMaxNumber.c_str(),
-		"MSPOT_LIGHT_PIXEL_NUMBER", strSpotLightPixelNumber.c_str(),
-		nullptr, nullptr
-		};
-
-	unsigned int unDefaultMacroSize = 9;
-
-	D3D_SHADER_MACRO* vShaderMacro = new D3D_SHADER_MACRO[unDefaultMacroSize + shaderMacro.m_vMacroParams.size()];
-	memcpy(vShaderMacro, macro, unDefaultMacroSize * sizeof(D3D_SHADER_MACRO));
-
-	for (unsigned int i = 0; i < shaderMacro.m_vMacroParams.size(); ++i)
+	for (unsigned int i = 0; i < unGlobalMacroSize; ++i)
+	{
+		const std::pair<MString, MString>& param = shaderMacro.s_vGlobalMacroParams[i];
+		vShaderMacro[i].Name = param.first.c_str();
+		vShaderMacro[i].Definition = param.second.c_str();
+	}
+	for (unsigned int i = 0; i < unShaderMacroSize; ++i)
 	{
 		const std::pair<MString, MString>& param = shaderMacro.m_vMacroParams[i];
-		vShaderMacro[unDefaultMacroSize - 1 + i].Name = param.first.c_str();
-		vShaderMacro[unDefaultMacroSize - 1 + i].Definition = param.second.c_str();
+		vShaderMacro[unGlobalMacroSize + i].Name = param.first.c_str();
+		vShaderMacro[unGlobalMacroSize + i].Definition = param.second.c_str();
 	}
 
-	unsigned int unEndIndex = unDefaultMacroSize + shaderMacro.m_vMacroParams.size() - 1;
 	vShaderMacro[unEndIndex].Name = nullptr;
 	vShaderMacro[unEndIndex].Definition = nullptr;
 

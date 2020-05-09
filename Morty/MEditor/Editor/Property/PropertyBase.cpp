@@ -8,6 +8,7 @@
 #include "MResourceManager.h"
 
 #include "imgui.h"
+#include "imgui_stdlib.h"
 #include "ImGuiFileDialog.h"
 
 unsigned int PropertyBase::m_unItemIDPool = 0;
@@ -31,14 +32,23 @@ static const char* vFilterList[] = {
 
 bool PropertyBase::ShowNodeBegin(const MString& strNodeName)
 {
+	if (ShowNodeBeginWithEx(strNodeName))
+	{
+		ImGui::NextColumn();
+		return true;
+	}
+
+	return false;
+}
+
+bool PropertyBase::ShowNodeBeginWithEx(const MString& strNodeName)
+{
 	ImGui::PushID(GetID(strNodeName));
 	ImGui::AlignTextToFramePadding();
 	if (bool node_open = ImGui::TreeNodeEx("Object", ImGuiTreeNodeFlags_DefaultOpen, "%s", strNodeName.c_str()))
 	{
 		ImGui::NextColumn();
 		ImGui::AlignTextToFramePadding();
-		//ImGui::Text("0.0");
-		ImGui::NextColumn();
 
 		return true;
 	}
@@ -47,6 +57,17 @@ bool PropertyBase::ShowNodeBegin(const MString& strNodeName)
 	ImGui::NextColumn();
 	ImGui::PopID();
 	return false;
+}
+
+void PropertyBase::ShowNodeExBegin(const MString& strExID)
+{
+	ImGui::PushID(GetID(strExID));
+}
+
+void PropertyBase::ShowNodeExEnd()
+{
+	ImGui::PopID();
+	ImGui::NextColumn();
 }
 
 void PropertyBase::ShowNodeEnd()
@@ -234,93 +255,131 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 {
 	bool bModified = false;
 
+	
+	if (MMaterialResource* pResource = pMaterial)
 	{
-		if (MMaterialResource* pResource = pMaterial)
 		{
 			ShowValueBegin("Save");
 			EditSaveMResource("material_save_dlg", pMaterial);
 			ShowValueEnd();
+		}
 
-			ShowValueBegin("VS");
-			if (ImGui::Button("Reload Vertex Shader", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+		{
+			MShaderMacro& shaderMacro = *pMaterial->GetShaderMacro();
+			float fWidth = ImGui::GetContentRegionAvailWidth();
+			if (ShowNodeBeginWithEx("Macro"))
 			{
-				MString strResPath = pResource->GetVertexShaderResource()->GetResourcePath();
-				pResource->GetResourceManager()->Reload(strResPath);
+				ShowNodeExBegin("Add Macro");
+				ImGui::SetNextItemWidth(fWidth * 0.7f);
+				MString& addKey = GetTempValue<MString>("AddShaderMacro", "");
+				EditMString(addKey);
+				ImGui::SameLine();
+				if (ImGui::Button("+", ImVec2(fWidth * 0.3f, 0)))
+				{
+					shaderMacro.AddUnionMacro(addKey);
+					addKey = "";
+				}
+
+				ShowNodeExEnd();
+
+				for (auto iter = shaderMacro.m_vMacroParams.begin(); iter != shaderMacro.m_vMacroParams.end(); ++iter)
+				{
+					auto& pair = *iter;
+
+					ShowValueBegin(pair.first);
+					ImGui::SetNextItemWidth(fWidth * 0.7f);
+					EditMString(pair.second);
+					ImGui::SameLine();
+					if (ImGui::Button("Delete", ImVec2(fWidth * 0.3f, 0)))
+					{
+						iter = shaderMacro.m_vMacroParams.erase(iter);
+					}
+					ShowValueEnd();
+				}
+
+				ShowNodeEnd();
+			}
+		}
+
+		{
+			ShowValueBegin("Shader");
+			if (ImGui::Button("Reload Shader", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+			{
+				MString strResPathVS = pResource->GetVertexShaderResource()->GetResourcePath();
+				pResource->GetResourceManager()->Reload(strResPathVS);
+
+				MString strResPathPS = pResource->GetPixelShaderResource()->GetResourcePath();
+				pResource->GetResourceManager()->Reload(strResPathPS);
 			}
 			ShowValueEnd();
+		}
 
-			ShowValueBegin("PS");
-			if (ImGui::Button("Reload Pixel Shader", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+		{
+			ShowValueBegin("Cull");
+			int nCullType = (int)pMaterial->GetRasterizerType();
+			if (EditEnum({ "Wireframe", "CullNone", "CullBack", "ECullFront" }, nCullType))
 			{
-				MString strResPath = pResource->GetPixelShaderResource()->GetResourcePath();
-				pResource->GetResourceManager()->Reload(strResPath);
+				pMaterial->SetRasterizerType(MERasterizerType(nCullType));
 			}
 			ShowValueEnd();
 		}
-	}
 
-	{
-		ShowValueBegin("Cull");
-		int nCullType = (int)pMaterial->GetRasterizerType();
-		if (EditEnum({ "Wireframe", "CullNone", "CullBack", "ECullFront" }, nCullType))
 		{
-			pMaterial->SetRasterizerType(MERasterizerType(nCullType));
-		}
-		ShowValueEnd();
-	}
-
-	{
-		ShowValueBegin("Type");
-		int nMaterialType = (int)pMaterial->GetMaterialType();
-		if (EditEnum({ "Default", "Transparent" }, nMaterialType))
-		{
-			pMaterial->SetMaterialType((MEMaterialType)nMaterialType);
-		}
-		ShowValueEnd();
-	}
-
-	{
-		std::vector<MShaderParam>& vParams = *pMaterial->GetShaderParams();
-		for (MShaderParam& param : vParams)
-		{
-			if (EditMVariant(param.strName, param.var))
+			ShowValueBegin("Type");
+			int nMaterialType = (int)pMaterial->GetMaterialType();
+			if (EditEnum({ "Default", "Transparent" }, nMaterialType))
 			{
-				param.SetDirty();
-				bModified = true;
+				pMaterial->SetMaterialType((MEMaterialType)nMaterialType);
 			}
-		}
-	}
-
-	{
-		std::vector<MShaderTextureParam>& vParams = *pMaterial->GetTextureParams();
-		std::vector<MResourceKeeper>& vResources = *pMaterial->GetTextures();
-		for (unsigned int i = 0; i < vParams.size(); ++i)
-		{
-			MShaderTextureParam& param = vParams[i];
-			if (param.unCode <= SHADER_PARAM_CODE_AUTO_UPDATE)
-				continue;
-
-			MString strDlgName = "file_dlg_tex_" + MStringHelper::ToString(i);
-
-			ShowValueBegin(param.strName);
-			MResource* pResource = vResources[i].GetResource();
-
-			EditMResource(strDlgName, pResource, MResourceManager::MEResourceType::Texture, [&param, &pMaterial](const MString& strNewFilePath) {
-
-				MResource* pNewResource = pMaterial->GetResourceManager()->LoadResource(strNewFilePath);
-
-				pMaterial->SetTexutreParam(param.strName, pNewResource);
-				});
-
-			if (param.pTexture)
-			{
-				ShowTexture(param.pTexture->GetBuffer());
-			}
-
 			ShowValueEnd();
+		}
 
+		{
+			std::vector<MShaderParam>& vParams = *pMaterial->GetShaderParams();
+			for (MShaderParam& param : vParams)
+			{
+				if (EditMVariant(param.strName, param.var))
+				{
+					param.SetDirty();
+					bModified = true;
+				}
+			}
+		}
+
+		{
+			std::vector<MShaderTextureParam>& vParams = *pMaterial->GetTextureParams();
+			std::vector<MResourceKeeper>& vResources = *pMaterial->GetTextures();
+			for (unsigned int i = 0; i < vParams.size(); ++i)
+			{
+				MShaderTextureParam& param = vParams[i];
+				if (param.unCode <= SHADER_PARAM_CODE_AUTO_UPDATE)
+					continue;
+
+				MString strDlgName = "file_dlg_tex_" + MStringHelper::ToString(i);
+
+				ShowValueBegin(param.strName);
+				MResource* pResource = vResources[i].GetResource();
+
+				EditMResource(strDlgName, pResource, MResourceManager::MEResourceType::Texture, [&param, &pMaterial](const MString& strNewFilePath) {
+
+					MResource* pNewResource = pMaterial->GetResourceManager()->LoadResource(strNewFilePath);
+
+					pMaterial->SetTexutreParam(param.strName, pNewResource);
+					});
+
+				if (param.pTexture)
+				{
+					ShowTexture(param.pTexture->GetBuffer());
+				}
+
+				ShowValueEnd();
+
+			}
 		}
 	}
+	
+
+	
 
 	return bModified;
 }
@@ -433,6 +492,11 @@ void PropertyBase::ShowTexture(MTextureBuffer* pTextureBuffer)
 bool PropertyBase::EditMColor(MColor& value)
 {
 	return ImGui::ColorEdit4("", value.m);
+}
+
+bool PropertyBase::EditMString(MString& value)
+{
+	return ImGui::InputText("", &value);
 }
 
 unsigned int PropertyBase::GetID(const MString& strItemName)

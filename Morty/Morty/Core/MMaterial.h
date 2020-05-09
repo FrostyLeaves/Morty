@@ -49,6 +49,7 @@ public:
 	MResource* GetVertexShaderResource() { return m_VertexResource.GetResource(); }
 	MResource* GetPixelShaderResource() { return m_VertexResource.GetResource(); }
 
+	MShaderMacro* GetShaderMacro() { return &m_ShaderMacro; }
 	
 public:
 

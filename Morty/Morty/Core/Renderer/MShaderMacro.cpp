@@ -1,4 +1,34 @@
 ﻿#include "MShaderMacro.h"
+#include "MVertex.h"
+
+const MString strBonesPerVertex = MStringHelper::ToString(MBONES_PER_VERTEX);
+const MString strBonesMaxNumber = MStringHelper::ToString(MBONES_MAX_NUMBER);
+const MString strShadowTextureSize = MStringHelper::ToString(MSHADOW_TEXTURE_SIZE);
+const MString strPointLightMaxNumber = MStringHelper::ToString(MPOINT_LIGHT_MAX_NUMBER);
+const MString strPointLightPixelNumber = MStringHelper::ToString(MPOINT_LIGHT_PIXEL_NUMBER);
+const MString strSpotLightMaxNumber = MStringHelper::ToString(MSPOT_LIGHT_MAX_NUMBER);
+const MString strSpotLightPixelNumber = MStringHelper::ToString(MSPOT_LIGHT_PIXEL_NUMBER);
+
+
+enum class METransparentPolicy
+{
+	EZOrder = 0,
+	EDepthPeeling = 1,
+};
+
+const MString strTransparentPolicy = MStringHelper::ToString((int)METransparentPolicy::EDepthPeeling);
+
+std::vector<std::pair<MString, MString>> MShaderMacro::s_vGlobalMacroParams = {
+	{"MBONES_PER_VERTEX", strBonesPerVertex},
+	{"MBONES_MAX_NUMBER", strBonesMaxNumber},
+	{"MSHADOW_TEXTURE_SIZE", strShadowTextureSize},
+	{"MCALC_NORMAL_IN_VS", MCALC_NORMAL_IN_VS ? "true" : "false"},
+	{"MPOINT_LIGHT_MAX_NUMBER", strPointLightMaxNumber},
+	{"MPOINT_LIGHT_PIXEL_NUMBER", strPointLightPixelNumber},
+	{"MSPOT_LIGHT_MAX_NUMBER", strSpotLightMaxNumber},
+	{"MSPOT_LIGHT_PIXEL_NUMBER", strSpotLightPixelNumber},
+	{"MTRANSPARENT_POLICY", strTransparentPolicy},
+};
 
 void MShaderMacro::SetMacro(const MString& strKey, const MString& strValue)
 {
@@ -19,6 +49,36 @@ void MShaderMacro::SetMacro(const MString& strKey, const MString& strValue)
 		m_vMacroParams.insert(iter, std::pair<MString, MString>(strKey, strValue));
 	}
 
+}
+
+void MShaderMacro::AddUnionMacro(const MString& strKey, const MString& strValue /*= ""*/)
+{
+	std::vector<std::pair<MString, MString>>::iterator iter = std::lower_bound(m_vMacroParams.begin(), m_vMacroParams.end(), strKey, [](const std::pair<MString, MString>& a, const MString& b) {
+		return a.first < b;
+		});
+
+	if (iter == m_vMacroParams.end())
+	{
+		m_vMacroParams.push_back(std::pair<MString, MString>(strKey, strValue));
+	}
+	else if (iter->first == strKey)
+		return;
+	else
+	{
+		m_vMacroParams.insert(iter, std::pair<MString, MString>(strKey, strValue));
+	}
+}
+
+void MShaderMacro::RemoveMacro(const MString& strKey)
+{
+	std::vector<std::pair<MString, MString>>::iterator iter = std::lower_bound(m_vMacroParams.begin(), m_vMacroParams.end(), strKey, [](const std::pair<MString, MString>& a, const MString& b) {
+		return a.first < b;
+		});
+
+	if (iter != m_vMacroParams.end())
+	{
+		m_vMacroParams.erase(iter);
+	}
 }
 
 bool MShaderMacro::Compare(const MShaderMacro& macro)

@@ -25,6 +25,9 @@ public:
 	virtual void EditObject(MObject* pObject) {};
 
 	bool ShowNodeBegin(const MString& strNodeName);
+	bool ShowNodeBeginWithEx(const MString& strNodeName);
+	void ShowNodeExBegin(const MString& strExID);
+	void ShowNodeExEnd();
 	void ShowNodeEnd();
 
 	void ShowValueBegin(const MString& strValueName);
@@ -40,6 +43,7 @@ public:
 	bool EditMTransform(MTransform& trans);
 	bool EditEnum(const std::vector<MString>& select, int& index);
 	bool EditMColor(MColor& value);
+	bool EditMString(MString& value);
 
 	bool EditMMaterial(MMaterial* pMaterial);
 	void EditMResource(const MString& strDlgID, MResource* pResource, const MResourceManager::MEResourceType& eResourceType, const std::function<void(const MString& strNewFilePath)>& funcLoadResource);

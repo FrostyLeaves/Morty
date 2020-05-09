@@ -17,6 +17,8 @@ class MORTY_CLASS MShaderMacro
 public:
 
 	void SetMacro(const MString& strKey, const MString& strValue);
+    void AddUnionMacro(const MString& strKey, const MString& strValue = "");
+    void RemoveMacro(const MString& strKey);
 
 	bool Compare(const MShaderMacro& macro);
 
@@ -24,6 +26,8 @@ public:
 
 	std::vector<std::pair<MString, MString>> m_vMacroParams;
 
+
+    static std::vector<std::pair<MString, MString>> s_vGlobalMacroParams;
 };
 
 #endif

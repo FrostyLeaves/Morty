@@ -192,6 +192,7 @@
     <ClInclude Include="..\..\..\ImGUI\imgui_impl_dx11.h" />
     <ClInclude Include="..\..\..\ImGUI\imgui_impl_win32.h" />
     <ClInclude Include="..\..\..\ImGUI\imgui_internal.h" />
+    <ClInclude Include="..\..\..\ImGUI\imgui_stdlib.h" />
     <ClInclude Include="..\..\..\ImGUI\imstb_rectpack.h" />
     <ClInclude Include="..\..\..\ImGUI\imstb_textedit.h" />
     <ClInclude Include="..\..\..\ImGUI\imstb_truetype.h" />
@@ -215,6 +216,7 @@
     <ClCompile Include="..\..\..\ImGUI\imgui_draw.cpp" />
     <ClCompile Include="..\..\..\ImGUI\imgui_impl_dx11.cpp" />
     <ClCompile Include="..\..\..\ImGUI\imgui_impl_win32.cpp" />
+    <ClCompile Include="..\..\..\ImGUI\imgui_stdlib.cpp" />
     <ClCompile Include="..\..\..\ImGUI\imgui_widgets.cpp" />
     <ClCompile Include="MEditor.cpp" />
     <ClCompile Include="pch.cpp">
