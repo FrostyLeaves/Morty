@@ -109,9 +109,19 @@ float4 PS(VS_OUT input) : SV_Target
     {
         float4 transparentColor = U_mat.texTransparent.Sample(U_defaultSampler, input.uv);
         fAlpha *= transparentColor.a;
-    }
 
-    clip(fAlpha - 0.1f);
+        clip(fAlpha - 0.1f);
+
+#ifdef MTRANSPARENT_DEPTH_PEELING
+        float2 f2DepthFrontUV = input.pos.xy;
+        if (saturate(f2DepthFrontUV.x) == f2DepthFrontUV.x && saturate(f2DepthFrontUV.y) == f2DepthFrontUV.y)
+        {   
+            float fZDepth = input.pos.z;
+            float bLessEqualFront = U_texDepthFront.SampleCmpLevelZero(U_shadowMapSampler, f2DepthFrontUV.xy, fZDepth);
+            clip(bLessEqualFront);
+        }
+#endif
+    }
 
     if(U_bDirectionLightEnabled > 0.5f)
     {

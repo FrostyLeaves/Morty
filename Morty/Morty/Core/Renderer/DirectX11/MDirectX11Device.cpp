@@ -888,6 +888,8 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 
 				if (pParam->strName == "U_texShadowMap")
 					pParam->unCode = SHADER_PARAM_CODE_SHADOW_MAP;
+				else if (pParam->strName == "")
+					pParam->unCode = SHADER_PARAM_CODE_DDEPTH_FRONT;
 				else
 					pParam->unCode = SHADER_PARAM_CODE_DEFAULT;
 

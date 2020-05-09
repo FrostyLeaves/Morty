@@ -58,7 +58,8 @@ const unsigned int SHADER_PARAM_CODE_WORLDINFO = 4;
 const unsigned int MINTERNAL_SHADER_CBUFFER_NUMBER = 5;
 
 const unsigned int SHADER_PARAM_CODE_SHADOW_MAP = 0;
-const unsigned int MINTERNAL_SHADER_TEXTURE_NUMBER = 1;
+const unsigned int SHADER_PARAM_CODE_DDEPTH_FRONT = 1;
+const unsigned int MINTERNAL_SHADER_TEXTURE_NUMBER = 2;
 
 const unsigned int SHADER_PARAM_CODE_DEFAULT_SAMPLER = 0;
 const unsigned int SHADER_PARAM_CODE_SHADOW_SAMPLER = 1;

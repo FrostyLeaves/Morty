@@ -34,15 +34,18 @@ void MTransparentRenderTarget::OnRender(MIRenderer* pRenderer)
     {
         MMaterial* pMaterial = group.m_pMaterial;
 
-		std::vector<MShaderTextureParam>& vTextureParams = *pMaterial->GetTextureParams();
-
-		for (MShaderTextureParam& param : vTextureParams)
+		//如果当前有Shader使用了ShadowMap，那么进行ShadowMap的更新
+		if (SHADER_PARAM_CODE_DDEPTH_FRONT < MShaderBuffer::s_vTextureParams.size())
 		{
-			if (param.strName == "FrontDepth")
+			MShaderTextureParam* pDepthFrontParam = MShaderBuffer::s_vTextureParams[SHADER_PARAM_CODE_DDEPTH_FRONT];
+			if (SHADER_PARAM_CODE_DDEPTH_FRONT == pDepthFrontParam->unCode)
 			{
-				param.pTexture = m_pPrevLevelRenderTarget->GetDepthTexture();
+				pDepthFrontParam->pTexture = m_pPrevLevelRenderTarget->GetDepthTexture();
+				pRenderer->SetPixelShaderTexture(*pDepthFrontParam);
 			}
 		}
+
+
 
     }
 }

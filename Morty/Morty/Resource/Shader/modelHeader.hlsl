@@ -54,6 +54,7 @@ cbuffer cbMaterial
 
 
 
+
 float3 CalcPointLight(PointLight pointLight, float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3WorldPixelPosition, float3 f3DiffColor, float3 f3SpecColor)
 {
 

@@ -1,3 +1,8 @@
+#if MTRANSPARENT_POLICY == 1
+#define MTRANSPARENT_DEPTH_PEELING
+#endif
+
+
 struct VS_IN_EMPTY
 {
     float3 pos : POSITION;
@@ -74,6 +79,11 @@ SamplerComparisonState U_shadowMapSampler : register(s1);
 
 //Shadowmap
 Texture2D U_texShadowMap : register(t0);
+
+#ifdef MTRANSPARENT_DEPTH_PEELING
+//Depth-Peeling
+Texture2D U_texDepthFront : register(t1);
+#endif
 
 //VS    per mesh
 cbuffer _M_E_cbMeshMatrix : register(b0)
