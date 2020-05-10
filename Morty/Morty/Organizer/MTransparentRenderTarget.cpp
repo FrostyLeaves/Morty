@@ -3,6 +3,11 @@
 #include "MMaterial.h"
 #include "MTexture.h"
 
+#include "MResourceManager.h"
+#include "Texture/MTextureResource.h"
+
+#include "MRenderSystem.h"
+
 MTypeIdentifierImplement(MTransparentRenderTarget, MObject)
 
 MTransparentRenderTarget::MTransparentRenderTarget()
@@ -21,6 +26,9 @@ MTransparentRenderTarget::~MTransparentRenderTarget()
 void MTransparentRenderTarget::OnCreated()
 {
 	m_pDevice = m_pEngine->GetDevice();
+	m_eRenderTargetType = MTextureRenderTarget::ERenderBack | MTextureRenderTarget::ERenderDepth;
+
+//	OnResize(MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE);
 }
 
 void MTransparentRenderTarget::OnDelete()
@@ -28,25 +36,59 @@ void MTransparentRenderTarget::OnDelete()
     m_Material.SetResource(nullptr);
 }
 
+void MTransparentRenderTarget::Render(MIRenderer* pRenderer, std::vector<MMaterialGroup>* pGroup)
+{
+	SetSourceMeshes(pGroup);
+
+	pRenderer->Render(this);
+
+	SetSourceMeshes(nullptr);
+}
+
 void MTransparentRenderTarget::OnRender(MIRenderer* pRenderer)
 {
-    for (MMaterialGroup& group : *m_pTransparentMeshes)
-    {
-        MMaterial* pMaterial = group.m_pMaterial;
+	if (nullptr == m_pTransparentMeshes)
+		return;
 
-		//如果当前有Shader使用了ShadowMap，那么进行ShadowMap的更新
-		if (SHADER_PARAM_CODE_DDEPTH_FRONT < MShaderBuffer::s_vTextureParams.size())
+	MShaderParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
+	if (nullptr == pMeshMatrixParam)
+		return;
+
+	//TODO 拷贝渲染完不透明物体后的深度视图，用来做深度剔除。
+	//如果不拷贝而是用原有的，因为不能写入深度，所以会出现Z值大的后被渲染而产生的显示问题。
+
+	MShaderParam* pAnimationParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_ANIMATION);
+
+	//如果当前有Shader使用了ShadowMap，那么进行ShadowMap的更新
+	if (SHADER_PARAM_CODE_DDEPTH_FRONT < MShaderBuffer::s_vTextureParams.size())
+	{
+		MShaderTextureParam* pDepthFrontParam = MShaderBuffer::s_vTextureParams[SHADER_PARAM_CODE_DDEPTH_FRONT];
+		if (SHADER_PARAM_CODE_DDEPTH_FRONT == pDepthFrontParam->unCode)
 		{
-			MShaderTextureParam* pDepthFrontParam = MShaderBuffer::s_vTextureParams[SHADER_PARAM_CODE_DDEPTH_FRONT];
-			if (SHADER_PARAM_CODE_DDEPTH_FRONT == pDepthFrontParam->unCode)
+			if (m_pPrevLevelRenderTarget)
 			{
 				pDepthFrontParam->pTexture = m_pPrevLevelRenderTarget->GetDepthTexture();
 				pRenderer->SetPixelShaderTexture(*pDepthFrontParam);
 			}
+			else
+			{
+				MTextureResource* pBlackTextureRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_BLACK);
+				pDepthFrontParam->pTexture = pBlackTextureRes->GetTextureTemplate();;
+				pRenderer->SetPixelShaderTexture(*pDepthFrontParam);
+			}
 		}
+	}
 
+    for (MMaterialGroup& group : *m_pTransparentMeshes)
+    {
+		MMaterial* pMaterial = group.m_pMaterial;
+		//使用材质
+		if (!pRenderer->SetUseMaterial(pMaterial, true))
+			continue;
 
-
+		for (MIMeshInstance* pMeshIns : group.m_vMeshInstances)
+		{
+			MRenderSystem::DrawMeshInstance(pRenderer, pMeshIns, pMeshMatrixParam, pAnimationParam);
+		}
     }
 }
-

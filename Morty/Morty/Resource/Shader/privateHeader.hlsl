@@ -123,5 +123,6 @@ cbuffer _M_E_cbWorldInfo : register(b4)
     float3 U_f3DirectionLight;
     float3 U_f3CameraPosition;
 
+    float2 U_f2ViewportSize;
   //  float3 U_vPointLightPosition[MPOINT_LIGHT_MAX_NUMBER];
 };

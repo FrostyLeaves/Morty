@@ -31,7 +31,7 @@ MEngine::MEngine()
 	, m_pScene(nullptr)
 	, m_pDevice(nullptr)
 	, m_pRenderer(nullptr)
-	, m_cTickInfo(60)
+	, m_cTickInfo(30)
 {
 }
 

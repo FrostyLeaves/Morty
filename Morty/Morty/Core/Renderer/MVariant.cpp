@@ -87,6 +87,14 @@ MVariant::MVariant(const float& var)
 	m_unByteSize = sizeof(float);
 }
 
+MVariant::MVariant(const Vector2& var)
+{
+	m_pData = (new unsigned char[sizeof(float) * 2]);
+	memcpy(m_pData, var.m, sizeof(float) * 2);
+	m_eType = EVector2;
+	m_unByteSize = sizeof(float) * 2;
+}
+
 MVariant::MVariant(const Vector3& var)
 {
 	m_pData = (new unsigned char[sizeof(float) * 3]);

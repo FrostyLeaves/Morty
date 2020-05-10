@@ -479,9 +479,6 @@
     <ClCompile Include="..\..\Organizer\Node\MInputNode.cpp">
       <Filter>Organizer\Node</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Organizer\Node\MNode.cpp">
-      <Filter>Organizer\Node</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Organizer\Node\Light\MPointLight.cpp">
       <Filter>Organizer\Node\Light</Filter>
     </ClCompile>
@@ -526,6 +523,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\MShaderMacro.cpp">
       <Filter>Core\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\Node\MNode.cpp">
+      <Filter>Organizer\Node</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -888,7 +888,7 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 
 				if (pParam->strName == "U_texShadowMap")
 					pParam->unCode = SHADER_PARAM_CODE_SHADOW_MAP;
-				else if (pParam->strName == "")
+				else if (pParam->strName == "U_texDepthFront")
 					pParam->unCode = SHADER_PARAM_CODE_DDEPTH_FRONT;
 				else
 					pParam->unCode = SHADER_PARAM_CODE_DEFAULT;
@@ -1232,6 +1232,10 @@ MVariant MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType* 
 		else if (type == "float3")
 		{
 			var = MVariant(Vector3());
+		}
+		else if (type == "float2")
+		{
+			var = MVariant(Vector2());
 		}
 		else if (type == "float3x3")
 		{

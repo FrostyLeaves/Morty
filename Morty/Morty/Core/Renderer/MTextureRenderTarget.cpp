@@ -9,6 +9,8 @@ MTextureRenderTarget::MTextureRenderTarget()
 	, m_pBackTexture(new MRenderTargetTexture())
 	, m_pDepthTexture(new MRenderDepthTexture())
 	, m_eRenderTargetType(ERenderNone)
+	, m_fWidth(0)
+	, m_fHeight(0)
 {
 
 }
@@ -30,6 +32,12 @@ MTextureRenderTarget* MTextureRenderTarget::CreateForTexture(MIDevice* pDevice, 
 
 void MTextureRenderTarget::OnResize(const unsigned int& nWidth, const unsigned int& nHeight)
 {
+	if (m_fWidth == nWidth && m_fHeight == nHeight)
+		return;
+
+	m_fWidth = nWidth;
+	m_fHeight = nHeight;
+
 	if (m_pBackTexture && (m_eRenderTargetType & METextureRenderTargetType::ERenderBack))
 		m_pBackTexture->SetSize(Vector2(nWidth, nHeight));
 	if (m_pDepthTexture && (m_eRenderTargetType & METextureRenderTargetType::ERenderDepth))

@@ -32,19 +32,21 @@ public:
 		EBool = 1,
 		EInt = 2,
 		EFloat = 3,
-		EVector3 = 4,
-		EVector4 = 5,
-		EMatrix3 = 6,
-		EMatrix4 = 7,
-		EStruct = 8,
-		EArray = 9,
-		EString = 10		//Not for shader.
+		EVector2 = 4,
+		EVector3 = 5,
+		EVector4 = 6,
+		EMatrix3 = 7,
+		EMatrix4 = 8,
+		EStruct = 9,
+		EArray = 10,
+		EString = 11		//Not for shader.
 	};
 
 	MVariant();
 	MVariant(const bool& var);
 	MVariant(const int& var);
 	MVariant(const float& var);
+	MVariant(const Vector2& var);
 	MVariant(const Vector3& var);
 	MVariant(const Vector4& var);
 	MVariant(const Matrix3& var);

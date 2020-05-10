@@ -47,7 +47,7 @@ public:
 	bool LoadPixelShader(MResource* pResource);
 
 	MResource* GetVertexShaderResource() { return m_VertexResource.GetResource(); }
-	MResource* GetPixelShaderResource() { return m_VertexResource.GetResource(); }
+	MResource* GetPixelShaderResource() { return m_PixelResource.GetResource(); }
 
 	MShaderMacro* GetShaderMacro() { return &m_ShaderMacro; }
 	

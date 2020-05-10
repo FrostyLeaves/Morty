@@ -344,7 +344,7 @@ bool MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial, const bool& bUpdat
 		}
 		else if (MEMaterialType::EDepthPeeling == m_eMaterialType)
 		{
-			m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::EReadNotWrite], 0);
+			m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::EDefault], 0);
 			m_pDevice->m_pD3dContext->OMSetBlendState(m_vBlendState[(int)MEBlendType::EDefault], nullptr, 0xffffffff);
 		}
 	}

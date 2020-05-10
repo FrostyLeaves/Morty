@@ -102,7 +102,7 @@ float4 PS(VS_OUT input) : SV_Target
     }
 
 
-    float3 f3Color = U_mat.f3Ambient * f3AmbiColor.xyz * 0.1f;
+    float3 f3Color = U_mat.f3Ambient * f3AmbiColor.xyz * 0.5f;
     float fAlpha = saturate(U_mat.fAlphaFactor) * f3AmbiColor.w;
 
     if (U_mat.bUseTransparentTex > 0.5f)
@@ -110,15 +110,23 @@ float4 PS(VS_OUT input) : SV_Target
         float4 transparentColor = U_mat.texTransparent.Sample(U_defaultSampler, input.uv);
         fAlpha *= transparentColor.a;
 
+        //test
+        fAlpha = 1.0f;
+
         clip(fAlpha - 0.1f);
 
 #ifdef MTRANSPARENT_DEPTH_PEELING
         float2 f2DepthFrontUV = input.pos.xy;
+        f2DepthFrontUV.x /= U_f2ViewportSize.x;
+        f2DepthFrontUV.y /= U_f2ViewportSize.y;
         if (saturate(f2DepthFrontUV.x) == f2DepthFrontUV.x && saturate(f2DepthFrontUV.y) == f2DepthFrontUV.y)
         {   
             float fZDepth = input.pos.z;
             float bLessEqualFront = U_texDepthFront.SampleCmpLevelZero(U_shadowMapSampler, f2DepthFrontUV.xy, fZDepth);
-            clip(bLessEqualFront);
+            clip(0.5f - bLessEqualFront);
+
+            //return float4(1,0,0,1);
+            //return float4(U_texDepthFront.Sample(U_defaultSampler, f2DepthFrontUV));
         }
 #endif
     }

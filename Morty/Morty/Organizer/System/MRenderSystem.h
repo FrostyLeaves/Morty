@@ -41,6 +41,7 @@ public:
 		MBoundsAABB cMeshRenderAABB;
 
 		std::vector<MMaterialGroup> vMaterialRenderGroup;
+		std::vector<MMaterialGroup> vTransparentMaterialRenderGroup;
 		std::vector<MIMeshInstance*> vTransparentRenderGroup;
 		std::vector<MShadowRenderGroup> vShadowGroup;
 	};
@@ -74,10 +75,10 @@ protected:
 	void DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pModelIns);
 	void DrawCameraFrustum(MRenderInfo& info, MCamera* pCamera);
 
+public:
+	static void DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pMeshInstance, MShaderParam*& pMeshMatrixParam, MShaderParam*& pAnimationParam);
 
 protected:
-
-	void DrawMeshInstance(MIRenderer* &pRenderer, MIMeshInstance* &pMeshInstance, MShaderParam* &pMeshMatrixParam, MShaderParam* &pAnimationParam);
 
 	void RecordMeshInstance(MRenderInfo& info, MIMeshInstance* pMeshInstance);
 

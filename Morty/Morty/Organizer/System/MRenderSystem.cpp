@@ -175,6 +175,8 @@ void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 
 		(*pWorldInfoParam->var.GetStruct())[1] = info.pViewport->GetCamera()->GetWorldPosition();
 
+		(*pWorldInfoParam->var.GetStruct())[2] = info.pViewport->GetSize();
+
 		pWorldInfoParam->SetDirty();
 		info.pRenderer->SetVertexShaderParam(*pWorldInfoParam);
 		pWorldInfoParam->SetDirty();
@@ -299,8 +301,14 @@ void MRenderSystem::DrawMeshInstance(MRenderInfo& info)
 	std::vector<MTransparentRenderTarget*>& vTransparentRenderTarget = *info.pScene->GetTransparentRenderTarget();
 	for (MTransparentRenderTarget* pRT : vTransparentRenderTarget)
 	{
-		info.pRenderer->Render(pRT);
+		pRT->OnResize(info.pViewport->GetWidth(), info.pViewport->GetHeight());
+		info.pRenderer->SetViewport(0.0f, 0.0f, info.pViewport->GetWidth(), info.pViewport->GetHeight(), 0.0f, 1.0f);
+		pRT->Render(info.pRenderer, &info.vTransparentMaterialRenderGroup);
 	}
+
+	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
+	info.pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight(), 0.0f, 1.0f);
+
 }
 
 void MRenderSystem::DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pMeshInstance, MShaderParam*& pMeshMatrixParam, MShaderParam*& pAnimationParam)
@@ -626,12 +634,35 @@ void MRenderSystem::RecordMeshInstance(MRenderInfo& info, MIMeshInstance* pMeshI
 
 		group.m_vMeshInstances.push_back(pMeshInstance);
 	}
+	else if(pMaterial->GetMaterialType() == MEMaterialType::EDepthPeeling)
+	{
+		std::vector<MMaterialGroup>& vGroup = info.vTransparentMaterialRenderGroup;
+
+		std::vector<MMaterialGroup>::iterator iter = std::lower_bound(vGroup.begin(), vGroup.end(), pMaterial, [](const MMaterialGroup& a, MMaterial* b) {return a.m_pMaterial < b; });
+		if (iter == vGroup.end())
+		{
+			vGroup.push_back(MMaterialGroup());
+			iter = vGroup.end() - 1;
+			iter->m_pMaterial = pMeshInstance->GetMaterial();
+		}
+		else if (iter->m_pMaterial != pMaterial)
+		{
+			MMaterialGroup group;
+			group.m_pMaterial = pMeshInstance->GetMaterial();
+			iter = vGroup.insert(iter, group);
+		}
+
+		MMaterialGroup& group = *iter;
+		group.m_vMeshInstances.push_back(pMeshInstance);
+	}
 	else if (pMaterial->GetMaterialType() == MEMaterialType::ETransparent)
 	{
-		std::vector<MIMeshInstance*>& vGroup = info.vTransparentRenderGroup;
-		
-		std::vector<MIMeshInstance*>::iterator iter = std::lower_bound(vGroup.begin(), vGroup.end(), pMeshInstance, [](MIMeshInstance* a, MIMeshInstance* b) {return a->GetWorldPosition().z > b->GetWorldPosition().z; });
+		{
+			std::vector<MIMeshInstance*>& vGroup = info.vTransparentRenderGroup;
 
-		vGroup.insert(iter, pMeshInstance);
+			std::vector<MIMeshInstance*>::iterator iter = std::lower_bound(vGroup.begin(), vGroup.end(), pMeshInstance, [](MIMeshInstance* a, MIMeshInstance* b) {return a->GetWorldPosition().z > b->GetWorldPosition().z; });
+
+			vGroup.insert(iter, pMeshInstance);
+		}
 	}
 }

@@ -48,7 +48,6 @@ public:
 	std::vector<MNode*> FindChildrenByName(const MString& strName);
 	std::vector<MNode*> FindChildrenByFunc(const SearchNodeFunction& func);
 
-
 	void SetName(const MString& strName) { m_strName = strName; }
 	MString GetName(){ return m_strName; }
 

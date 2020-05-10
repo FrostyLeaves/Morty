@@ -80,7 +80,7 @@ void MScene::OnCreated()
 
 	m_pShadowDepthMapRenderTarget = m_pEngine->GetObjectManager()->CreateObject<MShadowTextureRenderTarget>();
 
-	m_vTransparentRenderTarget.resize(1);
+	m_vTransparentRenderTarget.resize(3);
 	for (unsigned int i = 0; i < m_vTransparentRenderTarget.size(); ++i)
 	{
 		m_vTransparentRenderTarget[i] = m_pEngine->GetObjectManager()->CreateObject <MTransparentRenderTarget>();

@@ -28,9 +28,10 @@ public:
 	virtual void OnDelete() override;
 
 	virtual void OnRender(MIRenderer* pRenderer) override;
-    
-    void CopyFromDepthTextureBuffer(MDepthTextureBuffer* pBuffer);
-    void CopyToDepthTextureBuffer(MDepthTextureBuffer* pBuffer);
+
+    void Render(MIRenderer* pRenderer, std::vector<MMaterialGroup>* pGroup);
+ //   void CopyFromDepthTextureBuffer(MDepthTextureBuffer* pBuffer);
+ //   void CopyToDepthTextureBuffer(MDepthTextureBuffer* pBuffer);
 
 
     void SetSceneDepthTexture(MRenderDepthTexture* pDepthTexture) { m_pSceneDepthTexture = pDepthTexture; }

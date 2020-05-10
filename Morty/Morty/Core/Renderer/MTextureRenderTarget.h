@@ -31,6 +31,7 @@ public:
 
 public:
 
+	MRenderTargetTexture* GetBackTexture() { return m_pBackTexture; }
 	MRenderDepthTexture* GetDepthTexture(){ return m_pDepthTexture; }
 
 	unsigned int GetRenderTargetType() { return m_eRenderTargetType; }
@@ -48,6 +49,8 @@ public:
 protected:
 	MIDevice* m_pDevice;
 	unsigned int m_eRenderTargetType;
+	unsigned int m_fWidth;
+	unsigned int m_fHeight;
 };
 
 #endif
