@@ -32,7 +32,7 @@ public:
 public:
 
 	MRenderTargetTexture* GetBackTexture() { return m_pBackTexture; }
-	MRenderDepthTexture* GetDepthTexture(){ return m_pDepthTexture; }
+	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
 
 	unsigned int GetRenderTargetType() { return m_eRenderTargetType; }
 

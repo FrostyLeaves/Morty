@@ -84,6 +84,8 @@ void MScene::OnCreated()
 	for (unsigned int i = 0; i < m_vTransparentRenderTarget.size(); ++i)
 	{
 		m_vTransparentRenderTarget[i] = m_pEngine->GetObjectManager()->CreateObject <MTransparentRenderTarget>();
+		m_vTransparentRenderTarget[i]->m_backgroundColor = MColor(0.0f, 0.0f, 0.0f, 0.0f);
+
 		if (i > 0)
 		{
 			m_vTransparentRenderTarget[i]->SetPrevLevelRenderTarget(m_vTransparentRenderTarget[i - 1]);
@@ -271,11 +273,11 @@ MSCENE_ON_NODE_EXIT(SpotLight)
 MSCENE_ON_NODE_EXIT(InputNode)
 }
 
-void MScene::Render(MIRenderer* pRenderer, MViewport* pViewport)
+void MScene::Render(MIRenderer* pRenderer, MViewport* pViewport, MIRenderTarget* pRenderTarget)
 {
 	for (MISystem* pSystem : m_vSystems)
 	{
-		pSystem->Render(pRenderer, pViewport, this);
+		pSystem->Render(pRenderer, pViewport, this, pRenderTarget);
 	}
 }
 

@@ -251,6 +251,12 @@ bool MEngine::InitializeDefaultResource()
 	pNormalMap->SetSize(Vector2(1, 1));
 	pNormalMap->FillColor(MColor(0.5f, 0.5f, 1, 1));
 
+	MResource* pDPVSResource = GetResourceManager()->LoadResource("./Shader/depthPeeling.mvs");
+	MResource* pDPPSResource = GetResourceManager()->LoadResource("./Shader/depthPeeling.mps");
+	MMaterialResource* pTextureMaterial = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DEPTH_PEELING);
+	pTextureMaterial->LoadVertexShader(pDPVSResource);
+	pTextureMaterial->LoadPixelShader(pDPPSResource);
+	pTextureMaterial->SetMaterialType(MEMaterialType::ETransparent);
 
 	return true;
 }

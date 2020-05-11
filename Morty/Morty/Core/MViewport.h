@@ -23,8 +23,9 @@ class MPainter;
 class MIRenderer;
 class MInputEvent;
 class MBoundsAABB;
-class MInputManager;
 class MPointLight;
+class MInputManager;
+class MIRenderTarget;
 class MDirectionalLight;
 class MORTY_CLASS MViewport : public MObject
 {
@@ -70,7 +71,7 @@ public:
 	virtual void OnCreated() override;
 	virtual void OnDelete() override;
 
-	virtual void Render(MIRenderer* pRenderer);
+	virtual void Render(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget);
 
 	virtual void Input(MInputEvent* pEvent);
 

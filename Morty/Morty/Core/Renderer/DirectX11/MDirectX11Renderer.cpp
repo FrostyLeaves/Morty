@@ -28,7 +28,8 @@ const bool bEnable4xMsaa = true;
 MDirectX11Renderer::MDirectX11Renderer(MDirectX11Device* pDevice)
 	: m_pDevice(pDevice)
 	, m_pDefaultSamplerState(nullptr)
-	, m_pDepthTextureSamplerState(nullptr)
+	, m_pLessEqualSamplerState(nullptr)
+	, m_pGreaterEqualSamplerState(nullptr)
 	, m_vDepthStencilState()
 	, m_vRasterizerState()
 	, m_vBlendState()
@@ -158,6 +159,11 @@ bool MDirectX11Renderer::Initialize()
 
 	m_pDevice->m_pD3dDevice->CreateDepthStencilState(&dsDesc, &m_vDepthStencilState[(int)MEDepthStencilType::EReadNotWrite]);
 
+	dsDesc.DepthEnable = false;
+	dsDesc.StencilEnable = false;
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+
+	m_pDevice->m_pD3dDevice->CreateDepthStencilState(&dsDesc, &m_vDepthStencilState[(int)MEDepthStencilType::ENotReadNotWrite]);
 
 	D3D11_SAMPLER_DESC comparisonSamplerDesc;
 	ZeroMemory(&comparisonSamplerDesc, sizeof(D3D11_SAMPLER_DESC));
@@ -174,16 +180,23 @@ bool MDirectX11Renderer::Initialize()
 	comparisonSamplerDesc.MaxAnisotropy = 0;
 	comparisonSamplerDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
 	comparisonSamplerDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_POINT;
-	m_pDevice->m_pD3dDevice->CreateSamplerState(&comparisonSamplerDesc, &m_pDepthTextureSamplerState);
+	m_pDevice->m_pD3dDevice->CreateSamplerState(&comparisonSamplerDesc, &m_pLessEqualSamplerState);
 
+
+	comparisonSamplerDesc.ComparisonFunc = D3D11_COMPARISON_GREATER_EQUAL;
+	m_pDevice->m_pD3dDevice->CreateSamplerState(&comparisonSamplerDesc, &m_pGreaterEqualSamplerState);
+
+	
 
 	//三角形解析顶点
 	m_pDevice->m_pD3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	m_pDevice->m_pD3dContext->VSSetSamplers(0, 0, &m_pDefaultSamplerState);
-	m_pDevice->m_pD3dContext->VSSetSamplers(1, 1, &m_pDepthTextureSamplerState);
+	m_pDevice->m_pD3dContext->VSSetSamplers(1, 1, &m_pLessEqualSamplerState);
+	m_pDevice->m_pD3dContext->VSSetSamplers(2, 1, &m_pGreaterEqualSamplerState);
 	m_pDevice->m_pD3dContext->PSSetSamplers(0, 0, &m_pDefaultSamplerState);
-	m_pDevice->m_pD3dContext->PSSetSamplers(1, 1, &m_pDepthTextureSamplerState);
+	m_pDevice->m_pD3dContext->PSSetSamplers(1, 1, &m_pLessEqualSamplerState);
+	m_pDevice->m_pD3dContext->PSSetSamplers(2, 1, &m_pGreaterEqualSamplerState);
 
 
 	return true;
@@ -220,10 +233,15 @@ void MDirectX11Renderer::Release()
 		m_pDefaultSamplerState->Release();
 		m_pDefaultSamplerState = nullptr;
 	}
-	if (m_pDepthTextureSamplerState)
+	if (m_pLessEqualSamplerState)
 	{
-		m_pDepthTextureSamplerState->Release();
-		m_pDepthTextureSamplerState = nullptr;
+		m_pLessEqualSamplerState->Release();
+		m_pLessEqualSamplerState = nullptr;
+	}
+	if (m_pGreaterEqualSamplerState)
+	{
+		m_pGreaterEqualSamplerState->Release();
+		m_pGreaterEqualSamplerState = nullptr;
 	}
 }
 
@@ -339,7 +357,8 @@ bool MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial, const bool& bUpdat
 		}
 		else if (MEMaterialType::ETransparent == m_eMaterialType)
 		{
-			m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::EReadNotWrite], 0);
+		//	m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::EReadNotWrite], 0);
+			m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::ENotReadNotWrite], 0);
 			m_pDevice->m_pD3dContext->OMSetBlendState(m_vBlendState[(int)MEBlendType::ETransparent], nullptr, 0xffffffff);
 		}
 		else if (MEMaterialType::EDepthPeeling == m_eMaterialType)

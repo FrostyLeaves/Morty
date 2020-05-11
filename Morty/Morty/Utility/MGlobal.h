@@ -42,6 +42,7 @@ extern const char* DEFAULT_MATERIAL_DRAW3D;
 extern const char* DEFAULT_MATERIAL_SKYBOX;
 extern const char* DEFAULT_MATERIAL_SHADOW;
 extern const char* DEFAULT_MATERIAL_SHADOW_ANIM;
+extern const char* DEFAULT_MATERIAL_DEPTH_PEELING;
 
 extern const char* DEFAULT_TEXTURE_WHITE;
 extern const char* DEFAULT_TEXTURE_BLACK;
@@ -58,12 +59,14 @@ const unsigned int SHADER_PARAM_CODE_WORLDINFO = 4;
 const unsigned int MINTERNAL_SHADER_CBUFFER_NUMBER = 5;
 
 const unsigned int SHADER_PARAM_CODE_SHADOW_MAP = 0;
-const unsigned int SHADER_PARAM_CODE_DDEPTH_FRONT = 1;
-const unsigned int MINTERNAL_SHADER_TEXTURE_NUMBER = 2;
+const unsigned int SHADER_PARAM_CODE_DEPTH_FRONT = 1;
+const unsigned int SHADER_PARAM_CODE_DEPTH_BACK = 2;
+const unsigned int MINTERNAL_SHADER_TEXTURE_NUMBER = 3;
 
 const unsigned int SHADER_PARAM_CODE_DEFAULT_SAMPLER = 0;
-const unsigned int SHADER_PARAM_CODE_SHADOW_SAMPLER = 1;
-const unsigned int MINTERNAL_SHADER_SAMPLER_NUMBER = 2;
+const unsigned int SHADER_PARAM_CODE_LESS_EQUAL_SAMPLER = 1;
+const unsigned int SHADER_PARAM_CODE_GREATER_EQUAL_SAMPLER = 2;
+const unsigned int MINTERNAL_SHADER_SAMPLER_NUMBER = 3;
 
 const unsigned int SHADER_PARAM_CODE_AUTO_UPDATE = 100;
 const unsigned int SHADER_PARAM_CODE_MATERIAL = 101;

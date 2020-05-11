@@ -37,6 +37,7 @@ enum class MEDepthStencilType
 {
 	EDefault = 0,
 	EReadNotWrite,
+	ENotReadNotWrite,
 
 	EDepthTypeEnd,
 };

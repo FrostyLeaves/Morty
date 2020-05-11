@@ -27,6 +27,11 @@ public:
 	MDirectX11RenderTarget(MDirectX11Device* pDevice);
 	~MDirectX11RenderTarget();
 
+
+	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
+
+public:
+
 	virtual void OnResize(const unsigned int& nWidth, const unsigned int& nHeight) override;
 	virtual void OnRender(MIRenderer* pRenderer) override;
 

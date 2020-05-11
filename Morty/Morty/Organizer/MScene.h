@@ -37,6 +37,7 @@ class MShadowTextureRenderTarget;
 class MTransparentRenderTarget;
 class MBoundsAABB;
 class MISystem;
+class MIRenderTarget;
 class MORTY_CLASS MScene : public MObject
 {
 public:
@@ -65,7 +66,7 @@ public:
 public:
 
 	virtual void Tick(const float& fDelta);
-	virtual void Render(MIRenderer* pRenderer, MViewport* pViewport);
+	virtual void Render(MIRenderer* pRenderer, MViewport* pViewport, MIRenderTarget* pRenderTarget);
 	virtual void Input(MInputEvent* pEvent, MViewport* pViewport);
 
 	virtual void OnCreated() override;
@@ -94,6 +95,7 @@ public:
 // 	void RemoveZOrderGroup(MIMeshInstance* pMeshInstance);
 
 protected:
+
 
 
 private:

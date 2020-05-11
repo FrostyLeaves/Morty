@@ -13,6 +13,7 @@ const char* DEFAULT_MATERIAL_DRAW3D = "DefMatDraw3D";
 const char* DEFAULT_MATERIAL_SKYBOX = "DefMatSkyBox";
 const char* DEFAULT_MATERIAL_SHADOW = "DefMatShadow";
 const char* DEFAULT_MATERIAL_SHADOW_ANIM = "DefMatShadowAnim";
+const char* DEFAULT_MATERIAL_DEPTH_PEELING = "DefMatDepthPeeling";
 
 const char* DEFAULT_TEXTURE_WHITE = "DefTexWhite";
 const char* DEFAULT_TEXTURE_BLACK = "DefTexBlack";

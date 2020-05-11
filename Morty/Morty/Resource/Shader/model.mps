@@ -16,11 +16,11 @@ float ShadowCalculation(float4 dirLightSpacePos, float fNdotL)
         
         float pixelDepth = dirLightSpacePos.z / dirLightSpacePos.w - epsilon;
         float offset = 1.0f / MSHADOW_TEXTURE_SIZE;
-        lighting += float(U_texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy + float2(0, -offset), pixelDepth));
-        lighting += float(U_texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy + float2(0, offset), pixelDepth));
-        lighting += float(U_texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy + float2(-offset, 0), pixelDepth));
-        lighting += float(U_texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy + float2(offset, 0), pixelDepth));
-        lighting += float(U_texShadowMap.SampleCmpLevelZero(U_shadowMapSampler, shadowTexCoords.xy, pixelDepth));
+        lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy + float2(0, -offset), pixelDepth));
+        lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy + float2(0, offset), pixelDepth));
+        lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy + float2(-offset, 0), pixelDepth));
+        lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy + float2(offset, 0), pixelDepth));
+        lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy, pixelDepth));
  
         lighting *= 0.2f;
         return lighting;
@@ -111,25 +111,31 @@ float4 PS(VS_OUT input) : SV_Target
         fAlpha *= transparentColor.a;
 
         //test
-        fAlpha = 1.0f;
+        //fAlpha = 1.0f;
 
         clip(fAlpha - 0.1f);
 
+    }
+
 #ifdef MTRANSPARENT_DEPTH_PEELING
+    if (fAlpha < 0.9f)      //Transparent
+    {
         float2 f2DepthFrontUV = input.pos.xy;
         f2DepthFrontUV.x /= U_f2ViewportSize.x;
         f2DepthFrontUV.y /= U_f2ViewportSize.y;
         if (saturate(f2DepthFrontUV.x) == f2DepthFrontUV.x && saturate(f2DepthFrontUV.y) == f2DepthFrontUV.y)
         {   
             float fZDepth = input.pos.z;
-            float bLessEqualFront = U_texDepthFront.SampleCmpLevelZero(U_shadowMapSampler, f2DepthFrontUV.xy, fZDepth);
-            clip(0.5f - bLessEqualFront);
 
-            //return float4(1,0,0,1);
-            //return float4(U_texDepthFront.Sample(U_defaultSampler, f2DepthFrontUV));
+            // a <= b
+            float v1 = U_texDepthFront.Sample(U_defaultSampler, f2DepthFrontUV.xy);
+            clip(fZDepth - v1 - 0.000001f);
+
+            float v2 = U_texDepthBack.Sample(U_defaultSampler, f2DepthFrontUV.xy);
+            clip(v2 - fZDepth - 0.0000001f);
         }
-#endif
     }
+#endif
 
     if(U_bDirectionLightEnabled > 0.5f)
     {

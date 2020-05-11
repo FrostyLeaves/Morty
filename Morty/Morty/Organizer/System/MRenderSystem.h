@@ -29,6 +29,7 @@ public:
 
 	struct MRenderInfo
 	{
+		MIRenderTarget* pRenderTarget;
 		MIRenderer* pRenderer;
 		MViewport* pViewport;
 		MCamera* pCamera;
@@ -58,7 +59,7 @@ public:
 
 
     virtual void Tick(const float& fDelta) override;
-    virtual void Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene) override;
+    virtual void Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene, MIRenderTarget* pRenderTarget) override;
 
 protected:
 
@@ -66,7 +67,7 @@ protected:
 	void GenerateShadowMap(MRenderInfo& info);
 	void UpdateShaderSharedParams(MRenderInfo& info);
 	void DrawMeshInstance(MRenderInfo& info);
-
+	void DrawTransparentWithDeepPeeling(MRenderInfo& info);
 
 	void DrawModelInstance(MRenderInfo& info);
 	void DrawSkyBox(MRenderInfo& info);

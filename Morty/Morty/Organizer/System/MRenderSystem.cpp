@@ -10,6 +10,8 @@
 #include "MTransparentRenderTarget.h"
 
 #include "MPainter.h"
+#include "MTexture.h"
+#include "MRenderStructure.h"
 #include "MTransformCoord.h"
 
 #include "MCamera.h"
@@ -56,11 +58,12 @@ void MRenderSystem::Tick(const float& fDelta)
 
 }
 
-void MRenderSystem::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene)
+void MRenderSystem::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene, MIRenderTarget* pRenderTarget)
 {
 
 	MRenderInfo info;
 
+	info.pRenderTarget = pRenderTarget;
 	info.pRenderer = pRenderer;
 	info.pViewport = pViewport;
 	info.pCamera = pViewport->GetCamera();
@@ -75,8 +78,9 @@ void MRenderSystem::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* 
  	UpdateShaderSharedParams(info);
 	DrawPainter(info);
 	DrawMeshInstance(info);
-	DrawModelInstance(info);
 	DrawSkyBox(info);
+	DrawTransparentWithDeepPeeling(info);
+	DrawModelInstance(info);
 }
 
 void MRenderSystem::GenerateShadowMap(MRenderInfo& info)
@@ -297,18 +301,6 @@ void MRenderSystem::DrawMeshInstance(MRenderInfo& info)
 // 		DrawMeshInstance(info.pRenderer, pMeshIns, pMeshMatrixParam, pAnimationParam);
 // 	}
 
-
-	std::vector<MTransparentRenderTarget*>& vTransparentRenderTarget = *info.pScene->GetTransparentRenderTarget();
-	for (MTransparentRenderTarget* pRT : vTransparentRenderTarget)
-	{
-		pRT->OnResize(info.pViewport->GetWidth(), info.pViewport->GetHeight());
-		info.pRenderer->SetViewport(0.0f, 0.0f, info.pViewport->GetWidth(), info.pViewport->GetHeight(), 0.0f, 1.0f);
-		pRT->Render(info.pRenderer, &info.vTransparentMaterialRenderGroup);
-	}
-
-	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
-	info.pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight(), 0.0f, 1.0f);
-
 }
 
 void MRenderSystem::DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pMeshInstance, MShaderParam*& pMeshMatrixParam, MShaderParam*& pAnimationParam)
@@ -349,6 +341,54 @@ void MRenderSystem::DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pM
 	}
 
 	pRenderer->DrawMesh(pMeshInstance->GetMesh());
+}
+
+void MRenderSystem::DrawTransparentWithDeepPeeling(MRenderInfo& info)
+{
+	Vector2 v2Size = Vector2(info.pViewport->GetWidth(), info.pViewport->GetHeight());
+
+ 	std::vector<MTransparentRenderTarget*>& vTransparentRenderTarget = *info.pScene->GetTransparentRenderTarget();
+	for (MTransparentRenderTarget* pRT : vTransparentRenderTarget)
+	{
+		pRT->OnResize(v2Size.x, v2Size.y);
+		pRT->Render(info.pRenderer, info.pRenderTarget, &info.vTransparentMaterialRenderGroup);
+	}
+
+	MMesh<Vector2>* pMesh = m_pEngine->GetPublicMesh<Vector2>();
+
+	pMesh->ResizeVertices(4);
+	Vector2* vVertices = (Vector2*)pMesh->GetVertices();
+
+	vVertices[0] = Vector2(-1, -1);
+	vVertices[1] = Vector2(1, -1);
+	vVertices[2] = Vector2(-1, 1);
+	vVertices[3] = Vector2(1, 1);
+
+	pMesh->ResizeIndices(2, 3);
+	unsigned int* vIndices = pMesh->GetIndices();
+
+	vIndices[0] = 0;
+	vIndices[1] = 2;
+	vIndices[2] = 1;
+
+	vIndices[3] = 2;
+	vIndices[4] = 3;
+	vIndices[5] = 1;
+
+	MMaterialResource* pTextureMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DEPTH_PEELING);
+	info.pRenderer->SetUseMaterial(pTextureMaterial);
+
+	for (int i = vTransparentRenderTarget.size() - 1; i >= 0; --i)
+	{
+		MTransparentRenderTarget* pRT = vTransparentRenderTarget[i];
+
+		std::vector<MShaderTextureParam>& vTextures = *pTextureMaterial->GetTextureParams();
+		vTextures[0].pTexture = pRT->GetBackTexture();
+		info.pRenderer->UpdateMaterialResource();
+
+		info.pRenderer->DrawMesh(pMesh);
+	}
+
 }
 
 void MRenderSystem::DrawModelInstance(MRenderInfo& info)

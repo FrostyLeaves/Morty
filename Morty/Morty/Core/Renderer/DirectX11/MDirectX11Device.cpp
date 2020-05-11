@@ -889,7 +889,9 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 				if (pParam->strName == "U_texShadowMap")
 					pParam->unCode = SHADER_PARAM_CODE_SHADOW_MAP;
 				else if (pParam->strName == "U_texDepthFront")
-					pParam->unCode = SHADER_PARAM_CODE_DDEPTH_FRONT;
+					pParam->unCode = SHADER_PARAM_CODE_DEPTH_FRONT;
+				else if (pParam->strName == "U_texDepthBack")
+					pParam->unCode = SHADER_PARAM_CODE_DEPTH_BACK;
 				else
 					pParam->unCode = SHADER_PARAM_CODE_DEFAULT;
 
@@ -914,8 +916,10 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 
 				if (pParam->strName == "U_defaultSampler")
 					pParam->unCode = SHADER_PARAM_CODE_DEFAULT_SAMPLER;
-				else if (pParam->strName == "U_shadowMapSampler")
-					pParam->unCode = SHADER_PARAM_CODE_SHADOW_SAMPLER;
+				else if (pParam->strName == "U_lessEqualSampler")
+					pParam->unCode = SHADER_PARAM_CODE_LESS_EQUAL_SAMPLER;
+				else if (pParam->strName == "U_greaterEqualSampler")
+					pParam->unCode = SHADER_PARAM_CODE_GREATER_EQUAL_SAMPLER;
 
 				if (pParam->unBindPoint < MINTERNAL_SHADER_SAMPLER_NUMBER)
 				{
@@ -1086,6 +1090,7 @@ bool MDirectX11Device::GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsig
 		return false;
 	}
 
+	pDxRenderTarget->m_pDepthTexture->SetSize(Vector2(nWidth, nHeight));
 	pDxRenderTarget->m_pDepthTexture->GenerateBuffer(this, false);
 	if (MDepthTextureBuffer* pBuffer = dynamic_cast<MDepthTextureBuffer*>(pDxRenderTarget->m_pDepthTexture->GetBuffer()))
 		pDxRenderTarget->m_pDepthStencilView = pBuffer->m_pDepthStencilView;

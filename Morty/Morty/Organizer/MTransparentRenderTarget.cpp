@@ -14,6 +14,7 @@ MTransparentRenderTarget::MTransparentRenderTarget()
     : MObject()
     , m_Material(nullptr)
     , m_pSceneDepthTexture(nullptr)
+	, m_pBackRenderTarget(nullptr)
     , m_pPrevLevelRenderTarget(nullptr)
     , m_pTransparentMeshes(nullptr)
 {
@@ -36,12 +37,14 @@ void MTransparentRenderTarget::OnDelete()
     m_Material.SetResource(nullptr);
 }
 
-void MTransparentRenderTarget::Render(MIRenderer* pRenderer, std::vector<MMaterialGroup>* pGroup)
+void MTransparentRenderTarget::Render(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget, std::vector<MMaterialGroup>* pGroup)
 {
 	SetSourceMeshes(pGroup);
+	m_pBackRenderTarget = pRenderTarget;
 
 	pRenderer->Render(this);
 
+	m_pBackRenderTarget = nullptr;
 	SetSourceMeshes(nullptr);
 }
 
@@ -54,16 +57,14 @@ void MTransparentRenderTarget::OnRender(MIRenderer* pRenderer)
 	if (nullptr == pMeshMatrixParam)
 		return;
 
-	//TODO 拷贝渲染完不透明物体后的深度视图，用来做深度剔除。
-	//如果不拷贝而是用原有的，因为不能写入深度，所以会出现Z值大的后被渲染而产生的显示问题。
-
 	MShaderParam* pAnimationParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_ANIMATION);
 
 	//如果当前有Shader使用了ShadowMap，那么进行ShadowMap的更新
-	if (SHADER_PARAM_CODE_DDEPTH_FRONT < MShaderBuffer::s_vTextureParams.size())
+	if (SHADER_PARAM_CODE_DEPTH_FRONT < MShaderBuffer::s_vTextureParams.size())
 	{
-		MShaderTextureParam* pDepthFrontParam = MShaderBuffer::s_vTextureParams[SHADER_PARAM_CODE_DDEPTH_FRONT];
-		if (SHADER_PARAM_CODE_DDEPTH_FRONT == pDepthFrontParam->unCode)
+		MShaderTextureParam* pDepthFrontParam = MShaderBuffer::s_vTextureParams[SHADER_PARAM_CODE_DEPTH_FRONT];
+		MShaderTextureParam* pDepthBackParam = MShaderBuffer::s_vTextureParams[SHADER_PARAM_CODE_DEPTH_BACK];
+		if (SHADER_PARAM_CODE_DEPTH_FRONT == pDepthFrontParam->unCode)
 		{
 			if (m_pPrevLevelRenderTarget)
 			{
@@ -77,6 +78,12 @@ void MTransparentRenderTarget::OnRender(MIRenderer* pRenderer)
 				pRenderer->SetPixelShaderTexture(*pDepthFrontParam);
 			}
 		}
+		if (SHADER_PARAM_CODE_DEPTH_BACK == pDepthBackParam->unCode)
+		{
+			pDepthBackParam->pTexture = m_pBackRenderTarget->GetDepthTexture();
+			pRenderer->SetPixelShaderTexture(*pDepthBackParam);
+		}
+		
 	}
 
     for (MMaterialGroup& group : *m_pTransparentMeshes)

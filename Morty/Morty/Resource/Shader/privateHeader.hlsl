@@ -75,14 +75,16 @@ struct SpotLight
 };
 
 sampler U_defaultSampler : register(s0);
-SamplerComparisonState U_shadowMapSampler : register(s1);
+SamplerComparisonState U_lessEqualSampler : register(s1);
+SamplerComparisonState U_greaterEqualSampler : register(s2);
 
 //Shadowmap
 Texture2D U_texShadowMap : register(t0);
 
 #ifdef MTRANSPARENT_DEPTH_PEELING
 //Depth-Peeling
-Texture2D U_texDepthFront : register(t1);
+Texture2D<float> U_texDepthFront : register(t1);
+Texture2D<float> U_texDepthBack : register(t2);
 #endif
 
 //VS    per mesh

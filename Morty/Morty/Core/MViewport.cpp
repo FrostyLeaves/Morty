@@ -166,7 +166,7 @@ void MViewport::SetSize(const Vector2& v2Size)
 	m_v2Size = v2Size;
 }
 
-void MViewport::Render(MIRenderer* pRenderer)
+void MViewport::Render(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget)
 {
 	if (nullptr == m_pScene)
 		return;
@@ -175,7 +175,7 @@ void MViewport::Render(MIRenderer* pRenderer)
 	m_cameraFrustum.UpdateFromCameraInvProj(this->GetCameraInverseProjection());
 	m_bCameraInvProjMatrixLocked = true;
 	
-	m_pScene->Render(pRenderer, this);
+	m_pScene->Render(pRenderer, this, pRenderTarget);
 	
 	m_bCameraInvProjMatrixLocked = false;
 }

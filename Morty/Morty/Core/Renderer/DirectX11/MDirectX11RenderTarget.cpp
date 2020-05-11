@@ -37,16 +37,16 @@ MDirectX11RenderTarget* MDirectX11RenderTarget::CreateForView(MDirectX11Device* 
 	sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 	sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 
-	if (pDevice->m_bEnable4xMsaa)
-	{
-		sd.SampleDesc.Count = 4;
-		sd.SampleDesc.Quality = pDevice->m_n4xMsaaQuality;
-	}
-	else
-	{
+// 	if (pDevice->m_bEnable4xMsaa)
+// 	{
+// 		sd.SampleDesc.Count = 4;
+// 		sd.SampleDesc.Quality = pDevice->m_n4xMsaaQuality;
+// 	}
+// 	else
+// 	{
 		sd.SampleDesc.Count = 1;
 		sd.SampleDesc.Quality = 0;
-	}
+//	}
 
 	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	sd.BufferCount = 1;
@@ -143,7 +143,7 @@ void MDirectX11RenderTarget::OnRender(MIRenderer* pRenderer)
 	m_pView->OnRenderBegin();
 	for (MViewport* pViewport : m_pView->GetViewports())
 	{
-		pViewport->Render(pRenderer);
+		pViewport->Render(pRenderer, this);
 	}
 	m_pView->OnRenderEnd();
 

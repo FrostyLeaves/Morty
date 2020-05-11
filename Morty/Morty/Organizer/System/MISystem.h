@@ -14,6 +14,7 @@
 class MScene;
 class MViewport;
 class MIRenderer;
+class MIRenderTarget;
 class MORTY_CLASS MISystem : public MObject
 {
 public:
@@ -24,7 +25,7 @@ public:
 public:
 
     virtual void Tick(const float& fDelta) {};
-    virtual void Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene) {};
+    virtual void Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene, MIRenderTarget* pRenderTarget) {};
 
 private:
 };

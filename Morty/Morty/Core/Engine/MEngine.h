@@ -9,6 +9,7 @@
 #ifndef _M_MENGINE_H_
 #define _M_MENGINE_H_
 #include "MGlobal.h"
+#include "MMesh.h"
 
 #include <vector>
 
@@ -51,6 +52,19 @@ public:
 
 	MIDevice* GetDevice() { return m_pDevice; }
 	MIRenderer* GetRenderer() { return m_pRenderer; }
+
+	template <typename T>
+	static MMesh<T>* GetPublicMesh()
+	{
+		static MMesh<T>* pMesh = nullptr;
+
+		if (nullptr == pMesh)
+		{
+			pMesh = new MMesh<T>();
+		}
+
+		return pMesh;
+	}
 
 protected:
 

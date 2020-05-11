@@ -21,12 +21,15 @@
 
 class MIDevice;
 class MIRenderer;
+class MRenderDepthTexture;
 class MORTY_CLASS MIRenderTarget
 {
 public:
 
 	MIRenderTarget();
 	virtual ~MIRenderTarget() {}
+
+	virtual MRenderDepthTexture* GetDepthTexture() = 0;
 
 	virtual void OnResize(const unsigned int& nWidth, const unsigned int& nHeight) = 0;
 

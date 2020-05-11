@@ -63,7 +63,8 @@ protected:
 
 protected:
 	ID3D11SamplerState* m_pDefaultSamplerState;
-	ID3D11SamplerState* m_pDepthTextureSamplerState;
+	ID3D11SamplerState* m_pLessEqualSamplerState;
+	ID3D11SamplerState* m_pGreaterEqualSamplerState;
 //	ID3D11SamplerState* m_pAnisotropicFilterSamplerState;
 
 	std::vector<ID3D11RasterizerState*> m_vRasterizerState;
