@@ -1070,31 +1070,35 @@ bool MDirectX11Device::GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsig
 	// Resize the swap chain and recreate the render target view.
 	HRESULT hr;
 
-
 	ID3D11Texture2D* pBackBuffer = nullptr;
-	ID3D11Texture2D* pDepthStencilBuffer = nullptr;
 
+	unsigned int unTargetViewSize = pRenderTarget->GetTargetViewNum();
 
-	hr = pDxRenderTarget->m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
-	if (FAILED(hr) || nullptr == pBackBuffer)
+	pRenderTarget->m_vpTargetView = new ID3D11RenderTargetView*[unTargetViewSize];
+
+	for (unsigned int i = 0; i < unTargetViewSize; ++i)
 	{
-		MLogManager::GetInstance()->Error("Failed to GetBuffer!");
-		return false;
+		hr = pDxRenderTarget->m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
+		if (FAILED(hr) || nullptr == pBackBuffer)
+		{
+			MLogManager::GetInstance()->Error("Failed to GetBuffer!");
+			return false;
+		}
+
+		hr = m_pD3dDevice->CreateRenderTargetView(pBackBuffer, 0, &pRenderTarget->m_vpTargetView[i]);
+		pBackBuffer->Release();
+		if (FAILED(hr))
+		{
+			MLogManager::GetInstance()->Error("Failed to CreateRenderTargetView!");
+			return false;
+		}
+
+		pDxRenderTarget->m_pDepthTexture->SetSize(Vector2(nWidth, nHeight));
+		pDxRenderTarget->m_pDepthTexture->GenerateBuffer(this, false);
+		if (MDepthTextureBuffer* pBuffer = dynamic_cast<MDepthTextureBuffer*>(pDxRenderTarget->m_pDepthTexture->GetBuffer()))
+			pDxRenderTarget->m_pDepthStencilView = pBuffer->m_pDepthStencilView;
+
 	}
-
-	hr = m_pD3dDevice->CreateRenderTargetView(pBackBuffer, 0, &pRenderTarget->m_pTargetView);
-	pBackBuffer->Release();
-	if (FAILED(hr))
-	{
-		MLogManager::GetInstance()->Error("Failed to CreateRenderTargetView!");
-		return false;
-	}
-
-	pDxRenderTarget->m_pDepthTexture->SetSize(Vector2(nWidth, nHeight));
-	pDxRenderTarget->m_pDepthTexture->GenerateBuffer(this, false);
-	if (MDepthTextureBuffer* pBuffer = dynamic_cast<MDepthTextureBuffer*>(pDxRenderTarget->m_pDepthTexture->GetBuffer()))
-		pDxRenderTarget->m_pDepthStencilView = pBuffer->m_pDepthStencilView;
-
 	return true;
 }
 
@@ -1102,17 +1106,29 @@ bool MDirectX11Device::GenerateRenderTarget(MTextureRenderTarget* pRenderTarget,
 {
 	unsigned int eRenderTargetType = pRenderTarget->GetRenderTargetType();
 
+	
 	if (MTextureRenderTarget::ERenderBack & eRenderTargetType)
 	{
-		pRenderTarget->m_pBackTexture->GenerateBuffer(this, false);
-		if (MRenderTextureBuffer* pBuffer = dynamic_cast<MRenderTextureBuffer*>(pRenderTarget->m_pBackTexture->GetBuffer()))
-			pRenderTarget->m_pTargetView = pBuffer->m_pRenderTargetView;
+		unsigned int unTargetViewNum = pRenderTarget->GetTargetViewNum();
+		if (unTargetViewNum > 0)
+		{
+			pRenderTarget->m_vpTargetView = new ID3D11RenderTargetView * [unTargetViewNum];
+		}
+		if (pRenderTarget->m_vBackTexture)
+		{
+			for (unsigned int i = 0; i < unTargetViewNum; ++i)
+			{
+				pRenderTarget->m_vBackTexture[i].GenerateBuffer(this, false);
+				if (MRenderTextureBuffer* pBuffer = dynamic_cast<MRenderTextureBuffer*>(pRenderTarget->m_vBackTexture[i].GetBuffer()))
+					pRenderTarget->m_vpTargetView[i] = pBuffer->m_pRenderTargetView;
+			}
+		}
 	}
 
 	if (MTextureRenderTarget::ERenderDepth & eRenderTargetType)
 	{
 		pRenderTarget->m_pDepthTexture->GenerateBuffer(this, false);
-		if(MDepthTextureBuffer* pBuffer = dynamic_cast<MDepthTextureBuffer*>(pRenderTarget->m_pDepthTexture->GetBuffer()))
+		if (MDepthTextureBuffer* pBuffer = dynamic_cast<MDepthTextureBuffer*>(pRenderTarget->m_pDepthTexture->GetBuffer()))
 			pRenderTarget->m_pDepthStencilView = pBuffer->m_pDepthStencilView;
 	}
 
@@ -1121,10 +1137,15 @@ bool MDirectX11Device::GenerateRenderTarget(MTextureRenderTarget* pRenderTarget,
 
 void MDirectX11Device::DestroyRenderTarget(MTextureRenderTarget* pRenderTarget)
 {
-	if (pRenderTarget->m_pBackTexture)
+	if (pRenderTarget->m_vBackTexture)
 	{
-		pRenderTarget->m_pBackTexture->DestroyTexture(this);
-		pRenderTarget->m_pTargetView = nullptr;
+		for (unsigned int i = 0; i < pRenderTarget->GetTargetViewNum(); ++i)
+		{
+			pRenderTarget->m_vBackTexture[i].DestroyTexture(this);
+		}
+
+		delete[] pRenderTarget->m_vpTargetView;
+		pRenderTarget->m_vpTargetView = nullptr;
 	}
 	if (pRenderTarget->m_pDepthTexture)
 	{
@@ -1139,10 +1160,15 @@ void MDirectX11Device::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
 	if (nullptr == pDxRenderTarget)
 		return;
 
-	if (pDxRenderTarget->m_pTargetView)
+	if (pDxRenderTarget->m_vpTargetView)
 	{
-		pDxRenderTarget->m_pTargetView->Release();
-		pDxRenderTarget->m_pTargetView = nullptr;
+		for (unsigned int i = 0; i < pRenderTarget->GetTargetViewNum(); ++i)
+		{
+			pDxRenderTarget->m_vpTargetView[i]->Release();
+		}
+
+		delete[] pDxRenderTarget->m_vpTargetView;
+		pDxRenderTarget->m_vpTargetView = nullptr;
 	}
 
 	if (pDxRenderTarget->m_pDepthTexture)

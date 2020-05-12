@@ -267,9 +267,14 @@ void MDirectX11Renderer::Render(MIRenderTarget* pRenderTarget)
 
 		if(pRenderTarget->m_pDepthStencilView)
 			m_pDevice->m_pD3dContext->ClearDepthStencilView(pRenderTarget->m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-		if(pRenderTarget->m_pTargetView)
-			m_pDevice->m_pD3dContext->ClearRenderTargetView(pRenderTarget->m_pTargetView, pRenderTarget->m_backgroundColor.m);
-
+		
+		if (pRenderTarget->m_vpTargetView)
+		{
+			for (unsigned int i = 0; i < pRenderTarget->GetTargetViewNum(); ++i)
+			{
+				m_pDevice->m_pD3dContext->ClearRenderTargetView(pRenderTarget->m_vpTargetView[i], pRenderTarget->m_backgroundColor.m);
+			}
+		}
 		m_vRenderTargets.push(pRenderTarget);
 		RecoverRenderTarget(pRenderTarget);
 		pRenderTarget->OnRender(this);
@@ -294,10 +299,12 @@ void MDirectX11Renderer::RecoverRenderTarget(MIRenderTarget* pRenderTarget)
 		m_pUsingMaterial = nullptr;
 		//m_pCurrentRenderTarget = pRenderTarget;
 
-		if (pRenderTarget->m_pTargetView)
-			m_pDevice->m_pD3dContext->OMSetRenderTargets(1, &pRenderTarget->m_pTargetView, pRenderTarget->m_pDepthStencilView);
-		else
-			m_pDevice->m_pD3dContext->OMSetRenderTargets(0, nullptr, pRenderTarget->m_pDepthStencilView);
+		unsigned int unTargetSize = pRenderTarget->GetTargetViewNum();
+		m_pDevice->m_pD3dContext->OMSetRenderTargets(unTargetSize, pRenderTarget->m_vpTargetView, pRenderTarget->m_pDepthStencilView);
+		//if (pRenderTarget->m_pTargetView)
+		//	m_pDevice->m_pD3dContext->OMSetRenderTargets(1, &pRenderTarget->m_pTargetView, pRenderTarget->m_pDepthStencilView);
+		//else
+		//	m_pDevice->m_pD3dContext->OMSetRenderTargets(0, nullptr, pRenderTarget->m_pDepthStencilView);
 	}
 }
 
@@ -360,6 +367,7 @@ bool MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial, const bool& bUpdat
 		//	m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::EReadNotWrite], 0);
 			m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::ENotReadNotWrite], 0);
 			m_pDevice->m_pD3dContext->OMSetBlendState(m_vBlendState[(int)MEBlendType::ETransparent], nullptr, 0xffffffff);
+
 		}
 		else if (MEMaterialType::EDepthPeeling == m_eMaterialType)
 		{

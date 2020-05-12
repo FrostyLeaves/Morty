@@ -22,6 +22,7 @@
 class MIDevice;
 class MIRenderer;
 class MRenderDepthTexture;
+
 class MORTY_CLASS MIRenderTarget
 {
 public:
@@ -29,7 +30,11 @@ public:
 	MIRenderTarget();
 	virtual ~MIRenderTarget() {}
 
+	unsigned int GetTargetViewNum() const { return m_unTargetViewNum; }
+
 	virtual MRenderDepthTexture* GetDepthTexture() = 0;
+
+public:
 
 	virtual void OnResize(const unsigned int& nWidth, const unsigned int& nHeight) = 0;
 
@@ -39,7 +44,7 @@ public:
 	virtual void Release(MIDevice* pDevice) = 0;
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	ID3D11RenderTargetView* m_pTargetView;
+	ID3D11RenderTargetView** m_vpTargetView;
 	ID3D11DepthStencilView* m_pDepthStencilView;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 
@@ -47,6 +52,9 @@ public:
 
 	MColor m_backgroundColor;
 
+protected:
+
+	unsigned int m_unTargetViewNum;
 };
 
 

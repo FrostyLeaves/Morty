@@ -2,32 +2,41 @@
 #include "MIDevice.h"
 #include "MRenderStructure.h"
 #include "MTexture.h"
+#include "MEngine.h"
+
+MTypeIdentifierImplement(MTextureRenderTarget, MObject)
 
 MTextureRenderTarget::MTextureRenderTarget()
 	: MIRenderTarget()
-	, m_pDevice(nullptr)
-	, m_pBackTexture(new MRenderTargetTexture())
+	, m_vBackTexture(nullptr)
 	, m_pDepthTexture(new MRenderDepthTexture())
 	, m_eRenderTargetType(ERenderNone)
 	, m_fWidth(0)
 	, m_fHeight(0)
 {
-
+	m_unTargetViewNum = 1;
 }
 
 MTextureRenderTarget::~MTextureRenderTarget()
 {
-	Release(m_pDevice);
+	Release(m_pEngine->GetDevice());
 }
 
-MTextureRenderTarget* MTextureRenderTarget::CreateForTexture(MIDevice* pDevice, const unsigned int& eRenderTargetType, const unsigned int& unWidth, const unsigned int& unHeight)
+void MTextureRenderTarget::Initialize(const unsigned int& eType, const unsigned int& unWidth, const unsigned int& unHeight, const unsigned int& unTargetViewNum/* = 1*/)
 {
-	MTextureRenderTarget* pRenderTarget = new MTextureRenderTarget();
-	pRenderTarget->m_pDevice = pDevice;
-	pRenderTarget->m_eRenderTargetType = eRenderTargetType;
-	pRenderTarget->OnResize(unWidth, unHeight);
+	m_eRenderTargetType = eType;
+	m_unTargetViewNum = unTargetViewNum;
 
-	return pRenderTarget;
+	unsigned int unSize = GetTargetViewNum();
+	m_vBackTexture = new MRenderTargetTexture[unSize];
+
+	OnResize(unWidth, unHeight);
+}
+
+void MTextureRenderTarget::OnCreated()
+{
+	Super::OnCreated();
+
 }
 
 void MTextureRenderTarget::OnResize(const unsigned int& nWidth, const unsigned int& nHeight)
@@ -38,25 +47,37 @@ void MTextureRenderTarget::OnResize(const unsigned int& nWidth, const unsigned i
 	m_fWidth = nWidth;
 	m_fHeight = nHeight;
 
-	if (m_pBackTexture && (m_eRenderTargetType & METextureRenderTargetType::ERenderBack))
-		m_pBackTexture->SetSize(Vector2(nWidth, nHeight));
+	m_pEngine->GetDevice()->DestroyRenderTarget(this);
+
+	Vector2 v2Size(nWidth, nHeight);
+
+	if (m_vBackTexture && (m_eRenderTargetType & METextureRenderTargetType::ERenderBack))
+	{
+		for (unsigned int i = 0; i < GetTargetViewNum(); ++i)
+			m_vBackTexture[i].SetSize(v2Size);
+	}
+
 	if (m_pDepthTexture && (m_eRenderTargetType & METextureRenderTargetType::ERenderDepth))
-		m_pDepthTexture->SetSize(Vector2(nWidth, nHeight));
+		m_pDepthTexture->SetSize(v2Size);
 
-	m_pDevice->DestroyRenderTarget(this);
 
-	m_pDevice->GenerateRenderTarget(this, nWidth, nHeight);
+	if (nWidth == 0 || nHeight == 0)
+		return;
+
+	m_pEngine->GetDevice()->GenerateRenderTarget(this, nWidth, nHeight);
 }
 
 void MTextureRenderTarget::Release(MIDevice* pDevice)
 {
 	pDevice->DestroyRenderTarget(this);
 
-	if (m_pBackTexture)
+	if (m_vBackTexture)
 	{
-		m_pBackTexture->DestroyTexture(pDevice);
-		delete m_pBackTexture;
-		m_pBackTexture = nullptr;
+		for (unsigned int i = 0; i < GetTargetViewNum(); ++i)
+			m_vBackTexture[i].DestroyTexture(pDevice);
+
+		delete[] m_vBackTexture;
+		m_vBackTexture = nullptr;
 	}
 
 	if (m_pDepthTexture)

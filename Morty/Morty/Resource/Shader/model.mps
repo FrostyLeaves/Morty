@@ -102,7 +102,7 @@ float4 PS(VS_OUT input) : SV_Target
     }
 
 
-    float3 f3Color = U_mat.f3Ambient * f3AmbiColor.xyz * 0.5f;
+    float3 f3Color = U_mat.f3Ambient * f3AmbiColor.xyz * 0.2f;
     float fAlpha = saturate(U_mat.fAlphaFactor) * f3AmbiColor.w;
 
     if (U_mat.bUseTransparentTex > 0.5f)

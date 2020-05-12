@@ -8,10 +8,10 @@
 
 #include "MRenderSystem.h"
 
-MTypeIdentifierImplement(MTransparentRenderTarget, MObject)
+MTypeIdentifierImplement(MTransparentRenderTarget, MTextureRenderTarget)
 
 MTransparentRenderTarget::MTransparentRenderTarget()
-    : MObject()
+    : MTextureRenderTarget()
     , m_Material(nullptr)
     , m_pSceneDepthTexture(nullptr)
 	, m_pBackRenderTarget(nullptr)
@@ -26,10 +26,9 @@ MTransparentRenderTarget::~MTransparentRenderTarget()
 
 void MTransparentRenderTarget::OnCreated()
 {
-	m_pDevice = m_pEngine->GetDevice();
-	m_eRenderTargetType = MTextureRenderTarget::ERenderBack | MTextureRenderTarget::ERenderDepth;
+	Super::OnCreated();
 
-//	OnResize(MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE);
+	Initialize(MTextureRenderTarget::ERenderBack | MTextureRenderTarget::ERenderDepth, 0, 0);
 }
 
 void MTransparentRenderTarget::OnDelete()

@@ -78,7 +78,7 @@ void MRenderSystem::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* 
  	UpdateShaderSharedParams(info);
 	DrawPainter(info);
 	DrawMeshInstance(info);
-	DrawSkyBox(info);
+//	DrawSkyBox(info);
 	DrawTransparentWithDeepPeeling(info);
 	DrawModelInstance(info);
 }

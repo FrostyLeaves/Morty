@@ -16,7 +16,7 @@
 #include "MMaterialGroup.h"
 #include "MRenderStructure.h"
 
-class MORTY_CLASS MTransparentRenderTarget : public MObject, public MTextureRenderTarget
+class MORTY_CLASS MTransparentRenderTarget : public MTextureRenderTarget
 {
 public:
 	M_OBJECT(MTransparentRenderTarget);

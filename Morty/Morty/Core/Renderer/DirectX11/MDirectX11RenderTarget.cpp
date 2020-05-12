@@ -12,6 +12,7 @@ MDirectX11RenderTarget::MDirectX11RenderTarget(MDirectX11Device* pDevice)
 	, m_pView(nullptr)
 	, m_pDepthTexture(new MRenderDepthTexture())
 {
+	m_unTargetViewNum = 1;
 }
 
 MDirectX11RenderTarget::~MDirectX11RenderTarget()

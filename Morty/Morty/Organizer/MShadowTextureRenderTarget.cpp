@@ -14,7 +14,7 @@
 #include "MSkeleton.h"
 
 
-MTypeIdentifierImplement(MShadowTextureRenderTarget, MObject)
+MTypeIdentifierImplement(MShadowTextureRenderTarget, MTextureRenderTarget)
 
 MShadowTextureRenderTarget::MShadowTextureRenderTarget()
 	: MTextureRenderTarget()
@@ -47,22 +47,20 @@ void MShadowTextureRenderTarget::Render(MIRenderer* pRenderer, const Matrix4& m4
 
 void MShadowTextureRenderTarget::OnCreated()
 {
+
+	Super::OnCreated();
+
 	MMaterialResource* pShadowMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW);
 	m_pStaticMaterial = pShadowMaterialRes;
 
 	MMaterialResource* pShadowWithAnimMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_ANIM);
 	m_pAnimMaterial = pShadowWithAnimMaterialRes;
 	
-	m_pDevice = m_pEngine->GetDevice();
-	m_eRenderTargetType = MTextureRenderTarget::ERenderDepth;
-
-	OnResize(MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE);
+	Initialize(MTextureRenderTarget::ERenderDepth, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE, 0);
 }
 
 void MShadowTextureRenderTarget::OnDelete()
 {
-	Release(m_pDevice);
-
 	Super::OnDelete();
 }
 

@@ -29,7 +29,7 @@ struct MShadowRenderGroup
 };
 
 
-class MORTY_CLASS MShadowTextureRenderTarget : public MObject, public MTextureRenderTarget
+class MORTY_CLASS MShadowTextureRenderTarget : public MTextureRenderTarget
 {
 public:
     M_OBJECT(MShadowTextureRenderTarget)

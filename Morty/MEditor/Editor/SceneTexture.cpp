@@ -36,7 +36,9 @@ void SceneTexture::Initialize(MEngine* pEngine)
 	m_pRenderViewport = pEngine->GetObjectManager()->CreateObject<MViewport>();
 	m_pRenderViewport->SetScene(m_pScene);
 	m_pRenderViewport->SetSize(Vector2(256, 256));
-	m_pTextureRenderTarget = MTextureRenderTarget::CreateForTexture(m_pEngine->GetDevice(), MTextureRenderTarget::ERenderBack | MTextureRenderTarget::ERenderDepth, 256, 256);
+	m_pTextureRenderTarget = pEngine->GetObjectManager()->CreateObject<MTextureRenderTarget>();
+	m_pTextureRenderTarget->Initialize(MTextureRenderTarget::ERenderBack | MTextureRenderTarget::ERenderDepth, 256, 256);
+		//MTextureRenderTarget::CreateForTexture(m_pEngine->GetDevice(), MTextureRenderTarget::ERenderBack | MTextureRenderTarget::ERenderDepth, 256, 256);
 	m_pTextureRenderTarget->m_backgroundColor = MColor(0, 0, 0, 1);
 	m_pTextureRenderTarget->m_funcRenderFunction = [this](MIRenderer* pRenderer)
 	{
@@ -60,8 +62,7 @@ void SceneTexture::Release()
 	m_pRenderViewport->DeleteLater();
 	m_pRenderViewport = nullptr;
 
-	m_pTextureRenderTarget->Release(m_pEngine->GetDevice());
-	delete m_pTextureRenderTarget;
+	m_pTextureRenderTarget->DeleteLater();
 	m_pTextureRenderTarget = nullptr;
 }
 
@@ -82,17 +83,14 @@ void* SceneTexture::GetTexture()
 {
 	if (m_pTextureRenderTarget)
 	{
-		if (m_pTextureRenderTarget)
+		if (MRenderTargetTexture* pBackTexture = m_pTextureRenderTarget->GetBackTexture())
 		{
-			if (m_pTextureRenderTarget->m_pBackTexture)
+			if (MTextureBuffer* pBuffer = pBackTexture->GetBuffer())
 			{
-				if (MTextureBuffer* pBuffer = m_pTextureRenderTarget->m_pBackTexture->GetBuffer())
-				{
-					return pBuffer->GetResourceView();
-				}
+				return pBuffer->GetResourceView();
 			}
 		}
 	}
-
+	
 	return nullptr;
 }
