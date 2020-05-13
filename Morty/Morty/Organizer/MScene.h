@@ -61,8 +61,9 @@ public:
 	MShadowTextureRenderTarget* GetShadowRenderTarget() { return m_pShadowDepthMapRenderTarget; }
 	std::vector<MTransparentRenderTarget*>* GetTransparentRenderTarget() { return &m_vTransparentRenderTarget; }
 
-// 	std::vector<MMaterialGroup*>* GetMaterialGroups() { return &m_vMaterialOrderGroups; }
-// 	std::vector<MIMeshInstance*>* GetZOrderGroups() { return &m_vZOrderGroups; }
+
+	std::vector<MMaterialGroup*>* GetMaterialGroup() { return &m_vMaterialOrderGroups; }
+
 public:
 
 	virtual void Tick(const float& fDelta);
@@ -83,16 +84,9 @@ public:
 	void RemoveAttachedViewport(MViewport* pViewport);
 	std::vector<MViewport*> GetViewports() { return m_vViewports; }
 
-	void GetSceneRenderMeshAABB(MBoundsAABB& cSceneAABB, MViewport* pViewport);
+	void InsertMaterialGroup(MIMeshInstance* pMeshInstance);
+	void RemoveMaterialGroup(MIMeshInstance* pMeshInstance);
 
-// 	void RecordMeshInstance(MIMeshInstance* pMeshInstance);
-// 	void CancelRecordMeshInstance(MIMeshInstance* pMeshInstance);
-//
-// 	void InsertMaterialGroup(MIMeshInstance* pMeshInstance);
-// 	void RemoveMaterialGroup(MIMeshInstance* pMeshInstance);
-// 
-// 	void InsertZOrderGroup(MIMeshInstance* pMeshInstance);
-// 	void RemoveZOrderGroup(MIMeshInstance* pMeshInstance);
 
 protected:
 
@@ -115,10 +109,8 @@ private:
 	MSCENE_TYPED_VECTOR(SpotLight);
 	MSCENE_TYPED_VECTOR(InputNode);
 	MSCENE_TYPED_VECTOR(ModelInstance);
-	MSCENE_TYPED_VECTOR(IModelMeshInstance);
 
-// 	std::vector<MMaterialGroup*> m_vMaterialOrderGroups;
-// 	std::vector<MIMeshInstance*> m_vZOrderGroups;
+ 	std::vector<MMaterialGroup*> m_vMaterialOrderGroups;
 
 	std::vector<MViewport*> m_vViewports;
 	std::vector<MISystem*> m_vSystems;

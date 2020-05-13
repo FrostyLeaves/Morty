@@ -34,23 +34,35 @@
 
 MTypeIdentifierImplement(MRenderSystem, MISystem)
 
+
 MRenderSystem::MRenderSystem()
 	: MISystem()
+	, m_cDepthPeelingMesh(true)
 {
+	MMesh<Vector2>& mesh = m_cDepthPeelingMesh;
+	mesh.ResizeVertices(4);
+	Vector2* vVertices = (Vector2*)mesh.GetVertices();
+
+	vVertices[0] = Vector2(-1, -1);
+	vVertices[1] = Vector2(1, -1);
+	vVertices[2] = Vector2(-1, 1);
+	vVertices[3] = Vector2(1, 1);
+
+	mesh.ResizeIndices(2, 3);
+	unsigned int* vIndices = mesh.GetIndices();
+
+	vIndices[0] = 0;
+	vIndices[1] = 2;
+	vIndices[2] = 1;
+
+	vIndices[3] = 2;
+	vIndices[4] = 3;
+	vIndices[5] = 1;
 }
 
 MRenderSystem::~MRenderSystem()
 {
-}
-
-void MRenderSystem::Initialize()
-{
-
-}
-
-void MRenderSystem::Release()
-{
-
+	m_cDepthPeelingMesh.DestroyBuffer(m_pEngine->GetDevice());
 }
 
 void MRenderSystem::Tick(const float& fDelta)
@@ -77,9 +89,9 @@ void MRenderSystem::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* 
  
  	UpdateShaderSharedParams(info);
 	DrawPainter(info);
-	DrawMeshInstance(info);
+	DrawNormalMesh(info);
 //	DrawSkyBox(info);
-	DrawTransparentWithDeepPeeling(info);
+	DrawTransparentMesh(info);
 	DrawModelInstance(info);
 }
 
@@ -270,7 +282,7 @@ void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 	}
 }
 
-void MRenderSystem::DrawMeshInstance(MRenderInfo& info)
+void MRenderSystem::DrawNormalMesh(MRenderInfo& info)
 {
 	MShaderParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
 	if (nullptr == pMeshMatrixParam)
@@ -290,17 +302,6 @@ void MRenderSystem::DrawMeshInstance(MRenderInfo& info)
 			DrawMeshInstance(info.pRenderer, pMeshIns, pMeshMatrixParam, pAnimationParam);
 		}
 	}
-
-// 	for (MIMeshInstance* pMeshIns : info.vTransparentRenderGroup)
-// 	{
-// 		MMaterial* pMaterial = pMeshIns->GetMaterial();
-// 
-// 		if(!info.pRenderer->SetUseMaterial(pMaterial, true))
-// 			continue;
-// 
-// 		DrawMeshInstance(info.pRenderer, pMeshIns, pMeshMatrixParam, pAnimationParam);
-// 	}
-
 }
 
 void MRenderSystem::DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pMeshInstance, MShaderParam*& pMeshMatrixParam, MShaderParam*& pAnimationParam)
@@ -343,7 +344,7 @@ void MRenderSystem::DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pM
 	pRenderer->DrawMesh(pMeshInstance->GetMesh());
 }
 
-void MRenderSystem::DrawTransparentWithDeepPeeling(MRenderInfo& info)
+void MRenderSystem::DrawTransparentMesh(MRenderInfo& info)
 {
 	Vector2 v2Size = Vector2(info.pViewport->GetWidth(), info.pViewport->GetHeight());
 
@@ -351,29 +352,10 @@ void MRenderSystem::DrawTransparentWithDeepPeeling(MRenderInfo& info)
 	for (MTransparentRenderTarget* pRT : vTransparentRenderTarget)
 	{
 		pRT->OnResize(v2Size.x, v2Size.y);
-		pRT->Render(info.pRenderer, info.pRenderTarget, &info.vTransparentMaterialRenderGroup);
+		pRT->Render(info.pRenderer, info.pRenderTarget, &info.vTransparentRenderGroup);
 	}
 
-	MMesh<Vector2>* pMesh = m_pEngine->GetPublicMesh<Vector2>();
-
-	pMesh->ResizeVertices(4);
-	Vector2* vVertices = (Vector2*)pMesh->GetVertices();
-
-	vVertices[0] = Vector2(-1, -1);
-	vVertices[1] = Vector2(1, -1);
-	vVertices[2] = Vector2(-1, 1);
-	vVertices[3] = Vector2(1, 1);
-
-	pMesh->ResizeIndices(2, 3);
-	unsigned int* vIndices = pMesh->GetIndices();
-
-	vIndices[0] = 0;
-	vIndices[1] = 2;
-	vIndices[2] = 1;
-
-	vIndices[3] = 2;
-	vIndices[4] = 3;
-	vIndices[5] = 1;
+	MMesh<Vector2>& mesh = m_cDepthPeelingMesh;
 
 	MMaterialResource* pTextureMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DEPTH_PEELING);
 	info.pRenderer->SetUseMaterial(pTextureMaterial);
@@ -386,7 +368,7 @@ void MRenderSystem::DrawTransparentWithDeepPeeling(MRenderInfo& info)
 		vTextures[0].pTexture = pRT->GetBackTexture();
 		info.pRenderer->UpdateMaterialResource();
 
-		info.pRenderer->DrawMesh(pMesh);
+		info.pRenderer->DrawMesh(&mesh);
 	}
 
 }
@@ -588,121 +570,38 @@ void MRenderSystem::GenerateRenderGroup(MRenderInfo& info)
 	Vector3 v3BoundsMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
 	Vector3 v3BoundsMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
-
-	for (MIMeshInstance* pMeshIns : *info.pScene->GetAllIModelMeshInstance())
+	for (MMaterialGroup* pMaterialGroup : *info.pScene->GetMaterialGroup())
 	{
-		if (!pMeshIns->GetVisibleRecursively())
-			continue;
+		MMaterialGroup* pRenderGroup = nullptr;
 
-		if (MCameraFrustum::EOUTSIDE == info.pViewport->GetCameraFrustum()->ContainTest(*pMeshIns->GetBoundsAABB()))
-			continue;
+		if (pMaterialGroup->m_pMaterial->GetMaterialType() == MEMaterialType::EDefault)
+		{
+			info.vMaterialRenderGroup.push_back(MMaterialGroup());
+			pRenderGroup = &info.vMaterialRenderGroup.back();
+		}
+		else if (pMaterialGroup->m_pMaterial->GetMaterialType() == MEMaterialType::ETransparent)
+		{
+			info.vTransparentRenderGroup.push_back(MMaterialGroup());
+			pRenderGroup = &info.vTransparentRenderGroup.back();
+		}
 
-		RecordMeshInstance(info, pMeshIns);
 
-		const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
-		pBounds->UnionMinMax(v3BoundsMin, v3BoundsMax);
+		pRenderGroup->m_pMaterial = pMaterialGroup->m_pMaterial;
+
+		for (MIMeshInstance* pMeshIns : pMaterialGroup->m_vMeshInstances)
+		{
+			if (!pMeshIns->GetVisibleRecursively())
+				continue;
+
+			if (MCameraFrustum::EOUTSIDE == info.pViewport->GetCameraFrustum()->ContainTest(*pMeshIns->GetBoundsAABB()))
+				continue;
+
+			pRenderGroup->m_vMeshInstances.push_back(pMeshIns);
+
+			const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
+			pBounds->UnionMinMax(v3BoundsMin, v3BoundsMax);
+		}
 	}
-
-// 	for (MMaterialGroup* pGroups : *info.pScene->GetMaterialGroups())
-// 	{
-// 		info.vMaterialRenderGroup.push_back(MMaterialGroup());
-// 		MMaterialGroup& group = info.vMaterialRenderGroup.back();
-// 		group.m_pMaterial = pGroups->m_pMaterial;
-// 
-// 		for (MIMeshInstance* pMeshIns : pGroups->m_vMeshInstances)
-// 		{
-// 			if (!pMeshIns->GetVisibleRecursively())
-// 				continue;
-// 
-// 			if (MCameraFrustum::EOUTSIDE == info.pViewport->GetCameraFrustum()->ContainTest(*pMeshIns->GetBoundsAABB()))
-// 				continue;
-// 
-// 			group.m_vMeshInstances.push_back(pMeshIns);
-// 
-// 			const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
-// 			pBounds->UnionMinMax(v3BoundsMin, v3BoundsMax);
-// 		}
-// 	}
-// 
-// 	Vector3 v3CameraPos = info.pCamera->GetWorldPosition();
-// 
-// 	for (MIMeshInstance* pMeshIns : *info.pScene->GetZOrderGroups())
-// 	{
-// 		if (!pMeshIns->GetVisibleRecursively())
-// 			continue;
-// 
-// 		if (MCameraFrustum::EOUTSIDE == info.pViewport->GetCameraFrustum()->ContainTest(*pMeshIns->GetBoundsAABB()))
-// 			continue;
-// 
-// 		std::vector<MIMeshInstance*>::iterator iter = std::lower_bound(info.vTransparentRenderGroup.begin(), info.vTransparentRenderGroup.end(), pMeshIns,
-// 			[v3CameraPos](MIMeshInstance* a, MIMeshInstance* b)
-// 			{
-// 				return (a->GetWorldPosition() - v3CameraPos).Length() > (b->GetWorldPosition() - v3CameraPos).Length();
-// 			});
-// 		info.vTransparentRenderGroup.insert(iter, pMeshIns);
-// 
-// 		const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
-// 		pBounds->UnionMinMax(v3BoundsMin, v3BoundsMax);
-// 	}
 
 	info.cMeshRenderAABB.SetMinMax(v3BoundsMin, v3BoundsMax);
-}
-
-void MRenderSystem::RecordMeshInstance(MRenderInfo& info, MIMeshInstance* pMeshInstance)
-{
-	MMaterial* pMaterial = pMeshInstance->GetMaterial();
-
-	if (pMaterial->GetMaterialType() == MEMaterialType::EDefault)
-	{
-		std::vector<MMaterialGroup>& vGroup = info.vMaterialRenderGroup;
-
-		std::vector<MMaterialGroup>::iterator iter = std::lower_bound(vGroup.begin(), vGroup.end(), pMaterial, [](const MMaterialGroup& a, MMaterial* b) {return a.m_pMaterial < b; });
-		if (iter == vGroup.end())
-		{
-			vGroup.push_back(MMaterialGroup());
-			iter = vGroup.end() - 1;
-			iter->m_pMaterial = pMeshInstance->GetMaterial();
-		}
-		else if (iter->m_pMaterial != pMaterial)
-		{
-			MMaterialGroup group;
-			group.m_pMaterial = pMeshInstance->GetMaterial();
-			iter = vGroup.insert(iter, group);
-		}
-
-		MMaterialGroup& group = *iter;
-
-		group.m_vMeshInstances.push_back(pMeshInstance);
-	}
-	else if(pMaterial->GetMaterialType() == MEMaterialType::EDepthPeeling)
-	{
-		std::vector<MMaterialGroup>& vGroup = info.vTransparentMaterialRenderGroup;
-
-		std::vector<MMaterialGroup>::iterator iter = std::lower_bound(vGroup.begin(), vGroup.end(), pMaterial, [](const MMaterialGroup& a, MMaterial* b) {return a.m_pMaterial < b; });
-		if (iter == vGroup.end())
-		{
-			vGroup.push_back(MMaterialGroup());
-			iter = vGroup.end() - 1;
-			iter->m_pMaterial = pMeshInstance->GetMaterial();
-		}
-		else if (iter->m_pMaterial != pMaterial)
-		{
-			MMaterialGroup group;
-			group.m_pMaterial = pMeshInstance->GetMaterial();
-			iter = vGroup.insert(iter, group);
-		}
-
-		MMaterialGroup& group = *iter;
-		group.m_vMeshInstances.push_back(pMeshInstance);
-	}
-	else if (pMaterial->GetMaterialType() == MEMaterialType::ETransparent)
-	{
-		{
-			std::vector<MIMeshInstance*>& vGroup = info.vTransparentRenderGroup;
-
-			std::vector<MIMeshInstance*>::iterator iter = std::lower_bound(vGroup.begin(), vGroup.end(), pMeshInstance, [](MIMeshInstance* a, MIMeshInstance* b) {return a->GetWorldPosition().z > b->GetWorldPosition().z; });
-
-			vGroup.insert(iter, pMeshInstance);
-		}
-	}
 }

@@ -46,7 +46,10 @@ enum class MEMaterialType
 {
 	EDefault = 0,
 	ETransparent,
-	EDepthPeeling,
+
+
+
+	EBlendTransparent,
 
 	EMaterialTypeEnd,
 };

@@ -91,10 +91,6 @@ public:
 		{
 			m_v3MoveSpeed += Vector3(0, 1, 0) * speed * fDelta;
 		}
-		if (m_tKeyBoardDown['L'])
-		{
-			LookAt(static_cast<M3DNode*>(GetRootNode()->FindFirstChildByName("Teaport"))->GetPosition(), GetUp());
-		}
 		else if (m_tKeyBoardDown[MMouseInputEvent::MEMouseDownButton::RightButton] && (m_v2MouseAddi.x != 0 || m_v2MouseAddi.y != 0))
 		{
 
@@ -115,15 +111,12 @@ public:
 
 		SetPosition(GetPosition() + m_v3MoveSpeed);
 		m_v3MoveSpeed = m_v3MoveSpeed * 0.8f;
-
 	}
 
 	std::map<unsigned int, bool> m_tKeyBoardDown;
 	Vector2 m_v2MouseAddi;
 
 	Vector3 m_v3MoveSpeed;
-
-
 };
 
 

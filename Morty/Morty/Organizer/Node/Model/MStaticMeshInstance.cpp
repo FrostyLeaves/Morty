@@ -26,7 +26,17 @@ MStaticMeshInstance::~MStaticMeshInstance()
 
 void MStaticMeshInstance::SetMaterial(MMaterial* pMaterial)
 {
+	if (m_Material.GetResource() == pMaterial)
+		return;
+
+	if (m_pScene)
+		m_pScene->RemoveMaterialGroup(this);
+
 	m_Material.SetResource(pMaterial);
+
+	if (m_pScene)
+		m_pScene->InsertMaterialGroup(this);
+
 }
  
 MMaterial* MStaticMeshInstance::GetMaterial()

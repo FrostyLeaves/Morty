@@ -256,7 +256,7 @@ bool MEngine::InitializeDefaultResource()
 	MMaterialResource* pTextureMaterial = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DEPTH_PEELING);
 	pTextureMaterial->LoadVertexShader(pDPVSResource);
 	pTextureMaterial->LoadPixelShader(pDPPSResource);
-	pTextureMaterial->SetMaterialType(MEMaterialType::ETransparent);
+	pTextureMaterial->SetMaterialType(MEMaterialType::EBlendTransparent);
 
 	return true;
 }

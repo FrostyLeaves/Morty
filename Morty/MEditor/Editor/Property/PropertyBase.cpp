@@ -327,7 +327,7 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 		{
 			ShowValueBegin("Type");
 			int nMaterialType = (int)pMaterial->GetMaterialType();
-			if (EditEnum({ "Default", "Transparent" , "DeepPeeling"}, nMaterialType))
+			if (EditEnum({ "Default", "Transparent"}, nMaterialType))
 			{
 				pMaterial->SetMaterialType((MEMaterialType)nMaterialType);
 			}

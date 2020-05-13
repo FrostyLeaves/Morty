@@ -27,6 +27,7 @@ public:
     virtual void Tick(const float& fDelta) {};
     virtual void Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene, MIRenderTarget* pRenderTarget) {};
 
+
 private:
 };
 

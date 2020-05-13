@@ -9,8 +9,10 @@
 #ifndef _M_MRENDERSYSTEM_H_
 #define _M_MRENDERSYSTEM_H_
 #include "MGlobal.h"
-#include "MISystem.h"
+#include "MMesh.h"
+#include "Vector.h"
 #include "MBounds.h"
+#include "MISystem.h"
 #include "MMaterialGroup.h"
 #include "MShadowTextureRenderTarget.h"
 
@@ -41,10 +43,11 @@ public:
 		MBoundsAABB cShadowRenderAABB;
 		MBoundsAABB cMeshRenderAABB;
 
-		std::vector<MMaterialGroup> vMaterialRenderGroup;
-		std::vector<MMaterialGroup> vTransparentMaterialRenderGroup;
-		std::vector<MIMeshInstance*> vTransparentRenderGroup;
+ 		std::vector<MMaterialGroup> vMaterialRenderGroup;
+ 		std::vector<MMaterialGroup> vTransparentRenderGroup;
+
 		std::vector<MShadowRenderGroup> vShadowGroup;
+
 	};
 
 public:
@@ -54,10 +57,6 @@ public:
 
 public:
 
-	void Initialize();
-	void Release();
-
-
     virtual void Tick(const float& fDelta) override;
     virtual void Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene, MIRenderTarget* pRenderTarget) override;
 
@@ -66,8 +65,8 @@ protected:
 	void GenerateRenderGroup(MRenderInfo& info);
 	void GenerateShadowMap(MRenderInfo& info);
 	void UpdateShaderSharedParams(MRenderInfo& info);
-	void DrawMeshInstance(MRenderInfo& info);
-	void DrawTransparentWithDeepPeeling(MRenderInfo& info);
+	void DrawNormalMesh(MRenderInfo& info);
+	void DrawTransparentMesh(MRenderInfo& info);
 
 	void DrawModelInstance(MRenderInfo& info);
 	void DrawSkyBox(MRenderInfo& info);
@@ -81,8 +80,11 @@ public:
 
 protected:
 
-	void RecordMeshInstance(MRenderInfo& info, MIMeshInstance* pMeshInstance);
+	//void RecordMeshInstance(MRenderInfo& info, MIMeshInstance* pMeshInstance);
 
+
+private:
+	MMesh<Vector2> m_cDepthPeelingMesh;
 };
 
 #endif

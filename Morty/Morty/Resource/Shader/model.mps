@@ -132,7 +132,7 @@ float4 PS(VS_OUT input) : SV_Target
             clip(fZDepth - v1 - 0.000001f);
 
             float v2 = U_texDepthBack.Sample(U_defaultSampler, f2DepthFrontUV.xy);
-            clip(v2 - fZDepth - 0.0000001f);
+            clip(v2 - fZDepth - 0.000001f);
         }
     }
 #endif
