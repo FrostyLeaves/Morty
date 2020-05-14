@@ -7,6 +7,7 @@
 #include "MTexture.h"
 #include "MViewport.h"
 #include "MIRenderer.h"
+#include "MRenderSystem.h"
 #include "MRenderStructure.h"
 #include "MTextureRenderTarget.h"
 
@@ -29,6 +30,8 @@ void SceneTexture::Initialize(MEngine* pEngine)
 	m_pEngine = pEngine;
 
 	m_pScene = m_pEngine->GetObjectManager()->CreateObject<MScene>();
+	m_pScene->RegisterSystem<MRenderSystem>();
+
 	M3DNode* pRootNode = m_pEngine->GetObjectManager()->CreateObject<M3DNode>();
 	m_pScene->SetRootNode(pRootNode);
 

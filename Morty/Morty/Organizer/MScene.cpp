@@ -91,10 +91,6 @@ void MScene::OnCreated()
 			m_vTransparentRenderTarget[i]->SetPrevLevelRenderTarget(m_vTransparentRenderTarget[i - 1]);
 		}
 	}
-
-	MRenderSystem* pRenderSystem = m_pEngine->GetObjectManager()->CreateObject<MRenderSystem>();
-
-	m_vSystems.push_back(pRenderSystem);
 }
 
 void MScene::OnDelete()
@@ -306,19 +302,19 @@ void MScene::InsertMaterialGroup(MIMeshInstance* pMeshInstance)
 		return;
 
 	MMaterial* pMaterial = pMeshInstance->GetMaterial();
-	std::vector<MMaterialGroup*>::iterator iter = std::lower_bound(m_vMaterialOrderGroups.begin(), m_vMaterialOrderGroups.end(), pMaterial, [](MMaterialGroup* a, MMaterial* b) {return a->m_pMaterial < b; });
+	std::vector<MMaterialGroup*>::iterator iter = std::lower_bound(m_vMaterialGroups.begin(), m_vMaterialGroups.end(), pMaterial, [](MMaterialGroup* a, MMaterial* b) {return a->m_pMaterial < b; });
 	MMaterialGroup* pGroup = nullptr;
-	if (iter == m_vMaterialOrderGroups.end())
+	if (iter == m_vMaterialGroups.end())
 	{
 		pGroup = new MMaterialGroup();
 		pGroup->m_pMaterial = pMeshInstance->GetMaterial();
-		m_vMaterialOrderGroups.push_back(pGroup);
+		m_vMaterialGroups.push_back(pGroup);
 	}
 	else if ((*iter)->m_pMaterial != pMaterial)
 	{
 		pGroup = new MMaterialGroup();
 		pGroup->m_pMaterial = pMeshInstance->GetMaterial();
-		m_vMaterialOrderGroups.insert(iter, pGroup);
+		m_vMaterialGroups.insert(iter, pGroup);
 	}
 	else
 	{
@@ -334,8 +330,8 @@ void MScene::RemoveMaterialGroup(MIMeshInstance* pMeshInstance)
 		return;
 
 	MMaterial* pMaterial = pMeshInstance->GetMaterial();
-	std::vector<MMaterialGroup*>::iterator iter = std::lower_bound(m_vMaterialOrderGroups.begin(), m_vMaterialOrderGroups.end(), pMaterial, [](MMaterialGroup* a, MMaterial* b) {return a->m_pMaterial < b; });
-	if (iter == m_vMaterialOrderGroups.end())
+	std::vector<MMaterialGroup*>::iterator iter = std::lower_bound(m_vMaterialGroups.begin(), m_vMaterialGroups.end(), pMaterial, [](MMaterialGroup* a, MMaterial* b) {return a->m_pMaterial < b; });
+	if (iter == m_vMaterialGroups.end())
 		return;
 
 	MMaterialGroup* pGroup = *iter;
@@ -343,8 +339,13 @@ void MScene::RemoveMaterialGroup(MIMeshInstance* pMeshInstance)
 
 	if (pGroup->m_vMeshInstances.empty())
 	{
-		m_vMaterialOrderGroups.erase(iter);
+		m_vMaterialGroups.erase(iter);
 		delete pGroup;
 		pGroup = nullptr;
 	}
+}
+
+void MScene::RegisterSystem(MISystem* pSystem)
+{
+	UNION_PUSH_BACK_VECTOR(m_vSystems, pSystem);
 }

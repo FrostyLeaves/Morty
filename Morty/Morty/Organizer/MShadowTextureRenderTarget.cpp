@@ -36,13 +36,13 @@ MShadowTextureRenderTarget::~MShadowTextureRenderTarget()
 
 void MShadowTextureRenderTarget::Render(MIRenderer* pRenderer, const Matrix4& m4InvProj, std::vector<MShadowRenderGroup>* pGroup)
 {
-	SetLightInvProjMatrix(m4InvProj);
+	m_m4LightInvProj = m4InvProj;
 
-	SetSourceMeshes(pGroup);
+	m_pShadowRenderGroup = pGroup;
 
 	pRenderer->Render(this);
 
-	SetSourceMeshes(nullptr);
+	m_pShadowRenderGroup = nullptr;
 }
 
 void MShadowTextureRenderTarget::OnCreated()

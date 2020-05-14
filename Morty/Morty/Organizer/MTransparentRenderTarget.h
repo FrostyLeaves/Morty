@@ -30,13 +30,9 @@ public:
 	virtual void OnRender(MIRenderer* pRenderer) override;
 
     void Render(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget, std::vector<MMaterialGroup>* pGroup);
- //   void CopyFromDepthTextureBuffer(MDepthTextureBuffer* pBuffer);
- //   void CopyToDepthTextureBuffer(MDepthTextureBuffer* pBuffer);
 
-
-    void SetSceneDepthTexture(MRenderDepthTexture* pDepthTexture) { m_pSceneDepthTexture = pDepthTexture; }
-    void SetPrevLevelRenderTarget(MTransparentRenderTarget* pRenderTarget) { m_pPrevLevelRenderTarget = pRenderTarget; }
-    void SetSourceMeshes(std::vector<MMaterialGroup>* pGroup) { m_pTransparentMeshes = pGroup; }
+	void SetSceneDepthTexture(MRenderDepthTexture* pDepthTexture) { m_pSceneDepthTexture = pDepthTexture; }
+	void SetPrevLevelRenderTarget(MTransparentRenderTarget* pRenderTarget) { m_pPrevLevelRenderTarget = pRenderTarget; }
 
 private:
 

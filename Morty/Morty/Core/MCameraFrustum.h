@@ -42,9 +42,6 @@ public:
 protected:
 
 	MPlane m_vPlanes[6];
-
-	unsigned int m_vNearIndex[6];
-	unsigned int m_vFarIndex[6];
 };
 
 

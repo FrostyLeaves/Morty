@@ -6,8 +6,6 @@
 
 MCameraFrustum::MCameraFrustum()
 	: m_vPlanes()
-	, m_vNearIndex()
-	, m_vFarIndex()
 {
 }
 
@@ -31,18 +29,6 @@ void MCameraFrustum::UpdateFromCameraInvProj(const Matrix4& m4CameraInvProj)
 	m_vPlanes[4].m_v4Plane = -c2;		//Near
 	m_vPlanes[5].m_v4Plane = c2 - c3;	//Far
 
-	for (unsigned int i = 0; i < 6; ++i)
-	{
-		unsigned int unIndex = 0;
-		const Vector3& v3Normal = m_vPlanes[i].m_v3ABC;
-		 
-		if (v3Normal.x > 0.0f) unIndex |= 1;
-		if (v3Normal.y > 0.0f) unIndex |= 2;
-		if (v3Normal.z > 0.0f) unIndex |= 3;
-
-		m_vFarIndex[i] = unIndex;
-		m_vNearIndex[i] = 7 - unIndex;
-	}
 }
 
 MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const Vector3& position)
@@ -119,7 +105,7 @@ MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const MBoundsAABB& aab
 
 MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const MBoundsAABB& aabb, const Vector3& v3Direction)
 {
-	Vector3 v3NVertex, v3PVertex;
+	Vector3 v3NVertex;
 
 	const Vector3& v3Max = aabb.m_v3MaxPoint;
 	const Vector3& v3Min = aabb.m_v3MinPoint;
@@ -134,12 +120,10 @@ MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const MBoundsAABB& aab
 				if (v3Normal.m[n] > 0.0f)
 				{
 					v3NVertex.m[n] = v3Min.m[n];
-					v3PVertex.m[n] = v3Max.m[n];
 				}
 				else
 				{
 					v3NVertex.m[n] = v3Max.m[n];
-					v3PVertex.m[n] = v3Min.m[n];
 				}
 			}
 

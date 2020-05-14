@@ -82,6 +82,9 @@
     <Filter Include="ResourceLoader\Material">
       <UniqueIdentifier>{d3c7e605-aab8-4478-956f-fe272c4fd098}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Organizer\Component">
+      <UniqueIdentifier>{1451a60e-2242-49f9-b65e-4ff1e0e19064}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../ReadMe.txt" />

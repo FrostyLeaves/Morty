@@ -65,6 +65,17 @@ public:
 			return (T*)(this);
 		return nullptr;
 	}
+
+	template<typename T1, typename T2>
+	static bool IsType()
+	{
+		MTypeIdentifierConstPointer pTypeIdent = T1::GetClassTypeIdentifier();
+		MTypeIdentifierConstPointer pClassIdent = T2::GetClassTypeIdentifier();
+		for (int i = pTypeIdent->m_unDeep - pClassIdent->m_unDeep; i > 0; --i)
+			pTypeIdent = pTypeIdent->m_pBaseTypeIdentifier;
+
+		return pTypeIdent == pClassIdent;
+	}
 };
 
 

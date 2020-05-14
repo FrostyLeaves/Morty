@@ -177,26 +177,15 @@ bool MNode::RemoveNodeImpl(MNode* pNode, const MENodeChildType& etype)
 	return false;
 }
 
-void MNode::RemoveAllNodeImpl(const MENodeChildType& etype, const float& bDelete/* = false*/)
+void MNode::RemoveAllNodeImpl(const MENodeChildType& etype)
 {
 	std::vector<MNode*>& children = etype == MENodeChildType::EFixed ? m_vFixedChildren : m_vChildren;
 
-	if (bDelete)
+	for (MNode* pChild : children)
 	{
-		for (MNode* pChild : children)
-		{
-			pChild->m_pParent = nullptr;
-			pChild->SetAttachedScene(nullptr);
-			pChild->DeleteLater();
-		}
-	}
-	else
-	{
-		for (MNode* pChild : children)
-		{
-			pChild->m_pParent = nullptr;
-			pChild->SetAttachedScene(nullptr);
-		}
+		pChild->m_pParent = nullptr;
+		pChild->SetAttachedScene(nullptr);
+		pChild->DeleteLater();
 	}
 
 	children.clear();
@@ -238,8 +227,8 @@ void MNode::OnDelete()
 	else if (m_pScene) // as root node
 		this->SetAttachedScene(nullptr);
 
-	RemoveAllNodeImpl(MENodeChildType::ENormal, true);
-	RemoveAllNodeImpl(MENodeChildType::EFixed, true);
+	RemoveAllNodeImpl(MENodeChildType::ENormal);
+	RemoveAllNodeImpl(MENodeChildType::EFixed);
 
 	Super::OnDelete();
 }

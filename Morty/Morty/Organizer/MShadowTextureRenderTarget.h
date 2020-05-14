@@ -49,10 +49,6 @@ public:
 
     virtual void OnRender(MIRenderer* pRenderer) override;
 
-	void SetLightInvProjMatrix(const Matrix4& m4InvProj) { m_m4LightInvProj = m4InvProj; }
-	void SetSourceMeshes(std::vector<MShadowRenderGroup>* pGroup) { m_pShadowRenderGroup = pGroup; }
-
-private:
 
 private:
 

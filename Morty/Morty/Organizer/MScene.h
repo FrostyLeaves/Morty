@@ -11,6 +11,8 @@
 #include "MGlobal.h"
 #include "MObject.h"
 #include "Matrix.h"
+#include "MEngine.h"
+#include "MISystem.h"
 
 #include "MMaterialGroup.h"
 
@@ -36,7 +38,6 @@ class MInputNode;
 class MShadowTextureRenderTarget;
 class MTransparentRenderTarget;
 class MBoundsAABB;
-class MISystem;
 class MIRenderTarget;
 class MORTY_CLASS MScene : public MObject
 {
@@ -62,7 +63,17 @@ public:
 	std::vector<MTransparentRenderTarget*>* GetTransparentRenderTarget() { return &m_vTransparentRenderTarget; }
 
 
-	std::vector<MMaterialGroup*>* GetMaterialGroup() { return &m_vMaterialOrderGroups; }
+public:
+
+	template<typename SYSTEM>
+	void RegisterSystem()
+	{
+		if (MTypedClass::IsType<SYSTEM, MISystem>())
+		{
+			SYSTEM* pSystem = (SYSTEM*)(m_pEngine->GetObjectManager()->CreateObject<SYSTEM>());
+			RegisterSystem(pSystem);
+		}
+	}
 
 public:
 
@@ -87,10 +98,9 @@ public:
 	void InsertMaterialGroup(MIMeshInstance* pMeshInstance);
 	void RemoveMaterialGroup(MIMeshInstance* pMeshInstance);
 
-
 protected:
 
-
+	void RegisterSystem(MISystem* pSystem);
 
 private:
 
@@ -110,7 +120,10 @@ private:
 	MSCENE_TYPED_VECTOR(InputNode);
 	MSCENE_TYPED_VECTOR(ModelInstance);
 
- 	std::vector<MMaterialGroup*> m_vMaterialOrderGroups;
+public:
+	std::vector<MMaterialGroup*>* GetMaterialGroup() { return &m_vMaterialGroups; }
+private:
+	std::vector<MMaterialGroup*> m_vMaterialGroups;
 
 	std::vector<MViewport*> m_vViewports;
 	std::vector<MISystem*> m_vSystems;

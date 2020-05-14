@@ -110,7 +110,7 @@ void MModelInstance::ClearSkeletonAndMesh()
 		delete m_pSkeleton;
 		m_pSkeleton = nullptr;
 	}
-	RemoveAllNodeImpl(MENodeChildType::EFixed, true);
+	RemoveAllNodeImpl(MENodeChildType::EFixed);
 }
 
 void MModelInstance::Unload()

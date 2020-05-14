@@ -28,7 +28,7 @@ void MTransparentRenderTarget::OnCreated()
 {
 	Super::OnCreated();
 
-	Initialize(MTextureRenderTarget::ERenderBack | MTextureRenderTarget::ERenderDepth, 0, 0);
+	Initialize(MTextureRenderTarget::ERenderBack | MTextureRenderTarget::ERenderDepth, 0, 0, 3);
 }
 
 void MTransparentRenderTarget::OnDelete()
@@ -38,13 +38,13 @@ void MTransparentRenderTarget::OnDelete()
 
 void MTransparentRenderTarget::Render(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget, std::vector<MMaterialGroup>* pGroup)
 {
-	SetSourceMeshes(pGroup);
+	m_pTransparentMeshes = pGroup;
 	m_pBackRenderTarget = pRenderTarget;
 
 	pRenderer->Render(this);
 
 	m_pBackRenderTarget = nullptr;
-	SetSourceMeshes(nullptr);
+	m_pTransparentMeshes = nullptr;
 }
 
 void MTransparentRenderTarget::OnRender(MIRenderer* pRenderer)

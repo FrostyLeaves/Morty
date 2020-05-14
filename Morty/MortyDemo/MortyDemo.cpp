@@ -255,6 +255,7 @@ int main(int argc, char* argv[])
 	pEditorView->SetEditorNode(pRootNode);
 
 // 	MScene* pScene = engine.GetObjectManager()->CreateObject<MScene>();
+//	pScene->RegisterSystem<MRenderSystem>();
 // 	pScene->SetRootNode(pRootNode);
 // 	MWindowsRenderView* pView = new MWindowsRenderView();
 // 	pView->Initialize(&engine, "Morty");

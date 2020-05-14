@@ -21,7 +21,7 @@ class MORTY_CLASS MNode : public MObject
 public:
 	M_OBJECT(MNode);
     MNode();
-    virtual ~MNode();
+    virtual ~MNode();	//Release memory
 
 	enum MENodeChildType
 	{
@@ -64,11 +64,11 @@ public:
 public:
 	virtual bool AddNodeImpl(MNode* pNode, const MENodeChildType& etype);
 	virtual bool RemoveNodeImpl(MNode* pNode, const MENodeChildType& etype);
-	void RemoveAllNodeImpl(const MENodeChildType& etype, const float& bDelete = false);
+	void RemoveAllNodeImpl(const MENodeChildType& etype);
 	virtual void Tick(const float& fDelta);
 
 
-	virtual void OnDelete() override;
+	virtual void OnDelete() override;		// unbind relation
 
 public:
 
