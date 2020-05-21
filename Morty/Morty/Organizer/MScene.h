@@ -60,8 +60,9 @@ public:
 	MSkyBox* GetSkyBox() { return m_pSkyBox; }
 	MTransformCoord3D* GetTransformCoord() { return m_pTransformCoord3D; }
 	MShadowTextureRenderTarget* GetShadowRenderTarget() { return m_pShadowDepthMapRenderTarget; }
-	std::vector<MTransparentRenderTarget*>* GetTransparentRenderTarget() { return &m_vTransparentRenderTarget; }
+	MTransparentRenderTarget* GetTransparentRenderTarget() { return m_pTransparentRenderTarget; }
 
+	std::vector<MMaterialGroup*>& GetMaterialGroup() { return m_vMaterialGroups; }
 
 public:
 
@@ -112,7 +113,7 @@ private:
 	MSkyBox* m_pSkyBox;
 	MTransformCoord3D* m_pTransformCoord3D;
 	MShadowTextureRenderTarget* m_pShadowDepthMapRenderTarget;
-	std::vector<MTransparentRenderTarget*> m_vTransparentRenderTarget;
+	MTransparentRenderTarget* m_pTransparentRenderTarget;
 
 	MSCENE_TYPED_VECTOR(DirectionalLight);
 	MSCENE_TYPED_VECTOR(PointLight);
@@ -120,8 +121,6 @@ private:
 	MSCENE_TYPED_VECTOR(InputNode);
 	MSCENE_TYPED_VECTOR(ModelInstance);
 
-public:
-	std::vector<MMaterialGroup*>* GetMaterialGroup() { return &m_vMaterialGroups; }
 private:
 	std::vector<MMaterialGroup*> m_vMaterialGroups;
 

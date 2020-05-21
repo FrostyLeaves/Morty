@@ -80,17 +80,9 @@ void MScene::OnCreated()
 
 	m_pShadowDepthMapRenderTarget = m_pEngine->GetObjectManager()->CreateObject<MShadowTextureRenderTarget>();
 
-	m_vTransparentRenderTarget.resize(3);
-	for (unsigned int i = 0; i < m_vTransparentRenderTarget.size(); ++i)
-	{
-		m_vTransparentRenderTarget[i] = m_pEngine->GetObjectManager()->CreateObject <MTransparentRenderTarget>();
-		m_vTransparentRenderTarget[i]->m_backgroundColor = MColor(0.0f, 0.0f, 0.0f, 0.0f);
+	
+	m_pTransparentRenderTarget = m_pEngine->GetObjectManager()->CreateObject<MTransparentRenderTarget>();
 
-		if (i > 0)
-		{
-			m_vTransparentRenderTarget[i]->SetPrevLevelRenderTarget(m_vTransparentRenderTarget[i - 1]);
-		}
-	}
 }
 
 void MScene::OnDelete()
@@ -107,11 +99,8 @@ void MScene::OnDelete()
 		m_pShadowDepthMapRenderTarget = nullptr;
 	}
 
-	for (unsigned int i = 0; i < m_vTransparentRenderTarget.size(); ++i)
-	{
-		m_vTransparentRenderTarget[i]->DeleteLater();
-	}
-	m_vTransparentRenderTarget.clear();
+	m_pTransparentRenderTarget->DeleteLater();
+	m_pTransparentRenderTarget = nullptr;
 
 	for (MISystem* pSystem : m_vSystems)
 		pSystem->DeleteLater();

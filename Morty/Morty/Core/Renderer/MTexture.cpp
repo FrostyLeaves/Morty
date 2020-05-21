@@ -125,7 +125,8 @@ void MTextureCube::SetTexture(MTexture* pTexture, const MECubeFace& eFace)
 }
 
 MRenderTargetTexture::MRenderTargetTexture()
-	: MITexture()
+	: MIRenderTexture()
+	, m_eRenderType(MERenderTextureType::ERGBA8)
 	, m_v2Size(0, 0)
 	, m_pTextureBuffer(nullptr)
 {
@@ -142,7 +143,7 @@ void MRenderTargetTexture::GenerateBuffer(MIDevice* pDevice, const bool& bMipmap
 	if (m_pTextureBuffer)
 		pDevice->DestroyRenderTextureBuffer(&m_pTextureBuffer);
 
-	pDevice->GenerateRenderTextureBuffer(&m_pTextureBuffer, m_v2Size.x, m_v2Size.y);
+	pDevice->GenerateRenderTextureBuffer(&m_pTextureBuffer, m_eRenderType, m_v2Size.x, m_v2Size.y);
 }
 
 void MRenderTargetTexture::DestroyTexture(MIDevice* pDevice)
@@ -152,7 +153,7 @@ void MRenderTargetTexture::DestroyTexture(MIDevice* pDevice)
 }
 
 MRenderDepthTexture::MRenderDepthTexture()
-	: MITexture()
+	: MIRenderTexture()
 	, m_v2Size(0,0)
 	, m_pTextureBuffer(nullptr)
 {

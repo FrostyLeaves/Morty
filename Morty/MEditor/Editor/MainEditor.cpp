@@ -185,7 +185,7 @@ void MainEditor::SetRenderTarget(MIRenderTarget* pRenderTarget)
 		v4BackgroundColor.x = (v4BackgroundColor.x + 0.5f) * 0.5f;
 		v4BackgroundColor.y = (v4BackgroundColor.y + 0.5f) * 0.5f;
 		v4BackgroundColor.z = (v4BackgroundColor.z + 0.5f) * 0.5f;
-		GetRenderTarget()->m_backgroundColor = MColor(v4BackgroundColor.x, v4BackgroundColor.y, v4BackgroundColor.z, v4BackgroundColor.w);
+		GetRenderTarget()->SetBackgroundColor(0, MColor(v4BackgroundColor.x, v4BackgroundColor.y, v4BackgroundColor.z, v4BackgroundColor.w));
 	}
 }
 
@@ -248,8 +248,11 @@ void MainEditor::ShowRenderView()
 		m_v2RenderViewSize.x = v2RenderViewSize.x;
 		m_v2RenderViewSize.y = v2RenderViewSize.y;
 
-		if (ImTextureID texid = m_SceneTexture.GetTexture())
+		if (void* pTexture = m_SceneTexture.GetTexture())
 		{
+			ImTextureID texid;
+			texid.pTexture = pTexture;
+			texid.nType = 0;
 			ImGui::Image(texid, v2RenderViewSize);
 		}
 	}

@@ -136,6 +136,7 @@ MResourceKeeper::~MResourceKeeper()
 
 void MResourceKeeper::SetResource(MResource* pResource)
 {
+	MResource* pOldResource = m_pResource;
 	if (m_pResource)
 	{
 		std::vector<MResourceKeeper*>::iterator iter = std::find(m_pResource->m_vKeeper.begin(), m_pResource->m_vKeeper.end(), this);
@@ -143,14 +144,17 @@ void MResourceKeeper::SetResource(MResource* pResource)
 		{
 			m_pResource->m_vKeeper.erase(iter);
 		}
-
-		m_pResource->SubRef();
 	}
 	
 	if (m_pResource = pResource)
 	{
 		m_pResource->AddRef();
 		m_pResource->m_vKeeper.push_back(this);
+	}
+
+	if (pOldResource)
+	{
+		pOldResource->SubRef();
 	}
 }
 

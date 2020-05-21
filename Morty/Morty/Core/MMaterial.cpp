@@ -273,6 +273,30 @@ bool MMaterial::Load(const MString& strResourcePath)
 	return true;
 }
 
+void MMaterial::SetMaterialType(const MEMaterialType& eType)
+{
+	m_eMaterialType = eType;
+
+
+	switch (m_eMaterialType)
+	{
+	case MEMaterialType::ETransparent:
+	{
+		m_ShaderMacro.SetMortyMacro("MEN_TRANSPARENT", "1");
+		LoadVertexShader(m_VertexResource.GetResource());
+		LoadPixelShader(m_PixelResource.GetResource());
+	}
+
+		break;
+
+	default:
+		m_ShaderMacro.SetMortyMacro("MEN_TRANSPARENT", "0");
+		LoadVertexShader(m_VertexResource.GetResource());
+		LoadPixelShader(m_PixelResource.GetResource());
+		break;
+	}
+}
+
 bool MMaterial::LoadVertexShader(MResource* pResource)
 {
 	if (MShaderResource* pShaderResource = dynamic_cast<MShaderResource*>(pResource))

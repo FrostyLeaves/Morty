@@ -1,4 +1,4 @@
-#if MTRANSPARENT_POLICY == 1
+#if MTRANSPARENT_POLICY == 1 && MEN_TRANSPARENT == 1
 #define MTRANSPARENT_DEPTH_PEELING
 #endif
 
@@ -81,11 +81,10 @@ SamplerComparisonState U_greaterEqualSampler : register(s2);
 //Shadowmap
 Texture2D U_texShadowMap : register(t0);
 
-#ifdef MTRANSPARENT_DEPTH_PEELING
 //Depth-Peeling
 Texture2D<float> U_texDepthFront : register(t1);
 Texture2D<float> U_texDepthBack : register(t2);
-#endif
+
 
 //VS    per mesh
 cbuffer _M_E_cbMeshMatrix : register(b0)
@@ -128,3 +127,19 @@ cbuffer _M_E_cbWorldInfo : register(b4)
     float2 U_f2ViewportSize;
   //  float3 U_vPointLightPosition[MPOINT_LIGHT_MAX_NUMBER];
 };
+
+float4 FloatToFloat4(float depth)
+{
+    const float4 bit_shift = float4(256.0*256.0*256.0, 256.0*256.0, 256.0, 1.0);
+    const float4 bit_mask  = float4(0.0, 1.0/256.0, 1.0/256.0, 1.0/256.0);
+    float4 res = frac(depth * bit_shift);
+    res -= res.xxyz * bit_mask;
+    return res;
+}
+
+float Float4ToFloat(float4 rgba_depth)
+{
+    const float4 bit_shift = float4(1.0/(256.0*256.0*256.0), 1.0/(256.0*256.0), 1.0/256.0, 1.0);
+    float depth = dot(rgba_depth, bit_shift);
+    return depth;
+}

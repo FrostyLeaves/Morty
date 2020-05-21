@@ -29,7 +29,7 @@ public:
 					{
 						if (MTextureBuffer* pBuffer = pDepthTexture->GetBuffer())
 						{
-							ImGui::Image(pBuffer->m_pShaderResourceView, ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::GetContentRegionAvailWidth()));
+							ImGui::Image(ImTextureID(pBuffer->m_pShaderResourceView, 1), ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::GetContentRegionAvailWidth()));
 						}
 					}
 				}

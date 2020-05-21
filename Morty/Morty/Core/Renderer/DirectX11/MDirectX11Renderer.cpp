@@ -117,12 +117,79 @@ bool MDirectX11Renderer::Initialize()
 	mRTDesc.DestBlendAlpha = D3D11_BLEND_ONE;
 	
 	mRTDesc.SrcBlend = D3D11_BLEND_SRC_ALPHA;
-	mRTDesc.SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
+	mRTDesc.SrcBlendAlpha = D3D11_BLEND_ONE;
 
 	mRTDesc.BlendOp = D3D11_BLEND_OP_ADD;
 	mRTDesc.BlendOpAlpha = D3D11_BLEND_OP_MAX;
 
 	m_pDevice->m_pD3dDevice->CreateBlendState(&mBlendDesc, &m_vBlendState[(int)MEBlendType::ETransparent]);
+
+
+	{
+		//混合状态块
+		D3D11_BLEND_DESC mBlendDesc;
+		mBlendDesc.AlphaToCoverageEnable = false;
+		mBlendDesc.IndependentBlendEnable = true;
+
+		//Front
+		{
+			D3D11_RENDER_TARGET_BLEND_DESC& mRTDesc = mBlendDesc.RenderTarget[0];
+			mRTDesc.BlendEnable = true;
+ 			mRTDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+			mRTDesc.DestBlend = D3D11_BLEND_ONE;
+			mRTDesc.DestBlendAlpha = D3D11_BLEND_ONE;
+			mRTDesc.SrcBlend = D3D11_BLEND_INV_DEST_ALPHA;
+			mRTDesc.SrcBlendAlpha = D3D11_BLEND_INV_DEST_ALPHA;
+			mRTDesc.BlendOp = D3D11_BLEND_OP_ADD;
+			mRTDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+		}
+		//Back
+		{
+			D3D11_RENDER_TARGET_BLEND_DESC& mRTDesc = mBlendDesc.RenderTarget[1];
+			mRTDesc.BlendEnable = true;
+			mRTDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+			mRTDesc.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+			mRTDesc.DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
+			mRTDesc.SrcBlend = D3D11_BLEND_SRC_ALPHA;
+			mRTDesc.SrcBlendAlpha = D3D11_BLEND_ONE;
+			mRTDesc.BlendOp = D3D11_BLEND_OP_ADD;
+			mRTDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+// 			mRTDesc.DestBlend = D3D11_BLEND_ONE;
+// 			mRTDesc.DestBlendAlpha = D3D11_BLEND_ONE;
+// 
+// 			mRTDesc.SrcBlend = D3D11_BLEND_ONE;
+// 			mRTDesc.SrcBlendAlpha = D3D11_BLEND_ONE;
+// 
+// 			mRTDesc.BlendOp = D3D11_BLEND_OP_ADD;
+// 			mRTDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+		}
+		{//Front Depth
+			D3D11_RENDER_TARGET_BLEND_DESC& mRTDesc = mBlendDesc.RenderTarget[2];
+			mRTDesc.BlendEnable = true;
+			mRTDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+			mRTDesc.DestBlend = D3D11_BLEND_ONE;
+			mRTDesc.DestBlendAlpha = D3D11_BLEND_ONE;
+			mRTDesc.SrcBlend = D3D11_BLEND_ONE;
+			mRTDesc.SrcBlendAlpha = D3D11_BLEND_ONE;
+			mRTDesc.BlendOp = D3D11_BLEND_OP_MIN;
+			mRTDesc.BlendOpAlpha = D3D11_BLEND_OP_MIN;
+		}
+		for(unsigned int i = 3; i < 8 ; ++i)
+		{
+			//Back Depth
+			D3D11_RENDER_TARGET_BLEND_DESC& mRTDesc = mBlendDesc.RenderTarget[i];
+			mRTDesc.BlendEnable = true;
+			mRTDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+			mRTDesc.DestBlend = D3D11_BLEND_ONE;
+			mRTDesc.DestBlendAlpha = D3D11_BLEND_ONE;
+			mRTDesc.SrcBlend = D3D11_BLEND_ONE;
+			mRTDesc.SrcBlendAlpha = D3D11_BLEND_ONE;
+			mRTDesc.BlendOp = D3D11_BLEND_OP_MAX;
+			mRTDesc.BlendOpAlpha = D3D11_BLEND_OP_MAX;
+		}
+
+		m_pDevice->m_pD3dDevice->CreateBlendState(&mBlendDesc, &m_vBlendState[(int)MEBlendType::EAlphaOverlying]);
+	}
 
 	m_pDevice->m_pD3dContext->OMSetBlendState(m_vBlendState[(int)MEBlendType::EDefault], nullptr, 0xffffffff);
 
@@ -258,37 +325,7 @@ void MDirectX11Renderer::SetViewport(const float& fX, const float& fY, const flo
 	m_pDevice->m_pD3dContext->RSSetViewports(1, &viewport);
 }
 
-void MDirectX11Renderer::Render(MIRenderTarget* pRenderTarget)
-{
-	if (pRenderTarget)
-	{
-		if (!m_pDevice || !m_pDevice->m_pD3dContext)
-			return;
-
-		if(pRenderTarget->m_pDepthStencilView)
-			m_pDevice->m_pD3dContext->ClearDepthStencilView(pRenderTarget->m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-		
-		if (pRenderTarget->m_vpTargetView)
-		{
-			for (unsigned int i = 0; i < pRenderTarget->GetTargetViewNum(); ++i)
-			{
-				m_pDevice->m_pD3dContext->ClearRenderTargetView(pRenderTarget->m_vpTargetView[i], pRenderTarget->m_backgroundColor.m);
-			}
-		}
-		m_vRenderTargets.push(pRenderTarget);
-		RecoverRenderTarget(pRenderTarget);
-		pRenderTarget->OnRender(this);
-		m_vRenderTargets.pop();
-
-
-		//恢复上一个渲染目标的状态
-		if (!m_vRenderTargets.empty())
-			RecoverRenderTarget(m_vRenderTargets.top());
-	}
-
-}
-
-void MDirectX11Renderer::RecoverRenderTarget(MIRenderTarget* pRenderTarget)
+void MDirectX11Renderer::RecoverRenderTarget(RenderTargetPair& rtp)
 {
 	//warning! Material may has been switched.
 
@@ -297,14 +334,31 @@ void MDirectX11Renderer::RecoverRenderTarget(MIRenderTarget* pRenderTarget)
 	//if (m_pCurrentRenderTarget != pRenderTarget)
 	{
 		m_pUsingMaterial = nullptr;
-		//m_pCurrentRenderTarget = pRenderTarget;
 
+		unsigned int unTargetSize = rtp.pRenderTarget->GetTargetViewNum();
+		ID3D11DepthStencilView* pDepthStencilView = nullptr;
+		if (rtp.pDepthTexture->GetDepthBuffer())
+			pDepthStencilView = rtp.pDepthTexture->GetDepthBuffer()->m_pDepthStencilView;
+
+		m_pDevice->m_pD3dContext->OMSetRenderTargets(unTargetSize, rtp.pRenderTarget->m_vpRenderTargetView, pDepthStencilView);
+	}
+}
+
+void MDirectX11Renderer::ClearRenderTarget(MIRenderTarget* pRenderTarget)
+{
+	if (pRenderTarget->m_pDepthStencilView)
+		m_pDevice->m_pD3dContext->ClearDepthStencilView(pRenderTarget->m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+	if (pRenderTarget->m_vpRenderTargetView)
+	{
 		unsigned int unTargetSize = pRenderTarget->GetTargetViewNum();
-		m_pDevice->m_pD3dContext->OMSetRenderTargets(unTargetSize, pRenderTarget->m_vpTargetView, pRenderTarget->m_pDepthStencilView);
-		//if (pRenderTarget->m_pTargetView)
-		//	m_pDevice->m_pD3dContext->OMSetRenderTargets(1, &pRenderTarget->m_pTargetView, pRenderTarget->m_pDepthStencilView);
-		//else
-		//	m_pDevice->m_pD3dContext->OMSetRenderTargets(0, nullptr, pRenderTarget->m_pDepthStencilView);
+		for (unsigned int i = 0; i < unTargetSize; ++i)
+		{
+			if (pRenderTarget->GetNeedCleanTargetView(i))
+			{
+				m_pDevice->m_pD3dContext->ClearRenderTargetView(pRenderTarget->m_vpRenderTargetView[i], pRenderTarget->GetBackgroundColor(i).m);
+			}
+		}
 	}
 }
 
@@ -364,8 +418,8 @@ bool MDirectX11Renderer::SetUseMaterial(MMaterial* pMaterial, const bool& bUpdat
 		}
 		else if (MEMaterialType::ETransparent == m_eMaterialType)
 		{
-			m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::EDefault], 0);
-			m_pDevice->m_pD3dContext->OMSetBlendState(m_vBlendState[(int)MEBlendType::EDefault], nullptr, 0xffffffff);
+			m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::ENotReadNotWrite], 0);
+			m_pDevice->m_pD3dContext->OMSetBlendState(m_vBlendState[(int)MEBlendType::EAlphaOverlying], nullptr, 0xffffffff);
 		}
 		else if (MEMaterialType::EBlendTransparent == m_eMaterialType)
 		{
@@ -498,5 +552,10 @@ void MDirectX11Renderer::SetPixelShaderTexture(MShaderTextureParam& param)
 		}
 
 		m_pDevice->m_pD3dContext->PSSetShaderResources(param.unBindPoint, param.unBindCount, &(param.pTexture->GetBuffer()->m_pShaderResourceView));
+	}
+	else
+	{
+		static ID3D11ShaderResourceView* pNullPtr = nullptr;
+		m_pDevice->m_pD3dContext->PSSetShaderResources(param.unBindPoint, param.unBindCount, &pNullPtr);
 	}
 }

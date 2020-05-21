@@ -184,6 +184,7 @@ bool MEngine::InitializeDefaultResource()
 	MMaterialResource* pDraw2DMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW2D);
 	pDraw2DMaterialRes->LoadVertexShader(pDraw2DVSResource);
 	pDraw2DMaterialRes->LoadPixelShader(pDraw2DPSResource);
+	pDraw2DMaterialRes->SetMaterialType(MEMaterialType::EBlendTransparent);
 
 	MResource* pDraw3DVSResource = GetResourceManager()->LoadResource("./Shader/draw3D.mvs");
 	MResource* pDraw3DPSResource = GetResourceManager()->LoadResource("./Shader/draw3D.mps");
@@ -254,9 +255,9 @@ bool MEngine::InitializeDefaultResource()
 	MResource* pDPVSResource = GetResourceManager()->LoadResource("./Shader/depthPeeling.mvs");
 	MResource* pDPPSResource = GetResourceManager()->LoadResource("./Shader/depthPeeling.mps");
 	MMaterialResource* pTextureMaterial = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DEPTH_PEELING);
+	pTextureMaterial->SetMaterialType(MEMaterialType::EBlendTransparent);
 	pTextureMaterial->LoadVertexShader(pDPVSResource);
 	pTextureMaterial->LoadPixelShader(pDPPSResource);
-	pTextureMaterial->SetMaterialType(MEMaterialType::EBlendTransparent);
 
 	return true;
 }

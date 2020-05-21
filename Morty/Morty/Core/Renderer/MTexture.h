@@ -9,10 +9,13 @@
 #ifndef _M_MTEXTURE_H_
 #define _M_MTEXTURE_H_
 #include "MGlobal.h"
+#include "MIDevice.h"
 #include "Vector.h"
 #include "Type/MColor.h"
 
 //TODO : Dynamic Update Texture and TextureCube.
+
+
 
 class MIDevice;
 class MTextureBuffer;
@@ -97,7 +100,13 @@ private:
 	MTextureBuffer* m_pTextureBuffer;
 };
 
-class MORTY_CLASS MRenderTargetTexture : public MITexture
+class MORTY_CLASS MIRenderTexture : public MITexture
+{
+public:
+	virtual void SetSize(const Vector2& v2Size) = 0;
+};
+
+class MORTY_CLASS MRenderTargetTexture : public MIRenderTexture
 {
 public:
 	MRenderTargetTexture();
@@ -105,18 +114,24 @@ public:
 
 public:
 
-	void SetSize(const Vector2& v2Size) { m_v2Size = v2Size; }
+	//Should Set before GenerateBuffer
+	void SetType(const MERenderTextureType& eType) { m_eRenderType = eType; }
+	MERenderTextureType GetType() { return m_eRenderType; }
+
+	virtual void SetSize(const Vector2& v2Size) override { m_v2Size = v2Size; }
 	virtual Vector2 GetSize() override { return m_v2Size; }
 	virtual MTextureBuffer* GetBuffer() override;
+	MRenderTextureBuffer* GetRenderBuffer() { return m_pTextureBuffer; };
 	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = true) override;
 	virtual void DestroyTexture(MIDevice* pDevice) override;
 
 private:
+	MERenderTextureType m_eRenderType;
 	Vector2 m_v2Size;
 	MRenderTextureBuffer* m_pTextureBuffer;
 };
 
-class MORTY_CLASS MRenderDepthTexture : public MITexture
+class MORTY_CLASS MRenderDepthTexture : public MIRenderTexture
 {
 public:
 	MRenderDepthTexture();
@@ -124,9 +139,10 @@ public:
 
 public:
 
-	void SetSize(const Vector2& v2Size) { m_v2Size = v2Size; }
+	virtual void SetSize(const Vector2& v2Size) override { m_v2Size = v2Size; }
 	virtual Vector2 GetSize() override { return m_v2Size; }
 	virtual MTextureBuffer* GetBuffer() override;
+	MDepthTextureBuffer* GetDepthBuffer() { return m_pTextureBuffer; };
 	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = true) override;
 	virtual void DestroyTexture(MIDevice* pDevice) override;
 		

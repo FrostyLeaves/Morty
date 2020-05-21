@@ -33,7 +33,7 @@ public:
 
 	MIMeshInstance* GetMeshInstance(){ return m_pMeshInstance; }
 
-public:
+public: 
 
 private:
 	MMesh<Vector3>* m_pBoxMesh;

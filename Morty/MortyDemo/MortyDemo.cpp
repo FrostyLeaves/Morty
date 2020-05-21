@@ -54,6 +54,8 @@
 #include "Json/MJson.h"
 #include "MFileHelper.h"
 
+#include "MFunction.h"
+
 class MyCamera : public MCamera
 {
 public:
@@ -122,27 +124,26 @@ public:
 
 int main(int argc, char* argv[])
 {
-
 	MEngine engine;
 
 	engine.Initialize();
 
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
 	pRootNode->SetName("RootNode");
-	MModelResource* pGroundResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/ground.fbx"));
-
-	for (int i = 0; i < 1; ++i)
-	{
-		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
-		pSpatial->Load(pGroundResource);
-		pSpatial->SetPosition(Vector3(0, -20, -i * 100 + 100));
-		pSpatial->SetScale(Vector3(10, 10, 10));
-		pSpatial->SetName("Ground");
-
-		pRootNode->AddNode(pSpatial);
-
-		//	pSpatial->SetRotation(Quaternion(Vector3(0, 1, 0), 90.0f));
-	}
+	MModelResource* pGroundResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/teaport.fbx"));
+// 
+// 	for (int i = 0; i < 1; ++i)
+// 	{
+// 		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
+// 		pSpatial->Load(pGroundResource);
+// 		pSpatial->SetPosition(Vector3(0, 0, 0));
+// 		pSpatial->SetScale(Vector3(10, 10, 10));
+// 		pSpatial->SetName("Ground");
+// 
+// 		pRootNode->AddNode(pSpatial);
+// 
+// 		//	pSpatial->SetRotation(Quaternion(Vector3(0, 1, 0), 90.0f));
+// 	}
 
 
 	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/nfsq/model.dae"));

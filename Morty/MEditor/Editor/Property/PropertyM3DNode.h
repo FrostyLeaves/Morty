@@ -39,31 +39,37 @@ public:
 // 			ShowValueEnd();
 
 			MScene* pScene = pNode->GetScene();
-			std::vector<MTransparentRenderTarget*>& vTransRT = *pScene->GetTransparentRenderTarget();
 			
 			float fImageWidth = ImGui::GetContentRegionAvailWidth();
 
-			for (unsigned int i = 0; i < vTransRT.size(); ++i)
-			{
-				ShowValueBegin(MString("Lv") + MStringHelper::ToString((int)i));
 
-				if (MTransparentRenderTarget* pShadowTextureRt = vTransRT[i])
+			ShowValueBegin(MString("Lv1"));
+
+			if (MTransparentRenderTarget* pShadowTextureRt = pScene->GetTransparentRenderTarget())
+			{
+				unsigned int unTargetViewNum = pShadowTextureRt->GetTargetViewNum();
+				for (unsigned int i = 0; i < unTargetViewNum; ++i)
 				{
-					unsigned int unTargetViewNum = pShadowTextureRt->GetTargetViewNum();
-					for (unsigned int i = 0; i < unTargetViewNum; ++i)
+					if (MRenderTargetTexture* pBackTarget = pShadowTextureRt->GetBackTexture(i))
 					{
-						if (MRenderTargetTexture* pBackTarget = pShadowTextureRt->GetBackTexture(i))
+						if (MTextureBuffer* pBuffer = pBackTarget->GetBuffer())
 						{
-							if (MTextureBuffer* pBuffer = pBackTarget->GetBuffer())
-							{
-								ImGui::Image(pBuffer->m_pShaderResourceView, ImVec2(fImageWidth / unTargetViewNum, fImageWidth / unTargetViewNum));
-							}
+							if (i > 0) ImGui::SameLine();
+
+							ImTextureID texid;
+							texid.pTexture = pBuffer->m_pShaderResourceView;
+							if (i < 2)
+								texid.nType = 0;
+							else
+								texid.nType = 1;
+							ImGui::Image(texid, ImVec2(fImageWidth / unTargetViewNum, fImageWidth / unTargetViewNum));
 						}
 					}
 				}
-
-				ShowValueEnd();
 			}
+
+			ShowValueEnd();
+
 		}
 	}
 };

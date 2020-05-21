@@ -17,7 +17,6 @@
 #include <D3DX11.h>
 #include <DxErr.h>
 
-#include <stack>
 
 class MIRenderTarget;
 class MViewport;
@@ -40,9 +39,8 @@ public:
 	virtual void Release() override;
 
 	virtual void SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth) override;
-	virtual void Render(MIRenderTarget* pRenderTarget) override;
-	virtual void RecoverRenderTarget(MIRenderTarget* pRenderTarget) override;
-
+	virtual void RecoverRenderTarget(RenderTargetPair& pRenderTarget) override;
+	virtual void ClearRenderTarget(MIRenderTarget* pRenderTarget) override;
 public:
 	virtual void DrawMesh(MIMesh* pMesh) override;
 
@@ -75,7 +73,6 @@ protected:
 	MMaterial* m_pUsingMaterial;
 	//MIRenderTarget* m_pCurrentRenderTarget;
 
-	std::stack<MIRenderTarget*> m_vRenderTargets;
 };
 
 

@@ -9,7 +9,7 @@ struct VS_OUT
 {
     float4 pos : SV_POSITION;
     float2 uv : TEXCOORD;
-
+    
 #if MCALC_NORMAL_IN_VS
     float3 normal : NORMAL;
     float3 dirLightDirTangentSpace : DIRLIGHT_TANGENT;

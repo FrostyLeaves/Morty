@@ -31,3 +31,8 @@ MColor::~MColor()
 {
 
 }
+
+MColor MColor::Black = MColor(0, 0, 0, 1);
+MColor MColor::White = MColor(1, 1, 1, 1);
+MColor MColor::Black_T = MColor(0, 0, 0, 0);
+MColor MColor::White_T = MColor(1, 1, 1, 0);

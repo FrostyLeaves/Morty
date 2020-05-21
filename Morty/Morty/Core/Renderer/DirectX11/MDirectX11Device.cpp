@@ -419,17 +419,35 @@ void MDirectX11Device::DestroyTexture(MTextureBuffer** ppTextureBuffer)
 	*ppTextureBuffer = nullptr;
 }
 
-void MDirectX11Device::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const unsigned int& unWidth, const unsigned& unHeight)
+void MDirectX11Device::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const MERenderTextureType& eType, const unsigned int& unWidth, const unsigned& unHeight)
 {
 	HRESULT hr;
 
 	D3D11_TEXTURE2D_DESC desc;
 	ZeroMemory(&desc, sizeof(desc));
+	D3D11_RENDER_TARGET_VIEW_DESC rd;
+	ZeroMemory(&rd, sizeof(rd));
+	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
+	ZeroMemory(&shaderResourceViewDesc, sizeof(shaderResourceViewDesc));
+
 	desc.Width = unWidth;
 	desc.Height = unHeight;
 	desc.MipLevels = 1;
 	desc.ArraySize = 1;
-	desc.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
+	switch (eType)
+	{
+	case MERenderTextureType::ERGBA8:
+		desc.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
+		shaderResourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		break;
+	case MERenderTextureType::ER24X8:
+		desc.Format = DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT;
+		shaderResourceViewDesc.Format = DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT;
+		break;
+
+	default:
+		break;
+	}
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_RENDER_TARGET | D3D11_BIND_FLAG::D3D11_BIND_SHADER_RESOURCE;
 	desc.CPUAccessFlags = 0;
@@ -451,8 +469,6 @@ void MDirectX11Device::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppText
 
 	hr = m_pD3dDevice->CreateTexture2D(&desc, nullptr, &pTextureBuffer);
 
-	D3D11_RENDER_TARGET_VIEW_DESC rd;
-	ZeroMemory(&rd, sizeof(rd));
 	rd.Format = desc.Format;
 // 	if (m_bEnable4xMsaa)
 // 		rd.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
@@ -468,9 +484,6 @@ void MDirectX11Device::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppText
 		return;
 	}
 
-	D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
-	ZeroMemory(&viewDesc, sizeof(viewDesc));
-	viewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 // 	if (m_bEnable4xMsaa)
 // 	{
 // 		viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
@@ -479,13 +492,13 @@ void MDirectX11Device::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppText
 // 	}
 // 	else
 // 	{
-		viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-		viewDesc.Texture2D.MostDetailedMip = 0;
-		viewDesc.Texture2D.MipLevels = 1;
+	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
+	shaderResourceViewDesc.Texture2D.MipLevels = 1;
 //	}
 
 	ID3D11ShaderResourceView* pShaderResourceView = nullptr;
-	hr = m_pD3dDevice->CreateShaderResourceView(pTextureBuffer, &viewDesc, &pShaderResourceView);
+	hr = m_pD3dDevice->CreateShaderResourceView(pTextureBuffer, &shaderResourceViewDesc, &pShaderResourceView);
 
 	if (*ppTextureBuffer)
 		DestroyRenderTextureBuffer(ppTextureBuffer);
@@ -655,8 +668,9 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 	const char* svProFile = eShaderType == MShader::MEShaderType::Vertex ? "vs_5_0" : "ps_5_0";
 
 	unsigned int unGlobalMacroSize = shaderMacro.s_vGlobalMacroParams.size();
+	unsigned int unMortyShaderMacroSize = shaderMacro.m_vMortyMacroParams.size();
 	unsigned int unShaderMacroSize = shaderMacro.m_vMacroParams.size();
-	unsigned int unEndIndex = unGlobalMacroSize + unShaderMacroSize;
+	unsigned int unEndIndex = unGlobalMacroSize + unMortyShaderMacroSize + unShaderMacroSize;
 	D3D_SHADER_MACRO* vShaderMacro = new D3D_SHADER_MACRO[unEndIndex + 1];
 
 	for (unsigned int i = 0; i < unGlobalMacroSize; ++i)
@@ -665,11 +679,17 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 		vShaderMacro[i].Name = param.first.c_str();
 		vShaderMacro[i].Definition = param.second.c_str();
 	}
+	for (unsigned int i = 0; i < unMortyShaderMacroSize; ++i)
+	{
+		const std::pair<MString, MString>& param = shaderMacro.m_vMortyMacroParams[i];
+		vShaderMacro[unGlobalMacroSize + i].Name = param.first.c_str();
+		vShaderMacro[unGlobalMacroSize + i].Definition = param.second.c_str();
+	}
 	for (unsigned int i = 0; i < unShaderMacroSize; ++i)
 	{
 		const std::pair<MString, MString>& param = shaderMacro.m_vMacroParams[i];
-		vShaderMacro[unGlobalMacroSize + i].Name = param.first.c_str();
-		vShaderMacro[unGlobalMacroSize + i].Definition = param.second.c_str();
+		vShaderMacro[unGlobalMacroSize + unMortyShaderMacroSize + i].Name = param.first.c_str();
+		vShaderMacro[unGlobalMacroSize + unMortyShaderMacroSize + i].Definition = param.second.c_str();
 	}
 
 	vShaderMacro[unEndIndex].Name = nullptr;
@@ -1074,7 +1094,7 @@ bool MDirectX11Device::GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsig
 
 	unsigned int unTargetViewSize = pRenderTarget->GetTargetViewNum();
 
-	pRenderTarget->m_vpTargetView = new ID3D11RenderTargetView*[unTargetViewSize];
+	pDxRenderTarget->m_vpRenderTargetView = new ID3D11RenderTargetView*[unTargetViewSize];
 
 	for (unsigned int i = 0; i < unTargetViewSize; ++i)
 	{
@@ -1085,7 +1105,7 @@ bool MDirectX11Device::GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsig
 			return false;
 		}
 
-		hr = m_pD3dDevice->CreateRenderTargetView(pBackBuffer, 0, &pRenderTarget->m_vpTargetView[i]);
+		hr = m_pD3dDevice->CreateRenderTargetView(pBackBuffer, 0, &pDxRenderTarget->m_vpRenderTargetView[i]);
 		pBackBuffer->Release();
 		if (FAILED(hr))
 		{
@@ -1111,16 +1131,15 @@ bool MDirectX11Device::GenerateRenderTarget(MTextureRenderTarget* pRenderTarget,
 	{
 		unsigned int unTargetViewNum = pRenderTarget->GetTargetViewNum();
 		if (unTargetViewNum > 0)
-		{
-			pRenderTarget->m_vpTargetView = new ID3D11RenderTargetView * [unTargetViewNum];
-		}
+			pRenderTarget->m_vpRenderTargetView = new ID3D11RenderTargetView * [unTargetViewNum];
+
 		if (pRenderTarget->m_vBackTexture)
 		{
 			for (unsigned int i = 0; i < unTargetViewNum; ++i)
 			{
 				pRenderTarget->m_vBackTexture[i].GenerateBuffer(this, false);
 				if (MRenderTextureBuffer* pBuffer = dynamic_cast<MRenderTextureBuffer*>(pRenderTarget->m_vBackTexture[i].GetBuffer()))
-					pRenderTarget->m_vpTargetView[i] = pBuffer->m_pRenderTargetView;
+ 					pRenderTarget->m_vpRenderTargetView[i] = pBuffer->m_pRenderTargetView;
 			}
 		}
 	}
@@ -1128,7 +1147,7 @@ bool MDirectX11Device::GenerateRenderTarget(MTextureRenderTarget* pRenderTarget,
 	if (MTextureRenderTarget::ERenderDepth & eRenderTargetType)
 	{
 		pRenderTarget->m_pDepthTexture->GenerateBuffer(this, false);
-		if (MDepthTextureBuffer* pBuffer = dynamic_cast<MDepthTextureBuffer*>(pRenderTarget->m_pDepthTexture->GetBuffer()))
+ 		if (MDepthTextureBuffer* pBuffer = dynamic_cast<MDepthTextureBuffer*>(pRenderTarget->m_pDepthTexture->GetBuffer()))
 			pRenderTarget->m_pDepthStencilView = pBuffer->m_pDepthStencilView;
 	}
 
@@ -1143,15 +1162,15 @@ void MDirectX11Device::DestroyRenderTarget(MTextureRenderTarget* pRenderTarget)
 		{
 			pRenderTarget->m_vBackTexture[i].DestroyTexture(this);
 		}
-
-		delete[] pRenderTarget->m_vpTargetView;
-		pRenderTarget->m_vpTargetView = nullptr;
+ 		delete[] pRenderTarget->m_vpRenderTargetView;
+ 		pRenderTarget->m_vpRenderTargetView = nullptr;
 	}
 	if (pRenderTarget->m_pDepthTexture)
 	{
 		pRenderTarget->m_pDepthTexture->DestroyTexture(this);
 		pRenderTarget->m_pDepthStencilView = nullptr;		//Thie StencilView will be Released by pDepthTexture
 	}
+
 }
 
 void MDirectX11Device::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
@@ -1160,15 +1179,15 @@ void MDirectX11Device::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
 	if (nullptr == pDxRenderTarget)
 		return;
 
-	if (pDxRenderTarget->m_vpTargetView)
+	if (pDxRenderTarget->m_vpRenderTargetView)
 	{
 		for (unsigned int i = 0; i < pRenderTarget->GetTargetViewNum(); ++i)
 		{
-			pDxRenderTarget->m_vpTargetView[i]->Release();
+			pDxRenderTarget->m_vpRenderTargetView[i]->Release();
 		}
 
-		delete[] pDxRenderTarget->m_vpTargetView;
-		pDxRenderTarget->m_vpTargetView = nullptr;
+		delete[] pDxRenderTarget->m_vpRenderTargetView;
+		pDxRenderTarget->m_vpRenderTargetView = nullptr;
 	}
 
 	if (pDxRenderTarget->m_pDepthTexture)

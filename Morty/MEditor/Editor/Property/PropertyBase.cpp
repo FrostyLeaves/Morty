@@ -479,11 +479,11 @@ void PropertyBase::ShowTexture(MTextureBuffer* pTextureBuffer)
 			{
 				ImGui::Spacing();
 				ImGui::SameLine((fImageWidth - fMaxImageSize) * 0.5f);
-				ImGui::Image(pTextureBuffer->m_pShaderResourceView, ImVec2(fMaxImageSize, fMaxImageSize));
+				ImGui::Image(ImTextureID(pTextureBuffer->m_pShaderResourceView, 0), ImVec2(fMaxImageSize, fMaxImageSize));
 			}
 			else
 			{
-				ImGui::Image(pTextureBuffer->m_pShaderResourceView, ImVec2(fImageWidth, fImageWidth));
+				ImGui::Image(ImTextureID(pTextureBuffer->m_pShaderResourceView, 0), ImVec2(fImageWidth, fImageWidth));
 			}
 		}
 	}

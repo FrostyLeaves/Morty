@@ -52,8 +52,11 @@ void MaterialView::Render()
 {
 	if (m_pMaterial)
 	{
-		if (ImTextureID texid = m_SceneTexture.GetTexture())
+		if (void* pTexture = m_SceneTexture.GetTexture())
 		{
+			ImTextureID texid;
+			texid.pTexture = pTexture;
+			texid.nType = 0;
 			float fImageSize = ImGui::GetContentRegionAvail().x;
 			ImGui::SameLine(fImageSize * 0.25f);
 			ImGui::Image(texid, ImVec2(fImageSize * 0.5f, fImageSize * 0.5f));

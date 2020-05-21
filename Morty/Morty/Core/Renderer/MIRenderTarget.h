@@ -31,8 +31,13 @@ public:
 	virtual ~MIRenderTarget() {}
 
 	unsigned int GetTargetViewNum() const { return m_unTargetViewNum; }
-
+	
 	virtual MRenderDepthTexture* GetDepthTexture() = 0;
+
+	virtual void SetBackgroundColor(const unsigned int& unTargetIndex, const MColor& color) = 0;
+	virtual const MColor& GetBackgroundColor(const unsigned int& unTargetIndex) const { return MColor::Black; }
+
+	virtual bool GetNeedCleanTargetView(const unsigned int& unTargetIndex) const { return true; }
 
 public:
 
@@ -43,14 +48,15 @@ public:
 
 	virtual void Release(MIDevice* pDevice) = 0;
 
+
+public:
+
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	ID3D11RenderTargetView** m_vpTargetView;
-	ID3D11DepthStencilView* m_pDepthStencilView;
+	struct ID3D11RenderTargetView** m_vpRenderTargetView;
+	struct ID3D11DepthStencilView* m_pDepthStencilView;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 
 #endif
-
-	MColor m_backgroundColor;
 
 protected:
 

@@ -27,6 +27,8 @@ public:
 	MDirectX11RenderTarget(MDirectX11Device* pDevice);
 	~MDirectX11RenderTarget();
 
+	virtual void SetBackgroundColor(const unsigned int& unTargetIndex, const MColor& color) override { m_backgroundColor = color; }
+	virtual const MColor& GetBackgroundColor(const unsigned int& unTargetIndex) const override { return m_backgroundColor; }
 
 	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
 
@@ -43,6 +45,7 @@ public:
 	IDXGISwapChain* m_pSwapChain;
 	MRenderDepthTexture* m_pDepthTexture;
 private:
+	MColor m_backgroundColor;
 	MDirectX11Device* m_pDevice;
 	MWindowsRenderView* m_pView;
 

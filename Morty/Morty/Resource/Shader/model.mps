@@ -1,5 +1,17 @@
 #include "modelHeader.hlsl"
 
+#define BIAS 0.000001f 
+
+struct PS_OUT
+{
+    float4 target0: SV_Target0;
+
+#ifdef MTRANSPARENT_DEPTH_PEELING
+    float4 target1: SV_Target1;
+    float4 target2: SV_Target2;
+    float4 target3: SV_Target3;
+#endif
+};
 
 float ShadowCalculation(float4 dirLightSpacePos, float fNdotL)
 {
@@ -51,8 +63,9 @@ float3 CalcDirectionLight(VS_OUT input, float3 f3CameraDir, float3 f3LightDir, f
     }
 }
 
-float4 PS(VS_OUT input) : SV_Target
+PS_OUT PS(VS_OUT input) : SV_Target
 {
+    PS_OUT output;
     
     float4 f3AmbiColor = U_mat.texDiffuse.Sample(U_defaultSampler, input.uv);
 
@@ -118,23 +131,29 @@ float4 PS(VS_OUT input) : SV_Target
     }
 
 #ifdef MTRANSPARENT_DEPTH_PEELING
-    if (fAlpha < 0.9f)      //Transparent
+    float fZDepth = input.pos.z;
+    float2 f2DepthFrontUV = input.pos.xy;
+    f2DepthFrontUV.x /= U_f2ViewportSize.x;
+    f2DepthFrontUV.y /= U_f2ViewportSize.y;
+    float fZFront = U_texDepthFront.Sample(U_defaultSampler, f2DepthFrontUV.xy);
+    float fZBack = U_texDepthBack.Sample(U_defaultSampler, f2DepthFrontUV.xy);
+
+    output.target0 = float4(0, 0, 0, 0);
+    output.target1 = float4(0, 0, 0, 0);
+    output.target2 = 1;
+    output.target3 = 0;
+
+    // a <= b
+    clip(fZDepth + BIAS - fZFront);
+    clip(fZBack + BIAS - fZDepth);
+
+    if(fZDepth - BIAS > fZFront && fZDepth + BIAS < fZBack)
     {
-        float2 f2DepthFrontUV = input.pos.xy;
-        f2DepthFrontUV.x /= U_f2ViewportSize.x;
-        f2DepthFrontUV.y /= U_f2ViewportSize.y;
-        if (saturate(f2DepthFrontUV.x) == f2DepthFrontUV.x && saturate(f2DepthFrontUV.y) == f2DepthFrontUV.y)
-        {   
-            float fZDepth = input.pos.z;
-
-            // a <= b
-            float v1 = U_texDepthFront.Sample(U_defaultSampler, f2DepthFrontUV.xy);
-            clip(fZDepth - v1 - 0.000001f);
-
-            float v2 = U_texDepthBack.Sample(U_defaultSampler, f2DepthFrontUV.xy);
-            clip(v2 - fZDepth - 0.000001f);
-        }
+        output.target2 = input.pos.z;
+        output.target3 = input.pos.z;
+        return output;
     }
+      
 #endif
 
     if(U_bDirectionLightEnabled > 0.5f)
@@ -166,6 +185,25 @@ float4 PS(VS_OUT input) : SV_Target
         f3Color += CalcSpotLight(U_spotLights[i], f3CameraDir, f3LightDir, f3Normal, input.worldPos, f3DiffColor, f3SpecColor);
     }
 
-    return float4(f3Color, fAlpha);
+
+#ifdef MTRANSPARENT_DEPTH_PEELING
+
+    if(fZFront - BIAS <= fZDepth && fZDepth <= fZFront + BIAS)
+    {
+        // color = destColor + srcColor * srcAlpha * (1 - destAlpha)
+        // return [srcColor * srcAlpha] as srcColor
+        // blend destColor * 1 + srcColor * (1 - destAlpha)
+        output.target0 = float4(f3Color * fAlpha, fAlpha);
+    }
+    else
+    {
+        output.target1 = float4(f3Color, fAlpha);
+    }
+    
+#else
+    output.target0 = float4(f3Color, fAlpha);
+#endif
+
+    return output;
 }
 

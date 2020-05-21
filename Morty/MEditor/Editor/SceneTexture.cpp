@@ -42,7 +42,7 @@ void SceneTexture::Initialize(MEngine* pEngine)
 	m_pTextureRenderTarget = pEngine->GetObjectManager()->CreateObject<MTextureRenderTarget>();
 	m_pTextureRenderTarget->Initialize(MTextureRenderTarget::ERenderBack | MTextureRenderTarget::ERenderDepth, 256, 256);
 		//MTextureRenderTarget::CreateForTexture(m_pEngine->GetDevice(), MTextureRenderTarget::ERenderBack | MTextureRenderTarget::ERenderDepth, 256, 256);
-	m_pTextureRenderTarget->m_backgroundColor = MColor(0, 0, 0, 1);
+	m_pTextureRenderTarget->SetBackgroundColor(0, MColor::Black);
 	m_pTextureRenderTarget->m_funcRenderFunction = [this](MIRenderer* pRenderer)
 	{
 		m_pRenderViewport->Render(pRenderer, m_pTextureRenderTarget);

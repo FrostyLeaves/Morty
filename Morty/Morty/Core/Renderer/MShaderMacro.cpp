@@ -1,5 +1,6 @@
 ﻿#include "MShaderMacro.h"
 #include "MVertex.h"
+#include "MFunction.h"
 
 const MString strBonesPerVertex = MStringHelper::ToString(MBONES_PER_VERTEX);
 const MString strBonesMaxNumber = MStringHelper::ToString(MBONES_MAX_NUMBER);
@@ -12,11 +13,10 @@ const MString strSpotLightPixelNumber = MStringHelper::ToString(MSPOT_LIGHT_PIXE
 
 enum class METransparentPolicy
 {
-	EZOrder = 0,
-	EDepthPeeling = 1,
+	EDualDepthPeeling = 1,
 };
 
-const MString strTransparentPolicy = MStringHelper::ToString((int)METransparentPolicy::EDepthPeeling);
+const MString strTransparentPolicy = MStringHelper::ToString((int)METransparentPolicy::EDualDepthPeeling);
 
 std::vector<std::pair<MString, MString>> MShaderMacro::s_vGlobalMacroParams = {
 	{"MBONES_PER_VERTEX", strBonesPerVertex},
@@ -30,15 +30,25 @@ std::vector<std::pair<MString, MString>> MShaderMacro::s_vGlobalMacroParams = {
 	{"MTRANSPARENT_POLICY", strTransparentPolicy},
 };
 
+void MShaderMacro::SetMortyMacro(const MString& strKey, const MString& strValue)
+{
+	SetMacro(strKey, strValue, m_vMortyMacroParams);
+}
+
 void MShaderMacro::SetMacro(const MString& strKey, const MString& strValue)
 {
-	std::vector<std::pair<MString, MString>>::iterator iter = std::lower_bound(m_vMacroParams.begin(), m_vMacroParams.end(), strKey, [](const std::pair<MString, MString>& a, const MString& b) {
+	SetMacro(strKey, strValue, m_vMacroParams);
+}
+
+void MShaderMacro::SetMacro(const MString& strKey, const MString& strValue, std::vector<std::pair<MString, MString>>& vector)
+{
+	std::vector<std::pair<MString, MString>>::iterator iter = std::lower_bound(vector.begin(), vector.end(), strKey, [](const std::pair<MString, MString>& a, const MString& b) {
 		return a.first < b;
 		});
 
-	if (iter == m_vMacroParams.end())
+	if (iter == vector.end())
 	{
-		m_vMacroParams.push_back(std::pair<MString, MString>(strKey, strValue));
+		vector.push_back(std::pair<MString, MString>(strKey, strValue));
 	}
 	else if (iter->first == strKey)
 	{
@@ -46,51 +56,51 @@ void MShaderMacro::SetMacro(const MString& strKey, const MString& strValue)
 	}
 	else
 	{
-		m_vMacroParams.insert(iter, std::pair<MString, MString>(strKey, strValue));
+		vector.insert(iter, std::pair<MString, MString>(strKey, strValue));
 	}
-
 }
 
 void MShaderMacro::AddUnionMacro(const MString& strKey, const MString& strValue /*= ""*/)
 {
-	std::vector<std::pair<MString, MString>>::iterator iter = std::lower_bound(m_vMacroParams.begin(), m_vMacroParams.end(), strKey, [](const std::pair<MString, MString>& a, const MString& b) {
-		return a.first < b;
-		});
+	std::pair<MString, MString> pair(strKey, strValue);
 
-	if (iter == m_vMacroParams.end())
-	{
-		m_vMacroParams.push_back(std::pair<MString, MString>(strKey, strValue));
-	}
-	else if (iter->first == strKey)
-		return;
-	else
-	{
-		m_vMacroParams.insert(iter, std::pair<MString, MString>(strKey, strValue));
-	}
+	UNION_ORDER_PUSH_BACK_VECTOR<std::pair<MString, MString>>(m_vMacroParams, pair
+		, [](const std::pair<MString, MString>& a, const std::pair<MString, MString>& b) { return a.first < b.first; }
+	, [](const std::pair<MString, MString>& a, const std::pair<MString, MString>& b) { return a.first == b.first; }
+	);
 }
 
 void MShaderMacro::RemoveMacro(const MString& strKey)
 {
-	std::vector<std::pair<MString, MString>>::iterator iter = std::lower_bound(m_vMacroParams.begin(), m_vMacroParams.end(), strKey, [](const std::pair<MString, MString>& a, const MString& b) {
-		return a.first < b;
-		});
-
-	if (iter != m_vMacroParams.end())
-	{
-		m_vMacroParams.erase(iter);
-	}
+	std::pair<MString, MString> pair(strKey, "");
+	ERASE_UNION_ORDER_VECTOR<std::pair<MString, MString>>(m_vMacroParams, pair
+		, [](const std::pair<MString, MString>& a, const std::pair<MString, MString>& b) { return a.first < b.first; }
+	, [](const std::pair<MString, MString>& a, const std::pair<MString, MString>& b) { return a.first == b.first; }
+	);
 }
 
 bool MShaderMacro::Compare(const MShaderMacro& macro)
 {
 	unsigned int unSize = m_vMacroParams.size();
+	unsigned int unMortySize = m_vMacroParams.size();
 	if (unSize != macro.m_vMacroParams.size())
+		return false;
+	if (unMortySize != macro.m_vMortyMacroParams.size())
 		return false;
 
 	for (unsigned int i = 0; i < unSize; ++i)
 	{
 		const std::pair<MString, MString>& a = m_vMacroParams[i];
 		const std::pair<MString, MString>& b = macro.m_vMacroParams[i];
+
+		if (a.first != b.first || a.second != b.second)
+			return false;
+	}
+
+	for (unsigned int i = 0; i < unMortySize; ++i)
+	{
+		const std::pair<MString, MString>& a = m_vMortyMacroParams[i];
+		const std::pair<MString, MString>& b = macro.m_vMortyMacroParams[i];
 
 		if (a.first != b.first || a.second != b.second)
 			return false;

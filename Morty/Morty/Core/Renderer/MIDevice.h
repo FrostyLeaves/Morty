@@ -22,6 +22,14 @@ class MShaderBuffer;
 class MIRenderTarget;
 class MTextureRenderTarget;
 struct MShaderParam;
+
+
+enum MERenderTextureType
+{
+	ERGBA8 = 0,
+	ER24X8 = 1
+};
+
 class MORTY_CLASS MIDevice
 {;
 public:
@@ -41,7 +49,7 @@ public:
 	virtual void GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTexture* vTexture[6], const bool& bGenerateMipmap = true) = 0;
 	virtual void DestroyTexture(MTextureBuffer** ppTextureBuffer) = 0;
 
-	virtual void GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const unsigned int& unWidth, const unsigned& unHeight) = 0;
+	virtual void GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const MERenderTextureType& eType, const unsigned int& unWidth, const unsigned& unHeight) = 0;
 	virtual void DestroyRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer) = 0;
 
 	virtual void GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const unsigned int& unWidth, const unsigned int& unHeight) = 0;

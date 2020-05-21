@@ -24,6 +24,8 @@ public:
     virtual ~MTransparentRenderTarget();
 
 public:
+
+public:
 	virtual void OnCreated() override;
 	virtual void OnDelete() override;
 
@@ -31,17 +33,17 @@ public:
 
     void Render(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget, std::vector<MMaterialGroup>* pGroup);
 
-	void SetSceneDepthTexture(MRenderDepthTexture* pDepthTexture) { m_pSceneDepthTexture = pDepthTexture; }
-	void SetPrevLevelRenderTarget(MTransparentRenderTarget* pRenderTarget) { m_pPrevLevelRenderTarget = pRenderTarget; }
-
 private:
 
     MResourceKeeper m_Material;
 
-    MRenderDepthTexture* m_pSceneDepthTexture;
+    MITexture* m_pFrontDepthTexture;
+    MITexture* m_pBackDepthTexture;
+
+    MITexture* m_pWhiteTexture;
+    MITexture* m_pBlackTexture;
 
     MIRenderTarget* m_pBackRenderTarget;
-    MTransparentRenderTarget* m_pPrevLevelRenderTarget;
     std::vector<MMaterialGroup>* m_pTransparentMeshes;
 };
 

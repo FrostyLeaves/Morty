@@ -46,6 +46,7 @@ static ID3D10Blob*              g_pVertexShaderBlob = NULL;
 static ID3D11VertexShader*      g_pVertexShader = NULL;
 static ID3D11InputLayout*       g_pInputLayout = NULL;
 static ID3D11Buffer*            g_pVertexConstantBuffer = NULL;
+static ID3D11Buffer*            g_pPixelConstantBuffer = NULL;
 static ID3D10Blob*              g_pPixelShaderBlob = NULL;
 static ID3D11PixelShader*       g_pPixelShader = NULL;
 static ID3D11SamplerState*      g_pFontSampler = NULL;
@@ -55,10 +56,19 @@ static ID3D11BlendState*        g_pBlendState = NULL;
 static ID3D11DepthStencilState* g_pDepthStencilState = NULL;
 static int                      g_VertexBufferSize = 5000, g_IndexBufferSize = 10000;
 
+
 struct VERTEX_CONSTANT_BUFFER
 {
     float   mvp[4][4];
 };
+
+struct PIXEL_CONSTANT_BUFFER
+{
+	float   texType;
+	float   temp[3];
+};
+
+static PIXEL_CONSTANT_BUFFER    g_pixelConstant;
 
 static void ImGui_ImplDX11_SetupRenderState(ImDrawData* draw_data, ID3D11DeviceContext* ctx)
 {
@@ -81,6 +91,7 @@ static void ImGui_ImplDX11_SetupRenderState(ImDrawData* draw_data, ID3D11DeviceC
     ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     ctx->VSSetShader(g_pVertexShader, NULL, 0);
     ctx->VSSetConstantBuffers(0, 1, &g_pVertexConstantBuffer);
+   // ctx->PSSetConstantBuffers(0, 1, &g_pPixelConstantBuffer);
     ctx->PSSetShader(g_pPixelShader, NULL, 0);
     ctx->PSSetSamplers(0, 1, &g_pFontSampler);
     ctx->GSSetShader(NULL, NULL, 0);
@@ -195,7 +206,7 @@ void ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data)
         UINT                        PSInstancesCount, VSInstancesCount, GSInstancesCount;
         ID3D11ClassInstance         *PSInstances[256], *VSInstances[256], *GSInstances[256];   // 256 is max according to PSSetShader documentation
         D3D11_PRIMITIVE_TOPOLOGY    PrimitiveTopology;
-        ID3D11Buffer*               IndexBuffer, *VertexBuffer, *VSConstantBuffer;
+        ID3D11Buffer*               IndexBuffer, *VertexBuffer, *VSConstantBuffer, *PSConstantBuffer;
         UINT                        IndexBufferOffset, VertexBufferStride, VertexBufferOffset;
         DXGI_FORMAT                 IndexBufferFormat;
         ID3D11InputLayout*          InputLayout;
@@ -213,6 +224,7 @@ void ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data)
     ctx->PSGetShader(&old.PS, old.PSInstances, &old.PSInstancesCount);
     ctx->VSGetShader(&old.VS, old.VSInstances, &old.VSInstancesCount);
     ctx->VSGetConstantBuffers(0, 1, &old.VSConstantBuffer);
+    ctx->PSGetConstantBuffers(0, 1, &old.PSConstantBuffer);
     ctx->GSGetShader(&old.GS, old.GSInstances, &old.GSInstancesCount);
 
     ctx->IAGetPrimitiveTopology(&old.PrimitiveTopology);
@@ -250,8 +262,26 @@ void ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data)
                 ctx->RSSetScissorRects(1, &r);
 
                 // Bind texture, Draw
-                ID3D11ShaderResourceView* texture_srv = (ID3D11ShaderResourceView*)pcmd->TextureId;
-                ctx->PSSetShaderResources(0, 1, &texture_srv);
+                ImTextureID texid = pcmd->TextureId;
+
+                if(g_pixelConstant.texType != texid.nType)
+				{
+                    g_pixelConstant.texType = texid.nType;
+					D3D11_MAPPED_SUBRESOURCE mapped_resource;
+                    if (ctx->Map(g_pPixelConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped_resource) == S_OK)
+                    {
+                        PIXEL_CONSTANT_BUFFER* constant_buffer = (PIXEL_CONSTANT_BUFFER*)mapped_resource.pData;
+						memcpy(constant_buffer, &texid.nType, sizeof(float));
+						ctx->Unmap(g_pPixelConstantBuffer, 0);
+                    }
+				}
+
+                ctx->PSSetConstantBuffers(0, 1, &g_pPixelConstantBuffer);
+                ID3D11ShaderResourceView* texture_srv = (ID3D11ShaderResourceView*)texid.pTexture;
+                if(texid.nType < 2.5f)
+                    ctx->PSSetShaderResources(0, 1, &texture_srv);
+                else
+                    ctx->PSSetShaderResources(1, 1, &texture_srv);
                 ctx->DrawIndexed(pcmd->ElemCount, pcmd->IdxOffset + global_idx_offset, pcmd->VtxOffset + global_vtx_offset);
             }
         }
@@ -271,6 +301,7 @@ void ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data)
     for (UINT i = 0; i < old.PSInstancesCount; i++) if (old.PSInstances[i]) old.PSInstances[i]->Release();
     ctx->VSSetShader(old.VS, old.VSInstances, old.VSInstancesCount); if (old.VS) old.VS->Release();
     ctx->VSSetConstantBuffers(0, 1, &old.VSConstantBuffer); if (old.VSConstantBuffer) old.VSConstantBuffer->Release();
+    ctx->PSSetConstantBuffers(0, 1, &old.PSConstantBuffer); if (old.PSConstantBuffer) old.PSConstantBuffer->Release();
     ctx->GSSetShader(old.GS, old.GSInstances, old.GSInstancesCount); if (old.GS) old.GS->Release();
     for (UINT i = 0; i < old.VSInstancesCount; i++) if (old.VSInstances[i]) old.VSInstances[i]->Release();
     ctx->IASetPrimitiveTopology(old.PrimitiveTopology);
@@ -320,7 +351,9 @@ static void ImGui_ImplDX11_CreateFontsTexture()
     }
 
     // Store our identifier
-    io.Fonts->TexID = (ImTextureID)g_pFontTextureView;
+    io.Fonts->TexID = ImTextureID();
+    io.Fonts->TexID.pTexture = g_pFontTextureView;
+    io.Fonts->TexID.nType = 0;
 
     // Create texture sampler
     {
@@ -420,10 +453,32 @@ bool    ImGui_ImplDX11_CreateDeviceObjects()
             };\
             sampler sampler0;\
             Texture2D texture0;\
+            Texture2D<float> texture1;\
+            cbuffer pixelBuffer : register(b0) \
+            {\
+            float texType;\
+            float3 temp;\
+            };\
             \
+            float Float4ToFloat(float4 rgba_depth)\
+		    {\
+			    const float4 bit_shift = float4(1.0 / (256.0 * 256.0 * 256.0), 1.0 / (256.0 * 256.0), 1.0 / 256.0, 1.0);\
+			    float depth = dot(rgba_depth, bit_shift);\
+			    return depth;\
+		    }\
             float4 main(PS_INPUT input) : SV_Target\
             {\
-            float4 out_col = input.col * texture0.Sample(sampler0, input.uv); \
+            float4 out_col = float4(0.0f,0.0f,0.0f,0.0f); \
+            if (texType < 0.5f) \
+                out_col = input.col * texture0.Sample(sampler0, input.uv); \
+            else if(texType < 1.5f){\
+                float fDepth = texture0.Sample(sampler0, input.uv).r;\
+                out_col = float4(fDepth,fDepth,fDepth,1.0f);\
+            }\
+            else if(texType < 2.5f){\
+                float color = texture1.Sample(sampler0, input.uv);\
+                out_col = float4(color, color, color, 1.0f); \
+            }\
             return out_col; \
             }";
 
@@ -433,6 +488,17 @@ bool    ImGui_ImplDX11_CreateDeviceObjects()
         if (g_pd3dDevice->CreatePixelShader((DWORD*)g_pPixelShaderBlob->GetBufferPointer(), g_pPixelShaderBlob->GetBufferSize(), NULL, &g_pPixelShader) != S_OK)
             return false;
     }
+
+	// Create the constant buffer
+	{
+		D3D11_BUFFER_DESC desc;
+		desc.ByteWidth = sizeof(PIXEL_CONSTANT_BUFFER);
+		desc.Usage = D3D11_USAGE_DYNAMIC;
+		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		desc.MiscFlags = 0;
+		g_pd3dDevice->CreateBuffer(&desc, NULL, &g_pPixelConstantBuffer);
+	}
 
     // Create the blending setup
     {
@@ -486,7 +552,7 @@ void    ImGui_ImplDX11_InvalidateDeviceObjects()
         return;
 
     if (g_pFontSampler) { g_pFontSampler->Release(); g_pFontSampler = NULL; }
-    if (g_pFontTextureView) { g_pFontTextureView->Release(); g_pFontTextureView = NULL; ImGui::GetIO().Fonts->TexID = NULL; } // We copied g_pFontTextureView to io.Fonts->TexID so let's clear that as well.
+    if (g_pFontTextureView) { g_pFontTextureView->Release(); g_pFontTextureView = NULL; ImGui::GetIO().Fonts->TexID = ImTextureID(); } // We copied g_pFontTextureView to io.Fonts->TexID so let's clear that as well.
     if (g_pIB) { g_pIB->Release(); g_pIB = NULL; }
     if (g_pVB) { g_pVB->Release(); g_pVB = NULL; }
 
@@ -496,6 +562,7 @@ void    ImGui_ImplDX11_InvalidateDeviceObjects()
     if (g_pPixelShader) { g_pPixelShader->Release(); g_pPixelShader = NULL; }
     if (g_pPixelShaderBlob) { g_pPixelShaderBlob->Release(); g_pPixelShaderBlob = NULL; }
     if (g_pVertexConstantBuffer) { g_pVertexConstantBuffer->Release(); g_pVertexConstantBuffer = NULL; }
+    if (g_pPixelConstantBuffer) { g_pPixelConstantBuffer->Release(); g_pPixelConstantBuffer = NULL; }
     if (g_pInputLayout) { g_pInputLayout->Release(); g_pInputLayout = NULL; }
     if (g_pVertexShader) { g_pVertexShader->Release(); g_pVertexShader = NULL; }
     if (g_pVertexShaderBlob) { g_pVertexShaderBlob->Release(); g_pVertexShaderBlob = NULL; }

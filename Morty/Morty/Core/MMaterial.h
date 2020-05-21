@@ -40,7 +40,7 @@ public:
 	void SetRasterizerType(const MERasterizerType& eType) { m_eRasterizerType = eType; }
 	MERasterizerType GetRasterizerType() const { return m_eRasterizerType; }
 
-	void SetMaterialType(const MEMaterialType& eType) { m_eMaterialType = eType; }
+	void SetMaterialType(const MEMaterialType& eType);
 	MEMaterialType GetMaterialType() const { return m_eMaterialType; }
 
 	bool LoadVertexShader(MResource* pResource);

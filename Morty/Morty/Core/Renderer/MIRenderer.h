@@ -14,6 +14,7 @@
 #include "MVertex.h"
 #include "MRenderStructure.h"
 
+#include <stack>
 
 enum class MERasterizerType
 {
@@ -29,6 +30,9 @@ enum class MEBlendType
 {
 	EDefault = 0,
 	ETransparent,
+
+
+	EAlphaOverlying,
 
 	EBlendTypeEnd,
 };
@@ -69,6 +73,7 @@ struct MShaderParam;
 class MTexture;
 class MViewport;
 class MIRenderTarget;
+class MRenderDepthTexture;
 class MRenderTargetTexture;
 class MORTY_CLASS MIRenderer
 {
@@ -76,6 +81,13 @@ public:
 
 	MIRenderer();;
 	virtual ~MIRenderer(){};
+
+	struct RenderTargetPair
+	{
+		RenderTargetPair(MIRenderTarget* pRT, MRenderDepthTexture* pDT) :pRenderTarget(pRT), pDepthTexture(pDT) {}
+		MIRenderTarget* pRenderTarget;
+		MRenderDepthTexture* pDepthTexture;
+	};
 
 public:
 
@@ -87,8 +99,10 @@ public:
 	virtual void Release() = 0;
 
 	virtual void SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth) = 0;
-	virtual void Render(MIRenderTarget* pRenderTarget) = 0;
-	virtual void RecoverRenderTarget(MIRenderTarget* pRenderTarget) = 0;
+	void Render(MIRenderTarget* pRenderTarget);
+	void Render(MIRenderTarget* pRenderTarget, MRenderDepthTexture* pDepthTexture);
+	virtual void RecoverRenderTarget(RenderTargetPair& pRenderTarget) = 0;
+	virtual void ClearRenderTarget(MIRenderTarget* pRenderTarget) = 0;
 
 	virtual void AddOutputView(MIRenderView* pView) = 0;
 
@@ -110,6 +124,8 @@ public:
 protected:
 	MERasterizerType m_eRasterizerType;
 	MEMaterialType m_eMaterialType;
+
+	std::stack<RenderTargetPair> m_vRenderTargets;
 };
 
 

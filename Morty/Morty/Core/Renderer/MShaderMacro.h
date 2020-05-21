@@ -22,11 +22,17 @@ public:
 
 	bool Compare(const MShaderMacro& macro);
 
+
+protected:
+
+    friend class MMaterial;
+    void SetMortyMacro(const MString& strKey, const MString& strValue);
+	void SetMacro(const MString& strKey, const MString& strValue, std::vector<std::pair<MString, MString>>& vector);
+
 public:
-
 	std::vector<std::pair<MString, MString>> m_vMacroParams;
-
-
+    
+	std::vector<std::pair<MString, MString>> m_vMortyMacroParams;
     static std::vector<std::pair<MString, MString>> s_vGlobalMacroParams;
 };
 
