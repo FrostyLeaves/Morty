@@ -100,7 +100,6 @@ void MTransparentRenderTarget::Render(MIRenderer* pRenderer, MIRenderTarget* pRe
 		}
 
 		pRenderer->Render(this, pRenderTarget->GetDepthTexture());
-		//pRenderer->Render(this);
 	}
 	
 	m_pBackRenderTarget = nullptr;
