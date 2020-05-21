@@ -218,14 +218,13 @@ void MMaterial::Decode(MString& strCode)
 	MResource* pVSRes = pManager->LoadResource(*pVS->GetString());
 	MResource* pPsRes = pManager->LoadResource(*pPS->GetString());
 
-	LoadVertexShader(pVSRes);
-	LoadPixelShader(pPsRes);
-
 	int unType = *pRasterizerType->GetInt();
 	SetRasterizerType(MERasterizerType(unType));
 	unType = *pMaterialType->GetInt();
 	SetMaterialType((MEMaterialType)unType);
 
+	LoadVertexShader(pVSRes);
+	LoadPixelShader(pPsRes);
 
 	MStruct& textures = *pTextures->GetStruct();
 	for (unsigned int i = 0; i < textures.GetMemberCount(); ++i)

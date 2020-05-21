@@ -182,9 +182,9 @@ bool MEngine::InitializeDefaultResource()
 	MResource* pDraw2DVSResource = GetResourceManager()->LoadResource("./Shader/draw.mvs");
 	MResource* pDraw2DPSResource = GetResourceManager()->LoadResource("./Shader/draw.mps");
 	MMaterialResource* pDraw2DMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW2D);
+	pDraw2DMaterialRes->SetMaterialType(MEMaterialType::EBlendTransparent);
 	pDraw2DMaterialRes->LoadVertexShader(pDraw2DVSResource);
 	pDraw2DMaterialRes->LoadPixelShader(pDraw2DPSResource);
-	pDraw2DMaterialRes->SetMaterialType(MEMaterialType::EBlendTransparent);
 
 	MResource* pDraw3DVSResource = GetResourceManager()->LoadResource("./Shader/draw3D.mvs");
 	MResource* pDraw3DPSResource = GetResourceManager()->LoadResource("./Shader/draw3D.mps");
