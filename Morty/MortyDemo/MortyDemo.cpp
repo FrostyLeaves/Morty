@@ -8,6 +8,7 @@
 #include "stdafx.h"
 #include "MEngine.h"
 #include "Type/MColor.h"
+#include "MTypedClass.h"
 
 #include "MVertex.h"
 #include "MMesh.h"
@@ -55,6 +56,7 @@
 #include "MFileHelper.h"
 
 #include "MFunction.h"
+
 
 class MyCamera : public MCamera
 {
@@ -120,7 +122,6 @@ public:
 
 	Vector3 m_v3MoveSpeed;
 };
-
 
 int main(int argc, char* argv[])
 {

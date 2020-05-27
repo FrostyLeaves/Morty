@@ -1,7 +1,7 @@
 #include "MIModelMeshInstance.h"
 #include "MModelInstance.h"
 
-MTypeIdentifierImplement(MIModelMeshInstance, MIMeshInstance)
+M_I_OBJECT_IMPLEMENT(MIModelMeshInstance, MIMeshInstance)
 
 MIModelMeshInstance::MIModelMeshInstance()
 	: MIMeshInstance()

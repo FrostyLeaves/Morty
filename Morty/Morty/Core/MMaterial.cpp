@@ -15,7 +15,7 @@
 
 #include <algorithm>
 
-MTypeIdentifierImplement(MMaterial, MResource)
+M_RESOURCE_IMPLEMENT(MMaterial, MResource)
 
 MMaterial::MMaterial()
 	: MResource()

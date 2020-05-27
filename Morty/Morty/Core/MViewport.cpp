@@ -8,7 +8,7 @@
 #include "MBounds.h"
 #include "Node/Light/MDirectionalLight.h"
 
-MTypeIdentifierImplement(MViewport, MObject)
+M_OBJECT_IMPLEMENT(MViewport, MObject)
 
 #define Vector3Intersection(a, b, p) {\
 	if ((a).x > (p).x)			\

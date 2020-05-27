@@ -1,6 +1,6 @@
 #include "MILight.h"
 
-MTypeIdentifierImplement(MILight, M3DNode)
+M_OBJECT_IMPLEMENT(MILight, M3DNode)
 
 MILight::MILight()
 	: M3DNode()

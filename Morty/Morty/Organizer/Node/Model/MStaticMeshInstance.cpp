@@ -9,7 +9,7 @@
 
 #include "MBounds.h"
 
-MTypeIdentifierImplement(MStaticMeshInstance, MIModelMeshInstance)
+M_OBJECT_IMPLEMENT(MStaticMeshInstance, MIModelMeshInstance)
 
 MStaticMeshInstance::MStaticMeshInstance()
 	: MIModelMeshInstance()

@@ -5,7 +5,7 @@
 #include "MIDevice.h"
 #include "MResourceManager.h"
 
-MTypeIdentifierImplement(MShaderResource, MResource)
+M_RESOURCE_IMPLEMENT(MShaderResource, MResource)
 
 MShaderResource::MShaderResource()
 	: MResource()

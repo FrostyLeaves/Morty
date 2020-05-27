@@ -1,9 +1,11 @@
 ﻿#include "MNode.h"
 #include "MScene.h"
+#include "MVariant.h"
+#include "Json/MJson.h"
 
 #include <queue>
 
-MTypeIdentifierImplement(MNode, MObject)
+M_OBJECT_IMPLEMENT(MNode, MObject) 
 
 MNode::MNode()
 	: MObject()
@@ -11,9 +13,9 @@ MNode::MNode()
 	, m_pParent(nullptr)
 	, m_pScene(nullptr)
 	, m_bVisibleRecursively(true)
+	, m_strName("Node")
 	, m_bVisible(true)
 {
-
 }
 
 MNode::~MNode()
@@ -231,6 +233,98 @@ void MNode::OnDelete()
 	RemoveAllNodeImpl(MENodeChildType::EFixed);
 
 	Super::OnDelete();
+}
+
+void MNode::WriteToStruct(MStruct& srt)
+{
+	if (MStruct* pStruct = FindWriteVariant<MStruct>(srt, GetTypeName()))
+	{
+		pStruct->AppendMVariant("m_strName", m_strName);
+		pStruct->AppendMVariant("m_bVisible", m_bVisible);
+	}
+}
+
+void MNode::ReadFormStruct(MStruct& srt)
+{
+	if (MStruct* pStruct = FindReadVariant<MStruct>(srt, GetTypeName()))
+	{
+		if (MString* pName = pStruct->FindMember("m_strName")->GetString())
+			SetName(*pName);
+
+		if (bool bVislble = pStruct->FindMember("m_bVisible")->IsTrue())
+			SetVisible(bVislble);
+	}
+}
+
+void MNode::WriteChildrenToStruct(MStruct& srt)
+{
+	if (MVariantArray* pArray = FindWriteVariant<MVariantArray>(srt, "Children"))
+	{
+		unsigned int unSize = m_vChildren.size();
+		pArray->Resize(unSize);
+		for (unsigned int i = 0; i < unSize; ++i)
+		{
+			(*pArray)[i] = MStruct();
+			m_vChildren[i]->WriteToStruct(*((*pArray)[i].GetVar<MStruct>()));
+		}
+	}
+
+	if (MVariantArray* pArray = FindWriteVariant<MVariantArray>(srt, "FixedChildren"))
+	{
+		unsigned int unSize = m_vFixedChildren.size();
+		pArray->Resize(unSize);
+		for (unsigned int i = 0; i < unSize; ++i)
+		{
+			(*pArray)[i] = MStruct();
+			m_vFixedChildren[i]->WriteToStruct(*((*pArray)[i].GetVar<MStruct>()));
+		}
+	}
+}
+
+void MNode::ReadChildrenFromStruct(MStruct& srt)
+{
+	if (MVariantArray* pArray = FindReadVariant<MVariantArray>(srt, "Children"))
+	{
+		unsigned int unSize = pArray->GetSize();
+		m_vChildren.resize(unSize);
+		for (unsigned int i = 0; i < unSize; ++i)
+		{
+			//m_pEngine->GetObjectManager()->CreateObject();
+			(*pArray)[i] = MStruct();
+			m_vChildren[i]->WriteToStruct(*((*pArray)[i].GetVar<MStruct>()));
+		}
+	}
+
+	if (MVariantArray* pArray = FindReadVariant<MVariantArray>(srt, "FixedChildren"))
+	{
+		unsigned int unSize = m_vFixedChildren.size();
+		pArray->Resize(unSize);
+		for (unsigned int i = 0; i < unSize; ++i)
+		{
+			(*pArray)[i] = MStruct();
+			m_vFixedChildren[i]->WriteToStruct(*((*pArray)[i].GetVar<MStruct>()));
+		}
+	}
+}
+
+void MNode::Encode(MString& strCode)
+{
+	MVariant var = MStruct();
+	MStruct* pStruct = var.GetStruct();
+
+	WriteToStruct(*pStruct);
+	WriteChildrenToStruct(*pStruct);
+
+	MJson::MVariantToJson(var, strCode);
+}
+
+void MNode::Decode(MString& strCode)
+{
+	MVariant var;
+	MJson::JsonToMVariant(strCode, var);
+
+	ReadFormStruct(*var.GetStruct());
+	//ReadChildrenToStruct(*var.GetStruct());
 }
 
 void MNode::OnTick(const float& fDelta)

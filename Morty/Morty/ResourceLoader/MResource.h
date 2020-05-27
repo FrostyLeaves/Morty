@@ -22,8 +22,18 @@ class MResourceKeeper;
 class MEngine;
 class MObject;
 
-#define M_RESOURCE(CLASSNAME) \
-MTypedClassSign(CLASSNAME)
+#define M_I_RESOURCE(Class) \
+MTypedInterfaceSign(Class)
+
+#define M_RESOURCE(Class) \
+MTypedClassSign(Class);
+
+#define M_I_RESOURCE_IMPLEMENT(Class, BaseClass) \
+MTypedInterfaceImplement(Class, BaseClass)
+
+#define M_RESOURCE_IMPLEMENT(Class, BaseClass)\
+MTypedClassImplement(Class, BaseClass)
+
 
 class MORTY_CLASS MResource : public MRefCounter, public MTypedClass
 {

@@ -1,6 +1,6 @@
 #include "MISystem.h"
 
-MTypeIdentifierImplement(MISystem, MObject)
+M_OBJECT_IMPLEMENT(MISystem, MObject)
 
 MISystem::MISystem()
     : MObject()

@@ -1,6 +1,6 @@
 #include "MPointLight.h"
 
-MTypeIdentifierImplement(MPointLight, MILight)
+M_OBJECT_IMPLEMENT(MPointLight, MILight)
 
 MPointLight::MPointLight()
 	: MILight()

@@ -46,7 +46,7 @@
 
 #include <algorithm>
 
-MTypeIdentifierImplement(MScene, MObject)
+M_OBJECT_IMPLEMENT(MScene, MObject)
 
 
 #define MSCENE_ON_NODE_ENTER( TYPE ) \

@@ -1,7 +1,7 @@
 ﻿#include "MCamera.h"
 #include "MLogManager.h"
 
-MTypeIdentifierImplement(MCamera, M3DNode)
+M_OBJECT_IMPLEMENT(MCamera, M3DNode)
 
 MCamera::MCamera()
 	: M3DNode()

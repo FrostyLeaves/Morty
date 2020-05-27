@@ -107,7 +107,7 @@ void PropertyView::CreatePropertyList(MObject* pObject)
 	m_vPropertyList.clear();
 
 	MTypeIdentifierConstPointer pointer = pObject->GetTypeIdentifier();
-	MString name = pObject->GetObjectClassName();
+	MString name = pObject->GetTypeName();
 
 	while (pointer)
 	{
