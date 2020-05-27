@@ -17,6 +17,7 @@
 #define MTypedInterfaceSign(Class) \
 public: \
 static MTypeIdentifierConstPointer GetClassTypeIdentifier(); \
+static MString GetClassTypeName(){ return Class::GetClassTypeIdentifier()->m_strName;}\
 virtual MTypeIdentifierConstPointer GetTypeIdentifier() { return Class::GetClassTypeIdentifier(); }; \
 
 

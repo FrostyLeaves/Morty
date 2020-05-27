@@ -67,6 +67,17 @@ public:
 
 	void SetOwnerEngine(MEngine* pEngine);
 
+	void InitObject(MObject* pObject)
+	{
+		pObject->m_unObjectID = m_pObjectDB->GetNewID();
+		pObject->m_pEngine = m_pEngine;
+
+		m_tObjects[pObject->m_unObjectID] = pObject;
+
+		pObject->OnCreated();
+
+	}
+
 	template<typename Object_TYPE>
 	Object_TYPE* CreateObject()
 	{
@@ -77,14 +88,22 @@ public:
 			return nullptr;
 		}
 
-		pObject->m_unObjectID = m_pObjectDB->GetNewID();
-		pObject->m_pEngine = m_pEngine;
-
-		m_tObjects[pObject->m_unObjectID] = pObject;
-
-		pObject->OnCreated();
-
+		InitObject(pObject);
 		return pObject;
+	}
+
+	MObject* CreateObject(const MString& strTypeName)
+	{
+		if (MTypedClass* pTypedIns = MTypedClass::New(strTypeName))
+		{
+			if (MObject* pObject = pTypedIns->DynamicCast<MObject>())
+			{
+				InitObject(pObject);
+				return pObject;
+			}
+		}
+
+		return nullptr;
 	}
 
 	MObject* FindObject(const MObjectID& unID)

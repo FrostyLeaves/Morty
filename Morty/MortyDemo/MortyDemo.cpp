@@ -275,6 +275,11 @@ int main(int argc, char* argv[])
 // 	pViewport->SetSize(Vector2(pTestView->GetViewWidth(), pTestView->GetViewWidth()));
 // 	pTestView->AppendViewport(pViewport);
 
+	MString code;
+	pRootNode->Encode(code);
+
+	MFileHelper::WriteString("D:/Test.json", code);
+
 	while (engine.MainLoop());
 
 
