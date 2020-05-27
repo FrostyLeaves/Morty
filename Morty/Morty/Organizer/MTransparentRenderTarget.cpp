@@ -34,10 +34,10 @@ void MTransparentRenderTarget::OnCreated()
 	std::vector<MERenderTextureType> vTextureTypes(6);
 	vTextureTypes[0] = MERenderTextureType::ERGBA8;
 	vTextureTypes[1] = MERenderTextureType::ERGBA8;
-	vTextureTypes[2] = MERenderTextureType::ER24X8;
-	vTextureTypes[3] = MERenderTextureType::ER24X8;
-	vTextureTypes[4] = MERenderTextureType::ER24X8;
-	vTextureTypes[5] = MERenderTextureType::ER24X8;
+	vTextureTypes[2] = MERenderTextureType::ER32;
+	vTextureTypes[3] = MERenderTextureType::ER32;
+	vTextureTypes[4] = MERenderTextureType::ER32;
+	vTextureTypes[5] = MERenderTextureType::ER32;
 
 	Initialize(MTextureRenderTarget::ERenderBack | MTextureRenderTarget::ERenderDepth, 0, 0, vTextureTypes);
 

@@ -27,7 +27,7 @@ struct MShaderParam;
 enum MERenderTextureType
 {
 	ERGBA8 = 0,
-	ER24X8 = 1
+	ER32 = 1
 };
 
 class MORTY_CLASS MIDevice

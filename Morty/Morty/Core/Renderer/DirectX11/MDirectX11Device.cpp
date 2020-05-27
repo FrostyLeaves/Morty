@@ -440,7 +440,7 @@ void MDirectX11Device::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppText
 		desc.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
 		shaderResourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		break;
-	case MERenderTextureType::ER24X8:
+	case MERenderTextureType::ER32:
 		desc.Format = DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT;
 		shaderResourceViewDesc.Format = DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT;
 		break;
