@@ -14,7 +14,7 @@
 #include "MSkeleton.h"
 
 
-MTypeIdentifierImplement(MShadowTextureRenderTarget, MTextureRenderTarget)
+M_OBJECT_IMPLEMENT(MShadowTextureRenderTarget, MTextureRenderTarget)
 
 MShadowTextureRenderTarget::MShadowTextureRenderTarget()
 	: MTextureRenderTarget()

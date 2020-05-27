@@ -1,6 +1,6 @@
 #include "MInputNode.h"
 
-MTypeIdentifierImplement(MInputNode, MNode)
+M_OBJECT_IMPLEMENT(MInputNode, MNode)
 
 MInputNode::MInputNode()
     : MNode()

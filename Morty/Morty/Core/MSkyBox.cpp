@@ -12,7 +12,7 @@
 #include "Node/Model/MStaticMeshInstance.h"
 
 
-MTypeIdentifierImplement(MSkyBox, MObject)
+M_OBJECT_IMPLEMENT(MSkyBox, MObject)
 
 MSkyBox::MSkyBox()
 	: MObject()

@@ -5,7 +5,7 @@
 
 #include "MBounds.h"
 
-MTypeIdentifierImplement(MSkinnedMeshInstance, MIModelMeshInstance)
+M_OBJECT_IMPLEMENT(MSkinnedMeshInstance, MIModelMeshInstance)
 
 MSkinnedMeshInstance::MSkinnedMeshInstance()
 	: MIModelMeshInstance()

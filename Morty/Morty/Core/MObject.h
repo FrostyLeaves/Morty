@@ -16,11 +16,17 @@
 #include <vector>
 #include <map>
 
-#define M_OBJECT(CLASSNAME) \
-MTypedClassSign(CLASSNAME); \
-virtual MString GetObjectClassName() { \
-	return GetTypeIdentifier()->m_strName; \
-} 
+#define M_I_OBJECT(Class) \
+MTypedInterfaceSign(Class)
+
+#define M_OBJECT(Class) \
+MTypedClassSign(Class);
+
+#define M_I_OBJECT_IMPLEMENT(Class, BaseClass) \
+MTypedInterfaceImplement(Class, BaseClass)
+
+#define M_OBJECT_IMPLEMENT(Class, BaseClass)\
+MTypedClassImplement(Class, BaseClass)
 
 class MEngine;
 class MObjectManager;

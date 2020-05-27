@@ -6,7 +6,7 @@
 #include "MTextureResource.h"
 #include "MResourceManager.h"
 
-MTypeIdentifierImplement(MTextureCubeResource, MResource)
+M_RESOURCE_IMPLEMENT(MTextureCubeResource, MResource)
 
 MTextureCubeResource::MTextureCubeResource()
 	: MResource()

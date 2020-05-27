@@ -6,7 +6,7 @@
 
 #include "MFunction.h"
 
-MTypeIdentifierImplement(MTextureRenderTarget, MObject)
+M_OBJECT_IMPLEMENT(MTextureRenderTarget, MObject)
 
 MTextureRenderTarget::MTextureRenderTarget()
 	: MIRenderTarget()

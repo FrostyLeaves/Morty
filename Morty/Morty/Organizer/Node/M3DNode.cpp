@@ -1,6 +1,6 @@
 ﻿#include "M3DNode.h"
 
-MTypeIdentifierImplement(M3DNode, MNode)
+M_OBJECT_IMPLEMENT(M3DNode, MNode)
 
 M3DNode::M3DNode()
 	: MNode()

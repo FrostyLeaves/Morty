@@ -225,6 +225,17 @@ const MVariant& MVariant::operator=(const MVariant& var)
 	return var;
 }
 
+void MVariant::Move(MVariant& var)
+{
+	m_pData = var.m_pData;
+	m_eType = var.m_eType;
+	m_unByteSize = var.m_unByteSize;
+
+	var.m_pData = nullptr;
+	var.m_eType = ENone;
+	var.m_unByteSize = 0;
+}
+
 MVariant::~MVariant()
 {
 	Clean();
@@ -338,6 +349,18 @@ void MStruct::AppendMVariant(const MString& strName, const MVariant& var)
 	m_tVariantMap[strName] = AppendStructMember(sm);
 }
 
+MVariant* MStruct::AppendMVariant(const MString& strName)
+{
+	MStructMember sm;
+	sm.strName = strName;
+
+	unsigned int unIndex = AppendStructMember(sm);
+
+	m_tVariantMap[strName] = unIndex;
+
+	return &m_vMember[unIndex].var;
+}
+
 void MStruct::SetMember(const MString& strName, const MVariant& var)
 {
 	std::unordered_map<MString, unsigned int>::iterator iter = m_tVariantMap.find(strName);
@@ -372,6 +395,18 @@ const MVariant* MStruct::FindMember(const MString& strName) const
 	return nullptr;
 }
 
+void MStruct::Move(MStruct& sour)
+{
+	m_vMember = std::move(sour.m_vMember);
+	m_tVariantMap = std::move(sour.m_tVariantMap);
+}
+
+MVariantArray::MVariantArray(const unsigned int& unSize)
+	: MContainer()
+{
+	m_vMember.resize(unSize);
+}
+
 void MVariantArray::AppendMVariant(const MVariant& var)
 {
 	MStructMember sm;
@@ -379,6 +414,16 @@ void MVariantArray::AppendMVariant(const MVariant& var)
 	sm.var = var;
 
 	AppendStructMember(sm);
+}
+
+void MVariantArray::Resize(const unsigned int& unSize)
+{
+	m_vMember.resize(unSize);
+}
+
+void MVariantArray::Move(MVariantArray& sour)
+{
+	m_vMember = std::move(sour.m_vMember);
 }
 
 MVariant& MContainer::operator[](const unsigned int& unIndex)

@@ -32,7 +32,7 @@
 #include <algorithm>
 
 
-MTypeIdentifierImplement(MRenderSystem, MISystem)
+M_OBJECT_IMPLEMENT(MRenderSystem, MISystem)
 
 
 MRenderSystem::MRenderSystem()

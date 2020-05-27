@@ -9,7 +9,7 @@
 
 #include "MRenderSystem.h"
 
-MTypeIdentifierImplement(MTransparentRenderTarget, MTextureRenderTarget)
+M_OBJECT_IMPLEMENT(MTransparentRenderTarget, MTextureRenderTarget)
 
 MTransparentRenderTarget::MTransparentRenderTarget()
     : MTextureRenderTarget()

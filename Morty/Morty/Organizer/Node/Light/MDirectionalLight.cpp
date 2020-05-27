@@ -1,6 +1,6 @@
 #include "MDirectionalLight.h"
 
-MTypeIdentifierImplement(MDirectionalLight, MILight)
+M_OBJECT_IMPLEMENT(MDirectionalLight, MILight)
 
 MDirectionalLight::MDirectionalLight()
 	: MILight()

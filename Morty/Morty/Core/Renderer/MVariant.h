@@ -26,7 +26,7 @@ class MORTY_CLASS MVariant
 {
 public:
 
-	enum MEVariableType
+	enum MEVariantType
 	{
 		ENone = 0,
 		EBool = 1,
@@ -58,9 +58,12 @@ public:
 
 	void* GetData() const;
 	unsigned int GetSize() const;
-	MEVariableType GetType() const { return m_eType; }
+	MEVariantType GetType() const { return m_eType; }
 
-	bool IsTrue() const { return *((float*)m_pData) >= 0.5f; }
+	template <typename T>
+	T* GetVar() { return(T*)m_pData; }
+
+	bool IsTrue() const { return m_pData && *((float*)m_pData) >= 0.5f; }
 
 	int* GetInt() const { return (int*)m_pData; }
 	int* GetBool() const { return (int*)m_pData; }
@@ -75,6 +78,8 @@ public:
 
 	const MVariant& operator = (const MVariant& var);
 
+	void Move(MVariant& var);
+
 	~MVariant();
 
 	//从另一个var合并过来值
@@ -84,7 +89,7 @@ private:
 
 	void Clean();
 	unsigned char* m_pData;
-	MEVariableType m_eType;
+	MEVariantType m_eType;
 	unsigned int m_unByteSize;
 };
 
@@ -135,10 +140,14 @@ public:
 
 
 	void AppendMVariant(const MString& strName, const MVariant& var);
+	MVariant* AppendMVariant(const MString& strName);
 
 	void SetMember(const MString& strName, const MVariant& var);
 	MVariant* FindMember(const MString& strName);
 	const MVariant* FindMember(const MString& strName) const;
+
+
+	void Move(MStruct& sour);
 
 protected:
 	std::unordered_map< MString, unsigned int> m_tVariantMap;
@@ -148,10 +157,13 @@ class MORTY_CLASS MVariantArray : public MContainer
 {
 public:
 	MVariantArray() :MContainer() {}
+	MVariantArray(const unsigned int& unSize);
 	virtual ~MVariantArray() {}
 
 	void AppendMVariant(const MVariant& var);
+	void Resize(const unsigned int& unSize);
 
+	void Move(MVariantArray& sour);
 };
 
 #endif

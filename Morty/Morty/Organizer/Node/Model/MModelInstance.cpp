@@ -9,7 +9,7 @@
 
 #include "MEngine.h"
 
-MTypeIdentifierImplement(MModelInstance, M3DNode)
+M_OBJECT_IMPLEMENT(MModelInstance, M3DNode)
 
 MModelInstance::MModelInstance()
 	: M3DNode()

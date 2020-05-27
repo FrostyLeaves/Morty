@@ -1,6 +1,6 @@
 #include "MSpotLight.h"
 
-MTypeIdentifierImplement(MSpotLight, MILight)
+M_OBJECT_IMPLEMENT(MSpotLight, MILight)
 
 MSpotLight::MSpotLight()
 	: MILight()

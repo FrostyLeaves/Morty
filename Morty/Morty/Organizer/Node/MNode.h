@@ -11,6 +11,7 @@
 #include "MGlobal.h"
 #include "MObject.h"
 #include "MString.h"
+#include "MVariant.h"
 
 #include <vector>
 #include <functional>
@@ -70,6 +71,38 @@ public:
 
 	virtual void OnDelete() override;		// unbind relation
 
+
+
+//Serialize Begin
+public:
+	virtual void WriteToStruct(MStruct& srt);
+	virtual void ReadFormStruct(MStruct& srt);
+
+	void WriteChildrenToStruct(MStruct& srt);
+	void ReadChildrenFromStruct(MStruct& srt);
+
+	void Encode(MString& strCode);
+	void Decode(MString& strCode);
+
+	template <typename T>
+	T* FindWriteVariant(MStruct& srt, const MString& strName)
+	{
+		MVariant& var = *srt.AppendMVariant(strName);
+		var = T();
+		return var.GetVar<T>();
+	}
+
+	template <typename T>
+	T* FindReadVariant(MStruct& srt, const MString& strName)
+	{
+		MVariant* pVariant = srt.FindMember(strName);
+		if (nullptr == pVariant)
+			return nullptr;
+
+		return pVariant->GetVar<T>();
+	}
+//Serialize End
+
 public:
 
 	template <class T>
@@ -121,9 +154,11 @@ protected:
 	std::vector<MNode*> m_vChildren;
 	std::vector<MNode*> m_vFixedChildren;
 
-	MString m_strName;
-
 	bool m_bVisibleRecursively;
+
+
+protected:
+	MString m_strName;
 	bool m_bVisible;
 };
 
