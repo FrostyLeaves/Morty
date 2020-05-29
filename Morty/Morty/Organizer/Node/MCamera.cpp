@@ -49,3 +49,35 @@ void MCamera::SetZFar(const float& fZFar)
 	}
 }
 
+void MCamera::WriteToStruct(MStruct& srt)
+{
+	Super::WriteToStruct(srt);
+
+	M_SERIALIZER_BEGIN(Write);
+
+	M_SERIALIZER_WRITE_VALUE("CameraType", GetCameraType);
+	M_SERIALIZER_WRITE_VALUE("Fov", GetFov);
+	M_SERIALIZER_WRITE_VALUE("ZNear", GetZNear);
+	M_SERIALIZER_WRITE_VALUE("ZFar", GetZNear);
+	M_SERIALIZER_WRITE_VALUE("Width", GetWidth);
+	M_SERIALIZER_WRITE_VALUE("Height", GetHeight);
+
+	M_SERIALIZER_END;
+}
+
+void MCamera::ReadFromStruct(MStruct& srt)
+{
+	Super::ReadFromStruct(srt);
+
+	M_SERIALIZER_BEGIN(Read);
+
+	M_SERIALIZER_READ_VALUE("CameraType", SetCameraType, VarUnsafe<MECameraType>);
+	M_SERIALIZER_READ_VALUE("Fov", SetFov, Float);
+	M_SERIALIZER_READ_VALUE("ZNear", SetZNear, Float);
+	M_SERIALIZER_READ_VALUE("ZFar", SetZFar, Float);
+	M_SERIALIZER_READ_VALUE("Width", SetWidth, Float);
+	M_SERIALIZER_READ_VALUE("Height", SetHeight, Float);
+
+	M_SERIALIZER_END;
+}
+

@@ -237,33 +237,33 @@ void MNode::OnDelete()
 
 void MNode::WriteToStruct(MStruct& srt)
 {
+	MSerializer::WriteToStruct(srt);
+
+	M_SERIALIZER_BEGIN(Write);
+
+	M_SERIALIZER_WRITE_VALUE("Name", GetName);
+	M_SERIALIZER_WRITE_VALUE("Visible", GetVisible);
+
+	M_SERIALIZER_END;
+		
 	if (MString* pString = FindWriteVariant<MString>(srt, "NodeType"))
 	{
 		*pString = GetTypeName();
 	}
 
-	if (MStruct* pStruct = FindWriteVariant<MStruct>(srt, MNode::GetClassTypeName()))
-	{
-		pStruct->AppendMVariant("m_strName", m_strName);
-		pStruct->AppendMVariant("m_bVisible", m_bVisible);
-	}
-
 	WriteChildrenToStruct(srt);
 }
 
-void MNode::ReadFormStruct(MStruct& srt)
+void MNode::ReadFromStruct(MStruct& srt)
 {
-	if (MStruct* pStruct = FindReadVariant<MStruct>(srt, MNode::GetClassTypeName()))
-	{
-		if (MString* pName = pStruct->FindMember("m_strName")->GetString())
-			SetName(*pName);
+	MSerializer::ReadFromStruct(srt);
 
-		if (bool bVislble = pStruct->FindMember("m_bVisible")->IsTrue())
-			SetVisible(bVislble);
-	}
+	M_SERIALIZER_BEGIN(Read);
 
+	M_SERIALIZER_READ_VALUE("Name", SetName, String);
+	M_SERIALIZER_READ_VALUE("Visible", SetVisible, Bool);
 
-	//ReadChildrenToStruct(srt);
+	M_SERIALIZER_END;
 }
 
 void MNode::WriteChildrenToStruct(MStruct& srt)
@@ -275,7 +275,7 @@ void MNode::WriteChildrenToStruct(MStruct& srt)
 		for (unsigned int i = 0; i < unSize; ++i)
 		{
 			(*pArray)[i] = MStruct();
-			MStruct& childSrt = *((*pArray)[i].GetVar<MStruct>());
+			MStruct& childSrt = (*pArray)[i].GetVarUnsafe<MStruct>();
 			m_vChildren[i]->WriteToStruct(childSrt);
 		}
 	}
@@ -287,7 +287,7 @@ void MNode::WriteChildrenToStruct(MStruct& srt)
 		for (unsigned int i = 0; i < unSize; ++i)
 		{
 			(*pArray)[i] = MStruct();
-			m_vFixedChildren[i]->WriteToStruct(*((*pArray)[i].GetVar<MStruct>()));
+			m_vFixedChildren[i]->WriteToStruct((*pArray)[i].GetVarUnsafe<MStruct>());
 		}
 	}
 }
@@ -307,7 +307,7 @@ void MNode::ReadChildrenFromStruct(MStruct& srt)
 				{
 					if (MNode* pChildNode = pChildObject->DynamicCast<MNode>())
 					{
-						pChildNode->ReadFormStruct(childSrt);
+						pChildNode->ReadFromStruct(childSrt);
 						m_vChildren[i] = pChildNode;
 					}
 				}
@@ -327,31 +327,13 @@ void MNode::ReadChildrenFromStruct(MStruct& srt)
 				{
 					if (MNode* pChildNode = pChildObject->DynamicCast<MNode>())
 					{
-						pChildNode->ReadFormStruct(childSrt);
+						pChildNode->ReadFromStruct(childSrt);
 						m_vFixedChildren[i] = pChildNode;
 					}
 				}
 			}
 		}
 	}
-}
-
-void MNode::Encode(MString& strCode)
-{
-	MVariant var = MStruct();
-	MStruct* pStruct = var.GetStruct();
-
-	WriteToStruct(*pStruct);
-
-	MJson::MVariantToJson(var, strCode);
-}
-
-void MNode::Decode(MString& strCode)
-{
-	MVariant var;
-	MJson::JsonToMVariant(strCode, var);
-
-	ReadFormStruct(*var.GetStruct());
 }
 
 void MNode::OnTick(const float& fDelta)

@@ -1,0 +1,22 @@
+#include "MSerializer.h"
+#include "Json//MJson.h"
+
+
+
+void MSerializer::Encode(MString& strCode)
+{
+	MVariant var = MStruct();
+	MStruct* pStruct = var.GetStruct();
+
+	WriteToStruct(*pStruct);
+
+	MJson::MVariantToJson(var, strCode);
+}
+
+void MSerializer::Decode(MString& strCode)
+{
+	MVariant var;
+	MJson::JsonToMVariant(strCode, var);
+
+	ReadFromStruct(*var.GetStruct());
+}

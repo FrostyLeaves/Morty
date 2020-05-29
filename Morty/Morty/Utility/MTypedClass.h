@@ -21,10 +21,11 @@ static MString GetClassTypeName(){ return Class::GetClassTypeIdentifier()->m_str
 virtual MTypeIdentifierConstPointer GetTypeIdentifier() { return Class::GetClassTypeIdentifier(); }; \
 
 
-#define MTypedInterfaceImplement(Class, BaseClass) \
+#define MTypedInterfaceImplement(CurrClass, BaseClass) \
 typedef BaseClass Super; \
+typedef CurrClass Class;\
     MTypeIdentifierConstPointer Class::GetClassTypeIdentifier() { \
-		static const MTypeIdentifier typeIdentifier(#Class, BaseClass::GetClassTypeIdentifier()); \
+		static const MTypeIdentifier typeIdentifier(#CurrClass, BaseClass::GetClassTypeIdentifier()); \
 		return &typeIdentifier; \
 	} \
 

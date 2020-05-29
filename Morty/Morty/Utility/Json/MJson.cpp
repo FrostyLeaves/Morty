@@ -65,6 +65,18 @@ void JsonValueToMVariant(Value* pValue, MVariant& variant)
 				variant = var;
 				break;
 			}
+
+			case MVariant::EQuaternion:
+			{
+				Quaternion quat;
+				FIND_MEMBER(quat.w, pValue, "w", Float, 0.0f);
+				FIND_MEMBER(quat.x, pValue, "x", Float, 0.0f);
+				FIND_MEMBER(quat.y, pValue, "y", Float, 0.0f);
+				FIND_MEMBER(quat.z, pValue, "z", Float, 0.0f);
+				variant = quat;
+				break;
+			}
+
 			case MVariant::EMatrix3:
 			{
 				Matrix3 mat;
@@ -152,20 +164,20 @@ void MVariantToJsonValue(const MVariant& var, Value* pValue, Document& doc)
 		break;
 
 	case MVariant::EFloat:
-		pValue->SetFloat(*var.GetFloat());
+		pValue->SetFloat(var.GetFloat());
 		break;
 
 	case MVariant::EInt:
-		pValue->SetInt(*var.GetInt());
+		pValue->SetInt(var.GetInt());
 		break;
 
 	case MVariant::EString:
-		pValue->SetString((*var.GetString()).c_str(), doc.GetAllocator());
+		pValue->SetString((var.GetString()).c_str(), doc.GetAllocator());
 		break;
 
 	case MVariant::EVector3:
 	{
-		float* vFloat = var.GetFloat();
+		float* vFloat = var.CastFloatUnsafe();
 		pValue->SetObject();
 		pValue->AddMember("<T>", MVariant::EVector3, doc.GetAllocator());
 
@@ -178,7 +190,7 @@ void MVariantToJsonValue(const MVariant& var, Value* pValue, Document& doc)
 
 	case MVariant::EVector4:
 	{
-		float* vFloat = var.GetFloat();
+		float* vFloat = var.CastFloatUnsafe();
 		pValue->SetObject();
 		pValue->AddMember("<T>", MVariant::EVector4, doc.GetAllocator());
 
@@ -190,9 +202,23 @@ void MVariantToJsonValue(const MVariant& var, Value* pValue, Document& doc)
 		break;
 	}
 
+	case MVariant::EQuaternion:
+	{
+		float* vFloat = var.CastFloatUnsafe();
+		pValue->SetObject();
+		pValue->AddMember("<T>", MVariant::EQuaternion, doc.GetAllocator());
+
+		pValue->AddMember("w", vFloat[0], doc.GetAllocator());
+		pValue->AddMember("x", vFloat[1], doc.GetAllocator());
+		pValue->AddMember("y", vFloat[2], doc.GetAllocator());
+		pValue->AddMember("z", vFloat[3], doc.GetAllocator());
+
+		break;
+	}
+
 	case MVariant::EMatrix3:
 	{
-		float* vFloat = var.GetFloat();
+		float* vFloat = var.CastFloatUnsafe();
 		pValue->SetObject();
 		pValue->AddMember("<T>", MVariant::EMatrix3, doc.GetAllocator());
 
@@ -213,7 +239,7 @@ void MVariantToJsonValue(const MVariant& var, Value* pValue, Document& doc)
 
 	case MVariant::EMatrix4:
 	{
-		float* vFloat = var.GetFloat();
+		float* vFloat = var.CastFloatUnsafe();
 		pValue->SetObject();
 		pValue->AddMember("<T>", MVariant::EMatrix4, doc.GetAllocator());
 

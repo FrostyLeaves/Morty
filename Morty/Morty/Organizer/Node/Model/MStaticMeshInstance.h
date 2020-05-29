@@ -43,6 +43,15 @@ public:
 
 	virtual void OnDelete() override;
 
+public:
+
+	virtual void WriteToStruct(MStruct& srt) override;
+	virtual void ReadFromStruct(MStruct& srt) override;
+
+protected:
+
+	void SetMeshData(const MString& strModelResourcePath, const int& nIndex);
+
 protected:
 	virtual void WorldTransformDirty() override;
 	virtual void LocalTransformDirty() override;

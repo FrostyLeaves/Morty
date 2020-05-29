@@ -156,6 +156,15 @@ MVariant::MVariant(const MString& var)
 	m_unByteSize = 0;
 }
 
+MVariant::MVariant(const Quaternion& var)
+{
+	m_pData = (new unsigned char[sizeof(float) * 4]);
+	memcpy(m_pData, &var.w, sizeof(float));
+	memcpy(m_pData + sizeof(float), var.m, sizeof(float) * 3);
+	m_eType = EQuaternion;
+	m_unByteSize = sizeof(float) * 4;
+}
+
 void* MVariant::GetData() const
 {
 	if (EStruct == m_eType || EArray == m_eType)

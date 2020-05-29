@@ -6,6 +6,7 @@
 
 #include "Model/MModelResource.h"
 #include "Model/MModelMeshStruct.h"
+#include "MResourceManager.h"
 
 #include "MBounds.h"
 
@@ -84,8 +85,25 @@ void MStaticMeshInstance::SetMeshData(MModelMeshStruct* pMeshData)
 {
 	m_pMesh = pMeshData;
 
-	MMaterial* pMaterial = dynamic_cast<MMaterial*>(pMeshData->GetDefaultMaterial());
-	SetMaterial(pMaterial);
+	if (m_Material.GetResource() == nullptr)
+	{
+		MMaterial* pMaterial = dynamic_cast<MMaterial*>(m_pMesh->GetDefaultMaterial());
+		SetMaterial(pMaterial);
+	}
+}
+
+void MStaticMeshInstance::SetMeshData(const MString& strModelResourcePath, const int& nIndex)
+{
+	if (MModelResource* pModelRes = m_pEngine->GetResourceManager()->LoadResource(strModelResourcePath)->DynamicCast<MModelResource>())
+	{
+		m_pMesh = (*pModelRes->GetMeshes())[nIndex];
+
+		if (m_Material.GetResource() == nullptr)
+		{
+			MMaterial* pMaterial = dynamic_cast<MMaterial*>(m_pMesh->GetDefaultMaterial());
+			SetMaterial(pMaterial);
+		}
+	}
 }
 
 MIMesh* MStaticMeshInstance::GetMesh(const unsigned int& unDetailLevel)
@@ -100,6 +118,49 @@ void MStaticMeshInstance::OnDelete()
 	SetMaterial(nullptr);
 
 	Super::OnDelete();
+}
+
+void MStaticMeshInstance::WriteToStruct(MStruct& srt)
+{
+	Super::WriteToStruct(srt);
+
+	M_SERIALIZER_BEGIN(Write);
+	M_SERIALIZER_WRITE_VALUE("MaterialPath", GetMaterialPath);
+
+	if (m_pMesh)
+	{
+		if (MModelResource* pModelRes = m_pMesh->GetModelResource())
+		{
+			if (MVariant* pVariant = pStruct->AppendMVariant("ModelResource"))
+				*pVariant = pModelRes->GetResourcePath();
+			if (MVariant* pVariant = pStruct->AppendMVariant("MeshIndex"))
+				*pVariant = (int)m_pMesh->GetMeshIndex();
+		}
+	}
+	
+	M_SERIALIZER_END;
+}
+
+void MStaticMeshInstance::ReadFromStruct(MStruct& srt)
+{
+	Super::ReadFromStruct(srt);
+
+
+	M_SERIALIZER_BEGIN(Read);
+	M_SERIALIZER_READ_VALUE("MaterialPath", SetMaterialPath, String);
+	
+	
+	if (MString* pModelResource = FindReadVariant<MString>(*pStruct, "ModelResource"))
+	{
+		if (int* pMeshIndex = FindReadVariant<int>(*pStruct, "MeshIndex"))
+		{
+			SetMeshData(*pModelResource, *pMeshIndex);
+		}
+	}
+
+
+
+	M_SERIALIZER_END;
 }
 
 void MStaticMeshInstance::WorldTransformDirty()

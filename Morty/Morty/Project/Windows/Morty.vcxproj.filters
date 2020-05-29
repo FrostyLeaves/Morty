@@ -318,6 +318,9 @@
     <ClInclude Include="..\..\Core\Renderer\MShaderMacro.h">
       <Filter>Core\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Organizer\MSerializer.h">
+      <Filter>Organizer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -529,6 +532,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Organizer\Node\MNode.cpp">
       <Filter>Organizer\Node</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\MSerializer.cpp">
+      <Filter>Organizer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

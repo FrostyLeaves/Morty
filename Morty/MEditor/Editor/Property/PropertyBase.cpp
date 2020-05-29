@@ -208,20 +208,20 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
 	{
 	case MVariant::EBool:
 		ShowValueBegin(strVariantName);
-		bModified |= Editbool(*value.GetFloat());
+		bModified |= Editbool(*value.CastFloatUnsafe());
 		ShowValueEnd();
 		break;
 
 	case MVariant::EFloat:
 	case MVariant::EInt:
 		ShowValueBegin(strVariantName);
-		bModified |= Editfloat(*value.GetFloat());
+		bModified |= Editfloat(*value.CastFloatUnsafe());
 		ShowValueEnd();
 		break;
 
 	case MVariant::EVector3:
 		ShowValueBegin(strVariantName);
-		bModified |= EditVector3(value.GetFloat());
+		bModified |= EditVector3(value.CastFloatUnsafe());
 		ShowValueEnd();
 		break;
 

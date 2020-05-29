@@ -14,8 +14,9 @@
 
 class MIMesh;
 class MMaterial;
-class MModelMeshStruct;
 class MModelInstance;
+class MModelMeshStruct;
+class MSkeletonInstance;
 class MORTY_CLASS MIMeshInstance : public M3DNode
 {
 public:
@@ -35,13 +36,16 @@ public:
 	virtual void SetMaterial(MMaterial* pMaterial) = 0;
 	virtual MMaterial* GetMaterial() = 0;
 
+	bool SetMaterialPath(const MString& strPath);
+	MString GetMaterialPath();
+
 	virtual MBoundsAABB* GetBoundsAABB() = 0;
 	virtual MBoundsSphere* GetBoundsSphere() = 0;
 
 	virtual void SetGenerateDirLightShadow(const bool& bGenerate) = 0;
 	virtual bool GetGenerateDirLightShadow() const = 0;
 
-
+	virtual MSkeletonInstance* GetSkeletonInstance() { return nullptr; }
 
 public:
 	virtual MIMesh* GetMesh() = 0;

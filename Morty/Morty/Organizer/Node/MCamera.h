@@ -15,7 +15,7 @@ class MBoundsAABB;
 class MORTY_CLASS MCamera : public M3DNode
 {
 public:
-	enum MECameraType{
+	enum class MECameraType{
 		EPerspective = 1,
 		EOrthographic = 2,
 	};
@@ -23,7 +23,7 @@ public:
 	M_OBJECT(MCamera);
     MCamera();
     virtual ~MCamera();
-
+	
 public:
 
 	void SetCameraType(const MECameraType& eType) { m_eCameraType = eType; }
@@ -45,6 +45,10 @@ public:
 	void SetHeight(const float& fHeight) { m_fHeight = fHeight; }
 	float GetHeight() { return m_fHeight; }
 
+
+public:
+	virtual void WriteToStruct(MStruct& srt) override;
+	virtual void ReadFromStruct(MStruct& srt) override;
 
 private:
 

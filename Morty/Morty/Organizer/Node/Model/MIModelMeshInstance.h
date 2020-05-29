@@ -42,6 +42,11 @@ public:
 	void SetGenerateDirLightShadow(const bool& bGenerate) { m_bGenerateDirLightShadow = bGenerate; }
 	bool GetGenerateDirLightShadow() const;
 
+public:
+	virtual void WriteToStruct(MStruct& srt) override;
+	virtual void ReadFromStruct(MStruct& srt) override;
+
+
 private:
 	MEShadowType m_eShadowType;
 	MModelInstance* m_pModelInstance;

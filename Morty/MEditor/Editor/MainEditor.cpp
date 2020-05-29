@@ -193,7 +193,7 @@ void MainEditor::Notify_Edit_Material(const MVariant& var)
 {
 	if (var.GetType() == MVariant::EInt)
 	{
-		int unResID = *var.GetInt();
+		int unResID = var.GetInt();
 		MResource* pResource = m_pEngine->GetResourceManager()->FindResourceByID(unResID);
 		if (MMaterial* pMaterial = dynamic_cast<MMaterial*>(pResource))
 		{

@@ -1,7 +1,10 @@
 #include "MSkinnedMeshInstance.h"
 #include "MScene.h"
 #include "MMaterial.h"
+#include "Model/MModelInstance.h"
 #include "Model/MModelMeshStruct.h"
+#include "Model/MModelResource.h"
+#include "MResourceManager.h"
 
 #include "MBounds.h"
 
@@ -11,7 +14,6 @@ MSkinnedMeshInstance::MSkinnedMeshInstance()
 	: MIModelMeshInstance()
 	, m_pMesh(nullptr)
 	, m_Material()
-	, m_pSkeletonInstance(nullptr)
 	, m_bBoundsAABBDirty(true)
 	, m_bBoundsSphereDirty(true)
 {
@@ -72,9 +74,26 @@ MBoundsSphere* MSkinnedMeshInstance::GetBoundsSphere()
 void MSkinnedMeshInstance::SetMeshData(MModelMeshStruct* pMeshData)
 {
 	m_pMesh = pMeshData;
-	
-	MMaterial* pMaterial = dynamic_cast<MMaterial*>(pMeshData->GetDefaultMaterial());
-	SetMaterial(pMaterial);
+
+	if (m_Material.GetResource() == nullptr)
+	{
+		MMaterial* pMaterial = dynamic_cast<MMaterial*>(m_pMesh->GetDefaultMaterial());
+		SetMaterial(pMaterial);
+	}
+}
+
+void MSkinnedMeshInstance::SetMeshData(const MString& strModelResourcePath, const int& nIndex)
+{
+	if (MModelResource* pModelRes = m_pEngine->GetResourceManager()->LoadResource(strModelResourcePath)->DynamicCast<MModelResource>())
+	{
+		m_pMesh = (*pModelRes->GetMeshes())[nIndex];
+
+		if (m_Material.GetResource() == nullptr)
+		{
+			MMaterial* pMaterial = dynamic_cast<MMaterial*>(m_pMesh->GetDefaultMaterial());
+			SetMaterial(pMaterial);
+		}
+	}
 }
 
 MIMesh* MSkinnedMeshInstance::GetMesh(const unsigned int& unDetailLevel)
@@ -82,6 +101,14 @@ MIMesh* MSkinnedMeshInstance::GetMesh(const unsigned int& unDetailLevel)
 	if (unDetailLevel == MMESH_LOD_LEVEL_RANGE)
 		return m_pMesh->GetMesh();
 	else return m_pMesh->GetLevelMesh(unDetailLevel);
+}
+
+MSkeletonInstance* MSkinnedMeshInstance::GetSkeletonInstance()
+{
+	if (MModelInstance* pModelIns = GetParent()->DynamicCast<MModelInstance>())
+		return pModelIns->GetSkeleton();
+
+	return nullptr;
 }
 
 void MSkinnedMeshInstance::OnDelete()
@@ -108,4 +135,47 @@ void MSkinnedMeshInstance::LocalTransformDirty()
 	MIMeshInstance::LocalTransformDirty();
 
 	m_bBoundsAABBDirty = true;
+}
+
+void MSkinnedMeshInstance::WriteToStruct(MStruct& srt)
+{
+	Super::WriteToStruct(srt);
+
+	M_SERIALIZER_BEGIN(Write);
+	M_SERIALIZER_WRITE_VALUE("MaterialPath", GetMaterialPath);
+
+	if (m_pMesh)
+	{
+		if (MModelResource* pModelRes = m_pMesh->GetModelResource())
+		{
+			if (MVariant* pVariant = pStruct->AppendMVariant("ModelResource"))
+				*pVariant = pModelRes->GetResourcePath();
+			if (MVariant* pVariant = pStruct->AppendMVariant("MeshIndex"))
+				*pVariant = (int)m_pMesh->GetMeshIndex();
+		}
+	}
+
+	M_SERIALIZER_END;
+}
+
+void MSkinnedMeshInstance::ReadFromStruct(MStruct& srt)
+{
+	Super::ReadFromStruct(srt);
+
+
+	M_SERIALIZER_BEGIN(Read);
+	M_SERIALIZER_READ_VALUE("MaterialPath", SetMaterialPath, String);
+
+
+	if (MString* pModelResource = FindReadVariant<MString>(*pStruct, "ModelResource"))
+	{
+		if (int* pMeshIndex = FindReadVariant<int>(*pStruct, "MeshIndex"))
+		{
+			SetMeshData(*pModelResource, *pMeshIndex);
+		}
+	}
+
+
+
+	M_SERIALIZER_END;
 }

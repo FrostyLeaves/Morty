@@ -54,6 +54,11 @@ public:
 public:
 	virtual bool AddNodeImpl(MNode* pNode, const MENodeChildType& etype) override;
 	void UpdateWorldTransform();
+
+public:
+	virtual void WriteToStruct(MStruct& srt) override;
+	virtual void ReadFromStruct(MStruct& srt) override;
+
 protected:
 	static void WorldTransformDirtyRecursively(MNode* pNode);
 

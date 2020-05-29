@@ -8,6 +8,7 @@
 #include "MBounds.h"
 
 #include "MEngine.h"
+#include "MResourceManager.h"
 
 M_OBJECT_IMPLEMENT(MModelInstance, M3DNode)
 
@@ -25,11 +26,7 @@ MModelInstance::MModelInstance()
 
 MModelInstance::~MModelInstance()
 {
-	if (m_pSkeleton)
-	{
-		delete m_pSkeleton;
-		m_pSkeleton = nullptr;
-	}
+	SetSkeleton(nullptr);
 
 	if (m_pCurrentAnimationController)
 	{
@@ -48,68 +45,15 @@ MModelInstance::~MModelInstance()
 
 bool MModelInstance::Load(MResource* pResource)
 {
-	if (MModelResource* pModelRes = dynamic_cast<MModelResource*>(pResource))
-	{
-		auto UseResourceFunction = [this](const unsigned int& eReloadType) {
-			if (MModelResource* pModelResource = static_cast<MModelResource*>(m_ModelResource.GetResource()))
-			{
-				ClearSkeletonAndMesh();
-
-				if (!pModelResource->GetSkeleton()->GetAllBones().empty())
-				{
-					//Create SkeletonInstance
-					m_pSkeleton = new MSkeletonInstance(pModelResource->GetSkeleton());
-				}
-
-				//初始化Mesh的旋转矩阵
-				for (MModelMeshStruct* pMeshData : *pModelResource->GetMeshes())
-				{
-					MIModelMeshInstance* pMeshIns = nullptr;
-					if (pMeshData->GetMeshVertexType() == MModelMeshStruct::Normal)
-					{
-						MStaticMeshInstance* pStaticMeshIns = GetObjectManager()->CreateObject<MStaticMeshInstance>();
-						pStaticMeshIns->SetMeshData(pMeshData);
-						pMeshIns = pStaticMeshIns;
-					}
-					else
-					{
-						MSkinnedMeshInstance* pSkinnedMeshIns = GetObjectManager()->CreateObject<MSkinnedMeshInstance>();
-						pSkinnedMeshIns->SetSkeletonInstance(m_pSkeleton);
-						pSkinnedMeshIns->SetMeshData(pMeshData);
-						pMeshIns = pSkinnedMeshIns;
-					}
-						
-					pMeshIns->SetRotation(pMeshData->GetMeshesRotationMatrix()->GetRotation());
-
-					pMeshIns->SetName(pMeshData->GetMeshName());
-					pMeshIns->SetAttachedModelInstance(this);
-
-					AddNodeImpl(pMeshIns, MENodeChildType::EFixed);
-				}
-			}
 	
-			return true;
-		};
+	return SetResource(pResource, true);
 
-		m_ModelResource.SetResource(pModelRes);
-		m_ModelResource.SetResChangedCallback(UseResourceFunction);
-
-		UseResourceFunction(MResource::EResReloadType::EDefault);
-
-		return true;
-	}
-
-	return false;
 }
 
 void MModelInstance::ClearSkeletonAndMesh()
 {
 	SetRemoveAnimation();
-	if (m_pSkeleton)
-	{
-		delete m_pSkeleton;
-		m_pSkeleton = nullptr;
-	}
+	SetSkeleton(nullptr);
 	RemoveAllNodeImpl(MENodeChildType::EFixed);
 }
 
@@ -191,5 +135,107 @@ void MModelInstance::OnDelete()
 
 void MModelInstance::SetVisible(const bool& bVisible)
 {
-	M3DNode::SetVisible(bVisible);
+	Super::SetVisible(bVisible);
+}
+
+void MModelInstance::WriteToStruct(MStruct& srt)
+{
+	Super::WriteToStruct(srt);
+
+	M_SERIALIZER_BEGIN(Write);
+	M_SERIALIZER_WRITE_VALUE("Resource", GetResourcePath)
+
+	M_SERIALIZER_END;
+}
+
+void MModelInstance::ReadFromStruct(MStruct& srt)
+{
+	Super::ReadFromStruct(srt);
+
+	M_SERIALIZER_BEGIN(Read);
+	M_SERIALIZER_READ_VALUE("Resource", SetResourcePath, String);
+
+	M_SERIALIZER_END;
+}
+
+bool MModelInstance::SetResourcePath(const MString& strResourcePath, const bool& bLoad /*= false*/)
+{
+	if (MResource* pResource = m_pEngine->GetResourceManager()->LoadResource(strResourcePath))
+		return SetResource(pResource, bLoad);
+	
+	return false;
+}
+
+bool MModelInstance::SetResource(MResource* pResource, const bool& bLoad)
+{
+	if (MModelResource* pModelRes = dynamic_cast<MModelResource*>(pResource))
+	{
+		auto UseResourceFunction = [this](const unsigned int& eReloadType) {
+			if (MModelResource* pModelResource = static_cast<MModelResource*>(m_ModelResource.GetResource()))
+			{
+				ClearSkeletonAndMesh();
+
+				//Create SkeletonInstance
+				SetSkeleton(pModelResource->GetSkeleton());
+
+				//初始化Mesh的旋转矩阵
+				for (MModelMeshStruct* pMeshData : *pModelResource->GetMeshes())
+				{
+					MIModelMeshInstance* pMeshIns = nullptr;
+					if (pMeshData->GetMeshVertexType() == MModelMeshStruct::Normal)
+					{
+						MStaticMeshInstance* pStaticMeshIns = GetObjectManager()->CreateObject<MStaticMeshInstance>();
+						pStaticMeshIns->SetMeshData(pMeshData);
+						pMeshIns = pStaticMeshIns;
+					}
+					else
+					{
+						MSkinnedMeshInstance* pSkinnedMeshIns = GetObjectManager()->CreateObject<MSkinnedMeshInstance>();
+						pSkinnedMeshIns->SetMeshData(pMeshData);
+						pMeshIns = pSkinnedMeshIns;
+					}
+
+					pMeshIns->SetRotation(pMeshData->GetMeshesRotationMatrix()->GetRotation());
+
+					pMeshIns->SetName(pMeshData->GetMeshName());
+					pMeshIns->SetAttachedModelInstance(this);
+
+					AddNodeImpl(pMeshIns, MENodeChildType::EFixed);
+				}
+			}
+
+			return true;
+		};
+
+		m_ModelResource.SetResource(pModelRes);
+		m_ModelResource.SetResChangedCallback(UseResourceFunction);
+
+		if (bLoad)
+		{
+			UseResourceFunction(MResource::EResReloadType::EDefault);
+		}
+		else
+		{
+			if (m_pSkeleton->GetSkeletonTemplate() != pModelRes->GetSkeleton())
+				SetSkeleton(pModelRes->GetSkeleton());
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+void MModelInstance::SetSkeleton(const MSkeleton* pSkeleton)
+{
+	if (m_pSkeleton)
+	{
+		delete m_pSkeleton;
+		m_pSkeleton = nullptr;
+	}
+
+	if (pSkeleton)
+	{
+		m_pSkeleton = new MSkeletonInstance(pSkeleton);
+	}
 }

@@ -28,18 +28,20 @@ public:
 
 	enum MEVariantType
 	{
-		ENone = 0,
-		EBool = 1,
-		EInt = 2,
-		EFloat = 3,
-		EVector2 = 4,
-		EVector3 = 5,
-		EVector4 = 6,
-		EMatrix3 = 7,
-		EMatrix4 = 8,
-		EStruct = 9,
-		EArray = 10,
-		EString = 11		//Not for shader.
+		ENone,
+		EBool,
+		EInt,
+		EFloat,
+		EVector2,
+		EVector3,
+		EVector4,
+		EMatrix3,
+		EMatrix4,
+		EQuaternion,
+		EStruct,
+		EArray,
+		EString,		//Not for shader.
+		EUser,
 	};
 
 	MVariant();
@@ -51,24 +53,37 @@ public:
 	MVariant(const Vector4& var);
 	MVariant(const Matrix3& var);
 	MVariant(const Matrix4& var);
+	MVariant(const Quaternion& var);
 	MVariant(const MStruct& var);
 	MVariant(const MVariantArray& var);
 	MVariant(const MVariant& var);
 	MVariant(const MString& var);
 
+	template<typename T>
+	MVariant(const T& var);
+
 	void* GetData() const;
 	unsigned int GetSize() const;
 	MEVariantType GetType() const { return m_eType; }
 
-	template <typename T>
-	T* GetVar() { return(T*)m_pData; }
-
 	bool IsTrue() const { return m_pData && *((float*)m_pData) >= 0.5f; }
 
-	int* GetInt() const { return (int*)m_pData; }
-	int* GetBool() const { return (int*)m_pData; }
-	float* GetFloat() const { return (float*)m_pData; }
-	MString* GetString() const { return (MString*)m_pData; }
+	bool GetBool() const { return m_eType == EBool ? IsTrue() : false; }
+	const int& GetInt() const { return m_eType == EInt ? *(int*)m_pData : 0; }
+	const float& GetFloat() const { return m_eType == EFloat ? *(float*)m_pData : 0.0f; }
+	MString GetString() const { return m_eType == EString ? *(MString*)m_pData : ""; }
+	Vector2 GetVector2() const { return m_eType == EVector2 ? Vector2(((float*)m_pData)[0], ((float*)m_pData)[1]) : Vector2(); }
+	Vector3 GetVector3() const { return m_eType == EVector3 ? Vector3(((float*)m_pData)[0], ((float*)m_pData)[1], ((float*)m_pData)[2]) : Vector3(); }
+	Vector4 GetVector4() const { return m_eType == EVector4 ? Vector4(((float*)m_pData)[0], ((float*)m_pData)[1], ((float*)m_pData)[2], ((float*)m_pData)[3]) : Vector4(); }
+	Quaternion GetQuaternion() const { return m_eType == EQuaternion ? Quaternion(((float*)m_pData)[0], ((float*)m_pData)[1], ((float*)m_pData)[2], ((float*)m_pData)[3]) : Quaternion(); }
+
+	float* CastFloatUnsafe() const { return (float*)m_pData; }
+
+	template <typename T>
+	T& GetVarUnsafe() const { return *(T*)m_pData; }
+
+	template <typename T>
+	T* GetPointerUnsafe() const { return (T*)m_pData; }
 
 	MStruct* GetStruct() { return (MStruct*)m_pData; }
 	const MStruct* GetStruct() const { return (const MStruct*)m_pData; }
@@ -78,9 +93,9 @@ public:
 
 	const MVariant& operator = (const MVariant& var);
 
-	void Move(MVariant& var);
-
 	~MVariant();
+
+	void Move(MVariant& var);
 
 	//从另一个var合并过来值
 	void MergeFrom(const MVariant& var);
@@ -92,6 +107,15 @@ private:
 	MEVariantType m_eType;
 	unsigned int m_unByteSize;
 };
+
+template<typename T>
+MVariant::MVariant(const T& var)
+{
+	m_eType = EUser;
+	m_unByteSize = sizeof(T);
+	m_pData = (unsigned char*)new T();
+	memcpy(m_pData, &var, sizeof(T));
+}
 
 class MContainer
 {

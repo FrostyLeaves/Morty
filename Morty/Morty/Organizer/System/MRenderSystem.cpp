@@ -319,25 +319,23 @@ void MRenderSystem::DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pM
 
 	if (pAnimationParam)
 	{
-		if (MModelInstance* pModel = pMeshInstance->GetParent()->DynamicCast<MModelInstance>())
+		if (MSkeletonInstance* pSkeletonIns = pMeshInstance->GetSkeletonInstance())
 		{
-			if (pModel->GetSkeleton())
+			MStruct& cAnimationStruct = *pAnimationParam->var.GetStruct();
+			MVariantArray& cBonesArray = *cAnimationStruct[0].GetArray();
+
+			const std::vector<MBone*>& bones = pSkeletonIns->GetAllBones();
+			unsigned int size = bones.size();
+			if (size > MBONES_MAX_NUMBER) size = MBONES_MAX_NUMBER;
+
+			for (unsigned int i = 0; i < size; ++i)
 			{
-				MStruct& cAnimationStruct = *pAnimationParam->var.GetStruct();
-				MVariantArray& cBonesArray = *cAnimationStruct[0].GetArray();
-
-				const std::vector<MBone*>& bones = pModel->GetSkeleton()->GetAllBones();
-				unsigned int size = bones.size();
-				if (size > MBONES_MAX_NUMBER) size = MBONES_MAX_NUMBER;
-
-				for (unsigned int i = 0; i < size; ++i)
-				{
-					cBonesArray[i] = bones[i]->GetTransformInModelWorld();
-				}
-
-				pAnimationParam->SetDirty();
-				pRenderer->SetVertexShaderParam(*pAnimationParam);
+				cBonesArray[i] = bones[i]->GetTransformInModelWorld();
 			}
+
+			pAnimationParam->SetDirty();
+			pRenderer->SetVertexShaderParam(*pAnimationParam);
+
 		}
 	}
 

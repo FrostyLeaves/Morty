@@ -12,6 +12,7 @@
 #include "M3DNode.h"
 #include "MResource.h"
 
+class MSkeleton;
 class MBoundsOBB;
 class MBoundsAABB;
 class MModelResource;
@@ -33,6 +34,7 @@ public:
 	void Unload();
 
 	MModelResource* GetResource();
+	MString GetResourcePath() { return m_ModelResource.GetResourcePath(); }
 	MSkeletonInstance* GetSkeleton() { return m_pSkeleton; }
 
 	MBoundsAABB* GetBoundsAABB();
@@ -55,6 +57,16 @@ public:
 	virtual void Tick(const float& fDelta) override;
 	virtual void OnDelete() override;
 
+public:
+
+	virtual void WriteToStruct(MStruct& srt) override;
+	virtual void ReadFromStruct(MStruct& srt) override;
+
+protected:
+	bool SetResourcePath(const MString& strResourcePath, const bool& bLoad = false);
+	bool SetResource(MResource* pResource, const bool& bLoad = false);
+
+	void SetSkeleton(const MSkeleton* pSkeleton);
 
 private:
 	MBoundsAABB* m_pBoundsAABB;

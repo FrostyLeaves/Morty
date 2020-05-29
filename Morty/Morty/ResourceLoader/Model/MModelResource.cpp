@@ -103,7 +103,7 @@ bool MModelResource::Load(const MString& strResourcePath)
 	ProcessNode(scene->mRootNode, scene, vMaterialIndices, matRootRotation);
 	ProcessAnimation(scene);
 	ProcessMaterial(scene, vMaterialIndices);
-	
+
 	return true;
 }
 
@@ -131,12 +131,15 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vect
 			pSphere->SetPoints((const MByte*)pMMesh->GetVertices(), pMMesh->GetVerticesLength(), 0, pMMesh->GetVertexStructSize());
 
 			MModelMeshStruct* pMeshData = new MModelMeshStruct();
+			pMeshData->m_strName = pNode->mName.C_Str();
 			pMeshData->m_pMesh = pMMesh;
 			pMeshData->m_eVertexType = MModelMeshStruct::Skeleton;
 			pMeshData->m_matRotationMatrix = matRotation;
 			pMeshData->m_pBoundsOBB = pObb;
 			pMeshData->m_pBoundsSphere = pSphere;
+			pMeshData->m_pResource = this;
 
+			pMeshData->m_unMeshIndex = m_vMeshes.size();
 			m_vMeshes.push_back(pMeshData);
 		}
 		else
@@ -158,7 +161,9 @@ void MModelResource::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vect
 			pMeshData->m_matRotationMatrix = matRotation;
 			pMeshData->m_pBoundsOBB = pObb;
 			pMeshData->m_pBoundsSphere = pSphere;
+			pMeshData->m_pResource = this;
 
+			pMeshData->m_unMeshIndex = m_vMeshes.size();
 			m_vMeshes.push_back(pMeshData);
 		}
 

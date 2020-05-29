@@ -139,6 +139,7 @@
     <ClInclude Include="..\..\Core\Renderer\MVertex.h" />
     <ClInclude Include="..\..\Organizer\MMaterialGroup.h" />
     <ClInclude Include="..\..\Organizer\MScene.h" />
+    <ClInclude Include="..\..\Organizer\MSerializer.h" />
     <ClInclude Include="..\..\Organizer\MShadowTextureRenderTarget.h" />
     <ClInclude Include="..\..\Organizer\MTransformCoord.h" />
     <ClInclude Include="..\..\Organizer\MTransparentRenderTarget.h" />
@@ -225,6 +226,7 @@
     <ClCompile Include="..\..\Core\Renderer\MVariant.cpp" />
     <ClCompile Include="..\..\Organizer\MMaterialGroup.cpp" />
     <ClCompile Include="..\..\Organizer\MScene.cpp" />
+    <ClCompile Include="..\..\Organizer\MSerializer.cpp" />
     <ClCompile Include="..\..\Organizer\MShadowTextureRenderTarget.cpp" />
     <ClCompile Include="..\..\Organizer\MTransformCoord.cpp" />
     <ClCompile Include="..\..\Organizer\MTransparentRenderTarget.cpp" />

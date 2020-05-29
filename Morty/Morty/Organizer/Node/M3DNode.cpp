@@ -79,6 +79,32 @@ void M3DNode::UpdateWorldTransform()
 	}
 }
 
+void M3DNode::WriteToStruct(MStruct& srt)
+{
+	Super::WriteToStruct(srt);
+
+	M_SERIALIZER_BEGIN(Write);
+
+	M_SERIALIZER_WRITE_VALUE("Position", GetPosition);
+	M_SERIALIZER_WRITE_VALUE("Scale", GetScale);
+	M_SERIALIZER_WRITE_VALUE("Rotation", GetRotation);
+	
+	M_SERIALIZER_END;
+}
+
+void M3DNode::ReadFromStruct(MStruct& srt)
+{
+	Super::ReadFromStruct(srt);
+
+	M_SERIALIZER_BEGIN(Read);
+
+	M_SERIALIZER_READ_VALUE("Position", SetPosition, Vector3);
+	M_SERIALIZER_READ_VALUE("Scale", SetScale, Vector3);
+	M_SERIALIZER_READ_VALUE("Rotation", SetRotation, Quaternion);
+
+	M_SERIALIZER_END;
+}
+
 Vector3 M3DNode::GetWorldUp()
 {
 	return GetParentWorldTransform() * m_transform.GetUp();

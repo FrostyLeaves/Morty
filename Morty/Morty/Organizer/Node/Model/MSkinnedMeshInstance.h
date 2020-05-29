@@ -36,11 +36,20 @@ public:
 	virtual MIMesh* GetMesh() override { return GetMesh(GetDetailLevel()); }
 	virtual MIMesh* GetMesh(const unsigned int& unDetailLevel) override;
 
-	virtual void SetSkeletonInstance(MSkeletonInstance* pSkeletonIns) { m_pSkeletonInstance = pSkeletonIns; }
+	virtual MSkeletonInstance* GetSkeletonInstance() override;
 
 public:
 
 	virtual void OnDelete() override;
+
+public:
+
+	virtual void WriteToStruct(MStruct& srt) override;
+	virtual void ReadFromStruct(MStruct& srt) override;
+
+protected:
+
+	void SetMeshData(const MString& strModelResourcePath, const int& nIndex);
 
 protected:
 
@@ -57,8 +66,6 @@ private:
 	MBoundsSphere m_BoundsSphere;
 	bool m_bBoundsAABBDirty;
 	bool m_bBoundsSphereDirty;
-	
-	MSkeletonInstance* m_pSkeletonInstance;
 };
 
 

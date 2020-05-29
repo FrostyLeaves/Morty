@@ -21,5 +21,27 @@ MIModelMeshInstance::~MIModelMeshInstance()
 
 bool MIModelMeshInstance::GetGenerateDirLightShadow() const
 {
-	return m_bGenerateDirLightShadow && m_pModelInstance->GetGenerateDirLightShadow();
+	return m_bGenerateDirLightShadow;
+}
+
+void MIModelMeshInstance::WriteToStruct(MStruct& srt)
+{
+	Super::WriteToStruct(srt);
+
+	M_SERIALIZER_BEGIN(Write);
+	M_SERIALIZER_WRITE_VALUE("GenDirShadow", GetGenerateDirLightShadow);
+	M_SERIALIZER_WRITE_VALUE("DrawBounding", GetDrawBoundingSphere);
+	M_SERIALIZER_WRITE_VALUE("LOD", (int)GetDetailLevel);
+	M_SERIALIZER_END;
+}
+
+void MIModelMeshInstance::ReadFromStruct(MStruct& srt)
+{
+	Super::ReadFromStruct(srt);
+
+	M_SERIALIZER_BEGIN(Read);
+	M_SERIALIZER_READ_VALUE("GenDirShadow", SetGenerateDirLightShadow, Bool);
+	M_SERIALIZER_READ_VALUE("DrawBounding", SetDrawBoundingSphere, Bool);
+	M_SERIALIZER_READ_VALUE("LOD", SetDetailLevel, Int);
+	M_SERIALIZER_END;
 }

@@ -279,7 +279,7 @@ void MViewport::GetCameraFrustum(MCamera* pCamera, const float& fZNear, const fl
 {
 	UpdateMatrix();
 
-	if (MCamera::EPerspective == pCamera->GetCameraType())
+	if (MCamera::MECameraType::EPerspective == pCamera->GetCameraType())
 	{
 		float fAspect = GetWidth() / GetHeight();
 		float fHalfHeightDivideZ = (pCamera->GetFov() * 0.5f * M_PI / 180.0f);
@@ -372,7 +372,7 @@ void MViewport::UpdateMatrix()
 
 	//Update Camera and Projection Matrix.
 	MCamera* pCamera = GetCamera();
-	Matrix4 projMat = pCamera->GetCameraType() == MCamera::EPerspective
+	Matrix4 projMat = pCamera->GetCameraType() == MCamera::MECameraType::EPerspective
 		? MatrixPerspectiveFovLH(pCamera->GetFov() * 0.5f, m_v2Size.x / m_v2Size.y, pCamera->GetZNear(), pCamera->GetZFar())
 		: MatrixOrthoOffCenterLH(-pCamera->GetWidth() * 0.5f, pCamera->GetWidth() * 0.5f, pCamera->GetHeight() * 0.5f, -pCamera->GetHeight() * 0.5f, pCamera->GetZNear(), pCamera->GetZFar());
 

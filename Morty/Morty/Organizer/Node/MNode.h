@@ -12,12 +12,13 @@
 #include "MObject.h"
 #include "MString.h"
 #include "MVariant.h"
+#include "MSerializer.h"
 
 #include <vector>
 #include <functional>
 
 class MScene;
-class MORTY_CLASS MNode : public MObject
+class MORTY_CLASS MNode : public MObject, public MSerializer
 {
 public:
 	M_OBJECT(MNode);
@@ -75,70 +76,25 @@ public:
 
 //Serialize Begin
 public:
-	virtual void WriteToStruct(MStruct& srt);
-	virtual void ReadFormStruct(MStruct& srt);
+	virtual void WriteToStruct(MStruct& srt) override;
+	virtual void ReadFromStruct(MStruct& srt) override;
 
 	void WriteChildrenToStruct(MStruct& srt);
 	void ReadChildrenFromStruct(MStruct& srt);
 
-	void Encode(MString& strCode);
-	void Decode(MString& strCode);
-
-	template <typename T>
-	T* FindWriteVariant(MStruct& srt, const MString& strName)
-	{
-		MVariant& var = *srt.AppendMVariant(strName);
-		var = T();
-		return var.GetVar<T>();
-	}
-
-	template <typename T>
-	T* FindReadVariant(MStruct& srt, const MString& strName)
-	{
-		MVariant* pVariant = srt.FindMember(strName);
-		if (nullptr == pVariant)
-			return nullptr;
-
-		return pVariant->GetVar<T>();
-	}
 //Serialize End
 
 public:
 
 	template <class T>
-	T* FindFirstChildByType()
-	{
-		for (MNode* pNode : m_vChildren)
-		{
-			if (dynamic_cast<T*>(pNode))
-				return dynamic_cast<T*>(pNode);
-
-			if (T* pFindResult = pNode->FindFirstChildByType<T>())
-				return pFindResult;
-		}
-
-		return nullptr;
-	}
+	T* FindFirstChildByType();
 
 	template <class T>
-	T* FindChildrenByType()
-	{
-		std::vector<T*> vResult;
-		FindChildrenByType<T>(vResult);
-		return vResult;
-	}
+	T* FindChildrenByType();
 
 protected:
 	template <class T>
-	void FindChildrenByType(std::vector<T*>& vNodes)
-	{
-		for (MNode* pNode : m_vChildren)
-		{
-			if (dynamic_cast<T*>(pNode))
-				vNodes.push_back(static_cast<T*>(pNode));
-			pNode->FindChildrenByType<T>(vNodes);
-		}
-	}
+	void FindChildrenByType(std::vector<T*>& vNodes);
 	void FindChildrenByName(const MString& strName, std::vector<MNode*>& vNodes);
 	void FindChildrenByFunc(const SearchNodeFunction& func, std::vector<MNode*>& vNodes);
 
@@ -162,5 +118,41 @@ protected:
 	bool m_bVisible;
 };
 
+
+
+
+template <class T>
+T* MNode::FindFirstChildByType()
+{
+	for (MNode* pNode : m_vChildren)
+	{
+		if (dynamic_cast<T*>(pNode))
+			return dynamic_cast<T*>(pNode);
+
+		if (T* pFindResult = pNode->FindFirstChildByType<T>())
+			return pFindResult;
+	}
+
+	return nullptr;
+}
+
+template <class T>
+void MNode::FindChildrenByType(std::vector<T*>& vNodes)
+{
+	for (MNode* pNode : m_vChildren)
+	{
+		if (dynamic_cast<T*>(pNode))
+			vNodes.push_back(static_cast<T*>(pNode));
+		pNode->FindChildrenByType<T>(vNodes);
+	}
+}
+
+template <class T>
+T* MNode::FindChildrenByType()
+{
+	std::vector<T*> vResult;
+	FindChildrenByType<T>(vResult);
+	return vResult;
+}
 
 #endif

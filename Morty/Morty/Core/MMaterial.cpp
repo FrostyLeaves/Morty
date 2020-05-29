@@ -215,12 +215,12 @@ void MMaterial::Decode(MString& strCode)
 	if (nullptr == pTextures) return;
 	if (nullptr == pParams) return;
 
-	MResource* pVSRes = pManager->LoadResource(*pVS->GetString());
-	MResource* pPsRes = pManager->LoadResource(*pPS->GetString());
+	MResource* pVSRes = pManager->LoadResource(pVS->GetString());
+	MResource* pPsRes = pManager->LoadResource(pPS->GetString());
 
-	int unType = *pRasterizerType->GetInt();
+	int unType = pRasterizerType->GetInt();
 	SetRasterizerType(MERasterizerType(unType));
-	unType = *pMaterialType->GetInt();
+	unType = pMaterialType->GetInt();
 	SetMaterialType((MEMaterialType)unType);
 
 	LoadVertexShader(pVSRes);
@@ -232,7 +232,7 @@ void MMaterial::Decode(MString& strCode)
 		MStruct::MStructMember* pMember = textures.GetMember(i);
 		if (pMember->var.GetType() == MVariant::EString)
 		{
-			MResource* pTextureRes = pManager->LoadResource(*pMember->var.GetString());
+			MResource* pTextureRes = pManager->LoadResource(pMember->var.GetString());
 			SetTexutreParam(pMember->strName, pTextureRes);
 		}
 	}

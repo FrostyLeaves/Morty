@@ -43,6 +43,8 @@ public:
 	MResource* GetDefaultMaterial() { return m_MaterialKeeper.GetResource(); }
 	MModelResource* GetModelResource() { return m_pResource; }
 
+	unsigned int GetMeshIndex() { return m_unMeshIndex; }
+
 protected:
 
 private:
@@ -56,6 +58,8 @@ private:
 	MBoundsOBB* m_pBoundsOBB;
 	MBoundsSphere* m_pBoundsSphere;
 	MResourceKeeper m_MaterialKeeper;
+
+	unsigned int m_unMeshIndex;
 	MModelResource* m_pResource;
 
 	MMultiLevelMesh* m_pMeshDetailMap;
