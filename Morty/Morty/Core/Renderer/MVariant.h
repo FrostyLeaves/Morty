@@ -69,8 +69,8 @@ public:
 	bool IsTrue() const { return m_pData && *((float*)m_pData) >= 0.5f; }
 
 	bool GetBool() const { return m_eType == EBool ? IsTrue() : false; }
-	const int& GetInt() const { return m_eType == EInt ? *(int*)m_pData : 0; }
-	const float& GetFloat() const { return m_eType == EFloat ? *(float*)m_pData : 0.0f; }
+	int GetInt() const { return m_eType == EInt ? *(int*)m_pData : 0; }
+	float GetFloat() const { return m_eType == EFloat ? *(float*)m_pData : 0.0f; }
 	MString GetString() const { return m_eType == EString ? *(MString*)m_pData : ""; }
 	Vector2 GetVector2() const { return m_eType == EVector2 ? Vector2(((float*)m_pData)[0], ((float*)m_pData)[1]) : Vector2(); }
 	Vector3 GetVector3() const { return m_eType == EVector3 ? Vector3(((float*)m_pData)[0], ((float*)m_pData)[1], ((float*)m_pData)[2]) : Vector3(); }
@@ -159,7 +159,8 @@ protected:
 class MORTY_CLASS MStruct : public MContainer
 {
 public:
-	MStruct():MContainer() {}
+	MStruct() :MContainer()
+		, m_tVariantMap() {}
 	virtual ~MStruct() {}
 
 

@@ -216,7 +216,7 @@ bool MModelInstance::SetResource(MResource* pResource, const bool& bLoad)
 		}
 		else
 		{
-			if (m_pSkeleton->GetSkeletonTemplate() != pModelRes->GetSkeleton())
+			if (nullptr == m_pSkeleton || m_pSkeleton->GetSkeletonTemplate() != pModelRes->GetSkeleton())
 				SetSkeleton(pModelRes->GetSkeleton());
 		}
 

@@ -1,6 +1,7 @@
 #include "MFileHelper.h"
 
-#include <fstream> 
+#include <fstream>
+#include <sstream>
 
 MFileHelper::MFileHelper()
 {
@@ -34,8 +35,9 @@ bool MFileHelper::ReadString(const MString& strFilePath, MString& strData)
 		return false;
 
 	strData.clear();
-
-	file >> strData;
+	std::stringstream buffer;
+	buffer << file.rdbuf();
+	strData = buffer.str();
 
 	file.close();
 

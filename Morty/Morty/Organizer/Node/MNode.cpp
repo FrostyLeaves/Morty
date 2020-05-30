@@ -264,6 +264,8 @@ void MNode::ReadFromStruct(MStruct& srt)
 	M_SERIALIZER_READ_VALUE("Visible", SetVisible, Bool);
 
 	M_SERIALIZER_END;
+
+	ReadChildrenFromStruct(srt);
 }
 
 void MNode::WriteChildrenToStruct(MStruct& srt)
@@ -296,19 +298,20 @@ void MNode::ReadChildrenFromStruct(MStruct& srt)
 {
 	if (MVariantArray* pArray = FindReadVariant<MVariantArray>(srt, "Children"))
 	{
-		unsigned int unSize = pArray->GetSize();
-		m_vChildren.resize(unSize);
+		unsigned int unSize = pArray->GetMemberCount();
+		//m_vChildren.resize(unSize);
 		for (unsigned int i = 0; i < unSize; ++i)
 		{
 			MStruct& childSrt = *(*pArray)[i].GetStruct();
-			if (MString* pString = FindWriteVariant<MString>(childSrt, "NodeType"))
+			if (MString* pString = FindReadVariant<MString>(childSrt, "NodeType"))
 			{
 				if (MObject* pChildObject = m_pEngine->GetObjectManager()->CreateObject(*pString))
 				{
 					if (MNode* pChildNode = pChildObject->DynamicCast<MNode>())
 					{
 						pChildNode->ReadFromStruct(childSrt);
-						m_vChildren[i] = pChildNode;
+						//m_vChildren[i] = pChildNode;
+						AddNodeImpl(pChildNode, MENodeChildType::ENormal);
 					}
 				}
 			}
@@ -316,19 +319,20 @@ void MNode::ReadChildrenFromStruct(MStruct& srt)
 	}
 	if (MVariantArray* pArray = FindReadVariant<MVariantArray>(srt, "FixedChildren"))
 	{
-		unsigned int unSize = pArray->GetSize();
-		m_vFixedChildren.resize(unSize);
+		unsigned int unSize = pArray->GetMemberCount();
+		//m_vFixedChildren.resize(unSize);
 		for (unsigned int i = 0; i < unSize; ++i)
 		{
 			MStruct& childSrt = *(*pArray)[i].GetStruct();
-			if (MString* pString = FindWriteVariant<MString>(childSrt, "NodeType"))
+			if (MString* pString = FindReadVariant<MString>(childSrt, "NodeType"))
 			{
 				if (MObject* pChildObject = m_pEngine->GetObjectManager()->CreateObject(*pString))
 				{
 					if (MNode* pChildNode = pChildObject->DynamicCast<MNode>())
 					{
 						pChildNode->ReadFromStruct(childSrt);
-						m_vFixedChildren[i] = pChildNode;
+						//m_vFixedChildren[i] = pChildNode;
+						AddNodeImpl(pChildNode, MENodeChildType::EFixed);
 					}
 				}
 			}

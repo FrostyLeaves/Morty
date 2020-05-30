@@ -141,11 +141,12 @@ void JsonValueToMVariant(Value* pValue, MVariant& variant)
 	else if (pValue->IsArray())
 	{
 		Value value = pValue->GetArray();
+		unsigned int unSize = value.Size();
 		MVariantArray sut;
-		for (Value::MemberIterator iter = value.MemberBegin(); iter != value.MemberEnd(); ++iter)
+		for (unsigned int i = 0; i < unSize; ++i)
 		{
 			MVariant child;
-			JsonValueToMVariant(&iter->value, child);
+			JsonValueToMVariant(&value[i], child);
 			sut.AppendMVariant(child);
 		}
 		variant = MVariant(sut);

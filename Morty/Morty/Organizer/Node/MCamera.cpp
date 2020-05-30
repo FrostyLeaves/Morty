@@ -27,26 +27,26 @@ void MCamera::SetFov(const float& fFov)
 
 void MCamera::SetZNear(const float& fZNear)
 {
-	if (fZNear >= m_fZFar)
-	{
+//	if (fZNear >= m_fZFar)
+//	{
 		MLogManager::GetInstance()->Error("MCamera::SetZNear:   fZNear >= m_fZFar");
-	}
-	else
-	{
+// 	}
+// 	else
+// 	{
 		m_fZNear = fZNear;
-	}
+//	}
 }
 
 void MCamera::SetZFar(const float& fZFar)
 {
-	if (fZFar <= m_fZNear)
-	{
+//	if (fZFar <= m_fZNear)
+//	{
 		MLogManager::GetInstance()->Error("MCamera::SetZFar:   fZFar <= m_fZNear");
-	}
-	else
-	{
+//	}
+//	else
+//	{
 		m_fZFar = fZFar;
-	}
+//	}
 }
 
 void MCamera::WriteToStruct(MStruct& srt)
@@ -55,10 +55,10 @@ void MCamera::WriteToStruct(MStruct& srt)
 
 	M_SERIALIZER_BEGIN(Write);
 
-	M_SERIALIZER_WRITE_VALUE("CameraType", GetCameraType);
+	M_SERIALIZER_WRITE_VALUE("CameraType", (int)GetCameraType);
 	M_SERIALIZER_WRITE_VALUE("Fov", GetFov);
 	M_SERIALIZER_WRITE_VALUE("ZNear", GetZNear);
-	M_SERIALIZER_WRITE_VALUE("ZFar", GetZNear);
+	M_SERIALIZER_WRITE_VALUE("ZFar", GetZFar);
 	M_SERIALIZER_WRITE_VALUE("Width", GetWidth);
 	M_SERIALIZER_WRITE_VALUE("Height", GetHeight);
 
