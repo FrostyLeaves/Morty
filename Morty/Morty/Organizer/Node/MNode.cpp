@@ -2,6 +2,8 @@
 #include "MScene.h"
 #include "MVariant.h"
 #include "Json/MJson.h"
+#include "MFileHelper.h"
+#include "Node/MNodeResource.h"
 
 #include <queue>
 
@@ -235,6 +237,41 @@ void MNode::OnDelete()
 	Super::OnDelete();
 }
 
+bool MNode::Load(MResource* pResource)
+{
+	if (MNodeResource* pNodeResource = pResource->DynamicCast<MNodeResource>())
+	{
+		MString code;
+		if (false == MFileHelper::ReadString(pNodeResource->GetResourcePath(), code))
+		{
+			MLogManager::GetInstance()->Warning("Node Load File Failed: %s.", pNodeResource->GetResourcePath().c_str());
+			return false;
+		}
+
+		Decode(code);
+		return true;
+	}
+
+	return false;
+}
+
+MNode* MNode::CreateNodeByVariant(MEngine* pEngine, MStruct& srt)
+{
+	if (MString* pString = FindReadVariant<MString>(srt, "NodeType"))
+	{
+		if (MObject* pObject = pEngine->GetObjectManager()->CreateObject(*pString))
+		{
+			if (MNode* pNode = pObject->DynamicCast<MNode>())
+			{
+				pNode->ReadFromStruct(srt);
+				return pNode;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
 void MNode::WriteToStruct(MStruct& srt)
 {
 	MSerializer::WriteToStruct(srt);
@@ -303,17 +340,11 @@ void MNode::ReadChildrenFromStruct(MStruct& srt)
 		for (unsigned int i = 0; i < unSize; ++i)
 		{
 			MStruct& childSrt = *(*pArray)[i].GetStruct();
-			if (MString* pString = FindReadVariant<MString>(childSrt, "NodeType"))
+			if(MNode* pChildNode = CreateNodeByVariant(m_pEngine, childSrt))
 			{
-				if (MObject* pChildObject = m_pEngine->GetObjectManager()->CreateObject(*pString))
-				{
-					if (MNode* pChildNode = pChildObject->DynamicCast<MNode>())
-					{
-						pChildNode->ReadFromStruct(childSrt);
-						//m_vChildren[i] = pChildNode;
-						AddNodeImpl(pChildNode, MENodeChildType::ENormal);
-					}
-				}
+				//m_vChildren[i] = pChildNode;
+				AddNodeImpl(pChildNode, MENodeChildType::ENormal);
+			
 			}
 		}
 	}
@@ -324,17 +355,10 @@ void MNode::ReadChildrenFromStruct(MStruct& srt)
 		for (unsigned int i = 0; i < unSize; ++i)
 		{
 			MStruct& childSrt = *(*pArray)[i].GetStruct();
-			if (MString* pString = FindReadVariant<MString>(childSrt, "NodeType"))
+			if (MNode* pChildNode = CreateNodeByVariant(m_pEngine, childSrt))
 			{
-				if (MObject* pChildObject = m_pEngine->GetObjectManager()->CreateObject(*pString))
-				{
-					if (MNode* pChildNode = pChildObject->DynamicCast<MNode>())
-					{
-						pChildNode->ReadFromStruct(childSrt);
-						//m_vFixedChildren[i] = pChildNode;
-						AddNodeImpl(pChildNode, MENodeChildType::EFixed);
-					}
-				}
+				//m_vFixedChildren[i] = pChildNode;
+				AddNodeImpl(pChildNode, MENodeChildType::EFixed);
 			}
 		}
 	}

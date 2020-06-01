@@ -12,6 +12,7 @@
 #include "MObject.h"
 #include "MString.h"
 #include "MVariant.h"
+#include "MResource.h"
 #include "MSerializer.h"
 
 #include <vector>
@@ -72,10 +73,14 @@ public:
 
 	virtual void OnDelete() override;		// unbind relation
 
-
-
 //Serialize Begin
 public:
+
+
+	bool Load(MResource* pResource);
+
+	static MNode* CreateNodeByVariant(MEngine* pEngine, MStruct& var);
+
 	virtual void WriteToStruct(MStruct& srt) override;
 	virtual void ReadFromStruct(MStruct& srt) override;
 

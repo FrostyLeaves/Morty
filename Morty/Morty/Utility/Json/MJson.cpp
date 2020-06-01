@@ -309,7 +309,7 @@ void MVariantToJsonValue(const MVariant& var, Value* pValue, Document& doc)
 	}
 }
 
-void MJson::JsonToMVariant(const MString& strJson, MVariant& variant)
+bool MJson::JsonToMVariant(const MString& strJson, MVariant& variant)
 {
 	Document doc;
 	doc.Parse(strJson.c_str());
@@ -318,11 +318,11 @@ void MJson::JsonToMVariant(const MString& strJson, MVariant& variant)
 	{
 		MLogManager::GetInstance()->Error("Json Error Code : %d", doc.GetParseError());
 		variant = MVariant();
-		return;
+		return false;
 	}
 
 	 JsonValueToMVariant(&doc, variant);
-
+	 return true;
 }
 
 void MJson::MVariantToJson(const MVariant& var, MString& strJson)

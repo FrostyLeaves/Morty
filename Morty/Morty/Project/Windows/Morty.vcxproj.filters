@@ -85,6 +85,9 @@
     <Filter Include="Organizer\Component">
       <UniqueIdentifier>{1451a60e-2242-49f9-b65e-4ff1e0e19064}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ResourceLoader\Node">
+      <UniqueIdentifier>{318b8f66-d8a3-4ca9-ba5f-e161c950207b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../ReadMe.txt" />
@@ -321,6 +324,9 @@
     <ClInclude Include="..\..\Organizer\MSerializer.h">
       <Filter>Organizer</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\ResourceLoader\Node\MNodeResource.h">
+      <Filter>ResourceLoader\Node</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -535,6 +541,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Organizer\MSerializer.cpp">
       <Filter>Organizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ResourceLoader\Node\MNodeResource.cpp">
+      <Filter>ResourceLoader\Node</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

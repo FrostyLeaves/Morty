@@ -20,13 +20,13 @@ public:
 	virtual void ReadFromStruct(MStruct& srt) {};
 
 	void Encode(MString& strCode);
-	void Decode(MString& strCode);
+	bool Decode(MString& strCode);
 
 	template <typename T>
-	T* FindWriteVariant(MStruct& srt, const MString& strName);
+	static T* FindWriteVariant(MStruct& srt, const MString& strName);
 
 	template <typename T>
-	T* FindReadVariant(MStruct& srt, const MString& strName);
+	static T* FindReadVariant(MStruct& srt, const MString& strName);
 private:
 
 };

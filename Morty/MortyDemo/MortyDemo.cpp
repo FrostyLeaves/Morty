@@ -24,6 +24,7 @@
 #include "MVariant.h"
 #include "Material/MMaterialResource.h"
 #include "Texture/MTextureResource.h"
+#include "Node/MNodeResource.h"
 #include "MTexture.h"
 #include "MInputNode.h"
 #include "MIRenderer.h"
@@ -257,15 +258,22 @@ int main(int argc, char* argv[])
 
 
 
-	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
-	MString code;
-	MFileHelper::ReadString("D:/Test.json", code);
-	pRootNode->Decode(code);
+
+
 
 	MainEditor* pEditorView = new MainEditor();
 	pEditorView->Initialize(&engine, "Morty");
 	engine.AddView(pEditorView);
-	pEditorView->SetEditorNode(pRootNode);
+
+
+	if (MResource* pResource = engine.GetResourceManager()->LoadResource("D:/Test.node"))
+	{
+		if (MNodeResource* pNodeResource = pResource->DynamicCast<MNodeResource>())
+		{
+			MNode* pRootNode = pNodeResource->CreateNode();
+			pEditorView->SetEditorNode(pRootNode);
+		}
+	}
 
 // 	MScene* pScene = engine.GetObjectManager()->CreateObject<MScene>();
 //	pScene->RegisterSystem<MRenderSystem>();

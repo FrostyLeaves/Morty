@@ -20,6 +20,7 @@
 #include <vector>
 
 class MNode;
+class MResource;
 class MModelInstance;
 class MCamera;
 class MSkyBox;
@@ -98,6 +99,10 @@ public:
 
 	void InsertMaterialGroup(MIMeshInstance* pMeshInstance);
 	void RemoveMaterialGroup(MIMeshInstance* pMeshInstance);
+
+public:
+
+	void Load(MResource* pResource);
 
 protected:
 

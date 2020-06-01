@@ -29,6 +29,7 @@ public:
 		Shader = 2,
 		Material = 3,
 		Texture = 4,
+		Node = 5,
 	};
 
 public:

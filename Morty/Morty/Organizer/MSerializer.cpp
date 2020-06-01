@@ -13,10 +13,11 @@ void MSerializer::Encode(MString& strCode)
 	MJson::MVariantToJson(var, strCode);
 }
 
-void MSerializer::Decode(MString& strCode)
+bool MSerializer::Decode(MString& strCode)
 {
 	MVariant var;
 	MJson::JsonToMVariant(strCode, var);
 
 	ReadFromStruct(*var.GetStruct());
+	return true;
 }
