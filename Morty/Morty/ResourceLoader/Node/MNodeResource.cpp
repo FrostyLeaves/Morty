@@ -27,7 +27,10 @@ MNode* MNodeResource::CreateNode()
     if (MNode* pNode = MNode::CreateNodeByVariant(m_pEngine, *var.GetStruct()))
     {
         pNode->Decode(code);
+        return pNode;
     }
+
+    return nullptr;
 }
 
 void MNodeResource::SaveByNode(MNode* pNode)

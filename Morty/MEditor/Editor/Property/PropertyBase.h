@@ -64,7 +64,7 @@ public:
 		if (m_tTempValue[unRotateID].GetType() == MVariant::ENone)
 			m_tTempValue[unRotateID] = MVariant(defaultValue);
 
-		T& result = *(static_cast<T*>(m_tTempValue[unRotateID].GetData()));
+		T& result = *((T*)(m_tTempValue[unRotateID].GetData()));
 
 		return result;
 	}

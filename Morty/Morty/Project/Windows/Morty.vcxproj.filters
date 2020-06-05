@@ -327,6 +327,12 @@
     <ClInclude Include="..\..\ResourceLoader\Node\MNodeResource.h">
       <Filter>ResourceLoader\Node</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\ResourceLoader\Model\MSkeletonResource.h">
+      <Filter>ResourceLoader\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Engine\MProject.h">
+      <Filter>Core\Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -544,6 +550,12 @@
     </ClCompile>
     <ClCompile Include="..\..\ResourceLoader\Node\MNodeResource.cpp">
       <Filter>ResourceLoader\Node</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ResourceLoader\Model\MSkeletonResource.cpp">
+      <Filter>ResourceLoader\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Engine\MProject.cpp">
+      <Filter>Core\Engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -13,6 +13,7 @@
 #include "MIDPool.h"
 #include "MString.h"
 
+#include <vector>
 #include <map>
 
 class MEngine;
@@ -71,16 +72,14 @@ public:
 		return pResource;
 	}
 
+	void SetSearchPath(const std::vector<MString>& vSearchPath) { m_vSearchPath = vSearchPath; }
+
 	MEResourceType GetResourceType(const MString& strResourcePath);
 
 	MResource* LoadResource(const MString& strResourcePath, const MEResourceType& eType = MEResourceType::Default);
 	void UnloadResource(MResource* pResource);
 	
 	void Reload(const MString& strResourcePath);
-
-	void SetReloadEnabled(const bool& bReloadEnabled) { m_bReloadEnabled = bReloadEnabled; }
-	bool GetReloadEnabled() { return m_bReloadEnabled; }
-
 
 	MResource* FindResourceByID(const MResourceID& unID);
 
@@ -98,7 +97,9 @@ private:
 
 	MEngine* m_pEngine;
 
-	bool m_bReloadEnabled;
+
+	std::vector<MString> m_vSearchPath;
+
 };
 
 #endif

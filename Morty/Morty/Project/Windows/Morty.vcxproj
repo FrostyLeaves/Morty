@@ -111,6 +111,7 @@
     <ClInclude Include="../../Core\MObject.h" />
     <ClInclude Include="..\..\Core\Animation\MIAnimation.h" />
     <ClInclude Include="..\..\Core\Animation\MSkeletalAnimation.h" />
+    <ClInclude Include="..\..\Core\Engine\MProject.h" />
     <ClInclude Include="..\..\Core\Input\MInputManager.h" />
     <ClInclude Include="..\..\Core\MBounds.h" />
     <ClInclude Include="..\..\Core\MCameraFrustum.h" />
@@ -162,6 +163,7 @@
     <ClInclude Include="..\..\ResourceLoader\MFileHelper.h" />
     <ClInclude Include="..\..\ResourceLoader\Model\MMultiLevelMesh.h" />
     <ClInclude Include="..\..\ResourceLoader\Model\MModelMeshStruct.h" />
+    <ClInclude Include="..\..\ResourceLoader\Model\MSkeletonResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MResourceManager.h" />
     <ClInclude Include="..\..\ResourceLoader\Node\MNodeResource.h" />
     <ClInclude Include="..\..\ResourceLoader\Shader\MShaderResource.h" />
@@ -200,6 +202,7 @@
     <ClCompile Include="../../Morty.cpp" />
     <ClCompile Include="..\..\Core\Animation\MIAnimation.cpp" />
     <ClCompile Include="..\..\Core\Animation\MSkeletalAnimation.cpp" />
+    <ClCompile Include="..\..\Core\Engine\MProject.cpp" />
     <ClCompile Include="..\..\Core\Input\MInputManager.cpp" />
     <ClCompile Include="..\..\Core\MBounds.cpp" />
     <ClCompile Include="..\..\Core\MCameraFrustum.cpp" />
@@ -249,6 +252,7 @@
     <ClCompile Include="..\..\ResourceLoader\MFileHelper.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Model\MMultiLevelMesh.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Model\MModelMeshStruct.cpp" />
+    <ClCompile Include="..\..\ResourceLoader\Model\MSkeletonResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MResourceManager.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Node\MNodeResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Shader\MShaderResource.cpp" />

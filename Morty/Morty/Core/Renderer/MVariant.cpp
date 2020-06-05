@@ -17,11 +17,11 @@ MContainer::~MContainer()
 	}
 }
 
-void* MContainer::GetData()
+MByte* MContainer::GetData()
 {
 
 	if (nullptr == m_pData)
-		m_pData = new unsigned char[m_unByteSize];
+		m_pData = new MByte[m_unByteSize];
 
 	for (MStructMember& sm : m_vMember)
 	{
@@ -29,6 +29,17 @@ void* MContainer::GetData()
 	}
 
 	return m_pData;
+}
+
+void MContainer::MemcpyData(MByte* pData)
+{
+	if (pData)
+	{
+		for (MStructMember& sm : m_vMember)
+		{
+			sm.var.MemcpyData(pData + sm.unBeginOffset);
+		}
+	}
 }
 
 MContainer::MContainer(const MContainer& var)
@@ -65,7 +76,7 @@ const MContainer& MContainer::operator=(const MContainer& var)
 
 MVariant::MVariant(const bool& var)
 {
-	m_pData = (new unsigned char[sizeof(float) * 1]);
+	m_pData = (new MByte[sizeof(float) * 1]);
 	*(float*)(m_pData) = (var ? 1.0f : 0.0f);
 	m_eType = EBool;
 	m_unByteSize = sizeof(float);
@@ -73,7 +84,7 @@ MVariant::MVariant(const bool& var)
 
 MVariant::MVariant(const int& var)
 {
-	m_pData = (new unsigned char[sizeof(int) * 1]);
+	m_pData = (new MByte[sizeof(int) * 1]);
 	memcpy(m_pData, &var, sizeof(int) * 1);
 	m_eType = EInt;
 	m_unByteSize = sizeof(int);
@@ -81,7 +92,7 @@ MVariant::MVariant(const int& var)
 
 MVariant::MVariant(const float& var)
 {
-	m_pData = (new unsigned char[sizeof(float) * 1]);
+	m_pData = (new MByte[sizeof(float) * 1]);
 	memcpy(m_pData, &var, sizeof(float) * 1);
 	m_eType = EFloat;
 	m_unByteSize = sizeof(float);
@@ -89,7 +100,7 @@ MVariant::MVariant(const float& var)
 
 MVariant::MVariant(const Vector2& var)
 {
-	m_pData = (new unsigned char[sizeof(float) * 2]);
+	m_pData = (new MByte[sizeof(float) * 2]);
 	memcpy(m_pData, var.m, sizeof(float) * 2);
 	m_eType = EVector2;
 	m_unByteSize = sizeof(float) * 2;
@@ -97,7 +108,7 @@ MVariant::MVariant(const Vector2& var)
 
 MVariant::MVariant(const Vector3& var)
 {
-	m_pData = (new unsigned char[sizeof(float) * 3]);
+	m_pData = (new MByte[sizeof(float) * 3]);
 	memcpy(m_pData, var.m, sizeof(float) * 3);
 	m_eType = EVector3;
 	m_unByteSize = sizeof(float) * 3;
@@ -105,7 +116,7 @@ MVariant::MVariant(const Vector3& var)
 
 MVariant::MVariant(const Vector4& var)
 {
-	m_pData = (new unsigned char[sizeof(float) * 4]);
+	m_pData = (new MByte[sizeof(float) * 4]);
 	memcpy(m_pData, var.m, sizeof(float) * 4);
 	m_eType = EVector4;
 	m_unByteSize = sizeof(float) * 4;
@@ -113,7 +124,7 @@ MVariant::MVariant(const Vector4& var)
 
 MVariant::MVariant(const Matrix3& var)
 {
-	m_pData = (new unsigned char[sizeof(float) * 12]);
+	m_pData = (new MByte[sizeof(float) * 12]);
 	memcpy(m_pData + 0, var.m[0], sizeof(float) * 3);
 	memcpy(m_pData + sizeof(float) * 4, var.m[1], sizeof(float) * 3);
 	memcpy(m_pData + sizeof(float) * 8, var.m[2], sizeof(float) * 3);
@@ -123,7 +134,7 @@ MVariant::MVariant(const Matrix3& var)
 
 MVariant::MVariant(const Matrix4& var)
 {
-	m_pData = (new unsigned char[sizeof(float) * 16]);
+	m_pData = (new MByte[sizeof(float) * 16]);
 	memcpy(m_pData, var.m, sizeof(float) * 16);
 	m_eType = EMatrix4;
 	m_unByteSize = sizeof(float) * 16;
@@ -131,13 +142,13 @@ MVariant::MVariant(const Matrix4& var)
 
 MVariant::MVariant(const MStruct& var)
 {
-	m_pData = (unsigned char*)(new MStruct(var));
+	m_pData = (MByte*)(new MStruct(var));
 	m_eType = EStruct;
 }
 
 MVariant::MVariant(const MVariantArray& var)
 {
-	m_pData = (unsigned char*)(new MVariantArray(var));
+	m_pData = (MByte*)(new MVariantArray(var));
 	m_eType = EArray;
 }
 
@@ -151,26 +162,48 @@ MVariant::MVariant()
 
 MVariant::MVariant(const MString& var)
 {
-	m_pData = (unsigned char*)new MString(var);
+	m_unByteSize = var.size();
+	m_pData = (MByte*)new char[m_unByteSize];
+	memcpy(m_pData, var.c_str(), m_unByteSize);
 	m_eType = EString;
-	m_unByteSize = 0;
 }
 
 MVariant::MVariant(const Quaternion& var)
 {
-	m_pData = (new unsigned char[sizeof(float) * 4]);
+	m_pData = (new MByte[sizeof(float) * 4]);
 	memcpy(m_pData, &var.w, sizeof(float));
 	memcpy(m_pData + sizeof(float), var.m, sizeof(float) * 3);
 	m_eType = EQuaternion;
 	m_unByteSize = sizeof(float) * 4;
 }
 
-void* MVariant::GetData() const
+MByte* MVariant::GetData() const
 {
 	if (EStruct == m_eType || EArray == m_eType)
 		return ((MStruct*)(m_pData))->GetData();
 
 	return m_pData;
+}
+
+void MVariant::MemcpyData(MByte* pData)
+{
+	if (EStruct == m_eType)
+	{
+		GetStruct()->MemcpyData(pData);
+	}
+	else if (EArray == m_eType)
+	{
+		GetStruct()->MemcpyData(pData);
+	}
+	else if (EString == m_eType)
+	{
+		MString str((char*)pData);
+		*this = str;
+	}
+	else
+	{
+		memcpy(m_pData, pData, m_unByteSize);
+	}
 }
 
 unsigned int MVariant::GetSize() const
@@ -187,21 +220,21 @@ MVariant::MVariant(const MVariant& var)
 	m_unByteSize = var.GetSize();
 	if (EStruct == var.m_eType)
 	{
-		m_pData = (unsigned char*)(new MStruct());
+		m_pData = (MByte*)(new MStruct());
 		*((MStruct*)m_pData) = *((MStruct*)var.m_pData);
 	}
 	else if (EArray == var.m_eType)
 	{
-		m_pData = (unsigned char*)(new MVariantArray());
+		m_pData = (MByte*)(new MVariantArray());
 		*((MVariantArray*)m_pData) = *((MVariantArray*)var.m_pData);
 	}
 	else if (EString == var.m_eType)
 	{
-		m_pData = (unsigned char*)(new MString(*((MString*)var.m_pData)));
+		m_pData = (MByte*)(new MString(*((MString*)var.m_pData)));
 	}
 	else
 	{
-		m_pData = new unsigned char[var.m_unByteSize];
+		m_pData = new MByte[var.m_unByteSize];
 		memcpy(m_pData, var.m_pData, var.m_unByteSize);
 	}
 }
@@ -213,21 +246,17 @@ const MVariant& MVariant::operator=(const MVariant& var)
 	m_unByteSize = var.GetSize();
 	if (EStruct == var.m_eType)
 	{
-		m_pData = (unsigned char*)(new MStruct());
+		m_pData = (MByte*)(new MStruct());
 		*((MStruct*)m_pData) = *((MStruct*)var.m_pData);
 	}
 	else if (EArray == var.m_eType)
 	{
-		m_pData = (unsigned char*)(new MVariantArray());
+		m_pData = (MByte*)(new MVariantArray());
 		*((MVariantArray*)m_pData) = *((MVariantArray*)var.m_pData);
-	}
-	else if (EString == var.m_eType)
-	{
-		m_pData = (unsigned char*)(new MString(*((MString*)var.m_pData)));
 	}
 	else
 	{
-		m_pData = new unsigned char[var.m_unByteSize];
+		m_pData = new MByte[var.m_unByteSize];
 		memcpy(m_pData, var.m_pData, var.m_unByteSize);
 	}
 
@@ -326,9 +355,14 @@ unsigned int MContainer::AppendStructMember(MStructMember& mem)
 	if (unRemainder != 0 && (s_unPackSize - unRemainder) >= mem.var.GetSize())
 	{
 		mem.unBeginOffset = m_unByteSize;
-		m_vMember.push_back(mem);
-		unIndex = m_vMember.size() - 1;
 		m_unByteSize += mem.var.GetSize();
+
+		m_vMember.push_back(MStructMember());
+		m_vMember.back().strName = mem.strName;
+		m_vMember.back().unBeginOffset = mem.unBeginOffset;
+		m_vMember.back().var.Move(mem.var);
+
+		unIndex = m_vMember.size() - 1;
 	}
 	else
 	{
@@ -336,38 +370,46 @@ unsigned int MContainer::AppendStructMember(MStructMember& mem)
 			m_unByteSize = (m_unByteSize / s_unPackSize + 1) * s_unPackSize;
 
 		mem.unBeginOffset = m_unByteSize;
-		m_vMember.push_back(mem);
-		unIndex = m_vMember.size() - 1;
 		m_unByteSize += mem.var.GetSize();
+
+		m_vMember.push_back(MStructMember());
+		m_vMember.back().strName = mem.strName;
+		m_vMember.back().unBeginOffset = mem.unBeginOffset;
+		m_vMember.back().var.Move(mem.var);
+
+		unIndex = m_vMember.size() - 1;
 	}
 
 	if (m_pData)
 		delete[] m_pData;
 
-	m_pData = new unsigned char[m_unByteSize];
+	m_pData = new MByte[m_unByteSize];
 
 	return unIndex;
 }
 
-void MStruct::AppendMVariant(const MString& strName, const MVariant& var)
+MVariant* MStruct::AppendMVariant(const MString& strName, const MVariant& var)
 {
 	MStructMember sm;
 	sm.strName = strName;
 	sm.var = var;
 
 	m_tVariantMap[strName] = AppendStructMember(sm);
+
+	return &sm.var;
 }
 
-MVariant* MStruct::AppendMVariant(const MString& strName)
+MVariant* MStruct::AppendMVariantMove(const MString& strName, MVariant& var)
 {
 	MStructMember sm;
 	sm.strName = strName;
+	sm.var = MVariant();
 
-	unsigned int unIndex = AppendStructMember(sm);
+	sm.var.Move(var);
 
-	m_tVariantMap[strName] = unIndex;
+	m_tVariantMap[strName] = AppendStructMember(sm);
 
-	return &m_vMember[unIndex].var;
+	return &sm.var;
 }
 
 void MStruct::SetMember(const MString& strName, const MVariant& var)

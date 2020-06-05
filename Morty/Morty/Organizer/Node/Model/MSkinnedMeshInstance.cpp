@@ -148,10 +148,8 @@ void MSkinnedMeshInstance::WriteToStruct(MStruct& srt)
 	{
 		if (MModelResource* pModelRes = m_pMesh->GetModelResource())
 		{
-			if (MVariant* pVariant = pStruct->AppendMVariant("ModelResource"))
-				*pVariant = pModelRes->GetResourcePath();
-			if (MVariant* pVariant = pStruct->AppendMVariant("MeshIndex"))
-				*pVariant = (int)m_pMesh->GetMeshIndex();
+			pStruct->AppendMVariant("ModelResource", pModelRes->GetResourcePath());
+			pStruct->AppendMVariant("MeshIndex", (int)m_pMesh->GetMeshIndex());
 		}
 	}
 

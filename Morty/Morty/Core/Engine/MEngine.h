@@ -9,6 +9,8 @@
 #ifndef _M_MENGINE_H_
 #define _M_MENGINE_H_
 #include "MGlobal.h"
+#include "MProject.h"
+
 #include <vector>
 
 class MNode;
@@ -23,6 +25,10 @@ class MORTY_CLASS MEngine
 public:
     MEngine();
     virtual ~MEngine();
+
+public:
+
+	bool OpenProject(const MString& strProjectPath);
 
 public:
 
@@ -58,6 +64,8 @@ protected:
 	void ReleaseDefaultResource();
 
 private:
+
+	MProject m_Project;
 
 	MObjectManager* m_pObjectManager;
 	MResourceManager* m_pResourceManager;

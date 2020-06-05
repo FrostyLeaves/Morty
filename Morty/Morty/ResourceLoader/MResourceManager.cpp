@@ -23,7 +23,7 @@ m_tResSuffixToType[vSuffixList[i]] = Type; \
 MResourceManager::MResourceManager()
 	: m_ResourceDB()
 	, m_pEngine(nullptr)
-	, m_bReloadEnabled(false)
+	, m_vSearchPath({ "." })
 {
 	REGISTER_RESOURCE_TYPE(MEResourceType::Model, MModelResource, "fbx", "obj", "dae", "blend" );
 	REGISTER_RESOURCE_TYPE(MEResourceType::Shader, MShaderResource, SUFFIX_VERTEX_SHADER, SUFFIX_PIXEL_SHADER );
@@ -58,9 +58,13 @@ MResource* MResourceManager::LoadResource(const MString& strResourcePath, const 
 
 	if (pLoader = m_tResourceLoader[eResourceType])
 	{
-		if (pResource = pLoader->Load(this, strResourcePath))
+		for (MString strSearchPath : m_vSearchPath)
 		{
-			m_tPathResources[strResourcePath] = pResource;
+			if (pResource = pLoader->Load(this, strSearchPath + "/" + strResourcePath))
+			{
+				m_tPathResources[strResourcePath] = pResource;
+				break;
+			}
 		}
 	}
 
@@ -85,14 +89,11 @@ void MResourceManager::UnloadResource(MResource* pResource)
 
 void MResourceManager::Reload(const MString& strResourcePath)
 {
-	if (GetReloadEnabled())
+	std::map<MString, MResource*>::iterator iter = m_tPathResources.find(strResourcePath);
+	if (iter != m_tPathResources.end())
 	{
-		std::map<MString, MResource*>::iterator iter = m_tPathResources.find(strResourcePath);
-		if (iter != m_tPathResources.end())
-		{
-			iter->second->Load(strResourcePath);
-			iter->second->OnReload(MResource::EResReloadType::EDefault);
-		}
+		iter->second->Load(strResourcePath);
+		iter->second->OnReload(MResource::EResReloadType::EDefault);
 	}
 }
 

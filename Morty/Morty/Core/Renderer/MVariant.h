@@ -62,7 +62,9 @@ public:
 	template<typename T>
 	MVariant(const T& var);
 
-	void* GetData() const;
+	MByte* GetData() const;
+	void MemcpyData(MByte* pData);
+
 	unsigned int GetSize() const;
 	MEVariantType GetType() const { return m_eType; }
 
@@ -103,7 +105,7 @@ public:
 private:
 
 	void Clean();
-	unsigned char* m_pData;
+	MByte* m_pData;
 	MEVariantType m_eType;
 	unsigned int m_unByteSize;
 };
@@ -132,7 +134,10 @@ public:
 	};
 
 	unsigned int GetSize() const { return m_unByteSize; }
-	void* GetData();
+	MByte* GetData();
+
+	//For Serialize
+	void MemcpyData(MByte* pData);
 
 	MStructMember* GetMember(const unsigned int& unIndex) { return unIndex < m_vMember.size() ? &m_vMember[unIndex] : nullptr; }
 	const MStructMember* GetMember(const unsigned int& unIndex) const { return unIndex < m_vMember.size() ? &m_vMember[unIndex] : nullptr; }
@@ -164,8 +169,8 @@ public:
 	virtual ~MStruct() {}
 
 
-	void AppendMVariant(const MString& strName, const MVariant& var);
-	MVariant* AppendMVariant(const MString& strName);
+	MVariant* AppendMVariant(const MString& strName, const MVariant& var);
+	MVariant* AppendMVariantMove(const MString& strName, MVariant& var);
 
 	void SetMember(const MString& strName, const MVariant& var);
 	MVariant* FindMember(const MString& strName);
