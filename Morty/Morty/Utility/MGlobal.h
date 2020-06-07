@@ -21,7 +21,10 @@
 	#define MORTY_MAC
 #endif
 
+
+
 #pragma warnind( disable: 4251 )
+#pragma warnind( disable: 4275 )
 
 
 typedef unsigned long MObjectID;

@@ -98,6 +98,15 @@ void MSkeleton::SortByDeep()
 	m_vAllBones = vBones;
 }
 
+void MSkeleton::RebuildBonesMap()
+{
+	m_tBonesMap.clear();
+	for (MBone* pBone : m_vAllBones)
+	{
+		m_tBonesMap[pBone->strName] = pBone->unIndex;
+	}
+}
+
 MSkeletonInstance::MSkeletonInstance(const MSkeleton* templateSke)
 	: m_pSkeletonTemplate(templateSke)
 {

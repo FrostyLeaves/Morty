@@ -388,28 +388,13 @@ unsigned int MContainer::AppendStructMember(MStructMember& mem)
 	return unIndex;
 }
 
-MVariant* MStruct::AppendMVariant(const MString& strName, const MVariant& var)
+unsigned int MStruct::AppendMVariant(const MString& strName, const MVariant& var)
 {
 	MStructMember sm;
 	sm.strName = strName;
 	sm.var = var;
 
-	m_tVariantMap[strName] = AppendStructMember(sm);
-
-	return &sm.var;
-}
-
-MVariant* MStruct::AppendMVariantMove(const MString& strName, MVariant& var)
-{
-	MStructMember sm;
-	sm.strName = strName;
-	sm.var = MVariant();
-
-	sm.var.Move(var);
-
-	m_tVariantMap[strName] = AppendStructMember(sm);
-
-	return &sm.var;
+	return m_tVariantMap[strName] = AppendStructMember(sm);
 }
 
 void MStruct::SetMember(const MString& strName, const MVariant& var)

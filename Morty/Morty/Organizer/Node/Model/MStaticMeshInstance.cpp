@@ -131,8 +131,8 @@ void MStaticMeshInstance::WriteToStruct(MStruct& srt)
 	{
 		if (MModelResource* pModelRes = m_pMesh->GetModelResource())
 		{
-			pStruct->AppendMVariantMove("ModelResource", MVariant(pModelRes->GetResourcePath()));
-			pStruct->AppendMVariantMove("MeshIndex", MVariant((int)m_pMesh->GetMeshIndex()));
+			pStruct->AppendMVariant("ModelResource", pModelRes->GetResourcePath());
+			pStruct->AppendMVariant("MeshIndex", (int)m_pMesh->GetMeshIndex());
 		}
 	}
 	

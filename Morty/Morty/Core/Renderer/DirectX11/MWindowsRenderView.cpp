@@ -111,7 +111,7 @@ bool MWindowsRenderView::Initialize(MEngine* pEngine, const char* svWindowName)
 	int nScreenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
 	int nScreenHeight = GetSystemMetrics(SM_CYFULLSCREEN);
 
-	RECT rc = { (nScreenWidth - m_nWidth) * 0.5, (nScreenHeight - m_nHeight) * 0.5, (nScreenWidth + m_nWidth) * 0.5, (nScreenHeight + m_nHeight) * 0.5 };
+	RECT rc = { (nScreenWidth - m_nWidth) / 2, (nScreenHeight - m_nHeight) / 2, (nScreenWidth + m_nWidth) / 2, (nScreenHeight + m_nHeight) / 2 };
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, false);
 
 	m_hwnd = CreateWindow("Morty", svWindowName, WS_OVERLAPPEDWINDOW, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, NULL, NULL, s_hInstance, NULL);

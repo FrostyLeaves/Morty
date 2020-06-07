@@ -78,6 +78,7 @@ public:
 	Vector3 GetVector3() const { return m_eType == EVector3 ? Vector3(((float*)m_pData)[0], ((float*)m_pData)[1], ((float*)m_pData)[2]) : Vector3(); }
 	Vector4 GetVector4() const { return m_eType == EVector4 ? Vector4(((float*)m_pData)[0], ((float*)m_pData)[1], ((float*)m_pData)[2], ((float*)m_pData)[3]) : Vector4(); }
 	Quaternion GetQuaternion() const { return m_eType == EQuaternion ? Quaternion(((float*)m_pData)[0], ((float*)m_pData)[1], ((float*)m_pData)[2], ((float*)m_pData)[3]) : Quaternion(); }
+	Matrix4 GetMatrix4() const { return m_eType == EMatrix4 ? Matrix4((float*)m_pData) : Matrix4(); }
 
 	float* CastFloatUnsafe() const { return (float*)m_pData; }
 
@@ -119,7 +120,7 @@ MVariant::MVariant(const T& var)
 	memcpy(m_pData, &var, sizeof(T));
 }
 
-class MContainer
+class MORTY_CLASS MContainer
 {
 public:
 	MContainer();
@@ -150,6 +151,7 @@ public:
 
 protected:
 
+	//will move mem.var to owner var of array
 	unsigned int AppendStructMember(MStructMember& mem);
 
 protected:
@@ -169,8 +171,7 @@ public:
 	virtual ~MStruct() {}
 
 
-	MVariant* AppendMVariant(const MString& strName, const MVariant& var);
-	MVariant* AppendMVariantMove(const MString& strName, MVariant& var);
+	unsigned int AppendMVariant(const MString& strName, const MVariant& var);
 
 	void SetMember(const MString& strName, const MVariant& var);
 	MVariant* FindMember(const MString& strName);

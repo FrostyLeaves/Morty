@@ -51,10 +51,13 @@ public:
 	MBone* AppendBone(const MString& strName);
 	void SortByDeep();
 
+	void RebuildBonesMap();
+
 	const std::vector<MBone*>& GetAllBones() const { return m_vAllBones; }
 
 private:
 	friend class MModelResource;
+	friend class MSkeletonResource;
 	std::map<MString, unsigned int> m_tBonesMap;
 	std::vector<MBone*> m_vAllBones;
 };
