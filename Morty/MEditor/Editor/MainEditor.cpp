@@ -191,10 +191,9 @@ void MainEditor::SetRenderTarget(MIRenderTarget* pRenderTarget)
 
 void MainEditor::Notify_Edit_Material(const MVariant& var)
 {
-	if (var.GetType() == MVariant::EInt)
+	if (const int* pID = var.GetInt())
 	{
-		int unResID = var.GetInt();
-		MResource* pResource = m_pEngine->GetResourceManager()->FindResourceByID(unResID);
+		MResource* pResource = m_pEngine->GetResourceManager()->FindResourceByID(*pID);
 		if (MMaterial* pMaterial = dynamic_cast<MMaterial*>(pResource))
 		{
 			m_bShowMaterial = true;

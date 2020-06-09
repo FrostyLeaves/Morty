@@ -76,10 +76,10 @@ const MContainer& MContainer::operator=(const MContainer& var)
 
 MVariant::MVariant(const bool& var)
 {
-	m_pData = (new MByte[sizeof(float) * 1]);
-	*(float*)(m_pData) = (var ? 1.0f : 0.0f);
+	m_pData = (new MByte[sizeof(int) * 1]);
+	*(int*)(m_pData) = (var ? 1 : 0);
 	m_eType = EBool;
-	m_unByteSize = sizeof(float);
+	m_unByteSize = sizeof(int);
 }
 
 MVariant::MVariant(const int& var)
@@ -163,8 +163,8 @@ MVariant::MVariant()
 MVariant::MVariant(const MString& var)
 {
 	m_unByteSize = var.size();
-	m_pData = (MByte*)new char[m_unByteSize];
-	memcpy(m_pData, var.c_str(), m_unByteSize);
+	m_pData = (MByte*)new MString();
+	*((MString*)m_pData) = var;
 	m_eType = EString;
 }
 
@@ -215,28 +215,11 @@ unsigned int MVariant::GetSize() const
 }
 
 MVariant::MVariant(const MVariant& var)
+	: m_pData(nullptr)
+	, m_eType(ENone)
+	, m_unByteSize(0)
 {
-	m_eType = var.m_eType;
-	m_unByteSize = var.GetSize();
-	if (EStruct == var.m_eType)
-	{
-		m_pData = (MByte*)(new MStruct());
-		*((MStruct*)m_pData) = *((MStruct*)var.m_pData);
-	}
-	else if (EArray == var.m_eType)
-	{
-		m_pData = (MByte*)(new MVariantArray());
-		*((MVariantArray*)m_pData) = *((MVariantArray*)var.m_pData);
-	}
-	else if (EString == var.m_eType)
-	{
-		m_pData = (MByte*)(new MString(*((MString*)var.m_pData)));
-	}
-	else
-	{
-		m_pData = new MByte[var.m_unByteSize];
-		memcpy(m_pData, var.m_pData, var.m_unByteSize);
-	}
+	*this = var;
 }
 
 const MVariant& MVariant::operator=(const MVariant& var)
@@ -253,6 +236,10 @@ const MVariant& MVariant::operator=(const MVariant& var)
 	{
 		m_pData = (MByte*)(new MVariantArray());
 		*((MVariantArray*)m_pData) = *((MVariantArray*)var.m_pData);
+	}
+	else if (EString == var.m_eType)
+	{
+		m_pData = (MByte*)(new MString(*((MString*)var.m_pData)));
 	}
 	else
 	{
@@ -333,14 +320,17 @@ void MVariant::Clean()
 {
 	if (ENone != m_eType)
 	{
-		if (EStruct == m_eType)
-			delete ((MStruct*)m_pData);
-		else if (EArray == m_eType)
-			delete ((MVariantArray*)m_pData);
-		else if (EString == m_eType)
-			delete ((MString*)m_pData);
-		else
-			delete[] m_pData;
+		if (m_pData)
+		{
+			if (EStruct == m_eType)
+				delete ((MStruct*)m_pData);
+			else if (EArray == m_eType)
+				delete ((MVariantArray*)m_pData);
+			else if (EString == m_eType)
+				delete (MString*)m_pData;
+			else
+				delete[] m_pData;
+		}
 
 		m_eType = ENone;
 		m_unByteSize = 0;

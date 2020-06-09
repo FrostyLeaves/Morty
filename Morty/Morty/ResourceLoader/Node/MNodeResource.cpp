@@ -24,10 +24,13 @@ MNode* MNodeResource::CreateNode()
 	MVariant var;
 	MJson::JsonToMVariant(code, var);
 
-    if (MNode* pNode = MNode::CreateNodeByVariant(m_pEngine, *var.GetStruct()))
+    if (MStruct* pStruct = var.GetStruct())
     {
-        pNode->Decode(code);
-        return pNode;
+        if (MNode* pNode = MNode::CreateNodeByVariant(m_pEngine, *pStruct))
+        {
+            pNode->Decode(code);
+            return pNode;
+        }
     }
 
     return nullptr;

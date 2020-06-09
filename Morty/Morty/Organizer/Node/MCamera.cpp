@@ -71,7 +71,7 @@ void MCamera::ReadFromStruct(MStruct& srt)
 
 	M_SERIALIZER_BEGIN(Read);
 
-	M_SERIALIZER_READ_VALUE("CameraType", SetCameraType, VarUnsafe<MECameraType>);
+	M_SERIALIZER_READ_VALUE("CameraType", SetCameraType, Enum<MECameraType>);
 	M_SERIALIZER_READ_VALUE("Fov", SetFov, Float);
 	M_SERIALIZER_READ_VALUE("ZNear", SetZNear, Float);
 	M_SERIALIZER_READ_VALUE("ZFar", SetZFar, Float);

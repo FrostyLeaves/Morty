@@ -91,7 +91,7 @@ void MRenderSystem::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* 
 	DrawPainter(info);
 	DrawNormalMesh(info);
 	DrawTransparentMesh(info);
-	//	DrawSkyBox(info);
+	DrawSkyBox(info);
 	DrawModelInstance(info);
 }
 

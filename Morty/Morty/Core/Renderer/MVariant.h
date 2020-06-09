@@ -18,6 +18,15 @@
 #include <map>
 #include <unordered_map>  
 
+
+#define M_VAR_GET_FUNC(TYPE, TYPE_NAME)\
+ TYPE* Get##TYPE_NAME() { return m_eType == E##TYPE_NAME ? (TYPE*)m_pData : nullptr;} \
+\
+const TYPE* Get##TYPE_NAME() const { return m_eType == E##TYPE_NAME ? (const TYPE*)m_pData : nullptr;} \
+\
+template<> TYPE* GetTypedData<TYPE>(){ return Get##TYPE_NAME(); }\
+
+
 class MContainer;
 class MStruct;
 class MVariantArray;
@@ -70,15 +79,21 @@ public:
 
 	bool IsTrue() const { return m_pData && *((float*)m_pData) >= 0.5f; }
 
-	bool GetBool() const { return m_eType == EBool ? IsTrue() : false; }
-	int GetInt() const { return m_eType == EInt ? *(int*)m_pData : 0; }
-	float GetFloat() const { return m_eType == EFloat ? *(float*)m_pData : 0.0f; }
-	MString GetString() const { return m_eType == EString ? *(MString*)m_pData : ""; }
-	Vector2 GetVector2() const { return m_eType == EVector2 ? Vector2(((float*)m_pData)[0], ((float*)m_pData)[1]) : Vector2(); }
-	Vector3 GetVector3() const { return m_eType == EVector3 ? Vector3(((float*)m_pData)[0], ((float*)m_pData)[1], ((float*)m_pData)[2]) : Vector3(); }
-	Vector4 GetVector4() const { return m_eType == EVector4 ? Vector4(((float*)m_pData)[0], ((float*)m_pData)[1], ((float*)m_pData)[2], ((float*)m_pData)[3]) : Vector4(); }
-	Quaternion GetQuaternion() const { return m_eType == EQuaternion ? Quaternion(((float*)m_pData)[0], ((float*)m_pData)[1], ((float*)m_pData)[2], ((float*)m_pData)[3]) : Quaternion(); }
-	Matrix4 GetMatrix4() const { return m_eType == EMatrix4 ? Matrix4((float*)m_pData) : Matrix4(); }
+	template<typename T> T* GetTypedData() { return nullptr; }
+
+	int* GetBool() { return GetInt(); }
+	const int* GetBool() const { return GetInt(); }
+
+	M_VAR_GET_FUNC(int, Int);
+	M_VAR_GET_FUNC(float, Float);
+	M_VAR_GET_FUNC(MString, String);
+	M_VAR_GET_FUNC(Vector2, Vector2);
+	M_VAR_GET_FUNC(Vector3, Vector3);
+	M_VAR_GET_FUNC(Vector4, Vector4);
+	M_VAR_GET_FUNC(Quaternion, Quaternion);
+	M_VAR_GET_FUNC(Matrix4, Matrix4);
+	M_VAR_GET_FUNC(MStruct, Struct);
+	M_VAR_GET_FUNC(MVariantArray, Array);
 
 	float* CastFloatUnsafe() const { return (float*)m_pData; }
 
@@ -88,11 +103,14 @@ public:
 	template <typename T>
 	T* GetPointerUnsafe() const { return (T*)m_pData; }
 
-	MStruct* GetStruct() { return (MStruct*)m_pData; }
-	const MStruct* GetStruct() const { return (const MStruct*)m_pData; }
-	MVariantArray* GetArray() { return (MVariantArray*)m_pData; }
-	const MVariantArray* GetArray() const { return (const MVariantArray*)m_pData; }
+	template<typename T>
+	T* GetEnum() { return (T*)GetInt(); }
+
+	template<typename T>
+	const T* GetEnum() const { return (const T*)GetInt(); }
+
 	MContainer* GetContainer() { return (MContainer*)m_pData; }
+	const MContainer* GetContainer() const { return (const MContainer*)m_pData; }
 
 	const MVariant& operator = (const MVariant& var);
 
@@ -144,6 +162,14 @@ public:
 	const MStructMember* GetMember(const unsigned int& unIndex) const { return unIndex < m_vMember.size() ? &m_vMember[unIndex] : nullptr; }
 	unsigned int GetMemberCount() const { return m_vMember.size(); }
 
+	template <typename T>
+	T* GetMember(const unsigned int& unIndex)
+	{
+		if (MStructMember* pMember = GetMember(unIndex))
+			return pMember->var.GetTypedData<T>();
+		return nullptr;
+	}
+
 	const MContainer& operator = (const MContainer& var);
 	bool operator == (const MContainer& var) const;
 
@@ -177,6 +203,14 @@ public:
 	MVariant* FindMember(const MString& strName);
 	const MVariant* FindMember(const MString& strName) const;
 
+	template<typename T>
+	T* FindMember(const MString& strName)
+	{
+		if (MVariant* pVar = FindMember(strName))
+			return pVar->GetTypedData<T>();
+
+		return nullptr;
+	}
 
 	void Move(MStruct& sour);
 

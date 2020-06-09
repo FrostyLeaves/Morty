@@ -35,7 +35,7 @@ public:
 
 	//normal
 	bool Editbool(bool& value);
-	bool Editbool(float& value);
+	bool Editbool(int& value);
 	bool Editfloat(float& value, const float& fSpeed = 1.0f, const float& fMin = 0.0f, const float& fMax = 0.0f);
 	bool EditVector2(Vector2& value, const float& fSpeed = 1.0f, const float& fMin = 0.0f, const float& fMax = 0.0f);
 	bool EditVector3(Vector3& value, const float& fSpeed = 1.0f, const float& fMin = 0.0f, const float& fMax = 0.0f);

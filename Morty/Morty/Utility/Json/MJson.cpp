@@ -165,15 +165,15 @@ void MVariantToJsonValue(const MVariant& var, Value* pValue, Document& doc)
 		break;
 
 	case MVariant::EFloat:
-		pValue->SetFloat(var.GetFloat());
+		pValue->SetFloat(*var.GetFloat());
 		break;
 
 	case MVariant::EInt:
-		pValue->SetInt(var.GetInt());
+		pValue->SetInt(*var.GetInt());
 		break;
 
 	case MVariant::EString:
-		pValue->SetString((var.GetString()).c_str(), doc.GetAllocator());
+		pValue->SetString((*var.GetString()).c_str(), doc.GetAllocator());
 		break;
 
 	case MVariant::EVector3:

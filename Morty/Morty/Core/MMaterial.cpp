@@ -215,24 +215,33 @@ void MMaterial::Decode(MString& strCode)
 	if (nullptr == pTextures) return;
 	if (nullptr == pParams) return;
 
-	MResource* pVSRes = pManager->LoadResource(pVS->GetString());
-	MResource* pPsRes = pManager->LoadResource(pPS->GetString());
+	if(int* pType = pRasterizerType->GetInt())
+		SetRasterizerType(MERasterizerType(*pType));
+	
+	if(int* pType = pMaterialType->GetInt())
+		SetMaterialType(MEMaterialType(*pType));
 
-	int unType = pRasterizerType->GetInt();
-	SetRasterizerType(MERasterizerType(unType));
-	unType = pMaterialType->GetInt();
-	SetMaterialType((MEMaterialType)unType);
 
-	LoadVertexShader(pVSRes);
-	LoadPixelShader(pPsRes);
+	if (MString* pVSResourcePath = pVS->GetString())
+	{
+		MResource* pVSRes = pManager->LoadResource(*pVSResourcePath);
+		LoadVertexShader(pVSRes);
+	}
+	
+	if (MString* pPSResourcePath = pPS->GetString())
+	{
+		MResource* pPsRes = pManager->LoadResource(*pPSResourcePath);
+		LoadPixelShader(pPsRes);
+	}
+
 
 	MStruct& textures = *pTextures->GetStruct();
 	for (unsigned int i = 0; i < textures.GetMemberCount(); ++i)
 	{
 		MStruct::MStructMember* pMember = textures.GetMember(i);
-		if (pMember->var.GetType() == MVariant::EString)
+		if (MString* pResourcePath = pMember->var.GetString())
 		{
-			MResource* pTextureRes = pManager->LoadResource(pMember->var.GetString());
+			MResource* pTextureRes = pManager->LoadResource(*pResourcePath);
 			SetTexutreParam(pMember->strName, pTextureRes);
 		}
 	}

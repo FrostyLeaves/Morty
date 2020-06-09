@@ -96,12 +96,12 @@ bool PropertyBase::Editbool(bool& value)
 	return ImGui::Checkbox("", &value);
 }
 
-bool PropertyBase::Editbool(float& value)
+bool PropertyBase::Editbool(int& value)
 {
 	bool bBool = value > 1e-6;
 	if (ImGui::Checkbox("", &bBool))
 	{
-		value = bBool ? 1.0f : 0.0f;
+		value = bBool ? 1 : 0;
 		return true;
 	}
 
@@ -208,7 +208,7 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
 	{
 	case MVariant::EBool:
 		ShowValueBegin(strVariantName);
-		bModified |= Editbool(*value.CastFloatUnsafe());
+		bModified |= Editbool(*value.GetInt());
 		ShowValueEnd();
 		break;
 

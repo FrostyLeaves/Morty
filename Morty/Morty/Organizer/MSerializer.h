@@ -56,5 +56,6 @@ T* MSerializer::FindReadVariant(MStruct& srt, const MString& strName)
 
 #define M_SERIALIZER_READ_VALUE( NAME, SET_FUNC, TYPE) \
 	if(MVariant* pVariant = pStruct->FindMember(NAME)) \
-		SET_FUNC(pVariant->Get##TYPE());
+		if(auto pValue = pVariant->Get##TYPE()) \
+			SET_FUNC(*pValue);
 #endif

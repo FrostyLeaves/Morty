@@ -84,29 +84,31 @@ void MSkeletonResource::ReadFromStruct(MStruct& srt)
                     MBone* pBone = new MBone();
                     m_pSkeletonTemplate->m_vAllBones[i] = pBone;
 
-                    if (MVariant* pName = pBoneSrt->FindMember("Name"))
-                        pBone->strName = pName->GetString();
-                    if (MVariant* pIndex = pBoneSrt->FindMember("Index"))
-                        pBone->unIndex = pIndex->GetInt();
-                    if (MVariant* pParentIndex = pBoneSrt->FindMember("ParentIndex"))
-                        pBone->unParentIndex = pParentIndex->GetInt();
-                    if (MVariant* pMatTrans = pBoneSrt->FindMember("matTrans"))
-                        pBone->m_matTransform = pMatTrans->GetMatrix4();
-                    if (MVariant* pMatOffset = pBoneSrt->FindMember("matOffset"))
-                        pBone->m_matOffsetMatrix = pMatOffset->GetMatrix4();
+                    if(MString *pName = pBoneSrt->FindMember<MString>("Name"))
+                        pBone->strName = *pName;
+                    
+                    if (int* pIndex = pBoneSrt->FindMember<int>("Index"))
+                        pBone->unIndex = *pIndex;
+                    
+                    if (int* pParentIndex = pBoneSrt->FindMember<int>("ParentIndex"))
+                        pBone->unParentIndex = *pParentIndex;
+                    
+                    if (Matrix4* pMatTrans = pBoneSrt->FindMember<Matrix4>("matTrans"))
+                        pBone->m_matTransform = *pMatTrans;
+                    
+                    if (Matrix4* pMatOffset = pBoneSrt->FindMember<Matrix4>("matOffset"))
+                            pBone->m_matOffsetMatrix = *pMatOffset;
 
-                    if (MVariant* pChildren = pBoneSrt->FindMember("Children"))
+                    if (MVariantArray* pChildren = pBoneSrt->FindMember<MVariantArray>("Children"))
                     {
-                        if (MVariantArray* pChildrenArray = pChildren->GetArray())
-                        {
-                            unsigned int unChildrenCount = pChildrenArray->GetMemberCount();
-                            pBone->vChildrenIndices.resize(unChildrenCount);
+						unsigned int unChildrenCount = pChildren->GetMemberCount();
+						pBone->vChildrenIndices.resize(unChildrenCount);
 
-                            for (unsigned int cldIdx = 0; cldIdx < unChildrenCount; ++cldIdx)
-                            {
-                                pBone->vChildrenIndices[cldIdx] = pChildrenArray->GetMember(cldIdx)->var.GetInt();
-                            }
-                        }
+						for (unsigned int cldIdx = 0; cldIdx < unChildrenCount; ++cldIdx)
+						{
+                            if(int* pIndex = pChildren->GetMember<int>(cldIdx))
+							    pBone->vChildrenIndices[cldIdx] = *pIndex;
+						}
                     }
                 }
             }
