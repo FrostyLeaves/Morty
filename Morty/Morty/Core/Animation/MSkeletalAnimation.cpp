@@ -16,32 +16,41 @@ MSkeletalAnimation::~MSkeletalAnimation()
 
 }
 
-void MSkeletalAnimation::Update(const float& fTime, MSkeletonInstance* pSkeletonIns)
+void MSkeletalAnimation::Update(const float& fTime, MSkeletonInstance* pSkeletonIns, const MSkeletonAnimMap& skelAnimMap)
 {
 	const std::vector<MBone*>& bones = pSkeletonIns->GetAllBones();
 
-	for (unsigned int i = 0; i < bones.size(); ++i)
+	unsigned int unBonesSize = bones.size();
+
+	for (unsigned int i = 0; i < unBonesSize; ++i)
 	{
 		MBone* pBone = bones[i];
 // 		if(pBone->unIndex >= m_vSkeletalAnimNodes.size())
 // 			continue;
 
-		MSkeletalAnimNode* pAnimNode = m_vSkeletalAnimNodes[pBone->unIndex];
-		Matrix4 matLocalTrans;
+		int nAnimNodeIndex = skelAnimMap.m_vSkelToAnim[pBone->unIndex];
+		if(M_INVALID_INDEX == nAnimNodeIndex)
+			continue;
+
+		MSkeletalAnimNode* pAnimNode = m_vSkeletalAnimNodes[nAnimNodeIndex];
+		Matrix4 matParentTrans = pBone->unParentIndex == MBone::InvalidIndex ? Matrix4::IdentityMatrix : bones[pBone->unParentIndex]->m_matWorldTransform;
+
 		MTransform trans;
 		if (pAnimNode && FindTransform(fTime, pAnimNode, trans))
 		{
 			//Use animation transform
-			matLocalTrans = trans.GetMatrix();
+			pBone->m_matWorldTransform = matParentTrans * trans.GetMatrix();
 		}
 		else
 		{
 			//Use default transform
-			matLocalTrans = pSkeletonIns->GetBoneTemplateByIndex(i)->m_matTransform;
+			pBone->m_matWorldTransform = matParentTrans * pSkeletonIns->GetBoneTemplateByIndex(i)->m_matTransform;
 		}
+	}
 
-		Matrix4 matParentTrans = pBone->unParentIndex == MBone::InvalidIndex ? Matrix4::IdentityMatrix : bones[pBone->unParentIndex]->m_matTransform;
-		pBone->m_matTransform = matParentTrans * matLocalTrans;
+	for (MBone* pBone : bones)
+	{
+		pBone->m_matWorldTransform = pBone->m_matWorldTransform * pBone->m_matOffsetMatrix;
 	}
 
 }
@@ -148,11 +157,10 @@ bool MSkeletalAnimController::Initialize(MSkeletonInstance* pSkeletonIns, MSkele
 	if (nullptr == pSkeletonIns || nullptr == pAnimation)
 		return false;
 
-	if (pSkeletonIns->GetSkeletonTemplate() != pAnimation->GetSkeletonTemplate())
-		return false;
-
 	m_pSkeletonIns = pSkeletonIns;
 	m_pAnimation = pAnimation;
+
+	BindMapping();
 
 	m_bInitialized = true;
 
@@ -199,20 +207,20 @@ void MSkeletalAnimController::Update(const float& fDelta, const bool& bAnimStep)
 			{
 				m_fTicks = fmodf(m_fTicks, m_pAnimation->GetTicksDuration());
 				if (bAnimStep)
-					m_pAnimation->Update(fmodf(m_fTicks, m_pAnimation->GetTicksDuration()), m_pSkeletonIns);
+					m_pAnimation->Update(fmodf(m_fTicks, m_pAnimation->GetTicksDuration()), m_pSkeletonIns, m_SkeletonAnimMap);
 			}
 			else
 			{
 				m_fTicks = m_pAnimation->GetTicksDuration();
 				if (bAnimStep)
-					m_pAnimation->Update(fmodf(m_fTicks, m_pAnimation->GetTicksDuration()), m_pSkeletonIns);
+					m_pAnimation->Update(fmodf(m_fTicks, m_pAnimation->GetTicksDuration()), m_pSkeletonIns, m_SkeletonAnimMap);
 				this->Stop();
 			}
 		}
 		else
 		{
 			if (bAnimStep)
-				m_pAnimation->Update(m_fTicks, m_pSkeletonIns);
+				m_pAnimation->Update(m_fTicks, m_pSkeletonIns, m_SkeletonAnimMap);
 		}
 	}
 }
@@ -236,4 +244,29 @@ float MSkeletalAnimController::GetPercent()
 		return 0.0f;
 
 	return m_fTicks / m_pAnimation->GetTicksDuration() * 100.0f;
+}
+
+void MSkeletalAnimController::BindMapping()
+{
+	m_SkeletonAnimMap.m_vAnimToSkel.resize(m_pAnimation->GetSkeletonTemplate()->GetAllBones().size(), M_INVALID_INDEX);
+	m_SkeletonAnimMap.m_vSkelToAnim.resize(m_pSkeletonIns->GetAllBones().size(), M_INVALID_INDEX);
+
+	if (m_pSkeletonIns->GetSkeletonTemplate() == m_pAnimation->GetSkeletonTemplate())
+	{
+		for (unsigned int i = 0; i < m_SkeletonAnimMap.m_vAnimToSkel.size(); ++i)
+		{
+			m_SkeletonAnimMap.m_vSkelToAnim[i] = i;
+			m_SkeletonAnimMap.m_vAnimToSkel[i] = i;
+		}
+	}
+	else
+	{
+		for (MBone* pSkelBone : m_pSkeletonIns->GetAllBones())
+		{
+			MBone* pAnimBone = m_pAnimation->GetSkeletonTemplate()->FindBoneByName(pSkelBone->strName);
+
+			m_SkeletonAnimMap.m_vSkelToAnim[pSkelBone->unIndex] = pAnimBone->unIndex;
+			m_SkeletonAnimMap.m_vAnimToSkel[pAnimBone->unIndex] = pSkelBone->unIndex;
+		}
+	}
 }

@@ -263,11 +263,19 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight, const MB
 	//x和y取视椎体和SceneAABB的交集， zMin取SceneAABB的，因为相机后面的模型也会生成Shadow
 	//zMax取交集，超过视椎体的Shadow不需要渲染。
 
+	float fLeft = MAX(v3CameraMin.x, v3SceneMin.x);
+	float fRight = MIN(v3CameraMax.x, v3SceneMax.x);
+	float fBottom = MAX(v3CameraMin.y, v3SceneMin.y);
+	float fTop = MIN(v3CameraMax.y, v3SceneMax.y);
+	
+	float width = fRight - fLeft;
+	float height = fTop - fBottom;
+
 	Matrix4 projMat = MatrixOrthoOffCenterLH(
-		MAX(v3CameraMin.x, v3SceneMin.x),
-		MIN(v3CameraMax.x, v3SceneMax.x),
-		MIN(v3CameraMax.y, v3SceneMax.y),
-		MAX(v3CameraMin.y, v3SceneMin.y),
+		fLeft,
+		fLeft + MAX(width, height),
+		fBottom + MAX(width, height),
+		fBottom,
 		v3SceneMin.z,
 		MIN(v3CameraMax.z, v3SceneMax.z)
 	);

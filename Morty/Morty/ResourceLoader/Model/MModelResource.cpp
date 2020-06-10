@@ -346,7 +346,16 @@ void MModelResource::ProcessBones(const aiScene* pScene)
 {
 	RecordBones(pScene->mRootNode, pScene);
 	BindBones(pScene->mRootNode, pScene);
-	m_pSkeleton->SortByDeep();
+
+	if (m_pSkeleton->GetAllBones().empty())
+	{
+		delete m_pSkeleton;
+		m_pSkeleton = nullptr;
+	}
+	else
+	{
+		m_pSkeleton->SortByDeep();
+	}
 }
 
 void MModelResource::BindBones(aiNode* pNode, const aiScene* pScene, MBone* pParent/* = nullptr*/)
@@ -365,6 +374,8 @@ void MModelResource::BindBones(aiNode* pNode, const aiScene* pScene, MBone* pPar
 		}
 
 		CopyMatrix4(&pMBone->m_matTransform, &pNode->mTransformation);
+
+		pMBone->m_matWorldTransform = pMBone->m_matTransform * pMBone->m_matOffsetMatrix;
 	}
 
 	for (unsigned int i = 0; i < pNode->mNumChildren; ++i)

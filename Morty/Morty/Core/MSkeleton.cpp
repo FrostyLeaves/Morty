@@ -6,6 +6,7 @@ const unsigned int MBone::InvalidIndex = -1;
 MBone::MBone()
 	: m_matTransform(Matrix4::IdentityMatrix)
 	, m_matOffsetMatrix(Matrix4::IdentityMatrix)
+	, m_matWorldTransform(Matrix4::IdentityMatrix)
 {
 
 }

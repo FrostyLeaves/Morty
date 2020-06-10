@@ -91,7 +91,7 @@ void MRenderSystem::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* 
 	DrawPainter(info);
 	DrawNormalMesh(info);
 	DrawTransparentMesh(info);
-	DrawSkyBox(info);
+	//DrawSkyBox(info);
 	DrawModelInstance(info);
 }
 
@@ -330,7 +330,7 @@ void MRenderSystem::DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pM
 
 			for (unsigned int i = 0; i < size; ++i)
 			{
-				cBonesArray[i] = bones[i]->GetTransformInModelWorld();
+				cBonesArray[i] = bones[i]->m_matWorldTransform;
 			}
 
 			pAnimationParam->SetDirty();

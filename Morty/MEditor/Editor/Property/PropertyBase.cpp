@@ -98,7 +98,7 @@ bool PropertyBase::Editbool(bool& value)
 
 bool PropertyBase::Editbool(int& value)
 {
-	bool bBool = value > 1e-6;
+	bool bBool = value > 0;
 	if (ImGui::Checkbox("", &bBool))
 	{
 		value = bBool ? 1 : 0;
@@ -208,7 +208,7 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
 	{
 	case MVariant::EBool:
 		ShowValueBegin(strVariantName);
-		bModified |= Editbool(*value.GetInt());
+		bModified |= Editbool(*value.GetBool());
 		ShowValueEnd();
 		break;
 

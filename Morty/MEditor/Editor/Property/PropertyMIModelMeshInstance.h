@@ -38,7 +38,7 @@ public:
 				ShowValueBegin("Instance");
 				if (ImGui::Button("Edit Material", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 				{
-					int nResID = M_INVALID_OBJECT_ID;
+					int nResID = M_INVALID_INDEX;
 					if (pNode->GetMaterial())
 						nResID = pNode->GetMaterial()->GetResourceID();
 

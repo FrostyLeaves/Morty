@@ -31,7 +31,7 @@ typedef unsigned long MObjectID;
 typedef unsigned long MResourceID;
 typedef unsigned char MByte;
 
-extern const int M_INVALID_OBJECT_ID;
+extern const int M_INVALID_INDEX;
 
 //Asset
 extern const char* SUFFIX_VERTEX_SHADER;

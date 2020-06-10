@@ -9,7 +9,7 @@
 
 NodeTreeView::NodeTreeView()
 	: IBaseView()
-	, m_unRootNodeID(M_INVALID_OBJECT_ID)
+	, m_unRootNodeID(M_INVALID_INDEX)
 	, m_unSelectedObjectID(0)
 {
 
@@ -25,7 +25,7 @@ void NodeTreeView::SetRootNode(MNode* pNode)
 	if (pNode)
 		m_unRootNodeID = pNode->GetObjectID();
 	else
-		m_unRootNodeID = M_INVALID_OBJECT_ID;
+		m_unRootNodeID = M_INVALID_INDEX;
 }
 
 void NodeTreeView::Render()

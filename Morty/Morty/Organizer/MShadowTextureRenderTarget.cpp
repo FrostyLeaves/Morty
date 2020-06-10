@@ -98,7 +98,7 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 				size = MBONES_MAX_NUMBER;
 			for (unsigned int i = 0; i < size; ++i)
 			{
-				cBonesArray[i] = bones[i]->GetTransformInModelWorld();
+				cBonesArray[i] = bones[i]->m_matWorldTransform;
 			}
 
 			m_pAnimBonesParam->SetDirty();

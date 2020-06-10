@@ -58,12 +58,19 @@ MResource* MResourceManager::LoadResource(const MString& strResourcePath, const 
 
 	if (pLoader = m_tResourceLoader[eResourceType])
 	{
-		for (MString strSearchPath : m_vSearchPath)
+		if (pResource = pLoader->Load(this, strResourcePath))
 		{
-			if (pResource = pLoader->Load(this, strSearchPath + "/" + strResourcePath))
+			m_tPathResources[strResourcePath] = pResource;
+		}
+		else
+		{
+			for (MString strSearchPath : m_vSearchPath)
 			{
-				m_tPathResources[strResourcePath] = pResource;
-				break;
+				if (pResource = pLoader->Load(this, strSearchPath + "/" + strResourcePath))
+				{
+					m_tPathResources[strResourcePath] = pResource;
+					break;
+				}
 			}
 		}
 	}

@@ -81,8 +81,8 @@ public:
 
 	template<typename T> T* GetTypedData() { return nullptr; }
 
-	int* GetBool() { return GetInt(); }
-	const int* GetBool() const { return GetInt(); }
+	bool* GetBool() { return m_eType == EBool ? (bool*)(m_pData + sizeof(int) - sizeof(bool)) : nullptr; }
+	const bool* GetBool() const { return m_eType == EBool ? (const bool*)(m_pData + sizeof(int) - sizeof(bool)) : nullptr; }
 
 	M_VAR_GET_FUNC(int, Int);
 	M_VAR_GET_FUNC(float, Float);
@@ -208,7 +208,6 @@ public:
 	{
 		if (MVariant* pVar = FindMember(strName))
 			return pVar->GetTypedData<T>();
-
 		return nullptr;
 	}
 

@@ -132,15 +132,15 @@ int main(int argc, char* argv[])
 
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
 	pRootNode->SetName("RootNode");
-	MModelResource* pGroundResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/teaport.fbx"));
+	MModelResource* pGroundResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/Pikachu.fbx"));
 
 	for (int i = 0; i < 1; ++i)
 	{
 		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
 		pSpatial->Load(pGroundResource);
 		pSpatial->SetPosition(Vector3(0, 0, 0));
-		pSpatial->SetScale(Vector3(10, 10, 10));
-		pSpatial->SetName("Ground");
+		pSpatial->SetScale(Vector3(1, 1, 1));
+		pSpatial->SetName("Cat");
 
 		pRootNode->AddNode(pSpatial);
 

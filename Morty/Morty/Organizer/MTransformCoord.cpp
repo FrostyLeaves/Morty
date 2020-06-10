@@ -26,7 +26,7 @@ const MColor MTransformCoord3D::m_vColor[3] = { MColor(240.0f / 255.0f, 48.0f / 
 
 MTransformCoord3D::MTransformCoord3D()
 	: MITransformCoord()
-	, m_unSelectedID(M_INVALID_OBJECT_ID)
+	, m_unSelectedID(M_INVALID_INDEX)
 	, m_eCoordHoverType(MECoordHoverType::None)
 	, m_eCoordMoveType(MECoordHoverType::None)
 	, m_pCoordRenderCache(new MMesh<MPainterVertex>(true))
@@ -49,7 +49,7 @@ void MTransformCoord3D::SetTarget3DNode(MNode* pNode)
 	if (pNode)
 		m_unSelectedID = pNode->GetObjectID();
 	else
-		m_unSelectedID = M_INVALID_OBJECT_ID;
+		m_unSelectedID = M_INVALID_INDEX;
 }
 
 bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
@@ -58,7 +58,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 	if (nullptr == pMouseEvent)
 		return false;
 
-	if (M_INVALID_OBJECT_ID == m_unSelectedID)
+	if (M_INVALID_INDEX == m_unSelectedID)
 		return false;
 
 	M3DNode* pTargetNode = m_pEngine->GetObjectManager()->FindObject(m_unSelectedID)->DynamicCast<M3DNode>();
@@ -247,7 +247,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 
 void MTransformCoord3D::Render(MIRenderer* pRenderer, MViewport* pViewport)
 {
-	if (M_INVALID_OBJECT_ID == m_unSelectedID)
+	if (M_INVALID_INDEX == m_unSelectedID)
 		return;
 	M3DNode* pTargetNode = m_pEngine->GetObjectManager()->FindObject(m_unSelectedID)->DynamicCast<M3DNode>();
 	if (nullptr == pTargetNode)
@@ -306,7 +306,7 @@ void MTransformCoord3D::Render(MIRenderer* pRenderer, MViewport* pViewport)
 
 void MTransformCoord3D::GetTranslationShapes(MPainter2DLine* lines, class MPainter2DRect* rects, bool* vValid, int* vOrder, MViewport* pViewport)
 {
-	if (M_INVALID_OBJECT_ID == m_unSelectedID)
+	if (M_INVALID_INDEX == m_unSelectedID)
 		return;
 	M3DNode* pTargetNode = m_pEngine->GetObjectManager()->FindObject(m_unSelectedID)->DynamicCast<M3DNode>();
 	if (nullptr == pTargetNode)

@@ -27,26 +27,18 @@ void MCamera::SetFov(const float& fFov)
 
 void MCamera::SetZNear(const float& fZNear)
 {
-//	if (fZNear >= m_fZFar)
-//	{
-		MLogManager::GetInstance()->Error("MCamera::SetZNear:   fZNear >= m_fZFar");
-// 	}
+	if (fZNear >= m_fZFar)
+		MLogManager::GetInstance()->Warning("MCamera::SetZNear:   fZNear >= m_fZFar");
 // 	else
-// 	{
 		m_fZNear = fZNear;
-//	}
 }
 
 void MCamera::SetZFar(const float& fZFar)
 {
-//	if (fZFar <= m_fZNear)
-//	{
-		MLogManager::GetInstance()->Error("MCamera::SetZFar:   fZFar <= m_fZNear");
-//	}
+	if (fZFar <= m_fZNear)
+		MLogManager::GetInstance()->Warning("MCamera::SetZFar:   fZFar <= m_fZNear");
 //	else
-//	{
 		m_fZFar = fZFar;
-//	}
 }
 
 void MCamera::WriteToStruct(MStruct& srt)

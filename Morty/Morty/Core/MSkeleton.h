@@ -33,7 +33,7 @@ public:
 	Matrix4 m_matTransform;
 	Matrix4 m_matOffsetMatrix;
 
-	Matrix4 GetTransformInModelWorld() { return m_matTransform * m_matOffsetMatrix; }
+	Matrix4 m_matWorldTransform;
 };
 
 class MORTY_CLASS MSkeleton

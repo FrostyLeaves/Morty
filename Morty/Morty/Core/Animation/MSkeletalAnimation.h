@@ -41,6 +41,13 @@ public:
 
 };
 
+class MORTY_CLASS MSkeletonAnimMap
+{
+public:
+	std::vector<unsigned int> m_vSkelToAnim;
+	std::vector<unsigned int> m_vAnimToSkel;
+};
+
 class MORTY_CLASS MSkeletalAnimation : public MIAnimation
 {
 public:
@@ -56,7 +63,7 @@ public:
 	float GetTicksDuration() { return m_fTicksDuration; }
 	float GetTicksPerSecond() { return m_fTicksPerSecond; }
 
-	void Update(const float& fTime, MSkeletonInstance* pSkeletonIns);
+	void Update(const float& fTime, MSkeletonInstance* pSkeletonIns, const MSkeletonAnimMap& skelAnimMap);
 
 protected:
 
@@ -97,6 +104,11 @@ public:
 	virtual MEAnimControllerState GetState() override { return m_eState; }
 
 	MSkeletalAnimation* GetAnimation() { return m_pAnimation; }
+
+protected:
+
+	void BindMapping();
+
 private:
 	MSkeletonInstance* m_pSkeletonIns;
 	MSkeletalAnimation* m_pAnimation;
@@ -105,6 +117,8 @@ private:
 	float m_fTicks;
 	MEAnimControllerState m_eState;
 	bool m_bLoop;
+
+	MSkeletonAnimMap m_SkeletonAnimMap;
 };
 
 #endif
