@@ -291,7 +291,7 @@ void MModelResource::BindVertexAndBones(aiMesh* pMesh, const aiScene* pScene, MM
 		if (aiBone* pBone = pMesh->mBones[i])
 		{
 			MString strBoneName(pBone->mName.data); 
-			if (MBone* pMBone = m_pSkeleton->FindBoneByName(strBoneName))
+			if (const MBone* pMBone = m_pSkeleton->FindBoneByName(strBoneName))
 			{
 				for (unsigned int wgtIndex = 0; wgtIndex < pBone->mNumWeights; ++wgtIndex)
 				{
@@ -370,12 +370,10 @@ void MModelResource::BindBones(aiNode* pNode, const aiScene* pScene, MBone* pPar
 		}
 		else
 		{
-			pMBone->unParentIndex = MBone::InvalidIndex;
+			pMBone->unParentIndex = M_INVALID_INDEX;
 		}
 
 		CopyMatrix4(&pMBone->m_matTransform, &pNode->mTransformation);
-
-		pMBone->m_matWorldTransform = pMBone->m_matTransform * pMBone->m_matOffsetMatrix;
 	}
 
 	for (unsigned int i = 0; i < pNode->mNumChildren; ++i)

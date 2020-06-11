@@ -324,13 +324,13 @@ void MRenderSystem::DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pM
 			MStruct& cAnimationStruct = *pAnimationParam->var.GetStruct();
 			MVariantArray& cBonesArray = *cAnimationStruct[0].GetArray();
 
-			const std::vector<MBone*>& bones = pSkeletonIns->GetAllBones();
+			const std::vector<MBone>& bones = pSkeletonIns->GetAllBones();
 			unsigned int size = bones.size();
 			if (size > MBONES_MAX_NUMBER) size = MBONES_MAX_NUMBER;
 
 			for (unsigned int i = 0; i < size; ++i)
 			{
-				cBonesArray[i] = bones[i]->m_matWorldTransform;
+				cBonesArray[i] = bones[i].m_matWorldTransform;
 			}
 
 			pAnimationParam->SetDirty();

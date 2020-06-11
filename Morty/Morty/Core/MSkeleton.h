@@ -19,9 +19,6 @@ class MBoundsOBB;
 class MORTY_CLASS MBone
 {
 public:
-	static const unsigned int InvalidIndex;
-
-public:
 	MBone();
 public:
 	MString strName;
@@ -47,19 +44,22 @@ public:
 
 	void CopyAllBones(std::vector<MBone*>& allBones);
 
-	MBone* FindBoneByName(const MString& strName) const;
+	MBone* FindBoneByName(const MString& strName);
+	const MBone* FindBoneByName(const MString& strName) const;
 	MBone* AppendBone(const MString& strName);
 	void SortByDeep();
 
 	void RebuildBonesMap();
 
-	const std::vector<MBone*>& GetAllBones() const { return m_vAllBones; }
+	const std::vector<MBone>& GetAllBones() const { return m_vAllBones; }
 
 private:
 	friend class MModelResource;
 	friend class MSkeletonResource;
+
+private:
 	std::map<MString, unsigned int> m_tBonesMap;
-	std::vector<MBone*> m_vAllBones;
+	std::vector<MBone> m_vAllBones;
 };
 
 class MORTY_CLASS MSkeletonInstance
@@ -75,11 +75,13 @@ public:
 	const MBone* FindBoneTemplateByName(const MString& strName);
 	const MBone* GetBoneTemplateByIndex(const unsigned int& unIndex);
 
-	const std::vector<MBone*>& GetAllBones() { return m_vAllBones; }
+	std::vector<MBone>& GetAllBones() { return m_vAllBones; }
+
+	void ResetOriginPose();
 
 private:
 	const MSkeleton* m_pSkeletonTemplate;
-	std::vector<MBone*> m_vAllBones;
+	std::vector<MBone> m_vAllBones;
 };
 
 #endif

@@ -92,13 +92,13 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 			MVariant& cVariant = (*m_pAnimBonesParam->var.GetStruct())[0];
 			MVariantArray& cBonesArray = *cVariant.GetArray();
 
-			const std::vector<MBone*>& bones = pSkeleton->GetAllBones();
+			const std::vector<MBone>& bones = pSkeleton->GetAllBones();
 			unsigned int size = bones.size();
 			if (size > MBONES_MAX_NUMBER)
 				size = MBONES_MAX_NUMBER;
 			for (unsigned int i = 0; i < size; ++i)
 			{
-				cBonesArray[i] = bones[i]->m_matWorldTransform;
+				cBonesArray[i] = bones[i].m_matWorldTransform;
 			}
 
 			m_pAnimBonesParam->SetDirty();

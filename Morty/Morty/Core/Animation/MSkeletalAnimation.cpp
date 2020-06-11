@@ -18,39 +18,37 @@ MSkeletalAnimation::~MSkeletalAnimation()
 
 void MSkeletalAnimation::Update(const float& fTime, MSkeletonInstance* pSkeletonIns, const MSkeletonAnimMap& skelAnimMap)
 {
-	const std::vector<MBone*>& bones = pSkeletonIns->GetAllBones();
+	std::vector<MBone>& bones = pSkeletonIns->GetAllBones();
 
 	unsigned int unBonesSize = bones.size();
 
 	for (unsigned int i = 0; i < unBonesSize; ++i)
 	{
-		MBone* pBone = bones[i];
-// 		if(pBone->unIndex >= m_vSkeletalAnimNodes.size())
-// 			continue;
+		MBone& bone = bones[i];
 
-		int nAnimNodeIndex = skelAnimMap.m_vSkelToAnim[pBone->unIndex];
+		int nAnimNodeIndex = skelAnimMap.m_vSkelToAnim[bone.unIndex];
 		if(M_INVALID_INDEX == nAnimNodeIndex)
 			continue;
 
 		MSkeletalAnimNode* pAnimNode = m_vSkeletalAnimNodes[nAnimNodeIndex];
-		Matrix4 matParentTrans = pBone->unParentIndex == MBone::InvalidIndex ? Matrix4::IdentityMatrix : bones[pBone->unParentIndex]->m_matWorldTransform;
+		Matrix4 matParentTrans = bone.unParentIndex == M_INVALID_INDEX ? Matrix4::IdentityMatrix : bones[bone.unParentIndex].m_matWorldTransform;
 
 		MTransform trans;
 		if (pAnimNode && FindTransform(fTime, pAnimNode, trans))
 		{
 			//Use animation transform
-			pBone->m_matWorldTransform = matParentTrans * trans.GetMatrix();
+			bone.m_matWorldTransform = matParentTrans * trans.GetMatrix();
 		}
 		else
 		{
 			//Use default transform
-			pBone->m_matWorldTransform = matParentTrans * pSkeletonIns->GetBoneTemplateByIndex(i)->m_matTransform;
+			bone.m_matWorldTransform = matParentTrans * pSkeletonIns->GetBoneTemplateByIndex(i)->m_matTransform;
 		}
 	}
 
-	for (MBone* pBone : bones)
+	for (MBone& bone : bones)
 	{
-		pBone->m_matWorldTransform = pBone->m_matWorldTransform * pBone->m_matOffsetMatrix;
+		bone.m_matWorldTransform = bone.m_matWorldTransform * bone.m_matOffsetMatrix;
 	}
 
 }
@@ -261,12 +259,12 @@ void MSkeletalAnimController::BindMapping()
 	}
 	else
 	{
-		for (MBone* pSkelBone : m_pSkeletonIns->GetAllBones())
+		for (MBone& skelBone : m_pSkeletonIns->GetAllBones())
 		{
-			MBone* pAnimBone = m_pAnimation->GetSkeletonTemplate()->FindBoneByName(pSkelBone->strName);
+			const MBone* pAnimBone = m_pAnimation->GetSkeletonTemplate()->FindBoneByName(skelBone.strName);
 
-			m_SkeletonAnimMap.m_vSkelToAnim[pSkelBone->unIndex] = pAnimBone->unIndex;
-			m_SkeletonAnimMap.m_vAnimToSkel[pAnimBone->unIndex] = pSkelBone->unIndex;
+			m_SkeletonAnimMap.m_vSkelToAnim[skelBone.unIndex] = pAnimBone->unIndex;
+			m_SkeletonAnimMap.m_vAnimToSkel[pAnimBone->unIndex] = skelBone.unIndex;
 		}
 	}
 }

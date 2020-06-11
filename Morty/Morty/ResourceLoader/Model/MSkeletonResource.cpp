@@ -36,7 +36,7 @@ void MSkeletonResource::WriteToStruct(MStruct& srt)
 {
     if (m_pSkeletonTemplate)
     {
-        const std::vector<MBone*>& vBones = m_pSkeletonTemplate->GetAllBones();
+        std::vector<MBone>& vBones = m_pSkeletonTemplate->m_vAllBones;
         
         srt.AppendMVariant("Bones", MVariantArray());
         MVariantArray* pArray = srt.FindMember("Bones")->GetArray();
@@ -44,19 +44,19 @@ void MSkeletonResource::WriteToStruct(MStruct& srt)
 
         for (unsigned int i = 0; i < pArray->GetMemberCount(); ++i)
         {
-            MBone* pBone = vBones[i];
+            const MBone& bone = vBones[i];
             (*pArray)[i] = MStruct();
             MStruct& boneSrt = *(*pArray)[i].GetStruct();
 
 			MVariantArray vChildren;
-			for (unsigned int unChildIdx : pBone->vChildrenIndices)
+			for (unsigned int unChildIdx : bone.vChildrenIndices)
 				vChildren.AppendMVariant(unChildIdx);
 
-            boneSrt.AppendMVariant("Name", pBone->strName);
-            boneSrt.AppendMVariant("Index", pBone->unIndex);
-            boneSrt.AppendMVariant("ParentIndex", pBone->unParentIndex);
-            boneSrt.AppendMVariant("matTrans", pBone->m_matTransform);
-            boneSrt.AppendMVariant("matOffset", pBone->m_matOffsetMatrix);
+            boneSrt.AppendMVariant("Name", bone.strName);
+            boneSrt.AppendMVariant("Index", bone.unIndex);
+            boneSrt.AppendMVariant("ParentIndex", bone.unParentIndex);
+            boneSrt.AppendMVariant("matTrans", bone.m_matTransform);
+            boneSrt.AppendMVariant("matOffset", bone.m_matOffsetMatrix);
             boneSrt.AppendMVariant("Children", vChildren);
         }
 
@@ -81,33 +81,32 @@ void MSkeletonResource::ReadFromStruct(MStruct& srt)
                 MVariant& boneVar = pBonesArray->GetMember(i)->var;
                 if (MStruct* pBoneSrt = boneVar.GetStruct())
                 {
-                    MBone* pBone = new MBone();
-                    m_pSkeletonTemplate->m_vAllBones[i] = pBone;
+                    MBone& bone = m_pSkeletonTemplate->m_vAllBones[i];
 
                     if(MString *pName = pBoneSrt->FindMember<MString>("Name"))
-                        pBone->strName = *pName;
+                        bone.strName = *pName;
                     
                     if (int* pIndex = pBoneSrt->FindMember<int>("Index"))
-                        pBone->unIndex = *pIndex;
+                        bone.unIndex = *pIndex;
                     
                     if (int* pParentIndex = pBoneSrt->FindMember<int>("ParentIndex"))
-                        pBone->unParentIndex = *pParentIndex;
+                        bone.unParentIndex = *pParentIndex;
                     
                     if (Matrix4* pMatTrans = pBoneSrt->FindMember<Matrix4>("matTrans"))
-                        pBone->m_matTransform = *pMatTrans;
+                        bone.m_matTransform = *pMatTrans;
                     
                     if (Matrix4* pMatOffset = pBoneSrt->FindMember<Matrix4>("matOffset"))
-                            pBone->m_matOffsetMatrix = *pMatOffset;
+                            bone.m_matOffsetMatrix = *pMatOffset;
 
                     if (MVariantArray* pChildren = pBoneSrt->FindMember<MVariantArray>("Children"))
                     {
 						unsigned int unChildrenCount = pChildren->GetMemberCount();
-						pBone->vChildrenIndices.resize(unChildrenCount);
+						bone.vChildrenIndices.resize(unChildrenCount);
 
 						for (unsigned int cldIdx = 0; cldIdx < unChildrenCount; ++cldIdx)
 						{
                             if(int* pIndex = pChildren->GetMember<int>(cldIdx))
-							    pBone->vChildrenIndices[cldIdx] = *pIndex;
+							    bone.vChildrenIndices[cldIdx] = *pIndex;
 						}
                     }
                 }
@@ -126,7 +125,7 @@ bool MSkeletonResource::SaveTo(const MString& strResourcePath)
 {
     if (m_pSkeletonTemplate)
     {
-        const std::vector<MBone*>& vBones = m_pSkeletonTemplate->GetAllBones();
+        const std::vector<MBone>& vBones = m_pSkeletonTemplate->GetAllBones();
         
         MVariant var = MVariantArray();
         MVariantArray* pArray = var.GetArray();
@@ -134,19 +133,19 @@ bool MSkeletonResource::SaveTo(const MString& strResourcePath)
 
         for (unsigned int i = 0; i < pArray->GetMemberCount(); ++i)
         {
-            MBone* pBone = vBones[i];
+            const MBone& bone = vBones[i];
             (*pArray)[i] = MStruct();
             MStruct& srt = *(*pArray)[i].GetStruct();
 
 			MVariantArray vChildren;
-			for (unsigned int unChildIdx : pBone->vChildrenIndices)
+			for (unsigned int unChildIdx : bone.vChildrenIndices)
 				vChildren.AppendMVariant(unChildIdx);
 
-            srt.AppendMVariant("Name", pBone->strName);
-            srt.AppendMVariant("Index", pBone->unIndex);
-            srt.AppendMVariant("ParentIndex", pBone->unParentIndex);
-            srt.AppendMVariant("matTrans", pBone->m_matTransform);
-            srt.AppendMVariant("matOffset", pBone->m_matOffsetMatrix);
+            srt.AppendMVariant("Name", bone.strName);
+            srt.AppendMVariant("Index", bone.unIndex);
+            srt.AppendMVariant("ParentIndex", bone.unParentIndex);
+            srt.AppendMVariant("matTrans", bone.m_matTransform);
+            srt.AppendMVariant("matOffset", bone.m_matOffsetMatrix);
             srt.AppendMVariant("Children", vChildren);         
         }
 

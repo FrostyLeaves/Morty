@@ -1,8 +1,6 @@
 #include "MSkeleton.h"
 #include <algorithm>
 
-const unsigned int MBone::InvalidIndex = -1;
-
 MBone::MBone()
 	: m_matTransform(Matrix4::IdentityMatrix)
 	, m_matOffsetMatrix(Matrix4::IdentityMatrix)
@@ -33,16 +31,27 @@ void MSkeleton::CopyAllBones(std::vector<MBone*>& allBones)
 	for (int i = 0; i < m_vAllBones.size(); ++i)
 	{
 		allBones[i] = new MBone();
-		(*allBones[i]) = (*m_vAllBones[i]);
+		(*allBones[i]) = (m_vAllBones[i]);
 	}
 }
 
-MBone* MSkeleton::FindBoneByName(const MString& strName) const
+MBone* MSkeleton::FindBoneByName(const MString& strName)
 {
 	auto iter = m_tBonesMap.find(strName);
 	if (iter != m_tBonesMap.cend())
 	{
-		return m_vAllBones[iter->second];
+		return &m_vAllBones[iter->second];
+	}
+
+	return nullptr;
+}
+
+const MBone* MSkeleton::FindBoneByName(const MString& strName) const
+{
+	auto iter = m_tBonesMap.find(strName);
+	if (iter != m_tBonesMap.cend())
+	{
+		return &m_vAllBones[iter->second];
 	}
 
 	return nullptr;
@@ -50,61 +59,61 @@ MBone* MSkeleton::FindBoneByName(const MString& strName) const
 
 MBone* MSkeleton::AppendBone(const MString& strName)
 {
-	MBone* pBone = new MBone();
-	m_vAllBones.push_back(pBone);
-	pBone->strName = strName;
-	pBone->unIndex = m_vAllBones.size() - 1;
-	pBone->unParentIndex = MBone::InvalidIndex;
-	m_tBonesMap[strName] = pBone->unIndex;
-	return pBone;
+	m_vAllBones.push_back(MBone());
+	MBone& bone = m_vAllBones.back();
+	bone.strName = strName;
+	bone.unIndex = m_vAllBones.size() - 1;
+	bone.unParentIndex = M_INVALID_INDEX;
+	m_tBonesMap[strName] = bone.unIndex;
+	return &m_vAllBones.back();
 }
 
 void MSkeleton::SortByDeep()
 {
 	std::vector<int> map(m_vAllBones.size());
-	std::vector<MBone*> vBones = m_vAllBones;
-	std::map<MBone*, int> tDeep;
+	std::map<unsigned int, int> tDeep;
 
-	for (MBone* pBone : m_vAllBones)
+	for (MBone& bone : m_vAllBones)
 	{
 		int deep = 0;
-		MBone* pParent = pBone;
-		while (pParent->unParentIndex != MBone::InvalidIndex)
+		unsigned int unParentIdx = bone.unIndex;
+		while (unParentIdx != M_INVALID_INDEX)
 		{
-			pParent = m_vAllBones[pParent->unParentIndex];
+			unParentIdx = m_vAllBones[unParentIdx].unParentIndex;
 			++deep;
 		}
 
-		tDeep[pBone] = deep;
+		tDeep[bone.unIndex] = deep;
 	}
 
-	std::sort(vBones.begin(), vBones.end(), [&tDeep](MBone* a, MBone* b) { return tDeep[a] < tDeep[b]; });
+	std::vector<MBone>& vBones = m_vAllBones;
+
+	std::sort(vBones.begin(), vBones.end(), [&tDeep](MBone& a, MBone& b) { return tDeep[a.unIndex] < tDeep[b.unIndex]; });
 
 	for (unsigned int i = 0; i < vBones.size(); ++i)
-		map[vBones[i]->unIndex] = i;
+		map[vBones[i].unIndex] = i;
 
 	for (unsigned int i = 0; i < vBones.size(); ++i)
 	{
-		MBone* pBone = vBones[i];
-		pBone->unIndex = map[pBone->unIndex];
-		if (MBone::InvalidIndex != pBone->unParentIndex)
-			pBone->unParentIndex = map[pBone->unParentIndex];
-		for (unsigned int& index : pBone->vChildrenIndices)
+		MBone& bone = vBones[i];
+		bone.unIndex = map[bone.unIndex];
+		if (M_INVALID_INDEX != bone.unParentIndex)
+			bone.unParentIndex = map[bone.unParentIndex];
+		for (unsigned int& index : bone.vChildrenIndices)
 			index = map[index];
 	}
 
 	for (auto& iter : m_tBonesMap)
 		iter.second = map[iter.second];
 
-	m_vAllBones = vBones;
 }
 
 void MSkeleton::RebuildBonesMap()
 {
 	m_tBonesMap.clear();
-	for (MBone* pBone : m_vAllBones)
+	for (MBone& bone : m_vAllBones)
 	{
-		m_tBonesMap[pBone->strName] = pBone->unIndex;
+		m_tBonesMap[bone.strName] = bone.unIndex;
 	}
 }
 
@@ -112,6 +121,8 @@ MSkeletonInstance::MSkeletonInstance(const MSkeleton* templateSke)
 	: m_pSkeletonTemplate(templateSke)
 {
 	m_vAllBones = m_pSkeletonTemplate->GetAllBones();
+
+	ResetOriginPose();
 }
 
 MSkeletonInstance::MSkeletonInstance(const MSkeletonInstance& instance)
@@ -122,11 +133,11 @@ MSkeletonInstance::MSkeletonInstance(const MSkeletonInstance& instance)
 
 MBone* MSkeletonInstance::FindBoneByName(const MString& strName)
 {
-	MBone* pBoneTemp = m_pSkeletonTemplate->FindBoneByName(strName);
+	const MBone* pBoneTemp = m_pSkeletonTemplate->FindBoneByName(strName);
 	if (nullptr == pBoneTemp)
 		return nullptr;
 
-	return m_vAllBones[pBoneTemp->unIndex];
+	return &m_vAllBones[pBoneTemp->unIndex];
 }
 
 const MBone* MSkeletonInstance::FindBoneTemplateByName(const MString& strName)
@@ -136,6 +147,26 @@ const MBone* MSkeletonInstance::FindBoneTemplateByName(const MString& strName)
 
 const MBone* MSkeletonInstance::GetBoneTemplateByIndex(const unsigned int& unIndex)
 {
-	return m_pSkeletonTemplate->GetAllBones()[unIndex];
+	return &m_pSkeletonTemplate->GetAllBones()[unIndex];
+}
+
+void MSkeletonInstance::ResetOriginPose()
+{
+	for (MBone& bone : m_vAllBones)
+	{
+		if (bone.unParentIndex != M_INVALID_INDEX)
+		{
+			bone.m_matWorldTransform = m_vAllBones[bone.unParentIndex].m_matWorldTransform * bone.m_matTransform;
+		}
+		else
+		{
+			bone.m_matWorldTransform = bone.m_matTransform;
+		}
+	}
+
+	for (MBone& bone : m_vAllBones)
+	{
+		bone.m_matWorldTransform = bone.m_matWorldTransform * bone.m_matOffsetMatrix;
+	}
 }
 
