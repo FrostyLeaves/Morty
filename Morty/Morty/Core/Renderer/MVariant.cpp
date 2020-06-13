@@ -162,7 +162,7 @@ MVariant::MVariant()
 
 MVariant::MVariant(const MString& var)
 {
-	m_unByteSize = var.size();
+	m_unByteSize = 0;
 	m_pData = (MByte*)new MString();
 	*((MString*)m_pData) = var;
 	m_eType = EString;
@@ -210,6 +210,8 @@ unsigned int MVariant::GetSize() const
 {
 	if (EStruct == m_eType || EArray == m_eType)
 		return ((MStruct*)(m_pData))->GetSize();
+	else if (EString == m_eType)
+		return ((MString*)(m_pData))->size();
 
 	return m_unByteSize;
 }
@@ -252,6 +254,8 @@ const MVariant& MVariant::operator=(const MVariant& var)
 
 void MVariant::Move(MVariant& var)
 {
+	Clean();
+
 	m_pData = var.m_pData;
 	m_eType = var.m_eType;
 	m_unByteSize = var.m_unByteSize;

@@ -7,7 +7,7 @@
 #include "MResourceManager.h"
 #include "Material/MMaterialResource.h"
 #include "Texture/MTextureResource.h"
-#include "Model/MModelMeshStruct.h"
+#include "Model/MMeshResource.h"
 
 #include "Node/Model/MStaticMeshInstance.h"
 
@@ -17,7 +17,7 @@ M_OBJECT_IMPLEMENT(MSkyBox, MObject)
 MSkyBox::MSkyBox()
 	: MObject()
 	, m_pMeshData(nullptr)
-	, m_pMeshInstance(nullptr)
+	, m_pMaterial(nullptr)
 	, m_pBoxMesh(nullptr)
 	, m_pTextureCube(nullptr)
 	, m_TextureCubeResource(nullptr)
@@ -64,9 +64,6 @@ void MSkyBox::OnCreated()
 	MMaterialResource* pMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SKYBOX);
 	MMaterial* pMaterial = pMaterialRes;
 
-	MStaticMeshInstance* pMeshIns = m_pEngine->GetObjectManager()->CreateObject<MStaticMeshInstance>();
-	m_pMeshInstance = pMeshIns;
-
 
 	pMaterial->SetRasterizerType(MERasterizerType::ECullNone);
 
@@ -108,8 +105,5 @@ void MSkyBox::OnCreated()
 	for (int i = 0; i < m_pBoxMesh->GetIndicesLength(); ++i)
 		m_pBoxMesh->GetIndices()[i] = indexs[i];
 
-	m_pMeshData = new MModelMeshStruct();
-	m_pMeshData->SetMesh(m_pBoxMesh);
-	pMeshIns->SetMeshData(m_pMeshData);
-	pMeshIns->SetMaterial(pMaterial);
+	m_pMaterial = pMaterial;
 }

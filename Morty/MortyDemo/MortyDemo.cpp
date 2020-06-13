@@ -18,7 +18,7 @@
 #include "Model/MModelInstance.h"
 #include "Model/MIMeshInstance.h"
 #include "Model/MModelResource.h"
-#include "Model/MModelMeshStruct.h"
+#include "Model/MMeshResource.h"
 #include "Model/MIModelMeshInstance.h"
 #include "MResourceManager.h"
 #include "MVariant.h"

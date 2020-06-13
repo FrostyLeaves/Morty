@@ -12,9 +12,9 @@
 #include "Light/MPointLight.h"
 #include "Light/MSpotLight.h"
 
-#include "Model/MStaticMeshInstance.h"
-#include "Model/MModelMeshStruct.h"
+#include "Model/MMeshResource.h"
 #include "Model/MIModelMeshInstance.h"
+#include "Model/MStaticMeshInstance.h"
 #include "Material/MMaterialResource.h"
 
 #include "MVertex.h"

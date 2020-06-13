@@ -162,7 +162,7 @@
     <ClInclude Include="..\..\ResourceLoader\Material\MMaterialResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MFileHelper.h" />
     <ClInclude Include="..\..\ResourceLoader\Model\MMultiLevelMesh.h" />
-    <ClInclude Include="..\..\ResourceLoader\Model\MModelMeshStruct.h" />
+    <ClInclude Include="..\..\ResourceLoader\Model\MMeshResource.h" />
     <ClInclude Include="..\..\ResourceLoader\Model\MSkeletonResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MResourceManager.h" />
     <ClInclude Include="..\..\ResourceLoader\Node\MNodeResource.h" />
@@ -251,7 +251,7 @@
     <ClCompile Include="..\..\Organizer\System\MRenderSystem.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MFileHelper.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Model\MMultiLevelMesh.cpp" />
-    <ClCompile Include="..\..\ResourceLoader\Model\MModelMeshStruct.cpp" />
+    <ClCompile Include="..\..\ResourceLoader\Model\MMeshResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Model\MSkeletonResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MResourceManager.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Node\MNodeResource.cpp" />

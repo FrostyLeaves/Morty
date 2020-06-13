@@ -22,7 +22,8 @@ struct aiMesh;
 class MBone;
 class MModel;
 class MSkeleton;
-class MModelMeshStruct;
+class MSkeletonResource;
+class MMeshResource;
 class MSkeletalAnimation;
 class MORTY_CLASS MModelResource : public MResource
 {
@@ -31,8 +32,8 @@ public:
     MModelResource();
     virtual ~MModelResource();
 
-	const MSkeleton* GetSkeleton() { return m_pSkeleton; }
-	const std::vector<MModelMeshStruct*>* GetMeshes() { return &m_vMeshes; }
+	MSkeleton* GetSkeleton() { return m_pSkeleton; }
+	const std::vector<MMeshResource*>* GetMeshes() { return &m_vMeshes; }
 	const std::map<MString, MSkeletalAnimation*>* GetAnimations() { return &m_tSkeletalAnimation; }
 	const std::vector<MString>* GetAnimationsName() { return &m_vSkeletalAnimation; }
 
@@ -62,9 +63,10 @@ protected:
 
 private:
     
-	std::vector<MModelMeshStruct*> m_vMeshes;
+	std::vector<MMeshResource*> m_vMeshes;
 
 	MSkeleton* m_pSkeleton;
+	MSkeletonResource* m_pSkeletonResource;
 
 	std::vector<MString> m_vSkeletalAnimation;
 	std::map<MString, MSkeletalAnimation*> m_tSkeletalAnimation;

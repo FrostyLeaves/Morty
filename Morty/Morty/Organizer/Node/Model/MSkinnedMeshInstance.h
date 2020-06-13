@@ -16,6 +16,7 @@
 class MIMesh;
 class MMaterial;
 class MResource;
+class MMeshResource;
 class MModelResource;
 class MSkeletonInstance;
 class MORTY_CLASS MSkinnedMeshInstance : public MIModelMeshInstance
@@ -32,7 +33,11 @@ public:
 	virtual MBoundsSphere* GetBoundsSphere() override;
 public:
 
-	virtual void SetMeshData(MModelMeshStruct* pMeshData);
+	void Load(MResource* pResource);
+
+	void SetMeshResourcePath(const MString& strResourcePath);
+	MString GetMeshResourcePath() { return m_Mesh.GetResourcePath(); }
+
 	virtual MIMesh* GetMesh() override { return GetMesh(GetDetailLevel()); }
 	virtual MIMesh* GetMesh(const unsigned int& unDetailLevel) override;
 
@@ -60,7 +65,8 @@ protected:
 	virtual void LocalTransformDirty() override;
 private:
 
-	MModelMeshStruct* m_pMesh;
+	MMeshResource* m_pMesh;
+	MResourceKeeper m_Mesh;
 	MResourceKeeper m_Material;
 	MBoundsAABB m_BoundsAABB;
 	MBoundsSphere m_BoundsSphere;

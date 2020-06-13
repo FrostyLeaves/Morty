@@ -12,9 +12,11 @@
 #include "MMesh.h"
 #include "MVertex.h"
 #include "Vector.h"
+#include "MSerializer.h"
+
 #include <vector>
 
-class MORTY_CLASS MIBounds
+class MORTY_CLASS MIBounds : public MSerializer
 {
 public:
 	MIBounds() {}
@@ -25,7 +27,7 @@ public:
 };
 
 class MBoundsOBB;
-class MORTY_CLASS MBoundsAABB
+class MORTY_CLASS MBoundsAABB : public MIBounds
 {
 public:
 	MBoundsAABB() {}
@@ -45,13 +47,18 @@ public:
 	bool IsIntersect(const MBoundsAABB& aabb) const;
 
 public:
+
+	virtual void WriteToStruct(MStruct& srt) override;
+	virtual void ReadFromStruct(MStruct& srt) override;
+
+public:
 	Vector3 m_v3CenterPoint;
 	Vector3 m_v3HalfLength;
 	Vector3 m_v3MinPoint;
 	Vector3 m_v3MaxPoint;
 };
 
-class MORTY_CLASS MBoundsOBB
+class MORTY_CLASS MBoundsOBB : public MIBounds
 {
 public:
 	MBoundsOBB() {}
@@ -69,6 +76,11 @@ public:
 	
 
 public:
+
+	virtual void WriteToStruct(MStruct& srt) override;
+	virtual void ReadFromStruct(MStruct& srt) override;
+
+public:
 	Vector3 m_v3MinPoint;
 	Vector3 m_v3MaxPoint;
 	Vector3 m_v3CenterPoint;
@@ -77,7 +89,7 @@ public:
 	Matrix3 m_matEigVectors;
 };
 
-class MORTY_CLASS MBoundsSphere
+class MORTY_CLASS MBoundsSphere : public MIBounds
 {
 public:
 	MBoundsSphere();
@@ -92,6 +104,11 @@ public:
 
 
 	bool IsContain(const Vector3& pos);
+
+public:
+
+	virtual void WriteToStruct(MStruct& srt) override;
+	virtual void ReadFromStruct(MStruct& srt) override;
 
 public:
 

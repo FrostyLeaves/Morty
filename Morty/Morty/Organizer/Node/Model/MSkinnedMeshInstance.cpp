@@ -2,7 +2,7 @@
 #include "MScene.h"
 #include "MMaterial.h"
 #include "Model/MModelInstance.h"
-#include "Model/MModelMeshStruct.h"
+#include "Model/MMeshResource.h"
 #include "Model/MModelResource.h"
 #include "MResourceManager.h"
 
@@ -13,6 +13,7 @@ M_OBJECT_IMPLEMENT(MSkinnedMeshInstance, MIModelMeshInstance)
 MSkinnedMeshInstance::MSkinnedMeshInstance()
 	: MIModelMeshInstance()
 	, m_pMesh(nullptr)
+	, m_Mesh()
 	, m_Material()
 	, m_bBoundsAABBDirty(true)
 	, m_bBoundsSphereDirty(true)
@@ -71,15 +72,25 @@ MBoundsSphere* MSkinnedMeshInstance::GetBoundsSphere()
 	return &m_BoundsSphere;
 }
 
-void MSkinnedMeshInstance::SetMeshData(MModelMeshStruct* pMeshData)
+void MSkinnedMeshInstance::Load(MResource* pResource)
 {
-	m_pMesh = pMeshData;
-
-	if (m_Material.GetResource() == nullptr)
+	if (MMeshResource* pMeshResource = pResource->DynamicCast<MMeshResource>())
 	{
-		MMaterial* pMaterial = dynamic_cast<MMaterial*>(m_pMesh->GetDefaultMaterial());
-		SetMaterial(pMaterial);
+		m_pMesh = pMeshResource;
+		m_Mesh.SetResource(pResource);
+
+		if (m_Material.GetResource() == nullptr)
+		{
+			MMaterial* pMaterial = m_pMesh->GetDefaultMaterial()->DynamicCast<MMaterial>();
+			SetMaterial(pMaterial);
+		}
 	}
+}
+
+void MSkinnedMeshInstance::SetMeshResourcePath(const MString& strResourcePath)
+{
+	MResource* pResource = GetEngine()->GetResourceManager()->LoadResource(strResourcePath);
+	Load(pResource);
 }
 
 void MSkinnedMeshInstance::SetMeshData(const MString& strModelResourcePath, const int& nIndex)
@@ -143,16 +154,8 @@ void MSkinnedMeshInstance::WriteToStruct(MStruct& srt)
 
 	M_SERIALIZER_BEGIN(Write);
 	M_SERIALIZER_WRITE_VALUE("MaterialPath", GetMaterialPath);
-
-	if (m_pMesh)
-	{
-		if (MModelResource* pModelRes = m_pMesh->GetModelResource())
-		{
-			pStruct->AppendMVariant("ModelResource", pModelRes->GetResourcePath());
-			pStruct->AppendMVariant("MeshIndex", (int)m_pMesh->GetMeshIndex());
-		}
-	}
-
+	M_SERIALIZER_WRITE_VALUE("MeshPath", GetMeshResourcePath);
+	
 	M_SERIALIZER_END;
 }
 
@@ -163,17 +166,7 @@ void MSkinnedMeshInstance::ReadFromStruct(MStruct& srt)
 
 	M_SERIALIZER_BEGIN(Read);
 	M_SERIALIZER_READ_VALUE("MaterialPath", SetMaterialPath, String);
-
-
-	if (MString* pModelResource = FindReadVariant<MString>(*pStruct, "ModelResource"))
-	{
-		if (int* pMeshIndex = FindReadVariant<int>(*pStruct, "MeshIndex"))
-		{
-			SetMeshData(*pModelResource, *pMeshIndex);
-		}
-	}
-
-
+	M_SERIALIZER_READ_VALUE("MeshPath", SetMeshResourcePath, String);
 
 	M_SERIALIZER_END;
 }

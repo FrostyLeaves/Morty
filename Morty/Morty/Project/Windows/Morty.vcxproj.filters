@@ -246,9 +246,6 @@
     <ClInclude Include="..\..\ResourceLoader\Model\MMultiLevelMesh.h">
       <Filter>ResourceLoader\Model</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ResourceLoader\Model\MModelMeshStruct.h">
-      <Filter>ResourceLoader\Model</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Organizer\MScene.h">
       <Filter>Organizer</Filter>
     </ClInclude>
@@ -332,6 +329,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Core\Engine\MProject.h">
       <Filter>Core\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ResourceLoader\Model\MMeshResource.h">
+      <Filter>ResourceLoader\Model</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -473,9 +473,6 @@
     <ClCompile Include="..\..\ResourceLoader\Model\MMultiLevelMesh.cpp">
       <Filter>ResourceLoader\Model</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ResourceLoader\Model\MModelMeshStruct.cpp">
-      <Filter>ResourceLoader\Model</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Organizer\MScene.cpp">
       <Filter>Organizer</Filter>
     </ClCompile>
@@ -556,6 +553,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\Engine\MProject.cpp">
       <Filter>Core\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ResourceLoader\Model\MMeshResource.cpp">
+      <Filter>ResourceLoader\Model</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

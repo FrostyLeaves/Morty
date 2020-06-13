@@ -1,5 +1,5 @@
 ﻿#include "MModelInstance.h"
-#include "Model/MModelMeshStruct.h"
+#include "Model/MMeshResource.h"
 #include "Model/MModelResource.h"
 #include "MStaticMeshInstance.h"
 #include "MSkinnedMeshInstance.h"
@@ -179,25 +179,25 @@ bool MModelInstance::SetResource(MResource* pResource, const bool& bLoad)
 				SetSkeleton(pModelResource->GetSkeleton());
 
 				//初始化Mesh的旋转矩阵
-				for (MModelMeshStruct* pMeshData : *pModelResource->GetMeshes())
+				for (MMeshResource* pMeshResource : *pModelResource->GetMeshes())
 				{
 					MIModelMeshInstance* pMeshIns = nullptr;
-					if (pMeshData->GetMeshVertexType() == MModelMeshStruct::Normal)
+					if (pMeshResource->GetMeshVertexType() == MMeshResource::Normal)
 					{
 						MStaticMeshInstance* pStaticMeshIns = GetObjectManager()->CreateObject<MStaticMeshInstance>();
-						pStaticMeshIns->SetMeshData(pMeshData);
+						pStaticMeshIns->Load(pMeshResource);
 						pMeshIns = pStaticMeshIns;
 					}
 					else
 					{
 						MSkinnedMeshInstance* pSkinnedMeshIns = GetObjectManager()->CreateObject<MSkinnedMeshInstance>();
-						pSkinnedMeshIns->SetMeshData(pMeshData);
+						pSkinnedMeshIns->Load(pMeshResource);
 						pMeshIns = pSkinnedMeshIns;
 					}
 
-					pMeshIns->SetRotation(pMeshData->GetMeshesRotationMatrix()->GetRotation());
+					pMeshIns->SetRotation(pMeshResource->GetMeshesRotationMatrix()->GetRotation());
 
-					pMeshIns->SetName(pMeshData->GetMeshName());
+					pMeshIns->SetName(pMeshResource->GetMeshName());
 					pMeshIns->SetAttachedModelInstance(this);
 
 					AddNodeImpl(pMeshIns, MENodeChildType::EFixed);

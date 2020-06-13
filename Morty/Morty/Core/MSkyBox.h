@@ -14,6 +14,7 @@
 #include "MMesh.h"
 #include "MResource.h"
 
+class MMaterial;
 class MModelMeshStruct;
 class MTextureCubeResource;
 class MTextureCube;
@@ -31,14 +32,15 @@ public:
 
 	virtual void OnCreated() override;
 
-	MIMeshInstance* GetMeshInstance(){ return m_pMeshInstance; }
+	MIMesh* GetMesh(){ return m_pBoxMesh; }
+	MMaterial* GetMaterial() { return m_pMaterial; }
 
 public: 
 
 private:
 	MMesh<Vector3>* m_pBoxMesh;
 	MModelMeshStruct* m_pMeshData;
-	MIMeshInstance* m_pMeshInstance;
+	MMaterial* m_pMaterial;
 
 	MTextureCube* m_pTextureCube;
 	MResourceKeeper m_TextureCubeResource;

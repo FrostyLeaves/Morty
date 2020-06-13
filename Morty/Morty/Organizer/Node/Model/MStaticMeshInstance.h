@@ -18,7 +18,7 @@
 class MIMesh;
 class MMaterial;
 class MResource;
-class MMultiLevelMesh;
+class MMeshResource;
 class MModelResource;
 class MORTY_CLASS MStaticMeshInstance : public MIModelMeshInstance
 {
@@ -35,7 +35,11 @@ public:
 
 public:
 
-	virtual void SetMeshData(MModelMeshStruct* pMeshData);
+	void Load(MResource* pResource);
+
+	void SetMeshResourcePath(const MString& strResourcePath);
+	MString GetMeshResourcePath() { return m_Mesh.GetResourcePath(); }
+
 	virtual MIMesh* GetMesh() override { return GetMesh(GetDetailLevel()); }
 	virtual MIMesh* GetMesh(const unsigned int& unDetailLevel) override;
 
@@ -49,16 +53,13 @@ public:
 	virtual void ReadFromStruct(MStruct& srt) override;
 
 protected:
-
-	void SetMeshData(const MString& strModelResourcePath, const int& nIndex);
-
-protected:
 	virtual void WorldTransformDirty() override;
 	virtual void LocalTransformDirty() override;
 
 private:
 
-	MModelMeshStruct* m_pMesh;
+	MMeshResource* m_pMesh;
+	MResourceKeeper m_Mesh;
 	MResourceKeeper m_Material;
 	MBoundsAABB m_BoundsAABB;
 	MBoundsSphere m_BoundsSphere;

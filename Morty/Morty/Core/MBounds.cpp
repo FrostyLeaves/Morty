@@ -122,6 +122,23 @@ void MBoundsOBB::SetPoints(const MByte* vPoints, const unsigned int& unArrayLeng
 	m_v3HalfLength = (v3MaxPoint - v3MinPoint) * 0.5;
 }
 
+void MBoundsOBB::WriteToStruct(MStruct& srt)
+{
+	srt.AppendMVariant("mat", m_matEigVectors);
+	srt.AppendMVariant("min", m_v3MinPoint);
+	srt.AppendMVariant("max", m_v3MaxPoint);
+}
+
+void MBoundsOBB::ReadFromStruct(MStruct& srt)
+{
+	srt.FindMember<Matrix3>("mat", m_matEigVectors);
+	srt.FindMember<Vector3>("min", m_v3MinPoint);
+	srt.FindMember<Vector3>("max", m_v3MaxPoint);
+
+	m_v3CenterPoint = (m_v3MaxPoint + m_v3MinPoint) * 0.5;
+	m_v3HalfLength = (m_v3MaxPoint - m_v3MinPoint) * 0.5;
+}
+
 Vector3 MBoundsOBB::ConvertToOBB(const Vector3& v3Pos) const
 {
 	return v3Pos * m_matEigVectors;
@@ -278,6 +295,20 @@ bool MBoundsAABB::IsIntersect(const MBoundsAABB& aabb) const
 	return bXIntersect && bYIntersect && bZIntersect;
 }
 
+void MBoundsAABB::WriteToStruct(MStruct& srt)
+{
+	srt.AppendMVariant("min", m_v3MinPoint);
+	srt.AppendMVariant("max", m_v3MaxPoint);
+}
+
+void MBoundsAABB::ReadFromStruct(MStruct& srt)
+{
+	srt.FindMember<Vector3>("min", m_v3MinPoint);
+	srt.FindMember<Vector3>("max", m_v3MaxPoint);
+
+	SetMinMax(m_v3MinPoint, m_v3MaxPoint);
+}
+
 class MPointsSphere
 {
 public:
@@ -371,6 +402,18 @@ void MBoundsSphere::SetPoints(const MByte* vPoints, const unsigned int& unArrayL
 bool MBoundsSphere::IsContain(const Vector3& pos)
 {
 	return (pos - m_v3CenterPoint).Length() <= m_fRadius;
+}
+
+void MBoundsSphere::WriteToStruct(MStruct& srt)
+{
+	srt.AppendMVariant("r", m_fRadius);
+	srt.AppendMVariant("c", m_v3CenterPoint);
+}
+
+void MBoundsSphere::ReadFromStruct(MStruct& srt)
+{
+	srt.FindMember<float>("r", m_fRadius);
+	srt.FindMember<Vector3>("c", m_v3CenterPoint);
 }
 
 void MPointsSphere::RandomSwap()

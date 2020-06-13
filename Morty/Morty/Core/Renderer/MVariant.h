@@ -91,6 +91,7 @@ public:
 	M_VAR_GET_FUNC(Vector3, Vector3);
 	M_VAR_GET_FUNC(Vector4, Vector4);
 	M_VAR_GET_FUNC(Quaternion, Quaternion);
+	M_VAR_GET_FUNC(Matrix3, Matrix3);
 	M_VAR_GET_FUNC(Matrix4, Matrix4);
 	M_VAR_GET_FUNC(MStruct, Struct);
 	M_VAR_GET_FUNC(MVariantArray, Array);
@@ -199,6 +200,18 @@ public:
 
 	unsigned int AppendMVariant(const MString& strName, const MVariant& var);
 
+	template<typename T>
+	T* AppendMVariant(const MString& strName)
+	{
+		MStructMember sm;
+		sm.strName = strName;
+		sm.var = T();
+
+		unsigned int unIndex = m_tVariantMap[strName] = AppendStructMember(sm);
+
+		return m_vMember[unIndex].var.GetTypedData<T>();
+	}
+
 	void SetMember(const MString& strName, const MVariant& var);
 	MVariant* FindMember(const MString& strName);
 	const MVariant* FindMember(const MString& strName) const;
@@ -209,6 +222,18 @@ public:
 		if (MVariant* pVar = FindMember(strName))
 			return pVar->GetTypedData<T>();
 		return nullptr;
+	}
+
+	template<typename T>
+	bool FindMember(const MString& strName, T& result)
+	{
+		if (MVariant* pVar = FindMember(strName))
+		{
+			result = *pVar->GetTypedData<T>();
+			return true;
+		}
+
+		return false;
 	}
 
 	void Move(MStruct& sour);

@@ -26,8 +26,8 @@
 
 #include "MSkeleton.h"
 #include "Material/MMaterialResource.h"
+#include "Model/MMeshResource.h"
 #include "Model/MModelResource.h"
-#include "Model/MModelMeshStruct.h"
 
 #include <algorithm>
 
@@ -392,9 +392,9 @@ void MRenderSystem::DrawSkyBox(MRenderInfo& info)
 
 	if (pSkyBox)
 	{
-		if (MIMeshInstance* pMeshIns = pSkyBox->GetMeshInstance())
+		if (MIMesh* pMesh = pSkyBox->GetMesh())
 		{
-			MMaterial* pMaterial = pMeshIns->GetMaterial();
+			MMaterial* pMaterial = pSkyBox->GetMaterial();
 
 			if (MShaderParam* pMeshParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX))
 			{
@@ -412,7 +412,7 @@ void MRenderSystem::DrawSkyBox(MRenderInfo& info)
 
 			if (info.pRenderer->SetUseMaterial(pMaterial, true))
 			{
-				info.pRenderer->DrawMesh(pMeshIns->GetMesh());
+				info.pRenderer->DrawMesh(pMesh);
 			}
 		}
 
@@ -508,9 +508,9 @@ void MRenderSystem::DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pMeshI
 
 	if (MModelResource* pModelResource = dynamic_cast<MModelResource*>(pSphereResource))
 	{
-		for (MModelMeshStruct* pMeshData : *pModelResource->GetMeshes())
+		for (MMeshResource* pMeshRes : *pModelResource->GetMeshes())
 		{
-			info.pRenderer->DrawMesh(pMeshData->GetMesh());
+			info.pRenderer->DrawMesh(pMeshRes->GetMesh());
 		}
 	}
 }
