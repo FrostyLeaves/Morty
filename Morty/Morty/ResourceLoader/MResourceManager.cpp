@@ -113,3 +113,24 @@ MResource* MResourceManager::FindResourceByID(const MResourceID& unID)
 
 	return iter->second;
 }
+
+void MResourceManager::MoveTo(MResource* pResource, const MString& strTargetPath)
+{
+	MString strOldPath = pResource->m_strResourcePath;
+	m_tPathResources.erase(strOldPath);
+
+	MResource* pTargetResource = m_tPathResources[strTargetPath];
+	
+	pResource->m_strResourcePath = strTargetPath;
+	m_tPathResources[strTargetPath] = pResource;
+
+	if(pTargetResource)
+	{
+		//Set As Memory Resource
+		pTargetResource->m_strResourcePath = "";
+		for (MResourceKeeper* pKeeper : pTargetResource->m_vKeeper)
+		{
+			pKeeper->SetResource(pResource);
+		}
+	}
+}

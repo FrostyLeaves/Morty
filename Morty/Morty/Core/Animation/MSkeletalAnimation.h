@@ -70,7 +70,7 @@ protected:
 	bool FindTransform(const float& fTime, MSkeletalAnimNode* pAnimNode, MTransform& trans);
 
 private:
-	friend class MModelResource;
+	friend class MModelConverter;
 	std::vector<MSkeletalAnimNode*> m_vSkeletalAnimNodes;
 	MSkeleton* m_pSkeletonTemplate;
 

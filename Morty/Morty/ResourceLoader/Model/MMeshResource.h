@@ -63,7 +63,7 @@ protected:
 
 private:
 
-	friend class MModelResource;
+	friend class MModelConverter;
     
 	MString m_strName;
 	MEMeshVertexType m_eVertexType;

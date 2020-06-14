@@ -17,7 +17,7 @@
 #include "MMaterial.h"
 #include "Model/MModelInstance.h"
 #include "Model/MIMeshInstance.h"
-#include "Model/MModelResource.h"
+#include "Model/MModelConverter.h"
 #include "Model/MMeshResource.h"
 #include "Model/MIModelMeshInstance.h"
 #include "MResourceManager.h"
@@ -127,8 +127,10 @@ public:
 int main(int argc, char* argv[])
 {
 	MEngine engine;
-
 	engine.Initialize();
+
+	MModelConverter conver(&engine);
+
 
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
 	pRootNode->SetName("RootNode");

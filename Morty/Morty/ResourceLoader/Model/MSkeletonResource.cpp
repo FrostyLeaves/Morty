@@ -1,4 +1,5 @@
 #include "MSkeletonResource.h"
+#include "MResourceManager.h"
 
 #include "MVariant.h"
 #include "Json/MJson.h"
@@ -10,6 +11,7 @@ MSkeletonResource::MSkeletonResource()
     : MResource()
     , m_pSkeletonTemplate(nullptr)
 {
+	m_unResourceType = MResourceManager::MEResourceType::Skeleton;
 }
 
 MSkeletonResource::~MSkeletonResource()

@@ -31,6 +31,8 @@ public:
 		Material = 3,
 		Texture = 4,
 		Node = 5,
+		Mesh = 6,
+		Skeleton = 7,
 	};
 
 public:
@@ -84,6 +86,8 @@ public:
 	MResource* FindResourceByID(const MResourceID& unID);
 
 	std::map<MResourceID, MResource*>* GetAllResources() { return &m_tResources; }
+
+	void MoveTo(MResource* pResource, const MString& strTargetPath);
 
 private:
 

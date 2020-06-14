@@ -161,6 +161,8 @@
     <ClInclude Include="..\..\Organizer\System\MRenderSystem.h" />
     <ClInclude Include="..\..\ResourceLoader\Material\MMaterialResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MFileHelper.h" />
+    <ClInclude Include="..\..\ResourceLoader\Model\MModelConverter.h" />
+    <ClInclude Include="..\..\ResourceLoader\Model\MModelResource.h" />
     <ClInclude Include="..\..\ResourceLoader\Model\MMultiLevelMesh.h" />
     <ClInclude Include="..\..\ResourceLoader\Model\MMeshResource.h" />
     <ClInclude Include="..\..\ResourceLoader\Model\MSkeletonResource.h" />
@@ -176,7 +178,6 @@
     <ClInclude Include="../../Utility\MSingleInstance.h" />
     <ClInclude Include="../../Utility\MString.h" />
     <ClInclude Include="../../Utility\Timer\MTimer.h" />
-    <ClInclude Include="..\..\ResourceLoader\Model\MModelResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MResourceLoader.h" />
     <ClInclude Include="..\..\Utility\Json\MJson.h" />
@@ -250,6 +251,7 @@
     <ClCompile Include="..\..\Organizer\System\MISystem.cpp" />
     <ClCompile Include="..\..\Organizer\System\MRenderSystem.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MFileHelper.cpp" />
+    <ClCompile Include="..\..\ResourceLoader\Model\MModelResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Model\MMultiLevelMesh.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Model\MMeshResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Model\MSkeletonResource.cpp" />
@@ -263,7 +265,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="../../Utility\Timer\MTimer.cpp" />
-    <ClCompile Include="..\..\ResourceLoader\Model\MModelResource.cpp" />
+    <ClCompile Include="..\..\ResourceLoader\Model\MModelConverter.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MResource.cpp" />
     <ClCompile Include="..\..\Utility\Json\MJson.cpp" />
     <ClCompile Include="..\..\Utility\MGlobal.cpp" />
