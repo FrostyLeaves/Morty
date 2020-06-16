@@ -326,7 +326,7 @@ bool MSkeletalAnimation::Load(const MString& strResourcePath)
 		return false;
 
 	MVariant var;
-	MJson::MVariantToJson(var, code);
+	MJson::JsonToMVariant(code, var);
 	if (MStruct* pSrt = var.GetStruct())
 	{
 		ReadFromStruct(*pSrt);

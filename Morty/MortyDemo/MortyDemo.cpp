@@ -45,7 +45,7 @@
 #include "MTypedClass.h"
 
 #include "MBounds.h"
-
+#include "Timer/MTimer.h"
 
 #include "Quaternion.h"
 
@@ -130,20 +130,26 @@ int main(int argc, char* argv[])
 	MEngine engine;
 	engine.Initialize();
 
-
 	{
 		{
 			MModelConverter conver(&engine);
 			conver.Convert("./Model/Pikachu.fbx", "./Model", "Pikachu");
 		}
-		engine.Release();
-		return 0;
+// 		engine.Release();
+// 		return 0;
 	}
 
 
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
 	pRootNode->SetName("RootNode");
-	MModelResource* pGroundResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/cat/cat.model"));
+
+	auto time = MTimer::GetCurTime();
+
+	MModelResource* pGroundResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/Pikachu/Pikachu.model"));
+
+	time = MTimer::GetCurTime() - time;
+
+	MLogManager::GetInstance()->Log("Load Model Time: %lld", time);
 
 	for (int i = 0; i < 1; ++i)
 	{

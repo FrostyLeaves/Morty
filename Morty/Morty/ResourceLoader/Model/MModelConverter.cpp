@@ -25,6 +25,8 @@
 
 #include "MFileHelper.h"
 
+#include "Timer/MTimer.h"
+
 void CopyMatrix4(Matrix4* matdest, aiMatrix4x4* matsour)
 {
 	for (unsigned int r = 0; r < 4; ++r)
@@ -68,9 +70,13 @@ bool MModelConverter::Convert(const MString& strResourcePath, const MString& str
 {
 	m_strResourcePath = strResourcePath;
 
+	auto time = MTimer::GetCurTime();
 	if (!Load(strResourcePath))
 		return false;
-	
+
+	time = MTimer::GetCurTime() - time;
+
+	MLogManager::GetInstance()->Log("Load Model Time: %lld", time);
 
 	MString strPath = strOutputDir + "/" + strOutputName + "/";
 
@@ -81,18 +87,21 @@ bool MModelConverter::Convert(const MString& strResourcePath, const MString& str
 		m_pEngine->GetResourceManager()->MoveTo(m_pSkeleton, strPath + strOutputName + "." + SUFFIX_SKELETON);
 		m_pSkeleton->Save();
 	}
-	for (MMeshResource* pMeshResource : m_vMeshes)
+	for (int i = 0; i < m_vMeshes.size(); ++i)
 	{
+		MMeshResource* pMeshResource = m_vMeshes[i];
+		MString strMeshFileName = strPath + pMeshResource->GetMeshName() + "_" + MStringHelper::ToString(i);
+
 		if (MResource* pMatRes = pMeshResource->GetDefaultMaterial())
 		{
 			if (MMaterialResource* pMaterialResource = pMatRes->DynamicCast<MMaterialResource>())
 			{
-				m_pEngine->GetResourceManager()->MoveTo(pMaterialResource, strPath + pMeshResource->GetMeshName() + "." + SUFFIX_MATERIAL);
+				m_pEngine->GetResourceManager()->MoveTo(pMaterialResource, strMeshFileName + "." + SUFFIX_MATERIAL);
 				pMaterialResource->Save();
 			}
 		}
 
-		m_pEngine->GetResourceManager()->MoveTo(pMeshResource, strPath + pMeshResource->GetMeshName() + "." + SUFFIX_MESH);
+		m_pEngine->GetResourceManager()->MoveTo(pMeshResource, strMeshFileName + "." + SUFFIX_MESH);
 		pMeshResource->Save();
 	}
 

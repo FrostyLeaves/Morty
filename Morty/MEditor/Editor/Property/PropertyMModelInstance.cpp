@@ -11,24 +11,31 @@ void PropertyMModelInstance::EditAnimation(MModelInstance* pNode)
 
 	static auto ModelLoadFunc = [&pNode](const MString& strNewFilePath) {
 
-		MSkeletalAnimController* pController = pNode->GetSkeletalAnimationController();
-		bool bLoop = pController->GetLoop();
-		float fPercent = pController->GetPercent();
-		MIAnimController::MEAnimControllerState state = pController->GetState();
-
+		MSkeletalAnimController* pOldController = pNode->GetSkeletalAnimationController();
+		bool bLoop = false;
+		float fPercent = 0.0f;
+		MIAnimController::MEAnimControllerState state = MIAnimController::EStop;
+		if (pOldController)
+		{
+			bLoop = pOldController->GetLoop();
+			fPercent = pOldController->GetPercent();
+			state = pOldController->GetState();
+		}
 		pNode->SetPlayAnimation(strNewFilePath);
-		pController = pNode->GetSkeletalAnimationController();
+		MSkeletalAnimController* pController = pNode->GetSkeletalAnimationController();
 
-		pController->SetLoop(bLoop);
-		pController->SetPercent(fPercent);
-		pController->Update(0.0f);
-		if (MIAnimController::EPlay == state)
-			pController->Play();
-
+		if (pOldController)
+		{
+			pController->SetLoop(bLoop);
+			pController->SetPercent(fPercent);
+			pController->Update(0.0f);
+			if (MIAnimController::EPlay == state)
+				pController->Play();
+		}
 
 	};
 	ShowValueBegin("Animation");
-	EditMResource("model_file_dlg", pCurrentAnimResource, MResourceManager::MEResourceType::SkelAnim, ModelLoadFunc);
+	EditMResource("skelanim_file_dlg", pCurrentAnimResource, MResourceManager::MEResourceType::SkelAnim, ModelLoadFunc);
 
 	ShowValueEnd();
 
