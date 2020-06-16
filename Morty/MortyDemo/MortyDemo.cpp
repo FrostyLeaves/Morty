@@ -19,6 +19,7 @@
 #include "Model/MIMeshInstance.h"
 #include "Model/MModelConverter.h"
 #include "Model/MMeshResource.h"
+#include "Model/MModelResource.h"
 #include "Model/MIModelMeshInstance.h"
 #include "MResourceManager.h"
 #include "MVariant.h"
@@ -129,12 +130,20 @@ int main(int argc, char* argv[])
 	MEngine engine;
 	engine.Initialize();
 
-	MModelConverter conver(&engine);
+
+	{
+		{
+			MModelConverter conver(&engine);
+			conver.Convert("./Model/Pikachu.fbx", "./Model", "Pikachu");
+		}
+		engine.Release();
+		return 0;
+	}
 
 
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
 	pRootNode->SetName("RootNode");
-	MModelResource* pGroundResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/cat_rigged.fbx"));
+	MModelResource* pGroundResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/cat/cat.model"));
 
 	for (int i = 0; i < 1; ++i)
 	{

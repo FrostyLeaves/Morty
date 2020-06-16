@@ -1,8 +1,17 @@
 #include "MSkeletalAnimation.h"
 #include "MMath.h"
+#include "MEngine.h"
+#include "Json/MJson.h"
+#include "MFileHelper.h"
+#include "MResourceManager.h"
+#include "Model/MSkeletonResource.h"
+#include "Model/MSkeletalAnimationResource.h"
+
+M_RESOURCE_IMPLEMENT(MSkeletalAnimation, MResource)
 
 MSkeletalAnimation::MSkeletalAnimation()
-	: m_pSkeletonTemplate(nullptr)
+	: MIAnimation()
+	, m_Skeleton()
 	, m_unIndex(0)
 	, m_strName()
 	, m_fTicksDuration(0.0f)
@@ -14,6 +23,11 @@ MSkeletalAnimation::MSkeletalAnimation()
 MSkeletalAnimation::~MSkeletalAnimation()
 {
 
+}
+
+MSkeleton* MSkeletalAnimation::GetSkeletonTemplate()
+{
+	return m_Skeleton.GetResource<MSkeletonResource>();
 }
 
 void MSkeletalAnimation::Update(const float& fTime, MSkeletonInstance* pSkeletonIns, const MSkeletonAnimMap& skelAnimMap)
@@ -30,11 +44,11 @@ void MSkeletalAnimation::Update(const float& fTime, MSkeletonInstance* pSkeleton
 		if(M_INVALID_INDEX == nAnimNodeIndex)
 			continue;
 
-		MSkeletalAnimNode* pAnimNode = m_vSkeletalAnimNodes[nAnimNodeIndex];
+		MSkeletalAnimNode& animNode = m_vSkeletalAnimNodes[nAnimNodeIndex];
 		Matrix4 matParentTrans = bone.unParentIndex == M_INVALID_INDEX ? Matrix4::IdentityMatrix : bones[bone.unParentIndex].m_matWorldTransform;
 
 		MTransform trans;
-		if (pAnimNode && FindTransform(fTime, pAnimNode, trans))
+		if (FindTransform(fTime, animNode, trans))
 		{
 			//Use animation transform
 			bone.m_matWorldTransform = matParentTrans * trans.GetMatrix();
@@ -53,23 +67,197 @@ void MSkeletalAnimation::Update(const float& fTime, MSkeletonInstance* pSkeleton
 
 }
 
-bool MSkeletalAnimation::FindTransform(const float& fTime, MSkeletalAnimNode* pAnimNode, MTransform& trans)
+MSkeletalAnimNode::MSkeletalAnimNode()
+	: m_unPositionKeysNum(0)
+	, m_unRotationKeysNum(0)
+	, m_unScalingKeysNum(0)
+	, m_vPositionKeys(nullptr)
+	, m_vRotationKeys(nullptr)
+	, m_vScalingKeys(nullptr)
 {
+
+}
+
+MSkeletalAnimNode::~MSkeletalAnimNode()
+{
+	if (m_vPositionKeys) delete[] m_vPositionKeys;
+	if (m_vRotationKeys) delete[] m_vRotationKeys;
+	if (m_vScalingKeys) delete[] m_vScalingKeys;
+}
+
+void MSkeletalAnimNode::WriteToStruct(MStruct& srt)
+{
+	if (MVariantArray* pArray = srt.AppendMVariant<MVariantArray>("p"))
+	{
+		for (int i = 0; i < m_unPositionKeysNum; ++i)
+		{
+			if (MStruct* pNode = pArray->AppendMVariant<MStruct>())
+			{
+				pNode->AppendMVariant("t", m_vPositionKeys[i].mTime);
+				pNode->AppendMVariant("v", m_vPositionKeys[i].mValue);
+			}
+		}
+	}
+
+	if (MVariantArray* pArray = srt.AppendMVariant<MVariantArray>("r"))
+	{
+		for (int i = 0; i < m_unRotationKeysNum; ++i)
+		{
+			if (MStruct* pNode = pArray->AppendMVariant<MStruct>())
+			{
+				pNode->AppendMVariant("t", m_vRotationKeys[i].mTime);
+				pNode->AppendMVariant("v", m_vRotationKeys[i].mValue);
+			}
+		}
+	}
+
+	if (MVariantArray* pArray = srt.AppendMVariant<MVariantArray>("s"))
+	{
+		for (int i = 0; i < m_unScalingKeysNum; ++i)
+		{
+			if (MStruct* pNode = pArray->AppendMVariant<MStruct>())
+			{
+				pNode->AppendMVariant("t", m_vScalingKeys[i].mTime);
+				pNode->AppendMVariant("v", m_vScalingKeys[i].mValue);
+			}
+		}
+	}
+}
+
+void MSkeletalAnimNode::ReadFromStruct(MStruct& srt)
+{
+	if (MVariantArray* pArray = srt.FindMember<MVariantArray>("p"))
+	{
+		m_unPositionKeysNum = pArray->GetMemberCount();
+		m_vPositionKeys = new MAnimNodeKey<Vector3>[m_unPositionKeysNum];
+		for (int i = 0; i < m_unPositionKeysNum; ++i)
+		{
+			if (MStruct* pNode = pArray->GetMember(i)->var.GetStruct())
+			{
+				pNode->FindMember("t", m_vPositionKeys[i].mTime);
+				pNode->FindMember("v", m_vPositionKeys[i].mValue);
+			}
+		}
+	}
+
+	if (MVariantArray* pArray = srt.FindMember<MVariantArray>("r"))
+	{
+		m_unRotationKeysNum = pArray->GetMemberCount();
+		m_vRotationKeys = new MAnimNodeKey<Quaternion>[m_unRotationKeysNum];
+		for (int i = 0; i < m_unRotationKeysNum; ++i)
+		{
+			if (MStruct* pNode = pArray->GetMember(i)->var.GetStruct())
+			{
+				pNode->FindMember("t", m_vRotationKeys[i].mTime);
+				pNode->FindMember("v", m_vRotationKeys[i].mValue);
+			}
+		}
+	}
+
+	if (MVariantArray* pArray = srt.FindMember<MVariantArray>("s"))
+	{
+		m_unScalingKeysNum = pArray->GetMemberCount();
+		m_vScalingKeys = new MAnimNodeKey<Vector3>[m_unScalingKeysNum];
+		for (int i = 0; i < m_unScalingKeysNum; ++i)
+		{
+			if (MStruct* pNode = pArray->GetMember(i)->var.GetStruct())
+			{
+				pNode->FindMember("t", m_vScalingKeys[i].mTime);
+				pNode->FindMember("v", m_vScalingKeys[i].mValue);
+			}
+		}
+	}
+}
+
+void MSkeletalAnimation::WriteToStruct(MStruct& srt)
+{
+	if (MString* pSkePath = srt.AppendMVariant<MString>("ske"))
+	{
+		if (MResource* pSkeletonRes = m_Skeleton.GetResource())
+		{
+			*pSkePath = pSkeletonRes->GetResourcePath();
+		}
+	}
+
+	if (MString* pName = srt.AppendMVariant<MString>("name"))
+		*pName = m_strName;
+
+	if (float* pTime = srt.AppendMVariant<float>("dur"))
+		*pTime = m_fTicksDuration;
+
+	if (float* pTime = srt.AppendMVariant<float>("sec"))
+		*pTime = m_fTicksPerSecond;
+
+	if (MVariantArray* pNodeArray = srt.AppendMVariant<MVariantArray>("nodes"))
+	{
+		for (MSkeletalAnimNode& node : m_vSkeletalAnimNodes)
+		{
+			if (MStruct* pNodeSrt = pNodeArray->AppendMVariant<MStruct>())
+			{
+				node.WriteToStruct(*pNodeSrt);
+			}
+			
+		}
+	}
+}
+
+void MSkeletalAnimation::ReadFromStruct(MStruct& srt)
+{
+	if (MString* pSkePath = srt.FindMember<MString>("ske"))
+	{
+		if (MResource* pSkeletonRes = GetEngine()->GetResourceManager()->LoadResource(*pSkePath))
+		{
+			m_Skeleton = pSkeletonRes;
+		}
+	}
+
+	srt.FindMember<MString>("name", m_strName);
+
+	srt.FindMember<float>("dur", m_fTicksDuration);
+
+	srt.FindMember<float>("sec", m_fTicksPerSecond);
+
+	if (MVariantArray* pNodeArray = srt.FindMember<MVariantArray>("nodes"))
+	{
+		unsigned int nSize = pNodeArray->GetMemberCount();
+		m_vSkeletalAnimNodes.resize(nSize);
+		for (unsigned int i = 0 ; i < nSize; ++i)
+		{
+			if (MStruct* pNodeSrt = pNodeArray->GetMember(i)->var.GetStruct())
+			{
+				m_vSkeletalAnimNodes[i].ReadFromStruct(*pNodeSrt);
+			}
+		}
+	}
+}
+
+void MSkeletalAnimation::OnDelete()
+{
+	m_Skeleton.SetResource(nullptr);
+
+	Super::OnDelete();
+}
+
+bool MSkeletalAnimation::FindTransform(const float& fTime, const MSkeletalAnimNode& animNode, MTransform& trans)
+{
+	if (animNode.m_unPositionKeysNum + animNode.m_unRotationKeysNum + animNode.m_unScalingKeysNum == 0)
+		return false;
+
 	Vector3 v3Position, v3Scale;
 	Quaternion quatRotation;
 
-	for (unsigned int i = pAnimNode->m_unPositionKeysNum - 1; i >= 0; --i)
+	for (int i = animNode.m_unPositionKeysNum - 1; i >= 0; --i)
 	{
-		const MSkeletalAnimNode::MAnimNodeKey<Vector3>& curkey = pAnimNode->m_vPositionKeys[i];
+		const MSkeletalAnimNode::MAnimNodeKey<Vector3>& curkey = animNode.m_vPositionKeys[i];
 		if (fTime >= curkey.mTime)
 		{
-			if (i == pAnimNode->m_unPositionKeysNum - 1)
+			if (i == animNode.m_unPositionKeysNum - 1)
 			{
 				v3Position = curkey.mValue;
 			}
 			else
 			{
-				const MSkeletalAnimNode::MAnimNodeKey<Vector3>& nextKey = pAnimNode->m_vPositionKeys[i + 1];
+				const MSkeletalAnimNode::MAnimNodeKey<Vector3>& nextKey = animNode.m_vPositionKeys[i + 1];
 				if (nextKey.mTime - curkey.mTime > 1e-6f)
 					v3Position = MMath::Lerp(curkey.mValue, nextKey.mValue, (fTime - curkey.mTime) / (nextKey.mTime - curkey.mTime));
 				else
@@ -80,18 +268,18 @@ bool MSkeletalAnimation::FindTransform(const float& fTime, MSkeletalAnimNode* pA
 		}
 	}
 
-	for (unsigned int i = pAnimNode->m_unRotationKeysNum - 1; i >= 0; --i)
+	for (int i = animNode.m_unRotationKeysNum - 1; i >= 0; --i)
 	{
-		const MSkeletalAnimNode::MAnimNodeKey<Quaternion>& curkey = pAnimNode->m_vRotationKeys[i];
+		const MSkeletalAnimNode::MAnimNodeKey<Quaternion>& curkey = animNode.m_vRotationKeys[i];
 		if (fTime >= curkey.mTime)
 		{
-			if (i == pAnimNode->m_unRotationKeysNum - 1)
+			if (i == animNode.m_unRotationKeysNum - 1)
 			{
 				quatRotation = curkey.mValue;
 			}
 			else
 			{
-				const MSkeletalAnimNode::MAnimNodeKey<Quaternion>& nextKey = pAnimNode->m_vRotationKeys[i + 1];
+				const MSkeletalAnimNode::MAnimNodeKey<Quaternion>& nextKey = animNode.m_vRotationKeys[i + 1];
 				if (nextKey.mTime - curkey.mTime > 1e-6f)
 					quatRotation = Quaternion::Slerp(curkey.mValue, nextKey.mValue, (fTime - curkey.mTime) / (nextKey.mTime - curkey.mTime));
 				else
@@ -102,18 +290,18 @@ bool MSkeletalAnimation::FindTransform(const float& fTime, MSkeletalAnimNode* pA
 		}
 	}
 
-	for (unsigned int i = pAnimNode->m_unScalingKeysNum - 1; i >= 0; --i)
+	for (int i = animNode.m_unScalingKeysNum - 1; i >= 0; --i)
 	{
-		const MSkeletalAnimNode::MAnimNodeKey<Vector3>& curkey = pAnimNode->m_vScalingKeys[i];
+		const MSkeletalAnimNode::MAnimNodeKey<Vector3>& curkey = animNode.m_vScalingKeys[i];
 		if (fTime >= curkey.mTime)
 		{
-			if (i == pAnimNode->m_unScalingKeysNum - 1)
+			if (i == animNode.m_unScalingKeysNum - 1)
 			{
 				v3Scale = curkey.mValue;
 			}
 			else
 			{
-				const MSkeletalAnimNode::MAnimNodeKey<Vector3>& nextKey = pAnimNode->m_vScalingKeys[i + 1];
+				const MSkeletalAnimNode::MAnimNodeKey<Vector3>& nextKey = animNode.m_vScalingKeys[i + 1];
 				if (nextKey.mTime - curkey.mTime > 1e-6f)
 					v3Scale = MMath::Lerp(curkey.mValue, nextKey.mValue, (fTime - curkey.mTime) / (nextKey.mTime - curkey.mTime));
 				else
@@ -129,6 +317,37 @@ bool MSkeletalAnimation::FindTransform(const float& fTime, MSkeletalAnimNode* pA
 	trans.SetScale(v3Scale);
 
 	return true;
+}
+
+bool MSkeletalAnimation::Load(const MString& strResourcePath)
+{
+	MString code;
+	if (!MFileHelper::ReadString(strResourcePath, code))
+		return false;
+
+	MVariant var;
+	MJson::MVariantToJson(var, code);
+	if (MStruct* pSrt = var.GetStruct())
+	{
+		ReadFromStruct(*pSrt);
+
+		return true;
+	}
+
+	return false;
+}
+
+bool MSkeletalAnimation::SaveTo(const MString& strResourcePath)
+{
+	MVariant var = MStruct();
+	MStruct& srt = *var.GetStruct();
+
+	WriteToStruct(srt);
+
+	MString code;
+	MJson::MVariantToJson(srt, code);
+
+	return MFileHelper::WriteString(strResourcePath, code);
 }
 
 MSkeletalAnimController::MSkeletalAnimController()
@@ -149,6 +368,9 @@ MSkeletalAnimController::~MSkeletalAnimController()
 
 bool MSkeletalAnimController::Initialize(MSkeletonInstance* pSkeletonIns, MSkeletalAnimation* pAnimation)
 {
+	if (!pAnimation)
+		return false;
+
 	if (m_bInitialized)
 		return false;
 
@@ -156,6 +378,7 @@ bool MSkeletalAnimController::Initialize(MSkeletonInstance* pSkeletonIns, MSkele
 		return false;
 
 	m_pSkeletonIns = pSkeletonIns;
+	m_AnimResource = pAnimation;
 	m_pAnimation = pAnimation;
 
 	BindMapping();

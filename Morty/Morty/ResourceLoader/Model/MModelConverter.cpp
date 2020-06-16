@@ -9,9 +9,11 @@
 #include "MIDevice.h"
 #include "MEngine.h"
 
-#include "Material/MMaterialResource.h"
-#include "Texture/MTextureResource.h"
+#include "Model/MModelResource.h"
 #include "Model/MSkeletonResource.h"
+#include "Texture/MTextureResource.h"
+#include "Material/MMaterialResource.h"
+#include "Model/MSkeletalAnimationResource.h"
 
 #include "MBounds.h"
 #include "MSkeleton.h"
@@ -20,6 +22,8 @@
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
+
+#include "MFileHelper.h"
 
 void CopyMatrix4(Matrix4* matdest, aiMatrix4x4* matsour)
 {
@@ -35,16 +39,29 @@ void CopyMatrix4(Matrix4* matdest, aiMatrix4x4* matsour)
 MModelConverter::MModelConverter(MEngine* pEngine)
 : m_pEngine(pEngine)
 , m_strResourcePath()
-, m_strOutputDir()
-, m_strOutputName()
 , m_vMeshes()
-, m_pSkeletonResource(nullptr)
-, m_tSkeletalAnimation()
+, m_pSkeleton()
+, m_vSkeletalAnimation()
 {
 }
 
 MModelConverter::~MModelConverter()
 {
+	if (m_pSkeleton)
+	{
+		m_pSkeleton->SubRef();
+		m_pSkeleton = nullptr;
+	}
+
+	for (MMeshResource* pMeshRes : m_vMeshes)
+		pMeshRes->SubRef();
+	
+	m_vMeshes.clear();
+
+	for (MSkeletalAnimationResource* pAnim : m_vSkeletalAnimation)
+		pAnim->SubRef();
+
+	m_vSkeletalAnimation.clear();
 }
 
 bool MModelConverter::Convert(const MString& strResourcePath, const MString& strOutputDir, const MString& strOutputName)
@@ -57,17 +74,47 @@ bool MModelConverter::Convert(const MString& strResourcePath, const MString& str
 
 	MString strPath = strOutputDir + "/" + strOutputName + "/";
 
-	if (m_pSkeletonResource)
+	MFileHelper::MakeDir(strOutputDir + "/" + strOutputName);
+
+	if (m_pSkeleton)
 	{
-		m_pEngine->GetResourceManager()->MoveTo(m_pSkeletonResource, strPath + strOutputName + ".ske");
-		m_pSkeletonResource->Save();
+		m_pEngine->GetResourceManager()->MoveTo(m_pSkeleton, strPath + strOutputName + "." + SUFFIX_SKELETON);
+		m_pSkeleton->Save();
 	}
 	for (MMeshResource* pMeshResource : m_vMeshes)
 	{
-		m_pEngine->GetResourceManager()->MoveTo(pMeshResource, strPath + pMeshResource->GetMeshName() + ".mesh");
+		if (MResource* pMatRes = pMeshResource->GetDefaultMaterial())
+		{
+			if (MMaterialResource* pMaterialResource = pMatRes->DynamicCast<MMaterialResource>())
+			{
+				m_pEngine->GetResourceManager()->MoveTo(pMaterialResource, strPath + pMeshResource->GetMeshName() + "." + SUFFIX_MATERIAL);
+				pMaterialResource->Save();
+			}
+		}
+
+		m_pEngine->GetResourceManager()->MoveTo(pMeshResource, strPath + pMeshResource->GetMeshName() + "." + SUFFIX_MESH);
 		pMeshResource->Save();
 	}
 
+	for (MSkeletalAnimation* pAnimResource : m_vSkeletalAnimation)
+	{
+		MString strValidFileName = pAnimResource->GetName();
+		MFileHelper::GetValidFileName(strValidFileName);
+		m_pEngine->GetResourceManager()->MoveTo(pAnimResource, strPath + strValidFileName + "." + SUFFIX_SKELANIM);
+		pAnimResource->Save();
+
+	}
+
+	MModelResource* pModelResource = m_pEngine->GetResourceManager()->CreateResource<MModelResource>();
+	pModelResource->AddRef();
+	pModelResource->SetSkeletonResource(m_pSkeleton);
+	pModelResource->GetMeshResources(m_vMeshes);
+
+	m_pEngine->GetResourceManager()->MoveTo(pModelResource, strPath + strOutputName + "." + SUFFIX_MODEL);
+	pModelResource->Save();
+
+	pModelResource->SubRef();
+	pModelResource = nullptr;
 
 	return true;
 }
@@ -78,9 +125,8 @@ bool MModelConverter::Load(const MString& strResourcePath)
 		pMesh->SubRef();
 	m_vMeshes.clear();
 
-	m_pSkeletonResource = m_pEngine->GetResourceManager()->CreateResource<MSkeletonResource>();
-	m_pSkeletonResource->SetSkeleton(new MSkeleton());
-	m_pSkeletonResource->AddRef();
+	m_pSkeleton = m_pEngine->GetResourceManager()->CreateResource<MSkeletonResource>();
+	m_pSkeleton->AddRef();
 
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(strResourcePath, aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_FixInfacingNormals | aiProcess_ConvertToLeftHanded);
@@ -125,9 +171,10 @@ void MModelConverter::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vec
 			pMeshData->m_pMesh = pMMesh;
 			pMeshData->m_eVertexType = MMeshResource::Skeleton;
 			pMeshData->m_matRotationMatrix = matRotation;
-			pMeshData->m_SkeletonKeeper.SetResource(m_pSkeletonResource);
+			pMeshData->m_SkeletonKeeper.SetResource(m_pSkeleton);
 			pMeshData->ResetBounds();
 
+			pMeshData->AddRef();
 			m_vMeshes.push_back(pMeshData);
 		}
 		else
@@ -146,6 +193,7 @@ void MModelConverter::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vec
 
 			pMeshData->ResetBounds();
 
+			pMeshData->AddRef();
 			m_vMeshes.push_back(pMeshData);
 		}
 
@@ -268,14 +316,13 @@ void MModelConverter::ProcessMeshIndices(aiMesh* pMesh, const aiScene* pScene, M
 
 void MModelConverter::BindVertexAndBones(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh)
 {
-	MSkeleton* pSkeleton = m_pSkeletonResource->GetSkeleton();
 
 	for (unsigned int i = 0; i < pMesh->mNumBones; ++i)
 	{
 		if (aiBone* pBone = pMesh->mBones[i])
 		{
 			MString strBoneName(pBone->mName.data); 
-			if (const MBone* pMBone = pSkeleton->FindBoneByName(strBoneName))
+			if (const MBone* pMBone = m_pSkeleton->FindBoneByName(strBoneName))
 			{
 				for (unsigned int wgtIndex = 0; wgtIndex < pBone->mNumWeights; ++wgtIndex)
 				{
@@ -299,8 +346,6 @@ void MModelConverter::BindVertexAndBones(aiMesh* pMesh, const aiScene* pScene, M
 
 void MModelConverter::RecordBones(aiNode* pNode, const aiScene* pScene)
 {
-	MSkeleton* pSkeleton = m_pSkeletonResource->GetSkeleton();
-
 	for (unsigned int i = 0; i < pNode->mNumMeshes; ++i)
 	{
 		aiMesh* pMesh = pScene->mMeshes[pNode->mMeshes[i]];
@@ -311,10 +356,10 @@ void MModelConverter::RecordBones(aiNode* pNode, const aiScene* pScene)
 				if (aiBone* pBone = pMesh->mBones[i])
 				{
 					MString strBoneName(pBone->mName.data);
-					MBone* pMBone = pSkeleton->FindBoneByName(strBoneName);
+					MBone* pMBone = m_pSkeleton->FindBoneByName(strBoneName);
 					if (nullptr == pMBone)
 					{
-						pMBone = pSkeleton->AppendBone(strBoneName);
+						pMBone = m_pSkeleton->AppendBone(strBoneName);
 						CopyMatrix4(&pMBone->m_matOffsetMatrix, &pBone->mOffsetMatrix);
 					}
 				}
@@ -330,28 +375,24 @@ void MModelConverter::RecordBones(aiNode* pNode, const aiScene* pScene)
 
 void MModelConverter::ProcessBones(const aiScene* pScene)
 {
-	MSkeleton* pSkeleton = m_pSkeletonResource->GetSkeleton();
-
 	RecordBones(pScene->mRootNode, pScene);
 	BindBones(pScene->mRootNode, pScene);
 
-	if (pSkeleton->GetAllBones().empty())
+	if (m_pSkeleton->GetAllBones().empty())
 	{
-		m_pSkeletonResource->SubRef();
-		m_pSkeletonResource = nullptr;
+		m_pSkeleton->SubRef();
+		m_pSkeleton = nullptr;
 	}
 	else
 	{
-		pSkeleton->SortByDeep();
+		m_pSkeleton->SortByDeep();
 	}
 }
 
 void MModelConverter::BindBones(aiNode* pNode, const aiScene* pScene, MBone* pParent/* = nullptr*/)
 {
-	MSkeleton* pSkeleton = m_pSkeletonResource->GetSkeleton();
-
 	MBone* pMBone = nullptr;
-	if (pMBone = pSkeleton->FindBoneByName(pNode->mName.data))
+	if (pMBone = m_pSkeleton->FindBoneByName(pNode->mName.data))
 	{
 		if (pParent)
 		{
@@ -374,17 +415,21 @@ void MModelConverter::BindBones(aiNode* pNode, const aiScene* pScene, MBone* pPa
 
 void MModelConverter::ProcessAnimation(const aiScene* pScene)
 {
-	MSkeleton* pSkeleton = m_pSkeletonResource->GetSkeleton();
+	if (!m_pSkeleton)
+		return;
 
 	for (unsigned int i = 0; i < pScene->mNumAnimations; ++i)
 	{
 		aiAnimation* pAnimation = pScene->mAnimations[i];
-		MSkeletalAnimation* pMAnimation = new MSkeletalAnimation();
-		pMAnimation->m_pSkeletonTemplate = pSkeleton;
+
+		MSkeletalAnimationResource* pMAnimation = m_pEngine->GetResourceManager()->CreateResource<MSkeletalAnimationResource>();
+		pMAnimation->AddRef();
+
+		m_vSkeletalAnimation.push_back(pMAnimation);
+
+		pMAnimation->m_Skeleton = m_pSkeleton;
 //		pMAnimation->m_vSkeletalAnimNodes.resize(pAnimation->mNumChannels);// init by nullptr
-		pMAnimation->m_vSkeletalAnimNodes.resize(pSkeleton->GetAllBones().size());
-		//Record
-		m_tSkeletalAnimation[pAnimation->mName.C_Str()] = pMAnimation;
+		pMAnimation->m_vSkeletalAnimNodes.resize(m_pSkeleton->GetAllBones().size());
 
 		pMAnimation->m_unIndex = i;
 		pMAnimation->m_strName = pAnimation->mName.C_Str();
@@ -396,21 +441,20 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 		{
 			aiNodeAnim* pNodeAnim = pAnimation->mChannels[chanIndex];
 
-			if (MBone* pBone = pSkeleton->FindBoneByName(pNodeAnim->mNodeName.C_Str()))
+			if (MBone* pBone = m_pSkeleton->FindBoneByName(pNodeAnim->mNodeName.C_Str()))
 			{
-				MSkeletalAnimNode* pMAnimNode = new MSkeletalAnimNode();
-				pMAnimation->m_vSkeletalAnimNodes[pBone->unIndex] = pMAnimNode;
+				MSkeletalAnimNode& mAnimNode = pMAnimation->m_vSkeletalAnimNodes[pBone->unIndex];
+
+				mAnimNode.m_unPositionKeysNum = pNodeAnim->mNumPositionKeys;
+				mAnimNode.m_unRotationKeysNum = pNodeAnim->mNumRotationKeys;
+				mAnimNode.m_unScalingKeysNum = pNodeAnim->mNumScalingKeys;
 				
-				pMAnimNode->m_unPositionKeysNum = pNodeAnim->mNumPositionKeys;
-				pMAnimNode->m_unRotationKeysNum = pNodeAnim->mNumRotationKeys;
-				pMAnimNode->m_unScalingKeysNum = pNodeAnim->mNumScalingKeys;
-				
-				if (pMAnimNode->m_unPositionKeysNum > 0)
+				if (mAnimNode.m_unPositionKeysNum > 0)
 				{
-					pMAnimNode->m_vPositionKeys = new MSkeletalAnimNode::MAnimNodeKey<Vector3>[pMAnimNode->m_unPositionKeysNum];
-					for (unsigned keyIndex = 0; keyIndex < pMAnimNode->m_unPositionKeysNum; ++keyIndex)
+					mAnimNode.m_vPositionKeys = new MSkeletalAnimNode::MAnimNodeKey<Vector3>[mAnimNode.m_unPositionKeysNum];
+					for (unsigned keyIndex = 0; keyIndex < mAnimNode.m_unPositionKeysNum; ++keyIndex)
 					{
-						MSkeletalAnimNode::MAnimNodeKey<Vector3>& dkey = pMAnimNode->m_vPositionKeys[keyIndex];
+						MSkeletalAnimNode::MAnimNodeKey<Vector3>& dkey = mAnimNode.m_vPositionKeys[keyIndex];
 						const aiVectorKey& skey = pNodeAnim->mPositionKeys[keyIndex];
 						dkey.mTime = skey.mTime;
 						dkey.mValue.x = skey.mValue.x;
@@ -418,12 +462,12 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 						dkey.mValue.z = skey.mValue.z;
 					}
 				}
-				if (pMAnimNode->m_unRotationKeysNum > 0)
+				if (mAnimNode.m_unRotationKeysNum > 0)
 				{
-					pMAnimNode->m_vRotationKeys = new MSkeletalAnimNode::MAnimNodeKey<Quaternion>[pMAnimNode->m_unRotationKeysNum];
-					for (unsigned keyIndex = 0; keyIndex < pMAnimNode->m_unRotationKeysNum; ++keyIndex)
+					mAnimNode.m_vRotationKeys = new MSkeletalAnimNode::MAnimNodeKey<Quaternion>[mAnimNode.m_unRotationKeysNum];
+					for (unsigned keyIndex = 0; keyIndex < mAnimNode.m_unRotationKeysNum; ++keyIndex)
 					{
-						MSkeletalAnimNode::MAnimNodeKey<Quaternion>& dkey = pMAnimNode->m_vRotationKeys[keyIndex];
+						MSkeletalAnimNode::MAnimNodeKey<Quaternion>& dkey = mAnimNode.m_vRotationKeys[keyIndex];
 						const aiQuatKey& skey = pNodeAnim->mRotationKeys[keyIndex];
 						dkey.mTime = skey.mTime;
 						dkey.mValue.w = skey.mValue.w;
@@ -432,12 +476,12 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 						dkey.mValue.z = skey.mValue.z;
 					}
 				}
-				if (pMAnimNode->m_unScalingKeysNum > 0)
+				if (mAnimNode.m_unScalingKeysNum > 0)
 				{
-					pMAnimNode->m_vScalingKeys = new MSkeletalAnimNode::MAnimNodeKey<Vector3>[pMAnimNode->m_unScalingKeysNum];
-					for (unsigned keyIndex = 0; keyIndex < pMAnimNode->m_unScalingKeysNum; ++keyIndex)
+					mAnimNode.m_vScalingKeys = new MSkeletalAnimNode::MAnimNodeKey<Vector3>[mAnimNode.m_unScalingKeysNum];
+					for (unsigned keyIndex = 0; keyIndex < mAnimNode.m_unScalingKeysNum; ++keyIndex)
 					{
-						MSkeletalAnimNode::MAnimNodeKey<Vector3>& dkey = pMAnimNode->m_vScalingKeys[keyIndex];
+						MSkeletalAnimNode::MAnimNodeKey<Vector3>& dkey = mAnimNode.m_vScalingKeys[keyIndex];
 						const aiVectorKey& skey = pNodeAnim->mScalingKeys[keyIndex];
 						dkey.mTime = skey.mTime;
 						dkey.mValue.x = skey.mValue.x;

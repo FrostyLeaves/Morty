@@ -9,11 +9,13 @@
 #ifndef _M_MSKELETALANIMATION_H_
 #define _M_MSKELETALANIMATION_H_
 #include "MGlobal.h"
-#include "MIAnimation.h"
-#include "MSkeleton.h"
 #include "Vector.h"
+#include "MSkeleton.h"
+#include "MResource.h"
 #include "Quaternion.h"
 #include "MTransform.h"
+#include "MIAnimation.h"
+#include "MSerializer.h"
 
 #include <vector>
 
@@ -30,6 +32,9 @@ public:
 		T mValue;
 	};
 
+	MSkeletalAnimNode();
+	~MSkeletalAnimNode();
+
 public:
 
 	unsigned int m_unPositionKeysNum;
@@ -39,6 +44,8 @@ public:
 	MAnimNodeKey<Quaternion>* m_vRotationKeys;
 	MAnimNodeKey<Vector3>* m_vScalingKeys;
 
+	void WriteToStruct(MStruct& srt);
+	void ReadFromStruct(MStruct& srt);
 };
 
 class MORTY_CLASS MSkeletonAnimMap
@@ -48,15 +55,18 @@ public:
 	std::vector<unsigned int> m_vAnimToSkel;
 };
 
-class MORTY_CLASS MSkeletalAnimation : public MIAnimation
+class MORTY_CLASS MSkeletalAnimation : public MIAnimation, public MResource
 {
 public:
+	M_RESOURCE(MSkeletalAnimation);
     MSkeletalAnimation();
     virtual ~MSkeletalAnimation();
 
 public:
 
-	MSkeleton* GetSkeletonTemplate() { return m_pSkeletonTemplate; }
+	MSkeleton* GetSkeletonTemplate();
+
+	MResource* GetSkeletonResource() { return m_Skeleton.GetResource(); }
 
 	unsigned int GetIndex() { return m_unIndex; }
 	MString GetName() { return m_strName; }
@@ -65,14 +75,26 @@ public:
 
 	void Update(const float& fTime, MSkeletonInstance* pSkeletonIns, const MSkeletonAnimMap& skelAnimMap);
 
+	void WriteToStruct(MStruct& srt);
+	void ReadFromStruct(MStruct& srt);
+
+public:
+	
+	virtual void OnDelete() override;
+
+public:
+
+	virtual bool Load(const MString& strResourcePath) override;
+	virtual bool SaveTo(const MString& strResourcePath) override;
+
 protected:
 
-	bool FindTransform(const float& fTime, MSkeletalAnimNode* pAnimNode, MTransform& trans);
+	bool FindTransform(const float& fTime, const MSkeletalAnimNode& animNode, MTransform& trans);
 
 private:
 	friend class MModelConverter;
-	std::vector<MSkeletalAnimNode*> m_vSkeletalAnimNodes;
-	MSkeleton* m_pSkeletonTemplate;
+	std::vector<MSkeletalAnimNode> m_vSkeletalAnimNodes;
+	MResourceKeeper m_Skeleton;
 
 	unsigned int m_unIndex;
 	MString m_strName;
@@ -80,6 +102,7 @@ private:
 	float m_fTicksPerSecond;
 };
 
+class MSkeletalAnimationResource;
 class MORTY_CLASS MSkeletalAnimController : public MIAnimController
 {
 public:
@@ -112,6 +135,8 @@ protected:
 private:
 	MSkeletonInstance* m_pSkeletonIns;
 	MSkeletalAnimation* m_pAnimation;
+	MResourceKeeper m_AnimResource;
+
 	bool m_bInitialized;
 
 	float m_fTicks;

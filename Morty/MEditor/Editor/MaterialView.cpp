@@ -89,7 +89,7 @@ void MaterialView::Initialize(MEngine* pEngine)
 	MCamera* pCamera = m_SceneTexture.GetViewport()->GetCamera();
 	pCamera->SetPosition(Vector3(0, 0, -20));
 
-	MResource* pResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere.fbx");
+	MResource* pResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/Sphere.model");
 
 	MModelInstance* pModel = m_pEngine->GetObjectManager()->CreateObject<MModelInstance>();
 	pModel->Load(pResource);

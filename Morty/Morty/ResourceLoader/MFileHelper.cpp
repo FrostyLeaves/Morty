@@ -3,6 +3,34 @@
 #include <fstream>
 #include <sstream>
 
+#ifdef MORTY_WIN
+#include <direct.h>
+
+#endif
+
+MMortyFileFormat::~MMortyFileFormat()
+{
+	for (MFormatBody& body : m_vBody)
+	{
+		if (!body.bExternalMemory)
+		{
+			delete[] body.pData;
+		}
+	}
+
+	m_vBody.clear();
+}
+
+void MMortyFileFormat::PushBackBody(void* pData, const unsigned int& unSize, const bool& bExternalMemory /*= true*/)
+{
+	MFormatBody body;
+	body.pData = (char*)pData;
+	body.unSize = unSize;
+	body.bExternalMemory = bExternalMemory;
+
+	m_vBody.push_back(body);
+}
+
 const int MMortyFileFormat::s_nClipSize = 4;
 
 
@@ -13,6 +41,16 @@ MFileHelper::MFileHelper()
 
 MFileHelper::~MFileHelper()
 {
+
+}
+
+bool MFileHelper::MakeDir(const MString& strDirPath)
+{
+#ifdef MORTY_WIN
+	return 0 == _mkdir(strDirPath.c_str());
+#else
+	return false;
+#endif
 
 }
 
@@ -58,14 +96,14 @@ bool MFileHelper::WriteFormatFile(const MString& strFilePath, const MMortyFileFo
 
 	const int nHeadSize = format.m_strHead.size();
 
-	const int nBodySize = format.m_strBody.size();
-
 	file.write((const char*)(&nHeadSize), nClipSize);
 
 	file.write(&format.m_strHead[0], nHeadSize);
 
-	file.write(&format.m_strBody[0], nBodySize);
-
+	for (unsigned int i = 0; i < format.m_vBody.size(); ++i)
+	{
+		file.write(format.m_vBody[i].pData, format.m_vBody[i].unSize);
+	}
 	file.close();
 
 	return true;
@@ -89,7 +127,7 @@ bool MFileHelper::ReadFormatFile(const MString& strFilePath, MMortyFileFormat& f
 
 
 	int nHeadSize = 0;
-	file.read((char*)nHeadSize, nClipSize);
+	file.read((char*)&nHeadSize, nClipSize);
 
 
 	if (nFileLength < nClipSize + nHeadSize)
@@ -106,11 +144,51 @@ bool MFileHelper::ReadFormatFile(const MString& strFilePath, MMortyFileFormat& f
 	format.m_strHead.resize(nHeadSize);
 	file.read(&format.m_strHead[0], nHeadSize);
 
-	format.m_strBody.resize(nBodySize);
-	file.read(&format.m_strBody[0], nBodySize);
+	char* pData = new char[nBodySize];
+	file.read(pData, nBodySize);
+
+	format.PushBackBody(pData, nBodySize, false);
 
 
 	file.close();
 
 	return true;
+}
+
+void MFileHelper::GetValidFileName(MString& strFileName)
+{
+	char ch[] = {
+	0x5C, //    \ 
+	0x2F, //    /
+	0x3A, //    : 
+	0x2A, //    * 
+	0x3F, //    ? 
+	0x22, //    " 
+	0x3C, //    < 
+	0x3E, //    > 
+	0x7C, //    |
+	};
+
+	int nSize = strFileName.size();
+	int n = 0;
+	int m = 0; // \0
+
+	while ((++n, ++m) < nSize)
+	{
+		for (int i = 0; i < sizeof(ch); ++i)
+		{
+			if (ch[i] == strFileName[n])
+			{
+				++m;
+				break;
+			}
+		}
+		if (n != m)
+		{
+			strFileName[n] = strFileName[m];
+		}
+	}
+
+	strFileName.resize(n);
+	
 }

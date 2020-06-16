@@ -42,6 +42,14 @@ void MContainer::MemcpyData(MByte* pData)
 	}
 }
 
+MVariant* MContainer::Back()
+{
+	if(m_vMember.empty())
+		return nullptr;
+
+	return &m_vMember.back().var;
+}
+
 MContainer::MContainer(const MContainer& var)
 {
 	m_pData = nullptr;

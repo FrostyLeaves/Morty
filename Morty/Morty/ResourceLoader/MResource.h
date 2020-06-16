@@ -116,6 +116,7 @@ public:
 	MResource* GetResource(){ return m_pResource; }
 
 	const MResourceKeeper& operator = (const MResourceKeeper& keeper);
+	MResource* operator = (MResource* pResource);
 
 template <class T>
 	T* GetResource() { return m_pResource->DynamicCast<T>(); }

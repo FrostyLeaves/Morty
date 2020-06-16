@@ -15,6 +15,7 @@
 #include "MString.h"
 #include "MVertex.h"
 #include "MMesh.h"
+#include "MSkeletonResource.h"
 
 #include <map>
 
@@ -24,7 +25,6 @@ struct aiMesh;
 class MBone;
 class MModel;
 class MSkeleton;
-class MSkeletonResource;
 class MMeshResource;
 class MSkeletalAnimation;
 class MORTY_CLASS MModelConverter
@@ -62,9 +62,9 @@ private:
 	MString m_strResourcePath;
     
 	std::vector<MMeshResource*> m_vMeshes;
-	MSkeletonResource* m_pSkeletonResource;
+	MSkeletonResource* m_pSkeleton;
 
-	std::map<MString, MSkeletalAnimation*> m_tSkeletalAnimation;
+	std::vector<MSkeletalAnimation*> m_vSkeletalAnimation;
 };
 
 #endif

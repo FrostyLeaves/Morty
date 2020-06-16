@@ -336,6 +336,9 @@
     <ClInclude Include="..\..\ResourceLoader\Model\MModelResource.h">
       <Filter>ResourceLoader\Model</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\ResourceLoader\Model\MSkeletalAnimationResource.h">
+      <Filter>ResourceLoader\Model</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">

@@ -37,6 +37,11 @@ extern const int M_INVALID_INDEX;
 extern const char* SUFFIX_VERTEX_SHADER;
 extern const char* SUFFIX_PIXEL_SHADER;
 extern const char* SUFFIX_MATERIAL;
+extern const char* SUFFIX_SKELETON;
+extern const char* SUFFIX_MESH;
+extern const char* SUFFIX_MODEL;
+extern const char* SUFFIX_SKELANIM;
+
 //Default Asset
 extern const char* DEFAULT_MATERIAL_STATIC;
 extern const char* DEFAULT_MATERIAL_SKINNED;

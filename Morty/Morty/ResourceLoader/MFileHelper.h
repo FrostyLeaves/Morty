@@ -11,12 +11,26 @@
 #include "MGlobal.h"
 #include "MString.h"
 
+#include <vector>
+
 class MORTY_CLASS MMortyFileFormat
 {
 public:
+    struct MFormatBody
+    {
+        char* pData;
+        unsigned int unSize;
+        bool bExternalMemory;
+    };
+public:
+
+    MMortyFileFormat() {}
+    ~MMortyFileFormat();
+
+    void PushBackBody(void* pData, const unsigned int& unSize, const bool& bExternalMemory = true);
 
     MString m_strHead;
-    MString m_strBody;
+	std::vector<MFormatBody> m_vBody;
 
     static const int s_nClipSize;
 };
@@ -29,6 +43,8 @@ public:
 
 public:
 
+    static bool MakeDir(const MString& strDirPath);
+
 	static bool WriteString(const MString& strFilePath, const MString& strData);
 
 	static bool ReadString(const MString& strFilePath, MString& strData);
@@ -37,6 +53,8 @@ public:
 
     static bool ReadFormatFile(const MString& strFilePath, MMortyFileFormat& format);
 
+    static void GetValidFileName(MString& strFileName);
+    
 private:
 
 };

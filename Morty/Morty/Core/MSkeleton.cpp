@@ -1,12 +1,59 @@
 #include "MSkeleton.h"
 #include <algorithm>
 
+#include "Json/MJson.h"
+#include "MFileHelper.h"
+
 MBone::MBone()
 	: m_matTransform(Matrix4::IdentityMatrix)
 	, m_matOffsetMatrix(Matrix4::IdentityMatrix)
 	, m_matWorldTransform(Matrix4::IdentityMatrix)
 {
 
+}
+
+void MBone::WriteToStruct(MStruct& srt)
+{
+	MVariantArray vChildren;
+	for (unsigned int unChildIdx : vChildrenIndices)
+		vChildren.AppendMVariant((int)unChildIdx);
+
+	srt.AppendMVariant("Name", strName);
+	srt.AppendMVariant("Index", (int)unIndex);
+	srt.AppendMVariant("ParentIndex", (int)unParentIndex);
+	srt.AppendMVariant("matTrans", m_matTransform);
+	srt.AppendMVariant("matOffset", m_matOffsetMatrix);
+	srt.AppendMVariant("Children", vChildren);
+}
+
+void MBone::ReadFromStruct(MStruct& srt)
+{
+	if (MString* pName = srt.FindMember<MString>("Name"))
+		strName = *pName;
+
+	if (int* pIndex = srt.FindMember<int>("Index"))
+		unIndex = *pIndex;
+
+	if (int* pParentIndex = srt.FindMember<int>("ParentIndex"))
+		unParentIndex = *pParentIndex;
+
+	if (Matrix4* pMatTrans = srt.FindMember<Matrix4>("matTrans"))
+		m_matTransform = *pMatTrans;
+
+	if (Matrix4* pMatOffset = srt.FindMember<Matrix4>("matOffset"))
+		m_matOffsetMatrix = *pMatOffset;
+
+	if (MVariantArray* pChildren = srt.FindMember<MVariantArray>("Children"))
+	{
+		unsigned int unChildrenCount = pChildren->GetMemberCount();
+		vChildrenIndices.resize(unChildrenCount);
+
+		for (unsigned int cldIdx = 0; cldIdx < unChildrenCount; ++cldIdx)
+		{
+			if (int* pIndex = pChildren->GetMember<int>(cldIdx))
+				vChildrenIndices[cldIdx] = *pIndex;
+		}
+	}
 }
 
 MSkeleton::MSkeleton()
@@ -168,5 +215,76 @@ void MSkeletonInstance::ResetOriginPose()
 	{
 		bone.m_matWorldTransform = bone.m_matWorldTransform * bone.m_matOffsetMatrix;
 	}
+}
+
+
+void MSkeleton::WriteToStruct(MStruct& srt)
+{
+	std::vector<MBone>& vBones = m_vAllBones;
+
+	srt.AppendMVariant("Bones", MVariantArray());
+	MVariantArray* pArray = srt.FindMember("Bones")->GetArray();
+	pArray->Resize(vBones.size());
+
+	for (unsigned int i = 0; i < pArray->GetMemberCount(); ++i)
+	{
+		MBone bone = vBones[i];
+		(*pArray)[i] = MStruct();
+		MStruct& boneSrt = *(*pArray)[i].GetStruct();
+
+		bone.WriteToStruct(boneSrt);
+	}
+}
+
+void MSkeleton::ReadFromStruct(MStruct& srt)
+{
+	if (MVariant* pBonesVar = srt.FindMember("Bones"))
+	{
+		if (MVariantArray* pBonesArray = pBonesVar->GetArray())
+		{
+			unsigned int unBonesCount = pBonesArray->GetMemberCount();
+
+			m_vAllBones.resize(unBonesCount);
+
+			for (unsigned int i = 0; i < unBonesCount; ++i)
+			{
+				MVariant& boneVar = pBonesArray->GetMember(i)->var;
+				if (MStruct* pBoneSrt = boneVar.GetStruct())
+				{
+					MBone& bone = m_vAllBones[i];
+
+					bone.ReadFromStruct(*pBoneSrt);
+				}
+			}
+		}
+	}
+}
+
+bool MSkeleton::Load(const MString& strResourcePath)
+{
+	MString code;
+	if (!MFileHelper::ReadString(strResourcePath, code))
+		return false;
+
+	MVariant var;
+	MJson::JsonToMVariant(code, var);
+
+	MStruct& srt = *var.GetStruct();
+	ReadFromStruct(srt);
+
+	return true;
+}
+
+bool MSkeleton::SaveTo(const MString& strResourcePath)
+{
+	MVariant var = MStruct();
+	MStruct& srt = *var.GetStruct();
+
+	WriteToStruct(srt);
+
+	MString code;
+	MJson::MVariantToJson(var, code);
+
+	return MFileHelper::WriteString(strResourcePath, code);
 }
 

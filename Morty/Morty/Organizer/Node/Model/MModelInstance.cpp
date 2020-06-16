@@ -1,6 +1,7 @@
 ﻿#include "MModelInstance.h"
 #include "Model/MMeshResource.h"
 #include "Model/MModelResource.h"
+#include "Model/MSkeletalAnimationResource.h"
 #include "MStaticMeshInstance.h"
 #include "MSkinnedMeshInstance.h"
 #include "MSkeleton.h"
@@ -91,16 +92,27 @@ MBoundsAABB* MModelInstance::GetBoundsAABB()
 
 bool MModelInstance::SetPlayAnimation(const MString& strAnimationName)
 {
+	if (MResource* pAnimResource = GetEngine()->GetResourceManager()->LoadResource(strAnimationName))
+	{
+		return SetPlayAnimation(pAnimResource);
+	}
+
+	return false;
+}
+
+bool MModelInstance::SetPlayAnimation(MResource* pAnimation)
+{
 	SetRemoveAnimation();
 
-	MSkeletalAnimation* pAnimation = (*static_cast<MModelResource*>(m_ModelResource.GetResource())->GetAnimations()).at(strAnimationName);
-
-	MSkeletalAnimController* pController = new MSkeletalAnimController();
-	if (pController->Initialize(m_pSkeleton, pAnimation))
+	if (MSkeletalAnimationResource* pAnimRes = pAnimation->DynamicCast<MSkeletalAnimationResource>())
 	{
-		m_pCurrentAnimationController = pController;
+		MSkeletalAnimController* pController = new MSkeletalAnimController();
+		if (pController->Initialize(m_pSkeleton, pAnimRes))
+		{
+			m_pCurrentAnimationController = pController;
 
-		return true;
+			return true;
+		}
 	}
 
 	return false;
@@ -179,7 +191,7 @@ bool MModelInstance::SetResource(MResource* pResource, const bool& bLoad)
 				SetSkeleton(pModelResource->GetSkeleton());
 
 				//初始化Mesh的旋转矩阵
-				for (MMeshResource* pMeshResource : *pModelResource->GetMeshes())
+				for (MMeshResource* pMeshResource : pModelResource->GetMeshResources())
 				{
 					MIModelMeshInstance* pMeshIns = nullptr;
 					if (pMeshResource->GetMeshVertexType() == MMeshResource::Normal)

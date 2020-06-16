@@ -5,6 +5,10 @@ const int M_INVALID_INDEX = -1;
 const char* SUFFIX_VERTEX_SHADER = "mvs";
 const char* SUFFIX_PIXEL_SHADER = "mps";
 const char* SUFFIX_MATERIAL = "matl";
+const char* SUFFIX_SKELETON = "mske";
+const char* SUFFIX_MESH = "mesh";
+const char* SUFFIX_MODEL = "model";
+const char* SUFFIX_SKELANIM = "mseq";
 
 const char* DEFAULT_MATERIAL_STATIC = "DefMatStatic";
 const char* DEFAULT_MATERIAL_SKINNED = "DefMatSkinned";

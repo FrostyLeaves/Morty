@@ -1,9 +1,12 @@
 ﻿#include "MResourceManager.h"
 #include "MResource.h"
+#include "Model/MMeshResource.h"
 #include "Model/MModelResource.h"
 #include "Shader/MShaderResource.h"
-#include "Material/MMaterialResource.h"
+#include "Model/MSkeletonResource.h"
 #include "Texture/MTextureResource.h"
+#include "Material/MMaterialResource.h"
+#include "Model/MSkeletalAnimationResource.h"
 #include "Node/MNodeResource.h"
 #include "MResourceLoader.h"
 
@@ -25,7 +28,10 @@ MResourceManager::MResourceManager()
 	, m_pEngine(nullptr)
 	, m_vSearchPath({ "." })
 {
-	REGISTER_RESOURCE_TYPE(MEResourceType::Model, MModelResource, "fbx", "obj", "dae", "blend" );
+	REGISTER_RESOURCE_TYPE(MEResourceType::SkelAnim, MSkeletalAnimationResource, SUFFIX_SKELANIM);
+	REGISTER_RESOURCE_TYPE(MEResourceType::Mesh, MMeshResource, SUFFIX_MESH);
+	REGISTER_RESOURCE_TYPE(MEResourceType::Model, MModelResource, SUFFIX_MODEL);
+	REGISTER_RESOURCE_TYPE(MEResourceType::Skeleton, MSkeletonResource, SUFFIX_SKELETON);
 	REGISTER_RESOURCE_TYPE(MEResourceType::Shader, MShaderResource, SUFFIX_VERTEX_SHADER, SUFFIX_PIXEL_SHADER );
 	REGISTER_RESOURCE_TYPE(MEResourceType::Material, MMaterialResource, SUFFIX_MATERIAL);
 	REGISTER_RESOURCE_TYPE(MEResourceType::Texture, MTextureResource, "png", "bmp", "tga", "jpg");

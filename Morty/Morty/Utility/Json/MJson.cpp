@@ -96,7 +96,7 @@ void JsonValueToMVariant(Value* pValue, MVariant& variant)
 			}
 			case MVariant::EMatrix4:
 			{
-				Matrix3 mat;
+				Matrix4 mat;
 				FIND_MEMBER(mat.m[0][0], pValue, "00", Float, 0.0f);
 				FIND_MEMBER(mat.m[0][1], pValue, "01", Float, 0.0f);
 				FIND_MEMBER(mat.m[0][2], pValue, "02", Float, 0.0f);
@@ -127,14 +127,14 @@ void JsonValueToMVariant(Value* pValue, MVariant& variant)
 		}
 		else
 		{
-			MStruct sut;
+			variant = MStruct();
+			MStruct& sut = *variant.GetStruct();
 			for (Value::MemberIterator iter = pValue->MemberBegin(); iter != pValue->MemberEnd(); ++iter)
 			{
-				MVariant child;
+				unsigned int nIndex = sut.AppendMVariant(iter->name.GetString(), MVariant());
+				MVariant& child = sut.GetMember(nIndex)->var;
 				JsonValueToMVariant(&(iter->value), child);
-				sut.AppendMVariant(iter->name.GetString(), child);
 			}
-			variant = MVariant(sut);
 		}
 	}
 
@@ -142,14 +142,15 @@ void JsonValueToMVariant(Value* pValue, MVariant& variant)
 	{
 		Value value = pValue->GetArray();
 		unsigned int unSize = value.Size();
-		MVariantArray sut;
+
+		variant = MVariantArray();
+		MVariantArray& srt = *variant.GetArray();
 		for (unsigned int i = 0; i < unSize; ++i)
 		{
-			MVariant child;
+			srt.AppendMVariant(MVariant());
+			MVariant& child = srt.GetMember(srt.GetMemberCount() - 1)->var;
 			JsonValueToMVariant(&value[i], child);
-			sut.AppendMVariant(child);
 		}
-		variant = MVariant(sut);
 	}
 
 	else

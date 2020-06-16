@@ -97,7 +97,7 @@ void MSkinnedMeshInstance::SetMeshData(const MString& strModelResourcePath, cons
 {
 	if (MModelResource* pModelRes = m_pEngine->GetResourceManager()->LoadResource(strModelResourcePath)->DynamicCast<MModelResource>())
 	{
-		m_pMesh = (*pModelRes->GetMeshes())[nIndex];
+		m_pMesh = pModelRes->GetMeshResources()[nIndex];
 
 		if (m_Material.GetResource() == nullptr)
 		{

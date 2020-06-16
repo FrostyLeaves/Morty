@@ -478,7 +478,7 @@ void MRenderSystem::DrawBoundingBox(MRenderInfo& info, MModelInstance* pModelIns
 
 void MRenderSystem::DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pMeshIns)
 {
-	MResource* pSphereResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere.fbx");
+	MResource* pSphereResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/Sphere.model");
 	MMaterialResource* pStaticMeshMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_STATIC);
 
 	MMaterial& mat = *pStaticMeshMaterialRes;
@@ -508,7 +508,7 @@ void MRenderSystem::DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pMeshI
 
 	if (MModelResource* pModelResource = dynamic_cast<MModelResource*>(pSphereResource))
 	{
-		for (MMeshResource* pMeshRes : *pModelResource->GetMeshes())
+		for (MMeshResource* pMeshRes : pModelResource->GetMeshResources())
 		{
 			info.pRenderer->DrawMesh(pMeshRes->GetMesh());
 		}

@@ -9,8 +9,10 @@
 #ifndef _M_MSKELETON_H_
 #define _M_MSKELETON_H_
 #include "MGlobal.h"
-#include "MString.h"
 #include "Matrix.h"
+#include "MString.h"
+#include "MVariant.h"
+#include "MResource.h"
 #include <vector>
 #include <map>
 
@@ -20,6 +22,9 @@ class MORTY_CLASS MBone
 {
 public:
 	MBone();
+
+	void WriteToStruct(MStruct& srt);
+	void ReadFromStruct(MStruct& srt);
 public:
 	MString strName;
 	unsigned int unIndex;
@@ -33,7 +38,7 @@ public:
 	Matrix4 m_matWorldTransform;
 };
 
-class MORTY_CLASS MSkeleton
+class MORTY_CLASS MSkeleton : public MResource
 {
 public:
 public:
@@ -52,6 +57,14 @@ public:
 	void RebuildBonesMap();
 
 	const std::vector<MBone>& GetAllBones() const { return m_vAllBones; }
+
+public:
+
+	void WriteToStruct(MStruct& srt);
+	void ReadFromStruct(MStruct& srt);
+
+	virtual bool Load(const MString& strResourcePath) override;
+	virtual bool SaveTo(const MString& strResourcePath) override;
 
 private:
 	friend class MModelResource;

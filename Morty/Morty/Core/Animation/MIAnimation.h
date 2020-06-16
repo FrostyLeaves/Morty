@@ -10,16 +10,12 @@
 #define _M_MIANIMATION_H_
 #include "MGlobal.h"
 
-
+class MEngine;
 class MORTY_CLASS MIAnimation
 {
 public:
     MIAnimation();
     virtual ~MIAnimation();
-
-public:
-
-private:
 
 };
 

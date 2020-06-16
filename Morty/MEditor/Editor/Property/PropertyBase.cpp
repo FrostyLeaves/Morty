@@ -20,14 +20,22 @@ static const char* vTitleList[] = {
 		"Shader",
 		"Material",
 		"Texture",
+		"Node",
+		"Mesh",
+		"Skeleton",
+		"SkelAnim",
 };
 
 static const char* vFilterList[] = {
 	"\0\0",
-	".fbx\0.obj\0.dae\0\0",
+	".model\0\0",
 	".mvs\0.mps\0\0",
 	".matl\0\0",
 	".png\0.jpg\0.tga\0\0",
+	".node\0\0",
+	".mesh\0\0",
+	".mske\0\0",
+	".mseq\0\0"
 };
 
 bool PropertyBase::ShowNodeBegin(const MString& strNodeName)

@@ -67,7 +67,7 @@ bool MMeshResource::Load(const MString& strResourcePath)
 	if (!pHeader) return false;
 
 	int nVertexType = 0;
-	if (!pHeader->FindMember<int>("t"), nVertexType)
+	if (!pHeader->FindMember<int>("t", nVertexType))
 		return false;
 	m_eVertexType = (MEMeshVertexType)nVertexType;
 
@@ -95,10 +95,10 @@ bool MMeshResource::Load(const MString& strResourcePath)
 		return false;
 
 	m_pMesh->ResizeVertices(nVertexNum);
-	memcpy(m_pMesh->GetVertices(), &format.m_strBody[0] + nVertexBegin, nVertexEnd - nVertexBegin);
+	memcpy(m_pMesh->GetVertices(), format.m_vBody[0].pData + nVertexBegin, nVertexEnd - nVertexBegin);
 
 	m_pMesh->ResizeIndices(nIndexNum, 1);
-	memcpy(m_pMesh->GetIndices(), &format.m_strBody[0] + nIndexBegin, nIndexEnd - nIndexBegin);
+	memcpy(m_pMesh->GetIndices(), format.m_vBody[0].pData + nIndexBegin, nIndexEnd - nIndexBegin);
 
 	pHeader->FindMember<Matrix4>("rm", m_matRotationMatrix);
 	pHeader->FindMember<MString>("n", m_strName);
@@ -152,7 +152,6 @@ bool MMeshResource::SaveTo(const MString& strResourcePath)
 	pHeader->AppendMVariant("i3", nIndexEnd);
 
 
-
 	pHeader->AppendMVariant("rm", m_matRotationMatrix);
 	pHeader->AppendMVariant("n", m_strName);
 
@@ -169,13 +168,16 @@ bool MMeshResource::SaveTo(const MString& strResourcePath)
 
 	if (MString* pMaterial = pHeader->AppendMVariant<MString>("mat"))
 	{
-		*pMaterial = m_SkeletonKeeper.GetResourcePath();
+		*pMaterial = m_MaterialKeeper.GetResourcePath();
 	}
 
 	MMortyFileFormat format;
+	MJson::MVariantToJson(headerVar, format.m_strHead);
 
+	format.PushBackBody(m_pMesh->GetVertices(), nVertexEnd - nVertexBegin);
+	format.PushBackBody(m_pMesh->GetIndices(), nIndexEnd - nIndexBegin);
 
-	return false;
+	return MFileHelper::WriteFormatFile(strResourcePath, format);
 }
 
 void MMeshResource::OnDelete()

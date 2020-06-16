@@ -33,6 +33,7 @@ public:
 		Node = 5,
 		Mesh = 6,
 		Skeleton = 7,
+		SkelAnim = 8,
 	};
 
 public:

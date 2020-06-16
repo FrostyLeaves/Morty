@@ -14,6 +14,8 @@
 #include "MMeshResource.h"
 #include "MSkeletonResource.h"
 
+class MSkeleton;
+class MSkeletalAnimation;
 class MORTY_CLASS MModelResource : public MResource
 {
 public:
@@ -23,14 +25,26 @@ public:
 
 public:
 
+    MSkeletonResource* GetSkeleton() { return m_pSkeleton; }
+    const std::vector<MMeshResource*>& GetMeshResources() { return m_vMeshes; }
+
+    void SetSkeletonResource(MSkeletonResource* pSkeleton);
+    void GetMeshResources(const std::vector<MMeshResource*>& vMeshes);
+
+public:
+
     virtual bool Load(const MString& strResourcePath) override;
 
     virtual bool SaveTo(const MString& strResourcePath) override;
 
+    virtual void OnDelete() override;
+
 private:
 
-    MSkeletonResource m_Skeleton;
-    std::vector<MMeshResource> m_Meshes;
+    friend class MModelConverter;
+
+    MSkeletonResource* m_pSkeleton;
+    std::vector<MMeshResource*> m_vMeshes;
 };
 
 #endif

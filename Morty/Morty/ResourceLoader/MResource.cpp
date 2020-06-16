@@ -165,3 +165,11 @@ const MResourceKeeper& MResourceKeeper::operator=(const MResourceKeeper& keeper)
 
 	return keeper;
 }
+
+MResource* MResourceKeeper::operator=(MResource* pResource)
+{
+	m_funcReloadCallback = nullptr;
+	SetResource(pResource);
+
+	return pResource;
+}

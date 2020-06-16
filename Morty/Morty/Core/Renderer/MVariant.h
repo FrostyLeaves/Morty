@@ -81,6 +81,7 @@ public:
 
 	template<typename T> T* GetTypedData() { return nullptr; }
 
+	template<> bool* GetTypedData<bool>() { return GetBool(); }
 	bool* GetBool() { return m_eType == EBool ? (bool*)(m_pData + sizeof(int) - sizeof(bool)) : nullptr; }
 	const bool* GetBool() const { return m_eType == EBool ? (const bool*)(m_pData + sizeof(int) - sizeof(bool)) : nullptr; }
 
@@ -162,6 +163,8 @@ public:
 	MStructMember* GetMember(const unsigned int& unIndex) { return unIndex < m_vMember.size() ? &m_vMember[unIndex] : nullptr; }
 	const MStructMember* GetMember(const unsigned int& unIndex) const { return unIndex < m_vMember.size() ? &m_vMember[unIndex] : nullptr; }
 	unsigned int GetMemberCount() const { return m_vMember.size(); }
+
+	MVariant* Back();
 
 	template <typename T>
 	T* GetMember(const unsigned int& unIndex)
@@ -253,6 +256,13 @@ public:
 	void Resize(const unsigned int& unSize);
 
 	void Move(MVariantArray& sour);
+
+	template<typename T>
+	T* AppendMVariant()
+	{
+		AppendMVariant(T());
+		return  m_vMember.back().var.GetTypedData<T>();
+	}
 };
 
 #endif

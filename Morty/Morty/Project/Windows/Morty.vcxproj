@@ -165,6 +165,7 @@
     <ClInclude Include="..\..\ResourceLoader\Model\MModelResource.h" />
     <ClInclude Include="..\..\ResourceLoader\Model\MMultiLevelMesh.h" />
     <ClInclude Include="..\..\ResourceLoader\Model\MMeshResource.h" />
+    <ClInclude Include="..\..\ResourceLoader\Model\MSkeletalAnimationResource.h" />
     <ClInclude Include="..\..\ResourceLoader\Model\MSkeletonResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MResourceManager.h" />
     <ClInclude Include="..\..\ResourceLoader\Node\MNodeResource.h" />

@@ -207,7 +207,7 @@ bool MEngine::InitializeDefaultResource()
 	pSkyBoxMaterialRes->LoadVertexShader(pSkyBoxVSResource);
 	pSkyBoxMaterialRes->LoadPixelShader(pSkyBoxPSResource);
 
-	MResource* pSphereResource = GetResourceManager()->LoadResource("./Model/Sphere.fbx");
+	MResource* pSphereResource = GetResourceManager()->LoadResource("./Model/Sphere/Sphere.model");
 
 
 	const MString vTexturePath[6] = {

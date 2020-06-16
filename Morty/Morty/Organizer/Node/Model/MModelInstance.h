@@ -48,6 +48,7 @@ public:
 	bool GetGenerateDirLightShadow() const { return m_bGenerateDirLightShadow; }
 
 public:
+	bool SetPlayAnimation(MResource* pAnimation);
 	bool SetPlayAnimation(const MString& strAnimationName);
 	void SetRemoveAnimation();
 	MSkeletalAnimController* GetSkeletalAnimationController() { return m_pCurrentAnimationController; }
