@@ -1,4 +1,7 @@
 ﻿#include "MDirectX11Renderer.h"
+
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+
 #include "MWindowsRenderView.h"
 #include "MLogManager.h"
 
@@ -559,3 +562,6 @@ void MDirectX11Renderer::SetPixelShaderTexture(MShaderTextureParam& param)
 		m_pDevice->m_pD3dContext->PSSetShaderResources(param.unBindPoint, param.unBindCount, &pNullPtr);
 	}
 }
+
+
+#endif

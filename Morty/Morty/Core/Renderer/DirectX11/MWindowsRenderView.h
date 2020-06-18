@@ -30,6 +30,7 @@ public:
 	bool IsClosed(){ return m_bIsClosed; }
 
 	HWND GetHWND() { return m_hwnd; }
+	HINSTANCE GetHINSTANCE() { return s_hInstance; }
 
 	virtual int GetViewWidth() override { return m_nWidth; }
 	virtual int GetViewHeight() override { return m_nHeight; }

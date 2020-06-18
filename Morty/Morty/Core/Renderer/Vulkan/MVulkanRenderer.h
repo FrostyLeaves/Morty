@@ -1,40 +1,25 @@
-﻿/**
- * @File         MDirectX11Renderer
+/**
+ * @File         MVulkanRenderer
  * 
- * @Created      2019-05-12 21:52:30
+ * @Created      2020-06-18 15:18:31
  *
  * @Author       Pobrecito
 **/
 
-#ifndef _M_MDIRECTX11RENDERER_H_
-#define _M_MDIRECTX11RENDERER_H_
+#ifndef _M_MVULKANRENDERER_H_
+#define _M_MVULKANRENDERER_H_
 #include "MGlobal.h"
 
-#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+#if RENDER_GRAPHICS == MORTY_VULKAN
 
 #include "MIRenderer.h"
-#include "MRenderStructure.h"
-#include "MSingleInstance.h"
 
-#include <d3d11.h>
-#include <D3DX11.h>
-#include <DxErr.h>
-
-
-class MIRenderTarget;
-class MViewport;
-class MIRenderView;
-class MVertexBuffer;
-class MDirectX11Device;
-class MORTY_CLASS MDirectX11Renderer : public MIRenderer
+class MORTY_CLASS MVulkanRenderer : public MIRenderer
 {
 public:
-    MDirectX11Renderer(MDirectX11Device* pDevice);
-    virtual ~MDirectX11Renderer();
+    MVulkanRenderer();
+    virtual ~MVulkanRenderer();
 
-public:
-
-public:
 
 	virtual void AddOutputView(MIRenderView* pView) override;
 
@@ -62,19 +47,7 @@ public:
 
 protected:
 
-protected:
-	ID3D11SamplerState* m_pDefaultSamplerState;
-	ID3D11SamplerState* m_pLessEqualSamplerState;
-	ID3D11SamplerState* m_pGreaterEqualSamplerState;
-//	ID3D11SamplerState* m_pAnisotropicFilterSamplerState;
-
-	std::vector<ID3D11RasterizerState*> m_vRasterizerState;
-	std::vector<ID3D11BlendState*> m_vBlendState;
-	std::vector<ID3D11DepthStencilState*> m_vDepthStencilState;
-	
-	MDirectX11Device* m_pDevice;
-	MMaterial* m_pUsingMaterial;
-	//MIRenderTarget* m_pCurrentRenderTarget;
+private:
 
 };
 

@@ -1,34 +1,34 @@
-﻿/**
- * @File         MDirectX11Device
+/**
+ * @File         MVulkanDevice
  * 
- * @Created      2019-09-21 23:12:50
+ * @Created      2020-06-17 20:01:48
  *
  * @Author       Pobrecito
 **/
 
-
-#ifndef _M_MDIRECTX11DEVICE_H_
-#define _M_MDIRECTX11DEVICE_H_
+#ifndef _M_MVULKANDEVICE_H_
+#define _M_MVULKANDEVICE_H_
 #include "MGlobal.h"
 
-#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+#if RENDER_GRAPHICS == MORTY_VULKAN
 
 #include "MIDevice.h"
-#include "MVariant.h"
 
-#include <d3d11.h>
-#include <D3DX11.h>
-#include <DxErr.h>
+#include <vector>
+
+#include "vulkan/vulkan.h"
+#include "vulkan/vulkan_core.h"
 
 
-class MORTY_CLASS MDirectX11Device : public MIDevice
+class MORTY_CLASS MVulkanDevice : public MIDevice
 {
 public:
-    MDirectX11Device();
-    virtual ~MDirectX11Device();
+    MVulkanDevice();
+    virtual ~MVulkanDevice();
 
 public:
-	bool InitDirectX11();
+
+public:
 	virtual bool Initialize() override;
 	virtual void Release() override;
 
@@ -50,8 +50,6 @@ public:
 	virtual bool CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType, const MShaderMacro& macro) override;
 	virtual void CleanShader(MShaderBuffer** ppShaderBuffer) override;
 
-	ID3D11InputLayout* CreateInputLayout(D3D11_INPUT_ELEMENT_DESC desc[], const int& nLength);
-
 	virtual bool GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsigned int nWidth, unsigned int nHeight) override;
 	virtual void DestroyRenderTarget(MIRenderTarget* pRenderTarget) override;
 
@@ -61,16 +59,35 @@ public:
 	virtual bool GenerateShaderParamBuffer(MShaderParam* pParam) override;
 	virtual void DestroyShaderParamBuffer(MShaderParam* pParam) override;
 
-	MVariant GenerateVariableByBuffer(class ID3D11ShaderReflectionType* pReflectionType);
 
-	bool m_bEnable4xMsaa;
+	VkPhysicalDevice GetPhysicalDevice() { return m_VKPhysicalDevice; }
 
-	ID3D11Device* m_pD3dDevice;
-	ID3D11DeviceContext* m_pD3dContext;
+	int FindQueueGraphicsFamilies(VkPhysicalDevice device);
+	int FindQueuePresentFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
 
-	UINT m_n4xMsaaQuality;
-	D3D_DRIVER_TYPE m_nDriverType;
-	D3D_FEATURE_LEVEL m_nFeatureLevel;
+protected:
+	bool InitVulkanInstance();
+	bool InitPhysicalDevice();
+	bool InitLogicalDevice();
+
+	bool IsDeviceSuitable(VkPhysicalDevice device);
+	bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
+public:
+	PFN_vkGetPhysicalDeviceSurfaceSupportKHR GetPhysicalDeviceSurfaceSupportKHR;
+	PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR GetPhysicalDeviceSurfaceCapabilitiesKHR;
+	PFN_vkGetPhysicalDeviceSurfaceFormatsKHR GetPhysicalDeviceSurfaceFormatsKHR;
+	PFN_vkGetPhysicalDeviceSurfacePresentModesKHR GetPhysicalDeviceSurfacePresentModesKHR;
+	PFN_vkCreateSwapchainKHR CreateSwapchainKHR;
+	PFN_vkDestroySwapchainKHR DestroySwapchainKHR;
+	PFN_vkGetSwapchainImagesKHR GetSwapchainImagesKHR;
+	PFN_vkAcquireNextImageKHR AcquireNextImageKHR;
+	PFN_vkQueuePresentKHR QueuePresentKHR;
+
+public:
+	VkInstance m_VKInstance;
+	VkPhysicalDevice m_VKPhysicalDevice;
+	VkDevice m_VKDevice;
+	VkQueue m_VKGraphicsQueue;
 };
 
 

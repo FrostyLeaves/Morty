@@ -88,6 +88,9 @@
     <Filter Include="ResourceLoader\Node">
       <UniqueIdentifier>{318b8f66-d8a3-4ca9-ba5f-e161c950207b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\Renderer\Vulkan">
+      <UniqueIdentifier>{1f01f614-c590-41da-aa6c-d0b22526da9b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../ReadMe.txt" />
@@ -339,6 +342,12 @@
     <ClInclude Include="..\..\ResourceLoader\Model\MSkeletalAnimationResource.h">
       <Filter>ResourceLoader\Model</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanDevice.h">
+      <Filter>Core\Renderer\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanRenderTarget.h">
+      <Filter>Core\Renderer\Vulkan</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -565,6 +574,12 @@
     </ClCompile>
     <ClCompile Include="..\..\ResourceLoader\Model\MModelResource.cpp">
       <Filter>ResourceLoader\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanDevice.cpp">
+      <Filter>Core\Renderer\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanRenderTarget.cpp">
+      <Filter>Core\Renderer\Vulkan</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

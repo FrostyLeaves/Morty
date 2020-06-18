@@ -1,4 +1,7 @@
 #include "MDirectX11RenderTarget.h"
+
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+
 #include "MWindowsRenderView.h"
 #include "MDirectX11Device.h"
 #include "MLogManager.h"
@@ -168,3 +171,5 @@ void MDirectX11RenderTarget::Release(MIDevice* pDevice)
 
 //	MTextureRenderTarget::Release(pDevice);
 }
+
+#endif

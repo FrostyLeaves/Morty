@@ -1,0 +1,197 @@
+#include "MVulkanRenderTarget.h"
+
+#if RENDER_GRAPHICS == MORTY_VULKAN
+
+#ifdef MORTY_WIN
+#include "vulkan/vulkan_win32.h"
+#endif
+
+MVulkanRenderTarget::MVulkanRenderTarget(MVulkanDevice* pDevice)
+	:MIRenderTarget()
+	, m_pDevice(pDevice)
+{
+
+}
+
+MVulkanRenderTarget::~MVulkanRenderTarget()
+{
+
+}
+
+void MVulkanRenderTarget::Release(MIDevice* pDevice)
+{
+	vkDestroySurfaceKHR(m_pDevice->m_VKInstance, m_VKSurface, nullptr);
+}
+
+MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pDevice, MWindowsRenderView* pView)
+{
+	
+	VkWin32SurfaceCreateInfoKHR surfaceCreateInfo;
+	surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+	surfaceCreateInfo.pNext = NULL;
+	surfaceCreateInfo.flags = 0;
+	surfaceCreateInfo.hinstance = pView->GetHINSTANCE();
+	surfaceCreateInfo.hwnd = pView->GetHWND();
+
+
+	VkSurfaceKHR surface;
+	VkResult result = vkCreateWin32SurfaceKHR(pDevice->m_VKInstance, &surfaceCreateInfo, NULL, &surface);
+	if (result != VK_SUCCESS)
+	{
+		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : vkCreateWin32SurfaceKHR error");
+		return nullptr;
+	}
+
+	VkSurfaceCapabilitiesKHR caps = {};
+	result = pDevice->GetPhysicalDeviceSurfaceCapabilitiesKHR(pDevice->GetPhysicalDevice(), surface, &caps);
+	if (result != VK_SUCCESS || caps.maxImageCount < 1)
+	{
+		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : GetPhysicalDeviceSurfaceCapabilitiesKHR error");
+		vkDestroySurfaceKHR(pDevice->m_VKInstance, surface, nullptr);
+		return nullptr;
+	}
+
+	VkExtent2D swapchainExtent = {};
+
+	if (caps.currentExtent.width == -1 || caps.currentExtent.height == -1) {
+		swapchainExtent.width = pView->GetViewWidth();
+		swapchainExtent.height = pView->GetViewHeight();
+	}
+	else {
+		swapchainExtent = caps.currentExtent;
+	}
+
+// 	int nPresentQueueIndex =  pDevice->FindQueuePresentFamilies(pDevice->GetPhysicalDevice(), surface);
+// 
+// 	if (nPresentQueueIndex == -1)
+// 	{
+// 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : nPresentQueueIndex == -1");
+// 		vkDestroySurfaceKHR(pDevice->m_VKInstance, surface, nullptr);
+// 		return nullptr;
+// 	}
+
+
+
+	unsigned int unPresentModeCount = 0;
+	result = pDevice->GetPhysicalDeviceSurfacePresentModesKHR(pDevice->GetPhysicalDevice(), surface, &unPresentModeCount, NULL);
+	if (result != VK_SUCCESS || unPresentModeCount < 1)
+	{
+		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : vkGetPhysicalDeviceSurfacePresentModesKHR count < 1");
+		vkDestroySurfaceKHR(pDevice->m_VKInstance, surface, nullptr);
+		return nullptr;
+	}
+
+	std::vector<VkPresentModeKHR> vPresentModes(unPresentModeCount);
+	result = pDevice->GetPhysicalDeviceSurfacePresentModesKHR(pDevice->GetPhysicalDevice(), surface, &unPresentModeCount, vPresentModes.data());
+
+	if (result != VK_SUCCESS)
+	{
+		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : vkGetPhysicalDeviceSurfacePresentModesKHR error");
+		vkDestroySurfaceKHR(pDevice->m_VKInstance, surface, nullptr);
+		return nullptr;
+	}
+
+	VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
+
+	for (unsigned int i = 0; i < unPresentModeCount; i++) {
+		if (vPresentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
+			presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
+			break;
+		}
+
+		if (vPresentModes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR)
+			presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+	}
+
+	unsigned int imageCount = caps.minImageCount + 1;
+	if (imageCount > caps.maxImageCount)
+		imageCount = caps.maxImageCount;
+
+
+	unsigned int unFormatCount = 0;
+	result = pDevice->GetPhysicalDeviceSurfaceFormatsKHR(pDevice->GetPhysicalDevice(), surface, &unFormatCount, NULL);
+	if (result != VK_SUCCESS || unFormatCount < 1)
+	{
+		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : GetPhysicalDeviceSurfaceFormatsKHR unFormatCount < 1");
+		vkDestroySurfaceKHR(pDevice->m_VKInstance, surface, nullptr);
+		return nullptr;
+	}
+
+	std::vector<VkSurfaceFormatKHR> surfaceFormats(unFormatCount);
+	result = pDevice->GetPhysicalDeviceSurfaceFormatsKHR(pDevice->GetPhysicalDevice(), surface, &unFormatCount, surfaceFormats.data());
+	if (result != VK_SUCCESS)
+	{
+		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : GetPhysicalDeviceSurfaceFormatsKHR error");
+		vkDestroySurfaceKHR(pDevice->m_VKInstance, surface, nullptr);
+		return nullptr;
+	}
+
+	VkFormat colorFormat;
+	VkColorSpaceKHR colorSpace;
+
+	if (unFormatCount == 1 && surfaceFormats[0].format == VK_FORMAT_UNDEFINED)
+		colorFormat = VK_FORMAT_B8G8R8A8_UNORM;
+	else
+		colorFormat = surfaceFormats[0].format;
+	colorSpace = surfaceFormats[0].colorSpace;
+
+	VkSwapchainCreateInfoKHR swapchainCreateInfo = {};
+	swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+	swapchainCreateInfo.surface = surface;
+	swapchainCreateInfo.minImageCount = imageCount;
+	swapchainCreateInfo.imageFormat = colorFormat;
+	swapchainCreateInfo.imageColorSpace = colorSpace;
+	swapchainCreateInfo.imageExtent = { swapchainExtent.width, swapchainExtent.height };
+	swapchainCreateInfo.imageArrayLayers = 1;
+	swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	swapchainCreateInfo.queueFamilyIndexCount = 1;
+	swapchainCreateInfo.pQueueFamilyIndices = { 0 };
+	swapchainCreateInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+	swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+	swapchainCreateInfo.presentMode = presentMode;
+
+	VkSwapchainKHR swapchain;
+	result = pDevice->CreateSwapchainKHR(pDevice->m_VKDevice, &swapchainCreateInfo, NULL, &swapchain);
+	if (result != VK_SUCCESS)
+	{
+		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : CreateSwapchainKHR error");
+		vkDestroySurfaceKHR(pDevice->m_VKInstance, surface, nullptr);
+		return nullptr;
+	}
+
+	unsigned int unSwapchainImageCount = 0;
+	result = pDevice->GetSwapchainImagesKHR(pDevice->m_VKDevice, swapchain, &unSwapchainImageCount, NULL);
+	if (result != VK_SUCCESS || unSwapchainImageCount < 1)
+	{
+		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : unSwapchainImageCount < 1");
+		vkDestroySurfaceKHR(pDevice->m_VKInstance, surface, nullptr);
+		vkDestroySwapchainKHR(pDevice->m_VKDevice, swapchain, nullptr);
+		return nullptr;
+	}
+
+
+	std::vector<VkImage> vSwapchainImages(unSwapchainImageCount);
+	result = pDevice->GetSwapchainImagesKHR(pDevice->m_VKDevice, swapchain, &unSwapchainImageCount, vSwapchainImages.data());
+	if (result != VK_SUCCESS || unSwapchainImageCount < 1)
+	{
+		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : GetSwapchainImagesKHR error");
+		vkDestroySurfaceKHR(pDevice->m_VKInstance, surface, nullptr);
+		vkDestroySwapchainKHR(pDevice->m_VKDevice, swapchain, nullptr);
+		return nullptr;
+	}
+
+
+
+	MVulkanRenderTarget* pRenderTarget = new MVulkanRenderTarget(pDevice);
+	pRenderTarget->m_VKSwapchain = swapchain;
+	pRenderTarget->m_VKSurface = surface;
+	pRenderTarget->m_VKColorFormat = colorFormat;
+	pRenderTarget->m_vSwapchainImages = vSwapchainImages;
+
+
+	return pRenderTarget;
+}
+
+
+#endif

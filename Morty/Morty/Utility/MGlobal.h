@@ -18,7 +18,8 @@
 #if defined(__WINDOWS_) || defined(_WINDOWS) || defined(WIN32)
 	#define MORTY_WIN
 #else
-	#define MORTY_MAC
+	#define MORTY_ANDROID
+    #define MORTY_IOS
 #endif
 
 
@@ -97,12 +98,12 @@ extern const bool MCALC_NORMAL_IN_VS;
 
 extern const unsigned int MMESH_LOD_LEVEL_RANGE;
 
-//gles
+//vulkan
 #define MORTY_VULKAN 1
 //directx11
 #define MORTY_DIRECTX_11 2
 
-#define RENDER_GRAPHICS MORTY_DIRECTX_11
+#define RENDER_GRAPHICS MORTY_VULKAN
 
 
 #define MORTY_RENDER_DATA_STATISTICS true

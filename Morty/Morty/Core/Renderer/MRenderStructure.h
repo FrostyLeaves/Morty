@@ -15,6 +15,11 @@
 #include <map>
 #include <vector>
 
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+#elif RENDER_GRAPHICS == MORTY_VULKAN
+#include <vulkan/vulkan.h>
+#endif
+
 class MIRenderer;
 class MITexture;
 class MTextureCube;
@@ -67,7 +72,7 @@ public:
 	struct ID3D11Texture2D* m_pTextureBuffer;
 	class ID3D11ShaderResourceView* m_pShaderResourceView;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-
+	//VkImageView m_pShaderResourceView;
 #endif
 };
 

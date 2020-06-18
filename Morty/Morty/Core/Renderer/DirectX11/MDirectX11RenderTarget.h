@@ -9,6 +9,9 @@
 #ifndef _M_MDIRECTX11RENDERTARGET_H_
 #define _M_MDIRECTX11RENDERTARGET_H_
 #include "MGlobal.h"
+
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+
 #include <functional>
 
 #include <d3d11.h>
@@ -50,6 +53,9 @@ private:
 	MWindowsRenderView* m_pView;
 
 };
+
+
+#endif
 
 
 #endif

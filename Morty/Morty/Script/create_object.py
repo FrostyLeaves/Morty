@@ -31,7 +31,7 @@ private:
 
 sourceTemaplateString = """#include "{0}.h"
 
-MTypeIdentifierImplement({0}, MObject)
+M_OBJECT_IMPLEMENT({0}, MObject)
 
 {0}::{0}()
     : MObject()

@@ -1,5 +1,7 @@
 ﻿#include "MDirectX11Device.h"
 
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+
 #include <d3dcommon.h>
 #include <D3Dcompiler.h>
 #include <d3d11shader.h>
@@ -1315,3 +1317,7 @@ MVariant MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType* 
 
 	return var;
 }
+
+
+
+#endif
