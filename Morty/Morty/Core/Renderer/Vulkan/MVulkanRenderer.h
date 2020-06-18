@@ -47,6 +47,8 @@ public:
 
 protected:
 
+	bool CreateGraphicsPipeline(MMaterial* pMaaterial);
+
 private:
 
 };

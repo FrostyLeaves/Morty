@@ -1,4 +1,7 @@
 #include "MVulkanRenderer.h"
+#include "MShader.h"
+#include "MMaterial.h"
+#include "MRenderStructure.h"
 
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -55,16 +58,9 @@ bool MVulkanRenderer::Initialize()
 	//TODO Blend
 
 
-	//Vulkan必须填这个东西，才能在运行时修改viewport大小等设置
-	std::vector<VkDynamicState> dynamicStates = {
-	VK_DYNAMIC_STATE_VIEWPORT,
-	VK_DYNAMIC_STATE_LINE_WIDTH
-	};
 
-	VkPipelineDynamicStateCreateInfo dynamicState{};
-	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-	dynamicState.dynamicStateCount = dynamicStates.size();
-	dynamicState.pDynamicStates = dynamicStates.data();
+
+	
 
 
 	//Global uniform?
@@ -118,5 +114,58 @@ void MVulkanRenderer::SetViewport(const float& fX, const float& fY, const float&
 	viewportState.pScissors = &scissor;
 }
 
+
+bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial, const bool& bUpdateResources /*= false*/)
+{
+
+}
+
+bool MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial)
+{
+	if (!pMaterial)
+		return;
+
+	//Vulkan必须填这个东西，才能在运行时修改viewport大小等设置
+	std::vector<VkDynamicState> dynamicStates = {
+	VK_DYNAMIC_STATE_VIEWPORT,
+	VK_DYNAMIC_STATE_LINE_WIDTH
+	};
+	VkPipelineDynamicStateCreateInfo dynamicState{};
+	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+	dynamicState.dynamicStateCount = dynamicStates.size();
+	dynamicState.pDynamicStates = dynamicStates.data();
+
+	MShader* pVertexShader = pMaterial->GetVertexShader();
+	MShader* pPixelShader = pMaterial->GetPixelShader();
+
+	if (nullptr == pVertexShader || nullptr == pPixelShader)
+		return false;
+
+	if (nullptr == pVertexShader->GetBuffer())
+		return false;
+	if (nullptr == pPixelShader->GetBuffer())
+		return false;
+
+	VkPipelineShaderStageCreateInfo vShaderStageInfo[] = {
+		pVertexShader->GetBuffer()->m_VkShaderStageInfo,
+		pPixelShader->GetBuffer()->m_VkShaderStageInfo,
+	};
+
+	VkGraphicsPipelineCreateInfo pipelineInfo{};
+	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	pipelineInfo.stageCount = 2;
+	pipelineInfo.pStages = vShaderStageInfo;
+	pipelineInfo.pVertexInputState = &vertexInputInfo;
+	pipelineInfo.pInputAssemblyState = &inputAssembly;
+	pipelineInfo.pViewportState = &viewportState;
+	pipelineInfo.pRasterizationState = &rasterizer;
+	pipelineInfo.pMultisampleState = &multisampling;
+	pipelineInfo.pDepthStencilState = nullptr;
+	pipelineInfo.pColorBlendState = nullptr;
+	pipelineInfo.pDynamicState = &dynamicState;
+
+
+
+}
 
 #endif

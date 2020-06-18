@@ -187,6 +187,12 @@ public:
 	static std::vector<MShaderSampleParam*> s_vSampleParams;
 	static std::vector<MShaderTextureParam*> s_vTextureParams;
 	static std::vector<MShaderParam*> s_vShaderParams;
+
+
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+#elif RENDER_GRAPHICS == MORTY_VULKAN
+	VkPipelineShaderStageCreateInfo m_VkShaderStageInfo;
+#endif
 };
 
 class MVertexShaderBuffer : public MShaderBuffer

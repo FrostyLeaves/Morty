@@ -1,6 +1,7 @@
 #include "MVulkanDevice.h"
 #include "MShader.h"
 #include "MFileHelper.h"
+#include "MRenderStructure.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
@@ -314,6 +315,11 @@ bool MVulkanDevice::CheckDeviceExtensionSupport(VkPhysicalDevice device)
 
 bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType, const MShaderMacro& macro)
 {
+	if (*ppShaderBuffer)
+	{
+		CleanShader(ppShaderBuffer);
+	}
+
 	MString code;
 	if (!MFileHelper::ReadString(strShaderPath, code))
 		return false;
@@ -327,16 +333,29 @@ bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString&
 	if (vkCreateShaderModule(m_VKDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
 		return false;
 
-	VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-	vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	vertShaderStageInfo.stage = eShaderType == MShader::MEShaderType::Vertex ? VK_SHADER_STAGE_VERTEX_BIT : VK_SHADER_STAGE_FRAGMENT_BIT;
-	vertShaderStageInfo.module = shaderModule;
-	vertShaderStageInfo.pName = eShaderType == MShader::MEShaderType::Vertex ? "VS" : "PS";
+	VkPipelineShaderStageCreateInfo shaderStageInfo{};
+	shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	shaderStageInfo.stage = eShaderType == MShader::MEShaderType::Vertex ? VK_SHADER_STAGE_VERTEX_BIT : VK_SHADER_STAGE_FRAGMENT_BIT;
+	shaderStageInfo.module = shaderModule;
+	shaderStageInfo.pName = eShaderType == MShader::MEShaderType::Vertex ? "VS" : "PS";
 	
 	//TODO 用来定义类似于hlsl中的宏的变量
-	vertShaderStageInfo.pSpecializationInfo = nullptr;
+	shaderStageInfo.pSpecializationInfo = nullptr;
 
+	if (MShader::MEShaderType::Vertex == eShaderType)
+	{
+		MVertexShaderBuffer* pBuffer = new MVertexShaderBuffer();
+		pBuffer->m_VkShaderStageInfo = shaderStageInfo;
 
+		*ppShaderBuffer = pBuffer;
+	}
+	else if (MShader::MEShaderType::Pixel == eShaderType)
+	{
+		MPixelShaderBuffer* pBuffer = new MPixelShaderBuffer();
+		pBuffer->m_VkShaderStageInfo = shaderStageInfo;
+
+		*ppShaderBuffer = pBuffer;
+	}
 
 	return true;
 }
