@@ -135,8 +135,7 @@ void MMaterial::CopyFrom(const MResource* pResource)
 	m_vShaderParams.resize(pMaterial->m_vShaderParams.size());
 	for (unsigned int i = 0; i < pMaterial->m_vShaderParams.size(); ++i)
 	{
-		m_vShaderParams[i] = pMaterial->m_vShaderParams[i];
-		m_vShaderParams[i].pBuffer = nullptr;
+		m_vShaderParams[i] = MShaderParam(pMaterial->m_vShaderParams[i]);
 
 		m_pEngine->GetDevice()->GenerateShaderParamBuffer(&m_vShaderParams[i]);
 	}
@@ -440,9 +439,7 @@ void MMaterial::RecompileShaderParams(std::vector<MShaderParam>& vParams, std::v
 
 		if (!bFinded)
 		{
-			MShaderParam param;
-			param = *vNewParams[j];
-			param.pBuffer = nullptr;
+			MShaderParam param(*vNewParams[j]);
 			m_pEngine->GetDevice()->GenerateShaderParamBuffer(&param);
 			vParams.push_back(param);
 		}

@@ -7,6 +7,9 @@
 #if (RENDER_GRAPHICS == MORTY_DIRECTX_11)
 #include "MDirectX11Device.h"
 #include "MDirectX11Renderer.h"
+#elif (RENDER_GRAPHICS == MORTY_VULKAN)
+#include "MVulkanDevice.h"
+#include "MVulkanRenderer.h"
 #endif
 
 #ifdef MORTY_WIN
@@ -61,7 +64,10 @@ bool MEngine::Initialize()
 		MDirectX11Renderer* pDx11Renderer = new MDirectX11Renderer(pDevice);
 		m_pRenderer = pDx11Renderer;
 #elif (RENDER_GRAPHICS == MORTY_VULKAN)
-		m_pRenderer = nullptr;
+		m_pDevice = new MVulkanDevice();
+		m_pDevice->Initialize();
+
+		m_pRenderer = new MVulkanRenderer();
 #else
 		m_pRenderer = nullptr;
 #endif
@@ -93,20 +99,12 @@ bool MEngine::Initialize()
 MIRenderView* MEngine::CreateView()
 {
 
-	MIRenderView* pNewView = nullptr;
+	MWindowsRenderView* pWindowsView = new MWindowsRenderView();
+	pWindowsView->Initialize(this, "Morty");
+	pWindowsView->m_pEngine = this;
+	AddView(pWindowsView);
 
-#if (RENDER_GRAPHICS == MORTY_DIRECTX_11)
-	if (MDirectX11Renderer* pRenderer = dynamic_cast<MDirectX11Renderer*>(m_pRenderer))
-	{
-		MWindowsRenderView* pWindowsView = new MWindowsRenderView();
-		pWindowsView->Initialize(this, "Morty");
-		pWindowsView->m_pEngine = this;
-		AddView(pWindowsView);
-
-		pNewView = pWindowsView;
-	}
-
-#endif
+	MIRenderView* pNewView = pWindowsView;
 
 	MViewport* pViewport = GetObjectManager()->CreateObject<MViewport>();
 	pNewView->AppendViewport(pViewport);

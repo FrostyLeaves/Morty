@@ -75,6 +75,8 @@ class MViewport;
 class MIRenderTarget;
 class MRenderDepthTexture;
 class MRenderTargetTexture;
+
+
 class MORTY_CLASS MIRenderer
 {
 public:
@@ -107,6 +109,8 @@ public:
 	virtual void AddOutputView(MIRenderView* pView) = 0;
 
 public:
+
+	virtual void Draw();
 
 	virtual void DrawMesh(MIMesh* pMesh) = 0;
 

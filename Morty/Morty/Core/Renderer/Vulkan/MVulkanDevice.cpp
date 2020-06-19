@@ -1,4 +1,5 @@
 #include "MVulkanDevice.h"
+#include "MMesh.h"
 #include "MShader.h"
 #include "MFileHelper.h"
 #include "MRenderStructure.h"
@@ -42,10 +43,10 @@ const std::vector<const char*> DeviceExtensions = {
 
 MVulkanDevice::MVulkanDevice()
 	: MIDevice()
-	, m_VKInstance(VK_NULL_HANDLE)
-	, m_VKPhysicalDevice(VK_NULL_HANDLE)
-	, m_VKDevice(VK_NULL_HANDLE)
-	, m_VKGraphicsQueue(VK_NULL_HANDLE)
+	, m_VkInstance(VK_NULL_HANDLE)
+	, m_VkPhysicalDevice(VK_NULL_HANDLE)
+	, m_VkDevice(VK_NULL_HANDLE)
+	, m_VkGraphicsQueue(VK_NULL_HANDLE)
 {
 
 }
@@ -68,16 +69,16 @@ bool MVulkanDevice::Initialize()
 	
 
 
-	GET_INSTANCE_PROC_ADDR(m_VKInstance, GetPhysicalDeviceSurfaceSupportKHR);
-	GET_INSTANCE_PROC_ADDR(m_VKInstance, GetPhysicalDeviceSurfaceCapabilitiesKHR);
-	GET_INSTANCE_PROC_ADDR(m_VKInstance, GetPhysicalDeviceSurfaceFormatsKHR);
-	GET_INSTANCE_PROC_ADDR(m_VKInstance, GetPhysicalDeviceSurfacePresentModesKHR);
+	GET_INSTANCE_PROC_ADDR(m_VkInstance, GetPhysicalDeviceSurfaceSupportKHR);
+	GET_INSTANCE_PROC_ADDR(m_VkInstance, GetPhysicalDeviceSurfaceCapabilitiesKHR);
+	GET_INSTANCE_PROC_ADDR(m_VkInstance, GetPhysicalDeviceSurfaceFormatsKHR);
+	GET_INSTANCE_PROC_ADDR(m_VkInstance, GetPhysicalDeviceSurfacePresentModesKHR);
 
-	GET_DEVICE_PROC_ADDR(m_VKDevice, CreateSwapchainKHR);
-	GET_DEVICE_PROC_ADDR(m_VKDevice, DestroySwapchainKHR);
-	GET_DEVICE_PROC_ADDR(m_VKDevice, GetSwapchainImagesKHR);
-	GET_DEVICE_PROC_ADDR(m_VKDevice, AcquireNextImageKHR);
-	GET_DEVICE_PROC_ADDR(m_VKDevice, QueuePresentKHR);
+	GET_DEVICE_PROC_ADDR(m_VkDevice, CreateSwapchainKHR);
+	GET_DEVICE_PROC_ADDR(m_VkDevice, DestroySwapchainKHR);
+	GET_DEVICE_PROC_ADDR(m_VkDevice, GetSwapchainImagesKHR);
+	GET_DEVICE_PROC_ADDR(m_VkDevice, AcquireNextImageKHR);
+	GET_DEVICE_PROC_ADDR(m_VkDevice, QueuePresentKHR);
 
 
 	return true;
@@ -85,17 +86,61 @@ bool MVulkanDevice::Initialize()
 
 void MVulkanDevice::Release()
 {
-	vkDestroyInstance(m_VKInstance, NULL);
+	vkDestroyInstance(m_VkInstance, NULL);
+}
+
+int MVulkanDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+{
+	VkPhysicalDeviceMemoryProperties memProperties;
+	vkGetPhysicalDeviceMemoryProperties(m_VkPhysicalDevice, &memProperties);
+
+	for (int i = 0; i < memProperties.memoryTypeCount; i++) {
+		if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+			return i;
+		}
+	}
+
+	return -1;
 }
 
 void MVulkanDevice::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh, const bool& bModifiable /*= false*/)
 {
-	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputInfo.vertexBindingDescriptionCount = 0;
-	vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
-	vertexInputInfo.vertexAttributeDescriptionCount = 0;
-	vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
+	if (*ppVertexBuffer)
+		DestroyBuffer(ppVertexBuffer);
+
+	VkBuffer vertexBuffer;
+	VkDeviceMemory vertexBufferMemory;
+
+	GenerateBuffer(pMesh->GetVerticesLength() * pMesh->GetVertexStructSize(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		vertexBuffer, vertexBufferMemory);
+
+	MVertexBuffer* pBuffer = new MVertexBuffer();
+	pBuffer->m_VkVertexBuffer = vertexBuffer;
+	pBuffer->m_VkVertexBufferMemory = vertexBufferMemory;
+
+
+
+	*ppVertexBuffer = pBuffer;
+}
+
+void MVulkanDevice::DestroyBuffer(MVertexBuffer** ppVertexBuffer)
+{
+	if (*ppVertexBuffer)
+	{
+		DestroyBuffer((*ppVertexBuffer)->m_VkVertexBuffer, (*ppVertexBuffer)->m_VkVertexBufferMemory);
+		delete *ppVertexBuffer;
+		*ppVertexBuffer = nullptr;
+	}
+}
+
+void MVulkanDevice::UploadBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh)
+{
+	void* data = nullptr;
+	unsigned int unSize = pMesh->GetVerticesLength() * pMesh->GetVertexStructSize();
+	vkMapMemory(m_VkDevice, (*ppVertexBuffer)->m_VkVertexBufferMemory, 0, unSize, 0, &data);
+	memcpy(data, pMesh->GetVertices(), unSize);
+	vkUnmapMemory(m_VkDevice, (*ppVertexBuffer)->m_VkVertexBufferMemory);
 }
 
 bool MVulkanDevice::InitVulkanInstance()
@@ -128,7 +173,7 @@ bool MVulkanDevice::InitVulkanInstance()
 	createInfo.enabledExtensionCount = enabledExtensions.size();
 	createInfo.ppEnabledExtensionNames = enabledExtensions.data();
 
-	VkResult result = vkCreateInstance(&createInfo, nullptr, &m_VKInstance);
+	VkResult result = vkCreateInstance(&createInfo, nullptr, &m_VkInstance);
 
 	if (result == VK_ERROR_INCOMPATIBLE_DRIVER) {
 		MLogManager::GetInstance()->Error(
@@ -151,7 +196,7 @@ bool MVulkanDevice::InitVulkanInstance()
 bool MVulkanDevice::InitPhysicalDevice()
 {
 	unsigned int nDeviceCount = 0;
-	VkResult result = vkEnumeratePhysicalDevices(m_VKInstance, &nDeviceCount, NULL);
+	VkResult result = vkEnumeratePhysicalDevices(m_VkInstance, &nDeviceCount, NULL);
 
 	if (result != VK_SUCCESS || nDeviceCount < 1)
 	{
@@ -160,7 +205,7 @@ bool MVulkanDevice::InitPhysicalDevice()
 	}
 
 	std::vector<VkPhysicalDevice> vPhysicalDevices(nDeviceCount);
-	result = vkEnumeratePhysicalDevices(m_VKInstance, &nDeviceCount, vPhysicalDevices.data());
+	result = vkEnumeratePhysicalDevices(m_VkInstance, &nDeviceCount, vPhysicalDevices.data());
 	if (result != VK_SUCCESS)
 	{
 		MLogManager::GetInstance()->Error("Initialize Vulkan Error : vkEnumeratePhysicalDevices error.");
@@ -179,12 +224,12 @@ bool MVulkanDevice::InitPhysicalDevice()
 
 		if (IsDeviceSuitable(vPhysicalDevices[i]))
 		{
-			m_VKPhysicalDevice = vPhysicalDevices[i];
+			m_VkPhysicalDevice = vPhysicalDevices[i];
 			break;
 		}
 	}
 
-	if (m_VKPhysicalDevice == VK_NULL_HANDLE)
+	if (m_VkPhysicalDevice == VK_NULL_HANDLE)
 	{
 		MLogManager::GetInstance()->Error("Initialize Vulkan Error : m_nPhysicalDeviceIndex == -1");
 		return false;
@@ -196,7 +241,7 @@ bool MVulkanDevice::InitPhysicalDevice()
 
 bool MVulkanDevice::InitLogicalDevice()
 {
-	int nQueueFamilyIndex = FindQueueGraphicsFamilies(m_VKPhysicalDevice);
+	int nQueueFamilyIndex = FindQueueGraphicsFamilies(m_VkPhysicalDevice);
 
 	float priorities[] = { 1.0f };	//range 0~1
 	VkDeviceQueueCreateInfo queueInfo{};
@@ -224,14 +269,14 @@ bool MVulkanDevice::InitLogicalDevice()
 	//这里默认了当前队列族（nQueueFamilyIndex）都支持所有类型的功能
 	//可能会存在不支持往当前屏幕上绘制的，处理这个需要在创建logicalDevice之前创建窗口的surface，然后check支不支持。
 	//这个太恶心了，先不处理
-	VkResult result = vkCreateDevice(m_VKPhysicalDevice, &deviceInfo, NULL, &m_VKDevice);
+	VkResult result = vkCreateDevice(m_VkPhysicalDevice, &deviceInfo, NULL, &m_VkDevice);
 	if (result != VK_SUCCESS)
 	{
 		MLogManager::GetInstance()->Error("Initialize Vulkan Error : vkCreateDevice error.");
 		return false;
 	}
 
-	vkGetDeviceQueue(m_VKDevice, nQueueFamilyIndex, 0, &m_VKGraphicsQueue);
+	vkGetDeviceQueue(m_VkDevice, nQueueFamilyIndex, 0, &m_VkGraphicsQueue);
 
 	return true;
 }
@@ -245,6 +290,50 @@ bool MVulkanDevice::IsDeviceSuitable(VkPhysicalDevice device)
 		return false;
 
 	return true;
+}
+
+bool MVulkanDevice::GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+{
+	VkBufferCreateInfo bufferInfo{};
+	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.size = size;
+	bufferInfo.usage = usage;
+	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	if (vkCreateBuffer(m_VkDevice, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
+	{
+		return false;
+	}
+
+	VkMemoryRequirements memRequirements;
+	vkGetBufferMemoryRequirements(m_VkDevice, buffer, &memRequirements);
+
+	VkMemoryAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.allocationSize = memRequirements.size;
+	allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
+
+	if (-1 == allocInfo.memoryTypeIndex)
+	{
+		vkDestroyBuffer(m_VkDevice, buffer, nullptr);
+		return false;
+	}
+
+	if (vkAllocateMemory(m_VkDevice, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
+	{
+		vkDestroyBuffer(m_VkDevice, buffer, nullptr);
+		return false;
+	}
+
+	vkBindBufferMemory(m_VkDevice, buffer, bufferMemory, 0);
+
+	return true;
+}
+
+void MVulkanDevice::DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+{
+	vkDestroyBuffer(m_VkDevice, buffer, nullptr);
+	vkFreeMemory(m_VkDevice, bufferMemory, nullptr);
 }
 
 int MVulkanDevice::FindQueueGraphicsFamilies(VkPhysicalDevice device)
@@ -274,15 +363,15 @@ int MVulkanDevice::FindQueuePresentFamilies(VkPhysicalDevice device, VkSurfaceKH
 	int nPresentFamily = -1;
 
 	unsigned int unQueueFamilyCount = 0;
-	vkGetPhysicalDeviceQueueFamilyProperties(m_VKPhysicalDevice, &unQueueFamilyCount, NULL);
+	vkGetPhysicalDeviceQueueFamilyProperties(m_VkPhysicalDevice, &unQueueFamilyCount, NULL);
 
 	std::vector<VkQueueFamilyProperties> vQueueProperties(unQueueFamilyCount);
-	vkGetPhysicalDeviceQueueFamilyProperties(m_VKPhysicalDevice, &unQueueFamilyCount, vQueueProperties.data());
+	vkGetPhysicalDeviceQueueFamilyProperties(m_VkPhysicalDevice, &unQueueFamilyCount, vQueueProperties.data());
 
 	VkBool32 bSupportsPresenting(VK_FALSE);
 	for (unsigned int i = 0; i < unQueueFamilyCount; ++i)
 	{
-		GetPhysicalDeviceSurfaceSupportKHR(m_VKPhysicalDevice, i, surface, &bSupportsPresenting);
+		GetPhysicalDeviceSurfaceSupportKHR(m_VkPhysicalDevice, i, surface, &bSupportsPresenting);
 
 		if (vQueueProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 		{
@@ -330,7 +419,7 @@ bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString&
 	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
 	VkShaderModule shaderModule;
-	if (vkCreateShaderModule(m_VKDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+	if (vkCreateShaderModule(m_VkDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
 		return false;
 
 	VkPipelineShaderStageCreateInfo shaderStageInfo{};
@@ -348,6 +437,23 @@ bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString&
 		pBuffer->m_VkShaderStageInfo = shaderStageInfo;
 
 		*ppShaderBuffer = pBuffer;
+
+
+		VkVertexInputBindingDescription bindingDescription;
+		bindingDescription.binding = 0;
+		bindingDescription.stride = sizeof(Vertex);
+		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
+		attributeDescriptions[0].binding = 0;
+		attributeDescriptions[0].location = 0;
+		attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+		attributeDescriptions[0].offset = offsetof(Vertex, pos);
+
+		pBuffer->m_VkVertexInputStateInfo.vertexBindingDescriptionCount = 1;
+		pBuffer->m_VkVertexInputStateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+		pBuffer->m_VkVertexInputStateInfo.pVertexBindingDescriptions = &bindingDescription;
+		pBuffer->m_VkVertexInputStateInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 	}
 	else if (MShader::MEShaderType::Pixel == eShaderType)
 	{
@@ -371,6 +477,40 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsigned
 	if (nHeight < 1)
 		nHeight = 1;
 
+	VkAttachmentDescription colorAttachment{};
+	colorAttachment.format = pVkRenderTarget->m_VkColorFormat;
+	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	//VK_ATTACHMENT_LOAD_OP_LOAD：保留附件的现有内容
+	//VK_ATTACHMENT_LOAD_OP_CLEAR：在开始时将值清除为常数
+	//VK_ATTACHMENT_LOAD_OP_DONT_CARE：现有内容未定义；我们不在乎他们
+	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	//VK_ATTACHMENT_STORE_OP_STORE：渲染的内容将存储在内存中，以后可以读取
+	//VK_ATTACHMENT_STORE_OP_DONT_CARE：渲染操作后，帧缓冲区的内容将不确定
+	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;	//交换链
+
+	VkAttachmentReference colorAttachmentRef = {};
+	colorAttachmentRef.attachment = 0;
+	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkSubpassDescription subpass = {};
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.colorAttachmentCount = 1;
+	subpass.pColorAttachments = &colorAttachmentRef;
+
+	VkRenderPassCreateInfo renderPassInfo = {};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassInfo.attachmentCount = 1;
+	renderPassInfo.pAttachments = &colorAttachment;
+	renderPassInfo.subpassCount = 1;
+	renderPassInfo.pSubpasses = &subpass;
+
+	if (vkCreateRenderPass(m_VkDevice, &renderPassInfo, nullptr, &pVkRenderTarget->m_VkRenderPass) != VK_SUCCESS)
+		return false;
+
 	VkImageViewCreateInfo createInfo = {};
 
 	for (unsigned int i = 0; i < pVkRenderTarget->m_vSwapchainImages.size(); ++i)
@@ -378,7 +518,7 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsigned
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		createInfo.image = pVkRenderTarget->m_vSwapchainImages[i];
 		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		createInfo.format = pVkRenderTarget->m_VKColorFormat;
+		createInfo.format = pVkRenderTarget->m_VkColorFormat;
 		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
 		createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
 		createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -390,17 +530,17 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsigned
 		createInfo.subresourceRange.baseArrayLayer = 0;
 		createInfo.subresourceRange.layerCount = 1;
 
-		vkCreateImageView(m_VKDevice, &createInfo, nullptr, &pVkRenderTarget->m_vSwapchainImageView[i]);
+		vkCreateImageView(m_VkDevice, &createInfo, nullptr, &pVkRenderTarget->m_vSwapchainImageView[i]);
 
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass = renderPass;
+		framebufferInfo.renderPass = pRenderTarget->m_VkRenderPass;
 		framebufferInfo.attachmentCount = 1;
 		framebufferInfo.pAttachments = &pVkRenderTarget->m_vSwapchainImageView[i];
 		framebufferInfo.width = nWidth;
 		framebufferInfo.height = nHeight;
 		framebufferInfo.layers = 1;
-		vkCreateFramebuffer(m_VKDevice, &framebufferInfo, nullptr, &pVkRenderTarget->swapChainFramebuffers[i]);
+		vkCreateFramebuffer(m_VkDevice, &framebufferInfo, nullptr, &pVkRenderTarget->swapChainFramebuffers[i]);
 	}
 
 	
@@ -409,22 +549,7 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsigned
 	//TODO Multiple RenderTarget
 
 
-	VkAttachmentDescription colorAttachment{};
-	colorAttachment.format = pVkRenderTarget->m_VKColorFormat;
-	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-	//VK_ATTACHMENT_LOAD_OP_LOAD：保留附件的现有内容
-	//VK_ATTACHMENT_LOAD_OP_CLEAR：在开始时将值清除为常数
-	//VK_ATTACHMENT_LOAD_OP_DONT_CARE：现有内容未定义；我们不在乎他们
-	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	//VK_ATTACHMENT_STORE_OP_STORE：渲染的内容将存储在内存中，以后可以读取
-	//VK_ATTACHMENT_STORE_OP_DONT_CARE：渲染操作后，帧缓冲区的内容将不确定
-	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-
-
-	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;	//交换链
+	
 
 
 

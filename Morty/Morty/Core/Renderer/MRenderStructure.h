@@ -47,7 +47,8 @@ public:
 	class ID3D11Buffer* m_pVertexBuffer;
 	class ID3D11Buffer* m_pIndexBuffer;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-
+	VkBuffer m_VkVertexBuffer;
+	VkDeviceMemory m_VkVertexBufferMemory;
 #endif
 };
 
@@ -114,6 +115,7 @@ enum MEShaderParamType
 struct MShaderParam
 {
 	MShaderParam();
+	MShaderParam(const MShaderParam& param);
 
 	MString strName;
 	unsigned int unCode;
@@ -121,8 +123,8 @@ struct MShaderParam
 
 	MVariant var;
 	bool bDirty;
-
 	void SetDirty() { bDirty = true; }
+
 	
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	class ID3D11Buffer* pBuffer;
@@ -204,6 +206,8 @@ public:
 	class ID3D11VertexShader* m_pVertexShader;
 	class ID3D11InputLayout* m_pInputLayout;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
+	VkPipelineLayout m_VkPipelineLayout;
+	VkPipelineVertexInputStateCreateInfo m_VkVertexInputStateInfo;
 #endif
 
 };
@@ -216,6 +220,7 @@ public:
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	class ID3D11PixelShader* m_pPixelShader;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
+	VkPipelineLayout m_VkPipelineLayout;
 #endif
 
 };

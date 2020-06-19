@@ -14,10 +14,11 @@
 
 #include "MIRenderer.h"
 
+class MVulkanDevice;
 class MORTY_CLASS MVulkanRenderer : public MIRenderer
 {
 public:
-    MVulkanRenderer();
+    MVulkanRenderer(MVulkanDevice* pDevice);
     virtual ~MVulkanRenderer();
 
 
@@ -50,6 +51,13 @@ protected:
 	bool CreateGraphicsPipeline(MMaterial* pMaaterial);
 
 private:
+
+	MVulkanDevice* m_pDevice;
+
+	VkPipelineInputAssemblyStateCreateInfo m_InputAssemblyState;
+	VkPipelineRasterizationStateCreateInfo m_RasterizationState;
+	VkPipelineViewportStateCreateInfo m_ViewportState;
+	VkPipelineMultisampleStateCreateInfo m_MultisampleState;
 
 };
 

@@ -139,6 +139,7 @@
     <ClInclude Include="..\..\Core\Renderer\MVariant.h" />
     <ClInclude Include="..\..\Core\Renderer\MVertex.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanDevice.h" />
+    <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanRenderer.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanRenderTarget.h" />
     <ClInclude Include="..\..\Organizer\MMaterialGroup.h" />
     <ClInclude Include="..\..\Organizer\MScene.h" />
@@ -233,6 +234,7 @@
     <ClCompile Include="..\..\Core\Renderer\MTexture.cpp" />
     <ClCompile Include="..\..\Core\Renderer\MVariant.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanDevice.cpp" />
+    <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanRenderer.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanRenderTarget.cpp" />
     <ClCompile Include="..\..\Organizer\MMaterialGroup.cpp" />
     <ClCompile Include="..\..\Organizer\MScene.cpp" />

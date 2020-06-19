@@ -42,9 +42,9 @@ public:
 	MRenderDepthTexture* m_pDepthTexture;
 
 	MVulkanDevice* m_pDevice;
-	VkSurfaceKHR m_VKSurface;
-	VkSwapchainKHR m_VKSwapchain;
-	VkFormat m_VKColorFormat;
+	VkSurfaceKHR m_VkSurface;
+	VkSwapchainKHR m_VkSwapchain;
+	VkFormat m_VkColorFormat;
 	std::vector<VkImage> m_vSwapchainImages;
 
 	

@@ -60,11 +60,15 @@ public:
 	virtual void DestroyShaderParamBuffer(MShaderParam* pParam) override;
 
 
-	VkPhysicalDevice GetPhysicalDevice() { return m_VKPhysicalDevice; }
+	VkPhysicalDevice GetPhysicalDevice() { return m_VkPhysicalDevice; }
+
+	bool GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+	void DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 
 	int FindQueueGraphicsFamilies(VkPhysicalDevice device);
 	int FindQueuePresentFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
 
+	int FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 protected:
 	bool InitVulkanInstance();
 	bool InitPhysicalDevice();
@@ -84,10 +88,13 @@ public:
 	PFN_vkQueuePresentKHR QueuePresentKHR;
 
 public:
-	VkInstance m_VKInstance;
-	VkPhysicalDevice m_VKPhysicalDevice;
-	VkDevice m_VKDevice;
-	VkQueue m_VKGraphicsQueue;
+	VkInstance m_VkInstance;
+	VkPhysicalDevice m_VkPhysicalDevice;
+	VkDevice m_VkDevice;
+	VkQueue m_VkGraphicsQueue;
+
+
+	int m_nBufferNum;
 };
 
 

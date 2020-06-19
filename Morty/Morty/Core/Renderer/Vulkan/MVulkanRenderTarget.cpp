@@ -20,7 +20,7 @@ MVulkanRenderTarget::~MVulkanRenderTarget()
 
 void MVulkanRenderTarget::Release(MIDevice* pDevice)
 {
-	vkDestroySurfaceKHR(m_pDevice->m_VKInstance, m_VKSurface, nullptr);
+	vkDestroySurfaceKHR(m_pDevice->m_VkInstance, m_VkSurface, nullptr);
 }
 
 MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pDevice, MWindowsRenderView* pView)
@@ -35,7 +35,7 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 
 
 	VkSurfaceKHR surface;
-	VkResult result = vkCreateWin32SurfaceKHR(pDevice->m_VKInstance, &surfaceCreateInfo, NULL, &surface);
+	VkResult result = vkCreateWin32SurfaceKHR(pDevice->m_VkInstance, &surfaceCreateInfo, NULL, &surface);
 	if (result != VK_SUCCESS)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : vkCreateWin32SurfaceKHR error");
@@ -47,7 +47,7 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 	if (result != VK_SUCCESS || caps.maxImageCount < 1)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : GetPhysicalDeviceSurfaceCapabilitiesKHR error");
-		vkDestroySurfaceKHR(pDevice->m_VKInstance, surface, nullptr);
+		vkDestroySurfaceKHR(pDevice->m_VkInstance, surface, nullptr);
 		return nullptr;
 	}
 
@@ -77,7 +77,7 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 	if (result != VK_SUCCESS || unPresentModeCount < 1)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : vkGetPhysicalDeviceSurfacePresentModesKHR count < 1");
-		vkDestroySurfaceKHR(pDevice->m_VKInstance, surface, nullptr);
+		vkDestroySurfaceKHR(pDevice->m_VkInstance, surface, nullptr);
 		return nullptr;
 	}
 
@@ -87,7 +87,7 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 	if (result != VK_SUCCESS)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : vkGetPhysicalDeviceSurfacePresentModesKHR error");
-		vkDestroySurfaceKHR(pDevice->m_VKInstance, surface, nullptr);
+		vkDestroySurfaceKHR(pDevice->m_VkInstance, surface, nullptr);
 		return nullptr;
 	}
 
@@ -113,7 +113,7 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 	if (result != VK_SUCCESS || unFormatCount < 1)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : GetPhysicalDeviceSurfaceFormatsKHR unFormatCount < 1");
-		vkDestroySurfaceKHR(pDevice->m_VKInstance, surface, nullptr);
+		vkDestroySurfaceKHR(pDevice->m_VkInstance, surface, nullptr);
 		return nullptr;
 	}
 
@@ -122,7 +122,7 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 	if (result != VK_SUCCESS)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : GetPhysicalDeviceSurfaceFormatsKHR error");
-		vkDestroySurfaceKHR(pDevice->m_VKInstance, surface, nullptr);
+		vkDestroySurfaceKHR(pDevice->m_VkInstance, surface, nullptr);
 		return nullptr;
 	}
 
@@ -152,41 +152,41 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 	swapchainCreateInfo.presentMode = presentMode;
 
 	VkSwapchainKHR swapchain;
-	result = pDevice->CreateSwapchainKHR(pDevice->m_VKDevice, &swapchainCreateInfo, NULL, &swapchain);
+	result = pDevice->CreateSwapchainKHR(pDevice->m_VkDevice, &swapchainCreateInfo, NULL, &swapchain);
 	if (result != VK_SUCCESS)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : CreateSwapchainKHR error");
-		vkDestroySurfaceKHR(pDevice->m_VKInstance, surface, nullptr);
+		vkDestroySurfaceKHR(pDevice->m_VkInstance, surface, nullptr);
 		return nullptr;
 	}
 
 	unsigned int unSwapchainImageCount = 0;
-	result = pDevice->GetSwapchainImagesKHR(pDevice->m_VKDevice, swapchain, &unSwapchainImageCount, NULL);
+	result = pDevice->GetSwapchainImagesKHR(pDevice->m_VkDevice, swapchain, &unSwapchainImageCount, NULL);
 	if (result != VK_SUCCESS || unSwapchainImageCount < 1)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : unSwapchainImageCount < 1");
-		vkDestroySurfaceKHR(pDevice->m_VKInstance, surface, nullptr);
-		vkDestroySwapchainKHR(pDevice->m_VKDevice, swapchain, nullptr);
+		vkDestroySurfaceKHR(pDevice->m_VkInstance, surface, nullptr);
+		vkDestroySwapchainKHR(pDevice->m_VkDevice, swapchain, nullptr);
 		return nullptr;
 	}
 
 
 	std::vector<VkImage> vSwapchainImages(unSwapchainImageCount);
-	result = pDevice->GetSwapchainImagesKHR(pDevice->m_VKDevice, swapchain, &unSwapchainImageCount, vSwapchainImages.data());
+	result = pDevice->GetSwapchainImagesKHR(pDevice->m_VkDevice, swapchain, &unSwapchainImageCount, vSwapchainImages.data());
 	if (result != VK_SUCCESS || unSwapchainImageCount < 1)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : GetSwapchainImagesKHR error");
-		vkDestroySurfaceKHR(pDevice->m_VKInstance, surface, nullptr);
-		vkDestroySwapchainKHR(pDevice->m_VKDevice, swapchain, nullptr);
+		vkDestroySurfaceKHR(pDevice->m_VkInstance, surface, nullptr);
+		vkDestroySwapchainKHR(pDevice->m_VkDevice, swapchain, nullptr);
 		return nullptr;
 	}
 
 
 
 	MVulkanRenderTarget* pRenderTarget = new MVulkanRenderTarget(pDevice);
-	pRenderTarget->m_VKSwapchain = swapchain;
-	pRenderTarget->m_VKSurface = surface;
-	pRenderTarget->m_VKColorFormat = colorFormat;
+	pRenderTarget->m_VkSwapchain = swapchain;
+	pRenderTarget->m_VkSurface = surface;
+	pRenderTarget->m_VkColorFormat = colorFormat;
 	pRenderTarget->m_vSwapchainImages = vSwapchainImages;
 
 

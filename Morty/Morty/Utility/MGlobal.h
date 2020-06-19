@@ -98,6 +98,9 @@ extern const bool MCALC_NORMAL_IN_VS;
 
 extern const unsigned int MMESH_LOD_LEVEL_RANGE;
 
+
+#define M_BUFFER_NUM 3
+
 //vulkan
 #define MORTY_VULKAN 1
 //directx11

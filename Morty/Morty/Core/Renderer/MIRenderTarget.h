@@ -15,6 +15,8 @@
 #include <d3d11.h>
 #include <D3DX11.h>
 #include <DxErr.h>
+#elif RENDER_GRAPHICS == MORTY_VULKAN
+#include "vulkan/vulkan.h"
 #endif
 
 #include "Type/MColor.h"
@@ -48,14 +50,13 @@ public:
 
 	virtual void Release(MIDevice* pDevice) = 0;
 
-
 public:
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	struct ID3D11RenderTargetView** m_vpRenderTargetView;
 	struct ID3D11DepthStencilView* m_pDepthStencilView;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-
+	VkRenderPass m_VkRenderPass;
 #endif
 
 protected:

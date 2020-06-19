@@ -120,6 +120,24 @@ MShaderParam::MShaderParam()
 	, unCode(SHADER_PARAM_CODE_DEFAULT)
 	, var()
 	, bDirty(true)
+	, eType(0)
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	, pBuffer(nullptr)
+	, unBindPoint(0)
+	, unBindCount(0)
+#elif RENDER_GRAPHICS == MORTY_VULKAN
+
+#endif
+{
+
+}
+
+MShaderParam::MShaderParam(const MShaderParam& param)
+	: strName(param.strName)
+	, unCode(param.unCode)
+	, var(param.var)
+	, bDirty(true)
+	, eType(0)
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	, pBuffer(nullptr)
 	, unBindPoint(0)
@@ -137,7 +155,7 @@ MShaderTextureParam::MShaderTextureParam()
 	, pTexture(nullptr)
 	, eType(METextureType::ETexture2D)
 
-#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	#if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	, unBindPoint(0)
 	, unBindCount(0)
 #elif RENDER_GRAPHICS == MORTY_VULKAN
