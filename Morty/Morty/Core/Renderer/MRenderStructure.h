@@ -49,6 +49,8 @@ public:
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 	VkBuffer m_VkVertexBuffer;
 	VkDeviceMemory m_VkVertexBufferMemory;
+	VkBuffer m_VkIndexBuffer;
+	VkDeviceMemory m_VkIndexBufferMemory;
 #endif
 };
 
@@ -131,7 +133,8 @@ struct MShaderParam
 	unsigned int unBindPoint;
 	unsigned int unBindCount;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-
+	VkBuffer m_VkBuffer;
+	VkDeviceMemory m_VkBufferMemory;
 #endif
 };
 

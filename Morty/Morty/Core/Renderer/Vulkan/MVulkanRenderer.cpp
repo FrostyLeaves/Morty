@@ -2,9 +2,10 @@
 #include "MMesh.h"
 #include "MShader.h"
 #include "MMaterial.h"
-#include "MRenderStatistics.h"
 #include "MVulkanDevice.h"
+#include "MIRenderTarget.h"
 #include "MRenderStructure.h"
+#include "MRenderStatistics.h"
 
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -158,6 +159,8 @@ bool MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial)
 	if (vkCreatePipelineLayout(m_pDevice->m_VkDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
 		return false;
 
+	MIRenderTarget* pCurRenderTarget = m_vRenderTargets.top().pRenderTarget;
+
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipelineInfo.stageCount = 2;
@@ -172,11 +175,10 @@ bool MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial)
 	pipelineInfo.pDynamicState = &dynamicState;
 
 	pipelineInfo.layout = pipelineLayout;
-	pipelineInfo.renderPass = renderPass;
+	pipelineInfo.renderPass = pCurRenderTarget->m_VkRenderPass;
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	pipelineInfo.basePipelineIndex = -1; // Optional
-
 }
 
 #endif

@@ -6,11 +6,11 @@
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
-#include "spirv_cross/spirv_cross.hpp"
 
 #include "MVulkanRenderTarget.h"
 
 #include <set>
+#include <array>
 
 #ifdef MORTY_WIN
 #include "vulkan/vulkan_win32.h"
@@ -108,20 +108,91 @@ void MVulkanDevice::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh
 	if (*ppVertexBuffer)
 		DestroyBuffer(ppVertexBuffer);
 
+	VkDeviceSize bufferSize = pMesh->GetVerticesLength() * pMesh->GetVertexStructSize();
+
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	GenerateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+	void* data;
+	vkMapMemory(m_VkDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+	memcpy(data, pMesh->GetVertices(), (size_t)bufferSize);
+	vkUnmapMemory(m_VkDevice, stagingBufferMemory);
+
 	VkBuffer vertexBuffer;
 	VkDeviceMemory vertexBufferMemory;
+	GenerateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
 
-	GenerateBuffer(pMesh->GetVerticesLength() * pMesh->GetVertexStructSize(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-		vertexBuffer, vertexBufferMemory);
+	CopyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+
+	vkDestroyBuffer(m_VkDevice, stagingBuffer, nullptr);
+	vkFreeMemory(m_VkDevice, stagingBufferMemory, nullptr);
+
+	//TODO 优化内存分配机制，以合理利用内存。比如建立可复用的内存池，内存管理器
+
+	
+	VkDeviceSize bufferSize = sizeof(unsigned int) * pMesh->GetIndicesLength();
+
+	VkBuffer stagingIdxBuffer;
+	VkDeviceMemory stagingIdxBufferMemory;
+	GenerateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingIdxBuffer, stagingIdxBufferMemory);
+
+	void* data;
+	vkMapMemory(m_VkDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+	memcpy(data, pMesh->GetIndices(), (size_t)bufferSize);
+	vkUnmapMemory(m_VkDevice, stagingBufferMemory);
+
+	VkBuffer indexBuffer;
+	VkDeviceMemory indexBufferMemory;
+	GenerateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+
+	CopyBuffer(stagingBuffer, indexBuffer, bufferSize);
+
+	vkDestroyBuffer(m_VkDevice, stagingBuffer, nullptr);
+	vkFreeMemory(m_VkDevice, stagingBufferMemory, nullptr);
+
 
 	MVertexBuffer* pBuffer = new MVertexBuffer();
 	pBuffer->m_VkVertexBuffer = vertexBuffer;
 	pBuffer->m_VkVertexBufferMemory = vertexBufferMemory;
-
-
+	pBuffer->m_VkIndexBuffer = indexBuffer;
+	pBuffer->m_VkIndexBufferMemory = indexBufferMemory;
 
 	*ppVertexBuffer = pBuffer;
+}
+
+void MVulkanDevice::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+{
+	VkCommandBufferAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandPool = m_VkCommandPool;
+	allocInfo.commandBufferCount = 1;
+
+	VkCommandBuffer commandBuffer;
+	vkAllocateCommandBuffers(m_VkDevice, &allocInfo, &commandBuffer);
+
+	VkCommandBufferBeginInfo beginInfo{};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+	VkBufferCopy copyRegion{};
+	copyRegion.size = size;
+	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+	vkEndCommandBuffer(commandBuffer);
+
+	VkSubmitInfo submitInfo{};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffer;
+
+	vkQueueSubmit(m_VkGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(m_VkGraphicsQueue);
+
+	vkFreeCommandBuffers(m_VkDevice, m_VkCommandPool, 1, &commandBuffer);
 }
 
 void MVulkanDevice::DestroyBuffer(MVertexBuffer** ppVertexBuffer)
@@ -129,6 +200,7 @@ void MVulkanDevice::DestroyBuffer(MVertexBuffer** ppVertexBuffer)
 	if (*ppVertexBuffer)
 	{
 		DestroyBuffer((*ppVertexBuffer)->m_VkVertexBuffer, (*ppVertexBuffer)->m_VkVertexBufferMemory);
+		DestroyBuffer((*ppVertexBuffer)->m_VkIndexBuffer, (*ppVertexBuffer)->m_VkIndexBufferMemory);
 		delete *ppVertexBuffer;
 		*ppVertexBuffer = nullptr;
 	}
@@ -281,6 +353,17 @@ bool MVulkanDevice::InitLogicalDevice()
 	return true;
 }
 
+void MVulkanDevice::InitCommandPool()
+{
+	VkCommandPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	poolInfo.queueFamilyIndex = FindQueueGraphicsFamilies(m_VkPhysicalDevice);
+
+	if (vkCreateCommandPool(m_VkDevice, &poolInfo, nullptr, &m_VkCommandPool) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create command pool!");
+	}
+}
+
 bool MVulkanDevice::IsDeviceSuitable(VkPhysicalDevice device)
 {
 	if (-1 == FindQueueGraphicsFamilies(device))
@@ -422,6 +505,11 @@ bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString&
 	if (vkCreateShaderModule(m_VkDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
 		return false;
 
+	//File
+	std::vector<uint32_t> spirv;
+	spirv_cross::Compiler comp(move(spirv));
+	spirv_cross::ShaderResources shaderResources = comp.get_shader_resources();
+
 	VkPipelineShaderStageCreateInfo shaderStageInfo{};
 	shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	shaderStageInfo.stage = eShaderType == MShader::MEShaderType::Vertex ? VK_SHADER_STAGE_VERTEX_BIT : VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -435,35 +523,89 @@ bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString&
 	{
 		MVertexShaderBuffer* pBuffer = new MVertexShaderBuffer();
 		pBuffer->m_VkShaderStageInfo = shaderStageInfo;
+		GetVertexInputState(shaderResources, pBuffer->m_VkVertexInputStateInfo);
+		GetShaderParam(shaderResources, pBuffer);
 
 		*ppShaderBuffer = pBuffer;
-
-
-		VkVertexInputBindingDescription bindingDescription;
-		bindingDescription.binding = 0;
-		bindingDescription.stride = sizeof(Vertex);
-		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-		std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
-		attributeDescriptions[0].binding = 0;
-		attributeDescriptions[0].location = 0;
-		attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
-		pBuffer->m_VkVertexInputStateInfo.vertexBindingDescriptionCount = 1;
-		pBuffer->m_VkVertexInputStateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-		pBuffer->m_VkVertexInputStateInfo.pVertexBindingDescriptions = &bindingDescription;
-		pBuffer->m_VkVertexInputStateInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 	}
 	else if (MShader::MEShaderType::Pixel == eShaderType)
 	{
 		MPixelShaderBuffer* pBuffer = new MPixelShaderBuffer();
 		pBuffer->m_VkShaderStageInfo = shaderStageInfo;
+		GetShaderParam(shaderResources, pBuffer);
 
 		*ppShaderBuffer = pBuffer;
 	}
 
 	return true;
+}
+
+void MVulkanDevice::CleanShader(MShaderBuffer** ppShaderBuffer)
+{
+	if (nullptr == *ppShaderBuffer)
+		return;
+
+	if (MVertexShaderBuffer* pBuffer = dynamic_cast<MVertexShaderBuffer*>(*ppShaderBuffer))
+	{
+
+	}
+	else if (MPixelShaderBuffer* pBuffer = dynamic_cast<MPixelShaderBuffer*>(*ppShaderBuffer))
+	{
+
+	}
+
+	delete* ppShaderBuffer;
+	*ppShaderBuffer = nullptr;
+}
+
+void MVulkanDevice::GetVertexInputState(const spirv_cross::ShaderResources& shaderResources, VkPipelineVertexInputStateCreateInfo& vertexInputState)
+{
+	vertexInputState = VkPipelineVertexInputStateCreateInfo{};
+	vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+
+
+	std::vector<VkVertexInputAttributeDescription> attributeDescriptions(shaderResources.stage_inputs.size());
+
+	//Vertex Input
+	unsigned int unOffset = 0;
+	for (int i = 0 ; i < shaderResources.stage_inputs.size(); ++i)
+	{
+		const spirv_cross::Resource& res = shaderResources.stage_inputs[i];
+		
+		VkVertexInputAttributeDescription& attribute = attributeDescriptions[i];
+		attribute.binding = 0; // 它对应的是vertexBindingDescriptionCount，我们目前只有一个，这个值写死了是0
+		attribute.location = res.id;
+		attribute.format = VK_FORMAT_R32_SFLOAT;
+		attribute.offset = unOffset;
+
+		//spirv_cross::SPIRType type = comp.get_type(res.type_id);
+		//TODO fill attribute
+
+		unOffset += sizeof(float);
+	}
+
+	VkVertexInputBindingDescription bindingDescription{};
+	bindingDescription.binding = 0;
+	bindingDescription.stride = unOffset;
+	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+	vertexInputState.vertexBindingDescriptionCount = 1;
+	vertexInputState.pVertexBindingDescriptions = &bindingDescription;
+	vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	vertexInputState.pVertexAttributeDescriptions = attributeDescriptions.data();
+}
+
+void MVulkanDevice::GetShaderParam(const spirv_cross::ShaderResources& ShaderResources, MShaderBuffer* pShaderBuffer)
+{
+	for (const spirv_cross::Resource& res : ShaderResources.uniform_buffers)
+	{
+		MShaderParam* pParam = new MShaderParam();
+		pParam->strName = res.name;
+
+		pShaderBuffer->m_vShaderParamsTemplate.push_back(pParam);
+	}
+// 	VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+// 	createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]); 	
 }
 
 bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsigned int nWidth, unsigned int nHeight)
@@ -558,5 +700,24 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsigned
 }
 
 
+
+bool MVulkanDevice::GenerateShaderParamBuffer(MShaderParam* pParam)
+{
+	if (pParam)
+	{
+		return GenerateBuffer(pParam->var.GetSize(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			pParam->m_VkBuffer, pParam->m_VkBufferMemory);
+	}
+	return false;
+}
+
+void MVulkanDevice::DestroyShaderParamBuffer(MShaderParam* pParam)
+{
+	if (pParam)
+	{
+		DestroyBuffer(pParam->m_VkBuffer, pParam->m_VkBufferMemory);
+	}
+}
 
 #endif

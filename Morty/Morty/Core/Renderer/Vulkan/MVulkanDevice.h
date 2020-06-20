@@ -18,6 +18,7 @@
 
 #include "vulkan/vulkan.h"
 #include "vulkan/vulkan_core.h"
+#include "spirv_cross/spirv_cross.hpp"
 
 
 class MORTY_CLASS MVulkanDevice : public MIDevice
@@ -63,7 +64,12 @@ public:
 	VkPhysicalDevice GetPhysicalDevice() { return m_VkPhysicalDevice; }
 
 	bool GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 	void DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+
+
+	void GetVertexInputState(const spirv_cross::ShaderResources& shaderResource, VkPipelineVertexInputStateCreateInfo& vertexInputState);
+	void GetShaderParam(const spirv_cross::ShaderResources& shaderResource, MShaderBuffer* pShaderBuffer);
 
 	int FindQueueGraphicsFamilies(VkPhysicalDevice device);
 	int FindQueuePresentFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
@@ -73,6 +79,7 @@ protected:
 	bool InitVulkanInstance();
 	bool InitPhysicalDevice();
 	bool InitLogicalDevice();
+	void InitCommandPool();
 
 	bool IsDeviceSuitable(VkPhysicalDevice device);
 	bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
@@ -92,6 +99,7 @@ public:
 	VkPhysicalDevice m_VkPhysicalDevice;
 	VkDevice m_VkDevice;
 	VkQueue m_VkGraphicsQueue;
+	VkCommandPool m_VkCommandPool;
 
 
 	int m_nBufferNum;

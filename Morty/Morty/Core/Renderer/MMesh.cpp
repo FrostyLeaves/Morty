@@ -82,6 +82,7 @@ void MIMesh::UploadBuffer(MIDevice* pDevice)
 		GenerateBuffer(pDevice);
 
 	m_bNeedUpload = false;
+
 }
 
 void MIMesh::DestroyBuffer(MIDevice* pDevice)
