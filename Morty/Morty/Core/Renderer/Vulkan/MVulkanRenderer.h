@@ -50,6 +50,8 @@ protected:
 
 	bool CreateGraphicsPipeline(MMaterial* pMaaterial);
 
+	bool CreateRenderPass();
+
 private:
 
 	MVulkanDevice* m_pDevice;

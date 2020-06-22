@@ -333,7 +333,6 @@ void MEngine::RenderToView(MIRenderView* pView)
 	}
 }
 
-
 void MEngine::SetScene(MScene* pScene)
 {
 	m_pScene = pScene;

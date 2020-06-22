@@ -57,7 +57,6 @@ public:
 	struct ID3D11DepthStencilView* m_pDepthStencilView;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 
-	VkRenderPass m_VkRenderPass;
 #endif
 
 protected:
