@@ -39,7 +39,7 @@ public:
 	MString GetMeshName() { return m_strName; }
 	MEMeshVertexType GetMeshVertexType(){ return m_eVertexType; }
 	MIMesh* GetMesh() { return m_pMesh; }
-	MIMesh* GetLevelMesh(const unsigned int unLevel);
+	MIMesh* GetLevelMesh(const uint32_t unLevel);
 	const MBoundsOBB* GetMeshesDefaultOBB() { return &m_BoundsOBB; }
 	const MBoundsSphere* GetMeshesDefaultSphere() { return &m_BoundsSphere; }
 	const Matrix4* GetMeshesRotationMatrix() { return &m_matRotationMatrix; }

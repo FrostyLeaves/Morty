@@ -177,7 +177,7 @@ bool MDirectX11Renderer::Initialize()
 			mRTDesc.BlendOp = D3D11_BLEND_OP_MIN;
 			mRTDesc.BlendOpAlpha = D3D11_BLEND_OP_MIN;
 		}
-		for(unsigned int i = 3; i < 8 ; ++i)
+		for(uint32_t i = 3; i < 8 ; ++i)
 		{
 			//Back Depth
 			D3D11_RENDER_TARGET_BLEND_DESC& mRTDesc = mBlendDesc.RenderTarget[i];
@@ -338,7 +338,7 @@ void MDirectX11Renderer::RecoverRenderTarget(RenderTargetPair& rtp)
 	{
 		m_pUsingMaterial = nullptr;
 
-		unsigned int unTargetSize = rtp.pRenderTarget->GetTargetViewNum();
+		uint32_t unTargetSize = rtp.pRenderTarget->GetTargetViewNum();
 		ID3D11DepthStencilView* pDepthStencilView = nullptr;
 		if (rtp.pDepthTexture->GetDepthBuffer())
 			pDepthStencilView = rtp.pDepthTexture->GetDepthBuffer()->m_pDepthStencilView;
@@ -354,8 +354,8 @@ void MDirectX11Renderer::ClearRenderTarget(MIRenderTarget* pRenderTarget)
 
 	if (pRenderTarget->m_vpRenderTargetView)
 	{
-		unsigned int unTargetSize = pRenderTarget->GetTargetViewNum();
-		for (unsigned int i = 0; i < unTargetSize; ++i)
+		uint32_t unTargetSize = pRenderTarget->GetTargetViewNum();
+		for (uint32_t i = 0; i < unTargetSize; ++i)
 		{
 			if (pRenderTarget->GetNeedCleanTargetView(i))
 			{

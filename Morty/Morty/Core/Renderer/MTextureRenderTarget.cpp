@@ -19,7 +19,7 @@ MTextureRenderTarget::MTextureRenderTarget()
 {
 	m_unTargetViewNum = 1;
 
-	for (unsigned int i = 0; i < 8; ++i)
+	for (uint32_t i = 0; i < 8; ++i)
 		m_vNeedCleanBeforeRender[i] = true;
 }
 
@@ -28,32 +28,32 @@ MTextureRenderTarget::~MTextureRenderTarget()
 	Release(m_pEngine->GetDevice());
 }
 
-void MTextureRenderTarget::SetBackgroundColor(const unsigned int& unTargetIndex, const MColor& color)
+void MTextureRenderTarget::SetBackgroundColor(const uint32_t& unTargetIndex, const MColor& color)
 {
 	M_RETURN_OVER_RANGE(unTargetIndex, 0, m_unTargetViewNum);
 
 	m_vBackgroundColor[unTargetIndex] = color;
 }
 
-const MColor& MTextureRenderTarget::GetBackgroundColor(const unsigned int& unTargetIndex) const
+const MColor& MTextureRenderTarget::GetBackgroundColor(const uint32_t& unTargetIndex) const
 {
 	return m_vBackgroundColor[unTargetIndex];
 }
 
-bool MTextureRenderTarget::GetNeedCleanTargetView(const unsigned int& unTargetIndex) const
+bool MTextureRenderTarget::GetNeedCleanTargetView(const uint32_t& unTargetIndex) const
 {
 	M_RETURN_OVER_RANGE(unTargetIndex, 0, 8, (true));
 
 	return m_vNeedCleanBeforeRender[unTargetIndex];
 }
 
-void MTextureRenderTarget::Initialize(const unsigned int& eType, const unsigned int& unWidth, const unsigned int& unHeight)
+void MTextureRenderTarget::Initialize(const uint32_t& eType, const uint32_t& unWidth, const uint32_t& unHeight)
 {
 	static std::vector<MERenderTextureType> vDefaultArray{MERenderTextureType::ERGBA8};
 	Initialize(eType, unWidth, unHeight, vDefaultArray);
 }
 
-void MTextureRenderTarget::Initialize(const unsigned int& eType, const unsigned int& unWidth, const unsigned int& unHeight, const std::vector<MERenderTextureType>& vTextureTypes)
+void MTextureRenderTarget::Initialize(const uint32_t& eType, const uint32_t& unWidth, const uint32_t& unHeight, const std::vector<MERenderTextureType>& vTextureTypes)
 {
 	m_eRenderTargetType = eType;
 
@@ -63,7 +63,7 @@ void MTextureRenderTarget::Initialize(const unsigned int& eType, const unsigned 
 		m_vBackTexture = new MRenderTargetTexture[m_unTargetViewNum];
 		m_vBackgroundColor = new MColor[m_unTargetViewNum];
 
-		for (unsigned int i = 0; i < m_unTargetViewNum; ++i)
+		for (uint32_t i = 0; i < m_unTargetViewNum; ++i)
 		{
 			m_vBackTexture[i].SetType(vTextureTypes[i]);
 		}
@@ -85,7 +85,7 @@ void MTextureRenderTarget::OnCreated()
 
 }
 
-void MTextureRenderTarget::OnResize(const unsigned int& nWidth, const unsigned int& nHeight)
+void MTextureRenderTarget::OnResize(const uint32_t& nWidth, const uint32_t& nHeight)
 {
 	if (m_fWidth == nWidth && m_fHeight == nHeight)
 		return;
@@ -99,7 +99,7 @@ void MTextureRenderTarget::OnResize(const unsigned int& nWidth, const unsigned i
 
 	if (m_vBackTexture && (m_eRenderTargetType & METextureRenderTargetType::ERenderBack))
 	{
-		for (unsigned int i = 0; i < GetTargetViewNum(); ++i)
+		for (uint32_t i = 0; i < GetTargetViewNum(); ++i)
 			m_vBackTexture[i].SetSize(v2Size);
 	}
 
@@ -119,7 +119,7 @@ void MTextureRenderTarget::Release(MIDevice* pDevice)
 
 	if (m_vBackTexture)
 	{
-		for (unsigned int i = 0; i < GetTargetViewNum(); ++i)
+		for (uint32_t i = 0; i < GetTargetViewNum(); ++i)
 			m_vBackTexture[i].DestroyTexture(pDevice);
 
 		delete[] m_vBackTexture;

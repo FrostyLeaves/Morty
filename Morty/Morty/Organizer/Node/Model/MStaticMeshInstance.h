@@ -41,7 +41,7 @@ public:
 	MString GetMeshResourcePath() { return m_Mesh.GetResourcePath(); }
 
 	virtual MIMesh* GetMesh() override { return GetMesh(GetDetailLevel()); }
-	virtual MIMesh* GetMesh(const unsigned int& unDetailLevel) override;
+	virtual MIMesh* GetMesh(const uint32_t& unDetailLevel) override;
 
 public:
 

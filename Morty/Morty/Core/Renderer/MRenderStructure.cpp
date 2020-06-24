@@ -15,7 +15,7 @@ MVertexBuffer::MVertexBuffer()
 #endif
 }
 
-MShaderParam* MShaderBuffer::GetSharedParam(const unsigned int& unCode)
+MShaderParam* MShaderBuffer::GetSharedParam(const uint32_t& unCode)
 {
 	if (unCode >= s_vShaderParams.size())
 		return nullptr;
@@ -70,7 +70,6 @@ MTextureBuffer::MTextureBuffer()
 	m_pTextureBuffer = nullptr;
 	m_pShaderResourceView = nullptr;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-
 #endif
 
 }

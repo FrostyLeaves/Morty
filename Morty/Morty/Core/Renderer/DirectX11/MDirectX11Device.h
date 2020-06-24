@@ -41,21 +41,21 @@ public:
 	virtual void GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTexture* vTexture[6], const bool& bGenerateMipmap) override;
 	virtual void DestroyTexture(MTextureBuffer** ppTextureBuffer) override;
 
-	virtual void GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const MERenderTextureType& eType, const unsigned int& unWidth, const unsigned& unHeight) override;
+	virtual void GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const MERenderTextureType& eType, const uint32_t& unWidth, const unsigned& unHeight) override;
 	virtual void DestroyRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer) override;
 
-	virtual void GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const unsigned int& unWidth, const unsigned int& unHeight) override;
+	virtual void GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const uint32_t& unWidth, const uint32_t& unHeight) override;
 	virtual void DestroyDepthTexture(MDepthTextureBuffer** ppTextureBuffer) override;
 
-	virtual bool CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType, const MShaderMacro& macro) override;
+	virtual bool CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const uint32_t& eShaderType, const MShaderMacro& macro) override;
 	virtual void CleanShader(MShaderBuffer** ppShaderBuffer) override;
 
 	ID3D11InputLayout* CreateInputLayout(D3D11_INPUT_ELEMENT_DESC desc[], const int& nLength);
 
-	virtual bool GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsigned int nWidth, unsigned int nHeight) override;
+	virtual bool GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t nWidth, uint32_t nHeight) override;
 	virtual void DestroyRenderTarget(MIRenderTarget* pRenderTarget) override;
 
-	virtual bool GenerateRenderTarget(MTextureRenderTarget* pRenderTarget, unsigned int nWidth, unsigned int nHeight) override;
+	virtual bool GenerateRenderTarget(MTextureRenderTarget* pRenderTarget, uint32_t nWidth, uint32_t nHeight) override;
 	virtual void DestroyRenderTarget(MTextureRenderTarget* pRenderTarget) override;
 
 	virtual bool GenerateShaderParamBuffer(MShaderParam* pParam) override;

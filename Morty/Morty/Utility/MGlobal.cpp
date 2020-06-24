@@ -26,15 +26,15 @@ const char* DEFAULT_TEXTURE_NORMALMAP = "DefTexNormalMap";
 const char* SHADER_PARAM_NAME_DIFFUSE = "U_mat.texDiffuse";
 const char* SHADER_PARAM_NAME_NORMAL = "U_mat.texNormal";
 
-const unsigned int MSHADOW_TEXTURE_SIZE = 2048;
+const uint32_t MSHADOW_TEXTURE_SIZE = 2048;
 
-const unsigned int MPOINT_LIGHT_MAX_NUMBER = 8;
-const unsigned int MPOINT_LIGHT_PIXEL_NUMBER = 4;
+const uint32_t MPOINT_LIGHT_MAX_NUMBER = 8;
+const uint32_t MPOINT_LIGHT_PIXEL_NUMBER = 4;
 
-extern const unsigned int MSPOT_LIGHT_MAX_NUMBER = 8;
-extern const unsigned int MSPOT_LIGHT_PIXEL_NUMBER = 4;
+extern const uint32_t MSPOT_LIGHT_MAX_NUMBER = 8;
+extern const uint32_t MSPOT_LIGHT_PIXEL_NUMBER = 4;
 
 const bool MCALC_NORMAL_IN_VS = true;
 
 
-const unsigned int MMESH_LOD_LEVEL_RANGE = 10;
+const uint32_t MMESH_LOD_LEVEL_RANGE = 10;

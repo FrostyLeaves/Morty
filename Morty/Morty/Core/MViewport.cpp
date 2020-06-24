@@ -209,7 +209,7 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight, const MB
 
 	//计算相机的有效ZNear和ZFar.
 	float fSceneMinZNear = FLT_MAX, fSceneMaxZFar = -FLT_MAX;
-	for (unsigned int i = 0; i < 8; ++i)
+	for (uint32_t i = 0; i < 8; ++i)
 	{
 		float z = (matCameraInv * vSceneBoundsPoints[i]).z;
 
@@ -230,7 +230,7 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight, const MB
 
 	Vector3 v3CameraMin(FLT_MAX, FLT_MAX, FLT_MAX);
 	Vector3 v3CameraMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-	for (unsigned int i = 0; i < 8; ++i)
+	for (uint32_t i = 0; i < 8; ++i)
 	{
 		Vector3 pos = matLightInv * vCameraBoundsPoints[i];
 		if (v3CameraMin.x > pos.x) v3CameraMin.x = pos.x;
@@ -248,7 +248,7 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight, const MB
 	//计算Scene的AABB盒在方向光Camera内的最小和最大Z值
 	Vector3 v3SceneMin(FLT_MAX, FLT_MAX, FLT_MAX);
 	Vector3 v3SceneMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-	for (unsigned int i = 0; i < 8; ++i)
+	for (uint32_t i = 0; i < 8; ++i)
 	{
 		Vector3 pos = matLightInv * vShadowModelBoundsPoints[i];
 		if (v3SceneMin.x > pos.x) v3SceneMin.x = pos.x;

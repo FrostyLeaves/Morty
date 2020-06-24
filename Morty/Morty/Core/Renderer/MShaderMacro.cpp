@@ -81,14 +81,14 @@ void MShaderMacro::RemoveMacro(const MString& strKey)
 
 bool MShaderMacro::Compare(const MShaderMacro& macro)
 {
-	unsigned int unSize = m_vMacroParams.size();
-	unsigned int unMortySize = m_vMacroParams.size();
+	uint32_t unSize = m_vMacroParams.size();
+	uint32_t unMortySize = m_vMacroParams.size();
 	if (unSize != macro.m_vMacroParams.size())
 		return false;
 	if (unMortySize != macro.m_vMortyMacroParams.size())
 		return false;
 
-	for (unsigned int i = 0; i < unSize; ++i)
+	for (uint32_t i = 0; i < unSize; ++i)
 	{
 		const std::pair<MString, MString>& a = m_vMacroParams[i];
 		const std::pair<MString, MString>& b = macro.m_vMacroParams[i];
@@ -97,7 +97,7 @@ bool MShaderMacro::Compare(const MShaderMacro& macro)
 			return false;
 	}
 
-	for (unsigned int i = 0; i < unMortySize; ++i)
+	for (uint32_t i = 0; i < unMortySize; ++i)
 	{
 		const std::pair<MString, MString>& a = m_vMortyMacroParams[i];
 		const std::pair<MString, MString>& b = macro.m_vMortyMacroParams[i];

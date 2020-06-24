@@ -15,7 +15,7 @@ MBone::MBone()
 void MBone::WriteToStruct(MStruct& srt)
 {
 	MVariantArray vChildren;
-	for (unsigned int unChildIdx : vChildrenIndices)
+	for (uint32_t unChildIdx : vChildrenIndices)
 		vChildren.AppendMVariant((int)unChildIdx);
 
 	srt.AppendMVariant("Name", strName);
@@ -45,10 +45,10 @@ void MBone::ReadFromStruct(MStruct& srt)
 
 	if (MVariantArray* pChildren = srt.FindMember<MVariantArray>("Children"))
 	{
-		unsigned int unChildrenCount = pChildren->GetMemberCount();
+		uint32_t unChildrenCount = pChildren->GetMemberCount();
 		vChildrenIndices.resize(unChildrenCount);
 
-		for (unsigned int cldIdx = 0; cldIdx < unChildrenCount; ++cldIdx)
+		for (uint32_t cldIdx = 0; cldIdx < unChildrenCount; ++cldIdx)
 		{
 			if (int* pIndex = pChildren->GetMember<int>(cldIdx))
 				vChildrenIndices[cldIdx] = *pIndex;
@@ -118,12 +118,12 @@ MBone* MSkeleton::AppendBone(const MString& strName)
 void MSkeleton::SortByDeep()
 {
 	std::vector<int> map(m_vAllBones.size());
-	std::map<unsigned int, int> tDeep;
+	std::map<uint32_t, int> tDeep;
 
 	for (MBone& bone : m_vAllBones)
 	{
 		int deep = 0;
-		unsigned int unParentIdx = bone.unIndex;
+		uint32_t unParentIdx = bone.unIndex;
 		while (unParentIdx != M_INVALID_INDEX)
 		{
 			unParentIdx = m_vAllBones[unParentIdx].unParentIndex;
@@ -137,16 +137,16 @@ void MSkeleton::SortByDeep()
 
 	std::sort(vBones.begin(), vBones.end(), [&tDeep](MBone& a, MBone& b) { return tDeep[a.unIndex] < tDeep[b.unIndex]; });
 
-	for (unsigned int i = 0; i < vBones.size(); ++i)
+	for (uint32_t i = 0; i < vBones.size(); ++i)
 		map[vBones[i].unIndex] = i;
 
-	for (unsigned int i = 0; i < vBones.size(); ++i)
+	for (uint32_t i = 0; i < vBones.size(); ++i)
 	{
 		MBone& bone = vBones[i];
 		bone.unIndex = map[bone.unIndex];
 		if (M_INVALID_INDEX != bone.unParentIndex)
 			bone.unParentIndex = map[bone.unParentIndex];
-		for (unsigned int& index : bone.vChildrenIndices)
+		for (uint32_t& index : bone.vChildrenIndices)
 			index = map[index];
 	}
 
@@ -192,7 +192,7 @@ const MBone* MSkeletonInstance::FindBoneTemplateByName(const MString& strName)
 	return m_pSkeletonTemplate->FindBoneByName(strName);
 }
 
-const MBone* MSkeletonInstance::GetBoneTemplateByIndex(const unsigned int& unIndex)
+const MBone* MSkeletonInstance::GetBoneTemplateByIndex(const uint32_t& unIndex)
 {
 	return &m_pSkeletonTemplate->GetAllBones()[unIndex];
 }
@@ -226,7 +226,7 @@ void MSkeleton::WriteToStruct(MStruct& srt)
 	MVariantArray* pArray = srt.FindMember("Bones")->GetArray();
 	pArray->Resize(vBones.size());
 
-	for (unsigned int i = 0; i < pArray->GetMemberCount(); ++i)
+	for (uint32_t i = 0; i < pArray->GetMemberCount(); ++i)
 	{
 		MBone bone = vBones[i];
 		(*pArray)[i] = MStruct();
@@ -242,11 +242,11 @@ void MSkeleton::ReadFromStruct(MStruct& srt)
 	{
 		if (MVariantArray* pBonesArray = pBonesVar->GetArray())
 		{
-			unsigned int unBonesCount = pBonesArray->GetMemberCount();
+			uint32_t unBonesCount = pBonesArray->GetMemberCount();
 
 			m_vAllBones.resize(unBonesCount);
 
-			for (unsigned int i = 0; i < unBonesCount; ++i)
+			for (uint32_t i = 0; i < unBonesCount; ++i)
 			{
 				MVariant& boneVar = pBonesArray->GetMember(i)->var;
 				if (MStruct* pBoneSrt = boneVar.GetStruct())

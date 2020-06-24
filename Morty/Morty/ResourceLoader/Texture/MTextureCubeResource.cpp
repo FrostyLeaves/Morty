@@ -44,7 +44,7 @@ void MTextureCubeResource::SetTextures(MTextureResource* vTexs[6])
 		if (vTexs[i])
 		{
 			m_vTextures[i].SetResource(vTexs[i]);
-			m_vTextures[i].SetResChangedCallback([this](const unsigned int& eReloadType){
+			m_vTextures[i].SetResChangedCallback([this](const uint32_t& eReloadType){
 				//TODO update TexturesCube.
 				return true;
 			});

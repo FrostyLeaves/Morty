@@ -72,7 +72,7 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 
 
 
-	unsigned int unPresentModeCount = 0;
+	uint32_t unPresentModeCount = 0;
 	result = pDevice->GetPhysicalDeviceSurfacePresentModesKHR(pDevice->GetPhysicalDevice(), surface, &unPresentModeCount, NULL);
 	if (result != VK_SUCCESS || unPresentModeCount < 1)
 	{
@@ -93,7 +93,7 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 
 	VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
 
-	for (unsigned int i = 0; i < unPresentModeCount; i++) {
+	for (uint32_t i = 0; i < unPresentModeCount; i++) {
 		if (vPresentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
 			presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
 			break;
@@ -103,12 +103,12 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 			presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
 	}
 
-	unsigned int imageCount = caps.minImageCount + 1;
+	uint32_t imageCount = caps.minImageCount + 1;
 	if (imageCount > caps.maxImageCount)
 		imageCount = caps.maxImageCount;
 
 
-	unsigned int unFormatCount = 0;
+	uint32_t unFormatCount = 0;
 	result = pDevice->GetPhysicalDeviceSurfaceFormatsKHR(pDevice->GetPhysicalDevice(), surface, &unFormatCount, NULL);
 	if (result != VK_SUCCESS || unFormatCount < 1)
 	{
@@ -160,7 +160,7 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 		return nullptr;
 	}
 
-	unsigned int unSwapchainImageCount = 0;
+	uint32_t unSwapchainImageCount = 0;
 	result = pDevice->GetSwapchainImagesKHR(pDevice->m_VkDevice, swapchain, &unSwapchainImageCount, NULL);
 	if (result != VK_SUCCESS || unSwapchainImageCount < 1)
 	{
@@ -169,7 +169,6 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 		vkDestroySwapchainKHR(pDevice->m_VkDevice, swapchain, nullptr);
 		return nullptr;
 	}
-
 
 	std::vector<VkImage> vSwapchainImages(unSwapchainImageCount);
 	result = pDevice->GetSwapchainImagesKHR(pDevice->m_VkDevice, swapchain, &unSwapchainImageCount, vSwapchainImages.data());

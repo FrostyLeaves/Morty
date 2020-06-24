@@ -74,7 +74,7 @@ bool MModelResource::Load(const MString& strResourcePath)
 
     if (MVariantArray* pMeshPathArray = pStruct->FindMember<MVariantArray>("mesh"))
     {
-        for (unsigned int i = 0; i < pMeshPathArray->GetMemberCount(); ++i)
+        for (uint32_t i = 0; i < pMeshPathArray->GetMemberCount(); ++i)
         {
             if (MString* pMeshPath = pMeshPathArray->GetMember(i)->var.GetString())
             {

@@ -22,7 +22,7 @@ public:
 
 public:
 
-	unsigned int GetRefNumber() { return m_unReferenceNumber; }
+	uint32_t GetRefNumber() { return m_unReferenceNumber; }
 
 	void AddRef() { ++m_unReferenceNumber; }
 
@@ -37,7 +37,7 @@ protected:
 	virtual void OnReferenceZero();
 
 private:
-	unsigned int m_unReferenceNumber;
+	uint32_t m_unReferenceNumber;
 };
 
 

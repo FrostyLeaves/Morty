@@ -25,7 +25,7 @@ MIMesh::~MIMesh()
 		delete[] m_vIndices;
 }
 
-void MIMesh::CreateIndices(const unsigned int& unSize, const unsigned int& unIndexSize)
+void MIMesh::CreateIndices(const uint32_t& unSize, const uint32_t& unIndexSize)
 {
 	if (m_unIndicesArraySize < unSize * unIndexSize)
 	{
@@ -35,7 +35,7 @@ void MIMesh::CreateIndices(const unsigned int& unSize, const unsigned int& unInd
 			m_vIndices = nullptr;
 		}
 
-		m_vIndices = new unsigned int[unSize * unIndexSize];
+		m_vIndices = new uint32_t[unSize * unIndexSize];
 		m_unIndicesArraySize = unSize * unIndexSize;
 
 		m_bNeedGenerate = true;
@@ -44,15 +44,15 @@ void MIMesh::CreateIndices(const unsigned int& unSize, const unsigned int& unInd
 	m_unIndicesLength = unSize * unIndexSize;
 }
 
-void MIMesh::ResizeIndices(const unsigned int& unSize, const unsigned int& unIndexSize)
+void MIMesh::ResizeIndices(const uint32_t& unSize, const uint32_t& unIndexSize)
 {
 	if (m_unIndicesArraySize < unSize * unIndexSize)
 	{
-		unsigned int* indices = new unsigned int[unSize * unIndexSize];
+		uint32_t* indices = new uint32_t[unSize * unIndexSize];
 		
 		if (nullptr != m_vIndices)
 		{
-			memcpy(indices, m_vIndices, m_unIndicesLength * sizeof(unsigned int));
+			memcpy(indices, m_vIndices, m_unIndicesLength * sizeof(uint32_t));
 			delete[] m_vIndices;
 		}
 

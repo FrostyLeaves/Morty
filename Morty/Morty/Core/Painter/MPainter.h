@@ -29,8 +29,8 @@ public:
 	MIPainterShape() {}
 	virtual ~MIPainterShape() {}
 
-	virtual unsigned int GetVertexCount() = 0;
-	virtual unsigned int GetIndexCount() = 0;
+	virtual uint32_t GetVertexCount() = 0;
+	virtual uint32_t GetIndexCount() = 0;
 
 	virtual bool FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh) = 0;
 	virtual bool TouchTest(const Vector2& pos, MViewport* pViewport) { return false; }
@@ -45,8 +45,8 @@ public:
 
 	virtual ~MPainter2DLine() {}
 
-	virtual unsigned int GetVertexCount() override { return 4; }
-	virtual unsigned int GetIndexCount() override { return 6; }
+	virtual uint32_t GetVertexCount() override { return 4; }
+	virtual uint32_t GetIndexCount() override { return 6; }
 
 	virtual bool FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh) override;
 	virtual bool TouchTest(const Vector2& pos, MViewport* pViewport) override;
@@ -69,8 +69,8 @@ public:
 
 	virtual ~MPainter2DRect() {}
 
-	virtual unsigned int GetVertexCount() override { return 4; }
-	virtual unsigned int GetIndexCount() override { return 6; }
+	virtual uint32_t GetVertexCount() override { return 4; }
+	virtual uint32_t GetIndexCount() override { return 6; }
 
 	virtual bool FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh) override;
 	virtual bool TouchTest(const Vector2& pos, MViewport* pViewport) override;
@@ -90,8 +90,8 @@ public:
 
 	virtual ~MPainter2DLine3D() {}
 
-	virtual unsigned int GetVertexCount() override { return 4; }
-	virtual unsigned int GetIndexCount() override { return 6; }
+	virtual uint32_t GetVertexCount() override { return 4; }
+	virtual uint32_t GetIndexCount() override { return 6; }
 
 	virtual bool FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh) override;
 	virtual bool TouchTest(const Vector2& pos, MViewport* pViewport) override;

@@ -131,7 +131,7 @@ void JsonValueToMVariant(Value* pValue, MVariant& variant)
 			MStruct& sut = *variant.GetStruct();
 			for (Value::MemberIterator iter = pValue->MemberBegin(); iter != pValue->MemberEnd(); ++iter)
 			{
-				unsigned int nIndex = sut.AppendMVariant(iter->name.GetString(), MVariant());
+				uint32_t nIndex = sut.AppendMVariant(iter->name.GetString(), MVariant());
 				MVariant& child = sut.GetMember(nIndex)->var;
 				JsonValueToMVariant(&(iter->value), child);
 			}
@@ -141,11 +141,11 @@ void JsonValueToMVariant(Value* pValue, MVariant& variant)
 	else if (pValue->IsArray())
 	{
 		Value value = pValue->GetArray();
-		unsigned int unSize = value.Size();
+		uint32_t unSize = value.Size();
 
 		variant = MVariantArray();
 		MVariantArray& srt = *variant.GetArray();
-		for (unsigned int i = 0; i < unSize; ++i)
+		for (uint32_t i = 0; i < unSize; ++i)
 		{
 			srt.AppendMVariant(MVariant());
 			MVariant& child = srt.GetMember(srt.GetMemberCount() - 1)->var;
@@ -272,7 +272,7 @@ void MVariantToJsonValue(const MVariant& var, Value* pValue, Document& doc)
 	{
 		const MStruct* pStruct = var.GetStruct();
 		pValue->SetObject();
-		for (unsigned int i = 0; i < pStruct->GetMemberCount(); ++i)
+		for (uint32_t i = 0; i < pStruct->GetMemberCount(); ++i)
 		{
 			const MStruct::MStructMember* pMember = pStruct->GetMember(i);
 
@@ -289,7 +289,7 @@ void MVariantToJsonValue(const MVariant& var, Value* pValue, Document& doc)
 	{
 		const MVariantArray* pArray = var.GetArray();
 		pValue->SetArray();
-		for (unsigned int i = 0; i < pArray->GetMemberCount(); ++i)
+		for (uint32_t i = 0; i < pArray->GetMemberCount(); ++i)
 		{
 			const MVariantArray::MStructMember* pMember = pArray->GetMember(i);
 

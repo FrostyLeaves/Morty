@@ -48,7 +48,7 @@ bool MSkyBox::Load(MResource* pResource)
 	if (MTextureCubeResource* pCubeRes = dynamic_cast<MTextureCubeResource*>(pResource))
 	{
 		m_TextureCubeResource.SetResource(pResource);
-		m_TextureCubeResource.SetResChangedCallback([this](const unsigned int& eReloadType){
+		m_TextureCubeResource.SetResChangedCallback([this](const uint32_t& eReloadType){
 			m_pTextureCube = static_cast<MTextureCubeResource*>(m_TextureCubeResource.GetResource())->GetTextureCubeTemplate();
 			return true;
 		});

@@ -99,7 +99,7 @@ void MResource::OnReferenceZero()
 	GetResourceManager()->UnloadResource(this);
 } 
 
-void MResource::OnReload(const unsigned int& eReloadType)
+void MResource::OnReload(const uint32_t& eReloadType)
 {
 	for (MResourceKeeper* pKeeper : m_vKeeper)
 	{

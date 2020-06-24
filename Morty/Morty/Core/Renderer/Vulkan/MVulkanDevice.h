@@ -18,7 +18,7 @@
 
 #include "vulkan/vulkan.h"
 #include "vulkan/vulkan_core.h"
-#include "spirv_cross/spirv_cross.hpp"
+#include "spirv_cross.hpp"
 
 
 class MORTY_CLASS MVulkanDevice : public MIDevice
@@ -39,23 +39,23 @@ public:
 	virtual void UploadBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh) override;
 
 	virtual void GenerateTexture(MTextureBuffer** ppTextureBuffer, MTexture* pTexture, const bool& bGenerateMipmap) override;
-	virtual void GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTexture* vTexture[6], const bool& bGenerateMipmap) override;
+	virtual void GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTexture* vTexture[6], const bool& bGenerateMipmap) override {}
 	virtual void DestroyTexture(MTextureBuffer** ppTextureBuffer) override;
 
-	virtual void GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const MERenderTextureType& eType, const unsigned int& unWidth, const unsigned& unHeight) override;
-	virtual void DestroyRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer) override;
+	virtual void GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const MERenderTextureType& eType, const uint32_t& unWidth, const unsigned& unHeight) override {}
+	virtual void DestroyRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer) override {}
 
-	virtual void GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const unsigned int& unWidth, const unsigned int& unHeight) override;
-	virtual void DestroyDepthTexture(MDepthTextureBuffer** ppTextureBuffer) override;
+	virtual void GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const uint32_t& unWidth, const uint32_t& unHeight) override {}
+	virtual void DestroyDepthTexture(MDepthTextureBuffer** ppTextureBuffer) override {}
 
-	virtual bool CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType, const MShaderMacro& macro) override;
+	virtual bool CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const uint32_t& eShaderType, const MShaderMacro& macro) override;
 	virtual void CleanShader(MShaderBuffer** ppShaderBuffer) override;
 
-	virtual bool GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsigned int nWidth, unsigned int nHeight) override;
-	virtual void DestroyRenderTarget(MIRenderTarget* pRenderTarget) override;
+	virtual bool GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t nWidth, uint32_t nHeight) override;
+	virtual void DestroyRenderTarget(MIRenderTarget* pRenderTarget) override {}
 
-	virtual bool GenerateRenderTarget(MTextureRenderTarget* pRenderTarget, unsigned int nWidth, unsigned int nHeight) override;
-	virtual void DestroyRenderTarget(MTextureRenderTarget* pRenderTarget) override;
+	virtual bool GenerateRenderTarget(MTextureRenderTarget* pRenderTarget, uint32_t nWidth, uint32_t nHeight) override { return false; }
+	virtual void DestroyRenderTarget(MTextureRenderTarget* pRenderTarget) override {}
 
 	virtual bool GenerateShaderParamBuffer(MShaderParam* pParam) override;
 	virtual void DestroyShaderParamBuffer(MShaderParam* pParam) override;
@@ -63,9 +63,19 @@ public:
 
 	VkPhysicalDevice GetPhysicalDevice() { return m_VkPhysicalDevice; }
 
+
 	bool GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+	void CopyImageBuffer(VkBuffer srcBuffer, VkImage image, const uint32_t& width, const uint32_t& height);
 	void DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+
+	VkImageView CreateImageView(VkImage image, VkFormat format);
+
+	VkRenderPass CreateRenderPass(VkFormat format);
+
+	VkCommandBuffer BeginCommands();
+	void EndCommands(VkCommandBuffer commandBuffer);
 
 
 	void GetVertexInputState(const spirv_cross::ShaderResources& shaderResource, VkPipelineVertexInputStateCreateInfo& vertexInputState);
@@ -79,7 +89,7 @@ protected:
 	bool InitVulkanInstance();
 	bool InitPhysicalDevice();
 	bool InitLogicalDevice();
-	void InitCommandPool();
+	bool InitCommandPool();
 
 	bool IsDeviceSuitable(VkPhysicalDevice device);
 	bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
@@ -101,6 +111,7 @@ public:
 	VkQueue m_VkGraphicsQueue;
 	VkCommandPool m_VkCommandPool;
 
+	VkCommandBuffer m_VkCommandBuffer;
 
 	int m_nBufferNum;
 };

@@ -182,7 +182,7 @@ bool MModelInstance::SetResource(MResource* pResource, const bool& bLoad)
 {
 	if (MModelResource* pModelRes = dynamic_cast<MModelResource*>(pResource))
 	{
-		auto UseResourceFunction = [this](const unsigned int& eReloadType) {
+		auto UseResourceFunction = [this](const uint32_t& eReloadType) {
 			if (MModelResource* pModelResource = static_cast<MModelResource*>(m_ModelResource.GetResource()))
 			{
 				ClearSkeletonAndMesh();

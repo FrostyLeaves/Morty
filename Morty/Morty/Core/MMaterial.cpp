@@ -40,7 +40,7 @@ MMaterial::~MMaterial()
 
 void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)
 {
-	static auto funcResChangedFunction = [this, strName, pResource](const unsigned int& eReloadType) {
+	static auto funcResChangedFunction = [this, strName, pResource](const uint32_t& eReloadType) {
 		if (MTextureResource* pTexResource = dynamic_cast<MTextureResource*>(pResource))
 		{
 			for (MShaderTextureParam& param : m_vTextureParams)
@@ -88,7 +88,7 @@ void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)
 	} 
 }
 
-void MMaterial::SetTexutreParam(const unsigned int& unIndex, MResource* pTexResource)
+void MMaterial::SetTexutreParam(const uint32_t& unIndex, MResource* pTexResource)
 {
 	if (unIndex >= m_vTextureParams.size())
 		return;
@@ -133,7 +133,7 @@ void MMaterial::CopyFrom(const MResource* pResource)
 	m_eMaterialType = pMaterial->m_eMaterialType;
 
 	m_vShaderParams.resize(pMaterial->m_vShaderParams.size());
-	for (unsigned int i = 0; i < pMaterial->m_vShaderParams.size(); ++i)
+	for (uint32_t i = 0; i < pMaterial->m_vShaderParams.size(); ++i)
 	{
 		m_vShaderParams[i] = MShaderParam(pMaterial->m_vShaderParams[i]);
 
@@ -141,13 +141,13 @@ void MMaterial::CopyFrom(const MResource* pResource)
 	}
 
 	m_vTextureParams.resize(pMaterial->m_vTextureParams.size());
-	for (unsigned int i = 0; i < pMaterial->m_vTextureParams.size(); ++i)
+	for (uint32_t i = 0; i < pMaterial->m_vTextureParams.size(); ++i)
 	{
 		m_vTextureParams[i] = pMaterial->m_vTextureParams[i];
 	}
 
 	m_vTextureResKeeper.resize(pMaterial->m_vTextureResKeeper.size());
-	for (unsigned int i = 0; i < pMaterial->m_vTextureResKeeper.size(); ++i)
+	for (uint32_t i = 0; i < pMaterial->m_vTextureResKeeper.size(); ++i)
 	{
 		m_vTextureResKeeper[i] = pMaterial->m_vTextureResKeeper[i];
 	}
@@ -164,7 +164,7 @@ void MMaterial::Encode(MString& strCode)
 	material.AppendMVariant("MaterialType", static_cast<int>(m_eMaterialType));
 
 	MStruct vTextures;
-	for (unsigned int i = 0 ; i < m_vTextureResKeeper.size(); ++i)
+	for (uint32_t i = 0 ; i < m_vTextureResKeeper.size(); ++i)
 	{
 		MResourceKeeper& texResource = m_vTextureResKeeper[i];
 		MShaderTextureParam& param = m_vTextureParams[i];
@@ -235,7 +235,7 @@ void MMaterial::Decode(MString& strCode)
 
 
 	MStruct& textures = *pTextures->GetStruct();
-	for (unsigned int i = 0; i < textures.GetMemberCount(); ++i)
+	for (uint32_t i = 0; i < textures.GetMemberCount(); ++i)
 	{
 		MStruct::MStructMember* pMember = textures.GetMember(i);
 		if (MString* pResourcePath = pMember->var.GetString())
@@ -246,10 +246,10 @@ void MMaterial::Decode(MString& strCode)
 	}
 
 	MStruct& params = *pParams->GetStruct();
-	for (unsigned int i = 0; i < params.GetMemberCount(); ++i)
+	for (uint32_t i = 0; i < params.GetMemberCount(); ++i)
 	{
 		MStruct::MStructMember* pMember = params.GetMember(i);
-		for (unsigned int j = 0; j < m_vShaderParams.size(); ++j)
+		for (uint32_t j = 0; j < m_vShaderParams.size(); ++j)
 		{
 			if (m_vShaderParams[j].strName == pMember->strName)
 			{
@@ -310,7 +310,7 @@ bool MMaterial::LoadVertexShader(MResource* pResource)
 	{
 		if (MShader::MEShaderType::Vertex == pShaderResource->GetShaderType())
 		{
-			auto LoadFunc = [this](const unsigned int& eReloadType) {
+			auto LoadFunc = [this](const uint32_t& eReloadType) {
 				MShaderResource* pShaderResource = m_VertexResource.GetResource()->DynamicCast<MShaderResource>();
 				if (nullptr == pShaderResource)
 					return false;
@@ -349,7 +349,7 @@ bool MMaterial::LoadPixelShader(MResource* pResource)
 	{
 		if (MShader::MEShaderType::Pixel == pShaderResource->GetShaderType())
 		{
-			auto LoadFunc = [this](const unsigned int& eReloadType) {
+			auto LoadFunc = [this](const uint32_t& eReloadType) {
 				MShaderResource* pShaderResource = m_PixelResource.GetResource()->DynamicCast<MShaderResource>();
 				if (nullptr == pShaderResource)
 					return false;
@@ -380,8 +380,16 @@ bool MMaterial::LoadPixelShader(MResource* pResource)
 	return false;
 }
 
+void MMaterial::OnCreated()
+{
+	Super::OnCreated();
+	//m_unMaterialID = m_pEngine->GetRenderer()->RegisterMaterial(this);
+}
+
 void MMaterial::OnDelete()
 {
+	//m_pEngine->GetRenderer()->UnRegisterMaterial(this);
+
 	m_VertexResource.SetResource(nullptr);
 	m_PixelResource.SetResource(nullptr);
 	m_pVertexShader = nullptr;
@@ -418,11 +426,11 @@ void MMaterial::RecompileShaderParams(std::vector<MShaderParam>& vParams, std::v
 			++iter;
 	}
 
-	unsigned int vParamsSize = vParams.size();
-	for (unsigned int j = 0; j < vNewParams.size(); ++j)
+	uint32_t vParamsSize = vParams.size();
+	for (uint32_t j = 0; j < vNewParams.size(); ++j)
 	{
 		bool bFinded = false;
-		for (unsigned int i = 0; i < vParamsSize; ++i)
+		for (uint32_t i = 0; i < vParamsSize; ++i)
 		{
 			if (vParams[i].strName == vNewParams[j]->strName)
 			{
@@ -449,7 +457,7 @@ void MMaterial::RecompileShaderParams(std::vector<MShaderParam>& vParams, std::v
 
 void MMaterial::RecompileShaderTextureParam(std::vector<MShaderTextureParam>& vParams, std::vector<MResourceKeeper>& vResHolders, std::vector<MShaderTextureParam*>& vNewParams, const MEShaderParamType& eType)
 {
-	for (unsigned int i = 0; i < vParams.size();)
+	for (uint32_t i = 0; i < vParams.size();)
 	{
 		MShaderTextureParam& param = vParams[i];
 		if (param.eShaderType & eType)
@@ -465,10 +473,10 @@ void MMaterial::RecompileShaderTextureParam(std::vector<MShaderTextureParam>& vP
 		else ++i;
 	}
 
-	for (unsigned int j = 0; j < vNewParams.size(); ++j)
+	for (uint32_t j = 0; j < vNewParams.size(); ++j)
 	{
 		bool bFinded = false;
-		for (unsigned int i = 0; i < vParams.size(); ++i)
+		for (uint32_t i = 0; i < vParams.size(); ++i)
 		{
 			if (vParams[i].strName == vNewParams[j]->strName)
 			{
@@ -507,9 +515,4 @@ void MMaterial::CleanShaderParams()
 		m_pEngine->GetDevice()->DestroyShaderParamBuffer(&param);
 
 	m_vShaderParams.clear();
-}
-
-void MMaterial::UpdateShaderMacro()
-{
-
 }

@@ -30,12 +30,12 @@ void MTextureResource::OnDelete()
 bool MTextureResource::Load(const MString& strResourcePath)
 {
 	CxImage image;
-	unsigned int imageType = CxImage::GetTypeIdFromName(GetSuffix(strResourcePath).c_str());
+	uint32_t imageType = CxImage::GetTypeIdFromName(GetSuffix(strResourcePath).c_str());
 	if (false == image.Load(strResourcePath.c_str(), imageType))
 		return false;
-	
-	unsigned int unWidth = image.GetWidth();
-	unsigned int unHeight = image.GetHeight();
+	TCHAR ch;
+	uint32_t unWidth = image.GetWidth();
+	uint32_t unHeight = image.GetHeight();
 
 	m_pTexture->DestroyTexture(m_pEngine->GetDevice());
 

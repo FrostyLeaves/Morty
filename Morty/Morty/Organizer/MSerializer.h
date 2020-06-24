@@ -34,7 +34,7 @@ private:
 template <typename T>
 T* MSerializer::FindWriteVariant(MStruct& srt, const MString& strName)
 {
-	unsigned int unIndex = srt.AppendMVariant(strName, T());
+	uint32_t unIndex = srt.AppendMVariant(strName, T());
 	return srt.GetMember(unIndex)->var.GetPointerUnsafe<T>();
 }
 

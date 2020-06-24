@@ -21,7 +21,7 @@ MMortyFileFormat::~MMortyFileFormat()
 	m_vBody.clear();
 }
 
-void MMortyFileFormat::PushBackBody(void* pData, const unsigned int& unSize, const bool& bExternalMemory /*= true*/)
+void MMortyFileFormat::PushBackBody(void* pData, const uint32_t& unSize, const bool& bExternalMemory /*= true*/)
 {
 	MFormatBody body;
 	body.pData = (char*)pData;
@@ -100,7 +100,7 @@ bool MFileHelper::WriteFormatFile(const MString& strFilePath, const MMortyFileFo
 
 	file.write(&format.m_strHead[0], nHeadSize);
 
-	for (unsigned int i = 0; i < format.m_vBody.size(); ++i)
+	for (uint32_t i = 0; i < format.m_vBody.size(); ++i)
 	{
 		file.write(format.m_vBody[i].pData, format.m_vBody[i].unSize);
 	}

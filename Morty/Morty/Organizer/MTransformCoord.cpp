@@ -94,7 +94,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 			case MECoordHoverType::Y:
 			case MECoordHoverType::Z:
 			{
-				unsigned int i = GetAxisIndex(m_eCoordMoveType);
+				uint32_t i = GetAxisIndex(m_eCoordMoveType);
 
 				Vector2 pos1, pos2;
 				pViewport->ConvertWorldLineToNormalizedDevice(v3Origin, v3Origin + m_vDirection[i], pos1, pos2);
@@ -123,7 +123,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 				v3RayDir = v3RayDir - v3CameraPos;
 				v3RayDir.Normalize();
 
-				unsigned int i = GetAxisIndex((MECoordHoverType)((int)MECoordHoverType::XYZ ^ (int)m_eCoordMoveType));
+				uint32_t i = GetAxisIndex((MECoordHoverType)((int)MECoordHoverType::XYZ ^ (int)m_eCoordMoveType));
 				Vector3 v3PlaneNormal = m_vDirection[i];
 				v3PlaneNormal.Normalize();
 
@@ -156,7 +156,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 		case MECoordHoverType::Y:
 		case MECoordHoverType::Z:
 		{
-			unsigned int i = GetAxisIndex(m_eCoordMoveType);
+			uint32_t i = GetAxisIndex(m_eCoordMoveType);
 			
 			Vector3 addiPosition(0, 0, 0);
 
@@ -182,7 +182,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 			v3RayDir = v3RayDir - v3CameraPos;
 			v3RayDir.Normalize();
 
-			unsigned int i = GetAxisIndex((MECoordHoverType)((int)MECoordHoverType::XYZ ^ (int)m_eCoordMoveType));
+			uint32_t i = GetAxisIndex((MECoordHoverType)((int)MECoordHoverType::XYZ ^ (int)m_eCoordMoveType));
 			Vector3 v3PlaneNormal = m_vDirection[i];
 			v3PlaneNormal.Normalize();
 
@@ -191,9 +191,9 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 			{
 				Vector3 v3Dir = v3NewHitPoint - m_v3PlaneHitPoint;
 
-				for (unsigned int i = 0, n = 1; i <= 2; ++i, n*= 2)
+				for (uint32_t i = 0, n = 1; i <= 2; ++i, n*= 2)
 				{
-					if (n & (unsigned int)m_eCoordMoveType)
+					if (n & (uint32_t)m_eCoordMoveType)
 					{
 						float fLength = MMath::Projection(v3Dir, m_vDirection[i]);
 						pTargetNode->SetWorldPosition(pTargetNode->GetWorldPosition() + m_vDirection[i] * fLength);
@@ -378,7 +378,7 @@ void MTransformCoord3D::GetTranslationShapes(MPainter2DLine* lines, class MPaint
 		});
 }
 
-unsigned int MTransformCoord3D::GetAxisIndex(const MECoordHoverType& eType)
+uint32_t MTransformCoord3D::GetAxisIndex(const MECoordHoverType& eType)
 {
 	switch (eType)
 	{

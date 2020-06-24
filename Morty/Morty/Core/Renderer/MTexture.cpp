@@ -31,7 +31,7 @@ void MTexture::SetSize(const Vector2& v2Size)
 			delete[] m_pImageData;
 		}
 
-		m_unImageDataArraySize = (unsigned int)v2Size.x * v2Size.y * 4;
+		m_unImageDataArraySize = (uint32_t)v2Size.x * v2Size.y * 4;
 		m_pImageData = new unsigned char[m_unImageDataArraySize];
 		memset(m_pImageData, 255, m_unImageDataArraySize * sizeof(unsigned char));
 	}
@@ -41,14 +41,14 @@ void MTexture::SetSize(const Vector2& v2Size)
 
 void MTexture::FillColor(const MColor& color) 
 {
-	const unsigned int r = (unsigned int)(color.r * 255.0f);
-	const unsigned int g = (unsigned int)(color.g * 255.0f);
-	const unsigned int b = (unsigned int)(color.b * 255.0f);
-	const unsigned int a = (unsigned int)(color.a * 255.0f);
+	const uint32_t r = (uint32_t)(color.r * 255.0f);
+	const uint32_t g = (uint32_t)(color.g * 255.0f);
+	const uint32_t b = (uint32_t)(color.b * 255.0f);
+	const uint32_t a = (uint32_t)(color.a * 255.0f);
 
 	if (m_pImageData)
 	{
-		for (unsigned int i = 0; i < m_unImageDataArraySize; i += 4)
+		for (uint32_t i = 0; i < m_unImageDataArraySize; i += 4)
 		{
 			m_pImageData[i] = r;
 			m_pImageData[i + 1] = g;

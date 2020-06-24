@@ -18,7 +18,7 @@
 { \
 m_tResourceLoader[Type] = new MResourceLoaderTemp<ResourceClass>(); \
 std::vector<MString> vSuffixList = {__VA_ARGS__}; \
-for (unsigned int i = 0; i < vSuffixList.size(); ++i) \
+for (uint32_t i = 0; i < vSuffixList.size(); ++i) \
 m_tResSuffixToType[vSuffixList[i]] = Type; \
 } \
 

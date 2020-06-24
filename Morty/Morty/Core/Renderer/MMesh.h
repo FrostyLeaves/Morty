@@ -32,23 +32,23 @@ public:
 	virtual void GenerateBuffer(MIDevice* pDevice);
 	virtual void UploadBuffer(MIDevice* pDevice);
 	virtual void DestroyBuffer(MIDevice* pDevice);
-	virtual unsigned int GetVerticesLength() const { return m_unVerticesLength; }
-	virtual unsigned int GetIndicesLength()  const { return m_unIndicesLength; }
+	virtual uint32_t GetVerticesLength() const { return m_unVerticesLength; }
+	virtual uint32_t GetIndicesLength()  const { return m_unIndicesLength; }
 	void* GetVertices() { return m_vVertices; }
 	const void* GetVertices() const { return m_vVertices; }
-	virtual const unsigned int* GetIndices() const { return m_vIndices; }
-	virtual unsigned int* GetIndices() { return m_vIndices; }
+	virtual const uint32_t* GetIndices() const { return m_vIndices; }
+	virtual uint32_t* GetIndices() { return m_vIndices; }
 
-	virtual unsigned int GetVertexStructSize() const = 0;
+	virtual uint32_t GetVertexStructSize() const = 0;
 
 	virtual MIMesh* Copy(const bool& bModifiable = false) const = 0;
 
 public:
 
-	virtual void CreateVertices(const unsigned int& unSize) = 0;
-	virtual void CreateIndices(const unsigned int& unSize, const unsigned int& unIndexSize);
-	virtual void ResizeVertices(const unsigned int& unSize) = 0;
-	virtual void ResizeIndices(const unsigned int& unSize, const unsigned int& unIndexSize);
+	virtual void CreateVertices(const uint32_t& unSize) = 0;
+	virtual void CreateIndices(const uint32_t& unSize, const uint32_t& unIndexSize);
+	virtual void ResizeVertices(const uint32_t& unSize) = 0;
+	virtual void ResizeIndices(const uint32_t& unSize, const uint32_t& unIndexSize);
 
 	virtual void Clean()
 	{
@@ -59,12 +59,12 @@ public:
 protected:
 
 	void* m_vVertices;
-	unsigned int* m_vIndices;
-	unsigned int m_unVerticesLength;
-	unsigned int m_unIndicesLength;
+	uint32_t* m_vIndices;
+	uint32_t m_unVerticesLength;
+	uint32_t m_unIndicesLength;
 
-	unsigned int m_unVerticesArraySize;
-	unsigned int m_unIndicesArraySize;
+	uint32_t m_unVerticesArraySize;
+	uint32_t m_unIndicesArraySize;
 
 	MVertexBuffer* m_pVertexBuffer;
 
@@ -87,19 +87,19 @@ public:
 		pNewMesh->ResizeIndices(GetIndicesLength(), 1);
 		pNewMesh->ResizeVertices(GetVerticesLength());
 
-		memcpy(pNewMesh->m_vIndices, m_vIndices, m_unIndicesLength * sizeof(unsigned int));
+		memcpy(pNewMesh->m_vIndices, m_vIndices, m_unIndicesLength * sizeof(uint32_t));
 		memcpy(pNewMesh->m_vVertices, m_vVertices, m_unVerticesLength * sizeof(VERTEX_TYPE));
 
 		return pNewMesh;
 	}
 public:
 
-	virtual unsigned int GetVertexStructSize() const override
+	virtual uint32_t GetVertexStructSize() const override
 	{
 		return sizeof(VERTEX_TYPE);
 	}
 
-	virtual void CreateVertices(const unsigned int& unSize) override
+	virtual void CreateVertices(const uint32_t& unSize) override
 	{
 		if (m_unVerticesArraySize < unSize)
 		{
@@ -118,7 +118,7 @@ public:
 		m_unVerticesLength = unSize;
 	}
 
-	virtual void ResizeVertices(const unsigned int& unSize) override
+	virtual void ResizeVertices(const uint32_t& unSize) override
 	{
 		if (m_unVerticesArraySize < unSize)
 		{

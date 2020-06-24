@@ -351,6 +351,12 @@
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanRenderer.h">
       <Filter>Core\Renderer\Vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanPipelineManager.h">
+      <Filter>Core\Renderer\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Organizer\System\MBasicRenderSystem.h">
+      <Filter>Organizer\System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -586,6 +592,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanRenderer.cpp">
       <Filter>Core\Renderer\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanPipelineManager.cpp">
+      <Filter>Core\Renderer\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Organizer\System\MBasicRenderSystem.cpp">
+      <Filter>Organizer\System</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

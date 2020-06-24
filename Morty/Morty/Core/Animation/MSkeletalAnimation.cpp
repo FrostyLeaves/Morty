@@ -34,9 +34,9 @@ void MSkeletalAnimation::Update(const float& fTime, MSkeletonInstance* pSkeleton
 {
 	std::vector<MBone>& bones = pSkeletonIns->GetAllBones();
 
-	unsigned int unBonesSize = bones.size();
+	uint32_t unBonesSize = bones.size();
 
-	for (unsigned int i = 0; i < unBonesSize; ++i)
+	for (uint32_t i = 0; i < unBonesSize; ++i)
 	{
 		MBone& bone = bones[i];
 
@@ -219,9 +219,9 @@ void MSkeletalAnimation::ReadFromStruct(MStruct& srt)
 
 	if (MVariantArray* pNodeArray = srt.FindMember<MVariantArray>("nodes"))
 	{
-		unsigned int nSize = pNodeArray->GetMemberCount();
+		uint32_t nSize = pNodeArray->GetMemberCount();
 		m_vSkeletalAnimNodes.resize(nSize);
-		for (unsigned int i = 0 ; i < nSize; ++i)
+		for (uint32_t i = 0 ; i < nSize; ++i)
 		{
 			if (MStruct* pNodeSrt = pNodeArray->GetMember(i)->var.GetStruct())
 			{
@@ -474,7 +474,7 @@ void MSkeletalAnimController::BindMapping()
 
 	if (m_pSkeletonIns->GetSkeletonTemplate() == m_pAnimation->GetSkeletonTemplate())
 	{
-		for (unsigned int i = 0; i < m_SkeletonAnimMap.m_vAnimToSkel.size(); ++i)
+		for (uint32_t i = 0; i < m_SkeletonAnimMap.m_vAnimToSkel.size(); ++i)
 		{
 			m_SkeletonAnimMap.m_vSkelToAnim[i] = i;
 			m_SkeletonAnimMap.m_vAnimToSkel[i] = i;

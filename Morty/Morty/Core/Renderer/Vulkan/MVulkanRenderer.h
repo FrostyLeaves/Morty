@@ -22,35 +22,35 @@ public:
     virtual ~MVulkanRenderer();
 
 
-	virtual void AddOutputView(MIRenderView* pView) override;
+	virtual void AddOutputView(MIRenderView* pView) override {}
 
 	virtual bool Initialize() override;
-	virtual void Release() override;
+	virtual void Release() override {}
 
 	virtual void SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth) override;
-	virtual void RecoverRenderTarget(RenderTargetPair& pRenderTarget) override;
-	virtual void ClearRenderTarget(MIRenderTarget* pRenderTarget) override;
+	virtual void RecoverRenderTarget(RenderTargetPair& pRenderTarget) override {}
+	virtual void ClearRenderTarget(MIRenderTarget* pRenderTarget) override {}
 public:
 	virtual void DrawMesh(MIMesh* pMesh) override;
 
 	virtual bool SetUseMaterial(MMaterial* pMaterial, const bool& bUpdateResources = false) override;
-	virtual void UpdateMaterialParam() override;
-	virtual void UpdateMaterialResource() override;
+	virtual void UpdateMaterialParam() override {}
+	virtual void UpdateMaterialResource() override {}
 
 public:
-	void UpdateShaderParam(MShaderParam& param);
+	void UpdateShaderParam(MShaderParam& param) {}
 
-	virtual void SetVertexShaderParam(MShaderParam& param) override;
-	virtual void SetPixelShaderParam(MShaderParam& param) override;
+	virtual void SetVertexShaderParam(MShaderParam& param) override {}
+	virtual void SetPixelShaderParam(MShaderParam& param) override {}
 
-	virtual void SetVertexShaderTexture(MShaderTextureParam& param) override;
-	virtual void SetPixelShaderTexture(MShaderTextureParam& param) override;
+	virtual void SetVertexShaderTexture(MShaderTextureParam& param) override {}
+	virtual void SetPixelShaderTexture(MShaderTextureParam& param) override {}
 
 protected:
 
-	bool CreateGraphicsPipeline(MMaterial* pMaaterial);
-
-	bool CreateRenderPass();
+	VkPipeline CreateGraphicsPipeline(MMaterial* pMaaterial);
+	
+	bool InitCommandBuffer();
 
 private:
 
@@ -61,6 +61,10 @@ private:
 	VkPipelineViewportStateCreateInfo m_ViewportState;
 	VkPipelineMultisampleStateCreateInfo m_MultisampleState;
 
+	VkCommandBuffer m_VkCommandBuffer;
+	VkPipeline m_VkUsingPipeline;
+
+	MMaterial* m_pUsingMaterial;
 };
 
 

@@ -107,7 +107,7 @@ void MSkinnedMeshInstance::SetMeshData(const MString& strModelResourcePath, cons
 	}
 }
 
-MIMesh* MSkinnedMeshInstance::GetMesh(const unsigned int& unDetailLevel)
+MIMesh* MSkinnedMeshInstance::GetMesh(const uint32_t& unDetailLevel)
 {
 	if (unDetailLevel == MMESH_LOD_LEVEL_RANGE)
 		return m_pMesh->GetMesh();

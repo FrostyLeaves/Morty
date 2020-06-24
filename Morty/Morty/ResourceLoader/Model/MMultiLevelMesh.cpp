@@ -20,17 +20,17 @@ void MMultiLevelMesh::BindMesh(const MIMesh* pMesh)
 	m_pMesh = pMesh;
 
 	const MByte* pVertices = (MByte*)pMesh->GetVertices();
-	const unsigned int* vIndices = pMesh->GetIndices();
-	unsigned int unVertexSize = pMesh->GetVertexStructSize();
-	unsigned int unVerticesLength = pMesh->GetVerticesLength();
-	unsigned int unIndicesLength = pMesh->GetIndicesLength();
+	const uint32_t* vIndices = pMesh->GetIndices();
+	uint32_t unVertexSize = pMesh->GetVertexStructSize();
+	uint32_t unVerticesLength = pMesh->GetVerticesLength();
+	uint32_t unIndicesLength = pMesh->GetIndicesLength();
 
 	m_vIndexToMap.resize(unVerticesLength);
 	m_vMap.resize(unVerticesLength);
 
 	std::vector<Vertex*> vVertices(unVerticesLength);
 
-	for (unsigned int i = 0; i < unVerticesLength; ++i)
+	for (uint32_t i = 0; i < unVerticesLength; ++i)
 	{
 		Vertex* pVertex = new Vertex();
 		pVertex->unVertexIndex = i;
@@ -39,7 +39,7 @@ void MMultiLevelMesh::BindMesh(const MIMesh* pMesh)
 		vVertices[i] = pVertex;
 	}
 
-	for (unsigned int i = 0; i < unIndicesLength; i += 3)
+	for (uint32_t i = 0; i < unIndicesLength; i += 3)
 	{
 		Face* pFace = new Face();
 		pFace->vIndices[0] = vVertices[vIndices[i]];
@@ -47,11 +47,11 @@ void MMultiLevelMesh::BindMesh(const MIMesh* pMesh)
 		pFace->vIndices[2] = vVertices[vIndices[i + 2]];
 		ComputeNormal(pFace);
 
-		for (unsigned int n = i; n < i + 3; ++n)
+		for (uint32_t n = i; n < i + 3; ++n)
 		{
 			Vertex* pVtx1 = vVertices[vIndices[n]];
 			UNION_PUSH_BACK_VECTOR(pVtx1->vFaces, pFace);
-			for (unsigned int m = n + 1; m < i + 3; ++m)
+			for (uint32_t m = n + 1; m < i + 3; ++m)
 			{
 				Vertex* pVtx2 = vVertices[vIndices[m]];
 				if (pVtx1 != pVtx2)
@@ -78,33 +78,33 @@ void MMultiLevelMesh::BindMesh(const MIMesh* pMesh)
 		delete pVertex;
 	}
 
-	for (unsigned int i = 0; i < m_vMap.size(); i++) {
+	for (uint32_t i = 0; i < m_vMap.size(); i++) {
 		m_vMap[i] = (m_vMap[i] == -1) ? 0 : m_vIndexToMap[m_vMap[i]];
 	}
 
-	unsigned int unMemorySize = pMesh->GetVertexStructSize() * pMesh->GetVerticesLength();
+	uint32_t unMemorySize = pMesh->GetVertexStructSize() * pMesh->GetVerticesLength();
 	m_pSortVertices = new MByte[unMemorySize];
 
-	for (unsigned int i = 0; i < unVerticesLength; ++i) {
+	for (uint32_t i = 0; i < unVerticesLength; ++i) {
 		memcpy(m_pSortVertices + (m_vIndexToMap[i] * unVertexSize), pVertices + (i * unVertexSize), unVertexSize);
 	}
 }
 
-MIMesh* MMultiLevelMesh::CreateLevel(const unsigned int& unVertexNumber)
+MIMesh* MMultiLevelMesh::CreateLevel(const uint32_t& unVertexNumber)
 {
-	const unsigned int* vIndices = m_pMesh->GetIndices();
-	unsigned int unVertexSize = m_pMesh->GetVertexStructSize();
-	unsigned int unIndicesLength = m_pMesh->GetIndicesLength();
+	const uint32_t* vIndices = m_pMesh->GetIndices();
+	uint32_t unVertexSize = m_pMesh->GetVertexStructSize();
+	uint32_t unIndicesLength = m_pMesh->GetIndicesLength();
 
 	MIMesh* pMesh = m_pMesh->Copy();
-	unsigned int* vNewIndices = pMesh->GetIndices();
-	unsigned int ni = 0;
+	uint32_t* vNewIndices = pMesh->GetIndices();
+	uint32_t ni = 0;
 
 
-	for (unsigned int i = 0; i < unIndicesLength; i += 3)
+	for (uint32_t i = 0; i < unIndicesLength; i += 3)
 	{
-		unsigned int unIndex[3];
-		for (unsigned int n = 0; n < 3; ++n)
+		uint32_t unIndex[3];
+		for (uint32_t n = 0; n < 3; ++n)
 		{
 			unIndex[n] = m_vIndexToMap[vIndices[i + n]];
 			while (unIndex[n] >= unVertexNumber)
@@ -128,14 +128,14 @@ MIMesh* MMultiLevelMesh::CreateLevel(const unsigned int& unVertexNumber)
 	return pMesh;
 }
 
-MIMesh* MMultiLevelMesh::GetLevel(unsigned int unLevel)
+MIMesh* MMultiLevelMesh::GetLevel(uint32_t unLevel)
 {
 	if (unLevel < 1) unLevel = 1;
 	if (unLevel > MMESH_LOD_LEVEL_RANGE) unLevel = MMESH_LOD_LEVEL_RANGE;
 
 	if (m_vMeshesCache[unLevel] == nullptr)
 	{
-		unsigned int unVertexNumber = m_pMesh->GetVerticesLength() * (float)unLevel / MMESH_LOD_LEVEL_RANGE;
+		uint32_t unVertexNumber = m_pMesh->GetVerticesLength() * (float)unLevel / MMESH_LOD_LEVEL_RANGE;
 		m_vMeshesCache[unLevel] = CreateLevel(unVertexNumber);
 	}
 
@@ -153,12 +153,12 @@ void MMultiLevelMesh::Unuse(Vertex* pVertex)
 
 void MMultiLevelMesh::Unuse(Face* pFace)
 {
-	for (unsigned int i = 0; i < 3; ++i)
+	for (uint32_t i = 0; i < 3; ++i)
 		ERASE_FIRST_VECTOR(pFace->vIndices[i]->vFaces, pFace);
 	
-	for (unsigned int i = 0; i < 3; ++i)
+	for (uint32_t i = 0; i < 3; ++i)
 	{
-		for (unsigned int j = i + 1; j < 3; ++j)
+		for (uint32_t j = i + 1; j < 3; ++j)
 		{
 			UpdateNeighbor(pFace->vIndices[i], pFace->vIndices[j]);
 		}
@@ -178,7 +178,7 @@ bool MMultiLevelMesh::HasVertex(Face* pFace, Vertex* pVertex)
 void MMultiLevelMesh::ReplaceVertex(Face* pFace, Vertex* pFrom, Vertex* pTo)
 {
 	//Remove vertex from face
-	for (unsigned int i = 0; i < 3; ++i)
+	for (uint32_t i = 0; i < 3; ++i)
 	{
 		if (pFace->vIndices[i] == pFrom)
 			pFace->vIndices[i] = pTo;
@@ -190,7 +190,7 @@ void MMultiLevelMesh::ReplaceVertex(Face* pFace, Vertex* pFrom, Vertex* pTo)
 	//Add face to vertex
 	UNION_PUSH_BACK_VECTOR(pTo->vFaces, pFace);
 
-	for (unsigned int i = 0; i < 3; ++i)
+	for (uint32_t i = 0; i < 3; ++i)
 	{
 		UpdateNeighbor(pFace->vIndices[i], pFrom);
 		

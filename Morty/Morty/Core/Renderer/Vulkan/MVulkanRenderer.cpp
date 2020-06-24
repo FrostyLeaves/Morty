@@ -13,6 +13,8 @@
 MVulkanRenderer::MVulkanRenderer(MVulkanDevice* pDevice)
 	: MIRenderer()
 	, m_pDevice(pDevice)
+	, m_VkUsingPipeline(VK_NULL_HANDLE)
+	, m_pUsingMaterial(nullptr)
 {
 
 }
@@ -61,6 +63,11 @@ bool MVulkanRenderer::Initialize()
 
 
 
+
+	InitCommandBuffer();
+
+
+	return true;
 }
 
 void MVulkanRenderer::SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth)
@@ -96,13 +103,13 @@ void MVulkanRenderer::DrawMesh(MIMesh* pMesh)
 
 	if (MVertexBuffer* pBuffer = pMesh->GetBuffer())
 	{
-		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+		vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkUsingPipeline);
 
 		VkBuffer vertexBuffers[] = { pBuffer->m_VkVertexBuffer };
 		VkDeviceSize offsets[] = { 0 };
-		vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
+		vkCmdBindVertexBuffers(m_VkCommandBuffer, 0, 1, vertexBuffers, offsets);
 
-		vkCmdDraw(commandBuffers[i], pMesh->GetVerticesLength(), 1, 0, 0);
+		vkCmdDraw(m_VkCommandBuffer, pMesh->GetVerticesLength(), 1, 0, 0);
 
 #if MORTY_RENDER_DATA_STATISTICS
 		MRenderStatistics::GetInstance()->unTriangleCount += pMesh->GetIndicesLength() / 3;
@@ -114,13 +121,22 @@ void MVulkanRenderer::DrawMesh(MIMesh* pMesh)
 
 bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial, const bool& bUpdateResources /*= false*/)
 {
+	if (VK_NULL_HANDLE != m_VkUsingPipeline)
+	{
+		vkDestroyPipeline(m_pDevice->m_VkDevice, m_VkUsingPipeline, nullptr);
+	}
+	m_VkUsingPipeline = CreateGraphicsPipeline(pMaterial);
 
+
+
+
+	return true;
 }
 
-bool MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial)
+VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial)
 {
 	if (!pMaterial)
-		return;
+		return false;
 
 	//Vulkan必须填这个东西，才能在运行时修改viewport大小等设置
 	std::vector<VkDynamicState> dynamicStates = {
@@ -150,10 +166,29 @@ bool MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial)
 
 	VkPipelineVertexInputStateCreateInfo inputStateInfo = static_cast<MVertexShaderBuffer*>(pVertexShader->GetBuffer())->m_VkVertexInputStateInfo;
 
+	VkDescriptorSetLayoutBinding uboLayoutBinding{};
+	uboLayoutBinding.binding = 0;
+	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	uboLayoutBinding.descriptorCount = 1;
+	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+
+	VkDescriptorSetLayoutCreateInfo layoutInfo{};
+	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutInfo.bindingCount = 1;
+	layoutInfo.pBindings = &uboLayoutBinding;
+
+	VkDescriptorSetLayout descriptorSetLayout;
+
+	if (vkCreateDescriptorSetLayout(m_pDevice->m_VkDevice, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor set layout!");
+	}
+
+
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pipelineLayoutInfo.setLayoutCount = 1;
-	pipelineLayoutInfo.pSetLayouts = &static_cast<MVertexShaderBuffer*>(pVertexShader->GetBuffer())->m_VkPipelineLayout;
+	pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
 
 	VkPipelineLayout pipelineLayout;
 	if (vkCreatePipelineLayout(m_pDevice->m_VkDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
@@ -179,42 +214,26 @@ bool MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial)
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	pipelineInfo.basePipelineIndex = -1; // Optional
+
+	VkPipeline graphicsPipeline;
+	if (vkCreateGraphicsPipelines(m_pDevice->m_VkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
+		return VK_NULL_HANDLE;
+
+	return graphicsPipeline;
 }
 
-bool MVulkanRenderer::CreateRenderPass()
+bool MVulkanRenderer::InitCommandBuffer()
 {
-	VkRenderPass renderPass;
 
-	VkAttachmentDescription colorAttachment{};
-	colorAttachment.format = swapChainImageFormat;
-	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	VkCommandBufferAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.commandPool = m_pDevice->m_VkCommandPool;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandBufferCount = 1;
 
-	VkAttachmentReference colorAttachmentRef{};
-	colorAttachmentRef.attachment = 0;
-	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-	VkSubpassDescription subpass{};
-	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpass.colorAttachmentCount = 1;
-	subpass.pColorAttachments = &colorAttachmentRef;
-
-	VkRenderPassCreateInfo renderPassInfo{};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.attachmentCount = 1;
-	renderPassInfo.pAttachments = &colorAttachment;
-	renderPassInfo.subpassCount = 1;
-	renderPassInfo.pSubpasses = &subpass;
-
-	if (vkCreateRenderPass(m_pDevice->m_VkDevice, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
-	{
+	if (vkAllocateCommandBuffers(m_pDevice->m_VkDevice, &allocInfo, &m_VkCommandBuffer) != VK_SUCCESS)
 		return false;
-	}
+
 
 	return true;
 }

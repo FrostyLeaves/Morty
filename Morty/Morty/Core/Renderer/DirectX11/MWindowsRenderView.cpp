@@ -189,7 +189,7 @@ void MWindowsRenderView::Release()
 	s_tViewTable.erase(m_hwnd);
 }
 
-void MWindowsRenderView::KeyBoardChanged(const unsigned int& unKey, const MEKeyState& eState)
+void MWindowsRenderView::KeyBoardChanged(const uint32_t& unKey, const MEKeyState& eState)
 {
 	MKeyState state;
 	state.unKey = unKey;
@@ -197,7 +197,7 @@ void MWindowsRenderView::KeyBoardChanged(const unsigned int& unKey, const MEKeyS
 	m_vKeyQueue.push_back(state);
 }
 
-void MWindowsRenderView::MouseBtnChanged(const unsigned int& unMouseBtn, const MEKeyState& eState)
+void MWindowsRenderView::MouseBtnChanged(const uint32_t& unMouseBtn, const MEKeyState& eState)
 {
 	MKeyState state;
 	state.unKey = unMouseBtn;

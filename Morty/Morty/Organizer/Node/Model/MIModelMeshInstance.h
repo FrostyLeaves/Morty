@@ -30,8 +30,8 @@ public:
 	void SetShadowType(const MEShadowType& eType) { m_eShadowType = eType; }
 	MEShadowType GetShadowType() { return m_eShadowType; }
 
-	void SetDetailLevel(const unsigned int& unLevel) { m_unDetailLevel = unLevel; }
-	unsigned int GetDetailLevel() { return m_unDetailLevel; }
+	void SetDetailLevel(const uint32_t& unLevel) { m_unDetailLevel = unLevel; }
+	uint32_t GetDetailLevel() { return m_unDetailLevel; }
 
 	void SetAttachedModelInstance(MModelInstance* pModelIns) { m_pModelInstance = pModelIns; }
 	MModelInstance* GetAttachedModelInstance() { return m_pModelInstance; }
@@ -50,7 +50,7 @@ public:
 private:
 	MEShadowType m_eShadowType;
 	MModelInstance* m_pModelInstance;
-	unsigned int m_unDetailLevel;
+	uint32_t m_unDetailLevel;
 
 	bool m_bDrawBoundingSphere;
 	bool m_bGenerateDirLightShadow;

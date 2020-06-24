@@ -54,8 +54,8 @@ bool MPainter2DLine::FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh)
 		v2Normal.Normalize();
 	}
 
-	unsigned int unVerticesLength = mesh.GetVerticesLength();
-	unsigned int unIndicesLength = mesh.GetIndicesLength();
+	uint32_t unVerticesLength = mesh.GetVerticesLength();
+	uint32_t unIndicesLength = mesh.GetIndicesLength();
 
 	mesh.ResizeVertices(unVerticesLength + GetVertexCount());
 	mesh.ResizeIndices(unIndicesLength + GetIndexCount(), 1);
@@ -76,12 +76,12 @@ bool MPainter2DLine::FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh)
 	mesh.GetVertices()[unVerticesLength + 3].pos.y = v2End2D.y + v2Normal.y * m_fThickness / pViewport->GetSize().y;
 	mesh.GetVertices()[unVerticesLength + 3].color = m_lineColor.ToVector4();
 
-	static unsigned int const indices[] = {
+	static uint32_t const indices[] = {
 		0, 1, 2,
 		1, 3, 2
 	};
 
-	for (unsigned int i = 0; i < 6; ++i)
+	for (uint32_t i = 0; i < 6; ++i)
 		mesh.GetIndices()[unIndicesLength + i] = unVerticesLength + indices[i];
 
 	mesh.SetNeedUpload();
@@ -132,8 +132,8 @@ bool MPainter2DRect::FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh)
 	if (nullptr == pViewport)
 		return false;
 
-	unsigned int unVerticesLength = mesh.GetVerticesLength();
-	unsigned int unIndicesLength = mesh.GetIndicesLength();
+	uint32_t unVerticesLength = mesh.GetVerticesLength();
+	uint32_t unIndicesLength = mesh.GetIndicesLength();
 
 	mesh.ResizeVertices(unVerticesLength + GetVertexCount());
 	mesh.ResizeIndices(unIndicesLength + GetIndexCount(), 1);
@@ -145,24 +145,24 @@ bool MPainter2DRect::FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh)
 		mesh.GetVertices()[unVerticesLength + i].color = color;
 	}
 
-	static unsigned int const indices_front[] = {
+	static uint32_t const indices_front[] = {
 		0, 1, 2,
 		0, 2, 3,
 	};
 
-	static unsigned int const indices_back[] = {
+	static uint32_t const indices_back[] = {
 		0, 2, 1,
 		0, 3, 2,
 	};
 
 	if ((m_vPoint[1] - m_vPoint[0]).CrossProduct(m_vPoint[2] - m_vPoint[0]) < 0)
 	{
-		for (unsigned int i = 0; i < 6; ++i)
+		for (uint32_t i = 0; i < 6; ++i)
 			mesh.GetIndices()[unIndicesLength + i] = unVerticesLength + indices_front[i];
 	}
 	else
 	{
-		for (unsigned int i = 0; i < 6; ++i)
+		for (uint32_t i = 0; i < 6; ++i)
 			mesh.GetIndices()[unIndicesLength + i] = unVerticesLength + indices_back[i];
 	}
 
@@ -210,8 +210,8 @@ bool MPainter2DLine3D::FillData(MViewport* pViewport, MMesh<MPainterVertex>& mes
 	Vector3 v3Thick3D = v3Normal * (m_fThickness / (v2Nab - v2Center).Length());
 
 
-	unsigned int unVerticesLength = mesh.GetVerticesLength();
-	unsigned int unIndicesLength = mesh.GetIndicesLength();
+	uint32_t unVerticesLength = mesh.GetVerticesLength();
+	uint32_t unIndicesLength = mesh.GetIndicesLength();
 
 	mesh.ResizeVertices(unVerticesLength + GetVertexCount());
 	mesh.ResizeIndices(unIndicesLength + GetIndexCount(), 1);
@@ -228,12 +228,12 @@ bool MPainter2DLine3D::FillData(MViewport* pViewport, MMesh<MPainterVertex>& mes
 	mesh.GetVertices()[unVerticesLength + 3].pos = m_v3End - v3Thick3D;
 	mesh.GetVertices()[unVerticesLength + 3].color = m_lineColor.ToVector4();
 
-	static unsigned int const indices[] = {
+	static uint32_t const indices[] = {
 		0, 2, 1,
 		0, 3, 2
 	};
 
-	for (unsigned int i = 0; i < 6; ++i)
+	for (uint32_t i = 0; i < 6; ++i)
 		mesh.GetIndices()[unIndicesLength + i] = unVerticesLength + indices[i];
 
 	mesh.SetNeedUpload();

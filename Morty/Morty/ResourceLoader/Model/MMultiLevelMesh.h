@@ -24,7 +24,7 @@ public:
 		std::vector<struct Vertex*> vNeighbor;
 		std::vector<struct Face*> vFaces;
 
-		unsigned int unVertexIndex;
+		uint32_t unVertexIndex;
 		float fObjdist;
 		Vertex* pCollapseVertex;
 	};
@@ -40,11 +40,11 @@ public:
 	virtual ~MMultiLevelMesh() {}
 
 	void BindMesh(const MIMesh* pMesh);
-	MIMesh* GetLevel(unsigned int unLevel);
+	MIMesh* GetLevel(uint32_t unLevel);
 
 protected:
 
-	MIMesh* CreateLevel(const unsigned int& unIndexNumber);
+	MIMesh* CreateLevel(const uint32_t& unIndexNumber);
 
 	void Unuse(Vertex* pVertex);
 	void Unuse(Face* pFace);
@@ -64,7 +64,7 @@ protected:
 
 public:
 
-	std::vector<unsigned int> m_vIndexToMap;
+	std::vector<uint32_t> m_vIndexToMap;
 	std::vector<int> m_vMap;
 
 	MByte* m_pSortVertices;

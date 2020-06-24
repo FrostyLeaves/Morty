@@ -5,12 +5,12 @@
 #include "MMath.h"
 #include "Timer/MTimer.h"
 
-MBoundsOBB::MBoundsOBB(const Vector3* vPoints, const unsigned int& unArrayLength)
+MBoundsOBB::MBoundsOBB(const Vector3* vPoints, const uint32_t& unArrayLength)
 {
 	SetPoints((MByte*)vPoints, unArrayLength, 0, sizeof(Vector3));
 }
 
-void MBoundsOBB::SetPoints(const MByte* vPoints, const unsigned int& unArrayLength, const unsigned int& unOffset, const unsigned int& unDataSize)
+void MBoundsOBB::SetPoints(const MByte* vPoints, const uint32_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize)
 {
 	Vector3 v3Average;
 
@@ -24,7 +24,7 @@ void MBoundsOBB::SetPoints(const MByte* vPoints, const unsigned int& unArrayLeng
 	const MByte* pointer = nullptr;
 
 	pointer = vPoints;
-	for(unsigned int i = 0; i < unArrayLength; ++i, pointer += unDataSize)
+	for(uint32_t i = 0; i < unArrayLength; ++i, pointer += unDataSize)
 	{
 		const Vector3& pos = *(Vector3*)(pointer + unOffset);
 		v3Average += pos;
@@ -33,7 +33,7 @@ void MBoundsOBB::SetPoints(const MByte* vPoints, const unsigned int& unArrayLeng
 	v3Average /= unArrayLength;
 
 	pointer = vPoints;
-	for (unsigned int i = 0; i < unArrayLength; ++i, pointer += unDataSize)
+	for (uint32_t i = 0; i < unArrayLength; ++i, pointer += unDataSize)
 	{
 		const Vector3& pos = *(Vector3*)(pointer + unOffset);
 		cov_xx += (pos.x - v3Average.x) * (pos.x - v3Average.x);
@@ -69,7 +69,7 @@ void MBoundsOBB::SetPoints(const MByte* vPoints, const unsigned int& unArrayLeng
 
 	Vector3 v3MinPoint, v3MaxPoint;
 	pointer = vPoints;
-	for (unsigned int i = 0; i < unArrayLength; ++i, pointer += unDataSize)
+	for (uint32_t i = 0; i < unArrayLength; ++i, pointer += unDataSize)
 	{
 		const Vector3& pos = *(Vector3*)(pointer + unOffset);
 		v3MinPoint = v3MaxPoint = pos * m_matEigVectors;
@@ -77,7 +77,7 @@ void MBoundsOBB::SetPoints(const MByte* vPoints, const unsigned int& unArrayLeng
 	}
 
 	pointer = vPoints;
-	for (unsigned int i = 0; i < unArrayLength; ++i, pointer += unDataSize)
+	for (uint32_t i = 0; i < unArrayLength; ++i, pointer += unDataSize)
 	{
 		const Vector3& pos = *(Vector3*)(pointer + unOffset);
 		Vector3 mp = pos * m_matEigVectors;
@@ -176,7 +176,7 @@ MBoundsAABB::MBoundsAABB(const MBoundsAABB& aabb, const Matrix4& matWorld)
 MBoundsAABB::MBoundsAABB(const std::vector<Vector3>& vPoints, const Matrix4& matWorld)
 {
 	std::vector<Vector3> vWorldPoints(vPoints.size());
-	for (unsigned int i = 0; i < vPoints.size(); ++i)
+	for (uint32_t i = 0; i < vPoints.size(); ++i)
 		vWorldPoints[i] = matWorld * vPoints[i];
 
 	SetPoints(vPoints);
@@ -232,7 +232,7 @@ void MBoundsAABB::SetBoundsOBB(const Vector3& v3Origin, const Matrix4& matWorld,
 		matWorld * obb.ConvertFromOBB(Vector3(obb.m_v3MaxPoint.x, obb.m_v3MinPoint.y, obb.m_v3MaxPoint.z)),
 	};
 
-	for (unsigned int i = 0; i < 8; ++i)
+	for (uint32_t i = 0; i < 8; ++i)
 	{
 		if (m_v3MaxPoint.x < points[i].x)
 			m_v3MaxPoint.x = points[i].x;
@@ -319,9 +319,9 @@ public:
 	void RandomSwap();
 
 	MBoundsSphere GetMinSurroundBall();
-	MBoundsSphere GetMinSurroundBall(const unsigned int& idx1);
-	MBoundsSphere GetMinSurroundBall(const unsigned int& idx1, const unsigned int& idx2);
-	MBoundsSphere GetMinSurroundBall(const unsigned int& idx1, const unsigned int& idx2, const unsigned int& idx3);
+	MBoundsSphere GetMinSurroundBall(const uint32_t& idx1);
+	MBoundsSphere GetMinSurroundBall(const uint32_t& idx1, const uint32_t& idx2);
+	MBoundsSphere GetMinSurroundBall(const uint32_t& idx1, const uint32_t& idx2, const uint32_t& idx3);
 
 	Vector3 GetBallCenter(const Vector3& p1, const Vector3& p2, const Vector3& p3, const Vector3& p4);
 
@@ -344,14 +344,14 @@ MBoundsSphere::MBoundsSphere()
 
 }
 
-void MBoundsSphere::SetPoints(const MByte* vPoints, const unsigned int& unArrayLength, const unsigned int& unOffset, const unsigned int& unDataSize)
+void MBoundsSphere::SetPoints(const MByte* vPoints, const uint32_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize)
 {
 	
 	Vector3 v3Min(FLT_MAX, FLT_MAX, FLT_MAX);
 	Vector3 v3Max(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
 	const MByte* vPointer = vPoints;
-	for (unsigned int i = 0; i < unArrayLength; ++i, vPointer += unDataSize)
+	for (uint32_t i = 0; i < unArrayLength; ++i, vPointer += unDataSize)
 	{
 		const Vector3& pos = *(Vector3*)(vPointer + unOffset);
 		if (v3Min.x > pos.x)
@@ -383,7 +383,7 @@ void MBoundsSphere::SetPoints(const MByte* vPoints, const unsigned int& unArrayL
 	Vector3 direct;
 
 	vPointer = vPoints;
-	for (unsigned int i = 0; i < unArrayLength; ++i, vPointer += unDataSize)
+	for (uint32_t i = 0; i < unArrayLength; ++i, vPointer += unDataSize)
 	{
 		const Vector3& pos = *(Vector3*)(vPointer + unOffset);
 
@@ -418,11 +418,11 @@ void MBoundsSphere::ReadFromStruct(MStruct& srt)
 
 void MPointsSphere::RandomSwap()
 {
-	unsigned int unSize = m_vPoints.size();
+	uint32_t unSize = m_vPoints.size();
 	
-	unsigned int unIndex = 0;
+	uint32_t unIndex = 0;
 	Vector3 v3Temp;
-	for (unsigned int i = 0; i < unSize; ++i)
+	for (uint32_t i = 0; i < unSize; ++i)
 	{
 		unIndex = MMath::RandInt(0, unSize - 1);
 
@@ -437,7 +437,7 @@ MBoundsSphere MPointsSphere::GetMinSurroundBall()
 	RandomSwap();
 
 	MBoundsSphere sphere(m_vPoints[0], 0);
-	for (unsigned int i = 1; i < m_vPoints.size(); ++i)
+	for (uint32_t i = 1; i < m_vPoints.size(); ++i)
 	{
 		if (!sphere.IsContain(m_vPoints[i]))
 		{
@@ -448,11 +448,11 @@ MBoundsSphere MPointsSphere::GetMinSurroundBall()
 	return sphere;
 }
 
-MBoundsSphere MPointsSphere::GetMinSurroundBall(const unsigned int& idx1)
+MBoundsSphere MPointsSphere::GetMinSurroundBall(const uint32_t& idx1)
 {
 	MBoundsSphere sphere(m_vPoints[idx1], 0);
 
-	for (unsigned int i = 0; i < idx1; ++i)
+	for (uint32_t i = 0; i < idx1; ++i)
 	{
 		if (!sphere.IsContain(m_vPoints[i])) {
 			sphere = GetMinSurroundBall(idx1, i);
@@ -462,11 +462,11 @@ MBoundsSphere MPointsSphere::GetMinSurroundBall(const unsigned int& idx1)
 	return sphere;
 }
 
-MBoundsSphere MPointsSphere::GetMinSurroundBall(const unsigned int& idx1, const unsigned int& idx2)
+MBoundsSphere MPointsSphere::GetMinSurroundBall(const uint32_t& idx1, const uint32_t& idx2)
 {
 	MBoundsSphere sphere((m_vPoints[idx1] + m_vPoints[idx2]) * 0.5f, (m_vPoints[idx1] - m_vPoints[idx2]).Length());
 
-	for (unsigned int i = 1; i < idx2; ++i)
+	for (uint32_t i = 1; i < idx2; ++i)
 	{
 		if (!sphere.IsContain(m_vPoints[i])) {
 			sphere = GetMinSurroundBall(idx1, idx2, i);// i idx1 idx2
@@ -476,7 +476,7 @@ MBoundsSphere MPointsSphere::GetMinSurroundBall(const unsigned int& idx1, const 
 	return sphere;
 }
 		
-MBoundsSphere MPointsSphere::GetMinSurroundBall(const unsigned int& idx1, const unsigned int& idx2, const unsigned int& idx3)
+MBoundsSphere MPointsSphere::GetMinSurroundBall(const uint32_t& idx1, const uint32_t& idx2, const uint32_t& idx3)
 {
 	MBoundsSphere sphere;
 
@@ -484,7 +484,7 @@ MBoundsSphere MPointsSphere::GetMinSurroundBall(const unsigned int& idx1, const 
 	float fRadius = (m_vPoints[idx2] - sphere.m_v3CenterPoint).Length();
 	
 
-	for (unsigned int i = 0; i < idx3; ++i)
+	for (uint32_t i = 0; i < idx3; ++i)
 	{
 		if (!sphere.IsContain(m_vPoints[i]))
 		{

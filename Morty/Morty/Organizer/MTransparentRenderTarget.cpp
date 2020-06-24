@@ -62,11 +62,12 @@ void MTransparentRenderTarget::OnDelete()
 
 void MTransparentRenderTarget::Render(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget, std::vector<MMaterialGroup>* pGroup)
 {
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	m_unTargetViewNum = 4;
 	m_pTransparentMeshes = pGroup;
 	m_pBackRenderTarget = pRenderTarget;
 
-	for (unsigned int i = 0; i < 3; ++i)
+	for (uint32_t i = 0; i < 3; ++i)
 	{
 		m_vNeedCleanBeforeRender[0] = false;
 		m_vNeedCleanBeforeRender[1] = false;
@@ -105,6 +106,9 @@ void MTransparentRenderTarget::Render(MIRenderer* pRenderer, MIRenderTarget* pRe
 	m_pBackRenderTarget = nullptr;
 	m_pTransparentMeshes = nullptr;
 	m_unTargetViewNum = 6;
+
+
+#endif
 }
 
 void MTransparentRenderTarget::OnRender(MIRenderer* pRenderer)

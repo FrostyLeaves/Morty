@@ -38,24 +38,24 @@ public:
 
 public:
 	
-	MRenderTargetTexture* GetBackTexture(const unsigned int& unIndex = 0) { return &m_vBackTexture[unIndex]; }
+	MRenderTargetTexture* GetBackTexture(const uint32_t& unIndex = 0) { return &m_vBackTexture[unIndex]; }
 	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
 
-	virtual void SetBackgroundColor(const unsigned int& unTargetIndex, const MColor& color) override;
-	virtual const MColor& GetBackgroundColor(const unsigned int& unTargetIndex) const override;
+	virtual void SetBackgroundColor(const uint32_t& unTargetIndex, const MColor& color) override;
+	virtual const MColor& GetBackgroundColor(const uint32_t& unTargetIndex) const override;
 
-	virtual bool GetNeedCleanTargetView(const unsigned int& unTargetIndex) const override;
+	virtual bool GetNeedCleanTargetView(const uint32_t& unTargetIndex) const override;
 
-	unsigned int GetRenderTargetType() { return m_eRenderTargetType; }
+	uint32_t GetRenderTargetType() { return m_eRenderTargetType; }
 
 public:
 
-	void Initialize(const unsigned int& eType, const unsigned int& unWidth, const unsigned int& unHeight);
-	void Initialize(const unsigned int& eType, const unsigned int& unWidth, const unsigned int& unHeight, const std::vector<MERenderTextureType>& vTextureTypes);
+	void Initialize(const uint32_t& eType, const uint32_t& unWidth, const uint32_t& unHeight);
+	void Initialize(const uint32_t& eType, const uint32_t& unWidth, const uint32_t& unHeight, const std::vector<MERenderTextureType>& vTextureTypes);
 
 	virtual void OnCreated() override;
 
-	virtual void OnResize(const unsigned int& unWidth, const unsigned int& unHeight) override;
+	virtual void OnResize(const uint32_t& unWidth, const uint32_t& unHeight) override;
 
 	virtual void Release(MIDevice* pDevice) override;
 
@@ -67,9 +67,9 @@ public:
 protected:
 
 	MColor* m_vBackgroundColor;
-	unsigned int m_eRenderTargetType;
-	unsigned int m_fWidth;
-	unsigned int m_fHeight;
+	uint32_t m_eRenderTargetType;
+	uint32_t m_fWidth;
+	uint32_t m_fHeight;
 };
 
 #endif

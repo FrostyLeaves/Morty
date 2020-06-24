@@ -54,7 +54,7 @@ public:
 	static MString GetFileName(const MString& strPath);
 
 	MResourceID GetResourceID() const { return m_unResourceID; }
-	unsigned int GetType() const { return m_unResourceType; }
+	uint32_t GetType() const { return m_unResourceType; }
 
 	MEngine* GetEngine() { return m_pEngine; }
 
@@ -82,7 +82,7 @@ protected:
 
 	virtual void OnReferenceZero() override;
 	
-	void OnReload(const unsigned int& eReloadType = EResReloadType::EDefault);
+	void OnReload(const uint32_t& eReloadType = EResReloadType::EDefault);
 
 protected:
     
@@ -92,7 +92,7 @@ protected:
 
 	MString m_strResourcePath;
     MResourceID m_unResourceID;
-	unsigned int m_unResourceType;
+	uint32_t m_unResourceType;
 	MEngine* m_pEngine;
 
 	std::vector<MResourceKeeper*> m_vKeeper;
@@ -103,7 +103,7 @@ class MORTY_CLASS MResourceKeeper
 {
 public:
 	
-	typedef std::function<bool(const unsigned int& eReloadType)> MResChangedFunction;
+	typedef std::function<bool(const uint32_t& eReloadType)> MResChangedFunction;
 public:
 	MResourceKeeper();
 	MResourceKeeper(MResource* pResource);

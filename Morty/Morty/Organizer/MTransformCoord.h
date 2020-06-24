@@ -57,7 +57,7 @@ protected:
 
 	void GetTranslationShapes(class MPainter2DLine* lines, class MPainter2DRect* rects, bool* vValid, int* vOrder, MViewport* pViewport);
 
-	unsigned int GetAxisIndex(const MECoordHoverType& eType);
+	uint32_t GetAxisIndex(const MECoordHoverType& eType);
 	
 private:
 

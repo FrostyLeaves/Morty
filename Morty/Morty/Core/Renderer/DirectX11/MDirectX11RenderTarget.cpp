@@ -78,8 +78,8 @@ MDirectX11RenderTarget* MDirectX11RenderTarget::CreateForView(MDirectX11Device* 
 
 	pRenderTarget->m_pSwapChain = pSwapChain;
 
-	unsigned int unWidth = pView->GetViewWidth();
-	unsigned int unHeight = pView->GetViewHeight();
+	uint32_t unWidth = pView->GetViewWidth();
+	uint32_t unHeight = pView->GetViewHeight();
 	pRenderTarget->OnResize(unWidth, unHeight);
 
 
@@ -89,13 +89,13 @@ MDirectX11RenderTarget* MDirectX11RenderTarget::CreateForView(MDirectX11Device* 
 	return pRenderTarget;
 }
 
-void MDirectX11RenderTarget::OnResize(const unsigned int& unWidth, const unsigned int& unHeight)
+void MDirectX11RenderTarget::OnResize(const uint32_t& unWidth, const uint32_t& unHeight)
 {
 	if (nullptr == m_pDevice)
 		return;
 
-	unsigned int unSafeWidth = unWidth;
-	unsigned int unSafeHeight = unHeight;
+	uint32_t unSafeWidth = unWidth;
+	uint32_t unSafeHeight = unHeight;
 
 	if (unSafeWidth < 1)
 		unSafeWidth = 1;

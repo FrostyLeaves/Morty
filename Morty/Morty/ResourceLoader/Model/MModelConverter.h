@@ -40,7 +40,7 @@ protected:
 
 	bool Load(const MString& strResourcePath);
 
-	void ProcessNode(aiNode* pNode, const aiScene* pScene, std::vector<unsigned int>& vMaterialIndices, const Matrix4& matRotation);
+	void ProcessNode(aiNode* pNode, const aiScene* pScene, std::vector<uint32_t>& vMaterialIndices, const Matrix4& matRotation);
 	void ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertex>* pMMesh, const Matrix4& matRotation);
 	void ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh, const Matrix4& matRotation);
 	void ProcessMeshIndices(aiMesh* pMesh, const aiScene* pScene, MIMesh* pMMesh);
@@ -53,7 +53,7 @@ protected:
 
 	void ProcessAnimation(const aiScene* pScene);
 
-	void ProcessMaterial(const aiScene* pScene, std::vector<unsigned int>& vMaterialIndices);
+	void ProcessMaterial(const aiScene* pScene, std::vector<uint32_t>& vMaterialIndices);
 
 private:
 

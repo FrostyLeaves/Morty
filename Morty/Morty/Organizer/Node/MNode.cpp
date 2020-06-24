@@ -309,9 +309,9 @@ void MNode::WriteChildrenToStruct(MStruct& srt)
 {
 	if (MVariantArray* pArray = FindWriteVariant<MVariantArray>(srt, "Children"))
 	{
-		unsigned int unSize = m_vChildren.size();
+		uint32_t unSize = m_vChildren.size();
 		pArray->Resize(unSize);
-		for (unsigned int i = 0; i < unSize; ++i)
+		for (uint32_t i = 0; i < unSize; ++i)
 		{
 			(*pArray)[i] = MStruct();
 			MStruct& childSrt = (*pArray)[i].GetVarUnsafe<MStruct>();
@@ -321,9 +321,9 @@ void MNode::WriteChildrenToStruct(MStruct& srt)
 
 	if (MVariantArray* pArray = FindWriteVariant<MVariantArray>(srt, "FixedChildren"))
 	{
-		unsigned int unSize = m_vFixedChildren.size();
+		uint32_t unSize = m_vFixedChildren.size();
 		pArray->Resize(unSize);
-		for (unsigned int i = 0; i < unSize; ++i)
+		for (uint32_t i = 0; i < unSize; ++i)
 		{
 			(*pArray)[i] = MStruct();
 			m_vFixedChildren[i]->WriteToStruct((*pArray)[i].GetVarUnsafe<MStruct>());
@@ -335,9 +335,9 @@ void MNode::ReadChildrenFromStruct(MStruct& srt)
 {
 	if (MVariantArray* pArray = FindReadVariant<MVariantArray>(srt, "Children"))
 	{
-		unsigned int unSize = pArray->GetMemberCount();
+		uint32_t unSize = pArray->GetMemberCount();
 		//m_vChildren.resize(unSize);
-		for (unsigned int i = 0; i < unSize; ++i)
+		for (uint32_t i = 0; i < unSize; ++i)
 		{
 			MStruct& childSrt = *(*pArray)[i].GetStruct();
 			if(MNode* pChildNode = CreateNodeByVariant(m_pEngine, childSrt))
@@ -350,9 +350,9 @@ void MNode::ReadChildrenFromStruct(MStruct& srt)
 	}
 	if (MVariantArray* pArray = FindReadVariant<MVariantArray>(srt, "FixedChildren"))
 	{
-		unsigned int unSize = pArray->GetMemberCount();
+		uint32_t unSize = pArray->GetMemberCount();
 		//m_vFixedChildren.resize(unSize);
-		for (unsigned int i = 0; i < unSize; ++i)
+		for (uint32_t i = 0; i < unSize; ++i)
 		{
 			MStruct& childSrt = *(*pArray)[i].GetStruct();
 			if (MNode* pChildNode = CreateNodeByVariant(m_pEngine, childSrt))

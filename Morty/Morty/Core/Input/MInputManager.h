@@ -62,7 +62,7 @@ protected:
 	MEMouseDownButton m_eEventButton;
 	Vector2 m_v2MousePositionAddition;
 
-	static unsigned int s_unMouseDownButton;
+	static uint32_t s_unMouseDownButton;
 	static Vector2 s_v2MousePosition;
 
 	MEMouseInputType m_eInputType;
@@ -73,16 +73,16 @@ class MORTY_CLASS MKeyBoardInputEvent : public MInputEvent
 {
 public:
 
-	MKeyBoardInputEvent(const unsigned int& unKeyIndex, const MEKeyState& eInputType);
+	MKeyBoardInputEvent(const uint32_t& unKeyIndex, const MEKeyState& eInputType);
 
-	unsigned int GetKey() { return m_unKeyIndex; }
+	uint32_t GetKey() { return m_unKeyIndex; }
 	MEKeyState GetType(){ return m_eInputType; }
 
 protected:
 
 	static bool s_vKeyDownMap[256];
 
-	unsigned int m_unKeyIndex;
+	uint32_t m_unKeyIndex;
 	MEKeyState m_eInputType;
 };
 

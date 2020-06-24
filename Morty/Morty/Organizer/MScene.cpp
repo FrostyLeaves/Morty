@@ -184,7 +184,7 @@ void MScene::FindActiveSpotLights(const Vector3& v3WorldPosition, std::vector<MS
 {
 	//TODO 获取所有方向和摄像机一致的聚光灯
 
-	for (unsigned int i = 0; i < vSpotLights.size() && i < m_vSpotLight.size(); ++i)
+	for (uint32_t i = 0; i < vSpotLights.size() && i < m_vSpotLight.size(); ++i)
 	{
 		vSpotLights[i] = m_vSpotLight[i];
 	}

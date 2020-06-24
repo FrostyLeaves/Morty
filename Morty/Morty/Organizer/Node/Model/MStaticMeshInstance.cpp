@@ -104,7 +104,7 @@ void MStaticMeshInstance::SetMeshResourcePath(const MString& strResourcePath)
 	Load(pResource);
 }
 
-MIMesh* MStaticMeshInstance::GetMesh(const unsigned int& unDetailLevel)
+MIMesh* MStaticMeshInstance::GetMesh(const uint32_t& unDetailLevel)
 {
 	if (unDetailLevel == MMESH_LOD_LEVEL_RANGE)
 		return m_pMesh->GetMesh();

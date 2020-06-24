@@ -5,18 +5,33 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{764F8CE3-C2C9-4A43-9C49-F4C8470722B9}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Morty</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
@@ -29,13 +44,26 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -45,11 +73,23 @@
     <OutDir>$(SolutionDir)Build\$(ProjectName)\$(Configuration)\</OutDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)Include;</IncludePath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)Include;</IncludePath>
+    <LinkIncremental>true</LinkIncremental>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)Build\$(Platform)\$(ProjectName)\$(Configuration)\</OutDir>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>$(DXSDK_DIR)Lib\x86;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
     <OutDir>$(SolutionDir)Build\$(ProjectName)\$(Configuration)\</OutDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)Include;</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)Include;</IncludePath>
+    <LinkIncremental>false</LinkIncremental>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)Build\$(Platform)\$(ProjectName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -72,6 +112,34 @@
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\Demo\$(Configuration)"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;MORTY_EXPORTS;__STDC_LIMIT_MACROS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(VK_SDK_PATH)/Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/Eigen;$(SolutionDir)ThirdParty/SpirvCross/include;$(SolutionDir)Math3D/Math3D/Math3D/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/Organizer;$(SolutionDir)Morty/Organizer/System;$(SolutionDir)Morty/Organizer/Node;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/RefCounter;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Renderer/Vulkan;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Core/Animation</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>cximagecrt.lib;assimp-vc142-mt.lib;d3d11.lib;d3dx11.lib;dxguid.lib;d3dcompiler.lib;vulkan-1.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Math3D.lib;spirv-cross-cored.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Platform)\Math3D\$(Configuration);$(SolutionDir)ThirdParty/Assimp/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/CxImage/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/SpirvCross/lib/vs2019/$(Platform)/$(Configuration);$(DXSDK_DIR)Lib/$(PlatformTarget);$(VK_SDK_PATH)/Lib</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+    </Link>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -99,6 +167,38 @@
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\Demo\$(Configuration)"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;MORTY_EXPORTS;__STDC_LIMIT_MACROS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(VK_SDK_PATH)/Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/Eigen;$(SolutionDir)ThirdParty/SpirvCross/include;$(SolutionDir)Math3D/Math3D/Math3D/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/Organizer;$(SolutionDir)Morty/Organizer/System;$(SolutionDir)Morty/Organizer/Node;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/RefCounter;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Renderer/Vulkan;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Core/Animation</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>cximagecrt.lib;assimp-vc142-mt.lib;d3d11.lib;d3dx11.lib;dxguid.lib;d3dcompiler.lib;vulkan-1.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Math3D.lib;spirv-cross-core.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Platform)\Math3D\$(Configuration);$(SolutionDir)ThirdParty/Assimp/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/CxImage/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/SpirvCross/lib/vs2019/$(Platform)/$(Configuration);$(DXSDK_DIR)Lib/$(PlatformTarget);$(VK_SDK_PATH)/Lib</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+    </Link>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -139,6 +239,7 @@
     <ClInclude Include="..\..\Core\Renderer\MVariant.h" />
     <ClInclude Include="..\..\Core\Renderer\MVertex.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanDevice.h" />
+    <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanPipelineManager.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanRenderer.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanRenderTarget.h" />
     <ClInclude Include="..\..\Organizer\MMaterialGroup.h" />
@@ -160,6 +261,7 @@
     <ClInclude Include="..\..\Organizer\Node\Model\MModelInstance.h" />
     <ClInclude Include="..\..\Organizer\Node\Model\MSkinnedMeshInstance.h" />
     <ClInclude Include="..\..\Organizer\Node\Model\MStaticMeshInstance.h" />
+    <ClInclude Include="..\..\Organizer\System\MBasicRenderSystem.h" />
     <ClInclude Include="..\..\Organizer\System\MISystem.h" />
     <ClInclude Include="..\..\Organizer\System\MRenderSystem.h" />
     <ClInclude Include="..\..\ResourceLoader\Material\MMaterialResource.h" />
@@ -198,10 +300,16 @@
     <ClCompile Include="../../Core\MObject.cpp" />
     <ClCompile Include="../../dllmain.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="../../Morty.cpp" />
@@ -234,6 +342,7 @@
     <ClCompile Include="..\..\Core\Renderer\MTexture.cpp" />
     <ClCompile Include="..\..\Core\Renderer\MVariant.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanDevice.cpp" />
+    <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanPipelineManager.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanRenderer.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanRenderTarget.cpp" />
     <ClCompile Include="..\..\Organizer\MMaterialGroup.cpp" />
@@ -255,6 +364,7 @@
     <ClCompile Include="..\..\Organizer\Node\Model\MModelInstance.cpp" />
     <ClCompile Include="..\..\Organizer\Node\Model\MSkinnedMeshInstance.cpp" />
     <ClCompile Include="..\..\Organizer\Node\Model\MStaticMeshInstance.cpp" />
+    <ClCompile Include="..\..\Organizer\System\MBasicRenderSystem.cpp" />
     <ClCompile Include="..\..\Organizer\System\MISystem.cpp" />
     <ClCompile Include="..\..\Organizer\System\MRenderSystem.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MFileHelper.cpp" />
@@ -269,7 +379,9 @@
     <ClCompile Include="..\..\ResourceLoader\Texture\MTextureCubeResource.cpp" />
     <ClCompile Include="../../stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="../../Utility\Timer\MTimer.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Model\MModelConverter.cpp" />

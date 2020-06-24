@@ -33,7 +33,7 @@ void MCameraFrustum::UpdateFromCameraInvProj(const Matrix4& m4CameraInvProj)
 
 MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const Vector3& position)
 {
-	for (unsigned int i = 0; i < 6; ++i)
+	for (uint32_t i = 0; i < 6; ++i)
 	{
 		if (m_vPlanes[i].IsOnFront(position))
 			return MEContainType::EOUTSIDE;
@@ -46,7 +46,7 @@ MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const MBoundsSphere& s
 {
 	bool bIntersectable = false;
 
-	for (unsigned int i = 0; i < 6; ++i)
+	for (uint32_t i = 0; i < 6; ++i)
 	{
 		float fDistance = m_vPlanes[i].GetDistance(sphere.m_v3CenterPoint);
 		if (fDistance > 0.0f)
@@ -72,11 +72,11 @@ MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const MBoundsAABB& aab
 
 	const Vector3& v3Max = aabb.m_v3MaxPoint;
 	const Vector3& v3Min = aabb.m_v3MinPoint;
-	for (unsigned int i = 0; i < 6; ++i)
+	for (uint32_t i = 0; i < 6; ++i)
 	{
 		const Vector3& v3Normal = m_vPlanes[i].m_v3ABC;
 
-		for (unsigned int n = 0; n < 3; ++n)
+		for (uint32_t n = 0; n < 3; ++n)
 		{
 			if (v3Normal.m[n] > 0.0f)
 			{
@@ -109,13 +109,13 @@ MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const MBoundsAABB& aab
 
 	const Vector3& v3Max = aabb.m_v3MaxPoint;
 	const Vector3& v3Min = aabb.m_v3MinPoint;
-	for (unsigned int i = 0; i < 6; ++i)
+	for (uint32_t i = 0; i < 6; ++i)
 	{
 		const Vector3& v3Normal = m_vPlanes[i].m_v3ABC;
 
 		if (v3Direction * v3Normal >= 0.0f)
 		{
-			for (unsigned int n = 0; n < 3; ++n)
+			for (uint32_t n = 0; n < 3; ++n)
 			{
 				if (v3Normal.m[n] > 0.0f)
 				{

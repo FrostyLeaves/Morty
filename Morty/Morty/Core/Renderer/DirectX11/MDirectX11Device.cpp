@@ -52,7 +52,7 @@ bool MDirectX11Device::InitDirectX11()
 		D3D_DRIVER_TYPE_REFERENCE, D3D_DRIVER_TYPE_SOFTWARE
 	};
 
-	unsigned int nTotalDriverTypes = ARRAYSIZE(driverTypes);
+	uint32_t nTotalDriverTypes = ARRAYSIZE(driverTypes);
 
 	//依次找支持D3D11、支持D3D10.1、支持D3D10.0的硬件设备，找到哪个用哪个，找不到就用WARP。
 	D3D_FEATURE_LEVEL featureLevels[] = {
@@ -61,10 +61,10 @@ bool MDirectX11Device::InitDirectX11()
 		D3D_FEATURE_LEVEL_10_0
 	};
 
-	unsigned int nTotalFeatureLevels = ARRAYSIZE(featureLevels);
+	uint32_t nTotalFeatureLevels = ARRAYSIZE(featureLevels);
 
 	HRESULT hr;
-	for (unsigned int driverTypeIndex = 0; driverTypeIndex < nTotalDriverTypes; ++driverTypeIndex)
+	for (uint32_t driverTypeIndex = 0; driverTypeIndex < nTotalDriverTypes; ++driverTypeIndex)
 	{
 		hr = D3D11CreateDevice(
 			0,										//默认显示适配器
@@ -196,7 +196,7 @@ void MDirectX11Device::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pM
 		indicesBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 		indicesBufferDesc.CPUAccessFlags = 0;
 	}
-	indicesBufferDesc.ByteWidth = sizeof(unsigned int) * pMesh->GetIndicesLength();
+	indicesBufferDesc.ByteWidth = sizeof(uint32_t) * pMesh->GetIndicesLength();
 	indicesBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indicesBufferDesc.MiscFlags = 0;
 	indicesBufferDesc.StructureByteStride = 0;
@@ -230,8 +230,8 @@ void MDirectX11Device::GenerateTexture(MTextureBuffer** ppTextureBuffer, MTextur
 	Vector2 size = pTexture->GetSize();
 	D3D11_TEXTURE2D_DESC desc;
 	ZeroMemory(&desc, sizeof(desc));
-	desc.Width = (unsigned int)size.x;
-	desc.Height = (unsigned int)size.y;
+	desc.Width = (uint32_t)size.x;
+	desc.Height = (uint32_t)size.y;
 	desc.MipLevels = bGenerateMipmap ? 0 : 1;
 	desc.ArraySize = 1;
 	desc.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -249,15 +249,15 @@ void MDirectX11Device::GenerateTexture(MTextureBuffer** ppTextureBuffer, MTextur
 	{
 		m_pD3dDevice->CreateTexture2D(&desc, nullptr, &pTextureBuffer);
 		pTextureBuffer->GetDesc(&desc);
-		m_pD3dContext->UpdateSubresource(pTextureBuffer, 0, nullptr, pTexture->GetImageData(), (unsigned int)size.x * 4, 0);
+		m_pD3dContext->UpdateSubresource(pTextureBuffer, 0, nullptr, pTexture->GetImageData(), (uint32_t)size.x * 4, 0);
 
 	}
 	else
 	{
 		D3D11_SUBRESOURCE_DATA data;
 		data.pSysMem = pTexture->GetImageData();
-		data.SysMemPitch = (unsigned int)size.x * 4;
-		data.SysMemSlicePitch = (unsigned int)size.x * size.y * 4;
+		data.SysMemPitch = (uint32_t)size.x * 4;
+		data.SysMemSlicePitch = (uint32_t)size.x * size.y * 4;
 		m_pD3dDevice->CreateTexture2D(&desc, &data, &pTextureBuffer);
 	}
 
@@ -311,8 +311,8 @@ void MDirectX11Device::GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTe
 	Vector2 size = vTexture[0]->GetSize();
 	D3D11_TEXTURE2D_DESC desc;
 	ZeroMemory(&desc, sizeof(desc));
-	desc.Width = (unsigned int)size.x;
-	desc.Height = (unsigned int)size.y;
+	desc.Width = (uint32_t)size.x;
+	desc.Height = (uint32_t)size.y;
 	desc.MipLevels = bGenerateMipmap ? 0 : 1;
 	desc.ArraySize = 6;
 	desc.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -339,7 +339,7 @@ void MDirectX11Device::GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTe
 
 		for (int i = 0; i < 6; ++i)
 		{
-			m_pD3dContext->UpdateSubresource(pTextureBuffer, i, nullptr, vTexture[i]->GetImageData(), (unsigned int)size.x * 4, 0);
+			m_pD3dContext->UpdateSubresource(pTextureBuffer, i, nullptr, vTexture[i]->GetImageData(), (uint32_t)size.x * 4, 0);
 		}
 	}
 	else
@@ -348,8 +348,8 @@ void MDirectX11Device::GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTe
 		for (int i = 0; i < 6; ++i)
 		{
 			data[i].pSysMem = vTexture[i]->GetImageData();
-			data[i].SysMemPitch = (unsigned int)size.x * 4;
-			data[i].SysMemSlicePitch = (unsigned int)size.x * size.y * 4;
+			data[i].SysMemPitch = (uint32_t)size.x * 4;
+			data[i].SysMemSlicePitch = (uint32_t)size.x * size.y * 4;
 		}
 
 		HRESULT hr = m_pD3dDevice->CreateTexture2D(&desc, data, &pTextureBuffer);
@@ -421,7 +421,7 @@ void MDirectX11Device::DestroyTexture(MTextureBuffer** ppTextureBuffer)
 	*ppTextureBuffer = nullptr;
 }
 
-void MDirectX11Device::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const MERenderTextureType& eType, const unsigned int& unWidth, const unsigned& unHeight)
+void MDirectX11Device::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const MERenderTextureType& eType, const uint32_t& unWidth, const unsigned& unHeight)
 {
 	HRESULT hr;
 
@@ -546,7 +546,7 @@ void MDirectX11Device::DestroyRenderTextureBuffer(MRenderTextureBuffer** ppTextu
 	*ppTextureBuffer = nullptr;
 }
 
-void MDirectX11Device::GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const unsigned int& unWidth, const unsigned int& unHeight)
+void MDirectX11Device::GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const uint32_t& unWidth, const uint32_t& unHeight)
 {
 	if (*ppTextureBuffer)
 		DestroyDepthTexture(ppTextureBuffer);
@@ -645,13 +645,13 @@ void MDirectX11Device::UploadBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMes
 		return;
 
 	memcpy(vtx_resource.pData, pMesh->GetVertices(), pMesh->GetVerticesLength() * pMesh->GetVertexStructSize());
-	memcpy(idx_resource.pData, pMesh->GetIndices(), sizeof(unsigned int) * pMesh->GetIndicesLength());
+	memcpy(idx_resource.pData, pMesh->GetIndices(), sizeof(uint32_t) * pMesh->GetIndicesLength());
 
 	m_pD3dContext->Unmap((*ppVertexBuffer)->m_pVertexBuffer, 0);
 	m_pD3dContext->Unmap((*ppVertexBuffer)->m_pIndexBuffer, 0);
 }
 
-bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const unsigned int& eShaderType, const MShaderMacro& shaderMacro)
+bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const uint32_t& eShaderType, const MShaderMacro& shaderMacro)
 {
 	if (*ppShaderBuffer)
 	{
@@ -669,25 +669,25 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 	const char* svFuncName = eShaderType == MShader::MEShaderType::Vertex ? "VS" : "PS";
 	const char* svProFile = eShaderType == MShader::MEShaderType::Vertex ? "vs_5_0" : "ps_5_0";
 
-	unsigned int unGlobalMacroSize = shaderMacro.s_vGlobalMacroParams.size();
-	unsigned int unMortyShaderMacroSize = shaderMacro.m_vMortyMacroParams.size();
-	unsigned int unShaderMacroSize = shaderMacro.m_vMacroParams.size();
-	unsigned int unEndIndex = unGlobalMacroSize + unMortyShaderMacroSize + unShaderMacroSize;
+	uint32_t unGlobalMacroSize = shaderMacro.s_vGlobalMacroParams.size();
+	uint32_t unMortyShaderMacroSize = shaderMacro.m_vMortyMacroParams.size();
+	uint32_t unShaderMacroSize = shaderMacro.m_vMacroParams.size();
+	uint32_t unEndIndex = unGlobalMacroSize + unMortyShaderMacroSize + unShaderMacroSize;
 	D3D_SHADER_MACRO* vShaderMacro = new D3D_SHADER_MACRO[unEndIndex + 1];
 
-	for (unsigned int i = 0; i < unGlobalMacroSize; ++i)
+	for (uint32_t i = 0; i < unGlobalMacroSize; ++i)
 	{
 		const std::pair<MString, MString>& param = shaderMacro.s_vGlobalMacroParams[i];
 		vShaderMacro[i].Name = param.first.c_str();
 		vShaderMacro[i].Definition = param.second.c_str();
 	}
-	for (unsigned int i = 0; i < unMortyShaderMacroSize; ++i)
+	for (uint32_t i = 0; i < unMortyShaderMacroSize; ++i)
 	{
 		const std::pair<MString, MString>& param = shaderMacro.m_vMortyMacroParams[i];
 		vShaderMacro[unGlobalMacroSize + i].Name = param.first.c_str();
 		vShaderMacro[unGlobalMacroSize + i].Definition = param.second.c_str();
 	}
-	for (unsigned int i = 0; i < unShaderMacroSize; ++i)
+	for (uint32_t i = 0; i < unShaderMacroSize; ++i)
 	{
 		const std::pair<MString, MString>& param = shaderMacro.m_vMacroParams[i];
 		vShaderMacro[unGlobalMacroSize + unMortyShaderMacroSize + i].Name = param.first.c_str();
@@ -753,9 +753,9 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 
 		if (eShaderType == MShader::MEShaderType::Vertex)
 		{
-			unsigned int unByteOffset = 0;
+			uint32_t unByteOffset = 0;
 			D3D11_INPUT_ELEMENT_DESC* inputDesc = new D3D11_INPUT_ELEMENT_DESC[shaderDesc.InputParameters];
-			for (unsigned int i = 0; i < shaderDesc.InputParameters; ++i)
+			for (uint32_t i = 0; i < shaderDesc.InputParameters; ++i)
 			{
 				D3D11_SIGNATURE_PARAMETER_DESC paramDesc;
 				pReflector->GetInputParameterDesc(i, &paramDesc);
@@ -826,7 +826,7 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 
 		}
 
-		for (unsigned int i = 0; i < shaderDesc.BoundResources; ++i)
+		for (uint32_t i = 0; i < shaderDesc.BoundResources; ++i)
 		{
 			D3D11_SHADER_INPUT_BIND_DESC bindDesc;
 			pReflector->GetResourceBindingDesc(i, &bindDesc);
@@ -855,7 +855,7 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 					pParam->unCode = SHADER_PARAM_CODE_DEFAULT;
 
 
-				for (unsigned int i = 0; i < shaderDesc.ConstantBuffers; ++i)
+				for (uint32_t i = 0; i < shaderDesc.ConstantBuffers; ++i)
 				{
 					ID3D11ShaderReflectionConstantBuffer* pConstBuffer = pReflector->GetConstantBufferByIndex(i);
 					D3D11_SHADER_BUFFER_DESC bufferDesc;
@@ -865,7 +865,7 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 					{
 						pParam->var = MStruct();
 						MStruct& cbufferStruct = *pParam->var.GetStruct();
-						for (unsigned int n = 0; n < bufferDesc.Variables; ++n)
+						for (uint32_t n = 0; n < bufferDesc.Variables; ++n)
 						{
 							D3D11_SHADER_VARIABLE_DESC varDesc;
 							ID3D11ShaderReflectionVariable* pVar = pConstBuffer->GetVariableByIndex(n);
@@ -1073,7 +1073,7 @@ ID3D11InputLayout* MDirectX11Device::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC 
 	return pVertexInputLayout;
 }
 
-bool MDirectX11Device::GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsigned int nWidth, unsigned int nHeight)
+bool MDirectX11Device::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t nWidth, uint32_t nHeight)
 {
 	MDirectX11RenderTarget* pDxRenderTarget = dynamic_cast<MDirectX11RenderTarget*>(pRenderTarget);
 	if (nullptr == pDxRenderTarget)
@@ -1089,11 +1089,11 @@ bool MDirectX11Device::GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsig
 
 	ID3D11Texture2D* pBackBuffer = nullptr;
 
-	unsigned int unTargetViewSize = pRenderTarget->GetTargetViewNum();
+	uint32_t unTargetViewSize = pRenderTarget->GetTargetViewNum();
 
 	pDxRenderTarget->m_vpRenderTargetView = new ID3D11RenderTargetView*[unTargetViewSize];
 
-	for (unsigned int i = 0; i < unTargetViewSize; ++i)
+	for (uint32_t i = 0; i < unTargetViewSize; ++i)
 	{
 		hr = pDxRenderTarget->m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
 		if (FAILED(hr) || nullptr == pBackBuffer)
@@ -1119,20 +1119,20 @@ bool MDirectX11Device::GenerateRenderTarget(MIRenderTarget* pRenderTarget, unsig
 	return true;
 }
 
-bool MDirectX11Device::GenerateRenderTarget(MTextureRenderTarget* pRenderTarget, unsigned int unWidth, unsigned int unHeight)
+bool MDirectX11Device::GenerateRenderTarget(MTextureRenderTarget* pRenderTarget, uint32_t unWidth, uint32_t unHeight)
 {
-	unsigned int eRenderTargetType = pRenderTarget->GetRenderTargetType();
+	uint32_t eRenderTargetType = pRenderTarget->GetRenderTargetType();
 
 	
 	if (MTextureRenderTarget::ERenderBack & eRenderTargetType)
 	{
-		unsigned int unTargetViewNum = pRenderTarget->GetTargetViewNum();
+		uint32_t unTargetViewNum = pRenderTarget->GetTargetViewNum();
 		if (unTargetViewNum > 0)
 			pRenderTarget->m_vpRenderTargetView = new ID3D11RenderTargetView * [unTargetViewNum];
 
 		if (pRenderTarget->m_vBackTexture)
 		{
-			for (unsigned int i = 0; i < unTargetViewNum; ++i)
+			for (uint32_t i = 0; i < unTargetViewNum; ++i)
 			{
 				pRenderTarget->m_vBackTexture[i].GenerateBuffer(this, false);
 				if (MRenderTextureBuffer* pBuffer = dynamic_cast<MRenderTextureBuffer*>(pRenderTarget->m_vBackTexture[i].GetBuffer()))
@@ -1155,7 +1155,7 @@ void MDirectX11Device::DestroyRenderTarget(MTextureRenderTarget* pRenderTarget)
 {
 	if (pRenderTarget->m_vBackTexture)
 	{
-		for (unsigned int i = 0; i < pRenderTarget->GetTargetViewNum(); ++i)
+		for (uint32_t i = 0; i < pRenderTarget->GetTargetViewNum(); ++i)
 		{
 			pRenderTarget->m_vBackTexture[i].DestroyTexture(this);
 		}
@@ -1178,7 +1178,7 @@ void MDirectX11Device::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
 
 	if (pDxRenderTarget->m_vpRenderTargetView)
 	{
-		for (unsigned int i = 0; i < pRenderTarget->GetTargetViewNum(); ++i)
+		for (uint32_t i = 0; i < pRenderTarget->GetTargetViewNum(); ++i)
 		{
 			pDxRenderTarget->m_vpRenderTargetView[i]->Release();
 		}
@@ -1200,7 +1200,7 @@ bool MDirectX11Device::GenerateShaderParamBuffer(MShaderParam* pParam)
 	if (pParam->pBuffer)
 		DestroyShaderParamBuffer(pParam);
 	
-	unsigned int unParamDataSize = pParam->var.GetSize();
+	uint32_t unParamDataSize = pParam->var.GetSize();
 	ID3D11Buffer* pBuffer = nullptr;
 	D3D11_BUFFER_DESC bufferDesc;
 	bufferDesc.ByteWidth = unParamDataSize % 16 ? ((unParamDataSize / 16) + 1) * 16 : unParamDataSize;
@@ -1241,7 +1241,7 @@ MVariant MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType* 
 		//Is a struct.
 		MStruct mryStruct;
 
-		for (unsigned int i = 0; i < typeDesc.Members; ++i)
+		for (uint32_t i = 0; i < typeDesc.Members; ++i)
 		{
 			ID3D11ShaderReflectionType* pMemberType = pReflectionType->GetMemberTypeByIndex(i);
 			MString strName = pReflectionType->GetMemberTypeName(i);
@@ -1304,7 +1304,7 @@ MVariant MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType* 
 		//Is an array.
 		MVariantArray array;
 
-		for (unsigned int i = 0; i < typeDesc.Elements; ++i)
+		for (uint32_t i = 0; i < typeDesc.Elements; ++i)
 			array.AppendMVariant(var);
 
 		return array;

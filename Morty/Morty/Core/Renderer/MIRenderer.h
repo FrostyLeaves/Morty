@@ -110,7 +110,6 @@ public:
 
 public:
 
-	virtual void Draw();
 
 	virtual void DrawMesh(MIMesh* pMesh) = 0;
 
@@ -125,11 +124,18 @@ public:
 	virtual void SetVertexShaderTexture(MShaderTextureParam& param) = 0;
 	virtual void SetPixelShaderTexture(MShaderTextureParam& param) = 0;
 
+public:
+
+// 	virtual uint32_t RegisterMaterial(MMaterial* pMaterial);
+// 	virtual void UnRegisterMaterial(MMaterial* pMaterial);
+
+
 protected:
 	MERasterizerType m_eRasterizerType;
 	MEMaterialType m_eMaterialType;
 
 	std::stack<RenderTargetPair> m_vRenderTargets;
+
 };
 
 

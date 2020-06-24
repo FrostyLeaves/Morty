@@ -37,9 +37,9 @@ public:
 
 public:
 
-	unsigned int m_unPositionKeysNum;
-	unsigned int m_unRotationKeysNum;
-	unsigned int m_unScalingKeysNum;
+	uint32_t m_unPositionKeysNum;
+	uint32_t m_unRotationKeysNum;
+	uint32_t m_unScalingKeysNum;
 	MAnimNodeKey<Vector3>* m_vPositionKeys;
 	MAnimNodeKey<Quaternion>* m_vRotationKeys;
 	MAnimNodeKey<Vector3>* m_vScalingKeys;
@@ -51,8 +51,8 @@ public:
 class MORTY_CLASS MSkeletonAnimMap
 {
 public:
-	std::vector<unsigned int> m_vSkelToAnim;
-	std::vector<unsigned int> m_vAnimToSkel;
+	std::vector<uint32_t> m_vSkelToAnim;
+	std::vector<uint32_t> m_vAnimToSkel;
 };
 
 class MORTY_CLASS MSkeletalAnimation : public MIAnimation, public MResource
@@ -68,7 +68,7 @@ public:
 
 	MResource* GetSkeletonResource() { return m_Skeleton.GetResource(); }
 
-	unsigned int GetIndex() { return m_unIndex; }
+	uint32_t GetIndex() { return m_unIndex; }
 	MString GetName() { return m_strName; }
 	float GetTicksDuration() { return m_fTicksDuration; }
 	float GetTicksPerSecond() { return m_fTicksPerSecond; }
@@ -96,7 +96,7 @@ private:
 	std::vector<MSkeletalAnimNode> m_vSkeletalAnimNodes;
 	MResourceKeeper m_Skeleton;
 
-	unsigned int m_unIndex;
+	uint32_t m_unIndex;
 	MString m_strName;
 	float m_fTicksDuration;
 	float m_fTicksPerSecond;

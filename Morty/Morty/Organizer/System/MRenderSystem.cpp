@@ -49,7 +49,7 @@ MRenderSystem::MRenderSystem()
 	vVertices[3] = Vector2(1, 1);
 
 	mesh.ResizeIndices(2, 3);
-	unsigned int* vIndices = mesh.GetIndices();
+	uint32_t* vIndices = mesh.GetIndices();
 
 	vIndices[0] = 0;
 	vIndices[1] = 2;
@@ -227,7 +227,7 @@ void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 			varValidPointLights = 0;
 
 			MVariantArray& vPointLights = *varPointLights.GetArray();
-			for (unsigned int i = 0; i < vPointLights.GetMemberCount(); ++i)
+			for (uint32_t i = 0; i < vPointLights.GetMemberCount(); ++i)
 			{
 				if (MPointLight* pLight = vActivePointLights[i])
 				{
@@ -255,7 +255,7 @@ void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 			varValidSpotLights = 0;
 
 			MVariantArray& vSpotLights = *varSpotLights.GetArray();
-			for (unsigned int i = 0; i < vSpotLights.GetMemberCount(); ++i)
+			for (uint32_t i = 0; i < vSpotLights.GetMemberCount(); ++i)
 			{
 				if (MSpotLight* pLight = vActiveSpotLights[i])
 				{
@@ -325,10 +325,10 @@ void MRenderSystem::DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pM
 			MVariantArray& cBonesArray = *cAnimationStruct[0].GetArray();
 
 			const std::vector<MBone>& bones = pSkeletonIns->GetAllBones();
-			unsigned int size = bones.size();
+			uint32_t size = bones.size();
 			if (size > MBONES_MAX_NUMBER) size = MBONES_MAX_NUMBER;
 
-			for (unsigned int i = 0; i < size; ++i)
+			for (uint32_t i = 0; i < size; ++i)
 			{
 				cBonesArray[i] = bones[i].m_matWorldTransform;
 			}

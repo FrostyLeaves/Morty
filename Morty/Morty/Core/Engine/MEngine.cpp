@@ -64,10 +64,11 @@ bool MEngine::Initialize()
 		MDirectX11Renderer* pDx11Renderer = new MDirectX11Renderer(pDevice);
 		m_pRenderer = pDx11Renderer;
 #elif (RENDER_GRAPHICS == MORTY_VULKAN)
-		m_pDevice = new MVulkanDevice();
-		m_pDevice->Initialize();
+		MVulkanDevice* pDevice = new MVulkanDevice();
+		pDevice->Initialize();
+		m_pDevice = pDevice;
 
-		m_pRenderer = new MVulkanRenderer();
+		m_pRenderer = new MVulkanRenderer(pDevice);
 #else
 		m_pRenderer = nullptr;
 #endif

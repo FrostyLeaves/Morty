@@ -49,7 +49,7 @@ public:
 
 public:
 	virtual MIMesh* GetMesh() = 0;
-	virtual MIMesh* GetMesh(const unsigned int& unDetailLevel) = 0;
+	virtual MIMesh* GetMesh(const uint32_t& unDetailLevel) = 0;
 
 private:
 };

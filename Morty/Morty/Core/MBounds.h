@@ -62,17 +62,17 @@ class MORTY_CLASS MBoundsOBB : public MIBounds
 {
 public:
 	MBoundsOBB() {}
-	MBoundsOBB(const Vector3* vPoints, const unsigned int& unArrayLength);
+	MBoundsOBB(const Vector3* vPoints, const uint32_t& unArrayLength);
 	
 	Vector3 ConvertToOBB(const Vector3& v3Pos) const;
 	Vector3 ConvertFromOBB(const Vector3& v3Pos) const;
 
-	void SetPoints(const void* vPoints, const unsigned int& unArrayLength, const unsigned int& unOffset, const unsigned int& unDataSize)
+	void SetPoints(const void* vPoints, const uint32_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize)
 	{
 		SetPoints((const MByte*)vPoints, unArrayLength, unOffset, unDataSize);
 	}
 
-	void SetPoints(const MByte* vPoints, const unsigned int& unArrayLength, const unsigned int& unOffset, const unsigned int& unDataSize);
+	void SetPoints(const MByte* vPoints, const uint32_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize);
 	
 
 public:
@@ -95,12 +95,12 @@ public:
 	MBoundsSphere();
 	MBoundsSphere(const Vector3& v3CenterPoint, const float& fRadius);
 
-	void SetPoints(const void* vPoints, const unsigned int& unArrayLength, const unsigned int& unOffset, const unsigned int& unDataSize)
+	void SetPoints(const void* vPoints, const uint32_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize)
 	{
 		SetPoints((const MByte*)vPoints, unArrayLength, unOffset, unDataSize);
 	}
 
-	void SetPoints(const MByte* vPoints, const unsigned int& unArrayLength, const unsigned int& unOffset, const unsigned int& unDataSize);
+	void SetPoints(const MByte* vPoints, const uint32_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize);
 
 
 	bool IsContain(const Vector3& pos);

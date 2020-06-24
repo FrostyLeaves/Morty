@@ -60,7 +60,7 @@ private:
 	unsigned char* m_pImageData;
 	Vector2 m_v2Size;
 
-	unsigned int m_unImageDataArraySize;
+	uint32_t m_unImageDataArraySize;
 
 	MTextureBuffer* m_pTextureBuffer;
 

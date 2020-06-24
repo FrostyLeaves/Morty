@@ -29,9 +29,9 @@
 
 void CopyMatrix4(Matrix4* matdest, aiMatrix4x4* matsour)
 {
-	for (unsigned int r = 0; r < 4; ++r)
+	for (uint32_t r = 0; r < 4; ++r)
 	{
-		for (unsigned int c = 0; c < 4; ++c)
+		for (uint32_t c = 0; c < 4; ++c)
 		{
 			matdest->m[r][c] = (*matsour)[r][c];
 		}
@@ -146,7 +146,7 @@ bool MModelConverter::Load(const MString& strResourcePath)
 	}
 
 	//顶点数组对应的材质索引
-	std::vector<unsigned int> vMaterialIndices;
+	std::vector<uint32_t> vMaterialIndices;
 
 	ProcessBones(scene);
 	Matrix4 matRootRotation = Matrix4::IdentityMatrix;
@@ -157,13 +157,13 @@ bool MModelConverter::Load(const MString& strResourcePath)
 	return true;
 }
 
-void MModelConverter::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vector<unsigned int>& vMaterialIndices, const Matrix4& matParentRotation)
+void MModelConverter::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vector<uint32_t>& vMaterialIndices, const Matrix4& matParentRotation)
 {
 	Matrix4 matRotation;
 	CopyMatrix4(&matRotation, &pNode->mTransformation);
 	matRotation = matParentRotation * matRotation.GetRotatePart();
 
-	for (unsigned int i = 0; i < pNode->mNumMeshes; ++i)
+	for (uint32_t i = 0; i < pNode->mNumMeshes; ++i)
 	{
 		aiMesh* pMesh = pScene->mMeshes[pNode->mMeshes[i]];
 
@@ -208,7 +208,7 @@ void MModelConverter::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vec
 
 	}
 
-	for (unsigned int i = 0; i < pNode->mNumChildren; ++i)
+	for (uint32_t i = 0; i < pNode->mNumChildren; ++i)
 	{
 		ProcessNode(pNode->mChildren[i], pScene, vMaterialIndices, matRotation);
 	}
@@ -217,7 +217,7 @@ void MModelConverter::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vec
 void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertex>* pMMesh, const Matrix4& matRotation)
 {
 	pMMesh->CreateVertices(pMesh->mNumVertices);
-	for (unsigned int i = 0; i < pMesh->mNumVertices; ++i)
+	for (uint32_t i = 0; i < pMesh->mNumVertices; ++i)
 	{
 		MVertex& vertex = pMMesh->GetVertices()[i];
 		vertex.position.x = pMesh->mVertices[i].x;
@@ -265,7 +265,7 @@ void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, 
 void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh, const Matrix4& matRotation)
 {
 	pMMesh->CreateVertices(pMesh->mNumVertices);
-	for (unsigned int i = 0; i < pMesh->mNumVertices; ++i)
+	for (uint32_t i = 0; i < pMesh->mNumVertices; ++i)
 	{
 		MVertexWithBones& vertex = pMMesh->GetVertices()[i];
 		vertex.position.x = pMesh->mVertices[i].x;
@@ -312,11 +312,11 @@ void MModelConverter::ProcessMeshIndices(aiMesh* pMesh, const aiScene* pScene, M
 	// TODO 写死3不安全，多个顶点组成一个面的模型会有危险。
 	pMMesh->CreateIndices(pMesh->mNumFaces, 3);
 
-	for (unsigned int i = 0; i < pMesh->mNumFaces; ++i)
+	for (uint32_t i = 0; i < pMesh->mNumFaces; ++i)
 	{
 		const aiFace& face = pMesh->mFaces[i];
 
-		for (unsigned int j = 0; j < face.mNumIndices; ++j)
+		for (uint32_t j = 0; j < face.mNumIndices; ++j)
 		{
 			pMMesh->GetIndices()[i * 3 + j] = face.mIndices[j];
 		}
@@ -326,19 +326,19 @@ void MModelConverter::ProcessMeshIndices(aiMesh* pMesh, const aiScene* pScene, M
 void MModelConverter::BindVertexAndBones(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh)
 {
 
-	for (unsigned int i = 0; i < pMesh->mNumBones; ++i)
+	for (uint32_t i = 0; i < pMesh->mNumBones; ++i)
 	{
 		if (aiBone* pBone = pMesh->mBones[i])
 		{
 			MString strBoneName(pBone->mName.data); 
 			if (const MBone* pMBone = m_pSkeleton->FindBoneByName(strBoneName))
 			{
-				for (unsigned int wgtIndex = 0; wgtIndex < pBone->mNumWeights; ++wgtIndex)
+				for (uint32_t wgtIndex = 0; wgtIndex < pBone->mNumWeights; ++wgtIndex)
 				{
 					aiVertexWeight wgt = pBone->mWeights[wgtIndex];
 					MVertexWithBones& vertex = pMMesh->GetVertices()[wgt.mVertexId];
 
-					for (unsigned int boneIndex = 0; boneIndex < MBONES_PER_VERTEX; ++boneIndex)
+					for (uint32_t boneIndex = 0; boneIndex < MBONES_PER_VERTEX; ++boneIndex)
 					{
 						if (0 == vertex.bonesWeight[boneIndex])
 						{
@@ -355,12 +355,12 @@ void MModelConverter::BindVertexAndBones(aiMesh* pMesh, const aiScene* pScene, M
 
 void MModelConverter::RecordBones(aiNode* pNode, const aiScene* pScene)
 {
-	for (unsigned int i = 0; i < pNode->mNumMeshes; ++i)
+	for (uint32_t i = 0; i < pNode->mNumMeshes; ++i)
 	{
 		aiMesh* pMesh = pScene->mMeshes[pNode->mMeshes[i]];
 		if (pMesh->HasBones())
 		{
-			for (unsigned int i = 0; i < pMesh->mNumBones; ++i)
+			for (uint32_t i = 0; i < pMesh->mNumBones; ++i)
 			{
 				if (aiBone* pBone = pMesh->mBones[i])
 				{
@@ -376,7 +376,7 @@ void MModelConverter::RecordBones(aiNode* pNode, const aiScene* pScene)
 		}
 	}
 
-	for (unsigned int i = 0; i < pNode->mNumChildren; ++i)
+	for (uint32_t i = 0; i < pNode->mNumChildren; ++i)
 	{
 		RecordBones(pNode->mChildren[i], pScene);
 	}
@@ -416,7 +416,7 @@ void MModelConverter::BindBones(aiNode* pNode, const aiScene* pScene, MBone* pPa
 		CopyMatrix4(&pMBone->m_matTransform, &pNode->mTransformation);
 	}
 
-	for (unsigned int i = 0; i < pNode->mNumChildren; ++i)
+	for (uint32_t i = 0; i < pNode->mNumChildren; ++i)
 	{
 		BindBones(pNode->mChildren[i], pScene, pMBone);
 	}
@@ -427,7 +427,7 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 	if (!m_pSkeleton)
 		return;
 
-	for (unsigned int i = 0; i < pScene->mNumAnimations; ++i)
+	for (uint32_t i = 0; i < pScene->mNumAnimations; ++i)
 	{
 		aiAnimation* pAnimation = pScene->mAnimations[i];
 
@@ -446,7 +446,7 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 		if(pAnimation->mTicksPerSecond > 0.0f)
 			pMAnimation->m_fTicksPerSecond = pAnimation->mTicksPerSecond;
 
-		for (unsigned int chanIndex = 0; chanIndex < pAnimation->mNumChannels; ++chanIndex)
+		for (uint32_t chanIndex = 0; chanIndex < pAnimation->mNumChannels; ++chanIndex)
 		{
 			aiNodeAnim* pNodeAnim = pAnimation->mChannels[chanIndex];
 
@@ -503,14 +503,14 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 	}
 }
 
-void MModelConverter::ProcessMaterial(const aiScene* pScene, std::vector<unsigned int>& vMaterialIndices)
+void MModelConverter::ProcessMaterial(const aiScene* pScene, std::vector<uint32_t>& vMaterialIndices)
 {
 	aiString strAmbient("$clr.ambient"), strDiffuse("$clr.diffuse"), strSpecular("$clr.specular"), strShininess("$mat.shininess");
 
 	MMaterialResource* pStaticMeshMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_STATIC);
 	MMaterialResource* pSkinnedMeshMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SKINNED);
 
-	for (unsigned int i = 0; i < m_vMeshes.size(); ++i)
+	for (uint32_t i = 0; i < m_vMeshes.size(); ++i)
 	{
 		MMeshResource* pMeshData = m_vMeshes[i];
 		MMaterialResource* pMaterial = m_pEngine->GetResourceManager()->CreateResource<MMaterialResource>();
@@ -521,7 +521,7 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, std::vector<unsigne
 		else if(pMeshData->GetMeshVertexType() == MMeshResource::Skeleton)
 			pMaterial->CopyFrom(pSkinnedMeshMaterial);
 
-		unsigned int unMaterialIndex = vMaterialIndices[i];
+		uint32_t unMaterialIndex = vMaterialIndices[i];
 
 		if(unMaterialIndex >= pScene->mNumMaterials)
 			continue;

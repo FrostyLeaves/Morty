@@ -1,6 +1,6 @@
 ﻿#include "MVariant.h"
 
-unsigned int MContainer::s_unPackSize = 16;
+uint32_t MContainer::s_unPackSize = 16;
 
 MContainer::MContainer() : m_unByteSize(0)
 , m_pData(nullptr)
@@ -214,7 +214,7 @@ void MVariant::MemcpyData(MByte* pData)
 	}
 }
 
-unsigned int MVariant::GetSize() const
+uint32_t MVariant::GetSize() const
 {
 	if (EStruct == m_eType || EArray == m_eType)
 		return ((MStruct*)(m_pData))->GetSize();
@@ -290,7 +290,7 @@ void MVariant::MergeFrom(const MVariant& var)
 			MStruct& cStruct = *GetStruct();
 			const MStruct& cSource = *var.GetStruct();
 
-			for (unsigned int i = 0; i < cStruct.GetMemberCount(); ++i)
+			for (uint32_t i = 0; i < cStruct.GetMemberCount(); ++i)
 			{
 				MContainer::MStructMember* pMem = cStruct.GetMember(i);
 				if (const MVariant* pSourceChildVar = cSource.FindMember(pMem->strName))
@@ -304,10 +304,10 @@ void MVariant::MergeFrom(const MVariant& var)
 			MVariantArray& cArray = *GetArray();
 			const MVariantArray& cSource = *var.GetArray();
 
-			unsigned int unSize = cArray.GetMemberCount();
+			uint32_t unSize = cArray.GetMemberCount();
 			if (unSize > cSource.GetMemberCount()) unSize = cSource.GetMemberCount();
 
-			for (unsigned int i = 0; i < unSize; ++i)
+			for (uint32_t i = 0; i < unSize; ++i)
 			{
 				MContainer::MStructMember* pMem = cArray.GetMember(i);
 				const MContainer::MStructMember* pSourceMem = cSource.GetMember(i);
@@ -350,10 +350,10 @@ void MVariant::Clean()
 	}
 }
 
-unsigned int MContainer::AppendStructMember(MStructMember& mem)
+uint32_t MContainer::AppendStructMember(MStructMember& mem)
 {
-	unsigned int unIndex = 0;
-	unsigned int unRemainder = m_unByteSize % s_unPackSize;
+	uint32_t unIndex = 0;
+	uint32_t unRemainder = m_unByteSize % s_unPackSize;
 	if (unRemainder != 0 && (s_unPackSize - unRemainder) >= mem.var.GetSize())
 	{
 		mem.unBeginOffset = m_unByteSize;
@@ -390,7 +390,7 @@ unsigned int MContainer::AppendStructMember(MStructMember& mem)
 	return unIndex;
 }
 
-unsigned int MStruct::AppendMVariant(const MString& strName, const MVariant& var)
+uint32_t MStruct::AppendMVariant(const MString& strName, const MVariant& var)
 {
 	MStructMember sm;
 	sm.strName = strName;
@@ -401,7 +401,7 @@ unsigned int MStruct::AppendMVariant(const MString& strName, const MVariant& var
 
 void MStruct::SetMember(const MString& strName, const MVariant& var)
 {
-	std::unordered_map<MString, unsigned int>::iterator iter = m_tVariantMap.find(strName);
+	std::unordered_map<MString, uint32_t>::iterator iter = m_tVariantMap.find(strName);
 	if (iter != m_tVariantMap.end())
 	{
 		MStructMember& mem = m_vMember[iter->second];
@@ -411,7 +411,7 @@ void MStruct::SetMember(const MString& strName, const MVariant& var)
 
 MVariant* MStruct::FindMember(const MString& strName)
 {
-	std::unordered_map<MString, unsigned int>::iterator iter = m_tVariantMap.find(strName);
+	std::unordered_map<MString, uint32_t>::iterator iter = m_tVariantMap.find(strName);
 	if (iter != m_tVariantMap.end())
 	{
 		MStructMember& mem = m_vMember[iter->second];
@@ -423,7 +423,7 @@ MVariant* MStruct::FindMember(const MString& strName)
 
 const MVariant* MStruct::FindMember(const MString& strName) const
 {
-	std::unordered_map<MString, unsigned int>::const_iterator iter = m_tVariantMap.find(strName);
+	std::unordered_map<MString, uint32_t>::const_iterator iter = m_tVariantMap.find(strName);
 	if (iter != m_tVariantMap.end())
 	{
 		const MStructMember& mem = m_vMember[iter->second];
@@ -439,7 +439,7 @@ void MStruct::Move(MStruct& sour)
 	m_tVariantMap = std::move(sour.m_tVariantMap);
 }
 
-MVariantArray::MVariantArray(const unsigned int& unSize)
+MVariantArray::MVariantArray(const uint32_t& unSize)
 	: MContainer()
 {
 	m_vMember.resize(unSize);
@@ -454,7 +454,7 @@ void MVariantArray::AppendMVariant(const MVariant& var)
 	AppendStructMember(sm);
 }
 
-void MVariantArray::Resize(const unsigned int& unSize)
+void MVariantArray::Resize(const uint32_t& unSize)
 {
 	m_vMember.resize(unSize);
 }
@@ -464,7 +464,7 @@ void MVariantArray::Move(MVariantArray& sour)
 	m_vMember = std::move(sour.m_vMember);
 }
 
-MVariant& MContainer::operator[](const unsigned int& unIndex)
+MVariant& MContainer::operator[](const uint32_t& unIndex)
 {
 	if (0 <= unIndex && unIndex < m_vMember.size())
 		return m_vMember[unIndex].var;

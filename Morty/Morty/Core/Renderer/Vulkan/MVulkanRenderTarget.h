@@ -23,15 +23,15 @@ public:
     MVulkanRenderTarget(MVulkanDevice* pDevice);
     virtual ~MVulkanRenderTarget();
 
-	virtual void SetBackgroundColor(const unsigned int& unTargetIndex, const MColor& color) override { m_backgroundColor = color; }
-	virtual const MColor& GetBackgroundColor(const unsigned int& unTargetIndex) const override { return m_backgroundColor; }
+	virtual void SetBackgroundColor(const uint32_t& unTargetIndex, const MColor& color) override { m_backgroundColor = color; }
+	virtual const MColor& GetBackgroundColor(const uint32_t& unTargetIndex) const override { return m_backgroundColor; }
 
 	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
 
 public:
 
-	virtual void OnResize(const unsigned int& nWidth, const unsigned int& nHeight) override;
-	virtual void OnRender(MIRenderer* pRenderer) override;
+	virtual void OnResize(const uint32_t& nWidth, const uint32_t& nHeight) override {}
+	virtual void OnRender(MIRenderer* pRenderer) override {}
 
 	virtual void Release(MIDevice* pDevice) override;
 

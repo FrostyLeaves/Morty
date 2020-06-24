@@ -35,7 +35,7 @@ MMeshResource::~MMeshResource()
 	Clean();
 }
 
-MIMesh* MMeshResource::GetLevelMesh(const unsigned int unLevel)
+MIMesh* MMeshResource::GetLevelMesh(const uint32_t unLevel)
 {
 	if (m_pMesh)
 	{
@@ -91,7 +91,7 @@ bool MMeshResource::Load(const MString& strResourcePath)
 	if (m_pMesh->GetVertexStructSize() * nVertexNum != nVertexEnd - nVertexBegin)
 		return false;
 
-	if (sizeof(unsigned int) * nIndexNum != nIndexEnd - nIndexBegin)
+	if (sizeof(uint32_t) * nIndexNum != nIndexEnd - nIndexBegin)
 		return false;
 
 	m_pMesh->ResizeVertices(nVertexNum);
@@ -141,7 +141,7 @@ bool MMeshResource::SaveTo(const MString& strResourcePath)
 
 	int nIndexBegin = nVertexEnd;
 	int nIndexNum = m_pMesh->GetIndicesLength();
-	int nIndexEnd = nIndexBegin + nIndexNum * sizeof(unsigned int);
+	int nIndexEnd = nIndexBegin + nIndexNum * sizeof(uint32_t);
 
 	pHeader->AppendMVariant("v1", nVertexBegin);
 	pHeader->AppendMVariant("v2", nVertexNum);

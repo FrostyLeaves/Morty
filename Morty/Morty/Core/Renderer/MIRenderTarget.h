@@ -29,21 +29,27 @@ class MORTY_CLASS MIRenderTarget
 {
 public:
 
+	struct MInitializeInfo
+	{
+		bool bCleanTargetView;
+	};
+
+
 	MIRenderTarget();
 	virtual ~MIRenderTarget() {}
 
-	unsigned int GetTargetViewNum() const { return m_unTargetViewNum; }
+	uint32_t GetTargetViewNum() const { return m_unTargetViewNum; }
 	
 	virtual MRenderDepthTexture* GetDepthTexture() = 0;
 
-	virtual void SetBackgroundColor(const unsigned int& unTargetIndex, const MColor& color) = 0;
-	virtual const MColor& GetBackgroundColor(const unsigned int& unTargetIndex) const { return MColor::Black; }
+	virtual void SetBackgroundColor(const uint32_t& unTargetIndex, const MColor& color) = 0;
+	virtual const MColor& GetBackgroundColor(const uint32_t& unTargetIndex) const { return MColor::Black; }
 
-	virtual bool GetNeedCleanTargetView(const unsigned int& unTargetIndex) const { return true; }
+	virtual bool GetNeedCleanTargetView(const uint32_t& unTargetIndex) const { return true; }
 
 public:
 
-	virtual void OnResize(const unsigned int& nWidth, const unsigned int& nHeight) = 0;
+	virtual void OnResize(const uint32_t& nWidth, const uint32_t& nHeight) = 0;
 
 	virtual void OnRender(MIRenderer* pRenderer) { if(m_funcRenderFunction) m_funcRenderFunction(pRenderer); }
 	std::function<void(MIRenderer*)> m_funcRenderFunction;
@@ -56,12 +62,12 @@ public:
 	struct ID3D11RenderTargetView** m_vpRenderTargetView;
 	struct ID3D11DepthStencilView* m_pDepthStencilView;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-
+	VkRenderPass m_VkRenderPass;
 #endif
 
 protected:
 
-	unsigned int m_unTargetViewNum;
+	uint32_t m_unTargetViewNum;
 };
 
 

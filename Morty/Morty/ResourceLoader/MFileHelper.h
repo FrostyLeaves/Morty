@@ -19,7 +19,7 @@ public:
     struct MFormatBody
     {
         char* pData;
-        unsigned int unSize;
+        uint32_t unSize;
         bool bExternalMemory;
     };
 public:
@@ -27,7 +27,7 @@ public:
     MMortyFileFormat() {}
     ~MMortyFileFormat();
 
-    void PushBackBody(void* pData, const unsigned int& unSize, const bool& bExternalMemory = true);
+    void PushBackBody(void* pData, const uint32_t& unSize, const bool& bExternalMemory = true);
 
     MString m_strHead;
 	std::vector<MFormatBody> m_vBody;

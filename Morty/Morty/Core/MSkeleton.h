@@ -27,9 +27,9 @@ public:
 	void ReadFromStruct(MStruct& srt);
 public:
 	MString strName;
-	unsigned int unIndex;
-	unsigned int unParentIndex;
-	std::vector<unsigned int> vChildrenIndices;
+	uint32_t unIndex;
+	uint32_t unParentIndex;
+	std::vector<uint32_t> vChildrenIndices;
 
 	//Bones World
 	Matrix4 m_matTransform;
@@ -45,7 +45,7 @@ public:
 	MSkeleton();
 	virtual ~MSkeleton();
 	
-	const std::map<MString, unsigned int>& GetBonesMap() const { return m_tBonesMap; }
+	const std::map<MString, uint32_t>& GetBonesMap() const { return m_tBonesMap; }
 
 	void CopyAllBones(std::vector<MBone*>& allBones);
 
@@ -71,7 +71,7 @@ private:
 	friend class MSkeletonResource;
 
 private:
-	std::map<MString, unsigned int> m_tBonesMap;
+	std::map<MString, uint32_t> m_tBonesMap;
 	std::vector<MBone> m_vAllBones;
 };
 
@@ -86,7 +86,7 @@ public:
 	MBone* FindBoneByName(const MString& strName);
 
 	const MBone* FindBoneTemplateByName(const MString& strName);
-	const MBone* GetBoneTemplateByIndex(const unsigned int& unIndex);
+	const MBone* GetBoneTemplateByIndex(const uint32_t& unIndex);
 
 	std::vector<MBone>& GetAllBones() { return m_vAllBones; }
 

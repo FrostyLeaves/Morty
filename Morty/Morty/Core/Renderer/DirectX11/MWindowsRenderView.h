@@ -48,12 +48,12 @@ public:
 	
 	struct MKeyState
 	{
-		unsigned int unKey;
+		uint32_t unKey;
 		MEKeyState eState;
 	};
 
-	void KeyBoardChanged(const unsigned int& unKey, const MEKeyState& eState);
-	void MouseBtnChanged(const unsigned int& unMouseBtn, const MEKeyState& eState);
+	void KeyBoardChanged(const uint32_t& unKey, const MEKeyState& eState);
+	void MouseBtnChanged(const uint32_t& unMouseBtn, const MEKeyState& eState);
 
 	static LRESULT CALLBACK ProcessFunction(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 

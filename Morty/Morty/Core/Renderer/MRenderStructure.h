@@ -75,7 +75,9 @@ public:
 	struct ID3D11Texture2D* m_pTextureBuffer;
 	class ID3D11ShaderResourceView* m_pShaderResourceView;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-	//VkImageView m_pShaderResourceView;
+	VkImage m_VkTextureImage;
+	VkDeviceMemory m_VkTextureImageMemory;
+	VkImageView m_VkImageView;
 #endif
 };
 
@@ -120,8 +122,8 @@ struct MShaderParam
 	MShaderParam(const MShaderParam& param);
 
 	MString strName;
-	unsigned int unCode;
-	unsigned int  eType;
+	uint32_t unCode;
+	uint32_t  eType;
 
 	MVariant var;
 	bool bDirty;
@@ -130,8 +132,8 @@ struct MShaderParam
 	
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	class ID3D11Buffer* pBuffer;
-	unsigned int unBindPoint;
-	unsigned int unBindCount;
+	uint32_t unBindPoint;
+	uint32_t unBindCount;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 	VkBuffer m_VkBuffer;
 	VkDeviceMemory m_VkBufferMemory;
@@ -149,14 +151,14 @@ struct MShaderTextureParam
 	MShaderTextureParam();
 
 	MString strName;
-	unsigned int unCode;
-	unsigned int  eShaderType;
+	uint32_t unCode;
+	uint32_t  eShaderType;
 	MITexture* pTexture;
 	METextureType eType;
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	unsigned int unBindPoint;
-	unsigned int unBindCount;
+	uint32_t unBindPoint;
+	uint32_t unBindCount;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 
 #endif
@@ -166,11 +168,11 @@ struct MShaderSampleParam
 {
 	MShaderSampleParam();
 	MString strName;
-	unsigned int unCode;
-	unsigned int  eType;
+	uint32_t unCode;
+	uint32_t  eType;
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	unsigned int unBindPoint;
-	unsigned int unBindCount;
+	uint32_t unBindPoint;
+	uint32_t unBindCount;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 
 #endif
@@ -187,7 +189,7 @@ public:
 	std::vector<MShaderTextureParam*> m_vTextureParamsTemplate;
 	std::vector<MShaderParam*> m_vShaderParamsTemplate;
 
-	static MShaderParam* GetSharedParam(const unsigned int& unCode);
+	static MShaderParam* GetSharedParam(const uint32_t& unCode);
 
 	static std::vector<MShaderSampleParam*> s_vSampleParams;
 	static std::vector<MShaderTextureParam*> s_vTextureParams;

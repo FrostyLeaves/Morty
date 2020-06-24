@@ -35,7 +35,7 @@ public:
 	std::vector< MResourceKeeper>* GetTextures() { return &m_vTextureResKeeper; }
 
 	void SetTexutreParam(const MString& strName, MResource* pTexResource);
-	void SetTexutreParam(const unsigned int& unIndex, MResource* pTexResource);
+	void SetTexutreParam(const uint32_t& unIndex, MResource* pTexResource);
 
 	void SetRasterizerType(const MERasterizerType& eType) { m_eRasterizerType = eType; }
 	MERasterizerType GetRasterizerType() const { return m_eRasterizerType; }
@@ -51,8 +51,11 @@ public:
 
 	MShaderMacro* GetShaderMacro() { return &m_ShaderMacro; }
 	
+	uint32_t GetMaterialID() { return m_unMaterialID; }
+
 public:
 
+	virtual void OnCreated() override;
 	virtual void OnDelete() override;
 
 	void Unload();
@@ -76,7 +79,6 @@ protected:
 	void CleanTextureParams();
 	void CleanShaderParams();
 
-	void UpdateShaderMacro();
 
 private:
 
@@ -101,6 +103,8 @@ private:
 	int m_nVertexShaderIndex;
 	int m_nPixelShaderIndex;
 	MShaderMacro m_ShaderMacro;
+
+	uint32_t m_unMaterialID;
 };
 
 #endif
