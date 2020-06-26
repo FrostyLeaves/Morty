@@ -2,34 +2,6 @@
 #define MTRANSPARENT_DEPTH_PEELING
 #endif
 
-#ifndef MBONES_PER_VERTEX
-#define MBONES_PER_VERTEX 4
-#endif
-
-#ifndef MBONES_MAX_NUMBER
-#define MBONES_MAX_NUMBER 128
-#endif
-
-#ifndef MPOINT_LIGHT_MAX_NUMBER
-#define MPOINT_LIGHT_MAX_NUMBER 4
-#endif
-
-#ifndef MSPOT_LIGHT_MAX_NUMBER
-#define MSPOT_LIGHT_MAX_NUMBER 4
-#endif
-
-#ifndef MSHADOW_TEXTURE_SIZE
-#define MSHADOW_TEXTURE_SIZE 512
-#endif
-
-#ifndef MPOINT_LIGHT_PIXEL_NUMBER
-#define MPOINT_LIGHT_PIXEL_NUMBER 8
-#endif
-
-#ifndef MSPOT_LIGHT_PIXEL_NUMBER
-#define MSPOT_LIGHT_PIXEL_NUMBER 8
-#endif
-
 struct VS_IN_EMPTY
 {
     float3 pos : POSITION;

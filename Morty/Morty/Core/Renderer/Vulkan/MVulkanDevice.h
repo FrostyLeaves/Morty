@@ -85,6 +85,10 @@ public:
 	int FindQueuePresentFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
 
 	int FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+
+	bool CompileShader(const MString& strShaderPath);
+
 protected:
 	bool InitVulkanInstance();
 	bool InitPhysicalDevice();

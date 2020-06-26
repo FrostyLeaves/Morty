@@ -2,16 +2,21 @@
 #include "MMesh.h"
 #include "MShader.h"
 #include "MTexture.h"
+#include "MResource.h"
 #include "MFileHelper.h"
 #include "MRenderStructure.h"
+
+#include <set>
+#include <array>
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 
 #include "MVulkanRenderTarget.h"
-
-#include <set>
-#include <array>
+#include "glslang/Public/ShaderLang.h"
+#include "Logger.h"
+#include "SpvTools.h"
+#include "GlslangToSpv.h"
 
 #ifdef MORTY_WIN
 #include "vulkan/vulkan_win32.h"
@@ -806,6 +811,144 @@ bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString&
 	}
 
 	return true;
+}
+
+class TPreamble {
+public:
+	TPreamble() { }
+
+	bool isSet() const { return text.size() > 0; }
+	const char* get() const { return text.c_str(); }
+
+	const std::vector<std::string>& getProcesses() { return Processes; }
+
+	// #define...
+	void addDef(std::string def)
+	{
+		text.append("#define ");
+		fixLine(def);
+
+		Processes.push_back("define-macro ");
+		Processes.back().append(def);
+
+		// The first "=" needs to turn into a space
+		const size_t equal = def.find_first_of("=");
+		if (equal != def.npos)
+			def[equal] = ' ';
+
+		text.append(def);
+		text.append("\n");
+	}
+
+	// #undef...
+	void addUndef(std::string undef)
+	{
+		text.append("#undef ");
+		fixLine(undef);
+
+		Processes.push_back("undef-macro ");
+		Processes.back().append(undef);
+
+		text.append(undef);
+		text.append("\n");
+	}
+
+protected:
+	void fixLine(std::string& line)
+	{
+		// Can't go past a newline in the line
+		const size_t end = line.find_first_of("\n");
+		if (end != line.npos)
+			line = line.substr(0, end);
+	}
+
+	std::vector<std::string> Processes;
+	std::string text;  // contents of preamble
+};
+
+bool MVulkanDevice::CompileShader(const MString& strShaderPath)
+{
+// 	ShaderCompUnit compUnit(FindLanguage(workItem->name));
+// 	char* fileText = ReadFileData(workItem->name.c_str());
+// 	if (fileText == nullptr)
+// 		usage();
+// 	compUnit.addString(workItem->name, fileText);
+
+	glslang::TProgram program;
+
+	EShLanguage eLanguageType;
+	MString strSuffix = MResource::GetSuffix(strShaderPath);
+	if (strSuffix == "mvs")
+		eLanguageType = EShLangVertex;
+	else if (strSuffix == "mps")
+		eLanguageType = EShLangFragment;
+	else
+		return false;
+
+	glslang::TShader shader(eLanguageType);
+
+
+	MString strShaderCode;
+	MFileHelper::ReadString(strShaderPath, strShaderCode);
+
+	const char* svShaderCode = strShaderCode.c_str();
+	const char* svShaderPath = strShaderPath.c_str();
+	shader.setStringsWithLengthsAndNames(&svShaderCode, NULL, &svShaderPath, 1);
+	
+	if (EShLangVertex == eLanguageType)
+		shader.setEntryPoint("VS");
+	else if (EShLangFragment == eLanguageType)
+		shader.setEntryPoint("PS");
+
+	TPreamble UserPreamble;
+	if (UserPreamble.isSet())
+		shader.setPreamble(UserPreamble.get());
+	shader.addProcesses(UserPreamble.getProcesses());
+
+	shader.setNanMinMaxClamp(false);
+
+// 	shader.setFlattenUniformArrays((Options & EOptionFlattenUniformArrays) != 0);
+// 	if (Options & EOptionHlslIoMapping)
+// 		shader.setHlslIoMapping(true);
+
+
+	EShMessages messages = EShMsgDefault;
+	TBuiltInResource Resources;
+
+	if (!shader.parse(&Resources, 100, false, messages))
+		return false;
+
+	program.addShader(&shader);
+
+	if (!program.link(messages))
+		return false;
+
+
+	for (int stage = 0; stage < EShLangCount; ++stage) {
+		if (program.getIntermediate((EShLanguage)stage)) {
+			std::vector<unsigned int> spirv;
+			spv::SpvBuildLogger logger;
+			glslang::SpvOptions spvOptions;
+#ifdef _DEBUG
+			spvOptions.generateDebugInfo = true;
+			spvOptions.stripDebugInfo = true;
+#endif
+			glslang::GlslangToSpv(*program.getIntermediate((EShLanguage)stage), spirv, &logger, &spvOptions);
+
+			// Dump the spv to a file or stdout, etc., but only if not doing
+			// memory/perf testing, as it's not internal to programmatic use.
+			{
+				printf("%s", logger.getAllMessages().c_str());
+
+				const char* svBinaryName = nullptr;
+				if (eLanguageType == EShLangVertex)
+					svBinaryName = "vert.spv";
+				else svBinaryName = "frag.spv";
+
+				glslang::OutputSpvBin(spirv, svBinaryName);
+			}
+		}
+	}
 }
 
 void MVulkanDevice::CleanShader(MShaderBuffer** ppShaderBuffer)

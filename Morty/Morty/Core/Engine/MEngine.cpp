@@ -86,12 +86,9 @@ bool MEngine::Initialize()
 
 	m_pResourceManager = new MResourceManager();
 	m_pResourceManager->SetOwnerEngine(this);
-// 
-// 	//允许资源重加载
-// 	m_pResourceManager->SetReloadEnabled(true);
-	
+
 	//初始化默认资源
-	InitializeDefaultResource();
+//	InitializeDefaultResource();
 
 	return true;
 
