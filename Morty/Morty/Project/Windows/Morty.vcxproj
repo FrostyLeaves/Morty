@@ -126,7 +126,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>cximagecrt.lib;assimp-vc142-mt.lib;d3d11.lib;d3dx11.lib;dxguid.lib;d3dcompiler.lib;vulkan-1.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Math3D.lib;glslangd.lib;SPIRVd.lib;spirv-cross-cored.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>cximagecrt.lib;assimp-vc142-mt.lib;d3d11.lib;d3dx11.lib;dxguid.lib;d3dcompiler.lib;vulkan-1.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Math3D.lib;glslangd.lib;SPIRVd.lib;OSDependentd.lib;OGLCompilerd.lib;glslang-default-resource-limitsd.lib;spirv-cross-cored.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Platform)\Math3D\$(Configuration);$(SolutionDir)ThirdParty/Assimp/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/CxImage/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/SpirvCross/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/glslang/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/SPIRV/lib/vs2019/$(Platform)/$(Configuration);$(DXSDK_DIR)Lib/$(PlatformTarget);$(VK_SDK_PATH)/Lib</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
@@ -185,7 +185,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>cximagecrt.lib;assimp-vc142-mt.lib;d3d11.lib;d3dx11.lib;dxguid.lib;d3dcompiler.lib;vulkan-1.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Math3D.lib;glslang.lib;SPIRV.lib;spirv-cross-core.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>cximagecrt.lib;assimp-vc142-mt.lib;d3d11.lib;d3dx11.lib;dxguid.lib;d3dcompiler.lib;vulkan-1.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Math3D.lib;glslang.lib;SPIRV.lib;OSDependent.lib;OGLCompiler.lib;glslang-default-resource-limits.lib;spirv-cross-core.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Platform)\Math3D\$(Configuration);$(SolutionDir)ThirdParty/Assimp/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/CxImage/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/SpirvCross/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/glslang/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/SPIRV/lib/vs2019/$(Platform)/$(Configuration);$(DXSDK_DIR)Lib/$(PlatformTarget);$(VK_SDK_PATH)/Lib</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
@@ -238,6 +238,7 @@
     <ClInclude Include="..\..\Core\Renderer\MTexture.h" />
     <ClInclude Include="..\..\Core\Renderer\MVariant.h" />
     <ClInclude Include="..\..\Core\Renderer\MVertex.h" />
+    <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanShaderCompiler.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanDevice.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanPipelineManager.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanRenderer.h" />
@@ -341,6 +342,7 @@
     <ClCompile Include="..\..\Core\Renderer\MShader.cpp" />
     <ClCompile Include="..\..\Core\Renderer\MTexture.cpp" />
     <ClCompile Include="..\..\Core\Renderer\MVariant.cpp" />
+    <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanShaderCompiler.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanDevice.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanPipelineManager.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanRenderer.cpp" />

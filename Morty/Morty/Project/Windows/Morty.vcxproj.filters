@@ -357,6 +357,9 @@
     <ClInclude Include="..\..\Organizer\System\MBasicRenderSystem.h">
       <Filter>Organizer\System</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanShaderCompiler.h">
+      <Filter>Core\Renderer\Vulkan</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -598,6 +601,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Organizer\System\MBasicRenderSystem.cpp">
       <Filter>Organizer\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanShaderCompiler.cpp">
+      <Filter>Core\Renderer\Vulkan</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

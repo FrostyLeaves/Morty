@@ -19,6 +19,9 @@
 #include "vulkan/vulkan.h"
 #include "vulkan/vulkan_core.h"
 #include "spirv_cross.hpp"
+#include "spirv_parser.hpp"
+
+#include "MVulkanShaderCompiler.h"
 
 
 class MORTY_CLASS MVulkanDevice : public MIDevice
@@ -77,17 +80,14 @@ public:
 	VkCommandBuffer BeginCommands();
 	void EndCommands(VkCommandBuffer commandBuffer);
 
-
-	void GetVertexInputState(const spirv_cross::ShaderResources& shaderResource, VkPipelineVertexInputStateCreateInfo& vertexInputState);
-	void GetShaderParam(const spirv_cross::ShaderResources& shaderResource, MShaderBuffer* pShaderBuffer);
+	void GetVertexInputState(const spirv_cross::Compiler& compiler, const spirv_cross::ParsedIR& ir, VkPipelineVertexInputStateCreateInfo& vertexInputState);
+	void GetShaderParam(const spirv_cross::Compiler& compiler, const spirv_cross::ParsedIR& ir, MShaderBuffer* pShaderBuffer);
 
 	int FindQueueGraphicsFamilies(VkPhysicalDevice device);
 	int FindQueuePresentFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
 
 	int FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
-
-	bool CompileShader(const MString& strShaderPath);
 
 protected:
 	bool InitVulkanInstance();
@@ -118,6 +118,8 @@ public:
 	VkCommandBuffer m_VkCommandBuffer;
 
 	int m_nBufferNum;
+
+	MVulkanShaderCompiler m_ShaderCompiler;
 };
 
 

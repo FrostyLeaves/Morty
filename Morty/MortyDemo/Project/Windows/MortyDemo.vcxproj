@@ -245,16 +245,6 @@ copy "$(SolutionDir)ThirdParty\CxImage\lib\vs2019\$(Platform)\*.dll" "$(Solution
     <ClCompile Include="../../MortyDemo.cpp" />
     <ClCompile Include="../../stdafx.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="../../..\Morty\Morty.vcxproj">
-      <Project>{764f8ce3-c2c9-4a43-9c49-f4c8470722b9}</Project>
-      <Private>true</Private>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

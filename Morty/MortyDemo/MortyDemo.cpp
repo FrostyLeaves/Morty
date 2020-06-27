@@ -139,6 +139,12 @@ int main(int argc, char* argv[])
 	MEngine engine;
 	engine.Initialize();
 
+
+	MShaderBuffer* buffer = nullptr;
+	MShaderMacro macro;
+	engine.GetDevice()->CompileShader(&buffer, "D:/Custom/x/Morty/Morty/Morty/Resource/Shader/testgl.mvs", MShader::Vertex, macro);
+
+
 // 	{
 // 		{
 // 			MModelConverter conver(&engine);
