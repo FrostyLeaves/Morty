@@ -18,8 +18,6 @@
 
 #include "vulkan/vulkan.h"
 #include "vulkan/vulkan_core.h"
-#include "spirv_cross.hpp"
-#include "spirv_parser.hpp"
 
 #include "MVulkanShaderCompiler.h"
 
@@ -79,9 +77,6 @@ public:
 
 	VkCommandBuffer BeginCommands();
 	void EndCommands(VkCommandBuffer commandBuffer);
-
-	void GetVertexInputState(const spirv_cross::Compiler& compiler, const spirv_cross::ParsedIR& ir, VkPipelineVertexInputStateCreateInfo& vertexInputState);
-	void GetShaderParam(const spirv_cross::Compiler& compiler, const spirv_cross::ParsedIR& ir, MShaderBuffer* pShaderBuffer);
 
 	int FindQueueGraphicsFamilies(VkPhysicalDevice device);
 	int FindQueuePresentFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);

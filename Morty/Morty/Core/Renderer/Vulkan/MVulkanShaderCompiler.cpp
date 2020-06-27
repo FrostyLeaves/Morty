@@ -74,12 +74,12 @@ bool MVulkanShaderCompiler::CompileShader(const MString& strShaderPath, const ui
 	int ClientInputSemanticsVersion = 100;
 	EShMessages messages = EShMsgDefault;
 
-// 	if (true)
-// 	{
-// 		shader.setEnvInput(glslang::EShSourceHlsl, eLanguageType, glslang::EShClientVulkan, ClientInputSemanticsVersion);
-// 		messages = (EShMessages)(messages | EShMsgReadHlsl);
-// 	}
-// 	else
+	if (true)
+	{
+		shader.setEnvInput(glslang::EShSourceHlsl, eLanguageType, glslang::EShClientVulkan, ClientInputSemanticsVersion);
+		messages = (EShMessages)(messages | EShMsgReadHlsl);
+	}
+	else
 	{
 		shader.setEnvInput(glslang::EShSourceGlsl, eLanguageType, glslang::EShClientVulkan, ClientInputSemanticsVersion);
 	}
@@ -123,7 +123,123 @@ bool MVulkanShaderCompiler::CompileShader(const MString& strShaderPath, const ui
 
 void MVulkanShaderCompiler::ConvertMacro(const MShaderMacro& macro, MPreamble& preamble)
 {
+	for (const std::pair<MString, MString>& m : macro.s_vGlobalMacroParams)
+		preamble.AddDef(m.first, m.second);
+	
+	for (const std::pair<MString, MString>& m : macro.m_vMortyMacroParams)
+		preamble.AddDef(m.first, m.second);
 
+	for (const std::pair<MString, MString>& m : macro.m_vMacroParams)
+		preamble.AddDef(m.first, m.second);
+}
+
+void MVulkanShaderCompiler::GetVertexInputState(const spirv_cross::Compiler& compiler, const spirv_cross::ParsedIR& ir, VkPipelineVertexInputStateCreateInfo& vertexInputState)
+{
+	spirv_cross::ShaderResources shaderResources = compiler.get_shader_resources();
+
+	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+
+	//Vertex Input
+	uint32_t unOffset = 0;
+	for (const spirv_cross::Resource& res : shaderResources.stage_inputs)
+	{
+		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
+
+		const spirv_cross::Meta::Decoration& decoration = ir.meta.at(res.id).decoration;
+		uint32_t unLocation = decoration.location;
+
+		uint32_t unArraySize = type.array.empty() ? 1 : type.array[0];
+
+		for (uint32_t nArrayIdx = 0; nArrayIdx < unArraySize; ++nArrayIdx)
+		{
+			VkVertexInputAttributeDescription attribute = {};
+			attribute.binding = 0; // 它对应的是vertexBindingDescriptionCount，我们目前只有一个，这个值写死了是0
+			attribute.location = unLocation;
+			attribute.offset = unOffset;
+
+			//	TODO fill attribute
+			if (spirv_cross::SPIRType::BaseType::Float == type.basetype)
+			{
+				if (1 == type.vecsize)
+					attribute.format = VK_FORMAT_R32_SFLOAT;
+				else if (2 == type.vecsize)
+					attribute.format = VK_FORMAT_R32G32_SFLOAT;
+				else if (3 == type.vecsize)
+					attribute.format = VK_FORMAT_R32G32B32_SFLOAT;
+				else if (4 == type.vecsize)
+					attribute.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+				else
+					MLogManager::GetInstance()->Error("Error: vertex input find floatN ?");
+			}
+
+			attributeDescriptions.push_back(attribute);
+
+			unOffset += type.width * type.vecsize;
+			++unLocation;
+		}
+	}
+
+	VkVertexInputBindingDescription bindingDescription{};
+	bindingDescription.binding = 0;
+	bindingDescription.stride = unOffset;
+	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+	vertexInputState = VkPipelineVertexInputStateCreateInfo{};
+	vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	vertexInputState.vertexBindingDescriptionCount = 1;
+	vertexInputState.pVertexBindingDescriptions = &bindingDescription;
+	vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	vertexInputState.pVertexAttributeDescriptions = attributeDescriptions.data();
+}
+
+void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler, const spirv_cross::ParsedIR& ir, MShaderBuffer* pShaderBuffer)
+{
+	spirv_cross::ShaderResources shaderResources = compiler.get_shader_resources();
+
+	for (const spirv_cross::Resource& res : shaderResources.uniform_buffers)
+	{
+		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
+
+		MShaderParam* pParam = new MShaderParam();
+		pParam->strName = res.name;
+
+		ConvertVariant(compiler, type, pParam->var);
+
+		pShaderBuffer->m_vShaderParamsTemplate.push_back(pParam);
+	}
+	// 	VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+	// 	createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]); 	
+}
+
+void MVulkanShaderCompiler::ConvertVariant(const spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, MVariant& variant)
+{
+	switch (type.basetype)
+	{
+	case spirv_cross::SPIRType::BaseType::Struct:
+	{
+		variant = MStruct();
+		MStruct& srt = *variant.GetStruct();
+
+		for (uint32_t i = 0; i < type.member_types.size(); ++i)
+		{
+			const spirv_cross::TypeID& id = type.member_types[i];
+			spirv_cross::SPIRType childType = compiler.get_type(id);
+
+			spirv_cross::TypeID base_id = compiler.get_type(type.self).self;
+			std::string strName = compiler.get_member_name(base_id, i);
+			
+			uint32_t unMemIdx = srt.AppendMVariant(strName, MVariant());
+			MVariant& childVar = srt.GetMember(unMemIdx)->var;
+
+			ConvertVariant(compiler, childType, childVar);
+		}
+		break;
+	}
+
+
+	default:
+		break;
+	}
 }
 
 MPreamble::MPreamble()
@@ -141,39 +257,31 @@ bool MPreamble::IsValid() const
 	return m_strText.size() > 0;
 }
 
-void MPreamble::AddDef(std::string def)
+void MPreamble::AddDef(const MString& strName, const MString& strValue)
 {
 	m_strText.append("#define ");
-	FixLine(def);
 
 	m_vProcesses.push_back("define-macro ");
-	m_vProcesses.back().append(def);
-
-	// The first "=" needs to turn into a space
-	const size_t equal = def.find_first_of("=");
-	if (equal != def.npos)
-		def[equal] = ' ';
-
-	m_strText.append(def);
-	m_strText.append("\n");
+	if (strValue.empty())
+	{
+		m_vProcesses.back().append(strName);
+		m_strText.append(strName);
+		m_strText.append("\n");
+	}
+	else
+	{
+		m_vProcesses.back().append(strName + "=" + strValue);
+		m_strText.append(strName + " " + strValue + "\n");
+	}
 }
 
 void MPreamble::AddUndef(std::string undef)
 {
 	m_strText.append("#undef ");
-	FixLine(undef);
 
 	m_vProcesses.push_back("undef-macro ");
 	m_vProcesses.back().append(undef);
 
 	m_strText.append(undef);
 	m_strText.append("\n");
-}
-
-void MPreamble::FixLine(std::string& line)
-{
-	// Can't go past a newline in the line
-	const size_t end = line.find_first_of("\n");
-	if (end != line.npos)
-		line = line.substr(0, end);
 }

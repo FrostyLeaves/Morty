@@ -1,9 +1,6 @@
-
-
 struct VS_IN_EMPTY_ANIM
 {
     float3 pos : POSITION;
-
     int bonesID[5] : BONES_ID;
     float bonesWeight : BONES_WEIGHT;
 };
@@ -13,6 +10,13 @@ struct VS_OUT_EMPTY
     float4 pos : SV_POSITION;
     float2 uv : UV;
     float3 test3 : TEST3;
+};
+
+//VS    per mesh
+cbuffer _M_E_cbMeshMatrix : register(b0)
+{
+    float4x4 U_matWorld;
+    float3x3 U_matNormal;
 };
 
 VS_OUT_EMPTY VS(VS_IN_EMPTY_ANIM input)

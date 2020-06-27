@@ -11,6 +11,8 @@
 #include "MGlobal.h"
 #include "MShader.h"
 #include "MRenderStructure.h"
+#include "spirv_cross.hpp"
+#include "spirv_parser.hpp"
 
 class MORTY_CLASS MPreamble {
 public:
@@ -22,12 +24,10 @@ public:
 
 	const std::vector<std::string>& GetProcesses() { return m_vProcesses; }
 
-	void AddDef(std::string def);
+	void AddDef(const MString& strName, const MString& strValue);
 
 	void AddUndef(std::string undef);
 
-protected:
-	void FixLine(std::string& line);
 
 private:
 	std::vector<std::string> m_vProcesses;
@@ -47,6 +47,12 @@ public:
     bool CompileShader(const MString& strShaderPath, const uint32_t& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv);
 
 	void ConvertMacro(const MShaderMacro& macro, MPreamble& preamble);
+
+	void GetVertexInputState(const spirv_cross::Compiler& compiler, const spirv_cross::ParsedIR& ir, VkPipelineVertexInputStateCreateInfo& vertexInputState);
+
+	void GetShaderParam(const spirv_cross::Compiler& compiler, const spirv_cross::ParsedIR& ir, MShaderBuffer* pShaderBuffer);
+
+	void ConvertVariant(const spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, MVariant& variant);
 
 private:
 

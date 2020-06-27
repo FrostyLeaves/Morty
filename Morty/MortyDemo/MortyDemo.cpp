@@ -142,7 +142,7 @@ int main(int argc, char* argv[])
 
 	MShaderBuffer* buffer = nullptr;
 	MShaderMacro macro;
-	engine.GetDevice()->CompileShader(&buffer, "D:/Custom/x/Morty/Morty/Morty/Resource/Shader/testgl.mvs", MShader::Vertex, macro);
+	engine.GetDevice()->CompileShader(&buffer, "D:/Custom/x/Morty/Morty/Morty/Resource/Shader/test.mvs", MShader::Vertex, macro);
 
 
 // 	{

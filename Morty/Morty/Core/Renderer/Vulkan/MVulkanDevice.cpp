@@ -796,8 +796,8 @@ bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString&
 	{
 		MVertexShaderBuffer* pBuffer = new MVertexShaderBuffer();
 		pBuffer->m_VkShaderStageInfo = shaderStageInfo;
-		GetVertexInputState(comp, ir, pBuffer->m_VkVertexInputStateInfo);
-		GetShaderParam(comp, ir, pBuffer);
+		m_ShaderCompiler.GetVertexInputState(comp, ir, pBuffer->m_VkVertexInputStateInfo);
+		m_ShaderCompiler.GetShaderParam(comp, ir, pBuffer);
 
 		*ppShaderBuffer = pBuffer;
 	}
@@ -805,7 +805,7 @@ bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString&
 	{
 		MPixelShaderBuffer* pBuffer = new MPixelShaderBuffer();
 		pBuffer->m_VkShaderStageInfo = shaderStageInfo;
-		GetShaderParam(comp, ir, pBuffer);
+		m_ShaderCompiler.GetShaderParam(comp, ir, pBuffer);
 
 		*ppShaderBuffer = pBuffer;
 	}
@@ -829,80 +829,6 @@ void MVulkanDevice::CleanShader(MShaderBuffer** ppShaderBuffer)
 
 	delete* ppShaderBuffer;
 	*ppShaderBuffer = nullptr;
-}
-
-void MVulkanDevice::GetVertexInputState(const spirv_cross::Compiler& compiler, const spirv_cross::ParsedIR& ir, VkPipelineVertexInputStateCreateInfo& vertexInputState)
-{
-	spirv_cross::ShaderResources shaderResources = compiler.get_shader_resources();
-
-	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
-
-	//Vertex Input
-	uint32_t unOffset = 0;
-	for (const spirv_cross::Resource& res : shaderResources.stage_inputs)
-	{
-		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
-
-		const spirv_cross::Meta::Decoration& decoration = ir.meta.at(res.id).decoration;
-		uint32_t unLocation = decoration.location;
-
-		uint32_t unArraySize = type.array.empty() ? 1 : type.array[0];
-	
-		for (uint32_t nArrayIdx = 0; nArrayIdx < unArraySize; ++nArrayIdx)
-		{
-			VkVertexInputAttributeDescription attribute = {};
-			attribute.binding = 0; // 它对应的是vertexBindingDescriptionCount，我们目前只有一个，这个值写死了是0
-			attribute.location = unLocation;
-			attribute.offset = unOffset;
-
-			//	TODO fill attribute
-			if (spirv_cross::SPIRType::BaseType::Float == type.basetype)
-			{
-				if (1 == type.vecsize)
-					attribute.format = VK_FORMAT_R32_SFLOAT;
-				else if (2 == type.vecsize)
-					attribute.format = VK_FORMAT_R32G32_SFLOAT;
-				else if (3 == type.vecsize)
-					attribute.format = VK_FORMAT_R32G32B32_SFLOAT;
-				else if (4 == type.vecsize)
-					attribute.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-				else
-					MLogManager::GetInstance()->Error("Error: vertex input find floatN ?");
-			}
-
-			attributeDescriptions.push_back(attribute);
-
-			unOffset += type.width * type.vecsize;
-			++unLocation;
-		}
-	}
-
-	VkVertexInputBindingDescription bindingDescription{};
-	bindingDescription.binding = 0;
-	bindingDescription.stride = unOffset;
-	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-	vertexInputState = VkPipelineVertexInputStateCreateInfo{};
-	vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputState.vertexBindingDescriptionCount = 1;
-	vertexInputState.pVertexBindingDescriptions = &bindingDescription;
-	vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-	vertexInputState.pVertexAttributeDescriptions = attributeDescriptions.data();
-}
-
-void MVulkanDevice::GetShaderParam(const spirv_cross::Compiler& compiler, const spirv_cross::ParsedIR& ir, MShaderBuffer* pShaderBuffer)
-{
-	spirv_cross::ShaderResources shaderResources = compiler.get_shader_resources();
-
-	for (const spirv_cross::Resource& res : shaderResources.uniform_buffers)
-	{
-		MShaderParam* pParam = new MShaderParam();
-		pParam->strName = res.name;
-
-		pShaderBuffer->m_vShaderParamsTemplate.push_back(pParam);
-	}
-// 	VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-// 	createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]); 	
 }
 
 bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t nWidth, uint32_t nHeight)
