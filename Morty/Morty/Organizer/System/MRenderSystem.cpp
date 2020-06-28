@@ -91,7 +91,7 @@ void MRenderSystem::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* 
 	DrawPainter(info);
 	DrawNormalMesh(info);
 	DrawTransparentMesh(info);
-	//DrawSkyBox(info);
+	DrawSkyBox(info);
 	DrawModelInstance(info);
 }
 
@@ -179,7 +179,7 @@ void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 		cStruct[1] = info.m4DirLightInvProj;
 
 		pWorldMatrixParam->SetDirty();
-		info.pRenderer->SetVertexShaderParam(*pWorldMatrixParam);
+		info.pRenderer->SetShaderParam(*pWorldMatrixParam);
 	}
 
 	if (MShaderParam* pWorldInfoParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_WORLDINFO))
@@ -194,9 +194,7 @@ void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 		(*pWorldInfoParam->var.GetStruct())[2] = info.pViewport->GetSize();
 
 		pWorldInfoParam->SetDirty();
-		info.pRenderer->SetVertexShaderParam(*pWorldInfoParam);
-		pWorldInfoParam->SetDirty();
-		info.pRenderer->SetPixelShaderParam(*pWorldInfoParam);
+		info.pRenderer->SetShaderParam(*pWorldInfoParam);
 	}
 
 	if (MShaderParam* pLightParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_LIGHT))
@@ -276,9 +274,7 @@ void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 		}
 
 		pLightParam->SetDirty();
-		info.pRenderer->SetVertexShaderParam(*pLightParam);
-		pLightParam->SetDirty();
-		info.pRenderer->SetPixelShaderParam(*pLightParam);
+		info.pRenderer->SetShaderParam(*pLightParam);
 	}
 }
 
@@ -315,7 +311,7 @@ void MRenderSystem::DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pM
 	cStruct[1] = matNormal;
 
 	pMeshMatrixParam->SetDirty();
-	pRenderer->SetVertexShaderParam(*pMeshMatrixParam);
+	pRenderer->SetShaderParam(*pMeshMatrixParam);
 
 	if (pAnimationParam)
 	{
@@ -334,7 +330,7 @@ void MRenderSystem::DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pM
 			}
 
 			pAnimationParam->SetDirty();
-			pRenderer->SetVertexShaderParam(*pAnimationParam);
+			pRenderer->SetShaderParam(*pAnimationParam);
 
 		}
 	}
@@ -407,7 +403,7 @@ void MRenderSystem::DrawSkyBox(MRenderInfo& info)
 				cStruct[0] = mat;
 
 				pMeshParam->SetDirty();
-				info.pRenderer->SetVertexShaderParam(*pMeshParam);
+				info.pRenderer->SetShaderParam(*pMeshParam);
 			}
 
 			if (info.pRenderer->SetUseMaterial(pMaterial, true))
@@ -504,7 +500,7 @@ void MRenderSystem::DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pMeshI
 	cStruct[0] = worldTrans;
 
 	pMeshMatrixParam->SetDirty();
-	info.pRenderer->SetVertexShaderParam(*pMeshMatrixParam);
+	info.pRenderer->SetShaderParam(*pMeshMatrixParam);
 
 	if (MModelResource* pModelResource = dynamic_cast<MModelResource*>(pSphereResource))
 	{

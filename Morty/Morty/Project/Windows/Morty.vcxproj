@@ -70,7 +70,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <LibraryPath>$(DXSDK_DIR)Lib\x86;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
-    <OutDir>$(SolutionDir)Build\$(ProjectName)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)Build\$(Platform)\$(ProjectName)\$(Configuration)\</OutDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)Include;</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -82,7 +82,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>$(DXSDK_DIR)Lib\x86;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
-    <OutDir>$(SolutionDir)Build\$(ProjectName)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)Build\$(Platform)\$(ProjectName)\$(Configuration)\</OutDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)Include;</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -97,21 +97,22 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;MORTY_EXPORTS;__STDC_LIMIT_MACROS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(VK_SDK_PATH)/Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/Eigen;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/Organizer;$(SolutionDir)Morty/Organizer/System;$(SolutionDir)Morty/Organizer/Node;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/RefCounter;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Renderer/Vulkan;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Core/Animation</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(VK_SDK_PATH)/Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/Eigen;$(SolutionDir)ThirdParty/SpirvCross/include;$(SolutionDir)ThirdParty/glslang/include;$(SolutionDir)ThirdParty/SPIRV/include;$(SolutionDir)Math3D/Math3D/Math3D/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/Organizer;$(SolutionDir)Morty/Organizer/System;$(SolutionDir)Morty/Organizer/Node;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/RefCounter;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Renderer/Vulkan;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Core/Animation</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>d3d11.lib;d3dx11.lib;dxguid.lib;d3dcompiler.lib;vulkan-1.lib;cximagecrt.lib;assimp-vc120-mt.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Math3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build/Math3D/$(Configuration);$(SolutionDir)ThirdParty/Assimp/lib/vs2013;$(SolutionDir)ThirdParty/CxImage/lib/vs2013;$(DXSDK_DIR)Lib/$(PlatformTarget);$(VK_SDK_PATH)/Lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Platform)\Math3D\$(Configuration);$(SolutionDir)ThirdParty/Assimp/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/CxImage/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/SpirvCross/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/glslang/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/SPIRV/lib/vs2019/$(Platform)/$(Configuration);$(DXSDK_DIR)Lib/$(PlatformTarget);$(VK_SDK_PATH)/Lib</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>
       </Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\Demo\$(Configuration)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -150,7 +151,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;MORTY_EXPORTS;__STDC_LIMIT_MACROS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(VK_SDK_PATH)/Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/Eigen;$(SolutionDir)Build/Math3D/$(Configuration)/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/Organizer;$(SolutionDir)Morty/Organizer/System;$(SolutionDir)Morty/Organizer/Node;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/RefCounter;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Renderer/Vulkan;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Core/Animation</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(VK_SDK_PATH)/Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/Eigen;$(SolutionDir)ThirdParty/SpirvCross/include;$(SolutionDir)ThirdParty/glslang/include;$(SolutionDir)ThirdParty/SPIRV/include;$(SolutionDir)Math3D/Math3D/Math3D/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/Organizer;$(SolutionDir)Morty/Organizer/System;$(SolutionDir)Morty/Organizer/Node;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/RefCounter;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Renderer/Vulkan;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Core/Animation</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -159,14 +160,15 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>d3d11.lib;d3dx11.lib;dxguid.lib;d3dcompiler.lib;vulkan-1.lib;cximagecrt.lib;assimp-vc120-mt.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Math3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build/Math3D/$(Configuration);$(SolutionDir)ThirdParty/Assimp/lib/vs2013;$(SolutionDir)ThirdParty/CxImage/lib/vs2013;$(DXSDK_DIR)Lib/$(PlatformTarget);$(VK_SDK_PATH)/Lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Platform)\Math3D\$(Configuration);$(SolutionDir)ThirdParty/Assimp/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/CxImage/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/SpirvCross/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/glslang/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/SPIRV/lib/vs2019/$(Platform)/$(Configuration);$(DXSDK_DIR)Lib/$(PlatformTarget);$(VK_SDK_PATH)/Lib</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>
       </Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\Demo\$(Configuration)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

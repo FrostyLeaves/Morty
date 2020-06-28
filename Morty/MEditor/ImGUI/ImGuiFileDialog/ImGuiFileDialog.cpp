@@ -25,7 +25,7 @@ SOFTWARE.
 #include "ImGuiFileDialog.h"
 #include "imgui.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <dirent.h>
 #define PATH_SEP '\\'
 #ifndef PATH_MAX

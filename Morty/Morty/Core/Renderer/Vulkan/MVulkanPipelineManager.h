@@ -10,16 +10,15 @@
 #define _M_MVULKANPIPELINEMANAGER_H_
 #include "MGlobal.h"
 
+#if RENDER_GRAPHICS == MORTY_VULKAN
+
 #include "MIDPool.h"
+#include "MVulkanDevice.h"
 
-struct MPipeline
-{
-
-};
 
 struct MIndexPipeline
 {
-    std::vector< MPipeline> m_vPipelines;
+    std::vector<VkPipeline> m_vPipelines;
 };
 
 struct MRenderTargetPipeline
@@ -32,22 +31,38 @@ class MIRenderTarget;
 class MORTY_CLASS MVulkanPipelineManager
 {
 public:
-    MVulkanPipelineManager();
+    MVulkanPipelineManager(MVulkanDevice* pDevice);
     virtual ~MVulkanPipelineManager();
 
 public:
 
-    MPipeline* FindPipeline(MMaterial* pMaterial, MIRenderTarget* pRenderTarget, const uint32_t& unIndex);
+    VkPipeline FindPipeline(MMaterial* pMaterial, MIRenderTarget* pRenderTarget, const uint32_t& unIndex);
+
+    VkPipelineLayout FindPipelineLayout(MMaterial* pMaterial);
 
 public:
-	virtual uint32_t RegisterMaterial(MMaterial* pMaterial) ;
-	virtual void UnRegisterMaterial(MMaterial* pMaterial) ;
+	void RegisterMaterial(MMaterial* pMaterial);
+	void UnRegisterMaterial(MMaterial* pMaterial);
+
+
+public:
+
+    VkPipelineLayout CreateMaterialPipelineLayout(MMaterial* pMaterial);
+
+    void DestroyPipelineLayout(VkPipelineLayout& pPepelineLayout);
+
 private:
 
 	MRepeatIDPool<uint32_t> m_MaterialIDPool;
 
     std::vector<MRenderTargetPipeline> m_vRenderTargets;
+
+    std::vector<VkPipelineLayout> m_vPipelineLayouts;
+
+    MVulkanDevice* m_pDevice;
 };
 
+
+#endif
 
 #endif

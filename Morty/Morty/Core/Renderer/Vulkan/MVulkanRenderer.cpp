@@ -13,6 +13,7 @@
 MVulkanRenderer::MVulkanRenderer(MVulkanDevice* pDevice)
 	: MIRenderer()
 	, m_pDevice(pDevice)
+	, m_PipelineManager(pDevice)
 	, m_VkUsingPipeline(VK_NULL_HANDLE)
 	, m_pUsingMaterial(nullptr)
 {
@@ -103,8 +104,6 @@ void MVulkanRenderer::DrawMesh(MIMesh* pMesh)
 
 	if (MVertexBuffer* pBuffer = pMesh->GetBuffer())
 	{
-		vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkUsingPipeline);
-
 		VkBuffer vertexBuffers[] = { pBuffer->m_VkVertexBuffer };
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(m_VkCommandBuffer, 0, 1, vertexBuffers, offsets);
@@ -121,16 +120,84 @@ void MVulkanRenderer::DrawMesh(MIMesh* pMesh)
 
 bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial, const bool& bUpdateResources /*= false*/)
 {
-	if (VK_NULL_HANDLE != m_VkUsingPipeline)
+	m_VkUsingPipeline = m_PipelineManager.FindPipeline(pMaterial, m_vRenderTargets.top().pRenderTarget, 0);
+	m_VkUsingPipelineLayout = m_PipelineManager.FindPipelineLayout(pMaterial);
+
+
+	vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkUsingPipeline);
+
+
+
+	if (bUpdateResources)
 	{
-		vkDestroyPipeline(m_pDevice->m_VkDevice, m_VkUsingPipeline, nullptr);
+		UpdateMaterialResource();
+		UpdateMaterialParam();
 	}
-	m_VkUsingPipeline = CreateGraphicsPipeline(pMaterial);
-
-
-
 
 	return true;
+}
+
+void MVulkanRenderer::RegisterMaterial(MMaterial* pMaterial)
+{
+	m_PipelineManager.RegisterMaterial(pMaterial);
+}
+
+void MVulkanRenderer::UnRegisterMaterial(MMaterial* pMaterial)
+{
+	m_PipelineManager.UnRegisterMaterial(pMaterial);
+}
+
+void MVulkanRenderer::UpdateShaderParam(MShaderParam& param)
+{
+	if (VK_NULL_HANDLE == param.m_VkBuffer)
+		return;
+
+	uint32_t unSize = param.var.GetSize();
+
+	// Update Memory
+	void* data = nullptr;
+	vkMapMemory(m_pDevice->m_VkDevice, param.m_VkBufferMemory, 0, unSize, 0, &data);
+	memcpy(data, param.var.GetData(), unSize);
+	vkUnmapMemory(m_pDevice->m_VkDevice, param.m_VkBufferMemory);
+
+
+	// Update Uniform
+	MShaderParam param;
+	VkDescriptorBufferInfo bufferInfo{};
+	bufferInfo.buffer = param.m_VkBuffer;
+	bufferInfo.offset = 0;
+	bufferInfo.range = param.var.GetSize();
+
+	VkWriteDescriptorSet descriptorWrite{};
+	descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorWrite.dstSet = param.m_VkDescriptorSet;
+	descriptorWrite.dstBinding = param.unBinding;
+	descriptorWrite.dstArrayElement = 0;
+
+	descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	descriptorWrite.descriptorCount = 1;
+
+	descriptorWrite.pBufferInfo = &bufferInfo;
+	descriptorWrite.pImageInfo = nullptr; // Optional
+	descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+	vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
+
+
+
+
+	param.bDirty = false;
+}
+
+void MVulkanRenderer::SetShaderParam(MShaderParam& param)
+{
+	if (param.bDirty)
+		UpdateShaderParam(param);
+
+
+
+	//Set Use Uniform
+	vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkUsingPipelineLayout, 0, 1, &param.m_VkDescriptorSet, 0, nullptr);
 }
 
 VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial)
@@ -166,33 +233,7 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial)
 
 	VkPipelineVertexInputStateCreateInfo inputStateInfo = static_cast<MVertexShaderBuffer*>(pVertexShader->GetBuffer())->m_VkVertexInputStateInfo;
 
-	VkDescriptorSetLayoutBinding uboLayoutBinding{};
-	uboLayoutBinding.binding = 0;
-	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	uboLayoutBinding.descriptorCount = 1;
-	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-	uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
-
-	VkDescriptorSetLayoutCreateInfo layoutInfo{};
-	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	layoutInfo.bindingCount = 1;
-	layoutInfo.pBindings = &uboLayoutBinding;
-
-	VkDescriptorSetLayout descriptorSetLayout;
-
-	if (vkCreateDescriptorSetLayout(m_pDevice->m_VkDevice, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create descriptor set layout!");
-	}
-
-
-	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 1;
-	pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
-
-	VkPipelineLayout pipelineLayout;
-	if (vkCreatePipelineLayout(m_pDevice->m_VkDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
-		return false;
+	VkPipelineLayout pipelineLayout = m_PipelineManager.FindPipelineLayout(pMaterial);
 
 	MIRenderTarget* pCurRenderTarget = m_vRenderTargets.top().pRenderTarget;
 
@@ -208,7 +249,6 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial)
 	pipelineInfo.pDepthStencilState = nullptr;
 	pipelineInfo.pColorBlendState = nullptr;
 	pipelineInfo.pDynamicState = &dynamicState;
-
 	pipelineInfo.layout = pipelineLayout;
 	pipelineInfo.renderPass = pCurRenderTarget->m_VkRenderPass;
 	pipelineInfo.subpass = 0;

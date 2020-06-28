@@ -110,6 +110,8 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 		pChild->Initialize(pEngine);
 
 	NotifyManager::GetInstance()->RegisterNotify("Edit Material", this, NOTIFY_FUNC(this, MainEditor::Notify_Edit_Material));
+
+	return true;
 }
 
 void MainEditor::Release()

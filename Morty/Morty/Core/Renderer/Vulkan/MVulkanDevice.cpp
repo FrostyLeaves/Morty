@@ -72,6 +72,8 @@ bool MVulkanDevice::Initialize()
 	if (!InitCommandPool())
 		return false;
 	
+	if (!InitDescriptorPool())
+		return false;
 
 
 	GET_INSTANCE_PROC_ADDR(m_VkInstance, GetPhysicalDeviceSurfaceSupportKHR);
@@ -635,6 +637,29 @@ bool MVulkanDevice::InitCommandPool()
 	return true;
 }
 
+bool MVulkanDevice::InitDescriptorPool()
+{
+	uint32_t unSwapChainNum = 1;
+
+	VkDescriptorPoolSize poolSize{};
+	poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSize.descriptorCount = unSwapChainNum;
+
+	VkDescriptorPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.poolSizeCount = 1;
+	poolInfo.pPoolSizes = &poolSize;
+
+	poolInfo.maxSets = unSwapChainNum;
+
+	if (vkCreateDescriptorPool(m_VkDevice, &poolInfo, nullptr, &m_VkDescriptorPool) != VK_SUCCESS)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 bool MVulkanDevice::IsDeviceSuitable(VkPhysicalDevice device)
 {
 	if (-1 == FindQueueGraphicsFamilies(device))
@@ -775,13 +800,8 @@ bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString&
 	if (vkCreateShaderModule(m_VkDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
 		return false;
 
-	//File
-	spirv_cross::Parser parser(spirv);
-	parser.parse();
-	spirv_cross::ParsedIR ir = parser.get_parsed_ir();
-	spirv_cross::Compiler comp(ir);
 
-	spirv_cross::ShaderResources shaderResources = comp.get_shader_resources();
+	spirv_cross::Compiler compiler(spirv);
 
 	VkPipelineShaderStageCreateInfo shaderStageInfo{};
 	shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -792,24 +812,25 @@ bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString&
 	//TODO 用来定义类似于hlsl中的宏的变量
 	shaderStageInfo.pSpecializationInfo = nullptr;
 
+	MShaderBuffer* pBuffer = nullptr;
 	if (MShader::MEShaderType::Vertex == eShaderType)
 	{
-		MVertexShaderBuffer* pBuffer = new MVertexShaderBuffer();
-		pBuffer->m_VkShaderStageInfo = shaderStageInfo;
-		m_ShaderCompiler.GetVertexInputState(comp, ir, pBuffer->m_VkVertexInputStateInfo);
-		m_ShaderCompiler.GetShaderParam(comp, ir, pBuffer);
-
-		*ppShaderBuffer = pBuffer;
+		MVertexShaderBuffer* pVertexBuffer = new MVertexShaderBuffer();
+		m_ShaderCompiler.GetVertexInputState(compiler, pVertexBuffer->m_VkVertexInputStateInfo);
+		pBuffer = pVertexBuffer;
 	}
 	else if (MShader::MEShaderType::Pixel == eShaderType)
 	{
-		MPixelShaderBuffer* pBuffer = new MPixelShaderBuffer();
-		pBuffer->m_VkShaderStageInfo = shaderStageInfo;
-		m_ShaderCompiler.GetShaderParam(comp, ir, pBuffer);
-
-		*ppShaderBuffer = pBuffer;
+		MPixelShaderBuffer* pPixelBuffer = new MPixelShaderBuffer();
+		pBuffer = pPixelBuffer;
 	}
 
+	pBuffer->m_VkShaderStageInfo = shaderStageInfo;
+	m_ShaderCompiler.GetShaderParam(compiler, pBuffer);
+
+
+
+	*ppShaderBuffer = pBuffer;
 	return true;
 }
 
@@ -921,12 +942,24 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t
 
 bool MVulkanDevice::GenerateShaderParamBuffer(MShaderParam* pParam)
 {
+	if (VK_NULL_HANDLE != pParam->m_VkBuffer)
+		DestroyShaderParamBuffer(pParam);
+
 	if (pParam)
 	{
+		//Memory
 		return GenerateBuffer(pParam->var.GetSize(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			pParam->m_VkBuffer, pParam->m_VkBufferMemory);
+		
+
+		VkWriteDescriptorSet writeDescriptorSet;
+
+		writeDescriptorSet.dstSet = VkDescriptorSet();
+
+		return true;
 	}
+
 	return false;
 }
 

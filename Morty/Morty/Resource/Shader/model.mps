@@ -20,15 +20,14 @@ float ShadowCalculation(float4 dirLightSpacePos, float fNdotL)
     shadowTexCoords.y = 0.5f - (dirLightSpacePos.y / dirLightSpacePos.w * 0.5f);
     
 	if (saturate(shadowTexCoords.x) == shadowTexCoords.x && saturate(shadowTexCoords.y) == shadowTexCoords.y)
-    {   
-        float fShadowTextureSize = MSHADOW_TEXTURE_SIZE;
+    {     
         float margin = acos(saturate(fNdotL));
         float epsilon = clamp(margin / 1.570796, 0.001f, 0.003f);
 
         float lighting = 0.0f;
         
         float pixelDepth = dirLightSpacePos.z / dirLightSpacePos.w - epsilon;
-        float offset = 1.0f / fShadowTextureSize;
+        float offset = 1.0f / MSHADOW_TEXTURE_SIZE;
         lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy + float2(0, -offset), pixelDepth));
         lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy + float2(0, offset), pixelDepth));
         lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy + float2(-offset, 0), pixelDepth));

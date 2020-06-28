@@ -13,6 +13,7 @@
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 #include "MIRenderer.h"
+#include "MVulkanPipelineManager.h"
 
 class MVulkanDevice;
 class MORTY_CLASS MVulkanRenderer : public MIRenderer
@@ -37,11 +38,13 @@ public:
 	virtual void UpdateMaterialParam() override {}
 	virtual void UpdateMaterialResource() override {}
 
-public:
-	void UpdateShaderParam(MShaderParam& param) {}
+	virtual void RegisterMaterial(MMaterial* pMaterial) override;
+	virtual void UnRegisterMaterial(MMaterial* pMaterial) override;
 
-	virtual void SetVertexShaderParam(MShaderParam& param) override {}
-	virtual void SetPixelShaderParam(MShaderParam& param) override {}
+public:
+	void UpdateShaderParam(MShaderParam& param);
+
+	virtual void SetShaderParam(MShaderParam& param) override;
 
 	virtual void SetVertexShaderTexture(MShaderTextureParam& param) override {}
 	virtual void SetPixelShaderTexture(MShaderTextureParam& param) override {}
@@ -56,6 +59,8 @@ private:
 
 	MVulkanDevice* m_pDevice;
 
+	MVulkanPipelineManager m_PipelineManager;
+
 	VkPipelineInputAssemblyStateCreateInfo m_InputAssemblyState;
 	VkPipelineRasterizationStateCreateInfo m_RasterizationState;
 	VkPipelineViewportStateCreateInfo m_ViewportState;
@@ -63,6 +68,7 @@ private:
 
 	VkCommandBuffer m_VkCommandBuffer;
 	VkPipeline m_VkUsingPipeline;
+	VkPipelineLayout m_VkUsingPipelineLayout;
 
 	MMaterial* m_pUsingMaterial;
 };

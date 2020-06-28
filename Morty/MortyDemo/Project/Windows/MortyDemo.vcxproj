@@ -70,7 +70,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)Build\$(ProjectName)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)Build\$(Platform)\$(ProjectName)\$(Configuration)\</OutDir>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(SolutionDir)ThirdParty/Vld/Win32</LibraryPath>
     <LibraryWPath>$(WindowsSDK_MetadataPath);</LibraryWPath>
     <CustomBuildAfterTargets>
@@ -90,7 +90,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)Build\$(ProjectName)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)Build\$(Platform)\$(ProjectName)\$(Configuration)\</OutDir>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
     <LibraryWPath>$(WindowsSDK_MetadataPath);</LibraryWPath>
     <CustomBuildAfterTargets>
@@ -121,12 +121,15 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>Morty.lib;Math3D.lib;MEditor.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build/Morty/$(Configuration);$(SolutionDir)Build/MEditor/$(Configuration);$(SolutionDir)Build/Math3D/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build/$(Platform)/Morty/$(Configuration);$(SolutionDir)Build/$(Platform)/MEditor/$(Configuration);$(SolutionDir)Build/$(Platform)/Math3D/$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"
-copy "$(SolutionDir)Build\Math3D\$(Configuration)\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"
-copy "$(SolutionDir)ThirdParty\Assimp\lib\vs2013\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"</Command>
+      <Command>copy "$(SolutionDir)Build\$(Platform)\Math3D\$(Configuration)\*.dll" "$(SolutionDir)Build\$(Platform)\$(ProjectName)\$(Configuration)"
+copy "$(SolutionDir)Build\$(Platform)\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\$(Platform)\$(ProjectName)\$(Configuration)"
+
+copy "$(SolutionDir)ThirdParty\CxImage\lib\vs2019\$(Platform)\*.dll" "$(SolutionDir)Build\$(Platform)\$(ProjectName)\$(Configuration)"
+copy "$(SolutionDir)ThirdParty\Assimp\lib\vs2019\$(Platform)\*.dll" "$(SolutionDir)Build\$(Platform)\$(ProjectName)\$(Configuration)"
+</Command>
     </PreBuildEvent>
     <PreLinkEvent>
       <Command>
@@ -149,7 +152,7 @@ copy "$(SolutionDir)ThirdParty\Assimp\lib\vs2013\*.dll" "$(SolutionDir)Build\$(P
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Morty.lib;Math3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Math3D.lib;Morty.lib;MEditor.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Build/$(Platform)/Morty/$(Configuration);$(SolutionDir)Build/$(Platform)/MEditor/$(Configuration);$(SolutionDir)Build/$(Platform)/Math3D/$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
@@ -184,12 +187,15 @@ copy "$(SolutionDir)ThirdParty\CxImage\lib\vs2019\$(Platform)\*.dll" "$(Solution
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>Morty.lib;Math3D.lib;MEditor.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build/Morty/$(Configuration);$(SolutionDir)Build/MEditor/$(Configuration);$(SolutionDir)Build/Math3D/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build/$(Platform)/Morty/$(Configuration);$(SolutionDir)Build/$(Platform)/MEditor/$(Configuration);$(SolutionDir)Build/$(Platform)/Math3D/$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>copy "$(SolutionDir)Build\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"
-copy "$(SolutionDir)Build\Math3D\$(Configuration)\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"
-copy "$(SolutionDir)ThirdParty\Assimp\lib\vs2013\*.dll" "$(SolutionDir)Build\$(ProjectName)\$(Configuration)\"</Command>
+      <Command>copy "$(SolutionDir)Build\$(Platform)\Math3D\$(Configuration)\*.dll" "$(SolutionDir)Build\$(Platform)\$(ProjectName)\$(Configuration)"
+copy "$(SolutionDir)Build\$(Platform)\Morty\$(Configuration)\*.dll" "$(SolutionDir)Build\$(Platform)\$(ProjectName)\$(Configuration)"
+
+copy "$(SolutionDir)ThirdParty\CxImage\lib\vs2019\$(Platform)\*.dll" "$(SolutionDir)Build\$(Platform)\$(ProjectName)\$(Configuration)"
+copy "$(SolutionDir)ThirdParty\Assimp\lib\vs2019\$(Platform)\*.dll" "$(SolutionDir)Build\$(Platform)\$(ProjectName)\$(Configuration)"
+</Command>
     </PreBuildEvent>
     <PreLinkEvent>
       <Command>
@@ -216,7 +222,7 @@ copy "$(SolutionDir)ThirdParty\Assimp\lib\vs2013\*.dll" "$(SolutionDir)Build\$(P
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Morty.lib;Math3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Math3D.lib;Morty.lib;MEditor.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Build/$(Platform)/Morty/$(Configuration);$(SolutionDir)Build/$(Platform)/MEditor/$(Configuration);$(SolutionDir)Build/$(Platform)/Math3D/$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>

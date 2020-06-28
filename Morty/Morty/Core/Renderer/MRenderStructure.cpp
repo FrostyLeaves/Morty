@@ -125,24 +125,32 @@ MShaderParam::MShaderParam()
 	, unBindPoint(0)
 	, unBindCount(0)
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-
+	, m_VkBuffer(VK_NULL_HANDLE)
+	, m_VkBufferMemory(VK_NULL_HANDLE)
+	, unSet(0)
+	, unBinding(0)
+	, m_VkDescriptorSet(VK_NULL_HANDLE)
 #endif
 {
 
 }
 
-MShaderParam::MShaderParam(const MShaderParam& param)
+MShaderParam::MShaderParam(const MShaderParam& param, const int& unNone)
 	: strName(param.strName)
 	, unCode(param.unCode)
 	, var(param.var)
 	, bDirty(true)
-	, eType(0)
+	, eType(param.eType)
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	, pBuffer(nullptr)
-	, unBindPoint(0)
-	, unBindCount(0)
+	, unBindPoint(param.unBindPoint)
+	, unBindCount(param.unBindCount)
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-
+	, m_VkBuffer(VK_NULL_HANDLE)
+	, m_VkBufferMemory(VK_NULL_HANDLE)
+	, unSet(param.unSet)
+	, unBinding(param.unBinding)
+	, m_VkDescriptorSet(param.m_VkDescriptorSet)
 #endif
 {
 

@@ -116,10 +116,12 @@ enum MEShaderParamType
 	EBoth = 3,
 };
 
-struct MShaderParam
+struct MORTY_CLASS MShaderParam
 {
 	MShaderParam();
-	MShaderParam(const MShaderParam& param);
+
+
+	MShaderParam(const MShaderParam& param, const int& unNone);
 
 	MString strName;
 	uint32_t unCode;
@@ -137,6 +139,10 @@ struct MShaderParam
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 	VkBuffer m_VkBuffer;
 	VkDeviceMemory m_VkBufferMemory;
+
+	VkDescriptorSet m_VkDescriptorSet;
+	uint32_t unSet;
+	uint32_t unBinding;
 #endif
 };
 

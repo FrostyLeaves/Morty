@@ -19,6 +19,12 @@ cbuffer _M_E_cbMeshMatrix : register(b0)
     float3x3 U_matNormal;
 };
 
+[[vk::binding(0,1)]] cbuffer TestB1
+{
+    float2 testf2;
+    float4 testf4;
+};
+
 VS_OUT_EMPTY VS(VS_IN_EMPTY_ANIM input)
 {
     VS_OUT_EMPTY output;

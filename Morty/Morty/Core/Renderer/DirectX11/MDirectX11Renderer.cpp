@@ -475,10 +475,7 @@ void MDirectX11Renderer::UpdateMaterialParam()
 
 	for (MShaderParam& param : *m_pUsingMaterial->GetShaderParams())
 	{
-		if((int)MEShaderParamType::EVertex & param.eType)
-			SetVertexShaderParam(param);
-		if ((int)MEShaderParamType::EPixel & param.eType)
-			SetPixelShaderParam(param);
+		SetShaderParam(param);
 	}
 
 }
@@ -516,20 +513,15 @@ void MDirectX11Renderer::UpdateShaderParam(MShaderParam& param)
 	param.bDirty = false;
 }
 
-void MDirectX11Renderer::SetVertexShaderParam(MShaderParam& param)
+void MDirectX11Renderer::SetShaderParam(MShaderParam& param)
 {
 	if (param.bDirty)
 		UpdateShaderParam(param);
 
-	m_pDevice->m_pD3dContext->VSSetConstantBuffers(param.unBindPoint, param.unBindCount, &param.pBuffer);
-}
-
-void MDirectX11Renderer::SetPixelShaderParam(MShaderParam& param)
-{
-	if (param.bDirty)
-		UpdateShaderParam(param);
-
-	m_pDevice->m_pD3dContext->PSSetConstantBuffers(param.unBindPoint, param.unBindCount, &param.pBuffer);
+	if(param.eType & MShader::MEShaderType::Vertex)
+		m_pDevice->m_pD3dContext->VSSetConstantBuffers(param.unBindPoint, param.unBindCount, &param.pBuffer);
+	if(param.eType & MShader::MEShaderType::Pixel)
+		m_pDevice->m_pD3dContext->PSSetConstantBuffers(param.unBindPoint, param.unBindCount, &param.pBuffer);
 }
 
 void MDirectX11Renderer::SetVertexShaderTexture(MShaderTextureParam& param)

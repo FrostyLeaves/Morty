@@ -54,11 +54,15 @@ public:
 public:
 	void UpdateShaderParam(MShaderParam& param);
 
-	virtual void SetVertexShaderParam(MShaderParam& param) override;
-	virtual void SetPixelShaderParam(MShaderParam& param) override;
+	virtual void SetShaderParam(MShaderParam& param) override;
 
 	virtual void SetVertexShaderTexture(MShaderTextureParam& param) override;
 	virtual void SetPixelShaderTexture(MShaderTextureParam& param) override;
+
+public:
+
+	virtual void RegisterMaterial(MMaterial* pMaterial) {};
+	virtual void UnRegisterMaterial(MMaterial* pMaterial) {};
 
 protected:
 

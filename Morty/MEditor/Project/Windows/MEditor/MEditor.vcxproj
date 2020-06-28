@@ -43,14 +43,14 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -72,7 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)Build\$(ProjectName)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)Build\$(Platform)\$(ProjectName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -80,7 +80,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)Build\$(ProjectName)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)Build\$(Platform)\$(ProjectName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -114,8 +114,9 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>
+      </SDLCheck>
+      <PreprocessorDefinitions>WIN32;MSVC;_DEBUG;_WINDOWS;_USRDLL;MORTY_EXPORTS;__STDC_LIMIT_MACROS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(VK_SDK_PATH)/Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/dirent;$(SolutionDir)ThirdParty/SpirvCross/include;$(SolutionDir)Math3D/Math3D/Math3D/Math;$(SolutionDir)MEditor;$(SolutionDir)MEditor/Editor;$(SolutionDir)MEditor/Editor/Property;$(SolutionDir)MEditor/ImGUI;$(SolutionDir)MEditor/ImGUI/ImGuiFileDialog;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/Organizer;$(SolutionDir)Morty/Organizer/System;$(SolutionDir)Morty/Organizer/Node;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/RefCounter;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Core/Animation</AdditionalIncludeDirectories>
@@ -123,7 +124,19 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>Math3D.lib;Morty.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build/$(Platform)/Morty/$(Configuration);$(SolutionDir)Build/$(Platform)/Math3D/$(Configuration)</AdditionalLibraryDirectories>
     </Link>
+    <Lib>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+    </Lib>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -159,8 +172,9 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>
+      </SDLCheck>
+      <PreprocessorDefinitions>WIN32;MSVC;NDEBUG;_WINDOWS;_USRDLL;MORTY_EXPORTS;__STDC_LIMIT_MACROS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(VK_SDK_PATH)/Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/dirent;$(SolutionDir)ThirdParty/SpirvCross/include;$(SolutionDir)Math3D/Math3D/Math3D/Math;$(SolutionDir)MEditor;$(SolutionDir)MEditor/Editor;$(SolutionDir)MEditor/Editor/Property;$(SolutionDir)MEditor/ImGUI;$(SolutionDir)MEditor/ImGUI/ImGuiFileDialog;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/Organizer;$(SolutionDir)Morty/Organizer/System;$(SolutionDir)Morty/Organizer/Node;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/RefCounter;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Core/Animation</AdditionalIncludeDirectories>
@@ -170,7 +184,15 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>Math3D.lib;Morty.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build/$(Platform)/Morty/$(Configuration);$(SolutionDir)Build/$(Platform)/Math3D/$(Configuration)</AdditionalLibraryDirectories>
     </Link>
+    <Lib>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Editor\IBaseView.h" />

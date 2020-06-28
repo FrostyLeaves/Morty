@@ -51,6 +51,7 @@ public:
 
 	MShaderMacro* GetShaderMacro() { return &m_ShaderMacro; }
 	
+	void SetMaterialID(const uint32_t& unID) { m_unMaterialID = unID; }
 	uint32_t GetMaterialID() { return m_unMaterialID; }
 
 public:

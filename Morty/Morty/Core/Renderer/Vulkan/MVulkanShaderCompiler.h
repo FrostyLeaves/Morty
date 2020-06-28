@@ -9,6 +9,9 @@
 #ifndef _M_VULKANMSHADERCOMPILER_H_
 #define _M_VULKANMSHADERCOMPILER_H_
 #include "MGlobal.h"
+
+#if RENDER_GRAPHICS == MORTY_VULKAN
+
 #include "MShader.h"
 #include "MRenderStructure.h"
 #include "spirv_cross.hpp"
@@ -48,15 +51,20 @@ public:
 
 	void ConvertMacro(const MShaderMacro& macro, MPreamble& preamble);
 
-	void GetVertexInputState(const spirv_cross::Compiler& compiler, const spirv_cross::ParsedIR& ir, VkPipelineVertexInputStateCreateInfo& vertexInputState);
+	void GetVertexInputState(const spirv_cross::Compiler& compiler, VkPipelineVertexInputStateCreateInfo& vertexInputState);
 
-	void GetShaderParam(const spirv_cross::Compiler& compiler, const spirv_cross::ParsedIR& ir, MShaderBuffer* pShaderBuffer);
+	void GetShaderParam(const spirv_cross::Compiler& compiler, MShaderBuffer* pShaderBuffer);
 
 	void ConvertVariant(const spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, MVariant& variant);
+
+	bool ResetVariantType(const spirv_cross::SPIRType& type, MVariant& variant);
 
 private:
 
 };
+
+
+#endif
 
 
 #endif

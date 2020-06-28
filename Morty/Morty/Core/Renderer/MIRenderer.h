@@ -118,16 +118,15 @@ public:
 	virtual void UpdateMaterialResource() = 0;
 
 public:
-	virtual void SetVertexShaderParam(MShaderParam& param) = 0;
-	virtual void SetPixelShaderParam(MShaderParam& param) = 0;
+	virtual void SetShaderParam(MShaderParam& param) = 0;
 
 	virtual void SetVertexShaderTexture(MShaderTextureParam& param) = 0;
 	virtual void SetPixelShaderTexture(MShaderTextureParam& param) = 0;
 
 public:
 
-// 	virtual uint32_t RegisterMaterial(MMaterial* pMaterial);
-// 	virtual void UnRegisterMaterial(MMaterial* pMaterial);
+	virtual void RegisterMaterial(MMaterial* pMaterial) = 0;
+	virtual void UnRegisterMaterial(MMaterial* pMaterial) = 0;
 
 
 protected:

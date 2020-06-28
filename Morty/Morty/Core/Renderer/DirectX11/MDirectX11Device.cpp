@@ -1224,8 +1224,11 @@ bool MDirectX11Device::GenerateShaderParamBuffer(MShaderParam* pParam)
 
 void MDirectX11Device::DestroyShaderParamBuffer(MShaderParam* pParam)
 {
-	pParam->pBuffer->Release();
-	pParam->pBuffer = nullptr;
+	if (pParam->pBuffer)
+	{
+		pParam->pBuffer->Release();
+		pParam->pBuffer = nullptr;
+	}
 }
 
 MVariant MDirectX11Device::GenerateVariableByBuffer(ID3D11ShaderReflectionType* pReflectionType)

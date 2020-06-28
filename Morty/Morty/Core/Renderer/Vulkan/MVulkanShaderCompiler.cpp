@@ -1,5 +1,7 @@
 #include "MVulkanShaderCompiler.h"
 
+#if RENDER_GRAPHICS == MORTY_VULKAN
+
 #include "Logger.h"
 #include "SpvTools.h"
 #include "GlslangToSpv.h"
@@ -133,7 +135,7 @@ void MVulkanShaderCompiler::ConvertMacro(const MShaderMacro& macro, MPreamble& p
 		preamble.AddDef(m.first, m.second);
 }
 
-void MVulkanShaderCompiler::GetVertexInputState(const spirv_cross::Compiler& compiler, const spirv_cross::ParsedIR& ir, VkPipelineVertexInputStateCreateInfo& vertexInputState)
+void MVulkanShaderCompiler::GetVertexInputState(const spirv_cross::Compiler& compiler, VkPipelineVertexInputStateCreateInfo& vertexInputState)
 {
 	spirv_cross::ShaderResources shaderResources = compiler.get_shader_resources();
 
@@ -145,8 +147,7 @@ void MVulkanShaderCompiler::GetVertexInputState(const spirv_cross::Compiler& com
 	{
 		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
 
-		const spirv_cross::Meta::Decoration& decoration = ir.meta.at(res.id).decoration;
-		uint32_t unLocation = decoration.location;
+		uint32_t unLocation = compiler.get_decoration(res.id, spv::Decoration::DecorationLocation);
 
 		uint32_t unArraySize = type.array.empty() ? 1 : type.array[0];
 
@@ -192,7 +193,7 @@ void MVulkanShaderCompiler::GetVertexInputState(const spirv_cross::Compiler& com
 	vertexInputState.pVertexAttributeDescriptions = attributeDescriptions.data();
 }
 
-void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler, const spirv_cross::ParsedIR& ir, MShaderBuffer* pShaderBuffer)
+void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler, MShaderBuffer* pShaderBuffer)
 {
 	spirv_cross::ShaderResources shaderResources = compiler.get_shader_resources();
 
@@ -201,24 +202,26 @@ void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler
 		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
 
 		MShaderParam* pParam = new MShaderParam();
+		pParam->unSet = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
+		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
 		pParam->strName = res.name;
 
 		ConvertVariant(compiler, type, pParam->var);
 
 		pShaderBuffer->m_vShaderParamsTemplate.push_back(pParam);
-	}
-	// 	VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-	// 	createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]); 	
+	}	
 }
 
 void MVulkanShaderCompiler::ConvertVariant(const spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, MVariant& variant)
 {
+	MVariant tempVariant;
+
 	switch (type.basetype)
 	{
 	case spirv_cross::SPIRType::BaseType::Struct:
 	{
-		variant = MStruct();
-		MStruct& srt = *variant.GetStruct();
+		tempVariant = MStruct();
+		MStruct& srt = *tempVariant.GetStruct();
 
 		for (uint32_t i = 0; i < type.member_types.size(); ++i)
 		{
@@ -235,11 +238,103 @@ void MVulkanShaderCompiler::ConvertVariant(const spirv_cross::Compiler& compiler
 		}
 		break;
 	}
-
-
 	default:
+		ResetVariantType(type, tempVariant);
 		break;
 	}
+
+	//Êý×éÅÐ¶Ï
+	if (type.array.empty())
+	{
+		variant.Move(tempVariant);
+	}
+	else
+	{
+		uint32_t unArraySize = type.array[0];
+
+		variant = MVariantArray();
+		MVariantArray& varArray = *variant.GetArray();
+		varArray.Resize(unArraySize);
+
+		for(uint32_t i = 0; i < unArraySize; ++i)
+			varArray[i] = tempVariant;
+	}
+
+}
+
+bool MVulkanShaderCompiler::ResetVariantType(const spirv_cross::SPIRType& type, MVariant& variant)
+{
+	//todo support intN, boolN and matrixNxM
+
+
+	switch (type.basetype)
+	{
+	case spirv_cross::SPIRType::BaseType::Struct:
+		variant = MStruct();
+		return true;
+
+	case spirv_cross::SPIRType::BaseType::Boolean:
+		variant = bool();
+		return true;
+
+	case spirv_cross::SPIRType::BaseType::Int:
+		variant = int();
+		return true;
+
+	case spirv_cross::SPIRType::BaseType::Float:
+	{
+		switch (type.columns)
+		{
+		case 1:
+		{
+			switch (type.vecsize)
+			{
+			case 1:
+				variant = float();
+				return true;
+			case 2:
+				variant = Vector2();
+				return true;
+			case 3:
+				variant = Vector3();
+				return true;
+			case 4:
+				variant = Vector4();
+				return true;
+			default:
+				break;
+			}
+			break;
+		}
+		case 3:
+		{
+			if (3 == type.vecsize)
+			{
+				variant = Matrix3();
+				return true;
+			}
+			break;
+		}
+		case 4:
+		{
+			if (4 == type.vecsize)
+			{
+				variant = Matrix4();
+				return true;
+			}
+			break;
+		}
+
+		default:
+			break;
+		}
+		break;
+	}
+	}
+
+	MLogManager::GetInstance()->Error("Can`t convert MVariant from spirv_cross::SPIRType. Unknow type");
+
+	return false;
 }
 
 MPreamble::MPreamble()
@@ -285,3 +380,6 @@ void MPreamble::AddUndef(std::string undef)
 	m_strText.append(undef);
 	m_strText.append("\n");
 }
+
+
+#endif

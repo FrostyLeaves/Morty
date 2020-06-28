@@ -83,7 +83,7 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 	MStruct& cMeshStruct = *m_pMeshParam->var.GetStruct();
 	cWorldStruct[0] = m_m4LightInvProj;
 	m_pWorldParam->SetDirty();
-	pRenderer->SetVertexShaderParam(*m_pWorldParam);
+	pRenderer->SetShaderParam(*m_pWorldParam);
 
 	for (MShadowRenderGroup& group : *m_pShadowRenderGroup)
 	{
@@ -102,7 +102,7 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 			}
 
 			m_pAnimBonesParam->SetDirty();
-			pRenderer->SetVertexShaderParam(*m_pAnimBonesParam);
+			pRenderer->SetShaderParam(*m_pAnimBonesParam);
 
 			pRenderer->SetUseMaterial(m_pAnimMaterial);
 		}
@@ -117,7 +117,7 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 
 			cMeshStruct[0] = worldTrans;
 			m_pMeshParam->SetDirty();
-			pRenderer->SetVertexShaderParam(*m_pMeshParam);
+			pRenderer->SetShaderParam(*m_pMeshParam);
 
 			pRenderer->UpdateMaterialParam();
 			pRenderer->DrawMesh(pMeshIns->GetMesh());
