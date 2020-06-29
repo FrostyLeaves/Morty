@@ -839,59 +839,77 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 				pParam->unBindPoint = bindDesc.BindPoint;
 				pParam->unBindCount = bindDesc.BindCount;
 
+				uint32_t unCode = SHADER_PARAM_CODE_DEFAULT;
+
 				if (pParam->strName == "_M_E_cbMeshMatrix")
-					pParam->unCode = SHADER_PARAM_CODE_MESH_MATRIX;
+					unCode = SHADER_PARAM_CODE_MESH_MATRIX;
 				else if (pParam->strName == "_M_E_cbWorldMatrix")
-					pParam->unCode = SHADER_PARAM_CODE_WORLD_MATRIX;
+					unCode = SHADER_PARAM_CODE_WORLD_MATRIX;
 				else if (pParam->strName == "cbMaterial")
-					pParam->unCode = SHADER_PARAM_CODE_MATERIAL;
+					unCode = SHADER_PARAM_CODE_MATERIAL;
 				else if (pParam->strName == "_M_E_cbLights")
-					pParam->unCode = SHADER_PARAM_CODE_LIGHT;
+					unCode = SHADER_PARAM_CODE_LIGHT;
 				else if (pParam->strName == "_M_E_cbWorldInfo")
-					pParam->unCode = SHADER_PARAM_CODE_WORLDINFO;
+					unCode = SHADER_PARAM_CODE_WORLDINFO;
 				else if (pParam->strName == "_M_E_cbAnimation")
-					pParam->unCode = SHADER_PARAM_CODE_ANIMATION;
-				else
-					pParam->unCode = SHADER_PARAM_CODE_DEFAULT;
+					unCode = SHADER_PARAM_CODE_ANIMATION;
 
-
-				for (uint32_t i = 0; i < shaderDesc.ConstantBuffers; ++i)
-				{
-					ID3D11ShaderReflectionConstantBuffer* pConstBuffer = pReflector->GetConstantBufferByIndex(i);
-					D3D11_SHADER_BUFFER_DESC bufferDesc;
-					pConstBuffer->GetDesc(&bufferDesc);
-
-					if (bufferDesc.Name == pParam->strName)
-					{
-						pParam->var = MStruct();
-						MStruct& cbufferStruct = *pParam->var.GetStruct();
-						for (uint32_t n = 0; n < bufferDesc.Variables; ++n)
-						{
-							D3D11_SHADER_VARIABLE_DESC varDesc;
-							ID3D11ShaderReflectionVariable* pVar = pConstBuffer->GetVariableByIndex(n);
-							pVar->GetDesc(&varDesc);
-							ID3D11ShaderReflectionType* pType = pVar->GetType();
-							cbufferStruct.AppendMVariant(varDesc.Name, GenerateVariableByBuffer(pType));
-						}
-
-						break;
-					}
-
-				}
+				pParam->unCode = unCode;
+				
+				bool bNeedFillVariant = false;
+				bool bNeedGenerateBuffer = false;
 				
 				if (pParam->unBindPoint < MINTERNAL_SHADER_CBUFFER_NUMBER)
 				{
 					if ((*ppShaderBuffer)->s_vShaderParams.size() <= pParam->unBindPoint)
 						(*ppShaderBuffer)->s_vShaderParams.resize(pParam->unBindPoint + 1);
 
-					if (nullptr == (*ppShaderBuffer)->s_vShaderParams[pParam->unBindPoint])
+					if ((*ppShaderBuffer)->s_vShaderParams[pParam->unBindPoint])
 					{
-						GenerateShaderParamBuffer(pParam);
+						(*ppShaderBuffer)->s_vShaderParams[pParam->unBindPoint]->eType |= pParam->eType;
+					}
+					else
+					{
 						(*ppShaderBuffer)->s_vShaderParams[pParam->unBindPoint] = pParam;
+						bNeedFillVariant = true;
+						bNeedGenerateBuffer = true;
 					}
 				}
 				else
+				{
 					(*ppShaderBuffer)->m_vShaderParamsTemplate.push_back(pParam);
+					bNeedFillVariant = true;
+				}
+
+				if (bNeedFillVariant)
+				{
+					for (uint32_t i = 0; i < shaderDesc.ConstantBuffers; ++i)
+					{
+						ID3D11ShaderReflectionConstantBuffer* pConstBuffer = pReflector->GetConstantBufferByIndex(i);
+						D3D11_SHADER_BUFFER_DESC bufferDesc;
+						pConstBuffer->GetDesc(&bufferDesc);
+
+						if (bufferDesc.Name == pParam->strName)
+						{
+							pParam->var = MStruct();
+							MStruct& cbufferStruct = *pParam->var.GetStruct();
+							for (uint32_t n = 0; n < bufferDesc.Variables; ++n)
+							{
+								D3D11_SHADER_VARIABLE_DESC varDesc;
+								ID3D11ShaderReflectionVariable* pVar = pConstBuffer->GetVariableByIndex(n);
+								pVar->GetDesc(&varDesc);
+								ID3D11ShaderReflectionType* pType = pVar->GetType();
+								cbufferStruct.AppendMVariant(varDesc.Name, GenerateVariableByBuffer(pType));
+							}
+
+							break;
+						}
+					}
+					if (bNeedGenerateBuffer)
+					{
+						GenerateShaderParamBuffer(pParam);
+					}
+				}
 
 			}
 			else if (D3D_SHADER_INPUT_TYPE::D3D_SIT_TEXTURE == bindDesc.Type)

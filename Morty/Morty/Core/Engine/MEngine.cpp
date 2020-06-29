@@ -203,7 +203,6 @@ bool MEngine::InitializeDefaultResource()
 	pSkyBoxMaterialRes->LoadVertexShader(pSkyBoxVSResource);
 	pSkyBoxMaterialRes->LoadPixelShader(pSkyBoxPSResource);
 
-	MResource* pSphereResource = GetResourceManager()->LoadResource("./Model/Sphere/Sphere.model");
 
 
 	const MString vTexturePath[6] = {
@@ -246,11 +245,13 @@ bool MEngine::InitializeDefaultResource()
 	MTexture* pWhiteTexture = pWhiteTextureRes->GetTextureTemplate();
 	pWhiteTexture->SetSize(Vector2(1, 1));
 	pWhiteTexture->FillColor(MColor(1, 1, 1, 1));
+	pWhiteTextureRes->AddRef();
 
 	MTextureResource* pBlackTextureRes = GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_BLACK);
 	MTexture* pBlackTexture = pBlackTextureRes->GetTextureTemplate();
 	pBlackTexture->SetSize(Vector2(1, 1));
 	pBlackTexture->FillColor(MColor(0, 0, 0, 1));
+	pBlackTextureRes->AddRef();
 
 	MTextureResource* pNormalMapRes = GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_NORMALMAP);
 	MTexture* pNormalMap = pNormalMapRes->GetTextureTemplate();
@@ -263,6 +264,9 @@ bool MEngine::InitializeDefaultResource()
 	pTextureMaterial->SetMaterialType(MEMaterialType::EBlendTransparent);
 	pTextureMaterial->LoadVertexShader(pDPVSResource);
 	pTextureMaterial->LoadPixelShader(pDPPSResource);
+
+
+	MResource* pSphereResource = GetResourceManager()->LoadResource("./Model/Sphere/Sphere.model");
 
 	return true;
 }

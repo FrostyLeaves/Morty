@@ -149,15 +149,15 @@ int main(int argc, char* argv[])
 // 
 
 // 	{
-// 		{
-			MModelConverter conver(&engine);
-			conver.Convert("./Model/Pikachu.fbx", "./Model", "Pikachu");
-// 		}
+//  		{
+// 			MModelConverter conver(&engine);
+// 			conver.Convert("./Model/Pikachu.fbx", "./Model", "Pikachu");
+//  		}
 // // 		engine.Release();
 // // 		return 0;
 // 	}
 
-
+	 
 #ifdef MORTY_EDITOR_ENABLE
 
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
@@ -165,7 +165,7 @@ int main(int argc, char* argv[])
 
 	auto time = MTimer::GetCurTime();
 
-	MModelResource* pGroundResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/cat/Pikachu.model"));
+	MModelResource* pGroundResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/Sphere/Sphere.model"));
 
 	time = MTimer::GetCurTime() - time;
 
