@@ -43,7 +43,10 @@ public:
 
 	virtual void SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth) override;
 	virtual void RecoverRenderTarget(RenderTargetPair& pRenderTarget) override;
-	virtual void ClearRenderTarget(MIRenderTarget* pRenderTarget) override;
+
+	virtual void ClearRenderTargetView(MIRenderTarget* pRenderTarget, const uint32_t& unViewIndex, const MColor& color) override;
+	virtual void ClearDepthTexture(MRenderDepthTexture* pDepthTexture) override;
+
 public:
 	virtual void DrawMesh(MIMesh* pMesh) override;
 

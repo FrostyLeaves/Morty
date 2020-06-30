@@ -12,6 +12,7 @@
 #include "MString.h"
 #include "Matrix.h"
 #include "MVertex.h"
+#include "Type/MColor.h"
 #include "MRenderStructure.h"
 
 #include <stack>
@@ -104,7 +105,9 @@ public:
 	void Render(MIRenderTarget* pRenderTarget);
 	void Render(MIRenderTarget* pRenderTarget, MRenderDepthTexture* pDepthTexture);
 	virtual void RecoverRenderTarget(RenderTargetPair& pRenderTarget) = 0;
-	virtual void ClearRenderTarget(MIRenderTarget* pRenderTarget) = 0;
+
+	virtual void ClearRenderTargetView(MIRenderTarget* pRenderTarget, const uint32_t& unViewIndex, const MColor& color) = 0;
+	virtual void ClearDepthTexture(MRenderDepthTexture* pDepthTexture) = 0;
 
 	virtual void AddOutputView(MIRenderView* pView) = 0;
 

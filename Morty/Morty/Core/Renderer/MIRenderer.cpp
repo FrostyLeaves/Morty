@@ -22,8 +22,6 @@ void MIRenderer::Render(MIRenderTarget* pRenderTarget, MRenderDepthTexture* pDep
 {
 	if (pRenderTarget)
 	{
-		ClearRenderTarget(pRenderTarget);
-
 		RenderTargetPair rtp(pRenderTarget, pDepthTexture);
 
 		m_vRenderTargets.push(rtp);

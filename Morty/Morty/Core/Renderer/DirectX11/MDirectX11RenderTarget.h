@@ -30,8 +30,8 @@ public:
 	MDirectX11RenderTarget(MDirectX11Device* pDevice);
 	~MDirectX11RenderTarget();
 
-	virtual void SetBackgroundColor(const uint32_t& unTargetIndex, const MColor& color) override { m_backgroundColor = color; }
-	virtual const MColor& GetBackgroundColor(const uint32_t& unTargetIndex) const override { return m_backgroundColor; }
+	void SetBackgroundColor(const uint32_t& unTargetIndex, const MColor& color) { m_backgroundColor = color; }
+	const MColor& GetBackgroundColor(const uint32_t& unTargetIndex) const { return m_backgroundColor; }
 
 	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
 

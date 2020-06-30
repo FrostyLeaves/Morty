@@ -347,20 +347,21 @@ void MDirectX11Renderer::RecoverRenderTarget(RenderTargetPair& rtp)
 	}
 }
 
-void MDirectX11Renderer::ClearRenderTarget(MIRenderTarget* pRenderTarget)
+void MDirectX11Renderer::ClearRenderTargetView(MIRenderTarget* pRenderTarget, const uint32_t& unViewIndex, const MColor& color)
 {
-	if (pRenderTarget->m_pDepthStencilView)
-		m_pDevice->m_pD3dContext->ClearDepthStencilView(pRenderTarget->m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
-	if (pRenderTarget->m_vpRenderTargetView)
+	if (pRenderTarget)
 	{
-		uint32_t unTargetSize = pRenderTarget->GetTargetViewNum();
-		for (uint32_t i = 0; i < unTargetSize; ++i)
+		m_pDevice->m_pD3dContext->ClearRenderTargetView(pRenderTarget->m_vpRenderTargetView[unViewIndex], color.m);
+	}
+}
+
+void MDirectX11Renderer::ClearDepthTexture(MRenderDepthTexture* pDepthTexture)
+{
+	if (MDepthTextureBuffer* pBuffer = pDepthTexture->GetDepthBuffer())
+	{
+		if (pBuffer->m_pDepthStencilView)
 		{
-			if (pRenderTarget->GetNeedCleanTargetView(i))
-			{
-				m_pDevice->m_pD3dContext->ClearRenderTargetView(pRenderTarget->m_vpRenderTargetView[i], pRenderTarget->GetBackgroundColor(i).m);
-			}
+			m_pDevice->m_pD3dContext->ClearDepthStencilView(pBuffer->m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		}
 	}
 }

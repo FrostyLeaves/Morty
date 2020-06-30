@@ -29,11 +29,6 @@ class MORTY_CLASS MIRenderTarget
 {
 public:
 
-	struct MInitializeInfo
-	{
-		bool bCleanTargetView;
-	};
-
 
 	MIRenderTarget();
 	virtual ~MIRenderTarget() {}
@@ -41,11 +36,6 @@ public:
 	uint32_t GetTargetViewNum() const { return m_unTargetViewNum; }
 	
 	virtual MRenderDepthTexture* GetDepthTexture() = 0;
-
-	virtual void SetBackgroundColor(const uint32_t& unTargetIndex, const MColor& color) = 0;
-	virtual const MColor& GetBackgroundColor(const uint32_t& unTargetIndex) const { return MColor::Black; }
-
-	virtual bool GetNeedCleanTargetView(const uint32_t& unTargetIndex) const { return true; }
 
 public:
 

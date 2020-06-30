@@ -4,6 +4,7 @@
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
 
+#include "MDirectX11RenderTarget.h"
 
 #include "MDirectX11Device.h"
 #include "MEngine.h"
@@ -187,7 +188,12 @@ void MainEditor::SetRenderTarget(MIRenderTarget* pRenderTarget)
 		v4BackgroundColor.x = (v4BackgroundColor.x + 0.5f) * 0.5f;
 		v4BackgroundColor.y = (v4BackgroundColor.y + 0.5f) * 0.5f;
 		v4BackgroundColor.z = (v4BackgroundColor.z + 0.5f) * 0.5f;
-		GetRenderTarget()->SetBackgroundColor(0, MColor(v4BackgroundColor.x, v4BackgroundColor.y, v4BackgroundColor.z, v4BackgroundColor.w));
+
+
+		if (MDirectX11RenderTarget* pRt = dynamic_cast<MDirectX11RenderTarget*>(GetRenderTarget()))
+		{
+			pRt->SetBackgroundColor(0, MColor(v4BackgroundColor.x, v4BackgroundColor.y, v4BackgroundColor.z, v4BackgroundColor.w));
+		}
 	}
 }
 

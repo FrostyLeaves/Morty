@@ -5,6 +5,7 @@
 #include "MWindowsRenderView.h"
 #include "MDirectX11Device.h"
 #include "MLogManager.h"
+#include "MIRenderer.h"
 #include "MViewport.h"
 #include "MTexture.h"
 
@@ -143,6 +144,10 @@ void MDirectX11RenderTarget::OnRender(MIRenderer* pRenderer)
 {
 	if (nullptr == m_pView)
 		return;
+
+	pRenderer->ClearDepthTexture(GetDepthTexture());
+	pRenderer->ClearRenderTargetView(this, 0, m_backgroundColor);
+
 
 	m_pView->OnRenderBegin();
 	for (MViewport* pViewport : m_pView->GetViewports())

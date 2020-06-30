@@ -12,39 +12,16 @@ MTextureRenderTarget::MTextureRenderTarget()
 	: MIRenderTarget()
 	, m_vBackTexture(nullptr)
 	, m_pDepthTexture(new MRenderDepthTexture())
-	, m_vBackgroundColor(nullptr)
 	, m_eRenderTargetType(ERenderNone)
 	, m_fWidth(0)
 	, m_fHeight(0)
 {
 	m_unTargetViewNum = 1;
-
-	for (uint32_t i = 0; i < 8; ++i)
-		m_vNeedCleanBeforeRender[i] = true;
 }
 
 MTextureRenderTarget::~MTextureRenderTarget()
 {
 	Release(m_pEngine->GetDevice());
-}
-
-void MTextureRenderTarget::SetBackgroundColor(const uint32_t& unTargetIndex, const MColor& color)
-{
-	M_RETURN_OVER_RANGE(unTargetIndex, 0, m_unTargetViewNum);
-
-	m_vBackgroundColor[unTargetIndex] = color;
-}
-
-const MColor& MTextureRenderTarget::GetBackgroundColor(const uint32_t& unTargetIndex) const
-{
-	return m_vBackgroundColor[unTargetIndex];
-}
-
-bool MTextureRenderTarget::GetNeedCleanTargetView(const uint32_t& unTargetIndex) const
-{
-	M_RETURN_OVER_RANGE(unTargetIndex, 0, 8, (true));
-
-	return m_vNeedCleanBeforeRender[unTargetIndex];
 }
 
 void MTextureRenderTarget::Initialize(const uint32_t& eType, const uint32_t& unWidth, const uint32_t& unHeight)
@@ -61,7 +38,6 @@ void MTextureRenderTarget::Initialize(const uint32_t& eType, const uint32_t& unW
 	{
 		m_unTargetViewNum = vTextureTypes.size();
 		m_vBackTexture = new MRenderTargetTexture[m_unTargetViewNum];
-		m_vBackgroundColor = new MColor[m_unTargetViewNum];
 
 		for (uint32_t i = 0; i < m_unTargetViewNum; ++i)
 		{
@@ -71,7 +47,6 @@ void MTextureRenderTarget::Initialize(const uint32_t& eType, const uint32_t& unW
 	else
 	{
 		m_unTargetViewNum = 0;
-		m_vBackgroundColor = nullptr;
 		m_vBackTexture = nullptr;
 	}
 
@@ -124,9 +99,6 @@ void MTextureRenderTarget::Release(MIDevice* pDevice)
 
 		delete[] m_vBackTexture;
 		m_vBackTexture = nullptr;
-
-		delete[] m_vBackgroundColor;
-		m_vBackgroundColor = nullptr;
 	}
 
 	if (m_pDepthTexture)

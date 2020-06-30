@@ -70,6 +70,9 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 	if (nullptr == m_pShadowRenderGroup)
 		return;
 
+	pRenderer->ClearDepthTexture(GetDepthTexture());
+
+
 	if (nullptr == m_pMeshParam)
 		m_pMeshParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
 	if (nullptr == m_pWorldParam)

@@ -41,11 +41,6 @@ public:
 	MRenderTargetTexture* GetBackTexture(const uint32_t& unIndex = 0) { return &m_vBackTexture[unIndex]; }
 	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
 
-	virtual void SetBackgroundColor(const uint32_t& unTargetIndex, const MColor& color) override;
-	virtual const MColor& GetBackgroundColor(const uint32_t& unTargetIndex) const override;
-
-	virtual bool GetNeedCleanTargetView(const uint32_t& unTargetIndex) const override;
-
 	uint32_t GetRenderTargetType() { return m_eRenderTargetType; }
 
 public:
@@ -60,13 +55,11 @@ public:
 	virtual void Release(MIDevice* pDevice) override;
 
 public:
-	bool m_vNeedCleanBeforeRender[8];
 
 	MRenderTargetTexture* m_vBackTexture;
 	MRenderDepthTexture* m_pDepthTexture;
 protected:
 
-	MColor* m_vBackgroundColor;
 	uint32_t m_eRenderTargetType;
 	uint32_t m_fWidth;
 	uint32_t m_fHeight;

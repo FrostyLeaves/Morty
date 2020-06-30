@@ -41,13 +41,6 @@ void MTransparentRenderTarget::OnCreated()
 
 	Initialize(MTextureRenderTarget::ERenderBack | MTextureRenderTarget::ERenderDepth, 0, 0, vTextureTypes);
 
-	m_vBackgroundColor[0] = MColor::Black_T;
-	m_vBackgroundColor[1] = MColor::Black_T;
-	m_vBackgroundColor[2] = MColor::White;
-	m_vBackgroundColor[3] = MColor::Black_T;
-	m_vBackgroundColor[4] = MColor::White;
-	m_vBackgroundColor[5] = MColor::Black_T;
-
 	MTextureResource* pBlackTextureRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_BLACK);
 	MTextureResource* pWhiteTextureRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_WHITE);
 
@@ -69,9 +62,6 @@ void MTransparentRenderTarget::Render(MIRenderer* pRenderer, MIRenderTarget* pRe
 
 	for (uint32_t i = 0; i < 3; ++i)
 	{
-		m_vNeedCleanBeforeRender[0] = false;
-		m_vNeedCleanBeforeRender[1] = false;
-
 		if (i % 2 == 0)
 		{
 			m_vpRenderTargetView[2] = m_vBackTexture[2].GetRenderBuffer()->m_pRenderTargetView;
@@ -82,8 +72,10 @@ void MTransparentRenderTarget::Render(MIRenderer* pRenderer, MIRenderTarget* pRe
 				m_pFrontDepthTexture = m_pBlackTexture;
 				m_pBackDepthTexture = m_pWhiteTexture;
 
-				m_vNeedCleanBeforeRender[0] = true;
-				m_vNeedCleanBeforeRender[1] = true;
+
+				pRenderer->ClearDepthTexture(GetDepthTexture());
+				pRenderer->ClearRenderTargetView(this, 0, MColor::Black_T);
+				pRenderer->ClearRenderTargetView(this, 1, MColor::Black_T);
 			}
 			else
 			{
@@ -100,6 +92,9 @@ void MTransparentRenderTarget::Render(MIRenderer* pRenderer, MIRenderTarget* pRe
 			m_pBackDepthTexture = &m_vBackTexture[3];
 		}
 
+
+		pRenderer->ClearRenderTargetView(this, 2, MColor::White);
+		pRenderer->ClearRenderTargetView(this, 3, MColor::Black_T);
 		pRenderer->Render(this, pRenderTarget->GetDepthTexture());
 	}
 	
