@@ -295,7 +295,7 @@ int main(int argc, char* argv[])
 
 #else
 	MScene* pScene = engine.GetObjectManager()->CreateObject<MScene>();
-	pScene->SetRootNode(nullptr);
+	pScene->SetRootNode(pRootNode);
 	MWindowsRenderView* pView = new MWindowsRenderView();
 	pView->Initialize(&engine, "Morty");
 	MViewport* pViewport = engine.GetObjectManager()->CreateObject<MViewport>();
@@ -304,13 +304,10 @@ int main(int argc, char* argv[])
 	pViewport->SetSize(Vector2(pView->GetViewWidth(), pView->GetViewWidth()));
 	pViewport->SetScene(pScene);
 	engine.AddView(pView);
-
-	pViewport->SetSize(Vector2(pView->GetViewWidth(), pView->GetViewHeight()));
+	engine.SetScene(pScene);
 #endif
 
 	
-
-
 // 	MWindowsRenderView* pTestView = new MWindowsRenderView();
 // 	pTestView->Initialize(&engine, "Test");
 // 	engine.AddView(pTestView);

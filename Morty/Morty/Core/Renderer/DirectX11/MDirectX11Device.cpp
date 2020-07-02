@@ -125,19 +125,19 @@ void MDirectX11Device::Release()
 		m_pD3dContext = nullptr;
 	}
 
-#if defined(DEBUG) || defined(_DEBUG)
-	ID3D11Debug *d3dDebug;
-	HRESULT hr = m_pD3dDevice->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(&d3dDebug));
-	if (SUCCEEDED(hr))
-	{
-		hr = d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-	}
-	if (d3dDebug != nullptr)
-	{
-		d3dDebug->Release();
-		d3dDebug = nullptr;
-	}
-#endif
+// #if defined(DEBUG) || defined(_DEBUG)
+// 	ID3D11Debug *d3dDebug;
+// 	HRESULT hr = m_pD3dDevice->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(&d3dDebug));
+// 	if (SUCCEEDED(hr))
+// 	{
+// 		hr = d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+// 	}
+// 	if (d3dDebug != nullptr)
+// 	{
+// 		d3dDebug->Release();
+// 		d3dDebug = nullptr;
+// 	}
+// #endif
 
 	if (m_pD3dDevice)
 	{
