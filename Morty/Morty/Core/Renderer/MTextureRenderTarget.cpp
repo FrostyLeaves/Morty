@@ -10,13 +10,12 @@ M_OBJECT_IMPLEMENT(MTextureRenderTarget, MObject)
 
 MTextureRenderTarget::MTextureRenderTarget()
 	: MIRenderTarget()
-	, m_vBackTexture(nullptr)
-	, m_pDepthTexture(new MRenderDepthTexture())
+	, m_vBackTexture()
+	, m_pDepthTexture(nullptr)
 	, m_eRenderTargetType(ERenderNone)
 	, m_fWidth(0)
 	, m_fHeight(0)
 {
-	m_unTargetViewNum = 1;
 }
 
 MTextureRenderTarget::~MTextureRenderTarget()
@@ -24,35 +23,60 @@ MTextureRenderTarget::~MTextureRenderTarget()
 	Release(m_pEngine->GetDevice());
 }
 
-void MTextureRenderTarget::Initialize(const uint32_t& eType, const uint32_t& unWidth, const uint32_t& unHeight)
+void MTextureRenderTarget::SetBackTexture(MRenderTargetTexture* pBackTexture, const uint32_t& unIndex)
 {
-	static std::vector<MERenderTextureType> vDefaultArray{MERenderTextureType::ERGBA8};
-	Initialize(eType, unWidth, unHeight, vDefaultArray);
+	if (m_vBackTexture.size() < unIndex + 1)
+		m_vBackTexture.resize(unIndex + 1);
+
+	m_vBackTexture[unIndex] = pBackTexture;
 }
 
-void MTextureRenderTarget::Initialize(const uint32_t& eType, const uint32_t& unWidth, const uint32_t& unHeight, const std::vector<MERenderTextureType>& vTextureTypes)
+void MTextureRenderTarget::SetDepthTexture(MRenderDepthTexture* pDepthTexture)
 {
-	m_eRenderTargetType = eType;
-
-	if (vTextureTypes.size() > 0)
-	{
-		m_unTargetViewNum = vTextureTypes.size();
-		m_vBackTexture = new MRenderTargetTexture[m_unTargetViewNum];
-
-		for (uint32_t i = 0; i < m_unTargetViewNum; ++i)
-		{
-			m_vBackTexture[i].SetType(vTextureTypes[i]);
-		}
-	}
-	else
-	{
-		m_unTargetViewNum = 0;
-		m_vBackTexture = nullptr;
-	}
-
-
-	OnResize(unWidth, unHeight);
+	m_pDepthTexture = pDepthTexture;
 }
+
+// void MTextureRenderTarget::Initialize(const uint32_t& eType, const uint32_t& unWidth, const uint32_t& unHeight)
+// {
+// 	static std::vector<MERenderTextureType> vDefaultArray{MERenderTextureType::ERGBA8};
+// 	Initialize(eType, unWidth, unHeight, vDefaultArray);
+// }
+
+void MTextureRenderTarget::ResizeAllTexture(const Vector2& v2Size)
+{
+	for (uint32_t i = 0; i < m_vBackTexture.size(); ++i)
+	{
+		if (m_vBackTexture[i])
+			m_vBackTexture[i]->SetSize(v2Size);
+	}
+
+	if (m_pDepthTexture)
+		m_pDepthTexture->SetSize(v2Size);
+}
+
+// void MTextureRenderTarget::Initialize(const uint32_t& eType, const uint32_t& unWidth, const uint32_t& unHeight, const std::vector<MERenderTextureType>& vTextureTypes)
+// {
+// 	m_eRenderTargetType = eType;
+// 
+// 	if (vTextureTypes.size() > 0)
+// 	{
+// 		m_unTargetViewNum = vTextureTypes.size();
+// 		m_vBackTexture = new MRenderTargetTexture[m_unTargetViewNum];
+// 
+// 		for (uint32_t i = 0; i < m_unTargetViewNum; ++i)
+// 		{
+// 			m_vBackTexture[i].SetType(vTextureTypes[i]);
+// 		}
+// 	}
+// 	else
+// 	{
+// 		m_unTargetViewNum = 0;
+// 		m_vBackTexture = nullptr;
+// 	}
+// 
+// 
+// 	//OnResize(unWidth, unHeight);
+// }
 
 void MTextureRenderTarget::OnCreated()
 {
@@ -60,53 +84,39 @@ void MTextureRenderTarget::OnCreated()
 
 }
 
-void MTextureRenderTarget::OnResize(const uint32_t& nWidth, const uint32_t& nHeight)
-{
-	if (m_fWidth == nWidth && m_fHeight == nHeight)
-		return;
-
-	m_fWidth = nWidth;
-	m_fHeight = nHeight;
-
-	m_pEngine->GetDevice()->DestroyRenderTarget(this);
-
-	Vector2 v2Size(nWidth, nHeight);
-
-	if (m_vBackTexture && (m_eRenderTargetType & METextureRenderTargetType::ERenderBack))
-	{
-		for (uint32_t i = 0; i < GetTargetViewNum(); ++i)
-			m_vBackTexture[i].SetSize(v2Size);
-	}
-
-	if (m_pDepthTexture && (m_eRenderTargetType & METextureRenderTargetType::ERenderDepth))
-		m_pDepthTexture->SetSize(v2Size);
-
-
-	if (nWidth == 0 || nHeight == 0)
-		return;
-
-	m_pEngine->GetDevice()->GenerateRenderTarget(this, nWidth, nHeight);
-}
-
 void MTextureRenderTarget::Release(MIDevice* pDevice)
 {
-	pDevice->DestroyRenderTarget(this);
 
-	if (m_vBackTexture)
+}
+
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+std::vector<struct ID3D11RenderTargetView*> MTextureRenderTarget::GetRenderTargetViews()
+{
+	std::vector<struct ID3D11RenderTargetView*> views(m_vBackTexture.size());
+	for (uint32_t i = 0; i < m_vBackTexture.size(); ++i)
 	{
-		for (uint32_t i = 0; i < GetTargetViewNum(); ++i)
-			m_vBackTexture[i].DestroyTexture(pDevice);
-
-		delete[] m_vBackTexture;
-		m_vBackTexture = nullptr;
+		if (m_vBackTexture[i])
+		{
+			if (MRenderTextureBuffer* pBuffer = m_vBackTexture[i]->GetRenderBuffer())
+			{
+				views[i] = pBuffer->m_pRenderTargetView;
+			}
+		}
 	}
 
+	return views;
+}
+
+struct ID3D11DepthStencilView* MTextureRenderTarget::GetDepthStencilView()
+{
 	if (m_pDepthTexture)
 	{
-		m_pDepthTexture->DestroyTexture(pDevice);
-		delete m_pDepthTexture;
-		m_pDepthTexture = nullptr;
+		if (MDepthTextureBuffer* pBuffer = m_pDepthTexture->GetDepthBuffer())
+		{
+			return pBuffer->m_pDepthStencilView;
+		}
 	}
 
-//	MIRenderTarget::Release(pDevice);
+	return nullptr;
 }
+#endif

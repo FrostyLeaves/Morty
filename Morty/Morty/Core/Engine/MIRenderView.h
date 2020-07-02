@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "Vector.h"
+#include "Type/MColor.h"
 
 class MEngine;
 class MViewport;
@@ -28,8 +29,8 @@ public:
 
 public:
 
-	virtual bool Initialize(MEngine* pEngine, const char* svWindowName) = 0;
-	virtual void Release() = 0;
+	virtual bool Initialize(MEngine* pEngine, const char* svWindowName) { return true; };
+	virtual void Release();
 
 	virtual int GetViewWidth() = 0;
 	virtual int GetViewHeight() = 0;
@@ -50,6 +51,9 @@ public:
 	MIRenderTarget* GetRenderTarget() { return m_pRenderTarget; }
 	virtual void SetRenderTarget(MIRenderTarget* pRenderTarget) {m_pRenderTarget = pRenderTarget;}
 
+	void SetBackColor(const MColor& color) { m_BackColor = color; }
+	MColor GetBackColor()const { return m_BackColor; }
+
 protected:
 
 	friend class MEngine;
@@ -58,6 +62,8 @@ protected:
 	MEngine* m_pEngine;
 
 	MIRenderTarget* m_pRenderTarget;
+
+	MColor m_BackColor;
 };
 
 

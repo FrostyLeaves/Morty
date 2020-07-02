@@ -8,6 +8,8 @@
 #include "MBounds.h"
 #include "Node/Light/MDirectionalLight.h"
 
+#include "MForwardRenderProgram.h"
+
 M_OBJECT_IMPLEMENT(MViewport, MObject)
 
 #define Vector3Intersection(a, b, p) {\
@@ -40,6 +42,7 @@ MViewport::MViewport()
 	, m_v2ScreenPosition(0, 0)
 	, m_v2ScreenScale(1, 1)
 	, m_cameraFrustum()
+	, m_pRenderProgram(nullptr)
 {
 
 }
@@ -143,10 +146,19 @@ void MViewport::OnCreated()
 
 	//Init Default Camera.
 	m_pDefaultCamera = m_pEngine->GetObjectManager()->CreateObject<MCamera>();
+
+
+	RegisterRenderProgram<MIRenderProgram>();
 }
 
 void MViewport::OnDelete()
 {
+	if (m_pRenderProgram)
+	{
+		m_pRenderProgram->DeleteLater();
+		m_pRenderProgram = nullptr;
+	}
+
 	if (m_pDefaultCamera)
 	{
 		m_pDefaultCamera->DeleteLater();
@@ -170,12 +182,14 @@ void MViewport::Render(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget)
 {
 	if (nullptr == m_pScene)
 		return;
+	if (nullptr == m_pRenderProgram)
+		return;
 
 	UpdateMatrix();
 	m_cameraFrustum.UpdateFromCameraInvProj(this->GetCameraInverseProjection());
 	m_bCameraInvProjMatrixLocked = true;
 	
-	m_pScene->Render(pRenderer, this, pRenderTarget);
+	m_pRenderProgram->Render(pRenderer, this, m_pScene, pRenderTarget);
 	
 	m_bCameraInvProjMatrixLocked = false;
 }

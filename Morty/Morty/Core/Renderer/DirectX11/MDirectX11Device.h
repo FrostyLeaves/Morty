@@ -55,9 +55,6 @@ public:
 	virtual bool GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t nWidth, uint32_t nHeight) override;
 	virtual void DestroyRenderTarget(MIRenderTarget* pRenderTarget) override;
 
-	virtual bool GenerateRenderTarget(MTextureRenderTarget* pRenderTarget, uint32_t nWidth, uint32_t nHeight) override;
-	virtual void DestroyRenderTarget(MTextureRenderTarget* pRenderTarget) override;
-
 	virtual bool GenerateShaderParamBuffer(MShaderParam* pParam) override;
 	virtual void DestroyShaderParamBuffer(MShaderParam* pParam) override;
 

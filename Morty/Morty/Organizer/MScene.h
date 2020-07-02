@@ -12,7 +12,6 @@
 #include "MObject.h"
 #include "Matrix.h"
 #include "MEngine.h"
-#include "MISystem.h"
 
 #include "MMaterialGroup.h"
 
@@ -60,22 +59,9 @@ public:
 
 	MSkyBox* GetSkyBox() { return m_pSkyBox; }
 	MTransformCoord3D* GetTransformCoord() { return m_pTransformCoord3D; }
-	MShadowTextureRenderTarget* GetShadowRenderTarget() { return m_pShadowDepthMapRenderTarget; }
-	MTransparentRenderTarget* GetTransparentRenderTarget() { return m_pTransparentRenderTarget; }
 
 	std::vector<MMaterialGroup*>& GetMaterialGroup() { return m_vMaterialGroups; }
 
-public:
-
-	template<typename SYSTEM>
-	void RegisterSystem()
-	{
-		if (MTypedClass::IsType<SYSTEM, MISystem>())
-		{
-			SYSTEM* pSystem = (SYSTEM*)(m_pEngine->GetObjectManager()->CreateObject<SYSTEM>());
-			RegisterSystem(pSystem);
-		}
-	}
 
 public:
 
@@ -104,10 +90,6 @@ public:
 
 	void Load(MResource* pResource);
 
-protected:
-
-	void RegisterSystem(MISystem* pSystem);
-
 private:
 
 #define MSCENE_TYPED_VECTOR( TYPE ) \
@@ -117,8 +99,6 @@ private:
 	MNode* m_pRootNode;
 	MSkyBox* m_pSkyBox;
 	MTransformCoord3D* m_pTransformCoord3D;
-	MShadowTextureRenderTarget* m_pShadowDepthMapRenderTarget;
-	MTransparentRenderTarget* m_pTransparentRenderTarget;
 
 	MSCENE_TYPED_VECTOR(DirectionalLight);
 	MSCENE_TYPED_VECTOR(PointLight);
@@ -130,7 +110,6 @@ private:
 	std::vector<MMaterialGroup*> m_vMaterialGroups;
 
 	std::vector<MViewport*> m_vViewports;
-	std::vector<MISystem*> m_vSystems;
 };
 
 #endif

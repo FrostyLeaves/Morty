@@ -3,21 +3,20 @@
 #include "MMaterial.h"
 #include "MTexture.h"
 #include "MIDevice.h"
+#include "MViewport.h"
 
 #include "MResourceManager.h"
 #include "Texture/MTextureResource.h"
-
-#include "MRenderSystem.h"
 
 M_OBJECT_IMPLEMENT(MTransparentRenderTarget, MTextureRenderTarget)
 
 MTransparentRenderTarget::MTransparentRenderTarget()
     : MTextureRenderTarget()
-    , m_Material(nullptr)
-	, m_pBackRenderTarget(nullptr)
+	, m_Material(nullptr)
     , m_pFrontDepthTexture(nullptr)
 	, m_pBackDepthTexture(nullptr)
     , m_pTransparentMeshes(nullptr)
+	, m_pViewport(nullptr)
 	, m_pBlackTexture(nullptr)
 	, m_pWhiteTexture(nullptr)
 {
@@ -31,15 +30,17 @@ void MTransparentRenderTarget::OnCreated()
 {
 	Super::OnCreated();
 
-	std::vector<MERenderTextureType> vTextureTypes(6);
-	vTextureTypes[0] = MERenderTextureType::ERGBA8;
-	vTextureTypes[1] = MERenderTextureType::ERGBA8;
-	vTextureTypes[2] = MERenderTextureType::ER32;
-	vTextureTypes[3] = MERenderTextureType::ER32;
-	vTextureTypes[4] = MERenderTextureType::ER32;
-	vTextureTypes[5] = MERenderTextureType::ER32;
+// 	std::vector<MERenderTextureType> vTextureTypes(6);
+// 	vTextureTypes[0] = MERenderTextureType::ERGBA8;
+// 	vTextureTypes[1] = MERenderTextureType::ERGBA8;
+// 	vTextureTypes[2] = MERenderTextureType::ER32;
+// 	vTextureTypes[3] = MERenderTextureType::ER32;
+// 	vTextureTypes[4] = MERenderTextureType::ER32;
+// 	vTextureTypes[5] = MERenderTextureType::ER32;
+// 
+// 	Initialize(MTextureRenderTarget::ERenderBack | MTextureRenderTarget::ERenderDepth, 0, 0, vTextureTypes);
 
-	Initialize(MTextureRenderTarget::ERenderBack | MTextureRenderTarget::ERenderDepth, 0, 0, vTextureTypes);
+
 
 	MTextureResource* pBlackTextureRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_BLACK);
 	MTextureResource* pWhiteTextureRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_WHITE);
@@ -53,63 +54,38 @@ void MTransparentRenderTarget::OnDelete()
     m_Material.SetResource(nullptr);
 }
 
-void MTransparentRenderTarget::Render(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget, std::vector<MMaterialGroup>* pGroup)
+void MTransparentRenderTarget::Render(MIRenderer* pRenderer, MViewport* pViewport, MIRenderTarget* pRenderTarget, std::vector<MMaterialGroup>* pGroup)
 {
-#if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	m_unTargetViewNum = 4;
 	m_pTransparentMeshes = pGroup;
-	m_pBackRenderTarget = pRenderTarget;
+	m_pViewport = pViewport;
 
-	for (uint32_t i = 0; i < 3; ++i)
-	{
-		if (i % 2 == 0)
-		{
-			m_vpRenderTargetView[2] = m_vBackTexture[2].GetRenderBuffer()->m_pRenderTargetView;
-			m_vpRenderTargetView[3] = m_vBackTexture[3].GetRenderBuffer()->m_pRenderTargetView;
+	pRenderer->ClearRenderTargetView(GetBackTexture(2), MColor::White);
+	pRenderer->ClearRenderTargetView(GetBackTexture(3), MColor::Black_T);
+	pRenderer->Render(this, pRenderTarget->GetDepthTexture());
 
-			if (i == 0)
-			{
-				m_pFrontDepthTexture = m_pBlackTexture;
-				m_pBackDepthTexture = m_pWhiteTexture;
-
-
-				pRenderer->ClearDepthTexture(GetDepthTexture());
-				pRenderer->ClearRenderTargetView(this, 0, MColor::Black_T);
-				pRenderer->ClearRenderTargetView(this, 1, MColor::Black_T);
-			}
-			else
-			{
-				m_pFrontDepthTexture = &m_vBackTexture[4];
-				m_pBackDepthTexture = &m_vBackTexture[5];
-			}
-		}
-		else
-		{
-			m_vpRenderTargetView[2] = m_vBackTexture[4].GetRenderBuffer()->m_pRenderTargetView;
-			m_vpRenderTargetView[3] = m_vBackTexture[5].GetRenderBuffer()->m_pRenderTargetView;
-
-			m_pFrontDepthTexture = &m_vBackTexture[2];
-			m_pBackDepthTexture = &m_vBackTexture[3];
-		}
-
-
-		pRenderer->ClearRenderTargetView(this, 2, MColor::White);
-		pRenderer->ClearRenderTargetView(this, 3, MColor::Black_T);
-		pRenderer->Render(this, pRenderTarget->GetDepthTexture());
-	}
-	
-	m_pBackRenderTarget = nullptr;
 	m_pTransparentMeshes = nullptr;
-	m_unTargetViewNum = 6;
+	m_pViewport = nullptr;
 
+}
 
-#endif
+void MTransparentRenderTarget::ResetPrevLayerTexture()
+{
+	m_pFrontDepthTexture = m_pBlackTexture;
+	m_pBackDepthTexture = m_pWhiteTexture;
 }
 
 void MTransparentRenderTarget::OnRender(MIRenderer* pRenderer)
 {
 
 	if (nullptr == m_pTransparentMeshes)
+		return;
+
+	if (nullptr == m_pViewport)
+		return;
+
+
+	MIRenderProgram* pRenderProgram = m_pViewport->GetRenderProgram();
+	if (nullptr == pRenderProgram)
 		return;
 
 	MShaderParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
@@ -148,7 +124,7 @@ void MTransparentRenderTarget::OnRender(MIRenderer* pRenderer)
 
 			for (MIMeshInstance* pMeshIns : group.m_vMeshInstances)
 			{
-				MRenderSystem::DrawMeshInstance(pRenderer, pMeshIns, pMeshMatrixParam, pAnimationParam);
+				pRenderProgram->DrawMeshInstance(pRenderer, pMeshIns, pMeshMatrixParam, pAnimationParam);
 			}
 		}
 

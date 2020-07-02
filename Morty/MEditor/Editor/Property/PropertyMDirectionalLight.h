@@ -21,19 +21,23 @@ public:
 				ShowNodeEnd();
 
 				ShowNodeBegin("Shadow");
-				ShowValueBegin("ShadowMap");
 				MScene* pScene = pNode->GetScene();
-				if (MShadowTextureRenderTarget* pShadowTextureRt = pScene->GetShadowRenderTarget())
+				std::vector<MViewport*> viewports = pScene->GetViewports();
+				for (MViewport* pViewport : viewports)
 				{
-					if (MRenderDepthTexture* pDepthTexture = pShadowTextureRt->GetDepthTexture())
-					{
-						if (MTextureBuffer* pBuffer = pDepthTexture->GetBuffer())
-						{
-							ImGui::Image(ImTextureID(pBuffer->GetResourceView(), 1), ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::GetContentRegionAvailWidth()));
-						}
-					}
+// 					ShowValueBegin("ShadowMap");
+// 					if (MRenderDepthTexture* pDepthTexture = pViewport->GetRenderProgram())
+// 					{
+// 						if (MTextureBuffer* pBuffer = pDepthTexture->GetBuffer())
+// 						{
+// 							ImGui::Image(ImTextureID(pBuffer->GetResourceView(), 1), ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::GetContentRegionAvailWidth()));
+// 						}
+// 					}
+// 					ShowValueEnd();
 				}
-				ShowValueEnd();
+
+
+				
 				ShowNodeEnd();
 			}
 		}

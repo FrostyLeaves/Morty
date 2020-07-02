@@ -91,6 +91,9 @@
     <Filter Include="Core\Renderer\Vulkan">
       <UniqueIdentifier>{1f01f614-c590-41da-aa6c-d0b22526da9b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\RenderProgram">
+      <UniqueIdentifier>{f6fc0953-8cda-42db-bd08-3e5f3b35a65a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../ReadMe.txt" />
@@ -255,9 +258,6 @@
     <ClInclude Include="..\..\Organizer\MTransformCoord.h">
       <Filter>Organizer</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Organizer\System\MISystem.h">
-      <Filter>Organizer\System</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Organizer\Node\M3DNode.h">
       <Filter>Organizer\Node</Filter>
     </ClInclude>
@@ -306,9 +306,6 @@
     <ClInclude Include="..\..\Core\MPlane.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Organizer\System\MRenderSystem.h">
-      <Filter>Organizer\System</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Organizer\MMaterialGroup.h">
       <Filter>Organizer</Filter>
     </ClInclude>
@@ -354,11 +351,14 @@
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanPipelineManager.h">
       <Filter>Core\Renderer\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Organizer\System\MBasicRenderSystem.h">
-      <Filter>Organizer\System</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanShaderCompiler.h">
       <Filter>Core\Renderer\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\RenderProgram\MIRenderProgram.h">
+      <Filter>Core\RenderProgram</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\RenderProgram\MForwardRenderProgram.h">
+      <Filter>Core\RenderProgram</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -506,9 +506,6 @@
     <ClCompile Include="..\..\Organizer\MTransformCoord.cpp">
       <Filter>Organizer</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Organizer\System\MISystem.cpp">
-      <Filter>Organizer\System</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Organizer\Node\M3DNode.cpp">
       <Filter>Organizer\Node</Filter>
     </ClCompile>
@@ -550,9 +547,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\MPlane.cpp">
       <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Organizer\System\MRenderSystem.cpp">
-      <Filter>Organizer\System</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Organizer\MMaterialGroup.cpp">
       <Filter>Organizer</Filter>
@@ -599,11 +593,14 @@
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanPipelineManager.cpp">
       <Filter>Core\Renderer\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Organizer\System\MBasicRenderSystem.cpp">
-      <Filter>Organizer\System</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanShaderCompiler.cpp">
       <Filter>Core\Renderer\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\RenderProgram\MForwardRenderProgram.cpp">
+      <Filter>Core\RenderProgram</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\RenderProgram\MIRenderProgram.cpp">
+      <Filter>Core\RenderProgram</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

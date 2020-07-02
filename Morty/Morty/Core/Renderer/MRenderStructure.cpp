@@ -92,14 +92,9 @@ MTextureBuffer::~MTextureBuffer()
 }
 
 MRenderTextureBuffer::MRenderTextureBuffer()
+	: MTextureBuffer()
+	, MRenderTargetView()
 {
-#if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	m_pTextureBuffer = nullptr;
-	m_pShaderResourceView = nullptr;
-	m_pRenderTargetView = nullptr;
-#elif RENDER_GRAPHICS == MORTY_VULKAN
-
-#endif
 }
 
 MDepthTextureBuffer::MDepthTextureBuffer()
@@ -178,6 +173,16 @@ MShaderSampleParam::MShaderSampleParam()
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	, unBindPoint(0)
 	, unBindCount(0)
+#elif RENDER_GRAPHICS == MORTY_VULKAN
+
+#endif
+{
+
+}
+
+MRenderTargetView::MRenderTargetView()
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	: m_pRenderTargetView(nullptr)
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 
 #endif

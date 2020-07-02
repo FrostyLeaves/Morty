@@ -124,7 +124,6 @@ public:
 	MRenderTextureBuffer* GetRenderBuffer() { return m_pTextureBuffer; };
 	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = true) override;
 	virtual void DestroyTexture(MIDevice* pDevice) override;
-
 private:
 	MERenderTextureType m_eRenderType;
 	Vector2 m_v2Size;

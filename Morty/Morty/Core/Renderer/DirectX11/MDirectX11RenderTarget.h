@@ -19,6 +19,7 @@
 #include <DxErr.h>
 
 #include "MIRenderTarget.h"
+#include "MRenderStructure.h"
 
 class MIRenderer;
 class MWindowsRenderView;
@@ -30,25 +31,30 @@ public:
 	MDirectX11RenderTarget(MDirectX11Device* pDevice);
 	~MDirectX11RenderTarget();
 
-	void SetBackgroundColor(const uint32_t& unTargetIndex, const MColor& color) { m_backgroundColor = color; }
-	const MColor& GetBackgroundColor(const uint32_t& unTargetIndex) const { return m_backgroundColor; }
-
 	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
 
 public:
 
-	virtual void OnResize(const uint32_t& nWidth, const uint32_t& nHeight) override;
+	//virtual void OnResize(const uint32_t& nWidth, const uint32_t& nHeight) override;
+	void OnResize(const uint32_t& nWidth, const uint32_t& nHeight);
 	virtual void OnRender(MIRenderer* pRenderer) override;
 
 	virtual void Release(MIDevice* pDevice) override;
 
 	static MDirectX11RenderTarget* CreateForView(MDirectX11Device* pDevice, MWindowsRenderView* pView);
 
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	virtual std::vector<struct ID3D11RenderTargetView*> GetRenderTargetViews() override { return { m_RenderTargetView.m_pRenderTargetView }; }
+	virtual struct ID3D11DepthStencilView* GetDepthStencilView() override;
+#elif RENDER_GRAPHICS == MORTY_VULKAN
+	VkRenderPass m_VkRenderPass;
+#endif
+
 public:
 	IDXGISwapChain* m_pSwapChain;
+	MRenderTargetView m_RenderTargetView;
 	MRenderDepthTexture* m_pDepthTexture;
 private:
-	MColor m_backgroundColor;
 	MDirectX11Device* m_pDevice;
 	MWindowsRenderView* m_pView;
 

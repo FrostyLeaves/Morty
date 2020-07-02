@@ -5,6 +5,7 @@ MIRenderView::MIRenderView()
 	: m_pEngine(nullptr)
 	, m_vViewport()
 	, m_pRenderTarget(nullptr)
+	, m_BackColor(MColor::Black)
 {
 
 }
@@ -12,6 +13,14 @@ MIRenderView::MIRenderView()
 MIRenderView::~MIRenderView()
 {
 
+}
+
+void MIRenderView::Release()
+{
+	for (MViewport* pvp : m_vViewport)
+		pvp->DeleteLater();
+	
+	m_vViewport.clear();
 }
 
 void MIRenderView::AppendViewport(MViewport* pViewport)

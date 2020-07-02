@@ -61,9 +61,6 @@ public:
 	virtual bool GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t nWidth, uint32_t nHeight) = 0;
 	virtual void DestroyRenderTarget(MIRenderTarget* pRenderTarget) = 0;
 
-	virtual bool GenerateRenderTarget(MTextureRenderTarget* pRenderTarget, uint32_t nWidth, uint32_t nHeight) = 0;
-	virtual void DestroyRenderTarget(MTextureRenderTarget* pRenderTarget) = 0;
-
 	virtual bool GenerateShaderParamBuffer(MShaderParam* pParam) = 0;
 	virtual void DestroyShaderParamBuffer(MShaderParam* pParam) = 0;
 

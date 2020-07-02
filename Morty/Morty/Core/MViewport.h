@@ -12,7 +12,7 @@
 #include "MObject.h"
 #include "Vector.h"
 #include "Matrix.h"
-
+#include "MIRenderProgram.h"
 #include "MCameraFrustum.h"
 
 #include <vector>
@@ -103,12 +103,19 @@ public:
 	void SetScreenPosition(const Vector2& v2Position) { m_v2ScreenPosition = v2Position; }
 	void SetScreenScale(const Vector2& v2Scale) { m_v2ScreenScale = v2Scale; }
 
+	MIRenderProgram* GetRenderProgram() { return m_pRenderProgram; }
+
+public:
+
+	template<typename RENDER_PASS>
+	void RegisterRenderProgram();
+
+	
 
 protected:
 	void SetValidCamera(MCamera* pCamera);
 
 	void UpdateMatrix();
-
 
 
 
@@ -129,7 +136,24 @@ private:
 	bool m_bCameraInvProjMatrixLocked;
 
 	MCameraFrustum m_cameraFrustum;
+
+
+	MIRenderProgram* m_pRenderProgram;
 };
 
+template<typename RENDER_PASS>
+void MViewport::RegisterRenderProgram()
+{
+	if (MTypedClass::IsType<RENDER_PASS, MIRenderProgram>())
+	{
+		if (m_pRenderProgram)
+		{
+			m_pRenderProgram->DeleteLater();
+			m_pRenderProgram = nullptr;
+		}
+
+		m_pRenderProgram = (RENDER_PASS*)(m_pEngine->GetObjectManager()->CreateObject<RENDER_PASS>());
+	}
+}
 
 #endif

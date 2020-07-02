@@ -44,7 +44,8 @@ public:
 	virtual void SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth) override;
 	virtual void RecoverRenderTarget(RenderTargetPair& pRenderTarget) override;
 
-	virtual void ClearRenderTargetView(MIRenderTarget* pRenderTarget, const uint32_t& unViewIndex, const MColor& color) override;
+	virtual void ClearRenderTargetView(MRenderTargetTexture* pRenderTarget, const MColor& color) override;
+	virtual void ClearRenderTargetView(MRenderTargetView* pRenderTargetView,  const MColor& color) override;
 	virtual void ClearDepthTexture(MRenderDepthTexture* pDepthTexture) override;
 
 public:

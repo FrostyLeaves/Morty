@@ -189,11 +189,7 @@ void MainEditor::SetRenderTarget(MIRenderTarget* pRenderTarget)
 		v4BackgroundColor.y = (v4BackgroundColor.y + 0.5f) * 0.5f;
 		v4BackgroundColor.z = (v4BackgroundColor.z + 0.5f) * 0.5f;
 
-
-		if (MDirectX11RenderTarget* pRt = dynamic_cast<MDirectX11RenderTarget*>(GetRenderTarget()))
-		{
-			pRt->SetBackgroundColor(0, MColor(v4BackgroundColor.x, v4BackgroundColor.y, v4BackgroundColor.z, v4BackgroundColor.w));
-		}
+		SetBackColor(MColor(v4BackgroundColor.x, v4BackgroundColor.y, v4BackgroundColor.z, v4BackgroundColor.w));
 	}
 }
 

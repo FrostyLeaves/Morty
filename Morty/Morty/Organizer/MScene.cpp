@@ -5,8 +5,6 @@
 #include "MSkyBox.h"
 
 #include "MIDevice.h"
-#include "MISystem.h"
-#include "MRenderSystem.h"
 
 #include "Light/MDirectionalLight.h"
 #include "Light/MPointLight.h"
@@ -65,7 +63,6 @@ MScene::MScene()
 	, m_pRootNode(nullptr)
 	, m_pSkyBox(nullptr)
 	, m_pTransformCoord3D(nullptr)
-	, m_pShadowDepthMapRenderTarget(nullptr)
 	, m_vViewports()
 {
 	
@@ -78,11 +75,6 @@ void MScene::OnCreated()
 	m_pSkyBox = m_pEngine->GetObjectManager()->CreateObject<MSkyBox>();
 	m_pTransformCoord3D = m_pEngine->GetObjectManager()->CreateObject<MTransformCoord3D>();
 
-	m_pShadowDepthMapRenderTarget = m_pEngine->GetObjectManager()->CreateObject<MShadowTextureRenderTarget>();
-
-	
-	m_pTransparentRenderTarget = m_pEngine->GetObjectManager()->CreateObject<MTransparentRenderTarget>();
-
 }
 
 void MScene::OnDelete()
@@ -93,19 +85,6 @@ void MScene::OnDelete()
 		m_pSkyBox = nullptr;
 	}
 
-	if (m_pShadowDepthMapRenderTarget)
-	{
-		m_pShadowDepthMapRenderTarget->DeleteLater();
-		m_pShadowDepthMapRenderTarget = nullptr;
-	}
-
-	m_pTransparentRenderTarget->DeleteLater();
-	m_pTransparentRenderTarget = nullptr;
-
-	for (MISystem* pSystem : m_vSystems)
-		pSystem->DeleteLater();
-
-	m_vSystems.clear();
 
 	Super::OnDelete();
 }
@@ -237,10 +216,7 @@ MSCENE_ON_NODE_EXIT(InputNode)
 
 void MScene::Render(MIRenderer* pRenderer, MViewport* pViewport, MIRenderTarget* pRenderTarget)
 {
-	for (MISystem* pSystem : m_vSystems)
-	{
-		pSystem->Render(pRenderer, pViewport, this, pRenderTarget);
-	}
+
 }
 
 void MScene::Tick(const float& fDelta)
@@ -332,9 +308,4 @@ void MScene::RemoveMaterialGroup(MIMeshInstance* pMeshInstance)
 		delete pGroup;
 		pGroup = nullptr;
 	}
-}
-
-void MScene::RegisterSystem(MISystem* pSystem)
-{
-	UNION_PUSH_BACK_VECTOR(m_vSystems, pSystem);
 }

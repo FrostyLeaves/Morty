@@ -31,7 +31,12 @@ public:
 
 	virtual void OnRender(MIRenderer* pRenderer) override;
 
-    void Render(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget, std::vector<MMaterialGroup>* pGroup);
+    void Render(MIRenderer* pRenderer, MViewport* pViewport, MIRenderTarget* pRenderTarget, std::vector<MMaterialGroup>* pGroup);
+
+    void SetPrevLayerFrontDepthTexture(MITexture* pFrontDepthTexture) { m_pFrontDepthTexture = pFrontDepthTexture; }
+    void SetPrevLayerBackDepthTexture(MITexture* pBackDepthTexture) { m_pBackDepthTexture = pBackDepthTexture; }
+
+    void ResetPrevLayerTexture();
 
 private:
 
@@ -43,8 +48,8 @@ private:
     MITexture* m_pWhiteTexture;
     MITexture* m_pBlackTexture;
 
-    MIRenderTarget* m_pBackRenderTarget;
     std::vector<MMaterialGroup>* m_pTransparentMeshes;
+    MViewport* m_pViewport;
 };
 
 #endif

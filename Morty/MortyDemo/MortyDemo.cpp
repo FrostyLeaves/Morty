@@ -59,13 +59,12 @@
 
 #include "MFunction.h"
 
-#include "MBasicRenderSystem.h"
-#include "MRenderSystem.h"
 
 #include "MWindowsRenderView.h"
 
+#include "MForwardRenderProgram.h"
 
-#define MORTY_EDITOR_ENABLE
+//#define MORTY_EDITOR_ENABLE
 
 #ifdef MORTY_EDITOR_ENABLE
 #include "MainEditor.h"
@@ -151,14 +150,13 @@ int main(int argc, char* argv[])
 // 	{
 //  		{
 // 			MModelConverter conver(&engine);
-// 			conver.Convert("./Model/Pikachu.fbx", "./Model", "Pikachu");
+// 			conver.Convert("./Model/nfsq/model.dae", "./Model", "nfsq");
 //  		}
 // // 		engine.Release();
 // // 		return 0;
 // 	}
 
 	 
-#ifdef MORTY_EDITOR_ENABLE
 
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
 	pRootNode->SetName("RootNode");
@@ -185,7 +183,7 @@ int main(int argc, char* argv[])
 	}
 
 
-	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/nfsq/model.dae"));
+	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/nfsq/nfsq.model"));
 
 	for (int i = 0; i < 1; ++i)
 	{
@@ -289,45 +287,29 @@ int main(int argc, char* argv[])
 		return false;
 	});
 
+#ifdef MORTY_EDITOR_ENABLE
 	MainEditor* pEditorView = new MainEditor();
 	pEditorView->Initialize(&engine, "Morty");
 	engine.AddView(pEditorView);
 	pEditorView->SetEditorNode(pRootNode);
+
+#else
+	MScene* pScene = engine.GetObjectManager()->CreateObject<MScene>();
+	pScene->SetRootNode(nullptr);
+	MWindowsRenderView* pView = new MWindowsRenderView();
+	pView->Initialize(&engine, "Morty");
+	MViewport* pViewport = engine.GetObjectManager()->CreateObject<MViewport>();
+	pViewport->RegisterRenderProgram<MForwardRenderProgram>();
+	pView->AppendViewport(pViewport);
+	pViewport->SetSize(Vector2(pView->GetViewWidth(), pView->GetViewWidth()));
+	pViewport->SetScene(pScene);
+	engine.AddView(pView);
+
+	pViewport->SetSize(Vector2(pView->GetViewWidth(), pView->GetViewHeight()));
 #endif
 
-// 	MString code;
-// 	pRootNode->Encode(code);
-// 
-// 	MFileHelper::WriteString("D:/Test.node", code);
+	
 
-
-
-
-
-
-
-// 	if (MResource* pResource = engine.GetResourceManager()->LoadResource("D:/Test.node"))
-// 	{
-// 		if (MNodeResource* pNodeResource = pResource->DynamicCast<MNodeResource>())
-// 		{
-// 			MNode* pRootNode = pNodeResource->CreateNode();
-// 			pEditorView->SetEditorNode(pRootNode);
-// 		}
-// 	}
-
-// 	MScene* pScene = engine.GetObjectManager()->CreateObject<MScene>();
-// 	//pScene->RegisterSystem<MBasicRenderSystem>();
-// 	pScene->RegisterSystem<MRenderSystem>();
-// 	pScene->SetRootNode(nullptr);
-// 	MWindowsRenderView* pView = new MWindowsRenderView();
-// 	pView->Initialize(&engine, "Morty");
-// 	MViewport* pViewport = engine.GetObjectManager()->CreateObject<MViewport>();
-// 	pView->AppendViewport(pViewport);
-// 	pViewport->SetSize(Vector2(pView->GetViewWidth(), pView->GetViewWidth()));
-// 	pViewport->SetScene(pScene);
-// 	engine.AddView(pView);
-// 
-// 	pViewport->SetSize(Vector2(pView->GetViewWidth(), pView->GetViewHeight()));
 
 // 	MWindowsRenderView* pTestView = new MWindowsRenderView();
 // 	pTestView->Initialize(&engine, "Test");

@@ -81,18 +81,22 @@ public:
 #endif
 };
 
-//用于渲染目标的纹理缓存
-class MRenderTextureBuffer : public MTextureBuffer
+class MRenderTargetView
 {
 public:
-	MRenderTextureBuffer();
-	virtual ~MRenderTextureBuffer() {}
-
+	MRenderTargetView();
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	struct ID3D11RenderTargetView* m_pRenderTargetView;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 
 #endif
+};
+
+//用于渲染目标的纹理缓存
+class MRenderTextureBuffer : public MTextureBuffer, public MRenderTargetView
+{
+public:
+	MRenderTextureBuffer();
 };
 
 //用于渲染深度的纹理缓存

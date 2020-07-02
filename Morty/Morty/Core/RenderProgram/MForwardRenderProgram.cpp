@@ -1,4 +1,4 @@
-#include "MRenderSystem.h"
+#include "MForwardRenderProgram.h"
 #include "MEngine.h"
 #include "MResourceManager.h"
 #include "MIRenderer.h"
@@ -32,14 +32,20 @@
 #include <algorithm>
 
 
-M_OBJECT_IMPLEMENT(MRenderSystem, MISystem)
+M_OBJECT_IMPLEMENT(MForwardRenderProgram, MIRenderProgram)
 
 
-MRenderSystem::MRenderSystem()
-	: MISystem()
-	, m_cDepthPeelingMesh(true)
+MForwardRenderProgram::MForwardRenderProgram()
+	: MIRenderProgram()
+	, m_TransparentDrawMesh(true)
+	, m_pTransparentFrontTexture(nullptr)
+	, m_pTransparentBackTexture(nullptr)
+	, m_pShadowDepthMapRenderTarget(nullptr)
+	, m_pTransparentRenderTarget1(nullptr)
+	, m_pTransparentRenderTarget2(nullptr)
+	, m_v2TransparentTextureSize(0.0f, 0.0f)
 {
-	MMesh<Vector2>& mesh = m_cDepthPeelingMesh;
+	MMesh<Vector2>& mesh = m_TransparentDrawMesh;
 	mesh.ResizeVertices(4);
 	Vector2* vVertices = (Vector2*)mesh.GetVertices();
 
@@ -60,17 +66,141 @@ MRenderSystem::MRenderSystem()
 	vIndices[5] = 1;
 }
 
-MRenderSystem::~MRenderSystem()
+MForwardRenderProgram::~MForwardRenderProgram()
 {
-	m_cDepthPeelingMesh.DestroyBuffer(m_pEngine->GetDevice());
+	m_TransparentDrawMesh.DestroyBuffer(m_pEngine->GetDevice());
 }
 
-void MRenderSystem::Tick(const float& fDelta)
+void MForwardRenderProgram::InitializeRenderTargets()
 {
+	m_pShadowDepthMapRenderTarget = m_pEngine->GetObjectManager()->CreateObject<MShadowTextureRenderTarget>();
+
+	m_pShadowDepthTexture = new MRenderDepthTexture();
+	m_pShadowDepthTexture->SetSize(Vector2(MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE));
+	m_pShadowDepthTexture->GenerateBuffer(m_pEngine->GetDevice());
+	m_pShadowDepthMapRenderTarget->SetDepthTexture(m_pShadowDepthTexture);
+
+
+
+	m_pTransparentRenderTarget1 = m_pEngine->GetObjectManager()->CreateObject<MTransparentRenderTarget>();
+	m_pTransparentRenderTarget2 = m_pEngine->GetObjectManager()->CreateObject<MTransparentRenderTarget>();
+
+	m_pTransparentFrontTexture = new MRenderTargetTexture();
+	m_pTransparentFrontTexture->SetType(MERenderTextureType::ERGBA8);
+
+	m_pTransparentBackTexture = new MRenderTargetTexture();
+	m_pTransparentBackTexture->SetType(MERenderTextureType::ERGBA8);
+
+
+	MRenderTargetTexture* pBackTexture0 = new MRenderTargetTexture();
+	pBackTexture0->SetType(MERenderTextureType::ER32);
+
+	MRenderTargetTexture* pBackTexture1 = new MRenderTargetTexture();
+	pBackTexture1->SetType(MERenderTextureType::ER32);
+
+	MRenderTargetTexture* pBackTexture2 = new MRenderTargetTexture();
+	pBackTexture2->SetType(MERenderTextureType::ER32);
+
+	MRenderTargetTexture* pBackTexture3 = new MRenderTargetTexture();
+	pBackTexture3->SetType(MERenderTextureType::ER32);
+
+	m_vTransparentBackTexture = { pBackTexture0, pBackTexture1, pBackTexture2, pBackTexture3 };
+
+	m_pTransparentRenderTarget1->SetBackTexture(m_pTransparentFrontTexture, 0);
+	m_pTransparentRenderTarget1->SetBackTexture(m_pTransparentBackTexture, 1);
+	m_pTransparentRenderTarget1->SetBackTexture(pBackTexture0, 2);
+	m_pTransparentRenderTarget1->SetBackTexture(pBackTexture1, 3);
+	m_pTransparentRenderTarget1->SetPrevLayerFrontDepthTexture(pBackTexture2);
+	m_pTransparentRenderTarget1->SetPrevLayerBackDepthTexture(pBackTexture3);
+
+	m_pTransparentRenderTarget2->SetBackTexture(m_pTransparentFrontTexture, 0);
+	m_pTransparentRenderTarget2->SetBackTexture(m_pTransparentBackTexture, 1);
+	m_pTransparentRenderTarget2->SetBackTexture(pBackTexture2, 2);
+	m_pTransparentRenderTarget2->SetBackTexture(pBackTexture3, 3);
+	m_pTransparentRenderTarget2->SetPrevLayerFrontDepthTexture(pBackTexture0);
+	m_pTransparentRenderTarget2->SetPrevLayerBackDepthTexture(pBackTexture1);
+}
+
+void MForwardRenderProgram::ReleaseRenderTargets()
+{
+	if (m_pShadowDepthMapRenderTarget)
+	{
+		m_pShadowDepthMapRenderTarget->DeleteLater();
+		m_pShadowDepthMapRenderTarget = nullptr;
+	}
+
+	if (m_pTransparentRenderTarget1)
+	{
+		m_pTransparentRenderTarget1->DeleteLater();
+		m_pTransparentRenderTarget1 = nullptr;
+	}
+	if (m_pTransparentRenderTarget2)
+	{
+		m_pTransparentRenderTarget2->DeleteLater();
+		m_pTransparentRenderTarget2 = nullptr;
+	}
+
+	if (m_pShadowDepthTexture)
+	{
+		m_pShadowDepthTexture->DestroyTexture(GetEngine()->GetDevice());
+		delete m_pShadowDepthTexture;
+		m_pShadowDepthTexture = nullptr;
+	}
+
+	if (m_pTransparentFrontTexture)
+	{
+		m_pTransparentFrontTexture->DestroyTexture(GetEngine()->GetDevice());
+		delete m_pTransparentFrontTexture;
+		m_pTransparentFrontTexture = nullptr;
+	}
+
+	if (m_pTransparentBackTexture)
+	{
+		m_pTransparentBackTexture->DestroyTexture(GetEngine()->GetDevice());
+		delete m_pTransparentBackTexture;
+		m_pTransparentBackTexture = nullptr;
+	}
+
+	for (MRenderTargetTexture* pBackTexture : m_vTransparentBackTexture)
+	{
+		pBackTexture->DestroyTexture(GetEngine()->GetDevice());
+		delete pBackTexture;
+	}
+	m_vTransparentBackTexture.clear();
+}
+
+void MForwardRenderProgram::CheckTransparentTextureSize(MRenderInfo& info)
+{
+	Vector2 v2Size = info.pViewport->GetSize();
+
+	if (m_v2TransparentTextureSize == v2Size)
+		return;
+
+	m_v2TransparentTextureSize = v2Size;
+
+	MIDevice* pDevice = GetEngine()->GetDevice();
+
+	m_pTransparentFrontTexture->DestroyTexture(pDevice);
+	m_pTransparentFrontTexture->SetSize(v2Size);
+	m_pTransparentFrontTexture->GenerateBuffer(pDevice);
+
+	m_pTransparentBackTexture->DestroyTexture(pDevice);
+	m_pTransparentBackTexture->SetSize(v2Size);
+	m_pTransparentBackTexture->GenerateBuffer(pDevice);
+
+	for (MRenderTargetTexture* pTexture : m_vTransparentBackTexture)
+	{
+		if (pTexture)
+		{
+			pTexture->DestroyTexture(pDevice);
+			pTexture->SetSize(v2Size);
+			pTexture->GenerateBuffer(pDevice);
+		}
+	}
 
 }
 
-void MRenderSystem::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene, MIRenderTarget* pRenderTarget)
+void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene, MIRenderTarget* pRenderTarget)
 {
 
 	MRenderInfo info;
@@ -91,11 +221,26 @@ void MRenderSystem::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* 
 	DrawPainter(info);
 	DrawNormalMesh(info);
 	DrawTransparentMesh(info);
-	DrawSkyBox(info);
+
+	//DrawSkyBox(info);
 	DrawModelInstance(info);
 }
 
-void MRenderSystem::GenerateShadowMap(MRenderInfo& info)
+void MForwardRenderProgram::OnCreated()
+{
+	Super::OnCreated();
+
+	InitializeRenderTargets();
+}
+
+void MForwardRenderProgram::OnDelete()
+{
+	ReleaseRenderTargets();
+
+	Super::OnDelete();
+}
+
+void MForwardRenderProgram::GenerateShadowMap(MRenderInfo& info)
 {
 	info.pDirectionalLight = info.pScene->FindActiveDirectionLight();
 	if (nullptr == info.pDirectionalLight)
@@ -149,27 +294,27 @@ void MRenderSystem::GenerateShadowMap(MRenderInfo& info)
 
 	info.m4DirLightInvProj = info.pViewport->GetLightInverseProjection(info.pDirectionalLight, info.cMeshRenderAABB, info.cShadowRenderAABB);
 
-	MShadowTextureRenderTarget* pShadowRenderTarget = info.pScene->GetShadowRenderTarget();
-	if (nullptr == pShadowRenderTarget || nullptr == info.pScene->FindActiveDirectionLight())
+	if (nullptr == m_pShadowDepthMapRenderTarget || nullptr == info.pScene->FindActiveDirectionLight())
 	{
 		return;
 	}
+
 	//如果当前有Shader使用了ShadowMap，那么进行ShadowMap的更新
 	if (SHADER_PARAM_CODE_SHADOW_MAP < MShaderBuffer::s_vTextureParams.size())
 	{
 		MShaderTextureParam* pShadowParam = MShaderBuffer::s_vTextureParams[SHADER_PARAM_CODE_SHADOW_MAP];
 		if (pShadowParam && SHADER_PARAM_CODE_SHADOW_MAP == pShadowParam->unCode)
 		{
-			pShadowRenderTarget->Render(info.pRenderer, info.m4DirLightInvProj, &info.vShadowGroup);
+			m_pShadowDepthMapRenderTarget->Render(info.pRenderer, info.m4DirLightInvProj, &info.vShadowGroup);
 
-			pShadowParam->pTexture = pShadowRenderTarget->m_pDepthTexture;
+			pShadowParam->pTexture = m_pShadowDepthMapRenderTarget->GetDepthTexture();
 			info.pRenderer->SetPixelShaderTexture(*pShadowParam);
 		}
 	}
 
 }
 
-void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
+void MForwardRenderProgram::UpdateShaderSharedParams(MRenderInfo& info)
 {
 
 	if (MShaderParam* pWorldMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_WORLD_MATRIX))
@@ -278,7 +423,7 @@ void MRenderSystem::UpdateShaderSharedParams(MRenderInfo& info)
 	}
 }
 
-void MRenderSystem::DrawNormalMesh(MRenderInfo& info)
+void MForwardRenderProgram::DrawNormalMesh(MRenderInfo& info)
 {
 	MShaderParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
 	if (nullptr == pMeshMatrixParam)
@@ -300,7 +445,7 @@ void MRenderSystem::DrawNormalMesh(MRenderInfo& info)
 	}
 }
 
-void MRenderSystem::DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pMeshInstance, MShaderParam*& pMeshMatrixParam, MShaderParam*& pAnimationParam)
+void MForwardRenderProgram::DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pMeshInstance, MShaderParam*& pMeshMatrixParam, MShaderParam*& pAnimationParam)
 {
 	Matrix4 worldTrans = pMeshInstance->GetWorldTransform();
 	//Transposed and Inverse.
@@ -338,27 +483,42 @@ void MRenderSystem::DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pM
 	pRenderer->DrawMesh(pMeshInstance->GetMesh());
 }
 
-void MRenderSystem::DrawTransparentMesh(MRenderInfo& info)
+void MForwardRenderProgram::DrawTransparentMesh(MRenderInfo& info)
 {
-	Vector2 v2Size = Vector2(info.pViewport->GetWidth(), info.pViewport->GetHeight());
+	if (info.vTransparentRenderGroup.empty())
+		return;
 
- 	MTransparentRenderTarget* pTransparentRenderTarget = info.pScene->GetTransparentRenderTarget();
+	CheckTransparentTextureSize(info);
 
-	pTransparentRenderTarget->OnResize(v2Size.x, v2Size.y);
-	pTransparentRenderTarget->Render(info.pRenderer, info.pRenderTarget, &info.vTransparentRenderGroup);
+
+ 	info.pRenderer->ClearRenderTargetView(m_pTransparentFrontTexture, MColor::Black_T);
+ 	info.pRenderer->ClearRenderTargetView(m_pTransparentBackTexture, MColor::Black_T);
+
+	m_pTransparentRenderTarget2->ResetPrevLayerTexture();
+	m_pTransparentRenderTarget2->Render(info.pRenderer, info.pViewport, info.pRenderTarget, &info.vTransparentRenderGroup);
+	m_pTransparentRenderTarget2->SetPrevLayerFrontDepthTexture(m_vTransparentBackTexture[0]);
+	m_pTransparentRenderTarget2->SetPrevLayerBackDepthTexture(m_vTransparentBackTexture[1]);
+
+
+	for (uint32_t i = 0; i < 3; ++i)
+	{
+		m_pTransparentRenderTarget1->Render(info.pRenderer, info.pViewport, info.pRenderTarget, &info.vTransparentRenderGroup);
+		m_pTransparentRenderTarget2->Render(info.pRenderer, info.pViewport, info.pRenderTarget, &info.vTransparentRenderGroup);
+	}
+
 
 	MMaterialResource* pTextureMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DEPTH_PEELING);
 	std::vector<MShaderTextureParam>& params = *pTextureMaterial->GetTextureParams();
 
-	params[0].pTexture = pTransparentRenderTarget->GetBackTexture(0);
-	params[1].pTexture = pTransparentRenderTarget->GetBackTexture(1);
+	params[0].pTexture = m_pTransparentFrontTexture;
+	params[1].pTexture = m_pTransparentBackTexture;
 	info.pRenderer->SetUseMaterial(pTextureMaterial);
 	info.pRenderer->SetPixelShaderTexture(params[0]);
 	info.pRenderer->SetPixelShaderTexture(params[1]);
-	info.pRenderer->DrawMesh(&m_cDepthPeelingMesh);
+	info.pRenderer->DrawMesh(&m_TransparentDrawMesh);
 }
 
-void MRenderSystem::DrawModelInstance(MRenderInfo& info)
+void MForwardRenderProgram::DrawModelInstance(MRenderInfo& info)
 {
 	for (MModelInstance* pModelIns : *info.pScene->GetAllModelInstance())
 	{
@@ -382,7 +542,7 @@ void MRenderSystem::DrawModelInstance(MRenderInfo& info)
 
 }
 
-void MRenderSystem::DrawSkyBox(MRenderInfo& info)
+void MForwardRenderProgram::DrawSkyBox(MRenderInfo& info)
 {
 	MSkyBox* pSkyBox = info.pScene->GetSkyBox();
 
@@ -415,13 +575,13 @@ void MRenderSystem::DrawSkyBox(MRenderInfo& info)
 	}
 }
 
-void MRenderSystem::DrawPainter(MRenderInfo& info)
+void MForwardRenderProgram::DrawPainter(MRenderInfo& info)
 {
 	MTransformCoord3D* pTransformCoord = info.pScene->GetTransformCoord();
 	pTransformCoord->Render(info.pRenderer, info.pViewport);
 }
 
-void MRenderSystem::DrawBoundingBox(MRenderInfo& info, MModelInstance* pModelIns)
+void MForwardRenderProgram::DrawBoundingBox(MRenderInfo& info, MModelInstance* pModelIns)
 {
 	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW3D);
 	MMaterial* pMaterial = pDraw3DMaterialRes;
@@ -472,7 +632,7 @@ void MRenderSystem::DrawBoundingBox(MRenderInfo& info, MModelInstance* pModelIns
 	}
 }
 
-void MRenderSystem::DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pMeshIns)
+void MForwardRenderProgram::DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pMeshIns)
 {
 	MResource* pSphereResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/Sphere.model");
 	MMaterialResource* pStaticMeshMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_STATIC);
@@ -511,7 +671,7 @@ void MRenderSystem::DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pMeshI
 	}
 }
 
-void MRenderSystem::DrawCameraFrustum(MRenderInfo& info, MCamera* pCamera)
+void MForwardRenderProgram::DrawCameraFrustum(MRenderInfo& info, MCamera* pCamera)
 {
 	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW3D);
 	MMaterial* pMaterial = pDraw3DMaterialRes;
@@ -550,7 +710,7 @@ void MRenderSystem::DrawCameraFrustum(MRenderInfo& info, MCamera* pCamera)
 
 }
 
-void MRenderSystem::GenerateRenderGroup(MRenderInfo& info)
+void MForwardRenderProgram::GenerateRenderGroup(MRenderInfo& info)
 {
 	Vector3 v3BoundsMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
 	Vector3 v3BoundsMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);

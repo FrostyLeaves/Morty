@@ -57,7 +57,7 @@ void MShadowTextureRenderTarget::OnCreated()
 	m_pAnimMaterial = pShadowWithAnimMaterialRes;
 	
 	std::vector<MERenderTextureType> vEmpty;
-	Initialize(MTextureRenderTarget::ERenderDepth, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE, vEmpty);
+//	Initialize(MTextureRenderTarget::ERenderDepth, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE, vEmpty);
 }
 
 void MShadowTextureRenderTarget::OnDelete()

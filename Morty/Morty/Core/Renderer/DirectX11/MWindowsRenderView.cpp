@@ -10,6 +10,7 @@
 #include "MIRenderer.h"
 #include "MViewport.h"
 #include "MIRenderTarget.h"
+#include "MDirectX11RenderTarget.h"
 
 std::map<HWND, MWindowsRenderView*> MWindowsRenderView::s_tViewTable = std::map<HWND, MWindowsRenderView*>();
 HINSTANCE MWindowsRenderView::s_hInstance = 0;
@@ -93,6 +94,8 @@ void MWindowsRenderView::CheckInputEvent()
 
 bool MWindowsRenderView::Initialize(MEngine* pEngine, const char* svWindowName)
 {
+	MIRenderView::Initialize(pEngine, svWindowName);
+
 	if (false == s_bIsRegisterWindow && !RegisterClass())
 	{
 		MLogManager::GetInstance()->Error("Register class 'Morty' failed!");
@@ -135,8 +138,8 @@ bool MWindowsRenderView::Initialize(MEngine* pEngine, const char* svWindowName)
 
 void MWindowsRenderView::OnResize(const int& nWidth, const int& nHeight)
 {
-	if(m_pRenderTarget)
-		m_pRenderTarget->OnResize(nWidth, nHeight);
+	if(MDirectX11RenderTarget* pRt = dynamic_cast<MDirectX11RenderTarget*>(m_pRenderTarget))
+		pRt->OnResize(nWidth, nHeight);
 }
 
 void MWindowsRenderView::SetRenderTarget(MIRenderTarget* pRenderTarget)
@@ -187,6 +190,8 @@ void MWindowsRenderView::Release()
 		m_pRenderTarget = nullptr;
 	}
 	s_tViewTable.erase(m_hwnd);
+
+	MIRenderView::Release();
 }
 
 void MWindowsRenderView::KeyBoardChanged(const uint32_t& unKey, const MEKeyState& eState)

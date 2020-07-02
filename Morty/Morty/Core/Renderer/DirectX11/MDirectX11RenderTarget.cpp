@@ -12,11 +12,11 @@
 MDirectX11RenderTarget::MDirectX11RenderTarget(MDirectX11Device* pDevice)
 	: MIRenderTarget()
 	, m_pSwapChain(nullptr)
+	, m_RenderTargetView()
 	, m_pDevice(pDevice)
 	, m_pView(nullptr)
 	, m_pDepthTexture(new MRenderDepthTexture())
 {
-	m_unTargetViewNum = 1;
 }
 
 MDirectX11RenderTarget::~MDirectX11RenderTarget()
@@ -146,8 +146,7 @@ void MDirectX11RenderTarget::OnRender(MIRenderer* pRenderer)
 		return;
 
 	pRenderer->ClearDepthTexture(GetDepthTexture());
-	pRenderer->ClearRenderTargetView(this, 0, m_backgroundColor);
-
+	pRenderer->ClearRenderTargetView(&m_RenderTargetView, m_pView->GetBackColor());
 
 	m_pView->OnRenderBegin();
 	for (MViewport* pViewport : m_pView->GetViewports())
@@ -176,5 +175,18 @@ void MDirectX11RenderTarget::Release(MIDevice* pDevice)
 
 //	MTextureRenderTarget::Release(pDevice);
 }
+
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+struct ID3D11DepthStencilView* MDirectX11RenderTarget::GetDepthStencilView()
+{
+	if (m_pDepthTexture)
+	{
+		if (MDepthTextureBuffer* pDepthTexture = m_pDepthTexture->GetDepthBuffer())
+			return pDepthTexture->m_pDepthStencilView;
+	}
+
+	return nullptr;
+}
+#endif
 
 #endif

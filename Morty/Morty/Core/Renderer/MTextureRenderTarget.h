@@ -38,25 +38,34 @@ public:
 
 public:
 	
-	MRenderTargetTexture* GetBackTexture(const uint32_t& unIndex = 0) { return &m_vBackTexture[unIndex]; }
+	MRenderTargetTexture* GetBackTexture(const uint32_t& unIndex = 0) { return m_vBackTexture[unIndex]; }
 	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
+
+	void SetBackTexture(MRenderTargetTexture* pBackTexture, const uint32_t& unIndex);
+	void SetDepthTexture(MRenderDepthTexture* pDepthTexture);
 
 	uint32_t GetRenderTargetType() { return m_eRenderTargetType; }
 
+
+	void ResizeAllTexture(const Vector2& v2Size);
+
 public:
 
-	void Initialize(const uint32_t& eType, const uint32_t& unWidth, const uint32_t& unHeight);
-	void Initialize(const uint32_t& eType, const uint32_t& unWidth, const uint32_t& unHeight, const std::vector<MERenderTextureType>& vTextureTypes);
-
 	virtual void OnCreated() override;
-
-	virtual void OnResize(const uint32_t& unWidth, const uint32_t& unHeight) override;
 
 	virtual void Release(MIDevice* pDevice) override;
 
 public:
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	virtual std::vector<struct ID3D11RenderTargetView*> GetRenderTargetViews() override;
+	virtual struct ID3D11DepthStencilView* GetDepthStencilView() override;
+#elif RENDER_GRAPHICS == MORTY_VULKAN
+	VkRenderPass m_VkRenderPass;
+#endif
 
-	MRenderTargetTexture* m_vBackTexture;
+public:
+
+	std::vector<MRenderTargetTexture*> m_vBackTexture;
 	MRenderDepthTexture* m_pDepthTexture;
 protected:
 

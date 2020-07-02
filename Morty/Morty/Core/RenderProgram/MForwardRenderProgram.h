@@ -1,18 +1,18 @@
 /**
- * @File         MRenderSystem
+ * @File         MForwardRenderProgram
  * 
- * @Created      2020-04-19 16:05:49
+ * @Created      2020-07-2 11:45:49
  *
  * @Author       Pobrecito
 **/
 
-#ifndef _M_MRENDERSYSTEM_H_
-#define _M_MRENDERSYSTEM_H_
+#ifndef _M_MFORWARDRENDERPROGRAM_H_
+#define _M_MFORWARDRENDERPROGRAM_H_
 #include "MGlobal.h"
 #include "MMesh.h"
 #include "Vector.h"
 #include "MBounds.h"
-#include "MISystem.h"
+#include "MIRenderProgram.h"
 #include "MMaterialGroup.h"
 #include "MShadowTextureRenderTarget.h"
 
@@ -25,7 +25,11 @@ class MModelInstance;
 class MSkeletonInstance;
 class MDirectionalLight;
 class MIModelMeshInstance;
-class MORTY_CLASS MRenderSystem : public MISystem
+class MRenderDepthTexture;
+class MRenderTargetTexture;
+class MTransparentRenderTarget;
+class MShadowTextureRenderTarget;
+class MORTY_CLASS MForwardRenderProgram : public MIRenderProgram
 {
 public:
 
@@ -51,14 +55,18 @@ public:
 	};
 
 public:
-	M_OBJECT(MRenderSystem);
-    MRenderSystem();
-    virtual ~MRenderSystem();
+	M_OBJECT(MForwardRenderProgram);
+	MForwardRenderProgram();
+    virtual ~MForwardRenderProgram();
 
 public:
 
-    virtual void Tick(const float& fDelta) override;
     virtual void Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene, MIRenderTarget* pRenderTarget) override;
+
+public:
+
+	virtual void OnCreated() override;
+	virtual void OnDelete() override;
 
 protected:
 
@@ -75,16 +83,34 @@ protected:
 	void DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pModelIns);
 	void DrawCameraFrustum(MRenderInfo& info, MCamera* pCamera);
 
+
 public:
-	static void DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pMeshInstance, MShaderParam*& pMeshMatrixParam, MShaderParam*& pAnimationParam);
+
+	virtual void DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pMeshInstance, MShaderParam*& pMeshMatrixParam, MShaderParam*& pAnimationParam) override;
 
 protected:
 
-	//void RecordMeshInstance(MRenderInfo& info, MIMeshInstance* pMeshInstance);
+	void InitializeRenderTargets();
+	void ReleaseRenderTargets();
 
+	void CheckTransparentTextureSize(MRenderInfo& info);
 
 private:
-	MMesh<Vector2> m_cDepthPeelingMesh;
+
+	MMesh<Vector2> m_TransparentDrawMesh;
+
+	MShadowTextureRenderTarget* m_pShadowDepthMapRenderTarget;
+	MTransparentRenderTarget* m_pTransparentRenderTarget1;
+	MTransparentRenderTarget* m_pTransparentRenderTarget2;
+
+	MRenderDepthTexture* m_pShadowDepthTexture;
+
+
+	Vector2 m_v2TransparentTextureSize;
+	MRenderTargetTexture* m_pTransparentFrontTexture;
+	MRenderTargetTexture* m_pTransparentBackTexture;
+	std::vector<MRenderTargetTexture*> m_vTransparentBackTexture;
+
 };
 
 #endif

@@ -7,15 +7,17 @@
 #include "MTexture.h"
 #include "MViewport.h"
 #include "MIRenderer.h"
-#include "MRenderSystem.h"
 #include "MRenderStructure.h"
 #include "MTextureRenderTarget.h"
+#include "MForwardRenderProgram.h"
 
 SceneTexture::SceneTexture()
 	: m_pEngine(nullptr)
 	, m_pScene(nullptr)
 	, m_pTextureRenderTarget(nullptr)
 	, m_pRenderViewport(nullptr)
+	, m_pBackTexture(nullptr)
+	, m_pDepthTexture(nullptr)
 {
 
 }
@@ -30,7 +32,6 @@ void SceneTexture::Initialize(MEngine* pEngine)
 	m_pEngine = pEngine;
 
 	m_pScene = m_pEngine->GetObjectManager()->CreateObject<MScene>();
-	m_pScene->RegisterSystem<MRenderSystem>();
 
 	M3DNode* pRootNode = m_pEngine->GetObjectManager()->CreateObject<M3DNode>();
 	m_pScene->SetRootNode(pRootNode);
@@ -39,13 +40,26 @@ void SceneTexture::Initialize(MEngine* pEngine)
 	m_pRenderViewport = pEngine->GetObjectManager()->CreateObject<MViewport>();
 	m_pRenderViewport->SetScene(m_pScene);
 	m_pRenderViewport->SetSize(Vector2(256, 256));
+	m_pRenderViewport->RegisterRenderProgram<MForwardRenderProgram>();
+
+
+	m_pBackTexture = new MRenderTargetTexture();
+	m_pBackTexture->SetSize(Vector2(256, 256));
+	m_pBackTexture->SetType(MERenderTextureType::ERGBA8);
+	m_pBackTexture->GenerateBuffer(pEngine->GetDevice());
+
+	m_pDepthTexture = new MRenderDepthTexture();
+	m_pDepthTexture->SetSize(Vector2(256, 256));
+	m_pDepthTexture->GenerateBuffer(pEngine->GetDevice());
+
 	m_pTextureRenderTarget = pEngine->GetObjectManager()->CreateObject<MTextureRenderTarget>();
-	m_pTextureRenderTarget->Initialize(MTextureRenderTarget::ERenderBack | MTextureRenderTarget::ERenderDepth, 256, 256);
-		//MTextureRenderTarget::CreateForTexture(m_pEngine->GetDevice(), MTextureRenderTarget::ERenderBack | MTextureRenderTarget::ERenderDepth, 256, 256);
+	m_pTextureRenderTarget->SetBackTexture(m_pBackTexture, 0);
+	m_pTextureRenderTarget->SetDepthTexture(m_pDepthTexture);
+
 	m_pTextureRenderTarget->m_funcRenderFunction = [this](MIRenderer* pRenderer)
 	{
 		pRenderer->ClearDepthTexture(m_pTextureRenderTarget->GetDepthTexture());
-		pRenderer->ClearRenderTargetView(m_pTextureRenderTarget, 0, MColor::Black);
+		pRenderer->ClearRenderTargetView(m_pTextureRenderTarget->GetBackTexture(0), MColor::Black);
 
 		m_pRenderViewport->Render(pRenderer, m_pTextureRenderTarget);
 	};
@@ -69,14 +83,28 @@ void SceneTexture::Release()
 
 	m_pTextureRenderTarget->DeleteLater();
 	m_pTextureRenderTarget = nullptr;
+
+
+	m_pBackTexture->DestroyTexture(m_pEngine->GetDevice());
+	m_pDepthTexture->DestroyTexture(m_pEngine->GetDevice());
 }
 
 void SceneTexture::SetSize(const Vector2& v2Size)
 {
+	if (m_v2Size == v2Size)
+		return;
+
 	m_v2Size = v2Size;
 
-	m_pTextureRenderTarget->OnResize(m_v2Size.x, m_v2Size.y);
-	m_pRenderViewport->SetSize(Vector2(m_v2Size.x, m_v2Size.y));
+	m_pRenderViewport->SetSize(m_v2Size);
+	m_pBackTexture->SetSize(m_v2Size);
+	m_pDepthTexture->SetSize(m_v2Size);
+
+	m_pBackTexture->DestroyTexture(m_pEngine->GetDevice());
+	m_pBackTexture->GenerateBuffer(m_pEngine->GetDevice());
+
+	m_pDepthTexture->DestroyTexture(m_pEngine->GetDevice());
+	m_pDepthTexture->GenerateBuffer(m_pEngine->GetDevice());
 }
 
 void SceneTexture::UpdateTexture()
