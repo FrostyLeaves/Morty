@@ -81,7 +81,7 @@ MDirectX11RenderTarget* MDirectX11RenderTarget::CreateForView(MDirectX11Device* 
 
 	uint32_t unWidth = pView->GetViewWidth();
 	uint32_t unHeight = pView->GetViewHeight();
-	pRenderTarget->OnResize(unWidth, unHeight);
+	pRenderTarget->Resize(unWidth, unHeight);
 
 
 	pRenderTarget->m_pView = pView;
@@ -90,7 +90,7 @@ MDirectX11RenderTarget* MDirectX11RenderTarget::CreateForView(MDirectX11Device* 
 	return pRenderTarget;
 }
 
-void MDirectX11RenderTarget::OnResize(const uint32_t& unWidth, const uint32_t& unHeight)
+void MDirectX11RenderTarget::Resize(const uint32_t& unWidth, const uint32_t& unHeight)
 {
 	if (nullptr == m_pDevice)
 		return;
@@ -137,7 +137,7 @@ void MDirectX11RenderTarget::OnResize(const uint32_t& unWidth, const uint32_t& u
 	m_pDevice->GenerateRenderTarget(this, unSafeWidth, unSafeHeight);
 
 
-//	MIRenderTarget::OnResize(unWidth, unHeight);
+//	MIRenderTarget::Resize(unWidth, unHeight);
 }
 
 void MDirectX11RenderTarget::OnRender(MIRenderer* pRenderer)

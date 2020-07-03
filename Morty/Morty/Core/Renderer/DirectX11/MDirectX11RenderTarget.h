@@ -35,8 +35,7 @@ public:
 
 public:
 
-	//virtual void OnResize(const uint32_t& nWidth, const uint32_t& nHeight) override;
-	void OnResize(const uint32_t& nWidth, const uint32_t& nHeight);
+	void Resize(const uint32_t& nWidth, const uint32_t& nHeight);
 	virtual void OnRender(MIRenderer* pRenderer) override;
 
 	virtual void Release(MIDevice* pDevice) override;

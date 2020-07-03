@@ -50,7 +50,11 @@ public:
 	virtual std::vector<struct ID3D11RenderTargetView*> GetRenderTargetViews() = 0;
 	virtual struct ID3D11DepthStencilView* GetDepthStencilView() = 0;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-	VkRenderPass m_VkRenderPass;
+
+	virtual VkFramebuffer GetFrameBuffer(const uint32_t& unIndex) = 0;
+
+	VkExtent2D m_VkExtend;
+	VkFormat m_VkColorFormat;
 #endif
 
 };

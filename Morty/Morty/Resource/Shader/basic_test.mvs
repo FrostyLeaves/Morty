@@ -1,0 +1,24 @@
+
+struct VS_INPUT
+{
+    float2 pos : POSITION;
+};
+
+
+struct VS_OUTPUT
+{
+    float4 pos : SV_POSITION;
+    float2 originPos : OPOS;
+};
+
+
+
+VS_OUTPUT VS( VS_INPUT input)
+{
+    VS_OUTPUT output;
+
+    output.pos = float4(input.pos.x, input.pos.y, 0.0f, 1.0f);
+    output.originPos.x = input.pos.x + 0.5f;
+    output.originPos.y = input.pos.y + 0.5f;
+    return output;
+}

@@ -328,21 +328,39 @@ void MDirectX11Renderer::SetViewport(const float& fX, const float& fY, const flo
 	m_pDevice->m_pD3dContext->RSSetViewports(1, &viewport);
 }
 
-void MDirectX11Renderer::RecoverRenderTarget(RenderTargetPair& rtp)
+void MDirectX11Renderer::Render(MIRenderTarget* pRenderTarget)
+{
+	if (pRenderTarget)
+	{
+		m_vRenderTargets.push(pRenderTarget);
+		RecoverRenderTarget(pRenderTarget);
+		pRenderTarget->OnRender(this);
+		m_vRenderTargets.pop();
+
+
+		//恢复上一个渲染目标的状态
+		if (!m_vRenderTargets.empty())
+			RecoverRenderTarget(m_vRenderTargets.top());
+	}
+}
+
+void MDirectX11Renderer::RecoverRenderTarget(MIRenderTarget* pRenderTarget)
 {
 	//warning! Material may has been switched.
-
-
 	//warning, this could be changed by outer.so can`t do this.
 	//if (m_pCurrentRenderTarget != pRenderTarget)
 	{
 		m_pUsingMaterial = nullptr;
 
 		ID3D11DepthStencilView* pDepthStencilView = nullptr;
-		if (rtp.pDepthTexture->GetDepthBuffer())
-			pDepthStencilView = rtp.pDepthTexture->GetDepthBuffer()->m_pDepthStencilView;
-
-		std::vector<struct ID3D11RenderTargetView*> views = rtp.pRenderTarget->GetRenderTargetViews();
+		if (MRenderDepthTexture* pDepthTexture = pRenderTarget->GetDepthTexture())
+		{
+			if (MDepthTextureBuffer* pDepthBuffer = pDepthTexture->GetDepthBuffer())
+			{
+				pDepthStencilView = pDepthBuffer->m_pDepthStencilView;
+			}
+		}
+		std::vector<struct ID3D11RenderTargetView*> views = pRenderTarget->GetRenderTargetViews();
 		m_pDevice->m_pD3dContext->OMSetRenderTargets(views.size(), views.data(), pDepthStencilView);
 	}
 }

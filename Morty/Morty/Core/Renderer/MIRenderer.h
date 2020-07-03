@@ -102,9 +102,7 @@ public:
 	virtual void Release() = 0;
 
 	virtual void SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth) = 0;
-	void Render(MIRenderTarget* pRenderTarget);
-	void Render(MIRenderTarget* pRenderTarget, MRenderDepthTexture* pDepthTexture);
-	virtual void RecoverRenderTarget(RenderTargetPair& pRenderTarget) = 0;
+	virtual void Render(MIRenderTarget* pRenderTarget) = 0;
 
 	virtual void ClearRenderTargetView(MRenderTargetTexture* pRenderTarget, const MColor& color) = 0;
 	virtual void ClearRenderTargetView(MRenderTargetView* pRenderTargetView, const MColor& color) = 0;
@@ -137,7 +135,7 @@ protected:
 	MERasterizerType m_eRasterizerType;
 	MEMaterialType m_eMaterialType;
 
-	std::stack<RenderTargetPair> m_vRenderTargets;
+	std::stack<MIRenderTarget*> m_vRenderTargets;
 
 };
 

@@ -62,6 +62,7 @@
 
 #include "MWindowsRenderView.h"
 
+#include "MBasicRenderProgram.h"
 #include "MForwardRenderProgram.h"
 
 //#define MORTY_EDITOR_ENABLE
@@ -158,134 +159,134 @@ int main(int argc, char* argv[])
 
 	 
 
-	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
-	pRootNode->SetName("RootNode");
-
-	auto time = MTimer::GetCurTime();
-
-	MModelResource* pGroundResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/Sphere/Sphere.model"));
-
-	time = MTimer::GetCurTime() - time;
-
-	MLogManager::GetInstance()->Log("Load Model Time: %lld", time);
-
-	for (int i = 0; i < 1; ++i)
-	{
-		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
-		pSpatial->Load(pGroundResource);
-		pSpatial->SetPosition(Vector3(0, 0, 0));
-		pSpatial->SetScale(Vector3(1, 1, 1));
-		pSpatial->SetName("Cat");
-
-		pRootNode->AddNode(pSpatial);
-
-		//	pSpatial->SetRotation(Quaternion(Vector3(0, 1, 0), 90.0f));
-	}
-
-
-	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/nfsq/nfsq.model"));
-
-	for (int i = 0; i < 1; ++i)
-	{
-		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
-		pSpatial->Load(pResource);
-		pSpatial->SetPosition(Vector3((i / 6) * 12, 0, -(i % 6) * 12));
-		pSpatial->SetScale(Vector3(10, 10, 10));
-		pSpatial->SetName("Ground");
-
-		pRootNode->AddNode(pSpatial);
-	}
-
-
-// 	MString textureID[] = {"005","003","007","004","014","008","002","015","019"};
+// 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
+// 	pRootNode->SetName("RootNode");
 // 
-// 	MModelResource* pPikachuResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/gun/model.dae"));
-// 	for (int i = 0; i < 9; ++i)
+// 	auto time = MTimer::GetCurTime();
+// 
+// 	MModelResource* pGroundResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/Sphere/Sphere.model"));
+// 
+// 	time = MTimer::GetCurTime() - time;
+// 
+// 	MLogManager::GetInstance()->Log("Load Model Time: %lld", time);
+// 
+// 	for (int i = 0; i < 1; ++i)
 // 	{
-// 		MMaterial* pMaterial = dynamic_cast<MMaterial*>((*pPikachuResource->GetMeshes())[i]->GetDefaultMaterial());
-// 		MResource* pDiffuseRes = engine.GetResourceManager()->LoadResource("./Model/gun/tex/Material." + textureID[i] + "_albedo.jpg");
-// 		MResource* pNormalMapRes = engine.GetResourceManager()->LoadResource("./Model/gun/tex/Material." + textureID[i] + "_normal.png");
+// 		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
+// 		pSpatial->Load(pGroundResource);
+// 		pSpatial->SetPosition(Vector3(0, 0, 0));
+// 		pSpatial->SetScale(Vector3(1, 1, 1));
+// 		pSpatial->SetName("Cat");
 // 
-// 		pMaterial->SetTexutreParam(SHADER_PARAM_NAME_DIFFUSE, pDiffuseRes);
-// 		pMaterial->SetTexutreParam(SHADER_PARAM_NAME_NORMAL, pNormalMapRes);
+// 		pRootNode->AddNode(pSpatial);
 // 
-// 		for (MShaderParam& param : *pMaterial->GetShaderParams())
-// 		{
-// 			if (param.unCode == SHADER_PARAM_CODE_MATERIAL)
-// 			{
-// 				MStruct* pStruct = param.var.GetStruct()->FindMember("U_mat")->GetStruct();
-// 				pStruct->SetMember("bUseNormalTex", true);
+// 		//	pSpatial->SetRotation(Quaternion(Vector3(0, 1, 0), 90.0f));
+// 	}
 // 
-// 				param.SetDirty();
-// 				continue;
-// 			}
-// 		}
+// 
+// 	MModelResource* pResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/nfsq/nfsq.model"));
+// 
+// 	for (int i = 0; i < 1; ++i)
+// 	{
+// 		MModelInstance* pSpatial = engine.GetObjectManager()->CreateObject<MModelInstance>();
+// 		pSpatial->Load(pResource);
+// 		pSpatial->SetPosition(Vector3((i / 6) * 12, 0, -(i % 6) * 12));
+// 		pSpatial->SetScale(Vector3(10, 10, 10));
+// 		pSpatial->SetName("Ground");
+// 
+// 		pRootNode->AddNode(pSpatial);
+// 	}
+// 
+// 
+// // 	MString textureID[] = {"005","003","007","004","014","008","002","015","019"};
+// // 
+// // 	MModelResource* pPikachuResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/gun/model.dae"));
+// // 	for (int i = 0; i < 9; ++i)
+// // 	{
+// // 		MMaterial* pMaterial = dynamic_cast<MMaterial*>((*pPikachuResource->GetMeshes())[i]->GetDefaultMaterial());
+// // 		MResource* pDiffuseRes = engine.GetResourceManager()->LoadResource("./Model/gun/tex/Material." + textureID[i] + "_albedo.jpg");
+// // 		MResource* pNormalMapRes = engine.GetResourceManager()->LoadResource("./Model/gun/tex/Material." + textureID[i] + "_normal.png");
+// // 
+// // 		pMaterial->SetTexutreParam(SHADER_PARAM_NAME_DIFFUSE, pDiffuseRes);
+// // 		pMaterial->SetTexutreParam(SHADER_PARAM_NAME_NORMAL, pNormalMapRes);
+// // 
+// // 		for (MShaderParam& param : *pMaterial->GetShaderParams())
+// // 		{
+// // 			if (param.unCode == SHADER_PARAM_CODE_MATERIAL)
+// // 			{
+// // 				MStruct* pStruct = param.var.GetStruct()->FindMember("U_mat")->GetStruct();
+// // 				pStruct->SetMember("bUseNormalTex", true);
+// // 
+// // 				param.SetDirty();
+// // 				continue;
+// // 			}
+// // 		}
+// // 	}
+// // 
+// // 	for (unsigned int i = 0; i < 1; ++i)
+// // 	{
+// // 		MModelInstance* pPikachu = engine.GetObjectManager()->CreateObject<MModelInstance>();
+// // 		pPikachu->Load(pPikachuResource);
+// // 		pPikachu->SetGenerateDirLightShadow(true);
+// // 		pPikachu->SetPosition(Vector3(0, 0, 10));
+// // 		pPikachu->SetScale(Vector3(10, 10, 10));
+// // 		pPikachu->SetName("Pikachu");
+// // 
+// // 		pRootNode->AddNode(pPikachu);
+// // 	}
+// 
+// 	for (unsigned int i = 0; i < 1; ++i)
+// 	{
+// 		MSpotLight* pLight = engine.GetObjectManager()->CreateObject<MSpotLight>();
+// 		pLight->SetName("Spot Light");
+// 		pLight->SetPosition(Vector3(0, 0, 10000));
+// 		pRootNode->AddNode(pLight);
 // 	}
 // 
 // 	for (unsigned int i = 0; i < 1; ++i)
 // 	{
-// 		MModelInstance* pPikachu = engine.GetObjectManager()->CreateObject<MModelInstance>();
-// 		pPikachu->Load(pPikachuResource);
-// 		pPikachu->SetGenerateDirLightShadow(true);
-// 		pPikachu->SetPosition(Vector3(0, 0, 10));
-// 		pPikachu->SetScale(Vector3(10, 10, 10));
-// 		pPikachu->SetName("Pikachu");
-// 
-// 		pRootNode->AddNode(pPikachu);
+// 		MPointLight* pLight = engine.GetObjectManager()->CreateObject<MPointLight>();
+// 		pLight->SetName("Light");
+// 		pLight->SetPosition(Vector3(0, 0, 10000));
+// 		pRootNode->AddNode(pLight);
 // 	}
-
-	for (unsigned int i = 0; i < 1; ++i)
-	{
-		MSpotLight* pLight = engine.GetObjectManager()->CreateObject<MSpotLight>();
-		pLight->SetName("Spot Light");
-		pLight->SetPosition(Vector3(0, 0, 10000));
-		pRootNode->AddNode(pLight);
-	}
-
-	for (unsigned int i = 0; i < 1; ++i)
-	{
-		MPointLight* pLight = engine.GetObjectManager()->CreateObject<MPointLight>();
-		pLight->SetName("Light");
-		pLight->SetPosition(Vector3(0, 0, 10000));
-		pRootNode->AddNode(pLight);
-	}
-
-	MDirectionalLight* pDirLight = engine.GetObjectManager()->CreateObject<MDirectionalLight>();
-	pDirLight->SetName("DirLight");
-	pRootNode->AddNode(pDirLight);
-
-	MyCamera* pCamera = engine.GetObjectManager()->CreateObject<MyCamera>();
-	pCamera->SetPosition(Vector3(0, 10, -30));
-	pCamera->SetName("Camera");
-	pCamera->SetZNearFar(Vector2(10, 500));
-	pCamera->LookAt(Vector3(0, 0, 0), Vector3(0, 1, 0));
-	pRootNode->AddNode(pCamera);
-
-	MInputNode* pInputNode = engine.GetObjectManager()->CreateObject<MInputNode>();
-	pInputNode->SetName("InputNode");
-	pCamera->AddNode(pInputNode);
-
-	pInputNode->SetInputCallback([&pCamera](MInputEvent* pEvent, MViewport* pViewport) {
-
-		if (MKeyBoardInputEvent* pKeyInput = dynamic_cast<MKeyBoardInputEvent*>(pEvent))
-		{
-			pCamera->m_tKeyBoardDown[pKeyInput->GetKey()] = pKeyInput->GetType() == MEKeyState::DOWN;
-
-		}
-		else if (MMouseInputEvent* pMouseInput = dynamic_cast<MMouseInputEvent*>(pEvent))
-		{
-			if (pMouseInput->GetType() == MMouseInputEvent::MouseMove)
-			{
-				pCamera->m_v2MouseAddi = pMouseInput->GetMouseAddition();
-			}
-			else
-			{
-				pCamera->m_tKeyBoardDown[(unsigned int)pMouseInput->GetButton()] = pMouseInput->GetType() == MMouseInputEvent::ButtonDown;
-			}
-		}
-
-		return false;
-	});
+// 
+// 	MDirectionalLight* pDirLight = engine.GetObjectManager()->CreateObject<MDirectionalLight>();
+// 	pDirLight->SetName("DirLight");
+// 	pRootNode->AddNode(pDirLight);
+// 
+// 	MyCamera* pCamera = engine.GetObjectManager()->CreateObject<MyCamera>();
+// 	pCamera->SetPosition(Vector3(0, 10, -30));
+// 	pCamera->SetName("Camera");
+// 	pCamera->SetZNearFar(Vector2(10, 500));
+// 	pCamera->LookAt(Vector3(0, 0, 0), Vector3(0, 1, 0));
+// 	pRootNode->AddNode(pCamera);
+// 
+// 	MInputNode* pInputNode = engine.GetObjectManager()->CreateObject<MInputNode>();
+// 	pInputNode->SetName("InputNode");
+// 	pCamera->AddNode(pInputNode);
+// 
+// 	pInputNode->SetInputCallback([&pCamera](MInputEvent* pEvent, MViewport* pViewport) {
+// 
+// 		if (MKeyBoardInputEvent* pKeyInput = dynamic_cast<MKeyBoardInputEvent*>(pEvent))
+// 		{
+// 			pCamera->m_tKeyBoardDown[pKeyInput->GetKey()] = pKeyInput->GetType() == MEKeyState::DOWN;
+// 
+// 		}
+// 		else if (MMouseInputEvent* pMouseInput = dynamic_cast<MMouseInputEvent*>(pEvent))
+// 		{
+// 			if (pMouseInput->GetType() == MMouseInputEvent::MouseMove)
+// 			{
+// 				pCamera->m_v2MouseAddi = pMouseInput->GetMouseAddition();
+// 			}
+// 			else
+// 			{
+// 				pCamera->m_tKeyBoardDown[(unsigned int)pMouseInput->GetButton()] = pMouseInput->GetType() == MMouseInputEvent::ButtonDown;
+// 			}
+// 		}
+// 
+// 		return false;
+// 	});
 
 #ifdef MORTY_EDITOR_ENABLE
 	MainEditor* pEditorView = new MainEditor();
@@ -295,17 +296,20 @@ int main(int argc, char* argv[])
 
 #else
 	MScene* pScene = engine.GetObjectManager()->CreateObject<MScene>();
-	pScene->SetRootNode(pRootNode);
+//	pScene->SetRootNode(pRootNode);
 	MWindowsRenderView* pView = new MWindowsRenderView();
 	pView->Initialize(&engine, "Morty");
+	pView->SetBackColor(MColor(0.25f, 0.25f, 0.75f, 1.0f));
 	MViewport* pViewport = engine.GetObjectManager()->CreateObject<MViewport>();
-	pViewport->RegisterRenderProgram<MForwardRenderProgram>();
+	//pViewport->RegisterRenderProgram<MForwardRenderProgram>();
+	pViewport->RegisterRenderProgram<MBasicRenderProgram>();
 	pView->AppendViewport(pViewport);
 	pViewport->SetSize(Vector2(pView->GetViewWidth(), pView->GetViewWidth()));
 	pViewport->SetScene(pScene);
 	engine.AddView(pView);
 	engine.SetScene(pScene);
 #endif
+
 
 	
 // 	MWindowsRenderView* pTestView = new MWindowsRenderView();

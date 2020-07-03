@@ -1,12 +1,14 @@
 #include "MVulkanRenderer.h"
 #include "MMesh.h"
 #include "MShader.h"
+#include "MTexture.h"
 #include "MMaterial.h"
 #include "MVulkanDevice.h"
 #include "MIRenderTarget.h"
 #include "MRenderStructure.h"
 #include "MRenderStatistics.h"
 
+#include "MVulkanRenderTarget.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
@@ -16,6 +18,13 @@ MVulkanRenderer::MVulkanRenderer(MVulkanDevice* pDevice)
 	, m_PipelineManager(pDevice)
 	, m_VkUsingPipeline(VK_NULL_HANDLE)
 	, m_pUsingMaterial(nullptr)
+
+	, m_VkCommandBuffer(VK_NULL_HANDLE)
+
+	, m_VkImageAvailableSemaphore(VK_NULL_HANDLE)
+	, m_VkRenderFinishedSemaphore(VK_NULL_HANDLE)
+
+	, m_unFrameIndex(0)
 {
 
 }
@@ -23,6 +32,14 @@ MVulkanRenderer::MVulkanRenderer(MVulkanDevice* pDevice)
 MVulkanRenderer::~MVulkanRenderer()
 {
 
+}
+
+void MVulkanRenderer::AddOutputView(MIRenderView* pView)
+{
+	if (MWindowsRenderView* pWindowView = dynamic_cast<MWindowsRenderView*>(pView))
+	{
+		MVulkanRenderTarget::CreateForWindowsView(m_pDevice, pWindowView);
+	}
 }
 
 bool MVulkanRenderer::Initialize()
@@ -64,8 +81,7 @@ bool MVulkanRenderer::Initialize()
 
 
 
-
-	InitCommandBuffer();
+	InitSemaphores();
 
 
 	return true;
@@ -93,6 +109,94 @@ void MVulkanRenderer::SetViewport(const float& fX, const float& fY, const float&
 	m_ViewportState.pScissors = &scissor;
 }
 
+void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
+{
+	vkWaitForFences(m_pDevice->m_VkDevice, 1, &m_VkInFlightFences, VK_TRUE, UINT64_MAX);
+	
+	VkFramebuffer frameBuffer = pRenderTarget->GetFrameBuffer(m_unFrameIndex);
+
+	m_VkCommandBuffer = m_pDevice->BeginCommands();
+
+	VkSubmitInfo submitInfo{};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+	VkSemaphore waitSemaphores[] = { m_VkImageAvailableSemaphore };
+	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = waitSemaphores;
+	submitInfo.pWaitDstStageMask = waitStages;
+
+
+	submitInfo.commandBufferCount = 1;
+	//TODO maybe mutil command buffers for every frame
+	submitInfo.pCommandBuffers = &m_VkCommandBuffer;
+
+
+	VkSemaphore signalSemaphores[] = { m_VkRenderFinishedSemaphore };
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = signalSemaphores;
+
+	VkRenderPassBeginInfo renderPassInfo{};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassInfo.renderPass = pRenderTarget->m_VkRenderPass;
+	renderPassInfo.framebuffer = frameBuffer;
+	renderPassInfo.renderArea.offset = { 0, 0 };
+	renderPassInfo.renderArea.extent = pRenderTarget->m_VkExtend;
+
+	VkClearValue clearColor = { 0.5f, 0.5f, 0.0f, 1.0f };
+	renderPassInfo.clearValueCount = 1;
+	renderPassInfo.pClearValues = &clearColor;
+
+	// Render Datas
+	//vkCmdBeginRenderPass(m_VkCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+	pRenderTarget->OnRender(this);
+
+	//vkCmdEndRenderPass(m_VkCommandBuffer);
+
+	//TODO 不支持多个渲染的嵌套
+
+
+	MVulkanRenderTarget* pVkRenderTarget = dynamic_cast<MVulkanRenderTarget*>(pRenderTarget);
+
+	ClearRenderTargetView(&pVkRenderTarget->m_RenderTargetView[m_unFrameIndex], MColor(1,0,0,1));
+
+	m_pDevice->EndCommands(m_VkCommandBuffer);
+
+	vkResetFences(m_pDevice->m_VkDevice, 1, &m_VkInFlightFences);
+
+	if (vkQueueSubmit(m_pDevice->m_VkGraphicsQueue, 1, &submitInfo, m_VkInFlightFences) != VK_SUCCESS) {
+		throw std::runtime_error("failed to submit draw command buffer!");
+	}
+}
+
+void MVulkanRenderer::ClearRenderTargetView(MRenderTargetView* pRenderTargetView, const MColor& color)
+{
+	VkClearColorValue clearColor = { color.r, color.g, color.b, color.a };
+	VkClearValue clearValue = {};
+	clearValue.color = clearColor;
+
+	VkImageSubresourceRange imageRange = {};
+	imageRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	imageRange.levelCount = 1;
+	imageRange.layerCount = 1;
+
+	vkCmdClearColorImage(m_VkCommandBuffer, pRenderTargetView->m_VkRenderTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &imageRange);
+
+
+// 	VkClearAttachment clearAtts[] = { {VK_IMAGE_ASPECT_COLOR_BIT, 1, {1,0,0,1}} };
+// 	VkClearRect clearRect = { {{0,0}, {1,1}}, 0, 1 };
+// 
+// 	vkCmdClearAttachments(m_VkCommandBuffer, 1, clearAtts, 1, &clearRect);
+}
+
+void MVulkanRenderer::ClearRenderTargetView(MRenderTargetTexture* pRenderTarget, const MColor& color)
+{
+	if (MRenderTextureBuffer* pBuffer = pRenderTarget->GetRenderBuffer())
+	{
+		ClearRenderTargetView(pBuffer, color);
+	}
+}
 
 void MVulkanRenderer::DrawMesh(MIMesh* pMesh)
 {
@@ -120,7 +224,7 @@ void MVulkanRenderer::DrawMesh(MIMesh* pMesh)
 
 bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial, const bool& bUpdateResources /*= false*/)
 {
-	m_VkUsingPipeline = m_PipelineManager.FindPipeline(pMaterial, m_vRenderTargets.top().pRenderTarget, 0);
+	m_VkUsingPipeline = m_PipelineManager.FindPipeline(pMaterial, m_vRenderTargets.top(), 0);
 	m_VkUsingPipelineLayout = m_PipelineManager.FindPipelineLayout(pMaterial);
 
 
@@ -162,7 +266,7 @@ void MVulkanRenderer::UpdateShaderParam(MShaderParam& param)
 
 
 	// Update Uniform
-	MShaderParam param;
+	//MShaderParam param;
 	VkDescriptorBufferInfo bufferInfo{};
 	bufferInfo.buffer = param.m_VkBuffer;
 	bufferInfo.offset = 0;
@@ -235,7 +339,7 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial)
 
 	VkPipelineLayout pipelineLayout = m_PipelineManager.FindPipelineLayout(pMaterial);
 
-	MIRenderTarget* pCurRenderTarget = m_vRenderTargets.top().pRenderTarget;
+	MIRenderTarget* pCurRenderTarget = m_vRenderTargets.top();
 
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -262,20 +366,27 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial)
 	return graphicsPipeline;
 }
 
-bool MVulkanRenderer::InitCommandBuffer()
+bool MVulkanRenderer::InitSemaphores()
 {
+	VkSemaphoreCreateInfo semaphoreInfo{};
+	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-	VkCommandBufferAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.commandPool = m_pDevice->m_VkCommandPool;
-	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandBufferCount = 1;
-
-	if (vkAllocateCommandBuffers(m_pDevice->m_VkDevice, &allocInfo, &m_VkCommandBuffer) != VK_SUCCESS)
+	if (vkCreateSemaphore(m_pDevice->m_VkDevice, &semaphoreInfo, nullptr, &m_VkImageAvailableSemaphore) != VK_SUCCESS)
 		return false;
 
+	if (vkCreateSemaphore(m_pDevice->m_VkDevice, &semaphoreInfo, nullptr, &m_VkRenderFinishedSemaphore) != VK_SUCCESS)
+		return false;
+
+	VkFenceCreateInfo fenceInfo{};
+	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+
+	if (vkCreateFence(m_pDevice->m_VkDevice, &fenceInfo, nullptr, &m_VkInFlightFences) != VK_SUCCESS)
+		return false;
 
 	return true;
 }
+
 
 #endif

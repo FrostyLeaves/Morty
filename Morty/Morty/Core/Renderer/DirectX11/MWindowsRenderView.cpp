@@ -138,8 +138,12 @@ bool MWindowsRenderView::Initialize(MEngine* pEngine, const char* svWindowName)
 
 void MWindowsRenderView::OnResize(const int& nWidth, const int& nHeight)
 {
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	if(MDirectX11RenderTarget* pRt = dynamic_cast<MDirectX11RenderTarget*>(m_pRenderTarget))
-		pRt->OnResize(nWidth, nHeight);
+		pRt->Resize(nWidth, nHeight);
+#else
+
+#endif
 }
 
 void MWindowsRenderView::SetRenderTarget(MIRenderTarget* pRenderTarget)

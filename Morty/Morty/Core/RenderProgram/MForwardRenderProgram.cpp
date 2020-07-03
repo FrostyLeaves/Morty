@@ -68,7 +68,6 @@ MForwardRenderProgram::MForwardRenderProgram()
 
 MForwardRenderProgram::~MForwardRenderProgram()
 {
-	m_TransparentDrawMesh.DestroyBuffer(m_pEngine->GetDevice());
 }
 
 void MForwardRenderProgram::InitializeRenderTargets()
@@ -202,7 +201,6 @@ void MForwardRenderProgram::CheckTransparentTextureSize(MRenderInfo& info)
 
 void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene, MIRenderTarget* pRenderTarget)
 {
-
 	MRenderInfo info;
 
 	info.pRenderTarget = pRenderTarget;
@@ -218,12 +216,12 @@ void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport, 
  	pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, pViewport->GetWidth(), pViewport->GetHeight(), 0.0f, 1.0f);
  
  	UpdateShaderSharedParams(info);
-	DrawPainter(info);
 	DrawNormalMesh(info);
 	DrawTransparentMesh(info);
 
 	//DrawSkyBox(info);
 	DrawModelInstance(info);
+	DrawPainter(info);
 }
 
 void MForwardRenderProgram::OnCreated()
@@ -236,6 +234,8 @@ void MForwardRenderProgram::OnCreated()
 void MForwardRenderProgram::OnDelete()
 {
 	ReleaseRenderTargets();
+
+	m_TransparentDrawMesh.DestroyBuffer(m_pEngine->GetDevice());
 
 	Super::OnDelete();
 }

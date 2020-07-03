@@ -61,9 +61,11 @@ public:
 	virtual bool GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t nWidth, uint32_t nHeight) = 0;
 	virtual void DestroyRenderTarget(MIRenderTarget* pRenderTarget) = 0;
 
-	virtual bool GenerateShaderParamBuffer(MShaderParam* pParam) = 0;
+	virtual bool GenerateShaderParamBuffer( MShaderParam* pParam) = 0;
 	virtual void DestroyShaderParamBuffer(MShaderParam* pParam) = 0;
 
+	virtual bool GenerateRenderPass(MIRenderTarget* pRenderTarget, MRenderPass* pRenderPass) = 0;
+	virtual void DestroyRenderPass(MRenderPass* pRenderPass) = 0;
 };
 
 #endif

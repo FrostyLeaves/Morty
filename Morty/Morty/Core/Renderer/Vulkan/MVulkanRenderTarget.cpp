@@ -1,5 +1,8 @@
 #include "MVulkanRenderTarget.h"
 
+#include "MViewport.h"
+#include "MVulkanRenderer.h"
+
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 #ifdef MORTY_WIN
@@ -9,6 +12,7 @@
 MVulkanRenderTarget::MVulkanRenderTarget(MVulkanDevice* pDevice)
 	:MIRenderTarget()
 	, m_pDevice(pDevice)
+	, m_pView(nullptr)
 {
 
 }
@@ -18,9 +22,53 @@ MVulkanRenderTarget::~MVulkanRenderTarget()
 
 }
 
+void MVulkanRenderTarget::OnRender(MIRenderer* pRenderer)
+{
+	MVulkanRenderer* pVkRenderer = dynamic_cast<MVulkanRenderer*>(pRenderer);
+
+	//TODO ²»ÓÅÑÅ
+	uint32_t imageIndex;
+	vkAcquireNextImageKHR(m_pDevice->m_VkDevice, m_VkSwapchain, UINT64_MAX, pVkRenderer->m_VkImageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+	pVkRenderer->SetFrameIndex(imageIndex);
+
+	pRenderer->ClearDepthTexture(GetDepthTexture());
+	pRenderer->ClearRenderTargetView(&this->m_RenderTargetView[imageIndex], m_pView->GetBackColor());
+
+// 	m_pView->OnRenderBegin();
+// 	for (MViewport* pViewport : m_pView->GetViewports())
+// 	{
+// 		pViewport->Render(pRenderer, this);
+// 	}
+// 	m_pView->OnRenderEnd();
+
+
+
+	VkPresentInfoKHR presentInfo{};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+	VkSemaphore signalSemaphores[] = { pVkRenderer->m_VkRenderFinishedSemaphore };
+
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores = signalSemaphores;
+	VkSwapchainKHR swapChains[] = { m_VkSwapchain };
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = swapChains;
+	presentInfo.pImageIndices = &imageIndex;
+	presentInfo.pResults = nullptr; // Optional
+	vkQueuePresentKHR(m_VkPresentQueue, &presentInfo);
+}
+
 void MVulkanRenderTarget::Release(MIDevice* pDevice)
 {
 	vkDestroySurfaceKHR(m_pDevice->m_VkInstance, m_VkSurface, nullptr);
+}
+
+void MVulkanRenderTarget::Resize(const uint32_t& nWidth, const uint32_t& nHeight)
+{
+	m_pDevice->DestroyRenderTarget(this);
+
+
+	m_pDevice->GenerateRenderTarget(this, nWidth, nHeight);
 }
 
 MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pDevice, MWindowsRenderView* pView)
@@ -60,16 +108,6 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 	else {
 		swapchainExtent = caps.currentExtent;
 	}
-
-// 	int nPresentQueueIndex =  pDevice->FindQueuePresentFamilies(pDevice->GetPhysicalDevice(), surface);
-// 
-// 	if (nPresentQueueIndex == -1)
-// 	{
-// 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : nPresentQueueIndex == -1");
-// 		vkDestroySurfaceKHR(pDevice->m_VKInstance, surface, nullptr);
-// 		return nullptr;
-// 	}
-
 
 
 	uint32_t unPresentModeCount = 0;
@@ -187,7 +225,22 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 	pRenderTarget->m_VkSurface = surface;
 	pRenderTarget->m_VkColorFormat = colorFormat;
 	pRenderTarget->m_vSwapchainImages = vSwapchainImages;
+	pRenderTarget->m_pView = pView;
+	pRenderTarget->m_VkExtend = swapchainExtent;
+	pView->SetRenderTarget(pRenderTarget);
 
+
+	int nPresentQueueIndex = pDevice->FindQueuePresentFamilies(pDevice->GetPhysicalDevice(), surface);
+	if (nPresentQueueIndex == -1)
+	{
+		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : nPresentQueueIndex == -1");
+		vkDestroySurfaceKHR(pDevice->m_VkInstance, surface, nullptr);
+		vkDestroySwapchainKHR(pDevice->m_VkDevice, swapchain, nullptr);
+		return nullptr;
+	}
+	vkGetDeviceQueue(pDevice->m_VkDevice, nPresentQueueIndex, 0, &pRenderTarget->m_VkPresentQueue);
+
+	pRenderTarget->Resize(pView->GetViewWidth(), pView->GetViewHeight());
 
 	return pRenderTarget;
 }

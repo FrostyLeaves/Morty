@@ -245,6 +245,7 @@
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanPipelineManager.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanRenderer.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanRenderTarget.h" />
+    <ClInclude Include="..\..\Core\RenderProgram\MBasicRenderProgram.h" />
     <ClInclude Include="..\..\Core\RenderProgram\MForwardRenderProgram.h" />
     <ClInclude Include="..\..\Core\RenderProgram\MIRenderProgram.h" />
     <ClInclude Include="..\..\Organizer\MMaterialGroup.h" />
@@ -348,6 +349,7 @@
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanPipelineManager.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanRenderer.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanRenderTarget.cpp" />
+    <ClCompile Include="..\..\Core\RenderProgram\MBasicRenderProgram.cpp" />
     <ClCompile Include="..\..\Core\RenderProgram\MForwardRenderProgram.cpp" />
     <ClCompile Include="..\..\Core\RenderProgram\MIRenderProgram.cpp" />
     <ClCompile Include="..\..\Organizer\MMaterialGroup.cpp" />

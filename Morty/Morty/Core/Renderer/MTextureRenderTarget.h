@@ -46,6 +46,7 @@ public:
 
 	uint32_t GetRenderTargetType() { return m_eRenderTargetType; }
 
+	virtual VkFramebuffer GetFrameBuffer(const uint32_t& unIndex) override;
 
 	void ResizeAllTexture(const Vector2& v2Size);
 

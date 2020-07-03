@@ -22,15 +22,22 @@ public:
     MVulkanRenderer(MVulkanDevice* pDevice);
     virtual ~MVulkanRenderer();
 
+public:
 
-	virtual void AddOutputView(MIRenderView* pView) override {}
+	void SetFrameIndex(const uint32_t& unIndex) { m_unFrameIndex = unIndex; }
+
+	virtual void AddOutputView(MIRenderView* pView) override;
 
 	virtual bool Initialize() override;
 	virtual void Release() override {}
 
 	virtual void SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth) override;
-	virtual void RecoverRenderTarget(RenderTargetPair& pRenderTarget) override {}
-	virtual void ClearRenderTarget(MIRenderTarget* pRenderTarget) override {}
+	
+	virtual void Render(MIRenderTarget* pRenderTarget) override;
+
+	virtual void ClearRenderTargetView(MRenderTargetTexture* pRenderTarget, const MColor& color) override;;
+	virtual void ClearRenderTargetView(MRenderTargetView* pRenderTargetView, const MColor& color) override;;
+	virtual void ClearDepthTexture(MRenderDepthTexture* pDepthTexture) override {};
 public:
 	virtual void DrawMesh(MIMesh* pMesh) override;
 
@@ -53,9 +60,16 @@ protected:
 
 	VkPipeline CreateGraphicsPipeline(MMaterial* pMaaterial);
 	
-	bool InitCommandBuffer();
+	bool InitSemaphores();
+
+
+public:
+	VkSemaphore m_VkImageAvailableSemaphore;
+	VkSemaphore m_VkRenderFinishedSemaphore;
+	VkFence m_VkInFlightFences;
 
 private:
+
 
 	MVulkanDevice* m_pDevice;
 
@@ -71,6 +85,11 @@ private:
 	VkPipelineLayout m_VkUsingPipelineLayout;
 
 	MMaterial* m_pUsingMaterial;
+
+private:
+
+
+	uint32_t m_unFrameIndex;
 };
 
 

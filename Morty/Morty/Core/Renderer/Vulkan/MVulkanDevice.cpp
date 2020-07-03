@@ -308,44 +308,6 @@ VkImageView MVulkanDevice::CreateImageView(VkImage image, VkFormat format)
 	return imageView;
 }
 
-VkRenderPass MVulkanDevice::CreateRenderPass(VkFormat format)
-{
-	VkRenderPass renderPass;
-
-	VkAttachmentDescription colorAttachment{};
-	colorAttachment.format = format;
-	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-	VkAttachmentReference colorAttachmentRef{};
-	colorAttachmentRef.attachment = 0;
-	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-	VkSubpassDescription subpass{};
-	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpass.colorAttachmentCount = 1;
-	subpass.pColorAttachments = &colorAttachmentRef;
-
-	VkRenderPassCreateInfo renderPassInfo{};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.attachmentCount = 1;
-	renderPassInfo.pAttachments = &colorAttachment;
-	renderPassInfo.subpassCount = 1;
-	renderPassInfo.pSubpasses = &subpass;
-
-	if (vkCreateRenderPass(m_VkDevice, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
-	{
-		return VK_NULL_HANDLE;
-	}
-
-	return renderPass;
-}
-
 VkCommandBuffer MVulkanDevice::BeginCommands()
 {
 	VkCommandBufferAllocateInfo allocInfo{};
@@ -598,7 +560,6 @@ bool MVulkanDevice::InitLogicalDevice()
 	deviceInfo.ppEnabledExtensionNames = DeviceExtensions.data();
 	deviceInfo.pEnabledFeatures = &deviceFeatures;
 
-	
 	//这里默认了当前队列族（nQueueFamilyIndex）都支持所有类型的功能
 	//可能会存在不支持往当前屏幕上绘制的，处理这个需要在创建logicalDevice之前创建窗口的surface，然后check支不支持。
 	//这个太恶心了，先不处理
@@ -863,42 +824,14 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t
 	if (nHeight < 1)
 		nHeight = 1;
 
-	VkAttachmentDescription colorAttachment{};
-	colorAttachment.format = pVkRenderTarget->m_VkColorFormat;
-	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-	//VK_ATTACHMENT_LOAD_OP_LOAD：保留附件的现有内容
-	//VK_ATTACHMENT_LOAD_OP_CLEAR：在开始时将值清除为常数
-	//VK_ATTACHMENT_LOAD_OP_DONT_CARE：现有内容未定义；我们不在乎他们
-	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	//VK_ATTACHMENT_STORE_OP_STORE：渲染的内容将存储在内存中，以后可以读取
-	//VK_ATTACHMENT_STORE_OP_DONT_CARE：渲染操作后，帧缓冲区的内容将不确定
-	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;	//交换链
-
-	VkAttachmentReference colorAttachmentRef = {};
-	colorAttachmentRef.attachment = 0;
-	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-	VkSubpassDescription subpass = {};
-	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpass.colorAttachmentCount = 1;
-	subpass.pColorAttachments = &colorAttachmentRef;
-
-	VkRenderPassCreateInfo renderPassInfo = {};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.attachmentCount = 1;
-	renderPassInfo.pAttachments = &colorAttachment;
-	renderPassInfo.subpassCount = 1;
-	renderPassInfo.pSubpasses = &subpass;
-
-	if (vkCreateRenderPass(m_VkDevice, &renderPassInfo, nullptr, &pVkRenderTarget->m_VkRenderPass) != VK_SUCCESS)
+	GenerateRenderPass(pVkRenderTarget, &pVkRenderTarget->m_VkRenderPass);
+	if (VK_NULL_HANDLE == pVkRenderTarget->m_VkRenderPass)
 		return false;
 
 	VkImageViewCreateInfo createInfo = {};
 
+	pVkRenderTarget->m_vSwapchainImageView.resize(pVkRenderTarget->m_vSwapchainImages.size());
+	pVkRenderTarget->swapChainFramebuffers.resize(pVkRenderTarget->m_vSwapchainImages.size());
 	for (uint32_t i = 0; i < pVkRenderTarget->m_vSwapchainImages.size(); ++i)
 	{
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -927,10 +860,15 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t
 		framebufferInfo.height = nHeight;
 		framebufferInfo.layers = 1;
 		vkCreateFramebuffer(m_VkDevice, &framebufferInfo, nullptr, &pVkRenderTarget->swapChainFramebuffers[i]);
+
+		//TODO 不优雅
+		MRenderTargetView target;
+		target.m_VkRenderTextureImage = pVkRenderTarget->m_vSwapchainImages[i];
+		target.m_VkFrameBuffer = pVkRenderTarget->swapChainFramebuffers[i];
+		pVkRenderTarget->m_RenderTargetView.push_back(target);
 	}
 
 	
-	uint32_t unTargetViewSize = pRenderTarget->GetTargetViewNum();
 
 	//TODO Multiple RenderTarget
 
@@ -969,6 +907,52 @@ void MVulkanDevice::DestroyShaderParamBuffer(MShaderParam* pParam)
 	{
 		DestroyBuffer(pParam->m_VkBuffer, pParam->m_VkBufferMemory);
 	}
+}
+
+bool MVulkanDevice::GenerateRenderPass(MIRenderTarget* pRenderTarget, MRenderPass* pRenderPass)
+{
+	VkRenderPass renderPass;
+
+	VkAttachmentDescription colorAttachment{};
+	colorAttachment.format = pRenderTarget->m_VkColorFormat;
+	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	//	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+	VkAttachmentReference colorAttachmentRef{};
+	colorAttachmentRef.attachment = 0;
+	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkSubpassDescription subpass{};
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.colorAttachmentCount = 1;
+	subpass.pColorAttachments = &colorAttachmentRef;
+
+	VkRenderPassCreateInfo renderPassInfo{};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassInfo.attachmentCount = 1;
+	renderPassInfo.pAttachments = &colorAttachment;
+	renderPassInfo.subpassCount = 1;
+	renderPassInfo.pSubpasses = &subpass;
+
+	if (vkCreateRenderPass(m_VkDevice, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
+	{
+		return false;
+	}
+
+	pRenderPass->m_VkRenderPass = renderPass;
+
+	return true;
+}
+
+void MVulkanDevice::DestroyRenderPass(MRenderPass* pRenderPass)
+{
+
 }
 
 #endif

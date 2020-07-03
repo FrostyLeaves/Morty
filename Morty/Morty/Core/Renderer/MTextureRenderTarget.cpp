@@ -36,6 +36,12 @@ void MTextureRenderTarget::SetDepthTexture(MRenderDepthTexture* pDepthTexture)
 	m_pDepthTexture = pDepthTexture;
 }
 
+VkFramebuffer MTextureRenderTarget::GetFrameBuffer(const uint32_t& unIndex)
+{
+	//TODO mutil rendertarget
+	return m_vBackTexture[0]->GetRenderBuffer()->m_VkFrameBuffer;
+}
+
 // void MTextureRenderTarget::Initialize(const uint32_t& eType, const uint32_t& unWidth, const uint32_t& unHeight)
 // {
 // 	static std::vector<MERenderTextureType> vDefaultArray{MERenderTextureType::ERGBA8};

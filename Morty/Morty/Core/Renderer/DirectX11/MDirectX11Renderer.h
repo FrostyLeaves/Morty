@@ -42,7 +42,8 @@ public:
 	virtual void Release() override;
 
 	virtual void SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth) override;
-	virtual void RecoverRenderTarget(RenderTargetPair& pRenderTarget) override;
+
+	virtual void Render(MIRenderTarget* pRenderTarget) override;
 
 	virtual void ClearRenderTargetView(MRenderTargetTexture* pRenderTarget, const MColor& color) override;
 	virtual void ClearRenderTargetView(MRenderTargetView* pRenderTargetView,  const MColor& color) override;
@@ -57,6 +58,7 @@ public:
 
 public:
 	void UpdateShaderParam(MShaderParam& param);
+	void RecoverRenderTarget(MIRenderTarget* pRenderTarget);
 
 	virtual void SetShaderParam(MShaderParam& param) override;
 

@@ -88,7 +88,8 @@ public:
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	struct ID3D11RenderTargetView* m_pRenderTargetView;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-
+	VkImage m_VkRenderTextureImage;
+	VkFramebuffer m_VkFrameBuffer;
 #endif
 };
 
@@ -238,6 +239,23 @@ public:
 	VkPipelineLayout m_VkPipelineLayout;
 #endif
 
+};
+
+class MRenderTargetPass
+
+class MRenderPass
+{
+public:
+
+	std::vector<
+
+	bool bClearBackTexture;
+	bool bClearDepthTexture;
+
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+#elif RENDER_GRAPHICS == MORTY_VULKAN
+	VkRenderPass m_VkRenderPass
+#endif
 };
 
 

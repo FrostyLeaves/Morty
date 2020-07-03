@@ -88,7 +88,7 @@ bool MEngine::Initialize()
 	m_pResourceManager->SetOwnerEngine(this);
 
 	//初始化默认资源
-	InitializeDefaultResource();
+	//InitializeDefaultResource();
 
 	return true;
 

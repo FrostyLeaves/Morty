@@ -23,29 +23,32 @@ public:
     MVulkanRenderTarget(MVulkanDevice* pDevice);
     virtual ~MVulkanRenderTarget();
 
-	virtual void SetBackgroundColor(const uint32_t& unTargetIndex, const MColor& color) override { m_backgroundColor = color; }
-	virtual const MColor& GetBackgroundColor(const uint32_t& unTargetIndex) const override { return m_backgroundColor; }
-
 	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
 
 public:
 
-	virtual void OnResize(const uint32_t& nWidth, const uint32_t& nHeight) override {}
-	virtual void OnRender(MIRenderer* pRenderer) override {}
+	virtual void OnRender(MIRenderer* pRenderer) override;
 
 	virtual void Release(MIDevice* pDevice) override;
 
+	void Resize(const uint32_t& nWidth, const uint32_t& nHeight);
+
 	static MVulkanRenderTarget* CreateForWindowsView(MVulkanDevice* pDevice, MWindowsRenderView* pView);
 
-public:
-	MColor m_backgroundColor;
-	MRenderDepthTexture* m_pDepthTexture;
+	virtual VkFramebuffer GetFrameBuffer(const uint32_t& unIndex) override { return swapChainFramebuffers[unIndex]; }
 
+public:
+
+	MIRenderView* m_pView;
 	MVulkanDevice* m_pDevice;
 	VkSurfaceKHR m_VkSurface;
 	VkSwapchainKHR m_VkSwapchain;
-	VkFormat m_VkColorFormat;
+
+	VkQueue m_VkPresentQueue;
+
 	std::vector<VkImage> m_vSwapchainImages;
+	std::vector<MRenderTargetView> m_RenderTargetView;
+	MRenderDepthTexture* m_pDepthTexture;
 
 	
 	//
