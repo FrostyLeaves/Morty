@@ -9,9 +9,9 @@
 #ifndef _M_MTEXTURE_H_
 #define _M_MTEXTURE_H_
 #include "MGlobal.h"
-#include "MIDevice.h"
 #include "Vector.h"
 #include "Type/MColor.h"
+#include "MRenderStructure.h"
 
 //TODO : Dynamic Update Texture and TextureCube.
 
@@ -115,8 +115,8 @@ public:
 public:
 
 	//Should Set before GenerateBuffer
-	void SetType(const MERenderTextureType& eType) { m_eRenderType = eType; }
-	MERenderTextureType GetType() { return m_eRenderType; }
+	void SetType(const METextureLayout& eType) { m_eRenderType = eType; }
+	METextureLayout GetType() { return m_eRenderType; }
 
 	virtual void SetSize(const Vector2& v2Size) override { m_v2Size = v2Size; }
 	virtual Vector2 GetSize() override { return m_v2Size; }
@@ -125,7 +125,7 @@ public:
 	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = true) override;
 	virtual void DestroyTexture(MIDevice* pDevice) override;
 private:
-	MERenderTextureType m_eRenderType;
+	METextureLayout m_eRenderType;
 	Vector2 m_v2Size;
 	MRenderTextureBuffer* m_pTextureBuffer;
 };

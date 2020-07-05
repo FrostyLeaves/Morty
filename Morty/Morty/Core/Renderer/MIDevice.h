@@ -10,7 +10,9 @@
 #define _M_MIDEVICE_H_
 #include "MGlobal.h"
 #include "MString.h"
+#include "MRenderPass.h"
 #include "MShaderMacro.h"
+#include "MRenderStructure.h"
 
 class MVertexBuffer;
 class MIMesh;
@@ -18,17 +20,13 @@ class MTextureBuffer;
 class MRenderTextureBuffer;
 class MDepthTextureBuffer;
 class MTexture;
+class MRenderPass;
 class MShaderBuffer;
 class MIRenderTarget;
 class MTextureRenderTarget;
 struct MShaderParam;
 
 
-enum MERenderTextureType
-{
-	ERGBA8 = 0,
-	ER32 = 1
-};
 
 class MORTY_CLASS MIDevice
 {;
@@ -49,7 +47,7 @@ public:
 	virtual void GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTexture* vTexture[6], const bool& bGenerateMipmap = true) = 0;
 	virtual void DestroyTexture(MTextureBuffer** ppTextureBuffer) = 0;
 
-	virtual void GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const MERenderTextureType& eType, const uint32_t& unWidth, const unsigned& unHeight) = 0;
+	virtual void GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const METextureLayout& eType, const uint32_t& unWidth, const unsigned& unHeight) = 0;
 	virtual void DestroyRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer) = 0;
 
 	virtual void GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const uint32_t& unWidth, const uint32_t& unHeight) = 0;
@@ -64,7 +62,7 @@ public:
 	virtual bool GenerateShaderParamBuffer( MShaderParam* pParam) = 0;
 	virtual void DestroyShaderParamBuffer(MShaderParam* pParam) = 0;
 
-	virtual bool GenerateRenderPass(MIRenderTarget* pRenderTarget, MRenderPass* pRenderPass) = 0;
+	virtual bool GenerateRenderPass(MRenderPass* pRenderPass) = 0;
 	virtual void DestroyRenderPass(MRenderPass* pRenderPass) = 0;
 };
 

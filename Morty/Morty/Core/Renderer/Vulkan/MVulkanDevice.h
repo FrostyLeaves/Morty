@@ -43,7 +43,7 @@ public:
 	virtual void GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTexture* vTexture[6], const bool& bGenerateMipmap) override {}
 	virtual void DestroyTexture(MTextureBuffer** ppTextureBuffer) override;
 
-	virtual void GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const MERenderTextureType& eType, const uint32_t& unWidth, const unsigned& unHeight) override {}
+	virtual void GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const METextureLayout& eType, const uint32_t& unWidth, const unsigned& unHeight) override {}
 	virtual void DestroyRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer) override {}
 
 	virtual void GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const uint32_t& unWidth, const uint32_t& unHeight) override {}
@@ -59,7 +59,7 @@ public:
 	virtual void DestroyShaderParamBuffer(MShaderParam* pParam) override;
 
 	
-	virtual bool GenerateRenderPass(MIRenderTarget* pRenderTarget, MRenderPass* pRenderPass) override;
+	virtual bool GenerateRenderPass(MRenderPass* pRenderPass) override;
 	virtual void DestroyRenderPass(MRenderPass* pRenderPass) override;
 
 

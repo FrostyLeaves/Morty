@@ -85,23 +85,23 @@ void MForwardRenderProgram::InitializeRenderTargets()
 	m_pTransparentRenderTarget2 = m_pEngine->GetObjectManager()->CreateObject<MTransparentRenderTarget>();
 
 	m_pTransparentFrontTexture = new MRenderTargetTexture();
-	m_pTransparentFrontTexture->SetType(MERenderTextureType::ERGBA8);
+	m_pTransparentFrontTexture->SetType(METextureLayout::ERGBA8);
 
 	m_pTransparentBackTexture = new MRenderTargetTexture();
-	m_pTransparentBackTexture->SetType(MERenderTextureType::ERGBA8);
+	m_pTransparentBackTexture->SetType(METextureLayout::ERGBA8);
 
 
 	MRenderTargetTexture* pBackTexture0 = new MRenderTargetTexture();
-	pBackTexture0->SetType(MERenderTextureType::ER32);
+	pBackTexture0->SetType(METextureLayout::ER32);
 
 	MRenderTargetTexture* pBackTexture1 = new MRenderTargetTexture();
-	pBackTexture1->SetType(MERenderTextureType::ER32);
+	pBackTexture1->SetType(METextureLayout::ER32);
 
 	MRenderTargetTexture* pBackTexture2 = new MRenderTargetTexture();
-	pBackTexture2->SetType(MERenderTextureType::ER32);
+	pBackTexture2->SetType(METextureLayout::ER32);
 
 	MRenderTargetTexture* pBackTexture3 = new MRenderTargetTexture();
-	pBackTexture3->SetType(MERenderTextureType::ER32);
+	pBackTexture3->SetType(METextureLayout::ER32);
 
 	m_vTransparentBackTexture = { pBackTexture0, pBackTexture1, pBackTexture2, pBackTexture3 };
 

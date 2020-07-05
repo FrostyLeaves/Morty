@@ -9,15 +9,15 @@
 #ifndef _M_MTEXTURERENDERTARGET_H_
 #define _M_MTEXTURERENDERTARGET_H_
 #include "MGlobal.h"
-#include "MIDevice.h"
 #include "MObject.h"
-#include "MIRenderTarget.h"
+#include "MIDevice.h"
 #include "MTexture.h"
+#include "MIRenderTarget.h"
+#include "MRenderStructure.h"
 
 class MIDevice;
 class MViewport;
 class MTexture;
-class MRenderTargetTexture;
 class MRenderDepthTexture;
 
 class MORTY_CLASS MTextureRenderTarget : public MIRenderTarget, public MObject
@@ -37,8 +37,8 @@ public:
     virtual ~MTextureRenderTarget();
 
 public:
-	
-	MRenderTargetTexture* GetBackTexture(const uint32_t& unIndex = 0) { return m_vBackTexture[unIndex]; }
+
+	virtual MRenderTargetTexture* GetBackTexture(const uint32_t& unIndex) override;
 	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
 
 	void SetBackTexture(MRenderTargetTexture* pBackTexture, const uint32_t& unIndex);

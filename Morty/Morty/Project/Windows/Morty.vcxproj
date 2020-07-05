@@ -218,6 +218,7 @@
     <ClInclude Include="..\..\Core\MBounds.h" />
     <ClInclude Include="..\..\Core\MCameraFrustum.h" />
     <ClInclude Include="..\..\Core\MPlane.h" />
+    <ClInclude Include="..\..\Core\MRenderPass.h" />
     <ClInclude Include="..\..\Core\MViewport.h" />
     <ClInclude Include="..\..\Core\MMaterial.h" />
     <ClInclude Include="..\..\Core\MSkeleton.h" />
@@ -323,6 +324,7 @@
     <ClCompile Include="..\..\Core\MBounds.cpp" />
     <ClCompile Include="..\..\Core\MCameraFrustum.cpp" />
     <ClCompile Include="..\..\Core\MPlane.cpp" />
+    <ClCompile Include="..\..\Core\MRenderPass.cpp" />
     <ClCompile Include="..\..\Core\MViewport.cpp" />
     <ClCompile Include="..\..\Core\MMaterial.cpp" />
     <ClCompile Include="..\..\Core\MSkeleton.cpp" />

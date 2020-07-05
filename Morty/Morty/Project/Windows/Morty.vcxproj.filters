@@ -363,6 +363,9 @@
     <ClInclude Include="..\..\Core\RenderProgram\MBasicRenderProgram.h">
       <Filter>Core\RenderProgram</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\MRenderPass.h">
+      <Filter>Core\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -607,6 +610,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\RenderProgram\MBasicRenderProgram.cpp">
       <Filter>Core\RenderProgram</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\MRenderPass.cpp">
+      <Filter>Core\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

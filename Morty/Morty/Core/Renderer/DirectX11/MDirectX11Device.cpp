@@ -507,6 +507,8 @@ void MDirectX11Device::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppText
 
 	(*ppTextureBuffer) = new MRenderTextureBuffer();
 
+	ppTextureBuffer->m_eTextureLayout = eType;
+
 	if (FAILED(hr))
 	{
 		if (pTextureBuffer)

@@ -46,7 +46,6 @@ public:
 	virtual void Render(MIRenderTarget* pRenderTarget) override;
 
 	virtual void ClearRenderTargetView(MRenderTargetTexture* pRenderTarget, const MColor& color) override;
-	virtual void ClearRenderTargetView(MRenderTargetView* pRenderTargetView,  const MColor& color) override;
 	virtual void ClearDepthTexture(MRenderDepthTexture* pDepthTexture) override;
 
 public:

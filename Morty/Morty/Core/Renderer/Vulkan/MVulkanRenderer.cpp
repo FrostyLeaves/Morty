@@ -157,10 +157,6 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 	//TODO 不支持多个渲染的嵌套
 
 
-	MVulkanRenderTarget* pVkRenderTarget = dynamic_cast<MVulkanRenderTarget*>(pRenderTarget);
-
-	ClearRenderTargetView(&pVkRenderTarget->m_RenderTargetView[m_unFrameIndex], MColor(1,0,0,1));
-
 	m_pDevice->EndCommands(m_VkCommandBuffer);
 
 	vkResetFences(m_pDevice->m_VkDevice, 1, &m_VkInFlightFences);
@@ -170,7 +166,7 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 	}
 }
 
-void MVulkanRenderer::ClearRenderTargetView(MRenderTargetView* pRenderTargetView, const MColor& color)
+void MVulkanRenderer::ClearRenderTargetView(MRenderTargetTexture* pRenderTarget, const MColor& color)
 {
 	VkClearColorValue clearColor = { color.r, color.g, color.b, color.a };
 	VkClearValue clearValue = {};
@@ -181,21 +177,15 @@ void MVulkanRenderer::ClearRenderTargetView(MRenderTargetView* pRenderTargetView
 	imageRange.levelCount = 1;
 	imageRange.layerCount = 1;
 
-	vkCmdClearColorImage(m_VkCommandBuffer, pRenderTargetView->m_VkRenderTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &imageRange);
-
+	if (MRenderTextureBuffer* pBuffer = pRenderTarget->GetRenderBuffer())
+	{
+		vkCmdClearColorImage(m_VkCommandBuffer, pBuffer->m_VkTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &imageRange);
+	}
 
 // 	VkClearAttachment clearAtts[] = { {VK_IMAGE_ASPECT_COLOR_BIT, 1, {1,0,0,1}} };
 // 	VkClearRect clearRect = { {{0,0}, {1,1}}, 0, 1 };
 // 
 // 	vkCmdClearAttachments(m_VkCommandBuffer, 1, clearAtts, 1, &clearRect);
-}
-
-void MVulkanRenderer::ClearRenderTargetView(MRenderTargetTexture* pRenderTarget, const MColor& color)
-{
-	if (MRenderTextureBuffer* pBuffer = pRenderTarget->GetRenderBuffer())
-	{
-		ClearRenderTargetView(pBuffer, color);
-	}
 }
 
 void MVulkanRenderer::DrawMesh(MIMesh* pMesh)

@@ -24,6 +24,12 @@ class MIRenderer;
 class MITexture;
 class MTextureCube;
 
+enum METextureLayout
+{
+	ERGBA8 = 0,
+	ER32 = 1
+};
+
 class MInputLayout
 {
 public:
@@ -61,6 +67,8 @@ public:
 	MTextureBuffer();
 	virtual ~MTextureBuffer();
 
+	METextureLayout m_eTextureLayout;
+
 	void* GetResourceView() {
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	return m_pShaderResourceView;
@@ -81,23 +89,17 @@ public:
 #endif
 };
 
-class MRenderTargetView
-{
-public:
-	MRenderTargetView();
-#if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	struct ID3D11RenderTargetView* m_pRenderTargetView;
-#elif RENDER_GRAPHICS == MORTY_VULKAN
-	VkImage m_VkRenderTextureImage;
-	VkFramebuffer m_VkFrameBuffer;
-#endif
-};
-
 //用于渲染目标的纹理缓存
-class MRenderTextureBuffer : public MTextureBuffer, public MRenderTargetView
+class MRenderTextureBuffer : public MTextureBuffer
 {
 public:
 	MRenderTextureBuffer();
+
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+		struct ID3D11RenderTargetView* m_pRenderTargetView;
+#elif RENDER_GRAPHICS == MORTY_VULKAN
+	VkFramebuffer m_VkFrameBuffer;
+#endif
 };
 
 //用于渲染深度的纹理缓存
@@ -239,23 +241,6 @@ public:
 	VkPipelineLayout m_VkPipelineLayout;
 #endif
 
-};
-
-class MRenderTargetPass
-
-class MRenderPass
-{
-public:
-
-	std::vector<
-
-	bool bClearBackTexture;
-	bool bClearDepthTexture;
-
-#if RENDER_GRAPHICS == MORTY_DIRECTX_11
-#elif RENDER_GRAPHICS == MORTY_VULKAN
-	VkRenderPass m_VkRenderPass
-#endif
 };
 
 

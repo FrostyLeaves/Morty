@@ -45,7 +45,7 @@ void SceneTexture::Initialize(MEngine* pEngine)
 
 	m_pBackTexture = new MRenderTargetTexture();
 	m_pBackTexture->SetSize(Vector2(256, 256));
-	m_pBackTexture->SetType(MERenderTextureType::ERGBA8);
+	m_pBackTexture->SetType(METextureLayout::ERGBA8);
 	m_pBackTexture->GenerateBuffer(pEngine->GetDevice());
 
 	m_pDepthTexture = new MRenderDepthTexture();

@@ -824,7 +824,7 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t
 	if (nHeight < 1)
 		nHeight = 1;
 
-	GenerateRenderPass(pVkRenderTarget, &pVkRenderTarget->m_VkRenderPass);
+	GenerateRenderPass(&pVkRenderTarget->m_VkRenderPass);
 	if (VK_NULL_HANDLE == pVkRenderTarget->m_VkRenderPass)
 		return false;
 
@@ -862,7 +862,7 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t
 		vkCreateFramebuffer(m_VkDevice, &framebufferInfo, nullptr, &pVkRenderTarget->swapChainFramebuffers[i]);
 
 		//TODO ²»ÓÅÑÅ
-		MRenderTargetView target;
+		MRenderTargetTexture target;
 		target.m_VkRenderTextureImage = pVkRenderTarget->m_vSwapchainImages[i];
 		target.m_VkFrameBuffer = pVkRenderTarget->swapChainFramebuffers[i];
 		pVkRenderTarget->m_RenderTargetView.push_back(target);
@@ -909,36 +909,64 @@ void MVulkanDevice::DestroyShaderParamBuffer(MShaderParam* pParam)
 	}
 }
 
-bool MVulkanDevice::GenerateRenderPass(MIRenderTarget* pRenderTarget, MRenderPass* pRenderPass)
+bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 {
+	if (!pRenderPass->m_pRenderTarget)
+		return false;
+
+
 	VkRenderPass renderPass;
 
+	MIRenderTarget* pRenderTarget = pRenderPass->m_pRenderTarget;
+
+	MRenderTargetTexture* pTargetTexture = pRenderTarget->GetRenderTargetView(0);
+
+	if (MRenderDepthTexture* pDepthTexture = pRenderTarget->GetDepthTexture())
+	{
+
+	}
+
 	VkAttachmentDescription colorAttachment{};
-	colorAttachment.format = pRenderTarget->m_VkColorFormat;
+
+
+
+	if (METextureLayout::ERGBA8 == pRenderPass->m_eTextureType)
+		colorAttachment.format = VkFormat::VK_FORMAT_R8G8B8A8_UNORM;
+	else if (METextureLayout::ER32 == pRenderPass->m_eTextureType)
+		colorAttachment.format = VkFormat::VK_FORMAT_R32_SFLOAT;
+
+	if (pRenderPass->m_bClearBackTexture)
+		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	else
+		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	//	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-	VkAttachmentReference colorAttachmentRef{};
-	colorAttachmentRef.attachment = 0;
-	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	std::vector<VkSubpassDescription> vSubpass;
 
-	VkSubpassDescription subpass{};
-	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpass.colorAttachmentCount = 1;
-	subpass.pColorAttachments = &colorAttachmentRef;
+	for (MSubpass& subpass : pRenderPass->m_vSubpass)
+	{
+		VkAttachmentReference colorAttachmentRef{};
+		colorAttachmentRef.attachment = 0;
+		colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+		VkSubpassDescription vkSubpass{};
+		vkSubpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+		vkSubpass.colorAttachmentCount = 1;
+		vkSubpass.pColorAttachments = &colorAttachmentRef;
+	}
 
 	VkRenderPassCreateInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	renderPassInfo.attachmentCount = 1;
 	renderPassInfo.pAttachments = &colorAttachment;
-	renderPassInfo.subpassCount = 1;
-	renderPassInfo.pSubpasses = &subpass;
+	renderPassInfo.subpassCount = vSubpass.size();
+	renderPassInfo.pSubpasses = vSubpass.data();
 
 	if (vkCreateRenderPass(m_VkDevice, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
 	{

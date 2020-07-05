@@ -23,6 +23,11 @@ MTextureRenderTarget::~MTextureRenderTarget()
 	Release(m_pEngine->GetDevice());
 }
 
+MRenderTargetTexture* MTextureRenderTarget::GetBackTexture(const uint32_t& unIndex)
+{
+	return m_vBackTexture[unIndex];
+}
+
 void MTextureRenderTarget::SetBackTexture(MRenderTargetTexture* pBackTexture, const uint32_t& unIndex)
 {
 	if (m_vBackTexture.size() < unIndex + 1)

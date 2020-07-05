@@ -65,6 +65,7 @@ MInputLayout::MInputLayout()
 }
 
 MTextureBuffer::MTextureBuffer()
+	: m_eTextureLayout(METextureLayout::ERGBA8)
 {
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	m_pTextureBuffer = nullptr;
@@ -93,7 +94,11 @@ MTextureBuffer::~MTextureBuffer()
 
 MRenderTextureBuffer::MRenderTextureBuffer()
 	: MTextureBuffer()
-	, MRenderTargetView()
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	, m_pRenderTargetView(nullptr)
+#elif RENDER_GRAPHICS == MORTY_VULKAN
+
+#endif
 {
 }
 
@@ -180,12 +185,3 @@ MShaderSampleParam::MShaderSampleParam()
 
 }
 
-MRenderTargetView::MRenderTargetView()
-#if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	: m_pRenderTargetView(nullptr)
-#elif RENDER_GRAPHICS == MORTY_VULKAN
-
-#endif
-{
-
-}
