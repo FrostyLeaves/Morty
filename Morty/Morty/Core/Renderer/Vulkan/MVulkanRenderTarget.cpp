@@ -22,9 +22,9 @@ MVulkanRenderTarget::~MVulkanRenderTarget()
 
 }
 
-MRenderTargetTexture* MVulkanRenderTarget::GetBackTexture(const uint32_t& unIndex)
+MRenderTextureBuffer* MVulkanRenderTarget::GetBackBuffer(const uint32_t& unIndex)
 {
-	return &m_vRenderTargets[unIndex];
+	return m_vRenderTargets[unIndex];
 }
 
 void MVulkanRenderTarget::OnRender(MIRenderer* pRenderer)
@@ -37,7 +37,7 @@ void MVulkanRenderTarget::OnRender(MIRenderer* pRenderer)
 	pVkRenderer->SetFrameIndex(imageIndex);
 
 	pRenderer->ClearDepthTexture(GetDepthTexture());
-	pRenderer->ClearRenderTargetView(&this->m_vRenderTargets[imageIndex], m_pView->GetBackColor());
+	pRenderer->ClearRenderTargetView(this->m_vRenderTargets[imageIndex], m_pView->GetBackColor());
 
 // 	m_pView->OnRenderBegin();
 // 	for (MViewport* pViewport : m_pView->GetViewports())

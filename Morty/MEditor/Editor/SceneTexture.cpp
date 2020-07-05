@@ -59,7 +59,7 @@ void SceneTexture::Initialize(MEngine* pEngine)
 	m_pTextureRenderTarget->m_funcRenderFunction = [this](MIRenderer* pRenderer)
 	{
 		pRenderer->ClearDepthTexture(m_pTextureRenderTarget->GetDepthTexture());
-		pRenderer->ClearRenderTargetView(m_pTextureRenderTarget->GetBackTexture(0), MColor::Black);
+		pRenderer->ClearRenderTargetView(m_pTextureRenderTarget->GetBackBuffer(0), MColor::Black);
 
 		m_pRenderViewport->Render(pRenderer, m_pTextureRenderTarget);
 	};
@@ -116,7 +116,7 @@ void* SceneTexture::GetTexture()
 {
 	if (m_pTextureRenderTarget)
 	{
-		if (MRenderTargetTexture* pBackTexture = m_pTextureRenderTarget->GetBackTexture())
+		if (MRenderTargetTexture* pBackTexture = m_pTextureRenderTarget->GetBackTexture(0))
 		{
 			if (MTextureBuffer* pBuffer = pBackTexture->GetBuffer())
 			{

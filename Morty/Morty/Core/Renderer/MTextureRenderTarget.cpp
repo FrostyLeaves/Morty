@@ -23,6 +23,16 @@ MTextureRenderTarget::~MTextureRenderTarget()
 	Release(m_pEngine->GetDevice());
 }
 
+MRenderTextureBuffer* MTextureRenderTarget::GetBackBuffer(const uint32_t& unIndex)
+{
+	if (MRenderTargetTexture* pTexture = GetBackTexture(unIndex))
+	{
+		return pTexture->GetRenderBuffer();
+	}
+
+	return nullptr;
+}
+
 MRenderTargetTexture* MTextureRenderTarget::GetBackTexture(const uint32_t& unIndex)
 {
 	return m_vBackTexture[unIndex];
@@ -40,12 +50,13 @@ void MTextureRenderTarget::SetDepthTexture(MRenderDepthTexture* pDepthTexture)
 {
 	m_pDepthTexture = pDepthTexture;
 }
-
+#if RENDER_GRAPHICS == MORTY_VULKAN
 VkFramebuffer MTextureRenderTarget::GetFrameBuffer(const uint32_t& unIndex)
 {
 	//TODO mutil rendertarget
 	return m_vBackTexture[0]->GetRenderBuffer()->m_VkFrameBuffer;
 }
+#endif
 
 // void MTextureRenderTarget::Initialize(const uint32_t& eType, const uint32_t& unWidth, const uint32_t& unHeight)
 // {

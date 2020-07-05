@@ -38,7 +38,9 @@ public:
 
 public:
 
-	virtual MRenderTargetTexture* GetBackTexture(const uint32_t& unIndex) override;
+
+	virtual MRenderTextureBuffer* GetBackBuffer(const uint32_t& unIndex) override;
+	MRenderTargetTexture* GetBackTexture(const uint32_t& unIndex);
 	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
 
 	void SetBackTexture(MRenderTargetTexture* pBackTexture, const uint32_t& unIndex);
@@ -46,7 +48,6 @@ public:
 
 	uint32_t GetRenderTargetType() { return m_eRenderTargetType; }
 
-	virtual VkFramebuffer GetFrameBuffer(const uint32_t& unIndex) override;
 
 	void ResizeAllTexture(const Vector2& v2Size);
 
@@ -61,6 +62,7 @@ public:
 	virtual std::vector<struct ID3D11RenderTargetView*> GetRenderTargetViews() override;
 	virtual struct ID3D11DepthStencilView* GetDepthStencilView() override;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
+	virtual VkFramebuffer GetFrameBuffer(const uint32_t& unIndex) override;
 	VkRenderPass m_VkRenderPass;
 #endif
 

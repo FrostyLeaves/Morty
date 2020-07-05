@@ -490,9 +490,8 @@ void MForwardRenderProgram::DrawTransparentMesh(MRenderInfo& info)
 
 	CheckTransparentTextureSize(info);
 
-
- 	info.pRenderer->ClearRenderTargetView(m_pTransparentFrontTexture, MColor::Black_T);
- 	info.pRenderer->ClearRenderTargetView(m_pTransparentBackTexture, MColor::Black_T);
+ 	info.pRenderer->ClearRenderTargetView(m_pTransparentFrontTexture->GetRenderBuffer(), MColor::Black_T);
+ 	info.pRenderer->ClearRenderTargetView(m_pTransparentBackTexture->GetRenderBuffer(), MColor::Black_T);
 
 	m_pTransparentRenderTarget2->ResetPrevLayerTexture();
 	m_pTransparentRenderTarget2->Render(info.pRenderer, info.pViewport, info.pRenderTarget, &info.vTransparentRenderGroup);

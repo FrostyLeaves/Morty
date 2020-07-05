@@ -421,7 +421,7 @@ void MDirectX11Device::DestroyTexture(MTextureBuffer** ppTextureBuffer)
 	*ppTextureBuffer = nullptr;
 }
 
-void MDirectX11Device::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const MERenderTextureType& eType, const uint32_t& unWidth, const unsigned& unHeight)
+void MDirectX11Device::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const METextureLayout& eType, const uint32_t& unWidth, const unsigned& unHeight)
 {
 	HRESULT hr;
 
@@ -438,11 +438,11 @@ void MDirectX11Device::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppText
 	desc.ArraySize = 1;
 	switch (eType)
 	{
-	case MERenderTextureType::ERGBA8:
+	case METextureLayout::ERGBA8:
 		desc.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
 		shaderResourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		break;
-	case MERenderTextureType::ER32:
+	case METextureLayout::ER32:
 		desc.Format = DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT;
 		shaderResourceViewDesc.Format = DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT;
 		break;
@@ -507,7 +507,7 @@ void MDirectX11Device::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppText
 
 	(*ppTextureBuffer) = new MRenderTextureBuffer();
 
-	ppTextureBuffer->m_eTextureLayout = eType;
+	(*ppTextureBuffer)->m_eTextureLayout = eType;
 
 	if (FAILED(hr))
 	{
@@ -1117,7 +1117,9 @@ bool MDirectX11Device::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint3
 		return false;
 	}
 
-	hr = m_pD3dDevice->CreateRenderTargetView(pBackBuffer, 0, &pDxRenderTarget->m_RenderTargetView.m_pRenderTargetView);
+
+	ID3D11RenderTargetView* pRenderTargetView = nullptr;
+	hr = m_pD3dDevice->CreateRenderTargetView(pBackBuffer, 0, &pRenderTargetView);
 
 	pBackBuffer->Release();
 	if (FAILED(hr))
@@ -1126,6 +1128,8 @@ bool MDirectX11Device::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint3
 		return false;
 	}
 
+	pDxRenderTarget->m_pRenderTextureBuffer = new MRenderTextureBuffer();
+	pDxRenderTarget->m_pRenderTextureBuffer->m_pRenderTargetView = pRenderTargetView;
 	pDxRenderTarget->m_pDepthTexture->SetSize(Vector2(nWidth, nHeight));
 	pDxRenderTarget->m_pDepthTexture->GenerateBuffer(this, false);
 
@@ -1138,10 +1142,16 @@ void MDirectX11Device::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
 	if (nullptr == pDxRenderTarget)
 		return;
 
-	if (pDxRenderTarget->m_RenderTargetView.m_pRenderTargetView)
+	if (MRenderTextureBuffer* pBuffer = pDxRenderTarget->m_pRenderTextureBuffer)
 	{
-		pDxRenderTarget->m_RenderTargetView.m_pRenderTargetView->Release();
-		pDxRenderTarget->m_RenderTargetView.m_pRenderTargetView = nullptr;
+		if (pBuffer->m_pRenderTargetView)
+		{
+			pBuffer->m_pRenderTargetView->Release();
+			pBuffer->m_pRenderTargetView = nullptr;
+		}
+
+		delete pDxRenderTarget->m_pRenderTextureBuffer;
+		pDxRenderTarget->m_pRenderTextureBuffer = nullptr;
 	}
 
 	if (pDxRenderTarget->m_pDepthTexture)

@@ -31,6 +31,7 @@ public:
 	MDirectX11RenderTarget(MDirectX11Device* pDevice);
 	~MDirectX11RenderTarget();
 
+	virtual MRenderTextureBuffer* GetBackBuffer(const uint32_t& unIndex) override { return m_pRenderTextureBuffer; }
 	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
 
 public:
@@ -43,7 +44,7 @@ public:
 	static MDirectX11RenderTarget* CreateForView(MDirectX11Device* pDevice, MWindowsRenderView* pView);
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	virtual std::vector<struct ID3D11RenderTargetView*> GetRenderTargetViews() override { return { m_RenderTargetView.m_pRenderTargetView }; }
+	virtual std::vector<struct ID3D11RenderTargetView*> GetRenderTargetViews() override { return { m_pRenderTextureBuffer->m_pRenderTargetView }; }
 	virtual struct ID3D11DepthStencilView* GetDepthStencilView() override;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 	VkRenderPass m_VkRenderPass;
@@ -51,7 +52,7 @@ public:
 
 public:
 	IDXGISwapChain* m_pSwapChain;
-	MRenderTargetView m_RenderTargetView;
+	MRenderTextureBuffer* m_pRenderTextureBuffer;
 	MRenderDepthTexture* m_pDepthTexture;
 private:
 	MDirectX11Device* m_pDevice;

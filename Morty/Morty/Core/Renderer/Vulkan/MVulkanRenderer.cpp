@@ -166,7 +166,7 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 	}
 }
 
-void MVulkanRenderer::ClearRenderTargetView(MRenderTargetTexture* pRenderTarget, const MColor& color)
+void MVulkanRenderer::ClearRenderTargetView(MRenderTextureBuffer* pRenderTextureBuffer, const MColor& color)
 {
 	VkClearColorValue clearColor = { color.r, color.g, color.b, color.a };
 	VkClearValue clearValue = {};
@@ -177,15 +177,13 @@ void MVulkanRenderer::ClearRenderTargetView(MRenderTargetTexture* pRenderTarget,
 	imageRange.levelCount = 1;
 	imageRange.layerCount = 1;
 
-	if (MRenderTextureBuffer* pBuffer = pRenderTarget->GetRenderBuffer())
-	{
-		vkCmdClearColorImage(m_VkCommandBuffer, pBuffer->m_VkTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &imageRange);
-	}
+	vkCmdClearColorImage(m_VkCommandBuffer, pRenderTextureBuffer->m_VkTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &imageRange);
 
-// 	VkClearAttachment clearAtts[] = { {VK_IMAGE_ASPECT_COLOR_BIT, 1, {1,0,0,1}} };
-// 	VkClearRect clearRect = { {{0,0}, {1,1}}, 0, 1 };
-// 
-// 	vkCmdClearAttachments(m_VkCommandBuffer, 1, clearAtts, 1, &clearRect);
+
+	// 	VkClearAttachment clearAtts[] = { {VK_IMAGE_ASPECT_COLOR_BIT, 1, {1,0,0,1}} };
+	// 	VkClearRect clearRect = { {{0,0}, {1,1}}, 0, 1 };
+	// 
+	// 	vkCmdClearAttachments(m_VkCommandBuffer, 1, clearAtts, 1, &clearRect);
 }
 
 void MVulkanRenderer::DrawMesh(MIMesh* pMesh)

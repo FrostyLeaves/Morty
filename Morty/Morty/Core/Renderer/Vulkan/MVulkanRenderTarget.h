@@ -23,7 +23,8 @@ public:
     MVulkanRenderTarget(MVulkanDevice* pDevice);
     virtual ~MVulkanRenderTarget();
 
-	virtual MRenderTargetTexture* GetBackTexture(const uint32_t& unIndex) override;
+
+	virtual MRenderTextureBuffer* GetBackBuffer(const uint32_t& unIndex) override;
 	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
 
 public:
@@ -48,7 +49,7 @@ public:
 	VkQueue m_VkPresentQueue;
 
 	std::vector<VkImage> m_vSwapchainImages;
-	std::vector<MRenderTargetTexture> m_vRenderTargets;
+	std::vector<MRenderTextureBuffer*> m_vRenderTargets;
 	MRenderDepthTexture* m_pDepthTexture;
 
 	

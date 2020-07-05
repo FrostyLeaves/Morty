@@ -23,7 +23,7 @@
 class MIDevice;
 class MIRenderer;
 class MRenderDepthTexture;
-class MRenderTargetTexture;
+class MRenderTextureBuffer;
 
 class MORTY_CLASS MIRenderTarget
 {
@@ -33,7 +33,7 @@ public:
 	MIRenderTarget();
 	virtual ~MIRenderTarget() {}
 
-	virtual MRenderTargetTexture* GetBackTexture(const uint32_t& unIndex) = 0;
+	virtual MRenderTextureBuffer* GetBackBuffer(const uint32_t& unIndex) = 0;
 	virtual MRenderDepthTexture* GetDepthTexture() = 0;
 
 

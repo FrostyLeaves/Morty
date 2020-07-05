@@ -12,7 +12,7 @@
 MDirectX11RenderTarget::MDirectX11RenderTarget(MDirectX11Device* pDevice)
 	: MIRenderTarget()
 	, m_pSwapChain(nullptr)
-	, m_RenderTargetView()
+	, m_pRenderTextureBuffer(nullptr)
 	, m_pDevice(pDevice)
 	, m_pView(nullptr)
 	, m_pDepthTexture(new MRenderDepthTexture())
@@ -146,7 +146,7 @@ void MDirectX11RenderTarget::OnRender(MIRenderer* pRenderer)
 		return;
 
 	pRenderer->ClearDepthTexture(GetDepthTexture());
-	pRenderer->ClearRenderTargetView(&m_RenderTargetView, m_pView->GetBackColor());
+	pRenderer->ClearRenderTargetView(m_pRenderTextureBuffer, m_pView->GetBackColor());
 
 	m_pView->OnRenderBegin();
 	for (MViewport* pViewport : m_pView->GetViewports())

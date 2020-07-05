@@ -365,21 +365,9 @@ void MDirectX11Renderer::RecoverRenderTarget(MIRenderTarget* pRenderTarget)
 	}
 }
 
-void MDirectX11Renderer::ClearRenderTargetView(MRenderTargetTexture* pRenderTarget, const MColor& color)
+void MDirectX11Renderer::ClearRenderTargetView(MRenderTextureBuffer* pRenderTextureBuffer, const MColor& color)
 {
-	if (pRenderTarget)
-	{
-		if(MRenderTextureBuffer* pBuffer = pRenderTarget->GetRenderBuffer())
-		m_pDevice->m_pD3dContext->ClearRenderTargetView(pBuffer->m_pRenderTargetView, color.m);
-	}
-}
-
-void MDirectX11Renderer::ClearRenderTargetView(MRenderTargetView* pRenderTargetView, const MColor& color)
-{
-	if (pRenderTargetView && pRenderTargetView->m_pRenderTargetView)
-	{
-		m_pDevice->m_pD3dContext->ClearRenderTargetView(pRenderTargetView->m_pRenderTargetView, color.m);
-	}
+	m_pDevice->m_pD3dContext->ClearRenderTargetView(pRenderTextureBuffer->m_pRenderTargetView, color.m);
 }
 
 void MDirectX11Renderer::ClearDepthTexture(MRenderDepthTexture* pDepthTexture)
