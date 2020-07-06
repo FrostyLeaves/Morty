@@ -384,14 +384,14 @@ bool MMaterial::LoadPixelShader(MResource* pResource)
 void MMaterial::OnCreated()
 {
 	Super::OnCreated();
-	m_pEngine->GetRenderer()->RegisterMaterial(this);
+	m_pEngine->GetDevice()->RegisterMaterial(this);
 }
 
 void MMaterial::OnDelete()
 {
 	if (m_pEngine->GetRenderer())
 	{
-		m_pEngine->GetRenderer()->UnRegisterMaterial(this);
+		m_pEngine->GetDevice()->UnRegisterMaterial(this);
 	}
 
 	m_VertexResource.SetResource(nullptr);

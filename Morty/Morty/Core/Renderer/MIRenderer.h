@@ -121,12 +121,6 @@ public:
 	virtual void SetVertexShaderTexture(MShaderTextureParam& param) = 0;
 	virtual void SetPixelShaderTexture(MShaderTextureParam& param) = 0;
 
-public:
-
-	virtual void RegisterMaterial(MMaterial* pMaterial) = 0;
-	virtual void UnRegisterMaterial(MMaterial* pMaterial) = 0;
-
-
 protected:
 
 	virtual void ClearRenderTargetView(MRenderTextureBuffer* pRenderTextureBuffer, const MColor& color) = 0;

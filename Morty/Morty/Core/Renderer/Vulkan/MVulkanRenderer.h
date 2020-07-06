@@ -30,7 +30,7 @@ public:
 	virtual void AddOutputView(MIRenderView* pView) override;
 
 	virtual bool Initialize() override;
-	virtual void Release() override {}
+	virtual void Release() override;
 
 	virtual void SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth) override;
 	
@@ -42,9 +42,6 @@ public:
 	virtual bool SetUseMaterial(MMaterial* pMaterial, const bool& bUpdateResources = false) override;
 	virtual void UpdateMaterialParam() override {}
 	virtual void UpdateMaterialResource() override {}
-
-	virtual void RegisterMaterial(MMaterial* pMaterial) override;
-	virtual void UnRegisterMaterial(MMaterial* pMaterial) override;
 
 public:
 	void UpdateShaderParam(MShaderParam& param);

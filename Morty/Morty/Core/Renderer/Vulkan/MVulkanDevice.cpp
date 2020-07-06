@@ -1019,4 +1019,14 @@ void MVulkanDevice::DestroyRenderPass(MRenderPass* pRenderPass)
 	}
 }
 
+void MVulkanDevice::RegisterMaterial(MMaterial* pMaterial)
+{
+	m_PipelineManager.RegisterMaterial(pMaterial);
+}
+
+void MVulkanDevice::UnRegisterMaterial(MMaterial* pMaterial)
+{
+	m_PipelineManager.UnRegisterMaterial(pMaterial);
+}
+
 #endif

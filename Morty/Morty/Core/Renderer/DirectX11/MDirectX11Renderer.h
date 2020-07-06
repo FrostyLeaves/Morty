@@ -61,11 +61,6 @@ public:
 	virtual void SetVertexShaderTexture(MShaderTextureParam& param) override;
 	virtual void SetPixelShaderTexture(MShaderTextureParam& param) override;
 
-public:
-
-	virtual void RegisterMaterial(MMaterial* pMaterial) {};
-	virtual void UnRegisterMaterial(MMaterial* pMaterial) {};
-
 protected:
 
 	virtual void ClearRenderTargetView(MRenderTextureBuffer* pRenderTextureBuffer, const MColor& color) override;

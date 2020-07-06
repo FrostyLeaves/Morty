@@ -101,6 +101,17 @@ bool MVulkanRenderer::Initialize()
 	return true;
 }
 
+void MVulkanRenderer::Release()
+{
+	if (m_VkCommandBuffer != VK_NULL_HANDLE)
+	{
+		vkFreeCommandBuffers(m_pDevice->m_VkDevice, m_pDevice->m_VkCommandPool, 1, &m_VkCommandBuffer);
+		m_VkCommandBuffer = VK_NULL_HANDLE;
+	}
+
+
+}
+
 void MVulkanRenderer::SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth)
 {
 	m_VkViewport = {};
@@ -283,16 +294,6 @@ bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial, const bool& bUpdateRe
 	return true;
 }
 
-void MVulkanRenderer::RegisterMaterial(MMaterial* pMaterial)
-{
-	m_pDevice->m_PipelineManager.RegisterMaterial(pMaterial);
-}
-
-void MVulkanRenderer::UnRegisterMaterial(MMaterial* pMaterial)
-{
-	m_pDevice->m_PipelineManager.UnRegisterMaterial(pMaterial);
-}
-
 void MVulkanRenderer::UpdateShaderParam(MShaderParam& param)
 {
 	if (VK_NULL_HANDLE == param.m_VkBuffer)
@@ -356,7 +357,7 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 
 	//Vulkan必须填这个东西，才能在运行时修改viewport大小等设置
 	std::vector<VkDynamicState> dynamicStates = {
-//	VK_DYNAMIC_STATE_VIEWPORT,
+	VK_DYNAMIC_STATE_VIEWPORT,
 	VK_DYNAMIC_STATE_LINE_WIDTH
 	};
 	VkPipelineDynamicStateCreateInfo dynamicState{};

@@ -64,6 +64,10 @@ public:
 
 	virtual bool GenerateRenderPass(MRenderPass* pRenderPass) = 0;
 	virtual void DestroyRenderPass(MRenderPass* pRenderPass) = 0;
+
+	virtual void RegisterMaterial(MMaterial* pMaterial) {};
+	virtual void UnRegisterMaterial(MMaterial* pMaterial) {};
+
 };
 
 #endif

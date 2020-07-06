@@ -103,6 +103,7 @@ void MVulkanRenderTarget::Initialize()
 
 void MVulkanRenderTarget::Release(MIDevice* pDevice)
 {
+	vkDestroySwapchainKHR(m_pDevice->m_VkDevice, m_VkSwapchain, nullptr);
 	vkDestroySurfaceKHR(m_pDevice->m_VkInstance, m_VkSurface, nullptr);
 }
 

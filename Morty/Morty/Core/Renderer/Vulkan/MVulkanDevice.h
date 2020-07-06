@@ -63,6 +63,8 @@ public:
 	virtual bool GenerateRenderPass(MRenderPass* pRenderPass) override;
 	virtual void DestroyRenderPass(MRenderPass* pRenderPass) override;
 
+	virtual void RegisterMaterial(MMaterial* pMaterial) override;
+	virtual void UnRegisterMaterial(MMaterial* pMaterial) override;
 
 	VkPhysicalDevice GetPhysicalDevice() { return m_VkPhysicalDevice; }
 
