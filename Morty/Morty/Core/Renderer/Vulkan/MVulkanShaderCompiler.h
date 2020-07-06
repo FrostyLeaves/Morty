@@ -17,6 +17,7 @@
 #include "spirv_cross.hpp"
 #include "spirv_parser.hpp"
 
+class MVertexShaderBuffer;
 class MORTY_CLASS MPreamble {
 public:
 	MPreamble();
@@ -51,7 +52,7 @@ public:
 
 	void ConvertMacro(const MShaderMacro& macro, MPreamble& preamble);
 
-	void GetVertexInputState(const spirv_cross::Compiler& compiler, VkPipelineVertexInputStateCreateInfo& vertexInputState);
+	void GetVertexInputState(const spirv_cross::Compiler& compiler, MVertexShaderBuffer* pShaderBuffer);
 
 	void GetShaderParam(const spirv_cross::Compiler& compiler, MShaderBuffer* pShaderBuffer);
 

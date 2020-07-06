@@ -104,9 +104,6 @@ public:
 	virtual void SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth) = 0;
 	virtual void Render(MIRenderTarget* pRenderTarget) = 0;
 
-	virtual void ClearRenderTargetView(MRenderTextureBuffer* pRenderTextureBuffer, const MColor& color) = 0;
-	virtual void ClearDepthTexture(MRenderDepthTexture* pDepthTexture) = 0;
-
 	virtual void AddOutputView(MIRenderView* pView) = 0;
 
 public:
@@ -129,6 +126,11 @@ public:
 	virtual void RegisterMaterial(MMaterial* pMaterial) = 0;
 	virtual void UnRegisterMaterial(MMaterial* pMaterial) = 0;
 
+
+protected:
+
+	virtual void ClearRenderTargetView(MRenderTextureBuffer* pRenderTextureBuffer, const MColor& color) = 0;
+	virtual void ClearDepthTexture(MRenderDepthTexture* pDepthTexture) = 0;
 
 protected:
 	MERasterizerType m_eRasterizerType;

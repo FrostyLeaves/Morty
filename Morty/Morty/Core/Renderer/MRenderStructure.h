@@ -67,8 +67,6 @@ public:
 	MTextureBuffer();
 	virtual ~MTextureBuffer();
 
-	METextureLayout m_eTextureLayout;
-
 	void* GetResourceView() {
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	return m_pShaderResourceView;
@@ -83,6 +81,7 @@ public:
 	struct ID3D11Texture2D* m_pTextureBuffer;
 	class ID3D11ShaderResourceView* m_pShaderResourceView;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
+	VkFormat m_VkTextureFormat;
 	VkImage m_VkTextureImage;
 	VkDeviceMemory m_VkTextureImageMemory;
 	VkImageView m_VkImageView;
@@ -224,8 +223,8 @@ public:
 	class ID3D11VertexShader* m_pVertexShader;
 	class ID3D11InputLayout* m_pInputLayout;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-	VkPipelineLayout m_VkPipelineLayout;
-	VkPipelineVertexInputStateCreateInfo m_VkVertexInputStateInfo;
+	std::vector<VkVertexInputAttributeDescription> m_vAttributeDescs;
+	std::vector< VkVertexInputBindingDescription> m_vBindingDescs;
 #endif
 
 };
@@ -238,7 +237,6 @@ public:
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	class ID3D11PixelShader* m_pPixelShader;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-	VkPipelineLayout m_VkPipelineLayout;
 #endif
 
 };

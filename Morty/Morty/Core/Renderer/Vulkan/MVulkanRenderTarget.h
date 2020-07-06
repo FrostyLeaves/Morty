@@ -23,21 +23,23 @@ public:
     MVulkanRenderTarget(MVulkanDevice* pDevice);
     virtual ~MVulkanRenderTarget();
 
-
+	virtual uint32_t GetBackNum() override { return 1; }
 	virtual MRenderTextureBuffer* GetBackBuffer(const uint32_t& unIndex) override;
 	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
+	virtual MColor GetBackClearColor(const uint32_t& unIndex) override;;
 
 public:
-
+	virtual void Render(MIRenderer* pRenderer) override;
 	virtual void OnRender(MIRenderer* pRenderer) override;
-
+	virtual void OnRenderAfter(MIRenderer* pRenderer) override;
+	void Initialize();
 	virtual void Release(MIDevice* pDevice) override;
 
 	void Resize(const uint32_t& nWidth, const uint32_t& nHeight);
 
 	static MVulkanRenderTarget* CreateForWindowsView(MVulkanDevice* pDevice, MWindowsRenderView* pView);
 
-	virtual VkFramebuffer GetFrameBuffer(const uint32_t& unIndex) override { return swapChainFramebuffers[unIndex]; }
+	virtual VkFramebuffer GetFrameBuffer(const uint32_t& unIndex) override;
 
 public:
 
@@ -48,15 +50,16 @@ public:
 
 	VkQueue m_VkPresentQueue;
 
-	std::vector<VkImage> m_vSwapchainImages;
-	std::vector<MRenderTextureBuffer*> m_vRenderTargets;
+	//std::vector<VkImage> m_vSwapchainImages;
+	std::vector<MRenderTextureBuffer*> m_vBackBuffers;
 	MRenderDepthTexture* m_pDepthTexture;
 
 	
 	//
 public:
-	std::vector<VkFramebuffer> swapChainFramebuffers;
-	std::vector<VkImageView> m_vSwapchainImageView;
+
+	//std::vector<VkImageView> m_vSwapchainImageView;
+	//std::vector<VkFramebuffer> swapChainFramebuffers;
 };
 
 

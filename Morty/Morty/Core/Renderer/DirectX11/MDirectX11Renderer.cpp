@@ -333,6 +333,21 @@ void MDirectX11Renderer::Render(MIRenderTarget* pRenderTarget)
 	if (pRenderTarget)
 	{
 		m_vRenderTargets.push(pRenderTarget);
+
+		MRenderPass& renderPass = pRenderTarget->m_RenderPass;
+		for (uint32_t i = 0; i < renderPass.m_vBackDesc.size(); ++i)
+		{
+			MRenderPass::MRTDesc& desc = renderPass.m_vBackDesc[i];
+			if (desc.bClearWhenRender)
+			{
+				ClearRenderTargetView(pRenderTarget->GetBackBuffer(i), pRenderTarget->GetBackClearColor(i));
+			}
+		}
+
+		if (renderPass.m_DepthDesc.bClearWhenRender)
+			ClearDepthTexture(pRenderTarget->GetDepthTexture());
+
+
 		RecoverRenderTarget(pRenderTarget);
 		pRenderTarget->OnRender(this);
 		m_vRenderTargets.pop();

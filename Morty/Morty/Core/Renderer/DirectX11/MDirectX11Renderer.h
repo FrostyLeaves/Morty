@@ -45,9 +45,6 @@ public:
 
 	virtual void Render(MIRenderTarget* pRenderTarget) override;
 
-	virtual void ClearRenderTargetView(MRenderTextureBuffer* pRenderTextureBuffer, const MColor& color) override;
-	virtual void ClearDepthTexture(MRenderDepthTexture* pDepthTexture) override;
-
 public:
 	virtual void DrawMesh(MIMesh* pMesh) override;
 
@@ -70,6 +67,9 @@ public:
 	virtual void UnRegisterMaterial(MMaterial* pMaterial) {};
 
 protected:
+
+	virtual void ClearRenderTargetView(MRenderTextureBuffer* pRenderTextureBuffer, const MColor& color) override;
+	virtual void ClearDepthTexture(MRenderDepthTexture* pDepthTexture) override;
 
 protected:
 	ID3D11SamplerState* m_pDefaultSamplerState;

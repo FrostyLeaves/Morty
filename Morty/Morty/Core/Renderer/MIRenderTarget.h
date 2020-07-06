@@ -9,6 +9,10 @@
 #ifndef _M_MIRENDERTARGET_H_
 #define _M_MIRENDERTARGET_H_
 #include "MGlobal.h"
+#include "Type/MColor.h"
+#include "MRenderPass.h"
+#include "MIRenderer.h"
+
 #include <vector>
 #include <functional>
 
@@ -21,7 +25,6 @@
 #endif
 
 class MIDevice;
-class MIRenderer;
 class MRenderDepthTexture;
 class MRenderTextureBuffer;
 
@@ -33,20 +36,28 @@ public:
 	MIRenderTarget();
 	virtual ~MIRenderTarget() {}
 
+	virtual uint32_t GetBackNum() = 0;
 	virtual MRenderTextureBuffer* GetBackBuffer(const uint32_t& unIndex) = 0;
 	virtual MRenderDepthTexture* GetDepthTexture() = 0;
 
+	virtual MColor GetBackClearColor(const uint32_t& unIndex) = 0;
 
 public:
 
 	//virtual void OnResize(const uint32_t& nWidth, const uint32_t& nHeight) = 0;
 
+	virtual void Render(MIRenderer* pRenderer) { pRenderer->Render(this); }
+
+	virtual void OnRenderBefore(MIRenderer* pRenderer) {}
+	virtual void OnRenderAfter(MIRenderer* pRenderer) {}
 	virtual void OnRender(MIRenderer* pRenderer) { if(m_funcRenderFunction) m_funcRenderFunction(pRenderer); }
 	std::function<void(MIRenderer*)> m_funcRenderFunction;
 
 	virtual void Release(MIDevice* pDevice) = 0;
 
 public:
+
+	MRenderPass m_RenderPass;
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	virtual std::vector<struct ID3D11RenderTargetView*> GetRenderTargetViews() = 0;
@@ -55,9 +66,11 @@ public:
 
 	virtual VkFramebuffer GetFrameBuffer(const uint32_t& unIndex) = 0;
 
+
 	VkExtent2D m_VkExtend;
 	VkFormat m_VkColorFormat;
 #endif
+
 
 };
 

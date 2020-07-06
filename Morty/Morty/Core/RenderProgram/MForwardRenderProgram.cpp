@@ -77,10 +77,10 @@ void MForwardRenderProgram::InitializeRenderTargets()
 	m_pShadowDepthTexture = new MRenderDepthTexture();
 	m_pShadowDepthTexture->SetSize(Vector2(MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE));
 	m_pShadowDepthTexture->GenerateBuffer(m_pEngine->GetDevice());
-	m_pShadowDepthMapRenderTarget->SetDepthTexture(m_pShadowDepthTexture);
+	m_pShadowDepthMapRenderTarget->SetDepthTexture(m_pShadowDepthTexture, true);
 
 
-
+	m_pTransparentRenderTarget0 = m_pEngine->GetObjectManager()->CreateObject<MTransparentRenderTarget>();
 	m_pTransparentRenderTarget1 = m_pEngine->GetObjectManager()->CreateObject<MTransparentRenderTarget>();
 	m_pTransparentRenderTarget2 = m_pEngine->GetObjectManager()->CreateObject<MTransparentRenderTarget>();
 
@@ -105,17 +105,23 @@ void MForwardRenderProgram::InitializeRenderTargets()
 
 	m_vTransparentBackTexture = { pBackTexture0, pBackTexture1, pBackTexture2, pBackTexture3 };
 
-	m_pTransparentRenderTarget1->SetBackTexture(m_pTransparentFrontTexture, 0);
-	m_pTransparentRenderTarget1->SetBackTexture(m_pTransparentBackTexture, 1);
-	m_pTransparentRenderTarget1->SetBackTexture(pBackTexture0, 2);
-	m_pTransparentRenderTarget1->SetBackTexture(pBackTexture1, 3);
+	m_pTransparentRenderTarget0->SetBackTexture(m_pTransparentFrontTexture, 0, true, MColor::Black_T);
+	m_pTransparentRenderTarget0->SetBackTexture(m_pTransparentBackTexture, 1, true, MColor::Black_T);
+	m_pTransparentRenderTarget0->SetBackTexture(pBackTexture2, 2, true, MColor::White);
+	m_pTransparentRenderTarget0->SetBackTexture(pBackTexture3, 3, true, MColor::Black_T);
+	m_pTransparentRenderTarget0->ResetPrevLayerTexture();
+
+	m_pTransparentRenderTarget1->SetBackTexture(m_pTransparentFrontTexture, 0, false);
+	m_pTransparentRenderTarget1->SetBackTexture(m_pTransparentBackTexture, 1, false);
+	m_pTransparentRenderTarget1->SetBackTexture(pBackTexture0, 2, true, MColor::White);
+	m_pTransparentRenderTarget1->SetBackTexture(pBackTexture1, 3, true, MColor::Black_T);
 	m_pTransparentRenderTarget1->SetPrevLayerFrontDepthTexture(pBackTexture2);
 	m_pTransparentRenderTarget1->SetPrevLayerBackDepthTexture(pBackTexture3);
 
-	m_pTransparentRenderTarget2->SetBackTexture(m_pTransparentFrontTexture, 0);
-	m_pTransparentRenderTarget2->SetBackTexture(m_pTransparentBackTexture, 1);
-	m_pTransparentRenderTarget2->SetBackTexture(pBackTexture2, 2);
-	m_pTransparentRenderTarget2->SetBackTexture(pBackTexture3, 3);
+	m_pTransparentRenderTarget2->SetBackTexture(m_pTransparentFrontTexture, 0, false);
+	m_pTransparentRenderTarget2->SetBackTexture(m_pTransparentBackTexture, 1, false);
+	m_pTransparentRenderTarget2->SetBackTexture(pBackTexture2, 2, true, MColor::White);
+	m_pTransparentRenderTarget2->SetBackTexture(pBackTexture3, 3, true, MColor::Black_T);
 	m_pTransparentRenderTarget2->SetPrevLayerFrontDepthTexture(pBackTexture0);
 	m_pTransparentRenderTarget2->SetPrevLayerBackDepthTexture(pBackTexture1);
 }
@@ -126,6 +132,12 @@ void MForwardRenderProgram::ReleaseRenderTargets()
 	{
 		m_pShadowDepthMapRenderTarget->DeleteLater();
 		m_pShadowDepthMapRenderTarget = nullptr;
+	}
+
+	if (m_pTransparentRenderTarget0)
+	{
+		m_pTransparentRenderTarget0->DeleteLater();
+		m_pTransparentRenderTarget0 = nullptr;
 	}
 
 	if (m_pTransparentRenderTarget1)
@@ -490,14 +502,10 @@ void MForwardRenderProgram::DrawTransparentMesh(MRenderInfo& info)
 
 	CheckTransparentTextureSize(info);
 
- 	info.pRenderer->ClearRenderTargetView(m_pTransparentFrontTexture->GetRenderBuffer(), MColor::Black_T);
- 	info.pRenderer->ClearRenderTargetView(m_pTransparentBackTexture->GetRenderBuffer(), MColor::Black_T);
+ //	info.pRenderer->ClearRenderTargetView(m_pTransparentFrontTexture->GetRenderBuffer(), MColor::Black_T);
+ //	info.pRenderer->ClearRenderTargetView(m_pTransparentBackTexture->GetRenderBuffer(), MColor::Black_T);
 
-	m_pTransparentRenderTarget2->ResetPrevLayerTexture();
-	m_pTransparentRenderTarget2->Render(info.pRenderer, info.pViewport, info.pRenderTarget, &info.vTransparentRenderGroup);
-	m_pTransparentRenderTarget2->SetPrevLayerFrontDepthTexture(m_vTransparentBackTexture[0]);
-	m_pTransparentRenderTarget2->SetPrevLayerBackDepthTexture(m_vTransparentBackTexture[1]);
-
+	m_pTransparentRenderTarget0->Render(info.pRenderer, info.pViewport, info.pRenderTarget, &info.vTransparentRenderGroup);
 
 	for (uint32_t i = 0; i < 3; ++i)
 	{

@@ -33,23 +33,37 @@ MRenderTextureBuffer* MTextureRenderTarget::GetBackBuffer(const uint32_t& unInde
 	return nullptr;
 }
 
+MColor MTextureRenderTarget::GetBackClearColor(const uint32_t& unIndex)
+{
+	return m_vBackClearColor[unIndex];
+}
+
 MRenderTargetTexture* MTextureRenderTarget::GetBackTexture(const uint32_t& unIndex)
 {
 	return m_vBackTexture[unIndex];
 }
 
-void MTextureRenderTarget::SetBackTexture(MRenderTargetTexture* pBackTexture, const uint32_t& unIndex)
+void MTextureRenderTarget::SetBackTexture(MRenderTargetTexture* pBackTexture, const uint32_t& unIndex, const bool& bClearWhenRender, const MColor& clearColor)
 {
 	if (m_vBackTexture.size() < unIndex + 1)
+	{
 		m_vBackTexture.resize(unIndex + 1);
+		m_vBackClearColor.resize(unIndex + 1);
+
+		m_RenderPass.m_vBackDesc.resize(unIndex + 1);
+	}
 
 	m_vBackTexture[unIndex] = pBackTexture;
+	m_vBackClearColor[unIndex] = clearColor;
+	m_RenderPass.m_vBackDesc[unIndex].bClearWhenRender = bClearWhenRender;
 }
 
-void MTextureRenderTarget::SetDepthTexture(MRenderDepthTexture* pDepthTexture)
+void MTextureRenderTarget::SetDepthTexture(MRenderDepthTexture* pDepthTexture, const bool& bClearWhenRender)
 {
 	m_pDepthTexture = pDepthTexture;
+	m_RenderPass.m_DepthDesc.bClearWhenRender = bClearWhenRender;
 }
+
 #if RENDER_GRAPHICS == MORTY_VULKAN
 VkFramebuffer MTextureRenderTarget::GetFrameBuffer(const uint32_t& unIndex)
 {
@@ -104,11 +118,17 @@ void MTextureRenderTarget::OnCreated()
 {
 	Super::OnCreated();
 
+	InitRenderPass();
 }
 
 void MTextureRenderTarget::Release(MIDevice* pDevice)
 {
 
+}
+
+void MTextureRenderTarget::InitRenderPass()
+{
+	m_RenderPass.m_vSubpass.push_back(MSubpass());
 }
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11

@@ -120,7 +120,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Math3D.lib;Morty.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Math3D.lib;Morty.lib;MEditor.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Build/$(Platform)/Morty/$(Configuration);$(SolutionDir)Build/$(Platform)/MEditor/$(Configuration);$(SolutionDir)Build/$(Platform)/Math3D/$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
@@ -186,7 +186,7 @@ copy "$(SolutionDir)ThirdParty\CxImage\lib\vs2019\$(Platform)\*.dll" "$(Solution
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Math3D.lib;Morty.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Math3D.lib;Morty.lib;MEditor.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Build/$(Platform)/Morty/$(Configuration);$(SolutionDir)Build/$(Platform)/MEditor/$(Configuration);$(SolutionDir)Build/$(Platform)/Math3D/$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>

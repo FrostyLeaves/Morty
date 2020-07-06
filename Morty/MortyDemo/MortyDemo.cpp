@@ -4,6 +4,7 @@
 #ifdef _DEBUG
 //#include "vld.h"
 #endif
+#include "MObject.h"
 
 //#define MORTY_EDITOR_ENABLE
 
@@ -15,7 +16,6 @@
 #include "MVertex.h"
 #include "MMesh.h"
 
-#include "MObject.h"
 #include "MMaterial.h"
 #include "Model/MModelInstance.h"
 #include "Model/MIMeshInstance.h"
@@ -84,7 +84,7 @@ public:
 		MPointLight* pLight = static_cast<MPointLight*>(GetRootNode()->FindFirstChildByName("Light"));
 
 		const float speed = 16;
-		
+
 		if (true == m_tKeyBoardDown['W'])
 		{
 			m_v3MoveSpeed += GetForward() * speed * fDelta;
@@ -158,7 +158,7 @@ int main(int argc, char* argv[])
 // 	}
 
 	 
-
+// 
 // 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
 // 	pRootNode->SetName("RootNode");
 // 

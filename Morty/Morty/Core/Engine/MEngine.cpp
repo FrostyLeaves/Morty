@@ -2,6 +2,7 @@
 #include "MIRenderer.h"
 #include "MIRenderView.h"
 #include "MViewport.h"
+#include "MIRenderTarget.h"
 
 #include "MLogManager.h"
 #if (RENDER_GRAPHICS == MORTY_DIRECTX_11)
@@ -331,7 +332,7 @@ void MEngine::RenderToView(MIRenderView* pView)
 {
 	if (MIRenderTarget* pRenderTarget = pView->GetRenderTarget())
 	{
-		m_pRenderer->Render(pRenderTarget);
+		pRenderTarget->Render(m_pRenderer);
 	}
 }
 

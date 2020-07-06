@@ -56,8 +56,10 @@ void MShadowTextureRenderTarget::OnCreated()
 	MMaterialResource* pShadowWithAnimMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_ANIM);
 	m_pAnimMaterial = pShadowWithAnimMaterialRes;
 	
-	std::vector<METextureLayout> vEmpty;
+//	std::vector<METextureLayout> vEmpty;
 //	Initialize(MTextureRenderTarget::ERenderDepth, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE, vEmpty);
+
+	InitRenderPass();
 }
 
 void MShadowTextureRenderTarget::OnDelete()
@@ -70,7 +72,7 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 	if (nullptr == m_pShadowRenderGroup)
 		return;
 
-	pRenderer->ClearDepthTexture(GetDepthTexture());
+//	pRenderer->ClearDepthTexture(GetDepthTexture());
 
 
 	if (nullptr == m_pMeshParam)
@@ -128,4 +130,11 @@ void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 		}
 
 	}
+}
+
+void MShadowTextureRenderTarget::InitRenderPass()
+{
+	m_RenderPass.m_vSubpass.push_back(MSubpass());
+
+	m_RenderPass.m_DepthDesc.bClearWhenRender = true;
 }

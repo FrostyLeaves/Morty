@@ -65,7 +65,6 @@ MInputLayout::MInputLayout()
 }
 
 MTextureBuffer::MTextureBuffer()
-	: m_eTextureLayout(METextureLayout::ERGBA8)
 {
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	m_pTextureBuffer = nullptr;

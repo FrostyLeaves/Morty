@@ -20,6 +20,7 @@
 #include "vulkan/vulkan_core.h"
 
 #include "MVulkanShaderCompiler.h"
+#include "MVulkanPipelineManager.h"
 
 
 class MORTY_CLASS MVulkanDevice : public MIDevice
@@ -118,6 +119,7 @@ public:
 	int m_nBufferNum;
 
 	MVulkanShaderCompiler m_ShaderCompiler;
+	MVulkanPipelineManager m_PipelineManager;
 };
 
 

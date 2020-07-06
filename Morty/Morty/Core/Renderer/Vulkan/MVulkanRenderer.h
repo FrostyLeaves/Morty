@@ -13,8 +13,8 @@
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 #include "MIRenderer.h"
-#include "MVulkanPipelineManager.h"
 
+class MRenderPass;
 class MVulkanDevice;
 class MORTY_CLASS MVulkanRenderer : public MIRenderer
 {
@@ -24,6 +24,7 @@ public:
 
 public:
 
+	uint32_t GetFrameIndex() { return m_unFrameIndex; }
 	void SetFrameIndex(const uint32_t& unIndex) { m_unFrameIndex = unIndex; }
 
 	virtual void AddOutputView(MIRenderView* pView) override;
@@ -35,8 +36,6 @@ public:
 	
 	virtual void Render(MIRenderTarget* pRenderTarget) override;
 
-	virtual void ClearRenderTargetView(MRenderTextureBuffer* pRenderTextureBuffer, const MColor& color) override;
-	virtual void ClearDepthTexture(MRenderDepthTexture* pDepthTexture) override {};
 public:
 	virtual void DrawMesh(MIMesh* pMesh) override;
 
@@ -56,8 +55,10 @@ public:
 	virtual void SetPixelShaderTexture(MShaderTextureParam& param) override {}
 
 protected:
+	virtual void ClearRenderTargetView(MRenderTextureBuffer* pRenderTextureBuffer, const MColor& color) override;
+	virtual void ClearDepthTexture(MRenderDepthTexture* pDepthTexture) override {};
 
-	VkPipeline CreateGraphicsPipeline(MMaterial* pMaaterial);
+	VkPipeline CreateGraphicsPipeline(MMaterial* pMaaterial, MRenderPass* pRenderPass);
 	
 	bool InitSemaphores();
 
@@ -72,12 +73,13 @@ private:
 
 	MVulkanDevice* m_pDevice;
 
-	MVulkanPipelineManager m_PipelineManager;
-
 	VkPipelineInputAssemblyStateCreateInfo m_InputAssemblyState;
 	VkPipelineRasterizationStateCreateInfo m_RasterizationState;
-	VkPipelineViewportStateCreateInfo m_ViewportState;
 	VkPipelineMultisampleStateCreateInfo m_MultisampleState;
+	VkPipelineColorBlendAttachmentState m_ColorBlendAttachment;
+	VkPipelineColorBlendStateCreateInfo m_ColorBlending;
+
+	VkViewport m_VkViewport;
 
 	VkCommandBuffer m_VkCommandBuffer;
 	VkPipeline m_VkUsingPipeline;

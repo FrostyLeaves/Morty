@@ -1,5 +1,6 @@
 #include "MVulkanRenderTarget.h"
 
+#include "MTexture.h"
 #include "MViewport.h"
 #include "MVulkanRenderer.h"
 
@@ -12,6 +13,7 @@
 MVulkanRenderTarget::MVulkanRenderTarget(MVulkanDevice* pDevice)
 	:MIRenderTarget()
 	, m_pDevice(pDevice)
+	, m_pDepthTexture(new MRenderDepthTexture())
 	, m_pView(nullptr)
 {
 
@@ -24,43 +26,79 @@ MVulkanRenderTarget::~MVulkanRenderTarget()
 
 MRenderTextureBuffer* MVulkanRenderTarget::GetBackBuffer(const uint32_t& unIndex)
 {
-	return m_vRenderTargets[unIndex];
+	return m_vBackBuffers[unIndex];
+}
+
+MColor MVulkanRenderTarget::GetBackClearColor(const uint32_t& unIndex)
+{
+	return m_pView->GetBackColor();
+}
+
+void MVulkanRenderTarget::Render(MIRenderer* pRenderer)
+{
+	MVulkanRenderer* pVkRenderer = dynamic_cast<MVulkanRenderer*>(pRenderer);
+
+	uint32_t imageIndex;
+	vkAcquireNextImageKHR(m_pDevice->m_VkDevice, m_VkSwapchain, UINT64_MAX, pVkRenderer->m_VkImageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+	
+	//TODO 10
+	if (imageIndex < 10)
+	{
+		pVkRenderer->SetFrameIndex(imageIndex);
+		pRenderer->Render(this);
+	}
 }
 
 void MVulkanRenderTarget::OnRender(MIRenderer* pRenderer)
 {
+
+//	pRenderer->ClearDepthTexture(GetDepthTexture());
+//	pRenderer->ClearRenderTargetView(this->m_vBackBuffers[imageIndex], m_pView->GetBackColor());
+
+
+
+
+	m_pView->OnRenderBegin();
+	for (MViewport* pViewport : m_pView->GetViewports())
+	{
+		pViewport->Render(pRenderer, this);
+	}
+	m_pView->OnRenderEnd();
+
+
+
+	
+}
+
+void MVulkanRenderTarget::OnRenderAfter(MIRenderer* pRenderer)
+{
 	MVulkanRenderer* pVkRenderer = dynamic_cast<MVulkanRenderer*>(pRenderer);
-
-	//TODO ²»ÓÅÑÅ
-	uint32_t imageIndex;
-	vkAcquireNextImageKHR(m_pDevice->m_VkDevice, m_VkSwapchain, UINT64_MAX, pVkRenderer->m_VkImageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
-	pVkRenderer->SetFrameIndex(imageIndex);
-
-	pRenderer->ClearDepthTexture(GetDepthTexture());
-	pRenderer->ClearRenderTargetView(this->m_vRenderTargets[imageIndex], m_pView->GetBackColor());
-
-// 	m_pView->OnRenderBegin();
-// 	for (MViewport* pViewport : m_pView->GetViewports())
-// 	{
-// 		pViewport->Render(pRenderer, this);
-// 	}
-// 	m_pView->OnRenderEnd();
-
-
 
 	VkPresentInfoKHR presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
 	VkSemaphore signalSemaphores[] = { pVkRenderer->m_VkRenderFinishedSemaphore };
 
+	uint32_t unFrameIndex = pVkRenderer->GetFrameIndex();
+
 	presentInfo.waitSemaphoreCount = 1;
 	presentInfo.pWaitSemaphores = signalSemaphores;
 	VkSwapchainKHR swapChains[] = { m_VkSwapchain };
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapChains;
-	presentInfo.pImageIndices = &imageIndex;
+	presentInfo.pImageIndices = &unFrameIndex;
 	presentInfo.pResults = nullptr; // Optional
 	vkQueuePresentKHR(m_VkPresentQueue, &presentInfo);
+}
+
+void MVulkanRenderTarget::Initialize()
+{
+	m_RenderPass.m_vSubpass.push_back(MSubpass());
+
+	m_RenderPass.m_vBackDesc.push_back(MRenderPass::MRTDesc());
+	m_RenderPass.m_vBackDesc.back().bClearWhenRender = true;
+
+	m_RenderPass.m_DepthDesc.bClearWhenRender = true;
 }
 
 void MVulkanRenderTarget::Release(MIDevice* pDevice)
@@ -169,6 +207,14 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 		return nullptr;
 	}
 
+	int nPresentQueueIndex = pDevice->FindQueuePresentFamilies(pDevice->GetPhysicalDevice(), surface);
+	if (nPresentQueueIndex == -1)
+	{
+		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : nPresentQueueIndex == -1");
+		vkDestroySurfaceKHR(pDevice->m_VkInstance, surface, nullptr);
+		return nullptr;
+	}
+
 	VkFormat colorFormat;
 	VkColorSpaceKHR colorSpace;
 
@@ -229,20 +275,23 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 	pRenderTarget->m_VkSwapchain = swapchain;
 	pRenderTarget->m_VkSurface = surface;
 	pRenderTarget->m_VkColorFormat = colorFormat;
-	pRenderTarget->m_vSwapchainImages = vSwapchainImages;
+	
+	//index range is swapchain num
+	for (VkImage& image : vSwapchainImages)
+	{
+		MRenderTextureBuffer* pTextureBuffer = new MRenderTextureBuffer();
+		pTextureBuffer->m_VkTextureImage = image;
+		pTextureBuffer->m_VkTextureFormat = colorFormat;
+		pRenderTarget->m_vBackBuffers.push_back(pTextureBuffer);
+	}
 	pRenderTarget->m_pView = pView;
 	pRenderTarget->m_VkExtend = swapchainExtent;
+	pRenderTarget->Initialize();
+
 	pView->SetRenderTarget(pRenderTarget);
 
 
-	int nPresentQueueIndex = pDevice->FindQueuePresentFamilies(pDevice->GetPhysicalDevice(), surface);
-	if (nPresentQueueIndex == -1)
-	{
-		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : nPresentQueueIndex == -1");
-		vkDestroySurfaceKHR(pDevice->m_VkInstance, surface, nullptr);
-		vkDestroySwapchainKHR(pDevice->m_VkDevice, swapchain, nullptr);
-		return nullptr;
-	}
+	
 	vkGetDeviceQueue(pDevice->m_VkDevice, nPresentQueueIndex, 0, &pRenderTarget->m_VkPresentQueue);
 
 	pRenderTarget->Resize(pView->GetViewWidth(), pView->GetViewHeight());
@@ -250,5 +299,10 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 	return pRenderTarget;
 }
 
+
+VkFramebuffer MVulkanRenderTarget::GetFrameBuffer(const uint32_t& unIndex)
+{
+	return m_vBackBuffers[unIndex]->m_VkFrameBuffer;
+}
 
 #endif

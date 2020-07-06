@@ -234,7 +234,7 @@ LRESULT CALLBACK MWindowsRenderView::ViewProcessFunction(HWND hwnd, UINT message
 		break;
 
 	case WM_ERASEBKGND:
-		m_pEngine->RenderToView(this);
+	//	m_pEngine->RenderToView(this);
 		break;
 	case WM_SIZE:
 	{

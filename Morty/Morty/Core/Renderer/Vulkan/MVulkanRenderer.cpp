@@ -15,7 +15,6 @@
 MVulkanRenderer::MVulkanRenderer(MVulkanDevice* pDevice)
 	: MIRenderer()
 	, m_pDevice(pDevice)
-	, m_PipelineManager(pDevice)
 	, m_VkUsingPipeline(VK_NULL_HANDLE)
 	, m_pUsingMaterial(nullptr)
 
@@ -47,16 +46,18 @@ bool MVulkanRenderer::Initialize()
 
 
 	// Input
+	m_InputAssemblyState = {};
 	m_InputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	m_InputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	m_InputAssemblyState.primitiveRestartEnable = VK_FALSE;
 
 	//Rasterization
+	m_RasterizationState = {};
 	m_RasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	m_RasterizationState.depthClampEnable = VK_FALSE;
 	m_RasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
 	m_RasterizationState.lineWidth = 1.0f;
-	m_RasterizationState.cullMode = VK_CULL_MODE_BACK_BIT;
+	m_RasterizationState.cullMode = VK_CULL_MODE_NONE;
 	m_RasterizationState.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	m_RasterizationState.depthBiasEnable = VK_FALSE;
 	m_RasterizationState.depthBiasConstantFactor = 0.0f; // Optional
@@ -65,6 +66,7 @@ bool MVulkanRenderer::Initialize()
 
 
 	//多重采样
+	m_MultisampleState = {};
 	m_MultisampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	m_MultisampleState.sampleShadingEnable = VK_FALSE;
 	m_MultisampleState.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
@@ -77,8 +79,20 @@ bool MVulkanRenderer::Initialize()
 //	VkPipelineDepthStencilStateCreateInfo
 
 
-	//TODO Blend
+	m_ColorBlendAttachment = {};
+	m_ColorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+	m_ColorBlendAttachment.blendEnable = VK_FALSE;
 
+	m_ColorBlending = {};
+	m_ColorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	m_ColorBlending.logicOpEnable = VK_FALSE;
+	m_ColorBlending.logicOp = VK_LOGIC_OP_COPY;
+	m_ColorBlending.attachmentCount = 1;
+	m_ColorBlending.pAttachments = &m_ColorBlendAttachment;
+	m_ColorBlending.blendConstants[0] = 0.0f;
+	m_ColorBlending.blendConstants[1] = 0.0f;
+	m_ColorBlending.blendConstants[2] = 0.0f;
+	m_ColorBlending.blendConstants[3] = 0.0f;
 
 
 	InitSemaphores();
@@ -89,33 +103,83 @@ bool MVulkanRenderer::Initialize()
 
 void MVulkanRenderer::SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth)
 {
-	VkViewport viewport = {};
-	viewport.x = fX;
-	viewport.y = fY;
-	viewport.width = fWidth;
-	viewport.height = fHeight;
-	viewport.minDepth = fMinDepth;
-	viewport.maxDepth = fMaxDepth;
+	m_VkViewport = {};
+	m_VkViewport.x = fX;
+	m_VkViewport.y = fY;
+	m_VkViewport.width = fWidth;
+	m_VkViewport.height = fHeight;
+	m_VkViewport.minDepth = fMinDepth;
+	m_VkViewport.maxDepth = fMaxDepth;
 
-	VkRect2D scissor{};
-	scissor.offset = { 0, 0 };
-	scissor.extent.width = fWidth;
-	scissor.extent.height = fHeight;
-
-	m_ViewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-	m_ViewportState.viewportCount = 1;
-	m_ViewportState.pViewports = &viewport;
-	m_ViewportState.scissorCount = 1;
-	m_ViewportState.pScissors = &scissor;
+	vkCmdSetViewport(m_VkCommandBuffer, 0, 1, &m_VkViewport);
 }
 
 void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 {
 	vkWaitForFences(m_pDevice->m_VkDevice, 1, &m_VkInFlightFences, VK_TRUE, UINT64_MAX);
-	
+
+	if (m_VkCommandBuffer != VK_NULL_HANDLE)
+	{
+		vkFreeCommandBuffers(m_pDevice->m_VkDevice, m_pDevice->m_VkCommandPool, 1, &m_VkCommandBuffer);
+		m_VkCommandBuffer = VK_NULL_HANDLE;
+	}
+
+	pRenderTarget->OnRenderBefore(this);
+
 	VkFramebuffer frameBuffer = pRenderTarget->GetFrameBuffer(m_unFrameIndex);
 
-	m_VkCommandBuffer = m_pDevice->BeginCommands();
+
+
+	//m_VkCommandBuffer = m_pDevice->BeginCommands();
+	VkCommandBufferAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandPool = m_pDevice->m_VkCommandPool;
+	allocInfo.commandBufferCount = 1;
+
+	vkAllocateCommandBuffers(m_pDevice->m_VkDevice, &allocInfo, &m_VkCommandBuffer);
+
+	VkCommandBufferBeginInfo beginInfo{};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	vkBeginCommandBuffer(m_VkCommandBuffer, &beginInfo);
+
+	VkRenderPassBeginInfo renderPassInfo{};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassInfo.renderPass = pRenderTarget->m_RenderPass.m_VkRenderPass;
+	renderPassInfo.framebuffer = frameBuffer;
+	renderPassInfo.renderArea.offset = { 0, 0 };
+	renderPassInfo.renderArea.extent = pRenderTarget->m_VkExtend;
+
+	uint32_t unBackNum = pRenderTarget->GetBackNum();
+	std::vector<VkClearValue> vClearValues(unBackNum);
+	for (uint32_t i = 0; i < unBackNum; ++i)
+	{
+		MColor color = pRenderTarget->GetBackClearColor(i);
+		vClearValues[i] = {color.r, color.g, color.b, color.a};
+	}
+
+	renderPassInfo.clearValueCount = vClearValues.size();
+	renderPassInfo.pClearValues = vClearValues.data();
+
+	// Render Datas
+	vkCmdBeginRenderPass(m_VkCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+	m_vRenderTargets.push(pRenderTarget);
+	pRenderTarget->OnRender(this);
+	m_vRenderTargets.pop();
+
+	vkCmdEndRenderPass(m_VkCommandBuffer);
+
+	//TODO 不支持多个渲染的嵌套
+
+
+	//m_pDevice->EndCommands(m_VkCommandBuffer);
+	vkEndCommandBuffer(m_VkCommandBuffer);
+
+
+
 
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -128,42 +192,25 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 
 
 	submitInfo.commandBufferCount = 1;
+	VkCommandBuffer commandBuffers[] = { m_VkCommandBuffer };
 	//TODO maybe mutil command buffers for every frame
-	submitInfo.pCommandBuffers = &m_VkCommandBuffer;
+	submitInfo.pCommandBuffers = commandBuffers;
 
 
 	VkSemaphore signalSemaphores[] = { m_VkRenderFinishedSemaphore };
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
-	VkRenderPassBeginInfo renderPassInfo{};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassInfo.renderPass = pRenderTarget->m_VkRenderPass;
-	renderPassInfo.framebuffer = frameBuffer;
-	renderPassInfo.renderArea.offset = { 0, 0 };
-	renderPassInfo.renderArea.extent = pRenderTarget->m_VkExtend;
-
-	VkClearValue clearColor = { 0.5f, 0.5f, 0.0f, 1.0f };
-	renderPassInfo.clearValueCount = 1;
-	renderPassInfo.pClearValues = &clearColor;
-
-	// Render Datas
-	//vkCmdBeginRenderPass(m_VkCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-	pRenderTarget->OnRender(this);
-
-	//vkCmdEndRenderPass(m_VkCommandBuffer);
-
-	//TODO 不支持多个渲染的嵌套
-
-
-	m_pDevice->EndCommands(m_VkCommandBuffer);
-
 	vkResetFences(m_pDevice->m_VkDevice, 1, &m_VkInFlightFences);
+
 
 	if (vkQueueSubmit(m_pDevice->m_VkGraphicsQueue, 1, &submitInfo, m_VkInFlightFences) != VK_SUCCESS) {
 		throw std::runtime_error("failed to submit draw command buffer!");
 	}
+
+	pRenderTarget->OnRenderAfter(this);
+
+
 }
 
 void MVulkanRenderer::ClearRenderTargetView(MRenderTextureBuffer* pRenderTextureBuffer, const MColor& color)
@@ -199,8 +246,8 @@ void MVulkanRenderer::DrawMesh(MIMesh* pMesh)
 		VkBuffer vertexBuffers[] = { pBuffer->m_VkVertexBuffer };
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(m_VkCommandBuffer, 0, 1, vertexBuffers, offsets);
-
-		vkCmdDraw(m_VkCommandBuffer, pMesh->GetVerticesLength(), 1, 0, 0);
+		vkCmdBindIndexBuffer(m_VkCommandBuffer, pBuffer->m_VkIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdDrawIndexed(m_VkCommandBuffer, static_cast<uint32_t>(pMesh->GetIndicesLength()), 1, 0, 0, 0);
 
 #if MORTY_RENDER_DATA_STATISTICS
 		MRenderStatistics::GetInstance()->unTriangleCount += pMesh->GetIndicesLength() / 3;
@@ -212,10 +259,17 @@ void MVulkanRenderer::DrawMesh(MIMesh* pMesh)
 
 bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial, const bool& bUpdateResources /*= false*/)
 {
-	m_VkUsingPipeline = m_PipelineManager.FindPipeline(pMaterial, m_vRenderTargets.top(), 0);
-	m_VkUsingPipelineLayout = m_PipelineManager.FindPipelineLayout(pMaterial);
+	MRenderPass* pRenderPass = &(m_vRenderTargets.top()->m_RenderPass);
+	m_VkUsingPipelineLayout = m_pDevice->m_PipelineManager.FindPipelineLayout(pMaterial);
 
-
+	m_VkUsingPipeline = m_pDevice->m_PipelineManager.FindPipeline(pMaterial, pRenderPass);
+	if (!m_VkUsingPipeline)
+	{
+		m_VkUsingPipeline = CreateGraphicsPipeline(pMaterial, pRenderPass);
+		m_pDevice->m_PipelineManager.SetPipeline(pMaterial, pRenderPass, m_VkUsingPipeline);
+	}
+	
+	
 	vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkUsingPipeline);
 
 
@@ -231,12 +285,12 @@ bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial, const bool& bUpdateRe
 
 void MVulkanRenderer::RegisterMaterial(MMaterial* pMaterial)
 {
-	m_PipelineManager.RegisterMaterial(pMaterial);
+	m_pDevice->m_PipelineManager.RegisterMaterial(pMaterial);
 }
 
 void MVulkanRenderer::UnRegisterMaterial(MMaterial* pMaterial)
 {
-	m_PipelineManager.UnRegisterMaterial(pMaterial);
+	m_pDevice->m_PipelineManager.UnRegisterMaterial(pMaterial);
 }
 
 void MVulkanRenderer::UpdateShaderParam(MShaderParam& param)
@@ -288,24 +342,45 @@ void MVulkanRenderer::SetShaderParam(MShaderParam& param)
 
 
 
-	//Set Use Uniform
-	vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkUsingPipelineLayout, 0, 1, &param.m_VkDescriptorSet, 0, nullptr);
+	if (m_VkUsingPipelineLayout != VK_NULL_HANDLE)
+	{
+		//Set Use Uniform
+		vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkUsingPipelineLayout, 0, 1, &param.m_VkDescriptorSet, 0, nullptr);
+	}
 }
 
-VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial)
+VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass)
 {
 	if (!pMaterial)
 		return false;
 
 	//Vulkan必须填这个东西，才能在运行时修改viewport大小等设置
 	std::vector<VkDynamicState> dynamicStates = {
-	VK_DYNAMIC_STATE_VIEWPORT,
+//	VK_DYNAMIC_STATE_VIEWPORT,
 	VK_DYNAMIC_STATE_LINE_WIDTH
 	};
 	VkPipelineDynamicStateCreateInfo dynamicState{};
 	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	dynamicState.dynamicStateCount = dynamicStates.size();
 	dynamicState.pDynamicStates = dynamicStates.data();
+
+
+
+	VkRect2D scissor{};
+	scissor.offset = { 0, 0 };
+	scissor.extent.width = m_VkViewport.width;	//TODO
+	scissor.extent.height = m_VkViewport.height;
+
+	VkPipelineViewportStateCreateInfo viewportState = {};
+	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+	viewportState.viewportCount = 1;
+	viewportState.pViewports = &m_VkViewport;
+	viewportState.scissorCount = 1;
+	viewportState.pScissors = &scissor;
+
+
+
+
 
 	MShader* pVertexShader = pMaterial->GetVertexShader();
 	MShader* pPixelShader = pMaterial->GetPixelShader();
@@ -323,31 +398,35 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial)
 		pPixelShader->GetBuffer()->m_VkShaderStageInfo,
 	};
 
-	VkPipelineVertexInputStateCreateInfo inputStateInfo = static_cast<MVertexShaderBuffer*>(pVertexShader->GetBuffer())->m_VkVertexInputStateInfo;
+	MVertexShaderBuffer* pVertexShaderBuffer = static_cast<MVertexShaderBuffer*>(pVertexShader->GetBuffer());
 
-	VkPipelineLayout pipelineLayout = m_PipelineManager.FindPipelineLayout(pMaterial);
-
-	MIRenderTarget* pCurRenderTarget = m_vRenderTargets.top();
+	VkPipelineVertexInputStateCreateInfo inputStateInfo = {};
+	inputStateInfo = VkPipelineVertexInputStateCreateInfo{};
+	inputStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	inputStateInfo.vertexBindingDescriptionCount = pVertexShaderBuffer->m_vBindingDescs.size();
+	inputStateInfo.pVertexBindingDescriptions = pVertexShaderBuffer->m_vBindingDescs.data();
+	inputStateInfo.vertexAttributeDescriptionCount = pVertexShaderBuffer->m_vAttributeDescs.size();
+	inputStateInfo.pVertexAttributeDescriptions = pVertexShaderBuffer->m_vAttributeDescs.data();
+	
+	VkPipelineLayout pipelineLayout = m_pDevice->m_PipelineManager.FindPipelineLayout(pMaterial);
 
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipelineInfo.stageCount = 2;
+	pipelineInfo.pDynamicState = &dynamicState;
 	pipelineInfo.pStages = vShaderStageInfo;
 	pipelineInfo.pVertexInputState = &inputStateInfo;
 	pipelineInfo.pInputAssemblyState = &m_InputAssemblyState;
-	pipelineInfo.pViewportState = &m_ViewportState;
+	pipelineInfo.pViewportState = &viewportState;
 	pipelineInfo.pRasterizationState = &m_RasterizationState;
 	pipelineInfo.pMultisampleState = &m_MultisampleState;
-	pipelineInfo.pDepthStencilState = nullptr;
-	pipelineInfo.pColorBlendState = nullptr;
-	pipelineInfo.pDynamicState = &dynamicState;
+	pipelineInfo.pColorBlendState = &m_ColorBlending;
 	pipelineInfo.layout = pipelineLayout;
-	pipelineInfo.renderPass = pCurRenderTarget->m_VkRenderPass;
+	pipelineInfo.renderPass = pRenderPass->m_VkRenderPass;
 	pipelineInfo.subpass = 0;
-	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
-	pipelineInfo.basePipelineIndex = -1; // Optional
+	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	VkPipeline graphicsPipeline;
+	VkPipeline graphicsPipeline = VK_NULL_HANDLE;
 	if (vkCreateGraphicsPipelines(m_pDevice->m_VkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
 		return VK_NULL_HANDLE;
 

@@ -100,6 +100,7 @@ private:
 	MMesh<Vector2> m_TransparentDrawMesh;
 
 	MShadowTextureRenderTarget* m_pShadowDepthMapRenderTarget;
+	MTransparentRenderTarget* m_pTransparentRenderTarget0;
 	MTransparentRenderTarget* m_pTransparentRenderTarget1;
 	MTransparentRenderTarget* m_pTransparentRenderTarget2;
 

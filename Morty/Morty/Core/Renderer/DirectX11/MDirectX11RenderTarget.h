@@ -31,14 +31,17 @@ public:
 	MDirectX11RenderTarget(MDirectX11Device* pDevice);
 	~MDirectX11RenderTarget();
 
+	virtual uint32_t GetBackNum() override { return 1; }
 	virtual MRenderTextureBuffer* GetBackBuffer(const uint32_t& unIndex) override { return m_pRenderTextureBuffer; }
 	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
 
+	virtual MColor GetBackClearColor(const uint32_t& unIndex) override;;
 public:
 
 	void Resize(const uint32_t& nWidth, const uint32_t& nHeight);
 	virtual void OnRender(MIRenderer* pRenderer) override;
 
+	void Initialize();
 	virtual void Release(MIDevice* pDevice) override;
 
 	static MDirectX11RenderTarget* CreateForView(MDirectX11Device* pDevice, MWindowsRenderView* pView);

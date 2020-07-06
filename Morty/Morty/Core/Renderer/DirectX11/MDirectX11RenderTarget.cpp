@@ -87,7 +87,14 @@ MDirectX11RenderTarget* MDirectX11RenderTarget::CreateForView(MDirectX11Device* 
 	pRenderTarget->m_pView = pView;
 	pView->SetRenderTarget(pRenderTarget);
 
+	pRenderTarget->Initialize();
+
 	return pRenderTarget;
+}
+
+MColor MDirectX11RenderTarget::GetBackClearColor(const uint32_t& unIndex)
+{
+	return m_pView->GetBackColor();
 }
 
 void MDirectX11RenderTarget::Resize(const uint32_t& unWidth, const uint32_t& unHeight)
@@ -145,8 +152,8 @@ void MDirectX11RenderTarget::OnRender(MIRenderer* pRenderer)
 	if (nullptr == m_pView)
 		return;
 
-	pRenderer->ClearDepthTexture(GetDepthTexture());
-	pRenderer->ClearRenderTargetView(m_pRenderTextureBuffer, m_pView->GetBackColor());
+// 	pRenderer->ClearDepthTexture(GetDepthTexture());
+// 	pRenderer->ClearRenderTargetView(m_pRenderTextureBuffer, m_pView->GetBackColor());
 
 	m_pView->OnRenderBegin();
 	for (MViewport* pViewport : m_pView->GetViewports())
@@ -156,6 +163,16 @@ void MDirectX11RenderTarget::OnRender(MIRenderer* pRenderer)
 	m_pView->OnRenderEnd();
 
 	m_pSwapChain->Present(0, 0);
+}
+
+void MDirectX11RenderTarget::Initialize()
+{
+	m_RenderPass.m_vSubpass.push_back(MSubpass());
+
+	m_RenderPass.m_vBackDesc.push_back(MRenderPass::MRTDesc());
+	m_RenderPass.m_vBackDesc.back().bClearWhenRender = true;
+
+	m_RenderPass.m_DepthDesc.bClearWhenRender = true;
 }
 
 void MDirectX11RenderTarget::Release(MIDevice* pDevice)

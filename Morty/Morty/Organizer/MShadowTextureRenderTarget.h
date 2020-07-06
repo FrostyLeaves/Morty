@@ -49,6 +49,7 @@ public:
 
     virtual void OnRender(MIRenderer* pRenderer) override;
 
+    void InitRenderPass();
 
 private:
 

@@ -38,13 +38,16 @@ public:
 
 public:
 
-
+	virtual uint32_t GetBackNum() override { return m_vBackTexture.size(); }
 	virtual MRenderTextureBuffer* GetBackBuffer(const uint32_t& unIndex) override;
-	MRenderTargetTexture* GetBackTexture(const uint32_t& unIndex);
 	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
+	virtual MColor GetBackClearColor(const uint32_t& unIndex) override;
 
-	void SetBackTexture(MRenderTargetTexture* pBackTexture, const uint32_t& unIndex);
-	void SetDepthTexture(MRenderDepthTexture* pDepthTexture);
+
+	MRenderTargetTexture* GetBackTexture(const uint32_t& unIndex);
+
+	void SetBackTexture(MRenderTargetTexture* pBackTexture, const uint32_t& unIndex, const bool& bClearWhenRender, const MColor& clearColor = MColor::Black);
+	void SetDepthTexture(MRenderDepthTexture* pDepthTexture, const bool& bClearWhenRender);
 
 	uint32_t GetRenderTargetType() { return m_eRenderTargetType; }
 
@@ -56,6 +59,9 @@ public:
 	virtual void OnCreated() override;
 
 	virtual void Release(MIDevice* pDevice) override;
+
+
+	void InitRenderPass();
 
 public:
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
@@ -69,6 +75,7 @@ public:
 public:
 
 	std::vector<MRenderTargetTexture*> m_vBackTexture;
+	std::vector<MColor> m_vBackClearColor;
 	MRenderDepthTexture* m_pDepthTexture;
 protected:
 

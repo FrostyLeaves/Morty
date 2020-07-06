@@ -107,10 +107,10 @@ bool MVulkanShaderCompiler::CompileShader(const MString& strShaderPath, const ui
 	{
 		spv::SpvBuildLogger logger;
 		glslang::SpvOptions spvOptions;
-		// #ifdef _DEBUG
-		// 		spvOptions.generateDebugInfo = true;
-		// 		spvOptions.stripDebugInfo = true;
-		// #endif
+#ifdef _DEBUG
+		 		spvOptions.generateDebugInfo = true;
+		 		spvOptions.stripDebugInfo = true;
+#endif
 		glslang::GlslangToSpv(*program.getIntermediate(eLanguageType), vSpirv, &logger, &spvOptions);
 
 		MLogManager::GetInstance()->Information("%s", logger.getAllMessages().c_str());
@@ -120,7 +120,11 @@ bool MVulkanShaderCompiler::CompileShader(const MString& strShaderPath, const ui
 // 
 // 			glslang::OutputSpvBin(spirv, svBinaryName);
 // 		}
+
+		return true;
 	}
+
+	return false;
 }
 
 void MVulkanShaderCompiler::ConvertMacro(const MShaderMacro& macro, MPreamble& preamble)
@@ -135,7 +139,7 @@ void MVulkanShaderCompiler::ConvertMacro(const MShaderMacro& macro, MPreamble& p
 		preamble.AddDef(m.first, m.second);
 }
 
-void MVulkanShaderCompiler::GetVertexInputState(const spirv_cross::Compiler& compiler, VkPipelineVertexInputStateCreateInfo& vertexInputState)
+void MVulkanShaderCompiler::GetVertexInputState(const spirv_cross::Compiler& compiler, MVertexShaderBuffer* pShaderBuffer)
 {
 	spirv_cross::ShaderResources shaderResources = compiler.get_shader_resources();
 
@@ -171,11 +175,12 @@ void MVulkanShaderCompiler::GetVertexInputState(const spirv_cross::Compiler& com
 					attribute.format = VK_FORMAT_R32G32B32A32_SFLOAT;
 				else
 					MLogManager::GetInstance()->Error("Error: vertex input find floatN ?");
+
+				unOffset += sizeof(float) * type.vecsize;
 			}
 
 			attributeDescriptions.push_back(attribute);
 
-			unOffset += type.width * type.vecsize;
 			++unLocation;
 		}
 	}
@@ -185,12 +190,8 @@ void MVulkanShaderCompiler::GetVertexInputState(const spirv_cross::Compiler& com
 	bindingDescription.stride = unOffset;
 	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-	vertexInputState = VkPipelineVertexInputStateCreateInfo{};
-	vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputState.vertexBindingDescriptionCount = 1;
-	vertexInputState.pVertexBindingDescriptions = &bindingDescription;
-	vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-	vertexInputState.pVertexAttributeDescriptions = attributeDescriptions.data();
+	pShaderBuffer->m_vAttributeDescs = std::move(attributeDescriptions);
+	pShaderBuffer->m_vBindingDescs = { bindingDescription };
 }
 
 void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler, MShaderBuffer* pShaderBuffer)

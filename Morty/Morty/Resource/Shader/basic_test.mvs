@@ -17,7 +17,7 @@ VS_OUTPUT VS( VS_INPUT input)
 {
     VS_OUTPUT output;
 
-    output.pos = float4(input.pos.x, input.pos.y, 0.0f, 1.0f);
+    output.pos = float4(input.pos.x, input.pos.y, 0.5f, 1.0f);
     output.originPos.x = input.pos.x + 0.5f;
     output.originPos.y = input.pos.y + 0.5f;
     return output;

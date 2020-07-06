@@ -18,7 +18,7 @@
 #include <vulkan/vulkan.h>
 #endif
 
-
+class MIRenderTarget;
 class MORTY_CLASS MSubpass
 {
 public:
@@ -32,10 +32,26 @@ public:
 class MORTY_CLASS MRenderPass
 {
 public:
-    MRenderPass();
+    struct MRTDesc
+    {
+        bool bClearWhenRender = true;
+    };
+public:
+    MRenderPass(MIRenderTarget* pRenderTarget);
     ~MRenderPass();
 
 public:
+
+    void SetRenderPassID(const uint32_t& unID) { m_unRenderPassID = unID; }
+    uint32_t GetRenderPassID() const { return m_unRenderPassID; }
+
+	MIRenderTarget* m_pRenderTarget;
+	std::vector<MSubpass> m_vSubpass;
+
+    std::vector<MRTDesc> m_vBackDesc;
+    MRTDesc m_DepthDesc;
+
+    uint32_t m_unRenderPassID;
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 
@@ -43,12 +59,6 @@ public:
     
     VkRenderPass m_VkRenderPass;
 #endif
-
-
-    class MIRenderTarget* m_pRenderTarget;
-
-    std::vector<MSubpass> m_vSubpass;
-
 };
 
 #endif

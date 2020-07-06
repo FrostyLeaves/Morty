@@ -13,17 +13,12 @@
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 #include "MIDPool.h"
-#include "MVulkanDevice.h"
+#include "MRenderPass.h"
 
-
-struct MIndexPipeline
+class MVulkanDevice;
+struct MPipelineRenderPassGroup
 {
-    std::vector<VkPipeline> m_vPipelines;
-};
-
-struct MRenderTargetPipeline
-{
-    std::vector<MIndexPipeline> vMaterials;
+    std::vector<VkPipeline> vMaterialGroup;
 };
 
 class MMaterial;
@@ -36,7 +31,9 @@ public:
 
 public:
 
-    VkPipeline FindPipeline(MMaterial* pMaterial, MIRenderTarget* pRenderTarget, const uint32_t& unIndex);
+    VkPipeline FindPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass);
+
+    void SetPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, VkPipeline pipeline);
 
     VkPipelineLayout FindPipelineLayout(MMaterial* pMaterial);
 
@@ -44,18 +41,21 @@ public:
 	void RegisterMaterial(MMaterial* pMaterial);
 	void UnRegisterMaterial(MMaterial* pMaterial);
 
+    void RegisterRenderPass(MRenderPass* pRenderPass);
+    void UnRegisterRenderPass(MRenderPass* pRenderPass);
 
 public:
 
     VkPipelineLayout CreateMaterialPipelineLayout(MMaterial* pMaterial);
-
     void DestroyPipelineLayout(VkPipelineLayout& pPepelineLayout);
+
 
 private:
 
 	MRepeatIDPool<uint32_t> m_MaterialIDPool;
+    MRepeatIDPool<uint32_t> m_RenderPassIDPool;
 
-    std::vector<MRenderTargetPipeline> m_vRenderTargets;
+    std::vector<MPipelineRenderPassGroup> m_vRenderPassGroup;
 
     std::vector<VkPipelineLayout> m_vPipelineLayouts;
 

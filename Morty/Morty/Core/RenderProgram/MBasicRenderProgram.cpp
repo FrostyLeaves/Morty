@@ -12,7 +12,7 @@ M_OBJECT_IMPLEMENT(MBasicRenderProgram, MIRenderProgram)
 
 MBasicRenderProgram::MBasicRenderProgram()
 	: MIRenderProgram()
-	, m_TransparentDrawMesh(true)
+	, m_TransparentDrawMesh(false)
 {
 	MMesh<Vector2>& mesh = m_TransparentDrawMesh;
 	mesh.ResizeVertices(4);

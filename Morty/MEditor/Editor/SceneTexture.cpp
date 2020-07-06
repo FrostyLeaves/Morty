@@ -53,14 +53,11 @@ void SceneTexture::Initialize(MEngine* pEngine)
 	m_pDepthTexture->GenerateBuffer(pEngine->GetDevice());
 
 	m_pTextureRenderTarget = pEngine->GetObjectManager()->CreateObject<MTextureRenderTarget>();
-	m_pTextureRenderTarget->SetBackTexture(m_pBackTexture, 0);
-	m_pTextureRenderTarget->SetDepthTexture(m_pDepthTexture);
+	m_pTextureRenderTarget->SetBackTexture(m_pBackTexture, 0, true, MColor::Black);
+	m_pTextureRenderTarget->SetDepthTexture(m_pDepthTexture, true);
 
 	m_pTextureRenderTarget->m_funcRenderFunction = [this](MIRenderer* pRenderer)
 	{
-		pRenderer->ClearDepthTexture(m_pTextureRenderTarget->GetDepthTexture());
-		pRenderer->ClearRenderTargetView(m_pTextureRenderTarget->GetBackBuffer(0), MColor::Black);
-
 		m_pRenderViewport->Render(pRenderer, m_pTextureRenderTarget);
 	};
 

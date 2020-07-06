@@ -18,7 +18,9 @@
 #include "vulkan/vulkan_win32.h"
 #endif
 
-
+const std::vector<const char*> ValidationLayers = {
+	"VK_LAYER_KHRONOS_validation"
+};
 const std::vector<const char*> DeviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
@@ -49,6 +51,7 @@ MVulkanDevice::MVulkanDevice()
 	, m_VkPhysicalDevice(VK_NULL_HANDLE)
 	, m_VkDevice(VK_NULL_HANDLE)
 	, m_VkGraphicsQueue(VK_NULL_HANDLE)
+	, m_PipelineManager(this)
 {
 
 }
@@ -130,12 +133,12 @@ void MVulkanDevice::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh
 
 	if (bModifiable)
 	{
-		GenerateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexBuffer, vertexBufferMemory);
+		GenerateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexBuffer, vertexBufferMemory);
 		vkMapMemory(m_VkDevice, vertexBufferMemory, 0, bufferSize, 0, &data);
 		memcpy(data, pMesh->GetVertices(), (size_t)bufferSize);
 		vkUnmapMemory(m_VkDevice, vertexBufferMemory);
 
-		GenerateBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, indexBuffer, indexBufferMemory);
+		GenerateBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT , indexBuffer, indexBufferMemory);
 		vkMapMemory(m_VkDevice, indexBufferMemory, 0, indexBufferSize, 0, &data);
 		memcpy(data, pMesh->GetIndices(), (size_t)indexBufferSize);
 		vkUnmapMemory(m_VkDevice, indexBufferMemory);
@@ -422,6 +425,7 @@ void MVulkanDevice::GenerateTexture(MTextureBuffer** ppTextureBuffer, MTexture* 
 	*ppTextureBuffer = new MTextureBuffer();
 	(*ppTextureBuffer)->m_VkTextureImage = textureImage;
 	(*ppTextureBuffer)->m_VkTextureImageMemory = textureImageMemory;
+	(*ppTextureBuffer)->m_VkTextureFormat = VK_FORMAT_R8G8B8A8_SRGB;
 	(*ppTextureBuffer)->m_VkImageView = CreateImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
 }
 
@@ -454,6 +458,13 @@ bool MVulkanDevice::InitVulkanInstance()
 	createInfo.pNext = nullptr;
 	createInfo.flags = 0;
 	createInfo.pApplicationInfo = &appInfo;
+	
+#if _DEBUG
+	createInfo.enabledLayerCount = static_cast<uint32_t>(ValidationLayers.size());
+	createInfo.ppEnabledLayerNames = ValidationLayers.data();
+#else
+	createInfo.enabledLayerCount = 0;
+#endif
 
 	std::vector<const char*> enabledExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
 
@@ -754,7 +765,7 @@ bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString&
 
 	VkShaderModuleCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	createInfo.codeSize = spirv.size();
+	createInfo.codeSize = spirv.size() * sizeof(uint32_t);
 	createInfo.pCode = reinterpret_cast<const uint32_t*>(spirv.data());
 
 	VkShaderModule shaderModule;
@@ -777,7 +788,7 @@ bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString&
 	if (MShader::MEShaderType::Vertex == eShaderType)
 	{
 		MVertexShaderBuffer* pVertexBuffer = new MVertexShaderBuffer();
-		m_ShaderCompiler.GetVertexInputState(compiler, pVertexBuffer->m_VkVertexInputStateInfo);
+		m_ShaderCompiler.GetVertexInputState(compiler, pVertexBuffer);
 		pBuffer = pVertexBuffer;
 	}
 	else if (MShader::MEShaderType::Pixel == eShaderType)
@@ -824,18 +835,19 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t
 	if (nHeight < 1)
 		nHeight = 1;
 
-	GenerateRenderPass(&pVkRenderTarget->m_VkRenderPass);
-	if (VK_NULL_HANDLE == pVkRenderTarget->m_VkRenderPass)
-		return false;
+	MRenderPass& renderPass = pVkRenderTarget->m_RenderPass;
+
+	if(!GenerateRenderPass(&renderPass))
+			return false;
 
 	VkImageViewCreateInfo createInfo = {};
 
-	pVkRenderTarget->m_vSwapchainImageView.resize(pVkRenderTarget->m_vSwapchainImages.size());
-	pVkRenderTarget->swapChainFramebuffers.resize(pVkRenderTarget->m_vSwapchainImages.size());
-	for (uint32_t i = 0; i < pVkRenderTarget->m_vSwapchainImages.size(); ++i)
+	for (uint32_t i = 0; i < pVkRenderTarget->m_vBackBuffers.size(); ++i)
 	{
+		MRenderTextureBuffer* pBuffer = pVkRenderTarget->m_vBackBuffers[i];
+
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		createInfo.image = pVkRenderTarget->m_vSwapchainImages[i];
+		createInfo.image = pBuffer->m_VkTextureImage;
 		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 		createInfo.format = pVkRenderTarget->m_VkColorFormat;
 		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -849,25 +861,23 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t
 		createInfo.subresourceRange.baseArrayLayer = 0;
 		createInfo.subresourceRange.layerCount = 1;
 
-		vkCreateImageView(m_VkDevice, &createInfo, nullptr, &pVkRenderTarget->m_vSwapchainImageView[i]);
+		vkCreateImageView(m_VkDevice, &createInfo, nullptr, &pBuffer->m_VkImageView);
 
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass = pRenderTarget->m_VkRenderPass;
+		framebufferInfo.renderPass = renderPass.m_VkRenderPass;
+
+		// TODO attachmentCount is dynamic.
 		framebufferInfo.attachmentCount = 1;
-		framebufferInfo.pAttachments = &pVkRenderTarget->m_vSwapchainImageView[i];
+		framebufferInfo.pAttachments = &pBuffer->m_VkImageView;
 		framebufferInfo.width = nWidth;
 		framebufferInfo.height = nHeight;
 		framebufferInfo.layers = 1;
-		vkCreateFramebuffer(m_VkDevice, &framebufferInfo, nullptr, &pVkRenderTarget->swapChainFramebuffers[i]);
-
-		//TODO ²»ÓÅÑÅ
-		MRenderTargetTexture target;
-		target.m_VkRenderTextureImage = pVkRenderTarget->m_vSwapchainImages[i];
-		target.m_VkFrameBuffer = pVkRenderTarget->swapChainFramebuffers[i];
-		pVkRenderTarget->m_RenderTargetView.push_back(target);
+		vkCreateFramebuffer(m_VkDevice, &framebufferInfo, nullptr, &pBuffer->m_VkFrameBuffer);
 	}
 
+	pVkRenderTarget->m_pDepthTexture->SetSize(Vector2(nWidth, nHeight));
+	pVkRenderTarget->m_pDepthTexture->GenerateBuffer(this, false);
 	
 
 	//TODO Multiple RenderTarget
@@ -910,52 +920,73 @@ void MVulkanDevice::DestroyShaderParamBuffer(MShaderParam* pParam)
 }
 
 bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
-{
-	if (!pRenderPass->m_pRenderTarget)
+{	
+	MIRenderTarget* pRenderTarget = pRenderPass->m_pRenderTarget;
+	if (!pRenderTarget)
 		return false;
-
 
 	VkRenderPass renderPass;
 
-	MIRenderTarget* pRenderTarget = pRenderPass->m_pRenderTarget;
 
-	MRenderTargetTexture* pTargetTexture = pRenderTarget->GetRenderTargetView(0);
+	uint32_t unBackNum = pRenderTarget->GetBackNum();
 
-	if (MRenderDepthTexture* pDepthTexture = pRenderTarget->GetDepthTexture())
+	std::vector<VkAttachmentDescription> vAttachmentDesc;
+	for (uint32_t i = 0; i < unBackNum; ++i)
 	{
+		MRenderTextureBuffer* pBuffer = pRenderTarget->GetBackBuffer(i);
+
+		vAttachmentDesc.push_back({});
+		VkAttachmentDescription& colorAttachment = vAttachmentDesc.back();
+
+		if (pRenderTarget->m_RenderPass.m_vBackDesc[i].bClearWhenRender)
+			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		else
+			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+
+		colorAttachment.format = pBuffer->m_VkTextureFormat;
+		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 	}
+	if (MRenderDepthTexture* pDepthTexture = pRenderTarget->GetDepthTexture())
+	{
+		if (MDepthTextureBuffer* pBuffer = pDepthTexture->GetDepthBuffer())
+		{
+			vAttachmentDesc.push_back({});
+			VkAttachmentDescription& colorAttachment = vAttachmentDesc.back();
 
-	VkAttachmentDescription colorAttachment{};
+			if (pRenderTarget->m_RenderPass.m_DepthDesc.bClearWhenRender)
+				colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			else
+				colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 
+			colorAttachment.format = pBuffer->m_VkTextureFormat;
+			colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+			colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
+		}
+	}
 
-	if (METextureLayout::ERGBA8 == pRenderPass->m_eTextureType)
-		colorAttachment.format = VkFormat::VK_FORMAT_R8G8B8A8_UNORM;
-	else if (METextureLayout::ER32 == pRenderPass->m_eTextureType)
-		colorAttachment.format = VkFormat::VK_FORMAT_R32_SFLOAT;
-
-	if (pRenderPass->m_bClearBackTexture)
-		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	else
-		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-
-	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 	std::vector<VkSubpassDescription> vSubpass;
 
 	for (MSubpass& subpass : pRenderPass->m_vSubpass)
 	{
+		vSubpass.push_back(VkSubpassDescription());
+
 		VkAttachmentReference colorAttachmentRef{};
 		colorAttachmentRef.attachment = 0;
 		colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-		VkSubpassDescription vkSubpass{};
+		VkSubpassDescription& vkSubpass = vSubpass.back();
 		vkSubpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 		vkSubpass.colorAttachmentCount = 1;
 		vkSubpass.pColorAttachments = &colorAttachmentRef;
@@ -963,8 +994,8 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 
 	VkRenderPassCreateInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.attachmentCount = 1;
-	renderPassInfo.pAttachments = &colorAttachment;
+	renderPassInfo.attachmentCount = vAttachmentDesc.size();
+	renderPassInfo.pAttachments = vAttachmentDesc.data();
 	renderPassInfo.subpassCount = vSubpass.size();
 	renderPassInfo.pSubpasses = vSubpass.data();
 
@@ -974,13 +1005,18 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 	}
 
 	pRenderPass->m_VkRenderPass = renderPass;
+	m_PipelineManager.RegisterRenderPass(pRenderPass);
 
 	return true;
 }
 
 void MVulkanDevice::DestroyRenderPass(MRenderPass* pRenderPass)
 {
-
+	if (pRenderPass)
+	{
+		vkDestroyRenderPass(m_VkDevice, pRenderPass->m_VkRenderPass, nullptr);
+		m_PipelineManager.UnRegisterRenderPass(pRenderPass);
+	}
 }
 
 #endif

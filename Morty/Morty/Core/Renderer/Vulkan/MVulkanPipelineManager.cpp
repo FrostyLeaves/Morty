@@ -3,6 +3,7 @@
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 #include "MMaterial.h"
+#include "MVulkanDevice.h"
 
 MVulkanPipelineManager::MVulkanPipelineManager(MVulkanDevice* pDevice)
 	: m_pDevice(pDevice)
@@ -15,16 +16,48 @@ MVulkanPipelineManager::~MVulkanPipelineManager()
 
 }
 
-VkPipeline MVulkanPipelineManager::FindPipeline(MMaterial* pMaterial, MIRenderTarget* pRenderTarget, const uint32_t& unIndex)
+VkPipeline MVulkanPipelineManager::FindPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass)
 {
-	return VK_NULL_HANDLE;
+	uint32_t unRenderPassID = pRenderPass->GetRenderPassID();
+	if (m_vRenderPassGroup.size() < unRenderPassID + 1)
+		return VK_NULL_HANDLE;
+
+	MPipelineRenderPassGroup& group = m_vRenderPassGroup[unRenderPassID];
+	uint32_t unMaterialID = pMaterial->GetMaterialID();
+
+	if (group.vMaterialGroup.size() < unMaterialID + 1)
+		return VK_NULL_HANDLE;
+
+	return group.vMaterialGroup[unMaterialID];
+}
+
+void MVulkanPipelineManager::SetPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, VkPipeline pipeline)
+{
+	uint32_t unRenderPassID = pRenderPass->GetRenderPassID();
+	if (m_vRenderPassGroup.size() < unRenderPassID + 1)
+		m_vRenderPassGroup.resize(unRenderPassID + 1);
+
+
+	MPipelineRenderPassGroup& group = m_vRenderPassGroup[unRenderPassID];
+	uint32_t unMaterialID = pMaterial->GetMaterialID();
+
+	if (group.vMaterialGroup.size() < unMaterialID + 1)
+		group.vMaterialGroup.resize(unMaterialID + 1, VK_NULL_HANDLE);
+
+	if (group.vMaterialGroup[unMaterialID] != VK_NULL_HANDLE)
+	{
+		vkDestroyPipeline(m_pDevice->m_VkDevice, group.vMaterialGroup[unMaterialID], nullptr);
+		group.vMaterialGroup[unMaterialID] = VK_NULL_HANDLE;
+	}
+
+	group.vMaterialGroup[unMaterialID] = pipeline;
 }
 
 VkPipelineLayout MVulkanPipelineManager::FindPipelineLayout(MMaterial* pMaterial)
 {
 	uint32_t id = pMaterial->GetMaterialID();
 
-	if (m_vPipelineLayouts.size() < id)
+	if (m_vPipelineLayouts.size() < id + 1)
 		m_vPipelineLayouts.resize(id + 1, VK_NULL_HANDLE);
 
 	if (VK_NULL_HANDLE != m_vPipelineLayouts[id])
@@ -53,11 +86,32 @@ void MVulkanPipelineManager::UnRegisterMaterial(MMaterial* pMaterial)
 		}
 	}
 
-	m_MaterialIDPool.RecoveryID(pMaterial->GetMaterialID());
+	m_MaterialIDPool.RecoveryID(id);
+}
+
+void MVulkanPipelineManager::RegisterRenderPass(MRenderPass* pRenderPass)
+{
+	pRenderPass->SetRenderPassID(m_RenderPassIDPool.GetNewID());
+}
+
+void MVulkanPipelineManager::UnRegisterRenderPass(MRenderPass* pRenderPass)
+{
+	uint32_t id = pRenderPass->GetRenderPassID();
+
+	if (id < m_vRenderPassGroup.size())
+	{
+		MPipelineRenderPassGroup& group = m_vRenderPassGroup[id];
+		group.vMaterialGroup.clear();
+	}
+
+	m_RenderPassIDPool.RecoveryID(id);
 }
 
 VkPipelineLayout MVulkanPipelineManager::CreateMaterialPipelineLayout(MMaterial* pMaterial)
 {
+// 	if (pMaterial->GetShaderParams()->empty())
+// 		return VK_NULL_HANDLE;
+	
 	std::map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> tSetLayoutBinding;
 
 	for (const MShaderParam& param : *pMaterial->GetShaderParams())
@@ -112,19 +166,23 @@ VkPipelineLayout MVulkanPipelineManager::CreateMaterialPipelineLayout(MMaterial*
 	allocInfo.descriptorSetCount = vSetLayouts.size();
 	allocInfo.pSetLayouts = vSetLayouts.data();
 
-	std::vector<VkDescriptorSet> descriptorSets;
-	descriptorSets.resize(vSetLayouts.size());
-	if (vkAllocateDescriptorSets(m_pDevice->m_VkDevice, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate descriptor sets!");
-	}
 
-	for (uint32_t setIdx = 0; setIdx < vSetLayoutsSet.size(); ++setIdx)
+	if (!vSetLayouts.empty())
 	{
-		for (MShaderParam& param : *pMaterial->GetShaderParams())
+		std::vector<VkDescriptorSet> descriptorSets;
+		descriptorSets.resize(vSetLayouts.size());
+		if (vkAllocateDescriptorSets(m_pDevice->m_VkDevice, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
+			throw std::runtime_error("failed to allocate descriptor sets!");
+		}
+
+		for (uint32_t setIdx = 0; setIdx < vSetLayoutsSet.size(); ++setIdx)
 		{
-			if (param.unSet == vSetLayoutsSet[setIdx])
+			for (MShaderParam& param : *pMaterial->GetShaderParams())
 			{
-				param.m_VkDescriptorSet = descriptorSets[setIdx];
+				if (param.unSet == vSetLayoutsSet[setIdx])
+				{
+					param.m_VkDescriptorSet = descriptorSets[setIdx];
+				}
 			}
 		}
 	}

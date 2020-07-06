@@ -9,8 +9,8 @@ MSubpass::~MSubpass()
 {
 }
 
-MRenderPass::MRenderPass()
-	: m_pRenderTarget(nullptr)
+MRenderPass::MRenderPass(MIRenderTarget* pRenderTarget)
+	: m_pRenderTarget(pRenderTarget)
 {
 
 }
