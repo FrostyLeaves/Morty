@@ -159,6 +159,8 @@ void MEngine::Tick(float fDelta)
 		m_pScene->Tick(fDelta);
 	}
 
+	m_pDevice->Tick(fDelta);
+
 	m_pObjectManager->CleanRemoveObject();
 }
 

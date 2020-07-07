@@ -19,6 +19,7 @@
 #include "vulkan/vulkan.h"
 #include "vulkan/vulkan_core.h"
 
+#include "MVulkanBufferManager.h"
 #include "MVulkanShaderCompiler.h"
 #include "MVulkanPipelineManager.h"
 
@@ -30,10 +31,10 @@ public:
     virtual ~MVulkanDevice();
 
 public:
-
-public:
 	virtual bool Initialize() override;
 	virtual void Release() override;
+
+	virtual void Tick(const float& fDelta) override;
 
 public:
 	virtual void GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh, const bool& bModifiable = false) override;
@@ -54,7 +55,7 @@ public:
 	virtual void CleanShader(MShaderBuffer** ppShaderBuffer) override;
 
 	virtual bool GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t nWidth, uint32_t nHeight) override;
-	virtual void DestroyRenderTarget(MIRenderTarget* pRenderTarget) override {}
+	virtual void DestroyRenderTarget(MIRenderTarget* pRenderTarget) override;
 
 	virtual bool GenerateShaderParamBuffer(MShaderParam* pParam) override;
 	virtual void DestroyShaderParamBuffer(MShaderParam* pParam) override;
@@ -68,11 +69,8 @@ public:
 
 	VkPhysicalDevice GetPhysicalDevice() { return m_VkPhysicalDevice; }
 
-
-	bool GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 	void CopyImageBuffer(VkBuffer srcBuffer, VkImage image, const uint32_t& width, const uint32_t& height);
-	void DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
 	VkImageView CreateImageView(VkImage image, VkFormat format);
@@ -120,6 +118,7 @@ public:
 
 	int m_nBufferNum;
 
+	MVulkanBufferManager m_BufferManager;
 	MVulkanShaderCompiler m_ShaderCompiler;
 	MVulkanPipelineManager m_PipelineManager;
 };

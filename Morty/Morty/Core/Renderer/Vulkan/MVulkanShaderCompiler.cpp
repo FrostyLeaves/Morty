@@ -231,11 +231,10 @@ void MVulkanShaderCompiler::ConvertVariant(const spirv_cross::Compiler& compiler
 
 			spirv_cross::TypeID base_id = compiler.get_type(type.self).self;
 			std::string strName = compiler.get_member_name(base_id, i);
-			
-			uint32_t unMemIdx = srt.AppendMVariant(strName, MVariant());
-			MVariant& childVar = srt.GetMember(unMemIdx)->var;
 
-			ConvertVariant(compiler, childType, childVar);
+			MVariant child;
+			ConvertVariant(compiler, childType, child);
+			srt.AppendMVariant(strName, child);
 		}
 		break;
 	}

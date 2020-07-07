@@ -71,7 +71,7 @@ public:
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	return m_pShaderResourceView;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-	return nullptr;
+	return m_VkImageView;
 #else
 	return nullptr;
 #endif

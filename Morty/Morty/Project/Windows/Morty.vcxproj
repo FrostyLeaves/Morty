@@ -70,26 +70,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <LibraryPath>$(DXSDK_DIR)Lib\x86;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
-    <OutDir>$(SolutionDir)Build\$(Platform)\$(ProjectName)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)Build\$(Platform)\$(Configuration)\</OutDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)Include;</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)Include;</IncludePath>
     <LinkIncremental>true</LinkIncremental>
     <LibraryPath>$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)Build\$(Platform)\$(ProjectName)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)Build\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>$(DXSDK_DIR)Lib\x86;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
-    <OutDir>$(SolutionDir)Build\$(Platform)\$(ProjectName)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)Build\$(Platform)\$(Configuration)\</OutDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)Include;</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)Include;</IncludePath>
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)Build\$(Platform)\$(ProjectName)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)Build\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -104,7 +104,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>d3d11.lib;d3dx11.lib;dxguid.lib;d3dcompiler.lib;vulkan-1.lib;cximagecrt.lib;assimp-vc120-mt.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Math3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Platform)\Math3D\$(Configuration);$(SolutionDir)ThirdParty/Assimp/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/CxImage/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/SpirvCross/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/glslang/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/SPIRV/lib/vs2019/$(Platform)/$(Configuration);$(DXSDK_DIR)Lib/$(PlatformTarget);$(VK_SDK_PATH)/Lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Platform)\$(Configuration);$(SolutionDir)ThirdParty/Assimp/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/CxImage/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/SpirvCross/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/glslang/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/SPIRV/lib/vs2019/$(Platform)/$(Configuration);$(DXSDK_DIR)Lib/$(PlatformTarget);$(VK_SDK_PATH)/Lib</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>
@@ -128,7 +128,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>cximagecrt.lib;assimp-vc142-mt.lib;d3d11.lib;d3dx11.lib;dxguid.lib;d3dcompiler.lib;vulkan-1.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Math3D.lib;glslangd.lib;SPIRVd.lib;OSDependentd.lib;OGLCompilerd.lib;glslang-default-resource-limitsd.lib;spirv-cross-cored.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Platform)\Math3D\$(Configuration);$(SolutionDir)ThirdParty/Assimp/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/CxImage/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/SpirvCross/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/glslang/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/SPIRV/lib/vs2019/$(Platform)/$(Configuration);$(DXSDK_DIR)Lib/$(PlatformTarget);$(VK_SDK_PATH)/Lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Platform)\$(Configuration);$(SolutionDir)ThirdParty/Assimp/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/CxImage/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/SpirvCross/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/glslang/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/SPIRV/lib/vs2019/$(Platform)/$(Configuration);$(DXSDK_DIR)Lib/$(PlatformTarget);$(VK_SDK_PATH)/Lib</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
       <IgnoreAllDefaultLibraries>
@@ -160,7 +160,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>d3d11.lib;d3dx11.lib;dxguid.lib;d3dcompiler.lib;vulkan-1.lib;cximagecrt.lib;assimp-vc120-mt.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Math3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Platform)\Math3D\$(Configuration);$(SolutionDir)ThirdParty/Assimp/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/CxImage/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/SpirvCross/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/glslang/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/SPIRV/lib/vs2019/$(Platform)/$(Configuration);$(DXSDK_DIR)Lib/$(PlatformTarget);$(VK_SDK_PATH)/Lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Platform)\$(Configuration);$(SolutionDir)ThirdParty/Assimp/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/CxImage/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/SpirvCross/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/glslang/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/SPIRV/lib/vs2019/$(Platform)/$(Configuration);$(DXSDK_DIR)Lib/$(PlatformTarget);$(VK_SDK_PATH)/Lib</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>
@@ -188,7 +188,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>cximagecrt.lib;assimp-vc142-mt.lib;d3d11.lib;d3dx11.lib;dxguid.lib;d3dcompiler.lib;vulkan-1.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Math3D.lib;glslang.lib;SPIRV.lib;OSDependent.lib;OGLCompiler.lib;glslang-default-resource-limits.lib;spirv-cross-core.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Platform)\Math3D\$(Configuration);$(SolutionDir)ThirdParty/Assimp/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/CxImage/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/SpirvCross/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/glslang/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/SPIRV/lib/vs2019/$(Platform)/$(Configuration);$(DXSDK_DIR)Lib/$(PlatformTarget);$(VK_SDK_PATH)/Lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Platform)\$(Configuration);$(SolutionDir)ThirdParty/Assimp/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/CxImage/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/SpirvCross/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/glslang/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/SPIRV/lib/vs2019/$(Platform)/$(Configuration);$(DXSDK_DIR)Lib/$(PlatformTarget);$(VK_SDK_PATH)/Lib</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
       <IgnoreAllDefaultLibraries>
@@ -241,6 +241,7 @@
     <ClInclude Include="..\..\Core\Renderer\MTexture.h" />
     <ClInclude Include="..\..\Core\Renderer\MVariant.h" />
     <ClInclude Include="..\..\Core\Renderer\MVertex.h" />
+    <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanBufferManager.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanShaderCompiler.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanDevice.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanPipelineManager.h" />
@@ -346,6 +347,7 @@
     <ClCompile Include="..\..\Core\Renderer\MShader.cpp" />
     <ClCompile Include="..\..\Core\Renderer\MTexture.cpp" />
     <ClCompile Include="..\..\Core\Renderer\MVariant.cpp" />
+    <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanBufferManager.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanShaderCompiler.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanDevice.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanPipelineManager.cpp" />

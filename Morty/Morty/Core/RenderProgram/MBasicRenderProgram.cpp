@@ -43,7 +43,22 @@ void MBasicRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport, MS
 {
 	pRenderer->SetViewport(pViewport->GetLeft(), pViewport->GetTop(), pViewport->GetWidth(), pViewport->GetHeight(), 0.0f, 1.0f);
 
-	pRenderer->SetUseMaterial(m_pMaterial);
+	std::vector<MShaderParam>& params = *m_pMaterial->GetShaderParams();
+	if (!params.empty())
+	{
+		MShaderParam& param = params[0];
+		MStruct& srt = *param.var.GetStruct();
+
+		if (float* pTime = srt.FindMember<float>("time"))
+			*pTime += 0.02f;
+
+		if (Vector2* pSize = srt.FindMember<Vector2>("screenSize"))
+			*pSize = pViewport->GetSize();
+
+		param.SetDirty();
+	}
+
+	pRenderer->SetUseMaterial(m_pMaterial, true);
 
 
 	pRenderer->DrawMesh(&m_TransparentDrawMesh);

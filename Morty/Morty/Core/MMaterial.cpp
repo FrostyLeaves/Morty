@@ -452,6 +452,7 @@ void MMaterial::RecompileShaderParams(std::vector<MShaderParam>& vParams, std::v
 		if (!bFinded)
 		{
 			MShaderParam param(*vNewParams[j], 0);
+			param.eType = eType;
 			m_pEngine->GetDevice()->GenerateShaderParamBuffer(&param);
 			vParams.push_back(param);
 		}

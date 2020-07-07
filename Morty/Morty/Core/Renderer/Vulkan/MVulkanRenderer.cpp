@@ -103,6 +103,9 @@ bool MVulkanRenderer::Initialize()
 
 void MVulkanRenderer::Release()
 {
+	while (vkGetFenceStatus(m_pDevice->m_VkDevice, m_VkInFlightFences) != VK_SUCCESS);
+
+
 	if (m_VkCommandBuffer != VK_NULL_HANDLE)
 	{
 		vkFreeCommandBuffers(m_pDevice->m_VkDevice, m_pDevice->m_VkCommandPool, 1, &m_VkCommandBuffer);
@@ -127,7 +130,11 @@ void MVulkanRenderer::SetViewport(const float& fX, const float& fY, const float&
 
 void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 {
+	//if m_VkInFlightFences == signed
 	vkWaitForFences(m_pDevice->m_VkDevice, 1, &m_VkInFlightFences, VK_TRUE, UINT64_MAX);
+
+	//TODO check render end.
+	m_pDevice->m_BufferManager.FrameFinished(0);
 
 	if (m_VkCommandBuffer != VK_NULL_HANDLE)
 	{
@@ -212,9 +219,9 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
+	//m_VkInFlightFences = unsigned
 	vkResetFences(m_pDevice->m_VkDevice, 1, &m_VkInFlightFences);
-
-
+	
 	if (vkQueueSubmit(m_pDevice->m_VkGraphicsQueue, 1, &submitInfo, m_VkInFlightFences) != VK_SUCCESS) {
 		throw std::runtime_error("failed to submit draw command buffer!");
 	}
@@ -280,18 +287,33 @@ bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial, const bool& bUpdateRe
 		m_pDevice->m_PipelineManager.SetPipeline(pMaterial, pRenderPass, m_VkUsingPipeline);
 	}
 	
-	
-	vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkUsingPipeline);
-
-
-
-	if (bUpdateResources)
+	if (m_VkUsingPipeline)
 	{
-		UpdateMaterialResource();
-		UpdateMaterialParam();
+		m_pUsingMaterial = pMaterial;
+		vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkUsingPipeline);
+
+		if (bUpdateResources)
+		{
+			UpdateMaterialResource();
+			UpdateMaterialParam();
+		}
+
+		return true;
 	}
 
-	return true;
+	return false;
+}
+
+void MVulkanRenderer::UpdateMaterialParam()
+{
+	if (!m_pUsingMaterial)
+		return;
+
+	for (MShaderParam& param : *m_pUsingMaterial->GetShaderParams())
+	{
+		SetShaderParam(param);
+	}
+
 }
 
 void MVulkanRenderer::UpdateShaderParam(MShaderParam& param)

@@ -11,6 +11,7 @@
 #include "MViewport.h"
 #include "MIRenderTarget.h"
 #include "MDirectX11RenderTarget.h"
+#include "MVulkanRenderTarget.h"
 
 std::map<HWND, MWindowsRenderView*> MWindowsRenderView::s_tViewTable = std::map<HWND, MWindowsRenderView*>();
 HINSTANCE MWindowsRenderView::s_hInstance = 0;
@@ -141,8 +142,9 @@ void MWindowsRenderView::OnResize(const int& nWidth, const int& nHeight)
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	if(MDirectX11RenderTarget* pRt = dynamic_cast<MDirectX11RenderTarget*>(m_pRenderTarget))
 		pRt->Resize(nWidth, nHeight);
-#else
-
+#elif RENDER_GRAPHICS == MORTY_VULKAN
+	if (MVulkanRenderTarget* pRt = dynamic_cast<MVulkanRenderTarget*>(m_pRenderTarget))
+		pRt->Resize(nWidth, nHeight);
 #endif
 }
 

@@ -366,6 +366,9 @@
     <ClInclude Include="..\..\Core\MRenderPass.h">
       <Filter>Core\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanBufferManager.h">
+      <Filter>Core\Renderer\Vulkan</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -613,6 +616,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\MRenderPass.cpp">
       <Filter>Core\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanBufferManager.cpp">
+      <Filter>Core\Renderer\Vulkan</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

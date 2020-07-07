@@ -70,6 +70,9 @@ MTextureBuffer::MTextureBuffer()
 	m_pTextureBuffer = nullptr;
 	m_pShaderResourceView = nullptr;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
+	m_VkTextureImage = VK_NULL_HANDLE;
+	m_VkTextureImageMemory = VK_NULL_HANDLE;
+	m_VkImageView = VK_NULL_HANDLE;
 #endif
 
 }
@@ -96,7 +99,7 @@ MRenderTextureBuffer::MRenderTextureBuffer()
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	, m_pRenderTargetView(nullptr)
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-
+	, m_VkFrameBuffer(VK_NULL_HANDLE)
 #endif
 {
 }

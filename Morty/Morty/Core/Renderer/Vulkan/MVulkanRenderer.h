@@ -40,7 +40,7 @@ public:
 	virtual void DrawMesh(MIMesh* pMesh) override;
 
 	virtual bool SetUseMaterial(MMaterial* pMaterial, const bool& bUpdateResources = false) override;
-	virtual void UpdateMaterialParam() override {}
+	virtual void UpdateMaterialParam() override;
 	virtual void UpdateMaterialResource() override {}
 
 public:
