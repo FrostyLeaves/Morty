@@ -36,7 +36,10 @@ std::vector<MShaderParam*> MShaderBuffer::s_vShaderParams = std::vector<MShaderP
 
 MShaderBuffer::MShaderBuffer()
 {
-
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+#elif RENDER_GRAPHICS == MORTY_VULKAN
+	m_VkShaderModule = VK_NULL_HANDLE;
+#endif
 }
 
 MVertexShaderBuffer::MVertexShaderBuffer()

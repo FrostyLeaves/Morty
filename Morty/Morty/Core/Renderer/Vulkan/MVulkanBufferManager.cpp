@@ -1,6 +1,11 @@
 #include "MVulkanBufferManager.h"
 #include "MVulkanDevice.h"
 
+#define M_VULKAN_DESTROY_CLEAR(VK_TYPE, VK_FUNC) \
+	for (Vk##VK_TYPE& buffer : m_v##VK_TYPE[unFrameIndex])\
+		VK_FUNC(device, buffer, nullptr);\
+	m_v##VK_TYPE[unFrameIndex].clear();\
+
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 
@@ -14,35 +19,20 @@ void MVulkanBufferManager::FrameFinished(const uint32_t& unFrameIndex)
 {
 	VkDevice device = m_pDevice->m_VkDevice;
 
-	for (VkBuffer& buffer : m_vBuffer[unFrameIndex])
-		vkDestroyBuffer(device, buffer, nullptr);
+	M_VULKAN_DESTROY_CLEAR(Buffer, vkDestroyBuffer);
+	M_VULKAN_DESTROY_CLEAR(DeviceMemory, vkFreeMemory);
+	M_VULKAN_DESTROY_CLEAR(Framebuffer, vkDestroyFramebuffer);
+	M_VULKAN_DESTROY_CLEAR(ImageView, vkDestroyImageView);
+	M_VULKAN_DESTROY_CLEAR(Image, vkDestroyImage);
+	M_VULKAN_DESTROY_CLEAR(RenderPass, vkDestroyRenderPass);
+	M_VULKAN_DESTROY_CLEAR(PipelineLayout, vkDestroyPipelineLayout);
+	M_VULKAN_DESTROY_CLEAR(DescriptorSetLayout, vkDestroyDescriptorSetLayout);
+	M_VULKAN_DESTROY_CLEAR(ShaderModule, vkDestroyShaderModule);
+	M_VULKAN_DESTROY_CLEAR(Pipeline, vkDestroyPipeline);
 
-	m_vBuffer[unFrameIndex].clear();
-
-	for(VkDeviceMemory& memory : m_vDeviceMemory[unFrameIndex])
-		vkFreeMemory(device, memory, nullptr);
-
-	m_vDeviceMemory[unFrameIndex].clear();
-
-	for (VkFramebuffer& buffer : m_vFrameBuffer[unFrameIndex])
-		vkDestroyFramebuffer(device, buffer, nullptr);
-
-	m_vFrameBuffer[unFrameIndex].clear();
-
-	for (VkImageView& view : m_vImageView[unFrameIndex])
-		vkDestroyImageView(device, view, nullptr);
-
-	m_vImageView[unFrameIndex].clear();
-
-	for (VkImage& image : m_vImage[unFrameIndex])
-		vkDestroyImage(device, image, nullptr);
-
-	m_vImage[unFrameIndex].clear();
-
-	for (VkRenderPass& pass : m_vRenderPass[unFrameIndex])
-		vkDestroyRenderPass(device, pass, nullptr);
-
-	m_vRenderPass[unFrameIndex].clear();
+	for (auto& set : m_vDescriptorSets[unFrameIndex])
+		vkFreeDescriptorSets(device, m_pDevice->m_VkDescriptorPool, set.size(), set.data());
+	m_vDescriptorSets[unFrameIndex].clear();
 }
 
 bool MVulkanBufferManager::GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
@@ -89,36 +79,40 @@ void MVulkanBufferManager::DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& buffe
 	vkFreeMemory(m_pDevice->m_VkDevice, bufferMemory, nullptr);
 }
 
-
-
-void MVulkanBufferManager::DestroyBufferLater(const uint32_t& unFrameIndex, VkBuffer& buffer)
+void MVulkanBufferManager::DestroyDescriptorSets(const uint32_t& unFrameIndex, std::vector<VkDescriptorSet>& vDescriptorSets)
 {
-	m_vBuffer[unFrameIndex].push_back(buffer);
+	m_vDescriptorSets[unFrameIndex].push_back(std::move(vDescriptorSets));
 }
 
-void MVulkanBufferManager::DestroyDeviceMemoryLater(const uint32_t& unFrameIndex, VkDeviceMemory& memory)
-{
-	m_vDeviceMemory[unFrameIndex].push_back(memory);
-}
-
-void MVulkanBufferManager::DestroyFrameBufferLater(const uint32_t& unFrameIndex, VkFramebuffer& buffer)
-{
-	m_vFrameBuffer[unFrameIndex].push_back(buffer);
-}
-
-void MVulkanBufferManager::DestroyImageLater(const uint32_t& unFrameIndex, VkImage& image)
-{
-	m_vImage[unFrameIndex].push_back(image);
-}
-
-void MVulkanBufferManager::DestroyImageViewLater(const uint32_t& unFrameIndex, VkImageView& view)
-{
-	m_vImageView[unFrameIndex].push_back(view);
-}
-
-void MVulkanBufferManager::DestroyRenderPassLater(const uint32_t& unFrameIndex, VkRenderPass& pass)
-{
-	m_vRenderPass[unFrameIndex].push_back(pass);
-}
+// 
+// void MVulkanBufferManager::DestroyBufferLater(const uint32_t& unFrameIndex, VkBuffer& buffer)
+// {
+// 	m_vBuffer[unFrameIndex].push_back(buffer);
+// }
+// 
+// void MVulkanBufferManager::DestroyDeviceMemoryLater(const uint32_t& unFrameIndex, VkDeviceMemory& memory)
+// {
+// 	m_vDeviceMemory[unFrameIndex].push_back(memory);
+// }
+// 
+// void MVulkanBufferManager::DestroyFrameBufferLater(const uint32_t& unFrameIndex, VkFramebuffer& buffer)
+// {
+// 	m_vFrameBuffer[unFrameIndex].push_back(buffer);
+// }
+// 
+// void MVulkanBufferManager::DestroyImageLater(const uint32_t& unFrameIndex, VkImage& image)
+// {
+// 	m_vImage[unFrameIndex].push_back(image);
+// }
+// 
+// void MVulkanBufferManager::DestroyImageViewLater(const uint32_t& unFrameIndex, VkImageView& view)
+// {
+// 	m_vImageView[unFrameIndex].push_back(view);
+// }
+// 
+// void MVulkanBufferManager::DestroyRenderPassLater(const uint32_t& unFrameIndex, VkRenderPass& pass)
+// {
+// 	m_vRenderPass[unFrameIndex].push_back(pass);
+// }
 
 #endif

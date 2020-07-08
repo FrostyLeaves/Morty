@@ -114,8 +114,6 @@ public:
 	VkCommandPool m_VkCommandPool;
 	VkDescriptorPool m_VkDescriptorPool;
 
-	VkCommandBuffer m_VkCommandBuffer;
-
 	int m_nBufferNum;
 
 	MVulkanBufferManager m_BufferManager;

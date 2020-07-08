@@ -21,6 +21,15 @@ struct MPipelineRenderPassGroup
     std::vector<VkPipeline> vMaterialGroup;
 };
 
+struct MMaterialPipelineLayoutData
+{
+    MMaterialPipelineLayoutData();
+
+    VkPipelineLayout pipelineLayout;
+    std::vector<VkDescriptorSetLayout> vSetLayouts;
+    std::vector<VkDescriptorSet> vDescriptorSets;
+};
+
 class MMaterial;
 class MIRenderTarget;
 class MORTY_CLASS MVulkanPipelineManager
@@ -28,6 +37,8 @@ class MORTY_CLASS MVulkanPipelineManager
 public:
     MVulkanPipelineManager(MVulkanDevice* pDevice);
     virtual ~MVulkanPipelineManager();
+
+    void Release();
 
 public:
 
@@ -46,8 +57,8 @@ public:
 
 public:
 
-    VkPipelineLayout CreateMaterialPipelineLayout(MMaterial* pMaterial);
-    void DestroyPipelineLayout(VkPipelineLayout& pPepelineLayout);
+    bool CreateMaterialPipelineLayout(MMaterial* pMaterial, MMaterialPipelineLayoutData& data);
+    void DestroyMaterialPipelineLayout(MMaterialPipelineLayoutData& data);
 
 
 private:
@@ -57,7 +68,7 @@ private:
 
     std::vector<MPipelineRenderPassGroup> m_vRenderPassGroup;
 
-    std::vector<VkPipelineLayout> m_vPipelineLayouts;
+    std::vector<MMaterialPipelineLayoutData> m_vPipelineLayouts;
 
     MVulkanDevice* m_pDevice;
 };

@@ -320,7 +320,7 @@ void MForwardRenderProgram::GenerateShadowMap(MRenderInfo& info)
 			m_pShadowDepthMapRenderTarget->Render(info.pRenderer, info.m4DirLightInvProj, &info.vShadowGroup);
 
 			pShadowParam->pTexture = m_pShadowDepthMapRenderTarget->GetDepthTexture();
-			info.pRenderer->SetPixelShaderTexture(*pShadowParam);
+			info.pRenderer->SetShaderTexture(*pShadowParam);
 		}
 	}
 
@@ -520,8 +520,8 @@ void MForwardRenderProgram::DrawTransparentMesh(MRenderInfo& info)
 	params[0].pTexture = m_pTransparentFrontTexture;
 	params[1].pTexture = m_pTransparentBackTexture;
 	info.pRenderer->SetUseMaterial(pTextureMaterial);
-	info.pRenderer->SetPixelShaderTexture(params[0]);
-	info.pRenderer->SetPixelShaderTexture(params[1]);
+	info.pRenderer->SetShaderTexture(params[0]);
+	info.pRenderer->SetShaderTexture(params[1]);
 	info.pRenderer->DrawMesh(&m_TransparentDrawMesh);
 }
 

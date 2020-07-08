@@ -210,6 +210,7 @@ public:
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 #elif RENDER_GRAPHICS == MORTY_VULKAN
+	VkShaderModule m_VkShaderModule;
 	VkPipelineShaderStageCreateInfo m_VkShaderStageInfo;
 #endif
 };

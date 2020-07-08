@@ -37,6 +37,7 @@ MMaterial::~MMaterial()
 {
 	CleanTextureParams();
 	CleanShaderParams();
+
 }
 
 void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)

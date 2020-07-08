@@ -120,12 +120,6 @@ void MEngine::AddView(MIRenderView* pView)
 
 void MEngine::Release()
 {
-	if (m_pRenderer)
-	{
-		m_pRenderer->Release();
-		delete m_pRenderer;
-		m_pRenderer = nullptr;
-	}
 
 	for (auto pView : m_vView)
 	{
@@ -142,6 +136,13 @@ void MEngine::Release()
 
 
 	ReleaseDefaultResource();
+
+	if (m_pRenderer)
+	{
+		m_pRenderer->Release();
+		delete m_pRenderer;
+		m_pRenderer = nullptr;
+	}
 
 	if (m_pDevice)
 	{

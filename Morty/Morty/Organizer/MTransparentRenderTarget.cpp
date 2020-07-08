@@ -108,12 +108,12 @@ void MTransparentRenderTarget::OnRender(MIRenderer* pRenderer)
 			if (m_pFrontDepthTexture)
 			{
 				pDepthFrontParam->pTexture = m_pFrontDepthTexture;
-				pRenderer->SetPixelShaderTexture(*pDepthFrontParam);
+				pRenderer->SetShaderTexture(*pDepthFrontParam);
 			}
 			if (m_pFrontDepthTexture)
 			{
 				pDepthBackParam->pTexture = m_pBackDepthTexture;
-				pRenderer->SetPixelShaderTexture(*pDepthBackParam);
+				pRenderer->SetShaderTexture(*pDepthBackParam);
 			}
 		}
 
@@ -133,8 +133,8 @@ void MTransparentRenderTarget::OnRender(MIRenderer* pRenderer)
 
 		pDepthFrontParam->pTexture = nullptr;
 		pDepthBackParam->pTexture = nullptr;
-		pRenderer->SetPixelShaderTexture(*pDepthFrontParam);
-		pRenderer->SetPixelShaderTexture(*pDepthBackParam);
+		pRenderer->SetShaderTexture(*pDepthFrontParam);
+		pRenderer->SetShaderTexture(*pDepthBackParam);
 	}
 
   

@@ -103,8 +103,9 @@ bool MVulkanRenderer::Initialize()
 
 void MVulkanRenderer::Release()
 {
-	while (vkGetFenceStatus(m_pDevice->m_VkDevice, m_VkInFlightFences) != VK_SUCCESS);
+	m_pDevice->m_PipelineManager.Release();
 
+	while (vkGetFenceStatus(m_pDevice->m_VkDevice, m_VkInFlightFences) != VK_SUCCESS);
 
 	if (m_VkCommandBuffer != VK_NULL_HANDLE)
 	{
@@ -112,6 +113,9 @@ void MVulkanRenderer::Release()
 		m_VkCommandBuffer = VK_NULL_HANDLE;
 	}
 
+	m_pDevice->m_BufferManager.FrameFinished(0);
+
+	ReleaseSemaphores();
 
 }
 
@@ -231,26 +235,6 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 
 }
 
-void MVulkanRenderer::ClearRenderTargetView(MRenderTextureBuffer* pRenderTextureBuffer, const MColor& color)
-{
-	VkClearColorValue clearColor = { color.r, color.g, color.b, color.a };
-	VkClearValue clearValue = {};
-	clearValue.color = clearColor;
-
-	VkImageSubresourceRange imageRange = {};
-	imageRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	imageRange.levelCount = 1;
-	imageRange.layerCount = 1;
-
-	vkCmdClearColorImage(m_VkCommandBuffer, pRenderTextureBuffer->m_VkTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &imageRange);
-
-
-	// 	VkClearAttachment clearAtts[] = { {VK_IMAGE_ASPECT_COLOR_BIT, 1, {1,0,0,1}} };
-	// 	VkClearRect clearRect = { {{0,0}, {1,1}}, 0, 1 };
-	// 
-	// 	vkCmdClearAttachments(m_VkCommandBuffer, 1, clearAtts, 1, &clearRect);
-}
-
 void MVulkanRenderer::DrawMesh(MIMesh* pMesh)
 {
 	if (pMesh->GetNeedGenerate())
@@ -313,7 +297,17 @@ void MVulkanRenderer::UpdateMaterialParam()
 	{
 		SetShaderParam(param);
 	}
+}
 
+void MVulkanRenderer::UpdateMaterialResource()
+{
+	if (!m_pUsingMaterial)
+		return;
+
+	for (MShaderTextureParam& param : *m_pUsingMaterial->GetTextureParams())
+	{
+		SetShaderTexture(param);
+	}
 }
 
 void MVulkanRenderer::UpdateShaderParam(MShaderParam& param)
@@ -363,13 +357,15 @@ void MVulkanRenderer::SetShaderParam(MShaderParam& param)
 	if (param.bDirty)
 		UpdateShaderParam(param);
 
-
-
 	if (m_VkUsingPipelineLayout != VK_NULL_HANDLE)
 	{
 		//Set Use Uniform
 		vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkUsingPipelineLayout, 0, 1, &param.m_VkDescriptorSet, 0, nullptr);
 	}
+}
+
+void MVulkanRenderer::SetShaderTexture(MShaderTextureParam& param)
+{
 }
 
 VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass)
@@ -478,5 +474,13 @@ bool MVulkanRenderer::InitSemaphores()
 	return true;
 }
 
+
+void MVulkanRenderer::ReleaseSemaphores()
+{
+	vkDestroySemaphore(m_pDevice->m_VkDevice, m_VkImageAvailableSemaphore, nullptr);
+	vkDestroySemaphore(m_pDevice->m_VkDevice, m_VkRenderFinishedSemaphore, nullptr);
+
+	vkDestroyFence(m_pDevice->m_VkDevice, m_VkInFlightFences, nullptr);
+}
 
 #endif

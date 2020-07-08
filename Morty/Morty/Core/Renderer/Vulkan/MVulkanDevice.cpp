@@ -99,6 +99,12 @@ bool MVulkanDevice::Initialize()
 
 void MVulkanDevice::Release()
 {
+	vkDestroyCommandPool(m_VkDevice, m_VkCommandPool, nullptr);
+
+	vkDestroyDescriptorPool(m_VkDevice, m_VkDescriptorPool, nullptr);
+
+	vkDestroyDevice(m_VkDevice, nullptr);
+
 	vkDestroyInstance(m_VkInstance, NULL);
 }
 
@@ -606,13 +612,6 @@ bool MVulkanDevice::InitCommandPool()
 	if (vkCreateCommandPool(m_VkDevice, &poolInfo, nullptr, &m_VkCommandPool) != VK_SUCCESS)
 		return false;
 
-	VkCommandBufferAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandPool = m_VkCommandPool;
-	allocInfo.commandBufferCount = 1;
-
-	vkAllocateCommandBuffers(m_VkDevice, &allocInfo, &m_VkCommandBuffer);
 
 	return true;
 }
@@ -627,6 +626,7 @@ bool MVulkanDevice::InitDescriptorPool()
 
 	VkDescriptorPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 	poolInfo.poolSizeCount = 1;
 	poolInfo.pPoolSizes = &poolSize;
 
@@ -761,6 +761,7 @@ bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString&
 		pBuffer = pPixelBuffer;
 	}
 
+	pBuffer->m_VkShaderModule = shaderModule;
 	pBuffer->m_VkShaderStageInfo = shaderStageInfo;
 	m_ShaderCompiler.GetShaderParam(compiler, pBuffer);
 
@@ -775,14 +776,16 @@ void MVulkanDevice::CleanShader(MShaderBuffer** ppShaderBuffer)
 	if (nullptr == *ppShaderBuffer)
 		return;
 
-	if (MVertexShaderBuffer* pBuffer = dynamic_cast<MVertexShaderBuffer*>(*ppShaderBuffer))
+	MShaderBuffer* pBuffer = (*ppShaderBuffer);
+
+	for (MShaderParam* param : pBuffer->m_vShaderParamsTemplate)
 	{
+		m_BufferManager.DestroyBufferLater(0, param->m_VkBuffer);
+		m_BufferManager.DestroyDeviceMemoryLater(0, param->m_VkBufferMemory);
 
 	}
-	else if (MPixelShaderBuffer* pBuffer = dynamic_cast<MPixelShaderBuffer*>(*ppShaderBuffer))
-	{
 
-	}
+	m_BufferManager.DestroyShaderModuleLater(0, pBuffer->m_VkShaderModule);
 
 	delete* ppShaderBuffer;
 	*ppShaderBuffer = nullptr;
@@ -862,7 +865,7 @@ void MVulkanDevice::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
 
 		if (pBuffer->m_VkFrameBuffer)
 		{
-			m_BufferManager.DestroyFrameBufferLater(0, pBuffer->m_VkFrameBuffer);
+			m_BufferManager.DestroyFramebufferLater(0, pBuffer->m_VkFrameBuffer);
 			pBuffer->m_VkFrameBuffer = VK_NULL_HANDLE;
 		}
 

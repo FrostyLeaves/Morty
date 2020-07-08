@@ -41,23 +41,18 @@ public:
 
 	virtual bool SetUseMaterial(MMaterial* pMaterial, const bool& bUpdateResources = false) override;
 	virtual void UpdateMaterialParam() override;
-	virtual void UpdateMaterialResource() override {}
+	virtual void UpdateMaterialResource() override;
 
 public:
 	void UpdateShaderParam(MShaderParam& param);
 
 	virtual void SetShaderParam(MShaderParam& param) override;
-
-	virtual void SetVertexShaderTexture(MShaderTextureParam& param) override {}
-	virtual void SetPixelShaderTexture(MShaderTextureParam& param) override {}
-
-protected:
-	virtual void ClearRenderTargetView(MRenderTextureBuffer* pRenderTextureBuffer, const MColor& color) override;
-	virtual void ClearDepthTexture(MRenderDepthTexture* pDepthTexture) override {};
+	virtual void SetShaderTexture(MShaderTextureParam& param) override;
 
 	VkPipeline CreateGraphicsPipeline(MMaterial* pMaaterial, MRenderPass* pRenderPass);
 	
 	bool InitSemaphores();
+	void ReleaseSemaphores();
 
 
 public:

@@ -73,6 +73,7 @@ void MBasicRenderProgram::OnCreated()
 
 
 	m_pMaterial = GetEngine()->GetResourceManager()->CreateResource<MMaterial>();
+	m_pMaterial->AddRef();
 
 	m_pMaterial->LoadVertexShader(pVertixShader);
 	m_pMaterial->LoadPixelShader(pPixelShader);
@@ -81,6 +82,8 @@ void MBasicRenderProgram::OnCreated()
 void MBasicRenderProgram::OnDelete()
 {
 	m_TransparentDrawMesh.DestroyBuffer(m_pEngine->GetDevice());
+	m_pMaterial->SubRef();
+	m_pMaterial = nullptr;
 
 	Super::OnDelete();
 }

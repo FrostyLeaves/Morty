@@ -34,29 +34,28 @@ public:
 
 	void DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 
-    void DestroyBufferLater(const uint32_t& unFrameIndex, VkBuffer& buffer);
+public:
 
-    void DestroyDeviceMemoryLater(const uint32_t& unFrameIndex, VkDeviceMemory& memory);
+#define M_VULKAN_DESTROY_LATER_FUNC(VK_TYPE) \
+std::vector<Vk##VK_TYPE> m_v##VK_TYPE[M_BUFFER_NUM];\
+void Destroy##VK_TYPE##Later(const uint32_t& unFrameIndex, Vk##VK_TYPE& buffer){m_v##VK_TYPE[unFrameIndex].push_back(buffer);}\
 
-    void DestroyFrameBufferLater(const uint32_t& unFrameIndex, VkFramebuffer& buffer);
 
-    void DestroyImageLater(const uint32_t& unFrameIndex, VkImage& image);
+	M_VULKAN_DESTROY_LATER_FUNC(Buffer);
+	M_VULKAN_DESTROY_LATER_FUNC(Framebuffer);
+	M_VULKAN_DESTROY_LATER_FUNC(DeviceMemory);
+	M_VULKAN_DESTROY_LATER_FUNC(ImageView);
+	M_VULKAN_DESTROY_LATER_FUNC(Image);
+	M_VULKAN_DESTROY_LATER_FUNC(RenderPass);
+    M_VULKAN_DESTROY_LATER_FUNC(PipelineLayout);
+	M_VULKAN_DESTROY_LATER_FUNC(DescriptorSetLayout);
+	M_VULKAN_DESTROY_LATER_FUNC(ShaderModule);
+	M_VULKAN_DESTROY_LATER_FUNC(Pipeline);
 
-    void DestroyImageViewLater(const uint32_t& unFrameIndex, VkImageView& view);
-
-    void DestroyRenderPassLater(const uint32_t& unFrameIndex, VkRenderPass& pass);
-
-private:
+    std::vector<std::vector<VkDescriptorSet>> m_vDescriptorSets[M_BUFFER_NUM];
+    void DestroyDescriptorSets(const uint32_t& unFrameIndex, std::vector<VkDescriptorSet>& vDescriptorSets);
 
     MVulkanDevice* m_pDevice;
-
-
-    std::vector<VkBuffer> m_vBuffer[M_BUFFER_NUM];
-    std::vector< VkFramebuffer> m_vFrameBuffer[M_BUFFER_NUM];
-    std::vector<VkDeviceMemory> m_vDeviceMemory[M_BUFFER_NUM];
-	std::vector< VkImageView> m_vImageView[M_BUFFER_NUM];
-	std::vector< VkImage> m_vImage[M_BUFFER_NUM];
-    std::vector<VkRenderPass> m_vRenderPass[M_BUFFER_NUM];
 };
 
 

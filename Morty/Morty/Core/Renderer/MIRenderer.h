@@ -117,14 +117,7 @@ public:
 
 public:
 	virtual void SetShaderParam(MShaderParam& param) = 0;
-
-	virtual void SetVertexShaderTexture(MShaderTextureParam& param) = 0;
-	virtual void SetPixelShaderTexture(MShaderTextureParam& param) = 0;
-
-protected:
-
-	virtual void ClearRenderTargetView(MRenderTextureBuffer* pRenderTextureBuffer, const MColor& color) = 0;
-	virtual void ClearDepthTexture(MRenderDepthTexture* pDepthTexture) = 0;
+	virtual void SetShaderTexture(MShaderTextureParam& param) = 0;
 
 protected:
 	MERasterizerType m_eRasterizerType;
