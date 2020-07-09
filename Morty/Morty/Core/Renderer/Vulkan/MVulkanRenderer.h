@@ -75,7 +75,7 @@ private:
 
 	VkCommandBuffer m_VkCommandBuffer;
 	VkPipeline m_VkUsingPipeline;
-	VkPipelineLayout m_VkUsingPipelineLayout;
+	struct MMaterialPipelineLayoutData* m_pUsingPipelineLayout;
 
 	MMaterial* m_pUsingMaterial;
 

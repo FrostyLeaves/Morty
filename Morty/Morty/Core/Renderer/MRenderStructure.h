@@ -131,7 +131,7 @@ struct MORTY_CLASS MShaderParam
 
 	MString strName;
 	uint32_t unCode;
-	uint32_t  eType;
+	uint32_t  eShaderType;
 
 	MVariant var;
 	bool bDirty;
@@ -172,7 +172,9 @@ struct MShaderTextureParam
 	uint32_t unBindPoint;
 	uint32_t unBindCount;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-
+	VkDescriptorSet m_VkDescriptorSet;
+	uint32_t unSet;
+	uint32_t unBinding;
 #endif
 };
 
@@ -181,12 +183,13 @@ struct MShaderSampleParam
 	MShaderSampleParam();
 	MString strName;
 	uint32_t unCode;
-	uint32_t  eType;
+	uint32_t  eShaderType;
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	uint32_t unBindPoint;
 	uint32_t unBindCount;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-
+	uint32_t unSet;
+	uint32_t unBinding;
 #endif
 };
 

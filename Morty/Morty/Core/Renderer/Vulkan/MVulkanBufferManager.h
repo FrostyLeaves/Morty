@@ -28,11 +28,17 @@ public:
 
     void FrameFinished(const uint32_t& unFrameIndex);
     
+    bool Initialize();
+
+    void Release();
+
 public:
 
 	bool GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 
 	void DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+
+	bool InitDescriptorPool();
 
 public:
 
@@ -56,6 +62,9 @@ void Destroy##VK_TYPE##Later(const uint32_t& unFrameIndex, Vk##VK_TYPE& buffer){
     void DestroyDescriptorSets(const uint32_t& unFrameIndex, std::vector<VkDescriptorSet>& vDescriptorSets);
 
     MVulkanDevice* m_pDevice;
+
+
+	VkDescriptorPool m_VkDescriptorPool;
 };
 
 

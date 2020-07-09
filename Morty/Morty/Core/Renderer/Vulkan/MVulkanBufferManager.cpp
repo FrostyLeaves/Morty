@@ -11,6 +11,7 @@
 
 MVulkanBufferManager::MVulkanBufferManager(MVulkanDevice* pDevice)
 	: m_pDevice(pDevice)
+	, m_VkDescriptorPool(VK_NULL_HANDLE)
 {
 
 }
@@ -31,8 +32,21 @@ void MVulkanBufferManager::FrameFinished(const uint32_t& unFrameIndex)
 	M_VULKAN_DESTROY_CLEAR(Pipeline, vkDestroyPipeline);
 
 	for (auto& set : m_vDescriptorSets[unFrameIndex])
-		vkFreeDescriptorSets(device, m_pDevice->m_VkDescriptorPool, set.size(), set.data());
+		vkFreeDescriptorSets(device, m_VkDescriptorPool, set.size(), set.data());
 	m_vDescriptorSets[unFrameIndex].clear();
+}
+
+bool MVulkanBufferManager::Initialize()
+{
+	if (!InitDescriptorPool())
+		return false;
+
+	return true;
+}
+
+void MVulkanBufferManager::Release()
+{
+	vkDestroyDescriptorPool(m_pDevice->m_VkDevice, m_VkDescriptorPool, nullptr);
 }
 
 bool MVulkanBufferManager::GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
@@ -77,6 +91,33 @@ void MVulkanBufferManager::DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& buffe
 {
 	vkDestroyBuffer(m_pDevice->m_VkDevice, buffer, nullptr);
 	vkFreeMemory(m_pDevice->m_VkDevice, bufferMemory, nullptr);
+}
+
+bool MVulkanBufferManager::InitDescriptorPool()
+{
+	uint32_t unSwapChainNum = 100;
+
+	std::vector<VkDescriptorPoolSize> vPoolSize(2);
+	vPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	vPoolSize[0].descriptorCount = unSwapChainNum;
+
+	vPoolSize[1].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+	vPoolSize[1].descriptorCount = unSwapChainNum;
+
+	VkDescriptorPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+	poolInfo.poolSizeCount = vPoolSize.size();
+	poolInfo.pPoolSizes = vPoolSize.data();
+
+	poolInfo.maxSets = unSwapChainNum;
+
+	if (vkCreateDescriptorPool(m_pDevice->m_VkDevice, &poolInfo, nullptr, &m_VkDescriptorPool) != VK_SUCCESS)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void MVulkanBufferManager::DestroyDescriptorSets(const uint32_t& unFrameIndex, std::vector<VkDescriptorSet>& vDescriptorSets)

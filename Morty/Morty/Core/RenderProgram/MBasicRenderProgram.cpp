@@ -46,11 +46,16 @@ void MBasicRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport, MS
 	std::vector<MShaderParam>& params = *m_pMaterial->GetShaderParams();
 	if (!params.empty())
 	{
+		MShaderParam& p1 = params[1];
+		MStruct& srt1 = *p1.var.GetStruct();
+
+		if (float* pTime = srt1.FindMember<float>("time"))
+			*pTime += 0.02f;
+
+		p1.SetDirty();
+
 		MShaderParam& param = params[0];
 		MStruct& srt = *param.var.GetStruct();
-
-		if (float* pTime = srt.FindMember<float>("time"))
-			*pTime += 0.02f;
 
 		if (Vector2* pSize = srt.FindMember<Vector2>("screenSize"))
 			*pSize = pViewport->GetSize();

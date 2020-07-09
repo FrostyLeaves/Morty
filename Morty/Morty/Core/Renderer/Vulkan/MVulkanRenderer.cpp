@@ -262,7 +262,7 @@ void MVulkanRenderer::DrawMesh(MIMesh* pMesh)
 bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial, const bool& bUpdateResources /*= false*/)
 {
 	MRenderPass* pRenderPass = &(m_vRenderTargets.top()->m_RenderPass);
-	m_VkUsingPipelineLayout = m_pDevice->m_PipelineManager.FindPipelineLayout(pMaterial);
+	m_pUsingPipelineLayout = m_pDevice->m_PipelineManager.FindPipelineLayout(pMaterial);
 
 	m_VkUsingPipeline = m_pDevice->m_PipelineManager.FindPipeline(pMaterial, pRenderPass);
 	if (!m_VkUsingPipeline)
@@ -323,30 +323,29 @@ void MVulkanRenderer::UpdateShaderParam(MShaderParam& param)
 	memcpy(data, param.var.GetData(), unSize);
 	vkUnmapMemory(m_pDevice->m_VkDevice, param.m_VkBufferMemory);
 
-
-	// Update Uniform
-	//MShaderParam param;
-	VkDescriptorBufferInfo bufferInfo{};
-	bufferInfo.buffer = param.m_VkBuffer;
-	bufferInfo.offset = 0;
-	bufferInfo.range = param.var.GetSize();
-
-	VkWriteDescriptorSet descriptorWrite{};
-	descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorWrite.dstSet = param.m_VkDescriptorSet;
-	descriptorWrite.dstBinding = param.unBinding;
-	descriptorWrite.dstArrayElement = 0;
-
-	descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	descriptorWrite.descriptorCount = 1;
-
-	descriptorWrite.pBufferInfo = &bufferInfo;
-	descriptorWrite.pImageInfo = nullptr; // Optional
-	descriptorWrite.pTexelBufferView = nullptr; // Optional
-
-	vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
-
-
+// 
+// 	// Update Uniform
+// 	//MShaderParam param;
+// 	VkDescriptorBufferInfo bufferInfo{};
+// 	bufferInfo.buffer = param.m_VkBuffer;
+// 	bufferInfo.offset = 0;
+// 	bufferInfo.range = param.var.GetSize();
+// 
+// 	VkWriteDescriptorSet descriptorWrite{};
+// 	descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+// 	descriptorWrite.dstSet = param.m_VkDescriptorSet;
+// 	descriptorWrite.dstBinding = param.unBinding;
+// 	descriptorWrite.dstArrayElement = 0;
+// 
+// 	descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+// 	descriptorWrite.descriptorCount = 1;
+// 
+// 	descriptorWrite.pBufferInfo = &bufferInfo;
+// 	descriptorWrite.pImageInfo = nullptr; // Optional
+// 	descriptorWrite.pTexelBufferView = nullptr; // Optional
+// 
+// 	vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
+// 
 
 
 	param.bDirty = false;
@@ -357,10 +356,11 @@ void MVulkanRenderer::SetShaderParam(MShaderParam& param)
 	if (param.bDirty)
 		UpdateShaderParam(param);
 
-	if (m_VkUsingPipelineLayout != VK_NULL_HANDLE)
+
+	if (m_pUsingPipelineLayout)
 	{
 		//Set Use Uniform
-		vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkUsingPipelineLayout, 0, 1, &param.m_VkDescriptorSet, 0, nullptr);
+		vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pUsingPipelineLayout->pipelineLayout, param.unSet, 1, &param.m_VkDescriptorSet, 0, nullptr);
 	}
 }
 
@@ -427,7 +427,7 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 	inputStateInfo.vertexAttributeDescriptionCount = pVertexShaderBuffer->m_vAttributeDescs.size();
 	inputStateInfo.pVertexAttributeDescriptions = pVertexShaderBuffer->m_vAttributeDescs.data();
 	
-	VkPipelineLayout pipelineLayout = m_pDevice->m_PipelineManager.FindPipelineLayout(pMaterial);
+	VkPipelineLayout pipelineLayout = m_pDevice->m_PipelineManager.FindPipelineLayout(pMaterial)->pipelineLayout;
 
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;

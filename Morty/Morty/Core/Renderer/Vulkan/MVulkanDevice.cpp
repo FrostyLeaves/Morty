@@ -76,7 +76,7 @@ bool MVulkanDevice::Initialize()
 	if (!InitCommandPool())
 		return false;
 	
-	if (!InitDescriptorPool())
+	if (!m_BufferManager.Initialize())
 		return false;
 
 
@@ -100,8 +100,6 @@ bool MVulkanDevice::Initialize()
 void MVulkanDevice::Release()
 {
 	vkDestroyCommandPool(m_VkDevice, m_VkCommandPool, nullptr);
-
-	vkDestroyDescriptorPool(m_VkDevice, m_VkDescriptorPool, nullptr);
 
 	vkDestroyDevice(m_VkDevice, nullptr);
 
@@ -612,30 +610,6 @@ bool MVulkanDevice::InitCommandPool()
 	if (vkCreateCommandPool(m_VkDevice, &poolInfo, nullptr, &m_VkCommandPool) != VK_SUCCESS)
 		return false;
 
-
-	return true;
-}
-
-bool MVulkanDevice::InitDescriptorPool()
-{
-	uint32_t unSwapChainNum = 1;
-
-	VkDescriptorPoolSize poolSize{};
-	poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSize.descriptorCount = unSwapChainNum;
-
-	VkDescriptorPoolCreateInfo poolInfo{};
-	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-	poolInfo.poolSizeCount = 1;
-	poolInfo.pPoolSizes = &poolSize;
-
-	poolInfo.maxSets = unSwapChainNum;
-
-	if (vkCreateDescriptorPool(m_VkDevice, &poolInfo, nullptr, &m_VkDescriptorPool) != VK_SUCCESS)
-	{
-		return false;
-	}
 
 	return true;
 }

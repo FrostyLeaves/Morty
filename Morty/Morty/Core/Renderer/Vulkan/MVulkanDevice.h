@@ -90,7 +90,6 @@ protected:
 	bool InitPhysicalDevice();
 	bool InitLogicalDevice();
 	bool InitCommandPool();
-	bool InitDescriptorPool();
 
 	bool IsDeviceSuitable(VkPhysicalDevice device);
 	bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
@@ -112,7 +111,6 @@ public:
 	VkQueue m_VkGraphicsQueue;
 
 	VkCommandPool m_VkCommandPool;
-	VkDescriptorPool m_VkDescriptorPool;
 
 	int m_nBufferNum;
 

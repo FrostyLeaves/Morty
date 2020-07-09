@@ -46,7 +46,7 @@ public:
 
     void SetPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, VkPipeline pipeline);
 
-    VkPipelineLayout FindPipelineLayout(MMaterial* pMaterial);
+    MMaterialPipelineLayoutData* FindPipelineLayout(MMaterial* pMaterial);
 
 public:
 	void RegisterMaterial(MMaterial* pMaterial);
@@ -71,6 +71,9 @@ private:
     std::vector<MMaterialPipelineLayoutData> m_vPipelineLayouts;
 
     MVulkanDevice* m_pDevice;
+
+
+
 };
 
 

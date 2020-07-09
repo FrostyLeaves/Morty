@@ -419,10 +419,10 @@ void MMaterial::RecompileShaderParams(std::vector<MShaderParam>& vParams, std::v
 	for (std::vector<MShaderParam>::iterator iter = vParams.begin(); iter != vParams.end();)
 	{
 		MShaderParam& param = *iter;
-		if (param.eType & eType)
-			param.eType = param.eType ^ eType;
+		if (param.eShaderType & eType)
+			param.eShaderType = param.eShaderType ^ eType;
 		
-		if (0 == param.eType)
+		if (0 == param.eShaderType)
 		{
 			m_pEngine->GetDevice()->DestroyShaderParamBuffer(&param);
 			iter = vParams.erase(iter);
@@ -439,7 +439,7 @@ void MMaterial::RecompileShaderParams(std::vector<MShaderParam>& vParams, std::v
 		{
 			if (vParams[i].strName == vNewParams[j]->strName)
 			{
-				vParams[i].eType |= eType;
+				vParams[i].eShaderType |= eType;
 				MVariant var = vParams[i].var;
 				vParams[i].var = vNewParams[j]->var;
 				vParams[i].var.MergeFrom(var);
@@ -453,7 +453,7 @@ void MMaterial::RecompileShaderParams(std::vector<MShaderParam>& vParams, std::v
 		if (!bFinded)
 		{
 			MShaderParam param(*vNewParams[j], 0);
-			param.eType = eType;
+			param.eShaderType = eType;
 			m_pEngine->GetDevice()->GenerateShaderParamBuffer(&param);
 			vParams.push_back(param);
 		}

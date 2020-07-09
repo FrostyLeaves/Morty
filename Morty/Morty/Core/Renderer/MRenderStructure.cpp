@@ -124,7 +124,7 @@ MShaderParam::MShaderParam()
 	, unCode(SHADER_PARAM_CODE_DEFAULT)
 	, var()
 	, bDirty(true)
-	, eType(0)
+	, eShaderType(0)
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	, pBuffer(nullptr)
 	, unBindPoint(0)
@@ -145,7 +145,7 @@ MShaderParam::MShaderParam(const MShaderParam& param, const int& unNone)
 	, unCode(param.unCode)
 	, var(param.var)
 	, bDirty(true)
-	, eType(param.eType)
+	, eShaderType(param.eShaderType)
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	, pBuffer(nullptr)
 	, unBindPoint(param.unBindPoint)
@@ -153,9 +153,9 @@ MShaderParam::MShaderParam(const MShaderParam& param, const int& unNone)
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 	, m_VkBuffer(VK_NULL_HANDLE)
 	, m_VkBufferMemory(VK_NULL_HANDLE)
+	, m_VkDescriptorSet(param.m_VkDescriptorSet)
 	, unSet(param.unSet)
 	, unBinding(param.unBinding)
-	, m_VkDescriptorSet(param.m_VkDescriptorSet)
 #endif
 {
 
@@ -166,12 +166,15 @@ MShaderTextureParam::MShaderTextureParam()
 	, unCode(SHADER_PARAM_CODE_DEFAULT)
 	, pTexture(nullptr)
 	, eType(METextureType::ETexture2D)
+	, eShaderType(0)
 
 	#if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	, unBindPoint(0)
 	, unBindCount(0)
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-
+	, m_VkDescriptorSet(VK_NULL_HANDLE)
+	, unSet(0)
+	, unBinding(0)
 #endif
 {
 
@@ -180,11 +183,13 @@ MShaderTextureParam::MShaderTextureParam()
 MShaderSampleParam::MShaderSampleParam()
 	: strName()
 	, unCode(SHADER_PARAM_CODE_DEFAULT)
+	, eShaderType(0)
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	, unBindPoint(0)
 	, unBindCount(0)
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-
+	, unSet(0)
+	, unBinding(0)
 #endif
 {
 

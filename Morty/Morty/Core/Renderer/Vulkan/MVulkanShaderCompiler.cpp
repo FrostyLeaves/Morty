@@ -207,10 +207,36 @@ void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler
 		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
 		pParam->strName = res.name;
 
+		
+
 		ConvertVariant(compiler, type, pParam->var);
 
 		pShaderBuffer->m_vShaderParamsTemplate.push_back(pParam);
-	}	
+	}
+
+	for (const spirv_cross::Resource& res : shaderResources.separate_images)
+	{
+		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
+
+		MShaderTextureParam* pParam = new MShaderTextureParam();
+		pParam->unSet = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
+		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
+		pParam->strName = res.name;
+
+		pShaderBuffer->m_vTextureParamsTemplate.push_back(pParam);
+	}
+
+	for (const spirv_cross::Resource& res : shaderResources.separate_samplers)
+	{
+		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
+
+		MShaderSampleParam* pParam = new MShaderSampleParam();
+		pParam->unSet = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
+		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
+		pParam->strName = res.name;
+
+		pShaderBuffer->m_vSampleParamsTemplate.push_back(pParam);
+	}
 }
 
 void MVulkanShaderCompiler::ConvertVariant(const spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, MVariant& variant)
