@@ -39,6 +39,7 @@ public:
 	void DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 
 	bool InitDescriptorPool();
+	bool InitSampler();
 
 public:
 
@@ -65,6 +66,8 @@ void Destroy##VK_TYPE##Later(const uint32_t& unFrameIndex, Vk##VK_TYPE& buffer){
 
 
 	VkDescriptorPool m_VkDescriptorPool;
+
+	VkSampler m_VkDefaultSampler;
 };
 
 

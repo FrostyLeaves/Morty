@@ -106,12 +106,14 @@ void MMaterial::CompileShaderParams(const MEShaderParamType& eType)
 		{
 			RecompileShaderParams(m_vShaderParams, m_pVertexShader->GetBuffer()->m_vShaderParamsTemplate, MEShaderParamType::EVertex);
 			RecompileShaderTextureParam(m_vTextureParams, m_vTextureResKeeper, m_pVertexShader->GetBuffer()->m_vTextureParamsTemplate, MEShaderParamType::EVertex);
+			RecompileSampleParams(m_vSampleParams, m_pVertexShader->GetBuffer()->m_vSampleParamsTemplate, MEShaderParamType::EVertex);
 		}
 
 		if (MEShaderParamType::EVertex != eType)
 		{
 			RecompileShaderParams(m_vShaderParams, m_pPixelShader->GetBuffer()->m_vShaderParamsTemplate, MEShaderParamType::EPixel);
 			RecompileShaderTextureParam(m_vTextureParams, m_vTextureResKeeper, m_pPixelShader->GetBuffer()->m_vTextureParamsTemplate, MEShaderParamType::EPixel);
+			RecompileSampleParams(m_vSampleParams, m_pPixelShader->GetBuffer()->m_vSampleParamsTemplate, MEShaderParamType::EPixel);
 		}
 	}
 }
@@ -416,6 +418,7 @@ void MMaterial::Unload()
 
 void MMaterial::RecompileShaderParams(std::vector<MShaderParam>& vParams, std::vector<MShaderParam*>& vNewParams, const MEShaderParamType& eType)
 {
+	//删除旧的材质参数
 	for (std::vector<MShaderParam>::iterator iter = vParams.begin(); iter != vParams.end();)
 	{
 		MShaderParam& param = *iter;
@@ -431,25 +434,31 @@ void MMaterial::RecompileShaderParams(std::vector<MShaderParam>& vParams, std::v
 			++iter;
 	}
 
+	//添加新的材质参数
 	uint32_t vParamsSize = vParams.size();
 	for (uint32_t j = 0; j < vNewParams.size(); ++j)
 	{
+
+		//如果该材质参数已经添加过了，那么Merge一下
 		bool bFinded = false;
 		for (uint32_t i = 0; i < vParamsSize; ++i)
 		{
 			if (vParams[i].strName == vNewParams[j]->strName)
 			{
 				vParams[i].eShaderType |= eType;
-				MVariant var = vParams[i].var;
-				vParams[i].var = vNewParams[j]->var;
-				vParams[i].var.MergeFrom(var);
-				vParams[i].SetDirty();
 
+				MVariant temp;
+				temp.Move(vParams[i].var);
+				vParams[i].var = vNewParams[j]->var;
+				vParams[i].var.MergeFrom(temp);
+				vParams[i].SetDirty();
+				
 				bFinded = true;
 				break;
 			}
 		}
 
+		//如果材质参数没添加过，那么添加一下
 		if (!bFinded)
 		{
 			MShaderParam param(*vNewParams[j], 0);
@@ -469,7 +478,7 @@ void MMaterial::RecompileShaderTextureParam(std::vector<MShaderTextureParam>& vP
 		if (param.eShaderType & eType)
 			param.eShaderType = param.eShaderType ^ eType;
 
-		if (0 == param.eType)
+		if (0 == param.eShaderType)
 		{
 			vResHolders[i].SetResource(nullptr);
 		
@@ -502,6 +511,44 @@ void MMaterial::RecompileShaderTextureParam(std::vector<MShaderTextureParam>& vP
 		}
 	}
 
+}
+
+void MMaterial::RecompileSampleParams(std::vector<MShaderSampleParam>& vParams, std::vector<MShaderSampleParam*>& vNewParams, const MEShaderParamType& eType)
+{
+	for (uint32_t i = 0; i < vParams.size();)
+	{
+		MShaderSampleParam& param = vParams[i];
+		if (param.eShaderType & eType)
+			param.eShaderType = param.eShaderType ^ eType;
+
+		if (0 == param.eShaderType)
+		{
+			vParams.erase(vParams.begin() + i);
+		}
+		else ++i;
+	}
+
+	for (uint32_t j = 0; j < vNewParams.size(); ++j)
+	{
+		bool bFinded = false;
+		for (uint32_t i = 0; i < vParams.size(); ++i)
+		{
+			if (vParams[i].strName == vNewParams[j]->strName)
+			{
+				vParams[i].eShaderType |= eType;
+				bFinded = true;
+				break;
+			}
+		}
+
+		if (!bFinded)
+		{
+			MShaderSampleParam param;
+			param = *vNewParams[j];
+			param.eShaderType = eType;
+			vParams.push_back(param);
+		}
+	}
 }
 
 void MMaterial::CleanTextureParams()

@@ -57,6 +57,8 @@ public:
 
 public:
 
+	void BindDescriptor(MShaderParam& param);
+
     bool CreateMaterialPipelineLayout(MMaterial* pMaterial, MMaterialPipelineLayoutData& data);
     void DestroyMaterialPipelineLayout(MMaterialPipelineLayoutData& data);
 

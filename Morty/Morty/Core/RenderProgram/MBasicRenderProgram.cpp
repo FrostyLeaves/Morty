@@ -5,6 +5,7 @@
 #include "MViewport.h"
 #include "MIRenderer.h"
 #include "MResourceManager.h"
+#include "Texture/MTextureResource.h"
 #include "Model/MIMeshInstance.h"
 
 M_OBJECT_IMPLEMENT(MBasicRenderProgram, MIRenderProgram)
@@ -76,12 +77,25 @@ void MBasicRenderProgram::OnCreated()
 	MResource* pVertixShader = GetEngine()->GetResourceManager()->LoadResource("./Shader/basic_test.mvs");
 	MResource* pPixelShader = GetEngine()->GetResourceManager()->LoadResource("./Shader/basic_test.mps");
 
+	MResource* pTextureRes = GetEngine()->GetResourceManager()->LoadResource("./Texture/test.png");
 
 	m_pMaterial = GetEngine()->GetResourceManager()->CreateResource<MMaterial>();
 	m_pMaterial->AddRef();
 
 	m_pMaterial->LoadVertexShader(pVertixShader);
 	m_pMaterial->LoadPixelShader(pPixelShader);
+
+	std::vector<MShaderTextureParam>& params = *m_pMaterial->GetTextureParams();
+	if (!params.empty())
+	{
+		if (MTextureResource* pTextureResource = pTextureRes->DynamicCast<MTextureResource>())
+		{
+			MShaderTextureParam& p1 = params[0];
+			p1.pTexture = pTextureResource->GetTextureTemplate();
+			p1.SetDirty();
+		}
+	}
+
 }
 
 void MBasicRenderProgram::OnDelete()

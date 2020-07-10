@@ -52,12 +52,6 @@ void MVulkanRenderTarget::Render(MIRenderer* pRenderer)
 void MVulkanRenderTarget::OnRender(MIRenderer* pRenderer)
 {
 
-//	pRenderer->ClearDepthTexture(GetDepthTexture());
-//	pRenderer->ClearRenderTargetView(this->m_vBackBuffers[imageIndex], m_pView->GetBackColor());
-
-
-
-
 	m_pView->OnRenderBegin();
 	for (MViewport* pViewport : m_pView->GetViewports())
 	{
@@ -65,9 +59,6 @@ void MVulkanRenderTarget::OnRender(MIRenderer* pRenderer)
 	}
 	m_pView->OnRenderEnd();
 
-
-
-	
 }
 
 void MVulkanRenderTarget::OnRenderAfter(MIRenderer* pRenderer)

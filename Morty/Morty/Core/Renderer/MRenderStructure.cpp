@@ -167,6 +167,7 @@ MShaderTextureParam::MShaderTextureParam()
 	, pTexture(nullptr)
 	, eType(METextureType::ETexture2D)
 	, eShaderType(0)
+	, bDirty(true)
 
 	#if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	, unBindPoint(0)
@@ -188,6 +189,7 @@ MShaderSampleParam::MShaderSampleParam()
 	, unBindPoint(0)
 	, unBindCount(0)
 #elif RENDER_GRAPHICS == MORTY_VULKAN
+	, m_VkDescriptorSet(VK_NULL_HANDLE)
 	, unSet(0)
 	, unBinding(0)
 #endif

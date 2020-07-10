@@ -253,7 +253,7 @@ int main(int argc, char* argv[])
 	//pViewport->RegisterRenderProgram<MForwardRenderProgram>();
 	pViewport->RegisterRenderProgram<MBasicRenderProgram>();
 	pView->AppendViewport(pViewport);
-	pViewport->SetSize(Vector2(pView->GetViewWidth(), pView->GetViewWidth()));
+	pViewport->SetSize(Vector2(pView->GetViewWidth(), pView->GetViewHeight()));
 	pViewport->SetScene(pScene);
 	engine.AddView(pView);
 	engine.SetScene(pScene);

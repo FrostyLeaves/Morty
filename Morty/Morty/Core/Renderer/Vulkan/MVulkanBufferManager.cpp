@@ -12,6 +12,7 @@
 MVulkanBufferManager::MVulkanBufferManager(MVulkanDevice* pDevice)
 	: m_pDevice(pDevice)
 	, m_VkDescriptorPool(VK_NULL_HANDLE)
+	, m_VkDefaultSampler(VK_NULL_HANDLE)
 {
 
 }
@@ -41,12 +42,17 @@ bool MVulkanBufferManager::Initialize()
 	if (!InitDescriptorPool())
 		return false;
 
+	if (!InitSampler())
+		return false;
+
 	return true;
 }
 
 void MVulkanBufferManager::Release()
 {
 	vkDestroyDescriptorPool(m_pDevice->m_VkDevice, m_VkDescriptorPool, nullptr);
+
+	vkDestroySampler(m_pDevice->m_VkDevice, m_VkDefaultSampler, nullptr);
 }
 
 bool MVulkanBufferManager::GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
@@ -97,12 +103,18 @@ bool MVulkanBufferManager::InitDescriptorPool()
 {
 	uint32_t unSwapChainNum = 100;
 
-	std::vector<VkDescriptorPoolSize> vPoolSize(2);
+	std::vector<VkDescriptorPoolSize> vPoolSize(4);
 	vPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	vPoolSize[0].descriptorCount = unSwapChainNum;
 
 	vPoolSize[1].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 	vPoolSize[1].descriptorCount = unSwapChainNum;
+
+	vPoolSize[2].type = VK_DESCRIPTOR_TYPE_SAMPLER;
+	vPoolSize[2].descriptorCount = unSwapChainNum;
+
+	vPoolSize[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	vPoolSize[3].descriptorCount = unSwapChainNum;
 
 	VkDescriptorPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -119,6 +131,31 @@ bool MVulkanBufferManager::InitDescriptorPool()
 
 	return true;
 }
+
+bool MVulkanBufferManager::InitSampler()
+{
+	VkSamplerCreateInfo samplerInfo{};
+	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	samplerInfo.magFilter = VK_FILTER_LINEAR;
+	samplerInfo.minFilter = VK_FILTER_LINEAR;
+	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerInfo.anisotropyEnable = VK_FALSE;
+	samplerInfo.maxAnisotropy = 16.0f;
+	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+	samplerInfo.unnormalizedCoordinates = VK_FALSE;
+	samplerInfo.compareEnable = VK_FALSE;
+	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+
+	if (vkCreateSampler(m_pDevice->m_VkDevice, &samplerInfo, nullptr, &m_VkDefaultSampler) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create texture sampler!");
+	}
+
+	return true;
+}
+
 
 void MVulkanBufferManager::DestroyDescriptorSets(const uint32_t& unFrameIndex, std::vector<VkDescriptorSet>& vDescriptorSets)
 {

@@ -323,6 +323,42 @@ VkImageView MVulkanDevice::CreateImageView(VkImage image, VkFormat format)
 	return imageView;
 }
 
+void MVulkanDevice::CreateImage(const uint32_t& unWidth, const uint32_t& unHeight, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
+{
+	VkImageCreateInfo imageInfo{};
+	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageInfo.extent.width = unWidth;
+	imageInfo.extent.height = unHeight;
+	imageInfo.extent.depth = 1;
+	imageInfo.mipLevels = 1;
+	imageInfo.arrayLayers = 1;
+	imageInfo.format = format;
+	imageInfo.tiling = tiling;
+	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	imageInfo.usage = usage;
+	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	if (vkCreateImage(m_VkDevice, &imageInfo, nullptr, &image) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create image!");
+	}
+
+	VkMemoryRequirements memRequirements;
+	vkGetImageMemoryRequirements(m_VkDevice, image, &memRequirements);
+
+	VkMemoryAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.allocationSize = memRequirements.size;
+	allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
+
+	if (vkAllocateMemory(m_VkDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+		throw std::runtime_error("failed to allocate image memory!");
+	}
+
+	vkBindImageMemory(m_VkDevice, image, imageMemory, 0);
+}
+
 VkCommandBuffer MVulkanDevice::BeginCommands()
 {
 	VkCommandBufferAllocateInfo allocInfo{};
@@ -372,73 +408,36 @@ void MVulkanDevice::GenerateTexture(MTextureBuffer** ppTextureBuffer, MTexture* 
 	if (*ppTextureBuffer)
 		DestroyTexture(ppTextureBuffer);
 
+	uint32_t width = pTexture->GetSize().x;
+	uint32_t height = pTexture->GetSize().y;
+	VkDeviceSize imageSize = width * height * 4;
+
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
-	VkImage textureImage;
-	VkDeviceMemory textureImageMemory;
-
-	Vector2 v2Size = pTexture->GetSize();
-	VkDeviceSize imageSize = v2Size.x * v2Size.y * 4;
-
-	
-	VkImageCreateInfo imageInfo{};
-	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageInfo.extent.width = static_cast<uint32_t>(v2Size.x);
-	imageInfo.extent.height = static_cast<uint32_t>(v2Size.y);
-	imageInfo.extent.depth = 1;
-	imageInfo.mipLevels = 1;
-	imageInfo.arrayLayers = 1;
-	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	imageInfo.flags = 0; // Optional
-
-	if (vkCreateImage(m_VkDevice, &imageInfo, nullptr, &textureImage) != VK_SUCCESS)
-	{
-		return;
-	}
-
-	VkMemoryRequirements memRequirements;
-	vkGetImageMemoryRequirements(m_VkDevice, textureImage, &memRequirements);
-
-	VkMemoryAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	allocInfo.allocationSize = memRequirements.size;
-	allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-	if (vkAllocateMemory(m_VkDevice, &allocInfo, nullptr, &textureImageMemory) != VK_SUCCESS)
-	{
-		vkDestroyImage(m_VkDevice, textureImage, nullptr);
-		return;
-	}
-
-	vkBindImageMemory(m_VkDevice, textureImage, textureImageMemory, 0);
-
-
-
 	m_BufferManager.GenerateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
-	void* data = nullptr;
+	void* data;
 	vkMapMemory(m_VkDevice, stagingBufferMemory, 0, imageSize, 0, &data);
 	memcpy(data, pTexture->GetImageData(), static_cast<size_t>(imageSize));
 	vkUnmapMemory(m_VkDevice, stagingBufferMemory);
 
+	VkImage textureImage = VK_NULL_HANDLE;
+	VkDeviceMemory textureImageMemory = VK_NULL_HANDLE;
+	CreateImage(width, height, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+
 	TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-	CopyImageBuffer(stagingBuffer, textureImage, static_cast<uint32_t>(v2Size.x), static_cast<uint32_t>(v2Size.y));
+	CopyImageBuffer(stagingBuffer, textureImage, width, height);
 	TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	vkDestroyBuffer(m_VkDevice, stagingBuffer, nullptr);
 	vkFreeMemory(m_VkDevice, stagingBufferMemory, nullptr);
-
 
 	*ppTextureBuffer = new MTextureBuffer();
 	(*ppTextureBuffer)->m_VkTextureImage = textureImage;
 	(*ppTextureBuffer)->m_VkTextureImageMemory = textureImageMemory;
 	(*ppTextureBuffer)->m_VkTextureFormat = VK_FORMAT_R8G8B8A8_SRGB;
 	(*ppTextureBuffer)->m_VkImageView = CreateImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+	(*ppTextureBuffer)->m_VkImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 }
 
 void MVulkanDevice::DestroyTexture(MTextureBuffer** ppTextureBuffer)

@@ -83,6 +83,7 @@ public:
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 	VkFormat m_VkTextureFormat;
 	VkImage m_VkTextureImage;
+	VkImageLayout m_VkImageLayout;
 	VkDeviceMemory m_VkTextureImageMemory;
 	VkImageView m_VkImageView;
 #endif
@@ -168,6 +169,9 @@ struct MShaderTextureParam
 	MITexture* pTexture;
 	METextureType eType;
 
+	bool bDirty;
+	void SetDirty() { bDirty = true; }
+
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	uint32_t unBindPoint;
 	uint32_t unBindCount;
@@ -188,6 +192,7 @@ struct MShaderSampleParam
 	uint32_t unBindPoint;
 	uint32_t unBindCount;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
+	VkDescriptorSet m_VkDescriptorSet;
 	uint32_t unSet;
 	uint32_t unBinding;
 #endif

@@ -34,6 +34,8 @@ public:
 	std::vector<MShaderTextureParam>* GetTextureParams() { return &m_vTextureParams; }
 	std::vector< MResourceKeeper>* GetTextures() { return &m_vTextureResKeeper; }
 
+	std::vector<MShaderSampleParam>* GetSampleParams() { return &m_vSampleParams; }
+
 	void SetTexutreParam(const MString& strName, MResource* pTexResource);
 	void SetTexutreParam(const uint32_t& unIndex, MResource* pTexResource);
 
@@ -76,6 +78,7 @@ protected:
 
 	void RecompileShaderParams(std::vector<MShaderParam>& vParams, std::vector<MShaderParam*>& vNewParams, const MEShaderParamType& eType);
 	void RecompileShaderTextureParam(std::vector<MShaderTextureParam>& vParams, std::vector<MResourceKeeper>& vResHolders, std::vector<MShaderTextureParam*>& vNewParams, const MEShaderParamType& eType);
+	void RecompileSampleParams(std::vector<MShaderSampleParam>& vParams, std::vector<MShaderSampleParam*>& vNewParams, const MEShaderParamType& eType);
 
 	void CleanTextureParams();
 	void CleanShaderParams();
@@ -89,6 +92,9 @@ private:
 	//Texture
 	std::vector<MShaderTextureParam> m_vTextureParams;
 	std::vector<MResourceKeeper> m_vTextureResKeeper;
+
+	//Sample
+	std::vector<MShaderSampleParam> m_vSampleParams;
 
 	//Material
 	MResourceKeeper m_VertexResource;

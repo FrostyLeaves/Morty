@@ -75,6 +75,7 @@ public:
 
 	VkImageView CreateImageView(VkImage image, VkFormat format);
 
+	void CreateImage(const uint32_t& unWidth, const uint32_t& unHeight, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 
 	VkCommandBuffer BeginCommands();
 	void EndCommands(VkCommandBuffer commandBuffer);
