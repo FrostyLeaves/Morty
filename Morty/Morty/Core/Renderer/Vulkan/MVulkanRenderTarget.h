@@ -43,12 +43,22 @@ public:
 
 public:
 
+	bool InitializeSwapchain();
+
+	void ReleaseSwapchain();
+
+	bool RebindRenderBuffer();
+
+public:
+
 	MIRenderView* m_pView;
 	MVulkanDevice* m_pDevice;
 	VkSurfaceKHR m_VkSurface;
 	VkSwapchainKHR m_VkSwapchain;
 
 	VkQueue m_VkPresentQueue;
+
+
 
 	//std::vector<VkImage> m_vSwapchainImages;
 	std::vector<MRenderTextureBuffer*> m_vBackBuffers;

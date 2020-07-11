@@ -139,6 +139,21 @@ public:
 
 int main(int argc, char* argv[])
 {
+	MTransform t1;
+	t1.SetPosition(Vector3(0, 0, 5));
+
+	MTransform r;
+	r.SetRotation(Quaternion(Vector3(0, 1, 0), 90));
+
+	MTransform t2;
+	t2.SetPosition(Vector3(0, 0, 5));
+
+	Matrix4 m4 = t1.GetMatrix() * r.GetMatrix() * t2.GetMatrix();
+
+	Vector3 v3 = m4 * Vector3(0, 0, 0);
+	Matrix4 mm = m4.Inverse();
+	v3 = m4.Inverse() * Vector3(0, 0, 0);
+
 	MEngine engine;
 	engine.Initialize();
 

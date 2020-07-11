@@ -42,7 +42,7 @@ class MORTY_CLASS MVulkanShaderCompiler
 {
 public:
     MVulkanShaderCompiler();
-    ~MVulkanShaderCompiler();
+	~MVulkanShaderCompiler();
 
 public:
 
@@ -59,6 +59,7 @@ public:
 	void ConvertVariant(const spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, MVariant& variant);
 
 	bool ResetVariantType(const spirv_cross::SPIRType& type, MVariant& variant);
+
 
 private:
 

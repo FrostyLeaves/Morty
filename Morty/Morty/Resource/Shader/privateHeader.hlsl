@@ -99,7 +99,6 @@ cbuffer _M_E_cbWorldMatrix : register(b1)
     float4x4 U_matLightProj;
 };
 
-
 //VS    with bones
 cbuffer _M_E_cbAnimation : register(b2)
 {

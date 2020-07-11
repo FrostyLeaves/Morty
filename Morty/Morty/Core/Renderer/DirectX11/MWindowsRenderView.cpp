@@ -145,6 +145,8 @@ void MWindowsRenderView::OnResize(const int& nWidth, const int& nHeight)
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 	if (MVulkanRenderTarget* pRt = dynamic_cast<MVulkanRenderTarget*>(m_pRenderTarget))
 		pRt->Resize(nWidth, nHeight);
+// 	for (MViewport* pViewport : m_vViewport)
+// 		pViewport->SetSize(Vector2(nWidth, nHeight));
 #endif
 }
 
