@@ -30,7 +30,7 @@ public:
 
     virtual void Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene, MIRenderTarget* pRenderTarget) override;
 
-    virtual void DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pMeshInstance, MShaderParam*& pMeshMatrixParam, MShaderParam*& pAnimationParam) override;
+    virtual void DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance, MShaderParam* pMeshMatrixParam, MShaderParam* pAnimationParam) override;
 public:
 
 	virtual void OnCreated() override;

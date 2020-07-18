@@ -98,6 +98,28 @@ void MMaterial::SetTexutreParam(const uint32_t& unIndex, MResource* pTexResource
 	SetTexutreParam(m_vTextureParams[unIndex].strName, pTexResource);
 }
 
+MShaderParam* MMaterial::FindShaderParam(const MString& strName)
+{
+	for (MShaderParam& param : m_vShaderParams)
+	{
+		if (param.strName == strName)
+			return &param;
+	}
+
+	return nullptr;
+}
+
+MShaderParam* MMaterial::FindShaderParam(const uint32_t& unCode)
+{
+	for (MShaderParam& param : m_vShaderParams)
+	{
+		if (param.unCode == unCode)
+			return &param;
+	}
+
+	return nullptr;
+}
+
 void MMaterial::CompileShaderParams(const MEShaderParamType& eType)
 {
 	if (m_pVertexShader && m_pVertexShader->GetBuffer())

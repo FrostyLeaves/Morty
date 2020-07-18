@@ -14,7 +14,6 @@ MSkinnedMeshInstance::MSkinnedMeshInstance()
 	: MIModelMeshInstance()
 	, m_pMesh(nullptr)
 	, m_Mesh()
-	, m_Material()
 	, m_bBoundsAABBDirty(true)
 	, m_bBoundsSphereDirty(true)
 {
@@ -24,16 +23,6 @@ MSkinnedMeshInstance::MSkinnedMeshInstance()
 MSkinnedMeshInstance::~MSkinnedMeshInstance()
 {
 
-}
-
-void MSkinnedMeshInstance::SetMaterial(MMaterial* pMaterial)
-{
-	m_Material.SetResource(pMaterial);
-}
-
-MMaterial* MSkinnedMeshInstance::GetMaterial()
-{
-	return dynamic_cast<MMaterial*>(m_Material.GetResource());
 }
 
 MBoundsAABB* MSkinnedMeshInstance::GetBoundsAABB()
@@ -91,20 +80,6 @@ void MSkinnedMeshInstance::SetMeshResourcePath(const MString& strResourcePath)
 {
 	MResource* pResource = GetEngine()->GetResourceManager()->LoadResource(strResourcePath);
 	Load(pResource);
-}
-
-void MSkinnedMeshInstance::SetMeshData(const MString& strModelResourcePath, const int& nIndex)
-{
-	if (MModelResource* pModelRes = m_pEngine->GetResourceManager()->LoadResource(strModelResourcePath)->DynamicCast<MModelResource>())
-	{
-		m_pMesh = pModelRes->GetMeshResources()[nIndex];
-
-		if (m_Material.GetResource() == nullptr)
-		{
-			MMaterial* pMaterial = dynamic_cast<MMaterial*>(m_pMesh->GetDefaultMaterial());
-			SetMaterial(pMaterial);
-		}
-	}
 }
 
 MIMesh* MSkinnedMeshInstance::GetMesh(const uint32_t& unDetailLevel)

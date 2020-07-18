@@ -311,18 +311,18 @@ void MForwardRenderProgram::GenerateShadowMap(MRenderInfo& info)
 		return;
 	}
 
-	//如果当前有Shader使用了ShadowMap，那么进行ShadowMap的更新
-	if (SHADER_PARAM_CODE_SHADOW_MAP < MShaderBuffer::s_vTextureParams.size())
-	{
-		MShaderTextureParam* pShadowParam = MShaderBuffer::s_vTextureParams[SHADER_PARAM_CODE_SHADOW_MAP];
-		if (pShadowParam && SHADER_PARAM_CODE_SHADOW_MAP == pShadowParam->unCode)
-		{
-			m_pShadowDepthMapRenderTarget->Render(info.pRenderer, info.m4DirLightInvProj, &info.vShadowGroup);
-
-			pShadowParam->pTexture = m_pShadowDepthMapRenderTarget->GetDepthTexture();
-			info.pRenderer->SetShaderTexture(*pShadowParam);
-		}
-	}
+// 	//如果当前有Shader使用了ShadowMap，那么进行ShadowMap的更新
+// 	if (SHADER_PARAM_CODE_SHADOW_MAP < MShaderBuffer::s_vTextureParams.size())
+// 	{
+// 		MShaderTextureParam* pShadowParam = MShaderBuffer::s_vTextureParams[SHADER_PARAM_CODE_SHADOW_MAP];
+// 		if (pShadowParam && SHADER_PARAM_CODE_SHADOW_MAP == pShadowParam->unCode)
+// 		{
+// 			m_pShadowDepthMapRenderTarget->Render(info.pRenderer, info.m4DirLightInvProj, &info.vShadowGroup);
+// 
+// 			pShadowParam->pTexture = m_pShadowDepthMapRenderTarget->GetDepthTexture();
+// 			info.pRenderer->SetShaderTexture(*pShadowParam);
+// 		}
+// 	}
 
 }
 
@@ -457,7 +457,7 @@ void MForwardRenderProgram::DrawNormalMesh(MRenderInfo& info)
 	}
 }
 
-void MForwardRenderProgram::DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pMeshInstance, MShaderParam*& pMeshMatrixParam, MShaderParam*& pAnimationParam)
+void MForwardRenderProgram::DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance, MShaderParam* pMeshMatrixParam, MShaderParam* pAnimationParam)
 {
 	Matrix4 worldTrans = pMeshInstance->GetWorldTransform();
 	//Transposed and Inverse.

@@ -4,6 +4,7 @@
 #include "MTexture.h"
 #include "MResource.h"
 #include "MFileHelper.h"
+#include "MShaderParam.h"
 #include "MRenderStructure.h"
 
 #include <set>
@@ -751,12 +752,12 @@ void MVulkanDevice::CleanShader(MShaderBuffer** ppShaderBuffer)
 
 	MShaderBuffer* pBuffer = (*ppShaderBuffer);
 
-	for (MShaderParam* param : pBuffer->m_vShaderParamsTemplate)
-	{
-		m_BufferManager.DestroyBufferLater(0, param->m_VkBuffer);
-		m_BufferManager.DestroyDeviceMemoryLater(0, param->m_VkBufferMemory);
-
-	}
+// 	for (MShaderParam* param : pBuffer->m_vShaderParamsTemplate)
+// 	{
+// 		m_BufferManager.DestroyBufferLater(0, param->m_VkBuffer);
+// 		m_BufferManager.DestroyDeviceMemoryLater(0, param->m_VkBufferMemory);
+// 
+// 	}
 
 	m_BufferManager.DestroyShaderModuleLater(0, pBuffer->m_VkShaderModule);
 
@@ -864,7 +865,6 @@ bool MVulkanDevice::GenerateShaderParamBuffer(MShaderParam* pParam)
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			pParam->m_VkBuffer, pParam->m_VkBufferMemory);
 		
-
 		VkWriteDescriptorSet writeDescriptorSet;
 
 		writeDescriptorSet.dstSet = VkDescriptorSet();

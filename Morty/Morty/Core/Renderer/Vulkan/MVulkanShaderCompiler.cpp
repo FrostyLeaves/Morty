@@ -10,6 +10,7 @@
 
 #include "MResource.h"
 #include "MFileHelper.h"
+#include "MShaderParam.h"
 
 MVulkanShaderCompiler::MVulkanShaderCompiler()
 {
@@ -208,10 +209,9 @@ void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler
 		pParam->strName = res.name;
 
 		
-
 		ConvertVariant(compiler, type, pParam->var);
 
-		pShaderBuffer->m_vShaderParamsTemplate.push_back(pParam);
+		pShaderBuffer->m_vShaderSets[pParam->unSet].m_vParams.push_back(pParam);
 	}
 
 	for (const spirv_cross::Resource& res : shaderResources.separate_images)
@@ -223,7 +223,7 @@ void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler
 		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
 		pParam->strName = res.name;
 
-		pShaderBuffer->m_vTextureParamsTemplate.push_back(pParam);
+		pShaderBuffer->m_vShaderSets[pParam->unSet].m_vTextures.push_back(pParam);
 	}
 
 	for (const spirv_cross::Resource& res : shaderResources.separate_samplers)
@@ -235,7 +235,7 @@ void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler
 		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
 		pParam->strName = res.name;
 
-		pShaderBuffer->m_vSampleParamsTemplate.push_back(pParam);
+		pShaderBuffer->m_vShaderSets[pParam->unSet].m_vSamples.push_back(pParam);
 	}
 }
 

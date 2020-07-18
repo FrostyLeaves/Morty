@@ -11,13 +11,12 @@
 #include "MGlobal.h"
 #include "MObject.h"
 
-#include "MMaterialGroup.h"
-#include "MRenderStructure.h"
-
 class MScene;
 class MViewport;
 class MIRenderer;
+class MShaderParam;
 class MIRenderTarget;
+class MIMeshInstance;
 class MORTY_CLASS MIRenderProgram : public MObject
 {
 public:
@@ -29,7 +28,7 @@ public:
 
     virtual void Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene, MIRenderTarget* pRenderTarget) {};
 
-    virtual void DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pMeshInstance, MShaderParam*& pMeshMatrixParam, MShaderParam*& pAnimationParam) {}
+    virtual void DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance, MShaderParam* pMeshMatrixParam, MShaderParam* pAnimationParam) {}
 };
 
 #endif

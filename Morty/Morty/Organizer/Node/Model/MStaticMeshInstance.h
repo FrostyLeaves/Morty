@@ -27,12 +27,6 @@ public:
     MStaticMeshInstance();
     virtual ~MStaticMeshInstance();
 
-	virtual void SetMaterial(MMaterial* pMaterial) override;
-	virtual MMaterial* GetMaterial() override;
-
-	virtual MBoundsAABB* GetBoundsAABB() override;
-	virtual MBoundsSphere* GetBoundsSphere() override;
-
 public:
 
 	void Load(MResource* pResource);
@@ -42,6 +36,9 @@ public:
 
 	virtual MIMesh* GetMesh() override { return GetMesh(GetDetailLevel()); }
 	virtual MIMesh* GetMesh(const uint32_t& unDetailLevel) override;
+
+	virtual MBoundsAABB* GetBoundsAABB() override;
+	virtual MBoundsSphere* GetBoundsSphere() override;
 
 public:
 
@@ -60,11 +57,11 @@ private:
 
 	MMeshResource* m_pMesh;
 	MResourceKeeper m_Mesh;
-	MResourceKeeper m_Material;
 	MBoundsAABB m_BoundsAABB;
 	MBoundsSphere m_BoundsSphere;
 	bool m_bBoundsAABBDirty;
 	bool m_bBoundsSphereDirty;
+
 };
 
 #endif

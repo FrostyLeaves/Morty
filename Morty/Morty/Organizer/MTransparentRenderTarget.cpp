@@ -96,46 +96,46 @@ void MTransparentRenderTarget::OnRender(MIRenderer* pRenderer)
 
 	MShaderParam* pAnimationParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_ANIMATION);
 
-
-	//更新上一层的DepthMap
-	if (SHADER_PARAM_CODE_DEPTH_FRONT < MShaderBuffer::s_vTextureParams.size())
-	{
-		MShaderTextureParam* pDepthFrontParam = MShaderBuffer::s_vTextureParams[SHADER_PARAM_CODE_DEPTH_FRONT];
-		MShaderTextureParam* pDepthBackParam = MShaderBuffer::s_vTextureParams[SHADER_PARAM_CODE_DEPTH_BACK];
-
-		if (SHADER_PARAM_CODE_DEPTH_FRONT == pDepthFrontParam->unCode)
-		{
-			if (m_pFrontDepthTexture)
-			{
-				pDepthFrontParam->pTexture = m_pFrontDepthTexture;
-				pRenderer->SetShaderTexture(*pDepthFrontParam);
-			}
-			if (m_pFrontDepthTexture)
-			{
-				pDepthBackParam->pTexture = m_pBackDepthTexture;
-				pRenderer->SetShaderTexture(*pDepthBackParam);
-			}
-		}
-
-		for (MMaterialGroup& group : *m_pTransparentMeshes)
-		{
-			MMaterial* pMaterial = group.m_pMaterial;
-			//使用材质
-			if (!pRenderer->SetUseMaterial(pMaterial, true))
-				continue;
-
-			for (MIMeshInstance* pMeshIns : group.m_vMeshInstances)
-			{
-				pRenderProgram->DrawMeshInstance(pRenderer, pMeshIns, pMeshMatrixParam, pAnimationParam);
-			}
-		}
-
-
-		pDepthFrontParam->pTexture = nullptr;
-		pDepthBackParam->pTexture = nullptr;
-		pRenderer->SetShaderTexture(*pDepthFrontParam);
-		pRenderer->SetShaderTexture(*pDepthBackParam);
-	}
+// 
+// 	//更新上一层的DepthMap
+// 	if (SHADER_PARAM_CODE_DEPTH_FRONT < MShaderBuffer::s_vTextureParams.size())
+// 	{
+// 		MShaderTextureParam* pDepthFrontParam = MShaderBuffer::s_vTextureParams[SHADER_PARAM_CODE_DEPTH_FRONT];
+// 		MShaderTextureParam* pDepthBackParam = MShaderBuffer::s_vTextureParams[SHADER_PARAM_CODE_DEPTH_BACK];
+// 
+// 		if (SHADER_PARAM_CODE_DEPTH_FRONT == pDepthFrontParam->unCode)
+// 		{
+// 			if (m_pFrontDepthTexture)
+// 			{
+// 				pDepthFrontParam->pTexture = m_pFrontDepthTexture;
+// 				pRenderer->SetShaderTexture(*pDepthFrontParam);
+// 			}
+// 			if (m_pFrontDepthTexture)
+// 			{
+// 				pDepthBackParam->pTexture = m_pBackDepthTexture;
+// 				pRenderer->SetShaderTexture(*pDepthBackParam);
+// 			}
+// 		}
+// 
+// 		for (MMaterialGroup& group : *m_pTransparentMeshes)
+// 		{
+// 			MMaterial* pMaterial = group.m_pMaterial;
+// 			//使用材质
+// 			if (!pRenderer->SetUseMaterial(pMaterial, true))
+// 				continue;
+// 
+// 			for (MIMeshInstance* pMeshIns : group.m_vMeshInstances)
+// 			{
+// 				pRenderProgram->DrawMeshInstance(pRenderer, pMeshIns, pMeshMatrixParam, pAnimationParam);
+// 			}
+// 		}
+// 
+// 
+// 		pDepthFrontParam->pTexture = nullptr;
+// 		pDepthBackParam->pTexture = nullptr;
+// 		pRenderer->SetShaderTexture(*pDepthFrontParam);
+// 		pRenderer->SetShaderTexture(*pDepthBackParam);
+// 	}
 
   
 

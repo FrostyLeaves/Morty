@@ -277,11 +277,6 @@ bool MEngine::InitializeDefaultResource()
 
 void MEngine::ReleaseDefaultResource()
 {
-	for (MShaderParam* param : MShaderBuffer::s_vShaderParams)
-	{
-		if(param)
-			GetDevice()->DestroyShaderParamBuffer(param);
-	}
 }
 
 bool MEngine::MainLoop()

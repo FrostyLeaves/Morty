@@ -62,7 +62,6 @@ public:
     bool CreateMaterialPipelineLayout(MMaterial* pMaterial, MMaterialPipelineLayoutData& data);
     void DestroyMaterialPipelineLayout(MMaterialPipelineLayoutData& data);
 
-
 private:
 
 	MRepeatIDPool<uint32_t> m_MaterialIDPool;

@@ -48,16 +48,18 @@ void ERASE_FIRST_VECTOR(std::vector<T>& vector, const T& value)
 }
 
 template<typename T>
-void UNION_ORDER_PUSH_BACK_VECTOR(std::vector<T>& vector, const T& value, const std::function<bool(const T& a, const T& b)>& lessComp = std::less<T>(), const std::function<bool(const T& a, const T& b)>& equalComp = std::equal_to<T>())
+uint32_t UNION_ORDER_PUSH_BACK_VECTOR(std::vector<T>& vector, const T& value, const std::function<bool(const T& a, const T& b)>& lessComp = std::less<T>(), const std::function<bool(const T& a, const T& b)>& equalComp = std::equal_to<T>())
 {
 	std::vector<T>::iterator iter = std::lower_bound(vector.begin(), vector.end(), value, lessComp);
 
 	if (iter == vector.end())
 		vector.push_back(value);
 	else if (equalComp(*iter, value))
-		return;
+		return M_INVALID_INDEX;
 	else
 		vector.insert(iter, value);
+
+	return iter - vector.begin();
 }
 
 template<typename T>

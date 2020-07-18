@@ -13,10 +13,10 @@
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 #include "MShader.h"
-#include "MRenderStructure.h"
 #include "spirv_cross.hpp"
 #include "spirv_parser.hpp"
 
+class MShaderBuffer;
 class MVertexShaderBuffer;
 class MORTY_CLASS MPreamble {
 public:
@@ -50,17 +50,17 @@ public:
 
     bool CompileShader(const MString& strShaderPath, const uint32_t& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv);
 
-	void ConvertMacro(const MShaderMacro& macro, MPreamble& preamble);
-
 	void GetVertexInputState(const spirv_cross::Compiler& compiler, MVertexShaderBuffer* pShaderBuffer);
 
+public:
+
 	void GetShaderParam(const spirv_cross::Compiler& compiler, MShaderBuffer* pShaderBuffer);
+
+	void ConvertMacro(const MShaderMacro& macro, MPreamble& preamble);
 
 	void ConvertVariant(const spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, MVariant& variant);
 
 	bool ResetVariantType(const spirv_cross::SPIRType& type, MVariant& variant);
-
-
 private:
 
 };

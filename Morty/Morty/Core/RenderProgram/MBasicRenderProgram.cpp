@@ -107,7 +107,7 @@ void MBasicRenderProgram::OnDelete()
 	Super::OnDelete();
 }
 
-void MBasicRenderProgram::DrawMeshInstance(MIRenderer*& pRenderer, MIMeshInstance*& pMeshInstance, MShaderParam*& pMeshMatrixParam, MShaderParam*& pAnimationParam)
+void MBasicRenderProgram::DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance, MShaderParam* pMeshMatrixParam, MShaderParam* pAnimationParam)
 {
 	Matrix4 worldTrans = pMeshInstance->GetWorldTransform();
 	//Transposed and Inverse.

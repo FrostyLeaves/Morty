@@ -1,5 +1,7 @@
 ﻿#include "MStaticMeshInstance.h"
 #include "Model/MModelResource.h"
+#include "MEngine.h"
+#include "MIDevice.h"
 #include "MScene.h"
 #include "MMaterial.h"
 #include "MMath.h"
@@ -16,7 +18,6 @@ MStaticMeshInstance::MStaticMeshInstance()
 	: MIModelMeshInstance()
 	, m_pMesh(nullptr)
 	, m_Mesh()
-	, m_Material()
 	, m_bBoundsAABBDirty(true)
 	, m_bBoundsSphereDirty(true)
 {
@@ -25,26 +26,6 @@ MStaticMeshInstance::MStaticMeshInstance()
 
 MStaticMeshInstance::~MStaticMeshInstance()
 {
-}
-
-void MStaticMeshInstance::SetMaterial(MMaterial* pMaterial)
-{
-	if (m_Material.GetResource() == pMaterial)
-		return;
-
-	if (m_pScene)
-		m_pScene->RemoveMaterialGroup(this);
-
-	m_Material.SetResource(pMaterial);
-
-	if (m_pScene)
-		m_pScene->InsertMaterialGroup(this);
-
-}
- 
-MMaterial* MStaticMeshInstance::GetMaterial()
-{
-	return dynamic_cast<MMaterial*>(m_Material.GetResource());
 }
 
 MBoundsAABB* MStaticMeshInstance::GetBoundsAABB()
@@ -145,7 +126,7 @@ void MStaticMeshInstance::ReadFromStruct(MStruct& srt)
 
 void MStaticMeshInstance::WorldTransformDirty()
 {
-	MIMeshInstance::WorldTransformDirty();
+	Super::WorldTransformDirty();
 
 	m_bBoundsAABBDirty = true;
 	m_bBoundsSphereDirty = true;
@@ -153,7 +134,7 @@ void MStaticMeshInstance::WorldTransformDirty()
 
 void MStaticMeshInstance::LocalTransformDirty()
 {
-	MIMeshInstance::LocalTransformDirty();
+	Super::LocalTransformDirty();
 
 	m_bBoundsAABBDirty = true;
 	m_bBoundsSphereDirty = true;

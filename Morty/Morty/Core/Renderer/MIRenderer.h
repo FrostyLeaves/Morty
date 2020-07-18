@@ -13,6 +13,7 @@
 #include "Matrix.h"
 #include "MVertex.h"
 #include "Type/MColor.h"
+#include "MShaderParam.h"
 #include "MRenderStructure.h"
 
 #include <stack>

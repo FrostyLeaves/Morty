@@ -60,7 +60,6 @@ public:
 	virtual bool GenerateShaderParamBuffer(MShaderParam* pParam) override;
 	virtual void DestroyShaderParamBuffer(MShaderParam* pParam) override;
 
-	
 	virtual bool GenerateRenderPass(MRenderPass* pRenderPass) override;
 	virtual void DestroyRenderPass(MRenderPass* pRenderPass) override;
 

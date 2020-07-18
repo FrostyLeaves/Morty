@@ -14,6 +14,7 @@
 
 class MIMesh;
 class MMaterial;
+class MShaderParam;
 class MModelInstance;
 class MModelMeshStruct;
 class MSkeletonInstance;
@@ -33,11 +34,21 @@ public:
     virtual ~MIMeshInstance();
 
 public:
-	virtual void SetMaterial(MMaterial* pMaterial) = 0;
-	virtual MMaterial* GetMaterial() = 0;
+
+	void SetMaterial(MMaterial* pMaterial);
+	MMaterial* GetMaterial();
+
+
+	MShaderParam* GetShaderMeshParam();
+	void UpdateShaderMeshParam();
 
 	bool SetMaterialPath(const MString& strPath);
 	MString GetMaterialPath();
+
+public:
+
+	virtual MIMesh* GetMesh() = 0;
+	virtual MIMesh* GetMesh(const uint32_t& unDetailLevel) = 0;
 
 	virtual MBoundsAABB* GetBoundsAABB() = 0;
 	virtual MBoundsSphere* GetBoundsSphere() = 0;
@@ -47,11 +58,23 @@ public:
 
 	virtual MSkeletonInstance* GetSkeletonInstance() { return nullptr; }
 
-public:
-	virtual MIMesh* GetMesh() = 0;
-	virtual MIMesh* GetMesh(const uint32_t& unDetailLevel) = 0;
+protected:
 
-private:
+	virtual void WorldTransformDirty() override;
+	virtual void LocalTransformDirty() override;
+
+protected:
+
+	void BindShaderParam(MMaterial* pMaterial);
+
+protected:
+
+	MResourceKeeper m_Material;
+	bool m_bTransformParamDirty;
+
+	MShaderParam* m_pTransformParam;
+	Matrix4* m_pWorldMatrixParam;
+	Matrix3* m_pNormalMatrixParam;
 };
 
 #endif

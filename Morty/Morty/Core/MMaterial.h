@@ -9,12 +9,12 @@
 #ifndef _M_MMATERIAL_H_
 #define _M_MMATERIAL_H_
 #include "MGlobal.h"
-#include "MRefCounter.h"
 #include "MResource.h"
-#include "MRenderStructure.h"
 #include "MResource.h"
 #include "MIRenderer.h"
+#include "MRefCounter.h"
 #include "MShaderMacro.h"
+#include "MShaderParam.h"
 
 #include <vector>
 
@@ -31,13 +31,16 @@ public:
 	MShader* GetPixelShader() { return m_pPixelShader; }
 
 	std::vector<MShaderParam>* GetShaderParams() { return &m_vShaderParams; }
-	std::vector<MShaderTextureParam>* GetTextureParams() { return &m_vTextureParams; }
-	std::vector< MResourceKeeper>* GetTextures() { return &m_vTextureResKeeper; }
-
 	std::vector<MShaderSampleParam>* GetSampleParams() { return &m_vSampleParams; }
+	std::vector<MShaderTextureParam>* GetTextureParams() { return &m_vTextureParams; }
+
+	std::vector<MResourceKeeper>* GetTextures() { return &m_vTextureResKeeper; }
 
 	void SetTexutreParam(const MString& strName, MResource* pTexResource);
 	void SetTexutreParam(const uint32_t& unIndex, MResource* pTexResource);
+
+	MShaderParam* FindShaderParam(const MString& strName);
+	MShaderParam* FindShaderParam(const uint32_t& unCode);
 
 	void SetRasterizerType(const MERasterizerType& eType) { m_eRasterizerType = eType; }
 	MERasterizerType GetRasterizerType() const { return m_eRasterizerType; }
@@ -47,6 +50,9 @@ public:
 
 	bool LoadVertexShader(MResource* pResource);
 	bool LoadPixelShader(MResource* pResource);
+
+
+public:
 
 	MResource* GetVertexShaderResource() { return m_VertexResource.GetResource(); }
 	MResource* GetPixelShaderResource() { return m_PixelResource.GetResource(); }
@@ -95,6 +101,8 @@ private:
 
 	//Sample
 	std::vector<MShaderSampleParam> m_vSampleParams;
+	
+private:
 
 	//Material
 	MResourceKeeper m_VertexResource;

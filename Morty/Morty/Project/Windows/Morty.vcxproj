@@ -236,6 +236,7 @@
     <ClInclude Include="..\..\Core\Renderer\MRenderStructure.h" />
     <ClInclude Include="..\..\Core\Renderer\MIRenderTarget.h" />
     <ClInclude Include="..\..\Core\Renderer\MShaderMacro.h" />
+    <ClInclude Include="..\..\Core\Renderer\MShaderParam.h" />
     <ClInclude Include="..\..\Core\Renderer\MTextureRenderTarget.h" />
     <ClInclude Include="..\..\Core\Renderer\MShader.h" />
     <ClInclude Include="..\..\Core\Renderer\MTexture.h" />
@@ -343,6 +344,7 @@
     <ClCompile Include="..\..\Core\Renderer\MRenderStructure.cpp" />
     <ClCompile Include="..\..\Core\Renderer\MIRenderTarget.cpp" />
     <ClCompile Include="..\..\Core\Renderer\MShaderMacro.cpp" />
+    <ClCompile Include="..\..\Core\Renderer\MShaderParam.cpp" />
     <ClCompile Include="..\..\Core\Renderer\MTextureRenderTarget.cpp" />
     <ClCompile Include="..\..\Core\Renderer\MShader.cpp" />
     <ClCompile Include="..\..\Core\Renderer\MTexture.cpp" />
