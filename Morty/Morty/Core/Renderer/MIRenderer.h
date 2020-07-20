@@ -13,8 +13,8 @@
 #include "Matrix.h"
 #include "MVertex.h"
 #include "Type/MColor.h"
-#include "MShaderParam.h"
 #include "MRenderStructure.h"
+#include "Shader/MShaderParam.h"
 
 #include <stack>
 
@@ -71,7 +71,7 @@ class MShader;
 class MShaderResource;
 class MMaterial;
 class MCamera;
-struct MShaderParam;
+struct MShaderConstantParam;
 class MTexture;
 class MViewport;
 class MIRenderTarget;
@@ -117,7 +117,7 @@ public:
 	virtual void UpdateMaterialResource() = 0;
 
 public:
-	virtual void SetShaderParam(MShaderParam& param) = 0;
+	virtual void SetShaderParam(MShaderConstantParam& param) = 0;
 	virtual void SetShaderTexture(MShaderTextureParam& param) = 0;
 
 protected:

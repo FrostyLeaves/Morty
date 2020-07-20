@@ -13,6 +13,8 @@
 #include "Model/MSkinnedMeshInstance.h"
 #include "MSkeleton.h"
 
+#include "Shader/MShaderBuffer.h"
+
 
 M_OBJECT_IMPLEMENT(MShadowTextureRenderTarget, MTextureRenderTarget)
 

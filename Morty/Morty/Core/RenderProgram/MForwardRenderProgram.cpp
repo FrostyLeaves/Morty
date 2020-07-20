@@ -29,6 +29,8 @@
 #include "Model/MMeshResource.h"
 #include "Model/MModelResource.h"
 
+#include "Shader/MShaderBuffer.h"
+
 #include <algorithm>
 
 
@@ -329,7 +331,7 @@ void MForwardRenderProgram::GenerateShadowMap(MRenderInfo& info)
 void MForwardRenderProgram::UpdateShaderSharedParams(MRenderInfo& info)
 {
 
-	if (MShaderParam* pWorldMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_WORLD_MATRIX))
+	if (MShaderConstantParam* pWorldMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_WORLD_MATRIX))
 	{
 		MStruct& cStruct = *pWorldMatrixParam->var.GetStruct();
 		cStruct[0] = info.pViewport->GetCameraInverseProjection();
@@ -339,7 +341,7 @@ void MForwardRenderProgram::UpdateShaderSharedParams(MRenderInfo& info)
 		info.pRenderer->SetShaderParam(*pWorldMatrixParam);
 	}
 
-	if (MShaderParam* pWorldInfoParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_WORLDINFO))
+	if (MShaderConstantParam* pWorldInfoParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_WORLDINFO))
 	{
 		if (info.pDirectionalLight)
 		{
@@ -354,7 +356,7 @@ void MForwardRenderProgram::UpdateShaderSharedParams(MRenderInfo& info)
 		info.pRenderer->SetShaderParam(*pWorldInfoParam);
 	}
 
-	if (MShaderParam* pLightParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_LIGHT))
+	if (MShaderConstantParam* pLightParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_LIGHT))
 	{
 		MVariant& varDirLightEnable = (*pLightParam->var.GetStruct())[3];
 		if (info.pDirectionalLight)
@@ -437,11 +439,11 @@ void MForwardRenderProgram::UpdateShaderSharedParams(MRenderInfo& info)
 
 void MForwardRenderProgram::DrawNormalMesh(MRenderInfo& info)
 {
-	MShaderParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
+	MShaderConstantParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
 	if (nullptr == pMeshMatrixParam)
 		return;
 
-	MShaderParam* pAnimationParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_ANIMATION);
+	MShaderConstantParam* pAnimationParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_ANIMATION);
 
 	for (MMaterialGroup& group : info.vMaterialRenderGroup)
 	{
@@ -457,7 +459,7 @@ void MForwardRenderProgram::DrawNormalMesh(MRenderInfo& info)
 	}
 }
 
-void MForwardRenderProgram::DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance, MShaderParam* pMeshMatrixParam, MShaderParam* pAnimationParam)
+void MForwardRenderProgram::DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance, MShaderConstantParam* pMeshMatrixParam, MShaderConstantParam* pAnimationParam)
 {
 	Matrix4 worldTrans = pMeshInstance->GetWorldTransform();
 	//Transposed and Inverse.
@@ -515,13 +517,13 @@ void MForwardRenderProgram::DrawTransparentMesh(MRenderInfo& info)
 
 
 	MMaterialResource* pTextureMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DEPTH_PEELING);
-	std::vector<MShaderTextureParam>& params = *pTextureMaterial->GetTextureParams();
+	std::vector<MShaderTextureParam*>& params = *pTextureMaterial->GetTextureParams();
 
-	params[0].pTexture = m_pTransparentFrontTexture;
-	params[1].pTexture = m_pTransparentBackTexture;
+	params[0]->pTexture = m_pTransparentFrontTexture;
+	params[1]->pTexture = m_pTransparentBackTexture;
 	info.pRenderer->SetUseMaterial(pTextureMaterial);
-	info.pRenderer->SetShaderTexture(params[0]);
-	info.pRenderer->SetShaderTexture(params[1]);
+	info.pRenderer->SetShaderTexture(*params[0]);
+	info.pRenderer->SetShaderTexture(*params[1]);
 	info.pRenderer->DrawMesh(&m_TransparentDrawMesh);
 }
 
@@ -559,7 +561,7 @@ void MForwardRenderProgram::DrawSkyBox(MRenderInfo& info)
 		{
 			MMaterial* pMaterial = pSkyBox->GetMaterial();
 
-			if (MShaderParam* pMeshParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX))
+			if (MShaderConstantParam* pMeshParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX))
 			{
 				MStruct& cStruct = *pMeshParam->var.GetStruct();
 				Matrix4 mat(Matrix4::IdentityMatrix);
@@ -647,7 +649,7 @@ void MForwardRenderProgram::DrawBoundingSphere(MRenderInfo& info, MIMeshInstance
 	MMaterial& mat = *pStaticMeshMaterialRes;
 	mat.SetRasterizerType(MERasterizerType::ECullNone);
 
-	MShaderParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
+	MShaderConstantParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
 	if (nullptr == pMeshMatrixParam)
 		return;
 

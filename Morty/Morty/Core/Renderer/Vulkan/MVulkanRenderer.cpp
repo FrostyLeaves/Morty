@@ -1,12 +1,13 @@
 #include "MVulkanRenderer.h"
 #include "MMesh.h"
-#include "MShader.h"
 #include "MTexture.h"
 #include "MMaterial.h"
 #include "MVulkanDevice.h"
 #include "MIRenderTarget.h"
+#include "Shader/MShader.h"
 #include "MRenderStructure.h"
 #include "MRenderStatistics.h"
+#include "Shader/MShaderBuffer.h"
 
 #include "MVulkanRenderTarget.h"
 
@@ -290,7 +291,7 @@ bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial, const bool& bUpdateRe
 			UpdateMaterialParam();
 
 			UpdateMaterialResource();
-			for (MShaderSampleParam& param : *m_pUsingMaterial->GetSampleParams())
+			for (MShaderSampleParam* param : *m_pUsingMaterial->GetSampleParams())
 			{
 				if (m_pUsingPipelineLayout)
 				{
@@ -314,9 +315,9 @@ void MVulkanRenderer::UpdateMaterialParam()
 	if (!m_pUsingMaterial)
 		return;
 
-	for (MShaderParam& param : *m_pUsingMaterial->GetShaderParams())
+	for (MShaderConstantParam* param : *m_pUsingMaterial->GetShaderParams())
 	{
-		SetShaderParam(param);
+		SetShaderParam(*param);
 	}
 }
 
@@ -325,13 +326,13 @@ void MVulkanRenderer::UpdateMaterialResource()
 	if (!m_pUsingMaterial)
 		return;
 
-	for (MShaderTextureParam& param : *m_pUsingMaterial->GetTextureParams())
+	for (MShaderTextureParam* param : *m_pUsingMaterial->GetTextureParams())
 	{
-		SetShaderTexture(param);
+		SetShaderTexture(*param);
 	}
 }
 
-void MVulkanRenderer::UpdateShaderParam(MShaderParam& param)
+void MVulkanRenderer::UpdateShaderParam(MShaderConstantParam& param)
 {
 	if (VK_NULL_HANDLE == param.m_VkBuffer)
 		return;
@@ -349,7 +350,7 @@ void MVulkanRenderer::UpdateShaderParam(MShaderParam& param)
 	param.bDirty = false;
 }
 
-void MVulkanRenderer::SetShaderParam(MShaderParam& param)
+void MVulkanRenderer::SetShaderParam(MShaderConstantParam& param)
 {
 	if (param.bDirty)
 		UpdateShaderParam(param);
@@ -366,6 +367,8 @@ void MVulkanRenderer::SetShaderTexture(MShaderTextureParam& param)
 {
 	if (param.bDirty)
 	{
+		MShaderParamSet* pParamSet = m_pUsingMaterial->GetMaterialParamSet();
+
 		param.bDirty = false;
 
 		MITexture* pTexture = param.pTexture;
@@ -380,7 +383,7 @@ void MVulkanRenderer::SetShaderTexture(MShaderTextureParam& param)
 
 			VkWriteDescriptorSet descriptorWrite{};
 			descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrite.dstSet = param.m_VkDescriptorSet;
+			descriptorWrite.dstSet = pParamSet->m_VkDescriptorSet;
 			descriptorWrite.dstBinding = param.unBinding;
 			descriptorWrite.dstArrayElement = 0;
 

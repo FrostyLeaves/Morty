@@ -12,7 +12,7 @@
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
-#include "MShader.h"
+#include "Shader/MShader.h"
 #include "spirv_cross.hpp"
 #include "spirv_parser.hpp"
 

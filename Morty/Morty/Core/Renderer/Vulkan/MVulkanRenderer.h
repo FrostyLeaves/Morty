@@ -45,9 +45,9 @@ public:
 	virtual void UpdateMaterialResource() override;
 
 public:
-	void UpdateShaderParam(MShaderParam& param);
+	void UpdateShaderParam(MShaderConstantParam& param);
 
-	virtual void SetShaderParam(MShaderParam& param) override;
+	virtual void SetShaderParam(MShaderConstantParam& param) override;
 	virtual void SetShaderTexture(MShaderTextureParam& param) override;
 
 	VkPipeline CreateGraphicsPipeline(MMaterial* pMaaterial, MRenderPass* pRenderPass);

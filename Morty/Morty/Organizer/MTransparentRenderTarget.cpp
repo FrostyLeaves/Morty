@@ -6,6 +6,7 @@
 #include "MViewport.h"
 
 #include "MResourceManager.h"
+#include "Shader/MShaderBuffer.h"
 #include "Texture/MTextureResource.h"
 
 M_OBJECT_IMPLEMENT(MTransparentRenderTarget, MTextureRenderTarget)
@@ -90,11 +91,11 @@ void MTransparentRenderTarget::OnRender(MIRenderer* pRenderer)
 	if (nullptr == pRenderProgram)
 		return;
 
-	MShaderParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
+	MShaderConstantParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
 	if (nullptr == pMeshMatrixParam)
 		return;
 
-	MShaderParam* pAnimationParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_ANIMATION);
+	MShaderConstantParam* pAnimationParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_ANIMATION);
 
 // 
 // 	//更新上一层的DepthMap

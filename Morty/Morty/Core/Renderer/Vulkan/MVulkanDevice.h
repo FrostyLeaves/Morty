@@ -57,8 +57,8 @@ public:
 	virtual bool GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t nWidth, uint32_t nHeight) override;
 	virtual void DestroyRenderTarget(MIRenderTarget* pRenderTarget) override;
 
-	virtual bool GenerateShaderParamBuffer(MShaderParam* pParam) override;
-	virtual void DestroyShaderParamBuffer(MShaderParam* pParam) override;
+	virtual bool GenerateShaderParamBuffer(MShaderConstantParam* pParam) override;
+	virtual void DestroyShaderParamBuffer(MShaderConstantParam* pParam) override;
 
 	virtual bool GenerateRenderPass(MRenderPass* pRenderPass) override;
 	virtual void DestroyRenderPass(MRenderPass* pRenderPass) override;

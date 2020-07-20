@@ -16,6 +16,7 @@
 #include "MRenderPass.h"
 
 class MVulkanDevice;
+class MShaderParamSet;
 struct MPipelineRenderPassGroup
 {
     std::vector<VkPipeline> vMaterialGroup;
@@ -57,7 +58,7 @@ public:
 
 public:
 
-	void BindDescriptor(MShaderParam& param);
+	void BindDescriptor(MShaderParamSet* pParamSet);
 
     bool CreateMaterialPipelineLayout(MMaterial* pMaterial, MMaterialPipelineLayoutData& data);
     void DestroyMaterialPipelineLayout(MMaterialPipelineLayoutData& data);

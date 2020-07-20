@@ -1,8 +1,8 @@
 ﻿#include "MShaderResource.h"
 #include "MMath.h"
-#include "MShader.h"
 #include "MEngine.h"
 #include "MIDevice.h"
+#include "Shader/MShader.h"
 #include "MResourceManager.h"
 
 M_RESOURCE_IMPLEMENT(MShaderResource, MResource)

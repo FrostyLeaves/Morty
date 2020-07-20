@@ -33,9 +33,9 @@ void MIMeshInstance::BindShaderParam(MMaterial* pMaterial)
 
 	if (pMaterial)
 	{
-		if (MShaderParam* pParam = pMaterial->FindShaderParam(SHADER_PARAM_CODE_MESH_MATRIX))
+		if (MShaderConstantParam* pParam = pMaterial->FindShaderParam(SHADER_PARAM_CODE_MESH_MATRIX))
 		{
-			m_pTransformParam = new MShaderParam(*pParam, 0);
+			m_pTransformParam = new MShaderConstantParam(*pParam, 0);
 
 			if (MStruct* pSrt = m_pTransformParam->var.GetStruct())
 			{
@@ -101,7 +101,7 @@ void MIMeshInstance::LocalTransformDirty()
 	m_bTransformParamDirty = true;
 }
 
-MShaderParam* MIMeshInstance::GetShaderMeshParam()
+MShaderConstantParam* MIMeshInstance::GetShaderMeshParam()
 {
 	if (m_bTransformParamDirty)
 	{

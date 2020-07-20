@@ -14,7 +14,7 @@
 class MScene;
 class MViewport;
 class MIRenderer;
-class MShaderParam;
+class MShaderConstantParam;
 class MIRenderTarget;
 class MIMeshInstance;
 class MORTY_CLASS MIRenderProgram : public MObject
@@ -28,7 +28,7 @@ public:
 
     virtual void Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene, MIRenderTarget* pRenderTarget) {};
 
-    virtual void DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance, MShaderParam* pMeshMatrixParam, MShaderParam* pAnimationParam) {}
+    virtual void DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance, MShaderConstantParam* pMeshMatrixParam, MShaderConstantParam* pAnimationParam) {}
 };
 
 #endif

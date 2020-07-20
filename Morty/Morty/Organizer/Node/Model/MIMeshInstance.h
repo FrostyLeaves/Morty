@@ -14,7 +14,7 @@
 
 class MIMesh;
 class MMaterial;
-class MShaderParam;
+class MShaderConstantParam;
 class MModelInstance;
 class MModelMeshStruct;
 class MSkeletonInstance;
@@ -39,7 +39,7 @@ public:
 	MMaterial* GetMaterial();
 
 
-	MShaderParam* GetShaderMeshParam();
+	MShaderConstantParam* GetShaderMeshParam();
 	void UpdateShaderMeshParam();
 
 	bool SetMaterialPath(const MString& strPath);
@@ -72,7 +72,7 @@ protected:
 	MResourceKeeper m_Material;
 	bool m_bTransformParamDirty;
 
-	MShaderParam* m_pTransformParam;
+	MShaderConstantParam* m_pTransformParam;
 	Matrix4* m_pWorldMatrixParam;
 	Matrix3* m_pNormalMatrixParam;
 };

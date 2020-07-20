@@ -343,8 +343,8 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 		}
 
 		{
-			std::vector<MShaderParam>& vParams = *pMaterial->GetShaderParams();
-			for (MShaderParam& param : vParams)
+			std::vector<MShaderConstantParam>& vParams = *pMaterial->GetShaderParams();
+			for (MShaderConstantParam& param : vParams)
 			{
 				if (EditMVariant(param.strName, param.var))
 				{

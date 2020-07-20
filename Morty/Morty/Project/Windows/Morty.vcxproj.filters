@@ -94,6 +94,9 @@
     <Filter Include="Core\RenderProgram">
       <UniqueIdentifier>{f6fc0953-8cda-42db-bd08-3e5f3b35a65a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\Renderer\Shader">
+      <UniqueIdentifier>{c765a7e5-e8d8-455e-8f9f-9b48708803f2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../ReadMe.txt" />
@@ -166,9 +169,6 @@
       <Filter>Core\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Renderer\MMesh.h">
-      <Filter>Core\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Core\Renderer\MShader.h">
       <Filter>Core\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Renderer\MTexture.h">
@@ -312,9 +312,6 @@
     <ClInclude Include="..\..\Organizer\MTransparentRenderTarget.h">
       <Filter>Organizer</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Core\Renderer\MShaderMacro.h">
-      <Filter>Core\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Organizer\MSerializer.h">
       <Filter>Organizer</Filter>
     </ClInclude>
@@ -369,8 +366,20 @@
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanBufferManager.h">
       <Filter>Core\Renderer\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Core\Renderer\MShaderParam.h">
-      <Filter>Core\Renderer</Filter>
+    <ClInclude Include="..\..\Core\Renderer\Shader\MShader.h">
+      <Filter>Core\Renderer\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\Shader\MShaderBuffer.h">
+      <Filter>Core\Renderer\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\Shader\MShaderMacro.h">
+      <Filter>Core\Renderer\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\Shader\MShaderParam.h">
+      <Filter>Core\Renderer\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\Shader\MShaderParamSet.h">
+      <Filter>Core\Renderer\Shader</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -429,9 +438,6 @@
       <Filter>Core\Renderer\DirectX11</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\MMesh.cpp">
-      <Filter>Core\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Core\Renderer\MShader.cpp">
       <Filter>Core\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\MTexture.cpp">
@@ -566,9 +572,6 @@
     <ClCompile Include="..\..\Organizer\MTransparentRenderTarget.cpp">
       <Filter>Organizer</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Core\Renderer\MShaderMacro.cpp">
-      <Filter>Core\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Organizer\Node\MNode.cpp">
       <Filter>Organizer\Node</Filter>
     </ClCompile>
@@ -623,8 +626,20 @@
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanBufferManager.cpp">
       <Filter>Core\Renderer\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Core\Renderer\MShaderParam.cpp">
-      <Filter>Core\Renderer</Filter>
+    <ClCompile Include="..\..\Core\Renderer\Shader\MShader.cpp">
+      <Filter>Core\Renderer\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\Shader\MShaderBuffer.cpp">
+      <Filter>Core\Renderer\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\Shader\MShaderMacro.cpp">
+      <Filter>Core\Renderer\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\Shader\MShaderParam.cpp">
+      <Filter>Core\Renderer\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\Shader\MShaderParamSet.cpp">
+      <Filter>Core\Renderer\Shader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

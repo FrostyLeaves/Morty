@@ -103,6 +103,8 @@ extern const uint32_t MMESH_LOD_LEVEL_RANGE;
 
 #define M_BUFFER_NUM 3
 
+#define M_VALID_SHADER_SET_NUM 3
+
 //vulkan
 #define MORTY_VULKAN 1
 //directx11

@@ -13,10 +13,18 @@
 #include "MResource.h"
 #include "MIRenderer.h"
 #include "MRefCounter.h"
-#include "MShaderMacro.h"
-#include "MShaderParam.h"
+
+#include "Shader/MShaderMacro.h"
+#include "Shader/MShaderParamSet.h"
 
 #include <vector>
+
+class MORTY_CLASS MShaderRefTextureParam : public MShaderTextureParam
+{
+public:
+
+	MResourceKeeper m_TextureRef;
+};
 
 class MShader;
 class MShaderResource;
@@ -30,17 +38,20 @@ public:
 	MShader* GetVertexShader(){ return m_pVertexShader; }
 	MShader* GetPixelShader() { return m_pPixelShader; }
 
-	std::vector<MShaderParam>* GetShaderParams() { return &m_vShaderParams; }
-	std::vector<MShaderSampleParam>* GetSampleParams() { return &m_vSampleParams; }
-	std::vector<MShaderTextureParam>* GetTextureParams() { return &m_vTextureParams; }
+	std::vector<MShaderConstantParam*>* GetShaderParams();
+	std::vector<MShaderSampleParam*>* GetSampleParams();
+	std::vector<MShaderTextureParam*>* GetTextureParams();
 
-	std::vector<MResourceKeeper>* GetTextures() { return &m_vTextureResKeeper; }
+	MShaderParamSet* GetShaderParamSets() { return m_vShaderSets; }
+	MShaderParamSet* GetMaterialParamSet() { return &m_MaterialSet; }
+	MShaderParamSet* GetFrameParamSet() { return &m_FrameSet; }
+	MShaderParamSet* GetMeshParamSet() { return &m_MeshSet; }
 
 	void SetTexutreParam(const MString& strName, MResource* pTexResource);
 	void SetTexutreParam(const uint32_t& unIndex, MResource* pTexResource);
 
-	MShaderParam* FindShaderParam(const MString& strName);
-	MShaderParam* FindShaderParam(const uint32_t& unCode);
+	MShaderConstantParam* FindShaderParam(const MString& strName);
+	MShaderConstantParam* FindShaderParam(const uint32_t& unCode);
 
 	void SetRasterizerType(const MERasterizerType& eType) { m_eRasterizerType = eType; }
 	MERasterizerType GetRasterizerType() const { return m_eRasterizerType; }
@@ -69,8 +80,6 @@ public:
 
 	void Unload();
 
-	void CompileShaderParams(const MEShaderParamType& eType);
-
 	virtual void CopyFrom(const MResource* pResource) override;
 
 	virtual void Encode(MString& strCode) override;
@@ -82,25 +91,25 @@ protected:
 
 	virtual bool Load(const MString& strResourcePath) override;
 
-	void RecompileShaderParams(std::vector<MShaderParam>& vParams, std::vector<MShaderParam*>& vNewParams, const MEShaderParamType& eType);
-	void RecompileShaderTextureParam(std::vector<MShaderTextureParam>& vParams, std::vector<MResourceKeeper>& vResHolders, std::vector<MShaderTextureParam*>& vNewParams, const MEShaderParamType& eType);
-	void RecompileSampleParams(std::vector<MShaderSampleParam>& vParams, std::vector<MShaderSampleParam*>& vNewParams, const MEShaderParamType& eType);
+	void CopyShaderParamSet(MShaderParamSet& target, const MShaderParamSet& source);
 
-	void CleanTextureParams();
-	void CleanShaderParams();
+	void BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderParamType& eType);
+	void UnbindShaderBuffer(const MEShaderParamType& eType);
 
+	void ClearParams();
 
 private:
 
-	//Shader Params
-	std::vector<MShaderParam> m_vShaderParams;
+	union {
+		struct {
+			MShaderParamSet m_MaterialSet;
+			MShaderParamSet m_FrameSet;
+			MShaderParamSet m_MeshSet;
+		};
+		MShaderParamSet m_vShaderSets[M_VALID_SHADER_SET_NUM];
+	};
 
-	//Texture
-	std::vector<MShaderTextureParam> m_vTextureParams;
-	std::vector<MResourceKeeper> m_vTextureResKeeper;
 
-	//Sample
-	std::vector<MShaderSampleParam> m_vSampleParams;
 	
 private:
 

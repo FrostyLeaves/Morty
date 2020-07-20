@@ -1,11 +1,12 @@
 #include "MVulkanDevice.h"
 #include "MMesh.h"
-#include "MShader.h"
 #include "MTexture.h"
 #include "MResource.h"
 #include "MFileHelper.h"
-#include "MShaderParam.h"
+#include "Shader/MShader.h"
 #include "MRenderStructure.h"
+#include "Shader/MShaderParam.h"
+#include "Shader/MShaderBuffer.h"
 
 #include <set>
 #include <array>
@@ -853,7 +854,7 @@ void MVulkanDevice::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
 	DestroyRenderPass(&pRenderTarget->m_RenderPass);
 }
 
-bool MVulkanDevice::GenerateShaderParamBuffer(MShaderParam* pParam)
+bool MVulkanDevice::GenerateShaderParamBuffer(MShaderConstantParam* pParam)
 {
 	if (VK_NULL_HANDLE != pParam->m_VkBuffer)
 		DestroyShaderParamBuffer(pParam);
@@ -875,7 +876,7 @@ bool MVulkanDevice::GenerateShaderParamBuffer(MShaderParam* pParam)
 	return false;
 }
 
-void MVulkanDevice::DestroyShaderParamBuffer(MShaderParam* pParam)
+void MVulkanDevice::DestroyShaderParamBuffer(MShaderConstantParam* pParam)
 {
 	if (pParam)
 	{

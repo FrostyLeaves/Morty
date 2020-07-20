@@ -13,9 +13,9 @@ struct VS_OUTPUT
     float2 screenSize;
 };
 
-[[vk::binding(0,1)]]Texture2D image;
+[[vk::binding(2,0)]]Texture2D image;
 
-[[vk::binding(0,3)]]sampler samp;
+[[vk::binding(3,0)]]sampler samp;
 
 float4 PS( VS_OUTPUT input) : SV_Target
 {

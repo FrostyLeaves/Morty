@@ -10,7 +10,8 @@
 
 #include "MResource.h"
 #include "MFileHelper.h"
-#include "MShaderParam.h"
+#include "Shader/MShaderParam.h"
+#include "Shader/MShaderBuffer.h"
 
 MVulkanShaderCompiler::MVulkanShaderCompiler()
 {
@@ -203,7 +204,7 @@ void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler
 	{
 		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
 
-		MShaderParam* pParam = new MShaderParam();
+		MShaderConstantParam* pParam = new MShaderConstantParam();
 		pParam->unSet = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
 		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
 		pParam->strName = res.name;

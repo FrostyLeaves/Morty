@@ -146,98 +146,102 @@ void MVulkanPipelineManager::UnRegisterRenderPass(MRenderPass* pRenderPass)
 	m_RenderPassIDPool.RecoveryID(id);
 }
 
-void MVulkanPipelineManager::BindDescriptor(MShaderParam& param)
+void MVulkanPipelineManager::BindDescriptor(MShaderParamSet* pParamSet)
 {
-	VkDescriptorBufferInfo bufferInfo{};
-	bufferInfo.buffer = param.m_VkBuffer;
-	bufferInfo.offset = 0;
-	bufferInfo.range = param.var.GetSize();
+	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
+	{
+		VkDescriptorBufferInfo bufferInfo{};
+		bufferInfo.buffer = pParam->m_VkBuffer;
+		bufferInfo.offset = 0;
+		bufferInfo.range = pParam->var.GetSize();
 
-	VkWriteDescriptorSet descriptorWrite{};
-	descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorWrite.dstSet = param.m_VkDescriptorSet;
-	descriptorWrite.dstBinding = param.unBinding;
-	descriptorWrite.dstArrayElement = 0;
+		VkWriteDescriptorSet descriptorWrite{};
+		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descriptorWrite.dstSet = pParamSet->m_VkDescriptorSet;
+		descriptorWrite.dstBinding = pParam->unBinding;
+		descriptorWrite.dstArrayElement = 0;
 
-	descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	descriptorWrite.descriptorCount = 1;
+		descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		descriptorWrite.descriptorCount = 1;
 
-	descriptorWrite.pBufferInfo = &bufferInfo;
-	descriptorWrite.pImageInfo = nullptr; // Optional
-	descriptorWrite.pTexelBufferView = nullptr; // Optional
+		descriptorWrite.pBufferInfo = &bufferInfo;
+		descriptorWrite.pImageInfo = nullptr; // Optional
+		descriptorWrite.pTexelBufferView = nullptr; // Optional
 
-	vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
+		vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
+	}
 }
 
 bool MVulkanPipelineManager::CreateMaterialPipelineLayout(MMaterial* pMaterial, MMaterialPipelineLayoutData& data)
 {
-	std::map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> tParamBinding;
-	uint32_t unMaxSet = 0;
-
-	for (MShaderParam& param : *pMaterial->GetShaderParams())
+	std::vector<VkDescriptorSetLayoutBinding> vParamBinding[M_VALID_SHADER_SET_NUM];
+	
+	for (uint32_t unSetIdx = 0; unSetIdx < M_VALID_SHADER_SET_NUM; ++unSetIdx)
 	{
-		VkDescriptorSetLayoutBinding uboLayoutBinding{};
-		uboLayoutBinding.binding = param.unBinding;
-		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		uboLayoutBinding.descriptorCount = 1;
-		uboLayoutBinding.stageFlags = 0;
-		if (param.eShaderType & MEShaderParamType::EVertex)
-			uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_VERTEX_BIT;
-		if (param.eShaderType & MEShaderParamType::EPixel)
-			uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_FRAGMENT_BIT;
+		MShaderParamSet& paramSets = pMaterial->GetShaderParamSets()[unSetIdx];
 
-		uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+		for (MShaderConstantParam* param : paramSets.m_vParams)
+		{
+			VkDescriptorSetLayoutBinding uboLayoutBinding{};
+			uboLayoutBinding.binding = param->unBinding;
+			uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			uboLayoutBinding.descriptorCount = 1;
+			uboLayoutBinding.stageFlags = 0;
+			if (param->eShaderType & MEShaderParamType::EVertex)
+				uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_VERTEX_BIT;
+			if (param->eShaderType & MEShaderParamType::EPixel)
+				uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_FRAGMENT_BIT;
 
-		tParamBinding[param.unSet].push_back(uboLayoutBinding);
-		if (param.unSet > unMaxSet) unMaxSet = param.unSet;
-	}
+			uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
-	for (MShaderTextureParam& param : *pMaterial->GetTextureParams())
-	{
-		VkDescriptorSetLayoutBinding uboLayoutBinding{};
-		uboLayoutBinding.binding = param.unBinding;
-		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-		uboLayoutBinding.descriptorCount = 1;
-		uboLayoutBinding.stageFlags = 0;
-		if (param.eShaderType & MEShaderParamType::EVertex)
-			uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_VERTEX_BIT;
-		if (param.eShaderType & MEShaderParamType::EPixel)
-			uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_FRAGMENT_BIT;
+			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
+		}
 
-		uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+		for (MShaderTextureParam* param : paramSets.m_vTextures)
+		{
+			VkDescriptorSetLayoutBinding uboLayoutBinding{};
+			uboLayoutBinding.binding = param->unBinding;
+			uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+			uboLayoutBinding.descriptorCount = 1;
+			uboLayoutBinding.stageFlags = 0;
+			if (param->eShaderType & MEShaderParamType::EVertex)
+				uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_VERTEX_BIT;
+			if (param->eShaderType & MEShaderParamType::EPixel)
+				uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_FRAGMENT_BIT;
 
-		tParamBinding[param.unSet].push_back(uboLayoutBinding);
-		if (param.unSet > unMaxSet) unMaxSet = param.unSet;
-	}
+			uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
-	for (MShaderSampleParam& param : *pMaterial->GetSampleParams())
-	{
-		VkDescriptorSetLayoutBinding uboLayoutBinding{};
-		uboLayoutBinding.binding = param.unBinding;
-		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-		uboLayoutBinding.descriptorCount = 1;
-		uboLayoutBinding.stageFlags = 0;
-		if (param.eShaderType & MEShaderParamType::EVertex)
-			uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_VERTEX_BIT;
-		if (param.eShaderType & MEShaderParamType::EPixel)
-			uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_FRAGMENT_BIT;
+			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
+		}
+
+		for (MShaderSampleParam* param : paramSets.m_vSamples)
+		{
+			VkDescriptorSetLayoutBinding uboLayoutBinding{};
+			uboLayoutBinding.binding = param->unBinding;
+			uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+			uboLayoutBinding.descriptorCount = 1;
+			uboLayoutBinding.stageFlags = 0;
+			if (param->eShaderType & MEShaderParamType::EVertex)
+				uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_VERTEX_BIT;
+			if (param->eShaderType & MEShaderParamType::EPixel)
+				uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_FRAGMENT_BIT;
 
 
-		uboLayoutBinding.pImmutableSamplers = &m_pDevice->m_BufferManager.m_VkDefaultSampler;
+			uboLayoutBinding.pImmutableSamplers = &m_pDevice->m_BufferManager.m_VkDefaultSampler;
 
-		tParamBinding[param.unSet].push_back(uboLayoutBinding);
-		if (param.unSet > unMaxSet) unMaxSet = param.unSet;
+			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
+		}
 	}
 
 	std::vector<VkDescriptorSetLayout>& vSetLayouts = data.vSetLayouts;
 	std::unordered_map<uint32_t, uint32_t> vParamLayoutsSet;
 
-	for (uint32_t i = 0; i <= unMaxSet; ++i)
+	for (uint32_t i = 0; i < M_VALID_SHADER_SET_NUM; ++i)
 	{
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.bindingCount = tParamBinding[i].size();
-		layoutInfo.pBindings = tParamBinding[i].data();
+		layoutInfo.bindingCount = vParamBinding[i].size();
+		layoutInfo.pBindings = vParamBinding[i].data();
 
 		vSetLayouts.push_back(VkDescriptorSetLayout());
 
@@ -271,18 +275,12 @@ bool MVulkanPipelineManager::CreateMaterialPipelineLayout(MMaterial* pMaterial, 
 			throw std::runtime_error("failed to allocate descriptor sets!");
 		}
 
-		for (MShaderParam& param : *pMaterial->GetShaderParams())
+		for (uint32_t unSetIdx = 0; unSetIdx < M_VALID_SHADER_SET_NUM; ++unSetIdx)
 		{
-			param.m_VkDescriptorSet = vDescriptorSets[param.unSet];
-			BindDescriptor(param);
-		}
+			MShaderParamSet& paramSets = pMaterial->GetShaderParamSets()[unSetIdx];
+			paramSets.m_VkDescriptorSet = vDescriptorSets[unSetIdx];
 
-		for (MShaderTextureParam& param : *pMaterial->GetTextureParams())
-			param.m_VkDescriptorSet = vDescriptorSets[param.unSet];
-
-		for (MShaderSampleParam& param : *pMaterial->GetSampleParams())
-		{
-			param.m_VkDescriptorSet = vDescriptorSets[param.unSet];
+			BindDescriptor(&paramSets);
 		}
 	}
 

@@ -86,7 +86,7 @@ protected:
 
 public:
 
-	virtual void DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance, MShaderParam* pMeshMatrixParam, MShaderParam* pAnimationParam) override;
+	virtual void DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance, MShaderConstantParam* pMeshMatrixParam, MShaderConstantParam* pAnimationParam) override;
 
 protected:
 

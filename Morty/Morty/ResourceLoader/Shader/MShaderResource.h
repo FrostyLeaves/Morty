@@ -13,7 +13,7 @@
 #include <map>
 
 #include "MResource.h"
-#include "MShader.h"
+#include "Shader/MShader.h"
 
 
 class MORTY_CLASS MShaderResource : public MResource

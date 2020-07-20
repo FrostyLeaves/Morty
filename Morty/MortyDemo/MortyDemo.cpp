@@ -32,7 +32,7 @@
 #include "MInputNode.h"
 #include "MIRenderer.h"
 
-#include "MShader.h"
+#include "Shader/MShader.h"
 #include "MVertex.h"
 #include "MInputManager.h"
 #include "MLogManager.h"

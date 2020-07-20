@@ -17,7 +17,7 @@
 
 class MStruct;
 class MMaterial;
-class MShaderParam;
+class MShaderConstantParam;
 class MIMeshInstance;
 class MSkeletonInstance;
 
@@ -59,9 +59,9 @@ private:
 	MMaterial* m_pStaticMaterial;
 	MMaterial* m_pAnimMaterial;
 
-    MShaderParam* m_pMeshParam;
-	MShaderParam* m_pWorldParam;
-    MShaderParam* m_pAnimBonesParam;
+    MShaderConstantParam* m_pMeshParam;
+	MShaderConstantParam* m_pWorldParam;
+    MShaderConstantParam* m_pAnimBonesParam;
 
 };
 

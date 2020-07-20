@@ -11,8 +11,8 @@
 #include "MGlobal.h"
 #include "MString.h"
 #include "MRenderPass.h"
-#include "MShaderMacro.h"
 #include "MRenderStructure.h"
+#include "Shader/MShaderMacro.h"
 
 class MVertexBuffer;
 class MIMesh;
@@ -24,7 +24,7 @@ class MRenderPass;
 class MShaderBuffer;
 class MIRenderTarget;
 class MTextureRenderTarget;
-struct MShaderParam;
+struct MShaderConstantParam;
 
 
 
@@ -63,8 +63,8 @@ public:
 	virtual bool GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t nWidth, uint32_t nHeight) = 0;
 	virtual void DestroyRenderTarget(MIRenderTarget* pRenderTarget) = 0;
 
-	virtual bool GenerateShaderParamBuffer( MShaderParam* pParam) = 0;
-	virtual void DestroyShaderParamBuffer(MShaderParam* pParam) = 0;
+	virtual bool GenerateShaderParamBuffer( MShaderConstantParam* pParam) = 0;
+	virtual void DestroyShaderParamBuffer(MShaderConstantParam* pParam) = 0;
 
 	virtual bool GenerateRenderPass(MRenderPass* pRenderPass) = 0;
 	virtual void DestroyRenderPass(MRenderPass* pRenderPass) = 0;

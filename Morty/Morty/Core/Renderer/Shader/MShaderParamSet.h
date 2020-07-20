@@ -1,0 +1,114 @@
+/**
+ * @File         MShaderParamSet
+ * 
+ * @Created      2020-07-20 14:26:56
+ *
+ * @Author       Pobrecito
+**/
+
+#ifndef _M_MSHADERPARAMSET_H_
+#define _M_MSHADERPARAMSET_H_
+#include "MGlobal.h"
+#include "MShaderparam.h"
+
+class MIDevice;
+class MORTY_CLASS MShaderParamSet
+{
+public:
+    MShaderParamSet();
+    virtual ~MShaderParamSet();
+
+
+public:
+
+	MShaderConstantParam* FindConstantParam(const MShaderConstantParam* pParam) { return FindShaderParam(m_vParams, pParam); }
+	void AppendConstantParam(MShaderConstantParam* pParam, const uint32_t& eShaderType) { return AppendShaderParam(m_vParams, pParam, eShaderType); }
+	std::vector<MShaderConstantParam*> RemoveConstantParam(const uint32_t& eShaderType) { return RemoveShaderParam(m_vParams, eShaderType); }
+
+	MShaderTextureParam* FindTextureParam(const MShaderTextureParam* pParam) { return FindShaderParam(m_vTextures, pParam); }
+	void AppendTextureParam(MShaderTextureParam* pParam, const uint32_t& eShaderType) { return AppendShaderParam(m_vTextures, pParam, eShaderType); }
+	std::vector<MShaderTextureParam*> RemoveTextureParam(const uint32_t& eShaderType) { return RemoveShaderParam(m_vTextures, eShaderType); }
+
+	MShaderSampleParam* FindSampleParam(const MShaderSampleParam* pParam) { return FindShaderParam(m_vSamples, pParam); }
+	void AppendSampleParam(MShaderSampleParam* pParam, const uint32_t& eShaderType) { return AppendShaderParam(m_vSamples, pParam, eShaderType); }
+	std::vector<MShaderSampleParam*> RemoveSampleParam(const uint32_t& eShaderType) { return RemoveShaderParam(m_vSamples, eShaderType); }
+
+	void ClearAndDestroy(MIDevice* pDevice);
+
+public:
+	std::vector<MShaderConstantParam*> m_vParams;
+	std::vector<MShaderTextureParam*> m_vTextures;
+	std::vector<MShaderSampleParam*> m_vSamples;
+
+public:
+	uint32_t m_unKey;
+
+#if RENDER_GRAPHICS == MORTY_VULKAN
+	VkDescriptorSet m_VkDescriptorSet;
+#endif
+
+protected:
+
+	template <typename ParamType>
+	ParamType* FindShaderParam(std::vector<ParamType*>& vVector, const MShaderParam* pParam);
+
+    template <typename ParamType>
+	void AppendShaderParam(std::vector<ParamType*>& vVector, ParamType* pParam, const uint32_t& eShaderType);
+
+	template <typename ParamType>
+	std::vector<ParamType*> RemoveShaderParam(std::vector<ParamType*>& vVector, const uint32_t& eShaderType);
+
+};
+
+template <typename ParamType>
+ParamType* MShaderParamSet::FindShaderParam(std::vector<ParamType*>& vVector, const MShaderParam* pParam)
+{
+	uint32_t unNum = vVector.size();
+	for (uint32_t i = 0; i < unNum; ++i)
+	{
+		ParamType* param = vVector[i];
+
+		if (pParam->unSet == param->unSet && pParam->unBinding == param->unBinding)
+		{
+			return vVector[i];
+		}
+	}
+
+	return nullptr;
+}
+
+template <typename ParamType>
+void MShaderParamSet::AppendShaderParam(std::vector<ParamType*>& vVector, ParamType* pParam, const uint32_t& eShaderType)
+{
+	vVector.push_back(pParam);
+}
+
+template <typename ParamType>
+std::vector<ParamType*> MShaderParamSet::RemoveShaderParam(std::vector<ParamType*>& vVector, const uint32_t& eShaderType)
+{
+	std::vector<ParamType*> vResult;
+
+	for (std::vector<ParamType*>::iterator iter = vVector.begin(); iter != vVector.end();)
+	{
+		ParamType* param = *iter;
+
+		if (param->eShaderType & eShaderType)
+		{
+			param->eShaderType = param->eShaderType ^ eShaderType;
+		}
+
+		if (0 == param->eShaderType)
+		{
+			vResult.push_back(*iter);
+			iter = vVector.erase(iter);
+		}
+		else
+		{
+			++iter;
+		}
+	}
+
+	return vResult;
+}
+
+#endif
