@@ -75,6 +75,7 @@ struct MShaderConstantParam;
 class MTexture;
 class MViewport;
 class MIRenderTarget;
+class MShaderParamSet;
 class MRenderDepthTexture;
 class MRenderTargetTexture;
 
@@ -117,8 +118,7 @@ public:
 	virtual void UpdateMaterialResource() = 0;
 
 public:
-	virtual void SetShaderParam(MShaderConstantParam& param) = 0;
-	virtual void SetShaderTexture(MShaderTextureParam& param) = 0;
+	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) = 0;
 
 protected:
 	MERasterizerType m_eRasterizerType;

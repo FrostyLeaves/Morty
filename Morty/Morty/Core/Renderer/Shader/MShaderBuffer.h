@@ -27,8 +27,6 @@ public:
 		MShaderParamSet m_vShaderSets[M_VALID_SHADER_SET_NUM];
 	};
 
-	static MShaderConstantParam* GetSharedParam(const uint32_t& unCode);
-
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 
 #elif RENDER_GRAPHICS == MORTY_VULKAN

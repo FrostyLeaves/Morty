@@ -30,9 +30,9 @@ MMaterial::MMaterial()
 	, m_nPixelShaderIndex(0)
 	, m_ShaderMacro()
 	, m_unMaterialID(0)
-	, m_MaterialSet()
-	, m_FrameSet()
-	, m_MeshSet()
+	, m_MaterialSet(0)
+	, m_FrameSet(1)
+	, m_MeshSet(2)
 {
 	m_unResourceType = MResourceManager::MEResourceType::Material;
 }

@@ -313,24 +313,18 @@ void MForwardRenderProgram::GenerateShadowMap(MRenderInfo& info)
 		return;
 	}
 
-// 	//如果当前有Shader使用了ShadowMap，那么进行ShadowMap的更新
-// 	if (SHADER_PARAM_CODE_SHADOW_MAP < MShaderBuffer::s_vTextureParams.size())
-// 	{
-// 		MShaderTextureParam* pShadowParam = MShaderBuffer::s_vTextureParams[SHADER_PARAM_CODE_SHADOW_MAP];
-// 		if (pShadowParam && SHADER_PARAM_CODE_SHADOW_MAP == pShadowParam->unCode)
-// 		{
-// 			m_pShadowDepthMapRenderTarget->Render(info.pRenderer, info.m4DirLightInvProj, &info.vShadowGroup);
-// 
-// 			pShadowParam->pTexture = m_pShadowDepthMapRenderTarget->GetDepthTexture();
-// 			info.pRenderer->SetShaderTexture(*pShadowParam);
-// 		}
-// 	}
+
+	//TODO 只有在需要ShadowMap时才进行渲染的优化
+	m_pShadowDepthMapRenderTarget->Render(info.pRenderer, info.m4DirLightInvProj, &info.vShadowGroup);
+
+//	pShadowParam->pTexture = m_pShadowDepthMapRenderTarget->GetDepthTexture();
+//	info.pRenderer->SetShaderTexture(*pShadowParam);
+
 
 }
 
 void MForwardRenderProgram::UpdateShaderSharedParams(MRenderInfo& info)
 {
-
 	if (MShaderConstantParam* pWorldMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_WORLD_MATRIX))
 	{
 		MStruct& cStruct = *pWorldMatrixParam->var.GetStruct();
@@ -499,32 +493,32 @@ void MForwardRenderProgram::DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstan
 
 void MForwardRenderProgram::DrawTransparentMesh(MRenderInfo& info)
 {
-	if (info.vTransparentRenderGroup.empty())
-		return;
-
-	CheckTransparentTextureSize(info);
-
- //	info.pRenderer->ClearRenderTargetView(m_pTransparentFrontTexture->GetRenderBuffer(), MColor::Black_T);
- //	info.pRenderer->ClearRenderTargetView(m_pTransparentBackTexture->GetRenderBuffer(), MColor::Black_T);
-
-	m_pTransparentRenderTarget0->Render(info.pRenderer, info.pViewport, info.pRenderTarget, &info.vTransparentRenderGroup);
-
-	for (uint32_t i = 0; i < 3; ++i)
-	{
-		m_pTransparentRenderTarget1->Render(info.pRenderer, info.pViewport, info.pRenderTarget, &info.vTransparentRenderGroup);
-		m_pTransparentRenderTarget2->Render(info.pRenderer, info.pViewport, info.pRenderTarget, &info.vTransparentRenderGroup);
-	}
-
-
-	MMaterialResource* pTextureMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DEPTH_PEELING);
-	std::vector<MShaderTextureParam*>& params = *pTextureMaterial->GetTextureParams();
-
-	params[0]->pTexture = m_pTransparentFrontTexture;
-	params[1]->pTexture = m_pTransparentBackTexture;
-	info.pRenderer->SetUseMaterial(pTextureMaterial);
-	info.pRenderer->SetShaderTexture(*params[0]);
-	info.pRenderer->SetShaderTexture(*params[1]);
-	info.pRenderer->DrawMesh(&m_TransparentDrawMesh);
+// 	if (info.vTransparentRenderGroup.empty())
+// 		return;
+// 
+// 	CheckTransparentTextureSize(info);
+// 
+//  //	info.pRenderer->ClearRenderTargetView(m_pTransparentFrontTexture->GetRenderBuffer(), MColor::Black_T);
+//  //	info.pRenderer->ClearRenderTargetView(m_pTransparentBackTexture->GetRenderBuffer(), MColor::Black_T);
+// 
+// 	m_pTransparentRenderTarget0->Render(info.pRenderer, info.pViewport, info.pRenderTarget, &info.vTransparentRenderGroup);
+// 
+// 	for (uint32_t i = 0; i < 3; ++i)
+// 	{
+// 		m_pTransparentRenderTarget1->Render(info.pRenderer, info.pViewport, info.pRenderTarget, &info.vTransparentRenderGroup);
+// 		m_pTransparentRenderTarget2->Render(info.pRenderer, info.pViewport, info.pRenderTarget, &info.vTransparentRenderGroup);
+// 	}
+// 
+// 
+// 	MMaterialResource* pTextureMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DEPTH_PEELING);
+// 	std::vector<MShaderTextureParam*>& params = *pTextureMaterial->GetTextureParams();
+// 
+// 	params[0]->pTexture = m_pTransparentFrontTexture;
+// 	params[1]->pTexture = m_pTransparentBackTexture;
+// 	info.pRenderer->SetUseMaterial(pTextureMaterial);
+// 	info.pRenderer->SetShaderTexture(*params[0]);
+// 	info.pRenderer->SetShaderTexture(*params[1]);
+// 	info.pRenderer->DrawMesh(&m_TransparentDrawMesh);
 }
 
 void MForwardRenderProgram::DrawModelInstance(MRenderInfo& info)
@@ -553,35 +547,35 @@ void MForwardRenderProgram::DrawModelInstance(MRenderInfo& info)
 
 void MForwardRenderProgram::DrawSkyBox(MRenderInfo& info)
 {
-	MSkyBox* pSkyBox = info.pScene->GetSkyBox();
-
-	if (pSkyBox)
-	{
-		if (MIMesh* pMesh = pSkyBox->GetMesh())
-		{
-			MMaterial* pMaterial = pSkyBox->GetMaterial();
-
-			if (MShaderConstantParam* pMeshParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX))
-			{
-				MStruct& cStruct = *pMeshParam->var.GetStruct();
-				Matrix4 mat(Matrix4::IdentityMatrix);
-				Vector3 camPos = info.pViewport->GetCamera()->GetWorldPosition();
-				mat.m[0][3] = camPos.x;
-				mat.m[1][3] = camPos.y;
-				mat.m[2][3] = camPos.z;
-				cStruct[0] = mat;
-
-				pMeshParam->SetDirty();
-				info.pRenderer->SetShaderParam(*pMeshParam);
-			}
-
-			if (info.pRenderer->SetUseMaterial(pMaterial, true))
-			{
-				info.pRenderer->DrawMesh(pMesh);
-			}
-		}
-
-	}
+// 	MSkyBox* pSkyBox = info.pScene->GetSkyBox();
+// 
+// 	if (pSkyBox)
+// 	{
+// 		if (MIMesh* pMesh = pSkyBox->GetMesh())
+// 		{
+// 			MMaterial* pMaterial = pSkyBox->GetMaterial();
+// 
+// 			if (MShaderConstantParam* pMeshParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX))
+// 			{
+// 				MStruct& cStruct = *pMeshParam->var.GetStruct();
+// 				Matrix4 mat(Matrix4::IdentityMatrix);
+// 				Vector3 camPos = info.pViewport->GetCamera()->GetWorldPosition();
+// 				mat.m[0][3] = camPos.x;
+// 				mat.m[1][3] = camPos.y;
+// 				mat.m[2][3] = camPos.z;
+// 				cStruct[0] = mat;
+// 
+// 				pMeshParam->SetDirty();
+// 				info.pRenderer->SetShaderParam(*pMeshParam);
+// 			}
+// 
+// 			if (info.pRenderer->SetUseMaterial(pMaterial, true))
+// 			{
+// 				info.pRenderer->DrawMesh(pMesh);
+// 			}
+// 		}
+// 
+// 	}
 }
 
 void MForwardRenderProgram::DrawPainter(MRenderInfo& info)
@@ -643,41 +637,41 @@ void MForwardRenderProgram::DrawBoundingBox(MRenderInfo& info, MModelInstance* p
 
 void MForwardRenderProgram::DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pMeshIns)
 {
-	MResource* pSphereResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/Sphere.model");
-	MMaterialResource* pStaticMeshMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_STATIC);
-
-	MMaterial& mat = *pStaticMeshMaterialRes;
-	mat.SetRasterizerType(MERasterizerType::ECullNone);
-
-	MShaderConstantParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
-	if (nullptr == pMeshMatrixParam)
-		return;
-
-	if (!info.pRenderer->SetUseMaterial(pStaticMeshMaterialRes))
-		return;
-
-	MTransform trans;
-	if (MBoundsSphere* pSphere = pMeshIns->GetBoundsSphere())
-	{
-		float fScale = pSphere->m_fRadius / 3.8f;
-		trans.SetPosition(pSphere->m_v3CenterPoint);
-		trans.SetScale(Vector3(fScale, fScale, fScale));
-	}
-
-	Matrix4 worldTrans = trans.GetMatrix();
-	MStruct& cStruct = *pMeshMatrixParam->var.GetStruct();
-	cStruct[0] = worldTrans;
-
-	pMeshMatrixParam->SetDirty();
-	info.pRenderer->SetShaderParam(*pMeshMatrixParam);
-
-	if (MModelResource* pModelResource = dynamic_cast<MModelResource*>(pSphereResource))
-	{
-		for (MMeshResource* pMeshRes : pModelResource->GetMeshResources())
-		{
-			info.pRenderer->DrawMesh(pMeshRes->GetMesh());
-		}
-	}
+// 	MResource* pSphereResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/Sphere.model");
+// 	MMaterialResource* pStaticMeshMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_STATIC);
+// 
+// 	MMaterial& mat = *pStaticMeshMaterialRes;
+// 	mat.SetRasterizerType(MERasterizerType::ECullNone);
+// 
+// 	MShaderConstantParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
+// 	if (nullptr == pMeshMatrixParam)
+// 		return;
+// 
+// 	if (!info.pRenderer->SetUseMaterial(pStaticMeshMaterialRes))
+// 		return;
+// 
+// 	MTransform trans;
+// 	if (MBoundsSphere* pSphere = pMeshIns->GetBoundsSphere())
+// 	{
+// 		float fScale = pSphere->m_fRadius / 3.8f;
+// 		trans.SetPosition(pSphere->m_v3CenterPoint);
+// 		trans.SetScale(Vector3(fScale, fScale, fScale));
+// 	}
+// 
+// 	Matrix4 worldTrans = trans.GetMatrix();
+// 	MStruct& cStruct = *pMeshMatrixParam->var.GetStruct();
+// 	cStruct[0] = worldTrans;
+// 
+// 	pMeshMatrixParam->SetDirty();
+// 	info.pRenderer->SetShaderParam(*pMeshMatrixParam);
+// 
+// 	if (MModelResource* pModelResource = dynamic_cast<MModelResource*>(pSphereResource))
+// 	{
+// 		for (MMeshResource* pMeshRes : pModelResource->GetMeshResources())
+// 		{
+// 			info.pRenderer->DrawMesh(pMeshRes->GetMesh());
+// 		}
+// 	}
 }
 
 void MForwardRenderProgram::DrawCameraFrustum(MRenderInfo& info, MCamera* pCamera)

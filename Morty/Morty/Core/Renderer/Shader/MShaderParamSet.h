@@ -15,7 +15,9 @@ class MIDevice;
 class MORTY_CLASS MShaderParamSet
 {
 public:
-    MShaderParamSet();
+	MShaderParamSet();
+	MShaderParamSet(const uint32_t& unKey);
+
     virtual ~MShaderParamSet();
 
 

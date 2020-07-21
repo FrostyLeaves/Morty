@@ -14,6 +14,19 @@ MShaderParamSet::MShaderParamSet()
 
 }
 
+MShaderParamSet::MShaderParamSet(const uint32_t& unKey)
+	: m_vParams()
+	, m_vTextures()
+	, m_vSamples()
+	, m_unKey(unKey)
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+#elif RENDER_GRAPHICS == MORTY_VULKAN
+	, m_VkDescriptorSet(VK_NULL_HANDLE)
+#endif
+{
+
+}
+
 MShaderParamSet::~MShaderParamSet()
 {
 

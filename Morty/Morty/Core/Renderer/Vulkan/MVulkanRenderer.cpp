@@ -287,21 +287,12 @@ bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial, const bool& bUpdateRe
 
 		if (bUpdateResources)
 		{
-			
 			UpdateMaterialParam();
-
 			UpdateMaterialResource();
-			for (MShaderSampleParam* param : *m_pUsingMaterial->GetSampleParams())
-			{
-				if (m_pUsingPipelineLayout)
-				{
-					//Set Use Uniform
-	//				vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pUsingPipelineLayout->pipelineLayout, param.unSet, 1, &param.m_VkDescriptorSet, 0, nullptr);
-				}
-			}
 		}
 
-		vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pUsingPipelineLayout->pipelineLayout, 0, m_pUsingPipelineLayout->vDescriptorSets.size(), m_pUsingPipelineLayout->vDescriptorSets.data(), 0, nullptr);
+		MShaderParamSet* pParamSet = pMaterial->GetMaterialParamSet();
+		vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pUsingPipelineLayout->pipelineLayout, pParamSet->m_unKey, 1, &pParamSet->m_VkDescriptorSet, 0, nullptr);
 
 
 		return true;
@@ -317,7 +308,7 @@ void MVulkanRenderer::UpdateMaterialParam()
 
 	for (MShaderConstantParam* param : *m_pUsingMaterial->GetShaderParams())
 	{
-		SetShaderParam(*param);
+		UpdateShaderParam(*param);
 	}
 }
 
@@ -328,7 +319,7 @@ void MVulkanRenderer::UpdateMaterialResource()
 
 	for (MShaderTextureParam* param : *m_pUsingMaterial->GetTextureParams())
 	{
-		SetShaderTexture(*param);
+		UpdateShaderTexture(*param);
 	}
 }
 
@@ -350,20 +341,7 @@ void MVulkanRenderer::UpdateShaderParam(MShaderConstantParam& param)
 	param.bDirty = false;
 }
 
-void MVulkanRenderer::SetShaderParam(MShaderConstantParam& param)
-{
-	if (param.bDirty)
-		UpdateShaderParam(param);
-
-
-	if (m_pUsingPipelineLayout)
-	{
-		//Set Use Uniform
-	//	vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pUsingPipelineLayout->pipelineLayout, param.unSet, 1, &param.m_VkDescriptorSet, 0, nullptr);
-	}
-}
-
-void MVulkanRenderer::SetShaderTexture(MShaderTextureParam& param)
+void MVulkanRenderer::UpdateShaderTexture(MShaderTextureParam& param)
 {
 	if (param.bDirty)
 	{
@@ -397,12 +375,23 @@ void MVulkanRenderer::SetShaderTexture(MShaderTextureParam& param)
 			vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
 		}
 	}
+}
 
-	if (m_pUsingPipelineLayout)
+void MVulkanRenderer::SetShaderParamSet(MShaderParamSet* pParamSet)
+{
+	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
 	{
-		//Set Use Uniform
-	//	vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pUsingPipelineLayout->pipelineLayout, param.unSet, 1, &param.m_VkDescriptorSet, 0, nullptr);
+		if (pParam->bDirty)
+			UpdateShaderParam(*pParam);
 	}
+
+	for (MShaderTextureParam* pParam : pParamSet->m_vTextures)
+	{
+		if (pParam->bDirty)
+			UpdateShaderTexture(*pParam);
+	}
+
+
 }
 
 VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass)
