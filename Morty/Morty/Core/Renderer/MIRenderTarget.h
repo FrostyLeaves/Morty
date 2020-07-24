@@ -32,7 +32,6 @@ class MORTY_CLASS MIRenderTarget
 {
 public:
 
-
 	MIRenderTarget();
 	virtual ~MIRenderTarget() {}
 

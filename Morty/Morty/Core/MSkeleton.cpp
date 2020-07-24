@@ -4,6 +4,8 @@
 #include "Json/MJson.h"
 #include "MFileHelper.h"
 
+#include "Shader/MShaderParamSet.h"
+
 MBone::MBone()
 	: m_matTransform(Matrix4::IdentityMatrix)
 	, m_matOffsetMatrix(Matrix4::IdentityMatrix)
@@ -166,6 +168,7 @@ void MSkeleton::RebuildBonesMap()
 
 MSkeletonInstance::MSkeletonInstance(const MSkeleton* templateSke)
 	: m_pSkeletonTemplate(templateSke)
+	, m_pShaderParamSet(new MShaderParamSet(SHADER_PARAM_SET_SKELETON))
 {
 	m_vAllBones = m_pSkeletonTemplate->GetAllBones();
 

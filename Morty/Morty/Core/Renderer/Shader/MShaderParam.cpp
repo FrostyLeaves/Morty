@@ -3,7 +3,6 @@
 MShaderParam::MShaderParam()
 	: strName()
 	, unCode(SHADER_PARAM_CODE_DEFAULT)
-	, bDirty(true)
 	, eShaderType(0)
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	, pBuffer(nullptr)
@@ -14,18 +13,21 @@ MShaderParam::MShaderParam()
 	, unBinding(0)
 #endif
 {
-
+	SetDirty();
 }
 
 MShaderConstantParam::MShaderConstantParam()
 	: MShaderParam()
 	, var()
-#if RENDER_GRAPHICS == MORTY_VULKAN
-	, m_VkBuffer(VK_NULL_HANDLE)
-	, m_VkBufferMemory(VK_NULL_HANDLE)
-#endif
-
 {
+#if RENDER_GRAPHICS == MORTY_VULKAN
+	m_VkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+
+	memset(m_VkBuffer, VK_NULL_HANDLE, sizeof(VkBuffer) * M_BUFFER_NUM);
+	memset(m_VkBufferMemory, VK_NULL_HANDLE, sizeof(VkDeviceMemory) * M_BUFFER_NUM);
+	memset(m_unMemoryOffset, 0, sizeof(uint32_t) * M_BUFFER_NUM);
+	memset(m_pMemoryMapping, 0, sizeof(MByte) * M_BUFFER_NUM);
+#endif
 
 }
 
@@ -34,8 +36,10 @@ MShaderConstantParam::MShaderConstantParam(const MShaderConstantParam& param, co
 	strName = param.strName;
 	unCode = param.unCode;
 	var = param.var;
-	bDirty = true;
 	eShaderType = param.eShaderType;
+
+	SetDirty();
+	
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	pBuffer = nullptr;
 	unBindPoint = param.unBindPoint;
@@ -44,8 +48,10 @@ MShaderConstantParam::MShaderConstantParam(const MShaderConstantParam& param, co
 	unSet = param.unSet;
 	unBinding = param.unBinding;
 
-	m_VkBuffer = VK_NULL_HANDLE;
-	m_VkBufferMemory = VK_NULL_HANDLE;
+	memset(m_VkBuffer, VK_NULL_HANDLE, sizeof(VkBuffer) * M_BUFFER_NUM);
+	memset(m_VkBufferMemory, VK_NULL_HANDLE, sizeof(VkDeviceMemory) * M_BUFFER_NUM);
+	memset(m_unMemoryOffset ,0, sizeof(uint32_t) * M_BUFFER_NUM);
+	memset(m_pMemoryMapping, 0, sizeof(MByte) * M_BUFFER_NUM);
 #endif
 
 

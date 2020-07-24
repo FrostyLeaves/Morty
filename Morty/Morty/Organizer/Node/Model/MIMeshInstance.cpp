@@ -10,6 +10,7 @@ M_I_OBJECT_IMPLEMENT(MIMeshInstance, M3DNode)
 
 MIMeshInstance::MIMeshInstance()
 	: M3DNode()
+	, m_pShaderParamSet(nullptr)
 	, m_pTransformParam(nullptr)
 	, m_bTransformParamDirty(true)
 	, m_pWorldMatrixParam(nullptr)
@@ -25,24 +26,28 @@ MIMeshInstance::~MIMeshInstance()
 
 void MIMeshInstance::BindShaderParam(MMaterial* pMaterial)
 {
-	GetEngine()->GetDevice()->DestroyShaderParamBuffer(m_pTransformParam);
-	delete m_pTransformParam;
-	m_pTransformParam = nullptr;
-	m_pWorldMatrixParam = nullptr;
-	m_pNormalMatrixParam = nullptr;
+	if (m_pShaderParamSet)
+	{
+		m_pShaderParamSet->ClearAndDestroy(GetEngine()->GetDevice());
+		delete m_pShaderParamSet;
+		m_pShaderParamSet = nullptr;
+		m_pTransformParam = nullptr;
+	}
 
 	if (pMaterial)
 	{
-		if (MShaderConstantParam* pParam = pMaterial->FindShaderParam(SHADER_PARAM_CODE_MESH_MATRIX))
+		if (MShaderParamSet* pParamSet = pMaterial->GetMaterialParamSet())
 		{
-			m_pTransformParam = new MShaderConstantParam(*pParam, 0);
+			m_pShaderParamSet = pParamSet->Clone();
 
-			if (MStruct* pSrt = m_pTransformParam->var.GetStruct())
+			if (m_pTransformParam = pParamSet->FindConstantParam(""))
 			{
-				m_pWorldMatrixParam = pSrt->FindMember<Matrix4>("U_matWorld");
-				m_pNormalMatrixParam = pSrt->FindMember<Matrix3>("U_matNormal");
+				if (MStruct* pSrt = m_pTransformParam->var.GetStruct())
+				{
+					m_pWorldMatrixParam = pSrt->FindMember<Matrix4>("U_matWorld");
+					m_pNormalMatrixParam = pSrt->FindMember<Matrix3>("U_matNormal");
+				}
 			}
-
 		}
 	}
 }
@@ -101,14 +106,14 @@ void MIMeshInstance::LocalTransformDirty()
 	m_bTransformParamDirty = true;
 }
 
-MShaderConstantParam* MIMeshInstance::GetShaderMeshParam()
+MShaderParamSet* MIMeshInstance::GetShaderMeshParamSet()
 {
 	if (m_bTransformParamDirty)
 	{
 		UpdateShaderMeshParam();
 	}
 
-	return m_pTransformParam;
+	return m_pShaderParamSet;
 }
 
 void MIMeshInstance::UpdateShaderMeshParam()
@@ -129,6 +134,8 @@ void MIMeshInstance::UpdateShaderMeshParam()
 
 			*m_pNormalMatrixParam = matNormal;
 		}
+
+		m_pTransformParam->SetDirty();
 	}
 
 	m_bTransformParamDirty = false;

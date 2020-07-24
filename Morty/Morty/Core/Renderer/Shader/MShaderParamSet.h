@@ -20,6 +20,9 @@ public:
 
     virtual ~MShaderParamSet();
 
+public:
+
+	MShaderConstantParam* FindConstantParam(const MString& strParamName);
 
 public:
 
@@ -37,6 +40,8 @@ public:
 
 	void ClearAndDestroy(MIDevice* pDevice);
 
+	MShaderParamSet* Clone();
+
 public:
 	std::vector<MShaderConstantParam*> m_vParams;
 	std::vector<MShaderTextureParam*> m_vTextures;
@@ -46,7 +51,7 @@ public:
 	uint32_t m_unKey;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
-	VkDescriptorSet m_VkDescriptorSet;
+	VkDescriptorSet m_VkDescriptorSet[M_BUFFER_NUM];
 #endif
 
 protected:

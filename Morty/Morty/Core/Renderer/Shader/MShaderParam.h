@@ -34,8 +34,8 @@ public:
 	uint32_t unCode;
 	uint32_t  eShaderType;
 
-	bool bDirty;
-	void SetDirty() { bDirty = true; }
+	bool bDirty[M_BUFFER_NUM];
+	void SetDirty() { memset(bDirty , true, M_BUFFER_NUM * sizeof(bool)); }
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	class ID3D11Buffer* pBuffer;
@@ -55,10 +55,13 @@ struct MORTY_CLASS MShaderConstantParam : public MShaderParam
 
 	MVariant var;
 
-
 #if RENDER_GRAPHICS == MORTY_VULKAN
-	VkBuffer m_VkBuffer;
-	VkDeviceMemory m_VkBufferMemory;
+	VkDescriptorType m_VkDescriptorType;
+	VkBuffer m_VkBuffer[M_BUFFER_NUM];
+	VkDeviceMemory m_VkBufferMemory[M_BUFFER_NUM];
+
+	uint32_t m_unMemoryOffset[M_BUFFER_NUM];
+	MByte* m_pMemoryMapping[M_BUFFER_NUM];
 #endif
 };
 
@@ -78,9 +81,6 @@ struct MShaderTextureParam : public MShaderParam
 	uint32_t  eShaderType;
 	MITexture* pTexture;
 	METextureType eType;
-
-	bool bDirty;
-	void SetDirty() { bDirty = true; }
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	uint32_t unBindPoint;

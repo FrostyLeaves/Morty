@@ -86,7 +86,7 @@ protected:
 
 public:
 
-	virtual void DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance, MShaderConstantParam* pMeshMatrixParam, MShaderConstantParam* pAnimationParam) override;
+	virtual void DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance) override;
 
 protected:
 
@@ -105,7 +105,6 @@ private:
 	MTransparentRenderTarget* m_pTransparentRenderTarget2;
 
 	MRenderDepthTexture* m_pShadowDepthTexture;
-
 
 	Vector2 m_v2TransparentTextureSize;
 	MRenderTargetTexture* m_pTransparentFrontTexture;

@@ -245,6 +245,7 @@
     <ClInclude Include="..\..\Core\Renderer\Shader\MShaderParam.h" />
     <ClInclude Include="..\..\Core\Renderer\Shader\MShaderParamSet.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanBufferManager.h" />
+    <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanUniformBufferPool.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanShaderCompiler.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanDevice.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanPipelineManager.h" />
@@ -354,6 +355,7 @@
     <ClCompile Include="..\..\Core\Renderer\Shader\MShaderParam.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Shader\MShaderParamSet.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanBufferManager.cpp" />
+    <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanUniformBufferPool.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanShaderCompiler.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanDevice.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanPipelineManager.cpp" />

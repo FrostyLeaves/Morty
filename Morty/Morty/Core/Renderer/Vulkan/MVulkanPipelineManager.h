@@ -28,7 +28,6 @@ struct MMaterialPipelineLayoutData
 
     VkPipelineLayout pipelineLayout;
     std::vector<VkDescriptorSetLayout> vSetLayouts;
-    std::vector<VkDescriptorSet> vDescriptorSets;
 };
 
 class MMaterial;
@@ -62,6 +61,9 @@ public:
 
     bool CreateMaterialPipelineLayout(MMaterial* pMaterial, MMaterialPipelineLayoutData& data);
     void DestroyMaterialPipelineLayout(MMaterialPipelineLayoutData& data);
+
+    VkDescriptorSet CreateMaterialDescriptorSet(MMaterialPipelineLayoutData& data, const uint32_t& unSetIdx);
+
 
 private:
 

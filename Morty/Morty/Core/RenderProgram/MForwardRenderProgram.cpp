@@ -433,12 +433,6 @@ void MForwardRenderProgram::UpdateShaderSharedParams(MRenderInfo& info)
 
 void MForwardRenderProgram::DrawNormalMesh(MRenderInfo& info)
 {
-	MShaderConstantParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
-	if (nullptr == pMeshMatrixParam)
-		return;
-
-	MShaderConstantParam* pAnimationParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_ANIMATION);
-
 	for (MMaterialGroup& group : info.vMaterialRenderGroup)
 	{
 		MMaterial* pMaterial = group.m_pMaterial;
@@ -448,46 +442,33 @@ void MForwardRenderProgram::DrawNormalMesh(MRenderInfo& info)
 
 		for (MIMeshInstance* pMeshIns : group.m_vMeshInstances)
 		{
-			DrawMeshInstance(info.pRenderer, pMeshIns, pMeshMatrixParam, pAnimationParam);
+			DrawMeshInstance(info.pRenderer, pMeshIns);
 		}
 	}
 }
 
-void MForwardRenderProgram::DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance, MShaderConstantParam* pMeshMatrixParam, MShaderConstantParam* pAnimationParam)
+void MForwardRenderProgram::DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance)
 {
-	Matrix4 worldTrans = pMeshInstance->GetWorldTransform();
-	//Transposed and Inverse.
-	Matrix3 matNormal(worldTrans.Transposed().Inverse(), 3, 3);
-
-	MStruct& cStruct = *pMeshMatrixParam->var.GetStruct();
-	cStruct[0] = worldTrans;
-	cStruct[1] = matNormal;
-
-	pMeshMatrixParam->SetDirty();
-	pRenderer->SetShaderParam(*pMeshMatrixParam);
-
-	if (pAnimationParam)
+	if (MSkeletonInstance* pSkeletonIns = pMeshInstance->GetSkeletonInstance())
 	{
-		if (MSkeletonInstance* pSkeletonIns = pMeshInstance->GetSkeletonInstance())
+		MStruct& cAnimationStruct = *pAnimationParam->var.GetStruct();
+		MVariantArray& cBonesArray = *cAnimationStruct[0].GetArray();
+
+		const std::vector<MBone>& bones = pSkeletonIns->GetAllBones();
+		uint32_t size = bones.size();
+		if (size > MBONES_MAX_NUMBER) size = MBONES_MAX_NUMBER;
+
+		for (uint32_t i = 0; i < size; ++i)
 		{
-			MStruct& cAnimationStruct = *pAnimationParam->var.GetStruct();
-			MVariantArray& cBonesArray = *cAnimationStruct[0].GetArray();
-
-			const std::vector<MBone>& bones = pSkeletonIns->GetAllBones();
-			uint32_t size = bones.size();
-			if (size > MBONES_MAX_NUMBER) size = MBONES_MAX_NUMBER;
-
-			for (uint32_t i = 0; i < size; ++i)
-			{
-				cBonesArray[i] = bones[i].m_matWorldTransform;
-			}
-
-			pAnimationParam->SetDirty();
-			pRenderer->SetShaderParam(*pAnimationParam);
-
+			cBonesArray[i] = bones[i].m_matWorldTransform;
 		}
+
+		pAnimationParam->SetDirty();
+		pRenderer->SetShaderParam(*pAnimationParam);
+
 	}
 
+	pRenderer->SetShaderParamSet(pMeshInstance->GetShaderMeshParamSet());
 	pRenderer->DrawMesh(pMeshInstance->GetMesh());
 }
 

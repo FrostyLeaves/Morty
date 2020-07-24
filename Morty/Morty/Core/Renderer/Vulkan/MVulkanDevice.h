@@ -22,6 +22,7 @@
 #include "MVulkanBufferManager.h"
 #include "MVulkanShaderCompiler.h"
 #include "MVulkanPipelineManager.h"
+#include "MVulkanUniformBufferPool.h"
 
 
 class MORTY_CLASS MVulkanDevice : public MIDevice
@@ -107,6 +108,7 @@ public:
 public:
 	VkInstance m_VkInstance;
 	VkPhysicalDevice m_VkPhysicalDevice;
+	VkPhysicalDeviceProperties m_VkPhysicalDeviceProperties;
 	VkDevice m_VkDevice;
 	VkQueue m_VkGraphicsQueue;
 
@@ -117,6 +119,7 @@ public:
 	MVulkanBufferManager m_BufferManager;
 	MVulkanShaderCompiler m_ShaderCompiler;
 	MVulkanPipelineManager m_PipelineManager;
+	MVulkanUniformBufferPool m_DynamicUniformBufferPool;
 };
 
 

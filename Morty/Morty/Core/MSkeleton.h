@@ -17,6 +17,7 @@
 #include <map>
 
 class MBoundsOBB;
+class MShanderParamSet;
 
 class MORTY_CLASS MBone
 {
@@ -95,6 +96,8 @@ public:
 private:
 	const MSkeleton* m_pSkeletonTemplate;
 	std::vector<MBone> m_vAllBones;
+
+	MShaderParamSet* m_pShaderParamSet;
 };
 
 #endif

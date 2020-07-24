@@ -28,7 +28,7 @@ public:
 
     virtual void Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene, MIRenderTarget* pRenderTarget) {};
 
-    virtual void DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance, MShaderConstantParam* pMeshMatrixParam, MShaderConstantParam* pAnimationParam) {}
+    virtual void DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance) {}
 };
 
 #endif

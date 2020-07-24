@@ -103,7 +103,11 @@ extern const uint32_t MMESH_LOD_LEVEL_RANGE;
 
 #define M_BUFFER_NUM 3
 
-#define M_VALID_SHADER_SET_NUM 3
+#define M_VALID_SHADER_SET_NUM 4
+const uint32_t SHADER_PARAM_SET_MATERIAL = 0;
+const uint32_t SHADER_PARAM_SET_FRAME = 1;
+const uint32_t SHADER_PARAM_SET_MESH = 2;
+const uint32_t SHADER_PARAM_SET_SKELETON = 3;
 
 //vulkan
 #define MORTY_VULKAN 1

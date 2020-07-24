@@ -381,6 +381,9 @@
     <ClInclude Include="..\..\Core\Renderer\Shader\MShaderParamSet.h">
       <Filter>Core\Renderer\Shader</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanUniformBufferPool.h">
+      <Filter>Core\Renderer\Vulkan</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -640,6 +643,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\Shader\MShaderParamSet.cpp">
       <Filter>Core\Renderer\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanUniformBufferPool.cpp">
+      <Filter>Core\Renderer\Vulkan</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

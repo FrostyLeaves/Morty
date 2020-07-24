@@ -8,7 +8,6 @@
 MMaterialPipelineLayoutData::MMaterialPipelineLayoutData()
 	: pipelineLayout(VK_NULL_HANDLE)
 	, vSetLayouts()
-	, vDescriptorSets()
 {
 
 }
@@ -148,27 +147,30 @@ void MVulkanPipelineManager::UnRegisterRenderPass(MRenderPass* pRenderPass)
 
 void MVulkanPipelineManager::BindDescriptor(MShaderParamSet* pParamSet)
 {
-	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
+	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
 	{
-		VkDescriptorBufferInfo bufferInfo{};
-		bufferInfo.buffer = pParam->m_VkBuffer;
-		bufferInfo.offset = 0;
-		bufferInfo.range = pParam->var.GetSize();
+		for (MShaderConstantParam* pParam : pParamSet->m_vParams)
+		{
+			VkDescriptorBufferInfo bufferInfo{};
+			bufferInfo.buffer = pParam->m_VkBuffer[i];
+			bufferInfo.offset = 0;
+			bufferInfo.range = pParam->var.GetSize();
 
-		VkWriteDescriptorSet descriptorWrite{};
-		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrite.dstSet = pParamSet->m_VkDescriptorSet;
-		descriptorWrite.dstBinding = pParam->unBinding;
-		descriptorWrite.dstArrayElement = 0;
+			VkWriteDescriptorSet descriptorWrite{};
+			descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrite.dstSet = pParamSet->m_VkDescriptorSet[i];
+			descriptorWrite.dstBinding = pParam->unBinding;
+			descriptorWrite.dstArrayElement = 0;
 
-		descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		descriptorWrite.descriptorCount = 1;
+			descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptorWrite.descriptorCount = 1;
 
-		descriptorWrite.pBufferInfo = &bufferInfo;
-		descriptorWrite.pImageInfo = nullptr; // Optional
-		descriptorWrite.pTexelBufferView = nullptr; // Optional
+			descriptorWrite.pBufferInfo = &bufferInfo;
+			descriptorWrite.pImageInfo = nullptr; // Optional
+			descriptorWrite.pTexelBufferView = nullptr; // Optional
 
-		vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
+			vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
+		}
 	}
 }
 
@@ -184,7 +186,7 @@ bool MVulkanPipelineManager::CreateMaterialPipelineLayout(MMaterial* pMaterial, 
 		{
 			VkDescriptorSetLayoutBinding uboLayoutBinding{};
 			uboLayoutBinding.binding = param->unBinding;
-			uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
 			uboLayoutBinding.descriptorCount = 1;
 			uboLayoutBinding.stageFlags = 0;
 			if (param->eShaderType & MEShaderParamType::EVertex)
@@ -260,29 +262,31 @@ bool MVulkanPipelineManager::CreateMaterialPipelineLayout(MMaterial* pMaterial, 
 		return VK_NULL_HANDLE;
 
 
-	VkDescriptorSetAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = m_pDevice->m_BufferManager.m_VkDescriptorPool;
-	allocInfo.descriptorSetCount = vSetLayouts.size();
-	allocInfo.pSetLayouts = vSetLayouts.data();
 
-
-	if (!vSetLayouts.empty())
-	{
-		std::vector<VkDescriptorSet>& vDescriptorSets = data.vDescriptorSets;
-		vDescriptorSets.resize(vSetLayouts.size());
-		if (vkAllocateDescriptorSets(m_pDevice->m_VkDevice, &allocInfo, vDescriptorSets.data()) != VK_SUCCESS) {
-			throw std::runtime_error("failed to allocate descriptor sets!");
-		}
-
-		for (uint32_t unSetIdx = 0; unSetIdx < M_VALID_SHADER_SET_NUM; ++unSetIdx)
-		{
-			MShaderParamSet& paramSets = pMaterial->GetShaderParamSets()[unSetIdx];
-			paramSets.m_VkDescriptorSet = vDescriptorSets[unSetIdx];
-
-			BindDescriptor(&paramSets);
-		}
-	}
+// 	if (!vSetLayouts.empty())
+// 	{
+// 		for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+// 		{
+// 
+// 			std::vector<VkDescriptorSet> vDescriptorSets;
+// 			vDescriptorSets.resize(vSetLayouts.size());
+// 			if (vkAllocateDescriptorSets(m_pDevice->m_VkDevice, &allocInfo, vDescriptorSets.data()) != VK_SUCCESS) {
+// 				throw std::runtime_error("failed to allocate descriptor sets!");
+// 			}
+// 
+// 			for (uint32_t unSetIdx = 0; unSetIdx < M_VALID_SHADER_SET_NUM; ++unSetIdx)
+// 			{
+// 				MShaderParamSet& paramSets = pMaterial->GetShaderParamSets()[unSetIdx];
+// 				paramSets.m_VkDescriptorSet[i] = vDescriptorSets[unSetIdx];
+// 			}
+// 		}
+// 
+// 		for (uint32_t unSetIdx = 0; unSetIdx < M_VALID_SHADER_SET_NUM; ++unSetIdx)
+// 		{
+// 			MShaderParamSet& paramSets = pMaterial->GetShaderParamSets()[unSetIdx];
+// 			BindDescriptor(&paramSets);
+// 		}
+// 	}
 
 	return pipelineLayout;
 }
@@ -295,19 +299,28 @@ void MVulkanPipelineManager::DestroyMaterialPipelineLayout(MMaterialPipelineLayo
 
 		m_pDevice->m_BufferManager.DestroyPipelineLayoutLater(0, data.pipelineLayout);
 
-		if (!data.vDescriptorSets.empty())
-			m_pDevice->m_BufferManager.DestroyDescriptorSets(0, data.vDescriptorSets);
-
 		for (VkDescriptorSetLayout& layout : data.vSetLayouts)
 			m_pDevice->m_BufferManager.DestroyDescriptorSetLayoutLater(0, layout);
 
 		data.pipelineLayout = VK_NULL_HANDLE;
-		data.vDescriptorSets.clear();
 		data.vSetLayouts.clear();
 	}
 }
 
+VkDescriptorSet MVulkanPipelineManager::CreateMaterialDescriptorSet(MMaterialPipelineLayoutData& data, const uint32_t& unSetIdx)
+{
+	VkDescriptorSet descriptorSet;
 
+	VkDescriptorSetAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = m_pDevice->m_BufferManager.m_VkDescriptorPool;
+	allocInfo.descriptorSetCount = 1;
+	allocInfo.pSetLayouts = &data.vSetLayouts[unSetIdx];
+
+	if (vkAllocateDescriptorSets(m_pDevice->m_VkDevice, &allocInfo, &descriptorSet) != VK_SUCCESS)
+		return VK_NULL_HANDLE;
+
+	return descriptorSet;
+}
 
 #endif
-

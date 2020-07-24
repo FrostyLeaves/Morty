@@ -14,10 +14,11 @@
 
 class MIMesh;
 class MMaterial;
-class MShaderConstantParam;
 class MModelInstance;
+class MShaderParamSet;
 class MModelMeshStruct;
 class MSkeletonInstance;
+class MShaderConstantParam;
 class MORTY_CLASS MIMeshInstance : public M3DNode
 {
 public:
@@ -39,7 +40,7 @@ public:
 	MMaterial* GetMaterial();
 
 
-	MShaderConstantParam* GetShaderMeshParam();
+	MShaderParamSet* GetShaderMeshParamSet();
 	void UpdateShaderMeshParam();
 
 	bool SetMaterialPath(const MString& strPath);
@@ -72,7 +73,9 @@ protected:
 	MResourceKeeper m_Material;
 	bool m_bTransformParamDirty;
 
+	MShaderParamSet* m_pShaderParamSet;
 	MShaderConstantParam* m_pTransformParam;
+
 	Matrix4* m_pWorldMatrixParam;
 	Matrix3* m_pNormalMatrixParam;
 };

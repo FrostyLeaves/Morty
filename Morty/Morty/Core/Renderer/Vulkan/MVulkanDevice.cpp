@@ -51,10 +51,12 @@ MVulkanDevice::MVulkanDevice()
 	: MIDevice()
 	, m_VkInstance(VK_NULL_HANDLE)
 	, m_VkPhysicalDevice(VK_NULL_HANDLE)
+	, m_VkPhysicalDeviceProperties({})
 	, m_VkDevice(VK_NULL_HANDLE)
 	, m_VkGraphicsQueue(VK_NULL_HANDLE)
 	, m_BufferManager(this)
 	, m_PipelineManager(this)
+	, m_DynamicUniformBufferPool(this)
 {
 
 }
@@ -79,6 +81,9 @@ bool MVulkanDevice::Initialize()
 		return false;
 	
 	if (!m_BufferManager.Initialize())
+		return false;
+
+	if (!m_DynamicUniformBufferPool.Initialize())
 		return false;
 
 
@@ -531,15 +536,15 @@ bool MVulkanDevice::InitPhysicalDevice()
 		return false;
 	}
 
-	VkPhysicalDeviceProperties physicalProperties = {};
+	m_VkPhysicalDeviceProperties = {};
 
 	for (uint32_t i = 0; i < nDeviceCount; i++)
 	{
-		// 		vkGetPhysicalDeviceProperties(m_vPhysicalDevices[i], &physicalProperties);
-		// 		MLogManager::GetInstance()->Information("API Version:    %d.%d.%d\n",
-		// 			VK_VERSION_MAJOR(physicalProperties.apiVersion),
-		// 			VK_VERSION_MINOR(physicalProperties.apiVersion),
-		// 			VK_VERSION_PATCH(physicalProperties.apiVersion));
+		vkGetPhysicalDeviceProperties(vPhysicalDevices[i], &m_VkPhysicalDeviceProperties);
+		MLogManager::GetInstance()->Information("API Version:    %d.%d.%d\n",
+			VK_VERSION_MAJOR(m_VkPhysicalDeviceProperties.apiVersion),
+			VK_VERSION_MINOR(m_VkPhysicalDeviceProperties.apiVersion),
+			VK_VERSION_PATCH(m_VkPhysicalDeviceProperties.apiVersion));
 
 		if (IsDeviceSuitable(vPhysicalDevices[i]))
 		{
@@ -861,16 +866,7 @@ bool MVulkanDevice::GenerateShaderParamBuffer(MShaderConstantParam* pParam)
 
 	if (pParam)
 	{
-		//Memory
-		return m_BufferManager.GenerateBuffer(pParam->var.GetSize(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			pParam->m_VkBuffer, pParam->m_VkBufferMemory);
-		
-		VkWriteDescriptorSet writeDescriptorSet;
-
-		writeDescriptorSet.dstSet = VkDescriptorSet();
-
-		return true;
+		return m_DynamicUniformBufferPool.AllowBufferMemory(pParam);
 	}
 
 	return false;
@@ -880,14 +876,9 @@ void MVulkanDevice::DestroyShaderParamBuffer(MShaderConstantParam* pParam)
 {
 	if (pParam)
 	{
-		m_BufferManager.DestroyBufferLater(0, pParam->m_VkBuffer);
-		pParam->m_VkBuffer = VK_NULL_HANDLE;
-
-		m_BufferManager.DestroyDeviceMemoryLater(0, pParam->m_VkBufferMemory);
-		pParam->m_VkBufferMemory = VK_NULL_HANDLE;
+		m_DynamicUniformBufferPool.FreeBufferMemory(pParam);
 	}
 }
-
 bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 {	
 	MIRenderTarget* pRenderTarget = pRenderPass->m_pRenderTarget;

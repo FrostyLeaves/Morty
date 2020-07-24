@@ -103,7 +103,7 @@ bool MVulkanBufferManager::InitDescriptorPool()
 {
 	uint32_t unSwapChainNum = 100;
 
-	std::vector<VkDescriptorPoolSize> vPoolSize(4);
+	std::vector<VkDescriptorPoolSize> vPoolSize(5);
 	vPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	vPoolSize[0].descriptorCount = unSwapChainNum;
 
@@ -115,6 +115,9 @@ bool MVulkanBufferManager::InitDescriptorPool()
 
 	vPoolSize[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	vPoolSize[3].descriptorCount = unSwapChainNum;
+
+	vPoolSize[4].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+	vPoolSize[4].descriptorCount = unSwapChainNum;
 
 	VkDescriptorPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
