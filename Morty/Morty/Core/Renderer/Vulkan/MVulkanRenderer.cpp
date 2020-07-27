@@ -18,6 +18,7 @@ MVulkanRenderer::MVulkanRenderer(MVulkanDevice* pDevice)
 	, m_pDevice(pDevice)
 	, m_VkUsingPipeline(VK_NULL_HANDLE)
 	, m_pUsingMaterial(nullptr)
+	, m_pUsingPipelineLayout(nullptr)
 
 	, m_VkCommandBuffer(VK_NULL_HANDLE)
 
@@ -108,12 +109,14 @@ bool MVulkanRenderer::Initialize()
 
 void MVulkanRenderer::Release()
 {
-	m_WhiteTexture.DestroyTexture(m_pDevice);
+	while (vkGetFenceStatus(m_pDevice->m_VkDevice, m_VkInFlightFences) != VK_SUCCESS);
 
+	m_WhiteTexture.DestroyTexture(m_pDevice);
 
 	m_pDevice->m_PipelineManager.Release();
 
-	while (vkGetFenceStatus(m_pDevice->m_VkDevice, m_VkInFlightFences) != VK_SUCCESS);
+	m_pDevice->m_DynamicUniformBufferPool.Release();
+
 
 	if (m_VkCommandBuffer != VK_NULL_HANDLE)
 	{
@@ -121,8 +124,10 @@ void MVulkanRenderer::Release()
 		m_VkCommandBuffer = VK_NULL_HANDLE;
 	}
 
-	m_pDevice->m_BufferManager.FrameFinished(0);
-
+	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+	{
+		m_pDevice->m_BufferManager.FrameFinished(i);
+	}
 
 	m_pDevice->m_BufferManager.Release();
 
@@ -291,11 +296,11 @@ bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial, const bool& bUpdateRe
 		m_pUsingMaterial = pMaterial;
 		vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkUsingPipeline);
 
-		if (bUpdateResources)
-		{
-			UpdateMaterialParam();
-			UpdateMaterialResource();
-		}
+// 		if (bUpdateResources)
+// 		{
+// 			UpdateMaterialParam();
+// 			UpdateMaterialResource();
+// 		}
 
 		MShaderParamSet* pParamSet = pMaterial->GetMaterialParamSet();
 		SetShaderParamSet(pParamSet);
@@ -337,12 +342,12 @@ void MVulkanRenderer::UpdateShaderParam(MShaderConstantParam& param)
 	{
 		memcpy(param.m_pMemoryMapping[m_unFrameIndex] + param.m_unMemoryOffset[m_unFrameIndex], param.var.GetData(), param.var.GetSize());
 
-		VkMappedMemoryRange memoryRange = {};
-		memoryRange.sType = VkStructureType::VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-		memoryRange.memory = param.m_VkBufferMemory[m_unFrameIndex];
-		memoryRange.offset = param.m_unMemoryOffset[m_unFrameIndex];
-		memoryRange.size = param.var.GetSize();
-		vkFlushMappedMemoryRanges(m_pDevice->m_VkDevice, 1, &memoryRange);
+// 		VkMappedMemoryRange memoryRange = {};
+// 		memoryRange.sType = VkStructureType::VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+// 		memoryRange.memory = param.m_VkBufferMemory[m_unFrameIndex];
+// 		memoryRange.offset = param.m_unMemoryOffset[m_unFrameIndex];
+// 		memoryRange.size = param.m_unVkMemorySize;
+// 		vkFlushMappedMemoryRanges(m_pDevice->m_VkDevice, 1, &memoryRange);
 	}
 
 	param.bDirty[m_unFrameIndex] = false;
@@ -386,6 +391,12 @@ void MVulkanRenderer::UpdateShaderTexture(MShaderTextureParam& param)
 
 void MVulkanRenderer::SetShaderParamSet(MShaderParamSet* pParamSet)
 {
+	if (pParamSet->m_VkDescriptorSet[m_unFrameIndex] == VK_NULL_HANDLE)
+	{
+		pParamSet->m_VkDescriptorSet[m_unFrameIndex] = m_pDevice->m_PipelineManager.CreateMaterialDescriptorSet(*m_pUsingPipelineLayout, pParamSet->m_unKey);
+		m_pDevice->m_PipelineManager.BindConstantParamSet(pParamSet, m_unFrameIndex);
+	}
+
 	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
 	{
 		UpdateShaderParam(*pParam);
@@ -395,9 +406,6 @@ void MVulkanRenderer::SetShaderParamSet(MShaderParamSet* pParamSet)
 	{
 		UpdateShaderTexture(*pParam);
 	}
-
-	if (pParamSet->m_VkDescriptorSet[m_unFrameIndex] == VK_NULL_HANDLE)
-		pParamSet->m_VkDescriptorSet[m_unFrameIndex] = m_pDevice->m_PipelineManager.CreateMaterialDescriptorSet(*m_pUsingPipelineLayout, pParamSet->m_unKey);
 
 	vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pUsingPipelineLayout->pipelineLayout, pParamSet->m_unKey, 1, &pParamSet->m_VkDescriptorSet[m_unFrameIndex], 0, nullptr);
 

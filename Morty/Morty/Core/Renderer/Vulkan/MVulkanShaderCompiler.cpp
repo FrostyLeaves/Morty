@@ -2,6 +2,8 @@
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
+#include <regex>
+
 #include "Logger.h"
 #include "SpvTools.h"
 #include "GlslangToSpv.h"
@@ -12,6 +14,56 @@
 #include "MFileHelper.h"
 #include "Shader/MShaderParam.h"
 #include "Shader/MShaderBuffer.h"
+
+
+
+class MVulkanIncluder : public glslang::TShader::Includer
+{
+public:
+
+	MVulkanIncluder() :m_strLocalFolder("") {}
+
+	void SetLocalFolder(const MString& strLocalFolder) { m_strLocalFolder = strLocalFolder + "/"; }
+
+
+public:
+	virtual IncludeResult* includeSystem(const char* headerName, const char* includerName, size_t inclusionDepth) override
+	{
+		MString* pCode = new MString();
+		if (!MFileHelper::ReadString(headerName, *pCode))
+			return nullptr;
+		
+		glslang::TShader::Includer::IncludeResult* pResult = new glslang::TShader::Includer::IncludeResult(headerName, pCode->data(), pCode->length(), pCode);
+
+		return pResult;
+	}
+
+	virtual IncludeResult* includeLocal(const char* headerName, const char* includerName, size_t inclusionDepth) override
+	{
+		MString* pCode = new MString();
+		if (!MFileHelper::ReadString(m_strLocalFolder + headerName, *pCode))
+			return nullptr;
+
+		glslang::TShader::Includer::IncludeResult* pResult = new glslang::TShader::Includer::IncludeResult(headerName, pCode->data(), pCode->length(), pCode);
+
+		return pResult;
+	}
+
+	virtual void releaseInclude(IncludeResult* pResult) override
+	{
+		if (pResult)
+		{
+			MString* pCode = (MString*)pResult->userData;
+			delete pCode;
+		}
+	}
+
+private:
+
+	MString m_strLocalFolder;
+};
+
+
 
 MVulkanShaderCompiler::MVulkanShaderCompiler()
 {
@@ -49,9 +101,9 @@ bool MVulkanShaderCompiler::CompileShader(const MString& strShaderPath, const ui
 
 	glslang::TShader shader(eLanguageType);
 
-
 	MString strShaderCode;
 	MFileHelper::ReadString(strShaderPath, strShaderCode);
+
 
 	const char* svShaderCode = strShaderCode.c_str();
 	const char* svShaderPath = strShaderPath.c_str();
@@ -94,7 +146,11 @@ bool MVulkanShaderCompiler::CompileShader(const MString& strShaderPath, const ui
 	TBuiltInResource Resources = glslang::DefaultTBuiltInResource;
 
 
-	if (!shader.parse(&Resources, 100, false, messages))
+	MVulkanIncluder includer;
+
+	includer.SetLocalFolder("./Shader");
+
+	if (!shader.parse(&Resources, 100, false, messages, includer))
 	{
 		MLogManager::GetInstance()->Error("%s\n\n\n%s", shader.getInfoLog(), shader.getInfoDebugLog());
 		return false;
@@ -366,6 +422,29 @@ bool MVulkanShaderCompiler::ResetVariantType(const spirv_cross::SPIRType& type, 
 	MLogManager::GetInstance()->Error("Can`t convert MVariant from spirv_cross::SPIRType. Unknow type");
 
 	return false;
+}
+
+void MVulkanShaderCompiler::ReadShaderPath(const MString& strShaderPath)
+{
+	MString strShaderCode;
+	MFileHelper::ReadString(strShaderPath, strShaderCode);
+
+	std::regex r("\\s*#include\\s*\"(.*)\"");
+
+	std::sregex_iterator pos(strShaderCode.cbegin(), strShaderCode.cend(), r);
+	std::sregex_iterator end;
+
+	for (; pos != end; ++pos)
+	{
+		MLogManager::GetInstance()->Information("include :%s", pos->str(1).c_str());
+	}
+
+	MString strFolder = MFileHelper::GetFileFolder(strShaderPath);
+
+	MString strShaderFolder;
+
+
+
 }
 
 MPreamble::MPreamble()

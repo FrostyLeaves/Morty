@@ -57,7 +57,7 @@ public:
 
 public:
 
-	void BindDescriptor(MShaderParamSet* pParamSet);
+	void BindConstantParamSet(MShaderParamSet* pParamSet, const uint32_t& unFrameIdx);
 
     bool CreateMaterialPipelineLayout(MMaterial* pMaterial, MMaterialPipelineLayoutData& data);
     void DestroyMaterialPipelineLayout(MMaterialPipelineLayoutData& data);

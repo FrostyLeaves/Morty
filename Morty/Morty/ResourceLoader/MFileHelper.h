@@ -54,6 +54,8 @@ public:
     static bool ReadFormatFile(const MString& strFilePath, MMortyFileFormat& format);
 
     static void GetValidFileName(MString& strFileName);
+
+    static MString GetFileFolder(const MString& strFilePath);
     
 private:
 

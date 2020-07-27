@@ -139,21 +139,6 @@ public:
 
 int main(int argc, char* argv[])
 {
-	MTransform t1;
-	t1.SetPosition(Vector3(0, 0, 5));
-
-	MTransform r;
-	r.SetRotation(Quaternion(Vector3(0, 1, 0), 90));
-
-	MTransform t2;
-	t2.SetPosition(Vector3(0, 0, 5));
-
-	Matrix4 m4 = t1.GetMatrix() * r.GetMatrix() * t2.GetMatrix();
-
-	Vector3 v3 = m4 * Vector3(0, 0, 0);
-	Matrix4 mm = m4.Inverse();
-	v3 = m4.Inverse() * Vector3(0, 0, 0);
-
 	MEngine engine;
 	engine.Initialize();
 
@@ -175,12 +160,12 @@ int main(int argc, char* argv[])
 	pCamera->SetZNearFar(Vector2(10, 500));
 	pCamera->LookAt(Vector3(0, 0, 0), Vector3(0, 1, 0));
 	pRootNode->AddNode(pCamera);
-// 
-// 	MModelResource* pJeepResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/Jeep/Jeep.model"));
-// 	MModelInstance* pJeepModel = engine.GetObjectManager()->CreateObject<MModelInstance>();
-// 	pJeepModel->Load(pJeepResource);
-// 	pJeepModel->SetName("Jeep");
-// 	pRootNode->AddNode(pJeepModel);
+
+	MModelResource* pJeepResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/nfsq/nfsq.model"));
+	MModelInstance* pJeepModel = engine.GetObjectManager()->CreateObject<MModelInstance>();
+	pJeepModel->Load(pJeepResource);
+	pJeepModel->SetName("Jeep");
+	pRootNode->AddNode(pJeepModel);
  
 
 // // 	MString textureID[] = {"005","003","007","004","014","008","002","015","019"};
@@ -265,8 +250,8 @@ int main(int argc, char* argv[])
 	pView->Initialize(&engine, "Morty");
 	pView->SetBackColor(MColor(0.25f, 0.25f, 0.75f, 1.0f));
 	MViewport* pViewport = engine.GetObjectManager()->CreateObject<MViewport>();
-	//pViewport->RegisterRenderProgram<MForwardRenderProgram>();
-	pViewport->RegisterRenderProgram<MBasicRenderProgram>();
+	pViewport->RegisterRenderProgram<MForwardRenderProgram>();
+	//pViewport->RegisterRenderProgram<MBasicRenderProgram>();
 	pView->AppendViewport(pViewport);
 	pViewport->SetSize(Vector2(pView->GetViewWidth(), pView->GetViewHeight()));
 	pViewport->SetScene(pScene);

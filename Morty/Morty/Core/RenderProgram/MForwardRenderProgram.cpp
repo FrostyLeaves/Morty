@@ -456,9 +456,6 @@ void MForwardRenderProgram::UpdateShaderSharedParams(MRenderInfo& info)
 // 		info.pRenderer->SetShaderParam(*pLightParam);
 // 	}
 
-
-	info.pRenderer->SetShaderParamSet(&m_FrameParamSet);
-
 }
 
 void MForwardRenderProgram::DrawNormalMesh(MRenderInfo& info)
@@ -497,6 +494,8 @@ void MForwardRenderProgram::DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstan
 // 		pRenderer->SetShaderParam(*pAnimationParam);
 // 	}
 
+
+	pRenderer->SetShaderParamSet(&m_FrameParamSet);
 	pRenderer->SetShaderParamSet(pMeshInstance->GetShaderMeshParamSet());
 	pRenderer->DrawMesh(pMeshInstance->GetMesh());
 }

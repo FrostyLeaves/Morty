@@ -192,3 +192,13 @@ void MFileHelper::GetValidFileName(MString& strFileName)
 	strFileName.resize(n);
 	
 }
+
+MString MFileHelper::GetFileFolder(const MString& strFilePath)
+{
+	size_t n = strFilePath.find_last_of('/');
+
+	if (MString::npos == n)
+		return "";
+
+	return MString(strFilePath.data(), n);
+}

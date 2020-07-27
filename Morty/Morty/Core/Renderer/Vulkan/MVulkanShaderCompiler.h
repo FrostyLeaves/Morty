@@ -61,6 +61,9 @@ public:
 	void ConvertVariant(const spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, MVariant& variant);
 
 	bool ResetVariantType(const spirv_cross::SPIRType& type, MVariant& variant);
+
+	void ReadShaderPath(const MString& strShaderPath);
+
 private:
 
 };

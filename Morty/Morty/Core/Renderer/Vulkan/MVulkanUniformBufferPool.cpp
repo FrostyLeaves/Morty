@@ -79,9 +79,10 @@ bool MVulkanUniformBufferPool::AllowUniformBufferMemory(MShaderConstantParam* pP
 		pParam->m_VkBuffer[i] = buffer;
 		pParam->m_VkBufferMemory[i] = memory;
 		pParam->m_unMemoryOffset[i] = 0;
+		pParam->m_unVkMemorySize = unSize;
 	
 		void* pData = nullptr;
-		vkMapMemory(m_pDevice->m_VkDevice, m_VkDeviceMemory, 0, unSize, 0, &pData);
+		vkMapMemory(m_pDevice->m_VkDevice, memory, 0, unSize, 0, &pData);
 		pParam->m_pMemoryMapping[i] = (MByte*)pData;
 	}
 
@@ -120,6 +121,7 @@ bool MVulkanUniformBufferPool::AllowDynamicUniformBufferMemory(MShaderConstantPa
 		pParam->m_VkBufferMemory[i] = m_VkDeviceMemory;
 		pParam->m_unMemoryOffset[i] = allowInfo[i].begin + unVariantSize * i;
 		pParam->m_pMemoryMapping[i] = m_pMemoryMapping;
+		pParam->m_unVkMemorySize = unVariantSize;
 	}
 
 	return true;
@@ -129,6 +131,9 @@ void MVulkanUniformBufferPool::FreeBufferMemory(MShaderConstantParam* pParam)
 {
 	if (!pParam)
 		return ;
+
+	if (VK_NULL_HANDLE == pParam->m_VkBuffer[0])
+		return;
 
 	if (pParam->m_VkDescriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
 		return FreeUniformBufferMemory(pParam);

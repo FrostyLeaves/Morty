@@ -33,6 +33,7 @@ MMaterial::MMaterial()
 	, m_MaterialSet(0)
 	, m_FrameSet(1)
 	, m_MeshSet(2)
+	, m_SkeletonSet(3)
 {
 	m_unResourceType = MResourceManager::MEResourceType::Material;
 }

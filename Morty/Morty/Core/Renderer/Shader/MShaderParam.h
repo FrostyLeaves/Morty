@@ -62,6 +62,8 @@ struct MORTY_CLASS MShaderConstantParam : public MShaderParam
 
 	uint32_t m_unMemoryOffset[M_BUFFER_NUM];
 	MByte* m_pMemoryMapping[M_BUFFER_NUM];
+
+	uint32_t m_unVkMemorySize;
 #endif
 };
 

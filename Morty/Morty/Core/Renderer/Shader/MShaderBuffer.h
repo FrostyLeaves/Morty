@@ -23,6 +23,7 @@ public:
 			MShaderParamSet m_MaterialSet;
 			MShaderParamSet m_FrameSet;
 			MShaderParamSet m_MeshSet;
+			MShaderParamSet m_SkeletonSet;
 		};
 		MShaderParamSet m_vShaderSets[M_VALID_SHADER_SET_NUM];
 	};

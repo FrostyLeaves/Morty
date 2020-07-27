@@ -105,28 +105,25 @@ Texture2D<float> U_texDepthFront : register(t1);
 Texture2D<float> U_texDepthBack : register(t2);
 
 
-//VS    per mesh
-cbuffer _M_E_cbMeshMatrix : register(b0)
-{
-    float4x4 U_matWorld;
-    float3x3 U_matNormal;
-};
-
 //VS    per render
-cbuffer _M_E_cbWorldMatrix : register(b1)
+[[vk::binding(0,1)]]cbuffer _M_E_cbWorldMatrix : register(b1)
 {
     float4x4 U_matCamProj;
     float4x4 U_matLightProj;
 };
 
-//VS    with bones
-cbuffer _M_E_cbAnimation : register(b2)
+//VS & PS    per render
+[[vk::binding(1,1)]]cbuffer _M_E_cbWorldInfo : register(b4)
 {
-    float4x4 U_vBonesMatrix[MBONES_MAX_NUMBER];
+    float3 U_f3DirectionLight;
+    float3 U_f3CameraPosition;
+
+    float2 U_f2ViewportSize;
+  //  float3 U_vPointLightPosition[MPOINT_LIGHT_MAX_NUMBER];
 };
 
 //PS    per render
-cbuffer _M_E_cbLights : register(b3)
+[[vk::binding(2,1)]]cbuffer _M_E_cbLights : register(b3)
 {
     DirectionLight U_dirLight;
     PointLight U_pointLights[MPOINT_LIGHT_MAX_NUMBER];
@@ -136,12 +133,20 @@ cbuffer _M_E_cbLights : register(b3)
     int U_nValidSpotLightsNumber;
 };
 
-//VS & PS    per render
-cbuffer _M_E_cbWorldInfo : register(b4)
-{
-    float3 U_f3DirectionLight;
-    float3 U_f3CameraPosition;
 
-    float2 U_f2ViewportSize;
-  //  float3 U_vPointLightPosition[MPOINT_LIGHT_MAX_NUMBER];
+//VS    per mesh
+[[vk::binding(0,2)]]cbuffer _M_E_cbMeshMatrix : register(b0)
+{
+    float4x4 U_matWorld;
+    float3x3 U_matNormal;
 };
+
+
+//VS    with bones
+[[vk::binding(0,3)]]cbuffer _M_E_cbAnimation : register(b2)
+{
+    float4x4 U_vBonesMatrix[MBONES_MAX_NUMBER];
+};
+
+
+

@@ -32,6 +32,10 @@ struct VS_OUT
 
 struct Material
 {
+    Texture2D texDiffuse;
+    Texture2D texNormal;
+    Texture2D texSpecular;
+    Texture2D texTransparent;
     float3 f3Ambient;
     float fAlphaFactor;
     float3 f3Diffuse;
@@ -47,12 +51,6 @@ struct Material
 {
     Material U_mat;
 };
-
-
-[[vk::binding(1,0)]]Texture2D U_mat_texDiffuse;
-[[vk::binding(2,0)]]Texture2D U_mat_texNormal;
-[[vk::binding(3,0)]]Texture2D U_mat_texSpecular;
-[[vk::binding(4,0)]]Texture2D U_mat_texTransparent;
 
 
 

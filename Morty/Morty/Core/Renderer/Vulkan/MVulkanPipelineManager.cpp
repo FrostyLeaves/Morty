@@ -145,32 +145,29 @@ void MVulkanPipelineManager::UnRegisterRenderPass(MRenderPass* pRenderPass)
 	m_RenderPassIDPool.RecoveryID(id);
 }
 
-void MVulkanPipelineManager::BindDescriptor(MShaderParamSet* pParamSet)
+void MVulkanPipelineManager::BindConstantParamSet(MShaderParamSet* pParamSet, const uint32_t& unFrameIdx)
 {
-	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
 	{
-		for (MShaderConstantParam* pParam : pParamSet->m_vParams)
-		{
-			VkDescriptorBufferInfo bufferInfo{};
-			bufferInfo.buffer = pParam->m_VkBuffer[i];
-			bufferInfo.offset = 0;
-			bufferInfo.range = pParam->var.GetSize();
+		VkDescriptorBufferInfo bufferInfo{};
+		bufferInfo.buffer = pParam->m_VkBuffer[unFrameIdx];
+		bufferInfo.offset = 0;
+		bufferInfo.range = pParam->var.GetSize();
 
-			VkWriteDescriptorSet descriptorWrite{};
-			descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrite.dstSet = pParamSet->m_VkDescriptorSet[i];
-			descriptorWrite.dstBinding = pParam->unBinding;
-			descriptorWrite.dstArrayElement = 0;
+		VkWriteDescriptorSet descriptorWrite{};
+		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descriptorWrite.dstSet = pParamSet->m_VkDescriptorSet[unFrameIdx];
+		descriptorWrite.dstBinding = pParam->unBinding;
+		descriptorWrite.dstArrayElement = 0;
 
-			descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			descriptorWrite.descriptorCount = 1;
+		descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		descriptorWrite.descriptorCount = 1;
 
-			descriptorWrite.pBufferInfo = &bufferInfo;
-			descriptorWrite.pImageInfo = nullptr; // Optional
-			descriptorWrite.pTexelBufferView = nullptr; // Optional
+		descriptorWrite.pBufferInfo = &bufferInfo;
+		descriptorWrite.pImageInfo = nullptr; // Optional
+		descriptorWrite.pTexelBufferView = nullptr; // Optional
 
-			vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
-		}
+		vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
 	}
 }
 

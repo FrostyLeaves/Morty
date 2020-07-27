@@ -67,14 +67,14 @@ PS_OUT PS(VS_OUT input) : SV_Target
 {
     PS_OUT output;
     
-    float4 f3AmbiColor = U_mat.texDiffuse.Sample(U_defaultSampler, input.uv);
+    float4 f3AmbiColor = U_mat_texDiffuse.Sample(U_defaultSampler, input.uv);
 
     float4 f3DiffColor = f3AmbiColor;
     float4 f3SpecColor = f3AmbiColor;
     
     if (U_mat.bUseSpecularTex == true)
     {
-        f3SpecColor = U_mat.texSpecular.Sample(U_defaultSampler, input.uv);
+        f3SpecColor = U_mat_texSpecular.Sample(U_defaultSampler, input.uv);
     }
 
     float3 f3Normal = float3(0.0f, 0.0f, -1.0f);
@@ -83,7 +83,7 @@ PS_OUT PS(VS_OUT input) : SV_Target
 
     if (U_mat.bUseNormalTex == true)
     {
-        f3Normal = U_mat.texNormal.Sample(U_defaultSampler, input.uv).xyz;
+        f3Normal = U_mat_texNormal.Sample(U_defaultSampler, input.uv).xyz;
         f3Normal = f3Normal.rgb * 2.0f - 1.0f;
         f3Normal = normalize(f3Normal);
         
@@ -120,7 +120,7 @@ PS_OUT PS(VS_OUT input) : SV_Target
 
     if (U_mat.bUseTransparentTex == true)
     {
-        float4 transparentColor = U_mat.texTransparent.Sample(U_defaultSampler, input.uv);
+        float4 transparentColor = U_mat_texTransparent.Sample(U_defaultSampler, input.uv);
         fAlpha *= transparentColor.a;
 
         //test

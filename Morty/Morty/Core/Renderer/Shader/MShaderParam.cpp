@@ -27,6 +27,8 @@ MShaderConstantParam::MShaderConstantParam()
 	memset(m_VkBufferMemory, VK_NULL_HANDLE, sizeof(VkDeviceMemory) * M_BUFFER_NUM);
 	memset(m_unMemoryOffset, 0, sizeof(uint32_t) * M_BUFFER_NUM);
 	memset(m_pMemoryMapping, 0, sizeof(MByte) * M_BUFFER_NUM);
+
+	m_unVkMemorySize = 0;
 #endif
 
 }
@@ -47,11 +49,14 @@ MShaderConstantParam::MShaderConstantParam(const MShaderConstantParam& param, co
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 	unSet = param.unSet;
 	unBinding = param.unBinding;
+	m_VkDescriptorType = param.m_VkDescriptorType;
 
 	memset(m_VkBuffer, VK_NULL_HANDLE, sizeof(VkBuffer) * M_BUFFER_NUM);
 	memset(m_VkBufferMemory, VK_NULL_HANDLE, sizeof(VkDeviceMemory) * M_BUFFER_NUM);
 	memset(m_unMemoryOffset ,0, sizeof(uint32_t) * M_BUFFER_NUM);
 	memset(m_pMemoryMapping, 0, sizeof(MByte) * M_BUFFER_NUM);
+
+	m_unVkMemorySize = param.m_unVkMemorySize;
 #endif
 
 

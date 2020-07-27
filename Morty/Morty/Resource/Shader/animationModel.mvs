@@ -54,9 +54,9 @@ VS_OUT VS(VS_IN_ANIM input)
     {
         float3 f3CameraDir = normalize(U_f3CameraPosition - output.worldPos);
         float3 f3LightDir = normalize(U_pointLights[i].f3WorldPosition - output.worldPos);
-        float4 f3AmbiColor = U_mat.texDiffuse.SampleLevel(U_defaultSampler, input.uv, 0);
+        float4 f3AmbiColor = U_mat_texDiffuse.SampleLevel(U_defaultSampler, input.uv, 0);
         float4 f3DiffColor = f3AmbiColor;
-        float4 f3SpecColor = f3AmbiColor;//U_mat.texSpecular.Sample(U_defaultSampler, input.uv);
+        float4 f3SpecColor = f3AmbiColor;//U_mat_texSpecular.Sample(U_defaultSampler, input.uv);
         output.vertexPointLight += CalcPointLight(U_pointLights[i], f3CameraDir, f3LightDir, output.normal, output.worldPos, f3DiffColor, f3SpecColor);
     }
 
