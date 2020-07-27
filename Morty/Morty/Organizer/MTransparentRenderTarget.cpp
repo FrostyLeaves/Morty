@@ -79,23 +79,23 @@ void MTransparentRenderTarget::ResetPrevLayerTexture()
 
 void MTransparentRenderTarget::OnRender(MIRenderer* pRenderer)
 {
-
-	if (nullptr == m_pTransparentMeshes)
-		return;
-
-	if (nullptr == m_pViewport)
-		return;
-
-
-	MIRenderProgram* pRenderProgram = m_pViewport->GetRenderProgram();
-	if (nullptr == pRenderProgram)
-		return;
-
-	MShaderConstantParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
-	if (nullptr == pMeshMatrixParam)
-		return;
-
-	MShaderConstantParam* pAnimationParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_ANIMATION);
+// 
+// 	if (nullptr == m_pTransparentMeshes)
+// 		return;
+// 
+// 	if (nullptr == m_pViewport)
+// 		return;
+// 
+// 
+// 	MIRenderProgram* pRenderProgram = m_pViewport->GetRenderProgram();
+// 	if (nullptr == pRenderProgram)
+// 		return;
+// 
+// 	MShaderConstantParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
+// 	if (nullptr == pMeshMatrixParam)
+// 		return;
+// 
+// 	MShaderConstantParam* pAnimationParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_ANIMATION);
 
 // 
 // 	//更新上一层的DepthMap

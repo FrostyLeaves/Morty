@@ -5,7 +5,7 @@
 #include "Logger.h"
 #include "SpvTools.h"
 #include "GlslangToSpv.h"
-#include "glslang/Public/ShaderLang.h"
+#include "Public/ShaderLang.h"
 #include "StandAlone/ResourceLimits.h"
 
 #include "MResource.h"

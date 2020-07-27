@@ -107,40 +107,7 @@ void MBasicRenderProgram::OnDelete()
 	Super::OnDelete();
 }
 
-void MBasicRenderProgram::DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance, MShaderConstantParam* pMeshMatrixParam, MShaderConstantParam* pAnimationParam)
+void MBasicRenderProgram::DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance)
 {
-	Matrix4 worldTrans = pMeshInstance->GetWorldTransform();
-	//Transposed and Inverse.
-	Matrix3 matNormal(worldTrans.Transposed().Inverse(), 3, 3);
-
-	MStruct& cStruct = *pMeshMatrixParam->var.GetStruct();
-	cStruct[0] = worldTrans;
-	cStruct[1] = matNormal;
-
-	pMeshMatrixParam->SetDirty();
-	pRenderer->SetShaderParam(*pMeshMatrixParam);
-
-	if (pAnimationParam)
-	{
-		if (MSkeletonInstance* pSkeletonIns = pMeshInstance->GetSkeletonInstance())
-		{
-			MStruct& cAnimationStruct = *pAnimationParam->var.GetStruct();
-			MVariantArray& cBonesArray = *cAnimationStruct[0].GetArray();
-
-			const std::vector<MBone>& bones = pSkeletonIns->GetAllBones();
-			uint32_t size = bones.size();
-			if (size > MBONES_MAX_NUMBER) size = MBONES_MAX_NUMBER;
-
-			for (uint32_t i = 0; i < size; ++i)
-			{
-				cBonesArray[i] = bones[i].m_matWorldTransform;
-			}
-
-			pAnimationParam->SetDirty();
-			pRenderer->SetShaderParam(*pAnimationParam);
-
-		}
-	}
-
 	pRenderer->DrawMesh(pMeshInstance->GetMesh());
 }

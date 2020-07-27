@@ -17,7 +17,7 @@
 #include <map>
 
 class MBoundsOBB;
-class MShanderParamSet;
+class MShaderParamSet;
 
 class MORTY_CLASS MBone
 {

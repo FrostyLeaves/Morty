@@ -15,6 +15,7 @@
 #include "MIRenderProgram.h"
 #include "MMaterialGroup.h"
 #include "MShadowTextureRenderTarget.h"
+#include "Shader/MShaderParamSet.h"
 
 #include <vector>
 
@@ -93,9 +94,13 @@ protected:
 	void InitializeRenderTargets();
 	void ReleaseRenderTargets();
 
+	void InitializeShaderParamSet();
+
 	void CheckTransparentTextureSize(MRenderInfo& info);
 
 private:
+
+	MShaderParamSet m_FrameParamSet;
 
 	MMesh<Vector2> m_TransparentDrawMesh;
 
@@ -111,6 +116,9 @@ private:
 	MRenderTargetTexture* m_pTransparentBackTexture;
 	std::vector<MRenderTargetTexture*> m_vTransparentBackTexture;
 
+
+	MShaderConstantParam* m_pWorldMatrixParam;
+	MShaderConstantParam* m_pWorldInfoParam;
 };
 
 #endif
