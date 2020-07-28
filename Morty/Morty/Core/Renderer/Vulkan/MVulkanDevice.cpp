@@ -86,6 +86,9 @@ bool MVulkanDevice::Initialize()
 	if (!m_DynamicUniformBufferPool.Initialize())
 		return false;
 
+	if (!InitDefaultTexture())
+		return false;
+
 
 	GET_INSTANCE_PROC_ADDR(m_VkInstance, GetPhysicalDeviceSurfaceSupportKHR);
 	GET_INSTANCE_PROC_ADDR(m_VkInstance, GetPhysicalDeviceSurfaceCapabilitiesKHR);
@@ -106,6 +109,17 @@ bool MVulkanDevice::Initialize()
 
 void MVulkanDevice::Release()
 {
+	m_WhiteTexture.DestroyTexture(this);
+
+	m_PipelineManager.Release();
+	m_DynamicUniformBufferPool.Release();
+
+	//Release All Vk Object.
+	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+		m_BufferManager.FrameFinished(i);
+
+	m_BufferManager.Release();
+
 	vkDestroyCommandPool(m_VkDevice, m_VkCommandPool, nullptr);
 
 	vkDestroyDevice(m_VkDevice, nullptr);
@@ -620,6 +634,15 @@ bool MVulkanDevice::InitCommandPool()
 	return true;
 }
 
+bool MVulkanDevice::InitDefaultTexture()
+{
+	m_WhiteTexture.SetSize(Vector2(4, 4));
+	m_WhiteTexture.FillColor(MColor(0, 0, 0, 1));
+	m_WhiteTexture.GenerateBuffer(this, false);
+
+	return true;
+}
+
 bool MVulkanDevice::IsDeviceSuitable(VkPhysicalDevice device)
 {
 	if (-1 == FindQueueGraphicsFamilies(device))
@@ -861,7 +884,7 @@ void MVulkanDevice::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
 
 bool MVulkanDevice::GenerateShaderParamBuffer(MShaderConstantParam* pParam)
 {
-	if (VK_NULL_HANDLE != pParam->m_VkBuffer)
+	if (VK_NULL_HANDLE != pParam->m_VkBuffer[0])
 		DestroyShaderParamBuffer(pParam);
 
 	if (pParam)

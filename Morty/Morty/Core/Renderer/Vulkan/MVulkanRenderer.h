@@ -13,7 +13,6 @@
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 #include "MIRenderer.h"
-#include "MTexture.h"
 
 class MRenderPass;
 class MVulkanDevice;
@@ -82,8 +81,6 @@ private:
 	MMaterial* m_pUsingMaterial;
 
 private:
-
-	MTexture m_WhiteTexture;
 
 	uint32_t m_unFrameIndex;
 };

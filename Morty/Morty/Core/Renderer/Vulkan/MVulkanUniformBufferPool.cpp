@@ -7,7 +7,7 @@
 
 MVulkanUniformBufferPool::MVulkanUniformBufferPool(MVulkanDevice* pDevice)
 	: m_pDevice(pDevice)
-	, m_unMinUboAlignment(m_pDevice->m_VkPhysicalDeviceProperties.limits.minUniformBufferOffsetAlignment)
+	, m_unMinUboAlignment(0)
 	, m_unBufferMemorySize(0)
 	, m_VkBuffer(VK_NULL_HANDLE)
 	, m_VkDeviceMemory(VK_NULL_HANDLE)
@@ -23,6 +23,8 @@ MVulkanUniformBufferPool::~MVulkanUniformBufferPool()
 
 bool MVulkanUniformBufferPool::Initialize()
 {
+	m_unMinUboAlignment = m_pDevice->m_VkPhysicalDeviceProperties.limits.minUniformBufferOffsetAlignment;
+
 	uint32_t unAllowMemorySize = 32 * 1024 * 1024;
 
 	m_pDevice->m_BufferManager.GenerateBuffer(unAllowMemorySize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -31,6 +33,13 @@ bool MVulkanUniformBufferPool::Initialize()
 	void* pData = nullptr;
 	vkMapMemory(m_pDevice->m_VkDevice, m_VkDeviceMemory, 0, unAllowMemorySize, 0, &pData);
 	m_pMemoryMapping = (MByte*)pData;
+
+
+	MemoryInfo info;
+	info.begin = 0;
+	info.size = unAllowMemorySize;
+
+	m_vFreeMemory.push_back(info);
 
 	return true;
 }
@@ -91,7 +100,7 @@ bool MVulkanUniformBufferPool::AllowUniformBufferMemory(MShaderConstantParam* pP
 
 bool MVulkanUniformBufferPool::AllowDynamicUniformBufferMemory(MShaderConstantParam* pParam)
 {
-	if (pParam->m_VkBuffer != VK_NULL_HANDLE)
+	if (pParam->m_VkBuffer[0] != VK_NULL_HANDLE)
 		return false;
 
 	uint32_t unVariantSize = pParam->var.GetSize();
@@ -190,7 +199,6 @@ bool MVulkanUniformBufferPool::AllowMemory(const uint32_t& unVariantSize, Memory
 
 	if (bestIter == m_vFreeMemory.end())
 	{
-
 		return false;
 	}
 
@@ -203,6 +211,7 @@ bool MVulkanUniformBufferPool::AllowMemory(const uint32_t& unVariantSize, Memory
 	else if (bestIter->size > unVariantSize)
 	{
 		info = *bestIter;
+		info.size = unVariantSize;
 
 		bestIter->begin += unVariantSize;
 		bestIter->size -= unVariantSize;
@@ -219,13 +228,24 @@ void MVulkanUniformBufferPool::FreeMemory(MemoryInfo& info)
 {
 	std::vector<MemoryInfo>::iterator iter = std::lower_bound(m_vFreeMemory.begin(), m_vFreeMemory.end(), info);
 
-	if (iter == m_vFreeMemory.end())
+	if (m_vFreeMemory.end() - iter <= 1)
 	{
 		MemoryInfo& back = m_vFreeMemory.back();
 		if (back.begin + back.size == info.begin)
 			back.size += info.size;
 		else
 			m_vFreeMemory.push_back(info);
+	}
+	else if (iter == m_vFreeMemory.begin())
+	{
+		MemoryInfo& front = m_vFreeMemory.front();
+		if (info.begin + info.size == front.begin)
+		{
+			front.begin = info.begin;
+			front.size -= info.size;
+		}
+		else
+			m_vFreeMemory.insert(m_vFreeMemory.begin(), info);
 	}
 	else
 	{

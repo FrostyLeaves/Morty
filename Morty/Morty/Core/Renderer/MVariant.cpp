@@ -2,8 +2,9 @@
 
 uint32_t MContainer::s_unPackSize = 16;
 
-MContainer::MContainer() : m_unByteSize(0)
-, m_pData(nullptr)
+MContainer::MContainer()
+	: m_unByteSize(0)
+	, m_pData(nullptr)
 {
 
 }
@@ -15,6 +16,11 @@ MContainer::~MContainer()
 		delete[] m_pData;
 		m_pData = nullptr;
 	}
+}
+
+uint32_t MContainer::GetSize() const
+{
+	return m_unByteSize;
 }
 
 MByte* MContainer::GetData()
@@ -452,11 +458,6 @@ void MVariantArray::AppendMVariant(const MVariant& var)
 	sm.var = var;
 
 	AppendStructMember(sm);
-}
-
-void MVariantArray::Resize(const uint32_t& unSize)
-{
-	m_vMember.resize(unSize);
 }
 
 void MVariantArray::Move(MVariantArray& sour)

@@ -154,7 +154,7 @@ public:
 		uint32_t unBeginOffset;
 	};
 
-	uint32_t GetSize() const { return m_unByteSize; }
+	uint32_t GetSize() const;
 	MByte* GetData();
 
 	//For Serialize
@@ -253,7 +253,8 @@ public:
 	virtual ~MVariantArray() {}
 
 	void AppendMVariant(const MVariant& var);
-	void Resize(const uint32_t& unSize);
+
+//	void Resize(const uint32_t& unSize, const MVariant& var);
 
 	void Move(MVariantArray& sour);
 
@@ -264,5 +265,20 @@ public:
 		return  m_vMember.back().var.GetTypedData<T>();
 	}
 };
+
+// void MVariantArray::Resize(const uint32_t& unSize, const MVariant& var)
+// {
+// 	m_vMember.resize(unSize, MStructMember());
+// 	uint32_t unWidth = var.GetSize() / s_unPackSize;
+// 	if (var.GetSize() % s_unPackSize) unWidth += 1;
+// 	
+// 	for (uint32_t i = 0; i < unSize; ++i)
+// 	{
+// 		m_vMember[i].unBeginOffset = unWidth * s_unPackSize * i;
+// 		m_vMember[i].var = var;
+// 	}
+// 
+// 	m_unByteSize = unSize * unWidth * s_unPackSize;
+// }
 
 #endif

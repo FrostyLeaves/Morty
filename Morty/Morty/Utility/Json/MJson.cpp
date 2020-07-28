@@ -332,6 +332,8 @@ void MJson::MVariantToJson(const MVariant& var, MString& strJson)
 	MVariantToJsonValue(var, &doc, doc);
 
 	rapidjson::StringBuffer buffer;
+	buffer.Clear();
+
 	rapidjson::Writer<StringBuffer> writer(buffer);
 	doc.Accept(writer);
 

@@ -341,10 +341,11 @@ void MVulkanShaderCompiler::ConvertVariant(const spirv_cross::Compiler& compiler
 
 		variant = MVariantArray();
 		MVariantArray& varArray = *variant.GetArray();
-		varArray.Resize(unArraySize);
 
-		for(uint32_t i = 0; i < unArraySize; ++i)
-			varArray[i] = tempVariant;
+		for (uint32_t i = 0; i < unArraySize; ++i)
+		{
+			varArray.AppendMVariant(tempVariant);
+		}
 	}
 
 }
@@ -366,6 +367,10 @@ bool MVulkanShaderCompiler::ResetVariantType(const spirv_cross::SPIRType& type, 
 
 	case spirv_cross::SPIRType::BaseType::Int:
 		variant = int();
+		return true;
+
+	case spirv_cross::SPIRType::BaseType::UInt:
+		variant = bool();		// TODO  spirv会把bool转成UInt，以后想办法解决吧。。
 		return true;
 
 	case spirv_cross::SPIRType::BaseType::Float:

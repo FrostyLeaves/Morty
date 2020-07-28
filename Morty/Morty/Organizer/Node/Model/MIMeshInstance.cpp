@@ -32,15 +32,17 @@ void MIMeshInstance::BindShaderParam(MMaterial* pMaterial)
 		delete m_pShaderParamSet;
 		m_pShaderParamSet = nullptr;
 		m_pTransformParam = nullptr;
+		m_pWorldMatrixParam = nullptr;
+		m_pNormalMatrixParam = nullptr;
 	}
 
 	if (pMaterial)
 	{
-		if (MShaderParamSet* pParamSet = pMaterial->GetMaterialParamSet())
+		if (MShaderParamSet* pParamSet = pMaterial->GetMeshParamSet())
 		{
 			m_pShaderParamSet = pParamSet->Clone();
 
-			if (m_pTransformParam = pParamSet->FindConstantParam(""))
+			if (m_pTransformParam = m_pShaderParamSet->FindConstantParam("_M_E_cbMeshMatrix"))
 			{
 				if (MStruct* pSrt = m_pTransformParam->var.GetStruct())
 				{

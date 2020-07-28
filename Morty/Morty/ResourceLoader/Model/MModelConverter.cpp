@@ -161,7 +161,14 @@ void MModelConverter::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vec
 {
 	Matrix4 matRotation;
 	CopyMatrix4(&matRotation, &pNode->mTransformation);
+	//TODO 这里只要旋转矩阵
 	matRotation = matParentRotation * matRotation.GetRotatePart();
+	//matRotation = matParentRotation * matRotation;
+
+	matRotation.m[0][3] = 0;
+	matRotation.m[1][3] = 0;
+	matRotation.m[2][3] = 0;
+	matRotation = matParentRotation * matRotation;
 
 	for (uint32_t i = 0; i < pNode->mNumMeshes; ++i)
 	{
@@ -170,7 +177,7 @@ void MModelConverter::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vec
 		if (pMesh->HasBones())
 		{
 			MMesh<MVertexWithBones>* pMMesh = new MMesh<MVertexWithBones>();
-			ProcessMeshVertices(pMesh, pScene, pMMesh, matRotation);
+			ProcessMeshVertices(pMesh, pScene, pMMesh);
 			ProcessMeshIndices(pMesh, pScene, pMMesh);
 			BindVertexAndBones(pMesh, pScene, pMMesh);
 			vMaterialIndices.push_back(pMesh->mMaterialIndex);
@@ -189,7 +196,7 @@ void MModelConverter::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vec
 		else
 		{
 			MMesh<MVertex>* pMMesh = new MMesh<MVertex>();
-			ProcessMeshVertices(pMesh, pScene, pMMesh, matRotation);
+			ProcessMeshVertices(pMesh, pScene, pMMesh);
 			ProcessMeshIndices(pMesh, pScene, pMMesh);
 			vMaterialIndices.push_back(pMesh->mMaterialIndex);
 
@@ -214,7 +221,7 @@ void MModelConverter::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vec
 	}
 }
 
-void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertex>* pMMesh, const Matrix4& matRotation)
+void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertex>* pMMesh)
 {
 	pMMesh->CreateVertices(pMesh->mNumVertices);
 	for (uint32_t i = 0; i < pMesh->mNumVertices; ++i)
@@ -262,7 +269,7 @@ void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, 
 	}
 }
 
-void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh, const Matrix4& matRotation)
+void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh)
 {
 	pMMesh->CreateVertices(pMesh->mNumVertices);
 	for (uint32_t i = 0; i < pMesh->mNumVertices; ++i)

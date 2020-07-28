@@ -64,7 +64,7 @@ protected:
 private:
     MVulkanDevice* m_pDevice;
 
-    const uint32_t m_unMinUboAlignment;
+    uint32_t m_unMinUboAlignment;
     uint32_t m_unBufferMemorySize;
 
     std::vector<MemoryInfo> m_vFreeMemory;

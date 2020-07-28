@@ -24,6 +24,7 @@
 #include "MVulkanPipelineManager.h"
 #include "MVulkanUniformBufferPool.h"
 
+#include "MTexture.h"
 
 class MORTY_CLASS MVulkanDevice : public MIDevice
 {
@@ -91,6 +92,7 @@ protected:
 	bool InitPhysicalDevice();
 	bool InitLogicalDevice();
 	bool InitCommandPool();
+	bool InitDefaultTexture();
 
 	bool IsDeviceSuitable(VkPhysicalDevice device);
 	bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
@@ -120,6 +122,9 @@ public:
 	MVulkanShaderCompiler m_ShaderCompiler;
 	MVulkanPipelineManager m_PipelineManager;
 	MVulkanUniformBufferPool m_DynamicUniformBufferPool;
+
+
+	MTexture m_WhiteTexture;
 };
 
 

@@ -22,6 +22,8 @@
 class MORTY_CLASS MShaderRefTextureParam : public MShaderTextureParam
 {
 public:
+	MShaderRefTextureParam();
+	MShaderRefTextureParam(const MShaderTextureParam& param);
 
 	MResourceKeeper m_TextureRef;
 };

@@ -99,11 +99,6 @@ bool MVulkanRenderer::Initialize()
 
 	InitSemaphores();
 
-
-	m_WhiteTexture.SetSize(Vector2(4, 4));
-	m_WhiteTexture.FillColor(MColor(1, 1, 1, 1));
-	m_WhiteTexture.GenerateBuffer(m_pDevice, false);
-
 	return true;
 }
 
@@ -111,25 +106,11 @@ void MVulkanRenderer::Release()
 {
 	while (vkGetFenceStatus(m_pDevice->m_VkDevice, m_VkInFlightFences) != VK_SUCCESS);
 
-	m_WhiteTexture.DestroyTexture(m_pDevice);
-
-	m_pDevice->m_PipelineManager.Release();
-
-	m_pDevice->m_DynamicUniformBufferPool.Release();
-
-
 	if (m_VkCommandBuffer != VK_NULL_HANDLE)
 	{
 		vkFreeCommandBuffers(m_pDevice->m_VkDevice, m_pDevice->m_VkCommandPool, 1, &m_VkCommandBuffer);
 		m_VkCommandBuffer = VK_NULL_HANDLE;
 	}
-
-	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-	{
-		m_pDevice->m_BufferManager.FrameFinished(i);
-	}
-
-	m_pDevice->m_BufferManager.Release();
 
 	ReleaseSemaphores();
 
@@ -342,6 +323,7 @@ void MVulkanRenderer::UpdateShaderParam(MShaderConstantParam& param)
 	{
 		memcpy(param.m_pMemoryMapping[m_unFrameIndex] + param.m_unMemoryOffset[m_unFrameIndex], param.var.GetData(), param.var.GetSize());
 
+		//TODO 安卓可能有问题 
 // 		VkMappedMemoryRange memoryRange = {};
 // 		memoryRange.sType = VkStructureType::VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
 // 		memoryRange.memory = param.m_VkBufferMemory[m_unFrameIndex];
@@ -355,60 +337,49 @@ void MVulkanRenderer::UpdateShaderParam(MShaderConstantParam& param)
 
 void MVulkanRenderer::UpdateShaderTexture(MShaderTextureParam& param)
 {
-	if (param.bDirty[m_unFrameIndex])
-	{
-		MShaderParamSet* pParamSet = m_pUsingMaterial->GetMaterialParamSet();
 
-		param.bDirty[m_unFrameIndex] = false;
-
-		MITexture* pTexture = param.pTexture;
-		if (!pTexture) pTexture = &m_WhiteTexture;
-
-		if (MTextureBuffer* pBuffer = pTexture->GetBuffer())
-		{
-			VkDescriptorImageInfo imageInfo = {};
-			imageInfo.imageView = pBuffer->m_VkImageView;
-			imageInfo.imageLayout = pBuffer->m_VkImageLayout;
-			imageInfo.sampler = VK_NULL_HANDLE;
-
-			VkWriteDescriptorSet descriptorWrite{};
-			descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrite.dstSet = pParamSet->m_VkDescriptorSet[m_unFrameIndex];
-			descriptorWrite.dstBinding = param.unBinding;
-			descriptorWrite.dstArrayElement = 0;
-
-			descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-			descriptorWrite.descriptorCount = 1;
-
-			descriptorWrite.pBufferInfo = nullptr;
-			descriptorWrite.pImageInfo = &imageInfo;
-			descriptorWrite.pTexelBufferView = nullptr;
-
-			vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
-		}
-	}
 }
 
 void MVulkanRenderer::SetShaderParamSet(MShaderParamSet* pParamSet)
 {
 	if (pParamSet->m_VkDescriptorSet[m_unFrameIndex] == VK_NULL_HANDLE)
 	{
-		pParamSet->m_VkDescriptorSet[m_unFrameIndex] = m_pDevice->m_PipelineManager.CreateMaterialDescriptorSet(*m_pUsingPipelineLayout, pParamSet->m_unKey);
-		m_pDevice->m_PipelineManager.BindConstantParamSet(pParamSet, m_unFrameIndex);
+		for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+			pParamSet->m_VkDescriptorSet[i] = m_pDevice->m_PipelineManager.CreateMaterialDescriptorSet(*m_pUsingPipelineLayout, pParamSet->m_unKey);
 	}
+
+	std::vector<uint32_t> vDynamicOffsets;
 
 	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
 	{
+		//TODO 不优雅
+		if (pParam->m_VkBuffer[m_unFrameIndex] == VK_NULL_HANDLE)
+		{
+			m_pDevice->GenerateShaderParamBuffer(pParam);
+			
+			for(uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+				m_pDevice->m_PipelineManager.BindConstantParam(pParamSet, pParam, i);
+		}
+
 		UpdateShaderParam(*pParam);
+
+		if (pParam->m_VkDescriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
+		{
+			vDynamicOffsets.push_back(pParam->m_unMemoryOffset[m_unFrameIndex]);
+		}
 	}
 
 	for (MShaderTextureParam* pParam : pParamSet->m_vTextures)
 	{
-		UpdateShaderTexture(*pParam);
+		if (pParam->bDirty[m_unFrameIndex])
+		{
+			m_pDevice->m_PipelineManager.BindTextureParam(pParamSet, pParam, m_unFrameIndex);
+			pParam->bDirty[m_unFrameIndex] = false;
+		}
 	}
 
-	vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pUsingPipelineLayout->pipelineLayout, pParamSet->m_unKey, 1, &pParamSet->m_VkDescriptorSet[m_unFrameIndex], 0, nullptr);
 
+	vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pUsingPipelineLayout->pipelineLayout, pParamSet->m_unKey, 1, &pParamSet->m_VkDescriptorSet[m_unFrameIndex], vDynamicOffsets.size(), vDynamicOffsets.data());
 }
 
 VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass)

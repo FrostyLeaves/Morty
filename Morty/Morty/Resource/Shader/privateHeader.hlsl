@@ -90,21 +90,6 @@ float Float4ToFloat(float4 rgba_depth)
 }
 
 
-
-
-
-sampler U_defaultSampler : register(s0);
-SamplerComparisonState U_lessEqualSampler : register(s1);
-SamplerComparisonState U_greaterEqualSampler : register(s2);
-
-//Shadowmap
-Texture2D U_texShadowMap : register(t0);
-
-//Depth-Peeling
-Texture2D<float> U_texDepthFront : register(t1);
-Texture2D<float> U_texDepthBack : register(t2);
-
-
 //VS    per render
 [[vk::binding(0,1)]]cbuffer _M_E_cbWorldMatrix : register(b1)
 {
@@ -133,6 +118,19 @@ Texture2D<float> U_texDepthBack : register(t2);
     int U_nValidSpotLightsNumber;
 };
 
+[[vk::binding(3,1)]]sampler U_defaultSampler : register(s0);
+[[vk::binding(4,1)]]SamplerComparisonState U_lessEqualSampler : register(s1);
+[[vk::binding(5,1)]]SamplerComparisonState U_greaterEqualSampler : register(s2);
+
+//Shadowmap
+[[vk::binding(6,1)]]Texture2D U_texShadowMap : register(t0);
+
+//Depth-Peeling
+[[vk::binding(7,1)]]Texture2D<float> U_texDepthFront : register(t1);
+[[vk::binding(8,1)]]Texture2D<float> U_texDepthBack : register(t2);
+
+
+
 
 //VS    per mesh
 [[vk::binding(0,2)]]cbuffer _M_E_cbMeshMatrix : register(b0)
@@ -145,7 +143,7 @@ Texture2D<float> U_texDepthBack : register(t2);
 //VS    with bones
 [[vk::binding(0,3)]]cbuffer _M_E_cbAnimation : register(b2)
 {
-    float4x4 U_vBonesMatrix[MBONES_MAX_NUMBER];
+    float4x4 U_vBonesMatrix[128];
 };
 
 

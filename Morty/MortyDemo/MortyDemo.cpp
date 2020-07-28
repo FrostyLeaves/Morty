@@ -129,6 +129,9 @@ public:
 
 		SetPosition(GetPosition() + m_v3MoveSpeed);
 		m_v3MoveSpeed = m_v3MoveSpeed * 0.8f;
+
+
+//		MLogManager::GetInstance()->Log("Camera position: %f, %f, %f", GetPosition().x, GetPosition().y, GetPosition().z);
 	}
 
 	std::map<unsigned int, bool> m_tKeyBoardDown;
@@ -142,12 +145,12 @@ int main(int argc, char* argv[])
 	MEngine engine;
 	engine.Initialize();
 
-// 	{
-// 		{
-// 			MModelConverter conver(&engine);
-// 			conver.Convert("./Model/Jeep_done.fbx", "./Model", "Jeep");
-// 		}
-// 	}
+	{
+		{
+			MModelConverter conver(&engine);
+			conver.Convert("./Model/teaport.fbx", "./Model", "teaport");
+		}
+	}
 
 	 
  
@@ -155,14 +158,16 @@ int main(int argc, char* argv[])
  	pRootNode->SetName("RootNode");
 
 	MyCamera* pCamera = engine.GetObjectManager()->CreateObject<MyCamera>();
-	pCamera->SetPosition(Vector3(0, 10, -30));
+	pCamera->SetPosition(Vector3(0, 0, -20));
 	pCamera->SetName("Camera");
 	pCamera->SetZNearFar(Vector2(10, 500));
 	pCamera->LookAt(Vector3(0, 0, 0), Vector3(0, 1, 0));
 	pRootNode->AddNode(pCamera);
 
-	MModelResource* pJeepResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/nfsq/nfsq.model"));
+	MModelResource* pJeepResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/teaport/teaport.model"));
 	MModelInstance* pJeepModel = engine.GetObjectManager()->CreateObject<MModelInstance>();
+	pJeepModel->SetPosition(Vector3(0, 0, 10));
+	pJeepModel->SetScale(Vector3(1, 1, 1));
 	pJeepModel->Load(pJeepResource);
 	pJeepModel->SetName("Jeep");
 	pRootNode->AddNode(pJeepModel);
@@ -248,7 +253,7 @@ int main(int argc, char* argv[])
 	pScene->SetRootNode(pRootNode);
 	MWindowsRenderView* pView = new MWindowsRenderView();
 	pView->Initialize(&engine, "Morty");
-	pView->SetBackColor(MColor(0.25f, 0.25f, 0.75f, 1.0f));
+	pView->SetBackColor(MColor(0.25f, 0.25f, 0.25f, 1.0f));
 	MViewport* pViewport = engine.GetObjectManager()->CreateObject<MViewport>();
 	pViewport->RegisterRenderProgram<MForwardRenderProgram>();
 	//pViewport->RegisterRenderProgram<MBasicRenderProgram>();

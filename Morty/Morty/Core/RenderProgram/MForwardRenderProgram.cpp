@@ -47,8 +47,18 @@ MForwardRenderProgram::MForwardRenderProgram()
 	, m_pTransparentRenderTarget1(nullptr)
 	, m_pTransparentRenderTarget2(nullptr)
 	, m_v2TransparentTextureSize(0.0f, 0.0f)
+	
 	, m_pWorldMatrixParam(nullptr)
 	, m_pWorldInfoParam(nullptr)
+	, m_pLightInfoParam(nullptr)
+	
+	, m_pDefaultSampleParam(nullptr)
+	, m_pLessEqualSampleParam(nullptr)
+	, m_pGreaterEqualSampleParam(nullptr)
+
+	, m_pShadowTextureParam(nullptr)
+	, m_pTransparentFrontTextureParam(nullptr)
+	, m_pTransparentBackTextureParam(nullptr)
 {
 	MMesh<Vector2>& mesh = m_TransparentDrawMesh;
 	mesh.ResizeVertices(4);
@@ -188,6 +198,8 @@ void MForwardRenderProgram::ReleaseRenderTargets()
 void MForwardRenderProgram::InitializeShaderParamSet()
 {
 	m_pWorldMatrixParam = new MShaderConstantParam();
+	m_pWorldMatrixParam->unSet = 1;
+	m_pWorldMatrixParam->unBinding = 0;
 
 	MStruct worldMatrixSrt;
 	worldMatrixSrt.AppendMVariant("U_matCamProj", Matrix4());
@@ -195,8 +207,9 @@ void MForwardRenderProgram::InitializeShaderParamSet()
 
 	m_pWorldMatrixParam->var = worldMatrixSrt;
 
-
 	m_pWorldInfoParam = new MShaderConstantParam();
+	m_pWorldInfoParam->unSet = 1;
+	m_pWorldInfoParam->unBinding = 1;
 	
 	MStruct worldInfoSrt;
 	worldInfoSrt.AppendMVariant("U_f3DirectionLight", Vector3());
@@ -205,9 +218,97 @@ void MForwardRenderProgram::InitializeShaderParamSet()
 
 	m_pWorldInfoParam->var = worldInfoSrt;
 
+	m_pLightInfoParam = new MShaderConstantParam();
+	m_pLightInfoParam->unSet = 1;
+	m_pLightInfoParam->unBinding = 2;
+
+	m_pLightInfoParam->var = MStruct();
+	MStruct& lightInfoSrt = *m_pLightInfoParam->var.GetStruct();
+	
+	MStruct dirLightSrt;
+	dirLightSrt.AppendMVariant("f3Diffuse", Vector3());
+	dirLightSrt.AppendMVariant("f3Specular", Vector3());
+	
+	lightInfoSrt.AppendMVariant("U_dirLight", dirLightSrt);
+
+	MVariantArray pointLightArray;
+	for (uint32_t i = 0; i < MPOINT_LIGHT_MAX_NUMBER; ++i)
+	{
+		MStruct pointLight;
+		
+		pointLight.AppendMVariant("f3WorldPosition", Vector3());
+		pointLight.AppendMVariant("f3Diffuse", Vector3());
+		pointLight.AppendMVariant("f3Specular", Vector3());
+
+		pointLight.AppendMVariant("fConstant", float(0.0f));
+		pointLight.AppendMVariant("fLinear", float(0.0f));
+		pointLight.AppendMVariant("fQuadratic", float(0.0f));
+		
+		pointLightArray.AppendMVariant(pointLight);
+	}
+
+	lightInfoSrt.AppendMVariant("U_spotLights", pointLightArray);
+
+	MVariantArray spotLightArray;
+	for (uint32_t i = 0; i < MSPOT_LIGHT_MAX_NUMBER; ++i)
+	{
+		MStruct spotLight;
+	
+		spotLight.AppendMVariant("f3WorldPosition", Vector3());
+		spotLight.AppendMVariant("fHalfInnerCutOff", float(0.0f));
+		spotLight.AppendMVariant("f3Direction", Vector3());
+		spotLight.AppendMVariant("fHalfOuterCutOff", float(0.0f));
+		spotLight.AppendMVariant("f3Diffuse", Vector3());
+		spotLight.AppendMVariant("f3Specular", Vector3());
+
+		spotLightArray.AppendMVariant(spotLight);
+	}
+
+	lightInfoSrt.AppendMVariant("U_pointLights", spotLightArray);
+
+	lightInfoSrt.AppendMVariant("U_bDirectionLightEnabled", bool(false));
+	lightInfoSrt.AppendMVariant("U_nValidPointLightsNumber", int(0));
+	lightInfoSrt.AppendMVariant("U_nValidSpotLightsNumber", int(0));
+
+
+	m_pDefaultSampleParam = new MShaderSampleParam();
+	m_pDefaultSampleParam->unSet = 1;
+	m_pDefaultSampleParam->unBinding = 3;
+	m_pLessEqualSampleParam = new MShaderSampleParam();
+	m_pLessEqualSampleParam->unSet = 1;
+	m_pLessEqualSampleParam->unBinding = 4;
+	m_pGreaterEqualSampleParam = new MShaderSampleParam();
+	m_pGreaterEqualSampleParam->unSet = 1;
+	m_pGreaterEqualSampleParam->unBinding = 5;
+
+	m_pShadowTextureParam = new MShaderTextureParam();
+	m_pShadowTextureParam->unSet = 1;
+	m_pShadowTextureParam->unBinding = 6;
+	m_pTransparentFrontTextureParam = new MShaderTextureParam();
+	m_pTransparentFrontTextureParam->unSet = 1;
+	m_pTransparentFrontTextureParam->unBinding = 7;
+	m_pTransparentBackTextureParam = new MShaderTextureParam();
+	m_pTransparentBackTextureParam->unSet = 1;
+	m_pTransparentBackTextureParam->unBinding = 8;
 
 	m_FrameParamSet.m_vParams.push_back(m_pWorldMatrixParam);
 	m_FrameParamSet.m_vParams.push_back(m_pWorldInfoParam);
+	m_FrameParamSet.m_vParams.push_back(m_pLightInfoParam);
+
+
+	m_FrameParamSet.m_vSamples.push_back(m_pDefaultSampleParam);
+	m_FrameParamSet.m_vSamples.push_back(m_pLessEqualSampleParam);
+	m_FrameParamSet.m_vSamples.push_back(m_pGreaterEqualSampleParam);
+
+
+	m_FrameParamSet.m_vTextures.push_back(m_pShadowTextureParam);
+	m_FrameParamSet.m_vTextures.push_back(m_pTransparentFrontTextureParam);
+	m_FrameParamSet.m_vTextures.push_back(m_pTransparentBackTextureParam);
+}
+
+void MForwardRenderProgram::ReleaseShaderParamSet()
+{
+	m_FrameParamSet.ClearAndDestroy(GetEngine()->GetDevice());
 }
 
 void MForwardRenderProgram::CheckTransparentTextureSize(MRenderInfo& info)
@@ -271,10 +372,14 @@ void MForwardRenderProgram::OnCreated()
 	Super::OnCreated();
 
 	InitializeRenderTargets();
+
+	InitializeShaderParamSet();
 }
 
 void MForwardRenderProgram::OnDelete()
 {
+	ReleaseShaderParamSet();
+
 	ReleaseRenderTargets();
 
 	m_TransparentDrawMesh.DestroyBuffer(m_pEngine->GetDevice());
@@ -376,85 +481,84 @@ void MForwardRenderProgram::UpdateShaderSharedParams(MRenderInfo& info)
 		m_pWorldInfoParam->SetDirty();
 	}
 
-// 	if (MShaderConstantParam* pLightParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_LIGHT))
-// 	{
-// 		MVariant& varDirLightEnable = (*pLightParam->var.GetStruct())[3];
-// 		if (info.pDirectionalLight)
-// 		{
-// 			varDirLightEnable = true;
-// 			MVariant& varDirectionLight = (*pLightParam->var.GetStruct())[0];
-// 			{
-// 				MStruct& cLightStruct = *varDirectionLight.GetStruct();
-// 				{
-// 					cLightStruct[0] = info.pDirectionalLight->GetDiffuseColor().ToVector3();
-// 					cLightStruct[1] = info.pDirectionalLight->GetSpecularColor().ToVector3();
-// 				}
-// 			}
-// 		}
-// 		else
-// 		{
-// 			varDirLightEnable = false;
-// 		}
-// 
-// 		MVariant& varPointLights = (*pLightParam->var.GetStruct())[1];
-// 		MVariant& varValidPointLights = (*pLightParam->var.GetStruct())[4];
-// 		{
-// 			std::vector<MPointLight*> vActivePointLights(MPOINT_LIGHT_MAX_NUMBER);
-// 			info.pScene->FindActivePointLights(info.pViewport->GetCamera()->GetWorldPosition(), vActivePointLights);
-// 			varValidPointLights = 0;
-// 
-// 			MVariantArray& vPointLights = *varPointLights.GetArray();
-// 			for (uint32_t i = 0; i < vPointLights.GetMemberCount(); ++i)
-// 			{
-// 				if (MPointLight* pLight = vActivePointLights[i])
-// 				{
-// 					MStruct& cPointLight = *vPointLights[i].GetStruct();
-// 					cPointLight[0] = pLight->GetWorldPosition();
-// 					cPointLight[1] = pLight->GetDiffuseColor().ToVector3();
-// 					cPointLight[2] = pLight->GetSpecularColor().ToVector3();
-// 
-// 
-// 					cPointLight[3] = 1.0f;
-// 					cPointLight[4] = 0.022f;
-// 					cPointLight[5] = 0.0019f;
-// 
-// 					varValidPointLights = (int)i + 1;
-// 				}
-// 				else break;
-// 			}
-// 		}
-// 
-// 		MVariant& varSpotLights = (*pLightParam->var.GetStruct())[2];
-// 		MVariant& varValidSpotLights = (*pLightParam->var.GetStruct())[5];
-// 		{
-// 			std::vector<MSpotLight*> vActiveSpotLights(MSPOT_LIGHT_MAX_NUMBER);
-// 			info.pScene->FindActiveSpotLights(info.pViewport->GetCamera()->GetWorldPosition(), vActiveSpotLights);
-// 			varValidSpotLights = 0;
-// 
-// 			MVariantArray& vSpotLights = *varSpotLights.GetArray();
-// 			for (uint32_t i = 0; i < vSpotLights.GetMemberCount(); ++i)
-// 			{
-// 				if (MSpotLight* pLight = vActiveSpotLights[i])
-// 				{
-// 					Vector3 f3SpotDirection = pLight->GetWorldDirection();
-// 					f3SpotDirection.Normalize();
-// 					MStruct& cSpotLight = *vSpotLights[i].GetStruct();
-// 					cSpotLight[0] = pLight->GetWorldPosition();
-// 					cSpotLight[1] = pLight->GetInnerCutOffRadius();
-// 					cSpotLight[2] = f3SpotDirection;
-// 					cSpotLight[3] = pLight->GetOuterCutOffRadius();
-// 					cSpotLight[4] = pLight->GetDiffuseColor().ToVector3();
-// 					cSpotLight[5] = pLight->GetSpecularColor().ToVector3();
-// 
-// 					varValidSpotLights = (int)i + 1;
-// 				}
-// 				else break;
-// 			}
-// 		}
-// 
-// 		pLightParam->SetDirty();
-// 		info.pRenderer->SetShaderParam(*pLightParam);
-// 	}
+	if (MShaderConstantParam* pLightParam = m_pLightInfoParam)
+	{
+		MVariant& varDirLightEnable = (*pLightParam->var.GetStruct())[3];
+		if (info.pDirectionalLight)
+		{
+			varDirLightEnable = true;
+			MVariant& varDirectionLight = (*pLightParam->var.GetStruct())[0];
+			{
+				MStruct& cLightStruct = *varDirectionLight.GetStruct();
+				{
+					cLightStruct[0] = info.pDirectionalLight->GetDiffuseColor().ToVector3();
+					cLightStruct[1] = info.pDirectionalLight->GetSpecularColor().ToVector3();
+				}
+			}
+		}
+		else
+		{
+			varDirLightEnable = false;
+		}
+
+		MVariant& varPointLights = (*pLightParam->var.GetStruct())[1];
+		MVariant& varValidPointLights = (*pLightParam->var.GetStruct())[4];
+		{
+			std::vector<MPointLight*> vActivePointLights(MPOINT_LIGHT_MAX_NUMBER);
+			info.pScene->FindActivePointLights(info.pViewport->GetCamera()->GetWorldPosition(), vActivePointLights);
+			varValidPointLights = 0;
+
+			MVariantArray& vPointLights = *varPointLights.GetArray();
+			for (uint32_t i = 0; i < vPointLights.GetMemberCount(); ++i)
+			{
+				if (MPointLight* pLight = vActivePointLights[i])
+				{
+					MStruct& cPointLight = *vPointLights[i].GetStruct();
+					cPointLight[0] = pLight->GetWorldPosition();
+					cPointLight[1] = pLight->GetDiffuseColor().ToVector3();
+					cPointLight[2] = pLight->GetSpecularColor().ToVector3();
+
+
+					cPointLight[3] = 1.0f;
+					cPointLight[4] = 0.022f;
+					cPointLight[5] = 0.0019f;
+
+					varValidPointLights = (int)i + 1;
+				}
+				else break;
+			}
+		}
+
+		MVariant& varSpotLights = (*pLightParam->var.GetStruct())[2];
+		MVariant& varValidSpotLights = (*pLightParam->var.GetStruct())[5];
+		{
+			std::vector<MSpotLight*> vActiveSpotLights(MSPOT_LIGHT_MAX_NUMBER);
+			info.pScene->FindActiveSpotLights(info.pViewport->GetCamera()->GetWorldPosition(), vActiveSpotLights);
+			varValidSpotLights = 0;
+
+			MVariantArray& vSpotLights = *varSpotLights.GetArray();
+			for (uint32_t i = 0; i < vSpotLights.GetMemberCount(); ++i)
+			{
+				if (MSpotLight* pLight = vActiveSpotLights[i])
+				{
+					Vector3 f3SpotDirection = pLight->GetWorldDirection();
+					f3SpotDirection.Normalize();
+					MStruct& cSpotLight = *vSpotLights[i].GetStruct();
+					cSpotLight[0] = pLight->GetWorldPosition();
+					cSpotLight[1] = pLight->GetInnerCutOffRadius();
+					cSpotLight[2] = f3SpotDirection;
+					cSpotLight[3] = pLight->GetOuterCutOffRadius();
+					cSpotLight[4] = pLight->GetDiffuseColor().ToVector3();
+					cSpotLight[5] = pLight->GetSpecularColor().ToVector3();
+
+					varValidSpotLights = (int)i + 1;
+				}
+				else break;
+			}
+		}
+
+		pLightParam->SetDirty();
+	}
 
 }
 
@@ -466,6 +570,13 @@ void MForwardRenderProgram::DrawNormalMesh(MRenderInfo& info)
 		//Ê¹ÓÃ²ÄÖÊ
 		if (!info.pRenderer->SetUseMaterial(pMaterial, true))
 			continue;
+
+		Vector2 v2LeftTop = info.pViewport->GetLeftTop();
+		Vector2 v2Size = info.pViewport->GetSize();
+		info.pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y, 0.0f, 1.0f);
+
+		info.pRenderer->SetShaderParamSet(&m_FrameParamSet);
+		info.pRenderer->SetShaderParamSet(pMaterial->GetMaterialParamSet());
 
 		for (MIMeshInstance* pMeshIns : group.m_vMeshInstances)
 		{
@@ -495,7 +606,6 @@ void MForwardRenderProgram::DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstan
 // 	}
 
 
-	pRenderer->SetShaderParamSet(&m_FrameParamSet);
 	pRenderer->SetShaderParamSet(pMeshInstance->GetShaderMeshParamSet());
 	pRenderer->DrawMesh(pMeshInstance->GetMesh());
 }

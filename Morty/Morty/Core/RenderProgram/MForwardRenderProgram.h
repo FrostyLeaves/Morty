@@ -95,6 +95,7 @@ protected:
 	void ReleaseRenderTargets();
 
 	void InitializeShaderParamSet();
+	void ReleaseShaderParamSet();
 
 	void CheckTransparentTextureSize(MRenderInfo& info);
 
@@ -119,6 +120,16 @@ private:
 
 	MShaderConstantParam* m_pWorldMatrixParam;
 	MShaderConstantParam* m_pWorldInfoParam;
+	MShaderConstantParam* m_pLightInfoParam;
+
+	MShaderSampleParam* m_pDefaultSampleParam;
+	MShaderSampleParam* m_pLessEqualSampleParam;
+	MShaderSampleParam* m_pGreaterEqualSampleParam;
+
+	MShaderTextureParam* m_pShadowTextureParam;
+	MShaderTextureParam* m_pTransparentFrontTextureParam;
+	MShaderTextureParam* m_pTransparentBackTextureParam;
+
 };
 
 #endif

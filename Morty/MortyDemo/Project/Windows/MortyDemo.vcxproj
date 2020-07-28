@@ -78,6 +78,7 @@
     <CustomBuildBeforeTargets>
     </CustomBuildBeforeTargets>
     <IncludePath>$(SolutionDir)ThirdParty/Vld/include;$(IncludePath)</IncludePath>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LibraryPath>$(LibraryPath)</LibraryPath>
@@ -87,6 +88,7 @@
     <IncludePath>$(SolutionDir)ThirdParty/Vld/include;$(IncludePath)</IncludePath>
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Build\$(Platform)\$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>

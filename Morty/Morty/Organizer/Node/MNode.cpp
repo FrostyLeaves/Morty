@@ -310,10 +310,10 @@ void MNode::WriteChildrenToStruct(MStruct& srt)
 	if (MVariantArray* pArray = FindWriteVariant<MVariantArray>(srt, "Children"))
 	{
 		uint32_t unSize = m_vChildren.size();
-		pArray->Resize(unSize);
+
 		for (uint32_t i = 0; i < unSize; ++i)
 		{
-			(*pArray)[i] = MStruct();
+			pArray->AppendMVariant(MStruct());
 			MStruct& childSrt = (*pArray)[i].GetVarUnsafe<MStruct>();
 			m_vChildren[i]->WriteToStruct(childSrt);
 		}
@@ -322,10 +322,10 @@ void MNode::WriteChildrenToStruct(MStruct& srt)
 	if (MVariantArray* pArray = FindWriteVariant<MVariantArray>(srt, "FixedChildren"))
 	{
 		uint32_t unSize = m_vFixedChildren.size();
-		pArray->Resize(unSize);
+
 		for (uint32_t i = 0; i < unSize; ++i)
 		{
-			(*pArray)[i] = MStruct();
+			pArray->AppendMVariant(MStruct());
 			m_vFixedChildren[i]->WriteToStruct((*pArray)[i].GetVarUnsafe<MStruct>());
 		}
 	}

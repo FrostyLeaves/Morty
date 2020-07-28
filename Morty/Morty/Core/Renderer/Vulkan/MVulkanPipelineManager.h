@@ -17,6 +17,8 @@
 
 class MVulkanDevice;
 class MShaderParamSet;
+class MShaderTextureParam;
+class MShaderConstantParam;
 struct MPipelineRenderPassGroup
 {
     std::vector<VkPipeline> vMaterialGroup;
@@ -57,7 +59,9 @@ public:
 
 public:
 
-	void BindConstantParamSet(MShaderParamSet* pParamSet, const uint32_t& unFrameIdx);
+	void BindConstantParam(MShaderParamSet* pParamSet, MShaderConstantParam* pParam, const uint32_t& unIndex);
+
+    void BindTextureParam(MShaderParamSet* pParamSet, MShaderTextureParam* pParam, const uint32_t& unIndex);
 
     bool CreateMaterialPipelineLayout(MMaterial* pMaterial, MMaterialPipelineLayoutData& data);
     void DestroyMaterialPipelineLayout(MMaterialPipelineLayoutData& data);
@@ -75,8 +79,6 @@ private:
     std::vector<MMaterialPipelineLayoutData> m_vPipelineLayouts;
 
     MVulkanDevice* m_pDevice;
-
-
 
 };
 

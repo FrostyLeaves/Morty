@@ -145,27 +145,53 @@ void MVulkanPipelineManager::UnRegisterRenderPass(MRenderPass* pRenderPass)
 	m_RenderPassIDPool.RecoveryID(id);
 }
 
-void MVulkanPipelineManager::BindConstantParamSet(MShaderParamSet* pParamSet, const uint32_t& unFrameIdx)
+void MVulkanPipelineManager::BindConstantParam(MShaderParamSet* pParamSet, MShaderConstantParam* pParam, const uint32_t& unIndex)
 {
-	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
+	VkDescriptorBufferInfo bufferInfo{};
+	bufferInfo.buffer = pParam->m_VkBuffer[unIndex];
+	bufferInfo.offset = 0;
+	bufferInfo.range = pParam->var.GetSize();
+
+	VkWriteDescriptorSet descriptorWrite{};
+	descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorWrite.dstSet = pParamSet->m_VkDescriptorSet[unIndex];
+	descriptorWrite.dstBinding = pParam->unBinding;
+	descriptorWrite.dstArrayElement = 0;
+
+	descriptorWrite.descriptorType = pParam->m_VkDescriptorType;
+	descriptorWrite.descriptorCount = 1;
+
+	descriptorWrite.pBufferInfo = &bufferInfo;
+	descriptorWrite.pImageInfo = nullptr; // Optional
+	descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+	vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
+}
+
+void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShaderTextureParam* pParam, const uint32_t& unIndex)
+{
+	MITexture* pTexture = pParam->pTexture;
+	if (!pTexture) pTexture = &m_pDevice->m_WhiteTexture;
+
+	if (MTextureBuffer* pBuffer = pTexture->GetBuffer())
 	{
-		VkDescriptorBufferInfo bufferInfo{};
-		bufferInfo.buffer = pParam->m_VkBuffer[unFrameIdx];
-		bufferInfo.offset = 0;
-		bufferInfo.range = pParam->var.GetSize();
+		VkDescriptorImageInfo imageInfo = {};
+		imageInfo.imageView = pBuffer->m_VkImageView;
+		imageInfo.imageLayout = pBuffer->m_VkImageLayout;
+		imageInfo.sampler = VK_NULL_HANDLE;
 
 		VkWriteDescriptorSet descriptorWrite{};
 		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrite.dstSet = pParamSet->m_VkDescriptorSet[unFrameIdx];
+		descriptorWrite.dstSet = pParamSet->m_VkDescriptorSet[unIndex];
 		descriptorWrite.dstBinding = pParam->unBinding;
 		descriptorWrite.dstArrayElement = 0;
 
-		descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 		descriptorWrite.descriptorCount = 1;
 
-		descriptorWrite.pBufferInfo = &bufferInfo;
-		descriptorWrite.pImageInfo = nullptr; // Optional
-		descriptorWrite.pTexelBufferView = nullptr; // Optional
+		descriptorWrite.pBufferInfo = nullptr;
+		descriptorWrite.pImageInfo = &imageInfo;
+		descriptorWrite.pTexelBufferView = nullptr;
 
 		vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
 	}

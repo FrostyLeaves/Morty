@@ -227,12 +227,11 @@ void MSkeleton::WriteToStruct(MStruct& srt)
 
 	srt.AppendMVariant("Bones", MVariantArray());
 	MVariantArray* pArray = srt.FindMember("Bones")->GetArray();
-	pArray->Resize(vBones.size());
 
 	for (uint32_t i = 0; i < pArray->GetMemberCount(); ++i)
 	{
 		MBone bone = vBones[i];
-		(*pArray)[i] = MStruct();
+		pArray->AppendMVariant(MStruct());
 		MStruct& boneSrt = *(*pArray)[i].GetStruct();
 
 		bone.WriteToStruct(boneSrt);
