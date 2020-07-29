@@ -96,10 +96,6 @@ public:
 
 public:
 
-	virtual void SetRasterizerType(const MERasterizerType& eType) { m_eRasterizerType = eType; }
-
-public:
-
 	virtual bool Initialize() = 0;
 	virtual void Release() = 0;
 
@@ -110,22 +106,16 @@ public:
 
 public:
 
-
 	virtual void DrawMesh(MIMesh* pMesh) = 0;
 
-	virtual bool SetUseMaterial(MMaterial* pMaterial, const bool& bUpdateResources = false) = 0;
-	virtual void UpdateMaterialParam() = 0;
-	virtual void UpdateMaterialResource() = 0;
+	virtual bool SetUseMaterial(MMaterial* pMaterial) = 0;
 
 public:
 	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) = 0;
 
 protected:
-	MERasterizerType m_eRasterizerType;
-	MEMaterialType m_eMaterialType;
 
 	std::stack<MIRenderTarget*> m_vRenderTargets;
-
 };
 
 

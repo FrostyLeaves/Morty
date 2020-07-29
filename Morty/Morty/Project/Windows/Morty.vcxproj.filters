@@ -363,9 +363,6 @@
     <ClInclude Include="..\..\Core\MRenderPass.h">
       <Filter>Core\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanBufferManager.h">
-      <Filter>Core\Renderer\Vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Core\Renderer\Shader\MShader.h">
       <Filter>Core\Renderer\Shader</Filter>
     </ClInclude>
@@ -382,6 +379,9 @@
       <Filter>Core\Renderer\Shader</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanUniformBufferPool.h">
+      <Filter>Core\Renderer\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanObjectDestructor.h">
       <Filter>Core\Renderer\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>
@@ -626,9 +626,6 @@
     <ClCompile Include="..\..\Core\MRenderPass.cpp">
       <Filter>Core\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanBufferManager.cpp">
-      <Filter>Core\Renderer\Vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\Shader\MShader.cpp">
       <Filter>Core\Renderer\Shader</Filter>
     </ClCompile>
@@ -645,6 +642,9 @@
       <Filter>Core\Renderer\Shader</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanUniformBufferPool.cpp">
+      <Filter>Core\Renderer\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanObjectDestructor.cpp">
       <Filter>Core\Renderer\Vulkan</Filter>
     </ClCompile>
   </ItemGroup>

@@ -81,6 +81,7 @@ public:
 
 	virtual void OnTick(const float& fDelta)
 	{
+		
 		MPointLight* pLight = static_cast<MPointLight*>(GetRootNode()->FindFirstChildByName("Light"));
 
 		const float speed = 16;
@@ -145,15 +146,13 @@ int main(int argc, char* argv[])
 	MEngine engine;
 	engine.Initialize();
 
-	{
-		{
-			MModelConverter conver(&engine);
-			conver.Convert("./Model/teaport.fbx", "./Model", "teaport");
-		}
-	}
+// 	{
+// 		{
+// 			MModelConverter conver(&engine);
+// 			conver.Convert("./Model/girl/butterfly.fbx", "./Model", "butterfly");
+// 		}
+// 	}
 
-	 
- 
  	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
  	pRootNode->SetName("RootNode");
 

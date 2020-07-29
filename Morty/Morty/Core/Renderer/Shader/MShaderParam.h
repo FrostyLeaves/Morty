@@ -31,7 +31,6 @@ public:
 	MShaderParam();
 
 	MString strName;
-	uint32_t unCode;
 	uint32_t  eShaderType;
 
 	bool bDirty[M_BUFFER_NUM];

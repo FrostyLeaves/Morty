@@ -555,25 +555,22 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, std::vector<uint32_
 		MStruct* pMaterialStruct = nullptr;
 		for (MShaderConstantParam* pParam : *pMaterial->GetShaderParams())
 		{
-			if (pParam->unCode == SHADER_PARAM_CODE_MATERIAL)
+			if (MStruct* pStruct = pParam->var.GetStruct())
 			{
-				if (MStruct* pStruct = pParam->var.GetStruct())
+				if (MStruct* pMat = pStruct->FindMember("U_mat")->GetStruct())
 				{
-					if (MStruct* pMat = pStruct->FindMember("U_mat")->GetStruct())
-					{
-						pMaterialStruct = pMat;
+					pMaterialStruct = pMat;
 
-						pMat->SetMember("f3Ambient", v3Ambient);
-						pMat->SetMember("f3Diffuse", v3Diffuse);
-						pMat->SetMember("f3Specular", v3Specular);
-						pMat->SetMember("fShininess", fShininess);
-						pMat->SetMember("bUseNormalTex", false);
-						pMat->SetMember("fAlphaFactor", 1.0f);
-					}
+					pMat->SetMember("f3Ambient", v3Ambient);
+					pMat->SetMember("f3Diffuse", v3Diffuse);
+					pMat->SetMember("f3Specular", v3Specular);
+					pMat->SetMember("fShininess", fShininess);
+					pMat->SetMember("bUseNormalTex", false);
+					pMat->SetMember("fAlphaFactor", 1.0f);
 				}
-
-				continue;
 			}
+
+			continue;
 		}
 
 		MString strResourceFolder = MResource::GetFolder(m_strResourcePath);

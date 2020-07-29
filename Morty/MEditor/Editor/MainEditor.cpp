@@ -2,9 +2,16 @@
 
 #include "imgui.h"
 #include "imgui_impl_win32.h"
+
+
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
 #include "imgui_impl_dx11.h"
+#elif RENDER_GRAPHICS == MORTY_VULKAN
+#include "imgui_impl_vulkan.h"
+#endif
 
 #include "MDirectX11RenderTarget.h"
+#include "Vulkan/MVulkanRenderTarget.h"
 
 #include "MDirectX11Device.h"
 #include "MEngine.h"
@@ -86,11 +93,33 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 		return false;
 
 
-
-	MDirectX11Device* pDevice = dynamic_cast<MDirectX11Device*>(m_pEngine->GetDevice());
 	// Setup Platform/Renderer bindings
 	ImGui_ImplWin32_Init(GetHWND());
+
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
+	MDirectX11Device* pDevice = dynamic_cast<MDirectX11Device*>(m_pEngine->GetDevice());
 	ImGui_ImplDX11_Init(pDevice->m_pD3dDevice, pDevice->m_pD3dContext);
+#elif RENDER_GRAPHICS == MORTY_VULKAN
+	MVulkanDevice* pDevice = dynamic_cast<MVulkanDevice*>(m_pEngine->GetDevice());
+	
+	ImGui_ImplVulkan_InitInfo vulkanInitInfo;
+
+	vulkanInitInfo.Allocator = nullptr;
+	vulkanInitInfo.CheckVkResultFn = nullptr;
+	vulkanInitInfo.DescriptorPool = pDevice->m_ObjectDestructor.m_VkDescriptorPool;
+	vulkanInitInfo.Device = pDevice->m_VkDevice;
+	vulkanInitInfo.ImageCount;
+	vulkanInitInfo.Instance = pDevice->m_VkInstance;
+	vulkanInitInfo.MinImageCount;
+	vulkanInitInfo.MSAASamples;
+	vulkanInitInfo.PhysicalDevice = pDevice->m_VkPhysicalDevice;
+	vulkanInitInfo.PipelineCache;
+	vulkanInitInfo.Queue;
+	vulkanInitInfo.QueueFamily;
+
+	MVulkanRenderTarget* pVulkanRenderTarget = dynamic_cast<MVulkanRenderTarget*>(GetRenderTarget());
+	ImGui_ImplVulkan_Init(&vulkanInitInfo, pVulkanRenderTarget->m_RenderPass.m_VkRenderPass);
+#endif
 
 	//Setup Render
 	m_SceneTexture.Initialize(pEngine);
@@ -128,7 +157,12 @@ void MainEditor::Release()
 	m_vChildView.clear();
 
 	// Cleanup
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	ImGui_ImplDX11_Shutdown();
+#elif RENDER_GRAPHICS == MORTY_VULKAN
+	ImGui_ImplVulkan_Shutdown();
+#endif
+
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 
@@ -159,7 +193,12 @@ void MainEditor::Input(MInputEvent* pEvent)
 void MainEditor::OnRenderEnd()
 {
 	// Start the Dear ImGui frame
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	ImGui_ImplDX11_NewFrame();
+#elif RENDER_GRAPHICS == MORTY_VULKAN
+	ImGui_ImplVulkan_NewFrame();
+#endif
+
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 	
@@ -173,7 +212,12 @@ void MainEditor::OnRenderEnd()
 
 	// Rendering
 	ImGui::Render();
+
+#if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+#elif RENDER_GRAPHICS == MORTY_VULKAN
+	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), );
+#endif
 }
 
 void MainEditor::SetRenderTarget(MIRenderTarget* pRenderTarget)

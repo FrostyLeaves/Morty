@@ -127,17 +127,6 @@ MShaderConstantParam* MMaterial::FindShaderParam(const MString& strName)
 	return nullptr;
 }
 
-MShaderConstantParam* MMaterial::FindShaderParam(const uint32_t& unCode)
-{
-	for (MShaderConstantParam* pParam : m_MaterialSet.m_vParams)
-	{
-		if (pParam->unCode == unCode)
-			return pParam;
-	}
-
-	return nullptr;
-}
-
 void MMaterial::CopyFrom(const MResource* pResource)
 {
 	Unload();

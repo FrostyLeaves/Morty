@@ -216,6 +216,7 @@
     <ClInclude Include="..\..\..\ImGUI\ImGuiFileDialog\ImGuiFileDialog.h" />
     <ClInclude Include="..\..\..\ImGUI\ImGuiFileDialog\ImGuiFileDialogConfig.h" />
     <ClInclude Include="..\..\..\ImGUI\imgui_impl_dx11.h" />
+    <ClInclude Include="..\..\..\ImGUI\imgui_impl_vulkan.h" />
     <ClInclude Include="..\..\..\ImGUI\imgui_impl_win32.h" />
     <ClInclude Include="..\..\..\ImGUI\imgui_internal.h" />
     <ClInclude Include="..\..\..\ImGUI\imgui_stdlib.h" />
@@ -241,6 +242,7 @@
     <ClCompile Include="..\..\..\ImGUI\imgui_demo.cpp" />
     <ClCompile Include="..\..\..\ImGUI\imgui_draw.cpp" />
     <ClCompile Include="..\..\..\ImGUI\imgui_impl_dx11.cpp" />
+    <ClCompile Include="..\..\..\ImGUI\imgui_impl_vulkan.cpp" />
     <ClCompile Include="..\..\..\ImGUI\imgui_impl_win32.cpp" />
     <ClCompile Include="..\..\..\ImGUI\imgui_stdlib.cpp" />
     <ClCompile Include="..\..\..\ImGUI\imgui_widgets.cpp" />

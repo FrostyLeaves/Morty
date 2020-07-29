@@ -54,7 +54,7 @@ MVulkanDevice::MVulkanDevice()
 	, m_VkPhysicalDeviceProperties({})
 	, m_VkDevice(VK_NULL_HANDLE)
 	, m_VkGraphicsQueue(VK_NULL_HANDLE)
-	, m_BufferManager(this)
+	, m_ObjectDestructor(this)
 	, m_PipelineManager(this)
 	, m_DynamicUniformBufferPool(this)
 {
@@ -80,7 +80,7 @@ bool MVulkanDevice::Initialize()
 	if (!InitCommandPool())
 		return false;
 	
-	if (!m_BufferManager.Initialize())
+	if (!m_ObjectDestructor.Initialize())
 		return false;
 
 	if (!m_DynamicUniformBufferPool.Initialize())
@@ -116,9 +116,9 @@ void MVulkanDevice::Release()
 
 	//Release All Vk Object.
 	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-		m_BufferManager.FrameFinished(i);
+		m_ObjectDestructor.FrameFinished(i);
 
-	m_BufferManager.Release();
+	m_ObjectDestructor.Release();
 
 	vkDestroyCommandPool(m_VkDevice, m_VkCommandPool, nullptr);
 
@@ -164,12 +164,12 @@ void MVulkanDevice::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh
 
 	if (bModifiable)
 	{
-		m_BufferManager.GenerateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexBuffer, vertexBufferMemory);
+		m_ObjectDestructor.GenerateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexBuffer, vertexBufferMemory);
 		vkMapMemory(m_VkDevice, vertexBufferMemory, 0, bufferSize, 0, &data);
 		memcpy(data, pMesh->GetVertices(), (size_t)bufferSize);
 		vkUnmapMemory(m_VkDevice, vertexBufferMemory);
 
-		m_BufferManager.GenerateBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT , indexBuffer, indexBufferMemory);
+		m_ObjectDestructor.GenerateBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT , indexBuffer, indexBufferMemory);
 		vkMapMemory(m_VkDevice, indexBufferMemory, 0, indexBufferSize, 0, &data);
 		memcpy(data, pMesh->GetIndices(), (size_t)indexBufferSize);
 		vkUnmapMemory(m_VkDevice, indexBufferMemory);
@@ -178,14 +178,14 @@ void MVulkanDevice::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh
 	{
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
-		m_BufferManager.GenerateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+		m_ObjectDestructor.GenerateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 		vkMapMemory(m_VkDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
 		memcpy(data, pMesh->GetVertices(), (size_t)bufferSize);
 		vkUnmapMemory(m_VkDevice, stagingBufferMemory);
 
 		
-		m_BufferManager.GenerateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+		m_ObjectDestructor.GenerateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
 
 		CopyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
@@ -195,13 +195,13 @@ void MVulkanDevice::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh
 
 		VkBuffer stagingIdxBuffer;
 		VkDeviceMemory stagingIdxBufferMemory;
-		m_BufferManager.GenerateBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingIdxBuffer, stagingIdxBufferMemory);
+		m_ObjectDestructor.GenerateBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingIdxBuffer, stagingIdxBufferMemory);
 
 		vkMapMemory(m_VkDevice, stagingIdxBufferMemory, 0, indexBufferSize, 0, &data);
 		memcpy(data, pMesh->GetIndices(), (size_t)indexBufferSize);
 		vkUnmapMemory(m_VkDevice, stagingIdxBufferMemory);
 
-		m_BufferManager.GenerateBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+		m_ObjectDestructor.GenerateBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
 
 		CopyBuffer(stagingIdxBuffer, indexBuffer, indexBufferSize);
 
@@ -263,10 +263,10 @@ void MVulkanDevice::DestroyBuffer(MVertexBuffer** ppVertexBuffer)
 {
 	if (*ppVertexBuffer)
 	{
-		m_BufferManager.DestroyBufferLater(0, (*ppVertexBuffer)->m_VkVertexBuffer);
-		m_BufferManager.DestroyDeviceMemoryLater(0, (*ppVertexBuffer)->m_VkVertexBufferMemory);
-		m_BufferManager.DestroyBufferLater(0, (*ppVertexBuffer)->m_VkIndexBuffer);
-		m_BufferManager.DestroyDeviceMemoryLater(0, (*ppVertexBuffer)->m_VkIndexBufferMemory);
+		m_ObjectDestructor.DestroyBufferLater(0, (*ppVertexBuffer)->m_VkVertexBuffer);
+		m_ObjectDestructor.DestroyDeviceMemoryLater(0, (*ppVertexBuffer)->m_VkVertexBufferMemory);
+		m_ObjectDestructor.DestroyBufferLater(0, (*ppVertexBuffer)->m_VkIndexBuffer);
+		m_ObjectDestructor.DestroyDeviceMemoryLater(0, (*ppVertexBuffer)->m_VkIndexBufferMemory);
 		delete *ppVertexBuffer;
 		*ppVertexBuffer = nullptr;
 	}
@@ -435,7 +435,7 @@ void MVulkanDevice::GenerateTexture(MTextureBuffer** ppTextureBuffer, MTexture* 
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
-	m_BufferManager.GenerateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+	m_ObjectDestructor.GenerateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 	void* data;
 	vkMapMemory(m_VkDevice, stagingBufferMemory, 0, imageSize, 0, &data);
@@ -465,9 +465,9 @@ void MVulkanDevice::DestroyTexture(MTextureBuffer** ppTextureBuffer)
 {
 	if (*ppTextureBuffer)
 	{
-		m_BufferManager.DestroyImageViewLater(0, (*ppTextureBuffer)->m_VkImageView);
-		m_BufferManager.DestroyImageLater(0, (*ppTextureBuffer)->m_VkTextureImage);
-		m_BufferManager.DestroyDeviceMemoryLater(0, (*ppTextureBuffer)->m_VkTextureImageMemory);
+		m_ObjectDestructor.DestroyImageViewLater(0, (*ppTextureBuffer)->m_VkImageView);
+		m_ObjectDestructor.DestroyImageLater(0, (*ppTextureBuffer)->m_VkTextureImage);
+		m_ObjectDestructor.DestroyDeviceMemoryLater(0, (*ppTextureBuffer)->m_VkTextureImageMemory);
 
 		delete *ppTextureBuffer;
 		*ppTextureBuffer = nullptr;
@@ -637,7 +637,7 @@ bool MVulkanDevice::InitCommandPool()
 bool MVulkanDevice::InitDefaultTexture()
 {
 	m_WhiteTexture.SetSize(Vector2(4, 4));
-	m_WhiteTexture.FillColor(MColor(0, 0, 0, 1));
+	m_WhiteTexture.FillColor(MColor(1, 1, 1, 1));
 	m_WhiteTexture.GenerateBuffer(this, false);
 
 	return true;
@@ -783,12 +783,12 @@ void MVulkanDevice::CleanShader(MShaderBuffer** ppShaderBuffer)
 
 // 	for (MShaderParam* param : pBuffer->m_vShaderParamsTemplate)
 // 	{
-// 		m_BufferManager.DestroyBufferLater(0, param->m_VkBuffer);
-// 		m_BufferManager.DestroyDeviceMemoryLater(0, param->m_VkBufferMemory);
+// 		m_ObjectDestructor.DestroyBufferLater(0, param->m_VkBuffer);
+// 		m_ObjectDestructor.DestroyDeviceMemoryLater(0, param->m_VkBufferMemory);
 // 
 // 	}
 
-	m_BufferManager.DestroyShaderModuleLater(0, pBuffer->m_VkShaderModule);
+	m_ObjectDestructor.DestroyShaderModuleLater(0, pBuffer->m_VkShaderModule);
 
 	delete* ppShaderBuffer;
 	*ppShaderBuffer = nullptr;
@@ -868,13 +868,13 @@ void MVulkanDevice::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
 
 		if (pBuffer->m_VkFrameBuffer)
 		{
-			m_BufferManager.DestroyFramebufferLater(0, pBuffer->m_VkFrameBuffer);
+			m_ObjectDestructor.DestroyFramebufferLater(0, pBuffer->m_VkFrameBuffer);
 			pBuffer->m_VkFrameBuffer = VK_NULL_HANDLE;
 		}
 
 		if (pBuffer->m_VkImageView)
 		{
-			m_BufferManager.DestroyImageViewLater(0, pBuffer->m_VkImageView);
+			m_ObjectDestructor.DestroyImageViewLater(0, pBuffer->m_VkImageView);
 			pBuffer->m_VkImageView = VK_NULL_HANDLE;
 		}
 	}
@@ -997,7 +997,7 @@ void MVulkanDevice::DestroyRenderPass(MRenderPass* pRenderPass)
 {
 	if (pRenderPass && pRenderPass->m_VkRenderPass)
 	{
-		m_BufferManager.DestroyRenderPassLater(0, pRenderPass->m_VkRenderPass);
+		m_ObjectDestructor.DestroyRenderPassLater(0, pRenderPass->m_VkRenderPass);
 		pRenderPass->m_VkRenderPass = VK_NULL_HANDLE;
 		m_PipelineManager.UnRegisterRenderPass(pRenderPass);
 	}

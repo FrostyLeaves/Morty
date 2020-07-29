@@ -64,7 +64,7 @@ void MBasicRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport, MS
 		param->SetDirty();
 	}
 
-	pRenderer->SetUseMaterial(m_pMaterial, true);
+	pRenderer->SetUseMaterial(m_pMaterial);
 
 
 	pRenderer->DrawMesh(&m_TransparentDrawMesh);

@@ -3,6 +3,7 @@
 #include "MIRenderView.h"
 #include "MViewport.h"
 #include "MIRenderTarget.h"
+#include "MRenderStatistics.h"
 
 #include "MLogManager.h"
 #if (RENDER_GRAPHICS == MORTY_DIRECTX_11)
@@ -155,6 +156,9 @@ void MEngine::Release()
 void MEngine::Tick(float fDelta)
 {
 //	MLogManager::GetInstance()->Log("fps:  %d", (int)(1.0f / fDelta));
+
+	MLogManager::GetInstance()->Log("t:  %u", MRenderStatistics::GetInstance()->unTriangleCount);
+	MRenderStatistics::GetInstance()->unTriangleCount = 0;
 	if (m_pScene)
 	{
 		m_pScene->Tick(fDelta);

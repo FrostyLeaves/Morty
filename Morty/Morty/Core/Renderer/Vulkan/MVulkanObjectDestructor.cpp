@@ -1,4 +1,4 @@
-#include "MVulkanBufferManager.h"
+#include "MVulkanObjectDestructor.h"
 #include "MVulkanDevice.h"
 
 #define M_VULKAN_DESTROY_CLEAR(VK_TYPE, VK_FUNC) \
@@ -9,7 +9,7 @@
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 
-MVulkanBufferManager::MVulkanBufferManager(MVulkanDevice* pDevice)
+MVulkanObjectDestructor::MVulkanObjectDestructor(MVulkanDevice* pDevice)
 	: m_pDevice(pDevice)
 	, m_VkDescriptorPool(VK_NULL_HANDLE)
 	, m_VkDefaultSampler(VK_NULL_HANDLE)
@@ -17,7 +17,7 @@ MVulkanBufferManager::MVulkanBufferManager(MVulkanDevice* pDevice)
 
 }
 
-void MVulkanBufferManager::FrameFinished(const uint32_t& unFrameIndex)
+void MVulkanObjectDestructor::FrameFinished(const uint32_t& unFrameIndex)
 {
 	VkDevice device = m_pDevice->m_VkDevice;
 
@@ -37,7 +37,7 @@ void MVulkanBufferManager::FrameFinished(const uint32_t& unFrameIndex)
 	m_vDescriptorSets[unFrameIndex].clear();
 }
 
-bool MVulkanBufferManager::Initialize()
+bool MVulkanObjectDestructor::Initialize()
 {
 	if (!InitDescriptorPool())
 		return false;
@@ -48,14 +48,14 @@ bool MVulkanBufferManager::Initialize()
 	return true;
 }
 
-void MVulkanBufferManager::Release()
+void MVulkanObjectDestructor::Release()
 {
 	vkDestroyDescriptorPool(m_pDevice->m_VkDevice, m_VkDescriptorPool, nullptr);
 
 	vkDestroySampler(m_pDevice->m_VkDevice, m_VkDefaultSampler, nullptr);
 }
 
-bool MVulkanBufferManager::GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+bool MVulkanObjectDestructor::GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
 {
 	VkBufferCreateInfo bufferInfo{};
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -93,13 +93,13 @@ bool MVulkanBufferManager::GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags 
 	return true;
 }
 
-void MVulkanBufferManager::DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+void MVulkanObjectDestructor::DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory)
 {
 	vkDestroyBuffer(m_pDevice->m_VkDevice, buffer, nullptr);
 	vkFreeMemory(m_pDevice->m_VkDevice, bufferMemory, nullptr);
 }
 
-bool MVulkanBufferManager::InitDescriptorPool()
+bool MVulkanObjectDestructor::InitDescriptorPool()
 {
 	uint32_t unSwapChainNum = 100;
 
@@ -135,7 +135,7 @@ bool MVulkanBufferManager::InitDescriptorPool()
 	return true;
 }
 
-bool MVulkanBufferManager::InitSampler()
+bool MVulkanObjectDestructor::InitSampler()
 {
 	VkSamplerCreateInfo samplerInfo{};
 	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -160,7 +160,7 @@ bool MVulkanBufferManager::InitSampler()
 }
 
 
-void MVulkanBufferManager::DestroyDescriptorSets(const uint32_t& unFrameIndex, std::vector<VkDescriptorSet>& vDescriptorSets)
+void MVulkanObjectDestructor::DestroyDescriptorSets(const uint32_t& unFrameIndex, std::vector<VkDescriptorSet>& vDescriptorSets)
 {
 	m_vDescriptorSets[unFrameIndex].push_back(std::move(vDescriptorSets));
 }

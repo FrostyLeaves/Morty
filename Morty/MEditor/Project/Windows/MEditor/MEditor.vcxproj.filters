@@ -114,6 +114,9 @@
     <ClInclude Include="..\..\..\ImGUI\imgui_stdlib.h">
       <Filter>ImGUI</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\ImGUI\imgui_impl_vulkan.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MEditor.cpp">
@@ -174,6 +177,9 @@
       <Filter>Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\ImGUI\imgui_stdlib.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ImGUI\imgui_impl_vulkan.cpp">
       <Filter>ImGUI</Filter>
     </ClCompile>
   </ItemGroup>

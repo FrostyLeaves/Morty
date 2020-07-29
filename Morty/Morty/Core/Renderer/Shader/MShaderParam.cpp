@@ -2,7 +2,6 @@
 
 MShaderParam::MShaderParam()
 	: strName()
-	, unCode(SHADER_PARAM_CODE_DEFAULT)
 	, eShaderType(0)
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	, pBuffer(nullptr)
@@ -36,7 +35,6 @@ MShaderConstantParam::MShaderConstantParam()
 MShaderConstantParam::MShaderConstantParam(const MShaderConstantParam& param, const int& unNone)
 {
 	strName = param.strName;
-	unCode = param.unCode;
 	var = param.var;
 	eShaderType = param.eShaderType;
 

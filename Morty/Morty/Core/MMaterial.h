@@ -55,7 +55,6 @@ public:
 	void SetTexutreParam(const uint32_t& unIndex, MResource* pTexResource);
 
 	MShaderConstantParam* FindShaderParam(const MString& strName);
-	MShaderConstantParam* FindShaderParam(const uint32_t& unCode);
 
 	void SetRasterizerType(const MERasterizerType& eType) { m_eRasterizerType = eType; }
 	MERasterizerType GetRasterizerType() const { return m_eRasterizerType; }

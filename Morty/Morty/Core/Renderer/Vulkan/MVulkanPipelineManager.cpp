@@ -35,7 +35,7 @@ void MVulkanPipelineManager::Release()
 	{
 		for (VkPipeline& pipeline : group.vMaterialGroup)
 		{
-			m_pDevice->m_BufferManager.DestroyPipelineLater(0, pipeline);
+			m_pDevice->m_ObjectDestructor.DestroyPipelineLater(0, pipeline);
 		}
 	}
 
@@ -115,7 +115,7 @@ void MVulkanPipelineManager::UnRegisterMaterial(MMaterial* pMaterial)
 	{
 		if (id < group.vMaterialGroup.size() && group.vMaterialGroup[id])
 		{
-			m_pDevice->m_BufferManager.DestroyPipelineLater(0, group.vMaterialGroup[id]);
+			m_pDevice->m_ObjectDestructor.DestroyPipelineLater(0, group.vMaterialGroup[id]);
 			group.vMaterialGroup[id] = VK_NULL_HANDLE;
 		}
 	}
@@ -137,7 +137,7 @@ void MVulkanPipelineManager::UnRegisterRenderPass(MRenderPass* pRenderPass)
 		MPipelineRenderPassGroup& group = m_vRenderPassGroup[id];
 		for (VkPipeline& pipeline : group.vMaterialGroup)
 		{
-			m_pDevice->m_BufferManager.DestroyPipelineLater(0, pipeline);
+			m_pDevice->m_ObjectDestructor.DestroyPipelineLater(0, pipeline);
 		}
 		group.vMaterialGroup.clear();
 	}
@@ -252,7 +252,7 @@ bool MVulkanPipelineManager::CreateMaterialPipelineLayout(MMaterial* pMaterial, 
 				uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_FRAGMENT_BIT;
 
 
-			uboLayoutBinding.pImmutableSamplers = &m_pDevice->m_BufferManager.m_VkDefaultSampler;
+			uboLayoutBinding.pImmutableSamplers = &m_pDevice->m_ObjectDestructor.m_VkDefaultSampler;
 
 			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
 		}
@@ -285,32 +285,6 @@ bool MVulkanPipelineManager::CreateMaterialPipelineLayout(MMaterial* pMaterial, 
 		return VK_NULL_HANDLE;
 
 
-
-// 	if (!vSetLayouts.empty())
-// 	{
-// 		for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-// 		{
-// 
-// 			std::vector<VkDescriptorSet> vDescriptorSets;
-// 			vDescriptorSets.resize(vSetLayouts.size());
-// 			if (vkAllocateDescriptorSets(m_pDevice->m_VkDevice, &allocInfo, vDescriptorSets.data()) != VK_SUCCESS) {
-// 				throw std::runtime_error("failed to allocate descriptor sets!");
-// 			}
-// 
-// 			for (uint32_t unSetIdx = 0; unSetIdx < M_VALID_SHADER_SET_NUM; ++unSetIdx)
-// 			{
-// 				MShaderParamSet& paramSets = pMaterial->GetShaderParamSets()[unSetIdx];
-// 				paramSets.m_VkDescriptorSet[i] = vDescriptorSets[unSetIdx];
-// 			}
-// 		}
-// 
-// 		for (uint32_t unSetIdx = 0; unSetIdx < M_VALID_SHADER_SET_NUM; ++unSetIdx)
-// 		{
-// 			MShaderParamSet& paramSets = pMaterial->GetShaderParamSets()[unSetIdx];
-// 			BindDescriptor(&paramSets);
-// 		}
-// 	}
-
 	return pipelineLayout;
 }
 
@@ -320,10 +294,10 @@ void MVulkanPipelineManager::DestroyMaterialPipelineLayout(MMaterialPipelineLayo
 	{
 		VkDevice& device = m_pDevice->m_VkDevice;
 
-		m_pDevice->m_BufferManager.DestroyPipelineLayoutLater(0, data.pipelineLayout);
+		m_pDevice->m_ObjectDestructor.DestroyPipelineLayoutLater(0, data.pipelineLayout);
 
 		for (VkDescriptorSetLayout& layout : data.vSetLayouts)
-			m_pDevice->m_BufferManager.DestroyDescriptorSetLayoutLater(0, layout);
+			m_pDevice->m_ObjectDestructor.DestroyDescriptorSetLayoutLater(0, layout);
 
 		data.pipelineLayout = VK_NULL_HANDLE;
 		data.vSetLayouts.clear();
@@ -336,7 +310,7 @@ VkDescriptorSet MVulkanPipelineManager::CreateMaterialDescriptorSet(MMaterialPip
 
 	VkDescriptorSetAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = m_pDevice->m_BufferManager.m_VkDescriptorPool;
+	allocInfo.descriptorPool = m_pDevice->m_ObjectDestructor.m_VkDescriptorPool;
 	allocInfo.descriptorSetCount = 1;
 	allocInfo.pSetLayouts = &data.vSetLayouts[unSetIdx];
 

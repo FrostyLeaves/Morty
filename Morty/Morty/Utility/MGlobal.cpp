@@ -23,8 +23,8 @@ const char* DEFAULT_TEXTURE_WHITE = "DefTexWhite";
 const char* DEFAULT_TEXTURE_BLACK = "DefTexBlack";
 const char* DEFAULT_TEXTURE_NORMALMAP = "DefTexNormalMap";
 
-const char* SHADER_PARAM_NAME_DIFFUSE = "U_mat.texDiffuse";
-const char* SHADER_PARAM_NAME_NORMAL = "U_mat.texNormal";
+const char* SHADER_PARAM_NAME_DIFFUSE = "U_mat_texDiffuse";
+const char* SHADER_PARAM_NAME_NORMAL = "U_mat_texNormal";
 
 const uint32_t MSHADOW_TEXTURE_SIZE = 2048;
 

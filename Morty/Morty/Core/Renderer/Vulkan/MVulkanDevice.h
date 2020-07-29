@@ -19,7 +19,7 @@
 #include "vulkan/vulkan.h"
 #include "vulkan/vulkan_core.h"
 
-#include "MVulkanBufferManager.h"
+#include "MVulkanObjectDestructor.h"
 #include "MVulkanShaderCompiler.h"
 #include "MVulkanPipelineManager.h"
 #include "MVulkanUniformBufferPool.h"
@@ -116,11 +116,9 @@ public:
 
 	VkCommandPool m_VkCommandPool;
 
-	int m_nBufferNum;
-
-	MVulkanBufferManager m_BufferManager;
 	MVulkanShaderCompiler m_ShaderCompiler;
 	MVulkanPipelineManager m_PipelineManager;
+	MVulkanObjectDestructor m_ObjectDestructor;
 	MVulkanUniformBufferPool m_DynamicUniformBufferPool;
 
 

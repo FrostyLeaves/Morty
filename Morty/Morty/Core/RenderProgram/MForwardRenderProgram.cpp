@@ -568,12 +568,8 @@ void MForwardRenderProgram::DrawNormalMesh(MRenderInfo& info)
 	{
 		MMaterial* pMaterial = group.m_pMaterial;
 		//Ê¹ÓÃ²ÄÖÊ
-		if (!info.pRenderer->SetUseMaterial(pMaterial, true))
+		if (!info.pRenderer->SetUseMaterial(pMaterial))
 			continue;
-
-		Vector2 v2LeftTop = info.pViewport->GetLeftTop();
-		Vector2 v2Size = info.pViewport->GetSize();
-		info.pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y, 0.0f, 1.0f);
 
 		info.pRenderer->SetShaderParamSet(&m_FrameParamSet);
 		info.pRenderer->SetShaderParamSet(pMaterial->GetMaterialParamSet());
@@ -710,8 +706,6 @@ void MForwardRenderProgram::DrawBoundingBox(MRenderInfo& info, MModelInstance* p
 	if (!info.pRenderer->SetUseMaterial(pMaterial))
 		return;
 
-	info.pRenderer->UpdateMaterialParam();
-
 	const MBoundsAABB* pAABB = pModelIns->GetBoundsAABB();
 
 	const Vector3& obmin = pAABB->m_v3MinPoint;
@@ -799,8 +793,6 @@ void MForwardRenderProgram::DrawCameraFrustum(MRenderInfo& info, MCamera* pCamer
 	MMaterial* pMaterial = pDraw3DMaterialRes;
 	if (!info.pRenderer->SetUseMaterial(pMaterial))
 		return;
-
-	info.pRenderer->UpdateMaterialParam();
 
 
 	Vector3 list[8];

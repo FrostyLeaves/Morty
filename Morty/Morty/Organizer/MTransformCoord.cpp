@@ -259,8 +259,6 @@ void MTransformCoord3D::Render(MIRenderer* pRenderer, MViewport* pViewport)
 	if (!pRenderer->SetUseMaterial(pMaterial))
 		return;
 
-	pRenderer->UpdateMaterialParam();
-
 	bool vVaild[3];
 	int vOrder[3];
 	MPainter2DLine lines[3];

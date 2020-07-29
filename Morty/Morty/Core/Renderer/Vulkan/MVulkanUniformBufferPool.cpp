@@ -27,7 +27,7 @@ bool MVulkanUniformBufferPool::Initialize()
 
 	uint32_t unAllowMemorySize = 32 * 1024 * 1024;
 
-	m_pDevice->m_BufferManager.GenerateBuffer(unAllowMemorySize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+	m_pDevice->m_ObjectDestructor.GenerateBuffer(unAllowMemorySize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_VkBuffer, m_VkDeviceMemory);
 
 	void* pData = nullptr;
@@ -48,7 +48,7 @@ void MVulkanUniformBufferPool::Release()
 {
 	vkUnmapMemory(m_pDevice->m_VkDevice, m_VkDeviceMemory);
 
-	m_pDevice->m_BufferManager.DestroyBuffer(m_VkBuffer, m_VkDeviceMemory);
+	m_pDevice->m_ObjectDestructor.DestroyBuffer(m_VkBuffer, m_VkDeviceMemory);
 }
 
 bool MVulkanUniformBufferPool::AllowBufferMemory(MShaderConstantParam* pParam)
@@ -75,7 +75,7 @@ bool MVulkanUniformBufferPool::AllowUniformBufferMemory(MShaderConstantParam* pP
 		VkBuffer buffer = VK_NULL_HANDLE;
 		VkDeviceMemory memory = VK_NULL_HANDLE;
 
-		if (!m_pDevice->m_BufferManager.GenerateBuffer(unSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+		if (!m_pDevice->m_ObjectDestructor.GenerateBuffer(unSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			buffer, memory))
 		{
@@ -158,8 +158,8 @@ void MVulkanUniformBufferPool::FreeUniformBufferMemory(MShaderConstantParam* pPa
 		vkUnmapMemory(m_pDevice->m_VkDevice, pParam->m_VkBufferMemory[i]);
 		pParam->m_pMemoryMapping[i] = nullptr;
 
-		m_pDevice->m_BufferManager.DestroyBufferLater(i, pParam->m_VkBuffer[i]);
-		m_pDevice->m_BufferManager.DestroyDeviceMemoryLater(i, pParam->m_VkBufferMemory[i]);
+		m_pDevice->m_ObjectDestructor.DestroyBufferLater(i, pParam->m_VkBuffer[i]);
+		m_pDevice->m_ObjectDestructor.DestroyDeviceMemoryLater(i, pParam->m_VkBufferMemory[i]);
 
 		pParam->m_VkBuffer[i] = VK_NULL_HANDLE;
 		pParam->m_VkBufferMemory[i] = VK_NULL_HANDLE;

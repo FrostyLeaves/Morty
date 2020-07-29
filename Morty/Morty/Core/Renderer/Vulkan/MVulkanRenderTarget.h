@@ -58,18 +58,11 @@ public:
 
 	VkQueue m_VkPresentQueue;
 
-
-
-	//std::vector<VkImage> m_vSwapchainImages;
 	std::vector<MRenderTextureBuffer*> m_vBackBuffers;
 	MRenderDepthTexture* m_pDepthTexture;
 
-	
-	//
 public:
 
-	//std::vector<VkImageView> m_vSwapchainImageView;
-	//std::vector<VkFramebuffer> swapChainFramebuffers;
 };
 
 

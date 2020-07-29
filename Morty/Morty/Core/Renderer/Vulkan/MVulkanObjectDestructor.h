@@ -1,13 +1,13 @@
 /**
- * @File         MVulkanBufferManager
+ * @File         MVulkanObjectDestructor
  * 
  * @Created      2020-07-07 21:06:34
  *
  * @Author       Pobrecito
 **/
 
-#ifndef _M_MVULKANBUFFERMANAGER_H_
-#define _M_MVULKANBUFFERMANAGER_H_
+#ifndef _M_MVULKANOBJECTDESTRUCTOR_H_
+#define _M_MVULKANOBJECTDESTRUCTOR_H_
 #include "MGlobal.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -18,11 +18,11 @@
 #include <vector>
 
 class MVulkanDevice;
-class MORTY_CLASS MVulkanBufferManager
+class MORTY_CLASS MVulkanObjectDestructor
 {
 public:
-    MVulkanBufferManager(MVulkanDevice* pDevice);
-    ~MVulkanBufferManager() {}
+    MVulkanObjectDestructor(MVulkanDevice* pDevice);
+    ~MVulkanObjectDestructor() {}
 
 public:
 

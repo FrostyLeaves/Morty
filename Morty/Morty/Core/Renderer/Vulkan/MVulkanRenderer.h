@@ -39,13 +39,10 @@ public:
 public:
 	virtual void DrawMesh(MIMesh* pMesh) override;
 
-	virtual bool SetUseMaterial(MMaterial* pMaterial, const bool& bUpdateResources = false) override;
-	virtual void UpdateMaterialParam() override;
-	virtual void UpdateMaterialResource() override;
+	virtual bool SetUseMaterial(MMaterial* pMaterial) override;
 
 public:
 	void UpdateShaderParam(MShaderConstantParam& param);
-	void UpdateShaderTexture(MShaderTextureParam& param);
 
 	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) override;
 
@@ -75,16 +72,12 @@ private:
 	VkViewport m_VkViewport;
 
 	VkCommandBuffer m_VkCommandBuffer;
-	VkPipeline m_VkUsingPipeline;
-	struct MMaterialPipelineLayoutData* m_pUsingPipelineLayout;
-
-	MMaterial* m_pUsingMaterial;
+	struct MMaterialPipelineLayoutData* m_pUsingPipelineLayoutData;
 
 private:
 
 	uint32_t m_unFrameIndex;
 };
-
 
 #endif
 

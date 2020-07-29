@@ -71,6 +71,7 @@ PS_OUT PS(VS_OUT input) : SV_Target
 
     float4 f3DiffColor = f3AmbiColor;
     float4 f3SpecColor = f3AmbiColor;
+
     
     if (U_mat.bUseSpecularTex == true)
     {
@@ -116,6 +117,7 @@ PS_OUT PS(VS_OUT input) : SV_Target
 
 
     float3 f3Color = U_mat.f3Ambient * f3AmbiColor.xyz * 0.2f;
+
     float fAlpha = saturate(U_mat.fAlphaFactor) * f3AmbiColor.w;
 
     if (U_mat.bUseTransparentTex == true)
