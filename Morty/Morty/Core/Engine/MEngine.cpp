@@ -318,6 +318,8 @@ bool MEngine::MainLoop()
 		m_cTickInfo.lPrevTickTime = currentTime;
 
 		//Render
+		m_pRenderer->NewRenderFrame();
+
 		for (MIRenderView* pView : m_vView)
 			RenderToView(pView);
 

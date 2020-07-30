@@ -61,10 +61,12 @@ public:
 	//size is swapchain size.
 	std::vector<MRenderTextureBuffer*> m_vBackBuffers;
 
-	//size is M_BUFFER_NUM
+	//size is swapchain size.
 	std::vector<VkFramebuffer> m_VkFrameBuffer;
+	
 	MRenderDepthTexture* m_pDepthTexture;
 
+	uint32_t m_unFrameBufferIndex;
 
 public:
 

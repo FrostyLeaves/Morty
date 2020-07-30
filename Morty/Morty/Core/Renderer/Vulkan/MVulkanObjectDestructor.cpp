@@ -32,6 +32,7 @@ void MVulkanObjectDestructor::FrameFinished(const uint32_t& unFrameIndex)
 	M_VULKAN_DESTROY_CLEAR(ShaderModule, vkDestroyShaderModule);
 	M_VULKAN_DESTROY_CLEAR(Pipeline, vkDestroyPipeline);
 	M_VULKAN_DESTROY_CLEAR(Fence, vkDestroyFence);
+	M_VULKAN_DESTROY_CLEAR(Semaphore, vkDestroySemaphore);
 
 	for (auto& set : m_vDescriptorSets[unFrameIndex])
 		vkFreeDescriptorSets(device, m_VkDescriptorPool, set.size(), set.data());

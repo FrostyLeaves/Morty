@@ -15,6 +15,7 @@ MVulkanRenderTarget::MVulkanRenderTarget(MVulkanDevice* pDevice)
 	, m_pDevice(pDevice)
 	, m_pDepthTexture(new MRenderDepthTexture())
 	, m_pView(nullptr)
+	, m_unFrameBufferIndex(0)
 {
 
 }
@@ -38,15 +39,9 @@ void MVulkanRenderTarget::Render(MIRenderer* pRenderer)
 {
 	MVulkanRenderer* pVkRenderer = dynamic_cast<MVulkanRenderer*>(pRenderer);
 
-	uint32_t imageIndex;
-	vkAcquireNextImageKHR(m_pDevice->m_VkDevice, m_VkSwapchain, UINT64_MAX, pVkRenderer->m_VkImageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+	vkAcquireNextImageKHR(m_pDevice->m_VkDevice, m_VkSwapchain, UINT64_MAX, pVkRenderer->m_VkImageAvailableSemaphore, VK_NULL_HANDLE, &m_unFrameBufferIndex);
 	
-	//TODO 10
-	if (imageIndex < 10)
-	{
-		pVkRenderer->SetFrameIndex(imageIndex);
-		pRenderer->Render(this);
-	}
+	pRenderer->Render(this);
 }
 
 void MVulkanRenderTarget::OnRender(MIRenderer* pRenderer)
@@ -68,16 +63,15 @@ void MVulkanRenderTarget::OnRenderAfter(MIRenderer* pRenderer)
 	VkPresentInfoKHR presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-	VkSemaphore signalSemaphores[] = { pVkRenderer->m_VkRenderFinishedSemaphore };
-
 	uint32_t unFrameIndex = pVkRenderer->GetFrameIndex();
+	VkSemaphore signalSemaphores[] = { m_aVkRenderFinishedSemaphore[unFrameIndex] };
 
 	presentInfo.waitSemaphoreCount = 1;
 	presentInfo.pWaitSemaphores = signalSemaphores;
 	VkSwapchainKHR swapChains[] = { m_VkSwapchain };
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapChains;
-	presentInfo.pImageIndices = &unFrameIndex;
+	presentInfo.pImageIndices = &m_unFrameBufferIndex;
 	presentInfo.pResults = nullptr; // Optional
 	vkQueuePresentKHR(m_VkPresentQueue, &presentInfo);
 }
@@ -317,7 +311,7 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 
 VkFramebuffer MVulkanRenderTarget::GetFrameBuffer(const uint32_t& unIndex)
 {
-	return m_VkFrameBuffer[unIndex];
+	return m_VkFrameBuffer[m_unFrameBufferIndex];
 }
 
 #endif

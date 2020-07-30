@@ -101,6 +101,8 @@ public:
 
 	virtual void SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth) = 0;
 
+	virtual void NewRenderFrame() = 0;
+
 	virtual void Render(MIRenderTarget* pRenderTarget) = 0;
 
 	virtual void AddOutputView(MIRenderView* pView) = 0;

@@ -6,5 +6,6 @@ MIRenderTarget::MIRenderTarget()
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	m_VkCommandBuffers.fill(VK_NULL_HANDLE);
+	m_aVkRenderFinishedSemaphore.fill(VK_NULL_HANDLE);
 #endif
 }

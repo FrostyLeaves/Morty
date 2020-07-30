@@ -70,6 +70,7 @@ public:
 	VkFormat m_VkColorFormat;
 
 	std::array<VkCommandBuffer, M_BUFFER_NUM> m_VkCommandBuffers;
+	std::array <VkSemaphore, M_BUFFER_NUM> m_aVkRenderFinishedSemaphore;
 #endif
 
 

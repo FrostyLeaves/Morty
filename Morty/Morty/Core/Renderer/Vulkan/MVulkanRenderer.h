@@ -27,7 +27,9 @@ public:
 public:
 
 	uint32_t GetFrameIndex() { return m_unFrameIndex; }
-	void SetFrameIndex(const uint32_t& unIndex) { m_unFrameIndex = unIndex; }
+
+
+	virtual void NewRenderFrame() override;
 
 	virtual void AddOutputView(MIRenderView* pView) override;
 
@@ -56,7 +58,6 @@ public:
 
 public:
 	VkSemaphore m_VkImageAvailableSemaphore;
-	VkSemaphore m_VkRenderFinishedSemaphore;
 
 private:
 

@@ -888,7 +888,6 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t
 	if (nHeight < 1)
 		nHeight = 1;
 
-
 	pVkRenderTarget->m_pDepthTexture->SetSize(Vector2(nWidth, nHeight));
 	pVkRenderTarget->m_pDepthTexture->GenerateBuffer(this, false);
 
@@ -943,7 +942,14 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t
 	}
 
 	
+	VkSemaphoreCreateInfo semaphoreInfo{};
+	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
+	for (VkSemaphore& vkSemaphore : pVkRenderTarget->m_aVkRenderFinishedSemaphore)
+	{
+		if (vkCreateSemaphore(m_VkDevice, &semaphoreInfo, nullptr, &vkSemaphore) != VK_SUCCESS)
+			return false;
+	}
 	
 	//TODO Multiple RenderTarget
 
@@ -987,6 +993,12 @@ void MVulkanDevice::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
 	{
 		m_ObjectDestructor.DestroyCommandBufferLater(i, pRenderTarget->m_VkCommandBuffers[i]);
 		pRenderTarget->m_VkCommandBuffers[i] = VK_NULL_HANDLE;
+	}
+
+	for (uint32_t i = 0; i < pRenderTarget->m_aVkRenderFinishedSemaphore.size(); ++i)
+	{
+		m_ObjectDestructor.DestroySemaphoreLater(i, pRenderTarget->m_aVkRenderFinishedSemaphore[i]);
+		pRenderTarget->m_aVkRenderFinishedSemaphore[i] = VK_NULL_HANDLE;
 	}
 }
 

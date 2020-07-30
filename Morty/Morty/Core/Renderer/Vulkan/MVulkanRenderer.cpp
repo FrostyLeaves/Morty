@@ -21,7 +21,6 @@ MVulkanRenderer::MVulkanRenderer(MVulkanDevice* pDevice)
 	, m_VkCommandBuffer(VK_NULL_HANDLE)
 
 	, m_VkImageAvailableSemaphore(VK_NULL_HANDLE)
-	, m_VkRenderFinishedSemaphore(VK_NULL_HANDLE)
 
 	, m_unFrameIndex(0)
 {
@@ -143,13 +142,26 @@ void MVulkanRenderer::SetViewport(const float& fX, const float& fY, const float&
 	vkCmdSetViewport(m_VkCommandBuffer, 0, 1, &m_VkViewport);
 }
 
-void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
+void MVulkanRenderer::NewRenderFrame()
 {
+	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+	{
+		if(vkGetFenceStatus(m_pDevice->m_VkDevice, m_VkInFlightFences[m_unFrameIndex]) == VK_SUCCESS)
+			MLogManager::GetInstance()->Information("finish render frame: %d", i);
+	}
+
+	m_unFrameIndex = (m_unFrameIndex + 1) % M_BUFFER_NUM;
+
 	//渲染栅栏，防止上一次渲染还没渲染完，就执行了下一次的渲染
 	VkFence vkInFightFence = m_VkInFlightFences[m_unFrameIndex];
 
 	//if m_VkInFlightFences == signed
 	vkWaitForFences(m_pDevice->m_VkDevice, 1, &vkInFightFence, VK_TRUE, UINT64_MAX);
+}
+
+void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
+{
+	MLogManager::GetInstance()->Information("begin render frame: %d", m_unFrameIndex);
 
 	//Unused CommandBuffer
 	if (pRenderTarget->m_VkCommandBuffers[m_unFrameIndex])
@@ -233,8 +245,6 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 	vkEndCommandBuffer(m_VkCommandBuffer);
 
 
-
-
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -250,14 +260,13 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 	//TODO maybe mutil command buffers for every frame
 	submitInfo.pCommandBuffers = commandBuffers;
 
-
-	VkSemaphore signalSemaphores[] = { m_VkRenderFinishedSemaphore };
+	VkSemaphore signalSemaphores[] = { pRenderTarget->m_aVkRenderFinishedSemaphore[m_unFrameIndex] };
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
+	VkFence vkInFightFence = m_VkInFlightFences[m_unFrameIndex];
 	//m_VkInFlightFences = unsigned
 	vkResetFences(m_pDevice->m_VkDevice, 1, &vkInFightFence);
-	
 	if (vkQueueSubmit(m_pDevice->m_VkGraphicsQueue, 1, &submitInfo, vkInFightFence) != VK_SUCCESS) {
 		throw std::runtime_error("failed to submit draw command buffer!");
 	}
@@ -483,8 +492,6 @@ bool MVulkanRenderer::InitSemaphores()
 	if (vkCreateSemaphore(m_pDevice->m_VkDevice, &semaphoreInfo, nullptr, &m_VkImageAvailableSemaphore) != VK_SUCCESS)
 		return false;
 
-	if (vkCreateSemaphore(m_pDevice->m_VkDevice, &semaphoreInfo, nullptr, &m_VkRenderFinishedSemaphore) != VK_SUCCESS)
-		return false;
 
 
 	VkFenceCreateInfo fenceInfo{};
@@ -501,7 +508,6 @@ bool MVulkanRenderer::InitSemaphores()
 void MVulkanRenderer::ReleaseSemaphores()
 {
 	vkDestroySemaphore(m_pDevice->m_VkDevice, m_VkImageAvailableSemaphore, nullptr);
-	vkDestroySemaphore(m_pDevice->m_VkDevice, m_VkRenderFinishedSemaphore, nullptr);
 
 	for (uint32_t i = 0; i < m_VkInFlightFences.size(); ++i)
 	{
