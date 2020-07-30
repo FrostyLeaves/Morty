@@ -35,11 +35,11 @@ struct Material
     float3 f3Ambient;
     float fAlphaFactor;
     float3 f3Diffuse;
-    bool bUseNormalTex;
+    int bUseNormalTex;
     float3 f3Specular;
     float fShininess;
-    bool bUseSpecularTex;
-    bool bUseTransparentTex;
+    int bUseSpecularTex;
+    int bUseTransparentTex;
 };
 
 //PS

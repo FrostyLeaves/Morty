@@ -74,7 +74,9 @@ public:
 
 public:
 
-	std::vector<MRenderTargetTexture*> m_vBackTexture;
+	std::vector<MRenderTargetTexture*> m_vBackTexture;	//TODO support mutil rt and mutil frame
+
+	std::vector<VkFramebuffer> m_vFrameBuffer;			//size is frameNum
 	std::vector<MColor> m_vBackClearColor;
 	MRenderDepthTexture* m_pDepthTexture;
 protected:

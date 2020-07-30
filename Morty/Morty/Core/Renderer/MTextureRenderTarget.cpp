@@ -68,7 +68,7 @@ void MTextureRenderTarget::SetDepthTexture(MRenderDepthTexture* pDepthTexture, c
 VkFramebuffer MTextureRenderTarget::GetFrameBuffer(const uint32_t& unIndex)
 {
 	//TODO mutil rendertarget
-	return m_vBackTexture[0]->GetRenderBuffer()->m_VkFrameBuffer;
+	return m_vFrameBuffer[unIndex];
 }
 #endif
 

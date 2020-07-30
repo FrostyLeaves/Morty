@@ -11,6 +11,7 @@
 #include "MGlobal.h"
 #include "MIDevice.h"
 
+#include <array>
 #include <vector>
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
@@ -57,7 +58,7 @@ public:
 
 #elif RENDER_GRAPHICS == MORTY_VULKAN
     
-    VkRenderPass m_VkRenderPass;
+    std::array<VkRenderPass, M_BUFFER_NUM> m_aVkRenderPass;
 #endif
 };
 

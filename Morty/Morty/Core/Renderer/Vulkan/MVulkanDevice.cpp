@@ -89,6 +89,8 @@ bool MVulkanDevice::Initialize()
 	if (!InitDefaultTexture())
 		return false;
 
+	if (!InitDepthFormat())
+		return false;
 
 	GET_INSTANCE_PROC_ADDR(m_VkInstance, GetPhysicalDeviceSurfaceSupportKHR);
 	GET_INSTANCE_PROC_ADDR(m_VkInstance, GetPhysicalDeviceSurfaceCapabilitiesKHR);
@@ -144,6 +146,39 @@ int MVulkanDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags pro
 	}
 
 	return -1;
+}
+
+int MVulkanDevice::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+{
+	for (int i = 0; i < candidates.size(); ++i)
+	{
+		const VkFormat& format = candidates[i];
+
+		VkFormatProperties props;
+		vkGetPhysicalDeviceFormatProperties(m_VkPhysicalDevice, format, &props);
+
+		if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
+			return i;
+		}
+		else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+			return i;
+		}
+	}
+
+	return M_INVALID_INDEX;
+}
+
+bool MVulkanDevice::InitDepthFormat()
+{
+	std::vector<VkFormat> formats = { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT };
+
+	int index = FindSupportedFormat(formats, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+
+	if (index == M_INVALID_INDEX)
+		return false;
+
+	m_VkDepthTextureFormat = formats[index];
+	return true;
 }
 
 void MVulkanDevice::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh, const bool& bModifiable /*= false*/)
@@ -289,6 +324,7 @@ void MVulkanDevice::TransitionImageLayout(VkImage image, VkFormat format, VkImag
 	barrier.subresourceRange.baseArrayLayer = 0;
 	barrier.subresourceRange.layerCount = 1;
 
+
 	VkPipelineStageFlags sourceStage;
 	VkPipelineStageFlags destinationStage;
 
@@ -306,6 +342,18 @@ void MVulkanDevice::TransitionImageLayout(VkImage image, VkFormat format, VkImag
 		sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 	}
+	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+		if (format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT) {
+			barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		}
+
+		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+	}
 	else {
 		throw std::invalid_argument("unsupported layout transition!");
 	}
@@ -322,14 +370,14 @@ void MVulkanDevice::TransitionImageLayout(VkImage image, VkFormat format, VkImag
 	EndCommands(commandBuffer);
 }
 
-VkImageView MVulkanDevice::CreateImageView(VkImage image, VkFormat format)
+VkImageView MVulkanDevice::CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
 {
 	VkImageViewCreateInfo viewInfo{};
 	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	viewInfo.image = image;
 	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 	viewInfo.format = format;
-	viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	viewInfo.subresourceRange.aspectMask = aspectFlags;
 	viewInfo.subresourceRange.baseMipLevel = 0;
 	viewInfo.subresourceRange.levelCount = 1;
 	viewInfo.subresourceRange.baseArrayLayer = 0;
@@ -457,7 +505,7 @@ void MVulkanDevice::GenerateTexture(MTextureBuffer** ppTextureBuffer, MTexture* 
 	(*ppTextureBuffer)->m_VkTextureImage = textureImage;
 	(*ppTextureBuffer)->m_VkTextureImageMemory = textureImageMemory;
 	(*ppTextureBuffer)->m_VkTextureFormat = VK_FORMAT_R8G8B8A8_SRGB;
-	(*ppTextureBuffer)->m_VkImageView = CreateImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+	(*ppTextureBuffer)->m_VkImageView = CreateImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 	(*ppTextureBuffer)->m_VkImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 }
 
@@ -720,6 +768,41 @@ bool MVulkanDevice::CheckDeviceExtensionSupport(VkPhysicalDevice device)
 	return requiredExtensions.empty();
 }
 
+void MVulkanDevice::GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const uint32_t& unWidth, const uint32_t& unHeight)
+{
+	if (*ppTextureBuffer)
+		DestroyDepthTexture(ppTextureBuffer);
+
+	VkImage depthImage;
+	VkDeviceMemory depthImageMemory;
+	VkImageView depthImageView;
+	CreateImage(unWidth, unHeight, m_VkDepthTextureFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
+	depthImageView = CreateImageView(depthImage, m_VkDepthTextureFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+	TransitionImageLayout(depthImage, m_VkDepthTextureFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
+
+	*ppTextureBuffer = new MDepthTextureBuffer();
+	(*ppTextureBuffer)->m_VkTextureImage = depthImage;
+	(*ppTextureBuffer)->m_VkTextureImageMemory = depthImageMemory;
+	(*ppTextureBuffer)->m_VkTextureFormat = m_VkDepthTextureFormat;
+	(*ppTextureBuffer)->m_VkImageView = depthImageView;
+	(*ppTextureBuffer)->m_VkImageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+}
+
+void MVulkanDevice::DestroyDepthTexture(MDepthTextureBuffer** ppTextureBuffer)
+{
+	if (*ppTextureBuffer)
+	{
+		m_ObjectDestructor.DestroyImageViewLater(0, (*ppTextureBuffer)->m_VkImageView);
+		m_ObjectDestructor.DestroyImageLater(0, (*ppTextureBuffer)->m_VkTextureImage);
+		m_ObjectDestructor.DestroyDeviceMemoryLater(0, (*ppTextureBuffer)->m_VkTextureImageMemory);
+
+		delete* ppTextureBuffer;
+		*ppTextureBuffer = nullptr;
+	}
+}
+
 bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const uint32_t& eShaderType, const MShaderMacro& macro)
 {
 	if (*ppShaderBuffer)
@@ -805,13 +888,18 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t
 	if (nHeight < 1)
 		nHeight = 1;
 
+
+	pVkRenderTarget->m_pDepthTexture->SetSize(Vector2(nWidth, nHeight));
+	pVkRenderTarget->m_pDepthTexture->GenerateBuffer(this, false);
+
 	MRenderPass& renderPass = pVkRenderTarget->m_RenderPass;
 
 	if(!GenerateRenderPass(&renderPass))
-			return false;
+		return false;
 
 	VkImageViewCreateInfo createInfo = {};
 
+	pVkRenderTarget->m_VkFrameBuffer.resize(pVkRenderTarget->m_vBackBuffers.size());
 	for (uint32_t i = 0; i < pVkRenderTarget->m_vBackBuffers.size(); ++i)
 	{
 		MRenderTextureBuffer* pBuffer = pVkRenderTarget->m_vBackBuffers[i];
@@ -833,25 +921,31 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t
 
 		vkCreateImageView(m_VkDevice, &createInfo, nullptr, &pBuffer->m_VkImageView);
 
+
+		std::vector<VkImageView> vAttachments;
+
+		vAttachments.push_back(pBuffer->m_VkImageView);
+		vAttachments.push_back(pVkRenderTarget->m_pDepthTexture->GetBuffer()->m_VkImageView);
+
+
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass = renderPass.m_VkRenderPass;
+		//这里仅用于格式验证，具体渲染的时候，这个framebuffer不一定用哪个renderPass
+		framebufferInfo.renderPass = renderPass.m_aVkRenderPass[0];		
 
 		// TODO attachmentCount is dynamic.
-		framebufferInfo.attachmentCount = 1;
-		framebufferInfo.pAttachments = &pBuffer->m_VkImageView;
+		framebufferInfo.attachmentCount = vAttachments.size();
+		framebufferInfo.pAttachments = vAttachments.data();
 		framebufferInfo.width = nWidth;
 		framebufferInfo.height = nHeight;
 		framebufferInfo.layers = 1;
-		vkCreateFramebuffer(m_VkDevice, &framebufferInfo, nullptr, &pBuffer->m_VkFrameBuffer);
+		vkCreateFramebuffer(m_VkDevice, &framebufferInfo, nullptr, &pVkRenderTarget->m_VkFrameBuffer[i]);
 	}
 
-	pVkRenderTarget->m_pDepthTexture->SetSize(Vector2(nWidth, nHeight));
-	pVkRenderTarget->m_pDepthTexture->GenerateBuffer(this, false);
 	
 
+	
 	//TODO Multiple RenderTarget
-
 
 	return true;
 }
@@ -862,15 +956,20 @@ void MVulkanDevice::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
 	if (nullptr == pVkRenderTarget)
 		return;
 
+	for (uint32_t i = 0; i < pVkRenderTarget->m_VkFrameBuffer.size(); ++i)
+	{
+		if (pVkRenderTarget->m_VkFrameBuffer[i])
+		{
+			m_ObjectDestructor.DestroyFramebufferLater(0, pVkRenderTarget->m_VkFrameBuffer[i]);
+			pVkRenderTarget->m_VkFrameBuffer[i] = VK_NULL_HANDLE;
+		}
+	}
+
+	pVkRenderTarget->m_VkFrameBuffer.clear();
+
 	for (uint32_t i = 0; i < pVkRenderTarget->m_vBackBuffers.size(); ++i)
 	{
 		MRenderTextureBuffer* pBuffer = pVkRenderTarget->m_vBackBuffers[i];
-
-		if (pBuffer->m_VkFrameBuffer)
-		{
-			m_ObjectDestructor.DestroyFramebufferLater(0, pBuffer->m_VkFrameBuffer);
-			pBuffer->m_VkFrameBuffer = VK_NULL_HANDLE;
-		}
 
 		if (pBuffer->m_VkImageView)
 		{
@@ -879,7 +978,16 @@ void MVulkanDevice::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
 		}
 	}
 
+	pVkRenderTarget->m_pDepthTexture->DestroyTexture(this);
+
 	DestroyRenderPass(&pRenderTarget->m_RenderPass);
+
+
+	for (uint32_t i = 0; i < pRenderTarget->m_VkCommandBuffers.size(); ++i)
+	{
+		m_ObjectDestructor.DestroyCommandBufferLater(i, pRenderTarget->m_VkCommandBuffers[i]);
+		pRenderTarget->m_VkCommandBuffers[i] = VK_NULL_HANDLE;
+	}
 }
 
 bool MVulkanDevice::GenerateShaderParamBuffer(MShaderConstantParam* pParam)
@@ -914,12 +1022,19 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 	uint32_t unBackNum = pRenderTarget->GetBackNum();
 
 	std::vector<VkAttachmentDescription> vAttachmentDesc;
+
+	bool bDepthTextureValid = false;
+
+	std::vector<VkAttachmentReference> vAttachmentRef;
+
 	for (uint32_t i = 0; i < unBackNum; ++i)
 	{
 		MRenderTextureBuffer* pBuffer = pRenderTarget->GetBackBuffer(i);
 
 		vAttachmentDesc.push_back({});
 		VkAttachmentDescription& colorAttachment = vAttachmentDesc.back();
+
+		vAttachmentRef.push_back({ uint32_t(vAttachmentRef.size()), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL});
 
 		if (pRenderTarget->m_RenderPass.m_vBackDesc[i].bClearWhenRender)
 			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -939,8 +1054,12 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 	{
 		if (MDepthTextureBuffer* pBuffer = pDepthTexture->GetDepthBuffer())
 		{
+			bDepthTextureValid = true;
+
 			vAttachmentDesc.push_back({});
 			VkAttachmentDescription& colorAttachment = vAttachmentDesc.back();
+
+			vAttachmentRef.push_back({ uint32_t(vAttachmentRef.size()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL });
 
 			if (pRenderTarget->m_RenderPass.m_DepthDesc.bClearWhenRender)
 				colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -953,8 +1072,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 			colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 			colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
+			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		}
 	}
 
@@ -965,14 +1083,13 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 	{
 		vSubpass.push_back(VkSubpassDescription());
 
-		VkAttachmentReference colorAttachmentRef{};
-		colorAttachmentRef.attachment = 0;
-		colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
 		VkSubpassDescription& vkSubpass = vSubpass.back();
 		vkSubpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-		vkSubpass.colorAttachmentCount = 1;
-		vkSubpass.pColorAttachments = &colorAttachmentRef;
+		vkSubpass.colorAttachmentCount = unBackNum;
+		vkSubpass.pColorAttachments = vAttachmentRef.data();
+
+		if (bDepthTextureValid)
+			vkSubpass.pDepthStencilAttachment = vAttachmentRef.data() + unBackNum;
 	}
 
 	VkRenderPassCreateInfo renderPassInfo{};
@@ -982,23 +1099,31 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 	renderPassInfo.subpassCount = vSubpass.size();
 	renderPassInfo.pSubpasses = vSubpass.data();
 
-	if (vkCreateRenderPass(m_VkDevice, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
+
+	for (uint32_t i = 0; i < pRenderPass->m_aVkRenderPass.size(); ++i)
 	{
-		return false;
+		if (vkCreateRenderPass(m_VkDevice, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
+		{
+			return false;
+		}
+
+		pRenderPass->m_aVkRenderPass[i] = renderPass;
 	}
 
-	pRenderPass->m_VkRenderPass = renderPass;
 	m_PipelineManager.RegisterRenderPass(pRenderPass);
-
 	return true;
 }
 
 void MVulkanDevice::DestroyRenderPass(MRenderPass* pRenderPass)
 {
-	if (pRenderPass && pRenderPass->m_VkRenderPass)
+	if (pRenderPass)
 	{
-		m_ObjectDestructor.DestroyRenderPassLater(0, pRenderPass->m_VkRenderPass);
-		pRenderPass->m_VkRenderPass = VK_NULL_HANDLE;
+		for (uint32_t i = 0; i < pRenderPass->m_aVkRenderPass.size(); ++i)
+		{
+			m_ObjectDestructor.DestroyRenderPassLater(i, pRenderPass->m_aVkRenderPass[i]);
+			pRenderPass->m_aVkRenderPass[i] = VK_NULL_HANDLE;
+		}
+
 		m_PipelineManager.UnRegisterRenderPass(pRenderPass);
 	}
 }

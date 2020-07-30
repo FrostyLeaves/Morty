@@ -98,7 +98,7 @@ public:
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 		struct ID3D11RenderTargetView* m_pRenderTargetView;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-	VkFramebuffer m_VkFrameBuffer;
+	//VkFramebuffer m_VkFrameBuffer;
 #endif
 };
 

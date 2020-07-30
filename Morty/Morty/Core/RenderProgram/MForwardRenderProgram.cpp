@@ -266,7 +266,7 @@ void MForwardRenderProgram::InitializeShaderParamSet()
 
 	lightInfoSrt.AppendMVariant("U_pointLights", spotLightArray);
 
-	lightInfoSrt.AppendMVariant("U_bDirectionLightEnabled", bool(false));
+	lightInfoSrt.AppendMVariant("U_bDirectionLightEnabled", int(0));
 	lightInfoSrt.AppendMVariant("U_nValidPointLightsNumber", int(0));
 	lightInfoSrt.AppendMVariant("U_nValidSpotLightsNumber", int(0));
 
@@ -448,11 +448,12 @@ void MForwardRenderProgram::GenerateShadowMap(MRenderInfo& info)
 
 
 //	//TODO 只有在需要ShadowMap时才进行渲染的优化
-//	m_pShadowDepthMapRenderTarget->Render(info.pRenderer, info.m4DirLightInvProj, &info.vShadowGroup);
-
-//	pShadowParam->pTexture = m_pShadowDepthMapRenderTarget->GetDepthTexture();
-//	info.pRenderer->SetShaderTexture(*pShadowParam);
-
+// 	m_pShadowDepthMapRenderTarget->Render(info.pRenderer, info.m4DirLightInvProj, &info.vShadowGroup);
+// 
+// 	if (MShaderTextureParam* pShadowMapTextureParam = m_FrameParamSet.m_vTextures[0])
+// 	{
+// 		pShadowMapTextureParam->pTexture = m_pShadowDepthMapRenderTarget->GetDepthTexture();
+// 	}
 
 }
 
@@ -486,7 +487,7 @@ void MForwardRenderProgram::UpdateShaderSharedParams(MRenderInfo& info)
 		MVariant& varDirLightEnable = (*pLightParam->var.GetStruct())[3];
 		if (info.pDirectionalLight)
 		{
-			varDirLightEnable = true;
+			varDirLightEnable = 500;
 			MVariant& varDirectionLight = (*pLightParam->var.GetStruct())[0];
 			{
 				MStruct& cLightStruct = *varDirectionLight.GetStruct();

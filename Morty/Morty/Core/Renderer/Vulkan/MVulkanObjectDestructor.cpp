@@ -31,10 +31,15 @@ void MVulkanObjectDestructor::FrameFinished(const uint32_t& unFrameIndex)
 	M_VULKAN_DESTROY_CLEAR(DescriptorSetLayout, vkDestroyDescriptorSetLayout);
 	M_VULKAN_DESTROY_CLEAR(ShaderModule, vkDestroyShaderModule);
 	M_VULKAN_DESTROY_CLEAR(Pipeline, vkDestroyPipeline);
+	M_VULKAN_DESTROY_CLEAR(Fence, vkDestroyFence);
 
 	for (auto& set : m_vDescriptorSets[unFrameIndex])
 		vkFreeDescriptorSets(device, m_VkDescriptorPool, set.size(), set.data());
 	m_vDescriptorSets[unFrameIndex].clear();
+
+	for (VkCommandBuffer commandBuffer : m_vCommandBuffer[unFrameIndex])
+		vkFreeCommandBuffers(device, m_pDevice->m_VkCommandPool, 1, &commandBuffer);
+	m_vCommandBuffer[unFrameIndex].clear();
 }
 
 bool MVulkanObjectDestructor::Initialize()

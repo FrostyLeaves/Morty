@@ -113,7 +113,7 @@ float Float4ToFloat(float4 rgba_depth)
     DirectionLight U_dirLight;
     PointLight U_pointLights[MPOINT_LIGHT_MAX_NUMBER];
     SpotLight U_spotLights[MSPOT_LIGHT_MAX_NUMBER];
-    bool U_bDirectionLightEnabled;
+    int U_bDirectionLightEnabled;
     int U_nValidPointLightsNumber;
     int U_nValidSpotLightsNumber;
 };

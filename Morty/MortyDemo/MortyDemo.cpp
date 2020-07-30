@@ -146,12 +146,12 @@ int main(int argc, char* argv[])
 	MEngine engine;
 	engine.Initialize();
 
-// 	{
-// 		{
-// 			MModelConverter conver(&engine);
-// 			conver.Convert("./Model/girl/butterfly.fbx", "./Model", "butterfly");
-// 		}
-// 	}
+	{
+		{
+			MModelConverter conver(&engine);
+			conver.Convert("./Model/teaport.fbx", "./Model", "teaport");
+		}
+	}
 
  	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
  	pRootNode->SetName("RootNode");

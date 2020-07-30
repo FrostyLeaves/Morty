@@ -82,7 +82,7 @@ public:
 	template<typename T> T* GetTypedData() { return nullptr; }
 
 	template<> bool* GetTypedData<bool>() { return GetBool(); }
-	bool* GetBool() { return m_eType == EBool ? (bool*)(m_pData + sizeof(int) - sizeof(bool)) : nullptr; }
+	bool* GetBool() { return m_eType == EBool ? (bool*)(m_pData) : nullptr; }
 	const bool* GetBool() const { return m_eType == EBool ? (const bool*)(m_pData + sizeof(int) - sizeof(bool)) : nullptr; }
 
 	M_VAR_GET_FUNC(int, Int);
@@ -186,6 +186,7 @@ protected:
 
 protected:
 
+	MVariant::MEVariantType m_ContainerType;
 	uint32_t m_unByteSize;
 	unsigned char* m_pData;
 	std::vector<MStructMember> m_vMember;
@@ -196,8 +197,7 @@ protected:
 class MORTY_CLASS MStruct : public MContainer
 {
 public:
-	MStruct() :MContainer()
-		, m_tVariantMap() {}
+	MStruct();
 	virtual ~MStruct() {}
 
 
@@ -248,8 +248,7 @@ protected:
 class MORTY_CLASS MVariantArray : public MContainer
 {
 public:
-	MVariantArray() :MContainer() {}
-	MVariantArray(const uint32_t& unSize);
+	MVariantArray();
 	virtual ~MVariantArray() {}
 
 	void AppendMVariant(const MVariant& var);

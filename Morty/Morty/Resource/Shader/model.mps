@@ -73,7 +73,7 @@ PS_OUT PS(VS_OUT input) : SV_Target
     float4 f3SpecColor = f3AmbiColor;
 
     
-    if (U_mat.bUseSpecularTex == true)
+    if (U_mat.bUseSpecularTex > 0)
     {
         f3SpecColor = U_mat_texSpecular.Sample(U_defaultSampler, input.uv);
     }
@@ -82,7 +82,7 @@ PS_OUT PS(VS_OUT input) : SV_Target
     float3 f3CameraDir = float3(0.0f, 0.0f, 1.0f);
     float3 f3DirLightDir = float3(0.0f, 0.0f, 1.0f);
 
-    if (U_mat.bUseNormalTex == true)
+    if (U_mat.bUseNormalTex > 0)
     {
         f3Normal = U_mat_texNormal.Sample(U_defaultSampler, input.uv).xyz;
         f3Normal = f3Normal.rgb * 2.0f - 1.0f;
@@ -120,7 +120,7 @@ PS_OUT PS(VS_OUT input) : SV_Target
 
     float fAlpha = saturate(U_mat.fAlphaFactor) * f3AmbiColor.w;
 
-    if (U_mat.bUseTransparentTex == true)
+    if (U_mat.bUseTransparentTex > 0)
     {
         float4 transparentColor = U_mat_texTransparent.Sample(U_defaultSampler, input.uv);
         fAlpha *= transparentColor.a;
@@ -158,7 +158,7 @@ PS_OUT PS(VS_OUT input) : SV_Target
       
 #endif
 
-    if(U_bDirectionLightEnabled == true)
+    if(U_bDirectionLightEnabled > 0)
     {
         f3Color += CalcDirectionLight(input, f3CameraDir, f3DirLightDir, f3Normal, f3DiffColor, f3SpecColor);
     }

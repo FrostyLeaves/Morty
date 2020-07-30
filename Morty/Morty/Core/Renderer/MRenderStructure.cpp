@@ -61,7 +61,7 @@ MRenderTextureBuffer::MRenderTextureBuffer()
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	, m_pRenderTargetView(nullptr)
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-	, m_VkFrameBuffer(VK_NULL_HANDLE)
+	//, m_VkFrameBuffer(VK_NULL_HANDLE)
 #endif
 {
 }

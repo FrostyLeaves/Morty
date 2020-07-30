@@ -12,6 +12,8 @@
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
+#include <array>
+
 #include "MIRenderer.h"
 
 class MRenderPass;
@@ -52,14 +54,11 @@ public:
 	void ReleaseSemaphores();
 	
 
-
 public:
 	VkSemaphore m_VkImageAvailableSemaphore;
 	VkSemaphore m_VkRenderFinishedSemaphore;
-	VkFence m_VkInFlightFences;
 
 private:
-
 
 	MVulkanDevice* m_pDevice;
 
@@ -68,12 +67,14 @@ private:
 	VkPipelineMultisampleStateCreateInfo m_MultisampleState;
 	VkPipelineColorBlendAttachmentState m_ColorBlendAttachment;
 	VkPipelineColorBlendStateCreateInfo m_ColorBlending;
+	VkPipelineDepthStencilStateCreateInfo m_DepthStencilState;
 
 	VkViewport m_VkViewport;
 
 	VkCommandBuffer m_VkCommandBuffer;
 	struct MMaterialPipelineLayoutData* m_pUsingPipelineLayoutData;
 
+	std::array<VkFence, M_BUFFER_NUM> m_VkInFlightFences;
 private:
 
 	uint32_t m_unFrameIndex;

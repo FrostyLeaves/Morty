@@ -58,6 +58,8 @@ void Destroy##VK_TYPE##Later(const uint32_t& unFrameIndex, Vk##VK_TYPE& buffer){
 	M_VULKAN_DESTROY_LATER_FUNC(DescriptorSetLayout);
 	M_VULKAN_DESTROY_LATER_FUNC(ShaderModule);
 	M_VULKAN_DESTROY_LATER_FUNC(Pipeline);
+	M_VULKAN_DESTROY_LATER_FUNC(Fence);
+	M_VULKAN_DESTROY_LATER_FUNC(CommandBuffer);
 
     std::vector<std::vector<VkDescriptorSet>> m_vDescriptorSets[M_BUFFER_NUM];
     void DestroyDescriptorSets(const uint32_t& unFrameIndex, std::vector<VkDescriptorSet>& vDescriptorSets);

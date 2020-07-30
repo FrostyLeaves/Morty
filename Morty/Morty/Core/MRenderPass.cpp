@@ -19,7 +19,7 @@ MRenderPass::MRenderPass(MIRenderTarget* pRenderTarget)
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-	m_VkRenderPass = VK_NULL_HANDLE;
+	m_aVkRenderPass.fill(VK_NULL_HANDLE);
 #endif
 }
 

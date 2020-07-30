@@ -171,7 +171,8 @@ bool MVulkanShaderCompiler::CompileShader(const MString& strShaderPath, const ui
 #endif
 		glslang::GlslangToSpv(*program.getIntermediate(eLanguageType), vSpirv, &logger, &spvOptions);
 
-		MLogManager::GetInstance()->Information("%s", logger.getAllMessages().c_str());
+		if(!logger.getAllMessages().empty())
+			MLogManager::GetInstance()->Information("%s", logger.getAllMessages().c_str());
 //		{
 // 			MString strOutputName = (strShaderPath + "v");
 // 			const char* svBinaryName = strOutputName.c_str();

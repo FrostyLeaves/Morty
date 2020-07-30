@@ -50,8 +50,8 @@ public:
 	virtual void GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const METextureLayout& eType, const uint32_t& unWidth, const unsigned& unHeight) override {}
 	virtual void DestroyRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer) override {}
 
-	virtual void GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const uint32_t& unWidth, const uint32_t& unHeight) override {}
-	virtual void DestroyDepthTexture(MDepthTextureBuffer** ppTextureBuffer) override {}
+	virtual void GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const uint32_t& unWidth, const uint32_t& unHeight) override;
+	virtual void DestroyDepthTexture(MDepthTextureBuffer** ppTextureBuffer) override;
 
 	virtual bool CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const uint32_t& eShaderType, const MShaderMacro& macro) override;
 	virtual void CleanShader(MShaderBuffer** ppShaderBuffer) override;
@@ -74,7 +74,7 @@ public:
 	void CopyImageBuffer(VkBuffer srcBuffer, VkImage image, const uint32_t& width, const uint32_t& height);
 	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
-	VkImageView CreateImageView(VkImage image, VkFormat format);
+	VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
 	void CreateImage(const uint32_t& unWidth, const uint32_t& unHeight, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 
@@ -85,6 +85,7 @@ public:
 	int FindQueuePresentFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
 
 	int FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+	int FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
 
 protected:
@@ -93,6 +94,7 @@ protected:
 	bool InitLogicalDevice();
 	bool InitCommandPool();
 	bool InitDefaultTexture();
+	bool InitDepthFormat();
 
 	bool IsDeviceSuitable(VkPhysicalDevice device);
 	bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
@@ -121,6 +123,7 @@ public:
 	MVulkanObjectDestructor m_ObjectDestructor;
 	MVulkanUniformBufferPool m_DynamicUniformBufferPool;
 
+	VkFormat m_VkDepthTextureFormat;
 
 	MTexture m_WhiteTexture;
 };

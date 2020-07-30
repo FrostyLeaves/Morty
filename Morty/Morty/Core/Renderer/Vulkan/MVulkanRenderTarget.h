@@ -58,8 +58,13 @@ public:
 
 	VkQueue m_VkPresentQueue;
 
+	//size is swapchain size.
 	std::vector<MRenderTextureBuffer*> m_vBackBuffers;
+
+	//size is M_BUFFER_NUM
+	std::vector<VkFramebuffer> m_VkFrameBuffer;
 	MRenderDepthTexture* m_pDepthTexture;
+
 
 public:
 

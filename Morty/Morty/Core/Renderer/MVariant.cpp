@@ -5,6 +5,7 @@ uint32_t MContainer::s_unPackSize = 16;
 MContainer::MContainer()
 	: m_unByteSize(0)
 	, m_pData(nullptr)
+	, m_ContainerType(MVariant::EStruct)
 {
 
 }
@@ -91,7 +92,7 @@ const MContainer& MContainer::operator=(const MContainer& var)
 MVariant::MVariant(const bool& var)
 {
 	m_pData = (new MByte[sizeof(int) * 1]);
-	*(int*)(m_pData) = (var ? 1 : 0);
+	*(bool*)(m_pData) = var;
 	m_eType = EBool;
 	m_unByteSize = sizeof(int);
 }
@@ -380,6 +381,10 @@ uint32_t MContainer::AppendStructMember(MStructMember& mem)
 		mem.unBeginOffset = m_unByteSize;
 		m_unByteSize += mem.var.GetSize();
 
+		
+		if (MVariant::EArray == m_ContainerType)
+			m_unByteSize += (s_unPackSize - m_unByteSize % s_unPackSize);
+
 		m_vMember.push_back(MStructMember());
 		m_vMember.back().strName = mem.strName;
 		m_vMember.back().unBeginOffset = mem.unBeginOffset;
@@ -394,6 +399,12 @@ uint32_t MContainer::AppendStructMember(MStructMember& mem)
 	m_pData = new MByte[m_unByteSize];
 
 	return unIndex;
+}
+
+MStruct::MStruct() :MContainer()
+, m_tVariantMap()
+{
+	m_ContainerType = MVariant::EStruct;
 }
 
 uint32_t MStruct::AppendMVariant(const MString& strName, const MVariant& var)
@@ -445,10 +456,10 @@ void MStruct::Move(MStruct& sour)
 	m_tVariantMap = std::move(sour.m_tVariantMap);
 }
 
-MVariantArray::MVariantArray(const uint32_t& unSize)
+MVariantArray::MVariantArray()
 	: MContainer()
 {
-	m_vMember.resize(unSize);
+	m_ContainerType = MVariant::EArray;
 }
 
 void MVariantArray::AppendMVariant(const MVariant& var)

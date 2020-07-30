@@ -96,6 +96,7 @@ void MVulkanRenderTarget::Initialize()
 
 void MVulkanRenderTarget::Release(MIDevice* pDevice)
 {
+
 	m_pDevice->DestroyRenderTarget(this);
 	ReleaseSwapchain();
 
@@ -316,7 +317,7 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 
 VkFramebuffer MVulkanRenderTarget::GetFrameBuffer(const uint32_t& unIndex)
 {
-	return m_vBackBuffers[unIndex]->m_VkFrameBuffer;
+	return m_VkFrameBuffer[unIndex];
 }
 
 #endif

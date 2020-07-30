@@ -76,8 +76,25 @@ bool MVulkanRenderer::Initialize()
 	m_MultisampleState.alphaToOneEnable = VK_FALSE; // Optional
 
 	//TODO DepthStencil
-//	VkPipelineDepthStencilStateCreateInfo
-
+	m_DepthStencilState = {};
+	m_DepthStencilState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	m_DepthStencilState.pNext = NULL;
+	m_DepthStencilState.flags = 0;
+	m_DepthStencilState.depthTestEnable = VK_TRUE;
+	m_DepthStencilState.depthWriteEnable = VK_TRUE;
+	m_DepthStencilState.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+	m_DepthStencilState.depthBoundsTestEnable = VK_FALSE;
+	m_DepthStencilState.minDepthBounds = 0;
+	m_DepthStencilState.maxDepthBounds = 0;
+	m_DepthStencilState.stencilTestEnable = VK_FALSE;
+	m_DepthStencilState.back.failOp = VK_STENCIL_OP_KEEP;
+	m_DepthStencilState.back.passOp = VK_STENCIL_OP_KEEP;
+	m_DepthStencilState.back.compareOp = VK_COMPARE_OP_ALWAYS;
+	m_DepthStencilState.back.compareMask = 0;
+	m_DepthStencilState.back.reference = 0;
+	m_DepthStencilState.back.depthFailOp = VK_STENCIL_OP_KEEP;
+	m_DepthStencilState.back.writeMask = 0;
+	m_DepthStencilState.front = m_DepthStencilState.back;
 
 	m_ColorBlendAttachment = {};
 	m_ColorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -97,17 +114,16 @@ bool MVulkanRenderer::Initialize()
 
 	InitSemaphores();
 
+
 	return true;
 }
 
 void MVulkanRenderer::Release()
 {
-	while (vkGetFenceStatus(m_pDevice->m_VkDevice, m_VkInFlightFences) != VK_SUCCESS);
-
-	if (m_VkCommandBuffer != VK_NULL_HANDLE)
+	//All RenderTarget finished all renderpass.
+	for (VkFence vkFence : m_VkInFlightFences)
 	{
-		vkFreeCommandBuffers(m_pDevice->m_VkDevice, m_pDevice->m_VkCommandPool, 1, &m_VkCommandBuffer);
-		m_VkCommandBuffer = VK_NULL_HANDLE;
+		while (vkGetFenceStatus(m_pDevice->m_VkDevice, vkFence) != VK_SUCCESS);
 	}
 
 	ReleaseSemaphores();
@@ -129,70 +145,91 @@ void MVulkanRenderer::SetViewport(const float& fX, const float& fY, const float&
 
 void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 {
+	//渲染栅栏，防止上一次渲染还没渲染完，就执行了下一次的渲染
+	VkFence vkInFightFence = m_VkInFlightFences[m_unFrameIndex];
+
 	//if m_VkInFlightFences == signed
-	vkWaitForFences(m_pDevice->m_VkDevice, 1, &m_VkInFlightFences, VK_TRUE, UINT64_MAX);
+	vkWaitForFences(m_pDevice->m_VkDevice, 1, &vkInFightFence, VK_TRUE, UINT64_MAX);
 
-	//TODO check render end.
-	m_pDevice->m_ObjectDestructor.FrameFinished(0);
-
-	if (m_VkCommandBuffer != VK_NULL_HANDLE)
+	//Unused CommandBuffer
+	if (pRenderTarget->m_VkCommandBuffers[m_unFrameIndex])
 	{
-		vkFreeCommandBuffers(m_pDevice->m_VkDevice, m_pDevice->m_VkCommandPool, 1, &m_VkCommandBuffer);
-		m_VkCommandBuffer = VK_NULL_HANDLE;
+		m_pDevice->m_ObjectDestructor.DestroyCommandBufferLater(m_unFrameIndex, pRenderTarget->m_VkCommandBuffers[m_unFrameIndex]);
 	}
 
-	pRenderTarget->OnRenderBefore(this);
+	//Destroy All VulkanObject
+	m_pDevice->m_ObjectDestructor.FrameFinished(m_unFrameIndex);
 
-	VkFramebuffer frameBuffer = pRenderTarget->GetFrameBuffer(m_unFrameIndex);
-
-
-	//m_VkCommandBuffer = m_pDevice->BeginCommands();
+	//Use new CommandBuffer
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	allocInfo.commandPool = m_pDevice->m_VkCommandPool;
 	allocInfo.commandBufferCount = 1;
+	vkAllocateCommandBuffers(m_pDevice->m_VkDevice, &allocInfo, &pRenderTarget->m_VkCommandBuffers[m_unFrameIndex]);
 
-	vkAllocateCommandBuffers(m_pDevice->m_VkDevice, &allocInfo, &m_VkCommandBuffer);
 
+	//Set Record Using CommandBuffer
+	m_VkCommandBuffer = pRenderTarget->m_VkCommandBuffers[m_unFrameIndex];
+
+
+	//渲染用的Frame Buffer
+	VkFramebuffer vkFrameBuffer = pRenderTarget->GetFrameBuffer(m_unFrameIndex);
+
+
+	//CommandBuffer Begin Info
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-	vkBeginCommandBuffer(m_VkCommandBuffer, &beginInfo);
-
 	VkRenderPassBeginInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassInfo.renderPass = pRenderTarget->m_RenderPass.m_VkRenderPass;
-	renderPassInfo.framebuffer = frameBuffer;
+	renderPassInfo.renderPass = pRenderTarget->m_RenderPass.m_aVkRenderPass[m_unFrameIndex];
+	renderPassInfo.framebuffer = vkFrameBuffer;
 	renderPassInfo.renderArea.offset = { 0, 0 };
 	renderPassInfo.renderArea.extent = pRenderTarget->m_VkExtend;
 
+	//清除上一帧的渲染数据
 	uint32_t unBackNum = pRenderTarget->GetBackNum();
 	std::vector<VkClearValue> vClearValues(unBackNum);
 	for (uint32_t i = 0; i < unBackNum; ++i)
 	{
 		MColor color = pRenderTarget->GetBackClearColor(i);
-		vClearValues[i] = {color.r, color.g, color.b, color.a};
+		vClearValues[i].color = {color.r, color.g, color.b, color.a};
+	}
+
+	if (MRenderDepthTexture* pDepthTexture = pRenderTarget->GetDepthTexture())
+	{
+		if (MDepthTextureBuffer* pBuffer = pDepthTexture->GetDepthBuffer())
+		{
+			vClearValues.push_back({});
+			vClearValues.back().depthStencil = { 1.0f, 0 };
+		}
 	}
 
 	renderPassInfo.clearValueCount = vClearValues.size();
 	renderPassInfo.pClearValues = vClearValues.data();
 
-	// Render Datas
+
+	//Begin Command Buffer
+	vkBeginCommandBuffer(m_VkCommandBuffer, &beginInfo);
+
+	pRenderTarget->OnRenderBefore(this);
+
+	//Begin RenderPass
 	vkCmdBeginRenderPass(m_VkCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 	m_pUsingPipelineLayoutData = nullptr;
 
+	//Record Commands
 	m_vRenderTargets.push(pRenderTarget);
 	pRenderTarget->OnRender(this);
 	m_vRenderTargets.pop();
 
+	//End Render Pass
 	vkCmdEndRenderPass(m_VkCommandBuffer);
 
-	//TODO 不支持多个渲染的嵌套
 
-
-	//m_pDevice->EndCommands(m_VkCommandBuffer);
+	//End Command Buffer
 	vkEndCommandBuffer(m_VkCommandBuffer);
 
 
@@ -219,15 +256,13 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
 	//m_VkInFlightFences = unsigned
-	vkResetFences(m_pDevice->m_VkDevice, 1, &m_VkInFlightFences);
+	vkResetFences(m_pDevice->m_VkDevice, 1, &vkInFightFence);
 	
-	if (vkQueueSubmit(m_pDevice->m_VkGraphicsQueue, 1, &submitInfo, m_VkInFlightFences) != VK_SUCCESS) {
+	if (vkQueueSubmit(m_pDevice->m_VkGraphicsQueue, 1, &submitInfo, vkInFightFence) != VK_SUCCESS) {
 		throw std::runtime_error("failed to submit draw command buffer!");
 	}
 
 	pRenderTarget->OnRenderAfter(this);
-
-
 }
 
 void MVulkanRenderer::DrawMesh(MIMesh* pMesh)
@@ -342,6 +377,10 @@ void MVulkanRenderer::SetShaderParamSet(MShaderParamSet* pParamSet)
 	{
 		if (pParam->bDirty[m_unFrameIndex])
 		{
+			if(pParam->pTexture && !pParam->pTexture->GetBuffer())
+				pParam->pTexture->GenerateBuffer(m_pDevice, false);
+
+
 			m_pDevice->m_PipelineManager.BindTextureParam(pParamSet, pParam, m_unFrameIndex);
 			pParam->bDirty[m_unFrameIndex] = false;
 		}
@@ -423,8 +462,9 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 	pipelineInfo.pRasterizationState = &m_RasterizationState;
 	pipelineInfo.pMultisampleState = &m_MultisampleState;
 	pipelineInfo.pColorBlendState = &m_ColorBlending;
+	pipelineInfo.pDepthStencilState = &m_DepthStencilState;
 	pipelineInfo.layout = pipelineLayout;
-	pipelineInfo.renderPass = pRenderPass->m_VkRenderPass;
+	pipelineInfo.renderPass = pRenderPass->m_aVkRenderPass[m_unFrameIndex];
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
@@ -446,13 +486,13 @@ bool MVulkanRenderer::InitSemaphores()
 	if (vkCreateSemaphore(m_pDevice->m_VkDevice, &semaphoreInfo, nullptr, &m_VkRenderFinishedSemaphore) != VK_SUCCESS)
 		return false;
 
+
 	VkFenceCreateInfo fenceInfo{};
 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-
-	if (vkCreateFence(m_pDevice->m_VkDevice, &fenceInfo, nullptr, &m_VkInFlightFences) != VK_SUCCESS)
-		return false;
+	for (uint32_t i = 0; i < m_VkInFlightFences.size(); ++i)
+		vkCreateFence(m_pDevice->m_VkDevice, &fenceInfo, nullptr, &m_VkInFlightFences[i]);
 
 	return true;
 }
@@ -463,7 +503,12 @@ void MVulkanRenderer::ReleaseSemaphores()
 	vkDestroySemaphore(m_pDevice->m_VkDevice, m_VkImageAvailableSemaphore, nullptr);
 	vkDestroySemaphore(m_pDevice->m_VkDevice, m_VkRenderFinishedSemaphore, nullptr);
 
-	vkDestroyFence(m_pDevice->m_VkDevice, m_VkInFlightFences, nullptr);
+	for (uint32_t i = 0; i < m_VkInFlightFences.size(); ++i)
+	{
+		vkDestroyFence(m_pDevice->m_VkDevice, m_VkInFlightFences[i], nullptr);
+		m_VkInFlightFences[i] = VK_NULL_HANDLE;
+	}
 }
+
 
 #endif

@@ -13,6 +13,7 @@
 #include "MRenderPass.h"
 #include "MIRenderer.h"
 
+#include <array>
 #include <vector>
 #include <functional>
 
@@ -65,9 +66,10 @@ public:
 
 	virtual VkFramebuffer GetFrameBuffer(const uint32_t& unIndex) = 0;
 
-
 	VkExtent2D m_VkExtend;
 	VkFormat m_VkColorFormat;
+
+	std::array<VkCommandBuffer, M_BUFFER_NUM> m_VkCommandBuffers;
 #endif
 
 
