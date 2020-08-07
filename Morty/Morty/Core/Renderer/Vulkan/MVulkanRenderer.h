@@ -18,6 +18,7 @@
 
 class MRenderPass;
 class MVulkanDevice;
+class MMaterialGroup;
 class MORTY_CLASS MVulkanRenderer : public MIRenderer
 {
 public:

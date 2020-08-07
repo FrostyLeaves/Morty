@@ -3,6 +3,7 @@
 #include "MTexture.h"
 #include "MMaterial.h"
 #include "MVulkanDevice.h"
+#include "MMaterialGroup.h"
 #include "MIRenderTarget.h"
 #include "Shader/MShader.h"
 #include "MRenderStructure.h"
@@ -144,11 +145,11 @@ void MVulkanRenderer::SetViewport(const float& fX, const float& fY, const float&
 
 void MVulkanRenderer::NewRenderFrame()
 {
-	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-	{
-		if(vkGetFenceStatus(m_pDevice->m_VkDevice, m_VkInFlightFences[m_unFrameIndex]) == VK_SUCCESS)
-			MLogManager::GetInstance()->Information("finish render frame: %d", i);
-	}
+// 	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+// 	{
+// 		if(vkGetFenceStatus(m_pDevice->m_VkDevice, m_VkInFlightFences[m_unFrameIndex]) == VK_SUCCESS)
+// 			MLogManager::GetInstance()->Information("finish render frame: %d", i);
+// 	}
 
 	m_unFrameIndex = (m_unFrameIndex + 1) % M_BUFFER_NUM;
 
@@ -163,16 +164,16 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 {
 	MLogManager::GetInstance()->Information("begin render frame: %d", m_unFrameIndex);
 
-	//Unused CommandBuffer
+	//释放上一个CommandBuffer
 	if (pRenderTarget->m_VkCommandBuffers[m_unFrameIndex])
 	{
 		m_pDevice->m_ObjectDestructor.DestroyCommandBufferLater(m_unFrameIndex, pRenderTarget->m_VkCommandBuffers[m_unFrameIndex]);
 	}
 
-	//Destroy All VulkanObject
+	//释放无用的Vulkan对象
 	m_pDevice->m_ObjectDestructor.FrameFinished(m_unFrameIndex);
 
-	//Use new CommandBuffer
+	//New 一个CommandBuffer
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -274,10 +275,11 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 	pRenderTarget->OnRenderAfter(this);
 }
 
+//更新Buffer->绑定Buffer(命令)->绘图(命令)
 void MVulkanRenderer::DrawMesh(MIMesh* pMesh)
 {
 	if (pMesh->GetNeedGenerate())
-		pMesh->GenerateBuffer(m_pDevice);
+		pMesh->GenerateBuffer(m_pDevice);//这里会使用另一个CommandBuffer
 
 	if (pMesh->GetNeedUpload())
 		pMesh->UploadBuffer(m_pDevice);
@@ -296,6 +298,7 @@ void MVulkanRenderer::DrawMesh(MIMesh* pMesh)
 	}
 }
 
+//创建管线->绑定管线(命令)->绑定材质参数(命令)
 bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial)
 {
 	if (nullptr == pMaterial)

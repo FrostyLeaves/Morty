@@ -458,7 +458,8 @@ void MVulkanDevice::EndCommands(VkCommandBuffer commandBuffer)
 	submitInfo.pCommandBuffers = &commandBuffer;
 
 	vkQueueSubmit(m_VkGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(m_VkGraphicsQueue);
+
+	vkQueueWaitIdle(m_VkGraphicsQueue);	//暂停应用程序，直到完成提交给定队列的所有工作
 
 	vkFreeCommandBuffers(m_VkDevice, m_VkCommandPool, 1, &commandBuffer);
 }

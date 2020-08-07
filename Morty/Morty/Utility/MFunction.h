@@ -35,16 +35,18 @@ void UNION_PUSH_BACK_VECTOR(std::vector<T>& vector, const T& value)
 }
 
 template<typename T>
-void ERASE_FIRST_VECTOR(std::vector<T>& vector, const T& value)
+bool ERASE_FIRST_VECTOR(std::vector<T>& vector, const T& value)
 {
 	for (std::vector<T>::iterator iter = vector.begin(); iter != vector.end(); ++iter)
 	{
 		if (*iter == value)
 		{
 			vector.erase(iter);
-			return;
+			return true;
 		}
 	}
+
+	return false;
 }
 
 template<typename T>

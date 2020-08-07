@@ -286,7 +286,7 @@ void MScene::InsertMaterialGroup(MIMeshInstance* pMeshInstance)
 		pGroup = *iter;
 	}
 
-	pGroup->m_vMeshInstances.push_back(pMeshInstance);
+	pGroup->InsertMeshInstance(pMeshInstance);
 }
 
 void MScene::RemoveMaterialGroup(MIMeshInstance* pMeshInstance)
@@ -300,7 +300,7 @@ void MScene::RemoveMaterialGroup(MIMeshInstance* pMeshInstance)
 		return;
 
 	MMaterialGroup* pGroup = *iter;
-	ERASE_FIRST_VECTOR(pGroup->m_vMeshInstances, pMeshInstance);
+	pGroup->RemoveMeshInstance(pMeshInstance);
 
 	if (pGroup->m_vMeshInstances.empty())
 	{
