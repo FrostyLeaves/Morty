@@ -51,7 +51,7 @@ public:
 	virtual void GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTexture* vTexture[6], const bool& bGenerateMipmap = true) = 0;
 	virtual void DestroyTexture(MTextureBuffer** ppTextureBuffer) = 0;
 
-	virtual void GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const METextureLayout& eType, const uint32_t& unWidth, const unsigned& unHeight) = 0;
+	virtual bool GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const METextureLayout& eType, const uint32_t& unWidth, const unsigned& unHeight) = 0;
 	virtual void DestroyRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer) = 0;
 
 	virtual void GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const uint32_t& unWidth, const uint32_t& unHeight) = 0;

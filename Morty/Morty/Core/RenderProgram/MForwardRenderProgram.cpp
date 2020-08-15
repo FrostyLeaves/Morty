@@ -447,13 +447,13 @@ void MForwardRenderProgram::GenerateShadowMap(MRenderInfo& info)
 	}
 
 
-//	//TODO 只有在需要ShadowMap时才进行渲染的优化
-// 	m_pShadowDepthMapRenderTarget->Render(info.pRenderer, info.m4DirLightInvProj, &info.vShadowGroup);
-// 
-// 	if (MShaderTextureParam* pShadowMapTextureParam = m_FrameParamSet.m_vTextures[0])
-// 	{
-// 		pShadowMapTextureParam->pTexture = m_pShadowDepthMapRenderTarget->GetDepthTexture();
-// 	}
+	//TODO 只有在需要ShadowMap时才进行渲染的优化
+	m_pShadowDepthMapRenderTarget->Render(info.pRenderer, info.m4DirLightInvProj, &info.vShadowGroup);
+
+	if (MShaderTextureParam* pShadowMapTextureParam = m_FrameParamSet.m_vTextures[0])
+	{
+		pShadowMapTextureParam->pTexture = m_pShadowDepthMapRenderTarget->GetDepthTexture();
+	}
 
 }
 

@@ -71,6 +71,7 @@ public:
 
 	std::array<VkCommandBuffer, M_BUFFER_NUM> m_VkCommandBuffers;
 	std::array <VkSemaphore, M_BUFFER_NUM> m_aVkRenderFinishedSemaphore;
+	std::array<VkEvent, M_BUFFER_NUM> m_aVkRenderFinishedEvent;
 #endif
 
 

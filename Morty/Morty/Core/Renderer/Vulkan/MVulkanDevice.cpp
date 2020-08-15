@@ -951,6 +951,15 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t
 		if (vkCreateSemaphore(m_VkDevice, &semaphoreInfo, nullptr, &vkSemaphore) != VK_SUCCESS)
 			return false;
 	}
+
+	VkEventCreateInfo eventInfo{};
+	eventInfo.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
+
+	for (VkEvent& vkEvent : pVkRenderTarget->m_aVkRenderFinishedEvent)
+	{
+		if (vkCreateEvent(m_VkDevice, &eventInfo, nullptr, &vkEvent) != VK_SUCCESS)
+			return false;
+	}
 	
 	//TODO Multiple RenderTarget
 
@@ -1001,6 +1010,14 @@ void MVulkanDevice::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
 		m_ObjectDestructor.DestroySemaphoreLater(i, pRenderTarget->m_aVkRenderFinishedSemaphore[i]);
 		pRenderTarget->m_aVkRenderFinishedSemaphore[i] = VK_NULL_HANDLE;
 	}
+
+	for (uint32_t i = 0; i < pRenderTarget->m_aVkRenderFinishedEvent.size(); ++i)
+	{
+		m_ObjectDestructor.DestroyEventLater(i, pRenderTarget->m_aVkRenderFinishedEvent[i]);
+		pRenderTarget->m_aVkRenderFinishedEvent[i] = VK_NULL_HANDLE;
+	}
+
+
 }
 
 bool MVulkanDevice::GenerateShaderParamBuffer(MShaderConstantParam* pParam)

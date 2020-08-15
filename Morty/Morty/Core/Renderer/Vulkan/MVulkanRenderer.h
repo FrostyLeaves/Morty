@@ -52,10 +52,14 @@ public:
 	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) override;
 
 	VkPipeline CreateGraphicsPipeline(MMaterial* pMaaterial, MRenderPass* pRenderPass);
+
+	void GetRenderTargetBarrier(MIRenderTarget* pRenderTarget, std::vector<VkImageMemoryBarrier>& vResult);
+
 	
 	bool InitSemaphores();
 	void ReleaseSemaphores();
 	
+
 
 public:
 	VkSemaphore m_VkImageAvailableSemaphore;
@@ -73,8 +77,17 @@ private:
 
 	VkViewport m_VkViewport;
 
-	VkCommandBuffer m_VkCommandBuffer;
-	struct MMaterialPipelineLayoutData* m_pUsingPipelineLayoutData;
+
+	struct MRenderStage
+	{
+		MRenderStage() :vkCommandBuffer(VK_NULL_HANDLE), pUsingPipelineLayoutData(nullptr), vRenderTargetEvent() {}
+
+		VkCommandBuffer vkCommandBuffer;
+		struct MMaterialPipelineLayoutData* pUsingPipelineLayoutData;
+
+		std::vector<VkEvent> vRenderTargetEvent;
+	};
+	std::vector<MRenderStage> m_vRenderStages;
 
 	std::array<VkFence, M_BUFFER_NUM> m_VkInFlightFences;
 private:

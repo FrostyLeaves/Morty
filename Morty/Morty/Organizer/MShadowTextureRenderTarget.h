@@ -51,6 +51,9 @@ public:
 
     void InitRenderPass();
 
+    bool GenerateFrameBuffer();
+    void DestroyFrameBuffer();
+
 private:
 
 	Matrix4 m_m4LightInvProj;
