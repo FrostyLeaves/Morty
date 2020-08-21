@@ -23,9 +23,12 @@ public:
     MVulkanRenderTarget(MVulkanDevice* pDevice);
     virtual ~MVulkanRenderTarget();
 
-	virtual uint32_t GetBackNum() override { return 1; }
-	virtual MRenderTextureBuffer* GetBackBuffer(const uint32_t& unIndex) override;
+	virtual uint32_t GetBackNum() { return 1; }
+	//unIndex is frameIndex
+	virtual MRenderTextureBuffer** GetBackBuffers(const uint32_t& unIndex) override{ return m_vBackBuffers.empty() ? nullptr : &m_vBackBuffers[unIndex];}
 	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
+	virtual VkFramebuffer GetFrameBuffer(const uint32_t& unIndex) override;
+
 	virtual MColor GetBackClearColor(const uint32_t& unIndex) override;;
 
 public:
@@ -39,7 +42,6 @@ public:
 
 	static MVulkanRenderTarget* CreateForWindowsView(MVulkanDevice* pDevice, MWindowsRenderView* pView);
 
-	virtual VkFramebuffer GetFrameBuffer(const uint32_t& unIndex) override;
 
 public:
 
@@ -58,13 +60,13 @@ public:
 
 	VkQueue m_VkPresentQueue;
 
-	//size is swapchain size.
-	std::vector<MRenderTextureBuffer*> m_vBackBuffers;
+	//没有MutilRenderTarget
 
 	//size is swapchain size.
+	std::vector<MRenderTextureBuffer*> m_vBackBuffers;
 	std::vector<VkFramebuffer> m_VkFrameBuffer;
-	
-	MRenderDepthTexture* m_pDepthTexture;
+
+	MRenderDepthTexture* m_pDepthTexture;//swapchain的size和对不上的，所以没法把它作为Shader的Texture参数
 
 	uint32_t m_unFrameBufferIndex;
 

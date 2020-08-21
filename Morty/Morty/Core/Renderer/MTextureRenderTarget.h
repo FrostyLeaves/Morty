@@ -39,7 +39,7 @@ public:
 public:
 
 	virtual uint32_t GetBackNum() override { return m_vBackTexture.size(); }
-	virtual MRenderTextureBuffer* GetBackBuffer(const uint32_t& unIndex) override;
+	virtual MRenderTextureBuffer** GetBackBuffers(const uint32_t& unIndex) override;
 	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
 	virtual MColor GetBackClearColor(const uint32_t& unIndex) override;
 
@@ -73,12 +73,16 @@ public:
 #endif
 
 public:
+	
 
-	std::vector<MRenderTargetTexture*> m_vBackTexture;	//TODO support mutil rt and mutil frame
+	
+	//size is backNum
+	std::vector<MRenderTargetTexture*> m_vBackTexture;
+	std::vector<VkFramebuffer> m_vFrameBuffer;
 
-	std::vector<VkFramebuffer> m_vFrameBuffer;			//size is frameNum
-	std::vector<MColor> m_vBackClearColor;
 	MRenderDepthTexture* m_pDepthTexture;
+
+	std::vector<MColor> m_vBackClearColor;
 protected:
 
 	uint32_t m_eRenderTargetType;

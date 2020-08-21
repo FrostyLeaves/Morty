@@ -25,11 +25,6 @@ MVulkanRenderTarget::~MVulkanRenderTarget()
 
 }
 
-MRenderTextureBuffer* MVulkanRenderTarget::GetBackBuffer(const uint32_t& unIndex)
-{
-	return m_vBackBuffers[unIndex];
-}
-
 MColor MVulkanRenderTarget::GetBackClearColor(const uint32_t& unIndex)
 {
 	return m_pView->GetBackColor();
@@ -40,6 +35,8 @@ void MVulkanRenderTarget::Render(MIRenderer* pRenderer)
 	MVulkanRenderer* pVkRenderer = dynamic_cast<MVulkanRenderer*>(pRenderer);
 
 	vkAcquireNextImageKHR(m_pDevice->m_VkDevice, m_VkSwapchain, UINT64_MAX, pVkRenderer->m_VkImageAvailableSemaphore, VK_NULL_HANDLE, &m_unFrameBufferIndex);
+
+	MLogManager::GetInstance()->Information("m_unFrameBufferIndex: %u", m_unFrameBufferIndex);
 	
 	pRenderer->Render(this);
 }
@@ -272,6 +269,9 @@ bool MVulkanRenderTarget::RebindRenderBuffer()
 		pTextureBuffer->m_VkTextureFormat = m_VkColorFormat;
 		this->m_vBackBuffers.push_back(pTextureBuffer);
 	}
+
+	//init set depth texture buffer Num.
+	m_pDepthTexture->SetFrameNum(vSwapchainImages.size());
 
 	return true;
 }

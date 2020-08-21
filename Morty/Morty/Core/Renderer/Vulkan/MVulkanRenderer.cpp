@@ -170,7 +170,7 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 	m_vRenderStages.push_back(MRenderStage());
 	MRenderStage& rs = m_vRenderStages.back();
 
-	MLogManager::GetInstance()->Information("begin render frame: %d", m_unFrameIndex);
+	//MLogManager::GetInstance()->Information("begin render frame: %d", m_unFrameIndex);
 
 
 	//释放上一个CommandBuffer
@@ -218,7 +218,7 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 
 	if (MRenderDepthTexture* pDepthTexture = pRenderTarget->GetDepthTexture())
 	{
-		if (MDepthTextureBuffer* pBuffer = pDepthTexture->GetDepthBuffer())
+		if (MDepthTextureBuffer* pBuffer = pDepthTexture->GetDepthBuffer(m_unFrameIndex))
 		{
 			vClearValues.push_back({});
 			vClearValues.back().depthStencil = { 1.0f, 0 };
@@ -424,7 +424,7 @@ void MVulkanRenderer::SetShaderParamSet(MShaderParamSet* pParamSet)
 	{
 		if (pParam->bDirty[m_unFrameIndex])
 		{
-			if(pParam->pTexture && !pParam->pTexture->GetBuffer())
+			if(pParam->pTexture && !pParam->pTexture->GetBuffer(m_unFrameIndex))
 				pParam->pTexture->GenerateBuffer(m_pDevice, false);
 
 
@@ -526,17 +526,18 @@ void MVulkanRenderer::GetRenderTargetBarrier(MIRenderTarget* pRenderTarget, std:
 {
 	int nBackNum = pRenderTarget->GetBackNum();
 
-	for (int i = 0; i < nBackNum; ++i)
+
+	if (MRenderTextureBuffer** vBuffers = pRenderTarget->GetBackBuffers(m_unFrameIndex))
 	{
-		if (MRenderTextureBuffer* pBuffer = pRenderTarget->GetBackBuffer(i))
+		for (int i = 0; i < nBackNum; ++i)
 		{
 			VkImageMemoryBarrier barrier{};
 			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			barrier.oldLayout = pBuffer->m_VkImageLayout;
-			barrier.newLayout = pBuffer->m_VkImageLayout;
+			barrier.oldLayout = vBuffers[i]->m_VkImageLayout;
+			barrier.newLayout = vBuffers[i]->m_VkImageLayout;
 			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.image = pBuffer->m_VkTextureImage;
+			barrier.image = vBuffers[i]->m_VkTextureImage;
 			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			barrier.subresourceRange.baseMipLevel = 0;
 			barrier.subresourceRange.levelCount = 1;
@@ -549,7 +550,7 @@ void MVulkanRenderer::GetRenderTargetBarrier(MIRenderTarget* pRenderTarget, std:
 
 	if (MRenderDepthTexture* pDepthTexture = pRenderTarget->GetDepthTexture())
 	{
-		if (MDepthTextureBuffer* pBuffer = pDepthTexture->GetDepthBuffer())
+		if (MDepthTextureBuffer* pBuffer = pDepthTexture->GetDepthBuffer(m_unFrameIndex))
 		{
 			VkImageMemoryBarrier barrier{};
 			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
