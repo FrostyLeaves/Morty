@@ -60,7 +60,7 @@ void MTransparentRenderTarget::Render(MIRenderer* pRenderer, MViewport* pViewpor
 	m_pTransparentMeshes = pGroup;
 	m_pViewport = pViewport;
 
-	SetDepthTexture(pRenderTarget->GetDepthTexture(), false);
+	SetDepthTexture(pRenderTarget->GetCurrDepthTexture(), false);
 
 //	pRenderer->ClearRenderTargetView(GetBackBuffer(2), MColor::White);
 //	pRenderer->ClearRenderTargetView(GetBackBuffer(3), MColor::Black_T);

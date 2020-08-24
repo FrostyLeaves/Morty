@@ -216,13 +216,10 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 		vClearValues[i].color = {color.r, color.g, color.b, color.a};
 	}
 
-	if (MRenderDepthTexture* pDepthTexture = pRenderTarget->GetDepthTexture())
+	if (pRenderTarget->GetDepthEnable())
 	{
-		if (MDepthTextureBuffer* pBuffer = pDepthTexture->GetDepthBuffer())
-		{
-			vClearValues.push_back({});
-			vClearValues.back().depthStencil = { 1.0f, 0 };
-		}
+		vClearValues.push_back({});
+		vClearValues.back().depthStencil = { 1.0f, 0 };
 	}
 
 	renderPassInfo.clearValueCount = vClearValues.size();
@@ -524,49 +521,49 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 
 void MVulkanRenderer::GetRenderTargetBarrier(MIRenderTarget* pRenderTarget, std::vector<VkImageMemoryBarrier>& vResult)
 {
-	int nBackNum = pRenderTarget->GetBackNum();
-
-	for (int i = 0; i < nBackNum; ++i)
-	{
-		if (MRenderTextureBuffer* pBuffer = pRenderTarget->GetBackBuffer(i))
-		{
-			VkImageMemoryBarrier barrier{};
-			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			barrier.oldLayout = pBuffer->m_VkImageLayout;
-			barrier.newLayout = pBuffer->m_VkImageLayout;
-			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.image = pBuffer->m_VkTextureImage;
-			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			barrier.subresourceRange.baseMipLevel = 0;
-			barrier.subresourceRange.levelCount = 1;
-			barrier.subresourceRange.baseArrayLayer = 0;
-			barrier.subresourceRange.layerCount = 1;
-
-			vResult.push_back(barrier);
-		}
-	}
-
-	if (MRenderDepthTexture* pDepthTexture = pRenderTarget->GetDepthTexture())
-	{
-		if (MDepthTextureBuffer* pBuffer = pDepthTexture->GetDepthBuffer())
-		{
-			VkImageMemoryBarrier barrier{};
-			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			barrier.oldLayout = pBuffer->m_VkImageLayout;
-			barrier.newLayout = pBuffer->m_VkImageLayout;
-			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.image = pBuffer->m_VkTextureImage;
-			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-			barrier.subresourceRange.baseMipLevel = 0;
-			barrier.subresourceRange.levelCount = 1;
-			barrier.subresourceRange.baseArrayLayer = 0;
-			barrier.subresourceRange.layerCount = 1;
-
-			vResult.push_back(barrier);
-		}
-	}
+// 	int nBackNum = pRenderTarget->GetBackNum();
+// 
+// 	for (int i = 0; i < nBackNum; ++i)
+// 	{
+// 		if (MRenderTextureBuffer* pBuffer = pRenderTarget->GetBackBuffer(i))
+// 		{
+// 			VkImageMemoryBarrier barrier{};
+// 			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+// 			barrier.oldLayout = pBuffer->m_VkImageLayout;
+// 			barrier.newLayout = pBuffer->m_VkImageLayout;
+// 			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+// 			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+// 			barrier.image = pBuffer->m_VkTextureImage;
+// 			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+// 			barrier.subresourceRange.baseMipLevel = 0;
+// 			barrier.subresourceRange.levelCount = 1;
+// 			barrier.subresourceRange.baseArrayLayer = 0;
+// 			barrier.subresourceRange.layerCount = 1;
+// 
+// 			vResult.push_back(barrier);
+// 		}
+// 	}
+// 
+// 	if (MRenderDepthTexture* pDepthTexture = pRenderTarget->GetDepthTexture())
+// 	{
+// 		if (MDepthTextureBuffer* pBuffer = pDepthTexture->GetDepthBuffer())
+// 		{
+// 			VkImageMemoryBarrier barrier{};
+// 			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+// 			barrier.oldLayout = pBuffer->m_VkImageLayout;
+// 			barrier.newLayout = pBuffer->m_VkImageLayout;
+// 			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+// 			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+// 			barrier.image = pBuffer->m_VkTextureImage;
+// 			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+// 			barrier.subresourceRange.baseMipLevel = 0;
+// 			barrier.subresourceRange.levelCount = 1;
+// 			barrier.subresourceRange.baseArrayLayer = 0;
+// 			barrier.subresourceRange.layerCount = 1;
+// 
+// 			vResult.push_back(barrier);
+// 		}
+// 	}
 
 }
 

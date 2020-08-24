@@ -23,10 +23,13 @@ public:
     MVulkanRenderTarget(MVulkanDevice* pDevice);
     virtual ~MVulkanRenderTarget();
 
+	virtual MRenderDepthTexture* GetCurrDepthTexture() override;
+	virtual MRenderDepthTexture* GetPrevDepthTexture() override;
+
 	virtual uint32_t GetBackNum() override { return 1; }
-	virtual MRenderTextureBuffer* GetBackBuffer(const uint32_t& unIndex) override;
-	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
-	virtual MColor GetBackClearColor(const uint32_t& unIndex) override;;
+	virtual MColor GetBackClearColor(const uint32_t& unIndex) override;
+
+	virtual bool GetDepthEnable() override { return true; }
 
 public:
 	virtual void Render(MIRenderer* pRenderer) override;
@@ -49,6 +52,8 @@ public:
 
 	bool RebindRenderBuffer();
 
+	void CleanRenderInfo();
+
 public:
 
 	MIRenderView* m_pView;
@@ -58,14 +63,18 @@ public:
 
 	VkQueue m_VkPresentQueue;
 
-	//size is swapchain size.
-	std::vector<MRenderTextureBuffer*> m_vBackBuffers;
 
+	struct MBufferInfo 
+	{
+		MBufferInfo();
+		std::vector<MRenderTextureBuffer*> vBackBuffers;
+		MRenderDepthTexture* pDepthTexture;
+		VkFramebuffer vkFrameBuffer;
+	};
 	//size is swapchain size.
-	std::vector<VkFramebuffer> m_VkFrameBuffer;
-	
-	MRenderDepthTexture* m_pDepthTexture;
+	std::vector<MBufferInfo> m_vBufferInfo;
 
+	uint32_t m_unPrevFrameBufferIndex;
 	uint32_t m_unFrameBufferIndex;
 
 public:

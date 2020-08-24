@@ -38,13 +38,15 @@ public:
 
 public:
 
-	virtual uint32_t GetBackNum() override { return m_vBackTexture.size(); }
-	virtual MRenderTextureBuffer* GetBackBuffer(const uint32_t& unIndex) override;
-	virtual MRenderDepthTexture* GetDepthTexture() override { return m_pDepthTexture; }
+	virtual MRenderDepthTexture* GetCurrDepthTexture() override { return nullptr; }
+	virtual MRenderDepthTexture* GetPrevDepthTexture() override { return nullptr; }
+
+	virtual uint32_t GetBackNum() override { return 1; }
 	virtual MColor GetBackClearColor(const uint32_t& unIndex) override;
 
+	virtual bool GetDepthEnable() override { return true; }
 
-	MRenderTargetTexture* GetBackTexture(const uint32_t& unIndex);
+	std::vector<MRenderTargetTexture*>* GetBackTexture(const uint32_t& unIndex);
 
 	void SetBackTexture(MRenderTargetTexture* pBackTexture, const uint32_t& unIndex, const bool& bClearWhenRender, const MColor& clearColor = MColor::Black);
 	void SetDepthTexture(MRenderDepthTexture* pDepthTexture, const bool& bClearWhenRender);
@@ -74,11 +76,16 @@ public:
 
 public:
 
-	std::vector<MRenderTargetTexture*> m_vBackTexture;	//TODO support mutil rt and mutil frame
+	struct MBufferInfo
+	{
+		MBufferInfo();
+		std::vector<MRenderTargetTexture*> vBackTexture;
+		MRenderDepthTexture* pDepthTexture;
+		VkFramebuffer vkFrameBuffer;
+	};
 
-	std::vector<VkFramebuffer> m_vFrameBuffer;			//size is frameNum
+	std::vector<MBufferInfo> m_vBufferInfo;
 	std::vector<MColor> m_vBackClearColor;
-	MRenderDepthTexture* m_pDepthTexture;
 protected:
 
 	uint32_t m_eRenderTargetType;

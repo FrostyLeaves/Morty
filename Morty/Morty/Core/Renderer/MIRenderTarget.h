@@ -36,11 +36,13 @@ public:
 	MIRenderTarget();
 	virtual ~MIRenderTarget() {}
 
-	virtual uint32_t GetBackNum() = 0;
-	virtual MRenderTextureBuffer* GetBackBuffer(const uint32_t& unIndex) = 0;
-	virtual MRenderDepthTexture* GetDepthTexture() = 0;
+	virtual MRenderDepthTexture* GetCurrDepthTexture() = 0;
+	virtual MRenderDepthTexture* GetPrevDepthTexture() = 0;
 
+	virtual uint32_t GetBackNum() = 0;
 	virtual MColor GetBackClearColor(const uint32_t& unIndex) = 0;
+
+	virtual bool GetDepthEnable() = 0;
 
 public:
 
