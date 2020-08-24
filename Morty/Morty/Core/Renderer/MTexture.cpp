@@ -128,68 +128,54 @@ MRenderTargetTexture::MRenderTargetTexture()
 	: MIRenderTexture()
 	, m_eRenderType(METextureLayout::ERGBA8)
 	, m_v2Size(0, 0)
-	, m_unFrameNum(1)
-	, m_vTextureBuffer()
+	, m_pTextureBuffer(nullptr)
 {
 
 }
 
-MTextureBuffer* MRenderTargetTexture::GetBuffer(const uint32_t& unFrameIndex)
+MTextureBuffer* MRenderTargetTexture::GetBuffer()
 {
-	return m_vTextureBuffer[unFrameIndex];
+	return m_pTextureBuffer;
 }
 
 void MRenderTargetTexture::GenerateBuffer(MIDevice* pDevice, const bool& bMipmap /*= true*/)
 {
-	DestroyTexture(pDevice);
+	if (m_pTextureBuffer)
+		pDevice->DestroyRenderTextureBuffer(&m_pTextureBuffer);
 
-	m_vTextureBuffer.resize(m_unFrameNum);
 
-	for (uint32_t i = 0; i < m_vTextureBuffer.size(); ++i)
-	{
-		pDevice->GenerateRenderTextureBuffer(&m_vTextureBuffer[i], m_eRenderType, m_v2Size.x, m_v2Size.y);
-	}
+	pDevice->GenerateRenderTextureBuffer(&m_pTextureBuffer, m_eRenderType, m_v2Size.x, m_v2Size.y);
 }
 
 void MRenderTargetTexture::DestroyTexture(MIDevice* pDevice)
 {
-	for (uint32_t i = 0; i < m_vTextureBuffer.size(); ++i)
-	{
-		if (m_vTextureBuffer[i])
-			pDevice->DestroyRenderTextureBuffer(&m_vTextureBuffer[i]);
-	}
+	if (m_pTextureBuffer)
+		pDevice->DestroyRenderTextureBuffer(&m_pTextureBuffer);
 }
 
 MRenderDepthTexture::MRenderDepthTexture()
 	: MIRenderTexture()
 	, m_v2Size(0,0)
-	, m_unFrameNum(1)
-	, m_vTextureBuffer()
+	, m_pTextureBuffer(nullptr)
 {
 
 }
 
-MTextureBuffer* MRenderDepthTexture::GetBuffer(const uint32_t& unFrameIndex)
+MTextureBuffer* MRenderDepthTexture::GetBuffer()
 {
-	return m_vTextureBuffer[unFrameIndex];
+	return m_pTextureBuffer;
 }
 
 void MRenderDepthTexture::GenerateBuffer(MIDevice* pDevice, const bool& bMipmap/* = true*/)
 {
-	DestroyTexture(pDevice);
+	if (m_pTextureBuffer)
+		pDevice->DestroyDepthTexture(&m_pTextureBuffer);
 
-	m_vTextureBuffer.resize(m_unFrameNum);
-
-	for (uint32_t i = 0; i < m_vTextureBuffer.size(); ++i)
-	{
-		pDevice->GenerateDepthTexture(&m_vTextureBuffer[i], m_v2Size.x, m_v2Size.y);
-	}
+	pDevice->GenerateDepthTexture(&m_pTextureBuffer, m_v2Size.x, m_v2Size.y);
 }
 
 void MRenderDepthTexture::DestroyTexture(MIDevice* pDevice)
 {
-	for (uint32_t i = 0; i < m_vTextureBuffer.size(); ++i)
-	{
-		pDevice->DestroyDepthTexture(&m_vTextureBuffer[i]);
-	}
+	if (m_pTextureBuffer)
+		pDevice->DestroyDepthTexture(&m_pTextureBuffer);
 }

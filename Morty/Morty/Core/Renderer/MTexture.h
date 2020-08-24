@@ -30,7 +30,7 @@ public:
 public:
 
 	virtual Vector2 GetSize() = 0;
-	virtual MTextureBuffer* GetBuffer(const uint32_t& unFrameIndex) = 0;
+	virtual MTextureBuffer* GetBuffer() = 0;
 	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = true) = 0;
 	virtual void DestroyTexture(MIDevice* pDevice) = 0;
 };
@@ -53,7 +53,7 @@ public:
 	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = true) override;
 	virtual void DestroyTexture(MIDevice* pDevice) override;
 
-	virtual MTextureBuffer* GetBuffer(const uint32_t& unFrameIndex) override { return m_pTextureBuffer; }
+	virtual MTextureBuffer* GetBuffer() override { return m_pTextureBuffer; }
 
 private:
 
@@ -89,7 +89,7 @@ public:
 	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = true) override;
 	virtual void DestroyTexture(MIDevice* pDevice) override;
 
-	virtual MTextureBuffer* GetBuffer(const uint32_t& unFrameIndex) override { return m_pTextureBuffer; }
+	virtual MTextureBuffer* GetBuffer() override { return m_pTextureBuffer; }
 
 	void SetTextures(MTexture* vTexture[6]);
 	void SetTexture(MTexture* pTexture, const MECubeFace& eFace);
@@ -104,7 +104,6 @@ class MORTY_CLASS MIRenderTexture : public MITexture
 {
 public:
 	virtual void SetSize(const Vector2& v2Size) = 0;
-	virtual uint32_t GetFrameNum() = 0;
 };
 
 class MORTY_CLASS MRenderTargetTexture : public MIRenderTexture
@@ -119,21 +118,16 @@ public:
 	void SetType(const METextureLayout& eType) { m_eRenderType = eType; }
 	METextureLayout GetType() { return m_eRenderType; }
 
-	void SetFrameNum(const uint32_t& unNum) { m_unFrameNum = unNum; };
-	virtual uint32_t GetFrameNum() { return m_unFrameNum; }
-
 	virtual void SetSize(const Vector2& v2Size) override { m_v2Size = v2Size; }
 	virtual Vector2 GetSize() override { return m_v2Size; }
-	virtual MTextureBuffer* GetBuffer(const uint32_t& unFrameIndex) override;
-	MRenderTextureBuffer* GetRenderBuffer(const uint32_t& unFrameIndex) { return m_vTextureBuffer[unFrameIndex]; };
-	MRenderTextureBuffer** GetData() { return m_vTextureBuffer.data(); }
+	virtual MTextureBuffer* GetBuffer() override;
+	MRenderTextureBuffer* GetRenderBuffer() { return m_pTextureBuffer; };
 	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = true) override;
 	virtual void DestroyTexture(MIDevice* pDevice) override;
 private:
 	METextureLayout m_eRenderType;
 	Vector2 m_v2Size;
-	uint32_t m_unFrameNum;
-	std::vector<MRenderTextureBuffer*> m_vTextureBuffer;
+	MRenderTextureBuffer* m_pTextureBuffer;
 };
 
 class MORTY_CLASS MRenderDepthTexture : public MIRenderTexture
@@ -146,18 +140,13 @@ public:
 
 	virtual void SetSize(const Vector2& v2Size) override { m_v2Size = v2Size; }
 	virtual Vector2 GetSize() override { return m_v2Size; }
-	
-	void SetFrameNum(const uint32_t& unNum) { m_unFrameNum = unNum; };
-	virtual uint32_t GetFrameNum() { return m_unFrameNum; }
-
-	virtual MTextureBuffer* GetBuffer(const uint32_t& unFrameIndex) override;
-	MDepthTextureBuffer* GetDepthBuffer(const uint32_t& unFrameIndex) { return m_vTextureBuffer[unFrameIndex]; };
+	virtual MTextureBuffer* GetBuffer() override;
+	MDepthTextureBuffer* GetDepthBuffer() { return m_pTextureBuffer; };
 	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = true) override;
 	virtual void DestroyTexture(MIDevice* pDevice) override;
 		
 private:
 	Vector2 m_v2Size;
-	uint32_t m_unFrameNum;
-	std::vector<MDepthTextureBuffer*> m_vTextureBuffer;
+	MDepthTextureBuffer* m_pTextureBuffer;
 };
 #endif

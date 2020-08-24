@@ -903,7 +903,6 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t
 	for (uint32_t i = 0; i < pVkRenderTarget->m_vBackBuffers.size(); ++i)
 	{
 		MRenderTextureBuffer* pBuffer = pVkRenderTarget->m_vBackBuffers[i];
-		MDepthTextureBuffer* pDepthBuffer = pVkRenderTarget->m_pDepthTexture->GetDepthBuffer(i);
 
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		createInfo.image = pBuffer->m_VkTextureImage;
@@ -926,7 +925,7 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t
 		std::vector<VkImageView> vAttachments;
 
 		vAttachments.push_back(pBuffer->m_VkImageView);
-		vAttachments.push_back(pDepthBuffer->m_VkImageView);
+		vAttachments.push_back(pVkRenderTarget->m_pDepthTexture->GetBuffer()->m_VkImageView);
 
 
 		VkFramebufferCreateInfo framebufferInfo{};
@@ -1060,6 +1059,8 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 
 	for (uint32_t i = 0; i < unBackNum; ++i)
 	{
+		MRenderTextureBuffer* pBuffer = pRenderTarget->GetBackBuffer(i);
+
 		vAttachmentDesc.push_back({});
 		VkAttachmentDescription& colorAttachment = vAttachmentDesc.back();
 
@@ -1070,7 +1071,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 		else
 			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 
-		colorAttachment.format = pRenderTarget->m_VkColorFormat;
+		colorAttachment.format = pBuffer->m_VkTextureFormat;
 		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -1079,28 +1080,30 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 	}
-	if (pRenderTarget->GetDepthTexture())
+	if (MRenderDepthTexture* pDepthTexture = pRenderTarget->GetDepthTexture())
 	{
-		bDepthTextureValid = true;
+		if (MDepthTextureBuffer* pBuffer = pDepthTexture->GetDepthBuffer())
+		{
+			bDepthTextureValid = true;
 
-		vAttachmentDesc.push_back({});
-		VkAttachmentDescription& colorAttachment = vAttachmentDesc.back();
+			vAttachmentDesc.push_back({});
+			VkAttachmentDescription& colorAttachment = vAttachmentDesc.back();
 
-		vAttachmentRef.push_back({ uint32_t(vAttachmentRef.size()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL });
+			vAttachmentRef.push_back({ uint32_t(vAttachmentRef.size()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL });
 
-		if (pRenderTarget->m_RenderPass.m_DepthDesc.bClearWhenRender)
-			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		else
-			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+			if (pRenderTarget->m_RenderPass.m_DepthDesc.bClearWhenRender)
+				colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			else
+				colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 
-		colorAttachment.format = m_VkDepthTextureFormat;
-		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
+			colorAttachment.format = pBuffer->m_VkTextureFormat;
+			colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+			colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		}
 	}
 
 

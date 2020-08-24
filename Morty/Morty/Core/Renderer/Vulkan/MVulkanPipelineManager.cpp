@@ -173,7 +173,7 @@ void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShade
 	MITexture* pTexture = pParam->pTexture;
 	if (!pTexture) pTexture = &m_pDevice->m_WhiteTexture;
 
-	if (MTextureBuffer* pBuffer = pTexture->GetBuffer(unIndex))
+	if (MTextureBuffer* pBuffer = pTexture->GetBuffer())
 	{
 		VkDescriptorImageInfo imageInfo = {};
 		imageInfo.imageView = pBuffer->m_VkImageView;

@@ -10,6 +10,8 @@ M_OBJECT_IMPLEMENT(MTextureRenderTarget, MObject)
 
 MTextureRenderTarget::MTextureRenderTarget()
 	: MIRenderTarget()
+	, m_vBackTexture()
+	, m_pDepthTexture(nullptr)
 	, m_eRenderTargetType(ERenderNone)
 	, m_fWidth(0)
 	, m_fHeight(0)
@@ -21,12 +23,14 @@ MTextureRenderTarget::~MTextureRenderTarget()
 	Release(m_pEngine->GetDevice());
 }
 
-MRenderTextureBuffer** MTextureRenderTarget::GetBackBuffers(const uint32_t& unIndex)
+MRenderTextureBuffer* MTextureRenderTarget::GetBackBuffer(const uint32_t& unIndex)
 {
-	if (unIndex >= M_BUFFER_NUM)
-		return nullptr;
+	if (MRenderTargetTexture* pTexture = GetBackTexture(unIndex))
+	{
+		return pTexture->GetRenderBuffer();
+	}
 
-	return m_vBackTexture[unIndex]->GetData();
+	return nullptr;
 }
 
 MColor MTextureRenderTarget::GetBackClearColor(const uint32_t& unIndex)
