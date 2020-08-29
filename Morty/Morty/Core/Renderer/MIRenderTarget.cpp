@@ -10,3 +10,11 @@ MIRenderTarget::MIRenderTarget()
 	m_aVkRenderFinishedEvent.fill(VK_NULL_HANDLE);
 #endif
 }
+
+MFrameBuffer::MFrameBuffer()
+	: vBackTextures()
+	, pDepthTexture()
+	, vkFrameBuffer(VK_NULL_HANDLE)
+{
+
+}

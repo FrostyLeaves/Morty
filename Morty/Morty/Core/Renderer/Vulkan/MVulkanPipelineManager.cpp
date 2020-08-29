@@ -187,6 +187,10 @@ void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShade
 		descriptorWrite.dstArrayElement = 0;
 
 		descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+		if (dynamic_cast<MRenderDepthTexture*>(pTexture))
+		{
+			imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		}
 		descriptorWrite.descriptorCount = 1;
 
 		descriptorWrite.pBufferInfo = nullptr;

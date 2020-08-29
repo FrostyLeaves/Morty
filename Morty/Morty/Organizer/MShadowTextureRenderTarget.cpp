@@ -61,7 +61,7 @@ void MShadowTextureRenderTarget::OnCreated()
 //	std::vector<METextureLayout> vEmpty;
 //	Initialize(MTextureRenderTarget::ERenderDepth, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE, vEmpty);
 
-	InitRenderPass();
+	//InitRenderPass();
 }
 
 void MShadowTextureRenderTarget::OnDelete()

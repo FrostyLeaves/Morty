@@ -27,7 +27,7 @@ public:
 
 public:
 
-	uint32_t GetFrameIndex() { return m_unFrameIndex; }
+	virtual uint32_t GetFrameIndex() override { return m_unFrameIndex; }
 
 
 	virtual void NewRenderFrame() override;

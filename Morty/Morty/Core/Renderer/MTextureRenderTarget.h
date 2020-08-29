@@ -20,6 +20,7 @@ class MViewport;
 class MTexture;
 class MRenderDepthTexture;
 
+
 class MORTY_CLASS MTextureRenderTarget : public MIRenderTarget, public MObject
 {
 public:
@@ -38,18 +39,21 @@ public:
 
 public:
 
-	virtual MRenderDepthTexture* GetCurrDepthTexture() override { return nullptr; }
-	virtual MRenderDepthTexture* GetPrevDepthTexture() override { return nullptr; }
+	virtual MRenderDepthTexture* GetCurrDepthTexture() override;
 
-	virtual uint32_t GetBackNum() override { return 1; }
+	virtual uint32_t GetBackNum() override;
 	virtual MColor GetBackClearColor(const uint32_t& unIndex) override;
 
 	virtual bool GetDepthEnable() override { return true; }
 
-	std::vector<MRenderTargetTexture*>* GetBackTexture(const uint32_t& unIndex);
+	virtual uint32_t GetMFrameBufferNum() override { return m_vBufferInfo.size(); }
+	virtual MFrameBuffer* GetFrameBuffer(const uint32_t& unIndex) override;
+	virtual MFrameBuffer* GetCurrFrameBuffer(const uint32_t& unFrameIdx = 0) override { return GetFrameBuffer(unFrameIdx); }
 
-	void SetBackTexture(MRenderTargetTexture* pBackTexture, const uint32_t& unIndex, const bool& bClearWhenRender, const MColor& clearColor = MColor::Black);
-	void SetDepthTexture(MRenderDepthTexture* pDepthTexture, const bool& bClearWhenRender);
+	std::vector<MIRenderBackTexture*>* GetBackTexture(const uint32_t& unIndex);
+
+	void SetBackTexture(const std::array<MRenderBackTexture*, M_BUFFER_NUM>& vBackTexture, const uint32_t& unIndex, const MColor& clearColor = MColor::Black);
+	void SetDepthTexture(const std::array<MRenderDepthTexture*, M_BUFFER_NUM> vDepthTexture);
 
 	uint32_t GetRenderTargetType() { return m_eRenderTargetType; }
 
@@ -63,14 +67,13 @@ public:
 	virtual void Release(MIDevice* pDevice) override;
 
 
-	void InitRenderPass();
+	virtual void InitRenderPass();
 
 public:
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	virtual std::vector<struct ID3D11RenderTargetView*> GetRenderTargetViews() override;
 	virtual struct ID3D11DepthStencilView* GetDepthStencilView() override;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-	virtual VkFramebuffer GetFrameBuffer(const uint32_t& unIndex) override;
 	VkRenderPass m_VkRenderPass;
 #endif
 
@@ -79,12 +82,12 @@ public:
 	struct MBufferInfo
 	{
 		MBufferInfo();
-		std::vector<MRenderTargetTexture*> vBackTexture;
+		std::vector<MRenderBackTexture*> vBackTexture;
 		MRenderDepthTexture* pDepthTexture;
 		VkFramebuffer vkFrameBuffer;
 	};
 
-	std::vector<MBufferInfo> m_vBufferInfo;
+	std::array<MFrameBuffer, M_BUFFER_NUM> m_vBufferInfo;
 	std::vector<MColor> m_vBackClearColor;
 protected:
 

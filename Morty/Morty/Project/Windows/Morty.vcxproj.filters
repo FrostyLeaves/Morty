@@ -97,6 +97,9 @@
     <Filter Include="Core\Renderer\Shader">
       <UniqueIdentifier>{c765a7e5-e8d8-455e-8f9f-9b48708803f2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\RenderProgram\Forward">
+      <UniqueIdentifier>{d0eb9b7a-fadc-432b-bbe2-a217434f77fe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../ReadMe.txt" />
@@ -354,9 +357,6 @@
     <ClInclude Include="..\..\Core\RenderProgram\MIRenderProgram.h">
       <Filter>Core\RenderProgram</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Core\RenderProgram\MForwardRenderProgram.h">
-      <Filter>Core\RenderProgram</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Core\RenderProgram\MBasicRenderProgram.h">
       <Filter>Core\RenderProgram</Filter>
     </ClInclude>
@@ -383,6 +383,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanObjectDestructor.h">
       <Filter>Core\Renderer\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\RenderProgram\MForwardRenderProgram.h">
+      <Filter>Core\RenderProgram\Forward</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\RenderProgram\MForwardTransparentRenderProgram.h">
+      <Filter>Core\RenderProgram\Forward</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -614,9 +620,6 @@
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanShaderCompiler.cpp">
       <Filter>Core\Renderer\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Core\RenderProgram\MForwardRenderProgram.cpp">
-      <Filter>Core\RenderProgram</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Core\RenderProgram\MIRenderProgram.cpp">
       <Filter>Core\RenderProgram</Filter>
     </ClCompile>
@@ -646,6 +649,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanObjectDestructor.cpp">
       <Filter>Core\Renderer\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\RenderProgram\MForwardRenderProgram.cpp">
+      <Filter>Core\RenderProgram\Forward</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\RenderProgram\MForwardTransparentRenderProgram.cpp">
+      <Filter>Core\RenderProgram\Forward</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

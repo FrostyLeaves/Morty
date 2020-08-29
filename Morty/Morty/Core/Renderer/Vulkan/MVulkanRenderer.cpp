@@ -192,7 +192,7 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 
 
 	//äÖÈ¾ÓÃµÄFrame Buffer
-	VkFramebuffer vkFrameBuffer = pRenderTarget->GetFrameBuffer(m_unFrameIndex);
+	MFrameBuffer* pFrameBuffer = pRenderTarget->GetCurrFrameBuffer(m_unFrameIndex);
 
 
 	//CommandBuffer Begin Info
@@ -203,7 +203,7 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 	VkRenderPassBeginInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	renderPassInfo.renderPass = pRenderTarget->m_RenderPass.m_aVkRenderPass[m_unFrameIndex];
-	renderPassInfo.framebuffer = vkFrameBuffer;
+	renderPassInfo.framebuffer = pFrameBuffer->vkFrameBuffer;
 	renderPassInfo.renderArea.offset = { 0, 0 };
 	renderPassInfo.renderArea.extent = pRenderTarget->m_VkExtend;
 
@@ -243,8 +243,6 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 	vkCmdEndRenderPass(rs.vkCommandBuffer);
 
 
-	//End Command Buffer
-	vkEndCommandBuffer(rs.vkCommandBuffer);
 
 
 	VkSubmitInfo submitInfo{};
@@ -288,6 +286,12 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 		vkResetEvent(m_pDevice->m_VkDevice, vkEvent);
 		vkCmdSetEvent(rs.vkCommandBuffer, vkEvent, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT);
 	}
+
+
+
+	//End Command Buffer
+	vkEndCommandBuffer(rs.vkCommandBuffer);
+
 
 	VkFence vkInFightFence = m_VkInFlightFences[m_unFrameIndex];
 	//m_VkInFlightFences = unsigned
@@ -421,9 +425,11 @@ void MVulkanRenderer::SetShaderParamSet(MShaderParamSet* pParamSet)
 	{
 		if (pParam->bDirty[m_unFrameIndex])
 		{
-			if(pParam->pTexture && !pParam->pTexture->GetBuffer())
-				pParam->pTexture->GenerateBuffer(m_pDevice, false);
-
+			if (pParam->pTexture && !pParam->pTexture->GetBuffer())
+			{
+//				pParam->pTexture->GenerateBuffer(m_pDevice, false);
+				continue;
+			}
 
 			m_pDevice->m_PipelineManager.BindTextureParam(pParamSet, pParam, m_unFrameIndex);
 			pParam->bDirty[m_unFrameIndex] = false;
@@ -521,49 +527,56 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 
 void MVulkanRenderer::GetRenderTargetBarrier(MIRenderTarget* pRenderTarget, std::vector<VkImageMemoryBarrier>& vResult)
 {
-// 	int nBackNum = pRenderTarget->GetBackNum();
-// 
-// 	for (int i = 0; i < nBackNum; ++i)
-// 	{
-// 		if (MRenderTextureBuffer* pBuffer = pRenderTarget->GetBackBuffer(i))
-// 		{
-// 			VkImageMemoryBarrier barrier{};
-// 			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-// 			barrier.oldLayout = pBuffer->m_VkImageLayout;
-// 			barrier.newLayout = pBuffer->m_VkImageLayout;
-// 			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-// 			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-// 			barrier.image = pBuffer->m_VkTextureImage;
-// 			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-// 			barrier.subresourceRange.baseMipLevel = 0;
-// 			barrier.subresourceRange.levelCount = 1;
-// 			barrier.subresourceRange.baseArrayLayer = 0;
-// 			barrier.subresourceRange.layerCount = 1;
-// 
-// 			vResult.push_back(barrier);
-// 		}
-// 	}
-// 
-// 	if (MRenderDepthTexture* pDepthTexture = pRenderTarget->GetDepthTexture())
-// 	{
-// 		if (MDepthTextureBuffer* pBuffer = pDepthTexture->GetDepthBuffer())
-// 		{
-// 			VkImageMemoryBarrier barrier{};
-// 			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-// 			barrier.oldLayout = pBuffer->m_VkImageLayout;
-// 			barrier.newLayout = pBuffer->m_VkImageLayout;
-// 			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-// 			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-// 			barrier.image = pBuffer->m_VkTextureImage;
-// 			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-// 			barrier.subresourceRange.baseMipLevel = 0;
-// 			barrier.subresourceRange.levelCount = 1;
-// 			barrier.subresourceRange.baseArrayLayer = 0;
-// 			barrier.subresourceRange.layerCount = 1;
-// 
-// 			vResult.push_back(barrier);
-// 		}
-// 	}
+	MFrameBuffer* pFrameBuffer = pRenderTarget->GetCurrFrameBuffer(m_unFrameIndex);
+	if (!pFrameBuffer)
+		return;
+
+	int nBackNum = pRenderTarget->GetBackNum();
+	
+	
+	for (int i = 0; i < nBackNum; ++i)
+	{
+		if (MIRenderBackTexture* pBackTexture = pFrameBuffer->vBackTextures[i])
+		{
+			MRenderTextureBuffer* pBuffer =  pBackTexture->GetRenderBuffer();
+
+			VkImageMemoryBarrier barrier{};
+			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			barrier.oldLayout = pBuffer->m_VkImageLayout;
+			barrier.newLayout = pBuffer->m_VkImageLayout;
+			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.image = pBuffer->m_VkTextureImage;
+			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			barrier.subresourceRange.baseMipLevel = 0;
+			barrier.subresourceRange.levelCount = 1;
+			barrier.subresourceRange.baseArrayLayer = 0;
+			barrier.subresourceRange.layerCount = 1;
+
+			vResult.push_back(barrier);
+		}
+
+	}
+	if (MRenderDepthTexture* pDepthTexture = pFrameBuffer->pDepthTexture)
+	{
+		if (MDepthTextureBuffer* pBuffer = pDepthTexture->GetDepthBuffer())
+		{
+			VkImageMemoryBarrier barrier{};
+			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			barrier.oldLayout = pBuffer->m_VkImageLayout;
+			barrier.newLayout = pBuffer->m_VkImageLayout;
+			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.image = pBuffer->m_VkTextureImage;
+			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+			barrier.subresourceRange.baseMipLevel = 0;
+			barrier.subresourceRange.levelCount = 1;
+			barrier.subresourceRange.baseArrayLayer = 0;
+			barrier.subresourceRange.layerCount = 1;
+
+			vResult.push_back(barrier);
+		}
+	}
 
 }
 

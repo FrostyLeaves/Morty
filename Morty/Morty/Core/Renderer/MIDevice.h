@@ -69,6 +69,9 @@ public:
 	virtual bool GenerateRenderPass(MRenderPass* pRenderPass) = 0;
 	virtual void DestroyRenderPass(MRenderPass* pRenderPass) = 0;
 
+	virtual bool GenerateRenderTargetView(MRenderTextureBuffer* pTextureBuffer) = 0;
+	virtual void DestroyRenderTargetView(MRenderTextureBuffer* pTextureBuffer) = 0;
+
 	virtual void RegisterMaterial(MMaterial* pMaterial) {};
 	virtual void UnRegisterMaterial(MMaterial* pMaterial) {};
 

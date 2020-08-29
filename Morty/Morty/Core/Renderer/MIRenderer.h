@@ -77,7 +77,7 @@ class MViewport;
 class MIRenderTarget;
 class MShaderParamSet;
 class MRenderDepthTexture;
-class MRenderTargetTexture;
+class MRenderBackTexture;
 
 
 class MORTY_CLASS MIRenderer
@@ -115,6 +115,8 @@ public:
 
 public:
 	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) = 0;
+
+	virtual uint32_t GetFrameIndex() = 0;
 
 protected:
 

@@ -15,8 +15,8 @@ MVulkanRenderTarget::MVulkanRenderTarget(MVulkanDevice* pDevice)
 	, m_pDevice(pDevice)
 	, m_vBufferInfo()
 	, m_pView(nullptr)
-	, m_unPrevFrameBufferIndex(0)
 	, m_unFrameBufferIndex(0)
+	, m_v2Size(800, 600)
 {
 
 }
@@ -28,14 +28,7 @@ MVulkanRenderTarget::~MVulkanRenderTarget()
 
 MRenderDepthTexture* MVulkanRenderTarget::GetCurrDepthTexture()
 {
-	MBufferInfo& info = m_vBufferInfo[m_unFrameBufferIndex];
-
-	return info.pDepthTexture;
-}
-
-MRenderDepthTexture* MVulkanRenderTarget::GetPrevDepthTexture()
-{
-	MBufferInfo& info = m_vBufferInfo[m_unPrevFrameBufferIndex];
+	MFrameBuffer& info = m_vBufferInfo[m_unFrameBufferIndex];
 
 	return info.pDepthTexture;
 }
@@ -48,8 +41,6 @@ MColor MVulkanRenderTarget::GetBackClearColor(const uint32_t& unIndex)
 void MVulkanRenderTarget::Render(MIRenderer* pRenderer)
 {
 	MVulkanRenderer* pVkRenderer = dynamic_cast<MVulkanRenderer*>(pRenderer);
-
-	m_unPrevFrameBufferIndex = m_unFrameBufferIndex;
 
 	vkAcquireNextImageKHR(m_pDevice->m_VkDevice, m_VkSwapchain, UINT64_MAX, pVkRenderer->m_VkImageAvailableSemaphore, VK_NULL_HANDLE, &m_unFrameBufferIndex);
 	
@@ -104,6 +95,7 @@ void MVulkanRenderTarget::Release(MIDevice* pDevice)
 {
 	m_pDevice->DestroyRenderTarget(this);
 	ReleaseSwapchain();
+	CleanRenderInfo();
 
 	vkDestroySurfaceKHR(m_pDevice->m_VkInstance, m_VkSurface, nullptr);
 }
@@ -115,9 +107,12 @@ void MVulkanRenderTarget::Resize(const uint32_t& nWidth, const uint32_t& nHeight
 	m_pDevice->DestroyRenderTarget(this);
 
 	ReleaseSwapchain();
+	CleanRenderInfo();
+
+	m_v2Size.x = nWidth;
+	m_v2Size.y = nHeight;
 
 	InitializeSwapchain();
-
 
 	m_pDevice->GenerateRenderTarget(this, nWidth, nHeight);
 }
@@ -258,11 +253,15 @@ void MVulkanRenderTarget::ReleaseSwapchain()
 
 void MVulkanRenderTarget::CleanRenderInfo()
 {
-	for (MBufferInfo& info : m_vBufferInfo)
+	for (MFrameBuffer& info : m_vBufferInfo)
 	{
-		for (MRenderTextureBuffer* pBuffer : info.vBackBuffers)
-			delete pBuffer;
+		for (MIRenderBackTexture* pTexture : info.vBackTextures)
+		{
+			pTexture->DestroyBuffer(m_pDevice);
+			delete pTexture;
+		}
 
+		info.pDepthTexture->DestroyBuffer(m_pDevice);
 		delete info.pDepthTexture;
 	}
 
@@ -293,14 +292,30 @@ bool MVulkanRenderTarget::RebindRenderBuffer()
 	for (VkImage& image : vSwapchainImages)
 	{
 		m_vBufferInfo.push_back({});
-		MBufferInfo& info = m_vBufferInfo.back();
+		MFrameBuffer& info = m_vBufferInfo.back();
 
-		MRenderTextureBuffer* pTextureBuffer = new MRenderTextureBuffer();
-		pTextureBuffer->m_VkTextureImage = image;
-		pTextureBuffer->m_VkTextureFormat = m_VkColorFormat;
 
-		info.vBackBuffers.push_back(pTextureBuffer);
-		info.pDepthTexture = new MRenderDepthTexture();
+
+		MRenderSwapchainTexture* pTexture = new MRenderSwapchainTexture();
+		MRenderTextureBuffer* pBuffer = pTexture->GetRenderBuffer();
+		pBuffer->m_VkTextureImage = image;
+		pBuffer->m_VkTextureImageMemory = VK_NULL_HANDLE;
+		pBuffer->m_VkImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		pBuffer->m_VkTextureFormat = m_VkColorFormat;
+
+		pTexture->SetSize(m_v2Size);
+		pTexture->GenerateBuffer(m_pDevice);
+
+		info.vBackTextures.push_back(pTexture);
+		
+
+
+		MRenderDepthTexture* pDepthTexture = new MRenderDepthTexture();
+
+		pDepthTexture->SetSize(m_v2Size);
+		pDepthTexture->GenerateBuffer(m_pDevice);
+
+		info.pDepthTexture = pDepthTexture;
 	}
 
 	return true;
@@ -339,14 +354,14 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 }
 
 
-VkFramebuffer MVulkanRenderTarget::GetFrameBuffer(const uint32_t& unIndex)
+MFrameBuffer* MVulkanRenderTarget::GetFrameBuffer(const uint32_t& unIndex)
 {
-	return m_vBufferInfo[m_unFrameBufferIndex].vkFrameBuffer;
+	return &m_vBufferInfo[unIndex];
+}
+
+MFrameBuffer* MVulkanRenderTarget::GetCurrFrameBuffer(const uint32_t& unFrameIdx /*= 0*/)
+{
+	return &m_vBufferInfo[m_unFrameBufferIndex];
 }
 
 #endif
-
-MVulkanRenderTarget::MBufferInfo::MBufferInfo() :vBackBuffers(), pDepthTexture(nullptr), vkFrameBuffer(VK_NULL_HANDLE)
-{
-
-}

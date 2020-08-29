@@ -8,7 +8,7 @@ class MScene;
 class MEngine;
 class MViewport;
 class MRenderDepthTexture;
-class MRenderTargetTexture;
+class MRenderBackTexture;
 class MTextureRenderTarget;
 
 class SceneTexture
@@ -36,7 +36,7 @@ protected:
 	MScene* m_pScene;
 	MEngine* m_pEngine;
 
-	MRenderTargetTexture* m_pBackTexture;
+	MRenderBackTexture* m_pBackTexture;
 	MRenderDepthTexture* m_pDepthTexture;
 
 	MTextureRenderTarget* m_pTextureRenderTarget;

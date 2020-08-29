@@ -47,8 +47,8 @@ public:
 	virtual void GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTexture* vTexture[6], const bool& bGenerateMipmap) override {}
 	virtual void DestroyTexture(MTextureBuffer** ppTextureBuffer) override;
 
-	virtual bool GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const METextureLayout& eType, const uint32_t& unWidth, const unsigned& unHeight) override { return true; }
-	virtual void DestroyRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer) override {}
+	virtual bool GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const METextureLayout& eType, const uint32_t& unWidth, const unsigned& unHeight) override;
+	virtual void DestroyRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer) override;
 
 	virtual void GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const uint32_t& unWidth, const uint32_t& unHeight) override;
 	virtual void DestroyDepthTexture(MDepthTextureBuffer** ppTextureBuffer) override;
@@ -64,6 +64,9 @@ public:
 
 	virtual bool GenerateRenderPass(MRenderPass* pRenderPass) override;
 	virtual void DestroyRenderPass(MRenderPass* pRenderPass) override;
+
+	virtual bool GenerateRenderTargetView(MRenderTextureBuffer* pTextureBuffer) override;
+	virtual void DestroyRenderTargetView(MRenderTextureBuffer* pTextureBuffer) override;
 
 	virtual void RegisterMaterial(MMaterial* pMaterial) override;
 	virtual void UnRegisterMaterial(MMaterial* pMaterial) override;
@@ -87,6 +90,7 @@ public:
 	int FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	int FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
+	VkFormat GetFormat(const METextureLayout& layout);
 
 protected:
 	bool InitVulkanInstance();

@@ -253,18 +253,21 @@ bool MEngine::InitializeDefaultResource()
 	MTexture* pWhiteTexture = pWhiteTextureRes->GetTextureTemplate();
 	pWhiteTexture->SetSize(Vector2(1, 1));
 	pWhiteTexture->FillColor(MColor(1, 1, 1, 1));
+	pWhiteTexture->GenerateBuffer(GetDevice());
 	pWhiteTextureRes->AddRef();
 
 	MTextureResource* pBlackTextureRes = GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_BLACK);
 	MTexture* pBlackTexture = pBlackTextureRes->GetTextureTemplate();
 	pBlackTexture->SetSize(Vector2(1, 1));
 	pBlackTexture->FillColor(MColor(0, 0, 0, 1));
+	pBlackTexture->GenerateBuffer(GetDevice());
 	pBlackTextureRes->AddRef();
 
 	MTextureResource* pNormalMapRes = GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_NORMALMAP);
 	MTexture* pNormalMap = pNormalMapRes->GetTextureTemplate();
 	pNormalMap->SetSize(Vector2(1, 1));
 	pNormalMap->FillColor(MColor(0.5f, 0.5f, 1, 1));
+	pNormalMap->GenerateBuffer(GetDevice());
 
 	MResource* pDPVSResource = GetResourceManager()->LoadResource("./Shader/depthPeeling.mvs");
 	MResource* pDPPSResource = GetResourceManager()->LoadResource("./Shader/depthPeeling.mps");

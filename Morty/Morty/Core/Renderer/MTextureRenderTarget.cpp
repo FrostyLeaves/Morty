@@ -22,44 +22,64 @@ MTextureRenderTarget::~MTextureRenderTarget()
 	Release(m_pEngine->GetDevice());
 }
 
+MRenderDepthTexture* MTextureRenderTarget::GetCurrDepthTexture()
+{
+	MIRenderer* pRenderer = GetEngine()->GetRenderer();
+	uint32_t unIndex = pRenderer->GetFrameIndex();
+
+	MFrameBuffer& info = m_vBufferInfo[unIndex];
+
+	return info.pDepthTexture;
+}
+
+uint32_t MTextureRenderTarget::GetBackNum()
+{
+	return m_vBufferInfo[0].vBackTextures.size();
+}
+
 MColor MTextureRenderTarget::GetBackClearColor(const uint32_t& unIndex)
 {
 	return m_vBackClearColor[unIndex];
 }
 
-std::vector<MRenderTargetTexture*>* MTextureRenderTarget::GetBackTexture(const uint32_t& unIndex)
+std::vector<MIRenderBackTexture*>* MTextureRenderTarget::GetBackTexture(const uint32_t& unIndex)
 {
-	MBufferInfo& info = m_vBufferInfo[unIndex];
-	return &info.vBackTexture;
+	MFrameBuffer& info = m_vBufferInfo[unIndex];
+	return &info.vBackTextures;
 }
 
-void MTextureRenderTarget::SetBackTexture(MRenderTargetTexture* pBackTexture, const uint32_t& unIndex, const bool& bClearWhenRender, const MColor& clearColor)
+void MTextureRenderTarget::SetBackTexture(const std::array<MRenderBackTexture*, M_BUFFER_NUM>& vBackTexture, const uint32_t& unIndex, const MColor& clearColor /*= MColor::Black*/)
 {
-// 	if (m_vBackTexture.size() < unIndex + 1)
-// 	{
-// 		m_vBackTexture.resize(unIndex + 1);
-// 		m_vBackClearColor.resize(unIndex + 1);
-// 
-// 		m_RenderPass.m_vBackDesc.resize(unIndex + 1);
-// 	}
-// 
-// 	m_vBackTexture[unIndex] = pBackTexture;
-// 	m_vBackClearColor[unIndex] = clearColor;
-// 	m_RenderPass.m_vBackDesc[unIndex].bClearWhenRender = bClearWhenRender;
+	if (m_vBackClearColor.size() <= unIndex)
+	{
+		m_vBackClearColor.resize(unIndex + 1, MColor::Black);
+
+		for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+		{
+			m_vBufferInfo[i].vBackTextures.resize(unIndex + 1, nullptr);
+		}
+	}
+
+	m_vBackClearColor[unIndex] = clearColor;
+
+	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+	{
+		m_vBufferInfo[i].vBackTextures[unIndex] = vBackTexture[i];
+	}
 }
 
-void MTextureRenderTarget::SetDepthTexture(MRenderDepthTexture* pDepthTexture, const bool& bClearWhenRender)
+void MTextureRenderTarget::SetDepthTexture(const std::array<MRenderDepthTexture*, M_BUFFER_NUM> vDepthTexture)
 {
-// 	m_pDepthTexture = pDepthTexture;
-// 	m_RenderPass.m_DepthDesc.bClearWhenRender = bClearWhenRender;
+	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+	{
+		m_vBufferInfo[i].pDepthTexture = vDepthTexture[i];
+	}
 }
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
-VkFramebuffer MTextureRenderTarget::GetFrameBuffer(const uint32_t& unIndex)
+MFrameBuffer* MTextureRenderTarget::GetFrameBuffer(const uint32_t& unIndex)
 {
-	MBufferInfo& info = m_vBufferInfo[unIndex];
-
-	return info.vkFrameBuffer;
+	return &m_vBufferInfo[unIndex];
 }
 #endif
 
@@ -71,13 +91,13 @@ VkFramebuffer MTextureRenderTarget::GetFrameBuffer(const uint32_t& unIndex)
 
 void MTextureRenderTarget::ResizeAllTexture(const Vector2& v2Size)
 {
-	for (MBufferInfo& info : m_vBufferInfo)
+	for (MFrameBuffer& info : m_vBufferInfo)
 	{
-		for (uint32_t i = 0; i < info.vBackTexture.size(); ++i)
+		for (uint32_t i = 0; i < info.vBackTextures.size(); ++i)
 		{
-			if (info.vBackTexture[i])
+			if (info.vBackTextures[i])
 			{
-				info.vBackTexture[i]->SetSize(v2Size);
+				info.vBackTextures[i]->SetSize(v2Size);
 			}
 		}
 
@@ -160,11 +180,3 @@ struct ID3D11DepthStencilView* MTextureRenderTarget::GetDepthStencilView()
 	return nullptr;
 }
 #endif
-
-MTextureRenderTarget::MBufferInfo::MBufferInfo()
-	: vBackTexture()
-	, pDepthTexture(nullptr)
-	, vkFrameBuffer(VK_NULL_HANDLE)
-{
-
-}

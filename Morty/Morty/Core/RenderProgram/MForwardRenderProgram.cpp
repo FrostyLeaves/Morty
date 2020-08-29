@@ -31,6 +31,8 @@
 
 #include "Shader/MShaderBuffer.h"
 
+#include "MForwardTransparentRenderProgram.h"
+
 #include <algorithm>
 
 
@@ -40,13 +42,7 @@ M_OBJECT_IMPLEMENT(MForwardRenderProgram, MIRenderProgram)
 MForwardRenderProgram::MForwardRenderProgram()
 	: MIRenderProgram()
 	, m_FrameParamSet(1)
-	, m_TransparentDrawMesh(true)
-	, m_pTransparentFrontTexture(nullptr)
-	, m_pTransparentBackTexture(nullptr)
 	, m_pShadowDepthMapRenderTarget(nullptr)
-	, m_pTransparentRenderTarget1(nullptr)
-	, m_pTransparentRenderTarget2(nullptr)
-	, m_v2TransparentTextureSize(0.0f, 0.0f)
 	
 	, m_pWorldMatrixParam(nullptr)
 	, m_pWorldInfoParam(nullptr)
@@ -59,26 +55,10 @@ MForwardRenderProgram::MForwardRenderProgram()
 	, m_pShadowTextureParam(nullptr)
 	, m_pTransparentFrontTextureParam(nullptr)
 	, m_pTransparentBackTextureParam(nullptr)
+
+	, m_pTransparentProgram(nullptr)
 {
-	MMesh<Vector2>& mesh = m_TransparentDrawMesh;
-	mesh.ResizeVertices(4);
-	Vector2* vVertices = (Vector2*)mesh.GetVertices();
-
-	vVertices[0] = Vector2(-1, -1);
-	vVertices[1] = Vector2(1, -1);
-	vVertices[2] = Vector2(-1, 1);
-	vVertices[3] = Vector2(1, 1);
-
-	mesh.ResizeIndices(2, 3);
-	uint32_t* vIndices = mesh.GetIndices();
-
-	vIndices[0] = 0;
-	vIndices[1] = 2;
-	vIndices[2] = 1;
-
-	vIndices[3] = 2;
-	vIndices[4] = 3;
-	vIndices[5] = 1;
+	
 }
 
 MForwardRenderProgram::~MForwardRenderProgram()
@@ -89,110 +69,38 @@ void MForwardRenderProgram::InitializeRenderTargets()
 {
 	m_pShadowDepthMapRenderTarget = m_pEngine->GetObjectManager()->CreateObject<MShadowTextureRenderTarget>();
 
-	m_pShadowDepthTexture = new MRenderDepthTexture();
-	m_pShadowDepthTexture->SetSize(Vector2(MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE));
-	m_pShadowDepthTexture->GenerateBuffer(m_pEngine->GetDevice());
-	m_pShadowDepthMapRenderTarget->SetDepthTexture(m_pShadowDepthTexture, true);
+	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+	{
+		MRenderDepthTexture* pDepthTexture = new MRenderDepthTexture();
+		pDepthTexture->SetSize(Vector2(MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE));
+		pDepthTexture->GenerateBuffer(m_pEngine->GetDevice());
 
+		m_vShadowDepthTexture[i] = pDepthTexture;
+	}
 
-	m_pTransparentRenderTarget0 = m_pEngine->GetObjectManager()->CreateObject<MTransparentRenderTarget>();
-	m_pTransparentRenderTarget1 = m_pEngine->GetObjectManager()->CreateObject<MTransparentRenderTarget>();
-	m_pTransparentRenderTarget2 = m_pEngine->GetObjectManager()->CreateObject<MTransparentRenderTarget>();
+	m_pShadowDepthMapRenderTarget->SetDepthTexture(m_vShadowDepthTexture);
 
-	m_pTransparentFrontTexture = new MRenderTargetTexture();
-	m_pTransparentFrontTexture->SetType(METextureLayout::ERGBA8);
-
-	m_pTransparentBackTexture = new MRenderTargetTexture();
-	m_pTransparentBackTexture->SetType(METextureLayout::ERGBA8);
-
-
-	MRenderTargetTexture* pBackTexture0 = new MRenderTargetTexture();
-	pBackTexture0->SetType(METextureLayout::ER32);
-
-	MRenderTargetTexture* pBackTexture1 = new MRenderTargetTexture();
-	pBackTexture1->SetType(METextureLayout::ER32);
-
-	MRenderTargetTexture* pBackTexture2 = new MRenderTargetTexture();
-	pBackTexture2->SetType(METextureLayout::ER32);
-
-	MRenderTargetTexture* pBackTexture3 = new MRenderTargetTexture();
-	pBackTexture3->SetType(METextureLayout::ER32);
-
-	m_vTransparentBackTexture = { pBackTexture0, pBackTexture1, pBackTexture2, pBackTexture3 };
-
-	m_pTransparentRenderTarget0->SetBackTexture(m_pTransparentFrontTexture, 0, true, MColor::Black_T);
-	m_pTransparentRenderTarget0->SetBackTexture(m_pTransparentBackTexture, 1, true, MColor::Black_T);
-	m_pTransparentRenderTarget0->SetBackTexture(pBackTexture2, 2, true, MColor::White);
-	m_pTransparentRenderTarget0->SetBackTexture(pBackTexture3, 3, true, MColor::Black_T);
-	m_pTransparentRenderTarget0->ResetPrevLayerTexture();
-
-	m_pTransparentRenderTarget1->SetBackTexture(m_pTransparentFrontTexture, 0, false);
-	m_pTransparentRenderTarget1->SetBackTexture(m_pTransparentBackTexture, 1, false);
-	m_pTransparentRenderTarget1->SetBackTexture(pBackTexture0, 2, true, MColor::White);
-	m_pTransparentRenderTarget1->SetBackTexture(pBackTexture1, 3, true, MColor::Black_T);
-	m_pTransparentRenderTarget1->SetPrevLayerFrontDepthTexture(pBackTexture2);
-	m_pTransparentRenderTarget1->SetPrevLayerBackDepthTexture(pBackTexture3);
-
-	m_pTransparentRenderTarget2->SetBackTexture(m_pTransparentFrontTexture, 0, false);
-	m_pTransparentRenderTarget2->SetBackTexture(m_pTransparentBackTexture, 1, false);
-	m_pTransparentRenderTarget2->SetBackTexture(pBackTexture2, 2, true, MColor::White);
-	m_pTransparentRenderTarget2->SetBackTexture(pBackTexture3, 3, true, MColor::Black_T);
-	m_pTransparentRenderTarget2->SetPrevLayerFrontDepthTexture(pBackTexture0);
-	m_pTransparentRenderTarget2->SetPrevLayerBackDepthTexture(pBackTexture1);
+	m_pEngine->GetDevice()->GenerateRenderTarget(m_pShadowDepthMapRenderTarget, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE);
 }
 
 void MForwardRenderProgram::ReleaseRenderTargets()
 {
 	if (m_pShadowDepthMapRenderTarget)
 	{
+		m_pEngine->GetDevice()->DestroyRenderTarget(m_pShadowDepthMapRenderTarget);
 		m_pShadowDepthMapRenderTarget->DeleteLater();
 		m_pShadowDepthMapRenderTarget = nullptr;
 	}
 
-	if (m_pTransparentRenderTarget0)
+	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
 	{
-		m_pTransparentRenderTarget0->DeleteLater();
-		m_pTransparentRenderTarget0 = nullptr;
+		if (m_vShadowDepthTexture[i])
+		{
+			m_vShadowDepthTexture[i]->DestroyBuffer(GetEngine()->GetDevice());
+			delete m_vShadowDepthTexture[i];
+			m_vShadowDepthTexture[i] = nullptr;
+		}
 	}
-
-	if (m_pTransparentRenderTarget1)
-	{
-		m_pTransparentRenderTarget1->DeleteLater();
-		m_pTransparentRenderTarget1 = nullptr;
-	}
-	if (m_pTransparentRenderTarget2)
-	{
-		m_pTransparentRenderTarget2->DeleteLater();
-		m_pTransparentRenderTarget2 = nullptr;
-	}
-
-	if (m_pShadowDepthTexture)
-	{
-		m_pShadowDepthTexture->DestroyTexture(GetEngine()->GetDevice());
-		delete m_pShadowDepthTexture;
-		m_pShadowDepthTexture = nullptr;
-	}
-
-	if (m_pTransparentFrontTexture)
-	{
-		m_pTransparentFrontTexture->DestroyTexture(GetEngine()->GetDevice());
-		delete m_pTransparentFrontTexture;
-		m_pTransparentFrontTexture = nullptr;
-	}
-
-	if (m_pTransparentBackTexture)
-	{
-		m_pTransparentBackTexture->DestroyTexture(GetEngine()->GetDevice());
-		delete m_pTransparentBackTexture;
-		m_pTransparentBackTexture = nullptr;
-	}
-
-	for (MRenderTargetTexture* pBackTexture : m_vTransparentBackTexture)
-	{
-		pBackTexture->DestroyTexture(GetEngine()->GetDevice());
-		delete pBackTexture;
-	}
-	m_vTransparentBackTexture.clear();
 }
 
 void MForwardRenderProgram::InitializeShaderParamSet()
@@ -311,41 +219,11 @@ void MForwardRenderProgram::ReleaseShaderParamSet()
 	m_FrameParamSet.ClearAndDestroy(GetEngine()->GetDevice());
 }
 
-void MForwardRenderProgram::CheckTransparentTextureSize(MRenderInfo& info)
-{
-	Vector2 v2Size = info.pViewport->GetSize();
-
-	if (m_v2TransparentTextureSize == v2Size)
-		return;
-
-	m_v2TransparentTextureSize = v2Size;
-
-	MIDevice* pDevice = GetEngine()->GetDevice();
-
-	m_pTransparentFrontTexture->DestroyTexture(pDevice);
-	m_pTransparentFrontTexture->SetSize(v2Size);
-	m_pTransparentFrontTexture->GenerateBuffer(pDevice);
-
-	m_pTransparentBackTexture->DestroyTexture(pDevice);
-	m_pTransparentBackTexture->SetSize(v2Size);
-	m_pTransparentBackTexture->GenerateBuffer(pDevice);
-
-	for (MRenderTargetTexture* pTexture : m_vTransparentBackTexture)
-	{
-		if (pTexture)
-		{
-			pTexture->DestroyTexture(pDevice);
-			pTexture->SetSize(v2Size);
-			pTexture->GenerateBuffer(pDevice);
-		}
-	}
-
-}
-
 void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene, MIRenderTarget* pRenderTarget)
 {
 	MRenderInfo info;
 
+	info.unFrameIndex = pRenderer->GetFrameIndex();
 	info.pRenderTarget = pRenderTarget;
 	info.pRenderer = pRenderer;
 	info.pViewport = pViewport;
@@ -360,7 +238,9 @@ void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport, 
  
  	UpdateShaderSharedParams(info);
 	DrawNormalMesh(info);
-	DrawTransparentMesh(info);
+
+	if (m_pTransparentProgram)
+		m_pTransparentProgram->DrawTransparentMesh(info);
 
 	//DrawSkyBox(info);
 	DrawModelInstance(info);
@@ -374,6 +254,9 @@ void MForwardRenderProgram::OnCreated()
 	InitializeRenderTargets();
 
 	InitializeShaderParamSet();
+
+	m_pTransparentProgram = GetEngine()->GetObjectManager()->CreateObject<MForwardTransparentRenderProgram>();
+	m_pTransparentProgram->SetProgram(this);
 }
 
 void MForwardRenderProgram::OnDelete()
@@ -382,7 +265,8 @@ void MForwardRenderProgram::OnDelete()
 
 	ReleaseRenderTargets();
 
-	m_TransparentDrawMesh.DestroyBuffer(m_pEngine->GetDevice());
+	m_pTransparentProgram->DeleteLater();
+	m_pTransparentProgram = nullptr;
 
 	Super::OnDelete();
 }
@@ -447,13 +331,13 @@ void MForwardRenderProgram::GenerateShadowMap(MRenderInfo& info)
 	}
 
 
-// 	//TODO 只有在需要ShadowMap时才进行渲染的优化
-// 	m_pShadowDepthMapRenderTarget->Render(info.pRenderer, info.m4DirLightInvProj, &info.vShadowGroup);
-// 
-// 	if (MShaderTextureParam* pShadowMapTextureParam = m_FrameParamSet.m_vTextures[0])
-// 	{
-// 		pShadowMapTextureParam->pTexture = m_pShadowDepthMapRenderTarget->GetCurrDepthTexture();
-// 	}
+	//TODO 只有在需要ShadowMap时才进行渲染的优化
+	m_pShadowDepthMapRenderTarget->Render(info.pRenderer, info.m4DirLightInvProj, &info.vShadowGroup);
+
+	if (MShaderTextureParam* pShadowMapTextureParam = m_FrameParamSet.m_vTextures[0])
+	{
+		pShadowMapTextureParam->pTexture = m_pShadowDepthMapRenderTarget->GetCurrDepthTexture();
+	}
 
 }
 
@@ -605,36 +489,6 @@ void MForwardRenderProgram::DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstan
 
 	pRenderer->SetShaderParamSet(pMeshInstance->GetShaderMeshParamSet());
 	pRenderer->DrawMesh(pMeshInstance->GetMesh());
-}
-
-void MForwardRenderProgram::DrawTransparentMesh(MRenderInfo& info)
-{
-// 	if (info.vTransparentRenderGroup.empty())
-// 		return;
-// 
-// 	CheckTransparentTextureSize(info);
-// 
-//  //	info.pRenderer->ClearRenderTargetView(m_pTransparentFrontTexture->GetRenderBuffer(), MColor::Black_T);
-//  //	info.pRenderer->ClearRenderTargetView(m_pTransparentBackTexture->GetRenderBuffer(), MColor::Black_T);
-// 
-// 	m_pTransparentRenderTarget0->Render(info.pRenderer, info.pViewport, info.pRenderTarget, &info.vTransparentRenderGroup);
-// 
-// 	for (uint32_t i = 0; i < 3; ++i)
-// 	{
-// 		m_pTransparentRenderTarget1->Render(info.pRenderer, info.pViewport, info.pRenderTarget, &info.vTransparentRenderGroup);
-// 		m_pTransparentRenderTarget2->Render(info.pRenderer, info.pViewport, info.pRenderTarget, &info.vTransparentRenderGroup);
-// 	}
-// 
-// 
-// 	MMaterialResource* pTextureMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DEPTH_PEELING);
-// 	std::vector<MShaderTextureParam*>& params = *pTextureMaterial->GetTextureParams();
-// 
-// 	params[0]->pTexture = m_pTransparentFrontTexture;
-// 	params[1]->pTexture = m_pTransparentBackTexture;
-// 	info.pRenderer->SetUseMaterial(pTextureMaterial);
-// 	info.pRenderer->SetShaderTexture(*params[0]);
-// 	info.pRenderer->SetShaderTexture(*params[1]);
-// 	info.pRenderer->DrawMesh(&m_TransparentDrawMesh);
 }
 
 void MForwardRenderProgram::DrawModelInstance(MRenderInfo& info)

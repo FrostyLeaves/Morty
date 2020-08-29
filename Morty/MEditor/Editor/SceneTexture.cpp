@@ -43,7 +43,7 @@ void SceneTexture::Initialize(MEngine* pEngine)
 	m_pRenderViewport->RegisterRenderProgram<MForwardRenderProgram>();
 
 
-	m_pBackTexture = new MRenderTargetTexture();
+	m_pBackTexture = new MRenderBackTexture();
 	m_pBackTexture->SetSize(Vector2(256, 256));
 	m_pBackTexture->SetType(METextureLayout::ERGBA8);
 	m_pBackTexture->GenerateBuffer(pEngine->GetDevice());
@@ -113,7 +113,7 @@ void* SceneTexture::GetTexture()
 {
 	if (m_pTextureRenderTarget)
 	{
-		if (MRenderTargetTexture* pBackTexture = m_pTextureRenderTarget->GetBackTexture(0))
+		if (MRenderBackTexture* pBackTexture = m_pTextureRenderTarget->GetBackTexture(0))
 		{
 			if (MTextureBuffer* pBuffer = pBackTexture->GetBuffer())
 			{

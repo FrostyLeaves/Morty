@@ -27,15 +27,16 @@ class MSkeletonInstance;
 class MDirectionalLight;
 class MIModelMeshInstance;
 class MRenderDepthTexture;
-class MRenderTargetTexture;
-class MTransparentRenderTarget;
+class MRenderBackTexture;
 class MShadowTextureRenderTarget;
+class MForwardTransparentRenderProgram;
 class MORTY_CLASS MForwardRenderProgram : public MIRenderProgram
 {
 public:
 
 	struct MRenderInfo
 	{
+		uint32_t unFrameIndex;
 		MIRenderTarget* pRenderTarget;
 		MIRenderer* pRenderer;
 		MViewport* pViewport;
@@ -75,7 +76,6 @@ protected:
 	void GenerateShadowMap(MRenderInfo& info);
 	void UpdateShaderSharedParams(MRenderInfo& info);
 	void DrawNormalMesh(MRenderInfo& info);
-	void DrawTransparentMesh(MRenderInfo& info);
 
 	void DrawModelInstance(MRenderInfo& info);
 	void DrawSkyBox(MRenderInfo& info);
@@ -97,26 +97,15 @@ protected:
 	void InitializeShaderParamSet();
 	void ReleaseShaderParamSet();
 
-	void CheckTransparentTextureSize(MRenderInfo& info);
 
 private:
 
 	MShaderParamSet m_FrameParamSet;
 
-	MMesh<Vector2> m_TransparentDrawMesh;
 
 	MShadowTextureRenderTarget* m_pShadowDepthMapRenderTarget;
-	MTransparentRenderTarget* m_pTransparentRenderTarget0;
-	MTransparentRenderTarget* m_pTransparentRenderTarget1;
-	MTransparentRenderTarget* m_pTransparentRenderTarget2;
 
-	MRenderDepthTexture* m_pShadowDepthTexture;
-
-	Vector2 m_v2TransparentTextureSize;
-	MRenderTargetTexture* m_pTransparentFrontTexture;
-	MRenderTargetTexture* m_pTransparentBackTexture;
-	std::vector<MRenderTargetTexture*> m_vTransparentBackTexture;
-
+	std::array<MRenderDepthTexture*, M_BUFFER_NUM> m_vShadowDepthTexture;
 
 	MShaderConstantParam* m_pWorldMatrixParam;
 	MShaderConstantParam* m_pWorldInfoParam;
@@ -129,6 +118,8 @@ private:
 	MShaderTextureParam* m_pShadowTextureParam;
 	MShaderTextureParam* m_pTransparentFrontTextureParam;
 	MShaderTextureParam* m_pTransparentBackTextureParam;
+
+	MForwardTransparentRenderProgram* m_pTransparentProgram;
 
 };
 

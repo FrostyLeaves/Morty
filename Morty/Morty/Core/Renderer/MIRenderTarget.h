@@ -27,7 +27,15 @@
 
 class MIDevice;
 class MRenderDepthTexture;
-class MRenderTextureBuffer;
+class MIRenderBackTexture;
+
+struct MORTY_CLASS MFrameBuffer
+{
+	MFrameBuffer();
+	std::vector<MIRenderBackTexture*> vBackTextures;
+	MRenderDepthTexture* pDepthTexture;
+	VkFramebuffer vkFrameBuffer;
+};
 
 class MORTY_CLASS MIRenderTarget
 {
@@ -37,13 +45,17 @@ public:
 	virtual ~MIRenderTarget() {}
 
 	virtual MRenderDepthTexture* GetCurrDepthTexture() = 0;
-	virtual MRenderDepthTexture* GetPrevDepthTexture() = 0;
 
 	virtual uint32_t GetBackNum() = 0;
 	virtual MColor GetBackClearColor(const uint32_t& unIndex) = 0;
 
 	virtual bool GetDepthEnable() = 0;
 
+
+	virtual uint32_t GetMFrameBufferNum() = 0;
+	virtual MFrameBuffer* GetFrameBuffer(const uint32_t& unIndex) = 0;
+
+	virtual MFrameBuffer* GetCurrFrameBuffer(const uint32_t& unFrameIdx = 0) = 0;
 public:
 
 	//virtual void OnResize(const uint32_t& nWidth, const uint32_t& nHeight) = 0;
@@ -66,13 +78,11 @@ public:
 	virtual struct ID3D11DepthStencilView* GetDepthStencilView() = 0;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 
-	virtual VkFramebuffer GetFrameBuffer(const uint32_t& unIndex) = 0;
-
 	VkExtent2D m_VkExtend;
 	VkFormat m_VkColorFormat;
 
 	std::array<VkCommandBuffer, M_BUFFER_NUM> m_VkCommandBuffers;
-	std::array <VkSemaphore, M_BUFFER_NUM> m_aVkRenderFinishedSemaphore;
+	std::array<VkSemaphore, M_BUFFER_NUM> m_aVkRenderFinishedSemaphore;
 	std::array<VkEvent, M_BUFFER_NUM> m_aVkRenderFinishedEvent;
 #endif
 

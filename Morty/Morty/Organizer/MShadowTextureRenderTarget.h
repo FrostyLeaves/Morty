@@ -49,10 +49,7 @@ public:
 
     virtual void OnRender(MIRenderer* pRenderer) override;
 
-    void InitRenderPass();
-
-    bool GenerateFrameBuffer();
-    void DestroyFrameBuffer();
+    virtual void InitRenderPass() override;
 
 private:
 
