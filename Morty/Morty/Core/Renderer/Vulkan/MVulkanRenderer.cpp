@@ -168,7 +168,6 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 	m_pDevice->m_ObjectDestructor.FrameFinished(m_unFrameIndex);
 
 	m_vRenderStages.push_back(MRenderStage());
-	MRenderStage& rs = m_vRenderStages.back();
 
 	MLogManager::GetInstance()->Information("begin render frame: %d", m_unFrameIndex);
 
@@ -188,7 +187,7 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 	vkAllocateCommandBuffers(m_pDevice->m_VkDevice, &allocInfo, &pRenderTarget->m_VkCommandBuffers[m_unFrameIndex]);
 
 	//Set Record Using CommandBuffer
-	rs.vkCommandBuffer = pRenderTarget->m_VkCommandBuffers[m_unFrameIndex];
+	m_vRenderStages.back().vkCommandBuffer = pRenderTarget->m_VkCommandBuffers[m_unFrameIndex];
 
 
 	//äÖÈ¾ÓÃµÄFrame Buffer
@@ -227,12 +226,12 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 
 
 	//Begin Command Buffer
-	vkBeginCommandBuffer(rs.vkCommandBuffer, &beginInfo);
+	vkBeginCommandBuffer(m_vRenderStages.back().vkCommandBuffer, &beginInfo);
 
 	pRenderTarget->OnRenderBefore(this);
 
 	//Begin RenderPass
-	vkCmdBeginRenderPass(rs.vkCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBeginRenderPass(m_vRenderStages.back().vkCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 	//Record Commands
 	m_vRenderTargets.push(pRenderTarget);
@@ -240,31 +239,11 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 	m_vRenderTargets.pop();
 
 	//End Render Pass
-	vkCmdEndRenderPass(rs.vkCommandBuffer);
+	vkCmdEndRenderPass(m_vRenderStages.back().vkCommandBuffer);
 
 
-
-
-	VkSubmitInfo submitInfo{};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-	VkSemaphore waitSemaphores[] = { m_VkImageAvailableSemaphore };
-	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-	submitInfo.waitSemaphoreCount = 1;
-	submitInfo.pWaitSemaphores = waitSemaphores;
-	submitInfo.pWaitDstStageMask = waitStages;
-
-
-	submitInfo.commandBufferCount = 1;
-	VkCommandBuffer commandBuffers[] = { rs.vkCommandBuffer };
-	//TODO maybe mutil command buffers for every frame
-	submitInfo.pCommandBuffers = commandBuffers;
-
-	VkSemaphore signalSemaphores[] = { pRenderTarget->m_aVkRenderFinishedSemaphore[m_unFrameIndex] };
-	submitInfo.signalSemaphoreCount = 1;
-	submitInfo.pSignalSemaphores = signalSemaphores;
-
-
+	std::vector<VkSemaphore> waitSemaphores;
+	
 	//Process Render Finished Event
 	if (m_vRenderStages.size() > 1)
 	{
@@ -284,13 +263,35 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 
 		//Host Reset and Device Set.
 		vkResetEvent(m_pDevice->m_VkDevice, vkEvent);
-		vkCmdSetEvent(rs.vkCommandBuffer, vkEvent, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT);
+		vkCmdSetEvent(m_vRenderStages.back().vkCommandBuffer, vkEvent, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT);
 	}
+	else
+	{
+		waitSemaphores.push_back(m_VkImageAvailableSemaphore);
+	}
+
+	VkSubmitInfo submitInfo{};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+	submitInfo.waitSemaphoreCount = waitSemaphores.size();
+	submitInfo.pWaitSemaphores = waitSemaphores.data();
+	submitInfo.pWaitDstStageMask = waitStages;
+
+
+	submitInfo.commandBufferCount = 1;
+	VkCommandBuffer commandBuffers[] = { m_vRenderStages.back().vkCommandBuffer };
+	//TODO maybe mutil command buffers for every frame
+	submitInfo.pCommandBuffers = commandBuffers;
+
+	VkSemaphore signalSemaphores[] = { pRenderTarget->m_aVkRenderFinishedSemaphore[m_unFrameIndex] };
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = signalSemaphores;
 
 
 
 	//End Command Buffer
-	vkEndCommandBuffer(rs.vkCommandBuffer);
+	vkEndCommandBuffer(m_vRenderStages.back().vkCommandBuffer);
 
 
 	VkFence vkInFightFence = m_VkInFlightFences[m_unFrameIndex];
