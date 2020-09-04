@@ -55,6 +55,8 @@ public:
 
 	void GetRenderTargetBarrier(MIRenderTarget* pRenderTarget, std::vector<VkImageMemoryBarrier>& vResult);
 
+	void SetDepthTextureForRender(MITexture* pTexture);
+	void SetDepthTextureForShader(MITexture* pTexture);
 	
 	bool InitSemaphores();
 	void ReleaseSemaphores();
