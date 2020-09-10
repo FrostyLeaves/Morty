@@ -31,7 +31,8 @@
 
 #include "Shader/MShaderBuffer.h"
 
-#include "MForwardTransparentRenderProgram.h"
+#include "MForwardShadowMapWork.h"
+#include "MForwardTransparentWork.h"
 
 #include <algorithm>
 
@@ -42,7 +43,6 @@ M_OBJECT_IMPLEMENT(MForwardRenderProgram, MIRenderProgram)
 MForwardRenderProgram::MForwardRenderProgram()
 	: MIRenderProgram()
 	, m_FrameParamSet(1)
-	, m_pShadowDepthMapRenderTarget(nullptr)
 	
 	, m_pWorldMatrixParam(nullptr)
 	, m_pWorldInfoParam(nullptr)
@@ -56,51 +56,14 @@ MForwardRenderProgram::MForwardRenderProgram()
 	, m_pTransparentFrontTextureParam(nullptr)
 	, m_pTransparentBackTextureParam(nullptr)
 
-	, m_pTransparentProgram(nullptr)
+	, m_pShadowMapWork(nullptr)
+	, m_pTransparentWork(nullptr)
 {
 	
 }
 
 MForwardRenderProgram::~MForwardRenderProgram()
 {
-}
-
-void MForwardRenderProgram::InitializeRenderTargets()
-{
-	m_pShadowDepthMapRenderTarget = m_pEngine->GetObjectManager()->CreateObject<MShadowTextureRenderTarget>();
-
-	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-	{
-		MRenderDepthTexture* pDepthTexture = new MRenderDepthTexture();
-		pDepthTexture->SetSize(Vector2(MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE));
-		pDepthTexture->GenerateBuffer(m_pEngine->GetDevice());
-
-		m_vShadowDepthTexture[i] = pDepthTexture;
-	}
-
-	m_pShadowDepthMapRenderTarget->SetDepthTexture(m_vShadowDepthTexture);
-
-	m_pEngine->GetDevice()->GenerateRenderTarget(m_pShadowDepthMapRenderTarget, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE);
-}
-
-void MForwardRenderProgram::ReleaseRenderTargets()
-{
-	if (m_pShadowDepthMapRenderTarget)
-	{
-		m_pEngine->GetDevice()->DestroyRenderTarget(m_pShadowDepthMapRenderTarget);
-		m_pShadowDepthMapRenderTarget->DeleteLater();
-		m_pShadowDepthMapRenderTarget = nullptr;
-	}
-
-	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-	{
-		if (m_vShadowDepthTexture[i])
-		{
-			m_vShadowDepthTexture[i]->DestroyBuffer(GetEngine()->GetDevice());
-			delete m_vShadowDepthTexture[i];
-			m_vShadowDepthTexture[i] = nullptr;
-		}
-	}
 }
 
 void MForwardRenderProgram::InitializeShaderParamSet()
@@ -219,126 +182,98 @@ void MForwardRenderProgram::ReleaseShaderParamSet()
 	m_FrameParamSet.ClearAndDestroy(GetEngine()->GetDevice());
 }
 
-void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene, MIRenderTarget* pRenderTarget)
+void MForwardRenderProgram::Render(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget, const std::vector<MViewport*>& vViewports)
 {
 	MRenderInfo info;
+	memset(&info, 0, sizeof(MRenderInfo));
 
 	info.unFrameIndex = pRenderer->GetFrameIndex();
 	info.pRenderTarget = pRenderTarget;
 	info.pRenderer = pRenderer;
-	info.pViewport = pViewport;
-	info.pCamera = pViewport->GetCamera();
-	info.pScene = pScene;
 
- 	GenerateRenderGroup(info);
- 	GenerateShadowMap(info);
- 
- 	Vector2 v2LeftTop = pViewport->GetLeftTop();
- 	pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, pViewport->GetWidth(), pViewport->GetHeight(), 0.0f, 1.0f);
- 
- 	UpdateShaderSharedParams(info);
+	pRenderer->RenderBegin(pRenderTarget);
+ 	
+	for (MViewport* pViewport : vViewports)
+	{
+		RenderWithViewport(info, pViewport);
+	}
+
+	pRenderer->RenderEnd(pRenderTarget);
+}
+
+void MForwardRenderProgram::RenderWithViewport(MRenderInfo info, MViewport* pViewport)
+{
+ 	info.pViewport = pViewport;
+ 	info.pCamera = pViewport->GetCamera();
+ 	info.pScene = pViewport->GetScene();
+
+	GenerateRenderGroup(info);
+
+	if (m_pShadowMapWork)
+	{
+		if (MShaderTextureParam* pShadowMapTextureParam = m_FrameParamSet.m_vTextures[0])
+		{
+			m_pShadowMapWork->DrawShadowMap(info);
+			pShadowMapTextureParam->pTexture = m_pShadowMapWork->GetShadowMap(info.unFrameIndex);
+		}
+	}
+
+
+	info.pRenderer->BeginRenderPass(info.pRenderTarget);
+
+
+	Vector2 v2LeftTop = pViewport->GetLeftTop();
+	info.pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, pViewport->GetWidth(), pViewport->GetHeight(), 0.0f, 1.0f);
+
+	UpdateShaderSharedParams(info);
 	DrawNormalMesh(info);
 
-	if (m_pTransparentProgram)
-		m_pTransparentProgram->DrawTransparentMesh(info);
+
+	info.pRenderer->EndRenderPass(info.pRenderTarget);
+
+
+
+
+
+
+	if (m_pTransparentWork)
+		m_pTransparentWork->DrawTransparentMesh(info);
 
 	//DrawSkyBox(info);
-	DrawModelInstance(info);
-	DrawPainter(info);
+//	DrawModelInstance(info);
+//	DrawPainter(info);
 }
 
 void MForwardRenderProgram::OnCreated()
 {
 	Super::OnCreated();
 
-	InitializeRenderTargets();
-
 	InitializeShaderParamSet();
 
-	m_pTransparentProgram = GetEngine()->GetObjectManager()->CreateObject<MForwardTransparentRenderProgram>();
-	m_pTransparentProgram->SetProgram(this);
+	m_pShadowMapWork = GetEngine()->GetObjectManager()->CreateObject<MForwardShadowMapWork>();
+	m_pShadowMapWork->SetProgram(this);
+// 
+// 	m_pTransparentWork = GetEngine()->GetObjectManager()->CreateObject<MForwardTransparentWork>();
+// 	m_pTransparentWork->SetProgram(this);
 }
 
 void MForwardRenderProgram::OnDelete()
 {
 	ReleaseShaderParamSet();
 
-	ReleaseRenderTargets();
+	if (m_pShadowMapWork)
+	{
+		m_pShadowMapWork->DeleteLater();
+		m_pShadowMapWork = nullptr;
+	}
 
-	m_pTransparentProgram->DeleteLater();
-	m_pTransparentProgram = nullptr;
+	if (m_pTransparentWork)
+	{
+		m_pTransparentWork->DeleteLater();
+		m_pTransparentWork = nullptr;
+	}
 
 	Super::OnDelete();
-}
-
-void MForwardRenderProgram::GenerateShadowMap(MRenderInfo& info)
-{
-	info.pDirectionalLight = info.pScene->FindActiveDirectionLight();
-	if (nullptr == info.pDirectionalLight)
-		return;
-
-	Vector3 v3LightDir = info.pDirectionalLight->GetWorldDirection();
-
-	Vector3 v3ShadowMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
-	Vector3 v3ShadowMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-
-
-	info.vShadowGroup.push_back(MShadowRenderGroup());
-
-	std::vector<MModelInstance*>& vModels = *info.pScene->GetAllModelInstance();
-	for (MModelInstance* pModelIns : vModels)
-	{
-		if (pModelIns->GetVisibleRecursively() && pModelIns->GetGenerateDirLightShadow())
-		{
-			MShadowRenderGroup* pGroup = nullptr;
-			if (pModelIns->GetSkeleton())
-			{
-				info.vShadowGroup.push_back(MShadowRenderGroup());
-				pGroup = &info.vShadowGroup.back();
-				pGroup->pSkeletonInstance = pModelIns->GetSkeleton();
-			}
-			else
-			{
-				pGroup = &info.vShadowGroup.front();
-			}
-			MShadowRenderGroup& group = *pGroup;
-
-			for (MNode* pChild : pModelIns->GetFixedChildren())
-			{
-				if (MIMeshInstance* pMeshIns = pChild->DynamicCast<MIMeshInstance>())
-				{
-					if (pMeshIns->GetVisible() && pMeshIns->GetGenerateDirLightShadow())
-					{
-						const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
-						if (info.pViewport->GetCameraFrustum()->ContainTest(*pBounds, v3LightDir) != MCameraFrustum::EOUTSIDE)
-						{
-							group.vMeshInstances.push_back(pMeshIns);
-							pBounds->UnionMinMax(v3ShadowMin, v3ShadowMax);
-						}
-					}
-				}
-			}
-		}
-	}
-
-	info.cShadowRenderAABB.SetMinMax(v3ShadowMin, v3ShadowMax);
-
-	info.m4DirLightInvProj = info.pViewport->GetLightInverseProjection(info.pDirectionalLight, info.cMeshRenderAABB, info.cShadowRenderAABB);
-
-	if (nullptr == m_pShadowDepthMapRenderTarget || nullptr == info.pScene->FindActiveDirectionLight())
-	{
-		return;
-	}
-
-
-	//TODO 只有在需要ShadowMap时才进行渲染的优化
-	m_pShadowDepthMapRenderTarget->Render(info.pRenderer, info.m4DirLightInvProj, &info.vShadowGroup);
-
-	if (MShaderTextureParam* pShadowMapTextureParam = m_FrameParamSet.m_vTextures[0])
-	{
-		pShadowMapTextureParam->pTexture = m_pShadowDepthMapRenderTarget->GetCurrDepthTexture();
-	}
-
 }
 
 void MForwardRenderProgram::UpdateShaderSharedParams(MRenderInfo& info)

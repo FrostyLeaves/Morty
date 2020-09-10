@@ -103,7 +103,13 @@ public:
 
 	virtual void NewRenderFrame() = 0;
 
-	virtual void Render(MIRenderTarget* pRenderTarget) = 0;
+	virtual void RenderBegin(MIRenderTarget* pRenderTarget) = 0;
+
+	virtual void RenderEnd(MIRenderTarget* pRenderTarget) = 0;
+
+	virtual void BeginRenderPass(MIRenderTarget* pRenderTarget) = 0;
+
+	virtual void EndRenderPass(MIRenderTarget* pRenderTarget) = 0;
 
 	virtual void AddOutputView(MIRenderView* pView) = 0;
 

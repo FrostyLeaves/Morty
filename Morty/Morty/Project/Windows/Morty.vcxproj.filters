@@ -387,7 +387,10 @@
     <ClInclude Include="..\..\Core\RenderProgram\MForwardRenderProgram.h">
       <Filter>Core\RenderProgram\Forward</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Core\RenderProgram\MForwardTransparentRenderProgram.h">
+    <ClInclude Include="..\..\Core\RenderProgram\MForwardTransparentWork.h">
+      <Filter>Core\RenderProgram\Forward</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\RenderProgram\MForwardShadowMapWork.h">
       <Filter>Core\RenderProgram\Forward</Filter>
     </ClInclude>
   </ItemGroup>
@@ -653,7 +656,10 @@
     <ClCompile Include="..\..\Core\RenderProgram\MForwardRenderProgram.cpp">
       <Filter>Core\RenderProgram\Forward</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Core\RenderProgram\MForwardTransparentRenderProgram.cpp">
+    <ClCompile Include="..\..\Core\RenderProgram\MForwardTransparentWork.cpp">
+      <Filter>Core\RenderProgram\Forward</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\RenderProgram\MForwardShadowMapWork.cpp">
       <Filter>Core\RenderProgram\Forward</Filter>
     </ClCompile>
   </ItemGroup>

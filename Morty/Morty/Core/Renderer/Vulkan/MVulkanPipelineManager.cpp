@@ -178,7 +178,10 @@ void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShade
 		VkDescriptorImageInfo imageInfo = {};
 		imageInfo.imageView = pBuffer->m_VkImageView;
 		imageInfo.imageLayout = pBuffer->m_VkImageLayout;
-		imageInfo.sampler = VK_NULL_HANDLE;
+		imageInfo.sampler = pBuffer->m_VkSampler;
+
+		if (VK_NULL_HANDLE == imageInfo.sampler)		//TODO Default Sampler
+			imageInfo.sampler = m_pDevice->m_ObjectDestructor.m_VkDefaultSampler;
 
 		VkWriteDescriptorSet descriptorWrite{};
 		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -186,11 +189,8 @@ void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShade
 		descriptorWrite.dstBinding = pParam->unBinding;
 		descriptorWrite.dstArrayElement = 0;
 
-		descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-// 		if (dynamic_cast<MRenderDepthTexture*>(pTexture))
-// 		{
-// 			imageInfo.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-// 		}
+		//descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+		descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		descriptorWrite.descriptorCount = 1;
 
 		descriptorWrite.pBufferInfo = nullptr;
@@ -230,7 +230,8 @@ bool MVulkanPipelineManager::CreateMaterialPipelineLayout(MMaterial* pMaterial, 
 		{
 			VkDescriptorSetLayoutBinding uboLayoutBinding{};
 			uboLayoutBinding.binding = param->unBinding;
-			uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+			//uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+			uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			uboLayoutBinding.descriptorCount = 1;
 			uboLayoutBinding.stageFlags = 0;
 			if (param->eShaderType & MEShaderParamType::EVertex)

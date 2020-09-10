@@ -35,8 +35,8 @@ public:
 	virtual MFrameBuffer* GetCurrFrameBuffer(const uint32_t& unFrameIdx = 0) override;
 
 public:
-	virtual void Render(MIRenderer* pRenderer) override;
 	virtual void OnRender(MIRenderer* pRenderer) override;
+	virtual void OnRenderBefore(MIRenderer* pRenderer) override;
 	virtual void OnRenderAfter(MIRenderer* pRenderer) override;
 	void Initialize();
 	virtual void Release(MIDevice* pDevice) override;
@@ -64,6 +64,7 @@ public:
 
 	VkQueue m_VkPresentQueue;
 
+	VkSemaphore m_VkImageAvailableSemaphore;
 
 
 	//size is swapchain size.

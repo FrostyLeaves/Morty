@@ -40,8 +40,17 @@ MBasicRenderProgram::~MBasicRenderProgram()
 {
 }
 
-void MBasicRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene, MIRenderTarget* pRenderTarget)
+void MBasicRenderProgram::Render(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget, const std::vector<MViewport*>& vViewports)
 {
+	if (vViewports.empty())
+		return;
+
+	MViewport* pViewport = vViewports[0];
+
+	pRenderer->RenderBegin(pRenderTarget);
+
+	pRenderer->BeginRenderPass(pRenderTarget);
+
 	pRenderer->SetViewport(pViewport->GetLeft(), pViewport->GetTop(), pViewport->GetWidth(), pViewport->GetHeight(), 0.0f, 1.0f);
 
 	std::vector<MShaderConstantParam*>& params = *m_pMaterial->GetShaderParams();
@@ -68,6 +77,10 @@ void MBasicRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport, MS
 
 
 	pRenderer->DrawMesh(&m_TransparentDrawMesh);
+
+	pRenderer->EndRenderPass(pRenderTarget);
+
+	pRenderer->RenderEnd(pRenderTarget);
 }
 
 void MBasicRenderProgram::OnCreated()

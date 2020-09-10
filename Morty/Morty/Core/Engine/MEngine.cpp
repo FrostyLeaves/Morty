@@ -28,10 +28,12 @@
 #include "Texture/MTextureCubeResource.h"
 
 #include "MInputManager.h"
+#include "MIRenderProgram.h"
 
 
 MEngine::MEngine()
-	: m_pObjectManager(nullptr)
+	: m_pRenderProgram(nullptr)
+	, m_pObjectManager(nullptr)
 	, m_pResourceManager(nullptr)
 	, m_pScene(nullptr)
 	, m_pDevice(nullptr)
@@ -121,6 +123,11 @@ void MEngine::AddView(MIRenderView* pView)
 
 void MEngine::Release()
 {
+	if (m_pRenderProgram)
+	{
+		m_pRenderProgram->DeleteLater();
+		m_pRenderProgram = nullptr;
+	}
 
 	for (auto pView : m_vView)
 	{
@@ -132,6 +139,7 @@ void MEngine::Release()
 
 	m_vView.clear();
 
+	m_pObjectManager->CleanRemoveObject();
 	delete m_pObjectManager;
 	delete m_pResourceManager;
 
@@ -335,12 +343,22 @@ bool MEngine::MainLoop()
 
 	return !m_vView.empty();
 }
+
 void MEngine::RenderToView(MIRenderView* pView)
 {
+	pView->OnRenderBegin();
+
 	if (MIRenderTarget* pRenderTarget = pView->GetRenderTarget())
 	{
-		pRenderTarget->Render(m_pRenderer);
+		pRenderTarget->OnRenderBefore(m_pRenderer);
+
+		m_pRenderProgram->Render(m_pRenderer, pRenderTarget, pView->GetViewports());
+
+		pRenderTarget->OnRenderAfter(m_pRenderer);
 	}
+
+	pView->OnRenderEnd();
+
 }
 
 void MEngine::SetScene(MScene* pScene)

@@ -62,6 +62,7 @@ void Destroy##VK_TYPE##Later(const uint32_t& unFrameIndex, Vk##VK_TYPE& buffer){
 	M_VULKAN_DESTROY_LATER_FUNC(Semaphore);
 	M_VULKAN_DESTROY_LATER_FUNC(CommandBuffer);
 	M_VULKAN_DESTROY_LATER_FUNC(Event);
+	M_VULKAN_DESTROY_LATER_FUNC(Sampler);
 
     std::vector<std::vector<VkDescriptorSet>> m_vDescriptorSets[M_BUFFER_NUM];
     void DestroyDescriptorSets(const uint32_t& unFrameIndex, std::vector<VkDescriptorSet>& vDescriptorSets);

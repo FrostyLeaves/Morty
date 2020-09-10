@@ -17,6 +17,7 @@ MVulkanRenderTarget::MVulkanRenderTarget(MVulkanDevice* pDevice)
 	, m_pView(nullptr)
 	, m_unFrameBufferIndex(0)
 	, m_v2Size(800, 600)
+	, m_VkImageAvailableSemaphore(VK_NULL_HANDLE)
 {
 
 }
@@ -38,25 +39,14 @@ MColor MVulkanRenderTarget::GetBackClearColor(const uint32_t& unIndex)
 	return m_pView->GetBackColor();
 }
 
-void MVulkanRenderTarget::Render(MIRenderer* pRenderer)
-{
-	MVulkanRenderer* pVkRenderer = dynamic_cast<MVulkanRenderer*>(pRenderer);
-
-	vkAcquireNextImageKHR(m_pDevice->m_VkDevice, m_VkSwapchain, UINT64_MAX, pVkRenderer->m_VkImageAvailableSemaphore, VK_NULL_HANDLE, &m_unFrameBufferIndex);
-	
-	pRenderer->Render(this);
-}
-
 void MVulkanRenderTarget::OnRender(MIRenderer* pRenderer)
 {
 
-	m_pView->OnRenderBegin();
-	for (MViewport* pViewport : m_pView->GetViewports())
-	{
-		pViewport->Render(pRenderer, this);
-	}
-	m_pView->OnRenderEnd();
+}
 
+void MVulkanRenderTarget::OnRenderBefore(MIRenderer* pRenderer)
+{
+	vkAcquireNextImageKHR(m_pDevice->m_VkDevice, m_VkSwapchain, UINT64_MAX, m_VkImageAvailableSemaphore, VK_NULL_HANDLE, &m_unFrameBufferIndex);
 }
 
 void MVulkanRenderTarget::OnRenderAfter(MIRenderer* pRenderer)
@@ -83,6 +73,18 @@ void MVulkanRenderTarget::Initialize()
 {
 	InitializeSwapchain();
 
+	//Create WaitSemaphore
+	VkSemaphoreCreateInfo semaphoreInfo{};
+	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	if (vkCreateSemaphore(m_pDevice->m_VkDevice, &semaphoreInfo, nullptr, &m_VkImageAvailableSemaphore) != VK_SUCCESS)
+		return;
+
+	m_vWaitSemaphoreBeforeSubmit.push_back(m_VkImageAvailableSemaphore);
+
+
+
+	//Init RenderPass
 	m_RenderPass.m_vSubpass.push_back(MSubpass());
 
 	m_RenderPass.m_vBackDesc.push_back(MRenderPass::MRTDesc());
@@ -96,6 +98,11 @@ void MVulkanRenderTarget::Release(MIDevice* pDevice)
 	m_pDevice->DestroyRenderTarget(this);
 	ReleaseSwapchain();
 	CleanRenderInfo();
+
+	vkDestroySemaphore(m_pDevice->m_VkDevice, m_VkImageAvailableSemaphore, nullptr);
+	m_VkImageAvailableSemaphore = VK_NULL_HANDLE;
+	
+	m_vWaitSemaphoreBeforeSubmit.clear();
 
 	vkDestroySurfaceKHR(m_pDevice->m_VkInstance, m_VkSurface, nullptr);
 }
@@ -339,7 +346,6 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : vkCreateWin32SurfaceKHR error");
 		return nullptr;
 	}
-
 	
 	MVulkanRenderTarget* pRenderTarget = new MVulkanRenderTarget(pDevice);
 	pRenderTarget->m_VkSurface = surface;

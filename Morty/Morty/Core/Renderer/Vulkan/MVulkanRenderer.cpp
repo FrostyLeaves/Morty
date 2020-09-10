@@ -18,7 +18,6 @@ MVulkanRenderer::MVulkanRenderer(MVulkanDevice* pDevice)
 	: MIRenderer()
 	, m_pDevice(pDevice)
 	, m_vRenderStages()
-	, m_VkImageAvailableSemaphore(VK_NULL_HANDLE)
 
 	, m_unFrameIndex(0)
 {
@@ -144,25 +143,17 @@ void MVulkanRenderer::SetViewport(const float& fX, const float& fY, const float&
 
 void MVulkanRenderer::NewRenderFrame()
 {
-// 	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-// 	{
-// 		if(vkGetFenceStatus(m_pDevice->m_VkDevice, m_VkInFlightFences[m_unFrameIndex]) == VK_SUCCESS)
-// 			MLogManager::GetInstance()->Information("finish render frame: %d", i);
-// 	}
-
 	m_unFrameIndex = (m_unFrameIndex + 1) % M_BUFFER_NUM;
 
-	//渲染栅栏，防止上一次渲染还没渲染完，就执行了下一次的渲染
 	VkFence vkInFightFence = m_VkInFlightFences[m_unFrameIndex];
 
 	//if m_VkInFlightFences == signed
 	vkWaitForFences(m_pDevice->m_VkDevice, 1, &vkInFightFence, VK_TRUE, UINT64_MAX);
 
-
 	m_vRenderStages.clear();
 }
 
-void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
+void MVulkanRenderer::RenderBegin(MIRenderTarget* pRenderTarget)
 {
 	//释放无用的Vulkan对象
 	m_pDevice->m_ObjectDestructor.FrameFinished(m_unFrameIndex);
@@ -190,14 +181,50 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 	m_vRenderStages.back().vkCommandBuffer = pRenderTarget->m_VkCommandBuffers[m_unFrameIndex];
 
 
-	//渲染用的Frame Buffer
-	MFrameBuffer* pFrameBuffer = pRenderTarget->GetCurrFrameBuffer(m_unFrameIndex);
 
 
 	//CommandBuffer Begin Info
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	//Begin Command Buffer
+	vkBeginCommandBuffer(m_vRenderStages.back().vkCommandBuffer, &beginInfo);
+
+
+
+	//Record Commands
+	//pRenderTarget->OnRender(this);
+
+// 	//Process Render Finished Event
+// 	if (m_vRenderStages.size() > 1)
+// 	{
+// 		VkEvent vkEvent = pRenderTarget->m_aVkRenderFinishedEvent[m_unFrameIndex];
+// 		
+// 		//上一个RenderTarget的接下来的渲染操作，需要等待当前的渲染完成后再继续。
+// 		MRenderStage& prs = m_vRenderStages[m_vRenderStages.size() - 2];
+// 
+// 		std::vector<VkImageMemoryBarrier> vBarriers;
+// 		GetRenderTargetBarrier(pRenderTarget, vBarriers);
+// 
+// 		vkCmdWaitEvents(prs.vkCommandBuffer, 1, &vkEvent
+// 			//这个Event命令之前提交的命令，能做到哪些事情			//这个Event命令之后提交的命令，能做到哪些事情
+// 			, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT
+// 			, 0, VK_NULL_HANDLE, 0, VK_NULL_HANDLE
+// 			, vBarriers.size(), vBarriers.data());
+// 
+// 		//Host Reset and Device Set.
+// 		vkResetEvent(m_pDevice->m_VkDevice, vkEvent);
+// 		vkCmdSetEvent(m_vRenderStages.back().vkCommandBuffer, vkEvent, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT);
+// 	}
+
+	
+}
+
+void MVulkanRenderer::BeginRenderPass(MIRenderTarget* pRenderTarget)
+{
+	//渲染用的Frame Buffer
+	MFrameBuffer* pFrameBuffer = pRenderTarget->GetCurrFrameBuffer(m_unFrameIndex);
 
 	VkRenderPassBeginInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -212,7 +239,7 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 	for (uint32_t i = 0; i < unBackNum; ++i)
 	{
 		MColor color = pRenderTarget->GetBackClearColor(i);
-		vClearValues[i].color = {color.r, color.g, color.b, color.a};
+		vClearValues[i].color = { color.r, color.g, color.b, color.a };
 	}
 
 	if (pRenderTarget->GetDepthEnable())
@@ -225,59 +252,31 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 	renderPassInfo.pClearValues = vClearValues.data();
 
 
-	//Begin Command Buffer
-	vkBeginCommandBuffer(m_vRenderStages.back().vkCommandBuffer, &beginInfo);
-
-	pRenderTarget->OnRenderBefore(this);
-
 	//Begin RenderPass
 	vkCmdBeginRenderPass(m_vRenderStages.back().vkCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	//Record Commands
 	m_vRenderTargets.push(pRenderTarget);
-	pRenderTarget->OnRender(this);
-	m_vRenderTargets.pop();
+}
 
-	SetDepthTextureForRender(pRenderTarget->GetCurrDepthTexture());
+void MVulkanRenderer::EndRenderPass(MIRenderTarget* pRenderTarget)
+{
+	m_vRenderTargets.pop();
 
 	//End Render Pass
 	vkCmdEndRenderPass(m_vRenderStages.back().vkCommandBuffer);
+}
 
-
-	std::vector<VkSemaphore> waitSemaphores;
-	
-	//Process Render Finished Event
-	if (m_vRenderStages.size() > 1)
-	{
-		VkEvent vkEvent = pRenderTarget->m_aVkRenderFinishedEvent[m_unFrameIndex];
-		
-		//上一个RenderTarget的接下来的渲染操作，需要等待当前的渲染完成后再继续。
-		MRenderStage& prs = m_vRenderStages[m_vRenderStages.size() - 2];
-
-		std::vector<VkImageMemoryBarrier> vBarriers;
-		GetRenderTargetBarrier(pRenderTarget, vBarriers);
-
-		vkCmdWaitEvents(prs.vkCommandBuffer, 1, &vkEvent
-			//这个Event命令之前提交的命令，能做到哪些事情			//这个Event命令之后提交的命令，能做到哪些事情
-			, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT
-			, 0, VK_NULL_HANDLE, 0, VK_NULL_HANDLE
-			, vBarriers.size(), vBarriers.data());
-
-		//Host Reset and Device Set.
-		vkResetEvent(m_pDevice->m_VkDevice, vkEvent);
-		vkCmdSetEvent(m_vRenderStages.back().vkCommandBuffer, vkEvent, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT);
-	}
-	else
-	{
-		waitSemaphores.push_back(m_VkImageAvailableSemaphore);
-	}
+void MVulkanRenderer::RenderEnd(MIRenderTarget* pRenderTarget)
+{
+	//End Command Buffer
+	vkEndCommandBuffer(m_vRenderStages.back().vkCommandBuffer);
 
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
 	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-	submitInfo.waitSemaphoreCount = waitSemaphores.size();
-	submitInfo.pWaitSemaphores = waitSemaphores.data();
+	submitInfo.waitSemaphoreCount = pRenderTarget->m_vWaitSemaphoreBeforeSubmit.size();
+	submitInfo.pWaitSemaphores = pRenderTarget->m_vWaitSemaphoreBeforeSubmit.data();
 	submitInfo.pWaitDstStageMask = waitStages;
 
 
@@ -286,14 +285,12 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 	//TODO maybe mutil command buffers for every frame
 	submitInfo.pCommandBuffers = commandBuffers;
 
+	
 	VkSemaphore signalSemaphores[] = { pRenderTarget->m_aVkRenderFinishedSemaphore[m_unFrameIndex] };
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
 
-
-	//End Command Buffer
-	vkEndCommandBuffer(m_vRenderStages.back().vkCommandBuffer);
 
 
 	VkFence vkInFightFence = m_VkInFlightFences[m_unFrameIndex];
@@ -302,8 +299,6 @@ void MVulkanRenderer::Render(MIRenderTarget* pRenderTarget)
 	if (vkQueueSubmit(m_pDevice->m_VkGraphicsQueue, 1, &submitInfo, vkInFightFence) != VK_SUCCESS) {
 		throw std::runtime_error("failed to submit draw command buffer!");
 	}
-
-	pRenderTarget->OnRenderAfter(this);
 
 	m_vRenderStages.pop_back();
 }
@@ -436,11 +431,6 @@ void MVulkanRenderer::SetShaderParamSet(MShaderParamSet* pParamSet)
 
 			m_pDevice->m_PipelineManager.BindTextureParam(pParamSet, pParam, m_unFrameIndex);
 			pParam->bDirty[m_unFrameIndex] = false;
-		}
-
-		if (dynamic_cast<MRenderDepthTexture*>(pParam->pTexture))
-		{
-			SetDepthTextureForShader(pParam->pTexture);
 		}
 	}
 
@@ -588,127 +578,9 @@ void MVulkanRenderer::GetRenderTargetBarrier(MIRenderTarget* pRenderTarget, std:
 
 }
 
-void MVulkanRenderer::SetDepthTextureForRender(MITexture* pTexture)
-{
-	MRenderStage& rs = m_vRenderStages.back();
-	MTextureBuffer* pBuffer = pTexture->GetBuffer();
-
-	if (pBuffer->m_VkImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-		return;
-
-	VkCommandBuffer commandBuffer = rs.vkCommandBuffer;
-
-	VkPipelineStageFlags sourceStage;
-	VkPipelineStageFlags destinationStage;
-
-	VkImageMemoryBarrier barrier{};
-	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	barrier.oldLayout = pBuffer->m_VkImageLayout;
-	barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.image = pBuffer->m_VkTextureImage;
-	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	barrier.subresourceRange.baseMipLevel = 0;
-	barrier.subresourceRange.levelCount = 1;
-	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount = 1;
-	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-	if (pBuffer->m_VkTextureFormat == VK_FORMAT_D32_SFLOAT_S8_UINT || pBuffer->m_VkTextureFormat == VK_FORMAT_D24_UNORM_S8_UINT)
-		barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-
-	barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-	destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-	
-	if (pBuffer->m_VkImageLayout == VK_IMAGE_LAYOUT_UNDEFINED)
-	{
-		barrier.srcAccessMask = 0;
-		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-	}
-	else if (pBuffer->m_VkImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL)
-	{
-		barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-		sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	}
-
-	vkCmdPipelineBarrier(
-		commandBuffer,
-		sourceStage, destinationStage,
-		0,
-		0, nullptr,
-		0, nullptr,
-		1, &barrier
-	);
-
-	pBuffer->m_VkImageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-}
-
-void MVulkanRenderer::SetDepthTextureForShader(MITexture* pTexture)
-{
-	
-	MRenderStage& rs = m_vRenderStages.back();
-	MTextureBuffer* pBuffer = pTexture->GetBuffer();
-
-	if (pBuffer->m_VkImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL)
-		return;
-
-	VkCommandBuffer commandBuffer = rs.vkCommandBuffer;
-
-	VkPipelineStageFlags sourceStage;
-	VkPipelineStageFlags destinationStage;
-
-	VkImageMemoryBarrier barrier{};
-	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	barrier.oldLayout = pBuffer->m_VkImageLayout;
-	barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.image = pBuffer->m_VkTextureImage;
-	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	barrier.subresourceRange.baseMipLevel = 0;
-	barrier.subresourceRange.levelCount = 1;
-	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount = 1;
-	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-	if (pBuffer->m_VkTextureFormat == VK_FORMAT_D32_SFLOAT_S8_UINT || pBuffer->m_VkTextureFormat == VK_FORMAT_D24_UNORM_S8_UINT)
-		barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-
-	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-	destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-
-	if (pBuffer->m_VkImageLayout == VK_IMAGE_LAYOUT_UNDEFINED)
-	{
-		barrier.srcAccessMask = 0;
-		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-	}
-	else if (pBuffer->m_VkImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-	{
-		barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-		sourceStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-	}
-
-	vkCmdPipelineBarrier(
-		commandBuffer,
-		sourceStage, destinationStage,
-		0,
-		0, nullptr,
-		0, nullptr,
-		1, &barrier
-	);
-
-	pBuffer->m_VkImageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-}
-
 bool MVulkanRenderer::InitSemaphores()
 {
-	VkSemaphoreCreateInfo semaphoreInfo{};
-	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-	if (vkCreateSemaphore(m_pDevice->m_VkDevice, &semaphoreInfo, nullptr, &m_VkImageAvailableSemaphore) != VK_SUCCESS)
-		return false;
-
+	
 
 
 	VkFenceCreateInfo fenceInfo{};
@@ -724,8 +596,6 @@ bool MVulkanRenderer::InitSemaphores()
 
 void MVulkanRenderer::ReleaseSemaphores()
 {
-	vkDestroySemaphore(m_pDevice->m_VkDevice, m_VkImageAvailableSemaphore, nullptr);
-
 	for (uint32_t i = 0; i < m_VkInFlightFences.size(); ++i)
 	{
 		vkDestroyFence(m_pDevice->m_VkDevice, m_VkInFlightFences[i], nullptr);

@@ -71,7 +71,9 @@ public:
 	virtual void OnCreated() override;
 	virtual void OnDelete() override;
 
-	virtual void Render(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget);
+	virtual void OnRenderBefore(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget);
+
+	virtual void OnRenderAfter(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget);
 
 	virtual void Input(MInputEvent* pEvent);
 
@@ -103,12 +105,7 @@ public:
 	void SetScreenPosition(const Vector2& v2Position) { m_v2ScreenPosition = v2Position; }
 	void SetScreenScale(const Vector2& v2Scale) { m_v2ScreenScale = v2Scale; }
 
-	MIRenderProgram* GetRenderProgram() { return m_pRenderProgram; }
-
 public:
-
-	template<typename RENDER_PASS>
-	void RegisterRenderProgram();
 
 	
 
@@ -136,24 +133,7 @@ private:
 	bool m_bCameraInvProjMatrixLocked;
 
 	MCameraFrustum m_cameraFrustum;
-
-
-	MIRenderProgram* m_pRenderProgram;
 };
 
-template<typename RENDER_PASS>
-void MViewport::RegisterRenderProgram()
-{
-	if (MTypedClass::IsType<RENDER_PASS, MIRenderProgram>())
-	{
-		if (m_pRenderProgram)
-		{
-			m_pRenderProgram->DeleteLater();
-			m_pRenderProgram = nullptr;
-		}
-
-		m_pRenderProgram = (RENDER_PASS*)(m_pEngine->GetObjectManager()->CreateObject<RENDER_PASS>());
-	}
-}
 
 #endif

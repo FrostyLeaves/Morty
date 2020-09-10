@@ -6,19 +6,19 @@
  * @Author       Pobrecito
 **/
 
-#ifndef _M_MFORWARDTRANSPARENTRENDERPROGRAM_H_
-#define _M_MFORWARDTRANSPARENTRENDERPROGRAM_H_
+#ifndef _M_MFORWARDTRANSPARENTWORK_H_
+#define _M_MFORWARDTRANSPARENTWORK_H_
 #include "MGlobal.h"
 #include "MObject.h"
 #include "MForwardRenderProgram.h"
 
 class MTransparentRenderTarget;
-class MORTY_CLASS MForwardTransparentRenderProgram : public MObject
+class MORTY_CLASS MForwardTransparentWork : public MObject
 {
 public:
-	M_OBJECT(MForwardTransparentRenderProgram);
-    MForwardTransparentRenderProgram();
-    virtual ~MForwardTransparentRenderProgram();
+	M_OBJECT(MForwardTransparentWork);
+    MForwardTransparentWork();
+    virtual ~MForwardTransparentWork();
 
 public:
 

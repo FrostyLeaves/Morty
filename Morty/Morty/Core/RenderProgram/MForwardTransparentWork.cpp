@@ -1,4 +1,4 @@
-#include "MForwardTransparentRenderProgram.h"
+#include "MForwardTransparentWork.h"
 #include "MTransparentRenderTarget.h"
 
 #include "MEngine.h"
@@ -6,9 +6,9 @@
 #include "MResourceManager.h"
 #include "Material/MMaterialResource.h"
 
-M_OBJECT_IMPLEMENT(MForwardTransparentRenderProgram, MObject)
+M_OBJECT_IMPLEMENT(MForwardTransparentWork, MObject)
 
-MForwardTransparentRenderProgram::MForwardTransparentRenderProgram()
+MForwardTransparentWork::MForwardTransparentWork()
 	: MObject()
 	, m_TransparentDrawMesh(true)
 	, m_vTransparentFrontTexture()
@@ -21,11 +21,11 @@ MForwardTransparentRenderProgram::MForwardTransparentRenderProgram()
 	
 }
 
-MForwardTransparentRenderProgram::~MForwardTransparentRenderProgram()
+MForwardTransparentWork::~MForwardTransparentWork()
 {
 }
 
-void MForwardTransparentRenderProgram::DrawTransparentMesh(MForwardRenderProgram::MRenderInfo& info)
+void MForwardTransparentWork::DrawTransparentMesh(MForwardRenderProgram::MRenderInfo& info)
 {
 	if (info.vTransparentRenderGroup.empty())
 		return;
@@ -49,19 +49,19 @@ void MForwardTransparentRenderProgram::DrawTransparentMesh(MForwardRenderProgram
 	info.pRenderer->DrawMesh(&m_TransparentDrawMesh);
 }
 
-void MForwardTransparentRenderProgram::OnCreated()
+void MForwardTransparentWork::OnCreated()
 {
 	InitializeMesh();
 	InitializeRenderTargets();
 }
 
-void MForwardTransparentRenderProgram::OnDelete()
+void MForwardTransparentWork::OnDelete()
 {
 	ReleaseMesh();
 	ReleaseRenderTargets();
 }
 
-void MForwardTransparentRenderProgram::InitializeMesh()
+void MForwardTransparentWork::InitializeMesh()
 {
 	MMesh<Vector2>& mesh = m_TransparentDrawMesh;
 	mesh.ResizeVertices(4);
@@ -84,12 +84,12 @@ void MForwardTransparentRenderProgram::InitializeMesh()
 	vIndices[5] = 1;
 }
 
-void MForwardTransparentRenderProgram::ReleaseMesh()
+void MForwardTransparentWork::ReleaseMesh()
 {
 	m_TransparentDrawMesh.DestroyBuffer(m_pEngine->GetDevice());
 }
 
-void MForwardTransparentRenderProgram::InitializeRenderTargets()
+void MForwardTransparentWork::InitializeRenderTargets()
 {
 	m_pTransparentRenderTarget0 = GetEngine()->GetObjectManager()->CreateObject<MTransparentRenderTarget>();
 	m_pTransparentRenderTarget1 = GetEngine()->GetObjectManager()->CreateObject<MTransparentRenderTarget>();
@@ -149,7 +149,7 @@ void MForwardTransparentRenderProgram::InitializeRenderTargets()
 	//m_pTransparentRenderTarget2->SetPrevLayerBackDepthTexture(vBackTexture1);
 }
 
-void MForwardTransparentRenderProgram::ReleaseRenderTargets()
+void MForwardTransparentWork::ReleaseRenderTargets()
 {
 	if (m_pTransparentRenderTarget0)
 	{
@@ -175,7 +175,7 @@ void MForwardTransparentRenderProgram::ReleaseRenderTargets()
 	}
 }
 
-void MForwardTransparentRenderProgram::CheckTransparentTextureSize(MForwardRenderProgram::MRenderInfo& info)
+void MForwardTransparentWork::CheckTransparentTextureSize(MForwardRenderProgram::MRenderInfo& info)
 {
 	Vector2 v2Size = info.pViewport->GetSize();
 

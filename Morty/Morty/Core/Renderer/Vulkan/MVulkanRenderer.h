@@ -38,9 +38,14 @@ public:
 	virtual void Release() override;
 
 	virtual void SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth) override;
-	
-	virtual void Render(MIRenderTarget* pRenderTarget) override;
 
+	virtual void RenderBegin(MIRenderTarget* pRenderTarget) override;
+
+	virtual void BeginRenderPass(MIRenderTarget* pRenderTarget) override;
+
+	virtual void EndRenderPass(MIRenderTarget* pRenderTarget) override;
+
+	virtual void RenderEnd(MIRenderTarget* pRenderTarget) override;
 public:
 	virtual void DrawMesh(MIMesh* pMesh) override;
 
@@ -53,18 +58,11 @@ public:
 
 	VkPipeline CreateGraphicsPipeline(MMaterial* pMaaterial, MRenderPass* pRenderPass);
 
-	void GetRenderTargetBarrier(MIRenderTarget* pRenderTarget, std::vector<VkImageMemoryBarrier>& vResult);
-
-	void SetDepthTextureForRender(MITexture* pTexture);
-	void SetDepthTextureForShader(MITexture* pTexture);
+	void GetRenderTargetBarrier(MIRenderTarget* pRenderTarget, std::vector<VkImageMemoryBarrier>& vResult);;
 	
 	bool InitSemaphores();
 	void ReleaseSemaphores();
 	
-
-
-public:
-	VkSemaphore m_VkImageAvailableSemaphore;
 
 private:
 
@@ -91,6 +89,7 @@ private:
 	};
 	std::vector<MRenderStage> m_vRenderStages;
 
+	//渲染栅栏，防止上一次渲染还没渲染完，CPU就申请执行下一次的渲染
 	std::array<VkFence, M_BUFFER_NUM> m_VkInFlightFences;
 private:
 

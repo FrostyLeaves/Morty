@@ -42,7 +42,11 @@ void MShadowTextureRenderTarget::Render(MIRenderer* pRenderer, const Matrix4& m4
 
 	m_pShadowRenderGroup = pGroup;
 
-	pRenderer->Render(this);
+	pRenderer->BeginRenderPass(this);
+
+	OnRender(pRenderer);
+
+	pRenderer->EndRenderPass(this);
 
 	m_pShadowRenderGroup = nullptr;
 }

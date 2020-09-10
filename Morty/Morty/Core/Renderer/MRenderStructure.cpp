@@ -35,6 +35,7 @@ MTextureBuffer::MTextureBuffer()
 	m_VkTextureImage = VK_NULL_HANDLE;
 	m_VkTextureImageMemory = VK_NULL_HANDLE;
 	m_VkImageView = VK_NULL_HANDLE;
+	m_VkSampler = VK_NULL_HANDLE;
 #endif
 
 }

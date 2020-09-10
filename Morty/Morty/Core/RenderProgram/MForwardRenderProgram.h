@@ -25,11 +25,12 @@ class MIMeshInstance;
 class MModelInstance;
 class MSkeletonInstance;
 class MDirectionalLight;
+class MRenderBackTexture;
 class MIModelMeshInstance;
 class MRenderDepthTexture;
-class MRenderBackTexture;
+class MForwardShadowMapWork;
+class MForwardTransparentWork;
 class MShadowTextureRenderTarget;
-class MForwardTransparentRenderProgram;
 class MORTY_CLASS MForwardRenderProgram : public MIRenderProgram
 {
 public:
@@ -63,7 +64,9 @@ public:
 
 public:
 
-    virtual void Render(MIRenderer* pRenderer, MViewport* pViewport, MScene* pScene, MIRenderTarget* pRenderTarget) override;
+    virtual void Render(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget, const std::vector<MViewport*>& vViewports) override;
+
+	void RenderWithViewport(MRenderInfo info, MViewport* pViewport);
 
 public:
 
@@ -73,7 +76,6 @@ public:
 protected:
 
 	void GenerateRenderGroup(MRenderInfo& info);
-	void GenerateShadowMap(MRenderInfo& info);
 	void UpdateShaderSharedParams(MRenderInfo& info);
 	void DrawNormalMesh(MRenderInfo& info);
 
@@ -91,21 +93,13 @@ public:
 
 protected:
 
-	void InitializeRenderTargets();
-	void ReleaseRenderTargets();
-
 	void InitializeShaderParamSet();
 	void ReleaseShaderParamSet();
-
 
 private:
 
 	MShaderParamSet m_FrameParamSet;
 
-
-	MShadowTextureRenderTarget* m_pShadowDepthMapRenderTarget;
-
-	std::array<MRenderDepthTexture*, M_BUFFER_NUM> m_vShadowDepthTexture;
 
 	MShaderConstantParam* m_pWorldMatrixParam;
 	MShaderConstantParam* m_pWorldInfoParam;
@@ -119,7 +113,8 @@ private:
 	MShaderTextureParam* m_pTransparentFrontTextureParam;
 	MShaderTextureParam* m_pTransparentBackTextureParam;
 
-	MForwardTransparentRenderProgram* m_pTransparentProgram;
+	MForwardShadowMapWork* m_pShadowMapWork;
+	MForwardTransparentWork* m_pTransparentWork;
 
 };
 

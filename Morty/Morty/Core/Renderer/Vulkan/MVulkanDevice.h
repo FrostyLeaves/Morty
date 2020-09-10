@@ -90,6 +90,8 @@ public:
 	int FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	int FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
+	VkBool32 FormatIsFilterable(VkFormat format, VkImageTiling tiling);
+
 	VkFormat GetFormat(const METextureLayout& layout);
 
 protected:

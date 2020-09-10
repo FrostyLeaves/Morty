@@ -58,10 +58,6 @@ public:
 	virtual MFrameBuffer* GetCurrFrameBuffer(const uint32_t& unFrameIdx = 0) = 0;
 public:
 
-	//virtual void OnResize(const uint32_t& nWidth, const uint32_t& nHeight) = 0;
-
-	virtual void Render(MIRenderer* pRenderer) { pRenderer->Render(this); }
-
 	virtual void OnRenderBefore(MIRenderer* pRenderer) {}
 	virtual void OnRenderAfter(MIRenderer* pRenderer) {}
 	virtual void OnRender(MIRenderer* pRenderer) { if(m_funcRenderFunction) m_funcRenderFunction(pRenderer); }
@@ -78,12 +74,16 @@ public:
 	virtual struct ID3D11DepthStencilView* GetDepthStencilView() = 0;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 
+	
 	VkExtent2D m_VkExtend;
 	VkFormat m_VkColorFormat;
 
 	std::array<VkCommandBuffer, M_BUFFER_NUM> m_VkCommandBuffers;
 	std::array<VkSemaphore, M_BUFFER_NUM> m_aVkRenderFinishedSemaphore;
 	std::array<VkEvent, M_BUFFER_NUM> m_aVkRenderFinishedEvent;
+
+	std::vector<VkSemaphore> m_vWaitSemaphoreBeforeSubmit;
+
 #endif
 
 

@@ -86,6 +86,7 @@ public:
 	VkImageLayout m_VkImageLayout;
 	VkDeviceMemory m_VkTextureImageMemory;
 	VkImageView m_VkImageView;
+	VkSampler m_VkSampler;
 #endif
 };
 

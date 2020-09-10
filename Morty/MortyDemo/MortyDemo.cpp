@@ -72,6 +72,8 @@
 #include "NotifyManager.h"
 #endif
 
+static float rrrr = 0.0f;
+
 class MyCamera : public MCamera
 {
 public:
@@ -81,6 +83,12 @@ public:
 
 	virtual void OnTick(const float& fDelta)
 	{
+		auto jeep = GetRootNode()->FindFirstChildByName("Jeep")->DynamicCast<M3DNode>();
+		auto rot = jeep->GetRotation();
+		rot.RotateZ(rrrr);
+		rrrr += fDelta * 10.0f;
+
+		jeep->SetRotation(rot);
 		
 		MPointLight* pLight = static_cast<MPointLight*>(GetRootNode()->FindFirstChildByName("Light"));
 
@@ -145,13 +153,15 @@ int main(int argc, char* argv[])
 {
 	MEngine engine;
 	engine.Initialize();
+	engine.RegisterRenderProgram<MForwardRenderProgram>();
 
-	{
-		{
-			MModelConverter conver(&engine);
-			conver.Convert("./Model/teaport.fbx", "./Model", "teaport");
-		}
-	}
+
+// 	{
+// 		{
+// 			MModelConverter conver(&engine);
+// 			conver.Convert("./Model/teaport.fbx", "./Model", "teaport");
+// 		}
+// 	}
 
  	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
  	pRootNode->SetName("RootNode");
@@ -167,6 +177,7 @@ int main(int argc, char* argv[])
 	MModelInstance* pJeepModel = engine.GetObjectManager()->CreateObject<MModelInstance>();
 	pJeepModel->SetPosition(Vector3(0, 0, 10));
 	pJeepModel->SetScale(Vector3(1, 1, 1));
+	pJeepModel->SetGenerateDirLightShadow(true);
 	pJeepModel->Load(pJeepResource);
 	pJeepModel->SetName("Jeep");
 	pRootNode->AddNode(pJeepModel);
@@ -254,7 +265,6 @@ int main(int argc, char* argv[])
 	pView->Initialize(&engine, "Morty");
 	pView->SetBackColor(MColor(0.25f, 0.25f, 0.25f, 1.0f));
 	MViewport* pViewport = engine.GetObjectManager()->CreateObject<MViewport>();
-	pViewport->RegisterRenderProgram<MForwardRenderProgram>();
 	//pViewport->RegisterRenderProgram<MBasicRenderProgram>();
 	pView->AppendViewport(pViewport);
 	pViewport->SetSize(Vector2(pView->GetViewWidth(), pView->GetViewHeight()));
