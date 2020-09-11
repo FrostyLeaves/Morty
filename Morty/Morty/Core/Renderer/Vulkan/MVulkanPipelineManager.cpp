@@ -256,8 +256,10 @@ bool MVulkanPipelineManager::CreateMaterialPipelineLayout(MMaterial* pMaterial, 
 			if (param->eShaderType & MEShaderParamType::EPixel)
 				uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_FRAGMENT_BIT;
 
-
-			uboLayoutBinding.pImmutableSamplers = &m_pDevice->m_ObjectDestructor.m_VkDefaultSampler;
+			if (param->unBinding == 4)
+				uboLayoutBinding.pImmutableSamplers = &m_pDevice->m_ObjectDestructor.m_VkLessEqualSampler;
+			else
+				uboLayoutBinding.pImmutableSamplers = &m_pDevice->m_ObjectDestructor.m_VkDefaultSampler;
 
 			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
 		}

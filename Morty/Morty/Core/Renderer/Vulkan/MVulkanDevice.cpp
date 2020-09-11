@@ -834,8 +834,8 @@ void MVulkanDevice::GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, 
 	sampler.minLod = 0.0f;
 	sampler.maxLod = 1.0f;
 	sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-	sampler.compareEnable = VK_TRUE;
-	sampler.compareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+	//sampler.compareEnable = VK_TRUE;
+	//sampler.compareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 	vkCreateSampler(m_VkDevice, &sampler, nullptr, &depthSampler);
 
 

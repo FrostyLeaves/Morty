@@ -73,6 +73,7 @@ void Destroy##VK_TYPE##Later(const uint32_t& unFrameIndex, Vk##VK_TYPE& buffer){
 	VkDescriptorPool m_VkDescriptorPool;
 
 	VkSampler m_VkDefaultSampler;
+	VkSampler m_VkLessEqualSampler;
 };
 
 

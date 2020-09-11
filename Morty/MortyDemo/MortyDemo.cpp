@@ -84,11 +84,11 @@ public:
 	virtual void OnTick(const float& fDelta)
 	{
 		auto jeep = GetRootNode()->FindFirstChildByName("Jeep")->DynamicCast<M3DNode>();
-		auto rot = jeep->GetRotation();
-		rot.RotateZ(rrrr);
-		rrrr += fDelta * 10.0f;
+		//auto rot = jeep->GetRotation();
+		//rot.RotateY(rrrr);
+		//rrrr += fDelta * 10.0f;
 
-		jeep->SetRotation(rot);
+		//jeep->SetRotation(rot);
 		
 		MPointLight* pLight = static_cast<MPointLight*>(GetRootNode()->FindFirstChildByName("Light"));
 
@@ -171,6 +171,7 @@ int main(int argc, char* argv[])
 	pCamera->SetName("Camera");
 	pCamera->SetZNearFar(Vector2(10, 500));
 	pCamera->LookAt(Vector3(0, 0, 0), Vector3(0, 1, 0));
+	//pCamera->SetCameraType(MCamera::MECameraType::EOrthographic);
 	pRootNode->AddNode(pCamera);
 
 	MModelResource* pJeepResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/teaport/teaport.model"));
@@ -181,7 +182,13 @@ int main(int argc, char* argv[])
 	pJeepModel->Load(pJeepResource);
 	pJeepModel->SetName("Jeep");
 	pRootNode->AddNode(pJeepModel);
- 
+	pJeepModel->SetRotation(Quaternion(Vector3(1, 0, 0), 0));
+	pJeepModel->GetFixedChildren()[0]->DynamicCast<M3DNode>()->SetRotation(Quaternion(Vector3(1, 0, 0), 0));
+
+	auto rot = pJeepModel->GetRotation();
+	rot.RotateY(-90);
+	
+	pJeepModel->SetRotation(rot);
 
 // // 	MString textureID[] = {"005","003","007","004","014","008","002","015","019"};
 // // 

@@ -13,6 +13,7 @@ MVulkanObjectDestructor::MVulkanObjectDestructor(MVulkanDevice* pDevice)
 	: m_pDevice(pDevice)
 	, m_VkDescriptorPool(VK_NULL_HANDLE)
 	, m_VkDefaultSampler(VK_NULL_HANDLE)
+	, m_VkLessEqualSampler(VK_NULL_HANDLE)
 {
 
 }
@@ -61,6 +62,8 @@ void MVulkanObjectDestructor::Release()
 	vkDestroyDescriptorPool(m_pDevice->m_VkDevice, m_VkDescriptorPool, nullptr);
 
 	vkDestroySampler(m_pDevice->m_VkDevice, m_VkDefaultSampler, nullptr);
+
+	vkDestroySampler(m_pDevice->m_VkDevice, m_VkLessEqualSampler, nullptr);
 }
 
 bool MVulkanObjectDestructor::GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
@@ -164,6 +167,12 @@ bool MVulkanObjectDestructor::InitSampler()
 		throw std::runtime_error("failed to create texture sampler!");
 	}
 
+	samplerInfo.compareEnable = VK_TRUE;
+	samplerInfo.compareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+	if (vkCreateSampler(m_pDevice->m_VkDevice, &samplerInfo, nullptr, &m_VkLessEqualSampler) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create texture sampler!");
+	}
+
 	return true;
 }
 
@@ -172,36 +181,5 @@ void MVulkanObjectDestructor::DestroyDescriptorSets(const uint32_t& unFrameIndex
 {
 	m_vDescriptorSets[unFrameIndex].push_back(std::move(vDescriptorSets));
 }
-
-// 
-// void MVulkanBufferManager::DestroyBufferLater(const uint32_t& unFrameIndex, VkBuffer& buffer)
-// {
-// 	m_vBuffer[unFrameIndex].push_back(buffer);
-// }
-// 
-// void MVulkanBufferManager::DestroyDeviceMemoryLater(const uint32_t& unFrameIndex, VkDeviceMemory& memory)
-// {
-// 	m_vDeviceMemory[unFrameIndex].push_back(memory);
-// }
-// 
-// void MVulkanBufferManager::DestroyFrameBufferLater(const uint32_t& unFrameIndex, VkFramebuffer& buffer)
-// {
-// 	m_vFrameBuffer[unFrameIndex].push_back(buffer);
-// }
-// 
-// void MVulkanBufferManager::DestroyImageLater(const uint32_t& unFrameIndex, VkImage& image)
-// {
-// 	m_vImage[unFrameIndex].push_back(image);
-// }
-// 
-// void MVulkanBufferManager::DestroyImageViewLater(const uint32_t& unFrameIndex, VkImageView& view)
-// {
-// 	m_vImageView[unFrameIndex].push_back(view);
-// }
-// 
-// void MVulkanBufferManager::DestroyRenderPassLater(const uint32_t& unFrameIndex, VkRenderPass& pass)
-// {
-// 	m_vRenderPass[unFrameIndex].push_back(pass);
-// }
 
 #endif
