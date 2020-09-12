@@ -11,6 +11,8 @@
 #include "MGlobal.h"
 #include "MShaderparam.h"
 
+#include <vector>
+
 class MIDevice;
 class MORTY_CLASS MShaderParamSet
 {

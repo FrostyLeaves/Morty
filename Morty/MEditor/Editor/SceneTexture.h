@@ -4,6 +4,8 @@
 #include "MGlobal.h"
 #include "Vector.h"
 
+#include <array>
+
 class MScene;
 class MEngine;
 class MViewport;
@@ -24,7 +26,7 @@ public:
 	Vector2 GetSize() const { return m_v2Size; }
 
 	void UpdateTexture();
-	void* GetTexture();
+	void* GetTexture(const uint32_t& unFrameIndex);
 
 	MScene* GetScene() { return m_pScene; }
 	MViewport* GetViewport() { return m_pRenderViewport; }
@@ -36,8 +38,8 @@ protected:
 	MScene* m_pScene;
 	MEngine* m_pEngine;
 
-	MRenderBackTexture* m_pBackTexture;
-	MRenderDepthTexture* m_pDepthTexture;
+	std::array<MRenderBackTexture*, M_BUFFER_NUM> m_vBackTexture;
+	std::array<MRenderDepthTexture*, M_BUFFER_NUM> m_vDepthTexture;
 
 	MTextureRenderTarget* m_pTextureRenderTarget;
 	MViewport* m_pRenderViewport;

@@ -38,20 +38,22 @@ void MForwardShadowMapWork::DrawShadowMap(MForwardRenderProgram::MRenderInfo& in
 	if (nullptr == info.pDirectionalLight)
 		return;
 
-	UpdateRenderInfo(info);
+	std::vector<MShadowRenderGroup> vShadowMeshGroup;
+
+	UpdateRenderInfo(info, vShadowMeshGroup);
 	
-	if (info.vShadowGroup.empty())
+	if (vShadowMeshGroup.empty())
 		return;
 
 	info.pRenderer->BeginRenderPass(m_pShadowDepthMapRenderTarget);
 
-	RenderToShadowMap(info);
+	RenderToShadowMap(info, vShadowMeshGroup);
 
 	info.pRenderer->EndRenderPass(m_pShadowDepthMapRenderTarget);
 
 }
 
-void MForwardShadowMapWork::UpdateRenderInfo(MForwardRenderProgram::MRenderInfo& info)
+void MForwardShadowMapWork::UpdateRenderInfo(MForwardRenderProgram::MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup)
 {
 	Vector3 v3LightDir = info.pDirectionalLight->GetWorldDirection();
 
@@ -59,7 +61,7 @@ void MForwardShadowMapWork::UpdateRenderInfo(MForwardRenderProgram::MRenderInfo&
 	Vector3 v3ShadowMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
 
-	info.vShadowGroup.push_back(MShadowRenderGroup());
+	vShadowMeshGroup.push_back(MShadowRenderGroup());
 
 	std::vector<MModelInstance*>& vModels = *info.pScene->GetAllModelInstance();
 	for (MModelInstance* pModelIns : vModels)
@@ -69,13 +71,13 @@ void MForwardShadowMapWork::UpdateRenderInfo(MForwardRenderProgram::MRenderInfo&
 			MShadowRenderGroup* pGroup = nullptr;
 			if (pModelIns->GetSkeleton())
 			{
-				info.vShadowGroup.push_back(MShadowRenderGroup());
-				pGroup = &info.vShadowGroup.back();
+				vShadowMeshGroup.push_back(MShadowRenderGroup());
+				pGroup = &vShadowMeshGroup.back();
 				pGroup->pSkeletonInstance = pModelIns->GetSkeleton();
 			}
 			else
 			{
-				pGroup = &info.vShadowGroup.front();
+				pGroup = &vShadowMeshGroup.front();
 			}
 			MShadowRenderGroup& group = *pGroup;
 
@@ -103,7 +105,7 @@ void MForwardShadowMapWork::UpdateRenderInfo(MForwardRenderProgram::MRenderInfo&
 
 }
 
-void MForwardShadowMapWork::RenderToShadowMap(MForwardRenderProgram::MRenderInfo& info)
+void MForwardShadowMapWork::RenderToShadowMap(MForwardRenderProgram::MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup)
 {
 	if (m_pWorldMatrixParam)
 	{
@@ -120,7 +122,7 @@ void MForwardShadowMapWork::RenderToShadowMap(MForwardRenderProgram::MRenderInfo
 	(*pWorldStruct)[0] = info.m4DirLightInvProj;
 	m_pWorldMatrixParam->SetDirty();
 
-	for (MShadowRenderGroup& group : info.vShadowGroup)
+	for (MShadowRenderGroup& group : vShadowMeshGroup)
 	{
 		if (MSkeletonInstance* pSkeleton = group.pSkeletonInstance)
 		{
@@ -177,7 +179,7 @@ void MForwardShadowMapWork::OnDelete()
 
 void MForwardShadowMapWork::InitializeRenderTargets()
 {
-	m_pShadowDepthMapRenderTarget = m_pEngine->GetObjectManager()->CreateObject<MShadowTextureRenderTarget>();
+	m_pShadowDepthMapRenderTarget = m_pEngine->GetObjectManager()->CreateObject<MTextureRenderTarget>();
 
 	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
 	{
@@ -191,6 +193,10 @@ void MForwardShadowMapWork::InitializeRenderTargets()
 	m_pShadowDepthMapRenderTarget->SetDepthTexture(m_vShadowDepthTexture);
 
 	m_pEngine->GetDevice()->GenerateRenderTarget(m_pShadowDepthMapRenderTarget, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE);
+
+
+	m_pShadowDepthMapRenderTarget->m_RenderPass.m_vSubpass.push_back(MSubpass());
+	m_pShadowDepthMapRenderTarget->m_RenderPass.m_DepthDesc.bClearWhenRender = true;
 }
 
 void MForwardShadowMapWork::ReleaseRenderTargets()

@@ -52,7 +52,7 @@ void MaterialView::Render()
 {
 	if (m_pMaterial)
 	{
-		if (void* pTexture = m_SceneTexture.GetTexture())
+		if (void* pTexture = m_SceneTexture.GetTexture(m_pEngine->GetRenderer()->GetFrameIndex()))
 		{
 			ImTextureID texid;
 			texid.pTexture = pTexture;

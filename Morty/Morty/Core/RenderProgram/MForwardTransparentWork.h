@@ -12,6 +12,9 @@
 #include "MObject.h"
 #include "MForwardRenderProgram.h"
 
+#include <array>
+
+class MRenderBackTexture;
 class MTransparentRenderTarget;
 class MORTY_CLASS MForwardTransparentWork : public MObject
 {

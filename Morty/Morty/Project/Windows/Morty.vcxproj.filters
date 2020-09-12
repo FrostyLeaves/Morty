@@ -255,9 +255,6 @@
     <ClInclude Include="..\..\Organizer\MScene.h">
       <Filter>Organizer</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Organizer\MShadowTextureRenderTarget.h">
-      <Filter>Organizer</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Organizer\MTransformCoord.h">
       <Filter>Organizer</Filter>
     </ClInclude>
@@ -528,9 +525,6 @@
       <Filter>ResourceLoader\Model</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Organizer\MScene.cpp">
-      <Filter>Organizer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Organizer\MShadowTextureRenderTarget.cpp">
       <Filter>Organizer</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Organizer\MTransformCoord.cpp">

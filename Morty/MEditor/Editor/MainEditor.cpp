@@ -118,7 +118,7 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	vulkanInitInfo.QueueFamily;
 
 	MVulkanRenderTarget* pVulkanRenderTarget = dynamic_cast<MVulkanRenderTarget*>(GetRenderTarget());
-	ImGui_ImplVulkan_Init(&vulkanInitInfo, pVulkanRenderTarget->m_RenderPass.m_VkRenderPass);
+	ImGui_ImplVulkan_Init(&vulkanInitInfo, pVulkanRenderTarget->m_RenderPass.m_aVkRenderPass[0]);
 #endif
 
 	//Setup Render
@@ -295,7 +295,8 @@ void MainEditor::ShowRenderView()
 		m_v2RenderViewSize.x = v2RenderViewSize.x;
 		m_v2RenderViewSize.y = v2RenderViewSize.y;
 
-		if (void* pTexture = m_SceneTexture.GetTexture())
+		uint32_t unFrameIdx = m_pEngine->GetRenderer()->GetFrameIndex();
+		if (void* pTexture = m_SceneTexture.GetTexture(unFrameIdx))
 		{
 			ImTextureID texid;
 			texid.pTexture = pTexture;

@@ -343,45 +343,43 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 		}
 
 		{
-			std::vector<MShaderConstantParam>& vParams = *pMaterial->GetShaderParams();
-			for (MShaderConstantParam& param : vParams)
+			std::vector<MShaderConstantParam* >& vParams = *pMaterial->GetShaderParams();
+			for (MShaderConstantParam* param : vParams)
 			{
-				if (EditMVariant(param.strName, param.var))
+				if (EditMVariant(param->strName, param->var))
 				{
-					param.SetDirty();
+					param->SetDirty();
 					bModified = true;
 				}
 			}
 		}
 
 		{
-			std::vector<MShaderTextureParam>& vParams = *pMaterial->GetTextureParams();
-			std::vector<MResourceKeeper>& vResources = *pMaterial->GetTextures();
+			std::vector<MShaderTextureParam*>& vParams = *pMaterial->GetTextureParams();
 			for (unsigned int i = 0; i < vParams.size(); ++i)
 			{
-				MShaderTextureParam& param = vParams[i];
-				if (param.unCode <= SHADER_PARAM_CODE_AUTO_UPDATE)
-					continue;
-
-				MString strDlgName = "file_dlg_tex_" + MStringHelper::ToString(i);
-
-				ShowValueBegin(param.strName);
-				MResource* pResource = vResources[i].GetResource();
-
-				EditMResource(strDlgName, pResource, MResourceManager::MEResourceType::Texture, [&param, &pMaterial](const MString& strNewFilePath) {
-
-					MResource* pNewResource = pMaterial->GetResourceManager()->LoadResource(strNewFilePath);
-
-					pMaterial->SetTexutreParam(param.strName, pNewResource);
-					});
-
-				if (param.pTexture)
+				if (MShaderRefTextureParam* param = dynamic_cast<MShaderRefTextureParam*>(vParams[i]))
 				{
-					ShowTexture(param.pTexture->GetBuffer());
+
+					MString strDlgName = "file_dlg_tex_" + MStringHelper::ToString(i);
+
+					ShowValueBegin(param->strName);
+					MResource* pResource = param->m_TextureRef.GetResource();
+
+					EditMResource(strDlgName, pResource, MResourceManager::MEResourceType::Texture, [&param, &pMaterial](const MString& strNewFilePath) {
+
+						MResource* pNewResource = pMaterial->GetResourceManager()->LoadResource(strNewFilePath);
+
+						pMaterial->SetTexutreParam(param->strName, pNewResource);
+						});
+
+					if (param->pTexture)
+					{
+						ShowTexture(param->pTexture->GetBuffer());
+					}
+
+					ShowValueEnd();
 				}
-
-				ShowValueEnd();
-
 			}
 		}
 	}
@@ -480,18 +478,18 @@ void PropertyBase::ShowTexture(MTextureBuffer* pTextureBuffer)
 	const float fMaxImageSize = 200;
 	if (pTextureBuffer)
 	{
-		if (pTextureBuffer->m_pShaderResourceView)
+		if (pTextureBuffer->GetResourceView())
 		{
 			float fImageWidth = ImGui::GetContentRegionAvailWidth();
 			if (fImageWidth > fMaxImageSize)
 			{
 				ImGui::Spacing();
 				ImGui::SameLine((fImageWidth - fMaxImageSize) * 0.5f);
-				ImGui::Image(ImTextureID(pTextureBuffer->m_pShaderResourceView, 0), ImVec2(fMaxImageSize, fMaxImageSize));
+				ImGui::Image(ImTextureID(pTextureBuffer->GetResourceView(), 0), ImVec2(fMaxImageSize, fMaxImageSize));
 			}
 			else
 			{
-				ImGui::Image(ImTextureID(pTextureBuffer->m_pShaderResourceView, 0), ImVec2(fImageWidth, fImageWidth));
+				ImGui::Image(ImTextureID(pTextureBuffer->GetResourceView(), 0), ImVec2(fImageWidth, fImageWidth));
 			}
 		}
 	}

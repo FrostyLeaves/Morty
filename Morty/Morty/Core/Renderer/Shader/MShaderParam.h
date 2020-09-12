@@ -29,6 +29,7 @@ struct MORTY_CLASS MShaderParam
 {
 public:
 	MShaderParam();
+	virtual ~MShaderParam() {}
 
 	MString strName;
 	uint32_t  eShaderType;

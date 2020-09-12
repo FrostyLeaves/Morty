@@ -14,7 +14,6 @@
 #include "MBounds.h"
 #include "MIRenderProgram.h"
 #include "MMaterialGroup.h"
-#include "MShadowTextureRenderTarget.h"
 #include "Shader/MShaderParamSet.h"
 
 #include <vector>
@@ -51,9 +50,7 @@ public:
 		MBoundsAABB cMeshRenderAABB;
 
  		std::vector<MMaterialGroup> vMaterialRenderGroup;
- 		std::vector<MMaterialGroup> vTransparentRenderGroup;
-
-		std::vector<MShadowRenderGroup> vShadowGroup;
+		std::vector<MMaterialGroup> vTransparentRenderGroup;
 
 	};
 

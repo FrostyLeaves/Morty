@@ -10,6 +10,8 @@
 #define _M_MENGINE_H_
 #include "MGlobal.h"
 #include "MProject.h"
+#include "MTypedClass.h"
+#include "MIRenderProgram.h"
 
 #include <vector>
 

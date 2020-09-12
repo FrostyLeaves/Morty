@@ -39,8 +39,6 @@
 #include "MRenderStatistics.h"
 #endif
 
-#include "MShadowTextureRenderTarget.h"
-#include "MTransparentRenderTarget.h"
 
 #include <algorithm>
 

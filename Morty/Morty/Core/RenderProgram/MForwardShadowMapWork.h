@@ -14,6 +14,14 @@
 
 #include <array>
 
+class MTextureRenderTarget;
+struct MShadowRenderGroup
+{
+	MShadowRenderGroup() :pSkeletonInstance(nullptr) {}
+	MSkeletonInstance* pSkeletonInstance;
+	std::vector<MIMeshInstance*> vMeshInstances;
+};
+
 class MRenderDepthTexture;
 class MShadowTextureRenderTarget;
 class MORTY_CLASS MForwardShadowMapWork : public MObject
@@ -30,9 +38,9 @@ public:
 
     void DrawShadowMap(MForwardRenderProgram::MRenderInfo& info);
 
-    void UpdateRenderInfo(MForwardRenderProgram::MRenderInfo& info);
+    void UpdateRenderInfo(MForwardRenderProgram::MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup);
 
-    void RenderToShadowMap(MForwardRenderProgram::MRenderInfo& info);
+    void RenderToShadowMap(MForwardRenderProgram::MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup);
 
     virtual void OnCreated() override;
     virtual void OnDelete() override;
@@ -53,7 +61,7 @@ private:
 
     MIRenderProgram* m_pRenderProgram;
 
-	MShadowTextureRenderTarget* m_pShadowDepthMapRenderTarget;
+	MTextureRenderTarget* m_pShadowDepthMapRenderTarget;
 
 	std::array<MRenderDepthTexture*, M_BUFFER_NUM> m_vShadowDepthTexture;
 

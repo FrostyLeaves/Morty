@@ -346,8 +346,6 @@ bool MEngine::MainLoop()
 
 void MEngine::RenderToView(MIRenderView* pView)
 {
-	pView->OnRenderBegin();
-
 	if (MIRenderTarget* pRenderTarget = pView->GetRenderTarget())
 	{
 		pRenderTarget->OnRenderBefore(m_pRenderer);
@@ -356,9 +354,6 @@ void MEngine::RenderToView(MIRenderView* pView)
 
 		pRenderTarget->OnRenderAfter(m_pRenderer);
 	}
-
-	pView->OnRenderEnd();
-
 }
 
 void MEngine::SetScene(MScene* pScene)

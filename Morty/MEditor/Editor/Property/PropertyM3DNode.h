@@ -7,7 +7,6 @@
 #include "imgui.h"
 #include "Light/MDirectionalLight.h"
 #include "MScene.h"
-#include "MShadowTextureRenderTarget.h"
 #include "MTransparentRenderTarget.h"
 #include "MTexture.h"
 #include "MRenderStructure.h"

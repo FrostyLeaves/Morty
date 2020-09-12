@@ -6,8 +6,6 @@
 #include "MScene.h"
 #include "MViewport.h"
 #include "MTexture.h"
-#include "MShadowTextureRenderTarget.h"
-#include "MTransparentRenderTarget.h"
 
 #include "MPainter.h"
 #include "MTexture.h"
