@@ -1,6 +1,6 @@
 #include "modelHeader.hlsl"
 
-VS_OUT_EMPTY VS(VS_IN_EMPTY_ANIM input)
+VS_OUT_EMPTY VS(VS_IN input)
 {
     VS_OUT_EMPTY output;
 

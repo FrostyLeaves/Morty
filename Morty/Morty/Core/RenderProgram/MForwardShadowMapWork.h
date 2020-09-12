@@ -30,6 +30,10 @@ public:
 
     void DrawShadowMap(MForwardRenderProgram::MRenderInfo& info);
 
+    void UpdateRenderInfo(MForwardRenderProgram::MRenderInfo& info);
+
+    void RenderToShadowMap(MForwardRenderProgram::MRenderInfo& info);
+
     virtual void OnCreated() override;
     virtual void OnDelete() override;
 
@@ -39,6 +43,12 @@ protected:
 
 	void InitializeRenderTargets();
     void ReleaseRenderTargets();
+
+	void InitializeShaderParamSet();
+	void ReleaseShaderParamSet();
+
+    void InitializeMaterial();
+    void ReleaseMaterial();
 private:
 
     MIRenderProgram* m_pRenderProgram;
@@ -46,6 +56,12 @@ private:
 	MShadowTextureRenderTarget* m_pShadowDepthMapRenderTarget;
 
 	std::array<MRenderDepthTexture*, M_BUFFER_NUM> m_vShadowDepthTexture;
+
+    MShaderParamSet m_FrameParamSet;
+    MShaderConstantParam* m_pWorldMatrixParam;
+
+	MMaterial* m_pStaticMaterial;
+	MMaterial* m_pAnimMaterial;
 };
 
 #endif

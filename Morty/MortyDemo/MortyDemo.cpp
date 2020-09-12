@@ -84,11 +84,11 @@ public:
 	virtual void OnTick(const float& fDelta)
 	{
 		auto jeep = GetRootNode()->FindFirstChildByName("Jeep")->DynamicCast<M3DNode>();
-		//auto rot = jeep->GetRotation();
-		//rot.RotateY(rrrr);
-		//rrrr += fDelta * 10.0f;
+		auto rot = jeep->GetRotation();
+		rot.RotateY(rrrr);
+		rrrr += fDelta * 10.0f;
 
-		//jeep->SetRotation(rot);
+		jeep->SetRotation(rot);
 		
 		MPointLight* pLight = static_cast<MPointLight*>(GetRootNode()->FindFirstChildByName("Light"));
 

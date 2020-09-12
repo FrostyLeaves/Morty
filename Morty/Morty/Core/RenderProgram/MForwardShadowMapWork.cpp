@@ -20,6 +20,10 @@ MForwardShadowMapWork::MForwardShadowMapWork()
 	, m_pRenderProgram(nullptr)
 	, m_pShadowDepthMapRenderTarget(nullptr)
 	, m_vShadowDepthTexture()
+	, m_FrameParamSet(1)
+	, m_pWorldMatrixParam(nullptr)
+	, m_pStaticMaterial(nullptr)
+	, m_pAnimMaterial(nullptr)
 {
 	
 }
@@ -34,6 +38,21 @@ void MForwardShadowMapWork::DrawShadowMap(MForwardRenderProgram::MRenderInfo& in
 	if (nullptr == info.pDirectionalLight)
 		return;
 
+	UpdateRenderInfo(info);
+	
+	if (info.vShadowGroup.empty())
+		return;
+
+	info.pRenderer->BeginRenderPass(m_pShadowDepthMapRenderTarget);
+
+	RenderToShadowMap(info);
+
+	info.pRenderer->EndRenderPass(m_pShadowDepthMapRenderTarget);
+
+}
+
+void MForwardShadowMapWork::UpdateRenderInfo(MForwardRenderProgram::MRenderInfo& info)
+{
 	Vector3 v3LightDir = info.pDirectionalLight->GetWorldDirection();
 
 	Vector3 v3ShadowMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
@@ -82,16 +101,60 @@ void MForwardShadowMapWork::DrawShadowMap(MForwardRenderProgram::MRenderInfo& in
 
 	info.m4DirLightInvProj = info.pViewport->GetLightInverseProjection(info.pDirectionalLight, info.cMeshRenderAABB, info.cShadowRenderAABB);
 
-	if (nullptr == m_pShadowDepthMapRenderTarget || nullptr == info.pScene->FindActiveDirectionLight())
+}
+
+void MForwardShadowMapWork::RenderToShadowMap(MForwardRenderProgram::MRenderInfo& info)
+{
+	if (m_pWorldMatrixParam)
 	{
-		return;
+		MStruct& cStruct = *m_pWorldMatrixParam->var.GetStruct();
+		cStruct[0] = info.pViewport->GetCameraInverseProjection();
+		cStruct[1] = info.m4DirLightInvProj;
+
+		m_pWorldMatrixParam->SetDirty();
 	}
 
+	info.pRenderer->SetViewport(0.0f, 0.0f, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE, 0.0f, 1.0f);
 
-	//TODO 只有在需要ShadowMap时才进行渲染的优化
-	m_pShadowDepthMapRenderTarget->Render(info.pRenderer, info.m4DirLightInvProj, &info.vShadowGroup);
+	MStruct* pWorldStruct = m_pWorldMatrixParam->var.GetStruct();
+	(*pWorldStruct)[0] = info.m4DirLightInvProj;
+	m_pWorldMatrixParam->SetDirty();
 
-	
+	for (MShadowRenderGroup& group : info.vShadowGroup)
+	{
+		if (MSkeletonInstance* pSkeleton = group.pSkeletonInstance)
+		{
+// 			MVariant& cVariant = (*m_pAnimBonesParam->var.GetStruct())[0];
+// 			MVariantArray& cBonesArray = *cVariant.GetArray();
+// 
+// 			const std::vector<MBone>& bones = pSkeleton->GetAllBones();
+// 			uint32_t size = bones.size();
+// 			if (size > MBONES_MAX_NUMBER)
+// 				size = MBONES_MAX_NUMBER;
+// 			for (uint32_t i = 0; i < size; ++i)
+// 			{
+// 				cBonesArray[i] = bones[i].m_matWorldTransform;
+// 			}
+// 
+// 			m_pAnimBonesParam->SetDirty();
+// 			pRenderer->SetShaderParam(*m_pAnimBonesParam);
+// 
+// 			pRenderer->SetUseMaterial(m_pAnimMaterial);
+		}
+		else
+		{
+			info.pRenderer->SetUseMaterial(m_pStaticMaterial);
+		}
+
+		info.pRenderer->SetShaderParamSet(&m_FrameParamSet);
+
+		for (MIMeshInstance* pMeshIns : group.vMeshInstances)
+		{
+			info.pRenderer->SetShaderParamSet(pMeshIns->GetShaderMeshParamSet());
+			info.pRenderer->DrawMesh(pMeshIns->GetMesh());
+		}
+
+	}
 }
 
 void MForwardShadowMapWork::OnCreated()
@@ -99,11 +162,15 @@ void MForwardShadowMapWork::OnCreated()
 	Super::OnCreated();
 
 	InitializeRenderTargets();
+	InitializeShaderParamSet();
+	InitializeMaterial();
 }
 
 void MForwardShadowMapWork::OnDelete()
 {
+	ReleaseShaderParamSet();
 	ReleaseRenderTargets();
+	ReleaseMaterial();
 
 	Super::OnDelete();
 }
@@ -144,4 +211,37 @@ void MForwardShadowMapWork::ReleaseRenderTargets()
 			m_vShadowDepthTexture[i] = nullptr;
 		}
 	}
+}
+
+void MForwardShadowMapWork::InitializeShaderParamSet()
+{
+	m_pWorldMatrixParam = new MShaderConstantParam();
+	m_pWorldMatrixParam->unSet = 1;
+	m_pWorldMatrixParam->unBinding = 0;
+
+	MStruct worldMatrixSrt;
+	worldMatrixSrt.AppendMVariant("U_matCamProj", Matrix4());
+	worldMatrixSrt.AppendMVariant("U_matLightProj", Matrix4());
+
+	m_pWorldMatrixParam->var = worldMatrixSrt;
+
+	m_FrameParamSet.m_vParams.push_back(m_pWorldMatrixParam);
+}
+
+void MForwardShadowMapWork::ReleaseShaderParamSet()
+{
+	m_FrameParamSet.ClearAndDestroy(GetEngine()->GetDevice());
+}
+
+void MForwardShadowMapWork::InitializeMaterial()
+{
+	MMaterialResource* pShadowMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW);
+	m_pStaticMaterial = pShadowMaterialRes;
+
+	MMaterialResource* pShadowWithAnimMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_ANIM);
+	m_pAnimMaterial = pShadowWithAnimMaterialRes;
+}
+
+void MForwardShadowMapWork::ReleaseMaterial()
+{
 }

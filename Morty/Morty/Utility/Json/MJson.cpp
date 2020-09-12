@@ -228,13 +228,13 @@ void MVariantToJsonValue(const MVariant& var, Value* pValue, Document& doc)
 		pValue->AddMember("01", vFloat[1], doc.GetAllocator());
 		pValue->AddMember("02", vFloat[2], doc.GetAllocator());
 
-		pValue->AddMember("10", vFloat[3], doc.GetAllocator());
-		pValue->AddMember("11", vFloat[4], doc.GetAllocator());
-		pValue->AddMember("12", vFloat[5], doc.GetAllocator());
+		pValue->AddMember("10", vFloat[4], doc.GetAllocator());
+		pValue->AddMember("11", vFloat[5], doc.GetAllocator());
+		pValue->AddMember("12", vFloat[6], doc.GetAllocator());
 
-		pValue->AddMember("20", vFloat[6], doc.GetAllocator());
-		pValue->AddMember("21", vFloat[7], doc.GetAllocator());
-		pValue->AddMember("22", vFloat[8], doc.GetAllocator());
+		pValue->AddMember("20", vFloat[8], doc.GetAllocator());
+		pValue->AddMember("21", vFloat[9], doc.GetAllocator());
+		pValue->AddMember("22", vFloat[10], doc.GetAllocator());
 
 		break;
 	}

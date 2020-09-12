@@ -17,7 +17,11 @@ float ShadowCalculation(float4 dirLightSpacePos, float fNdotL)
 {
     float2 shadowTexCoords;
     shadowTexCoords.x = 0.5f + (dirLightSpacePos.x / dirLightSpacePos.w * 0.5f);
-    shadowTexCoords.y = 0.5f - (dirLightSpacePos.y / dirLightSpacePos.w * 0.5f);
+
+    //DirectX Y 1 -> 0
+//    shadowTexCoords.y = 0.5f - (dirLightSpacePos.y / dirLightSpacePos.w * 0.5f);
+    //Vulkan Y 0 -> 1
+    shadowTexCoords.y = 0.5f + (dirLightSpacePos.y / dirLightSpacePos.w * 0.5f);
     
 	if (saturate(shadowTexCoords.x) == shadowTexCoords.x && saturate(shadowTexCoords.y) == shadowTexCoords.y)
     {     
@@ -27,14 +31,14 @@ float ShadowCalculation(float4 dirLightSpacePos, float fNdotL)
         float lighting = 0.0f;
         
         float pixelDepth = dirLightSpacePos.z / dirLightSpacePos.w - epsilon;
-        float offset = 1.0f / MSHADOW_TEXTURE_SIZE;
-        lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy + float2(0, -offset), pixelDepth));
-        lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy + float2(0, offset), pixelDepth));
-        lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy + float2(-offset, 0), pixelDepth));
-        lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy + float2(offset, 0), pixelDepth));
         lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy, pixelDepth));
  
-        lighting *= 0.2f;
+        //float offset = 1.0f / MSHADOW_TEXTURE_SIZE;
+        //lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy + float2(0, -offset), pixelDepth));
+        //lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy + float2(0, offset), pixelDepth));
+        //lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy + float2(-offset, 0), pixelDepth));
+        //lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy + float2(offset, 0), pixelDepth));
+        //lighting *= 0.2f;
         return lighting;
     }
 

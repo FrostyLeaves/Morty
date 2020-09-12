@@ -75,65 +75,7 @@ void MShadowTextureRenderTarget::OnDelete()
 
 void MShadowTextureRenderTarget::OnRender(MIRenderer* pRenderer)
 {
-// 	if (nullptr == m_pShadowRenderGroup)
-// 		return;
-// 
-// 
-// 	if (nullptr == m_pMeshParam)
-// 		m_pMeshParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
-// 	if (nullptr == m_pWorldParam)
-// 		m_pWorldParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_WORLD_MATRIX);
-// 	if (nullptr == m_pAnimBonesParam)
-// 		m_pAnimBonesParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_ANIMATION);
-// 
-// 	pRenderer->SetViewport(0.0f, 0.0f, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE, 0.0f, 1.0f);
-// 
-// 	MStruct& cWorldStruct = *m_pWorldParam->var.GetStruct();
-// 	MStruct& cMeshStruct = *m_pMeshParam->var.GetStruct();
-// 	cWorldStruct[0] = m_m4LightInvProj;
-// 	m_pWorldParam->SetDirty();
-// 	pRenderer->SetShaderParam(*m_pWorldParam);
-// 
-// 	for (MShadowRenderGroup& group : *m_pShadowRenderGroup)
-// 	{
-// 		if (MSkeletonInstance* pSkeleton = group.pSkeletonInstance)
-// 		{
-// 			MVariant& cVariant = (*m_pAnimBonesParam->var.GetStruct())[0];
-// 			MVariantArray& cBonesArray = *cVariant.GetArray();
-// 
-// 			const std::vector<MBone>& bones = pSkeleton->GetAllBones();
-// 			uint32_t size = bones.size();
-// 			if (size > MBONES_MAX_NUMBER)
-// 				size = MBONES_MAX_NUMBER;
-// 			for (uint32_t i = 0; i < size; ++i)
-// 			{
-// 				cBonesArray[i] = bones[i].m_matWorldTransform;
-// 			}
-// 
-// 			m_pAnimBonesParam->SetDirty();
-// 			pRenderer->SetShaderParam(*m_pAnimBonesParam);
-// 
-// 			pRenderer->SetUseMaterial(m_pAnimMaterial);
-// 		}
-// 		else
-// 		{
-// 			pRenderer->SetUseMaterial(m_pStaticMaterial);
-// 		}
-// 
-// 		for (MIMeshInstance* pMeshIns : group.vMeshInstances)
-// 		{
-// 			Matrix4 worldTrans = pMeshIns->GetWorldTransform();
-// 
-// 			cMeshStruct[0] = worldTrans;
-// 			m_pMeshParam->SetDirty();
-// 			pRenderer->SetShaderParam(*m_pMeshParam);
-// 
-// 			pRenderer->UpdateMaterialParam();
-// 			pRenderer->DrawMesh(pMeshIns->GetMesh());
-// 
-// 		}
-// 
-// 	}
+	
 }
 
 void MShadowTextureRenderTarget::InitRenderPass()
