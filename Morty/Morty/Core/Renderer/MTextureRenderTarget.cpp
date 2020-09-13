@@ -42,6 +42,11 @@ MColor MTextureRenderTarget::GetBackClearColor(const uint32_t& unIndex)
 	return m_vBackClearColor[unIndex];
 }
 
+bool MTextureRenderTarget::GetDepthEnable()
+{
+	return m_vBufferInfo[0].pDepthTexture;
+}
+
 std::vector<MIRenderBackTexture*>* MTextureRenderTarget::GetBackTexture(const uint32_t& unIndex)
 {
 	MFrameBuffer& info = m_vBufferInfo[unIndex];

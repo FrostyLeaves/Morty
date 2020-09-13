@@ -18,6 +18,7 @@ MVulkanRenderTarget::MVulkanRenderTarget(MVulkanDevice* pDevice)
 	, m_unFrameBufferIndex(0)
 	, m_v2Size(800, 600)
 	, m_VkImageAvailableSemaphore(VK_NULL_HANDLE)
+	, m_unMinImageCount(0)
 {
 
 }
@@ -243,6 +244,7 @@ bool MVulkanRenderTarget::InitializeSwapchain()
 		return false;
 	}
 
+	m_unMinImageCount = imageCount;
 	m_VkSwapchain = swapchain;
 	m_VkColorFormat = colorFormat;
 	m_VkExtend = swapchainExtent;

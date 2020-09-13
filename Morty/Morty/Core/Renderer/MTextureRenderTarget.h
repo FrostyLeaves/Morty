@@ -44,7 +44,7 @@ public:
 	virtual uint32_t GetBackNum() override;
 	virtual MColor GetBackClearColor(const uint32_t& unIndex) override;
 
-	virtual bool GetDepthEnable() override { return true; }
+	virtual bool GetDepthEnable() override;
 
 	virtual uint32_t GetMFrameBufferNum() override { return m_vBufferInfo.size(); }
 	virtual MFrameBuffer* GetFrameBuffer(const uint32_t& unIndex) override;

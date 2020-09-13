@@ -150,8 +150,8 @@ copy "$(SolutionDir)ThirdParty\Assimp\lib\vs2019\$(Platform)\*.dll" "$(SolutionD
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Math3D.lib;Morty.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Math3D.lib;Morty.lib;MEditor.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Platform)\$(Configuration)\;$(VK_SDK_PATH)/Lib</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>copy "$(SolutionDir)ThirdParty\CxImage\lib\vs2019\$(Platform)\*.dll" "$(SolutionDir)Build\$(Platform)\$(Configuration)"
@@ -214,8 +214,8 @@ copy "$(SolutionDir)ThirdParty\Assimp\lib\vs2019\$(Platform)\*.dll" "$(SolutionD
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Math3D.lib;Morty.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Math3D.lib;Morty.lib;MEditor.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Platform)\$(Configuration)\;$(VK_SDK_PATH)/Lib</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>copy "$(SolutionDir)ThirdParty\CxImage\lib\vs2019\$(Platform)\*.dll" "$(SolutionDir)Build\$(Platform)\$(Configuration)"

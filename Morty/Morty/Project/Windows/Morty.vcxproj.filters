@@ -390,6 +390,9 @@
     <ClInclude Include="..\..\Core\RenderProgram\MForwardShadowMapWork.h">
       <Filter>Core\RenderProgram\Forward</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\RenderProgram\MForwardRenderShaderParamSet.h">
+      <Filter>Core\RenderProgram\Forward</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -654,6 +657,9 @@
       <Filter>Core\RenderProgram\Forward</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Core\RenderProgram\MForwardShadowMapWork.cpp">
+      <Filter>Core\RenderProgram\Forward</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\RenderProgram\MForwardRenderShaderParamSet.cpp">
       <Filter>Core\RenderProgram\Forward</Filter>
     </ClCompile>
   </ItemGroup>

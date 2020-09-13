@@ -64,6 +64,7 @@ public:
 	void ReleaseSemaphores();
 	
 
+	VkCommandBuffer GetCommandBuffer();
 private:
 
 	MVulkanDevice* m_pDevice;

@@ -372,7 +372,7 @@ void MVulkanRenderer::UpdateShaderParam(MShaderConstantParam& param)
 	if (VK_NULL_HANDLE == param.m_VkBuffer)
 		return;
 
-	if (param.m_pMemoryMapping[m_unFrameIndex])
+	if (param.bDirty && param.m_pMemoryMapping[m_unFrameIndex])
 	{
 		memcpy(param.m_pMemoryMapping[m_unFrameIndex] + param.m_unMemoryOffset[m_unFrameIndex], param.var.GetData(), param.var.GetSize());
 
@@ -383,9 +383,10 @@ void MVulkanRenderer::UpdateShaderParam(MShaderConstantParam& param)
 // 		memoryRange.offset = param.m_unMemoryOffset[m_unFrameIndex];
 // 		memoryRange.size = param.m_unVkMemorySize;
 // 		vkFlushMappedMemoryRanges(m_pDevice->m_VkDevice, 1, &memoryRange);
+
+		param.bDirty[m_unFrameIndex] = false;
 	}
 
-	param.bDirty[m_unFrameIndex] = false;
 }
 
 void MVulkanRenderer::SetShaderParamSet(MShaderParamSet* pParamSet)
@@ -603,5 +604,13 @@ void MVulkanRenderer::ReleaseSemaphores()
 	}
 }
 
+
+VkCommandBuffer MVulkanRenderer::GetCommandBuffer()
+{
+	if (m_vRenderStages.empty())
+		return VK_NULL_HANDLE;
+
+	return m_vRenderStages.back().vkCommandBuffer;
+}
 
 #endif

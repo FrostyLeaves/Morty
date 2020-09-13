@@ -20,6 +20,7 @@ bool MWindowsRenderView::s_bIsRegisterWindow = false;
 MWindowsRenderView::MWindowsRenderView()
 	: MIRenderView()
 	, m_bIsClosed(false)
+	, m_bMinimized(false)
 	, m_nWidth(640)
 	, m_nHeight(480)
 	, m_lEnginePrevTickTime(0)
@@ -139,14 +140,20 @@ bool MWindowsRenderView::Initialize(MEngine* pEngine, const char* svWindowName)
 
 void MWindowsRenderView::OnResize(const int& nWidth, const int& nHeight)
 {
+	if (nWidth <= 0 || nHeight <= 0)
+	{
+		m_bMinimized = true;
+		return;
+	}
+	else
+		m_bMinimized = false;
+
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	if(MDirectX11RenderTarget* pRt = dynamic_cast<MDirectX11RenderTarget*>(m_pRenderTarget))
 		pRt->Resize(nWidth, nHeight);
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 	if (MVulkanRenderTarget* pRt = dynamic_cast<MVulkanRenderTarget*>(m_pRenderTarget))
 		pRt->Resize(nWidth, nHeight);
-// 	for (MViewport* pViewport : m_vViewport)
-// 		pViewport->SetSize(Vector2(nWidth, nHeight));
 #endif
 }
 

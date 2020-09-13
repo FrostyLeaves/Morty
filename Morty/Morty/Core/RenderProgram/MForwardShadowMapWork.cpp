@@ -192,11 +192,11 @@ void MForwardShadowMapWork::InitializeRenderTargets()
 
 	m_pShadowDepthMapRenderTarget->SetDepthTexture(m_vShadowDepthTexture);
 
+	//m_pShadowDepthMapRenderTarget->m_RenderPass.m_vSubpass.push_back(MSubpass());
+	m_pShadowDepthMapRenderTarget->m_RenderPass.m_DepthDesc.bClearWhenRender = true;
+
 	m_pEngine->GetDevice()->GenerateRenderTarget(m_pShadowDepthMapRenderTarget, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE);
 
-
-	m_pShadowDepthMapRenderTarget->m_RenderPass.m_vSubpass.push_back(MSubpass());
-	m_pShadowDepthMapRenderTarget->m_RenderPass.m_DepthDesc.bClearWhenRender = true;
 }
 
 void MForwardShadowMapWork::ReleaseRenderTargets()

@@ -71,6 +71,7 @@ public:
 	std::vector<MFrameBuffer> m_vBufferInfo;
 
 	uint32_t m_unFrameBufferIndex;
+	uint32_t m_unMinImageCount;
 
 	Vector2 m_v2Size;
 

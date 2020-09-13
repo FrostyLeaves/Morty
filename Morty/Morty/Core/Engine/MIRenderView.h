@@ -44,6 +44,8 @@ public:
 	virtual void OnRenderBegin() {}
 	virtual void OnRenderEnd() {}
 
+	virtual bool GetMinimized() = 0;
+
 	void AppendViewport(MViewport* pViewport);
 	void RemoveViewport(MViewport* pViewport);
 	std::vector<MViewport*>& GetViewports(){ return m_vViewport; }

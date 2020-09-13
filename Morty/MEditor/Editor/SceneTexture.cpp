@@ -18,6 +18,7 @@ SceneTexture::SceneTexture()
 	, m_pRenderViewport(nullptr)
 	, m_vBackTexture()
 	, m_vDepthTexture()
+	, m_pRenderProgram(nullptr)
 {
 
 }
@@ -30,6 +31,8 @@ SceneTexture::~SceneTexture()
 void SceneTexture::Initialize(MEngine* pEngine)
 {
 	m_pEngine = pEngine;
+
+	m_pRenderProgram = m_pEngine->GetObjectManager()->CreateObject<MForwardRenderProgram>();
 
 	m_pScene = m_pEngine->GetObjectManager()->CreateObject<MScene>();
 
@@ -66,6 +69,12 @@ void SceneTexture::Initialize(MEngine* pEngine)
 		//m_pRenderViewport->Render(pRenderer, m_pTextureRenderTarget);
 	};
 
+	MRenderPass::MRTDesc mrt;
+	mrt.bClearWhenRender = true;
+	m_pTextureRenderTarget->m_RenderPass.m_vBackDesc.push_back(mrt);
+	m_pTextureRenderTarget->m_RenderPass.m_DepthDesc.bClearWhenRender = true;
+
+	m_pEngine->GetDevice()->GenerateRenderTarget(m_pTextureRenderTarget, 256, 256);
 
 	MCamera* pCamera = m_pRenderViewport->GetCamera();
 	pCamera->SetPosition(Vector3(0, 0, -20));
@@ -83,9 +92,13 @@ void SceneTexture::Release()
 	m_pRenderViewport->DeleteLater();
 	m_pRenderViewport = nullptr;
 
+	m_pEngine->GetDevice()->DestroyRenderTarget(m_pTextureRenderTarget);
+
 	m_pTextureRenderTarget->DeleteLater();
 	m_pTextureRenderTarget = nullptr;
 
+	m_pRenderProgram->DeleteLater();
+	m_pRenderProgram = nullptr;
 
 	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
 	{
@@ -117,10 +130,19 @@ void SceneTexture::SetSize(const Vector2& v2Size)
 		m_vDepthTexture[i]->DestroyBuffer(m_pEngine->GetDevice());
 		m_vDepthTexture[i]->GenerateBuffer(m_pEngine->GetDevice());
 	}
+
+
+	m_pEngine->GetDevice()->DestroyRenderTarget(m_pTextureRenderTarget);
+	m_pEngine->GetDevice()->GenerateRenderTarget(m_pTextureRenderTarget, m_v2Size.x, m_v2Size.y);
 }
 
 void SceneTexture::UpdateTexture()
 {
+	if (m_pRenderProgram)
+	{
+		std::vector<MViewport*> vViewports = { m_pRenderViewport };
+		m_pRenderProgram->Render(m_pEngine->GetRenderer(), m_pTextureRenderTarget, vViewports);
+	}
 //	m_pEngine->GetRenderer()->Render(m_pTextureRenderTarget);
 }
 
@@ -128,7 +150,8 @@ void* SceneTexture::GetTexture(const uint32_t& unFrameIndex)
 {
 	if (m_pTextureRenderTarget)
 	{
-		if (MIRenderBackTexture* pBackTexture = m_pTextureRenderTarget->GetBackTexture(0)->at(unFrameIndex))
+		std::vector<MIRenderBackTexture*>*  pBackTextures = m_pTextureRenderTarget->GetBackTexture(unFrameIndex);
+		if (MIRenderBackTexture* pBackTexture = pBackTextures->at(0))
 		{
 			if (MTextureBuffer* pBuffer = pBackTexture->GetBuffer())
 			{

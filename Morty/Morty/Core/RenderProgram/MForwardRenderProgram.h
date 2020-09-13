@@ -16,6 +16,8 @@
 #include "MMaterialGroup.h"
 #include "Shader/MShaderParamSet.h"
 
+#include "MForwardRenderShaderParamSet.h"
+
 #include <vector>
 
 class MScene;
@@ -70,10 +72,11 @@ public:
 	virtual void OnCreated() override;
 	virtual void OnDelete() override;
 
+	static void UpdateShaderSharedParams(MRenderInfo& info, MForwardRenderShaderParamSet& frameParamSet);
+
 protected:
 
 	void GenerateRenderGroup(MRenderInfo& info);
-	void UpdateShaderSharedParams(MRenderInfo& info);
 	void DrawNormalMesh(MRenderInfo& info);
 
 	void DrawModelInstance(MRenderInfo& info);
@@ -95,20 +98,7 @@ protected:
 
 private:
 
-	MShaderParamSet m_FrameParamSet;
-
-
-	MShaderConstantParam* m_pWorldMatrixParam;
-	MShaderConstantParam* m_pWorldInfoParam;
-	MShaderConstantParam* m_pLightInfoParam;
-
-	MShaderSampleParam* m_pDefaultSampleParam;
-	MShaderSampleParam* m_pLessEqualSampleParam;
-	MShaderSampleParam* m_pGreaterEqualSampleParam;
-
-	MShaderTextureParam* m_pShadowTextureParam;
-	MShaderTextureParam* m_pTransparentFrontTextureParam;
-	MShaderTextureParam* m_pTransparentBackTextureParam;
+	MForwardRenderShaderParamSet m_FrameParamSet;
 
 	MForwardShadowMapWork* m_pShadowMapWork;
 	MForwardTransparentWork* m_pTransparentWork;

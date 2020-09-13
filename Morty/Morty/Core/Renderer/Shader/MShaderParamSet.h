@@ -9,7 +9,7 @@
 #ifndef _M_MSHADERPARAMSET_H_
 #define _M_MSHADERPARAMSET_H_
 #include "MGlobal.h"
-#include "MShaderparam.h"
+#include "MShaderParam.h"
 
 #include <vector>
 
@@ -30,15 +30,15 @@ public:
 
 	MShaderConstantParam* FindConstantParam(const MShaderConstantParam* pParam) { return FindShaderParam(m_vParams, pParam); }
 	void AppendConstantParam(MShaderConstantParam* pParam, const uint32_t& eShaderType) { return AppendShaderParam(m_vParams, pParam, eShaderType); }
-	std::vector<MShaderConstantParam*> RemoveConstantParam(const uint32_t& eShaderType) { return RemoveShaderParam(m_vParams, eShaderType); }
+	std::vector<MShaderConstantParam*> RemoveConstantParam(const uint32_t& eShaderType) { return RemoveShaderParam<MShaderConstantParam>(m_vParams, eShaderType); }
 
 	MShaderTextureParam* FindTextureParam(const MShaderTextureParam* pParam) { return FindShaderParam(m_vTextures, pParam); }
 	void AppendTextureParam(MShaderTextureParam* pParam, const uint32_t& eShaderType) { return AppendShaderParam(m_vTextures, pParam, eShaderType); }
-	std::vector<MShaderTextureParam*> RemoveTextureParam(const uint32_t& eShaderType) { return RemoveShaderParam(m_vTextures, eShaderType); }
+	std::vector<MShaderTextureParam*> RemoveTextureParam(const uint32_t& eShaderType) { return RemoveShaderParam<MShaderTextureParam>(m_vTextures, eShaderType); }
 
 	MShaderSampleParam* FindSampleParam(const MShaderSampleParam* pParam) { return FindShaderParam(m_vSamples, pParam); }
 	void AppendSampleParam(MShaderSampleParam* pParam, const uint32_t& eShaderType) { return AppendShaderParam(m_vSamples, pParam, eShaderType); }
-	std::vector<MShaderSampleParam*> RemoveSampleParam(const uint32_t& eShaderType) { return RemoveShaderParam(m_vSamples, eShaderType); }
+	std::vector<MShaderSampleParam*> RemoveSampleParam(const uint32_t& eShaderType) { return RemoveShaderParam<MShaderSampleParam>(m_vSamples, eShaderType); }
 
 	void ClearAndDestroy(MIDevice* pDevice);
 
@@ -97,7 +97,7 @@ std::vector<ParamType*> MShaderParamSet::RemoveShaderParam(std::vector<ParamType
 {
 	std::vector<ParamType*> vResult;
 
-	for (std::vector<ParamType*>::iterator iter = vVector.begin(); iter != vVector.end();)
+	for (auto iter = vVector.begin(); iter != vVector.end();)
 	{
 		ParamType* param = *iter;
 

@@ -1,7 +1,7 @@
 #include "privateHeader.hlsl"
 
-Texture2D frontTex;
-Texture2D backTex;
+[[vk::binding(1,0)]]Texture2D frontTex;
+[[vk::binding(2,0)]]Texture2D backTex;
 
 struct VS_OUT_DP
 {

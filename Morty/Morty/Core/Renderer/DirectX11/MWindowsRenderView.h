@@ -35,6 +35,8 @@ public:
 	virtual int GetViewWidth() override { return m_nWidth; }
 	virtual int GetViewHeight() override { return m_nHeight; }
 
+	virtual bool GetMinimized() override { return m_bMinimized; }
+
 	virtual void OnResize(const int& nWidth, const int& nHeight) override;
 	virtual void SetRenderTarget(MIRenderTarget* pRenderTarget) override;
 	virtual bool MainLoop(const float& fDelta) override;
@@ -74,6 +76,8 @@ protected:
 
 	long long m_lEnginePrevTickTime;
 	bool m_bIsClosed;
+
+	bool m_bMinimized;
 
 	std::vector<MKeyState> m_vKeyQueue;
 	std::vector<MKeyState> m_vMouseBtnQueue;

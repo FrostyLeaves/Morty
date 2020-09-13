@@ -15,7 +15,7 @@
 #include <array>
 
 class MRenderBackTexture;
-class MTransparentRenderTarget;
+class MTextureRenderTarget;
 class MORTY_CLASS MForwardTransparentWork : public MObject
 {
 public:
@@ -30,6 +30,8 @@ public:
 
     void DrawTransparentMesh(MForwardRenderProgram::MRenderInfo& info);
 
+	void RenderToTarget(MForwardRenderProgram::MRenderInfo& info, MTextureRenderTarget* pRenderTarget, const uint32_t& unFrameParamIdx);
+
     virtual void OnCreated() override;
     virtual void OnDelete() override;
 
@@ -39,17 +41,30 @@ protected:
     void InitializeMesh();
     void ReleaseMesh();
 
+    void InitializeTexture();
+    void ReleaseTexture();
+
     void InitializeRenderTargets();
     void ReleaseRenderTargets();
 
 	void CheckTransparentTextureSize(MForwardRenderProgram::MRenderInfo& info);
 private:
 
-    MIRenderProgram* m_pRenderProgram;
+	MIRenderProgram* m_pRenderProgram;
 
-	MTransparentRenderTarget* m_pTransparentRenderTarget0;
-	MTransparentRenderTarget* m_pTransparentRenderTarget1;
-	MTransparentRenderTarget* m_pTransparentRenderTarget2;
+	MITexture* m_pWhiteTexture;
+	MITexture* m_pBlackTexture;
+
+	MTextureRenderTarget* m_pTransparentRenderTarget0;
+    MTextureRenderTarget* m_pTransparentRenderTarget1;
+    MTextureRenderTarget* m_pTransparentRenderTarget2;
+
+	std::array<MRenderBackTexture*, M_BUFFER_NUM> vBackTexture0;
+	std::array<MRenderBackTexture*, M_BUFFER_NUM> vBackTexture1;
+	std::array<MRenderBackTexture*, M_BUFFER_NUM> vBackTexture2;
+	std::array<MRenderBackTexture*, M_BUFFER_NUM> vBackTexture3;
+
+	MForwardRenderShaderParamSet m_FrameParamSet[3];
 
 	Vector2 m_v2TransparentTextureSize;
 	std::array<MRenderBackTexture*, M_BUFFER_NUM> m_vTransparentFrontTexture;

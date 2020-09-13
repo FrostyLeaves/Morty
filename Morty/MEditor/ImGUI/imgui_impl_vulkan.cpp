@@ -49,6 +49,7 @@
 #include "imgui.h"
 #include "imgui_impl_vulkan.h"
 #include <stdio.h>
+#include <map>
 
 // Reusable buffers used for rendering 1 current in-flight frame, for ImGui_ImplVulkan_RenderDrawData()
 // [Please zero-clear before use!]
@@ -80,6 +81,8 @@ static VkDescriptorSetLayout    g_DescriptorSetLayout = VK_NULL_HANDLE;
 static VkPipelineLayout         g_PipelineLayout = VK_NULL_HANDLE;
 static VkDescriptorSet          g_DescriptorSet = VK_NULL_HANDLE;
 static VkPipeline               g_Pipeline = VK_NULL_HANDLE;
+
+static std::map<void*, VkDescriptorSet> g_DescriptorSets;
 
 // Font data
 static VkSampler                g_FontSampler = VK_NULL_HANDLE;
@@ -233,6 +236,37 @@ static void check_vk_result(VkResult err)
         v->CheckVkResultFn(err);
 }
 
+VkDescriptorSet CreateAndBindDescriptorSet(void* pTextureID)
+{
+	ImGui_ImplVulkan_InitInfo* v = &g_VulkanInitInfo;
+
+	VkDescriptorSet result;
+
+	VkResult err;
+	VkDescriptorSetAllocateInfo alloc_info = {};
+	alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	alloc_info.descriptorPool = v->DescriptorPool;
+	alloc_info.descriptorSetCount = 1;
+	alloc_info.pSetLayouts = &g_DescriptorSetLayout;
+	err = vkAllocateDescriptorSets(v->Device, &alloc_info, &result);
+	check_vk_result(err);
+
+
+	VkDescriptorImageInfo desc_image[1] = {};
+	desc_image[0].sampler = g_FontSampler;
+	desc_image[0].imageView = (VkImageView)pTextureID;
+	desc_image[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	VkWriteDescriptorSet write_desc[1] = {};
+	write_desc[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	write_desc[0].dstSet = result;
+	write_desc[0].descriptorCount = 1;
+	write_desc[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	write_desc[0].pImageInfo = desc_image;
+	vkUpdateDescriptorSets(v->Device, 1, write_desc, 0, NULL);
+
+	return result;
+}
+
 static void CreateOrResizeBuffer(VkBuffer& buffer, VkDeviceMemory& buffer_memory, VkDeviceSize& p_buffer_size, size_t new_size, VkBufferUsageFlagBits usage)
 {
     ImGui_ImplVulkan_InitInfo* v = &g_VulkanInitInfo;
@@ -266,12 +300,31 @@ static void CreateOrResizeBuffer(VkBuffer& buffer, VkDeviceMemory& buffer_memory
     p_buffer_size = new_size;
 }
 
-static void ImGui_ImplVulkan_SetupRenderState(ImDrawData* draw_data, VkCommandBuffer command_buffer, ImGui_ImplVulkanH_FrameRenderBuffers* rb, int fb_width, int fb_height)
+static void ImGui_ImplVulkan_SetupRenderState(ImDrawData* draw_data, VkCommandBuffer command_buffer, ImGui_ImplVulkanH_FrameRenderBuffers* rb, int fb_width, int fb_height, void* pTextureID = nullptr)
 {
     // Bind pipeline and descriptor sets:
     {
+        VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
+
+        if (pTextureID && pTextureID != g_FontImage)
+        {
+			auto find_result = g_DescriptorSets.find(pTextureID);
+			if (find_result == g_DescriptorSets.end())
+			{
+                descriptorSet = CreateAndBindDescriptorSet(pTextureID);
+                g_DescriptorSets[pTextureID] = descriptorSet;
+			}
+            else
+            {
+                descriptorSet = find_result->second;
+            }
+        }
+        else
+            descriptorSet = g_DescriptorSet;
+
+
         vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_Pipeline);
-        VkDescriptorSet desc_set[1] = { g_DescriptorSet };
+        VkDescriptorSet desc_set[1] = { descriptorSet };
         vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_PipelineLayout, 0, 1, desc_set, 0, NULL);
     }
 
@@ -384,12 +437,20 @@ void ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, VkCommandBuffer comm
     // (Because we merged all buffers into a single one, we maintain our own offset into them)
     int global_vtx_offset = 0;
     int global_idx_offset = 0;
+    void* using_texture = nullptr;
     for (int n = 0; n < draw_data->CmdListsCount; n++)
     {
         const ImDrawList* cmd_list = draw_data->CmdLists[n];
         for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
         {
             const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
+
+            if (using_texture != pcmd->TextureId.pTexture)
+            {
+                using_texture = pcmd->TextureId.pTexture;
+                ImGui_ImplVulkan_SetupRenderState(draw_data, command_buffer, rb, fb_width, fb_height, using_texture);
+            }
+
             if (pcmd->UserCallback != NULL)
             {
                 // User callback, registered via ImDrawList::AddCallback()
@@ -581,7 +642,10 @@ bool ImGui_ImplVulkan_CreateFontsTexture(VkCommandBuffer command_buffer)
     }
 
     // Store our identifier
-    io.Fonts->TexID = (ImTextureID)(intptr_t)g_FontImage;
+    ImTextureStruct imTexStruct;
+    imTexStruct.pTexture = g_FontImage;
+    imTexStruct.nType = 0;
+    io.Fonts->TexID = imTexStruct;
 
     return true;
 }

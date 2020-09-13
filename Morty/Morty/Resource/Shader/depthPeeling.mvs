@@ -1,17 +1,12 @@
 #include "privateHeader.hlsl"
 
-struct VS_IN_DP
-{
-    float2 pos : POSITION;
-};
-
 struct VS_OUT_DP
 {
     float4 pos : SV_POSITION;
     float2 uv : TEXCOORD;
 };
 
-VS_OUT_DP VS(VS_IN_DP input)
+VS_OUT_DP VS(VS_IN input)
 {
     VS_OUT_DP output;
 

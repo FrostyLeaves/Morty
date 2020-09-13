@@ -6,7 +6,7 @@
 #endif
 #include "MObject.h"
 
-//#define MORTY_EDITOR_ENABLE
+#define MORTY_EDITOR_ENABLE
 
 #include "stdafx.h"
 #include "MEngine.h"

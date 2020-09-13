@@ -7,7 +7,10 @@
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 #include "imgui_impl_dx11.h"
 #elif RENDER_GRAPHICS == MORTY_VULKAN
+#include "vulkan/vulkan_core.h"
 #include "imgui_impl_vulkan.h"
+#include "Vulkan/MVulkanRenderer.h"
+#include "Vulkan/MVulkanRenderTarget.h"
 #endif
 
 #include "MDirectX11RenderTarget.h"
@@ -52,7 +55,7 @@ MainEditor::MainEditor()
 	, m_bShowMessage(true)
 	, m_bShowNodeTree(true)
 	, m_bShowProperty(true)
-	, m_bShowRenderView(false)
+	, m_bShowRenderView(true)
 	, m_bShowMaterial(false)
 	, m_bShowResource(true)
 {
@@ -92,7 +95,7 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	if (!MWindowsRenderView::Initialize(pEngine, svWindowName))
 		return false;
 
-
+	
 	// Setup Platform/Renderer bindings
 	ImGui_ImplWin32_Init(GetHWND());
 
@@ -101,24 +104,30 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	ImGui_ImplDX11_Init(pDevice->m_pD3dDevice, pDevice->m_pD3dContext);
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 	MVulkanDevice* pDevice = dynamic_cast<MVulkanDevice*>(m_pEngine->GetDevice());
-	
-	ImGui_ImplVulkan_InitInfo vulkanInitInfo;
+	MVulkanRenderTarget* pRenderTarget = dynamic_cast<MVulkanRenderTarget*>(GetRenderTarget());
+
+	ImGui_ImplVulkan_InitInfo vulkanInitInfo = {};
 
 	vulkanInitInfo.Allocator = nullptr;
 	vulkanInitInfo.CheckVkResultFn = nullptr;
 	vulkanInitInfo.DescriptorPool = pDevice->m_ObjectDestructor.m_VkDescriptorPool;
 	vulkanInitInfo.Device = pDevice->m_VkDevice;
-	vulkanInitInfo.ImageCount;
+	vulkanInitInfo.ImageCount = pRenderTarget->m_vBufferInfo.size();
 	vulkanInitInfo.Instance = pDevice->m_VkInstance;
-	vulkanInitInfo.MinImageCount;
-	vulkanInitInfo.MSAASamples;
+	vulkanInitInfo.MinImageCount = pRenderTarget->m_unMinImageCount;
+	vulkanInitInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 	vulkanInitInfo.PhysicalDevice = pDevice->m_VkPhysicalDevice;
-	vulkanInitInfo.PipelineCache;
-	vulkanInitInfo.Queue;
-	vulkanInitInfo.QueueFamily;
+	vulkanInitInfo.PipelineCache = VK_NULL_HANDLE;
+	vulkanInitInfo.Queue = pDevice->m_VkGraphicsQueue;
+	vulkanInitInfo.QueueFamily = pDevice->FindQueueGraphicsFamilies(pDevice->m_VkPhysicalDevice);
 
 	MVulkanRenderTarget* pVulkanRenderTarget = dynamic_cast<MVulkanRenderTarget*>(GetRenderTarget());
 	ImGui_ImplVulkan_Init(&vulkanInitInfo, pVulkanRenderTarget->m_RenderPass.m_aVkRenderPass[0]);
+
+
+	VkCommandBuffer buffer = pDevice->BeginCommands();
+	ImGui_ImplVulkan_CreateFontsTexture(buffer);
+	pDevice->EndCommands(buffer);
 #endif
 
 	//Setup Render
@@ -173,6 +182,9 @@ void MainEditor::OnResize(const int& nWidth, const int& nHeight)
 {
 	MWindowsRenderView::OnResize(nWidth, nHeight);
 
+	if (nWidth == 0 || nHeight == 0)
+		return;
+
 	if (m_vViewport.empty())
 		return;
 
@@ -216,7 +228,18 @@ void MainEditor::OnRenderEnd()
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), );
+
+	if (MVulkanRenderer* pVkRenderer = dynamic_cast<MVulkanRenderer*>(m_pEngine->GetRenderer()))
+	{
+		if (VkCommandBuffer vkCmmandBuffer = pVkRenderer->GetCommandBuffer())
+		{
+			pVkRenderer->BeginRenderPass(GetRenderTarget());
+
+			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), vkCmmandBuffer);
+
+			pVkRenderer->EndRenderPass(GetRenderTarget());
+		}
+	}
 #endif
 }
 

@@ -9,8 +9,9 @@
 class MScene;
 class MEngine;
 class MViewport;
-class MRenderDepthTexture;
+class MIRenderProgram;
 class MRenderBackTexture;
+class MRenderDepthTexture;
 class MTextureRenderTarget;
 
 class SceneTexture
@@ -43,6 +44,9 @@ protected:
 
 	MTextureRenderTarget* m_pTextureRenderTarget;
 	MViewport* m_pRenderViewport;
+
+
+	MIRenderProgram* m_pRenderProgram;
 
 };
 

@@ -346,11 +346,22 @@ bool MEngine::MainLoop()
 
 void MEngine::RenderToView(MIRenderView* pView)
 {
+	if (pView->GetMinimized())
+		return;
+
 	if (MIRenderTarget* pRenderTarget = pView->GetRenderTarget())
 	{
 		pRenderTarget->OnRenderBefore(m_pRenderer);
 
+		m_pRenderer->RenderBegin(pRenderTarget);
+
+		pView->OnRenderBegin();
+
 		m_pRenderProgram->Render(m_pRenderer, pRenderTarget, pView->GetViewports());
+
+		pView->OnRenderEnd();
+
+		m_pRenderer->RenderEnd(pRenderTarget);
 
 		pRenderTarget->OnRenderAfter(m_pRenderer);
 	}

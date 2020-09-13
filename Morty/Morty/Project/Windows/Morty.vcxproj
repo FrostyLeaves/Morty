@@ -253,6 +253,7 @@
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanRenderTarget.h" />
     <ClInclude Include="..\..\Core\RenderProgram\MBasicRenderProgram.h" />
     <ClInclude Include="..\..\Core\RenderProgram\MForwardRenderProgram.h" />
+    <ClInclude Include="..\..\Core\RenderProgram\MForwardRenderShaderParamSet.h" />
     <ClInclude Include="..\..\Core\RenderProgram\MForwardShadowMapWork.h" />
     <ClInclude Include="..\..\Core\RenderProgram\MForwardTransparentWork.h" />
     <ClInclude Include="..\..\Core\RenderProgram\MIRenderProgram.h" />
@@ -364,6 +365,7 @@
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanRenderTarget.cpp" />
     <ClCompile Include="..\..\Core\RenderProgram\MBasicRenderProgram.cpp" />
     <ClCompile Include="..\..\Core\RenderProgram\MForwardRenderProgram.cpp" />
+    <ClCompile Include="..\..\Core\RenderProgram\MForwardRenderShaderParamSet.cpp" />
     <ClCompile Include="..\..\Core\RenderProgram\MForwardShadowMapWork.cpp" />
     <ClCompile Include="..\..\Core\RenderProgram\MForwardTransparentWork.cpp" />
     <ClCompile Include="..\..\Core\RenderProgram\MIRenderProgram.cpp" />

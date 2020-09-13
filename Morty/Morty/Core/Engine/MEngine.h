@@ -52,6 +52,8 @@ public:
 	MObjectManager* GetObjectManager() { return m_pObjectManager; }
 	MResourceManager* GetResourceManager() { return m_pResourceManager; }
 
+	MIRenderProgram* GetRenderProgram() { return m_pRenderProgram; }
+
 public:
 
 	void SetMaxFPS(const int& nFPS);

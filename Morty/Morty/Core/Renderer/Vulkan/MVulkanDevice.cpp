@@ -948,7 +948,7 @@ bool MVulkanDevice::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTexture
 
 	VkFormat textureFormat = GetFormat(eType);
 
-	CreateImage(unWidth, unHeight, textureFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+	CreateImage(unWidth, unHeight, textureFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
 	TransitionImageLayout(textureImage, textureFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	
 	(*ppTextureBuffer) = new MRenderTextureBuffer();
@@ -1018,7 +1018,7 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t
 		//这里仅用于格式验证，具体渲染的时候，这个framebuffer不一定用哪个renderPass
 		framebufferInfo.renderPass = renderPass.m_aVkRenderPass[0];		
 
-		// TODO attachmentCount is dynamic.
+
 		framebufferInfo.attachmentCount = vAttachments.size();
 		framebufferInfo.pAttachments = vAttachments.data();
 		framebufferInfo.width = nWidth;
@@ -1138,13 +1138,19 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 		else
 			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 
-		colorAttachment.format = pRenderTarget->m_VkColorFormat;
+		MIRenderBackTexture* pBackTexture = pRenderTarget->GetFrameBuffer(0)->vBackTextures[i];
+
+		colorAttachment.format = pBackTexture->GetBuffer()->m_VkTextureFormat;
 		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+		if (dynamic_cast<MVulkanRenderTarget*>(pRenderTarget))
+			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		else
+			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	}
 
