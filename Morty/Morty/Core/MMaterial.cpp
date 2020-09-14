@@ -313,8 +313,10 @@ void MMaterial::CopyShaderParamSet(MShaderParamSet& target, const MShaderParamSe
 
 void MMaterial::SetMaterialType(const MEMaterialType& eType)
 {
-	m_eMaterialType = eType;
+	if (m_eMaterialType == eType)
+		return;
 
+	m_eMaterialType = eType;
 
 	switch (m_eMaterialType)
 	{
@@ -333,6 +335,11 @@ void MMaterial::SetMaterialType(const MEMaterialType& eType)
 		LoadPixelShader(m_PixelResource.GetResource());
 		break;
 	}
+
+	GetEngine()->GetDevice()->UnRegisterMaterial(this);
+
+
+	GetEngine()->GetDevice()->RegisterMaterial(this);
 }
 
 bool MMaterial::LoadVertexShader(MResource* pResource)

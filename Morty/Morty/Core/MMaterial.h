@@ -49,8 +49,6 @@ public:
 	MShaderParamSet* GetFrameParamSet() { return &m_FrameSet; }
 	MShaderParamSet* GetMeshParamSet() { return &m_MeshSet; }
 
-
-
 	void SetTexutreParam(const MString& strName, MResource* pTexResource);
 	void SetTexutreParam(const uint32_t& unIndex, MResource* pTexResource);
 
@@ -64,7 +62,6 @@ public:
 
 	bool LoadVertexShader(MResource* pResource);
 	bool LoadPixelShader(MResource* pResource);
-
 
 public:
 

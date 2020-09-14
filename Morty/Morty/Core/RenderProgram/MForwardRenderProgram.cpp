@@ -132,8 +132,8 @@ void MForwardRenderProgram::OnCreated()
 	m_pShadowMapWork = GetEngine()->GetObjectManager()->CreateObject<MForwardShadowMapWork>();
 	m_pShadowMapWork->SetProgram(this);
  
-	m_pTransparentWork = GetEngine()->GetObjectManager()->CreateObject<MForwardTransparentWork>();
-	m_pTransparentWork->SetProgram(this);
+// 	m_pTransparentWork = GetEngine()->GetObjectManager()->CreateObject<MForwardTransparentWork>();
+// 	m_pTransparentWork->SetProgram(this);
 }
 
 void MForwardRenderProgram::OnDelete()

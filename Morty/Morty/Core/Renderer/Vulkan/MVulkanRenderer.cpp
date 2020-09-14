@@ -367,6 +367,47 @@ bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial)
 	return false;
 }
 
+void MVulkanRenderer::GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPass, std::vector<VkPipelineColorBlendAttachmentState>& vAttachState, VkPipelineColorBlendStateCreateInfo& blendInfo)
+{
+	for (uint32_t i = 0; i < pRenderPass->m_vBackDesc.size(); ++i)
+	{
+		vAttachState.push_back({});
+		vAttachState.back().colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+		vAttachState.back().blendEnable = VK_FALSE;
+	}
+
+	blendInfo = {};
+	blendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	blendInfo.logicOpEnable = VK_FALSE;
+	blendInfo.logicOp = VK_LOGIC_OP_COPY;
+
+	MEMaterialType eType = pMaterial->GetMaterialType();
+
+// 	if (MEMaterialType::EDefault == eType)
+// 	{
+// 		m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::EDefault], 0);
+// 		m_pDevice->m_pD3dContext->OMSetBlendState(m_vBlendState[(int)MEBlendType::EDefault], nullptr, 0xffffffff);
+// 	}
+// 	else if (MEMaterialType::ETransparent == eType)
+// 	{
+// 		m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::EReadNotWrite], 0);
+// 		m_pDevice->m_pD3dContext->OMSetBlendState(m_vBlendState[(int)MEBlendType::EAlphaOverlying], nullptr, 0xffffffff);
+// 	}
+// 	else if (MEMaterialType::EBlendTransparent == eType)
+// 	{
+// 		m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::ENotReadNotWrite], 0);
+// 		m_pDevice->m_pD3dContext->OMSetBlendState(m_vBlendState[(int)MEBlendType::ETransparent], nullptr, 0xffffffff);
+// 	}
+
+	blendInfo.attachmentCount = vAttachState.size();
+	blendInfo.pAttachments = vAttachState.data();
+	blendInfo.blendConstants[0] = 0.0f;
+	blendInfo.blendConstants[1] = 0.0f;
+	blendInfo.blendConstants[2] = 0.0f;
+	blendInfo.blendConstants[3] = 0.0f;
+
+}
+
 void MVulkanRenderer::UpdateShaderParam(MShaderConstantParam& param)
 {
 	if (VK_NULL_HANDLE == param.m_VkBuffer)
@@ -498,6 +539,14 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 	inputStateInfo.vertexAttributeDescriptionCount = pVertexShaderBuffer->m_vAttributeDescs.size();
 	inputStateInfo.pVertexAttributeDescriptions = pVertexShaderBuffer->m_vAttributeDescs.data();
 	
+
+
+	VkPipelineColorBlendStateCreateInfo blendInfo = {};
+	std::vector<VkPipelineColorBlendAttachmentState> vBlendAttach;
+
+	//在vkCreateGraphicsPipelines之前，vBlendAttach不能被释放
+	GetBlendStage(pMaterial, pRenderPass, vBlendAttach, blendInfo);
+
 	VkPipelineLayout pipelineLayout = m_pDevice->m_PipelineManager.FindPipelineLayout(pMaterial)->pipelineLayout;
 
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -510,7 +559,7 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 	pipelineInfo.pViewportState = &viewportState;
 	pipelineInfo.pRasterizationState = &m_RasterizationState;
 	pipelineInfo.pMultisampleState = &m_MultisampleState;
-	pipelineInfo.pColorBlendState = &m_ColorBlending;
+	pipelineInfo.pColorBlendState = &blendInfo;
 	pipelineInfo.pDepthStencilState = &m_DepthStencilState;
 	pipelineInfo.layout = pipelineLayout;
 	pipelineInfo.renderPass = pRenderPass->m_aVkRenderPass[m_unFrameIndex];

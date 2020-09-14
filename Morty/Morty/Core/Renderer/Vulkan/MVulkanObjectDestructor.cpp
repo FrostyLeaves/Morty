@@ -2,9 +2,9 @@
 #include "MVulkanDevice.h"
 
 #define M_VULKAN_DESTROY_CLEAR(VK_TYPE, VK_FUNC) \
-	for (Vk##VK_TYPE& buffer : m_v##VK_TYPE[unFrameIndex])\
+	for (Vk##VK_TYPE& buffer : m_v##VK_TYPE[m_unSafeIdx])\
 		VK_FUNC(device, buffer, nullptr);\
-	m_v##VK_TYPE[unFrameIndex].clear();\
+	m_v##VK_TYPE[m_unSafeIdx].clear();\
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
@@ -14,6 +14,7 @@ MVulkanObjectDestructor::MVulkanObjectDestructor(MVulkanDevice* pDevice)
 	, m_VkDescriptorPool(VK_NULL_HANDLE)
 	, m_VkDefaultSampler(VK_NULL_HANDLE)
 	, m_VkLessEqualSampler(VK_NULL_HANDLE)
+	, m_unSafeIdx(0)
 {
 
 }
@@ -21,6 +22,11 @@ MVulkanObjectDestructor::MVulkanObjectDestructor(MVulkanDevice* pDevice)
 void MVulkanObjectDestructor::FrameFinished(const uint32_t& unFrameIndex)
 {
 	VkDevice device = m_pDevice->m_VkDevice;
+
+	if (unFrameIndex != M_BUFFER_NUM - 1)
+		return;
+
+	m_unSafeIdx = (m_unSafeIdx + 1) % 2;
 
 	M_VULKAN_DESTROY_CLEAR(Buffer, vkDestroyBuffer);
 	M_VULKAN_DESTROY_CLEAR(DeviceMemory, vkFreeMemory);
@@ -37,13 +43,13 @@ void MVulkanObjectDestructor::FrameFinished(const uint32_t& unFrameIndex)
 	M_VULKAN_DESTROY_CLEAR(Event, vkDestroyEvent);
 	M_VULKAN_DESTROY_CLEAR(Sampler, vkDestroySampler);
 
-	for (auto& set : m_vDescriptorSets[unFrameIndex])
+	for (auto& set : m_vDescriptorSets[m_unSafeIdx])
 		vkFreeDescriptorSets(device, m_VkDescriptorPool, set.size(), set.data());
-	m_vDescriptorSets[unFrameIndex].clear();
+	m_vDescriptorSets[m_unSafeIdx].clear();
 
-	for (VkCommandBuffer commandBuffer : m_vCommandBuffer[unFrameIndex])
+	for (VkCommandBuffer commandBuffer : m_vCommandBuffer[m_unSafeIdx])
 		vkFreeCommandBuffers(device, m_pDevice->m_VkCommandPool, 1, &commandBuffer);
-	m_vCommandBuffer[unFrameIndex].clear();
+	m_vCommandBuffer[m_unSafeIdx].clear();
 }
 
 bool MVulkanObjectDestructor::Initialize()
@@ -59,6 +65,10 @@ bool MVulkanObjectDestructor::Initialize()
 
 void MVulkanObjectDestructor::Release()
 {
+	//Release All Vk Object.
+	FrameFinished(M_BUFFER_NUM - 1);
+	FrameFinished(M_BUFFER_NUM - 1);
+
 	vkDestroyDescriptorPool(m_pDevice->m_VkDevice, m_VkDescriptorPool, nullptr);
 
 	vkDestroySampler(m_pDevice->m_VkDevice, m_VkDefaultSampler, nullptr);

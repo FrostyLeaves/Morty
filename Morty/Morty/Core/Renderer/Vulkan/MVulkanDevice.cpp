@@ -116,10 +116,6 @@ void MVulkanDevice::Release()
 	m_PipelineManager.Release();
 	m_DynamicUniformBufferPool.Release();
 
-	//Release All Vk Object.
-	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-		m_ObjectDestructor.FrameFinished(i);
-
 	m_ObjectDestructor.Release();
 
 	vkDestroyCommandPool(m_VkDevice, m_VkCommandPool, nullptr);
@@ -949,13 +945,13 @@ bool MVulkanDevice::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTexture
 	VkFormat textureFormat = GetFormat(eType);
 
 	CreateImage(unWidth, unHeight, textureFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
-	TransitionImageLayout(textureImage, textureFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	//TransitionImageLayout(textureImage, textureFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	
 	(*ppTextureBuffer) = new MRenderTextureBuffer();
 	(*ppTextureBuffer)->m_VkTextureImage = textureImage;
 	(*ppTextureBuffer)->m_VkTextureImageMemory = textureImageMemory;
 	(*ppTextureBuffer)->m_VkTextureFormat = textureFormat;
-	(*ppTextureBuffer)->m_VkImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	(*ppTextureBuffer)->m_VkImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	GenerateRenderTargetView(*ppTextureBuffer);
 	

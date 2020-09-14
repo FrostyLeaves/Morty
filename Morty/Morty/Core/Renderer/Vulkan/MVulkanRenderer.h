@@ -52,6 +52,10 @@ public:
 	virtual bool SetUseMaterial(MMaterial* pMaterial) override;
 
 public:
+
+	void GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPass, std::vector<VkPipelineColorBlendAttachmentState>& vAttachState, VkPipelineColorBlendStateCreateInfo& blendInfo);
+
+
 	void UpdateShaderParam(MShaderConstantParam& param);
 
 	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) override;

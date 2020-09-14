@@ -44,8 +44,10 @@ public:
 public:
 
 #define M_VULKAN_DESTROY_LATER_FUNC(VK_TYPE) \
-std::vector<Vk##VK_TYPE> m_v##VK_TYPE[M_BUFFER_NUM];\
-void Destroy##VK_TYPE##Later(const uint32_t& unFrameIndex, Vk##VK_TYPE& buffer){m_v##VK_TYPE[unFrameIndex].push_back(buffer);}\
+std::vector<Vk##VK_TYPE> m_v##VK_TYPE[2];\
+void Destroy##VK_TYPE##Later(const uint32_t& unFrameIndex, Vk##VK_TYPE& buffer){\
+		m_v##VK_TYPE[m_unSafeIdx].push_back(buffer); \
+}\
 
 
 	M_VULKAN_DESTROY_LATER_FUNC(Buffer);
@@ -74,6 +76,8 @@ void Destroy##VK_TYPE##Later(const uint32_t& unFrameIndex, Vk##VK_TYPE& buffer){
 
 	VkSampler m_VkDefaultSampler;
 	VkSampler m_VkLessEqualSampler;
+
+	uint32_t m_unSafeIdx;
 };
 
 
