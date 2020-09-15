@@ -4,7 +4,8 @@
 #include "MIDevice.h"
 #include "MEngine.h"
 
-#include "ximage.h"
+//#include "ximage.h"
+#include "spot.hpp"
 
 M_RESOURCE_IMPLEMENT(MTextureResource, MResource)
 
@@ -29,13 +30,13 @@ void MTextureResource::OnDelete()
 
 bool MTextureResource::Load(const MString& strResourcePath)
 {
-	CxImage image;
-	uint32_t imageType = CxImage::GetTypeIdFromName(GetSuffix(strResourcePath).c_str());
-	if (false == image.Load(strResourcePath.c_str(), imageType))
+	spot::texture image;
+
+	if (!image.load(strResourcePath))
 		return false;
-	TCHAR ch;
-	uint32_t unWidth = image.GetWidth();
-	uint32_t unHeight = image.GetHeight();
+
+	uint32_t unWidth = image.w;
+	uint32_t unHeight = image.h;
 
 	m_pTexture->DestroyTexture(m_pEngine->GetDevice());
 
@@ -43,21 +44,17 @@ bool MTextureResource::Load(const MString& strResourcePath)
 
 	unsigned char* pData = m_pTexture->GetImageData();
 
-	if (!image.AlphaIsValid())
-	{
-		image.AlphaCreate();
-		image.AlphaSet(255);
-	}
+	memcpy(pData, image.data(), image.size());
 
 	for (int x = 0; x < unWidth; ++x)
 	{
 		for (int y = 0; y < unHeight; ++y)
 		{
-			RGBQUAD color = image.GetPixelColor(x, unHeight - 1 - y, true);
-			pData[(y * unWidth + x) * 4 + 0] = color.rgbRed;
-			pData[(y * unWidth + x) * 4 + 1] = color.rgbGreen;
-			pData[(y * unWidth + x) * 4 + 2] = color.rgbBlue;
-			pData[(y * unWidth + x) * 4 + 3] = color.rgbReserved;
+			auto color = image.at(x, unHeight - 1 - y);
+			pData[(y * unWidth + x) * 4 + 0] = color.r;
+			pData[(y * unWidth + x) * 4 + 1] = color.g;
+			pData[(y * unWidth + x) * 4 + 2] = color.b;
+			pData[(y * unWidth + x) * 4 + 3] = color.a;
 		}
 	}
 

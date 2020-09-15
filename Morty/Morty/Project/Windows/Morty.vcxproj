@@ -121,13 +121,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;Morty_EXPORTS;__STDC_LIMIT_MACROS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(VK_SDK_PATH)/Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/Eigen;$(SolutionDir)ThirdParty/SpirvCross/include;$(SolutionDir)ThirdParty/glslang/include;$(SolutionDir)ThirdParty/SPIRV/include;$(SolutionDir)Morty/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/Organizer;$(SolutionDir)Morty/Organizer/System;$(SolutionDir)Morty/Organizer/Node;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/RefCounter;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Renderer/Vulkan;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Core/Animation;$(SolutionDir)Morty/Core/RenderProgram</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(VK_SDK_PATH)/Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/spot;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/Eigen;$(SolutionDir)ThirdParty/SpirvCross/include;$(SolutionDir)ThirdParty/glslang/include;$(SolutionDir)ThirdParty/SPIRV/include;$(SolutionDir)Morty/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/Organizer;$(SolutionDir)Morty/Organizer/System;$(SolutionDir)Morty/Organizer/Node;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/RefCounter;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Renderer/Vulkan;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Core/Animation;$(SolutionDir)Morty/Core/RenderProgram</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>cximagecrt.lib;assimp-vc142-mt.lib;d3d11.lib;d3dx11.lib;dxguid.lib;d3dcompiler.lib;vulkan-1.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Math3D.lib;glslangd.lib;SPIRVd.lib;OSDependentd.lib;OGLCompilerd.lib;glslang-default-resource-limitsd.lib;spirv-cross-cored.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp-vc142-mt.lib;d3d11.lib;d3dx11.lib;dxguid.lib;d3dcompiler.lib;vulkan-1.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Math3D.lib;glslangd.lib;SPIRVd.lib;OSDependentd.lib;OGLCompilerd.lib;glslang-default-resource-limitsd.lib;spirv-cross-cored.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Platform)\$(Configuration);$(SolutionDir)ThirdParty/Assimp/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/CxImage/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/SpirvCross/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/glslang/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/SPIRV/lib/vs2019/$(Platform)/$(Configuration);$(DXSDK_DIR)Lib/$(PlatformTarget);$(VK_SDK_PATH)/Lib</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
@@ -179,7 +179,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;Morty_EXPORTS;__STDC_LIMIT_MACROS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(VK_SDK_PATH)/Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/CxImage/include;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/Eigen;$(SolutionDir)ThirdParty/SpirvCross/include;$(SolutionDir)ThirdParty/glslang/include;$(SolutionDir)ThirdParty/SPIRV/include;$(SolutionDir)Morty/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/Organizer;$(SolutionDir)Morty/Organizer/System;$(SolutionDir)Morty/Organizer/Node;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/RefCounter;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Renderer/Vulkan;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Core/Animation;$(SolutionDir)Morty/Core/RenderProgram</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(VK_SDK_PATH)/Include;$(SolutionDir)ThirdParty/Assimp/include;$(SolutionDir)ThirdParty/spot;$(SolutionDir)ThirdParty/rapidjson/include;$(SolutionDir)ThirdParty/Eigen;$(SolutionDir)ThirdParty/SpirvCross/include;$(SolutionDir)ThirdParty/glslang/include;$(SolutionDir)ThirdParty/SPIRV/include;$(SolutionDir)Morty/Math;$(SolutionDir)Morty/Utility;$(SolutionDir)Morty/ResourceLoader;$(SolutionDir)Morty/Organizer;$(SolutionDir)Morty/Organizer/System;$(SolutionDir)Morty/Organizer/Node;$(SolutionDir)Morty/Core;$(SolutionDir)Morty/Core/Engine;$(SolutionDir)Morty/Core/RefCounter;$(SolutionDir)Morty/Core/Log;$(SolutionDir)Morty/Core/Renderer;$(SolutionDir)Morty/Core/Renderer/DirectX11;$(SolutionDir)Morty/Core/Renderer/Vulkan;$(SolutionDir)Morty/Core/Input;$(SolutionDir)Morty/Core/Painter;$(SolutionDir)Morty/Core/Animation;$(SolutionDir)Morty/Core/RenderProgram</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -187,7 +187,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>cximagecrt.lib;assimp-vc142-mt.lib;d3d11.lib;d3dx11.lib;dxguid.lib;d3dcompiler.lib;vulkan-1.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Math3D.lib;glslang.lib;SPIRV.lib;OSDependent.lib;OGLCompiler.lib;glslang-default-resource-limits.lib;spirv-cross-core.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp-vc142-mt.lib;d3d11.lib;d3dx11.lib;dxguid.lib;d3dcompiler.lib;vulkan-1.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Math3D.lib;glslang.lib;SPIRV.lib;OSDependent.lib;OGLCompiler.lib;glslang-default-resource-limits.lib;spirv-cross-core.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Platform)\$(Configuration);$(SolutionDir)ThirdParty/Assimp/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/CxImage/lib/vs2019/$(Platform);$(SolutionDir)ThirdParty/SpirvCross/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/glslang/lib/vs2019/$(Platform)/$(Configuration);$(SolutionDir)ThirdParty/SPIRV/lib/vs2019/$(Platform)/$(Configuration);$(DXSDK_DIR)Lib/$(PlatformTarget);$(VK_SDK_PATH)/Lib</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
@@ -211,6 +211,7 @@
     <ClInclude Include="../../Core\Engine\MIRenderView.h" />
     <ClInclude Include="../../Core\Log\MLogManager.h" />
     <ClInclude Include="../../Core\MObject.h" />
+    <ClInclude Include="..\..\..\ThirdParty\spot\spot.hpp" />
     <ClInclude Include="..\..\Core\Animation\MIAnimation.h" />
     <ClInclude Include="..\..\Core\Animation\MSkeletalAnimation.h" />
     <ClInclude Include="..\..\Core\Engine\MProject.h" />
@@ -327,6 +328,8 @@
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="../../Morty.cpp" />
+    <ClCompile Include="..\..\..\ThirdParty\spot\spot.cpp" />
+    <ClCompile Include="..\..\..\ThirdParty\spot\spotc.c" />
     <ClCompile Include="..\..\Core\Animation\MIAnimation.cpp" />
     <ClCompile Include="..\..\Core\Animation\MSkeletalAnimation.cpp" />
     <ClCompile Include="..\..\Core\Engine\MProject.cpp" />
