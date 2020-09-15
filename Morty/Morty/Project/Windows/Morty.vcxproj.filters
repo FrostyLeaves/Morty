@@ -100,6 +100,9 @@
     <Filter Include="Core\RenderProgram\Forward">
       <UniqueIdentifier>{d0eb9b7a-fadc-432b-bbe2-a217434f77fe}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{0e3cc751-3f1c-4ea4-8a95-4b59f7e7d43e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../ReadMe.txt" />
@@ -393,6 +396,15 @@
     <ClInclude Include="..\..\Core\RenderProgram\MForwardRenderShaderParamSet.h">
       <Filter>Core\RenderProgram\Forward</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Math\Matrix.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Math\Quaternion.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Math\Vector.h">
+      <Filter>Math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../stdafx.cpp">
@@ -661,6 +673,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\RenderProgram\MForwardRenderShaderParamSet.cpp">
       <Filter>Core\RenderProgram\Forward</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Math\Matrix.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Math\Quaternion.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Math\Vector.cpp">
+      <Filter>Math</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

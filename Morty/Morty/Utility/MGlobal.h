@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#ifdef MORTY_EXPORTS
+#ifdef Morty_EXPORTS
 #if defined(__WINDOWS_) || defined(_WINDOWS) || defined(WIN32)
         #define MORTY_CLASS __declspec(dllexport)
     #else
@@ -23,6 +23,17 @@
 	#define MORTY_ANDROID
     #define MORTY_IOS
 #endif
+
+
+#ifndef M_PI 
+#define M_PI (3.14159265358979323846)
+#endif
+
+#define ROW_MAJOR 1
+#define COL_MAJOR 2
+
+//#define MATRIX_MAJOR ROW_MAJOR
+#define MATRIX_MAJOR COL_MAJOR
 
 
 
@@ -101,7 +112,6 @@ enum class MEKeyState
 	DOWN = 1,
 	UP = 2,
 };
-
 
 
 

@@ -396,7 +396,7 @@ Matrix4 MViewport::MatrixPerspectiveFovLH(const float& fFovYZAngle, const float&
 
 	Matrix4 mProjMatrix;
 	//清除为0
-	ZeroMemory(&mProjMatrix.m, sizeof(mProjMatrix.m));
+	memset(&mProjMatrix, 0, sizeof(mProjMatrix));
 
 
 	//度数转化为弧度

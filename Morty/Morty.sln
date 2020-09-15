@@ -3,13 +3,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29324.140
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Math3D", "Math3D\Math3D\Math3D\Math3D.vcxproj", "{D0CCB623-555A-4973-9AF3-BBDFC487E41F}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Morty", "Morty\Project\Windows\Morty.vcxproj", "{764F8CE3-C2C9-4A43-9C49-F4C8470722B9}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Demo", "MortyDemo\Project\Windows\MortyDemo.vcxproj", "{67AAB01F-0C54-4713-AD80-80FB2F2B9A7B}"
 	ProjectSection(ProjectDependencies) = postProject
-		{D0CCB623-555A-4973-9AF3-BBDFC487E41F} = {D0CCB623-555A-4973-9AF3-BBDFC487E41F}
 		{0C78AF3F-B308-47D7-9892-AAB501954925} = {0C78AF3F-B308-47D7-9892-AAB501954925}
 		{764F8CE3-C2C9-4A43-9C49-F4C8470722B9} = {764F8CE3-C2C9-4A43-9C49-F4C8470722B9}
 	EndProjectSection
@@ -24,13 +21,6 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D0CCB623-555A-4973-9AF3-BBDFC487E41F}.Debug|Win32.ActiveCfg = Debug|Win32
-		{D0CCB623-555A-4973-9AF3-BBDFC487E41F}.Debug|Win32.Build.0 = Debug|Win32
-		{D0CCB623-555A-4973-9AF3-BBDFC487E41F}.Debug|x64.ActiveCfg = Debug|x64
-		{D0CCB623-555A-4973-9AF3-BBDFC487E41F}.Debug|x64.Build.0 = Debug|x64
-		{D0CCB623-555A-4973-9AF3-BBDFC487E41F}.Release|Win32.ActiveCfg = Release|Win32
-		{D0CCB623-555A-4973-9AF3-BBDFC487E41F}.Release|Win32.Build.0 = Release|Win32
-		{D0CCB623-555A-4973-9AF3-BBDFC487E41F}.Release|x64.ActiveCfg = Release|x64
 		{764F8CE3-C2C9-4A43-9C49-F4C8470722B9}.Debug|Win32.ActiveCfg = Debug|Win32
 		{764F8CE3-C2C9-4A43-9C49-F4C8470722B9}.Debug|Win32.Build.0 = Debug|Win32
 		{764F8CE3-C2C9-4A43-9C49-F4C8470722B9}.Debug|x64.ActiveCfg = Debug|x64
