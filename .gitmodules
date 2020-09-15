@@ -1,0 +1,3 @@
+[submodule "Morty/ThirdParty/glslang"]
+	path = Morty/ThirdParty/glslang
+	url = https://github.com/KhronosGroup/SPIRV-Cross.git
