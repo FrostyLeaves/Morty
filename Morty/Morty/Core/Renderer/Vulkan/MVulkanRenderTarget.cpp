@@ -2,12 +2,20 @@
 
 #include "MTexture.h"
 #include "MViewport.h"
+#include "MIRenderView.h"
 #include "MVulkanRenderer.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 #ifdef MORTY_WIN
+#include <windows.h>
 #include "vulkan/vulkan_win32.h"
+#include "MWindowsRenderView.h"
+#endif
+
+#ifdef MORTY_ANDROID
+#include "vulkan/vulkan_android.h"
+#include "MAndroidRenderView.h"
 #endif
 
 MVulkanRenderTarget::MVulkanRenderTarget(MVulkanDevice* pDevice)
@@ -129,7 +137,7 @@ bool MVulkanRenderTarget::InitializeSwapchain()
 {
 	VkPhysicalDevice physicalDevice = m_pDevice->GetPhysicalDevice();
 
-	//±ØÐëÔÚCreateSpawnchainÖ®Ç°µ÷ÓÃ¡£
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½CreateSpawnchainÖ®Ç°ï¿½ï¿½ï¿½Ã¡ï¿½
 	int nPresentQueueIndex = m_pDevice->FindQueuePresentFamilies(physicalDevice, m_VkSurface);
 	if (nPresentQueueIndex == -1)
 	{
@@ -330,26 +338,34 @@ bool MVulkanRenderTarget::RebindRenderBuffer()
 	return true;
 }
 
-MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pDevice, MWindowsRenderView* pView)
+#ifdef MORTY_WIN
+MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MIDevice* pDevice, MIRenderView* pView)
 {
+	MVulkanDevice* pVkDevice = dynamic_cast<MVulkanDevice*>(pDevice);
+	if (nullptr == pVkDevice)
+		return nullptr;
+
+	MWindowsRenderView* pWinView = dynamic_cast<MWindowsRenderView*>(pView);
+	if (nullptr == pWinView)
+		return nullptr;
 	
 	VkWin32SurfaceCreateInfoKHR surfaceCreateInfo;
 	surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
 	surfaceCreateInfo.pNext = NULL;
 	surfaceCreateInfo.flags = 0;
-	surfaceCreateInfo.hinstance = pView->GetHINSTANCE();
-	surfaceCreateInfo.hwnd = pView->GetHWND();
+	surfaceCreateInfo.hinstance = pWinView->GetHINSTANCE();
+	surfaceCreateInfo.hwnd = pWinView->GetHWND();
 
 
 	VkSurfaceKHR surface;
-	VkResult result = vkCreateWin32SurfaceKHR(pDevice->m_VkInstance, &surfaceCreateInfo, NULL, &surface);
+	VkResult result = vkCreateWin32SurfaceKHR(pVkDevice->m_VkInstance, &surfaceCreateInfo, NULL, &surface);
 	if (result != VK_SUCCESS)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : vkCreateWin32SurfaceKHR error");
 		return nullptr;
 	}
 	
-	MVulkanRenderTarget* pRenderTarget = new MVulkanRenderTarget(pDevice);
+	MVulkanRenderTarget* pRenderTarget = new MVulkanRenderTarget(pVkDevice);
 	pRenderTarget->m_VkSurface = surface;
 	pRenderTarget->m_pView = pView;
 	pRenderTarget->Initialize();
@@ -361,6 +377,46 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MVulkanDevice* pD
 	return pRenderTarget;
 }
 
+#endif
+
+#ifdef MORTY_ANDROID
+MVulkanRenderTarget* MVulkanRenderTarget::CreateForAndroidView(MIDevice* pDevice, MIRenderView* pView)
+{
+	MVulkanDevice* pVkDevice = dynamic_cast<MVulkanDevice*>(pDevice);
+	if (nullptr == pVkDevice)
+		return nullptr;
+
+	MAndroidRenderView* pAndView = dynamic_cast<MAndroidRenderView*>(pView);
+	if (nullptr == pAndView)
+		return nullptr;
+
+	VkAndroidSurfaceCreateInfoKHR createInfo;
+	createInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
+	createInfo.pNext = nullptr;
+	createInfo.flags = 0;
+	createInfo.window = pAndView->GetNativeWindow();
+
+	VkSurfaceKHR surface;
+	VkResult result = vkCreateAndroidSurfaceKHR(pVkDevice->m_VkInstance, &createInfo, nullptr, &surface);
+	if (result != VK_SUCCESS)
+	{
+		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : vkCreateAndroidSurfaceKHR error");
+		return nullptr;
+	}
+
+	MVulkanRenderTarget* pRenderTarget = new MVulkanRenderTarget(pVkDevice);
+	pRenderTarget->m_VkSurface = surface;
+	pRenderTarget->m_pView = pView;
+	pRenderTarget->Initialize();
+
+	pView->SetRenderTarget(pRenderTarget);
+
+	pRenderTarget->Resize(pView->GetViewWidth(), pView->GetViewHeight());
+
+	return pRenderTarget;
+}
+
+#endif
 
 MFrameBuffer* MVulkanRenderTarget::GetFrameBuffer(const uint32_t& unIndex)
 {

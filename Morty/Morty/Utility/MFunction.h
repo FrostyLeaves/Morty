@@ -20,7 +20,7 @@
 template<typename T1, typename T2>
 void DELETE_CLEAR_MAP(std::map<T1, T2>& map)
 {
-	for (std::map<T1, T2>::iterator iter = map.begin(); iter != map.end(); ++iter)
+	for (auto iter = map.begin(); iter != map.end(); ++iter)
 		delete iter->second;
 	
 	map.clear();
@@ -37,7 +37,7 @@ void UNION_PUSH_BACK_VECTOR(std::vector<T>& vector, const T& value)
 template<typename T>
 bool ERASE_FIRST_VECTOR(std::vector<T>& vector, const T& value)
 {
-	for (std::vector<T>::iterator iter = vector.begin(); iter != vector.end(); ++iter)
+	for (auto iter = vector.begin(); iter != vector.end(); ++iter)
 	{
 		if (*iter == value)
 		{
@@ -52,7 +52,7 @@ bool ERASE_FIRST_VECTOR(std::vector<T>& vector, const T& value)
 template<typename T>
 uint32_t UNION_ORDER_PUSH_BACK_VECTOR(std::vector<T>& vector, const T& value, const std::function<bool(const T& a, const T& b)>& lessComp = std::less<T>(), const std::function<bool(const T& a, const T& b)>& equalComp = std::equal_to<T>())
 {
-	std::vector<T>::iterator iter = std::lower_bound(vector.begin(), vector.end(), value, lessComp);
+	auto iter = std::lower_bound(vector.begin(), vector.end(), value, lessComp);
 
 	if (iter == vector.end())
 		vector.push_back(value);
@@ -67,7 +67,7 @@ uint32_t UNION_ORDER_PUSH_BACK_VECTOR(std::vector<T>& vector, const T& value, co
 template<typename T>
 void ERASE_UNION_ORDER_VECTOR(std::vector<T>& vector, const T& value, const std::function<bool(const T& a, const T& b)>& lessComp = std::less<T>(), const std::function<bool(const T& a, const T& b)>& equalComp = std::equal_to<T>())
 {
-	std::vector<T>::iterator iter = std::lower_bound(vector.begin(), vector.end(), value, lessComp);
+	auto iter = std::lower_bound(vector.begin(), vector.end(), value, lessComp);
 
 	if (iter != vector.end() && equalComp(*iter, value))
 	{

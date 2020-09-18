@@ -15,9 +15,11 @@
 #include "MIDevice.h"
 
 #include <vector>
+#include "MVulkanWrapper.h"
 
-#include "vulkan/vulkan.h"
+#ifdef MORTY_WIN
 #include "vulkan/vulkan_core.h"
+#endif
 
 #include "MVulkanObjectDestructor.h"
 #include "MVulkanShaderCompiler.h"

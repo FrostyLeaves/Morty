@@ -11,9 +11,7 @@
 #include "MGlobal.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
-
-#include "vulkan/vulkan.h"
-#include "vulkan/vulkan_core.h"
+#include "MVulkanWrapper.h"
 
 #include <vector>
 #include <map>
@@ -29,7 +27,8 @@ public:
         uint32_t begin;
         uint32_t size;
 
-        bool operator< (const MemoryInfo& info) { return begin < info.begin; }
+		bool operator< (const MemoryInfo& info) { return begin < info.begin; }
+		bool operator< (const MemoryInfo& info) const { return begin < info.begin; }
     };
 
 public:

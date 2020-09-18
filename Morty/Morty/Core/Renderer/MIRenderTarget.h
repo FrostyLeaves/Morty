@@ -22,7 +22,7 @@
 #include <D3DX11.h>
 #include <DxErr.h>
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-#include "vulkan/vulkan.h"
+#include "MVulkanWrapper.h"
 #endif
 
 class MIDevice;
@@ -80,7 +80,6 @@ public:
 
 	std::array<VkCommandBuffer, M_BUFFER_NUM> m_VkCommandBuffers;
 	std::array<VkSemaphore, M_BUFFER_NUM> m_aVkRenderFinishedSemaphore;
-	std::array<VkEvent, M_BUFFER_NUM> m_aVkRenderFinishedEvent;
 
 	std::vector<VkSemaphore> m_vWaitSemaphoreBeforeSubmit;
 

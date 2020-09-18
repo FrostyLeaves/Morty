@@ -13,7 +13,7 @@
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-#include <vulkan/vulkan.h>
+#include "MVulkanWrapper.h"
 #endif
 
 class MITexture;

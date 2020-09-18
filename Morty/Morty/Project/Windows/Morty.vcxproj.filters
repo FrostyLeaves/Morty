@@ -108,12 +108,6 @@
     <Text Include="../../ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="../../stdafx.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="../../targetver.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="../../Utility\MGlobal.h">
       <Filter>Utility</Filter>
     </ClInclude>
@@ -406,17 +400,17 @@
       <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\ThirdParty\spot\spot.hpp">
-      <Filter>头文件</Filter>
+      <Filter>ResourceLoader\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanWrapper.h">
+      <Filter>Core\Renderer\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Renderer\Vulkan\MAndroidRenderView.h">
+      <Filter>Core\Renderer\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="../../stdafx.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="../../Morty.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="../../dllmain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="../../Core\Engine\MEngine.cpp">
@@ -687,10 +681,19 @@
       <Filter>Math</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\ThirdParty\spot\spot.cpp">
-      <Filter>源文件</Filter>
+      <Filter>ResourceLoader\Texture</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\ThirdParty\spot\spotc.c">
+      <Filter>ResourceLoader\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\dllmain.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanWrapper.cpp">
+      <Filter>Core\Renderer\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\Renderer\Vulkan\MAndroidRenderView.cpp">
+      <Filter>Core\Renderer\Vulkan</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

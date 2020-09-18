@@ -14,8 +14,8 @@
 
 #include "MIRenderTarget.h"
 #include "MVulkanDevice.h"
-#include "MWindowsRenderView.h"
 
+class MWindowsRenderView;
 class MRenderDepthTexture;
 class MORTY_CLASS MVulkanRenderTarget : public MIRenderTarget
 {
@@ -43,7 +43,13 @@ public:
 
 	void Resize(const uint32_t& nWidth, const uint32_t& nHeight);
 
-	static MVulkanRenderTarget* CreateForWindowsView(MVulkanDevice* pDevice, MWindowsRenderView* pView);
+#ifdef MORTY_WIN
+	static MVulkanRenderTarget* CreateForWindowsView(MIDevice* pDevice, MIRenderView* pView);
+#endif
+
+#ifdef MORTY_ANDROID
+	static MVulkanRenderTarget* CreateForAndroidView(MIDevice* pDevice, MIRenderView* pView);
+#endif
 
 public:
 

@@ -51,6 +51,8 @@
 #include <stdio.h>
 #include <map>
 
+#include "Vulkan/MVulkanDevice.h"
+
 // Reusable buffers used for rendering 1 current in-flight frame, for ImGui_ImplVulkan_RenderDrawData()
 // [Please zero-clear before use!]
 struct ImGui_ImplVulkanH_FrameRenderBuffers
@@ -74,6 +76,7 @@ struct ImGui_ImplVulkanH_WindowRenderBuffers
 
 // Vulkan data
 static ImGui_ImplVulkan_InitInfo g_VulkanInitInfo = {};
+static MVulkanDevice*           g_MortyEngineDevice = nullptr;
 static VkRenderPass             g_RenderPass = VK_NULL_HANDLE;
 static VkDeviceSize             g_BufferMemoryAlignment = 256;
 static VkPipelineCreateFlags    g_PipelineCreateFlags = 0x00;
@@ -272,9 +275,13 @@ static void CreateOrResizeBuffer(VkBuffer& buffer, VkDeviceMemory& buffer_memory
     ImGui_ImplVulkan_InitInfo* v = &g_VulkanInitInfo;
     VkResult err;
     if (buffer != VK_NULL_HANDLE)
-        vkDestroyBuffer(v->Device, buffer, v->Allocator);
+    {
+        g_MortyEngineDevice->m_ObjectDestructor.DestroyBufferLater(buffer);
+    }
     if (buffer_memory != VK_NULL_HANDLE)
-        vkFreeMemory(v->Device, buffer_memory, v->Allocator);
+    {
+        g_MortyEngineDevice->m_ObjectDestructor.DestroyDeviceMemoryLater(buffer_memory);
+    }
 
     VkDeviceSize vertex_buffer_size_aligned = ((new_size - 1) / g_BufferMemoryAlignment + 1) * g_BufferMemoryAlignment;
     VkBufferCreateInfo buffer_info = {};
@@ -835,8 +842,8 @@ bool ImGui_ImplVulkan_CreateDeviceObjects()
     err = vkCreateGraphicsPipelines(v->Device, v->PipelineCache, 1, &info, v->Allocator, &g_Pipeline);
     check_vk_result(err);
 
-    vkDestroyShaderModule(v->Device, vert_module, v->Allocator);
-    vkDestroyShaderModule(v->Device, frag_module, v->Allocator);
+	g_MortyEngineDevice->m_ObjectDestructor.DestroyShaderModuleLater(vert_module);
+	g_MortyEngineDevice->m_ObjectDestructor.DestroyShaderModuleLater(frag_module);
 
     return true;
 }
@@ -862,17 +869,20 @@ void    ImGui_ImplVulkan_DestroyDeviceObjects()
     ImGui_ImplVulkanH_DestroyWindowRenderBuffers(v->Device, &g_MainWindowRenderBuffers, v->Allocator);
     ImGui_ImplVulkan_DestroyFontUploadObjects();
 
-    if (g_FontView)             { vkDestroyImageView(v->Device, g_FontView, v->Allocator); g_FontView = VK_NULL_HANDLE; }
-    if (g_FontImage)            { vkDestroyImage(v->Device, g_FontImage, v->Allocator); g_FontImage = VK_NULL_HANDLE; }
-    if (g_FontMemory)           { vkFreeMemory(v->Device, g_FontMemory, v->Allocator); g_FontMemory = VK_NULL_HANDLE; }
-    if (g_FontSampler)          { vkDestroySampler(v->Device, g_FontSampler, v->Allocator); g_FontSampler = VK_NULL_HANDLE; }
-    if (g_DescriptorSetLayout)  { vkDestroyDescriptorSetLayout(v->Device, g_DescriptorSetLayout, v->Allocator); g_DescriptorSetLayout = VK_NULL_HANDLE; }
-    if (g_PipelineLayout)       { vkDestroyPipelineLayout(v->Device, g_PipelineLayout, v->Allocator); g_PipelineLayout = VK_NULL_HANDLE; }
-    if (g_Pipeline)             { vkDestroyPipeline(v->Device, g_Pipeline, v->Allocator); g_Pipeline = VK_NULL_HANDLE; }
+    if (g_FontView) { g_MortyEngineDevice->m_ObjectDestructor.DestroyImageViewLater(g_FontView); g_FontView = VK_NULL_HANDLE;}
+    if (g_FontImage) { g_MortyEngineDevice->m_ObjectDestructor.DestroyImageLater(g_FontImage); g_FontImage = VK_NULL_HANDLE; }
+    if (g_FontMemory) { g_MortyEngineDevice->m_ObjectDestructor.DestroyDeviceMemoryLater(g_FontMemory); g_FontMemory = VK_NULL_HANDLE;}
+    if (g_FontSampler) { g_MortyEngineDevice->m_ObjectDestructor.DestroySamplerLater(g_FontSampler); g_FontSampler = VK_NULL_HANDLE;}
+    if (g_DescriptorSetLayout) { g_MortyEngineDevice->m_ObjectDestructor.DestroyDescriptorSetLayoutLater(g_DescriptorSetLayout); g_DescriptorSetLayout = VK_NULL_HANDLE;}
+    if (g_PipelineLayout) { g_MortyEngineDevice->m_ObjectDestructor.DestroyPipelineLayoutLater(g_PipelineLayout); g_PipelineLayout = VK_NULL_HANDLE; }
+    if (g_Pipeline) { g_MortyEngineDevice->m_ObjectDestructor.DestroyPipelineLater(g_Pipeline); g_Pipeline = VK_NULL_HANDLE; }
+
 }
 
-bool    ImGui_ImplVulkan_Init(ImGui_ImplVulkan_InitInfo* info, VkRenderPass render_pass)
+bool    ImGui_ImplVulkan_Init(ImGui_ImplVulkan_InitInfo* info, VkRenderPass render_pass, class MVulkanDevice* pVulkanDevice)
 {
+    g_MortyEngineDevice = pVulkanDevice;
+
     // Setup back-end capabilities flags
     ImGuiIO& io = ImGui::GetIO();
     io.BackendRendererName = "imgui_impl_vulkan";
@@ -1079,8 +1089,9 @@ void ImGui_ImplVulkanH_CreateWindowSwapChain(VkPhysicalDevice physical_device, V
     wd->FrameSemaphores = NULL;
     wd->ImageCount = 0;
     if (wd->RenderPass)
-        vkDestroyRenderPass(device, wd->RenderPass, allocator);
-
+    {
+        g_MortyEngineDevice->m_ObjectDestructor.DestroyRenderPassLater(wd->RenderPass);
+    }
     // If min image count was not specified, request different count of images dependent on selected present mode
     if (min_image_count == 0)
         min_image_count = ImGui_ImplVulkanH_GetMinImageCountFromPresentMode(wd->PresentMode);
@@ -1269,10 +1280,10 @@ void ImGui_ImplVulkanH_DestroyFrameSemaphores(VkDevice device, ImGui_ImplVulkanH
 
 void ImGui_ImplVulkanH_DestroyFrameRenderBuffers(VkDevice device, ImGui_ImplVulkanH_FrameRenderBuffers* buffers, const VkAllocationCallbacks* allocator)
 {
-    if (buffers->VertexBuffer) { vkDestroyBuffer(device, buffers->VertexBuffer, allocator); buffers->VertexBuffer = VK_NULL_HANDLE; }
-    if (buffers->VertexBufferMemory) { vkFreeMemory(device, buffers->VertexBufferMemory, allocator); buffers->VertexBufferMemory = VK_NULL_HANDLE; }
-    if (buffers->IndexBuffer) { vkDestroyBuffer(device, buffers->IndexBuffer, allocator); buffers->IndexBuffer = VK_NULL_HANDLE; }
-    if (buffers->IndexBufferMemory) { vkFreeMemory(device, buffers->IndexBufferMemory, allocator); buffers->IndexBufferMemory = VK_NULL_HANDLE; }
+    if (buffers->VertexBuffer) { g_MortyEngineDevice->m_ObjectDestructor.DestroyBufferLater(buffers->VertexBuffer); buffers->VertexBuffer = VK_NULL_HANDLE; }
+    if (buffers->VertexBufferMemory) { g_MortyEngineDevice->m_ObjectDestructor.DestroyDeviceMemoryLater(buffers->VertexBufferMemory); buffers->VertexBufferMemory = VK_NULL_HANDLE; }
+    if (buffers->IndexBuffer) { g_MortyEngineDevice->m_ObjectDestructor.DestroyBufferLater(buffers->IndexBuffer); buffers->IndexBuffer = VK_NULL_HANDLE; }
+    if (buffers->IndexBufferMemory) { g_MortyEngineDevice->m_ObjectDestructor.DestroyDeviceMemoryLater(buffers->IndexBufferMemory); buffers->IndexBufferMemory = VK_NULL_HANDLE; }
     buffers->VertexBufferSize = 0;
     buffers->IndexBufferSize = 0;
 }

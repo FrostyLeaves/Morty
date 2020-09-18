@@ -1,4 +1,7 @@
 ﻿#include "MWindowsRenderView.h"
+
+#ifdef MORTY_WIN
+
 #include <windows.h>
 #include <functional>
 #include <string>
@@ -133,7 +136,9 @@ bool MWindowsRenderView::Initialize(MEngine* pEngine, const char* svWindowName)
 	ShowWindow(m_hwnd, SW_SHOW);
 	UpdateWindow(m_hwnd);
 
-	m_pEngine->GetRenderer()->AddOutputView(this);
+#if RENDER_GRAPHICS == MORTY_VULKAN
+	MVulkanRenderTarget::CreateForWindowsView(pEngine->GetDevice(), this);
+#endif
 
 	return true;
 }
@@ -292,3 +297,6 @@ LRESULT CALLBACK MWindowsRenderView::ViewProcessFunction(HWND hwnd, UINT message
 
 	return 0;
 }
+
+
+#endif

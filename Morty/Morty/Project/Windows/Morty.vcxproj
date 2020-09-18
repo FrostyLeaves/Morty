@@ -245,6 +245,7 @@
     <ClInclude Include="..\..\Core\Renderer\Shader\MShaderMacro.h" />
     <ClInclude Include="..\..\Core\Renderer\Shader\MShaderParam.h" />
     <ClInclude Include="..\..\Core\Renderer\Shader\MShaderParamSet.h" />
+    <ClInclude Include="..\..\Core\Renderer\Vulkan\MAndroidRenderView.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanObjectDestructor.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanUniformBufferPool.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanShaderCompiler.h" />
@@ -252,6 +253,7 @@
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanPipelineManager.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanRenderer.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanRenderTarget.h" />
+    <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanWrapper.h" />
     <ClInclude Include="..\..\Core\RenderProgram\MBasicRenderProgram.h" />
     <ClInclude Include="..\..\Core\RenderProgram\MForwardRenderProgram.h" />
     <ClInclude Include="..\..\Core\RenderProgram\MForwardRenderShaderParamSet.h" />
@@ -292,8 +294,6 @@
     <ClInclude Include="..\..\ResourceLoader\Shader\MShaderResource.h" />
     <ClInclude Include="..\..\ResourceLoader\Texture\MTextureResource.h" />
     <ClInclude Include="..\..\ResourceLoader\Texture\MTextureCubeResource.h" />
-    <ClInclude Include="../../stdafx.h" />
-    <ClInclude Include="../../targetver.h" />
     <ClInclude Include="../../Utility\MFunction.h" />
     <ClInclude Include="../../Utility\MGlobal.h" />
     <ClInclude Include="../../Utility\MSingleInstance.h" />
@@ -313,21 +313,8 @@
     <ClCompile Include="../../Core\Engine\MIRenderView.cpp" />
     <ClCompile Include="../../Core\Log\MLogManager.cpp" />
     <ClCompile Include="../../Core\MObject.cpp" />
-    <ClCompile Include="../../dllmain.cpp">
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </PrecompiledHeader>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="../../Morty.cpp" />
+    <ClCompile Include="..\..\..\dllmain.cpp" />
     <ClCompile Include="..\..\..\ThirdParty\spot\spot.cpp" />
     <ClCompile Include="..\..\..\ThirdParty\spot\spotc.c" />
     <ClCompile Include="..\..\Core\Animation\MIAnimation.cpp" />
@@ -362,6 +349,7 @@
     <ClCompile Include="..\..\Core\Renderer\Shader\MShaderMacro.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Shader\MShaderParam.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Shader\MShaderParamSet.cpp" />
+    <ClCompile Include="..\..\Core\Renderer\Vulkan\MAndroidRenderView.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanObjectDestructor.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanUniformBufferPool.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanShaderCompiler.cpp" />
@@ -369,6 +357,7 @@
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanPipelineManager.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanRenderer.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanRenderTarget.cpp" />
+    <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanWrapper.cpp" />
     <ClCompile Include="..\..\Core\RenderProgram\MBasicRenderProgram.cpp" />
     <ClCompile Include="..\..\Core\RenderProgram\MForwardRenderProgram.cpp" />
     <ClCompile Include="..\..\Core\RenderProgram\MForwardRenderShaderParamSet.cpp" />
@@ -406,12 +395,6 @@
     <ClCompile Include="..\..\ResourceLoader\Shader\MShaderResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Texture\MTextureResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Texture\MTextureCubeResource.cpp" />
-    <ClCompile Include="../../stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="../../Utility\Timer\MTimer.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Model\MModelConverter.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MResource.cpp" />

@@ -111,8 +111,6 @@ public:
 
 	virtual void EndRenderPass(MIRenderTarget* pRenderTarget) = 0;
 
-	virtual void AddOutputView(MIRenderView* pView) = 0;
-
 public:
 
 	virtual void DrawMesh(MIMesh* pMesh) = 0;

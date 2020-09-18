@@ -1,6 +1,5 @@
 #include "MVulkanUniformBufferPool.h"
 
-#include "MFunction.h"
 #include "MVulkanDevice.h"
 #include "Shader/MShaderParam.h"
 
@@ -158,8 +157,8 @@ void MVulkanUniformBufferPool::FreeUniformBufferMemory(MShaderConstantParam* pPa
 		vkUnmapMemory(m_pDevice->m_VkDevice, pParam->m_VkBufferMemory[i]);
 		pParam->m_pMemoryMapping[i] = nullptr;
 
-		m_pDevice->m_ObjectDestructor.DestroyBufferLater(i, pParam->m_VkBuffer[i]);
-		m_pDevice->m_ObjectDestructor.DestroyDeviceMemoryLater(i, pParam->m_VkBufferMemory[i]);
+		m_pDevice->m_ObjectDestructor.DestroyBufferLater(pParam->m_VkBuffer[i]);
+		m_pDevice->m_ObjectDestructor.DestroyDeviceMemoryLater(pParam->m_VkBufferMemory[i]);
 
 		pParam->m_VkBuffer[i] = VK_NULL_HANDLE;
 		pParam->m_VkBufferMemory[i] = VK_NULL_HANDLE;
@@ -180,8 +179,8 @@ void MVulkanUniformBufferPool::FreeDynamicUniformBufferMemory(MShaderConstantPar
 
 bool MVulkanUniformBufferPool::AllowMemory(const uint32_t& unVariantSize, MemoryInfo& info)
 {
-	std::vector<MemoryInfo>::iterator biggestIter = m_vFreeMemory.begin();
-	std::vector<MemoryInfo>::iterator bestIter = m_vFreeMemory.end();
+	auto biggestIter = m_vFreeMemory.begin();
+	auto bestIter = m_vFreeMemory.end();
 	for (auto iter = m_vFreeMemory.begin(); iter != m_vFreeMemory.end(); ++iter)
 	{
 		if (iter->size == unVariantSize)
@@ -226,7 +225,7 @@ bool MVulkanUniformBufferPool::AllowMemory(const uint32_t& unVariantSize, Memory
 
 void MVulkanUniformBufferPool::FreeMemory(MemoryInfo& info)
 {
-	std::vector<MemoryInfo>::iterator iter = std::lower_bound(m_vFreeMemory.begin(), m_vFreeMemory.end(), info);
+	auto iter = std::lower_bound(m_vFreeMemory.begin(), m_vFreeMemory.end(), info);
 
 	if (m_vFreeMemory.end() - iter <= 1)
 	{

@@ -7,8 +7,7 @@
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 #include "imgui_impl_dx11.h"
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-#include "vulkan/vulkan_core.h"
-#include "imgui_impl_vulkan.h"
+#include "Vulkan/MVulkanWrapper.h"
 #include "Vulkan/MVulkanRenderer.h"
 #include "Vulkan/MVulkanRenderTarget.h"
 #endif
@@ -122,8 +121,8 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	vulkanInitInfo.QueueFamily = pDevice->FindQueueGraphicsFamilies(pDevice->m_VkPhysicalDevice);
 
 	MVulkanRenderTarget* pVulkanRenderTarget = dynamic_cast<MVulkanRenderTarget*>(GetRenderTarget());
-	ImGui_ImplVulkan_Init(&vulkanInitInfo, pVulkanRenderTarget->m_RenderPass.m_aVkRenderPass[0]);
-
+	ImGui_ImplVulkan_Init(&vulkanInitInfo, pVulkanRenderTarget->m_RenderPass.m_aVkRenderPass[0], pDevice);
+	
 
 	VkCommandBuffer buffer = pDevice->BeginCommands();
 	ImGui_ImplVulkan_CreateFontsTexture(buffer);

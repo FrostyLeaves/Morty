@@ -98,23 +98,6 @@ bool MEngine::Initialize()
 
 }
 
-MIRenderView* MEngine::CreateView()
-{
-
-	MWindowsRenderView* pWindowsView = new MWindowsRenderView();
-	pWindowsView->Initialize(this, "Morty");
-	pWindowsView->m_pEngine = this;
-	AddView(pWindowsView);
-
-	MIRenderView* pNewView = pWindowsView;
-
-	MViewport* pViewport = GetObjectManager()->CreateObject<MViewport>();
-	pNewView->AppendViewport(pViewport);
-
-	return pNewView;
-
-}
-
 void MEngine::AddView(MIRenderView* pView)
 {
 	pView->m_pEngine = this;
@@ -334,11 +317,11 @@ bool MEngine::MainLoop()
 		for (MIRenderView* pView : m_vView)
 			RenderToView(pView);
 
- 		int nTime = (int)(m_cTickInfo.fTickInterval * 1000) * 0.75 - (MTimer::GetCurTime() - currentTime);
- 		if (nTime > 0)
- 		{
- 			Sleep(nTime);
- 		}
+//  		int nTime = (int)(m_cTickInfo.fTickInterval * 1000) * 0.75 - (MTimer::GetCurTime() - currentTime);
+//  		if (nTime > 0)
+//  		{
+//  			Sleep(nTime);
+//  		}
 	}
 
 	return !m_vView.empty();

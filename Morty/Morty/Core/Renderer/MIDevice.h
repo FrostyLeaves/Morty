@@ -25,7 +25,7 @@ class MShaderBuffer;
 class MIRenderTarget;
 class MTextureRenderTarget;
 struct MShaderConstantParam;
-
+class MMaterial;
 
 
 class MORTY_CLASS MIDevice

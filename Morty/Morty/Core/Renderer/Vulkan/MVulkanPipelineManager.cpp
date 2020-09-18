@@ -35,7 +35,7 @@ void MVulkanPipelineManager::Release()
 	{
 		for (VkPipeline& pipeline : group.vMaterialGroup)
 		{
-			m_pDevice->m_ObjectDestructor.DestroyPipelineLater(0, pipeline);
+			m_pDevice->m_ObjectDestructor.DestroyPipelineLater(pipeline);
 		}
 	}
 
@@ -115,7 +115,7 @@ void MVulkanPipelineManager::UnRegisterMaterial(MMaterial* pMaterial)
 	{
 		if (id < group.vMaterialGroup.size() && group.vMaterialGroup[id])
 		{
-			m_pDevice->m_ObjectDestructor.DestroyPipelineLater(0, group.vMaterialGroup[id]);
+			m_pDevice->m_ObjectDestructor.DestroyPipelineLater(group.vMaterialGroup[id]);
 			group.vMaterialGroup[id] = VK_NULL_HANDLE;
 		}
 	}
@@ -137,7 +137,7 @@ void MVulkanPipelineManager::UnRegisterRenderPass(MRenderPass* pRenderPass)
 		MPipelineRenderPassGroup& group = m_vRenderPassGroup[id];
 		for (VkPipeline& pipeline : group.vMaterialGroup)
 		{
-			m_pDevice->m_ObjectDestructor.DestroyPipelineLater(0, pipeline);
+			m_pDevice->m_ObjectDestructor.DestroyPipelineLater(pipeline);
 		}
 		group.vMaterialGroup.clear();
 	}
@@ -301,10 +301,10 @@ void MVulkanPipelineManager::DestroyMaterialPipelineLayout(MMaterialPipelineLayo
 	{
 		VkDevice& device = m_pDevice->m_VkDevice;
 
-		m_pDevice->m_ObjectDestructor.DestroyPipelineLayoutLater(0, data.pipelineLayout);
+		m_pDevice->m_ObjectDestructor.DestroyPipelineLayoutLater(data.pipelineLayout);
 
 		for (VkDescriptorSetLayout& layout : data.vSetLayouts)
-			m_pDevice->m_ObjectDestructor.DestroyDescriptorSetLayoutLater(0, layout);
+			m_pDevice->m_ObjectDestructor.DestroyDescriptorSetLayoutLater(layout);
 
 		data.pipelineLayout = VK_NULL_HANDLE;
 		data.vSetLayouts.clear();

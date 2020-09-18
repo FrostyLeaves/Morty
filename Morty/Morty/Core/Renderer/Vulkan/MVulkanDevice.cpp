@@ -17,7 +17,12 @@
 #include "MVulkanRenderTarget.h"
 
 #ifdef MORTY_WIN
+#include <windows.h>
 #include "vulkan/vulkan_win32.h"
+#endif
+
+#ifdef MORTY_ANDROID
+#include "vulkan/vulkan_android.h"
 #endif
 
 const std::vector<const char*> ValidationLayers = {
@@ -68,6 +73,11 @@ MVulkanDevice::~MVulkanDevice()
 
 bool MVulkanDevice::Initialize()
 {
+#ifdef MORTY_ANDROID
+	if (!InitVulkan())
+		return false;
+#endif
+
 	if (!InitVulkanInstance())
 		return false;
 
@@ -274,7 +284,7 @@ void MVulkanDevice::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh
 		vkFreeMemory(m_VkDevice, stagingIdxBufferMemory, nullptr);
 	}
 
-	//TODO ÓÅ»¯ÄÚ´æ·ÖÅä»úÖÆ£¬ÒÔºÏÀíÀûÓÃÄÚ´æ¡£±ÈÈç½¨Á¢¿É¸´ÓÃµÄÄÚ´æ³Ø£¬ÄÚ´æ¹ÜÀíÆ÷
+	//TODO ï¿½Å»ï¿½ï¿½Ú´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ£ï¿½ï¿½Ôºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú´æ¡£ï¿½ï¿½ï¿½ç½¨ï¿½ï¿½ï¿½É¸ï¿½ï¿½Ãµï¿½ï¿½Ú´ï¿½Ø£ï¿½ï¿½Ú´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 
 
@@ -328,10 +338,10 @@ void MVulkanDevice::DestroyBuffer(MVertexBuffer** ppVertexBuffer)
 {
 	if (*ppVertexBuffer)
 	{
-		m_ObjectDestructor.DestroyBufferLater(0, (*ppVertexBuffer)->m_VkVertexBuffer);
-		m_ObjectDestructor.DestroyDeviceMemoryLater(0, (*ppVertexBuffer)->m_VkVertexBufferMemory);
-		m_ObjectDestructor.DestroyBufferLater(0, (*ppVertexBuffer)->m_VkIndexBuffer);
-		m_ObjectDestructor.DestroyDeviceMemoryLater(0, (*ppVertexBuffer)->m_VkIndexBufferMemory);
+		m_ObjectDestructor.DestroyBufferLater((*ppVertexBuffer)->m_VkVertexBuffer);
+		m_ObjectDestructor.DestroyDeviceMemoryLater((*ppVertexBuffer)->m_VkVertexBufferMemory);
+		m_ObjectDestructor.DestroyBufferLater((*ppVertexBuffer)->m_VkIndexBuffer);
+		m_ObjectDestructor.DestroyDeviceMemoryLater((*ppVertexBuffer)->m_VkIndexBufferMemory);
 		delete *ppVertexBuffer;
 		*ppVertexBuffer = nullptr;
 	}
@@ -489,7 +499,7 @@ void MVulkanDevice::EndCommands(VkCommandBuffer commandBuffer)
 
 	vkQueueSubmit(m_VkGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 
-	vkQueueWaitIdle(m_VkGraphicsQueue);	//ÔÝÍ£Ó¦ÓÃ³ÌÐò£¬Ö±µ½Íê³ÉÌá½»¸ø¶¨¶ÓÁÐµÄËùÓÐ¹¤×÷
+	vkQueueWaitIdle(m_VkGraphicsQueue);	//ï¿½ï¿½Í£Ó¦ï¿½Ã³ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á½»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½ï¿½Ð¹ï¿½ï¿½ï¿½
 
 	vkFreeCommandBuffers(m_VkDevice, m_VkCommandPool, 1, &commandBuffer);
 }
@@ -544,9 +554,9 @@ void MVulkanDevice::DestroyTexture(MTextureBuffer** ppTextureBuffer)
 {
 	if (*ppTextureBuffer)
 	{
-		m_ObjectDestructor.DestroyImageViewLater(0, (*ppTextureBuffer)->m_VkImageView);
-		m_ObjectDestructor.DestroyImageLater(0, (*ppTextureBuffer)->m_VkTextureImage);
-		m_ObjectDestructor.DestroyDeviceMemoryLater(0, (*ppTextureBuffer)->m_VkTextureImageMemory);
+		m_ObjectDestructor.DestroyImageViewLater((*ppTextureBuffer)->m_VkImageView);
+		m_ObjectDestructor.DestroyImageLater((*ppTextureBuffer)->m_VkTextureImage);
+		m_ObjectDestructor.DestroyDeviceMemoryLater((*ppTextureBuffer)->m_VkTextureImageMemory);
 
 		delete *ppTextureBuffer;
 		*ppTextureBuffer = nullptr;
@@ -682,9 +692,9 @@ bool MVulkanDevice::InitLogicalDevice()
 	deviceInfo.ppEnabledExtensionNames = DeviceExtensions.data();
 	deviceInfo.pEnabledFeatures = &deviceFeatures;
 
-	//ÕâÀïÄ¬ÈÏÁËµ±Ç°¶ÓÁÐ×å£¨nQueueFamilyIndex£©¶¼Ö§³ÖËùÓÐÀàÐÍµÄ¹¦ÄÜ
-	//¿ÉÄÜ»á´æÔÚ²»Ö§³ÖÍùµ±Ç°ÆÁÄ»ÉÏ»æÖÆµÄ£¬´¦ÀíÕâ¸öÐèÒªÔÚ´´½¨logicalDeviceÖ®Ç°´´½¨´°¿ÚµÄsurface£¬È»ºócheckÖ§²»Ö§³Ö¡£
-	//Õâ¸öÌ«¶ñÐÄÁË£¬ÏÈ²»´¦Àí
+	//ï¿½ï¿½ï¿½ï¿½Ä¬ï¿½ï¿½ï¿½Ëµï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½å£¨nQueueFamilyIndexï¿½ï¿½ï¿½ï¿½Ö§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÍµÄ¹ï¿½ï¿½ï¿½
+	//ï¿½ï¿½ï¿½Ü»ï¿½ï¿½ï¿½Ú²ï¿½Ö§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½Ä»ï¿½Ï»ï¿½ï¿½ÆµÄ£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½Ú´ï¿½ï¿½ï¿½logicalDeviceÖ®Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½surfaceï¿½ï¿½È»ï¿½ï¿½checkÖ§ï¿½ï¿½Ö§ï¿½Ö¡ï¿½
+	//ï¿½ï¿½ï¿½Ì«ï¿½ï¿½ï¿½ï¿½ï¿½Ë£ï¿½ï¿½È²ï¿½ï¿½ï¿½ï¿½ï¿½
 	VkResult result = vkCreateDevice(m_VkPhysicalDevice, &deviceInfo, NULL, &m_VkDevice);
 	if (result != VK_SUCCESS)
 	{
@@ -849,10 +859,10 @@ void MVulkanDevice::DestroyDepthTexture(MDepthTextureBuffer** ppTextureBuffer)
 {
 	if (*ppTextureBuffer)
 	{
-		m_ObjectDestructor.DestroyImageViewLater(0, (*ppTextureBuffer)->m_VkImageView);
-		m_ObjectDestructor.DestroyImageLater(0, (*ppTextureBuffer)->m_VkTextureImage);
-		m_ObjectDestructor.DestroyDeviceMemoryLater(0, (*ppTextureBuffer)->m_VkTextureImageMemory);
-		m_ObjectDestructor.DestroySamplerLater(0, (*ppTextureBuffer)->m_VkSampler);
+		m_ObjectDestructor.DestroyImageViewLater((*ppTextureBuffer)->m_VkImageView);
+		m_ObjectDestructor.DestroyImageLater((*ppTextureBuffer)->m_VkTextureImage);
+		m_ObjectDestructor.DestroyDeviceMemoryLater((*ppTextureBuffer)->m_VkTextureImageMemory);
+		m_ObjectDestructor.DestroySamplerLater((*ppTextureBuffer)->m_VkSampler);
 
 		delete* ppTextureBuffer;
 		*ppTextureBuffer = nullptr;
@@ -887,7 +897,7 @@ bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString&
 	shaderStageInfo.module = shaderModule;
 	shaderStageInfo.pName = eShaderType == MShader::MEShaderType::Vertex ? "VS" : "PS";
 	
-	//TODO ÓÃÀ´¶¨ÒåÀàËÆÓÚhlslÖÐµÄºêµÄ±äÁ¿
+	//TODO ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½hlslï¿½ÐµÄºï¿½Ä±ï¿½ï¿½ï¿½
 	shaderStageInfo.pSpecializationInfo = nullptr;
 
 	MShaderBuffer* pBuffer = nullptr;
@@ -922,12 +932,12 @@ void MVulkanDevice::CleanShader(MShaderBuffer** ppShaderBuffer)
 
 // 	for (MShaderParam* param : pBuffer->m_vShaderParamsTemplate)
 // 	{
-// 		m_ObjectDestructor.DestroyBufferLater(0, param->m_VkBuffer);
-// 		m_ObjectDestructor.DestroyDeviceMemoryLater(0, param->m_VkBufferMemory);
+// 		m_ObjectDestructor.DestroyBufferLater(param->m_VkBuffer);
+// 		m_ObjectDestructor.DestroyDeviceMemoryLater(param->m_VkBufferMemory);
 // 
 // 	}
 
-	m_ObjectDestructor.DestroyShaderModuleLater(0, pBuffer->m_VkShaderModule);
+	m_ObjectDestructor.DestroyShaderModuleLater(pBuffer->m_VkShaderModule);
 
 	delete* ppShaderBuffer;
 	*ppShaderBuffer = nullptr;
@@ -960,12 +970,15 @@ bool MVulkanDevice::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTexture
 
 void MVulkanDevice::DestroyRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer)
 {
-// 	if (*ppTextureBuffer)
-// 	{
-//		DestroyRenderTargetView(*ppTextureBuffer);
-// 		m_ObjectDestructor.DestroyImageLater((*ppTextureBuffer)->m_VkTextureImage);
-// 		(*ppTextureBuffer)
-// 	}
+	if (*ppTextureBuffer)
+	{
+		DestroyRenderTargetView(*ppTextureBuffer);
+		m_ObjectDestructor.DestroyImageLater((*ppTextureBuffer)->m_VkTextureImage);
+		m_ObjectDestructor.DestroyDeviceMemoryLater((*ppTextureBuffer)->m_VkTextureImageMemory);
+
+		delete (*ppTextureBuffer);
+		*ppTextureBuffer = nullptr;
+	}
 }
 
 bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t nWidth, uint32_t nHeight)
@@ -1011,7 +1024,7 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t
 
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		//ÕâÀï½öÓÃÓÚ¸ñÊ½ÑéÖ¤£¬¾ßÌåäÖÈ¾µÄÊ±ºò£¬Õâ¸öframebuffer²»Ò»¶¨ÓÃÄÄ¸örenderPass
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¸ï¿½Ê½ï¿½ï¿½Ö¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¾ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½framebufferï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Ä¸ï¿½renderPass
 		framebufferInfo.renderPass = renderPass.m_aVkRenderPass[0];		
 
 
@@ -1033,17 +1046,6 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t
 			return false;
 	}
 
-	VkEventCreateInfo eventInfo{};
-	eventInfo.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
-
-	for (VkEvent& vkEvent : pVkRenderTarget->m_aVkRenderFinishedEvent)
-	{
-		if (vkCreateEvent(m_VkDevice, &eventInfo, nullptr, &vkEvent) != VK_SUCCESS)
-			return false;
-	}
-	
-	//TODO Multiple RenderTarget
-
 	return true;
 }
 
@@ -1057,7 +1059,7 @@ void MVulkanDevice::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
 
 		if (pFrameBuffer->vkFrameBuffer)
 		{
-			m_ObjectDestructor.DestroyFramebufferLater(0, pFrameBuffer->vkFrameBuffer);
+			m_ObjectDestructor.DestroyFramebufferLater(pFrameBuffer->vkFrameBuffer);
 			pFrameBuffer->vkFrameBuffer = VK_NULL_HANDLE;
 		}
 	}
@@ -1068,20 +1070,14 @@ void MVulkanDevice::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
 
 	for (uint32_t i = 0; i < pRenderTarget->m_VkCommandBuffers.size(); ++i)
 	{
-		m_ObjectDestructor.DestroyCommandBufferLater(i, pRenderTarget->m_VkCommandBuffers[i]);
+		m_ObjectDestructor.DestroyCommandBufferLater(pRenderTarget->m_VkCommandBuffers[i]);
 		pRenderTarget->m_VkCommandBuffers[i] = VK_NULL_HANDLE;
 	}
 
 	for (uint32_t i = 0; i < pRenderTarget->m_aVkRenderFinishedSemaphore.size(); ++i)
 	{
-		m_ObjectDestructor.DestroySemaphoreLater(i, pRenderTarget->m_aVkRenderFinishedSemaphore[i]);
+		m_ObjectDestructor.DestroySemaphoreLater(pRenderTarget->m_aVkRenderFinishedSemaphore[i]);
 		pRenderTarget->m_aVkRenderFinishedSemaphore[i] = VK_NULL_HANDLE;
-	}
-
-	for (uint32_t i = 0; i < pRenderTarget->m_aVkRenderFinishedEvent.size(); ++i)
-	{
-		m_ObjectDestructor.DestroyEventLater(i, pRenderTarget->m_aVkRenderFinishedEvent[i]);
-		pRenderTarget->m_aVkRenderFinishedEvent[i] = VK_NULL_HANDLE;
 	}
 
 
@@ -1169,8 +1165,8 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		//colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;		//Õý³£Çé¿öÏÂ
-		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;			//ÎªÁË´«¸øShader
+		//colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;			//Îªï¿½Ë´ï¿½ï¿½ï¿½Shader
 	}
 
 
@@ -1220,7 +1216,7 @@ void MVulkanDevice::DestroyRenderPass(MRenderPass* pRenderPass)
 	{
 		for (uint32_t i = 0; i < pRenderPass->m_aVkRenderPass.size(); ++i)
 		{
-			m_ObjectDestructor.DestroyRenderPassLater(i, pRenderPass->m_aVkRenderPass[i]);
+			m_ObjectDestructor.DestroyRenderPassLater(pRenderPass->m_aVkRenderPass[i]);
 			pRenderPass->m_aVkRenderPass[i] = VK_NULL_HANDLE;
 		}
 
@@ -1237,7 +1233,7 @@ void MVulkanDevice::DestroyRenderTargetView(MRenderTextureBuffer* pTextureBuffer
 {
 	if (pTextureBuffer->m_VkImageView)
 	{
-		m_ObjectDestructor.DestroyImageViewLater(0, pTextureBuffer->m_VkImageView);
+		m_ObjectDestructor.DestroyImageViewLater(pTextureBuffer->m_VkImageView);
 	}
 }
 

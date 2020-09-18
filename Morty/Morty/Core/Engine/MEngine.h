@@ -44,7 +44,6 @@ public:
 
 	void SetScene(MScene* pScene);
 
-	MIRenderView* CreateView();
 	void AddView(MIRenderView* pView);
 
 	void RenderToView(MIRenderView* pView);

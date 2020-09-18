@@ -9,6 +9,9 @@
 #ifndef _M_MWINDOWSRENDERVIEW_H_
 #define _M_MWINDOWSRENDERVIEW_H_
 #include "MGlobal.h"
+
+#ifdef MORTY_WIN
+
 #include "MIRenderView.h"
 #include "MString.h"
 
@@ -89,6 +92,9 @@ protected:
 	static std::map<HWND, MWindowsRenderView*> s_tViewTable;
 	static bool s_bIsRegisterWindow;
 };
+
+
+#endif
 
 
 #endif
