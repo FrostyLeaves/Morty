@@ -10,12 +10,13 @@ cmake_minimum_required(VERSION 3.4.1)
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=format-security")
+
 SET(MORTY_SLN_PATH ${CMAKE_SOURCE_DIR}/../../../../../../../)
 SET(MORTY_CODE_PATH ${CMAKE_SOURCE_DIR}/../../../../../../)
 SET(NDK_PATH $NDK_ROOT)
 
 SET(VULKAN_PATH $ENV{VK_SDK_PATH})
-
 SET(MORTY_INCLUDE_DIR
         ${VULKAN_PATH}/Include
         ${MORTY_SLN_PATH}ThirdParty/spot

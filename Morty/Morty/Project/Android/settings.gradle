@@ -1,3 +1,3 @@
-include ':mortydemo'
 rootProject.name='Morty'
 include ':app'
+include ':mortydemo'

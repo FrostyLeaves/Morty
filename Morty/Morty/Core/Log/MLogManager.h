@@ -12,21 +12,92 @@
 #include "MString.h"
 #include "MSingleInstance.h"
 
+#ifdef MORTY_WIN
+#include <windows.h>
+#endif
+
+#include <cstdio>
+#include <cstdarg>
+#include <cstdlib>
+#include <cstring>
+#include <functional>
+
 class MORTY_CLASS MLogManager : public MSingleInstance<MLogManager>
 {
 public:
-	MLogManager(){};
+	MLogManager();
 	virtual ~MLogManager() {};
 
 public:
 
-	void Error(const char* svMessage, ...);
-	void Information(const char* svMessage, ...);
-	void Log(const char* svMessage, ...);
-	void Warning(const char* svMessage, ...);
+	typedef std::function<void(const char*)> MLogFunction;
+	void SetPrintFunction(MLogFunction func) { m_printFunction = func; }
 
+	template<typename ...ARGS_T>
+	void Print(const char* svMessage, ARGS_T ...Args)
+	{
+		if (m_printFunction) {
+			size_t size = 1 + snprintf(svLogData, 4096, svMessage, Args...);
+
+			m_printFunction(svLogData);
+		}
+		else
+		{
+			printf(svMessage, Args...);
+			printf("\n");
+		}
+
+	}
+
+	template<typename ...ARGS_T>
+	void Error(const char* svMessage, ARGS_T ...Args)
+	{
+#ifdef MORTY_WIN
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY |
+			FOREGROUND_RED);
+#endif
+
+		Print(svMessage, Args...);
+	}
+
+	template<typename ...ARGS_T>
+	void Information(const char* svMessage, ARGS_T... Args)
+	{
+#ifdef MORTY_WIN
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY |
+			FOREGROUND_RED | FOREGROUND_GREEN);
+
+#endif
+
+		Print(svMessage, Args...);
+	}
+
+	template<typename ...ARGS_T>
+	void Log(const char* svMessage, ARGS_T... Args)
+	{
+#ifdef MORTY_WIN
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY |
+			FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+#endif
+
+		Print(svMessage, Args...);
+	}
+
+	template<typename ...ARGS_T>
+	void Warning(const char* svMessage, ARGS_T... Args)
+	{
+#ifdef MORTY_WIN
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY |
+			FOREGROUND_RED | FOREGROUND_GREEN);
+#endif
+
+		Print(svMessage, Args...);
+	}
 private:
+	MLogFunction m_printFunction;
 
+
+	char svLogData[4096];
 };
 
 
