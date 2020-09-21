@@ -384,11 +384,17 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForAndroidView(MIDevice* pDevice
 {
 	MVulkanDevice* pVkDevice = dynamic_cast<MVulkanDevice*>(pDevice);
 	if (nullptr == pVkDevice)
+	{
+		MLogManager::GetInstance()->Error("CreateForAndroidView Error: Device not matching.");
 		return nullptr;
+	}
 
 	MAndroidRenderView* pAndView = dynamic_cast<MAndroidRenderView*>(pView);
 	if (nullptr == pAndView)
+	{
+		MLogManager::GetInstance()->Error("CreateForAndroidView Error: RenderView not matching.");
 		return nullptr;
+	}
 
 	VkAndroidSurfaceCreateInfoKHR createInfo;
 	createInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
@@ -397,6 +403,7 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForAndroidView(MIDevice* pDevice
 	createInfo.window = pAndView->GetNativeWindow();
 
 	VkSurfaceKHR surface;
+	MLogManager::GetInstance()->Information("CreateForAndroidView: Test to call vkCreateAndroidSurfaceKHR");
 	VkResult result = vkCreateAndroidSurfaceKHR(pVkDevice->m_VkInstance, &createInfo, nullptr, &surface);
 	if (result != VK_SUCCESS)
 	{
@@ -411,8 +418,11 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForAndroidView(MIDevice* pDevice
 
 	pView->SetRenderTarget(pRenderTarget);
 
+	MLogManager::GetInstance()->Information("CreateForAndroidView: Test to call Resize");
 	pRenderTarget->Resize(pView->GetViewWidth(), pView->GetViewHeight());
 
+
+	MLogManager::GetInstance()->Information("CreateForAndroidView: Finished");
 	return pRenderTarget;
 }
 

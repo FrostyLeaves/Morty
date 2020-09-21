@@ -55,7 +55,7 @@ bool MEngine::OpenProject(const MString& strProjectPath)
 	return true;
 }
 
-bool MEngine::Initialize()
+bool MEngine::Initialize(const MString& strSearchPath)
 {
 
 	if (nullptr == m_pRenderer)
@@ -90,6 +90,7 @@ bool MEngine::Initialize()
 
 	m_pResourceManager = new MResourceManager();
 	m_pResourceManager->SetOwnerEngine(this);
+	m_pResourceManager->SetSearchPath({ strSearchPath });
 
 	//初始化默认资源
 	InitializeDefaultResource();

@@ -151,8 +151,14 @@ public:
 
 int main(int argc, char* argv[])
 {
+	MLogManager::GetInstance()->SetPrintFunction([](const char* svMessage) {
+
+		printf("test log %s\n", svMessage);
+
+		});
+
 	MEngine engine;
-	engine.Initialize();
+	engine.Initialize("./");
 	engine.RegisterRenderProgram<MForwardRenderProgram>();
 
 

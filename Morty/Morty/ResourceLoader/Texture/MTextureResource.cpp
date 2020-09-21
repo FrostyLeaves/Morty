@@ -31,8 +31,10 @@ bool MTextureResource::Load(const MString& strResourcePath)
 {
 	std::ifstream ifs(strResourcePath.c_str(), std::ios::binary);
 	if (!ifs.good())
+	{
+		MLogManager::GetInstance()->Error("Load Texture Error: [path:%s] not found", strResourcePath.c_str());
 		return false;
-
+	}
 	size_t unWidth = 0;
 	size_t unHeight = 0;
 	size_t comp;

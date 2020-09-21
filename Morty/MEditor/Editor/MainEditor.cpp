@@ -7,6 +7,7 @@
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 #include "imgui_impl_dx11.h"
 #elif RENDER_GRAPHICS == MORTY_VULKAN
+#include "imgui_impl_vulkan.h"
 #include "Vulkan/MVulkanWrapper.h"
 #include "Vulkan/MVulkanRenderer.h"
 #include "Vulkan/MVulkanRenderTarget.h"

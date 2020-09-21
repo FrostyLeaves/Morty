@@ -77,8 +77,15 @@ MResource* MResourceManager::LoadResource(const MString& strResourcePath, const 
 					m_tPathResources[strResourcePath] = pResource;
 					break;
 				}
+
+				MLogManager::GetInstance()->Error("Load Resource try to find: [path: %s]", (strSearchPath + "/" + strResourcePath).c_str());
 			}
 		}
+	}
+
+	if (nullptr == pResource)
+	{
+		MLogManager::GetInstance()->Error("Load Resource not found: [path: %s]", strResourcePath.c_str());
 	}
 
 	return pResource;

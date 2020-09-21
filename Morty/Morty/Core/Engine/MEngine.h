@@ -35,7 +35,7 @@ public:
 
 public:
 
-	virtual bool Initialize();
+	virtual bool Initialize(const MString& strSearchPath);
 	virtual void Release();
 
 	bool MainLoop();
