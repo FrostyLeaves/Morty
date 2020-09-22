@@ -88,6 +88,8 @@ bool MModelResource::Load(const MString& strResourcePath)
             }
         }
     }
+
+    return true;
 }
 
 bool MModelResource::SaveTo(const MString& strResourcePath)

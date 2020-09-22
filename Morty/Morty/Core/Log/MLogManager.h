@@ -37,8 +37,7 @@ public:
 	void Print(const char* svMessage, ARGS_T ...Args)
 	{
 		if (m_printFunction) {
-			size_t size = 1 + snprintf(svLogData, 4096, svMessage, Args...);
-
+			snprintf(svLogData, 4096, svMessage, Args...);
 			m_printFunction(svLogData);
 		}
 		else

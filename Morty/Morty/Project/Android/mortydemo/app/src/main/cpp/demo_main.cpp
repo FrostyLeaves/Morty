@@ -39,6 +39,8 @@
 #include "Model/MModelResource.h"
 #include "Model/MModelInstance.h"
 
+#include "Light/MDirectionalLight.h"
+
 #include "M3DNode.h"
 #include "MCamera.h"
 #include "MScene.h"
@@ -88,20 +90,27 @@ static void onNativeWindowCreated(ANativeActivity* activity, ANativeWindow* wind
         MLogManager::GetInstance()->Error("Load Failed: Jeep(is teaport).");
     }
 
+    MDirectionalLight* pDirLight = g_Engine.GetObjectManager()->CreateObject<MDirectionalLight>();
+    pDirLight->SetName("DirLight");
+    pRootNode->AddNode(pDirLight);
+
     //循环等待事情以进行处理。
     ANDROID_APP_LOGV("创建Scene");
     MScene* pScene = g_Engine.GetObjectManager()->CreateObject<MScene>();
     pScene->SetRootNode(pRootNode);
     MAndroidRenderView* pView = new MAndroidRenderView();
     pView->SetNativeWindow(window);
-    pView->SetSize(Vector2(ANativeWindow_getWidth(window), ANativeWindow_getHeight(window)));
+
+    Vector2 size = Vector2(ANativeWindow_getWidth(window), ANativeWindow_getHeight(window));
+
+    pView->SetSize(size);
     ANDROID_APP_LOGV("创建View");
     pView->Initialize(&g_Engine, "Morty");
     ANDROID_APP_LOGV("View Init 完成");
-    pView->SetBackColor(MColor(1.0f, 0.25f, 0.25f, 1.0f));
+    pView->SetBackColor(MColor(0.25f, 0.25f, 0.25f, 1.0f));
     MViewport* pViewport = g_Engine.GetObjectManager()->CreateObject<MViewport>();
     pView->AppendViewport(pViewport);
-    pViewport->SetSize(Vector2(pView->GetViewWidth(), pView->GetViewHeight()));
+    pViewport->SetSize(size);
     pViewport->SetScene(pScene);
     g_Engine.AddView(pView);
     g_Engine.SetScene(pScene);
