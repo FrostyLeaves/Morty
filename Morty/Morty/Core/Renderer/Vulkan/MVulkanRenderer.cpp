@@ -63,42 +63,6 @@ bool MVulkanRenderer::Initialize()
 	m_MultisampleState.alphaToCoverageEnable = VK_FALSE; // Optional
 	m_MultisampleState.alphaToOneEnable = VK_FALSE; // Optional
 
-	//TODO DepthStencil
-	m_DepthStencilState = {};
-	m_DepthStencilState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	m_DepthStencilState.pNext = NULL;
-	m_DepthStencilState.flags = 0;
-	m_DepthStencilState.depthTestEnable = VK_TRUE;
-	m_DepthStencilState.depthWriteEnable = VK_TRUE;
-	m_DepthStencilState.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-	m_DepthStencilState.depthBoundsTestEnable = VK_FALSE;
-	m_DepthStencilState.minDepthBounds = 0;
-	m_DepthStencilState.maxDepthBounds = 0;
-	m_DepthStencilState.stencilTestEnable = VK_FALSE;
-	m_DepthStencilState.back.failOp = VK_STENCIL_OP_KEEP;
-	m_DepthStencilState.back.passOp = VK_STENCIL_OP_KEEP;
-	m_DepthStencilState.back.compareOp = VK_COMPARE_OP_ALWAYS;
-	m_DepthStencilState.back.compareMask = 0;
-	m_DepthStencilState.back.reference = 0;
-	m_DepthStencilState.back.depthFailOp = VK_STENCIL_OP_KEEP;
-	m_DepthStencilState.back.writeMask = 0;
-	m_DepthStencilState.front = m_DepthStencilState.back;
-
-	m_ColorBlendAttachment = {};
-	m_ColorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	m_ColorBlendAttachment.blendEnable = VK_FALSE;
-
-	m_ColorBlending = {};
-	m_ColorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-	m_ColorBlending.logicOpEnable = VK_FALSE;
-	m_ColorBlending.logicOp = VK_LOGIC_OP_COPY;
-	m_ColorBlending.attachmentCount = 1;
-	m_ColorBlending.pAttachments = &m_ColorBlendAttachment;
-	m_ColorBlending.blendConstants[0] = 0.0f;
-	m_ColorBlending.blendConstants[1] = 0.0f;
-	m_ColorBlending.blendConstants[2] = 0.0f;
-	m_ColorBlending.blendConstants[3] = 0.0f;
-
 
 	InitSemaphores();
 
@@ -359,14 +323,9 @@ bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial)
 	return false;
 }
 
-void MVulkanRenderer::GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPass, std::vector<VkPipelineColorBlendAttachmentState>& vAttachState, VkPipelineColorBlendStateCreateInfo& blendInfo)
+void MVulkanRenderer::GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPass, std::vector<VkPipelineColorBlendAttachmentState>& vBlendAttach, VkPipelineColorBlendStateCreateInfo& blendInfo)
 {
-	for (uint32_t i = 0; i < pRenderPass->m_vBackDesc.size(); ++i)
-	{
-		vAttachState.push_back({});
-		vAttachState.back().colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-		vAttachState.back().blendEnable = VK_FALSE;
-	}
+	
 
 	blendInfo = {};
 	blendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -375,29 +334,144 @@ void MVulkanRenderer::GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPa
 
 	MEMaterialType eType = pMaterial->GetMaterialType();
 
-// 	if (MEMaterialType::EDefault == eType)
-// 	{
-// 		m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::EDefault], 0);
-// 		m_pDevice->m_pD3dContext->OMSetBlendState(m_vBlendState[(int)MEBlendType::EDefault], nullptr, 0xffffffff);
-// 	}
-// 	else if (MEMaterialType::ETransparent == eType)
-// 	{
-// 		m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::EReadNotWrite], 0);
-// 		m_pDevice->m_pD3dContext->OMSetBlendState(m_vBlendState[(int)MEBlendType::EAlphaOverlying], nullptr, 0xffffffff);
-// 	}
-// 	else if (MEMaterialType::EBlendTransparent == eType)
-// 	{
-// 		m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::ENotReadNotWrite], 0);
-// 		m_pDevice->m_pD3dContext->OMSetBlendState(m_vBlendState[(int)MEBlendType::ETransparent], nullptr, 0xffffffff);
-// 	}
+	if (MEMaterialType::EDefault == eType)
+	{
+		//m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::EDefault], 0);
 
-	blendInfo.attachmentCount = vAttachState.size();
-	blendInfo.pAttachments = vAttachState.data();
+		for (uint32_t i = 0; i < pRenderPass->m_vBackDesc.size(); ++i)
+		{
+			vBlendAttach.push_back({});
+			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
+			attachStage.blendEnable = VK_FALSE;
+			attachStage.blendEnable = VK_TRUE;
+			attachStage.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+			attachStage.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+			attachStage.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+			attachStage.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+			attachStage.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			attachStage.colorBlendOp = VK_BLEND_OP_ADD;
+			attachStage.alphaBlendOp = VK_BLEND_OP_ADD;
+		}
+		
+	}
+	else if (MEMaterialType::ETransparent == eType)
+	{
+	//	m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::EReadNotWrite], 0);
+		
+		if (pRenderPass->m_vBackDesc.size() != 4)
+			return;
+
+		vBlendAttach.resize(4);
+
+		
+		{//Front
+			vBlendAttach[0].blendEnable = VK_TRUE;
+			vBlendAttach[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+			vBlendAttach[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+			vBlendAttach[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			vBlendAttach[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+			vBlendAttach[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+			vBlendAttach[0].colorBlendOp = VK_BLEND_OP_ADD;
+			vBlendAttach[0].alphaBlendOp = VK_BLEND_OP_ADD;
+		}
+		{//Back
+			vBlendAttach[1].blendEnable = VK_TRUE;
+			vBlendAttach[1].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+			vBlendAttach[1].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			vBlendAttach[1].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			vBlendAttach[1].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+			vBlendAttach[1].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			vBlendAttach[1].colorBlendOp = VK_BLEND_OP_ADD;
+			vBlendAttach[1].alphaBlendOp = VK_BLEND_OP_ADD;
+		}
+		{//Front Depth
+			vBlendAttach[2].blendEnable = VK_TRUE;
+			vBlendAttach[2].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+			vBlendAttach[2].dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+			vBlendAttach[2].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			vBlendAttach[2].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+			vBlendAttach[2].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			vBlendAttach[2].colorBlendOp = VK_BLEND_OP_MIN;
+			vBlendAttach[2].alphaBlendOp = VK_BLEND_OP_MIN;
+		}
+		{//Back Depth
+			vBlendAttach[3].blendEnable = VK_TRUE;
+			vBlendAttach[3].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+			vBlendAttach[3].dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+			vBlendAttach[3].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			vBlendAttach[3].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+			vBlendAttach[3].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			vBlendAttach[3].colorBlendOp = VK_BLEND_OP_MAX;
+			vBlendAttach[3].alphaBlendOp = VK_BLEND_OP_MAX;
+		}
+	}
+	else if (MEMaterialType::EBlendTransparent == eType)
+	{
+		//m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::ENotReadNotWrite], 0);
+		for (uint32_t i = 0; i < pRenderPass->m_vBackDesc.size(); ++i)
+		{
+			vBlendAttach.push_back({});
+			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
+			attachStage.blendEnable = VK_TRUE;
+			attachStage.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+			attachStage.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			attachStage.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			attachStage.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+			attachStage.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			attachStage.colorBlendOp = VK_BLEND_OP_ADD;
+			attachStage.alphaBlendOp = VK_BLEND_OP_MAX;
+		}
+	}
+
+	blendInfo.attachmentCount = vBlendAttach.size();
+	blendInfo.pAttachments = vBlendAttach.data();
 	blendInfo.blendConstants[0] = 0.0f;
 	blendInfo.blendConstants[1] = 0.0f;
 	blendInfo.blendConstants[2] = 0.0f;
 	blendInfo.blendConstants[3] = 0.0f;
 
+}
+
+void MVulkanRenderer::GetDepthStencilStage(MMaterial* pMaterial, MRenderPass* pRenderPass, VkPipelineDepthStencilStateCreateInfo& depthStencilInfo)
+{
+	depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	depthStencilInfo.pNext = NULL;
+	depthStencilInfo.flags = 0;
+	depthStencilInfo.depthTestEnable = VK_TRUE;
+	depthStencilInfo.depthWriteEnable = VK_TRUE;
+	depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+	depthStencilInfo.depthBoundsTestEnable = VK_FALSE;
+	depthStencilInfo.minDepthBounds = 0;
+	depthStencilInfo.maxDepthBounds = 0;
+	depthStencilInfo.stencilTestEnable = VK_FALSE;
+
+	MEMaterialType eType = pMaterial->GetMaterialType();
+
+	if (MEMaterialType::EDefault == eType)
+	{
+		depthStencilInfo.depthTestEnable = VK_TRUE;
+		depthStencilInfo.depthWriteEnable = VK_TRUE;
+		depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+		depthStencilInfo.stencilTestEnable = VK_FALSE;
+	}
+	else if (MEMaterialType::ETransparent == eType)
+	{
+		depthStencilInfo.depthTestEnable = VK_TRUE;
+		depthStencilInfo.depthWriteEnable = VK_FALSE;
+		depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+		depthStencilInfo.stencilTestEnable = VK_FALSE;
+	}
+	else if (MEMaterialType::EBlendTransparent == eType)
+	{
+		//m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::ENotReadNotWrite], 0);
+		for (uint32_t i = 0; i < pRenderPass->m_vBackDesc.size(); ++i)
+		{
+			depthStencilInfo.depthTestEnable = VK_FALSE;
+			depthStencilInfo.depthWriteEnable = VK_FALSE;
+			depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+			depthStencilInfo.stencilTestEnable = VK_FALSE;
+		}
+	}
 }
 
 void MVulkanRenderer::UpdateShaderParam(MShaderConstantParam& param)
@@ -534,10 +608,13 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 
 
 	VkPipelineColorBlendStateCreateInfo blendInfo = {};
-	std::vector<VkPipelineColorBlendAttachmentState> vBlendAttach;
+	VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
 
 	//��vkCreateGraphicsPipelines֮ǰ��vBlendAttach���ܱ��ͷ�
+	std::vector<VkPipelineColorBlendAttachmentState> vBlendAttach;
 	GetBlendStage(pMaterial, pRenderPass, vBlendAttach, blendInfo);
+
+	GetDepthStencilStage(pMaterial, pRenderPass, depthStencilInfo);
 
 	VkPipelineLayout pipelineLayout = m_pDevice->m_PipelineManager.FindPipelineLayout(pMaterial)->pipelineLayout;
 
@@ -552,7 +629,7 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 	pipelineInfo.pRasterizationState = &m_RasterizationState;
 	pipelineInfo.pMultisampleState = &m_MultisampleState;
 	pipelineInfo.pColorBlendState = &blendInfo;
-	pipelineInfo.pDepthStencilState = &m_DepthStencilState;
+	pipelineInfo.pDepthStencilState = &depthStencilInfo;
 	pipelineInfo.layout = pipelineLayout;
 	pipelineInfo.renderPass = pRenderPass->m_aVkRenderPass[m_unFrameIndex];
 	pipelineInfo.subpass = 0;

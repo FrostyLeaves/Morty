@@ -122,7 +122,7 @@ void MVulkanObjectDestructor::DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bu
 
 bool MVulkanObjectDestructor::InitDescriptorPool()
 {
-	uint32_t unSwapChainNum = 100;
+	uint32_t unSwapChainNum = 500;
 
 	std::vector<VkDescriptorPoolSize> vPoolSize(5);
 	vPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;

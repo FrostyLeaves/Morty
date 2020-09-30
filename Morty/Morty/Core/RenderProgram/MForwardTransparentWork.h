@@ -41,6 +41,9 @@ protected:
     void InitializeMesh();
     void ReleaseMesh();
 
+    void InitializeMaterial();
+    void ReleaseMaterial();
+
     void InitializeTexture();
     void ReleaseTexture();
 
@@ -72,6 +75,7 @@ private:
 	std::vector<MRenderBackTexture*> m_vRenderTargetTexture;
 
 	MMesh<Vector2> m_TransparentDrawMesh;
+    MMaterial* m_pDrawMeshMaterial;
 };
 
 #endif

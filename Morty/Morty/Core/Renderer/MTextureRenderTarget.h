@@ -74,19 +74,10 @@ public:
 	virtual std::vector<struct ID3D11RenderTargetView*> GetRenderTargetViews() override;
 	virtual struct ID3D11DepthStencilView* GetDepthStencilView() override;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-	VkRenderPass m_VkRenderPass;
 #endif
 
 public:
-
-	struct MBufferInfo
-	{
-		MBufferInfo();
-		std::vector<MRenderBackTexture*> vBackTexture;
-		MRenderDepthTexture* pDepthTexture;
-		VkFramebuffer vkFrameBuffer;
-	};
-
+;
 	std::array<MFrameBuffer, M_BUFFER_NUM> m_vBufferInfo;
 	std::vector<MColor> m_vBackClearColor;
 protected:

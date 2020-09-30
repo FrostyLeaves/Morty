@@ -681,6 +681,8 @@ bool MVulkanDevice::InitLogicalDevice()
 
 
 	VkPhysicalDeviceFeatures deviceFeatures = {};
+	vkGetPhysicalDeviceFeatures(m_VkPhysicalDevice, &deviceFeatures);
+
 
 	VkDeviceCreateInfo deviceInfo{};
 	deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

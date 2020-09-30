@@ -125,6 +125,8 @@ void MEngine::Release()
 
 	m_pObjectManager->CleanRemoveObject();
 	delete m_pObjectManager;
+
+
 	delete m_pResourceManager;
 
 

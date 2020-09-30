@@ -14,6 +14,7 @@ M_OBJECT_IMPLEMENT(MForwardTransparentWork, MObject)
 MForwardTransparentWork::MForwardTransparentWork()
 	: MObject()
 	, m_TransparentDrawMesh(true)
+	, m_pDrawMeshMaterial(nullptr)
 	, m_pWhiteTexture(nullptr)
 	, m_pBlackTexture(nullptr)
 	, m_vTransparentFrontTexture()
@@ -64,13 +65,14 @@ void MForwardTransparentWork::DrawTransparentMesh(MForwardRenderProgram::MRender
 
 	info.pRenderer->BeginRenderPass(info.pRenderTarget);
 
-	MMaterialResource* pTextureMaterial = GetEngine()->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DEPTH_PEELING);
-	std::vector<MShaderTextureParam*>& params = *pTextureMaterial->GetTextureParams();
+	std::vector<MShaderTextureParam*>& params = *m_pDrawMeshMaterial->GetTextureParams();
 
 	params[0]->pTexture = m_vTransparentFrontTexture[info.unFrameIndex];
+	params[0]->SetDirty();
 	params[1]->pTexture = m_vTransparentBackTexture[info.unFrameIndex];
+	params[1]->SetDirty();
 
-	info.pRenderer->SetUseMaterial(pTextureMaterial);
+	info.pRenderer->SetUseMaterial(m_pDrawMeshMaterial);
 
 	info.pRenderer->DrawMesh(&m_TransparentDrawMesh);
 
@@ -89,7 +91,7 @@ void MForwardTransparentWork::RenderToTarget(MForwardRenderProgram::MRenderInfo&
 
 	info.pRenderer->BeginRenderPass(pRenderTarget);
 
-	//Set Current DepthTexture.
+//Set Current DepthTexture.
 // 	std::array<MRenderDepthTexture*, M_BUFFER_NUM> vDepthTextures;
 // 	vDepthTextures.fill(info.pRenderTarget->GetCurrDepthTexture());
 // 	pRenderTarget->SetDepthTexture(vDepthTextures);
@@ -111,12 +113,12 @@ void MForwardTransparentWork::RenderToTarget(MForwardRenderProgram::MRenderInfo&
 		}
 	}
 	
-
 	info.pRenderer->EndRenderPass(pRenderTarget);
 }
 
 void MForwardTransparentWork::OnCreated()
 {
+	InitializeMaterial();
 	InitializeMesh();
 	InitializeTexture();
 
@@ -136,6 +138,7 @@ void MForwardTransparentWork::OnDelete()
 	}
 	ReleaseTexture();
 	ReleaseMesh();
+	ReleaseMaterial();
 }
 
 void MForwardTransparentWork::InitializeMesh()
@@ -164,6 +167,26 @@ void MForwardTransparentWork::InitializeMesh()
 void MForwardTransparentWork::ReleaseMesh()
 {
 	m_TransparentDrawMesh.DestroyBuffer(m_pEngine->GetDevice());
+}
+
+void MForwardTransparentWork::InitializeMaterial()
+{
+	MResourceManager* pManager = GetEngine()->GetResourceManager();
+	m_pDrawMeshMaterial = GetEngine()->GetResourceManager()->CreateResource<MMaterialResource>();
+	MResource* pDPVSResource = pManager->LoadResource("./Shader/depthPeeling.mvs");
+	MResource* pDPPSResource = pManager->LoadResource("./Shader/depthPeeling.mps");
+
+	m_pDrawMeshMaterial->SetMaterialType(MEMaterialType::EBlendTransparent);
+	m_pDrawMeshMaterial->LoadVertexShader(pDPVSResource);
+	m_pDrawMeshMaterial->LoadPixelShader(pDPPSResource);
+
+	m_pDrawMeshMaterial->AddRef();
+}
+
+void MForwardTransparentWork::ReleaseMaterial()
+{
+	m_pDrawMeshMaterial->SubRef();
+	m_pDrawMeshMaterial = nullptr;
 }
 
 void MForwardTransparentWork::InitializeTexture()
@@ -265,19 +288,23 @@ void MForwardTransparentWork::InitializeRenderTargets()
 
 void MForwardTransparentWork::ReleaseRenderTargets()
 {
+
 	if (m_pTransparentRenderTarget0)
 	{
+		GetEngine()->GetDevice()->DestroyRenderTarget(m_pTransparentRenderTarget0);
 		m_pTransparentRenderTarget0->DeleteLater();
 		m_pTransparentRenderTarget0 = nullptr;
 	}
 
 	if (m_pTransparentRenderTarget1)
 	{
+		GetEngine()->GetDevice()->DestroyRenderTarget(m_pTransparentRenderTarget1);
 		m_pTransparentRenderTarget1->DeleteLater();
 		m_pTransparentRenderTarget1 = nullptr;
 	}
 	if (m_pTransparentRenderTarget2)
 	{
+		GetEngine()->GetDevice()->DestroyRenderTarget(m_pTransparentRenderTarget2);
 		m_pTransparentRenderTarget2->DeleteLater();
 		m_pTransparentRenderTarget2 = nullptr;
 	}

@@ -325,9 +325,8 @@ void MMaterial::SetMaterialType(const MEMaterialType& eType)
 		m_ShaderMacro.SetMortyMacro("MEN_TRANSPARENT", "1");
 		LoadVertexShader(m_VertexResource.GetResource());
 		LoadPixelShader(m_PixelResource.GetResource());
-	}
-
 		break;
+	}
 
 	default:
 		m_ShaderMacro.SetMortyMacro("MEN_TRANSPARENT", "0");
@@ -337,8 +336,6 @@ void MMaterial::SetMaterialType(const MEMaterialType& eType)
 	}
 
 	GetEngine()->GetDevice()->UnRegisterMaterial(this);
-
-
 	GetEngine()->GetDevice()->RegisterMaterial(this);
 }
 

@@ -51,8 +51,9 @@ public:
 
 public:
 
-	void GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPass, std::vector<VkPipelineColorBlendAttachmentState>& vAttachState, VkPipelineColorBlendStateCreateInfo& blendInfo);
+	void GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPass, std::vector<VkPipelineColorBlendAttachmentState>& vBlendAttach, VkPipelineColorBlendStateCreateInfo& blendInfo);
 
+	void GetDepthStencilStage(MMaterial* pMaterial, MRenderPass* pRenderPass, VkPipelineDepthStencilStateCreateInfo& depthStencilInfo);
 
 	void UpdateShaderParam(MShaderConstantParam& param);
 
@@ -74,9 +75,6 @@ private:
 	VkPipelineInputAssemblyStateCreateInfo m_InputAssemblyState;
 	VkPipelineRasterizationStateCreateInfo m_RasterizationState;
 	VkPipelineMultisampleStateCreateInfo m_MultisampleState;
-	VkPipelineColorBlendAttachmentState m_ColorBlendAttachment;
-	VkPipelineColorBlendStateCreateInfo m_ColorBlending;
-	VkPipelineDepthStencilStateCreateInfo m_DepthStencilState;
 
 	VkViewport m_VkViewport;
 
