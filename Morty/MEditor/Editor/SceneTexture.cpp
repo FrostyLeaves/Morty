@@ -61,20 +61,18 @@ void SceneTexture::Initialize(MEngine* pEngine)
 		m_vDepthTexture[i] = pDepthTexture;
 	}
 	m_pTextureRenderTarget = pEngine->GetObjectManager()->CreateObject<MTextureRenderTarget>();
-	m_pTextureRenderTarget->SetBackTexture(m_vBackTexture, 0, MColor::Black);
+	m_pTextureRenderTarget->SetBackTexture(m_vBackTexture, 0);
 	m_pTextureRenderTarget->SetDepthTexture(m_vDepthTexture);
+
+	m_pRenderProgram->BindRenderTarget(m_pTextureRenderTarget);
 
 	m_pTextureRenderTarget->m_funcRenderFunction = [this](MIRenderer* pRenderer)
 	{
 		//m_pRenderViewport->Render(pRenderer, m_pTextureRenderTarget);
 	};
 
-	MRenderPass::MRTDesc mrt;
-	mrt.bClearWhenRender = true;
-	m_pTextureRenderTarget->m_RenderPass.m_vBackDesc.push_back(mrt);
-	m_pTextureRenderTarget->m_RenderPass.m_DepthDesc.bClearWhenRender = true;
-
-	m_pEngine->GetDevice()->GenerateRenderTarget(m_pTextureRenderTarget, 256, 256);
+//	m_pEngine->GetDevice()->GenerateRenderTarget(m_pTextureRenderTarget, 256, 256);
+	m_pTextureRenderTarget->Resize({ 256, 256 });
 
 	MCamera* pCamera = m_pRenderViewport->GetCamera();
 	pCamera->SetPosition(Vector3(0, 0, -20));
@@ -117,6 +115,12 @@ void SceneTexture::SetSize(const Vector2& v2Size)
 
 	m_v2Size = v2Size;
 
+	if (m_v2Size.x < 1.0f)
+		m_v2Size.x = 1.0f;
+
+	if (m_v2Size.y < 1.0f)
+		m_v2Size.y = 1.0f;
+
 	m_pRenderViewport->SetSize(m_v2Size);
 
 	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
@@ -131,9 +135,8 @@ void SceneTexture::SetSize(const Vector2& v2Size)
 		m_vDepthTexture[i]->GenerateBuffer(m_pEngine->GetDevice());
 	}
 
-
-	m_pEngine->GetDevice()->DestroyRenderTarget(m_pTextureRenderTarget);
-	m_pEngine->GetDevice()->GenerateRenderTarget(m_pTextureRenderTarget, m_v2Size.x, m_v2Size.y);
+//	m_pEngine->GetDevice()->GenerateRenderTarget(m_pTextureRenderTarget, m_v2Size.x, m_v2Size.y);
+	m_pTextureRenderTarget->Resize(m_v2Size);
 }
 
 void SceneTexture::UpdateTexture()
@@ -141,7 +144,7 @@ void SceneTexture::UpdateTexture()
 	if (m_pRenderProgram)
 	{
 		std::vector<MViewport*> vViewports = { m_pRenderViewport };
-		m_pRenderProgram->Render(m_pEngine->GetRenderer(), m_pTextureRenderTarget, vViewports);
+		m_pRenderProgram->Render(m_pEngine->GetRenderer(), vViewports);
 	}
 //	m_pEngine->GetRenderer()->Render(m_pTextureRenderTarget);
 }

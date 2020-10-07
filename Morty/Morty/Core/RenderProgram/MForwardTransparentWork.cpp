@@ -32,6 +32,36 @@ MForwardTransparentWork::~MForwardTransparentWork()
 {
 }
 
+void MForwardTransparentWork::Initialize(MIRenderProgram* pRenderProgram)
+{
+	m_pRenderProgram = pRenderProgram;
+
+	InitializeMaterial();
+	InitializeMesh();
+	InitializeTexture();
+
+	for (uint32_t i = 0; i < 3; ++i)
+	{
+		m_FrameParamSet[i].InitializeShaderParamSet(GetEngine());
+	}
+	InitializeRenderTargets();
+	InitializeRenderPass();
+}
+
+void MForwardTransparentWork::Release()
+{
+	ReleaseRenderPass();
+	ReleaseRenderTargets();
+	for (uint32_t i = 0; i < 3; ++i)
+	{
+		m_FrameParamSet[i].ReleaseShaderParamSet(GetEngine());
+	}
+
+	ReleaseTexture();
+	ReleaseMesh();
+	ReleaseMaterial();
+}
+
 void MForwardTransparentWork::DrawTransparentMesh(MForwardRenderProgram::MRenderInfo& info)
 {
 	if (info.vTransparentRenderGroup.empty())
@@ -53,17 +83,15 @@ void MForwardTransparentWork::DrawTransparentMesh(MForwardRenderProgram::MRender
 	m_FrameParamSet[2].m_pTransparentFrontTextureParam->pTexture = vBackTexture0[unFrameIdx];
 	m_FrameParamSet[2].m_pTransparentBackTextureParam->pTexture = vBackTexture1[unFrameIdx];
 
-	
-	RenderToTarget(info, m_pTransparentRenderTarget0, 0);
 
+	RenderToTarget(info, &m_TransWithClearRenderPass, m_pTransparentRenderTarget0, 0);
 	for (uint32_t i = 0; i < 3; ++i)
 	{
-		RenderToTarget(info, m_pTransparentRenderTarget1, 1);
-		RenderToTarget(info, m_pTransparentRenderTarget2, 2);
+		RenderToTarget(info, &m_TransRenderPass, m_pTransparentRenderTarget1, 1);
+		RenderToTarget(info, &m_TransRenderPass, m_pTransparentRenderTarget2, 2);
 	}
 
-
-	info.pRenderer->BeginRenderPass(info.pRenderTarget);
+	info.pRenderer->BeginRenderPass(&m_MeshRenderPass, info.pRenderTarget);
 
 	std::vector<MShaderTextureParam*>& params = *m_pDrawMeshMaterial->GetTextureParams();
 
@@ -76,10 +104,10 @@ void MForwardTransparentWork::DrawTransparentMesh(MForwardRenderProgram::MRender
 
 	info.pRenderer->DrawMesh(&m_TransparentDrawMesh);
 
-	info.pRenderer->EndRenderPass(info.pRenderTarget);
+	info.pRenderer->EndRenderPass();
 }
 
-void MForwardTransparentWork::RenderToTarget(MForwardRenderProgram::MRenderInfo& info, MTextureRenderTarget* pRenderTarget, const uint32_t& unFrameParamIdx)
+void MForwardTransparentWork::RenderToTarget(MForwardRenderProgram::MRenderInfo& info, MRenderPass* pRenderPass, MTextureRenderTarget* pRenderTarget, const uint32_t& unFrameParamIdx)
 {
 	if (nullptr == info.pViewport)
 		return;
@@ -89,13 +117,7 @@ void MForwardTransparentWork::RenderToTarget(MForwardRenderProgram::MRenderInfo&
 
 	MViewport* pViewport = info.pViewport;
 
-	info.pRenderer->BeginRenderPass(pRenderTarget);
-
-//Set Current DepthTexture.
-// 	std::array<MRenderDepthTexture*, M_BUFFER_NUM> vDepthTextures;
-// 	vDepthTextures.fill(info.pRenderTarget->GetCurrDepthTexture());
-// 	pRenderTarget->SetDepthTexture(vDepthTextures);
-
+	info.pRenderer->BeginRenderPass(pRenderPass, pRenderTarget);
 
 	for (MMaterialGroup& group : info.vTransparentRenderGroup)
 	{
@@ -113,32 +135,7 @@ void MForwardTransparentWork::RenderToTarget(MForwardRenderProgram::MRenderInfo&
 		}
 	}
 	
-	info.pRenderer->EndRenderPass(pRenderTarget);
-}
-
-void MForwardTransparentWork::OnCreated()
-{
-	InitializeMaterial();
-	InitializeMesh();
-	InitializeTexture();
-
-	for (uint32_t i = 0; i < 3; ++i)
-	{
-		m_FrameParamSet[i].InitializeShaderParamSet(GetEngine());
-	}
-	InitializeRenderTargets();
-}
-
-void MForwardTransparentWork::OnDelete()
-{
-	ReleaseRenderTargets();
-	for (uint32_t i = 0; i < 3; ++i)
-	{
-		m_FrameParamSet[i].ReleaseShaderParamSet(GetEngine());
-	}
-	ReleaseTexture();
-	ReleaseMesh();
-	ReleaseMaterial();
+	info.pRenderer->EndRenderPass();
 }
 
 void MForwardTransparentWork::InitializeMesh()
@@ -240,49 +237,21 @@ void MForwardTransparentWork::InitializeRenderTargets()
 	}
 
 
-	m_pTransparentRenderTarget0->SetBackTexture(m_vTransparentFrontTexture, 0, MColor::Black_T);
-	m_pTransparentRenderTarget0->SetBackTexture(m_vTransparentFrontTexture, 1, MColor::Black_T);
-	m_pTransparentRenderTarget0->SetBackTexture(vBackTexture2, 2, MColor::White);
-	m_pTransparentRenderTarget0->SetBackTexture(vBackTexture3, 3, MColor::Black_T);
-//	m_pTransparentRenderTarget0->SetPrevLayerFrontDepthTexture(m_pBlackTexture);
-//	m_pTransparentRenderTarget0->SetPrevLayerBackDepthTexture(m_pWhiteTexture);
-	m_pTransparentRenderTarget0->SetBackTexture(vBackTexture3, 3, MColor::Black_T);
+	m_pTransparentRenderTarget0->SetBackTexture(m_vTransparentFrontTexture, 0);
+	m_pTransparentRenderTarget0->SetBackTexture(m_vTransparentBackTexture, 1);
+	m_pTransparentRenderTarget0->SetBackTexture(vBackTexture2, 2);
+	m_pTransparentRenderTarget0->SetBackTexture(vBackTexture3, 3);
 
 
 	m_pTransparentRenderTarget1->SetBackTexture(m_vTransparentFrontTexture, 0);
 	m_pTransparentRenderTarget1->SetBackTexture(m_vTransparentBackTexture, 1);
-	m_pTransparentRenderTarget1->SetBackTexture(vBackTexture0, 2, MColor::White);
-	m_pTransparentRenderTarget1->SetBackTexture(vBackTexture1, 3, MColor::Black_T);
-	//m_pTransparentRenderTarget1->SetPrevLayerFrontDepthTexture(vBackTexture2);
-	//m_pTransparentRenderTarget1->SetPrevLayerBackDepthTexture(vBackTexture3);
+	m_pTransparentRenderTarget1->SetBackTexture(vBackTexture0, 2);
+	m_pTransparentRenderTarget1->SetBackTexture(vBackTexture1, 3);
 
 	m_pTransparentRenderTarget2->SetBackTexture(m_vTransparentFrontTexture, 0);
 	m_pTransparentRenderTarget2->SetBackTexture(m_vTransparentBackTexture, 1);
-	m_pTransparentRenderTarget2->SetBackTexture(vBackTexture2, 2, MColor::White);
-	m_pTransparentRenderTarget2->SetBackTexture(vBackTexture3, 3, MColor::Black_T);
-	//m_pTransparentRenderTarget2->SetPrevLayerFrontDepthTexture(vBackTexture0);
-	//m_pTransparentRenderTarget2->SetPrevLayerBackDepthTexture(vBackTexture1);
-
-
-	MRenderPass::MRTDesc desc0, desc1, desc2, desc3;
-
-	desc0.bClearWhenRender = false;
-	desc1.bClearWhenRender = false;
-
-	m_pTransparentRenderTarget0->m_RenderPass.m_vBackDesc.push_back(desc0);
-	m_pTransparentRenderTarget0->m_RenderPass.m_vBackDesc.push_back(desc1);
-	m_pTransparentRenderTarget0->m_RenderPass.m_vBackDesc.push_back(desc2);
-	m_pTransparentRenderTarget0->m_RenderPass.m_vBackDesc.push_back(desc3);
-
-	m_pTransparentRenderTarget1->m_RenderPass.m_vBackDesc.push_back(desc0);
-	m_pTransparentRenderTarget1->m_RenderPass.m_vBackDesc.push_back(desc1);
-	m_pTransparentRenderTarget1->m_RenderPass.m_vBackDesc.push_back(desc2);
-	m_pTransparentRenderTarget1->m_RenderPass.m_vBackDesc.push_back(desc3);
-
-	m_pTransparentRenderTarget2->m_RenderPass.m_vBackDesc.push_back(desc0);
-	m_pTransparentRenderTarget2->m_RenderPass.m_vBackDesc.push_back(desc1);
-	m_pTransparentRenderTarget2->m_RenderPass.m_vBackDesc.push_back(desc2);
-	m_pTransparentRenderTarget2->m_RenderPass.m_vBackDesc.push_back(desc3);
+	m_pTransparentRenderTarget2->SetBackTexture(vBackTexture2, 2);
+	m_pTransparentRenderTarget2->SetBackTexture(vBackTexture3, 3);
 
 }
 
@@ -316,6 +285,52 @@ void MForwardTransparentWork::ReleaseRenderTargets()
 	}
 }
 
+void MForwardTransparentWork::InitializeRenderPass()
+{
+	if (!m_pRenderProgram)
+	{
+		MLogManager::GetInstance()->Error("MForwardTransparentWork::InitializeRenderPass error, rp == nullptr");
+		return;
+	}
+
+	MIRenderTarget* pRenderTarget = m_pRenderProgram->GetRenderTarget();
+	if (!pRenderTarget)
+	{
+		MLogManager::GetInstance()->Error("MForwardTransparentWork::InitializeRenderPass error, rt == nullptr");
+		return;
+	}
+
+	MRenderPass::MTargetDesc descNoClear(false, MColor::Black_T);
+	MRenderPass::MTargetDesc descWhite(true, MColor::White);
+	MRenderPass::MTargetDesc descBlackT(true, MColor::Black_T);
+
+	m_TransWithClearRenderPass.m_vBackDesc.push_back(descBlackT);
+	m_TransWithClearRenderPass.m_vBackDesc.push_back(descBlackT);
+	m_TransWithClearRenderPass.m_vBackDesc.push_back(descWhite);
+	m_TransWithClearRenderPass.m_vBackDesc.push_back(descBlackT);
+
+	m_TransRenderPass.m_vBackDesc.push_back(descNoClear);
+	m_TransRenderPass.m_vBackDesc.push_back(descNoClear);
+	m_TransRenderPass.m_vBackDesc.push_back(descWhite);
+	m_TransRenderPass.m_vBackDesc.push_back(descBlackT);
+
+	GetEngine()->GetDevice()->GenerateRenderPass(&m_TransWithClearRenderPass, m_pTransparentRenderTarget0);
+	GetEngine()->GetDevice()->GenerateRenderPass(&m_TransRenderPass, m_pTransparentRenderTarget1);
+
+	MRenderPass::MTargetDesc descMesh;
+	descMesh.bClearWhenRender = false;
+	m_MeshRenderPass.m_vBackDesc.push_back(descMesh);
+	m_MeshRenderPass.m_DepthDesc.bClearWhenRender = false;
+	GetEngine()->GetDevice()->GenerateRenderPass(&m_MeshRenderPass, pRenderTarget);
+}
+
+void MForwardTransparentWork::ReleaseRenderPass()
+{
+	GetEngine()->GetDevice()->DestroyRenderPass(&m_TransWithClearRenderPass);
+	GetEngine()->GetDevice()->DestroyRenderPass(&m_TransRenderPass);
+	GetEngine()->GetDevice()->DestroyRenderPass(&m_MeshRenderPass);
+}
+
 void MForwardTransparentWork::CheckTransparentTextureSize(MForwardRenderProgram::MRenderInfo& info)
 {
 	Vector2 v2Size = info.pViewport->GetSize();
@@ -337,14 +352,8 @@ void MForwardTransparentWork::CheckTransparentTextureSize(MForwardRenderProgram:
 		}
 	}
 
-
-	GetEngine()->GetDevice()->DestroyRenderTarget(m_pTransparentRenderTarget0);
-	GetEngine()->GetDevice()->DestroyRenderTarget(m_pTransparentRenderTarget1);
-	GetEngine()->GetDevice()->DestroyRenderTarget(m_pTransparentRenderTarget2);
-
-
-	GetEngine()->GetDevice()->GenerateRenderTarget(m_pTransparentRenderTarget0, m_v2TransparentTextureSize.x, m_v2TransparentTextureSize.y);
-	GetEngine()->GetDevice()->GenerateRenderTarget(m_pTransparentRenderTarget1, m_v2TransparentTextureSize.x, m_v2TransparentTextureSize.y);
-	GetEngine()->GetDevice()->GenerateRenderTarget(m_pTransparentRenderTarget2, m_v2TransparentTextureSize.x, m_v2TransparentTextureSize.y);
+	m_pTransparentRenderTarget0->Resize(m_v2TransparentTextureSize);
+	m_pTransparentRenderTarget1->Resize(m_v2TransparentTextureSize);
+	m_pTransparentRenderTarget2->Resize(m_v2TransparentTextureSize);
 }
 

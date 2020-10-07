@@ -6,7 +6,7 @@
 
 #include "MFunction.h"
 
-M_OBJECT_IMPLEMENT(MTextureRenderTarget, MObject)
+M_OBJECT_IMPLEMENT(MTextureRenderTarget, MIRenderTarget)
 
 MTextureRenderTarget::MTextureRenderTarget()
 	: MIRenderTarget()
@@ -19,7 +19,7 @@ MTextureRenderTarget::MTextureRenderTarget()
 
 MTextureRenderTarget::~MTextureRenderTarget()
 {
-	Release(m_pEngine->GetDevice());
+	Release();
 }
 
 MRenderDepthTexture* MTextureRenderTarget::GetCurrDepthTexture()
@@ -32,19 +32,16 @@ MRenderDepthTexture* MTextureRenderTarget::GetCurrDepthTexture()
 	return info.pDepthTexture;
 }
 
-uint32_t MTextureRenderTarget::GetBackNum()
-{
-	return m_vBufferInfo[0].vBackTextures.size();
-}
-
-MColor MTextureRenderTarget::GetBackClearColor(const uint32_t& unIndex)
-{
-	return m_vBackClearColor[unIndex];
-}
-
 bool MTextureRenderTarget::GetDepthEnable()
 {
 	return m_vBufferInfo[0].pDepthTexture;
+}
+
+void MTextureRenderTarget::Resize(const Vector2& v2Size)
+{
+	GetEngine()->GetDevice()->DestroyRenderTarget(this);
+
+	Super::Resize(v2Size);
 }
 
 std::vector<MIRenderBackTexture*>* MTextureRenderTarget::GetBackTexture(const uint32_t& unIndex)
@@ -53,19 +50,13 @@ std::vector<MIRenderBackTexture*>* MTextureRenderTarget::GetBackTexture(const ui
 	return &info.vBackTextures;
 }
 
-void MTextureRenderTarget::SetBackTexture(const std::array<MRenderBackTexture*, M_BUFFER_NUM>& vBackTexture, const uint32_t& unIndex, const MColor& clearColor /*= MColor::Black*/)
+void MTextureRenderTarget::SetBackTexture(const std::array<MRenderBackTexture*, M_BUFFER_NUM>& vBackTexture, const uint32_t& unIndex)
 {
-	if (m_vBackClearColor.size() <= unIndex)
+	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
 	{
-		m_vBackClearColor.resize(unIndex + 1, MColor::Black);
-
-		for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-		{
+		if (m_vBufferInfo[i].vBackTextures.size() <= unIndex)
 			m_vBufferInfo[i].vBackTextures.resize(unIndex + 1, nullptr);
-		}
 	}
-
-	m_vBackClearColor[unIndex] = clearColor;
 
 	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
 	{
@@ -141,17 +132,11 @@ void MTextureRenderTarget::OnCreated()
 {
 	Super::OnCreated();
 
-	InitRenderPass();
 }
 
-void MTextureRenderTarget::Release(MIDevice* pDevice)
+void MTextureRenderTarget::Release()
 {
 
-}
-
-void MTextureRenderTarget::InitRenderPass()
-{
-	m_RenderPass.m_vSubpass.push_back(MSubpass());
 }
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11

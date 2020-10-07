@@ -16,6 +16,7 @@
 #include "MMaterialGroup.h"
 #include "Shader/MShaderParamSet.h"
 
+#include "MRenderPass.h"
 #include "MForwardRenderShaderParamSet.h"
 
 #include <vector>
@@ -63,7 +64,9 @@ public:
 
 public:
 
-    virtual void Render(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget, const std::vector<MViewport*>& vViewports) override;
+	void BindRenderTarget(MIRenderTarget* pRenderTarget);
+
+    virtual void Render(MIRenderer* pRenderer, const std::vector<MViewport*>& vViewports) override;
 
 	void RenderWithViewport(MRenderInfo info, MViewport* pViewport);
 
@@ -93,8 +96,14 @@ public:
 
 protected:
 
+	virtual void Initialize() override;
+	virtual void Release() override;
+
 	void InitializeShaderParamSet();
 	void ReleaseShaderParamSet();
+
+	void InitializeRenderPass();
+	void ReleaseRenderPass();
 
 private:
 
@@ -103,6 +112,7 @@ private:
 	MForwardShadowMapWork* m_pShadowMapWork;
 	MForwardTransparentWork* m_pTransparentWork;
 
+	MRenderPass m_ForwardMeshRenderPass;
 };
 
 #endif

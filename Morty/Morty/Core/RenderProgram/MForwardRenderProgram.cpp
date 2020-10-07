@@ -32,6 +32,8 @@
 #include "MForwardShadowMapWork.h"
 #include "MForwardTransparentWork.h"
 
+#include "MIRenderTarget.h"
+
 #include <algorithm>
 
 
@@ -51,6 +53,35 @@ MForwardRenderProgram::~MForwardRenderProgram()
 {
 }
 
+void MForwardRenderProgram::Initialize()
+{
+	InitializeShaderParamSet();
+	InitializeRenderPass();
+
+	m_pShadowMapWork = GetEngine()->GetObjectManager()->CreateObject<MForwardShadowMapWork>();
+	m_pShadowMapWork->Initialize(this);
+
+	m_pTransparentWork = GetEngine()->GetObjectManager()->CreateObject<MForwardTransparentWork>();
+	m_pTransparentWork->Initialize(this);
+}
+
+void MForwardRenderProgram::Release()
+{
+	ReleaseShaderParamSet();
+
+	if (m_pShadowMapWork)
+	{
+		m_pShadowMapWork->DeleteLater();
+		m_pShadowMapWork = nullptr;
+	}
+
+	if (m_pTransparentWork)
+	{
+		m_pTransparentWork->DeleteLater();
+		m_pTransparentWork = nullptr;
+	}
+}
+
 void MForwardRenderProgram::InitializeShaderParamSet()
 {
 	m_FrameParamSet.InitializeShaderParamSet(GetEngine());
@@ -61,23 +92,44 @@ void MForwardRenderProgram::ReleaseShaderParamSet()
 	m_FrameParamSet.ReleaseShaderParamSet(GetEngine());
 }
 
-void MForwardRenderProgram::Render(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget, const std::vector<MViewport*>& vViewports)
+void MForwardRenderProgram::InitializeRenderPass()
+{
+	if (!GetRenderTarget())
+	{
+		MLogManager::GetInstance()->Error("MForwardRenderProgram::InitializeRenderPass error: rt == nullptr");
+		return;
+	}
+
+	//Init RenderPass
+	m_ForwardMeshRenderPass.m_vSubpass.push_back(MSubpass());
+
+	m_ForwardMeshRenderPass.m_vBackDesc.push_back(MRenderPass::MTargetDesc());
+	m_ForwardMeshRenderPass.m_vBackDesc.back().bClearWhenRender = true;
+	m_ForwardMeshRenderPass.m_vBackDesc.back().cClearColor = MColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+	m_ForwardMeshRenderPass.m_DepthDesc.bClearWhenRender = true;
+
+	GetEngine()->GetDevice()->GenerateRenderPass(&m_ForwardMeshRenderPass, GetRenderTarget());
+}
+
+void MForwardRenderProgram::ReleaseRenderPass()
+{
+	GetEngine()->GetDevice()->DestroyRenderPass(&m_ForwardMeshRenderPass);
+}
+
+void MForwardRenderProgram::Render(MIRenderer* pRenderer, const std::vector<MViewport*>& vViewports)
 {
 	MRenderInfo info;
 	memset(&info, 0, sizeof(MRenderInfo));
 
 	info.unFrameIndex = pRenderer->GetFrameIndex();
-	info.pRenderTarget = pRenderTarget;
+	info.pRenderTarget = GetRenderTarget();
 	info.pRenderer = pRenderer;
 
-	//pRenderer->RenderBegin(pRenderTarget);
- 	
 	for (MViewport* pViewport : vViewports)
 	{
 		RenderWithViewport(info, pViewport);
 	}
-
-	//pRenderer->RenderEnd(pRenderTarget);
 }
 
 void MForwardRenderProgram::RenderWithViewport(MRenderInfo info, MViewport* pViewport)
@@ -97,8 +149,7 @@ void MForwardRenderProgram::RenderWithViewport(MRenderInfo info, MViewport* pVie
 		}
 	}
 
-
-	info.pRenderer->BeginRenderPass(info.pRenderTarget);
+	info.pRenderer->BeginRenderPass(&m_ForwardMeshRenderPass, info.pRenderTarget);
 
 
 	Vector2 v2LeftTop = pViewport->GetLeftTop();
@@ -108,7 +159,7 @@ void MForwardRenderProgram::RenderWithViewport(MRenderInfo info, MViewport* pVie
 	DrawNormalMesh(info);
 
 
-	info.pRenderer->EndRenderPass(info.pRenderTarget);
+	info.pRenderer->EndRenderPass();
 
 
 	if (m_pTransparentWork)
@@ -122,32 +173,10 @@ void MForwardRenderProgram::RenderWithViewport(MRenderInfo info, MViewport* pVie
 void MForwardRenderProgram::OnCreated()
 {
 	Super::OnCreated();
-
-	InitializeShaderParamSet();
-
-	m_pShadowMapWork = GetEngine()->GetObjectManager()->CreateObject<MForwardShadowMapWork>();
-	m_pShadowMapWork->SetProgram(this);
- 
-	m_pTransparentWork = GetEngine()->GetObjectManager()->CreateObject<MForwardTransparentWork>();
-	m_pTransparentWork->SetProgram(this);
 }
 
 void MForwardRenderProgram::OnDelete()
 {
-	ReleaseShaderParamSet();
-
-	if (m_pShadowMapWork)
-	{
-		m_pShadowMapWork->DeleteLater();
-		m_pShadowMapWork = nullptr;
-	}
-
-	if (m_pTransparentWork)
-	{
-		m_pTransparentWork->DeleteLater();
-		m_pTransparentWork = nullptr;
-	}
-
 	Super::OnDelete();
 }
 

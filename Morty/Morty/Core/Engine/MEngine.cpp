@@ -32,8 +32,7 @@
 
 
 MEngine::MEngine()
-	: m_pRenderProgram(nullptr)
-	, m_pObjectManager(nullptr)
+	: m_pObjectManager(nullptr)
 	, m_pResourceManager(nullptr)
 	, m_pScene(nullptr)
 	, m_pDevice(nullptr)
@@ -107,12 +106,6 @@ void MEngine::AddView(MIRenderView* pView)
 
 void MEngine::Release()
 {
-	if (m_pRenderProgram)
-	{
-		m_pRenderProgram->DeleteLater();
-		m_pRenderProgram = nullptr;
-	}
-
 	for (auto pView : m_vView)
 	{
 		pView->Release();
@@ -335,22 +328,29 @@ void MEngine::RenderToView(MIRenderView* pView)
 	if (pView->GetMinimized())
 		return;
 
-	if (MIRenderTarget* pRenderTarget = pView->GetRenderTarget())
-	{
-		pRenderTarget->OnRenderBefore(m_pRenderer);
+	MIRenderTarget* pRenderTarget = pView->GetRenderTarget();
+	if (!pRenderTarget)
+		return;
+	
+	MIRenderProgram* pRenderProgram = pRenderTarget->GetRenderProgram();
+	if (!pRenderProgram)
+		return;
 
-		m_pRenderer->RenderBegin(pRenderTarget);
 
-		pView->OnRenderBegin();
+	pRenderTarget->OnRenderBefore(m_pRenderer);
 
-		m_pRenderProgram->Render(m_pRenderer, pRenderTarget, pView->GetViewports());
+	m_pRenderer->RenderBegin(pRenderTarget);
 
-		pView->OnRenderEnd();
+	pView->OnRenderBegin();
 
-		m_pRenderer->RenderEnd(pRenderTarget);
+	pRenderProgram->Render(m_pRenderer, pView->GetViewports());
 
-		pRenderTarget->OnRenderAfter(m_pRenderer);
-	}
+	pView->OnRenderEnd();
+
+	m_pRenderer->RenderEnd(pRenderTarget);
+
+	pRenderTarget->OnRenderAfter(m_pRenderer);
+
 }
 
 void MEngine::SetScene(MScene* pScene)

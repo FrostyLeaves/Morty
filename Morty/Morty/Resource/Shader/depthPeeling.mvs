@@ -1,12 +1,17 @@
 #include "privateHeader.hlsl"
 
+struct VS_IN_SLICE
+{
+    float2 pos : POSITION;
+};
+
 struct VS_OUT_DP
 {
     float4 pos : SV_POSITION;
     float2 uv : TEXCOORD;
 };
 
-VS_OUT_DP VS(VS_IN input)
+VS_OUT_DP VS(VS_IN_SLICE input)
 {
     VS_OUT_DP output;
 
@@ -14,7 +19,7 @@ VS_OUT_DP VS(VS_IN input)
     output.pos.w = 1.0f;
     output.pos.z = 0.0f;
     output.uv.x = output.pos.x * 0.5f + 0.5f;
-    output.uv.y = output.pos.y * -0.5f + 0.5f;
+    output.uv.y = output.pos.y * 0.5f + 0.5f;
 
     return output;
 }

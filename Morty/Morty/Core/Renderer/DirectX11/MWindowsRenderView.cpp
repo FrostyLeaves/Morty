@@ -137,7 +137,7 @@ bool MWindowsRenderView::Initialize(MEngine* pEngine, const char* svWindowName)
 	UpdateWindow(m_hwnd);
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
-	MVulkanRenderTarget::CreateForWindowsView(pEngine->GetDevice(), this);
+	MVulkanRenderTarget::CreateForWindowsView(pEngine, this);
 #endif
 
 	return true;
@@ -158,7 +158,7 @@ void MWindowsRenderView::OnResize(const int& nWidth, const int& nHeight)
 		pRt->Resize(nWidth, nHeight);
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 	if (MVulkanRenderTarget* pRt = dynamic_cast<MVulkanRenderTarget*>(m_pRenderTarget))
-		pRt->Resize(nWidth, nHeight);
+		pRt->Resize(Vector2(nWidth, nHeight));
 #endif
 }
 
@@ -205,7 +205,7 @@ void MWindowsRenderView::Release()
 {
 	if (m_pRenderTarget)
 	{
-		m_pRenderTarget->Release(m_pEngine->GetDevice());
+		m_pRenderTarget->Release();
 		delete m_pRenderTarget;
 		m_pRenderTarget = nullptr;
 	}

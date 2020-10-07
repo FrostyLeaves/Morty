@@ -31,14 +31,13 @@ float ShadowCalculation(float4 dirLightSpacePos, float fNdotL)
         float lighting = 0.0f;
         
         float pixelDepth = dirLightSpacePos.z / dirLightSpacePos.w - epsilon;
-        lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy, pixelDepth));
- 
-        //float offset = 1.0f / MSHADOW_TEXTURE_SIZE;
-        //lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy + float2(0, -offset), pixelDepth));
-        //lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy + float2(0, offset), pixelDepth));
-        //lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy + float2(-offset, 0), pixelDepth));
-        //lighting += float(U_texShadowMap.SampleCmpLevelZero(U_lessEqualSampler, shadowTexCoords.xy + float2(offset, 0), pixelDepth));
-        //lighting *= 0.2f;
+        float shadowDepth = U_texShadowMap.Sample(U_defaultSampler, shadowTexCoords.xy);
+
+        //current pixel is nearer.
+        if (pixelDepth < shadowDepth)
+            lighting += 1.0f;
+
+            
         return lighting;
     }
 

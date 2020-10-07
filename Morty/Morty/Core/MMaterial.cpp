@@ -311,6 +311,14 @@ void MMaterial::CopyShaderParamSet(MShaderParamSet& target, const MShaderParamSe
 	}
 }
 
+void MMaterial::SetRasterizerType(const MERasterizerType& eType)
+{
+	m_eRasterizerType = eType;
+
+	GetEngine()->GetDevice()->UnRegisterMaterial(this);
+	GetEngine()->GetDevice()->RegisterMaterial(this);
+}
+
 void MMaterial::SetMaterialType(const MEMaterialType& eType)
 {
 	if (m_eMaterialType == eType)

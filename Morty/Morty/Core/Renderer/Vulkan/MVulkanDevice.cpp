@@ -983,28 +983,44 @@ void MVulkanDevice::DestroyRenderTextureBuffer(MRenderTextureBuffer** ppTextureB
 	}
 }
 
-bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t nWidth, uint32_t nHeight)
+bool MVulkanDevice::GenerateRenderTarget(MRenderPass* pRenderPass, MIRenderTarget* pRenderTarget)
 {
-	MIRenderTarget* pVkRenderTarget = pRenderTarget;
-
-	if (nWidth < 1)
-		nWidth = 1;
-	if (nHeight < 1)
-		nHeight = 1;
-
-	pVkRenderTarget->m_VkExtend.width = nWidth;
-	pVkRenderTarget->m_VkExtend.height = nHeight;
-
-	MRenderPass& renderPass = pVkRenderTarget->m_RenderPass;
-
-	if(!GenerateRenderPass(&renderPass))
+	if (!pRenderTarget)
+	{
+		MLogManager::GetInstance()->Error("MVulkanDevice::GenerateRenderTarget error, rt == nullptr");
 		return false;
+	}
 
-	VkImageViewCreateInfo createInfo = {};
+	if (!pRenderPass)
+	{
+		MLogManager::GetInstance()->Error("MVulkanDevice::GenerateRenderTarget error, rp == nullptr");
+		return false;
+	}
+
+	VkRenderPass vkRenderPass = pRenderPass->m_aVkRenderPass[0];
+
+	if (VK_NULL_HANDLE == vkRenderPass)
+	{
+		MLogManager::GetInstance()->Error("MVulkanDevice::GenerateRenderTarget error, vkrp == nullptr");
+		return false;
+	}
+
+	Vector2 v2Size = pRenderTarget->GetSize();
+
+	if (v2Size.x < 1)
+		v2Size.x = 1;
+	if (v2Size.y < 1)
+		v2Size.y = 1;
+
+	if(!dynamic_cast<MVulkanRenderTarget*>(pRenderTarget))
+	{
+		pRenderTarget->m_VkExtend.width = v2Size.x;
+		pRenderTarget->m_VkExtend.height = v2Size.y;
+	}
 
 	for (uint32_t i = 0; i < pRenderTarget->GetMFrameBufferNum(); ++i)
 	{
-		MFrameBuffer* pFrameBuffer = pVkRenderTarget->GetFrameBuffer(i);
+		MFrameBuffer* pFrameBuffer = pRenderTarget->GetFrameBuffer(i);
 
 		std::vector<VkImageView> vAttachments;
 
@@ -1022,18 +1038,19 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t
 			vAttachments.push_back(pDepthBuffer->m_VkImageView);
 		}
 
-
+		
 
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		//��������ڸ�ʽ��֤��������Ⱦ��ʱ�����framebuffer��һ�����ĸ�renderPass
-		framebufferInfo.renderPass = renderPass.m_aVkRenderPass[0];		
+		//This renderpass only used to match format.
+		framebufferInfo.renderPass = vkRenderPass;
 
+		pFrameBuffer->vkExtend = pRenderTarget->m_VkExtend;
 
 		framebufferInfo.attachmentCount = vAttachments.size();
 		framebufferInfo.pAttachments = vAttachments.data();
-		framebufferInfo.width = nWidth;
-		framebufferInfo.height = nHeight;
+		framebufferInfo.width = v2Size.x;
+		framebufferInfo.height = v2Size.y;
 		framebufferInfo.layers = 1;
 		vkCreateFramebuffer(m_VkDevice, &framebufferInfo, nullptr, &pFrameBuffer->vkFrameBuffer);
 	}
@@ -1042,7 +1059,7 @@ bool MVulkanDevice::GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t
 	VkSemaphoreCreateInfo semaphoreInfo{};
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-	for (VkSemaphore& vkSemaphore : pVkRenderTarget->m_aVkRenderFinishedSemaphore)
+	for (VkSemaphore& vkSemaphore : pRenderTarget->m_aVkRenderFinishedSemaphore)
 	{
 		if (vkCreateSemaphore(m_VkDevice, &semaphoreInfo, nullptr, &vkSemaphore) != VK_SUCCESS)
 			return false;
@@ -1065,10 +1082,6 @@ void MVulkanDevice::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
 			pFrameBuffer->vkFrameBuffer = VK_NULL_HANDLE;
 		}
 	}
-
-
-	DestroyRenderPass(&pRenderTarget->m_RenderPass);
-
 
 	for (uint32_t i = 0; i < pRenderTarget->m_VkCommandBuffers.size(); ++i)
 	{
@@ -1105,16 +1118,22 @@ void MVulkanDevice::DestroyShaderParamBuffer(MShaderConstantParam* pParam)
 		m_DynamicUniformBufferPool.FreeBufferMemory(pParam);
 	}
 }
-bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
+bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass, MIRenderTarget* pRenderTarget)
 {	
-	MIRenderTarget* pRenderTarget = pRenderPass->m_pRenderTarget;
 	if (!pRenderTarget)
 		return false;
 
+	if (!pRenderPass)
+		return false;
+
+	MFrameBuffer* pFrameBuffer = pRenderTarget->GetCurrFrameBuffer();
+	if (!pFrameBuffer)
+		return false;
+
+
 	VkRenderPass renderPass;
 
-
-	uint32_t unBackNum = pRenderTarget->GetBackNum();
+	uint32_t unBackNum = pRenderPass->m_vBackDesc.size();
 
 	std::vector<VkAttachmentDescription> vAttachmentDesc;
 
@@ -1122,19 +1141,28 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 
 	for (uint32_t i = 0; i < unBackNum; ++i)
 	{
+		MIRenderBackTexture* pBackTexture = pFrameBuffer->vBackTextures[i];
+		if (!pBackTexture)
+		{
+			MLogManager::GetInstance()->Error("MVulkanDevice::GenerateRenderPass error: bt == nullptr");
+			return false;
+		}
+		
 		vAttachmentDesc.push_back({});
 		VkAttachmentDescription& colorAttachment = vAttachmentDesc.back();
 
 		vAttachmentRef.push_back({ uint32_t(vAttachmentRef.size()), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL});
 
-		if (pRenderTarget->m_RenderPass.m_vBackDesc[i].bClearWhenRender)
+		if (pRenderPass->m_vBackDesc[i].bClearWhenRender)
 			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		else
 			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 
-		MIRenderBackTexture* pBackTexture = pRenderTarget->GetFrameBuffer(0)->vBackTextures[i];
+		if (MTextureBuffer* pTexBuffer = pBackTexture->GetBuffer())
+			colorAttachment.format = pTexBuffer->m_VkTextureFormat;
+		else
+			colorAttachment.format = GetFormat(pBackTexture->GetType());
 
-		colorAttachment.format = pBackTexture->GetBuffer()->m_VkTextureFormat;
 		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -1150,13 +1178,12 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 
 	if (pRenderTarget->GetDepthEnable())
 	{
-
 		vAttachmentDesc.push_back({});
 		VkAttachmentDescription& colorAttachment = vAttachmentDesc.back();
 
 		vAttachmentRef.push_back({ uint32_t(vAttachmentRef.size()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL });
 
-		if (pRenderTarget->m_RenderPass.m_DepthDesc.bClearWhenRender)
+		if (pRenderPass->m_DepthDesc.bClearWhenRender)
 			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		else
 			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
@@ -1174,6 +1201,10 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 
 	std::vector<VkSubpassDescription> vSubpass;
 	std::vector<VkSubpassDependency> vDependencies;
+
+	// least at one.
+	if (pRenderPass->m_vSubpass.empty())
+		pRenderPass->m_vSubpass.push_back(MSubpass());
 
 	for (MSubpass& subpass : pRenderPass->m_vSubpass)
 	{

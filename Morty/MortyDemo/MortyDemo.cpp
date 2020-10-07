@@ -83,12 +83,12 @@ public:
 
 	virtual void OnTick(const float& fDelta)
 	{
-		auto jeep = GetRootNode()->FindFirstChildByName("Jeep")->DynamicCast<M3DNode>();
-		auto rot = jeep->GetRotation();
-		rot.RotateY(rrrr);
-		rrrr += fDelta * 10.0f;
+		//auto jeep = GetRootNode()->FindFirstChildByName("Jeep")->DynamicCast<M3DNode>();
+		//auto rot = jeep->GetRotation();
+		//rot.RotateY(rrrr);
+		//rrrr += fDelta * 10.0f;
 
-		jeep->SetRotation(rot);
+		//jeep->SetRotation(rot);
 		
 		MPointLight* pLight = static_cast<MPointLight*>(GetRootNode()->FindFirstChildByName("Light"));
 
@@ -151,15 +151,8 @@ public:
 
 int main(int argc, char* argv[])
 {
-	MLogManager::GetInstance()->SetPrintFunction([](const char* svMessage) {
-
-		printf("test log %s\n", svMessage);
-
-		});
-
 	MEngine engine;
 	engine.Initialize("./");
-	engine.RegisterRenderProgram<MForwardRenderProgram>();
 
 
 // 	{
@@ -272,6 +265,7 @@ int main(int argc, char* argv[])
 	pEditorView->SetEditorNode(pRootNode);
 
 #else
+	engine.RegisterRenderProgram<MForwardRenderProgram>();
 	MScene* pScene = engine.GetObjectManager()->CreateObject<MScene>();
 	pScene->SetRootNode(pRootNode);
 	MWindowsRenderView* pView = new MWindowsRenderView();

@@ -51,8 +51,6 @@ public:
 	MObjectManager* GetObjectManager() { return m_pObjectManager; }
 	MResourceManager* GetResourceManager() { return m_pResourceManager; }
 
-	MIRenderProgram* GetRenderProgram() { return m_pRenderProgram; }
-
 public:
 
 	void SetMaxFPS(const int& nFPS);
@@ -61,8 +59,6 @@ public:
 	MIDevice* GetDevice() { return m_pDevice; }
 	MIRenderer* GetRenderer() { return m_pRenderer; }
 
-	template<typename RENDER_PASS>
-	void RegisterRenderProgram();
 protected:
 
 	bool InitializeDefaultResource();
@@ -71,8 +67,6 @@ protected:
 private:
 
 	MProject m_Project;
-
-	MIRenderProgram* m_pRenderProgram;
 
 	MObjectManager* m_pObjectManager;
 	MResourceManager* m_pResourceManager;
@@ -95,20 +89,5 @@ private:
 
 	} m_cTickInfo;
 };
-
-template<typename RENDER_PASS>
-void MEngine::RegisterRenderProgram()
-{
-	if (MTypedClass::IsType<RENDER_PASS, MIRenderProgram>())
-	{
-		if (m_pRenderProgram)
-		{
-			m_pRenderProgram->DeleteLater();
-			m_pRenderProgram = nullptr;
-		}
-
-		m_pRenderProgram = (RENDER_PASS*)(GetObjectManager()->CreateObject<RENDER_PASS>());
-	}
-}
 
 #endif

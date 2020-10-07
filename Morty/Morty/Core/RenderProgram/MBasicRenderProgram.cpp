@@ -40,47 +40,47 @@ MBasicRenderProgram::~MBasicRenderProgram()
 {
 }
 
-void MBasicRenderProgram::Render(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget, const std::vector<MViewport*>& vViewports)
+void MBasicRenderProgram::Render(MIRenderer* pRenderer, const std::vector<MViewport*>& vViewports)
 {
-	if (vViewports.empty())
-		return;
-
-	MViewport* pViewport = vViewports[0];
-
-	pRenderer->RenderBegin(pRenderTarget);
-
-	pRenderer->BeginRenderPass(pRenderTarget);
-
-	pRenderer->SetViewport(pViewport->GetLeft(), pViewport->GetTop(), pViewport->GetWidth(), pViewport->GetHeight(), 0.0f, 1.0f);
-
-	std::vector<MShaderConstantParam*>& params = *m_pMaterial->GetShaderParams();
-	if (!params.empty())
-	{
-		MShaderConstantParam* p1 = params[1];
-		MStruct& srt1 = *p1->var.GetStruct();
-
-		if (float* pTime = srt1.FindMember<float>("time"))
-			*pTime += 0.02f;
-
-		p1->SetDirty();
-
-		MShaderConstantParam* param = params[0];
-		MStruct& srt = *param->var.GetStruct();
-
-		if (Vector2* pSize = srt.FindMember<Vector2>("screenSize"))
-			*pSize = pViewport->GetSize();
-
-		param->SetDirty();
-	}
-
-	pRenderer->SetUseMaterial(m_pMaterial);
-
-
-	pRenderer->DrawMesh(&m_TransparentDrawMesh);
-
-	pRenderer->EndRenderPass(pRenderTarget);
-
-	pRenderer->RenderEnd(pRenderTarget);
+// 	if (vViewports.empty())
+// 		return;
+// 
+// 	MViewport* pViewport = vViewports[0];
+// 
+// 	pRenderer->RenderBegin(pRenderTarget);
+// 
+// 	pRenderer->BeginRenderPass(pRenderTarget);
+// 
+// 	pRenderer->SetViewport(pViewport->GetLeft(), pViewport->GetTop(), pViewport->GetWidth(), pViewport->GetHeight(), 0.0f, 1.0f);
+// 
+// 	std::vector<MShaderConstantParam*>& params = *m_pMaterial->GetShaderParams();
+// 	if (!params.empty())
+// 	{
+// 		MShaderConstantParam* p1 = params[1];
+// 		MStruct& srt1 = *p1->var.GetStruct();
+// 
+// 		if (float* pTime = srt1.FindMember<float>("time"))
+// 			*pTime += 0.02f;
+// 
+// 		p1->SetDirty();
+// 
+// 		MShaderConstantParam* param = params[0];
+// 		MStruct& srt = *param->var.GetStruct();
+// 
+// 		if (Vector2* pSize = srt.FindMember<Vector2>("screenSize"))
+// 			*pSize = pViewport->GetSize();
+// 
+// 		param->SetDirty();
+// 	}
+// 
+// 	pRenderer->SetUseMaterial(m_pMaterial);
+// 
+// 
+// 	pRenderer->DrawMesh(&m_TransparentDrawMesh);
+// 
+// 	pRenderer->EndRenderPass(pRenderTarget);
+// 
+// 	pRenderer->RenderEnd(pRenderTarget);
 }
 
 void MBasicRenderProgram::OnCreated()

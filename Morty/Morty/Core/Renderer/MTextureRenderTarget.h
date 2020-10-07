@@ -21,7 +21,7 @@ class MTexture;
 class MRenderDepthTexture;
 
 
-class MORTY_CLASS MTextureRenderTarget : public MIRenderTarget, public MObject
+class MORTY_CLASS MTextureRenderTarget : public MIRenderTarget
 {
 public:
 	M_OBJECT(MTextureRenderTarget)
@@ -41,18 +41,17 @@ public:
 
 	virtual MRenderDepthTexture* GetCurrDepthTexture() override;
 
-	virtual uint32_t GetBackNum() override;
-	virtual MColor GetBackClearColor(const uint32_t& unIndex) override;
-
 	virtual bool GetDepthEnable() override;
 
 	virtual uint32_t GetMFrameBufferNum() override { return m_vBufferInfo.size(); }
 	virtual MFrameBuffer* GetFrameBuffer(const uint32_t& unIndex) override;
 	virtual MFrameBuffer* GetCurrFrameBuffer(const uint32_t& unFrameIdx = 0) override { return GetFrameBuffer(unFrameIdx); }
 
+	virtual void Resize(const Vector2& v2Size) override;
+
 	std::vector<MIRenderBackTexture*>* GetBackTexture(const uint32_t& unIndex);
 
-	void SetBackTexture(const std::array<MRenderBackTexture*, M_BUFFER_NUM>& vBackTexture, const uint32_t& unIndex, const MColor& clearColor = MColor::Black);
+	void SetBackTexture(const std::array<MRenderBackTexture*, M_BUFFER_NUM>& vBackTexture, const uint32_t& unIndex);
 	void SetDepthTexture(const std::array<MRenderDepthTexture*, M_BUFFER_NUM> vDepthTexture);
 
 	uint32_t GetRenderTargetType() { return m_eRenderTargetType; }
@@ -64,10 +63,8 @@ public:
 
 	virtual void OnCreated() override;
 
-	virtual void Release(MIDevice* pDevice) override;
+	virtual void Release() override;
 
-
-	virtual void InitRenderPass();
 
 public:
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
@@ -79,7 +76,6 @@ public:
 public:
 ;
 	std::array<MFrameBuffer, M_BUFFER_NUM> m_vBufferInfo;
-	std::vector<MColor> m_vBackClearColor;
 protected:
 
 	uint32_t m_eRenderTargetType;

@@ -33,7 +33,9 @@ public:
 
 public:
 
-    void SetProgram(MIRenderProgram* pRenderProgram) { m_pRenderProgram = pRenderProgram; }
+    void Initialize(MIRenderProgram* pRenderProgram);
+    void Release();
+
     MIRenderProgram* GetProgram() const { return m_pRenderProgram; }
 
     void DrawShadowMap(MForwardRenderProgram::MRenderInfo& info);
@@ -41,9 +43,6 @@ public:
     void UpdateRenderInfo(MForwardRenderProgram::MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup);
 
     void RenderToShadowMap(MForwardRenderProgram::MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup);
-
-    virtual void OnCreated() override;
-    virtual void OnDelete() override;
 
     MRenderDepthTexture* GetShadowMap(const uint32_t& unIdx) { return m_vShadowDepthTexture[unIdx]; }
 
@@ -57,6 +56,9 @@ protected:
 
     void InitializeMaterial();
     void ReleaseMaterial();
+
+    void InitializeRenderPass();
+    void ReleaseRenderPass();
 private:
 
     MIRenderProgram* m_pRenderProgram;
@@ -70,6 +72,8 @@ private:
 
 	MMaterial* m_pStaticMaterial;
 	MMaterial* m_pAnimMaterial;
+
+    MRenderPass m_ShadowRenderPass;
 };
 
 #endif

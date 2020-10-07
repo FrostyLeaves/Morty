@@ -74,11 +74,13 @@ class MCamera;
 struct MShaderConstantParam;
 class MTexture;
 class MViewport;
+class MRenderPass;
+class MRenderFrame;
+class MFrameBuffer;
 class MIRenderTarget;
 class MShaderParamSet;
 class MRenderDepthTexture;
 class MRenderBackTexture;
-
 
 class MORTY_CLASS MIRenderer
 {
@@ -107,9 +109,9 @@ public:
 
 	virtual void RenderEnd(MIRenderTarget* pRenderTarget) = 0;
 
-	virtual void BeginRenderPass(MIRenderTarget* pRenderTarget) = 0;
+	virtual void BeginRenderPass(MRenderPass* pRenderPass, MIRenderTarget* pRenderTarget) = 0;
 
-	virtual void EndRenderPass(MIRenderTarget* pRenderTarget) = 0;
+	virtual void EndRenderPass() = 0;
 
 public:
 
@@ -122,9 +124,6 @@ public:
 
 	virtual uint32_t GetFrameIndex() = 0;
 
-protected:
-
-	std::stack<MIRenderTarget*> m_vRenderTargets;
 };
 
 

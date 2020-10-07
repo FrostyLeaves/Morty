@@ -1,4 +1,4 @@
-struct VS_IN_EMPTY_ANIM
+struct VS_IN_ONLY_POS_ANIM
 {
     float3 pos : POSITION;
     int bonesID[5] : BONES_ID;
@@ -25,7 +25,7 @@ cbuffer _M_E_cbMeshMatrix : register(b0)
     float4 testf4;
 };
 
-VS_OUT_EMPTY VS(VS_IN_EMPTY_ANIM input)
+VS_OUT_EMPTY VS(VS_IN_ONLY_POS_ANIM input)
 {
     VS_OUT_EMPTY output;
 

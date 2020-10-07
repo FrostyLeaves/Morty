@@ -2,6 +2,7 @@
 #define _MAIN_EDITOR_H_
 
 #include "MVariant.h"
+#include "MRenderPass.h"
 #include "SceneTexture.h"
 #include "MWindowsRenderView.h"
 
@@ -35,7 +36,6 @@ public:
 	virtual void OnRenderEnd() override;
 
 	virtual void SetRenderTarget(MIRenderTarget* pRenderTarget) override;
-
 
 public:
 
@@ -79,6 +79,8 @@ protected:
 
 
 	SceneTexture m_SceneTexture;
+
+	MRenderPass m_ImguiRenderPass;
 };
 
 

@@ -39,9 +39,9 @@ public:
 
 	virtual void RenderBegin(MIRenderTarget* pRenderTarget) override;
 
-	virtual void BeginRenderPass(MIRenderTarget* pRenderTarget) override;
+	virtual void BeginRenderPass(MRenderPass* pRenderPass, MIRenderTarget* pRenderTarget) override;
 
-	virtual void EndRenderPass(MIRenderTarget* pRenderTarget) override;
+	virtual void EndRenderPass() override;
 
 	virtual void RenderEnd(MIRenderTarget* pRenderTarget) override;
 public:
@@ -73,7 +73,6 @@ private:
 	MVulkanDevice* m_pDevice;
 
 	VkPipelineInputAssemblyStateCreateInfo m_InputAssemblyState;
-	VkPipelineRasterizationStateCreateInfo m_RasterizationState;
 	VkPipelineMultisampleStateCreateInfo m_MultisampleState;
 
 	VkViewport m_VkViewport;
@@ -95,6 +94,9 @@ private:
 private:
 
 	uint32_t m_unFrameIndex;
+
+
+	std::stack<MRenderPass*> m_vRenderPass;
 };
 
 #endif

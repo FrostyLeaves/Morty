@@ -60,13 +60,13 @@ public:
 	virtual bool CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const uint32_t& eShaderType, const MShaderMacro& macro) = 0;
 	virtual void CleanShader(MShaderBuffer** ppShader) = 0;
 
-	virtual bool GenerateRenderTarget(MIRenderTarget* pRenderTarget, uint32_t nWidth, uint32_t nHeight) = 0;
+	virtual bool GenerateRenderTarget(MRenderPass* pRenderPass, MIRenderTarget* pRenderTarget) = 0;
 	virtual void DestroyRenderTarget(MIRenderTarget* pRenderTarget) = 0;
 
 	virtual bool GenerateShaderParamBuffer( MShaderConstantParam* pParam) = 0;
 	virtual void DestroyShaderParamBuffer(MShaderConstantParam* pParam) = 0;
 
-	virtual bool GenerateRenderPass(MRenderPass* pRenderPass) = 0;
+	virtual bool GenerateRenderPass(MRenderPass* pRenderPass, MIRenderTarget* pRenderTarget) = 0;
 	virtual void DestroyRenderPass(MRenderPass* pRenderPass) = 0;
 
 	virtual bool GenerateRenderTargetView(MRenderTextureBuffer* pTextureBuffer) = 0;

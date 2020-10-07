@@ -20,13 +20,12 @@ class MRenderDepthTexture;
 class MORTY_CLASS MVulkanRenderTarget : public MIRenderTarget
 {
 public:
-    MVulkanRenderTarget(MVulkanDevice* pDevice);
+	M_OBJECT(MVulkanRenderTarget)
+public:
+    MVulkanRenderTarget();
     virtual ~MVulkanRenderTarget();
 
 	virtual MRenderDepthTexture* GetCurrDepthTexture() override;
-
-	virtual uint32_t GetBackNum() override { return 1; }
-	virtual MColor GetBackClearColor(const uint32_t& unIndex) override;
 
 	virtual bool GetDepthEnable() override { return true; }
 
@@ -39,32 +38,31 @@ public:
 	virtual void OnRenderBefore(MIRenderer* pRenderer) override;
 	virtual void OnRenderAfter(MIRenderer* pRenderer) override;
 	void Initialize();
-	virtual void Release(MIDevice* pDevice) override;
+	virtual void Release() override;
 
-	void Resize(const uint32_t& nWidth, const uint32_t& nHeight);
+	virtual void Resize(const Vector2& v2Size) override;
 
 #ifdef MORTY_WIN
-	static MVulkanRenderTarget* CreateForWindowsView(MIDevice* pDevice, MIRenderView* pView);
+	static MVulkanRenderTarget* CreateForWindowsView(MEngine* pEngine, MIRenderView* pView);
 #endif
 
 #ifdef MORTY_ANDROID
-	static MVulkanRenderTarget* CreateForAndroidView(MIDevice* pDevice, MIRenderView* pView);
+	static MVulkanRenderTarget* CreateForAndroidView(MEngine* pEngine, MIRenderView* pView);
 #endif
 
 public:
 
-	bool InitializeSwapchain();
+	bool InitializeSwapchain(MVulkanDevice* pDevice);
 
-	void ReleaseSwapchain();
+	void ReleaseSwapchain(MVulkanDevice* pDevice);
 
-	bool RebindRenderBuffer();
+	bool RebindRenderBuffer(MVulkanDevice* pDevice);
 
-	void CleanRenderInfo();
+	void CleanRenderInfo(MVulkanDevice* pDevice);
 
 public:
 
 	MIRenderView* m_pView;
-	MVulkanDevice* m_pDevice;
 	VkSurfaceKHR m_VkSurface;
 	VkSwapchainKHR m_VkSwapchain;
 

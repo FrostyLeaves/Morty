@@ -21,14 +21,24 @@ class MORTY_CLASS MIRenderProgram : public MObject
 {
 public:
 	M_I_OBJECT(MIRenderProgram);
-    MIRenderProgram() {}
+    MIRenderProgram();
     virtual ~MIRenderProgram() {}
 
 public:
 
-    virtual void Render(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget, const std::vector<MViewport*>& vViewports) {};
+    void BindRenderTarget(MIRenderTarget* pRenderTarget);
+    MIRenderTarget* GetRenderTarget() { return m_pRenderTarget; }
+
+    virtual void Render(MIRenderer* pRenderer, const std::vector<MViewport*>& vViewports) {};
 
     virtual void DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance) {}
+
+    virtual void Initialize() {}
+    virtual void Release() {}
+
+private:
+
+    MIRenderTarget* m_pRenderTarget;
 };
 
 #endif

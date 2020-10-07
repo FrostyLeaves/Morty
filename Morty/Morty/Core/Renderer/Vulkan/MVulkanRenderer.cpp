@@ -20,6 +20,7 @@ MVulkanRenderer::MVulkanRenderer(MVulkanDevice* pDevice)
 	, m_vRenderStages()
 
 	, m_unFrameIndex(0)
+	, m_vRenderPass()
 {
 
 }
@@ -39,18 +40,6 @@ bool MVulkanRenderer::Initialize()
 	m_InputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	m_InputAssemblyState.primitiveRestartEnable = VK_FALSE;
 
-	//Rasterization
-	m_RasterizationState = {};
-	m_RasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-	m_RasterizationState.depthClampEnable = VK_FALSE;
-	m_RasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
-	m_RasterizationState.lineWidth = 1.0f;
-	m_RasterizationState.cullMode = VK_CULL_MODE_NONE;
-	m_RasterizationState.frontFace = VK_FRONT_FACE_CLOCKWISE;
-	m_RasterizationState.depthBiasEnable = VK_FALSE;
-	m_RasterizationState.depthBiasConstantFactor = 0.0f; // Optional
-	m_RasterizationState.depthBiasClamp = 0.0f; // Optional
-	m_RasterizationState.depthBiasSlopeFactor = 0.0f; // Optional
 
 
 	//���ز���
@@ -95,6 +84,8 @@ void MVulkanRenderer::SetViewport(const float& fX, const float& fY, const float&
 	MRenderStage& rs = m_vRenderStages.back();
 	vkCmdSetViewport(rs.vkCommandBuffer, 0, 1, &m_VkViewport);
 	
+	VkRect2D scissorRect = {fX, fY, fWidth, fHeight};
+	vkCmdSetScissor(rs.vkCommandBuffer, 0, 1, &scissorRect);
 }
 
 void MVulkanRenderer::NewRenderFrame()
@@ -177,28 +168,46 @@ void MVulkanRenderer::RenderBegin(MIRenderTarget* pRenderTarget)
 	
 }
 
-void MVulkanRenderer::BeginRenderPass(MIRenderTarget* pRenderTarget)
+void MVulkanRenderer::BeginRenderPass(MRenderPass* pRenderPass, MIRenderTarget* pRenderTarget)
 {
-	//��Ⱦ�õ�Frame Buffer
-	MFrameBuffer* pFrameBuffer = pRenderTarget->GetCurrFrameBuffer(m_unFrameIndex);
+	if (!pRenderPass || !pRenderTarget)
+		return;
+
+	MFrameBuffer* pFrameBuffer = pRenderTarget->GetCurrFrameBuffer(GetFrameIndex());
+	if (!pFrameBuffer)
+		return;
+
+	if (VK_NULL_HANDLE == pFrameBuffer->vkFrameBuffer)
+	{
+		if (!m_pDevice->GenerateRenderTarget(pRenderPass, pRenderTarget))
+		{
+			MLogManager::GetInstance()->Error("MVulkanRenderer::BeginRenderPass error: Generate rt failed.");
+			return;
+		}
+	}
+
+	pFrameBuffer = pRenderTarget->GetCurrFrameBuffer(GetFrameIndex());
+
+	size_t unBackNum = pFrameBuffer->vBackTextures.size();
+	if (unBackNum != pRenderPass->m_vBackDesc.size())
+		return;
+
 
 	VkRenderPassBeginInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassInfo.renderPass = pRenderTarget->m_RenderPass.m_aVkRenderPass[m_unFrameIndex];
+	renderPassInfo.renderPass = pRenderPass->m_aVkRenderPass[m_unFrameIndex];
 	renderPassInfo.framebuffer = pFrameBuffer->vkFrameBuffer;
 	renderPassInfo.renderArea.offset = { 0, 0 };
 	renderPassInfo.renderArea.extent = pRenderTarget->m_VkExtend;
 
-	//�����һ֡����Ⱦ����
-	uint32_t unBackNum = pRenderTarget->GetBackNum();
 	std::vector<VkClearValue> vClearValues(unBackNum);
 	for (uint32_t i = 0; i < unBackNum; ++i)
 	{
-		MColor color = pRenderTarget->GetBackClearColor(i);
+		MColor color = pRenderPass->m_vBackDesc[i].cClearColor;
 		vClearValues[i].color = { color.r, color.g, color.b, color.a };
 	}
 
-	if (pRenderTarget->GetDepthEnable())
+	if (pFrameBuffer->pDepthTexture)
 	{
 		vClearValues.push_back({});
 		vClearValues.back().depthStencil = { 1.0f, 0 };
@@ -207,16 +216,15 @@ void MVulkanRenderer::BeginRenderPass(MIRenderTarget* pRenderTarget)
 	renderPassInfo.clearValueCount = vClearValues.size();
 	renderPassInfo.pClearValues = vClearValues.data();
 
-
 	//Begin RenderPass
 	vkCmdBeginRenderPass(m_vRenderStages.back().vkCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	m_vRenderTargets.push(pRenderTarget);
+	m_vRenderPass.push(pRenderPass);
 }
 
-void MVulkanRenderer::EndRenderPass(MIRenderTarget* pRenderTarget)
+void MVulkanRenderer::EndRenderPass()
 {
-	m_vRenderTargets.pop();
+	m_vRenderPass.pop();
 
 	//End Render Pass
 	vkCmdEndRenderPass(m_vRenderStages.back().vkCommandBuffer);
@@ -295,7 +303,7 @@ bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial)
 		return true;
 	}
 
-	MRenderPass* pRenderPass = &(m_vRenderTargets.top()->m_RenderPass);
+	MRenderPass* pRenderPass = m_vRenderPass.top();
 	MMaterialPipelineLayoutData* pPipelineLayoutData = m_pDevice->m_PipelineManager.FindPipelineLayout(pMaterial);
 
 	if (rs.pUsingPipelineLayoutData == pPipelineLayoutData)
@@ -551,9 +559,22 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 	if (!pMaterial)
 		return VK_NULL_HANDLE;
 
+	MShader* pVertexShader = pMaterial->GetVertexShader();
+	MShader* pPixelShader = pMaterial->GetPixelShader();
+
+	if (nullptr == pVertexShader || nullptr == pPixelShader)
+		return VK_NULL_HANDLE;
+
+	if (nullptr == pVertexShader->GetBuffer())
+		return VK_NULL_HANDLE;
+	if (nullptr == pPixelShader->GetBuffer())
+		return VK_NULL_HANDLE;
+
+
 	//Vulkan�������������������������ʱ�޸�viewport��С������
 	std::vector<VkDynamicState> dynamicStates = {
 	VK_DYNAMIC_STATE_VIEWPORT,
+	VK_DYNAMIC_STATE_SCISSOR,
 	VK_DYNAMIC_STATE_LINE_WIDTH
 	};
 	VkPipelineDynamicStateCreateInfo dynamicState{};
@@ -576,20 +597,6 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 	viewportState.pScissors = &scissor;
 
 
-
-
-
-	MShader* pVertexShader = pMaterial->GetVertexShader();
-	MShader* pPixelShader = pMaterial->GetPixelShader();
-
-	if (nullptr == pVertexShader || nullptr == pPixelShader)
-		return VK_NULL_HANDLE;
-
-	if (nullptr == pVertexShader->GetBuffer())
-		return VK_NULL_HANDLE;
-	if (nullptr == pPixelShader->GetBuffer())
-		return VK_NULL_HANDLE;
-
 	VkPipelineShaderStageCreateInfo vShaderStageInfo[] = {
 		pVertexShader->GetBuffer()->m_VkShaderStageInfo,
 		pPixelShader->GetBuffer()->m_VkShaderStageInfo,
@@ -605,6 +612,41 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 	inputStateInfo.vertexAttributeDescriptionCount = pVertexShaderBuffer->m_vAttributeDescs.size();
 	inputStateInfo.pVertexAttributeDescriptions = pVertexShaderBuffer->m_vAttributeDescs.data();
 	
+	//Rasterization
+	VkPipelineRasterizationStateCreateInfo rasterizationState = {};
+	rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+	rasterizationState.depthClampEnable = VK_FALSE;
+	rasterizationState.lineWidth = 1.0f;
+	rasterizationState.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	rasterizationState.depthBiasEnable = VK_FALSE;
+	rasterizationState.depthBiasConstantFactor = 0.0f; // Optional
+	rasterizationState.depthBiasClamp = 0.0f; // Optional
+	rasterizationState.depthBiasSlopeFactor = 0.0f; // Optional
+
+	switch (pMaterial->GetRasterizerType())
+	{
+		case MERasterizerType::ECullNone:
+			rasterizationState.cullMode = VK_CULL_MODE_NONE;
+			rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
+			break;
+
+		case MERasterizerType::ECullBack:
+			rasterizationState.cullMode = VK_CULL_MODE_FRONT_BIT;		//vulkan inverse
+			rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
+			break;
+
+		case MERasterizerType::ECullFront:
+			rasterizationState.cullMode = VK_CULL_MODE_BACK_BIT;
+			rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
+			break;
+		case MERasterizerType::EWireframe:
+			rasterizationState.cullMode = VK_CULL_MODE_NONE;
+			rasterizationState.polygonMode = VK_POLYGON_MODE_LINE;
+			break;
+		default:
+			break;
+	}
+
 
 
 	VkPipelineColorBlendStateCreateInfo blendInfo = {};
@@ -626,7 +668,7 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 	pipelineInfo.pVertexInputState = &inputStateInfo;
 	pipelineInfo.pInputAssemblyState = &m_InputAssemblyState;
 	pipelineInfo.pViewportState = &viewportState;
-	pipelineInfo.pRasterizationState = &m_RasterizationState;
+	pipelineInfo.pRasterizationState = &rasterizationState;
 	pipelineInfo.pMultisampleState = &m_MultisampleState;
 	pipelineInfo.pColorBlendState = &blendInfo;
 	pipelineInfo.pDepthStencilState = &depthStencilInfo;
@@ -648,9 +690,7 @@ void MVulkanRenderer::GetRenderTargetBarrier(MIRenderTarget* pRenderTarget, std:
 	if (!pFrameBuffer)
 		return;
 
-	int nBackNum = pRenderTarget->GetBackNum();
-	
-	
+	int nBackNum = pFrameBuffer->vBackTextures.size();
 	for (int i = 0; i < nBackNum; ++i)
 	{
 		if (MIRenderBackTexture* pBackTexture = pFrameBuffer->vBackTextures[i])

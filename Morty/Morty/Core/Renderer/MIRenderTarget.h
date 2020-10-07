@@ -9,9 +9,9 @@
 #ifndef _M_MIRENDERTARGET_H_
 #define _M_MIRENDERTARGET_H_
 #include "MGlobal.h"
-#include "Type/MColor.h"
-#include "MRenderPass.h"
 #include "MIRenderer.h"
+#include "Type/MColor.h"
+#include "MIRenderProgram.h"
 
 #include <array>
 #include <vector>
@@ -35,27 +35,36 @@ struct MORTY_CLASS MFrameBuffer
 	std::vector<MIRenderBackTexture*> vBackTextures;
 	MRenderDepthTexture* pDepthTexture;
 	VkFramebuffer vkFrameBuffer;
+	VkExtent2D vkExtend;
 };
 
-class MORTY_CLASS MIRenderTarget
+class MORTY_CLASS MIRenderTarget : public MObject
 {
 public:
+	M_I_OBJECT(MIRenderTarget)
 
 	MIRenderTarget();
 	virtual ~MIRenderTarget() {}
 
 	virtual MRenderDepthTexture* GetCurrDepthTexture() = 0;
 
-	virtual uint32_t GetBackNum() = 0;
-	virtual MColor GetBackClearColor(const uint32_t& unIndex) = 0;
-
 	virtual bool GetDepthEnable() = 0;
-
 
 	virtual uint32_t GetMFrameBufferNum() = 0;
 	virtual MFrameBuffer* GetFrameBuffer(const uint32_t& unIndex) = 0;
 
 	virtual MFrameBuffer* GetCurrFrameBuffer(const uint32_t& unFrameIdx = 0) = 0;
+
+public:
+
+	virtual void Resize(const Vector2& v2Size) { m_v2Size = v2Size; }
+	Vector2 GetSize() const { return m_v2Size; }
+
+	template <typename Type>
+	void RegisterRenderProgram();
+
+	MIRenderProgram* GetRenderProgram() { return m_pRenderProgram; }
+
 public:
 
 	virtual void OnRenderBefore(MIRenderer* pRenderer) {}
@@ -63,18 +72,16 @@ public:
 	virtual void OnRender(MIRenderer* pRenderer) { if(m_funcRenderFunction) m_funcRenderFunction(pRenderer); }
 	std::function<void(MIRenderer*)> m_funcRenderFunction;
 
-	virtual void Release(MIDevice* pDevice) = 0;
+	virtual void Release() = 0;
 
 public:
-
-	MRenderPass m_RenderPass;
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	virtual std::vector<struct ID3D11RenderTargetView*> GetRenderTargetViews() = 0;
 	virtual struct ID3D11DepthStencilView* GetDepthStencilView() = 0;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 
-	
+
 	VkExtent2D m_VkExtend;
 	VkFormat m_VkColorFormat;
 
@@ -85,8 +92,25 @@ public:
 
 #endif
 
+	Vector2 m_v2Size;
 
+	MIRenderProgram* m_pRenderProgram;
 };
 
+template <typename Type>
+void MIRenderTarget::RegisterRenderProgram()
+{
+	if (MTypedClass::IsType<Type, MIRenderProgram>())
+	{
+		if (m_pRenderProgram)
+		{
+			m_pRenderProgram->DeleteLater();
+			m_pRenderProgram = nullptr;
+		}
+
+		m_pRenderProgram = (Type*)(GetEngine()->GetObjectManager()->CreateObject<Type>());
+		m_pRenderProgram->BindRenderTarget(this);
+	}
+}
 
 #endif

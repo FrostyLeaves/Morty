@@ -85,7 +85,12 @@ static VkPipelineLayout         g_PipelineLayout = VK_NULL_HANDLE;
 static VkDescriptorSet          g_DescriptorSet = VK_NULL_HANDLE;
 static VkPipeline               g_Pipeline = VK_NULL_HANDLE;
 
-static std::map<void*, VkDescriptorSet> g_DescriptorSets;
+struct ImguiTextureDescriptorSet
+{
+    VkDescriptorSet set = VK_NULL_HANDLE;
+    int nCount = 0;
+};
+static std::map<void*, ImguiTextureDescriptorSet> g_DescriptorSets;
 
 // Font data
 static VkSampler                g_FontSampler = VK_NULL_HANDLE;
@@ -239,11 +244,11 @@ static void check_vk_result(VkResult err)
         v->CheckVkResultFn(err);
 }
 
-VkDescriptorSet CreateAndBindDescriptorSet(void* pTextureID)
+ImguiTextureDescriptorSet CreateAndBindDescriptorSet(void* pTextureID)
 {
 	ImGui_ImplVulkan_InitInfo* v = &g_VulkanInitInfo;
 
-	VkDescriptorSet result;
+    ImguiTextureDescriptorSet result;
 
 	VkResult err;
 	VkDescriptorSetAllocateInfo alloc_info = {};
@@ -251,7 +256,7 @@ VkDescriptorSet CreateAndBindDescriptorSet(void* pTextureID)
 	alloc_info.descriptorPool = v->DescriptorPool;
 	alloc_info.descriptorSetCount = 1;
 	alloc_info.pSetLayouts = &g_DescriptorSetLayout;
-	err = vkAllocateDescriptorSets(v->Device, &alloc_info, &result);
+	err = vkAllocateDescriptorSets(v->Device, &alloc_info, &result.set);
 	check_vk_result(err);
 
 
@@ -261,12 +266,14 @@ VkDescriptorSet CreateAndBindDescriptorSet(void* pTextureID)
 	desc_image[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	VkWriteDescriptorSet write_desc[1] = {};
 	write_desc[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	write_desc[0].dstSet = result;
+	write_desc[0].dstSet = result.set;
 	write_desc[0].descriptorCount = 1;
 	write_desc[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	write_desc[0].pImageInfo = desc_image;
 	vkUpdateDescriptorSets(v->Device, 1, write_desc, 0, NULL);
 
+
+	g_DescriptorSets[pTextureID] = result;
 	return result;
 }
 
@@ -311,7 +318,7 @@ static void ImGui_ImplVulkan_SetupRenderState(ImDrawData* draw_data, VkCommandBu
 {
     // Bind pipeline and descriptor sets:
     {
-        VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
+        ImguiTextureDescriptorSet descriptorSet;
 
         if (pTextureID && pTextureID != g_FontImage)
         {
@@ -319,19 +326,21 @@ static void ImGui_ImplVulkan_SetupRenderState(ImDrawData* draw_data, VkCommandBu
 			if (find_result == g_DescriptorSets.end())
 			{
                 descriptorSet = CreateAndBindDescriptorSet(pTextureID);
-                g_DescriptorSets[pTextureID] = descriptorSet;
 			}
             else
             {
                 descriptorSet = find_result->second;
+                int& count = find_result->second.nCount;
+                if (count > -300)
+                    --count;
             }
         }
         else
-            descriptorSet = g_DescriptorSet;
+            descriptorSet.set = g_DescriptorSet;
 
 
         vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_Pipeline);
-        VkDescriptorSet desc_set[1] = { descriptorSet };
+        VkDescriptorSet desc_set[1] = { descriptorSet.set };
         vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_PipelineLayout, 0, 1, desc_set, 0, NULL);
     }
 
@@ -911,6 +920,23 @@ void ImGui_ImplVulkan_Shutdown()
 
 void ImGui_ImplVulkan_NewFrame()
 {
+    for (auto iter = g_DescriptorSets.begin(); iter != g_DescriptorSets.end(); )
+    {
+        int& count = iter->second.nCount;
+        ++count;
+
+        if (count > 30)
+		{
+            std::vector<VkDescriptorSet> sets = { iter->second.set };
+			g_MortyEngineDevice->m_ObjectDestructor.DestroyDescriptorSets(0, sets);
+
+            iter = g_DescriptorSets.erase(iter);
+        }
+        else
+        {
+            ++iter;
+        }
+    }
 }
 
 void ImGui_ImplVulkan_SetMinImageCount(uint32_t min_image_count)

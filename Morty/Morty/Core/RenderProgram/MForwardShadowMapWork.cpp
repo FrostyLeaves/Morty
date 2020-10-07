@@ -32,6 +32,35 @@ MForwardShadowMapWork::~MForwardShadowMapWork()
 {
 }
 
+void MForwardShadowMapWork::Initialize(MIRenderProgram* pRenderProgram)
+{
+	m_pRenderProgram = pRenderProgram;
+
+	InitializeRenderTargets();
+	InitializeShaderParamSet();
+	InitializeMaterial();
+	InitializeRenderPass();
+}
+
+void MForwardShadowMapWork::Release()
+{
+	ReleaseShaderParamSet();
+	ReleaseRenderTargets();
+	ReleaseMaterial();
+}
+
+void MForwardShadowMapWork::InitializeRenderPass()
+{
+	m_ShadowRenderPass.m_DepthDesc.bClearWhenRender = true;
+
+	GetEngine()->GetDevice()->GenerateRenderPass(&m_ShadowRenderPass, m_pShadowDepthMapRenderTarget);
+}
+
+void MForwardShadowMapWork::ReleaseRenderPass()
+{
+	GetEngine()->GetDevice()->DestroyRenderPass(&m_ShadowRenderPass);
+}
+
 void MForwardShadowMapWork::DrawShadowMap(MForwardRenderProgram::MRenderInfo& info)
 {
 	info.pDirectionalLight = info.pScene->FindActiveDirectionLight();
@@ -45,11 +74,11 @@ void MForwardShadowMapWork::DrawShadowMap(MForwardRenderProgram::MRenderInfo& in
 	if (vShadowMeshGroup.empty())
 		return;
 
-	info.pRenderer->BeginRenderPass(m_pShadowDepthMapRenderTarget);
+	info.pRenderer->BeginRenderPass(&m_ShadowRenderPass, m_pShadowDepthMapRenderTarget);
 
 	RenderToShadowMap(info, vShadowMeshGroup);
 
-	info.pRenderer->EndRenderPass(m_pShadowDepthMapRenderTarget);
+	info.pRenderer->EndRenderPass();
 
 }
 
@@ -159,24 +188,6 @@ void MForwardShadowMapWork::RenderToShadowMap(MForwardRenderProgram::MRenderInfo
 	}
 }
 
-void MForwardShadowMapWork::OnCreated()
-{
-	Super::OnCreated();
-
-	InitializeRenderTargets();
-	InitializeShaderParamSet();
-	InitializeMaterial();
-}
-
-void MForwardShadowMapWork::OnDelete()
-{
-	ReleaseShaderParamSet();
-	ReleaseRenderTargets();
-	ReleaseMaterial();
-
-	Super::OnDelete();
-}
-
 void MForwardShadowMapWork::InitializeRenderTargets()
 {
 	m_pShadowDepthMapRenderTarget = m_pEngine->GetObjectManager()->CreateObject<MTextureRenderTarget>();
@@ -192,11 +203,8 @@ void MForwardShadowMapWork::InitializeRenderTargets()
 
 	m_pShadowDepthMapRenderTarget->SetDepthTexture(m_vShadowDepthTexture);
 
-	//m_pShadowDepthMapRenderTarget->m_RenderPass.m_vSubpass.push_back(MSubpass());
-	m_pShadowDepthMapRenderTarget->m_RenderPass.m_DepthDesc.bClearWhenRender = true;
-
-	m_pEngine->GetDevice()->GenerateRenderTarget(m_pShadowDepthMapRenderTarget, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE);
-
+//	m_pEngine->GetDevice()->GenerateRenderTarget(m_pShadowDepthMapRenderTarget, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE);
+	m_pShadowDepthMapRenderTarget->Resize(Vector2(MSHADOW_TEXTURE_SIZE , MSHADOW_TEXTURE_SIZE));
 }
 
 void MForwardShadowMapWork::ReleaseRenderTargets()

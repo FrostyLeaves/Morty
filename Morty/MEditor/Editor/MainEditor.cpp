@@ -31,6 +31,7 @@
 #include "MTransformCoord.h"
 #include "MIRenderTarget.h"
 #include "MTextureRenderTarget.h"
+#include "MForwardRenderProgram.h"
 
 #include "Matrix.h"
 #include "MTexture.h"
@@ -58,6 +59,7 @@ MainEditor::MainEditor()
 	, m_bShowRenderView(true)
 	, m_bShowMaterial(false)
 	, m_bShowResource(true)
+	, m_ImguiRenderPass()
 {
 	m_nWidth = 800.0f;
 	m_nHeight = 480.0f;
@@ -99,6 +101,9 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	// Setup Platform/Renderer bindings
 	ImGui_ImplWin32_Init(GetHWND());
 
+	m_ImguiRenderPass.m_vBackDesc.push_back(MRenderPass::MTargetDesc(true, MColor(0.0f, 0.0f, 0.0f, 1.0f)));
+	m_pEngine->GetDevice()->GenerateRenderPass(&m_ImguiRenderPass, GetRenderTarget());
+
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	MDirectX11Device* pDevice = dynamic_cast<MDirectX11Device*>(m_pEngine->GetDevice());
 	ImGui_ImplDX11_Init(pDevice->m_pD3dDevice, pDevice->m_pD3dContext);
@@ -122,7 +127,11 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	vulkanInitInfo.QueueFamily = pDevice->FindQueueGraphicsFamilies(pDevice->m_VkPhysicalDevice);
 
 	MVulkanRenderTarget* pVulkanRenderTarget = dynamic_cast<MVulkanRenderTarget*>(GetRenderTarget());
-	ImGui_ImplVulkan_Init(&vulkanInitInfo, pVulkanRenderTarget->m_RenderPass.m_aVkRenderPass[0], pDevice);
+	pVulkanRenderTarget->RegisterRenderProgram<MForwardRenderProgram>();
+	MIRenderProgram* pRenderProgram = pVulkanRenderTarget->GetRenderProgram();
+
+	
+	ImGui_ImplVulkan_Init(&vulkanInitInfo, m_ImguiRenderPass.m_aVkRenderPass[0], pDevice);
 	
 
 	VkCommandBuffer buffer = pDevice->BeginCommands();
@@ -155,6 +164,8 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 
 void MainEditor::Release()
 {
+	m_pEngine->GetDevice()->DestroyRenderPass(&m_ImguiRenderPass);
+
 	m_SceneTexture.Release();
 
 	for (IBaseView* pChild : m_vChildView)
@@ -233,11 +244,11 @@ void MainEditor::OnRenderEnd()
 	{
 		if (VkCommandBuffer vkCmmandBuffer = pVkRenderer->GetCommandBuffer())
 		{
-			pVkRenderer->BeginRenderPass(GetRenderTarget());
+			pVkRenderer->BeginRenderPass(&m_ImguiRenderPass, GetRenderTarget());
 
 			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), vkCmmandBuffer);
 
-			pVkRenderer->EndRenderPass(GetRenderTarget());
+			pVkRenderer->EndRenderPass();
 		}
 	}
 #endif
@@ -452,6 +463,11 @@ void MainEditor::OnRenderBegin()
 			m_pMaterialView->SetMaterial(pMeshIns->GetMaterial());
 		}
 		m_pMaterialView->UpdateMaterialTexture();
+	}
+
+	if (!m_ImguiRenderPass.m_vBackDesc.empty())
+	{
+		m_ImguiRenderPass.m_vBackDesc[0].cClearColor = GetBackColor();
 	}
 }
 

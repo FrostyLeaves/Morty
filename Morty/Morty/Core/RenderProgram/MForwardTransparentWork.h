@@ -25,15 +25,14 @@ public:
 
 public:
 
-    void SetProgram(MIRenderProgram* pRenderProgram) { m_pRenderProgram = pRenderProgram; }
+	void Initialize(MIRenderProgram* pRenderProgram);
+	void Release();
+
     MIRenderProgram* GetProgram() const { return m_pRenderProgram; }
 
     void DrawTransparentMesh(MForwardRenderProgram::MRenderInfo& info);
 
-	void RenderToTarget(MForwardRenderProgram::MRenderInfo& info, MTextureRenderTarget* pRenderTarget, const uint32_t& unFrameParamIdx);
-
-    virtual void OnCreated() override;
-    virtual void OnDelete() override;
+	void RenderToTarget(MForwardRenderProgram::MRenderInfo& info, MRenderPass* pRenderPass, MTextureRenderTarget* pRenderTarget, const uint32_t& unFrameParamIdx);
 
 
 protected:
@@ -49,6 +48,9 @@ protected:
 
     void InitializeRenderTargets();
     void ReleaseRenderTargets();
+
+    void InitializeRenderPass();
+    void ReleaseRenderPass();
 
 	void CheckTransparentTextureSize(MForwardRenderProgram::MRenderInfo& info);
 private:
@@ -76,6 +78,11 @@ private:
 
 	MMesh<Vector2> m_TransparentDrawMesh;
     MMaterial* m_pDrawMeshMaterial;
+
+
+	MRenderPass m_TransWithClearRenderPass;
+	MRenderPass m_TransRenderPass;
+    MRenderPass m_MeshRenderPass;
 };
 
 #endif

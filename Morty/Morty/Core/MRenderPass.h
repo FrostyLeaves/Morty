@@ -10,6 +10,7 @@
 #define _M_MRENDERPASS_H_
 #include "MGlobal.h"
 #include "MIDevice.h"
+#include "Type/MColor.h"
 
 #include <array>
 #include <vector>
@@ -33,12 +34,20 @@ public:
 class MORTY_CLASS MRenderPass
 {
 public:
-    struct MRTDesc
+    struct MORTY_CLASS MTargetDesc
     {
-        bool bClearWhenRender = true;
+        MTargetDesc();
+        MTargetDesc(const bool bClear, const MColor& cClearColor);
+
+        bool bClearWhenRender;
+        MColor cClearColor;
+
+#if RENDER_GRAPHICS == MORTY_VULKAN
+        VkFormat m_vkTargetFormat;
+#endif
     };
 public:
-    MRenderPass(MIRenderTarget* pRenderTarget);
+    MRenderPass();
     ~MRenderPass();
 
 public:
@@ -46,11 +55,10 @@ public:
     void SetRenderPassID(const uint32_t& unID) { m_unRenderPassID = unID; }
     uint32_t GetRenderPassID() const { return m_unRenderPassID; }
 
-	MIRenderTarget* m_pRenderTarget;
 	std::vector<MSubpass> m_vSubpass;
 
-    std::vector<MRTDesc> m_vBackDesc;
-    MRTDesc m_DepthDesc;
+    std::vector<MTargetDesc> m_vBackDesc;
+    MTargetDesc m_DepthDesc;
 
     uint32_t m_unRenderPassID;
 
@@ -59,6 +67,7 @@ public:
 #elif RENDER_GRAPHICS == MORTY_VULKAN
     
     std::array<VkRenderPass, M_BUFFER_NUM> m_aVkRenderPass;
+
 #endif
 };
 

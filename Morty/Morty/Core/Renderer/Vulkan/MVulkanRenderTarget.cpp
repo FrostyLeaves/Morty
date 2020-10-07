@@ -1,9 +1,11 @@
 #include "MVulkanRenderTarget.h"
-
+#include "MEngine.h"
 #include "MTexture.h"
 #include "MViewport.h"
 #include "MIRenderView.h"
 #include "MVulkanRenderer.h"
+
+M_OBJECT_IMPLEMENT(MVulkanRenderTarget, MIRenderTarget)
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
@@ -18,9 +20,8 @@
 #include "MAndroidRenderView.h"
 #endif
 
-MVulkanRenderTarget::MVulkanRenderTarget(MVulkanDevice* pDevice)
-	:MIRenderTarget()
-	, m_pDevice(pDevice)
+MVulkanRenderTarget::MVulkanRenderTarget()
+	: MIRenderTarget()
 	, m_vBufferInfo()
 	, m_pView(nullptr)
 	, m_unFrameBufferIndex(0)
@@ -43,11 +44,6 @@ MRenderDepthTexture* MVulkanRenderTarget::GetCurrDepthTexture()
 	return info.pDepthTexture;
 }
 
-MColor MVulkanRenderTarget::GetBackClearColor(const uint32_t& unIndex)
-{
-	return m_pView->GetBackColor();
-}
-
 void MVulkanRenderTarget::OnRender(MIRenderer* pRenderer)
 {
 
@@ -55,7 +51,11 @@ void MVulkanRenderTarget::OnRender(MIRenderer* pRenderer)
 
 void MVulkanRenderTarget::OnRenderBefore(MIRenderer* pRenderer)
 {
-	vkAcquireNextImageKHR(m_pDevice->m_VkDevice, m_VkSwapchain, UINT64_MAX, m_VkImageAvailableSemaphore, VK_NULL_HANDLE, &m_unFrameBufferIndex);
+	MVulkanDevice* pDevice = dynamic_cast<MVulkanDevice*>(GetEngine()->GetDevice());
+	if (!pDevice)
+		return;
+
+	vkAcquireNextImageKHR(pDevice->m_VkDevice, m_VkSwapchain, UINT64_MAX, m_VkImageAvailableSemaphore, VK_NULL_HANDLE, &m_unFrameBufferIndex);
 }
 
 void MVulkanRenderTarget::OnRenderAfter(MIRenderer* pRenderer)
@@ -80,65 +80,77 @@ void MVulkanRenderTarget::OnRenderAfter(MIRenderer* pRenderer)
 
 void MVulkanRenderTarget::Initialize()
 {
-	InitializeSwapchain();
+	MVulkanDevice* pDevice = dynamic_cast<MVulkanDevice*>(GetEngine()->GetDevice());
+	if (!pDevice)
+	{
+		MLogManager::GetInstance()->Error("MVulkanRenderTarget::Initialize Error: device == nullptr");
+		return;
+	}
+
+	InitializeSwapchain(pDevice);
 
 	//Create WaitSemaphore
 	VkSemaphoreCreateInfo semaphoreInfo{};
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-	if (vkCreateSemaphore(m_pDevice->m_VkDevice, &semaphoreInfo, nullptr, &m_VkImageAvailableSemaphore) != VK_SUCCESS)
+	if (vkCreateSemaphore(pDevice->m_VkDevice, &semaphoreInfo, nullptr, &m_VkImageAvailableSemaphore) != VK_SUCCESS)
 		return;
 
 	m_vWaitSemaphoreBeforeSubmit.push_back(m_VkImageAvailableSemaphore);
 
-
-
-	//Init RenderPass
-	m_RenderPass.m_vSubpass.push_back(MSubpass());
-
-	m_RenderPass.m_vBackDesc.push_back(MRenderPass::MRTDesc());
-	m_RenderPass.m_vBackDesc.back().bClearWhenRender = true;
-
-	m_RenderPass.m_DepthDesc.bClearWhenRender = true;
 }
 
-void MVulkanRenderTarget::Release(MIDevice* pDevice)
+void MVulkanRenderTarget::Release()
 {
-	m_pDevice->DestroyRenderTarget(this);
-	ReleaseSwapchain();
-	CleanRenderInfo();
+	MVulkanDevice* pDevice = dynamic_cast<MVulkanDevice*>(GetEngine()->GetDevice());
+	if (!pDevice)
+	{
+		MLogManager::GetInstance()->Error("MVulkanRenderTarget::Release Error: device == nullptr");
+		return;
+	}
 
-	vkDestroySemaphore(m_pDevice->m_VkDevice, m_VkImageAvailableSemaphore, nullptr);
+	pDevice->DestroyRenderTarget(this);
+	ReleaseSwapchain(pDevice);
+	CleanRenderInfo(pDevice);
+
+	vkDestroySemaphore(pDevice->m_VkDevice, m_VkImageAvailableSemaphore, nullptr);
 	m_VkImageAvailableSemaphore = VK_NULL_HANDLE;
 	
 	m_vWaitSemaphoreBeforeSubmit.clear();
 
-	vkDestroySurfaceKHR(m_pDevice->m_VkInstance, m_VkSurface, nullptr);
+	vkDestroySurfaceKHR(pDevice->m_VkInstance, m_VkSurface, nullptr);
 }
 
-void MVulkanRenderTarget::Resize(const uint32_t& nWidth, const uint32_t& nHeight)
+void MVulkanRenderTarget::Resize(const Vector2& v2Size)
 {
-	vkDeviceWaitIdle(m_pDevice->m_VkDevice);
+	MVulkanDevice* pDevice = dynamic_cast<MVulkanDevice*>(GetEngine()->GetDevice());
+	if (!pDevice)
+	{
+		MLogManager::GetInstance()->Error("MVulkanRenderTarget::Resize Error: device == nullptr");
+		return;
+	}
 
-	m_pDevice->DestroyRenderTarget(this);
+	vkDeviceWaitIdle(pDevice->m_VkDevice);
 
-	ReleaseSwapchain();
-	CleanRenderInfo();
+	pDevice->DestroyRenderTarget(this);
 
-	m_v2Size.x = nWidth;
-	m_v2Size.y = nHeight;
+	ReleaseSwapchain(pDevice);
+	CleanRenderInfo(pDevice);
 
-	InitializeSwapchain();
+	m_v2Size = v2Size;
 
-	m_pDevice->GenerateRenderTarget(this, nWidth, nHeight);
+	InitializeSwapchain(pDevice);
+
+//	pDevice->GenerateRenderTarget(this, nWidth, nHeight);
+	Super::Resize(m_v2Size);
 }
 
-bool MVulkanRenderTarget::InitializeSwapchain()
+bool MVulkanRenderTarget::InitializeSwapchain(MVulkanDevice* pDevice)
 {
-	VkPhysicalDevice physicalDevice = m_pDevice->GetPhysicalDevice();
+	VkPhysicalDevice physicalDevice = pDevice->GetPhysicalDevice();
 
 	//������CreateSpawnchain֮ǰ���á�
-	int nPresentQueueIndex = m_pDevice->FindQueuePresentFamilies(physicalDevice, m_VkSurface);
+	int nPresentQueueIndex = pDevice->FindQueuePresentFamilies(physicalDevice, m_VkSurface);
 	if (nPresentQueueIndex == -1)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : nPresentQueueIndex == -1");
@@ -146,10 +158,10 @@ bool MVulkanRenderTarget::InitializeSwapchain()
 	}
 
 	VkQueue presentQueue;
-	vkGetDeviceQueue(m_pDevice->m_VkDevice, nPresentQueueIndex, 0, &presentQueue);
+	vkGetDeviceQueue(pDevice->m_VkDevice, nPresentQueueIndex, 0, &presentQueue);
 
 	VkSurfaceCapabilitiesKHR caps = {};
-	VkResult result = m_pDevice->GetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_VkSurface, &caps);
+	VkResult result = pDevice->GetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_VkSurface, &caps);
 	if (result != VK_SUCCESS || caps.maxImageCount < 1)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : GetPhysicalDeviceSurfaceCapabilitiesKHR error");
@@ -168,7 +180,7 @@ bool MVulkanRenderTarget::InitializeSwapchain()
 
 
 	uint32_t unPresentModeCount = 0;
-	result = m_pDevice->GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_VkSurface, &unPresentModeCount, NULL);
+	result = pDevice->GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_VkSurface, &unPresentModeCount, NULL);
 	if (result != VK_SUCCESS || unPresentModeCount < 1)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : vkGetPhysicalDeviceSurfacePresentModesKHR count < 1");
@@ -176,12 +188,12 @@ bool MVulkanRenderTarget::InitializeSwapchain()
 	}
 
 	std::vector<VkPresentModeKHR> vPresentModes(unPresentModeCount);
-	result = m_pDevice->GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_VkSurface, &unPresentModeCount, vPresentModes.data());
+	result = pDevice->GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_VkSurface, &unPresentModeCount, vPresentModes.data());
 
 	if (result != VK_SUCCESS)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : vkGetPhysicalDeviceSurfacePresentModesKHR error");
-		vkDestroySurfaceKHR(m_pDevice->m_VkInstance, m_VkSurface, nullptr);
+		vkDestroySurfaceKHR(pDevice->m_VkInstance, m_VkSurface, nullptr);
 		return false;
 	}
 
@@ -203,7 +215,7 @@ bool MVulkanRenderTarget::InitializeSwapchain()
 
 
 	uint32_t unFormatCount = 0;
-	result = m_pDevice->GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_VkSurface, &unFormatCount, NULL);
+	result = pDevice->GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_VkSurface, &unFormatCount, NULL);
 	if (result != VK_SUCCESS || unFormatCount < 1)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : GetPhysicalDeviceSurfaceFormatsKHR unFormatCount < 1");
@@ -211,7 +223,7 @@ bool MVulkanRenderTarget::InitializeSwapchain()
 	}
 
 	std::vector<VkSurfaceFormatKHR> surfaceFormats(unFormatCount);
-	result = m_pDevice->GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_VkSurface, &unFormatCount, surfaceFormats.data());
+	result = pDevice->GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_VkSurface, &unFormatCount, surfaceFormats.data());
 	if (result != VK_SUCCESS)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : GetPhysicalDeviceSurfaceFormatsKHR error");
@@ -245,7 +257,7 @@ bool MVulkanRenderTarget::InitializeSwapchain()
 
 
 	VkSwapchainKHR swapchain;
-	result = m_pDevice->CreateSwapchainKHR(m_pDevice->m_VkDevice, &swapchainCreateInfo, NULL, &swapchain);
+	result = pDevice->CreateSwapchainKHR(pDevice->m_VkDevice, &swapchainCreateInfo, NULL, &swapchain);
 	if (result != VK_SUCCESS)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : CreateSwapchainKHR error");
@@ -258,39 +270,39 @@ bool MVulkanRenderTarget::InitializeSwapchain()
 	m_VkExtend = swapchainExtent;
 	m_VkPresentQueue = presentQueue;
 
-	RebindRenderBuffer();
+	RebindRenderBuffer(pDevice);
 	return true;
 }
 
-void MVulkanRenderTarget::ReleaseSwapchain()
+void MVulkanRenderTarget::ReleaseSwapchain(MVulkanDevice* pDevice)
 {
-	vkDestroySwapchainKHR(m_pDevice->m_VkDevice, m_VkSwapchain, nullptr);
+	vkDestroySwapchainKHR(pDevice->m_VkDevice, m_VkSwapchain, nullptr);
 	m_VkSwapchain = VK_NULL_HANDLE;
 }
 
-void MVulkanRenderTarget::CleanRenderInfo()
+void MVulkanRenderTarget::CleanRenderInfo(MVulkanDevice* pDevice)
 {
 	for (MFrameBuffer& info : m_vBufferInfo)
 	{
 		for (MIRenderBackTexture* pTexture : info.vBackTextures)
 		{
-			pTexture->DestroyBuffer(m_pDevice);
+			pTexture->DestroyBuffer(pDevice);
 			delete pTexture;
 		}
 
-		info.pDepthTexture->DestroyBuffer(m_pDevice);
+		info.pDepthTexture->DestroyBuffer(pDevice);
 		delete info.pDepthTexture;
 	}
 
 	this->m_vBufferInfo.clear();
 }
 
-bool MVulkanRenderTarget::RebindRenderBuffer()
+bool MVulkanRenderTarget::RebindRenderBuffer(MVulkanDevice* pDevice)
 {
-	CleanRenderInfo();
+	CleanRenderInfo(pDevice);
 
 	uint32_t unSwapchainImageCount = 0;
-	VkResult result = m_pDevice->GetSwapchainImagesKHR(m_pDevice->m_VkDevice, m_VkSwapchain, &unSwapchainImageCount, NULL);
+	VkResult result = pDevice->GetSwapchainImagesKHR(pDevice->m_VkDevice, m_VkSwapchain, &unSwapchainImageCount, NULL);
 	if (result != VK_SUCCESS || unSwapchainImageCount < 1)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : unSwapchainImageCount < 1");
@@ -298,7 +310,7 @@ bool MVulkanRenderTarget::RebindRenderBuffer()
 	}
 
 	std::vector<VkImage> vSwapchainImages(unSwapchainImageCount);
-	result = m_pDevice->GetSwapchainImagesKHR(m_pDevice->m_VkDevice, m_VkSwapchain, &unSwapchainImageCount, vSwapchainImages.data());
+	result = pDevice->GetSwapchainImagesKHR(pDevice->m_VkDevice, m_VkSwapchain, &unSwapchainImageCount, vSwapchainImages.data());
 	if (result != VK_SUCCESS || unSwapchainImageCount < 1)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : GetSwapchainImagesKHR error");
@@ -321,7 +333,7 @@ bool MVulkanRenderTarget::RebindRenderBuffer()
 		pBuffer->m_VkTextureFormat = m_VkColorFormat;
 
 		pTexture->SetSize(m_v2Size);
-		pTexture->GenerateBuffer(m_pDevice);
+		pTexture->GenerateBuffer(pDevice);
 
 		info.vBackTextures.push_back(pTexture);
 		
@@ -330,7 +342,7 @@ bool MVulkanRenderTarget::RebindRenderBuffer()
 		MRenderDepthTexture* pDepthTexture = new MRenderDepthTexture();
 
 		pDepthTexture->SetSize(m_v2Size);
-		pDepthTexture->GenerateBuffer(m_pDevice);
+		pDepthTexture->GenerateBuffer(pDevice);
 
 		info.pDepthTexture = pDepthTexture;
 	}
@@ -339,9 +351,9 @@ bool MVulkanRenderTarget::RebindRenderBuffer()
 }
 
 #ifdef MORTY_WIN
-MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MIDevice* pDevice, MIRenderView* pView)
+MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MEngine* pEngine, MIRenderView* pView)
 {
-	MVulkanDevice* pVkDevice = dynamic_cast<MVulkanDevice*>(pDevice);
+	MVulkanDevice* pVkDevice = dynamic_cast<MVulkanDevice*>(pEngine->GetDevice());
 	if (nullptr == pVkDevice)
 		return nullptr;
 
@@ -365,14 +377,14 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MIDevice* pDevice
 		return nullptr;
 	}
 	
-	MVulkanRenderTarget* pRenderTarget = new MVulkanRenderTarget(pVkDevice);
+	MVulkanRenderTarget* pRenderTarget = pEngine->GetObjectManager()->CreateObject<MVulkanRenderTarget>();
 	pRenderTarget->m_VkSurface = surface;
 	pRenderTarget->m_pView = pView;
 	pRenderTarget->Initialize();
 
 	pView->SetRenderTarget(pRenderTarget);
 
-	pRenderTarget->Resize(pView->GetViewWidth(), pView->GetViewHeight());
+	pRenderTarget->Resize(Vector2(pView->GetViewWidth(), pView->GetViewHeight()));
 
 	return pRenderTarget;
 }
@@ -380,7 +392,7 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MIDevice* pDevice
 #endif
 
 #ifdef MORTY_ANDROID
-MVulkanRenderTarget* MVulkanRenderTarget::CreateForAndroidView(MIDevice* pDevice, MIRenderView* pView)
+MVulkanRenderTarget* MVulkanRenderTarget::CreateForAndroidView(MEngine* pEngine, MIRenderView* pView)
 {
 	MVulkanDevice* pVkDevice = dynamic_cast<MVulkanDevice*>(pDevice);
 	if (nullptr == pVkDevice)
