@@ -27,7 +27,6 @@ MVulkanRenderer::MVulkanRenderer(MVulkanDevice* pDevice)
 
 MVulkanRenderer::~MVulkanRenderer()
 {
-#include <malloc.h>
 }
 
 bool MVulkanRenderer::Initialize()
@@ -394,7 +393,7 @@ void MVulkanRenderer::GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPa
 		}
 		{//Front Depth
 			vBlendAttach[2].blendEnable = VK_TRUE;
-			vBlendAttach[2].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+			vBlendAttach[2].colorWriteMask = VK_COLOR_COMPONENT_R_BIT;
 			vBlendAttach[2].dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
 			vBlendAttach[2].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
 			vBlendAttach[2].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
@@ -404,7 +403,7 @@ void MVulkanRenderer::GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPa
 		}
 		{//Back Depth
 			vBlendAttach[3].blendEnable = VK_TRUE;
-			vBlendAttach[3].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+			vBlendAttach[3].colorWriteMask = VK_COLOR_COMPONENT_R_BIT;
 			vBlendAttach[3].dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
 			vBlendAttach[3].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
 			vBlendAttach[3].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;

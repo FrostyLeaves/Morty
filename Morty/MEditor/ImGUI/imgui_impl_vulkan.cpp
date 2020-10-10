@@ -928,7 +928,7 @@ void ImGui_ImplVulkan_NewFrame()
         if (count > 30)
 		{
             std::vector<VkDescriptorSet> sets = { iter->second.set };
-			g_MortyEngineDevice->m_ObjectDestructor.DestroyDescriptorSets(0, sets);
+			g_MortyEngineDevice->m_ObjectDestructor.DestroyDescriptorSetsLater(sets);
 
             iter = g_DescriptorSets.erase(iter);
         }

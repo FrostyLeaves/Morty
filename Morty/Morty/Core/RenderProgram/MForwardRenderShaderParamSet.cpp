@@ -9,8 +9,6 @@ MForwardRenderShaderParamSet::MForwardRenderShaderParamSet()
 	, m_pLightInfoParam(nullptr)
 	
 	, m_pDefaultSampleParam(nullptr)
-	, m_pLessEqualSampleParam(nullptr)
-	, m_pGreaterEqualSampleParam(nullptr)
 
 	, m_pShadowTextureParam(nullptr)
 	, m_pTransparentFrontTextureParam(nullptr)
@@ -103,12 +101,6 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	m_pDefaultSampleParam = new MShaderSampleParam();
 	m_pDefaultSampleParam->unSet = 1;
 	m_pDefaultSampleParam->unBinding = 3;
-	m_pLessEqualSampleParam = new MShaderSampleParam();
-	m_pLessEqualSampleParam->unSet = 1;
-	m_pLessEqualSampleParam->unBinding = 4;
-	m_pGreaterEqualSampleParam = new MShaderSampleParam();
-	m_pGreaterEqualSampleParam->unSet = 1;
-	m_pGreaterEqualSampleParam->unBinding = 5;
 
 	m_pShadowTextureParam = new MShaderTextureParam();
 	m_pShadowTextureParam->unSet = 1;
@@ -126,8 +118,6 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 
 
 	m_vSamples.push_back(m_pDefaultSampleParam);
-	m_vSamples.push_back(m_pLessEqualSampleParam);
-	m_vSamples.push_back(m_pGreaterEqualSampleParam);
 
 
 	m_vTextures.push_back(m_pShadowTextureParam);

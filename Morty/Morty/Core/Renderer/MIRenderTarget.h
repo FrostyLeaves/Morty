@@ -72,7 +72,7 @@ public:
 	virtual void OnRender(MIRenderer* pRenderer) { if(m_funcRenderFunction) m_funcRenderFunction(pRenderer); }
 	std::function<void(MIRenderer*)> m_funcRenderFunction;
 
-	virtual void Release() = 0;
+	virtual void Release();
 
 public:
 

@@ -59,6 +59,8 @@ protected:
 
     void InitializeRenderPass();
     void ReleaseRenderPass();
+
+    virtual void OnDelete() override;
 private:
 
     MIRenderProgram* m_pRenderProgram;

@@ -1130,6 +1130,15 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass, MIRenderTarget*
 	if (!pFrameBuffer)
 		return false;
 
+	for (uint32_t i = 0; i < pRenderPass->m_aVkRenderPass.size(); ++i)
+	{
+		if (VK_NULL_HANDLE != pRenderPass->m_aVkRenderPass[i])
+		{
+			DestroyRenderPass(pRenderPass);
+			break;
+		}
+	}
+
 
 	VkRenderPass renderPass;
 
@@ -1249,8 +1258,11 @@ void MVulkanDevice::DestroyRenderPass(MRenderPass* pRenderPass)
 	{
 		for (uint32_t i = 0; i < pRenderPass->m_aVkRenderPass.size(); ++i)
 		{
-			m_ObjectDestructor.DestroyRenderPassLater(pRenderPass->m_aVkRenderPass[i]);
-			pRenderPass->m_aVkRenderPass[i] = VK_NULL_HANDLE;
+			if (VK_NULL_HANDLE != pRenderPass->m_aVkRenderPass[i])
+			{
+				m_ObjectDestructor.DestroyRenderPassLater(pRenderPass->m_aVkRenderPass[i]);
+				pRenderPass->m_aVkRenderPass[i] = VK_NULL_HANDLE;
+			}
 		}
 
 		m_PipelineManager.UnRegisterRenderPass(pRenderPass);

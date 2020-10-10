@@ -206,7 +206,7 @@ void MWindowsRenderView::Release()
 	if (m_pRenderTarget)
 	{
 		m_pRenderTarget->Release();
-		delete m_pRenderTarget;
+		m_pRenderTarget->DeleteLater();
 		m_pRenderTarget = nullptr;
 	}
 	s_tViewTable.erase(m_hwnd);

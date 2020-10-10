@@ -74,22 +74,16 @@ void MForwardTransparentWork::DrawTransparentMesh(MForwardRenderProgram::MRender
 	for (uint32_t i = 0; i < 3; ++i)
 		MForwardRenderProgram::UpdateShaderSharedParams(info, m_FrameParamSet[i]);
 
-	m_FrameParamSet[0].m_pTransparentFrontTextureParam->pTexture = m_pBlackTexture;
-	m_FrameParamSet[0].m_pTransparentBackTextureParam->pTexture = m_pWhiteTexture;
+	UpdateTextureParams(info);
 
-	m_FrameParamSet[1].m_pTransparentFrontTextureParam->pTexture = vBackTexture2[unFrameIdx];
-	m_FrameParamSet[1].m_pTransparentBackTextureParam->pTexture = vBackTexture3[unFrameIdx];
+ 	RenderToTarget(info, &m_TransWithClearRenderPass, m_pTransparentRenderTarget0, 0);
+// 	for (uint32_t i = 0; i < 3; ++i)
+// 	{
+// 		RenderToTarget(info, &m_TransRenderPass, m_pTransparentRenderTarget1, 1);
+// 		RenderToTarget(info, &m_TransRenderPass, m_pTransparentRenderTarget2, 2);
+// 	}
 
-	m_FrameParamSet[2].m_pTransparentFrontTextureParam->pTexture = vBackTexture0[unFrameIdx];
-	m_FrameParamSet[2].m_pTransparentBackTextureParam->pTexture = vBackTexture1[unFrameIdx];
-
-
-	RenderToTarget(info, &m_TransWithClearRenderPass, m_pTransparentRenderTarget0, 0);
-	for (uint32_t i = 0; i < 3; ++i)
-	{
-		RenderToTarget(info, &m_TransRenderPass, m_pTransparentRenderTarget1, 1);
-		RenderToTarget(info, &m_TransRenderPass, m_pTransparentRenderTarget2, 2);
-	}
+	info.pRenderer->Wait();
 
 	info.pRenderer->BeginRenderPass(&m_MeshRenderPass, info.pRenderTarget);
 
@@ -189,17 +183,35 @@ void MForwardTransparentWork::ReleaseMaterial()
 void MForwardTransparentWork::InitializeTexture()
 {
 
-	MTextureResource* pBlackTextureRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_BLACK);
-	MTextureResource* pWhiteTextureRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_WHITE);
+	MTextureResource* pBlackTextureRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>("Transparent_Black");
+	MTextureResource* pWhiteTextureRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>("Transparent_White");
+
 
 	m_pBlackTexture = pBlackTextureRes->GetTextureTemplate();
-	m_pWhiteTexture = pWhiteTextureRes->GetTextureTemplate();
+	m_pBlackTexture->SetSize(Vector2(1, 1));
+	m_pBlackTexture->FillColor(MColor(0, 0, 0, 0));
+	m_pBlackTexture->GenerateBuffer(GetEngine()->GetDevice());
+
+	m_pWhiteTexture = pBlackTextureRes->GetTextureTemplate();
+	m_pWhiteTexture->SetSize(Vector2(1, 1));
+	m_pWhiteTexture->FillColor(MColor(1, 1, 1, 1));
+	m_pWhiteTexture->GenerateBuffer(GetEngine()->GetDevice());
+
+
+	pBlackTextureRes->AddRef();
+	pWhiteTextureRes->AddRef();
 }
 
 void MForwardTransparentWork::ReleaseTexture()
 {
 	m_pBlackTexture = nullptr;
 	m_pWhiteTexture = nullptr;
+
+	MTextureResource* pBlackTextureRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>("Transparent_Black");
+	MTextureResource* pWhiteTextureRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>("Transparent_White");
+
+	pBlackTextureRes->SubRef();
+	pWhiteTextureRes->SubRef();
 }
 
 void MForwardTransparentWork::InitializeRenderTargets()
@@ -355,5 +367,32 @@ void MForwardTransparentWork::CheckTransparentTextureSize(MForwardRenderProgram:
 	m_pTransparentRenderTarget0->Resize(m_v2TransparentTextureSize);
 	m_pTransparentRenderTarget1->Resize(m_v2TransparentTextureSize);
 	m_pTransparentRenderTarget2->Resize(m_v2TransparentTextureSize);
+}
+
+void MForwardTransparentWork::UpdateTextureParams(MForwardRenderProgram::MRenderInfo& info)
+{
+	uint32_t unFrameIdx = info.unFrameIndex;
+
+	m_FrameParamSet[0].m_pTransparentFrontTextureParam->pTexture = m_pBlackTexture;
+	m_FrameParamSet[0].m_pTransparentBackTextureParam->pTexture = m_pWhiteTexture;
+	m_FrameParamSet[0].m_pTransparentFrontTextureParam->SetDirty();
+	m_FrameParamSet[0].m_pTransparentBackTextureParam->SetDirty();
+
+	m_FrameParamSet[1].m_pTransparentFrontTextureParam->pTexture = vBackTexture2[unFrameIdx];
+	m_FrameParamSet[1].m_pTransparentBackTextureParam->pTexture = vBackTexture3[unFrameIdx];
+	m_FrameParamSet[1].m_pTransparentFrontTextureParam->SetDirty();
+	m_FrameParamSet[1].m_pTransparentBackTextureParam->SetDirty();
+
+	m_FrameParamSet[2].m_pTransparentFrontTextureParam->pTexture = vBackTexture0[unFrameIdx];
+	m_FrameParamSet[2].m_pTransparentBackTextureParam->pTexture = vBackTexture1[unFrameIdx];
+	m_FrameParamSet[2].m_pTransparentFrontTextureParam->SetDirty();
+	m_FrameParamSet[2].m_pTransparentBackTextureParam->SetDirty();
+}
+
+void MForwardTransparentWork::OnDelete()
+{
+	Release();
+
+	Super::OnDelete();
 }
 

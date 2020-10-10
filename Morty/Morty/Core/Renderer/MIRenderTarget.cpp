@@ -14,6 +14,15 @@ MIRenderTarget::MIRenderTarget()
 #endif
 }
 
+void MIRenderTarget::Release()
+{
+	if (m_pRenderProgram)
+	{
+		m_pRenderProgram->DeleteLater();
+		m_pRenderProgram = nullptr;
+	}
+}
+
 MFrameBuffer::MFrameBuffer()
 	: vBackTextures()
 	, pDepthTexture()

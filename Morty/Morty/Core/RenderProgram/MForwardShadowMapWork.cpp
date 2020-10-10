@@ -44,9 +44,10 @@ void MForwardShadowMapWork::Initialize(MIRenderProgram* pRenderProgram)
 
 void MForwardShadowMapWork::Release()
 {
+	ReleaseRenderPass();
+	ReleaseMaterial();
 	ReleaseShaderParamSet();
 	ReleaseRenderTargets();
-	ReleaseMaterial();
 }
 
 void MForwardShadowMapWork::InitializeRenderPass()
@@ -59,6 +60,13 @@ void MForwardShadowMapWork::InitializeRenderPass()
 void MForwardShadowMapWork::ReleaseRenderPass()
 {
 	GetEngine()->GetDevice()->DestroyRenderPass(&m_ShadowRenderPass);
+}
+
+void MForwardShadowMapWork::OnDelete()
+{
+	Release();
+
+	Super::OnDelete();
 }
 
 void MForwardShadowMapWork::DrawShadowMap(MForwardRenderProgram::MRenderInfo& info)

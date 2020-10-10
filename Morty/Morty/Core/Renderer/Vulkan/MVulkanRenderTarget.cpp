@@ -25,7 +25,6 @@ MVulkanRenderTarget::MVulkanRenderTarget()
 	, m_vBufferInfo()
 	, m_pView(nullptr)
 	, m_unFrameBufferIndex(0)
-	, m_v2Size(800, 600)
 	, m_VkImageAvailableSemaphore(VK_NULL_HANDLE)
 	, m_unMinImageCount(0)
 {
@@ -119,10 +118,14 @@ void MVulkanRenderTarget::Release()
 	m_vWaitSemaphoreBeforeSubmit.clear();
 
 	vkDestroySurfaceKHR(pDevice->m_VkInstance, m_VkSurface, nullptr);
+
+	Super::Release();
 }
 
 void MVulkanRenderTarget::Resize(const Vector2& v2Size)
 {
+	Super::Resize(v2Size);
+
 	MVulkanDevice* pDevice = dynamic_cast<MVulkanDevice*>(GetEngine()->GetDevice());
 	if (!pDevice)
 	{
@@ -137,12 +140,9 @@ void MVulkanRenderTarget::Resize(const Vector2& v2Size)
 	ReleaseSwapchain(pDevice);
 	CleanRenderInfo(pDevice);
 
-	m_v2Size = v2Size;
-
 	InitializeSwapchain(pDevice);
 
 //	pDevice->GenerateRenderTarget(this, nWidth, nHeight);
-	Super::Resize(m_v2Size);
 }
 
 bool MVulkanRenderTarget::InitializeSwapchain(MVulkanDevice* pDevice)

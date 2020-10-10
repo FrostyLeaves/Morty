@@ -31,8 +31,6 @@ public:
 	MShaderConstantParam* m_pLightInfoParam;
 
 	MShaderSampleParam* m_pDefaultSampleParam;
-	MShaderSampleParam* m_pLessEqualSampleParam;
-	MShaderSampleParam* m_pGreaterEqualSampleParam;
 
 	MShaderTextureParam* m_pShadowTextureParam;
 	MShaderTextureParam* m_pTransparentFrontTextureParam;

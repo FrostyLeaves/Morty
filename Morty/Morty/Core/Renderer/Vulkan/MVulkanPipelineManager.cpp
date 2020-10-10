@@ -180,7 +180,7 @@ void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShade
 		imageInfo.imageLayout = pBuffer->m_VkImageLayout;
 		imageInfo.sampler = pBuffer->m_VkSampler;
 
-		if (VK_NULL_HANDLE == imageInfo.sampler)		//TODO Default Sampler
+		if (VK_NULL_HANDLE == imageInfo.sampler)
 			imageInfo.sampler = m_pDevice->m_ObjectDestructor.m_VkDefaultSampler;
 
 		VkWriteDescriptorSet descriptorWrite{};
@@ -189,7 +189,6 @@ void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShade
 		descriptorWrite.dstBinding = pParam->unBinding;
 		descriptorWrite.dstArrayElement = 0;
 
-		//descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 		descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		descriptorWrite.descriptorCount = 1;
 
@@ -322,7 +321,10 @@ VkDescriptorSet MVulkanPipelineManager::CreateMaterialDescriptorSet(MMaterialPip
 	allocInfo.pSetLayouts = &data.vSetLayouts[unSetIdx];
 
 	if (vkAllocateDescriptorSets(m_pDevice->m_VkDevice, &allocInfo, &descriptorSet) != VK_SUCCESS)
+	{
+		MLogManager::GetInstance()->Error("MVulkanPipelineManager::CreateMaterialDescriptorSet error: descriptor pool == 0");
 		return VK_NULL_HANDLE;
+	}
 
 	return descriptorSet;
 }

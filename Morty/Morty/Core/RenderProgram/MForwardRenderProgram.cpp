@@ -67,6 +67,7 @@ void MForwardRenderProgram::Initialize()
 
 void MForwardRenderProgram::Release()
 {
+	ReleaseRenderPass();
 	ReleaseShaderParamSet();
 
 	if (m_pShadowMapWork)
@@ -177,6 +178,8 @@ void MForwardRenderProgram::OnCreated()
 
 void MForwardRenderProgram::OnDelete()
 {
+	Release();
+
 	Super::OnDelete();
 }
 

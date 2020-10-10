@@ -136,7 +136,7 @@ void MTextureRenderTarget::OnCreated()
 
 void MTextureRenderTarget::Release()
 {
-
+	Super::Release();
 }
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11

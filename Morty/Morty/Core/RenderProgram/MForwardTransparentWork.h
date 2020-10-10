@@ -53,12 +53,16 @@ protected:
     void ReleaseRenderPass();
 
 	void CheckTransparentTextureSize(MForwardRenderProgram::MRenderInfo& info);
+    
+    void UpdateTextureParams(MForwardRenderProgram::MRenderInfo& info);
+
+    virtual void OnDelete() override;
 private:
 
 	MIRenderProgram* m_pRenderProgram;
 
-	MITexture* m_pWhiteTexture;
-	MITexture* m_pBlackTexture;
+	MTexture* m_pWhiteTexture;
+	MTexture* m_pBlackTexture;
 
 	MTextureRenderTarget* m_pTransparentRenderTarget0;
     MTextureRenderTarget* m_pTransparentRenderTarget1;

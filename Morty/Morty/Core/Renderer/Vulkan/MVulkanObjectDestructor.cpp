@@ -187,9 +187,9 @@ bool MVulkanObjectDestructor::InitSampler()
 }
 
 
-void MVulkanObjectDestructor::DestroyDescriptorSets(const uint32_t& unFrameIndex, std::vector<VkDescriptorSet>& vDescriptorSets)
+void MVulkanObjectDestructor::DestroyDescriptorSetsLater(std::vector<VkDescriptorSet>& vDescriptorSets)
 {
-	m_vDescriptorSets[unFrameIndex].push_back(std::move(vDescriptorSets));
+	m_vDescriptorSets[m_unSafeIdx].push_back(std::move(vDescriptorSets));
 }
 
 #endif
