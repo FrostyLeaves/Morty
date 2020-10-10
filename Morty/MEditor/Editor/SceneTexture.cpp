@@ -36,10 +36,6 @@ void SceneTexture::Initialize(MEngine* pEngine)
 
 	m_pScene = m_pEngine->GetObjectManager()->CreateObject<MScene>();
 
-	M3DNode* pRootNode = m_pEngine->GetObjectManager()->CreateObject<M3DNode>();
-	m_pScene->SetRootNode(pRootNode);
-
-
 	m_pRenderViewport = pEngine->GetObjectManager()->CreateObject<MViewport>();
 	m_pRenderViewport->SetScene(m_pScene);
 	m_pRenderViewport->SetSize(Vector2(256, 256));

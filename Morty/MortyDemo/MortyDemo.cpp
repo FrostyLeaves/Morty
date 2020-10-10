@@ -189,6 +189,13 @@ int main(int argc, char* argv[])
 	
 	pJeepModel->SetRotation(rot);
 
+
+	if (auto pMeshIns = pJeepModel->GetFixedChildren()[0]->DynamicCast<MIModelMeshInstance>())
+	{
+		pMeshIns->GetMaterial()->SetMaterialType(MEMaterialType::ETransparent);
+	}
+
+
 // // 	MString textureID[] = {"005","003","007","004","014","008","002","015","019"};
 // // 
 // // 	MModelResource* pPikachuResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/gun/model.dae"));
@@ -292,7 +299,6 @@ int main(int argc, char* argv[])
 
 
 	while (engine.MainLoop());
-
 
 	engine.Release();
 

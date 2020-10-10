@@ -72,8 +72,6 @@ public:
 	virtual void OnCreated() override;
 	virtual void OnDelete() override;
 
-	void CleanAllNodes();
-
 	//节点接入场景时进行的操作
 	void OnNodeEnter(MNode* pNode);
 	//节点退出场景时进行的操作

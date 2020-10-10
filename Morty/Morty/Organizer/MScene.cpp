@@ -83,13 +83,22 @@ void MScene::OnDelete()
 		m_pSkyBox = nullptr;
 	}
 
+	if (m_pTransformCoord3D)
+	{
+		m_pTransformCoord3D->DeleteLater();
+		m_pTransformCoord3D = nullptr;
+	}
+
+	if (m_pRootNode)
+	{
+		MNode* pDeletedNode = m_pRootNode;
+		pDeletedNode->SetAttachedScene(nullptr);
+		pDeletedNode->DeleteLater();
+
+		m_pRootNode = nullptr;
+	}
 
 	Super::OnDelete();
-}
-
-void MScene::CleanAllNodes()
-{
-
 }
 
 void MScene::AddAttachedViewport(MViewport* pViewport)

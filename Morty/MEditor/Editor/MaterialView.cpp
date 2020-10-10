@@ -85,6 +85,11 @@ void MaterialView::Initialize(MEngine* pEngine)
 
 	MScene* pScene = m_SceneTexture.GetScene();
 	MNode* pRootNode = pScene->GetRootNode();
+	if (nullptr == pRootNode)
+	{
+		pRootNode = pEngine->GetObjectManager()->CreateObject<M3DNode>();
+		pScene->SetRootNode(pRootNode);
+	}
 
 	MCamera* pCamera = m_SceneTexture.GetViewport()->GetCamera();
 	pCamera->SetPosition(Vector3(0, 0, -20));

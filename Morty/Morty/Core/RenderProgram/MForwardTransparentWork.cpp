@@ -83,8 +83,6 @@ void MForwardTransparentWork::DrawTransparentMesh(MForwardRenderProgram::MRender
 // 		RenderToTarget(info, &m_TransRenderPass, m_pTransparentRenderTarget2, 2);
 // 	}
 
-	info.pRenderer->Wait();
-
 	info.pRenderer->BeginRenderPass(&m_MeshRenderPass, info.pRenderTarget);
 
 	std::vector<MShaderTextureParam*>& params = *m_pDrawMeshMaterial->GetTextureParams();
