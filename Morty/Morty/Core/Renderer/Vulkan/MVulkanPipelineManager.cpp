@@ -79,7 +79,7 @@ void MVulkanPipelineManager::SetPipeline(MMaterial* pMaterial, MRenderPass* pRen
 	group.vMaterialGroup[unMaterialID] = pipeline;
 }
 
-MMaterialPipelineLayoutData* MVulkanPipelineManager::FindPipelineLayout(MMaterial* pMaterial)
+MMaterialPipelineLayoutData* MVulkanPipelineManager::FindOrCreatePipelineLayout(MMaterial* pMaterial)
 {
 	uint32_t id = pMaterial->GetMaterialID();
 
@@ -92,6 +92,17 @@ MMaterialPipelineLayoutData* MVulkanPipelineManager::FindPipelineLayout(MMateria
 	CreateMaterialPipelineLayout(pMaterial, m_vPipelineLayouts[id]);
 
 	return &m_vPipelineLayouts[id];
+}
+
+MMaterialPipelineLayoutData* MVulkanPipelineManager::FindPipelineLayout(const uint32_t& nMaterialIdx)
+{
+	if (M_INVALID_INDEX == nMaterialIdx)
+		return nullptr;
+
+	if (m_vPipelineLayouts.size() < nMaterialIdx + 1)
+		return nullptr;
+
+	return &m_vPipelineLayouts[nMaterialIdx];
 }
 
 void MVulkanPipelineManager::RegisterMaterial(MMaterial* pMaterial)
@@ -120,7 +131,7 @@ void MVulkanPipelineManager::UnRegisterMaterial(MMaterial* pMaterial)
 		}
 	}
 
-	m_MaterialIDPool.RecoveryID(id);
+//	m_MaterialIDPool.RecoveryID(id);
 }
 
 void MVulkanPipelineManager::RegisterRenderPass(MRenderPass* pRenderPass)
@@ -310,7 +321,7 @@ void MVulkanPipelineManager::DestroyMaterialPipelineLayout(MMaterialPipelineLayo
 	}
 }
 
-VkDescriptorSet MVulkanPipelineManager::CreateMaterialDescriptorSet(MMaterialPipelineLayoutData& data, const uint32_t& unSetIdx)
+VkDescriptorSet MVulkanPipelineManager::CreateMaterialDescriptorSet(VkDescriptorSetLayout& vkDescriptorSetLayout)
 {
 	VkDescriptorSet descriptorSet;
 
@@ -318,7 +329,7 @@ VkDescriptorSet MVulkanPipelineManager::CreateMaterialDescriptorSet(MMaterialPip
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	allocInfo.descriptorPool = m_pDevice->m_ObjectDestructor.m_VkDescriptorPool;
 	allocInfo.descriptorSetCount = 1;
-	allocInfo.pSetLayouts = &data.vSetLayouts[unSetIdx];
+	allocInfo.pSetLayouts = &vkDescriptorSetLayout;
 
 	if (vkAllocateDescriptorSets(m_pDevice->m_VkDevice, &allocInfo, &descriptorSet) != VK_SUCCESS)
 	{

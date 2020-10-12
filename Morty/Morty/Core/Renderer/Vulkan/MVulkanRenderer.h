@@ -55,7 +55,7 @@ public:
 
 	void GetDepthStencilStage(MMaterial* pMaterial, MRenderPass* pRenderPass, VkPipelineDepthStencilStateCreateInfo& depthStencilInfo);
 
-	void UpdateShaderParam(MShaderConstantParam& param);
+	void UpdateShaderParam(MShaderConstantParam& param, const uint32_t& unFrameIdx);
 
 	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) override;
 
@@ -80,9 +80,10 @@ private:
 
 	struct MRenderStage
 	{
-		MRenderStage() :vkCommandBuffer(VK_NULL_HANDLE), pUsingPipelineLayoutData(nullptr), vRenderTargetEvent() {}
+		MRenderStage() :vkCommandBuffer(VK_NULL_HANDLE), pUsingMaterial(nullptr), pUsingPipelineLayoutData(nullptr), vRenderTargetEvent() {}
 
 		VkCommandBuffer vkCommandBuffer;
+		struct MMaterial* pUsingMaterial;
 		struct MMaterialPipelineLayoutData* pUsingPipelineLayoutData;
 
 		std::vector<VkEvent> vRenderTargetEvent;

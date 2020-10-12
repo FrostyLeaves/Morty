@@ -1,5 +1,8 @@
 #include "MShaderParamSet.h"
 #include "MIDevice.h"
+#if RENDER_GRAPHICS == MORTY_VULKAN
+#include "MVulkanDevice.h"
+#endif
 
 MShaderParamSet::MShaderParamSet()
 	: m_vParams()
@@ -9,6 +12,7 @@ MShaderParamSet::MShaderParamSet()
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	memset(m_VkDescriptorSet, VK_NULL_HANDLE, sizeof(VkDescriptorSet) * M_BUFFER_NUM);
+	m_nDescriptorSetInitMaterialIdx = M_INVALID_INDEX;
 #endif
 }
 
@@ -20,6 +24,7 @@ MShaderParamSet::MShaderParamSet(const uint32_t& unKey)
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	memset(m_VkDescriptorSet, VK_NULL_HANDLE, sizeof(VkDescriptorSet) * M_BUFFER_NUM);
+	m_nDescriptorSetInitMaterialIdx = M_INVALID_INDEX;
 #endif
 }
 
@@ -62,7 +67,16 @@ void MShaderParamSet::ClearAndDestroy(MIDevice* pDevice)
 	m_vSamples.clear();
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
+	MVulkanDevice* pVkDevice = dynamic_cast<MVulkanDevice*>(pDevice);
+
+	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+	{
+// 		if (m_VkDescriptorSet[i])
+// 			pVkDevice->m_ObjectDestructor.DestroyDescriptorSetLater(m_VkDescriptorSet[i]);
+	}
+
 	memset(m_VkDescriptorSet, VK_NULL_HANDLE, sizeof(VkDescriptorSet) * M_BUFFER_NUM);
+	m_nDescriptorSetInitMaterialIdx = M_INVALID_INDEX;
 #endif
 }
 

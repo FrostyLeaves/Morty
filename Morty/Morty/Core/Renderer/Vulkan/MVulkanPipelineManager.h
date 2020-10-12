@@ -48,7 +48,8 @@ public:
 
     void SetPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, VkPipeline pipeline);
 
-    MMaterialPipelineLayoutData* FindPipelineLayout(MMaterial* pMaterial);
+	MMaterialPipelineLayoutData* FindOrCreatePipelineLayout(MMaterial* pMaterial);
+	MMaterialPipelineLayoutData* FindPipelineLayout(const uint32_t& nMaterialIdx);
 
 public:
 	void RegisterMaterial(MMaterial* pMaterial);
@@ -66,7 +67,7 @@ public:
     bool CreateMaterialPipelineLayout(MMaterial* pMaterial, MMaterialPipelineLayoutData& data);
     void DestroyMaterialPipelineLayout(MMaterialPipelineLayoutData& data);
 
-    VkDescriptorSet CreateMaterialDescriptorSet(MMaterialPipelineLayoutData& data, const uint32_t& unSetIdx);
+    VkDescriptorSet CreateMaterialDescriptorSet(VkDescriptorSetLayout& vkDescriptorSetLayout);
 
 
 private:

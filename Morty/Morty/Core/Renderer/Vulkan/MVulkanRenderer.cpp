@@ -298,16 +298,18 @@ bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial)
 
 	if (nullptr == pMaterial)
 	{
+		rs.pUsingMaterial = nullptr;
 		rs.pUsingPipelineLayoutData = nullptr;
 		return true;
 	}
 
 	MRenderPass* pRenderPass = m_vRenderPass.top();
-	MMaterialPipelineLayoutData* pPipelineLayoutData = m_pDevice->m_PipelineManager.FindPipelineLayout(pMaterial);
+	MMaterialPipelineLayoutData* pPipelineLayoutData = m_pDevice->m_PipelineManager.FindOrCreatePipelineLayout(pMaterial);
 
 	if (rs.pUsingPipelineLayoutData == pPipelineLayoutData)
 		return true;
 
+	rs.pUsingMaterial = pMaterial;
 	rs.pUsingPipelineLayoutData = pPipelineLayoutData;
 
 	VkPipeline vkPipeline = m_pDevice->m_PipelineManager.FindPipeline(pMaterial, pRenderPass);
@@ -481,14 +483,14 @@ void MVulkanRenderer::GetDepthStencilStage(MMaterial* pMaterial, MRenderPass* pR
 	}
 }
 
-void MVulkanRenderer::UpdateShaderParam(MShaderConstantParam& param)
+void MVulkanRenderer::UpdateShaderParam(MShaderConstantParam& param, const uint32_t& unFrameIdx)
 {
 	if (VK_NULL_HANDLE == param.m_VkBuffer)
 		return;
 
-	if (param.bDirty && param.m_pMemoryMapping[m_unFrameIndex])
+	if (param.bDirty && param.m_pMemoryMapping[unFrameIdx])
 	{
-		memcpy(param.m_pMemoryMapping[m_unFrameIndex] + param.m_unMemoryOffset[m_unFrameIndex], param.var.GetData(), param.var.GetSize());
+		memcpy(param.m_pMemoryMapping[unFrameIdx] + param.m_unMemoryOffset[unFrameIdx], param.var.GetData(), param.var.GetSize());
 
 		//TODO ��׿���������� 
 // 		VkMappedMemoryRange memoryRange = {};
@@ -498,7 +500,7 @@ void MVulkanRenderer::UpdateShaderParam(MShaderConstantParam& param)
 // 		memoryRange.size = param.m_unVkMemorySize;
 // 		vkFlushMappedMemoryRanges(m_pDevice->m_VkDevice, 1, &memoryRange);
 
-		param.bDirty[m_unFrameIndex] = false;
+		param.bDirty[unFrameIdx] = false;
 	}
 
 }
@@ -507,17 +509,24 @@ void MVulkanRenderer::SetShaderParamSet(MShaderParamSet* pParamSet)
 {
 	MRenderStage& rs = m_vRenderStages.back();
 
-	if (pParamSet->m_VkDescriptorSet[m_unFrameIndex] == VK_NULL_HANDLE)
+	MMaterialPipelineLayoutData* pLayoutData = m_pDevice->m_PipelineManager.FindPipelineLayout(pParamSet->m_nDescriptorSetInitMaterialIdx);
+	if (!pLayoutData)
 	{
+		if (!rs.pUsingMaterial)
+			return;
+		if (!rs.pUsingPipelineLayoutData)
+			return;
+
+		pParamSet->m_nDescriptorSetInitMaterialIdx = rs.pUsingMaterial->GetMaterialID();
+
 		for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-			pParamSet->m_VkDescriptorSet[i] = m_pDevice->m_PipelineManager.CreateMaterialDescriptorSet(*rs.pUsingPipelineLayoutData, pParamSet->m_unKey);
+			pParamSet->m_VkDescriptorSet[i] = m_pDevice->m_PipelineManager.CreateMaterialDescriptorSet(rs.pUsingPipelineLayoutData->vSetLayouts[pParamSet->m_unKey]);
 	}
 
 	std::vector<uint32_t> vDynamicOffsets;
 
 	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
 	{
-		//TODO ������
 		if (pParam->m_VkBuffer[m_unFrameIndex] == VK_NULL_HANDLE)
 		{
 			m_pDevice->GenerateShaderParamBuffer(pParam);
@@ -526,7 +535,7 @@ void MVulkanRenderer::SetShaderParamSet(MShaderParamSet* pParamSet)
 				m_pDevice->m_PipelineManager.BindConstantParam(pParamSet, pParam, i);
 		}
 
-		UpdateShaderParam(*pParam);
+		UpdateShaderParam(*pParam, m_unFrameIndex);
 
 		if (pParam->m_VkDescriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
 		{
@@ -657,7 +666,7 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 
 	GetDepthStencilStage(pMaterial, pRenderPass, depthStencilInfo);
 
-	VkPipelineLayout pipelineLayout = m_pDevice->m_PipelineManager.FindPipelineLayout(pMaterial)->pipelineLayout;
+	VkPipelineLayout pipelineLayout = m_pDevice->m_PipelineManager.FindOrCreatePipelineLayout(pMaterial)->pipelineLayout;
 
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;

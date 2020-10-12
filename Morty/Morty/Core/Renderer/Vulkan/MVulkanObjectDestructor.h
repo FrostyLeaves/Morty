@@ -64,8 +64,8 @@ void Destroy##VK_TYPE##Later(Vk##VK_TYPE& buffer){\
 	M_VULKAN_DESTROY_LATER_FUNC(Event);
 	M_VULKAN_DESTROY_LATER_FUNC(Sampler);
 
-    std::vector<std::vector<VkDescriptorSet>> m_vDescriptorSets[2];
-    void DestroyDescriptorSetsLater(std::vector<VkDescriptorSet>& vDescriptorSets);
+    std::vector<VkDescriptorSet> m_vDescriptorSets[2];
+	void DestroyDescriptorSetLater(VkDescriptorSet vDescriptorSet);
 
     MVulkanDevice* m_pDevice;
 
