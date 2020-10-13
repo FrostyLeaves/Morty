@@ -16,6 +16,7 @@
 
 class MVertexBuffer;
 class MIMesh;
+class MShaderParamSet;
 class MTextureBuffer;
 class MRenderTextureBuffer;
 class MDepthTextureBuffer;
@@ -59,6 +60,9 @@ public:
 
 	virtual bool CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const uint32_t& eShaderType, const MShaderMacro& macro) = 0;
 	virtual void CleanShader(MShaderBuffer** ppShader) = 0;
+
+	virtual bool GenerateShaderParamSet(MShaderParamSet* pParamSet) = 0;
+	virtual void DestroyShaderParamSet(MShaderParamSet* pParamSet) = 0;
 
 	virtual bool GenerateRenderTarget(MRenderPass* pRenderPass, MIRenderTarget* pRenderTarget) = 0;
 	virtual void DestroyRenderTarget(MIRenderTarget* pRenderTarget) = 0;

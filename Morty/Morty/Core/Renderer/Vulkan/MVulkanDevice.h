@@ -58,6 +58,9 @@ public:
 	virtual bool CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const uint32_t& eShaderType, const MShaderMacro& macro) override;
 	virtual void CleanShader(MShaderBuffer** ppShaderBuffer) override;
 
+	virtual bool GenerateShaderParamSet(MShaderParamSet* pParamSet) override;
+	virtual void DestroyShaderParamSet(MShaderParamSet* pParamSet) override;
+
 	virtual bool GenerateRenderTarget(MRenderPass* pRenderPass, MIRenderTarget* pRenderTarget) override;
 	virtual void DestroyRenderTarget(MIRenderTarget* pRenderTarget) override;
 
@@ -82,6 +85,8 @@ public:
 	VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
 	void CreateImage(const uint32_t& unWidth, const uint32_t& unHeight, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+
+	VkDescriptorSet CreateMaterialDescriptorSet(VkDescriptorSetLayout& vkDescriptorSetLayout);
 
 	VkCommandBuffer BeginCommands();
 	void EndCommands(VkCommandBuffer commandBuffer);

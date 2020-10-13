@@ -106,7 +106,7 @@ void MVulkanRenderer::RenderBegin(MIRenderTarget* pRenderTarget)
 
 	m_vRenderStages.push_back(MRenderStage());
 
-	MLogManager::GetInstance()->Information("begin render frame: %d", m_unFrameIndex);
+//	MLogManager::GetInstance()->Information("begin render frame: %d", m_unFrameIndex);
 
 
 	//�ͷ���һ��CommandBuffer
@@ -227,6 +227,11 @@ void MVulkanRenderer::EndRenderPass()
 
 	//End Render Pass
 	vkCmdEndRenderPass(m_vRenderStages.back().vkCommandBuffer);
+
+
+
+
+//	vkCmdPipelineBarrier(m_vRenderStages.back().vkCommandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,)
 }
 
 void MVulkanRenderer::RenderEnd(MIRenderTarget* pRenderTarget)
@@ -492,7 +497,7 @@ void MVulkanRenderer::UpdateShaderParam(MShaderConstantParam& param, const uint3
 	{
 		memcpy(param.m_pMemoryMapping[unFrameIdx] + param.m_unMemoryOffset[unFrameIdx], param.var.GetData(), param.var.GetSize());
 
-		//TODO ��׿���������� 
+		//TODO android 或其它平台可能需要手动刷新一下缓存
 // 		VkMappedMemoryRange memoryRange = {};
 // 		memoryRange.sType = VkStructureType::VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
 // 		memoryRange.memory = param.m_VkBufferMemory[m_unFrameIndex];
@@ -519,22 +524,13 @@ void MVulkanRenderer::SetShaderParamSet(MShaderParamSet* pParamSet)
 
 		pParamSet->m_nDescriptorSetInitMaterialIdx = rs.pUsingMaterial->GetMaterialID();
 
-		for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-			pParamSet->m_VkDescriptorSet[i] = m_pDevice->m_PipelineManager.CreateMaterialDescriptorSet(rs.pUsingPipelineLayoutData->vSetLayouts[pParamSet->m_unKey]);
+		pParamSet->GenerateBuffer(m_pDevice);
 	}
 
 	std::vector<uint32_t> vDynamicOffsets;
 
 	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
 	{
-		if (pParam->m_VkBuffer[m_unFrameIndex] == VK_NULL_HANDLE)
-		{
-			m_pDevice->GenerateShaderParamBuffer(pParam);
-			
-			for(uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-				m_pDevice->m_PipelineManager.BindConstantParam(pParamSet, pParam, i);
-		}
-
 		UpdateShaderParam(*pParam, m_unFrameIndex);
 
 		if (pParam->m_VkDescriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)

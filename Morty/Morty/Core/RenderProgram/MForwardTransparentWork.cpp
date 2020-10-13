@@ -77,7 +77,7 @@ void MForwardTransparentWork::DrawTransparentMesh(MForwardRenderProgram::MRender
 	UpdateTextureParams(info);
 
  	RenderToTarget(info, &m_TransWithClearRenderPass, m_pTransparentRenderTarget0, 0);
-// 	for (uint32_t i = 0; i < 3; ++i)
+// 	for (uint32_t i = 0; i < 1; ++i)
 // 	{
 // 		RenderToTarget(info, &m_TransRenderPass, m_pTransparentRenderTarget1, 1);
 // 		RenderToTarget(info, &m_TransRenderPass, m_pTransparentRenderTarget2, 2);
@@ -99,7 +99,7 @@ void MForwardTransparentWork::DrawTransparentMesh(MForwardRenderProgram::MRender
 	info.pRenderer->EndRenderPass();
 }
 
-void MForwardTransparentWork::RenderToTarget(MForwardRenderProgram::MRenderInfo& info, MRenderPass* pRenderPass, MTextureRenderTarget* pRenderTarget, const uint32_t& unFrameParamIdx)
+void MForwardTransparentWork::RenderToTarget(MForwardRenderProgram::MRenderInfo& info, MRenderPass* pRenderPass, MTextureRenderTarget* pRenderTarget, const uint32_t& unTargetIdx)
 {
 	if (nullptr == info.pViewport)
 		return;
@@ -118,7 +118,7 @@ void MForwardTransparentWork::RenderToTarget(MForwardRenderProgram::MRenderInfo&
 		if (!info.pRenderer->SetUseMaterial(pMaterial))
 			continue;
 
-		info.pRenderer->SetShaderParamSet(&m_FrameParamSet[unFrameParamIdx]);
+		info.pRenderer->SetShaderParamSet(&m_FrameParamSet[unTargetIdx]);
 		info.pRenderer->SetShaderParamSet(pMaterial->GetMaterialParamSet());
 		for (MIMeshInstance* pMeshIns : group.m_vMeshInstances)
 		{

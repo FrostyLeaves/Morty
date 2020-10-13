@@ -25,9 +25,14 @@ MVulkanPipelineManager::~MVulkanPipelineManager()
 
 void MVulkanPipelineManager::Release()
 {
-	for (MMaterialPipelineLayoutData& data : m_vPipelineLayouts)
-		DestroyMaterialPipelineLayout(data);
-	
+	for (MMaterialPipelineLayoutData* pLayoutData : m_vPipelineLayouts)
+	{
+		if (pLayoutData)
+		{
+			DestroyMaterialPipelineLayout(pLayoutData);
+			delete pLayoutData;
+		}
+	}
 	m_vPipelineLayouts.clear();
 
 
@@ -86,12 +91,12 @@ MMaterialPipelineLayoutData* MVulkanPipelineManager::FindOrCreatePipelineLayout(
 	if (m_vPipelineLayouts.size() < id + 1)
 		m_vPipelineLayouts.resize(id + 1);
 
-	if (VK_NULL_HANDLE != m_vPipelineLayouts[id].pipelineLayout)
-		return &m_vPipelineLayouts[id];
+	if (nullptr != m_vPipelineLayouts[id])
+		return m_vPipelineLayouts[id];
 
-	CreateMaterialPipelineLayout(pMaterial, m_vPipelineLayouts[id]);
+	m_vPipelineLayouts[id] = CreateMaterialPipelineLayout(pMaterial);
 
-	return &m_vPipelineLayouts[id];
+	return m_vPipelineLayouts[id];
 }
 
 MMaterialPipelineLayoutData* MVulkanPipelineManager::FindPipelineLayout(const uint32_t& nMaterialIdx)
@@ -102,23 +107,29 @@ MMaterialPipelineLayoutData* MVulkanPipelineManager::FindPipelineLayout(const ui
 	if (m_vPipelineLayouts.size() < nMaterialIdx + 1)
 		return nullptr;
 
-	return &m_vPipelineLayouts[nMaterialIdx];
+	return m_vPipelineLayouts[nMaterialIdx];
 }
 
 void MVulkanPipelineManager::RegisterMaterial(MMaterial* pMaterial)
 {
-	pMaterial->SetMaterialID(m_MaterialIDPool.GetNewID());
+	uint32_t id = m_MaterialIDPool.GetNewID();
+	pMaterial->SetMaterialID(id);
+
+	m_tMaterialMap[id] = pMaterial;
 }
 
 void MVulkanPipelineManager::UnRegisterMaterial(MMaterial* pMaterial)
 {
 	uint32_t id = pMaterial->GetMaterialID();
+	m_tMaterialMap.erase(id);
 
 	if (id < m_vPipelineLayouts.size())
 	{
-		if (m_vPipelineLayouts[id].pipelineLayout)
+		if (m_vPipelineLayouts[id])
 		{
 			DestroyMaterialPipelineLayout(m_vPipelineLayouts[id]);
+			delete m_vPipelineLayouts[id];
+			m_vPipelineLayouts[id] = nullptr;
 		}
 	}
 
@@ -131,7 +142,7 @@ void MVulkanPipelineManager::UnRegisterMaterial(MMaterial* pMaterial)
 		}
 	}
 
-//	m_MaterialIDPool.RecoveryID(id);
+	m_MaterialIDPool.RecoveryID(id);
 }
 
 void MVulkanPipelineManager::RegisterRenderPass(MRenderPass* pRenderPass)
@@ -211,7 +222,7 @@ void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShade
 	}
 }
 
-bool MVulkanPipelineManager::CreateMaterialPipelineLayout(MMaterial* pMaterial, MMaterialPipelineLayoutData& data)
+MMaterialPipelineLayoutData* MVulkanPipelineManager::CreateMaterialPipelineLayout(MMaterial* pMaterial)
 {
 	std::vector<VkDescriptorSetLayoutBinding> vParamBinding[M_VALID_SHADER_SET_NUM];
 	
@@ -275,7 +286,7 @@ bool MVulkanPipelineManager::CreateMaterialPipelineLayout(MMaterial* pMaterial, 
 		}
 	}
 
-	std::vector<VkDescriptorSetLayout>& vSetLayouts = data.vSetLayouts;
+	std::vector<VkDescriptorSetLayout> vSetLayouts;
 	std::unordered_map<uint32_t, uint32_t> vParamLayoutsSet;
 
 	for (uint32_t i = 0; i < M_VALID_SHADER_SET_NUM; ++i)
@@ -297,47 +308,39 @@ bool MVulkanPipelineManager::CreateMaterialPipelineLayout(MMaterial* pMaterial, 
 	pipelineLayoutInfo.setLayoutCount = vSetLayouts.size();
 	pipelineLayoutInfo.pSetLayouts = vSetLayouts.data();
 
-	VkPipelineLayout& pipelineLayout = data.pipelineLayout;
+	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 	if (vkCreatePipelineLayout(m_pDevice->m_VkDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
 		return VK_NULL_HANDLE;
 
 
-	return pipelineLayout;
+	MMaterialPipelineLayoutData* pResult = new MMaterialPipelineLayoutData();
+
+	pResult->pipelineLayout = pipelineLayout;
+	pResult->pMaterial = pMaterial;
+	pResult->vSetLayouts = vSetLayouts;
+
+	return pResult;
 }
 
-void MVulkanPipelineManager::DestroyMaterialPipelineLayout(MMaterialPipelineLayoutData& data)
+void MVulkanPipelineManager::DestroyMaterialPipelineLayout(MMaterialPipelineLayoutData* pLayoutData)
 {
-	if (data.pipelineLayout)
+	if (!pLayoutData)
+		return;
+
+	if (pLayoutData->pipelineLayout)
 	{
 		VkDevice& device = m_pDevice->m_VkDevice;
 
-		m_pDevice->m_ObjectDestructor.DestroyPipelineLayoutLater(data.pipelineLayout);
+		m_pDevice->m_ObjectDestructor.DestroyPipelineLayoutLater(pLayoutData->pipelineLayout);
 
-		for (VkDescriptorSetLayout& layout : data.vSetLayouts)
+		for (VkDescriptorSetLayout& layout : pLayoutData->vSetLayouts)
 			m_pDevice->m_ObjectDestructor.DestroyDescriptorSetLayoutLater(layout);
 
-		data.pipelineLayout = VK_NULL_HANDLE;
-		data.vSetLayouts.clear();
-	}
-}
-
-VkDescriptorSet MVulkanPipelineManager::CreateMaterialDescriptorSet(VkDescriptorSetLayout& vkDescriptorSetLayout)
-{
-	VkDescriptorSet descriptorSet;
-
-	VkDescriptorSetAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = m_pDevice->m_ObjectDestructor.m_VkDescriptorPool;
-	allocInfo.descriptorSetCount = 1;
-	allocInfo.pSetLayouts = &vkDescriptorSetLayout;
-
-	if (vkAllocateDescriptorSets(m_pDevice->m_VkDevice, &allocInfo, &descriptorSet) != VK_SUCCESS)
-	{
-		MLogManager::GetInstance()->Error("MVulkanPipelineManager::CreateMaterialDescriptorSet error: descriptor pool == 0");
-		return VK_NULL_HANDLE;
+		pLayoutData->pipelineLayout = VK_NULL_HANDLE;
 	}
 
-	return descriptorSet;
+	pLayoutData->vSetLayouts.clear();
+	pLayoutData->pMaterial = nullptr;
 }
 
 #endif

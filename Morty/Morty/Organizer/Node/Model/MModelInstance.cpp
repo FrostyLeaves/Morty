@@ -129,7 +129,7 @@ void MModelInstance::SetRemoveAnimation()
 
 void MModelInstance::Tick(const float& fDelta)
 {
-	M3DNode::Tick(fDelta);
+	Super::Tick(fDelta);
 
 	if (m_pCurrentAnimationController && m_pCurrentAnimationController->GetState() == MIAnimController::EPlay)
 	{

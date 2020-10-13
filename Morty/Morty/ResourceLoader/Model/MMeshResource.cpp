@@ -115,8 +115,11 @@ bool MMeshResource::Load(const MString& strResourcePath)
 
 	if (MString* pSkeleton = pHeader->FindMember<MString>("ske"))
 	{
-		MResource* pResource = GetEngine()->GetResourceManager()->LoadResource(*pSkeleton);
-		m_SkeletonKeeper.SetResource(pResource);
+		if (!pSkeleton->empty())
+		{
+			MResource* pResource = GetEngine()->GetResourceManager()->LoadResource(*pSkeleton);
+			m_SkeletonKeeper.SetResource(pResource);
+		}
 	}
 
 	if (MString* pMaterial = pHeader->FindMember<MString>("mat"))

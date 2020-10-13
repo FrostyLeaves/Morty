@@ -419,30 +419,27 @@ void MSkeletalAnimController::Update(const float& fDelta, const bool& bAnimStep)
 {
 	if (!m_bInitialized) return;
 
-	//if (MEAnimControllerState::EPlay == m_eState)
+	m_fTicks += m_pAnimation->GetTicksPerSecond() * fDelta;
+	if (m_fTicks >= m_pAnimation->GetTicksDuration())
 	{
-		m_fTicks += m_pAnimation->GetTicksPerSecond() * fDelta;
-		if (m_fTicks >= m_pAnimation->GetTicksDuration())
+		if (m_bLoop)
 		{
-			if (m_bLoop)
-			{
-				m_fTicks = fmodf(m_fTicks, m_pAnimation->GetTicksDuration());
-				if (bAnimStep)
-					m_pAnimation->Update(fmodf(m_fTicks, m_pAnimation->GetTicksDuration()), m_pSkeletonIns, m_SkeletonAnimMap);
-			}
-			else
-			{
-				m_fTicks = m_pAnimation->GetTicksDuration();
-				if (bAnimStep)
-					m_pAnimation->Update(fmodf(m_fTicks, m_pAnimation->GetTicksDuration()), m_pSkeletonIns, m_SkeletonAnimMap);
-				this->Stop();
-			}
+			m_fTicks = fmodf(m_fTicks, m_pAnimation->GetTicksDuration());
+			if (bAnimStep)
+				m_pAnimation->Update(fmodf(m_fTicks, m_pAnimation->GetTicksDuration()), m_pSkeletonIns, m_SkeletonAnimMap);
 		}
 		else
 		{
+			m_fTicks = m_pAnimation->GetTicksDuration();
 			if (bAnimStep)
-				m_pAnimation->Update(m_fTicks, m_pSkeletonIns, m_SkeletonAnimMap);
+				m_pAnimation->Update(fmodf(m_fTicks, m_pAnimation->GetTicksDuration()), m_pSkeletonIns, m_SkeletonAnimMap);
+			this->Stop();
 		}
+	}
+	else
+	{
+		if (bAnimStep)
+			m_pAnimation->Update(m_fTicks, m_pSkeletonIns, m_SkeletonAnimMap);
 	}
 }
 

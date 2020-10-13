@@ -30,7 +30,18 @@ MShaderParamSet::MShaderParamSet(const uint32_t& unKey)
 
 MShaderParamSet::~MShaderParamSet()
 {
+	for (MShaderConstantParam* pParam : m_vParams)
+		delete pParam;
 
+	for (MShaderTextureParam* pParam : m_vTextures)
+		delete pParam;
+
+	for (MShaderSampleParam* pParam : m_vSamples)
+		delete pParam;
+
+	m_vParams.clear();
+	m_vTextures.clear();
+	m_vSamples.clear();
 }
 
 MShaderConstantParam* MShaderParamSet::FindConstantParam(const MString& strParamName)
@@ -44,40 +55,15 @@ MShaderConstantParam* MShaderParamSet::FindConstantParam(const MString& strParam
 	return nullptr;
 }
 
-void MShaderParamSet::ClearAndDestroy(MIDevice* pDevice)
+void MShaderParamSet::GenerateBuffer(MIDevice* pDevice)
 {
-	for (MShaderConstantParam* pParam : m_vParams)
-	{
-		pDevice->DestroyShaderParamBuffer(pParam);
-		delete pParam;
-	}
+	pDevice->GenerateShaderParamSet(this);
+}
 
-	for (MShaderTextureParam* pParam : m_vTextures)
-	{
-		delete pParam;
-	}
-
-	for (MShaderSampleParam* pParam : m_vSamples)
-	{
-		delete pParam;
-	}
-
-	m_vParams.clear();
-	m_vTextures.clear();
-	m_vSamples.clear();
-
-#if RENDER_GRAPHICS == MORTY_VULKAN
-	MVulkanDevice* pVkDevice = dynamic_cast<MVulkanDevice*>(pDevice);
-
-	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-	{
-// 		if (m_VkDescriptorSet[i])
-// 			pVkDevice->m_ObjectDestructor.DestroyDescriptorSetLater(m_VkDescriptorSet[i]);
-	}
-
-	memset(m_VkDescriptorSet, VK_NULL_HANDLE, sizeof(VkDescriptorSet) * M_BUFFER_NUM);
+void MShaderParamSet::DestroyBuffer(MIDevice* pDevice)
+{
+	pDevice->DestroyShaderParamSet(this);
 	m_nDescriptorSetInitMaterialIdx = M_INVALID_INDEX;
-#endif
 }
 
 MShaderParamSet* MShaderParamSet::Clone()

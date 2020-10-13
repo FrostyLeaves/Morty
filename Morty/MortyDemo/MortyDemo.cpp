@@ -6,7 +6,7 @@
 #endif
 #include "MObject.h"
 
-#define MORTY_EDITOR_ENABLE
+//#define MORTY_EDITOR_ENABLE
 
 #include "stdafx.h"
 #include "MEngine.h"
@@ -62,10 +62,9 @@
 
 #include "MWindowsRenderView.h"
 
+#include "MIRenderTarget.h"
 #include "MBasicRenderProgram.h"
 #include "MForwardRenderProgram.h"
-
-//#define MORTY_EDITOR_ENABLE
 
 #ifdef MORTY_EDITOR_ENABLE
 #include "MainEditor.h"
@@ -155,12 +154,12 @@ int main(int argc, char* argv[])
 	engine.Initialize("./");
 
 
-// 	{
-// 		{
-// 			MModelConverter conver(&engine);
-// 			conver.Convert("./Model/teaport.fbx", "./Model", "teaport");
-// 		}
-// 	}
+	{
+		{
+			MModelConverter conver(&engine);
+			conver.Convert("./Model/pigeon/source/Pigeon_Animations.fbx", "./Model/output", "pigeon");
+		}
+	}
 
  	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
  	pRootNode->SetName("RootNode");
@@ -173,7 +172,7 @@ int main(int argc, char* argv[])
 	//pCamera->SetCameraType(MCamera::MECameraType::EOrthographic);
 	pRootNode->AddNode(pCamera);
 
-	MModelResource* pJeepResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/teaport/teaport.model"));
+	MModelResource* pJeepResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/output/pigeon/pigeon.model"));
 	MModelInstance* pJeepModel = engine.GetObjectManager()->CreateObject<MModelInstance>();
 	pJeepModel->SetPosition(Vector3(0, 0, 10));
 	pJeepModel->SetScale(Vector3(1, 1, 1));
@@ -182,7 +181,7 @@ int main(int argc, char* argv[])
 	pJeepModel->SetName("Jeep");
 	pRootNode->AddNode(pJeepModel);
 	pJeepModel->SetRotation(Quaternion(Vector3(1, 0, 0), 0));
-	pJeepModel->GetFixedChildren()[0]->DynamicCast<M3DNode>()->SetRotation(Quaternion(Vector3(1, 0, 0), 0));
+	//pJeepModel->GetFixedChildren()[0]->DynamicCast<M3DNode>()->SetRotation(Quaternion(Vector3(1, 0, 0), 0));
 
 	auto rot = pJeepModel->GetRotation();
 	rot.RotateY(-90);
@@ -272,19 +271,20 @@ int main(int argc, char* argv[])
 	pEditorView->SetEditorNode(pRootNode);
 
 #else
-	engine.RegisterRenderProgram<MForwardRenderProgram>();
 	MScene* pScene = engine.GetObjectManager()->CreateObject<MScene>();
 	pScene->SetRootNode(pRootNode);
 	MWindowsRenderView* pView = new MWindowsRenderView();
 	pView->Initialize(&engine, "Morty");
 	pView->SetBackColor(MColor(0.25f, 0.25f, 0.25f, 1.0f));
+	pView->GetRenderTarget()->RegisterRenderProgram<MForwardRenderProgram>();
+
 	MViewport* pViewport = engine.GetObjectManager()->CreateObject<MViewport>();
-	//pViewport->RegisterRenderProgram<MBasicRenderProgram>();
 	pView->AppendViewport(pViewport);
 	pViewport->SetSize(Vector2(pView->GetViewWidth(), pView->GetViewHeight()));
 	pViewport->SetScene(pScene);
 	engine.AddView(pView);
 	engine.SetScene(pScene);
+
 #endif
 
 

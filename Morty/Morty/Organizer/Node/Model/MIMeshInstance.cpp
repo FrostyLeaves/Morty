@@ -28,7 +28,7 @@ void MIMeshInstance::BindShaderParam(MMaterial* pMaterial)
 {
 	if (m_pShaderParamSet)
 	{
-		m_pShaderParamSet->ClearAndDestroy(GetEngine()->GetDevice());
+		m_pShaderParamSet->DestroyBuffer(GetEngine()->GetDevice());
 		delete m_pShaderParamSet;
 		m_pShaderParamSet = nullptr;
 		m_pTransformParam = nullptr;

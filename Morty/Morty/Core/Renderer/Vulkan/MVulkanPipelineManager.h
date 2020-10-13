@@ -15,7 +15,9 @@
 #include "MIDPool.h"
 #include "MRenderPass.h"
 
+class MMaterial;
 class MVulkanDevice;
+class MIRenderTarget;
 class MShaderParamSet;
 class MShaderTextureParam;
 class MShaderConstantParam;
@@ -28,12 +30,11 @@ struct MMaterialPipelineLayoutData
 {
     MMaterialPipelineLayoutData();
 
+    MMaterial* pMaterial;
     VkPipelineLayout pipelineLayout;
     std::vector<VkDescriptorSetLayout> vSetLayouts;
 };
 
-class MMaterial;
-class MIRenderTarget;
 class MORTY_CLASS MVulkanPipelineManager
 {
 public:
@@ -64,11 +65,8 @@ public:
 
     void BindTextureParam(MShaderParamSet* pParamSet, MShaderTextureParam* pParam, const uint32_t& unIndex);
 
-    bool CreateMaterialPipelineLayout(MMaterial* pMaterial, MMaterialPipelineLayoutData& data);
-    void DestroyMaterialPipelineLayout(MMaterialPipelineLayoutData& data);
-
-    VkDescriptorSet CreateMaterialDescriptorSet(VkDescriptorSetLayout& vkDescriptorSetLayout);
-
+    MMaterialPipelineLayoutData* CreateMaterialPipelineLayout(MMaterial* pMaterial);
+    void DestroyMaterialPipelineLayout(MMaterialPipelineLayoutData* pLayoutData);
 
 private:
 
@@ -77,7 +75,9 @@ private:
 
     std::vector<MPipelineRenderPassGroup> m_vRenderPassGroup;
 
-    std::vector<MMaterialPipelineLayoutData> m_vPipelineLayouts;
+    std::vector<MMaterialPipelineLayoutData*> m_vPipelineLayouts;
+
+	std::map<uint32_t, MMaterial*> m_tMaterialMap;
 
     MVulkanDevice* m_pDevice;
 

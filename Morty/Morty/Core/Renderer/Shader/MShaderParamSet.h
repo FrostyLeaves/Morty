@@ -40,7 +40,8 @@ public:
 	void AppendSampleParam(MShaderSampleParam* pParam, const uint32_t& eShaderType) { return AppendShaderParam(m_vSamples, pParam, eShaderType); }
 	std::vector<MShaderSampleParam*> RemoveSampleParam(const uint32_t& eShaderType) { return RemoveShaderParam<MShaderSampleParam>(m_vSamples, eShaderType); }
 
-	void ClearAndDestroy(MIDevice* pDevice);
+	void GenerateBuffer(MIDevice* pDevice);
+	void DestroyBuffer(MIDevice* pDevice);
 
 	MShaderParamSet* Clone();
 

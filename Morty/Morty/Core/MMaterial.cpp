@@ -148,7 +148,6 @@ void MMaterial::CopyFrom(const MResource* pResource)
 	
 	for (uint32_t i = 0; i < M_VALID_SHADER_SET_NUM; ++i)
 	{
-		m_vShaderSets[i].ClearAndDestroy(GetEngine()->GetDevice());
 		CopyShaderParamSet(m_vShaderSets[i], pMaterial->m_vShaderSets[i]);
 	}
 }
@@ -283,13 +282,12 @@ bool MMaterial::Load(const MString& strResourcePath)
 
 void MMaterial::CopyShaderParamSet(MShaderParamSet& target, const MShaderParamSet& source)
 {
-	target.ClearAndDestroy(GetEngine()->GetDevice());
+	target.DestroyBuffer(GetEngine()->GetDevice());
 
 	target.m_vParams.resize(source.m_vParams.size());
 	for (uint32_t i = 0; i < source.m_vParams.size(); ++i)
 	{
 		target.m_vParams[i] = new MShaderConstantParam(*source.m_vParams[i], 0);
-	//	GetEngine()->GetDevice()->GenerateShaderParamBuffer(target.m_vParams[i]);
 	}
 
 	target.m_vTextures.resize(source.m_vTextures.size());
@@ -476,7 +474,6 @@ void MMaterial::BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderParamType
 			{
 				MShaderConstantParam* pParam = new MShaderConstantParam(*pBufferParam, 0);
 				pParam->eShaderType = eType;
-		//		GetEngine()->GetDevice()->GenerateShaderParamBuffer(pParam);
 				selfSet.AppendConstantParam(pParam, eType);
 			}
 		}
@@ -539,7 +536,8 @@ void MMaterial::ClearParams()
 {
 	for (uint32_t i = 0; i < M_VALID_SHADER_SET_NUM; ++i)
 	{
-		m_vShaderSets[i].ClearAndDestroy(GetEngine()->GetDevice());
+		m_vShaderSets[i].DestroyBuffer(GetEngine()->GetDevice());
+		m_vShaderSets[i] = MShaderParamSet(i);
 	}
 }
 

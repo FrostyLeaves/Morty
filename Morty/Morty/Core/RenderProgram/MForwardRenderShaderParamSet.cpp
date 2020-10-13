@@ -127,5 +127,5 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 
 void MForwardRenderShaderParamSet::ReleaseShaderParamSet(MEngine* pEngine)
 {
-	ClearAndDestroy(pEngine->GetDevice());
+	DestroyBuffer(pEngine->GetDevice());
 }

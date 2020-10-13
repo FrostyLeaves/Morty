@@ -43,8 +43,11 @@ void MVulkanObjectDestructor::FrameFinished(const uint32_t& unFrameIndex)
 	M_VULKAN_DESTROY_CLEAR(Event, vkDestroyEvent);
 	M_VULKAN_DESTROY_CLEAR(Sampler, vkDestroySampler);
 
-// 	vkFreeDescriptorSets(device, m_VkDescriptorPool, m_vDescriptorSets[m_unSafeIdx].size(), m_vDescriptorSets[m_unSafeIdx].data());
-// 	m_vDescriptorSets[m_unSafeIdx].clear();
+	if (!m_vDescriptorSets[m_unSafeIdx].empty())
+	{
+		vkFreeDescriptorSets(device, m_VkDescriptorPool, m_vDescriptorSets[m_unSafeIdx].size(), m_vDescriptorSets[m_unSafeIdx].data());
+		m_vDescriptorSets[m_unSafeIdx].clear();
+	}
 
 	for (VkCommandBuffer commandBuffer : m_vCommandBuffer[m_unSafeIdx])
 		vkFreeCommandBuffers(device, m_pDevice->m_VkCommandPool, 1, &commandBuffer);

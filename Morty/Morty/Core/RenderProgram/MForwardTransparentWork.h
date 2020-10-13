@@ -32,7 +32,7 @@ public:
 
     void DrawTransparentMesh(MForwardRenderProgram::MRenderInfo& info);
 
-	void RenderToTarget(MForwardRenderProgram::MRenderInfo& info, MRenderPass* pRenderPass, MTextureRenderTarget* pRenderTarget, const uint32_t& unFrameParamIdx);
+	void RenderToTarget(MForwardRenderProgram::MRenderInfo& info, MRenderPass* pRenderPass, MTextureRenderTarget* pRenderTarget, const uint32_t& unTargetIdx);
 
 
 protected:

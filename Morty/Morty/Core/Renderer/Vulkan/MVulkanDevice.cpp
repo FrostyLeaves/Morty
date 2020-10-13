@@ -468,6 +468,25 @@ void MVulkanDevice::CreateImage(const uint32_t& unWidth, const uint32_t& unHeigh
 	vkBindImageMemory(m_VkDevice, image, imageMemory, 0);
 }
 
+VkDescriptorSet MVulkanDevice::CreateMaterialDescriptorSet(VkDescriptorSetLayout& vkDescriptorSetLayout)
+{
+	VkDescriptorSet descriptorSet;
+
+	VkDescriptorSetAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = m_ObjectDestructor.m_VkDescriptorPool;
+	allocInfo.descriptorSetCount = 1;
+	allocInfo.pSetLayouts = &vkDescriptorSetLayout;
+
+	if (vkAllocateDescriptorSets(m_VkDevice, &allocInfo, &descriptorSet) != VK_SUCCESS)
+	{
+		MLogManager::GetInstance()->Error("MVulkanPipelineManager::CreateMaterialDescriptorSet error: descriptor pool == 0");
+		return VK_NULL_HANDLE;
+	}
+
+	return descriptorSet;
+}
+
 VkCommandBuffer MVulkanDevice::BeginCommands()
 {
 	VkCommandBufferAllocateInfo allocInfo{};
@@ -945,6 +964,56 @@ void MVulkanDevice::CleanShader(MShaderBuffer** ppShaderBuffer)
 	*ppShaderBuffer = nullptr;
 }
 
+bool MVulkanDevice::GenerateShaderParamSet(MShaderParamSet* pParamSet)
+{
+	if (!pParamSet)
+		return false;
+
+	MMaterialPipelineLayoutData* pLayoutData = m_PipelineManager.FindPipelineLayout(pParamSet->m_nDescriptorSetInitMaterialIdx);
+	if (!pLayoutData)
+		return false;
+
+	if (pParamSet->m_unKey >= pLayoutData->vSetLayouts.size())
+		return false;
+
+	DestroyShaderParamSet(pParamSet);
+
+	VkDescriptorSetLayout vkSetLayout = pLayoutData->vSetLayouts[pParamSet->m_unKey];
+
+	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+	{
+		pParamSet->m_VkDescriptorSet[i] = CreateMaterialDescriptorSet(vkSetLayout);
+	}
+
+	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
+	{
+		GenerateShaderParamBuffer(pParam);
+
+		for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+		{
+			m_PipelineManager.BindConstantParam(pParamSet, pParam, i);
+		}
+	}
+
+	return true;
+}
+
+void MVulkanDevice::DestroyShaderParamSet(MShaderParamSet* pParamSet)
+{
+	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+	{
+		if (pParamSet->m_VkDescriptorSet[i])
+			m_ObjectDestructor.DestroyDescriptorSetLater(pParamSet->m_VkDescriptorSet[i]);
+	}
+
+	memset(pParamSet->m_VkDescriptorSet, VK_NULL_HANDLE, sizeof(VkDescriptorSet)* M_BUFFER_NUM);
+
+	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
+	{
+		DestroyShaderParamBuffer(pParam);
+	}
+}
+
 bool MVulkanDevice::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const METextureLayout& eType, const uint32_t& unWidth, const unsigned& unHeight)
 {
 	if (*ppTextureBuffer)
@@ -1182,7 +1251,6 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass, MIRenderTarget*
 			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 		else
 			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
 	}
 
 	if (pRenderTarget->GetDepthEnable())

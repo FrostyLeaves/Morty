@@ -252,7 +252,7 @@ void MForwardShadowMapWork::InitializeShaderParamSet()
 
 void MForwardShadowMapWork::ReleaseShaderParamSet()
 {
-	m_FrameParamSet.ClearAndDestroy(GetEngine()->GetDevice());
+	m_FrameParamSet.DestroyBuffer(GetEngine()->GetDevice());
 }
 
 void MForwardShadowMapWork::InitializeMaterial()
