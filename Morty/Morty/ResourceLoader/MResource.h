@@ -53,6 +53,8 @@ public:
 	static MString GetFolder(const MString& strPath);
 	static MString GetFileName(const MString& strPath);
 
+	MEngine* GetEngine() const { return m_pEngine; }
+
 	MResourceID GetResourceID() const { return m_unResourceID; }
 	uint32_t GetType() const { return m_unResourceType; }
 

@@ -13,10 +13,6 @@
 #include "MString.h"
 
 
-//Bones number per Vertex.
-#define MBONES_PER_VERTEX (4)
-#define MBONES_MAX_NUMBER (128)
-
 //顶点
 struct MVertex
 {

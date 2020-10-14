@@ -237,6 +237,21 @@ void MVulkanShaderCompiler::GetVertexInputState(const spirv_cross::Compiler& com
 
 				unOffset += sizeof(float) * type.vecsize;
 			}
+			else if (spirv_cross::SPIRType::BaseType::Int == type.basetype)
+			{
+				if (1 == type.vecsize)
+					attribute.format = VK_FORMAT_R32_SINT;
+				else if (2 == type.vecsize)
+					attribute.format = VK_FORMAT_R32G32_SINT;
+				else if (3 == type.vecsize)
+					attribute.format = VK_FORMAT_R32G32B32_SINT;
+				else if (4 == type.vecsize)
+					attribute.format = VK_FORMAT_R32G32B32A32_SINT;
+				else
+					MLogManager::GetInstance()->Error("Error: vertex input find intN ?");
+
+				unOffset += sizeof(int) * type.vecsize;
+			}
 
 			attributeDescriptions.push_back(attribute);
 

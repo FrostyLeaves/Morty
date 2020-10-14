@@ -9,6 +9,7 @@
 #ifndef _M_MSHADER_MACRO_H_
 #define _M_MSHADER_MACRO_H_
 #include "MGlobal.h"
+#include "MVariant.h"
 
 #include <vector>
 
@@ -23,6 +24,9 @@ public:
 	bool Compare(const MShaderMacro& macro);
 
 
+	void WriteToStruct(MStruct& srt);
+	void ReadFromStruct(MStruct& srt);
+
 protected:
 
     friend class MMaterial;
@@ -31,8 +35,8 @@ protected:
 
 public:
 	std::vector<std::pair<MString, MString>> m_vMacroParams;
-    
 	std::vector<std::pair<MString, MString>> m_vMortyMacroParams;
+
     static std::vector<std::pair<MString, MString>> s_vGlobalMacroParams;
 };
 

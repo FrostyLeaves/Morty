@@ -145,6 +145,7 @@ void MMaterial::CopyFrom(const MResource* pResource)
 	m_eRasterizerType = pMaterial->m_eRasterizerType;
 	m_eMaterialType = pMaterial->m_eMaterialType;
 
+	m_ShaderMacro = pMaterial->m_ShaderMacro;
 	
 	for (uint32_t i = 0; i < M_VALID_SHADER_SET_NUM; ++i)
 	{
@@ -161,6 +162,10 @@ void MMaterial::Encode(MString& strCode)
 	material.AppendMVariant("PS", m_PixelResource.GetResource()->GetResourcePath());
 	material.AppendMVariant("RasterizerType", static_cast<int>(m_eRasterizerType));
 	material.AppendMVariant("MaterialType", static_cast<int>(m_eMaterialType));
+
+	MStruct macro;
+	m_ShaderMacro.WriteToStruct(macro);
+	material.AppendMVariant("macro", macro);
 
 	MStruct vTextures;
 	for (MShaderTextureParam* pParam : m_MaterialSet.m_vTextures)
@@ -183,6 +188,7 @@ void MMaterial::Encode(MString& strCode)
 
 	material.AppendMVariant("params", vParams);
 
+
 	MVariant variant(material);
 
 
@@ -202,6 +208,7 @@ void MMaterial::Decode(MString& strCode)
 	MVariant* pPS = material.FindMember("PS");
 	MVariant* pRasterizerType = material.FindMember("RasterizerType");
 	MVariant* pMaterialType = material.FindMember("MaterialType");
+	MVariant* pMacro = material.FindMember("macro");
 	MVariant* pTextures = material.FindMember("textures");
 	MVariant* pParams = material.FindMember("params");
 
@@ -209,6 +216,7 @@ void MMaterial::Decode(MString& strCode)
 	if (nullptr == pPS) return;
 	if (nullptr == pRasterizerType) return;
 	if (nullptr == pMaterialType) return;
+	if (nullptr == pMacro) return;
 	if (nullptr == pTextures) return;
 	if (nullptr == pParams) return;
 
@@ -218,6 +226,8 @@ void MMaterial::Decode(MString& strCode)
 	if(int* pType = pMaterialType->GetInt())
 		SetMaterialType(MEMaterialType(*pType));
 
+	MStruct& macro = *pMacro->GetStruct();
+	m_ShaderMacro.ReadFromStruct(macro);
 
 	if (MString* pVSResourcePath = pVS->GetString())
 	{
@@ -259,6 +269,7 @@ void MMaterial::Decode(MString& strCode)
 			}
 		}
 	}
+
 }
 
 bool MMaterial::SaveTo(const MString& strResourcePath)

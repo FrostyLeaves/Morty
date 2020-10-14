@@ -89,6 +89,11 @@ extern const bool MCALC_NORMAL_IN_VS;
 extern const uint32_t MMESH_LOD_LEVEL_RANGE;
 
 
+//Bones number per Vertex.
+#define MBONES_PER_VERTEX (4)
+#define MBONES_MAX_NUMBER (128)
+
+
 #define M_BUFFER_NUM 3
 
 #define M_VALID_SHADER_SET_NUM 4

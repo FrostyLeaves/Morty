@@ -4,6 +4,7 @@
 #include <sstream>
 
 #ifdef MORTY_WIN
+#include  <io.h>
 #include <direct.h>
 
 #endif
@@ -44,14 +45,37 @@ MFileHelper::~MFileHelper()
 
 }
 
-bool MFileHelper::MakeDir(const MString& strDirPath)
+bool MFileHelper::MakeDir(MString strDirPath)
 {
+	uint32_t nChIdx = 0;
+	uint32_t nCopyIdx = 0;
+	char svPath[MAX_PATH] = { 0 };
+	
+	for (nChIdx = 0; nChIdx < strDirPath.size(); ++nChIdx)
+	{
+		if (strDirPath[nChIdx] == '\\' || strDirPath[nChIdx] == '/')
+		{
+			strncpy(svPath + nCopyIdx, strDirPath.c_str() + nCopyIdx, nChIdx - nCopyIdx);
+			nCopyIdx = nChIdx;
+
+			if (_access(svPath, 0) == -1)
+			{
+				if (0 != _mkdir(svPath))
+					return false;
+			}
+		}
+	}
+
+	if (nCopyIdx != strDirPath.size())
+	{
+		return 0 == _mkdir(strDirPath.c_str());
+	}
+
+	
 #ifdef MORTY_WIN
-	return 0 == _mkdir(strDirPath.c_str());
-#else
-	return false;
 #endif
 
+	return true;
 }
 
 bool MFileHelper::WriteString(const MString& strFilePath, const MString& strData)

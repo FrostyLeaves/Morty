@@ -310,24 +310,10 @@ void MForwardRenderProgram::DrawNormalMesh(MRenderInfo& info)
 
 void MForwardRenderProgram::DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance)
 {
-// 	if (MSkeletonInstance* pSkeletonIns = pMeshInstance->GetSkeletonInstance())
-// 	{
-// 		MStruct& cAnimationStruct = *pAnimationParam->var.GetStruct();
-// 		MVariantArray& cBonesArray = *cAnimationStruct[0].GetArray();
-// 
-// 		const std::vector<MBone>& bones = pSkeletonIns->GetAllBones();
-// 		uint32_t size = bones.size();
-// 		if (size > MBONES_MAX_NUMBER) size = MBONES_MAX_NUMBER;
-// 
-// 		for (uint32_t i = 0; i < size; ++i)
-// 		{
-// 			cBonesArray[i] = bones[i].m_matWorldTransform;
-// 		}
-// 
-// 		pAnimationParam->SetDirty();
-// 		pRenderer->SetShaderParam(*pAnimationParam);
-// 	}
-
+	if (MSkeletonInstance* pSkeletonIns = pMeshInstance->GetSkeletonInstance())
+	{
+		pRenderer->SetShaderParamSet(pSkeletonIns->GetShaderParamSet());
+	}
 
 	pRenderer->SetShaderParamSet(pMeshInstance->GetShaderMeshParamSet());
 	pRenderer->DrawMesh(pMeshInstance->GetMesh());

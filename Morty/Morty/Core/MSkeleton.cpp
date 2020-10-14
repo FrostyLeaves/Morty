@@ -1,6 +1,7 @@
 #include "MSkeleton.h"
 #include <algorithm>
 
+#include "MEngine.h"
 #include "Json/MJson.h"
 #include "MFileHelper.h"
 
@@ -167,8 +168,11 @@ void MSkeleton::RebuildBonesMap()
 }
 
 MSkeletonInstance::MSkeletonInstance(const MSkeleton* templateSke)
-	: m_pSkeletonTemplate(templateSke)
+	: m_pEngine(templateSke->GetEngine())
+	, m_pSkeletonTemplate(templateSke)
+	, m_bShaderParamSetDirty(true)
 	, m_pShaderParamSet(new MShaderParamSet(SHADER_PARAM_SET_SKELETON))
+	, m_pShaderBonesArray(nullptr)
 {
 	m_vAllBones = m_pSkeletonTemplate->GetAllBones();
 
@@ -176,9 +180,25 @@ MSkeletonInstance::MSkeletonInstance(const MSkeleton* templateSke)
 }
 
 MSkeletonInstance::MSkeletonInstance(const MSkeletonInstance& instance)
-	: m_pSkeletonTemplate(instance.m_pSkeletonTemplate)
+	: m_pEngine(instance.m_pEngine)
+	, m_pSkeletonTemplate(instance.m_pSkeletonTemplate)
+	, m_bShaderParamSetDirty(true)
+	, m_pShaderParamSet(new MShaderParamSet(SHADER_PARAM_SET_SKELETON))
+	, m_pShaderBonesArray(nullptr)
 {
 	m_vAllBones = m_pSkeletonTemplate->GetAllBones();
+}
+
+MSkeletonInstance::~MSkeletonInstance()
+{
+	m_pShaderBonesArray = nullptr;
+
+	if (m_pShaderParamSet)
+	{
+		m_pShaderParamSet->DestroyBuffer(m_pEngine->GetDevice());
+		delete m_pShaderParamSet;
+		m_pShaderParamSet = nullptr;
+	}
 }
 
 MBone* MSkeletonInstance::FindBoneByName(const MString& strName)
@@ -221,6 +241,53 @@ void MSkeletonInstance::ResetOriginPose()
 }
 
 
+MShaderParamSet* MSkeletonInstance::GetShaderParamSet()
+{
+	if (!m_pShaderBonesArray)
+	{
+		MShaderConstantParam* pBonesSet = new MShaderConstantParam();
+		pBonesSet->unSet = 3;
+		pBonesSet->unBinding = 0;
+
+		MVariantArray bonesArr;
+		for (int i = 0; i < 128; ++i)
+			bonesArr.AppendMVariant<Matrix4>();
+
+		MStruct bonesSrt;
+		uint32_t nIdx = bonesSrt.AppendMVariant("U_vBonesMatrix", bonesArr);
+
+		pBonesSet->var = bonesSrt;
+
+		m_pShaderParamSet->m_vParams.push_back(pBonesSet);
+		m_pShaderParamSet->GenerateBuffer(m_pEngine->GetDevice());
+
+		m_pShaderBonesArray = pBonesSet->var.GetStruct()->GetMember(nIdx)->var.GetArray();
+	}
+
+	if (m_bShaderParamSetDirty)
+	{
+		const std::vector<MBone>& bones = GetAllBones();
+		uint32_t size = bones.size();
+		if (size > MBONES_MAX_NUMBER) size = MBONES_MAX_NUMBER;
+
+		for (uint32_t i = 0; i < size; ++i)
+		{
+			(*m_pShaderBonesArray)[i] = bones[i].m_matWorldTransform;
+		}
+
+		m_pShaderParamSet->m_vParams[0]->SetDirty();
+
+		m_bShaderParamSetDirty = false;
+	}
+
+	return m_pShaderParamSet;
+}
+
+void MSkeletonInstance::SetDirty()
+{
+	m_bShaderParamSetDirty = true;
+}
+
 void MSkeleton::WriteToStruct(MStruct& srt)
 {
 	std::vector<MBone>& vBones = m_vAllBones;
@@ -228,7 +295,7 @@ void MSkeleton::WriteToStruct(MStruct& srt)
 	srt.AppendMVariant("Bones", MVariantArray());
 	MVariantArray* pArray = srt.FindMember("Bones")->GetArray();
 
-	for (uint32_t i = 0; i < pArray->GetMemberCount(); ++i)
+	for (uint32_t i = 0; i < vBones.size(); ++i)
 	{
 		MBone bone = vBones[i];
 		pArray->AppendMVariant(MStruct());

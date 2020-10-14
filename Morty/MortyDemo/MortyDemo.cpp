@@ -6,7 +6,7 @@
 #endif
 #include "MObject.h"
 
-//#define MORTY_EDITOR_ENABLE
+#define MORTY_EDITOR_ENABLE
 
 #include "stdafx.h"
 #include "MEngine.h"
@@ -191,7 +191,7 @@ int main(int argc, char* argv[])
 
 	if (auto pMeshIns = pJeepModel->GetFixedChildren()[0]->DynamicCast<MIModelMeshInstance>())
 	{
-		pMeshIns->GetMaterial()->SetMaterialType(MEMaterialType::ETransparent);
+		//pMeshIns->GetMaterial()->SetMaterialType(MEMaterialType::ETransparent);
 	}
 
 

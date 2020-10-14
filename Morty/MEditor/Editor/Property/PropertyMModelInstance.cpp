@@ -32,14 +32,13 @@ void PropertyMModelInstance::EditAnimation(MModelInstance* pNode)
 			if (MIAnimController::EPlay == state)
 				pController->Play();
 		}
-
 	};
 	ShowValueBegin("Animation");
 	EditMResource("skelanim_file_dlg", pCurrentAnimResource, MResourceManager::MEResourceType::SkelAnim, ModelLoadFunc);
 
 	ShowValueEnd();
 
-	if (pController)
+	if (pController = pNode->GetSkeletalAnimationController())
 	{
 		ShowValueBegin("Loop");
 		bool bLoop = pController->GetLoop();

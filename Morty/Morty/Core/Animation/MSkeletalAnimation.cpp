@@ -65,6 +65,7 @@ void MSkeletalAnimation::Update(const float& fTime, MSkeletonInstance* pSkeleton
 		bone.m_matWorldTransform = bone.m_matWorldTransform * bone.m_matOffsetMatrix;
 	}
 
+	pSkeletonIns->SetDirty();
 }
 
 MSkeletalAnimNode::MSkeletalAnimNode()

@@ -108,3 +108,52 @@ bool MShaderMacro::Compare(const MShaderMacro& macro)
 
 	return true;
 }
+
+void MShaderMacro::WriteToStruct(MStruct& srt)
+{
+	if (MVariantArray* pArray = srt.AppendMVariant<MVariantArray>("mat"))
+	{
+		for (auto pairs : m_vMacroParams)
+		{
+			pArray->AppendMVariant(pairs.first);
+			pArray->AppendMVariant(pairs.second);
+		}
+	}
+	
+	if (MVariantArray* pArray = srt.AppendMVariant<MVariantArray>("morty"))
+	{
+		for (auto pairs : m_vMortyMacroParams)
+		{
+			pArray->AppendMVariant(pairs.first);
+			pArray->AppendMVariant(pairs.second);
+		}
+	}
+}
+
+void MShaderMacro::ReadFromStruct(MStruct& srt)
+{
+	m_vMacroParams.clear();
+	m_vMortyMacroParams.clear();
+
+	if (MVariantArray* pArray = srt.FindMember<MVariantArray>("mat"))
+	{
+		for (uint32_t i = 0; i < pArray->GetMemberCount(); i+=2)
+		{
+			MString* key = (*pArray)[i].GetString();
+			MString* value = (*pArray)[i + 1].GetString();
+
+			m_vMacroParams.push_back({ *key, *value });
+		}
+	}
+
+	if (MVariantArray* pArray = srt.FindMember<MVariantArray>("morty"))
+	{
+		for (uint32_t i = 0; i < pArray->GetMemberCount(); i += 2)
+		{
+			MString* key = (*pArray)[i].GetString();
+			MString* value = (*pArray)[i + 1].GetString();
+
+			m_vMortyMacroParams.push_back({ *key, *value });
+		}
+	}
+}

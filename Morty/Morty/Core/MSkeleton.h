@@ -81,6 +81,7 @@ class MORTY_CLASS MSkeletonInstance
 public:
 	MSkeletonInstance(const MSkeleton* templateSke);
 	MSkeletonInstance(const MSkeletonInstance& instance);
+	~MSkeletonInstance();
 
 	const MSkeleton* GetSkeletonTemplate() const { return m_pSkeletonTemplate; }
 
@@ -93,11 +94,19 @@ public:
 
 	void ResetOriginPose();
 
+	MShaderParamSet* GetShaderParamSet();
+
+	void SetDirty();
+
 private:
+	MEngine* m_pEngine;
 	const MSkeleton* m_pSkeletonTemplate;
 	std::vector<MBone> m_vAllBones;
 
+	bool m_bShaderParamSetDirty;
+
 	MShaderParamSet* m_pShaderParamSet;
+	MVariantArray* m_pShaderBonesArray;
 };
 
 #endif

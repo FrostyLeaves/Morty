@@ -64,8 +64,6 @@ public:
 
 public:
 
-	void BindRenderTarget(MIRenderTarget* pRenderTarget);
-
     virtual void Render(MIRenderer* pRenderer, const std::vector<MViewport*>& vViewports) override;
 
 	void RenderWithViewport(MRenderInfo info, MViewport* pViewport);

@@ -382,7 +382,7 @@ uint32_t MContainer::AppendStructMember(MStructMember& mem)
 		m_unByteSize += mem.var.GetSize();
 
 		
-		if (MVariant::EArray == m_ContainerType)
+		if (MVariant::EArray == m_ContainerType && m_unByteSize % s_unPackSize != 0)
 			m_unByteSize += (s_unPackSize - m_unByteSize % s_unPackSize);
 
 		m_vMember.push_back(MStructMember());

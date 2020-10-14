@@ -43,7 +43,7 @@ public:
 
 public:
 
-    static bool MakeDir(const MString& strDirPath);
+    static bool MakeDir(MString strDirPath);
 
 	static bool WriteString(const MString& strFilePath, const MString& strData);
 
