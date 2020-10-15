@@ -30,7 +30,7 @@ std::vector<std::pair<MString, MString>> MShaderMacro::s_vGlobalMacroParams = {
 	{"MTRANSPARENT_POLICY", strTransparentPolicy},
 };
 
-void MShaderMacro::SetMortyMacro(const MString& strKey, const MString& strValue)
+void MShaderMacro::SetInnerMacro(const MString& strKey, const MString& strValue)
 {
 	SetMacro(strKey, strValue, m_vMortyMacroParams);
 }

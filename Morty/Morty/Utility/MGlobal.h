@@ -93,6 +93,8 @@ extern const uint32_t MMESH_LOD_LEVEL_RANGE;
 #define MBONES_PER_VERTEX (4)
 #define MBONES_MAX_NUMBER (128)
 
+//Material Macro
+extern const char* MATERIAL_MACRO_SKELETON_ENABLE;
 
 #define M_BUFFER_NUM 3
 

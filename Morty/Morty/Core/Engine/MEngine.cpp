@@ -175,9 +175,9 @@ bool MEngine::InitializeDefaultResource()
 	pStaticMeshMaterialRes->LoadPixelShader(pMeshPSResource);
 
 	MMaterialResource* pSkinnedMeshMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SKINNED);
+	pSkinnedMeshMaterialRes->GetShaderMacro()->SetInnerMacro(MATERIAL_MACRO_SKELETON_ENABLE, "1");
 	pSkinnedMeshMaterialRes->LoadVertexShader(pMeshVSResource);
 	pSkinnedMeshMaterialRes->LoadPixelShader(pMeshPSResource);
-	pSkinnedMeshMaterialRes->GetShaderMacro()->SetMacro("SKELETON_ENABLE", "1");
 
 	MResource* pDraw2DVSResource = GetResourceManager()->LoadResource("./Shader/draw.mvs");
 	MResource* pDraw2DPSResource = GetResourceManager()->LoadResource("./Shader/draw.mps");
@@ -229,10 +229,10 @@ bool MEngine::InitializeDefaultResource()
 	pShadowMaterialRes->SetRasterizerType(MERasterizerType::ECullFront);
 
 	MMaterialResource* pShadowWithAnimMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_ANIM);
+	pShadowWithAnimMaterialRes->GetShaderMacro()->SetInnerMacro(MATERIAL_MACRO_SKELETON_ENABLE, "1");
 	pShadowWithAnimMaterialRes->LoadVertexShader(pEmptyVSResource);
 	pShadowWithAnimMaterialRes->LoadPixelShader(pEmptyPSResource);
 	pShadowWithAnimMaterialRes->SetRasterizerType(MERasterizerType::ECullFront);
-	pShadowWithAnimMaterialRes->GetShaderMacro()->SetMacro("SKELETON_ENABLE", "1");
 
 
 

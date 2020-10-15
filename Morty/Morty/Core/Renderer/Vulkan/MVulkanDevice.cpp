@@ -29,7 +29,8 @@ const std::vector<const char*> ValidationLayers = {
 	"VK_LAYER_KHRONOS_validation"
 };
 const std::vector<const char*> DeviceExtensions = {
-	VK_KHR_SWAPCHAIN_EXTENSION_NAME
+	VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+	VK_KHR_MAINTENANCE1_EXTENSION_NAME
 };
 
 

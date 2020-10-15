@@ -167,14 +167,14 @@ void MViewport::SetSize(const Vector2& v2Size)
 {
 	m_v2Size = v2Size;
 }
-void MViewport::OnRenderBefore(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget)
+void MViewport::LockMatrix()
 {
 	UpdateMatrix();
 	m_cameraFrustum.UpdateFromCameraInvProj(this->GetCameraInverseProjection());
 	m_bCameraInvProjMatrixLocked = true;
 }
 
-void MViewport::OnRenderAfter(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget)
+void MViewport::UnlockMatrix()
 {
 	m_bCameraInvProjMatrixLocked = false;
 }

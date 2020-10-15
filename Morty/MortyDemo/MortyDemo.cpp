@@ -154,12 +154,12 @@ int main(int argc, char* argv[])
 	engine.Initialize("./");
 
 
-	{
-		{
-			MModelConverter conver(&engine);
-			conver.Convert("./Model/pigeon/source/Pigeon_Animations.fbx", "./Model/output", "pigeon");
-		}
-	}
+// 	{
+// 		{
+// 			MModelConverter conver(&engine);
+// 			conver.Convert("./Model/pigeon/source/Pigeon_Animations.fbx", "./Model/output", "pigeon");
+// 		}
+// 	}
 
  	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
  	pRootNode->SetName("RootNode");
@@ -167,7 +167,6 @@ int main(int argc, char* argv[])
 	MyCamera* pCamera = engine.GetObjectManager()->CreateObject<MyCamera>();
 	pCamera->SetPosition(Vector3(0, 0, -20));
 	pCamera->SetName("Camera");
-	pCamera->SetZNearFar(Vector2(10, 500));
 	pCamera->LookAt(Vector3(0, 0, 0), Vector3(0, 1, 0));
 	//pCamera->SetCameraType(MCamera::MECameraType::EOrthographic);
 	pRootNode->AddNode(pCamera);

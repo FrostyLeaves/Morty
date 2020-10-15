@@ -71,9 +71,8 @@ public:
 	virtual void OnCreated() override;
 	virtual void OnDelete() override;
 
-	virtual void OnRenderBefore(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget);
-
-	virtual void OnRenderAfter(MIRenderer* pRenderer, MIRenderTarget* pRenderTarget);
+	void LockMatrix();
+	void UnlockMatrix();
 
 	virtual void Input(MInputEvent* pEvent);
 

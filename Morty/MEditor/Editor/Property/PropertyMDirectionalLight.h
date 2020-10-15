@@ -19,26 +19,6 @@ public:
 				PROPERTY_VALUE_EDIT(pNode, "Specular", MColor, GetSpecularColor, SetSpecularColor);
 
 				ShowNodeEnd();
-
-				ShowNodeBegin("Shadow");
-				MScene* pScene = pNode->GetScene();
-				std::vector<MViewport*> viewports = pScene->GetViewports();
-				for (MViewport* pViewport : viewports)
-				{
-// 					ShowValueBegin("ShadowMap");
-// 					if (MRenderDepthTexture* pDepthTexture = pViewport->GetRenderProgram())
-// 					{
-// 						if (MTextureBuffer* pBuffer = pDepthTexture->GetBuffer())
-// 						{
-// 							ImGui::Image(ImTextureID(pBuffer->GetResourceView(), 1), ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::GetContentRegionAvailWidth()));
-// 						}
-// 					}
-// 					ShowValueEnd();
-				}
-
-
-				
-				ShowNodeEnd();
 			}
 		}
 	}

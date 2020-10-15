@@ -68,6 +68,7 @@ void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)
 				if (pParam->strName == strName)
 				{
 					pParam->pTexture = pTexResource->GetTextureTemplate();
+					pParam->SetDirty();
 					return true;
 				}
 			}
@@ -90,6 +91,7 @@ void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)
 					pParam->m_TextureRef.SetResChangedCallback(funcResChangedFunction);
 
 					pParam->pTexture = pTexResource->GetTextureTemplate();
+					pParam->SetDirty();
 				}
 			}
 			else if (pParam->eType == ETextureCube)
@@ -100,6 +102,7 @@ void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)
 					pParam->m_TextureRef.SetResChangedCallback(funcResChangedFunction);
 
 					pParam->pTexture = pTexResource->GetTextureCubeTemplate();
+					pParam->SetDirty();
 				}
 			}
 
@@ -339,14 +342,14 @@ void MMaterial::SetMaterialType(const MEMaterialType& eType)
 	{
 	case MEMaterialType::ETransparent:
 	{
-		m_ShaderMacro.SetMortyMacro("MEN_TRANSPARENT", "1");
+		m_ShaderMacro.SetInnerMacro("MEN_TRANSPARENT", "1");
 		LoadVertexShader(m_VertexResource.GetResource());
 		LoadPixelShader(m_PixelResource.GetResource());
 		break;
 	}
 
 	default:
-		m_ShaderMacro.SetMortyMacro("MEN_TRANSPARENT", "0");
+		m_ShaderMacro.SetInnerMacro("MEN_TRANSPARENT", "0");
 		LoadVertexShader(m_VertexResource.GetResource());
 		LoadPixelShader(m_PixelResource.GetResource());
 		break;

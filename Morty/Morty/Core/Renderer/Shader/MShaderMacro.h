@@ -23,14 +23,14 @@ public:
 
 	bool Compare(const MShaderMacro& macro);
 
+	void SetInnerMacro(const MString& strKey, const MString& strValue);
 
 	void WriteToStruct(MStruct& srt);
 	void ReadFromStruct(MStruct& srt);
 
 protected:
 
-    friend class MMaterial;
-    void SetMortyMacro(const MString& strKey, const MString& strValue);
+	friend class MMaterial;
 	void SetMacro(const MString& strKey, const MString& strValue, std::vector<std::pair<MString, MString>>& vector);
 
 public:

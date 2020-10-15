@@ -601,7 +601,13 @@ bool ImGui::ButtonBehavior(const ImRect& bb, ImGuiID id, bool* out_hovered, bool
     return pressed;
 }
 
-bool ImGui::ButtonEx(const char* label, const ImVec2& size_arg, ImGuiButtonFlags flags)
+bool ImGui::ButtonEx(const char* label, const ImVec2& size_arg /*= ImVec2(0, 0)*/, ImGuiButtonFlags flags /*= 0*/)
+{
+    ImGuiID id = ImGui::GetID(label);
+    return ButtonEx(id, label, size_arg, flags);
+}
+
+bool ImGui::ButtonEx(ImGuiID id, const char* label, const ImVec2& size_arg, ImGuiButtonFlags flags)
 {
     ImGuiWindow* window = GetCurrentWindow();
     if (window->SkipItems)
@@ -609,7 +615,6 @@ bool ImGui::ButtonEx(const char* label, const ImVec2& size_arg, ImGuiButtonFlags
 
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;
-    const ImGuiID id = window->GetID(label);
     const ImVec2 label_size = CalcTextSize(label, NULL, true);
 
     ImVec2 pos = window->DC.CursorPos;
@@ -643,7 +648,12 @@ bool ImGui::ButtonEx(const char* label, const ImVec2& size_arg, ImGuiButtonFlags
 
 bool ImGui::Button(const char* label, const ImVec2& size_arg)
 {
-    return ButtonEx(label, size_arg, 0);
+	return ButtonEx(label, size_arg, 0);
+}
+
+bool ImGui::Button(ImGuiID id, const char* label, const ImVec2& size_arg)
+{
+    return ButtonEx(id, label, size_arg, 0);
 }
 
 // Small buttons fits within text without additional vertical spacing.

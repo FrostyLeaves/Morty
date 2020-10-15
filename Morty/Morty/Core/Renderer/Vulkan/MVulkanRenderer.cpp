@@ -299,6 +299,12 @@ void MVulkanRenderer::DrawMesh(MIMesh* pMesh)
 //��������->�󶨹���(����)->�󶨲��ʲ���(����)
 bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial)
 {
+	if (m_vRenderStages.empty())
+		return false;
+
+	if (m_vRenderPass.empty())
+		return false;
+
 	MRenderStage& rs = m_vRenderStages.back();
 
 	if (nullptr == pMaterial)
@@ -545,7 +551,6 @@ void MVulkanRenderer::SetShaderParamSet(MShaderParamSet* pParamSet)
 		{
 			if (pParam->pTexture && !pParam->pTexture->GetBuffer())
 			{
-//				pParam->pTexture->GenerateBuffer(m_pDevice, false);
 				continue;
 			}
 

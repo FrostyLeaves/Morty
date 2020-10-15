@@ -1,8 +1,9 @@
 #include "PropertyBase.h"
 
-#include "MIRenderer.h"
+#include "Timer/MTimer.h"
 #include "MMaterial.h"
 #include "MResource.h"
+#include "MIRenderer.h"
 #include "Texture/MTextureResource.h"
 #include "Material/MMaterialResource.h"
 #include "MResourceManager.h"
@@ -443,14 +444,14 @@ void PropertyBase::EditSaveMResource(const MString& stringID, MResource* pResour
 
 		float fWidth = ImGui::GetContentRegionAvailWidth();
 
-		if (ImGui::Button("Save", ImVec2(fWidth * 0.5f, 0)))
-			pResource->Save();
-
-		ImGui::SameLine();
-
 		bool bButtonDown = ImGui::Button("Save To", ImVec2(fWidth * 0.5f, 0));
 		if (ImGui::IsItemHovered() && !strResourcePathName.empty())
 			ImGui::SetTooltip(strResourcePathName.c_str());
+
+		ImGui::SameLine();
+
+		if (ImGui::Button(ImGui::GetID(pResource), "Save", ImVec2(fWidth * 0.5f, 0)))
+			pResource->Save();
 
 		if (bButtonDown)
 		{

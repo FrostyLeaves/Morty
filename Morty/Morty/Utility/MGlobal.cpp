@@ -31,10 +31,13 @@ const uint32_t MSHADOW_TEXTURE_SIZE = 2048;
 const uint32_t MPOINT_LIGHT_MAX_NUMBER = 8;
 const uint32_t MPOINT_LIGHT_PIXEL_NUMBER = 4;
 
-extern const uint32_t MSPOT_LIGHT_MAX_NUMBER = 8;
-extern const uint32_t MSPOT_LIGHT_PIXEL_NUMBER = 4;
+const uint32_t MSPOT_LIGHT_MAX_NUMBER = 8;
+const uint32_t MSPOT_LIGHT_PIXEL_NUMBER = 4;
 
 const bool MCALC_NORMAL_IN_VS = false;
 
 
 const uint32_t MMESH_LOD_LEVEL_RANGE = 10;
+
+
+const char* MATERIAL_MACRO_SKELETON_ENABLE = "SKELETON_ENABLE";

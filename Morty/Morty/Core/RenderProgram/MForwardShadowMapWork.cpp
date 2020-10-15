@@ -11,6 +11,7 @@
 #include "Model/MModelInstance.h"
 #include "Light/MDirectionalLight.h"
 
+#include "MSkeleton.h"
 #include "MForwardRenderProgram.h"
 
 M_OBJECT_IMPLEMENT(MForwardShadowMapWork, MObject)
@@ -163,22 +164,8 @@ void MForwardShadowMapWork::RenderToShadowMap(MForwardRenderProgram::MRenderInfo
 	{
 		if (MSkeletonInstance* pSkeleton = group.pSkeletonInstance)
 		{
-// 			MVariant& cVariant = (*m_pAnimBonesParam->var.GetStruct())[0];
-// 			MVariantArray& cBonesArray = *cVariant.GetArray();
-// 
-// 			const std::vector<MBone>& bones = pSkeleton->GetAllBones();
-// 			uint32_t size = bones.size();
-// 			if (size > MBONES_MAX_NUMBER)
-// 				size = MBONES_MAX_NUMBER;
-// 			for (uint32_t i = 0; i < size; ++i)
-// 			{
-// 				cBonesArray[i] = bones[i].m_matWorldTransform;
-// 			}
-// 
-// 			m_pAnimBonesParam->SetDirty();
-// 			pRenderer->SetShaderParam(*m_pAnimBonesParam);
-// 
-// 			pRenderer->SetUseMaterial(m_pAnimMaterial);
+			info.pRenderer->SetUseMaterial(m_pAnimMaterial);
+			info.pRenderer->SetShaderParamSet(pSkeleton->GetShaderParamSet());
 		}
 		else
 		{

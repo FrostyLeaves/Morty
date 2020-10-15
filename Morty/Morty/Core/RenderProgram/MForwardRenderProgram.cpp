@@ -139,6 +139,8 @@ void MForwardRenderProgram::RenderWithViewport(MRenderInfo info, MViewport* pVie
  	info.pCamera = pViewport->GetCamera();
  	info.pScene = pViewport->GetScene();
 
+	pViewport->LockMatrix();
+
 	GenerateRenderGroup(info);
 
 	if (m_pShadowMapWork)
@@ -159,6 +161,7 @@ void MForwardRenderProgram::RenderWithViewport(MRenderInfo info, MViewport* pVie
 	UpdateShaderSharedParams(info, m_FrameParamSet);
 	DrawNormalMesh(info);
 
+	DrawModelInstance(info);
 
 	info.pRenderer->EndRenderPass();
 
@@ -166,9 +169,11 @@ void MForwardRenderProgram::RenderWithViewport(MRenderInfo info, MViewport* pVie
 	if (m_pTransparentWork)
 		m_pTransparentWork->DrawTransparentMesh(info);
 
-	//DrawSkyBox(info);
-//	DrawModelInstance(info);
+//  DrawSkyBox(info);
 //	DrawPainter(info);
+
+
+	pViewport->UnlockMatrix();
 }
 
 void MForwardRenderProgram::OnCreated()
@@ -388,6 +393,8 @@ void MForwardRenderProgram::DrawBoundingBox(MRenderInfo& info, MModelInstance* p
 	MMaterial* pMaterial = pDraw3DMaterialRes;
 	if (!info.pRenderer->SetUseMaterial(pMaterial))
 		return;
+
+	info.pRenderer->SetShaderParamSet(&m_FrameParamSet);
 
 	const MBoundsAABB* pAABB = pModelIns->GetBoundsAABB();
 
