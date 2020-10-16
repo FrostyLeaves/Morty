@@ -3,7 +3,6 @@
 #include "Model/MModelResource.h"
 #include "Model/MSkeletalAnimationResource.h"
 #include "MStaticMeshInstance.h"
-#include "MSkinnedMeshInstance.h"
 #include "MSkeleton.h"
 #include "MSkeletalAnimation.h"
 #include "MBounds.h"
@@ -193,19 +192,9 @@ bool MModelInstance::SetResource(MResource* pResource, const bool& bLoad)
 				//初始化Mesh的旋转矩阵
 				for (MMeshResource* pMeshResource : pModelResource->GetMeshResources())
 				{
-					MIModelMeshInstance* pMeshIns = nullptr;
-					if (pMeshResource->GetMeshVertexType() == MMeshResource::Normal)
-					{
-						MStaticMeshInstance* pStaticMeshIns = GetObjectManager()->CreateObject<MStaticMeshInstance>();
-						pStaticMeshIns->Load(pMeshResource);
-						pMeshIns = pStaticMeshIns;
-					}
-					else
-					{
-						MSkinnedMeshInstance* pSkinnedMeshIns = GetObjectManager()->CreateObject<MSkinnedMeshInstance>();
-						pSkinnedMeshIns->Load(pMeshResource);
-						pMeshIns = pSkinnedMeshIns;
-					}
+					MStaticMeshInstance* pMeshIns = GetObjectManager()->CreateObject<MStaticMeshInstance>();
+					pMeshIns->Load(pMeshResource);
+	
 
 					pMeshIns->SetRotation(pMeshResource->GetMeshesRotationMatrix()->GetRotation());
 

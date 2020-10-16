@@ -37,6 +37,8 @@ public:
 	virtual MIMesh* GetMesh() override { return GetMesh(GetDetailLevel()); }
 	virtual MIMesh* GetMesh(const uint32_t& unDetailLevel) override;
 
+	virtual MSkeletonInstance* GetSkeletonInstance() override;
+
 	virtual MBoundsAABB* GetBoundsAABB() override;
 	virtual MBoundsSphere* GetBoundsSphere() override;
 

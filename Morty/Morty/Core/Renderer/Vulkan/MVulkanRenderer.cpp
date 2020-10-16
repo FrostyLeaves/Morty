@@ -74,9 +74,9 @@ void MVulkanRenderer::SetViewport(const float& fX, const float& fY, const float&
 {
 	m_VkViewport = {};
 	m_VkViewport.x = fX;
-	m_VkViewport.y = fY;
+	m_VkViewport.y = fY + fHeight;
 	m_VkViewport.width = fWidth;
-	m_VkViewport.height = fHeight;
+	m_VkViewport.height = -fHeight;
 	m_VkViewport.minDepth = fMinDepth;
 	m_VkViewport.maxDepth = fMaxDepth;
 
@@ -640,12 +640,12 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 			break;
 
 		case MERasterizerType::ECullBack:
-			rasterizationState.cullMode = VK_CULL_MODE_FRONT_BIT;		//vulkan inverse
+			rasterizationState.cullMode = VK_CULL_MODE_BACK_BIT;		//vulkan inverse
 			rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
 			break;
 
 		case MERasterizerType::ECullFront:
-			rasterizationState.cullMode = VK_CULL_MODE_BACK_BIT;
+			rasterizationState.cullMode = VK_CULL_MODE_FRONT_BIT;
 			rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
 			break;
 		case MERasterizerType::EWireframe:

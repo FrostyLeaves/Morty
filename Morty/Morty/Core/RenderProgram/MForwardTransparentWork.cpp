@@ -4,6 +4,7 @@
 
 #include "MEngine.h"
 #include "MViewport.h"
+#include "MSkeleton.h"
 #include "Model/MIMeshInstance.h"
 #include "MResourceManager.h"
 #include "Texture/MTextureResource.h"
@@ -120,8 +121,13 @@ void MForwardTransparentWork::RenderToTarget(MForwardRenderProgram::MRenderInfo&
 
 		info.pRenderer->SetShaderParamSet(&m_FrameParamSet[unTargetIdx]);
 		info.pRenderer->SetShaderParamSet(pMaterial->GetMaterialParamSet());
+
 		for (MIMeshInstance* pMeshIns : group.m_vMeshInstances)
 		{
+			if (MSkeletonInstance* pSkeletonIns = pMeshIns->GetSkeletonInstance())
+			{
+				info.pRenderer->SetShaderParamSet(pSkeletonIns->GetShaderParamSet());
+			}
 			info.pRenderer->SetShaderParamSet(pMeshIns->GetShaderMeshParamSet());
 			info.pRenderer->DrawMesh(pMeshIns->GetMesh());
 		}

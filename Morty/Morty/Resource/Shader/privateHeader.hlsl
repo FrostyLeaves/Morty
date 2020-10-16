@@ -96,7 +96,6 @@ float Float4ToFloat(float4 rgba_depth)
     float3 U_f3CameraPosition;
 
     float2 U_f2ViewportSize;
-  //  float3 U_vPointLightPosition[MPOINT_LIGHT_MAX_NUMBER];
 };
 
 //PS    per render

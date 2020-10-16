@@ -24,6 +24,7 @@ public:
 	bool Compare(const MShaderMacro& macro);
 
 	void SetInnerMacro(const MString& strKey, const MString& strValue);
+	MString GetInnerMacro(const MString& strKey);
 
 	void WriteToStruct(MStruct& srt);
 	void ReadFromStruct(MStruct& srt);

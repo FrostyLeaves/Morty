@@ -35,6 +35,17 @@ void MShaderMacro::SetInnerMacro(const MString& strKey, const MString& strValue)
 	SetMacro(strKey, strValue, m_vMortyMacroParams);
 }
 
+MString MShaderMacro::GetInnerMacro(const MString& strKey)
+{
+	for (auto pairs : m_vMortyMacroParams)
+	{
+		if (strKey == pairs.first)
+			return pairs.second;
+	}
+
+	return MString();
+}
+
 void MShaderMacro::SetMacro(const MString& strKey, const MString& strValue)
 {
 	SetMacro(strKey, strValue, m_vMacroParams);

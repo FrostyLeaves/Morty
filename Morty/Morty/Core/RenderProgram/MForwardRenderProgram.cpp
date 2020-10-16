@@ -413,29 +413,28 @@ void MForwardRenderProgram::DrawBoundingBox(MRenderInfo& info, MModelInstance* p
 		Vector3(obmin.x, obmax.y, obmax.z),
 	};
 
+	MMesh<MPainterVertex> meshs;
 	Vector2 begin, end;
 	for (int j = 0; j < 4; ++j)
 	{
 		for (int i = 0; i < 2; ++i)
 		{
-			MPainter2DLine3D line(list[j + i * 4], list[(j + 1) % 4 + i * 4], MColor(1, 1, 1, 1), 1.0f);
+			MPainter3DLine line(list[j + i * 4], list[(j + 1) % 4 + i * 4], MColor(1, 1, 1, 1), 1.0f);
 
-			MMesh<MPainterVertex> meshs;
 			if (line.FillData(info.pViewport, meshs))
 			{
 				info.pRenderer->DrawMesh(&meshs);
-				meshs.DestroyBuffer(m_pEngine->GetDevice());
 			}
 		}
 
-		MPainter2DLine3D line(list[j], list[(j + 4)], MColor(1, 1, 1, 1), 1.0f);
-		MMesh<MPainterVertex> meshs;
+		MPainter3DLine line(list[j], list[(j + 4)], MColor(1, 1, 1, 1), 1.0f);
 		if (line.FillData(info.pViewport, meshs))
 		{
 			info.pRenderer->DrawMesh(&meshs);
-			meshs.DestroyBuffer(m_pEngine->GetDevice());
 		}
 	}
+
+	meshs.DestroyBuffer(m_pEngine->GetDevice());
 }
 
 void MForwardRenderProgram::DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pMeshIns)
@@ -493,7 +492,7 @@ void MForwardRenderProgram::DrawCameraFrustum(MRenderInfo& info, MCamera* pCamer
 	{
 		for (int i = 0; i < 2; ++i)
 		{
-			MPainter2DLine3D line(list[j + i * 4], list[(j + 1) % 4 + i * 4], MColor(i == 0 ? 0 : 1, 1, 1, 1), 1.0f);
+			MPainter3DLine line(list[j + i * 4], list[(j + 1) % 4 + i * 4], MColor(i == 0 ? 0 : 1, 1, 1, 1), 1.0f);
 
 			MMesh<MPainterVertex> meshs;
 			if (line.FillData(info.pViewport, meshs))
@@ -503,7 +502,7 @@ void MForwardRenderProgram::DrawCameraFrustum(MRenderInfo& info, MCamera* pCamer
 			}
 		}
 
-		MPainter2DLine3D line(list[j], list[(j + 4)], MColor(1, 1, 1, 1), 1.0f);
+		MPainter3DLine line(list[j], list[(j + 4)], MColor(1, 1, 1, 1), 1.0f);
 		MMesh<MPainterVertex> meshs;
 		if (line.FillData(info.pViewport, meshs))
 		{

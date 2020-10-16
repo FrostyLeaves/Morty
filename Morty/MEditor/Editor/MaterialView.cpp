@@ -21,6 +21,7 @@ MaterialView::MaterialView()
 	: IBaseView()
 	, m_Resource()
 	, m_pMaterial(nullptr)
+	, m_bShowPreview(true)
 {
 
 }
@@ -40,17 +41,22 @@ void MaterialView::SetMaterial(MMaterial* pMaterial)
 	m_Resource.SetResource(pMaterial);
 	m_pMaterial = pMaterial;
 
+	m_bShowPreview = m_pMaterial->GetShaderMacro()->GetInnerMacro(MATERIAL_MACRO_SKELETON_ENABLE).empty();
+
 	m_pMeshInstance->SetMaterial(pMaterial);
 }
 
 void MaterialView::UpdateMaterialTexture()
 {
+	if (!m_bShowPreview)
+		return;
+
 	m_SceneTexture.UpdateTexture();
 }
 
 void MaterialView::Render()
 {
-	if (m_pMaterial)
+	if (m_pMaterial && m_bShowPreview)
 	{
 		if (void* pTexture = m_SceneTexture.GetTexture(m_pEngine->GetRenderer()->GetFrameIndex()))
 		{

@@ -131,7 +131,6 @@ void SceneTexture::SetSize(const Vector2& v2Size)
 		m_vDepthTexture[i]->GenerateBuffer(m_pEngine->GetDevice());
 	}
 
-//	m_pEngine->GetDevice()->GenerateRenderTarget(m_pTextureRenderTarget, m_v2Size.x, m_v2Size.y);
 	m_pTextureRenderTarget->Resize(m_v2Size);
 }
 
@@ -142,7 +141,6 @@ void SceneTexture::UpdateTexture()
 		std::vector<MViewport*> vViewports = { m_pRenderViewport };
 		m_pRenderProgram->Render(m_pEngine->GetRenderer(), vViewports);
 	}
-//	m_pEngine->GetRenderer()->Render(m_pTextureRenderTarget);
 }
 
 void* SceneTexture::GetTexture(const uint32_t& unFrameIndex)

@@ -81,14 +81,14 @@ public:
 	MColor m_rectColor;
 };
 
-class MORTY_CLASS MPainter2DLine3D : public MIPainterShape
+class MORTY_CLASS MPainter3DLine : public MIPainterShape
 {
 public:
-	MPainter2DLine3D() : m_v3Begin(), m_v3End(), m_lineColor(), m_fThickness(1.0f) {}
-	MPainter2DLine3D(const Vector3& v3Begin, const Vector3& v3End, const MColor& color, const float& fTickness) : MIPainterShape()
+	MPainter3DLine() : m_v3Begin(), m_v3End(), m_lineColor(), m_fThickness(1.0f) {}
+	MPainter3DLine(const Vector3& v3Begin, const Vector3& v3End, const MColor& color, const float& fTickness) : MIPainterShape()
 		, m_v3Begin(v3Begin), m_v3End(v3End), m_lineColor(color), m_fThickness(fTickness) {}
 
-	virtual ~MPainter2DLine3D() {}
+	virtual ~MPainter3DLine() {}
 
 	virtual uint32_t GetVertexCount() override { return 4; }
 	virtual uint32_t GetIndexCount() override { return 6; }

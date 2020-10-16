@@ -237,6 +237,14 @@ int main(int argc, char* argv[])
 	pRootNode->AddNode(pDirLight);
 
 
+	for (int i = 0; i < 1; ++i)
+	{
+		MPointLight* pPointLight = engine.GetObjectManager()->CreateObject<MPointLight>();
+		pPointLight->SetName(MString("PointLight_") + MStringHelper::ToString(i));
+		pRootNode->AddNode(pPointLight);
+	}
+
+
 	MInputNode* pInputNode = engine.GetObjectManager()->CreateObject<MInputNode>();
 	pInputNode->SetName("InputNode");
 	pCamera->AddNode(pInputNode);

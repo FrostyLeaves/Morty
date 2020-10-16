@@ -285,9 +285,6 @@
     <ClInclude Include="..\..\Organizer\Node\Model\MModelInstance.h">
       <Filter>Organizer\Node\Model</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Organizer\Node\Model\MSkinnedMeshInstance.h">
-      <Filter>Organizer\Node\Model</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Organizer\Node\Model\MStaticMeshInstance.h">
       <Filter>Organizer\Node\Model</Filter>
     </ClInclude>
@@ -564,9 +561,6 @@
       <Filter>Organizer\Node\Light</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Organizer\Node\Model\MModelInstance.cpp">
-      <Filter>Organizer\Node\Model</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Organizer\Node\Model\MSkinnedMeshInstance.cpp">
       <Filter>Organizer\Node\Model</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Organizer\Node\Model\MStaticMeshInstance.cpp">

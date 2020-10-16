@@ -191,7 +191,7 @@ bool MPainter2DRect::TouchTest(const Vector2& pos, MViewport* pViewport)
 	return false;
 }
 
-bool MPainter2DLine3D::FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh)
+bool MPainter3DLine::FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh)
 {
 	if (nullptr == pViewport)
 		return false;
@@ -240,7 +240,7 @@ bool MPainter2DLine3D::FillData(MViewport* pViewport, MMesh<MPainterVertex>& mes
 	return true;
 }
 
-bool MPainter2DLine3D::TouchTest(const Vector2& pos, MViewport* pViewport)
+bool MPainter3DLine::TouchTest(const Vector2& pos, MViewport* pViewport)
 {
 	return false;
 }

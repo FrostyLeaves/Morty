@@ -40,7 +40,7 @@ private:
 	MEngine* m_pEngine;
 	MIMeshInstance* m_pMeshInstance;
 
-
+	bool m_bShowPreview;
 	SceneTexture m_SceneTexture;
 };
 

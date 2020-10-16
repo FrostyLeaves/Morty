@@ -6,9 +6,10 @@
 #include "MMaterial.h"
 #include "MMath.h"
 
-#include "Model/MModelResource.h"
-#include "Model/MMeshResource.h"
 #include "MResourceManager.h"
+#include "Model/MMeshResource.h"
+#include "Model/MModelResource.h"
+#include "Model/MModelInstance.h"
 
 #include "MBounds.h"
 
@@ -90,6 +91,14 @@ MIMesh* MStaticMeshInstance::GetMesh(const uint32_t& unDetailLevel)
 	if (unDetailLevel == MMESH_LOD_LEVEL_RANGE)
 		return m_pMesh->GetMesh();
 	else return m_pMesh->GetLevelMesh(unDetailLevel);
+}
+
+MSkeletonInstance* MStaticMeshInstance::GetSkeletonInstance()
+{
+	if (MModelInstance* pModelIns = GetParent()->DynamicCast<MModelInstance>())
+		return pModelIns->GetSkeleton();
+
+	return nullptr;
 }
 
 void MStaticMeshInstance::OnDelete()
