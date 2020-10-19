@@ -7,7 +7,7 @@
 
 EditorCamera::EditorCamera()
 	: MCamera()
-	, m_fMaxSpeed(16.0f)
+	, m_fMaxSpeed(6.0f)
 	, m_v2MouseAddi(0.0f, 0.0f)
 	, m_v3MoveSpeed(0.0f, 0.0f, 0.0f)
 {
@@ -16,7 +16,7 @@ EditorCamera::EditorCamera()
 
 void EditorCamera::OnTick(const float& fDelta)
 {
-	const float speed = 16;
+	const float speed = m_fMaxSpeed;
 
 	if (true == m_tKeyBoardDown['W'])
 	{

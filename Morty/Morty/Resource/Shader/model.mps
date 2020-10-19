@@ -49,7 +49,7 @@ float3 CalcDirectionLight(VS_OUT input, float3 f3CameraDir, float3 f3LightDir, f
 {
     float fNdotL = dot(f3Normal, -f3LightDir);
 
-    if (fNdotL > 0)
+    if (fNdotL >= 0)
     {
         float shadow = ShadowCalculation(input.dirLightSpacePos, fNdotL);
 
