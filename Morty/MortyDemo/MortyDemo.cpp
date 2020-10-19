@@ -29,12 +29,10 @@
 #include "Texture/MTextureResource.h"
 #include "Node/MNodeResource.h"
 #include "MTexture.h"
-#include "MInputNode.h"
 #include "MIRenderer.h"
 
 #include "Shader/MShader.h"
 #include "MVertex.h"
-#include "MInputManager.h"
 #include "MLogManager.h"
 #include "MIRenderView.h"
 #include "MCamera.h"
@@ -66,87 +64,12 @@
 #include "MBasicRenderProgram.h"
 #include "MForwardRenderProgram.h"
 
+#include "EditorCamera.h"
+
 #ifdef MORTY_EDITOR_ENABLE
 #include "MainEditor.h"
 #include "NotifyManager.h"
 #endif
-
-static float rrrr = 0.0f;
-
-class MyCamera : public MCamera
-{
-public:
-	MyCamera()
-		: MCamera()
-	{}
-
-	virtual void OnTick(const float& fDelta)
-	{
-		//auto jeep = GetRootNode()->FindFirstChildByName("Jeep")->DynamicCast<M3DNode>();
-		//auto rot = jeep->GetRotation();
-		//rot.RotateY(rrrr);
-		//rrrr += fDelta * 10.0f;
-
-		//jeep->SetRotation(rot);
-		
-		MPointLight* pLight = static_cast<MPointLight*>(GetRootNode()->FindFirstChildByName("Light"));
-
-		const float speed = 16;
-
-		if (true == m_tKeyBoardDown['W'])
-		{
-			m_v3MoveSpeed += GetForward() * speed * fDelta;
-		}
-		if (true == m_tKeyBoardDown['S'])
-		{
-			m_v3MoveSpeed += GetForward() * -speed * fDelta;
-		}
-		if (true == m_tKeyBoardDown['A'])
-		{
-			m_v3MoveSpeed += GetRight() * -speed * fDelta;
-		}
-		if (true == m_tKeyBoardDown['D'])
-		{
-			m_v3MoveSpeed += GetRight() * speed * fDelta;
-		}
-		if (true == m_tKeyBoardDown['Q'])
-		{
-			m_v3MoveSpeed += Vector3(0, 1, 0) * -speed * fDelta;
-		}
-		if (true == m_tKeyBoardDown['E'])
-		{
-			m_v3MoveSpeed += Vector3(0, 1, 0) * speed * fDelta;
-		}
-		else if (m_tKeyBoardDown[MMouseInputEvent::MEMouseDownButton::RightButton] && (m_v2MouseAddi.x != 0 || m_v2MouseAddi.y != 0))
-		{
-
-			Vector3 up = Vector3(0, 1, 0);
-
-			Vector3 right = GetRight();
-			SetRotation(GetRotation() * Quaternion(up, m_v2MouseAddi.x * 0.25f) * Quaternion(right, m_v2MouseAddi.y * 0.25f));
-
-			m_v2MouseAddi = Vector2(0, 0);
-		}
-
-		float fLength = m_v3MoveSpeed.Length();
-		if (fLength > speed)
-		{
-			m_v3MoveSpeed.Normalize();
-			m_v3MoveSpeed = m_v3MoveSpeed * speed;
-		}
-
-		SetPosition(GetPosition() + m_v3MoveSpeed);
-		m_v3MoveSpeed = m_v3MoveSpeed * 0.8f;
-
-
-//		MLogManager::GetInstance()->Log("Camera position: %f, %f, %f", GetPosition().x, GetPosition().y, GetPosition().z);
-	}
-
-	std::map<unsigned int, bool> m_tKeyBoardDown;
-	Vector2 m_v2MouseAddi;
-
-	Vector3 m_v3MoveSpeed;
-};
 
 int main(int argc, char* argv[])
 {
@@ -164,7 +87,7 @@ int main(int argc, char* argv[])
  	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
  	pRootNode->SetName("RootNode");
 
-	MyCamera* pCamera = engine.GetObjectManager()->CreateObject<MyCamera>();
+	EditorCamera* pCamera = engine.GetObjectManager()->CreateObject<EditorCamera>();
 	pCamera->SetPosition(Vector3(0, 0, -20));
 	pCamera->SetName("Camera");
 	pCamera->LookAt(Vector3(0, 0, 0), Vector3(0, 1, 0));
@@ -245,32 +168,7 @@ int main(int argc, char* argv[])
 	}
 
 
-	MInputNode* pInputNode = engine.GetObjectManager()->CreateObject<MInputNode>();
-	pInputNode->SetName("InputNode");
-	pCamera->AddNode(pInputNode);
-
-	pInputNode->SetInputCallback([&pCamera](MInputEvent* pEvent, MViewport* pViewport) {
-
-		if (MKeyBoardInputEvent* pKeyInput = dynamic_cast<MKeyBoardInputEvent*>(pEvent))
-		{
-			pCamera->m_tKeyBoardDown[pKeyInput->GetKey()] = pKeyInput->GetType() == MEKeyState::DOWN;
-
-		}
-		else if (MMouseInputEvent* pMouseInput = dynamic_cast<MMouseInputEvent*>(pEvent))
-		{
-			if (pMouseInput->GetType() == MMouseInputEvent::MouseMove)
-			{
-				pCamera->m_v2MouseAddi = pMouseInput->GetMouseAddition();
-			}
-			else
-			{
-				pCamera->m_tKeyBoardDown[(unsigned int)pMouseInput->GetButton()] = pMouseInput->GetType() == MMouseInputEvent::ButtonDown;
-			}
-		}
-
-		return false;
-	});
-
+	
 #ifdef MORTY_EDITOR_ENABLE
 	MainEditor* pEditorView = new MainEditor();
 	pEditorView->Initialize(&engine, "Morty");

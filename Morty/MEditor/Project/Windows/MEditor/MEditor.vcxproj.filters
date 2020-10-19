@@ -117,6 +117,9 @@
     <ClInclude Include="..\..\..\ImGUI\imgui_impl_vulkan.h">
       <Filter>ImGUI</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Editor\EditorCamera.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MEditor.cpp">
@@ -181,6 +184,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\ImGUI\imgui_impl_vulkan.cpp">
       <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Editor\EditorCamera.cpp">
+      <Filter>Editor</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
