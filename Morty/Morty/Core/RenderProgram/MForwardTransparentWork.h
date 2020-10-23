@@ -56,6 +56,8 @@ protected:
     
     void UpdateTextureParams(MForwardRenderProgram::MRenderInfo& info);
 
+    void SetupSubPass(MRenderPass& renderpass);
+
     virtual void OnDelete() override;
 private:
 

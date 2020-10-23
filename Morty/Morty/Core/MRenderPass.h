@@ -29,6 +29,9 @@ public:
 
 public:
 
+    std::vector<uint32_t> m_vInputIndex;
+    std::vector<uint32_t> m_vOutputIndex;
+
 };
 
 class MORTY_CLASS MRenderPass

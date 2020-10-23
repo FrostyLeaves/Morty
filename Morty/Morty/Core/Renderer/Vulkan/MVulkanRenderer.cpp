@@ -167,6 +167,12 @@ void MVulkanRenderer::RenderBegin(MIRenderTarget* pRenderTarget)
 	
 }
 
+void MVulkanRenderer::NextSubpass()
+{
+	MRenderStage& rs = m_vRenderStages.back();
+	vkCmdNextSubpass(rs.vkCommandBuffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+}
+
 void MVulkanRenderer::BeginRenderPass(MRenderPass* pRenderPass, MIRenderTarget* pRenderTarget)
 {
 	if (!pRenderPass || !pRenderTarget)
@@ -378,7 +384,7 @@ void MVulkanRenderer::GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPa
 	{
 	//	m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::EReadNotWrite], 0);
 		
-		if (pRenderPass->m_vBackDesc.size() != 4)
+		if (pRenderPass->m_vBackDesc.size() < 4)
 			return;
 
 		vBlendAttach.resize(4);

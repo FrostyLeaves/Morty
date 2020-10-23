@@ -102,7 +102,6 @@ void MForwardRenderProgram::InitializeRenderPass()
 	}
 
 	//Init RenderPass
-	m_ForwardMeshRenderPass.m_vSubpass.push_back(MSubpass());
 
 	m_ForwardMeshRenderPass.m_vBackDesc.push_back(MRenderPass::MTargetDesc());
 	m_ForwardMeshRenderPass.m_vBackDesc.back().bClearWhenRender = true;

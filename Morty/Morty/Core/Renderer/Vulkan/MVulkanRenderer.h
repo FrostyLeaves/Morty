@@ -39,6 +39,8 @@ public:
 
 	virtual void RenderBegin(MIRenderTarget* pRenderTarget) override;
 
+	virtual void NextSubpass() override;
+
 	virtual void BeginRenderPass(MRenderPass* pRenderPass, MIRenderTarget* pRenderTarget) override;
 
 	virtual void EndRenderPass() override;

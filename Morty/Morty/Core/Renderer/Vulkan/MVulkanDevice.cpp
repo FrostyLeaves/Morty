@@ -1209,14 +1209,12 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass, MIRenderTarget*
 		}
 	}
 
-
 	VkRenderPass renderPass;
 
 	uint32_t unBackNum = pRenderPass->m_vBackDesc.size();
 
 	std::vector<VkAttachmentDescription> vAttachmentDesc;
 
-	std::vector<VkAttachmentReference> vAttachmentRef;
 
 	for (uint32_t i = 0; i < unBackNum; ++i)
 	{
@@ -1230,7 +1228,6 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass, MIRenderTarget*
 		vAttachmentDesc.push_back({});
 		VkAttachmentDescription& colorAttachment = vAttachmentDesc.back();
 
-		vAttachmentRef.push_back({ uint32_t(vAttachmentRef.size()), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL});
 
 		if (pRenderPass->m_vBackDesc[i].bClearWhenRender)
 			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -1259,8 +1256,6 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass, MIRenderTarget*
 		vAttachmentDesc.push_back({});
 		VkAttachmentDescription& colorAttachment = vAttachmentDesc.back();
 
-		vAttachmentRef.push_back({ uint32_t(vAttachmentRef.size()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL });
-
 		if (pRenderPass->m_DepthDesc.bClearWhenRender)
 			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		else
@@ -1272,29 +1267,127 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass, MIRenderTarget*
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		//colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;		//���������
-		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;			//Ϊ�˴���Shader
+		//colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;		//default
+		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;			//for Shader
 	}
 
 
 	std::vector<VkSubpassDescription> vSubpass;
-	std::vector<VkSubpassDependency> vDependencies;
 
-	// least at one.
+	std::vector<std::vector<VkAttachmentReference>> vOutAttachmentRef;
+	std::vector<std::vector<VkAttachmentReference>> vOutDepthAttachmentRef;
+	std::vector<std::vector<VkAttachmentReference>> vInAttachmentRef;
+	std::vector<std::vector<uint32_t>> vUnusedAttachmentRef;
+
+	// default subpass
 	if (pRenderPass->m_vSubpass.empty())
-		pRenderPass->m_vSubpass.push_back(MSubpass());
-
-	for (MSubpass& subpass : pRenderPass->m_vSubpass)
 	{
-		vSubpass.push_back(VkSubpassDescription());
+		vOutAttachmentRef.resize(1);
+		vOutDepthAttachmentRef.resize(1);
 
+		vSubpass.push_back(VkSubpassDescription());
 		VkSubpassDescription& vkSubpass = vSubpass.back();
 		vkSubpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+		
+		for (uint32_t i = 0; i < unBackNum; ++i)
+			vOutAttachmentRef[0].push_back({ uint32_t(vOutAttachmentRef[0].size()), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
+
 		vkSubpass.colorAttachmentCount = unBackNum;
-		vkSubpass.pColorAttachments = vAttachmentRef.data();
 
 		if (pRenderTarget->GetDepthEnable())
-			vkSubpass.pDepthStencilAttachment = vAttachmentRef.data() + unBackNum;
+		{
+			vOutDepthAttachmentRef[0] = { { uint32_t(vOutAttachmentRef[0].size()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL } };
+			vkSubpass.pDepthStencilAttachment = vOutDepthAttachmentRef[0].data();
+		}
+
+		vkSubpass.pColorAttachments = vOutAttachmentRef[0].data();
+	}
+	else  //
+	{
+		uint32_t unSubpassNum = pRenderPass->m_vSubpass.size();
+		vOutAttachmentRef.resize(unSubpassNum);
+		vOutDepthAttachmentRef.resize(unSubpassNum);
+		vInAttachmentRef.resize(unSubpassNum);
+		vUnusedAttachmentRef.resize(unSubpassNum);
+
+		for (uint32_t nSubpassIdx = 0; nSubpassIdx < unSubpassNum; ++nSubpassIdx)
+		{
+			MSubpass& subpass = pRenderPass->m_vSubpass[nSubpassIdx];
+
+			vSubpass.push_back(VkSubpassDescription());
+			VkSubpassDescription& vkSubpass = vSubpass.back();
+			vkSubpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+
+			std::set<uint32_t> vUsedAttachIndex;
+
+			for (uint32_t i = 0; i < subpass.m_vOutputIndex.size(); ++i)
+			{
+				uint32_t nBackIdx = subpass.m_vOutputIndex[i];
+
+				vOutAttachmentRef[nSubpassIdx].push_back({});
+				VkAttachmentReference& vkAttachRef = vOutAttachmentRef[nSubpassIdx].back();
+
+				vkAttachRef.attachment = nBackIdx;
+				vkAttachRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+				vUsedAttachIndex.insert(nBackIdx);
+			}
+			
+			if (pRenderTarget->GetDepthEnable())
+			{
+				vOutDepthAttachmentRef[nSubpassIdx] = { { uint32_t(vOutAttachmentRef[nSubpassIdx].size()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL } };
+				vkSubpass.pDepthStencilAttachment = vOutDepthAttachmentRef[nSubpassIdx].data();
+			}
+
+			vkSubpass.colorAttachmentCount = vOutAttachmentRef[nSubpassIdx].size();
+			vkSubpass.pColorAttachments = vOutAttachmentRef[nSubpassIdx].data();
+
+			for (uint32_t i = 0; i < subpass.m_vInputIndex.size(); ++i)
+			{
+				uint32_t nBackIdx = subpass.m_vInputIndex[i];
+
+				vInAttachmentRef[nSubpassIdx].push_back({});
+				VkAttachmentReference& vkAttachRef = vInAttachmentRef[nSubpassIdx].back();
+
+				vkAttachRef.attachment = nBackIdx;
+				vkAttachRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+				vUsedAttachIndex.insert(nBackIdx);
+			}
+
+			vkSubpass.inputAttachmentCount = vInAttachmentRef[nSubpassIdx].size();
+			vkSubpass.pInputAttachments = vInAttachmentRef[nSubpassIdx].data();
+
+			for (uint32_t i = 0; i < unBackNum; ++i)
+			{
+				if (vUsedAttachIndex.find(i) == vUsedAttachIndex.end())
+				{
+					vUnusedAttachmentRef[nSubpassIdx].push_back(i);
+				}
+			}
+
+			vkSubpass.preserveAttachmentCount = vUnusedAttachmentRef[nSubpassIdx].size();
+			vkSubpass.pPreserveAttachments = vUnusedAttachmentRef[nSubpassIdx].data();
+
+		}
+	}
+
+	std::vector<VkSubpassDependency> vSubpassDependencies;
+	for (uint32_t nSubpassIdx = 1; nSubpassIdx < vSubpass.size(); ++nSubpassIdx)
+	{
+		for (int nDependantIdx = 0; nDependantIdx < nSubpassIdx; ++nDependantIdx)
+		{
+			vSubpassDependencies.push_back({});
+			VkSubpassDependency& depend = vSubpassDependencies.back();
+			depend.srcSubpass = nDependantIdx;
+			depend.dstSubpass = nSubpassIdx;
+//          depend.dstSubpass = (subpass<subpassCount) ? subpass : VK_SUBPASS_EXTERNAL;
+			depend.srcStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+			depend.dstStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+			depend.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+			depend.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+			depend.dependencyFlags = 0;
+		}
 	}
 
 	VkRenderPassCreateInfo renderPassInfo{};
@@ -1303,8 +1396,8 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass, MIRenderTarget*
 	renderPassInfo.pAttachments = vAttachmentDesc.data();
 	renderPassInfo.subpassCount = vSubpass.size();
 	renderPassInfo.pSubpasses = vSubpass.data();
-	renderPassInfo.dependencyCount = vDependencies.size();
-	renderPassInfo.pDependencies = vDependencies.data();
+	renderPassInfo.dependencyCount = vSubpassDependencies.size();
+	renderPassInfo.pDependencies = vSubpassDependencies.data();
 
 
 	for (uint32_t i = 0; i < pRenderPass->m_aVkRenderPass.size(); ++i)

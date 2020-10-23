@@ -138,4 +138,10 @@ float Float4ToFloat(float4 rgba_depth)
 };
 
 
+//Double Depth peel
 
+#ifdef MTRANSPARENT_DEPTH_PEELING
+[[vk::input_attachment_index(0)]] SubpassInput U_texSubpassInput0;
+[[vk::input_attachment_index(1)]] SubpassInput U_texSubpassInput1;
+
+#endif

@@ -109,6 +109,8 @@ public:
 
 	virtual void RenderEnd(MIRenderTarget* pRenderTarget) = 0;
 
+	virtual void NextSubpass() = 0;
+
 	virtual void BeginRenderPass(MRenderPass* pRenderPass, MIRenderTarget* pRenderTarget) = 0;
 
 	virtual void EndRenderPass() = 0;
