@@ -136,35 +136,6 @@ void MVulkanRenderer::RenderBegin(MIRenderTarget* pRenderTarget)
 
 	//Begin Command Buffer
 	vkBeginCommandBuffer(m_vRenderStages.back().vkCommandBuffer, &beginInfo);
-
-
-
-	//Record Commands
-	//pRenderTarget->OnRender(this);
-
-// 	//Process Render Finished Event
-// 	if (m_vRenderStages.size() > 1)
-// 	{
-// 		VkEvent vkEvent = pRenderTarget->m_aVkRenderFinishedEvent[m_unFrameIndex];
-// 		
-// 		//��һ��RenderTarget�Ľ���������Ⱦ��������Ҫ�ȴ���ǰ����Ⱦ��ɺ��ټ�����
-// 		MRenderStage& prs = m_vRenderStages[m_vRenderStages.size() - 2];
-// 
-// 		std::vector<VkImageMemoryBarrier> vBarriers;
-// 		GetRenderTargetBarrier(pRenderTarget, vBarriers);
-// 
-// 		vkCmdWaitEvents(prs.vkCommandBuffer, 1, &vkEvent
-// 			//���Event����֮ǰ�ύ�������������Щ����			//���Event����֮���ύ�������������Щ����
-// 			, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT
-// 			, 0, VK_NULL_HANDLE, 0, VK_NULL_HANDLE
-// 			, vBarriers.size(), vBarriers.data());
-// 
-// 		//Host Reset and Device Set.
-// 		vkResetEvent(m_pDevice->m_VkDevice, vkEvent);
-// 		vkCmdSetEvent(m_vRenderStages.back().vkCommandBuffer, vkEvent, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT);
-// 	}
-
-	
 }
 
 void MVulkanRenderer::NextSubpass()

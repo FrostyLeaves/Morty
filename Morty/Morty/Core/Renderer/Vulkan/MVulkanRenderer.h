@@ -82,13 +82,11 @@ private:
 
 	struct MRenderStage
 	{
-		MRenderStage() :vkCommandBuffer(VK_NULL_HANDLE), pUsingMaterial(nullptr), pUsingPipelineLayoutData(nullptr), vRenderTargetEvent() {}
+		MRenderStage() :vkCommandBuffer(VK_NULL_HANDLE), pUsingMaterial(nullptr), pUsingPipelineLayoutData(nullptr) {}
 
 		VkCommandBuffer vkCommandBuffer;
 		struct MMaterial* pUsingMaterial;
 		struct MMaterialPipelineLayoutData* pUsingPipelineLayoutData;
-
-		std::vector<VkEvent> vRenderTargetEvent;
 	};
 	std::vector<MRenderStage> m_vRenderStages;
 

@@ -41,7 +41,7 @@ void MaterialView::SetMaterial(MMaterial* pMaterial)
 	m_Resource.SetResource(pMaterial);
 	m_pMaterial = pMaterial;
 
-	m_bShowPreview = m_pMaterial->GetShaderMacro()->GetInnerMacro(MATERIAL_MACRO_SKELETON_ENABLE).empty();
+	m_bShowPreview = m_pMaterial && m_pMaterial->GetShaderMacro()->GetInnerMacro(MATERIAL_MACRO_SKELETON_ENABLE).empty();
 
 	m_pMeshInstance->SetMaterial(pMaterial);
 }
