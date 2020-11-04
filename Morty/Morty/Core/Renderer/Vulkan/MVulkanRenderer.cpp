@@ -18,9 +18,8 @@ MVulkanRenderer::MVulkanRenderer(MVulkanDevice* pDevice)
 	: MIRenderer()
 	, m_pDevice(pDevice)
 	, m_vRenderStages()
-
+	, m_vRenderPassStages()
 	, m_unFrameIndex(0)
-	, m_vRenderPass()
 {
 
 }
@@ -141,7 +140,13 @@ void MVulkanRenderer::RenderBegin(MIRenderTarget* pRenderTarget)
 void MVulkanRenderer::NextSubpass()
 {
 	MRenderStage& rs = m_vRenderStages.back();
-	vkCmdNextSubpass(rs.vkCommandBuffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+//	vkCmdNextSubpass(rs.vkCommandBuffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+	vkCmdNextSubpass(rs.vkCommandBuffer, VK_SUBPASS_CONTENTS_INLINE);
+
+	if (!m_vRenderPassStages.empty())
+	{
+		m_vRenderPassStages.top().nSubpassIdx++;
+	}
 }
 
 void MVulkanRenderer::BeginRenderPass(MRenderPass* pRenderPass, MIRenderTarget* pRenderTarget)
@@ -195,12 +200,12 @@ void MVulkanRenderer::BeginRenderPass(MRenderPass* pRenderPass, MIRenderTarget* 
 	//Begin RenderPass
 	vkCmdBeginRenderPass(m_vRenderStages.back().vkCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	m_vRenderPass.push(pRenderPass);
+	m_vRenderPassStages.push(MRenderPassStage(pRenderPass, 0));
 }
 
 void MVulkanRenderer::EndRenderPass()
 {
-	m_vRenderPass.pop();
+	m_vRenderPassStages.pop();
 
 	//End Render Pass
 	vkCmdEndRenderPass(m_vRenderStages.back().vkCommandBuffer);
@@ -279,7 +284,7 @@ bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial)
 	if (m_vRenderStages.empty())
 		return false;
 
-	if (m_vRenderPass.empty())
+	if (m_vRenderPassStages.empty())
 		return false;
 
 	MRenderStage& rs = m_vRenderStages.back();
@@ -291,20 +296,20 @@ bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial)
 		return true;
 	}
 
-	MRenderPass* pRenderPass = m_vRenderPass.top();
+	MRenderPassStage stage = m_vRenderPassStages.top();
 	MMaterialPipelineLayoutData* pPipelineLayoutData = m_pDevice->m_PipelineManager.FindOrCreatePipelineLayout(pMaterial);
 
-	if (rs.pUsingPipelineLayoutData == pPipelineLayoutData)
-		return true;
+	//if (rs.pUsingPipelineLayoutData == pPipelineLayoutData)
+	//	return true;
 
 	rs.pUsingMaterial = pMaterial;
 	rs.pUsingPipelineLayoutData = pPipelineLayoutData;
 
-	VkPipeline vkPipeline = m_pDevice->m_PipelineManager.FindPipeline(pMaterial, pRenderPass);
+	VkPipeline vkPipeline = m_pDevice->m_PipelineManager.FindPipeline(pMaterial, stage.pRenderPass, stage.nSubpassIdx);
 	if (!vkPipeline)
 	{
-		vkPipeline = CreateGraphicsPipeline(pMaterial, pRenderPass);
-		m_pDevice->m_PipelineManager.SetPipeline(pMaterial, pRenderPass, vkPipeline);
+		vkPipeline = CreateGraphicsPipeline(pMaterial, stage.pRenderPass, stage.nSubpassIdx);
+		m_pDevice->m_PipelineManager.SetPipeline(pMaterial, stage.pRenderPass, stage.nSubpassIdx, vkPipeline);
 	}
 	
 	if (vkPipeline)
@@ -540,7 +545,7 @@ void MVulkanRenderer::SetShaderParamSet(MShaderParamSet* pParamSet)
 	vkCmdBindDescriptorSets(rs.vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, rs.pUsingPipelineLayoutData->pipelineLayout, pParamSet->m_unKey, 1, &pParamSet->m_VkDescriptorSet[m_unFrameIndex], vDynamicOffsets.size(), vDynamicOffsets.data());
 }
 
-VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass)
+VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx)
 {
 	if (!pMaterial)
 		return VK_NULL_HANDLE;
@@ -660,7 +665,7 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 	pipelineInfo.pDepthStencilState = &depthStencilInfo;
 	pipelineInfo.layout = pipelineLayout;
 	pipelineInfo.renderPass = pRenderPass->m_aVkRenderPass[m_unFrameIndex];
-	pipelineInfo.subpass = 0;
+	pipelineInfo.subpass = nSubpassIdx;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
 	VkPipeline graphicsPipeline = VK_NULL_HANDLE;

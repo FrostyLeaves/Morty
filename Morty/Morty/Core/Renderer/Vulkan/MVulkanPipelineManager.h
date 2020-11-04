@@ -21,9 +21,16 @@ class MIRenderTarget;
 class MShaderParamSet;
 class MShaderTextureParam;
 class MShaderConstantParam;
-struct MPipelineRenderPassGroup
+
+
+struct MRenderPassPipelines
 {
-    std::vector<VkPipeline> vMaterialGroup;
+    std::vector<VkPipeline> vSubpassPipeline;
+};
+
+struct MMaterialPipelineGroup
+{
+    std::vector<MRenderPassPipelines*> vRenderPassGroup;
 };
 
 struct MMaterialPipelineLayoutData
@@ -45,9 +52,9 @@ public:
 
 public:
 
-    VkPipeline FindPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass);
+    VkPipeline FindPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx);
 
-    void SetPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, VkPipeline pipeline);
+    void SetPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx, VkPipeline pipeline);
 
 	MMaterialPipelineLayoutData* FindOrCreatePipelineLayout(MMaterial* pMaterial);
 	MMaterialPipelineLayoutData* FindPipelineLayout(const uint32_t& nMaterialIdx);
@@ -73,7 +80,7 @@ private:
 	MRepeatIDPool<uint32_t> m_MaterialIDPool;
     MRepeatIDPool<uint32_t> m_RenderPassIDPool;
 
-    std::vector<MPipelineRenderPassGroup> m_vRenderPassGroup;
+    std::vector<MMaterialPipelineGroup*> m_tPipelineTable;
 
     std::vector<MMaterialPipelineLayoutData*> m_vPipelineLayouts;
 

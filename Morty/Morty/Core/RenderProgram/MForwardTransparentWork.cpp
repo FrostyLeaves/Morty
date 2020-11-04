@@ -78,11 +78,6 @@ void MForwardTransparentWork::DrawTransparentMesh(MForwardRenderProgram::MRender
 	UpdateTextureParams(info);
 
  	RenderToTarget(info, &m_TransWithClearRenderPass, m_pTransparentRenderTarget0, 0);
-// 	for (uint32_t i = 0; i < 1; ++i)
-// 	{
-// 		RenderToTarget(info, &m_TransRenderPass, m_pTransparentRenderTarget1, 1);
-// 		RenderToTarget(info, &m_TransRenderPass, m_pTransparentRenderTarget2, 2);
-// 	}
 
 	info.pRenderer->BeginRenderPass(&m_MeshRenderPass, info.pRenderTarget);
 

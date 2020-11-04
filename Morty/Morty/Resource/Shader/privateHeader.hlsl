@@ -116,9 +116,6 @@ float Float4ToFloat(float4 rgba_depth)
 //Shadowmap
 [[vk::binding(6,1)]]Texture2D U_texShadowMap : register(t0);
 
-//Depth-Peeling
-[[vk::binding(7,1)]]Texture2D<float> U_texDepthFront : register(t1);
-[[vk::binding(8,1)]]Texture2D<float> U_texDepthBack : register(t2);
 
 
 
@@ -139,9 +136,9 @@ float Float4ToFloat(float4 rgba_depth)
 
 
 //Double Depth peel
-
+[[vk::binding(7,1)]]Texture2D<float> U_texDepthFront : register(t1);
+[[vk::binding(8,1)]]Texture2D<float> U_texDepthBack : register(t2);
 #ifdef MTRANSPARENT_DEPTH_PEELING
 [[vk::input_attachment_index(0)]] SubpassInput U_texSubpassInput0;
 [[vk::input_attachment_index(1)]] SubpassInput U_texSubpassInput1;
-
 #endif

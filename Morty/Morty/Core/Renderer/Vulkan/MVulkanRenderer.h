@@ -61,7 +61,7 @@ public:
 
 	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) override;
 
-	VkPipeline CreateGraphicsPipeline(MMaterial* pMaaterial, MRenderPass* pRenderPass);
+	VkPipeline CreateGraphicsPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx);
 
 	void GetRenderTargetBarrier(MIRenderTarget* pRenderTarget, std::vector<VkImageMemoryBarrier>& vResult);;
 	
@@ -90,14 +90,24 @@ private:
 	};
 	std::vector<MRenderStage> m_vRenderStages;
 
+
+	struct MRenderPassStage
+	{
+		MRenderPassStage() : pRenderPass(nullptr), nSubpassIdx(0) {}
+		MRenderPassStage(MRenderPass* p, const uint32_t& n) : pRenderPass(p), nSubpassIdx(n) {}
+
+		MRenderPass* pRenderPass;
+		uint32_t nSubpassIdx;
+	};
+
+	std::stack<MRenderPassStage> m_vRenderPassStages;
+
 	//渲染栅栏，防止上一次渲染还没渲染完，CPU就申请执行下一次的渲染
 	std::array<VkFence, M_BUFFER_NUM> m_VkInFlightFences;
 private:
 
 	uint32_t m_unFrameIndex;
 
-
-	std::stack<MRenderPass*> m_vRenderPass;
 };
 
 #endif

@@ -1,4 +1,4 @@
-#include "MVulkanPipelineManager.h"
+﻿#include "MVulkanPipelineManager.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
@@ -36,52 +36,91 @@ void MVulkanPipelineManager::Release()
 	m_vPipelineLayouts.clear();
 
 
-	for (MPipelineRenderPassGroup& group : m_vRenderPassGroup)
+	for (MMaterialPipelineGroup* pMaterialGroup : m_tPipelineTable)
 	{
-		for (VkPipeline& pipeline : group.vMaterialGroup)
+		if (pMaterialGroup)
 		{
-			m_pDevice->m_ObjectDestructor.DestroyPipelineLater(pipeline);
+			for (MRenderPassPipelines* pRenderPassGroup : pMaterialGroup->vRenderPassGroup)
+			{
+				if (pRenderPassGroup)
+				{
+					for (VkPipeline pipeline : pRenderPassGroup->vSubpassPipeline)
+						m_pDevice->m_ObjectDestructor.DestroyPipelineLater(pipeline);
+
+					delete pRenderPassGroup;
+				}
+			}
+
+			delete pMaterialGroup;
 		}
 	}
 
-	m_vRenderPassGroup.clear();
+	m_tPipelineTable.clear();
 }
 
-VkPipeline MVulkanPipelineManager::FindPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass)
+VkPipeline MVulkanPipelineManager::FindPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx)
 {
-	uint32_t unRenderPassID = pRenderPass->GetRenderPassID();
-	if (m_vRenderPassGroup.size() < unRenderPassID + 1)
-		return VK_NULL_HANDLE;
-
-	MPipelineRenderPassGroup& group = m_vRenderPassGroup[unRenderPassID];
 	uint32_t unMaterialID = pMaterial->GetMaterialID();
+	uint32_t unRenderPassID = pRenderPass->GetRenderPassID();
 
-	if (group.vMaterialGroup.size() < unMaterialID + 1)
+	if (m_tPipelineTable.size() < unRenderPassID + 1)
 		return VK_NULL_HANDLE;
 
-	return group.vMaterialGroup[unMaterialID];
+	MMaterialPipelineGroup* pMaterialGroup = m_tPipelineTable[unRenderPassID];
+	if (!pMaterialGroup)
+		return VK_NULL_HANDLE;
+
+	if (pMaterialGroup->vRenderPassGroup.size() < unRenderPassID + 1)
+		return VK_NULL_HANDLE;
+
+	MRenderPassPipelines* pPipelines = pMaterialGroup->vRenderPassGroup[unRenderPassID];
+	if (!pPipelines)
+		return VK_NULL_HANDLE;
+
+	if (pPipelines->vSubpassPipeline.size() < unSubpassIdx + 1)
+		return VK_NULL_HANDLE;
+
+	return pPipelines->vSubpassPipeline[unSubpassIdx];
 }
 
-void MVulkanPipelineManager::SetPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, VkPipeline pipeline)
+void MVulkanPipelineManager::SetPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx, VkPipeline pipeline)
 {
-	uint32_t unRenderPassID = pRenderPass->GetRenderPassID();
-	if (m_vRenderPassGroup.size() < unRenderPassID + 1)
-		m_vRenderPassGroup.resize(unRenderPassID + 1);
-
-
-	MPipelineRenderPassGroup& group = m_vRenderPassGroup[unRenderPassID];
 	uint32_t unMaterialID = pMaterial->GetMaterialID();
+	uint32_t unRenderPassID = pRenderPass->GetRenderPassID();
 
-	if (group.vMaterialGroup.size() < unMaterialID + 1)
-		group.vMaterialGroup.resize(unMaterialID + 1, VK_NULL_HANDLE);
 
-	if (group.vMaterialGroup[unMaterialID] != VK_NULL_HANDLE)
+	if (m_tPipelineTable.size() < unMaterialID + 1)
+		m_tPipelineTable.resize(unMaterialID + 1, nullptr);
+
+
+	MMaterialPipelineGroup* pMaterialGroup = m_tPipelineTable[unMaterialID];
+
+	if (nullptr == pMaterialGroup)
 	{
-		vkDestroyPipeline(m_pDevice->m_VkDevice, group.vMaterialGroup[unMaterialID], nullptr);
-		group.vMaterialGroup[unMaterialID] = VK_NULL_HANDLE;
+		pMaterialGroup = new MMaterialPipelineGroup();
+		m_tPipelineTable[unMaterialID] = pMaterialGroup;
 	}
 
-	group.vMaterialGroup[unMaterialID] = pipeline;
+	if (pMaterialGroup->vRenderPassGroup.size() < unRenderPassID + 1)
+		pMaterialGroup->vRenderPassGroup.resize(unRenderPassID + 1, nullptr);
+
+	MRenderPassPipelines* pRenderPassGroup = pMaterialGroup->vRenderPassGroup[unRenderPassID];
+	if (nullptr == pRenderPassGroup)
+	{
+		pRenderPassGroup = new MRenderPassPipelines();
+		pMaterialGroup->vRenderPassGroup[unRenderPassID] = pRenderPassGroup;
+	}
+
+	if (pRenderPassGroup->vSubpassPipeline.size() < unSubpassIdx + 1)
+		pRenderPassGroup->vSubpassPipeline.resize(unSubpassIdx + 1, VK_NULL_HANDLE);
+
+	if(pRenderPassGroup->vSubpassPipeline[unSubpassIdx])
+	{
+		m_pDevice->m_ObjectDestructor.DestroyPipelineLater(pRenderPassGroup->vSubpassPipeline[unSubpassIdx]);
+		pRenderPassGroup->vSubpassPipeline[unSubpassIdx] = VK_NULL_HANDLE;
+	}
+
+	pRenderPassGroup->vSubpassPipeline[unSubpassIdx] = pipeline;
 }
 
 MMaterialPipelineLayoutData* MVulkanPipelineManager::FindOrCreatePipelineLayout(MMaterial* pMaterial)
@@ -133,14 +172,28 @@ void MVulkanPipelineManager::UnRegisterMaterial(MMaterial* pMaterial)
 		}
 	}
 
-	for (MPipelineRenderPassGroup& group : m_vRenderPassGroup)
+	if (m_tPipelineTable.size() < id + 1)
+		return;
+
+	MMaterialPipelineGroup* pMaterialGroup = m_tPipelineTable[id];
+	if (!pMaterialGroup)
+		return;
+
+	for (MRenderPassPipelines* pipelines : pMaterialGroup->vRenderPassGroup)
 	{
-		if (id < group.vMaterialGroup.size() && group.vMaterialGroup[id])
+		if (pipelines)
 		{
-			m_pDevice->m_ObjectDestructor.DestroyPipelineLater(group.vMaterialGroup[id]);
-			group.vMaterialGroup[id] = VK_NULL_HANDLE;
+			for (VkPipeline pipeline : pipelines->vSubpassPipeline)
+			{
+				m_pDevice->m_ObjectDestructor.DestroyPipelineLater(pipeline);
+			}
+
+			delete pipelines;
 		}
 	}
+
+	delete pMaterialGroup;
+	m_tPipelineTable[id] = nullptr;
 
 	m_MaterialIDPool.RecoveryID(id);
 }
@@ -154,15 +207,24 @@ void MVulkanPipelineManager::UnRegisterRenderPass(MRenderPass* pRenderPass)
 {
 	uint32_t id = pRenderPass->GetRenderPassID();
 
-	if (id < m_vRenderPassGroup.size())
+
+	for (MMaterialPipelineGroup* pMaterialGroup : m_tPipelineTable)
 	{
-		MPipelineRenderPassGroup& group = m_vRenderPassGroup[id];
-		for (VkPipeline& pipeline : group.vMaterialGroup)
+		if (pMaterialGroup && id < pMaterialGroup->vRenderPassGroup.size())
 		{
-			m_pDevice->m_ObjectDestructor.DestroyPipelineLater(pipeline);
+			if (MRenderPassPipelines* pPipelines = pMaterialGroup->vRenderPassGroup[id])
+			{
+				for (VkPipeline& pipeline : pPipelines->vSubpassPipeline)
+				{
+					m_pDevice->m_ObjectDestructor.DestroyPipelineLater(pipeline);
+				}
+
+				delete pPipelines;
+				pMaterialGroup->vRenderPassGroup[id] = nullptr;
+			}
 		}
-		group.vMaterialGroup.clear();
 	}
+	
 
 	m_RenderPassIDPool.RecoveryID(id);
 }
