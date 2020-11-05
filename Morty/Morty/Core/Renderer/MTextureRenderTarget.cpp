@@ -50,7 +50,7 @@ std::vector<MIRenderBackTexture*>* MTextureRenderTarget::GetBackTexture(const ui
 	return &info.vBackTextures;
 }
 
-void MTextureRenderTarget::SetBackTexture(const std::array<MRenderBackTexture*, M_BUFFER_NUM>& vBackTexture, const uint32_t& unIndex)
+void MTextureRenderTarget::SetBackTexture(const std::array<MIRenderBackTexture*, M_BUFFER_NUM>& vBackTexture, const uint32_t& unIndex)
 {
 	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
 	{

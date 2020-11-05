@@ -41,7 +41,7 @@ void MForwardTransparentWork::Initialize(MIRenderProgram* pRenderProgram)
 	InitializeMesh();
 	InitializeTexture();
 
-	for (uint32_t i = 0; i < 3; ++i)
+	for (uint32_t i = 0; i < 2; ++i)
 	{
 		m_FrameParamSet[i].InitializeShaderParamSet(GetEngine());
 	}
@@ -53,7 +53,7 @@ void MForwardTransparentWork::Release()
 {
 	ReleaseRenderPass();
 	ReleaseRenderTargets();
-	for (uint32_t i = 0; i < 3; ++i)
+	for (uint32_t i = 0; i < 2; ++i)
 	{
 		m_FrameParamSet[i].ReleaseShaderParamSet(GetEngine());
 	}
@@ -72,12 +72,12 @@ void MForwardTransparentWork::DrawTransparentMesh(MForwardRenderProgram::MRender
 
 	uint32_t unFrameIdx = info.pRenderer->GetFrameIndex();
 
-	for (uint32_t i = 0; i < 3; ++i)
+	for (uint32_t i = 0; i < 2; ++i)
 		MForwardRenderProgram::UpdateShaderSharedParams(info, m_FrameParamSet[i]);
 
 	UpdateTextureParams(info);
 
- 	RenderToTarget(info, &m_TransWithClearRenderPass, m_pTransparentRenderTarget0, 0);
+ 	RenderToTarget(info, &m_TransWithClearRenderPass, m_pTransparentRenderTarget0, 1);
 
 	info.pRenderer->BeginRenderPass(&m_MeshRenderPass, info.pRenderTarget);
 
@@ -121,7 +121,7 @@ void MForwardTransparentWork::RenderToTarget(MForwardRenderProgram::MRenderInfo&
 			if (!info.pRenderer->SetUseMaterial(pMaterial))
 				continue;
 
-			info.pRenderer->SetShaderParamSet(&m_FrameParamSet[unTargetIdx]);
+			info.pRenderer->SetShaderParamSet(&m_FrameParamSet[i % 2]);
 			info.pRenderer->SetShaderParamSet(pMaterial->GetMaterialParamSet());
 
 			for (MIMeshInstance* pMeshIns : group.m_vMeshInstances)
@@ -235,16 +235,29 @@ void MForwardTransparentWork::InitializeRenderTargets()
 		m_vTransparentBackTexture[i] = new MRenderBackTexture();
 		m_vTransparentBackTexture[i]->SetType(METextureLayout::ERGBA8);
 
-		vBackTexture0[i] = new MRenderBackTexture();
-		vBackTexture0[i]->SetType(METextureLayout::ER32);
+// 		vBackTexture0[i] = new MRenderSubpassTexture();
+// 		vBackTexture0[i]->SetType(METextureLayout::ER32);
+// 
+// 		vBackTexture1[i] = new MRenderSubpassTexture();
+// 		vBackTexture1[i]->SetType(METextureLayout::ER32);
+// 
+// 		vBackTexture2[i] = new MRenderSubpassTexture();
+// 		vBackTexture2[i]->SetType(METextureLayout::ER32);
+// 
+// 		vBackTexture3[i] = new MRenderSubpassTexture();
+// 		vBackTexture3[i]->SetType(METextureLayout::ER32);
 
-		vBackTexture1[i] = new MRenderBackTexture();
-		vBackTexture1[i]->SetType(METextureLayout::ER32);
+		//for test
+ 		vBackTexture0[i] = new MRenderSubpassTexture();
+		vBackTexture0[i]->SetType(METextureLayout::ERGBA8);
 
-		vBackTexture2[i] = new MRenderBackTexture();
+		vBackTexture1[i] = new MRenderSubpassTexture();
+		vBackTexture1[i]->SetType(METextureLayout::ERGBA8);
+
+		vBackTexture2[i] = new MRenderSubpassTexture();
 		vBackTexture2[i]->SetType(METextureLayout::ER32);
 
-		vBackTexture3[i] = new MRenderBackTexture();
+		vBackTexture3[i] = new MRenderSubpassTexture();
 		vBackTexture3[i]->SetType(METextureLayout::ER32);
 
 		m_vRenderTargetTexture.push_back(m_vTransparentFrontTexture[i]);
@@ -303,7 +316,7 @@ void MForwardTransparentWork::ReleaseRenderTargets()
 		m_pTransparentRenderTarget2 = nullptr;
 	}
 
-	for (MRenderBackTexture* pBackTexture : m_vRenderTargetTexture)
+	for (MIRenderBackTexture* pBackTexture : m_vRenderTargetTexture)
 	{
 		pBackTexture->DestroyBuffer(GetEngine()->GetDevice());
 		delete pBackTexture;
@@ -373,7 +386,7 @@ void MForwardTransparentWork::CheckTransparentTextureSize(MForwardRenderProgram:
 
 	MIDevice* pDevice = GetEngine()->GetDevice();
 
-	for (MRenderBackTexture* pTexture : m_vRenderTargetTexture)
+	for (MIRenderBackTexture* pTexture : m_vRenderTargetTexture)
 	{
 		if (pTexture)
 		{
@@ -392,20 +405,15 @@ void MForwardTransparentWork::UpdateTextureParams(MForwardRenderProgram::MRender
 {
 	uint32_t unFrameIdx = info.unFrameIndex;
 
-	m_FrameParamSet[0].m_pTransparentFrontTextureParam->pTexture = m_pBlackTexture;
-	m_FrameParamSet[0].m_pTransparentBackTextureParam->pTexture = m_pWhiteTexture;
+	m_FrameParamSet[0].m_pTransparentFrontTextureParam->pTexture = vBackTexture2[unFrameIdx];
+	m_FrameParamSet[0].m_pTransparentBackTextureParam->pTexture = vBackTexture3[unFrameIdx];
 	m_FrameParamSet[0].m_pTransparentFrontTextureParam->SetDirty();
 	m_FrameParamSet[0].m_pTransparentBackTextureParam->SetDirty();
 
-	m_FrameParamSet[1].m_pTransparentFrontTextureParam->pTexture = vBackTexture2[unFrameIdx];
-	m_FrameParamSet[1].m_pTransparentBackTextureParam->pTexture = vBackTexture3[unFrameIdx];
+	m_FrameParamSet[1].m_pTransparentFrontTextureParam->pTexture = vBackTexture0[unFrameIdx];
+	m_FrameParamSet[1].m_pTransparentBackTextureParam->pTexture = vBackTexture1[unFrameIdx];
 	m_FrameParamSet[1].m_pTransparentFrontTextureParam->SetDirty();
 	m_FrameParamSet[1].m_pTransparentBackTextureParam->SetDirty();
-
-	m_FrameParamSet[2].m_pTransparentFrontTextureParam->pTexture = vBackTexture0[unFrameIdx];
-	m_FrameParamSet[2].m_pTransparentBackTextureParam->pTexture = vBackTexture1[unFrameIdx];
-	m_FrameParamSet[2].m_pTransparentFrontTextureParam->SetDirty();
-	m_FrameParamSet[2].m_pTransparentBackTextureParam->SetDirty();
 }
 
 void MForwardTransparentWork::SetupSubPass(MRenderPass& renderpass)
@@ -418,29 +426,34 @@ void MForwardTransparentWork::SetupSubPass(MRenderPass& renderpass)
 	/*
 	* 0 output front
 	* 1 output back
-	* 2 input/output front depth
-	* 3 input/output back depth
+	* 2 input/output front
+	* 3 input/output back
 	* 4 input/output front depth
 	* 5 input/output back depth
 	*/
 
 	subpass.m_vInputIndex = {};
-	subpass.m_vOutputIndex = { 0, 1, 2, 3 };
+	subpass.m_vOutputIndex = { 2, 3, 4, 5 };
 
 	for (uint32_t i = 0; i < SUB_PASS_NUM; ++i)
 	{
 		renderpass.m_vSubpass.push_back(MSubpass());
 		MSubpass& subpass = renderpass.m_vSubpass.back();
 
-		if (i % 2)
+		if (i == SUB_PASS_NUM - 1)
 		{
-			subpass.m_vInputIndex = { 4, 5 };
-			subpass.m_vOutputIndex = { 0, 1, 2, 3 };
+			subpass.m_vInputIndex = { 2, 3 };
+			subpass.m_vOutputIndex = { 0, 1, 4, 5 };
+		}
+		else if (i % 2)
+		{
+			subpass.m_vInputIndex = { 2, 3 };
+			subpass.m_vOutputIndex = { 2, 3, 4, 5 };
 		}
 		else
 		{
 			subpass.m_vInputIndex = { 2, 3 };
-			subpass.m_vOutputIndex = { 0, 1, 4, 5 };
+			subpass.m_vOutputIndex = { 2, 3, 4, 5 };
 		}
 	}
 }

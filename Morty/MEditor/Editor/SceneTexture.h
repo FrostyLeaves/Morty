@@ -11,6 +11,7 @@ class MEngine;
 class MViewport;
 class MIRenderProgram;
 class MRenderBackTexture;
+class MIRenderBackTexture;
 class MRenderDepthTexture;
 class MTextureRenderTarget;
 
@@ -39,7 +40,7 @@ protected:
 	MScene* m_pScene;
 	MEngine* m_pEngine;
 
-	std::array<MRenderBackTexture*, M_BUFFER_NUM> m_vBackTexture;
+	std::array<MIRenderBackTexture*, M_BUFFER_NUM> m_vBackTexture;
 	std::array<MRenderDepthTexture*, M_BUFFER_NUM> m_vDepthTexture;
 
 	MTextureRenderTarget* m_pTextureRenderTarget;

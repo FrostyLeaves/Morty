@@ -14,7 +14,9 @@
 
 #include <array>
 
+class MIRenderBackTexture;
 class MRenderBackTexture;
+class MRenderSubpassTexture;
 class MTextureRenderTarget;
 class MORTY_CLASS MForwardTransparentWork : public MObject
 {
@@ -70,17 +72,17 @@ private:
     MTextureRenderTarget* m_pTransparentRenderTarget1;
     MTextureRenderTarget* m_pTransparentRenderTarget2;
 
-	std::array<MRenderBackTexture*, M_BUFFER_NUM> vBackTexture0;
-	std::array<MRenderBackTexture*, M_BUFFER_NUM> vBackTexture1;
-	std::array<MRenderBackTexture*, M_BUFFER_NUM> vBackTexture2;
-	std::array<MRenderBackTexture*, M_BUFFER_NUM> vBackTexture3;
+	std::array<MIRenderBackTexture*, M_BUFFER_NUM> vBackTexture0;
+	std::array<MIRenderBackTexture*, M_BUFFER_NUM> vBackTexture1;
+	std::array<MIRenderBackTexture*, M_BUFFER_NUM> vBackTexture2;
+	std::array<MIRenderBackTexture*, M_BUFFER_NUM> vBackTexture3;
 
-	MForwardRenderShaderParamSet m_FrameParamSet[3];
+	MForwardRenderShaderParamSet m_FrameParamSet[2];
 
 	Vector2 m_v2TransparentTextureSize;
-	std::array<MRenderBackTexture*, M_BUFFER_NUM> m_vTransparentFrontTexture;
-    std::array<MRenderBackTexture*, M_BUFFER_NUM> m_vTransparentBackTexture;
-	std::vector<MRenderBackTexture*> m_vRenderTargetTexture;
+	std::array<MIRenderBackTexture*, M_BUFFER_NUM> m_vTransparentFrontTexture;
+    std::array<MIRenderBackTexture*, M_BUFFER_NUM> m_vTransparentBackTexture;
+	std::vector<MIRenderBackTexture*> m_vRenderTargetTexture;
 
 	MMesh<Vector2> m_TransparentDrawMesh;
     MMaterial* m_pDrawMeshMaterial;

@@ -376,6 +376,20 @@ void MVulkanDevice::TransitionImageLayout(VkImage image, VkFormat format, VkImag
 		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 	}
+	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+
+		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	}
+	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	}
 	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
@@ -1015,6 +1029,33 @@ void MVulkanDevice::DestroyShaderParamSet(MShaderParamSet* pParamSet)
 	}
 }
 
+bool MVulkanDevice::GenerateSubpassTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const METextureLayout& eType, const uint32_t& unWidth, const uint32_t& unHeight)
+{
+	if (*ppTextureBuffer)
+		DestroyRenderTextureBuffer(ppTextureBuffer);
+
+
+	VkImage textureImage;
+	VkDeviceMemory textureImageMemory;
+
+	VkFormat textureFormat = GetFormat(eType);
+
+	CreateImage(unWidth, unHeight, textureFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+	//TransitionImageLayout(textureImage, textureFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+	TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+	(*ppTextureBuffer) = new MRenderTextureBuffer();
+	(*ppTextureBuffer)->m_VkTextureImage = textureImage;
+	(*ppTextureBuffer)->m_VkTextureImageMemory = textureImageMemory;
+	(*ppTextureBuffer)->m_VkTextureFormat = textureFormat;
+	(*ppTextureBuffer)->m_VkImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	GenerateRenderTargetView(*ppTextureBuffer);
+
+	return true;
+}
+
 bool MVulkanDevice::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const METextureLayout& eType, const uint32_t& unWidth, const unsigned& unHeight)
 {
 	if (*ppTextureBuffer)
@@ -1029,6 +1070,9 @@ bool MVulkanDevice::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTexture
 	CreateImage(unWidth, unHeight, textureFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
 	//TransitionImageLayout(textureImage, textureFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	
+
+	TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
 	(*ppTextureBuffer) = new MRenderTextureBuffer();
 	(*ppTextureBuffer)->m_VkTextureImage = textureImage;
 	(*ppTextureBuffer)->m_VkTextureImageMemory = textureImageMemory;
@@ -1243,10 +1287,21 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass, MIRenderTarget*
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+		//colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
+		if (!pBackTexture->GetRenderBuffer())
+		{
+			pBackTexture->SetSize(pRenderTarget->GetSize());
+			pBackTexture->GenerateBuffer(this);
+		}
+
+		colorAttachment.initialLayout =	pBackTexture->GetRenderBuffer()->m_VkImageLayout;
+		//colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
 		if (dynamic_cast<MVulkanRenderTarget*>(pRenderTarget))
 			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		else if (pBackTexture->GetBuffer())
+			colorAttachment.finalLayout = pBackTexture->GetBuffer()->m_VkImageLayout;
 		else
 			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	}
@@ -1345,6 +1400,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass, MIRenderTarget*
 			for (uint32_t i = 0; i < subpass.m_vInputIndex.size(); ++i)
 			{
 				uint32_t nBackIdx = subpass.m_vInputIndex[i];
+				MIRenderBackTexture* pBackTexture = pRenderTarget->GetCurrFrameBuffer()->vBackTextures[nBackIdx];
 
 				vInAttachmentRef[nSubpassIdx].push_back({});
 				VkAttachmentReference& vkAttachRef = vInAttachmentRef[nSubpassIdx].back();

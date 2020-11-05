@@ -148,6 +148,17 @@ public:
 	virtual void DestroyBuffer(MIDevice* pDevice) override;
 };
 
+class MORTY_CLASS MRenderSubpassTexture : public MIRenderBackTexture
+{
+public:
+	MRenderSubpassTexture();
+	virtual ~MRenderSubpassTexture() {}
+
+public:
+	virtual void GenerateBuffer(MIDevice* pDevice) override;
+	virtual void DestroyBuffer(MIDevice* pDevice) override;
+};
+
 class MORTY_CLASS MRenderDepthTexture : public MIRenderTexture
 {
 public:

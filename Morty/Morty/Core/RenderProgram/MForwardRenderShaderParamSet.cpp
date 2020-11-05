@@ -105,10 +105,10 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	m_pShadowTextureParam = new MShaderTextureParam();
 	m_pShadowTextureParam->unSet = 1;
 	m_pShadowTextureParam->unBinding = 6;
-	m_pTransparentFrontTextureParam = new MShaderTextureParam();
+	m_pTransparentFrontTextureParam = new MShaderSubpasssInputParam();
 	m_pTransparentFrontTextureParam->unSet = 1;
 	m_pTransparentFrontTextureParam->unBinding = 7;
-	m_pTransparentBackTextureParam = new MShaderTextureParam();
+	m_pTransparentBackTextureParam = new MShaderSubpasssInputParam();
 	m_pTransparentBackTextureParam->unSet = 1;
 	m_pTransparentBackTextureParam->unBinding = 8;
 

@@ -211,3 +211,25 @@ MIRenderBackTexture::MIRenderBackTexture()
 {
 
 }
+
+MRenderSubpassTexture::MRenderSubpassTexture()
+	: MIRenderBackTexture()
+{
+
+}
+
+void MRenderSubpassTexture::GenerateBuffer(MIDevice* pDevice)
+{
+	if (m_pTextureBuffer)
+		pDevice->DestroyRenderTextureBuffer(&m_pTextureBuffer);
+
+	//pDevice->GenerateSubpassTextureBuffer(&m_pTextureBuffer, m_eRenderType, m_v2Size.x, m_v2Size.y);
+
+	pDevice->GenerateSubpassTextureBuffer(&m_pTextureBuffer, m_eRenderType, m_v2Size.x, m_v2Size.y);
+}
+
+void MRenderSubpassTexture::DestroyBuffer(MIDevice* pDevice)
+{
+	if (m_pTextureBuffer)
+		pDevice->DestroyRenderTextureBuffer(&m_pTextureBuffer);
+}

@@ -152,7 +152,9 @@ bool MVulkanShaderCompiler::CompileShader(const MString& strShaderPath, const ui
 
 	if (!shader.parse(&Resources, 100, false, messages, includer))
 	{
-		MLogManager::GetInstance()->Error("%s\n\n\n%s", shader.getInfoLog(), shader.getInfoDebugLog());
+		const char* a = shader.getInfoLog();
+		const char* b = shader.getInfoDebugLog();
+		MLogManager::GetInstance()->Error("%s\n\n\n%s", MString(shader.getInfoLog()).c_str(), MString(shader.getInfoDebugLog()).c_str());
 		return false;
 	}
 	program.addShader(&shader);
@@ -300,6 +302,8 @@ void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler
 		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
 		pParam->strName = res.name;
 
+		pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+
 		pShaderBuffer->m_vShaderSets[pParam->unSet].m_vTextures.push_back(pParam);
 	}
 
@@ -312,7 +316,24 @@ void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler
 		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
 		pParam->strName = res.name;
 
+		pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+
 		pShaderBuffer->m_vShaderSets[pParam->unSet].m_vSamples.push_back(pParam);
+	}
+
+
+	for (const spirv_cross::Resource& res : shaderResources.subpass_inputs)
+	{
+		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
+
+		MShaderSubpasssInputParam* pParam = new MShaderSubpasssInputParam();
+		pParam->unSet = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
+		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
+		pParam->strName = res.name;
+
+		pParam->m_VkDescriptorType =  VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+
+		pShaderBuffer->m_vShaderSets[pParam->unSet].m_vTextures.push_back(pParam);
 	}
 }
 

@@ -273,7 +273,7 @@ void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShade
 		descriptorWrite.dstBinding = pParam->unBinding;
 		descriptorWrite.dstArrayElement = 0;
 
-		descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		descriptorWrite.descriptorType = pParam->m_VkDescriptorType;
 		descriptorWrite.descriptorCount = 1;
 
 		descriptorWrite.pBufferInfo = nullptr;
@@ -314,7 +314,7 @@ MMaterialPipelineLayoutData* MVulkanPipelineManager::CreateMaterialPipelineLayou
 			VkDescriptorSetLayoutBinding uboLayoutBinding{};
 			uboLayoutBinding.binding = param->unBinding;
 			//uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-			uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
 			uboLayoutBinding.descriptorCount = 1;
 			uboLayoutBinding.stageFlags = 0;
 			if (param->eShaderType & MEShaderParamType::EVertex)
@@ -331,7 +331,7 @@ MMaterialPipelineLayoutData* MVulkanPipelineManager::CreateMaterialPipelineLayou
 		{
 			VkDescriptorSetLayoutBinding uboLayoutBinding{};
 			uboLayoutBinding.binding = param->unBinding;
-			uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
 			uboLayoutBinding.descriptorCount = 1;
 			uboLayoutBinding.stageFlags = 0;
 			if (param->eShaderType & MEShaderParamType::EVertex)

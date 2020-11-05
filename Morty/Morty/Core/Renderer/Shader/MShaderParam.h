@@ -42,6 +42,7 @@ public:
 	uint32_t unBindPoint;
 	uint32_t unBindCount;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
+	VkDescriptorType m_VkDescriptorType;
 	uint32_t unSet;
 	uint32_t unBinding;
 #endif
@@ -56,7 +57,6 @@ struct MORTY_CLASS MShaderConstantParam : public MShaderParam
 	MVariant var;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
-	VkDescriptorType m_VkDescriptorType;
 	VkBuffer m_VkBuffer[M_BUFFER_NUM];
 	VkDeviceMemory m_VkBufferMemory[M_BUFFER_NUM];
 
@@ -88,6 +88,11 @@ struct MShaderTextureParam : public MShaderParam
 	uint32_t unBindPoint;
 	uint32_t unBindCount;
 #endif
+};
+
+struct MShaderSubpasssInputParam : public MShaderTextureParam
+{
+	MShaderSubpasssInputParam();
 };
 
 struct MShaderSampleParam : public MShaderParam

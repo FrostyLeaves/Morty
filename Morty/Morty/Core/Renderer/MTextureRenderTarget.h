@@ -51,7 +51,7 @@ public:
 
 	std::vector<MIRenderBackTexture*>* GetBackTexture(const uint32_t& unIndex);
 
-	void SetBackTexture(const std::array<MRenderBackTexture*, M_BUFFER_NUM>& vBackTexture, const uint32_t& unIndex);
+	void SetBackTexture(const std::array<MIRenderBackTexture*, M_BUFFER_NUM>& vBackTexture, const uint32_t& unIndex);
 	void SetDepthTexture(const std::array<MRenderDepthTexture*, M_BUFFER_NUM> vDepthTexture);
 
 	uint32_t GetRenderTargetType() { return m_eRenderTargetType; }

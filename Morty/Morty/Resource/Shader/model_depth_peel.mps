@@ -10,6 +10,9 @@ struct PS_OUT
     float4 fBackDepth: SV_Target3;
 };
 
+[[vk::input_attachment_index(0)]] [[vk::binding(7, 1)]] SubpassInput U_texSubpassInput0;
+[[vk::input_attachment_index(1)]] [[vk::binding(8, 1)]] SubpassInput U_texSubpassInput1;
+
 PS_OUT PS(VS_OUT input) : SV_Target
 {
     PS_OUT output;
@@ -28,12 +31,21 @@ PS_OUT PS(VS_OUT input) : SV_Target
         clip(fAlpha - 0.1f);
     }
 
+    
+    f3Color = AdditionAllLights(f3Color, f3AmbiColor, input);
+
+    float4 prevout = U_texSubpassInput1.SubpassLoad();
+
+    output.f4FrontColor = float4(0, 0, 0, 0);
+    output.fBackColor = prevout + float4(f3Color, 0);
+    output.fFrontDepth = 1;
+    output.fBackDepth = 0;
+
+    return output;
+/*
     float fZDepth = input.pos.z;
-    float2 f2DepthFrontUV = input.pos.xy;
-    f2DepthFrontUV.x /= U_f2ViewportSize.x;
-    f2DepthFrontUV.y /= U_f2ViewportSize.y;
-    float fZFront = U_texDepthFront.Sample(U_defaultSampler, f2DepthFrontUV.xy);
-    float fZBack = U_texDepthBack.Sample(U_defaultSampler, f2DepthFrontUV.xy);
+    float fZFront = U_texSubpassInput0.SubpassLoad();
+    float fZBack = U_texSubpassInput1.SubpassLoad();
 
     output.f4FrontColor = float4(0, 0, 0, 0);
     output.fBackColor = float4(0, 0, 0, 0);
@@ -68,5 +80,6 @@ PS_OUT PS(VS_OUT input) : SV_Target
     }
 
     return output;
+*/
 }
 

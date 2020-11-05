@@ -67,11 +67,23 @@ MShaderTextureParam::MShaderTextureParam()
 
 {
 
+#if RENDER_GRAPHICS == MORTY_VULKAN
+	m_VkDescriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+#endif
 }
 
 MShaderSampleParam::MShaderSampleParam()
 	: MShaderParam()
 {
-
+#if RENDER_GRAPHICS == MORTY_VULKAN
+	m_VkDescriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+#endif
 }
 
+MShaderSubpasssInputParam::MShaderSubpasssInputParam()
+	: MShaderTextureParam()
+{
+#if RENDER_GRAPHICS == MORTY_VULKAN
+	m_VkDescriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+#endif
+}

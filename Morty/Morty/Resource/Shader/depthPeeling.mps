@@ -18,7 +18,6 @@ float4 PS(VS_OUT_DP input) : SV_Target
     float3 color = backColor.rgb * (1 - frontColor.a) + frontColor.rgb;
     float alpha = frontColor.a + (1 - frontColor.a) * backColor.a;
 
-    color = float3(0.5, 0, 0);
     return float4(color, alpha);
 }
 
