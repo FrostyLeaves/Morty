@@ -11,8 +11,6 @@ MForwardRenderShaderParamSet::MForwardRenderShaderParamSet()
 	, m_pDefaultSampleParam(nullptr)
 
 	, m_pShadowTextureParam(nullptr)
-	, m_pTransparentFrontTextureParam(nullptr)
-	, m_pTransparentBackTextureParam(nullptr)
 
 {
 	
@@ -105,12 +103,7 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	m_pShadowTextureParam = new MShaderTextureParam();
 	m_pShadowTextureParam->unSet = 1;
 	m_pShadowTextureParam->unBinding = 6;
-	m_pTransparentFrontTextureParam = new MShaderSubpasssInputParam();
-	m_pTransparentFrontTextureParam->unSet = 1;
-	m_pTransparentFrontTextureParam->unBinding = 7;
-	m_pTransparentBackTextureParam = new MShaderSubpasssInputParam();
-	m_pTransparentBackTextureParam->unSet = 1;
-	m_pTransparentBackTextureParam->unBinding = 8;
+	
 
 	m_vParams.push_back(m_pWorldMatrixParam);
 	m_vParams.push_back(m_pWorldInfoParam);
@@ -121,11 +114,44 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 
 
 	m_vTextures.push_back(m_pShadowTextureParam);
-	m_vTextures.push_back(m_pTransparentFrontTextureParam);
-	m_vTextures.push_back(m_pTransparentBackTextureParam);
 }
 
 void MForwardRenderShaderParamSet::ReleaseShaderParamSet(MEngine* pEngine)
 {
 	DestroyBuffer(pEngine->GetDevice());
+}
+
+
+
+MForwardRenderTransparentShaderParamSet::MForwardRenderTransparentShaderParamSet()
+	: MForwardRenderShaderParamSet()
+	, m_pTransparentFrontTextureParam(nullptr)
+	, m_pTransparentBackTextureParam(nullptr)
+{
+
+}
+
+MForwardRenderTransparentShaderParamSet::~MForwardRenderTransparentShaderParamSet()
+{
+
+}
+
+void MForwardRenderTransparentShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
+{
+	MForwardRenderShaderParamSet::InitializeShaderParamSet(pEngine);
+
+	m_pTransparentFrontTextureParam = new MShaderSubpasssInputParam();
+	m_pTransparentFrontTextureParam->unSet = 1;
+	m_pTransparentFrontTextureParam->unBinding = 7;
+	m_pTransparentBackTextureParam = new MShaderSubpasssInputParam();
+	m_pTransparentBackTextureParam->unSet = 1;
+	m_pTransparentBackTextureParam->unBinding = 8;
+
+	m_vTextures.push_back(m_pTransparentFrontTextureParam);
+	m_vTextures.push_back(m_pTransparentBackTextureParam);
+}
+
+void MForwardRenderTransparentShaderParamSet::ReleaseShaderParamSet(MEngine* pEngine)
+{
+	MForwardRenderShaderParamSet::ReleaseShaderParamSet(pEngine);
 }

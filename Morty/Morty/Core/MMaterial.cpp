@@ -397,6 +397,14 @@ bool MMaterial::LoadVertexShader(MResource* pResource)
 	return false;
 }
 
+bool MMaterial::LoadVertexShader(const MString& strResource)
+{
+	if (MResource* pResource = GetResourceManager()->LoadResource(strResource))
+		return LoadVertexShader(pResource);
+
+	return false;
+}
+
 bool MMaterial::LoadPixelShader(MResource* pResource)
 {
 	if (MShaderResource* pShaderResource = dynamic_cast<MShaderResource*>(pResource))
@@ -431,6 +439,14 @@ bool MMaterial::LoadPixelShader(MResource* pResource)
 			return true;
 		}
 	}
+
+	return false;
+}
+
+bool MMaterial::LoadPixelShader(const MString& strResource)
+{
+	if (MResource* pResource = GetResourceManager()->LoadResource(strResource))
+		return LoadPixelShader(pResource);
 
 	return false;
 }

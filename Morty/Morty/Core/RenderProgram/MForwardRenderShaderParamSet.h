@@ -21,8 +21,8 @@ public:
 
 public:
 
-	void InitializeShaderParamSet(MEngine* pEngine);
-	void ReleaseShaderParamSet(MEngine* pEngine);
+	virtual void InitializeShaderParamSet(MEngine* pEngine);
+	virtual void ReleaseShaderParamSet(MEngine* pEngine);
 
 public:
 
@@ -33,8 +33,24 @@ public:
 	MShaderSampleParam* m_pDefaultSampleParam;
 
 	MShaderTextureParam* m_pShadowTextureParam;
+};
+
+
+class MForwardRenderTransparentShaderParamSet : public MForwardRenderShaderParamSet
+{
+public:
+	MForwardRenderTransparentShaderParamSet();
+	virtual ~MForwardRenderTransparentShaderParamSet();
+
+
+	virtual void InitializeShaderParamSet(MEngine* pEngine) override;
+	virtual void ReleaseShaderParamSet(MEngine* pEngine) override;
+
+public:
+
 	MShaderTextureParam* m_pTransparentFrontTextureParam;
 	MShaderTextureParam* m_pTransparentBackTextureParam;
 };
+
 
 #endif

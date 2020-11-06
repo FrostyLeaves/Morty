@@ -4,6 +4,7 @@
 
 #include "MMaterial.h"
 #include "MVulkanDevice.h"
+#include "MFunction.h"
 
 MMaterialPipelineLayoutData::MMaterialPipelineLayoutData()
 	: pipelineLayout(VK_NULL_HANDLE)
@@ -401,8 +402,71 @@ void MVulkanPipelineManager::DestroyMaterialPipelineLayout(MMaterialPipelineLayo
 		pLayoutData->pipelineLayout = VK_NULL_HANDLE;
 	}
 
+	for (MShaderParamSet* pParamSet : pLayoutData->vShaderParamSets)
+	{
+		pParamSet->DestroyBuffer(m_pDevice);
+		pParamSet->m_nDescriptorSetInitMaterialIdx = M_INVALID_INDEX;
+	}
+
 	pLayoutData->vSetLayouts.clear();
 	pLayoutData->pMaterial = nullptr;
+}
+
+void MVulkanPipelineManager::GenerateShaderParamSet(MShaderParamSet* pParamSet)
+{
+	MMaterialPipelineLayoutData* pLayoutData = FindPipelineLayout(pParamSet->m_nDescriptorSetInitMaterialIdx);
+	if (!pLayoutData)
+		return;
+
+	if (pParamSet->m_unKey >= pLayoutData->vSetLayouts.size())
+		return;
+
+	pLayoutData->vShaderParamSets.push_back(pParamSet);
+
+	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+	{
+		VkDescriptorSetLayout vkDescriptorSetLayout = pLayoutData->vSetLayouts[pParamSet->m_unKey];
+
+		VkDescriptorSetAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = m_pDevice->m_ObjectDestructor.m_VkDescriptorPool;
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &vkDescriptorSetLayout;
+
+
+		VkDescriptorSet descriptorSet;
+		if (vkAllocateDescriptorSets(m_pDevice->m_VkDevice, &allocInfo, &descriptorSet) != VK_SUCCESS)
+		{
+			MLogManager::GetInstance()->Error("MVulkanPipelineManager::CreateMaterialDescriptorSet error: descriptor pool == 0");
+			return;
+		}
+
+		pParamSet->m_VkDescriptorSet[i] = descriptorSet;
+	}
+}
+
+void MVulkanPipelineManager::DestroyShaderParamSet(MShaderParamSet* pParamSet)
+{
+	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+	{
+		if (pParamSet->m_VkDescriptorSet[i])
+		{
+			m_pDevice->m_ObjectDestructor.DestroyDescriptorSetLater(pParamSet->m_VkDescriptorSet[i]);
+		}
+	}
+
+	memset(pParamSet->m_VkDescriptorSet, VK_NULL_HANDLE, sizeof(VkDescriptorSet) * M_BUFFER_NUM);
+
+	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
+	{
+		m_pDevice->DestroyShaderParamBuffer(pParam);
+	}
+
+	MMaterialPipelineLayoutData* pLayoutData = FindPipelineLayout(pParamSet->m_nDescriptorSetInitMaterialIdx);
+	if (!pLayoutData)
+		return;
+
+	ERASE_FIRST_VECTOR(pLayoutData->vShaderParamSets, pParamSet);
 }
 
 #endif

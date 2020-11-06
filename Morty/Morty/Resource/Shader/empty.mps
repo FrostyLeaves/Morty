@@ -1,4 +1,4 @@
-#include "modelHeader.hlsl"
+#include "model_header.hlsl"
 
 float4 PS(VS_OUT_EMPTY input) : SV_Target
 {

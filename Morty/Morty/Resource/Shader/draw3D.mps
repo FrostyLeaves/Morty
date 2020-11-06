@@ -1,4 +1,4 @@
-#include "privateHeader.hlsl"
+#include "private_header.hlsl"
 
 struct VS_OUT_DRAW3D
 {

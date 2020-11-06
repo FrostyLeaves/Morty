@@ -57,14 +57,15 @@ extern const char* SUFFIX_MODEL;
 extern const char* SUFFIX_SKELANIM;
 
 //Default Asset
-extern const char* DEFAULT_MATERIAL_STATIC;
-extern const char* DEFAULT_MATERIAL_SKINNED;
+extern const char* DEFAULT_MATERIAL_MODEL_STATIC_MESH;
+extern const char* DEFAULT_MATERIAL_MODEL_SKELETON_MESH;
 extern const char* DEFAULT_MATERIAL_DRAW2D;
 extern const char* DEFAULT_MATERIAL_DRAW3D;
 extern const char* DEFAULT_MATERIAL_SKYBOX;
-extern const char* DEFAULT_MATERIAL_SHADOW;
-extern const char* DEFAULT_MATERIAL_SHADOW_ANIM;
-extern const char* DEFAULT_MATERIAL_DEPTH_PEELING;
+extern const char* DEFAULT_MATERIAL_SHADOW_STATIC;
+extern const char* DEFAULT_MATERIAL_SHADOW_SKELETON;
+extern const char* DEFAULT_MATERIAL_DEPTH_PEEL_BLEND;
+extern const char* DEFAULT_MATERIAL_DEPTH_PEEL_FILL;
 
 extern const char* DEFAULT_TEXTURE_WHITE;
 extern const char* DEFAULT_TEXTURE_BLACK;

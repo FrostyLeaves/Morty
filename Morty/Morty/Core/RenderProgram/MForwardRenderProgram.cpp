@@ -162,6 +162,8 @@ void MForwardRenderProgram::RenderWithViewport(MRenderInfo info, MViewport* pVie
 
 	DrawModelInstance(info);
 
+	DrawPainter(info);
+
 	info.pRenderer->EndRenderPass();
 
 
@@ -169,7 +171,6 @@ void MForwardRenderProgram::RenderWithViewport(MRenderInfo info, MViewport* pVie
 		m_pTransparentWork->DrawTransparentMesh(info);
 
 //  DrawSkyBox(info);
-//	DrawPainter(info);
 
 
 	pViewport->UnlockMatrix();
@@ -439,7 +440,7 @@ void MForwardRenderProgram::DrawBoundingBox(MRenderInfo& info, MModelInstance* p
 void MForwardRenderProgram::DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pMeshIns)
 {
 // 	MResource* pSphereResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/Sphere.model");
-// 	MMaterialResource* pStaticMeshMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_STATIC);
+// 	MMaterialResource* pStaticMeshMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_MODEL_STATIC_MESH);
 // 
 // 	MMaterial& mat = *pStaticMeshMaterialRes;
 // 	mat.SetRasterizerType(MERasterizerType::ECullNone);

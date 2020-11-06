@@ -244,13 +244,18 @@ void MForwardShadowMapWork::ReleaseShaderParamSet()
 
 void MForwardShadowMapWork::InitializeMaterial()
 {
-	MMaterialResource* pShadowMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW);
-	m_pStaticMaterial = pShadowMaterialRes;
+	m_pStaticMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_STATIC);
+	m_pStaticMaterial->AddRef();
 
-	MMaterialResource* pShadowWithAnimMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_ANIM);
-	m_pAnimMaterial = pShadowWithAnimMaterialRes;
+	m_pAnimMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_SKELETON);
+	m_pAnimMaterial->AddRef();
 }
 
 void MForwardShadowMapWork::ReleaseMaterial()
 {
+	m_pStaticMaterial->SubRef();
+	m_pStaticMaterial = nullptr;
+
+	m_pAnimMaterial->SubRef();
+	m_pAnimMaterial = nullptr;
 }

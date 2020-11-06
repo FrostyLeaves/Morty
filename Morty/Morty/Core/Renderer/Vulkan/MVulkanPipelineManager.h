@@ -40,6 +40,7 @@ struct MMaterialPipelineLayoutData
     MMaterial* pMaterial;
     VkPipelineLayout pipelineLayout;
     std::vector<VkDescriptorSetLayout> vSetLayouts;
+    std::vector<MShaderParamSet*> vShaderParamSets;
 };
 
 class MORTY_CLASS MVulkanPipelineManager
@@ -74,6 +75,9 @@ public:
 
     MMaterialPipelineLayoutData* CreateMaterialPipelineLayout(MMaterial* pMaterial);
     void DestroyMaterialPipelineLayout(MMaterialPipelineLayoutData* pLayoutData);
+
+    void GenerateShaderParamSet(MShaderParamSet* pParamSet);
+    void DestroyShaderParamSet(MShaderParamSet* pParamSet);
 
 private:
 

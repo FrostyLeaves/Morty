@@ -170,34 +170,38 @@ bool MEngine::InitializeDefaultResource()
 	MResource* pMeshVSResource = GetResourceManager()->LoadResource("./Shader/model.mvs");
 	MResource* pMeshPSResource = GetResourceManager()->LoadResource("./Shader/model.mps");
 
-	MMaterialResource* pStaticMeshMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_STATIC);
+	MMaterialResource* pStaticMeshMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_MODEL_STATIC_MESH);
 	pStaticMeshMaterialRes->LoadVertexShader(pMeshVSResource);
 	pStaticMeshMaterialRes->LoadPixelShader(pMeshPSResource);
+	pStaticMeshMaterialRes->AddRef();
 
-	MMaterialResource* pSkinnedMeshMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SKINNED);
+	MMaterialResource* pSkinnedMeshMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_MODEL_SKELETON_MESH);
 	pSkinnedMeshMaterialRes->GetShaderMacro()->SetInnerMacro(MATERIAL_MACRO_SKELETON_ENABLE, "1");
 	pSkinnedMeshMaterialRes->LoadVertexShader(pMeshVSResource);
 	pSkinnedMeshMaterialRes->LoadPixelShader(pMeshPSResource);
+	pSkinnedMeshMaterialRes->AddRef();
 
 	MResource* pDraw2DVSResource = GetResourceManager()->LoadResource("./Shader/draw.mvs");
 	MResource* pDraw2DPSResource = GetResourceManager()->LoadResource("./Shader/draw.mps");
 	MMaterialResource* pDraw2DMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW2D);
-	pDraw2DMaterialRes->SetMaterialType(MEMaterialType::EBlendTransparent);
+	pDraw2DMaterialRes->SetMaterialType(MEMaterialType::EDefault);
 	pDraw2DMaterialRes->LoadVertexShader(pDraw2DVSResource);
 	pDraw2DMaterialRes->LoadPixelShader(pDraw2DPSResource);
+	pDraw2DMaterialRes->AddRef();
 
 	MResource* pDraw3DVSResource = GetResourceManager()->LoadResource("./Shader/draw3D.mvs");
 	MResource* pDraw3DPSResource = GetResourceManager()->LoadResource("./Shader/draw3D.mps");
 	MMaterialResource* pDraw3DMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW3D);
 	pDraw3DMaterialRes->LoadVertexShader(pDraw3DVSResource);
 	pDraw3DMaterialRes->LoadPixelShader(pDraw3DPSResource);
+	pDraw3DMaterialRes->AddRef();
 
 	MResource* pSkyBoxVSResource = GetResourceManager()->LoadResource("./Shader/skybox.mvs");
 	MResource* pSkyBoxPSResource = GetResourceManager()->LoadResource("./Shader/skybox.mps");
 	MMaterialResource* pSkyBoxMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SKYBOX);
 	pSkyBoxMaterialRes->LoadVertexShader(pSkyBoxVSResource);
 	pSkyBoxMaterialRes->LoadPixelShader(pSkyBoxPSResource);
-
+	pSkyBoxMaterialRes->AddRef();
 
 
 	const MString vTexturePath[6] = {
@@ -223,17 +227,18 @@ bool MEngine::InitializeDefaultResource()
 
 	MResource* pEmptyVSResource = GetResourceManager()->LoadResource("./Shader/empty.mvs");
 	MResource* pEmptyPSResource = GetResourceManager()->LoadResource("./Shader/empty.mps");
-	MMaterialResource* pShadowMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW);
-	pShadowMaterialRes->LoadVertexShader(pEmptyVSResource);
-	pShadowMaterialRes->LoadPixelShader(pEmptyPSResource);
-	pShadowMaterialRes->SetRasterizerType(MERasterizerType::ECullFront);
+	MMaterialResource* pShadowStaticMaterial = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_STATIC);
+	pShadowStaticMaterial->LoadVertexShader(pEmptyVSResource);
+	pShadowStaticMaterial->LoadPixelShader(pEmptyPSResource);
+	pShadowStaticMaterial->SetRasterizerType(MERasterizerType::ECullFront);
+	pShadowStaticMaterial->AddRef();
 
-	MMaterialResource* pShadowWithAnimMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_ANIM);
-	pShadowWithAnimMaterialRes->GetShaderMacro()->SetInnerMacro(MATERIAL_MACRO_SKELETON_ENABLE, "1");
-	pShadowWithAnimMaterialRes->LoadVertexShader(pEmptyVSResource);
-	pShadowWithAnimMaterialRes->LoadPixelShader(pEmptyPSResource);
-	pShadowWithAnimMaterialRes->SetRasterizerType(MERasterizerType::ECullFront);
-
+	MMaterialResource* pShadowSkeletonMaterial = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_SKELETON);
+	pShadowSkeletonMaterial->GetShaderMacro()->SetInnerMacro(MATERIAL_MACRO_SKELETON_ENABLE, "1");
+	pShadowSkeletonMaterial->LoadVertexShader(pEmptyVSResource);
+	pShadowSkeletonMaterial->LoadPixelShader(pEmptyPSResource);
+	pShadowSkeletonMaterial->SetRasterizerType(MERasterizerType::ECullFront);
+	pShadowSkeletonMaterial->AddRef();
 
 
 	MTextureResource* pWhiteTextureRes = GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_WHITE);
@@ -255,16 +260,28 @@ bool MEngine::InitializeDefaultResource()
 	pNormalMap->SetSize(Vector2(1, 1));
 	pNormalMap->FillColor(MColor(0.5f, 0.5f, 1, 1));
 	pNormalMap->GenerateBuffer(GetDevice());
+	pNormalMapRes->AddRef();
 
-	MResource* pDPVSResource = GetResourceManager()->LoadResource("./Shader/depthPeeling.mvs");
-	MResource* pDPPSResource = GetResourceManager()->LoadResource("./Shader/depthPeeling.mps");
-	MMaterialResource* pTextureMaterial = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DEPTH_PEELING);
+
+	MResource* pDPVSResource = GetResourceManager()->LoadResource("./Shader/depth_peel_blend.mvs");
+	MResource* pDPBPSResource = GetResourceManager()->LoadResource("./Shader/depth_peel_blend.mps");
+	MResource* pDPFPSResource = GetResourceManager()->LoadResource("./Shader/depth_peel_fill.mps");
+
+	MMaterialResource* pTextureMaterial = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DEPTH_PEEL_BLEND);
 	pTextureMaterial->SetMaterialType(MEMaterialType::EBlendTransparent);
 	pTextureMaterial->LoadVertexShader(pDPVSResource);
-	pTextureMaterial->LoadPixelShader(pDPPSResource);
+	pTextureMaterial->LoadPixelShader(pDPBPSResource);
+	pTextureMaterial->AddRef();
 
+
+	MMaterialResource* pDepthPeelFillMaterial = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DEPTH_PEEL_FILL);
+	pDepthPeelFillMaterial->SetMaterialType(MEMaterialType::ETransparent);
+	pDepthPeelFillMaterial->LoadVertexShader(pDPVSResource);
+	pDepthPeelFillMaterial->LoadPixelShader(pDPFPSResource);
+	pDepthPeelFillMaterial->AddRef();
 
 	MResource* pSphereResource = GetResourceManager()->LoadResource("./Model/Sphere/Sphere.model");
+	pSphereResource->AddRef();
 
 	return true;
 }

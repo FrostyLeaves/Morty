@@ -1,11 +1,28 @@
-#include "modelHeader.hlsl"
+#include "model_header.hlsl"
 
 #define BIAS 0.000001f 
+
+#ifdef MTRANSPARENT_DEPTH_PEELING
+
+struct PS_OUT
+{
+    float4 f4FrontColor: SV_Target0;
+    float4 fBackColor: SV_Target1;
+    float fFrontDepth: SV_Target2;
+    float fBackDepth: SV_Target3;
+};
+
+[[vk::input_attachment_index(2)]] [[vk::binding(7, 1)]] SubpassInput U_texSubpassInput0;
+[[vk::input_attachment_index(3)]] [[vk::binding(8, 1)]] SubpassInput U_texSubpassInput1;
+
+#else
 
 struct PS_OUT
 {
     float4 target0: SV_Target0;
 };
+
+#endif
 
 PS_OUT PS(VS_OUT input) : SV_Target
 {
@@ -24,9 +41,41 @@ PS_OUT PS(VS_OUT input) : SV_Target
         clip(fAlpha - 0.1f);
     }
 
+#ifdef MTRANSPARENT_DEPTH_PEELING
+
+    float fZDepth = input.pos.z;
+    float fZFront = U_texSubpassInput0.SubpassLoad();
+    float fZBack = U_texSubpassInput1.SubpassLoad();
+
+    output.f4FrontColor = float4(0, 0, 0, 0);
+    output.fBackColor = float4(0, 0, 0, 0);
+    output.fFrontDepth = 1;
+    output.fBackDepth = 0;
+
+    // a <= b
+    clip(fZDepth + BIAS - fZFront);
+    clip(fZBack + BIAS - fZDepth);
+
+    if(fZDepth - BIAS > fZFront && fZDepth + BIAS < fZBack)
+    {
+        output.fFrontDepth = input.pos.z;
+        output.fBackDepth = input.pos.z;
+        return output;
+    }
+      
     f3Color = AdditionAllLights(f3Color, f3AmbiColor, input);
 
+    // color = destColor + srcColor * srcAlpha * (1 - destAlpha)
+    // return [srcColor * srcAlpha] as srcColor
+    // blend destColor * 1 + srcColor * (1 - destAlpha)
+    if(fZFront - BIAS <= fZDepth && fZDepth <= fZFront + BIAS)
+        output.f4FrontColor = float4(f3Color * fAlpha, fAlpha);
+    else
+        output.fBackColor = float4(f3Color, fAlpha);
+#else
+    f3Color = AdditionAllLights(f3Color, f3AmbiColor, input);
     output.target0 = float4(f3Color, fAlpha);
-
+#endif
+    
     return output;
 }

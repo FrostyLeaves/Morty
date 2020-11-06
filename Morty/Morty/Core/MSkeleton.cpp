@@ -259,7 +259,7 @@ MShaderParamSet* MSkeletonInstance::GetShaderParamSet()
 		pBonesSet->var = bonesSrt;
 
 		m_pShaderParamSet->m_vParams.push_back(pBonesSet);
-		m_pShaderParamSet->GenerateBuffer(m_pEngine->GetDevice());
+	//	m_pShaderParamSet->GenerateBuffer(m_pEngine->GetDevice());
 
 		m_pShaderBonesArray = pBonesSet->var.GetStruct()->GetMember(nIdx)->var.GetArray();
 	}

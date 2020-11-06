@@ -63,6 +63,9 @@ public:
 	bool LoadVertexShader(MResource* pResource);
 	bool LoadPixelShader(MResource* pResource);
 
+	bool LoadVertexShader(const MString& strResource);
+	bool LoadPixelShader(const MString& strResource);
+
 public:
 
 	MResource* GetVertexShaderResource() { return m_VertexResource.GetResource(); }
