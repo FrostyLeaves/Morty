@@ -79,6 +79,8 @@ public:
     void GenerateShaderParamSet(MShaderParamSet* pParamSet);
     void DestroyShaderParamSet(MShaderParamSet* pParamSet);
 
+    void DestroyShaderParamSetImpl(MShaderParamSet* pParamSet);
+
 private:
 
 	MRepeatIDPool<uint32_t> m_MaterialIDPool;

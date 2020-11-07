@@ -970,16 +970,6 @@ bool MVulkanDevice::GenerateShaderParamSet(MShaderParamSet* pParamSet)
 	
 	m_PipelineManager.GenerateShaderParamSet(pParamSet);
 
-	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
-	{
-		GenerateShaderParamBuffer(pParam);
-
-		for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-		{
-			m_PipelineManager.BindConstantParam(pParamSet, pParam, i);
-		}
-	}
-
 	return true;
 }
 

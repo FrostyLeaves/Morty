@@ -56,6 +56,7 @@ public:
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	VkDescriptorSet m_VkDescriptorSet[M_BUFFER_NUM];
 	int m_nDescriptorSetInitMaterialIdx;
+	uint32_t m_unLayoutDataIdx;
 #endif
 
 protected:

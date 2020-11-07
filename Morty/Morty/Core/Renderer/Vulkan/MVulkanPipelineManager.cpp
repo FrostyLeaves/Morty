@@ -404,9 +404,11 @@ void MVulkanPipelineManager::DestroyMaterialPipelineLayout(MMaterialPipelineLayo
 
 	for (MShaderParamSet* pParamSet : pLayoutData->vShaderParamSets)
 	{
-		pParamSet->DestroyBuffer(m_pDevice);
+		DestroyShaderParamSetImpl(pParamSet);
+		pParamSet->m_unLayoutDataIdx = M_INVALID_INDEX;
 		pParamSet->m_nDescriptorSetInitMaterialIdx = M_INVALID_INDEX;
 	}
+	pLayoutData->vShaderParamSets.clear();
 
 	pLayoutData->vSetLayouts.clear();
 	pLayoutData->pMaterial = nullptr;
@@ -422,6 +424,7 @@ void MVulkanPipelineManager::GenerateShaderParamSet(MShaderParamSet* pParamSet)
 		return;
 
 	pLayoutData->vShaderParamSets.push_back(pParamSet);
+	pParamSet->m_unLayoutDataIdx = pLayoutData->vShaderParamSets.size();
 
 	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
 	{
@@ -443,9 +446,33 @@ void MVulkanPipelineManager::GenerateShaderParamSet(MShaderParamSet* pParamSet)
 
 		pParamSet->m_VkDescriptorSet[i] = descriptorSet;
 	}
+
+	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
+	{
+		m_pDevice->GenerateShaderParamBuffer(pParam);
+
+		for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+		{
+			m_PipelineManager.BindConstantParam(pParamSet, pParam, i);
+		}
+	}
 }
 
 void MVulkanPipelineManager::DestroyShaderParamSet(MShaderParamSet* pParamSet)
+{
+	DestroyShaderParamSetImpl(pParamSet);
+
+	MMaterialPipelineLayoutData* pLayoutData = FindPipelineLayout(pParamSet->m_nDescriptorSetInitMaterialIdx);
+	if (!pLayoutData)
+		return;
+
+	pLayoutData->vShaderParamSets.erase(pParamSet->m_unLayoutDataIdx);
+
+	pParamSet->m_unLayoutDataIdx = M_INVALID_INDEX;
+	pParamSet->m_nDescriptorSetInitMaterialIdx = M_INVALID_INDEX;
+}
+
+void MVulkanPipelineManager::DestroyShaderParamSetImpl(MShaderParamSet* pParamSet)
 {
 	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
 	{
@@ -461,12 +488,6 @@ void MVulkanPipelineManager::DestroyShaderParamSet(MShaderParamSet* pParamSet)
 	{
 		m_pDevice->DestroyShaderParamBuffer(pParam);
 	}
-
-	MMaterialPipelineLayoutData* pLayoutData = FindPipelineLayout(pParamSet->m_nDescriptorSetInitMaterialIdx);
-	if (!pLayoutData)
-		return;
-
-	ERASE_FIRST_VECTOR(pLayoutData->vShaderParamSets, pParamSet);
 }
 
 #endif

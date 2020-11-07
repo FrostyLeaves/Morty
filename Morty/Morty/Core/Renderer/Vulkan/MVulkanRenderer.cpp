@@ -478,7 +478,7 @@ void MVulkanRenderer::GetDepthStencilStage(MMaterial* pMaterial, MRenderPass* pR
 
 void MVulkanRenderer::UpdateShaderParam(MShaderConstantParam& param, const uint32_t& unFrameIdx)
 {
-	if (VK_NULL_HANDLE == param.m_VkBuffer)
+	if (VK_NULL_HANDLE == param.m_VkBuffer[unFrameIdx])
 		return;
 
 	if (param.bDirty && param.m_pMemoryMapping[unFrameIdx])
