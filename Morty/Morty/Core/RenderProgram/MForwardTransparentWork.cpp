@@ -309,7 +309,7 @@ void MForwardTransparentWork::InitializeRenderPass()
 	GetEngine()->GetDevice()->GenerateRenderPass(&m_TransWithClearRenderPass, m_pTransparentRenderTarget);
 
 	MRenderPass::MTargetDesc descMesh;
-	descMesh.bClearWhenRender = true;
+	descMesh.bClearWhenRender = false;
 	m_MeshRenderPass.m_vBackDesc.push_back(descMesh);
 	m_MeshRenderPass.m_DepthDesc.bClearWhenRender = false;
 	GetEngine()->GetDevice()->GenerateRenderPass(&m_MeshRenderPass, pRenderTarget);

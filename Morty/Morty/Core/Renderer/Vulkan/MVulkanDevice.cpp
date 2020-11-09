@@ -136,11 +136,6 @@ void MVulkanDevice::Release()
 	vkDestroyInstance(m_VkInstance, NULL);
 }
 
-void MVulkanDevice::Tick(const float& fDelta)
-{
-
-}
-
 int MVulkanDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
 {
 	VkPhysicalDeviceMemoryProperties memProperties;
@@ -152,7 +147,7 @@ int MVulkanDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags pro
 		}
 	}
 
-	return -1;
+	return M_INVALID_INDEX;
 }
 
 int MVulkanDevice::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
@@ -284,10 +279,6 @@ void MVulkanDevice::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh
 		vkDestroyBuffer(m_VkDevice, stagingIdxBuffer, nullptr);
 		vkFreeMemory(m_VkDevice, stagingIdxBufferMemory, nullptr);
 	}
-
-	//TODO �Ż��ڴ������ƣ��Ժ��������ڴ档���罨���ɸ��õ��ڴ�أ��ڴ������
-
-
 
 	MVertexBuffer* pBuffer = new MVertexBuffer();
 	pBuffer->m_VkVertexBuffer = vertexBuffer;
@@ -965,7 +956,7 @@ bool MVulkanDevice::GenerateShaderParamSet(MShaderParamSet* pParamSet)
 	if (!pParamSet)
 		return false;
 
-	DestroyShaderParamSet(pParamSet);
+	//DestroyShaderParamSet(pParamSet);
 
 	
 	m_PipelineManager.GenerateShaderParamSet(pParamSet);

@@ -73,6 +73,8 @@ public:
 	virtual void OnCreated() override;
 	virtual void OnDelete() override;
 
+	virtual void SetClearColor(const MColor& cClearColor) override;
+
 	static void UpdateShaderSharedParams(MRenderInfo& info, MForwardRenderShaderParamSet& frameParamSet);
 
 protected:
@@ -111,6 +113,8 @@ private:
 	MForwardTransparentWork* m_pTransparentWork;
 
 	MRenderPass m_ForwardMeshRenderPass;
+
+	MColor m_cClearColor;
 };
 
 #endif

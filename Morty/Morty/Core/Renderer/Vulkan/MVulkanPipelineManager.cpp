@@ -251,6 +251,8 @@ void MVulkanPipelineManager::BindConstantParam(MShaderParamSet* pParamSet, MShad
 	descriptorWrite.pTexelBufferView = nullptr; // Optional
 
 	vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
+
+//	memset(pParam->bDirty, 1, sizeof(bool) * M_BUFFER_NUM);
 }
 
 void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShaderTextureParam* pParam, const uint32_t& unIndex)
@@ -281,6 +283,7 @@ void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShade
 		descriptorWrite.pImageInfo = &imageInfo;
 		descriptorWrite.pTexelBufferView = nullptr;
 
+		//A VkDescripotrSet can only be updated once on per render. .
 		vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
 	}
 }
@@ -405,8 +408,6 @@ void MVulkanPipelineManager::DestroyMaterialPipelineLayout(MMaterialPipelineLayo
 	for (MShaderParamSet* pParamSet : pLayoutData->vShaderParamSets)
 	{
 		DestroyShaderParamSetImpl(pParamSet);
-		pParamSet->m_unLayoutDataIdx = M_INVALID_INDEX;
-		pParamSet->m_nDescriptorSetInitMaterialIdx = M_INVALID_INDEX;
 	}
 	pLayoutData->vShaderParamSets.clear();
 
@@ -453,23 +454,28 @@ void MVulkanPipelineManager::GenerateShaderParamSet(MShaderParamSet* pParamSet)
 
 		for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
 		{
-			m_PipelineManager.BindConstantParam(pParamSet, pParam, i);
+			BindConstantParam(pParamSet, pParam, i);
 		}
 	}
 }
 
 void MVulkanPipelineManager::DestroyShaderParamSet(MShaderParamSet* pParamSet)
 {
-	DestroyShaderParamSetImpl(pParamSet);
-
 	MMaterialPipelineLayoutData* pLayoutData = FindPipelineLayout(pParamSet->m_nDescriptorSetInitMaterialIdx);
 	if (!pLayoutData)
 		return;
 
-	pLayoutData->vShaderParamSets.erase(pParamSet->m_unLayoutDataIdx);
+	if (M_INVALID_INDEX != pParamSet->m_unLayoutDataIdx)
+	{
+		for (uint32_t i = pParamSet->m_unLayoutDataIdx; i < pLayoutData->vShaderParamSets.size() - 1; ++i)
+		{
+			pLayoutData->vShaderParamSets[i] = pLayoutData->vShaderParamSets[i + 1];
+		}
 
-	pParamSet->m_unLayoutDataIdx = M_INVALID_INDEX;
-	pParamSet->m_nDescriptorSetInitMaterialIdx = M_INVALID_INDEX;
+		pLayoutData->vShaderParamSets.pop_back();
+	}
+
+	DestroyShaderParamSetImpl(pParamSet);
 }
 
 void MVulkanPipelineManager::DestroyShaderParamSetImpl(MShaderParamSet* pParamSet)
@@ -487,7 +493,17 @@ void MVulkanPipelineManager::DestroyShaderParamSetImpl(MShaderParamSet* pParamSe
 	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
 	{
 		m_pDevice->DestroyShaderParamBuffer(pParam);
+		pParam->SetDirty();
 	}
+
+	for (MShaderTextureParam* pParam : pParamSet->m_vTextures)
+	{
+		pParam->SetDirty();
+	}
+
+
+	pParamSet->m_unLayoutDataIdx = M_INVALID_INDEX;
+	pParamSet->m_nDescriptorSetInitMaterialIdx = M_INVALID_INDEX;
 }
 
 #endif

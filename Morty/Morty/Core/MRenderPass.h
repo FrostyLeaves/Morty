@@ -42,8 +42,8 @@ public:
         MTargetDesc();
         MTargetDesc(const bool bClear, const MColor& cClearColor);
 
-        bool bClearWhenRender;
-        MColor cClearColor;
+		bool bClearWhenRender;
+		MColor cClearColor;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
         VkFormat m_vkTargetFormat;

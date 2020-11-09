@@ -77,12 +77,12 @@ int main(int argc, char* argv[])
 	engine.Initialize("./");
 
 
-// 	{
-// 		{
-// 			MModelConverter conver(&engine);
-// 			conver.Convert("./Model/pigeon/source/Pigeon_Animations.fbx", "./Model/output", "pigeon");
-// 		}
-// 	}
+	{
+		{
+			MModelConverter conver(&engine);
+			conver.Convert("./Model/pigeon/source/Pigeon_Animations.fbx", "./Model/output", "pigeon");
+		}
+	}
 
  	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
  	pRootNode->SetName("RootNode");

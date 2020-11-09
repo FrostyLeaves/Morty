@@ -45,6 +45,7 @@ MForwardRenderProgram::MForwardRenderProgram()
 	, m_FrameParamSet()
 	, m_pShadowMapWork(nullptr)
 	, m_pTransparentWork(nullptr)
+	, m_cClearColor(0, 0, 0, 1.0f)
 {
 	
 }
@@ -105,7 +106,7 @@ void MForwardRenderProgram::InitializeRenderPass()
 
 	m_ForwardMeshRenderPass.m_vBackDesc.push_back(MRenderPass::MTargetDesc());
 	m_ForwardMeshRenderPass.m_vBackDesc.back().bClearWhenRender = true;
-	m_ForwardMeshRenderPass.m_vBackDesc.back().cClearColor = MColor(0.0f, 0.0f, 0.0f, 1.0f);
+	m_ForwardMeshRenderPass.m_vBackDesc.back().cClearColor = m_cClearColor;
 
 	m_ForwardMeshRenderPass.m_DepthDesc.bClearWhenRender = true;
 
@@ -186,6 +187,16 @@ void MForwardRenderProgram::OnDelete()
 	Release();
 
 	Super::OnDelete();
+}
+
+void MForwardRenderProgram::SetClearColor(const MColor& cClearColor)
+{
+	m_cClearColor = cClearColor;
+
+	for (MRenderPass::MTargetDesc& desc : m_ForwardMeshRenderPass.m_vBackDesc)
+	{
+		desc.cClearColor = m_cClearColor;
+	}
 }
 
 void MForwardRenderProgram::UpdateShaderSharedParams(MRenderInfo& info, MForwardRenderShaderParamSet& frameParamSet)
@@ -304,7 +315,6 @@ void MForwardRenderProgram::DrawNormalMesh(MRenderInfo& info)
 			continue;
 
 		info.pRenderer->SetShaderParamSet(&m_FrameParamSet);
-		info.pRenderer->SetShaderParamSet(pMaterial->GetMaterialParamSet());
 
 		for (MIMeshInstance* pMeshIns : group.m_vMeshInstances)
 		{

@@ -141,6 +141,8 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 
 	//Setup Render
 	m_SceneTexture.Initialize(pEngine);
+	m_SceneTexture.SetBackColor(MColor(bgColor.x + 0.3f, bgColor.y + 0.3f, bgColor.z + 0.3f, bgColor.w));
+
 	m_pEngine->SetScene(m_SceneTexture.GetScene());
 
 	m_pNodeTreeView = new NodeTreeView();

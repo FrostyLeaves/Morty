@@ -59,16 +59,9 @@ void SceneTexture::Initialize(MEngine* pEngine)
 	m_pTextureRenderTarget = pEngine->GetObjectManager()->CreateObject<MTextureRenderTarget>();
 	m_pTextureRenderTarget->SetBackTexture(m_vBackTexture, 0);
 	m_pTextureRenderTarget->SetDepthTexture(m_vDepthTexture);
+	m_pTextureRenderTarget->Resize({ 256, 256 });
 
 	m_pRenderProgram->BindRenderTarget(m_pTextureRenderTarget);
-
-	m_pTextureRenderTarget->m_funcRenderFunction = [this](MIRenderer* pRenderer)
-	{
-		//m_pRenderViewport->Render(pRenderer, m_pTextureRenderTarget);
-	};
-
-//	m_pEngine->GetDevice()->GenerateRenderTarget(m_pTextureRenderTarget, 256, 256);
-	m_pTextureRenderTarget->Resize({ 256, 256 });
 
 	MCamera* pCamera = m_pRenderViewport->GetCamera();
 	pCamera->SetPosition(Vector3(0, 0, -20));
@@ -158,4 +151,9 @@ void* SceneTexture::GetTexture(const uint32_t& unFrameIndex)
 	}
 	
 	return nullptr;
+}
+
+void SceneTexture::SetBackColor(const MColor& cColor)
+{
+	m_pRenderProgram->SetClearColor(cColor);
 }

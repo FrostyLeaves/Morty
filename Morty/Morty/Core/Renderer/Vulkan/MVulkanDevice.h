@@ -38,8 +38,6 @@ public:
 	virtual bool Initialize() override;
 	virtual void Release() override;
 
-	virtual void Tick(const float& fDelta) override;
-
 public:
 	virtual void GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh, const bool& bModifiable = false) override;
 	virtual void DestroyBuffer(MVertexBuffer** ppVertexBuffer) override;

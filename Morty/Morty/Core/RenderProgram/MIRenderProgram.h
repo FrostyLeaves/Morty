@@ -10,6 +10,7 @@
 #define _M_MIRENDERPROGRAM_H_
 #include "MGlobal.h"
 #include "MObject.h"
+#include "Type/MColor.h"
 
 class MScene;
 class MViewport;
@@ -32,6 +33,8 @@ public:
     virtual void Render(MIRenderer* pRenderer, const std::vector<MViewport*>& vViewports) {};
 
     virtual void DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance) {}
+
+    virtual void SetClearColor(const MColor& cClearColor) {}
 
     virtual void Initialize() {}
     virtual void Release() {}

@@ -168,7 +168,7 @@ void MModelConverter::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vec
 	matRotation.m[0][3] = 0;
 	matRotation.m[1][3] = 0;
 	matRotation.m[2][3] = 0;
-	matRotation = matParentRotation * matRotation;
+	//matRotation = matParentRotation * matRotation;
 
 	for (uint32_t i = 0; i < pNode->mNumMeshes; ++i)
 	{
@@ -357,6 +357,22 @@ void MModelConverter::BindVertexAndBones(aiMesh* pMesh, const aiScene* pScene, M
 				}
 			}
 		}
+	}
+
+	for (uint32_t i = 0; i < pMMesh->GetVerticesLength(); ++i)
+	{
+		MVertexWithBones& vertex = pMMesh->GetVertices()[i];
+
+		float fLength = 0.0f;
+		for (uint32_t n = 0; n < MBONES_PER_VERTEX; ++n)
+			fLength += vertex.bonesWeight[n];
+
+		if (fLength > 0.0f)
+		{
+			for (uint32_t n = 0; n < MBONES_PER_VERTEX; ++n)
+				vertex.bonesWeight[n] *= (1.0f / fLength);
+		}
+
 	}
 }
 

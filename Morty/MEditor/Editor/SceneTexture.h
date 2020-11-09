@@ -3,6 +3,7 @@
 
 #include "MGlobal.h"
 #include "Vector.h"
+#include "Type/MColor.h"
 
 #include <array>
 
@@ -32,6 +33,8 @@ public:
 
 	MScene* GetScene() { return m_pScene; }
 	MViewport* GetViewport() { return m_pRenderViewport; }
+
+	void SetBackColor(const MColor& cColor);
 
 protected:
 

@@ -39,9 +39,6 @@ public:
 	virtual bool Initialize() = 0;
 	virtual void Release() = 0;
 
-public:
-
-	virtual void Tick(const float& fDelta) {}
 
 public:
 	virtual void GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh, const bool& bModifiable = false) = 0;
