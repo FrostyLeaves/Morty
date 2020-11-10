@@ -44,7 +44,7 @@ public:
 	virtual void UploadBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh) override;
 
 	virtual void GenerateTexture(MTextureBuffer** ppTextureBuffer, MTexture* pTexture, const bool& bGenerateMipmap) override;
-	virtual void GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTexture* vTexture[6], const bool& bGenerateMipmap) override {}
+	virtual void GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTexture* vTexture[6], const bool& bGenerateMipmap) override;
 	virtual void DestroyTexture(MTextureBuffer** ppTextureBuffer) override;
 
 	virtual bool GenerateSubpassTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const METextureLayout& eType, const uint32_t& unWidth, const uint32_t& unHeight) override;
@@ -72,18 +72,20 @@ public:
 	virtual bool GenerateRenderTargetView(MRenderTextureBuffer* pTextureBuffer) override;
 	virtual void DestroyRenderTargetView(MRenderTextureBuffer* pTextureBuffer) override;
 
-	virtual void RegisterMaterial(MMaterial* pMaterial) override;
-	virtual void UnRegisterMaterial(MMaterial* pMaterial) override;
+	virtual bool RegisterMaterial(MMaterial* pMaterial) override;
+	virtual bool UnRegisterMaterial(MMaterial* pMaterial) override;
 
 	VkPhysicalDevice GetPhysicalDevice() { return m_VkPhysicalDevice; }
 
 	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-	void CopyImageBuffer(VkBuffer srcBuffer, VkImage image, const uint32_t& width, const uint32_t& height);
-	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+	void CopyImageBuffer(VkBuffer srcBuffer, VkImage image, const uint32_t& width, const uint32_t& height, const uint32_t& unCount);
+
+	void TransitionImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange subresourceRange);
 
 	VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
 	void CreateImage(const uint32_t& unWidth, const uint32_t& unHeight, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+	void CreateImageCube(const uint32_t& unWidth, const uint32_t& unHeight, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 
 	VkCommandBuffer BeginCommands();
 	void EndCommands(VkCommandBuffer commandBuffer);

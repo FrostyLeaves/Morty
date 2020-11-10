@@ -165,13 +165,14 @@ void MForwardRenderProgram::RenderWithViewport(MRenderInfo info, MViewport* pVie
 
 	DrawPainter(info);
 
+//	DrawSkyBox(info);
+
 	info.pRenderer->EndRenderPass();
 
 
 	if (m_pTransparentWork)
 		m_pTransparentWork->DrawTransparentMesh(info);
 
-//  DrawSkyBox(info);
 
 
 	pViewport->UnlockMatrix();
@@ -360,35 +361,43 @@ void MForwardRenderProgram::DrawModelInstance(MRenderInfo& info)
 
 void MForwardRenderProgram::DrawSkyBox(MRenderInfo& info)
 {
-// 	MSkyBox* pSkyBox = info.pScene->GetSkyBox();
-// 
-// 	if (pSkyBox)
-// 	{
-// 		if (MIMesh* pMesh = pSkyBox->GetMesh())
-// 		{
-// 			MMaterial* pMaterial = pSkyBox->GetMaterial();
-// 
-// 			if (MShaderConstantParam* pMeshParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX))
-// 			{
-// 				MStruct& cStruct = *pMeshParam->var.GetStruct();
-// 				Matrix4 mat(Matrix4::IdentityMatrix);
-// 				Vector3 camPos = info.pViewport->GetCamera()->GetWorldPosition();
-// 				mat.m[0][3] = camPos.x;
-// 				mat.m[1][3] = camPos.y;
-// 				mat.m[2][3] = camPos.z;
-// 				cStruct[0] = mat;
-// 
-// 				pMeshParam->SetDirty();
-// 				info.pRenderer->SetShaderParam(*pMeshParam);
-// 			}
-// 
-// 			if (info.pRenderer->SetUseMaterial(pMaterial, true))
-// 			{
-// 				info.pRenderer->DrawMesh(pMesh);
-// 			}
-// 		}
-// 
-// 	}
+	MSkyBox* pSkyBox = info.pScene->GetSkyBox();
+
+	if (pSkyBox)
+	{
+		if (MIMesh* pMesh = pSkyBox->GetMesh())
+		{
+			MMaterial* pMaterial = pSkyBox->GetMaterial();
+
+			if (info.pRenderer->SetUseMaterial(pMaterial))
+			{
+				MShaderParamSet* pMeshParamSet = pSkyBox->GetShaderMeshParamSet();
+				MShaderConstantParam* pParam = pSkyBox->GetShaderTransformParam();
+				if (pMeshParamSet && pParam)
+				{
+					MCamera* pCamera = info.pCamera;
+
+					Matrix4 mat(Matrix4::IdentityMatrix);
+					Vector3 camPos = info.pViewport->GetCamera()->GetWorldPosition();
+					mat.m[0][3] = camPos.x;
+					mat.m[1][3] = camPos.y;
+					mat.m[2][3] = camPos.z;
+
+					if (MStruct* pSrt = pParam->var.GetStruct())
+					{
+						*pSrt->FindMember<Matrix4>("U_matWorld") = mat;
+						pParam->SetDirty();
+					}
+
+					info.pRenderer->SetShaderParamSet(pMeshParamSet);
+				}
+
+				info.pRenderer->SetShaderParamSet(&m_FrameParamSet);
+				info.pRenderer->DrawMesh(pMesh);
+			}
+		}
+
+	}
 }
 
 void MForwardRenderProgram::DrawPainter(MRenderInfo& info)

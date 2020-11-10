@@ -61,8 +61,8 @@ public:
 	MMaterialPipelineLayoutData* FindPipelineLayout(const uint32_t& nMaterialIdx);
 
 public:
-	void RegisterMaterial(MMaterial* pMaterial);
-	void UnRegisterMaterial(MMaterial* pMaterial);
+	bool RegisterMaterial(MMaterial* pMaterial);
+	bool UnRegisterMaterial(MMaterial* pMaterial);
 
     void RegisterRenderPass(MRenderPass* pRenderPass);
     void UnRegisterRenderPass(MRenderPass* pRenderPass);

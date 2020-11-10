@@ -19,6 +19,8 @@ class MModelMeshStruct;
 class MTextureCubeResource;
 class MTextureCube;
 class MIMeshInstance;
+class MShaderParamSet;
+class MShaderConstantParam;
 class MORTY_CLASS MSkyBox : public MObject
 {
 public:
@@ -31,16 +33,20 @@ public:
 	virtual bool Load(MResource* pResource);
 
 	virtual void OnCreated() override;
+	virtual void OnDelete() override;
 
 	MIMesh* GetMesh(){ return m_pBoxMesh; }
 	MMaterial* GetMaterial() { return m_pMaterial; }
 
+	MShaderParamSet* GetShaderMeshParamSet() { return m_pMeshParamSet; }
+	MShaderConstantParam* GetShaderTransformParam() { return m_pTransformParam; }
 public: 
 
 private:
 	MMesh<Vector3>* m_pBoxMesh;
-	MModelMeshStruct* m_pMeshData;
 	MMaterial* m_pMaterial;
+	MShaderParamSet* m_pMeshParamSet;
+	MShaderConstantParam* m_pTransformParam;
 
 	MTextureCube* m_pTextureCube;
 	MResourceKeeper m_TextureCubeResource;

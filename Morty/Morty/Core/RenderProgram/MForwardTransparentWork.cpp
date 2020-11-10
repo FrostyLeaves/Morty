@@ -105,6 +105,8 @@ void MForwardTransparentWork::RenderToTarget(MForwardRenderProgram::MRenderInfo&
 
 	info.pRenderer->BeginRenderPass(pRenderPass, pRenderTarget);
 
+	m_pDrawFillMaterial->GetTextureParams()->at(0)->pTexture = info.pRenderTarget->GetCurrDepthTexture();
+	m_pDrawFillMaterial->GetTextureParams()->at(0)->SetDirty();
 
  	if (info.pRenderer->SetUseMaterial(m_pDrawFillMaterial))
  	{

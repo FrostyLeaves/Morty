@@ -16,8 +16,9 @@ M_OBJECT_IMPLEMENT(MSkyBox, MObject)
 
 MSkyBox::MSkyBox()
 	: MObject()
-	, m_pMeshData(nullptr)
 	, m_pMaterial(nullptr)
+	, m_pMeshParamSet(nullptr)
+	, m_pTransformParam(nullptr)
 	, m_pBoxMesh(nullptr)
 	, m_pTextureCube(nullptr)
 	, m_TextureCubeResource(nullptr)
@@ -27,20 +28,6 @@ MSkyBox::MSkyBox()
 
 MSkyBox::~MSkyBox()
 {
-	if (m_pMeshData)
-	{
-		delete m_pMeshData;
-		m_pMeshData = nullptr;
-	}
-
-	if (m_pBoxMesh)
-	{
-		m_pBoxMesh->DestroyBuffer(m_pEngine->GetDevice());
-		delete m_pBoxMesh;
-		m_pBoxMesh = nullptr;
-	}
-
-	m_TextureCubeResource.SetResource(nullptr);
 }
 
 bool MSkyBox::Load(MResource* pResource)
@@ -61,11 +48,43 @@ bool MSkyBox::Load(MResource* pResource)
 
 void MSkyBox::OnCreated()
 {
-	MMaterialResource* pMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SKYBOX);
-	MMaterial* pMaterial = pMaterialRes;
+	Super::OnCreated();
 
+	MResourceManager* pResourceManager = GetEngine()->GetResourceManager();
 
-	pMaterial->SetRasterizerType(MERasterizerType::ECullNone);
+	MResource* pSkyBoxVSResource = pResourceManager->LoadResource("./Shader/skybox.mvs");
+	MResource* pSkyBoxPSResource = pResourceManager->LoadResource("./Shader/skybox.mps");
+	m_pMaterial = pResourceManager->CreateResource<MMaterialResource>();
+	m_pMaterial->SetRasterizerType(MERasterizerType::ECullNone);
+	m_pMaterial->LoadVertexShader(pSkyBoxVSResource);
+	m_pMaterial->LoadPixelShader(pSkyBoxPSResource);
+	m_pMaterial->AddRef();
+
+	const MString vTexturePath[6] = {
+		"ashcanyon_lf.tga",
+		"ashcanyon_rt.tga",
+		"ashcanyon_up.tga",
+		"ashcanyon_dn.tga",
+		"ashcanyon_ft.tga",
+		"ashcanyon_bk.tga",
+	};
+
+	MTextureResource* vTextureRes[6];
+	for (int i = 0; i < 6; ++i)
+	{
+		vTextureRes[i] = static_cast<MTextureResource*>(pResourceManager->LoadResource("./Texture/skybox/" + vTexturePath[i]));
+	}
+
+	MTextureCubeResource* pTextureCubeRes = pResourceManager->CreateResource<MTextureCubeResource>();
+	pTextureCubeRes->SetTextures(vTextureRes);
+
+	m_pMaterial->SetTexutreParam("SkyTexCube", pTextureCubeRes);
+
+	if (MShaderParamSet* pParamSet = m_pMaterial->GetMeshParamSet())
+	{
+		m_pMeshParamSet = pParamSet->Clone();
+		m_pTransformParam = m_pMeshParamSet->FindConstantParam("_M_E_cbMeshMatrix");
+	}
 
 	m_pBoxMesh = new MMesh<Vector3>();
 
@@ -104,6 +123,27 @@ void MSkyBox::OnCreated()
 
 	for (int i = 0; i < m_pBoxMesh->GetIndicesLength(); ++i)
 		m_pBoxMesh->GetIndices()[i] = indexs[i];
+}
 
-	m_pMaterial = pMaterial;
+void MSkyBox::OnDelete()
+{
+	m_pMaterial->SubRef();
+
+	if (m_pMeshParamSet)
+	{
+		m_pMeshParamSet->DestroyBuffer(GetEngine()->GetDevice());
+		delete m_pMeshParamSet;
+		m_pMeshParamSet = nullptr;
+	}
+
+	if (m_pBoxMesh)
+	{
+		m_pBoxMesh->DestroyBuffer(m_pEngine->GetDevice());
+		delete m_pBoxMesh;
+		m_pBoxMesh = nullptr;
+	}
+
+	m_TextureCubeResource.SetResource(nullptr);
+
+	Super::OnDelete();
 }

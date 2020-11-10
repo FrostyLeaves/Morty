@@ -6,7 +6,7 @@ struct VS_OUT_SKYBOX
     float3 uvw : UVW;
 };
 
-TextureCube SkyTexCube;
+[[vk::binding(5,0)]]TextureCube SkyTexCube;
 
 float4 PS(VS_OUT_SKYBOX input) : SV_Target
 {

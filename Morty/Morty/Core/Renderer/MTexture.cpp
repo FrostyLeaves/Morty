@@ -58,7 +58,7 @@ void MTexture::FillColor(const MColor& color)
 	}
 }
 
-void MTexture::GenerateBuffer(MIDevice* pDevice, const bool& bMipmap/* = true*/)
+void MTexture::GenerateBuffer(MIDevice* pDevice, const bool& bMipmap/* = false*/)
 {
 	if (m_pTextureBuffer)
 		pDevice->DestroyTexture(&m_pTextureBuffer);
@@ -90,7 +90,7 @@ MTextureCube::~MTextureCube()
 {
 }
 
-void MTextureCube::GenerateBuffer(MIDevice* pDevice, const bool& bMipmap/* = true*/)
+void MTextureCube::GenerateBuffer(MIDevice* pDevice, const bool& bMipmap/* = false*/)
 {
 	if (m_pTextureBuffer)
 		pDevice->DestroyTexture(&m_pTextureBuffer);

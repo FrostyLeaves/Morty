@@ -13,10 +13,6 @@
 #include "Type/MColor.h"
 #include "MRenderStructure.h"
 
-//TODO : Dynamic Update Texture and TextureCube.
-
-
-
 class MIDevice;
 class MTextureBuffer;
 class MRenderTextureBuffer;
@@ -48,7 +44,7 @@ public:
 
 	void FillColor(const MColor& color);
 
-	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = true);
+	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = false);
 	virtual void DestroyTexture(MIDevice* pDevice);
 
 	virtual MTextureBuffer* GetBuffer() override { return m_pTextureBuffer; }
@@ -84,7 +80,7 @@ public:
 
 	virtual Vector2 GetSize() override { return m_v2Size; }
 
-	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = true);
+	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = false);
 	virtual void DestroyTexture(MIDevice* pDevice);
 
 	virtual MTextureBuffer* GetBuffer() override { return m_pTextureBuffer; }

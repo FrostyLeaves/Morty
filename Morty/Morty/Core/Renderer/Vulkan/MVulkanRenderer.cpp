@@ -562,7 +562,6 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 		return VK_NULL_HANDLE;
 
 
-	//Vulkan�������������������������ʱ�޸�viewport��С������
 	std::vector<VkDynamicState> dynamicStates = {
 	VK_DYNAMIC_STATE_VIEWPORT,
 	VK_DYNAMIC_STATE_SCISSOR,

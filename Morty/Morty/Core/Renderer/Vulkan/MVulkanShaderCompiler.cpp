@@ -302,6 +302,9 @@ void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler
 		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
 		pParam->strName = res.name;
 
+		if (type.image.dim == spv::Dim::DimCube)
+			pParam->eType = METextureType::ETextureCube;
+
 		pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 
 		pShaderBuffer->m_vShaderSets[pParam->unSet].m_vTextures.push_back(pParam);

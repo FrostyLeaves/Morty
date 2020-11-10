@@ -194,35 +194,6 @@ bool MEngine::InitializeDefaultResource()
 	pDraw3DMaterialRes->LoadPixelShader(pDraw3DPSResource);
 	pDraw3DMaterialRes->AddRef();
 
-	MResource* pSkyBoxVSResource = GetResourceManager()->LoadResource("./Shader/skybox.mvs");
-	MResource* pSkyBoxPSResource = GetResourceManager()->LoadResource("./Shader/skybox.mps");
-	MMaterialResource* pSkyBoxMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SKYBOX);
-	pSkyBoxMaterialRes->LoadVertexShader(pSkyBoxVSResource);
-	pSkyBoxMaterialRes->LoadPixelShader(pSkyBoxPSResource);
-	pSkyBoxMaterialRes->AddRef();
-
-
-	const MString vTexturePath[6] = {
-		"ashcanyon_lf.tga",
-		"ashcanyon_rt.tga",
-		"ashcanyon_up.tga",
-		"ashcanyon_dn.tga",
-		"ashcanyon_ft.tga",
-		"ashcanyon_bk.tga",
-	};
-
-	MTextureResource* vTextureRes[6];
-	for (int i = 0; i < 6; ++i)
-	{
-		vTextureRes[i] = static_cast<MTextureResource*>(GetResourceManager()->LoadResource("./Texture/skybox/" + vTexturePath[i]));
-	}
-
-	MTextureCubeResource* pTextureCubeRes = GetResourceManager()->CreateResource<MTextureCubeResource>();
-	pTextureCubeRes->SetTextures(vTextureRes);
-
-	pSkyBoxMaterialRes->SetTexutreParam("SkyTexCube", pTextureCubeRes);
-
-
 	MResource* pEmptyVSResource = GetResourceManager()->LoadResource("./Shader/empty.mvs");
 	MResource* pEmptyPSResource = GetResourceManager()->LoadResource("./Shader/empty.mps");
 	MMaterialResource* pShadowStaticMaterial = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_STATIC);

@@ -1073,7 +1073,7 @@ ID3D11InputLayout* MDirectX11Device::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC 
 	}
 
 	ID3D11InputLayout* pVertexInputLayout = nullptr;
-	//TODO 需要根据顶点数据自动创建出假的Shader，来骗过DX11的Shader-InputLayout验证，让它认为Layout合法。
+	//需要根据顶点数据自动创建出假的Shader，来骗过DX11的Shader-InputLayout验证，让它认为Layout合法。
 	hr = m_pD3dDevice->CreateInputLayout(desc, nLength, pShaderBuffer->GetBufferPointer(), pShaderBuffer->GetBufferSize(), &pVertexInputLayout);
 	if (FAILED(hr))
 	{

@@ -161,14 +161,11 @@ void MModelConverter::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vec
 {
 	Matrix4 matRotation;
 	CopyMatrix4(&matRotation, &pNode->mTransformation);
-	//TODO 这里只要旋转矩阵
-	matRotation = matParentRotation * matRotation.GetRotatePart();
-	//matRotation = matParentRotation * matRotation;
-
 	matRotation.m[0][3] = 0;
 	matRotation.m[1][3] = 0;
 	matRotation.m[2][3] = 0;
-	//matRotation = matParentRotation * matRotation;
+
+	matRotation = matParentRotation * matRotation.GetRotatePart();
 
 	for (uint32_t i = 0; i < pNode->mNumMeshes; ++i)
 	{

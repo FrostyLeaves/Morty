@@ -37,6 +37,8 @@ void MTextureCubeResource::OnDelete()
 
 void MTextureCubeResource::SetTextures(MTextureResource* vTexs[6])
 {
+	m_pTextureCube->DestroyTexture(GetEngine()->GetDevice());
+
 	for (int i = 0; i < 6; ++i)
 	{
 		m_vTextures[i].SetResource(nullptr);
@@ -51,8 +53,9 @@ void MTextureCubeResource::SetTextures(MTextureResource* vTexs[6])
 
 			m_pTextureCube->SetTexture(vTexs[i]->GetTextureTemplate(), MTextureCube::MECubeFace(i));
 		}
-
 	}
+
+	m_pTextureCube->GenerateBuffer(GetEngine()->GetDevice());
 }
 
 bool MTextureCubeResource::Load(const MString& strResourcePath)

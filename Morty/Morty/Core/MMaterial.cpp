@@ -325,10 +325,15 @@ void MMaterial::CopyShaderParamSet(MShaderParamSet& target, const MShaderParamSe
 
 void MMaterial::SetRasterizerType(const MERasterizerType& eType)
 {
+	if (m_eRasterizerType == eType)
+		return;
+
 	m_eRasterizerType = eType;
 
-	GetEngine()->GetDevice()->UnRegisterMaterial(this);
-	GetEngine()->GetDevice()->RegisterMaterial(this);
+	if (GetEngine()->GetDevice()->UnRegisterMaterial(this))
+	{
+		GetEngine()->GetDevice()->RegisterMaterial(this);
+	}
 }
 
 void MMaterial::SetMaterialType(const MEMaterialType& eType)
@@ -355,8 +360,10 @@ void MMaterial::SetMaterialType(const MEMaterialType& eType)
 		break;
 	}
 
-	GetEngine()->GetDevice()->UnRegisterMaterial(this);
-	GetEngine()->GetDevice()->RegisterMaterial(this);
+	if (GetEngine()->GetDevice()->UnRegisterMaterial(this))
+	{
+		GetEngine()->GetDevice()->RegisterMaterial(this);
+	}
 }
 
 bool MMaterial::LoadVertexShader(MResource* pResource)

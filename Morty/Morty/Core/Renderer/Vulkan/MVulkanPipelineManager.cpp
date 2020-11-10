@@ -150,18 +150,25 @@ MMaterialPipelineLayoutData* MVulkanPipelineManager::FindPipelineLayout(const ui
 	return m_vPipelineLayouts[nMaterialIdx];
 }
 
-void MVulkanPipelineManager::RegisterMaterial(MMaterial* pMaterial)
+bool MVulkanPipelineManager::RegisterMaterial(MMaterial* pMaterial)
 {
 	uint32_t id = m_MaterialIDPool.GetNewID();
 	pMaterial->SetMaterialID(id);
 
 	m_tMaterialMap[id] = pMaterial;
+
+	return true;
 }
 
-void MVulkanPipelineManager::UnRegisterMaterial(MMaterial* pMaterial)
+bool MVulkanPipelineManager::UnRegisterMaterial(MMaterial* pMaterial)
 {
 	uint32_t id = pMaterial->GetMaterialID();
+	if (m_tMaterialMap.find(id) == m_tMaterialMap.end())
+		return false;
+
+
 	m_tMaterialMap.erase(id);
+	m_MaterialIDPool.RecoveryID(id);
 
 	if (id < m_vPipelineLayouts.size())
 	{
@@ -174,11 +181,11 @@ void MVulkanPipelineManager::UnRegisterMaterial(MMaterial* pMaterial)
 	}
 
 	if (m_tPipelineTable.size() < id + 1)
-		return;
+		return true;
 
 	MMaterialPipelineGroup* pMaterialGroup = m_tPipelineTable[id];
 	if (!pMaterialGroup)
-		return;
+		return true;
 
 	for (MRenderPassPipelines* pipelines : pMaterialGroup->vRenderPassGroup)
 	{
@@ -196,7 +203,7 @@ void MVulkanPipelineManager::UnRegisterMaterial(MMaterial* pMaterial)
 	delete pMaterialGroup;
 	m_tPipelineTable[id] = nullptr;
 
-	m_MaterialIDPool.RecoveryID(id);
+	return true;
 }
 
 void MVulkanPipelineManager::RegisterRenderPass(MRenderPass* pRenderPass)
@@ -424,8 +431,8 @@ void MVulkanPipelineManager::GenerateShaderParamSet(MShaderParamSet* pParamSet)
 	if (pParamSet->m_unKey >= pLayoutData->vSetLayouts.size())
 		return;
 
-	pLayoutData->vShaderParamSets.push_back(pParamSet);
 	pParamSet->m_unLayoutDataIdx = pLayoutData->vShaderParamSets.size();
+	pLayoutData->vShaderParamSets.push_back(pParamSet);
 
 	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
 	{

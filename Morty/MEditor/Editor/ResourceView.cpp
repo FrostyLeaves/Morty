@@ -25,7 +25,11 @@ void ResourceView::Render()
 		"Model",
 		"Shader",
 		"Material",
-		"Texture"
+		"Texture",
+		"Node",
+		"Mesh",
+		"Skeleton",
+		"SkelAnim"
 	};
 
 

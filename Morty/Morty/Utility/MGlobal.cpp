@@ -14,7 +14,6 @@ const char* DEFAULT_MATERIAL_MODEL_STATIC_MESH = "DefMatModelStaticMesh";
 const char* DEFAULT_MATERIAL_MODEL_SKELETON_MESH = "DefMatModelSkeletonMesh";
 const char* DEFAULT_MATERIAL_DRAW2D = "DefMatDraw2D";
 const char* DEFAULT_MATERIAL_DRAW3D = "DefMatDraw3D";
-const char* DEFAULT_MATERIAL_SKYBOX = "DefMatSkyBox";
 const char* DEFAULT_MATERIAL_SHADOW_STATIC = "DefMatShadow";
 const char* DEFAULT_MATERIAL_SHADOW_SKELETON = "DefMatShadowAnim";
 const char* DEFAULT_MATERIAL_DEPTH_PEEL_BLEND = "DefMatDepthPeelBlend";

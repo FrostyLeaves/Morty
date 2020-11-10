@@ -72,7 +72,6 @@ void MScene::OnCreated()
 
 	m_pSkyBox = m_pEngine->GetObjectManager()->CreateObject<MSkyBox>();
 	m_pTransformCoord3D = m_pEngine->GetObjectManager()->CreateObject<MTransformCoord3D>();
-
 }
 
 void MScene::OnDelete()
@@ -168,8 +167,6 @@ void MScene::FindActivePointLights(const Vector3& v3WorldPosition, std::vector<M
 
 void MScene::FindActiveSpotLights(const Vector3& v3WorldPosition, std::vector<MSpotLight*>& vSpotLights)
 {
-	//TODO 获取所有方向和摄像机一致的聚光灯
-
 	for (uint32_t i = 0; i < vSpotLights.size() && i < m_vSpotLight.size(); ++i)
 	{
 		vSpotLights[i] = m_vSpotLight[i];

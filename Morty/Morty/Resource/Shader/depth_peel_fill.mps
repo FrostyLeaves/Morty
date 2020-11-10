@@ -1,5 +1,3 @@
-#include "private_header.hlsl"
-
 [[vk::binding(1,0)]]Texture2D frontTex;
 [[vk::binding(2,0)]]Texture2D backTex;
 [[vk::binding(3,0)]]sampler defaultSampler;
@@ -9,8 +7,6 @@ struct VS_OUT_DP
     float4 pos : SV_POSITION;
     float2 uv : TEXCOORD;
 };
-
-
 
 struct PS_OUT
 {
@@ -27,8 +23,7 @@ PS_OUT PS(VS_OUT_DP input) : SV_Target
     output.f4FrontColor = float4(0, 0, 0, 0);
     output.fBackColor = float4(0, 0, 0, 0);
     output.fFrontDepth = 0;
-    output.fBackDepth = 1;
+    output.fBackDepth = backTex.Sample(defaultSampler, input.uv);
 
     return output;
 }
-

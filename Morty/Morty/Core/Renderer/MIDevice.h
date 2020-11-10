@@ -75,8 +75,8 @@ public:
 	virtual bool GenerateRenderTargetView(MRenderTextureBuffer* pTextureBuffer) = 0;
 	virtual void DestroyRenderTargetView(MRenderTextureBuffer* pTextureBuffer) = 0;
 
-	virtual void RegisterMaterial(MMaterial* pMaterial) {};
-	virtual void UnRegisterMaterial(MMaterial* pMaterial) {};
+	virtual bool RegisterMaterial(MMaterial* pMaterial) { return true; };
+	virtual bool UnRegisterMaterial(MMaterial* pMaterial) { return true; };
 
 };
 

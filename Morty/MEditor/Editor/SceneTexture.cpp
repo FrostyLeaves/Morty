@@ -70,7 +70,6 @@ void SceneTexture::Initialize(MEngine* pEngine)
 
 void SceneTexture::Release()
 {
-	//TODO Release RenderTarget and Viewport
 	MObjectManager* pObjManager = m_pEngine->GetObjectManager();
 
 	m_pScene->DeleteLater();
