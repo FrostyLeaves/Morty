@@ -162,9 +162,10 @@ void MVariantToJsonValue(const MVariant& var, Value* pValue, Document& doc)
 	switch (var.GetType())
 	{
 	case MVariant::EBool:
+	{
 		pValue->SetBool(var.IsTrue());
 		break;
-
+	}
 	case MVariant::EFloat:
 		pValue->SetFloat(*var.GetFloat());
 		break;

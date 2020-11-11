@@ -249,9 +249,6 @@ bool MEngine::InitializeDefaultResource()
 	pDepthPeelFillMaterial->LoadPixelShader(pDPFPSResource);
 	pDepthPeelFillMaterial->AddRef();
 
-	MResource* pSphereResource = GetResourceManager()->LoadResource("./Model/Sphere/Sphere.model");
-	pSphereResource->AddRef();
-
 	return true;
 }
 

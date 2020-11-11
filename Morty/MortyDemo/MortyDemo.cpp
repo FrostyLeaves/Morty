@@ -77,12 +77,12 @@ int main(int argc, char* argv[])
 	engine.Initialize("./");
 
 
-// 	{
-// 		{
-// 			MModelConverter conver(&engine);
-// 			conver.Convert("./Model/pigeon/source/Pigeon_Animations.fbx", "./Model/output", "pigeon");
-// 		}
-// 	}
+	{
+		{
+			MModelConverter conver(&engine);
+			conver.Convert("./Model/pigeon/source/Pigeon_Animations.fbx", "./Model/output", "pigeon");
+		}
+	}
 
  	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
  	pRootNode->SetName("RootNode");
@@ -94,27 +94,14 @@ int main(int argc, char* argv[])
 	//pCamera->SetCameraType(MCamera::MECameraType::EOrthographic);
 	pRootNode->AddNode(pCamera);
 
-	MModelResource* pJeepResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/output/pigeon/pigeon.model"));
-	MModelInstance* pJeepModel = engine.GetObjectManager()->CreateObject<MModelInstance>();
-	pJeepModel->SetPosition(Vector3(0, 0, 10));
-	pJeepModel->SetScale(Vector3(1, 1, 1));
-	pJeepModel->SetGenerateDirLightShadow(true);
-	pJeepModel->Load(pJeepResource);
-	pJeepModel->SetName("Jeep");
-	pRootNode->AddNode(pJeepModel);
-	pJeepModel->SetRotation(Quaternion(Vector3(1, 0, 0), 0));
-	//pJeepModel->GetFixedChildren()[0]->DynamicCast<M3DNode>()->SetRotation(Quaternion(Vector3(1, 0, 0), 0));
+	MNodeResource* pNodeResource = engine.GetResourceManager()->LoadResource("./Model/output/pigeon/pigeon.mnode")->DynamicCast<MNodeResource>();
 
-	auto rot = pJeepModel->GetRotation();
-	rot.RotateY(-90);
-	
-	pJeepModel->SetRotation(rot);
+	pRootNode->AddNode(pNodeResource->CreateNode());
 
-
-	if (auto pMeshIns = pJeepModel->GetFixedChildren()[0]->DynamicCast<MIModelMeshInstance>())
-	{
-		pMeshIns->GetMaterial()->SetMaterialType(MEMaterialType::ETransparent);
-	}
+// 	if (auto pMeshIns = pJeepModel->GetFixedChildren()[0]->DynamicCast<MIModelMeshInstance>())
+// 	{
+// 		pMeshIns->GetMaterial()->SetMaterialType(MEMaterialType::ETransparent);
+// 	}
 
 
 // // 	MString textureID[] = {"005","003","007","004","014","008","002","015","019"};

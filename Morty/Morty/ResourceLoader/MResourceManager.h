@@ -26,14 +26,13 @@ public:
 	enum MEResourceType
 	{
 		Default = 0,
-		Model = 1,
-		Shader = 2,
-		Material = 3,
-		Texture = 4,
-		Node = 5,
-		Mesh = 6,
-		Skeleton = 7,
-		SkelAnim = 8,
+		Shader,
+		Material,
+		Texture,
+		Node,
+		Mesh,
+		Skeleton,
+		SkelAnim,
 	};
 
 public:

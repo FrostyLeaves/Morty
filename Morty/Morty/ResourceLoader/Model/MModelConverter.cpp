@@ -9,11 +9,14 @@
 #include "MIDevice.h"
 #include "MEngine.h"
 
+#include "Model/MModelInstance.h"
 #include "Model/MModelResource.h"
+#include "Model/MStaticMeshInstance.h"
 #include "Model/MSkeletonResource.h"
 #include "Texture/MTextureResource.h"
 #include "Material/MMaterialResource.h"
 #include "Model/MSkeletalAnimationResource.h"
+#include "Node/MNodeResource.h"
 
 #include "MBounds.h"
 #include "MSkeleton.h"
@@ -42,7 +45,8 @@ MModelConverter::MModelConverter(MEngine* pEngine)
 : m_pEngine(pEngine)
 , m_strResourcePath()
 , m_vMeshes()
-, m_pSkeleton()
+, m_pSkeleton(nullptr)
+, m_pModelInstance(nullptr)
 , m_vSkeletalAnimation()
 {
 }
@@ -114,28 +118,24 @@ bool MModelConverter::Convert(const MString& strResourcePath, const MString& str
 
 	}
 
-	MModelResource* pModelResource = m_pEngine->GetResourceManager()->CreateResource<MModelResource>();
-	pModelResource->AddRef();
-	pModelResource->SetSkeletonResource(m_pSkeleton);
-	pModelResource->GetMeshResources(m_vMeshes);
+	MNodeResource* pNodeResource = m_pEngine->GetResourceManager()->CreateResource<MNodeResource>();
+	pNodeResource->AddRef();
 
-	m_pEngine->GetResourceManager()->MoveTo(pModelResource, strPath + strOutputName + "." + SUFFIX_MODEL);
-	pModelResource->Save();
+	m_pEngine->GetResourceManager()->MoveTo(pNodeResource, strPath + strOutputName + "." + SUFFIX_NODE);
+	pNodeResource->SaveByNode(m_pModelInstance);
 
-	pModelResource->SubRef();
-	pModelResource = nullptr;
+	pNodeResource->SubRef();
+	pNodeResource = nullptr;
 
 	return true;
 }
 
 bool MModelConverter::Load(const MString& strResourcePath)
 {
-	for (MMeshResource* pMesh : m_vMeshes)
-		pMesh->SubRef();
-	m_vMeshes.clear();
-
 	m_pSkeleton = m_pEngine->GetResourceManager()->CreateResource<MSkeletonResource>();
 	m_pSkeleton->AddRef();
+
+	m_pModelInstance = m_pEngine->GetObjectManager()->CreateObject<MModelInstance>();
 
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(strResourcePath, aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_FixInfacingNormals | aiProcess_ConvertToLeftHanded);
@@ -145,28 +145,18 @@ bool MModelConverter::Load(const MString& strResourcePath)
 		return false;
 	}
 
-	//顶点数组对应的材质索引
-	std::vector<uint32_t> vMaterialIndices;
 
 	ProcessBones(scene);
-	Matrix4 matRootRotation = Matrix4::IdentityMatrix;
-	ProcessNode(scene->mRootNode, scene, vMaterialIndices, matRootRotation);
+	ProcessNode(scene->mRootNode, scene);
+	m_pModelInstance->SetSkeletonTemplate(m_pSkeleton);
+
 	ProcessAnimation(scene);
-	ProcessMaterial(scene, vMaterialIndices);
 
 	return true;
 }
 
-void MModelConverter::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vector<uint32_t>& vMaterialIndices, const Matrix4& matParentRotation)
+void MModelConverter::ProcessNode(aiNode* pNode, const aiScene *pScene)
 {
-	Matrix4 matRotation;
-	CopyMatrix4(&matRotation, &pNode->mTransformation);
-	matRotation.m[0][3] = 0;
-	matRotation.m[1][3] = 0;
-	matRotation.m[2][3] = 0;
-
-	matRotation = matParentRotation * matRotation.GetRotatePart();
-
 	for (uint32_t i = 0; i < pNode->mNumMeshes; ++i)
 	{
 		aiMesh* pMesh = pScene->mMeshes[pNode->mMeshes[i]];
@@ -177,44 +167,61 @@ void MModelConverter::ProcessNode(aiNode *pNode, const aiScene *pScene, std::vec
 			ProcessMeshVertices(pMesh, pScene, pMMesh);
 			ProcessMeshIndices(pMesh, pScene, pMMesh);
 			BindVertexAndBones(pMesh, pScene, pMMesh);
-			vMaterialIndices.push_back(pMesh->mMaterialIndex);
 
 			MMeshResource* pMeshData = m_pEngine->GetResourceManager()->CreateResource<MMeshResource>();
 			pMeshData->m_strName = pNode->mName.C_Str();
 			pMeshData->m_pMesh = pMMesh;
 			pMeshData->m_eVertexType = MMeshResource::Skeleton;
-			pMeshData->m_matRotationMatrix = matRotation;
 			pMeshData->m_SkeletonKeeper.SetResource(m_pSkeleton);
 			pMeshData->ResetBounds();
 
 			pMeshData->AddRef();
 			m_vMeshes.push_back(pMeshData);
+
+			ProcessMaterial(pScene, pMeshData, pMesh->mMaterialIndex);
+
+			MStaticMeshInstance* pMeshNode = m_pEngine->GetObjectManager()->CreateObject<MStaticMeshInstance>();
+			pMeshNode->SetName(pMesh->mName.C_Str());
+			pMeshNode->SetAttachedModelInstance(m_pModelInstance);
+			pMeshNode->Load(pMeshData);
+
+			GetMNodeFromNode(pNode)->AddNodeImpl(pMeshNode, MNode::EFixed);
+
+			m_tNodeMaps[pNode] = pMeshNode;
 		}
 		else
 		{
 			MMesh<MVertex>* pMMesh = new MMesh<MVertex>();
 			ProcessMeshVertices(pMesh, pScene, pMMesh);
 			ProcessMeshIndices(pMesh, pScene, pMMesh);
-			vMaterialIndices.push_back(pMesh->mMaterialIndex);
 
 			MMeshResource* pMeshData = m_pEngine->GetResourceManager()->CreateResource<MMeshResource>();
 			pMeshData->m_strName = pNode->mName.C_Str();
 			pMeshData->m_pMesh = pMMesh;
 			pMeshData->m_eVertexType = MMeshResource::Normal;
-			pMeshData->m_matRotationMatrix = matRotation;
 			pMeshData->m_SkeletonKeeper.SetResource(nullptr);
 
 			pMeshData->ResetBounds();
 
 			pMeshData->AddRef();
 			m_vMeshes.push_back(pMeshData);
+
+			ProcessMaterial(pScene, pMeshData, pMesh->mMaterialIndex);
+
+			MStaticMeshInstance* pMeshNode = m_pEngine->GetObjectManager()->CreateObject<MStaticMeshInstance>();
+			pMeshNode->SetName(pMesh->mName.C_Str());
+			pMeshNode->SetAttachedModelInstance(m_pModelInstance);
+			pMeshNode->Load(pMeshData);
+
+			GetMNodeFromNode(pNode)->AddNodeImpl(pMeshNode, MNode::EFixed);
 		}
 
 	}
 
 	for (uint32_t i = 0; i < pNode->mNumChildren; ++i)
 	{
-		ProcessNode(pNode->mChildren[i], pScene, vMaterialIndices, matRotation);
+		aiNode* pChild = pNode->mChildren[i];
+		ProcessNode(pChild, pScene);
 	}
 }
 
@@ -523,96 +530,112 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 	}
 }
 
-void MModelConverter::ProcessMaterial(const aiScene* pScene, std::vector<uint32_t>& vMaterialIndices)
+void MModelConverter::ProcessMaterial(const aiScene* pScene, MMeshResource* pMeshData, const uint32_t& nMaterialIdx)
 {
 	aiString strAmbient("$clr.ambient"), strDiffuse("$clr.diffuse"), strSpecular("$clr.specular"), strShininess("$mat.shininess");
 
 	MMaterialResource* pStaticMeshMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_MODEL_STATIC_MESH);
 	MMaterialResource* pSkinnedMeshMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_MODEL_SKELETON_MESH);
 
-	for (uint32_t i = 0; i < m_vMeshes.size(); ++i)
+	MMaterialResource* pMaterial = m_pEngine->GetResourceManager()->CreateResource<MMaterialResource>();
+	pMeshData->m_MaterialKeeper.SetResource(pMaterial);
+
+	if (pMeshData->GetMeshVertexType() == MMeshResource::Normal)
+		pMaterial->CopyFrom(pStaticMeshMaterial);
+	else if(pMeshData->GetMeshVertexType() == MMeshResource::Skeleton)
+		pMaterial->CopyFrom(pSkinnedMeshMaterial);
+
+	if(nMaterialIdx >= pScene->mNumMaterials)
+		return;
+
+	aiMaterial* pAiMaterial = pScene->mMaterials[nMaterialIdx];
+
+	Vector3 v3Ambient(1.0f, 1.0f, 1.0f), v3Diffuse(1.0f, 1.0f, 1.0f), v3Specular(1.0f, 1.0f, 1.0f);
+	float fShininess = 32.0f;
+	MString strTexPath;
+
+	for (int n = 0; n < pAiMaterial->mNumProperties; ++n)
 	{
-		MMeshResource* pMeshData = m_vMeshes[i];
-		MMaterialResource* pMaterial = m_pEngine->GetResourceManager()->CreateResource<MMaterialResource>();
-		pMeshData->m_MaterialKeeper.SetResource(pMaterial);
-
-		if (pMeshData->GetMeshVertexType() == MMeshResource::Normal)
-			pMaterial->CopyFrom(pStaticMeshMaterial);
-		else if(pMeshData->GetMeshVertexType() == MMeshResource::Skeleton)
-			pMaterial->CopyFrom(pSkinnedMeshMaterial);
-
-		uint32_t unMaterialIndex = vMaterialIndices[i];
-
-		if(unMaterialIndex >= pScene->mNumMaterials)
-			continue;
-
-		aiMaterial* pAiMaterial = pScene->mMaterials[unMaterialIndex];
-
-		Vector3 v3Ambient(1.0f, 1.0f, 1.0f), v3Diffuse(1.0f, 1.0f, 1.0f), v3Specular(1.0f, 1.0f, 1.0f);
-		float fShininess = 32.0f;
-		MString strTexPath;
-
-		for (int n = 0; n < pAiMaterial->mNumProperties; ++n)
-		{
-			aiMaterialProperty* prop = pAiMaterial->mProperties[n];
-			if (prop->mKey == strAmbient)
-				memcpy(v3Ambient.m, prop->mData, sizeof(Vector3));
-			else if (prop->mKey == strDiffuse)
-				memcpy(v3Diffuse.m, prop->mData, sizeof(Vector3));
-			else if (prop->mKey == strSpecular)
-				memcpy(v3Specular.m, prop->mData, sizeof(Vector3));
-			else if (prop->mKey == strShininess)
-				memcpy(&fShininess, prop->mData, sizeof(float));
-		}
-		//Test Data, need read from file.
-		MStruct* pMaterialStruct = nullptr;
-		for (MShaderConstantParam* pParam : *pMaterial->GetShaderParams())
-		{
-			if (MStruct* pStruct = pParam->var.GetStruct())
-			{
-				if (MStruct* pMat = pStruct->FindMember("U_mat")->GetStruct())
-				{
-					pMaterialStruct = pMat;
-
-					pMat->SetMember("f3Ambient", v3Ambient);
-					pMat->SetMember("f3Diffuse", v3Diffuse);
-					pMat->SetMember("f3Specular", v3Specular);
-					pMat->SetMember("fShininess", fShininess);
-					pMat->SetMember("bUseNormalTex", false);
-					pMat->SetMember("fAlphaFactor", 1.0f);
-				}
-			}
-
-			continue;
-		}
-
-		MString strResourceFolder = MResource::GetFolder(m_strResourcePath);
-
-		aiString strDiffuseTextureFile, strNormalTextureFile;
-		pAiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &strDiffuseTextureFile);
-		pAiMaterial->GetTexture(aiTextureType_NORMALS, 0, &strNormalTextureFile);
-		MString strDiffuseFileName = MResource::GetFileName(MString(strDiffuseTextureFile.C_Str()));
-		MString strNormalFileName = MResource::GetFileName(MString(strNormalTextureFile.C_Str()));
-
-		MResource* pDiffuseTexRes = nullptr;
-		MResource* pNormalMapRes = nullptr;
-
-		if (!strDiffuseFileName.empty())
-			pDiffuseTexRes = m_pEngine->GetResourceManager()->LoadResource(strResourceFolder + "/tex/" + strDiffuseFileName);
-		else
-			pDiffuseTexRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_WHITE);
-
-		if (!strNormalFileName.empty())
-		{
-			pNormalMapRes = m_pEngine->GetResourceManager()->LoadResource(strResourceFolder + "/tex/" + strNormalFileName);
-			if (pMaterialStruct)
-				pMaterialStruct->SetMember("bUseNormalTex", true);
-
-		}
-		else
-			pNormalMapRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_NORMALMAP);
-
-		pMaterial->SetTexutreParam(SHADER_PARAM_NAME_DIFFUSE, pDiffuseTexRes);
-		pMaterial->SetTexutreParam(SHADER_PARAM_NAME_NORMAL, pNormalMapRes);
+		aiMaterialProperty* prop = pAiMaterial->mProperties[n];
+		if (prop->mKey == strAmbient)
+			memcpy(v3Ambient.m, prop->mData, sizeof(Vector3));
+		else if (prop->mKey == strDiffuse)
+			memcpy(v3Diffuse.m, prop->mData, sizeof(Vector3));
+		else if (prop->mKey == strSpecular)
+			memcpy(v3Specular.m, prop->mData, sizeof(Vector3));
+		else if (prop->mKey == strShininess)
+			memcpy(&fShininess, prop->mData, sizeof(float));
 	}
+	//Test Data, need read from file.
+	MStruct* pMaterialStruct = nullptr;
+	for (MShaderConstantParam* pParam : *pMaterial->GetShaderParams())
+	{
+		if (MStruct* pStruct = pParam->var.GetStruct())
+		{
+			if (MStruct* pMat = pStruct->FindMember("U_mat")->GetStruct())
+			{
+				pMaterialStruct = pMat;
+
+				pMat->SetMember("f3Ambient", v3Ambient);
+				pMat->SetMember("f3Diffuse", v3Diffuse);
+				pMat->SetMember("f3Specular", v3Specular);
+				pMat->SetMember("fShininess", fShininess);
+				pMat->SetMember("bUseNormalTex", false);
+				pMat->SetMember("fAlphaFactor", 1.0f);
+			}
+		}
+
+		continue;
+	}
+
+	MString strResourceFolder = MResource::GetFolder(m_strResourcePath);
+
+	aiString strDiffuseTextureFile, strNormalTextureFile;
+	pAiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &strDiffuseTextureFile);
+	pAiMaterial->GetTexture(aiTextureType_NORMALS, 0, &strNormalTextureFile);
+	MString strDiffuseFileName = MResource::GetFileName(MString(strDiffuseTextureFile.C_Str()));
+	MString strNormalFileName = MResource::GetFileName(MString(strNormalTextureFile.C_Str()));
+
+	MResource* pDiffuseTexRes = nullptr;
+	MResource* pNormalMapRes = nullptr;
+
+	if (!strDiffuseFileName.empty())
+		pDiffuseTexRes = m_pEngine->GetResourceManager()->LoadResource(strResourceFolder + "/tex/" + strDiffuseFileName);
+	else
+		pDiffuseTexRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_WHITE);
+
+	if (!strNormalFileName.empty())
+	{
+		pNormalMapRes = m_pEngine->GetResourceManager()->LoadResource(strResourceFolder + "/tex/" + strNormalFileName);
+		if (pMaterialStruct)
+			pMaterialStruct->SetMember("bUseNormalTex", true);
+
+	}
+	else
+		pNormalMapRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_NORMALMAP);
+
+	pMaterial->SetTexutreParam(SHADER_PARAM_NAME_DIFFUSE, pDiffuseTexRes);
+	pMaterial->SetTexutreParam(SHADER_PARAM_NAME_NORMAL, pNormalMapRes);
+	
+}
+
+M3DNode* MModelConverter::GetMNodeFromNode(aiNode* pNode)
+{
+	if (nullptr == pNode)
+		return m_pModelInstance;
+
+	if (M3DNode* pMNode = m_tNodeMaps[pNode])
+		return pMNode;
+
+	Matrix4 matTransform;
+	CopyMatrix4(&matTransform, &pNode->mTransformation);
+
+	M3DNode* pMParent = GetMNodeFromNode(pNode->mParent);
+
+	M3DNode* pMNode = m_pEngine->GetObjectManager()->CreateObject<M3DNode>();
+	pMNode->SetName(pNode->mName.C_Str());
+	pMNode->SetTransform(MTransform(matTransform));
+	pMParent->AddNodeImpl(pMNode, MNode::EFixed);
+
+	return pMNode;
 }

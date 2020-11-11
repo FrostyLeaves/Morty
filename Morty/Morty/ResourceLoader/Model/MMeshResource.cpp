@@ -14,7 +14,6 @@ M_RESOURCE_IMPLEMENT(MMeshResource, MResource)
 MMeshResource::MMeshResource()
 	: m_eVertexType(MEMeshVertexType::Normal)
 	, m_pMesh(nullptr)
-	, m_matRotationMatrix(Matrix4::IdentityMatrix)
 	, m_BoundsOBB()
 	, m_BoundsSphere()
 	, m_MaterialKeeper()
@@ -100,7 +99,6 @@ bool MMeshResource::Load(const MString& strResourcePath)
 	m_pMesh->ResizeIndices(nIndexNum, 1);
 	memcpy(m_pMesh->GetIndices(), format.m_vBody[0].pData + nIndexBegin, nIndexEnd - nIndexBegin);
 
-	pHeader->FindMember<Matrix4>("rm", m_matRotationMatrix);
 	pHeader->FindMember<MString>("n", m_strName);
 
 	if (MStruct* pBoundsObb = pHeader->FindMember<MStruct>("obb"))
@@ -155,7 +153,6 @@ bool MMeshResource::SaveTo(const MString& strResourcePath)
 	pHeader->AppendMVariant("i3", nIndexEnd);
 
 
-	pHeader->AppendMVariant("rm", m_matRotationMatrix);
 	pHeader->AppendMVariant("n", m_strName);
 
 	if(MStruct* pObbSrt = pHeader->AppendMVariant<MStruct>("obb"))

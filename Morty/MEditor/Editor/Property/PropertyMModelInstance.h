@@ -33,12 +33,6 @@ public:
 
 				};
 
-				MModelResource* pResource = pNode->GetResource();
-				ShowValueBegin("Resource");
-				EditMResource("model_file_dlg", pResource, MResourceManager::MEResourceType::Model, ModelLoadFunc);
-
-				ShowValueEnd();
-
 				EditAnimation(pNode);
 
 				ShowNodeEnd();

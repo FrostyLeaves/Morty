@@ -89,7 +89,7 @@ public:
 	bool operator == (const Matrix4& mat) const;
 
 // 	void SetTranslation(const float& x, const float& y, const float& z);
-// 	Vector3 GetTranslation();
+ 	Vector3 GetTranslation() const;
 // 
 // 	void SetRotation(const Quaternion& quat);
  	Quaternion GetRotation() const;
@@ -97,6 +97,8 @@ public:
 // 	Matrix4 GetTransPart();
  	Matrix4 GetRotatePart() const;
  	Matrix4 GetScalePart() const;
+
+	Vector3 GetScale() const;
 
 public:
 	float m[4][4];

@@ -11,7 +11,7 @@
 #include "Model/MIMeshInstance.h"
 #include "MTextureRenderTarget.h"
 #include "Model/MModelResource.h"
-#include "Model/MModelInstance.h"
+#include "Model/MStaticMeshInstance.h"
 #include "MResourceManager.h"
 #include "Material/MMaterialResource.h"
 
@@ -100,13 +100,11 @@ void MaterialView::Initialize(MEngine* pEngine)
 	MCamera* pCamera = m_SceneTexture.GetViewport()->GetCamera();
 	pCamera->SetPosition(Vector3(0, 0, -20));
 
-	MResource* pResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/Sphere.model");
+	MResource* pResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/GeoSphere001.mesh");
 
-	MModelInstance* pModel = m_pEngine->GetObjectManager()->CreateObject<MModelInstance>();
-	pModel->Load(pResource);
-	pRootNode->AddNode(pModel);
-
-	m_pMeshInstance = pModel->GetFixedChildren()[0]->DynamicCast<MIMeshInstance>();
+	m_pMeshInstance = m_pEngine->GetObjectManager()->CreateObject<MStaticMeshInstance>();
+	m_pMeshInstance->Load(pResource);
+	pRootNode->AddNode(m_pMeshInstance);
 
  	MDirectionalLight* pDirLight = m_pEngine->GetObjectManager()->CreateObject<MDirectionalLight>();
  	pDirLight->SetName("DirLight");

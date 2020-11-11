@@ -95,7 +95,7 @@ MIMesh* MStaticMeshInstance::GetMesh(const uint32_t& unDetailLevel)
 
 MSkeletonInstance* MStaticMeshInstance::GetSkeletonInstance()
 {
-	if (MModelInstance* pModelIns = GetParent()->DynamicCast<MModelInstance>())
+	if (MModelInstance* pModelIns = GetAttachedModelInstance())
 		return pModelIns->GetSkeleton();
 
 	return nullptr;

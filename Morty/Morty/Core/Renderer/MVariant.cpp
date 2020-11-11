@@ -92,7 +92,7 @@ const MContainer& MContainer::operator=(const MContainer& var)
 MVariant::MVariant(const bool& var)
 {
 	m_pData = (new MByte[sizeof(int) * 1]);
-	*(bool*)(m_pData) = var;
+	*(int*)(m_pData) = var;
 	m_eType = EBool;
 	m_unByteSize = sizeof(int);
 }

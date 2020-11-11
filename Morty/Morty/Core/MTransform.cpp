@@ -8,6 +8,14 @@ MTransform::MTransform()
 
 }
 
+MTransform::MTransform(const Matrix4& matTransform)
+{
+	m_v3Position = matTransform.GetTranslation();
+	m_v3Scale = matTransform.GetScale();
+	m_qtRotation = matTransform.GetRotation();
+	m_qtRotation.Normalize();
+}
+
 MTransform::~MTransform()
 {
 

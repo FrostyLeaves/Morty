@@ -34,7 +34,7 @@ public:
 	uint32_t GetDetailLevel() { return m_unDetailLevel; }
 
 	void SetAttachedModelInstance(MModelInstance* pModelIns) { m_pModelInstance = pModelIns; }
-	MModelInstance* GetAttachedModelInstance() { return m_pModelInstance; }
+	MModelInstance* GetAttachedModelInstance();
 
 	void SetDrawBoundingSphere(const bool& bDrawable) { m_bDrawBoundingSphere = bDrawable; }
 	bool GetDrawBoundingSphere() { return m_bDrawBoundingSphere; }

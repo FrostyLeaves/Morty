@@ -373,11 +373,22 @@ Matrix4 Matrix4::GetScalePart() const
 
 	return mat;
 }
-// 
-// Vector3 Matrix4::GetTranslation()
-// {
-// 	return Vector3(m[3][0], m[3][1], m[3][2]);
-// }
+
+Vector3 Matrix4::GetScale() const
+{
+	Vector3 v3Scale;
+	v3Scale.x = Vector3(m[0][0], m[0][1], m[0][2]).Length();
+	v3Scale.y = Vector3(m[1][0], m[1][1], m[1][2]).Length();
+	v3Scale.z = Vector3(m[2][0], m[2][1], m[2][2]).Length();
+
+	return v3Scale;
+}
+
+
+Vector3 Matrix4::GetTranslation() const
+{
+	return Vector3(m[3][0], m[3][1], m[3][2]);
+}
 // 
 // void Matrix4::SetRotation(const Quaternion& quat)
 // {
@@ -397,7 +408,7 @@ Matrix4 Matrix4::GetScalePart() const
 // 	}
 // 	
 // }
-// 
+
  Quaternion Matrix4::GetRotation() const
  {
  	Matrix4 mat = GetRotatePart();

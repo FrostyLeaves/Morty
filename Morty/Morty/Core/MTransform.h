@@ -17,6 +17,7 @@ class MORTY_CLASS MTransform
 {
 public:
     MTransform();
+	MTransform(const Matrix4& matTransform);
     virtual ~MTransform();
 
 public:

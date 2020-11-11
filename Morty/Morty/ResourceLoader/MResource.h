@@ -112,7 +112,7 @@ public:
 	MResourceKeeper(const MResourceKeeper& cHolder);
 	virtual ~MResourceKeeper();
 
-	MString GetResourcePath() { return m_pResource ? m_pResource->GetResourcePath() : ""; }
+	MString GetResourcePath() const { return m_pResource ? m_pResource->GetResourcePath() : ""; }
 
 	void SetResource(MResource* pResource);
 	MResource* GetResource(){ return m_pResource; }

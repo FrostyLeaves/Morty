@@ -53,7 +53,7 @@ extern const char* SUFFIX_PIXEL_SHADER;
 extern const char* SUFFIX_MATERIAL;
 extern const char* SUFFIX_SKELETON;
 extern const char* SUFFIX_MESH;
-extern const char* SUFFIX_MODEL;
+extern const char* SUFFIX_NODE;
 extern const char* SUFFIX_SKELANIM;
 
 //Default Asset

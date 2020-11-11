@@ -28,7 +28,6 @@ MNode* MNodeResource::CreateNode()
     {
         if (MNode* pNode = MNode::CreateNodeByVariant(m_pEngine, *pStruct))
         {
-            pNode->Decode(code);
             return pNode;
         }
     }

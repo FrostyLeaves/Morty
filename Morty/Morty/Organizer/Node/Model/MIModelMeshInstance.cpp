@@ -19,6 +19,25 @@ MIModelMeshInstance::~MIModelMeshInstance()
 
 }
 
+MModelInstance* MIModelMeshInstance::GetAttachedModelInstance()
+{
+	if (!m_pModelInstance)
+	{
+		MNode* pParent = GetParent();
+		while (pParent)
+		{
+			if (MModelInstance* pModelIns = pParent->DynamicCast<MModelInstance>())
+			{
+				m_pModelInstance = pModelIns;
+				break;
+			}
+
+			pParent = pParent->GetParent();
+		}
+	}
+	return m_pModelInstance;
+}
+
 bool MIModelMeshInstance::GetGenerateDirLightShadow() const
 {
 	return m_bGenerateDirLightShadow;

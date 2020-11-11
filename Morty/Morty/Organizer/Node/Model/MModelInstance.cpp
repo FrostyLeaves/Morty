@@ -26,7 +26,7 @@ MModelInstance::MModelInstance()
 
 MModelInstance::~MModelInstance()
 {
-	SetSkeleton(nullptr);
+	SetSkeletonTemplate(nullptr);
 
 	if (m_pCurrentAnimationController)
 	{
@@ -53,7 +53,7 @@ bool MModelInstance::Load(MResource* pResource)
 void MModelInstance::ClearSkeletonAndMesh()
 {
 	SetRemoveAnimation();
-	SetSkeleton(nullptr);
+	SetSkeletonTemplate(nullptr);
 	RemoveAllNodeImpl(MENodeChildType::EFixed);
 }
 
@@ -154,7 +154,7 @@ void MModelInstance::WriteToStruct(MStruct& srt)
 	Super::WriteToStruct(srt);
 
 	M_SERIALIZER_BEGIN(Write);
-	M_SERIALIZER_WRITE_VALUE("Resource", GetResourcePath)
+	M_SERIALIZER_WRITE_VALUE("SkeletonResource", GetSkeletonTemplatePath)
 
 	M_SERIALIZER_END;
 }
@@ -164,7 +164,7 @@ void MModelInstance::ReadFromStruct(MStruct& srt)
 	Super::ReadFromStruct(srt);
 
 	M_SERIALIZER_BEGIN(Read);
-	M_SERIALIZER_READ_VALUE("Resource", SetResourcePath, String);
+	M_SERIALIZER_READ_VALUE("SkeletonResource", SetSkeletonTemplatePath, String);
 
 	M_SERIALIZER_END;
 }
@@ -187,7 +187,7 @@ bool MModelInstance::SetResource(MResource* pResource, const bool& bLoad)
 				ClearSkeletonAndMesh();
 
 				//Create SkeletonInstance
-				SetSkeleton(pModelResource->GetSkeleton());
+				SetSkeletonTemplate(pModelResource->GetSkeleton());
 
 				//初始化Mesh的旋转矩阵
 				for (MMeshResource* pMeshResource : pModelResource->GetMeshResources())
@@ -196,7 +196,7 @@ bool MModelInstance::SetResource(MResource* pResource, const bool& bLoad)
 					pMeshIns->Load(pMeshResource);
 	
 
-					pMeshIns->SetRotation(pMeshResource->GetMeshesRotationMatrix()->GetRotation());
+					//pMeshIns->SetRotation(pMeshResource->GetMeshesRotationMatrix()->GetRotation());
 
 					pMeshIns->SetName(pMeshResource->GetMeshName());
 					pMeshIns->SetAttachedModelInstance(this);
@@ -218,7 +218,7 @@ bool MModelInstance::SetResource(MResource* pResource, const bool& bLoad)
 		else
 		{
 			if (nullptr == m_pSkeleton || m_pSkeleton->GetSkeletonTemplate() != pModelRes->GetSkeleton())
-				SetSkeleton(pModelRes->GetSkeleton());
+				SetSkeletonTemplate(pModelRes->GetSkeleton());
 		}
 
 		return true;
@@ -227,7 +227,7 @@ bool MModelInstance::SetResource(MResource* pResource, const bool& bLoad)
 	return false;
 }
 
-void MModelInstance::SetSkeleton(const MSkeleton* pSkeleton)
+void MModelInstance::SetSkeletonTemplate(MSkeleton* pSkeleton)
 {
 	if (m_pSkeleton)
 	{
@@ -239,4 +239,21 @@ void MModelInstance::SetSkeleton(const MSkeleton* pSkeleton)
 	{
 		m_pSkeleton = new MSkeletonInstance(pSkeleton);
 	}
+
+
+	m_SkeletonResource.SetResource(pSkeleton);
 }
+
+void MModelInstance::SetSkeletonTemplatePath(const MString& strSkeletonPath)
+{
+	if (MResource* pResource = GetEngine()->GetResourceManager()->LoadResource(strSkeletonPath))
+	{
+		SetSkeletonTemplate(pResource->DynamicCast<MSkeletonResource>());
+	}
+}
+
+MString MModelInstance::GetSkeletonTemplatePath() const
+{
+	return m_SkeletonResource.GetResourcePath();
+}
+

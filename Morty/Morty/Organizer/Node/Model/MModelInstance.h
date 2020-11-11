@@ -35,7 +35,13 @@ public:
 
 	MModelResource* GetResource();
 	MString GetResourcePath() { return m_ModelResource.GetResourcePath(); }
+
+	void SetSkeletonTemplate(MSkeleton* pSkeleton);
+	void SetSkeletonTemplatePath(const MString& strSkeletonPath);
+	MString GetSkeletonTemplatePath() const;
+	
 	MSkeletonInstance* GetSkeleton() { return m_pSkeleton; }
+
 
 	MBoundsAABB* GetBoundsAABB();
 
@@ -53,6 +59,7 @@ public:
 	void SetRemoveAnimation();
 	MSkeletalAnimController* GetSkeletalAnimationController() { return m_pCurrentAnimationController; }
 
+
 public:
 
 	virtual void Tick(const float& fDelta) override;
@@ -67,11 +74,11 @@ protected:
 	bool SetResourcePath(const MString& strResourcePath, const bool& bLoad = false);
 	bool SetResource(MResource* pResource, const bool& bLoad = false);
 
-	void SetSkeleton(const MSkeleton* pSkeleton);
 
 private:
 	MBoundsAABB* m_pBoundsAABB;
 	MSkeletonInstance* m_pSkeleton;
+	MResourceKeeper m_SkeletonResource;
 	MResourceKeeper m_ModelResource;
 
 	MSkeletalAnimController* m_pCurrentAnimationController;

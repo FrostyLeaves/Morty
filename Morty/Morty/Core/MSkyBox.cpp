@@ -54,7 +54,7 @@ void MSkyBox::OnCreated()
 
 	MResource* pSkyBoxVSResource = pResourceManager->LoadResource("./Shader/skybox.mvs");
 	MResource* pSkyBoxPSResource = pResourceManager->LoadResource("./Shader/skybox.mps");
-	m_pMaterial = pResourceManager->CreateResource<MMaterialResource>();
+	m_pMaterial = pResourceManager->LoadVirtualResource<MMaterialResource>("SkyBox_Material_For_Object_" + MStringHelper::ToString(GetObjectID()));
 	m_pMaterial->SetRasterizerType(MERasterizerType::ECullNone);
 	m_pMaterial->LoadVertexShader(pSkyBoxVSResource);
 	m_pMaterial->LoadPixelShader(pSkyBoxPSResource);
@@ -75,7 +75,7 @@ void MSkyBox::OnCreated()
 		vTextureRes[i] = static_cast<MTextureResource*>(pResourceManager->LoadResource("./Texture/skybox/" + vTexturePath[i]));
 	}
 
-	MTextureCubeResource* pTextureCubeRes = pResourceManager->CreateResource<MTextureCubeResource>();
+	MTextureCubeResource* pTextureCubeRes = pResourceManager->LoadVirtualResource<MTextureCubeResource>("SkyBox_TextureCube_For_Object_" + MStringHelper::ToString(GetObjectID()));
 	pTextureCubeRes->SetTextures(vTextureRes);
 
 	m_pMaterial->SetTexutreParam("SkyTexCube", pTextureCubeRes);

@@ -22,7 +22,6 @@ void ResourceView::Render()
 {
 	static const char* vResourceType[] = {
 		"Default",
-		"Model",
 		"Shader",
 		"Material",
 		"Texture",
@@ -39,7 +38,7 @@ void ResourceView::Render()
 
 	std::map<MResourceID, MResource*>& resources = *pResManager->GetAllResources();
 	int ITEMS_COUNT = resources.size();
-	ImGuiListClipper clipper(ITEMS_COUNT - 1);  // Also demonstrate using the clipper for large list
+	ImGuiListClipper clipper(ITEMS_COUNT);  // Also demonstrate using the clipper for large list
 	
 	while (clipper.Step())
 	{

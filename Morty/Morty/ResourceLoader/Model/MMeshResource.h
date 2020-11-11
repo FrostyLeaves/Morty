@@ -42,7 +42,6 @@ public:
 	MIMesh* GetLevelMesh(const uint32_t unLevel);
 	const MBoundsOBB* GetMeshesDefaultOBB() { return &m_BoundsOBB; }
 	const MBoundsSphere* GetMeshesDefaultSphere() { return &m_BoundsSphere; }
-	const Matrix4* GetMeshesRotationMatrix() { return &m_matRotationMatrix; }
 	MResource* GetDefaultMaterial() { return m_MaterialKeeper.GetResource(); }
 
 
@@ -68,7 +67,6 @@ private:
 	MString m_strName;
 	MEMeshVertexType m_eVertexType;
 	MIMesh* m_pMesh;
-	Matrix4 m_matRotationMatrix;
 	MBoundsOBB m_BoundsOBB;
 	MBoundsSphere m_BoundsSphere;
 	MResourceKeeper m_MaterialKeeper;

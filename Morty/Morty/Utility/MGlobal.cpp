@@ -7,7 +7,7 @@ const char* SUFFIX_PIXEL_SHADER = "mps";
 const char* SUFFIX_MATERIAL = "matl";
 const char* SUFFIX_SKELETON = "mske";
 const char* SUFFIX_MESH = "mesh";
-const char* SUFFIX_MODEL = "model";
+const char* SUFFIX_NODE = "mnode";
 const char* SUFFIX_SKELANIM = "mseq";
 
 const char* DEFAULT_MATERIAL_MODEL_STATIC_MESH = "DefMatModelStaticMesh";
