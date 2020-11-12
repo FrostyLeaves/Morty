@@ -9,6 +9,7 @@
 #include "MIRenderer.h"
 #include "Light/MDirectionalLight.h"
 #include "Model/MIMeshInstance.h"
+#include "Model/MModelInstance.h"
 #include "MTextureRenderTarget.h"
 #include "Model/MModelResource.h"
 #include "Model/MStaticMeshInstance.h"
@@ -41,9 +42,24 @@ void MaterialView::SetMaterial(MMaterial* pMaterial)
 	m_Resource.SetResource(pMaterial);
 	m_pMaterial = pMaterial;
 
-	m_bShowPreview = m_pMaterial && m_pMaterial->GetShaderMacro()->GetInnerMacro(MATERIAL_MACRO_SKELETON_ENABLE).empty();
+	if (!m_pMaterial)
+	{
+		m_pMeshInstance->SetVisible(false);
+		m_pSkeletonMeshInstance->SetVisible(false);
+	}
+	else if (m_pMaterial->GetShaderMacro()->GetInnerMacro(MATERIAL_MACRO_SKELETON_ENABLE).empty())
+	{
+		m_pMeshInstance->SetVisible(true);
+		m_pSkeletonMeshInstance->SetVisible(false);
+	}
+	else
+	{
+		m_pMeshInstance->SetVisible(false);
+		m_pSkeletonMeshInstance->SetVisible(true);
+	}
 
 	m_pMeshInstance->SetMaterial(pMaterial);
+	m_pSkeletonMeshInstance->SetMaterial(pMaterial);
 }
 
 void MaterialView::UpdateMaterialTexture()
@@ -98,13 +114,63 @@ void MaterialView::Initialize(MEngine* pEngine)
 	}
 
 	MCamera* pCamera = m_SceneTexture.GetViewport()->GetCamera();
-	pCamera->SetPosition(Vector3(0, 0, -20));
+	pCamera->SetPosition(Vector3(0, 0, -10));
 
-	MResource* pResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/GeoSphere001.mesh");
+	MMeshResource* pResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/GeoSphere001.mesh")->DynamicCast<MMeshResource>();
+	MMeshResource* pResourceAnim = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/GeoSphere001_anim.mesh")->DynamicCast<MMeshResource>();
+	
 
 	m_pMeshInstance = m_pEngine->GetObjectManager()->CreateObject<MStaticMeshInstance>();
 	m_pMeshInstance->Load(pResource);
 	pRootNode->AddNode(m_pMeshInstance);
+	m_pMeshInstance->SetVisible(false);
+
+
+	MSkeletonResource* pSkeleton = m_pEngine->GetResourceManager()->CreateResource<MSkeletonResource>();
+
+	MModelInstance* pModelInstance = m_pEngine->GetObjectManager()->CreateObject<MModelInstance>();
+	pModelInstance->SetSkeletonTemplate(pSkeleton);
+	pRootNode->AddNode(pModelInstance);
+
+	m_pSkeletonMeshInstance = m_pEngine->GetObjectManager()->CreateObject<MStaticMeshInstance>();
+	m_pSkeletonMeshInstance->Load(pResourceAnim);
+	pModelInstance->AddNode(m_pSkeletonMeshInstance);
+	m_pMeshInstance->SetVisible(false);
+
+
+
+
+
+// 	unsigned int nSize = pResource->GetMesh()->GetVerticesLength();
+// 	uint32_t nIdxSize = pResource->GetMesh()->GetIndicesLength();
+// 	MVertex* pVertex = (MVertex*)pResource->GetMesh()->GetVertices();
+// 	uint32_t* pIdxxx = pResource->GetMesh()->GetIndices();
+// 
+// 	MMesh<MVertexWithBones>* pNewVertex = new MMesh<MVertexWithBones>();
+// 	pNewVertex->CreateVertices(nSize);
+// 	pNewVertex->CreateIndices(pResource->GetMesh()->GetIndicesLength(), 1);
+// 
+// 	MVertexWithBones* pBoneVertex = pNewVertex->GetVertices();
+// 	uint32_t* pIndices = pNewVertex->GetIndices();
+// 
+// 	for (int i = 0; i < nSize; ++i)
+// 	{
+// 		memset(&(pBoneVertex[i]), 0, sizeof(MVertexWithBones));
+// 		pBoneVertex[i].position = pVertex[i].position;
+// 		pBoneVertex[i].bitangent = pVertex[i].bitangent;
+// 		pBoneVertex[i].normal = pVertex[i].normal;
+// 		pBoneVertex[i].tangent = pVertex[i].tangent;
+// 		pBoneVertex[i].texCoords = pVertex[i].texCoords;
+// 	}
+// 
+// 	memcpy(pIndices, pIdxxx, sizeof(uint32_t) * nIdxSize);
+// 	
+// 
+// 	pResource->m_pMesh = pNewVertex;
+// 	pResource->m_eVertexType = MMeshResource::Skeleton;
+// 
+// 
+// 	pResource->SaveTo("./Model/Sphere/GeoSphere001_anim.mesh");
 
  	MDirectionalLight* pDirLight = m_pEngine->GetObjectManager()->CreateObject<MDirectionalLight>();
  	pDirLight->SetName("DirLight");
@@ -120,6 +186,13 @@ void MaterialView::Release()
 	SetMaterial(nullptr);
 
 	m_SceneTexture.Release();
+
+
+	m_pMeshInstance->DeleteLater();
+	m_pMeshInstance = nullptr;
+
+	m_pSkeletonMeshInstance->DeleteLater();
+	m_pSkeletonMeshInstance = nullptr;
 }
 
 void MaterialView::Input(MInputEvent* pEvent)

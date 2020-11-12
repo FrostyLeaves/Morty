@@ -11,7 +11,7 @@ class MScene;
 class MEngine;
 class MMaterial;
 class MInputEvent;
-class MIMeshInstance;
+class MStaticMeshInstance;
 class MaterialView : public IBaseView
 {
 public:
@@ -38,7 +38,8 @@ private:
 	PropertyBase m_propertyBase;
 
 	MEngine* m_pEngine;
-	MIMeshInstance* m_pMeshInstance;
+	MStaticMeshInstance* m_pMeshInstance;
+	MStaticMeshInstance* m_pSkeletonMeshInstance;
 
 	bool m_bShowPreview;
 	SceneTexture m_SceneTexture;
