@@ -31,7 +31,7 @@ MStaticMeshInstance::~MStaticMeshInstance()
 
 MBoundsAABB* MStaticMeshInstance::GetBoundsAABB()
 {
-	if (m_bBoundsAABBDirty)
+	if (m_bBoundsAABBDirty && m_pMesh)
 	{
 		Matrix4 matWorldTrans = GetWorldTransform();
 		Vector3 v3Position = GetWorldPosition();
@@ -67,6 +67,9 @@ MBoundsSphere* MStaticMeshInstance::GetBoundsSphere()
 
 void MStaticMeshInstance::Load(MResource* pResource)
 {
+	if (!pResource)
+		return;
+
 	if (MMeshResource* pMeshResource = pResource->DynamicCast<MMeshResource>())
 	{
 		m_pMesh = pMeshResource;
@@ -88,6 +91,9 @@ void MStaticMeshInstance::SetMeshResourcePath(const MString& strResourcePath)
 
 MIMesh* MStaticMeshInstance::GetMesh(const uint32_t& unDetailLevel)
 {
+	if (!m_pMesh)
+		return nullptr;
+
 	if (unDetailLevel == MMESH_LOD_LEVEL_RANGE)
 		return m_pMesh->GetMesh();
 	else return m_pMesh->GetLevelMesh(unDetailLevel);

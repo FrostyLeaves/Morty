@@ -91,20 +91,23 @@ bool MModelConverter::Convert(const MString& strResourcePath, const MString& str
 		m_pEngine->GetResourceManager()->MoveTo(m_pSkeleton, strPath + strOutputName + "." + SUFFIX_SKELETON);
 		m_pSkeleton->Save();
 	}
+
+	for (int i = 0; i < m_vMaterials.size(); ++i)
+	{
+		if (m_vMaterials[i])
+		{
+			MString strMaterialFileName = strPath + "material_" + MStringHelper::ToString(i);
+			m_pEngine->GetResourceManager()->MoveTo(m_vMaterials[i], strMaterialFileName + "." + SUFFIX_MATERIAL);
+			m_vMaterials[i]->Save();
+		}
+	}
+
 	for (int i = 0; i < m_vMeshes.size(); ++i)
 	{
 		MMeshResource* pMeshResource = m_vMeshes[i];
 		MString strMeshFileName = strPath + pMeshResource->GetMeshName() + "_" + MStringHelper::ToString(i);
 
-		if (MResource* pMatRes = pMeshResource->GetDefaultMaterial())
-		{
-			if (MMaterialResource* pMaterialResource = pMatRes->DynamicCast<MMaterialResource>())
-			{
-				m_pEngine->GetResourceManager()->MoveTo(pMaterialResource, strMeshFileName + "." + SUFFIX_MATERIAL);
-				pMaterialResource->Save();
-			}
-		}
-
+		
 		m_pEngine->GetResourceManager()->MoveTo(pMeshResource, strMeshFileName + "." + SUFFIX_MESH);
 		pMeshResource->Save();
 	}
@@ -145,11 +148,14 @@ bool MModelConverter::Load(const MString& strResourcePath)
 		return false;
 	}
 
-
+	//Bones
 	ProcessBones(scene);
-	ProcessNode(scene->mRootNode, scene);
 	m_pModelInstance->SetSkeletonTemplate(m_pSkeleton);
 
+	//Meshes
+	ProcessNode(scene->mRootNode, scene);
+
+	//Animation
 	ProcessAnimation(scene);
 
 	return true;
@@ -159,63 +165,45 @@ void MModelConverter::ProcessNode(aiNode* pNode, const aiScene *pScene)
 {
 	for (uint32_t i = 0; i < pNode->mNumMeshes; ++i)
 	{
-		aiMesh* pMesh = pScene->mMeshes[pNode->mMeshes[i]];
+		aiMesh* pChildMesh = pScene->mMeshes[pNode->mMeshes[i]];
 
-		if (pMesh->HasBones())
+
+		MMeshResource* pChildMeshResource = m_pEngine->GetResourceManager()->CreateResource<MMeshResource>();
+		pChildMeshResource->AddRef();
+
+		if (m_pSkeleton)
 		{
-			MMesh<MVertexWithBones>* pMMesh = new MMesh<MVertexWithBones>();
-			ProcessMeshVertices(pMesh, pScene, pMMesh);
-			ProcessMeshIndices(pMesh, pScene, pMMesh);
-			BindVertexAndBones(pMesh, pScene, pMMesh);
-
-			MMeshResource* pMeshData = m_pEngine->GetResourceManager()->CreateResource<MMeshResource>();
-			pMeshData->m_strName = pNode->mName.C_Str();
-			pMeshData->m_pMesh = pMMesh;
-			pMeshData->m_eVertexType = MMeshResource::Skeleton;
-			pMeshData->m_SkeletonKeeper.SetResource(m_pSkeleton);
-			pMeshData->ResetBounds();
-
-			pMeshData->AddRef();
-			m_vMeshes.push_back(pMeshData);
-
-			ProcessMaterial(pScene, pMeshData, pMesh->mMaterialIndex);
-
-			MStaticMeshInstance* pMeshNode = m_pEngine->GetObjectManager()->CreateObject<MStaticMeshInstance>();
-			pMeshNode->SetName(pMesh->mName.C_Str());
-			pMeshNode->SetAttachedModelInstance(m_pModelInstance);
-			pMeshNode->Load(pMeshData);
-
-			GetMNodeFromNode(pNode)->AddNodeImpl(pMeshNode, MNode::EFixed);
-
-			m_tNodeMaps[pNode] = pMeshNode;
+			MMesh<MVertexWithBones>* pMBonesMesh = new MMesh<MVertexWithBones>();
+			ProcessMeshVertices(pChildMesh, pScene, pMBonesMesh);
+			ProcessMeshIndices(pChildMesh, pScene, pMBonesMesh);
+			BindVertexAndBones(pChildMesh, pScene, pMBonesMesh);
+			pChildMeshResource->m_pMesh = pMBonesMesh;
+			pChildMeshResource->m_eVertexType = MMeshResource::Skeleton;
 		}
 		else
 		{
-			MMesh<MVertex>* pMMesh = new MMesh<MVertex>();
-			ProcessMeshVertices(pMesh, pScene, pMMesh);
-			ProcessMeshIndices(pMesh, pScene, pMMesh);
+			MMesh<MVertex>* pMStaticMesh = new MMesh<MVertex>();
+			ProcessMeshVertices(pChildMesh, pScene, pMStaticMesh);
+			ProcessMeshIndices(pChildMesh, pScene, pMStaticMesh);
+			pChildMeshResource->m_eVertexType = MMeshResource::Skeleton;
 
-			MMeshResource* pMeshData = m_pEngine->GetResourceManager()->CreateResource<MMeshResource>();
-			pMeshData->m_strName = pNode->mName.C_Str();
-			pMeshData->m_pMesh = pMMesh;
-			pMeshData->m_eVertexType = MMeshResource::Normal;
-			pMeshData->m_SkeletonKeeper.SetResource(nullptr);
-
-			pMeshData->ResetBounds();
-
-			pMeshData->AddRef();
-			m_vMeshes.push_back(pMeshData);
-
-			ProcessMaterial(pScene, pMeshData, pMesh->mMaterialIndex);
-
-			MStaticMeshInstance* pMeshNode = m_pEngine->GetObjectManager()->CreateObject<MStaticMeshInstance>();
-			pMeshNode->SetName(pMesh->mName.C_Str());
-			pMeshNode->SetAttachedModelInstance(m_pModelInstance);
-			pMeshNode->Load(pMeshData);
-
-			GetMNodeFromNode(pNode)->AddNodeImpl(pMeshNode, MNode::EFixed);
+			pChildMeshResource->m_pMesh = pMStaticMesh;
+			pChildMeshResource->m_eVertexType = MMeshResource::Normal;
 		}
 
+		pChildMeshResource->m_strName = pNode->mName.C_Str();
+		pChildMeshResource->m_SkeletonKeeper.SetResource(m_pSkeleton);
+		pChildMeshResource->m_MaterialKeeper.SetResource(GetMaterial(pScene, pChildMesh->mMaterialIndex));
+		pChildMeshResource->ResetBounds();
+		m_vMeshes.push_back(pChildMeshResource);
+
+
+		MStaticMeshInstance* pChildMeshNode = m_pEngine->GetObjectManager()->CreateObject<MStaticMeshInstance>();
+		pChildMeshNode->SetName(pChildMesh->mName.C_Str());
+		pChildMeshNode->SetAttachedModelInstance(m_pModelInstance);
+		pChildMeshNode->Load(pChildMeshResource);
+
+		GetMNodeFromNode(pNode)->AddNodeImpl(pChildMeshNode, MNode::EFixed);
 	}
 
 	for (uint32_t i = 0; i < pNode->mNumChildren; ++i)
@@ -235,7 +223,6 @@ void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, 
 		vertex.position.y = pMesh->mVertices[i].y;
 		vertex.position.z = pMesh->mVertices[i].z;
 
-	//	vertex.position = matRotation * vertex.position;
 
 		if (pMesh->mNormals)
 		{
@@ -243,7 +230,6 @@ void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, 
 			vertex.normal.y = pMesh->mNormals[i].y;
 			vertex.normal.z = pMesh->mNormals[i].z;
 
-	//		vertex.normal = matRotation * vertex.normal;
 		}
 		if (pMesh->mTextureCoords)
 		{
@@ -260,15 +246,12 @@ void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, 
 			vertex.tangent.y = pMesh->mTangents[i].y;
 			vertex.tangent.z = pMesh->mTangents[i].z;
 
-	//		vertex.tangent = matRotation * vertex.tangent;
 		}
 		if (pMesh->mBitangents)
 		{
 			vertex.bitangent.x = pMesh->mBitangents[i].x;
 			vertex.bitangent.y = pMesh->mBitangents[i].y;
 			vertex.bitangent.z = pMesh->mBitangents[i].z;
-
-	//		vertex.bitangent = matRotation * vertex.bitangent;
 		}
 	}
 }
@@ -283,15 +266,12 @@ void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, 
 		vertex.position.y = pMesh->mVertices[i].y;
 		vertex.position.z = pMesh->mVertices[i].z;
 
-	//	vertex.position = matRotation * vertex.position;
-
 		if (pMesh->mNormals)
 		{
 			vertex.normal.x = pMesh->mNormals[i].x;
 			vertex.normal.y = pMesh->mNormals[i].y;
 			vertex.normal.z = pMesh->mNormals[i].z;
 
-	//		vertex.normal = matRotation * vertex.normal;
 		}
 		if (pMesh->mTextureCoords)
 		{
@@ -305,7 +285,6 @@ void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, 
 			vertex.tangent.y = pMesh->mTangents[i].y;
 			vertex.tangent.z = pMesh->mTangents[i].z;
 
-	//		vertex.tangent = matRotation * vertex.tangent;
 		}
 		if (pMesh->mBitangents)
 		{
@@ -313,7 +292,6 @@ void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, 
 			vertex.bitangent.y = pMesh->mBitangents[i].y;
 			vertex.bitangent.z = pMesh->mBitangents[i].z;
 
-	//		vertex.bitangent = matRotation * vertex.bitangent;
 		}
 	}
 }
@@ -530,20 +508,22 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 	}
 }
 
-void MModelConverter::ProcessMaterial(const aiScene* pScene, MMeshResource* pMeshData, const uint32_t& nMaterialIdx)
+void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMaterialIdx)
 {
 	aiString strAmbient("$clr.ambient"), strDiffuse("$clr.diffuse"), strSpecular("$clr.specular"), strShininess("$mat.shininess");
 
-	MMaterialResource* pStaticMeshMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_MODEL_STATIC_MESH);
-	MMaterialResource* pSkinnedMeshMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_MODEL_SKELETON_MESH);
-
 	MMaterialResource* pMaterial = m_pEngine->GetResourceManager()->CreateResource<MMaterialResource>();
-	pMeshData->m_MaterialKeeper.SetResource(pMaterial);
-
-	if (pMeshData->GetMeshVertexType() == MMeshResource::Normal)
-		pMaterial->CopyFrom(pStaticMeshMaterial);
-	else if(pMeshData->GetMeshVertexType() == MMeshResource::Skeleton)
+	
+	if (m_pSkeleton)
+	{
+		MMaterialResource* pSkinnedMeshMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_MODEL_SKELETON_MESH);
 		pMaterial->CopyFrom(pSkinnedMeshMaterial);
+	}
+	else
+	{
+		MMaterialResource* pStaticMeshMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_MODEL_STATIC_MESH);
+		pMaterial->CopyFrom(pStaticMeshMaterial);
+	}
 
 	if(nMaterialIdx >= pScene->mNumMaterials)
 		return;
@@ -617,6 +597,8 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, MMeshResource* pMes
 	pMaterial->SetTexutreParam(SHADER_PARAM_NAME_DIFFUSE, pDiffuseTexRes);
 	pMaterial->SetTexutreParam(SHADER_PARAM_NAME_NORMAL, pNormalMapRes);
 	
+
+	m_vMaterials[nMaterialIdx] = pMaterial;
 }
 
 M3DNode* MModelConverter::GetMNodeFromNode(aiNode* pNode)
@@ -636,6 +618,18 @@ M3DNode* MModelConverter::GetMNodeFromNode(aiNode* pNode)
 	pMNode->SetName(pNode->mName.C_Str());
 	pMNode->SetTransform(MTransform(matTransform));
 	pMParent->AddNodeImpl(pMNode, MNode::EFixed);
+	m_tNodeMaps[pNode] = pMNode;
 
 	return pMNode;
+}
+
+MMaterial* MModelConverter::GetMaterial(const aiScene* pScene, const uint32_t& nMaterialIdx)
+{
+	if (m_vMaterials.size() <= nMaterialIdx)
+		m_vMaterials.resize(nMaterialIdx + 1);
+
+	if (!m_vMaterials[nMaterialIdx])
+		ProcessMaterial(pScene, nMaterialIdx);
+
+	return m_vMaterials[nMaterialIdx];
 }

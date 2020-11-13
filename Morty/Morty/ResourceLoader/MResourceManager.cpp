@@ -84,7 +84,7 @@ MResource* MResourceManager::LoadResource(const MString& strResourcePath, const 
 
 	if (nullptr == pResource)
 	{
-		MLogManager::GetInstance()->Error("Load Resource not found: [path: %s]", strResourcePath.c_str());
+		MLogManager::GetInstance()->Error("Load Resource failed: [path: %s]", strResourcePath.c_str());
 	}
 
 	return pResource;

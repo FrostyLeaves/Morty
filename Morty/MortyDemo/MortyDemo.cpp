@@ -77,12 +77,12 @@ int main(int argc, char* argv[])
 	engine.Initialize("./");
 
 
-	{
-		{
-			MModelConverter conver(&engine);
-			conver.Convert("./Model/pigeon/source/Pigeon_Animations.fbx", "./Model/output", "pigeon");
-		}
-	}
+// 	{
+// 		{
+// 			MModelConverter conver(&engine);
+// 			conver.Convert("./Model/just-a-girl/source/final_v01.obj", "./Model/output", "girl");
+// 		}
+// 	}
 
  	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
  	pRootNode->SetName("RootNode");
@@ -94,9 +94,11 @@ int main(int argc, char* argv[])
 	//pCamera->SetCameraType(MCamera::MECameraType::EOrthographic);
 	pRootNode->AddNode(pCamera);
 
-	MNodeResource* pNodeResource = engine.GetResourceManager()->LoadResource("./Model/output/pigeon/pigeon.mnode")->DynamicCast<MNodeResource>();
+	MNodeResource* pNodeResource = engine.GetResourceManager()->LoadResource("./Model/output/girl/girl.mnode")->DynamicCast<MNodeResource>();
 
-	pRootNode->AddNode(pNodeResource->CreateNode());
+	MNode* pEditorNode = pNodeResource->CreateNode();
+
+	pRootNode->AddNode(pEditorNode);
 
 // 	if (auto pMeshIns = pJeepModel->GetFixedChildren()[0]->DynamicCast<MIModelMeshInstance>())
 // 	{

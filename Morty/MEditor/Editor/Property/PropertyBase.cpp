@@ -17,7 +17,6 @@ std::map<MString, unsigned int> PropertyBase::m_tItemID = std::map<MString, unsi
 
 static const char* vTitleList[] = {
 		"Default",
-		"Model",
 		"Shader",
 		"Material",
 		"Texture",
@@ -29,7 +28,6 @@ static const char* vTitleList[] = {
 
 static const char* vFilterList[] = {
 	"\0\0",
-	".model\0\0",
 	".mvs\0.mps\0\0",
 	".matl\0\0",
 	".png\0.jpg\0.tga\0\0",

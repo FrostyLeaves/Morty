@@ -56,10 +56,12 @@ protected:
 
 	void ProcessAnimation(const aiScene* pScene);
 
-	void ProcessMaterial(const aiScene* pScene, MMeshResource* pMeshData, const uint32_t& nMaterialIdx);
+	void ProcessMaterial(const aiScene* pScene, const uint32_t& nMaterialIdx);
 
 
 	M3DNode* GetMNodeFromNode(aiNode* pNode);
+
+	MMaterial* GetMaterial(const aiScene* pScene, const uint32_t& nMaterialIdx);
 
 private:
 
@@ -68,7 +70,8 @@ private:
 	MString m_strResourcePath;
 
 	std::vector<MMeshResource*> m_vMeshes;
-	
+	std::vector<MMaterial*> m_vMaterials;
+
 	std::map<aiNode*, M3DNode*> m_tNodeMaps;
 
 	MSkeletonResource* m_pSkeleton;

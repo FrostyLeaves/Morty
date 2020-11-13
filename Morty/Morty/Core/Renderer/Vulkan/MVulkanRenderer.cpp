@@ -256,6 +256,9 @@ void MVulkanRenderer::RenderEnd(MIRenderTarget* pRenderTarget)
 //����Buffer->��Buffer(����)->��ͼ(����)
 void MVulkanRenderer::DrawMesh(MIMesh* pMesh)
 {
+	if (!pMesh)
+		return;
+
 	MRenderStage& rs = m_vRenderStages.back();
 
 	if (pMesh->GetNeedGenerate())
