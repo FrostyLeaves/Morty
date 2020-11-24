@@ -51,11 +51,9 @@ enum class MEDepthStencilType
 enum class MEMaterialType
 {
 	EDefault = 0,
-	ETransparent,
-
-
-
-	EBlendTransparent,
+	EDepthPeel,
+	ETransparentBlend,
+	EOutline,
 
 	EMaterialTypeEnd,
 };

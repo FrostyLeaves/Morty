@@ -57,6 +57,11 @@ public:
 #endif
 
 		Print(svMessage, Args...);
+
+#ifdef MORTY_WIN
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY |
+			FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+#endif
 	}
 
 	template<typename ...ARGS_T>
@@ -69,6 +74,11 @@ public:
 #endif
 
 		Print(svMessage, Args...);
+
+#ifdef MORTY_WIN
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY |
+			FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+#endif
 	}
 
 	template<typename ...ARGS_T>
@@ -91,6 +101,11 @@ public:
 #endif
 
 		Print(svMessage, Args...);
+
+#ifdef MORTY_WIN
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY |
+			FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+#endif
 	}
 private:
 	MLogFunction m_printFunction;

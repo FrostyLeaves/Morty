@@ -6,8 +6,9 @@ M_I_OBJECT_IMPLEMENT(MIModelMeshInstance, MIMeshInstance)
 MIModelMeshInstance::MIModelMeshInstance()
 	: MIMeshInstance()
 	, m_eShadowType(MEShadowType::EOnlyDirectional)
-	, m_pModelInstance(nullptr)
 	, m_unDetailLevel(MMESH_LOD_LEVEL_RANGE)
+	, m_bModelInstanceFound(false)
+	, m_pModelInstance(nullptr)
 	, m_bDrawBoundingSphere(false)
 	, m_bGenerateDirLightShadow(true)
 {
@@ -21,19 +22,10 @@ MIModelMeshInstance::~MIModelMeshInstance()
 
 MModelInstance* MIModelMeshInstance::GetAttachedModelInstance()
 {
-	if (!m_pModelInstance)
+	if (!m_bModelInstanceFound && !m_pModelInstance)
 	{
-		MNode* pParent = GetParent();
-		while (pParent)
-		{
-			if (MModelInstance* pModelIns = pParent->DynamicCast<MModelInstance>())
-			{
-				m_pModelInstance = pModelIns;
-				break;
-			}
-
-			pParent = pParent->GetParent();
-		}
+		m_pModelInstance = FindParentByType<MModelInstance>();
+		m_bModelInstanceFound = true;
 	}
 	return m_pModelInstance;
 }
@@ -63,4 +55,12 @@ void MIModelMeshInstance::ReadFromStruct(MStruct& srt)
 	M_SERIALIZER_READ_VALUE("DrawBounding", SetDrawBoundingSphere, Bool);
 	M_SERIALIZER_READ_VALUE("LOD", SetDetailLevel, Int);
 	M_SERIALIZER_END;
+}
+
+void MIModelMeshInstance::ParentChangeImpl(MNode* pParent)
+{
+	Super::ParentChangeImpl(pParent);
+
+	m_bModelInstanceFound = false;
+	m_pModelInstance = nullptr;
 }

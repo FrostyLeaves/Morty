@@ -345,7 +345,7 @@ void MMaterial::SetMaterialType(const MEMaterialType& eType)
 
 	switch (m_eMaterialType)
 	{
-	case MEMaterialType::ETransparent:
+	case MEMaterialType::EDepthPeel:
 	{
 		m_ShaderMacro.SetInnerMacro("MEN_TRANSPARENT", "1");
 		LoadVertexShader(m_VertexResource.GetResource());

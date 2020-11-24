@@ -47,10 +47,15 @@ public:
 	virtual void ReadFromStruct(MStruct& srt) override;
 
 
+protected:
+	virtual void ParentChangeImpl(MNode* pParent) override;
+
 private:
 	MEShadowType m_eShadowType;
-	MModelInstance* m_pModelInstance;
 	uint32_t m_unDetailLevel;
+
+	bool m_bModelInstanceFound;
+	MModelInstance* m_pModelInstance;
 
 	bool m_bDrawBoundingSphere;
 	bool m_bGenerateDirLightShadow;

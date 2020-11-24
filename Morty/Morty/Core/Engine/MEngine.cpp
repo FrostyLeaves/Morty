@@ -237,14 +237,14 @@ bool MEngine::InitializeDefaultResource()
 	MResource* pDPFPSResource = GetResourceManager()->LoadResource("./Shader/depth_peel_fill.mps");
 
 	MMaterialResource* pTextureMaterial = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DEPTH_PEEL_BLEND);
-	pTextureMaterial->SetMaterialType(MEMaterialType::EBlendTransparent);
+	pTextureMaterial->SetMaterialType(MEMaterialType::ETransparentBlend);
 	pTextureMaterial->LoadVertexShader(pDPVSResource);
 	pTextureMaterial->LoadPixelShader(pDPBPSResource);
 	pTextureMaterial->AddRef();
 
 
 	MMaterialResource* pDepthPeelFillMaterial = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DEPTH_PEEL_FILL);
-	pDepthPeelFillMaterial->SetMaterialType(MEMaterialType::ETransparent);
+	pDepthPeelFillMaterial->SetMaterialType(MEMaterialType::EDepthPeel);
 	pDepthPeelFillMaterial->LoadVertexShader(pDPVSResource);
 	pDepthPeelFillMaterial->LoadPixelShader(pDPFPSResource);
 	pDepthPeelFillMaterial->AddRef();

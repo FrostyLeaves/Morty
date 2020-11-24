@@ -1059,7 +1059,6 @@ bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString&
 	if (vkCreateShaderModule(m_VkDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
 		return false;
 
-
 	spirv_cross::Compiler compiler(spirv);
 
 	VkPipelineShaderStageCreateInfo shaderStageInfo{};

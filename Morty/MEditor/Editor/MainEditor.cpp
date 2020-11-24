@@ -58,7 +58,7 @@ MainEditor::MainEditor()
 	, m_bShowProperty(true)
 	, m_bShowRenderView(true)
 	, m_bShowMaterial(false)
-	, m_bShowResource(true)
+	, m_bShowResource(false)
 	, m_ImguiRenderPass()
 {
 	m_nWidth = 800.0f;

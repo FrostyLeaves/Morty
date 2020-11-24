@@ -359,7 +359,7 @@ void MVulkanRenderer::GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPa
 		}
 		
 	}
-	else if (MEMaterialType::ETransparent == eType)
+	else if (MEMaterialType::EDepthPeel == eType)
 	{
 	//	m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::EReadNotWrite], 0);
 		
@@ -410,7 +410,7 @@ void MVulkanRenderer::GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPa
 			vBlendAttach[3].alphaBlendOp = VK_BLEND_OP_MAX;
 		}
 	}
-	else if (MEMaterialType::EBlendTransparent == eType)
+	else if (MEMaterialType::ETransparentBlend == eType)
 	{
 		//m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::ENotReadNotWrite], 0);
 		for (uint32_t i = 0; i < pRenderPass->m_vBackDesc.size(); ++i)
@@ -459,16 +459,15 @@ void MVulkanRenderer::GetDepthStencilStage(MMaterial* pMaterial, MRenderPass* pR
 		depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 		depthStencilInfo.stencilTestEnable = VK_FALSE;
 	}
-	else if (MEMaterialType::ETransparent == eType)
+	else if (MEMaterialType::EDepthPeel == eType)
 	{
 		depthStencilInfo.depthTestEnable = VK_TRUE;
 		depthStencilInfo.depthWriteEnable = VK_FALSE;
 		depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 		depthStencilInfo.stencilTestEnable = VK_FALSE;
 	}
-	else if (MEMaterialType::EBlendTransparent == eType)
+	else if (MEMaterialType::ETransparentBlend == eType)
 	{
-		//m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::ENotReadNotWrite], 0);
 		for (uint32_t i = 0; i < pRenderPass->m_vBackDesc.size(); ++i)
 		{
 			depthStencilInfo.depthTestEnable = VK_FALSE;

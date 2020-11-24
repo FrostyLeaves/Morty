@@ -64,10 +64,14 @@ public:
 	bool AddNode(MNode* pNode) { return AddNodeImpl(pNode, MENodeChildType::ENormal); }
 	bool RemoveNode(MNode* pNode) { return !m_bDeleteMark && RemoveNodeImpl(pNode, MENodeChildType::ENormal); }
 
-public:
+protected:
 	virtual bool AddNodeImpl(MNode* pNode, const MENodeChildType& etype);
 	virtual bool RemoveNodeImpl(MNode* pNode, const MENodeChildType& etype);
+	virtual void ParentChangeImpl(MNode* pParent);
+	
 	void RemoveAllNodeImpl(const MENodeChildType& etype);
+	
+	
 	virtual void Tick(const float& fDelta);
 
 
@@ -96,6 +100,9 @@ public:
 
 	template <class T>
 	T* FindChildrenByType();
+
+	template <class T>
+	T* FindParentByType();
 
 protected:
 	template <class T>
@@ -158,6 +165,22 @@ T* MNode::FindChildrenByType()
 	std::vector<T*> vResult;
 	FindChildrenByType<T>(vResult);
 	return vResult;
+}
+
+template <class T>
+T* MNode::FindParentByType()
+{
+	MNode* pParent = GetParent();
+	T* pTypedParent = nullptr;
+	while (pParent)
+	{
+		if (pTypedParent = pParent->DynamicCast<T>())
+			return pTypedParent;
+
+		pParent = pParent->GetParent();
+	}
+
+	return nullptr;
 }
 
 #endif

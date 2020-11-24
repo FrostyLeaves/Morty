@@ -547,7 +547,7 @@ void MForwardRenderProgram::GenerateRenderGroup(MRenderInfo& info)
 			info.vMaterialRenderGroup.push_back(MMaterialGroup());
 			pRenderGroup = &info.vMaterialRenderGroup.back();
 		}
-		else if (pMaterialGroup->m_pMaterial->GetMaterialType() == MEMaterialType::ETransparent)
+		else if (pMaterialGroup->m_pMaterial->GetMaterialType() == MEMaterialType::EDepthPeel)
 		{
 			info.vTransparentRenderGroup.push_back(MMaterialGroup());
 			pRenderGroup = &info.vTransparentRenderGroup.back();

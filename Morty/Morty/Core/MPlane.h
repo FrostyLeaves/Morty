@@ -4,6 +4,8 @@
  * @Created      2020-04-14 22:40:14
  *
  * @Author       Pobrecito
+ * 
+ * http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
 **/
 
 #ifndef _M_MPLANE_H_
@@ -24,7 +26,8 @@ public:
 	float GetDistance(const Vector3& position);
 
 public:
-
+	
+	//ax + by + cz + d = 0
 	union
 	{
 		struct {
@@ -36,5 +39,6 @@ public:
 	};
 	
 };
+
 
 #endif

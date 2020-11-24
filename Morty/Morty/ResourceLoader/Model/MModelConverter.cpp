@@ -18,6 +18,11 @@
 #include "Model/MSkeletalAnimationResource.h"
 #include "Node/MNodeResource.h"
 
+#include "MCamera.h"
+#include "Light/MSpotLight.h"
+#include "Light/MPointLight.h"
+#include "Light/MDirectionalLight.h"
+
 #include "MBounds.h"
 #include "MSkeleton.h"
 #include "MSkeletalAnimation.h"
@@ -39,6 +44,16 @@ void CopyMatrix4(Matrix4* matdest, aiMatrix4x4* matsour)
 			matdest->m[r][c] = (*matsour)[r][c];
 		}
 	}
+}
+
+MColor GetColor(const aiColor3D& color)
+{
+	return MColor(color.r, color.g, color.b);
+}
+
+Vector3 GetVector3(const aiVector3D& val)
+{
+	return Vector3(val.x, val.y, val.z);
 }
 
 MModelConverter::MModelConverter(MEngine* pEngine)
@@ -158,6 +173,12 @@ bool MModelConverter::Load(const MString& strResourcePath)
 	//Animation
 	ProcessAnimation(scene);
 
+	//Lights
+	ProcessLights(scene);
+
+	//Cameras
+	ProcessCameras(scene);
+
 	return true;
 }
 
@@ -166,7 +187,6 @@ void MModelConverter::ProcessNode(aiNode* pNode, const aiScene *pScene)
 	for (uint32_t i = 0; i < pNode->mNumMeshes; ++i)
 	{
 		aiMesh* pChildMesh = pScene->mMeshes[pNode->mMeshes[i]];
-
 
 		MMeshResource* pChildMeshResource = m_pEngine->GetResourceManager()->CreateResource<MMeshResource>();
 		pChildMeshResource->AddRef();
@@ -203,7 +223,7 @@ void MModelConverter::ProcessNode(aiNode* pNode, const aiScene *pScene)
 		pChildMeshNode->SetAttachedModelInstance(m_pModelInstance);
 		pChildMeshNode->Load(pChildMeshResource);
 
-		GetMNodeFromNode(pNode)->AddNodeImpl(pChildMeshNode, MNode::EFixed);
+		GetMNodeFromNode(pScene, pNode)->AddNodeImpl(pChildMeshNode, MNode::EFixed);
 	}
 
 	for (uint32_t i = 0; i < pNode->mNumChildren; ++i)
@@ -427,6 +447,59 @@ void MModelConverter::BindBones(aiNode* pNode, const aiScene* pScene, MBone* pPa
 	}
 }
 
+void MModelConverter::ProcessLights(const aiScene* pScene)
+{
+	for (uint32_t i = 0; i < pScene->mNumLights; ++i)
+	{
+		aiLight* pLight = pScene->mLights[i];
+
+		MString strName = pLight->mName.C_Str();
+
+		MILight* pMLight = nullptr;
+		switch (pLight->mType)
+		{
+		case aiLightSourceType::aiLightSource_POINT:
+		{
+			MPointLight* pPointLight = m_pEngine->GetObjectManager()->CreateObject<MPointLight>();
+			pPointLight->SetDiffuseColor(GetColor(pLight->mColorDiffuse));
+			pPointLight->SetSpecularColor(GetColor(pLight->mColorSpecular));
+
+			pMLight = pPointLight;
+		}
+			break;
+
+		default:
+			break;
+		}
+
+		if (pMLight)
+		{
+			pMLight->SetPosition(GetVector3(pLight->mPosition));
+		}
+	}
+}
+
+void MModelConverter::ProcessCameras(const aiScene* pScene)
+{
+	for (uint32_t i = 0; i < pScene->mNumCameras; ++i)
+	{
+		aiCamera* pCamera = pScene->mCameras[i];
+
+		MCamera* pMCamera = m_pEngine->GetObjectManager()->CreateObject<MCamera>();
+
+		pMCamera->SetCameraType(MCamera::MECameraType::EPerspective);
+		pMCamera->SetZNear(pCamera->mClipPlaneNear);
+		pMCamera->SetZFar(pCamera->mClipPlaneFar);
+		pMCamera->SetFov(pCamera->mHorizontalFOV);
+
+		pMCamera->SetPosition(GetVector3(pCamera->mPosition));
+		pMCamera->LookAt(GetVector3(pCamera->mLookAt), GetVector3(pCamera->mUp));
+		
+
+		GetMNodeFromNode(pScene, pScene->mRootNode)->AddNodeImpl(pMCamera, MNode::EFixed);
+	}
+}
+
 void MModelConverter::ProcessAnimation(const aiScene* pScene)
 {
 	if (!m_pSkeleton)
@@ -601,9 +674,9 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 	m_vMaterials[nMaterialIdx] = pMaterial;
 }
 
-M3DNode* MModelConverter::GetMNodeFromNode(aiNode* pNode)
+M3DNode* MModelConverter::GetMNodeFromNode(const aiScene* pScene, aiNode* pNode)
 {
-	if (nullptr == pNode)
+	if (pScene->mRootNode == pNode)
 		return m_pModelInstance;
 
 	if (M3DNode* pMNode = m_tNodeMaps[pNode])
@@ -612,7 +685,7 @@ M3DNode* MModelConverter::GetMNodeFromNode(aiNode* pNode)
 	Matrix4 matTransform;
 	CopyMatrix4(&matTransform, &pNode->mTransformation);
 
-	M3DNode* pMParent = GetMNodeFromNode(pNode->mParent);
+	M3DNode* pMParent = GetMNodeFromNode(pScene, pNode->mParent);
 
 	M3DNode* pMNode = m_pEngine->GetObjectManager()->CreateObject<M3DNode>();
 	pMNode->SetName(pNode->mName.C_Str());

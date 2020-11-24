@@ -13,6 +13,7 @@
 #include "MFunction.h"
 
 #include <vector>
+#include <cassert>
 
 #define REGISTER_RESOURCE_TYPE(Type, ResourceClass, ...) \
 { \
@@ -51,6 +52,9 @@ MResourceManager::MEResourceType MResourceManager::GetResourceType(const MString
 
 MResource* MResourceManager::LoadResource(const MString& strResourcePath, const MEResourceType& eType/* = MEResourceType::Default*/)
 {
+	if (strResourcePath.empty())
+		return nullptr;
+
 	std::map<MString, MResource*>::iterator iter = m_tPathResources.find(strResourcePath);
 	if (iter != m_tPathResources.end())
 		return iter->second;
@@ -84,6 +88,9 @@ MResource* MResourceManager::LoadResource(const MString& strResourcePath, const 
 
 	if (nullptr == pResource)
 	{
+#ifdef _DEBUG
+		assert(false);
+#endif
 		MLogManager::GetInstance()->Error("Load Resource failed: [path: %s]", strResourcePath.c_str());
 	}
 

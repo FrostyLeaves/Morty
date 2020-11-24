@@ -91,7 +91,7 @@ bool MNode::AddNodeImpl(MNode* pNode, const MENodeChildType& etype)
 	}
 
 	children.push_back(pNode);
-	pNode->m_pParent = this;
+	pNode->ParentChangeImpl(this);
 	pNode->m_eChildType = etype;
 	
 	//Update Attached Scene.
@@ -169,7 +169,7 @@ bool MNode::RemoveNodeImpl(MNode* pNode, const MENodeChildType& etype)
 	{
 		if (*iter == pNode)
 		{
-			pNode->m_pParent = nullptr;
+			pNode->ParentChangeImpl(nullptr);
 			children.erase(iter);
 
 			pNode->SetAttachedScene(nullptr);
@@ -181,13 +181,18 @@ bool MNode::RemoveNodeImpl(MNode* pNode, const MENodeChildType& etype)
 	return false;
 }
 
+void MNode::ParentChangeImpl(MNode* pParent)
+{
+	m_pParent = pParent;
+}
+
 void MNode::RemoveAllNodeImpl(const MENodeChildType& etype)
 {
 	std::vector<MNode*>& children = etype == MENodeChildType::EFixed ? m_vFixedChildren : m_vChildren;
 
 	for (MNode* pChild : children)
 	{
-		pChild->m_pParent = nullptr;
+		pChild->ParentChangeImpl(nullptr);
 		pChild->SetAttachedScene(nullptr);
 		pChild->DeleteLater();
 	}

@@ -54,12 +54,16 @@ protected:
 	void RecordBones(aiNode* pNode, const aiScene* pScene);
 	void BindBones(aiNode* pNode, const aiScene* pScene, MBone* pParent = nullptr);
 
+	void ProcessLights(const aiScene* pScene);
+
+	void ProcessCameras(const aiScene* pScene);
+
 	void ProcessAnimation(const aiScene* pScene);
 
 	void ProcessMaterial(const aiScene* pScene, const uint32_t& nMaterialIdx);
 
 
-	M3DNode* GetMNodeFromNode(aiNode* pNode);
+	M3DNode* GetMNodeFromNode(const aiScene* pScene, aiNode* pNode);
 
 	MMaterial* GetMaterial(const aiScene* pScene, const uint32_t& nMaterialIdx);
 
