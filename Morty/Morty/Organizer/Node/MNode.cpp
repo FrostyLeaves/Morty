@@ -184,6 +184,7 @@ bool MNode::RemoveNodeImpl(MNode* pNode, const MENodeChildType& etype)
 void MNode::ParentChangeImpl(MNode* pParent)
 {
 	m_pParent = pParent;
+	UpdateVisibleRecursively();
 }
 
 void MNode::RemoveAllNodeImpl(const MENodeChildType& etype)

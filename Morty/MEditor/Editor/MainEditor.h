@@ -39,6 +39,10 @@ public:
 
 public:
 
+	void SetCloseCallback(const std::function<bool()>& callback) { m_funcCloseCallback = callback; }
+
+public:
+
 	void Notify_Edit_Material(const MVariant& var);
 
 
@@ -81,6 +85,8 @@ protected:
 	SceneTexture m_SceneTexture;
 
 	MRenderPass m_ImguiRenderPass;
+
+	std::function<bool()> m_funcCloseCallback;
 };
 
 

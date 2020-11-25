@@ -172,12 +172,20 @@ void MForwardTransparentWork::ReleaseMesh()
 
 void MForwardTransparentWork::InitializeMaterial()
 {
-	MResourceManager* pManager = GetEngine()->GetResourceManager();
-	m_pDrawMeshMaterial = GetEngine()->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DEPTH_PEEL_BLEND);
+	MResource* pDPVSResource = GetEngine()->GetResourceManager()->LoadResource("./Shader/depth_peel_blend.mvs");
+	MResource* pDPBPSResource = GetEngine()->GetResourceManager()->LoadResource("./Shader/depth_peel_blend.mps");
+	MResource* pDPFPSResource = GetEngine()->GetResourceManager()->LoadResource("./Shader/depth_peel_fill.mps");
+
+	m_pDrawMeshMaterial = GetEngine()->GetResourceManager()->CreateResource<MMaterialResource>();
+	m_pDrawMeshMaterial->SetMaterialType(MEMaterialType::ETransparentBlend);
+	m_pDrawMeshMaterial->LoadVertexShader(pDPVSResource);
+	m_pDrawMeshMaterial->LoadPixelShader(pDPBPSResource);
 	m_pDrawMeshMaterial->AddRef();
 
-
-	m_pDrawFillMaterial = GetEngine()->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DEPTH_PEEL_FILL);
+	m_pDrawFillMaterial = GetEngine()->GetResourceManager()->CreateResource<MMaterialResource>();
+	m_pDrawFillMaterial->SetMaterialType(MEMaterialType::EDepthPeel);
+	m_pDrawFillMaterial->LoadVertexShader(pDPVSResource);
+	m_pDrawFillMaterial->LoadPixelShader(pDPFPSResource);
 	m_pDrawFillMaterial->AddRef();
 }
 

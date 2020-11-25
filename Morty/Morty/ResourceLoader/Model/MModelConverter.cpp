@@ -463,18 +463,40 @@ void MModelConverter::ProcessLights(const aiScene* pScene)
 			MPointLight* pPointLight = m_pEngine->GetObjectManager()->CreateObject<MPointLight>();
 			pPointLight->SetDiffuseColor(GetColor(pLight->mColorDiffuse));
 			pPointLight->SetSpecularColor(GetColor(pLight->mColorSpecular));
+			pPointLight->SetPosition(GetVector3(pLight->mPosition));
 
 			pMLight = pPointLight;
 		}
-			break;
+		break;
+
+		case aiLightSourceType::aiLightSource_DIRECTIONAL:
+		{
+			MDirectionalLight* pDirLight = m_pEngine->GetObjectManager()->CreateObject<MDirectionalLight>();
+			pDirLight->SetDiffuseColor(GetColor(pLight->mColorDiffuse));
+			pDirLight->SetSpecularColor(GetColor(pLight->mColorSpecular));
+			pDirLight->LookAt(GetVector3(pLight->mDirection), GetVector3((pLight->mUp)));
+			pDirLight->SetPosition(GetVector3(pLight->mPosition));
+
+			pMLight = pDirLight;
+		}
+		break;
+		case aiLightSourceType::aiLightSource_SPOT:
+		{
+			MSpotLight* pSpotLight = m_pEngine->GetObjectManager()->CreateObject<MSpotLight>();
+			pSpotLight->SetDiffuseColor(GetColor(pLight->mColorDiffuse));
+			pSpotLight->SetSpecularColor(GetColor(pLight->mColorSpecular));
+			pSpotLight->LookAt(GetVector3(pLight->mDirection), GetVector3((pLight->mUp)));
+			pSpotLight->SetPosition(GetVector3(pLight->mPosition));
+
+			pSpotLight->SetInnerCutOff(pLight->mAngleInnerCone);
+			pSpotLight->SetOuterCutOff(pLight->mAngleOuterCone);
+
+			pMLight = pSpotLight;
+		}
+		break;
 
 		default:
 			break;
-		}
-
-		if (pMLight)
-		{
-			pMLight->SetPosition(GetVector3(pLight->mPosition));
 		}
 	}
 }
@@ -619,6 +641,10 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		else if (prop->mKey == strShininess)
 			memcpy(&fShininess, prop->mData, sizeof(float));
 	}
+
+	if (0.0f == fShininess)
+		fShininess = 32.0f;
+
 	//Test Data, need read from file.
 	MStruct* pMaterialStruct = nullptr;
 	for (MShaderConstantParam* pParam : *pMaterial->GetShaderParams())

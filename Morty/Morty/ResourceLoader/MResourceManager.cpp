@@ -89,7 +89,7 @@ MResource* MResourceManager::LoadResource(const MString& strResourcePath, const 
 	if (nullptr == pResource)
 	{
 #ifdef _DEBUG
-		assert(false);
+	//	assert(false);
 #endif
 		MLogManager::GetInstance()->Error("Load Resource failed: [path: %s]", strResourcePath.c_str());
 	}

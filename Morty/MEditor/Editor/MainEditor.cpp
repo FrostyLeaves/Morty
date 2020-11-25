@@ -60,6 +60,7 @@ MainEditor::MainEditor()
 	, m_bShowMaterial(false)
 	, m_bShowResource(false)
 	, m_ImguiRenderPass()
+	, m_funcCloseCallback(nullptr)
 {
 	m_nWidth = 800.0f;
 	m_nHeight = 480.0f;
@@ -166,6 +167,9 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 
 void MainEditor::Release()
 {
+	if (m_funcCloseCallback)
+		m_funcCloseCallback();
+
 	m_pEngine->GetDevice()->DestroyRenderPass(&m_ImguiRenderPass);
 
 	m_SceneTexture.Release();

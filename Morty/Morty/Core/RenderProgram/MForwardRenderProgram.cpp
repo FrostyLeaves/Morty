@@ -262,10 +262,9 @@ void MForwardRenderProgram::UpdateShaderSharedParams(MRenderInfo& info, MForward
 					cPointLight[1] = pLight->GetDiffuseColor().ToVector3();
 					cPointLight[2] = pLight->GetSpecularColor().ToVector3();
 
-
-					cPointLight[3] = 1.0f;
-					cPointLight[4] = 0.022f;
-					cPointLight[5] = 0.0019f;
+					cPointLight[3] = pLight->GetConstant();
+					cPointLight[4] = pLight->GetLinear();
+					cPointLight[5] = pLight->GetQuadratic();
 
 					varValidPointLights = (int)i + 1;
 				}

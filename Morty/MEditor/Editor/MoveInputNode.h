@@ -1,12 +1,15 @@
 #ifndef _EDITOR_CAMERA_H_
 #define _EDITOR_CAMERA_H_
 
-#include "MCamera.h"
+#include "MInputNode.h"
 
-class EditorCamera : public MCamera
+class M3DNode;
+class MoveInputNode : public MInputNode
 {
 public:
-	EditorCamera();
+	MoveInputNode();
+
+	void SetMoveNode(M3DNode* pNode);
 
 	virtual void OnTick(const float& fDelta);
 
@@ -17,6 +20,9 @@ public:
 	float m_fMaxSpeed;
 	Vector2 m_v2MouseAddi;
 	Vector3 m_v3MoveSpeed;
+
+
+	M3DNode* m_pMoveNode;
 };
 
 #endif

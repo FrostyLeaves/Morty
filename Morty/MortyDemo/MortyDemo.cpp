@@ -64,7 +64,7 @@
 #include "MBasicRenderProgram.h"
 #include "MForwardRenderProgram.h"
 
-#include "EditorCamera.h"
+#include "MoveInputNode.h"
 
 #ifdef MORTY_EDITOR_ENABLE
 #include "MainEditor.h"
@@ -77,22 +77,15 @@ int main(int argc, char* argv[])
 	engine.Initialize("./");
 
 
-	{
-		{
-			MModelConverter conver(&engine);
-			conver.Convert("./Model/just-a-girl/source/final_v01.obj", "./Model/output", "girl");
-		}
-	}
+// 	{
+// 		{
+// 			MModelConverter conver(&engine);
+// 			conver.Convert("./Model/just-a-girl/source/final_v01.obj", "./Model/output", "girl");
+// 		}
+// 	}
 
  	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
  	pRootNode->SetName("RootNode");
-
-	EditorCamera* pCamera = engine.GetObjectManager()->CreateObject<EditorCamera>();
-	pCamera->SetPosition(Vector3(0, 0, -20));
-	pCamera->SetName("Camera");
-	pCamera->LookAt(Vector3(0, 0, 0), Vector3(0, 1, 0));
-	//pCamera->SetCameraType(MCamera::MECameraType::EOrthographic);
-	pRootNode->AddNode(pCamera);
 
 	MNodeResource* pNodeResource = engine.GetResourceManager()->LoadResource("./Model/output/girl/girl.mnode")->DynamicCast<MNodeResource>();
 
@@ -100,69 +93,38 @@ int main(int argc, char* argv[])
 
 	pRootNode->AddNode(pEditorNode);
 
-// 	if (auto pMeshIns = pJeepModel->GetFixedChildren()[0]->DynamicCast<MIModelMeshInstance>())
-// 	{
-// 		pMeshIns->GetMaterial()->SetMaterialType(MEMaterialType::ETransparent);
-// 	}
 
 
-// // 	MString textureID[] = {"005","003","007","004","014","008","002","015","019"};
-// // 
-// // 	MModelResource* pPikachuResource = dynamic_cast<MModelResource*>(engine.GetResourceManager()->LoadResource("./Model/gun/model.dae"));
-// // 	for (int i = 0; i < 9; ++i)
-// // 	{
-// // 		MMaterial* pMaterial = dynamic_cast<MMaterial*>((*pPikachuResource->GetMeshes())[i]->GetDefaultMaterial());
-// // 		MResource* pDiffuseRes = engine.GetResourceManager()->LoadResource("./Model/gun/tex/Material." + textureID[i] + "_albedo.jpg");
-// // 		MResource* pNormalMapRes = engine.GetResourceManager()->LoadResource("./Model/gun/tex/Material." + textureID[i] + "_normal.png");
-// // 
-// // 		pMaterial->SetTexutreParam(SHADER_PARAM_NAME_DIFFUSE, pDiffuseRes);
-// // 		pMaterial->SetTexutreParam(SHADER_PARAM_NAME_NORMAL, pNormalMapRes);
-// // 
-// // 		for (MShaderParam& param : *pMaterial->GetShaderParams())
-// // 		{
-// // 			if (param.unCode == SHADER_PARAM_CODE_MATERIAL)
-// // 			{
-// // 				MStruct* pStruct = param.var.GetStruct()->FindMember("U_mat")->GetStruct();
-// // 				pStruct->SetMember("bUseNormalTex", true);
-// // 
-// // 				param.SetDirty();
-// // 				continue;
-// // 			}
-// // 		}
-// // 	}
-// // 
-// // 	for (unsigned int i = 0; i < 1; ++i)
-// // 	{
-// // 		MModelInstance* pPikachu = engine.GetObjectManager()->CreateObject<MModelInstance>();
-// // 		pPikachu->Load(pPikachuResource);
-// // 		pPikachu->SetGenerateDirLightShadow(true);
-// // 		pPikachu->SetPosition(Vector3(0, 0, 10));
-// // 		pPikachu->SetScale(Vector3(10, 10, 10));
-// // 		pPikachu->SetName("Pikachu");
-// // 
-// // 		pRootNode->AddNode(pPikachu);
-// // 	}
-
-
-	MDirectionalLight* pDirLight = engine.GetObjectManager()->CreateObject<MDirectionalLight>();
-	pDirLight->SetName("DirLight");
-	pRootNode->AddNode(pDirLight);
-
-
-	for (int i = 0; i < 1; ++i)
+	if (!pEditorNode->FindFirstChildByType<MDirectionalLight>())
 	{
-		MPointLight* pPointLight = engine.GetObjectManager()->CreateObject<MPointLight>();
-		pPointLight->SetName(MString("PointLight_") + MStringHelper::ToString(i));
-		pRootNode->AddNode(pPointLight);
+		MDirectionalLight* pDirLight = engine.GetObjectManager()->CreateObject<MDirectionalLight>();
+		pDirLight->SetName("DirLight");
+		pEditorNode->AddNode(pDirLight);
 	}
 
+	if (!pEditorNode->FindFirstChildByType<MCamera>())
+	{
+		MCamera* pCamera = engine.GetObjectManager()->CreateObject<MCamera>();
+		pCamera->SetPosition(Vector3(0, 0, -20));
+		pCamera->SetName("Camera");
+		pCamera->LookAt(Vector3(0, 0, 0), Vector3(0, 1, 0));
+		pEditorNode->AddNode(pCamera);
+	}
 
+	MoveInputNode* pMoveNode = engine.GetObjectManager()->CreateObject<MoveInputNode>();
+	pRootNode->AddNode(pMoveNode);
+	pMoveNode->SetMoveNode(pRootNode->FindFirstChildByName("Camera")->DynamicCast<M3DNode>());
 	
 #ifdef MORTY_EDITOR_ENABLE
 	MainEditor* pEditorView = new MainEditor();
 	pEditorView->Initialize(&engine, "Morty");
 	engine.AddView(pEditorView);
 	pEditorView->SetEditorNode(pRootNode);
+
+	pEditorView->SetCloseCallback([pEditorNode, pNodeResource]() {
+		pNodeResource->SaveByNode(pEditorNode);
+		return true;
+	});
 
 #else
 	MScene* pScene = engine.GetObjectManager()->CreateObject<MScene>();

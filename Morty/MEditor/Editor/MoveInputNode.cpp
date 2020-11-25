@@ -1,38 +1,48 @@
-#include "EditorCamera.h"
+#include "MoveInputNode.h"
 
 #include "MEngine.h"
 #include "MObject.h"
+#include "M3DNode.h"
 #include "MInputNode.h"
 #include "MInputManager.h"
 
-EditorCamera::EditorCamera()
-	: MCamera()
+MoveInputNode::MoveInputNode()
+	: MInputNode()
 	, m_fMaxSpeed(6.0f)
 	, m_v2MouseAddi(0.0f, 0.0f)
 	, m_v3MoveSpeed(0.0f, 0.0f, 0.0f)
+	, m_pMoveNode(nullptr)
 {
 
 }
 
-void EditorCamera::OnTick(const float& fDelta)
+void MoveInputNode::SetMoveNode(M3DNode* pNode)
 {
+	m_pMoveNode = pNode;
+}
+
+void MoveInputNode::OnTick(const float& fDelta)
+{
+	if (!m_pMoveNode)
+		return;
+
 	const float speed = m_fMaxSpeed;
 
 	if (true == m_tKeyBoardDown['W'])
 	{
-		m_v3MoveSpeed += GetForward() * speed * fDelta;
+		m_v3MoveSpeed += m_pMoveNode->GetForward() * speed * fDelta;
 	}
 	if (true == m_tKeyBoardDown['S'])
 	{
-		m_v3MoveSpeed += GetForward() * -speed * fDelta;
+		m_v3MoveSpeed += m_pMoveNode->GetForward() * -speed * fDelta;
 	}
 	if (true == m_tKeyBoardDown['A'])
 	{
-		m_v3MoveSpeed += GetRight() * -speed * fDelta;
+		m_v3MoveSpeed += m_pMoveNode->GetRight() * -speed * fDelta;
 	}
 	if (true == m_tKeyBoardDown['D'])
 	{
-		m_v3MoveSpeed += GetRight() * speed * fDelta;
+		m_v3MoveSpeed += m_pMoveNode->GetRight() * speed * fDelta;
 	}
 	if (true == m_tKeyBoardDown['Q'])
 	{
@@ -47,8 +57,8 @@ void EditorCamera::OnTick(const float& fDelta)
 
 		Vector3 up = Vector3(0, 1, 0);
 
-		Vector3 right = GetRight();
-		SetRotation(GetRotation() * Quaternion(up, m_v2MouseAddi.x * 0.25f) * Quaternion(right, m_v2MouseAddi.y * 0.25f));
+		Vector3 right = m_pMoveNode->GetRight();
+		m_pMoveNode->SetRotation(m_pMoveNode->GetRotation() * Quaternion(up, m_v2MouseAddi.x * 0.25f) * Quaternion(right, m_v2MouseAddi.y * 0.25f));
 
 		m_v2MouseAddi = Vector2(0, 0);
 	}
@@ -60,17 +70,13 @@ void EditorCamera::OnTick(const float& fDelta)
 		m_v3MoveSpeed = m_v3MoveSpeed * speed;
 	}
 
-	SetPosition(GetPosition() + m_v3MoveSpeed);
+	m_pMoveNode->SetPosition(m_pMoveNode->GetPosition() + m_v3MoveSpeed);
 	m_v3MoveSpeed = m_v3MoveSpeed * 0.8f;
 }
 
-void EditorCamera::OnCreated()
+void MoveInputNode::OnCreated()
 {
-	MInputNode* pInputNode = GetEngine()->GetObjectManager()->CreateObject<MInputNode>();
-	pInputNode->SetName("InputNode");
-	AddNode(pInputNode);
-
-	pInputNode->SetInputCallback([this](MInputEvent* pEvent, MViewport* pViewport) {
+	SetInputCallback([this](MInputEvent* pEvent, MViewport* pViewport) {
 
 		if (MKeyBoardInputEvent* pKeyInput = dynamic_cast<MKeyBoardInputEvent*>(pEvent))
 		{
@@ -90,7 +96,6 @@ void EditorCamera::OnCreated()
 		}
 
 		return false;
-		});
-
+	});
 }
 

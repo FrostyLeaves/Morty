@@ -197,7 +197,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Editor\EditorCamera.h" />
+    <ClInclude Include="..\..\..\Editor\MoveInputNode.h" />
     <ClInclude Include="..\..\..\Editor\IBaseView.h" />
     <ClInclude Include="..\..\..\Editor\MainEditor.h" />
     <ClInclude Include="..\..\..\Editor\MaterialView.h" />
@@ -231,7 +231,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Morty\Utility\MGlobal.cpp" />
-    <ClCompile Include="..\..\..\Editor\EditorCamera.cpp" />
+    <ClCompile Include="..\..\..\Editor\MoveInputNode.cpp" />
     <ClCompile Include="..\..\..\Editor\MainEditor.cpp" />
     <ClCompile Include="..\..\..\Editor\MaterialView.cpp" />
     <ClCompile Include="..\..\..\Editor\NodeTreeView.cpp" />

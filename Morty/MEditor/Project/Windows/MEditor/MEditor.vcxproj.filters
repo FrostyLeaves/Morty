@@ -117,7 +117,7 @@
     <ClInclude Include="..\..\..\ImGUI\imgui_impl_vulkan.h">
       <Filter>ImGUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Editor\EditorCamera.h">
+    <ClInclude Include="..\..\..\Editor\MoveInputNode.h">
       <Filter>Editor</Filter>
     </ClInclude>
   </ItemGroup>
@@ -185,7 +185,7 @@
     <ClCompile Include="..\..\..\ImGUI\imgui_impl_vulkan.cpp">
       <Filter>ImGUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Editor\EditorCamera.cpp">
+    <ClCompile Include="..\..\..\Editor\MoveInputNode.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
   </ItemGroup>

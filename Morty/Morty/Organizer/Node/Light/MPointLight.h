@@ -28,9 +28,24 @@ public:
 	void SetSpecularColor(const MColor& color) { m_f3Specular = color; }
 	MColor GetSpecularColor() { return m_f3Specular; }
 
+
+	void SetConstant(const float& fValue) { m_fConstant = fValue; }
+
+	float GetConstant() const { return m_fConstant; }
+
+	void SetLinear(const float& fValue) { m_fLinear = fValue; }
+	float GetLinear() const { return m_fLinear; }
+
+	void SetQuadratic(const float& fValue) { m_fQuadratic = fValue; }
+	float GetQuadratic() const { return m_fQuadratic; }
+
 private:
 	MColor m_f3Diffuse;
 	MColor m_f3Specular;
+
+	float m_fConstant;
+	float m_fLinear;
+	float m_fQuadratic;
 };
 
 
