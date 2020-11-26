@@ -54,7 +54,7 @@ void MModelInstance::ClearSkeletonAndMesh()
 {
 	SetRemoveAnimation();
 	SetSkeletonTemplate(nullptr);
-	RemoveAllNodeImpl(MENodeChildType::EFixed);
+	RemoveAllNodeImpl(MENodeChildType::EProtected);
 }
 
 void MModelInstance::Unload()
@@ -74,7 +74,7 @@ MBoundsAABB* MModelInstance::GetBoundsAABB()
 	Vector3 v3Min, v3Max;
 	v3Min = v3Max = GetWorldPosition();
 	
-	for (MNode* pNode : m_vFixedChildren)
+	for (MNode* pNode : m_vProtectedChildren)
 	{
 		if (MIMeshInstance* pMeshIns = dynamic_cast<MIMeshInstance*>(pNode))
 		{
@@ -201,7 +201,7 @@ bool MModelInstance::SetResource(MResource* pResource, const bool& bLoad)
 					pMeshIns->SetName(pMeshResource->GetMeshName());
 					pMeshIns->SetAttachedModelInstance(this);
 
-					AddNodeImpl(pMeshIns, MENodeChildType::EFixed);
+					AddNodeImpl(pMeshIns, MENodeChildType::EProtected);
 				}
 			}
 

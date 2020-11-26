@@ -206,7 +206,7 @@ void M3DNode::WorldTransformDirtyRecursively(MNode* pNode)
 		WorldTransformDirtyRecursively(pChildNode);
 	}
 
-	for (MNode* pChildNode : pNode->GetFixedChildren())
+	for (MNode* pChildNode : pNode->GetProtectedChildren())
 	{
 		WorldTransformDirtyRecursively(pChildNode);
 	}
@@ -224,7 +224,7 @@ void M3DNode::LocalTransformDirty()
 		return;
 
 	m_bLocalTransformDirty = true;
-	for (MNode* pChildNode : m_vFixedChildren)
+	for (MNode* pChildNode : m_vProtectedChildren)
 		WorldTransformDirtyRecursively(pChildNode);
 	for (MNode* pChildNode : m_vChildren)
 		WorldTransformDirtyRecursively(pChildNode);

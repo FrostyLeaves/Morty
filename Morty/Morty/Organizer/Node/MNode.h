@@ -28,8 +28,9 @@ public:
 
 	enum MENodeChildType
 	{
-		ENormal = 0,
-		EFixed = 1,
+		EPublic = 1,
+		EProtected = 2,
+		EPrivate = 4,
 	};
 
 	typedef std::function<bool(MNode*)> SearchNodeFunction;
@@ -44,7 +45,7 @@ public:
 
 	virtual MNode* GetParent() { return m_pParent; }
 	std::vector<MNode*>& GetChildren(){ return m_vChildren; }
-	std::vector<MNode*>& GetFixedChildren() { return m_vFixedChildren; }
+	std::vector<MNode*>& GetProtectedChildren() { return m_vProtectedChildren; }
 	MNode* GetRootNode();
 
 	MNode* FindFirstChildByName(const MString& strName);
@@ -61,8 +62,8 @@ public:
 
 	virtual void OnTick(const float& fDelta);
 
-	bool AddNode(MNode* pNode) { return AddNodeImpl(pNode, MENodeChildType::ENormal); }
-	bool RemoveNode(MNode* pNode) { return !m_bDeleteMark && RemoveNodeImpl(pNode, MENodeChildType::ENormal); }
+	bool AddNode(MNode* pNode) { return AddNodeImpl(pNode, MENodeChildType::EPublic); }
+	bool RemoveNode(MNode* pNode) { return !m_bDeleteMark && RemoveNodeImpl(pNode, MENodeChildType::EPublic); }
 
 protected:
 	virtual bool AddNodeImpl(MNode* pNode, const MENodeChildType& etype);
@@ -99,14 +100,12 @@ public:
 	T* FindFirstChildByType();
 
 	template <class T>
-	T* FindChildrenByType();
+	void FindChildrenByType(std::vector<T*>& vNodes, const int& nChildType = MENodeChildType::EPublic);
 
 	template <class T>
 	T* FindParentByType();
 
 protected:
-	template <class T>
-	void FindChildrenByType(std::vector<T*>& vNodes);
 	void FindChildrenByName(const MString& strName, std::vector<MNode*>& vNodes);
 	void FindChildrenByFunc(const SearchNodeFunction& func, std::vector<MNode*>& vNodes);
 
@@ -120,7 +119,7 @@ protected:
 	MNode* m_pParent;
 	MScene* m_pScene;
 	std::vector<MNode*> m_vChildren;
-	std::vector<MNode*> m_vFixedChildren;
+	std::vector<MNode*> m_vProtectedChildren;
 
 	bool m_bVisibleRecursively;
 
@@ -138,7 +137,7 @@ T* MNode::FindFirstChildByType()
 {
 	for (MNode* pNode : m_vChildren)
 	{
-		if (dynamic_cast<T*>(pNode))
+		if (pNode->DynamicCast<T>())
 			return dynamic_cast<T*>(pNode);
 
 		if (T* pFindResult = pNode->FindFirstChildByType<T>())
@@ -149,22 +148,27 @@ T* MNode::FindFirstChildByType()
 }
 
 template <class T>
-void MNode::FindChildrenByType(std::vector<T*>& vNodes)
+void MNode::FindChildrenByType(std::vector<T*>& vNodes, const int& nChildType)
 {
-	for (MNode* pNode : m_vChildren)
+	if (nChildType & MENodeChildType::EPublic)
 	{
-		if (dynamic_cast<T*>(pNode))
-			vNodes.push_back(static_cast<T*>(pNode));
-		pNode->FindChildrenByType<T>(vNodes);
+		for (MNode* pNode : m_vChildren)
+		{
+			if (pNode->DynamicCast<T>())
+				vNodes.push_back(static_cast<T*>(pNode));
+			pNode->FindChildrenByType<T>(vNodes);
+		}
 	}
-}
 
-template <class T>
-T* MNode::FindChildrenByType()
-{
-	std::vector<T*> vResult;
-	FindChildrenByType<T>(vResult);
-	return vResult;
+	if (nChildType & MENodeChildType::EProtected)
+	{
+		for (MNode* pNode : m_vProtectedChildren)
+		{
+			if (pNode->DynamicCast<T>())
+				vNodes.push_back(static_cast<T*>(pNode));
+			pNode->FindChildrenByType<T>(vNodes, nChildType);
+		}
+	}
 }
 
 template <class T>

@@ -223,7 +223,7 @@ void MModelConverter::ProcessNode(aiNode* pNode, const aiScene *pScene)
 		pChildMeshNode->SetAttachedModelInstance(m_pModelInstance);
 		pChildMeshNode->Load(pChildMeshResource);
 
-		GetMNodeFromNode(pScene, pNode)->AddNodeImpl(pChildMeshNode, MNode::EFixed);
+		GetMNodeFromNode(pScene, pNode)->AddNodeImpl(pChildMeshNode, MNode::EProtected);
 	}
 
 	for (uint32_t i = 0; i < pNode->mNumChildren; ++i)
@@ -518,7 +518,7 @@ void MModelConverter::ProcessCameras(const aiScene* pScene)
 		pMCamera->LookAt(GetVector3(pCamera->mLookAt), GetVector3(pCamera->mUp));
 		
 
-		GetMNodeFromNode(pScene, pScene->mRootNode)->AddNodeImpl(pMCamera, MNode::EFixed);
+		GetMNodeFromNode(pScene, pScene->mRootNode)->AddNodeImpl(pMCamera, MNode::EProtected);
 	}
 }
 
@@ -716,7 +716,7 @@ M3DNode* MModelConverter::GetMNodeFromNode(const aiScene* pScene, aiNode* pNode)
 	M3DNode* pMNode = m_pEngine->GetObjectManager()->CreateObject<M3DNode>();
 	pMNode->SetName(pNode->mName.C_Str());
 	pMNode->SetTransform(MTransform(matTransform));
-	pMParent->AddNodeImpl(pMNode, MNode::EFixed);
+	pMParent->AddNodeImpl(pMNode, MNode::EProtected);
 	m_tNodeMaps[pNode] = pMNode;
 
 	return pMNode;

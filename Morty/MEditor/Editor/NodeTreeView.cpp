@@ -66,7 +66,7 @@ MObject* NodeTreeView::GetSelectionNode()
 void NodeTreeView::RenderNode(MNode* pNode)
 {
 	ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_FramePadding;
-	if (pNode->GetChildren().size() + pNode->GetFixedChildren().size() == 0)
+	if (pNode->GetChildren().size() + pNode->GetProtectedChildren().size() == 0)
 		node_flags |= ImGuiTreeNodeFlags_Leaf;
 	else if (pNode->GetObjectID() == m_unRootNodeID)
 		node_flags |= ImGuiTreeNodeFlags_DefaultOpen;
@@ -94,7 +94,7 @@ void NodeTreeView::RenderNode(MNode* pNode)
 		for (MNode* pChild : pNode->GetChildren())
 			RenderNode(pChild);
 
-		for (MNode* pChild : pNode->GetFixedChildren())
+		for (MNode* pChild : pNode->GetProtectedChildren())
 			RenderNode(pChild);
 
 		ImGui::TreePop();

@@ -11,7 +11,7 @@ M_OBJECT_IMPLEMENT(MNode, MObject)
 
 MNode::MNode()
 	: MObject()
-	, m_eChildType(MENodeChildType::ENormal)
+	, m_eChildType(MENodeChildType::EPublic)
 	, m_pParent(nullptr)
 	, m_pScene(nullptr)
 	, m_bVisibleRecursively(true)
@@ -30,7 +30,7 @@ void MNode::UpdateVisibleRecursively()
 	bool bParentVisible = m_pParent ? m_pParent->m_bVisibleRecursively : true;
 
 	m_bVisibleRecursively = bParentVisible & m_bVisible;
-	for (MNode* pChild : m_vFixedChildren)
+	for (MNode* pChild : m_vProtectedChildren)
 		pChild->UpdateVisibleRecursively();
 	for (MNode* pChild : m_vChildren)
 		pChild->UpdateVisibleRecursively();
@@ -65,7 +65,7 @@ void MNode::SetAttachedScene(MScene* pScene)
 
 			for (MNode* pChildNode : pFrontNode->GetChildren())
 				que.push(pChildNode);
-			for (MNode* pChildNode : pFrontNode->GetFixedChildren())
+			for (MNode* pChildNode : pFrontNode->GetProtectedChildren())
 				que.push(pChildNode);
 
 			if (pFrontNode->m_pScene)
@@ -82,7 +82,7 @@ bool MNode::AddNodeImpl(MNode* pNode, const MENodeChildType& etype)
 	if (pNode->isHolderOf(this))
 		return false;
 
-	std::vector<MNode*>& children = etype == MENodeChildType::EFixed ? m_vFixedChildren : m_vChildren;
+	std::vector<MNode*>& children = etype == MENodeChildType::EProtected ? m_vProtectedChildren : m_vChildren;
 
 	for (MNode* pChildNode : children)
 	{
@@ -163,7 +163,7 @@ void MNode::FindChildrenByFunc(const SearchNodeFunction& func, std::vector<MNode
 
 bool MNode::RemoveNodeImpl(MNode* pNode, const MENodeChildType& etype)
 {
-	std::vector<MNode*>& children = etype == MENodeChildType::EFixed ? m_vFixedChildren : m_vChildren;
+	std::vector<MNode*>& children = etype == MENodeChildType::EProtected ? m_vProtectedChildren : m_vChildren;
 
 	for (std::vector<MNode*>::iterator iter = children.begin(); iter != children.end(); ++iter)
 	{
@@ -189,7 +189,7 @@ void MNode::ParentChangeImpl(MNode* pParent)
 
 void MNode::RemoveAllNodeImpl(const MENodeChildType& etype)
 {
-	std::vector<MNode*>& children = etype == MENodeChildType::EFixed ? m_vFixedChildren : m_vChildren;
+	std::vector<MNode*>& children = etype == MENodeChildType::EProtected ? m_vProtectedChildren : m_vChildren;
 
 	for (MNode* pChild : children)
 	{
@@ -222,7 +222,7 @@ void MNode::Tick(const float& fDelta)
 
 	OnTick(fDelta);
 
-	for (MNode* pChild : m_vFixedChildren)
+	for (MNode* pChild : m_vProtectedChildren)
 		pChild->Tick(fDelta);
 
 	for (MNode* pChild : m_vChildren)
@@ -237,8 +237,8 @@ void MNode::OnDelete()
 	else if (m_pScene) // as root node
 		this->SetAttachedScene(nullptr);
 
-	RemoveAllNodeImpl(MENodeChildType::ENormal);
-	RemoveAllNodeImpl(MENodeChildType::EFixed);
+	RemoveAllNodeImpl(MENodeChildType::EPublic);
+	RemoveAllNodeImpl(MENodeChildType::EProtected);
 
 	Super::OnDelete();
 }
@@ -327,12 +327,12 @@ void MNode::WriteChildrenToStruct(MStruct& srt)
 
 	if (MVariantArray* pArray = FindWriteVariant<MVariantArray>(srt, "FixedChildren"))
 	{
-		uint32_t unSize = m_vFixedChildren.size();
+		uint32_t unSize = m_vProtectedChildren.size();
 
 		for (uint32_t i = 0; i < unSize; ++i)
 		{
 			pArray->AppendMVariant(MStruct());
-			m_vFixedChildren[i]->WriteToStruct((*pArray)[i].GetVarUnsafe<MStruct>());
+			m_vProtectedChildren[i]->WriteToStruct((*pArray)[i].GetVarUnsafe<MStruct>());
 		}
 	}
 }
@@ -349,7 +349,7 @@ void MNode::ReadChildrenFromStruct(MStruct& srt)
 			if(MNode* pChildNode = CreateNodeByVariant(m_pEngine, childSrt))
 			{
 				//m_vChildren[i] = pChildNode;
-				AddNodeImpl(pChildNode, MENodeChildType::ENormal);
+				AddNodeImpl(pChildNode, MENodeChildType::EPublic);
 			
 			}
 		}
@@ -364,7 +364,7 @@ void MNode::ReadChildrenFromStruct(MStruct& srt)
 			if (MNode* pChildNode = CreateNodeByVariant(m_pEngine, childSrt))
 			{
 				//m_vFixedChildren[i] = pChildNode;
-				AddNodeImpl(pChildNode, MENodeChildType::EFixed);
+				AddNodeImpl(pChildNode, MENodeChildType::EProtected);
 			}
 		}
 	}

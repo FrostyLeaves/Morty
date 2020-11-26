@@ -343,7 +343,7 @@ void MForwardRenderProgram::DrawModelInstance(MRenderInfo& info)
 			DrawBoundingBox(info, pModelIns);
 		}
 
-		for (MNode* pChild : pModelIns->GetFixedChildren())
+		for (MNode* pChild : pModelIns->GetProtectedChildren())
 		{
 			if (MIModelMeshInstance* pMeshIns = dynamic_cast<MIModelMeshInstance*>(pChild))
 			{

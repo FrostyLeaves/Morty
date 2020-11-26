@@ -95,6 +95,7 @@ void MForwardShadowMapWork::UpdateRenderInfo(MForwardRenderProgram::MRenderInfo&
 {
 	Vector3 v3LightDir = info.pDirectionalLight->GetWorldDirection();
 
+	bool bGenerateShadow = false;
 	Vector3 v3ShadowMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
 	Vector3 v3ShadowMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
@@ -119,28 +120,36 @@ void MForwardShadowMapWork::UpdateRenderInfo(MForwardRenderProgram::MRenderInfo&
 			}
 			MShadowRenderGroup& group = *pGroup;
 
-			for (MNode* pChild : pModelIns->GetFixedChildren())
+			std::vector<MIMeshInstance*> vMeshIns;
+			pModelIns->FindChildrenByType(vMeshIns, MNode::MENodeChildType::EProtected);
+
+			for (MIMeshInstance* pMeshIns : vMeshIns)
 			{
-				if (MIMeshInstance* pMeshIns = pChild->DynamicCast<MIMeshInstance>())
+				if (pMeshIns->GetVisible() && pMeshIns->GetGenerateDirLightShadow())
 				{
-					if (pMeshIns->GetVisible() && pMeshIns->GetGenerateDirLightShadow())
+					const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
+					if (info.pViewport->GetCameraFrustum()->ContainTest(*pBounds, v3LightDir) != MCameraFrustum::EOUTSIDE)
 					{
-						const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
-						if (info.pViewport->GetCameraFrustum()->ContainTest(*pBounds, v3LightDir) != MCameraFrustum::EOUTSIDE)
-						{
-							group.vMeshInstances.push_back(pMeshIns);
-							pBounds->UnionMinMax(v3ShadowMin, v3ShadowMax);
-						}
+						group.vMeshInstances.push_back(pMeshIns);
+						pBounds->UnionMinMax(v3ShadowMin, v3ShadowMax);
+
+						bGenerateShadow = true;
 					}
 				}
 			}
 		}
 	}
 
-	info.cShadowRenderAABB.SetMinMax(v3ShadowMin, v3ShadowMax);
+	if (bGenerateShadow)
+	{
+		info.cShadowRenderAABB.SetMinMax(v3ShadowMin, v3ShadowMax);
+	}
+	else
+	{
+		info.cShadowRenderAABB = info.cMeshRenderAABB;
+	}
 
 	info.m4DirLightInvProj = info.pViewport->GetLightInverseProjection(info.pDirectionalLight, info.cMeshRenderAABB, info.cShadowRenderAABB);
-
 }
 
 void MForwardShadowMapWork::RenderToShadowMap(MForwardRenderProgram::MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup)

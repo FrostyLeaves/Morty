@@ -80,14 +80,14 @@ int main(int argc, char* argv[])
 // 	{
 // 		{
 // 			MModelConverter conver(&engine);
-// 			conver.Convert("./Model/just-a-girl/source/final_v01.obj", "./Model/output", "girl");
+// 			conver.Convert("./Model/emissive/sign_neon_small_vert.fbx", "./Model/output", "sign_neon");
 // 		}
 // 	}
 
  	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
  	pRootNode->SetName("RootNode");
 
-	MNodeResource* pNodeResource = engine.GetResourceManager()->LoadResource("./Model/output/girl/girl.mnode")->DynamicCast<MNodeResource>();
+	MNodeResource* pNodeResource = engine.GetResourceManager()->LoadResource("./Model/output/sign_neon/sign_neon.mnode")->DynamicCast<MNodeResource>();
 
 	MNode* pEditorNode = pNodeResource->CreateNode();
 
@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
 	{
 		MDirectionalLight* pDirLight = engine.GetObjectManager()->CreateObject<MDirectionalLight>();
 		pDirLight->SetName("DirLight");
-		pEditorNode->AddNode(pDirLight);
+		pRootNode->AddNode(pDirLight);
 	}
 
 	if (!pEditorNode->FindFirstChildByType<MCamera>())
@@ -112,6 +112,7 @@ int main(int argc, char* argv[])
 	}
 
 	MoveInputNode* pMoveNode = engine.GetObjectManager()->CreateObject<MoveInputNode>();
+	pMoveNode->SetName("InputNode");
 	pRootNode->AddNode(pMoveNode);
 	pMoveNode->SetMoveNode(pRootNode->FindFirstChildByName("Camera")->DynamicCast<M3DNode>());
 	
@@ -122,7 +123,7 @@ int main(int argc, char* argv[])
 	pEditorView->SetEditorNode(pRootNode);
 
 	pEditorView->SetCloseCallback([pEditorNode, pNodeResource]() {
-		pNodeResource->SaveByNode(pEditorNode);
+	//	pNodeResource->SaveByNode(pEditorNode);
 		return true;
 	});
 
