@@ -310,7 +310,7 @@ void MForwardRenderProgram::DrawNormalMesh(MRenderInfo& info)
 	for (MMaterialGroup& group : info.vMaterialRenderGroup)
 	{
 		MMaterial* pMaterial = group.m_pMaterial;
-		//Ê¹ÓÃ²ÄÖÊ
+
 		if (!info.pRenderer->SetUseMaterial(pMaterial))
 			continue;
 

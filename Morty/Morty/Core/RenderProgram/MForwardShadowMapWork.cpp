@@ -1,5 +1,4 @@
 #include "MForwardShadowMapWork.h"
-#include "MTransparentRenderTarget.h"
 
 #include "MEngine.h"
 #include "MViewport.h"
@@ -7,11 +6,12 @@
 #include "Material/MMaterialResource.h"
 
 #include "MScene.h"
+#include "MSkeleton.h"
 #include "Model/MIMeshInstance.h"
 #include "Model/MModelInstance.h"
 #include "Light/MDirectionalLight.h"
 
-#include "MSkeleton.h"
+#include "MTextureRenderTarget.h"
 #include "MForwardRenderProgram.h"
 
 M_OBJECT_IMPLEMENT(MForwardShadowMapWork, MObject)

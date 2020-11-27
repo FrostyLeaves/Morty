@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
 	{
 		MDirectionalLight* pDirLight = engine.GetObjectManager()->CreateObject<MDirectionalLight>();
 		pDirLight->SetName("DirLight");
-		pRootNode->AddNode(pDirLight);
+		pEditorNode->AddNode(pDirLight);
 	}
 
 	if (!pEditorNode->FindFirstChildByType<MCamera>())
@@ -123,7 +123,7 @@ int main(int argc, char* argv[])
 	pEditorView->SetEditorNode(pRootNode);
 
 	pEditorView->SetCloseCallback([pEditorNode, pNodeResource]() {
-	//	pNodeResource->SaveByNode(pEditorNode);
+		pNodeResource->SaveByNode(pEditorNode);
 		return true;
 	});
 

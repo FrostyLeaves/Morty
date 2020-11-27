@@ -183,6 +183,7 @@ bool MEngine::InitializeDefaultResource()
 	MResource* pDraw2DPSResource = GetResourceManager()->LoadResource("./Shader/draw.mps");
 	MMaterialResource* pDraw2DMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW2D);
 	pDraw2DMaterialRes->SetMaterialType(MEMaterialType::EDefault);
+	pDraw2DMaterialRes->SetRasterizerType(MERasterizerType::ECullNone);
 	pDraw2DMaterialRes->LoadVertexShader(pDraw2DVSResource);
 	pDraw2DMaterialRes->LoadPixelShader(pDraw2DPSResource);
 	pDraw2DMaterialRes->AddRef();

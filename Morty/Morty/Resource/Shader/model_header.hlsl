@@ -40,6 +40,7 @@ struct Material
     float fShininess;
     int bUseSpecularTex;
     int bUseTransparentTex;
+    int bUseEmissiveTex;
 };
 
 struct LightBasicInfo
@@ -60,6 +61,7 @@ struct LightBasicInfo
 [[vk::binding(2,0)]]Texture2D U_mat_texNormal;
 [[vk::binding(3,0)]]Texture2D U_mat_texSpecular;
 [[vk::binding(4,0)]]Texture2D U_mat_texTransparent;
+[[vk::binding(5,0)]]Texture2D U_mat_texEmissive;
 
 
 

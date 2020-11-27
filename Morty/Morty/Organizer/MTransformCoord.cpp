@@ -80,7 +80,6 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 			Vector2 v2ViewportPos;
 			if (false == pViewport->ConvertScreenPointToViewport(pMouseEvent->GetMosuePosition(), v2ViewportPos))
 				return false;
-			v2ViewportPos.y = pViewport->GetHeight() - v2ViewportPos.y;
 
 			m_eCoordMoveType = m_eCoordHoverType;
 
@@ -117,7 +116,6 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 				Vector3 v3CameraPos = pViewport->GetCamera()->GetWorldPosition();
 
 				Vector3 v3RayDir;
-				v2ViewportPos.y = pViewport->GetHeight() - v2ViewportPos.y;
 
 				pViewport->ConvertViewportPointToWorld(v2ViewportPos, 1.0f, v3RayDir);
 				v3RayDir = v3RayDir - v3CameraPos;
@@ -176,7 +174,6 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 
 			Vector2 v2ViewportPos;
 			pViewport->ConvertScreenPointToViewport(pMouseEvent->GetMosuePosition(), v2ViewportPos);
-			v2ViewportPos.y = pViewport->GetHeight() - v2ViewportPos.y;
 
 			pViewport->ConvertViewportPointToWorld(v2ViewportPos, 1.0f, v3RayDir);
 			v3RayDir = v3RayDir - v3CameraPos;
@@ -216,7 +213,6 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 		m_eCoordHoverType = MECoordHoverType::None;
 		Vector2 v2ViewportPos;
 		pViewport->ConvertScreenPointToViewport(pMouseEvent->GetMosuePosition(), v2ViewportPos);
-		v2ViewportPos.y = pViewport->GetHeight() - v2ViewportPos.y;
 
 		for (int i : vOrder)
 		{
@@ -333,17 +329,17 @@ void MTransformCoord3D::GetTranslationShapes(MPainter2DLine* lines, class MPaint
 	if (vValid[0])
 	{
 		rit2 = rit1 + (rit2 - rit1) * (200.0f / pViewport->GetHeight()) / fMaxLength;
-		lines[0] = MPainter2DLine(rit1, rit2, m_vColor[0], 6.0f);
+		lines[0] = MPainter2DLine(rit1, rit2, m_vColor[0], 3.0f);
 	}
 	if (vValid[1])
 	{
 		up2 = up1 + (up2 - up1) * (200.0f / pViewport->GetHeight()) / fMaxLength;
-		lines[1] = MPainter2DLine(up1, up2, m_vColor[1], 6.0f);
+		lines[1] = MPainter2DLine(up1, up2, m_vColor[1], 3.0f);
 	}
 	if (vValid[2])
 	{
 		fwd2 = fwd1 + (fwd2 - fwd1) * (200.0f / pViewport->GetHeight()) / fMaxLength;
-		lines[2] = MPainter2DLine(fwd1, fwd2, m_vColor[2], 6.0f);
+		lines[2] = MPainter2DLine(fwd1, fwd2, m_vColor[2], 3.0f);
 	}
 
 	if (vValid[1] && vValid[2])

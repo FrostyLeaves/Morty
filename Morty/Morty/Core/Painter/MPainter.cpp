@@ -145,26 +145,14 @@ bool MPainter2DRect::FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh)
 		mesh.GetVertices()[unVerticesLength + i].color = color;
 	}
 
-	static uint32_t const indices_front[] = {
+	static uint32_t const indices[] = {
 		0, 1, 2,
 		0, 2, 3,
 	};
 
-	static uint32_t const indices_back[] = {
-		0, 2, 1,
-		0, 3, 2,
-	};
-
-	if ((m_vPoint[1] - m_vPoint[0]).CrossProduct(m_vPoint[2] - m_vPoint[0]) < 0)
-	{
-		for (uint32_t i = 0; i < 6; ++i)
-			mesh.GetIndices()[unIndicesLength + i] = unVerticesLength + indices_front[i];
-	}
-	else
-	{
-		for (uint32_t i = 0; i < 6; ++i)
-			mesh.GetIndices()[unIndicesLength + i] = unVerticesLength + indices_back[i];
-	}
+	for (uint32_t i = 0; i < 6; ++i)
+		mesh.GetIndices()[unIndicesLength + i] = unVerticesLength + indices[i];
+	
 
 	mesh.SetNeedUpload();
 	return true;

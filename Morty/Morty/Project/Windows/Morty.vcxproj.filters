@@ -303,9 +303,6 @@
     <ClInclude Include="..\..\Organizer\MMaterialGroup.h">
       <Filter>Organizer</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Organizer\MTransparentRenderTarget.h">
-      <Filter>Organizer</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Organizer\MSerializer.h">
       <Filter>Organizer</Filter>
     </ClInclude>
@@ -579,9 +576,6 @@
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Organizer\MMaterialGroup.cpp">
-      <Filter>Organizer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Organizer\MTransparentRenderTarget.cpp">
       <Filter>Organizer</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Organizer\Node\MNode.cpp">

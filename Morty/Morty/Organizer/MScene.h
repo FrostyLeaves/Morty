@@ -36,7 +36,6 @@ class MIModelMeshInstance;
 class MTransformCoord3D;
 class MInputNode;
 class MShadowTextureRenderTarget;
-class MTransparentRenderTarget;
 class MBoundsAABB;
 class MIRenderTarget;
 class MORTY_CLASS MScene : public MObject

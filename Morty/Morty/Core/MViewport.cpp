@@ -134,7 +134,7 @@ bool MViewport::ConvertWorldPointToNormalizedDevice(const Vector3& v3Pos, Vector
 bool MViewport::ConvertScreenPointToViewport(const Vector2& v2Point, Vector2& v2Result)
 {
 	v2Result.x = (v2Point.x - m_v2ScreenPosition.x) * m_v2ScreenScale.x;
-	v2Result.y =(v2Point.y - m_v2ScreenPosition.y)* m_v2ScreenScale.y;
+	v2Result.y = m_v2Size.y - (v2Point.y - m_v2ScreenPosition.y)* m_v2ScreenScale.y;
 
 	return v2Result.x >= 0.0f && v2Result.y >= 0.0f && v2Result.x <= m_v2Size.x && v2Result.y <= m_v2Size.y;
 }

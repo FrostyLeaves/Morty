@@ -62,9 +62,23 @@ PS_OUT PS(VS_OUT input) : SV_Target
         output.fBackDepth = input.pos.z;
         return output;
     }
-      
-    f3Color = AdditionAllLights(f3Color, f3AmbiColor, input);
 
+    if (U_mat.bUseEmissiveTex > 0)
+    {
+        float3 f3EmissiveColor = U_mat_texEmissive.Sample(U_defaultSampler, input.uv);
+        if(length(f3EmissiveColor) <= 0.0f)
+        {
+            f3Color = AdditionAllLights(f3Color, f3AmbiColor, input);
+        }
+        else
+        {
+            f3Color += f3EmissiveColor;
+        }
+    }
+    else
+    {
+        f3Color = AdditionAllLights(f3Color, f3AmbiColor, input);
+    }
     // color = destColor + srcColor * srcAlpha * (1 - destAlpha)
     // return [srcColor * srcAlpha] as srcColor
     // blend destColor * 1 + srcColor * (1 - destAlpha)
@@ -73,7 +87,22 @@ PS_OUT PS(VS_OUT input) : SV_Target
     else
         output.fBackColor = float4(f3Color, fAlpha);
 #else
-    f3Color = AdditionAllLights(f3Color, f3AmbiColor, input);
+    if (U_mat.bUseEmissiveTex > 0)
+    {
+        float3 f3EmissiveColor = U_mat_texEmissive.Sample(U_defaultSampler, input.uv);
+        if(length(f3EmissiveColor) <= 0.0f)
+        {
+            f3Color = AdditionAllLights(f3Color, f3AmbiColor, input);
+        }
+        else
+        {
+            f3Color += f3EmissiveColor;
+        }
+    }
+    else
+    {
+        f3Color = AdditionAllLights(f3Color, f3AmbiColor, input);
+    }
     output.target0 = float4(f3Color, fAlpha);
 #endif
     

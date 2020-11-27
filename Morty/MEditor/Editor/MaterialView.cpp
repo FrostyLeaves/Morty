@@ -114,7 +114,7 @@ void MaterialView::Initialize(MEngine* pEngine)
 	}
 
 	MCamera* pCamera = m_SceneTexture.GetViewport()->GetCamera();
-	pCamera->SetPosition(Vector3(0, 0, -10));
+	pCamera->SetPosition(Vector3(0, 0, -5));
 
 	MMeshResource* pResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/GeoSphere001.mesh")->DynamicCast<MMeshResource>();
 	MMeshResource* pResourceAnim = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/GeoSphere001_anim.mesh")->DynamicCast<MMeshResource>();
