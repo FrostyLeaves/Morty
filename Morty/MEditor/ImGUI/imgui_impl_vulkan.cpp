@@ -928,7 +928,7 @@ void ImGui_ImplVulkan_NewFrame()
         if (count > 30)
 		{
 			g_MortyEngineDevice->m_ObjectDestructor.DestroyDescriptorSetLater(iter->second.set);
-
+            iter->second.set = VK_NULL_HANDLE;
             iter = g_DescriptorSets.erase(iter);
         }
         else

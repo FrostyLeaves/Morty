@@ -63,8 +63,6 @@ public:
 
 	VkPipeline CreateGraphicsPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx);
 
-	void GetRenderTargetBarrier(MIRenderTarget* pRenderTarget, std::vector<VkImageMemoryBarrier>& vResult);;
-	
 	bool InitSemaphores();
 	void ReleaseSemaphores();
 	

@@ -54,8 +54,6 @@ void MForwardShadowMapWork::Release()
 void MForwardShadowMapWork::InitializeRenderPass()
 {
 	m_ShadowRenderPass.m_DepthDesc.bClearWhenRender = true;
-
-	GetEngine()->GetDevice()->GenerateRenderPass(&m_ShadowRenderPass, m_pShadowDepthMapRenderTarget);
 }
 
 void MForwardShadowMapWork::ReleaseRenderPass()
@@ -70,7 +68,7 @@ void MForwardShadowMapWork::OnDelete()
 	Super::OnDelete();
 }
 
-void MForwardShadowMapWork::DrawShadowMap(MForwardRenderProgram::MRenderInfo& info)
+void MForwardShadowMapWork::Render(MRenderInfo& info)
 {
 	info.pDirectionalLight = info.pScene->FindActiveDirectionLight();
 	if (nullptr == info.pDirectionalLight)
@@ -85,13 +83,13 @@ void MForwardShadowMapWork::DrawShadowMap(MForwardRenderProgram::MRenderInfo& in
 
 	info.pRenderer->BeginRenderPass(&m_ShadowRenderPass, m_pShadowDepthMapRenderTarget);
 
-	RenderToShadowMap(info, vShadowMeshGroup);
+	RenderMesh(info, vShadowMeshGroup);
 
 	info.pRenderer->EndRenderPass();
 
 }
 
-void MForwardShadowMapWork::UpdateRenderInfo(MForwardRenderProgram::MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup)
+void MForwardShadowMapWork::UpdateRenderInfo(MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup)
 {
 	Vector3 v3LightDir = info.pDirectionalLight->GetWorldDirection();
 
@@ -152,7 +150,7 @@ void MForwardShadowMapWork::UpdateRenderInfo(MForwardRenderProgram::MRenderInfo&
 	info.m4DirLightInvProj = info.pViewport->GetLightInverseProjection(info.pDirectionalLight, info.cMeshRenderAABB, info.cShadowRenderAABB);
 }
 
-void MForwardShadowMapWork::RenderToShadowMap(MForwardRenderProgram::MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup)
+void MForwardShadowMapWork::RenderMesh(MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup)
 {
 	if (m_pWorldMatrixParam)
 	{
@@ -171,6 +169,9 @@ void MForwardShadowMapWork::RenderToShadowMap(MForwardRenderProgram::MRenderInfo
 
 	for (MShadowRenderGroup& group : vShadowMeshGroup)
 	{
+		if(group.vMeshInstances.empty())
+			continue;
+
 		if (MSkeletonInstance* pSkeleton = group.pSkeletonInstance)
 		{
 			info.pRenderer->SetUseMaterial(m_pAnimMaterial);

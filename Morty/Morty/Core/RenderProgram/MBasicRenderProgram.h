@@ -30,7 +30,7 @@ public:
 
     virtual void Render(MIRenderer* pRenderer, const std::vector<MViewport*>& vViewports) override;
 
-    virtual void DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance) override;
+	void DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance) ;
 public:
 
 	virtual void OnCreated() override;

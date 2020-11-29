@@ -5,10 +5,12 @@
 #include "MEngine.h"
 #include "MViewport.h"
 #include "MSkeleton.h"
-#include "Model/MIMeshInstance.h"
 #include "MResourceManager.h"
+#include "Model/MIMeshInstance.h"
 #include "Texture/MTextureResource.h"
 #include "Material/MMaterialResource.h"
+
+#include "MForwardRenderWork.h"
 
 M_OBJECT_IMPLEMENT(MForwardTransparentWork, MObject)
 
@@ -64,7 +66,7 @@ void MForwardTransparentWork::Release()
 	ReleaseMaterial();
 }
 
-void MForwardTransparentWork::DrawTransparentMesh(MForwardRenderProgram::MRenderInfo& info)
+void MForwardTransparentWork::Render(MRenderInfo& info)
 {
 	if (info.vTransparentRenderGroup.empty())
 		return;
@@ -75,7 +77,7 @@ void MForwardTransparentWork::DrawTransparentMesh(MForwardRenderProgram::MRender
 
 	UpdateShaderSharedParams(info);
 
- 	RenderToTarget(info, &m_TransWithClearRenderPass, m_pTransparentRenderTarget, 1);
+	RenderDepthPeel(info, &m_TransWithClearRenderPass, m_pTransparentRenderTarget, 1);
 
 	info.pRenderer->BeginRenderPass(&m_MeshRenderPass, info.pRenderTarget);
 
@@ -93,7 +95,7 @@ void MForwardTransparentWork::DrawTransparentMesh(MForwardRenderProgram::MRender
 	info.pRenderer->EndRenderPass();
 }
 
-void MForwardTransparentWork::RenderToTarget(MForwardRenderProgram::MRenderInfo& info, MRenderPass* pRenderPass, MTextureRenderTarget* pRenderTarget, const uint32_t& unTargetIdx)
+void MForwardTransparentWork::RenderDepthPeel(MRenderInfo& info, MRenderPass* pRenderPass, MTextureRenderTarget* pRenderTarget, const uint32_t& unTargetIdx)
 {
 	if (nullptr == info.pViewport)
 		return;
@@ -316,13 +318,10 @@ void MForwardTransparentWork::InitializeRenderPass()
 
 	SetupSubPass(m_TransWithClearRenderPass);
 
-	GetEngine()->GetDevice()->GenerateRenderPass(&m_TransWithClearRenderPass, m_pTransparentRenderTarget);
-
 	MRenderPass::MTargetDesc descMesh;
 	descMesh.bClearWhenRender = false;
 	m_MeshRenderPass.m_vBackDesc.push_back(descMesh);
 	m_MeshRenderPass.m_DepthDesc.bClearWhenRender = false;
-	GetEngine()->GetDevice()->GenerateRenderPass(&m_MeshRenderPass, pRenderTarget);
 }
 
 void MForwardTransparentWork::ReleaseRenderPass()
@@ -331,7 +330,7 @@ void MForwardTransparentWork::ReleaseRenderPass()
 	GetEngine()->GetDevice()->DestroyRenderPass(&m_MeshRenderPass);
 }
 
-void MForwardTransparentWork::CheckTransparentTextureSize(MForwardRenderProgram::MRenderInfo& info)
+void MForwardTransparentWork::CheckTransparentTextureSize(MRenderInfo& info)
 {
 	Vector2 v2Size = info.pViewport->GetSize();
 
@@ -355,17 +354,17 @@ void MForwardTransparentWork::CheckTransparentTextureSize(MForwardRenderProgram:
 	m_pTransparentRenderTarget->Resize(m_v2TransparentTextureSize);
 }
 
-void MForwardTransparentWork::UpdateShaderSharedParams(MForwardRenderProgram::MRenderInfo& info)
+void MForwardTransparentWork::UpdateShaderSharedParams(MRenderInfo& info)
 {
 	uint32_t unFrameIdx = info.unFrameIndex;
 
-	MForwardRenderProgram::UpdateShaderSharedParams(info, m_aFrameParamSet[0]);
+	MForwardRenderWork::UpdateShaderSharedParams(info, m_aFrameParamSet[0]);
 	m_aFrameParamSet[0].m_pTransparentFrontTextureParam->pTexture = vFrontDepthTexture[1][unFrameIdx];
 	m_aFrameParamSet[0].m_pTransparentBackTextureParam->pTexture = vBackDepthTexture[1][unFrameIdx];
 	m_aFrameParamSet[0].m_pTransparentFrontTextureParam->SetDirty();
 	m_aFrameParamSet[0].m_pTransparentBackTextureParam->SetDirty();
 
-	MForwardRenderProgram::UpdateShaderSharedParams(info, m_aFrameParamSet[1]);
+	MForwardRenderWork::UpdateShaderSharedParams(info, m_aFrameParamSet[1]);
 	m_aFrameParamSet[1].m_pTransparentFrontTextureParam->pTexture = vFrontDepthTexture[0][unFrameIdx];
 	m_aFrameParamSet[1].m_pTransparentBackTextureParam->pTexture = vBackDepthTexture[0][unFrameIdx];
 	m_aFrameParamSet[1].m_pTransparentFrontTextureParam->SetDirty();

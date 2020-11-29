@@ -10,6 +10,7 @@
 #include "MRenderStructure.h"
 #include "MTextureRenderTarget.h"
 #include "MForwardRenderProgram.h"
+#include "MForwardPostProcessProgram.h"
 
 SceneTexture::SceneTexture()
 	: m_pEngine(nullptr)
@@ -33,6 +34,7 @@ void SceneTexture::Initialize(MEngine* pEngine)
 	m_pEngine = pEngine;
 
 	m_pRenderProgram = m_pEngine->GetObjectManager()->CreateObject<MForwardRenderProgram>();
+	//m_pRenderProgram = m_pEngine->GetObjectManager()->CreateObject<MForwardPostProcessProgram>();
 
 	m_pScene = m_pEngine->GetObjectManager()->CreateObject<MScene>();
 

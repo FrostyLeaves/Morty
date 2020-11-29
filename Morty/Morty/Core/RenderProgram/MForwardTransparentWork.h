@@ -32,9 +32,9 @@ public:
 
     MIRenderProgram* GetProgram() const { return m_pRenderProgram; }
 
-    void DrawTransparentMesh(MForwardRenderProgram::MRenderInfo& info);
+    void Render(MRenderInfo& info);
 
-	void RenderToTarget(MForwardRenderProgram::MRenderInfo& info, MRenderPass* pRenderPass, MTextureRenderTarget* pRenderTarget, const uint32_t& unTargetIdx);
+	void RenderDepthPeel(MRenderInfo& info, MRenderPass* pRenderPass, MTextureRenderTarget* pRenderTarget, const uint32_t& unTargetIdx);
 
 
 protected:
@@ -54,9 +54,9 @@ protected:
     void InitializeRenderPass();
     void ReleaseRenderPass();
 
-	void CheckTransparentTextureSize(MForwardRenderProgram::MRenderInfo& info);
+	void CheckTransparentTextureSize(MRenderInfo& info);
 
-	void UpdateShaderSharedParams(MForwardRenderProgram::MRenderInfo& info);
+	void UpdateShaderSharedParams(MRenderInfo& info);
 
     void SetupSubPass(MRenderPass& renderpass);
 

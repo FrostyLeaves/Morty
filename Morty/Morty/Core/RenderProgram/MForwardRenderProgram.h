@@ -16,6 +16,8 @@
 #include "MMaterialGroup.h"
 #include "Shader/MShaderParamSet.h"
 
+#include "MForwardRenderInfo.h"
+
 #include "MRenderPass.h"
 #include "MForwardRenderShaderParamSet.h"
 
@@ -27,36 +29,37 @@ class MIMeshInstance;
 class MModelInstance;
 class MSkeletonInstance;
 class MDirectionalLight;
+class MForwardRenderWork;
 class MRenderBackTexture;
 class MIModelMeshInstance;
 class MRenderDepthTexture;
 class MForwardShadowMapWork;
 class MForwardTransparentWork;
 class MShadowTextureRenderTarget;
+
+struct MRenderInfo
+{
+	uint32_t unFrameIndex;
+	class MIRenderTarget* pRenderTarget;
+	class MIRenderer* pRenderer;
+	class MViewport* pViewport;
+	class MCamera* pCamera;
+	class MScene* pScene;
+
+	class MDirectionalLight* pDirectionalLight;
+	class MITexture* pShadowMapTexture;
+	Matrix4 m4DirLightInvProj;
+
+	MBoundsAABB cShadowRenderAABB;
+	MBoundsAABB cMeshRenderAABB;
+
+	std::vector<MMaterialGroup> vMaterialRenderGroup;
+	std::vector<MMaterialGroup> vTransparentRenderGroup;
+
+};
+
 class MORTY_CLASS MForwardRenderProgram : public MIRenderProgram
 {
-public:
-
-	struct MRenderInfo
-	{
-		uint32_t unFrameIndex;
-		MIRenderTarget* pRenderTarget;
-		MIRenderer* pRenderer;
-		MViewport* pViewport;
-		MCamera* pCamera;
-		MScene* pScene;
-
-		MDirectionalLight* pDirectionalLight;
-		Matrix4 m4DirLightInvProj;
-
-		MBoundsAABB cShadowRenderAABB;
-		MBoundsAABB cMeshRenderAABB;
-
- 		std::vector<MMaterialGroup> vMaterialRenderGroup;
-		std::vector<MMaterialGroup> vTransparentRenderGroup;
-
-	};
-
 public:
 	M_OBJECT(MForwardRenderProgram);
 	MForwardRenderProgram();
@@ -66,8 +69,6 @@ public:
 
     virtual void Render(MIRenderer* pRenderer, const std::vector<MViewport*>& vViewports) override;
 
-	void RenderWithViewport(MRenderInfo info, MViewport* pViewport);
-
 public:
 
 	virtual void OnCreated() override;
@@ -75,44 +76,21 @@ public:
 
 	virtual void SetClearColor(const MColor& cClearColor) override;
 
-	static void UpdateShaderSharedParams(MRenderInfo& info, MForwardRenderShaderParamSet& frameParamSet);
-
-protected:
-
-	void GenerateRenderGroup(MRenderInfo& info);
-	void DrawNormalMesh(MRenderInfo& info);
-
-	void DrawModelInstance(MRenderInfo& info);
-	void DrawSkyBox(MRenderInfo& info);
-	void DrawPainter(MRenderInfo& info);
-	void DrawBoundingBox(MRenderInfo& info, MModelInstance* pModelIns);
-	void DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pModelIns);
-	void DrawCameraFrustum(MRenderInfo& info, MCamera* pCamera);
-
 
 public:
 
-	virtual void DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance) override;
+	void GenerateRenderGroup(MRenderInfo& info);
 
 protected:
 
 	virtual void Initialize() override;
 	virtual void Release() override;
 
-	void InitializeShaderParamSet();
-	void ReleaseShaderParamSet();
-
-	void InitializeRenderPass();
-	void ReleaseRenderPass();
-
-private:
-
-	MForwardRenderShaderParamSet m_FrameParamSet;
+protected:
 
 	MForwardShadowMapWork* m_pShadowMapWork;
+	MForwardRenderWork* m_pRenderWork;
 	MForwardTransparentWork* m_pTransparentWork;
-
-	MRenderPass m_ForwardMeshRenderPass;
 
 	MColor m_cClearColor;
 };

@@ -38,11 +38,11 @@ public:
 
     MIRenderProgram* GetProgram() const { return m_pRenderProgram; }
 
-    void DrawShadowMap(MForwardRenderProgram::MRenderInfo& info);
+    void Render(MRenderInfo& info);
 
-    void UpdateRenderInfo(MForwardRenderProgram::MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup);
+    void UpdateRenderInfo(MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup);
 
-    void RenderToShadowMap(MForwardRenderProgram::MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup);
+    void RenderMesh(MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup);
 
     MRenderDepthTexture* GetShadowMap(const uint32_t& unIdx) { return m_vShadowDepthTexture[unIdx]; }
 

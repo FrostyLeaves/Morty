@@ -197,6 +197,10 @@ VkFormat MVulkanDevice::GetFormat(const METextureLayout& layout)
 		return VK_FORMAT_R8G8B8A8_SRGB;
 		break;
 
+	case METextureLayout::ERGBA16:
+		return VK_FORMAT_R16G16B16A16_SFLOAT;
+		break;
+
 	default:
 		return VK_FORMAT_R8G8B8A8_SRGB;
 		break;
@@ -1016,7 +1020,6 @@ void MVulkanDevice::GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, 
 	vkCreateSampler(m_VkDevice, &sampler, nullptr, &depthSampler);
 
 
-	//VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
 	*ppTextureBuffer = new MDepthTextureBuffer();
 	(*ppTextureBuffer)->m_VkTextureImage = depthImage;
 	(*ppTextureBuffer)->m_VkTextureImageMemory = depthImageMemory;
@@ -1143,8 +1146,7 @@ bool MVulkanDevice::GenerateSubpassTextureBuffer(MRenderTextureBuffer** ppTextur
 	VkFormat textureFormat = GetFormat(eType);
 
 	CreateImage(unWidth, unHeight, textureFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
-	//TransitionImageLayout(textureImage, textureFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
+	
 
 	VkImageSubresourceRange vkSubresourceRange = {};
 	vkSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -1177,7 +1179,6 @@ bool MVulkanDevice::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTexture
 	VkFormat textureFormat = GetFormat(eType);
 
 	CreateImage(unWidth, unHeight, textureFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
-	//TransitionImageLayout(textureImage, textureFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	
 
 	VkImageSubresourceRange vkSubresourceRange = {};
@@ -1403,15 +1404,13 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass, MIRenderTarget*
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 
-		//colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
 		if (!pBackTexture->GetRenderBuffer())
 		{
 			pBackTexture->SetSize(pRenderTarget->GetSize());
 			pBackTexture->GenerateBuffer(this);
 		}
 
-		colorAttachment.initialLayout =	pBackTexture->GetRenderBuffer()->m_VkImageLayout;
-		//colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		colorAttachment.initialLayout =	pBackTexture->GetBuffer()->m_VkImageLayout;
 
 		if (dynamic_cast<MVulkanRenderTarget*>(pRenderTarget))
 			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
@@ -1437,7 +1436,6 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass, MIRenderTarget*
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		//colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;		//default
 		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;			//for Shader
 	}
 

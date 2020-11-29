@@ -116,12 +116,9 @@ void MaterialView::Initialize(MEngine* pEngine)
 	MCamera* pCamera = m_SceneTexture.GetViewport()->GetCamera();
 	pCamera->SetPosition(Vector3(0, 0, -5));
 
-	MMeshResource* pResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/GeoSphere001.mesh")->DynamicCast<MMeshResource>();
-	MMeshResource* pResourceAnim = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/GeoSphere001_anim.mesh")->DynamicCast<MMeshResource>();
-	
-
 	m_pMeshInstance = m_pEngine->GetObjectManager()->CreateObject<MStaticMeshInstance>();
-	m_pMeshInstance->Load(pResource);
+	if(MResource* pResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/GeoSphere001.mesh"))
+		m_pMeshInstance->Load(pResource);
 	pRootNode->AddNode(m_pMeshInstance);
 	m_pMeshInstance->SetVisible(false);
 
@@ -133,7 +130,8 @@ void MaterialView::Initialize(MEngine* pEngine)
 	pRootNode->AddNode(pModelInstance);
 
 	m_pSkeletonMeshInstance = m_pEngine->GetObjectManager()->CreateObject<MStaticMeshInstance>();
-	m_pSkeletonMeshInstance->Load(pResourceAnim);
+	if (MResource* pResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/GeoSphere001_anim.mesh"))
+		m_pSkeletonMeshInstance->Load(pResource);
 	pModelInstance->AddNode(m_pSkeletonMeshInstance);
 	m_pMeshInstance->SetVisible(false);
 

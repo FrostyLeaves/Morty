@@ -402,6 +402,15 @@
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MAndroidRenderView.h">
       <Filter>Core\Renderer\Vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\RenderProgram\MForwardHDRWork.h">
+      <Filter>Core\RenderProgram\Forward</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\RenderProgram\MForwardRenderWork.h">
+      <Filter>Core\RenderProgram\Forward</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\RenderProgram\MForwardPostProcessProgram.h">
+      <Filter>Core\RenderProgram\Forward</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../Morty.cpp">
@@ -650,9 +659,6 @@
     <ClCompile Include="..\..\Core\RenderProgram\MForwardRenderProgram.cpp">
       <Filter>Core\RenderProgram\Forward</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Core\RenderProgram\MForwardTransparentWork.cpp">
-      <Filter>Core\RenderProgram\Forward</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Core\RenderProgram\MForwardShadowMapWork.cpp">
       <Filter>Core\RenderProgram\Forward</Filter>
     </ClCompile>
@@ -682,6 +688,18 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MAndroidRenderView.cpp">
       <Filter>Core\Renderer\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\RenderProgram\MForwardHDRWork.cpp">
+      <Filter>Core\RenderProgram\Forward</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\RenderProgram\MForwardRenderWork.cpp">
+      <Filter>Core\RenderProgram\Forward</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\RenderProgram\MForwardPostProcessProgram.cpp">
+      <Filter>Core\RenderProgram\Forward</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\RenderProgram\MForwardTransparentWork.cpp">
+      <Filter>Core\RenderProgram</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

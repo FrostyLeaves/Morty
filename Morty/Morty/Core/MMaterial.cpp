@@ -466,7 +466,7 @@ void MMaterial::OnCreated()
 
 void MMaterial::OnDelete()
 {
-	if (m_pEngine->GetRenderer())
+	if (m_pEngine->GetDevice())
 	{
 		m_pEngine->GetDevice()->UnRegisterMaterial(this);
 	}

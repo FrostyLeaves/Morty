@@ -7,8 +7,10 @@
 #include "MFunction.h"
 
 MMaterialPipelineLayoutData::MMaterialPipelineLayoutData()
-	: pipelineLayout(VK_NULL_HANDLE)
+	: pMaterial(nullptr)
+	, pipelineLayout(VK_NULL_HANDLE)
 	, vSetLayouts()
+	, vShaderParamSets()
 {
 
 }
@@ -165,7 +167,6 @@ bool MVulkanPipelineManager::UnRegisterMaterial(MMaterial* pMaterial)
 	uint32_t id = pMaterial->GetMaterialID();
 	if (m_tMaterialMap.find(id) == m_tMaterialMap.end())
 		return false;
-
 
 	m_tMaterialMap.erase(id);
 	m_MaterialIDPool.RecoveryID(id);
@@ -474,12 +475,16 @@ void MVulkanPipelineManager::DestroyShaderParamSet(MShaderParamSet* pParamSet)
 
 	if (M_INVALID_INDEX != pParamSet->m_unLayoutDataIdx)
 	{
-		for (uint32_t i = pParamSet->m_unLayoutDataIdx; i < pLayoutData->vShaderParamSets.size() - 1; ++i)
+		if (pParamSet->m_unLayoutDataIdx < pLayoutData->vShaderParamSets.size())
 		{
-			pLayoutData->vShaderParamSets[i] = pLayoutData->vShaderParamSets[i + 1];
-		}
+			for (uint32_t i = pParamSet->m_unLayoutDataIdx; i < pLayoutData->vShaderParamSets.size() - 1; ++i)
+			{
+				pLayoutData->vShaderParamSets[i] = pLayoutData->vShaderParamSets[i + 1];
+				pLayoutData->vShaderParamSets[i]->m_unLayoutDataIdx = i;
+			}
 
-		pLayoutData->vShaderParamSets.pop_back();
+			pLayoutData->vShaderParamSets.pop_back();
+		}
 	}
 
 	DestroyShaderParamSetImpl(pParamSet);
@@ -487,15 +492,17 @@ void MVulkanPipelineManager::DestroyShaderParamSet(MShaderParamSet* pParamSet)
 
 void MVulkanPipelineManager::DestroyShaderParamSetImpl(MShaderParamSet* pParamSet)
 {
+	if (!pParamSet)
+		return;
+
 	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
 	{
 		if (pParamSet->m_VkDescriptorSet[i])
 		{
 			m_pDevice->m_ObjectDestructor.DestroyDescriptorSetLater(pParamSet->m_VkDescriptorSet[i]);
+			pParamSet->m_VkDescriptorSet[i] = VK_NULL_HANDLE;
 		}
 	}
-
-	memset(pParamSet->m_VkDescriptorSet, VK_NULL_HANDLE, sizeof(VkDescriptorSet) * M_BUFFER_NUM);
 
 	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
 	{

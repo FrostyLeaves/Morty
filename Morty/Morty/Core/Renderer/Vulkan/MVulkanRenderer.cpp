@@ -154,6 +154,15 @@ void MVulkanRenderer::BeginRenderPass(MRenderPass* pRenderPass, MIRenderTarget* 
 	if (!pRenderPass || !pRenderTarget)
 		return;
 
+	if (VK_NULL_HANDLE == pRenderPass->m_aVkRenderPass[GetFrameIndex()])
+	{
+		if (!m_pDevice->GenerateRenderPass(pRenderPass, pRenderTarget))
+		{
+			MLogManager::GetInstance()->Error("MVulkanRenderer::BeginRenderPass error: Generate rp failed.");
+			return;
+		}
+	}
+
 	MFrameBuffer* pFrameBuffer = pRenderTarget->GetCurrFrameBuffer(GetFrameIndex());
 	if (!pFrameBuffer)
 		return;
@@ -674,59 +683,6 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 		return VK_NULL_HANDLE;
 
 	return graphicsPipeline;
-}
-
-void MVulkanRenderer::GetRenderTargetBarrier(MIRenderTarget* pRenderTarget, std::vector<VkImageMemoryBarrier>& vResult)
-{
-	MFrameBuffer* pFrameBuffer = pRenderTarget->GetCurrFrameBuffer(m_unFrameIndex);
-	if (!pFrameBuffer)
-		return;
-
-	int nBackNum = pFrameBuffer->vBackTextures.size();
-	for (int i = 0; i < nBackNum; ++i)
-	{
-		if (MIRenderBackTexture* pBackTexture = pFrameBuffer->vBackTextures[i])
-		{
-			MRenderTextureBuffer* pBuffer =  pBackTexture->GetRenderBuffer();
-
-			VkImageMemoryBarrier barrier{};
-			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			barrier.oldLayout = pBuffer->m_VkImageLayout;
-			barrier.newLayout = pBuffer->m_VkImageLayout;
-			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.image = pBuffer->m_VkTextureImage;
-			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			barrier.subresourceRange.baseMipLevel = 0;
-			barrier.subresourceRange.levelCount = 1;
-			barrier.subresourceRange.baseArrayLayer = 0;
-			barrier.subresourceRange.layerCount = 1;
-
-			vResult.push_back(barrier);
-		}
-
-	}
-	if (MRenderDepthTexture* pDepthTexture = pFrameBuffer->pDepthTexture)
-	{
-		if (MDepthTextureBuffer* pBuffer = pDepthTexture->GetDepthBuffer())
-		{
-			VkImageMemoryBarrier barrier{};
-			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			barrier.oldLayout = pBuffer->m_VkImageLayout;
-			barrier.newLayout = pBuffer->m_VkImageLayout;
-			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.image = pBuffer->m_VkTextureImage;
-			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-			barrier.subresourceRange.baseMipLevel = 0;
-			barrier.subresourceRange.levelCount = 1;
-			barrier.subresourceRange.baseArrayLayer = 0;
-			barrier.subresourceRange.layerCount = 1;
-
-			vResult.push_back(barrier);
-		}
-	}
-
 }
 
 bool MVulkanRenderer::InitSemaphores()

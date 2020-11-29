@@ -27,7 +27,8 @@ class MTextureCube;
 enum METextureLayout
 {
 	ERGBA8 = 0,
-	ER32 = 1
+	ERGBA16,
+	ER32,
 };
 
 class MInputLayout

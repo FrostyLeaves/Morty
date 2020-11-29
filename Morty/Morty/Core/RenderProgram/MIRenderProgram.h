@@ -32,9 +32,8 @@ public:
 
     virtual void Render(MIRenderer* pRenderer, const std::vector<MViewport*>& vViewports) {};
 
-    virtual void DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance) {}
-
     virtual void SetClearColor(const MColor& cClearColor) {}
+    virtual MColor GetClearColor() const { return MColor::Black_T; }
 
     virtual void Initialize() {}
     virtual void Release() {}
