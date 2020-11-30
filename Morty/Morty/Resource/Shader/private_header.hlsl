@@ -115,21 +115,3 @@ float Float4ToFloat(float4 rgba_depth)
 
 //Shadowmap
 [[vk::binding(6,1)]]Texture2D U_texShadowMap : register(t0);
-
-
-
-
-
-//VS    per mesh
-[[vk::binding(0,2)]]cbuffer _M_E_cbMeshMatrix : register(b0)
-{
-    float4x4 U_matWorld;
-    float3x3 U_matNormal;
-};
-
-
-//VS    with bones
-[[vk::binding(0,3)]]cbuffer _M_E_cbAnimation : register(b2)
-{
-    float4x4 U_vBonesMatrix[128];
-};

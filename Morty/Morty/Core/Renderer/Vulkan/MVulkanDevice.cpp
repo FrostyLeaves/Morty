@@ -12,6 +12,8 @@
 #include <array>
 #include <assert.h>
 
+#define VALUE_MAX(a, b)(a > b ? a : b)
+
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 
@@ -465,8 +467,8 @@ void MVulkanDevice::CreateImage(const uint32_t& unWidth, const uint32_t& unHeigh
 	VkImageCreateInfo imageInfo{};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	imageInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageInfo.extent.width = unWidth;
-	imageInfo.extent.height = unHeight;
+	imageInfo.extent.width = VALUE_MAX(unWidth, 1);
+	imageInfo.extent.height = VALUE_MAX(unHeight, 1);
 	imageInfo.extent.depth = 1;
 	imageInfo.mipLevels = 1;
 	imageInfo.arrayLayers = 1;

@@ -62,6 +62,7 @@ protected:
 
 private:
 
+	friend class MEngine;
 	friend class MModelConverter;
     
 	MString m_strName;

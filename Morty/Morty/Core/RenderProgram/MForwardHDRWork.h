@@ -10,15 +10,10 @@
 #define _M_MFORWARDHDRWORK_H_
 #include "MGlobal.h"
 #include "MObject.h"
-#include "MForwardRenderProgram.h"
+#include "MStandardPostProcessWork.h"
 
-#include "MMesh.h"
-
-class MIRenderTarget;
-class MIRenderBackTexture;
-class MRenderDepthTexture;
-class MTextureRenderTarget;
-class MORTY_CLASS MForwardHDRWork : public MObject
+class MMaterial;
+class MORTY_CLASS MForwardHDRWork : public MStandardPostProcessWork
 {
 public:
 	M_OBJECT(MForwardHDRWork);
@@ -27,44 +22,17 @@ public:
 
 public:
 
-	void Initialize(MIRenderProgram* pRenderProgram);
-	void Release();
+    virtual void Render(MPostProcessRenderInfo& info) override;
 
-	MIRenderTarget* GetTempRenderTarget();
 
-	void CheckTextureSize(MRenderInfo& info);
-
-    void Render(MRenderInfo& info);
-
-public:
-
-	void InitializeMesh();
-	void ReleaseMesh();
-
-	void InitializeRenderTargets();
-	void ReleaseRenderTargets();
-
-	void InitializeRenderPass();
-	void ReleaseRenderPass();
+	virtual void Initialize(MIRenderProgram* pRenderProgram) override;
+	virtual void Release() override;
 
 	void InitializeMaterial();
 	void ReleaseMaterial();
-
-
 private:
 
-	MIRenderProgram* m_pRenderProgram;
-
-	std::array<MIRenderBackTexture*, M_BUFFER_NUM> m_aBackTexture;
-	std::array<MRenderDepthTexture*, M_BUFFER_NUM> m_aDepthTexture;
-
-	MTextureRenderTarget* m_pTempRenderTarget;
-	MRenderPass m_HDRRenderPass;
-	
-	MMesh<Vector2> m_ScreenDrawMesh;
 	MMaterial* m_pHDRMaterial;
-
-
 };
 
 #endif

@@ -254,6 +254,7 @@
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanRenderer.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanRenderTarget.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanWrapper.h" />
+    <ClInclude Include="..\..\Core\RenderProgram\MGaussianBlurWork.h" />
     <ClInclude Include="..\..\Core\RenderProgram\MBasicRenderProgram.h" />
     <ClInclude Include="..\..\Core\RenderProgram\MForwardPostProcessProgram.h" />
     <ClInclude Include="..\..\Core\RenderProgram\MForwardHDRWork.h" />
@@ -262,7 +263,9 @@
     <ClInclude Include="..\..\Core\RenderProgram\MForwardRenderWork.h" />
     <ClInclude Include="..\..\Core\RenderProgram\MForwardShadowMapWork.h" />
     <ClInclude Include="..\..\Core\RenderProgram\MForwardTransparentWork.h" />
+    <ClInclude Include="..\..\Core\RenderProgram\MIPostProcessWork.h" />
     <ClInclude Include="..\..\Core\RenderProgram\MIRenderProgram.h" />
+    <ClInclude Include="..\..\Core\RenderProgram\MStandardPostProcessWork.h" />
     <ClInclude Include="..\..\Math\Matrix.h" />
     <ClInclude Include="..\..\Math\Quaternion.h" />
     <ClInclude Include="..\..\Math\Vector.h" />
@@ -359,6 +362,7 @@
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanRenderer.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanRenderTarget.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanWrapper.cpp" />
+    <ClCompile Include="..\..\Core\RenderProgram\MGaussianBlurWork.cpp" />
     <ClCompile Include="..\..\Core\RenderProgram\MBasicRenderProgram.cpp" />
     <ClCompile Include="..\..\Core\RenderProgram\MForwardPostProcessProgram.cpp" />
     <ClCompile Include="..\..\Core\RenderProgram\MForwardHDRWork.cpp" />
@@ -367,7 +371,9 @@
     <ClCompile Include="..\..\Core\RenderProgram\MForwardRenderWork.cpp" />
     <ClCompile Include="..\..\Core\RenderProgram\MForwardShadowMapWork.cpp" />
     <ClCompile Include="..\..\Core\RenderProgram\MForwardTransparentWork.cpp" />
+    <ClCompile Include="..\..\Core\RenderProgram\MIPostProcessWork.cpp" />
     <ClCompile Include="..\..\Core\RenderProgram\MIRenderProgram.cpp" />
+    <ClCompile Include="..\..\Core\RenderProgram\MStandardPostProcessWork.cpp" />
     <ClCompile Include="..\..\Math\Matrix.cpp" />
     <ClCompile Include="..\..\Math\Quaternion.cpp" />
     <ClCompile Include="..\..\Math\Vector.cpp" />

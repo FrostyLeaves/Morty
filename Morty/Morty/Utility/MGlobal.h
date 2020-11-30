@@ -65,6 +65,7 @@ extern const char* DEFAULT_MATERIAL_SHADOW_STATIC;
 extern const char* DEFAULT_MATERIAL_SHADOW_SKELETON;
 extern const char* DEFAULT_MATERIAL_DEPTH_PEEL_BLEND;
 extern const char* DEFAULT_MATERIAL_DEPTH_PEEL_FILL;
+extern const char* DEFAULT_MESH_SCREEN_DRAW;
 
 extern const char* DEFAULT_TEXTURE_WHITE;
 extern const char* DEFAULT_TEXTURE_BLACK;

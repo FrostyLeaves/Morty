@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
  	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
  	pRootNode->SetName("RootNode");
 
-	MNodeResource* pNodeResource = engine.GetResourceManager()->LoadResource("./Model/output/pigeon/pigeon.mnode")->DynamicCast<MNodeResource>();
+	MNodeResource* pNodeResource = engine.GetResourceManager()->LoadResource("./Model/output/sign_neon/sign_neon.mnode")->DynamicCast<MNodeResource>();
 
 	MNode* pEditorNode = pNodeResource->CreateNode();
 

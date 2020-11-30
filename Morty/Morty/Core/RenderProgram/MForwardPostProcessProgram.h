@@ -11,7 +11,12 @@
 #include "MGlobal.h"
 #include "MForwardRenderProgram.h"
 
+class MMaterial;
+class MRenderPass;
 class MForwardHDRWork;
+class MIPostProcessWork;
+class MIRenderBackTexture;
+class MRenderDepthTexture;
 class MORTY_CLASS MForwardPostProcessProgram : public MForwardRenderProgram
 {
 public:
@@ -22,14 +27,56 @@ public:
 public:
 	virtual void Render(MIRenderer* pRenderer, const std::vector<MViewport*>& vViewports) override;
 
+	template<typename CLASS_TYPE>
+	CLASS_TYPE* AppendPostProcess();
+
 protected:
+
+
+	void RenderPostProcess(MIRenderer* pRenderer, MViewport* pViewport);
+	void RenderScreenMesh(MIRenderer* pRenderer, MViewport* pViewport);
+
+	void CheckRenderTargetSize(const Vector2& v2Size);
 
 	virtual void Initialize() override;
 	virtual void Release() override;
 
+	void InitializeMesh();
+	void ReleaseMesh();
+
+	void InitializeMaterial();
+	void ReleaseMaterial();
+
+	void InitializeRenderPass();
+	void ReleaseRenderPass();
+
+	void InitializeRenderTarget();
+	void ReleaseRenderTarget();
+
 protected:
 
-	MForwardHDRWork* m_pRenderHDRWork;
+	std::vector<MIPostProcessWork*> m_vPostProcessWork;
+
+private:
+
+	std::array<MIRenderBackTexture*, M_BUFFER_NUM> m_aBackTexture;
+	std::array<MRenderDepthTexture*, M_BUFFER_NUM> m_aDepthTexture;
+
+	MTextureRenderTarget* m_pTempRenderTarget;
+	MRenderPass* m_pScreenDrawRenderPass;
+	MIMesh* m_pScreenDrawMesh;
+	MMaterial* m_pScreenDrawMaterial;
 };
+
+template<typename CLASS_TYPE>
+CLASS_TYPE* MForwardPostProcessProgram::AppendPostProcess()
+{
+	CLASS_TYPE* pPostProcess = GetEngine()->GetObjectManager()->CreateObject<CLASS_TYPE>();
+	pPostProcess->Initialize(this);
+
+	m_vPostProcessWork.push_back(pPostProcess);
+
+	return pPostProcess;
+}
 
 #endif

@@ -110,12 +110,11 @@ void MForwardRenderWork::Render(MRenderInfo& info)
 	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
 	info.pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight(), 0.0f, 1.0f);
 
-	DrawPainter(info);
-
 	DrawNormalMesh(info);
 
-	DrawModelInstance(info);
+	DrawPainter(info);
 
+	DrawModelInstance(info);
 
 	//	DrawSkyBox(info);
 

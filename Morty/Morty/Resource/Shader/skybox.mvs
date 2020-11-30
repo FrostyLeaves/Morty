@@ -1,4 +1,4 @@
-#include "private_header.hlsl"
+#include "model_header.hlsl"
 
 struct VS_IN_SKYBOX
 {

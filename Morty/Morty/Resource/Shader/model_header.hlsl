@@ -50,12 +50,25 @@ struct LightBasicInfo
     float3 f3DirLightDir;
 };
 
+//VS    per mesh
+[[vk::binding(0,2)]]cbuffer _M_E_cbMeshMatrix : register(b0)
+{
+    float4x4 U_matWorld;
+    float3x3 U_matNormal;
+};
+
+//VS    with bones
+[[vk::binding(0,3)]]cbuffer _M_E_cbAnimation : register(b2)
+{
+    float4x4 U_vBonesMatrix[128];
+};
+
+
 //PS
 [[vk::binding(0,0)]]cbuffer cbMaterial
 {
     Material U_mat;
 };
-
 
 [[vk::binding(1,0)]]Texture2D U_mat_texDiffuse;
 [[vk::binding(2,0)]]Texture2D U_mat_texNormal;

@@ -18,6 +18,7 @@ const char* DEFAULT_MATERIAL_SHADOW_STATIC = "DefMatShadow";
 const char* DEFAULT_MATERIAL_SHADOW_SKELETON = "DefMatShadowAnim";
 const char* DEFAULT_MATERIAL_DEPTH_PEEL_BLEND = "DefMatDepthPeelBlend";
 const char* DEFAULT_MATERIAL_DEPTH_PEEL_FILL = "DefMatDepthPeelFill";
+const char* DEFAULT_MESH_SCREEN_DRAW = "DefMeshScreenDraw";
 
 const char* DEFAULT_TEXTURE_WHITE = "DefTexWhite";
 const char* DEFAULT_TEXTURE_BLACK = "DefTexBlack";

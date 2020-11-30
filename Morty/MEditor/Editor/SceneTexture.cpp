@@ -33,8 +33,8 @@ void SceneTexture::Initialize(MEngine* pEngine)
 {
 	m_pEngine = pEngine;
 
-	m_pRenderProgram = m_pEngine->GetObjectManager()->CreateObject<MForwardRenderProgram>();
-	//m_pRenderProgram = m_pEngine->GetObjectManager()->CreateObject<MForwardPostProcessProgram>();
+	//m_pRenderProgram = m_pEngine->GetObjectManager()->CreateObject<MForwardRenderProgram>();
+	m_pRenderProgram = m_pEngine->GetObjectManager()->CreateObject<MForwardPostProcessProgram>();
 
 	m_pScene = m_pEngine->GetObjectManager()->CreateObject<MScene>();
 

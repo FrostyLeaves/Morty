@@ -18,13 +18,14 @@
 #include "MWindowsRenderView.h"
 #endif
 
-#include "Timer/MTimer.h"
 #include "MNode.h"
 #include "MScene.h"
 #include "MMaterial.h"
+#include "Timer/MTimer.h"
 #include "MResourceManager.h"  
-#include "Material/MMaterialResource.h"
+#include "Model/MMeshResource.h"
 #include "Texture/MTextureResource.h"
+#include "Material/MMaterialResource.h"
 #include "Texture/MTextureCubeResource.h"
 
 #include "MInputManager.h"
@@ -249,6 +250,30 @@ bool MEngine::InitializeDefaultResource()
 	pDepthPeelFillMaterial->LoadVertexShader(pDPVSResource);
 	pDepthPeelFillMaterial->LoadPixelShader(pDPFPSResource);
 	pDepthPeelFillMaterial->AddRef();
+
+
+	MMesh<Vector2>* pScreenMesh = new MMesh<Vector2>;
+	pScreenMesh->ResizeVertices(4);
+	Vector2* vVertices = (Vector2*)pScreenMesh->GetVertices();
+
+	vVertices[0] = Vector2(-1, -1);
+	vVertices[1] = Vector2(1, -1);
+	vVertices[2] = Vector2(-1, 1);
+	vVertices[3] = Vector2(1, 1);
+
+	pScreenMesh->ResizeIndices(2, 3);
+	uint32_t* vIndices = pScreenMesh->GetIndices();
+
+	vIndices[0] = 0;
+	vIndices[1] = 2;
+	vIndices[2] = 1;
+
+	vIndices[3] = 2;
+	vIndices[4] = 3;
+	vIndices[5] = 1;
+	MMeshResource* pScreenMeshRes = GetResourceManager()->LoadVirtualResource<MMeshResource>(DEFAULT_MESH_SCREEN_DRAW);
+	pScreenMeshRes->m_pMesh = pScreenMesh;
+	pScreenMeshRes->AddRef();
 
 	return true;
 }

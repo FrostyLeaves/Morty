@@ -66,10 +66,10 @@ VkPipeline MVulkanPipelineManager::FindPipeline(MMaterial* pMaterial, MRenderPas
 	uint32_t unMaterialID = pMaterial->GetMaterialID();
 	uint32_t unRenderPassID = pRenderPass->GetRenderPassID();
 
-	if (m_tPipelineTable.size() < unRenderPassID + 1)
+	if (m_tPipelineTable.size() < unMaterialID + 1)
 		return VK_NULL_HANDLE;
 
-	MMaterialPipelineGroup* pMaterialGroup = m_tPipelineTable[unRenderPassID];
+	MMaterialPipelineGroup* pMaterialGroup = m_tPipelineTable[unMaterialID];
 	if (!pMaterialGroup)
 		return VK_NULL_HANDLE;
 
