@@ -707,9 +707,6 @@
     <ClCompile Include="..\..\Core\RenderProgram\MForwardPostProcessProgram.cpp">
       <Filter>Core\RenderProgram\Forward</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Core\RenderProgram\MForwardTransparentWork.cpp">
-      <Filter>Core\RenderProgram</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Core\RenderProgram\MIPostProcessWork.cpp">
       <Filter>Core\RenderProgram</Filter>
     </ClCompile>
@@ -721,6 +718,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\RenderProgram\MGaussianBlurWork.cpp">
       <Filter>Core\RenderProgram\PostProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\RenderProgram\MForwardTransparentWork.cpp">
+      <Filter>Core\RenderProgram\Forward</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

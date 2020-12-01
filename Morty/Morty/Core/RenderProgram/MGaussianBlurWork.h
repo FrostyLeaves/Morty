@@ -57,7 +57,7 @@ protected:
 	MIMesh* m_pScreenDrawMesh;
 
 
-    MMaterial* m_aMaterial[2];
+    MMaterial* m_aMaterial[3];
 };
 
 #endif

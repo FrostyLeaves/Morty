@@ -337,6 +337,41 @@ bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial)
 	return false;
 }
 
+bool MVulkanRenderer::SetRenderToTextureBarrier(const std::vector<MIRenderBackTexture*> vTextures)
+{
+	if (m_vRenderStages.empty())
+		return false;
+
+	MRenderStage& rs = m_vRenderStages.back();
+
+	std::vector<VkImageMemoryBarrier> vImageBarrier;
+
+	for (uint32_t i = 0; i < vTextures.size(); ++i)
+	{
+		if (MRenderTextureBuffer* pBuffer = vTextures[i]->GetRenderBuffer())
+		{
+			vImageBarrier.push_back(VkImageMemoryBarrier());
+			VkImageMemoryBarrier& imageMemoryBarrier = vImageBarrier.back();
+
+			imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			imageMemoryBarrier.oldLayout = vTextures[i]->GetRenderBuffer()->m_VkImageLayout;
+			imageMemoryBarrier.newLayout = vTextures[i]->GetRenderBuffer()->m_VkImageLayout;
+			imageMemoryBarrier.image = vTextures[i]->GetRenderBuffer()->m_VkTextureImage;
+			imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+			imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		}
+	}
+	vkCmdPipelineBarrier(
+		rs.vkCommandBuffer,
+		VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+		0,
+		0, nullptr,
+		0, nullptr,
+		vImageBarrier.size(), vImageBarrier.data());
+}
+
 void MVulkanRenderer::GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPass, std::vector<VkPipelineColorBlendAttachmentState>& vBlendAttach, VkPipelineColorBlendStateCreateInfo& blendInfo)
 {
 	

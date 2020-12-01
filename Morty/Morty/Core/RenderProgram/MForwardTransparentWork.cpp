@@ -79,6 +79,8 @@ void MForwardTransparentWork::Render(MRenderInfo& info)
 
 	RenderDepthPeel(info, &m_TransWithClearRenderPass, m_pTransparentRenderTarget, 1);
 
+	info.pRenderer->SetRenderToTextureBarrier({ vFrontTexture[info.unFrameIndex], vBackTexture[info.unFrameIndex] });
+
 	info.pRenderer->BeginRenderPass(&m_MeshRenderPass, info.pRenderTarget);
 
 	std::vector<MShaderTextureParam*>& params = *m_pDrawMeshMaterial->GetTextureParams();

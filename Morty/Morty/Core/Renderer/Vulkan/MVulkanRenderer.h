@@ -51,6 +51,8 @@ public:
 
 	virtual bool SetUseMaterial(MMaterial* pMaterial) override;
 
+	virtual bool SetRenderToTextureBarrier(const std::vector<MIRenderBackTexture*> vTextures) override;
+
 public:
 
 	void GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPass, std::vector<VkPipelineColorBlendAttachmentState>& vBlendAttach, VkPipelineColorBlendStateCreateInfo& blendInfo);

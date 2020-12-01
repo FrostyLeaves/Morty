@@ -77,8 +77,9 @@ class MRenderFrame;
 class MFrameBuffer;
 class MIRenderTarget;
 class MShaderParamSet;
-class MRenderDepthTexture;
 class MRenderBackTexture;
+class MIRenderBackTexture;
+class MRenderDepthTexture;
 
 class MORTY_CLASS MIRenderer
 {
@@ -118,6 +119,8 @@ public:
 	virtual void DrawMesh(MIMesh* pMesh) = 0;
 
 	virtual bool SetUseMaterial(MMaterial* pMaterial) = 0;
+
+	virtual bool SetRenderToTextureBarrier(const std::vector<MIRenderBackTexture*> vTextures) = 0;
 
 public:
 	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) = 0;

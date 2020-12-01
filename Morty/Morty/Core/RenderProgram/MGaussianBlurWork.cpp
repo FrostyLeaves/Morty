@@ -22,33 +22,79 @@ MGaussianBlurWork::~MGaussianBlurWork()
 
 void MGaussianBlurWork::Render(MPostProcessRenderInfo& info)
 {
-	for (uint32_t i = 0; i < 2; ++i)
+	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
+	Vector2 v2ViewportSize = info.pViewport->GetSize();
+
+	if (MShaderParamSet* pMaterialParamSet = m_aMaterial[0]->GetMaterialParamSet())
 	{
-		info.pRenderer->BeginRenderPass(m_pTempRenderPass, m_aTempRenderTarget[i]);
+		MIRenderBackTexture* pBackTexture = m_aTempRenderTarget[1]->GetBackTexture(info.unFrameIndex)->at(0);
+		pMaterialParamSet->m_vTextures[0]->pTexture = pBackTexture;
+		pMaterialParamSet->m_vTextures[0]->SetDirty();
 
-		Vector2 v2LeftTop = info.pViewport->GetLeftTop();
-		Vector2 v2ViewportSize = info.pViewport->GetSize();
-		info.pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, v2ViewportSize.x, v2ViewportSize.y, 0.0f, 1.0f);
+		Vector2 v2BlurOffset;
+		v2BlurOffset.x = 1.0f / v2ViewportSize.x;
+		pMaterialParamSet->m_vParams[0]->var = v2BlurOffset;
+		pMaterialParamSet->m_vParams[0]->SetDirty();
+	}
+	if (MShaderParamSet* pMaterialParamSet = m_aMaterial[1]->GetMaterialParamSet())
+	{
+		MIRenderBackTexture* pBackTexture = m_aTempRenderTarget[0]->GetBackTexture(info.unFrameIndex)->at(0);
+		pMaterialParamSet->m_vTextures[0]->pTexture = pBackTexture;
+		pMaterialParamSet->m_vTextures[0]->SetDirty();
 
-		if (MShaderParamSet* pMaterialParamSet = m_aMaterial[i]->GetMaterialParamSet())
+		Vector2 v2BlurOffset;
+		v2BlurOffset.y = 1.0f / v2ViewportSize.y;
+		pMaterialParamSet->m_vParams[0]->var = v2BlurOffset;
+		pMaterialParamSet->m_vParams[0]->SetDirty();
+	}
+	if (MShaderParamSet* pMaterialParamSet = m_aMaterial[2]->GetMaterialParamSet())
+	{
+		MIRenderBackTexture* pBackTexture = info.pPrevLevel->GetBackTexture(info.unFrameIndex)->at(0);
+		pMaterialParamSet->m_vTextures[0]->pTexture = pBackTexture;
+		pMaterialParamSet->m_vTextures[0]->SetDirty();
+
+		Vector2 v2BlurOffset;
+		v2BlurOffset.x = 1.0f / v2ViewportSize.x;
+		pMaterialParamSet->m_vParams[0]->var = v2BlurOffset;
+		pMaterialParamSet->m_vParams[0]->SetDirty();
+	}
+
+	const uint32_t nNum = 3;
+
+	for (uint32_t i = 0; i < 2 * nNum; ++i)
+	{
+		MMaterial* pMaterial = nullptr;
+		if (MShaderParamSet* pMaterialParamSet = m_aMaterial[i % 2]->GetMaterialParamSet())
 		{
 			if (i == 0)
 			{
-				pMaterialParamSet->m_vTextures[0]->pTexture = info.pPrevLevel->GetBackTexture(info.unFrameIndex)->at(0);
-				pMaterialParamSet->m_vTextures[0]->SetDirty();
+				MIRenderBackTexture* pBackTexture = info.pPrevLevel->GetBackTexture(info.unFrameIndex)->at(0);
+				info.pRenderer->SetRenderToTextureBarrier({ pBackTexture });
+
+				pMaterial = m_aMaterial[2];
+			}
+			else if (i % 2 == 0)
+			{
+				MIRenderBackTexture* pBackTexture = m_aTempRenderTarget[1]->GetBackTexture(info.unFrameIndex)->at(0);
+				info.pRenderer->SetRenderToTextureBarrier({ pBackTexture });
+
+				pMaterial = m_aMaterial[0];
 			}
 			else
 			{
-				pMaterialParamSet->m_vTextures[0]->pTexture = m_aTempRenderTarget[0]->GetBackTexture(info.unFrameIndex)->at(0);
-				pMaterialParamSet->m_vTextures[0]->SetDirty();
+				MIRenderBackTexture* pBackTexture = m_aTempRenderTarget[0]->GetBackTexture(info.unFrameIndex)->at(0);
+				info.pRenderer->SetRenderToTextureBarrier({ pBackTexture });
+
+				pMaterial = m_aMaterial[1];
 			}
-			Vector2 v2BlurOffset;
-			v2BlurOffset.m[i] = 5.0f / v2ViewportSize.m[i];
-			pMaterialParamSet->m_vParams[0]->var = v2BlurOffset;
-			pMaterialParamSet->m_vParams[0]->SetDirty();
+
 		}
 
-		if (info.pRenderer->SetUseMaterial(m_aMaterial[i]))
+		info.pRenderer->BeginRenderPass(m_pTempRenderPass, m_aTempRenderTarget[i % 2]);
+
+		info.pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, v2ViewportSize.x, v2ViewportSize.y, 0.0f, 1.0f);
+
+		if (info.pRenderer->SetUseMaterial(pMaterial))
 		{
 			info.pRenderer->DrawMesh(m_pScreenDrawMesh);
 		}
@@ -188,7 +234,7 @@ void MGaussianBlurWork::InitializeMaterial()
 	MResource* pVSResource = GetEngine()->GetResourceManager()->LoadResource("./Shader/gaussian_blur.mvs");
 	MResource* pPSResource = GetEngine()->GetResourceManager()->LoadResource("./Shader/gaussian_blur.mps");
 
-	for (uint32_t i = 0; i < 2; ++i)
+	for (uint32_t i = 0; i < 3; ++i)
 	{
 		m_aMaterial[i] = GetEngine()->GetResourceManager()->CreateResource<MMaterialResource>();
 
@@ -201,7 +247,7 @@ void MGaussianBlurWork::InitializeMaterial()
 
 void MGaussianBlurWork::ReleaseMaterial()
 {
-	for (uint32_t i = 0; i < 2; ++i)
+	for (uint32_t i = 0; i < 3; ++i)
 	{
 		if (m_aMaterial[i])
 		{
