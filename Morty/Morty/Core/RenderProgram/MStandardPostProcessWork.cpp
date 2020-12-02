@@ -104,7 +104,7 @@ void MStandardPostProcessWork::ReleaseRenderTargets()
 
 void MStandardPostProcessWork::InitializeRenderPass()
 {
-	if (!m_pRenderProgram->GetRenderTarget())
+	if (!m_pTempRenderTarget)
 	{
 		MLogManager::GetInstance()->Error("MForwardRenderProgram::InitializeRenderPass error: rt == nullptr");
 		return;

@@ -20,6 +20,8 @@ M_OBJECT_IMPLEMENT(MForwardPostProcessProgram, MForwardRenderProgram)
 
 MForwardPostProcessProgram::MForwardPostProcessProgram()
     : MForwardRenderProgram()
+	, m_bHDR_Enable(false)
+	, m_pHDRPostProcessWork(nullptr)
 	, m_vPostProcessWork()
 	, m_aBackTexture()
 	, m_aDepthTexture()
@@ -54,25 +56,8 @@ void MForwardPostProcessProgram::Render(MIRenderer* pRenderer, const std::vector
 	info.pCamera = pViewport->GetCamera();
 	info.pScene = pViewport->GetScene();
 
-	pViewport->LockMatrix();
 
-	GenerateRenderGroup(info);
-
-	if (m_pShadowMapWork)
-	{
-		m_pShadowMapWork->Render(info);
-		info.pShadowMapTexture = m_pShadowMapWork->GetShadowMap(info.unFrameIndex);
-	}
-
-	if (m_pRenderWork)
-	{
-		m_pRenderWork->Render(info);
-	}
-
-	if (m_pTransparentWork)
-	{
-		m_pTransparentWork->Render(info);
-	}
+	MForwardRenderProgram::Render(info);
 
 	RenderPostProcess(pRenderer, pViewport);
 
@@ -81,29 +66,78 @@ void MForwardPostProcessProgram::Render(MIRenderer* pRenderer, const std::vector
 	pViewport->UnlockMatrix();
 }
 
+void MForwardPostProcessProgram::SetHighDynamicRangeEnable(const bool& bEnable)
+{
+	if (m_bHDR_Enable == bEnable)
+		return;
+	m_bHDR_Enable = bEnable;
+
+	GetEngine()->GetDevice()->DestroyRenderPass(m_pScreenDrawRenderPass);
+	GetEngine()->GetDevice()->DestroyRenderTarget(m_pTempRenderTarget);
+
+	METextureLayout eNewLayout = bEnable ? METextureLayout::ERGBA16 : METextureLayout::ERGBA8;
+
+	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+	{
+		if (m_aBackTexture[i])
+		{
+			m_aBackTexture[i]->DestroyBuffer(GetEngine()->GetDevice());
+			m_aBackTexture[i]->SetType(eNewLayout);
+			m_aBackTexture[i]->GenerateBuffer(GetEngine()->GetDevice());
+		}
+	}
+
+	if (bEnable && !m_pHDRPostProcessWork)
+	{
+		m_pHDRPostProcessWork = GetEngine()->GetObjectManager()->CreateObject<MForwardHDRWork>();
+		m_pHDRPostProcessWork->Initialize(this);
+	}
+	else if (!bEnable && m_pHDRPostProcessWork)
+	{
+		m_pHDRPostProcessWork->DeleteLater();
+		m_pHDRPostProcessWork = nullptr;
+	}
+}
+
 void MForwardPostProcessProgram::RenderPostProcess(MIRenderer* pRenderer, MViewport* pViewport)
 {
+	Vector2 v2ViewportSize = pViewport->GetSize();
+
+	uint32_t unFrameIdx = pRenderer->GetFrameIndex();
+
 	MPostProcessRenderInfo cPostInfo;
-	cPostInfo.unFrameIndex = pRenderer->GetFrameIndex();
+	cPostInfo.unFrameIndex = unFrameIdx;
 	cPostInfo.pViewport = pViewport;
 	cPostInfo.pRenderer = pRenderer;
-	cPostInfo.pPrevLevel = m_pTempRenderTarget;
+	cPostInfo.pPrevLevelOutput = m_pTempRenderTarget->GetBackTexture(unFrameIdx)->at(0);
+
+	if (m_pHDRPostProcessWork)
+	{
+		m_pHDRPostProcessWork->CheckRenderTargetSize(v2ViewportSize);
+		m_pHDRPostProcessWork->Render(cPostInfo);
+
+		cPostInfo.pPrevLevelOutput = m_pHDRPostProcessWork->GetRenderTarget()->GetBackTexture(unFrameIdx)->at(0);
+	}
 
 	for (MIPostProcessWork* pPostProcess : m_vPostProcessWork)
 	{
-		pPostProcess->CheckRenderTargetSize(pViewport->GetSize());
+		pPostProcess->CheckRenderTargetSize(v2ViewportSize);
 		pPostProcess->Render(cPostInfo);
 
-		cPostInfo.pPrevLevel = pPostProcess->GetRenderTarget();
+		cPostInfo.pPrevLevelOutput = pPostProcess->GetRenderTarget()->GetBackTexture(unFrameIdx)->at(0);
 	}
 }
 
 void MForwardPostProcessProgram::RenderScreenMesh(MIRenderer* pRenderer, MViewport* pViewport)
 {
-	if (m_vPostProcessWork.empty())
-		return;
+	MTextureRenderTarget* pTextureRT = nullptr;
 
-	MTextureRenderTarget* pTextureRT = m_vPostProcessWork.back()->GetRenderTarget();
+	if (!pTextureRT && !m_vPostProcessWork.empty())
+		m_vPostProcessWork.back()->GetRenderTarget();
+
+	if (!pTextureRT && m_pHDRPostProcessWork)
+		pTextureRT = m_pHDRPostProcessWork->GetRenderTarget();
+
 	if (!pTextureRT)
 		return;
 
@@ -160,11 +194,17 @@ void MForwardPostProcessProgram::Initialize()
 	InitializeRenderTarget();
 	InitializeRenderPass();
 
-	AppendPostProcess<MGaussianBlurWork>();
+	//AppendPostProcess<MGaussianBlurWork>();
 }
 
 void MForwardPostProcessProgram::Release()
 {
+	if (m_pHDRPostProcessWork)
+	{
+		m_pHDRPostProcessWork->DeleteLater();
+		m_pHDRPostProcessWork = nullptr;
+	}
+
 	for (MIPostProcessWork* pPostProcess : m_vPostProcessWork)
 	{
 		pPostProcess->DeleteLater();
@@ -252,10 +292,14 @@ void MForwardPostProcessProgram::InitializeRenderTarget()
 {
 	m_pTempRenderTarget = m_pEngine->GetObjectManager()->CreateObject<MTextureRenderTarget>();
 
+	METextureLayout eNewLayout = m_bHDR_Enable ? METextureLayout::ERGBA16 : METextureLayout::ERGBA8;
+
 	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
 	{
 		MRenderBackTexture* pBackTexture = new MRenderBackTexture();
 		MRenderDepthTexture* pDepthTexture = new MRenderDepthTexture();
+
+		pBackTexture->SetType(eNewLayout);
 
 		m_aBackTexture[i] = pBackTexture;
 		m_aDepthTexture[i] = pDepthTexture;

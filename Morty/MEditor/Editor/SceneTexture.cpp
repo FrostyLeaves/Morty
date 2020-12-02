@@ -34,7 +34,11 @@ void SceneTexture::Initialize(MEngine* pEngine)
 	m_pEngine = pEngine;
 
 	//m_pRenderProgram = m_pEngine->GetObjectManager()->CreateObject<MForwardRenderProgram>();
-	m_pRenderProgram = m_pEngine->GetObjectManager()->CreateObject<MForwardPostProcessProgram>();
+	MForwardPostProcessProgram* pPostProcessProgram = m_pEngine->GetObjectManager()->CreateObject<MForwardPostProcessProgram>();
+	pPostProcessProgram->SetHighDynamicRangeEnable(true);
+
+
+	m_pRenderProgram = pPostProcessProgram;
 
 	m_pScene = m_pEngine->GetObjectManager()->CreateObject<MScene>();
 
@@ -64,6 +68,7 @@ void SceneTexture::Initialize(MEngine* pEngine)
 	m_pTextureRenderTarget->Resize({ 256, 256 });
 
 	m_pRenderProgram->BindRenderTarget(m_pTextureRenderTarget);
+	m_pRenderProgram->Initialize();
 
 	MCamera* pCamera = m_pRenderViewport->GetCamera();
 	pCamera->SetPosition(Vector3(0, 0, -20));

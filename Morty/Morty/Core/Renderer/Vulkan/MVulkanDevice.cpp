@@ -1302,6 +1302,9 @@ bool MVulkanDevice::GenerateRenderTarget(MRenderPass* pRenderPass, MIRenderTarge
 
 void MVulkanDevice::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
 {
+	if (!pRenderTarget)
+		return;
+
 	MIRenderTarget* pVkRenderTarget = pRenderTarget;
 
 	for (uint32_t i = 0; i < pRenderTarget->GetMFrameBufferNum(); ++i)

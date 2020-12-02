@@ -11,9 +11,5 @@ MIRenderProgram::MIRenderProgram()
 
 void MIRenderProgram::BindRenderTarget(MIRenderTarget* pRenderTarget)
 {
-	Release();
-
 	m_pRenderTarget = pRenderTarget;
-
-	Initialize();
 }

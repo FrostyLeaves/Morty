@@ -254,6 +254,7 @@
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanRenderer.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanRenderTarget.h" />
     <ClInclude Include="..\..\Core\Renderer\Vulkan\MVulkanWrapper.h" />
+    <ClInclude Include="..\..\Core\RenderProgram\MCombineWork.h" />
     <ClInclude Include="..\..\Core\RenderProgram\MGaussianBlurWork.h" />
     <ClInclude Include="..\..\Core\RenderProgram\MBasicRenderProgram.h" />
     <ClInclude Include="..\..\Core\RenderProgram\MForwardPostProcessProgram.h" />
@@ -362,6 +363,7 @@
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanRenderer.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanRenderTarget.cpp" />
     <ClCompile Include="..\..\Core\Renderer\Vulkan\MVulkanWrapper.cpp" />
+    <ClCompile Include="..\..\Core\RenderProgram\MCombineWork.cpp" />
     <ClCompile Include="..\..\Core\RenderProgram\MGaussianBlurWork.cpp" />
     <ClCompile Include="..\..\Core\RenderProgram\MBasicRenderProgram.cpp" />
     <ClCompile Include="..\..\Core\RenderProgram\MForwardPostProcessProgram.cpp" />

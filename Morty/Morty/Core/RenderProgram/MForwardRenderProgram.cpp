@@ -90,7 +90,12 @@ void MForwardRenderProgram::Render(MIRenderer* pRenderer, const std::vector<MVie
 	info.pCamera = pViewport->GetCamera();
 	info.pScene = pViewport->GetScene();
 
-	pViewport->LockMatrix();
+	Render(info);
+}
+
+void MForwardRenderProgram::Render(MRenderInfo& info)
+{
+	info.pViewport->LockMatrix();
 
 	GenerateRenderGroup(info);
 
@@ -110,7 +115,7 @@ void MForwardRenderProgram::Render(MIRenderer* pRenderer, const std::vector<MVie
 		m_pTransparentWork->Render(info);
 	}
 
-	pViewport->UnlockMatrix();
+	info.pViewport->UnlockMatrix();
 }
 
 void MForwardRenderProgram::OnCreated()

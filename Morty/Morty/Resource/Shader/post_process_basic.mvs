@@ -1,19 +1,19 @@
 #include "private_header.hlsl"
 
-struct VS_IN_HDR
+struct VS_IN_POST
 {
     float2 pos : POSITION;
 };
 
-struct VS_OUT_HDR
+struct VS_OUT_POST
 {
     float4 pos : SV_POSITION;
     float2 uv : TEXCOORD;
 };
 
-VS_OUT_HDR VS(VS_IN_HDR input)
+VS_OUT_POST VS(VS_IN_POST input)
 {
-    VS_OUT_HDR output;
+    VS_OUT_POST output;
 
     output.pos.xy = input.pos.xy;
     output.pos.w = 1.0f;

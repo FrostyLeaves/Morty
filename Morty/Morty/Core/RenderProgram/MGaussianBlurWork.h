@@ -23,6 +23,14 @@ public:
 
 public:
 
+	void SetBlurRadius(const float& fRadius) { m_fBlurRadius = fRadius; }
+	float GetBlurRadius() const { return m_fBlurRadius; }
+
+	void SetIteration(const uint32_t& unIteration) { m_unIteration = unIteration; }
+	uint32_t GetIteration() const { return m_unIteration; }
+
+public:
+
 	virtual void Initialize(MIRenderProgram* pRenderProgram) override;
 	virtual void Release() override;
 
@@ -32,7 +40,9 @@ public:
 
 	virtual void Render(MPostProcessRenderInfo& info) override;
 
-public:
+protected:
+
+	void UpdateShaderSharedParams(MPostProcessRenderInfo& info);
 
 	void InitializeMesh();
 	void ReleaseMesh();
@@ -56,8 +66,11 @@ protected:
 	MRenderPass* m_pTempRenderPass;
 	MIMesh* m_pScreenDrawMesh;
 
-
     MMaterial* m_aMaterial[3];
+
+private:
+	float m_fBlurRadius;
+	uint32_t m_unIteration;
 };
 
 #endif

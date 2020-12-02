@@ -13,16 +13,19 @@
 
 #include "Vector.h"
 
+class MITexture;
 class MViewport;
 class MIRenderer;
 class MIRenderProgram;
+class MIRenderBackTexture;
 class MTextureRenderTarget;
 struct MORTY_CLASS MPostProcessRenderInfo
 {
     uint32_t unFrameIndex;
     MIRenderer* pRenderer;
     MViewport* pViewport;
-    MTextureRenderTarget* pPrevLevel;
+    MIRenderBackTexture* pPrevLevelOutput;
+    MIRenderBackTexture* pPrevLevelOutput1;
 };
 
 class MORTY_CLASS MIPostProcessWork : public MObject

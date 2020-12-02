@@ -13,6 +13,8 @@ M_OBJECT_IMPLEMENT(MGaussianBlurWork, MIPostProcessWork)
 MGaussianBlurWork::MGaussianBlurWork()
     : MIPostProcessWork()
     , m_aMaterial()
+	, m_fBlurRadius(1.0f)
+	, m_unIteration(6)
 {
 }
 
@@ -22,53 +24,16 @@ MGaussianBlurWork::~MGaussianBlurWork()
 
 void MGaussianBlurWork::Render(MPostProcessRenderInfo& info)
 {
-	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
-	Vector2 v2ViewportSize = info.pViewport->GetSize();
+	UpdateShaderSharedParams(info);
 
-	if (MShaderParamSet* pMaterialParamSet = m_aMaterial[0]->GetMaterialParamSet())
-	{
-		MIRenderBackTexture* pBackTexture = m_aTempRenderTarget[1]->GetBackTexture(info.unFrameIndex)->at(0);
-		pMaterialParamSet->m_vTextures[0]->pTexture = pBackTexture;
-		pMaterialParamSet->m_vTextures[0]->SetDirty();
-
-		Vector2 v2BlurOffset;
-		v2BlurOffset.x = 1.0f / v2ViewportSize.x;
-		pMaterialParamSet->m_vParams[0]->var = v2BlurOffset;
-		pMaterialParamSet->m_vParams[0]->SetDirty();
-	}
-	if (MShaderParamSet* pMaterialParamSet = m_aMaterial[1]->GetMaterialParamSet())
-	{
-		MIRenderBackTexture* pBackTexture = m_aTempRenderTarget[0]->GetBackTexture(info.unFrameIndex)->at(0);
-		pMaterialParamSet->m_vTextures[0]->pTexture = pBackTexture;
-		pMaterialParamSet->m_vTextures[0]->SetDirty();
-
-		Vector2 v2BlurOffset;
-		v2BlurOffset.y = 1.0f / v2ViewportSize.y;
-		pMaterialParamSet->m_vParams[0]->var = v2BlurOffset;
-		pMaterialParamSet->m_vParams[0]->SetDirty();
-	}
-	if (MShaderParamSet* pMaterialParamSet = m_aMaterial[2]->GetMaterialParamSet())
-	{
-		MIRenderBackTexture* pBackTexture = info.pPrevLevel->GetBackTexture(info.unFrameIndex)->at(0);
-		pMaterialParamSet->m_vTextures[0]->pTexture = pBackTexture;
-		pMaterialParamSet->m_vTextures[0]->SetDirty();
-
-		Vector2 v2BlurOffset;
-		v2BlurOffset.x = 1.0f / v2ViewportSize.x;
-		pMaterialParamSet->m_vParams[0]->var = v2BlurOffset;
-		pMaterialParamSet->m_vParams[0]->SetDirty();
-	}
-
-	const uint32_t nNum = 3;
-
-	for (uint32_t i = 0; i < 2 * nNum; ++i)
+	for (uint32_t i = 0; i < 2 * m_unIteration; ++i)
 	{
 		MMaterial* pMaterial = nullptr;
 		if (MShaderParamSet* pMaterialParamSet = m_aMaterial[i % 2]->GetMaterialParamSet())
 		{
 			if (i == 0)
 			{
-				MIRenderBackTexture* pBackTexture = info.pPrevLevel->GetBackTexture(info.unFrameIndex)->at(0);
+				MIRenderBackTexture* pBackTexture = info.pPrevLevelOutput;
 				info.pRenderer->SetRenderToTextureBarrier({ pBackTexture });
 
 				pMaterial = m_aMaterial[2];
@@ -92,6 +57,8 @@ void MGaussianBlurWork::Render(MPostProcessRenderInfo& info)
 
 		info.pRenderer->BeginRenderPass(m_pTempRenderPass, m_aTempRenderTarget[i % 2]);
 
+		Vector2 v2LeftTop = info.pViewport->GetLeftTop();
+		Vector2 v2ViewportSize = info.pViewport->GetSize();
 		info.pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, v2ViewportSize.x, v2ViewportSize.y, 0.0f, 1.0f);
 
 		if (info.pRenderer->SetUseMaterial(pMaterial))
@@ -101,6 +68,45 @@ void MGaussianBlurWork::Render(MPostProcessRenderInfo& info)
 
 		info.pRenderer->EndRenderPass();
 	}
+}
+
+void MGaussianBlurWork::UpdateShaderSharedParams(MPostProcessRenderInfo& info)
+{
+	Vector2 v2ViewportSize = info.pViewport->GetSize();
+	if (MShaderParamSet* pMaterialParamSet = m_aMaterial[0]->GetMaterialParamSet())
+	{
+		MIRenderBackTexture* pBackTexture = m_aTempRenderTarget[1]->GetBackTexture(info.unFrameIndex)->at(0);
+		pMaterialParamSet->m_vTextures[0]->pTexture = pBackTexture;
+		pMaterialParamSet->m_vTextures[0]->SetDirty();
+
+		Vector2 v2BlurOffset;
+		v2BlurOffset.x = m_fBlurRadius / v2ViewportSize.x;
+		pMaterialParamSet->m_vParams[0]->var = v2BlurOffset;
+		pMaterialParamSet->m_vParams[0]->SetDirty();
+	}
+	if (MShaderParamSet* pMaterialParamSet = m_aMaterial[1]->GetMaterialParamSet())
+	{
+		MIRenderBackTexture* pBackTexture = m_aTempRenderTarget[0]->GetBackTexture(info.unFrameIndex)->at(0);
+		pMaterialParamSet->m_vTextures[0]->pTexture = pBackTexture;
+		pMaterialParamSet->m_vTextures[0]->SetDirty();
+
+		Vector2 v2BlurOffset;
+		v2BlurOffset.y = m_fBlurRadius / v2ViewportSize.y;
+		pMaterialParamSet->m_vParams[0]->var = v2BlurOffset;
+		pMaterialParamSet->m_vParams[0]->SetDirty();
+	}
+	if (MShaderParamSet* pMaterialParamSet = m_aMaterial[2]->GetMaterialParamSet())
+	{
+		MIRenderBackTexture* pBackTexture = info.pPrevLevelOutput;
+		pMaterialParamSet->m_vTextures[0]->pTexture = pBackTexture;
+		pMaterialParamSet->m_vTextures[0]->SetDirty();
+
+		Vector2 v2BlurOffset;
+		v2BlurOffset.x = m_fBlurRadius / v2ViewportSize.x;
+		pMaterialParamSet->m_vParams[0]->var = v2BlurOffset;
+		pMaterialParamSet->m_vParams[0]->SetDirty();
+	}
+
 }
 
 void MGaussianBlurWork::InitializeMesh()
@@ -158,7 +164,7 @@ void MGaussianBlurWork::ReleaseRenderTargets()
 
 void MGaussianBlurWork::InitializeRenderPass()
 {
-	if (!m_pRenderProgram->GetRenderTarget())
+	if (!m_pTempRenderPass)
 	{
 		MLogManager::GetInstance()->Error("MForwardRenderProgram::InitializeRenderPass error: rt == nullptr");
 		return;

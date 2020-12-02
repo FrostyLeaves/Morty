@@ -423,6 +423,9 @@
     <ClInclude Include="..\..\Core\RenderProgram\MGaussianBlurWork.h">
       <Filter>Core\RenderProgram\PostProcess</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Core\RenderProgram\MCombineWork.h">
+      <Filter>Core\RenderProgram\PostProcess</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../Morty.cpp">
@@ -721,6 +724,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\RenderProgram\MForwardTransparentWork.cpp">
       <Filter>Core\RenderProgram\Forward</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Core\RenderProgram\MCombineWork.cpp">
+      <Filter>Core\RenderProgram\PostProcess</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

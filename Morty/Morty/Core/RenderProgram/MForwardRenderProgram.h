@@ -79,6 +79,8 @@ public:
 
 public:
 
+	void Render(MRenderInfo& info);
+
 	void GenerateRenderGroup(MRenderInfo& info);
 
 protected:

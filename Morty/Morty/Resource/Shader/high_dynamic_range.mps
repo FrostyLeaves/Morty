@@ -2,29 +2,32 @@
 
 [[vk::binding(1,0)]]Texture2D U_HDR_OriginTex;
 [[vk::binding(2,0)]]sampler defaultSampler;
-[[vk::binding(3,0)]]float2 U_HDR_TextureSize;
-[[vk::binding(4,0)]]float2 U_HDR_BlurOffset;
 
-struct VS_OUT_HDR
+struct VS_OUT_GAUSSIAN
 {
     float4 pos : SV_POSITION;
     float2 uv : TEXCOORD;
 };
 
-float4 PS(VS_OUT_HDR input) : SV_Target
+struct PS_OUT_HDR
 {
+    float4 color0 : SV_Target0;
+    float4 color1 : SV_Target1;
+};
 
-    float4 f4Color = float4(0, 0, 0, 0);
-    
-    float2 f2PixelSize = 1.0f / U_HDR_TextureSize * U_HDR_BlurOffset;
+PS_OUT_HDR PS(VS_OUT_GAUSSIAN input) : SV_Target
+{
+    PS_OUT_HDR output;
 
-    f4Color += 0.40 * U_HDR_OriginTex.Sample(defaultSampler, input.uv);
-    f4Color += 0.15 * U_HDR_OriginTex.Sample(defaultSampler, input.uv + f2PixelSize);
-    f4Color += 0.15 * U_HDR_OriginTex.Sample(defaultSampler, input.uv - f2PixelSize);
-    f4Color += 0.10 * U_HDR_OriginTex.Sample(defaultSampler, input.uv + f2PixelSize * 2.0f);
-    f4Color += 0.10 * U_HDR_OriginTex.Sample(defaultSampler, input.uv - f2PixelSize * 2.0f);
-    f4Color += 0.05 * U_HDR_OriginTex.Sample(defaultSampler, input.uv + f2PixelSize * 6.0f);
-    f4Color += 0.05 * U_HDR_OriginTex.Sample(defaultSampler, input.uv - f2PixelSize * 6.0f);
+    float4 f4Color = U_HDR_OriginTex.Sample(defaultSampler, input.uv);
+    output.color0 = f4Color;
 
-    return f4Color;
+
+    float fBrightness = dot(f4Color.rgb, float3(0.2126, 0.7152, 0.0722));
+    float fThreshold = 0.75;
+
+    output.color1.rgb = (fBrightness > fThreshold) ? f4Color.rgb : float3(0.0, 0.0, 0.0);
+    output.color1.a = f4Color.a;
+
+    return output;
 }

@@ -30,6 +30,10 @@ public:
 	template<typename CLASS_TYPE>
 	CLASS_TYPE* AppendPostProcess();
 
+
+	void SetHighDynamicRangeEnable(const bool& bEnable);
+	bool GetHighDynamicRangeEnable() { return m_bHDR_Enable; }
+
 protected:
 
 
@@ -55,6 +59,9 @@ protected:
 
 protected:
 
+	//HDR first
+	bool m_bHDR_Enable;
+	MIPostProcessWork* m_pHDRPostProcessWork;
 	std::vector<MIPostProcessWork*> m_vPostProcessWork;
 
 private:
