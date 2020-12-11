@@ -73,7 +73,6 @@ void MForwardPostProcessProgram::SetHighDynamicRangeEnable(const bool& bEnable)
 	m_bHDR_Enable = bEnable;
 
 	GetEngine()->GetDevice()->DestroyRenderPass(m_pScreenDrawRenderPass);
-	GetEngine()->GetDevice()->DestroyRenderTarget(m_pTempRenderTarget);
 
 	METextureLayout eNewLayout = bEnable ? METextureLayout::ERGBA16 : METextureLayout::ERGBA8;
 
@@ -315,7 +314,6 @@ void MForwardPostProcessProgram::ReleaseRenderTarget()
 {
 	if (m_pTempRenderTarget)
 	{
-		m_pEngine->GetDevice()->DestroyRenderTarget(m_pTempRenderTarget);
 		m_pTempRenderTarget->DeleteLater();
 		m_pTempRenderTarget = nullptr;
 	}

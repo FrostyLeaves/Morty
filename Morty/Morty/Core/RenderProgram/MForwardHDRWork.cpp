@@ -43,6 +43,9 @@ void MForwardHDRWork::Render(MPostProcessRenderInfo& info)
 	{
 		pMaterialParamSet->m_vTextures[0]->pTexture = info.pPrevLevelOutput;
 		pMaterialParamSet->m_vTextures[0]->SetDirty();
+
+		pMaterialParamSet->m_vParams[0]->var = float(1.0f);
+		pMaterialParamSet->m_vParams[0]->SetDirty();
 	}
 
 	if (info.pRenderer->SetUseMaterial(m_pHDRMaterial))
@@ -165,7 +168,6 @@ void MForwardHDRWork::ReleaseRenderTargets()
 {
 	if (m_pTempRenderTarget)
 	{
-		m_pEngine->GetDevice()->DestroyRenderTarget(m_pTempRenderTarget);
 		m_pTempRenderTarget->DeleteLater();
 		m_pTempRenderTarget = nullptr;
 	}

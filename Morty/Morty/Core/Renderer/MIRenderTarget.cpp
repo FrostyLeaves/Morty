@@ -1,4 +1,6 @@
 #include "MIRenderTarget.h"
+
+#include "MEngine.h"
 #include "MRenderPass.h"
 
 M_I_OBJECT_IMPLEMENT(MIRenderTarget, MObject)
@@ -14,13 +16,18 @@ MIRenderTarget::MIRenderTarget()
 #endif
 }
 
-void MIRenderTarget::Release()
+void MIRenderTarget::OnDelete()
 {
 	if (m_pRenderProgram)
 	{
 		m_pRenderProgram->DeleteLater();
 		m_pRenderProgram = nullptr;
 	}
+
+
+	GetEngine()->GetDevice()->DestroyRenderTarget(this);
+
+	Super::OnDelete();
 }
 
 MFrameBuffer::MFrameBuffer()

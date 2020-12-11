@@ -62,9 +62,7 @@ public:
 public:
 
 	virtual void OnCreated() override;
-
-	virtual void Release() override;
-
+	virtual void OnDelete() override;
 
 public:
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11

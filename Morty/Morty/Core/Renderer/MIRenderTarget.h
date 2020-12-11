@@ -55,6 +55,8 @@ public:
 
 	virtual MFrameBuffer* GetCurrFrameBuffer(const uint32_t& unFrameIdx = 0) = 0;
 
+	virtual void OnDelete() override;
+
 public:
 
 	virtual void Resize(const Vector2& v2Size) { m_v2Size = v2Size; }
@@ -71,8 +73,6 @@ public:
 	virtual void OnRenderAfter(MIRenderer* pRenderer) {}
 	virtual void OnRender(MIRenderer* pRenderer) { if(m_funcRenderFunction) m_funcRenderFunction(pRenderer); }
 	std::function<void(MIRenderer*)> m_funcRenderFunction;
-
-	virtual void Release();
 
 public:
 

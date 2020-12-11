@@ -79,7 +79,6 @@ void MStandardPostProcessWork::ReleaseRenderTargets()
 {
 	if (m_pTempRenderTarget)
 	{
-		m_pEngine->GetDevice()->DestroyRenderTarget(m_pTempRenderTarget);
 		m_pTempRenderTarget->DeleteLater();
 		m_pTempRenderTarget = nullptr;
 	}

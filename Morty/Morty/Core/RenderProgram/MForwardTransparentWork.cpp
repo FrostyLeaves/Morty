@@ -280,7 +280,6 @@ void MForwardTransparentWork::ReleaseRenderTargets()
 
 	if (m_pTransparentRenderTarget)
 	{
-		GetEngine()->GetDevice()->DestroyRenderTarget(m_pTransparentRenderTarget);
 		m_pTransparentRenderTarget->DeleteLater();
 		m_pTransparentRenderTarget = nullptr;
 	}

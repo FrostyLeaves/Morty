@@ -145,7 +145,6 @@ void MGaussianBlurWork::ReleaseRenderTargets()
 	{
 		if (m_aTempRenderTarget[nRtIdx])
 		{
-			m_pEngine->GetDevice()->DestroyRenderTarget(m_aTempRenderTarget[nRtIdx]);
 			m_aTempRenderTarget[nRtIdx]->DeleteLater();
 			m_aTempRenderTarget[nRtIdx] = nullptr;
 		}

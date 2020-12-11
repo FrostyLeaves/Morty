@@ -37,8 +37,11 @@ public:
 	virtual void OnRender(MIRenderer* pRenderer) override;
 	virtual void OnRenderBefore(MIRenderer* pRenderer) override;
 	virtual void OnRenderAfter(MIRenderer* pRenderer) override;
+
+	virtual void OnCreated() override;
+	virtual void OnDelete() override;
+
 	void Initialize();
-	virtual void Release() override;
 
 	virtual void Resize(const Vector2& v2Size) override;
 

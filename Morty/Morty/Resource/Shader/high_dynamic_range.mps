@@ -2,6 +2,7 @@
 
 [[vk::binding(1,0)]]Texture2D U_HDR_OriginTex;
 [[vk::binding(2,0)]]sampler defaultSampler;
+[[vk::binding(3,0)]]float U_HDR_Exposure;
 
 struct VS_OUT_GAUSSIAN
 {
@@ -20,8 +21,8 @@ PS_OUT_HDR PS(VS_OUT_GAUSSIAN input) : SV_Target
     PS_OUT_HDR output;
 
     float4 f4Color = U_HDR_OriginTex.Sample(defaultSampler, input.uv);
-    output.color0 = f4Color;
-
+    output.color0.rgb = float3(1.0, 1.0, 1.0) - exp(-f4Color.rgb * U_HDR_Exposure);
+    output.color0.a = f4Color.a;
 
     float fBrightness = dot(f4Color.rgb, float3(0.2126, 0.7152, 0.0722));
     float fThreshold = 0.75;

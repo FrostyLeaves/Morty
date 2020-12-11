@@ -216,7 +216,6 @@ void MForwardShadowMapWork::ReleaseRenderTargets()
 {
 	if (m_pShadowDepthMapRenderTarget)
 	{
-		m_pEngine->GetDevice()->DestroyRenderTarget(m_pShadowDepthMapRenderTarget);
 		m_pShadowDepthMapRenderTarget->DeleteLater();
 		m_pShadowDepthMapRenderTarget = nullptr;
 	}

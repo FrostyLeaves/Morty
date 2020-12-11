@@ -77,6 +77,11 @@ void MVulkanRenderTarget::OnRenderAfter(MIRenderer* pRenderer)
 	vkQueuePresentKHR(m_VkPresentQueue, &presentInfo);
 }
 
+void MVulkanRenderTarget::OnCreated()
+{
+	Super::OnCreated();
+}
+
 void MVulkanRenderTarget::Initialize()
 {
 	MVulkanDevice* pDevice = dynamic_cast<MVulkanDevice*>(GetEngine()->GetDevice());
@@ -96,11 +101,12 @@ void MVulkanRenderTarget::Initialize()
 		return;
 
 	m_vWaitSemaphoreBeforeSubmit.push_back(m_VkImageAvailableSemaphore);
-
 }
 
-void MVulkanRenderTarget::Release()
+void MVulkanRenderTarget::OnDelete()
 {
+	Super::OnDelete();
+
 	MVulkanDevice* pDevice = dynamic_cast<MVulkanDevice*>(GetEngine()->GetDevice());
 	if (!pDevice)
 	{
@@ -108,18 +114,15 @@ void MVulkanRenderTarget::Release()
 		return;
 	}
 
-	pDevice->DestroyRenderTarget(this);
 	ReleaseSwapchain(pDevice);
 	CleanRenderInfo(pDevice);
 
 	vkDestroySemaphore(pDevice->m_VkDevice, m_VkImageAvailableSemaphore, nullptr);
 	m_VkImageAvailableSemaphore = VK_NULL_HANDLE;
-	
+
 	m_vWaitSemaphoreBeforeSubmit.clear();
 
 	vkDestroySurfaceKHR(pDevice->m_VkInstance, m_VkSurface, nullptr);
-
-	Super::Release();
 }
 
 void MVulkanRenderTarget::Resize(const Vector2& v2Size)
@@ -141,8 +144,6 @@ void MVulkanRenderTarget::Resize(const Vector2& v2Size)
 	CleanRenderInfo(pDevice);
 
 	InitializeSwapchain(pDevice);
-
-//	pDevice->GenerateRenderTarget(this, nWidth, nHeight);
 }
 
 bool MVulkanRenderTarget::InitializeSwapchain(MVulkanDevice* pDevice)

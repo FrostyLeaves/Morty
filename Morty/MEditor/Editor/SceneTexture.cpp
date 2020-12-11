@@ -85,8 +85,6 @@ void SceneTexture::Release()
 	m_pRenderViewport->DeleteLater();
 	m_pRenderViewport = nullptr;
 
-	m_pEngine->GetDevice()->DestroyRenderTarget(m_pTextureRenderTarget);
-
 	m_pTextureRenderTarget->DeleteLater();
 	m_pTextureRenderTarget = nullptr;
 

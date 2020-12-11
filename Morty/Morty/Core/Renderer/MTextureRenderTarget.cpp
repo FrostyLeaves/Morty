@@ -19,7 +19,6 @@ MTextureRenderTarget::MTextureRenderTarget()
 
 MTextureRenderTarget::~MTextureRenderTarget()
 {
-	Release();
 }
 
 MRenderDepthTexture* MTextureRenderTarget::GetCurrDepthTexture()
@@ -134,9 +133,9 @@ void MTextureRenderTarget::OnCreated()
 
 }
 
-void MTextureRenderTarget::Release()
+void MTextureRenderTarget::OnDelete()
 {
-	Super::Release();
+	Super::OnDelete();
 }
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11

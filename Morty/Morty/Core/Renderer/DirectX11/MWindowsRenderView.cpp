@@ -205,7 +205,6 @@ void MWindowsRenderView::Release()
 {
 	if (m_pRenderTarget)
 	{
-		m_pRenderTarget->Release();
 		m_pRenderTarget->DeleteLater();
 		m_pRenderTarget = nullptr;
 	}
