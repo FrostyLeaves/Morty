@@ -1,0 +1,49 @@
+{
+    "BackTexture": [
+        {
+            "name": "0",
+            "clear": [0,0,0,0]
+        },
+        {
+            "name": "1",
+            "clear": [0,0,0,0]
+        },
+        {
+            "name": "2",
+            "clear": [1,1,1,1]
+        },
+        {
+            "name": "3",
+            "clear": [0,0,0,0]
+        },
+        {
+            "name": "4",
+            "clear": [1,1,1,1]
+        },
+        {
+            "name": "5",
+            "clear": [0,0,0,0]
+        }
+    ],
+    "Subpass": [
+        {
+            "name": "Pass0",
+            "input": [],
+            "output": ["0", "1", "2", "3"]
+        },
+        {
+            "name": "Pass1",
+            "input": ["2", "3"],
+            "output": ["0", "1", "4", "5"]
+        },
+        {
+            "name": "Pass2",
+            "input": ["4", "5"],
+            "output": ["0", "1", "2", "3"]
+        },
+        {
+           "reference": ["Pass1", "Pass2"],
+           "loop": 3
+        }
+    ]
+}
