@@ -71,6 +71,10 @@ private:
 
 	MGaussianBlurWork* m_pGaussianBlurWork;
 	MCombineWork* m_pCombineWork;
+
+	float m_fAverageLum;
+	float m_fAdaptLum;
+	float m_fAdjustLum;
 };
 
 #endif

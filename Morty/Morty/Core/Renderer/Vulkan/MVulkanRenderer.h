@@ -29,7 +29,6 @@ public:
 
 	virtual uint32_t GetFrameIndex() override { return m_unFrameIndex; }
 
-
 	virtual void NewRenderFrame() override;
 
 	virtual bool Initialize() override;
@@ -52,6 +51,8 @@ public:
 	virtual bool SetUseMaterial(MMaterial* pMaterial) override;
 
 	virtual bool SetRenderToTextureBarrier(const std::vector<MIRenderBackTexture*> vTextures) override;
+
+	virtual bool DownloadTexture(MIRenderTexture* pTexture, const std::function<void(unsigned char* pImageData, const Vector2& size)>& callback) override;
 
 public:
 
@@ -104,6 +105,10 @@ private:
 
 	//渲染栅栏，防止上一次渲染还没渲染完，CPU就申请执行下一次的渲染
 	std::array<VkFence, M_BUFFER_NUM> m_VkInFlightFences;
+
+	//渲染完成回调
+	std::array<std::vector<std::function<void()> >, M_BUFFER_NUM> m_aRenderFinishedCallback;
+
 private:
 
 	uint32_t m_unFrameIndex;

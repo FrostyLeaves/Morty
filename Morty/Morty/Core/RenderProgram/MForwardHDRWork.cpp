@@ -25,6 +25,9 @@ MForwardHDRWork::MForwardHDRWork()
 	, m_aHighLightTexture()
 	, m_pGaussianBlurWork(nullptr)
 	, m_pCombineWork(nullptr)
+	, m_fAverageLum(0.0f)
+	, m_fAdaptLum(0.0f)
+	, m_fAdjustLum(1.0f)
 {
 }
 
@@ -34,6 +37,23 @@ MForwardHDRWork::~MForwardHDRWork()
 
 void MForwardHDRWork::Render(MPostProcessRenderInfo& info)
 {
+	info.pRenderer->DownloadTexture(info.pPrevLevelOutput, [this](unsigned char* pImageData, const Vector2& size) {
+		
+		uint32_t unPixelSize = (int)(size.x * size.y);
+		float flum = 0.0f;
+		m_fAverageLum = 0.0f;
+		char* iter = (char*)pImageData;
+		char* end = iter + unPixelSize * 8;
+		for (iter; iter < end; iter += 4)
+		{
+			flum = ((int)*(iter)) * 0.27f + int(*(iter + 1)) * 0.67f + ((int)*(iter + 2)) * 0.06f + 1e-6f;
+			m_fAverageLum += flum;
+		}
+
+		m_fAverageLum /= unPixelSize;
+		m_fAverageLum /= 255.0f;
+		});
+
 	info.pRenderer->BeginRenderPass(m_pTempRenderPass, m_pTempRenderTarget);
 
 	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
@@ -44,7 +64,7 @@ void MForwardHDRWork::Render(MPostProcessRenderInfo& info)
 		pMaterialParamSet->m_vTextures[0]->pTexture = info.pPrevLevelOutput;
 		pMaterialParamSet->m_vTextures[0]->SetDirty();
 
-		pMaterialParamSet->m_vParams[0]->var = float(1.0f);
+		pMaterialParamSet->m_vParams[0]->var = float(m_fAverageLum * m_fAdjustLum);
 		pMaterialParamSet->m_vParams[0]->SetDirty();
 	}
 
@@ -54,7 +74,6 @@ void MForwardHDRWork::Render(MPostProcessRenderInfo& info)
 	}
 
 	info.pRenderer->EndRenderPass();
-
 
 	RenderBloom(info);
 
