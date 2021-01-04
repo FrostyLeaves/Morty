@@ -88,3 +88,8 @@ bool MTextureResource::Load(const MString& strResourcePath)
 	
 	return true;
 }
+
+bool MTextureResource::SaveTo(const MString& strResourcePath)
+{
+	return false;
+}

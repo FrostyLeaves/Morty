@@ -17,6 +17,7 @@
 #include "Shader/MShaderParam.h"
 
 #include <stack>
+#include <functional>
 
 enum class MERasterizerType
 {
@@ -76,6 +77,7 @@ class MRenderPass;
 class MRenderFrame;
 class MFrameBuffer;
 class MIRenderTarget;
+class MIRenderTexture;
 class MShaderParamSet;
 class MRenderBackTexture;
 class MIRenderBackTexture;
@@ -121,6 +123,8 @@ public:
 	virtual bool SetUseMaterial(MMaterial* pMaterial) = 0;
 
 	virtual bool SetRenderToTextureBarrier(const std::vector<MIRenderBackTexture*> vTextures) = 0;
+
+	virtual bool DownloadTexture(MIRenderTexture* pTexture, const std::function<void(unsigned char* pImageData, const Vector2& size)>& callback) = 0;
 
 public:
 	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) = 0;

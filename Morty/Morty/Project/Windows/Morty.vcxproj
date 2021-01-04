@@ -296,6 +296,7 @@
     <ClInclude Include="..\..\ResourceLoader\Model\MSkeletonResource.h" />
     <ClInclude Include="..\..\ResourceLoader\MResourceManager.h" />
     <ClInclude Include="..\..\ResourceLoader\Node\MNodeResource.h" />
+    <ClInclude Include="..\..\ResourceLoader\RenderPass\MRenderPassResource.h" />
     <ClInclude Include="..\..\ResourceLoader\Shader\MShaderResource.h" />
     <ClInclude Include="..\..\ResourceLoader\Texture\MTextureResource.h" />
     <ClInclude Include="..\..\ResourceLoader\Texture\MTextureCubeResource.h" />
@@ -402,6 +403,7 @@
     <ClCompile Include="..\..\ResourceLoader\Model\MSkeletonResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\MResourceManager.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Node\MNodeResource.cpp" />
+    <ClCompile Include="..\..\ResourceLoader\RenderPass\MRenderPassResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Shader\MShaderResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Texture\MTextureResource.cpp" />
     <ClCompile Include="..\..\ResourceLoader\Texture\MTextureCubeResource.cpp" />

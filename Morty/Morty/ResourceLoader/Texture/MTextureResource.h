@@ -29,6 +29,7 @@ public:
 protected:
 
 	virtual bool Load(const MString& strResourcePath) override;
+	virtual bool SaveTo(const MString& strResourcePath) override;
 private:
 
 

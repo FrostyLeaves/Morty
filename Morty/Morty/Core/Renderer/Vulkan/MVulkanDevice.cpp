@@ -267,8 +267,7 @@ void MVulkanDevice::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh
 
 		CopyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
-		vkDestroyBuffer(m_VkDevice, stagingBuffer, nullptr);
-		vkFreeMemory(m_VkDevice, stagingBufferMemory, nullptr);
+		m_ObjectDestructor.DestroyBuffer(stagingBuffer, stagingBufferMemory);
 
 
 		VkBuffer stagingIdxBuffer;
@@ -283,8 +282,7 @@ void MVulkanDevice::GenerateBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh
 
 		CopyBuffer(stagingIdxBuffer, indexBuffer, indexBufferSize);
 
-		vkDestroyBuffer(m_VkDevice, stagingIdxBuffer, nullptr);
-		vkFreeMemory(m_VkDevice, stagingIdxBufferMemory, nullptr);
+		m_ObjectDestructor.DestroyBuffer(stagingIdxBuffer, stagingIdxBufferMemory);
 	}
 
 	MVertexBuffer* pBuffer = new MVertexBuffer();
@@ -346,9 +344,9 @@ void MVulkanDevice::DestroyBuffer(MVertexBuffer** ppVertexBuffer)
 	}
 }
 
-void MVulkanDevice::TransitionImageLayout(VkImage image,VkImageLayout oldLayout,VkImageLayout newLayout,VkImageSubresourceRange subresourceRange)
+void MVulkanDevice::TransitionImageLayout(VkImage image,VkImageLayout oldLayout,VkImageLayout newLayout,VkImageSubresourceRange subresourceRange, VkCommandBuffer buffer/* = VK_NULL_HANDLE*/)
 {
-	VkCommandBuffer commandBuffer = BeginCommands();
+	VkCommandBuffer commandBuffer = buffer ? buffer : BeginCommands();
 
 	// Create an image barrier object
 	VkImageMemoryBarrier imageMemoryBarrier = {};
@@ -436,8 +434,10 @@ void MVulkanDevice::TransitionImageLayout(VkImage image,VkImageLayout oldLayout,
 
 	vkCmdPipelineBarrier(commandBuffer, srcStageFlags, destStageFlags, 0, 0, VK_NULL_HANDLE, 0, VK_NULL_HANDLE, 1, &imageMemoryBarrier);
 
-
-	EndCommands(commandBuffer);
+	if (!buffer)
+	{
+		EndCommands(commandBuffer);
+	}
 }
 
 VkImageView MVulkanDevice::CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
@@ -608,8 +608,7 @@ void MVulkanDevice::GenerateTexture(MTextureBuffer** ppTextureBuffer, MTexture* 
 	CopyImageBuffer(stagingBuffer, textureImage, width, height, 1);
 	TransitionImageLayout(textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, vkSubresourceRange);
 
-	vkDestroyBuffer(m_VkDevice, stagingBuffer, nullptr);
-	vkFreeMemory(m_VkDevice, stagingBufferMemory, nullptr);
+	m_ObjectDestructor.DestroyBuffer(stagingBuffer, stagingBufferMemory);
 
 	*ppTextureBuffer = new MTextureBuffer();
 	(*ppTextureBuffer)->m_VkTextureImage = textureImage;
@@ -1180,7 +1179,8 @@ bool MVulkanDevice::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTexture
 
 	VkFormat textureFormat = GetFormat(eType);
 
-	CreateImage(unWidth, unHeight, textureFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+	//TODO VK_IMAGE_USAGE_TRANSFER_SRC_BIT is not necessary.
+	CreateImage(unWidth, unHeight, textureFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
 	
 
 	VkImageSubresourceRange vkSubresourceRange = {};

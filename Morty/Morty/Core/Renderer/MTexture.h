@@ -27,6 +27,7 @@ public:
 
 	virtual Vector2 GetSize() = 0;
 	virtual MTextureBuffer* GetBuffer() = 0;
+	virtual unsigned char* GetImageData() { return nullptr; }
 };
 
 class MORTY_CLASS MTexture : public MITexture
@@ -39,8 +40,7 @@ public:
 
 	void SetSize(const Vector2& v2Size);
 	virtual Vector2 GetSize() override { return m_v2Size; }
-
-	unsigned char* GetImageData(){ return m_pImageData; }
+	virtual unsigned char* GetImageData() override { return m_pImageData; }
 
 	void FillColor(const MColor& color);
 

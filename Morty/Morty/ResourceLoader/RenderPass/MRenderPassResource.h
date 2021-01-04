@@ -22,7 +22,7 @@ public:
 
 public:
 
-	MRenderPass* GetRenderPassTemplate() { m_pRenderPass; }
+	MRenderPass* GetRenderPassTemplate() { return m_pRenderPass; }
 
 protected:
 
