@@ -79,6 +79,9 @@ void MNode::SetAttachedScene(MScene* pScene)
 
 bool MNode::AddNodeImpl(MNode* pNode, const MENodeChildType& etype)
 {
+	if (!pNode)
+		return false;
+
 	if (pNode->isHolderOf(this))
 		return false;
 

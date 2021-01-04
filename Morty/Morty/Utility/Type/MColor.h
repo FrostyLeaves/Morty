@@ -17,6 +17,7 @@ public:
 	MColor();
 	MColor(const float& r, const float& g, const float& b, const float& a = 1.0f);
 	MColor(const Vector3& vec3, const float& a = 1.0f);
+	MColor(const Vector4& vec4);
 	~MColor();
 
 

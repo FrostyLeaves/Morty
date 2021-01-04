@@ -27,6 +27,15 @@ MColor::MColor(const Vector3& vec3, const float& a /*= 1.0f*/)
 
 }
 
+MColor::MColor(const Vector4& vec4)
+	: r(vec4.x)
+	, g(vec4.y)
+	, b(vec4.z)
+	, a(vec4.w)
+{
+
+}
+
 MColor::~MColor()
 {
 

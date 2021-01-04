@@ -106,6 +106,9 @@
     <Filter Include="Core\RenderProgram\PostProcess">
       <UniqueIdentifier>{30f8e625-94f7-407e-865e-226fc80cbd14}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ResourceLoader\RenderPass">
+      <UniqueIdentifier>{1f177c73-2c9f-42b8-80ea-2e180c0533d4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../ReadMe.txt" />
@@ -426,6 +429,9 @@
     <ClInclude Include="..\..\Core\RenderProgram\MCombineWork.h">
       <Filter>Core\RenderProgram\PostProcess</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\ResourceLoader\RenderPass\MRenderPassResource.h">
+      <Filter>ResourceLoader\RenderPass</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../Morty.cpp">
@@ -727,6 +733,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Core\RenderProgram\MCombineWork.cpp">
       <Filter>Core\RenderProgram\PostProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ResourceLoader\RenderPass\MRenderPassResource.cpp">
+      <Filter>ResourceLoader\RenderPass</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
