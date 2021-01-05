@@ -135,8 +135,7 @@ void SceneTexture::UpdateTexture()
 {
 	if (m_pRenderProgram)
 	{
-		std::vector<MViewport*> vViewports = { m_pRenderViewport };
-		m_pRenderProgram->Render(m_pEngine->GetRenderer(), vViewports);
+		m_pRenderProgram->Render(m_pEngine->GetRenderer(), m_pRenderViewport);
 	}
 }
 

@@ -40,7 +40,7 @@ MBasicRenderProgram::~MBasicRenderProgram()
 {
 }
 
-void MBasicRenderProgram::Render(MIRenderer* pRenderer, const std::vector<MViewport*>& vViewports)
+void MBasicRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport)
 {
 // 	if (vViewports.empty())
 // 		return;

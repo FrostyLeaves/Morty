@@ -320,7 +320,7 @@ bool MEngine::MainLoop()
 		m_pRenderer->NewRenderFrame();
 
 		for (MIRenderView* pView : m_vView)
-			RenderToView(pView);
+			RenderToView(pView, fTimeDelta);
 
 //  		int nTime = (int)(m_cTickInfo.fTickInterval * 1000) * 0.75 - (MTimer::GetCurTime() - currentTime);
 //  		if (nTime > 0)
@@ -332,7 +332,7 @@ bool MEngine::MainLoop()
 	return !m_vView.empty();
 }
 
-void MEngine::RenderToView(MIRenderView* pView)
+void MEngine::RenderToView(MIRenderView* pView, const float& fDelta)
 {
 	if (pView->GetMinimized())
 		return;
@@ -352,7 +352,11 @@ void MEngine::RenderToView(MIRenderView* pView)
 
 	pView->OnRenderBegin();
 
-	pRenderProgram->Render(m_pRenderer, pView->GetViewports());
+	for (MViewport* pViewport : pView->GetViewports())
+	{
+		pRenderProgram->Render(m_pRenderer, pViewport);
+		break;
+	}
 
 	pView->OnRenderEnd();
 

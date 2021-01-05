@@ -30,7 +30,7 @@ public:
     void BindRenderTarget(MIRenderTarget* pRenderTarget);
     MIRenderTarget* GetRenderTarget() { return m_pRenderTarget; }
 
-    virtual void Render(MIRenderer* pRenderer, const std::vector<MViewport*>& vViewports) {};
+    virtual void Render(MIRenderer* pRenderer, MViewport* pViewport) {};
 
     virtual void SetClearColor(const MColor& cClearColor) {}
     virtual MColor GetClearColor() const { return MColor::Black_T; }
