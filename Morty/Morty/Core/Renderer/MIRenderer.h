@@ -124,7 +124,7 @@ public:
 
 	virtual bool SetRenderToTextureBarrier(const std::vector<MIRenderBackTexture*> vTextures) = 0;
 
-	virtual bool DownloadTexture(MIRenderTexture* pTexture, const std::function<void(unsigned char* pImageData, const Vector2& size)>& callback) = 0;
+	virtual bool DownloadTexture(MIRenderTexture* pTexture, const std::function<void(void* pImageData, const Vector2& size)>& callback) = 0;
 
 public:
 	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) = 0;

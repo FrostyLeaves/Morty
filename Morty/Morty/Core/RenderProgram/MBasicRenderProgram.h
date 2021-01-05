@@ -28,7 +28,7 @@ public:
 
 public:
 
-    virtual void Render(MIRenderer* pRenderer, const std::vector<MViewport*>& vViewports) override;
+    virtual void Render(MIRenderer* pRenderer, MViewport* pViewport) override;
 
 	void DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance) ;
 public:

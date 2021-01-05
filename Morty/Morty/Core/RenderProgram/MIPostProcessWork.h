@@ -21,6 +21,7 @@ class MIRenderBackTexture;
 class MTextureRenderTarget;
 struct MORTY_CLASS MPostProcessRenderInfo
 {
+    float fDelta;
     uint32_t unFrameIndex;
     MIRenderer* pRenderer;
     MViewport* pViewport;

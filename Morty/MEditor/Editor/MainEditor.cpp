@@ -142,7 +142,7 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 
 	//Setup Render
 	m_SceneTexture.Initialize(pEngine);
-	m_SceneTexture.SetBackColor(MColor(bgColor.x + 0.3f, bgColor.y + 0.3f, bgColor.z + 0.3f, bgColor.w));
+	//m_SceneTexture.SetBackColor(MColor(bgColor.x + 0.3f, bgColor.y + 0.3f, bgColor.z + 0.3f, bgColor.w));
 
 	m_pEngine->SetScene(m_SceneTexture.GetScene());
 
@@ -474,6 +474,7 @@ void MainEditor::OnRenderBegin()
 	if (!m_ImguiRenderPass.m_vBackDesc.empty())
 	{
 		m_ImguiRenderPass.m_vBackDesc[0].cClearColor = GetBackColor();
+	//	m_ImguiRenderPass.m_vBackDesc[0].cClearColor = MColor(1, 0, 0, 1);
 	}
 }
 

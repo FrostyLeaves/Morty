@@ -36,19 +36,15 @@ MForwardPostProcessProgram::~MForwardPostProcessProgram()
 {
 }
 
-void MForwardPostProcessProgram::Render(MIRenderer* pRenderer, const std::vector<MViewport*>& vViewports)
+void MForwardPostProcessProgram::Render(MIRenderer* pRenderer, MViewport* pViewport)
 {
-	if (vViewports.empty())
+	if (!pViewport)
 		return;
-
-	//Only one viewport.
-	MViewport* pViewport = vViewports[0];
 
 	MRenderInfo info;
 	memset(&info, 0, sizeof(MRenderInfo));
 
-	CheckRenderTargetSize(pViewport->GetSize());
-
+	info.fDelta = m_pEngine->GetInstantDelta();
 	info.unFrameIndex = pRenderer->GetFrameIndex();
 	info.pRenderTarget = m_pTempRenderTarget;
 	info.pRenderer = pRenderer;
@@ -57,11 +53,13 @@ void MForwardPostProcessProgram::Render(MIRenderer* pRenderer, const std::vector
 	info.pScene = pViewport->GetScene();
 
 
+	CheckRenderTargetSize(pViewport->GetSize());
+
 	MForwardRenderProgram::Render(info);
 
-	RenderPostProcess(pRenderer, pViewport);
+	RenderPostProcess(info);
 
-	RenderScreenMesh(pRenderer, pViewport);
+	RenderScreenMesh(info);
 
 	pViewport->UnlockMatrix();
 }
@@ -98,16 +96,18 @@ void MForwardPostProcessProgram::SetHighDynamicRangeEnable(const bool& bEnable)
 	}
 }
 
-void MForwardPostProcessProgram::RenderPostProcess(MIRenderer* pRenderer, MViewport* pViewport)
+void MForwardPostProcessProgram::RenderPostProcess(const MRenderInfo& info)
 {
-	Vector2 v2ViewportSize = pViewport->GetSize();
+	Vector2 v2ViewportSize = info.pViewport->GetSize();
 
-	uint32_t unFrameIdx = pRenderer->GetFrameIndex();
+	uint32_t unFrameIdx = info.pRenderer->GetFrameIndex();
 
 	MPostProcessRenderInfo cPostInfo;
+
+	cPostInfo.fDelta = info.fDelta;
 	cPostInfo.unFrameIndex = unFrameIdx;
-	cPostInfo.pViewport = pViewport;
-	cPostInfo.pRenderer = pRenderer;
+	cPostInfo.pViewport = info.pViewport;
+	cPostInfo.pRenderer = info.pRenderer;
 	cPostInfo.pPrevLevelOutput = m_pTempRenderTarget->GetBackTexture(unFrameIdx)->at(0);
 
 	if (m_pHDRPostProcessWork)
@@ -127,7 +127,7 @@ void MForwardPostProcessProgram::RenderPostProcess(MIRenderer* pRenderer, MViewp
 	}
 }
 
-void MForwardPostProcessProgram::RenderScreenMesh(MIRenderer* pRenderer, MViewport* pViewport)
+void MForwardPostProcessProgram::RenderScreenMesh(const MRenderInfo& info)
 {
 	MTextureRenderTarget* pTextureRT = nullptr;
 
@@ -140,12 +140,14 @@ void MForwardPostProcessProgram::RenderScreenMesh(MIRenderer* pRenderer, MViewpo
 	if (!pTextureRT)
 		return;
 
-	uint32_t unFrameIndex = pRenderer->GetFrameIndex();
+	uint32_t unFrameIndex = info.pRenderer->GetFrameIndex();
 
-	pRenderer->BeginRenderPass(m_pScreenDrawRenderPass, GetRenderTarget());
+	info.pRenderer->SetRenderToTextureBarrier({ pTextureRT->GetBackTexture(unFrameIndex)->at(0) });
 
-	Vector2 v2LeftTop = pViewport->GetLeftTop();
-	pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, pViewport->GetWidth(), pViewport->GetHeight(), 0.0f, 1.0f);
+	info.pRenderer->BeginRenderPass(m_pScreenDrawRenderPass, GetRenderTarget());
+
+	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
+	info.pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight(), 0.0f, 1.0f);
 
 	if (MShaderParamSet* pMaterialParamSet = m_pScreenDrawMaterial->GetMaterialParamSet())
 	{
@@ -153,12 +155,12 @@ void MForwardPostProcessProgram::RenderScreenMesh(MIRenderer* pRenderer, MViewpo
 		pMaterialParamSet->m_vTextures[0]->SetDirty();
 	}
 
-	if (pRenderer->SetUseMaterial(m_pScreenDrawMaterial))
+	if (info.pRenderer->SetUseMaterial(m_pScreenDrawMaterial))
 	{
-		pRenderer->DrawMesh(m_pScreenDrawMesh);
+		info.pRenderer->DrawMesh(m_pScreenDrawMesh);
 	}
 
-	pRenderer->EndRenderPass();
+	info.pRenderer->EndRenderPass();
 }
 
 void MForwardPostProcessProgram::CheckRenderTargetSize(const Vector2& v2ViewportSize)

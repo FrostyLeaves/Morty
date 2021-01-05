@@ -25,7 +25,7 @@ public:
     virtual ~MForwardPostProcessProgram();
 
 public:
-	virtual void Render(MIRenderer* pRenderer, const std::vector<MViewport*>& vViewports) override;
+	virtual void Render(MIRenderer* pRenderer, MViewport* pViewport) override;
 
 	template<typename CLASS_TYPE>
 	CLASS_TYPE* AppendPostProcess();
@@ -37,8 +37,8 @@ public:
 protected:
 
 
-	void RenderPostProcess(MIRenderer* pRenderer, MViewport* pViewport);
-	void RenderScreenMesh(MIRenderer* pRenderer, MViewport* pViewport);
+	void RenderPostProcess(const MRenderInfo& info);
+	void RenderScreenMesh(const MRenderInfo& info);
 
 	void CheckRenderTargetSize(const Vector2& v2Size);
 

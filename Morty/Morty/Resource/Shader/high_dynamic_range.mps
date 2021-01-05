@@ -24,11 +24,10 @@ PS_OUT_HDR PS(VS_OUT_GAUSSIAN input) : SV_Target
     f4Color.xyz = f4Color.xyz / U_HDR_AverageLum;
     f4Color.xyz = f4Color.xyz / (float3(1.0f, 1.0f, 1.0f) + f4Color.xyz);
 
-    output.color0.rgb = f4Color.xyz;
-    output.color0.a = f4Color.a;
+    output.color0 = f4Color;
 
     float fBrightness = dot(f4Color.rgb, float3(0.2126, 0.7152, 0.0722));
-    float fThreshold = 0.75;
+    float fThreshold = 0.75f;
 
     output.color1.rgb = (fBrightness > fThreshold) ? f4Color.rgb : float3(0.0, 0.0, 0.0);
     output.color1.a = f4Color.a;

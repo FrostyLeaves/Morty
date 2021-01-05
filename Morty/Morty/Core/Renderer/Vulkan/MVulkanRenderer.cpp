@@ -367,9 +367,9 @@ bool MVulkanRenderer::SetRenderToTextureBarrier(const std::vector<MIRenderBackTe
 			VkImageMemoryBarrier& imageMemoryBarrier = vImageBarrier.back();
 
 			imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			imageMemoryBarrier.oldLayout = vTextures[i]->GetRenderBuffer()->m_VkImageLayout;
-			imageMemoryBarrier.newLayout = vTextures[i]->GetRenderBuffer()->m_VkImageLayout;
-			imageMemoryBarrier.image = vTextures[i]->GetRenderBuffer()->m_VkTextureImage;
+			imageMemoryBarrier.oldLayout = pBuffer->m_VkImageLayout;
+			imageMemoryBarrier.newLayout = pBuffer->m_VkImageLayout;
+			imageMemoryBarrier.image = pBuffer->m_VkTextureImage;
 			imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 			imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
 			imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
@@ -385,7 +385,7 @@ bool MVulkanRenderer::SetRenderToTextureBarrier(const std::vector<MIRenderBackTe
 		vImageBarrier.size(), vImageBarrier.data());
 }
 
-bool MVulkanRenderer::DownloadTexture(MIRenderTexture* pTexture, const std::function<void(unsigned char* pImageData, const Vector2& size)>& callback)
+bool MVulkanRenderer::DownloadTexture(MIRenderTexture* pTexture, const std::function<void(void* pImageData, const Vector2& size)>& callback)
 {
 	if (!pTexture)
 		return false;
@@ -446,16 +446,9 @@ bool MVulkanRenderer::DownloadTexture(MIRenderTexture* pTexture, const std::func
 	m_aRenderFinishedCallback[m_unFrameIndex].push_back([=]() {
 
 		MByte* data = nullptr;
-		MByte* output = new MByte[imageSize];
 		vkMapMemory(m_pDevice->m_VkDevice, stagingBufferMemory, 0, imageSize, 0, (void**)&data);
-		memcpy(output, data, static_cast<size_t>(imageSize));
+		callback(data, size);
 		vkUnmapMemory(m_pDevice->m_VkDevice, stagingBufferMemory);
-
-
-		callback(output, size);
-
-		delete[] output;
-		output = nullptr;
 
 		m_pDevice->m_ObjectDestructor.DestroyBufferLater(stagingBuffer);
 		m_pDevice->m_ObjectDestructor.DestroyDeviceMemoryLater(stagingBufferMemory);

@@ -39,6 +39,7 @@ class MShadowTextureRenderTarget;
 
 struct MRenderInfo
 {
+	float fDelta;
 	uint32_t unFrameIndex;
 	class MIRenderTarget* pRenderTarget;
 	class MIRenderer* pRenderer;
@@ -67,7 +68,7 @@ public:
 
 public:
 
-    virtual void Render(MIRenderer* pRenderer, const std::vector<MViewport*>& vViewports) override;
+    virtual void Render(MIRenderer* pRenderer, MViewport* pViewport) override;
 
 public:
 

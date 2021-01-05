@@ -46,7 +46,7 @@ public:
 
 	void AddView(MIRenderView* pView);
 
-	void RenderToView(MIRenderView* pView);
+	void RenderToView(MIRenderView* pView, const float& fDelta);
 
 	MObjectManager* GetObjectManager() { return m_pObjectManager; }
 	MResourceManager* GetResourceManager() { return m_pResourceManager; }
@@ -55,6 +55,7 @@ public:
 
 	void SetMaxFPS(const int& nFPS);
 	float GetInstantFPS() { return 1.0f / m_cTickInfo.fTimeDelta; }
+	float GetInstantDelta() { return m_cTickInfo.fTimeDelta; }
 
 	MIDevice* GetDevice() { return m_pDevice; }
 	MIRenderer* GetRenderer() { return m_pRenderer; }

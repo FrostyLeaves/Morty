@@ -72,17 +72,15 @@ void MForwardRenderProgram::Release()
 
 }
 
-void MForwardRenderProgram::Render(MIRenderer* pRenderer, const std::vector<MViewport*>& vViewports)
+void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport)
 {
-	if (vViewports.empty())
+	if (!pViewport)
 		return;
-
-	//Only one viewport.
-	MViewport* pViewport = vViewports[0];
 
 	MRenderInfo info;
 	memset(&info, 0, sizeof(MRenderInfo));
 
+	info.fDelta = m_pEngine->GetInstantDelta();
 	info.unFrameIndex = pRenderer->GetFrameIndex();
 	info.pRenderTarget = GetRenderTarget();
 	info.pRenderer = pRenderer;

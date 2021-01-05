@@ -48,7 +48,6 @@ void MCombineWork::Render(MPostProcessRenderInfo& info)
 
 	if (MShaderParamSet* pMaterialParamSet = m_pMaterial->GetMaterialParamSet())
 	{
-
 		pMaterialParamSet->m_vTextures[0]->pTexture = info.pPrevLevelOutput;
 		pMaterialParamSet->m_vTextures[0]->SetDirty();
 
