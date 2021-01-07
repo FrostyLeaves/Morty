@@ -19,8 +19,8 @@ class MMaterial;
 class MVulkanDevice;
 class MIRenderTarget;
 class MShaderParamSet;
-class MShaderTextureParam;
-class MShaderConstantParam;
+struct MShaderTextureParam;
+struct MShaderConstantParam;
 
 
 struct MRenderPassPipelines

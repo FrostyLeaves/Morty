@@ -40,6 +40,8 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	worldInfoSrt.AppendMVariant("U_f3DirectionLight", Vector3());
 	worldInfoSrt.AppendMVariant("U_f3CameraPosition", Vector3());
 	worldInfoSrt.AppendMVariant("U_f2ViewportSize", Vector2());
+	worldInfoSrt.AppendMVariant("U_fDelta", float());
+	worldInfoSrt.AppendMVariant("U_fGameTime", float());
 
 	m_pWorldInfoParam->var = worldInfoSrt;
 

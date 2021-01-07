@@ -15,6 +15,7 @@
 #include <array>
 
 class MIMesh;
+class MTexture;
 class MMaterial;
 class MRenderPass;
 class MCombineWork;
@@ -67,6 +68,8 @@ protected:
 
 	std::array<MIRenderBackTexture*, M_BUFFER_NUM> m_aBackTexture;
 	std::array<MIRenderBackTexture*, M_BUFFER_NUM> m_aHighLightTexture;
+
+	std::array<MTexture*, M_BUFFER_NUM> m_aLumTexture;
 private:
 
 	MGaussianBlurWork* m_pGaussianBlurWork;

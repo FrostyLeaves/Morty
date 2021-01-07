@@ -37,8 +37,8 @@
 
 
 
-#pragma warnind( disable: 4251 )
-#pragma warnind( disable: 4275 )
+#pragma warning( disable: 4251 )
+#pragma warning( disable: 4275 )
 
 
 typedef unsigned long MObjectID;

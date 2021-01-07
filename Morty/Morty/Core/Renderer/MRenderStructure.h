@@ -24,7 +24,7 @@ class MIRenderer;
 class MITexture;
 class MTextureCube;
 
-enum METextureLayout
+enum class METextureLayout
 {
 	ERGBA8 = 0,
 	ERGBA16,
@@ -78,6 +78,9 @@ public:
 #endif
 	}
 
+	uint32_t m_unMipmaps;
+	uint32_t m_unWidth;
+	uint32_t m_unHeight;
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	struct ID3D11Texture2D* m_pTextureBuffer;
 	class ID3D11ShaderResourceView* m_pShaderResourceView;
@@ -100,7 +103,6 @@ public:
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 		struct ID3D11RenderTargetView* m_pRenderTargetView;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-
 #endif
 };
 

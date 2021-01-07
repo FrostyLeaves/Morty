@@ -26,7 +26,7 @@ public:
     MNode();
     virtual ~MNode();	//Release memory
 
-	enum MENodeChildType
+	enum class MENodeChildType
 	{
 		EPublic = 1,
 		EProtected = 2,
@@ -100,7 +100,7 @@ public:
 	T* FindFirstChildByType();
 
 	template <class T>
-	void FindChildrenByType(std::vector<T*>& vNodes, const int& nChildType = MENodeChildType::EPublic);
+	void FindChildrenByType(std::vector<T*>& vNodes, const int& nChildType = static_cast<int>(MENodeChildType::EPublic));
 
 	template <class T>
 	T* FindParentByType();
@@ -150,7 +150,7 @@ T* MNode::FindFirstChildByType()
 template <class T>
 void MNode::FindChildrenByType(std::vector<T*>& vNodes, const int& nChildType)
 {
-	if (nChildType & MENodeChildType::EPublic)
+	if (nChildType & static_cast<int>(MENodeChildType::EPublic))
 	{
 		for (MNode* pNode : m_vChildren)
 		{
@@ -160,7 +160,7 @@ void MNode::FindChildrenByType(std::vector<T*>& vNodes, const int& nChildType)
 		}
 	}
 
-	if (nChildType & MENodeChildType::EProtected)
+	if (nChildType & static_cast<int>(MENodeChildType::EProtected))
 	{
 		for (MNode* pNode : m_vProtectedChildren)
 		{

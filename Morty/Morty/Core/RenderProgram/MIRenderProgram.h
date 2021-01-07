@@ -15,7 +15,7 @@
 class MScene;
 class MViewport;
 class MIRenderer;
-class MShaderConstantParam;
+struct MShaderConstantParam;
 class MIRenderTarget;
 class MIMeshInstance;
 class MORTY_CLASS MIRenderProgram : public MObject

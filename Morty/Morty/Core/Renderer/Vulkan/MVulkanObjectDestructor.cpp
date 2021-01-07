@@ -99,7 +99,7 @@ bool MVulkanObjectDestructor::GenerateBuffer(VkDeviceSize size, VkBufferUsageFla
 	allocInfo.allocationSize = memRequirements.size;
 	allocInfo.memoryTypeIndex = m_pDevice->FindMemoryType(memRequirements.memoryTypeBits, properties);
 
-	if (-1 == allocInfo.memoryTypeIndex)
+	if (M_INVALID_INDEX == allocInfo.memoryTypeIndex)
 	{
 		vkDestroyBuffer(m_pDevice->m_VkDevice, buffer, nullptr);
 		return false;
@@ -174,6 +174,8 @@ bool MVulkanObjectDestructor::InitSampler()
 	samplerInfo.compareEnable = VK_FALSE;
 	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+	samplerInfo.minLod = 0.0f;
+	samplerInfo.maxLod = VK_LOD_CLAMP_NONE;
 
 	if (vkCreateSampler(m_pDevice->m_VkDevice, &samplerInfo, nullptr, &m_VkDefaultSampler) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture sampler!");

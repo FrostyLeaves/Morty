@@ -28,11 +28,16 @@ MInputLayout::MInputLayout()
 
 MTextureBuffer::MTextureBuffer()
 {
+	m_unMipmaps = 1;
+	m_unWidth = 0;
+	m_unHeight = 0;
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	m_pTextureBuffer = nullptr;
 	m_pShaderResourceView = nullptr;
 #elif RENDER_GRAPHICS == MORTY_VULKAN
+	m_VkTextureFormat = VK_FORMAT_R8G8B8A8_SRGB;
 	m_VkTextureImage = VK_NULL_HANDLE;
+	m_VkImageLayout = VK_IMAGE_LAYOUT_GENERAL;
 	m_VkTextureImageMemory = VK_NULL_HANDLE;
 	m_VkImageView = VK_NULL_HANDLE;
 	m_VkSampler = VK_NULL_HANDLE;
@@ -59,6 +64,9 @@ MTextureBuffer::~MTextureBuffer()
 
 MRenderTextureBuffer::MRenderTextureBuffer()
 	: MTextureBuffer()
+
+
+
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	, m_pRenderTargetView(nullptr)
 #elif RENDER_GRAPHICS == MORTY_VULKAN

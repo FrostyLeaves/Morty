@@ -21,6 +21,7 @@ class MTextureBuffer;
 class MRenderTextureBuffer;
 class MDepthTextureBuffer;
 class MTexture;
+class MIRenderTexture;
 class MRenderPass;
 class MShaderBuffer;
 class MIRenderTarget;
@@ -45,14 +46,12 @@ public:
 	virtual void DestroyBuffer(MVertexBuffer** ppVertexBuffer) = 0;
 	virtual void UploadBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh) = 0;
 
-	virtual void GenerateTexture(MTextureBuffer** ppTextureBuffer, MTexture* pTexture, const bool& bGeneerateMipmap = true) = 0;
+	virtual void GenerateTexture(MTextureBuffer** ppTextureBuffer, MTexture* pTexture) = 0;
 	virtual void GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTexture* vTexture[6], const bool& bGenerateMipmap = true) = 0;
 	virtual void DestroyTexture(MTextureBuffer** ppTextureBuffer) = 0;
 
-	virtual bool GenerateSubpassTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const METextureLayout& eType, const uint32_t& unWidth, const uint32_t& unHeight) = 0;
-	virtual bool GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, const METextureLayout& eType, const uint32_t& unWidth, const uint32_t& unHeight) = 0;
+	virtual bool GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, MIRenderTexture* pTexture) = 0;
 	virtual void DestroyRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer) = 0;
-
 
 	virtual void GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const uint32_t& unWidth, const uint32_t& unHeight) = 0;
 	virtual void DestroyDepthTexture(MDepthTextureBuffer** ppTextureBuffer) = 0;

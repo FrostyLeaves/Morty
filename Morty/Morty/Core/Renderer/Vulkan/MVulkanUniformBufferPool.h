@@ -17,7 +17,7 @@
 #include <map>
 
 class MVulkanDevice;
-class MShaderConstantParam;
+struct MShaderConstantParam;
 class MORTY_CLASS MVulkanUniformBufferPool
 {
 public:

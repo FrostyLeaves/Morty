@@ -22,6 +22,8 @@ class MResourceKeeper;
 class MEngine;
 class MObject;
 
+enum class MEResourceType;
+
 #define M_I_RESOURCE(Class) \
 MTypedInterfaceSign(Class)
 
@@ -56,7 +58,7 @@ public:
 	MEngine* GetEngine() const { return m_pEngine; }
 
 	MResourceID GetResourceID() const { return m_unResourceID; }
-	uint32_t GetType() const { return m_unResourceType; }
+	MEResourceType GetType() const { return m_eResourceType; }
 
 	MEngine* GetEngine() { return m_pEngine; }
 
@@ -94,7 +96,7 @@ protected:
 
 	MString m_strResourcePath;
     MResourceID m_unResourceID;
-	uint32_t m_unResourceType;
+	MEResourceType m_eResourceType;
 	MEngine* m_pEngine;
 
 	std::vector<MResourceKeeper*> m_vKeeper;

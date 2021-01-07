@@ -19,7 +19,7 @@
 
 #include <vector>
 
-class MORTY_CLASS MShaderRefTextureParam : public MShaderTextureParam
+struct MORTY_CLASS MShaderRefTextureParam : public MShaderTextureParam
 {
 public:
 	MShaderRefTextureParam();

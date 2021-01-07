@@ -20,9 +20,9 @@
 
 
 #define M_VAR_GET_FUNC(TYPE, TYPE_NAME)\
- TYPE* Get##TYPE_NAME() { return m_eType == E##TYPE_NAME ? (TYPE*)m_pData : nullptr;} \
+ TYPE* Get##TYPE_NAME() { return m_eType == MEVariantType::E##TYPE_NAME ? (TYPE*)m_pData : nullptr;} \
 \
-const TYPE* Get##TYPE_NAME() const { return m_eType == E##TYPE_NAME ? (const TYPE*)m_pData : nullptr;} \
+const TYPE* Get##TYPE_NAME() const { return m_eType == MEVariantType::E##TYPE_NAME ? (const TYPE*)m_pData : nullptr;} \
 \
 template<> TYPE* GetTypedData<TYPE>(){ return Get##TYPE_NAME(); }\
 
@@ -35,7 +35,7 @@ class MORTY_CLASS MVariant
 {
 public:
 
-	enum MEVariantType
+	enum class MEVariantType
 	{
 		ENone,
 		EBool,
@@ -82,8 +82,8 @@ public:
 	template<typename T> T* GetTypedData() { return nullptr; }
 
 	template<> bool* GetTypedData<bool>() { return GetBool(); }
-	bool* GetBool() { return m_eType == EBool ? (bool*)(m_pData) : nullptr; }
-	const bool* GetBool() const { return m_eType == EBool ? (const bool*)(m_pData) : nullptr; }
+	bool* GetBool() { return m_eType == MEVariantType::EBool ? (bool*)(m_pData) : nullptr; }
+	const bool* GetBool() const { return m_eType == MEVariantType::EBool ? (const bool*)(m_pData) : nullptr; }
 
 	M_VAR_GET_FUNC(int, Int);
 	M_VAR_GET_FUNC(float, Float);
@@ -134,7 +134,7 @@ private:
 template<typename T>
 MVariant::MVariant(const T& var)
 {
-	m_eType = EUser;
+	m_eType = MEVariantType::EUser;
 	m_unByteSize = sizeof(T);
 	m_pData = (unsigned char*)new T();
 	memcpy(m_pData, &var, sizeof(T));

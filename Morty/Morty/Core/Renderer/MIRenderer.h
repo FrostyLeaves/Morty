@@ -124,7 +124,11 @@ public:
 
 	virtual bool SetRenderToTextureBarrier(const std::vector<MIRenderBackTexture*> vTextures) = 0;
 
-	virtual bool DownloadTexture(MIRenderTexture* pTexture, const std::function<void(void* pImageData, const Vector2& size)>& callback) = 0;
+	virtual bool DownloadTexture(MITexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback) = 0;
+
+	virtual bool CopyImageBuffer(MITexture* pSource, MITexture* pDest) = 0;
+
+	virtual void UpdateMipmaps(MTextureBuffer* pBuffer) = 0;
 
 public:
 	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) = 0;

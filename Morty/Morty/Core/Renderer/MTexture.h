@@ -25,8 +25,13 @@ public:
 
 public:
 
+
+	uint32_t static GetImageMemorySize(const METextureLayout& layout);
+
 	virtual Vector2 GetSize() = 0;
+	virtual METextureLayout GetType() = 0;
 	virtual MTextureBuffer* GetBuffer() = 0;
+	virtual bool GetReadable() = 0;
 	virtual unsigned char* GetImageData() { return nullptr; }
 };
 
@@ -40,12 +45,21 @@ public:
 
 	void SetSize(const Vector2& v2Size);
 	virtual Vector2 GetSize() override { return m_v2Size; }
+	void SetType(const METextureLayout& eLayout) { m_eRenderType = eLayout; }
+	virtual METextureLayout GetType() override { return m_eRenderType; }
+
+	void SetReadable(const bool& bReadable) { m_bReadable = bReadable; }
+	virtual bool GetReadable() override { return m_bReadable; }
+
+	void SetMipmapsEnable(const bool& bEnable) { m_bMipmapsEnable = bEnable; }
+	bool GetMipmapsEnable() { return m_bMipmapsEnable; }
+
 	virtual unsigned char* GetImageData() override { return m_pImageData; }
 
 	void FillColor(const MColor& color);
 
-	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = false);
-	virtual void DestroyTexture(MIDevice* pDevice);
+	virtual void GenerateBuffer(MIDevice* pDevice);
+	virtual void DestroyBuffer(MIDevice* pDevice);
 
 	virtual MTextureBuffer* GetBuffer() override { return m_pTextureBuffer; }
 
@@ -57,6 +71,9 @@ private:
 	uint32_t m_unImageDataArraySize;
 
 	MTextureBuffer* m_pTextureBuffer;
+	METextureLayout m_eRenderType;
+	bool m_bReadable;
+	bool m_bMipmapsEnable;
 
 };
 
@@ -79,6 +96,9 @@ public:
 public:
 
 	virtual Vector2 GetSize() override { return m_v2Size; }
+	virtual METextureLayout GetType() override { return METextureLayout::ERGBA8; }
+
+	virtual bool GetReadable() override { return false; }
 
 	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = false);
 	virtual void DestroyTexture(MIDevice* pDevice);
@@ -104,8 +124,12 @@ public:
 	MIRenderBackTexture();
 	virtual ~MIRenderBackTexture() {}
 	//Should Set before GenerateBuffer
+
 	void SetType(const METextureLayout& eType) { m_eRenderType = eType; }
-	METextureLayout GetType() { return m_eRenderType; }
+	virtual METextureLayout GetType() override { return m_eRenderType; }
+
+	void SetReadable(const bool& bReadable) { m_bReadable = bReadable; }
+	virtual bool GetReadable() override { return m_bReadable; }
 
 	void SetSize(const Vector2& v2Size) { m_v2Size = v2Size; }
 	virtual Vector2 GetSize() override { return m_v2Size; }
@@ -118,6 +142,7 @@ public:
 	virtual void DestroyBuffer(MIDevice* pDevice) = 0;
 
 protected:
+	bool m_bReadable;
 	Vector2 m_v2Size;
 	MRenderTextureBuffer* m_pTextureBuffer;
 	METextureLayout m_eRenderType;
@@ -164,7 +189,9 @@ public:
 public:
 
 	void SetSize(const Vector2& v2Size) { m_v2Size = v2Size; }
-	Vector2 GetSize() override { return m_v2Size; }
+	virtual Vector2 GetSize() override { return m_v2Size; }
+	virtual METextureLayout GetType() override { return METextureLayout::ER32; }
+	virtual bool GetReadable() override { return false; }
 	virtual MTextureBuffer* GetBuffer() override;
 	MDepthTextureBuffer* GetDepthBuffer() { return m_pTextureBuffer; };
 	void GenerateBuffer(MIDevice* pDevice);

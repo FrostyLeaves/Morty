@@ -17,8 +17,12 @@
 MVulkanRenderer::MVulkanRenderer(MVulkanDevice* pDevice)
 	: MIRenderer()
 	, m_pDevice(pDevice)
+	, m_InputAssemblyState({})
+	, m_MultisampleState({})
+	, m_VkViewport({})
 	, m_vRenderStages()
 	, m_vRenderPassStages()
+	, m_VkInFlightFences()
 	, m_unFrameIndex(0)
 	, m_aRenderFinishedCallback()
 {
@@ -385,7 +389,7 @@ bool MVulkanRenderer::SetRenderToTextureBarrier(const std::vector<MIRenderBackTe
 		vImageBarrier.size(), vImageBarrier.data());
 }
 
-bool MVulkanRenderer::DownloadTexture(MIRenderTexture* pTexture, const std::function<void(void* pImageData, const Vector2& size)>& callback)
+bool MVulkanRenderer::DownloadTexture(MITexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback)
 {
 	if (!pTexture)
 		return false;
@@ -394,7 +398,9 @@ bool MVulkanRenderer::DownloadTexture(MIRenderTexture* pTexture, const std::func
 	if (!pBuffer)
 		return false;
 
-	MRenderBackTexture* pBackTexture = dynamic_cast<MRenderBackTexture*>(pTexture);
+	uint32_t unValidMipIdx = unMipIdx;
+	if (unValidMipIdx >= pBuffer->m_unMipmaps)
+		unValidMipIdx = pBuffer->m_unMipmaps - 1;
 
 	MRenderStage& rs = m_vRenderStages.back();
 	VkCommandBuffer commandBuffer = rs.vkCommandBuffer;
@@ -402,57 +408,90 @@ bool MVulkanRenderer::DownloadTexture(MIRenderTexture* pTexture, const std::func
 	VkImageSubresourceRange vkSubresourceRange = {};
 	vkSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	vkSubresourceRange.baseMipLevel = 0;
-	vkSubresourceRange.levelCount = 1;
+	vkSubresourceRange.levelCount = pBuffer->m_unMipmaps;
 	vkSubresourceRange.layerCount = 1;
 
 	Vector2 size = pTexture->GetSize();
 	VkImage textureImage = pBuffer->m_VkTextureImage;
 
-	uint32_t width = pTexture->GetSize().x;
-	uint32_t height = pTexture->GetSize().y;
+	uint64_t unBufferWidth = size.x;
+	uint64_t unBufferHeight = size.y;
 	
-	VkDeviceSize imageSize = 0;
-	if (pBackTexture->GetType() == ERGBA16)
-		imageSize = width * height * 8;
-	else
-		imageSize = width * height * 4;
+	for (int i = 0; i < unValidMipIdx; ++i)
+	{
+		if(unBufferWidth > 1)
+			unBufferWidth /= 2;
+		if(unBufferHeight > 1)
+			unBufferHeight /= 2;
+	}
 
+	VkDeviceSize unBufferSize = unBufferWidth * unBufferHeight * static_cast<uint64_t>(MTexture::GetImageMemorySize(pTexture->GetType()));
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
-	m_pDevice->m_ObjectDestructor.GenerateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+	m_pDevice->m_ObjectDestructor.GenerateBuffer(unBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 	VkBufferImageCopy region = {};
 	region.bufferOffset = 0;
-	region.bufferRowLength = size.x;
-	region.bufferImageHeight = size.y;
+	region.bufferRowLength = unBufferWidth;
+	region.bufferImageHeight = unBufferHeight;
 	region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	region.imageSubresource.mipLevel = 0;
+	region.imageSubresource.mipLevel = unValidMipIdx;
 	region.imageSubresource.baseArrayLayer = 0;
 	region.imageSubresource.layerCount = 1;
 	region.imageOffset.x = 0;
 	region.imageOffset.y = 0;
 	region.imageOffset.z = 0;
-	region.imageExtent.width = size.x;
-	region.imageExtent.height = size.y;
+	region.imageExtent.width = unBufferWidth;
+	region.imageExtent.height = unBufferHeight;	// copy to size
 	region.imageExtent.depth = 1;
 
-	m_pDevice->TransitionImageLayout(textureImage, pBuffer->m_VkImageLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vkSubresourceRange, commandBuffer);
-	
-	vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
-	
-	m_pDevice->TransitionImageLayout(textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pBuffer->m_VkImageLayout, vkSubresourceRange, commandBuffer);
 
+
+	m_pDevice->TransitionImageLayout(textureImage, pBuffer->m_VkImageLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vkSubresourceRange, commandBuffer);
+
+	vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
+
+	m_pDevice->TransitionImageLayout(textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pBuffer->m_VkImageLayout, vkSubresourceRange, commandBuffer);
 
 	m_aRenderFinishedCallback[m_unFrameIndex].push_back([=]() {
 
 		MByte* data = nullptr;
-		vkMapMemory(m_pDevice->m_VkDevice, stagingBufferMemory, 0, imageSize, 0, (void**)&data);
-		callback(data, size);
+		vkMapMemory(m_pDevice->m_VkDevice, stagingBufferMemory, 0, unBufferSize, 0, (void**)&data);
+		callback(data, Vector2(unBufferWidth, unBufferHeight));
 		vkUnmapMemory(m_pDevice->m_VkDevice, stagingBufferMemory);
 
 		m_pDevice->m_ObjectDestructor.DestroyBufferLater(stagingBuffer);
 		m_pDevice->m_ObjectDestructor.DestroyDeviceMemoryLater(stagingBufferMemory);
-	});
+		});
+
+}
+
+bool MVulkanRenderer::CopyImageBuffer(MITexture* pSource, MITexture* pDest)
+{
+	MRenderStage& rs = m_vRenderStages.back();
+	VkCommandBuffer commandBuffer = rs.vkCommandBuffer;
+
+	MTextureBuffer* pSourBuffer = pSource->GetBuffer();
+	MTextureBuffer* pDestBuffer = pDest->GetBuffer();
+
+	if (!pSourBuffer || !pDestBuffer)
+		return false;
+
+	m_pDevice->CopyImageBuffer(pSourBuffer, pDestBuffer, commandBuffer);
+
+	return true;
+}
+
+void MVulkanRenderer::UpdateMipmaps(MTextureBuffer* pBuffer)
+{
+	if (!pBuffer)
+		return;
+
+	MRenderStage& rs = m_vRenderStages.back();
+	VkCommandBuffer commandBuffer = rs.vkCommandBuffer;
+
+	m_pDevice->GenerateMipmaps(pBuffer, pBuffer->m_unMipmaps, commandBuffer);
+	
 }
 
 void MVulkanRenderer::GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPass, std::vector<VkPipelineColorBlendAttachmentState>& vBlendAttach, VkPipelineColorBlendStateCreateInfo& blendInfo)

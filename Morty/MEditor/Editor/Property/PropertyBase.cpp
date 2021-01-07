@@ -213,27 +213,27 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
 
 	switch (value.GetType())
 	{
-	case MVariant::EBool:
+	case MVariant::MEVariantType::EBool:
 		ShowValueBegin(strVariantName);
 		bModified |= Editbool(*value.GetBool());
 		ShowValueEnd();
 		break;
 
-	case MVariant::EFloat:
-	case MVariant::EInt:
+	case MVariant::MEVariantType::EFloat:
+	case MVariant::MEVariantType::EInt:
 		ShowValueBegin(strVariantName);
 		bModified |= Editfloat(*value.CastFloatUnsafe());
 		ShowValueEnd();
 		break;
 
-	case MVariant::EVector3:
+	case MVariant::MEVariantType::EVector3:
 		ShowValueBegin(strVariantName);
 		bModified |= EditVector3(value.CastFloatUnsafe());
 		ShowValueEnd();
 		break;
 
-	case MVariant::EArray:
-	case MVariant::EStruct:
+	case MVariant::MEVariantType::EArray:
+	case MVariant::MEVariantType::EStruct:
 	if(ShowNodeBegin(strVariantName))
 	{
 		MContainer* pStruct = value.GetContainer();
@@ -250,7 +250,7 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
 		break;
 	}
 
-	case MVariant::ENone:
+	case MVariant::MEVariantType::ENone:
 	default:
 		break;
 	}
@@ -365,7 +365,7 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 					ShowValueBegin(param->strName);
 					MResource* pResource = param->m_TextureRef.GetResource();
 
-					EditMResource(strDlgName, pResource, MResourceManager::MEResourceType::Texture, [&param, &pMaterial](const MString& strNewFilePath) {
+					EditMResource(strDlgName, pResource, MEResourceType::Texture, [&param, &pMaterial](const MString& strNewFilePath) {
 
 						MResource* pNewResource = pMaterial->GetResourceManager()->LoadResource(strNewFilePath);
 
@@ -389,7 +389,7 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 	return bModified;
 }
 
-void PropertyBase::EditMResource(const MString& strDlgID, MResource* pResource, const MResourceManager::MEResourceType& eResourceType, const std::function<void(const MString & strNewFilePath)>& funcLoadResource)
+void PropertyBase::EditMResource(const MString& strDlgID, MResource* pResource, const MEResourceType& eResourceType, const std::function<void(const MString & strNewFilePath)>& funcLoadResource)
 {
 
 	MString strButtonLabel;

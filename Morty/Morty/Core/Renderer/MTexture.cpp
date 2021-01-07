@@ -9,6 +9,9 @@ MTexture::MTexture()
 	, m_v2Size(0, 0)
 	, m_unImageDataArraySize(0)
 	, m_pTextureBuffer(nullptr)
+	, m_eRenderType(METextureLayout::ERGBA8)
+	, m_bReadable(false)
+	, m_bMipmapsEnable(false)
 {
 
 }
@@ -24,16 +27,17 @@ MTexture::~MTexture()
 
 void MTexture::SetSize(const Vector2& v2Size)
 {
-	if (m_unImageDataArraySize < v2Size.x * v2Size.y * 4)
+	uint32_t unMemorySize = GetImageMemorySize(GetType()) * v2Size.x * v2Size.y;
+	if (m_unImageDataArraySize < unMemorySize)
 	{
 		if (nullptr != m_pImageData)
 		{
 			delete[] m_pImageData;
 		}
 
-		m_unImageDataArraySize = (uint32_t)v2Size.x * v2Size.y * 4;
+		m_unImageDataArraySize = (uint32_t)unMemorySize;
 		m_pImageData = new unsigned char[m_unImageDataArraySize];
-		memset(m_pImageData, 255, m_unImageDataArraySize * sizeof(unsigned char));
+		memset(m_pImageData, 0, m_unImageDataArraySize * sizeof(unsigned char));
 	}
 
 	m_v2Size = v2Size;
@@ -58,12 +62,12 @@ void MTexture::FillColor(const MColor& color)
 	}
 }
 
-void MTexture::GenerateBuffer(MIDevice* pDevice, const bool& bMipmap/* = false*/)
+void MTexture::GenerateBuffer(MIDevice* pDevice)
 {
 	if (m_pTextureBuffer)
 		pDevice->DestroyTexture(&m_pTextureBuffer);
 
-	pDevice->GenerateTexture(&m_pTextureBuffer, this, bMipmap);
+	pDevice->GenerateTexture(&m_pTextureBuffer, this);
 
 // 	if (nullptr != m_pImageData)
 // 	{
@@ -73,7 +77,7 @@ void MTexture::GenerateBuffer(MIDevice* pDevice, const bool& bMipmap/* = false*/
 // 	}
 }
 
-void MTexture::DestroyTexture(MIDevice* pDevice)
+void MTexture::DestroyBuffer(MIDevice* pDevice)
 {
 	if (m_pTextureBuffer)
 		pDevice->DestroyTexture(&m_pTextureBuffer);
@@ -95,7 +99,7 @@ void MTextureCube::GenerateBuffer(MIDevice* pDevice, const bool& bMipmap/* = fal
 	if (m_pTextureBuffer)
 		pDevice->DestroyTexture(&m_pTextureBuffer);
 
-	pDevice->GenerateTextureCube(&m_pTextureBuffer, m_vTexture, false/*bMipmap*/); //TODO Fix TextureCube Mipmap
+	pDevice->GenerateTextureCube(&m_pTextureBuffer, m_vTexture, bMipmap); //TODO Fix TextureCube Mipmap
 }
 
 void MTextureCube::DestroyTexture(MIDevice* pDevice)
@@ -135,8 +139,7 @@ void MRenderBackTexture::GenerateBuffer(MIDevice* pDevice)
 	if (m_pTextureBuffer)
 		pDevice->DestroyRenderTextureBuffer(&m_pTextureBuffer);
 
-
-	pDevice->GenerateRenderTextureBuffer(&m_pTextureBuffer, m_eRenderType, m_v2Size.x, m_v2Size.y);
+	pDevice->GenerateRenderTextureBuffer(&m_pTextureBuffer, this);
 }
 
 void MRenderBackTexture::DestroyBuffer(MIDevice* pDevice)
@@ -205,6 +208,7 @@ void MRenderDepthTexture::DestroyBuffer(MIDevice* pDevice)
 
 MIRenderBackTexture::MIRenderBackTexture()
 	: MIRenderTexture()
+	, m_bReadable(false)
 	, m_eRenderType(METextureLayout::ERGBA8)
 	, m_v2Size(0, 0)
 	, m_pTextureBuffer(nullptr)
@@ -223,13 +227,19 @@ void MRenderSubpassTexture::GenerateBuffer(MIDevice* pDevice)
 	if (m_pTextureBuffer)
 		pDevice->DestroyRenderTextureBuffer(&m_pTextureBuffer);
 
-	pDevice->GenerateRenderTextureBuffer(&m_pTextureBuffer, m_eRenderType, m_v2Size.x, m_v2Size.y);
-
-	//pDevice->GenerateSubpassTextureBuffer(&m_pTextureBuffer, m_eRenderType, m_v2Size.x, m_v2Size.y);
+	pDevice->GenerateRenderTextureBuffer(&m_pTextureBuffer, this);
 }
 
 void MRenderSubpassTexture::DestroyBuffer(MIDevice* pDevice)
 {
 	if (m_pTextureBuffer)
 		pDevice->DestroyRenderTextureBuffer(&m_pTextureBuffer);
+}
+
+uint32_t MITexture::GetImageMemorySize(const METextureLayout& layout)
+{
+	if (METextureLayout::ERGBA16 == layout)
+		return 8;
+	else
+		return 4;
 }

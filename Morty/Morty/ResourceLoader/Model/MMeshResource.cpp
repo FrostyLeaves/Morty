@@ -20,7 +20,7 @@ MMeshResource::MMeshResource()
 	, m_SkeletonKeeper()
 	, m_pMeshDetailMap(nullptr)
 {
-	m_unResourceType = MResourceManager::MEResourceType::Mesh;
+	m_eResourceType = MEResourceType::Mesh;
 }
 
 MMeshResource::~MMeshResource()

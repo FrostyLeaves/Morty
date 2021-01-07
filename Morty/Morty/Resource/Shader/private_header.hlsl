@@ -96,6 +96,8 @@ float Float4ToFloat(float4 rgba_depth)
     float3 U_f3CameraPosition;
 
     float2 U_f2ViewportSize;
+    float U_fDelta;
+    float U_fGameTime;
 };
 
 //PS    per render
