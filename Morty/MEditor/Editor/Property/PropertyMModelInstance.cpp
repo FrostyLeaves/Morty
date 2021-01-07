@@ -34,7 +34,7 @@ void PropertyMModelInstance::EditAnimation(MModelInstance* pNode)
 		}
 	};
 	ShowValueBegin("Animation");
-	EditMResource("skelanim_file_dlg", pCurrentAnimResource, MResourceManager::MEResourceType::SkelAnim, ModelLoadFunc);
+	EditMResource("skelanim_file_dlg", pCurrentAnimResource, MEResourceType::SkelAnim, ModelLoadFunc);
 
 	ShowValueEnd();
 

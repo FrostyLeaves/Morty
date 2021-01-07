@@ -7,7 +7,7 @@ M_I_RESOURCE_IMPLEMENT(MResource, MTypedClass)
 
 MResource::MResource()
 : m_unResourceID(0)
-, m_unResourceType(0)
+, m_eResourceType(MEResourceType::Default)
 , m_pEngine(nullptr)
 {
     

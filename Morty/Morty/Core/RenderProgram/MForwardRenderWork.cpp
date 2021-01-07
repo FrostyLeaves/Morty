@@ -144,6 +144,10 @@ void MForwardRenderWork::UpdateShaderSharedParams(MRenderInfo& info, MForwardRen
 
 		(*frameParamSet.m_pWorldInfoParam->var.GetStruct())[2] = info.pViewport->GetSize();
 
+		(*frameParamSet.m_pWorldInfoParam->var.GetStruct())[3] = info.fDelta;
+
+		(*frameParamSet.m_pWorldInfoParam->var.GetStruct())[4] = info.fDelta;
+
 		frameParamSet.m_pWorldInfoParam->SetDirty();
 	}
 

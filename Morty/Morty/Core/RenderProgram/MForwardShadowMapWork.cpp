@@ -119,7 +119,7 @@ void MForwardShadowMapWork::UpdateRenderInfo(MRenderInfo& info, std::vector<MSha
 			MShadowRenderGroup& group = *pGroup;
 
 			std::vector<MIMeshInstance*> vMeshIns;
-			pModelIns->FindChildrenByType(vMeshIns, MNode::MENodeChildType::EProtected);
+			pModelIns->FindChildrenByType(vMeshIns, static_cast<int>(MNode::MENodeChildType::EProtected));
 
 			for (MIMeshInstance* pMeshIns : vMeshIns)
 			{

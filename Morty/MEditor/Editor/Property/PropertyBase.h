@@ -46,7 +46,7 @@ public:
 	bool EditMString(MString& value);
 
 	bool EditMMaterial(MMaterial* pMaterial);
-	void EditMResource(const MString& strDlgID, MResource* pResource, const MResourceManager::MEResourceType& eResourceType, const std::function<void(const MString& strNewFilePath)>& funcLoadResource);
+	void EditMResource(const MString& strDlgID, MResource* pResource, const MEResourceType& eResourceType, const std::function<void(const MString& strNewFilePath)>& funcLoadResource);
 	void EditSaveMResource(const MString& stringID, MResource* pResource);
 
 	void ShowTexture(MTextureBuffer* pTextureBuffer);
@@ -61,7 +61,7 @@ public:
 	T& GetTempValue(const MString& strValueName, const T& defaultValue)
 	{
 		unsigned int unRotateID = GetID(strValueName);
-		if (m_tTempValue[unRotateID].GetType() == MVariant::ENone)
+		if (m_tTempValue[unRotateID].GetType() == MVariant::MEVariantType::ENone)
 			m_tTempValue[unRotateID] = MVariant(defaultValue);
 
 		T& result = *((T*)(m_tTempValue[unRotateID].GetData()));

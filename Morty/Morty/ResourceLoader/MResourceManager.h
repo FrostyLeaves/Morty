@@ -20,21 +20,21 @@ class MEngine;
 class MIRenderer;
 class MResource;
 class MResourceLoader;
+
+enum class MEResourceType
+{
+	Default = 0,
+	Shader,
+	Material,
+	Texture,
+	Node,
+	Mesh,
+	Skeleton,
+	SkelAnim,
+};
+
 class MORTY_CLASS MResourceManager
 {
-public:
-	enum MEResourceType
-	{
-		Default = 0,
-		Shader,
-		Material,
-		Texture,
-		Node,
-		Mesh,
-		Skeleton,
-		SkelAnim,
-	};
-
 public:
 	MResourceManager();
 	virtual ~MResourceManager();

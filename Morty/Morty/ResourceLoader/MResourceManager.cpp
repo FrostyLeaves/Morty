@@ -44,7 +44,7 @@ MResourceManager::~MResourceManager()
 	DELETE_CLEAR_MAP(m_tResources);
 }
 
-MResourceManager::MEResourceType MResourceManager::GetResourceType(const MString& strResourcePath)
+MEResourceType MResourceManager::GetResourceType(const MString& strResourcePath)
 {
 	MString suffix = MResource::GetSuffix(strResourcePath);
 	return m_tResSuffixToType[suffix];

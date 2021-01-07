@@ -24,6 +24,9 @@ MVulkanRenderTarget::MVulkanRenderTarget()
 	: MIRenderTarget()
 	, m_vBufferInfo()
 	, m_pView(nullptr)
+	, m_VkSurface(VK_NULL_HANDLE)
+	, m_VkSwapchain(VK_NULL_HANDLE)
+	, m_VkPresentQueue(VK_NULL_HANDLE)
 	, m_unFrameBufferIndex(0)
 	, m_VkImageAvailableSemaphore(VK_NULL_HANDLE)
 	, m_unMinImageCount(0)
@@ -162,7 +165,7 @@ bool MVulkanRenderTarget::InitializeSwapchain(MVulkanDevice* pDevice)
 	vkGetDeviceQueue(pDevice->m_VkDevice, nPresentQueueIndex, 0, &presentQueue);
 
 	VkSurfaceCapabilitiesKHR caps = {};
-	VkResult result = pDevice->GetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_VkSurface, &caps);
+	VkResult result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_VkSurface, &caps);
 	if (result != VK_SUCCESS || caps.maxImageCount < 1)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : GetPhysicalDeviceSurfaceCapabilitiesKHR error");
@@ -181,7 +184,7 @@ bool MVulkanRenderTarget::InitializeSwapchain(MVulkanDevice* pDevice)
 
 
 	uint32_t unPresentModeCount = 0;
-	result = pDevice->GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_VkSurface, &unPresentModeCount, NULL);
+	result = vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_VkSurface, &unPresentModeCount, NULL);
 	if (result != VK_SUCCESS || unPresentModeCount < 1)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : vkGetPhysicalDeviceSurfacePresentModesKHR count < 1");
@@ -189,7 +192,7 @@ bool MVulkanRenderTarget::InitializeSwapchain(MVulkanDevice* pDevice)
 	}
 
 	std::vector<VkPresentModeKHR> vPresentModes(unPresentModeCount);
-	result = pDevice->GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_VkSurface, &unPresentModeCount, vPresentModes.data());
+	result = vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_VkSurface, &unPresentModeCount, vPresentModes.data());
 
 	if (result != VK_SUCCESS)
 	{
@@ -216,7 +219,7 @@ bool MVulkanRenderTarget::InitializeSwapchain(MVulkanDevice* pDevice)
 
 
 	uint32_t unFormatCount = 0;
-	result = pDevice->GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_VkSurface, &unFormatCount, NULL);
+	result = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_VkSurface, &unFormatCount, NULL);
 	if (result != VK_SUCCESS || unFormatCount < 1)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : GetPhysicalDeviceSurfaceFormatsKHR unFormatCount < 1");
@@ -224,7 +227,7 @@ bool MVulkanRenderTarget::InitializeSwapchain(MVulkanDevice* pDevice)
 	}
 
 	std::vector<VkSurfaceFormatKHR> surfaceFormats(unFormatCount);
-	result = pDevice->GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_VkSurface, &unFormatCount, surfaceFormats.data());
+	result = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_VkSurface, &unFormatCount, surfaceFormats.data());
 	if (result != VK_SUCCESS)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : GetPhysicalDeviceSurfaceFormatsKHR error");
@@ -258,7 +261,7 @@ bool MVulkanRenderTarget::InitializeSwapchain(MVulkanDevice* pDevice)
 
 
 	VkSwapchainKHR swapchain;
-	result = pDevice->CreateSwapchainKHR(pDevice->m_VkDevice, &swapchainCreateInfo, NULL, &swapchain);
+	result = vkCreateSwapchainKHR(pDevice->m_VkDevice, &swapchainCreateInfo, NULL, &swapchain);
 	if (result != VK_SUCCESS)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : CreateSwapchainKHR error");
@@ -303,7 +306,7 @@ bool MVulkanRenderTarget::RebindRenderBuffer(MVulkanDevice* pDevice)
 	CleanRenderInfo(pDevice);
 
 	uint32_t unSwapchainImageCount = 0;
-	VkResult result = pDevice->GetSwapchainImagesKHR(pDevice->m_VkDevice, m_VkSwapchain, &unSwapchainImageCount, NULL);
+	VkResult result = vkGetSwapchainImagesKHR(pDevice->m_VkDevice, m_VkSwapchain, &unSwapchainImageCount, NULL);
 	if (result != VK_SUCCESS || unSwapchainImageCount < 1)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : unSwapchainImageCount < 1");
@@ -311,7 +314,7 @@ bool MVulkanRenderTarget::RebindRenderBuffer(MVulkanDevice* pDevice)
 	}
 
 	std::vector<VkImage> vSwapchainImages(unSwapchainImageCount);
-	result = pDevice->GetSwapchainImagesKHR(pDevice->m_VkDevice, m_VkSwapchain, &unSwapchainImageCount, vSwapchainImages.data());
+	result = vkGetSwapchainImagesKHR(pDevice->m_VkDevice, m_VkSwapchain, &unSwapchainImageCount, vSwapchainImages.data());
 	if (result != VK_SUCCESS || unSwapchainImageCount < 1)
 	{
 		MLogManager::GetInstance()->Error("Create VulkanRenderTarget Error : GetSwapchainImagesKHR error");

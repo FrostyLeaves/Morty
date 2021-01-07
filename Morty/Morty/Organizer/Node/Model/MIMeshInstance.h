@@ -18,7 +18,7 @@ class MModelInstance;
 class MShaderParamSet;
 class MModelMeshStruct;
 class MSkeletonInstance;
-class MShaderConstantParam;
+struct MShaderConstantParam;
 class MORTY_CLASS MIMeshInstance : public M3DNode
 {
 public:

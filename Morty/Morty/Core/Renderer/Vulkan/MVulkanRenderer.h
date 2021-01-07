@@ -52,7 +52,11 @@ public:
 
 	virtual bool SetRenderToTextureBarrier(const std::vector<MIRenderBackTexture*> vTextures) override;
 
-	virtual bool DownloadTexture(MIRenderTexture* pTexture, const std::function<void(void* pImageData, const Vector2& size)>& callback) override;
+	virtual bool DownloadTexture(MITexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback) override;
+
+	virtual bool CopyImageBuffer(MITexture* pSource, MITexture* pDest) override;
+
+	virtual void UpdateMipmaps(MTextureBuffer* pBuffer) override;
 
 public:
 

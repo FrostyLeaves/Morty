@@ -39,6 +39,7 @@ MForwardHDRWork::MForwardHDRWork()
 	, m_pHDRMaterial(nullptr)
 	, m_aBackTexture()
 	, m_aHighLightTexture()
+	, m_aLumTexture()
 	, m_pGaussianBlurWork(nullptr)
 	, m_pCombineWork(nullptr)
 	, m_fAverageLum(1.0f)
@@ -53,18 +54,25 @@ MForwardHDRWork::~MForwardHDRWork()
 
 void MForwardHDRWork::Render(MPostProcessRenderInfo& info)
 {
-	info.pRenderer->DownloadTexture(info.pPrevLevelOutput, [this](void* pImageData, const Vector2& size) {
-		
-		uint32_t unPixelSize = (int)(size.x * size.y);
+	info.pRenderer->CopyImageBuffer(info.pPrevLevelOutput, m_aLumTexture[info.unFrameIndex]);
+	info.pRenderer->UpdateMipmaps(m_aLumTexture[info.unFrameIndex]->GetBuffer());
+
+	uint32_t unMipIdx = m_aLumTexture[info.unFrameIndex]->GetBuffer()->m_unMipmaps;
+	unMipIdx = unMipIdx >= 3 ? unMipIdx - 3 : unMipIdx;
+
+	info.pRenderer->DownloadTexture(m_aLumTexture[info.unFrameIndex], unMipIdx, [this](void* pImageData, const Vector2& size) {
+
+		size_t unPixelSize = static_cast<size_t>(size.x) * static_cast<size_t>(size.y);
 		float flum = 0.0f;
 		m_fAverageLum = 0.0f;
 		char16_t* iter = (char16_t*)pImageData;
-		char16_t* end = iter + unPixelSize * 4;
+		char16_t* end = iter + (unPixelSize * 4);
+
 		for (iter; iter < end; iter += 4)
 		{
-			float r = ConvertHalfToFloat(*(iter));
-			float g = ConvertHalfToFloat(*(iter + 1));
-			float b = ConvertHalfToFloat(*(iter + 2));
+			const float r = ConvertHalfToFloat(*(iter));
+			const float g = ConvertHalfToFloat(*(iter + 1));
+			const float b = ConvertHalfToFloat(*(iter + 2));
 			flum = r * 0.27f + g * 0.67f + b * 0.06f + 1e-6f;
 			m_fAverageLum += flum;
 		}
@@ -196,6 +204,11 @@ void MForwardHDRWork::InitializeRenderTargets()
 	{
 		m_aBackTexture[i] = new MRenderBackTexture();
 		m_aHighLightTexture[i] = new MRenderBackTexture();
+
+		m_aLumTexture[i] = new MTexture();
+		m_aLumTexture[i]->SetReadable(true);
+		m_aLumTexture[i]->SetMipmapsEnable(true);
+		m_aLumTexture[i]->SetType(METextureLayout::ERGBA16);
 	}
 
 	m_pTempRenderTarget->SetBackTexture(m_aBackTexture, 0);
@@ -226,6 +239,13 @@ void MForwardHDRWork::ReleaseRenderTargets()
 			m_aHighLightTexture[i]->DestroyBuffer(GetEngine()->GetDevice());
 			delete m_aHighLightTexture[i];
 			m_aHighLightTexture[i] = nullptr;
+		}
+
+		if (m_aLumTexture[i])
+		{
+			m_aLumTexture[i]->DestroyBuffer(GetEngine()->GetDevice());
+			delete m_aLumTexture[i];
+			m_aLumTexture[i] = nullptr;
 		}
 	}
 }
@@ -274,6 +294,10 @@ void MForwardHDRWork::CheckRenderTargetSize(const Vector2& v2ViewportSize)
 				m_aHighLightTexture[i]->DestroyBuffer(GetEngine()->GetDevice());
 				m_aHighLightTexture[i]->SetSize(v2ViewportSize);
 				m_aHighLightTexture[i]->GenerateBuffer(GetEngine()->GetDevice());
+
+				m_aLumTexture[i]->DestroyBuffer(GetEngine()->GetDevice());
+				m_aLumTexture[i]->SetSize(v2ViewportSize);
+				m_aLumTexture[i]->GenerateBuffer(GetEngine()->GetDevice());
 			}
 
 			m_pTempRenderTarget->Resize(v2ViewportSize);

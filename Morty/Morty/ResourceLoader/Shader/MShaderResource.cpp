@@ -12,7 +12,7 @@ MShaderResource::MShaderResource()
 	, m_eShaderType(MShader::MEShaderType::None)
 	, m_strShaderPath()
 {
-	m_unResourceType = MResourceManager::MEResourceType::Shader;
+	m_eResourceType = MEResourceType::Shader;
 }
 
 MShaderResource::~MShaderResource()

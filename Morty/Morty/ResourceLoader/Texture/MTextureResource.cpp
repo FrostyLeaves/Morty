@@ -11,13 +11,13 @@ M_RESOURCE_IMPLEMENT(MTextureResource, MResource)
 MTextureResource::MTextureResource()
 	:MResource()
 {
-	m_unResourceType = MResourceManager::MEResourceType::Texture;
+	m_eResourceType = MEResourceType::Texture;
 	m_pTexture = new MTexture();
 }
 
 MTextureResource::~MTextureResource()
 {
-	m_pTexture->DestroyTexture(m_pEngine->GetDevice());
+	m_pTexture->DestroyBuffer(m_pEngine->GetDevice());
 	delete m_pTexture;
 	m_pTexture = nullptr;
 }
@@ -55,7 +55,7 @@ bool MTextureResource::Load(const MString& strResourcePath)
 		return false;
 	}
 
-	m_pTexture->DestroyTexture(m_pEngine->GetDevice());
+	m_pTexture->DestroyBuffer(m_pEngine->GetDevice());
 
 	m_pTexture->SetSize(Vector2(unWidth, unHeight));
 

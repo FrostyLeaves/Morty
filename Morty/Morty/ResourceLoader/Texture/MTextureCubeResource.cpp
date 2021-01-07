@@ -13,7 +13,7 @@ MTextureCubeResource::MTextureCubeResource()
 	, m_pTextureCube(nullptr)
 	, m_vTextures()
 {
-	m_unResourceType = MResourceManager::MEResourceType::Texture;
+	m_eResourceType = MEResourceType::Texture;
 	m_pTextureCube = new MTextureCube();
 	memset(m_vTextures, 0, sizeof(MResourceKeeper*) * 6);
 }

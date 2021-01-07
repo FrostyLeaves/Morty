@@ -43,10 +43,10 @@ void JsonValueToMVariant(Value* pValue, MVariant& variant)
 		Value::MemberIterator type = pValue->FindMember("<T>");
 		if (type != pValue->MemberEnd())
 		{
-			int eType(type->value.GetInt());
+			MVariant::MEVariantType eType = static_cast<MVariant::MEVariantType>(type->value.GetInt());
 			switch (eType)
 			{
-			case MVariant::EVector3:
+			case MVariant::MEVariantType::EVector3:
 			{
 				Vector3 var;
 				FIND_MEMBER(var.x, pValue, "x", Float, 0.0f);
@@ -55,7 +55,7 @@ void JsonValueToMVariant(Value* pValue, MVariant& variant)
 				variant = var;
 				break;
 			}
-			case MVariant::EVector4:
+			case MVariant::MEVariantType::EVector4:
 			{
 				Vector4 var;
 				FIND_MEMBER(var.x, pValue, "x", Float, 0.0f);
@@ -66,7 +66,7 @@ void JsonValueToMVariant(Value* pValue, MVariant& variant)
 				break;
 			}
 
-			case MVariant::EQuaternion:
+			case MVariant::MEVariantType::EQuaternion:
 			{
 				Quaternion quat;
 				FIND_MEMBER(quat.w, pValue, "w", Float, 0.0f);
@@ -77,7 +77,7 @@ void JsonValueToMVariant(Value* pValue, MVariant& variant)
 				break;
 			}
 
-			case MVariant::EMatrix3:
+			case MVariant::MEVariantType::EMatrix3:
 			{
 				Matrix3 mat;
 				FIND_MEMBER(mat.m[0][0], pValue, "00", Float, 0.0f);
@@ -94,7 +94,7 @@ void JsonValueToMVariant(Value* pValue, MVariant& variant)
 				variant = mat;
 				break;
 			}
-			case MVariant::EMatrix4:
+			case MVariant::MEVariantType::EMatrix4:
 			{
 				Matrix4 mat;
 				FIND_MEMBER(mat.m[0][0], pValue, "00", Float, 0.0f);
@@ -161,28 +161,28 @@ void MVariantToJsonValue(const MVariant& var, Value* pValue, Document& doc)
 {
 	switch (var.GetType())
 	{
-	case MVariant::EBool:
+	case MVariant::MEVariantType::EBool:
 	{
 		pValue->SetBool(var.IsTrue());
 		break;
 	}
-	case MVariant::EFloat:
+	case MVariant::MEVariantType::EFloat:
 		pValue->SetFloat(*var.GetFloat());
 		break;
 
-	case MVariant::EInt:
+	case MVariant::MEVariantType::EInt:
 		pValue->SetInt(*var.GetInt());
 		break;
 
-	case MVariant::EString:
+	case MVariant::MEVariantType::EString:
 		pValue->SetString((*var.GetString()).c_str(), doc.GetAllocator());
 		break;
 
-	case MVariant::EVector3:
+	case MVariant::MEVariantType::EVector3:
 	{
 		float* vFloat = var.CastFloatUnsafe();
 		pValue->SetObject();
-		pValue->AddMember("<T>", MVariant::EVector3, doc.GetAllocator());
+		pValue->AddMember("<T>", static_cast<int>(MVariant::MEVariantType::EVector3), doc.GetAllocator());
 
 		pValue->AddMember("x", vFloat[0], doc.GetAllocator());
 		pValue->AddMember("y", vFloat[1], doc.GetAllocator());
@@ -191,11 +191,11 @@ void MVariantToJsonValue(const MVariant& var, Value* pValue, Document& doc)
 		break;
 	}
 
-	case MVariant::EVector4:
+	case MVariant::MEVariantType::EVector4:
 	{
 		float* vFloat = var.CastFloatUnsafe();
 		pValue->SetObject();
-		pValue->AddMember("<T>", MVariant::EVector4, doc.GetAllocator());
+		pValue->AddMember("<T>", static_cast<int>(MVariant::MEVariantType::EVector4), doc.GetAllocator());
 
 		pValue->AddMember("x", vFloat[0], doc.GetAllocator());
 		pValue->AddMember("y", vFloat[1], doc.GetAllocator());
@@ -205,11 +205,11 @@ void MVariantToJsonValue(const MVariant& var, Value* pValue, Document& doc)
 		break;
 	}
 
-	case MVariant::EQuaternion:
+	case MVariant::MEVariantType::EQuaternion:
 	{
 		float* vFloat = var.CastFloatUnsafe();
 		pValue->SetObject();
-		pValue->AddMember("<T>", MVariant::EQuaternion, doc.GetAllocator());
+		pValue->AddMember("<T>", static_cast<int>(MVariant::MEVariantType::EQuaternion), doc.GetAllocator());
 
 		pValue->AddMember("w", vFloat[0], doc.GetAllocator());
 		pValue->AddMember("x", vFloat[1], doc.GetAllocator());
@@ -219,11 +219,11 @@ void MVariantToJsonValue(const MVariant& var, Value* pValue, Document& doc)
 		break;
 	}
 
-	case MVariant::EMatrix3:
+	case MVariant::MEVariantType::EMatrix3:
 	{
 		float* vFloat = var.CastFloatUnsafe();
 		pValue->SetObject();
-		pValue->AddMember("<T>", MVariant::EMatrix3, doc.GetAllocator());
+		pValue->AddMember("<T>", static_cast<int>(MVariant::MEVariantType::EMatrix3), doc.GetAllocator());
 
 		pValue->AddMember("00", vFloat[0], doc.GetAllocator());
 		pValue->AddMember("01", vFloat[1], doc.GetAllocator());
@@ -240,11 +240,11 @@ void MVariantToJsonValue(const MVariant& var, Value* pValue, Document& doc)
 		break;
 	}
 
-	case MVariant::EMatrix4:
+	case MVariant::MEVariantType::EMatrix4:
 	{
 		float* vFloat = var.CastFloatUnsafe();
 		pValue->SetObject();
-		pValue->AddMember("<T>", MVariant::EMatrix4, doc.GetAllocator());
+		pValue->AddMember("<T>", static_cast<int>(MVariant::MEVariantType::EMatrix4), doc.GetAllocator());
 
 		pValue->AddMember("00", vFloat[0], doc.GetAllocator());
 		pValue->AddMember("01", vFloat[1], doc.GetAllocator());
@@ -269,7 +269,7 @@ void MVariantToJsonValue(const MVariant& var, Value* pValue, Document& doc)
 		break;
 	}
 
-	case MVariant::EStruct:
+	case MVariant::MEVariantType::EStruct:
 	{
 		const MStruct* pStruct = var.GetStruct();
 		pValue->SetObject();
@@ -286,7 +286,7 @@ void MVariantToJsonValue(const MVariant& var, Value* pValue, Document& doc)
 		}
 		break;
 	}
-	case MVariant::EArray:
+	case MVariant::MEVariantType::EArray:
 	{
 		const MVariantArray* pArray = var.GetArray();
 		pValue->SetArray();
@@ -304,7 +304,7 @@ void MVariantToJsonValue(const MVariant& var, Value* pValue, Document& doc)
 		break;
 	}
 
-	case MVariant::ENone:
+	case MVariant::MEVariantType::ENone:
 	default:
 		pValue->SetNull();
 		break;
