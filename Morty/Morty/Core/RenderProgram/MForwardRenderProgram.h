@@ -39,6 +39,8 @@ class MShadowTextureRenderTarget;
 
 struct MRenderInfo
 {
+	MRenderInfo();
+
 	float fDelta;
 	uint32_t unFrameIndex;
 	class MIRenderTarget* pRenderTarget;

@@ -78,7 +78,6 @@ void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport)
 		return;
 
 	MRenderInfo info;
-	memset(&info, 0, sizeof(MRenderInfo));
 
 	info.fDelta = m_pEngine->GetInstantDelta();
 	info.unFrameIndex = pRenderer->GetFrameIndex();
@@ -158,6 +157,8 @@ void MForwardRenderProgram::GenerateRenderGroup(MRenderInfo& info)
 			pRenderGroup = &info.vTransparentRenderGroup.back();
 		}
 
+		if(!pRenderGroup)
+			continue;
 
 		pRenderGroup->m_pMaterial = pMaterialGroup->m_pMaterial;
 
@@ -177,4 +178,23 @@ void MForwardRenderProgram::GenerateRenderGroup(MRenderInfo& info)
 	}
 
 	info.cMeshRenderAABB.SetMinMax(v3BoundsMin, v3BoundsMax);
+}
+
+MRenderInfo::MRenderInfo()
+	: fDelta(0.0f)
+	, unFrameIndex(0)
+	, pRenderTarget(nullptr)
+	, pRenderer(nullptr)
+	, pViewport(nullptr)
+	, pCamera(nullptr)
+	, pScene(nullptr)
+	, pDirectionalLight(nullptr)
+	, pShadowMapTexture(nullptr)
+	, m4DirLightInvProj()
+	, cShadowRenderAABB()
+	, cMeshRenderAABB()
+	, vMaterialRenderGroup()
+	, vTransparentRenderGroup()
+{
+
 }
