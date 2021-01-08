@@ -16,14 +16,25 @@ struct PS_OUT_HDR
     float4 color1 : SV_Target1;
 };
 
+float3 ACESToneMapping(float3 color, float adapted_lum)
+{
+	const float A = 2.51f;
+	const float B = 0.03f;
+	const float C = 2.43f;
+	const float D = 0.59f;
+	const float E = 0.14f;
+
+	color *= adapted_lum;
+	return (color * (A * color + B)) / (color * (C * color + D) + E);
+}
+
 PS_OUT_HDR PS(VS_OUT_GAUSSIAN input) : SV_Target
 {
     PS_OUT_HDR output;
 
     float4 f4Color = U_HDR_OriginTex.Sample(defaultSampler, input.uv);
-    f4Color.xyz = f4Color.xyz / U_HDR_AverageLum;
-    f4Color.xyz = f4Color.xyz / (float3(1.0f, 1.0f, 1.0f) + f4Color.xyz);
-
+    f4Color.xyz = ACESToneMapping(f4Color.xyz, U_HDR_AverageLum);
+    
     output.color0 = f4Color;
 
     float fBrightness = dot(f4Color.rgb, float3(0.2126, 0.7152, 0.0722));

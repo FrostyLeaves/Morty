@@ -634,13 +634,10 @@ void MVulkanRenderer::GetDepthStencilStage(MMaterial* pMaterial, MRenderPass* pR
 	}
 	else if (MEMaterialType::ETransparentBlend == eType)
 	{
-		for (uint32_t i = 0; i < pRenderPass->m_vBackDesc.size(); ++i)
-		{
-			depthStencilInfo.depthTestEnable = VK_FALSE;
-			depthStencilInfo.depthWriteEnable = VK_FALSE;
-			depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-			depthStencilInfo.stencilTestEnable = VK_FALSE;
-		}
+		depthStencilInfo.depthTestEnable = VK_FALSE;
+		depthStencilInfo.depthWriteEnable = VK_FALSE;
+		depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+		depthStencilInfo.stencilTestEnable = VK_FALSE;
 	}
 }
 

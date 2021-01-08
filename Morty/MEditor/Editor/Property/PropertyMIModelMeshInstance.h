@@ -26,7 +26,7 @@ public:
 				ShowValueBegin("Load");
 
 				MMaterial* pMaterial = pNode->GetMaterial();
-				EditMResource("material_file_dlg", pMaterial, MResourceManager::Material, [pNode](const MString& strNewFilePath) {
+				EditMResource("material_file_dlg", pMaterial, MEResourceType::Material, [pNode](const MString& strNewFilePath) {
 					if (MMaterial* pMaterial = dynamic_cast<MMaterial*>(pNode->GetEngine()->GetResourceManager()->LoadResource(strNewFilePath)))
 					{
 						pNode->SetMaterial(pMaterial);
