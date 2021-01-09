@@ -414,9 +414,9 @@ void PropertyBase::EditMResource(const MString& strDlgID, MResource* pResource, 
 	if (bButtonDown)
 	{
 		if (pResource)
-			ImGuiFileDialog::Instance()->OpenDialog(strDlgID, vTitleList[eResourceType], vFilterList[eResourceType], pResource->GetFolder(strResourcePathName), strButtonLabel, MString(""));
+			ImGuiFileDialog::Instance()->OpenDialog(strDlgID, vTitleList[static_cast<int>(eResourceType)], vFilterList[static_cast<int>(eResourceType)], pResource->GetFolder(strResourcePathName), strButtonLabel, MString(""));
 		else
-			ImGuiFileDialog::Instance()->OpenDialog(strDlgID, vTitleList[eResourceType], vFilterList[eResourceType], ".");
+			ImGuiFileDialog::Instance()->OpenDialog(strDlgID, vTitleList[static_cast<int>(eResourceType)], vFilterList[static_cast<int>(eResourceType)], ".");
 	}
 
 	if (ImGuiFileDialog::Instance()->FileDialog(strDlgID))
@@ -453,7 +453,7 @@ void PropertyBase::EditSaveMResource(const MString& stringID, MResource* pResour
 
 		if (bButtonDown)
 		{
-			ImGuiFileDialog::Instance()->OpenDialog(stringID, vTitleList[pResource->GetType()], vFilterList[pResource->GetType()], pResource->GetFolder(strResourcePathName), strButtonLabel, MString(""));
+			ImGuiFileDialog::Instance()->OpenDialog(stringID, vTitleList[static_cast<int>(pResource->GetType())], vFilterList[static_cast<int>(pResource->GetType())], pResource->GetFolder(strResourcePathName), strButtonLabel, MString(""));
 		}
 
 		if (ImGuiFileDialog::Instance()->FileDialog(stringID))

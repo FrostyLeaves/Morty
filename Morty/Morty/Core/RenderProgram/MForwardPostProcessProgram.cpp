@@ -42,7 +42,6 @@ void MForwardPostProcessProgram::Render(MIRenderer* pRenderer, MViewport* pViewp
 		return;
 
 	MRenderInfo info;
-	memset(&info, 0, sizeof(MRenderInfo));
 
 	info.fDelta = m_pEngine->GetInstantDelta();
 	info.unFrameIndex = pRenderer->GetFrameIndex();

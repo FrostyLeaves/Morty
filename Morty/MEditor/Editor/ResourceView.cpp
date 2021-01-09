@@ -53,7 +53,7 @@ void ResourceView::Render()
 			MResource* pResource = iter->second;
 			ImGui::Text("%lu", pResource->GetResourceID());
 			ImGui::NextColumn();
-			ImGui::Text(vResourceType[pResource->GetType()]);
+			ImGui::Text(vResourceType[static_cast<int>(pResource->GetType())]);
 			ImGui::NextColumn();
 			ImGui::Text(pResource->GetResourcePath().c_str());
 			ImGui::NextColumn();
