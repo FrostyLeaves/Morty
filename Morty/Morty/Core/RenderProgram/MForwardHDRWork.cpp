@@ -74,10 +74,11 @@ void MForwardHDRWork::Render(MPostProcessRenderInfo& info)
 			const float g = ConvertHalfToFloat(*(iter + 1));
 			const float b = ConvertHalfToFloat(*(iter + 2));
 			flum = r * 0.27f + g * 0.67f + b * 0.06f + 1e-6f;
-			m_fAverageLum += flum;
+			m_fAverageLum += log(flum);
 		}
 
 		m_fAverageLum /= unPixelSize;
+		m_fAverageLum = exp(m_fAverageLum);
 		});
 
 	info.pRenderer->SetRenderToTextureBarrier({ info.pPrevLevelOutput });
