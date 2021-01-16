@@ -271,7 +271,7 @@ void MForwardPostProcessProgram::InitializeRenderPass()
 	}
 
 	//Init RenderPass
-	m_pScreenDrawRenderPass->m_vBackDesc.push_back(MRenderPass::MTargetDesc());
+	m_pScreenDrawRenderPass->m_vBackDesc.push_back(MPassTargetDescription());
 	m_pScreenDrawRenderPass->m_vBackDesc.back().bClearWhenRender = true;
 	m_pScreenDrawRenderPass->m_vBackDesc.back().cClearColor = GetClearColor();
 

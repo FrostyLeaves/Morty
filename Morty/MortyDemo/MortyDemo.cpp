@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
 // 	{
 // 		{
 // 			MModelConverter conver(&engine);
-// 			conver.Convert("./Model/emissive/sign_neon_small_vert.fbx", "./Model/output", "sign_neon");
+// 			conver.Convert("./Model/NEW YEAR 2021_SF.fbx", "./Model/output", "snowman");
 // 		}
 // 	}
 
@@ -95,20 +95,20 @@ int main(int argc, char* argv[])
 
 
 
-	if (!pEditorNode->FindFirstChildByType<MDirectionalLight>())
+	if (!pRootNode->FindFirstChildByType<MDirectionalLight>())
 	{
 		MDirectionalLight* pDirLight = engine.GetObjectManager()->CreateObject<MDirectionalLight>();
 		pDirLight->SetName("DirLight");
-		pEditorNode->AddNode(pDirLight);
+		pRootNode->AddNode(pDirLight);
 	}
 
-	if (!pEditorNode->FindFirstChildByType<MCamera>())
+	if (!pRootNode->FindFirstChildByType<MCamera>())
 	{
 		MCamera* pCamera = engine.GetObjectManager()->CreateObject<MCamera>();
 		pCamera->SetPosition(Vector3(0, 0, -20));
 		pCamera->SetName("Camera");
 		pCamera->LookAt(Vector3(0, 0, 0), Vector3(0, 1, 0));
-		pEditorNode->AddNode(pCamera);
+		pRootNode->AddNode(pCamera);
 	}
 
 	MoveInputNode* pMoveNode = engine.GetObjectManager()->CreateObject<MoveInputNode>();
@@ -122,10 +122,10 @@ int main(int argc, char* argv[])
 	engine.AddView(pEditorView);
 	pEditorView->SetEditorNode(pRootNode);
 
-	pEditorView->SetCloseCallback([pEditorNode, pNodeResource]() {
-		pNodeResource->SaveByNode(pEditorNode);
-		return true;
-	});
+// 	pEditorView->SetCloseCallback([pEditorNode, pNodeResource]() {
+// 		pNodeResource->SaveByNode(pEditorNode);
+// 		return true;
+// 	});
 
 #else
 	MScene* pScene = engine.GetObjectManager()->CreateObject<MScene>();

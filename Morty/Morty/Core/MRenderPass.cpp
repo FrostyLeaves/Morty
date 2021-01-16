@@ -6,6 +6,9 @@
 #endif
 
 MSubpass::MSubpass()
+	: m_strName("")
+	, m_vInputIndex()
+	, m_vOutputIndex()
 {
 
 }
@@ -32,8 +35,9 @@ MRenderPass::~MRenderPass()
 
 }
 
-MRenderPass::MTargetDesc::MTargetDesc(const bool bClear, const MColor& cColor)
-	: bClearWhenRender(bClear)
+MPassTargetDescription::MPassTargetDescription(const bool bClear, const MColor& cColor)
+	: m_strName("")
+	, bClearWhenRender(bClear)
 	, cClearColor(cColor)
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -41,8 +45,9 @@ MRenderPass::MTargetDesc::MTargetDesc(const bool bClear, const MColor& cColor)
 #endif
 }
 
-MRenderPass::MTargetDesc::MTargetDesc()
-	: bClearWhenRender(true)
+MPassTargetDescription::MPassTargetDescription()
+	: m_strName("")
+	, bClearWhenRender(true)
 	, cClearColor(MColor::Black)
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN

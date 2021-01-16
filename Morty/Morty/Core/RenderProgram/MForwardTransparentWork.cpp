@@ -306,9 +306,9 @@ void MForwardTransparentWork::InitializeRenderPass()
 		return;
 	}
 
-	MRenderPass::MTargetDesc descNoClear(false, MColor::Black_T);
-	MRenderPass::MTargetDesc descWhite(true, MColor::White);
-	MRenderPass::MTargetDesc descBlackT(true, MColor::Black_T);
+	MPassTargetDescription descNoClear(false, MColor::Black_T);
+	MPassTargetDescription descWhite(true, MColor::White);
+	MPassTargetDescription descBlackT(true, MColor::Black_T);
 
 	m_TransWithClearRenderPass.m_vBackDesc.push_back(descBlackT);
 	m_TransWithClearRenderPass.m_vBackDesc.push_back(descBlackT);
@@ -319,7 +319,7 @@ void MForwardTransparentWork::InitializeRenderPass()
 
 	SetupSubPass(m_TransWithClearRenderPass);
 
-	MRenderPass::MTargetDesc descMesh;
+	MPassTargetDescription descMesh;
 	descMesh.bClearWhenRender = false;
 	m_MeshRenderPass.m_vBackDesc.push_back(descMesh);
 	m_MeshRenderPass.m_DepthDesc.bClearWhenRender = false;

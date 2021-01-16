@@ -30,7 +30,7 @@ public:
 	};
 
 public:
-	M_OBJECT(MIMeshInstance);
+	M_I_OBJECT(MIMeshInstance);
     MIMeshInstance();
     virtual ~MIMeshInstance();
 

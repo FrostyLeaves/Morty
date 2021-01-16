@@ -102,7 +102,7 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	// Setup Platform/Renderer bindings
 	ImGui_ImplWin32_Init(GetHWND());
 
-	m_ImguiRenderPass.m_vBackDesc.push_back(MRenderPass::MTargetDesc(true, MColor(0.0f, 0.0f, 0.0f, 1.0f)));
+	m_ImguiRenderPass.m_vBackDesc.push_back(MPassTargetDescription(true, MColor(0.0f, 0.0f, 0.0f, 1.0f)));
 	m_pEngine->GetDevice()->GenerateRenderPass(&m_ImguiRenderPass, GetRenderTarget());
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11

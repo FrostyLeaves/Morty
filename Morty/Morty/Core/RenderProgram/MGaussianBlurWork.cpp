@@ -171,7 +171,7 @@ void MGaussianBlurWork::InitializeRenderPass()
 
 	//Init RenderPass
 	m_pTempRenderPass = new MRenderPass();
-	m_pTempRenderPass->m_vBackDesc.push_back(MRenderPass::MTargetDesc());
+	m_pTempRenderPass->m_vBackDesc.push_back(MPassTargetDescription());
 	m_pTempRenderPass->m_vBackDesc.back().bClearWhenRender = true;
 	m_pTempRenderPass->m_vBackDesc.back().cClearColor = m_pRenderProgram->GetClearColor();
 

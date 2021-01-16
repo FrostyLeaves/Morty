@@ -39,7 +39,7 @@ MTypedClassImplement(Class, BaseClass)
 
 class MORTY_CLASS MResource : public MRefCounter, public MTypedClass
 {
-	M_RESOURCE(MResource)
+	M_I_RESOURCE(MResource)
 public:
 	enum EResReloadType
 	{

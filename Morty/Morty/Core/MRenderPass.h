@@ -28,27 +28,34 @@ public:
     ~MSubpass();
 
 public:
-
+    MString m_strName;
     std::vector<uint32_t> m_vInputIndex;
     std::vector<uint32_t> m_vOutputIndex;
 
 };
 
+class MORTY_CLASS MPassTargetDescription
+{
+public:
+	MPassTargetDescription();
+	MPassTargetDescription(const bool bClear, const MColor& cClearColor);
+
+
+
+public:
+    MString m_strName;
+	bool bClearWhenRender;
+	MColor cClearColor;
+
+#if RENDER_GRAPHICS == MORTY_VULKAN
+	VkFormat m_vkTargetFormat;
+#endif
+};
+
 class MORTY_CLASS MRenderPass
 {
 public:
-    struct MORTY_CLASS MTargetDesc
-    {
-        MTargetDesc();
-        MTargetDesc(const bool bClear, const MColor& cClearColor);
-
-		bool bClearWhenRender;
-		MColor cClearColor;
-
-#if RENDER_GRAPHICS == MORTY_VULKAN
-        VkFormat m_vkTargetFormat;
-#endif
-    };
+    
 public:
     MRenderPass();
     ~MRenderPass();
@@ -60,8 +67,8 @@ public:
 
 	std::vector<MSubpass> m_vSubpass;
 
-    std::vector<MTargetDesc> m_vBackDesc;
-    MTargetDesc m_DepthDesc;
+    std::vector<MPassTargetDescription> m_vBackDesc;
+    MPassTargetDescription m_DepthDesc;
 
     uint32_t m_unRenderPassID;
 

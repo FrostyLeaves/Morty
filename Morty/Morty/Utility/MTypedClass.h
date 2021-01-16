@@ -32,6 +32,7 @@ typedef CurrClass Class;\
 
 #define MTypedCreatorSign(Class) \
 public: \
+	static MTypedClass* New() { return new Class(); } \
 	static MTypedCreator<Class> s_##Class##Creator; \
 
 
@@ -113,9 +114,8 @@ public:
 
 	template<typename T>
 	static void RegisterTypedClass() {
-		MString strName = T::GetClassTypeIdentifier()->m_strName;
-		std::function<MTypedClass* (void)> func = []() {return new T(); };
-		GetFactory()[strName] = func;
+		const MString& strName = T::GetClassTypeIdentifier()->m_strName;
+		GetFactory()[strName] = &T::New;
 	}
 
 	static MTypedClass* New(const MString& strTypeName);

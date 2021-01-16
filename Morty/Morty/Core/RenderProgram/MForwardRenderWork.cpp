@@ -69,7 +69,7 @@ void MForwardRenderWork::InitializeRenderPass()
 
 	//Init RenderPass
 
-	m_ForwardMeshRenderPass.m_vBackDesc.push_back(MRenderPass::MTargetDesc());
+	m_ForwardMeshRenderPass.m_vBackDesc.push_back(MPassTargetDescription());
 	m_ForwardMeshRenderPass.m_vBackDesc.back().bClearWhenRender = true;
 	m_ForwardMeshRenderPass.m_vBackDesc.back().cClearColor = m_pRenderProgram->GetClearColor();
 
@@ -90,7 +90,7 @@ void MForwardRenderWork::OnDelete()
 
 void MForwardRenderWork::SetClearColor(const MColor& cClearColor)
 {
-	for (MRenderPass::MTargetDesc& desc : m_ForwardMeshRenderPass.m_vBackDesc)
+	for (MPassTargetDescription& desc : m_ForwardMeshRenderPass.m_vBackDesc)
 	{
 		desc.cClearColor = cClearColor;
 	}

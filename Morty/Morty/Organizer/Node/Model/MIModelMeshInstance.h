@@ -22,7 +22,7 @@ public:
 	};
 
 public:
-	M_OBJECT(MIModelMeshInstance);
+	M_I_OBJECT(MIModelMeshInstance);
 	MIModelMeshInstance();
     virtual ~MIModelMeshInstance();
 
