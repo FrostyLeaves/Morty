@@ -23,7 +23,7 @@ struct MPainterVertex
 	Vector4 color;
 };
 
-class MORTY_CLASS MIPainterShape
+class MORTY_API MIPainterShape
 {
 public:
 	MIPainterShape() {}
@@ -36,7 +36,7 @@ public:
 	virtual bool TouchTest(const Vector2& pos, MViewport* pViewport) { return false; }
 };
 
-class MORTY_CLASS MPainter2DLine : public MIPainterShape
+class MORTY_API MPainter2DLine : public MIPainterShape
 {
 public:
 	MPainter2DLine(): m_v2Begin(), m_v2End(), m_lineColor(), m_fThickness(1.0f) {}
@@ -61,7 +61,7 @@ public:
 	float m_fThickness;
 };
 
-class MORTY_CLASS MPainter2DRect : public MIPainterShape
+class MORTY_API MPainter2DRect : public MIPainterShape
 {
 public:
 	MPainter2DRect() : m_vPoint(), m_rectColor() {}
@@ -81,7 +81,7 @@ public:
 	MColor m_rectColor;
 };
 
-class MORTY_CLASS MPainter3DLine : public MIPainterShape
+class MORTY_API MPainter3DLine : public MIPainterShape
 {
 public:
 	MPainter3DLine() : m_v3Begin(), m_v3End(), m_lineColor(), m_fThickness(1.0f) {}

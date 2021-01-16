@@ -12,7 +12,7 @@
 #include "M3DNode.h"
 
 class MBoundsAABB;
-class MORTY_CLASS MCamera : public M3DNode
+class MORTY_API MCamera : public M3DNode
 {
 public:
 	enum class MECameraType{

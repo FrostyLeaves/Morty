@@ -14,6 +14,7 @@
 
 #include <vector>
 #include <cassert>
+#include <fstream>
 
 #define REGISTER_RESOURCE_TYPE(Type, ResourceClass, ...) \
 { \
@@ -75,6 +76,11 @@ MResource* MResourceManager::LoadResource(const MString& strResourcePath, const 
 		{
 			for (MString strSearchPath : m_vSearchPath)
 			{
+				std::string strFullpath = strSearchPath + "/" + strResourcePath;
+				std::ifstream ifs(strFullpath.c_str(), std::ios::binary);
+				if(!ifs.good())
+					continue;
+
 				if (pResource = pLoader->Load(this, strSearchPath + "/" + strResourcePath))
 				{
 					m_tPathResources[strResourcePath] = pResource;

@@ -16,8 +16,6 @@
 #include "MMaterialGroup.h"
 #include "Shader/MShaderParamSet.h"
 
-#include "MForwardRenderInfo.h"
-
 #include "MRenderPass.h"
 #include "MForwardRenderShaderParamSet.h"
 
@@ -61,7 +59,7 @@ struct MRenderInfo
 
 };
 
-class MORTY_CLASS MForwardRenderProgram : public MIRenderProgram
+class MORTY_API MForwardRenderProgram : public MIRenderProgram
 {
 public:
 	M_OBJECT(MForwardRenderProgram);

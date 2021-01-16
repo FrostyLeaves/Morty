@@ -19,7 +19,7 @@ class MShaderParamSet;
 class MModelMeshStruct;
 class MSkeletonInstance;
 struct MShaderConstantParam;
-class MORTY_CLASS MIMeshInstance : public M3DNode
+class MORTY_API MIMeshInstance : public M3DNode
 {
 public:
 	enum MERenderOrderType

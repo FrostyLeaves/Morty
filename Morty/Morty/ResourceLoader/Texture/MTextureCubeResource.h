@@ -14,7 +14,7 @@
 class MTextureCube;
 class MTextureResource;
 class MResourceKeeper;
-class MORTY_CLASS MTextureCubeResource : public MResource
+class MORTY_API MTextureCubeResource : public MResource
 {
 public:
 	M_RESOURCE(MTextureCubeResource)

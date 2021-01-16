@@ -43,7 +43,7 @@ struct MMaterialPipelineLayoutData
     std::vector<MShaderParamSet*> vShaderParamSets;
 };
 
-class MORTY_CLASS MVulkanPipelineManager
+class MORTY_API MVulkanPipelineManager
 {
 public:
     MVulkanPipelineManager(MVulkanDevice* pDevice);

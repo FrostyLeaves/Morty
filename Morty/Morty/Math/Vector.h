@@ -11,7 +11,7 @@ class Vector4;
 class Matrix3;
 class Matrix4;
 
-class MORTY_CLASS Vector2
+class MORTY_API Vector2
 {
 public:
 	Vector2();
@@ -55,7 +55,7 @@ public:
 	static const Vector2 Zero;
 };
 
-class MORTY_CLASS Vector3
+class MORTY_API Vector3
 {
 public:
 	Vector3();
@@ -126,7 +126,7 @@ typedef Vector3 ColorRGB;
 
 
 
-class MORTY_CLASS Vector4
+class MORTY_API Vector4
 {
 public:
 	Vector4();

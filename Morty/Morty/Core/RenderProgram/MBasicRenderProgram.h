@@ -16,7 +16,7 @@
 #include <vector>
 
 class MMaterial;
-class MORTY_CLASS MBasicRenderProgram : public MIRenderProgram
+class MORTY_API MBasicRenderProgram : public MIRenderProgram
 {
 public:
 

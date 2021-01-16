@@ -13,7 +13,7 @@
 
 #include <vector>
 
-class MORTY_CLASS MShaderMacro
+class MORTY_API MShaderMacro
 {
 public:
 

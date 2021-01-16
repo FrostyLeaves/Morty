@@ -25,7 +25,7 @@ class MIRenderer;
 class MWindowsRenderView;
 class MDirectX11Device;
 class MRenderDepthTexture;
-class MORTY_CLASS MDirectX11RenderTarget : public MIRenderTarget
+class MORTY_API MDirectX11RenderTarget : public MIRenderTarget
 {
 public:
 	MDirectX11RenderTarget(MDirectX11Device* pDevice);

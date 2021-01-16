@@ -28,7 +28,7 @@
 
 #include "MTexture.h"
 
-class MORTY_CLASS MVulkanDevice : public MIDevice
+class MORTY_API MVulkanDevice : public MIDevice
 {
 public:
     MVulkanDevice();

@@ -23,7 +23,7 @@ class MIMesh;
 class MSkeleton;
 class MMultiLevelMesh;
 class MModelResource;
-class MORTY_CLASS MMeshResource : public MResource
+class MORTY_API MMeshResource : public MResource
 {
 public:
 	M_RESOURCE(MMeshResource);

@@ -14,7 +14,7 @@
 #include <vector>
 
 class MIDevice;
-class MORTY_CLASS MShaderParamSet
+class MORTY_API MShaderParamSet
 {
 public:
 	MShaderParamSet();

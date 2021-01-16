@@ -18,7 +18,7 @@
 
 class MVulkanDevice;
 struct MShaderConstantParam;
-class MORTY_CLASS MVulkanUniformBufferPool
+class MORTY_API MVulkanUniformBufferPool
 {
 public:
 

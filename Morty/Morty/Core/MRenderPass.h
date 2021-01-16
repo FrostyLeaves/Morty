@@ -21,7 +21,7 @@
 #endif
 
 class MIRenderTarget;
-class MORTY_CLASS MSubpass
+class MORTY_API MSubpass
 {
 public:
     MSubpass();
@@ -34,7 +34,7 @@ public:
 
 };
 
-class MORTY_CLASS MPassTargetDescription
+class MORTY_API MPassTargetDescription
 {
 public:
 	MPassTargetDescription();
@@ -52,7 +52,7 @@ public:
 #endif
 };
 
-class MORTY_CLASS MRenderPass
+class MORTY_API MRenderPass
 {
 public:
     

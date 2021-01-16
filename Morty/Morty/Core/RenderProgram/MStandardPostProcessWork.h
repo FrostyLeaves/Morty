@@ -19,7 +19,7 @@ class MRenderPass;
 class MIRenderProgram;
 class MIRenderBackTexture;
 class MRenderDepthTexture;
-class MORTY_CLASS MStandardPostProcessWork : public MIPostProcessWork
+class MORTY_API MStandardPostProcessWork : public MIPostProcessWork
 {
 public:
 	M_OBJECT(MStandardPostProcessWork);

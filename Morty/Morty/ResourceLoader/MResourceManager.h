@@ -33,7 +33,7 @@ enum class MEResourceType
 	SkelAnim,
 };
 
-class MORTY_CLASS MResourceManager
+class MORTY_API MResourceManager
 {
 public:
 	MResourceManager();

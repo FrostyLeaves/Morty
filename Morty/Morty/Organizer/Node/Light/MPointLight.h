@@ -13,7 +13,7 @@
 #include "Type/MType.h"
 #include "Vector.h"
 
-class MORTY_CLASS MPointLight : public MILight
+class MORTY_API MPointLight : public MILight
 {
 public:
 	M_OBJECT(MPointLight);

@@ -18,7 +18,7 @@ class MIRenderer;
 struct MShaderConstantParam;
 class MIRenderTarget;
 class MIMeshInstance;
-class MORTY_CLASS MIRenderProgram : public MObject
+class MORTY_API MIRenderProgram : public MObject
 {
 public:
 	M_I_OBJECT(MIRenderProgram);

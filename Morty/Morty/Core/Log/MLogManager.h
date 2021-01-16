@@ -22,7 +22,7 @@
 #include <cstring>
 #include <functional>
 
-class MORTY_CLASS MLogManager : public MSingleInstance<MLogManager>
+class MORTY_API MLogManager : public MSingleInstance<MLogManager>
 {
 public:
 	MLogManager();

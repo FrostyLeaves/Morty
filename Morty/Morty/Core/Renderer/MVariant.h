@@ -31,7 +31,7 @@ class MContainer;
 class MStruct;
 class MVariantArray;
 
-class MORTY_CLASS MVariant
+class MORTY_API MVariant
 {
 public:
 
@@ -140,7 +140,7 @@ MVariant::MVariant(const T& var)
 	memcpy(m_pData, &var, sizeof(T));
 }
 
-class MORTY_CLASS MContainer
+class MORTY_API MContainer
 {
 public:
 	MContainer();
@@ -194,7 +194,7 @@ protected:
 	static uint32_t s_unPackSize;
 };
 
-class MORTY_CLASS MStruct : public MContainer
+class MORTY_API MStruct : public MContainer
 {
 public:
 	MStruct();
@@ -245,7 +245,7 @@ protected:
 	std::unordered_map< MString, uint32_t> m_tVariantMap;
 };
 
-class MORTY_CLASS MVariantArray : public MContainer
+class MORTY_API MVariantArray : public MContainer
 {
 public:
 	MVariantArray();

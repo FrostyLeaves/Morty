@@ -13,7 +13,7 @@
 
 #include <vector>
 
-class MORTY_CLASS MMortyFileFormat
+class MORTY_API MMortyFileFormat
 {
 public:
     struct MFormatBody
@@ -35,7 +35,7 @@ public:
     static const int s_nClipSize;
 };
 
-class MORTY_CLASS MFileHelper
+class MORTY_API MFileHelper
 {
 public:
     MFileHelper();

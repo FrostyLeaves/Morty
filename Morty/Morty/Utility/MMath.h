@@ -13,7 +13,7 @@
 
 #include <random>
 
-class MORTY_CLASS MMath
+class MORTY_API MMath
 {
 public:
 

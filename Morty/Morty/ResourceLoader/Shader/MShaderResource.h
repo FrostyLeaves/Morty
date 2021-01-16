@@ -16,7 +16,7 @@
 #include "Shader/MShader.h"
 
 
-class MORTY_CLASS MShaderResource : public MResource
+class MORTY_API MShaderResource : public MResource
 {
 public:
 	M_RESOURCE(MShaderResource)

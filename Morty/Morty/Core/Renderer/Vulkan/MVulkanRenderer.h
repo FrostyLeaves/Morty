@@ -19,7 +19,7 @@
 class MRenderPass;
 class MVulkanDevice;
 class MMaterialGroup;
-class MORTY_CLASS MVulkanRenderer : public MIRenderer
+class MORTY_API MVulkanRenderer : public MIRenderer
 {
 public:
     MVulkanRenderer(MVulkanDevice* pDevice);

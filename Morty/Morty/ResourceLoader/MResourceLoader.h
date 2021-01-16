@@ -13,7 +13,7 @@
 
 class MResource;
 class MResourceManager;
-class MORTY_CLASS MResourceLoader
+class MORTY_API MResourceLoader
 {
 public:
 	MResourceLoader() {}
@@ -39,7 +39,7 @@ protected:
 };
 
 template <typename RESOURCE_TYPE>
-class MORTY_CLASS MResourceLoaderTemp : public MResourceLoader
+class MORTY_API MResourceLoaderTemp : public MResourceLoader
 {
 public:
 	MResourceLoaderTemp() {}

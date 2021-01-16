@@ -19,7 +19,7 @@
 class MBoundsOBB;
 class MShaderParamSet;
 
-class MORTY_CLASS MBone
+class MORTY_API MBone
 {
 public:
 	MBone();
@@ -39,7 +39,7 @@ public:
 	Matrix4 m_matWorldTransform;
 };
 
-class MORTY_CLASS MSkeleton : public MResource
+class MORTY_API MSkeleton : public MResource
 {
 public:
 public:
@@ -76,7 +76,7 @@ private:
 	std::vector<MBone> m_vAllBones;
 };
 
-class MORTY_CLASS MSkeletonInstance
+class MORTY_API MSkeletonInstance
 {
 public:
 	MSkeletonInstance(const MSkeleton* templateSke);

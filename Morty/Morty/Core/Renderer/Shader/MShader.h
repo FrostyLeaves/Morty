@@ -16,7 +16,7 @@
 
 class MIDevice;
 class MShaderBuffer;
-class MORTY_CLASS MShader
+class MORTY_API MShader
 {
 public:
 	enum MEShaderType

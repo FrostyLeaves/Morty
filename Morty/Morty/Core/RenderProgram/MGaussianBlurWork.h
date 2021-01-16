@@ -14,7 +14,7 @@
 
 class MMaterial;
 class MShaderParamSet;
-class MORTY_CLASS MGaussianBlurWork : public MIPostProcessWork
+class MORTY_API MGaussianBlurWork : public MIPostProcessWork
 {
 public:
 	M_OBJECT(MGaussianBlurWork);

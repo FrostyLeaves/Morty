@@ -27,7 +27,7 @@ class MPointLight;
 class MInputManager;
 class MIRenderTarget;
 class MDirectionalLight;
-class MORTY_CLASS MViewport : public MObject
+class MORTY_API MViewport : public MObject
 {
 public:
 	M_OBJECT(MViewport);

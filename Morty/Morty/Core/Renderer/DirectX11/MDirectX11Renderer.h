@@ -26,7 +26,7 @@ class MViewport;
 class MIRenderView;
 class MVertexBuffer;
 class MDirectX11Device;
-class MORTY_CLASS MDirectX11Renderer : public MIRenderer
+class MORTY_API MDirectX11Renderer : public MIRenderer
 {
 public:
     MDirectX11Renderer(MDirectX11Device* pDevice);

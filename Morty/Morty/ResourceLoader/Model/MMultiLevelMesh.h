@@ -14,7 +14,7 @@
 #include "MResource.h"
 #include <vector>
 
-class MORTY_CLASS MMultiLevelMesh
+class MORTY_API MMultiLevelMesh
 {
 public:
 	struct Face;

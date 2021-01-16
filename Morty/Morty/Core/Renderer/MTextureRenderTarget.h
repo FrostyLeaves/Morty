@@ -21,7 +21,7 @@ class MTexture;
 class MRenderDepthTexture;
 
 
-class MORTY_CLASS MTextureRenderTarget : public MIRenderTarget
+class MORTY_API MTextureRenderTarget : public MIRenderTarget
 {
 public:
 	M_OBJECT(MTextureRenderTarget)

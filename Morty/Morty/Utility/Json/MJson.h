@@ -12,7 +12,7 @@
 #include "MVariant.h"
 
 class GenericValue;
-class MORTY_CLASS MJson
+class MORTY_API MJson
 {
 public:
     MJson();

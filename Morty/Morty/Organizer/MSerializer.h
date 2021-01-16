@@ -11,7 +11,7 @@
 #include "MGlobal.h"
 #include "MVariant.h"
 
-class MORTY_CLASS MSerializer
+class MORTY_API MSerializer
 {
 
 

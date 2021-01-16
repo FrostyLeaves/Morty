@@ -12,7 +12,7 @@
 
 #include "MShaderParamSet.h"
 
-class MORTY_CLASS MShaderBuffer
+class MORTY_API MShaderBuffer
 {
 public:
     MShaderBuffer();

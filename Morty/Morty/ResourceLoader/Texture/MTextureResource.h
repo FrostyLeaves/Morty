@@ -13,7 +13,7 @@
 
 #include "MTexture.h"
 
-class MORTY_CLASS MTextureResource : public MResource
+class MORTY_API MTextureResource : public MResource
 {
 public:
 	M_RESOURCE(MTextureResource)

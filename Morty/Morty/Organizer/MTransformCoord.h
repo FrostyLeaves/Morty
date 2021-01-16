@@ -19,7 +19,7 @@ class MIRenderer;
 class MViewport;
 class MInputEvent;
 class MIMesh;
-class MORTY_CLASS MITransformCoord
+class MORTY_API MITransformCoord
 {
 public:
 	MITransformCoord() {}
@@ -29,7 +29,7 @@ public:
 
 };
 
-class MORTY_CLASS MTransformCoord3D : public MITransformCoord, public MObject
+class MORTY_API MTransformCoord3D : public MITransformCoord, public MObject
 {
 public:
 

@@ -19,7 +19,7 @@
 
 #include <vector>
 
-class MORTY_CLASS MSkeletalAnimNode
+class MORTY_API MSkeletalAnimNode
 {
 public:
 	template <typename T>
@@ -48,14 +48,14 @@ public:
 	void ReadFromStruct(MStruct& srt);
 };
 
-class MORTY_CLASS MSkeletonAnimMap
+class MORTY_API MSkeletonAnimMap
 {
 public:
 	std::vector<uint32_t> m_vSkelToAnim;
 	std::vector<uint32_t> m_vAnimToSkel;
 };
 
-class MORTY_CLASS MSkeletalAnimation : public MIAnimation, public MResource
+class MORTY_API MSkeletalAnimation : public MIAnimation, public MResource
 {
 public:
 	M_RESOURCE(MSkeletalAnimation);
@@ -103,7 +103,7 @@ private:
 };
 
 class MSkeletalAnimationResource;
-class MORTY_CLASS MSkeletalAnimController : public MIAnimController
+class MORTY_API MSkeletalAnimController : public MIAnimController
 {
 public:
 	MSkeletalAnimController();

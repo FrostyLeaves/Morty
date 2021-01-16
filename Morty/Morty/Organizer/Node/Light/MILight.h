@@ -12,7 +12,7 @@
 #include "M3DNode.h"
 #include "Vector.h"
 
-class MORTY_CLASS MILight : public M3DNode
+class MORTY_API MILight : public M3DNode
 {
 public:
 	M_OBJECT(MILight);

@@ -18,7 +18,7 @@ class MBoundsAABB;
 class MModelResource;
 class MSkeletonInstance;
 class MSkeletalAnimController;
-class MORTY_CLASS MModelInstance : public M3DNode
+class MORTY_API MModelInstance : public M3DNode
 {
 public:
 

@@ -15,7 +15,7 @@
 #include <functional>
 
 class MViewport;
-class MORTY_CLASS MInputEvent
+class MORTY_API MInputEvent
 {
 public:
 	MInputEvent();
@@ -29,7 +29,7 @@ private:
 	bool m_bIsAccepted;
 };
 
-class MORTY_CLASS MMouseInputEvent : public MInputEvent
+class MORTY_API MMouseInputEvent : public MInputEvent
 {
 public:
 
@@ -69,7 +69,7 @@ protected:
 
 };
 
-class MORTY_CLASS MKeyBoardInputEvent : public MInputEvent
+class MORTY_API MKeyBoardInputEvent : public MInputEvent
 {
 public:
 

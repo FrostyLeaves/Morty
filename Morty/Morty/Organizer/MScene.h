@@ -38,7 +38,7 @@ class MInputNode;
 class MShadowTextureRenderTarget;
 class MBoundsAABB;
 class MIRenderTarget;
-class MORTY_CLASS MScene : public MObject
+class MORTY_API MScene : public MObject
 {
 public:
 	M_OBJECT(MScene);

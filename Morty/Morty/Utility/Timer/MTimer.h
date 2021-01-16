@@ -11,7 +11,7 @@
 #include "MGlobal.h"
 
 
-class MORTY_CLASS MTimer
+class MORTY_API MTimer
 {
 public:
     MTimer();

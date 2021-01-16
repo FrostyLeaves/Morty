@@ -23,7 +23,7 @@ class MIRenderProgram;
 class MGaussianBlurWork;
 class MIRenderBackTexture;
 class MRenderDepthTexture;
-class MORTY_CLASS MForwardHDRWork : public MIPostProcessWork
+class MORTY_API MForwardHDRWork : public MIPostProcessWork
 {
 public:
 	M_OBJECT(MForwardHDRWork);

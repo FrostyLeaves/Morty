@@ -30,7 +30,7 @@ MTypedClassImplement(Class, BaseClass)
 
 class MEngine;
 class MObjectManager;
-class MORTY_CLASS MObject : public MTypedClass
+class MORTY_API MObject : public MTypedClass
 {
 public:
 	M_OBJECT(MObject);
@@ -59,7 +59,7 @@ protected:
 	bool		m_bDeleteMark;
 };
 
-class MORTY_CLASS MObjectManager
+class MORTY_API MObjectManager
 {
 public:
 	MObjectManager();

@@ -23,7 +23,7 @@ class MIRenderView;
 class MObjectManager;
 class MIRenderProgram;
 class MResourceManager;
-class MORTY_CLASS MEngine
+class MORTY_API MEngine
 {
 public:
     MEngine();

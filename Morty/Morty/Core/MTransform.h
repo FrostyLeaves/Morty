@@ -13,7 +13,7 @@
 #include "Matrix.h"
 #include "Quaternion.h"
 
-class MORTY_CLASS MTransform
+class MORTY_API MTransform
 {
 public:
     MTransform();

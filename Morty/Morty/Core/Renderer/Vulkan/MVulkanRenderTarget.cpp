@@ -12,7 +12,7 @@ M_OBJECT_IMPLEMENT(MVulkanRenderTarget, MIRenderTarget)
 #ifdef MORTY_WIN
 #include <windows.h>
 #include "vulkan/vulkan_win32.h"
-#include "MWindowsRenderView.h"
+#include "DirectX11/MWindowsRenderView.h"
 #endif
 
 #ifdef MORTY_ANDROID

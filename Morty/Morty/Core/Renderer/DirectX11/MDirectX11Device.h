@@ -21,7 +21,7 @@
 #include <DxErr.h>
 
 
-class MORTY_CLASS MDirectX11Device : public MIDevice
+class MORTY_API MDirectX11Device : public MIDevice
 {
 public:
     MDirectX11Device();

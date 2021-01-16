@@ -19,7 +19,7 @@
 #include <functional>
 
 class MScene;
-class MORTY_CLASS MNode : public MObject, public MSerializer
+class MORTY_API MNode : public MObject, public MSerializer
 {
 public:
 	M_OBJECT(MNode);

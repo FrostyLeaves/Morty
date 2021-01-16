@@ -12,7 +12,7 @@
 #include "Shader/MShaderParamSet.h"
 
 class MEngine;
-class MORTY_CLASS MForwardRenderShaderParamSet : public MShaderParamSet
+class MORTY_API MForwardRenderShaderParamSet : public MShaderParamSet
 {
 public:
 

@@ -37,7 +37,7 @@ MTypedInterfaceImplement(Class, BaseClass)
 MTypedClassImplement(Class, BaseClass)
 
 
-class MORTY_CLASS MResource : public MRefCounter, public MTypedClass
+class MORTY_API MResource : public MRefCounter, public MTypedClass
 {
 	M_I_RESOURCE(MResource)
 public:
@@ -103,7 +103,7 @@ protected:
 
 };
 
-class MORTY_CLASS MResourceKeeper
+class MORTY_API MResourceKeeper
 {
 public:
 	

@@ -14,7 +14,7 @@ headerTemaplateString = """/**
 #include "MGlobal.h"
 #include "MObject.h"
 
-class MORTY_CLASS {1} : public MObject
+class MORTY_API {1} : public MObject
 {{
 public:
 	M_OBJECT({1});

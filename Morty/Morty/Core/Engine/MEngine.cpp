@@ -15,7 +15,7 @@
 #endif
 
 #ifdef MORTY_WIN
-#include "MWindowsRenderView.h"
+#include "DirectX11/MWindowsRenderView.h"
 #endif
 
 #include "MNode.h"

@@ -11,7 +11,7 @@
 #include "MGlobal.h"
 #include "Vector.h"
 
-class MORTY_CLASS MColor
+class MORTY_API MColor
 {
 public:
 	MColor();

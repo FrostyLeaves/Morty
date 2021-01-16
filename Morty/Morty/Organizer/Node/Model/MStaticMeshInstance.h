@@ -20,7 +20,7 @@ class MMaterial;
 class MResource;
 class MMeshResource;
 class MModelResource;
-class MORTY_CLASS MStaticMeshInstance : public MIModelMeshInstance
+class MORTY_API MStaticMeshInstance : public MIModelMeshInstance
 {
 public:
 	M_OBJECT(MStaticMeshInstance);

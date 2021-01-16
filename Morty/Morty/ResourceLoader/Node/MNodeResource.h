@@ -12,7 +12,7 @@
 #include "MResource.h"
 
 class MNode;
-class MORTY_CLASS MNodeResource : public MResource
+class MORTY_API MNodeResource : public MResource
 {
 public:
 	M_RESOURCE(MNodeResource);

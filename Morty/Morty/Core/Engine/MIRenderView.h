@@ -19,7 +19,7 @@ class MEngine;
 class MViewport;
 class MInputEvent;
 class MIRenderTarget;
-class MORTY_CLASS MIRenderView
+class MORTY_API MIRenderView
 {
 public:
     MIRenderView();

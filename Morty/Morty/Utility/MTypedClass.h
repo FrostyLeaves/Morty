@@ -74,7 +74,7 @@ public:
 
 typedef const MTypeIdentifier* MTypeIdentifierConstPointer;
 
-class MORTY_CLASS MTypedClass
+class MORTY_API MTypedClass
 {
 public:
 	MTypedClass() {};

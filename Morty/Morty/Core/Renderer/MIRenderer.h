@@ -83,7 +83,7 @@ class MRenderBackTexture;
 class MIRenderBackTexture;
 class MRenderDepthTexture;
 
-class MORTY_CLASS MIRenderer
+class MORTY_API MIRenderer
 {
 public:
 

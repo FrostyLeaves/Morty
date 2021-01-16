@@ -12,7 +12,7 @@
 #include "MStandardPostProcessWork.h"
 
 class MMaterial;
-class MORTY_CLASS MBloomWork : public MStandardPostProcessWork
+class MORTY_API MBloomWork : public MStandardPostProcessWork
 {
 public:
 	M_OBJECT(MBloomWork);

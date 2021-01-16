@@ -24,7 +24,7 @@ struct MShadowRenderGroup
 
 class MRenderDepthTexture;
 class MShadowTextureRenderTarget;
-class MORTY_CLASS MForwardShadowMapWork : public MObject
+class MORTY_API MForwardShadowMapWork : public MObject
 {
 public:
 	M_OBJECT(MForwardShadowMapWork);

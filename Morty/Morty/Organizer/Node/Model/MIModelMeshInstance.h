@@ -11,7 +11,7 @@
 #include "MGlobal.h"
 #include "MIMeshInstance.h"
 
-class MORTY_CLASS MIModelMeshInstance : public MIMeshInstance
+class MORTY_API MIModelMeshInstance : public MIMeshInstance
 {
 public:
 	enum MEShadowType

@@ -3,17 +3,17 @@
 
 #include <stdint.h>
 
-#ifdef Morty_EXPORTS
+#ifdef MORTY_EXPORTS
 #if defined(__WINDOWS_) || defined(_WINDOWS) || defined(WIN32)
-        #define MORTY_CLASS __declspec(dllexport)
+        #define MORTY_API __declspec(dllexport)
     #else
-        #define MORTY_CLASS
+        #define MORTY_API
     #endif
 #else
 	#if defined(__WINDOWS_) || defined(_WINDOWS) || defined(WIN32)
-        #define MORTY_CLASS __declspec(dllimport)
+        #define MORTY_API __declspec(dllimport)
     #else
-        #define MORTY_CLASS
+        #define MORTY_API
     #endif
 #endif
 
@@ -45,49 +45,49 @@ typedef unsigned long MObjectID;
 typedef unsigned long MResourceID;
 typedef unsigned char MByte;
 
-extern const int M_INVALID_INDEX;
+extern MORTY_API const int M_INVALID_INDEX;
 
 //Asset
-extern const char* SUFFIX_VERTEX_SHADER;
-extern const char* SUFFIX_PIXEL_SHADER;
-extern const char* SUFFIX_MATERIAL;
-extern const char* SUFFIX_SKELETON;
-extern const char* SUFFIX_MESH;
-extern const char* SUFFIX_NODE;
-extern const char* SUFFIX_SKELANIM;
+extern MORTY_API const char* SUFFIX_VERTEX_SHADER;
+extern MORTY_API const char* SUFFIX_PIXEL_SHADER;
+extern MORTY_API const char* SUFFIX_MATERIAL;
+extern MORTY_API const char* SUFFIX_SKELETON;
+extern MORTY_API const char* SUFFIX_MESH;
+extern MORTY_API const char* SUFFIX_NODE;
+extern MORTY_API const char* SUFFIX_SKELANIM;
 
 //Default Asset
-extern const char* DEFAULT_MATERIAL_MODEL_STATIC_MESH;
-extern const char* DEFAULT_MATERIAL_MODEL_SKELETON_MESH;
-extern const char* DEFAULT_MATERIAL_DRAW2D;
-extern const char* DEFAULT_MATERIAL_DRAW3D;
-extern const char* DEFAULT_MATERIAL_SHADOW_STATIC;
-extern const char* DEFAULT_MATERIAL_SHADOW_SKELETON;
-extern const char* DEFAULT_MATERIAL_DEPTH_PEEL_BLEND;
-extern const char* DEFAULT_MATERIAL_DEPTH_PEEL_FILL;
-extern const char* DEFAULT_MESH_SCREEN_DRAW;
+extern MORTY_API const char* DEFAULT_MATERIAL_MODEL_STATIC_MESH;
+extern MORTY_API const char* DEFAULT_MATERIAL_MODEL_SKELETON_MESH;
+extern MORTY_API const char* DEFAULT_MATERIAL_DRAW2D;
+extern MORTY_API const char* DEFAULT_MATERIAL_DRAW3D;
+extern MORTY_API const char* DEFAULT_MATERIAL_SHADOW_STATIC;
+extern MORTY_API const char* DEFAULT_MATERIAL_SHADOW_SKELETON;
+extern MORTY_API const char* DEFAULT_MATERIAL_DEPTH_PEEL_BLEND;
+extern MORTY_API const char* DEFAULT_MATERIAL_DEPTH_PEEL_FILL;
+extern MORTY_API const char* DEFAULT_MESH_SCREEN_DRAW;
 
-extern const char* DEFAULT_TEXTURE_WHITE;
-extern const char* DEFAULT_TEXTURE_BLACK;
-extern const char* DEFAULT_TEXTURE_NORMALMAP;
+extern MORTY_API const char* DEFAULT_TEXTURE_WHITE;
+extern MORTY_API const char* DEFAULT_TEXTURE_BLACK;
+extern MORTY_API const char* DEFAULT_TEXTURE_NORMALMAP;
 
-extern const char* SHADER_PARAM_NAME_DIFFUSE;
-extern const char* SHADER_PARAM_NAME_NORMAL;
+extern MORTY_API const char* SHADER_PARAM_NAME_DIFFUSE;
+extern MORTY_API const char* SHADER_PARAM_NAME_NORMAL;
 
 
 //Shadowmap size
-extern const uint32_t MSHADOW_TEXTURE_SIZE;
+extern MORTY_API const uint32_t MSHADOW_TEXTURE_SIZE;
 
-extern const uint32_t MPOINT_LIGHT_MAX_NUMBER;
-extern const uint32_t MPOINT_LIGHT_PIXEL_NUMBER;
+extern MORTY_API const uint32_t MPOINT_LIGHT_MAX_NUMBER;
+extern MORTY_API const uint32_t MPOINT_LIGHT_PIXEL_NUMBER;
 
-extern const uint32_t MSPOT_LIGHT_MAX_NUMBER;
-extern const uint32_t MSPOT_LIGHT_PIXEL_NUMBER;
+extern MORTY_API const uint32_t MSPOT_LIGHT_MAX_NUMBER;
+extern MORTY_API const uint32_t MSPOT_LIGHT_PIXEL_NUMBER;
 
-extern const bool MCALC_NORMAL_IN_VS;
+extern MORTY_API const bool MCALC_NORMAL_IN_VS;
 
 
-extern const uint32_t MMESH_LOD_LEVEL_RANGE;
+extern MORTY_API const uint32_t MMESH_LOD_LEVEL_RANGE;
 
 
 //Bones number per Vertex.
@@ -95,7 +95,7 @@ extern const uint32_t MMESH_LOD_LEVEL_RANGE;
 #define MBONES_MAX_NUMBER (128)
 
 //Material Macro
-extern const char* MATERIAL_MACRO_SKELETON_ENABLE;
+extern MORTY_API const char* MATERIAL_MACRO_SKELETON_ENABLE;
 
 #define M_BUFFER_NUM 3
 

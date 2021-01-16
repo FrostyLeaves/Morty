@@ -13,7 +13,7 @@
 
 class MInputEvent;
 class MViewport;
-class MORTY_CLASS MInputNode : public MNode
+class MORTY_API MInputNode : public MNode
 {
 public:
 	M_OBJECT(MInputNode);

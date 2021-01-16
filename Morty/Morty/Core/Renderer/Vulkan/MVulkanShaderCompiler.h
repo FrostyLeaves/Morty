@@ -17,8 +17,9 @@
 #include "spirv_parser.hpp"
 
 class MShaderBuffer;
+class MVulkanDevice;
 class MVertexShaderBuffer;
-class MORTY_CLASS MPreamble {
+class MORTY_API MPreamble {
 public:
 	MPreamble();
 	~MPreamble();
@@ -38,10 +39,10 @@ private:
 	std::string m_strText;  // contents of preamble
 };
 
-class MORTY_CLASS MVulkanShaderCompiler
+class MORTY_API MVulkanShaderCompiler
 {
 public:
-    MVulkanShaderCompiler();
+    MVulkanShaderCompiler(MVulkanDevice* pDevice);
 	~MVulkanShaderCompiler();
 
 public:
@@ -65,7 +66,9 @@ public:
 	void ReadShaderPath(const MString& strShaderPath);
 
 private:
+	struct TBuiltInResource* m_pDefaultBuiltInResource;
 
+	MVulkanDevice* m_pDevice;
 };
 
 

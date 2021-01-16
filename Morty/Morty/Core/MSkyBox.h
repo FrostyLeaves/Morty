@@ -21,7 +21,7 @@ class MTextureCube;
 class MIMeshInstance;
 class MShaderParamSet;
 struct MShaderConstantParam;
-class MORTY_CLASS MSkyBox : public MObject
+class MORTY_API MSkyBox : public MObject
 {
 public:
 	M_OBJECT(MSkyBox);

@@ -22,7 +22,7 @@ public:
 	float m[2][2];
 };
 
-class MORTY_CLASS Matrix3
+class MORTY_API Matrix3
 {
 public:
 	Matrix3();
@@ -51,7 +51,7 @@ private:
 	float AlgebraicCofactor(const int& i, const int& j) const;
 };
 
-class MORTY_CLASS Matrix4
+class MORTY_API Matrix4
 {
 public:
 	Matrix4();

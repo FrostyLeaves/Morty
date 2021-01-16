@@ -12,7 +12,7 @@
 #include "MResource.h"
 
 class MRenderPass;
-class MORTY_CLASS MRenderPassResource : public MResource
+class MORTY_API MRenderPassResource : public MResource
 {
 public:
 	M_RESOURCE(MRenderPassResource);

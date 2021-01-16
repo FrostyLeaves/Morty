@@ -12,7 +12,7 @@
 
 #include <vector>
 
-class MORTY_CLASS MProject
+class MORTY_API MProject
 {
 public:
     MProject();

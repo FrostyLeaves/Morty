@@ -15,7 +15,7 @@
 #include <array>
 
 class MMaterial;
-class MORTY_CLASS MCombineWork : public MStandardPostProcessWork
+class MORTY_API MCombineWork : public MStandardPostProcessWork
 {
 public:
 	M_OBJECT(MCombineWork);

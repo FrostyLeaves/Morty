@@ -30,7 +30,7 @@ struct MShaderConstantParam;
 class MMaterial;
 
 
-class MORTY_CLASS MIDevice
+class MORTY_API MIDevice
 {;
 public:
 	MIDevice() {}

@@ -29,7 +29,7 @@ class MIDevice;
 class MRenderDepthTexture;
 class MIRenderBackTexture;
 
-struct MORTY_CLASS MFrameBuffer
+struct MORTY_API MFrameBuffer
 {
 	MFrameBuffer();
 	std::vector<MIRenderBackTexture*> vBackTextures;
@@ -38,7 +38,7 @@ struct MORTY_CLASS MFrameBuffer
 	VkExtent2D vkExtend;
 };
 
-class MORTY_CLASS MIRenderTarget : public MObject
+class MORTY_API MIRenderTarget : public MObject
 {
 public:
 	M_I_OBJECT(MIRenderTarget)

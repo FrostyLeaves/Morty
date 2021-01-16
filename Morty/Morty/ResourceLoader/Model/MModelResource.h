@@ -16,7 +16,7 @@
 
 class MSkeleton;
 class MSkeletalAnimation;
-class MORTY_CLASS MModelResource : public MResource
+class MORTY_API MModelResource : public MResource
 {
 public:
 	M_RESOURCE(MModelResource);

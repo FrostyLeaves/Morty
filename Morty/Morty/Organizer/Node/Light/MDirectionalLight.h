@@ -12,7 +12,7 @@
 #include "MILight.h"
 #include "Type/MColor.h"
 
-class MORTY_CLASS MDirectionalLight : public MILight
+class MORTY_API MDirectionalLight : public MILight
 {
 public:
 	M_OBJECT(MDirectionalLight);

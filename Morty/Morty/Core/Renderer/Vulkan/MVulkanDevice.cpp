@@ -47,6 +47,7 @@ MVulkanDevice::MVulkanDevice()
 	, m_VkCommandPool(VK_NULL_HANDLE)
 	, m_ObjectDestructor(this)
 	, m_PipelineManager(this)
+	, m_ShaderCompiler(this)
 	, m_DynamicUniformBufferPool(this)
 	, m_VkDepthTextureFormat(VK_FORMAT_D32_SFLOAT_S8_UINT)
 {
@@ -769,6 +770,11 @@ void MVulkanDevice::GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTextu
 {
 	if (*ppTextureBuffer)
 		DestroyTexture(ppTextureBuffer);
+
+	for (uint32_t i = 0; i < 6; ++i)
+	{
+		if (!vTexture[i]) return;
+	}
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;

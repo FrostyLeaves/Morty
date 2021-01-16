@@ -11,7 +11,7 @@
 #include "MGlobal.h"
 
 class MEngine;
-class MORTY_CLASS MIAnimation
+class MORTY_API MIAnimation
 {
 public:
     MIAnimation();
@@ -19,7 +19,7 @@ public:
 
 };
 
-class MORTY_CLASS MIAnimController
+class MORTY_API MIAnimController
 {
 public:
 	enum MEAnimControllerState

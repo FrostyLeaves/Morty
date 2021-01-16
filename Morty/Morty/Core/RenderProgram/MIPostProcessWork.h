@@ -19,7 +19,7 @@ class MIRenderer;
 class MIRenderProgram;
 class MIRenderBackTexture;
 class MTextureRenderTarget;
-struct MORTY_CLASS MPostProcessRenderInfo
+struct MORTY_API MPostProcessRenderInfo
 {
     float fDelta;
     uint32_t unFrameIndex;
@@ -29,7 +29,7 @@ struct MORTY_CLASS MPostProcessRenderInfo
     MIRenderBackTexture* pPrevLevelOutput1;
 };
 
-class MORTY_CLASS MIPostProcessWork : public MObject
+class MORTY_API MIPostProcessWork : public MObject
 {
 public:
 	M_OBJECT(MIPostProcessWork);

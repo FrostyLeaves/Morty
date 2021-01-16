@@ -17,7 +17,7 @@ class MForwardHDRWork;
 class MIPostProcessWork;
 class MIRenderBackTexture;
 class MRenderDepthTexture;
-class MORTY_CLASS MForwardPostProcessProgram : public MForwardRenderProgram
+class MORTY_API MForwardPostProcessProgram : public MForwardRenderProgram
 {
 public:
 	M_OBJECT(MForwardPostProcessProgram);

@@ -12,7 +12,7 @@
 #include "MSingleInstance.h"
 
 #if MORTY_RENDER_DATA_STATISTICS
-class MORTY_CLASS MRenderStatistics
+class MORTY_API MRenderStatistics
 {
 public:
 	static MRenderStatistics* GetInstance();

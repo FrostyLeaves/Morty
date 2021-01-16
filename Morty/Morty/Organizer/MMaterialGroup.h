@@ -14,7 +14,7 @@
 
 class MMaterial;
 class MIMeshInstance;
-class MORTY_CLASS MMaterialGroup
+class MORTY_API MMaterialGroup
 {
 public:
     MMaterialGroup();

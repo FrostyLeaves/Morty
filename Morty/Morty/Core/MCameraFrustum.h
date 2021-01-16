@@ -13,7 +13,7 @@
 #include "MPlane.h"
 
 class MViewport;
-class MORTY_CLASS MCameraFrustum
+class MORTY_API MCameraFrustum
 {
 public:
 	enum MEContainType

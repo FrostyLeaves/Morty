@@ -16,7 +16,7 @@
 #include <vector>
 
 class MVulkanDevice;
-class MORTY_CLASS MVulkanObjectDestructor
+class MORTY_API MVulkanObjectDestructor
 {
 public:
     MVulkanObjectDestructor(MVulkanDevice* pDevice);

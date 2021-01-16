@@ -17,7 +17,7 @@
 #include "MForwardRenderProgram.h"
 #include "MForwardRenderShaderParamSet.h"
 
-class MORTY_CLASS MForwardRenderWork : public MObject
+class MORTY_API MForwardRenderWork : public MObject
 {
 public:
 	M_OBJECT(MForwardRenderWork);

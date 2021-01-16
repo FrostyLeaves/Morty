@@ -25,7 +25,7 @@ enum MEShaderParamType
 	EBoth = 3,
 };
 
-struct MORTY_CLASS MShaderParam
+struct MORTY_API MShaderParam
 {
 public:
 	MShaderParam();
@@ -48,7 +48,7 @@ public:
 #endif
 };
 
-struct MORTY_CLASS MShaderConstantParam : public MShaderParam
+struct MORTY_API MShaderConstantParam : public MShaderParam
 {
 	MShaderConstantParam();
 

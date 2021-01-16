@@ -8,7 +8,7 @@
 
 class Vector3;
 class Matrix4;
-class MORTY_CLASS Quaternion
+class MORTY_API Quaternion
 {
 public:
 	Quaternion();

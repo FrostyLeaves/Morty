@@ -14,7 +14,7 @@ headerTemaplateString = """/**
 #include "MGlobal.h"
 
 
-class MORTY_CLASS {1}
+class MORTY_API {1}
 {{
 public:
     {1}();

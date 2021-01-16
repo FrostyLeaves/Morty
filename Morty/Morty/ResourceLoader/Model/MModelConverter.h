@@ -30,7 +30,7 @@ class MSkeleton;
 class MMeshResource;
 class MModelInstance;
 class MSkeletalAnimation;
-class MORTY_CLASS MModelConverter
+class MORTY_API MModelConverter
 {
 public:
 	MModelConverter(MEngine* pEngine);

@@ -12,7 +12,7 @@
 #include <queue>
 
 template<typename IDTYPE>
-class MORTY_CLASS MIDPool
+class MORTY_API MIDPool
 {
 public:
     MIDPool():m_IDPool(0){}
@@ -27,7 +27,7 @@ private:
 };
 
 template<typename IDTYPE>
-class MORTY_CLASS MRepeatIDPool
+class MORTY_API MRepeatIDPool
 {
 public:
     MRepeatIDPool() :m_IDPool(0) {}

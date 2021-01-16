@@ -1,3 +1,6 @@
 [submodule "Morty/ThirdParty/spot"]
 	path = Morty/ThirdParty/spot
 	url = https://github.com/r-lyeh-archived/spot.git
+[submodule "assimp"]
+	path = assimp
+	url = https://github.com/assimp/assimp.git

@@ -17,7 +17,7 @@
 
 class MWindowsRenderView;
 class MRenderDepthTexture;
-class MORTY_CLASS MVulkanRenderTarget : public MIRenderTarget
+class MORTY_API MVulkanRenderTarget : public MIRenderTarget
 {
 public:
 	M_OBJECT(MVulkanRenderTarget)

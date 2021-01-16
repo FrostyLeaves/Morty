@@ -15,7 +15,7 @@
 #include "Quaternion.h"
 #include "MTransform.h"
 
-class MORTY_CLASS M3DNode : public MNode
+class MORTY_API M3DNode : public MNode
 {
 public:
 	M_OBJECT(M3DNode);

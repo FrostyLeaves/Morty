@@ -20,7 +20,7 @@
 #include <windows.h>
 
 
-class MORTY_CLASS MWindowsRenderView : public MIRenderView
+class MORTY_API MWindowsRenderView : public MIRenderView
 {
 public:
     MWindowsRenderView();

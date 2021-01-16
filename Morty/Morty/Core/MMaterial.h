@@ -19,7 +19,7 @@
 
 #include <vector>
 
-struct MORTY_CLASS MShaderRefTextureParam : public MShaderTextureParam
+struct MORTY_API MShaderRefTextureParam : public MShaderTextureParam
 {
 public:
 	MShaderRefTextureParam();
@@ -30,7 +30,7 @@ public:
 
 class MShader;
 class MShaderResource;
-class MORTY_CLASS MMaterial : public MResource
+class MORTY_API MMaterial : public MResource
 {
 public:
 	M_RESOURCE(MMaterial)

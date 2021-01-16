@@ -12,7 +12,7 @@
 
 #include <functional>
 
-class MORTY_CLASS MRefCounter
+class MORTY_API MRefCounter
 {
 public:
 	MRefCounter() : m_unReferenceNumber(0) {}

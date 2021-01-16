@@ -18,7 +18,7 @@ class MIRenderBackTexture;
 class MRenderBackTexture;
 class MRenderSubpassTexture;
 class MTextureRenderTarget;
-class MORTY_CLASS MForwardTransparentWork : public MObject
+class MORTY_API MForwardTransparentWork : public MObject
 {
 public:
 	M_OBJECT(MForwardTransparentWork);

@@ -16,7 +16,7 @@
 #include "MString.h"
 
 
-class MORTY_CLASS MAndroidRenderView : public MIRenderView
+class MORTY_API MAndroidRenderView : public MIRenderView
 {
 public:
 	MAndroidRenderView();

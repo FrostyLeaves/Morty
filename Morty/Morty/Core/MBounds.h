@@ -16,7 +16,7 @@
 
 #include <vector>
 
-class MORTY_CLASS MIBounds : public MSerializer
+class MORTY_API MIBounds : public MSerializer
 {
 public:
 	MIBounds() {}
@@ -27,7 +27,7 @@ public:
 };
 
 class MBoundsOBB;
-class MORTY_CLASS MBoundsAABB : public MIBounds
+class MORTY_API MBoundsAABB : public MIBounds
 {
 public:
 	MBoundsAABB() {}
@@ -58,7 +58,7 @@ public:
 	Vector3 m_v3MaxPoint;
 };
 
-class MORTY_CLASS MBoundsOBB : public MIBounds
+class MORTY_API MBoundsOBB : public MIBounds
 {
 public:
 	MBoundsOBB() {}
@@ -89,7 +89,7 @@ public:
 	Matrix3 m_matEigVectors;
 };
 
-class MORTY_CLASS MBoundsSphere : public MIBounds
+class MORTY_API MBoundsSphere : public MIBounds
 {
 public:
 	MBoundsSphere();

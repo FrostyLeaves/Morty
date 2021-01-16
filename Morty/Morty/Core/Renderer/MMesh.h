@@ -17,7 +17,7 @@ class MVertexBuffer;
 struct MVertex;
 class MMaterial;
 
-class MORTY_CLASS MIMesh
+class MORTY_API MIMesh
 {
 public:
 	MIMesh(const bool& bModifiable = false);
@@ -74,7 +74,7 @@ protected:
 };
 
 template <class VERTEX_TYPE>
-class MORTY_CLASS MMesh : public MIMesh
+class MORTY_API MMesh : public MIMesh
 {
 public:
 	MMesh(const bool& bModifiable = false)

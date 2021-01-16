@@ -17,7 +17,7 @@ class MIDevice;
 class MTextureBuffer;
 class MRenderTextureBuffer;
 class MDepthTextureBuffer;
-class MORTY_CLASS MITexture
+class MORTY_API MITexture
 {
 public:
 	MITexture(){}
@@ -35,7 +35,7 @@ public:
 	virtual unsigned char* GetImageData() { return nullptr; }
 };
 
-class MORTY_CLASS MTexture : public MITexture
+class MORTY_API MTexture : public MITexture
 {
 public:
     MTexture();
@@ -77,7 +77,7 @@ private:
 
 };
 
-class MORTY_CLASS MTextureCube : public MITexture
+class MORTY_API MTextureCube : public MITexture
 {
 public:
 	MTextureCube();
@@ -114,11 +114,11 @@ private:
 	MTextureBuffer* m_pTextureBuffer;
 };
 
-class MORTY_CLASS MIRenderTexture : public MITexture
+class MORTY_API MIRenderTexture : public MITexture
 {
 };
 
-class MORTY_CLASS MIRenderBackTexture : public MIRenderTexture
+class MORTY_API MIRenderBackTexture : public MIRenderTexture
 {
 public:
 	MIRenderBackTexture();
@@ -148,7 +148,7 @@ protected:
 	METextureLayout m_eRenderType;
 };
 
-class MORTY_CLASS MRenderSwapchainTexture : public MIRenderBackTexture
+class MORTY_API MRenderSwapchainTexture : public MIRenderBackTexture
 {
 public:
 	MRenderSwapchainTexture();
@@ -158,7 +158,7 @@ public:
 	virtual void DestroyBuffer(MIDevice* pDevice) override;
 };
 
-class MORTY_CLASS MRenderBackTexture : public MIRenderBackTexture
+class MORTY_API MRenderBackTexture : public MIRenderBackTexture
 {
 public:
 	MRenderBackTexture();
@@ -169,7 +169,7 @@ public:
 	virtual void DestroyBuffer(MIDevice* pDevice) override;
 };
 
-class MORTY_CLASS MRenderSubpassTexture : public MIRenderBackTexture
+class MORTY_API MRenderSubpassTexture : public MIRenderBackTexture
 {
 public:
 	MRenderSubpassTexture();
@@ -180,7 +180,7 @@ public:
 	virtual void DestroyBuffer(MIDevice* pDevice) override;
 };
 
-class MORTY_CLASS MRenderDepthTexture : public MIRenderTexture
+class MORTY_API MRenderDepthTexture : public MIRenderTexture
 {
 public:
 	MRenderDepthTexture();
