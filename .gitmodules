@@ -7,3 +7,9 @@
 [submodule "Morty/ThirdParty/rapidjson"]
 	path = Morty/ThirdParty/rapidjson
 	url = https://github.com/Tencent/rapidjson.git
+[submodule "Morty/ThirdParty/assimp"]
+	path = Morty/ThirdParty/assimp
+	url = https://github.com/assimp/assimp.git
+[submodule "Morty/ThirdParty/eigen"]
+	path = Morty/ThirdParty/eigen
+	url = https://github.com/libigl/eigen.git
