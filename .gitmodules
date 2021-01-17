@@ -1,6 +1,9 @@
 [submodule "Morty/ThirdParty/spot"]
 	path = Morty/ThirdParty/spot
 	url = https://github.com/r-lyeh-archived/spot.git
-[submodule "assimp"]
-	path = assimp
-	url = https://github.com/assimp/assimp.git
+[submodule "Morty/ThirdParty/SPIRV-Cross"]
+	path = Morty/ThirdParty/SPIRV-Cross
+	url = https://github.com/KhronosGroup/SPIRV-Cross.git
+[submodule "Morty/ThirdParty/rapidjson"]
+	path = Morty/ThirdParty/rapidjson
+	url = https://github.com/Tencent/rapidjson.git
