@@ -48,7 +48,7 @@ target_include_directories(Editor
     PUBLIC 
         ${MORTY_CODE_DIRECTORIES}
         ${EDITOR_CODE_DIRECTORIES}
-        ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/dirent
+        ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/dirent/include
 )
 
 ############################################################

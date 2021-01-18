@@ -50,7 +50,7 @@ bool MEngine::OpenProject(const MString& strProjectPath)
 {
 	m_Project.SetWorkPath(strProjectPath);
 
-	m_pResourceManager->SetSearchPath({ ".", strProjectPath });
+	m_pResourceManager->SetSearchPath({strProjectPath });
 
 	return true;
 }

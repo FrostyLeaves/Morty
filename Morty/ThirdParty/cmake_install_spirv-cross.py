@@ -38,5 +38,12 @@ def build_SPIRV_Cross_for_windows():
     shutil.rmtree(SPIRV_CROSS_BUILD_PATH)
 
 
+os.chdir(SPIRV_CROSS_PATH)
+os.system("checkout_glslang_spirv_tools.sh")
+os.system("build_glslang_spirv_tools.sh")
+os.chdir(WORK_PATH)
+
+
+
 build_SPIRV_Cross_for_windows()
 

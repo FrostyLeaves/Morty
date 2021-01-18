@@ -28,7 +28,7 @@ m_tResSuffixToType[vSuffixList[i]] = Type; \
 MResourceManager::MResourceManager()
 	: m_ResourceDB()
 	, m_pEngine(nullptr)
-	, m_vSearchPath({ "." })
+	, m_vSearchPath({ "" })
 {
 	REGISTER_RESOURCE_TYPE(MEResourceType::SkelAnim, MSkeletalAnimationResource, SUFFIX_SKELANIM);
 	REGISTER_RESOURCE_TYPE(MEResourceType::Mesh, MMeshResource, SUFFIX_MESH);
@@ -43,6 +43,23 @@ MResourceManager::~MResourceManager()
 {
 	DELETE_CLEAR_MAP(m_tResourceLoader);
 	DELETE_CLEAR_MAP(m_tResources);
+}
+
+void MResourceManager::SetSearchPath(const std::vector<MString>& vSearchPath)
+{
+	m_vSearchPath = { "" }; //empty for absolute path.
+
+	for (const MString& strPath : vSearchPath)
+	{
+		if (!strPath.empty() && strPath.back() != '/')
+		{
+			m_vSearchPath.push_back(strPath + '/');
+		}
+		else
+		{
+			m_vSearchPath.push_back(strPath);
+		}
+	}
 }
 
 MEResourceType MResourceManager::GetResourceType(const MString& strResourcePath)
@@ -68,27 +85,20 @@ MResource* MResourceManager::LoadResource(const MString& strResourcePath, const 
 
 	if (pLoader = m_tResourceLoader[eResourceType])
 	{
-		if (pResource = pLoader->Load(this, strResourcePath))
+		for (MString strSearchPath : m_vSearchPath)
 		{
-			m_tPathResources[strResourcePath] = pResource;
-		}
-		else
-		{
-			for (MString strSearchPath : m_vSearchPath)
+			std::string strFullpath = strSearchPath + strResourcePath;
+			std::ifstream ifs(strFullpath.c_str(), std::ios::binary);
+			if (!ifs.good())
+				continue;
+
+			if (pResource = pLoader->Load(this, strFullpath))
 			{
-				std::string strFullpath = strSearchPath + "/" + strResourcePath;
-				std::ifstream ifs(strFullpath.c_str(), std::ios::binary);
-				if(!ifs.good())
-					continue;
-
-				if (pResource = pLoader->Load(this, strSearchPath + "/" + strResourcePath))
-				{
-					m_tPathResources[strResourcePath] = pResource;
-					break;
-				}
-
-				MLogManager::GetInstance()->Error("Load Resource try to find: [path: %s]", (strSearchPath + "/" + strResourcePath).c_str());
+				m_tPathResources[strResourcePath] = pResource;
+				break;
 			}
+
+			MLogManager::GetInstance()->Error("Load Resource try to find: [path: %s]", (strSearchPath + "/" + strResourcePath).c_str());
 		}
 	}
 

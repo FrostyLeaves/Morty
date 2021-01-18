@@ -74,7 +74,7 @@ public:
 		return pResource;
 	}
 
-	void SetSearchPath(const std::vector<MString>& vSearchPath) { m_vSearchPath = vSearchPath; }
+	void SetSearchPath(const std::vector<MString>& vSearchPath);
 
 	MEResourceType GetResourceType(const MString& strResourcePath);
 

@@ -2,7 +2,8 @@ import cmake
 import os
 import sys
 import shutil
-
+import codecs
+import chardet
 
 WORK_PATH = os.getcwd()
 ASSIMP_PATH = WORK_PATH + "/assimp"
@@ -83,7 +84,30 @@ def build_assimp_for_android():
 
         shutil.rmtree(temp_dir)
 
+
+def procBOM(strPath, bAdd):
+    
+    f = open(strPath, "rb")
+    fcontent = f.read()
+    f.close()
+
+    codeType = chardet.detect(fcontent)["encoding"]
+    if codeType.lower().find('utf-8') == -1 and codeType.lower().find('ascii') == -1 :
+        return
+    
+    if fcontent[:3] != codecs.BOM_UTF8:
+        fcontent = codecs.BOM_UTF8 + fcontent
+        
+        f = open(strPath, "wb+")
+        f.write(fcontent)
+        f.close()
+
 def build_assimp_for_windows():
+
+    for root, dirs, files in os.walk(ASSIMP_PATH + "/code/AssetLib/AMF", topdown=False):
+        for name in files:
+            file_full_path = os.path.join(root, name)
+            procBOM(file_full_path, True)
 
     CMAKE_PATH = "cmake"
 

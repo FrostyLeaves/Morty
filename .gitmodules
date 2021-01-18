@@ -13,3 +13,6 @@
 [submodule "Morty/ThirdParty/eigen"]
 	path = Morty/ThirdParty/eigen
 	url = https://github.com/libigl/eigen.git
+[submodule "Morty/ThirdParty/dirent"]
+	path = Morty/ThirdParty/dirent
+	url = https://github.com/tronkko/dirent.git

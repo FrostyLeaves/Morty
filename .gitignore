@@ -285,7 +285,6 @@ iOSInjectionProject/
 **/xcshareddata/WorkspaceSettings.xcsettings
 
 # End of https://www.gitignore.io/api/swift,xcode,Cobjective-c,osx
-Morty/Debug
+Morty/out
 Morty/.vs/
-Morty/Morty/Resource/Model/
-Morty/ThirdParty
+Morty/Resource/Model/
