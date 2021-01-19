@@ -15,6 +15,12 @@ MIRenderView::~MIRenderView()
 
 }
 
+bool MIRenderView::Initialize(MEngine* pEngine, const char* svWindowName)
+{
+	m_pEngine = pEngine;
+	return true;
+}
+
 void MIRenderView::Release()
 {
 	for (MViewport* pvp : m_vViewport)

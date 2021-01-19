@@ -354,6 +354,20 @@ bool MVulkanRenderTarget::RebindRenderBuffer(MVulkanDevice* pDevice)
 	return true;
 }
 
+MVulkanRenderTarget* MVulkanRenderTarget::CreateForSurface(MEngine* pEngine, MIRenderView* pView, VkSurfaceKHR surface)
+{
+	MVulkanRenderTarget* pRenderTarget = pEngine->GetObjectManager()->CreateObject<MVulkanRenderTarget>();
+	pRenderTarget->m_VkSurface = surface;
+	pRenderTarget->m_pView = pView;
+	pRenderTarget->Initialize();
+
+	pView->SetRenderTarget(pRenderTarget);
+
+	pRenderTarget->Resize(Vector2(pView->GetViewWidth(), pView->GetViewHeight()));
+
+	return pRenderTarget;
+}
+
 #ifdef MORTY_WIN
 MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MEngine* pEngine, MIRenderView* pView)
 {
@@ -364,7 +378,7 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MEngine* pEngine,
 	MWindowsRenderView* pWinView = dynamic_cast<MWindowsRenderView*>(pView);
 	if (nullptr == pWinView)
 		return nullptr;
-	
+
 	VkWin32SurfaceCreateInfoKHR surfaceCreateInfo;
 	surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
 	surfaceCreateInfo.pNext = NULL;
@@ -381,16 +395,7 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForWindowsView(MEngine* pEngine,
 		return nullptr;
 	}
 	
-	MVulkanRenderTarget* pRenderTarget = pEngine->GetObjectManager()->CreateObject<MVulkanRenderTarget>();
-	pRenderTarget->m_VkSurface = surface;
-	pRenderTarget->m_pView = pView;
-	pRenderTarget->Initialize();
-
-	pView->SetRenderTarget(pRenderTarget);
-
-	pRenderTarget->Resize(Vector2(pView->GetViewWidth(), pView->GetViewHeight()));
-
-	return pRenderTarget;
+	return CreateForSurface(pEngine, pView, surface);
 }
 
 #endif
@@ -427,19 +432,7 @@ MVulkanRenderTarget* MVulkanRenderTarget::CreateForAndroidView(MEngine* pEngine,
 		return nullptr;
 	}
 
-	MVulkanRenderTarget* pRenderTarget = new MVulkanRenderTarget(pVkDevice);
-	pRenderTarget->m_VkSurface = surface;
-	pRenderTarget->m_pView = pView;
-	pRenderTarget->Initialize();
-
-	pView->SetRenderTarget(pRenderTarget);
-
-	MLogManager::GetInstance()->Information("CreateForAndroidView: Test to call Resize");
-	pRenderTarget->Resize(pView->GetViewWidth(), pView->GetViewHeight());
-
-
-	MLogManager::GetInstance()->Information("CreateForAndroidView: Finished");
-	return pRenderTarget;
+	return CreateForSurface(pEngine, pView, surface);
 }
 
 #endif

@@ -16,3 +16,6 @@
 [submodule "Morty/ThirdParty/dirent"]
 	path = Morty/ThirdParty/dirent
 	url = https://github.com/tronkko/dirent.git
+[submodule "Morty/ThirdParty/SDL"]
+	path = Morty/ThirdParty/SDL
+	url = https://github.com/SDL-mirror/SDL.git

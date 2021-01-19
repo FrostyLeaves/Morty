@@ -1,8 +1,8 @@
 ﻿#include "MainEditor.h"
 
 #include "imgui.h"
-#include "imgui_impl_win32.h"
-
+#include "imgui_impl_sdl.h"
+#include "SDL.h"
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 #include "imgui_impl_dx11.h"
@@ -13,6 +13,7 @@
 #include "Vulkan/MVulkanWrapper.h"
 #include "Vulkan/MVulkanRenderer.h"
 #include "Vulkan/MVulkanRenderTarget.h"
+#include <SDL_vulkan.h>
 #endif
 
 #include "Vulkan/MVulkanRenderTarget.h"
@@ -47,7 +48,7 @@
 #include "NotifyManager.h"
 
 MainEditor::MainEditor()
-	: MWindowsRenderView()
+	: MIRenderView()
 	, m_pNodeTreeView(nullptr)
 	, m_pPropertyView(nullptr)
 	, m_pMaterialView(nullptr)
@@ -61,9 +62,10 @@ MainEditor::MainEditor()
 	, m_bShowResource(false)
 	, m_ImguiRenderPass()
 	, m_funcCloseCallback(nullptr)
+	, m_pSDLWindow(nullptr)
 {
-	m_nWidth = 800.0f;
-	m_nHeight = 480.0f;
+	m_v2WindowSize.x = 800.0f;
+	m_v2WindowSize.y = 480.0f;
 }
 
 MainEditor::~MainEditor()
@@ -79,6 +81,11 @@ void MainEditor::SetEditorNode(MNode* pNode)
 
 bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 {
+	//Setup Window
+	if (!MIRenderView::Initialize(pEngine, svWindowName))
+		return false;
+
+
 	//Setup ImGui
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -90,17 +97,12 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	style.ItemSpacing.x = 2.0f;
 
 	ImVec4 bgColor = style.Colors[ImGuiCol_WindowBg];
-	style.Colors[ImGuiCol_ChildWindowBg] = bgColor;
+	//style.Colors[ImGuiCol_ChildWindowBg] = bgColor;
 
 	io.ConfigWindowsMoveFromTitleBarOnly = true;
 
-	//Setup Window
-	if (!MWindowsRenderView::Initialize(pEngine, svWindowName))
-		return false;
 
-	
-	// Setup Platform/Renderer bindings
-	ImGui_ImplWin32_Init(GetHWND());
+	InitializeSDLWindow();
 
 	m_ImguiRenderPass.m_vBackDesc.push_back(MPassTargetDescription(true, MColor(0.0f, 0.0f, 0.0f, 1.0f)));
 	m_pEngine->GetDevice()->GenerateRenderPass(&m_ImguiRenderPass, GetRenderTarget());
@@ -126,13 +128,65 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	vulkanInitInfo.PipelineCache = VK_NULL_HANDLE;
 	vulkanInitInfo.Queue = pDevice->m_VkGraphicsQueue;
 	vulkanInitInfo.QueueFamily = pDevice->FindQueueGraphicsFamilies(pDevice->m_VkPhysicalDevice);
+	vulkanInitInfo.FreeDescriptSetFunction = [pDevice](VkDescriptorSet set) {
+		pDevice->m_ObjectDestructor.DestroyDescriptorSetLater(set);
+	};
+
+	vulkanInitInfo.DestroyBufferFunction = [pDevice](VkBuffer buffer) {
+		pDevice->m_ObjectDestructor.DestroyBufferLater(buffer);
+	};
+
+	vulkanInitInfo.DestroyDeviceMemoryFunction = [pDevice](VkDeviceMemory memory) {
+		pDevice->m_ObjectDestructor.DestroyDeviceMemoryLater(memory);
+	};
+
+	vulkanInitInfo.DestroyImageViewFunction = [pDevice](VkImageView view) {
+		pDevice->m_ObjectDestructor.DestroyImageViewLater(view);
+	};
+
+	vulkanInitInfo.DestroyImageFunction = [pDevice](VkImage image) {
+		pDevice->m_ObjectDestructor.DestroyImageLater(image);
+	};
+
+	vulkanInitInfo.DestroySamplerFunction = [pDevice](VkSampler sampler) {
+		pDevice->m_ObjectDestructor.DestroySamplerLater(sampler);
+	};
+
+	vulkanInitInfo.DestroyDescriptorSetLayoutFunction = [pDevice](VkDescriptorSetLayout layout) {
+		pDevice->m_ObjectDestructor.DestroyDescriptorSetLayoutLater(layout);
+	};
+
+	vulkanInitInfo.DestroyPipelineLayoutFunction = [pDevice](VkPipelineLayout layout) {
+		pDevice->m_ObjectDestructor.DestroyPipelineLayoutLater(layout);
+	};
+
+	vulkanInitInfo.DestroyPipelineFunction = [pDevice](VkPipeline pipeline) {
+		pDevice->m_ObjectDestructor.DestroyPipelineLater(pipeline);
+	};
+
+	vulkanInitInfo.DestroyRenderPassFunction = [pDevice](VkRenderPass renderpass) {
+		pDevice->m_ObjectDestructor.DestroyRenderPassLater(renderpass);
+	};
+
+	vulkanInitInfo.DestroyShaderModuleFunction = [pDevice](VkShaderModule module) {
+		pDevice->m_ObjectDestructor.DestroyShaderModuleLater(module);
+	};
+
+	vulkanInitInfo.DestroySemaphoreFunction = [pDevice](VkSemaphore semaphore) {
+		pDevice->m_ObjectDestructor.DestroySemaphoreLater(semaphore);
+	};
+
+	vulkanInitInfo.DestroyFramebufferFunction = [pDevice](VkFramebuffer buffer) {
+		pDevice->m_ObjectDestructor.DestroyFramebufferLater(buffer);
+	};
+
 
 	MVulkanRenderTarget* pVulkanRenderTarget = dynamic_cast<MVulkanRenderTarget*>(GetRenderTarget());
 	pVulkanRenderTarget->RegisterRenderProgram<MForwardRenderProgram>();
 	MIRenderProgram* pRenderProgram = pVulkanRenderTarget->GetRenderProgram();
 
 	
-	ImGui_ImplVulkan_Init(&vulkanInitInfo, m_ImguiRenderPass.m_aVkRenderPass[0], pDevice);
+	ImGui_ImplVulkan_Init(&vulkanInitInfo, m_ImguiRenderPass.m_aVkRenderPass[0]);
 	
 
 	VkCommandBuffer buffer = pDevice->BeginCommands();
@@ -189,24 +243,22 @@ void MainEditor::Release()
 	ImGui_ImplVulkan_Shutdown();
 #endif
 
-	ImGui_ImplWin32_Shutdown();
+	ImGui_ImplSDL2_Shutdown();
+
 	ImGui::DestroyContext();
 
-	MWindowsRenderView::Release();
 }
 
 void MainEditor::OnResize(const int& nWidth, const int& nHeight)
 {
-	MWindowsRenderView::OnResize(nWidth, nHeight);
-
 	if (nWidth == 0 || nHeight == 0)
 		return;
 
 	if (m_vViewport.empty())
 		return;
 
-	m_nWidth = nWidth;
-	m_nHeight = nHeight;
+	m_v2WindowSize.x = nWidth;
+	m_v2WindowSize.y = nHeight;
 }
 
 void MainEditor::Input(MInputEvent* pEvent)
@@ -228,7 +280,8 @@ void MainEditor::OnRenderEnd()
 	ImGui_ImplVulkan_NewFrame();
 #endif
 
-	ImGui_ImplWin32_NewFrame();
+	ImGui_ImplSDL2_NewFrame(m_pSDLWindow);
+
 	ImGui::NewFrame();
 	
 	ShowMenu();
@@ -260,9 +313,30 @@ void MainEditor::OnRenderEnd()
 #endif
 }
 
+bool MainEditor::GetMinimized()
+{
+	return false;
+}
+
+bool MainEditor::MainLoop(const float& fDelta)
+{
+	SDL_Event event;
+	bool bClosed = false;
+	while (SDL_PollEvent(&event))
+	{
+		ImGui_ImplSDL2_ProcessEvent(&event);
+		if (event.type == SDL_QUIT)
+			bClosed = true;
+		if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(m_pSDLWindow))
+			bClosed = true;
+	}
+
+	return !bClosed;
+}
+
 void MainEditor::SetRenderTarget(MIRenderTarget* pRenderTarget)
 {
-	MWindowsRenderView::SetRenderTarget(pRenderTarget);
+	MIRenderView::SetRenderTarget(pRenderTarget);
 
 	if (pRenderTarget)
 	{
@@ -289,6 +363,40 @@ void MainEditor::Notify_Edit_Material(const MVariant& var)
 		}
 	}
 
+}
+
+void MainEditor::InitializeSDLWindow()
+{
+	MVulkanDevice* pDevice = dynamic_cast<MVulkanDevice*>(m_pEngine->GetDevice());
+
+	// Setup SDL
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
+	{
+		printf("Error: %s\n", SDL_GetError());
+		return;
+	}
+
+	// Setup window
+	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+	m_pSDLWindow = SDL_CreateWindow("Dear ImGui SDL2+Vulkan example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_v2WindowSize.x, m_v2WindowSize.y, window_flags);
+
+	// Create Window Surface
+	VkSurfaceKHR surface;
+	if (SDL_Vulkan_CreateSurface(m_pSDLWindow, pDevice->m_VkInstance, &surface) == 0)
+	{
+		printf("Failed to create Vulkan surface.\n");
+		return;
+	}
+
+	MVulkanRenderTarget::CreateForSurface(m_pEngine, this, surface);
+
+
+	// Create Framebuffers
+	int w, h;
+	SDL_GetWindowSize(m_pSDLWindow, &w, &h);
+
+	// Setup Platform/Renderer bindings
+	ImGui_ImplSDL2_InitForVulkan(m_pSDLWindow);
 }
 
 void MainEditor::ShowMenu()
@@ -338,9 +446,7 @@ void MainEditor::ShowRenderView()
 		uint32_t unFrameIdx = m_pEngine->GetRenderer()->GetFrameIndex();
 		if (void* pTexture = m_SceneTexture.GetTexture(unFrameIdx))
 		{
-			ImTextureID texid;
-			texid.pTexture = pTexture;
-			texid.nType = 0;
+			ImTextureID texid = pTexture;
 			ImGui::Image(texid, v2RenderViewSize);
 		}
 	}
@@ -476,13 +582,4 @@ void MainEditor::OnRenderBegin()
 		m_ImguiRenderPass.m_vBackDesc[0].cClearColor = GetBackColor();
 	//	m_ImguiRenderPass.m_vBackDesc[0].cClearColor = MColor(1, 0, 0, 1);
 	}
-}
-
-extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK MainEditor::ViewProcessFunction(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	if (ImGui_ImplWin32_WndProcHandler(hwnd, message, wParam, lParam))
-		return true;
-
-	return MWindowsRenderView::ViewProcessFunction(hwnd, message, wParam, lParam);
 }

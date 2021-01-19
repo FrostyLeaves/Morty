@@ -448,7 +448,10 @@ void PropertyBase::EditSaveMResource(const MString& stringID, MResource* pResour
 
 		ImGui::SameLine();
 
-		if (ImGui::Button(ImGui::GetID(pResource), "Save", ImVec2(fWidth * 0.5f, 0)))
+		char btn_name[64];
+		sprintf(btn_name, "Save_%d", ImGui::GetID(pResource));
+
+		if (ImGui::Button(btn_name, ImVec2(fWidth * 0.5f, 0)))
 			pResource->Save();
 
 		if (bButtonDown)
@@ -484,11 +487,11 @@ void PropertyBase::ShowTexture(MTextureBuffer* pTextureBuffer)
 			{
 				ImGui::Spacing();
 				ImGui::SameLine((fImageWidth - fMaxImageSize) * 0.5f);
-				ImGui::Image(ImTextureID(pTextureBuffer->GetResourceView(), 0), ImVec2(fMaxImageSize, fMaxImageSize));
+				ImGui::Image(ImTextureID(pTextureBuffer->GetResourceView()), ImVec2(fMaxImageSize, fMaxImageSize));
 			}
 			else
 			{
-				ImGui::Image(ImTextureID(pTextureBuffer->GetResourceView(), 0), ImVec2(fImageWidth, fImageWidth));
+				ImGui::Image(ImTextureID(pTextureBuffer->GetResourceView()), ImVec2(fImageWidth, fImageWidth));
 			}
 		}
 	}
