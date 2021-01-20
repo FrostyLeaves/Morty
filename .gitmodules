@@ -19,3 +19,6 @@
 [submodule "Morty/ThirdParty/MoltenVK"]
 	path = Morty/ThirdParty/MoltenVK
 	url = https://github.com/KhronosGroup/MoltenVK.git
+[submodule "Morty/ThirdParty/SDL"]
+	path = Morty/ThirdParty/SDL
+	url = https://github.com/SDL-mirror/SDL.git

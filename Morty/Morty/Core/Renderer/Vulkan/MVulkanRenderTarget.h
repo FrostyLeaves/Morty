@@ -45,6 +45,9 @@ public:
 
 	virtual void Resize(const Vector2& v2Size) override;
 
+
+	static MVulkanRenderTarget* CreateForSurface(MEngine* pEngine, MIRenderView* pView, VkSurfaceKHR surface);
+
 #ifdef MORTY_WIN
 	static MVulkanRenderTarget* CreateForWindowsView(MEngine* pEngine, MIRenderView* pView);
 #endif

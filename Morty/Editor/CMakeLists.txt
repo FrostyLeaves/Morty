@@ -94,3 +94,14 @@ endif()
 # Morty
 ############################################################
 
+############################################################
+# SDL
+############################################################
+target_include_directories(Editor
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/SDL/include/SDL2
+)
+set(SDL2_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/SDL/cmake)
+find_package(SDL2)
+
+target_link_libraries(Editor PRIVATE SDL2::SDL2)

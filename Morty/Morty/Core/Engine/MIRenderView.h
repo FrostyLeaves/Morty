@@ -29,7 +29,7 @@ public:
 
 public:
 
-	virtual bool Initialize(MEngine* pEngine, const char* svWindowName) { return true; };
+	virtual bool Initialize(MEngine* pEngine, const char* svWindowName);
 	virtual void Release();
 
 	virtual int GetViewWidth() = 0;

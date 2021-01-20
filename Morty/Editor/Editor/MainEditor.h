@@ -4,7 +4,7 @@
 #include "MVariant.h"
 #include "MRenderPass.h"
 #include "SceneTexture.h"
-#include "DirectX11/MWindowsRenderView.h"
+#include "MIRenderView.h"
 
 class MNode;
 class MScene;
@@ -14,7 +14,7 @@ class NodeTreeView;
 class PropertyView;
 class MaterialView;
 class ResourceView;
-class MainEditor : public MWindowsRenderView
+class MainEditor : public MIRenderView
 {
 public:
 
@@ -35,6 +35,13 @@ public:
 	virtual void OnRenderBegin() override;
 	virtual void OnRenderEnd() override;
 
+	virtual int GetViewWidth() override { return m_v2WindowSize.x; }
+	virtual int GetViewHeight() override { return m_v2WindowSize.y; }
+
+	virtual bool GetMinimized() override;
+
+	virtual bool MainLoop(const float& fDelta) override;
+
 	virtual void SetRenderTarget(MIRenderTarget* pRenderTarget) override;
 
 public:
@@ -45,6 +52,7 @@ public:
 
 	void Notify_Edit_Material(const MVariant& var);
 
+	void InitializeSDLWindow();
 
 public:
 
@@ -57,9 +65,6 @@ public:
 	void ShowMessage();
 	void ShowResource();
 
-public:
-	virtual LRESULT CALLBACK ViewProcessFunction(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) override;
-
 protected:
 
 	NodeTreeView* m_pNodeTreeView;
@@ -69,6 +74,8 @@ protected:
 
 	std::vector<IBaseView*> m_vChildView;
 
+
+	Vector2 m_v2WindowSize;
 	Vector2 m_v2RenderViewPos;
 	Vector2 m_v2RenderViewSize;
 
@@ -87,6 +94,8 @@ protected:
 	MRenderPass m_ImguiRenderPass;
 
 	std::function<bool()> m_funcCloseCallback;
+
+	struct SDL_Window* m_pSDLWindow;
 };
 
 
