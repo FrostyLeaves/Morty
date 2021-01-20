@@ -3,25 +3,20 @@
 
 #include <stdint.h>
 
-#ifdef MORTY_EXPORTS
-#if defined(__WINDOWS_) || defined(_WINDOWS) || defined(WIN32)
+
+//define MORTY_WIN
+//define MORTY_MACOS
+//#define MORTY_ANDROID
+//#define MORTY_IOS
+
+#if defined(MORTY_WIN)
+    #ifdef MORTY_EXPORTS
         #define MORTY_API __declspec(dllexport)
     #else
-        #define MORTY_API
-    #endif
-#else
-	#if defined(__WINDOWS_) || defined(_WINDOWS) || defined(WIN32)
         #define MORTY_API __declspec(dllimport)
-    #else
-        #define MORTY_API
     #endif
-#endif
-
-#if defined(__WINDOWS_) || defined(_WINDOWS) || defined(WIN32)
-	#define MORTY_WIN
 #else
-	//#define MORTY_ANDROID
-    //#define MORTY_IOS
+        #define MORTY_API
 #endif
 
 

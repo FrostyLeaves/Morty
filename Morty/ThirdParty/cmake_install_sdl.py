@@ -1,9 +1,6 @@
-import cmake
 import os
 import sys
 import shutil
-import codecs
-import chardet
 
 WORK_PATH = os.getcwd()
 SDL_PATH = WORK_PATH + "/SDL"
@@ -34,8 +31,8 @@ def build_sdl_for_windows():
       ' ' + SDL_PATH
     )
 
-    os.system(CMAKE_PATH + " --build ./ --target INSTALL --config Debug")
-    os.system(CMAKE_PATH + " --build ./ --target INSTALL --config Release")
+    os.system(CMAKE_PATH + " --build ./ --target install --config Debug")
+    os.system(CMAKE_PATH + " --build ./ --target install --config Release")
 
     os.chdir(WORK_PATH)
 

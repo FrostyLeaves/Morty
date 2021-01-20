@@ -33,7 +33,7 @@ const std::vector<const char*> ValidationLayers = {
 };
 const std::vector<const char*> DeviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-	VK_KHR_MAINTENANCE1_EXTENSION_NAME
+	VK_KHR_MAINTENANCE1_EXTENSION_NAME,
 };
 
 
@@ -919,7 +919,12 @@ bool MVulkanDevice::InitVulkanInstance()
 	createInfo.enabledLayerCount = 0;
 #endif
 
-	std::vector<const char*> enabledExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
+	std::vector<const char*> enabledExtensions = { VK_KHR_SURFACE_EXTENSION_NAME,
+#ifdef MORTY_MACOS
+        "VK_EXT_metal_surface",
+        "VK_MVK_macos_surface"
+#endif
+    };
 
 #if defined(MORTY_WIN)
 	enabledExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);

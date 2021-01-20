@@ -209,6 +209,18 @@ set(MORTY_CODE_DIRECTORIES ${MORTY_CODE_DIRECTORIES}
 # ThirdParty
 ############################################################
 
+
+if(WIN32)
+    target_compile_definitions(Morty PRIVATE MORTY_EXPORTS)
+
+    target_compile_definitions(Morty PUBLIC MORTY_WIN)
+elseif(APPLE)
+
+    target_compile_definitions(Morty PUBLIC MORTY_MACOS)
+
+endif()
+
+
 if(WIN32)
 ############################################################
 # Vulkan
@@ -415,8 +427,6 @@ target_include_directories(Morty
     PUBLIC 
         ${MORTY_CODE_DIRECTORIES}
 )
-
-target_compile_definitions(Morty PRIVATE MORTY_EXPORTS)
 
 set_target_properties(Morty PROPERTIES
          LIBRARY_OUTPUT_PATH_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/../out/build/Debug

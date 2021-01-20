@@ -15,6 +15,7 @@ target_include_directories(Demo
         ${EDITOR_CODE_DIRECTORIES}
 )
 
+if(WIN32)
 add_custom_command(TARGET Demo POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_BINARY_DIR}/Morty/Morty.dll"
@@ -39,3 +40,4 @@ add_custom_command(TARGET Demo POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/SDL/bin/SDL2.dll"
         $<TARGET_FILE_DIR:Demo>)
+endif()

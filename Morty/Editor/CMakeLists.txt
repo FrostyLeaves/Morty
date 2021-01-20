@@ -48,7 +48,9 @@ target_include_directories(Editor
     PUBLIC 
         ${MORTY_CODE_DIRECTORIES}
         ${EDITOR_CODE_DIRECTORIES}
+if(APPLE)
         ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/dirent/include
+endif()
 )
 
 
@@ -101,7 +103,12 @@ target_include_directories(Editor
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/SDL/include/SDL2
 )
-set(SDL2_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/SDL/cmake)
+if(WIN32)
+    set(SDL2_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/SDL/cmake)
+else()
+    set(SDL2_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/SDL/lib/cmake/SDL2)
+endif()
+
 find_package(SDL2)
 
 target_link_libraries(Editor PRIVATE SDL2::SDL2)
