@@ -5,6 +5,8 @@
 #include "MMath.h"
 #include "Timer/MTimer.h"
 
+#include <float.h>
+
 MBoundsOBB::MBoundsOBB(const Vector3* vPoints, const uint32_t& unArrayLength)
 {
 	SetPoints((MByte*)vPoints, unArrayLength, 0, sizeof(Vector3));

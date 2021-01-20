@@ -120,7 +120,7 @@ public:
 
 	static MTypedClass* New(const MString& strTypeName);
 
-	static std::map<MString, std::function<MTypedClass* (void)>>& GetFactory();
+	static std::map<MString, std::function<MTypedClass* (void)> >& GetFactory();
 };
 
 template <typename T>

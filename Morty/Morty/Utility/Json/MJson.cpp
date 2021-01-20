@@ -140,7 +140,7 @@ void JsonValueToMVariant(Value* pValue, MVariant& variant)
 
 	else if (pValue->IsArray())
 	{
-		Value value = pValue->GetArray();
+		auto value = pValue->GetArray();
 		uint32_t unSize = value.Size();
 
 		variant = MVariantArray();

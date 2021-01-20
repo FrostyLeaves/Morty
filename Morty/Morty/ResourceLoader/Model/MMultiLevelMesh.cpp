@@ -1,8 +1,10 @@
-﻿#include "MMultiLevelMesh.h"
+#include "MMultiLevelMesh.h"
 #include "MModelResource.h"
 #include "MLogManager.h"
 
 #include "MFunction.h"
+
+#include <float.h>
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b) )
 #define MAX(a, b) ((a) > (b) ? (a) : (b) )

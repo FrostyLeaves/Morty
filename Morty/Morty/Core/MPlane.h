@@ -28,15 +28,9 @@ public:
 public:
 	
 	//ax + by + cz + d = 0
-	union
-	{
-		struct {
-			Vector3 m_v3ABC;
-			float m_fD;
-		};
-
-		Vector4 m_v4Plane;
-	};
+	
+    Vector4 m_v4Plane;
+	
 	
 };
 

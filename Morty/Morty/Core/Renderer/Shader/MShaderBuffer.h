@@ -18,15 +18,12 @@ public:
     MShaderBuffer();
 	virtual ~MShaderBuffer() {}
 
-	union {
-		struct {
-			MShaderParamSet m_MaterialSet;
-			MShaderParamSet m_FrameSet;
-			MShaderParamSet m_MeshSet;
-			MShaderParamSet m_SkeletonSet;
-		};
-		MShaderParamSet m_vShaderSets[M_VALID_SHADER_SET_NUM];
-	};
+//			MShaderParamSet m_MaterialSet;
+//			MShaderParamSet m_FrameSet;
+//			MShaderParamSet m_MeshSet;
+//			MShaderParamSet m_SkeletonSet;
+    MShaderParamSet m_vShaderSets[M_VALID_SHADER_SET_NUM];
+	
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 

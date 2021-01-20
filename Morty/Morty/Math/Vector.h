@@ -1,4 +1,4 @@
-﻿#ifndef _VECTOR_H_
+#ifndef _VECTOR_H_
 #define _VECTOR_H_
 
 #include "MGlobal.h"
@@ -146,6 +146,8 @@ public:
 	const Vector4& operator *= (const float& value);
 	const Vector4& operator /= (const float& value);
 
+    Vector3& GetVector3();
+    
 	float Length() const;
 	void Normalize();
 

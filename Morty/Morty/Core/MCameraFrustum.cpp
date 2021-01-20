@@ -74,7 +74,7 @@ MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const MBoundsAABB& aab
 	const Vector3& v3Min = aabb.m_v3MinPoint;
 	for (uint32_t i = 0; i < 6; ++i)
 	{
-		const Vector3& v3Normal = m_vPlanes[i].m_v3ABC;
+		const Vector3& v3Normal = m_vPlanes[i].m_v4Plane.GetVector3();
 
 		for (uint32_t n = 0; n < 3; ++n)
 		{
@@ -111,7 +111,7 @@ MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const MBoundsAABB& aab
 	const Vector3& v3Min = aabb.m_v3MinPoint;
 	for (uint32_t i = 0; i < 6; ++i)
 	{
-		const Vector3& v3Normal = m_vPlanes[i].m_v3ABC;
+		const Vector3& v3Normal = m_vPlanes[i].m_v4Plane.GetVector3();
 
 		if (v3Direction * v3Normal >= 0.0f)
 		{

@@ -79,27 +79,27 @@ private:
 
 #define PROPERTY_NODE_EDIT(  NODE, KEY_NAME, TYPE, GET_FUNC, SET_FUNC) \
 if (ShowNodeBegin(KEY_NAME))	{ \
-	TYPE value = NODE->##GET_FUNC(); \
+	TYPE value = NODE->GET_FUNC(); \
 	if (Edit##TYPE(value)) {\
-		NODE->##SET_FUNC(value);	\
+		NODE->SET_FUNC(value);	\
 	}	\
 	ShowNodeEnd();	\
 }
 
 #define PROPERTY_VALUE_EDIT( NODE, KEY_NAME, TYPE, GET_FUNC, SET_FUNC) \
 	ShowValueBegin(KEY_NAME); {\
-	TYPE value = NODE->##GET_FUNC(); \
+	TYPE value = NODE->GET_FUNC(); \
 	if (Edit##TYPE(value)) {\
-		NODE->##SET_FUNC(value);	\
+		NODE->SET_FUNC(value);	\
 	} \
 	ShowValueEnd();	\
 }
 
 #define PROPERTY_VALUE_EDIT_SPEED_MIN_MAX( NODE, KEY_NAME, TYPE, GET_FUNC, SET_FUNC, SPEED, MIN_VAR, MAX_VAR) \
 	ShowValueBegin(KEY_NAME); {\
-	TYPE value = NODE->##GET_FUNC(); \
+	TYPE value = NODE->GET_FUNC(); \
 	if (Edit##TYPE(value, SPEED, MIN_VAR, MAX_VAR)) {\
-		NODE->##SET_FUNC(value);	\
+		NODE->SET_FUNC(value);	\
 	} \
 	ShowValueEnd();	\
 }

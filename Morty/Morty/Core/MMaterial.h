@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @File         MMaterial
  * 
  * @Created      2019-08-27 19:22:28
@@ -45,9 +45,9 @@ public:
 	std::vector<MShaderTextureParam*>* GetTextureParams();
 
 	MShaderParamSet* GetShaderParamSets() { return m_vShaderSets; }
-	MShaderParamSet* GetMaterialParamSet() { return &m_MaterialSet; }
-	MShaderParamSet* GetFrameParamSet() { return &m_FrameSet; }
-	MShaderParamSet* GetMeshParamSet() { return &m_MeshSet; }
+	MShaderParamSet* GetMaterialParamSet() { return &m_vShaderSets[SHADER_PARAM_SET_MATERIAL]; }
+	MShaderParamSet* GetFrameParamSet() { return &m_vShaderSets[SHADER_PARAM_SET_FRAME]; }
+	MShaderParamSet* GetMeshParamSet() { return &m_vShaderSets[SHADER_PARAM_SET_MESH]; }
 
 	void SetTexutreParam(const MString& strName, MResource* pTexResource);
 	void SetTexutreParam(const uint32_t& unIndex, MResource* pTexResource);
@@ -103,15 +103,13 @@ protected:
 
 private:
 
-	union {
-		struct {
-			MShaderParamSet m_MaterialSet;
-			MShaderParamSet m_FrameSet;
-			MShaderParamSet m_MeshSet;
-			MShaderParamSet m_SkeletonSet;
-		};
-		MShaderParamSet m_vShaderSets[M_VALID_SHADER_SET_NUM];
-	};
+	
+//			MShaderParamSet m_MaterialSet;
+//			MShaderParamSet m_FrameSet;
+//			MShaderParamSet m_MeshSet;
+//			MShaderParamSet m_SkeletonSet;
+    MShaderParamSet m_vShaderSets[M_VALID_SHADER_SET_NUM];
+	
 
 
 	

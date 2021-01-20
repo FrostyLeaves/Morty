@@ -1,4 +1,4 @@
-﻿#include "Vector.h"
+#include "Vector.h"
 #include <cmath>
 #include <cassert>
 
@@ -277,6 +277,11 @@ Vector4 Vector4::operator-(const Vector4& value) const
 const Vector4& Vector4::operator*=(const float& value)
 {
 	return *this = *this * value;
+}
+
+Vector3& Vector4::GetVector3()
+{
+    return *((Vector3*)(this));
 }
 
 Vector2::Vector2()

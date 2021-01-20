@@ -22,14 +22,15 @@ def build_glslang_for_windows():
     os.system(CMAKE_PATH + 
       ' --G "Visual Studio 16 Win64" ' +
       " -DCMAKE_INSTALL_PREFIX=" + GLSLANG_INSTALL_PATH +
+      " -DCMAKE_DEBUG_POSTFIX=d" +
       " " + GLSLANG_PATH)
 
 
     if not os.path.exists(GLSLANG_INSTALL_PATH): 
         os.makedirs(GLSLANG_INSTALL_PATH)
         
-    os.system(CMAKE_PATH + " --build ./ --target INSTALL --config Debug")
-    os.system(CMAKE_PATH + " --build ./ --target INSTALL --config Release")
+    os.system(CMAKE_PATH + " --build ./ --target install --config Debug")
+    #os.system(CMAKE_PATH + " --build ./ --target install --config Release")
     
 
     os.chdir(WORK_PATH)

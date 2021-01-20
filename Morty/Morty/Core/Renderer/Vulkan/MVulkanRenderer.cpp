@@ -87,7 +87,7 @@ void MVulkanRenderer::SetViewport(const float& fX, const float& fY, const float&
 	MRenderStage& rs = m_vRenderStages.back();
 	vkCmdSetViewport(rs.vkCommandBuffer, 0, 1, &m_VkViewport);
 	
-	VkRect2D scissorRect = {fX, fY, fWidth, fHeight};
+	VkRect2D scissorRect = {int32_t(fX), int32_t(fY), uint32_t(fWidth), uint32_t(fHeight)};
 	vkCmdSetScissor(rs.vkCommandBuffer, 0, 1, &scissorRect);
 }
 

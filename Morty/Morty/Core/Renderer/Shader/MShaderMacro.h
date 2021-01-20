@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @File         MShader
  * 
  * @Created      2020-5-8 22:15:46
@@ -32,13 +32,13 @@ public:
 protected:
 
 	friend class MMaterial;
-	void SetMacro(const MString& strKey, const MString& strValue, std::vector<std::pair<MString, MString>>& vector);
+	void SetMacro(const MString& strKey, const MString& strValue, std::vector<std::pair<MString, MString> >& vector);
 
 public:
-	std::vector<std::pair<MString, MString>> m_vMacroParams;
-	std::vector<std::pair<MString, MString>> m_vMortyMacroParams;
+	std::vector<std::pair<MString, MString> > m_vMacroParams;
+	std::vector<std::pair<MString, MString> > m_vMortyMacroParams;
 
-    static std::vector<std::pair<MString, MString>> s_vGlobalMacroParams;
+    static std::vector<std::pair<MString, MString> > s_vGlobalMacroParams;
 };
 
 #endif

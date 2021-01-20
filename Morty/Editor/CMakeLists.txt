@@ -51,15 +51,44 @@ target_include_directories(Editor
         ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/dirent/include
 )
 
+
+if(WIN32)
 ############################################################
 # Vulkan
 ############################################################
-find_package(Vulkan)
-if(Vulkan_FOUND)
-    target_link_libraries(Editor PRIVATE Vulkan::Vulkan)
-else(Vulkan_FOUND)
-    message(FATAL_ERROR "Vulkan library not found")
-endif(Vulkan_FOUND)
+    find_package(Vulkan)
+    if(Vulkan_FOUND)
+        target_link_libraries(Editor PRIVATE Vulkan::Vulkan)
+    else(Vulkan_FOUND)
+        message(FATAL_ERROR "Vulkan library not found")
+    endif(Vulkan_FOUND)
+
+elseif(APPLE)
+############################################################
+# MoltenVK
+############################################################
+target_include_directories(Editor
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/MoltenVK/include
+)
+
+target_link_directories(Editor
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/MoltenVK
+)
+
+add_library(MoltenVK UNKNOWN IMPORTED)
+
+set_target_properties(MoltenVK
+                    PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/MoltenVK/include"
+                                IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/Package/Debug/MoltenVK/dylib/macOS/libMoltenVK.dylib"
+                                IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/Package/Release/MoltenVK/dylib/macOS/libMoltenVK.dylib"
+)
+
+
+target_link_libraries(Editor PRIVATE MoltenVK)
+
+endif()
 
 ############################################################
 # Morty

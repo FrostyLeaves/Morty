@@ -1,4 +1,4 @@
-﻿#include "MMaterial.h"
+#include "MMaterial.h"
 #include "Shader/MShader.h"
 #include "Shader/MShaderBuffer.h"
 #include "Shader/MShaderResource.h"
@@ -30,12 +30,13 @@ MMaterial::MMaterial()
 	, m_nPixelShaderIndex(0)
 	, m_ShaderMacro()
 	, m_unMaterialID(0)
-	, m_MaterialSet(0)
-	, m_FrameSet(1)
-	, m_MeshSet(2)
-	, m_SkeletonSet(3)
 {
 	m_eResourceType = MEResourceType::Material;
+    
+    m_vShaderSets[SHADER_PARAM_SET_MATERIAL] = MShaderParamSet(SHADER_PARAM_SET_MATERIAL);
+    m_vShaderSets[SHADER_PARAM_SET_FRAME] = MShaderParamSet(SHADER_PARAM_SET_FRAME);
+    m_vShaderSets[SHADER_PARAM_SET_MESH] = MShaderParamSet(SHADER_PARAM_SET_MESH);
+    m_vShaderSets[SHADER_PARAM_SET_SKELETON] = MShaderParamSet(SHADER_PARAM_SET_SKELETON);
 }
 
 MMaterial::~MMaterial()
@@ -45,17 +46,17 @@ MMaterial::~MMaterial()
 
 std::vector<MShaderConstantParam*>* MMaterial::GetShaderParams()
 {
-	return &m_MaterialSet.m_vParams;
+	return &m_vShaderSets[SHADER_PARAM_SET_MATERIAL].m_vParams;
 }
 
 std::vector<MShaderSampleParam*>* MMaterial::GetSampleParams()
 {
-	return &m_MaterialSet.m_vSamples;
+	return &m_vShaderSets[SHADER_PARAM_SET_MATERIAL].m_vSamples;
 }
 
 std::vector<MShaderTextureParam*>* MMaterial::GetTextureParams()
 {
-	return &m_MaterialSet.m_vTextures;
+	return &m_vShaderSets[SHADER_PARAM_SET_MATERIAL].m_vTextures;
 }
 
 void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)
@@ -63,7 +64,7 @@ void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)
 	static auto funcResChangedFunction = [this, strName, pResource](const uint32_t& eReloadType) {
 		if (MTextureResource* pTexResource = dynamic_cast<MTextureResource*>(pResource))
 		{
-			for (MShaderTextureParam* pParam : m_MaterialSet.m_vTextures)
+			for (MShaderTextureParam* pParam : GetMaterialParamSet()->m_vTextures)
 			{
 				if (pParam->strName == strName)
 				{
@@ -78,9 +79,9 @@ void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)
 	};
 
 
-	for (int i = 0; i < m_MaterialSet.m_vTextures.size(); ++i)
+	for (int i = 0; i < GetMaterialParamSet()->m_vTextures.size(); ++i)
 	{
-		MShaderRefTextureParam* pParam = static_cast<MShaderRefTextureParam*>(m_MaterialSet.m_vTextures[i]);
+		MShaderRefTextureParam* pParam = static_cast<MShaderRefTextureParam*>(GetMaterialParamSet()->m_vTextures[i]);
 		if (strName == pParam->strName)
 		{
 			if (pParam->eType == ETexture2D)
@@ -113,15 +114,15 @@ void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)
 
 void MMaterial::SetTexutreParam(const uint32_t& unIndex, MResource* pTexResource)
 {
-	if (unIndex >= m_MaterialSet.m_vTextures.size())
+	if (unIndex >= GetMaterialParamSet()->m_vTextures.size())
 		return;
 
-	SetTexutreParam(m_MaterialSet.m_vTextures[unIndex]->strName, pTexResource);
+	SetTexutreParam(GetMaterialParamSet()->m_vTextures[unIndex]->strName, pTexResource);
 }
 
 MShaderConstantParam* MMaterial::FindShaderParam(const MString& strName)
 {
-	for (MShaderConstantParam* pParam : m_MaterialSet.m_vParams)
+	for (MShaderConstantParam* pParam : GetMaterialParamSet()->m_vParams)
 	{
 		if (pParam->strName == strName)
 			return pParam;
@@ -171,7 +172,7 @@ void MMaterial::Encode(MString& strCode)
 	material.AppendMVariant("macro", macro);
 
 	MStruct vTextures;
-	for (MShaderTextureParam* pParam : m_MaterialSet.m_vTextures)
+	for (MShaderTextureParam* pParam : GetMaterialParamSet()->m_vTextures)
 	{
 		MShaderRefTextureParam* pRefParam = static_cast<MShaderRefTextureParam*>(pParam);
 
@@ -184,7 +185,7 @@ void MMaterial::Encode(MString& strCode)
 	material.AppendMVariant("textures", vTextures);
 
 	MStruct vParams;
-	for (MShaderConstantParam* pParam : m_MaterialSet.m_vParams)
+	for (MShaderConstantParam* pParam : GetMaterialParamSet()->m_vParams)
 	{
 		vParams.AppendMVariant(pParam->strName, pParam->var);
 	}
@@ -256,7 +257,7 @@ void MMaterial::Decode(MString& strCode)
 		}
 	}
 
-	auto& vShaderParams = m_MaterialSet.m_vParams;
+	auto& vShaderParams = GetMaterialParamSet()->m_vParams;
 
 	MStruct& params = *pParams->GetStruct();
 	for (uint32_t i = 0; i < params.GetMemberCount(); ++i)

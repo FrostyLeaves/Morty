@@ -1,4 +1,4 @@
-﻿#include "MViewport.h"
+#include "MViewport.h"
 #include "MScene.h"
 #include "MCamera.h"
 #include "MEngine.h"
@@ -9,6 +9,8 @@
 #include "Node/Light/MDirectionalLight.h"
 
 #include "MForwardRenderProgram.h"
+
+#include <float.h>
 
 M_OBJECT_IMPLEMENT(MViewport, MObject)
 

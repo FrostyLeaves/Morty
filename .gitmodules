@@ -16,3 +16,6 @@
 [submodule "Morty/ThirdParty/dirent"]
 	path = Morty/ThirdParty/dirent
 	url = https://github.com/tronkko/dirent.git
+[submodule "Morty/ThirdParty/MoltenVK"]
+	path = Morty/ThirdParty/MoltenVK
+	url = https://github.com/KhronosGroup/MoltenVK.git

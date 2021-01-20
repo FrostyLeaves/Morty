@@ -14,6 +14,8 @@
 #include "MTextureRenderTarget.h"
 #include "MForwardRenderProgram.h"
 
+#include <float.h>
+
 M_OBJECT_IMPLEMENT(MForwardShadowMapWork, MObject)
 
 MForwardShadowMapWork::MForwardShadowMapWork()

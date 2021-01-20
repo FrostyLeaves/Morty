@@ -9,6 +9,7 @@
 #ifndef _M_MFORWARDPOSTPROCESSPROGRAM_H_
 #define _M_MFORWARDPOSTPROCESSPROGRAM_H_
 #include "MGlobal.h"
+#include "MEngine.h"
 #include "MForwardRenderProgram.h"
 
 class MMaterial;

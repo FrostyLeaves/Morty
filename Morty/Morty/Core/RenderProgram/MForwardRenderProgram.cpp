@@ -18,6 +18,7 @@
 #include "MIRenderTarget.h"
 
 #include <algorithm>
+#include <float.h>
 
 
 M_OBJECT_IMPLEMENT(MForwardRenderProgram, MIRenderProgram)

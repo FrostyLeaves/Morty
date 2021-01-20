@@ -14,10 +14,10 @@ MPlane::~MPlane()
 
 bool MPlane::IsOnFront(const Vector3& position)
 {
-	return (position * m_v3ABC) + m_fD > 0.0f;
+	return (position * m_v4Plane.GetVector3()) + m_v4Plane.w > 0.0f;
 }
 
 float MPlane::GetDistance(const Vector3& position)
 {
-	return ((position * m_v3ABC) + m_fD) / m_v3ABC.Length();
+	return ((position * m_v4Plane.GetVector3()) + m_v4Plane.w) / m_v4Plane.GetVector3().Length();
 }

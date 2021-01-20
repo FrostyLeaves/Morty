@@ -227,17 +227,24 @@ elseif(APPLE)
 ############################################################
 target_include_directories(Morty
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/MoltenVK/include
 )
 
 target_link_directories(Morty
     PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK
+        ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/MoltenVK
 )
 
-target_link_libraries(Morty
-    MoltenVK
+add_library(MoltenVK UNKNOWN IMPORTED)
+
+set_target_properties(MoltenVK
+                    PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/MoltenVK/include"
+                                IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/Package/Debug/MoltenVK/dylib/macOS/libMoltenVK.dylib"
+                                IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/Package/Release/MoltenVK/dylib/macOS/libMoltenVK.dylib"
 )
+
+
+target_link_libraries(Morty PRIVATE MoltenVK)
 
 endif()
 
@@ -270,76 +277,87 @@ target_link_libraries(Morty PRIVATE spirv-cross-cpp)
 # glslang
 ############################################################
 if(NOT TARGET GLSLang) # this if is required for subsequent runs of CMake
-   
 
     set(GLSLang_Include
         "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/include/glslang/SPIRV"
         "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/include/glslang/Include"
         "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/include/glslang/Public"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/include"
     )
+
+if(WIN32)
+    set(PPRS "")
+    set(PPOS_D "d.lib")
+    set(PPOS_R ".lib")
+elseif(APPLE)
+    set(PPRS "lib")
+    set(PPOS_D "d.a")
+    set(PPOS_R ".a")
+endif()
+
     
     add_library(GLSLang::GLSLang UNKNOWN IMPORTED)
 
     set_target_properties(GLSLang::GLSLang
                         PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLSLang_Include}"
-                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/glslangd.lib"
-                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/glslang.lib"
+                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}glslang${PPOS_D}"
+                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}glslang${PPOS_R}"
     )
 
     add_library(GLSLang::SPIRV UNKNOWN IMPORTED)
 
     set_target_properties(GLSLang::SPIRV
                    PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLSLang_Include}"
-                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/SPIRVd.lib"
-                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/SPIRV.lib"
+                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}SPIRV${PPOS_D}"
+                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}SPIRV${PPOS_R}"
     )
 
     add_library(GLSLang::GenericCodeGen UNKNOWN IMPORTED)
 
     set_target_properties(GLSLang::GenericCodeGen
                    PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLSLang_Include}"
-                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/GenericCodeGend.lib"
-                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/GenericCodeGen.lib"
+                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}GenericCodeGen${PPOS_D}"
+                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}GenericCodeGen${PPOS_R}"
     )
 
     add_library(GLSLang::HLSL UNKNOWN IMPORTED)
 
     set_target_properties(GLSLang::HLSL
                    PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLSLang_Include}"
-                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/HLSLd.lib"
-                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/HLSL.lib"
+                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}HLSL${PPOS_D}"
+                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}HLSL${PPOS_R}"
     )
 
     add_library(GLSLang::MachineIndependent UNKNOWN IMPORTED)
 
     set_target_properties(GLSLang::MachineIndependent
                    PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLSLang_Include}"
-                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/MachineIndependentd.lib"
-                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/MachineIndependent.lib"
+                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}MachineIndependent${PPOS_D}"
+                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}MachineIndependent${PPOS_R}"
     )
     
     add_library(GLSLang::OGLCompiler UNKNOWN IMPORTED)
 
     set_target_properties(GLSLang::OGLCompiler
                    PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLSLang_Include}"
-                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/OGLCompilerd.lib"
-                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/OGLCompiler.lib"
+                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}OGLCompiler${PPOS_D}"
+                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}OGLCompiler${PPOS_R}"
     )
     
     add_library(GLSLang::OSDependent UNKNOWN IMPORTED)
 
     set_target_properties(GLSLang::OSDependent
                    PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLSLang_Include}"
-                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/OSDependentd.lib"
-                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/OSDependent.lib"
+                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}OSDependent${PPOS_D}"
+                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}OSDependent${PPOS_R}"
     )
     
     add_library(GLSLang::SPVRemapper UNKNOWN IMPORTED)
 
     set_target_properties(GLSLang::SPVRemapper
                    PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLSLang_Include}"
-                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/SPVRemapperd.lib"
-                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/SPVRemapper.lib"
+                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}SPVRemapper${PPOS_D}"
+                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}SPVRemapper${PPOS_R}"
     )
 
     add_library(GLSLang::ALL INTERFACE IMPORTED)

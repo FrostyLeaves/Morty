@@ -1,4 +1,3 @@
-import cmake
 import os
 import sys
 import shutil
@@ -122,8 +121,8 @@ def build_assimp_for_windows():
       ' ' + ASSIMP_PATH
     )
 
-    os.system(CMAKE_PATH + " --build ./ --target INSTALL --config Debug")
-    os.system(CMAKE_PATH + " --build ./ --target INSTALL --config Release")
+    os.system(CMAKE_PATH + " --build ./ --target install --config Debug")
+    os.system(CMAKE_PATH + " --build ./ --target install --config Release")
 
     os.chdir(WORK_PATH)
 

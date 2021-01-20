@@ -1,4 +1,4 @@
-﻿#ifndef _M_GLOBAL_H_
+#ifndef _M_GLOBAL_H_
 #define _M_GLOBAL_H_
 
 #include <stdint.h>
@@ -20,8 +20,8 @@
 #if defined(__WINDOWS_) || defined(_WINDOWS) || defined(WIN32)
 	#define MORTY_WIN
 #else
-	#define MORTY_ANDROID
-    #define MORTY_IOS
+	//#define MORTY_ANDROID
+    //#define MORTY_IOS
 #endif
 
 

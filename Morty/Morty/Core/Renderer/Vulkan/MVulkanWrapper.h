@@ -3,6 +3,9 @@
 
 #include "MGlobal.h"
 
+//test for macos
+#include <vulkan/vulkan.h>
+
 #ifdef MORTY_WIN
 #include <vulkan/vulkan.h>
 #endif
@@ -10,6 +13,7 @@
 #define VK_USE_PLATFORM_ANDROID_KHR
 #define VK_NO_PROTOTYPES 1
 #include <vulkan/vulkan.h>
+
 
 int InitVulkan(void);
 

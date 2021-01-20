@@ -28,8 +28,8 @@ def build_SPIRV_Cross_for_windows():
     if not os.path.exists(SPIRV_CROSS_INSTALL_PATH): 
         os.makedirs(SPIRV_CROSS_INSTALL_PATH)
         
-    os.system(CMAKE_PATH + " --build ./ --target INSTALL --config Debug")
-    os.system(CMAKE_PATH + " --build ./ --target INSTALL --config Release")
+    os.system(CMAKE_PATH + " --build ./ --target install --config Debug")
+    os.system(CMAKE_PATH + " --build ./ --target install --config Release")
     
 
     os.chdir(WORK_PATH)

@@ -369,7 +369,7 @@ void MVulkanDevice::GenerateMipmaps(MTextureBuffer* pBuffer, const uint32_t& unM
 
 	int32_t mipWidth = pBuffer->m_unWidth;
 	int32_t mipHeight = pBuffer->m_unHeight;
-	uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(max(pBuffer->m_unWidth, pBuffer->m_unHeight)))) + 1;
+	uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(VALUE_MAX(pBuffer->m_unWidth, pBuffer->m_unHeight)))) + 1;
 
 	VkImageSubresourceRange vkSubresourceRange = {};
 	vkSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -711,7 +711,7 @@ void MVulkanDevice::GenerateTexture(MTextureBuffer** ppTextureBuffer, MTexture* 
 	
 	if (bGenerateMipmaps)
 	{
-		unMipmap = static_cast<uint32_t>(std::floor(std::log2(max(width, height)))) + 1;
+		unMipmap = static_cast<uint32_t>(std::floor(std::log2(VALUE_MAX(width, height)))) + 1;
 	}
 
 	VkImage textureImage = VK_NULL_HANDLE;

@@ -9,6 +9,7 @@
 #ifndef _M_MIRENDERTARGET_H_
 #define _M_MIRENDERTARGET_H_
 #include "MGlobal.h"
+#include "MEngine.h"
 #include "MIRenderer.h"
 #include "Type/MColor.h"
 #include "MIRenderProgram.h"

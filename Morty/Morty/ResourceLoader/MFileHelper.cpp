@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <float.h>
 
 #ifdef MORTY_WIN
 #include  <io.h>
@@ -47,6 +48,8 @@ MFileHelper::~MFileHelper()
 
 bool MFileHelper::MakeDir(MString strDirPath)
 {
+    
+#ifdef MORTY_WIN
 	uint32_t nChIdx = 0;
 	uint32_t nCopyIdx = 0;
 	char svPath[MAX_PATH] = { 0 };
@@ -70,9 +73,6 @@ bool MFileHelper::MakeDir(MString strDirPath)
 	{
 		return 0 == _mkdir(strDirPath.c_str());
 	}
-
-	
-#ifdef MORTY_WIN
 #endif
 
 	return true;
