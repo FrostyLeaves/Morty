@@ -236,6 +236,13 @@ void MainEditor::Release()
 
 	m_vChildView.clear();
 
+
+	if (MIRenderTarget* pRenderTarget = GetRenderTarget())
+	{
+		pRenderTarget->DeleteLater();
+		SetRenderTarget(NULL);
+	}
+
 	// Cleanup
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	ImGui_ImplDX11_Shutdown();
@@ -553,29 +560,29 @@ void MainEditor::OnRenderBegin()
 #if MORTY_RENDER_DATA_STATISTICS
 	MRenderStatistics::GetInstance()->unTriangleCount = 0;
 #endif
-	{
-		MViewport* pViewport = m_SceneTexture.GetViewport();
-		pViewport->SetScreenPosition(Vector2(m_v2RenderViewPos.x, m_v2RenderViewPos.y));
-
-		if (m_SceneTexture.GetSize().x != m_v2RenderViewSize.x || m_SceneTexture.GetSize().y != m_v2RenderViewSize.y)
-		{
-			m_SceneTexture.SetSize(Vector2(m_v2RenderViewSize.x, m_v2RenderViewSize.y));
-		}
-
-		m_SceneTexture.UpdateTexture();
-	}
-	m_unTriangleCount = MRenderStatistics::GetInstance()->unTriangleCount;
-
-
-
-	if (m_pMaterialView && m_bShowMaterial)
-	{
-		if (MIMeshInstance* pMeshIns = m_pNodeTreeView->GetSelectionNode()->DynamicCast<MIMeshInstance>())
-		{
-			m_pMaterialView->SetMaterial(pMeshIns->GetMaterial());
-		}
-		m_pMaterialView->UpdateMaterialTexture();
-	}
+// 	{
+// 		MViewport* pViewport = m_SceneTexture.GetViewport();
+// 		pViewport->SetScreenPosition(Vector2(m_v2RenderViewPos.x, m_v2RenderViewPos.y));
+// 
+// 		if (m_SceneTexture.GetSize().x != m_v2RenderViewSize.x || m_SceneTexture.GetSize().y != m_v2RenderViewSize.y)
+// 		{
+// 			m_SceneTexture.SetSize(Vector2(m_v2RenderViewSize.x, m_v2RenderViewSize.y));
+// 		}
+// 
+// 		m_SceneTexture.UpdateTexture();
+// 	}
+// 	m_unTriangleCount = MRenderStatistics::GetInstance()->unTriangleCount;
+// 
+// 
+// 
+// 	if (m_pMaterialView && m_bShowMaterial)
+// 	{
+// 		if (MIMeshInstance* pMeshIns = m_pNodeTreeView->GetSelectionNode()->DynamicCast<MIMeshInstance>())
+// 		{
+// 			m_pMaterialView->SetMaterial(pMeshIns->GetMaterial());
+// 		}
+// 		m_pMaterialView->UpdateMaterialTexture();
+//	}
 
 	if (!m_ImguiRenderPass.m_vBackDesc.empty())
 	{

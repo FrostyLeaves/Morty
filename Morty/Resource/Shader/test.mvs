@@ -1,0 +1,36 @@
+struct VS_IN_ONLY_POS_ANIM
+{
+    float3 pos : POSITION;
+    int bonesID[5] : BONES_ID;
+    float bonesWeight : BONES_WEIGHT;
+};
+
+struct VS_OUT_EMPTY
+{
+    float4 pos : SV_POSITION;
+    float2 uv : UV;
+    float3 test3 : TEST3;
+};
+
+//VS    per mesh
+cbuffer _M_E_cbMeshMatrix : register(b0)
+{
+    float4x4 U_matWorld;
+    float3x3 U_matNormal;
+};
+
+[[vk::binding(0,1)]] cbuffer TestB1
+{
+    float2 testf2;
+    float4 testf4;
+};
+
+VS_OUT_EMPTY VS(VS_IN_ONLY_POS_ANIM input)
+{
+    VS_OUT_EMPTY output;
+
+    output.pos = float4(input.pos, 1.0f);
+    output.uv = float2(1, 1);
+    output.test3 = float3(0,1,2);
+    return output;
+}
