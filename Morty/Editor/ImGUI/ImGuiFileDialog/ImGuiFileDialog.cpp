@@ -47,7 +47,7 @@ SOFTWARE.
 #define stat _stat
 #define stricmp _stricmp
 #include <cctype>
-#include "dirent/dirent.h" // directly open the dirent file attached to this lib
+#include "dirent.h" // directly open the dirent file attached to this lib
 #define PATH_SEP '\\'
 #ifndef PATH_MAX
 #define PATH_MAX 260

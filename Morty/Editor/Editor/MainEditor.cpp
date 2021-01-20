@@ -352,6 +352,58 @@ bool MainEditor::MainLoop(const float& fDelta)
             else if(event.window.event == SDL_WINDOWEVENT_CLOSE)
                 bClosed = true;
         }
+		else if (event.type == SDL_KEYDOWN && event.key.windowID == SDL_GetWindowID(m_pSDLWindow))
+		{
+			MKeyBoardInputEvent e(event.key.keysym.sym, MEKeyState::DOWN);
+			m_SceneTexture.GetViewport()->Input(&e);
+		}
+		else if (event.type == SDL_KEYUP && event.key.windowID == SDL_GetWindowID(m_pSDLWindow))
+		{
+			MKeyBoardInputEvent e(event.key.keysym.sym, MEKeyState::UP);
+			m_SceneTexture.GetViewport()->Input(&e);
+		}
+
+		else if (event.type == SDL_MOUSEBUTTONUP && event.button.windowID == SDL_GetWindowID(m_pSDLWindow))
+		{
+			MMouseInputEvent::MEMouseDownButton type;
+			if (event.button.button == 0x01) type = MMouseInputEvent::LeftButton;
+			if (event.button.button == 0x02) type = MMouseInputEvent::ScrollButton;
+			if (event.button.button == 0x03) type = MMouseInputEvent::RightButton;
+
+			MMouseInputEvent e(type, MMouseInputEvent::ButtonUp);
+			m_SceneTexture.GetViewport()->Input(&e);
+		}
+
+		else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.windowID == SDL_GetWindowID(m_pSDLWindow))
+		{
+			MMouseInputEvent::MEMouseDownButton type;
+			if (event.button.button == 0x01) type = MMouseInputEvent::LeftButton;
+			if (event.button.button == 0x02) type = MMouseInputEvent::ScrollButton;
+			if (event.button.button == 0x03) type = MMouseInputEvent::RightButton;
+
+			MMouseInputEvent e(type, MMouseInputEvent::ButtonDown);
+			m_SceneTexture.GetViewport()->Input(&e);
+		}
+
+		else if (event.type == SDL_MOUSEMOTION && event.button.windowID == SDL_GetWindowID(m_pSDLWindow))
+		{
+			Vector2 new_pos(event.button.x, event.button.y);
+
+			static Vector2 test_v2 = Vector2(-1, -1);
+			if (test_v2.x == -1 && test_v2.y == -1)
+				test_v2 = new_pos;
+
+			MMouseInputEvent e(new_pos, new_pos - test_v2);
+			test_v2 = new_pos;
+
+			m_SceneTexture.GetViewport()->Input(&e);
+		}
+	}
+
+	if (bClosed)
+	{
+		SDL_DestroyWindow(m_pSDLWindow);
+		m_pSDLWindow = nullptr;
 	}
 
 	return !bClosed;
@@ -577,29 +629,29 @@ void MainEditor::OnRenderBegin()
 #if MORTY_RENDER_DATA_STATISTICS
 	MRenderStatistics::GetInstance()->unTriangleCount = 0;
 #endif
-// 	{
-// 		MViewport* pViewport = m_SceneTexture.GetViewport();
-// 		pViewport->SetScreenPosition(Vector2(m_v2RenderViewPos.x, m_v2RenderViewPos.y));
-// 
-// 		if (m_SceneTexture.GetSize().x != m_v2RenderViewSize.x || m_SceneTexture.GetSize().y != m_v2RenderViewSize.y)
-// 		{
-// 			m_SceneTexture.SetSize(Vector2(m_v2RenderViewSize.x, m_v2RenderViewSize.y));
-// 		}
-// 
-// 		m_SceneTexture.UpdateTexture();
-// 	}
-// 	m_unTriangleCount = MRenderStatistics::GetInstance()->unTriangleCount;
-// 
-// 
-// 
-// 	if (m_pMaterialView && m_bShowMaterial)
-// 	{
-// 		if (MIMeshInstance* pMeshIns = m_pNodeTreeView->GetSelectionNode()->DynamicCast<MIMeshInstance>())
-// 		{
-// 			m_pMaterialView->SetMaterial(pMeshIns->GetMaterial());
-// 		}
-// 		m_pMaterialView->UpdateMaterialTexture();
-//	}
+	{
+		MViewport* pViewport = m_SceneTexture.GetViewport();
+		pViewport->SetScreenPosition(Vector2(m_v2RenderViewPos.x, m_v2RenderViewPos.y));
+
+		if (m_SceneTexture.GetSize().x != m_v2RenderViewSize.x || m_SceneTexture.GetSize().y != m_v2RenderViewSize.y)
+		{
+			m_SceneTexture.SetSize(Vector2(m_v2RenderViewSize.x, m_v2RenderViewSize.y));
+		}
+
+		m_SceneTexture.UpdateTexture();
+	}
+	m_unTriangleCount = MRenderStatistics::GetInstance()->unTriangleCount;
+
+
+
+	if (m_pMaterialView && m_bShowMaterial)
+	{
+		if (MIMeshInstance* pMeshIns = m_pNodeTreeView->GetSelectionNode()->DynamicCast<MIMeshInstance>())
+		{
+			m_pMaterialView->SetMaterial(pMeshIns->GetMaterial());
+		}
+		m_pMaterialView->UpdateMaterialTexture();
+	}
 
 	if (!m_ImguiRenderPass.m_vBackDesc.empty())
 	{

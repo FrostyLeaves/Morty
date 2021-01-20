@@ -9,12 +9,6 @@ add_executable(Demo Main.cpp)
 target_link_libraries(Demo Morty)
 target_link_libraries(Demo Editor)
 
-target_include_directories(Demo
-    PUBLIC 
-        ${MORTY_CODE_DIRECTORIES}
-        ${EDITOR_CODE_DIRECTORIES}
-)
-
 if(WIN32)
 add_custom_command(TARGET Demo POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different

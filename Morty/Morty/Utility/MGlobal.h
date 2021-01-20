@@ -9,14 +9,14 @@
 //#define MORTY_ANDROID
 //#define MORTY_IOS
 
-#if defined(MORTY_WIN)
+#ifdef MORTY_WIN
     #ifdef MORTY_EXPORTS
         #define MORTY_API __declspec(dllexport)
     #else
         #define MORTY_API __declspec(dllimport)
     #endif
 #else
-        #define MORTY_API
+    #define MORTY_API
 #endif
 
 

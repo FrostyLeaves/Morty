@@ -211,13 +211,15 @@ set(MORTY_CODE_DIRECTORIES ${MORTY_CODE_DIRECTORIES}
 
 
 if(WIN32)
-    target_compile_definitions(Morty PRIVATE MORTY_EXPORTS)
+    target_compile_definitions(Morty
+        PRIVATE MORTY_EXPORTS
+        PUBLIC MORTY_WIN
+)
 
-    target_compile_definitions(Morty PUBLIC MORTY_WIN)
 elseif(APPLE)
-
-    target_compile_definitions(Morty PUBLIC MORTY_MACOS)
-
+    target_compile_definitions(Morty
+        PUBLIC MORTY_MACOS
+)
 endif()
 
 

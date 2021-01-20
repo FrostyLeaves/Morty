@@ -53,6 +53,17 @@ if(APPLE)
 endif()
 )
 
+if(WIN32)
+    target_compile_definitions(Editor
+        PUBLIC MORTY_WIN
+)
+
+elseif(APPLE)
+    target_compile_definitions(Editor
+        PUBLIC MORTY_MACOS
+)
+endif()
+
 
 if(WIN32)
 ############################################################

@@ -28,27 +28,27 @@ void MoveInputNode::OnTick(const float& fDelta)
 
 	const float speed = m_fMaxSpeed;
 
-	if (true == m_tKeyBoardDown['W'])
+	if (true == m_tKeyBoardDown['w'])
 	{
 		m_v3MoveSpeed += m_pMoveNode->GetForward() * speed * fDelta;
 	}
-	if (true == m_tKeyBoardDown['S'])
+	if (true == m_tKeyBoardDown['s'])
 	{
 		m_v3MoveSpeed += m_pMoveNode->GetForward() * -speed * fDelta;
 	}
-	if (true == m_tKeyBoardDown['A'])
+	if (true == m_tKeyBoardDown['a'])
 	{
 		m_v3MoveSpeed += m_pMoveNode->GetRight() * -speed * fDelta;
 	}
-	if (true == m_tKeyBoardDown['D'])
+	if (true == m_tKeyBoardDown['d'])
 	{
 		m_v3MoveSpeed += m_pMoveNode->GetRight() * speed * fDelta;
 	}
-	if (true == m_tKeyBoardDown['Q'])
+	if (true == m_tKeyBoardDown['q'])
 	{
 		m_v3MoveSpeed += Vector3(0, 1, 0) * -speed * fDelta;
 	}
-	if (true == m_tKeyBoardDown['E'])
+	if (true == m_tKeyBoardDown['e'])
 	{
 		m_v3MoveSpeed += Vector3(0, 1, 0) * speed * fDelta;
 	}
