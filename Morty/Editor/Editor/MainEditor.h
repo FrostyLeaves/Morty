@@ -1,4 +1,4 @@
-﻿#ifndef _MAIN_EDITOR_H_
+#ifndef _MAIN_EDITOR_H_
 #define _MAIN_EDITOR_H_
 
 #include "MVariant.h"
@@ -35,10 +35,10 @@ public:
 	virtual void OnRenderBegin() override;
 	virtual void OnRenderEnd() override;
 
-	virtual int GetViewWidth() override { return m_v2WindowSize.x; }
-	virtual int GetViewHeight() override { return m_v2WindowSize.y; }
+	virtual int GetViewWidth() override { return m_v2DrawableSize.x; }
+	virtual int GetViewHeight() override { return m_v2DrawableSize.y; }
 
-	virtual bool GetMinimized() override;
+    virtual bool GetMinimized() override { return m_bWindowMinimized; }
 
 	virtual bool MainLoop(const float& fDelta) override;
 
@@ -76,6 +76,9 @@ protected:
 
 
 	Vector2 m_v2WindowSize;
+    Vector2 m_v2DrawableSize;
+    bool m_bWindowMinimized;
+    
 	Vector2 m_v2RenderViewPos;
 	Vector2 m_v2RenderViewSize;
 

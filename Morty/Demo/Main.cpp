@@ -69,7 +69,7 @@
 #include "MainEditor.h"
 #include "NotifyManager.h"
 #endif
-#include <direct.h>
+
 int main(int argc, char* argv[])
 {
 	MEngine engine;
@@ -86,12 +86,13 @@ int main(int argc, char* argv[])
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
 	pRootNode->SetName("RootNode");
 
- 	MNodeResource* pNodeResource = engine.GetResourceManager()->LoadResource("./Model/output/girl/girl.mnode")->DynamicCast<MNodeResource>();
+    MResource* pNodeResourceBase = engine.GetResourceManager()->LoadResource("./Model/output/girl/girl.mnode");
+    if (MNodeResource* pNodeResource = pNodeResourceBase ? pNodeResourceBase->DynamicCast<MNodeResource>() : nullptr)
+    {
+        MNode* pEditorNode = pNodeResource->CreateNode();
 
-	MNode* pEditorNode = pNodeResource->CreateNode();
-
-	pRootNode->AddNode(pEditorNode);
-
+        pRootNode->AddNode(pEditorNode);
+    }
 
 
 	if (!pRootNode->FindFirstChildByType<MDirectionalLight>())

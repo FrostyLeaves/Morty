@@ -7,7 +7,7 @@ WORK_PATH = os.getcwd()
 MOLTENVK_PATH = WORK_PATH + "/MoltenVK"
 MOLTENVK_INSTALL_PATH = WORK_PATH + "/installs/MoltenVK"
 
-MOLTENVK_BUILD_PATH = WORK_PATH + "/SPIRV-Cross-Build"
+MOLTENVK_BUILD_PATH = WORK_PATH + "/MoltenVK-Build"
 
 def build_MoltenVK_for_windows():
 

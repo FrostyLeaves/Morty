@@ -1,4 +1,4 @@
-﻿#include "MainEditor.h"
+#include "MainEditor.h"
 
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
@@ -63,9 +63,10 @@ MainEditor::MainEditor()
 	, m_ImguiRenderPass()
 	, m_funcCloseCallback(nullptr)
 	, m_pSDLWindow(nullptr)
+    , m_v2WindowSize(800.0f, 480.0f)
+    , m_v2DrawableSize(800.0f, 480.0f)
+    , m_bWindowMinimized(false)
 {
-	m_v2WindowSize.x = 800.0f;
-	m_v2WindowSize.y = 480.0f;
 }
 
 MainEditor::~MainEditor()
@@ -261,11 +262,15 @@ void MainEditor::OnResize(const int& nWidth, const int& nHeight)
 	if (nWidth == 0 || nHeight == 0)
 		return;
 
-	if (m_vViewport.empty())
-		return;
-
 	m_v2WindowSize.x = nWidth;
 	m_v2WindowSize.y = nHeight;
+    
+    int w, h;
+    SDL_Vulkan_GetDrawableSize(m_pSDLWindow, &w, &h);
+    m_v2DrawableSize.x = w;
+    m_v2DrawableSize.y = h;
+    
+    GetRenderTarget()->Resize(m_v2DrawableSize);
 }
 
 void MainEditor::Input(MInputEvent* pEvent)
@@ -320,11 +325,6 @@ void MainEditor::OnRenderEnd()
 #endif
 }
 
-bool MainEditor::GetMinimized()
-{
-	return false;
-}
-
 bool MainEditor::MainLoop(const float& fDelta)
 {
 	SDL_Event event;
@@ -334,8 +334,24 @@ bool MainEditor::MainLoop(const float& fDelta)
 		ImGui_ImplSDL2_ProcessEvent(&event);
 		if (event.type == SDL_QUIT)
 			bClosed = true;
-		if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(m_pSDLWindow))
-			bClosed = true;
+
+        if(event.type == SDL_WINDOWEVENT && event.window.windowID == SDL_GetWindowID(m_pSDLWindow))
+        {
+            if(event.window.event == SDL_WINDOWEVENT_RESIZED)
+            {
+                OnResize(event.window.data1, event.window.data2);
+            }
+            
+            else if(event.window.event == SDL_WINDOWEVENT_MINIMIZED)
+                m_bWindowMinimized = true;
+            else if(event.window.event == SDL_WINDOWEVENT_MAXIMIZED)
+                m_bWindowMinimized = false;
+            else if(event.window.event == SDL_WINDOWEVENT_RESTORED)
+                m_bWindowMinimized = false;
+            
+            else if(event.window.event == SDL_WINDOWEVENT_CLOSE)
+                bClosed = true;
+        }
 	}
 
 	return !bClosed;
@@ -385,7 +401,7 @@ void MainEditor::InitializeSDLWindow()
 
 	// Setup window
 	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-	m_pSDLWindow = SDL_CreateWindow("Dear ImGui SDL2+Vulkan example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_v2WindowSize.x, m_v2WindowSize.y, window_flags);
+	m_pSDLWindow = SDL_CreateWindow("Morty Editor", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_v2WindowSize.x, m_v2WindowSize.y, window_flags);
 
 	// Create Window Surface
 	VkSurfaceKHR surface;
@@ -394,13 +410,14 @@ void MainEditor::InitializeSDLWindow()
 		printf("Failed to create Vulkan surface.\n");
 		return;
 	}
+    
+    int w, h;
+    SDL_Vulkan_GetDrawableSize(m_pSDLWindow, &w, &h);
+    m_v2DrawableSize.x = w;
+    m_v2DrawableSize.y = h;
 
 	MVulkanRenderTarget::CreateForSurface(m_pEngine, this, surface);
 
-
-	// Create Framebuffers
-	int w, h;
-	SDL_GetWindowSize(m_pSDLWindow, &w, &h);
 
 	// Setup Platform/Renderer bindings
 	ImGui_ImplSDL2_InitForVulkan(m_pSDLWindow);

@@ -414,22 +414,22 @@ void PropertyBase::EditMResource(const MString& strDlgID, MResource* pResource, 
 	if (bButtonDown)
 	{
 		if (pResource)
-			ImGuiFileDialog::Instance()->OpenDialog(strDlgID, vTitleList[static_cast<int>(eResourceType)], vFilterList[static_cast<int>(eResourceType)], pResource->GetFolder(strResourcePathName), strButtonLabel, MString(""));
+			ImGuiFileDialog::Instance()->OpenDialog(strDlgID, vTitleList[static_cast<int>(eResourceType)], vFilterList[static_cast<int>(eResourceType)], pResource->GetFolder(strResourcePathName), strButtonLabel);
 		else
 			ImGuiFileDialog::Instance()->OpenDialog(strDlgID, vTitleList[static_cast<int>(eResourceType)], vFilterList[static_cast<int>(eResourceType)], ".");
 	}
 
-	if (ImGuiFileDialog::Instance()->FileDialog(strDlgID))
+	if (ImGuiFileDialog::Instance()->Display(strDlgID))
 	{
-		if (ImGuiFileDialog::Instance()->IsOk == true)
+		if (ImGuiFileDialog::Instance()->IsOk() == true)
 		{
 			if (funcLoadResource)
 			{
-				std::string filePathName = ImGuiFileDialog::Instance()->GetFilepathName();
+				std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
 				funcLoadResource(filePathName);
 			}
 		}
-		ImGuiFileDialog::Instance()->CloseDialog(strDlgID);
+		ImGuiFileDialog::Instance()->Close();
 	}
 }
 
@@ -456,17 +456,18 @@ void PropertyBase::EditSaveMResource(const MString& stringID, MResource* pResour
 
 		if (bButtonDown)
 		{
-			ImGuiFileDialog::Instance()->OpenDialog(stringID, vTitleList[static_cast<int>(pResource->GetType())], vFilterList[static_cast<int>(pResource->GetType())], pResource->GetFolder(strResourcePathName), strButtonLabel, MString(""));
+
+			ImGuiFileDialog::Instance()->OpenDialog(stringID, vTitleList[static_cast<int>(pResource->GetType())], vFilterList[static_cast<int>(pResource->GetType())], pResource->GetFolder(strResourcePathName), strButtonLabel);
 		}
 
-		if (ImGuiFileDialog::Instance()->FileDialog(stringID))
+		if (ImGuiFileDialog::Instance()->Display(stringID))
 		{
-			if (ImGuiFileDialog::Instance()->IsOk == true)
+			if (ImGuiFileDialog::Instance()->IsOk() == true)
 			{
-				std::string filePathName = ImGuiFileDialog::Instance()->GetFilepathName();
+				std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
 				pResource->SaveTo(filePathName);
 			}
-			ImGuiFileDialog::Instance()->CloseDialog(stringID);
+			ImGuiFileDialog::Instance()->Close();
 		}
 	}
 	else
