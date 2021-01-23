@@ -924,6 +924,12 @@ bool MVulkanDevice::InitVulkanInstance()
         "VK_EXT_metal_surface",
         "VK_MVK_macos_surface"
 #endif
+        
+#ifdef MORTY_IOS
+        "VK_EXT_metal_surface",
+        "VK_MVK_ios_surface",
+        "VK_MVK_moltenvk"
+#endif
     };
 
 #if defined(MORTY_WIN)
@@ -931,7 +937,7 @@ bool MVulkanDevice::InitVulkanInstance()
 #elif defined(MORTY_ANDROID)
 	enabledExtensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
 #elif defined(MORTY_IOS)
-	enabledExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+	//enabledExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 #endif
 
 	createInfo.enabledExtensionCount = enabledExtensions.size();

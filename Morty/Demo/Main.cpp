@@ -70,10 +70,15 @@
 #include "NotifyManager.h"
 #endif
 
+#include "SDL.h"
+
 int main(int argc, char* argv[])
 {
+    
+    std::string strBasePath = SDL_GetBasePath();
+    
 	MEngine engine;
-	engine.Initialize("../../../../Resource");
+	engine.Initialize(strBasePath + "/Resource");
 
 
 	// 	{
@@ -163,6 +168,6 @@ int main(int argc, char* argv[])
 	NotifyManager::GetInstance()->UnRegisterAll();
 #endif
 
-	system("PAUSE");
+	//system("PAUSE");
 	return 0;
 }

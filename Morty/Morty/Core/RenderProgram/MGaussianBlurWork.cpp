@@ -163,11 +163,6 @@ void MGaussianBlurWork::ReleaseRenderTargets()
 
 void MGaussianBlurWork::InitializeRenderPass()
 {
-	if (!m_pTempRenderPass)
-	{
-		MLogManager::GetInstance()->Error("MForwardRenderProgram::InitializeRenderPass error: rt == nullptr");
-		return;
-	}
 
 	//Init RenderPass
 	m_pTempRenderPass = new MRenderPass();

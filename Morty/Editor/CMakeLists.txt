@@ -53,73 +53,44 @@ if(APPLE)
 endif()
 )
 
-if(WIN32)
+
+
+if(MORTY_BUILD_TARGET STREQUAL "WIN")
+    include(../Cmake/add_vulkan.cmake)
+    include(../Cmake/add_sdl.cmake)
+
     target_compile_definitions(Editor
         PUBLIC MORTY_WIN
-)
+    )
+endif()
 
-elseif(APPLE)
+if(MORTY_BUILD_TARGET STREQUAL "MACOS")
+    include(../Cmake/add_vulkan_macos.cmake)
+    include(../Cmake/add_sdl.cmake)
     target_compile_definitions(Editor
         PUBLIC MORTY_MACOS
-)
+    )
+#    message(FATAL_ERROR MACOS)
+endif()
+
+if(MORTY_BUILD_TARGET STREQUAL "IOS")
+    include(../Cmake/add_vulkan_ios.cmake)
+    include(../Cmake/add_sdl_ios.cmake)
+    target_compile_definitions(Editor
+        PUBLIC MORTY_IOS
+    )
 endif()
 
 
-if(WIN32)
-############################################################
-# Vulkan
-############################################################
-    find_package(Vulkan)
-    if(Vulkan_FOUND)
-        target_link_libraries(Editor PRIVATE Vulkan::Vulkan)
-    else(Vulkan_FOUND)
-        message(FATAL_ERROR "Vulkan library not found")
-    endif(Vulkan_FOUND)
 
-elseif(APPLE)
-############################################################
-# MoltenVK
-############################################################
-target_include_directories(Editor
-    PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/MoltenVK/include
-)
-
-target_link_directories(Editor
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/MoltenVK
-)
-
-add_library(MoltenVK UNKNOWN IMPORTED)
-
-set_target_properties(MoltenVK
-                    PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/MoltenVK/include"
-                                IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/Package/Debug/MoltenVK/dylib/macOS/libMoltenVK.dylib"
-                                IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/Package/Release/MoltenVK/dylib/macOS/libMoltenVK.dylib"
-)
-
-
-target_link_libraries(Editor PRIVATE MoltenVK)
-
-endif()
-
-############################################################
-# Morty
-############################################################
-
-############################################################
-# SDL
-############################################################
-target_include_directories(Editor
-    PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/SDL/include/SDL2
-)
-if(WIN32)
-    set(SDL2_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/SDL/cmake)
+if(Vulkan_FOUND)
+    target_link_libraries(Editor PRIVATE Vulkan::Vulkan)
 else()
-    set(SDL2_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/SDL/lib/cmake/SDL2)
+    message(FATAL_ERROR "Vulkan not found.")
 endif()
 
-find_package(SDL2)
-
-target_link_libraries(Editor PRIVATE SDL2::SDL2)
+if(SDL2_FOUND)
+    target_link_libraries(Editor PUBLIC SDL2::SDL2)
+else()
+    message(FATAL_ERROR "SDL2 not found.")
+endif()

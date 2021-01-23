@@ -16,6 +16,11 @@ else()
         message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
+
+set(MORTY_BUILD_TARGET IOS)
+
+
+
 # 包含子项目。
 add_subdirectory ("Morty")
 add_subdirectory ("Editor")

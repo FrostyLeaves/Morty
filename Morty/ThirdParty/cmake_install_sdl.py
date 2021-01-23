@@ -38,8 +38,24 @@ def build_sdl_for_windows():
 
     shutil.rmtree(SDL_BUILD_PATH)
 
+def build_sdl_for_ios():
+
+    if not os.path.exists(SDL_BUILD_PATH):
+            os.makedirs(SDL_BUILD_PATH)
+            
+    os.chdir(SDL_PATH + "/Xcode/SDL")
+
+    os.system('xcodebuild' +
+    ' -scheme "Static Library-iOS"' +
+    ' SYMROOT="' + SDL_INSTALL_PATH + '/lib"' +
+    ' -configuration Release'
+    )
+
+    os.chdir(WORK_PATH)
+
+    shutil.rmtree(SDL_BUILD_PATH)
 
 
 
-build_sdl_for_windows()
-
+#build_sdl_for_windows()
+build_sdl_for_ios()

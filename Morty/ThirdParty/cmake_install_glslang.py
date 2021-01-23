@@ -39,5 +39,73 @@ def build_glslang_for_windows():
     shutil.rmtree(GLSLANG_BUILD_PATH)
 
 
-build_glslang_for_windows()
+def build_glslang_for_ios():
 
+    CMAKE_PATH = "cmake"
+
+
+    if not os.path.exists(GLSLANG_BUILD_PATH):
+            os.makedirs(GLSLANG_BUILD_PATH)
+            
+    os.chdir(GLSLANG_BUILD_PATH)
+
+
+    os.system(CMAKE_PATH + 
+      ' -G Xcode ' +
+      " -DCMAKE_INSTALL_PREFIX=" + GLSLANG_INSTALL_PATH +
+      " -DCMAKE_TOOLCHAIN_FILE=" + WORK_PATH + "/ios-cmake/ios.toolchain.cmake" +
+      " -DCMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM=L8DNJAKB7A" +
+      " -DPLATFORM=OS64COMBINED" +
+      " -DSKIP_GLSLANG_INSTALL=True" +
+      " -DENABLE_SPVREMAPPER=ON" +
+      " " + GLSLANG_PATH)
+
+
+    if not os.path.exists(GLSLANG_INSTALL_PATH): 
+        os.makedirs(GLSLANG_INSTALL_PATH)
+        
+    os.system(CMAKE_PATH + " --build ./" + 
+      " --target MachineIndependent " +
+      " --target glslang" +
+      " --target OSDependent" +
+      " --target HLSL" +
+      " --target OGLCompiler" +
+      " --target SPIRV" +
+      " --target SPVRemapper" +
+      " --target glslang-default-resource-limits" +
+      " --config Release"
+    )
+    
+    os.chdir(WORK_PATH)
+
+    output_list = [
+      "hlsl/Release-iphoneos",
+      "glslang/Release-iphoneos",
+      "glslang/OSDependent/Unix/Release-iphoneos",
+      "OGLCompilersDLL/Release-iphoneos",
+      "SPIRV/Release-iphoneos",
+      "StandAlone/Release-iphoneos",
+
+    ]
+
+
+    if os.path.isdir(GLSLANG_INSTALL_PATH + "/lib-arm64"):
+      shutil.rmtree(GLSLANG_INSTALL_PATH + "/lib-arm64")
+
+    os.mkdir(GLSLANG_INSTALL_PATH + "/lib-arm64")
+    
+    for i in range(len(output_list)):
+      dir_full_path = GLSLANG_BUILD_PATH + "/" + output_list[i]
+      dir_files=os.listdir(dir_full_path)
+      for file in dir_files:
+        file_path=os.path.join(dir_full_path,file)  
+        if os.path.isfile(file_path):          
+          shutil.move(file_path, GLSLANG_INSTALL_PATH + "/lib-arm64/" + file)
+
+    
+    shutil.rmtree(GLSLANG_BUILD_PATH)
+
+
+
+#build_glslang_for_windows()
+build_glslang_for_ios()

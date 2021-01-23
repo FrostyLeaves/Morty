@@ -121,7 +121,7 @@ source_group("Utility/Type" FILES ${MORTY_TYPE_FILES})
 ############################################################
 file(GLOB SPOT_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/spot/*.hpp
                     ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/spot/*.cpp
-                    ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/spot/*.c
+#                    ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/spot/*.c
 )
 source_group("spot" FILES ${SPOT_FILES})
 set(MORTY_CODE_DIRECTORIES ${MORTY_CODE_DIRECTORIES} ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/spot)
@@ -130,7 +130,7 @@ set(MORTY_CODE_DIRECTORIES ${MORTY_CODE_DIRECTORIES} ${CMAKE_CURRENT_SOURCE_DIR}
 ############################################################
 # add library
 ############################################################
-add_library(Morty SHARED 
+add_library(Morty STATIC 
     ${MORTY_MATH_FILES}
 
     ${MORTY_CORE_FILES}
@@ -210,185 +210,62 @@ set(MORTY_CODE_DIRECTORIES ${MORTY_CODE_DIRECTORIES}
 ############################################################
 
 
-if(WIN32)
+if(MORTY_BUILD_TARGET STREQUAL "WIN")
+    include(../Cmake/add_vulkan.cmake)
+    include(../Cmake/add_spirv.cmake)
+    include(../Cmake/add_assimp.cmake)
+
     target_compile_definitions(Morty
         PRIVATE MORTY_EXPORTS
         PUBLIC MORTY_WIN
-)
+    )
+endif()
 
-elseif(APPLE)
+if(MORTY_BUILD_TARGET STREQUAL "MACOS")
+    include(../Cmake/add_vulkan_macos.cmake)
+    include(../Cmake/add_spirv.cmake)
+    include(../Cmake/add_assimp.cmake)
     target_compile_definitions(Morty
         PUBLIC MORTY_MACOS
-)
+    )
+#    message(FATAL_ERROR MACOS)
+endif()
+
+if(MORTY_BUILD_TARGET STREQUAL "IOS")
+    include(../Cmake/add_vulkan_ios.cmake)
+    include(../Cmake/add_spirv_ios.cmake)
+    include(../Cmake/add_assimp_ios.cmake)
+    target_compile_definitions(Morty
+        PUBLIC MORTY_IOS
+    )
+#    message(FATAL_ERROR IOS)
 endif()
 
 
-if(WIN32)
-############################################################
-# Vulkan
-############################################################
-    find_package(Vulkan)
-    if(Vulkan_FOUND)
-        set(MORTY_CODE_DIRECTORIES ${MORTY_CODE_DIRECTORIES} ${Vulkan_INCLUDE_DIRS})
-        target_link_libraries(Morty PRIVATE Vulkan::Vulkan)
-    else(Vulkan_FOUND)
-        message(FATAL_ERROR "Vulkan library not found")
-    endif(Vulkan_FOUND)
 
-elseif(APPLE)
-############################################################
-# MoltenVK
-############################################################
+if(Vulkan_FOUND)
+    target_link_libraries(Morty PUBLIC Vulkan::Vulkan)
+else()
+    message(FATAL_ERROR "Vulkan not found.")
+endif()
+
+if(assimp_FOUND)
+    target_link_libraries(Morty PRIVATE assimp::assimp)
+else()
+    message(FATAL_ERROR "Assimp not found.")
+endif()
+
+if(SPIRV_CROSS_FOUND)
+    target_link_libraries(Morty PRIVATE SPIRV::ALL)
+else()
+    message(FATAL_ERROR "SPIRV_CROSS not found.")
+endif()
+
+
 target_include_directories(Morty
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/MoltenVK/include
+        "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/External/SPIRV-Cross"
 )
-
-target_link_directories(Morty
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/MoltenVK
-)
-
-add_library(MoltenVK UNKNOWN IMPORTED)
-
-set_target_properties(MoltenVK
-                    PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/MoltenVK/include"
-                                IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/Package/Debug/MoltenVK/dylib/macOS/libMoltenVK.dylib"
-                                IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/Package/Release/MoltenVK/dylib/macOS/libMoltenVK.dylib"
-)
-
-
-target_link_libraries(Morty PRIVATE MoltenVK)
-
-endif()
-
-############################################################
-# SPIRV-Cross 
-############################################################
-set(spirv_cross_core_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/SPIRV-Cross/share/spirv_cross_core/cmake)
-set(spirv_cross_glsl_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/SPIRV-Cross/share/spirv_cross_glsl/cmake)
-set(spirv_cross_cpp_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/SPIRV-Cross/share/spirv_cross_cpp/cmake)
-
-find_package(spirv_cross_core)
-find_package(spirv_cross_glsl)
-find_package(spirv_cross_cpp)
-
-set( MORTY_CODE_DIRECTORIES ${MORTY_CODE_DIRECTORIES}
-    ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/SPIRV-Cross/include/spirv_cross
-)
-
-target_link_directories(Morty
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/SPIRV-Cross/lib
-)
-
-target_link_libraries(Morty PRIVATE spirv-cross-core)
-target_link_libraries(Morty PRIVATE spirv-cross-glsl)
-target_link_libraries(Morty PRIVATE spirv-cross-cpp)
-
-
-############################################################
-# glslang
-############################################################
-if(NOT TARGET GLSLang) # this if is required for subsequent runs of CMake
-
-    set(GLSLang_Include
-        "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/include/glslang/SPIRV"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/include/glslang/Include"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/include/glslang/Public"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/include"
-    )
-
-if(WIN32)
-    set(PPRS "")
-    set(PPOS_D "d.lib")
-    set(PPOS_R ".lib")
-elseif(APPLE)
-    set(PPRS "lib")
-    set(PPOS_D "d.a")
-    set(PPOS_R ".a")
-endif()
-
-    
-    add_library(GLSLang::GLSLang UNKNOWN IMPORTED)
-
-    set_target_properties(GLSLang::GLSLang
-                        PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLSLang_Include}"
-                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}glslang${PPOS_D}"
-                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}glslang${PPOS_R}"
-    )
-
-    add_library(GLSLang::SPIRV UNKNOWN IMPORTED)
-
-    set_target_properties(GLSLang::SPIRV
-                   PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLSLang_Include}"
-                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}SPIRV${PPOS_D}"
-                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}SPIRV${PPOS_R}"
-    )
-
-    add_library(GLSLang::GenericCodeGen UNKNOWN IMPORTED)
-
-    set_target_properties(GLSLang::GenericCodeGen
-                   PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLSLang_Include}"
-                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}GenericCodeGen${PPOS_D}"
-                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}GenericCodeGen${PPOS_R}"
-    )
-
-    add_library(GLSLang::HLSL UNKNOWN IMPORTED)
-
-    set_target_properties(GLSLang::HLSL
-                   PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLSLang_Include}"
-                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}HLSL${PPOS_D}"
-                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}HLSL${PPOS_R}"
-    )
-
-    add_library(GLSLang::MachineIndependent UNKNOWN IMPORTED)
-
-    set_target_properties(GLSLang::MachineIndependent
-                   PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLSLang_Include}"
-                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}MachineIndependent${PPOS_D}"
-                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}MachineIndependent${PPOS_R}"
-    )
-    
-    add_library(GLSLang::OGLCompiler UNKNOWN IMPORTED)
-
-    set_target_properties(GLSLang::OGLCompiler
-                   PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLSLang_Include}"
-                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}OGLCompiler${PPOS_D}"
-                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}OGLCompiler${PPOS_R}"
-    )
-    
-    add_library(GLSLang::OSDependent UNKNOWN IMPORTED)
-
-    set_target_properties(GLSLang::OSDependent
-                   PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLSLang_Include}"
-                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}OSDependent${PPOS_D}"
-                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}OSDependent${PPOS_R}"
-    )
-    
-    add_library(GLSLang::SPVRemapper UNKNOWN IMPORTED)
-
-    set_target_properties(GLSLang::SPVRemapper
-                   PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLSLang_Include}"
-                                   IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}SPVRemapper${PPOS_D}"
-                                   IMPORTED_LOCATION_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/glslang/lib/${PPRS}SPVRemapper${PPOS_R}"
-    )
-
-    add_library(GLSLang::ALL INTERFACE IMPORTED)
-    set_property(TARGET GLSLang::ALL PROPERTY INTERFACE_LINK_LIBRARIES
-                    GLSLang::GLSLang
-                    GLSLang::SPIRV
-                    GLSLang::GenericCodeGen
-                    GLSLang::HLSL
-                    GLSLang::MachineIndependent
-                    GLSLang::OGLCompiler
-                    GLSLang::OSDependent
-                    GLSLang::SPVRemapper)
-
-    target_link_libraries(Morty PRIVATE GLSLang::ALL)
-
-endif()
-
 
 ############################################################
 # Eigen
@@ -397,20 +274,6 @@ target_include_directories(Morty
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/eigen/Eigen
 )
-
-
-############################################################
-# assimp
-############################################################
-target_include_directories(Morty
-    PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/assimp/include
-)
-set(assimp_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/assimp/lib/cmake/assimp-5.0)
-find_package(assimp)
-
-target_link_libraries(Morty PRIVATE assimp::assimp)
-
 
 ############################################################
 # rapidjson

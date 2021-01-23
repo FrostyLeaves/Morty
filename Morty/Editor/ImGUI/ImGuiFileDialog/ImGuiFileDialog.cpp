@@ -326,7 +326,11 @@ namespace IGFD
 #elif defined(UNIX)
 				char buffer[PATH_MAX] = {};
 				snprintf(buffer, PATH_MAX, "mkdir -p %s", name.c_str());
-				const int dir_err = std::system(buffer);
+#ifdef MORTY_IOS
+                const int dir_err = -1;
+#else
+                const int dir_err = std::system(buffer);
+#endif
 				if (dir_err == -1)
 				{
 					std::cout << "Error creating directory " << name << std::endl;

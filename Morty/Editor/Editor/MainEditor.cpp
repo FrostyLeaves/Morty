@@ -442,8 +442,11 @@ void MainEditor::Notify_Edit_Material(const MVariant& var)
 
 void MainEditor::InitializeSDLWindow()
 {
+    
 	MVulkanDevice* pDevice = dynamic_cast<MVulkanDevice*>(m_pEngine->GetDevice());
 
+    SDL_SetMainReady();
+    //SDL_Vulkan_LoadLibrary(NULL);
 	// Setup SDL
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
 	{
@@ -451,9 +454,16 @@ void MainEditor::InitializeSDLWindow()
 		return;
 	}
 
+    
+#if defined(MORTY_WIN) || defined(MORTY_MACOS)
 	// Setup window
 	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 	m_pSDLWindow = SDL_CreateWindow("Morty Editor", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_v2WindowSize.x, m_v2WindowSize.y, window_flags);
+  
+#elif defined(MORTY_IOS)
+    m_pSDLWindow = SDL_CreateWindow(NULL, 0, 0, 320, 480, SDL_WINDOW_VULKAN | SDL_WINDOW_FULLSCREEN);
+#endif
+    
 
 	// Create Window Surface
 	VkSurfaceKHR surface;
@@ -473,6 +483,7 @@ void MainEditor::InitializeSDLWindow()
 
 	// Setup Platform/Renderer bindings
 	ImGui_ImplSDL2_InitForVulkan(m_pSDLWindow);
+     
 }
 
 void MainEditor::ShowMenu()
@@ -629,6 +640,7 @@ void MainEditor::OnRenderBegin()
 #if MORTY_RENDER_DATA_STATISTICS
 	MRenderStatistics::GetInstance()->unTriangleCount = 0;
 #endif
+    /*
 	{
 		MViewport* pViewport = m_SceneTexture.GetViewport();
 		pViewport->SetScreenPosition(Vector2(m_v2RenderViewPos.x, m_v2RenderViewPos.y));
@@ -652,6 +664,7 @@ void MainEditor::OnRenderBegin()
 		}
 		m_pMaterialView->UpdateMaterialTexture();
 	}
+    */
 
 	if (!m_ImguiRenderPass.m_vBackDesc.empty())
 	{

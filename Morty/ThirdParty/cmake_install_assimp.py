@@ -38,7 +38,7 @@ def build_assimp_for_android():
 
     for arm_type in ARM_LIST:
             
-        temp_dir = BUILD_PATH + arm_type["abi"]
+        temp_dir = ASSIMP_BUILD_PATH + arm_type["abi"]
         if not os.path.exists(temp_dir):
             os.makedirs(temp_dir)
 
@@ -103,7 +103,7 @@ def procBOM(strPath, bAdd):
 
 def build_assimp_for_windows():
 
-    for root, dirs, files in os.walk(ASSIMP_PATH + "/code/AssetLib/AMF", topdown=False):
+    for root, _, files in os.walk(ASSIMP_PATH + "/code/AssetLib/AMF", topdown=False):
         for name in files:
             file_full_path = os.path.join(root, name)
             procBOM(file_full_path, True)
@@ -128,6 +128,13 @@ def build_assimp_for_windows():
 
     shutil.rmtree(ASSIMP_BUILD_PATH)
 
-#build_assimp_for_android()
-build_assimp_for_windows()
+def build_assimp_for_ios():
+    os.chdir(ASSIMP_PATH + "/port/iOS")
 
+    os.system("./build.sh")
+
+    os.chdir(WORK_PATH)
+
+#build_assimp_for_android()
+#build_assimp_for_windows()
+build_assimp_for_ios()
