@@ -289,3 +289,4 @@ Morty/out
 Morty/.vs/
 Morty/Resource/Model/
 Morty/ThirdParty/installs
+Morty/ThirdParty/__pycache__/
