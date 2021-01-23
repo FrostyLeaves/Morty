@@ -118,7 +118,6 @@ endif()
                     GLSLang::SPVRemapper
                     spirv-cross-core
                     spirv-cross-glsl
-                    spirv-cross-hlsl
                     spirv-cross-cpp
     )
 

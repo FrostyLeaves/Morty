@@ -16,7 +16,7 @@ def find_cmake(path):
         return file_path
     return None
 
-def build_sdl_for_windows():
+def build_for_windows():
 
     CMAKE_PATH = "cmake"
 
@@ -38,7 +38,7 @@ def build_sdl_for_windows():
 
     shutil.rmtree(SDL_BUILD_PATH)
 
-def build_sdl_for_ios():
+def build_for_ios():
 
     if not os.path.exists(SDL_BUILD_PATH):
             os.makedirs(SDL_BUILD_PATH)
@@ -55,7 +55,3 @@ def build_sdl_for_ios():
 
     shutil.rmtree(SDL_BUILD_PATH)
 
-
-
-#build_sdl_for_windows()
-build_sdl_for_ios()

@@ -9,7 +9,7 @@ MOLTENVK_INSTALL_PATH = WORK_PATH + "/installs/MoltenVK"
 
 MOLTENVK_BUILD_PATH = WORK_PATH + "/MoltenVK-Build"
 
-def build_MoltenVK_for_windows():
+def build_for_macos():
 
     os.chdir(MOLTENVK_PATH)
 
@@ -17,8 +17,11 @@ def build_MoltenVK_for_windows():
 
     os.chdir(WORK_PATH)
 
+def build_for_ios():
 
+    os.chdir(MOLTENVK_PATH)
 
+    os.system("./fetchDependencies --ios")
 
-build_MoltenVK_for_windows()
+    os.chdir(WORK_PATH)
 

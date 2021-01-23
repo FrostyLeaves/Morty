@@ -72,11 +72,15 @@
 
 #include "SDL.h"
 
+#ifdef MORTY_WIN
+#undef main
+#endif
+
 int main(int argc, char* argv[])
 {
     
     std::string strBasePath = SDL_GetBasePath();
-    
+
 	MEngine engine;
 	engine.Initialize(strBasePath + "/Resource");
 

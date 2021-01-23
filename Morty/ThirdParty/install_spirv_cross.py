@@ -9,7 +9,7 @@ SPIRV_CROSS_INSTALL_PATH = WORK_PATH + "/installs/SPIRV-Cross"
 
 SPIRV_CROSS_BUILD_PATH = WORK_PATH + "/SPIRV-Cross-Build"
 
-def build_SPIRV_Cross_for_windows():
+def build_for_windows():
 
 
     os.chdir(SPIRV_CROSS_PATH)
@@ -43,12 +43,12 @@ def build_SPIRV_Cross_for_windows():
 
     shutil.rmtree(SPIRV_CROSS_BUILD_PATH)
 
-def build_SPIRV_Cross_for_ios():
+def build_for_ios():
 
 
     os.chdir(SPIRV_CROSS_PATH)
-    #os.system("./checkout_glslang_spirv_tools.sh")
-    #os.system("./build_glslang_spirv_tools.sh")
+    os.system("./checkout_glslang_spirv_tools.sh")
+    os.system("./build_glslang_spirv_tools.sh")
     os.chdir(WORK_PATH)
 
     CMAKE_PATH = "cmake"
@@ -110,8 +110,3 @@ def build_SPIRV_Cross_for_ios():
     shutil.rmtree(SPIRV_CROSS_BUILD_PATH)
 
 
-
-
-
-#build_SPIRV_Cross_for_windows()
-build_SPIRV_Cross_for_ios()

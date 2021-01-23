@@ -18,7 +18,7 @@ def find_cmake(path):
         return file_path
     return None
 
-def build_assimp_for_android():
+def build_for_android():
 
 
     ANDROID_SDK_PATH="C:/Users/null.ptr/AppData/Local/Android/Sdk"
@@ -83,7 +83,6 @@ def build_assimp_for_android():
 
         shutil.rmtree(temp_dir)
 
-
 def procBOM(strPath, bAdd):
     
     f = open(strPath, "rb")
@@ -101,7 +100,7 @@ def procBOM(strPath, bAdd):
         f.write(fcontent)
         f.close()
 
-def build_assimp_for_windows():
+def build_for_windows():
 
     for root, _, files in os.walk(ASSIMP_PATH + "/code/AssetLib/AMF", topdown=False):
         for name in files:
@@ -128,13 +127,9 @@ def build_assimp_for_windows():
 
     shutil.rmtree(ASSIMP_BUILD_PATH)
 
-def build_assimp_for_ios():
+def build_for_ios():
     os.chdir(ASSIMP_PATH + "/port/iOS")
 
     os.system("./build.sh")
 
     os.chdir(WORK_PATH)
-
-#build_assimp_for_android()
-#build_assimp_for_windows()
-build_assimp_for_ios()

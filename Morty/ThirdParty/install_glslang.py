@@ -9,7 +9,7 @@ GLSLANG_INSTALL_PATH = WORK_PATH + "/installs/glslang"
 
 GLSLANG_BUILD_PATH = WORK_PATH + "/glslang-Build"
 
-def build_glslang_for_windows():
+def build_for_windows():
 
     CMAKE_PATH = "cmake"
 
@@ -30,7 +30,7 @@ def build_glslang_for_windows():
         os.makedirs(GLSLANG_INSTALL_PATH)
         
     os.system(CMAKE_PATH + " --build ./ --target install --config Debug")
-    #os.system(CMAKE_PATH + " --build ./ --target install --config Release")
+    os.system(CMAKE_PATH + " --build ./ --target install --config Release")
     
 
     os.chdir(WORK_PATH)
@@ -38,8 +38,7 @@ def build_glslang_for_windows():
 
     shutil.rmtree(GLSLANG_BUILD_PATH)
 
-
-def build_glslang_for_ios():
+def build_for_ios():
 
     CMAKE_PATH = "cmake"
 
@@ -106,6 +105,3 @@ def build_glslang_for_ios():
     shutil.rmtree(GLSLANG_BUILD_PATH)
 
 
-
-#build_glslang_for_windows()
-build_glslang_for_ios()

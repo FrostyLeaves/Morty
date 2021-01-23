@@ -18,10 +18,10 @@ target_link_libraries(Demo Editor)
 
 if(MORTY_BUILD_TARGET STREQUAL "WIN")
 
-    add_custom_command(TARGET Demo POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${CMAKE_BINARY_DIR}/Morty/Morty.dll"
-            $<TARGET_FILE_DIR:Demo>)
+#    add_custom_command(TARGET Demo POST_BUILD
+#        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#            "${CMAKE_BINARY_DIR}/Morty/Morty.dll"
+#            $<TARGET_FILE_DIR:Demo>)
 
     add_custom_command(TARGET Demo POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
