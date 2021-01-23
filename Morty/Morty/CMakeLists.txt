@@ -121,7 +121,7 @@ source_group("Utility/Type" FILES ${MORTY_TYPE_FILES})
 ############################################################
 file(GLOB SPOT_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/spot/*.hpp
                     ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/spot/*.cpp
-#                    ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/spot/*.c
+                    ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/spot/*.c
 )
 source_group("spot" FILES ${SPOT_FILES})
 set(MORTY_CODE_DIRECTORIES ${MORTY_CODE_DIRECTORIES} ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/spot)
