@@ -11,9 +11,9 @@
 
 #ifdef MORTY_WIN
     #ifdef MORTY_EXPORTS
-        #define MORTY_API __declspec(dllexport)
+        #define MORTY_API
     #else
-        #define MORTY_API __declspec(dllimport)
+        #define MORTY_API
     #endif
 #else
     #define MORTY_API

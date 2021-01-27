@@ -9,14 +9,18 @@ M_RESOURCE_IMPLEMENT(MRenderPassResource, MResource)
 
 MRenderPassResource::MRenderPassResource()
 	: MResource()
-	, m_pRenderPass(nullptr)
+	, m_pRenderPass(new MRenderPass())
 {
 
 }
 
 MRenderPassResource::~MRenderPassResource()
 {
-
+	if (m_pRenderPass)
+	{
+		delete m_pRenderPass;
+		m_pRenderPass = nullptr;
+	}
 }
 
 bool MRenderPassResource::Load(const MString& strResourcePath)
@@ -81,16 +85,16 @@ bool MRenderPassResource::Load(const MString& strResourcePath)
 		uint32_t nSize = pSubpassArray->GetMemberCount();
 		for (uint32_t i = 0; i < nSize; ++i)
 		{
-			m_pRenderPass->m_vSubpass.push_back(MSubpass());
-			MSubpass& subpass = m_pRenderPass->m_vSubpass.back();
-
 			if (MStruct* pSubpass = pSubpassArray->GetMember<MStruct>(i))
 			{
-				if (MString* pSubpassName = pSubpass->FindMember<MString>("name"))
-				{
-					tSubPassRef[*pSubpassName] = i;
-					subpass.m_strName = *pSubpassName;
-				}
+				m_pRenderPass->m_vSubpass.push_back(MSubpass());
+				MSubpass& subpass = m_pRenderPass->m_vSubpass.back();
+
+// 				if (MString* pSubpassName = pSubpass->FindMember<MString>("name"))
+// 				{
+// 					tSubPassRef[*pSubpassName] = i;
+// 					subpass.m_strName = *pSubpassName;
+// 				}
 
 				if (MVariantArray* pInputs = pSubpass->FindMember<MVariantArray>("input"))
 				{
@@ -123,35 +127,6 @@ bool MRenderPassResource::Load(const MString& strResourcePath)
 						}
 					}
 				}
-
-				MVariantArray* pReference = pSubpass->FindMember<MVariantArray>("reference");
-				int* pLoop = pSubpass->FindMember<int>("loop");
-
-				if (pReference && pLoop)
-				{
-					std::vector<uint32_t> vAppendIdxs;
-
-					uint32_t nRefSize = pReference->GetMemberCount();
-					for (uint32_t nRefIdx = 0; nRefIdx < nRefSize; ++nRefIdx)
-					{
-						if (MString* pRefName = pReference->GetMember<MString>(nRefIdx))
-						{
-							auto find = tSubPassRef.find(*pRefName);
-							if (find != tSubPassRef.end())
-							{
-								vAppendIdxs.push_back(find->second);
-							}
-						}
-					}
-
-					for (uint32_t nLoopIdx = 0; nLoopIdx < *pLoop; ++nLoopIdx)
-					{
-						for (const uint32_t& nSubpassIdx : vAppendIdxs)
-						{
-							m_pRenderPass->m_vSubpass.push_back(m_pRenderPass->m_vSubpass[nSubpassIdx]);
-						}
-					}
-				}
 			}
 		}
 	}
@@ -161,16 +136,63 @@ bool MRenderPassResource::SaveTo(const MString& strResourcePath)
 {
 	MStruct srt;
 
-
 	if (MVariantArray* pBackTextures = srt.AppendMVariant<MVariantArray>("BackTexture"))
 	{
-
+		for (const MPassTargetDescription& desc : m_pRenderPass->m_vBackDesc)
+		{
+			if (MStruct* pStruct = pBackTextures->AppendMVariant<MStruct>())
+			{
+				pStruct->AppendMVariant("name", desc.m_strName);
+				if (desc.bClearWhenRender)
+				{
+					pStruct->AppendMVariant("clear", desc.cClearColor.ToVector4());
+				}
+			}
+		}
 	}
 
 	if (MVariantArray* pSubpass = srt.AppendMVariant<MVariantArray>("Subpass"))
 	{
+		for (const MSubpass& subpass : m_pRenderPass->m_vSubpass)
+		{
+			if (MStruct* pStruct = pSubpass->AppendMVariant<MStruct>())
+			{
+				//				pStruct->AppendMVariant("name", subpass.m_strName);
 
+				if (MVariantArray* inputs = pStruct->AppendMVariant<MVariantArray>("input"))
+				{
+					for (const uint32_t& unIdx : subpass.m_vInputIndex)
+					{
+						if (unIdx < m_pRenderPass->m_vBackDesc.size())
+						{
+							const MPassTargetDescription& desc = m_pRenderPass->m_vBackDesc[unIdx];
+							inputs->AppendMVariant(desc.m_strName);
+						}
+					}
+				}
+
+				if (MVariantArray* outputs = pStruct->AppendMVariant<MVariantArray>("output"))
+				{
+					for (const uint32_t& unIdx : subpass.m_vOutputIndex)
+					{
+						if (unIdx < m_pRenderPass->m_vBackDesc.size())
+						{
+							const MPassTargetDescription& desc = m_pRenderPass->m_vBackDesc[unIdx];
+							outputs->AppendMVariant(desc.m_strName);
+						}
+					}
+				}
+			}
+		}
 	}
 
-	return false;
+	if (m_pRenderPass->m_DepthDesc.bClearWhenRender)
+	{
+		MStruct* pDepthTexture = srt.AppendMVariant<MStruct>("DepthTexture");
+	}
+
+	MString strJsonCode;
+	MJson::MVariantToJson(srt, strJsonCode);
+
+	return MFileHelper::WriteString(strResourcePath, strJsonCode);
 }

@@ -6,8 +6,7 @@
 #endif
 
 MSubpass::MSubpass()
-	: m_strName("")
-	, m_vInputIndex()
+	: m_vInputIndex()
 	, m_vOutputIndex()
 {
 

@@ -58,6 +58,9 @@ source_group("Core/Renderer/DirectX11" FILES ${MORTY_DX11_PROGRAM_FILES})
 file(GLOB MORTY_RENDER_PROGRAM_FILES Core/RenderProgram/*.h Core/RenderProgram/*.cpp )
 source_group("Core/RenderProgram" FILES ${MORTY_RENDER_PROGRAM_FILES})
 
+file(GLOB MORTY_RENDER_GRAPH_FILES Core/RenderGraph/*.h Core/RenderGraph/*.cpp )
+source_group("Core/RenderGraph" FILES ${MORTY_RENDER_GRAPH_FILES})
+
 
 ############################################################
 # Organizer
@@ -145,6 +148,7 @@ add_library(Morty STATIC
     ${MORTY_VULKAN_PROGRAM_FILES}
     ${MORTY_DX11_PROGRAM_FILES}
     ${MORTY_RENDER_PROGRAM_FILES}
+    ${MORTY_RENDER_GRAPH_FILES}
 
     ${MORTY_ORGANIZER_FILES}
     ${MORTY_NODE_FILES}
@@ -185,6 +189,7 @@ set(MORTY_CODE_DIRECTORIES ${MORTY_CODE_DIRECTORIES}
         ${CMAKE_CURRENT_SOURCE_DIR}/Core/Renderer/Shader
         ${CMAKE_CURRENT_SOURCE_DIR}/Core/Renderer/Vulkan
         ${CMAKE_CURRENT_SOURCE_DIR}/Core/RenderProgram
+        ${CMAKE_CURRENT_SOURCE_DIR}/Core/RenderGraph
 
         ${CMAKE_CURRENT_SOURCE_DIR}/Organizer
         ${CMAKE_CURRENT_SOURCE_DIR}/Organizer/Node
