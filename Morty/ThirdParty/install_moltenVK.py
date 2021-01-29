@@ -15,6 +15,13 @@ def build_for_macos():
 
     os.system("./fetchDependencies --macos")
 
+    os.system('xcodebuild' +
+    ' -project MoltenVKPackaging.xcodeproj' +
+    ' SYMROOT="' + MOLTENVK_INSTALL_PATH + '/lib"' +
+    ' -scheme "MoltenVK-macOS"' +
+    ' -configuration Release'
+    )
+
     os.chdir(WORK_PATH)
 
 def build_for_ios():
@@ -22,6 +29,13 @@ def build_for_ios():
     os.chdir(MOLTENVK_PATH)
 
     os.system("./fetchDependencies --ios")
+
+    os.system('xcodebuild' +
+    ' -project MoltenVKPackaging.xcodeproj' +
+    ' SYMROOT="' + MOLTENVK_INSTALL_PATH + '/lib-arm64"' +
+    ' -scheme "MoltenVK-iOS"' +
+    ' -configuration Release'
+    )
 
     os.chdir(WORK_PATH)
 

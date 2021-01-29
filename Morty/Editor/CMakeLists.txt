@@ -48,11 +48,14 @@ target_include_directories(Editor
     PUBLIC 
         ${MORTY_CODE_DIRECTORIES}
         ${EDITOR_CODE_DIRECTORIES}
-if(APPLE)
-        ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/dirent/include
-endif()
 )
 
+if(MORTY_BUILD_TARGET STREQUAL "WIN")
+    target_include_directories(Editor
+        PUBLIC 
+            ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/dirent/include
+    )
+endif()
 
 
 if(MORTY_BUILD_TARGET STREQUAL "WIN")
