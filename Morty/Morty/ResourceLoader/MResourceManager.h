@@ -31,6 +31,7 @@ enum class MEResourceType
 	Mesh,
 	Skeleton,
 	SkelAnim,
+	RenderPass
 };
 
 class MORTY_API MResourceManager

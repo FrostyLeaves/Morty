@@ -8,6 +8,7 @@
 #include "Material/MMaterialResource.h"
 #include "Model/MSkeletalAnimationResource.h"
 #include "Node/MNodeResource.h"
+#include "RenderPass/MRenderPassResource.h"
 #include "MResourceLoader.h"
 
 #include "MFunction.h"
@@ -37,6 +38,7 @@ MResourceManager::MResourceManager()
 	REGISTER_RESOURCE_TYPE(MEResourceType::Material, MMaterialResource, SUFFIX_MATERIAL);
 	REGISTER_RESOURCE_TYPE(MEResourceType::Node, MNodeResource, SUFFIX_NODE);
 	REGISTER_RESOURCE_TYPE(MEResourceType::Texture, MTextureResource, "png", "bmp", "tga", "jpg");
+	REGISTER_RESOURCE_TYPE(MEResourceType::RenderPass, MRenderPassResource, "mrps");
 }
 
 MResourceManager::~MResourceManager()

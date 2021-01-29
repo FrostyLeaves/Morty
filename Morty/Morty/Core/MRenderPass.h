@@ -28,7 +28,6 @@ public:
     ~MSubpass();
 
 public:
-    MString m_strName;
     std::vector<uint32_t> m_vInputIndex;
     std::vector<uint32_t> m_vOutputIndex;
 
@@ -39,8 +38,6 @@ class MORTY_API MPassTargetDescription
 public:
 	MPassTargetDescription();
 	MPassTargetDescription(const bool bClear, const MColor& cClearColor);
-
-
 
 public:
     MString m_strName;

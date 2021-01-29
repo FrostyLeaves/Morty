@@ -1500,6 +1500,8 @@ void MVulkanDevice::DestroyShaderParamBuffer(MShaderConstantParam* pParam)
 		m_DynamicUniformBufferPool.FreeBufferMemory(pParam);
 	}
 }
+
+//depend on rendertarget format and layout
 bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass, MIRenderTarget* pRenderTarget)
 {	
 	if (!pRenderTarget)
