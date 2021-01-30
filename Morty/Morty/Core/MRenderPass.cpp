@@ -34,22 +34,39 @@ MRenderPass::~MRenderPass()
 
 }
 
+void MRenderPass::GenerateBuffer(MIDevice* pDevice)
+{
+
+}
+
+void MRenderPass::DestroyBuffer(MIDevice* pDevice)
+{
+
+}
+
+std::vector<MIRenderTexture*> MRenderPass::GetBackTexture(const size_t& nFrameIdx)
+{
+	return m_aFrameBuffers[nFrameIdx].vBackTextures;
+}
+
+MIRenderTexture* MRenderPass::GetDepthTexture(const size_t& nFrameIdx)
+{
+	return m_aFrameBuffers[nFrameIdx].pDepthTexture;
+}
+
+MFrameBuffer* MRenderPass::GetFrameBuffer(const size_t& nFrameIdx)
+{
+	return &m_aFrameBuffers[nFrameIdx];
+}
+
 MPassTargetDescription::MPassTargetDescription(const bool bClear, const MColor& cColor)
-	: m_strName("")
-	, bClearWhenRender(bClear)
+	: bClearWhenRender(bClear)
 	, cClearColor(cColor)
 {
-#if RENDER_GRAPHICS == MORTY_VULKAN
-	m_vkTargetFormat = VK_FORMAT_R8G8B8A8_SRGB;
-#endif
 }
 
 MPassTargetDescription::MPassTargetDescription()
-	: m_strName("")
-	, bClearWhenRender(true)
+	: bClearWhenRender(true)
 	, cClearColor(MColor::Black)
 {
-#if RENDER_GRAPHICS == MORTY_VULKAN
-	m_vkTargetFormat = VK_FORMAT_R8G8B8A8_SRGB;
-#endif
 }

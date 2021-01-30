@@ -3,7 +3,7 @@
  * 
  * @Created      2020-11-30 17:58:42
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MCOMBINEWORK_H_

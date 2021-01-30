@@ -3,7 +3,7 @@
  * 
  * @Created      2019-05-13 00:38:35
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MLOGMANAGER_H_

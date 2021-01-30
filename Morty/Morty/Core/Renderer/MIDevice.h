@@ -3,7 +3,7 @@
  * 
  * @Created      2019-09-21 23:08:49
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MIDEVICE_H_
@@ -53,9 +53,6 @@ public:
 	virtual bool GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, MIRenderTexture* pTexture) = 0;
 	virtual void DestroyRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer) = 0;
 
-	virtual void GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const uint32_t& unWidth, const uint32_t& unHeight) = 0;
-	virtual void DestroyDepthTexture(MDepthTextureBuffer** ppTextureBuffer) = 0;
-
 	virtual bool CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const uint32_t& eShaderType, const MShaderMacro& macro) = 0;
 	virtual void CleanShader(MShaderBuffer** ppShader) = 0;
 
@@ -68,8 +65,11 @@ public:
 	virtual bool GenerateShaderParamBuffer( MShaderConstantParam* pParam) = 0;
 	virtual void DestroyShaderParamBuffer(MShaderConstantParam* pParam) = 0;
 
-	virtual bool GenerateRenderPass(MRenderPass* pRenderPass, MIRenderTarget* pRenderTarget) = 0;
+	virtual bool GenerateRenderPass(MRenderPass* pRenderPass) = 0;
 	virtual void DestroyRenderPass(MRenderPass* pRenderPass) = 0;
+
+	virtual bool GenerateFrameBuffer(MRenderPass* pRenderPass) = 0;
+	virtual void DestroyFrameBuffer(MRenderPass* pRenderPass) = 0;
 
 	virtual bool GenerateRenderTargetView(MRenderTextureBuffer* pTextureBuffer) = 0;
 	virtual void DestroyRenderTargetView(MRenderTextureBuffer* pTextureBuffer) = 0;

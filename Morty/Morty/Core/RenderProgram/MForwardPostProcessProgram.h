@@ -3,7 +3,7 @@
  * 
  * @Created      2020-11-29 15:32:27
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MFORWARDPOSTPROCESSPROGRAM_H_
@@ -16,8 +16,7 @@ class MMaterial;
 class MRenderPass;
 class MForwardHDRWork;
 class MIPostProcessWork;
-class MIRenderBackTexture;
-class MRenderDepthTexture;
+class MIRenderTexture;
 class MORTY_API MForwardPostProcessProgram : public MForwardRenderProgram
 {
 public:
@@ -67,8 +66,8 @@ protected:
 
 private:
 
-	std::array<MIRenderBackTexture*, M_BUFFER_NUM> m_aBackTexture;
-	std::array<MRenderDepthTexture*, M_BUFFER_NUM> m_aDepthTexture;
+	std::array<MIRenderTexture*, M_BUFFER_NUM> m_aBackTexture;
+	std::array<MIRenderTexture*, M_BUFFER_NUM> m_aDepthTexture;
 
 	MTextureRenderTarget* m_pTempRenderTarget;
 	MRenderPass* m_pScreenDrawRenderPass;

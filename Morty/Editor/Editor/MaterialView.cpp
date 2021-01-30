@@ -10,7 +10,6 @@
 #include "Light/MDirectionalLight.h"
 #include "Model/MIMeshInstance.h"
 #include "Model/MModelInstance.h"
-#include "MTextureRenderTarget.h"
 #include "Model/MModelResource.h"
 #include "Model/MStaticMeshInstance.h"
 #include "MResourceManager.h"

@@ -3,7 +3,7 @@
  *
  * @Created      2020-07-02 11:43:46
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MIRENDERPROGRAM_H_
@@ -15,8 +15,8 @@
 class MScene;
 class MViewport;
 class MIRenderer;
+class MRenderGraph;
 struct MShaderConstantParam;
-class MIRenderTarget;
 class MIMeshInstance;
 class MORTY_API MIRenderProgram : public MObject
 {
@@ -27,8 +27,7 @@ public:
 
 public:
 
-    void BindRenderTarget(MIRenderTarget* pRenderTarget);
-    MIRenderTarget* GetRenderTarget() { return m_pRenderTarget; }
+    virtual MRenderGraph* GetRenderGraph() { return nullptr; }
 
     virtual void Render(MIRenderer* pRenderer, MViewport* pViewport) {};
 
@@ -39,8 +38,6 @@ public:
     virtual void Release() {}
 
 private:
-
-    MIRenderTarget* m_pRenderTarget;
 };
 
 #endif

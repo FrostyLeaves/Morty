@@ -3,7 +3,7 @@
  * 
  * @Created      2020-11-30 17:58:42
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MSTANDARDPOSTPROCESSWORK_H_
@@ -17,8 +17,7 @@
 class MIMesh;
 class MRenderPass;
 class MIRenderProgram;
-class MIRenderBackTexture;
-class MRenderDepthTexture;
+class MIRenderTexture;
 class MORTY_API MStandardPostProcessWork : public MIPostProcessWork
 {
 public:
@@ -55,8 +54,8 @@ protected:
 	MRenderPass* m_pTempRenderPass;
 	MIMesh* m_pScreenDrawMesh;
 
-	std::array<MIRenderBackTexture*, M_BUFFER_NUM> m_aBackTexture;
-	std::array<MRenderDepthTexture*, M_BUFFER_NUM> m_aDepthTexture;
+	std::array<MIRenderTexture*, M_BUFFER_NUM> m_aBackTexture;
+	std::array<MIRenderTexture*, M_BUFFER_NUM> m_aDepthTexture;
 
 };
 #endif

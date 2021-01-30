@@ -3,7 +3,7 @@
  * 
  * @Created      2020-11-30 16:08:08
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MIPOSTPROCESSWORK_H_
@@ -17,7 +17,7 @@ class MITexture;
 class MViewport;
 class MIRenderer;
 class MIRenderProgram;
-class MIRenderBackTexture;
+class MIRenderTexture;
 class MTextureRenderTarget;
 struct MORTY_API MPostProcessRenderInfo
 {
@@ -25,8 +25,8 @@ struct MORTY_API MPostProcessRenderInfo
     uint32_t unFrameIndex;
     MIRenderer* pRenderer;
     MViewport* pViewport;
-    MIRenderBackTexture* pPrevLevelOutput;
-    MIRenderBackTexture* pPrevLevelOutput1;
+    MIRenderTexture* pPrevLevelOutput;
+    MIRenderTexture* pPrevLevelOutput1;
 };
 
 class MORTY_API MIPostProcessWork : public MObject

@@ -3,7 +3,7 @@
  * 
  * @Created      2020-11-30 17:43:05
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MGAUSSIANBLURWORK_H_
@@ -61,7 +61,7 @@ protected:
 
 	MIRenderProgram* m_pRenderProgram;
 	MTextureRenderTarget* m_aTempRenderTarget[2];
-	std::array<MIRenderBackTexture*, M_BUFFER_NUM> m_aBackTexture[2];
+	std::array<MIRenderTexture*, M_BUFFER_NUM> m_aBackTexture[2];
 
 	MRenderPass* m_pTempRenderPass;
 	MIMesh* m_pScreenDrawMesh;

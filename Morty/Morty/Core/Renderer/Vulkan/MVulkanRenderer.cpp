@@ -166,46 +166,40 @@ void MVulkanRenderer::NextSubpass()
 	}
 }
 
-void MVulkanRenderer::BeginRenderPass(MRenderPass* pRenderPass, MIRenderTarget* pRenderTarget)
+void MVulkanRenderer::BeginRenderPass(MRenderPass* pRenderPass, const uint32_t& nFrameBufferIdx)
 {
-	if (!pRenderPass || !pRenderTarget)
+	if (!pRenderPass)
 		return;
 
 	if (VK_NULL_HANDLE == pRenderPass->m_aVkRenderPass[GetFrameIndex()])
 	{
-		if (!m_pDevice->GenerateRenderPass(pRenderPass, pRenderTarget))
+		if (!m_pDevice->GenerateRenderPass(pRenderPass))
 		{
 			MLogManager::GetInstance()->Error("MVulkanRenderer::BeginRenderPass error: Generate rp failed.");
 			return;
 		}
 	}
 
-	MFrameBuffer* pFrameBuffer = pRenderTarget->GetCurrFrameBuffer(GetFrameIndex());
+	MFrameBuffer* pFrameBuffer = pRenderPass->GetFrameBuffer(nFrameBufferIdx);
 	if (!pFrameBuffer)
 		return;
-
-	if (VK_NULL_HANDLE == pFrameBuffer->vkFrameBuffer)
-	{
-		if (!m_pDevice->GenerateRenderTarget(pRenderPass, pRenderTarget))
-		{
-			MLogManager::GetInstance()->Error("MVulkanRenderer::BeginRenderPass error: Generate rt failed.");
-			return;
-		}
-	}
-
-	pFrameBuffer = pRenderTarget->GetCurrFrameBuffer(GetFrameIndex());
 
 	size_t unBackNum = pFrameBuffer->vBackTextures.size();
 	if (unBackNum != pRenderPass->m_vBackDesc.size())
 		return;
 
+	if (!pFrameBuffer->vkFrameBuffer)
+	{
+		m_pDevice->GenerateFrameBuffer(pRenderPass);
+		pFrameBuffer = pRenderPass->GetFrameBuffer(nFrameBufferIdx);
+	}
 
 	VkRenderPassBeginInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	renderPassInfo.renderPass = pRenderPass->m_aVkRenderPass[m_unFrameIndex];
 	renderPassInfo.framebuffer = pFrameBuffer->vkFrameBuffer;
 	renderPassInfo.renderArea.offset = { 0, 0 };
-	renderPassInfo.renderArea.extent = pRenderTarget->m_VkExtend;
+	renderPassInfo.renderArea.extent = pFrameBuffer->m_vkExtent2D;
 
 	std::vector<VkClearValue> vClearValues(unBackNum);
 	for (uint32_t i = 0; i < unBackNum; ++i)
@@ -354,7 +348,7 @@ bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial)
 	return false;
 }
 
-bool MVulkanRenderer::SetRenderToTextureBarrier(const std::vector<MIRenderBackTexture*> vTextures)
+bool MVulkanRenderer::SetRenderToTextureBarrier(const std::vector<MIRenderTexture*> vTextures)
 {
 	if (m_vRenderStages.empty())
 		return false;
@@ -365,7 +359,7 @@ bool MVulkanRenderer::SetRenderToTextureBarrier(const std::vector<MIRenderBackTe
 
 	for (uint32_t i = 0; i < vTextures.size(); ++i)
 	{
-		if (MRenderTextureBuffer* pBuffer = vTextures[i]->GetRenderBuffer())
+		if (MTextureBuffer* pBuffer = vTextures[i]->GetBuffer())
 		{
 			vImageBarrier.push_back(VkImageMemoryBarrier());
 			VkImageMemoryBarrier& imageMemoryBarrier = vImageBarrier.back();

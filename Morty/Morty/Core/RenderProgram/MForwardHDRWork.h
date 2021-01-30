@@ -3,7 +3,7 @@
  * 
  * @Created      2020-11-29 11:05:51
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MFORWARDHDRWORK_H_
@@ -21,8 +21,7 @@ class MRenderPass;
 class MCombineWork;
 class MIRenderProgram;
 class MGaussianBlurWork;
-class MIRenderBackTexture;
-class MRenderDepthTexture;
+class MIRenderTexture;
 class MORTY_API MForwardHDRWork : public MIPostProcessWork
 {
 public:
@@ -66,8 +65,8 @@ protected:
 	MIMesh* m_pScreenDrawMesh;
 	MMaterial* m_pHDRMaterial;
 
-	std::array<MIRenderBackTexture*, M_BUFFER_NUM> m_aBackTexture;
-	std::array<MIRenderBackTexture*, M_BUFFER_NUM> m_aHighLightTexture;
+	std::array<MIRenderTexture*, M_BUFFER_NUM> m_aBackTexture;
+	std::array<MIRenderTexture*, M_BUFFER_NUM> m_aHighLightTexture;
 
 	std::array<MTexture*, M_BUFFER_NUM> m_aLumTexture;
 private:

@@ -3,85 +3,195 @@
  * 
  * @Created      2021-01-27 16:21:44
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MRENDERGRAPH_H_
 #define _M_MRENDERGRAPH_H_
 #include "MGlobal.h"
+#include "MObject.h"
 #include "MTexture.h"
 
-
+#include <array>
 #include <vector>
 #include <functional>
 
 class MRenderPass;
-class MTextureRenderTarget;
+class MRenderGraphNode;
+class MRenderGraphTexture;
+class MRenderGraphNodeInput;
+class MRenderGraphNodeOutput;
+
+class MORTY_API MRenderGraphNodeInput
+{
+public:
+
+    void LinkTo(MRenderGraphNodeOutput* pOutput);
+
+    void UnLink();
+
+    MRenderGraphNode* GetLinkedNode() const;
+    MRenderGraphTexture* GetLinkedTexture() const;
+    MRenderGraphNodeOutput* GetLinkedOutput() const { return pLinkedOutput; }
+
+private:
+	friend class MRenderGraphNodeOutput;
+
+private:
+    MRenderGraphNodeOutput* pLinkedOutput;
+};
+
+class MORTY_API MRenderGraphNodeOutput
+{
+public:
+    MRenderGraphNodeOutput();
+
+    void SetClear(const bool& b) { bClear = b; }
+    bool GetClear() const { return bClear; }
+
+    void SetClearColor(const MColor& color) { mClearColor = color; }
+    MColor GetClearColor() const { return mClearColor; }
+
+    void SetRenderTexture(MRenderGraphTexture* pTexture) { pGraphTexture = pTexture; }
+    MRenderGraphTexture* GetRenderTexture() const { return pGraphTexture; }
+
+    MRenderGraphNode* GetRenderGraphNode() { return pGraphNode; }
+
+    void LinkTo(MRenderGraphNodeInput* pInput);
+    void UnLink(MRenderGraphNodeInput* pInput);
+
+private:
+
+	friend class MRenderGraphNode;
+
+    bool bClear;
+    MColor mClearColor;
+
+    MRenderGraphNode* pGraphNode;
+    MRenderGraphTexture* pGraphTexture;
+
+    std::vector<MRenderGraphNodeInput*> vLinkedInput;
+};
+
 class MORTY_API MRenderGraphNode
 {
 public:
 
     MRenderGraphNode();
-    MRenderGraphNode(const MString& strNodeName
-        , const std::vector<size_t>& vDependNodes
-        , const std::vector<size_t>& vInputTextures
-        , const std::vector<size_t>& vOutputTextures);
 
+    MRenderGraphNodeInput* AppendInput();
+    MRenderGraphNodeOutput* AppendOutput();
 
-public:
+    MRenderGraphNodeInput* GetInput(const size_t& nInputIdx);
+    MRenderGraphNodeOutput* GetOutput(const size_t& nOutputIdx);
+
+    MRenderGraphTexture* GetInputTexture(const size_t& nInputIdx);
+
+    MRenderPass* GetRenderPass() { return m_pRenderPass; }
+
+    void SetFinalNode(const bool& bFinal) { m_bFinalNode = bFinal; }
+    bool GetFinalNode()const { return m_bFinalNode; }
+
+    void BindRenderFunction(std::function<void(MRenderGraphNode*)> func) { m_funcRender = func; }
+
+    void Compile(MIDevice* pDevice);
+
+	void GenerateBuffer(MIDevice* pDevice);
+	void DestroyBuffer(MIDevice* pDevice);
+
+private:
+
+    friend class MRenderGraph;
 
     MString m_strNodeName;
 
-    std::vector<size_t> m_vDependNodeNames;
-
-    std::vector<size_t> m_vInputTextureNames;
-    std::vector<size_t> m_vOutputTextureNames;
-
+    std::vector<MRenderGraphNodeInput*> m_vInputTextures;
+    std::vector<MRenderGraphNodeOutput*> m_vOutputTextures;
 
     int m_nCommandLevel;
+    bool m_bFinalNode;
 
-    std::function<void()> m_funcRender; // render 
+    std::function<void(MRenderGraphNode* pNode)> m_funcRender; // render 
 
- //   MRenderPass* m_pRenderPass;
- //   MTextureRenderTarget* m_pRenderTarget;
+    class MRenderGraph* m_pGraph;
+    MRenderPass* m_pRenderPass;
 };
 
 class MORTY_API MRenderGraphTexture
 {
+public:
+    MRenderGraphTexture();
 
+
+	MRenderGraph* GetRenderGraph() const { return m_pGraph; }
+
+    void SetUsage(const METextureUsage& eUsage);
+    METextureUsage GetUsage() const { return m_eUsage; }
+
+    void SetLayout(const METextureLayout& eLayout);
+    METextureLayout GetLayout() const { return m_eLayout; }
+
+    void SetSize(const Vector2& size) { m_v2Size = size; }
+    Vector2 GetSize() const { m_v2Size; }
+
+    MIRenderTexture* GetRenderTexture(const size_t& nIdx);
+
+	void Compile(MIDevice* pDevice);
+
+	void GenerateBuffer(MIDevice* pDevice);
+	void DestroyBuffer(MIDevice* pDevice);
+
+
+
+private:
+
+	friend class MRenderGraph;
+
+    MString m_strTextureName;
+    METextureUsage m_eUsage;
+    METextureLayout m_eLayout;
+    Vector2 m_v2Size;
+
+	std::array<MRenderTexture*, M_BUFFER_NUM> m_aTextures;
+	class MRenderGraph* m_pGraph;
 };
 
-class MORTY_API MRenderGraph
+class MORTY_API MRenderGraph : public MObject
 {
 public:
+	M_OBJECT(MRenderGraph);
 
     MRenderGraph();
     virtual ~MRenderGraph();
 
 public:
 
-    void SetFinalNode(const size_t& nNodeIdx);
+	MRenderGraphNode* AddRenderGraphNode(const MString& strNodeName);
 
-    size_t AddRenderGraphNode(MRenderGraphNode* pNode);
+    MRenderGraphTexture* AddRenderGraphTexture(const MString& strTextureName);
 
-    size_t AddRenderGraphTexture(const MString& strTextureName);
+    MRenderGraphTexture* FindRenderGraphTexture(const MString& strTextureName) const;
 
-    bool Compile();
+    MRenderGraphNode* FindRenderGraphNode(const MString& strNodeName) const;
+
+    void CompileDirty();
+
+    void Render();
+
+	void GenerateBuffer(MIDevice* pDevice);
+	void DestroyBuffer(MIDevice* pDevice);
 
 protected:
 
-    MRenderGraphNode* GetFinalNode();
-    MRenderGraphNode* GetNode(const size_t& nIdx);
+	bool Compile(MIDevice* pDevice);
 
 private:
-
-
-    std::vector<MRenderGraphNode*> m_vGraphNodes;
-    std::vector<MRenderGraphTexture*> m_vGraphTextures;
+    std::map<MString, MRenderGraphNode*> m_tGraphNodeMap;
+    std::map<MString, MRenderGraphTexture*> m_tGraphTextureMap;
 
     std::vector<MRenderGraphNode*> m_vSortedNodes;
 
-    size_t m_nFinalNodeIdx;
+    bool m_bCompiled;
 };
 
 

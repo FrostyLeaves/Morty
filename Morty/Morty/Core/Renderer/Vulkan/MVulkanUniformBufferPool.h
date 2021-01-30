@@ -3,7 +3,7 @@
  * 
  * @Created      2020-07-22 14:36:30
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MVULKANUNIFORMBUFFERPOOL_H_

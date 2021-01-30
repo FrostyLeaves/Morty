@@ -3,7 +3,7 @@
  * 
  * @Created      2019-09-19 17:45:15
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MDIRECTIONALLIGHT_H_

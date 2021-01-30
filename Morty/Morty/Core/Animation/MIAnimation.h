@@ -3,7 +3,7 @@
  * 
  * @Created      2019-12-09 22:37:59
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MIANIMATION_H_

@@ -3,7 +3,7 @@
  * 
  * @Created      2019-05-12 22:03:17
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MWINDOWSRENDERVIEW_H_

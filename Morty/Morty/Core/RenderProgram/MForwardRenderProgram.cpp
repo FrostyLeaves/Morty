@@ -5,6 +5,7 @@
 #include "MCamera.h"
 #include "MTexture.h"
 #include "MViewport.h"
+#include "MRenderGraph.h"
 
 #include "MMaterialGroup.h"
 #include "Model/MModelInstance.h"
@@ -29,6 +30,7 @@ MForwardRenderProgram::MForwardRenderProgram()
 	, m_pShadowMapWork(nullptr)
 	, m_pRenderWork(nullptr)
 	, m_pTransparentWork(nullptr)
+	, m_pRenderGraph(nullptr)
 	, m_cClearColor(MColor::Black_T)
 {
 	
@@ -40,6 +42,8 @@ MForwardRenderProgram::~MForwardRenderProgram()
 
 void MForwardRenderProgram::Initialize()
 {
+	m_pRenderGraph = GetEngine()->GetObjectManager()->CreateObject<MRenderGraph>();
+
 	m_pShadowMapWork = GetEngine()->GetObjectManager()->CreateObject<MForwardShadowMapWork>();
 	m_pShadowMapWork->Initialize(this);
 
@@ -71,6 +75,11 @@ void MForwardRenderProgram::Release()
 		m_pTransparentWork = nullptr;
 	}
 
+	if (m_pRenderGraph)
+	{
+		m_pRenderGraph->DeleteLater();
+		m_pRenderGraph = nullptr;
+	}
 }
 
 void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport)
@@ -82,7 +91,6 @@ void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport)
 
 	info.fDelta = m_pEngine->GetInstantDelta();
 	info.unFrameIndex = pRenderer->GetFrameIndex();
-	info.pRenderTarget = GetRenderTarget();
 	info.pRenderer = pRenderer;
 	info.pViewport = pViewport;
 	info.pCamera = pViewport->GetCamera();
@@ -96,21 +104,26 @@ void MForwardRenderProgram::Render(MRenderInfo& info)
 	info.pViewport->LockMatrix();
 
 	GenerateRenderGroup(info);
+// 
+// 	if (m_pShadowMapWork)
+// 	{
+// 		m_pShadowMapWork->Render(info);
+// 		info.pShadowMapTexture = m_pShadowMapWork->GetShadowMap(info.unFrameIndex);
+// 	}
+// 
+// 	if (m_pRenderWork)
+// 	{
+// 		m_pRenderWork->Render(info);
+// 	}
+// 
+// 	if (m_pTransparentWork)
+// 	{
+// 		m_pTransparentWork->Render(info);
+// 	}
 
-	if (m_pShadowMapWork)
+	if (m_pRenderGraph)
 	{
-		m_pShadowMapWork->Render(info);
-		info.pShadowMapTexture = m_pShadowMapWork->GetShadowMap(info.unFrameIndex);
-	}
-
-	if (m_pRenderWork)
-	{
-		m_pRenderWork->Render(info);
-	}
-
-	if (m_pTransparentWork)
-	{
-		m_pTransparentWork->Render(info);
+		m_pRenderGraph->Render();
 	}
 
 	info.pViewport->UnlockMatrix();

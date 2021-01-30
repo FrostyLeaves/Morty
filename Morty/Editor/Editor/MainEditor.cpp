@@ -16,8 +16,6 @@
 #include <SDL_vulkan.h>
 #endif
 
-#include "Vulkan/MVulkanRenderTarget.h"
-
 #include "MEngine.h"
 #include "MIRenderer.h"
 #include "MViewport.h"
@@ -31,7 +29,6 @@
 #include "MCamera.h"
 #include "MTransformCoord.h"
 #include "MIRenderTarget.h"
-#include "MTextureRenderTarget.h"
 #include "MForwardRenderProgram.h"
 
 #include "Matrix.h"
@@ -60,7 +57,6 @@ MainEditor::MainEditor()
 	, m_bShowRenderView(true)
 	, m_bShowMaterial(false)
 	, m_bShowResource(false)
-	, m_ImguiRenderPass()
 	, m_funcCloseCallback(nullptr)
 	, m_pSDLWindow(nullptr)
     , m_v2WindowSize(800.0f, 480.0f)
@@ -98,15 +94,11 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	style.ItemSpacing.x = 2.0f;
 
 	ImVec4 bgColor = style.Colors[ImGuiCol_WindowBg];
-	//style.Colors[ImGuiCol_ChildWindowBg] = bgColor;
 
 	io.ConfigWindowsMoveFromTitleBarOnly = true;
 
 
 	InitializeSDLWindow();
-
-	m_ImguiRenderPass.m_vBackDesc.push_back(MPassTargetDescription(true, MColor(0.0f, 0.0f, 0.0f, 1.0f)));
-	m_pEngine->GetDevice()->GenerateRenderPass(&m_ImguiRenderPass, GetRenderTarget());
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	MDirectX11Device* pDevice = dynamic_cast<MDirectX11Device*>(m_pEngine->GetDevice());
@@ -114,6 +106,7 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 #elif RENDER_GRAPHICS == MORTY_VULKAN
 	MVulkanDevice* pDevice = dynamic_cast<MVulkanDevice*>(m_pEngine->GetDevice());
 	MVulkanRenderTarget* pRenderTarget = dynamic_cast<MVulkanRenderTarget*>(GetRenderTarget());
+	m_pEngine->GetDevice()->GenerateRenderPass(&pRenderTarget->m_RenderPass);
 
 	ImGui_ImplVulkan_InitInfo vulkanInitInfo = {};
 
@@ -121,7 +114,7 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	vulkanInitInfo.CheckVkResultFn = nullptr;
 	vulkanInitInfo.DescriptorPool = pDevice->m_ObjectDestructor.m_VkDescriptorPool;
 	vulkanInitInfo.Device = pDevice->m_VkDevice;
-	vulkanInitInfo.ImageCount = pRenderTarget->m_vBufferInfo.size();
+	vulkanInitInfo.ImageCount = pRenderTarget->m_RenderPass.m_aFrameBuffers.size();
 	vulkanInitInfo.Instance = pDevice->m_VkInstance;
 	vulkanInitInfo.MinImageCount = pRenderTarget->m_unMinImageCount;
 	vulkanInitInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
@@ -187,7 +180,7 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	MIRenderProgram* pRenderProgram = pVulkanRenderTarget->GetRenderProgram();
 
 	
-	ImGui_ImplVulkan_Init(&vulkanInitInfo, m_ImguiRenderPass.m_aVkRenderPass[0]);
+	ImGui_ImplVulkan_Init(&vulkanInitInfo, pVulkanRenderTarget->m_RenderPass.m_aVkRenderPass[0]);
 	
 
 	VkCommandBuffer buffer = pDevice->BeginCommands();
@@ -224,8 +217,6 @@ void MainEditor::Release()
 {
 	if (m_funcCloseCallback)
 		m_funcCloseCallback();
-
-	m_pEngine->GetDevice()->DestroyRenderPass(&m_ImguiRenderPass);
 
 	m_SceneTexture.Release();
 
@@ -315,7 +306,8 @@ void MainEditor::OnRenderEnd()
 	{
 		if (VkCommandBuffer vkCmmandBuffer = pVkRenderer->GetCommandBuffer())
 		{
-			pVkRenderer->BeginRenderPass(&m_ImguiRenderPass, GetRenderTarget());
+			MVulkanRenderTarget* pRenderTarget = dynamic_cast<MVulkanRenderTarget*>(GetRenderTarget());
+			pVkRenderer->BeginRenderPass(&pRenderTarget->m_RenderPass, GetRenderTarget()->GetFrameBufferIndex());
 
 			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), vkCmmandBuffer);
 
@@ -446,7 +438,6 @@ void MainEditor::InitializeSDLWindow()
 	MVulkanDevice* pDevice = dynamic_cast<MVulkanDevice*>(m_pEngine->GetDevice());
 
     SDL_SetMainReady();
-    //SDL_Vulkan_LoadLibrary(NULL);
 	// Setup SDL
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
 	{
@@ -666,9 +657,4 @@ void MainEditor::OnRenderBegin()
 	}
     */
 
-	if (!m_ImguiRenderPass.m_vBackDesc.empty())
-	{
-		m_ImguiRenderPass.m_vBackDesc[0].cClearColor = GetBackColor();
-	//	m_ImguiRenderPass.m_vBackDesc[0].cClearColor = MColor(1, 0, 0, 1);
-	}
 }

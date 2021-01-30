@@ -3,7 +3,7 @@
  * 
  * @Created      2019-09-11 16:12:31
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MTEXTURE_H_
@@ -116,17 +116,17 @@ private:
 
 class MORTY_API MIRenderTexture : public MITexture
 {
-};
-
-class MORTY_API MIRenderBackTexture : public MIRenderTexture
-{
 public:
-	MIRenderBackTexture();
-	virtual ~MIRenderBackTexture() {}
+	MIRenderTexture();
+	virtual ~MIRenderTexture() {}
 	//Should Set before GenerateBuffer
 
 	void SetType(const METextureLayout& eType) { m_eRenderType = eType; }
 	virtual METextureLayout GetType() override { return m_eRenderType; }
+
+	void SetUsage(const METextureUsage& eType) { m_eUsageType = eType; }
+	METextureUsage GetUsage() { return m_eUsageType; }
+
 
 	void SetReadable(const bool& bReadable) { m_bReadable = bReadable; }
 	virtual bool GetReadable() override { return m_bReadable; }
@@ -136,7 +136,6 @@ public:
 
 public:
 	virtual MTextureBuffer* GetBuffer() override { return m_pTextureBuffer; }
-	MRenderTextureBuffer* GetRenderBuffer() { return m_pTextureBuffer; }
 
 	virtual void GenerateBuffer(MIDevice* pDevice) = 0;
 	virtual void DestroyBuffer(MIDevice* pDevice) = 0;
@@ -146,9 +145,10 @@ protected:
 	Vector2 m_v2Size;
 	MRenderTextureBuffer* m_pTextureBuffer;
 	METextureLayout m_eRenderType;
+	METextureUsage m_eUsageType;
 };
 
-class MORTY_API MRenderSwapchainTexture : public MIRenderBackTexture
+class MORTY_API MRenderSwapchainTexture : public MIRenderTexture
 {
 public:
 	MRenderSwapchainTexture();
@@ -158,48 +158,16 @@ public:
 	virtual void DestroyBuffer(MIDevice* pDevice) override;
 };
 
-class MORTY_API MRenderBackTexture : public MIRenderBackTexture
+class MORTY_API MRenderTexture : public MIRenderTexture
 {
 public:
-	MRenderBackTexture();
-	virtual ~MRenderBackTexture() {}
+	MRenderTexture();
+	virtual ~MRenderTexture() {}
 
 public:
 	virtual void GenerateBuffer(MIDevice* pDevice) override;
 	virtual void DestroyBuffer(MIDevice* pDevice) override;
 };
 
-class MORTY_API MRenderSubpassTexture : public MIRenderBackTexture
-{
-public:
-	MRenderSubpassTexture();
-	virtual ~MRenderSubpassTexture() {}
-
-public:
-	virtual void GenerateBuffer(MIDevice* pDevice) override;
-	virtual void DestroyBuffer(MIDevice* pDevice) override;
-};
-
-class MORTY_API MRenderDepthTexture : public MIRenderTexture
-{
-public:
-	MRenderDepthTexture();
-	virtual ~MRenderDepthTexture() {}
-
-public:
-
-	void SetSize(const Vector2& v2Size) { m_v2Size = v2Size; }
-	virtual Vector2 GetSize() override { return m_v2Size; }
-	virtual METextureLayout GetType() override { return METextureLayout::ER32; }
-	virtual bool GetReadable() override { return false; }
-	virtual MTextureBuffer* GetBuffer() override;
-	MDepthTextureBuffer* GetDepthBuffer() { return m_pTextureBuffer; };
-	void GenerateBuffer(MIDevice* pDevice);
-	void DestroyBuffer(MIDevice* pDevice);
-		
-private:
-	Vector2 m_v2Size;
-	MDepthTextureBuffer* m_pTextureBuffer;
-};
 
 #endif

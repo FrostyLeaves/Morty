@@ -3,7 +3,7 @@
  * 
  * @Created      2019-05-12 21:49:13
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MIRENDERER_H_
@@ -79,9 +79,8 @@ class MFrameBuffer;
 class MIRenderTarget;
 class MIRenderTexture;
 class MShaderParamSet;
-class MRenderBackTexture;
-class MIRenderBackTexture;
-class MRenderDepthTexture;
+class MRenderTexture;
+class MIRenderTexture;
 
 class MORTY_API MIRenderer
 {
@@ -89,13 +88,6 @@ public:
 
 	MIRenderer();;
 	virtual ~MIRenderer(){};
-
-	struct RenderTargetPair
-	{
-		RenderTargetPair(MIRenderTarget* pRT, MRenderDepthTexture* pDT) :pRenderTarget(pRT), pDepthTexture(pDT) {}
-		MIRenderTarget* pRenderTarget;
-		MRenderDepthTexture* pDepthTexture;
-	};
 
 public:
 
@@ -112,7 +104,7 @@ public:
 
 	virtual void NextSubpass() = 0;
 
-	virtual void BeginRenderPass(MRenderPass* pRenderPass, MIRenderTarget* pRenderTarget) = 0;
+	virtual void BeginRenderPass(MRenderPass* pRenderPass, const uint32_t& nFrameBufferIdx) = 0;
 
 	virtual void EndRenderPass() = 0;
 
@@ -122,7 +114,7 @@ public:
 
 	virtual bool SetUseMaterial(MMaterial* pMaterial) = 0;
 
-	virtual bool SetRenderToTextureBarrier(const std::vector<MIRenderBackTexture*> vTextures) = 0;
+	virtual bool SetRenderToTextureBarrier(const std::vector<MIRenderTexture*> vTextures) = 0;
 
 	virtual bool DownloadTexture(MITexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback) = 0;
 

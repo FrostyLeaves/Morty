@@ -3,7 +3,7 @@
  * 
  * @Created      2020-06-27 13:42:59
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_VULKANMSHADERCOMPILER_H_

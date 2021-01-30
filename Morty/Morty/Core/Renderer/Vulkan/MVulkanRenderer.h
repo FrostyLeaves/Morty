@@ -3,7 +3,7 @@
  * 
  * @Created      2020-06-18 15:18:31
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MVULKANRENDERER_H_
@@ -40,7 +40,7 @@ public:
 
 	virtual void NextSubpass() override;
 
-	virtual void BeginRenderPass(MRenderPass* pRenderPass, MIRenderTarget* pRenderTarget) override;
+	virtual void BeginRenderPass(MRenderPass* pRenderPass, const uint32_t& nFrameBufferIdx) override;
 
 	virtual void EndRenderPass() override;
 
@@ -50,7 +50,7 @@ public:
 
 	virtual bool SetUseMaterial(MMaterial* pMaterial) override;
 
-	virtual bool SetRenderToTextureBarrier(const std::vector<MIRenderBackTexture*> vTextures) override;
+	virtual bool SetRenderToTextureBarrier(const std::vector<MIRenderTexture*> vTextures) override;
 
 	virtual bool DownloadTexture(MITexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback) override;
 

@@ -3,7 +3,7 @@
  * 
  * @Created      2019-12-7 16:36:40
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MRENDERSTRUCTURE_H_
@@ -29,6 +29,13 @@ enum class METextureLayout
 	ERGBA8 = 0,
 	ERGBA16,
 	ER32,
+};
+
+enum class METextureUsage
+{
+	EUnknow = 0,
+	ERenderBack,
+	ERenderDepth
 };
 
 class MInputLayout
@@ -106,19 +113,6 @@ public:
 #endif
 };
 
-//用于渲染深度的纹理缓存
-class MDepthTextureBuffer : public MTextureBuffer
-{
-public:
-	MDepthTextureBuffer();
-	virtual ~MDepthTextureBuffer() {}
-
-#if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	struct ID3D11DepthStencilView* m_pDepthStencilView;
-#elif RENDER_GRAPHICS == MORTY_VULKAN
-
-#endif
-};
 
 
 

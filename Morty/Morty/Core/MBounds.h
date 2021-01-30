@@ -3,7 +3,7 @@
  * 
  * @Created      2019-11-26 12:23:04
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MBOUNDS_H_

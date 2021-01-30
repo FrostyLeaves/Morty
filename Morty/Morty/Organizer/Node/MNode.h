@@ -3,7 +3,7 @@
  * 
  * @Created      2019-05-25 19:54:42
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MNODE_H_

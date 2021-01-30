@@ -203,8 +203,8 @@ void MForwardHDRWork::InitializeRenderTargets()
 
 	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
 	{
-		m_aBackTexture[i] = new MRenderBackTexture();
-		m_aHighLightTexture[i] = new MRenderBackTexture();
+		m_aBackTexture[i] = new MRenderTexture();
+		m_aHighLightTexture[i] = new MRenderTexture();
 
 		m_aLumTexture[i] = new MTexture();
 		m_aLumTexture[i]->SetReadable(true);
@@ -212,8 +212,8 @@ void MForwardHDRWork::InitializeRenderTargets()
 		m_aLumTexture[i]->SetType(METextureLayout::ERGBA16);
 	}
 
-	m_pTempRenderTarget->SetBackTexture(m_aBackTexture, 0);
-	m_pTempRenderTarget->SetBackTexture(m_aHighLightTexture, 1);
+//	m_pTempRenderTarget->SetBackTexture(m_aBackTexture, 0);
+//	m_pTempRenderTarget->SetBackTexture(m_aHighLightTexture, 1);
 
 	m_pTempRenderTarget->Resize(Vector2(MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE));
 }
@@ -324,7 +324,7 @@ void MForwardHDRWork::RenderCombine(MPostProcessRenderInfo& info)
 
 	m_pCombineWork->CheckRenderTargetSize(info.pViewport->GetSize());
 
-	info.pPrevLevelOutput = m_pGaussianBlurWork->GetRenderTarget()->GetBackTexture(info.unFrameIndex)->at(0);
+//	info.pPrevLevelOutput = m_pGaussianBlurWork->GetRenderTarget()->GetBackTexture(info.unFrameIndex)->at(0);
 	info.pPrevLevelOutput1 = m_aBackTexture[info.unFrameIndex];
 	
 

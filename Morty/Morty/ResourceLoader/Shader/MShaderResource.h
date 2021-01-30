@@ -3,7 +3,7 @@
  * 
  * @Created      2019-08-26 20:26:13
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MSHADERRESOURCE_H_

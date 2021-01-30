@@ -3,7 +3,7 @@
  * 
  * @Created      2019-09-22 14:51:44
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MTEXTURECUBERESOURCE_H_

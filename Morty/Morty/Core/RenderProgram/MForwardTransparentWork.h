@@ -3,7 +3,7 @@
  * 
  * @Created      2020-08-25 11:25:01
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MFORWARDTRANSPARENTWORK_H_
@@ -14,9 +14,9 @@
 
 #include <array>
 
-class MIRenderBackTexture;
-class MRenderBackTexture;
-class MRenderSubpassTexture;
+class MIRenderTexture;
+class MRenderTexture;
+class MRenderTexture;
 class MTextureRenderTarget;
 class MORTY_API MForwardTransparentWork : public MObject
 {
@@ -68,17 +68,17 @@ private:
 	MTexture* m_pWhiteTexture;
 	MTexture* m_pBlackTexture;
 
-	MTextureRenderTarget* m_pTransparentRenderTarget;
+//	MTextureRenderTarget* m_pTransparentRenderTarget;
 
-	std::array<MIRenderBackTexture*, M_BUFFER_NUM> vBackTexture;
-	std::array<MIRenderBackTexture*, M_BUFFER_NUM> vFrontTexture;
-	std::array<MIRenderBackTexture*, M_BUFFER_NUM> vBackDepthTexture[2];
-	std::array<MIRenderBackTexture*, M_BUFFER_NUM> vFrontDepthTexture[2];
+	std::array<MIRenderTexture*, M_BUFFER_NUM> vBackTexture;
+	std::array<MIRenderTexture*, M_BUFFER_NUM> vFrontTexture;
+	std::array<MIRenderTexture*, M_BUFFER_NUM> vBackDepthTexture[2];
+	std::array<MIRenderTexture*, M_BUFFER_NUM> vFrontDepthTexture[2];
 
 	MForwardRenderTransparentShaderParamSet m_aFrameParamSet[2];
 
 	Vector2 m_v2TransparentTextureSize;
-	std::vector<MIRenderBackTexture*> m_vRenderTargetTexture;
+	std::vector<MIRenderTexture*> m_vRenderTargetTexture;
 
 	MMesh<Vector2> m_TransparentDrawMesh;
     MMaterial* m_pDrawMeshMaterial;

@@ -3,7 +3,7 @@
  * 
  * @Created      2019-11-04 23:06:48
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MTYPE_

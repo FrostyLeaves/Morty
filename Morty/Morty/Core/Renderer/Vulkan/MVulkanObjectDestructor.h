@@ -3,7 +3,7 @@
  * 
  * @Created      2020-07-07 21:06:34
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MVULKANOBJECTDESTRUCTOR_H_

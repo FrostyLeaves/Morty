@@ -3,7 +3,7 @@
  * 
  * @Created      2020-5-8 22:15:46
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MSHADER_MACRO_H_

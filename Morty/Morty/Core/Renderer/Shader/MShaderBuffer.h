@@ -3,7 +3,7 @@
  * 
  * @Created      2020-07-20 14:41:06
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MSHADERBUFFER_H_

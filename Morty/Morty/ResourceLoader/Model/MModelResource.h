@@ -3,7 +3,7 @@
  * 
  * @Created      2020-06-14 16:58:57
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MMODELRESOURCE_H_

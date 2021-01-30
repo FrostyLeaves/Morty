@@ -3,7 +3,7 @@
  * 
  * @Created      2020-06-02 01:50:44
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MSKELETONRESOURCE_H_

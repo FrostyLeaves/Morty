@@ -107,14 +107,14 @@ void MForwardPostProcessProgram::RenderPostProcess(const MRenderInfo& info)
 	cPostInfo.unFrameIndex = unFrameIdx;
 	cPostInfo.pViewport = info.pViewport;
 	cPostInfo.pRenderer = info.pRenderer;
-	cPostInfo.pPrevLevelOutput = m_pTempRenderTarget->GetBackTexture(unFrameIdx)->at(0);
+//	cPostInfo.pPrevLevelOutput = m_pTempRenderTarget->GetBackTexture(unFrameIdx)->at(0);
 
 	if (m_pHDRPostProcessWork)
 	{
 		m_pHDRPostProcessWork->CheckRenderTargetSize(v2ViewportSize);
 		m_pHDRPostProcessWork->Render(cPostInfo);
 
-		cPostInfo.pPrevLevelOutput = m_pHDRPostProcessWork->GetRenderTarget()->GetBackTexture(unFrameIdx)->at(0);
+//		cPostInfo.pPrevLevelOutput = m_pHDRPostProcessWork->GetRenderTarget()->GetBackTexture(unFrameIdx)->at(0);
 	}
 
 	for (MIPostProcessWork* pPostProcess : m_vPostProcessWork)
@@ -122,7 +122,7 @@ void MForwardPostProcessProgram::RenderPostProcess(const MRenderInfo& info)
 		pPostProcess->CheckRenderTargetSize(v2ViewportSize);
 		pPostProcess->Render(cPostInfo);
 
-		cPostInfo.pPrevLevelOutput = pPostProcess->GetRenderTarget()->GetBackTexture(unFrameIdx)->at(0);
+//		cPostInfo.pPrevLevelOutput = pPostProcess->GetRenderTarget()->GetBackTexture(unFrameIdx)->at(0);
 	}
 }
 
@@ -141,7 +141,7 @@ void MForwardPostProcessProgram::RenderScreenMesh(const MRenderInfo& info)
 
 	uint32_t unFrameIndex = info.pRenderer->GetFrameIndex();
 
-	info.pRenderer->SetRenderToTextureBarrier({ pTextureRT->GetBackTexture(unFrameIndex)->at(0) });
+//	info.pRenderer->SetRenderToTextureBarrier({ pTextureRT->GetBackTexture(unFrameIndex)->at(0) });
 
 	info.pRenderer->BeginRenderPass(m_pScreenDrawRenderPass, GetRenderTarget());
 
@@ -150,7 +150,7 @@ void MForwardPostProcessProgram::RenderScreenMesh(const MRenderInfo& info)
 
 	if (MShaderParamSet* pMaterialParamSet = m_pScreenDrawMaterial->GetMaterialParamSet())
 	{
-		pMaterialParamSet->m_vTextures[0]->pTexture = pTextureRT->GetBackTexture(unFrameIndex)->at(0);
+//		pMaterialParamSet->m_vTextures[0]->pTexture = pTextureRT->GetBackTexture(unFrameIndex)->at(0);
 		pMaterialParamSet->m_vTextures[0]->SetDirty();
 	}
 
@@ -296,17 +296,19 @@ void MForwardPostProcessProgram::InitializeRenderTarget()
 
 	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
 	{
-		MRenderBackTexture* pBackTexture = new MRenderBackTexture();
-		MRenderDepthTexture* pDepthTexture = new MRenderDepthTexture();
+		MRenderTexture* pBackTexture = new MRenderTexture();
+		MRenderTexture* pDepthTexture = new MRenderTexture();
 
 		pBackTexture->SetType(eNewLayout);
+		pDepthTexture->SetType(METextureLayout::ER32);
+		pDepthTexture->SetUsage(METextureUsage::ERenderDepth);
 
 		m_aBackTexture[i] = pBackTexture;
 		m_aDepthTexture[i] = pDepthTexture;
 	}
 
-	m_pTempRenderTarget->SetBackTexture(m_aBackTexture, 0);
-	m_pTempRenderTarget->SetDepthTexture(m_aDepthTexture);
+//	m_pTempRenderTarget->SetBackTexture(m_aBackTexture, 0);
+//	m_pTempRenderTarget->SetDepthTexture(m_aDepthTexture);
 
 	m_pTempRenderTarget->Resize(Vector2(MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE));
 }

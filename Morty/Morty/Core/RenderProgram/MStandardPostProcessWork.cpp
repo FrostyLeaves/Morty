@@ -61,16 +61,18 @@ void MStandardPostProcessWork::InitializeRenderTargets()
 
 	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
 	{
-		MRenderBackTexture* pBackTexture = new MRenderBackTexture();
+		MRenderTexture* pBackTexture = new MRenderTexture();
 
-		MRenderDepthTexture* pDepthTexture = new MRenderDepthTexture();
+		MRenderTexture* pDepthTexture = new MRenderTexture();
+		pDepthTexture->SetType(METextureLayout::ER32);
+		pDepthTexture->SetUsage(METextureUsage::ERenderDepth);
 
 		m_aBackTexture[i] = pBackTexture;
 		m_aDepthTexture[i] = pDepthTexture;
 	}
 
-	m_pTempRenderTarget->SetBackTexture(m_aBackTexture, 0);
-	m_pTempRenderTarget->SetDepthTexture(m_aDepthTexture);
+// 	m_pTempRenderTarget->SetBackTexture(m_aBackTexture, 0);
+// 	m_pTempRenderTarget->SetDepthTexture(m_aDepthTexture);
 
 	m_pTempRenderTarget->Resize(Vector2(MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE));
 }

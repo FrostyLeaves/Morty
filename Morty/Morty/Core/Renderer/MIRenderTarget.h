@@ -3,7 +3,7 @@
  * 
  * @Created      2019-12-30 11:43:46
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MIRENDERTARGET_H_
@@ -27,17 +27,7 @@
 #endif
 
 class MIDevice;
-class MRenderDepthTexture;
-class MIRenderBackTexture;
-
-struct MORTY_API MFrameBuffer
-{
-	MFrameBuffer();
-	std::vector<MIRenderBackTexture*> vBackTextures;
-	MRenderDepthTexture* pDepthTexture;
-	VkFramebuffer vkFrameBuffer;
-	VkExtent2D vkExtend;
-};
+class MIRenderTexture;
 
 class MORTY_API MIRenderTarget : public MObject
 {
@@ -47,18 +37,11 @@ public:
 	MIRenderTarget();
 	virtual ~MIRenderTarget() {}
 
-	virtual MRenderDepthTexture* GetCurrDepthTexture() = 0;
-
-	virtual bool GetDepthEnable() = 0;
-
-	virtual uint32_t GetMFrameBufferNum() = 0;
-	virtual MFrameBuffer* GetFrameBuffer(const uint32_t& unIndex) = 0;
-
-	virtual MFrameBuffer* GetCurrFrameBuffer(const uint32_t& unFrameIdx = 0) = 0;
-
 	virtual void OnDelete() override;
 
 public:
+
+	virtual uint32_t GetFrameBufferIndex();
 
 	virtual void Resize(const Vector2& v2Size) { m_v2Size = v2Size; }
 	Vector2 GetSize() const { return m_v2Size; }

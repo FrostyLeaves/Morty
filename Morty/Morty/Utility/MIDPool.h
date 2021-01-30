@@ -3,7 +3,7 @@
  * 
  * @Created      2019-08-06 18:39:21
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MIDPOOL_H_

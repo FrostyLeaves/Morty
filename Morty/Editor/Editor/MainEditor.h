@@ -94,8 +94,6 @@ protected:
 
 	SceneTexture m_SceneTexture;
 
-	MRenderPass m_ImguiRenderPass;
-
 	std::function<bool()> m_funcCloseCallback;
 
 	struct SDL_Window* m_pSDLWindow;

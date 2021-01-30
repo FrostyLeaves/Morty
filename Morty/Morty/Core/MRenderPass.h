@@ -3,7 +3,7 @@
  * 
  * @Created      2020-07-05 19:33:41
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MRENDERPASS_H_
@@ -11,6 +11,7 @@
 #include "MGlobal.h"
 #include "MIDevice.h"
 #include "Type/MColor.h"
+#include "MRenderStructure.h"
 
 #include <array>
 #include <vector>
@@ -20,6 +21,8 @@
 #include "MVulkanWrapper.h"
 #endif
 
+class MIDevice;
+class MIRenderTexture;
 class MIRenderTarget;
 class MORTY_API MSubpass
 {
@@ -40,14 +43,20 @@ public:
 	MPassTargetDescription(const bool bClear, const MColor& cClearColor);
 
 public:
-    MString m_strName;
 	bool bClearWhenRender;
 	MColor cClearColor;
-
-#if RENDER_GRAPHICS == MORTY_VULKAN
-	VkFormat m_vkTargetFormat;
-#endif
 };
+
+
+struct MORTY_API MFrameBuffer
+{
+    MFrameBuffer();
+    std::vector<MIRenderTexture*> vBackTextures;
+    MIRenderTexture* pDepthTexture;
+    VkFramebuffer vkFrameBuffer;
+    VkExtent2D m_vkExtent2D;
+};
+
 
 class MORTY_API MRenderPass
 {
@@ -57,14 +66,22 @@ public:
     MRenderPass();
     ~MRenderPass();
 
+
+    void GenerateBuffer(MIDevice* pDevice);
+    void DestroyBuffer(MIDevice* pDevice);
+
 public:
 
     void SetRenderPassID(const uint32_t& unID) { m_unRenderPassID = unID; }
     uint32_t GetRenderPassID() const { return m_unRenderPassID; }
 
-	std::vector<MSubpass> m_vSubpass;
+    std::vector<MIRenderTexture*> GetBackTexture(const size_t& nFrameIdx);
+    MIRenderTexture* GetDepthTexture(const size_t& nFrameIdx);
+    MFrameBuffer* GetFrameBuffer(const size_t& nFrameIdx);
 
-    std::vector<MPassTargetDescription> m_vBackDesc;
+	std::vector<MSubpass> m_vSubpass;
+	std::vector<MPassTargetDescription> m_vBackDesc;
+	std::vector<MFrameBuffer> m_aFrameBuffers;
     MPassTargetDescription m_DepthDesc;
 
     uint32_t m_unRenderPassID;
@@ -74,6 +91,7 @@ public:
 #elif RENDER_GRAPHICS == MORTY_VULKAN
     
     std::array<VkRenderPass, M_BUFFER_NUM> m_aVkRenderPass;
+	std::array<VkCommandBuffer, M_BUFFER_NUM> m_aVkCommandBuffers;
 
 #endif
 };

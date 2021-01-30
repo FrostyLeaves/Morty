@@ -30,7 +30,6 @@
 #include "Material/MMaterialResource.h"
 #include "MInputNode.h"
 #include "MTexture.h"
-#include "MTextureRenderTarget.h"
 
 #include "MSkeleton.h"
 #include "Texture/MTextureResource.h"

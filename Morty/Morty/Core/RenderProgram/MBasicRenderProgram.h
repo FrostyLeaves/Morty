@@ -3,7 +3,7 @@
  * 
  * @Created      2020-07-2 11:45:49
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MBasicRenderProgram_H_
