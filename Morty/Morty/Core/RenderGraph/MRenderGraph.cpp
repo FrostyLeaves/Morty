@@ -1,5 +1,6 @@
 #include "MRenderGraph.h"
 
+#include "MEngine.h"
 #include "MFunction.h"
 #include "MRenderPass.h"
 
@@ -7,7 +8,6 @@
 #include <queue>
 #include <functional>
 
-M_OBJECT_IMPLEMENT(MRenderGraph, MObject)
 
 MRenderGraphNode::MRenderGraphNode()
 	: m_strNodeName("")
@@ -86,8 +86,9 @@ void MRenderGraphNode::Compile(MIDevice* pDevice)
 					frameBuffer.vBackTextures.push_back(pRenderTexture->GetRenderTexture(fbIdx));
 				}
 
-				m_pRenderPass->m_vBackDesc[opIdx].bClearWhenRender = pOutput->GetClear();
-				m_pRenderPass->m_vBackDesc[opIdx].cClearColor = pOutput->GetClearColor();
+				m_pRenderPass->m_vBackDesc.push_back({});
+				m_pRenderPass->m_vBackDesc.back().bClearWhenRender = pOutput->GetClear();
+				m_pRenderPass->m_vBackDesc.back().cClearColor = pOutput->GetClearColor();
 			}
 			else if (pRenderTexture->GetUsage() == METextureUsage::ERenderDepth)
 			{
@@ -126,6 +127,16 @@ MRenderGraph::MRenderGraph()
 	: m_tGraphNodeMap()
 	, m_tGraphTextureMap()
 	, m_bCompiled(false)
+	, m_pEngine(nullptr)
+{
+
+}
+
+MRenderGraph::MRenderGraph(MEngine* pEngine)
+	: m_tGraphNodeMap()
+	, m_tGraphTextureMap()
+	, m_bCompiled(false)
+	, m_pEngine(pEngine)
 {
 
 }
@@ -142,7 +153,7 @@ MRenderGraphNode* MRenderGraph::AddRenderGraphNode(const MString& strNodeName)
 		return pFindResult;
 	}
 
-	MRenderGraphNode* pGraphNode = new MRenderGraphNode();
+	MRenderGraphNode* pGraphNode = NewRenderGraphNode();
 
 	pGraphNode->m_strNodeName = strNodeName;
 	pGraphNode->m_pGraph = this;
@@ -161,6 +172,7 @@ MRenderGraphTexture* MRenderGraph::AddRenderGraphTexture(const MString& strTextu
 
 	MRenderGraphTexture* pGraphTexture = new MRenderGraphTexture();
 	pGraphTexture->m_strTextureName = strTextureName;
+	pGraphTexture->m_pGraph = this;
 
 	m_tGraphTextureMap[strTextureName] = pGraphTexture;
 
@@ -260,25 +272,16 @@ bool MRenderGraph::Compile(MIDevice* pDevice)
 	return m_bCompiled =  true;
 }
 
-void MRenderGraph::Render()
-{
-	if (!m_bCompiled)
-		return;
-
-	for (MRenderGraphNode* pNode : m_vSortedNodes)
-	{
-		if (pNode->m_funcRender)
-		{
-			pNode->m_funcRender(pNode);
-		}
-	}
-}
-
 void MRenderGraph::GenerateBuffer(MIDevice* pDevice)
 {
 	if (!m_bCompiled && !Compile(pDevice))
 		return;
 	
+	for (auto& pr : m_tGraphTextureMap)
+	{
+		pr.second->GenerateBuffer(pDevice);
+	}
+
 	for (MRenderGraphNode* pGraphNode : m_vSortedNodes)
 	{
 		pGraphNode->GenerateBuffer(pDevice);
@@ -291,6 +294,12 @@ void MRenderGraph::DestroyBuffer(MIDevice* pDevice)
 	{
 		pGraphNode->DestroyBuffer(pDevice);
 	}
+
+	for (auto& pr : m_tGraphTextureMap)
+	{
+		pr.second->DestroyBuffer(pDevice);
+		pr.second = nullptr;
+	}
 }
 
 MRenderGraphTexture::MRenderGraphTexture()
@@ -301,7 +310,10 @@ MRenderGraphTexture::MRenderGraphTexture()
 	, m_v2Size()
 	, m_pGraph(nullptr)
 {
-
+	for (size_t i = 0; i < m_aTextures.size(); ++i)
+	{
+		m_aTextures[i] = new MRenderTexture();
+	}
 }
 
 void MRenderGraphTexture::SetUsage(const METextureUsage& eUsage)
@@ -312,6 +324,44 @@ void MRenderGraphTexture::SetUsage(const METextureUsage& eUsage)
 void MRenderGraphTexture::SetLayout(const METextureLayout& eLayout)
 {
 	m_eLayout = eLayout;
+}
+
+void MRenderGraphTexture::SetSize(const Vector2& size)
+{
+	if (m_v2Size != size)
+	{
+		for (size_t texIdx = 0; texIdx < m_aTextures.size(); ++texIdx)
+		{
+			m_aTextures[texIdx]->DestroyBuffer(GetRenderGraph()->GetEngine()->GetDevice());
+
+			m_aTextures[texIdx]->SetUsage(m_eUsage);
+			m_aTextures[texIdx]->SetType(m_eLayout);
+			m_aTextures[texIdx]->SetSize(m_v2Size);
+
+//			m_aTextures[texIdx]->GenerateBuffer(pDevice);
+		}
+
+
+		for (MRenderGraphNodeOutput* pOutput : m_vOutputs)
+		{
+			if (MRenderGraphNode* pOwnerNode = pOutput->GetRenderGraphNode())
+			{
+				pOwnerNode->DestroyBuffer(GetRenderGraph()->GetEngine()->GetDevice());
+			}
+		}
+
+		m_v2Size = size;
+	}
+}
+
+void MRenderGraphTexture::AddRenderGraphNodeOutput(MRenderGraphNodeOutput* pOutput)
+{
+	UNION_PUSH_BACK_VECTOR(m_vOutputs, pOutput);
+}
+
+void MRenderGraphTexture::RemoveRenderGraphNodeOutput(MRenderGraphNodeOutput* pOutput)
+{
+	ERASE_FIRST_VECTOR(m_vOutputs, pOutput);
 }
 
 MIRenderTexture* MRenderGraphTexture::GetRenderTexture(const size_t& nIdx)
@@ -331,6 +381,24 @@ void MRenderGraphTexture::Compile(MIDevice* pDevice)
 		m_aTextures[texIdx]->SetUsage(m_eUsage);
 		m_aTextures[texIdx]->SetType(m_eLayout);
 		m_aTextures[texIdx]->SetSize(m_v2Size);
+
+		m_aTextures[texIdx]->GenerateBuffer(pDevice);
+	}
+}
+
+void MRenderGraphTexture::GenerateBuffer(MIDevice* pDevice)
+{
+	for (size_t texIdx = 0; texIdx < m_aTextures.size(); ++texIdx)
+	{
+		m_aTextures[texIdx]->GenerateBuffer(pDevice);
+	}
+}
+
+void MRenderGraphTexture::DestroyBuffer(MIDevice* pDevice)
+{
+	for (size_t texIdx = 0; texIdx < m_aTextures.size(); ++texIdx)
+	{
+		m_aTextures[texIdx]->DestroyBuffer(pDevice);
 	}
 }
 
@@ -342,6 +410,19 @@ MRenderGraphNodeOutput::MRenderGraphNodeOutput()
 	, vLinkedInput()
 {
 
+}
+
+void MRenderGraphNodeOutput::SetRenderTexture(MRenderGraphTexture* pTexture)
+{
+	if (pGraphTexture)
+	{
+		pGraphTexture->RemoveRenderGraphNodeOutput(this);
+	}
+
+	if (pGraphTexture = pTexture)
+	{
+		pGraphTexture->AddRenderGraphNodeOutput(this);
+	}
 }
 
 void MRenderGraphNodeOutput::LinkTo(MRenderGraphNodeInput* pInput)

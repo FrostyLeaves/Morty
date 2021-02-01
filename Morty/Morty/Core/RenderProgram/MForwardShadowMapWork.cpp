@@ -75,8 +75,10 @@ void MForwardShadowMapWork::InitializeRenderGraph()
 	pShadowMapOutput->SetClear(true);
 	pShadowMapOutput->SetRenderTexture(pShadowMapTexture);
 
-
-	pShadowMapNode->BindRenderFunction(std::bind(&MForwardShadowMapWork::Render, this, std::placeholders::_1));
+	if (MRenderGraphNodeTemplate<MRenderInfo>* pTypedShadowMapNode = dynamic_cast<MRenderGraphNodeTemplate<MRenderInfo>*>(pShadowMapNode))
+	{
+		pTypedShadowMapNode->BindRenderFunction(std::bind(&MForwardShadowMapWork::Render, this, std::placeholders::_1, std::placeholders::_2));
+	}
 }
 
 void MForwardShadowMapWork::OnDelete()
@@ -86,30 +88,28 @@ void MForwardShadowMapWork::OnDelete()
 	Super::OnDelete();
 }
 
-// void MForwardShadowMapWork::Render(MRenderInfo& info)
-// {
-// 	info.pDirectionalLight = info.pScene->FindActiveDirectionLight();
-// 	if (nullptr == info.pDirectionalLight)
-// 		return;
-// 
-// 	std::vector<MShadowRenderGroup> vShadowMeshGroup;
-// 
-// 	UpdateRenderInfo(info, vShadowMeshGroup);
-// 	
-// 	if (vShadowMeshGroup.empty())
-// 		return;
-// 
-// 	info.pRenderer->BeginRenderPass(&m_ShadowRenderPass, info.unFrameIndex);
-// 
-// 	RenderMesh(info, vShadowMeshGroup);
-// 
-// 	info.pRenderer->EndRenderPass();
-// 
-// }
-
-void MForwardShadowMapWork::Render(MRenderGraphNode* pGraphNode)
+void MForwardShadowMapWork::Render(MRenderGraphNode* pGraphNode, MRenderInfo& info)
 {
+	MRenderPass* pRenderPass = pGraphNode->GetRenderPass();
+	if (!pRenderPass)
+		return;
 
+	info.pDirectionalLight = info.pScene->FindActiveDirectionLight();
+	if (nullptr == info.pDirectionalLight)
+		return;
+
+	std::vector<MShadowRenderGroup> vShadowMeshGroup;
+
+	UpdateRenderInfo(info, vShadowMeshGroup);
+
+	if (vShadowMeshGroup.empty())
+		return;
+
+	info.pRenderer->BeginRenderPass(pRenderPass, info.unFrameIndex);
+
+	RenderMesh(info, vShadowMeshGroup);
+
+	info.pRenderer->EndRenderPass();
 }
 
 void MForwardShadowMapWork::UpdateRenderInfo(MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup)

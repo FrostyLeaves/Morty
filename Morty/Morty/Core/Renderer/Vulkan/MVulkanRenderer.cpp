@@ -171,7 +171,7 @@ void MVulkanRenderer::BeginRenderPass(MRenderPass* pRenderPass, const uint32_t& 
 	if (!pRenderPass)
 		return;
 
-	if (VK_NULL_HANDLE == pRenderPass->m_aVkRenderPass[GetFrameIndex()])
+	if (VK_NULL_HANDLE == pRenderPass->m_VkRenderPass)
 	{
 		if (!m_pDevice->GenerateRenderPass(pRenderPass))
 		{
@@ -182,21 +182,26 @@ void MVulkanRenderer::BeginRenderPass(MRenderPass* pRenderPass, const uint32_t& 
 
 	MFrameBuffer* pFrameBuffer = pRenderPass->GetFrameBuffer(nFrameBufferIdx);
 	if (!pFrameBuffer)
+	{
+		MLogManager::GetInstance()->Error("MVulkanRenderer::BeginRenderPass error: fb == nullptr.");
 		return;
+	}
+
+
+	if (!pFrameBuffer->vkFrameBuffer && !m_pDevice->GenerateFrameBuffer(pRenderPass))
+	{
+		MLogManager::GetInstance()->Error("MVulkanRenderer::BeginRenderPass error: fb == nullptr.");
+		return;
+	}
 
 	size_t unBackNum = pFrameBuffer->vBackTextures.size();
 	if (unBackNum != pRenderPass->m_vBackDesc.size())
 		return;
 
-	if (!pFrameBuffer->vkFrameBuffer)
-	{
-		m_pDevice->GenerateFrameBuffer(pRenderPass);
-		pFrameBuffer = pRenderPass->GetFrameBuffer(nFrameBufferIdx);
-	}
 
 	VkRenderPassBeginInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassInfo.renderPass = pRenderPass->m_aVkRenderPass[m_unFrameIndex];
+	renderPassInfo.renderPass = pRenderPass->m_VkRenderPass;
 	renderPassInfo.framebuffer = pFrameBuffer->vkFrameBuffer;
 	renderPassInfo.renderArea.offset = { 0, 0 };
 	renderPassInfo.renderArea.extent = pFrameBuffer->m_vkExtent2D;
@@ -822,7 +827,7 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 	pipelineInfo.pColorBlendState = &blendInfo;
 	pipelineInfo.pDepthStencilState = &depthStencilInfo;
 	pipelineInfo.layout = pipelineLayout;
-	pipelineInfo.renderPass = pRenderPass->m_aVkRenderPass[m_unFrameIndex];
+	pipelineInfo.renderPass = pRenderPass->m_VkRenderPass;
 	pipelineInfo.subpass = nSubpassIdx;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 

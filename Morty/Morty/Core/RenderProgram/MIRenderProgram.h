@@ -27,7 +27,7 @@ public:
 
 public:
 
-    virtual MRenderGraph* GetRenderGraph() { return nullptr; }
+	virtual MRenderGraph* GetRenderGraph() { return nullptr; }
 
     virtual void Render(MIRenderer* pRenderer, MViewport* pViewport) {};
 

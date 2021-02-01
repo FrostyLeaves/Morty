@@ -21,12 +21,11 @@
 #include <algorithm>
 #include <float.h>
 
-
 M_OBJECT_IMPLEMENT(MForwardRenderProgram, MIRenderProgram)
-
 
 MForwardRenderProgram::MForwardRenderProgram()
 	: MIRenderProgram()
+	, m_aRenderInfo()
 	, m_pShadowMapWork(nullptr)
 	, m_pRenderWork(nullptr)
 	, m_pTransparentWork(nullptr)
@@ -42,17 +41,17 @@ MForwardRenderProgram::~MForwardRenderProgram()
 
 void MForwardRenderProgram::Initialize()
 {
-	m_pRenderGraph = GetEngine()->GetObjectManager()->CreateObject<MRenderGraph>();
+
+	m_pRenderGraph = new MRenderGraphTemplate<MRenderInfo>(GetEngine());
 
 	m_pShadowMapWork = GetEngine()->GetObjectManager()->CreateObject<MForwardShadowMapWork>();
 	m_pShadowMapWork->Initialize(this);
 
 	m_pRenderWork = GetEngine()->GetObjectManager()->CreateObject<MForwardRenderWork>();
 	m_pRenderWork->Initialize(this);
-
-	m_pTransparentWork = GetEngine()->GetObjectManager()->CreateObject<MForwardTransparentWork>();
-	m_pTransparentWork->Initialize(this);
-
+// 
+// 	m_pTransparentWork = GetEngine()->GetObjectManager()->CreateObject<MForwardTransparentWork>();
+// 	m_pTransparentWork->Initialize(this);
 }
 
 void MForwardRenderProgram::Release()
@@ -77,9 +76,11 @@ void MForwardRenderProgram::Release()
 
 	if (m_pRenderGraph)
 	{
-		m_pRenderGraph->DeleteLater();
+		m_pRenderGraph->DestroyBuffer(GetEngine()->GetDevice());
+		delete m_pRenderGraph;
 		m_pRenderGraph = nullptr;
 	}
+
 }
 
 void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport)
@@ -121,9 +122,10 @@ void MForwardRenderProgram::Render(MRenderInfo& info)
 // 		m_pTransparentWork->Render(info);
 // 	}
 
-	if (m_pRenderGraph)
+	
+	if (m_pRenderGraph->GetCompiled() || m_pRenderGraph->Compile(GetEngine()->GetDevice()))
 	{
-		m_pRenderGraph->Render();
+		m_pRenderGraph->Render(info);
 	}
 
 	info.pViewport->UnlockMatrix();
@@ -144,10 +146,10 @@ void MForwardRenderProgram::OnDelete()
 void MForwardRenderProgram::SetClearColor(const MColor& cClearColor)
 {
 	m_cClearColor = cClearColor;
-	if (m_pRenderWork)
-	{
-		m_pRenderWork->SetClearColor(cClearColor);
-	}
+// 	if (m_pRenderWork)
+// 	{
+// 		m_pRenderWork->SetClearColor(cClearColor);
+// 	}
 }
 
 void MForwardRenderProgram::GenerateRenderGroup(MRenderInfo& info)

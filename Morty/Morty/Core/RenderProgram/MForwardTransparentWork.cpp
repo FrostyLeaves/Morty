@@ -300,12 +300,12 @@ void MForwardTransparentWork::InitializeRenderPass()
 		return;
 	}
 
-	MIRenderTarget* pRenderTarget = m_pRenderProgram->GetRenderTarget();
-	if (!pRenderTarget)
-	{
-		MLogManager::GetInstance()->Error("MForwardTransparentWork::InitializeRenderPass error, rt == nullptr");
-		return;
-	}
+// 	MIRenderTarget* pRenderTarget = m_pRenderProgram->GetRenderTarget();
+// 	if (!pRenderTarget)
+// 	{
+// 		MLogManager::GetInstance()->Error("MForwardTransparentWork::InitializeRenderPass error, rt == nullptr");
+// 		return;
+// 	}
 
 	MPassTargetDescription descNoClear(false, MColor::Black_T);
 	MPassTargetDescription descWhite(true, MColor::White);

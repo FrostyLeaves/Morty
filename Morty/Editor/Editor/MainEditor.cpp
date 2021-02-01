@@ -180,7 +180,7 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	MIRenderProgram* pRenderProgram = pVulkanRenderTarget->GetRenderProgram();
 
 	
-	ImGui_ImplVulkan_Init(&vulkanInitInfo, pVulkanRenderTarget->m_RenderPass.m_aVkRenderPass[0]);
+	ImGui_ImplVulkan_Init(&vulkanInitInfo, pVulkanRenderTarget->m_RenderPass.m_VkRenderPass);
 	
 
 	VkCommandBuffer buffer = pDevice->BeginCommands();
@@ -631,7 +631,7 @@ void MainEditor::OnRenderBegin()
 #if MORTY_RENDER_DATA_STATISTICS
 	MRenderStatistics::GetInstance()->unTriangleCount = 0;
 #endif
-    /*
+    
 	{
 		MViewport* pViewport = m_SceneTexture.GetViewport();
 		pViewport->SetScreenPosition(Vector2(m_v2RenderViewPos.x, m_v2RenderViewPos.y));
@@ -646,7 +646,7 @@ void MainEditor::OnRenderBegin()
 	m_unTriangleCount = MRenderStatistics::GetInstance()->unTriangleCount;
 
 
-
+	/*
 	if (m_pMaterialView && m_bShowMaterial)
 	{
 		if (MIMeshInstance* pMeshIns = m_pNodeTreeView->GetSelectionNode()->DynamicCast<MIMeshInstance>())

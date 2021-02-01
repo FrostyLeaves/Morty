@@ -90,7 +90,7 @@ public:
 
 #elif RENDER_GRAPHICS == MORTY_VULKAN
     
-    std::array<VkRenderPass, M_BUFFER_NUM> m_aVkRenderPass;
+    VkRenderPass m_VkRenderPass;
 	std::array<VkCommandBuffer, M_BUFFER_NUM> m_aVkCommandBuffers;
 
 #endif

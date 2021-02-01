@@ -93,7 +93,6 @@ void MIRenderTarget::RegisterRenderProgram()
 		}
 
 		m_pRenderProgram = (Type*)(GetEngine()->GetObjectManager()->CreateObject<Type>());
-		m_pRenderProgram->BindRenderTarget(this);
 	}
 }
 

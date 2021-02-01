@@ -21,11 +21,12 @@ MRenderPass::MRenderPass()
 	, m_vBackDesc()
 	, m_DepthDesc()
 	, m_unRenderPassID(0)
+	, m_VkRenderPass(VK_NULL_HANDLE)
 {
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-	m_aVkRenderPass.fill(VK_NULL_HANDLE);
+
 #endif
 }
 
@@ -36,12 +37,14 @@ MRenderPass::~MRenderPass()
 
 void MRenderPass::GenerateBuffer(MIDevice* pDevice)
 {
-
+	pDevice->DestroyRenderPass(this);
+	pDevice->DestroyFrameBuffer(this);
 }
 
 void MRenderPass::DestroyBuffer(MIDevice* pDevice)
 {
-
+	pDevice->DestroyFrameBuffer(this);
+	pDevice->DestroyRenderPass(this);
 }
 
 std::vector<MIRenderTexture*> MRenderPass::GetBackTexture(const size_t& nFrameIdx)

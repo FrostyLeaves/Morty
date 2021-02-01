@@ -17,6 +17,7 @@
 #include "Shader/MShaderParamSet.h"
 
 #include "MRenderPass.h"
+#include "MRenderGraph.h"
 #include "MForwardRenderShaderParamSet.h"
 
 #include <vector>
@@ -89,6 +90,10 @@ protected:
 	virtual void Initialize() override;
 	virtual void Release() override;
 
+public:
+
+	std::array<MRenderInfo, M_BUFFER_NUM> m_aRenderInfo;
+
 protected:
 
 	MForwardShadowMapWork* m_pShadowMapWork;
@@ -98,7 +103,7 @@ protected:
 	MColor m_cClearColor;
 
 
-	MRenderGraph* m_pRenderGraph;
+	MRenderGraphTemplate<MRenderInfo>* m_pRenderGraph;
 };
 
 #endif

@@ -1306,6 +1306,14 @@ bool MVulkanDevice::GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTexture
 		uint32_t unHeight = pTexture->GetSize().y;
 		CreateImage(unWidth, unHeight, unMipmap, textureFormat, VK_IMAGE_TILING_OPTIMAL, usageFlags, memoryFlags, textureImage, textureImageMemory);
 
+// 		VkImageSubresourceRange vkSubresourceRange = {};
+// 		vkSubresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+// 		vkSubresourceRange.baseMipLevel = 0;
+// 		vkSubresourceRange.levelCount = unMipmap;
+// 		vkSubresourceRange.layerCount = 1;
+// 
+// 		TransitionImageLayout(textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, vkSubresourceRange);
+
 		VkImageView imageView = CreateImageView(textureImage, textureFormat, aspectFlgas, unMipmap);
 
 		VkFilter vkShadowMapFilter = FormatIsFilterable(textureFormat, VK_IMAGE_TILING_OPTIMAL) ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
@@ -1455,23 +1463,16 @@ void MVulkanDevice::DestroyShaderParamBuffer(MShaderConstantParam* pParam)
 	}
 }
 
-//depend on rendertarget format and layout
 bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 {	
 	if (!pRenderPass)
 		return false;
 
-	for (uint32_t i = 0; i < pRenderPass->m_aVkRenderPass.size(); ++i)
+	
+	if (VK_NULL_HANDLE != pRenderPass->m_VkRenderPass)
 	{
-		if (VK_NULL_HANDLE != pRenderPass->m_aVkRenderPass[i])
-		{
-			DestroyRenderPass(pRenderPass);
-			break;
-		}
+		DestroyRenderPass(pRenderPass);
 	}
-
-
-	VkRenderPass renderPass;
 
 	uint32_t unBackNum = pRenderPass->m_vBackDesc.size();
 
@@ -1490,6 +1491,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 		if (!pBuffer)
 		{
 			pBackTexture->GenerateBuffer(this);
+			pBuffer = pBackTexture->GetBuffer();
 		}
 
 		vAttachmentDesc.push_back({});
@@ -1525,6 +1527,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 		if (!pBuffer)
 		{
 			pDepthTexture->GenerateBuffer(this);
+			MTextureBuffer* pBuffer = pDepthTexture->GetBuffer();
 		}
 
 		vAttachmentDesc.push_back({});
@@ -1673,21 +1676,12 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 	renderPassInfo.pDependencies = vSubpassDependencies.data();
 
 
-	for (uint32_t i = 0; i < pRenderPass->m_aVkRenderPass.size(); ++i)
+	if (vkCreateRenderPass(m_VkDevice, &renderPassInfo, nullptr, &pRenderPass->m_VkRenderPass) != VK_SUCCESS)
 	{
-		if (vkCreateRenderPass(m_VkDevice, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
-		{
-			return false;
-		}
-
-		pRenderPass->m_aVkRenderPass[i] = renderPass;
+		return false;
 	}
 
 	m_PipelineManager.RegisterRenderPass(pRenderPass);
-
-
-
-	
 
 	return true;
 }
@@ -1696,13 +1690,10 @@ void MVulkanDevice::DestroyRenderPass(MRenderPass* pRenderPass)
 {
 	if (pRenderPass)
 	{
-		for (uint32_t i = 0; i < pRenderPass->m_aVkRenderPass.size(); ++i)
+		if (VK_NULL_HANDLE != pRenderPass->m_VkRenderPass)
 		{
-			if (VK_NULL_HANDLE != pRenderPass->m_aVkRenderPass[i])
-			{
-				m_ObjectDestructor.DestroyRenderPassLater(pRenderPass->m_aVkRenderPass[i]);
-				pRenderPass->m_aVkRenderPass[i] = VK_NULL_HANDLE;
-			}
+			m_ObjectDestructor.DestroyRenderPassLater(pRenderPass->m_VkRenderPass);
+			pRenderPass->m_VkRenderPass = VK_NULL_HANDLE;
 		}
 
 		m_PipelineManager.UnRegisterRenderPass(pRenderPass);
@@ -1740,7 +1731,7 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 			}
 
 			MTextureBuffer* pBuffer = pBackTexture->GetBuffer();
-			if (!pBuffer->m_VkImageView)
+			if (!pBuffer)
 			{
 				pBackTexture->GenerateBuffer(this);
 				pBuffer = pBackTexture->GetBuffer();
@@ -1749,19 +1740,23 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 			vAttachmentViews.push_back(pBuffer->m_VkImageView);
 		}
 
-		MIRenderTexture* pDepthTexture = pRenderPass->m_aFrameBuffers.front().pDepthTexture;
+		MIRenderTexture* pDepthTexture = pFrameBuffer->pDepthTexture;
 
 		if (pDepthTexture)
 		{
 			MTextureBuffer* pBuffer = pDepthTexture->GetBuffer();
-
-			if (size != pDepthTexture->GetSize())
+			
+			if (size.x == 0.0f && size.y == 0.0f)
+			{
+				size = pDepthTexture->GetSize();
+			}
+			else if (size != pDepthTexture->GetSize())
 			{
 				MLogManager::GetInstance()->Error("MVulkanDevice::GenerateFrameBuffer error: different texture size.");
 				return false;
 			}
 
-			if (!pBuffer->m_VkImageView)
+			if (!pBuffer)
 			{
 				pDepthTexture->GenerateBuffer(this);
 				pBuffer = pDepthTexture->GetBuffer();
@@ -1774,13 +1769,17 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		//This renderpass only used to match format.
-		framebufferInfo.renderPass = pRenderPass->m_aVkRenderPass[frameIdx];
+		framebufferInfo.renderPass = pRenderPass->m_VkRenderPass;
 
 		framebufferInfo.attachmentCount = vAttachmentViews.size();
 		framebufferInfo.pAttachments = vAttachmentViews.data();
 		framebufferInfo.width = size.x;
 		framebufferInfo.height = size.y;
 		framebufferInfo.layers = 1;
+
+
+		pFrameBuffer->m_vkExtent2D.width = size.x;
+		pFrameBuffer->m_vkExtent2D.height = size.y;
 		vkCreateFramebuffer(m_VkDevice, &framebufferInfo, nullptr, &pFrameBuffer->vkFrameBuffer);
 	}
 

@@ -74,6 +74,7 @@ void MForwardRenderWork::InitializeRenderGraph()
 		pOutputTargetTexture = pRenderGraph->AddRenderGraphTexture("Output Target");
 		pOutputTargetTexture->SetUsage(METextureUsage::ERenderBack);
 		pOutputTargetTexture->SetLayout(METextureLayout::ERGBA8);
+		pOutputTargetTexture->SetSize(Vector2(640, 640));
 	}
 
 	MRenderGraphTexture* pOutputDepthTexture = pRenderGraph->FindRenderGraphTexture("Output Depth");
@@ -82,9 +83,11 @@ void MForwardRenderWork::InitializeRenderGraph()
 		pOutputDepthTexture = pRenderGraph->AddRenderGraphTexture("Output Depth");
 		pOutputDepthTexture->SetUsage(METextureUsage::ERenderDepth);
 		pOutputDepthTexture->SetLayout(METextureLayout::ER32);
+		pOutputDepthTexture->SetSize(Vector2(640, 640));
 	}
 
 	MRenderGraphNode* pForwardNode = pRenderGraph->AddRenderGraphNode("Forward Node");
+	pForwardNode->SetFinalNode(true);
 
 	MRenderGraphNodeInput* pInputNode = pForwardNode->AppendInput();
 	MRenderGraphNodeOutput* pOutputTarget = pForwardNode->AppendOutput();
@@ -105,7 +108,10 @@ void MForwardRenderWork::InitializeRenderGraph()
 		pInputNode->LinkTo(pShadowMapOutput);
 	}
 
-	pForwardNode->BindRenderFunction(std::bind(&MForwardRenderWork::Render, this, std::placeholders::_1));
+	if (MRenderGraphNodeTemplate<MRenderInfo>* pTypedForwardNode = dynamic_cast<MRenderGraphNodeTemplate<MRenderInfo>*>(pForwardNode))
+	{
+		pTypedForwardNode->BindRenderFunction(std::bind(&MForwardRenderWork::Render, this, std::placeholders::_1, std::placeholders::_2));
+	}
 }
 
 void MForwardRenderWork::ReleaseRenderGraph()
@@ -119,20 +125,22 @@ void MForwardRenderWork::OnDelete()
 	Super::OnDelete();
 }
 
-void MForwardRenderWork::Render(MRenderGraphNode* pNode)
+void MForwardRenderWork::Render(MRenderGraphNode* pGraphNode, MRenderInfo& info)
 {
-	MRenderGraphTexture* pShadowMapTexture = pNode->GetInputTexture(0);
+
+	MRenderGraphTexture* pShadowMapTexture = pGraphNode->GetInputTexture(0);
 	if (!pShadowMapTexture)
 		return;
 
 	if (MShaderTextureParam* pShadowMapTextureParam = m_FrameParamSet.m_vTextures[0])
 	{
-		pShadowMapTextureParam->pTexture = pShadowMapTexture->GetRenderTexture();
+		pShadowMapTextureParam->pTexture = pShadowMapTexture->GetRenderTexture(info.unFrameIndex);
+		pShadowMapTextureParam->SetDirty();
 	}
 
 	UpdateShaderSharedParams(info, m_FrameParamSet);
 
-	info.pRenderer->BeginRenderPass(pNode->GetRenderPass(), info.unFrameIndex);
+	info.pRenderer->BeginRenderPass(pGraphNode->GetRenderPass(), info.unFrameIndex);
 
 	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
 	info.pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight(), 0.0f, 1.0f);
@@ -146,7 +154,6 @@ void MForwardRenderWork::Render(MRenderGraphNode* pNode)
 	//	DrawSkyBox(info);
 
 	info.pRenderer->EndRenderPass();
-
 }
 
 void MForwardRenderWork::UpdateShaderSharedParams(MRenderInfo& info, MForwardRenderShaderParamSet& frameParamSet)

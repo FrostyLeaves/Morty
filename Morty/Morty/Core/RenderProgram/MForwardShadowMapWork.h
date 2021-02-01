@@ -37,13 +37,11 @@ public:
 
     MIRenderProgram* GetProgram() const { return m_pRenderProgram; }
 
-    //void Render(MRenderInfo& info);
-
     void UpdateRenderInfo(MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup);
 
     void RenderMesh(MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup);
 
-    void Render(MRenderGraphNode* pGraphNode);
+    void Render(MRenderGraphNode* pGraphNode, MRenderInfo& info);
 
 protected:
 
