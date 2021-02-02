@@ -23,10 +23,6 @@ MForwardTransparentWork::MForwardTransparentWork()
 //	, m_pTransparentRenderTarget(nullptr)
 	, m_v2TransparentTextureSize(0.0f, 0.0f)
 	, m_aFrameParamSet()
-	, vBackTexture()
-	, vFrontTexture()
-	, vBackDepthTexture()
-	, vFrontDepthTexture()
 {
 	
 }
@@ -42,19 +38,16 @@ void MForwardTransparentWork::Initialize(MIRenderProgram* pRenderProgram)
 	InitializeMaterial();
 	InitializeMesh();
 	InitializeTexture();
+	InitializeRenderGraph();
 
 	for (uint32_t i = 0; i < 2; ++i)
 	{
 		m_aFrameParamSet[i].InitializeShaderParamSet(GetEngine());
 	}
-	InitializeRenderTargets();
-	InitializeRenderPass();
 }
 
 void MForwardTransparentWork::Release()
 {
-	ReleaseRenderPass();
-	ReleaseRenderTargets();
 	for (uint32_t i = 0; i < 2; ++i)
 	{
 		m_aFrameParamSet[i].ReleaseShaderParamSet(GetEngine());
@@ -65,28 +58,32 @@ void MForwardTransparentWork::Release()
 	ReleaseMaterial();
 }
 
-void MForwardTransparentWork::Render(MRenderInfo& info)
+void MForwardTransparentWork::Render(MRenderGraphNode* pGraphNode, MRenderInfo& info)
 {
+	if (!pGraphNode)
+		return;
+
 	if (info.vTransparentRenderGroup.empty())
 		return;
 
-	CheckTransparentTextureSize(info);
-
-	uint32_t unFrameIdx = info.pRenderer->GetFrameIndex();
+	MRenderPass* pRenderPass = pGraphNode->GetRenderPass();
+	if (!pRenderPass)
+		return;
 
 	UpdateShaderSharedParams(info);
 
-//	RenderDepthPeel(info, &m_TransWithClearRenderPass, m_pTransparentRenderTarget, 1);
+	MRenderGraphTexture* pFrontTexture = pGraphNode->GetInput(1)->GetLinkedTexture();
+	MRenderGraphTexture* pBackTexture = pGraphNode->GetInput(2)->GetLinkedTexture();
 
-	info.pRenderer->SetRenderToTextureBarrier({ vFrontTexture[info.unFrameIndex], vBackTexture[info.unFrameIndex] });
+	info.pRenderer->SetRenderToTextureBarrier({ pFrontTexture->GetRenderTexture(info.unFrameIndex), pBackTexture->GetRenderTexture(info.unFrameIndex) });
 
-	info.pRenderer->BeginRenderPass(&m_MeshRenderPass, info.unFrameIndex);
+	info.pRenderer->BeginRenderPass(pRenderPass, info.unFrameIndex);
 
 	std::vector<MShaderTextureParam*>& params = *m_pDrawMeshMaterial->GetTextureParams();
 
-	params[0]->pTexture = vFrontTexture[info.unFrameIndex];
+	params[0]->pTexture = pFrontTexture->GetRenderTexture(info.unFrameIndex);
 	params[0]->SetDirty();
-	params[1]->pTexture = vBackTexture[info.unFrameIndex];
+	params[1]->pTexture = pBackTexture->GetRenderTexture(info.unFrameIndex);
 	params[1]->SetDirty();
 
 	info.pRenderer->SetUseMaterial(m_pDrawMeshMaterial);
@@ -96,7 +93,7 @@ void MForwardTransparentWork::Render(MRenderInfo& info)
 	info.pRenderer->EndRenderPass();
 }
 
-void MForwardTransparentWork::RenderDepthPeel(MRenderInfo& info, MRenderPass* pRenderPass, MTextureRenderTarget* pRenderTarget, const uint32_t& unTargetIdx)
+void MForwardTransparentWork::RenderDepthPeel(MRenderGraphNode* pGraphNode, MRenderInfo& info)
 {
 	if (nullptr == info.pViewport)
 		return;
@@ -104,17 +101,23 @@ void MForwardTransparentWork::RenderDepthPeel(MRenderInfo& info, MRenderPass* pR
 	if (info.vTransparentRenderGroup.empty())
 		return;
 
+	MRenderPass* pRenderPass = pGraphNode->GetRenderPass();
+	if (!pRenderPass)
+		return;
+
 	MViewport* pViewport = info.pViewport;
 
 	info.pRenderer->BeginRenderPass(pRenderPass, info.unFrameIndex);
 
-//	m_pDrawFillMaterial->GetTextureParams()->at(0)->pTexture = info.pRenderTarget->GetCurrDepthTexture();
+	MRenderGraphTexture* pDepthTexture = pGraphNode->GetInput(1)->GetLinkedTexture();
+
+	m_pDrawFillMaterial->GetTextureParams()->at(0)->pTexture = pDepthTexture->GetRenderTexture(info.unFrameIndex);
 	m_pDrawFillMaterial->GetTextureParams()->at(0)->SetDirty();
 
- 	if (info.pRenderer->SetUseMaterial(m_pDrawFillMaterial))
- 	{
- 		info.pRenderer->DrawMesh(&m_TransparentDrawMesh);
- 	}
+	if (info.pRenderer->SetUseMaterial(m_pDrawFillMaterial))
+	{
+		info.pRenderer->DrawMesh(&m_TransparentDrawMesh);
+	}
 
 	for (uint32_t i = 1; i < pRenderPass->m_vSubpass.size(); ++i)
 	{
@@ -141,7 +144,7 @@ void MForwardTransparentWork::RenderDepthPeel(MRenderInfo& info, MRenderPass* pR
 			}
 		}
 	}
-	
+
 	info.pRenderer->EndRenderPass();
 }
 
@@ -235,125 +238,129 @@ void MForwardTransparentWork::ReleaseTexture()
 	pWhiteTextureRes->SubRef();
 }
 
-void MForwardTransparentWork::InitializeRenderTargets()
+void MForwardTransparentWork::InitializeRenderGraph()
 {
-//	m_pTransparentRenderTarget = GetEngine()->GetObjectManager()->CreateObject<MTextureRenderTarget>();
-	
-	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+	MRenderGraph* pRenderGraph = m_pRenderProgram->GetRenderGraph();
+	if (!pRenderGraph)
 	{
-		vFrontTexture[i] = new MRenderTexture();
-		vFrontTexture[i]->SetType(METextureLayout::ERGBA8);
-
-		vBackTexture[i] = new MRenderTexture();
-		vBackTexture[i]->SetType(METextureLayout::ERGBA8);
-
-		m_vRenderTargetTexture.push_back(vFrontTexture[i]);
-		m_vRenderTargetTexture.push_back(vBackTexture[i]);
-
-		for (uint32_t n = 0; n < 2; ++n)
-		{
-			vFrontDepthTexture[n][i] = new MRenderTexture();
-			vFrontDepthTexture[n][i]->SetType(METextureLayout::ER32);
-			vFrontDepthTexture[n][i]->SetUsage(METextureUsage::ERenderDepth);
-
-			vBackDepthTexture[n][i] = new MRenderTexture();
-			vBackDepthTexture[n][i]->SetType(METextureLayout::ER32);
-			vBackDepthTexture[n][i]->SetUsage(METextureUsage::ERenderDepth);
-
-			m_vRenderTargetTexture.push_back(vFrontDepthTexture[n][i]);
-			m_vRenderTargetTexture.push_back(vBackDepthTexture[n][i]);
-		}
-
-	}
-
-// 	m_pTransparentRenderTarget->SetBackTexture(vFrontTexture, 0);
-// 	m_pTransparentRenderTarget->SetBackTexture(vBackTexture, 1);
-// 	m_pTransparentRenderTarget->SetBackTexture(vFrontDepthTexture[0],2);
-// 	m_pTransparentRenderTarget->SetBackTexture(vBackDepthTexture[0], 3);
-// 	m_pTransparentRenderTarget->SetBackTexture(vFrontDepthTexture[1], 4);
-// 	m_pTransparentRenderTarget->SetBackTexture(vBackDepthTexture[1], 5);
-	
-
-}
-
-void MForwardTransparentWork::ReleaseRenderTargets()
-{
-
-// 	if (m_pTransparentRenderTarget)
-// 	{
-// 		m_pTransparentRenderTarget->DeleteLater();
-// 		m_pTransparentRenderTarget = nullptr;
-// 	}
-
-	for (MIRenderTexture* pBackTexture : m_vRenderTargetTexture)
-	{
-		pBackTexture->DestroyBuffer(GetEngine()->GetDevice());
-		delete pBackTexture;
-	}
-}
-
-void MForwardTransparentWork::InitializeRenderPass()
-{
-	if (!m_pRenderProgram)
-	{
-		MLogManager::GetInstance()->Error("MForwardTransparentWork::InitializeRenderPass error, rp == nullptr");
+		MLogManager::GetInstance()->Error("MForwardTransparentWork::InitializeRenderGraph failed. rg == nullptr");
 		return;
 	}
 
-// 	MIRenderTarget* pRenderTarget = m_pRenderProgram->GetRenderTarget();
-// 	if (!pRenderTarget)
-// 	{
-// 		MLogManager::GetInstance()->Error("MForwardTransparentWork::InitializeRenderPass error, rt == nullptr");
-// 		return;
-// 	}
+	Vector2 size(512, 512);
 
-	MPassTargetDescription descNoClear(false, MColor::Black_T);
-	MPassTargetDescription descWhite(true, MColor::White);
-	MPassTargetDescription descBlackT(true, MColor::Black_T);
-
-	m_TransWithClearRenderPass.m_vBackDesc.push_back(descBlackT);
-	m_TransWithClearRenderPass.m_vBackDesc.push_back(descBlackT);
-	m_TransWithClearRenderPass.m_vBackDesc.push_back(descWhite);
-	m_TransWithClearRenderPass.m_vBackDesc.push_back(descBlackT);
-	m_TransWithClearRenderPass.m_vBackDesc.push_back(descWhite);
-	m_TransWithClearRenderPass.m_vBackDesc.push_back(descBlackT);
-
-	SetupSubPass(m_TransWithClearRenderPass);
-
-	MPassTargetDescription descMesh;
-	descMesh.bClearWhenRender = false;
-	m_MeshRenderPass.m_vBackDesc.push_back(descMesh);
-	m_MeshRenderPass.m_DepthDesc.bClearWhenRender = false;
-}
-
-void MForwardTransparentWork::ReleaseRenderPass()
-{
-	GetEngine()->GetDevice()->DestroyRenderPass(&m_TransWithClearRenderPass);
-	GetEngine()->GetDevice()->DestroyRenderPass(&m_MeshRenderPass);
-}
-
-void MForwardTransparentWork::CheckTransparentTextureSize(MRenderInfo& info)
-{
-	Vector2 v2Size = info.pViewport->GetSize();
-
-	if (m_v2TransparentTextureSize == v2Size)
-		return;
-
-	m_v2TransparentTextureSize = v2Size;
-
-	MIDevice* pDevice = GetEngine()->GetDevice();
-
-	for (MIRenderTexture* pTexture : m_vRenderTargetTexture)
+	MRenderGraphNode* pTransparentNode = pRenderGraph->AddRenderGraphNode("Transparent Node");
+	if (pTransparentNode)
 	{
-		if (pTexture)
+		if (MRenderGraphNode* pForwardNode = pRenderGraph->FindRenderGraphNode("Forward Node"))
 		{
-			pTexture->DestroyBuffer(pDevice);
-			pTexture->SetSize(v2Size);
-			pTexture->GenerateBuffer(pDevice);
+			if (MRenderGraphNodeInput* pInput = pTransparentNode->AppendInput())
+			{
+				pInput->LinkTo(pForwardNode->GetOutput(0));
+			}
+			if (MRenderGraphNodeInput* pInput = pTransparentNode->AppendInput())
+			{
+				pInput->LinkTo(pForwardNode->GetOutput(1));
+			}
 		}
+
+		if (MRenderGraphNodeOutput* pOutput = pTransparentNode->AppendOutput())
+		{
+			MRenderGraphTexture* pFrontTexture = pRenderGraph->AddRenderGraphTexture("Ts Front Tex");
+			pFrontTexture->SetLayout(METextureLayout::ERGBA8);
+			pFrontTexture->SetUsage(METextureUsage::ERenderBack);
+			pFrontTexture->SetSize(size);
+
+			pOutput->SetRenderTexture(pFrontTexture);
+			pOutput->SetClear(true);
+			pOutput->SetClearColor(MColor::Black_T);
+		}
+		if (MRenderGraphNodeOutput* pOutput = pTransparentNode->AppendOutput())
+		{
+			MRenderGraphTexture* pBackTexture = pRenderGraph->AddRenderGraphTexture("Ts Back Tex");
+			pBackTexture->SetLayout(METextureLayout::ERGBA8);
+			pBackTexture->SetUsage(METextureUsage::ERenderBack);
+			pBackTexture->SetSize(size);
+
+			pOutput->SetRenderTexture(pBackTexture);
+			pOutput->SetClear(true);
+			pOutput->SetClearColor(MColor::Black_T);
+		}
+		if (MRenderGraphNodeOutput* pOutput = pTransparentNode->AppendOutput())
+		{
+			MRenderGraphTexture* pFrontDepthTexture0 = pRenderGraph->AddRenderGraphTexture("Ts Front Depth 0 Tex");
+			pFrontDepthTexture0->SetLayout(METextureLayout::ER32);
+			pFrontDepthTexture0->SetUsage(METextureUsage::ERenderBack);
+			pFrontDepthTexture0->SetSize(size);
+
+			pOutput->SetRenderTexture(pFrontDepthTexture0);
+			pOutput->SetClear(true);
+			pOutput->SetClearColor(MColor::White);
+		}
+		if (MRenderGraphNodeOutput* pOutput = pTransparentNode->AppendOutput())
+		{
+			MRenderGraphTexture* pBackDepthTexture0 = pRenderGraph->AddRenderGraphTexture("Ts Back Depth 0 Tex");
+			pBackDepthTexture0->SetLayout(METextureLayout::ER32);
+			pBackDepthTexture0->SetUsage(METextureUsage::ERenderBack);
+			pBackDepthTexture0->SetSize(size);
+
+			pOutput->SetRenderTexture(pBackDepthTexture0);
+			pOutput->SetClear(true);
+			pOutput->SetClearColor(MColor::Black_T);
+		}
+		if (MRenderGraphNodeOutput* pOutput = pTransparentNode->AppendOutput())
+		{
+			MRenderGraphTexture* pFrontDepthTexture1 = pRenderGraph->AddRenderGraphTexture("Ts Front Depth 1 Tex");
+			pFrontDepthTexture1->SetLayout(METextureLayout::ER32);
+			pFrontDepthTexture1->SetUsage(METextureUsage::ERenderBack);
+
+			pFrontDepthTexture1->SetSize(size);
+			pOutput->SetRenderTexture(pFrontDepthTexture1);
+			pOutput->SetClear(true);
+			pOutput->SetClearColor(MColor::White);
+		}
+		if (MRenderGraphNodeOutput* pOutput = pTransparentNode->AppendOutput())
+		{
+			MRenderGraphTexture* pBackDepthTexture1 = pRenderGraph->AddRenderGraphTexture("Ts Back Depth 1 Tex");
+			pBackDepthTexture1->SetLayout(METextureLayout::ER32);
+			pBackDepthTexture1->SetUsage(METextureUsage::ERenderBack);
+			pBackDepthTexture1->SetSize(size);
+
+			pOutput->SetRenderTexture(pBackDepthTexture1);
+			pOutput->SetClear(true);
+			pOutput->SetClearColor(MColor::Black_T);
+		}
+
+		SetupSubPass(*pTransparentNode->GetRenderPass());
 	}
 
-//	m_pTransparentRenderTarget->Resize(m_v2TransparentTextureSize);
+	if (MRenderGraphNode* pCombineNode = pRenderGraph->AddRenderGraphNode("Transparent Combine Node"))
+	{
+		if (MRenderGraphNode* pForwardNode = pRenderGraph->FindRenderGraphNode("Forward Node"))
+		{
+			if (MRenderGraphNodeInput* pInput = pCombineNode->AppendInput())
+			{
+				pInput->LinkTo(pForwardNode->GetOutput(0));
+			}
+			if (MRenderGraphNodeOutput* pOutput = pCombineNode->AppendOutput())
+			{
+				pOutput->SetRenderTexture(pForwardNode->GetOutput(0)->GetRenderTexture());
+				pOutput->SetClear(false);
+			}
+		}
+
+		if (pTransparentNode)
+		{
+			if (MRenderGraphNodeInput* pInput = pCombineNode->AppendInput())
+			{
+				pInput->LinkTo(pTransparentNode->GetOutput(0));
+			}
+			if (MRenderGraphNodeInput* pInput = pCombineNode->AppendInput())
+			{
+				pInput->LinkTo(pTransparentNode->GetOutput(1));
+			}
+		}
+	}
 }
 
 void MForwardTransparentWork::UpdateShaderSharedParams(MRenderInfo& info)
