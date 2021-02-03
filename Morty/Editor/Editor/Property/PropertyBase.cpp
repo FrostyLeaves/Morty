@@ -374,7 +374,7 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 
 					if (param->pTexture)
 					{
-						ShowTexture(param->pTexture->GetBuffer());
+						ShowTexture(param->pTexture->GetBuffer(0)); // TODO GetFrameIndex
 					}
 
 					ShowValueEnd();

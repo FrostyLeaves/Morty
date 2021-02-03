@@ -29,6 +29,7 @@ enum class METextureLayout
 	ERGBA8 = 0,
 	ERGBA16,
 	ER32,
+	EDepth,
 };
 
 enum class METextureUsage

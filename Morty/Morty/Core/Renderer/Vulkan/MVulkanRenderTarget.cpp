@@ -294,25 +294,24 @@ void MVulkanRenderTarget::ReleaseSwapchain(MVulkanDevice* pDevice)
 
 void MVulkanRenderTarget::CleanRenderBuffer(MVulkanDevice* pDevice)
 {
-	for (MFrameBuffer& info : m_RenderPass.m_aFrameBuffers)
+	MFrameBuffer* pFrameBuffer = m_RenderPass.GetFrameBuffer();
+	for (MIRenderTexture* pTexture : pFrameBuffer->vBackTextures)
 	{
-		for (MIRenderTexture* pTexture : info.vBackTextures)
-		{
-			pTexture->DestroyBuffer(pDevice);
-			delete pTexture;
-		}
+		pTexture->DestroyBuffer(pDevice);
+		delete pTexture;
+	}
 
-		if (info.pDepthTexture)
-		{
-			info.pDepthTexture->DestroyBuffer(pDevice);
-			delete info.pDepthTexture;
-		}
+	pFrameBuffer->vBackTextures.clear();
+
+	if (pFrameBuffer->pDepthTexture)
+	{
+		pFrameBuffer->pDepthTexture->DestroyBuffer(pDevice);
+		delete pFrameBuffer->pDepthTexture;
+		pFrameBuffer->pDepthTexture = nullptr;
 	}
 
 	GetEngine()->GetDevice()->DestroyFrameBuffer(&m_RenderPass);
 	GetEngine()->GetDevice()->DestroyRenderPass(&m_RenderPass);
-
-	m_RenderPass.m_aFrameBuffers.clear();
 }
 
 bool MVulkanRenderTarget::RebindRenderBuffer(MVulkanDevice* pDevice)
@@ -335,37 +334,31 @@ bool MVulkanRenderTarget::RebindRenderBuffer(MVulkanDevice* pDevice)
 		return false;
 	}
 
-	m_RenderPass.m_aFrameBuffers.clear();
 	//index range is swapchain num
-	for (VkImage& image : vSwapchainImages)
+
+	MFrameBuffer* pFrameBuffer = m_RenderPass.GetFrameBuffer();
+
+	MRenderSwapchainTexture* pTexture = new MRenderSwapchainTexture(unSwapchainImageCount);
+	for (size_t i = 0; i < vSwapchainImages.size(); ++i)
 	{
-		m_RenderPass.m_aFrameBuffers.push_back({});
-		MFrameBuffer& info = m_RenderPass.m_aFrameBuffers.back();
-
-
-
-		MRenderSwapchainTexture* pTexture = new MRenderSwapchainTexture();
-		MTextureBuffer* pBuffer = pTexture->GetBuffer();
-		pBuffer->m_VkTextureImage = image;
+		MTextureBuffer* pBuffer = pTexture->GetBuffer(i);
+		pBuffer->m_VkTextureImage = vSwapchainImages[i];
 		pBuffer->m_VkTextureImageMemory = VK_NULL_HANDLE;
 		pBuffer->m_VkImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		pBuffer->m_VkTextureFormat = m_VkColorFormat;
-
-		pTexture->SetSize(m_v2Size);
-		pTexture->GenerateBuffer(pDevice);
-
-		info.vBackTextures.push_back(pTexture);
-		
-		info.m_vkExtent2D = m_VkExtend;
-
-// 		MRenderTexture* pDepthTexture = new MRenderTexture();
-// 		pDepthTexture->SetType(METextureLayout::ER32);
-// 		pDepthTexture->SetUsage(METextureUsage::ERenderDepth);
-// 		pDepthTexture->SetSize(m_v2Size);
-// 		pDepthTexture->GenerateBuffer(pDevice);
-// 
-// 		info.pDepthTexture = pDepthTexture;
 	}
+	pTexture->SetSize(m_v2Size);
+	pTexture->GenerateBuffer(pDevice);
+	pFrameBuffer->vBackTextures.push_back(pTexture);
+
+	MRenderTexture* pDepthTexture = new MRenderTexture();
+	pDepthTexture->SetType(METextureLayout::EDepth);
+	pDepthTexture->SetUsage(METextureUsage::ERenderDepth);
+	pDepthTexture->SetSize(m_v2Size);
+	pDepthTexture->GenerateBuffer(pDevice);
+	pFrameBuffer->pDepthTexture = pDepthTexture;
+
+	pFrameBuffer->m_vkExtent2D = m_VkExtend;
 
 	return true;
 }

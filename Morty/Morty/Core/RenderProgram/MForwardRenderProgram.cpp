@@ -49,9 +49,9 @@ void MForwardRenderProgram::Initialize()
 
 	m_pRenderWork = GetEngine()->GetObjectManager()->CreateObject<MForwardRenderWork>();
 	m_pRenderWork->Initialize(this);
-// 
-// 	m_pTransparentWork = GetEngine()->GetObjectManager()->CreateObject<MForwardTransparentWork>();
-// 	m_pTransparentWork->Initialize(this);
+
+	m_pTransparentWork = GetEngine()->GetObjectManager()->CreateObject<MForwardTransparentWork>();
+	m_pTransparentWork->Initialize(this);
 }
 
 void MForwardRenderProgram::Release()

@@ -108,9 +108,9 @@ void* SceneTexture::GetTexture(const uint32_t& unFrameIndex)
 	{
 		if (MRenderGraphTexture* pRenderGraphTexture = pRenderGraph->FindRenderGraphTexture("Output Target"))
 		{
-			if (MIRenderTexture* pTexture = pRenderGraphTexture->GetRenderTexture(unFrameIndex))
+			if (MIRenderTexture* pTexture = pRenderGraphTexture->GetRenderTexture())
 			{
-				if (MTextureBuffer* pBuffer = pTexture->GetBuffer())
+				if (MTextureBuffer* pBuffer = pTexture->GetBuffer(unFrameIndex))
 				{
 					return pBuffer->GetResourceView();
 				}

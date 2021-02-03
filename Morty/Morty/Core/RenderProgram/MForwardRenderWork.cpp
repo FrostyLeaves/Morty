@@ -82,7 +82,7 @@ void MForwardRenderWork::InitializeRenderGraph()
 	{
 		pOutputDepthTexture = pRenderGraph->AddRenderGraphTexture("Output Depth");
 		pOutputDepthTexture->SetUsage(METextureUsage::ERenderDepth);
-		pOutputDepthTexture->SetLayout(METextureLayout::ER32);
+		pOutputDepthTexture->SetLayout(METextureLayout::EDepth);
 		pOutputDepthTexture->SetSize(Vector2(640, 640));
 	}
 
@@ -106,6 +106,15 @@ void MForwardRenderWork::InitializeRenderGraph()
 	if (MRenderGraphNodeOutput* pShadowMapOutput = pShadowMapNode->GetOutput(0))
 	{
 		pInputNode->LinkTo(pShadowMapOutput);
+
+		if (MShaderTextureParam* pShadowMapTextureParam = m_FrameParamSet.m_vTextures[0])
+		{
+			if (MRenderGraphTexture* pShadowMapTexture = pShadowMapOutput->GetRenderTexture())
+			{
+				pShadowMapTextureParam->pTexture = pShadowMapTexture->GetRenderTexture();
+				pShadowMapTextureParam->SetDirty();
+			}
+		}
 	}
 
 	if (MRenderGraphNodeTemplate<MRenderInfo>* pTypedForwardNode = dynamic_cast<MRenderGraphNodeTemplate<MRenderInfo>*>(pForwardNode))
@@ -127,17 +136,6 @@ void MForwardRenderWork::OnDelete()
 
 void MForwardRenderWork::Render(MRenderGraphNode* pGraphNode, MRenderInfo& info)
 {
-
-	MRenderGraphTexture* pShadowMapTexture = pGraphNode->GetInputTexture(0);
-	if (!pShadowMapTexture)
-		return;
-
-	if (MShaderTextureParam* pShadowMapTextureParam = m_FrameParamSet.m_vTextures[0])
-	{
-		pShadowMapTextureParam->pTexture = pShadowMapTexture->GetRenderTexture(info.unFrameIndex);
-		pShadowMapTextureParam->SetDirty();
-	}
-
 	UpdateShaderSharedParams(info, m_FrameParamSet);
 
 	info.pRenderer->BeginRenderPass(pGraphNode->GetRenderPass(), info.unFrameIndex);

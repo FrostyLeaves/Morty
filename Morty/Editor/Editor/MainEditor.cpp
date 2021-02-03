@@ -107,6 +107,7 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	MVulkanDevice* pDevice = dynamic_cast<MVulkanDevice*>(m_pEngine->GetDevice());
 	MVulkanRenderTarget* pRenderTarget = dynamic_cast<MVulkanRenderTarget*>(GetRenderTarget());
 	m_pEngine->GetDevice()->GenerateRenderPass(&pRenderTarget->m_RenderPass);
+	m_pEngine->GetDevice()->GenerateFrameBuffer(&pRenderTarget->m_RenderPass);
 
 	ImGui_ImplVulkan_InitInfo vulkanInitInfo = {};
 
@@ -114,7 +115,7 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	vulkanInitInfo.CheckVkResultFn = nullptr;
 	vulkanInitInfo.DescriptorPool = pDevice->m_ObjectDestructor.m_VkDescriptorPool;
 	vulkanInitInfo.Device = pDevice->m_VkDevice;
-	vulkanInitInfo.ImageCount = pRenderTarget->m_RenderPass.m_aFrameBuffers.size();
+	vulkanInitInfo.ImageCount = pRenderTarget->m_RenderPass.m_FrameBuffer.m_aVkFrameBuffer.size();
 	vulkanInitInfo.Instance = pDevice->m_VkInstance;
 	vulkanInitInfo.MinImageCount = pRenderTarget->m_unMinImageCount;
 	vulkanInitInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;

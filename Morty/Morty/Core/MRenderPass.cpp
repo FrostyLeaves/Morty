@@ -22,6 +22,7 @@ MRenderPass::MRenderPass()
 	, m_DepthDesc()
 	, m_unRenderPassID(0)
 	, m_VkRenderPass(VK_NULL_HANDLE)
+	, m_FrameBuffer()
 {
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 
@@ -47,19 +48,19 @@ void MRenderPass::DestroyBuffer(MIDevice* pDevice)
 	pDevice->DestroyRenderPass(this);
 }
 
-std::vector<MIRenderTexture*> MRenderPass::GetBackTexture(const size_t& nFrameIdx)
+std::vector<MIRenderTexture*> MRenderPass::GetBackTexture()
 {
-	return m_aFrameBuffers[nFrameIdx].vBackTextures;
+	return m_FrameBuffer.vBackTextures;
 }
 
-MIRenderTexture* MRenderPass::GetDepthTexture(const size_t& nFrameIdx)
+MIRenderTexture* MRenderPass::GetDepthTexture()
 {
-	return m_aFrameBuffers[nFrameIdx].pDepthTexture;
+	return m_FrameBuffer.pDepthTexture;
 }
 
-MFrameBuffer* MRenderPass::GetFrameBuffer(const size_t& nFrameIdx)
+MFrameBuffer* MRenderPass::GetFrameBuffer()
 {
-	return &m_aFrameBuffers[nFrameIdx];
+	return &m_FrameBuffer;
 }
 
 MPassTargetDescription::MPassTargetDescription(const bool bClear, const MColor& cColor)

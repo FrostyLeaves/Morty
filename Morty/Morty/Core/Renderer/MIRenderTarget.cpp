@@ -38,7 +38,7 @@ uint32_t MIRenderTarget::GetFrameBufferIndex()
 MFrameBuffer::MFrameBuffer()
 	: vBackTextures()
 	, pDepthTexture()
-	, vkFrameBuffer(VK_NULL_HANDLE)
+	, m_aVkFrameBuffer()
 {
 
 }

@@ -67,7 +67,7 @@ void MForwardShadowMapWork::InitializeRenderGraph()
 	{
 		pShadowMapTexture = pRenderGraph->AddRenderGraphTexture("Shadow Map");
 		pShadowMapTexture->SetUsage(METextureUsage::ERenderDepth);
-		pShadowMapTexture->SetLayout(METextureLayout::ER32);
+		pShadowMapTexture->SetLayout(METextureLayout::EDepth);
 		pShadowMapTexture->SetSize(Vector2(MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE));
 	}
 
@@ -79,6 +79,9 @@ void MForwardShadowMapWork::InitializeRenderGraph()
 	{
 		pTypedShadowMapNode->BindRenderFunction(std::bind(&MForwardShadowMapWork::Render, this, std::placeholders::_1, std::placeholders::_2));
 	}
+
+
+
 }
 
 void MForwardShadowMapWork::OnDelete()

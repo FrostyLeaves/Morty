@@ -1,6 +1,6 @@
 ﻿/**
  * @File         MTexture
- * 
+ *
  * @Created      2019-09-11 16:12:31
  *
  * @Author       DoubleYe
@@ -13,6 +13,8 @@
 #include "Type/MColor.h"
 #include "MRenderStructure.h"
 
+#include <array>
+
 class MIDevice;
 class MTextureBuffer;
 class MRenderTextureBuffer;
@@ -20,8 +22,8 @@ class MDepthTextureBuffer;
 class MORTY_API MITexture
 {
 public:
-	MITexture(){}
-	virtual ~MITexture(){}
+	MITexture() {}
+	virtual ~MITexture() {}
 
 public:
 
@@ -30,7 +32,7 @@ public:
 
 	virtual Vector2 GetSize() = 0;
 	virtual METextureLayout GetType() = 0;
-	virtual MTextureBuffer* GetBuffer() = 0;
+	virtual MTextureBuffer* GetBuffer(const uint32_t& nFrameIdx) = 0;
 	virtual bool GetReadable() = 0;
 	virtual unsigned char* GetImageData() { return nullptr; }
 };
@@ -38,8 +40,8 @@ public:
 class MORTY_API MTexture : public MITexture
 {
 public:
-    MTexture();
-    virtual ~MTexture();
+	MTexture();
+	virtual ~MTexture();
 
 public:
 
@@ -61,7 +63,7 @@ public:
 	virtual void GenerateBuffer(MIDevice* pDevice);
 	virtual void DestroyBuffer(MIDevice* pDevice);
 
-	virtual MTextureBuffer* GetBuffer() override { return m_pTextureBuffer; }
+	virtual MTextureBuffer* GetBuffer(const uint32_t& nFrameIdx) override { return m_pTextureBuffer; }
 
 private:
 
@@ -103,7 +105,7 @@ public:
 	virtual void GenerateBuffer(MIDevice* pDevice, const bool& bMipmap = false);
 	virtual void DestroyTexture(MIDevice* pDevice);
 
-	virtual MTextureBuffer* GetBuffer() override { return m_pTextureBuffer; }
+	virtual MTextureBuffer* GetBuffer(const uint32_t& nFrameIdx) override { return m_pTextureBuffer; }
 
 	void SetTextures(MTexture* vTexture[6]);
 	void SetTexture(MTexture* pTexture, const MECubeFace& eFace);
@@ -117,6 +119,7 @@ private:
 class MORTY_API MIRenderTexture : public MITexture
 {
 public:
+
 	MIRenderTexture();
 	virtual ~MIRenderTexture() {}
 	//Should Set before GenerateBuffer
@@ -135,7 +138,8 @@ public:
 	virtual Vector2 GetSize() override { return m_v2Size; }
 
 public:
-	virtual MTextureBuffer* GetBuffer() override { return m_pTextureBuffer; }
+
+	virtual uint32_t GetBufferNum() = 0;
 
 	virtual void GenerateBuffer(MIDevice* pDevice) = 0;
 	virtual void DestroyBuffer(MIDevice* pDevice) = 0;
@@ -143,7 +147,6 @@ public:
 protected:
 	bool m_bReadable;
 	Vector2 m_v2Size;
-	MRenderTextureBuffer* m_pTextureBuffer;
 	METextureLayout m_eRenderType;
 	METextureUsage m_eUsageType;
 };
@@ -151,11 +154,21 @@ protected:
 class MORTY_API MRenderSwapchainTexture : public MIRenderTexture
 {
 public:
-	MRenderSwapchainTexture();
-	virtual ~MRenderSwapchainTexture();
-public:
+	MRenderSwapchainTexture(const size_t& nSize):
+	m_aTextureBuffer(nSize){}
+	virtual ~MRenderSwapchainTexture() {}
+
+
+	virtual uint32_t GetBufferNum() override { return m_aTextureBuffer.size(); }
+
 	virtual void GenerateBuffer(MIDevice* pDevice) override;
 	virtual void DestroyBuffer(MIDevice* pDevice) override;
+
+	virtual MTextureBuffer* GetBuffer(const uint32_t& nFrameIdx) override;
+
+protected:
+
+	std::vector<MRenderTextureBuffer> m_aTextureBuffer;
 };
 
 class MORTY_API MRenderTexture : public MIRenderTexture
@@ -165,8 +178,17 @@ public:
 	virtual ~MRenderTexture() {}
 
 public:
+
+	virtual uint32_t GetBufferNum() override { return M_BUFFER_NUM; }
+
+	virtual MTextureBuffer* GetBuffer(const uint32_t& nFrameIdx) override;
+
 	virtual void GenerateBuffer(MIDevice* pDevice) override;
+
 	virtual void DestroyBuffer(MIDevice* pDevice) override;
+protected:
+
+	std::array<MRenderTextureBuffer, M_BUFFER_NUM> m_aTextureBuffer;
 };
 
 

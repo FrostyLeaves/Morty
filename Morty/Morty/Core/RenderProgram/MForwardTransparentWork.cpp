@@ -38,12 +38,15 @@ void MForwardTransparentWork::Initialize(MIRenderProgram* pRenderProgram)
 	InitializeMaterial();
 	InitializeMesh();
 	InitializeTexture();
-	InitializeRenderGraph();
 
 	for (uint32_t i = 0; i < 2; ++i)
 	{
 		m_aFrameParamSet[i].InitializeShaderParamSet(GetEngine());
 	}
+
+	InitializeRenderGraph();
+
+	
 }
 
 void MForwardTransparentWork::Release()
@@ -70,21 +73,16 @@ void MForwardTransparentWork::Render(MRenderGraphNode* pGraphNode, MRenderInfo& 
 	if (!pRenderPass)
 		return;
 
-	UpdateShaderSharedParams(info);
+	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
+	info.pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight(), 0.0f, 1.0f);
+
 
 	MRenderGraphTexture* pFrontTexture = pGraphNode->GetInput(1)->GetLinkedTexture();
 	MRenderGraphTexture* pBackTexture = pGraphNode->GetInput(2)->GetLinkedTexture();
 
-	info.pRenderer->SetRenderToTextureBarrier({ pFrontTexture->GetRenderTexture(info.unFrameIndex), pBackTexture->GetRenderTexture(info.unFrameIndex) });
+	info.pRenderer->SetRenderToTextureBarrier({ pFrontTexture->GetRenderTexture(), pBackTexture->GetRenderTexture() });
 
 	info.pRenderer->BeginRenderPass(pRenderPass, info.unFrameIndex);
-
-	std::vector<MShaderTextureParam*>& params = *m_pDrawMeshMaterial->GetTextureParams();
-
-	params[0]->pTexture = pFrontTexture->GetRenderTexture(info.unFrameIndex);
-	params[0]->SetDirty();
-	params[1]->pTexture = pBackTexture->GetRenderTexture(info.unFrameIndex);
-	params[1]->SetDirty();
 
 	info.pRenderer->SetUseMaterial(m_pDrawMeshMaterial);
 
@@ -105,13 +103,22 @@ void MForwardTransparentWork::RenderDepthPeel(MRenderGraphNode* pGraphNode, MRen
 	if (!pRenderPass)
 		return;
 
+
+
+	MForwardRenderWork::UpdateShaderSharedParams(info, m_aFrameParamSet[0]);
+	MForwardRenderWork::UpdateShaderSharedParams(info, m_aFrameParamSet[1]);
+
+
 	MViewport* pViewport = info.pViewport;
+
+	info.pRenderer->SetViewport(0, 0, 512, 512, 0, 1);
+
 
 	info.pRenderer->BeginRenderPass(pRenderPass, info.unFrameIndex);
 
 	MRenderGraphTexture* pDepthTexture = pGraphNode->GetInput(1)->GetLinkedTexture();
 
-	m_pDrawFillMaterial->GetTextureParams()->at(0)->pTexture = pDepthTexture->GetRenderTexture(info.unFrameIndex);
+	m_pDrawFillMaterial->GetTextureParams()->at(0)->pTexture = pDepthTexture->GetRenderTexture();
 	m_pDrawFillMaterial->GetTextureParams()->at(0)->SetDirty();
 
 	if (info.pRenderer->SetUseMaterial(m_pDrawFillMaterial))
@@ -254,6 +261,7 @@ void MForwardTransparentWork::InitializeRenderGraph()
 	{
 		if (MRenderGraphNode* pForwardNode = pRenderGraph->FindRenderGraphNode("Forward Node"))
 		{
+			pForwardNode->SetFinalNode(false);
 			if (MRenderGraphNodeInput* pInput = pTransparentNode->AppendInput())
 			{
 				pInput->LinkTo(pForwardNode->GetOutput(0));
@@ -262,6 +270,7 @@ void MForwardTransparentWork::InitializeRenderGraph()
 			{
 				pInput->LinkTo(pForwardNode->GetOutput(1));
 			}
+			pTransparentNode->SetFinalNode(true);
 		}
 
 		if (MRenderGraphNodeOutput* pOutput = pTransparentNode->AppendOutput())
@@ -332,6 +341,11 @@ void MForwardTransparentWork::InitializeRenderGraph()
 		}
 
 		SetupSubPass(*pTransparentNode->GetRenderPass());
+
+		if (MRenderGraphNodeTemplate<MRenderInfo>* pTypedForwardNode = dynamic_cast<MRenderGraphNodeTemplate<MRenderInfo>*>(pTransparentNode))
+		{
+			pTypedForwardNode->BindRenderFunction(std::bind(&MForwardTransparentWork::RenderDepthPeel, this, std::placeholders::_1, std::placeholders::_2));
+		}
 	}
 
 	if (MRenderGraphNode* pCombineNode = pRenderGraph->AddRenderGraphNode("Transparent Combine Node"))
@@ -360,24 +374,45 @@ void MForwardTransparentWork::InitializeRenderGraph()
 				pInput->LinkTo(pTransparentNode->GetOutput(1));
 			}
 		}
+
+		if (MRenderGraphNodeTemplate<MRenderInfo>* pTypedForwardNode = dynamic_cast<MRenderGraphNodeTemplate<MRenderInfo>*>(pCombineNode))
+		{
+			pTypedForwardNode->BindRenderFunction(std::bind(&MForwardTransparentWork::Render, this, std::placeholders::_1, std::placeholders::_2));
+		}
 	}
+
+
+
+	BindTextureParam();
 }
 
-void MForwardTransparentWork::UpdateShaderSharedParams(MRenderInfo& info)
+void MForwardTransparentWork::BindTextureParam()
 {
-	uint32_t unFrameIdx = info.unFrameIndex;
+	MRenderGraph* pRenderGraph = m_pRenderProgram->GetRenderGraph();
 
-	MForwardRenderWork::UpdateShaderSharedParams(info, m_aFrameParamSet[0]);
-	m_aFrameParamSet[0].m_pTransparentFrontTextureParam->pTexture = vFrontDepthTexture[1][unFrameIdx];
-	m_aFrameParamSet[0].m_pTransparentBackTextureParam->pTexture = vBackDepthTexture[1][unFrameIdx];
+	MRenderGraphTexture* pFrontTexture = pRenderGraph->FindRenderGraphTexture("Ts Front Tex");
+	MRenderGraphTexture* pBackTexture = pRenderGraph->FindRenderGraphTexture("Ts Back Tex");
+	MRenderGraphTexture* pFrontDepthTexture0 = pRenderGraph->FindRenderGraphTexture("Ts Front Depth 0 Tex");
+	MRenderGraphTexture* pFrontDepthTexture1 = pRenderGraph->FindRenderGraphTexture("Ts Front Depth 1 Tex");
+	MRenderGraphTexture* pBackDepthTexture0 = pRenderGraph->FindRenderGraphTexture("Ts Back Depth 0 Tex");
+	MRenderGraphTexture* pBackDepthTexture1 = pRenderGraph->FindRenderGraphTexture("Ts Back Depth 1 Tex");
+
+	m_aFrameParamSet[0].m_pTransparentFrontTextureParam->pTexture = pFrontDepthTexture1->GetRenderTexture();
 	m_aFrameParamSet[0].m_pTransparentFrontTextureParam->SetDirty();
+	m_aFrameParamSet[0].m_pTransparentBackTextureParam->pTexture = pBackDepthTexture1->GetRenderTexture();
 	m_aFrameParamSet[0].m_pTransparentBackTextureParam->SetDirty();
 
-	MForwardRenderWork::UpdateShaderSharedParams(info, m_aFrameParamSet[1]);
-	m_aFrameParamSet[1].m_pTransparentFrontTextureParam->pTexture = vFrontDepthTexture[0][unFrameIdx];
-	m_aFrameParamSet[1].m_pTransparentBackTextureParam->pTexture = vBackDepthTexture[0][unFrameIdx];
+	m_aFrameParamSet[1].m_pTransparentFrontTextureParam->pTexture = pFrontDepthTexture0->GetRenderTexture();
 	m_aFrameParamSet[1].m_pTransparentFrontTextureParam->SetDirty();
+	m_aFrameParamSet[1].m_pTransparentBackTextureParam->pTexture = pBackDepthTexture0->GetRenderTexture();
 	m_aFrameParamSet[1].m_pTransparentBackTextureParam->SetDirty();
+
+
+	std::vector<MShaderTextureParam*>& params = *m_pDrawMeshMaterial->GetTextureParams();
+	params[0]->pTexture = pFrontTexture->GetRenderTexture();
+	params[0]->SetDirty();
+	params[1]->pTexture = pBackTexture->GetRenderTexture();
+	params[1]->SetDirty();
 }
 
 void MForwardTransparentWork::SetupSubPass(MRenderPass& renderpass)

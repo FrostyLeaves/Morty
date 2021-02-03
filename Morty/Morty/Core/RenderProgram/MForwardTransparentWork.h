@@ -50,7 +50,7 @@ protected:
 
 	void InitializeRenderGraph();
 
-	void UpdateShaderSharedParams(MRenderInfo& info);
+	void BindTextureParam();
 
     void SetupSubPass(MRenderPass& renderpass);
 

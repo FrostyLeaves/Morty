@@ -94,7 +94,7 @@ public:
     void AddRenderGraphNodeOutput(MRenderGraphNodeOutput* pOutput);
     void RemoveRenderGraphNodeOutput(MRenderGraphNodeOutput* pOutput);
 
-	MIRenderTexture* GetRenderTexture(const size_t& nIdx);
+	MIRenderTexture* GetRenderTexture();
 
 	void Compile(MIDevice* pDevice);
 
@@ -112,7 +112,7 @@ private:
 	METextureLayout m_eLayout;
 	Vector2 m_v2Size;
 
-	std::array<MRenderTexture*, M_BUFFER_NUM> m_aTextures;
+	MRenderTexture* m_pTexture;
     std::vector<MRenderGraphNodeOutput*> m_vOutputs;
 	class MRenderGraph* m_pGraph;
 };

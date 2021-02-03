@@ -69,9 +69,6 @@ void MRenderGraphNode::Compile(MIDevice* pDevice)
 {
 	DestroyBuffer(pDevice);
 
-	m_pRenderPass->m_aFrameBuffers.clear();
-	m_pRenderPass->m_aFrameBuffers.resize(M_BUFFER_NUM);
-
 	for (size_t opIdx = 0; opIdx < m_vOutputTextures.size(); ++opIdx)
 	{
 		MRenderGraphNodeOutput* pOutput = m_vOutputTextures[opIdx];
@@ -80,11 +77,8 @@ void MRenderGraphNode::Compile(MIDevice* pDevice)
 
 			if (pRenderTexture->GetUsage() == METextureUsage::ERenderBack)
 			{
-				for (size_t fbIdx = 0; fbIdx < M_BUFFER_NUM; ++fbIdx)
-				{
-					MFrameBuffer& frameBuffer = m_pRenderPass->m_aFrameBuffers[fbIdx];
-					frameBuffer.vBackTextures.push_back(pRenderTexture->GetRenderTexture(fbIdx));
-				}
+				MFrameBuffer* pFrameBuffer = m_pRenderPass->GetFrameBuffer();
+				pFrameBuffer->vBackTextures.push_back(pRenderTexture->GetRenderTexture());
 
 				m_pRenderPass->m_vBackDesc.push_back({});
 				m_pRenderPass->m_vBackDesc.back().bClearWhenRender = pOutput->GetClear();
@@ -92,11 +86,8 @@ void MRenderGraphNode::Compile(MIDevice* pDevice)
 			}
 			else if (pRenderTexture->GetUsage() == METextureUsage::ERenderDepth)
 			{
-				for (size_t fbIdx = 0; fbIdx < M_BUFFER_NUM; ++fbIdx)
-				{
-					MFrameBuffer& frameBuffer = m_pRenderPass->m_aFrameBuffers[fbIdx];
-					frameBuffer.pDepthTexture = pRenderTexture->GetRenderTexture(fbIdx);
-				}
+				MFrameBuffer* pFrameBuffer = m_pRenderPass->GetFrameBuffer();
+				pFrameBuffer->pDepthTexture = pRenderTexture->GetRenderTexture();
 
 				m_pRenderPass->m_DepthDesc.bClearWhenRender = pOutput->GetClear();
 			}
@@ -304,16 +295,13 @@ void MRenderGraph::DestroyBuffer(MIDevice* pDevice)
 
 MRenderGraphTexture::MRenderGraphTexture()
 	: m_strTextureName()
-	, m_aTextures()
+	, m_pTexture(nullptr)
 	, m_eUsage(METextureUsage::ERenderBack)
 	, m_eLayout(METextureLayout::ERGBA8)
 	, m_v2Size()
 	, m_pGraph(nullptr)
 {
-	for (size_t i = 0; i < m_aTextures.size(); ++i)
-	{
-		m_aTextures[i] = new MRenderTexture();
-	}
+	m_pTexture = new MRenderTexture();
 }
 
 void MRenderGraphTexture::SetUsage(const METextureUsage& eUsage)
@@ -330,16 +318,13 @@ void MRenderGraphTexture::SetSize(const Vector2& size)
 {
 	if (m_v2Size != size)
 	{
-		for (size_t texIdx = 0; texIdx < m_aTextures.size(); ++texIdx)
-		{
-			m_aTextures[texIdx]->DestroyBuffer(GetRenderGraph()->GetEngine()->GetDevice());
+		m_pTexture->DestroyBuffer(GetRenderGraph()->GetEngine()->GetDevice());
 
-			m_aTextures[texIdx]->SetUsage(m_eUsage);
-			m_aTextures[texIdx]->SetType(m_eLayout);
-			m_aTextures[texIdx]->SetSize(m_v2Size);
+		m_pTexture->SetUsage(m_eUsage);
+		m_pTexture->SetType(m_eLayout);
+		m_pTexture->SetSize(m_v2Size);
 
-//			m_aTextures[texIdx]->GenerateBuffer(pDevice);
-		}
+//		m_aTextures[texIdx]->GenerateBuffer(pDevice);
 
 
 		for (MRenderGraphNodeOutput* pOutput : m_vOutputs)
@@ -364,42 +349,30 @@ void MRenderGraphTexture::RemoveRenderGraphNodeOutput(MRenderGraphNodeOutput* pO
 	ERASE_FIRST_VECTOR(m_vOutputs, pOutput);
 }
 
-MIRenderTexture* MRenderGraphTexture::GetRenderTexture(const size_t& nIdx)
+MIRenderTexture* MRenderGraphTexture::GetRenderTexture()
 {
-	if (nIdx < m_aTextures.size())
-		return m_aTextures[nIdx];
-
-	return nullptr;
+	return m_pTexture;
 }
 
 void MRenderGraphTexture::Compile(MIDevice* pDevice)
 {
-	for (size_t texIdx = 0; texIdx < m_aTextures.size(); ++texIdx)
-	{
-		m_aTextures[texIdx]->DestroyBuffer(pDevice);
+	m_pTexture->DestroyBuffer(pDevice);
 
-		m_aTextures[texIdx]->SetUsage(m_eUsage);
-		m_aTextures[texIdx]->SetType(m_eLayout);
-		m_aTextures[texIdx]->SetSize(m_v2Size);
+	m_pTexture->SetUsage(m_eUsage);
+	m_pTexture->SetType(m_eLayout);
+	m_pTexture->SetSize(m_v2Size);
 
-		m_aTextures[texIdx]->GenerateBuffer(pDevice);
-	}
+	m_pTexture->GenerateBuffer(pDevice);
 }
 
 void MRenderGraphTexture::GenerateBuffer(MIDevice* pDevice)
 {
-	for (size_t texIdx = 0; texIdx < m_aTextures.size(); ++texIdx)
-	{
-		m_aTextures[texIdx]->GenerateBuffer(pDevice);
-	}
+	m_pTexture->GenerateBuffer(pDevice);
 }
 
 void MRenderGraphTexture::DestroyBuffer(MIDevice* pDevice)
 {
-	for (size_t texIdx = 0; texIdx < m_aTextures.size(); ++texIdx)
-	{
-		m_aTextures[texIdx]->DestroyBuffer(pDevice);
-	}
+	m_pTexture->DestroyBuffer(pDevice);
 }
 
 MRenderGraphNodeOutput::MRenderGraphNodeOutput()

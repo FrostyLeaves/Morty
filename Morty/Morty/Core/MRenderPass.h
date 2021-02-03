@@ -53,7 +53,7 @@ struct MORTY_API MFrameBuffer
     MFrameBuffer();
     std::vector<MIRenderTexture*> vBackTextures;
     MIRenderTexture* pDepthTexture;
-    VkFramebuffer vkFrameBuffer;
+    std::vector<VkFramebuffer> m_aVkFrameBuffer;
     VkExtent2D m_vkExtent2D;
 };
 
@@ -75,13 +75,13 @@ public:
     void SetRenderPassID(const uint32_t& unID) { m_unRenderPassID = unID; }
     uint32_t GetRenderPassID() const { return m_unRenderPassID; }
 
-    std::vector<MIRenderTexture*> GetBackTexture(const size_t& nFrameIdx);
-    MIRenderTexture* GetDepthTexture(const size_t& nFrameIdx);
-    MFrameBuffer* GetFrameBuffer(const size_t& nFrameIdx);
+    std::vector<MIRenderTexture*> GetBackTexture();
+    MIRenderTexture* GetDepthTexture();
+    MFrameBuffer* GetFrameBuffer();
 
 	std::vector<MSubpass> m_vSubpass;
 	std::vector<MPassTargetDescription> m_vBackDesc;
-	std::vector<MFrameBuffer> m_aFrameBuffers;
+	MFrameBuffer m_FrameBuffer;
     MPassTargetDescription m_DepthDesc;
 
     uint32_t m_unRenderPassID;

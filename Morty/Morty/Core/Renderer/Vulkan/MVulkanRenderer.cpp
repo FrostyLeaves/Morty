@@ -180,7 +180,7 @@ void MVulkanRenderer::BeginRenderPass(MRenderPass* pRenderPass, const uint32_t& 
 		}
 	}
 
-	MFrameBuffer* pFrameBuffer = pRenderPass->GetFrameBuffer(nFrameBufferIdx);
+	MFrameBuffer* pFrameBuffer = pRenderPass->GetFrameBuffer();
 	if (!pFrameBuffer)
 	{
 		MLogManager::GetInstance()->Error("MVulkanRenderer::BeginRenderPass error: fb == nullptr.");
@@ -188,7 +188,7 @@ void MVulkanRenderer::BeginRenderPass(MRenderPass* pRenderPass, const uint32_t& 
 	}
 
 
-	if (!pFrameBuffer->vkFrameBuffer && !m_pDevice->GenerateFrameBuffer(pRenderPass))
+	if (pFrameBuffer->m_aVkFrameBuffer.empty() && !m_pDevice->GenerateFrameBuffer(pRenderPass))
 	{
 		MLogManager::GetInstance()->Error("MVulkanRenderer::BeginRenderPass error: fb == nullptr.");
 		return;
@@ -202,7 +202,7 @@ void MVulkanRenderer::BeginRenderPass(MRenderPass* pRenderPass, const uint32_t& 
 	VkRenderPassBeginInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	renderPassInfo.renderPass = pRenderPass->m_VkRenderPass;
-	renderPassInfo.framebuffer = pFrameBuffer->vkFrameBuffer;
+	renderPassInfo.framebuffer = pFrameBuffer->m_aVkFrameBuffer[nFrameBufferIdx];
 	renderPassInfo.renderArea.offset = { 0, 0 };
 	renderPassInfo.renderArea.extent = pFrameBuffer->m_vkExtent2D;
 
@@ -364,7 +364,7 @@ bool MVulkanRenderer::SetRenderToTextureBarrier(const std::vector<MIRenderTextur
 
 	for (uint32_t i = 0; i < vTextures.size(); ++i)
 	{
-		if (MTextureBuffer* pBuffer = vTextures[i]->GetBuffer())
+		if (MTextureBuffer* pBuffer = vTextures[i]->GetBuffer(m_unFrameIndex))
 		{
 			vImageBarrier.push_back(VkImageMemoryBarrier());
 			VkImageMemoryBarrier& imageMemoryBarrier = vImageBarrier.back();
@@ -393,7 +393,7 @@ bool MVulkanRenderer::DownloadTexture(MITexture* pTexture, const uint32_t& unMip
 	if (!pTexture)
 		return false;
 
-	MTextureBuffer* pBuffer = pTexture->GetBuffer();
+	MTextureBuffer* pBuffer = pTexture->GetBuffer(m_unFrameIndex);
 	if (!pBuffer)
 		return false;
 
@@ -470,8 +470,8 @@ bool MVulkanRenderer::CopyImageBuffer(MITexture* pSource, MITexture* pDest)
 	MRenderStage& rs = m_vRenderStages.back();
 	VkCommandBuffer commandBuffer = rs.vkCommandBuffer;
 
-	MTextureBuffer* pSourBuffer = pSource->GetBuffer();
-	MTextureBuffer* pDestBuffer = pDest->GetBuffer();
+	MTextureBuffer* pSourBuffer = pSource->GetBuffer(m_unFrameIndex);
+	MTextureBuffer* pDestBuffer = pDest->GetBuffer(m_unFrameIndex);
 
 	if (!pSourBuffer || !pDestBuffer)
 		return false;
@@ -695,7 +695,7 @@ void MVulkanRenderer::SetShaderParamSet(MShaderParamSet* pParamSet)
 	{
 		if (pParam->bDirty[m_unFrameIndex])
 		{
-			if (pParam->pTexture && !pParam->pTexture->GetBuffer())
+			if (pParam->pTexture && !pParam->pTexture->GetBuffer(m_unFrameIndex))
 			{
 				continue;
 			}

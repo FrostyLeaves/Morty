@@ -130,64 +130,31 @@ void MTextureCube::SetTexture(MTexture* pTexture, const MECubeFace& eFace)
 
 MRenderTexture::MRenderTexture()
 	: MIRenderTexture()
+	, m_aTextureBuffer()
 {
 
+}
+
+MTextureBuffer* MRenderTexture::GetBuffer(const uint32_t& nFrameIdx)
+{
+	if (nFrameIdx < m_aTextureBuffer.size())
+		return &(m_aTextureBuffer[nFrameIdx]);
 }
 
 void MRenderTexture::GenerateBuffer(MIDevice* pDevice)
 {
-	if (m_pTextureBuffer)
-		pDevice->DestroyRenderTextureBuffer(&m_pTextureBuffer);
-
-	pDevice->GenerateRenderTextureBuffer(&m_pTextureBuffer, this);
+	for (auto& buffer : m_aTextureBuffer)
+	{
+		pDevice->GenerateRenderTextureBuffer(&buffer, this);
+	}
 }
 
 void MRenderTexture::DestroyBuffer(MIDevice* pDevice)
 {
-	if (m_pTextureBuffer)
-		pDevice->DestroyRenderTextureBuffer(&m_pTextureBuffer);
-}
-
-MRenderSwapchainTexture::MRenderSwapchainTexture()
-	: MIRenderTexture()
-{
-	m_pTextureBuffer = new MRenderTextureBuffer();
-}
-
-MRenderSwapchainTexture::~MRenderSwapchainTexture()
-{
-	if (m_pTextureBuffer)
+	for (auto& buffer : m_aTextureBuffer)
 	{
-		delete m_pTextureBuffer;
-		m_pTextureBuffer = nullptr;
+		pDevice->DestroyRenderTextureBuffer(&buffer);
 	}
-}
-
-void MRenderSwapchainTexture::GenerateBuffer(MIDevice* pDevice)
-{
-	if (m_pTextureBuffer)
-	{
-		pDevice->GenerateRenderTargetView(m_pTextureBuffer);
-	}
-}
-
-void MRenderSwapchainTexture::DestroyBuffer(MIDevice* pDevice)
-{
-	if (m_pTextureBuffer)
-	{
-		pDevice->DestroyRenderTargetView(m_pTextureBuffer);
-	}
-}
-
-MIRenderTexture::MIRenderTexture()
-	: MITexture()
-	, m_bReadable(false)
-	, m_eRenderType(METextureLayout::ERGBA8)
-	, m_eUsageType(METextureUsage::ERenderBack)
-	, m_v2Size(0, 0)
-	, m_pTextureBuffer(nullptr)
-{
-
 }
 
 uint32_t MITexture::GetImageMemorySize(const METextureLayout& layout)
@@ -196,4 +163,36 @@ uint32_t MITexture::GetImageMemorySize(const METextureLayout& layout)
 		return 8;
 	else
 		return 4;
+}
+
+MIRenderTexture::MIRenderTexture() : MITexture()
+, m_bReadable(false)
+, m_eRenderType(METextureLayout::ERGBA8)
+, m_eUsageType(METextureUsage::ERenderBack)
+, m_v2Size(0, 0)
+{
+
+}
+
+void MRenderSwapchainTexture::GenerateBuffer(MIDevice* pDevice)
+{
+	for (auto& buffer : m_aTextureBuffer)
+	{
+		pDevice->GenerateRenderTargetView(&buffer);
+	}
+}
+
+void MRenderSwapchainTexture::DestroyBuffer(MIDevice* pDevice)
+{
+	for (auto& buffer : m_aTextureBuffer)
+	{
+		pDevice->DestroyRenderTargetView(&buffer);
+	}
+}
+
+MTextureBuffer* MRenderSwapchainTexture::GetBuffer(const uint32_t& nFrameIdx)
+{
+	if (nFrameIdx < m_aTextureBuffer.size())
+		return &(m_aTextureBuffer[nFrameIdx]);
+	return nullptr;
 }
