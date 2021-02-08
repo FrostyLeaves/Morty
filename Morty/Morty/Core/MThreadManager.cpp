@@ -28,6 +28,7 @@ size_t MThreadManager::AddWork(MThreadWork* work)
 		m_ConditionVariable.notify_one(); //唤醒一个线程.
 	}
 
+	return 0;
 }
 
 void MThreadManager::ThreadRun(size_t nThreadIdx)

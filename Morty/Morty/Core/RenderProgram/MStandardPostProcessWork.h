@@ -30,32 +30,18 @@ public:
 	virtual void Initialize(MIRenderProgram* pRenderProgram) override;
 	virtual void Release() override;
 
-	virtual MTextureRenderTarget* GetRenderTarget() override;
-
-	virtual void CheckRenderTargetSize(const Vector2& v2Size) override;
-
-	virtual void Render(MPostProcessRenderInfo& info) override;
-
-public:
+protected:
 
 	void InitializeMesh();
 	void ReleaseMesh();
 
-	void InitializeRenderTargets();
-	void ReleaseRenderTargets();
-
-	void InitializeRenderPass();
-	void ReleaseRenderPass();
+	void InitializeRenderGraph();
+	void ReleaseRenderGraph();
 
 protected:
 
 	MIRenderProgram* m_pRenderProgram;
-	MTextureRenderTarget* m_pTempRenderTarget;
-	MRenderPass* m_pTempRenderPass;
 	MIMesh* m_pScreenDrawMesh;
-
-	std::array<MIRenderTexture*, M_BUFFER_NUM> m_aBackTexture;
-	std::array<MIRenderTexture*, M_BUFFER_NUM> m_aDepthTexture;
 
 };
 #endif

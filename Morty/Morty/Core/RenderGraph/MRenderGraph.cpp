@@ -14,7 +14,6 @@ MRenderGraphNode::MRenderGraphNode()
 	, m_vInputTextures()
 	, m_vOutputTextures()
 	, m_nCommandLevel(M_INVALID_INDEX)
-	, m_bFinalNode(false)
 	, m_pGraph(nullptr)
 	, m_pRenderPass(new MRenderPass())
 {
@@ -119,6 +118,7 @@ MRenderGraph::MRenderGraph()
 	, m_tGraphTextureMap()
 	, m_bCompiled(false)
 	, m_pEngine(nullptr)
+	, m_pFinalOutputTexture(nullptr)
 {
 
 }
@@ -128,6 +128,7 @@ MRenderGraph::MRenderGraph(MEngine* pEngine)
 	, m_tGraphTextureMap()
 	, m_bCompiled(false)
 	, m_pEngine(pEngine)
+	, m_pFinalOutputTexture(nullptr)
 {
 
 }
@@ -188,6 +189,22 @@ MRenderGraphNode* MRenderGraph::FindRenderGraphNode(const MString& strNodeName) 
 	return nullptr;
 }
 
+void MRenderGraph::SetFinalOutputTexture(MRenderGraphTexture* pGraphTexture)
+{
+	if (!pGraphTexture || pGraphTexture->GetRenderGraph() == this)
+	{
+		m_pFinalOutputTexture = pGraphTexture;
+	}
+}
+
+void MRenderGraph::SetFinalNode(MRenderGraphNode* pGraphNode)
+{
+	if (!pGraphNode || pGraphNode->m_pGraph == this)
+	{
+		m_pFinalNode = pGraphNode;
+	}
+}
+
 void MRenderGraph::CompileDirty()
 {
 	m_bCompiled = false;
@@ -208,14 +225,7 @@ bool MRenderGraph::Compile(MIDevice* pDevice)
 	}
 
 	std::queue<MRenderGraphNode*> queue;
-	for (size_t nodeIdx = 0; nodeIdx < nSize; ++nodeIdx)
-	{
-		if (m_vSortedNodes[nodeIdx]->GetFinalNode())
-		{
-			m_vSortedNodes[nodeIdx]->m_nCommandLevel = 0;
-			queue.push(m_vSortedNodes[nodeIdx]);
-		}
-	}
+	queue.push(GetFinalNode());
 
 	if (queue.empty())
 	{

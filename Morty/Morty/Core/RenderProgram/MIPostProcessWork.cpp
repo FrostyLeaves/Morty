@@ -13,8 +13,8 @@ MIPostProcessWork::~MIPostProcessWork()
 
 void MIPostProcessWork::OnDelete()
 {
-    Release();
+	Release();
 
-    Super::OnDelete();
+	Super::OnDelete();
 }
 

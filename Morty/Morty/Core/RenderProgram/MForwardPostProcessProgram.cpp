@@ -45,7 +45,6 @@ void MForwardPostProcessProgram::Render(MIRenderer* pRenderer, MViewport* pViewp
 
 	info.fDelta = m_pEngine->GetInstantDelta();
 	info.unFrameIndex = pRenderer->GetFrameIndex();
-	info.pRenderTarget = m_pTempRenderTarget;
 	info.pRenderer = pRenderer;
 	info.pViewport = pViewport;
 	info.pCamera = pViewport->GetCamera();

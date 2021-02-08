@@ -82,3 +82,13 @@ void MCombineWork::ReleaseMaterial()
 		m_pMaterial = nullptr;
 	}
 }
+
+void MCombineWork::InitializeRenderGraph()
+{
+
+}
+
+void MCombineWork::ReleaseRenderGraph()
+{
+
+}

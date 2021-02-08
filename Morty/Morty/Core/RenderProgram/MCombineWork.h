@@ -35,6 +35,9 @@ protected:
 	void InitializeMaterial();
 	void ReleaseMaterial();
 
+	void InitializeRenderGraph();
+	void ReleaseRenderGraph();
+
 protected:
 
 	MMaterial* m_pMaterial;

@@ -38,14 +38,8 @@ public:
 
 public:
 
-    virtual void Initialize(MIRenderProgram* pRenderProgram) {};
-    virtual void Release() {};
-
-    virtual void CheckRenderTargetSize(const Vector2& v2Size) {}
-
-    virtual void Render(MPostProcessRenderInfo& info) {}
-
-    virtual MTextureRenderTarget* GetRenderTarget() { return nullptr; }
+	virtual void Initialize(MIRenderProgram* pRenderProgram) {};
+	virtual void Release() {};
 
 
 	virtual void OnDelete();

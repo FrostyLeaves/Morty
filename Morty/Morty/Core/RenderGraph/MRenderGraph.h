@@ -134,9 +134,6 @@ public:
 
     MRenderPass* GetRenderPass() { return m_pRenderPass; }
 
-    void SetFinalNode(const bool& bFinal) { m_bFinalNode = bFinal; }
-    bool GetFinalNode()const { return m_bFinalNode; }
-
     void Compile(MIDevice* pDevice);
 
 	void GenerateBuffer(MIDevice* pDevice);
@@ -152,7 +149,6 @@ protected:
     std::vector<MRenderGraphNodeOutput*> m_vOutputTextures;
 
     int m_nCommandLevel;
-    bool m_bFinalNode;
 
     class MRenderGraph* m_pGraph;
     MRenderPass* m_pRenderPass;
@@ -176,6 +172,12 @@ public:
 
     MEngine* GetEngine() { return m_pEngine; }
 
+    void SetFinalOutputTexture(MRenderGraphTexture* pGraphTexture);
+    MRenderGraphTexture* GetFinalOutputTexture() const { return m_pFinalOutputTexture; }
+
+    void SetFinalNode(MRenderGraphNode* pGraphNode);
+    MRenderGraphNode* GetFinalNode() const { return m_pFinalNode; }
+
     bool GetCompiled() const { return m_bCompiled; }
 	void CompileDirty();
 	bool Compile(MIDevice* pDevice);
@@ -195,6 +197,9 @@ protected:
 
     bool m_bCompiled;
     MEngine* m_pEngine;
+
+    MRenderGraphNode* m_pFinalNode;
+    MRenderGraphTexture* m_pFinalOutputTexture;
 };
 
 template<typename T>

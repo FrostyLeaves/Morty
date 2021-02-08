@@ -2,8 +2,8 @@
 #include "MEngine.h"
 #include "MViewport.h"
 #include "MIRenderer.h"
-#include "MTextureRenderTarget.h"
 
+#include "MRenderGraph.h"
 #include "MResourceManager.h"
 #include "Model/MMeshResource.h"
 #include "Material/MMaterialResource.h"
@@ -13,11 +13,7 @@ M_OBJECT_IMPLEMENT(MStandardPostProcessWork, MIPostProcessWork)
 MStandardPostProcessWork::MStandardPostProcessWork()
 	: MIPostProcessWork()
 	, m_pRenderProgram(nullptr)
-	, m_pTempRenderTarget(nullptr)
-	, m_pTempRenderPass(nullptr)
 	, m_pScreenDrawMesh(nullptr)
-	, m_aBackTexture()
-	, m_aDepthTexture()
 {
 }
 
@@ -30,14 +26,12 @@ void MStandardPostProcessWork::Initialize(MIRenderProgram* pRenderProgram)
 	m_pRenderProgram = pRenderProgram;
 
 	InitializeMesh();
-	InitializeRenderTargets();
-	InitializeRenderPass();
+	InitializeRenderGraph();
 }
 
 void MStandardPostProcessWork::Release()
 {
-	ReleaseRenderPass();
-	ReleaseRenderTargets();
+	ReleaseRenderGraph();
 	ReleaseMesh();
 }
 
@@ -55,110 +49,68 @@ void MStandardPostProcessWork::ReleaseMesh()
 	pScreenMeshRes->SubRef();
 }
 
-void MStandardPostProcessWork::InitializeRenderTargets()
+void MStandardPostProcessWork::InitializeRenderGraph()
 {
-	m_pTempRenderTarget = m_pEngine->GetObjectManager()->CreateObject<MTextureRenderTarget>();
-
-	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+	MRenderGraph* pRenderGraph = m_pRenderProgram->GetRenderGraph();
+	if (!pRenderGraph)
 	{
-		MRenderTexture* pBackTexture = new MRenderTexture();
-
-		MRenderTexture* pDepthTexture = new MRenderTexture();
-		pDepthTexture->SetType(METextureLayout::ER32);
-		pDepthTexture->SetUsage(METextureUsage::ERenderDepth);
-
-		m_aBackTexture[i] = pBackTexture;
-		m_aDepthTexture[i] = pDepthTexture;
-	}
-
-// 	m_pTempRenderTarget->SetBackTexture(m_aBackTexture, 0);
-// 	m_pTempRenderTarget->SetDepthTexture(m_aDepthTexture);
-
-	m_pTempRenderTarget->Resize(Vector2(MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE));
-}
-
-void MStandardPostProcessWork::ReleaseRenderTargets()
-{
-	if (m_pTempRenderTarget)
-	{
-		m_pTempRenderTarget->DeleteLater();
-		m_pTempRenderTarget = nullptr;
-	}
-
-	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-	{
-		if (m_aBackTexture[i])
-		{
-			m_aBackTexture[i]->DestroyBuffer(GetEngine()->GetDevice());
-			delete m_aBackTexture[i];
-			m_aBackTexture[i] = nullptr;
-		}
-
-		if (m_aDepthTexture[i])
-		{
-			m_aDepthTexture[i]->DestroyBuffer(GetEngine()->GetDevice());
-			delete m_aDepthTexture[i];
-			m_aDepthTexture[i] = nullptr;
-		}
-	}
-}
-
-void MStandardPostProcessWork::InitializeRenderPass()
-{
-	if (!m_pTempRenderTarget)
-	{
-		MLogManager::GetInstance()->Error("MForwardRenderProgram::InitializeRenderPass error: rt == nullptr");
+		MLogManager::GetInstance()->Error("MStandardPostProcessWork::InitializeRenderGraph error: rg == nullptr");
 		return;
 	}
 
-	//Init RenderPass
-	m_pTempRenderPass = new MRenderPass();
-	m_pTempRenderPass->m_vBackDesc.push_back(MPassTargetDescription());
-	m_pTempRenderPass->m_vBackDesc.back().bClearWhenRender = true;
-	m_pTempRenderPass->m_vBackDesc.back().cClearColor = m_pRenderProgram->GetClearColor();
 
-	m_pTempRenderPass->m_DepthDesc.bClearWhenRender = true;
-}
+	MRenderGraphNode* pFinalNode = pRenderGraph->GetFinalNode();
+	MRenderGraphTexture* pOutputTargetTexture = pRenderGraph->GetFinalOutputTexture();
 
-void MStandardPostProcessWork::ReleaseRenderPass()
-{
-	if (m_pTempRenderPass)
+
+	MString strTempOutputTextureName;
+	MString strTempOutputNodeName;
+
 	{
-		GetEngine()->GetDevice()->DestroyRenderPass(m_pTempRenderPass);
-		delete m_pTempRenderPass;
-		m_pTempRenderPass = nullptr;
-	}
-}
-
-void MStandardPostProcessWork::CheckRenderTargetSize(const Vector2& v2ViewportSize)
-{
-	if (m_pTempRenderTarget)
-	{
-		Vector2 v2Size = m_pTempRenderTarget->GetSize();
-		if (v2Size.x != v2ViewportSize.x || v2Size.y != v2ViewportSize.y)
+		int i = 0;
+		MString strNameHead("Standard_Post_");
+		strTempOutputTextureName = strNameHead + MStringHelper::ToString(i);
+		while (pRenderGraph->FindRenderGraphTexture(strTempOutputTextureName))
 		{
-			for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-			{
-				m_aBackTexture[i]->DestroyBuffer(GetEngine()->GetDevice());
-				m_aBackTexture[i]->SetSize(v2ViewportSize);
-				m_aBackTexture[i]->GenerateBuffer(GetEngine()->GetDevice());
-
-				m_aDepthTexture[i]->DestroyBuffer(GetEngine()->GetDevice());
-				m_aDepthTexture[i]->SetSize(v2ViewportSize);
-				m_aDepthTexture[i]->GenerateBuffer(GetEngine()->GetDevice());
-			}
-
-			m_pTempRenderTarget->Resize(v2ViewportSize);
+			strTempOutputTextureName = strNameHead + MStringHelper::ToString(++i);
 		}
 	}
+
+	MRenderGraphTexture* pTempOutputTexture = pRenderGraph->AddRenderGraphTexture(strTempOutputTextureName);
+	if (pTempOutputTexture)
+	{
+		pTempOutputTexture->SetLayout(pOutputTargetTexture->GetLayout());
+		pTempOutputTexture->SetSize(pTempOutputTexture->GetSize());
+		pTempOutputTexture->SetUsage(pTempOutputTexture->GetUsage());
+		pRenderGraph->SetFinalOutputTexture(pTempOutputTexture);
+	}
+
+	{
+		int i = 0;
+		MString strNameHead("Standard_Post_");
+		strTempOutputNodeName = strNameHead + MStringHelper::ToString(i);
+		while (pRenderGraph->FindRenderGraphNode(strTempOutputNodeName))
+		{
+			strTempOutputNodeName = strNameHead + MStringHelper::ToString(++i);
+		}
+	}
+	
+	if (MRenderGraphNode* pPostProcessNode = pRenderGraph->AddRenderGraphNode(strTempOutputNodeName))
+	{
+		if (MRenderGraphNodeInput* pInput = pPostProcessNode->AppendInput())
+		{
+			pInput->LinkTo(pFinalNode->GetOutput(0));
+		}
+
+		if (MRenderGraphNodeOutput* pOutput = pPostProcessNode->AppendOutput())
+		{
+			pOutput->SetRenderTexture(pTempOutputTexture);
+		}
+	}
+
 }
 
-void MStandardPostProcessWork::Render(MPostProcessRenderInfo& info)
+void MStandardPostProcessWork::ReleaseRenderGraph()
 {
 
-}
-
-MTextureRenderTarget* MStandardPostProcessWork::GetRenderTarget()
-{
-	return m_pTempRenderTarget;
 }
