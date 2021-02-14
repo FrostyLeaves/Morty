@@ -89,7 +89,7 @@ public:
 	METextureLayout GetLayout() const { return m_eLayout; }
 
 	void SetSize(const Vector2& size);
-	Vector2 GetSize() const { m_v2Size; }
+	Vector2 GetSize() const { return m_v2Size; }
 
     void AddRenderGraphNodeOutput(MRenderGraphNodeOutput* pOutput);
     void RemoveRenderGraphNodeOutput(MRenderGraphNodeOutput* pOutput);

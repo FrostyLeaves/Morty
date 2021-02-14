@@ -14,7 +14,7 @@
 
 class MMaterial;
 class MShaderParamSet;
-class MORTY_API MGaussianBlurWork : public MIPostProcessWork
+class MORTY_API MGaussianBlurWork : public MStandardPostProcessWork
 {
 public:
 	M_OBJECT(MGaussianBlurWork);
@@ -33,12 +33,8 @@ public:
 
 	virtual void Initialize(MIRenderProgram* pRenderProgram) override;
 	virtual void Release() override;
-
-	virtual MTextureRenderTarget* GetRenderTarget() override;
-
-	virtual void CheckRenderTargetSize(const Vector2& v2Size) override;
-
-	virtual void Render(MPostProcessRenderInfo& info) override;
+	
+	void Render(MRenderGraphNode* pGraphNode, MRenderInfo& info);
 
 protected:
 
@@ -47,12 +43,8 @@ protected:
 	void InitializeMesh();
 	void ReleaseMesh();
 
-	void InitializeRenderTargets();
-	void ReleaseRenderTargets();
-
-	void InitializeRenderPass();
-	void ReleaseRenderPass();
-
+	void InitializeGraph();
+	void ReleaseGraph();
 
     void InitializeMaterial();
     void ReleaseMaterial();

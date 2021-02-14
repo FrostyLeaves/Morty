@@ -21,12 +21,12 @@ class MIRenderTexture;
 class MTextureRenderTarget;
 struct MORTY_API MPostProcessRenderInfo
 {
-    float fDelta;
-    uint32_t unFrameIndex;
-    MIRenderer* pRenderer;
-    MViewport* pViewport;
-    MIRenderTexture* pPrevLevelOutput;
-    MIRenderTexture* pPrevLevelOutput1;
+	float fDelta;
+	uint32_t unFrameIndex;
+	MIRenderer* pRenderer;
+	MViewport* pViewport;
+	MIRenderTexture* pPrevLevelOutput;
+	MIRenderTexture* pPrevLevelOutput1;
 };
 
 class MORTY_API MIPostProcessWork : public MObject

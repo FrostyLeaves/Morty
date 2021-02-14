@@ -4,7 +4,6 @@
 #include "MTexture.h"
 #include "MViewport.h"
 #include "MIRenderer.h"
-#include "MTextureRenderTarget.h"
 
 #include "MForwardHDRWork.h"
 #include "MGaussianBlurWork.h"

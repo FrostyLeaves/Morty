@@ -2,16 +2,17 @@
 #include "MEngine.h"
 #include "MViewport.h"
 #include "MIRenderer.h"
-#include "MTextureRenderTarget.h"
 
 #include "MResourceManager.h"
 #include "Model/MMeshResource.h"
 #include "Material/MMaterialResource.h"
 
-M_OBJECT_IMPLEMENT(MGaussianBlurWork, MIPostProcessWork)
+#include "MRenderGraph.h"
+
+M_OBJECT_IMPLEMENT(MGaussianBlurWork, MStandardPostProcessWork)
 
 MGaussianBlurWork::MGaussianBlurWork()
-    : MIPostProcessWork()
+    : MStandardPostProcessWork()
     , m_aMaterial()
 	, m_fBlurRadius(1.0f)
 	, m_unIteration(6)
@@ -21,8 +22,7 @@ MGaussianBlurWork::MGaussianBlurWork()
 MGaussianBlurWork::~MGaussianBlurWork()
 {
 }
-
-void MGaussianBlurWork::Render(MPostProcessRenderInfo& info)
+void MGaussianBlurWork::Render(MRenderGraphNode* pGraphNode, MRenderInfo& info)
 {
 	UpdateShaderSharedParams(info);
 
@@ -123,6 +123,70 @@ void MGaussianBlurWork::ReleaseMesh()
 	pScreenMeshRes->SubRef();
 }
 
+void MGaussianBlurWork::InitializeGraph()
+{
+	MRenderGraph* pRenderGraph = m_pRenderProgram->GetRenderGraph();
+	if (!pRenderGraph)
+	{
+		MLogManager::GetInstance()->Error("MStandardPostProcessWork::InitializeRenderGraph error: rg == nullptr");
+		return;
+	}
+
+	MRenderGraphNode* pFinalNode = pRenderGraph->GetFinalNode();
+	MRenderGraphTexture* pOutputTargetTexture = pRenderGraph->GetFinalOutputTexture();
+
+
+	MString strNameHead("Standard_Post_");
+	MString strTempOutputTextureName;
+	MString strTempOutputNodeName;
+
+	{
+		int i = 0;
+		strTempOutputTextureName = strNameHead + MStringHelper::ToString(i);
+		while (pRenderGraph->FindRenderGraphTexture(strTempOutputTextureName))
+		{
+			strTempOutputTextureName = strNameHead + MStringHelper::ToString(++i);
+		}
+	}
+
+	MRenderGraphTexture* pTempOutputTexture = pRenderGraph->AddRenderGraphTexture(strTempOutputTextureName);
+	if (pTempOutputTexture)
+	{
+		pTempOutputTexture->SetLayout(pOutputTargetTexture->GetLayout());
+		pTempOutputTexture->SetSize(pTempOutputTexture->GetSize());
+		pTempOutputTexture->SetUsage(pTempOutputTexture->GetUsage());
+		pRenderGraph->SetFinalOutputTexture(pTempOutputTexture);
+	}
+
+	{
+		int i = 0;
+		strTempOutputNodeName = strNameHead + MStringHelper::ToString(i);
+		while (pRenderGraph->FindRenderGraphNode(strTempOutputNodeName))
+		{
+			strTempOutputNodeName = strNameHead + MStringHelper::ToString(++i);
+		}
+	}
+
+	if (MRenderGraphNode* pPostProcessNode = pRenderGraph->AddRenderGraphNode(strTempOutputNodeName))
+	{
+		if (MRenderGraphNodeInput* pInput = pPostProcessNode->AppendInput())
+		{
+			pInput->LinkTo(pFinalNode->GetOutput(0));
+		}
+
+		if (MRenderGraphNodeOutput* pOutput = pPostProcessNode->AppendOutput())
+		{
+			pOutput->SetRenderTexture(pTempOutputTexture);
+		}
+	}
+
+}
+
+void MGaussianBlurWork::ReleaseGraph()
+{
+
+}
+
 void MGaussianBlurWork::InitializeRenderTargets()
 {
 	for (uint32_t nRtIdx = 0; nRtIdx < 2; ++nRtIdx)
@@ -139,28 +203,6 @@ void MGaussianBlurWork::InitializeRenderTargets()
 	}
 }
 
-void MGaussianBlurWork::ReleaseRenderTargets()
-{
-	for (uint32_t nRtIdx = 0; nRtIdx < 2; ++nRtIdx)
-	{
-		if (m_aTempRenderTarget[nRtIdx])
-		{
-			m_aTempRenderTarget[nRtIdx]->DeleteLater();
-			m_aTempRenderTarget[nRtIdx] = nullptr;
-		}
-
-		for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-		{
-			if (m_aBackTexture[nRtIdx][i])
-			{
-				m_aBackTexture[nRtIdx][i]->DestroyBuffer(GetEngine()->GetDevice());
-				delete m_aBackTexture[nRtIdx][i];
-				m_aBackTexture[nRtIdx][i] = nullptr;
-			}
-		}
-	}
-}
-
 void MGaussianBlurWork::InitializeRenderPass()
 {
 
@@ -173,35 +215,6 @@ void MGaussianBlurWork::InitializeRenderPass()
 	m_pTempRenderPass->m_DepthDesc.bClearWhenRender = true;
 }
 
-void MGaussianBlurWork::ReleaseRenderPass()
-{
-	if (m_pTempRenderPass)
-	{
-		GetEngine()->GetDevice()->DestroyRenderPass(m_pTempRenderPass);
-		delete m_pTempRenderPass;
-		m_pTempRenderPass = nullptr;
-	}
-}
-
-void MGaussianBlurWork::CheckRenderTargetSize(const Vector2& v2ViewportSize)
-{
-	for (uint32_t nRtIdx = 0; nRtIdx < 2; ++nRtIdx)
-	{
-		Vector2 v2Size = m_aTempRenderTarget[nRtIdx]->GetSize();
-		if (v2Size.x != v2ViewportSize.x || v2Size.y != v2ViewportSize.y)
-		{
-			for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-			{
-				m_aBackTexture[nRtIdx][i]->DestroyBuffer(GetEngine()->GetDevice());
-				m_aBackTexture[nRtIdx][i]->SetSize(v2ViewportSize);
-				m_aBackTexture[nRtIdx][i]->GenerateBuffer(GetEngine()->GetDevice());
-			}
-
-			m_aTempRenderTarget[nRtIdx]->Resize(v2ViewportSize);
-		}
-	}
-}
-
 void MGaussianBlurWork::Initialize(MIRenderProgram* pRenderProgram)
 {
 	Super::Initialize(pRenderProgram);
@@ -210,23 +223,16 @@ void MGaussianBlurWork::Initialize(MIRenderProgram* pRenderProgram)
 
 	InitializeMesh();
 	InitializeMaterial();
-	InitializeRenderTargets();
-	InitializeRenderPass();
+	InitializeGraph();
 }
 
 void MGaussianBlurWork::Release()
 {
-	ReleaseRenderPass();
-	ReleaseRenderTargets();
+	ReleaseGraph();
 	ReleaseMaterial();
 	ReleaseMesh();
 
 	Super::Release();
-}
-
-MTextureRenderTarget* MGaussianBlurWork::GetRenderTarget()
-{
-	return m_aTempRenderTarget[1];
 }
 
 void MGaussianBlurWork::InitializeMaterial()

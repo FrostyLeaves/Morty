@@ -3,7 +3,6 @@
 #include "MEngine.h"
 #include "MViewport.h"
 #include "MIRenderer.h"
-#include "MTextureRenderTarget.h"
 
 #include "MResourceManager.h"
 #include "Model/MMeshResource.h"
