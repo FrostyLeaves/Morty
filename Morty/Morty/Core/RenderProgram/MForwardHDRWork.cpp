@@ -10,6 +10,7 @@
 
 #include "MCombineWork.h"
 #include "MGaussianBlurWork.h"
+#include "MForwardPostProcessProgram.h"
 
 M_OBJECT_IMPLEMENT(MForwardHDRWork, MIPostProcessWork)
 
@@ -32,13 +33,8 @@ float ConvertHalfToFloat(const char16_t& h)
 MForwardHDRWork::MForwardHDRWork()
     : MIPostProcessWork()
 	, m_pRenderProgram(nullptr)
-	, m_pTempRenderTarget(nullptr)
-	, m_pTempRenderPass(nullptr)
 	, m_pScreenDrawMesh(nullptr)
 	, m_pHDRMaterial(nullptr)
-	, m_aBackTexture()
-	, m_aHighLightTexture()
-	, m_aLumTexture()
 	, m_pGaussianBlurWork(nullptr)
 	, m_pCombineWork(nullptr)
 	, m_fAverageLum(1.0f)
@@ -51,12 +47,27 @@ MForwardHDRWork::~MForwardHDRWork()
 {
 }
 
-void MForwardHDRWork::Render(MPostProcessRenderInfo& info)
+void MForwardHDRWork::Render(MRenderGraphNode* pGraphNode)
 {
-	info.pRenderer->CopyImageBuffer(info.pPrevLevelOutput, m_aLumTexture[info.unFrameIndex]);
-	info.pRenderer->UpdateMipmaps(m_aLumTexture[info.unFrameIndex]->GetBuffer());
+	MForwardPostProcessProgram* pRenderProgram = dynamic_cast<MForwardPostProcessProgram*>(m_pRenderProgram);
+	if (!pRenderProgram)
+		return;
 
-	uint32_t unMipIdx = m_aLumTexture[info.unFrameIndex]->GetBuffer()->m_unMipmaps;
+	MRenderInfo& info = pRenderProgram->GetRenderInfo();
+
+
+	MRenderGraphNodeInput* pInput =  pGraphNode->GetInput(0);
+	if (!pInput)
+		return;
+
+	MRenderGraphTexture* pInputTexture = pInput->GetLinkedTexture();
+	if (!pInputTexture)
+		return;
+
+	info.pRenderer->CopyImageBuffer(pInputTexture->GetRenderTexture(), m_aLumTexture[info.unFrameIndex]);
+	info.pRenderer->UpdateMipmaps(m_aLumTexture[info.unFrameIndex]->GetBuffer(info.unFrameIndex));
+
+	uint32_t unMipIdx = m_aLumTexture[info.unFrameIndex]->GetBuffer(info.unFrameIndex)->m_unMipmaps;
 	unMipIdx = unMipIdx >= 3 ? unMipIdx - 3 : unMipIdx;
 
 	info.pRenderer->DownloadTexture(m_aLumTexture[info.unFrameIndex], unMipIdx, [this](void* pImageData, const Vector2& size) {
@@ -80,16 +91,16 @@ void MForwardHDRWork::Render(MPostProcessRenderInfo& info)
 		m_fAverageLum = exp(m_fAverageLum);
 		});
 
-	info.pRenderer->SetRenderToTextureBarrier({ info.pPrevLevelOutput });
+	info.pRenderer->SetRenderToTextureBarrier({ pInputTexture->GetRenderTexture() });
 
-	info.pRenderer->BeginRenderPass(m_pTempRenderPass, m_pTempRenderTarget);
+	info.pRenderer->BeginRenderPass(pGraphNode->GetRenderPass(), info.unFrameIndex);
 
 	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
 	info.pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight(), 0.0f, 1.0f);
 
 	if (MShaderParamSet* pMaterialParamSet = m_pHDRMaterial->GetMaterialParamSet())
 	{
-		pMaterialParamSet->m_vTextures[0]->pTexture = info.pPrevLevelOutput;
+		pMaterialParamSet->m_vTextures[0]->pTexture = pInputTexture->GetRenderTexture();
 		pMaterialParamSet->m_vTextures[0]->SetDirty();
 
 		m_fAdaptLum += (m_fAverageLum * m_fAdjustLum - m_fAdaptLum) * (1.0f - pow(0.98f, 30 * info.fDelta));
@@ -103,18 +114,6 @@ void MForwardHDRWork::Render(MPostProcessRenderInfo& info)
 	}
 
 	info.pRenderer->EndRenderPass();
-
-	RenderBloom(info);
-
-	RenderCombine(info);
-}
-
-MTextureRenderTarget* MForwardHDRWork::GetRenderTarget()
-{
- 	if (m_pCombineWork)
- 		return m_pCombineWork->GetRenderTarget();
-	
-	return m_pTempRenderTarget;
 }
 
 void MForwardHDRWork::Initialize(MIRenderProgram* pRenderProgram)
@@ -125,8 +124,7 @@ void MForwardHDRWork::Initialize(MIRenderProgram* pRenderProgram)
 
 	InitializeMesh();
 	InitializeMaterial();
-	InitializeRenderTargets();
-	InitializeRenderPass();
+
 
 	if (!m_pGaussianBlurWork)
 	{
@@ -139,6 +137,9 @@ void MForwardHDRWork::Initialize(MIRenderProgram* pRenderProgram)
 		m_pCombineWork = GetEngine()->GetObjectManager()->CreateObject<MCombineWork>();
 		m_pCombineWork->Initialize(pRenderProgram);
 	}
+
+	InitializeRenderGraph();
+
 }
 
 void MForwardHDRWork::Release()
@@ -155,8 +156,6 @@ void MForwardHDRWork::Release()
 		m_pCombineWork = nullptr;
 	}
 
-	ReleaseRenderPass();
-	ReleaseRenderTargets();
 	ReleaseMaterial();
 	ReleaseMesh();
 
@@ -196,136 +195,94 @@ void MForwardHDRWork::ReleaseMesh()
 	pScreenMeshRes->SubRef();
 }
 
-void MForwardHDRWork::InitializeRenderTargets()
+void MForwardHDRWork::InitializeRenderGraph()
 {
-	m_pTempRenderTarget = m_pEngine->GetObjectManager()->CreateObject<MTextureRenderTarget>();
+	MRenderGraph* pRenderGraph = m_pRenderProgram->GetRenderGraph();
+	if (!pRenderGraph)
+	{
+		MLogManager::GetInstance()->Error("MForwardHDRWork::InitializeRenderGraph error: rg == nullptr");
+		return;
+	}
 
+
+	MRenderGraphNode* pFinalNode = pRenderGraph->GetFinalNode();
+	MRenderGraphTexture* pOutputTargetTexture = pRenderGraph->GetFinalOutputTexture();
+
+
+	MRenderGraphTexture* pTempOutputHDRTexture = pRenderGraph->AddRenderGraphTexture("HDR_Post");
+	if (pTempOutputHDRTexture)
+	{
+		pTempOutputHDRTexture->SetLayout(pOutputTargetTexture->GetLayout());
+		pTempOutputHDRTexture->SetSize(pOutputTargetTexture->GetSize());
+		pTempOutputHDRTexture->SetUsage(pOutputTargetTexture->GetUsage());
+	}
+
+	MRenderGraphTexture* pTempOutputHighLightTexture = pRenderGraph->AddRenderGraphTexture("HDR_Post_HL");
+	if (pTempOutputHighLightTexture)
+	{
+		pTempOutputHighLightTexture->SetLayout(pOutputTargetTexture->GetLayout());
+		pTempOutputHighLightTexture->SetSize(pOutputTargetTexture->GetSize());
+		pTempOutputHighLightTexture->SetUsage(pOutputTargetTexture->GetUsage());
+	}
+
+	if (MRenderGraphNode* pPostProcessNode = pRenderGraph->AddRenderGraphNode("HDR_Post"))
+	{
+		if (MRenderGraphNodeInput* pInput = pPostProcessNode->AppendInput())
+		{
+			pInput->LinkTo(pFinalNode->GetOutput(0));
+		}
+
+		if (MRenderGraphNodeOutput* pOutput = pPostProcessNode->AppendOutput())
+		{
+			pOutput->SetRenderTexture(pTempOutputHDRTexture);
+			pOutput->SetClear(true);
+			pOutput->SetClearColor(m_pRenderProgram->GetClearColor());
+		}
+
+		if (MRenderGraphNodeOutput* pOutput = pPostProcessNode->AppendOutput())
+		{
+			pOutput->SetRenderTexture(pTempOutputHighLightTexture);
+			pOutput->SetClear(true);
+			pOutput->SetClearColor(MColor::Black_T);
+
+			
+		}
+
+		pPostProcessNode->BindRenderFunction(std::bind(&MForwardHDRWork::Render, this, std::placeholders::_1));
+
+		MRenderGraphNode* pGaussNode = pRenderGraph->FindRenderGraphNode(m_pGaussianBlurWork->GetGraphNodeName());
+		MRenderGraphNode* pCombineNode = pRenderGraph->FindRenderGraphNode(m_pCombineWork->GetGraphNodeName());
+
+		pPostProcessNode->GetOutput(1)->LinkTo(pGaussNode->GetInput(0));
+		pCombineNode->GetInput(0)->LinkTo(pPostProcessNode->GetOutput(0));
+		pCombineNode->GetInput(1)->LinkTo(pGaussNode->GetOutput(0));
+		
+	}
+
+
+}
+
+void MForwardHDRWork::ReleaseRenderGraph()
+{
+
+}
+
+void MForwardHDRWork::InitializeCopyTarget()
+{
 	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
 	{
-		m_aBackTexture[i] = new MRenderTexture();
-		m_aHighLightTexture[i] = new MRenderTexture();
-
 		m_aLumTexture[i] = new MTexture();
 		m_aLumTexture[i]->SetReadable(true);
 		m_aLumTexture[i]->SetMipmapsEnable(true);
 		m_aLumTexture[i]->SetType(METextureLayout::ERGBA16);
 	}
-
-//	m_pTempRenderTarget->SetBackTexture(m_aBackTexture, 0);
-//	m_pTempRenderTarget->SetBackTexture(m_aHighLightTexture, 1);
-
-	m_pTempRenderTarget->Resize(Vector2(MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE));
 }
 
-void MForwardHDRWork::ReleaseRenderTargets()
+void MForwardHDRWork::ReleaseCopyTarget()
 {
-	if (m_pTempRenderTarget)
-	{
-		m_pTempRenderTarget->DeleteLater();
-		m_pTempRenderTarget = nullptr;
-	}
-
 	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
 	{
-		if (m_aBackTexture[i])
-		{
-			m_aBackTexture[i]->DestroyBuffer(GetEngine()->GetDevice());
-			delete m_aBackTexture[i];
-			m_aBackTexture[i] = nullptr;
-		}
-
-		if (m_aHighLightTexture[i])
-		{
-			m_aHighLightTexture[i]->DestroyBuffer(GetEngine()->GetDevice());
-			delete m_aHighLightTexture[i];
-			m_aHighLightTexture[i] = nullptr;
-		}
-
-		if (m_aLumTexture[i])
-		{
-			m_aLumTexture[i]->DestroyBuffer(GetEngine()->GetDevice());
-			delete m_aLumTexture[i];
-			m_aLumTexture[i] = nullptr;
-		}
+		m_aLumTexture[i]->DestroyBuffer(GetEngine()->GetDevice());
+		m_aLumTexture[i] = nullptr;
 	}
-}
-
-void MForwardHDRWork::InitializeRenderPass()
-{
-	if (!m_pTempRenderTarget)
-	{
-		MLogManager::GetInstance()->Error("MForwardRenderProgram::InitializeRenderPass error: rt == nullptr");
-		return;
-	}
-
-	//Init RenderPass
-	m_pTempRenderPass = new MRenderPass();
-	m_pTempRenderPass->m_vBackDesc.push_back(MPassTargetDescription());
-	m_pTempRenderPass->m_vBackDesc.back().bClearWhenRender = true;
-	m_pTempRenderPass->m_vBackDesc.back().cClearColor = m_pRenderProgram->GetClearColor();
-	m_pTempRenderPass->m_vBackDesc.push_back(MPassTargetDescription());
-	m_pTempRenderPass->m_vBackDesc.back().bClearWhenRender = true;
-	m_pTempRenderPass->m_vBackDesc.back().cClearColor = MColor::Black_T;
-}
-
-void MForwardHDRWork::ReleaseRenderPass()
-{
-	if (m_pTempRenderPass)
-	{
-		GetEngine()->GetDevice()->DestroyRenderPass(m_pTempRenderPass);
-		delete m_pTempRenderPass;
-		m_pTempRenderPass = nullptr;
-	}
-}
-
-void MForwardHDRWork::CheckRenderTargetSize(const Vector2& v2ViewportSize)
-{
-	if (m_pTempRenderTarget)
-	{
-		Vector2 v2Size = m_pTempRenderTarget->GetSize();
-		if (v2Size.x != v2ViewportSize.x || v2Size.y != v2ViewportSize.y)
-		{
-			for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-			{
-				m_aBackTexture[i]->DestroyBuffer(GetEngine()->GetDevice());
-				m_aBackTexture[i]->SetSize(v2ViewportSize);
-				m_aBackTexture[i]->GenerateBuffer(GetEngine()->GetDevice());
-
-				m_aHighLightTexture[i]->DestroyBuffer(GetEngine()->GetDevice());
-				m_aHighLightTexture[i]->SetSize(v2ViewportSize);
-				m_aHighLightTexture[i]->GenerateBuffer(GetEngine()->GetDevice());
-
-				m_aLumTexture[i]->DestroyBuffer(GetEngine()->GetDevice());
-				m_aLumTexture[i]->SetSize(v2ViewportSize);
-				m_aLumTexture[i]->GenerateBuffer(GetEngine()->GetDevice());
-			}
-
-			m_pTempRenderTarget->Resize(v2ViewportSize);
-		}
-	}
-}
-
-void MForwardHDRWork::RenderBloom(MPostProcessRenderInfo& info)
-{
-	if (!m_pGaussianBlurWork)
-		return;
-
-	m_pGaussianBlurWork->CheckRenderTargetSize(info.pViewport->GetSize());
-
-	info.pPrevLevelOutput = m_aHighLightTexture[info.unFrameIndex];
-	m_pGaussianBlurWork->Render(info);
-}
-
-void MForwardHDRWork::RenderCombine(MPostProcessRenderInfo& info)
-{
-	if (!m_pCombineWork || !m_pGaussianBlurWork)
-		return;
-
-	m_pCombineWork->CheckRenderTargetSize(info.pViewport->GetSize());
-
-//	info.pPrevLevelOutput = m_pGaussianBlurWork->GetRenderTarget()->GetBackTexture(info.unFrameIndex)->at(0);
-	info.pPrevLevelOutput1 = m_aBackTexture[info.unFrameIndex];
-	
-
-	m_pCombineWork->Render(info);
 }

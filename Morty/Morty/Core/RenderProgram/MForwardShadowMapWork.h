@@ -41,7 +41,7 @@ public:
 
     void RenderMesh(MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup);
 
-    void Render(MRenderGraphNode* pGraphNode, MRenderInfo& info);
+    void Render(MRenderGraphNode* pGraphNode);
 
 protected:
 

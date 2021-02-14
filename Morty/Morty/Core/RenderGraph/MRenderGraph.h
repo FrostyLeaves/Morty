@@ -23,6 +23,7 @@ class MRenderGraphTexture;
 class MRenderGraphNodeInput;
 class MRenderGraphNodeOutput;
 
+
 class MORTY_API MRenderGraphNodeInput
 {
 public:
@@ -124,6 +125,8 @@ public:
     MRenderGraphNode();
     virtual ~MRenderGraphNode() {}
 
+    MString GetNodeName() const { return m_strNodeName; }
+
     MRenderGraphNodeInput* AppendInput();
     MRenderGraphNodeOutput* AppendOutput();
 
@@ -139,6 +142,8 @@ public:
 	void GenerateBuffer(MIDevice* pDevice);
 	void DestroyBuffer(MIDevice* pDevice);
 
+    void BindRenderFunction(const std::function<void(MRenderGraphNode*)>& func) { m_funcRender = func; }
+
 protected:
 
     friend class MRenderGraph;
@@ -152,6 +157,8 @@ protected:
 
     class MRenderGraph* m_pGraph;
     MRenderPass* m_pRenderPass;
+
+    std::function<void(MRenderGraphNode*)> m_funcRender;
 };
 
 class MORTY_API MRenderGraph
@@ -185,6 +192,20 @@ public:
 	void GenerateBuffer(MIDevice* pDevice);
 	void DestroyBuffer(MIDevice* pDevice);
 
+	void Render()
+	{
+		if (!m_bCompiled)
+			return;
+
+		for (MRenderGraphNode* pNode : m_vSortedNodes)
+		{
+			if (pNode->m_funcRender)
+			{
+                pNode->m_funcRender(pNode);
+			}
+		}
+	}
+
 protected:
 
     virtual MRenderGraphNode* NewRenderGraphNode() { return new MRenderGraphNode(); }
@@ -200,45 +221,6 @@ protected:
 
     MRenderGraphNode* m_pFinalNode;
     MRenderGraphTexture* m_pFinalOutputTexture;
-};
-
-template<typename T>
-class MRenderGraphNodeTemplate : public MRenderGraphNode
-{
-public:
-	void BindRenderFunction(std::function<void(MRenderGraphNode*, T&)> func) { m_funcRender = func; }
-
-	std::function<void(MRenderGraphNode*, T&)> m_funcRender; // render 
-};
-
-template<typename T>
-class MORTY_API MRenderGraphTemplate : public MRenderGraph
-{
-public:
-
-    MRenderGraphTemplate() :MRenderGraph() {}
-    MRenderGraphTemplate(MEngine* pEngine) : MRenderGraph(pEngine) {}
-
-	virtual MRenderGraphNode* NewRenderGraphNode() override { return new MRenderGraphNodeTemplate<T>(); }
-
-public:
-
-    
-
-	void Render(T& renderInfo)
-	{
-        if (!m_bCompiled)
-            return;
-
-		for (MRenderGraphNode* pNode : m_vSortedNodes)
-		{
-            MRenderGraphNodeTemplate<T>*  pTypedNode = static_cast<MRenderGraphNodeTemplate<T>*>(pNode);
-			if (pTypedNode->m_funcRender)
-			{
-                pTypedNode->m_funcRender(pTypedNode, renderInfo);
-			}
-		}
-	}
 };
 
 

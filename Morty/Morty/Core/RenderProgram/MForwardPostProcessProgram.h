@@ -65,7 +65,6 @@ protected:
 	std::vector<MIPostProcessWork*> m_vPostProcessWork;
 
 private:
-
 	std::array<MIRenderTexture*, M_BUFFER_NUM> m_aBackTexture;
 	std::array<MIRenderTexture*, M_BUFFER_NUM> m_aDepthTexture;
 

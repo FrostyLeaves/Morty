@@ -61,8 +61,13 @@ void MForwardTransparentWork::Release()
 	ReleaseMaterial();
 }
 
-void MForwardTransparentWork::Render(MRenderGraphNode* pGraphNode, MRenderInfo& info)
+void MForwardTransparentWork::Render(MRenderGraphNode* pGraphNode)
 {
+	MForwardRenderProgram* pRenderProgram = dynamic_cast<MForwardRenderProgram*>(m_pRenderProgram);
+	if (!pRenderProgram)
+		return;
+	MRenderInfo& info = pRenderProgram->GetRenderInfo();
+
 	if (!pGraphNode)
 		return;
 
@@ -91,8 +96,13 @@ void MForwardTransparentWork::Render(MRenderGraphNode* pGraphNode, MRenderInfo& 
 	info.pRenderer->EndRenderPass();
 }
 
-void MForwardTransparentWork::RenderDepthPeel(MRenderGraphNode* pGraphNode, MRenderInfo& info)
+void MForwardTransparentWork::RenderDepthPeel(MRenderGraphNode* pGraphNode)
 {
+	MForwardRenderProgram* pRenderProgram = dynamic_cast<MForwardRenderProgram*>(m_pRenderProgram);
+	if (!pRenderProgram)
+		return;
+	MRenderInfo& info = pRenderProgram->GetRenderInfo();
+
 	if (nullptr == info.pViewport)
 		return;
 
@@ -342,10 +352,9 @@ void MForwardTransparentWork::InitializeRenderGraph()
 
 		SetupSubPass(*pTransparentNode->GetRenderPass());
 
-		if (MRenderGraphNodeTemplate<MRenderInfo>* pTypedForwardNode = dynamic_cast<MRenderGraphNodeTemplate<MRenderInfo>*>(pTransparentNode))
-		{
-			pTypedForwardNode->BindRenderFunction(std::bind(&MForwardTransparentWork::RenderDepthPeel, this, std::placeholders::_1, std::placeholders::_2));
-		}
+		
+		pTransparentNode->BindRenderFunction(std::bind(&MForwardTransparentWork::RenderDepthPeel, this, std::placeholders::_1));
+		
 	}
 
 	if (MRenderGraphNode* pCombineNode = pRenderGraph->AddRenderGraphNode("Transparent Combine Node"))
@@ -379,10 +388,9 @@ void MForwardTransparentWork::InitializeRenderGraph()
 			}
 		}
 
-		if (MRenderGraphNodeTemplate<MRenderInfo>* pTypedForwardNode = dynamic_cast<MRenderGraphNodeTemplate<MRenderInfo>*>(pCombineNode))
-		{
-			pTypedForwardNode->BindRenderFunction(std::bind(&MForwardTransparentWork::Render, this, std::placeholders::_1, std::placeholders::_2));
-		}
+		
+		pCombineNode->BindRenderFunction(std::bind(&MForwardTransparentWork::Render, this, std::placeholders::_1));
+		
 	}
 
 

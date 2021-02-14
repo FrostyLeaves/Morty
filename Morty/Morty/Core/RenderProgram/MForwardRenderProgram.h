@@ -41,6 +41,7 @@ struct MRenderInfo
 	MRenderInfo();
 
 	float fDelta;
+	float fGameTime;
 	uint32_t unFrameIndex;
 	class MIRenderTarget* pRenderTarget;
 	class MIRenderer* pRenderer;
@@ -85,16 +86,16 @@ public:
 
 	void GenerateRenderGroup(MRenderInfo& info);
 
+	MRenderInfo& GetRenderInfo() { return m_RenderInfo; }
+
 protected:
 
 	virtual void Initialize() override;
 	virtual void Release() override;
 
-public:
-
-	std::array<MRenderInfo, M_BUFFER_NUM> m_aRenderInfo;
-
 protected:
+
+	MRenderInfo m_RenderInfo;
 
 	MForwardShadowMapWork* m_pShadowMapWork;
 	MForwardRenderWork* m_pRenderWork;
@@ -103,7 +104,7 @@ protected:
 	MColor m_cClearColor;
 
 
-	MRenderGraphTemplate<MRenderInfo>* m_pRenderGraph;
+	MRenderGraph* m_pRenderGraph;
 };
 
 #endif

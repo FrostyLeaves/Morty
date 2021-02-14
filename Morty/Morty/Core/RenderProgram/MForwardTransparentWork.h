@@ -32,9 +32,9 @@ public:
 
     MIRenderProgram* GetProgram() const { return m_pRenderProgram; }
 
-    void Render(MRenderGraphNode* pGraphNode, MRenderInfo& info);
+    void Render(MRenderGraphNode* pGraphNode);
 
-	void RenderDepthPeel(MRenderGraphNode* pGraphNode, MRenderInfo& info);
+	void RenderDepthPeel(MRenderGraphNode* pGraphNode);
 
 
 protected:

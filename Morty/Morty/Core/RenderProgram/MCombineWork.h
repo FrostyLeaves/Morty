@@ -27,16 +27,12 @@ public:
 	virtual void Initialize(MIRenderProgram* pRenderProgram) override;
 	virtual void Release() override;
 
-	virtual void Render(MPostProcessRenderInfo& info) override;
-
+	virtual void Render(MRenderGraphNode* pGraphNode) override;
 
 protected:
 
 	void InitializeMaterial();
 	void ReleaseMaterial();
-
-	void InitializeRenderGraph();
-	void ReleaseRenderGraph();
 
 protected:
 

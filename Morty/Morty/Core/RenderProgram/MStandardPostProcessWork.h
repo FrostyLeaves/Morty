@@ -18,6 +18,7 @@ class MIMesh;
 class MRenderPass;
 class MIRenderProgram;
 class MIRenderTexture;
+class MRenderGraphNode;
 class MORTY_API MStandardPostProcessWork : public MIPostProcessWork
 {
 public:
@@ -30,6 +31,10 @@ public:
 	virtual void Initialize(MIRenderProgram* pRenderProgram) override;
 	virtual void Release() override;
 
+	virtual void Render(MRenderGraphNode* pGraphNode);
+
+	MString GetGraphNodeName() const { return m_strGraphNodeName; }
+
 protected:
 
 	void InitializeMesh();
@@ -40,6 +45,7 @@ protected:
 
 protected:
 
+	MString m_strGraphNodeName;
 	MIRenderProgram* m_pRenderProgram;
 	MIMesh* m_pScreenDrawMesh;
 

@@ -37,7 +37,7 @@ public:
 
 	virtual void OnDelete() override;
 
-	void Render(MRenderGraphNode* pGraphNode, MRenderInfo& info);
+	void Render(MRenderGraphNode* pGraphNode);
 
 	static void UpdateShaderSharedParams(MRenderInfo& info, MForwardRenderShaderParamSet& frameParamSet);
 

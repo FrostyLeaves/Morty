@@ -12,6 +12,7 @@ M_OBJECT_IMPLEMENT(MStandardPostProcessWork, MIPostProcessWork)
 
 MStandardPostProcessWork::MStandardPostProcessWork()
 	: MIPostProcessWork()
+	, m_strGraphNodeName("")
 	, m_pRenderProgram(nullptr)
 	, m_pScreenDrawMesh(nullptr)
 {
@@ -33,6 +34,11 @@ void MStandardPostProcessWork::Release()
 {
 	ReleaseRenderGraph();
 	ReleaseMesh();
+}
+
+void MStandardPostProcessWork::Render(MRenderGraphNode* pGraphNode)
+{
+
 }
 
 void MStandardPostProcessWork::InitializeMesh()
@@ -63,40 +69,19 @@ void MStandardPostProcessWork::InitializeRenderGraph()
 	MRenderGraphTexture* pOutputTargetTexture = pRenderGraph->GetFinalOutputTexture();
 
 
-	MString strTempOutputTextureName;
-	MString strTempOutputNodeName;
-
-	{
-		int i = 0;
-		MString strNameHead("Standard_Post_");
-		strTempOutputTextureName = strNameHead + MStringHelper::ToString(i);
-		while (pRenderGraph->FindRenderGraphTexture(strTempOutputTextureName))
-		{
-			strTempOutputTextureName = strNameHead + MStringHelper::ToString(++i);
-		}
-	}
-
-	MRenderGraphTexture* pTempOutputTexture = pRenderGraph->AddRenderGraphTexture(strTempOutputTextureName);
+	MRenderGraphTexture* pTempOutputTexture = pRenderGraph->AddRenderGraphTexture("Standard_Post");
 	if (pTempOutputTexture)
 	{
 		pTempOutputTexture->SetLayout(pOutputTargetTexture->GetLayout());
-		pTempOutputTexture->SetSize(pTempOutputTexture->GetSize());
-		pTempOutputTexture->SetUsage(pTempOutputTexture->GetUsage());
+		pTempOutputTexture->SetSize(pOutputTargetTexture->GetSize());
+		pTempOutputTexture->SetUsage(pOutputTargetTexture->GetUsage());
 		pRenderGraph->SetFinalOutputTexture(pTempOutputTexture);
 	}
-
-	{
-		int i = 0;
-		MString strNameHead("Standard_Post_");
-		strTempOutputNodeName = strNameHead + MStringHelper::ToString(i);
-		while (pRenderGraph->FindRenderGraphNode(strTempOutputNodeName))
-		{
-			strTempOutputNodeName = strNameHead + MStringHelper::ToString(++i);
-		}
-	}
 	
-	if (MRenderGraphNode* pPostProcessNode = pRenderGraph->AddRenderGraphNode(strTempOutputNodeName))
+	if (MRenderGraphNode* pPostProcessNode = pRenderGraph->AddRenderGraphNode("Standard_Post"))
 	{
+		m_strGraphNodeName = pPostProcessNode->GetNodeName();
+
 		if (MRenderGraphNodeInput* pInput = pPostProcessNode->AppendInput())
 		{
 			pInput->LinkTo(pFinalNode->GetOutput(0));
@@ -106,6 +91,8 @@ void MStandardPostProcessWork::InitializeRenderGraph()
 		{
 			pOutput->SetRenderTexture(pTempOutputTexture);
 		}
+
+		pPostProcessNode->BindRenderFunction(std::bind(&MStandardPostProcessWork::Render, this, std::placeholders::_1));
 	}
 
 }

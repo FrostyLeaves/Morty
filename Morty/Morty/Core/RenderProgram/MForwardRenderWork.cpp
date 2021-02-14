@@ -118,10 +118,7 @@ void MForwardRenderWork::InitializeRenderGraph()
 		}
 	}
 
-	if (MRenderGraphNodeTemplate<MRenderInfo>* pTypedForwardNode = dynamic_cast<MRenderGraphNodeTemplate<MRenderInfo>*>(pForwardNode))
-	{
-		pTypedForwardNode->BindRenderFunction(std::bind(&MForwardRenderWork::Render, this, std::placeholders::_1, std::placeholders::_2));
-	}
+		pForwardNode->BindRenderFunction(std::bind(&MForwardRenderWork::Render, this, std::placeholders::_1));
 }
 
 void MForwardRenderWork::ReleaseRenderGraph()
@@ -135,8 +132,14 @@ void MForwardRenderWork::OnDelete()
 	Super::OnDelete();
 }
 
-void MForwardRenderWork::Render(MRenderGraphNode* pGraphNode, MRenderInfo& info)
+void MForwardRenderWork::Render(MRenderGraphNode* pGraphNode)
 {
+	MForwardRenderProgram* pRenderProgram = dynamic_cast<MForwardRenderProgram*>(m_pRenderProgram);
+	if (!pRenderProgram)
+		return;
+	MRenderInfo& info = pRenderProgram->GetRenderInfo();
+
+
 	UpdateShaderSharedParams(info, m_FrameParamSet);
 
 	info.pRenderer->BeginRenderPass(pGraphNode->GetRenderPass(), info.unFrameIndex);
@@ -179,7 +182,7 @@ void MForwardRenderWork::UpdateShaderSharedParams(MRenderInfo& info, MForwardRen
 
 		(*frameParamSet.m_pWorldInfoParam->var.GetStruct())[3] = info.fDelta;
 
-		(*frameParamSet.m_pWorldInfoParam->var.GetStruct())[4] = info.fDelta;
+		(*frameParamSet.m_pWorldInfoParam->var.GetStruct())[4] = info.fGameTime;
 
 		frameParamSet.m_pWorldInfoParam->SetDirty();
 	}

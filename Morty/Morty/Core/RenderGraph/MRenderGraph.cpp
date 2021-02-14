@@ -16,6 +16,7 @@ MRenderGraphNode::MRenderGraphNode()
 	, m_nCommandLevel(M_INVALID_INDEX)
 	, m_pGraph(nullptr)
 	, m_pRenderPass(new MRenderPass())
+	, m_funcRender(nullptr)
 {
 
 }
@@ -140,33 +141,39 @@ MRenderGraph::~MRenderGraph()
 
 MRenderGraphNode* MRenderGraph::AddRenderGraphNode(const MString& strNodeName)
 {
-	if (MRenderGraphNode* pFindResult = FindRenderGraphNode(strNodeName))
+	MString strValidName = strNodeName;
+
+	int i = 0;
+	while (FindRenderGraphNode(strValidName))
 	{
-		return pFindResult;
+		strValidName = strNodeName + "_" + MStringHelper::ToString(++i);
 	}
 
 	MRenderGraphNode* pGraphNode = NewRenderGraphNode();
 
-	pGraphNode->m_strNodeName = strNodeName;
+	pGraphNode->m_strNodeName = strValidName;
 	pGraphNode->m_pGraph = this;
 
-	m_tGraphNodeMap[pGraphNode->m_strNodeName] = pGraphNode;
+	m_tGraphNodeMap[strValidName] = pGraphNode;
 
 	return pGraphNode;
 }
 
 MRenderGraphTexture* MRenderGraph::AddRenderGraphTexture(const MString& strTextureName)
 {
-	if (MRenderGraphTexture* pFindResult = FindRenderGraphTexture(strTextureName))
+	MString strValidName = strTextureName;
+
+	int i = 0;
+	while(FindRenderGraphTexture(strValidName))
 	{
-		return pFindResult;
+		strValidName = strTextureName +  "_" + MStringHelper::ToString(++i);
 	}
 
 	MRenderGraphTexture* pGraphTexture = new MRenderGraphTexture();
-	pGraphTexture->m_strTextureName = strTextureName;
+	pGraphTexture->m_strTextureName = strValidName;
 	pGraphTexture->m_pGraph = this;
 
-	m_tGraphTextureMap[strTextureName] = pGraphTexture;
+	m_tGraphTextureMap[strValidName] = pGraphTexture;
 
 	return pGraphTexture;
 }

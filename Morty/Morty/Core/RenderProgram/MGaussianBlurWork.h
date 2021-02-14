@@ -10,10 +10,13 @@
 #define _M_MGAUSSIANBLURWORK_H_
 #include "MGlobal.h"
 #include "MObject.h"
+
+#include "MForwardRenderProgram.h"
 #include "MStandardPostProcessWork.h"
 
 class MMaterial;
 class MShaderParamSet;
+class MRenderGraphNode;
 class MORTY_API MGaussianBlurWork : public MStandardPostProcessWork
 {
 public:
@@ -29,16 +32,19 @@ public:
 	void SetIteration(const uint32_t& unIteration) { m_unIteration = unIteration; }
 	uint32_t GetIteration() const { return m_unIteration; }
 
+
+	MString GetGraphNodeName() const { return m_strGraphNodeName; }
+
 public:
 
 	virtual void Initialize(MIRenderProgram* pRenderProgram) override;
 	virtual void Release() override;
 	
-	void Render(MRenderGraphNode* pGraphNode, MRenderInfo& info);
+	void Render(MRenderGraphNode* pGraphNode);
 
 protected:
 
-	void UpdateShaderSharedParams(MPostProcessRenderInfo& info);
+	void UpdateShaderSharedParams(MRenderGraphNode* pGraphNode, MRenderInfo& info);
 
 	void InitializeMesh();
 	void ReleaseMesh();
@@ -51,13 +57,11 @@ protected:
 
 protected:
 
+	MString m_strGraphNodeName;
+
 	MIRenderProgram* m_pRenderProgram;
-	MTextureRenderTarget* m_aTempRenderTarget[2];
-	std::array<MIRenderTexture*, M_BUFFER_NUM> m_aBackTexture[2];
 
-	MRenderPass* m_pTempRenderPass;
 	MIMesh* m_pScreenDrawMesh;
-
     MMaterial* m_aMaterial[3];
 
 private:

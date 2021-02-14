@@ -75,12 +75,7 @@ void MForwardShadowMapWork::InitializeRenderGraph()
 	pShadowMapOutput->SetClear(true);
 	pShadowMapOutput->SetRenderTexture(pShadowMapTexture);
 
-	if (MRenderGraphNodeTemplate<MRenderInfo>* pTypedShadowMapNode = dynamic_cast<MRenderGraphNodeTemplate<MRenderInfo>*>(pShadowMapNode))
-	{
-		pTypedShadowMapNode->BindRenderFunction(std::bind(&MForwardShadowMapWork::Render, this, std::placeholders::_1, std::placeholders::_2));
-	}
-
-
+	pShadowMapNode->BindRenderFunction(std::bind(&MForwardShadowMapWork::Render, this, std::placeholders::_1));
 
 }
 
@@ -91,8 +86,13 @@ void MForwardShadowMapWork::OnDelete()
 	Super::OnDelete();
 }
 
-void MForwardShadowMapWork::Render(MRenderGraphNode* pGraphNode, MRenderInfo& info)
+void MForwardShadowMapWork::Render(MRenderGraphNode* pGraphNode)
 {
+	MForwardRenderProgram* pRenderProgram = dynamic_cast<MForwardRenderProgram*>(m_pRenderProgram);
+	if (!pRenderProgram)
+		return;
+	MRenderInfo& info = pRenderProgram->GetRenderInfo();
+
 	MRenderPass* pRenderPass = pGraphNode->GetRenderPass();
 	if (!pRenderPass)
 		return;

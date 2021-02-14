@@ -25,7 +25,7 @@ M_OBJECT_IMPLEMENT(MForwardRenderProgram, MIRenderProgram)
 
 MForwardRenderProgram::MForwardRenderProgram()
 	: MIRenderProgram()
-	, m_aRenderInfo()
+	, m_RenderInfo()
 	, m_pShadowMapWork(nullptr)
 	, m_pRenderWork(nullptr)
 	, m_pTransparentWork(nullptr)
@@ -42,7 +42,7 @@ MForwardRenderProgram::~MForwardRenderProgram()
 void MForwardRenderProgram::Initialize()
 {
 
-	m_pRenderGraph = new MRenderGraphTemplate<MRenderInfo>(GetEngine());
+	m_pRenderGraph = new MRenderGraph(GetEngine());
 
 	m_pShadowMapWork = GetEngine()->GetObjectManager()->CreateObject<MForwardShadowMapWork>();
 	m_pShadowMapWork->Initialize(this);
@@ -88,7 +88,9 @@ void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport)
 	if (!pViewport)
 		return;
 
-	MRenderInfo info;
+	MRenderInfo& info = GetRenderInfo();
+
+	info = MRenderInfo();
 
 	info.fDelta = m_pEngine->GetInstantDelta();
 	info.unFrameIndex = pRenderer->GetFrameIndex();
@@ -105,27 +107,10 @@ void MForwardRenderProgram::Render(MRenderInfo& info)
 	info.pViewport->LockMatrix();
 
 	GenerateRenderGroup(info);
-// 
-// 	if (m_pShadowMapWork)
-// 	{
-// 		m_pShadowMapWork->Render(info);
-// 		info.pShadowMapTexture = m_pShadowMapWork->GetShadowMap(info.unFrameIndex);
-// 	}
-// 
-// 	if (m_pRenderWork)
-// 	{
-// 		m_pRenderWork->Render(info);
-// 	}
-// 
-// 	if (m_pTransparentWork)
-// 	{
-// 		m_pTransparentWork->Render(info);
-// 	}
-
 	
 	if (m_pRenderGraph->GetCompiled() || m_pRenderGraph->Compile(GetEngine()->GetDevice()))
 	{
-		m_pRenderGraph->Render(info);
+		m_pRenderGraph->Render();
 	}
 
 	info.pViewport->UnlockMatrix();
@@ -198,6 +183,7 @@ void MForwardRenderProgram::GenerateRenderGroup(MRenderInfo& info)
 
 MRenderInfo::MRenderInfo()
 	: fDelta(0.0f)
+	, fGameTime(0.0f)
 	, unFrameIndex(0)
 	, pRenderTarget(nullptr)
 	, pRenderer(nullptr)
