@@ -17,7 +17,7 @@
 class MMaterial;
 class MShaderParamSet;
 class MRenderGraphNode;
-class MORTY_API MGaussianBlurWork : public MStandardPostProcessWork
+class MORTY_API MGaussianBlurWork : public MIPostProcessWork
 {
 public:
 	M_OBJECT(MGaussianBlurWork);
@@ -62,7 +62,7 @@ protected:
 	MIRenderProgram* m_pRenderProgram;
 
 	MIMesh* m_pScreenDrawMesh;
-    MMaterial* m_aMaterial[3];
+    MMaterial* m_aMaterial[M_BUFFER_NUM];
 
 private:
 	float m_fBlurRadius;

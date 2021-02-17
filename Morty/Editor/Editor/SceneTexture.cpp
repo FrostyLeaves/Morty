@@ -30,10 +30,8 @@ void SceneTexture::Initialize(MEngine* pEngine)
 {
 	m_pEngine = pEngine;
 
-	m_pRenderProgram = m_pEngine->GetObjectManager()->CreateObject<MForwardRenderProgram>();
-	//MForwardPostProcessProgram* pPostProcessProgram = m_pEngine->GetObjectManager()->CreateObject<MForwardPostProcessProgram>();
-	//pPostProcessProgram->SetHighDynamicRangeEnable(true);
-	//m_pRenderProgram = pPostProcessProgram;
+	//m_pRenderProgram = m_pEngine->GetObjectManager()->CreateObject<MForwardRenderProgram>();
+	m_pRenderProgram = m_pEngine->GetObjectManager()->CreateObject<MForwardPostProcessProgram>();
 
 	m_pScene = m_pEngine->GetObjectManager()->CreateObject<MScene>();
 
@@ -106,7 +104,7 @@ void* SceneTexture::GetTexture(const uint32_t& unFrameIndex)
 
 	if (MRenderGraph* pRenderGraph = m_pRenderProgram->GetRenderGraph())
 	{
-		if (MRenderGraphTexture* pRenderGraphTexture = pRenderGraph->FindRenderGraphTexture("Output Target"))
+		if (MRenderGraphTexture* pRenderGraphTexture = pRenderGraph->GetFinalOutputTexture())
 		{
 			if (MIRenderTexture* pTexture = pRenderGraphTexture->GetRenderTexture())
 			{
@@ -124,4 +122,14 @@ void* SceneTexture::GetTexture(const uint32_t& unFrameIndex)
 void SceneTexture::SetBackColor(const MColor& cColor)
 {
 	m_pRenderProgram->SetClearColor(cColor);
+}
+
+MRenderGraph* SceneTexture::GetRenderGraph()
+{
+	if (m_pRenderProgram)
+	{
+		return m_pRenderProgram->GetRenderGraph();
+	}
+
+	return nullptr;
 }

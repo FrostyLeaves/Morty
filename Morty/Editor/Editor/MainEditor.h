@@ -14,6 +14,7 @@ class NodeTreeView;
 class PropertyView;
 class MaterialView;
 class ResourceView;
+class RenderGraphView;
 class MainEditor : public MIRenderView
 {
 public:
@@ -64,6 +65,7 @@ public:
 	void ShowMaterial();
 	void ShowMessage();
 	void ShowResource();
+	void ShowRenderGraphView();
 
 protected:
 
@@ -71,6 +73,7 @@ protected:
 	PropertyView* m_pPropertyView;
 	MaterialView* m_pMaterialView;
 	ResourceView* m_pResourceView;
+	RenderGraphView* m_pRenderGraphView;
 
 	std::vector<IBaseView*> m_vChildView;
 
@@ -90,6 +93,7 @@ protected:
 	bool m_bShowRenderView;
 	bool m_bShowMaterial;
 	bool m_bShowResource;
+	bool m_bShowRenderGraph;
 
 
 	SceneTexture m_SceneTexture;

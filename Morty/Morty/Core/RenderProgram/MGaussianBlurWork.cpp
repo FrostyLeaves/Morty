@@ -11,10 +11,10 @@
 
 #include "MRenderGraph.h"
 
-M_OBJECT_IMPLEMENT(MGaussianBlurWork, MStandardPostProcessWork)
+M_OBJECT_IMPLEMENT(MGaussianBlurWork, MIPostProcessWork)
 
 MGaussianBlurWork::MGaussianBlurWork()
-    : MStandardPostProcessWork()
+    : MIPostProcessWork()
 	, m_strGraphNodeName("")
     , m_aMaterial()
 	, m_fBlurRadius(1.0f)
@@ -159,7 +159,6 @@ void MGaussianBlurWork::InitializeGraph()
 		return;
 	}
 
-	MRenderGraphNode* pFinalNode = pRenderGraph->GetFinalNode();
 	MRenderGraphTexture* pOutputTargetTexture = pRenderGraph->GetFinalOutputTexture();
 
 
@@ -182,12 +181,7 @@ void MGaussianBlurWork::InitializeGraph()
 	{
 		m_strGraphNodeName = pPostProcessNode->GetNodeName();
 
-		pRenderGraph->SetFinalNode(pPostProcessNode);
-
-		if (MRenderGraphNodeInput* pInput = pPostProcessNode->AppendInput())
-		{
-			pInput->LinkTo(pFinalNode->GetOutput(0));
-		}
+		pPostProcessNode->AppendInput();
 
 		if (MRenderGraphNodeOutput* pOutput = pPostProcessNode->AppendOutput())
 		{

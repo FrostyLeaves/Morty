@@ -82,14 +82,14 @@ int main(int argc, char* argv[])
     std::string strBasePath = SDL_GetBasePath();
 
 	MEngine engine;
-	engine.Initialize("D:/Custom/x/Morty/Morty/Resource");
+	engine.Initialize("D://Project//Morty//Morty//Resource");
 
-	// 	{
-	// 		{
-	// 			MModelConverter conver(&engine);
-	// 			conver.Convert("./Model/NEW YEAR 2021_SF.fbx", "./Model/output", "snowman");
-	// 		}
-	// 	}
+// 	{
+// 		{
+// 			MModelConverter conver(&engine);
+// 			conver.Convert("./Model/girl/final_v01.obj", "./Model/output", "girl");
+// 		}
+// 	}
 
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
 	pRootNode->SetName("RootNode");

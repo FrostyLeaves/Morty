@@ -6,16 +6,20 @@
 #include "MIRenderer.h"
 
 #include "MResourceManager.h"
+#include "Model/MMeshResource.h"
 #include "Material/MMaterialResource.h"
 
 #include "MRenderGraph.h"
 #include "MForwardPostProcessProgram.h"
 
-M_OBJECT_IMPLEMENT(MCombineWork, MStandardPostProcessWork)
+M_OBJECT_IMPLEMENT(MCombineWork, MIPostProcessWork)
 
 MCombineWork::MCombineWork()
-	: MStandardPostProcessWork()
-	, m_pMaterial(nullptr)
+	: MIPostProcessWork()
+	, m_strGraphNodeName("")
+	, m_pRenderProgram(nullptr)
+	, m_aMaterial()
+	, m_pScreenDrawMesh(nullptr)
 {
 
 }
@@ -27,16 +31,22 @@ MCombineWork::~MCombineWork()
 
 void MCombineWork::Initialize(MIRenderProgram* pRenderProgram)
 {
+	m_pRenderProgram = pRenderProgram;
 	Super::Initialize(pRenderProgram);
 
+	InitializeMesh();
 	InitializeMaterial();
+	InitializeGraph();
 }
 
 void MCombineWork::Release()
 {
+	ReleaseGraph();
 	ReleaseMaterial();
+	ReleaseMesh();
 
 	Super::Release();
+	m_pRenderProgram = nullptr;
 }
 void MCombineWork::Render(MRenderGraphNode* pGraphNode)
 {
@@ -65,7 +75,7 @@ void MCombineWork::Render(MRenderGraphNode* pGraphNode)
 	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
 	info.pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight(), 0.0f, 1.0f);
 
-	if (MShaderParamSet* pMaterialParamSet = m_pMaterial->GetMaterialParamSet())
+	if (MShaderParamSet* pMaterialParamSet = m_aMaterial[info.unFrameIndex]->GetMaterialParamSet())
 	{
 		pMaterialParamSet->m_vTextures[0]->pTexture = pInputTex0->GetRenderTexture();
 		pMaterialParamSet->m_vTextures[0]->SetDirty();
@@ -74,7 +84,7 @@ void MCombineWork::Render(MRenderGraphNode* pGraphNode)
 		pMaterialParamSet->m_vTextures[1]->SetDirty();
 	}
 
-	if (info.pRenderer->SetUseMaterial(m_pMaterial))
+	if (info.pRenderer->SetUseMaterial(m_aMaterial[info.unFrameIndex]))
 	{
 		info.pRenderer->DrawMesh(m_pScreenDrawMesh);
 	}
@@ -82,23 +92,84 @@ void MCombineWork::Render(MRenderGraphNode* pGraphNode)
 	info.pRenderer->EndRenderPass();
 }
 
+void MCombineWork::InitializeMesh()
+{
+	MMeshResource* pScreenMeshRes = GetEngine()->GetResourceManager()->LoadVirtualResource<MMeshResource>(DEFAULT_MESH_SCREEN_DRAW);
+	pScreenMeshRes->AddRef();
+
+	m_pScreenDrawMesh = pScreenMeshRes->GetMesh();
+}
+
+void MCombineWork::ReleaseMesh()
+{
+	MMeshResource* pScreenMeshRes = GetEngine()->GetResourceManager()->LoadVirtualResource<MMeshResource>(DEFAULT_MESH_SCREEN_DRAW);
+	pScreenMeshRes->SubRef();
+}
+
+void MCombineWork::InitializeGraph()
+{
+	MRenderGraph* pRenderGraph = m_pRenderProgram->GetRenderGraph();
+	if (!pRenderGraph)
+	{
+		MLogManager::GetInstance()->Error("MStandardPostProcessWork::InitializeRenderGraph error: rg == nullptr");
+		return;
+	}
+
+
+	MRenderGraphNode* pFinalNode = pRenderGraph->GetFinalNode();
+	MRenderGraphTexture* pOutputTargetTexture = pRenderGraph->GetFinalOutputTexture();
+
+
+	MRenderGraphTexture* pTempOutputTexture = pRenderGraph->AddRenderGraphTexture("Combine_Post");
+	if (pTempOutputTexture)
+	{
+		pTempOutputTexture->SetLayout(pOutputTargetTexture->GetLayout());
+		pTempOutputTexture->SetSize(pOutputTargetTexture->GetSize());
+		pTempOutputTexture->SetUsage(pOutputTargetTexture->GetUsage());
+		pRenderGraph->SetFinalOutputTexture(pTempOutputTexture);
+	}
+
+	if (MRenderGraphNode* pPostProcessNode = pRenderGraph->AddRenderGraphNode("Combine_Post"))
+	{
+		m_strGraphNodeName = pPostProcessNode->GetNodeName();
+
+		pPostProcessNode->AppendInput();
+		pPostProcessNode->AppendInput();
+
+		if (MRenderGraphNodeOutput* pOutput = pPostProcessNode->AppendOutput())
+		{
+			pOutput->SetRenderTexture(pTempOutputTexture);
+		}
+
+		pPostProcessNode->BindRenderFunction(std::bind(&MCombineWork::Render, this, std::placeholders::_1));
+	}
+}
+
+void MCombineWork::ReleaseGraph()
+{
+
+}
+
 void MCombineWork::InitializeMaterial()
 {
-	if (!m_pMaterial)
+	for(uint32_t i = 0; i < M_BUFFER_NUM; ++i)
 	{
-		m_pMaterial = GetEngine()->GetResourceManager()->CreateResource<MMaterialResource>();
-		m_pMaterial->LoadVertexShader("./Shader/post_process_basic.mvs");
-		m_pMaterial->LoadPixelShader("./Shader/post_process_combine.mps");
+		m_aMaterial[i] = GetEngine()->GetResourceManager()->CreateResource<MMaterialResource>();
+		m_aMaterial[i]->LoadVertexShader("./Shader/post_process_basic.mvs");
+		m_aMaterial[i]->LoadPixelShader("./Shader/post_process_combine.mps");
 
-		m_pMaterial->AddRef();
+		m_aMaterial[i]->AddRef();
 	}
 }
 
 void MCombineWork::ReleaseMaterial()
 {
-	if (m_pMaterial)
+	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
 	{
-		m_pMaterial->SubRef();
-		m_pMaterial = nullptr;
+		if (m_aMaterial[i])
+		{
+			m_aMaterial[i]->SubRef();
+			m_aMaterial[i] = nullptr;
+		}
 	}
 }

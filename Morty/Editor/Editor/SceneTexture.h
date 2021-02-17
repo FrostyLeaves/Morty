@@ -10,6 +10,7 @@
 class MScene;
 class MEngine;
 class MViewport;
+class MRenderGraph;
 class MIRenderProgram;
 class MRenderTexture;
 class MIRenderTexture;
@@ -33,6 +34,8 @@ public:
 	MViewport* GetViewport() { return m_pRenderViewport; }
 
 	void SetBackColor(const MColor& cColor);
+
+	MRenderGraph* GetRenderGraph();
 
 protected:
 

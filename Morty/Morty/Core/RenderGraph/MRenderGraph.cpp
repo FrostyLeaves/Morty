@@ -24,6 +24,8 @@ MRenderGraphNode::MRenderGraphNode()
 MRenderGraphNodeInput* MRenderGraphNode::AppendInput()
 {
 	MRenderGraphNodeInput* pInput = new MRenderGraphNodeInput();
+	pInput->pGraphNode = this;
+	pInput->m_unIndex = m_vInputTextures.size();
 	m_vInputTextures.push_back(pInput);
 
 	return pInput;

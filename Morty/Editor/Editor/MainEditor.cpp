@@ -38,6 +38,7 @@
 #include "PropertyView.h"
 #include "MaterialView.h"
 #include "ResourceView.h"
+#include "RenderGraphView.h"
 
 #include "MRenderStatistics.h"
 #include "MInputManager.h"
@@ -50,6 +51,7 @@ MainEditor::MainEditor()
 	, m_pPropertyView(nullptr)
 	, m_pMaterialView(nullptr)
 	, m_pResourceView(nullptr)
+	, m_pRenderGraphView(nullptr)
 	, m_unTriangleCount(0)
 	, m_bShowMessage(true)
 	, m_bShowNodeTree(true)
@@ -57,6 +59,7 @@ MainEditor::MainEditor()
 	, m_bShowRenderView(true)
 	, m_bShowMaterial(false)
 	, m_bShowResource(false)
+	, m_bShowRenderGraph(false)
 	, m_funcCloseCallback(nullptr)
 	, m_pSDLWindow(nullptr)
     , m_v2WindowSize(800.0f, 480.0f)
@@ -199,17 +202,22 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	m_pPropertyView = new PropertyView();
 	m_pMaterialView = new MaterialView();
 	m_pResourceView = new ResourceView();
+	m_pRenderGraphView = new RenderGraphView();
 
 	m_vChildView.push_back(m_pNodeTreeView);
 	m_vChildView.push_back(m_pPropertyView);
 	m_vChildView.push_back(m_pMaterialView);
 	m_vChildView.push_back(m_pResourceView);
+	m_vChildView.push_back(m_pRenderGraphView);
 
 
 	for (IBaseView* pChild : m_vChildView)
 		pChild->Initialize(pEngine);
 
 	NotifyManager::GetInstance()->RegisterNotify("Edit Material", this, NOTIFY_FUNC(this, MainEditor::Notify_Edit_Material));
+
+
+	m_pRenderGraphView->SetRenderGraph(m_SceneTexture.GetRenderGraph());
 
 	return true;
 }
@@ -295,6 +303,7 @@ void MainEditor::OnRenderEnd()
 	ShowProperty();
 	ShowMessage();
 	ShowResource();
+	ShowRenderGraphView();
 
 	// Rendering
 	ImGui::Render();
@@ -490,6 +499,7 @@ void MainEditor::ShowMenu()
 			if (ImGui::MenuItem("Material", "", &m_bShowMaterial)) {}
 			if (ImGui::MenuItem("Resource", "", &m_bShowResource)) {}
 			if (ImGui::MenuItem("Message", "", &m_bShowMessage)) {}
+			if (ImGui::MenuItem("RenderGraph", "", &m_bShowRenderGraph)) {}
 			
 			ImGui::EndMenu();
 		}
@@ -622,6 +632,19 @@ void MainEditor::ShowResource()
 	if (ImGui::Begin("Resource", &m_bShowResource))
 	{
 		m_pResourceView->Render();
+	}
+
+	ImGui::End();
+}
+
+void MainEditor::ShowRenderGraphView()
+{
+	if (!m_bShowRenderGraph)
+		return;
+
+	if (ImGui::Begin("RenderGraph", &m_bShowRenderGraph))
+	{
+		m_pRenderGraphView->Render();
 	}
 
 	ImGui::End();

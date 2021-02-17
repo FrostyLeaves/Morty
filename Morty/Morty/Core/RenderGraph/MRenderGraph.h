@@ -32,14 +32,20 @@ public:
 
     void UnLink();
 
+
+    size_t GetIndex() const { return m_unIndex; }
+    MRenderGraphNode* GetGraphNode() const { return pGraphNode; }
     MRenderGraphNode* GetLinkedNode() const;
     MRenderGraphTexture* GetLinkedTexture() const;
     MRenderGraphNodeOutput* GetLinkedOutput() const { return pLinkedOutput; }
 
 private:
+	friend class MRenderGraphNode;
 	friend class MRenderGraphNodeOutput;
 
 private:
+    size_t m_unIndex;
+	MRenderGraphNode* pGraphNode;
     MRenderGraphNodeOutput* pLinkedOutput;
 };
 
@@ -58,6 +64,8 @@ public:
     MRenderGraphTexture* GetRenderTexture() const { return pGraphTexture; }
 
     MRenderGraphNode* GetRenderGraphNode() { return pGraphNode; }
+
+    const std::vector<MRenderGraphNodeInput*>& GetLinkedInputs() const { return vLinkedInput; }
 
     void LinkTo(MRenderGraphNodeInput* pInput);
     void UnLink(MRenderGraphNodeInput* pInput);
@@ -130,6 +138,9 @@ public:
     MRenderGraphNodeInput* AppendInput();
     MRenderGraphNodeOutput* AppendOutput();
 
+    size_t GetInputSize() const { return m_vInputTextures.size(); }
+    size_t GetOutputSize() const { return m_vOutputTextures.size(); }
+
     MRenderGraphNodeInput* GetInput(const size_t& nInputIdx);
     MRenderGraphNodeOutput* GetOutput(const size_t& nOutputIdx);
 
@@ -191,6 +202,8 @@ public:
 
 	void GenerateBuffer(MIDevice* pDevice);
 	void DestroyBuffer(MIDevice* pDevice);
+
+    const std::vector<MRenderGraphNode*>& GetAllNodes() const { return m_vSortedNodes; }
 
 	void Render()
 	{

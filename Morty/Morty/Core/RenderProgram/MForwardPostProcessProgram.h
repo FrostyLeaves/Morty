@@ -35,41 +35,17 @@ public:
 	bool GetHighDynamicRangeEnable() { return m_bHDR_Enable; }
 
 protected:
-
-
-	void RenderPostProcess(const MRenderInfo& info);
-	void RenderScreenMesh(const MRenderInfo& info);
-
-	void CheckRenderTargetSize(const Vector2& v2Size);
-
 	virtual void Initialize() override;
 	virtual void Release() override;
 
-	void InitializeMesh();
-	void ReleaseMesh();
 
-	void InitializeMaterial();
-	void ReleaseMaterial();
-
-	void InitializeRenderPass();
-	void ReleaseRenderPass();
-
-	void InitializeRenderTarget();
-	void ReleaseRenderTarget();
 
 protected:
 
 	//HDR first
 	bool m_bHDR_Enable;
-	MIPostProcessWork* m_pHDRPostProcessWork;
 	std::vector<MIPostProcessWork*> m_vPostProcessWork;
 
-private:
-	std::array<MIRenderTexture*, M_BUFFER_NUM> m_aBackTexture;
-	std::array<MIRenderTexture*, M_BUFFER_NUM> m_aDepthTexture;
-
-	MTextureRenderTarget* m_pTempRenderTarget;
-	MRenderPass* m_pScreenDrawRenderPass;
 	MIMesh* m_pScreenDrawMesh;
 	MMaterial* m_pScreenDrawMaterial;
 };

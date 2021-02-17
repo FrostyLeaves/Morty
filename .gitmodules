@@ -22,3 +22,6 @@ url=https://github.com/FrostyLeaves/spot.git
 [submodule "Morty/ThirdParty/SDL"]
 	path = Morty/ThirdParty/SDL
 	url = https://github.com/SDL-mirror/SDL.git
+[submodule "Morty/ThirdParty/imgui-node-editor"]
+	path = Morty/ThirdParty/imgui-node-editor
+	url = https://github.com/thedmd/imgui-node-editor.git

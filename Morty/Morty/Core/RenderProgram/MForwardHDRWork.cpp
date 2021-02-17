@@ -35,6 +35,7 @@ MForwardHDRWork::MForwardHDRWork()
 	, m_pRenderProgram(nullptr)
 	, m_pScreenDrawMesh(nullptr)
 	, m_pHDRMaterial(nullptr)
+	, m_aLumTexture()
 	, m_pGaussianBlurWork(nullptr)
 	, m_pCombineWork(nullptr)
 	, m_fAverageLum(1.0f)
@@ -122,6 +123,7 @@ void MForwardHDRWork::Initialize(MIRenderProgram* pRenderProgram)
 
 	Super::Initialize(pRenderProgram);
 
+	InitializeCopyTarget();
 	InitializeMesh();
 	InitializeMaterial();
 
@@ -257,6 +259,7 @@ void MForwardHDRWork::InitializeRenderGraph()
 		pCombineNode->GetInput(0)->LinkTo(pPostProcessNode->GetOutput(0));
 		pCombineNode->GetInput(1)->LinkTo(pGaussNode->GetOutput(0));
 		
+		pRenderGraph->SetFinalOutputTexture(pCombineNode->GetOutput(0)->GetRenderTexture());
 	}
 
 
@@ -275,6 +278,8 @@ void MForwardHDRWork::InitializeCopyTarget()
 		m_aLumTexture[i]->SetReadable(true);
 		m_aLumTexture[i]->SetMipmapsEnable(true);
 		m_aLumTexture[i]->SetType(METextureLayout::ERGBA16);
+		m_aLumTexture[i]->SetSize(Vector2(512, 512));
+		m_aLumTexture[i]->GenerateBuffer(GetEngine()->GetDevice());
 	}
 }
 
