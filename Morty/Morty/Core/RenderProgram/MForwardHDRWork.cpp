@@ -35,6 +35,8 @@ MForwardHDRWork::MForwardHDRWork()
 	, m_pRenderProgram(nullptr)
 	, m_pScreenDrawMesh(nullptr)
 	, m_pHDRMaterial(nullptr)
+	, m_pInput(nullptr)
+	, m_pOutput(nullptr)
 	, m_aLumTexture()
 	, m_pGaussianBlurWork(nullptr)
 	, m_pCombineWork(nullptr)
@@ -164,6 +166,16 @@ void MForwardHDRWork::Release()
 	Super::Release();
 }
 
+MRenderGraphNodeInput* MForwardHDRWork::GetInput()
+{
+	return m_pInput;
+}
+
+MRenderGraphNodeOutput* MForwardHDRWork::GetOutput()
+{
+	return m_pOutput;
+}
+
 void MForwardHDRWork::InitializeMaterial()
 {
 	m_pHDRMaterial = GetEngine()->GetResourceManager()->CreateResource<MMaterialResource>();
@@ -206,8 +218,6 @@ void MForwardHDRWork::InitializeRenderGraph()
 		return;
 	}
 
-
-	MRenderGraphNode* pFinalNode = pRenderGraph->GetFinalNode();
 	MRenderGraphTexture* pOutputTargetTexture = pRenderGraph->GetFinalOutputTexture();
 
 
@@ -229,10 +239,7 @@ void MForwardHDRWork::InitializeRenderGraph()
 
 	if (MRenderGraphNode* pPostProcessNode = pRenderGraph->AddRenderGraphNode("HDR_Post"))
 	{
-		if (MRenderGraphNodeInput* pInput = pPostProcessNode->AppendInput())
-		{
-			pInput->LinkTo(pFinalNode->GetOutput(0));
-		}
+		m_pInput = pPostProcessNode->AppendInput();
 
 		if (MRenderGraphNodeOutput* pOutput = pPostProcessNode->AppendOutput())
 		{
@@ -259,7 +266,7 @@ void MForwardHDRWork::InitializeRenderGraph()
 		pCombineNode->GetInput(0)->LinkTo(pPostProcessNode->GetOutput(0));
 		pCombineNode->GetInput(1)->LinkTo(pGaussNode->GetOutput(0));
 		
-		pRenderGraph->SetFinalOutputTexture(pCombineNode->GetOutput(0)->GetRenderTexture());
+		m_pOutput = pCombineNode->GetOutput(0);
 	}
 
 

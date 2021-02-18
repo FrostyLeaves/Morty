@@ -47,8 +47,15 @@ void MForwardPostProcessProgram::Initialize()
 {
     Super::Initialize();
 
-	MIPostProcessWork* pHDRWork = GetEngine()->GetObjectManager()->CreateObject<MForwardHDRWork>();
+	MForwardHDRWork* pHDRWork = GetEngine()->GetObjectManager()->CreateObject<MForwardHDRWork>();
 	pHDRWork->Initialize(this);
+
+
+	if (MRenderGraphNodeOutput* pFinalOutput = m_pRenderGraph->GetFinalOutput())
+	{
+		pFinalOutput->LinkTo(pHDRWork->GetInput());
+		m_pRenderGraph->SetFinalOutput(pHDRWork->GetOutput());
+	}
 
 	m_vPostProcessWork.push_back(pHDRWork);
 }

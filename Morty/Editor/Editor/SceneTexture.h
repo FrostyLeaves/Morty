@@ -28,6 +28,8 @@ public:
 	Vector2 GetSize() const { return m_v2Size; }
 
 	void UpdateTexture();
+
+	void SetRenderTextureName(const MString& strTextureName);
 	void* GetTexture(const uint32_t& unFrameIndex);
 
 	MScene* GetScene() { return m_pScene; }

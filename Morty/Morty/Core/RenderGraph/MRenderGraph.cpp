@@ -35,6 +35,7 @@ MRenderGraphNodeOutput* MRenderGraphNode::AppendOutput()
 {
 	MRenderGraphNodeOutput* pOutput = new MRenderGraphNodeOutput();
 	pOutput->pGraphNode = this;
+	pOutput->m_unIndex = m_vOutputTextures.size();
 
 	m_vOutputTextures.push_back(pOutput);
 
@@ -121,7 +122,7 @@ MRenderGraph::MRenderGraph()
 	, m_tGraphTextureMap()
 	, m_bCompiled(false)
 	, m_pEngine(nullptr)
-	, m_pFinalOutputTexture(nullptr)
+	, m_pFinalOutput(nullptr)
 {
 
 }
@@ -131,7 +132,7 @@ MRenderGraph::MRenderGraph(MEngine* pEngine)
 	, m_tGraphTextureMap()
 	, m_bCompiled(false)
 	, m_pEngine(pEngine)
-	, m_pFinalOutputTexture(nullptr)
+	, m_pFinalOutput(nullptr)
 {
 
 }
@@ -198,20 +199,34 @@ MRenderGraphNode* MRenderGraph::FindRenderGraphNode(const MString& strNodeName) 
 	return nullptr;
 }
 
-void MRenderGraph::SetFinalOutputTexture(MRenderGraphTexture* pGraphTexture)
+void MRenderGraph::SetFinalOutput(MRenderGraphNodeOutput* pFinalOutput)
 {
-	if (!pGraphTexture || pGraphTexture->GetRenderGraph() == this)
+	if (!pFinalOutput)
 	{
-		m_pFinalOutputTexture = pGraphTexture;
+		m_pFinalOutput = pFinalOutput;
+	}
+	else if (MRenderGraphNode* pNode = pFinalOutput->GetRenderGraphNode())
+	{
+		if (pNode->m_pGraph == this)
+		{
+			m_pFinalOutput = pFinalOutput;
+		}
 	}
 }
 
-void MRenderGraph::SetFinalNode(MRenderGraphNode* pGraphNode)
+MRenderGraphNodeOutput* MRenderGraph::GetFinalOutput() const
 {
-	if (!pGraphNode || pGraphNode->m_pGraph == this)
+	return m_pFinalOutput;
+}
+
+MRenderGraphTexture* MRenderGraph::GetFinalOutputTexture() const
+{
+	if (m_pFinalOutput)
 	{
-		m_pFinalNode = pGraphNode;
+		return m_pFinalOutput->GetRenderTexture();
 	}
+
+	return nullptr;
 }
 
 void MRenderGraph::CompileDirty()
@@ -224,6 +239,13 @@ bool MRenderGraph::Compile(MIDevice* pDevice)
 	if (m_bCompiled)
 		return true;
 
+	MRenderGraphTexture* pFinalTexture = GetFinalOutputTexture();
+	if (!pFinalTexture)
+	{
+		MLogManager::GetInstance()->Warning("RenderGraph FinalTexture == nullptr.");
+	}
+
+
 	const size_t nSize = m_tGraphNodeMap.size();
 
 	m_vSortedNodes.clear();
@@ -234,7 +256,11 @@ bool MRenderGraph::Compile(MIDevice* pDevice)
 	}
 
 	std::queue<MRenderGraphNode*> queue;
-	queue.push(GetFinalNode());
+
+	for (MRenderGraphNodeOutput* pOutput : pFinalTexture->m_vOutputs)
+	{
+		queue.push(pOutput->GetRenderGraphNode());
+	}
 
 	if (queue.empty())
 	{
@@ -368,6 +394,29 @@ void MRenderGraphTexture::RemoveRenderGraphNodeOutput(MRenderGraphNodeOutput* pO
 	ERASE_FIRST_VECTOR(m_vOutputs, pOutput);
 }
 
+MRenderGraphNodeOutput* MRenderGraphTexture::GetFinalNodeOutput() const
+{
+	if (m_vOutputs.empty())
+		return nullptr;
+
+	//TODO already compiled.
+
+	MRenderGraphNodeOutput* pResultOutput = m_vOutputs[0];
+
+	for (MRenderGraphNodeOutput* p : m_vOutputs)
+	{
+		if (MRenderGraphNode* pNode = p->GetRenderGraphNode())
+		{
+			if (pResultOutput->GetRenderGraphNode()->GetLevel() > pNode->GetLevel())
+			{
+				pResultOutput = p;
+			}
+		}
+	}
+
+	return pResultOutput;
+}
+
 MIRenderTexture* MRenderGraphTexture::GetRenderTexture()
 {
 	return m_pTexture;
@@ -395,13 +444,22 @@ void MRenderGraphTexture::DestroyBuffer(MIDevice* pDevice)
 }
 
 MRenderGraphNodeOutput::MRenderGraphNodeOutput()
-	: bClear(true)
+	: m_unIndex(0)
+	, bClear(true)
 	, mClearColor(MColor::Black_T)
 	, pGraphNode(nullptr)
 	, pGraphTexture(nullptr)
 	, vLinkedInput()
 {
 
+}
+
+MString MRenderGraphNodeOutput::GetStringID() const
+{
+	if (!GetRenderGraphNode())
+		return "";
+
+	return GetRenderGraphNode()->GetNodeName() + "_Output_" + MStringHelper::ToString(m_unIndex);
 }
 
 void MRenderGraphNodeOutput::SetRenderTexture(MRenderGraphTexture* pTexture)
@@ -446,6 +504,14 @@ void MRenderGraphNodeInput::UnLink()
 	{
 		pLinkedOutput->UnLink(this);
 	}
+}
+
+MString MRenderGraphNodeInput::GetStringID() const
+{
+	if (!GetRenderGraphNode())
+		return "";
+
+	return GetRenderGraphNode()->GetNodeName() + "_Input_" + MStringHelper::ToString(m_unIndex);
 }
 
 MRenderGraphNode* MRenderGraphNodeInput::GetLinkedNode() const

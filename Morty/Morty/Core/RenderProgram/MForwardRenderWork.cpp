@@ -75,7 +75,6 @@ void MForwardRenderWork::InitializeRenderGraph()
 		pOutputTargetTexture->SetUsage(METextureUsage::ERenderBack);
 		pOutputTargetTexture->SetLayout(METextureLayout::ERGBA8);
 		pOutputTargetTexture->SetSize(Vector2(640, 640));
-		pRenderGraph->SetFinalOutputTexture(pOutputTargetTexture);
 	}
 
 	MRenderGraphTexture* pOutputDepthTexture = pRenderGraph->FindRenderGraphTexture("Output Depth");
@@ -88,7 +87,6 @@ void MForwardRenderWork::InitializeRenderGraph()
 	}
 
 	MRenderGraphNode* pForwardNode = pRenderGraph->AddRenderGraphNode("Forward Node");
-	pRenderGraph->SetFinalNode(pForwardNode);
 
 	MRenderGraphNodeInput* pInputNode = pForwardNode->AppendInput();
 	MRenderGraphNodeOutput* pOutputTarget = pForwardNode->AppendOutput();
@@ -97,6 +95,7 @@ void MForwardRenderWork::InitializeRenderGraph()
 	pOutputTarget->SetClear(true);
 	pOutputTarget->SetClearColor(m_pRenderProgram->GetClearColor());
 	pOutputTarget->SetRenderTexture(pOutputTargetTexture);
+	pRenderGraph->SetFinalOutput(pOutputTarget);
 
 	pOutputDepth->SetClear(true);
 	pOutputDepth->SetRenderTexture(pOutputDepthTexture);

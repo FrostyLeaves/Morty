@@ -174,7 +174,6 @@ void MGaussianBlurWork::InitializeGraph()
 		aTempOutputTextures[i]->SetUsage(pOutputTargetTexture->GetUsage());
 	}
 
-	pRenderGraph->SetFinalOutputTexture(aTempOutputTextures[0]);
 
 
 	if (MRenderGraphNode* pPostProcessNode = pRenderGraph->AddRenderGraphNode("Gaussian_Post"))

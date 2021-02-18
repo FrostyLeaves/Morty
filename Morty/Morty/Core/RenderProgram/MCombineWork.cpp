@@ -115,8 +115,6 @@ void MCombineWork::InitializeGraph()
 		return;
 	}
 
-
-	MRenderGraphNode* pFinalNode = pRenderGraph->GetFinalNode();
 	MRenderGraphTexture* pOutputTargetTexture = pRenderGraph->GetFinalOutputTexture();
 
 
@@ -126,7 +124,6 @@ void MCombineWork::InitializeGraph()
 		pTempOutputTexture->SetLayout(pOutputTargetTexture->GetLayout());
 		pTempOutputTexture->SetSize(pOutputTargetTexture->GetSize());
 		pTempOutputTexture->SetUsage(pOutputTargetTexture->GetUsage());
-		pRenderGraph->SetFinalOutputTexture(pTempOutputTexture);
 	}
 
 	if (MRenderGraphNode* pPostProcessNode = pRenderGraph->AddRenderGraphNode("Combine_Post"))

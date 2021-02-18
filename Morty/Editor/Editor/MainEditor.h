@@ -5,6 +5,7 @@
 #include "MRenderPass.h"
 #include "SceneTexture.h"
 #include "MIRenderView.h"
+#include "MTexture.h"
 
 class MNode;
 class MScene;
@@ -55,6 +56,9 @@ public:
 
 	void InitializeSDLWindow();
 
+	void InitializeImGUIFont();
+	void ReleaseImGUIFont();
+
 public:
 
 	void ShowMenu();
@@ -101,6 +105,8 @@ protected:
 	std::function<bool()> m_funcCloseCallback;
 
 	struct SDL_Window* m_pSDLWindow;
+
+	MTexture m_ImGUIFontTexture;
 };
 
 

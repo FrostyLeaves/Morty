@@ -371,9 +371,7 @@ void MForwardTransparentWork::InitializeRenderGraph()
 				pOutput->SetRenderTexture(pRenderTexture);
 				pOutput->SetClear(false);
 
-
-				pRenderGraph->SetFinalOutputTexture(pRenderTexture);
-
+				pRenderGraph->SetFinalOutput(pOutput);
 			}
 		}
 
@@ -390,11 +388,7 @@ void MForwardTransparentWork::InitializeRenderGraph()
 		}
 
 
-		pRenderGraph->SetFinalNode(pCombineNode);
-
-		
 		pCombineNode->BindRenderFunction(std::bind(&MForwardTransparentWork::Render, this, std::placeholders::_1));
-		
 	}
 
 

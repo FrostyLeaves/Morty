@@ -6,6 +6,7 @@
 class MObject;
 class MNode;
 class MRenderGraph;
+class MRenderGraphTexture;
 class RenderGraphView : public IBaseView
 {
 public:
@@ -14,6 +15,8 @@ public:
 
 
 	void SetRenderGraph(MRenderGraph* pRenderGraph);
+
+	MRenderGraphTexture* GetSelectedOutputTexture();
 
 public:
 	virtual void Render() override;
@@ -28,6 +31,7 @@ private:
 	MEngine* m_pEngine;
 
 	MRenderGraph* m_pRenderGraph;
+	MRenderGraphTexture* m_pSelectedTexture;
 };
 
 

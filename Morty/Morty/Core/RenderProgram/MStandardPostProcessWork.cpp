@@ -65,7 +65,6 @@ void MStandardPostProcessWork::InitializeRenderGraph()
 	}
 
 
-	MRenderGraphNode* pFinalNode = pRenderGraph->GetFinalNode();
 	MRenderGraphTexture* pOutputTargetTexture = pRenderGraph->GetFinalOutputTexture();
 
 
@@ -75,17 +74,13 @@ void MStandardPostProcessWork::InitializeRenderGraph()
 		pTempOutputTexture->SetLayout(pOutputTargetTexture->GetLayout());
 		pTempOutputTexture->SetSize(pOutputTargetTexture->GetSize());
 		pTempOutputTexture->SetUsage(pOutputTargetTexture->GetUsage());
-		pRenderGraph->SetFinalOutputTexture(pTempOutputTexture);
 	}
 	
 	if (MRenderGraphNode* pPostProcessNode = pRenderGraph->AddRenderGraphNode("Standard_Post"))
 	{
 		m_strGraphNodeName = pPostProcessNode->GetNodeName();
 
-		if (MRenderGraphNodeInput* pInput = pPostProcessNode->AppendInput())
-		{
-			pInput->LinkTo(pFinalNode->GetOutput(0));
-		}
+		pPostProcessNode->AppendInput();
 
 		if (MRenderGraphNodeOutput* pOutput = pPostProcessNode->AppendOutput())
 		{

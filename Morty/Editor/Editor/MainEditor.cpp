@@ -187,9 +187,12 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	ImGui_ImplVulkan_Init(&vulkanInitInfo, pVulkanRenderTarget->m_RenderPass.m_VkRenderPass);
 	
 
-	VkCommandBuffer buffer = pDevice->BeginCommands();
-	ImGui_ImplVulkan_CreateFontsTexture(buffer);
-	pDevice->EndCommands(buffer);
+	//VkCommandBuffer buffer = pDevice->BeginCommands();
+	//ImGui_ImplVulkan_CreateFontsTexture(buffer);
+	//pDevice->EndCommands(buffer);
+
+	InitializeImGUIFont();
+
 #endif
 
 	//Setup Render
@@ -227,6 +230,7 @@ void MainEditor::Release()
 	if (m_funcCloseCallback)
 		m_funcCloseCallback();
 
+	ReleaseImGUIFont();
 	m_SceneTexture.Release();
 
 	for (IBaseView* pChild : m_vChildView)
@@ -487,6 +491,32 @@ void MainEditor::InitializeSDLWindow()
      
 }
 
+void MainEditor::InitializeImGUIFont()
+{
+	ImGuiIO& io = ImGui::GetIO();
+
+	unsigned char* pixels;
+	int width, height; // width height
+	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+	size_t upload_size = width * height * 4 * sizeof(char);
+
+	VkResult err;
+
+	m_ImGUIFontTexture.SetSize(Vector2(width, height));
+	m_ImGUIFontTexture.SetType(METextureLayout::ERGBA8);
+	memcpy(m_ImGUIFontTexture.GetImageData(), pixels, upload_size);
+	m_ImGUIFontTexture.GenerateBuffer(m_pEngine->GetDevice());
+
+	// Store our identifier
+	io.Fonts->TexID = m_ImGUIFontTexture.GetBuffer(0)->m_VkImageView;
+
+}
+
+void MainEditor::ReleaseImGUIFont()
+{
+	m_ImGUIFontTexture.DestroyBuffer(m_pEngine->GetDevice());
+}
+
 void MainEditor::ShowMenu()
 {
 	if (ImGui::BeginMainMenuBar())
@@ -533,10 +563,20 @@ void MainEditor::ShowRenderView()
 		m_v2RenderViewSize.y = v2RenderViewSize.y;
 
 		uint32_t unFrameIdx = m_pEngine->GetRenderer()->GetFrameIndex();
-		if (void* pTexture = m_SceneTexture.GetTexture(unFrameIdx))
+
+		if (MRenderGraph* pRenderGraph = m_SceneTexture.GetRenderGraph())
 		{
-			ImTextureID texid = pTexture;
-			ImGui::Image(texid, v2RenderViewSize);
+			if (MRenderGraphTexture* pRenderGraphTexture = m_pRenderGraphView->GetSelectedOutputTexture())
+			{
+				if (MIRenderTexture* pTexture = pRenderGraphTexture->GetRenderTexture())
+				{
+					if (MTextureBuffer* pBuffer = pTexture->GetBuffer(unFrameIdx))
+					{
+						ImTextureID texid = pBuffer->GetResourceView();
+						ImGui::Image(texid, v2RenderViewSize);
+					}
+				}
+			}
 		}
 	}
 	ImGui::End();

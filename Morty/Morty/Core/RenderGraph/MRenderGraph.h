@@ -34,7 +34,9 @@ public:
 
 
     size_t GetIndex() const { return m_unIndex; }
-    MRenderGraphNode* GetGraphNode() const { return pGraphNode; }
+    MString GetStringID() const;
+
+    MRenderGraphNode* GetRenderGraphNode() const { return pGraphNode; }
     MRenderGraphNode* GetLinkedNode() const;
     MRenderGraphTexture* GetLinkedTexture() const;
     MRenderGraphNodeOutput* GetLinkedOutput() const { return pLinkedOutput; }
@@ -54,6 +56,9 @@ class MORTY_API MRenderGraphNodeOutput
 public:
     MRenderGraphNodeOutput();
 
+	size_t GetIndex() const { return m_unIndex; }
+	MString GetStringID() const;
+
     void SetClear(const bool& b) { bClear = b; }
     bool GetClear() const { return bClear; }
 
@@ -63,7 +68,7 @@ public:
     void SetRenderTexture(MRenderGraphTexture* pTexture);
     MRenderGraphTexture* GetRenderTexture() const { return pGraphTexture; }
 
-    MRenderGraphNode* GetRenderGraphNode() { return pGraphNode; }
+    MRenderGraphNode* GetRenderGraphNode() const { return pGraphNode; }
 
     const std::vector<MRenderGraphNodeInput*>& GetLinkedInputs() const { return vLinkedInput; }
 
@@ -74,6 +79,7 @@ private:
 
 	friend class MRenderGraphNode;
 
+    size_t m_unIndex;
     bool bClear;
     MColor mClearColor;
 
@@ -90,6 +96,7 @@ public:
 
 
 	MRenderGraph* GetRenderGraph() const { return m_pGraph; }
+    MString GetTextureName() const { return m_strTextureName; }
 
 	void SetUsage(const METextureUsage& eUsage);
 	METextureUsage GetUsage() const { return m_eUsage; }
@@ -102,6 +109,9 @@ public:
 
     void AddRenderGraphNodeOutput(MRenderGraphNodeOutput* pOutput);
     void RemoveRenderGraphNodeOutput(MRenderGraphNodeOutput* pOutput);
+
+
+    MRenderGraphNodeOutput* GetFinalNodeOutput() const;
 
 	MIRenderTexture* GetRenderTexture();
 
@@ -134,6 +144,7 @@ public:
     virtual ~MRenderGraphNode() {}
 
     MString GetNodeName() const { return m_strNodeName; }
+    int GetLevel() const { return m_nCommandLevel; }
 
     MRenderGraphNodeInput* AppendInput();
     MRenderGraphNodeOutput* AppendOutput();
@@ -190,11 +201,12 @@ public:
 
     MEngine* GetEngine() { return m_pEngine; }
 
-    void SetFinalOutputTexture(MRenderGraphTexture* pGraphTexture);
-    MRenderGraphTexture* GetFinalOutputTexture() const { return m_pFinalOutputTexture; }
+	void SetFinalOutput(MRenderGraphNodeOutput* pFinalOutput);
+    MRenderGraphNodeOutput* GetFinalOutput() const;
+    MRenderGraphTexture* GetFinalOutputTexture() const;
 
-    void SetFinalNode(MRenderGraphNode* pGraphNode);
-    MRenderGraphNode* GetFinalNode() const { return m_pFinalNode; }
+//     void SetFinalNode(MRenderGraphNode* pGraphNode);
+//     MRenderGraphNode* GetFinalNode() const { return m_pFinalNode; }
 
     bool GetCompiled() const { return m_bCompiled; }
 	void CompileDirty();
@@ -232,8 +244,7 @@ protected:
     bool m_bCompiled;
     MEngine* m_pEngine;
 
-    MRenderGraphNode* m_pFinalNode;
-    MRenderGraphTexture* m_pFinalOutputTexture;
+    MRenderGraphNodeOutput* m_pFinalOutput;
 };
 
 

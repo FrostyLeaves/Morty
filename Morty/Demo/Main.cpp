@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
     std::string strBasePath = SDL_GetBasePath();
 
 	MEngine engine;
-	engine.Initialize("D://Project//Morty//Morty//Resource");
+	engine.Initialize("D://Custom//x//Morty//Morty//Resource");
 
 // 	{
 // 		{

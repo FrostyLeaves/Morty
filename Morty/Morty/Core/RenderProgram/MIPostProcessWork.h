@@ -18,7 +18,8 @@ class MViewport;
 class MIRenderer;
 class MIRenderProgram;
 class MIRenderTexture;
-class MTextureRenderTarget;
+class MRenderGraphNodeInput;
+class MRenderGraphNodeOutput;
 
 class MORTY_API MIPostProcessWork : public MObject
 {
@@ -32,8 +33,10 @@ public:
 	virtual void Initialize(MIRenderProgram* pRenderProgram) {};
 	virtual void Release() {};
 
-
 	virtual void OnDelete();
+
+	virtual MRenderGraphNodeInput* GetInput() { return nullptr; }
+	virtual MRenderGraphNodeOutput* GetOutput() { return nullptr; }
 
 private:
 };

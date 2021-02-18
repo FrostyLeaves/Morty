@@ -32,10 +32,13 @@ public:
 
 public:
 
-	virtual void Render(MRenderGraphNode* pGraphNode);
+	void Render(MRenderGraphNode* pGraphNode);
 
 	virtual void Initialize(MIRenderProgram* pRenderProgram) override;
 	virtual void Release() override;
+
+	virtual MRenderGraphNodeInput* GetInput() override;
+	virtual MRenderGraphNodeOutput* GetOutput() override;
 
 	void InitializeMaterial();
 	void ReleaseMaterial();
@@ -56,6 +59,8 @@ protected:
 	MIRenderProgram* m_pRenderProgram;
 	MIMesh* m_pScreenDrawMesh;
 	MMaterial* m_pHDRMaterial;
+	MRenderGraphNodeInput* m_pInput;
+	MRenderGraphNodeOutput* m_pOutput;
 
 	std::array<MTexture*, M_BUFFER_NUM> m_aLumTexture;
 private:
