@@ -21,7 +21,6 @@ MForwardPostProcessProgram::MForwardPostProcessProgram()
     : MForwardRenderProgram()
 	, m_bHDR_Enable(false)
 	, m_vPostProcessWork()
-	, m_pScreenDrawMesh(nullptr)
 	, m_pScreenDrawMaterial(nullptr)
 {
 }

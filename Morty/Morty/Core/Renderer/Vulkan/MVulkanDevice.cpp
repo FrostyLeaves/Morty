@@ -48,7 +48,7 @@ MVulkanDevice::MVulkanDevice()
 	, m_ObjectDestructor(this)
 	, m_PipelineManager(this)
 	, m_ShaderCompiler(this)
-	, m_DynamicUniformBufferPool(this)
+	, m_BufferPool(this)
 	, m_VkDepthTextureFormat(VK_FORMAT_D32_SFLOAT_S8_UINT)
 {
 
@@ -81,7 +81,7 @@ bool MVulkanDevice::Initialize()
 	if (!m_ObjectDestructor.Initialize())
 		return false;
 
-	if (!m_DynamicUniformBufferPool.Initialize())
+	if (!m_BufferPool.Initialize())
 		return false;
 
 	if (!InitDefaultTexture())
@@ -101,7 +101,7 @@ void MVulkanDevice::Release()
 	m_WhiteTexture.DestroyBuffer(this);
 
 	m_PipelineManager.Release();
-	m_DynamicUniformBufferPool.Release();
+	m_BufferPool.Release();
 
 	m_ObjectDestructor.Release();
 
@@ -692,11 +692,20 @@ void MVulkanDevice::EndCommands(VkCommandBuffer commandBuffer)
 
 void MVulkanDevice::UploadBuffer(MVertexBuffer** ppVertexBuffer, MIMesh* pMesh)
 {
-	void* data = nullptr;
-	uint32_t unSize = pMesh->GetVerticesLength() * pMesh->GetVertexStructSize();
-	vkMapMemory(m_VkDevice, (*ppVertexBuffer)->m_VkVertexBufferMemory, 0, unSize, 0, &data);
-	memcpy(data, pMesh->GetVertices(), unSize);
-	vkUnmapMemory(m_VkDevice, (*ppVertexBuffer)->m_VkVertexBufferMemory);
+	{
+		void* data = nullptr;
+		uint32_t unSize = pMesh->GetVerticesLength() * pMesh->GetVertexStructSize();
+		vkMapMemory(m_VkDevice, (*ppVertexBuffer)->m_VkVertexBufferMemory, 0, unSize, 0, &data);
+		memcpy(data, pMesh->GetVertices(), unSize);
+		vkUnmapMemory(m_VkDevice, (*ppVertexBuffer)->m_VkVertexBufferMemory);
+	}
+	{
+		void* data = nullptr;
+		uint32_t unSize = pMesh->GetIndicesLength() * sizeof(uint32_t);
+		vkMapMemory(m_VkDevice, (*ppVertexBuffer)->m_VkIndexBufferMemory, 0, unSize, 0, &data);
+		memcpy(data, pMesh->GetIndices(), unSize);
+		vkUnmapMemory(m_VkDevice, (*ppVertexBuffer)->m_VkIndexBufferMemory);
+	}
 }
 
 void MVulkanDevice::GenerateTexture(MTextureBuffer** ppTextureBuffer, MTexture* pTexture)
@@ -1450,7 +1459,7 @@ bool MVulkanDevice::GenerateShaderParamBuffer(MShaderConstantParam* pParam)
 
 	if (pParam)
 	{
-		return m_DynamicUniformBufferPool.AllowBufferMemory(pParam);
+		return m_BufferPool.AllowBufferMemory(pParam);
 	}
 
 	return false;
@@ -1460,7 +1469,7 @@ void MVulkanDevice::DestroyShaderParamBuffer(MShaderConstantParam* pParam)
 {
 	if (pParam)
 	{
-		m_DynamicUniformBufferPool.FreeBufferMemory(pParam);
+		m_BufferPool.FreeBufferMemory(pParam);
 	}
 }
 

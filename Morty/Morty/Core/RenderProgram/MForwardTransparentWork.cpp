@@ -80,6 +80,7 @@ void MForwardTransparentWork::Render(MRenderGraphNode* pGraphNode)
 
 	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
 	info.pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight(), 0.0f, 1.0f);
+	info.pRenderer->SetScissor(0.0f, 0.0f, info.pViewport->GetWidth(), info.pViewport->GetHeight());
 
 
 	MRenderGraphTexture* pFrontTexture = pGraphNode->GetInput(1)->GetLinkedTexture();
@@ -122,6 +123,7 @@ void MForwardTransparentWork::RenderDepthPeel(MRenderGraphNode* pGraphNode)
 	MViewport* pViewport = info.pViewport;
 
 	info.pRenderer->SetViewport(0, 0, 512, 512, 0, 1);
+	info.pRenderer->SetScissor(0.0f, 0.0f, 512, 512);
 
 
 	info.pRenderer->BeginRenderPass(pRenderPass, info.unFrameIndex);
@@ -367,8 +369,14 @@ void MForwardTransparentWork::InitializeRenderGraph()
 			if (MRenderGraphNodeOutput* pOutput = pCombineNode->AppendOutput())
 			{
 				MRenderGraphTexture* pRenderTexture = pForwardNode->GetOutput(0)->GetRenderTexture();
-
 				pOutput->SetRenderTexture(pRenderTexture);
+
+// 				MRenderGraphTexture* pDebugOutputTexture = pRenderGraph->AddRenderGraphTexture("Ts Combine Tex");
+// 				pDebugOutputTexture->SetLayout(METextureLayout::ER32);
+// 				pDebugOutputTexture->SetUsage(METextureUsage::ERenderBack);
+// 				pDebugOutputTexture->SetSize(size);
+// 				pOutput->SetRenderTexture(pDebugOutputTexture);
+
 				pOutput->SetClear(false);
 
 				pRenderGraph->SetFinalOutput(pOutput);

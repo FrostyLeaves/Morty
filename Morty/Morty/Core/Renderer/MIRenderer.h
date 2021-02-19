@@ -55,6 +55,7 @@ enum class MEMaterialType
 	EDepthPeel,
 	ETransparentBlend,
 	EOutline,
+	EImGui,
 
 	EMaterialTypeEnd,
 };
@@ -96,6 +97,8 @@ public:
 
 	virtual void SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth) = 0;
 
+	virtual void SetScissor(const float& fX, const float& fY, const float& fWidth, const float& fHeight) = 0;
+
 	virtual void NewRenderFrame() = 0;
 
 	virtual void RenderBegin(MIRenderTarget* pRenderTarget) = 0;
@@ -111,6 +114,8 @@ public:
 public:
 
 	virtual void DrawMesh(MIMesh* pMesh) = 0;
+
+	virtual void DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, const uint32_t& nIdxCount, const uint32_t& nVrtOffset) = 0;
 
 	virtual bool SetUseMaterial(MMaterial* pMaterial) = 0;
 

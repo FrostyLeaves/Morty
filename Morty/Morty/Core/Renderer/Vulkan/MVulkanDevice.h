@@ -24,7 +24,7 @@
 #include "MVulkanObjectDestructor.h"
 #include "MVulkanShaderCompiler.h"
 #include "MVulkanPipelineManager.h"
-#include "MVulkanUniformBufferPool.h"
+#include "MVulkanBufferPool.h"
 
 #include "MTexture.h"
 
@@ -126,7 +126,7 @@ public:
 	MVulkanShaderCompiler m_ShaderCompiler;
 	MVulkanPipelineManager m_PipelineManager;
 	MVulkanObjectDestructor m_ObjectDestructor;
-	MVulkanUniformBufferPool m_DynamicUniformBufferPool;
+	MVulkanBufferPool m_BufferPool;
 
 	VkFormat m_VkDepthTextureFormat;
 

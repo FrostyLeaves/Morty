@@ -145,6 +145,7 @@ void MForwardRenderWork::Render(MRenderGraphNode* pGraphNode)
 
 	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
 	info.pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight(), 0.0f, 1.0f);
+	info.pRenderer->SetScissor(0.0f, 0.0f, info.pViewport->GetWidth(), info.pViewport->GetHeight());
 
 	DrawNormalMesh(info);
 

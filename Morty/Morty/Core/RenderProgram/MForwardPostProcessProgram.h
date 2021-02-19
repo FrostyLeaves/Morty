@@ -46,7 +46,6 @@ protected:
 	bool m_bHDR_Enable;
 	std::vector<MIPostProcessWork*> m_vPostProcessWork;
 
-	MIMesh* m_pScreenDrawMesh;
 	MMaterial* m_pScreenDrawMaterial;
 };
 

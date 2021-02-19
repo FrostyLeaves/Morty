@@ -87,7 +87,12 @@ void MVulkanRenderer::SetViewport(const float& fX, const float& fY, const float&
 	MRenderStage& rs = m_vRenderStages.back();
 	vkCmdSetViewport(rs.vkCommandBuffer, 0, 1, &m_VkViewport);
 	
-	VkRect2D scissorRect = {int32_t(fX), int32_t(fY), uint32_t(fWidth), uint32_t(fHeight)};
+}
+
+void MVulkanRenderer::SetScissor(const float& fX, const float& fY, const float& fWidth, const float& fHeight)
+{
+	MRenderStage& rs = m_vRenderStages.back();
+	VkRect2D scissorRect = { int32_t(fX), int32_t(fY), uint32_t(fWidth), uint32_t(fHeight) };
 	vkCmdSetScissor(rs.vkCommandBuffer, 0, 1, &scissorRect);
 }
 
@@ -284,6 +289,14 @@ void MVulkanRenderer::DrawMesh(MIMesh* pMesh)
 	if (!pMesh)
 		return;
 
+	DrawMesh(pMesh, 0, pMesh->GetIndicesLength(), 0);
+}
+
+void MVulkanRenderer::DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, const uint32_t& nIdxCount, const uint32_t& nVrtOffset)
+{
+	if (!pMesh)
+		return;
+
 	MRenderStage& rs = m_vRenderStages.back();
 
 	if (pMesh->GetNeedGenerate())
@@ -298,7 +311,7 @@ void MVulkanRenderer::DrawMesh(MIMesh* pMesh)
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(rs.vkCommandBuffer, 0, 1, vertexBuffers, offsets);
 		vkCmdBindIndexBuffer(rs.vkCommandBuffer, pBuffer->m_VkIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-		vkCmdDrawIndexed(rs.vkCommandBuffer, static_cast<uint32_t>(pMesh->GetIndicesLength()), 1, 0, 0, 0);
+		vkCmdDrawIndexed(rs.vkCommandBuffer, nIdxCount, 1, nIdxOffset, nVrtOffset, 0);
 
 #if MORTY_RENDER_DATA_STATISTICS
 		MRenderStatistics::GetInstance()->unTriangleCount += pMesh->GetIndicesLength() / 3;
@@ -424,13 +437,19 @@ bool MVulkanRenderer::DownloadTexture(MITexture* pTexture, const uint32_t& unMip
 			unBufferHeight /= 2;
 	}
 
-	VkDeviceSize unBufferSize = unBufferWidth * unBufferHeight * static_cast<uint64_t>(MTexture::GetImageMemorySize(pTexture->GetType()));
-	VkBuffer stagingBuffer;
-	VkDeviceMemory stagingBufferMemory;
-	m_pDevice->m_ObjectDestructor.GenerateBuffer(unBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+	uint32_t unBufferSize = unBufferWidth * unBufferHeight * static_cast<uint32_t>(MTexture::GetImageMemorySize(pTexture->GetType()));
+	
 
+	uint32_t unMemoryID = M_INVALID_INDEX;
+	MemoryInfo memoryInfo;
+	VkBuffer readBackBuffer = m_pDevice->m_BufferPool.GetReadBackBuffer();
+	if (!m_pDevice->m_BufferPool.AllowReadBackBuffer(unBufferSize, unMemoryID, memoryInfo))
+	{
+		return false;
+	}
+	
 	VkBufferImageCopy region = {};
-	region.bufferOffset = 0;
+	region.bufferOffset = memoryInfo.begin;
 	region.bufferRowLength = unBufferWidth;
 	region.bufferImageHeight = unBufferHeight;
 	region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -448,19 +467,16 @@ bool MVulkanRenderer::DownloadTexture(MITexture* pTexture, const uint32_t& unMip
 
 	m_pDevice->TransitionImageLayout(textureImage, pBuffer->m_VkImageLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vkSubresourceRange, commandBuffer);
 
-	vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
+	vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, readBackBuffer, 1, &region);
 
 	m_pDevice->TransitionImageLayout(textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pBuffer->m_VkImageLayout, vkSubresourceRange, commandBuffer);
 
 	m_aRenderFinishedCallback[m_unFrameIndex].push_back([=]() {
 
-		MByte* data = nullptr;
-		vkMapMemory(m_pDevice->m_VkDevice, stagingBufferMemory, 0, unBufferSize, 0, (void**)&data);
-		callback(data, Vector2(unBufferWidth, unBufferHeight));
-		vkUnmapMemory(m_pDevice->m_VkDevice, stagingBufferMemory);
+		MByte* data = m_pDevice->m_BufferPool.GetReadBackMemory();
+		callback(data + memoryInfo.begin, Vector2(unBufferWidth, unBufferHeight));
 
-		m_pDevice->m_ObjectDestructor.DestroyBufferLater(stagingBuffer);
-		m_pDevice->m_ObjectDestructor.DestroyDeviceMemoryLater(stagingBufferMemory);
+		m_pDevice->m_BufferPool.FreeReadBackBuffer(unMemoryID);
 		});
 
 }
@@ -512,7 +528,6 @@ void MVulkanRenderer::GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPa
 		{
 			vBlendAttach.push_back({});
 			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
-			attachStage.blendEnable = VK_FALSE;
 			attachStage.blendEnable = VK_TRUE;
 			attachStage.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 			attachStage.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
@@ -592,6 +607,23 @@ void MVulkanRenderer::GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPa
 			attachStage.alphaBlendOp = VK_BLEND_OP_MAX;
 		}
 	}
+	else if (MEMaterialType::EImGui == eType)
+	{
+		for (uint32_t i = 0; i < pRenderPass->m_vBackDesc.size(); ++i)
+		{
+			vBlendAttach.push_back({});
+			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
+			attachStage.blendEnable = VK_TRUE;
+			attachStage.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+			attachStage.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			attachStage.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+			attachStage.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+			attachStage.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			attachStage.colorBlendOp = VK_BLEND_OP_ADD;
+			attachStage.alphaBlendOp = VK_BLEND_OP_ADD;
+		}
+
+	}
 
 	blendInfo.attachmentCount = vBlendAttach.size();
 	blendInfo.pAttachments = vBlendAttach.data();
@@ -637,6 +669,11 @@ void MVulkanRenderer::GetDepthStencilStage(MMaterial* pMaterial, MRenderPass* pR
 		depthStencilInfo.depthWriteEnable = VK_FALSE;
 		depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 		depthStencilInfo.stencilTestEnable = VK_FALSE;
+	}
+	else if (MEMaterialType::EImGui == eType)
+	{
+		depthStencilInfo = {};
+		depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	}
 }
 

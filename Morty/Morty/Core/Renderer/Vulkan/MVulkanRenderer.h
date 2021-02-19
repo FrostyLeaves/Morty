@@ -36,6 +36,8 @@ public:
 
 	virtual void SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth) override;
 
+	virtual void SetScissor(const float& fX, const float& fY, const float& fWidth, const float& fHeight) override;
+
 	virtual void RenderBegin(MIRenderTarget* pRenderTarget) override;
 
 	virtual void NextSubpass() override;
@@ -47,6 +49,8 @@ public:
 	virtual void RenderEnd(MIRenderTarget* pRenderTarget) override;
 public:
 	virtual void DrawMesh(MIMesh* pMesh) override;
+
+	virtual void DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, const uint32_t& nIdxCount, const uint32_t& nVrtOffset) override;
 
 	virtual bool SetUseMaterial(MMaterial* pMaterial) override;
 

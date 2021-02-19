@@ -74,18 +74,11 @@ void SceneTexture::SetSize(const Vector2& v2Size)
 	if (m_v2Size.y < 1.0f)
 		m_v2Size.y = 1.0f;
 
-	m_pRenderViewport->SetSize(m_v2Size);
-
 	if (MRenderGraph* pRenderGraph = m_pRenderProgram->GetRenderGraph())
 	{
-		if (MRenderGraphTexture* pRenderGraphTexture = pRenderGraph->FindRenderGraphTexture("Output Target"))
+		if (MRenderGraphTexture* pRenderGraphTexture = pRenderGraph->GetFinalOutputTexture())
 		{
-			pRenderGraphTexture->SetSize(m_v2Size);
-		}
-
-		if (MRenderGraphTexture* pRenderGraphTexture = pRenderGraph->FindRenderGraphTexture("Output Depth"))
-		{
-			pRenderGraphTexture->SetSize(m_v2Size);
+			m_pRenderViewport->SetSize(pRenderGraphTexture->GetSize());
 		}
 	}
 
@@ -108,10 +101,7 @@ void* SceneTexture::GetTexture(const uint32_t& unFrameIndex)
 		{
 			if (MIRenderTexture* pTexture = pRenderGraphTexture->GetRenderTexture())
 			{
-				if (MTextureBuffer* pBuffer = pTexture->GetBuffer(unFrameIndex))
-				{
-					return pBuffer->GetResourceView();
-				}
+				return pTexture;
 			}
 		}
 	}

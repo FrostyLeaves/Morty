@@ -116,7 +116,7 @@ void RenderGraphView::Render()
 					ImGui::PushStyleColor(ImGuiCol_Button, color);
 				}
 
-				if (ImGui::Button(pInputTexture->GetTextureName().c_str()))
+				if (ImGui::Button((pInputTexture->GetTextureName() + "##" + pNode->GetOutput(i)->GetStringID()).c_str()))
 				{
 					m_pSelectedTexture = pInputTexture;
 				}

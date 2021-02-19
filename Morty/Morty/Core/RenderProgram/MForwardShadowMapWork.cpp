@@ -188,6 +188,7 @@ void MForwardShadowMapWork::RenderMesh(MRenderInfo& info, std::vector<MShadowRen
 	}
 
 	info.pRenderer->SetViewport(0.0f, 0.0f, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE, 0.0f, 1.0f);
+	info.pRenderer->SetScissor(0.0f, 0.0f, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE);
 
 	MStruct* pWorldStruct = m_pWorldMatrixParam->var.GetStruct();
 	(*pWorldStruct)[0] = info.m4DirLightInvProj;

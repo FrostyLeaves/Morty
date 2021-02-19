@@ -9,6 +9,7 @@
 
 class MNode;
 class MScene;
+class ImGuiRenderable;
 class MStaticMeshInstance;
 class IBaseView;
 class NodeTreeView;
@@ -56,8 +57,8 @@ public:
 
 	void InitializeSDLWindow();
 
-	void InitializeImGUIFont();
-	void ReleaseImGUIFont();
+
+	void RenderImGUI();
 
 public:
 
@@ -106,7 +107,7 @@ protected:
 
 	struct SDL_Window* m_pSDLWindow;
 
-	MTexture m_ImGUIFontTexture;
+	ImGuiRenderable* m_pImGuiRenderable;
 };
 
 

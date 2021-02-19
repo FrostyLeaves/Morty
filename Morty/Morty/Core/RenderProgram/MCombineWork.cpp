@@ -56,24 +56,35 @@ void MCombineWork::Render(MRenderGraphNode* pGraphNode)
 
 	MRenderInfo& info = pRenderProgram->GetRenderInfo();
 
+	MRenderGraphNodeOutput* pOutput = pGraphNode->GetOutput(0);
+	if (!pOutput)
+		return;
+
+	MRenderGraphTexture* pOutputTexture = pOutput->GetRenderTexture();
+	if (!pOutputTexture)
+		return;
+
 	MRenderGraphNodeInput* pInput0 = pGraphNode->GetInput(0);
 	MRenderGraphNodeInput* pInput1 = pGraphNode->GetInput(1);
-
 	if (!pInput0 || !pInput1)
 		return;
 
 	MRenderGraphTexture* pInputTex0 = pInput0->GetLinkedTexture();
 	MRenderGraphTexture* pInputTex1 = pInput1->GetLinkedTexture();
-
 	if (!pInputTex0 || !pInputTex1)
 		return;
+
 
 	info.pRenderer->SetRenderToTextureBarrier({ pInputTex0->GetRenderTexture(), pInputTex1->GetRenderTexture() });
 
 	info.pRenderer->BeginRenderPass(pGraphNode->GetRenderPass(), info.unFrameIndex);
 
-	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
-	info.pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight(), 0.0f, 1.0f);
+	info.pRenderer->SetViewport(0.0f, 0.0f,
+		pOutputTexture->GetSize().x,
+		pOutputTexture->GetSize().y,
+		0.0f, 1.0f);
+
+	info.pRenderer->SetScissor(0.0f, 0.0f, pOutputTexture->GetSize().x, pOutputTexture->GetSize().y);
 
 	if (MShaderParamSet* pMaterialParamSet = m_aMaterial[info.unFrameIndex]->GetMaterialParamSet())
 	{
