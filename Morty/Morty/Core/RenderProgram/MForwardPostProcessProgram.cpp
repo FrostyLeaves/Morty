@@ -52,6 +52,7 @@ void MForwardPostProcessProgram::Initialize()
 
 	if (MRenderGraphNodeOutput* pFinalOutput = m_pRenderGraph->GetFinalOutput())
 	{
+		pFinalOutput->GetRenderTexture()->SetLayout(METextureLayout::ERGBA16);
 		pFinalOutput->LinkTo(pHDRWork->GetInput());
 		m_pRenderGraph->SetFinalOutput(pHDRWork->GetOutput());
 	}

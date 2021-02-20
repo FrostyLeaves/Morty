@@ -73,14 +73,14 @@ void SceneTexture::SetSize(const Vector2& v2Size)
 
 	if (m_v2Size.y < 1.0f)
 		m_v2Size.y = 1.0f;
-
-	if (MRenderGraph* pRenderGraph = m_pRenderProgram->GetRenderGraph())
-	{
-		if (MRenderGraphTexture* pRenderGraphTexture = pRenderGraph->GetFinalOutputTexture())
-		{
-			m_pRenderViewport->SetSize(pRenderGraphTexture->GetSize());
-		}
-	}
+// 
+// 	if (MRenderGraph* pRenderGraph = m_pRenderProgram->GetRenderGraph())
+// 	{
+// 		if (MRenderGraphTexture* pRenderGraphTexture = pRenderGraph->GetFinalOutputTexture())
+// 		{
+// 			m_pRenderViewport->SetSize(pRenderGraphTexture->GetSize());
+// 		}
+// 	}
 
 }
 

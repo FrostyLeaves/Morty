@@ -99,6 +99,7 @@ void MaterialView::Render()
 void MaterialView::Initialize(MEngine* pEngine)
 {
 	m_SceneTexture.Initialize(pEngine);
+	m_SceneTexture.SetSize(Vector2(512, 512));
 
 	m_pEngine = pEngine;
 
