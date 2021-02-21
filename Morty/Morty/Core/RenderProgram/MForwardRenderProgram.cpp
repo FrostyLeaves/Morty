@@ -76,7 +76,7 @@ void MForwardRenderProgram::Release()
 
 	if (m_pRenderGraph)
 	{
-		m_pRenderGraph->DestroyBuffer(GetEngine()->GetDevice());
+		m_pRenderGraph->Release();
 		delete m_pRenderGraph;
 		m_pRenderGraph = nullptr;
 	}

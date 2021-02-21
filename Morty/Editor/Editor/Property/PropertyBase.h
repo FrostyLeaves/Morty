@@ -14,7 +14,7 @@
 class MObject;
 class MMaterial;
 class MResource;
-class MTextureBuffer;
+class MITexture;
 class PropertyBase
 {
 public:
@@ -49,7 +49,7 @@ public:
 	void EditMResource(const MString& strDlgID, MResource* pResource, const MEResourceType& eResourceType, const std::function<void(const MString& strNewFilePath)>& funcLoadResource);
 	void EditSaveMResource(const MString& stringID, MResource* pResource);
 
-	void ShowTexture(MTextureBuffer* pTextureBuffer);
+	void ShowTexture(MITexture* pTexture);
 
 	//auto call ShowValue/ShowNode
 	bool EditMVariant(const MString& strVariantName, MVariant& value);

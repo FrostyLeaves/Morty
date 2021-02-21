@@ -608,7 +608,7 @@ void MainEditor::OnRenderBegin()
 	m_unTriangleCount = MRenderStatistics::GetInstance()->unTriangleCount;
 
 
-	/*
+	
 	if (m_pMaterialView && m_bShowMaterial)
 	{
 		if (MIMeshInstance* pMeshIns = m_pNodeTreeView->GetSelectionNode()->DynamicCast<MIMeshInstance>())
@@ -617,6 +617,6 @@ void MainEditor::OnRenderBegin()
 		}
 		m_pMaterialView->UpdateMaterialTexture();
 	}
-    */
+    
 
 }

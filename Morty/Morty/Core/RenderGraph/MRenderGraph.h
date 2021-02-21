@@ -107,20 +107,20 @@ public:
 	void SetSize(const Vector2& size);
 	Vector2 GetSize() const { return m_v2Size; }
 
+
+public:
+
+    void SetDirty();
+
     void AddRenderGraphNodeOutput(MRenderGraphNodeOutput* pOutput);
     void RemoveRenderGraphNodeOutput(MRenderGraphNodeOutput* pOutput);
-
 
     MRenderGraphNodeOutput* GetFinalNodeOutput() const;
 
 	MIRenderTexture* GetRenderTexture();
 
-	void Compile(MIDevice* pDevice);
-
-	void GenerateBuffer(MIDevice* pDevice);
-	void DestroyBuffer(MIDevice* pDevice);
-
-
+	void UpdateBuffer(MIDevice* pDevice);
+    void DestroyBuffer(MIDevice* pDevice);
 
 private:
 
@@ -130,6 +130,7 @@ private:
 	METextureUsage m_eUsage;
 	METextureLayout m_eLayout;
 	Vector2 m_v2Size;
+    bool m_bDirty;
 
 	MRenderTexture* m_pTexture;
     std::vector<MRenderGraphNodeOutput*> m_vOutputs;
@@ -159,10 +160,11 @@ public:
 
     MRenderPass* GetRenderPass() { return m_pRenderPass; }
 
-    void Compile(MIDevice* pDevice);
+    void SetDirty() { m_bDirty = true; }
+    bool GetDirty() { return m_bDirty; }
 
-	void GenerateBuffer(MIDevice* pDevice);
-	void DestroyBuffer(MIDevice* pDevice);
+    void UpdateBuffer(MIDevice* pDevice);
+    void DestroyBuffer(MIDevice* pDevice);
 
     void BindRenderFunction(const std::function<void(MRenderGraphNode*)>& func) { m_funcRender = func; }
 
@@ -179,6 +181,8 @@ protected:
 
     class MRenderGraph* m_pGraph;
     MRenderPass* m_pRenderPass;
+
+    bool m_bDirty;
 
     std::function<void(MRenderGraphNode*)> m_funcRender;
 };
@@ -205,31 +209,15 @@ public:
     MRenderGraphNodeOutput* GetFinalOutput() const;
     MRenderGraphTexture* GetFinalOutputTexture() const;
 
-//     void SetFinalNode(MRenderGraphNode* pGraphNode);
-//     MRenderGraphNode* GetFinalNode() const { return m_pFinalNode; }
-
     bool GetCompiled() const { return m_bCompiled; }
 	void CompileDirty();
 	bool Compile(MIDevice* pDevice);
 
-	void GenerateBuffer(MIDevice* pDevice);
-	void DestroyBuffer(MIDevice* pDevice);
+    void Release();
 
     const std::vector<MRenderGraphNode*>& GetAllNodes() const { return m_vSortedNodes; }
 
-	void Render()
-	{
-		if (!m_bCompiled)
-			return;
-
-		for (MRenderGraphNode* pNode : m_vSortedNodes)
-		{
-			if (pNode->m_funcRender)
-			{
-                pNode->m_funcRender(pNode);
-			}
-		}
-	}
+	void Render();
 
 protected:
 
@@ -239,6 +227,7 @@ protected:
     std::map<MString, MRenderGraphNode*> m_tGraphNodeMap;
     std::map<MString, MRenderGraphTexture*> m_tGraphTextureMap;
 
+    
     std::vector<MRenderGraphNode*> m_vSortedNodes;
 
     bool m_bCompiled;
