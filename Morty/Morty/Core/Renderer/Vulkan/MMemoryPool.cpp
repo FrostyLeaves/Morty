@@ -1,5 +1,7 @@
 #include "MMemoryPool.h"
 
+#include <algorithm>
+
 MMemoryPool::MMemoryPool(const uint32_t& unPoolSize)
 	: m_unBufferMemorySize(0)
 	, m_vFreeMemory()
