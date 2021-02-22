@@ -130,6 +130,9 @@ void MRenderGraphNode::DestroyBuffer(MIDevice* pDevice)
 MRenderGraph::MRenderGraph()
 	: m_tGraphNodeMap()
 	, m_tGraphTextureMap()
+	, m_vSortedNodes()
+	, m_vRelationTextures()
+	, m_v2OutputSize(256.0f, 256.0f)
 	, m_bCompiled(false)
 	, m_pEngine(nullptr)
 	, m_pFinalOutput(nullptr)
@@ -237,6 +240,42 @@ MRenderGraphTexture* MRenderGraph::GetFinalOutputTexture() const
 	}
 
 	return nullptr;
+}
+
+void MRenderGraph::AddRelationTexture(MRenderGraphTexture* pTexture)
+{
+	UNION_PUSH_BACK_VECTOR(m_vRelationTextures, pTexture);
+}
+
+void MRenderGraph::RemoveRelationTexture(MRenderGraphTexture* pTexture)
+{
+	ERASE_FIRST_VECTOR(m_vRelationTextures, pTexture);
+}
+
+void MRenderGraph::UpdateTextureSize(MRenderGraphTexture* pTexture)
+{
+	if (pTexture->GetSizePolicy() == MRenderGraphTexture::ESizePolicy::ERelative)
+	{
+		Vector2 size;
+		size.x = m_v2OutputSize.x * pTexture->GetSize().x;
+		size.y = m_v2OutputSize.y * pTexture->GetSize().y;
+
+		pTexture->GetRenderTexture->SetSize(size);
+	}
+	else
+	{
+		pTexture->GetRenderTexture()->SetSize(pTexture->GetSize());
+	}
+}
+
+void MRenderGraph::SetOutputSize(const Vector2& v2Size)
+{
+	m_v2OutputSize = v2Size;
+
+	for (MRenderGraphTexture* pTexture : m_vRelationTextures)
+	{
+		UpdateTextureSize(pTexture, m_v2OutputSize);
+	}
 }
 
 void MRenderGraph::CompileDirty()
@@ -363,10 +402,35 @@ MRenderGraphTexture::MRenderGraphTexture()
 	, m_pTexture(nullptr)
 	, m_eUsage(METextureUsage::ERenderBack)
 	, m_eLayout(METextureLayout::ERGBA8)
+	, m_eSizePolicy(ESizePolicy::EAbsolute)
 	, m_v2Size()
 	, m_pGraph(nullptr)
 {
 	m_pTexture = new MRenderTexture();
+}
+
+void MRenderGraphTexture::SetSizePolicy(const ESizePolicy& ePolicy)
+{
+	if (m_eSizePolicy != ePolicy)
+	{
+		m_eSizePolicy = ePolicy;
+
+		if (m_pGraph)
+		{
+			if (ESizePolicy::ERelative == m_eSizePolicy)
+			{
+				m_pGraph->AddRelationTexture(this);
+				m_pGraph->UpdateTextureSize(this);
+			}
+			else
+			{
+				m_pGraph->RemoveRelationTexture(this);
+				m_pGraph->UpdateTextureSize(this);
+			}
+
+			SetDirty();
+		}
+	}
 }
 
 void MRenderGraphTexture::SetUsage(const METextureUsage& eUsage)
@@ -394,7 +458,11 @@ void MRenderGraphTexture::SetSize(const Vector2& size)
 	if (m_v2Size != size)
 	{
 		m_v2Size = size;
-		m_pTexture->SetSize(m_v2Size);
+
+		if (m_pGraph)
+		{
+			m_pGraph->UpdateTextureSize(this);
+		}
 
 		SetDirty();
 	}

@@ -92,8 +92,16 @@ private:
 class MORTY_API MRenderGraphTexture
 {
 public:
+    enum class ESizePolicy
+    {
+        ERelative,
+        EAbsolute
+    };
+public:
 	MRenderGraphTexture();
 
+    void SetSizePolicy(const ESizePolicy& ePolicy);
+    ESizePolicy GetSizePolicy() const { return m_eSizePolicy; }
 
 	MRenderGraph* GetRenderGraph() const { return m_pGraph; }
     MString GetTextureName() const { return m_strTextureName; }
@@ -129,6 +137,7 @@ private:
 	MString m_strTextureName;
 	METextureUsage m_eUsage;
 	METextureLayout m_eLayout;
+    ESizePolicy m_eSizePolicy;
 	Vector2 m_v2Size;
     bool m_bDirty;
 
@@ -209,6 +218,15 @@ public:
     MRenderGraphNodeOutput* GetFinalOutput() const;
     MRenderGraphTexture* GetFinalOutputTexture() const;
 
+
+    void AddRelationTexture(MRenderGraphTexture* pTexture);
+    void RemoveRelationTexture(MRenderGraphTexture* pTexture);
+    void UpdateTextureSize(MRenderGraphTexture* pTexture);
+
+    void SetOutputSize(const Vector2& v2Size);
+
+
+
     bool GetCompiled() const { return m_bCompiled; }
 	void CompileDirty();
 	bool Compile(MIDevice* pDevice);
@@ -229,6 +247,9 @@ protected:
 
     
     std::vector<MRenderGraphNode*> m_vSortedNodes;
+    std::vector<MRenderGraphTexture*> m_vRelationTextures;
+
+    Vector2 m_v2OutputSize;
 
     bool m_bCompiled;
     MEngine* m_pEngine;
