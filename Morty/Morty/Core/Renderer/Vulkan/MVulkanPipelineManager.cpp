@@ -293,6 +293,8 @@ void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShade
 
 		//A VkDescripotrSet can only be updated once on per render. .
 		vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
+
+		pParam->m_VkUpdatedImage = pBuffer->m_VkTextureImage;
 	}
 }
 

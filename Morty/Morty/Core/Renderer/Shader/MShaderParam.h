@@ -88,6 +88,11 @@ struct MShaderTextureParam : public MShaderParam
 	uint32_t unBindPoint;
 	uint32_t unBindCount;
 #endif
+
+#if RENDER_GRAPHICS == MORTY_VULKAN
+
+	VkImage m_VkUpdatedImage;
+#endif
 };
 
 struct MShaderSubpasssInputParam : public MShaderTextureParam

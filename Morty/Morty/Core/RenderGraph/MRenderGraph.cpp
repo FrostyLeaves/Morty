@@ -143,6 +143,9 @@ MRenderGraph::MRenderGraph()
 MRenderGraph::MRenderGraph(MEngine* pEngine)
 	: m_tGraphNodeMap()
 	, m_tGraphTextureMap()
+	, m_vSortedNodes()
+	, m_vRelationTextures()
+	, m_v2OutputSize(256.0f, 256.0f)
 	, m_bCompiled(false)
 	, m_pEngine(pEngine)
 	, m_pFinalOutput(nullptr)
@@ -260,21 +263,37 @@ void MRenderGraph::UpdateTextureSize(MRenderGraphTexture* pTexture)
 		size.x = m_v2OutputSize.x * pTexture->GetSize().x;
 		size.y = m_v2OutputSize.y * pTexture->GetSize().y;
 
-		pTexture->GetRenderTexture->SetSize(size);
+		if (size != pTexture->GetRenderTexture()->GetSize())
+		{
+			pTexture->GetRenderTexture()->SetSize(size);
+			pTexture->SetDirty();
+		}
 	}
 	else
 	{
-		pTexture->GetRenderTexture()->SetSize(pTexture->GetSize());
+		if (pTexture->GetSize() != pTexture->GetRenderTexture()->GetSize())
+		{
+			pTexture->GetRenderTexture()->SetSize(pTexture->GetSize());
+			pTexture->SetDirty();
+		}
 	}
 }
 
 void MRenderGraph::SetOutputSize(const Vector2& v2Size)
 {
-	m_v2OutputSize = v2Size;
+	if (m_v2OutputSize != v2Size)
+	{
+		m_v2OutputSize = v2Size;
+
+		m_v2OutputSize.x = (std::max)(m_v2OutputSize.x, 1.0f);
+		m_v2OutputSize.y = (std::max)(m_v2OutputSize.y, 1.0f);
+
+	}
+
 
 	for (MRenderGraphTexture* pTexture : m_vRelationTextures)
 	{
-		UpdateTextureSize(pTexture, m_v2OutputSize);
+		UpdateTextureSize(pTexture);
 	}
 }
 
@@ -346,16 +365,6 @@ bool MRenderGraph::Compile(MIDevice* pDevice)
 		m_bCompiled = true;
 	}
 
-	for (auto& pr : m_tGraphTextureMap)
-	{
-		pr.second->UpdateBuffer(pDevice);
-	}
-
-	for (MRenderGraphNode* pNode : m_vSortedNodes)
-	{
-		pNode->UpdateBuffer(pDevice);
-	}
-
 	return m_bCompiled;
 }
 
@@ -390,6 +399,13 @@ void MRenderGraph::Render()
 
 	for (MRenderGraphNode* pNode : m_vSortedNodes)
 	{
+		for (MRenderGraphNodeOutput* pOutput : pNode->m_vOutputTextures)
+		{
+			pOutput->GetRenderTexture()->UpdateBuffer(GetEngine()->GetDevice());
+		}
+
+		pNode->UpdateBuffer(GetEngine()->GetDevice());
+
 		if (pNode->m_funcRender)
 		{
 			pNode->m_funcRender(pNode);
@@ -403,10 +419,13 @@ MRenderGraphTexture::MRenderGraphTexture()
 	, m_eUsage(METextureUsage::ERenderBack)
 	, m_eLayout(METextureLayout::ERGBA8)
 	, m_eSizePolicy(ESizePolicy::EAbsolute)
-	, m_v2Size()
+	, m_v2Size(256.0f, 256.0f)
 	, m_pGraph(nullptr)
 {
 	m_pTexture = new MRenderTexture();
+	m_pTexture->SetUsage(m_eUsage);
+	m_pTexture->SetType(m_eLayout);
+	m_pTexture->SetSize(Vector2(256.0f, 256.0f));
 }
 
 void MRenderGraphTexture::SetSizePolicy(const ESizePolicy& ePolicy)
@@ -427,8 +446,6 @@ void MRenderGraphTexture::SetSizePolicy(const ESizePolicy& ePolicy)
 				m_pGraph->RemoveRelationTexture(this);
 				m_pGraph->UpdateTextureSize(this);
 			}
-
-			SetDirty();
 		}
 	}
 }
@@ -463,8 +480,6 @@ void MRenderGraphTexture::SetSize(const Vector2& size)
 		{
 			m_pGraph->UpdateTextureSize(this);
 		}
-
-		SetDirty();
 	}
 }
 
@@ -527,11 +542,6 @@ void MRenderGraphTexture::UpdateBuffer(MIDevice* pDevice)
 	{
 		m_bDirty = false;
 		m_pTexture->DestroyBuffer(pDevice);
-
-		m_pTexture->SetUsage(m_eUsage);
-		m_pTexture->SetType(m_eLayout);
-		m_pTexture->SetSize(m_v2Size);
-
 		m_pTexture->GenerateBuffer(pDevice);
 	}
 }

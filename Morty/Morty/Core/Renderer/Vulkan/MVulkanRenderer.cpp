@@ -732,14 +732,25 @@ void MVulkanRenderer::SetShaderParamSet(MShaderParamSet* pParamSet)
 	{
 		if (pParam->bDirty[m_unFrameIndex])
 		{
-			if (pParam->pTexture && !pParam->pTexture->GetBuffer(m_unFrameIndex))
-			{
-				continue;
-			}
-
 			m_pDevice->m_PipelineManager.BindTextureParam(pParamSet, pParam, m_unFrameIndex);
 			pParam->bDirty[m_unFrameIndex] = false;
 		}
+		else
+		{
+			if (pParam->pTexture)
+			{
+				if (MTextureBuffer* pBuffer = pParam->pTexture->GetBuffer(m_unFrameIndex))
+				{
+					if (pBuffer->m_VkTextureImage != pParam->m_VkUpdatedImage)
+					{
+						m_pDevice->m_PipelineManager.BindTextureParam(pParamSet, pParam, m_unFrameIndex);
+					}
+				}
+			}
+		}
+
+		//all else
+
 	}
 
 

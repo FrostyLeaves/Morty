@@ -177,7 +177,8 @@ void MGaussianBlurWork::InitializeGraph()
 	for(size_t i = 0; i < 2; ++i)
 	{
 		aTempOutputTextures[i]->SetLayout(pOutputTargetTexture->GetLayout());
-		aTempOutputTextures[i]->SetSize(pOutputTargetTexture->GetSize());
+		aTempOutputTextures[i]->SetSizePolicy(MRenderGraphTexture::ESizePolicy::ERelative);
+		aTempOutputTextures[i]->SetSize(Vector2(1.0f, 1.0f));
 		aTempOutputTextures[i]->SetUsage(pOutputTargetTexture->GetUsage());
 	}
 

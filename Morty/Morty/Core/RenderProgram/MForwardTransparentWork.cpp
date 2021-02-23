@@ -289,7 +289,8 @@ void MForwardTransparentWork::InitializeRenderGraph()
 			MRenderGraphTexture* pFrontTexture = pRenderGraph->AddRenderGraphTexture("Ts Front Tex");
 			pFrontTexture->SetLayout(METextureLayout::ERGBA8);
 			pFrontTexture->SetUsage(METextureUsage::ERenderBack);
-			pFrontTexture->SetSize(size);
+			pFrontTexture->SetSizePolicy(MRenderGraphTexture::ESizePolicy::ERelative);
+			pFrontTexture->SetSize(Vector2(1.0f, 1.0f));
 
 			pOutput->SetRenderTexture(pFrontTexture);
 			pOutput->SetClear(true);
@@ -300,7 +301,8 @@ void MForwardTransparentWork::InitializeRenderGraph()
 			MRenderGraphTexture* pBackTexture = pRenderGraph->AddRenderGraphTexture("Ts Back Tex");
 			pBackTexture->SetLayout(METextureLayout::ERGBA8);
 			pBackTexture->SetUsage(METextureUsage::ERenderBack);
-			pBackTexture->SetSize(size);
+			pBackTexture->SetSizePolicy(MRenderGraphTexture::ESizePolicy::ERelative);
+			pBackTexture->SetSize(Vector2(1.0f, 1.0f));
 
 			pOutput->SetRenderTexture(pBackTexture);
 			pOutput->SetClear(true);
@@ -311,7 +313,8 @@ void MForwardTransparentWork::InitializeRenderGraph()
 			MRenderGraphTexture* pFrontDepthTexture0 = pRenderGraph->AddRenderGraphTexture("Ts Front Depth 0 Tex");
 			pFrontDepthTexture0->SetLayout(METextureLayout::ER32);
 			pFrontDepthTexture0->SetUsage(METextureUsage::ERenderBack);
-			pFrontDepthTexture0->SetSize(size);
+			pFrontDepthTexture0->SetSizePolicy(MRenderGraphTexture::ESizePolicy::ERelative);
+			pFrontDepthTexture0->SetSize(Vector2(1.0f, 1.0f));
 
 			pOutput->SetRenderTexture(pFrontDepthTexture0);
 			pOutput->SetClear(true);
@@ -322,7 +325,8 @@ void MForwardTransparentWork::InitializeRenderGraph()
 			MRenderGraphTexture* pBackDepthTexture0 = pRenderGraph->AddRenderGraphTexture("Ts Back Depth 0 Tex");
 			pBackDepthTexture0->SetLayout(METextureLayout::ER32);
 			pBackDepthTexture0->SetUsage(METextureUsage::ERenderBack);
-			pBackDepthTexture0->SetSize(size);
+			pBackDepthTexture0->SetSizePolicy(MRenderGraphTexture::ESizePolicy::ERelative);
+			pBackDepthTexture0->SetSize(Vector2(1.0f, 1.0f));
 
 			pOutput->SetRenderTexture(pBackDepthTexture0);
 			pOutput->SetClear(true);
@@ -333,8 +337,9 @@ void MForwardTransparentWork::InitializeRenderGraph()
 			MRenderGraphTexture* pFrontDepthTexture1 = pRenderGraph->AddRenderGraphTexture("Ts Front Depth 1 Tex");
 			pFrontDepthTexture1->SetLayout(METextureLayout::ER32);
 			pFrontDepthTexture1->SetUsage(METextureUsage::ERenderBack);
+			pFrontDepthTexture1->SetSizePolicy(MRenderGraphTexture::ESizePolicy::ERelative);
+			pFrontDepthTexture1->SetSize(Vector2(1.0f, 1.0f));
 
-			pFrontDepthTexture1->SetSize(size);
 			pOutput->SetRenderTexture(pFrontDepthTexture1);
 			pOutput->SetClear(true);
 			pOutput->SetClearColor(MColor::White);
@@ -344,7 +349,8 @@ void MForwardTransparentWork::InitializeRenderGraph()
 			MRenderGraphTexture* pBackDepthTexture1 = pRenderGraph->AddRenderGraphTexture("Ts Back Depth 1 Tex");
 			pBackDepthTexture1->SetLayout(METextureLayout::ER32);
 			pBackDepthTexture1->SetUsage(METextureUsage::ERenderBack);
-			pBackDepthTexture1->SetSize(size);
+			pBackDepthTexture1->SetSizePolicy(MRenderGraphTexture::ESizePolicy::ERelative);
+			pBackDepthTexture1->SetSize(Vector2(1.0f, 1.0f));
 
 			pOutput->SetRenderTexture(pBackDepthTexture1);
 			pOutput->SetClear(true);
@@ -370,13 +376,6 @@ void MForwardTransparentWork::InitializeRenderGraph()
 			{
 				MRenderGraphTexture* pRenderTexture = pForwardNode->GetOutput(0)->GetRenderTexture();
 				pOutput->SetRenderTexture(pRenderTexture);
-
-// 				MRenderGraphTexture* pDebugOutputTexture = pRenderGraph->AddRenderGraphTexture("Ts Combine Tex");
-// 				pDebugOutputTexture->SetLayout(METextureLayout::ER32);
-// 				pDebugOutputTexture->SetUsage(METextureUsage::ERenderBack);
-// 				pDebugOutputTexture->SetSize(size);
-// 				pOutput->SetRenderTexture(pDebugOutputTexture);
-
 				pOutput->SetClear(false);
 
 				pRenderGraph->SetFinalOutput(pOutput);

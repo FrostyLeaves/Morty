@@ -60,7 +60,6 @@
 #include "DirectX11/MWindowsRenderView.h"
 
 #include "MIRenderTarget.h"
-#include "MBasicRenderProgram.h"
 #include "MForwardRenderProgram.h"
 
 #include "MoveInputNode.h"

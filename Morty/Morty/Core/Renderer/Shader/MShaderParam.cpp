@@ -70,6 +70,10 @@ MShaderTextureParam::MShaderTextureParam()
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	m_VkDescriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 #endif
+
+#if RENDER_GRAPHICS == MORTY_VULKAN
+	m_VkUpdatedImage = VK_NULL_HANDLE;
+#endif
 }
 
 MShaderSampleParam::MShaderSampleParam()

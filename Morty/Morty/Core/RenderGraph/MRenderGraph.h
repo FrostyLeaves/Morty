@@ -225,8 +225,6 @@ public:
 
     void SetOutputSize(const Vector2& v2Size);
 
-
-
     bool GetCompiled() const { return m_bCompiled; }
 	void CompileDirty();
 	bool Compile(MIDevice* pDevice);

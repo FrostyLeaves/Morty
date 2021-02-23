@@ -72,7 +72,8 @@ void MStandardPostProcessWork::InitializeRenderGraph()
 	if (pTempOutputTexture)
 	{
 		pTempOutputTexture->SetLayout(pOutputTargetTexture->GetLayout());
-		pTempOutputTexture->SetSize(pOutputTargetTexture->GetSize());
+		pTempOutputTexture->SetSizePolicy(MRenderGraphTexture::ESizePolicy::ERelative);
+		pTempOutputTexture->SetSize(Vector2(1.0f, 1.0f));
 		pTempOutputTexture->SetUsage(pOutputTargetTexture->GetUsage());
 	}
 	
