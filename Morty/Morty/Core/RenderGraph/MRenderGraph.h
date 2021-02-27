@@ -115,6 +115,7 @@ public:
 	void SetSize(const Vector2& size);
 	Vector2 GetSize() const { return m_v2Size; }
 
+    Vector2 GetOutputSize() const;
 
 public:
 

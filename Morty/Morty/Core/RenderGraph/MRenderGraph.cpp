@@ -483,6 +483,16 @@ void MRenderGraphTexture::SetSize(const Vector2& size)
 	}
 }
 
+Vector2 MRenderGraphTexture::GetOutputSize() const
+{
+	if (m_pTexture)
+	{
+		return m_pTexture->GetSize();
+	}
+
+	return Vector2(256.0f, 256.0f);
+}
+
 void MRenderGraphTexture::SetDirty()
 {
 	if (!m_bDirty)

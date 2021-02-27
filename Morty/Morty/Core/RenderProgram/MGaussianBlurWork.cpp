@@ -87,8 +87,9 @@ void MGaussianBlurWork::Render(MRenderGraphNode* pGraphNode)
 
 		info.pRenderer->BeginRenderPass(pGraphNode->GetRenderPass(), info.unFrameIndex);
 
-		info.pRenderer->SetViewport(0.0f, 0.0f, pOutputTexture->GetSize().x, pOutputTexture->GetSize().y, 0.0f, 1.0f);
-		info.pRenderer->SetScissor(0.0f, 0.0f, pOutputTexture->GetSize().x, pOutputTexture->GetSize().y);
+		Vector2 v2OutputSize = pOutputTexture->GetOutputSize();
+		info.pRenderer->SetViewport(0.0f, 0.0f, v2OutputSize.x, v2OutputSize.y, 0.0f, 1.0f);
+		info.pRenderer->SetScissor(0.0f, 0.0f, v2OutputSize.x, v2OutputSize.y);
 
 		if (info.pRenderer->SetUseMaterial(pMaterial))
 		{

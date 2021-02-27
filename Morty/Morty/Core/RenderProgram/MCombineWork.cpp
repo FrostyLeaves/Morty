@@ -79,12 +79,14 @@ void MCombineWork::Render(MRenderGraphNode* pGraphNode)
 
 	info.pRenderer->BeginRenderPass(pGraphNode->GetRenderPass(), info.unFrameIndex);
 
+
+	Vector2 v2OutputSize = pOutputTexture->GetOutputSize();
 	info.pRenderer->SetViewport(0.0f, 0.0f,
-		pOutputTexture->GetSize().x,
-		pOutputTexture->GetSize().y,
+		v2OutputSize.x,
+		v2OutputSize.y,
 		0.0f, 1.0f);
 
-	info.pRenderer->SetScissor(0.0f, 0.0f, pOutputTexture->GetSize().x, pOutputTexture->GetSize().y);
+	info.pRenderer->SetScissor(0.0f, 0.0f, v2OutputSize.x, v2OutputSize.y);
 
 	if (MShaderParamSet* pMaterialParamSet = m_aMaterial[info.unFrameIndex]->GetMaterialParamSet())
 	{

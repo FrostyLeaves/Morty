@@ -74,39 +74,41 @@ void MForwardHDRWork::Render(MRenderGraphNode* pGraphNode)
 	if (!pInputTexture)
 		return;
 
-// 	info.pRenderer->CopyImageBuffer(pInputTexture->GetRenderTexture(), m_aLumTexture[info.unFrameIndex]);
-// 	info.pRenderer->UpdateMipmaps(m_aLumTexture[info.unFrameIndex]->GetBuffer(info.unFrameIndex));
-// 
-// 	uint32_t unMipIdx = m_aLumTexture[info.unFrameIndex]->GetBuffer(info.unFrameIndex)->m_unMipmaps;
-// 	unMipIdx = unMipIdx >= 3 ? unMipIdx - 3 : unMipIdx;
-// 
-// 	info.pRenderer->DownloadTexture(m_aLumTexture[info.unFrameIndex], unMipIdx, [this](void* pImageData, const Vector2& size) {
-// 
-// 		size_t unPixelSize = static_cast<size_t>(size.x) * static_cast<size_t>(size.y);
-// 		float flum = 0.0f;
-// 		m_fAverageLum = 0.0f;
-// 		char16_t* iter = (char16_t*)pImageData;
-// 		char16_t* end = iter + (unPixelSize * 4);
-// 
-// 		for (iter; iter < end; iter += 4)
-// 		{
-// 			const float r = ConvertHalfToFloat(*(iter));
-// 			const float g = ConvertHalfToFloat(*(iter + 1));
-// 			const float b = ConvertHalfToFloat(*(iter + 2));
-// 			flum = r * 0.27f + g * 0.67f + b * 0.06f + 1e-6f;
-// 			m_fAverageLum += log(flum);
-// 		}
-// 
-// 		m_fAverageLum /= unPixelSize;
-// 		m_fAverageLum = exp(m_fAverageLum);
-// 		});
+	info.pRenderer->CopyImageBuffer(pInputTexture->GetRenderTexture(), m_aLumTexture[info.unFrameIndex]);
+	info.pRenderer->UpdateMipmaps(m_aLumTexture[info.unFrameIndex]->GetBuffer(info.unFrameIndex));
+
+	uint32_t unMipIdx = m_aLumTexture[info.unFrameIndex]->GetBuffer(info.unFrameIndex)->m_unMipmaps;
+	unMipIdx = unMipIdx >= 3 ? unMipIdx - 3 : unMipIdx;
+
+	info.pRenderer->DownloadTexture(m_aLumTexture[info.unFrameIndex], unMipIdx, [this](void* pImageData, const Vector2& size) {
+
+		size_t unPixelSize = static_cast<size_t>(size.x) * static_cast<size_t>(size.y);
+		float flum = 0.0f;
+		m_fAverageLum = 0.0f;
+		char16_t* iter = (char16_t*)pImageData;
+		char16_t* end = iter + (unPixelSize * 4);
+
+		for (iter; iter < end; iter += 4)
+		{
+			const float r = ConvertHalfToFloat(*(iter));
+			const float g = ConvertHalfToFloat(*(iter + 1));
+			const float b = ConvertHalfToFloat(*(iter + 2));
+			flum = r * 0.27f + g * 0.67f + b * 0.06f + 1e-6f;
+			m_fAverageLum += log(flum);
+		}
+
+		m_fAverageLum /= unPixelSize;
+		m_fAverageLum = exp(m_fAverageLum);
+		});
 
 	info.pRenderer->SetRenderToTextureBarrier({ pInputTexture->GetRenderTexture() });
 
 	info.pRenderer->BeginRenderPass(pGraphNode->GetRenderPass(), info.unFrameIndex);
 
-	info.pRenderer->SetViewport(0.0f, 0.0f, pOutputTexture->GetSize().x, pOutputTexture->GetSize().y, 0.0f, 1.0f);
-	info.pRenderer->SetScissor(0.0f, 0.0f, pOutputTexture->GetSize().x, pOutputTexture->GetSize().y);
+
+	Vector2 v2OutputSize = pOutputTexture->GetOutputSize();
+	info.pRenderer->SetViewport(0.0f, 0.0f, v2OutputSize.x, v2OutputSize.y, 0.0f, 1.0f);
+	info.pRenderer->SetScissor(0.0f, 0.0f, v2OutputSize.x, v2OutputSize.y);
 
 	if (MShaderParamSet* pMaterialParamSet = m_pHDRMaterial->GetMaterialParamSet())
 	{
