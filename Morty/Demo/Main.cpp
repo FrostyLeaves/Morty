@@ -60,7 +60,6 @@
 #include "DirectX11/MWindowsRenderView.h"
 
 #include "MIRenderTarget.h"
-#include "MBasicRenderProgram.h"
 #include "MForwardRenderProgram.h"
 
 #include "MoveInputNode.h"
@@ -76,61 +75,20 @@
 #undef main
 #endif
 
-
-#include "MRenderGraph.h"
-void test()
-{
-	MRenderGraph graph;
-
-	size_t nShadowMapIdx = graph.AddRenderGraphTexture("Shadow Map");
-	size_t nTransBackIdx = graph.AddRenderGraphTexture("Trans Back");
-	size_t nTransFrontIdx = graph.AddRenderGraphTexture("Trans Front");
-	size_t nTransBackDepth0Idx = graph.AddRenderGraphTexture("Trans Back Depth 0");
-	size_t nTransBackDepth1Idx = graph.AddRenderGraphTexture("Trans Back Depth 1");
-	size_t nTransFrontDepth0Idx = graph.AddRenderGraphTexture("Trans Front Depth 0");
-	size_t nTransFrontDepth1Idx = graph.AddRenderGraphTexture("Trans Front Depth 1");
-	size_t nOutputTargetIdx = graph.AddRenderGraphTexture("Output Target");
-	size_t nOutputDepthIdx = graph.AddRenderGraphTexture("Output Depth");
-
-	size_t nShadowMapNodeIdx = graph.AddRenderGraphNode(new MRenderGraphNode("Shadow Map Node", {}, {}, { nShadowMapIdx }));
-
-	size_t nForwardNodeIdx = graph.AddRenderGraphNode(new MRenderGraphNode("Forward Node", { nShadowMapNodeIdx }, { nShadowMapIdx }, { nOutputTargetIdx, nOutputDepthIdx }));
-
-	size_t nTransparentNodeIdx = graph.AddRenderGraphNode(new MRenderGraphNode("Transparent Node", { nForwardNodeIdx }, {
-		nTransBackIdx,
-		nTransFrontIdx,
-		nTransBackDepth0Idx,
-		nTransBackDepth1Idx,
-		nTransFrontDepth0Idx,
-		nTransFrontDepth1Idx
-		}, { nOutputTargetIdx, nOutputDepthIdx }));
-
-
-	graph.SetFinalNode(nTransparentNodeIdx);
-	graph.Compile();
-
-	int a = 0;
-	++a;
-}
-
-
 int main(int argc, char* argv[])
 {
-	test();
-
-
 
     std::string strBasePath = SDL_GetBasePath();
 
 	MEngine engine;
-	engine.Initialize("D:/Custom/x/Morty/Morty/Resource");
+	engine.Initialize("../../Resource");
 
-	// 	{
-	// 		{
-	// 			MModelConverter conver(&engine);
-	// 			conver.Convert("./Model/NEW YEAR 2021_SF.fbx", "./Model/output", "snowman");
-	// 		}
-	// 	}
+// 	{
+// 		{
+// 			MModelConverter conver(&engine);
+// 			conver.Convert("./Model/girl/final_v01.obj", "./Model/output", "girl");
+// 		}
+// 	}
 
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
 	pRootNode->SetName("RootNode");

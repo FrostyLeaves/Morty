@@ -3,7 +3,7 @@
  * 
  * @Created      2020-11-29 11:53:33
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MFORWARDRENDERWORK_H_
@@ -17,6 +17,7 @@
 #include "MForwardRenderProgram.h"
 #include "MForwardRenderShaderParamSet.h"
 
+class MRenderGraphNode;
 class MORTY_API MForwardRenderWork : public MObject
 {
 public:
@@ -31,14 +32,12 @@ public:
 	void InitializeShaderParamSet();
 	void ReleaseShaderParamSet();
 
-	void InitializeRenderPass();
-	void ReleaseRenderPass();
+	void InitializeRenderGraph();
+	void ReleaseRenderGraph();
 
 	virtual void OnDelete() override;
 
-	void Render(MRenderInfo& info);
-
-	void SetClearColor(const MColor& cClearColor);
+	void Render(MRenderGraphNode* pGraphNode);
 
 	static void UpdateShaderSharedParams(MRenderInfo& info, MForwardRenderShaderParamSet& frameParamSet);
 
@@ -59,7 +58,6 @@ private:
 
 	MIRenderProgram* m_pRenderProgram;
 	MForwardRenderShaderParamSet m_FrameParamSet;
-	MRenderPass m_ForwardMeshRenderPass;
 };
 
 #endif

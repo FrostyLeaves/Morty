@@ -10,11 +10,10 @@
 class MScene;
 class MEngine;
 class MViewport;
+class MRenderGraph;
 class MIRenderProgram;
-class MRenderBackTexture;
-class MIRenderBackTexture;
-class MRenderDepthTexture;
-class MTextureRenderTarget;
+class MRenderTexture;
+class MIRenderTexture;
 
 class SceneTexture
 {
@@ -29,12 +28,16 @@ public:
 	Vector2 GetSize() const { return m_v2Size; }
 
 	void UpdateTexture();
+
+	void SetRenderTextureName(const MString& strTextureName);
 	void* GetTexture(const uint32_t& unFrameIndex);
 
 	MScene* GetScene() { return m_pScene; }
 	MViewport* GetViewport() { return m_pRenderViewport; }
 
 	void SetBackColor(const MColor& cColor);
+
+	MRenderGraph* GetRenderGraph();
 
 protected:
 
@@ -43,10 +46,6 @@ protected:
 	MScene* m_pScene;
 	MEngine* m_pEngine;
 
-	std::array<MIRenderBackTexture*, M_BUFFER_NUM> m_vBackTexture;
-	std::array<MRenderDepthTexture*, M_BUFFER_NUM> m_vDepthTexture;
-
-	MTextureRenderTarget* m_pTextureRenderTarget;
 	MViewport* m_pRenderViewport;
 
 

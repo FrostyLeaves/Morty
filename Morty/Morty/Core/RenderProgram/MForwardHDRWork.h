@@ -3,7 +3,7 @@
  * 
  * @Created      2020-11-29 11:05:51
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MFORWARDHDRWORK_H_
@@ -20,9 +20,9 @@ class MMaterial;
 class MRenderPass;
 class MCombineWork;
 class MIRenderProgram;
+class MIRenderTexture;
+class MRenderGraphNode;
 class MGaussianBlurWork;
-class MIRenderBackTexture;
-class MRenderDepthTexture;
 class MORTY_API MForwardHDRWork : public MIPostProcessWork
 {
 public:
@@ -32,12 +32,13 @@ public:
 
 public:
 
-    virtual void Render(MPostProcessRenderInfo& info) override;
-
-	virtual MTextureRenderTarget* GetRenderTarget();
+	void Render(MRenderGraphNode* pGraphNode);
 
 	virtual void Initialize(MIRenderProgram* pRenderProgram) override;
 	virtual void Release() override;
+
+	virtual MRenderGraphNodeInput* GetInput() override;
+	virtual MRenderGraphNodeOutput* GetOutput() override;
 
 	void InitializeMaterial();
 	void ReleaseMaterial();
@@ -45,29 +46,21 @@ public:
 	void InitializeMesh();
 	void ReleaseMesh();
 
-	void InitializeRenderTargets();
-	void ReleaseRenderTargets();
+	void InitializeRenderGraph();
+	void ReleaseRenderGraph();
 
-	void InitializeRenderPass();
-	void ReleaseRenderPass();
 
-	virtual void CheckRenderTargetSize(const Vector2& v2Size) override;
+	void InitializeCopyTarget();
+	void ReleaseCopyTarget();
 
-protected:
-
-	void RenderBloom(MPostProcessRenderInfo& info);
-	void RenderCombine(MPostProcessRenderInfo& info);
 
 protected:
 
 	MIRenderProgram* m_pRenderProgram;
-	MTextureRenderTarget* m_pTempRenderTarget;
-	MRenderPass* m_pTempRenderPass;
 	MIMesh* m_pScreenDrawMesh;
 	MMaterial* m_pHDRMaterial;
-
-	std::array<MIRenderBackTexture*, M_BUFFER_NUM> m_aBackTexture;
-	std::array<MIRenderBackTexture*, M_BUFFER_NUM> m_aHighLightTexture;
+	MRenderGraphNodeInput* m_pInput;
+	MRenderGraphNodeOutput* m_pOutput;
 
 	std::array<MTexture*, M_BUFFER_NUM> m_aLumTexture;
 private:

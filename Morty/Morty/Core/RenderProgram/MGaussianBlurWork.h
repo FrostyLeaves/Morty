@@ -3,17 +3,20 @@
  * 
  * @Created      2020-11-30 17:43:05
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MGAUSSIANBLURWORK_H_
 #define _M_MGAUSSIANBLURWORK_H_
 #include "MGlobal.h"
 #include "MObject.h"
+
+#include "MForwardRenderProgram.h"
 #include "MStandardPostProcessWork.h"
 
 class MMaterial;
 class MShaderParamSet;
+class MRenderGraphNode;
 class MORTY_API MGaussianBlurWork : public MIPostProcessWork
 {
 public:
@@ -29,44 +32,37 @@ public:
 	void SetIteration(const uint32_t& unIteration) { m_unIteration = unIteration; }
 	uint32_t GetIteration() const { return m_unIteration; }
 
+
+	MString GetGraphNodeName() const { return m_strGraphNodeName; }
+
 public:
 
 	virtual void Initialize(MIRenderProgram* pRenderProgram) override;
 	virtual void Release() override;
-
-	virtual MTextureRenderTarget* GetRenderTarget() override;
-
-	virtual void CheckRenderTargetSize(const Vector2& v2Size) override;
-
-	virtual void Render(MPostProcessRenderInfo& info) override;
+	
+	void Render(MRenderGraphNode* pGraphNode);
 
 protected:
 
-	void UpdateShaderSharedParams(MPostProcessRenderInfo& info);
+	void UpdateShaderSharedParams(MRenderGraphNode* pGraphNode, MRenderInfo& info);
 
 	void InitializeMesh();
 	void ReleaseMesh();
 
-	void InitializeRenderTargets();
-	void ReleaseRenderTargets();
-
-	void InitializeRenderPass();
-	void ReleaseRenderPass();
-
+	void InitializeGraph();
+	void ReleaseGraph();
 
     void InitializeMaterial();
     void ReleaseMaterial();
 
 protected:
 
+	MString m_strGraphNodeName;
+
 	MIRenderProgram* m_pRenderProgram;
-	MTextureRenderTarget* m_aTempRenderTarget[2];
-	std::array<MIRenderBackTexture*, M_BUFFER_NUM> m_aBackTexture[2];
 
-	MRenderPass* m_pTempRenderPass;
 	MIMesh* m_pScreenDrawMesh;
-
-    MMaterial* m_aMaterial[3];
+    MMaterial* m_aMaterial[M_BUFFER_NUM];
 
 private:
 	float m_fBlurRadius;

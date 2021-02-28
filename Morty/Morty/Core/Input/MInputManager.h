@@ -3,7 +3,7 @@
  * 
  * @Created      2019-09-03 18:22:20
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MINPUTMANAGER_H_

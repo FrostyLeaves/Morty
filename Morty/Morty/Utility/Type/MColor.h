@@ -3,7 +3,7 @@
  * 
  * @Created      2019-11-04 23:01:32
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MCOLOR_H_

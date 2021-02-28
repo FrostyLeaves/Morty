@@ -3,7 +3,7 @@
  * 
  * @Created      2019-05-25 19:43:33
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MOBJECT_H_

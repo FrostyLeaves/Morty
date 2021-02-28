@@ -3,7 +3,7 @@
  * 
  * @Created      2020-05-30 23:16:16
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MNODERESOURCE_H_

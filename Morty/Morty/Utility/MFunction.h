@@ -3,7 +3,7 @@
  * 
  * @Created      2019-05-13 00:31:54
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MFUNCTION_H_
@@ -27,11 +27,13 @@ void DELETE_CLEAR_MAP(std::map<T1, T2>& map)
 }
 
 template<typename T>
-void UNION_PUSH_BACK_VECTOR(std::vector<T>& vector, const T& value)
+bool UNION_PUSH_BACK_VECTOR(std::vector<T>& vector, const T& value)
 {
 	for (T& v : vector)
-		if (v == value) return;
+		if (v == value) return false;
 	vector.push_back(value);
+
+	return true;
 }
 
 template<typename T>

@@ -3,7 +3,7 @@
  * 
  * @Created      2020-11-30 16:08:08
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MIPOSTPROCESSWORK_H_
@@ -17,17 +17,9 @@ class MITexture;
 class MViewport;
 class MIRenderer;
 class MIRenderProgram;
-class MIRenderBackTexture;
-class MTextureRenderTarget;
-struct MORTY_API MPostProcessRenderInfo
-{
-    float fDelta;
-    uint32_t unFrameIndex;
-    MIRenderer* pRenderer;
-    MViewport* pViewport;
-    MIRenderBackTexture* pPrevLevelOutput;
-    MIRenderBackTexture* pPrevLevelOutput1;
-};
+class MIRenderTexture;
+class MRenderGraphNodeInput;
+class MRenderGraphNodeOutput;
 
 class MORTY_API MIPostProcessWork : public MObject
 {
@@ -38,17 +30,13 @@ public:
 
 public:
 
-    virtual void Initialize(MIRenderProgram* pRenderProgram) {};
-    virtual void Release() {};
-
-    virtual void CheckRenderTargetSize(const Vector2& v2Size) {}
-
-    virtual void Render(MPostProcessRenderInfo& info) {}
-
-    virtual MTextureRenderTarget* GetRenderTarget() { return nullptr; }
-
+	virtual void Initialize(MIRenderProgram* pRenderProgram) {};
+	virtual void Release() {};
 
 	virtual void OnDelete();
+
+	virtual MRenderGraphNodeInput* GetInput() { return nullptr; }
+	virtual MRenderGraphNodeOutput* GetOutput() { return nullptr; }
 
 private:
 };

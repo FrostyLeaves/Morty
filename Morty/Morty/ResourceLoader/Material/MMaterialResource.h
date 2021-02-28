@@ -3,7 +3,7 @@
  * 
  * @Created      2019-09-01 15:25:21
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MMATERIALRESOURCE_H_

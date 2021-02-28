@@ -3,7 +3,7 @@
  * 
  * @Created      2020-05-29 16:30:19
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MSERIALIZER_H_

@@ -3,7 +3,7 @@
  * 
  * @Created      2020-06-17 21:01:03
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MVULKANRENDERTARGET_H_
@@ -14,9 +14,9 @@
 
 #include "MIRenderTarget.h"
 #include "MVulkanDevice.h"
+#include "MRenderPass.h"
 
 class MWindowsRenderView;
-class MRenderDepthTexture;
 class MORTY_API MVulkanRenderTarget : public MIRenderTarget
 {
 public:
@@ -24,14 +24,6 @@ public:
 public:
     MVulkanRenderTarget();
     virtual ~MVulkanRenderTarget();
-
-	virtual MRenderDepthTexture* GetCurrDepthTexture() override;
-
-	virtual bool GetDepthEnable() override { return true; }
-
-	virtual uint32_t GetMFrameBufferNum() override { return m_vBufferInfo.size(); }
-	virtual MFrameBuffer* GetFrameBuffer(const uint32_t& unIndex) override;
-	virtual MFrameBuffer* GetCurrFrameBuffer(const uint32_t& unFrameIdx = 0) override;
 
 public:
 	virtual void OnRender(MIRenderer* pRenderer) override;
@@ -44,6 +36,9 @@ public:
 	void Initialize();
 
 	virtual void Resize(const Vector2& v2Size) override;
+
+
+	virtual uint32_t GetFrameBufferIndex() override;
 
 
 	static MVulkanRenderTarget* CreateForSurface(MEngine* pEngine, MIRenderView* pView, VkSurfaceKHR surface);
@@ -62,9 +57,9 @@ public:
 
 	void ReleaseSwapchain(MVulkanDevice* pDevice);
 
-	bool RebindRenderBuffer(MVulkanDevice* pDevice);
 
-	void CleanRenderInfo(MVulkanDevice* pDevice);
+	void CleanRenderBuffer(MVulkanDevice* pDevice);
+	bool RebindRenderBuffer(MVulkanDevice* pDevice);
 
 public:
 
@@ -76,12 +71,10 @@ public:
 
 	VkSemaphore m_VkImageAvailableSemaphore;
 
-
-	//size is swapchain size.
-	std::vector<MFrameBuffer> m_vBufferInfo;
-
 	uint32_t m_unFrameBufferIndex;
 	uint32_t m_unMinImageCount;
+
+	MRenderPass m_RenderPass;
 
 public:
 

@@ -3,7 +3,7 @@
  * 
  * @Created      2020-09-18 18:52:47
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_ANDROID_RENDERVIEW_H_

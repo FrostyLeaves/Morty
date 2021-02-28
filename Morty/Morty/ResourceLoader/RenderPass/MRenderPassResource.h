@@ -3,7 +3,7 @@
  * 
  * @Created      2020-12-25 21:08:21
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MRENDERPASSRESOURCE_H_

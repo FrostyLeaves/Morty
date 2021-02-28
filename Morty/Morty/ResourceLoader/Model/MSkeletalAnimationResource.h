@@ -3,7 +3,7 @@
  * 
  * @Created      2020-06-15 21:09:00
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MSKELETALANIMATIONRESOURCE_H_

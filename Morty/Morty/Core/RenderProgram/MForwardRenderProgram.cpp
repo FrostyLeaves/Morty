@@ -5,6 +5,7 @@
 #include "MCamera.h"
 #include "MTexture.h"
 #include "MViewport.h"
+#include "MRenderGraph.h"
 
 #include "MMaterialGroup.h"
 #include "Model/MModelInstance.h"
@@ -20,15 +21,15 @@
 #include <algorithm>
 #include <float.h>
 
-
 M_OBJECT_IMPLEMENT(MForwardRenderProgram, MIRenderProgram)
-
 
 MForwardRenderProgram::MForwardRenderProgram()
 	: MIRenderProgram()
+	, m_RenderInfo()
 	, m_pShadowMapWork(nullptr)
 	, m_pRenderWork(nullptr)
 	, m_pTransparentWork(nullptr)
+	, m_pRenderGraph(nullptr)
 	, m_cClearColor(MColor::Black_T)
 {
 	
@@ -40,6 +41,9 @@ MForwardRenderProgram::~MForwardRenderProgram()
 
 void MForwardRenderProgram::Initialize()
 {
+
+	m_pRenderGraph = new MRenderGraph(GetEngine());
+
 	m_pShadowMapWork = GetEngine()->GetObjectManager()->CreateObject<MForwardShadowMapWork>();
 	m_pShadowMapWork->Initialize(this);
 
@@ -48,7 +52,6 @@ void MForwardRenderProgram::Initialize()
 
 	m_pTransparentWork = GetEngine()->GetObjectManager()->CreateObject<MForwardTransparentWork>();
 	m_pTransparentWork->Initialize(this);
-
 }
 
 void MForwardRenderProgram::Release()
@@ -71,6 +74,13 @@ void MForwardRenderProgram::Release()
 		m_pTransparentWork = nullptr;
 	}
 
+	if (m_pRenderGraph)
+	{
+		m_pRenderGraph->Release();
+		delete m_pRenderGraph;
+		m_pRenderGraph = nullptr;
+	}
+
 }
 
 void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport)
@@ -78,11 +88,12 @@ void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport)
 	if (!pViewport)
 		return;
 
-	MRenderInfo info;
+	MRenderInfo& info = GetRenderInfo();
+
+	info = MRenderInfo();
 
 	info.fDelta = m_pEngine->GetInstantDelta();
 	info.unFrameIndex = pRenderer->GetFrameIndex();
-	info.pRenderTarget = GetRenderTarget();
 	info.pRenderer = pRenderer;
 	info.pViewport = pViewport;
 	info.pCamera = pViewport->GetCamera();
@@ -96,21 +107,10 @@ void MForwardRenderProgram::Render(MRenderInfo& info)
 	info.pViewport->LockMatrix();
 
 	GenerateRenderGroup(info);
-
-	if (m_pShadowMapWork)
+	
+	if (m_pRenderGraph->GetCompiled() || m_pRenderGraph->Compile(GetEngine()->GetDevice()))
 	{
-		m_pShadowMapWork->Render(info);
-		info.pShadowMapTexture = m_pShadowMapWork->GetShadowMap(info.unFrameIndex);
-	}
-
-	if (m_pRenderWork)
-	{
-		m_pRenderWork->Render(info);
-	}
-
-	if (m_pTransparentWork)
-	{
-		m_pTransparentWork->Render(info);
+		m_pRenderGraph->Render();
 	}
 
 	info.pViewport->UnlockMatrix();
@@ -131,10 +131,10 @@ void MForwardRenderProgram::OnDelete()
 void MForwardRenderProgram::SetClearColor(const MColor& cClearColor)
 {
 	m_cClearColor = cClearColor;
-	if (m_pRenderWork)
-	{
-		m_pRenderWork->SetClearColor(cClearColor);
-	}
+// 	if (m_pRenderWork)
+// 	{
+// 		m_pRenderWork->SetClearColor(cClearColor);
+// 	}
 }
 
 void MForwardRenderProgram::GenerateRenderGroup(MRenderInfo& info)
@@ -183,6 +183,7 @@ void MForwardRenderProgram::GenerateRenderGroup(MRenderInfo& info)
 
 MRenderInfo::MRenderInfo()
 	: fDelta(0.0f)
+	, fGameTime(0.0f)
 	, unFrameIndex(0)
 	, pRenderTarget(nullptr)
 	, pRenderer(nullptr)

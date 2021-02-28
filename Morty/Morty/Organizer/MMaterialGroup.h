@@ -3,7 +3,7 @@
  * 
  * @Created      2020-05-03 11:22:55
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MMATERIALGROUP_H_

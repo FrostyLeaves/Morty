@@ -3,7 +3,7 @@
  * 
  * @Created      2020-06-23 12:16:06
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MVULKANPIPELINEMANAGER_H_

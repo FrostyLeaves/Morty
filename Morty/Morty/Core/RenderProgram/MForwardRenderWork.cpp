@@ -7,6 +7,7 @@
 #include "MPainter.h"
 #include "MViewport.h"
 #include "MIRenderer.h"
+#include "MRenderGraph.h"
 #include "MTransformCoord.h"
 
 #include "Light/MSpotLight.h"
@@ -26,7 +27,6 @@ MForwardRenderWork::MForwardRenderWork()
     : MObject()
 	, m_pRenderProgram(nullptr)
 	, m_FrameParamSet()
-	, m_ForwardMeshRenderPass()
 {
 }
 
@@ -39,12 +39,12 @@ void MForwardRenderWork::Initialize(MIRenderProgram* pRenderProgram)
 	m_pRenderProgram = pRenderProgram;
 
 	InitializeShaderParamSet();
-	InitializeRenderPass();
+	InitializeRenderGraph();
 }
 
 void MForwardRenderWork::Release()
 {
-	ReleaseRenderPass();
+	ReleaseRenderGraph();
 	ReleaseShaderParamSet();
 }
 
@@ -59,26 +59,71 @@ void MForwardRenderWork::ReleaseShaderParamSet()
 	m_FrameParamSet.ReleaseShaderParamSet(GetEngine());
 }
 
-void MForwardRenderWork::InitializeRenderPass()
+void MForwardRenderWork::InitializeRenderGraph()
 {
-	if (!m_pRenderProgram->GetRenderTarget())
+	MRenderGraph* pRenderGraph = m_pRenderProgram->GetRenderGraph();
+	if (!pRenderGraph)
 	{
-		MLogManager::GetInstance()->Error("MForwardRenderProgram::InitializeRenderPass error: rt == nullptr");
+		MLogManager::GetInstance()->Error("MForwardRenderProgram::InitializeRenderGraph error: rg == nullptr");
 		return;
 	}
 
-	//Init RenderPass
+	MRenderGraphTexture* pOutputTargetTexture = pRenderGraph->FindRenderGraphTexture("Output Target");
+	if (nullptr == pOutputTargetTexture)
+	{
+		pOutputTargetTexture = pRenderGraph->AddRenderGraphTexture("Output Target");
+		pOutputTargetTexture->SetUsage(METextureUsage::ERenderBack);
+		pOutputTargetTexture->SetLayout(METextureLayout::ERGBA8);
+		pOutputTargetTexture->SetSizePolicy(MRenderGraphTexture::ESizePolicy::ERelative);
+		pOutputTargetTexture->SetSize(Vector2(1.0f, 1.0f));
+	}
 
-	m_ForwardMeshRenderPass.m_vBackDesc.push_back(MPassTargetDescription());
-	m_ForwardMeshRenderPass.m_vBackDesc.back().bClearWhenRender = true;
-	m_ForwardMeshRenderPass.m_vBackDesc.back().cClearColor = m_pRenderProgram->GetClearColor();
+	MRenderGraphTexture* pOutputDepthTexture = pRenderGraph->FindRenderGraphTexture("Output Depth");
+	if (nullptr == pOutputDepthTexture)
+	{
+		pOutputDepthTexture = pRenderGraph->AddRenderGraphTexture("Output Depth");
+		pOutputDepthTexture->SetUsage(METextureUsage::ERenderDepth);
+		pOutputDepthTexture->SetLayout(METextureLayout::EDepth);
+		pOutputDepthTexture->SetSizePolicy(MRenderGraphTexture::ESizePolicy::ERelative);
+		pOutputDepthTexture->SetSize(Vector2(1.0f, 1.0f));
+	}
 
-	m_ForwardMeshRenderPass.m_DepthDesc.bClearWhenRender = true;
+	MRenderGraphNode* pForwardNode = pRenderGraph->AddRenderGraphNode("Forward Node");
+
+	MRenderGraphNodeInput* pInputNode = pForwardNode->AppendInput();
+	MRenderGraphNodeOutput* pOutputTarget = pForwardNode->AppendOutput();
+	MRenderGraphNodeOutput* pOutputDepth = pForwardNode->AppendOutput();
+
+	pOutputTarget->SetClear(true);
+	pOutputTarget->SetClearColor(m_pRenderProgram->GetClearColor());
+	pOutputTarget->SetRenderTexture(pOutputTargetTexture);
+	pRenderGraph->SetFinalOutput(pOutputTarget);
+
+	pOutputDepth->SetClear(true);
+	pOutputDepth->SetRenderTexture(pOutputDepthTexture);
+
+
+	MRenderGraphNode* pShadowMapNode = pRenderGraph->FindRenderGraphNode("Shadow Map Node");
+
+	if (MRenderGraphNodeOutput* pShadowMapOutput = pShadowMapNode->GetOutput(0))
+	{
+		pInputNode->LinkTo(pShadowMapOutput);
+
+		if (MShaderTextureParam* pShadowMapTextureParam = m_FrameParamSet.m_vTextures[0])
+		{
+			if (MRenderGraphTexture* pShadowMapTexture = pShadowMapOutput->GetRenderTexture())
+			{
+				pShadowMapTextureParam->pTexture = pShadowMapTexture->GetRenderTexture();
+				pShadowMapTextureParam->SetDirty();
+			}
+		}
+	}
+
+		pForwardNode->BindRenderFunction(std::bind(&MForwardRenderWork::Render, this, std::placeholders::_1));
 }
 
-void MForwardRenderWork::ReleaseRenderPass()
+void MForwardRenderWork::ReleaseRenderGraph()
 {
-	GetEngine()->GetDevice()->DestroyRenderPass(&m_ForwardMeshRenderPass);
 }
 
 void MForwardRenderWork::OnDelete()
@@ -88,27 +133,21 @@ void MForwardRenderWork::OnDelete()
 	Super::OnDelete();
 }
 
-void MForwardRenderWork::SetClearColor(const MColor& cClearColor)
+void MForwardRenderWork::Render(MRenderGraphNode* pGraphNode)
 {
-	for (MPassTargetDescription& desc : m_ForwardMeshRenderPass.m_vBackDesc)
-	{
-		desc.cClearColor = cClearColor;
-	}
-}
+	MForwardRenderProgram* pRenderProgram = dynamic_cast<MForwardRenderProgram*>(m_pRenderProgram);
+	if (!pRenderProgram)
+		return;
+	MRenderInfo& info = pRenderProgram->GetRenderInfo();
 
-void MForwardRenderWork::Render(MRenderInfo& info)
-{
-	if (MShaderTextureParam* pShadowMapTextureParam = m_FrameParamSet.m_vTextures[0])
-	{
-		pShadowMapTextureParam->pTexture = info.pShadowMapTexture;
-	}
 
 	UpdateShaderSharedParams(info, m_FrameParamSet);
 
-	info.pRenderer->BeginRenderPass(&m_ForwardMeshRenderPass, info.pRenderTarget);
+	info.pRenderer->BeginRenderPass(pGraphNode->GetRenderPass(), info.unFrameIndex);
 
 	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
 	info.pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight(), 0.0f, 1.0f);
+	info.pRenderer->SetScissor(0.0f, 0.0f, info.pViewport->GetWidth(), info.pViewport->GetHeight());
 
 	DrawNormalMesh(info);
 
@@ -119,7 +158,6 @@ void MForwardRenderWork::Render(MRenderInfo& info)
 	//	DrawSkyBox(info);
 
 	info.pRenderer->EndRenderPass();
-
 }
 
 void MForwardRenderWork::UpdateShaderSharedParams(MRenderInfo& info, MForwardRenderShaderParamSet& frameParamSet)
@@ -146,7 +184,7 @@ void MForwardRenderWork::UpdateShaderSharedParams(MRenderInfo& info, MForwardRen
 
 		(*frameParamSet.m_pWorldInfoParam->var.GetStruct())[3] = info.fDelta;
 
-		(*frameParamSet.m_pWorldInfoParam->var.GetStruct())[4] = info.fDelta;
+		(*frameParamSet.m_pWorldInfoParam->var.GetStruct())[4] = info.fGameTime;
 
 		frameParamSet.m_pWorldInfoParam->SetDirty();
 	}

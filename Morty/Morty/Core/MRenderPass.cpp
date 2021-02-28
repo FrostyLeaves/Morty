@@ -21,11 +21,13 @@ MRenderPass::MRenderPass()
 	, m_vBackDesc()
 	, m_DepthDesc()
 	, m_unRenderPassID(0)
+	, m_VkRenderPass(VK_NULL_HANDLE)
+	, m_FrameBuffer()
 {
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-	m_aVkRenderPass.fill(VK_NULL_HANDLE);
+
 #endif
 }
 
@@ -34,22 +36,41 @@ MRenderPass::~MRenderPass()
 
 }
 
+void MRenderPass::GenerateBuffer(MIDevice* pDevice)
+{
+	pDevice->DestroyRenderPass(this);
+	pDevice->DestroyFrameBuffer(this);
+}
+
+void MRenderPass::DestroyBuffer(MIDevice* pDevice)
+{
+	pDevice->DestroyFrameBuffer(this);
+	pDevice->DestroyRenderPass(this);
+}
+
+std::vector<MIRenderTexture*> MRenderPass::GetBackTexture()
+{
+	return m_FrameBuffer.vBackTextures;
+}
+
+MIRenderTexture* MRenderPass::GetDepthTexture()
+{
+	return m_FrameBuffer.pDepthTexture;
+}
+
+MFrameBuffer* MRenderPass::GetFrameBuffer()
+{
+	return &m_FrameBuffer;
+}
+
 MPassTargetDescription::MPassTargetDescription(const bool bClear, const MColor& cColor)
-	: m_strName("")
-	, bClearWhenRender(bClear)
+	: bClearWhenRender(bClear)
 	, cClearColor(cColor)
 {
-#if RENDER_GRAPHICS == MORTY_VULKAN
-	m_vkTargetFormat = VK_FORMAT_R8G8B8A8_SRGB;
-#endif
 }
 
 MPassTargetDescription::MPassTargetDescription()
-	: m_strName("")
-	, bClearWhenRender(true)
+	: bClearWhenRender(true)
 	, cClearColor(MColor::Black)
 {
-#if RENDER_GRAPHICS == MORTY_VULKAN
-	m_vkTargetFormat = VK_FORMAT_R8G8B8A8_SRGB;
-#endif
 }

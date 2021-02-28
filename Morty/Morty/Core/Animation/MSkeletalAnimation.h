@@ -3,7 +3,7 @@
  * 
  * @Created      2019-12-09 22:38:06
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MSKELETALANIMATION_H_

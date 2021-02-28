@@ -30,11 +30,15 @@ void MIRenderTarget::OnDelete()
 	Super::OnDelete();
 }
 
+uint32_t MIRenderTarget::GetFrameBufferIndex()
+{
+	return GetEngine()->GetRenderer()->GetFrameIndex();
+}
+
 MFrameBuffer::MFrameBuffer()
 	: vBackTextures()
 	, pDepthTexture()
-	, vkFrameBuffer(VK_NULL_HANDLE)
-	, vkExtend()
+	, m_aVkFrameBuffer()
 {
 
 }

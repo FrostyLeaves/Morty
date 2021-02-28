@@ -3,7 +3,7 @@
  * 
  * @Created      2019-08-28 17:14:21
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MCAMERA_H_

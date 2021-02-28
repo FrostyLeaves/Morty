@@ -5,18 +5,14 @@
 #include "SDL.h"
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
-#include "imgui_impl_dx11.h"
 #include "MDirectX11/MDirectX11Device.h"
 #include "MDirectX11/MDirectX11RenderTarget.h"
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-#include "imgui_impl_vulkan.h"
 #include "Vulkan/MVulkanWrapper.h"
 #include "Vulkan/MVulkanRenderer.h"
 #include "Vulkan/MVulkanRenderTarget.h"
 #include <SDL_vulkan.h>
 #endif
-
-#include "Vulkan/MVulkanRenderTarget.h"
 
 #include "MEngine.h"
 #include "MIRenderer.h"
@@ -31,7 +27,6 @@
 #include "MCamera.h"
 #include "MTransformCoord.h"
 #include "MIRenderTarget.h"
-#include "MTextureRenderTarget.h"
 #include "MForwardRenderProgram.h"
 
 #include "Matrix.h"
@@ -41,11 +36,14 @@
 #include "PropertyView.h"
 #include "MaterialView.h"
 #include "ResourceView.h"
+#include "RenderGraphView.h"
 
 #include "MRenderStatistics.h"
 #include "MInputManager.h"
 
 #include "NotifyManager.h"
+
+#include "ImGuiRenderable.h"
 
 MainEditor::MainEditor()
 	: MIRenderView()
@@ -53,6 +51,8 @@ MainEditor::MainEditor()
 	, m_pPropertyView(nullptr)
 	, m_pMaterialView(nullptr)
 	, m_pResourceView(nullptr)
+	, m_pRenderGraphView(nullptr)
+	, m_pImGuiRenderable(nullptr)
 	, m_unTriangleCount(0)
 	, m_bShowMessage(true)
 	, m_bShowNodeTree(true)
@@ -60,7 +60,7 @@ MainEditor::MainEditor()
 	, m_bShowRenderView(true)
 	, m_bShowMaterial(false)
 	, m_bShowResource(false)
-	, m_ImguiRenderPass()
+	, m_bShowRenderGraph(false)
 	, m_funcCloseCallback(nullptr)
 	, m_pSDLWindow(nullptr)
     , m_v2WindowSize(800.0f, 480.0f)
@@ -98,102 +98,17 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	style.ItemSpacing.x = 2.0f;
 
 	ImVec4 bgColor = style.Colors[ImGuiCol_WindowBg];
-	//style.Colors[ImGuiCol_ChildWindowBg] = bgColor;
 
 	io.ConfigWindowsMoveFromTitleBarOnly = true;
 
-
 	InitializeSDLWindow();
 
-	m_ImguiRenderPass.m_vBackDesc.push_back(MPassTargetDescription(true, MColor(0.0f, 0.0f, 0.0f, 1.0f)));
-	m_pEngine->GetDevice()->GenerateRenderPass(&m_ImguiRenderPass, GetRenderTarget());
-
-#if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	MDirectX11Device* pDevice = dynamic_cast<MDirectX11Device*>(m_pEngine->GetDevice());
-	ImGui_ImplDX11_Init(pDevice->m_pD3dDevice, pDevice->m_pD3dContext);
-#elif RENDER_GRAPHICS == MORTY_VULKAN
 	MVulkanDevice* pDevice = dynamic_cast<MVulkanDevice*>(m_pEngine->GetDevice());
 	MVulkanRenderTarget* pRenderTarget = dynamic_cast<MVulkanRenderTarget*>(GetRenderTarget());
+	pRenderTarget->RegisterRenderProgram<MForwardRenderProgram>();
 
-	ImGui_ImplVulkan_InitInfo vulkanInitInfo = {};
-
-	vulkanInitInfo.Allocator = nullptr;
-	vulkanInitInfo.CheckVkResultFn = nullptr;
-	vulkanInitInfo.DescriptorPool = pDevice->m_ObjectDestructor.m_VkDescriptorPool;
-	vulkanInitInfo.Device = pDevice->m_VkDevice;
-	vulkanInitInfo.ImageCount = pRenderTarget->m_vBufferInfo.size();
-	vulkanInitInfo.Instance = pDevice->m_VkInstance;
-	vulkanInitInfo.MinImageCount = pRenderTarget->m_unMinImageCount;
-	vulkanInitInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-	vulkanInitInfo.PhysicalDevice = pDevice->m_VkPhysicalDevice;
-	vulkanInitInfo.PipelineCache = VK_NULL_HANDLE;
-	vulkanInitInfo.Queue = pDevice->m_VkGraphicsQueue;
-	vulkanInitInfo.QueueFamily = pDevice->FindQueueGraphicsFamilies(pDevice->m_VkPhysicalDevice);
-	vulkanInitInfo.FreeDescriptSetFunction = [pDevice](VkDescriptorSet set) {
-		pDevice->m_ObjectDestructor.DestroyDescriptorSetLater(set);
-	};
-
-	vulkanInitInfo.DestroyBufferFunction = [pDevice](VkBuffer buffer) {
-		pDevice->m_ObjectDestructor.DestroyBufferLater(buffer);
-	};
-
-	vulkanInitInfo.DestroyDeviceMemoryFunction = [pDevice](VkDeviceMemory memory) {
-		pDevice->m_ObjectDestructor.DestroyDeviceMemoryLater(memory);
-	};
-
-	vulkanInitInfo.DestroyImageViewFunction = [pDevice](VkImageView view) {
-		pDevice->m_ObjectDestructor.DestroyImageViewLater(view);
-	};
-
-	vulkanInitInfo.DestroyImageFunction = [pDevice](VkImage image) {
-		pDevice->m_ObjectDestructor.DestroyImageLater(image);
-	};
-
-	vulkanInitInfo.DestroySamplerFunction = [pDevice](VkSampler sampler) {
-		pDevice->m_ObjectDestructor.DestroySamplerLater(sampler);
-	};
-
-	vulkanInitInfo.DestroyDescriptorSetLayoutFunction = [pDevice](VkDescriptorSetLayout layout) {
-		pDevice->m_ObjectDestructor.DestroyDescriptorSetLayoutLater(layout);
-	};
-
-	vulkanInitInfo.DestroyPipelineLayoutFunction = [pDevice](VkPipelineLayout layout) {
-		pDevice->m_ObjectDestructor.DestroyPipelineLayoutLater(layout);
-	};
-
-	vulkanInitInfo.DestroyPipelineFunction = [pDevice](VkPipeline pipeline) {
-		pDevice->m_ObjectDestructor.DestroyPipelineLater(pipeline);
-	};
-
-	vulkanInitInfo.DestroyRenderPassFunction = [pDevice](VkRenderPass renderpass) {
-		pDevice->m_ObjectDestructor.DestroyRenderPassLater(renderpass);
-	};
-
-	vulkanInitInfo.DestroyShaderModuleFunction = [pDevice](VkShaderModule module) {
-		pDevice->m_ObjectDestructor.DestroyShaderModuleLater(module);
-	};
-
-	vulkanInitInfo.DestroySemaphoreFunction = [pDevice](VkSemaphore semaphore) {
-		pDevice->m_ObjectDestructor.DestroySemaphoreLater(semaphore);
-	};
-
-	vulkanInitInfo.DestroyFramebufferFunction = [pDevice](VkFramebuffer buffer) {
-		pDevice->m_ObjectDestructor.DestroyFramebufferLater(buffer);
-	};
-
-
-	MVulkanRenderTarget* pVulkanRenderTarget = dynamic_cast<MVulkanRenderTarget*>(GetRenderTarget());
-	pVulkanRenderTarget->RegisterRenderProgram<MForwardRenderProgram>();
-	MIRenderProgram* pRenderProgram = pVulkanRenderTarget->GetRenderProgram();
-
-	
-	ImGui_ImplVulkan_Init(&vulkanInitInfo, m_ImguiRenderPass.m_aVkRenderPass[0]);
-	
-
-	VkCommandBuffer buffer = pDevice->BeginCommands();
-	ImGui_ImplVulkan_CreateFontsTexture(buffer);
-	pDevice->EndCommands(buffer);
-#endif
+	m_pImGuiRenderable = new ImGuiRenderable(pEngine);
+	m_pImGuiRenderable->Initialize();
 
 	//Setup Render
 	m_SceneTexture.Initialize(pEngine);
@@ -205,17 +120,22 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	m_pPropertyView = new PropertyView();
 	m_pMaterialView = new MaterialView();
 	m_pResourceView = new ResourceView();
+	m_pRenderGraphView = new RenderGraphView();
 
 	m_vChildView.push_back(m_pNodeTreeView);
 	m_vChildView.push_back(m_pPropertyView);
 	m_vChildView.push_back(m_pMaterialView);
 	m_vChildView.push_back(m_pResourceView);
+	m_vChildView.push_back(m_pRenderGraphView);
 
 
 	for (IBaseView* pChild : m_vChildView)
 		pChild->Initialize(pEngine);
 
 	NotifyManager::GetInstance()->RegisterNotify("Edit Material", this, NOTIFY_FUNC(this, MainEditor::Notify_Edit_Material));
+
+
+	m_pRenderGraphView->SetRenderGraph(m_SceneTexture.GetRenderGraph());
 
 	return true;
 }
@@ -225,7 +145,12 @@ void MainEditor::Release()
 	if (m_funcCloseCallback)
 		m_funcCloseCallback();
 
-	m_pEngine->GetDevice()->DestroyRenderPass(&m_ImguiRenderPass);
+	if (m_pImGuiRenderable)
+	{
+		m_pImGuiRenderable->Release();
+		delete m_pImGuiRenderable;
+		m_pImGuiRenderable = nullptr;
+	}
 
 	m_SceneTexture.Release();
 
@@ -248,7 +173,6 @@ void MainEditor::Release()
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	ImGui_ImplDX11_Shutdown();
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-	ImGui_ImplVulkan_Shutdown();
 #endif
 
 	ImGui_ImplSDL2_Shutdown();
@@ -289,7 +213,6 @@ void MainEditor::OnRenderEnd()
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	ImGui_ImplDX11_NewFrame();
 #elif RENDER_GRAPHICS == MORTY_VULKAN
-	ImGui_ImplVulkan_NewFrame();
 #endif
 
 	ImGui_ImplSDL2_NewFrame(m_pSDLWindow);
@@ -303,6 +226,7 @@ void MainEditor::OnRenderEnd()
 	ShowProperty();
 	ShowMessage();
 	ShowResource();
+	ShowRenderGraphView();
 
 	// Rendering
 	ImGui::Render();
@@ -315,9 +239,10 @@ void MainEditor::OnRenderEnd()
 	{
 		if (VkCommandBuffer vkCmmandBuffer = pVkRenderer->GetCommandBuffer())
 		{
-			pVkRenderer->BeginRenderPass(&m_ImguiRenderPass, GetRenderTarget());
+			MVulkanRenderTarget* pRenderTarget = dynamic_cast<MVulkanRenderTarget*>(GetRenderTarget());
+			pVkRenderer->BeginRenderPass(&pRenderTarget->m_RenderPass, GetRenderTarget()->GetFrameBufferIndex());
 
-			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), vkCmmandBuffer);
+			RenderImGUI();
 
 			pVkRenderer->EndRenderPass();
 		}
@@ -446,7 +371,6 @@ void MainEditor::InitializeSDLWindow()
 	MVulkanDevice* pDevice = dynamic_cast<MVulkanDevice*>(m_pEngine->GetDevice());
 
     SDL_SetMainReady();
-    //SDL_Vulkan_LoadLibrary(NULL);
 	// Setup SDL
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
 	{
@@ -486,6 +410,15 @@ void MainEditor::InitializeSDLWindow()
      
 }
 
+void MainEditor::RenderImGUI()
+{
+	if (m_pImGuiRenderable)
+	{
+		m_pImGuiRenderable->Tick(0.0f);
+		m_pImGuiRenderable->Render(m_pEngine->GetRenderer());
+	}
+}
+
 void MainEditor::ShowMenu()
 {
 	if (ImGui::BeginMainMenuBar())
@@ -498,6 +431,7 @@ void MainEditor::ShowMenu()
 			if (ImGui::MenuItem("Material", "", &m_bShowMaterial)) {}
 			if (ImGui::MenuItem("Resource", "", &m_bShowResource)) {}
 			if (ImGui::MenuItem("Message", "", &m_bShowMessage)) {}
+			if (ImGui::MenuItem("RenderGraph", "", &m_bShowRenderGraph)) {}
 			
 			ImGui::EndMenu();
 		}
@@ -531,10 +465,16 @@ void MainEditor::ShowRenderView()
 		m_v2RenderViewSize.y = v2RenderViewSize.y;
 
 		uint32_t unFrameIdx = m_pEngine->GetRenderer()->GetFrameIndex();
-		if (void* pTexture = m_SceneTexture.GetTexture(unFrameIdx))
+
+		if (MRenderGraph* pRenderGraph = m_SceneTexture.GetRenderGraph())
 		{
-			ImTextureID texid = pTexture;
-			ImGui::Image(texid, v2RenderViewSize);
+			if (MRenderGraphTexture* pRenderGraphTexture = m_pRenderGraphView->GetSelectedOutputTexture())
+			{
+				if (ImTextureID texid = pRenderGraphTexture->GetRenderTexture())
+				{
+					ImGui::Image(texid, v2RenderViewSize);
+				}
+			}
 		}
 	}
 	ImGui::End();
@@ -635,12 +575,25 @@ void MainEditor::ShowResource()
 	ImGui::End();
 }
 
+void MainEditor::ShowRenderGraphView()
+{
+	if (!m_bShowRenderGraph)
+		return;
+
+	if (ImGui::Begin("RenderGraph", &m_bShowRenderGraph))
+	{
+		m_pRenderGraphView->Render();
+	}
+
+	ImGui::End();
+}
+
 void MainEditor::OnRenderBegin()
 {	
 #if MORTY_RENDER_DATA_STATISTICS
 	MRenderStatistics::GetInstance()->unTriangleCount = 0;
 #endif
-    /*
+    
 	{
 		MViewport* pViewport = m_SceneTexture.GetViewport();
 		pViewport->SetScreenPosition(Vector2(m_v2RenderViewPos.x, m_v2RenderViewPos.y));
@@ -655,7 +608,7 @@ void MainEditor::OnRenderBegin()
 	m_unTriangleCount = MRenderStatistics::GetInstance()->unTriangleCount;
 
 
-
+	
 	if (m_pMaterialView && m_bShowMaterial)
 	{
 		if (MIMeshInstance* pMeshIns = m_pNodeTreeView->GetSelectionNode()->DynamicCast<MIMeshInstance>())
@@ -664,11 +617,6 @@ void MainEditor::OnRenderBegin()
 		}
 		m_pMaterialView->UpdateMaterialTexture();
 	}
-    */
+    
 
-	if (!m_ImguiRenderPass.m_vBackDesc.empty())
-	{
-		m_ImguiRenderPass.m_vBackDesc[0].cClearColor = GetBackColor();
-	//	m_ImguiRenderPass.m_vBackDesc[0].cClearColor = MColor(1, 0, 0, 1);
-	}
 }

@@ -3,7 +3,7 @@
  * 
  * @Created      2019-08-27 19:22:28
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MMATERIAL_H_

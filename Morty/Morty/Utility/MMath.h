@@ -3,7 +3,7 @@
  * 
  * @Created      2019-12-10 12:42:08
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MMATH_H_

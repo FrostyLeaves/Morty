@@ -3,7 +3,7 @@
  * 
  * @Created      2019-12-27 19:56:48
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MINPUTNODE_H_

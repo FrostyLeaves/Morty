@@ -3,7 +3,7 @@
  *
  * @Created      2020-07-05 19:33:41
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MSHADER_PARAM_H_
@@ -87,6 +87,11 @@ struct MShaderTextureParam : public MShaderParam
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
 	uint32_t unBindPoint;
 	uint32_t unBindCount;
+#endif
+
+#if RENDER_GRAPHICS == MORTY_VULKAN
+
+	VkImage m_VkUpdatedImage;
 #endif
 };
 

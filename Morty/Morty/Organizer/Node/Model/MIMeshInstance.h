@@ -3,7 +3,7 @@
  * 
  * @Created      2019-12-13 20:24:19
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MIMESHINSTANCE_H_

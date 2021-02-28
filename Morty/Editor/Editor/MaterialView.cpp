@@ -10,7 +10,6 @@
 #include "Light/MDirectionalLight.h"
 #include "Model/MIMeshInstance.h"
 #include "Model/MModelInstance.h"
-#include "MTextureRenderTarget.h"
 #include "Model/MModelResource.h"
 #include "Model/MStaticMeshInstance.h"
 #include "MResourceManager.h"
@@ -100,6 +99,7 @@ void MaterialView::Render()
 void MaterialView::Initialize(MEngine* pEngine)
 {
 	m_SceneTexture.Initialize(pEngine);
+	m_SceneTexture.SetSize(Vector2(512, 512));
 
 	m_pEngine = pEngine;
 

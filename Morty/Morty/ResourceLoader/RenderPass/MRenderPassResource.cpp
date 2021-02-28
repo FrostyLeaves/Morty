@@ -53,7 +53,6 @@ bool MRenderPassResource::Load(const MString& strResourcePath)
 				if (MString* name = tex->FindMember<MString>("name"))
 				{
 					tBackTextureRef[*name] = i;
-					desc.m_strName = *name;
 				}
 
 				if (Vector4* clearColor = tex->FindMember<Vector4>("clear"))
@@ -142,7 +141,6 @@ bool MRenderPassResource::SaveTo(const MString& strResourcePath)
 		{
 			if (MStruct* pStruct = pBackTextures->AppendMVariant<MStruct>())
 			{
-				pStruct->AppendMVariant("name", desc.m_strName);
 				if (desc.bClearWhenRender)
 				{
 					pStruct->AppendMVariant("clear", desc.cClearColor.ToVector4());
@@ -166,7 +164,6 @@ bool MRenderPassResource::SaveTo(const MString& strResourcePath)
 						if (unIdx < m_pRenderPass->m_vBackDesc.size())
 						{
 							const MPassTargetDescription& desc = m_pRenderPass->m_vBackDesc[unIdx];
-							inputs->AppendMVariant(desc.m_strName);
 						}
 					}
 				}
@@ -178,7 +175,6 @@ bool MRenderPassResource::SaveTo(const MString& strResourcePath)
 						if (unIdx < m_pRenderPass->m_vBackDesc.size())
 						{
 							const MPassTargetDescription& desc = m_pRenderPass->m_vBackDesc[unIdx];
-							outputs->AppendMVariant(desc.m_strName);
 						}
 					}
 				}

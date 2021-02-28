@@ -3,7 +3,7 @@
  * 
  * @Created      2019-12-30 11:43:46
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MDIRECTX11RENDERTARGET_H_

@@ -3,7 +3,7 @@
  * 
  * @Created      2020-07-2 11:45:49
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MFORWARDRENDERPROGRAM_H_
@@ -17,20 +17,21 @@
 #include "Shader/MShaderParamSet.h"
 
 #include "MRenderPass.h"
+#include "MRenderGraph.h"
 #include "MForwardRenderShaderParamSet.h"
 
 #include <vector>
 
 class MScene;
 class MCamera;
+class MRenderGraph;
 class MIMeshInstance;
 class MModelInstance;
 class MSkeletonInstance;
 class MDirectionalLight;
 class MForwardRenderWork;
-class MRenderBackTexture;
+class MRenderTexture;
 class MIModelMeshInstance;
-class MRenderDepthTexture;
 class MForwardShadowMapWork;
 class MForwardTransparentWork;
 class MShadowTextureRenderTarget;
@@ -40,6 +41,7 @@ struct MRenderInfo
 	MRenderInfo();
 
 	float fDelta;
+	float fGameTime;
 	uint32_t unFrameIndex;
 	class MIRenderTarget* pRenderTarget;
 	class MIRenderer* pRenderer;
@@ -77,12 +79,14 @@ public:
 
 	virtual void SetClearColor(const MColor& cClearColor) override;
 
-
+	virtual MRenderGraph* GetRenderGraph() override { return m_pRenderGraph; }
 public:
 
 	void Render(MRenderInfo& info);
 
 	void GenerateRenderGroup(MRenderInfo& info);
+
+	MRenderInfo& GetRenderInfo() { return m_RenderInfo; }
 
 protected:
 
@@ -91,11 +95,16 @@ protected:
 
 protected:
 
+	MRenderInfo m_RenderInfo;
+
 	MForwardShadowMapWork* m_pShadowMapWork;
 	MForwardRenderWork* m_pRenderWork;
 	MForwardTransparentWork* m_pTransparentWork;
 
 	MColor m_cClearColor;
+
+
+	MRenderGraph* m_pRenderGraph;
 };
 
 #endif

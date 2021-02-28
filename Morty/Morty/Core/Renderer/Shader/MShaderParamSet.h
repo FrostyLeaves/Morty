@@ -3,7 +3,7 @@
  * 
  * @Created      2020-07-20 14:26:56
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MSHADERPARAMSET_H_

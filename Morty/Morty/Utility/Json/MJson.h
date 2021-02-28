@@ -3,7 +3,7 @@
  * 
  * @Created      2019-10-25 00:02:48
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MJSON_H_

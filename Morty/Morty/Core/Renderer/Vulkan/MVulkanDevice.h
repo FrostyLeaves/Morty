@@ -3,7 +3,7 @@
  * 
  * @Created      2020-06-17 20:01:48
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MVULKANDEVICE_H_
@@ -24,7 +24,7 @@
 #include "MVulkanObjectDestructor.h"
 #include "MVulkanShaderCompiler.h"
 #include "MVulkanPipelineManager.h"
-#include "MVulkanUniformBufferPool.h"
+#include "MVulkanBufferPool.h"
 
 #include "MTexture.h"
 
@@ -47,11 +47,8 @@ public:
 	virtual void GenerateTextureCube(MTextureBuffer** ppTextureBuffer, MTexture* vTexture[6], const bool& bGenerateMipmap) override;
 	virtual void DestroyTexture(MTextureBuffer** ppTextureBuffer) override;
 
-	virtual bool GenerateRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer, MIRenderTexture* pTexture) override;
-	virtual void DestroyRenderTextureBuffer(MRenderTextureBuffer** ppTextureBuffer) override;
-
-	virtual void GenerateDepthTexture(MDepthTextureBuffer** ppTextureBuffer, const uint32_t& unWidth, const uint32_t& unHeight) override;
-	virtual void DestroyDepthTexture(MDepthTextureBuffer** ppTextureBuffer) override;
+	virtual bool GenerateRenderTextureBuffer(MRenderTextureBuffer* ppTextureBuffer, MIRenderTexture* pTexture) override;
+	virtual void DestroyRenderTextureBuffer(MRenderTextureBuffer* ppTextureBuffer) override;
 
 	virtual bool CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const uint32_t& eShaderType, const MShaderMacro& macro) override;
 	virtual void CleanShader(MShaderBuffer** ppShaderBuffer) override;
@@ -65,8 +62,11 @@ public:
 	virtual bool GenerateShaderParamBuffer(MShaderConstantParam* pParam) override;
 	virtual void DestroyShaderParamBuffer(MShaderConstantParam* pParam) override;
 
-	virtual bool GenerateRenderPass(MRenderPass* pRenderPass, MIRenderTarget* pRenderTarget) override;
+	virtual bool GenerateRenderPass(MRenderPass* pRenderPass) override;
 	virtual void DestroyRenderPass(MRenderPass* pRenderPass) override;
+
+	virtual bool GenerateFrameBuffer(MRenderPass* pRenderPass) override;
+	virtual void DestroyFrameBuffer(MRenderPass* pRenderPass) override;
 
 	virtual bool GenerateRenderTargetView(MRenderTextureBuffer* pTextureBuffer) override;
 	virtual void DestroyRenderTargetView(MRenderTextureBuffer* pTextureBuffer) override;
@@ -126,7 +126,7 @@ public:
 	MVulkanShaderCompiler m_ShaderCompiler;
 	MVulkanPipelineManager m_PipelineManager;
 	MVulkanObjectDestructor m_ObjectDestructor;
-	MVulkanUniformBufferPool m_DynamicUniformBufferPool;
+	MVulkanBufferPool m_BufferPool;
 
 	VkFormat m_VkDepthTextureFormat;
 

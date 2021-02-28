@@ -5,15 +5,18 @@
 #include "MRenderPass.h"
 #include "SceneTexture.h"
 #include "MIRenderView.h"
+#include "MTexture.h"
 
 class MNode;
 class MScene;
+class ImGuiRenderable;
 class MStaticMeshInstance;
 class IBaseView;
 class NodeTreeView;
 class PropertyView;
 class MaterialView;
 class ResourceView;
+class RenderGraphView;
 class MainEditor : public MIRenderView
 {
 public:
@@ -54,6 +57,9 @@ public:
 
 	void InitializeSDLWindow();
 
+
+	void RenderImGUI();
+
 public:
 
 	void ShowMenu();
@@ -64,6 +70,7 @@ public:
 	void ShowMaterial();
 	void ShowMessage();
 	void ShowResource();
+	void ShowRenderGraphView();
 
 protected:
 
@@ -71,6 +78,7 @@ protected:
 	PropertyView* m_pPropertyView;
 	MaterialView* m_pMaterialView;
 	ResourceView* m_pResourceView;
+	RenderGraphView* m_pRenderGraphView;
 
 	std::vector<IBaseView*> m_vChildView;
 
@@ -90,15 +98,16 @@ protected:
 	bool m_bShowRenderView;
 	bool m_bShowMaterial;
 	bool m_bShowResource;
+	bool m_bShowRenderGraph;
 
 
 	SceneTexture m_SceneTexture;
 
-	MRenderPass m_ImguiRenderPass;
-
 	std::function<bool()> m_funcCloseCallback;
 
 	struct SDL_Window* m_pSDLWindow;
+
+	ImGuiRenderable* m_pImGuiRenderable;
 };
 
 

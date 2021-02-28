@@ -3,7 +3,7 @@
  * 
  * @Created      2019-12-27 19:21:39
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MTYPEDCLASS_H_

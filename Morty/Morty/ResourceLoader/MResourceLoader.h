@@ -3,7 +3,7 @@
  * 
  * @Created      2019-08-06 17:59:45
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MRESOURCELOADER_H_

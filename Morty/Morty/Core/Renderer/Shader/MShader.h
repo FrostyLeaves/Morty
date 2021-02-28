@@ -3,7 +3,7 @@
  * 
  * @Created      2019-08-26 21:24:51
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MSHADER_H_

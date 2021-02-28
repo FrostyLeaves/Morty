@@ -21,6 +21,10 @@ source_group("ImGUI" FILES ${IMGUI_FILES})
 file(GLOB IMGUI_FILE_DIALOG_FILES ImGUI/ImGuiFileDialog/*.h ImGUI/ImGuiFileDialog/*.cpp )
 source_group("ImGUI/FileDialog" FILES ${IMGUI_FILE_DIALOG_FILES})
 
+file(GLOB IMGUI_NODE_EDITOR_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/imgui-node-editor/*.h ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/imgui-node-editor/*.cpp )
+source_group("ImGUI/NodeEditor" FILES ${IMGUI_NODE_EDITOR_FILES})
+
+
 
 add_library(Editor STATIC
 	
@@ -29,7 +33,7 @@ add_library(Editor STATIC
 
 	${IMGUI_FILES}
 	${IMGUI_FILE_DIALOG_FILES}
-
+    ${IMGUI_NODE_EDITOR_FILES}
 )
 
 ############################################################
@@ -40,6 +44,7 @@ set(EDITOR_CODE_DIRECTORIES ${MORTY_CODE_DIRECTORIES}
         ${CMAKE_CURRENT_SOURCE_DIR}/Editor/Property
         ${CMAKE_CURRENT_SOURCE_DIR}/ImGUI
         ${CMAKE_CURRENT_SOURCE_DIR}/ImGUI/ImGuiFileDialog
+        ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/imgui-node-editor
 
         CACHE INTERNAL "Editor Source Code Directories"
 )

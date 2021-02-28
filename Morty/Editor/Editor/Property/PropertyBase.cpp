@@ -374,7 +374,7 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 
 					if (param->pTexture)
 					{
-						ShowTexture(param->pTexture->GetBuffer());
+						ShowTexture(param->pTexture);
 					}
 
 					ShowValueEnd();
@@ -476,24 +476,21 @@ void PropertyBase::EditSaveMResource(const MString& stringID, MResource* pResour
 	}
 }
 
-void PropertyBase::ShowTexture(MTextureBuffer* pTextureBuffer)
+void PropertyBase::ShowTexture(MITexture* pTexture)
 {
 	const float fMaxImageSize = 200;
-	if (pTextureBuffer)
+	if (pTexture)
 	{
-		if (pTextureBuffer->GetResourceView())
+		float fImageWidth = ImGui::GetContentRegionAvailWidth();
+		if (fImageWidth > fMaxImageSize)
 		{
-			float fImageWidth = ImGui::GetContentRegionAvailWidth();
-			if (fImageWidth > fMaxImageSize)
-			{
-				ImGui::Spacing();
-				ImGui::SameLine((fImageWidth - fMaxImageSize) * 0.5f);
-				ImGui::Image(ImTextureID(pTextureBuffer->GetResourceView()), ImVec2(fMaxImageSize, fMaxImageSize));
-			}
-			else
-			{
-				ImGui::Image(ImTextureID(pTextureBuffer->GetResourceView()), ImVec2(fImageWidth, fImageWidth));
-			}
+			ImGui::Spacing();
+			ImGui::SameLine((fImageWidth - fMaxImageSize) * 0.5f);
+			ImGui::Image(ImTextureID(pTexture), ImVec2(fMaxImageSize, fMaxImageSize));
+		}
+		else
+		{
+			ImGui::Image(ImTextureID(pTexture), ImVec2(fImageWidth, fImageWidth));
 		}
 	}
 }

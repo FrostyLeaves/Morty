@@ -7,18 +7,15 @@
 #include "MTexture.h"
 #include "MViewport.h"
 #include "MIRenderer.h"
+#include "MTexture.h"
 #include "MRenderStructure.h"
-#include "MTextureRenderTarget.h"
 #include "MForwardRenderProgram.h"
 #include "MForwardPostProcessProgram.h"
 
 SceneTexture::SceneTexture()
 	: m_pEngine(nullptr)
 	, m_pScene(nullptr)
-	, m_pTextureRenderTarget(nullptr)
 	, m_pRenderViewport(nullptr)
-	, m_vBackTexture()
-	, m_vDepthTexture()
 	, m_pRenderProgram(nullptr)
 {
 
@@ -34,11 +31,7 @@ void SceneTexture::Initialize(MEngine* pEngine)
 	m_pEngine = pEngine;
 
 	//m_pRenderProgram = m_pEngine->GetObjectManager()->CreateObject<MForwardRenderProgram>();
-	MForwardPostProcessProgram* pPostProcessProgram = m_pEngine->GetObjectManager()->CreateObject<MForwardPostProcessProgram>();
-	pPostProcessProgram->SetHighDynamicRangeEnable(true);
-
-
-	m_pRenderProgram = pPostProcessProgram;
+	m_pRenderProgram = m_pEngine->GetObjectManager()->CreateObject<MForwardPostProcessProgram>();
 
 	m_pScene = m_pEngine->GetObjectManager()->CreateObject<MScene>();
 
@@ -46,28 +39,6 @@ void SceneTexture::Initialize(MEngine* pEngine)
 	m_pRenderViewport->SetScene(m_pScene);
 	m_pRenderViewport->SetSize(Vector2(256, 256));
 
-	
-	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-	{
-		MRenderBackTexture* pBackTexture = new MRenderBackTexture();
-		pBackTexture->SetSize(Vector2(256, 256));
-		pBackTexture->SetType(METextureLayout::ERGBA8);
-		pBackTexture->GenerateBuffer(pEngine->GetDevice());
-
-		m_vBackTexture[i] = pBackTexture;
-
-		MRenderDepthTexture* pDepthTexture = new MRenderDepthTexture();
-		pDepthTexture->SetSize(Vector2(256, 256));
-		pDepthTexture->GenerateBuffer(pEngine->GetDevice());
-
-		m_vDepthTexture[i] = pDepthTexture;
-	}
-	m_pTextureRenderTarget = pEngine->GetObjectManager()->CreateObject<MTextureRenderTarget>();
-	m_pTextureRenderTarget->SetBackTexture(m_vBackTexture, 0);
-	m_pTextureRenderTarget->SetDepthTexture(m_vDepthTexture);
-	m_pTextureRenderTarget->Resize({ 256, 256 });
-
-	m_pRenderProgram->BindRenderTarget(m_pTextureRenderTarget);
 	m_pRenderProgram->Initialize();
 
 	MCamera* pCamera = m_pRenderViewport->GetCamera();
@@ -85,20 +56,9 @@ void SceneTexture::Release()
 	m_pRenderViewport->DeleteLater();
 	m_pRenderViewport = nullptr;
 
-	m_pTextureRenderTarget->DeleteLater();
-	m_pTextureRenderTarget = nullptr;
-
 	m_pRenderProgram->DeleteLater();
 	m_pRenderProgram = nullptr;
 
-	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
-	{
-		m_vBackTexture[i]->DestroyBuffer(m_pEngine->GetDevice());
-		m_vDepthTexture[i]->DestroyBuffer(m_pEngine->GetDevice());
-
-		m_vBackTexture[i] = nullptr;
-		m_vDepthTexture[i] = nullptr;
-	}
 }
 
 void SceneTexture::SetSize(const Vector2& v2Size)
@@ -114,21 +74,16 @@ void SceneTexture::SetSize(const Vector2& v2Size)
 	if (m_v2Size.y < 1.0f)
 		m_v2Size.y = 1.0f;
 
-	m_pRenderViewport->SetSize(m_v2Size);
-
-	for (uint32_t i = 0; i < M_BUFFER_NUM; ++i)
+	if (MRenderGraph* pRenderGraph = m_pRenderProgram->GetRenderGraph())
 	{
-		m_vBackTexture[i]->SetSize(m_v2Size);
-		m_vDepthTexture[i]->SetSize(m_v2Size);
-
-		m_vBackTexture[i]->DestroyBuffer(m_pEngine->GetDevice());
-		m_vBackTexture[i]->GenerateBuffer(m_pEngine->GetDevice());
-
-		m_vDepthTexture[i]->DestroyBuffer(m_pEngine->GetDevice());
-		m_vDepthTexture[i]->GenerateBuffer(m_pEngine->GetDevice());
+		pRenderGraph->SetOutputSize(m_v2Size);
 	}
 
-	m_pTextureRenderTarget->Resize(m_v2Size);
+	if (m_pRenderViewport)
+	{
+		m_pRenderViewport->SetSize(m_v2Size);
+	}
+
 }
 
 void SceneTexture::UpdateTexture()
@@ -141,22 +96,32 @@ void SceneTexture::UpdateTexture()
 
 void* SceneTexture::GetTexture(const uint32_t& unFrameIndex)
 {
-	if (m_pTextureRenderTarget)
+
+	if (MRenderGraph* pRenderGraph = m_pRenderProgram->GetRenderGraph())
 	{
-		std::vector<MIRenderBackTexture*>*  pBackTextures = m_pTextureRenderTarget->GetBackTexture(unFrameIndex);
-		if (MIRenderBackTexture* pBackTexture = pBackTextures->at(0))
+		if (MRenderGraphTexture* pRenderGraphTexture = pRenderGraph->GetFinalOutputTexture())
 		{
-			if (MTextureBuffer* pBuffer = pBackTexture->GetBuffer())
+			if (MIRenderTexture* pTexture = pRenderGraphTexture->GetRenderTexture())
 			{
-				return pBuffer->GetResourceView();
+				return pTexture;
 			}
 		}
 	}
-	
+
 	return nullptr;
 }
 
 void SceneTexture::SetBackColor(const MColor& cColor)
 {
 	m_pRenderProgram->SetClearColor(cColor);
+}
+
+MRenderGraph* SceneTexture::GetRenderGraph()
+{
+	if (m_pRenderProgram)
+	{
+		return m_pRenderProgram->GetRenderGraph();
+	}
+
+	return nullptr;
 }

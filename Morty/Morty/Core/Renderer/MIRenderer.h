@@ -3,7 +3,7 @@
  * 
  * @Created      2019-05-12 21:49:13
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MIRENDERER_H_
@@ -55,6 +55,7 @@ enum class MEMaterialType
 	EDepthPeel,
 	ETransparentBlend,
 	EOutline,
+	EImGui,
 
 	EMaterialTypeEnd,
 };
@@ -79,9 +80,8 @@ class MFrameBuffer;
 class MIRenderTarget;
 class MIRenderTexture;
 class MShaderParamSet;
-class MRenderBackTexture;
-class MIRenderBackTexture;
-class MRenderDepthTexture;
+class MRenderTexture;
+class MIRenderTexture;
 
 class MORTY_API MIRenderer
 {
@@ -90,19 +90,14 @@ public:
 	MIRenderer();;
 	virtual ~MIRenderer(){};
 
-	struct RenderTargetPair
-	{
-		RenderTargetPair(MIRenderTarget* pRT, MRenderDepthTexture* pDT) :pRenderTarget(pRT), pDepthTexture(pDT) {}
-		MIRenderTarget* pRenderTarget;
-		MRenderDepthTexture* pDepthTexture;
-	};
-
 public:
 
 	virtual bool Initialize() = 0;
 	virtual void Release() = 0;
 
 	virtual void SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth) = 0;
+
+	virtual void SetScissor(const float& fX, const float& fY, const float& fWidth, const float& fHeight) = 0;
 
 	virtual void NewRenderFrame() = 0;
 
@@ -112,7 +107,7 @@ public:
 
 	virtual void NextSubpass() = 0;
 
-	virtual void BeginRenderPass(MRenderPass* pRenderPass, MIRenderTarget* pRenderTarget) = 0;
+	virtual void BeginRenderPass(MRenderPass* pRenderPass, const uint32_t& nFrameBufferIdx) = 0;
 
 	virtual void EndRenderPass() = 0;
 
@@ -120,9 +115,11 @@ public:
 
 	virtual void DrawMesh(MIMesh* pMesh) = 0;
 
+	virtual void DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, const uint32_t& nIdxCount, const uint32_t& nVrtOffset) = 0;
+
 	virtual bool SetUseMaterial(MMaterial* pMaterial) = 0;
 
-	virtual bool SetRenderToTextureBarrier(const std::vector<MIRenderBackTexture*> vTextures) = 0;
+	virtual bool SetRenderToTextureBarrier(const std::vector<MIRenderTexture*> vTextures) = 0;
 
 	virtual bool DownloadTexture(MITexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback) = 0;
 

@@ -3,7 +3,7 @@
  * 
  * @Created      2020-08-25 11:25:01
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MFORWARDTRANSPARENTWORK_H_
@@ -14,9 +14,9 @@
 
 #include <array>
 
-class MIRenderBackTexture;
-class MRenderBackTexture;
-class MRenderSubpassTexture;
+class MIRenderTexture;
+class MRenderTexture;
+class MRenderTexture;
 class MTextureRenderTarget;
 class MORTY_API MForwardTransparentWork : public MObject
 {
@@ -32,9 +32,9 @@ public:
 
     MIRenderProgram* GetProgram() const { return m_pRenderProgram; }
 
-    void Render(MRenderInfo& info);
+    void Render(MRenderGraphNode* pGraphNode);
 
-	void RenderDepthPeel(MRenderInfo& info, MRenderPass* pRenderPass, MTextureRenderTarget* pRenderTarget, const uint32_t& unTargetIdx);
+	void RenderDepthPeel(MRenderGraphNode* pGraphNode);
 
 
 protected:
@@ -48,15 +48,9 @@ protected:
     void InitializeTexture();
     void ReleaseTexture();
 
-    void InitializeRenderTargets();
-    void ReleaseRenderTargets();
+	void InitializeRenderGraph();
 
-    void InitializeRenderPass();
-    void ReleaseRenderPass();
-
-	void CheckTransparentTextureSize(MRenderInfo& info);
-
-	void UpdateShaderSharedParams(MRenderInfo& info);
+	void BindTextureParam();
 
     void SetupSubPass(MRenderPass& renderpass);
 
@@ -68,25 +62,14 @@ private:
 	MTexture* m_pWhiteTexture;
 	MTexture* m_pBlackTexture;
 
-	MTextureRenderTarget* m_pTransparentRenderTarget;
-
-	std::array<MIRenderBackTexture*, M_BUFFER_NUM> vBackTexture;
-	std::array<MIRenderBackTexture*, M_BUFFER_NUM> vFrontTexture;
-	std::array<MIRenderBackTexture*, M_BUFFER_NUM> vBackDepthTexture[2];
-	std::array<MIRenderBackTexture*, M_BUFFER_NUM> vFrontDepthTexture[2];
-
 	MForwardRenderTransparentShaderParamSet m_aFrameParamSet[2];
 
 	Vector2 m_v2TransparentTextureSize;
-	std::vector<MIRenderBackTexture*> m_vRenderTargetTexture;
+	std::vector<MIRenderTexture*> m_vRenderTargetTexture;
 
 	MMesh<Vector2> m_TransparentDrawMesh;
     MMaterial* m_pDrawMeshMaterial;
     MMaterial* m_pDrawFillMaterial;
-
-
-	MRenderPass m_TransWithClearRenderPass;
-    MRenderPass m_MeshRenderPass;
 };
 
 #endif
