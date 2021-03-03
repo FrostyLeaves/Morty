@@ -12,6 +12,8 @@
 #include "MForwardRenderProgram.h"
 #include "MForwardPostProcessProgram.h"
 
+#include "MRenderGraphTexture.h"
+
 SceneTexture::SceneTexture()
 	: m_pEngine(nullptr)
 	, m_pScene(nullptr)
@@ -86,11 +88,11 @@ void SceneTexture::SetSize(const Vector2& v2Size)
 
 }
 
-void SceneTexture::UpdateTexture()
+void SceneTexture::UpdateTexture(MRenderCommand* pCommand)
 {
 	if (m_pRenderProgram)
 	{
-		m_pRenderProgram->Render(m_pEngine->GetRenderer(), m_pRenderViewport);
+		m_pRenderProgram->Render(m_pEngine->GetRenderer(), m_pRenderViewport, pCommand);
 	}
 }
 

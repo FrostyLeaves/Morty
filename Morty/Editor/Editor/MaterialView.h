@@ -21,7 +21,7 @@ public:
 public:
 	void SetMaterial(MMaterial* pMaterial);
 
-	void UpdateMaterialTexture();
+	void UpdateTexture(MRenderCommand* pCommand);
 
 	virtual void Render() override;
 

@@ -41,8 +41,7 @@ public:
 
 	virtual void Input(MInputEvent* pEvent) = 0;
 
-	virtual void OnRenderBegin() {}
-	virtual void OnRenderEnd() {}
+	virtual void Render() = 0;
 
 	virtual bool GetMinimized() = 0;
 

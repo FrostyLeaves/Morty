@@ -30,6 +30,7 @@ MVulkanRenderTarget::MVulkanRenderTarget()
 	, m_VkImageAvailableSemaphore(VK_NULL_HANDLE)
 	, m_unMinImageCount(0)
 	, m_RenderPass()
+	, m_aPrimaryCommands()
 {
 
 }
@@ -44,7 +45,7 @@ void MVulkanRenderTarget::OnRender(MIRenderer* pRenderer)
 
 }
 
-void MVulkanRenderTarget::OnRenderBefore(MIRenderer* pRenderer)
+void MVulkanRenderTarget::WaitImageReady()
 {
 	MVulkanDevice* pDevice = dynamic_cast<MVulkanDevice*>(GetEngine()->GetDevice());
 	if (!pDevice)
@@ -53,18 +54,20 @@ void MVulkanRenderTarget::OnRenderBefore(MIRenderer* pRenderer)
 	vkAcquireNextImageKHR(pDevice->m_VkDevice, m_VkSwapchain, UINT64_MAX, m_VkImageAvailableSemaphore, VK_NULL_HANDLE, &m_unFrameBufferIndex);
 }
 
-void MVulkanRenderTarget::OnRenderAfter(MIRenderer* pRenderer)
+void MVulkanRenderTarget::Present()
 {
-	MVulkanRenderer* pVkRenderer = dynamic_cast<MVulkanRenderer*>(pRenderer);
-
 	VkPresentInfoKHR presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-	uint32_t unFrameIndex = pVkRenderer->GetFrameIndex();
-	VkSemaphore signalSemaphores[] = { m_aVkRenderFinishedSemaphore[unFrameIndex] };
+	std::vector<VkSemaphore> vSignalSemaphores;
 
-	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores = signalSemaphores;
+	if (m_aPrimaryCommands[m_unFrameBufferIndex])
+	{
+		vSignalSemaphores.push_back(m_aPrimaryCommands[GetEngine()->GetFrameIdx()]->m_VkRenderFinishedSemaphore);
+	}
+
+	presentInfo.waitSemaphoreCount = vSignalSemaphores.size();
+	presentInfo.pWaitSemaphores = vSignalSemaphores.data();
 	VkSwapchainKHR swapChains[] = { m_VkSwapchain };
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapChains;
@@ -101,6 +104,13 @@ void MVulkanRenderTarget::Initialize()
 		return;
 
 	m_vWaitSemaphoreBeforeSubmit.push_back(m_VkImageAvailableSemaphore);
+
+
+	for (size_t i = 0; i < m_aPrimaryCommands.size(); ++i)
+	{
+		m_aPrimaryCommands[i] = m_pEngine->GetDevice()->CreateRenderCommand();
+		m_aPrimaryCommands[i]->m_unFrameIdx = i;
+	}
 }
 
 void MVulkanRenderTarget::OnDelete()
@@ -114,6 +124,14 @@ void MVulkanRenderTarget::OnDelete()
 		return;
 	}
 
+	for (size_t i = 0; i < m_aPrimaryCommands.size(); ++i)
+	{
+		if (m_aPrimaryCommands[i])
+		{
+			m_pEngine->GetDevice()->RecoveryRenderCommand(m_aPrimaryCommands[i]);
+			m_aPrimaryCommands[i] = nullptr;
+		}
+	}
 
 	CleanRenderBuffer(pDevice);
 	pDevice->DestroyRenderTarget(this);
@@ -155,6 +173,11 @@ void MVulkanRenderTarget::Resize(const Vector2& v2Size)
 uint32_t MVulkanRenderTarget::GetFrameBufferIndex()
 {
 	return m_unFrameBufferIndex;
+}
+
+MRenderCommand* MVulkanRenderTarget::GetPrimaryCommand()
+{
+	return m_aPrimaryCommands[GetEngine()->GetFrameIdx()];
 }
 
 bool MVulkanRenderTarget::InitializeSwapchain(MVulkanDevice* pDevice)

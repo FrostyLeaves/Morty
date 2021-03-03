@@ -137,7 +137,7 @@ void ImGuiRenderable::Tick(const float& fDelta)
 	UpdateMesh();
 }
 
-void ImGuiRenderable::Render(MIRenderer* pRenderer)
+void ImGuiRenderable::Render(MIRenderer* pRenderer, MRenderCommand* pCommand)
 {
 	auto draw_data = ImGui::GetDrawData();
 	// Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
@@ -146,10 +146,10 @@ void ImGuiRenderable::Render(MIRenderer* pRenderer)
 	if (fb_width <= 0 || fb_height <= 0)
 		return;
 
-	pRenderer->SetViewport(0.0f, fb_height, fb_width, -fb_height, 0.0f, 1.0f);
+	pRenderer->SetViewport(pCommand, MViewportInfo(0.0f, fb_height, fb_width, -fb_height));
 	m_pMaterial->SetMaterialType(MEMaterialType::EImGui);
 	m_pMaterial->SetRasterizerType(MERasterizerType::ECullNone);
-	pRenderer->SetUseMaterial(m_pMaterial);
+	pRenderer->SetUseMaterial(pCommand, m_pMaterial);
 
 	Vector2 scale;
 	scale.x = 2.0f / draw_data->DisplaySize.x;
@@ -192,7 +192,7 @@ void ImGuiRenderable::Render(MIRenderer* pRenderer)
 					if (dest->nDestroyCount > 0) {
 						--dest->nDestroyCount;
 					}
-					pRenderer->SetShaderParamSet(dest->pParamSet);
+					pRenderer->SetShaderParamSet(pCommand, dest->pParamSet);
 				}
 			}
 
@@ -211,9 +211,9 @@ void ImGuiRenderable::Render(MIRenderer* pRenderer)
 				if (clip_rect.y < 0.0f)
 					clip_rect.y = 0.0f;
 
-				pRenderer->SetScissor(clip_rect.x, clip_rect.y, clip_rect.z - clip_rect.x, clip_rect.w - clip_rect.y);
+				pRenderer->SetScissor(pCommand, MScissorInfo(clip_rect.x, clip_rect.y, clip_rect.z - clip_rect.x, clip_rect.w - clip_rect.y));
 
-				pRenderer->DrawMesh(&m_Mesh, pcmd->IdxOffset + global_idx_offset, pcmd->ElemCount, pcmd->VtxOffset + global_vtx_offset);
+				pRenderer->DrawMesh(pCommand, &m_Mesh, pcmd->IdxOffset + global_idx_offset, pcmd->ElemCount, pcmd->VtxOffset + global_vtx_offset);
 			}
 
 		}

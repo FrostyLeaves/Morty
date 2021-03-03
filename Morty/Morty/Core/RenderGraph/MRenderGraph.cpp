@@ -3,129 +3,12 @@
 #include "MEngine.h"
 #include "MFunction.h"
 #include "MRenderPass.h"
+#include "MRenderGraphNode.h"
+#include "MRenderGraphTexture.h"
 
 
 #include <queue>
 #include <functional>
-
-
-MRenderGraphNode::MRenderGraphNode()
-	: m_strNodeName("")
-	, m_vInputTextures()
-	, m_vOutputTextures()
-	, m_nCommandLevel(M_INVALID_INDEX)
-	, m_pGraph(nullptr)
-	, m_pRenderPass(new MRenderPass())
-	, m_bDirty(true)
-	, m_funcRender(nullptr)
-{
-
-}
-
-MRenderGraphNodeInput* MRenderGraphNode::AppendInput()
-{
-	MRenderGraphNodeInput* pInput = new MRenderGraphNodeInput();
-	pInput->pGraphNode = this;
-	pInput->m_unIndex = m_vInputTextures.size();
-	m_vInputTextures.push_back(pInput);
-
-	return pInput;
-}
-
-MRenderGraphNodeOutput* MRenderGraphNode::AppendOutput()
-{
-	MRenderGraphNodeOutput* pOutput = new MRenderGraphNodeOutput();
-	pOutput->pGraphNode = this;
-	pOutput->m_unIndex = m_vOutputTextures.size();
-
-	m_vOutputTextures.push_back(pOutput);
-
-	return pOutput;
-}
-
-MRenderGraphNodeInput* MRenderGraphNode::GetInput(const size_t& nInputIdx)
-{
-	if (nInputIdx < m_vInputTextures.size())
-		return m_vInputTextures[nInputIdx];
-
-	return nullptr;
-}
-
-MRenderGraphNodeOutput* MRenderGraphNode::GetOutput(const size_t& nOutputIdx)
-{
-	if (nOutputIdx < m_vOutputTextures.size())
-		return m_vOutputTextures[nOutputIdx];
-
-	return nullptr;
-}
-
-MRenderGraphTexture* MRenderGraphNode::GetInputTexture(const size_t& nInputIdx)
-{
-	if (MRenderGraphNodeInput* pInput = GetInput(nInputIdx))
-	{
-		return pInput->GetLinkedTexture();
-	}
-
-	return nullptr;
-}
-
-void MRenderGraphNode::UpdateBuffer(MIDevice* pDevice)
-{
-	if (m_bDirty)
-	{
-		m_bDirty = false;
-
-		//chean Renderpass.
-		m_pRenderPass->DestroyBuffer(pDevice);
-		m_pRenderPass->m_vBackDesc = {};
-		MFrameBuffer* pFrameBuffer = m_pRenderPass->GetFrameBuffer();
-		pFrameBuffer->vBackTextures = {};
-		pFrameBuffer->pDepthTexture = nullptr;
-
-		for (size_t opIdx = 0; opIdx < m_vOutputTextures.size(); ++opIdx)
-		{
-			MRenderGraphNodeOutput* pOutput = m_vOutputTextures[opIdx];
-			if (MRenderGraphTexture* pRenderTexture = pOutput->GetRenderTexture())
-			{
-
-				if (pRenderTexture->GetUsage() == METextureUsage::ERenderBack)
-				{
-					MFrameBuffer* pFrameBuffer = m_pRenderPass->GetFrameBuffer();
-					pFrameBuffer->vBackTextures.push_back(pRenderTexture->GetRenderTexture());
-
-					m_pRenderPass->m_vBackDesc.push_back({});
-					m_pRenderPass->m_vBackDesc.back().bClearWhenRender = pOutput->GetClear();
-					m_pRenderPass->m_vBackDesc.back().cClearColor = pOutput->GetClearColor();
-				}
-				else if (pRenderTexture->GetUsage() == METextureUsage::ERenderDepth)
-				{
-					MFrameBuffer* pFrameBuffer = m_pRenderPass->GetFrameBuffer();
-					pFrameBuffer->pDepthTexture = pRenderTexture->GetRenderTexture();
-
-					m_pRenderPass->m_DepthDesc.bClearWhenRender = pOutput->GetClear();
-				}
-				else
-				{
-					//error
-				}
-
-			}
-			else
-			{
-				//error.
-			}
-		}
-		m_pRenderPass->GenerateBuffer(pDevice);
-	}
-}
-
-void MRenderGraphNode::DestroyBuffer(MIDevice* pDevice)
-{
-	if (m_pRenderPass)
-	{
-		m_pRenderPass->DestroyBuffer(pDevice);
-	}
-}
 
 MRenderGraph::MRenderGraph()
 	: m_tGraphNodeMap()
@@ -160,6 +43,22 @@ MRenderGraph::~MRenderGraph()
 
 MRenderGraphNode* MRenderGraph::AddRenderGraphNode(const MString& strNodeName)
 {
+	MRenderGraphNode* pNode = new MRenderGraphNode();
+
+	if (!AddRenderGraphNode(pNode, strNodeName))
+	{
+		delete pNode;
+		pNode = nullptr;
+	}
+
+	return pNode;
+}
+
+bool MRenderGraph::AddRenderGraphNode(MRenderGraphNode* pGraphNode, const MString& strNodeName)
+{
+	if (!pGraphNode)
+		return false;
+
 	MString strValidName = strNodeName;
 
 	int i = 0;
@@ -168,14 +67,12 @@ MRenderGraphNode* MRenderGraph::AddRenderGraphNode(const MString& strNodeName)
 		strValidName = strNodeName + "_" + MStringHelper::ToString(++i);
 	}
 
-	MRenderGraphNode* pGraphNode = NewRenderGraphNode();
-
 	pGraphNode->m_strNodeName = strValidName;
 	pGraphNode->m_pGraph = this;
 
 	m_tGraphNodeMap[strValidName] = pGraphNode;
 
-	return pGraphNode;
+	return true;
 }
 
 MRenderGraphTexture* MRenderGraph::AddRenderGraphTexture(const MString& strTextureName)
@@ -404,253 +301,22 @@ void MRenderGraph::Render()
 			pOutput->GetRenderTexture()->UpdateBuffer(GetEngine()->GetDevice());
 		}
 
-		pNode->UpdateBuffer(GetEngine()->GetDevice());
+		if (pNode->GetDirty())
+		{
+			pNode->UpdateBuffer(GetEngine()->GetDevice());
+			pNode->ResetDirty();
+		}
+
+		if (pNode->m_funcUpdate)
+		{
+			//Update render resources
+			pNode->m_funcUpdate(pNode);
+		}
 
 		if (pNode->m_funcRender)
 		{
+			//render
 			pNode->m_funcRender(pNode);
 		}
 	}
-}
-
-MRenderGraphTexture::MRenderGraphTexture()
-	: m_strTextureName()
-	, m_pTexture(nullptr)
-	, m_eUsage(METextureUsage::ERenderBack)
-	, m_eLayout(METextureLayout::ERGBA8)
-	, m_eSizePolicy(ESizePolicy::EAbsolute)
-	, m_v2Size(256.0f, 256.0f)
-	, m_pGraph(nullptr)
-{
-	m_pTexture = new MRenderTexture();
-	m_pTexture->SetUsage(m_eUsage);
-	m_pTexture->SetType(m_eLayout);
-	m_pTexture->SetSize(Vector2(256.0f, 256.0f));
-}
-
-void MRenderGraphTexture::SetSizePolicy(const ESizePolicy& ePolicy)
-{
-	if (m_eSizePolicy != ePolicy)
-	{
-		m_eSizePolicy = ePolicy;
-
-		if (m_pGraph)
-		{
-			if (ESizePolicy::ERelative == m_eSizePolicy)
-			{
-				m_pGraph->AddRelationTexture(this);
-				m_pGraph->UpdateTextureSize(this);
-			}
-			else
-			{
-				m_pGraph->RemoveRelationTexture(this);
-				m_pGraph->UpdateTextureSize(this);
-			}
-		}
-	}
-}
-
-void MRenderGraphTexture::SetUsage(const METextureUsage& eUsage)
-{
-	if (m_eUsage != eUsage)
-	{
-		m_eUsage = eUsage;
-		m_pTexture->SetUsage(eUsage);
-		SetDirty();
-	}
-}
-
-void MRenderGraphTexture::SetLayout(const METextureLayout& eLayout)
-{
-	if (m_eLayout != eLayout)
-	{
-		m_eLayout = eLayout;
-		m_pTexture->SetType(eLayout);
-		SetDirty();
-	}
-}
-
-void MRenderGraphTexture::SetSize(const Vector2& size)
-{
-	if (m_v2Size != size)
-	{
-		m_v2Size = size;
-
-		if (m_pGraph)
-		{
-			m_pGraph->UpdateTextureSize(this);
-		}
-	}
-}
-
-Vector2 MRenderGraphTexture::GetOutputSize() const
-{
-	if (m_pTexture)
-	{
-		return m_pTexture->GetSize();
-	}
-
-	return Vector2(256.0f, 256.0f);
-}
-
-void MRenderGraphTexture::SetDirty()
-{
-	if (!m_bDirty)
-	{
-		m_bDirty = true;
-		for (MRenderGraphNodeOutput* pOutput : m_vOutputs)
-		{
-			if (MRenderGraphNode* pOwnerNode = pOutput->GetRenderGraphNode())
-			{
-				pOwnerNode->SetDirty();
-			}
-		}
-	}
-}
-
-void MRenderGraphTexture::AddRenderGraphNodeOutput(MRenderGraphNodeOutput* pOutput)
-{
-	UNION_PUSH_BACK_VECTOR(m_vOutputs, pOutput);
-}
-
-void MRenderGraphTexture::RemoveRenderGraphNodeOutput(MRenderGraphNodeOutput* pOutput)
-{
-	ERASE_FIRST_VECTOR(m_vOutputs, pOutput);
-}
-
-MRenderGraphNodeOutput* MRenderGraphTexture::GetFinalNodeOutput() const
-{
-	if (m_vOutputs.empty())
-		return nullptr;
-
-	//TODO already compiled.
-
-	MRenderGraphNodeOutput* pResultOutput = m_vOutputs[0];
-
-	for (MRenderGraphNodeOutput* p : m_vOutputs)
-	{
-		if (MRenderGraphNode* pNode = p->GetRenderGraphNode())
-		{
-			if (pResultOutput->GetRenderGraphNode()->GetLevel() > pNode->GetLevel())
-			{
-				pResultOutput = p;
-			}
-		}
-	}
-
-	return pResultOutput;
-}
-
-MIRenderTexture* MRenderGraphTexture::GetRenderTexture()
-{
-	return m_pTexture;
-}
-
-void MRenderGraphTexture::UpdateBuffer(MIDevice* pDevice)
-{
-	if (m_bDirty)
-	{
-		m_bDirty = false;
-		m_pTexture->DestroyBuffer(pDevice);
-		m_pTexture->GenerateBuffer(pDevice);
-	}
-}
-
-void MRenderGraphTexture::DestroyBuffer(MIDevice* pDevice)
-{
-	if (m_pTexture)
-	{
-		m_pTexture->DestroyBuffer(pDevice);
-	}
-}
-
-MRenderGraphNodeOutput::MRenderGraphNodeOutput()
-	: m_unIndex(0)
-	, bClear(true)
-	, mClearColor(MColor::Black_T)
-	, pGraphNode(nullptr)
-	, pGraphTexture(nullptr)
-	, vLinkedInput()
-{
-
-}
-
-MString MRenderGraphNodeOutput::GetStringID() const
-{
-	if (!GetRenderGraphNode())
-		return "";
-
-	return GetRenderGraphNode()->GetNodeName() + "_Output_" + MStringHelper::ToString(m_unIndex);
-}
-
-void MRenderGraphNodeOutput::SetRenderTexture(MRenderGraphTexture* pTexture)
-{
-	if (pGraphTexture)
-	{
-		pGraphTexture->RemoveRenderGraphNodeOutput(this);
-	}
-
-	if (pGraphTexture = pTexture)
-	{
-		pGraphTexture->AddRenderGraphNodeOutput(this);
-	}
-}
-
-void MRenderGraphNodeOutput::LinkTo(MRenderGraphNodeInput* pInput)
-{
-	if (pInput && UNION_PUSH_BACK_VECTOR(vLinkedInput, pInput))
-	{
-		pInput->pLinkedOutput = this;
-	}
-}
-
-void MRenderGraphNodeOutput::UnLink(MRenderGraphNodeInput* pInput)
-{
-	if (pInput->pLinkedOutput == this)
-	{
-		ERASE_FIRST_VECTOR(vLinkedInput, pInput);
-		pInput->pLinkedOutput = nullptr;
-	}
-}
-
-void MRenderGraphNodeInput::LinkTo(MRenderGraphNodeOutput* pOutput)
-{
-	UnLink();
-	pOutput->LinkTo(this);
-}
-
-void MRenderGraphNodeInput::UnLink()
-{
-	if (pLinkedOutput)
-	{
-		pLinkedOutput->UnLink(this);
-	}
-}
-
-MString MRenderGraphNodeInput::GetStringID() const
-{
-	if (!GetRenderGraphNode())
-		return "";
-
-	return GetRenderGraphNode()->GetNodeName() + "_Input_" + MStringHelper::ToString(m_unIndex);
-}
-
-MRenderGraphNode* MRenderGraphNodeInput::GetLinkedNode() const
-{
-	if (pLinkedOutput)
-	{
-		return pLinkedOutput->GetRenderGraphNode();
-	}
-
-	return nullptr;
-}
-
-MRenderGraphTexture* MRenderGraphNodeInput::GetLinkedTexture() const
-{
-	if (pLinkedOutput)
-	{
-		return pLinkedOutput->GetRenderTexture();
-	}
-
-	return nullptr;
 }

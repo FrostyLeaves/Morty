@@ -18,6 +18,7 @@ struct PS_OUT_HDR
 
 float3 ACESToneMapping(float3 color, float adapted_lum)
 {
+    /*
 	const float A = 2.51f;
 	const float B = 0.03f;
 	const float C = 2.43f;
@@ -26,6 +27,12 @@ float3 ACESToneMapping(float3 color, float adapted_lum)
 
 	color *= adapted_lum;
 	return (color * (A * color + B)) / (color * (C * color + D) + E);
+    */
+
+    float lum = dot(color , float3(0.27,0.67,0.06));
+    color *= 0.5 * lum / adapted_lum;
+    color /= float3(float3(1.0,1.0,1.0) + color);
+    return color;
 }
 
 PS_OUT_HDR PS(VS_OUT_GAUSSIAN input) : SV_Target

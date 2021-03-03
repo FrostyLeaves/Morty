@@ -11,6 +11,7 @@ class MScene;
 class MEngine;
 class MViewport;
 class MRenderGraph;
+class MRenderCommand;
 class MIRenderProgram;
 class MRenderTexture;
 class MIRenderTexture;
@@ -27,7 +28,7 @@ public:
 	void SetSize(const Vector2& v2Size);
 	Vector2 GetSize() const { return m_v2Size; }
 
-	void UpdateTexture();
+	void UpdateTexture(MRenderCommand* pCommand);
 
 	void SetRenderTextureName(const MString& strTextureName);
 	void* GetTexture(const uint32_t& unFrameIndex);

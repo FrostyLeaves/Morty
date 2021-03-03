@@ -35,8 +35,7 @@ public:
 
 	virtual void Input(MInputEvent* pEvent) override;
 
-	virtual void OnRenderBegin() override;
-	virtual void OnRenderEnd() override;
+	virtual void Render() override;
 
 	virtual int GetViewWidth() override { return m_v2DrawableSize.x; }
 	virtual int GetViewHeight() override { return m_v2DrawableSize.y; }
@@ -56,9 +55,6 @@ public:
 	void Notify_Edit_Material(const MVariant& var);
 
 	void InitializeSDLWindow();
-
-
-	void RenderImGUI();
 
 public:
 
@@ -108,6 +104,7 @@ protected:
 	struct SDL_Window* m_pSDLWindow;
 
 	ImGuiRenderable* m_pImGuiRenderable;
+
 };
 
 

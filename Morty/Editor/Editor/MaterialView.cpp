@@ -61,19 +61,19 @@ void MaterialView::SetMaterial(MMaterial* pMaterial)
 	m_pSkeletonMeshInstance->SetMaterial(pMaterial);
 }
 
-void MaterialView::UpdateMaterialTexture()
+void MaterialView::UpdateTexture(MRenderCommand* pCommand)
 {
 	if (!m_bShowPreview)
 		return;
 
-	m_SceneTexture.UpdateTexture();
+	m_SceneTexture.UpdateTexture(pCommand);
 }
 
 void MaterialView::Render()
 {
 	if (m_pMaterial && m_bShowPreview)
 	{
-		if (void* pTexture = m_SceneTexture.GetTexture(m_pEngine->GetRenderer()->GetFrameIndex()))
+		if (void* pTexture = m_SceneTexture.GetTexture(m_pEngine->GetFrameIdx()))
 		{
 			ImTextureID texid = pTexture;
 			float fImageSize = ImGui::GetContentRegionAvail().x;

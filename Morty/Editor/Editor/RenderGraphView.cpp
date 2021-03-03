@@ -8,6 +8,8 @@
 #include "MNode.h"
 
 #include "MRenderGraph.h"
+#include "MRenderGraphNode.h"
+#include "MRenderGraphTexture.h"
 
 namespace ed = ax::NodeEditor;
 

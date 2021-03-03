@@ -21,6 +21,10 @@
 #include "MResourceManager.h"
 #include "Material/MMaterialResource.h"
 
+#include "MRenderGraph.h"
+#include "MRenderGraphNode.h"
+#include "MRenderGraphTexture.h"
+
 M_OBJECT_IMPLEMENT(MForwardRenderWork, MObject)
 
 MForwardRenderWork::MForwardRenderWork()
@@ -143,11 +147,11 @@ void MForwardRenderWork::Render(MRenderGraphNode* pGraphNode)
 
 	UpdateShaderSharedParams(info, m_FrameParamSet);
 
-	info.pRenderer->BeginRenderPass(pGraphNode->GetRenderPass(), info.unFrameIndex);
+	info.pRenderer->BeginRenderPass(info.pPrimaryCommand, pGraphNode->GetRenderPass(), info.unFrameIndex);
 
 	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
-	info.pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight(), 0.0f, 1.0f);
-	info.pRenderer->SetScissor(0.0f, 0.0f, info.pViewport->GetWidth(), info.pViewport->GetHeight());
+	info.pRenderer->SetViewport(info.pPrimaryCommand, MViewportInfo(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight()));
+	info.pRenderer->SetScissor(info.pPrimaryCommand, MScissorInfo(0.0f, 0.0f, info.pViewport->GetWidth(), info.pViewport->GetHeight()));
 
 	DrawNormalMesh(info);
 
@@ -157,7 +161,7 @@ void MForwardRenderWork::Render(MRenderGraphNode* pGraphNode)
 
 	//	DrawSkyBox(info);
 
-	info.pRenderer->EndRenderPass();
+	info.pRenderer->EndRenderPass(info.pPrimaryCommand);
 }
 
 void MForwardRenderWork::UpdateShaderSharedParams(MRenderInfo& info, MForwardRenderShaderParamSet& frameParamSet)
@@ -275,27 +279,27 @@ void MForwardRenderWork::DrawNormalMesh(MRenderInfo& info)
 	{
 		MMaterial* pMaterial = group.m_pMaterial;
 
-		if (!info.pRenderer->SetUseMaterial(pMaterial))
+		if (!info.pRenderer->SetUseMaterial(info.pPrimaryCommand, pMaterial))
 			continue;
 
-		info.pRenderer->SetShaderParamSet(&m_FrameParamSet);
+		info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, &m_FrameParamSet);
 
 		for (MIMeshInstance* pMeshIns : group.m_vMeshInstances)
 		{
-			DrawMeshInstance(info.pRenderer, pMeshIns);
+			DrawMeshInstance(info, pMeshIns);
 		}
 	}
 }
 
-void MForwardRenderWork::DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance)
+void MForwardRenderWork::DrawMeshInstance(MRenderInfo& info, MIMeshInstance* pMeshInstance)
 {
 	if (MSkeletonInstance* pSkeletonIns = pMeshInstance->GetSkeletonInstance())
 	{
-		pRenderer->SetShaderParamSet(pSkeletonIns->GetShaderParamSet());
+		info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, pSkeletonIns->GetShaderParamSet());
 	}
 
-	pRenderer->SetShaderParamSet(pMeshInstance->GetShaderMeshParamSet());
-	pRenderer->DrawMesh(pMeshInstance->GetMesh());
+	info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, pMeshInstance->GetShaderMeshParamSet());
+	info.pRenderer->DrawMesh(info.pPrimaryCommand, pMeshInstance->GetMesh());
 }
 
 void MForwardRenderWork::DrawModelInstance(MRenderInfo& info)
@@ -332,7 +336,7 @@ void MForwardRenderWork::DrawSkyBox(MRenderInfo& info)
 		{
 			MMaterial* pMaterial = pSkyBox->GetMaterial();
 
-			if (info.pRenderer->SetUseMaterial(pMaterial))
+			if (info.pRenderer->SetUseMaterial(info.pPrimaryCommand, pMaterial))
 			{
 				MShaderParamSet* pMeshParamSet = pSkyBox->GetShaderMeshParamSet();
 				MShaderConstantParam* pParam = pSkyBox->GetShaderTransformParam();
@@ -352,11 +356,11 @@ void MForwardRenderWork::DrawSkyBox(MRenderInfo& info)
 						pParam->SetDirty();
 					}
 
-					info.pRenderer->SetShaderParamSet(pMeshParamSet);
+					info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, pMeshParamSet);
 				}
 
-				info.pRenderer->SetShaderParamSet(&m_FrameParamSet);
-				info.pRenderer->DrawMesh(pMesh);
+				info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, &m_FrameParamSet);
+				info.pRenderer->DrawMesh(info.pPrimaryCommand, pMesh);
 			}
 		}
 
@@ -366,17 +370,17 @@ void MForwardRenderWork::DrawSkyBox(MRenderInfo& info)
 void MForwardRenderWork::DrawPainter(MRenderInfo& info)
 {
 	MTransformCoord3D* pTransformCoord = info.pScene->GetTransformCoord();
-	pTransformCoord->Render(info.pRenderer, info.pViewport);
+	pTransformCoord->Render(info.pRenderer, info.pViewport, info.pPrimaryCommand);
 }
 
 void MForwardRenderWork::DrawBoundingBox(MRenderInfo& info, MModelInstance* pModelIns)
 {
 	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW3D);
 	MMaterial* pMaterial = pDraw3DMaterialRes;
-	if (!info.pRenderer->SetUseMaterial(pMaterial))
+	if (!info.pRenderer->SetUseMaterial(info.pPrimaryCommand, pMaterial))
 		return;
 
-	info.pRenderer->SetShaderParamSet(&m_FrameParamSet);
+	info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, &m_FrameParamSet);
 
 	const MBoundsAABB* pAABB = pModelIns->GetBoundsAABB();
 
@@ -405,14 +409,14 @@ void MForwardRenderWork::DrawBoundingBox(MRenderInfo& info, MModelInstance* pMod
 
 			if (line.FillData(info.pViewport, meshs))
 			{
-				info.pRenderer->DrawMesh(&meshs);
+				info.pRenderer->DrawMesh(info.pPrimaryCommand, &meshs);
 			}
 		}
 
 		MPainter3DLine line(list[j], list[(j + 4)], MColor(1, 1, 1, 1), 1.0f);
 		if (line.FillData(info.pViewport, meshs))
 		{
-			info.pRenderer->DrawMesh(&meshs);
+			info.pRenderer->DrawMesh(info.pPrimaryCommand, &meshs);
 		}
 	}
 
@@ -462,7 +466,7 @@ void MForwardRenderWork::DrawCameraFrustum(MRenderInfo& info, MCamera* pCamera)
 {
 	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW3D);
 	MMaterial* pMaterial = pDraw3DMaterialRes;
-	if (!info.pRenderer->SetUseMaterial(pMaterial))
+	if (!info.pRenderer->SetUseMaterial(info.pPrimaryCommand, pMaterial))
 		return;
 
 
@@ -479,7 +483,7 @@ void MForwardRenderWork::DrawCameraFrustum(MRenderInfo& info, MCamera* pCamera)
 			MMesh<MPainterVertex> meshs;
 			if (line.FillData(info.pViewport, meshs))
 			{
-				info.pRenderer->DrawMesh(&meshs);
+				info.pRenderer->DrawMesh(info.pPrimaryCommand, &meshs);
 				meshs.DestroyBuffer(m_pEngine->GetDevice());
 			}
 		}
@@ -488,7 +492,7 @@ void MForwardRenderWork::DrawCameraFrustum(MRenderInfo& info, MCamera* pCamera)
 		MMesh<MPainterVertex> meshs;
 		if (line.FillData(info.pViewport, meshs))
 		{
-			info.pRenderer->DrawMesh(&meshs);
+			info.pRenderer->DrawMesh(info.pPrimaryCommand, &meshs);
 			meshs.DestroyBuffer(m_pEngine->GetDevice());
 		}
 	}

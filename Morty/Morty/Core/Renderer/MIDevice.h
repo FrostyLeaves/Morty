@@ -77,6 +77,9 @@ public:
 	virtual bool RegisterMaterial(MMaterial* pMaterial) { return true; };
 	virtual bool UnRegisterMaterial(MMaterial* pMaterial) { return true; };
 
+	virtual MRenderCommand* CreateRenderCommand() = 0;
+	virtual void RecoveryRenderCommand(MRenderCommand* pCommand) = 0;
+
 };
 
 #endif

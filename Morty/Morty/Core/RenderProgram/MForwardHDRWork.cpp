@@ -12,6 +12,11 @@
 #include "MGaussianBlurWork.h"
 #include "MForwardPostProcessProgram.h"
 
+
+#include "MRenderGraph.h"
+#include "MRenderGraphNode.h"
+#include "MRenderGraphTexture.h"
+
 M_OBJECT_IMPLEMENT(MForwardHDRWork, MIPostProcessWork)
 
 float ConvertHalfToFloat(const char16_t& h)
@@ -74,13 +79,13 @@ void MForwardHDRWork::Render(MRenderGraphNode* pGraphNode)
 	if (!pInputTexture)
 		return;
 
-	info.pRenderer->CopyImageBuffer(pInputTexture->GetRenderTexture(), m_aLumTexture[info.unFrameIndex]);
-	info.pRenderer->UpdateMipmaps(m_aLumTexture[info.unFrameIndex]->GetBuffer(info.unFrameIndex));
+	info.pRenderer->CopyImageBuffer(info.pPrimaryCommand, pInputTexture->GetRenderTexture(), m_aLumTexture[info.unFrameIndex]);
+	info.pRenderer->UpdateMipmaps(info.pPrimaryCommand, m_aLumTexture[info.unFrameIndex]->GetBuffer(info.unFrameIndex));
 
-	uint32_t unMipIdx = m_aLumTexture[info.unFrameIndex]->GetBuffer(info.unFrameIndex)->m_unMipmaps;
-	unMipIdx = unMipIdx >= 3 ? unMipIdx - 3 : unMipIdx;
+ 	uint32_t unMipIdx = m_aLumTexture[info.unFrameIndex]->GetBuffer(info.unFrameIndex)->m_unMipmaps;
+ 	unMipIdx = unMipIdx >= 3 ? unMipIdx - 3 : unMipIdx;
 
-	info.pRenderer->DownloadTexture(m_aLumTexture[info.unFrameIndex], unMipIdx, [this](void* pImageData, const Vector2& size) {
+	info.pRenderer->DownloadTexture(info.pPrimaryCommand, m_aLumTexture[info.unFrameIndex], unMipIdx, [this](void* pImageData, const Vector2& size) {
 
 		size_t unPixelSize = static_cast<size_t>(size.x) * static_cast<size_t>(size.y);
 		float flum = 0.0f;
@@ -101,14 +106,14 @@ void MForwardHDRWork::Render(MRenderGraphNode* pGraphNode)
 		m_fAverageLum = exp(m_fAverageLum);
 		});
 
-	info.pRenderer->SetRenderToTextureBarrier({ pInputTexture->GetRenderTexture() });
+	info.pRenderer->SetRenderToTextureBarrier(info.pPrimaryCommand, { pInputTexture->GetRenderTexture() });
 
-	info.pRenderer->BeginRenderPass(pGraphNode->GetRenderPass(), info.unFrameIndex);
+	info.pRenderer->BeginRenderPass(info.pPrimaryCommand, pGraphNode->GetRenderPass(), info.unFrameIndex);
 
 
 	Vector2 v2OutputSize = pOutputTexture->GetOutputSize();
-	info.pRenderer->SetViewport(0.0f, 0.0f, v2OutputSize.x, v2OutputSize.y, 0.0f, 1.0f);
-	info.pRenderer->SetScissor(0.0f, 0.0f, v2OutputSize.x, v2OutputSize.y);
+	info.pRenderer->SetViewport(info.pPrimaryCommand, MViewportInfo(0.0f, 0.0f, v2OutputSize.x, v2OutputSize.y));
+	info.pRenderer->SetScissor(info.pPrimaryCommand, MScissorInfo(0.0f, 0.0f, v2OutputSize.x, v2OutputSize.y));
 
 	if (MShaderParamSet* pMaterialParamSet = m_pHDRMaterial->GetMaterialParamSet())
 	{
@@ -120,12 +125,12 @@ void MForwardHDRWork::Render(MRenderGraphNode* pGraphNode)
 		pMaterialParamSet->m_vParams[0]->SetDirty();
 	}
 
-	if (info.pRenderer->SetUseMaterial(m_pHDRMaterial))
+	if (info.pRenderer->SetUseMaterial(info.pPrimaryCommand, m_pHDRMaterial))
 	{
-		info.pRenderer->DrawMesh(m_pScreenDrawMesh);
+		info.pRenderer->DrawMesh(info.pPrimaryCommand, m_pScreenDrawMesh);
 	}
 
-	info.pRenderer->EndRenderPass();
+	info.pRenderer->EndRenderPass(info.pPrimaryCommand);
 }
 
 void MForwardHDRWork::Initialize(MIRenderProgram* pRenderProgram)

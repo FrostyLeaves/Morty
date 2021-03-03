@@ -10,6 +10,7 @@
 
 class MEngine;
 class MIRenderer;
+class MRenderCommand;
 class MShaderParamSet;
 class ImGuiRenderable
 {
@@ -35,7 +36,7 @@ public:
 
 
 	void Tick(const float& fDelta);
-	void Render(MIRenderer* pRenderer);
+	void Render(MIRenderer* pRenderer, MRenderCommand* pCommand);
 	
 
 protected:

@@ -74,6 +74,11 @@ public:
 	virtual bool RegisterMaterial(MMaterial* pMaterial) override;
 	virtual bool UnRegisterMaterial(MMaterial* pMaterial) override;
 
+
+	virtual MRenderCommand* CreateRenderCommand() override;
+	virtual void RecoveryRenderCommand(MRenderCommand* pCommand) override;
+
+
 	VkPhysicalDevice GetPhysicalDevice() { return m_VkPhysicalDevice; }
 
 	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);

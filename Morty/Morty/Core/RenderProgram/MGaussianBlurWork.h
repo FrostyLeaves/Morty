@@ -40,6 +40,8 @@ public:
 	virtual void Initialize(MIRenderProgram* pRenderProgram) override;
 	virtual void Release() override;
 	
+	void Update(MRenderGraphNode* pGraphNode);
+
 	void Render(MRenderGraphNode* pGraphNode);
 
 protected:

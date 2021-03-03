@@ -14,11 +14,12 @@
 #include "Type/MColor.h"
 
 class MNode;
-class M3DNode;
-class MIRenderer;
-class MViewport;
-class MInputEvent;
 class MIMesh;
+class M3DNode;
+class MViewport;
+class MIRenderer;
+class MInputEvent;
+class MRenderCommand;
 class MORTY_API MITransformCoord
 {
 public:
@@ -51,7 +52,7 @@ public:
 	void SetTarget3DNode(MNode* pNode);
 
 	bool Input(MInputEvent* pEvent, MViewport* pViewport);
-	void Render(MIRenderer* pRenderer, MViewport* pViewport);
+	void Render(MIRenderer* pRenderer, MViewport* pViewport, MRenderCommand* pCommand);
 
 protected:
 

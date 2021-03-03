@@ -25,8 +25,9 @@
 #include "MMesh.h"
 #include "MScene.h"
 #include "MCamera.h"
-#include "MTransformCoord.h"
 #include "MIRenderTarget.h"
+#include "MTransformCoord.h"
+#include "MRenderGraphTexture.h"
 #include "MForwardRenderProgram.h"
 
 #include "Matrix.h"
@@ -207,49 +208,6 @@ void MainEditor::Input(MInputEvent* pEvent)
 	m_SceneTexture.GetViewport()->Input(pEvent);
 }
 
-void MainEditor::OnRenderEnd()
-{
-	// Start the Dear ImGui frame
-#if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	ImGui_ImplDX11_NewFrame();
-#elif RENDER_GRAPHICS == MORTY_VULKAN
-#endif
-
-	ImGui_ImplSDL2_NewFrame(m_pSDLWindow);
-
-	ImGui::NewFrame();
-	
-	ShowMenu();
-	ShowMaterial();
-	ShowRenderView();
-	ShowNodeTree();
-	ShowProperty();
-	ShowMessage();
-	ShowResource();
-	ShowRenderGraphView();
-
-	// Rendering
-	ImGui::Render();
-
-#if RENDER_GRAPHICS == MORTY_DIRECTX_11
-	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-#elif RENDER_GRAPHICS == MORTY_VULKAN
-
-	if (MVulkanRenderer* pVkRenderer = dynamic_cast<MVulkanRenderer*>(m_pEngine->GetRenderer()))
-	{
-		if (VkCommandBuffer vkCmmandBuffer = pVkRenderer->GetCommandBuffer())
-		{
-			MVulkanRenderTarget* pRenderTarget = dynamic_cast<MVulkanRenderTarget*>(GetRenderTarget());
-			pVkRenderer->BeginRenderPass(&pRenderTarget->m_RenderPass, GetRenderTarget()->GetFrameBufferIndex());
-
-			RenderImGUI();
-
-			pVkRenderer->EndRenderPass();
-		}
-	}
-#endif
-}
-
 bool MainEditor::MainLoop(const float& fDelta)
 {
 	SDL_Event event;
@@ -410,15 +368,6 @@ void MainEditor::InitializeSDLWindow()
      
 }
 
-void MainEditor::RenderImGUI()
-{
-	if (m_pImGuiRenderable)
-	{
-		m_pImGuiRenderable->Tick(0.0f);
-		m_pImGuiRenderable->Render(m_pEngine->GetRenderer());
-	}
-}
-
 void MainEditor::ShowMenu()
 {
 	if (ImGui::BeginMainMenuBar())
@@ -463,8 +412,6 @@ void MainEditor::ShowRenderView()
 
 		m_v2RenderViewSize.x = v2RenderViewSize.x;
 		m_v2RenderViewSize.y = v2RenderViewSize.y;
-
-		uint32_t unFrameIdx = m_pEngine->GetRenderer()->GetFrameIndex();
 
 		if (MRenderGraph* pRenderGraph = m_SceneTexture.GetRenderGraph())
 		{
@@ -588,8 +535,31 @@ void MainEditor::ShowRenderGraphView()
 	ImGui::End();
 }
 
-void MainEditor::OnRenderBegin()
-{	
+void MainEditor::Render()
+{
+	MRenderCommand* pRenderCommand = nullptr;
+	MIRenderer* pRenderer = m_pEngine->GetRenderer();
+
+#if RENDER_GRAPHICS == MORTY_VULKAN
+
+	MVulkanRenderer* pVkRenderer = dynamic_cast<MVulkanRenderer*>(m_pEngine->GetRenderer());
+	if (!pVkRenderer)
+		return;
+	MVulkanRenderTarget* pRenderTarget = dynamic_cast<MVulkanRenderTarget*>(GetRenderTarget());
+	if (!pRenderTarget)
+		return;
+
+	pRenderCommand = pRenderTarget->GetPrimaryCommand();
+	
+#endif;
+
+	if (!pRenderCommand)
+		return;
+
+
+	GetRenderTarget()->WaitImageReady();
+	pRenderer->RenderCommandBegin(pRenderCommand);
+
 #if MORTY_RENDER_DATA_STATISTICS
 	MRenderStatistics::GetInstance()->unTriangleCount = 0;
 #endif
@@ -603,7 +573,7 @@ void MainEditor::OnRenderBegin()
 			m_SceneTexture.SetSize(Vector2(m_v2RenderViewSize.x, m_v2RenderViewSize.y));
 		}
 
-		m_SceneTexture.UpdateTexture();
+		m_SceneTexture.UpdateTexture(pRenderCommand);
 	}
 	m_unTriangleCount = MRenderStatistics::GetInstance()->unTriangleCount;
 
@@ -615,8 +585,39 @@ void MainEditor::OnRenderBegin()
 		{
 			m_pMaterialView->SetMaterial(pMeshIns->GetMaterial());
 		}
-		m_pMaterialView->UpdateMaterialTexture();
+		m_pMaterialView->UpdateTexture(pRenderCommand);
 	}
-    
 
+	ImGui_ImplSDL2_NewFrame(m_pSDLWindow);
+
+	ImGui::NewFrame();
+
+	ShowMenu();
+	ShowMaterial();
+	ShowRenderView();
+	ShowNodeTree();
+	ShowProperty();
+	ShowMessage();
+	ShowResource();
+	ShowRenderGraphView();
+
+	// Rendering
+	ImGui::Render();
+
+
+
+	if (m_pImGuiRenderable)
+	{
+		pVkRenderer->BeginRenderPass(pRenderCommand, &pRenderTarget->m_RenderPass, pRenderTarget->GetFrameBufferIndex());
+		m_pImGuiRenderable->Tick(0.0f);
+		m_pImGuiRenderable->Render(m_pEngine->GetRenderer(), pRenderCommand);
+		pVkRenderer->EndRenderPass(pRenderCommand);
+	}
+
+
+	pVkRenderer->RenderCommandEnd(pRenderCommand);
+	pVkRenderer->SubmitRenderCommand(pRenderCommand, pRenderTarget);
+	
+    
+	GetRenderTarget()->Present();
 }

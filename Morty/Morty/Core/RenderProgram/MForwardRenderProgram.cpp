@@ -52,6 +52,7 @@ void MForwardRenderProgram::Initialize()
 
 	m_pTransparentWork = GetEngine()->GetObjectManager()->CreateObject<MForwardTransparentWork>();
 	m_pTransparentWork->Initialize(this);
+
 }
 
 void MForwardRenderProgram::Release()
@@ -83,7 +84,7 @@ void MForwardRenderProgram::Release()
 
 }
 
-void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport)
+void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport, MRenderCommand* pCommand)
 {
 	if (!pViewport)
 		return;
@@ -93,11 +94,13 @@ void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport)
 	info = MRenderInfo();
 
 	info.fDelta = m_pEngine->GetInstantDelta();
-	info.unFrameIndex = pRenderer->GetFrameIndex();
+	info.unFrameIndex = pCommand->m_unFrameIdx;
 	info.pRenderer = pRenderer;
 	info.pViewport = pViewport;
 	info.pCamera = pViewport->GetCamera();
 	info.pScene = pViewport->GetScene();
+	info.pPrimaryCommand = pCommand;
+
 
 	Render(info);
 }
@@ -192,6 +195,7 @@ MRenderInfo::MRenderInfo()
 	, pScene(nullptr)
 	, pDirectionalLight(nullptr)
 	, pShadowMapTexture(nullptr)
+	, pPrimaryCommand(nullptr)
 	, m4DirLightInvProj()
 	, cShadowRenderAABB()
 	, cMeshRenderAABB()

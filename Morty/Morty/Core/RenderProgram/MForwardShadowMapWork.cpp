@@ -13,6 +13,11 @@
 #include "Model/MModelInstance.h"
 #include "Light/MDirectionalLight.h"
 
+
+#include "MRenderGraph.h"
+#include "MRenderGraphNode.h"
+#include "MRenderGraphTexture.h"
+
 #include "MForwardRenderProgram.h"
 
 #include <float.h>
@@ -108,11 +113,11 @@ void MForwardShadowMapWork::Render(MRenderGraphNode* pGraphNode)
 	if (vShadowMeshGroup.empty())
 		return;
 
-	info.pRenderer->BeginRenderPass(pRenderPass, info.unFrameIndex);
+	info.pRenderer->BeginRenderPass(info.pPrimaryCommand, pRenderPass, info.unFrameIndex);
 
 	RenderMesh(info, vShadowMeshGroup);
 
-	info.pRenderer->EndRenderPass();
+	info.pRenderer->EndRenderPass(info.pPrimaryCommand);
 }
 
 void MForwardShadowMapWork::UpdateRenderInfo(MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup)
@@ -187,8 +192,8 @@ void MForwardShadowMapWork::RenderMesh(MRenderInfo& info, std::vector<MShadowRen
 		m_pWorldMatrixParam->SetDirty();
 	}
 
-	info.pRenderer->SetViewport(0.0f, 0.0f, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE, 0.0f, 1.0f);
-	info.pRenderer->SetScissor(0.0f, 0.0f, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE);
+	info.pRenderer->SetViewport(info.pPrimaryCommand, MViewportInfo(0.0f, 0.0f, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE));
+	info.pRenderer->SetScissor(info.pPrimaryCommand, MScissorInfo(0.0f, 0.0f, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE));
 
 	MStruct* pWorldStruct = m_pWorldMatrixParam->var.GetStruct();
 	(*pWorldStruct)[0] = info.m4DirLightInvProj;
@@ -201,20 +206,20 @@ void MForwardShadowMapWork::RenderMesh(MRenderInfo& info, std::vector<MShadowRen
 
 		if (MSkeletonInstance* pSkeleton = group.pSkeletonInstance)
 		{
-			info.pRenderer->SetUseMaterial(m_pAnimMaterial);
-			info.pRenderer->SetShaderParamSet(pSkeleton->GetShaderParamSet());
+			info.pRenderer->SetUseMaterial(info.pPrimaryCommand, m_pAnimMaterial);
+			info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, pSkeleton->GetShaderParamSet());
 		}
 		else
 		{
-			info.pRenderer->SetUseMaterial(m_pStaticMaterial);
+			info.pRenderer->SetUseMaterial(info.pPrimaryCommand, m_pStaticMaterial);
 		}
 
-		info.pRenderer->SetShaderParamSet(&m_FrameParamSet);
+		info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, &m_FrameParamSet);
 
 		for (MIMeshInstance* pMeshIns : group.vMeshInstances)
 		{
-			info.pRenderer->SetShaderParamSet(pMeshIns->GetShaderMeshParamSet());
-			info.pRenderer->DrawMesh(pMeshIns->GetMesh());
+			info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, pMeshIns->GetShaderMeshParamSet());
+			info.pRenderer->DrawMesh(info.pPrimaryCommand, pMeshIns->GetMesh());
 		}
 
 	}

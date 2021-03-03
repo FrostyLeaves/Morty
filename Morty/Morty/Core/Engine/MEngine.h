@@ -51,6 +51,8 @@ public:
 	MObjectManager* GetObjectManager() { return m_pObjectManager; }
 	MResourceManager* GetResourceManager() { return m_pResourceManager; }
 
+	uint32_t GetFrameIdx() { return m_unFrameIdx; }
+
 public:
 
 	void SetMaxFPS(const int& nFPS);
@@ -65,15 +67,19 @@ protected:
 	bool InitializeDefaultResource();
 	void ReleaseDefaultResource();
 
+	void WaitRenderFinished(const uint32_t& unFrameIdx);
+
 private:
 
 	MProject m_Project;
+
+	//TODO 这个id值，应该是上层无感知的
+	uint32_t m_unFrameIdx;
 
 	MObjectManager* m_pObjectManager;
 	MResourceManager* m_pResourceManager;
 
 	MScene* m_pScene;
-
 	MIDevice* m_pDevice;
 	MIRenderer* m_pRenderer;
 	

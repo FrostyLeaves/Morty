@@ -1071,7 +1071,7 @@ bool MVulkanDevice::InitCommandPool()
 	VkCommandPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	poolInfo.queueFamilyIndex = unQueueFamilyIndex;
-	poolInfo.flags = 0; // Optional
+	poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Optional
 
 	if (vkCreateCommandPool(m_VkDevice, &poolInfo, nullptr, &m_VkCommandPool) != VK_SUCCESS)
 		return false;
@@ -1395,14 +1395,6 @@ bool MVulkanDevice::GenerateRenderTarget(MRenderPass* pRenderPass, MIRenderTarge
 		return false;
 	}
 
-// 	VkRenderPass vkRenderPass = pRenderPass->m_aVkRenderPass[0];
-// 
-// 	if (VK_NULL_HANDLE == vkRenderPass)
-// 	{
-// 		MLogManager::GetInstance()->Error("MVulkanDevice::GenerateRenderTarget error, vkrp == nullptr");
-// 		return false;
-// 	}
-
 	Vector2 v2Size = pRenderTarget->GetSize();
 
 	if (v2Size.x < 1)
@@ -1415,15 +1407,6 @@ bool MVulkanDevice::GenerateRenderTarget(MRenderPass* pRenderPass, MIRenderTarge
 		pRenderTarget->m_VkExtend.width = v2Size.x;
 		pRenderTarget->m_VkExtend.height = v2Size.y;
 	}
-	
-	VkSemaphoreCreateInfo semaphoreInfo{};
-	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-	for (VkSemaphore& vkSemaphore : pRenderTarget->m_aVkRenderFinishedSemaphore)
-	{
-		if (vkCreateSemaphore(m_VkDevice, &semaphoreInfo, nullptr, &vkSemaphore) != VK_SUCCESS)
-			return false;
-	}
 
 	return true;
 }
@@ -1434,20 +1417,6 @@ void MVulkanDevice::DestroyRenderTarget(MIRenderTarget* pRenderTarget)
 		return;
 
 	MIRenderTarget* pVkRenderTarget = pRenderTarget;
-
-
-
-	for (uint32_t i = 0; i < pRenderTarget->m_VkCommandBuffers.size(); ++i)
-	{
-		m_ObjectDestructor.DestroyCommandBufferLater(pRenderTarget->m_VkCommandBuffers[i]);
-		pRenderTarget->m_VkCommandBuffers[i] = VK_NULL_HANDLE;
-	}
-
-	for (uint32_t i = 0; i < pRenderTarget->m_aVkRenderFinishedSemaphore.size(); ++i)
-	{
-		m_ObjectDestructor.DestroySemaphoreLater(pRenderTarget->m_aVkRenderFinishedSemaphore[i]);
-		pRenderTarget->m_aVkRenderFinishedSemaphore[i] = VK_NULL_HANDLE;
-	}
 
 
 }
@@ -1859,6 +1828,66 @@ bool MVulkanDevice::RegisterMaterial(MMaterial* pMaterial)
 bool MVulkanDevice::UnRegisterMaterial(MMaterial* pMaterial)
 {
 	return m_PipelineManager.UnRegisterMaterial(pMaterial);
+}
+
+MRenderCommand* MVulkanDevice::CreateRenderCommand()
+{
+	MRenderCommand* pCommand = new MRenderCommand();
+
+	//New CommandBuffer
+	VkCommandBufferAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandPool = m_VkCommandPool;
+	allocInfo.commandBufferCount = 1;
+	vkAllocateCommandBuffers(m_VkDevice, &allocInfo, &pCommand->m_VkCommandBuffer);
+
+
+	VkFenceCreateInfo fenceInfo{};
+	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+	vkCreateFence(m_VkDevice, &fenceInfo, nullptr, &pCommand->m_VkRenderFinishedFence);
+
+	VkSemaphoreCreateInfo semaphoreInfo{};
+	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	vkCreateSemaphore(m_VkDevice, &semaphoreInfo, nullptr, &pCommand->m_VkRenderFinishedSemaphore);
+
+
+	return pCommand;
+}
+
+void MVulkanDevice::RecoveryRenderCommand(MRenderCommand* pCommand)
+{
+	if (!pCommand)
+		return;
+
+	//TODO cancel wait.
+	while (vkGetFenceStatus(m_VkDevice, pCommand->m_VkRenderFinishedFence) != VK_SUCCESS);
+
+	if (pCommand->m_VkCommandBuffer)
+	{
+		m_ObjectDestructor.DestroyCommandBufferLater(pCommand->m_VkCommandBuffer);
+		pCommand->m_VkCommandBuffer = VK_NULL_HANDLE;
+	}
+
+	if (pCommand->m_VkRenderFinishedFence)
+	{
+		//TODO DestroyLater
+		vkDestroyFence(m_VkDevice, pCommand->m_VkRenderFinishedFence, nullptr);
+		pCommand->m_VkRenderFinishedFence = VK_NULL_HANDLE;
+	}
+
+	if (pCommand->m_VkRenderFinishedSemaphore)
+	{
+		//TODO DestroyLater
+		vkDestroySemaphore(m_VkDevice, pCommand->m_VkRenderFinishedSemaphore, nullptr);
+		pCommand->m_VkRenderFinishedSemaphore = VK_NULL_HANDLE;
+	}
+
+	//TODO Recovery
+	delete pCommand;
 }
 
 #endif

@@ -52,7 +52,7 @@ protected:
 	void DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pModelIns);
 	void DrawCameraFrustum(MRenderInfo& info, MCamera* pCamera);
 
-	void DrawMeshInstance(MIRenderer* pRenderer, MIMeshInstance* pMeshInstance);
+	void DrawMeshInstance(MRenderInfo& info, MIMeshInstance* pMeshInstance);
 
 private:
 

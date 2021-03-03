@@ -12,7 +12,9 @@
 #include "Vector.h"
 #include "MString.h"
 #include "MVariant.h"
+
 #include <map>
+#include <stack>
 #include <vector>
 
 #if RENDER_GRAPHICS == MORTY_DIRECTX_11
@@ -20,9 +22,13 @@
 #include "MVulkanWrapper.h"
 #endif
 
-class MIRenderer;
+class MIDevice;
 class MITexture;
+class MMaterial;
+class MIRenderer;
+class MRenderPass;
 class MTextureCube;
+struct MMaterialPipelineLayoutData;
 
 enum class METextureLayout
 {
@@ -114,6 +120,64 @@ public:
 #endif
 };
 
+
+struct MORTY_API MViewportInfo
+{
+	MViewportInfo();
+	MViewportInfo(const float& _x, const float& _y, const float& _width, const float& _height);
+
+	float x;
+	float y;
+	float width;
+	float height;
+	float minz;
+	float maxz;
+};
+
+struct MORTY_API MScissorInfo
+{
+	MScissorInfo();
+	MScissorInfo(const float& _x, const float& _y, const float& _width, const float& _height);
+
+	float x;
+	float y;
+	float width;
+	float height;
+};
+
+struct MORTY_API MRenderPassStage
+{
+	MRenderPassStage();
+	MRenderPassStage(MRenderPass* p, const uint32_t& n);
+
+	MRenderPass* pRenderPass;
+	uint32_t nSubpassIdx;
+};
+
+class MORTY_API MRenderCommand
+{
+public:
+	MRenderCommand();
+
+
+public:
+
+	uint32_t m_unFrameIdx;
+
+	MMaterial* pUsingMaterial;
+	MMaterialPipelineLayoutData* pUsingPipelineLayoutData;
+
+	std::stack<MRenderPassStage> m_vRenderPassStages;
+
+	//渲染完成回调
+	std::vector<std::function<void()>> m_aRenderFinishedCallback;
+
+#if RENDER_GRAPHICS == MORTY_VULKAN
+	VkCommandBuffer m_VkCommandBuffer;
+	VkFence m_VkRenderFinishedFence;
+	VkSemaphore m_VkRenderFinishedSemaphore;
+#endif
+};
 
 
 

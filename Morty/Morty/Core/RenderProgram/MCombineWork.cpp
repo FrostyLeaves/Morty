@@ -10,6 +10,9 @@
 #include "Material/MMaterialResource.h"
 
 #include "MRenderGraph.h"
+#include "MRenderGraphNode.h"
+#include "MRenderGraphTexture.h"
+
 #include "MForwardPostProcessProgram.h"
 
 M_OBJECT_IMPLEMENT(MCombineWork, MIPostProcessWork)
@@ -75,18 +78,14 @@ void MCombineWork::Render(MRenderGraphNode* pGraphNode)
 		return;
 
 
-	info.pRenderer->SetRenderToTextureBarrier({ pInputTex0->GetRenderTexture(), pInputTex1->GetRenderTexture() });
+	info.pRenderer->SetRenderToTextureBarrier(info.pPrimaryCommand, { pInputTex0->GetRenderTexture(), pInputTex1->GetRenderTexture() });
 
-	info.pRenderer->BeginRenderPass(pGraphNode->GetRenderPass(), info.unFrameIndex);
+	info.pRenderer->BeginRenderPass(info.pPrimaryCommand, pGraphNode->GetRenderPass(), info.unFrameIndex);
 
 
 	Vector2 v2OutputSize = pOutputTexture->GetOutputSize();
-	info.pRenderer->SetViewport(0.0f, 0.0f,
-		v2OutputSize.x,
-		v2OutputSize.y,
-		0.0f, 1.0f);
-
-	info.pRenderer->SetScissor(0.0f, 0.0f, v2OutputSize.x, v2OutputSize.y);
+	info.pRenderer->SetViewport(info.pPrimaryCommand, MViewportInfo(0.0f, 0.0f, v2OutputSize.x, v2OutputSize.y));
+	info.pRenderer->SetScissor(info.pPrimaryCommand, MScissorInfo(0.0f, 0.0f, v2OutputSize.x, v2OutputSize.y));
 
 	if (MShaderParamSet* pMaterialParamSet = m_aMaterial[info.unFrameIndex]->GetMaterialParamSet())
 	{
@@ -97,12 +96,12 @@ void MCombineWork::Render(MRenderGraphNode* pGraphNode)
 		pMaterialParamSet->m_vTextures[1]->SetDirty();
 	}
 
-	if (info.pRenderer->SetUseMaterial(m_aMaterial[info.unFrameIndex]))
+	if (info.pRenderer->SetUseMaterial(info.pPrimaryCommand, m_aMaterial[info.unFrameIndex]))
 	{
-		info.pRenderer->DrawMesh(m_pScreenDrawMesh);
+		info.pRenderer->DrawMesh(info.pPrimaryCommand, m_pScreenDrawMesh);
 	}
 
-	info.pRenderer->EndRenderPass();
+	info.pRenderer->EndRenderPass(info.pPrimaryCommand);
 }
 
 void MCombineWork::InitializeMesh()

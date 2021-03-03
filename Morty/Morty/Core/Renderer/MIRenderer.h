@@ -95,42 +95,40 @@ public:
 	virtual bool Initialize() = 0;
 	virtual void Release() = 0;
 
-	virtual void SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth) = 0;
+	virtual void SetViewport(MRenderCommand* pCommand, const MViewportInfo& viewport) = 0;
 
-	virtual void SetScissor(const float& fX, const float& fY, const float& fWidth, const float& fHeight) = 0;
+	virtual void SetScissor(MRenderCommand* pCommand, const MScissorInfo& scissor) = 0;
 
-	virtual void NewRenderFrame() = 0;
+	//virtual void NewRenderFrame() = 0;
 
-	virtual void RenderBegin(MIRenderTarget* pRenderTarget) = 0;
+	virtual void RenderCommandBegin(MRenderCommand* pCommand) = 0;
+	virtual void RenderCommandEnd(MRenderCommand* pCommand) = 0;
+	virtual void SubmitRenderCommand(MRenderCommand* pCommand, MIRenderTarget* pRenderTarget) = 0;
 
-	virtual void RenderEnd(MIRenderTarget* pRenderTarget) = 0;
+	virtual void NextSubpass(MRenderCommand* pCommand) = 0;
 
-	virtual void NextSubpass() = 0;
+	virtual void BeginRenderPass(MRenderCommand* pCommand, MRenderPass* pRenderPass, const uint32_t& nFrameBufferIdx) = 0;
 
-	virtual void BeginRenderPass(MRenderPass* pRenderPass, const uint32_t& nFrameBufferIdx) = 0;
-
-	virtual void EndRenderPass() = 0;
-
-public:
-
-	virtual void DrawMesh(MIMesh* pMesh) = 0;
-
-	virtual void DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, const uint32_t& nIdxCount, const uint32_t& nVrtOffset) = 0;
-
-	virtual bool SetUseMaterial(MMaterial* pMaterial) = 0;
-
-	virtual bool SetRenderToTextureBarrier(const std::vector<MIRenderTexture*> vTextures) = 0;
-
-	virtual bool DownloadTexture(MITexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback) = 0;
-
-	virtual bool CopyImageBuffer(MITexture* pSource, MITexture* pDest) = 0;
-
-	virtual void UpdateMipmaps(MTextureBuffer* pBuffer) = 0;
+	virtual void EndRenderPass(MRenderCommand* pCommand) = 0;
 
 public:
-	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) = 0;
 
-	virtual uint32_t GetFrameIndex() = 0;
+	virtual void DrawMesh(MRenderCommand* pCommand, MIMesh* pMesh) = 0;
+
+	virtual void DrawMesh(MRenderCommand* pCommand, MIMesh* pMesh, const uint32_t& nIdxOffset, const uint32_t& nIdxCount, const uint32_t& nVrtOffset) = 0;
+
+	virtual bool SetUseMaterial(MRenderCommand* pCommand, MMaterial* pMaterial) = 0;
+
+	virtual bool SetRenderToTextureBarrier(MRenderCommand* pCommand, const std::vector<MIRenderTexture*> vTextures) = 0;
+
+	virtual bool DownloadTexture(MRenderCommand* pCommand, MITexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback) = 0;
+
+	virtual bool CopyImageBuffer(MRenderCommand* pCommand, MITexture* pSource, MITexture* pDest) = 0;
+
+	virtual void UpdateMipmaps(MRenderCommand* pCommand, MTextureBuffer* pBuffer) = 0;
+
+public:
+	virtual void SetShaderParamSet(MRenderCommand* pCommand, MShaderParamSet* pParamSet) = 0;
 
 };
 

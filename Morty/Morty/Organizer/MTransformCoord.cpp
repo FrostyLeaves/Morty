@@ -241,7 +241,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 	return MECoordHoverType::None != m_eCoordHoverType;
 }
 
-void MTransformCoord3D::Render(MIRenderer* pRenderer, MViewport* pViewport)
+void MTransformCoord3D::Render(MIRenderer* pRenderer, MViewport* pViewport, MRenderCommand* pCommand)
 {
 	if (M_INVALID_INDEX == m_unSelectedID)
 		return;
@@ -252,7 +252,7 @@ void MTransformCoord3D::Render(MIRenderer* pRenderer, MViewport* pViewport)
 	MMaterialResource* pMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW2D);
 	MMaterial* pMaterial = pMaterialRes;
 
-	if (!pRenderer->SetUseMaterial(pMaterial))
+	if (!pRenderer->SetUseMaterial(pCommand, pMaterial))
 		return;
 
 	bool vVaild[3];
@@ -293,7 +293,7 @@ void MTransformCoord3D::Render(MIRenderer* pRenderer, MViewport* pViewport)
 
 	if (m_pCoordRenderCache->GetIndicesLength() > 0)
 	{
-		pRenderer->DrawMesh(m_pCoordRenderCache);
+		pRenderer->DrawMesh(pCommand, m_pCoordRenderCache);
 		m_pCoordRenderCache->Clean();
 	}
 }

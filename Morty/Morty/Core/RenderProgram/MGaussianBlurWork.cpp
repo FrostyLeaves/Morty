@@ -10,12 +10,113 @@
 #include "MForwardPostProcessProgram.h"
 
 #include "MRenderGraph.h"
+#include "MRenderGraphNode.h"
+#include "MRenderGraphTexture.h"
 
 M_OBJECT_IMPLEMENT(MGaussianBlurWork, MIPostProcessWork)
+
+
+class MGaussianBlurGraphNode : public MRenderGraphNode
+{
+public:
+	MGaussianBlurGraphNode();
+	virtual ~MGaussianBlurGraphNode();
+
+	virtual void UpdateBuffer(MIDevice* pDevice) override;
+
+	virtual void DestroyBuffer(MIDevice* pDevice) override;
+
+	MRenderPass* GetTempRenderPass() { return m_pTempRenderPass; }
+
+protected:
+
+
+	MRenderPass* m_pTempRenderPass;
+};
+
+MGaussianBlurGraphNode::MGaussianBlurGraphNode()
+	: MRenderGraphNode()
+	, m_pTempRenderPass(new MRenderPass())
+{
+
+}
+
+MGaussianBlurGraphNode::~MGaussianBlurGraphNode()
+{
+	if (m_pTempRenderPass)
+	{
+		delete m_pTempRenderPass;
+		m_pTempRenderPass = nullptr;
+	}
+}
+
+void MGaussianBlurGraphNode::UpdateBuffer(MIDevice* pDevice)
+{
+	//chean Renderpass.
+	m_pRenderPass->DestroyBuffer(pDevice);
+	m_pRenderPass->m_vBackDesc = {};
+	MFrameBuffer* pFrameBuffer = m_pRenderPass->GetFrameBuffer();
+	pFrameBuffer->vBackTextures = {};
+	pFrameBuffer->pDepthTexture = nullptr;
+
+	m_pTempRenderPass->DestroyBuffer(pDevice);
+	m_pTempRenderPass->m_vBackDesc = {};
+	MFrameBuffer* pTempFrameBuffer = m_pTempRenderPass->GetFrameBuffer();
+	pTempFrameBuffer->vBackTextures = {};
+	pTempFrameBuffer->pDepthTexture = nullptr;
+
+	if (m_vOutputTextures.size() < 2)
+	{
+		//TODO error.
+		return;
+	}
+
+	if (MRenderGraphNodeOutput* pOutput = m_vOutputTextures[0])
+	{
+		if (MRenderGraphTexture* pRenderTexture = pOutput->GetRenderTexture())
+		{
+			if (pRenderTexture->GetUsage() == METextureUsage::ERenderBack)
+			{
+				MFrameBuffer* pFrameBuffer = m_pRenderPass->GetFrameBuffer();
+				pFrameBuffer->vBackTextures.push_back(pRenderTexture->GetRenderTexture());
+
+				m_pRenderPass->m_vBackDesc.push_back({});
+				m_pRenderPass->m_vBackDesc.back().bClearWhenRender = pOutput->GetClear();
+				m_pRenderPass->m_vBackDesc.back().cClearColor = pOutput->GetClearColor();
+			}
+		}
+	}
+	if (MRenderGraphNodeOutput* pOutput = m_vOutputTextures[1])
+	{
+		if (MRenderGraphTexture* pRenderTexture = pOutput->GetRenderTexture())
+		{
+			if (pRenderTexture->GetUsage() == METextureUsage::ERenderBack)
+			{
+				MFrameBuffer* pFrameBuffer = m_pTempRenderPass->GetFrameBuffer();
+				pFrameBuffer->vBackTextures.push_back(pRenderTexture->GetRenderTexture());
+
+				m_pTempRenderPass->m_vBackDesc.push_back({});
+				m_pTempRenderPass->m_vBackDesc.back().bClearWhenRender = pOutput->GetClear();
+				m_pTempRenderPass->m_vBackDesc.back().cClearColor = pOutput->GetClearColor();
+			}
+		}
+	}
+
+	m_pRenderPass->GenerateBuffer(pDevice);
+	m_pTempRenderPass->GenerateBuffer(pDevice);
+}
+
+void MGaussianBlurGraphNode::DestroyBuffer(MIDevice* pDevice)
+{
+	m_pRenderPass->DestroyBuffer(pDevice);
+	m_pTempRenderPass->DestroyBuffer(pDevice);
+}
 
 MGaussianBlurWork::MGaussianBlurWork()
     : MIPostProcessWork()
 	, m_strGraphNodeName("")
+	, m_pRenderProgram(nullptr)
+	, m_pScreenDrawMesh(nullptr)
     , m_aMaterial()
 	, m_fBlurRadius(1.0f)
 	, m_unIteration(6)
@@ -26,6 +127,11 @@ MGaussianBlurWork::~MGaussianBlurWork()
 {
 }
 
+void MGaussianBlurWork::Update(MRenderGraphNode* pGraphNode)
+{
+	
+}
+
 void MGaussianBlurWork::Render(MRenderGraphNode* pGraphNode)
 {
 	MForwardPostProcessProgram* pRenderProgram = dynamic_cast<MForwardPostProcessProgram*>(m_pRenderProgram);
@@ -34,12 +140,20 @@ void MGaussianBlurWork::Render(MRenderGraphNode* pGraphNode)
 
 	MRenderInfo& info = pRenderProgram->GetRenderInfo();
 
-	MRenderGraphNodeOutput* pOutput = pGraphNode->GetOutput(0);
-	if (!pOutput)
+	MRenderGraphNodeOutput* pOutput0 = pGraphNode->GetOutput(0);
+	if (!pOutput0)
 		return;
 
-	MRenderGraphTexture* pOutputTexture = pOutput->GetRenderTexture();
-	if (!pOutputTexture)
+	MRenderGraphNodeOutput* pOutput1 = pGraphNode->GetOutput(0);
+	if (!pOutput1)
+		return;
+
+	MRenderGraphTexture* pOutputTexture0 = pOutput0->GetRenderTexture();
+	if (!pOutputTexture0)
+		return;
+
+	MRenderGraphTexture* pOutputTexture1 = pOutput1->GetRenderTexture();
+	if (!pOutputTexture1)
 		return;
 
 	MRenderGraphNodeInput* pInput = pGraphNode->GetInput(0);
@@ -50,53 +164,60 @@ void MGaussianBlurWork::Render(MRenderGraphNode* pGraphNode)
 	if (!pInputTexture)
 		return;
 
-	MRenderGraphTexture* pOutput0Texture = pGraphNode->GetOutput(0)->GetRenderTexture();
-	MRenderGraphTexture* pOutput1Texture = pGraphNode->GetOutput(1)->GetRenderTexture();
+	MGaussianBlurGraphNode* pTypedGraphNode = pGraphNode->DynamicCast<MGaussianBlurGraphNode>();
+	if (!pTypedGraphNode)
+		return;
+
+
+	MRenderPass* pRenderPass = pGraphNode->GetRenderPass();
 
 
 	UpdateShaderSharedParams(pGraphNode, info);
-
 	for (uint32_t i = 0; i < 2 * m_unIteration; ++i)
 	{
+
 		MMaterial* pMaterial = nullptr;
 		if (MShaderParamSet* pMaterialParamSet = m_aMaterial[i % 2]->GetMaterialParamSet())
 		{
 			if (i == 0)
 			{
 				MIRenderTexture* pBackTexture = pInputTexture->GetRenderTexture();
-				info.pRenderer->SetRenderToTextureBarrier({ pBackTexture });
+				info.pRenderer->SetRenderToTextureBarrier(info.pPrimaryCommand, { pBackTexture });
 
 				pMaterial = m_aMaterial[2];
 			}
 			else if (i % 2 == 0)
 			{
-				MIRenderTexture* pBackTexture = pOutput1Texture->GetRenderTexture();
-				info.pRenderer->SetRenderToTextureBarrier({ pBackTexture });
+				MIRenderTexture* pBackTexture = pOutputTexture1->GetRenderTexture();
+				info.pRenderer->SetRenderToTextureBarrier(info.pPrimaryCommand, { pBackTexture });
 
 				pMaterial = m_aMaterial[0];
 			}
 			else
 			{
-				MIRenderTexture* pBackTexture = pOutput0Texture->GetRenderTexture();
-				info.pRenderer->SetRenderToTextureBarrier({ pBackTexture });
+				MIRenderTexture* pBackTexture = pOutputTexture0->GetRenderTexture();
+				info.pRenderer->SetRenderToTextureBarrier(info.pPrimaryCommand, { pBackTexture });
 
 				pMaterial = m_aMaterial[1];
 			}
 
 		}
 
-		info.pRenderer->BeginRenderPass(pGraphNode->GetRenderPass(), info.unFrameIndex);
+		if (i % 2 == 0)
+			info.pRenderer->BeginRenderPass(info.pPrimaryCommand, pTypedGraphNode->GetRenderPass(), info.unFrameIndex);
+		else
+			info.pRenderer->BeginRenderPass(info.pPrimaryCommand, pTypedGraphNode->GetTempRenderPass(), info.unFrameIndex);
 
-		Vector2 v2OutputSize = pOutputTexture->GetOutputSize();
-		info.pRenderer->SetViewport(0.0f, 0.0f, v2OutputSize.x, v2OutputSize.y, 0.0f, 1.0f);
-		info.pRenderer->SetScissor(0.0f, 0.0f, v2OutputSize.x, v2OutputSize.y);
+		Vector2 v2OutputSize = pOutputTexture0->GetOutputSize();
+		info.pRenderer->SetViewport(info.pPrimaryCommand, MViewportInfo(0.0f, 0.0f, v2OutputSize.x, v2OutputSize.y));
+		info.pRenderer->SetScissor(info.pPrimaryCommand, MScissorInfo(0.0f, 0.0f, v2OutputSize.x, v2OutputSize.y));
 
-		if (info.pRenderer->SetUseMaterial(pMaterial))
+		if (info.pRenderer->SetUseMaterial(info.pPrimaryCommand, pMaterial))
 		{
-			info.pRenderer->DrawMesh(m_pScreenDrawMesh);
+			info.pRenderer->DrawMesh(info.pPrimaryCommand, m_pScreenDrawMesh);
 		}
 
-		info.pRenderer->EndRenderPass();
+		info.pRenderer->EndRenderPass(info.pPrimaryCommand);
 	}
 }
 
@@ -170,22 +291,8 @@ void MGaussianBlurWork::InitializeGraph()
 	MRenderGraphTexture* pOutputTargetTexture = pRenderGraph->GetFinalOutputTexture();
 
 
-	MRenderGraphTexture* aTempOutputTextures[2] = {
-		pRenderGraph->AddRenderGraphTexture("Gaussian_Post_A"),
-		pRenderGraph->AddRenderGraphTexture("Gaussian_Post_B"),
-	};
 
-	for(size_t i = 0; i < 2; ++i)
-	{
-		aTempOutputTextures[i]->SetLayout(pOutputTargetTexture->GetLayout());
-		aTempOutputTextures[i]->SetSizePolicy(MRenderGraphTexture::ESizePolicy::ERelative);
-		aTempOutputTextures[i]->SetSize(Vector2(1.0f, 1.0f));
-		aTempOutputTextures[i]->SetUsage(pOutputTargetTexture->GetUsage());
-	}
-
-
-
-	if (MRenderGraphNode* pPostProcessNode = pRenderGraph->AddRenderGraphNode("Gaussian_Post"))
+	if (MRenderGraphNode* pPostProcessNode = pRenderGraph->AddRenderGraphNode<MGaussianBlurGraphNode>("Gaussian_Post"))
 	{
 		m_strGraphNodeName = pPostProcessNode->GetNodeName();
 
@@ -193,19 +300,34 @@ void MGaussianBlurWork::InitializeGraph()
 
 		if (MRenderGraphNodeOutput* pOutput = pPostProcessNode->AppendOutput())
 		{
-			pOutput->SetRenderTexture(aTempOutputTextures[0]);
+			MRenderGraphTexture* pGaussianOutputTexture = pRenderGraph->AddRenderGraphTexture("Gaussian_Post_0");
+			pGaussianOutputTexture->SetLayout(pOutputTargetTexture->GetLayout());
+			pGaussianOutputTexture->SetSizePolicy(MRenderGraphTexture::ESizePolicy::ERelative);
+			pGaussianOutputTexture->SetSize(Vector2(1.0f, 1.0f));
+			pGaussianOutputTexture->SetUsage(pOutputTargetTexture->GetUsage());
+
+
+			pOutput->SetRenderTexture(pGaussianOutputTexture);
 			pOutput->SetClear(true);
 			pOutput->SetClearColor(m_pRenderProgram->GetClearColor());
 		}
 
 		if (MRenderGraphNodeOutput* pOutput = pPostProcessNode->AppendOutput())
 		{
-			pOutput->SetRenderTexture(aTempOutputTextures[1]);
+			MRenderGraphTexture* pGaussianOutputTexture = pRenderGraph->AddRenderGraphTexture("Gaussian_Post_1");
+			pGaussianOutputTexture->SetLayout(pOutputTargetTexture->GetLayout());
+			pGaussianOutputTexture->SetSizePolicy(MRenderGraphTexture::ESizePolicy::ERelative);
+			pGaussianOutputTexture->SetSize(Vector2(1.0f, 1.0f));
+			pGaussianOutputTexture->SetUsage(pOutputTargetTexture->GetUsage());
+
+
+			pOutput->SetRenderTexture(pGaussianOutputTexture);
 			pOutput->SetClear(true);
 			pOutput->SetClearColor(m_pRenderProgram->GetClearColor());
 		}
-	}
 
+		pPostProcessNode->BindRenderFunction(std::bind(&MGaussianBlurWork::Render, this, std::placeholders::_1));
+	}
 }
 
 void MGaussianBlurWork::ReleaseGraph()

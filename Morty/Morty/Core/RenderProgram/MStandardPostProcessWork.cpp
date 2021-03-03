@@ -8,6 +8,11 @@
 #include "Model/MMeshResource.h"
 #include "Material/MMaterialResource.h"
 
+
+#include "MRenderGraph.h"
+#include "MRenderGraphNode.h"
+#include "MRenderGraphTexture.h"
+
 M_OBJECT_IMPLEMENT(MStandardPostProcessWork, MIPostProcessWork)
 
 MStandardPostProcessWork::MStandardPostProcessWork()

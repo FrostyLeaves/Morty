@@ -152,16 +152,6 @@ int main(int argc, char* argv[])
 #endif
 
 
-
-	// 	MWindowsRenderView* pTestView = new MWindowsRenderView();
-	// 	pTestView->Initialize(&engine, "Test");
-	// 	engine.AddView(pTestView);
-	// 	MViewport* pViewport = engine.GetObjectManager()->CreateObject<MViewport>();
-	// 	pViewport->SetScene(pEditorView->GetScene());
-	// 	pViewport->SetSize(Vector2(pTestView->GetViewWidth(), pTestView->GetViewWidth()));
-	// 	pTestView->AppendViewport(pViewport);
-
-
 	while (engine.MainLoop());
 
 	engine.Release();

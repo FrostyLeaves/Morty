@@ -27,6 +27,7 @@
 #endif
 
 class MIDevice;
+class MRenderCommand;
 class MIRenderTexture;
 
 class MORTY_API MIRenderTarget : public MObject
@@ -41,8 +42,6 @@ public:
 
 public:
 
-	virtual uint32_t GetFrameBufferIndex();
-
 	virtual void Resize(const Vector2& v2Size) { m_v2Size = v2Size; }
 	Vector2 GetSize() const { return m_v2Size; }
 
@@ -53,8 +52,8 @@ public:
 
 public:
 
-	virtual void OnRenderBefore(MIRenderer* pRenderer) {}
-	virtual void OnRenderAfter(MIRenderer* pRenderer) {}
+	virtual void WaitImageReady() {}
+	virtual void Present() {}
 	virtual void OnRender(MIRenderer* pRenderer) { if(m_funcRenderFunction) m_funcRenderFunction(pRenderer); }
 	std::function<void(MIRenderer*)> m_funcRenderFunction;
 
@@ -68,9 +67,6 @@ public:
 
 	VkExtent2D m_VkExtend;
 	VkFormat m_VkColorFormat;
-
-	std::array<VkCommandBuffer, M_BUFFER_NUM> m_VkCommandBuffers;
-	std::array<VkSemaphore, M_BUFFER_NUM> m_aVkRenderFinishedSemaphore;
 
 	std::vector<VkSemaphore> m_vWaitSemaphoreBeforeSubmit;
 

@@ -9,6 +9,10 @@
 #include "Texture/MTextureResource.h"
 #include "Material/MMaterialResource.h"
 
+#include "MRenderGraph.h"
+#include "MRenderGraphNode.h"
+#include "MRenderGraphTexture.h"
+
 #include "MForwardRenderWork.h"
 
 M_OBJECT_IMPLEMENT(MForwardTransparentWork, MObject)
@@ -79,22 +83,22 @@ void MForwardTransparentWork::Render(MRenderGraphNode* pGraphNode)
 		return;
 
 	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
-	info.pRenderer->SetViewport(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight(), 0.0f, 1.0f);
-	info.pRenderer->SetScissor(0.0f, 0.0f, info.pViewport->GetWidth(), info.pViewport->GetHeight());
+	info.pRenderer->SetViewport(info.pPrimaryCommand, MViewportInfo(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight()));
+	info.pRenderer->SetScissor(info.pPrimaryCommand, MScissorInfo(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight()));
 
 
 	MRenderGraphTexture* pFrontTexture = pGraphNode->GetInput(1)->GetLinkedTexture();
 	MRenderGraphTexture* pBackTexture = pGraphNode->GetInput(2)->GetLinkedTexture();
 
-	info.pRenderer->SetRenderToTextureBarrier({ pFrontTexture->GetRenderTexture(), pBackTexture->GetRenderTexture() });
+	info.pRenderer->SetRenderToTextureBarrier(info.pPrimaryCommand, { pFrontTexture->GetRenderTexture(), pBackTexture->GetRenderTexture() });
 
-	info.pRenderer->BeginRenderPass(pRenderPass, info.unFrameIndex);
+	info.pRenderer->BeginRenderPass(info.pPrimaryCommand, pRenderPass, info.unFrameIndex);
 
-	info.pRenderer->SetUseMaterial(m_pDrawMeshMaterial);
+	info.pRenderer->SetUseMaterial(info.pPrimaryCommand, m_pDrawMeshMaterial);
 
-	info.pRenderer->DrawMesh(&m_TransparentDrawMesh);
+	info.pRenderer->DrawMesh(info.pPrimaryCommand, &m_TransparentDrawMesh);
 
-	info.pRenderer->EndRenderPass();
+	info.pRenderer->EndRenderPass(info.pPrimaryCommand);
 }
 
 void MForwardTransparentWork::RenderDepthPeel(MRenderGraphNode* pGraphNode)
@@ -114,7 +118,15 @@ void MForwardTransparentWork::RenderDepthPeel(MRenderGraphNode* pGraphNode)
 	if (!pRenderPass)
 		return;
 
+	MRenderGraphNodeOutput* pOutput0 = pGraphNode->GetOutput(0);
+	if (!pOutput0)
+		return;
 
+	MRenderGraphTexture* pOutputTexture0 = pOutput0->GetRenderTexture();
+	if (!pOutputTexture0)
+		return;
+
+	Vector2 v2OutputSize = pOutputTexture0->GetOutputSize();
 
 	MForwardRenderWork::UpdateShaderSharedParams(info, m_aFrameParamSet[0]);
 	MForwardRenderWork::UpdateShaderSharedParams(info, m_aFrameParamSet[1]);
@@ -122,49 +134,49 @@ void MForwardTransparentWork::RenderDepthPeel(MRenderGraphNode* pGraphNode)
 
 	MViewport* pViewport = info.pViewport;
 
-	info.pRenderer->SetViewport(0, 0, 512, 512, 0, 1);
-	info.pRenderer->SetScissor(0.0f, 0.0f, 512, 512);
+	info.pRenderer->SetViewport(info.pPrimaryCommand, MViewportInfo(0, 0, v2OutputSize.x, v2OutputSize.y));
+	info.pRenderer->SetScissor(info.pPrimaryCommand, MScissorInfo(0.0f, 0.0f, v2OutputSize.x, v2OutputSize.y));
 
 
-	info.pRenderer->BeginRenderPass(pRenderPass, info.unFrameIndex);
+	info.pRenderer->BeginRenderPass(info.pPrimaryCommand, pRenderPass, info.unFrameIndex);
 
 	MRenderGraphTexture* pDepthTexture = pGraphNode->GetInput(1)->GetLinkedTexture();
 
 	m_pDrawFillMaterial->GetTextureParams()->at(0)->pTexture = pDepthTexture->GetRenderTexture();
 	m_pDrawFillMaterial->GetTextureParams()->at(0)->SetDirty();
 
-	if (info.pRenderer->SetUseMaterial(m_pDrawFillMaterial))
+	if (info.pRenderer->SetUseMaterial(info.pPrimaryCommand, m_pDrawFillMaterial))
 	{
-		info.pRenderer->DrawMesh(&m_TransparentDrawMesh);
+		info.pRenderer->DrawMesh(info.pPrimaryCommand, &m_TransparentDrawMesh);
 	}
 
 	for (uint32_t i = 1; i < pRenderPass->m_vSubpass.size(); ++i)
 	{
-		info.pRenderer->NextSubpass();
+		info.pRenderer->NextSubpass(info.pPrimaryCommand);
 
 		for (MMaterialGroup& group : info.vTransparentRenderGroup)
 		{
 			MMaterial* pMaterial = group.m_pMaterial;
 			//Ê¹ÓÃ²ÄÖÊ
-			if (!info.pRenderer->SetUseMaterial(pMaterial))
+			if (!info.pRenderer->SetUseMaterial(info.pPrimaryCommand, pMaterial))
 				continue;
 
-			info.pRenderer->SetShaderParamSet(&m_aFrameParamSet[i % 2]);
-			info.pRenderer->SetShaderParamSet(pMaterial->GetMaterialParamSet());
+			info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, &m_aFrameParamSet[i % 2]);
+			info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, pMaterial->GetMaterialParamSet());
 
 			for (MIMeshInstance* pMeshIns : group.m_vMeshInstances)
 			{
 				if (MSkeletonInstance* pSkeletonIns = pMeshIns->GetSkeletonInstance())
 				{
-					info.pRenderer->SetShaderParamSet(pSkeletonIns->GetShaderParamSet());
+					info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, pSkeletonIns->GetShaderParamSet());
 				}
-				info.pRenderer->SetShaderParamSet(pMeshIns->GetShaderMeshParamSet());
-				info.pRenderer->DrawMesh(pMeshIns->GetMesh());
+				info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, pMeshIns->GetShaderMeshParamSet());
+				info.pRenderer->DrawMesh(info.pPrimaryCommand, pMeshIns->GetMesh());
 			}
 		}
 	}
 
-	info.pRenderer->EndRenderPass();
+	info.pRenderer->EndRenderPass(info.pPrimaryCommand);
 }
 
 void MForwardTransparentWork::InitializeMesh()

@@ -27,8 +27,8 @@ public:
 
 public:
 	virtual void OnRender(MIRenderer* pRenderer) override;
-	virtual void OnRenderBefore(MIRenderer* pRenderer) override;
-	virtual void OnRenderAfter(MIRenderer* pRenderer) override;
+	virtual void WaitImageReady() override;
+	virtual void Present() override;
 
 	virtual void OnCreated() override;
 	virtual void OnDelete() override;
@@ -38,7 +38,8 @@ public:
 	virtual void Resize(const Vector2& v2Size) override;
 
 
-	virtual uint32_t GetFrameBufferIndex() override;
+	uint32_t GetFrameBufferIndex();
+	MRenderCommand* GetPrimaryCommand();
 
 
 	static MVulkanRenderTarget* CreateForSurface(MEngine* pEngine, MIRenderView* pView, VkSurfaceKHR surface);
@@ -75,6 +76,8 @@ public:
 	uint32_t m_unMinImageCount;
 
 	MRenderPass m_RenderPass;
+
+	std::array<MRenderCommand*, M_BUFFER_NUM> m_aPrimaryCommands;
 
 public:
 

@@ -31,6 +31,7 @@ class MSkeletonInstance;
 class MDirectionalLight;
 class MForwardRenderWork;
 class MRenderTexture;
+class MRenderCommand;
 class MIModelMeshInstance;
 class MForwardShadowMapWork;
 class MForwardTransparentWork;
@@ -48,6 +49,7 @@ struct MRenderInfo
 	class MViewport* pViewport;
 	class MCamera* pCamera;
 	class MScene* pScene;
+	class MRenderCommand* pPrimaryCommand;
 
 	class MDirectionalLight* pDirectionalLight;
 	class MITexture* pShadowMapTexture;
@@ -70,7 +72,8 @@ public:
 
 public:
 
-    virtual void Render(MIRenderer* pRenderer, MViewport* pViewport) override;
+	//TODO Secondary Command.
+    virtual void Render(MIRenderer* pRenderer, MViewport* pViewport, MRenderCommand* pCommand) override;
 
 public:
 

@@ -33,12 +33,13 @@
 
 
 MEngine::MEngine()
-	: m_pObjectManager(nullptr)
+	: m_unFrameIdx(0)
+	, m_pObjectManager(nullptr)
 	, m_pResourceManager(nullptr)
 	, m_pScene(nullptr)
 	, m_pDevice(nullptr)
 	, m_pRenderer(nullptr)
-	, m_cTickInfo(30)
+	, m_cTickInfo(500)
 {
 }
 
@@ -282,6 +283,11 @@ void MEngine::ReleaseDefaultResource()
 {
 }
 
+void MEngine::WaitRenderFinished(const uint32_t& unFrameIdx)
+{
+
+}
+
 bool MEngine::MainLoop()
 {
 	long long currentTime = MTimer::GetCurTime();
@@ -312,21 +318,20 @@ bool MEngine::MainLoop()
 	{
 		m_cTickInfo.fTimeDelta = fTimeDelta;
 
-		//Tick
+		//tick
 		Tick(fTimeDelta);
 		m_cTickInfo.lPrevTickTime = currentTime;
 
-		//Render
-		m_pRenderer->NewRenderFrame();
+		// prev frame finished.
+		WaitRenderFinished(m_unFrameIdx);
+		m_unFrameIdx = (m_unFrameIdx + 1) % M_BUFFER_NUM;
 
+		// render
 		for (MIRenderView* pView : m_vView)
+		{
 			RenderToView(pView, fTimeDelta);
-
-//  		int nTime = (int)(m_cTickInfo.fTickInterval * 1000) * 0.75 - (MTimer::GetCurTime() - currentTime);
-//  		if (nTime > 0)
-//  		{
-//  			Sleep(nTime);
-//  		}
+			break; //TODO mutil view.
+		}
 	}
 
 	return !m_vView.empty();
@@ -337,32 +342,7 @@ void MEngine::RenderToView(MIRenderView* pView, const float& fDelta)
 	if (pView->GetMinimized())
 		return;
 
-	MIRenderTarget* pRenderTarget = pView->GetRenderTarget();
-	if (!pRenderTarget)
-		return;
-	
-	MIRenderProgram* pRenderProgram = pRenderTarget->GetRenderProgram();
-	if (!pRenderProgram)
-		return;
-
-
-	pRenderTarget->OnRenderBefore(m_pRenderer);
-
-	m_pRenderer->RenderBegin(pRenderTarget);
-
-	pView->OnRenderBegin();
-
-	for (MViewport* pViewport : pView->GetViewports())
-	{
-		pRenderProgram->Render(m_pRenderer, pViewport);
-		break;
-	}
-
-	pView->OnRenderEnd();
-
-	m_pRenderer->RenderEnd(pRenderTarget);
-
-	pRenderTarget->OnRenderAfter(m_pRenderer);
+	pView->Render();
 
 }
 

@@ -25,8 +25,6 @@ public:
     virtual ~MForwardPostProcessProgram();
 
 public:
-	virtual void Render(MIRenderer* pRenderer, MViewport* pViewport) override;
-
 	template<typename CLASS_TYPE>
 	CLASS_TYPE* AppendPostProcess();
 

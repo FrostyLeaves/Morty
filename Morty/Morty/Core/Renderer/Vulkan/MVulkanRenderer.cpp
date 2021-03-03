@@ -19,12 +19,6 @@ MVulkanRenderer::MVulkanRenderer(MVulkanDevice* pDevice)
 	, m_pDevice(pDevice)
 	, m_InputAssemblyState({})
 	, m_MultisampleState({})
-	, m_VkViewport({})
-	, m_vRenderStages()
-	, m_vRenderPassStages()
-	, m_VkInFlightFences()
-	, m_unFrameIndex(0)
-	, m_aRenderFinishedCallback()
 {
 
 }
@@ -35,7 +29,6 @@ MVulkanRenderer::~MVulkanRenderer()
 
 bool MVulkanRenderer::Initialize()
 {
-
 
 	// Input
 	m_InputAssemblyState = {};
@@ -55,99 +48,60 @@ bool MVulkanRenderer::Initialize()
 	m_MultisampleState.alphaToCoverageEnable = VK_FALSE; // Optional
 	m_MultisampleState.alphaToOneEnable = VK_FALSE; // Optional
 
-
-	InitSemaphores();
-
-
 	return true;
 }
 
 void MVulkanRenderer::Release()
 {
-	//All RenderTarget finished all renderpass.
-	for (VkFence vkFence : m_VkInFlightFences)
-	{
-		while (vkGetFenceStatus(m_pDevice->m_VkDevice, vkFence) != VK_SUCCESS);
-	}
-
-	ReleaseSemaphores();
 
 }
 
-void MVulkanRenderer::SetViewport(const float& fX, const float& fY, const float& fWidth, const float& fHeight, const float& fMinDepth, const float& fMaxDepth)
+void MVulkanRenderer::SetViewport(MRenderCommand* pCommand, const MViewportInfo& viewport)
 {
-	m_VkViewport = {};
-	m_VkViewport.x = fX;
-	m_VkViewport.y = fY + fHeight;
-	m_VkViewport.width = fWidth;
-	m_VkViewport.height = -fHeight;
-	m_VkViewport.minDepth = fMinDepth;
-	m_VkViewport.maxDepth = fMaxDepth;
+	if (!pCommand)
+		return;
 
-	MRenderStage& rs = m_vRenderStages.back();
-	vkCmdSetViewport(rs.vkCommandBuffer, 0, 1, &m_VkViewport);
-	
+	VkViewport vkViewport = {};
+	vkViewport.x = viewport.x;
+	vkViewport.y = viewport.y + viewport.height;
+	vkViewport.width = viewport.width;
+	vkViewport.height = -viewport.height;
+	vkViewport.minDepth = viewport.minz;
+	vkViewport.maxDepth = viewport.maxz;
+
+	vkCmdSetViewport(pCommand->m_VkCommandBuffer, 0, 1, &vkViewport);
+
 }
 
-void MVulkanRenderer::SetScissor(const float& fX, const float& fY, const float& fWidth, const float& fHeight)
+void MVulkanRenderer::SetScissor(MRenderCommand* pCommand, const MScissorInfo& scissor)
 {
-	MRenderStage& rs = m_vRenderStages.back();
-	VkRect2D scissorRect = { int32_t(fX), int32_t(fY), uint32_t(fWidth), uint32_t(fHeight) };
-	vkCmdSetScissor(rs.vkCommandBuffer, 0, 1, &scissorRect);
+	if (!pCommand)
+		return;
+
+	VkRect2D scissorRect = { int32_t(scissor.x), int32_t(scissor.y), uint32_t(scissor.width), uint32_t(scissor.height) };
+	vkCmdSetScissor(pCommand->m_VkCommandBuffer, 0, 1, &scissorRect);
 }
 
-void MVulkanRenderer::NewRenderFrame()
+void MVulkanRenderer::RenderCommandBegin(MRenderCommand* pCommand)
 {
-	uint32_t unPrevFrameIdx = m_unFrameIndex;
+	{//TODO more elegant.
+		m_pDevice->m_ObjectDestructor.FrameFinished(pCommand->m_unFrameIdx);
 
-	m_unFrameIndex = (m_unFrameIndex + 1) % M_BUFFER_NUM;
+		//if m_VkInFlightFences == signed
+		vkWaitForFences(m_pDevice->m_VkDevice, 1, &pCommand->m_VkRenderFinishedFence, VK_TRUE, UINT64_MAX);
 
-	VkFence vkInFightFence = m_VkInFlightFences[m_unFrameIndex];
-
-	//if m_VkInFlightFences == signed
-	vkWaitForFences(m_pDevice->m_VkDevice, 1, &vkInFightFence, VK_TRUE, UINT64_MAX);
-
-	for (auto callback : m_aRenderFinishedCallback[unPrevFrameIdx])
-	{
-		if (callback)
+		for (auto callback : pCommand->m_aRenderFinishedCallback)
 		{
-			callback();
+			if (callback)
+			{
+				callback();
+			}
 		}
+
+		pCommand->m_aRenderFinishedCallback.clear();
 	}
 
-	m_aRenderFinishedCallback[unPrevFrameIdx].clear();
-
-	m_vRenderStages.clear();
-}
-
-void MVulkanRenderer::RenderBegin(MIRenderTarget* pRenderTarget)
-{
-	//�ͷ����õ�Vulkan����
-	m_pDevice->m_ObjectDestructor.FrameFinished(m_unFrameIndex);
-
-	m_vRenderStages.push_back(MRenderStage());
-
-//	MLogManager::GetInstance()->Information("begin render frame: %d", m_unFrameIndex);
-
-
-	//�ͷ���һ��CommandBuffer
-	if (pRenderTarget->m_VkCommandBuffers[m_unFrameIndex])
-	{
-		m_pDevice->m_ObjectDestructor.DestroyCommandBufferLater(pRenderTarget->m_VkCommandBuffers[m_unFrameIndex]);
-	}
-
-	//New һ��CommandBuffer
-	VkCommandBufferAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandPool = m_pDevice->m_VkCommandPool;
-	allocInfo.commandBufferCount = 1;
-	vkAllocateCommandBuffers(m_pDevice->m_VkDevice, &allocInfo, &pRenderTarget->m_VkCommandBuffers[m_unFrameIndex]);
-
-	//Set Record Using CommandBuffer
-	m_vRenderStages.back().vkCommandBuffer = pRenderTarget->m_VkCommandBuffers[m_unFrameIndex];
-
-
+	vkResetCommandBuffer(pCommand->m_VkCommandBuffer, 0);
 
 
 	//CommandBuffer Begin Info
@@ -156,24 +110,72 @@ void MVulkanRenderer::RenderBegin(MIRenderTarget* pRenderTarget)
 	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
 	//Begin Command Buffer
-	vkBeginCommandBuffer(m_vRenderStages.back().vkCommandBuffer, &beginInfo);
+	vkBeginCommandBuffer(pCommand->m_VkCommandBuffer, &beginInfo);
 }
 
-void MVulkanRenderer::NextSubpass()
+void MVulkanRenderer::RenderCommandEnd(MRenderCommand* pCommand)
 {
-	MRenderStage& rs = m_vRenderStages.back();
-//	vkCmdNextSubpass(rs.vkCommandBuffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
-	vkCmdNextSubpass(rs.vkCommandBuffer, VK_SUBPASS_CONTENTS_INLINE);
+	if (!pCommand || !pCommand->m_VkCommandBuffer)
+		return;
 
-	if (!m_vRenderPassStages.empty())
+	//End Command Buffer
+	vkEndCommandBuffer(pCommand->m_VkCommandBuffer);
+}
+
+void MVulkanRenderer::SubmitRenderCommand(MRenderCommand* pCommand, MIRenderTarget* pRenderTarget)
+{
+	if (!pCommand || !pCommand->m_VkCommandBuffer)
+		return;
+
+	VkSubmitInfo submitInfo{};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+
+	if (pRenderTarget)
 	{
-		m_vRenderPassStages.top().nSubpassIdx++;
+		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		submitInfo.waitSemaphoreCount = pRenderTarget->m_vWaitSemaphoreBeforeSubmit.size();
+		submitInfo.pWaitSemaphores = pRenderTarget->m_vWaitSemaphoreBeforeSubmit.data();
+		submitInfo.pWaitDstStageMask = waitStages;
+	}
+
+
+	submitInfo.commandBufferCount = 1;
+	VkCommandBuffer commandBuffers[] = { pCommand->m_VkCommandBuffer };
+	//TODO maybe mutil command buffers for every frame
+	submitInfo.pCommandBuffers = commandBuffers;
+
+
+	VkSemaphore signalSemaphores[] = { pCommand->m_VkRenderFinishedSemaphore };
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = signalSemaphores;
+	
+
+	VkFence vkInFightFence = pCommand->m_VkRenderFinishedFence;
+	//m_VkInFlightFences = unsigned
+	vkResetFences(m_pDevice->m_VkDevice, 1, &vkInFightFence);
+	if (vkQueueSubmit(m_pDevice->m_VkGraphicsQueue, 1, &submitInfo, vkInFightFence) != VK_SUCCESS) {
+		throw std::runtime_error("failed to submit draw command buffer!");
 	}
 }
 
-void MVulkanRenderer::BeginRenderPass(MRenderPass* pRenderPass, const uint32_t& nFrameBufferIdx)
+void MVulkanRenderer::NextSubpass(MRenderCommand* pCommand)
 {
-	if (!pRenderPass)
+	if (!pCommand)
+		return;
+
+//	vkCmdNextSubpass(rs.vkCommandBuffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+	vkCmdNextSubpass(pCommand->m_VkCommandBuffer, VK_SUBPASS_CONTENTS_INLINE);
+
+	if (!pCommand->m_vRenderPassStages.empty())
+	{
+		pCommand->m_vRenderPassStages.top().nSubpassIdx++;
+	}
+}
+
+void MVulkanRenderer::BeginRenderPass(MRenderCommand* pCommand, MRenderPass* pRenderPass, const uint32_t& nFrameBufferIdx)
+{
+	if (!pCommand || !pRenderPass)
 		return;
 
 	if (VK_NULL_HANDLE == pRenderPass->m_VkRenderPass)
@@ -228,76 +230,39 @@ void MVulkanRenderer::BeginRenderPass(MRenderPass* pRenderPass, const uint32_t& 
 	renderPassInfo.pClearValues = vClearValues.data();
 
 	//Begin RenderPass
-	vkCmdBeginRenderPass(m_vRenderStages.back().vkCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBeginRenderPass(pCommand->m_VkCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	m_vRenderPassStages.push(MRenderPassStage(pRenderPass, 0));
+	pCommand->m_vRenderPassStages.push(MRenderPassStage(pRenderPass, 0));
 }
 
-void MVulkanRenderer::EndRenderPass()
+void MVulkanRenderer::EndRenderPass(MRenderCommand* pCommand)
 {
-	m_vRenderPassStages.pop();
+	if (pCommand->m_vRenderPassStages.empty())
+		return;
+
+
+	pCommand->m_vRenderPassStages.pop();
 
 	//End Render Pass
-	vkCmdEndRenderPass(m_vRenderStages.back().vkCommandBuffer);
-
-
-
+	vkCmdEndRenderPass(pCommand->m_VkCommandBuffer);
 
 //	vkCmdPipelineBarrier(m_vRenderStages.back().vkCommandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,)
 }
 
-void MVulkanRenderer::RenderEnd(MIRenderTarget* pRenderTarget)
-{
-	//End Command Buffer
-	vkEndCommandBuffer(m_vRenderStages.back().vkCommandBuffer);
-
-	VkSubmitInfo submitInfo{};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-	submitInfo.waitSemaphoreCount = pRenderTarget->m_vWaitSemaphoreBeforeSubmit.size();
-	submitInfo.pWaitSemaphores = pRenderTarget->m_vWaitSemaphoreBeforeSubmit.data();
-	submitInfo.pWaitDstStageMask = waitStages;
-
-
-	submitInfo.commandBufferCount = 1;
-	VkCommandBuffer commandBuffers[] = { m_vRenderStages.back().vkCommandBuffer };
-	//TODO maybe mutil command buffers for every frame
-	submitInfo.pCommandBuffers = commandBuffers;
-
-	
-	VkSemaphore signalSemaphores[] = { pRenderTarget->m_aVkRenderFinishedSemaphore[m_unFrameIndex] };
-	submitInfo.signalSemaphoreCount = 1;
-	submitInfo.pSignalSemaphores = signalSemaphores;
-
-
-
-
-	VkFence vkInFightFence = m_VkInFlightFences[m_unFrameIndex];
-	//m_VkInFlightFences = unsigned
-	vkResetFences(m_pDevice->m_VkDevice, 1, &vkInFightFence);
-	if (vkQueueSubmit(m_pDevice->m_VkGraphicsQueue, 1, &submitInfo, vkInFightFence) != VK_SUCCESS) {
-		throw std::runtime_error("failed to submit draw command buffer!");
-	}
-
-	m_vRenderStages.pop_back();
-}
-
 //����Buffer->��Buffer(����)->��ͼ(����)
-void MVulkanRenderer::DrawMesh(MIMesh* pMesh)
+void MVulkanRenderer::DrawMesh(MRenderCommand* pCommand, MIMesh* pMesh)
 {
 	if (!pMesh)
 		return;
 
-	DrawMesh(pMesh, 0, pMesh->GetIndicesLength(), 0);
+	DrawMesh(pCommand, pMesh, 0, pMesh->GetIndicesLength(), 0);
 }
 
-void MVulkanRenderer::DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, const uint32_t& nIdxCount, const uint32_t& nVrtOffset)
+void MVulkanRenderer::DrawMesh(MRenderCommand* pCommand, MIMesh* pMesh, const uint32_t& nIdxOffset, const uint32_t& nIdxCount, const uint32_t& nVrtOffset)
 {
-	if (!pMesh)
+	if (!pCommand || !pMesh)
 		return;
 
-	MRenderStage& rs = m_vRenderStages.back();
 
 	if (pMesh->GetNeedGenerate())
 		pMesh->GenerateBuffer(m_pDevice);//�����ʹ����һ��CommandBuffer
@@ -309,9 +274,9 @@ void MVulkanRenderer::DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, const 
 	{
 		VkBuffer vertexBuffers[] = { pBuffer->m_VkVertexBuffer };
 		VkDeviceSize offsets[] = { 0 };
-		vkCmdBindVertexBuffers(rs.vkCommandBuffer, 0, 1, vertexBuffers, offsets);
-		vkCmdBindIndexBuffer(rs.vkCommandBuffer, pBuffer->m_VkIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-		vkCmdDrawIndexed(rs.vkCommandBuffer, nIdxCount, 1, nIdxOffset, nVrtOffset, 0);
+		vkCmdBindVertexBuffers(pCommand->m_VkCommandBuffer, 0, 1, vertexBuffers, offsets);
+		vkCmdBindIndexBuffer(pCommand->m_VkCommandBuffer, pBuffer->m_VkIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdDrawIndexed(pCommand->m_VkCommandBuffer, nIdxCount, 1, nIdxOffset, nVrtOffset, 0);
 
 #if MORTY_RENDER_DATA_STATISTICS
 		MRenderStatistics::GetInstance()->unTriangleCount += pMesh->GetIndicesLength() / 3;
@@ -320,31 +285,27 @@ void MVulkanRenderer::DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, const 
 }
 
 //��������->�󶨹���(����)->�󶨲��ʲ���(����)
-bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial)
+bool MVulkanRenderer::SetUseMaterial(MRenderCommand* pCommand, MMaterial* pMaterial)
 {
-	if (m_vRenderStages.empty())
+	if (!pCommand)
 		return false;
 
-	if (m_vRenderPassStages.empty())
+	//must begin renderpass
+	if (pCommand->m_vRenderPassStages.empty())
 		return false;
-
-	MRenderStage& rs = m_vRenderStages.back();
 
 	if (nullptr == pMaterial)
 	{
-		rs.pUsingMaterial = nullptr;
-		rs.pUsingPipelineLayoutData = nullptr;
+		pCommand->pUsingMaterial = nullptr;
+		pCommand->pUsingPipelineLayoutData = nullptr;
 		return true;
 	}
 
-	MRenderPassStage stage = m_vRenderPassStages.top();
+	MRenderPassStage stage = pCommand->m_vRenderPassStages.top();
 	MMaterialPipelineLayoutData* pPipelineLayoutData = m_pDevice->m_PipelineManager.FindOrCreatePipelineLayout(pMaterial);
 
-	//if (rs.pUsingPipelineLayoutData == pPipelineLayoutData)
-	//	return true;
-
-	rs.pUsingMaterial = pMaterial;
-	rs.pUsingPipelineLayoutData = pPipelineLayoutData;
+	pCommand->pUsingMaterial = pMaterial;
+	pCommand->pUsingPipelineLayoutData = pPipelineLayoutData;
 
 	VkPipeline vkPipeline = m_pDevice->m_PipelineManager.FindPipeline(pMaterial, stage.pRenderPass, stage.nSubpassIdx);
 	if (!vkPipeline)
@@ -355,10 +316,10 @@ bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial)
 	
 	if (vkPipeline)
 	{
-		vkCmdBindPipeline(rs.vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
+		vkCmdBindPipeline(pCommand->m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
 
 		MShaderParamSet* pParamSet = pMaterial->GetMaterialParamSet();
-		SetShaderParamSet(pParamSet);
+		SetShaderParamSet(pCommand, pParamSet);
 
 		return true;
 	}
@@ -366,18 +327,16 @@ bool MVulkanRenderer::SetUseMaterial(MMaterial* pMaterial)
 	return false;
 }
 
-bool MVulkanRenderer::SetRenderToTextureBarrier(const std::vector<MIRenderTexture*> vTextures)
+bool MVulkanRenderer::SetRenderToTextureBarrier(MRenderCommand* pCommand, const std::vector<MIRenderTexture*> vTextures)
 {
-	if (m_vRenderStages.empty())
+	if (!pCommand)
 		return false;
-
-	MRenderStage& rs = m_vRenderStages.back();
 
 	std::vector<VkImageMemoryBarrier> vImageBarrier;
 
 	for (uint32_t i = 0; i < vTextures.size(); ++i)
 	{
-		if (MTextureBuffer* pBuffer = vTextures[i]->GetBuffer(m_unFrameIndex))
+		if (MTextureBuffer* pBuffer = vTextures[i]->GetBuffer(pCommand->m_unFrameIdx))
 		{
 			vImageBarrier.push_back(VkImageMemoryBarrier());
 			VkImageMemoryBarrier& imageMemoryBarrier = vImageBarrier.back();
@@ -392,7 +351,7 @@ bool MVulkanRenderer::SetRenderToTextureBarrier(const std::vector<MIRenderTextur
 		}
 	}
 	vkCmdPipelineBarrier(
-		rs.vkCommandBuffer,
+		pCommand->m_VkCommandBuffer,
 		VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 		0,
@@ -401,12 +360,12 @@ bool MVulkanRenderer::SetRenderToTextureBarrier(const std::vector<MIRenderTextur
 		vImageBarrier.size(), vImageBarrier.data());
 }
 
-bool MVulkanRenderer::DownloadTexture(MITexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback)
+bool MVulkanRenderer::DownloadTexture(MRenderCommand* pCommand, MITexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback)
 {
-	if (!pTexture)
+	if (!pCommand ||!pTexture)
 		return false;
 
-	MTextureBuffer* pBuffer = pTexture->GetBuffer(m_unFrameIndex);
+	MTextureBuffer* pBuffer = pTexture->GetBuffer(pCommand->m_unFrameIdx);
 	if (!pBuffer)
 		return false;
 
@@ -414,8 +373,7 @@ bool MVulkanRenderer::DownloadTexture(MITexture* pTexture, const uint32_t& unMip
 	if (unValidMipIdx >= pBuffer->m_unMipmaps)
 		unValidMipIdx = pBuffer->m_unMipmaps - 1;
 
-	MRenderStage& rs = m_vRenderStages.back();
-	VkCommandBuffer commandBuffer = rs.vkCommandBuffer;
+	VkCommandBuffer commandBuffer = pCommand->m_VkCommandBuffer;
 	
 	VkImageSubresourceRange vkSubresourceRange = {};
 	vkSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -471,7 +429,7 @@ bool MVulkanRenderer::DownloadTexture(MITexture* pTexture, const uint32_t& unMip
 
 	m_pDevice->TransitionImageLayout(textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pBuffer->m_VkImageLayout, vkSubresourceRange, commandBuffer);
 
-	m_aRenderFinishedCallback[m_unFrameIndex].push_back([=]() {
+	pCommand->m_aRenderFinishedCallback.push_back([=]() {
 
 		MByte* data = m_pDevice->m_BufferPool.GetReadBackMemory();
 		callback(data + memoryInfo.begin, Vector2(unBufferWidth, unBufferHeight));
@@ -481,13 +439,15 @@ bool MVulkanRenderer::DownloadTexture(MITexture* pTexture, const uint32_t& unMip
 
 }
 
-bool MVulkanRenderer::CopyImageBuffer(MITexture* pSource, MITexture* pDest)
+bool MVulkanRenderer::CopyImageBuffer(MRenderCommand* pCommand, MITexture* pSource, MITexture* pDest)
 {
-	MRenderStage& rs = m_vRenderStages.back();
-	VkCommandBuffer commandBuffer = rs.vkCommandBuffer;
+	if (!pCommand)
+		return false;
 
-	MTextureBuffer* pSourBuffer = pSource->GetBuffer(m_unFrameIndex);
-	MTextureBuffer* pDestBuffer = pDest->GetBuffer(m_unFrameIndex);
+	VkCommandBuffer commandBuffer = pCommand->m_VkCommandBuffer;
+
+	MTextureBuffer* pSourBuffer = pSource->GetBuffer(pCommand->m_unFrameIdx);
+	MTextureBuffer* pDestBuffer = pDest->GetBuffer(pCommand->m_unFrameIdx);
 
 	if (!pSourBuffer || !pDestBuffer)
 		return false;
@@ -497,13 +457,12 @@ bool MVulkanRenderer::CopyImageBuffer(MITexture* pSource, MITexture* pDest)
 	return true;
 }
 
-void MVulkanRenderer::UpdateMipmaps(MTextureBuffer* pBuffer)
+void MVulkanRenderer::UpdateMipmaps(MRenderCommand* pCommand, MTextureBuffer* pBuffer)
 {
-	if (!pBuffer)
+	if (!pCommand || !pBuffer)
 		return;
 
-	MRenderStage& rs = m_vRenderStages.back();
-	VkCommandBuffer commandBuffer = rs.vkCommandBuffer;
+	VkCommandBuffer commandBuffer = pCommand->m_VkCommandBuffer;
 
 	m_pDevice->GenerateMipmaps(pBuffer, pBuffer->m_unMipmaps, commandBuffer);
 	
@@ -689,8 +648,8 @@ void MVulkanRenderer::UpdateShaderParam(MShaderConstantParam& param, const uint3
 		//TODO android 或其它平台可能需要手动刷新一下缓存
 // 		VkMappedMemoryRange memoryRange = {};
 // 		memoryRange.sType = VkStructureType::VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-// 		memoryRange.memory = param.m_VkBufferMemory[m_unFrameIndex];
-// 		memoryRange.offset = param.m_unMemoryOffset[m_unFrameIndex];
+// 		memoryRange.memory = param.m_VkBufferMemory[pCommand->m_unFrameIdx];
+// 		memoryRange.offset = param.m_unMemoryOffset[pCommand->m_unFrameIdx];
 // 		memoryRange.size = param.m_unVkMemorySize;
 // 		vkFlushMappedMemoryRanges(m_pDevice->m_VkDevice, 1, &memoryRange);
 
@@ -699,19 +658,20 @@ void MVulkanRenderer::UpdateShaderParam(MShaderConstantParam& param, const uint3
 
 }
 
-void MVulkanRenderer::SetShaderParamSet(MShaderParamSet* pParamSet)
+void MVulkanRenderer::SetShaderParamSet(MRenderCommand* pCommand, MShaderParamSet* pParamSet)
 {
-	MRenderStage& rs = m_vRenderStages.back();
+	if (!pCommand)
+		return;
 
 	MMaterialPipelineLayoutData* pLayoutData = m_pDevice->m_PipelineManager.FindPipelineLayout(pParamSet->m_nDescriptorSetInitMaterialIdx);
 	if (!pLayoutData)
 	{
-		if (!rs.pUsingMaterial)
+		if (!pCommand->pUsingMaterial)
 			return;
-		if (!rs.pUsingPipelineLayoutData)
+		if (!pCommand->pUsingPipelineLayoutData)
 			return;
 
-		pParamSet->m_nDescriptorSetInitMaterialIdx = rs.pUsingMaterial->GetMaterialID();
+		pParamSet->m_nDescriptorSetInitMaterialIdx = pCommand->pUsingMaterial->GetMaterialID();
 
 		pParamSet->GenerateBuffer(m_pDevice);
 	}
@@ -720,30 +680,30 @@ void MVulkanRenderer::SetShaderParamSet(MShaderParamSet* pParamSet)
 
 	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
 	{
-		UpdateShaderParam(*pParam, m_unFrameIndex);
+		UpdateShaderParam(*pParam, pCommand->m_unFrameIdx);
 
 		if (pParam->m_VkDescriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
 		{
-			vDynamicOffsets.push_back(pParam->m_unMemoryOffset[m_unFrameIndex]);
+			vDynamicOffsets.push_back(pParam->m_unMemoryOffset[pCommand->m_unFrameIdx]);
 		}
 	}
 
 	for (MShaderTextureParam* pParam : pParamSet->m_vTextures)
 	{
-		if (pParam->bDirty[m_unFrameIndex])
+		if (pParam->bDirty[pCommand->m_unFrameIdx])
 		{
-			m_pDevice->m_PipelineManager.BindTextureParam(pParamSet, pParam, m_unFrameIndex);
-			pParam->bDirty[m_unFrameIndex] = false;
+			m_pDevice->m_PipelineManager.BindTextureParam(pParamSet, pParam, pCommand->m_unFrameIdx);
+			pParam->bDirty[pCommand->m_unFrameIdx] = false;
 		}
 		else
 		{
 			if (pParam->pTexture)
 			{
-				if (MTextureBuffer* pBuffer = pParam->pTexture->GetBuffer(m_unFrameIndex))
+				if (MTextureBuffer* pBuffer = pParam->pTexture->GetBuffer(pCommand->m_unFrameIdx))
 				{
 					if (pBuffer->m_VkTextureImage != pParam->m_VkUpdatedImage)
 					{
-						m_pDevice->m_PipelineManager.BindTextureParam(pParamSet, pParam, m_unFrameIndex);
+						m_pDevice->m_PipelineManager.BindTextureParam(pParamSet, pParam, pCommand->m_unFrameIdx);
 					}
 				}
 			}
@@ -754,7 +714,7 @@ void MVulkanRenderer::SetShaderParamSet(MShaderParamSet* pParamSet)
 	}
 
 
-	vkCmdBindDescriptorSets(rs.vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, rs.pUsingPipelineLayoutData->pipelineLayout, pParamSet->m_unKey, 1, &pParamSet->m_VkDescriptorSet[m_unFrameIndex], vDynamicOffsets.size(), vDynamicOffsets.data());
+	vkCmdBindDescriptorSets(pCommand->m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pCommand->pUsingPipelineLayoutData->pipelineLayout, pParamSet->m_unKey, 1, &pParamSet->m_VkDescriptorSet[pCommand->m_unFrameIdx], vDynamicOffsets.size(), vDynamicOffsets.data());
 }
 
 VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx)
@@ -788,13 +748,21 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 
 	VkRect2D scissor{};
 	scissor.offset = { 0, 0 };
-	scissor.extent.width = m_VkViewport.width;	//TODO
-	scissor.extent.height = m_VkViewport.height;
+	scissor.extent.width = UINT_MAX;	//default
+	scissor.extent.height = UINT_MAX;
+
+	VkViewport viewport{};
+	viewport.x = 0;
+	viewport.y = 0;
+	viewport.width = 512;
+	viewport.height = 512;
+	viewport.minDepth = 0;
+	viewport.maxDepth = 1;
 
 	VkPipelineViewportStateCreateInfo viewportState = {};
 	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	viewportState.viewportCount = 1;
-	viewportState.pViewports = &m_VkViewport;
+	viewportState.pViewports = &viewport;
 	viewportState.scissorCount = 1;
 	viewportState.pScissors = &scissor;
 
@@ -886,38 +854,5 @@ VkPipeline MVulkanRenderer::CreateGraphicsPipeline(MMaterial* pMaterial, MRender
 	return graphicsPipeline;
 }
 
-bool MVulkanRenderer::InitSemaphores()
-{
-	
-
-
-	VkFenceCreateInfo fenceInfo{};
-	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-	for (uint32_t i = 0; i < m_VkInFlightFences.size(); ++i)
-		vkCreateFence(m_pDevice->m_VkDevice, &fenceInfo, nullptr, &m_VkInFlightFences[i]);
-
-	return true;
-}
-
-
-void MVulkanRenderer::ReleaseSemaphores()
-{
-	for (uint32_t i = 0; i < m_VkInFlightFences.size(); ++i)
-	{
-		vkDestroyFence(m_pDevice->m_VkDevice, m_VkInFlightFences[i], nullptr);
-		m_VkInFlightFences[i] = VK_NULL_HANDLE;
-	}
-}
-
-
-VkCommandBuffer MVulkanRenderer::GetCommandBuffer()
-{
-	if (m_vRenderStages.empty())
-		return VK_NULL_HANDLE;
-
-	return m_vRenderStages.back().vkCommandBuffer;
-}
 
 #endif

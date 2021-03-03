@@ -16,8 +16,9 @@ class MScene;
 class MViewport;
 class MIRenderer;
 class MRenderGraph;
-struct MShaderConstantParam;
 class MIMeshInstance;
+class MRenderCommand;
+struct MShaderConstantParam;
 class MORTY_API MIRenderProgram : public MObject
 {
 public:
@@ -29,7 +30,7 @@ public:
 
 	virtual MRenderGraph* GetRenderGraph() { return nullptr; }
 
-    virtual void Render(MIRenderer* pRenderer, MViewport* pViewport) {};
+    virtual void Render(MIRenderer* pRenderer, MViewport* pViewport, MRenderCommand* pCommand) {};
 
     virtual void SetClearColor(const MColor& cClearColor) {}
     virtual MColor GetClearColor() const { return MColor::Black_T; }
