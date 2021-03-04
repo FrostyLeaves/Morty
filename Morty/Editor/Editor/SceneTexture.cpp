@@ -96,7 +96,7 @@ void SceneTexture::UpdateTexture(MRenderCommand* pCommand)
 	}
 }
 
-void* SceneTexture::GetTexture(const uint32_t& unFrameIndex)
+MITexture* SceneTexture::GetTexture(const uint32_t& unFrameIndex)
 {
 
 	if (MRenderGraph* pRenderGraph = m_pRenderProgram->GetRenderGraph())

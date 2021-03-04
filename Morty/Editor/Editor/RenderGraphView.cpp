@@ -32,7 +32,11 @@ RenderGraphView::~RenderGraphView()
 
 void RenderGraphView::SetRenderGraph(MRenderGraph* pRenderGraph)
 {
-	m_pRenderGraph = pRenderGraph;
+	if (m_pRenderGraph = pRenderGraph)
+	{
+		m_pSelectedTexture = pRenderGraph->GetFinalOutputTexture();
+
+	}
 }
 
 MRenderGraphTexture* RenderGraphView::GetSelectedOutputTexture()

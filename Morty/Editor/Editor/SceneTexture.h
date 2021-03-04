@@ -10,6 +10,7 @@
 class MScene;
 class MEngine;
 class MViewport;
+class MITexture;
 class MRenderGraph;
 class MRenderCommand;
 class MIRenderProgram;
@@ -30,8 +31,7 @@ public:
 
 	void UpdateTexture(MRenderCommand* pCommand);
 
-	void SetRenderTextureName(const MString& strTextureName);
-	void* GetTexture(const uint32_t& unFrameIndex);
+	MITexture* GetTexture(const uint32_t& unFrameIndex);
 
 	MScene* GetScene() { return m_pScene; }
 	MViewport* GetViewport() { return m_pRenderViewport; }
