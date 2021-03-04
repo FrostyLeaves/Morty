@@ -35,6 +35,8 @@
 
 #include "Timer/MTimer.h"
 
+#include <fstream>
+
 void CopyMatrix4(Matrix4* matdest, aiMatrix4x4* matsour)
 {
 	for (uint32_t r = 0; r < 4; ++r)
@@ -155,13 +157,31 @@ bool MModelConverter::Load(const MString& strResourcePath)
 
 	m_pModelInstance = m_pEngine->GetObjectManager()->CreateObject<MModelInstance>();
 
+	std::vector<MString> vSearchPath = m_pEngine->GetResourceManager()->GetSearchPath();
+
+
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(strResourcePath, aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_FixInfacingNormals | aiProcess_ConvertToLeftHanded);
-	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
+	const aiScene* scene = nullptr;
+	for (MString strSearchPath : vSearchPath)
 	{
-		MLogManager::GetInstance()->Error("ERROR::ASSIMP:: %s", importer.GetErrorString());
-		return false;
+		std::string strFullpath = strSearchPath + strResourcePath;
+		std::ifstream ifs(strFullpath.c_str(), std::ios::binary);
+		if (!ifs.good())
+			continue;
+
+		scene = importer.ReadFile(strFullpath, aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_FixInfacingNormals | aiProcess_ConvertToLeftHanded);
+	
+		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
+		{
+			MLogManager::GetInstance()->Error("ERROR::ASSIMP:: %s", importer.GetErrorString());
+			return false;
+		}
+		break;
 	}
+
+	if (!scene)
+		return false;
+	
 
 	//Bones
 	ProcessBones(scene);

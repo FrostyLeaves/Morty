@@ -45,4 +45,20 @@ def build_for_ios():
 
     os.chdir(WORK_PATH)
 
-build_for_ios()
+def build_for_windows():
+
+    CMAKE_PATH = "cmake"
+
+    if not os.path.exists(MORTY_BUILD_PATH):
+            os.makedirs(MORTY_BUILD_PATH)
+            
+    os.chdir(MORTY_BUILD_PATH)
+
+    os.system(CMAKE_PATH + 
+      ' -G "Visual Studio 16 2019" ' +
+      " -DMORTY_BUILD_TARGET=WIN" +
+      " " + MORTY_PATH)
+
+    os.chdir(WORK_PATH)
+
+build_for_windows()

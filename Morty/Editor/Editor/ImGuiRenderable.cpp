@@ -35,8 +35,8 @@ void ImGuiRenderable::UpdateMesh()
 	if (draw_data->TotalVtxCount > 0)
 	{
 		// Create or resize the vertex/index buffers
-		m_Mesh.ResizeVertices(draw_data->TotalVtxCount);
-		m_Mesh.ResizeIndices(draw_data->TotalIdxCount, 1);
+		m_Mesh.ResizeVertices(draw_data->TotalVtxCount * 3);
+		m_Mesh.ResizeIndices(draw_data->TotalIdxCount * 3, 1);
 
 		// Upload vertex/index data into a single contiguous GPU buffer
 		ImDrawVert* vtx_dst = m_Mesh.GetVertices();

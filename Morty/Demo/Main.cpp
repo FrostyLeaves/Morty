@@ -70,6 +70,7 @@
 #endif
 
 #include "SDL.h"
+#include <fstream>
 
 #ifdef MORTY_WIN
 #undef main
@@ -83,12 +84,15 @@ int main(int argc, char* argv[])
 	MEngine engine;
 	engine.Initialize("../../Resource");
 
-// 	{
-// 		{
-// 			MModelConverter conver(&engine);
-// 			conver.Convert("./Model/girl/final_v01.obj", "./Model/output", "girl");
-// 		}
-// 	}
+	std::ifstream ifs("./Model/output/girl/girl.mnode", std::ios::binary);
+	if (!ifs.good())
+	{
+		{
+			MModelConverter conver(&engine);
+			conver.Convert("Model/just-a-girl/source/final_v01.obj", "./Model/output", "girl");
+		}
+	}
+	ifs.close();
 
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
 	pRootNode->SetName("RootNode");

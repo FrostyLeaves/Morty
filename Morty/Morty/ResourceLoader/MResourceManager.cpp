@@ -94,6 +94,7 @@ MResource* MResourceManager::LoadResource(const MString& strResourcePath, const 
 			if (!ifs.good())
 				continue;
 
+			ifs.close();
 			if (pResource = pLoader->Load(this, strFullpath))
 			{
 				m_tPathResources[strResourcePath] = pResource;
