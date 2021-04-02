@@ -59,7 +59,7 @@ void MShaderResource::OnDelete()
 
 bool MShaderResource::Load(const MString& strResourcePath)
 {
-	m_eShaderType = MResource::GetSuffix(strResourcePath) == SUFFIX_VERTEX_SHADER ? MShader::MEShaderType::Vertex : MShader::MEShaderType::Pixel;
+	m_eShaderType = MResource::GetSuffix(strResourcePath) == MGlobal::SUFFIX_VERTEX_SHADER ? MShader::MEShaderType::Vertex : MShader::MEShaderType::Pixel;
 	m_strShaderPath = strResourcePath;
 	for (MShader* pShader : m_vShaders)
 	{

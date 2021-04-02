@@ -113,7 +113,7 @@ MBone* MSkeleton::AppendBone(const MString& strName)
 	MBone& bone = m_vAllBones.back();
 	bone.strName = strName;
 	bone.unIndex = m_vAllBones.size() - 1;
-	bone.unParentIndex = M_INVALID_INDEX;
+	bone.unParentIndex = MGlobal::M_INVALID_INDEX;
 	m_tBonesMap[strName] = bone.unIndex;
 	return &m_vAllBones.back();
 }
@@ -127,7 +127,7 @@ void MSkeleton::SortByDeep()
 	{
 		int deep = 0;
 		uint32_t unParentIdx = bone.unIndex;
-		while (unParentIdx != M_INVALID_INDEX)
+		while (unParentIdx != MGlobal::M_INVALID_INDEX)
 		{
 			unParentIdx = m_vAllBones[unParentIdx].unParentIndex;
 			++deep;
@@ -147,7 +147,7 @@ void MSkeleton::SortByDeep()
 	{
 		MBone& bone = vBones[i];
 		bone.unIndex = map[bone.unIndex];
-		if (M_INVALID_INDEX != bone.unParentIndex)
+		if (MGlobal::M_INVALID_INDEX != bone.unParentIndex)
 			bone.unParentIndex = map[bone.unParentIndex];
 		for (uint32_t& index : bone.vChildrenIndices)
 			index = map[index];
@@ -171,7 +171,7 @@ MSkeletonInstance::MSkeletonInstance(const MSkeleton* templateSke)
 	: m_pEngine(templateSke->GetEngine())
 	, m_pSkeletonTemplate(templateSke)
 	, m_bShaderParamSetDirty(true)
-	, m_pShaderParamSet(new MShaderParamSet(SHADER_PARAM_SET_SKELETON))
+	, m_pShaderParamSet(new MShaderParamSet(MGlobal::SHADER_PARAM_SET_SKELETON))
 	, m_pShaderBonesArray(nullptr)
 {
 	m_vAllBones = m_pSkeletonTemplate->GetAllBones();
@@ -183,7 +183,7 @@ MSkeletonInstance::MSkeletonInstance(const MSkeletonInstance& instance)
 	: m_pEngine(instance.m_pEngine)
 	, m_pSkeletonTemplate(instance.m_pSkeletonTemplate)
 	, m_bShaderParamSetDirty(true)
-	, m_pShaderParamSet(new MShaderParamSet(SHADER_PARAM_SET_SKELETON))
+	, m_pShaderParamSet(new MShaderParamSet(MGlobal::SHADER_PARAM_SET_SKELETON))
 	, m_pShaderBonesArray(nullptr)
 {
 	m_vAllBones = m_pSkeletonTemplate->GetAllBones();
@@ -224,7 +224,7 @@ void MSkeletonInstance::ResetOriginPose()
 {
 	for (MBone& bone : m_vAllBones)
 	{
-		if (bone.unParentIndex != M_INVALID_INDEX)
+		if (bone.unParentIndex != MGlobal::M_INVALID_INDEX)
 		{
 			bone.m_matWorldTransform = m_vAllBones[bone.unParentIndex].m_matWorldTransform * bone.m_matTransform;
 		}

@@ -49,15 +49,38 @@ void MDeferredGBufferWork::InitializeRenderGraph()
 		return;
 	}
 
-	MRenderGraphTexture* pOutputTargetTexture = pRenderGraph->FindRenderGraphTexture("Output Target");
-	if (nullptr == pOutputTargetTexture)
+	const std::vector<MString> aTextureName = {
+		"Output Target",
+		"Output Position",
+		"Output Albedo",
+		"Output Normal",
+		"Output Metallic",
+		"Output Roughness",
+		"Output AmbientOcc"
+	};
+
+	MRenderGraphNode* pGBufferNode = pRenderGraph->AddRenderGraphNode("GBuffer Node");
+
+	MRenderGraphNodeInput* pInputNode = pGBufferNode->AppendInput();
+
+	for (const MString& strTextureName : aTextureName)
 	{
-		pOutputTargetTexture = pRenderGraph->AddRenderGraphTexture("Output Target");
-		pOutputTargetTexture->SetUsage(METextureUsage::ERenderBack);
-		pOutputTargetTexture->SetLayout(METextureLayout::ERGBA8);
-		pOutputTargetTexture->SetSizePolicy(MRenderGraphTexture::ESizePolicy::ERelative);
-		pOutputTargetTexture->SetSize(Vector2(1.0f, 1.0f));
+		MRenderGraphTexture* pOutputTargetTexture = pRenderGraph->FindRenderGraphTexture(strTextureName);
+		if (nullptr == pOutputTargetTexture)
+		{
+			pOutputTargetTexture = pRenderGraph->AddRenderGraphTexture(strTextureName);
+			pOutputTargetTexture->SetUsage(METextureUsage::ERenderBack);
+			pOutputTargetTexture->SetLayout(METextureLayout::ERGBA8);
+			pOutputTargetTexture->SetSizePolicy(MRenderGraphTexture::ESizePolicy::ERelative);
+			pOutputTargetTexture->SetSize(Vector2(1.0f, 1.0f));
+		}
+
+		MRenderGraphNodeOutput* pOutputTarget = pGBufferNode->AppendOutput();
+		pOutputTarget->SetClear(true);
+		pOutputTarget->SetClearColor(Vector4(0.0f, 0.0f, 0.0f, 0.0f));
+		pOutputTarget->SetRenderTexture(pOutputTargetTexture);
 	}
+
 
 	MRenderGraphTexture* pOutputDepthTexture = pRenderGraph->FindRenderGraphTexture("Output Depth");
 	if (nullptr == pOutputDepthTexture)
@@ -69,23 +92,13 @@ void MDeferredGBufferWork::InitializeRenderGraph()
 		pOutputDepthTexture->SetSize(Vector2(1.0f, 1.0f));
 	}
 
-	MRenderGraphNode* pForwardNode = pRenderGraph->AddRenderGraphNode("Forward Node");
-
-	MRenderGraphNodeInput* pInputNode = pForwardNode->AppendInput();
-	MRenderGraphNodeOutput* pOutputTarget = pForwardNode->AppendOutput();
-	MRenderGraphNodeOutput* pOutputDepth = pForwardNode->AppendOutput();
-
-	pOutputTarget->SetClear(true);
-	pOutputTarget->SetClearColor(m_pRenderProgram->GetClearColor());
-	pOutputTarget->SetRenderTexture(pOutputTargetTexture);
-	pRenderGraph->SetFinalOutput(pOutputTarget);
-
+	MRenderGraphNodeOutput* pOutputDepth = pGBufferNode->AppendOutput();
 	pOutputDepth->SetClear(true);
 	pOutputDepth->SetRenderTexture(pOutputDepthTexture);
 
 
-
-	pForwardNode->BindRenderFunction(std::bind(&MDeferredGBufferWork::Render, this, std::placeholders::_1));
+	pRenderGraph->SetFinalOutput(pGBufferNode->GetOutput(0));
+	pGBufferNode->BindRenderFunction(std::bind(&MDeferredGBufferWork::Render, this, std::placeholders::_1));
 }
 
 void MDeferredGBufferWork::ReleaseRenderGraph()

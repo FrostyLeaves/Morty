@@ -12,7 +12,7 @@
 MMultiLevelMesh::MMultiLevelMesh()
 	: m_pMesh(nullptr)
 	, m_pSortVertices(nullptr)
-	, m_vMeshesCache(MMESH_LOD_LEVEL_RANGE)
+	, m_vMeshesCache(MGlobal::MMESH_LOD_LEVEL_RANGE)
 {
 	
 }
@@ -133,11 +133,11 @@ MIMesh* MMultiLevelMesh::CreateLevel(const uint32_t& unVertexNumber)
 MIMesh* MMultiLevelMesh::GetLevel(uint32_t unLevel)
 {
 	if (unLevel < 1) unLevel = 1;
-	if (unLevel > MMESH_LOD_LEVEL_RANGE) unLevel = MMESH_LOD_LEVEL_RANGE;
+	if (unLevel > MGlobal::MMESH_LOD_LEVEL_RANGE) unLevel = MGlobal::MMESH_LOD_LEVEL_RANGE;
 
 	if (m_vMeshesCache[unLevel] == nullptr)
 	{
-		uint32_t unVertexNumber = m_pMesh->GetVerticesLength() * (float)unLevel / MMESH_LOD_LEVEL_RANGE;
+		uint32_t unVertexNumber = m_pMesh->GetVerticesLength() * (float)unLevel / MGlobal::MMESH_LOD_LEVEL_RANGE;
 		m_vMeshesCache[unLevel] = CreateLevel(unVertexNumber);
 	}
 

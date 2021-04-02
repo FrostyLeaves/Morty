@@ -105,7 +105,7 @@ bool MModelConverter::Convert(const MString& strResourcePath, const MString& str
 
 	if (m_pSkeleton)
 	{
-		m_pEngine->GetResourceManager()->MoveTo(m_pSkeleton, strPath + strOutputName + "." + SUFFIX_SKELETON);
+		m_pEngine->GetResourceManager()->MoveTo(m_pSkeleton, strPath + strOutputName + "." + MGlobal::SUFFIX_SKELETON);
 		m_pSkeleton->Save();
 	}
 
@@ -114,7 +114,7 @@ bool MModelConverter::Convert(const MString& strResourcePath, const MString& str
 		if (m_vMaterials[i])
 		{
 			MString strMaterialFileName = strPath + "material_" + MStringHelper::ToString(i);
-			m_pEngine->GetResourceManager()->MoveTo(m_vMaterials[i], strMaterialFileName + "." + SUFFIX_MATERIAL);
+			m_pEngine->GetResourceManager()->MoveTo(m_vMaterials[i], strMaterialFileName + "." + MGlobal::SUFFIX_MATERIAL);
 			m_vMaterials[i]->Save();
 		}
 	}
@@ -125,7 +125,7 @@ bool MModelConverter::Convert(const MString& strResourcePath, const MString& str
 		MString strMeshFileName = strPath + pMeshResource->GetMeshName() + "_" + MStringHelper::ToString(i);
 
 		
-		m_pEngine->GetResourceManager()->MoveTo(pMeshResource, strMeshFileName + "." + SUFFIX_MESH);
+		m_pEngine->GetResourceManager()->MoveTo(pMeshResource, strMeshFileName + "." + MGlobal::SUFFIX_MESH);
 		pMeshResource->Save();
 	}
 
@@ -133,7 +133,7 @@ bool MModelConverter::Convert(const MString& strResourcePath, const MString& str
 	{
 		MString strValidFileName = pAnimResource->GetName();
 		MFileHelper::GetValidFileName(strValidFileName);
-		m_pEngine->GetResourceManager()->MoveTo(pAnimResource, strPath + strValidFileName + "." + SUFFIX_SKELANIM);
+		m_pEngine->GetResourceManager()->MoveTo(pAnimResource, strPath + strValidFileName + "." + MGlobal::SUFFIX_SKELANIM);
 		pAnimResource->Save();
 
 	}
@@ -141,7 +141,7 @@ bool MModelConverter::Convert(const MString& strResourcePath, const MString& str
 	MNodeResource* pNodeResource = m_pEngine->GetResourceManager()->CreateResource<MNodeResource>();
 	pNodeResource->AddRef();
 
-	m_pEngine->GetResourceManager()->MoveTo(pNodeResource, strPath + strOutputName + "." + SUFFIX_NODE);
+	m_pEngine->GetResourceManager()->MoveTo(pNodeResource, strPath + strOutputName + "." + MGlobal::SUFFIX_NODE);
 	pNodeResource->SaveByNode(m_pModelInstance);
 
 	pNodeResource->SubRef();
@@ -455,7 +455,7 @@ void MModelConverter::BindBones(aiNode* pNode, const aiScene* pScene, MBone* pPa
 		}
 		else
 		{
-			pMBone->unParentIndex = M_INVALID_INDEX;
+			pMBone->unParentIndex = MGlobal::M_INVALID_INDEX;
 		}
 
 		CopyMatrix4(&pMBone->m_matTransform, &pNode->mTransformation);
@@ -631,12 +631,12 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 	
 	if (m_pSkeleton)
 	{
-		MMaterialResource* pSkinnedMeshMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_MODEL_SKELETON_MESH);
+		MMaterialResource* pSkinnedMeshMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_MODEL_SKELETON_MESH);
 		pMaterial->CopyFrom(pSkinnedMeshMaterial);
 	}
 	else
 	{
-		MMaterialResource* pStaticMeshMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_MODEL_STATIC_MESH);
+		MMaterialResource* pStaticMeshMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_MODEL_STATIC_MESH);
 		pMaterial->CopyFrom(pStaticMeshMaterial);
 	}
 
@@ -692,6 +692,17 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 	aiString strDiffuseTextureFile, strNormalTextureFile;
 	pAiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &strDiffuseTextureFile);
 	pAiMaterial->GetTexture(aiTextureType_NORMALS, 0, &strNormalTextureFile);
+
+// 	aiString strBaseColorTextureFile, strNormalCameraTextureFile, strEmissionTextureFile, 
+// 		strMetalnessTextureFile, strDiffuseRoughnessTextureFile, strAmbientOcclusionTextureFile;
+// 	pAiMaterial->GetTexture(aiTextureType_BASE_COLOR, 0, &strBaseColorTextureFile);
+// 	pAiMaterial->GetTexture(aiTextureType_NORMAL_CAMERA, 0, &strNormalCameraTextureFile);
+// 	pAiMaterial->GetTexture(aiTextureType_EMISSION_COLOR, 0, &strEmissionTextureFile);
+// 	pAiMaterial->GetTexture(aiTextureType_METALNESS, 0, &strMetalnessTextureFile);
+// 	pAiMaterial->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &strDiffuseRoughnessTextureFile);
+// 	pAiMaterial->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &strAmbientOcclusionTextureFile);
+	
+
 	MString strDiffuseFileName = MResource::GetFileName(MString(strDiffuseTextureFile.C_Str()));
 	MString strNormalFileName = MResource::GetFileName(MString(strNormalTextureFile.C_Str()));
 
@@ -701,7 +712,7 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 	if (!strDiffuseFileName.empty())
 		pDiffuseTexRes = m_pEngine->GetResourceManager()->LoadResource(strResourceFolder + "/tex/" + strDiffuseFileName);
 	else
-		pDiffuseTexRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_WHITE);
+		pDiffuseTexRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(MGlobal::DEFAULT_TEXTURE_WHITE);
 
 	if (!strNormalFileName.empty())
 	{
@@ -711,10 +722,10 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 
 	}
 	else
-		pNormalMapRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(DEFAULT_TEXTURE_NORMALMAP);
+		pNormalMapRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(MGlobal::DEFAULT_TEXTURE_NORMALMAP);
 
-	pMaterial->SetTexutreParam(SHADER_PARAM_NAME_DIFFUSE, pDiffuseTexRes);
-	pMaterial->SetTexutreParam(SHADER_PARAM_NAME_NORMAL, pNormalMapRes);
+	pMaterial->SetTexutreParam(MGlobal::SHADER_PARAM_NAME_DIFFUSE, pDiffuseTexRes);
+	pMaterial->SetTexutreParam(MGlobal::SHADER_PARAM_NAME_NORMAL, pNormalMapRes);
 	
 
 	m_vMaterials[nMaterialIdx] = pMaterial;

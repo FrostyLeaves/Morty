@@ -59,7 +59,7 @@ uint32_t UNION_ORDER_PUSH_BACK_VECTOR(std::vector<T>& vector, const T& value, co
 	if (iter == vector.end())
 		vector.push_back(value);
 	else if (equalComp(*iter, value))
-		return M_INVALID_INDEX;
+		return MGlobal::M_INVALID_INDEX;
 	else
 		vector.insert(iter, value);
 

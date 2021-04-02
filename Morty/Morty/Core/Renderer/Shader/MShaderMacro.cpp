@@ -4,11 +4,11 @@
 
 const MString strBonesPerVertex = MStringHelper::ToString(MBONES_PER_VERTEX);
 const MString strBonesMaxNumber = MStringHelper::ToString(MBONES_MAX_NUMBER);
-const MString strShadowTextureSize = MStringHelper::ToString(MSHADOW_TEXTURE_SIZE);
-const MString strPointLightMaxNumber = MStringHelper::ToString(MPOINT_LIGHT_MAX_NUMBER);
-const MString strPointLightPixelNumber = MStringHelper::ToString(MPOINT_LIGHT_PIXEL_NUMBER);
-const MString strSpotLightMaxNumber = MStringHelper::ToString(MSPOT_LIGHT_MAX_NUMBER);
-const MString strSpotLightPixelNumber = MStringHelper::ToString(MSPOT_LIGHT_PIXEL_NUMBER);
+const MString strShadowTextureSize = MStringHelper::ToString(MGlobal::MSHADOW_TEXTURE_SIZE);
+const MString strPointLightMaxNumber = MStringHelper::ToString(MGlobal::MPOINT_LIGHT_MAX_NUMBER);
+const MString strPointLightPixelNumber = MStringHelper::ToString(MGlobal::MPOINT_LIGHT_PIXEL_NUMBER);
+const MString strSpotLightMaxNumber = MStringHelper::ToString(MGlobal::MSPOT_LIGHT_MAX_NUMBER);
+const MString strSpotLightPixelNumber = MStringHelper::ToString(MGlobal::MSPOT_LIGHT_PIXEL_NUMBER);
 
 
 enum class METransparentPolicy
@@ -22,7 +22,7 @@ std::vector<std::pair<MString, MString>> MShaderMacro::s_vGlobalMacroParams = {
 	{"MBONES_PER_VERTEX", strBonesPerVertex},
 	{"MBONES_MAX_NUMBER", strBonesMaxNumber},
 	{"MSHADOW_TEXTURE_SIZE", strShadowTextureSize},
-	{"MCALC_NORMAL_IN_VS", MCALC_NORMAL_IN_VS ? "true" : "false"},
+	{"MCALC_NORMAL_IN_VS", MGlobal::MCALC_NORMAL_IN_VS ? "true" : "false"},
 	{"MPOINT_LIGHT_MAX_NUMBER", strPointLightMaxNumber},
 	{"MPOINT_LIGHT_PIXEL_NUMBER", strPointLightPixelNumber},
 	{"MSPOT_LIGHT_MAX_NUMBER", strSpotLightMaxNumber},

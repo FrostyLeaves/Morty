@@ -84,12 +84,12 @@ int main(int argc, char* argv[])
 	MEngine engine;
 	engine.Initialize("../../Resource");
 
-	std::ifstream ifs("./Model/output/girl/girl.mnode", std::ios::binary);
+	std::ifstream ifs("./Model/output/bullet/bullet.mnode", std::ios::binary);
 	if (!ifs.good())
 	{
 		{
 			MModelConverter conver(&engine);
-			conver.Convert("Model/just-a-girl/source/final_v01.obj", "./Model/output", "girl");
+			conver.Convert("Model/pbr/bullet/bullet.fbx", "./Model/output", "bullet");
 		}
 	}
 	ifs.close();
@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
 	pRootNode->SetName("RootNode");
 
-    MResource* pNodeResourceBase = engine.GetResourceManager()->LoadResource("./Model/output/girl/girl.mnode");
+    MResource* pNodeResourceBase = engine.GetResourceManager()->LoadResource("./Model/output/bullet/bullet.mnode");
     if (MNodeResource* pNodeResource = pNodeResourceBase ? pNodeResourceBase->DynamicCast<MNodeResource>() : nullptr)
     {
         MNode* pEditorNode = pNodeResource->CreateNode();

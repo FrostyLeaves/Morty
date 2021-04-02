@@ -216,7 +216,7 @@ void MForwardRenderWork::UpdateShaderSharedParams(MRenderInfo& info, MForwardRen
 		MVariant& varPointLights = (*pLightParam->var.GetStruct())[1];
 		MVariant& varValidPointLights = (*pLightParam->var.GetStruct())[4];
 		{
-			std::vector<MPointLight*> vActivePointLights(MPOINT_LIGHT_MAX_NUMBER);
+			std::vector<MPointLight*> vActivePointLights(MGlobal::MPOINT_LIGHT_MAX_NUMBER);
 			info.pScene->FindActivePointLights(info.pViewport->GetCamera()->GetWorldPosition(), vActivePointLights);
 			varValidPointLights = 0;
 
@@ -243,7 +243,7 @@ void MForwardRenderWork::UpdateShaderSharedParams(MRenderInfo& info, MForwardRen
 		MVariant& varSpotLights = (*pLightParam->var.GetStruct())[2];
 		MVariant& varValidSpotLights = (*pLightParam->var.GetStruct())[5];
 		{
-			std::vector<MSpotLight*> vActiveSpotLights(MSPOT_LIGHT_MAX_NUMBER);
+			std::vector<MSpotLight*> vActiveSpotLights(MGlobal::MSPOT_LIGHT_MAX_NUMBER);
 			info.pScene->FindActiveSpotLights(info.pViewport->GetCamera()->GetWorldPosition(), vActiveSpotLights);
 			varValidSpotLights = 0;
 
@@ -375,7 +375,7 @@ void MForwardRenderWork::DrawPainter(MRenderInfo& info)
 
 void MForwardRenderWork::DrawBoundingBox(MRenderInfo& info, MModelInstance* pModelIns)
 {
-	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW3D);
+	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_DRAW3D);
 	MMaterial* pMaterial = pDraw3DMaterialRes;
 	if (!info.pRenderer->SetUseMaterial(info.pPrimaryCommand, pMaterial))
 		return;
@@ -464,7 +464,7 @@ void MForwardRenderWork::DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* p
 
 void MForwardRenderWork::DrawCameraFrustum(MRenderInfo& info, MCamera* pCamera)
 {
-	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_DRAW3D);
+	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_DRAW3D);
 	MMaterial* pMaterial = pDraw3DMaterialRes;
 	if (!info.pRenderer->SetUseMaterial(info.pPrimaryCommand, pMaterial))
 		return;

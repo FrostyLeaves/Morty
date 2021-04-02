@@ -143,7 +143,7 @@ MMaterialPipelineLayoutData* MVulkanPipelineManager::FindOrCreatePipelineLayout(
 
 MMaterialPipelineLayoutData* MVulkanPipelineManager::FindPipelineLayout(const uint32_t& nMaterialIdx)
 {
-	if (M_INVALID_INDEX == nMaterialIdx)
+	if (MGlobal::M_INVALID_INDEX == nMaterialIdx)
 		return nullptr;
 
 	if (m_vPipelineLayouts.size() < nMaterialIdx + 1)
@@ -475,7 +475,7 @@ void MVulkanPipelineManager::DestroyShaderParamSet(MShaderParamSet* pParamSet)
 	if (!pLayoutData)
 		return;
 
-	if (M_INVALID_INDEX != pParamSet->m_unLayoutDataIdx)
+	if (MGlobal::M_INVALID_INDEX != pParamSet->m_unLayoutDataIdx)
 	{
 		if (pParamSet->m_unLayoutDataIdx < pLayoutData->vShaderParamSets.size())
 		{
@@ -518,8 +518,8 @@ void MVulkanPipelineManager::DestroyShaderParamSetImpl(MShaderParamSet* pParamSe
 	}
 
 
-	pParamSet->m_unLayoutDataIdx = M_INVALID_INDEX;
-	pParamSet->m_nDescriptorSetInitMaterialIdx = M_INVALID_INDEX;
+	pParamSet->m_unLayoutDataIdx = MGlobal::M_INVALID_INDEX;
+	pParamSet->m_nDescriptorSetInitMaterialIdx = MGlobal::M_INVALID_INDEX;
 }
 
 #endif

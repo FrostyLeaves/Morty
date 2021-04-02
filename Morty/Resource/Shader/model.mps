@@ -1,4 +1,4 @@
-#include "model_header.hlsl"
+#include "light_forward.hlsl"
 
 #define BIAS 0.000001f 
 

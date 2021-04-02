@@ -12,8 +12,8 @@ MShaderParamSet::MShaderParamSet()
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	memset(m_VkDescriptorSet, VK_NULL_HANDLE, sizeof(VkDescriptorSet) * M_BUFFER_NUM);
-	m_nDescriptorSetInitMaterialIdx = M_INVALID_INDEX;
-	m_unLayoutDataIdx = M_INVALID_INDEX;
+	m_nDescriptorSetInitMaterialIdx = MGlobal::M_INVALID_INDEX;
+	m_unLayoutDataIdx = MGlobal::M_INVALID_INDEX;
 #endif
 }
 
@@ -25,8 +25,8 @@ MShaderParamSet::MShaderParamSet(const uint32_t& unKey)
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	memset(m_VkDescriptorSet, VK_NULL_HANDLE, sizeof(VkDescriptorSet) * M_BUFFER_NUM);
-	m_nDescriptorSetInitMaterialIdx = M_INVALID_INDEX;
-	m_unLayoutDataIdx = M_INVALID_INDEX;
+	m_nDescriptorSetInitMaterialIdx = MGlobal::M_INVALID_INDEX;
+	m_unLayoutDataIdx = MGlobal::M_INVALID_INDEX;
 #endif
 }
 
@@ -65,7 +65,7 @@ void MShaderParamSet::GenerateBuffer(MIDevice* pDevice)
 void MShaderParamSet::DestroyBuffer(MIDevice* pDevice)
 {
 	pDevice->DestroyShaderParamSet(this);
-	m_nDescriptorSetInitMaterialIdx = M_INVALID_INDEX;
+	m_nDescriptorSetInitMaterialIdx = MGlobal::M_INVALID_INDEX;
 }
 
 MShaderParamSet* MShaderParamSet::Clone()

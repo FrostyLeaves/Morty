@@ -48,7 +48,7 @@ void MStandardPostProcessWork::Render(MRenderGraphNode* pGraphNode)
 
 void MStandardPostProcessWork::InitializeMesh()
 {
-	MMeshResource* pScreenMeshRes = GetEngine()->GetResourceManager()->LoadVirtualResource<MMeshResource>(DEFAULT_MESH_SCREEN_DRAW);
+	MMeshResource* pScreenMeshRes = GetEngine()->GetResourceManager()->LoadVirtualResource<MMeshResource>(MGlobal::DEFAULT_MESH_SCREEN_DRAW);
 	pScreenMeshRes->AddRef();
 
 	m_pScreenDrawMesh = pScreenMeshRes->GetMesh();
@@ -56,7 +56,7 @@ void MStandardPostProcessWork::InitializeMesh()
 
 void MStandardPostProcessWork::ReleaseMesh()
 {
-	MMeshResource* pScreenMeshRes = GetEngine()->GetResourceManager()->LoadVirtualResource<MMeshResource>(DEFAULT_MESH_SCREEN_DRAW);
+	MMeshResource* pScreenMeshRes = GetEngine()->GetResourceManager()->LoadVirtualResource<MMeshResource>(MGlobal::DEFAULT_MESH_SCREEN_DRAW);
 	pScreenMeshRes->SubRef();
 }
 

@@ -267,7 +267,7 @@ void MGaussianBlurWork::UpdateShaderSharedParams(MRenderGraphNode* pGraphNode, M
 
 void MGaussianBlurWork::InitializeMesh()
 {
-	MMeshResource* pScreenMeshRes = GetEngine()->GetResourceManager()->LoadVirtualResource<MMeshResource>(DEFAULT_MESH_SCREEN_DRAW);
+	MMeshResource* pScreenMeshRes = GetEngine()->GetResourceManager()->LoadVirtualResource<MMeshResource>(MGlobal::DEFAULT_MESH_SCREEN_DRAW);
 	pScreenMeshRes->AddRef();
 
 	m_pScreenDrawMesh = pScreenMeshRes->GetMesh();
@@ -275,7 +275,7 @@ void MGaussianBlurWork::InitializeMesh()
 
 void MGaussianBlurWork::ReleaseMesh()
 {
-	MMeshResource* pScreenMeshRes = GetEngine()->GetResourceManager()->LoadVirtualResource<MMeshResource>(DEFAULT_MESH_SCREEN_DRAW);
+	MMeshResource* pScreenMeshRes = GetEngine()->GetResourceManager()->LoadVirtualResource<MMeshResource>(MGlobal::DEFAULT_MESH_SCREEN_DRAW);
 	pScreenMeshRes->SubRef();
 }
 

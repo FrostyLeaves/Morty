@@ -398,7 +398,7 @@ bool MVulkanRenderer::DownloadTexture(MRenderCommand* pCommand, MITexture* pText
 	uint32_t unBufferSize = unBufferWidth * unBufferHeight * static_cast<uint32_t>(MTexture::GetImageMemorySize(pTexture->GetType()));
 	
 
-	uint32_t unMemoryID = M_INVALID_INDEX;
+	uint32_t unMemoryID = MGlobal::M_INVALID_INDEX;
 	MemoryInfo memoryInfo;
 	VkBuffer readBackBuffer = m_pDevice->m_BufferPool.GetReadBackBuffer();
 	if (!m_pDevice->m_BufferPool.AllowReadBackBuffer(unBufferSize, unMemoryID, memoryInfo))

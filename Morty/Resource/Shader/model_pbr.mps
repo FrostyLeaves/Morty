@@ -1,4 +1,4 @@
-#include "model_header_pbr.hlsl"
+#include "light_deferred.hlsl"
 
 #define BIAS 0.000001f 
 

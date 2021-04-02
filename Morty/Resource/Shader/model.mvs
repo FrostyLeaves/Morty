@@ -1,4 +1,4 @@
-#include "model_header.hlsl"
+#include "light_forward.hlsl"
 
 VS_OUT VS(VS_IN input)
 {

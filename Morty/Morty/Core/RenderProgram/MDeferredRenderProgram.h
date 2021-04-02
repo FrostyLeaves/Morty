@@ -1,16 +1,16 @@
 /**
- * @File         MForwardRenderProgram
+ * @File         MDeferredRenderProgram
  * 
  * @Created      2020-07-2 11:45:49
  *
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MFORWARDRENDERPROGRAM_H_
-#define _M_MFORWARDRENDERPROGRAM_H_
+#ifndef _M_MDEFERRED_RDRENDERPROGRAM_H_
+#define _M_MDEFERRED_RDRENDERPROGRAM_H_
 #include "MGlobal.h"
-#include "MMesh.h"
 #include "MIRenderProgram.h"
+#include "Shader/MShaderParamSet.h"
 
 #include "MRenderInfo.h"
 #include "MRenderPass.h"
@@ -26,7 +26,7 @@ class MIMeshInstance;
 class MModelInstance;
 class MSkeletonInstance;
 class MDirectionalLight;
-class MForwardRenderWork;
+class MDeferredGBufferWork;
 class MRenderTexture;
 class MRenderCommand;
 class MIModelMeshInstance;
@@ -34,12 +34,12 @@ class MForwardShadowMapWork;
 class MForwardTransparentWork;
 class MShadowTextureRenderTarget;
 
-class MORTY_API MForwardRenderProgram : public MIRenderProgram
+class MORTY_API MDeferredRenderProgram : public MIRenderProgram
 {
 public:
-	M_OBJECT(MForwardRenderProgram);
-	MForwardRenderProgram();
-    virtual ~MForwardRenderProgram();
+	M_OBJECT(MDeferredRenderProgram);
+	MDeferredRenderProgram();
+    virtual ~MDeferredRenderProgram();
 
 public:
 
@@ -72,7 +72,7 @@ protected:
 	MRenderInfo m_RenderInfo;
 
 	MForwardShadowMapWork* m_pShadowMapWork;
-	MForwardRenderWork* m_pRenderWork;
+	MDeferredGBufferWork* m_pRenderWork;
 	MForwardTransparentWork* m_pTransparentWork;
 
 	MColor m_cClearColor;

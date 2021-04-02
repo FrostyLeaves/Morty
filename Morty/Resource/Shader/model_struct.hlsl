@@ -1,10 +1,5 @@
 #include "private_header.hlsl"
 
-struct VS_OUT_EMPTY
-{
-    float4 pos : SV_POSITION;
-};
-
 struct VS_OUT
 {
     float4 pos : SV_POSITION;
@@ -60,50 +55,6 @@ struct LightBasicInfo
     float3 f3CameraDir;
     float3 f3DirLightDir;
 };
-
-LightBasicInfo GetLightBasicInfo(VS_OUT input)
-{
-    LightBasicInfo result;
-    result.f3Normal = float3(0.0f, 0.0f, -1.0f);
-    result.f3CameraDir = float3(0.0f, 0.0f, 1.0f);
-    result.f3DirLightDir = float3(0.0f, 0.0f, 1.0f);
-    
-
-    if (U_mat.bUseNormalTex > 0)
-    {
-        result.f3Normal = U_mat_texNormal.Sample(U_defaultSampler, input.uv).xyz;
-        result.f3Normal = result.f3Normal.rgb * 2.0f - 1.0f;
-        result.f3Normal = normalize(result.f3Normal);
-        
-//如果在VS处理Normal
-#if MCALC_NORMAL_IN_VS
-        //使用法线贴图， 法向量在切线空间， CameraDir也在切线空间
-        
-        result.f3CameraDir = input.toCameraDirTangentSpace;
-        result.f3DirLightDir = input.dirLightDirTangentSpace;
-#else
-        //使用法线贴图，法向量在view space，CameraDir也在view space
-
-        float3 T = normalize(input.tangent);
-        float3 B = normalize(input.bitangent);
-        float3 N = normalize(input.normal);
-        float3x3 TBN = float3x3(T,B,N);
-
-        result.f3Normal = mul(result.f3Normal, TBN);
-        result.f3CameraDir = normalize(U_f3CameraPosition - input.worldPos);
-        result.f3DirLightDir = U_f3DirectionLight;
-#endif
-    }
-    else
-    {
-        //没用法线贴图，法向量在view space，CameraDir也在view space
-        result.f3Normal = input.normal;
-        result.f3CameraDir = normalize(U_f3CameraPosition - input.worldPos);
-        result.f3DirLightDir = U_f3DirectionLight;
-    }
-
-    return result;
-}
 
 //shadow
 float CalcShadow(float4 dirLightSpacePos, float fNdotL)

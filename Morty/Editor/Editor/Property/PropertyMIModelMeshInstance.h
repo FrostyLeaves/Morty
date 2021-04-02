@@ -38,7 +38,7 @@ public:
 				ShowValueBegin("Instance");
 				if (ImGui::Button("Edit Material", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 				{
-					int nResID = M_INVALID_INDEX;
+					int nResID = MGlobal::M_INVALID_INDEX;
 					if (pNode->GetMaterial())
 						nResID = pNode->GetMaterial()->GetResourceID();
 
@@ -62,7 +62,7 @@ public:
 				}
 				ShowValueEnd();
 
-				PROPERTY_VALUE_EDIT_SPEED_MIN_MAX(pNode, "LOD", float, GetDetailLevel, SetDetailLevel, 1, 1, MMESH_LOD_LEVEL_RANGE);
+				PROPERTY_VALUE_EDIT_SPEED_MIN_MAX(pNode, "LOD", float, GetDetailLevel, SetDetailLevel, 1, 1, MGlobal::MMESH_LOD_LEVEL_RANGE);
 
 
 				ShowNodeEnd();

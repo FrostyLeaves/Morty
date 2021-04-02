@@ -1,4 +1,4 @@
-#include "MForwardRenderProgram.h"
+#include "MDeferredRenderProgram.h"
 
 #include "MScene.h"
 #include "MEngine.h"
@@ -12,7 +12,7 @@
 #include "Model/MIModelMeshInstance.h"
 #include "Material/MMaterialResource.h"
 
-#include "MForwardRenderWork.h"
+#include "MDeferredGBufferWork.h"
 #include "MForwardShadowMapWork.h"
 #include "MForwardTransparentWork.h"
 
@@ -21,9 +21,9 @@
 #include <algorithm>
 #include <float.h>
 
-M_OBJECT_IMPLEMENT(MForwardRenderProgram, MIRenderProgram)
+M_OBJECT_IMPLEMENT(MDeferredRenderProgram, MIRenderProgram)
 
-MForwardRenderProgram::MForwardRenderProgram()
+MDeferredRenderProgram::MDeferredRenderProgram()
 	: MIRenderProgram()
 	, m_RenderInfo()
 	, m_pShadowMapWork(nullptr)
@@ -35,11 +35,11 @@ MForwardRenderProgram::MForwardRenderProgram()
 	
 }
 
-MForwardRenderProgram::~MForwardRenderProgram()
+MDeferredRenderProgram::~MDeferredRenderProgram()
 {
 }
 
-void MForwardRenderProgram::Initialize()
+void MDeferredRenderProgram::Initialize()
 {
 
 	m_pRenderGraph = new MRenderGraph(GetEngine());
@@ -47,7 +47,7 @@ void MForwardRenderProgram::Initialize()
 	m_pShadowMapWork = GetEngine()->GetObjectManager()->CreateObject<MForwardShadowMapWork>();
 	m_pShadowMapWork->Initialize(this);
 
-	m_pRenderWork = GetEngine()->GetObjectManager()->CreateObject<MForwardRenderWork>();
+	m_pRenderWork = GetEngine()->GetObjectManager()->CreateObject<MDeferredGBufferWork>();
 	m_pRenderWork->Initialize(this);
 
 	m_pTransparentWork = GetEngine()->GetObjectManager()->CreateObject<MForwardTransparentWork>();
@@ -55,7 +55,7 @@ void MForwardRenderProgram::Initialize()
 
 }
 
-void MForwardRenderProgram::Release()
+void MDeferredRenderProgram::Release()
 {
 	if (m_pShadowMapWork)
 	{
@@ -84,7 +84,7 @@ void MForwardRenderProgram::Release()
 
 }
 
-void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport, MRenderCommand* pCommand)
+void MDeferredRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport, MRenderCommand* pCommand)
 {
 	if (!pViewport)
 		return;
@@ -105,7 +105,7 @@ void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport, 
 	Render(info);
 }
 
-void MForwardRenderProgram::Render(MRenderInfo& info)
+void MDeferredRenderProgram::Render(MRenderInfo& info)
 {
 	info.pViewport->LockMatrix();
 
@@ -119,19 +119,19 @@ void MForwardRenderProgram::Render(MRenderInfo& info)
 	info.pViewport->UnlockMatrix();
 }
 
-void MForwardRenderProgram::OnCreated()
+void MDeferredRenderProgram::OnCreated()
 {
 	Super::OnCreated();
 }
 
-void MForwardRenderProgram::OnDelete()
+void MDeferredRenderProgram::OnDelete()
 {
 	Release();
 
 	Super::OnDelete();
 }
 
-void MForwardRenderProgram::SetClearColor(const MColor& cClearColor)
+void MDeferredRenderProgram::SetClearColor(const MColor& cClearColor)
 {
 	m_cClearColor = cClearColor;
 // 	if (m_pRenderWork)
@@ -140,7 +140,7 @@ void MForwardRenderProgram::SetClearColor(const MColor& cClearColor)
 // 	}
 }
 
-void MForwardRenderProgram::GenerateRenderGroup(MRenderInfo& info)
+void MDeferredRenderProgram::GenerateRenderGroup(MRenderInfo& info)
 {
 	Vector3 v3BoundsMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
 	Vector3 v3BoundsMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);

@@ -41,11 +41,11 @@ void MSkeletalAnimation::Update(const float& fTime, MSkeletonInstance* pSkeleton
 		MBone& bone = bones[i];
 
 		int nAnimNodeIndex = skelAnimMap.m_vSkelToAnim[bone.unIndex];
-		if(M_INVALID_INDEX == nAnimNodeIndex)
+		if(MGlobal::M_INVALID_INDEX == nAnimNodeIndex)
 			continue;
 
 		MSkeletalAnimNode& animNode = m_vSkeletalAnimNodes[nAnimNodeIndex];
-		Matrix4 matParentTrans = bone.unParentIndex == M_INVALID_INDEX ? Matrix4::IdentityMatrix : bones[bone.unParentIndex].m_matWorldTransform;
+		Matrix4 matParentTrans = bone.unParentIndex == MGlobal::M_INVALID_INDEX ? Matrix4::IdentityMatrix : bones[bone.unParentIndex].m_matWorldTransform;
 
 		MTransform trans;
 		if (FindTransform(fTime, animNode, trans))
@@ -467,8 +467,8 @@ float MSkeletalAnimController::GetPercent()
 
 void MSkeletalAnimController::BindMapping()
 {
-	m_SkeletonAnimMap.m_vAnimToSkel.resize(m_pAnimation->GetSkeletonTemplate()->GetAllBones().size(), M_INVALID_INDEX);
-	m_SkeletonAnimMap.m_vSkelToAnim.resize(m_pSkeletonIns->GetAllBones().size(), M_INVALID_INDEX);
+	m_SkeletonAnimMap.m_vAnimToSkel.resize(m_pAnimation->GetSkeletonTemplate()->GetAllBones().size(), MGlobal::M_INVALID_INDEX);
+	m_SkeletonAnimMap.m_vSkelToAnim.resize(m_pSkeletonIns->GetAllBones().size(), MGlobal::M_INVALID_INDEX);
 
 	if (m_pSkeletonIns->GetSkeletonTemplate() == m_pAnimation->GetSkeletonTemplate())
 	{

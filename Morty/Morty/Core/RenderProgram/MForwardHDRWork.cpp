@@ -212,7 +212,7 @@ void MForwardHDRWork::ReleaseMaterial()
 
 void MForwardHDRWork::InitializeMesh()
 {
-	MMeshResource* pScreenMeshRes = GetEngine()->GetResourceManager()->LoadVirtualResource<MMeshResource>(DEFAULT_MESH_SCREEN_DRAW);
+	MMeshResource* pScreenMeshRes = GetEngine()->GetResourceManager()->LoadVirtualResource<MMeshResource>(MGlobal::DEFAULT_MESH_SCREEN_DRAW);
 	pScreenMeshRes->AddRef();
 
 	m_pScreenDrawMesh = pScreenMeshRes->GetMesh();
@@ -220,7 +220,7 @@ void MForwardHDRWork::InitializeMesh()
 
 void MForwardHDRWork::ReleaseMesh()
 {
-	MMeshResource* pScreenMeshRes = GetEngine()->GetResourceManager()->LoadVirtualResource<MMeshResource>(DEFAULT_MESH_SCREEN_DRAW);
+	MMeshResource* pScreenMeshRes = GetEngine()->GetResourceManager()->LoadVirtualResource<MMeshResource>(MGlobal::DEFAULT_MESH_SCREEN_DRAW);
 	pScreenMeshRes->SubRef();
 }
 

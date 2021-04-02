@@ -31,12 +31,12 @@ MResourceManager::MResourceManager()
 	, m_pEngine(nullptr)
 	, m_vSearchPath({ "" })
 {
-	REGISTER_RESOURCE_TYPE(MEResourceType::SkelAnim, MSkeletalAnimationResource, SUFFIX_SKELANIM);
-	REGISTER_RESOURCE_TYPE(MEResourceType::Mesh, MMeshResource, SUFFIX_MESH);
-	REGISTER_RESOURCE_TYPE(MEResourceType::Skeleton, MSkeletonResource, SUFFIX_SKELETON);
-	REGISTER_RESOURCE_TYPE(MEResourceType::Shader, MShaderResource, SUFFIX_VERTEX_SHADER, SUFFIX_PIXEL_SHADER );
-	REGISTER_RESOURCE_TYPE(MEResourceType::Material, MMaterialResource, SUFFIX_MATERIAL);
-	REGISTER_RESOURCE_TYPE(MEResourceType::Node, MNodeResource, SUFFIX_NODE);
+	REGISTER_RESOURCE_TYPE(MEResourceType::SkelAnim, MSkeletalAnimationResource, MGlobal::SUFFIX_SKELANIM);
+	REGISTER_RESOURCE_TYPE(MEResourceType::Mesh, MMeshResource, MGlobal::SUFFIX_MESH);
+	REGISTER_RESOURCE_TYPE(MEResourceType::Skeleton, MSkeletonResource, MGlobal::SUFFIX_SKELETON);
+	REGISTER_RESOURCE_TYPE(MEResourceType::Shader, MShaderResource, MGlobal::SUFFIX_VERTEX_SHADER, MGlobal::SUFFIX_PIXEL_SHADER );
+	REGISTER_RESOURCE_TYPE(MEResourceType::Material, MMaterialResource, MGlobal::SUFFIX_MATERIAL);
+	REGISTER_RESOURCE_TYPE(MEResourceType::Node, MNodeResource, MGlobal::SUFFIX_NODE);
 	REGISTER_RESOURCE_TYPE(MEResourceType::Texture, MTextureResource, "png", "bmp", "tga", "jpg");
 	REGISTER_RESOURCE_TYPE(MEResourceType::RenderPass, MRenderPassResource, "mrps");
 }

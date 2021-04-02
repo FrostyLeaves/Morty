@@ -123,7 +123,7 @@ int MVulkanDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags pro
 		}
 	}
 
-	return M_INVALID_INDEX;
+	return MGlobal::M_INVALID_INDEX;
 }
 
 int MVulkanDevice::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
@@ -143,7 +143,7 @@ int MVulkanDevice::FindSupportedFormat(const std::vector<VkFormat>& candidates, 
 		}
 	}
 
-	return M_INVALID_INDEX;
+	return MGlobal::M_INVALID_INDEX;
 }
 
 VkBool32 MVulkanDevice::FormatIsFilterable(VkFormat format, VkImageTiling tiling)
@@ -193,7 +193,7 @@ bool MVulkanDevice::InitDepthFormat()
 
 	int index = FindSupportedFormat(formats, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
-	if (index == M_INVALID_INDEX)
+	if (index == MGlobal::M_INVALID_INDEX)
 		return false;
 
 	m_VkDepthTextureFormat = formats[index];
@@ -609,7 +609,7 @@ void MVulkanDevice::CreateImage(const uint32_t& unWidth, const uint32_t& unHeigh
 	allocInfo.allocationSize = memRequirements.size;
 	allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
-	if (M_INVALID_INDEX == allocInfo.memoryTypeIndex)
+	if (MGlobal::M_INVALID_INDEX == allocInfo.memoryTypeIndex)
 	{
 		assert(false);
 	}
@@ -1175,6 +1175,9 @@ bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString&
 
 	std::vector<uint32_t> spirv;
 	m_ShaderCompiler.CompileShader(strShaderPath, eShaderType, macro, spirv);
+
+	if (spirv.size() == 0)
+		return false;
 
 	VkShaderModuleCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;

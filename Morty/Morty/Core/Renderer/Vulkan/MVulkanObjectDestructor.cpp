@@ -99,7 +99,7 @@ bool MVulkanObjectDestructor::GenerateBuffer(VkDeviceSize size, VkBufferUsageFla
 	allocInfo.allocationSize = memRequirements.size;
 	allocInfo.memoryTypeIndex = m_pDevice->FindMemoryType(memRequirements.memoryTypeBits, properties);
 
-	if (M_INVALID_INDEX == allocInfo.memoryTypeIndex)
+	if (MGlobal::M_INVALID_INDEX == allocInfo.memoryTypeIndex)
 	{
 		vkDestroyBuffer(m_pDevice->m_VkDevice, buffer, nullptr);
 		return false;

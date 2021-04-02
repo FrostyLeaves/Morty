@@ -2,9 +2,16 @@
 #define MTRANSPARENT_DEPTH_PEELING
 #endif
 
+#define NUM_PI (3.1415926535898)
+
 struct VS_IN_EMPTY
 {
     float3 pos : POSITION;
+};
+
+struct VS_OUT_EMPTY
+{
+    float4 pos : SV_POSITION;
 };
 
 struct VS_IN_EMPTY_ANIM

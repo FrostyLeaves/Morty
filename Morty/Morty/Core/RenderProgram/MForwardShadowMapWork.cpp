@@ -73,7 +73,7 @@ void MForwardShadowMapWork::InitializeRenderGraph()
 		pShadowMapTexture = pRenderGraph->AddRenderGraphTexture("Shadow Map");
 		pShadowMapTexture->SetUsage(METextureUsage::ERenderDepth);
 		pShadowMapTexture->SetLayout(METextureLayout::EDepth);
-		pShadowMapTexture->SetSize(Vector2(MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE));
+		pShadowMapTexture->SetSize(Vector2(MGlobal::MSHADOW_TEXTURE_SIZE, MGlobal::MSHADOW_TEXTURE_SIZE));
 	}
 
 	MRenderGraphNodeOutput* pShadowMapOutput =  pShadowMapNode->AppendOutput();
@@ -192,8 +192,8 @@ void MForwardShadowMapWork::RenderMesh(MRenderInfo& info, std::vector<MShadowRen
 		m_pWorldMatrixParam->SetDirty();
 	}
 
-	info.pRenderer->SetViewport(info.pPrimaryCommand, MViewportInfo(0.0f, 0.0f, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE));
-	info.pRenderer->SetScissor(info.pPrimaryCommand, MScissorInfo(0.0f, 0.0f, MSHADOW_TEXTURE_SIZE, MSHADOW_TEXTURE_SIZE));
+	info.pRenderer->SetViewport(info.pPrimaryCommand, MViewportInfo(0.0f, 0.0f, MGlobal::MSHADOW_TEXTURE_SIZE, MGlobal::MSHADOW_TEXTURE_SIZE));
+	info.pRenderer->SetScissor(info.pPrimaryCommand, MScissorInfo(0.0f, 0.0f, MGlobal::MSHADOW_TEXTURE_SIZE, MGlobal::MSHADOW_TEXTURE_SIZE));
 
 	MStruct* pWorldStruct = m_pWorldMatrixParam->var.GetStruct();
 	(*pWorldStruct)[0] = info.m4DirLightInvProj;
@@ -287,10 +287,10 @@ void MForwardShadowMapWork::ReleaseShaderParamSet()
 
 void MForwardShadowMapWork::InitializeMaterial()
 {
-	m_pStaticMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_STATIC);
+	m_pStaticMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_SHADOW_STATIC);
 	m_pStaticMaterial->AddRef();
 
-	m_pAnimMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_SHADOW_SKELETON);
+	m_pAnimMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_SHADOW_SKELETON);
 	m_pAnimMaterial->AddRef();
 }
 

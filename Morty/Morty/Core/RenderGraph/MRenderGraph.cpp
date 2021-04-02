@@ -215,7 +215,7 @@ bool MRenderGraph::Compile(MIDevice* pDevice)
 		m_vSortedNodes.clear();
 		for (auto& pr : m_tGraphNodeMap)
 		{
-			pr.second->m_nCommandLevel = M_INVALID_INDEX;
+			pr.second->m_nCommandLevel = MGlobal::M_INVALID_INDEX;
 			m_vSortedNodes.push_back(pr.second);
 		}
 

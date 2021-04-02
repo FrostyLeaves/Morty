@@ -1,4 +1,4 @@
-#include "model_header.hlsl"
+#include "model_struct.hlsl"
 
 float4 PS(VS_OUT_EMPTY input) : SV_Target
 {

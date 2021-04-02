@@ -1,4 +1,4 @@
-#include "model_header.hlsl"
+#include "model_struct.hlsl"
 
 VS_OUT_EMPTY VS(VS_IN input)
 {

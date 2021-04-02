@@ -46,7 +46,7 @@ void MaterialView::SetMaterial(MMaterial* pMaterial)
 		m_pMeshInstance->SetVisible(false);
 		m_pSkeletonMeshInstance->SetVisible(false);
 	}
-	else if (m_pMaterial->GetShaderMacro()->GetInnerMacro(MATERIAL_MACRO_SKELETON_ENABLE).empty())
+	else if (m_pMaterial->GetShaderMacro()->GetInnerMacro(MGlobal::MATERIAL_MACRO_SKELETON_ENABLE).empty())
 	{
 		m_pMeshInstance->SetVisible(true);
 		m_pSkeletonMeshInstance->SetVisible(false);

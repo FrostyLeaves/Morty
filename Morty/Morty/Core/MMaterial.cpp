@@ -33,10 +33,10 @@ MMaterial::MMaterial()
 {
 	m_eResourceType = MEResourceType::Material;
     
-    m_vShaderSets[SHADER_PARAM_SET_MATERIAL] = MShaderParamSet(SHADER_PARAM_SET_MATERIAL);
-    m_vShaderSets[SHADER_PARAM_SET_FRAME] = MShaderParamSet(SHADER_PARAM_SET_FRAME);
-    m_vShaderSets[SHADER_PARAM_SET_MESH] = MShaderParamSet(SHADER_PARAM_SET_MESH);
-    m_vShaderSets[SHADER_PARAM_SET_SKELETON] = MShaderParamSet(SHADER_PARAM_SET_SKELETON);
+    m_vShaderSets[MGlobal::SHADER_PARAM_SET_MATERIAL] = MShaderParamSet(MGlobal::SHADER_PARAM_SET_MATERIAL);
+    m_vShaderSets[MGlobal::MGlobal::SHADER_PARAM_SET_FRAME] = MShaderParamSet(MGlobal::SHADER_PARAM_SET_FRAME);
+    m_vShaderSets[MGlobal::MGlobal::SHADER_PARAM_SET_MESH] = MShaderParamSet(MGlobal::SHADER_PARAM_SET_MESH);
+    m_vShaderSets[MGlobal::SHADER_PARAM_SET_SKELETON] = MShaderParamSet(MGlobal::SHADER_PARAM_SET_SKELETON);
 }
 
 MMaterial::~MMaterial()
@@ -46,17 +46,17 @@ MMaterial::~MMaterial()
 
 std::vector<MShaderConstantParam*>* MMaterial::GetShaderParams()
 {
-	return &m_vShaderSets[SHADER_PARAM_SET_MATERIAL].m_vParams;
+	return &m_vShaderSets[MGlobal::SHADER_PARAM_SET_MATERIAL].m_vParams;
 }
 
 std::vector<MShaderSampleParam*>* MMaterial::GetSampleParams()
 {
-	return &m_vShaderSets[SHADER_PARAM_SET_MATERIAL].m_vSamples;
+	return &m_vShaderSets[MGlobal::SHADER_PARAM_SET_MATERIAL].m_vSamples;
 }
 
 std::vector<MShaderTextureParam*>* MMaterial::GetTextureParams()
 {
-	return &m_vShaderSets[SHADER_PARAM_SET_MATERIAL].m_vTextures;
+	return &m_vShaderSets[MGlobal::SHADER_PARAM_SET_MATERIAL].m_vTextures;
 }
 
 void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)

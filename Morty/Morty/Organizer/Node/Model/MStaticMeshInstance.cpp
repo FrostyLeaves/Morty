@@ -94,7 +94,7 @@ MIMesh* MStaticMeshInstance::GetMesh(const uint32_t& unDetailLevel)
 	if (!m_pMesh)
 		return nullptr;
 
-	if (unDetailLevel == MMESH_LOD_LEVEL_RANGE)
+	if (unDetailLevel == MGlobal::MMESH_LOD_LEVEL_RANGE)
 		return m_pMesh->GetMesh();
 	else return m_pMesh->GetLevelMesh(unDetailLevel);
 }

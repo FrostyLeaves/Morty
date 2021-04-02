@@ -106,7 +106,7 @@ void MCombineWork::Render(MRenderGraphNode* pGraphNode)
 
 void MCombineWork::InitializeMesh()
 {
-	MMeshResource* pScreenMeshRes = GetEngine()->GetResourceManager()->LoadVirtualResource<MMeshResource>(DEFAULT_MESH_SCREEN_DRAW);
+	MMeshResource* pScreenMeshRes = GetEngine()->GetResourceManager()->LoadVirtualResource<MMeshResource>(MGlobal::DEFAULT_MESH_SCREEN_DRAW);
 	pScreenMeshRes->AddRef();
 
 	m_pScreenDrawMesh = pScreenMeshRes->GetMesh();
@@ -114,7 +114,7 @@ void MCombineWork::InitializeMesh()
 
 void MCombineWork::ReleaseMesh()
 {
-	MMeshResource* pScreenMeshRes = GetEngine()->GetResourceManager()->LoadVirtualResource<MMeshResource>(DEFAULT_MESH_SCREEN_DRAW);
+	MMeshResource* pScreenMeshRes = GetEngine()->GetResourceManager()->LoadVirtualResource<MMeshResource>(MGlobal::DEFAULT_MESH_SCREEN_DRAW);
 	pScreenMeshRes->SubRef();
 }
 
