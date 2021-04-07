@@ -1,4 +1,10 @@
-#include "private_header.hlsl"
+#include "inner_constant.hlsl"
+
+struct VS_IN_DRAW3D
+{
+    float3 pos : POSITION;
+    float4 color : COLOR;
+};
 
 struct VS_OUT_DRAW3D
 {
@@ -6,7 +12,7 @@ struct VS_OUT_DRAW3D
     float4 color : COLOR;
 };
 
-VS_OUT_DRAW3D VS(VS_IN_COLOR input)
+VS_OUT_DRAW3D VS(VS_IN_DRAW3D input)
 {
     VS_OUT_DRAW3D output;
 

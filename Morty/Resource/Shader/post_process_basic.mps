@@ -1,7 +1,6 @@
-#include "private_header.hlsl"
 
 [[vk::binding(1,0)]]Texture2D U_Post_Texture;
-[[vk::binding(2,0)]]sampler defaultSampler;
+[[vk::binding(2,0)]]sampler U_defaultSampler;
 
 struct VS_OUT_POST
 {
@@ -11,5 +10,5 @@ struct VS_OUT_POST
 
 float4 PS(VS_OUT_POST input) : SV_Target
 {
-    return U_Post_Texture.Sample(defaultSampler, input.uv);
+    return U_Post_Texture.Sample(U_defaultSampler, input.uv);
 }

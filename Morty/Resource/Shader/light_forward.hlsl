@@ -1,5 +1,31 @@
 #include "model_struct.hlsl"
 
+struct VS_OUT
+{
+    float4 pos : SV_POSITION;
+    float2 uv : TEXCOORD;
+    
+#if MCALC_NORMAL_IN_VS
+    float3 normal : NORMAL;
+    float3 dirLightDirTangentSpace : DIRLIGHT_TANGENT;
+    float3 toCameraDirTangentSpace : CAMERADIR_TANGENT;
+
+    float3 pointLightDirTangentSpace[MPOINT_LIGHT_MAX_NUMBER] : POINTLIGHT_TANGENT;
+    float3 spotLightDirTangentSpace[MSPOT_LIGHT_MAX_NUMBER] : SPOTLIGHT_TANGENT;
+#else
+    float3 normal : NORMAL;
+    float3 tangent : Tangent;
+    float3 bitangent : BITANGENT;
+#endif 
+
+    float3 vertexPointLight : VERTEXX_POINT_LIGHT;
+
+    float3 worldPos : POSITION;
+
+    float4 dirLightSpacePos : DIRLIGHTSPACEPOS;
+};
+
+
 struct Material
 {
     float3 f3Ambient;
@@ -74,7 +100,7 @@ float3 CalcDirectionLight(float4 f4DirLightSpacePos, float3 f3CameraDir, float3 
 
     if (fNdotL >= 0)
     {
-        float shadow = CalcShadow(f4DirLightSpacePos, fNdotL);
+        float shadow = CalcShadow(U_texShadowMap, f4DirLightSpacePos, fNdotL);
 
         float3 fReflectDir = reflect(f3LightDir, f3Normal);
         float fSpec = pow(max(dot(f3CameraDir, fReflectDir), 0.0f), U_mat.fShininess);

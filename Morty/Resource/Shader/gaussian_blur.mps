@@ -1,4 +1,3 @@
-#include "private_header.hlsl"
 
 [[vk::binding(1,0)]]Texture2D U_HDR_OriginTex;
 [[vk::binding(2,0)]]sampler defaultSampler;

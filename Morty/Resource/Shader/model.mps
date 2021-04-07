@@ -1,7 +1,5 @@
 #include "light_forward.hlsl"
 
-#define BIAS 0.000001f 
-
 #ifdef MTRANSPARENT_DEPTH_PEELING
 
 struct PS_OUT
@@ -53,10 +51,10 @@ PS_OUT PS(VS_OUT input) : SV_Target
     output.fBackDepth = 0;
 
     // a <= b
-    clip(fZDepth + BIAS - fZFront);
-    clip(fZBack + BIAS - fZDepth);
+    clip(fZDepth + NUM_BIAS - fZFront);
+    clip(fZBack + NUM_BIAS - fZDepth);
 
-    if(fZDepth - BIAS > fZFront && fZDepth + BIAS < fZBack)
+    if(fZDepth - NUM_BIAS > fZFront && fZDepth + NUM_BIAS < fZBack)
     {
         output.fFrontDepth = input.pos.z;
         output.fBackDepth = input.pos.z;
@@ -82,7 +80,7 @@ PS_OUT PS(VS_OUT input) : SV_Target
     // color = destColor + srcColor * srcAlpha * (1 - destAlpha)
     // return [srcColor * srcAlpha] as srcColor
     // blend destColor * 1 + srcColor * (1 - destAlpha)
-    if(fZFront - BIAS <= fZDepth && fZDepth <= fZFront + BIAS)
+    if(fZFront - NUM_BIAS <= fZDepth && fZDepth <= fZFront + NUM_BIAS)
         output.f4FrontColor = float4(f3Color * fAlpha, fAlpha);
     else
         output.fBackColor = float4(f3Color, fAlpha);

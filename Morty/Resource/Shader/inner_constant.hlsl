@@ -1,47 +1,10 @@
+
+#define NUM_PI (3.1415926535898)
+#define NUM_BIAS (0.000001f)
+
 #if MTRANSPARENT_POLICY == 1 && MEN_TRANSPARENT == 1
 #define MTRANSPARENT_DEPTH_PEELING
 #endif
-
-#define NUM_PI (3.1415926535898)
-
-struct VS_IN_EMPTY
-{
-    float3 pos : POSITION;
-};
-
-struct VS_OUT_EMPTY
-{
-    float4 pos : SV_POSITION;
-};
-
-struct VS_IN_EMPTY_ANIM
-{
-    float3 pos : POSITION;
-
-    int bonesID[MBONES_PER_VERTEX] : BONES_ID;
-    float bonesWeight[MBONES_PER_VERTEX] : BONES_WEIGHT;
-};
-
-struct VS_IN_COLOR
-{
-    float3 pos : POSITION;
-    float4 color : COLOR;
-};
-
-struct VS_IN
-{
-    float3 pos : POSITION;
-
-#if SKELETON_ENABLE == 1
-    int bonesID[MBONES_PER_VERTEX] : BONES_ID;
-    float bonesWeight[MBONES_PER_VERTEX] : BONES_WEIGHT;
-#endif
-
-    float3 normal : NORMAL;
-    float3 tangent : TANGENT;
-    float3 bitangent : BITANGENT;
-    float2 uv : TEXCOORDS;
-};
 
 struct DirectionLight
 {
@@ -72,28 +35,15 @@ struct SpotLight
     float3 f3Specular;
 };
 
-float4 FloatToFloat4(float depth)
-{
-    const float4 bit_shift = float4(256.0*256.0*256.0, 256.0*256.0, 256.0, 1.0);
-    const float4 bit_mask  = float4(0.0, 1.0/256.0, 1.0/256.0, 1.0/256.0);
-    float4 res = frac(depth * bit_shift);
-    res -= res.xxyz * bit_mask;
-    return res;
-}
-
-float Float4ToFloat(float4 rgba_depth)
-{
-    const float4 bit_shift = float4(1.0/(256.0*256.0*256.0), 1.0/(256.0*256.0), 1.0/256.0, 1.0);
-    float depth = dot(rgba_depth, bit_shift);
-    return depth;
-}
 
 
 //VS    per render
 [[vk::binding(0,1)]]cbuffer _M_E_cbWorldMatrix : register(b1)
 {
-    float4x4 U_matCamProj;
+    float4x4 U_matCamProj; // world to proj
+    float4x4 U_matCamProjInv; // proj to world
     float4x4 U_matLightProj;
+
 };
 
 //VS & PS    per render
@@ -103,6 +53,7 @@ float Float4ToFloat(float4 rgba_depth)
     float3 U_f3CameraPosition;
 
     float2 U_f2ViewportSize;
+    float2 U_matZNearFar;
     float U_fDelta;
     float U_fGameTime;
 };

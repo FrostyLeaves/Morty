@@ -1,4 +1,3 @@
-#include "private_header.hlsl"
 
 [[vk::binding(3,0)]]float2 U_GaussianBlurOffset;
 

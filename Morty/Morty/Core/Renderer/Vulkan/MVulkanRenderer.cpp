@@ -345,7 +345,11 @@ bool MVulkanRenderer::SetRenderToTextureBarrier(MRenderCommand* pCommand, const 
 			imageMemoryBarrier.oldLayout = pBuffer->m_VkImageLayout;
 			imageMemoryBarrier.newLayout = pBuffer->m_VkImageLayout;
 			imageMemoryBarrier.image = pBuffer->m_VkTextureImage;
-			imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
+			if(vTextures[i]->GetUsage() == METextureUsage::ERenderDepth)
+				imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1 };
+			else
+				imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 			imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
 			imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		}

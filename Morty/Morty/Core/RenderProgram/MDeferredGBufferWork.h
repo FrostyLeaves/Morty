@@ -17,6 +17,8 @@
 #include "MForwardRenderProgram.h"
 #include "MForwardRenderShaderParamSet.h"
 
+class MIMesh;
+class MMaterial;
 class MRenderGraphNode;
 class MORTY_API MDeferredGBufferWork : public MObject
 {
@@ -35,15 +37,34 @@ public:
 	void InitializeRenderGraph();
 	void ReleaseRenderGraph();
 
+	void InitializeMesh();
+	void ReleaseMesh();
+
+	void InitializeMaterial();
+	void ReleaseMaterial();
+
+
 	virtual void OnDelete() override;
+
+	void RenderUpdate(MRenderGraphNode* pGraphNode);
 
 	void Render(MRenderGraphNode* pGraphNode);
 
-	static void UpdateShaderSharedParams(MRenderInfo& info, MForwardRenderShaderParamSet& frameParamSet);
+	void Lightning(MRenderGraphNode* pGraphNode);
 
+
+	void DrawNormalMesh(MRenderInfo& info);
+
+	void DrawMeshInstance(MRenderInfo& info, MIMeshInstance* pMeshInstance);
+
+	
 private:
 
 	MIRenderProgram* m_pRenderProgram;
+	MForwardRenderShaderParamSet m_FrameParamSet;
+
+	MIMesh* m_pScreenDrawMesh;
+	MMaterial* m_pLightningMaterial;
 };
 
 #endif

@@ -180,19 +180,19 @@ bool MEngine::InitializeDefaultResource()
 	pSkinnedMeshMaterialRes->LoadVertexShader(pMeshVSResource);
 	pSkinnedMeshMaterialRes->LoadPixelShader(pMeshPSResource);
 	pSkinnedMeshMaterialRes->AddRef();
-
-	MResource* pMeshPBRPSResource = GetResourceManager()->LoadResource("./Shader/model_pbr.mps");
-
-	MMaterialResource* pStaticMeshMaterialPBRRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_MODEL_STATIC_MESH_PBR);
-	pStaticMeshMaterialRes->LoadVertexShader(pMeshVSResource);
-	pStaticMeshMaterialRes->LoadPixelShader(pMeshPBRPSResource);
-	pStaticMeshMaterialRes->AddRef();
-
-	MMaterialResource* pSkinnedMeshMaterialPBRRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_MODEL_SKELETON_MESH_PBR);
-	pSkinnedMeshMaterialRes->GetShaderMacro()->SetInnerMacro(MGlobal::MATERIAL_MACRO_SKELETON_ENABLE, "1");
-	pSkinnedMeshMaterialRes->LoadVertexShader(pMeshVSResource);
-	pSkinnedMeshMaterialRes->LoadPixelShader(pMeshPBRPSResource);
-	pSkinnedMeshMaterialRes->AddRef();
+// 
+// 	MResource* pMeshPBRPSResource = GetResourceManager()->LoadResource("./Shader/model_pbr.mps");
+// 
+// 	MMaterialResource* pStaticMeshMaterialPBRRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_MODEL_STATIC_MESH_PBR);
+// 	pStaticMeshMaterialRes->LoadVertexShader(pMeshVSResource);
+// 	pStaticMeshMaterialRes->LoadPixelShader(pMeshPBRPSResource);
+// 	pStaticMeshMaterialRes->AddRef();
+// 
+// 	MMaterialResource* pSkinnedMeshMaterialPBRRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_MODEL_SKELETON_MESH_PBR);
+// 	pSkinnedMeshMaterialRes->GetShaderMacro()->SetInnerMacro(MGlobal::MATERIAL_MACRO_SKELETON_ENABLE, "1");
+// 	pSkinnedMeshMaterialRes->LoadVertexShader(pMeshVSResource);
+// 	pSkinnedMeshMaterialRes->LoadPixelShader(pMeshPBRPSResource);
+// 	pSkinnedMeshMaterialRes->AddRef();
 
 	MResource* pDraw2DVSResource = GetResourceManager()->LoadResource("./Shader/draw.mvs");
 	MResource* pDraw2DPSResource = GetResourceManager()->LoadResource("./Shader/draw.mps");

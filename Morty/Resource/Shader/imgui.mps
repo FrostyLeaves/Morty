@@ -20,4 +20,16 @@ float4 PS( VS_OUTPUT input) : SV_Target
     {
         return input.color * float(image.Sample(samp, input.uv));
     }
+
+    else if(imageType == 2)
+    {
+        return float4(input.color.rgb * image.Sample(samp, input.uv).rgb, 1.0f);
+    }
+
+    else if(imageType == 3)
+    {
+        return input.color * float(image.Sample(samp, input.uv).w);
+    }
+
+    return input.color;
 }

@@ -128,8 +128,8 @@ void MForwardTransparentWork::RenderDepthPeel(MRenderGraphNode* pGraphNode)
 
 	Vector2 v2OutputSize = pOutputTexture0->GetOutputSize();
 
-	MForwardRenderWork::UpdateShaderSharedParams(info, m_aFrameParamSet[0]);
-	MForwardRenderWork::UpdateShaderSharedParams(info, m_aFrameParamSet[1]);
+	m_aFrameParamSet[0].UpdateShaderSharedParams(info);
+	m_aFrameParamSet[1].UpdateShaderSharedParams(info);
 
 
 	MViewport* pViewport = info.pViewport;

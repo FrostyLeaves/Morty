@@ -10,10 +10,6 @@
 #include "MRenderGraph.h"
 #include "MTransformCoord.h"
 
-#include "Light/MSpotLight.h"
-#include "Light/MPointLight.h"
-#include "Light/MDirectionalLight.h"
-
 #include "MSkeleton.h"
 #include "Model/MModelInstance.h"
 #include "Model/MIModelMeshInstance.h"
@@ -145,7 +141,7 @@ void MForwardRenderWork::Render(MRenderGraphNode* pGraphNode)
 	MRenderInfo& info = pRenderProgram->GetRenderInfo();
 
 
-	UpdateShaderSharedParams(info, m_FrameParamSet);
+	m_FrameParamSet.UpdateShaderSharedParams(info);
 
 	info.pRenderer->BeginRenderPass(info.pPrimaryCommand, pGraphNode->GetRenderPass(), info.unFrameIndex);
 
@@ -162,115 +158,6 @@ void MForwardRenderWork::Render(MRenderGraphNode* pGraphNode)
 	//	DrawSkyBox(info);
 
 	info.pRenderer->EndRenderPass(info.pPrimaryCommand);
-}
-
-void MForwardRenderWork::UpdateShaderSharedParams(MRenderInfo& info, MForwardRenderShaderParamSet& frameParamSet)
-{
-	if (frameParamSet.m_pWorldMatrixParam)
-	{
-		MStruct& cStruct = *frameParamSet.m_pWorldMatrixParam->var.GetStruct();
-		cStruct[0] = info.pViewport->GetCameraInverseProjection();
-		cStruct[1] = info.m4DirLightInvProj;
-
-		frameParamSet.m_pWorldMatrixParam->SetDirty();
-	}
-
-	if (frameParamSet.m_pWorldInfoParam)
-	{
-		if (info.pDirectionalLight)
-		{
-			(*frameParamSet.m_pWorldInfoParam->var.GetStruct())[0] = info.pDirectionalLight->GetWorldDirection();
-		}
-
-		(*frameParamSet.m_pWorldInfoParam->var.GetStruct())[1] = info.pViewport->GetCamera()->GetWorldPosition();
-
-		(*frameParamSet.m_pWorldInfoParam->var.GetStruct())[2] = info.pViewport->GetSize();
-
-		(*frameParamSet.m_pWorldInfoParam->var.GetStruct())[3] = info.fDelta;
-
-		(*frameParamSet.m_pWorldInfoParam->var.GetStruct())[4] = info.fGameTime;
-
-		frameParamSet.m_pWorldInfoParam->SetDirty();
-	}
-
-	if (MShaderConstantParam* pLightParam = frameParamSet.m_pLightInfoParam)
-	{
-		MVariant& varDirLightEnable = (*pLightParam->var.GetStruct())[3];
-		if (info.pDirectionalLight)
-		{
-			varDirLightEnable = 500;
-			MVariant& varDirectionLight = (*pLightParam->var.GetStruct())[0];
-			{
-				MStruct& cLightStruct = *varDirectionLight.GetStruct();
-				{
-					cLightStruct[0] = info.pDirectionalLight->GetDiffuseColor().ToVector3();
-					cLightStruct[1] = info.pDirectionalLight->GetSpecularColor().ToVector3();
-				}
-			}
-		}
-		else
-		{
-			varDirLightEnable = false;
-		}
-
-		MVariant& varPointLights = (*pLightParam->var.GetStruct())[1];
-		MVariant& varValidPointLights = (*pLightParam->var.GetStruct())[4];
-		{
-			std::vector<MPointLight*> vActivePointLights(MGlobal::MPOINT_LIGHT_MAX_NUMBER);
-			info.pScene->FindActivePointLights(info.pViewport->GetCamera()->GetWorldPosition(), vActivePointLights);
-			varValidPointLights = 0;
-
-			MVariantArray& vPointLights = *varPointLights.GetArray();
-			for (uint32_t i = 0; i < vPointLights.GetMemberCount(); ++i)
-			{
-				if (MPointLight* pLight = vActivePointLights[i])
-				{
-					MStruct& cPointLight = *vPointLights[i].GetStruct();
-					cPointLight[0] = pLight->GetWorldPosition();
-					cPointLight[1] = pLight->GetDiffuseColor().ToVector3();
-					cPointLight[2] = pLight->GetSpecularColor().ToVector3();
-
-					cPointLight[3] = pLight->GetConstant();
-					cPointLight[4] = pLight->GetLinear();
-					cPointLight[5] = pLight->GetQuadratic();
-
-					varValidPointLights = (int)i + 1;
-				}
-				else break;
-			}
-		}
-
-		MVariant& varSpotLights = (*pLightParam->var.GetStruct())[2];
-		MVariant& varValidSpotLights = (*pLightParam->var.GetStruct())[5];
-		{
-			std::vector<MSpotLight*> vActiveSpotLights(MGlobal::MSPOT_LIGHT_MAX_NUMBER);
-			info.pScene->FindActiveSpotLights(info.pViewport->GetCamera()->GetWorldPosition(), vActiveSpotLights);
-			varValidSpotLights = 0;
-
-			MVariantArray& vSpotLights = *varSpotLights.GetArray();
-			for (uint32_t i = 0; i < vSpotLights.GetMemberCount(); ++i)
-			{
-				if (MSpotLight* pLight = vActiveSpotLights[i])
-				{
-					Vector3 f3SpotDirection = pLight->GetWorldDirection();
-					f3SpotDirection.Normalize();
-					MStruct& cSpotLight = *vSpotLights[i].GetStruct();
-					cSpotLight[0] = pLight->GetWorldPosition();
-					cSpotLight[1] = pLight->GetInnerCutOffRadius();
-					cSpotLight[2] = f3SpotDirection;
-					cSpotLight[3] = pLight->GetOuterCutOffRadius();
-					cSpotLight[4] = pLight->GetDiffuseColor().ToVector3();
-					cSpotLight[5] = pLight->GetSpecularColor().ToVector3();
-
-					varValidSpotLights = (int)i + 1;
-				}
-				else break;
-			}
-		}
-
-		pLightParam->SetDirty();
-	}
-
 }
 
 void MForwardRenderWork::DrawNormalMesh(MRenderInfo& info)

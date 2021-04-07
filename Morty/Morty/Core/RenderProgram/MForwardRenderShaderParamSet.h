@@ -11,6 +11,9 @@
 #include "MGlobal.h"
 #include "Shader/MShaderParamSet.h"
 
+
+#include "MRenderInfo.h"
+
 class MEngine;
 class MORTY_API MForwardRenderShaderParamSet : public MShaderParamSet
 {
@@ -23,6 +26,9 @@ public:
 
 	virtual void InitializeShaderParamSet(MEngine* pEngine);
 	virtual void ReleaseShaderParamSet(MEngine* pEngine);
+
+
+	void UpdateShaderSharedParams(MRenderInfo& info);
 
 public:
 

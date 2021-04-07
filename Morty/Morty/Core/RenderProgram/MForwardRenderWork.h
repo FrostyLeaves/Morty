@@ -39,8 +39,6 @@ public:
 
 	void Render(MRenderGraphNode* pGraphNode);
 
-	static void UpdateShaderSharedParams(MRenderInfo& info, MForwardRenderShaderParamSet& frameParamSet);
-
 protected:
 
 	void DrawNormalMesh(MRenderInfo& info);

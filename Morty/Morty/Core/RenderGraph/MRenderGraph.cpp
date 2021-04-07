@@ -207,6 +207,7 @@ bool MRenderGraph::Compile(MIDevice* pDevice)
 		if (!pFinalTexture)
 		{
 			MLogManager::GetInstance()->Warning("RenderGraph FinalTexture == nullptr.");
+			return false;
 		}
 
 

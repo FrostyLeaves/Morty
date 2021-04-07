@@ -1,4 +1,4 @@
-#include "private_header.hlsl"
+#include "model_struct.hlsl"
 
 struct VS_OUT_SKYBOX
 {

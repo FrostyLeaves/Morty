@@ -1,69 +1,18 @@
-#include "model_struct.hlsl"
+#include "inner_constant.hlsl"
+#include "inner_functional.hlsl"
 
-struct Material
+struct VS_OUT
 {
-    float fAlphaFactor;
-    float bUseNormalTex;
+    float4 pos : SV_POSITION;
+    float2 uv : TEXCOORD;
 };
-
-//PS
-[[vk::binding(0,0)]]cbuffer cbMaterial
-{
-    Material U_mat;
-};
-
 
 //Textures
-[[vk::binding(1,0)]]Texture2D U_mat_texAlbedo;
-[[vk::binding(2,0)]]Texture2D U_mat_texNormal;
-[[vk::binding(3,0)]]Texture2D U_mat_texMetallic;
-[[vk::binding(4,0)]]Texture2D U_mat_texRoughness;
-[[vk::binding(5,0)]]Texture2D U_mat_texAmbientOcc;
+[[vk::binding(0,0)]]Texture2D U_mat_f3Base_fMetal;
+[[vk::binding(1,0)]]Texture2D U_mat_f3Albedo_fAmbientOcc;
+[[vk::binding(2,0)]]Texture2D U_mat_f3Normal_fRoughness;
+[[vk::binding(3,0)]]Texture2D U_mat_fDepth;
 
-
-LightBasicInfo GetLightBasicInfo(VS_OUT input)
-{
-    LightBasicInfo result;
-    result.f3Normal = float3(0.0f, 0.0f, -1.0f);
-    result.f3CameraDir = float3(0.0f, 0.0f, 1.0f);
-    result.f3DirLightDir = float3(0.0f, 0.0f, 1.0f);
-    
-
-    if (U_mat.bUseNormalTex > 0)
-    {
-        result.f3Normal = U_mat_texNormal.Sample(U_defaultSampler, input.uv).xyz;
-        result.f3Normal = result.f3Normal.rgb * 2.0f - 1.0f;
-        result.f3Normal = normalize(result.f3Normal);
-        
-//如果在VS处理Normal
-#if MCALC_NORMAL_IN_VS
-        //使用法线贴图， 法向量在切线空间， CameraDir也在切线空间
-        
-        result.f3CameraDir = input.toCameraDirTangentSpace;
-        result.f3DirLightDir = input.dirLightDirTangentSpace;
-#else
-        //使用法线贴图，法向量在view space，CameraDir也在view space
-
-        float3 T = normalize(input.tangent);
-        float3 B = normalize(input.bitangent);
-        float3 N = normalize(input.normal);
-        float3x3 TBN = float3x3(T,B,N);
-
-        result.f3Normal = mul(result.f3Normal, TBN);
-        result.f3CameraDir = normalize(U_f3CameraPosition - input.worldPos);
-        result.f3DirLightDir = U_f3DirectionLight;
-#endif
-    }
-    else
-    {
-        //没用法线贴图，法向量在view space，CameraDir也在view space
-        result.f3Normal = input.normal;
-        result.f3CameraDir = normalize(U_f3CameraPosition - input.worldPos);
-        result.f3DirLightDir = U_f3DirectionLight;
-    }
-
-    return result;
-}
 
 float DistributionGGX(float3 N, float3 H, float roughness)
 {
@@ -105,7 +54,7 @@ float3 FresnelSchlick(float cosTheta, float3 F0)
     return F0 + (1.0 - F0) * pow(max(1.0 - cosTheta, 0.0), 5.0);
 }
 
-float3 CalcPBRLight(float3 f3LightColor, float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3BasicColor, float3 f3Albedo, float fRoughness, float fMetallic)
+float3 CalcPBRLight(float3 f3LightColor, float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3BaseColor, float3 f3Albedo, float fRoughness, float fMetallic)
 {
     // 视线方向 + 光照方向 的中间向量
     float3 f3HalfDir = normalize(f3CameraDir + f3LightDir);
@@ -113,7 +62,7 @@ float3 CalcPBRLight(float3 f3LightColor, float3 f3CameraDir, float3 f3LightDir, 
     // Cook-Torrance BRDF
     float NDF = DistributionGGX(f3Normal, f3HalfDir, fRoughness);
     float G   = GeometrySmith(f3Normal, f3CameraDir, f3LightDir, fRoughness);
-    float3 F  = FresnelSchlick(max(dot(f3HalfDir, f3CameraDir), 0.0), f3BasicColor);
+    float3 F  = FresnelSchlick(max(dot(f3HalfDir, f3CameraDir), 0.0), f3BaseColor);
         
     float3 nominator    = NDF * G * F; 
     float denominator = 4 * max(dot(f3Normal, f3CameraDir), 0.0) * max(dot(f3Normal, f3LightDir), 0.0) + 0.001; // 0.001 to prevent divide by zero.
@@ -138,7 +87,7 @@ float3 CalcPBRLight(float3 f3LightColor, float3 f3CameraDir, float3 f3LightDir, 
 }
 
 // spot light
-float3 CalcSpotLight(SpotLight spotLight, float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3WorldPixelPosition, float3 f3BasicColor, float3 f3Albedo, float fRoughness, float fMetallic)
+float3 CalcSpotLight(SpotLight spotLight, float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3WorldPixelPosition, float3 f3BaseColor, float3 f3Albedo, float fRoughness, float fMetallic)
 {
     float fTheta = dot(spotLight.f3Direction, -f3LightDir);
     if (fTheta > spotLight.fHalfOuterCutOff)
@@ -151,7 +100,7 @@ float3 CalcSpotLight(SpotLight spotLight, float3 f3CameraDir, float3 f3LightDir,
 
         float3 f3LightColor = spotLight.f3Diffuse * fIntensity;
                     
-        return CalcPBRLight(f3LightColor, f3CameraDir, f3LightDir, f3Normal, f3BasicColor, f3Albedo, fRoughness, fMetallic);
+        return CalcPBRLight(f3LightColor, f3CameraDir, f3LightDir, f3Normal, f3BaseColor, f3Albedo, fRoughness, fMetallic);
     }
     else
     {
@@ -160,81 +109,99 @@ float3 CalcSpotLight(SpotLight spotLight, float3 f3CameraDir, float3 f3LightDir,
 }
 
 // point light
-float3 CalcPointLight(PointLight pointLight, float3 worldPos, float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3BasicColor, float3 f3Albedo, float fRoughness, float fMetallic)
+float3 CalcPointLight(PointLight pointLight, float3 worldPos, float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3BaseColor, float3 f3Albedo, float fRoughness, float fMetallic)
 {
     float fDistance = length(pointLight.f3WorldPosition - worldPos);
     float fAttenuation = 1.0f / (1.0f + pointLight.fLinear * fDistance + pointLight.fQuadratic * fDistance * fDistance);
 
     float3 f3LightColor = pointLight.f3Diffuse * fAttenuation;
 
-    return CalcPBRLight(f3LightColor, f3CameraDir, f3LightDir, f3Normal, f3BasicColor, f3Albedo, fRoughness, fMetallic);
+    return CalcPBRLight(f3LightColor, f3CameraDir, f3LightDir, f3Normal, f3BaseColor, f3Albedo, fRoughness, fMetallic);
 }
 
 // point light
-float3 CalcDirectionLight(DirectionLight dirLight, float4 f4DirLightSpacePos, float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3BasicColor, float3 f3Albedo, float fRoughness, float fMetallic)
+float3 CalcDirectionLight(DirectionLight dirLight, float4 f4DirLightSpacePos, float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3BaseColor, float3 f3Albedo, float fRoughness, float fMetallic)
 {
     float fNdotL = dot(f3Normal, -f3LightDir);
 
     if (fNdotL >= 0)
     {
-        float shadow = CalcShadow(f4DirLightSpacePos, fNdotL);
+        float shadow = CalcShadow(U_texShadowMap, f4DirLightSpacePos, fNdotL);
 
         float3 f3LightColor = dirLight.f3Diffuse;
 
-        return CalcPBRLight(f3LightColor, f3CameraDir, f3LightDir, f3Normal, f3BasicColor, f3Albedo, fRoughness, fMetallic);
+        return CalcPBRLight(f3LightColor, f3CameraDir, f3LightDir, f3Normal, f3BaseColor, f3Albedo, fRoughness, fMetallic);
     }
 
     return float3(0, 0, 0);
 }
 
+float3 GetWorldPosition(VS_OUT input)
+{
+    float2 pos = input.pos.xy;
+
+    float fDepth = U_mat_fDepth.Sample(U_defaultSampler, input.uv);
+
+    fDepth = fDepth * (U_matZNearFar.y - U_matZNearFar.x) + U_matZNearFar.x;
+
+    float4 f4ViewportToWorldPos = mul(float4(pos.x, pos.y, U_matZNearFar.x, 1.0f), U_matCamProjInv);
+
+    float3 f3WorldPosition = f4ViewportToWorldPos.xyz;
+
+    return U_f3CameraPosition + normalize(f3WorldPosition - U_f3CameraPosition) * fDepth;
+}
+
 float3 AdditionAllLights(VS_OUT input, float3 f3Color)
 {
-    float3 f3Albedo   = pow(U_mat_texAlbedo.Sample(U_defaultSampler, input.uv).rgb, float3(2.2));
-    float fMetallic   = U_mat_texMetallic.Sample(U_defaultSampler, input.uv).r;
-    float fRoughness  = U_mat_texRoughness.Sample(U_defaultSampler, input.uv).r;
-    //float fAmbientOcc = U_mat_texAmbientOcc.Sample(U_defaultSampler, input.uv).r;
 
-    float3 f3CameraDir = normalize(U_f3CameraPosition - input.worldPos);
+    float4 f3Base_fMetal = U_mat_f3Base_fMetal.Sample(U_defaultSampler, input.uv);
+    float4 f3Albedo_fAmbientOcc = U_mat_f3Albedo_fAmbientOcc.Sample(U_defaultSampler, input.uv);
+    float4 f3Normal_fRoughness = U_mat_f3Normal_fRoughness.Sample(U_defaultSampler, input.uv);
 
-    // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
-    // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
-    float3 f3BasicColor = lerp(float3(0.04), f3Albedo, fMetallic);
+    float3 f3BaseColor = f3Base_fMetal.rgb;
+    float3 f3Albedo   = pow(f3Albedo_fAmbientOcc.rgb, float3(2.2));
+    float3 f3Normal = f3Normal_fRoughness.rgb;
 
+    float fMetallic   = f3Base_fMetal.a;
+    float fAmbientOcc = f3Albedo_fAmbientOcc.a;
+    float fRoughness = f3Normal_fRoughness.a;
 
+    float3 f3WorldPosition = GetWorldPosition(input);
 
-    LightBasicInfo cLightInfo = GetLightBasicInfo(input);
+    float3 f3CameraDir = normalize(U_f3CameraPosition - f3WorldPosition);
+
+//    // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
+//    // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
+//    float3 f3BaseColor = lerp(float3(0.04), f3Albedo, fMetallic);
+
 
     if(U_bDirectionLightEnabled > 0)
     {
+        float3 f3DirLightDir = U_f3DirectionLight;
+        float4 f3DirLightSpacePos = mul(float4(f3WorldPosition, 1.0f), U_matLightProj);
+
         f3Color += CalcDirectionLight(  U_dirLight,
-                                        input.dirLightSpacePos,
-                                        cLightInfo.f3CameraDir,
-                                        cLightInfo.f3DirLightDir,
-                                        cLightInfo.f3Normal,
-                                        f3BasicColor,
+                                        f3DirLightSpacePos,
+                                        f3CameraDir,
+                                        f3DirLightDir,
+                                        f3Normal,
+                                        f3BaseColor,
                                         f3Albedo,
                                         fRoughness,
                                         fMetallic
                                     );
     }
     
-    f3Color += input.vertexPointLight;
-
     for(int i = 0; i < min(MPOINT_LIGHT_PIXEL_NUMBER, U_nValidPointLightsNumber); ++i)
     {
-//如果在VS处理Normal
-#if MCALC_NORMAL_IN_VS
-        float3 f3LightDir = input.pointLightDirTangentSpace[i];
-#else
-        float3 f3LightDir = normalize(U_pointLights[i].f3WorldPosition - input.worldPos);
-#endif
+        float3 f3LightDir = normalize(U_pointLights[i].f3WorldPosition - f3WorldPosition);
 
         f3Color += CalcPointLight(  U_pointLights[i],
-                                    input.worldPos,
-                                    cLightInfo.f3CameraDir,
+                                    f3WorldPosition,
+                                    f3CameraDir,
                                     f3LightDir,
-                                    cLightInfo.f3Normal,
-                                    f3BasicColor,
+                                    f3Normal,
+                                    f3BaseColor,
                                     f3Albedo,
                                     fRoughness,
                                     fMetallic
@@ -243,18 +210,13 @@ float3 AdditionAllLights(VS_OUT input, float3 f3Color)
 
     for(int i = 0; i < min(MSPOT_LIGHT_PIXEL_NUMBER, U_nValidSpotLightsNumber); ++i)
     {
-//如果在VS处理Normal
-#if MCALC_NORMAL_IN_VS
-        float3 f3LightDir = input.spotLightDirTangentSpace[i];
-#else
-        float3 f3LightDir = normalize(U_spotLights[i].f3WorldPosition - input.worldPos);
-#endif
+        float3 f3LightDir = normalize(U_spotLights[i].f3WorldPosition - f3WorldPosition);
         f3Color += CalcSpotLight(   U_spotLights[i],
-                                    cLightInfo.f3CameraDir,
+                                    f3CameraDir,
                                     f3LightDir,
-                                    cLightInfo.f3Normal,
-                                    input.worldPos,
-                                    f3BasicColor,
+                                    f3Normal,
+                                    f3WorldPosition,
+                                    f3BaseColor,
                                     f3Albedo,
                                     fRoughness,
                                     fMetallic

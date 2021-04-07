@@ -1,4 +1,3 @@
-#include "private_header.hlsl"
 
 struct VS_OUT_DRAW
 {
