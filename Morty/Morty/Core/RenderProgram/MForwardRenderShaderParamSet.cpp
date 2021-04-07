@@ -38,6 +38,7 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 
 	MStruct worldMatrixSrt;
 	worldMatrixSrt.AppendMVariant("U_matCamProj", Matrix4());
+	worldMatrixSrt.AppendMVariant("U_matCamProjInv", Matrix4());
 	worldMatrixSrt.AppendMVariant("U_matLightProj", Matrix4());
 
 	m_pWorldMatrixParam->var = worldMatrixSrt;

@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
 	if (!pRootNode->FindFirstChildByType<MCamera>())
 	{
 		MCamera* pCamera = engine.GetObjectManager()->CreateObject<MCamera>();
-		pCamera->SetPosition(Vector3(0, 60, -160));
+		pCamera->SetPosition(Vector3(0, 3, -8));
 		pCamera->SetName("Camera");
 		pCamera->LookAt(Vector3(0, 0, 0), Vector3(0, 1, 0));
 		pRootNode->AddNode(pCamera);
