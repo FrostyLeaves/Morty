@@ -54,8 +54,10 @@ float3 FresnelSchlick(float cosTheta, float3 F0)
     return F0 + (1.0 - F0) * pow(max(1.0 - cosTheta, 0.0), 5.0);
 }
 
-float3 CalcPBRLight(float3 f3LightColor, float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3BaseColor, float3 f3Albedo, float fRoughness, float fMetallic)
+float3 CalcPBRLight(float3 f3LightColor, float3 f3CameraDir, float3 _f3LightDir, float3 f3Normal, float3 f3BaseColor, float3 f3Albedo, float fRoughness, float fMetallic)
 {
+    float3 f3LightDir = -_f3LightDir;
+
     // 视线方向 + 光照方向 的中间向量
     float3 f3HalfDir = normalize(f3CameraDir + f3LightDir);
 
@@ -138,15 +140,17 @@ float3 CalcDirectionLight(DirectionLight dirLight, float4 f4DirLightSpacePos, fl
 
 float3 GetWorldPosition(VS_OUT input)
 {
-    float2 pos = input.pos.xy;
+    float2 pos = input.uv * 2.0 - 1.0;
 
-    float fDepth = U_mat_fDepth.Sample(U_defaultSampler, input.uv);
+    float4 f4DepthColor = U_mat_fDepth.Sample(U_defaultSampler, input.uv);
+
+    float fDepth = Float4ToFloat(f4DepthColor);
 
     fDepth = fDepth * (U_matZNearFar.y - U_matZNearFar.x) + U_matZNearFar.x;
 
     float4 f4ViewportToWorldPos = mul(float4(pos.x, pos.y, U_matZNearFar.x, 1.0f), U_matCamProjInv);
 
-    float3 f3WorldPosition = f4ViewportToWorldPos.xyz;
+    float3 f3WorldPosition = f4ViewportToWorldPos.xyz / f4ViewportToWorldPos.w;
 
     return U_f3CameraPosition + normalize(f3WorldPosition - U_f3CameraPosition) * fDepth;
 }
@@ -161,6 +165,7 @@ float3 AdditionAllLights(VS_OUT input, float3 f3Color)
     float3 f3BaseColor = f3Base_fMetal.rgb;
     float3 f3Albedo   = pow(f3Albedo_fAmbientOcc.rgb, float3(2.2));
     float3 f3Normal = f3Normal_fRoughness.rgb;
+    f3Normal = f3Normal * 2.0 - 1.0;
 
     float fMetallic   = f3Base_fMetal.a;
     float fAmbientOcc = f3Albedo_fAmbientOcc.a;
@@ -173,7 +178,6 @@ float3 AdditionAllLights(VS_OUT input, float3 f3Color)
 //    // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
 //    // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
 //    float3 f3BaseColor = lerp(float3(0.04), f3Albedo, fMetallic);
-
 
     if(U_bDirectionLightEnabled > 0)
     {

@@ -1,5 +1,5 @@
 
-/*
+
 float4 FloatToFloat4(float depth)
 {
     const float4 bit_shift = float4(256.0*256.0*256.0, 256.0*256.0, 256.0, 1.0);
@@ -15,7 +15,7 @@ float Float4ToFloat(float4 rgba_depth)
     float depth = dot(rgba_depth, bit_shift);
     return depth;
 }
-*/
+
 
 //https://stackoverflow.com/questions/35486775/how-do-i-convert-between-float-and-vec4-vec3-vec2
 

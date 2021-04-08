@@ -134,11 +134,7 @@ void MGaussianBlurWork::Update(MRenderGraphNode* pGraphNode)
 
 void MGaussianBlurWork::Render(MRenderGraphNode* pGraphNode)
 {
-	MForwardPostProcessProgram* pRenderProgram = dynamic_cast<MForwardPostProcessProgram*>(m_pRenderProgram);
-	if (!pRenderProgram)
-		return;
-
-	MRenderInfo& info = pRenderProgram->GetRenderInfo();
+	MRenderInfo& info = *m_pRenderProgram->GetRenderInfo();
 
 	MRenderGraphNodeOutput* pOutput0 = pGraphNode->GetOutput(0);
 	if (!pOutput0)

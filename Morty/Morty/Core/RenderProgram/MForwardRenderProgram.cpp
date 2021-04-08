@@ -89,7 +89,7 @@ void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport, 
 	if (!pViewport)
 		return;
 
-	MRenderInfo& info = GetRenderInfo();
+	MRenderInfo& info = *GetRenderInfo();
 
 	info = MRenderInfo();
 

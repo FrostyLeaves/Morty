@@ -4,6 +4,8 @@ struct VS_OUT
 {
     float4 pos : SV_POSITION;
     float2 uv : TEXCOORD;
+
+    float depth : DEPTH;
     
     float3 normal : NORMAL;
     float3 tangent : Tangent;
@@ -34,6 +36,7 @@ struct PS_OUT
     float4 f3Base_fMetal: SV_Target0;
     float4 f3Albedo_fAmbientOcc: SV_Target1;
     float4 f3Normal_fRoughness: SV_Target2;
+    float4 fDepth: SV_Target3;
 };
 
 float3 GetNormal(VS_OUT input)
@@ -84,6 +87,7 @@ PS_OUT PS(VS_OUT input) : SV_Target
     output.f3Albedo_fAmbientOcc.rgb = f3Albedo;
     output.f3Albedo_fAmbientOcc.a = fAmbientOcc;
 
+    output.fDepth = FloatToFloat4((input.depth - U_matZNearFar.x) / (U_matZNearFar.y - U_matZNearFar.x));
 
     return output;
 }

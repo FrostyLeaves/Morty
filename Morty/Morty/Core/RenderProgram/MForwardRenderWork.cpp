@@ -119,7 +119,7 @@ void MForwardRenderWork::InitializeRenderGraph()
 		}
 	}
 
-		pForwardNode->BindRenderFunction(std::bind(&MForwardRenderWork::Render, this, std::placeholders::_1));
+	pForwardNode->BindRenderFunction(std::bind(&MForwardRenderWork::Render, this, std::placeholders::_1));
 }
 
 void MForwardRenderWork::ReleaseRenderGraph()
@@ -135,10 +135,7 @@ void MForwardRenderWork::OnDelete()
 
 void MForwardRenderWork::Render(MRenderGraphNode* pGraphNode)
 {
-	MForwardRenderProgram* pRenderProgram = dynamic_cast<MForwardRenderProgram*>(m_pRenderProgram);
-	if (!pRenderProgram)
-		return;
-	MRenderInfo& info = pRenderProgram->GetRenderInfo();
+	MRenderInfo& info = *m_pRenderProgram->GetRenderInfo();
 
 
 	m_FrameParamSet.UpdateShaderSharedParams(info);

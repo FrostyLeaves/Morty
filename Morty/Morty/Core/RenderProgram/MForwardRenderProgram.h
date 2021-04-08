@@ -60,7 +60,7 @@ public:
 
 	void GenerateRenderGroup(MRenderInfo& info);
 
-	MRenderInfo& GetRenderInfo() { return m_RenderInfo; }
+	virtual MRenderInfo* GetRenderInfo() override { return &m_RenderInfo; }
 
 protected:
 

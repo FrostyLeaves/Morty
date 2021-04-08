@@ -12,7 +12,7 @@
 #include "Model/MIModelMeshInstance.h"
 #include "Material/MMaterialResource.h"
 
-#include "MDeferredGBufferWork.h"
+#include "MDeferredRenderWork.h"
 #include "MForwardShadowMapWork.h"
 #include "MForwardTransparentWork.h"
 
@@ -47,7 +47,7 @@ void MDeferredRenderProgram::Initialize()
 	m_pShadowMapWork = GetEngine()->GetObjectManager()->CreateObject<MForwardShadowMapWork>();
 	m_pShadowMapWork->Initialize(this);
 
-	m_pRenderWork = GetEngine()->GetObjectManager()->CreateObject<MDeferredGBufferWork>();
+	m_pRenderWork = GetEngine()->GetObjectManager()->CreateObject<MDeferredRenderWork>();
 	m_pRenderWork->Initialize(this);
 
 	m_pTransparentWork = GetEngine()->GetObjectManager()->CreateObject<MForwardTransparentWork>();
@@ -89,7 +89,7 @@ void MDeferredRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport,
 	if (!pViewport)
 		return;
 
-	MRenderInfo& info = GetRenderInfo();
+	MRenderInfo& info = *GetRenderInfo();
 
 	info = MRenderInfo();
 

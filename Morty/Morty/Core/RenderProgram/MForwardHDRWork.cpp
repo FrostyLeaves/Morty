@@ -57,11 +57,7 @@ MForwardHDRWork::~MForwardHDRWork()
 
 void MForwardHDRWork::Render(MRenderGraphNode* pGraphNode)
 {
-	MForwardPostProcessProgram* pRenderProgram = dynamic_cast<MForwardPostProcessProgram*>(m_pRenderProgram);
-	if (!pRenderProgram)
-		return;
-
-	MRenderInfo& info = pRenderProgram->GetRenderInfo();
+	MRenderInfo& info = *m_pRenderProgram->GetRenderInfo();
 
 	MRenderGraphNodeOutput* pOutput = pGraphNode->GetOutput(0);
 	if (!pOutput)

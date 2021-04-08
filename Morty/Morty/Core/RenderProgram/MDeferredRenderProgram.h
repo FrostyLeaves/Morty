@@ -26,7 +26,7 @@ class MIMeshInstance;
 class MModelInstance;
 class MSkeletonInstance;
 class MDirectionalLight;
-class MDeferredGBufferWork;
+class MDeferredRenderWork;
 class MRenderTexture;
 class MRenderCommand;
 class MIModelMeshInstance;
@@ -60,7 +60,7 @@ public:
 
 	void GenerateRenderGroup(MRenderInfo& info);
 
-	MRenderInfo& GetRenderInfo() { return m_RenderInfo; }
+	virtual MRenderInfo* GetRenderInfo() override { return &m_RenderInfo; }
 
 protected:
 
@@ -72,7 +72,7 @@ protected:
 	MRenderInfo m_RenderInfo;
 
 	MForwardShadowMapWork* m_pShadowMapWork;
-	MDeferredGBufferWork* m_pRenderWork;
+	MDeferredRenderWork* m_pRenderWork;
 	MForwardTransparentWork* m_pTransparentWork;
 
 	MColor m_cClearColor;

@@ -19,6 +19,7 @@ struct VS_OUT
 {
     float4 pos : SV_POSITION;
     float2 uv : TEXCOORD;
+    float depth : DEPTH;
     
     float3 normal : NORMAL;
     float3 tangent : Tangent;
@@ -52,6 +53,8 @@ VS_OUT VS(VS_IN input)
     output.pos = mul(float4(input.pos, 1.0f), mul(U_matWorld, U_matCamProj));
 
 #endif
+
+    output.depth = output.pos.z;
 
     output.normal = normalize(mul(input.normal, U_matNormal));
     output.tangent = normalize(mul(input.tangent, U_matNormal));

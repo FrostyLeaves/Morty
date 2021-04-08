@@ -1,4 +1,4 @@
-#include "MDeferredGBufferWork.h"
+#include "MDeferredRenderWork.h"
 
 #include "MEngine.h"
 #include "MViewport.h"
@@ -18,9 +18,9 @@
 
 #include "MDeferredRenderProgram.h"
 
-M_OBJECT_IMPLEMENT(MDeferredGBufferWork, MObject)
+M_OBJECT_IMPLEMENT(MDeferredRenderWork, MObject)
 
-MDeferredGBufferWork::MDeferredGBufferWork()
+MDeferredRenderWork::MDeferredRenderWork()
     : MObject()
     , m_pRenderProgram(nullptr)
 	, m_FrameParamSet()
@@ -29,39 +29,39 @@ MDeferredGBufferWork::MDeferredGBufferWork()
 {
 }
 
-MDeferredGBufferWork::~MDeferredGBufferWork()
+MDeferredRenderWork::~MDeferredRenderWork()
 {
 }
 
-void MDeferredGBufferWork::Initialize(MIRenderProgram* pRenderProgram)
+void MDeferredRenderWork::Initialize(MIRenderProgram* pRenderProgram)
 {
 	m_pRenderProgram = pRenderProgram;
 
 	InitializeMesh();
 	InitializeMaterial();
-	InitializeRenderGraph();
 	InitializeShaderParamSet();
+	InitializeRenderGraph();
 }
 
-void MDeferredGBufferWork::Release()
+void MDeferredRenderWork::Release()
 {
-	ReleaseShaderParamSet();
 	ReleaseRenderGraph();
+	ReleaseShaderParamSet();
 	ReleaseMaterial();
 	ReleaseMesh();
 }
 
-void MDeferredGBufferWork::InitializeShaderParamSet()
+void MDeferredRenderWork::InitializeShaderParamSet()
 {
 	m_FrameParamSet.InitializeShaderParamSet(GetEngine());
 }
 
-void MDeferredGBufferWork::ReleaseShaderParamSet()
+void MDeferredRenderWork::ReleaseShaderParamSet()
 {
 	m_FrameParamSet.ReleaseShaderParamSet(GetEngine());
 }
 
-void MDeferredGBufferWork::InitializeRenderGraph()
+void MDeferredRenderWork::InitializeRenderGraph()
 {
 	MRenderGraph* pRenderGraph = m_pRenderProgram->GetRenderGraph();
 	if (!pRenderGraph)
@@ -73,7 +73,8 @@ void MDeferredGBufferWork::InitializeRenderGraph()
 	const std::vector<MString> aTextureName = {
 		"Base_Metallic",
 		"Albedo_AmbientOcc",
-		"Normal_Roughness"
+		"Normal_Roughness",
+		"Depth"
 	};
 
 	MRenderGraphNode* pGBufferNode = pRenderGraph->AddRenderGraphNode("GBuffer Node");
@@ -134,9 +135,25 @@ void MDeferredGBufferWork::InitializeRenderGraph()
 		pRenderGraph->SetFinalOutput(pLightningOutput);
 	}
 
-	pGBufferNode->BindUpdateFunction(std::bind(&MDeferredGBufferWork::RenderUpdate, this, std::placeholders::_1));
-	pGBufferNode->BindRenderFunction(std::bind(&MDeferredGBufferWork::Render, this, std::placeholders::_1));
-	pLightningNode->BindRenderFunction(std::bind(&MDeferredGBufferWork::Lightning, this, std::placeholders::_1));
+	MRenderGraphNode* pShadowMapNode = pRenderGraph->FindRenderGraphNode("Shadow Map Node");
+
+	if (MRenderGraphNodeOutput* pShadowMapOutput = pShadowMapNode->GetOutput(0))
+	{
+		pInputNode->LinkTo(pShadowMapOutput);
+
+		if (MShaderTextureParam* pShadowMapTextureParam = m_FrameParamSet.m_vTextures[0])
+		{
+			if (MRenderGraphTexture* pShadowMapTexture = pShadowMapOutput->GetRenderTexture())
+			{
+				pShadowMapTextureParam->pTexture = pShadowMapTexture->GetRenderTexture();
+				pShadowMapTextureParam->SetDirty();
+			}
+		}
+	}
+
+	pGBufferNode->BindUpdateFunction(std::bind(&MDeferredRenderWork::RenderUpdate, this, std::placeholders::_1));
+	pGBufferNode->BindRenderFunction(std::bind(&MDeferredRenderWork::Render, this, std::placeholders::_1));
+	pLightningNode->BindRenderFunction(std::bind(&MDeferredRenderWork::Lightning, this, std::placeholders::_1));
 
 
 
@@ -152,12 +169,12 @@ void MDeferredGBufferWork::InitializeRenderGraph()
 
 }
 
-void MDeferredGBufferWork::ReleaseRenderGraph()
+void MDeferredRenderWork::ReleaseRenderGraph()
 {
 
 }
 
-void MDeferredGBufferWork::InitializeMesh()
+void MDeferredRenderWork::InitializeMesh()
 {
 	MMeshResource* pScreenMeshRes = GetEngine()->GetResourceManager()->LoadVirtualResource<MMeshResource>(MGlobal::DEFAULT_MESH_SCREEN_DRAW);
 	pScreenMeshRes->AddRef();
@@ -165,13 +182,13 @@ void MDeferredGBufferWork::InitializeMesh()
 	m_pScreenDrawMesh = pScreenMeshRes->GetMesh();
 }
 
-void MDeferredGBufferWork::ReleaseMesh()
+void MDeferredRenderWork::ReleaseMesh()
 {
 	MMeshResource* pScreenMeshRes = GetEngine()->GetResourceManager()->LoadVirtualResource<MMeshResource>(MGlobal::DEFAULT_MESH_SCREEN_DRAW);
 	pScreenMeshRes->SubRef();
 }
 
-void MDeferredGBufferWork::InitializeMaterial()
+void MDeferredRenderWork::InitializeMaterial()
 {
 	m_pLightningMaterial = GetEngine()->GetResourceManager()->CreateResource<MMaterialResource>();
 	m_pLightningMaterial->AddRef();
@@ -180,36 +197,30 @@ void MDeferredGBufferWork::InitializeMaterial()
 	m_pLightningMaterial->LoadPixelShader("./Shader/model_deferred.mps");
 }
 
-void MDeferredGBufferWork::ReleaseMaterial()
+void MDeferredRenderWork::ReleaseMaterial()
 {
 	m_pLightningMaterial->SubRef();
 	m_pLightningMaterial = nullptr;
 }
 
-void MDeferredGBufferWork::OnDelete()
+void MDeferredRenderWork::OnDelete()
 {
 	Release();
 
 	Super::OnDelete();
 }
 
-void MDeferredGBufferWork::RenderUpdate(MRenderGraphNode* pGraphNode)
+void MDeferredRenderWork::RenderUpdate(MRenderGraphNode* pGraphNode)
 {
-	MDeferredRenderProgram* pRenderProgram = dynamic_cast<MDeferredRenderProgram*>(m_pRenderProgram);
-	if (!pRenderProgram)
-		return;
-	MRenderInfo& info = pRenderProgram->GetRenderInfo();
+	MRenderInfo& info = *m_pRenderProgram->GetRenderInfo();
 
 	m_FrameParamSet.UpdateShaderSharedParams(info);
 
 }
 
-void MDeferredGBufferWork::Render(MRenderGraphNode* pGraphNode)
+void MDeferredRenderWork::Render(MRenderGraphNode* pGraphNode)
 {
-	MDeferredRenderProgram* pRenderProgram = dynamic_cast<MDeferredRenderProgram*>(m_pRenderProgram);
-	if (!pRenderProgram)
-		return;
-	MRenderInfo& info = pRenderProgram->GetRenderInfo();
+	MRenderInfo& info = *m_pRenderProgram->GetRenderInfo();
 
 	info.pRenderer->BeginRenderPass(info.pPrimaryCommand, pGraphNode->GetRenderPass(), info.unFrameIndex);
 
@@ -222,12 +233,9 @@ void MDeferredGBufferWork::Render(MRenderGraphNode* pGraphNode)
 	info.pRenderer->EndRenderPass(info.pPrimaryCommand);
 }
 
-void MDeferredGBufferWork::Lightning(MRenderGraphNode* pGraphNode)
+void MDeferredRenderWork::Lightning(MRenderGraphNode* pGraphNode)
 {
-	MDeferredRenderProgram* pRenderProgram = dynamic_cast<MDeferredRenderProgram*>(m_pRenderProgram);
-	if (!pRenderProgram)
-		return;
-	MRenderInfo& info = pRenderProgram->GetRenderInfo();
+	MRenderInfo& info = *m_pRenderProgram->GetRenderInfo();
 
 	info.pRenderer->SetRenderToTextureBarrier(info.pPrimaryCommand, {
 		pGraphNode->GetInputTexture(0)->GetRenderTexture(),
@@ -252,7 +260,7 @@ void MDeferredGBufferWork::Lightning(MRenderGraphNode* pGraphNode)
 	info.pRenderer->EndRenderPass(info.pPrimaryCommand);
 }
 
-void MDeferredGBufferWork::DrawNormalMesh(MRenderInfo& info)
+void MDeferredRenderWork::DrawNormalMesh(MRenderInfo& info)
 {
 	for (MMaterialGroup& group : info.vMaterialRenderGroup)
 	{
@@ -270,7 +278,7 @@ void MDeferredGBufferWork::DrawNormalMesh(MRenderInfo& info)
 	}
 }
 
-void MDeferredGBufferWork::DrawMeshInstance(MRenderInfo& info, MIMeshInstance* pMeshInstance)
+void MDeferredRenderWork::DrawMeshInstance(MRenderInfo& info, MIMeshInstance* pMeshInstance)
 {
 	if (MSkeletonInstance* pSkeletonIns = pMeshInstance->GetSkeletonInstance())
 	{

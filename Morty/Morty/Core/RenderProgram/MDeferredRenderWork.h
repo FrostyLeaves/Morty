@@ -1,13 +1,13 @@
 /**
- * @File         MDeferredGBufferWork
+ * @File         MDeferredRenderWork
  * 
  * @Created      2021-03-22 16:44:50
  *
  * @Author       Pobrecito
 **/
 
-#ifndef _M_MDEFERREDGBUFFERWORK_H_
-#define _M_MDEFERREDGBUFFERWORK_H_
+#ifndef _M_MDEFERRED_RENDER_WORK_H_
+#define _M_MDEFERRED_RENDER_WORK_H_
 #include "MGlobal.h"
 #include "MObject.h"
 
@@ -20,12 +20,12 @@
 class MIMesh;
 class MMaterial;
 class MRenderGraphNode;
-class MORTY_API MDeferredGBufferWork : public MObject
+class MORTY_API MDeferredRenderWork : public MObject
 {
 public:
-	M_OBJECT(MDeferredGBufferWork);
-    MDeferredGBufferWork();
-    virtual ~MDeferredGBufferWork();
+	M_OBJECT(MDeferredRenderWork);
+    MDeferredRenderWork();
+    virtual ~MDeferredRenderWork();
 
 public:
 	void Initialize(MIRenderProgram* pRenderProgram);

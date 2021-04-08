@@ -15,6 +15,7 @@
 class MScene;
 class MViewport;
 class MIRenderer;
+class MRenderInfo;
 class MRenderGraph;
 class MIMeshInstance;
 class MRenderCommand;
@@ -37,6 +38,8 @@ public:
 
     virtual void Initialize() {}
     virtual void Release() {}
+
+	virtual MRenderInfo* GetRenderInfo() { return nullptr; }
 
 private:
 };

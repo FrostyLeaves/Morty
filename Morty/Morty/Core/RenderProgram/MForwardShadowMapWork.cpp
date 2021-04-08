@@ -93,10 +93,7 @@ void MForwardShadowMapWork::OnDelete()
 
 void MForwardShadowMapWork::Render(MRenderGraphNode* pGraphNode)
 {
-	MForwardRenderProgram* pRenderProgram = dynamic_cast<MForwardRenderProgram*>(m_pRenderProgram);
-	if (!pRenderProgram)
-		return;
-	MRenderInfo& info = pRenderProgram->GetRenderInfo();
+	MRenderInfo& info = *m_pRenderProgram->GetRenderInfo();
 
 	MRenderPass* pRenderPass = pGraphNode->GetRenderPass();
 	if (!pRenderPass)

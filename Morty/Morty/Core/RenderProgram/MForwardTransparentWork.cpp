@@ -67,10 +67,7 @@ void MForwardTransparentWork::Release()
 
 void MForwardTransparentWork::Render(MRenderGraphNode* pGraphNode)
 {
-	MForwardRenderProgram* pRenderProgram = dynamic_cast<MForwardRenderProgram*>(m_pRenderProgram);
-	if (!pRenderProgram)
-		return;
-	MRenderInfo& info = pRenderProgram->GetRenderInfo();
+	MRenderInfo& info = *m_pRenderProgram->GetRenderInfo();
 
 	if (!pGraphNode)
 		return;
@@ -103,10 +100,7 @@ void MForwardTransparentWork::Render(MRenderGraphNode* pGraphNode)
 
 void MForwardTransparentWork::RenderDepthPeel(MRenderGraphNode* pGraphNode)
 {
-	MForwardRenderProgram* pRenderProgram = dynamic_cast<MForwardRenderProgram*>(m_pRenderProgram);
-	if (!pRenderProgram)
-		return;
-	MRenderInfo& info = pRenderProgram->GetRenderInfo();
+	MRenderInfo& info = *m_pRenderProgram->GetRenderInfo();
 
 	if (nullptr == info.pViewport)
 		return;
