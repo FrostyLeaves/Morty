@@ -165,7 +165,7 @@ float3 AdditionAllLights(VS_OUT input, float3 f3Color)
     float3 f3BaseColor = f3Base_fMetal.rgb;
     float3 f3Albedo   = pow(f3Albedo_fAmbientOcc.rgb, float3(2.2));
     float3 f3Normal = f3Normal_fRoughness.rgb;
-    f3Normal = f3Normal * 2.0 - 1.0;
+    f3Normal = normalize(f3Normal * 2.0 - 1.0);
 
     float fMetallic   = f3Base_fMetal.a;
     float fAmbientOcc = f3Albedo_fAmbientOcc.a;
@@ -226,6 +226,15 @@ float3 AdditionAllLights(VS_OUT input, float3 f3Color)
                                     fMetallic
                                 );
     }
+
+    float3 f3Ambient = float3(0.1) * f3Albedo * fAmbientOcc;
+    
+    f3Color = f3Color + f3Ambient;
+
+    // HDR tonemapping
+    f3Color = f3Color / (f3Color + float3(1.0));
+    // gamma correct
+    f3Color = pow(f3Color, float3(1.0/2.2)); 
 
     return f3Color;
 }
