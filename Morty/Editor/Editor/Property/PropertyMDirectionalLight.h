@@ -17,6 +17,7 @@ public:
 			{
 				PROPERTY_VALUE_EDIT(pNode, "Diffuse", MColor, GetDiffuseColor, SetDiffuseColor);
 				PROPERTY_VALUE_EDIT(pNode, "Specular", MColor, GetSpecularColor, SetSpecularColor);
+				PROPERTY_VALUE_EDIT(pNode, "Intensity", float, GetLightIntensity, SetLightIntensity);
 
 				ShowNodeEnd();
 			}

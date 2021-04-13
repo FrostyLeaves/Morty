@@ -84,20 +84,21 @@ int main(int argc, char* argv[])
 	MEngine engine;
 	engine.Initialize("../../Resource");
 
-	std::ifstream ifs("./Model/output/bullet/bullet.mnode", std::ios::binary);
-	if (!ifs.good())
-	{
-		{
-			MModelConverter conver(&engine);
-			conver.Convert("Model/pbr/bullet/bullet.fbx", "./Model/output", "bullet");
-		}
-	}
-	ifs.close();
+// 	std::ifstream ifs("./Model/output/Sphere/Sphere.mnode", std::ios::binary);
+// 	if (!ifs.good())
+// 	{
+// 		{
+// 			MModelConverter conver(&engine);
+// 			conver.Convert("Model/Sphere.fbx", "./Model/output", "Sphere");
+// 		}
+// 	}
+// 	ifs.close();
 
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
 	pRootNode->SetName("RootNode");
 
-    MResource* pNodeResourceBase = engine.GetResourceManager()->LoadResource("./Model/output/bullet/bullet.mnode");
+	MResource* pNodeResourceBase = engine.GetResourceManager()->LoadResource("./Model/output/bullet/bullet.mnode");
+//    MResource* pNodeResourceBase = engine.GetResourceManager()->LoadResource("./Model/pbr/rustediron2/Sphere.mnode");
     if (MNodeResource* pNodeResource = pNodeResourceBase ? pNodeResourceBase->DynamicCast<MNodeResource>() : nullptr)
     {
         MNode* pEditorNode = pNodeResource->CreateNode();

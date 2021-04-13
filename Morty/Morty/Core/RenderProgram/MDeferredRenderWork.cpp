@@ -91,7 +91,7 @@ void MDeferredRenderWork::InitializeRenderGraph()
 			pOutputTargetTexture->SetUsage(METextureUsage::ERenderBack);
 			pOutputTargetTexture->SetLayout(METextureLayout::ERGBA8);
 			pOutputTargetTexture->SetSizePolicy(MRenderGraphTexture::ESizePolicy::ERelative);
-			pOutputTargetTexture->SetSize(Vector2(1.0f, 1.0f));
+			pOutputTargetTexture->SetSize(Vector2(2.0f, 2.0f));
 		}
 
 		MRenderGraphNodeOutput* pOutputTarget = pGBufferNode->AppendOutput();
@@ -110,7 +110,7 @@ void MDeferredRenderWork::InitializeRenderGraph()
 		pOutputDepthTexture->SetUsage(METextureUsage::ERenderDepth);
 		pOutputDepthTexture->SetLayout(METextureLayout::EDepth);
 		pOutputDepthTexture->SetSizePolicy(MRenderGraphTexture::ESizePolicy::ERelative);
-		pOutputDepthTexture->SetSize(Vector2(1.0f, 1.0f));
+		pOutputDepthTexture->SetSize(Vector2(2.0f, 2.0f));
 	}
 
 	MRenderGraphNodeOutput* pOutputDepth = pGBufferNode->AppendOutput();
@@ -224,9 +224,14 @@ void MDeferredRenderWork::Render(MRenderGraphNode* pGraphNode)
 
 	info.pRenderer->BeginRenderPass(info.pPrimaryCommand, pGraphNode->GetRenderPass(), info.unFrameIndex);
 
-	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
-	info.pRenderer->SetViewport(info.pPrimaryCommand, MViewportInfo(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight()));
-	info.pRenderer->SetScissor(info.pPrimaryCommand, MScissorInfo(0.0f, 0.0f, info.pViewport->GetWidth(), info.pViewport->GetHeight()));
+	MRenderGraphNodeOutput* pOutput = pGraphNode->GetOutput(0);
+	if (!pOutput)
+		return;
+
+	Vector2 v2Size = pOutput->GetRenderTexture()->GetOutputSize();
+
+	info.pRenderer->SetViewport(info.pPrimaryCommand, MViewportInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
+	info.pRenderer->SetScissor(info.pPrimaryCommand, MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
 
 	DrawNormalMesh(info);
 
@@ -237,6 +242,10 @@ void MDeferredRenderWork::Lightning(MRenderGraphNode* pGraphNode)
 {
 	MRenderInfo& info = *m_pRenderProgram->GetRenderInfo();
 
+	MRenderGraphNodeOutput* pOutput = pGraphNode->GetOutput(0);
+	if (!pOutput)
+		return;
+
 	info.pRenderer->SetRenderToTextureBarrier(info.pPrimaryCommand, {
 		pGraphNode->GetInputTexture(0)->GetRenderTexture(),
 		pGraphNode->GetInputTexture(1)->GetRenderTexture(),
@@ -246,9 +255,10 @@ void MDeferredRenderWork::Lightning(MRenderGraphNode* pGraphNode)
 
 	info.pRenderer->BeginRenderPass(info.pPrimaryCommand, pGraphNode->GetRenderPass(), info.unFrameIndex);
 
-	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
-	info.pRenderer->SetViewport(info.pPrimaryCommand, MViewportInfo(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight()));
-	info.pRenderer->SetScissor(info.pPrimaryCommand, MScissorInfo(0.0f, 0.0f, info.pViewport->GetWidth(), info.pViewport->GetHeight()));
+	Vector2 v2Size = pOutput->GetRenderTexture()->GetOutputSize();
+
+	info.pRenderer->SetViewport(info.pPrimaryCommand, MViewportInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
+	info.pRenderer->SetScissor(info.pPrimaryCommand, MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
 
 
 	if (info.pRenderer->SetUseMaterial(info.pPrimaryCommand, m_pLightningMaterial))

@@ -141,6 +141,7 @@ float3 CalcDirectionLight(DirectionLight dirLight, float4 f4DirLightSpacePos, fl
 float3 GetWorldPosition(VS_OUT input)
 {
     float2 pos = input.uv * 2.0 - 1.0;
+    pos.y = 1.0 - pos.y;
 
     float4 f4DepthColor = U_mat_fDepth.Sample(U_defaultSampler, input.uv);
 
@@ -172,6 +173,8 @@ float3 AdditionAllLights(VS_OUT input, float3 f3Color)
     float fRoughness = f3Normal_fRoughness.a;
 
     float3 f3WorldPosition = GetWorldPosition(input);
+
+
 
     float3 f3CameraDir = normalize(U_f3CameraPosition - f3WorldPosition);
 

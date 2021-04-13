@@ -1,1 +1,3 @@
-{"VS":"./Shader/model.mvs","PS":"./Shader/model.mps","RasterizerType":2,"MaterialType":0,"macro":{"mat":[],"morty":[]},"textures":{"U_mat_texDiffuse":"DefTexWhite","U_mat_texNormal":"DefTexNormalMap","U_mat_texSpecular":null,"U_mat_texTransparent":null,"U_mat_texEmissive":null},"params":{"cbMaterial":{"U_mat":{"f3Ambient":{"<T>":5,"x":0.0,"y":0.0,"z":0.0},"fAlphaFactor":1.0,"f3Diffuse":{"<T>":5,"x":0.4000000059604645,"y":0.4000000059604645,"z":0.4000000059604645},"bUseNormalTex":false,"f3Specular":{"<T>":5,"x":0.5,"y":0.5,"z":0.5},"fShininess":6.311790943145752,"bUseSpecularTex":0,"bUseTransparentTex":0,"bUseEmissiveTex":0}}}}
+version https://git-lfs.github.com/spec/v1
+oid sha256:e8de977747ad030df6598a5a7a01f2486f639bac94a302647f25d88dccdec928
+size 634

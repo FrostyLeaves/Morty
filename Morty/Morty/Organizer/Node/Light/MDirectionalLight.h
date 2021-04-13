@@ -34,16 +34,22 @@ public:
 	}
 
 	void SetDiffuseColor(const MColor& color) { m_f3Diffuse = color; }
-	MColor GetDiffuseColor() { return m_f3Diffuse; }
+	MColor GetDiffuseColor() const { return m_f3Diffuse; }
 
+	// For Phong Lightning
 	void SetSpecularColor(const MColor& color) { m_f3Specular = color; }
-	MColor GetSpecularColor() { return m_f3Specular; }
+	MColor GetSpecularColor() const { return m_f3Specular; }
+
+	// For PBR Lightning
+	void SetLightIntensity(const float& fIntensity) { m_fIntensity = fIntensity; }
+	float GetLightIntensity() const { return m_fIntensity; }
 
 private:
 
 	Vector3 m_v3Direction;
 	MColor m_f3Diffuse;
 	MColor m_f3Specular;
+	float m_fIntensity;
 
 };
 

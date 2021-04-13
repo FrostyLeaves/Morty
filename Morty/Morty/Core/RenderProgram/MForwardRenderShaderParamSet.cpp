@@ -179,7 +179,7 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 			{
 				MStruct& cLightStruct = *varDirectionLight.GetStruct();
 				{
-					cLightStruct[0] = info.pDirectionalLight->GetDiffuseColor().ToVector3();
+					cLightStruct[0] = info.pDirectionalLight->GetDiffuseColor().ToVector3() * info.pDirectionalLight->GetLightIntensity();
 					cLightStruct[1] = info.pDirectionalLight->GetSpecularColor().ToVector3();
 				}
 			}

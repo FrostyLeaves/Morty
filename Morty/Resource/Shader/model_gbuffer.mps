@@ -15,7 +15,6 @@ struct VS_OUT
 struct Material
 {
     float fAlphaFactor;
-    float bUseNormalTex;
 };
 
 //PS
@@ -42,27 +41,18 @@ struct PS_OUT
 float3 GetNormal(VS_OUT input)
 {
     float3 f3Normal = float3(0.0f, 0.0f, -1.0f);
-    if (U_mat.bUseNormalTex > 0)
-    {
-        f3Normal = U_mat_texNormal.Sample(U_defaultSampler, input.uv).xyz;
-        
-        //使用法线贴图，法向量在view space，CameraDir也在view space
-        float3 T = normalize(input.tangent);
-        float3 B = normalize(input.bitangent);
-        float3 N = normalize(input.normal);
-        float3x3 TBN = float3x3(T,B,N);
 
-        f3Normal = mul(f3Normal, TBN);
-        f3Normal = normalize(f3Normal);
-        f3Normal = (f3Normal + 1.0f) * 0.5f;
-    }
-    else
-    {
-        //没用法线贴图，法向量在view space，CameraDir也在view space
-        f3Normal = input.normal;
-        f3Normal = normalize(f3Normal);
-        f3Normal = (f3Normal + 1.0f) * 0.5f;
-    }
+    f3Normal = U_mat_texNormal.Sample(U_defaultSampler, input.uv).xyz;
+    
+    //使用法线贴图，法向量在view space，CameraDir也在view space
+    float3 T = normalize(input.tangent);
+    float3 B = normalize(input.bitangent);
+    float3 N = normalize(input.normal);
+    float3x3 TBN = float3x3(T,B,N);
+
+    f3Normal = mul(f3Normal, TBN);
+    f3Normal = normalize(f3Normal);
+    f3Normal = (f3Normal + 1.0f) * 0.5f;
 
     return f3Normal;
 }
