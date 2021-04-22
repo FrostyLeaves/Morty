@@ -7,7 +7,7 @@
 
 MShader::MShader()
 	: m_pShaderBuffer(nullptr)
-	, m_eShaderType(None)
+	, m_eShaderType(MEShaderType::ENone)
 {
 }
 

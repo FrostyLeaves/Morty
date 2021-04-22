@@ -30,14 +30,29 @@ class MSkeleton;
 class MMeshResource;
 class MModelInstance;
 class MSkeletalAnimation;
+
+enum class MModelConvertMaterialType
+{
+	E_Default_Forward = 0,
+	E_PBR_Deferred
+};
+
+struct MORTY_API MModelConvertInfo
+{
+	MString strResourcePath;
+	MString strOutputDir;
+	MString strOutputName;
+	
+	MModelConvertMaterialType eMaterialType;
+};
+
 class MORTY_API MModelConverter
 {
 public:
 	MModelConverter(MEngine* pEngine);
     virtual ~MModelConverter();
 
-	bool Convert(const MString& strResourcePath, const MString& strOutputDir, const MString& strOutputName);
-
+	bool Convert(const MModelConvertInfo& convertInfo);
 
 protected:
 

@@ -53,7 +53,7 @@ public:
 public:
 
 	virtual void WaitImageReady() {}
-	virtual void Present() {}
+	virtual void Present(MRenderCommand* pPrimaryCommand) {}
 	virtual void OnRender(MIRenderer* pRenderer) { if(m_funcRenderFunction) m_funcRenderFunction(pRenderer); }
 	std::function<void(MIRenderer*)> m_funcRenderFunction;
 

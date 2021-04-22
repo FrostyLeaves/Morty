@@ -371,7 +371,7 @@ bool MMaterial::LoadVertexShader(MResource* pResource)
 {
 	if (MShaderResource* pShaderResource = dynamic_cast<MShaderResource*>(pResource))
 	{
-		if (MShader::MEShaderType::Vertex == pShaderResource->GetShaderType())
+		if (MEShaderType::EVertex == pShaderResource->GetShaderType())
 		{
 			auto LoadFunc = [this](const uint32_t& eReloadType) {
 				MShaderResource* pShaderResource = m_VertexResource.GetResource()->DynamicCast<MShaderResource>();
@@ -417,7 +417,7 @@ bool MMaterial::LoadPixelShader(MResource* pResource)
 {
 	if (MShaderResource* pShaderResource = dynamic_cast<MShaderResource*>(pResource))
 	{
-		if (MShader::MEShaderType::Pixel == pShaderResource->GetShaderType())
+		if (MEShaderType::EPixel == pShaderResource->GetShaderType())
 		{
 			auto LoadFunc = [this](const uint32_t& eReloadType) {
 				MShaderResource* pShaderResource = m_PixelResource.GetResource()->DynamicCast<MShaderResource>();

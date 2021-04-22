@@ -1166,7 +1166,7 @@ bool MVulkanDevice::CheckDeviceExtensionSupport(VkPhysicalDevice device)
 	return requiredExtensions.empty();
 }
 
-bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const uint32_t& eShaderType, const MShaderMacro& macro)
+bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro)
 {
 	if (*ppShaderBuffer)
 	{
@@ -1192,21 +1192,21 @@ bool MVulkanDevice::CompileShader(MShaderBuffer** ppShaderBuffer, const MString&
 
 	VkPipelineShaderStageCreateInfo shaderStageInfo{};
 	shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	shaderStageInfo.stage = eShaderType == MShader::MEShaderType::Vertex ? VK_SHADER_STAGE_VERTEX_BIT : VK_SHADER_STAGE_FRAGMENT_BIT;
+	shaderStageInfo.stage = eShaderType == MEShaderType::EVertex ? VK_SHADER_STAGE_VERTEX_BIT : VK_SHADER_STAGE_FRAGMENT_BIT;
 	shaderStageInfo.module = shaderModule;
-	shaderStageInfo.pName = eShaderType == MShader::MEShaderType::Vertex ? "VS" : "PS";
+	shaderStageInfo.pName = eShaderType == MEShaderType::EVertex ? "VS" : "PS";
 	
 
 	shaderStageInfo.pSpecializationInfo = nullptr;
 
 	MShaderBuffer* pBuffer = nullptr;
-	if (MShader::MEShaderType::Vertex == eShaderType)
+	if (MEShaderType::EVertex == eShaderType)
 	{
 		MVertexShaderBuffer* pVertexBuffer = new MVertexShaderBuffer();
 		m_ShaderCompiler.GetVertexInputState(compiler, pVertexBuffer);
 		pBuffer = pVertexBuffer;
 	}
-	else if (MShader::MEShaderType::Pixel == eShaderType)
+	else if (MEShaderType::EPixel == eShaderType)
 	{
 		MPixelShaderBuffer* pPixelBuffer = new MPixelShaderBuffer();
 		pBuffer = pPixelBuffer;

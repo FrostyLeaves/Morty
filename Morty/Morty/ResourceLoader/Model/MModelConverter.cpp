@@ -86,26 +86,25 @@ MModelConverter::~MModelConverter()
 
 	m_vSkeletalAnimation.clear();
 }
-
-bool MModelConverter::Convert(const MString& strResourcePath, const MString& strOutputDir, const MString& strOutputName)
+bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 {
-	m_strResourcePath = strResourcePath;
+	m_strResourcePath = convertInfo.strResourcePath;
 
 	auto time = MTimer::GetCurTime();
-	if (!Load(strResourcePath))
+	if (!Load(convertInfo.strResourcePath))
 		return false;
 
 	time = MTimer::GetCurTime() - time;
 
 	MLogManager::GetInstance()->Log("Load Model Time: %lld", time);
 
-	MString strPath = strOutputDir + "/" + strOutputName + "/";
+	MString strPath = convertInfo.strOutputDir + "/" + convertInfo.strOutputName + "/";
 
-	MFileHelper::MakeDir(strOutputDir + "/" + strOutputName);
+	MFileHelper::MakeDir(convertInfo.strOutputDir + "/" + convertInfo.strOutputName);
 
 	if (m_pSkeleton)
 	{
-		m_pEngine->GetResourceManager()->MoveTo(m_pSkeleton, strPath + strOutputName + "." + MGlobal::SUFFIX_SKELETON);
+		m_pEngine->GetResourceManager()->MoveTo(m_pSkeleton, strPath + convertInfo.strOutputName + "." + MGlobal::SUFFIX_SKELETON);
 		m_pSkeleton->Save();
 	}
 
@@ -141,7 +140,7 @@ bool MModelConverter::Convert(const MString& strResourcePath, const MString& str
 	MNodeResource* pNodeResource = m_pEngine->GetResourceManager()->CreateResource<MNodeResource>();
 	pNodeResource->AddRef();
 
-	m_pEngine->GetResourceManager()->MoveTo(pNodeResource, strPath + strOutputName + "." + MGlobal::SUFFIX_NODE);
+	m_pEngine->GetResourceManager()->MoveTo(pNodeResource, strPath + convertInfo.strOutputName + "." + MGlobal::SUFFIX_NODE);
 	pNodeResource->SaveByNode(m_pModelInstance);
 
 	pNodeResource->SubRef();

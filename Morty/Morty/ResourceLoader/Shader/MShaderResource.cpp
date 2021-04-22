@@ -9,7 +9,7 @@ M_RESOURCE_IMPLEMENT(MShaderResource, MResource)
 
 MShaderResource::MShaderResource()
 	: MResource()
-	, m_eShaderType(MShader::MEShaderType::None)
+	, m_eShaderType(MEShaderType::ENone)
 	, m_strShaderPath()
 {
 	m_eResourceType = MEResourceType::Shader;
@@ -59,7 +59,7 @@ void MShaderResource::OnDelete()
 
 bool MShaderResource::Load(const MString& strResourcePath)
 {
-	m_eShaderType = MResource::GetSuffix(strResourcePath) == MGlobal::SUFFIX_VERTEX_SHADER ? MShader::MEShaderType::Vertex : MShader::MEShaderType::Pixel;
+	m_eShaderType = MResource::GetSuffix(strResourcePath) == MGlobal::SUFFIX_VERTEX_SHADER ? MEShaderType::EVertex : MEShaderType::EPixel;
 	m_strShaderPath = strResourcePath;
 	for (MShader* pShader : m_vShaders)
 	{

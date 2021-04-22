@@ -13,19 +13,12 @@
 #include "MVertex.h"
 #include "MVariant.h"
 #include "MShaderMacro.h"
+#include "MRenderStructure.h"
 
 class MIDevice;
 class MShaderBuffer;
 class MORTY_API MShader
 {
-public:
-	enum MEShaderType
-	{
-		None = 0,
-		Vertex = 1,
-		Pixel = 2
-	};
-		
 public:
     MShader();
     virtual ~MShader();
@@ -33,6 +26,7 @@ public:
 	bool CompileShader(MIDevice* pDevice);
 	void CleanShader(MIDevice* pDevice);
 	MShaderBuffer* GetBuffer() { return m_pShaderBuffer; }
+
 	const MEShaderType GetType() const { return m_eShaderType; }
 
 private:

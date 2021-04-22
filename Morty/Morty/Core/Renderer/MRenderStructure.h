@@ -30,6 +30,13 @@ class MRenderPass;
 class MTextureCube;
 struct MMaterialPipelineLayoutData;
 
+enum class MEShaderType
+{
+	ENone = 0,
+	EVertex = 1,
+	EPixel = 2
+};
+
 enum class METextureLayout
 {
 	ERGBA8 = 0,

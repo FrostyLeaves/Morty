@@ -667,8 +667,8 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 	ID3D10Blob* pErrorMessage = nullptr;
 	ID3D10Blob* pShaderBuffer = nullptr;
 
-	const char* svFuncName = eShaderType == MShader::MEShaderType::Vertex ? "VS" : "PS";
-	const char* svProFile = eShaderType == MShader::MEShaderType::Vertex ? "vs_5_0" : "ps_5_0";
+	const char* svFuncName = eShaderType == MEShaderType::Vertex ? "VS" : "PS";
+	const char* svProFile = eShaderType == MEShaderType::Vertex ? "vs_5_0" : "ps_5_0";
 
 	uint32_t unGlobalMacroSize = shaderMacro.s_vGlobalMacroParams.size();
 	uint32_t unMortyShaderMacroSize = shaderMacro.m_vMortyMacroParams.size();
@@ -712,7 +712,7 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 		return false;
 	}
 
-	if (eShaderType == MShader::MEShaderType::Vertex)
+	if (eShaderType == MEShaderType::Vertex)
 	{
 		ID3D11VertexShader* pVertexShader = nullptr;
 		hr = m_pD3dDevice->CreateVertexShader(pShaderBuffer->GetBufferPointer(), pShaderBuffer->GetBufferSize(), nullptr, &pVertexShader);
@@ -752,7 +752,7 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 		pReflector->GetDesc(&shaderDesc);
 
 
-		if (eShaderType == MShader::MEShaderType::Vertex)
+		if (eShaderType == MEShaderType::Vertex)
 		{
 			uint32_t unByteOffset = 0;
 			D3D11_INPUT_ELEMENT_DESC* inputDesc = new D3D11_INPUT_ELEMENT_DESC[shaderDesc.InputParameters];
@@ -835,7 +835,7 @@ bool MDirectX11Device::CompileShader(MShaderBuffer** ppShaderBuffer, const MStri
 			if (D3D_SHADER_INPUT_TYPE::D3D_SIT_CBUFFER == bindDesc.Type)
 			{
 				MShaderParam* pParam = new MShaderParam();
-				pParam->eType = MShader::MEShaderType::Vertex == eShaderType ? MEShaderParamType::EVertex : MEShaderParamType::EPixel;
+				pParam->eType = MEShaderType::Vertex == eShaderType ? MEShaderParamType::EVertex : MEShaderParamType::EPixel;
 				pParam->strName = bindDesc.Name;
 				pParam->unBindPoint = bindDesc.BindPoint;
 				pParam->unBindCount = bindDesc.BindCount;

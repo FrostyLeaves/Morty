@@ -84,12 +84,12 @@ int main(int argc, char* argv[])
 	MEngine engine;
 	engine.Initialize("../../Resource");
 
-// 	std::ifstream ifs("./Model/output/Sphere/Sphere.mnode", std::ios::binary);
+// 	std::ifstream ifs("Model/pbr/1793_Bermuda_Penny/1793BerP.obj", std::ios::binary);
 // 	if (!ifs.good())
 // 	{
 // 		{
 // 			MModelConverter conver(&engine);
-// 			conver.Convert("Model/Sphere.fbx", "./Model/output", "Sphere");
+// 			conver.Convert("Model/pbr/1793_Bermuda_Penny/1793BerP.obj", "./Model/output", "BerP");
 // 		}
 // 	}
 // 	ifs.close();
@@ -97,7 +97,8 @@ int main(int argc, char* argv[])
 	M3DNode* pRootNode = engine.GetObjectManager()->CreateObject<M3DNode>();
 	pRootNode->SetName("RootNode");
 
-	MResource* pNodeResourceBase = engine.GetResourceManager()->LoadResource("./Model/output/bullet/bullet.mnode");
+	MResource* pNodeResourceBase = engine.GetResourceManager()->LoadResource("./Model/output/BerP/BerP.mnode");
+//	MResource* pNodeResourceBase = engine.GetResourceManager()->LoadResource("./Model/output/bullet/bullet.mnode");
 //    MResource* pNodeResourceBase = engine.GetResourceManager()->LoadResource("./Model/pbr/rustediron2/Sphere.mnode");
     if (MNodeResource* pNodeResource = pNodeResourceBase ? pNodeResourceBase->DynamicCast<MNodeResource>() : nullptr)
     {

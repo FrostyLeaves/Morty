@@ -200,7 +200,7 @@ bool MVulkanShaderCompiler::Initialize()
 	return true;
 }
 
-bool MVulkanShaderCompiler::CompileShader(const MString& strShaderPath, const uint32_t& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv)
+bool MVulkanShaderCompiler::CompileShader(const MString& strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv)
 {
 	glslang::TProgram program;
 

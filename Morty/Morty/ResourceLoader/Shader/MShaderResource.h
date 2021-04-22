@@ -28,7 +28,7 @@ public:
     MShader* GetShaderByIndex(const int& nIndex);
     int FindShaderByMacroParam(const MShaderMacro& macro);
 
-    MShader::MEShaderType GetShaderType() { return m_eShaderType; }
+    MEShaderType GetShaderType() { return m_eShaderType; }
 
 public:
 
@@ -40,7 +40,7 @@ protected:
 
 private:
 
-    MShader::MEShaderType m_eShaderType;
+    MEShaderType m_eShaderType;
     MString m_strShaderPath;
 
     std::vector<MShader*> m_vShaders;

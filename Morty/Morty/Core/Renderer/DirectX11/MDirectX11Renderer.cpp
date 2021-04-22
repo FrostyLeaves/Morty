@@ -549,9 +549,9 @@ void MDirectX11Renderer::SetShaderParam(MShaderParam& param)
 	if (param.bDirty)
 		UpdateShaderParam(param);
 
-	if(param.eType & MShader::MEShaderType::Vertex)
+	if(param.eType & MEShaderType::Vertex)
 		m_pDevice->m_pD3dContext->VSSetConstantBuffers(param.unBindPoint, param.unBindCount, &param.pBuffer);
-	if(param.eType & MShader::MEShaderType::Pixel)
+	if(param.eType & MEShaderType::Pixel)
 		m_pDevice->m_pD3dContext->PSSetConstantBuffers(param.unBindPoint, param.unBindCount, &param.pBuffer);
 }
 

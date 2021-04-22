@@ -616,8 +616,8 @@ void MainEditor::Render()
 
 
 	pVkRenderer->RenderCommandEnd(pRenderCommand);
+
+
 	pVkRenderer->SubmitRenderCommand(pRenderCommand, pRenderTarget);
-	
-    
-	GetRenderTarget()->Present();
+	GetRenderTarget()->Present(pRenderCommand);
 }

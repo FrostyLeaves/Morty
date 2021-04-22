@@ -50,7 +50,7 @@ public:
 	virtual bool GenerateRenderTextureBuffer(MRenderTextureBuffer* ppTextureBuffer, MIRenderTexture* pTexture) override;
 	virtual void DestroyRenderTextureBuffer(MRenderTextureBuffer* ppTextureBuffer) override;
 
-	virtual bool CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const uint32_t& eShaderType, const MShaderMacro& macro) override;
+	virtual bool CompileShader(MShaderBuffer** ppShaderBuffer, const MString& strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro) override;
 	virtual void CleanShader(MShaderBuffer** ppShaderBuffer) override;
 
 	virtual bool GenerateShaderParamSet(MShaderParamSet* pParamSet) override;

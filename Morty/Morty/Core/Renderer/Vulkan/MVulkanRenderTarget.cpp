@@ -54,16 +54,19 @@ void MVulkanRenderTarget::WaitImageReady()
 	vkAcquireNextImageKHR(pDevice->m_VkDevice, m_VkSwapchain, UINT64_MAX, m_VkImageAvailableSemaphore, VK_NULL_HANDLE, &m_unFrameBufferIndex);
 }
 
-void MVulkanRenderTarget::Present()
+void MVulkanRenderTarget::Present(MRenderCommand* pPrimaryCommand)
 {
+	if (!pPrimaryCommand)
+		return;
+
 	VkPresentInfoKHR presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
 	std::vector<VkSemaphore> vSignalSemaphores;
 
-	if (m_aPrimaryCommands[m_unFrameBufferIndex])
+	if (pPrimaryCommand)
 	{
-		vSignalSemaphores.push_back(m_aPrimaryCommands[GetEngine()->GetFrameIdx()]->m_VkRenderFinishedSemaphore);
+		vSignalSemaphores.push_back(pPrimaryCommand->m_VkRenderFinishedSemaphore);
 	}
 
 	presentInfo.waitSemaphoreCount = vSignalSemaphores.size();

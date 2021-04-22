@@ -28,7 +28,7 @@ public:
 public:
 	virtual void OnRender(MIRenderer* pRenderer) override;
 	virtual void WaitImageReady() override;
-	virtual void Present() override;
+	virtual void Present(MRenderCommand* pPrimaryCommand) override;
 
 	virtual void OnCreated() override;
 	virtual void OnDelete() override;

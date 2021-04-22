@@ -16,6 +16,8 @@
 #include "spirv_cross.hpp"
 #include "spirv_parser.hpp"
 
+#include "MRenderStructure.h"
+
 class MShaderBuffer;
 class MVulkanDevice;
 class MVertexShaderBuffer;
@@ -49,7 +51,7 @@ public:
 
     bool Initialize();
 
-    bool CompileShader(const MString& strShaderPath, const uint32_t& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv);
+    bool CompileShader(const MString& strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv);
 
 	void GetVertexInputState(const spirv_cross::Compiler& compiler, MVertexShaderBuffer* pShaderBuffer);
 
