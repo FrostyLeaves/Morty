@@ -14,6 +14,7 @@
 
 class MIMesh;
 class MMaterial;
+class MIRenderable;
 class MModelInstance;
 class MShaderParamSet;
 class MModelMeshStruct;
@@ -21,14 +22,6 @@ class MSkeletonInstance;
 struct MShaderConstantParam;
 class MORTY_API MIMeshInstance : public M3DNode
 {
-public:
-	enum MERenderOrderType
-	{
-		EAutoOrder = 0,
-		EOrderByTransparent = 1,
-		EOrderByMaterial = 2,
-	};
-
 public:
 	M_I_OBJECT(MIMeshInstance);
     MIMeshInstance();
@@ -39,7 +32,6 @@ public:
 	void SetMaterial(MMaterial* pMaterial);
 	MMaterial* GetMaterial();
 
-
 	MShaderParamSet* GetShaderMeshParamSet();
 	void UpdateShaderMeshParam();
 
@@ -49,7 +41,6 @@ public:
 public:
 
 	virtual MIMesh* GetMesh() = 0;
-	virtual MIMesh* GetMesh(const uint32_t& unDetailLevel) = 0;
 
 	virtual MBoundsAABB* GetBoundsAABB() = 0;
 	virtual MBoundsSphere* GetBoundsSphere() = 0;
@@ -69,6 +60,8 @@ protected:
 	void BindShaderParam(MMaterial* pMaterial);
 
 protected:
+
+	MIRenderable* m_pRenderabel;
 
 	MResourceKeeper m_Material;
 	bool m_bTransformParamDirty;

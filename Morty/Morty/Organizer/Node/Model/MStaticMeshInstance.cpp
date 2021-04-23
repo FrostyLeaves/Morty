@@ -89,14 +89,12 @@ void MStaticMeshInstance::SetMeshResourcePath(const MString& strResourcePath)
 	Load(pResource);
 }
 
-MIMesh* MStaticMeshInstance::GetMesh(const uint32_t& unDetailLevel)
+MIMesh* MStaticMeshInstance::GetMesh()
 {
 	if (!m_pMesh)
 		return nullptr;
 
-	if (unDetailLevel == MGlobal::MMESH_LOD_LEVEL_RANGE)
-		return m_pMesh->GetMesh();
-	else return m_pMesh->GetLevelMesh(unDetailLevel);
+	return m_pMesh->GetLevelMesh(GetDetailLevel());
 }
 
 MSkeletonInstance* MStaticMeshInstance::GetSkeletonInstance()
