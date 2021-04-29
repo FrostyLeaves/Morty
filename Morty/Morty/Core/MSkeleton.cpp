@@ -29,31 +29,31 @@ void MBone::WriteToStruct(MStruct& srt)
 	srt.AppendMVariant("Children", vChildren);
 }
 
-void MBone::ReadFromStruct(MStruct& srt)
+void MBone::ReadFromStruct(const MStruct& srt)
 {
-	if (MString* pName = srt.FindMember<MString>("Name"))
+	if (const MString* pName = srt.FindMember<MString>("Name"))
 		strName = *pName;
 
-	if (int* pIndex = srt.FindMember<int>("Index"))
+	if (const int* pIndex = srt.FindMember<int>("Index"))
 		unIndex = *pIndex;
 
-	if (int* pParentIndex = srt.FindMember<int>("ParentIndex"))
+	if (const int* pParentIndex = srt.FindMember<int>("ParentIndex"))
 		unParentIndex = *pParentIndex;
 
-	if (Matrix4* pMatTrans = srt.FindMember<Matrix4>("matTrans"))
+	if (const Matrix4* pMatTrans = srt.FindMember<Matrix4>("matTrans"))
 		m_matTransform = *pMatTrans;
 
-	if (Matrix4* pMatOffset = srt.FindMember<Matrix4>("matOffset"))
+	if (const Matrix4* pMatOffset = srt.FindMember<Matrix4>("matOffset"))
 		m_matOffsetMatrix = *pMatOffset;
 
-	if (MVariantArray* pChildren = srt.FindMember<MVariantArray>("Children"))
+	if (const MVariantArray* pChildren = srt.FindMember<MVariantArray>("Children"))
 	{
 		uint32_t unChildrenCount = pChildren->GetMemberCount();
 		vChildrenIndices.resize(unChildrenCount);
 
 		for (uint32_t cldIdx = 0; cldIdx < unChildrenCount; ++cldIdx)
 		{
-			if (int* pIndex = pChildren->GetMember<int>(cldIdx))
+			if (const int* pIndex = pChildren->GetMember<int>(cldIdx))
 				vChildrenIndices[cldIdx] = *pIndex;
 		}
 	}
@@ -305,11 +305,11 @@ void MSkeleton::WriteToStruct(MStruct& srt)
 	}
 }
 
-void MSkeleton::ReadFromStruct(MStruct& srt)
+void MSkeleton::ReadFromStruct(const MStruct& srt)
 {
-	if (MVariant* pBonesVar = srt.FindMember("Bones"))
+	if (const MVariant* pBonesVar = srt.FindMember("Bones"))
 	{
-		if (MVariantArray* pBonesArray = pBonesVar->GetArray())
+		if (const MVariantArray* pBonesArray = pBonesVar->GetArray())
 		{
 			uint32_t unBonesCount = pBonesArray->GetMemberCount();
 
@@ -317,8 +317,8 @@ void MSkeleton::ReadFromStruct(MStruct& srt)
 
 			for (uint32_t i = 0; i < unBonesCount; ++i)
 			{
-				MVariant& boneVar = pBonesArray->GetMember(i)->var;
-				if (MStruct* pBoneSrt = boneVar.GetStruct())
+				const MVariant& boneVar = pBonesArray->GetMember(i)->var;
+				if (const MStruct* pBoneSrt = boneVar.GetStruct())
 				{
 					MBone& bone = m_vAllBones[i];
 

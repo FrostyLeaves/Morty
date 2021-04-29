@@ -1,8 +1,7 @@
 #include "SceneTexture.h"
 
+#include "MNode.h"
 #include "MScene.h"
-#include "MCamera.h"
-#include "M3DNode.h"
 #include "MEngine.h"
 #include "MTexture.h"
 #include "MViewport.h"
@@ -10,10 +9,12 @@
 #include "MTexture.h"
 #include "MRenderStructure.h"
 #include "MForwardRenderProgram.h"
-#include "MForwardPostProcessProgram.h"
 #include "MDeferredRenderProgram.h"
+#include "MForwardPostProcessProgram.h"
 
 #include "MRenderGraphTexture.h"
+
+#include "MSceneComponent.h"
 
 SceneTexture::SceneTexture()
 	: m_pEngine(nullptr)
@@ -44,9 +45,12 @@ void SceneTexture::Initialize(MEngine* pEngine)
 
 	m_pRenderProgram->Initialize();
 
-	MCamera* pCamera = m_pRenderViewport->GetCamera();
-	pCamera->SetPosition(Vector3(0, 0, -20));
-
+	MNode* pCameraNode = m_pRenderViewport->GetCamera();
+	
+	if (MSceneComponent* pSceneComponent = pCameraNode->GetComponent<MSceneComponent>())
+	{
+		pSceneComponent->SetPosition(Vector3(0, 0, -20));
+	}
 }
 
 void SceneTexture::Release()

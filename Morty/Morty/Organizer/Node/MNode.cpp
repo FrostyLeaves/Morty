@@ -5,6 +5,10 @@
 #include "MFileHelper.h"
 #include "Node/MNodeResource.h"
 
+#include "MComponent.h"
+
+#include "MFunction.h"
+
 #include <queue>
 
 M_OBJECT_IMPLEMENT(MNode, MObject) 
@@ -164,6 +168,15 @@ void MNode::FindChildrenByFunc(const SearchNodeFunction& func, std::vector<MNode
 	}
 }
 
+void MNode::CallRecursivelyFunction(const CallFunction& func)
+{
+	for (MNode* pNode : m_vChildren)
+	{
+		func(pNode);
+		pNode->CallRecursivelyFunction(func);
+	}
+}
+
 bool MNode::RemoveNodeImpl(MNode* pNode, const MENodeChildType& etype)
 {
 	std::vector<MNode*>& children = etype == MENodeChildType::EProtected ? m_vProtectedChildren : m_vChildren;
@@ -225,6 +238,11 @@ void MNode::Tick(const float& fDelta)
 
 	OnTick(fDelta);
 
+	for (auto& pair : m_tComponents)
+	{
+		pair.second->Tick(fDelta);
+	}
+
 	for (MNode* pChild : m_vProtectedChildren)
 		pChild->Tick(fDelta);
 
@@ -264,9 +282,9 @@ bool MNode::Load(MResource* pResource)
 	return false;
 }
 
-MNode* MNode::CreateNodeByVariant(MEngine* pEngine, MStruct& srt)
+MNode* MNode::CreateNodeByVariant(MEngine* pEngine, const MStruct& srt)
 {
-	if (MString* pString = FindReadVariant<MString>(srt, "NodeType"))
+	if (const MString* pString = FindReadVariant<MString>(srt, "NodeType"))
 	{
 		if (MObject* pObject = pEngine->GetObjectManager()->CreateObject(*pString))
 		{
@@ -285,7 +303,7 @@ void MNode::WriteToStruct(MStruct& srt)
 {
 	MSerializer::WriteToStruct(srt);
 
-	M_SERIALIZER_BEGIN(Write);
+	M_SERIALIZER_WRITE_BEGIN;
 
 	M_SERIALIZER_WRITE_VALUE("Name", GetName);
 	M_SERIALIZER_WRITE_VALUE("Visible", GetVisible);
@@ -297,19 +315,23 @@ void MNode::WriteToStruct(MStruct& srt)
 		*pString = GetTypeName();
 	}
 
+	WriteComponentToStruct(srt);
+
 	WriteChildrenToStruct(srt);
 }
 
-void MNode::ReadFromStruct(MStruct& srt)
+void MNode::ReadFromStruct(const MStruct& srt)
 {
 	MSerializer::ReadFromStruct(srt);
 
-	M_SERIALIZER_BEGIN(Read);
+	M_SERIALIZER_READ_BEGIN;
 
 	M_SERIALIZER_READ_VALUE("Name", SetName, String);
 	M_SERIALIZER_READ_VALUE("Visible", SetVisible, Bool);
 
 	M_SERIALIZER_END;
+
+	ReadComponentFromStruct(srt);
 
 	ReadChildrenFromStruct(srt);
 }
@@ -340,15 +362,15 @@ void MNode::WriteChildrenToStruct(MStruct& srt)
 	}
 }
 
-void MNode::ReadChildrenFromStruct(MStruct& srt)
+void MNode::ReadChildrenFromStruct(const MStruct& srt)
 {
-	if (MVariantArray* pArray = FindReadVariant<MVariantArray>(srt, "Children"))
+	if (const MVariantArray* pArray = FindReadVariant<MVariantArray>(srt, "Children"))
 	{
 		uint32_t unSize = pArray->GetMemberCount();
 		//m_vChildren.resize(unSize);
 		for (uint32_t i = 0; i < unSize; ++i)
 		{
-			MStruct& childSrt = *(*pArray)[i].GetStruct();
+			const MStruct& childSrt = *(*pArray)[i].GetStruct();
 			if(MNode* pChildNode = CreateNodeByVariant(m_pEngine, childSrt))
 			{
 				//m_vChildren[i] = pChildNode;
@@ -357,13 +379,13 @@ void MNode::ReadChildrenFromStruct(MStruct& srt)
 			}
 		}
 	}
-	if (MVariantArray* pArray = FindReadVariant<MVariantArray>(srt, "FixedChildren"))
+	if (const MVariantArray* pArray = FindReadVariant<MVariantArray>(srt, "FixedChildren"))
 	{
 		uint32_t unSize = pArray->GetMemberCount();
 		//m_vFixedChildren.resize(unSize);
 		for (uint32_t i = 0; i < unSize; ++i)
 		{
-			MStruct& childSrt = *(*pArray)[i].GetStruct();
+			const MStruct& childSrt = *(*pArray)[i].GetStruct();
 			if (MNode* pChildNode = CreateNodeByVariant(m_pEngine, childSrt))
 			{
 				//m_vFixedChildren[i] = pChildNode;
@@ -373,7 +395,202 @@ void MNode::ReadChildrenFromStruct(MStruct& srt)
 	}
 }
 
+void MNode::WriteComponentToStruct(MStruct& srt)
+{
+	if (MVariantArray* pArray = FindWriteVariant<MVariantArray>(srt, "Components"))
+	{
+		for (auto& pair : m_tComponents)
+		{
+			if (MComponent* pComponent = pair.second)
+			{
+				pArray->AppendMVariant(MStruct());
+				MStruct& componentSrt = pArray->Back()->GetVarUnsafe<MStruct>();
+				pComponent->WriteToStruct(componentSrt);
+				componentSrt.AppendMVariant("ComponentType", pComponent->GetTypeIdentifier()->m_strName);
+			}
+		}
+	}
+
+}
+
+void MNode::ReadComponentFromStruct(const MStruct& srt)
+{
+	if (const MVariantArray* pArray = FindReadVariant<MVariantArray>(srt, "Components"))
+	{
+		uint32_t unSize = pArray->GetMemberCount();
+		for (uint32_t i = 0; i < unSize; ++i)
+		{
+			const MStruct& componentSrt = *(*pArray)[i].GetStruct();
+			if(const MString* pComponentTypeStr = componentSrt.FindMember<MString>("ComponentType"))
+			{
+				if (MTypeIdentifierConstPointer pComponentType = MTypedClass::GetType(*pComponentTypeStr))
+				{
+					if (MComponent* pComponent = RegisterComponent(pComponentType))
+					{
+						pComponent->ReadFromStruct(componentSrt);
+					}
+				}
+			}
+		}
+	}
+}
+
 void MNode::OnTick(const float& fDelta)
 {
 
+}
+
+MComponent* MNode::RegisterComponent(MTypeIdentifierConstPointer pComponentType)
+{
+	if (!MTypedClass::IsType(pComponentType, MComponent::GetClassTypeIdentifier()))
+		return false;
+
+	auto findResult = m_tComponents.find(pComponentType);
+	if (findResult != m_tComponents.end())
+		return findResult->second;
+
+	MComponent* pCreateComponent = static_cast<MComponent*>(MTypedClass::New(pComponentType->m_strName));
+
+	pCreateComponent->SetOwnerNode(this);
+	pCreateComponent->Initialize();
+
+	m_tComponents[pComponentType] = pCreateComponent;
+
+	if (MScene* pScene = GetScene())
+	{
+		pScene->AddComponent(pCreateComponent);
+	}
+
+	return pCreateComponent;
+}
+
+void MNode::UnregisterComponent(MTypeIdentifierConstPointer pComponentType)
+{
+	if (!MTypedClass::IsType(pComponentType, MComponent::GetClassTypeIdentifier()))
+		return;
+
+	auto findResult = m_tComponents.find(pComponentType);
+	if (findResult == m_tComponents.end())
+		return;
+
+	MComponent* pFoundComponent = findResult->second;
+	m_tComponents.erase(findResult);
+
+	if (MScene* pScene = GetScene())
+	{
+		pScene->RemoveComponent(pFoundComponent);
+	}
+
+	pFoundComponent->Release();
+	delete pFoundComponent;
+	pFoundComponent = nullptr;
+}
+
+MComponent* MNode::GetComponent(MTypeIdentifierConstPointer pComponentType)
+{
+	if (!MTypedClass::IsType(pComponentType, MComponent::GetClassTypeIdentifier()))
+		return nullptr;
+
+	auto findResult = m_tComponents.find(pComponentType);
+	if (findResult == m_tComponents.end())
+		return nullptr;
+
+	return findResult->second;
+}
+
+std::vector<MComponent*> MNode::GetComponents()
+{
+	std::vector<MComponent*> vComponents;
+
+	for (auto& pair : m_tComponents)
+	{
+		vComponents.push_back(pair.second);
+	}
+
+	return vComponents;
+}
+
+void MNode::RegisterComponentNotify(const MString& strNotifyName, const void* pComponentType, const std::function<void()>& callback)
+{
+	MComponentNotifyInfo* pNotifyInfo = nullptr;
+
+	auto findResult = m_tComponentNotify.find(strNotifyName);
+
+	if (findResult == m_tComponentNotify.end())
+	{
+		pNotifyInfo = new MComponentNotifyInfo();
+		m_tComponentNotify.insert(std::make_pair(strNotifyName, pNotifyInfo));
+	}
+	else
+	{
+		pNotifyInfo = findResult->second;
+	}
+
+	if (!pNotifyInfo)
+		return;
+
+	pNotifyInfo->AddNotifyFunction(pComponentType, callback);
+}
+
+void MNode::UnregisterComponentNotify(const MString& strNotifyName, const void* pComponentType)
+{
+	auto findResult = m_tComponentNotify.find(strNotifyName);
+
+	if (findResult == m_tComponentNotify.end())
+		return;
+
+	MComponentNotifyInfo* pNotifyInfo = findResult->second;
+	m_tComponentNotify.erase(findResult);
+
+	if (pNotifyInfo)
+	{
+		delete pNotifyInfo;
+		pNotifyInfo = nullptr;
+	}
+}
+
+void MNode::SendComponentNotify(const MString& strSignalName)
+{
+	auto findResult = m_tComponentNotify.find(strSignalName);
+
+	if (findResult == m_tComponentNotify.end())
+		return;
+
+	MComponentNotifyInfo* pNotifyInfo = findResult->second;
+	if (!pNotifyInfo)
+		return;
+
+	for (auto& callfunction : pNotifyInfo->m_vComponentNotifyCallFunction)
+	{
+		callfunction.function();
+	}
+}
+
+void MComponentNotifyInfo::AddNotifyFunction(const void* pComponentType, const std::function<void()>& callback)
+{
+	for (auto& cf : m_vComponentNotifyCallFunction)
+	{
+		if (cf.pComponentType == pComponentType)
+		{
+			cf.function = callback;
+			return;
+		}
+	}
+
+	MComponentNotifyCallFunction cf;
+	cf.pComponentType = pComponentType;
+	cf.function = callback;
+	m_vComponentNotifyCallFunction.push_back(cf);
+}
+
+void MComponentNotifyInfo::RemoveNotifyFunction(const void* pComponentType)
+{
+	for (auto iter =m_vComponentNotifyCallFunction.begin(); iter != m_vComponentNotifyCallFunction.end(); ++iter)
+	{
+		if (iter->pComponentType == pComponentType)
+		{
+			m_vComponentNotifyCallFunction.erase(iter);
+			return;
+		}
+	}
 }

@@ -16,18 +16,6 @@
 #include <vector>
 #include <map>
 
-#define M_I_OBJECT(Class) \
-MTypedInterfaceSign(Class)
-
-#define M_OBJECT(Class) \
-MTypedClassSign(Class);
-
-#define M_I_OBJECT_IMPLEMENT(Class, BaseClass) \
-MTypedInterfaceImplement(Class, BaseClass)
-
-#define M_OBJECT_IMPLEMENT(Class, BaseClass)\
-MTypedClassImplement(Class, BaseClass)
-
 class MEngine;
 class MObjectManager;
 class MORTY_API MObject : public MTypedClass

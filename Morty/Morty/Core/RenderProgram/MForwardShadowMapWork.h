@@ -15,11 +15,12 @@
 #include <array>
 
 class MIRenderTexture;
+class MRenderableMeshComponent;
 struct MShadowRenderGroup
 {
 	MShadowRenderGroup() :pSkeletonInstance(nullptr) {}
 	MSkeletonInstance* pSkeletonInstance;
-	std::vector<MIMeshInstance*> vMeshInstances;
+	std::vector<MRenderableMeshComponent*> vMeshInstances;
 };
 
 class MShadowTextureRenderTarget;

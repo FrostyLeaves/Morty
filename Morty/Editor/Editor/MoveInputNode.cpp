@@ -1,48 +1,50 @@
 #include "MoveInputNode.h"
 
+#include "MNode.h"
 #include "MEngine.h"
 #include "MObject.h"
-#include "M3DNode.h"
-#include "MInputNode.h"
 #include "MInputManager.h"
 
-MoveInputNode::MoveInputNode()
-	: MInputNode()
+#include "MSceneComponent.h"
+
+M_OBJECT_IMPLEMENT(MoveInputComponent, MInputComponent)
+
+MoveInputComponent::MoveInputComponent()
+	: MInputComponent()
 	, m_fMaxSpeed(6.0f)
 	, m_v2MouseAddi(0.0f, 0.0f)
 	, m_v3MoveSpeed(0.0f, 0.0f, 0.0f)
-	, m_pMoveNode(nullptr)
 {
 
 }
 
-void MoveInputNode::SetMoveNode(M3DNode* pNode)
+void MoveInputComponent::Tick(const float& fDelta)
 {
-	m_pMoveNode = pNode;
-}
+	MNode* pOwner = GetOwnerNode();
+	if (!pOwner)
+		return;
 
-void MoveInputNode::OnTick(const float& fDelta)
-{
-	if (!m_pMoveNode)
+	MSceneComponent* pSceneComponent = pOwner->GetComponent<MSceneComponent>();
+	if (!pSceneComponent)
 		return;
 
 	const float speed = m_fMaxSpeed;
 
 	if (true == m_tKeyBoardDown['w'])
 	{
-		m_v3MoveSpeed += m_pMoveNode->GetForward() * speed * fDelta;
+		m_v3MoveSpeed += pSceneComponent->GetForward() * speed * fDelta;
 	}
 	if (true == m_tKeyBoardDown['s'])
 	{
-		m_v3MoveSpeed += m_pMoveNode->GetForward() * -speed * fDelta;
+		m_v3MoveSpeed += pSceneComponent->GetForward() * -speed * fDelta;
 	}
 	if (true == m_tKeyBoardDown['a'])
 	{
-		m_v3MoveSpeed += m_pMoveNode->GetRight() * -speed * fDelta;
+		m_v3MoveSpeed += pSceneComponent->GetRight() * -speed * fDelta;
 	}
 	if (true == m_tKeyBoardDown['d'])
 	{
-		m_v3MoveSpeed += m_pMoveNode->GetRight() * speed * fDelta;
+		m_v3MoveSpeed += pSceneComponent->GetRight() * speed * fDelta;
 	}
 	if (true == m_tKeyBoardDown['q'])
 	{
@@ -57,8 +59,8 @@ void MoveInputNode::OnTick(const float& fDelta)
 
 		Vector3 up = Vector3(0, 1, 0);
 
-		Vector3 right = m_pMoveNode->GetRight();
-		m_pMoveNode->SetRotation(m_pMoveNode->GetRotation() * Quaternion(up, m_v2MouseAddi.x * 0.25f) * Quaternion(right, m_v2MouseAddi.y * 0.25f));
+		Vector3 right = pSceneComponent->GetRight();
+		pSceneComponent->SetRotation(pSceneComponent->GetRotation() * Quaternion(up, m_v2MouseAddi.x * 0.25f) * Quaternion(right, m_v2MouseAddi.y * 0.25f));
 
 		m_v2MouseAddi = Vector2(0, 0);
 	}
@@ -70,12 +72,15 @@ void MoveInputNode::OnTick(const float& fDelta)
 		m_v3MoveSpeed = m_v3MoveSpeed * speed;
 	}
 
-	m_pMoveNode->SetPosition(m_pMoveNode->GetPosition() + m_v3MoveSpeed);
+	pSceneComponent->SetPosition(pSceneComponent->GetPosition() + m_v3MoveSpeed);
 	m_v3MoveSpeed = m_v3MoveSpeed * 0.8f;
 }
 
-void MoveInputNode::OnCreated()
+void MoveInputComponent::Initialize()
 {
+	Super::Initialize();
+
+
 	SetInputCallback([this](MInputEvent* pEvent, MViewport* pViewport) {
 
 		if (MKeyBoardInputEvent* pKeyInput = dynamic_cast<MKeyBoardInputEvent*>(pEvent))

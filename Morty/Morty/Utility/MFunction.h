@@ -16,6 +16,8 @@
 #define M_RETURN_OVER_RANGE(I, MIN, MAX, ...)\
 	if (I < MIN || I >= MAX) return ##__VA_ARGS__;
 
+#define M_CLASS_FUNCTION_BIND_0(CLASS_FUNC) std::bind(&CLASS_FUNC, this)
+
 
 template<typename T1, typename T2>
 void DELETE_CLEAR_MAP(std::map<T1, T2>& map)

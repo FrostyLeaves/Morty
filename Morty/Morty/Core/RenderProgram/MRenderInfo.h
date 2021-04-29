@@ -17,11 +17,13 @@ struct MRenderInfo
 	class MIRenderTarget* pRenderTarget;
 	class MIRenderer* pRenderer;
 	class MViewport* pViewport;
-	class MCamera* pCamera;
+	class MCameraComponent* pCameraComponent;
+	class MSceneComponent* pCameraSceneComponent;
+	class MDirectionalLightComponent* pDirectionalLightComponent;
+
 	class MScene* pScene;
 	class MRenderCommand* pPrimaryCommand;
 
-	class MDirectionalLight* pDirectionalLight;
 	class MITexture* pShadowMapTexture;
 	Matrix4 m4DirLightInvProj;
 

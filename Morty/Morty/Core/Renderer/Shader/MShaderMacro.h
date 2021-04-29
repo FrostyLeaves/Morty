@@ -27,7 +27,7 @@ public:
 	MString GetInnerMacro(const MString& strKey);
 
 	void WriteToStruct(MStruct& srt);
-	void ReadFromStruct(MStruct& srt);
+	void ReadFromStruct(const MStruct& srt);
 
 protected:
 

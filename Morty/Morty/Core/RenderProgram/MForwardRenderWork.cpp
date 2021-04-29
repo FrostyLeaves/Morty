@@ -2,7 +2,6 @@
 
 #include "MScene.h"
 #include "MEngine.h"
-#include "MCamera.h"
 #include "MSkyBox.h"
 #include "MPainter.h"
 #include "MViewport.h"
@@ -11,8 +10,6 @@
 #include "MTransformCoord.h"
 
 #include "MSkeleton.h"
-#include "Model/MModelInstance.h"
-#include "Model/MIModelMeshInstance.h"
 
 #include "MResourceManager.h"
 #include "Material/MMaterialResource.h"
@@ -20,6 +17,11 @@
 #include "MRenderGraph.h"
 #include "MRenderGraphNode.h"
 #include "MRenderGraphTexture.h"
+
+#include "MModelComponent.h"
+#include "MSceneComponent.h"
+#include "MCameraComponent.h"
+#include "MRenderableMeshComponent.h"
 
 M_OBJECT_IMPLEMENT(MForwardRenderWork, MObject)
 
@@ -150,7 +152,7 @@ void MForwardRenderWork::Render(MRenderGraphNode* pGraphNode)
 
 	DrawPainter(info);
 
-	DrawModelInstance(info);
+	DrawModelBoundingBox(info);
 
 	//	DrawSkyBox(info);
 
@@ -168,42 +170,37 @@ void MForwardRenderWork::DrawNormalMesh(MRenderInfo& info)
 
 		info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, &m_FrameParamSet);
 
-		for (MIMeshInstance* pMeshIns : group.m_vMeshInstances)
+		for (MRenderableMeshComponent* pMeshComponent : group.m_vMeshComponents)
 		{
-			DrawMeshInstance(info, pMeshIns);
+			DrawMeshComponent(info, pMeshComponent);
 		}
 	}
 }
 
-void MForwardRenderWork::DrawMeshInstance(MRenderInfo& info, MIMeshInstance* pMeshInstance)
+void MForwardRenderWork::DrawMeshComponent(MRenderInfo& info, MRenderableMeshComponent* pMeshComponent)
 {
-	if (MSkeletonInstance* pSkeletonIns = pMeshInstance->GetSkeletonInstance())
+	if (MSkeletonInstance* pSkeletonIns = pMeshComponent->GetSkeletonInstance())
 	{
 		info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, pSkeletonIns->GetShaderParamSet());
 	}
 
-	info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, pMeshInstance->GetShaderMeshParamSet());
-	info.pRenderer->DrawMesh(info.pPrimaryCommand, pMeshInstance->GetMesh());
+	info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, pMeshComponent->GetShaderMeshParamSet());
+	info.pRenderer->DrawMesh(info.pPrimaryCommand, pMeshComponent->GetMesh());
 }
 
-void MForwardRenderWork::DrawModelInstance(MRenderInfo& info)
+void MForwardRenderWork::DrawModelBoundingBox(MRenderInfo& info)
 {
-	for (MModelInstance* pModelIns : *info.pScene->GetAllModelInstance())
-	{
-		if (pModelIns->GetDrawBoundingBox())
-		{
-			DrawBoundingBox(info, pModelIns);
-		}
+	MComponentGroup* pModelComponentGroup = info.pScene->FindComponents<MModelComponent>();
+	if (!pModelComponentGroup)
+		return;
 
-		for (MNode* pChild : pModelIns->GetProtectedChildren())
+	for (MComponent* pComponent : pModelComponentGroup->m_vComponent)
+	{
+		MModelComponent* pModelComponent = static_cast<MModelComponent*>(pComponent);
+
+		if (pModelComponent->GetBoundingBoxVisiable())
 		{
-			if (MIModelMeshInstance* pMeshIns = dynamic_cast<MIModelMeshInstance*>(pChild))
-			{
-				if (pMeshIns->GetDrawBoundingSphere())
-				{
-					DrawBoundingSphere(info, pMeshIns);
-				}
-			}
+			DrawBoundingBox(info, pModelComponent);
 		}
 	}
 
@@ -226,10 +223,10 @@ void MForwardRenderWork::DrawSkyBox(MRenderInfo& info)
 				MShaderConstantParam* pParam = pSkyBox->GetShaderTransformParam();
 				if (pMeshParamSet && pParam)
 				{
-					MCamera* pCamera = info.pCamera;
+					MSceneComponent* pCameraSceneComponent = info.pCameraSceneComponent;
 
 					Matrix4 mat(Matrix4::IdentityMatrix);
-					Vector3 camPos = info.pViewport->GetCamera()->GetWorldPosition();
+					Vector3 camPos = pCameraSceneComponent->GetWorldPosition();
 					mat.m[0][3] = camPos.x;
 					mat.m[1][3] = camPos.y;
 					mat.m[2][3] = camPos.z;
@@ -257,7 +254,7 @@ void MForwardRenderWork::DrawPainter(MRenderInfo& info)
 	pTransformCoord->Render(info.pRenderer, info.pViewport, info.pPrimaryCommand);
 }
 
-void MForwardRenderWork::DrawBoundingBox(MRenderInfo& info, MModelInstance* pModelIns)
+void MForwardRenderWork::DrawBoundingBox(MRenderInfo& info, MModelComponent* pModelComponent)
 {
 	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_DRAW3D);
 	MMaterial* pMaterial = pDraw3DMaterialRes;
@@ -266,10 +263,10 @@ void MForwardRenderWork::DrawBoundingBox(MRenderInfo& info, MModelInstance* pMod
 
 	info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, &m_FrameParamSet);
 
-	const MBoundsAABB* pAABB = pModelIns->GetBoundsAABB();
+	MBoundsAABB aabb = pModelComponent->GetBoundsAABB();
 
-	const Vector3& obmin = pAABB->m_v3MinPoint;
-	const Vector3& obmax = pAABB->m_v3MaxPoint;
+	const Vector3& obmin = aabb.m_v3MinPoint;
+	const Vector3& obmax = aabb.m_v3MaxPoint;
 
 	Vector3 list[] = {
 		Vector3(obmin.x, obmin.y, obmin.z),

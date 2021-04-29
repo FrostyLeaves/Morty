@@ -78,7 +78,7 @@ protected:
 	void ProcessMaterial(const aiScene* pScene, const uint32_t& nMaterialIdx);
 
 
-	M3DNode* GetMNodeFromNode(const aiScene* pScene, aiNode* pNode);
+	MNode* GetMNodeFromNode(const aiScene* pScene, aiNode* pNode);
 
 	MMaterial* GetMaterial(const aiScene* pScene, const uint32_t& nMaterialIdx);
 
@@ -91,12 +91,14 @@ private:
 	std::vector<MMeshResource*> m_vMeshes;
 	std::vector<MMaterial*> m_vMaterials;
 
-	std::map<aiNode*, M3DNode*> m_tNodeMaps;
+	std::map<aiNode*, MNode*> m_tNodeMaps;
 
 	MSkeletonResource* m_pSkeleton;
-	MModelInstance* m_pModelInstance;
+	MNode* m_pModelNode;
 
 	std::vector<MSkeletalAnimation*> m_vSkeletalAnimation;
+
+	MModelConvertMaterialType eMaterialType;
 };
 
 #endif

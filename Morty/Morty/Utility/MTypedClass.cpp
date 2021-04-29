@@ -8,14 +8,25 @@ MTypeIdentifierConstPointer MTypedClass::GetClassTypeIdentifier()
 
 MTypedClass* MTypedClass::New(const MString& strTypeName)
 {
-	if(std::function<MTypedClass* (void)> func = GetFactory()[strTypeName])
-		return func();
+	auto findResult = GetFactory().find(strTypeName);
+	if(findResult != GetFactory().end())
+		return findResult->second.m_funcNew();
+
 	return nullptr;
 }
 
-std::map<MString, std::function<MTypedClass* (void)>>& MTypedClass::GetFactory()
+MTypeIdentifierConstPointer MTypedClass::GetType(const MString& strTypeName)
 {
-	static std::map<MString, std::function<MTypedClass* (void)>> m;
+	auto findResult = GetFactory().find(strTypeName);
+	if (findResult != GetFactory().end())
+		return findResult->second.m_pType;
+
+	return nullptr;
+}
+
+std::map<MString, MDynamicTypeInfo>& MTypedClass::GetFactory()
+{
+	static std::map<MString, MDynamicTypeInfo> m;
 	return m;
 }
 

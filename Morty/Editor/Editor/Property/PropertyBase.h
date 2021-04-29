@@ -1,6 +1,7 @@
 #ifndef _PROPERTY_BASE_H_
 #define _PROPERTY_BASE_H_
 
+#include "MNode.h"
 #include "MString.h"
 #include "Vector.h"
 #include "MVariant.h"
@@ -11,6 +12,7 @@
 #include <map>
 #include <functional>
 
+class MNode;
 class MObject;
 class MMaterial;
 class MResource;
@@ -22,7 +24,7 @@ public:
 	PropertyBase() {}
 	virtual ~PropertyBase() {};
 
-	virtual void EditObject(MObject* pObject) {};
+	virtual void EditNode(MNode* pObject) {};
 
 	bool ShowNodeBegin(const MString& strNodeName);
 	bool ShowNodeBeginWithEx(const MString& strNodeName);

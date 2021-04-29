@@ -3,9 +3,9 @@
 #include <algorithm>
 
 #include "MMath.h"
-#include "M3DNode.h"
 #include "MLogManager.h"
 
+#include "MNode.h"
 #include "MEngine.h"
 #include "MIRenderer.h"
 #include "MPainter.h"
@@ -13,7 +13,8 @@
 #include "MResourceManager.h"
 #include "Material/MMaterialResource.h"
 #include "MViewport.h"
-#include "MCamera.h"
+
+#include "MSceneComponent.h"
 
 #include "MInputManager.h"
 
@@ -61,10 +62,21 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 	if (MGlobal::M_INVALID_INDEX == m_unSelectedID)
 		return false;
 
-	M3DNode* pTargetNode = m_pEngine->GetObjectManager()->FindObject(m_unSelectedID)->DynamicCast<M3DNode>();
+	MNode* pTargetNode = m_pEngine->GetObjectManager()->FindObject(m_unSelectedID)->DynamicCast<MNode>();
 	if (nullptr == pTargetNode)
 		return false;
 
+	MSceneComponent* pSceneComponent = pTargetNode->GetComponent<MSceneComponent>();
+	if (!pSceneComponent)
+		return false;
+
+	MNode* pCameraNode = pViewport->GetCamera();
+	if (!pCameraNode)
+		return false;
+
+	MSceneComponent* pCameraSceneComponent = pCameraNode->GetComponent<MSceneComponent>();
+	if (!pCameraSceneComponent)
+		return false;
 
 	bool vVaild[3];
 	int vOrder[3];
@@ -84,7 +96,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 			m_eCoordMoveType = m_eCoordHoverType;
 
 			
-			m_v3TransformOrigin = pTargetNode->GetWorldTransform() * Vector3(0, 0, 0);
+			m_v3TransformOrigin = pSceneComponent->GetWorldTransform() * Vector3(0, 0, 0);
 			const Vector3& v3Origin = m_v3TransformOrigin;
 
 			switch (m_eCoordMoveType)
@@ -113,7 +125,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 			case MECoordHoverType::XZ:
 			case MECoordHoverType::YZ:
 			{
-				Vector3 v3CameraPos = pViewport->GetCamera()->GetWorldPosition();
+				Vector3 v3CameraPos = pCameraSceneComponent->GetWorldPosition();
 
 				Vector3 v3RayDir;
 
@@ -143,7 +155,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 		Vector2 addi = pMouseEvent->GetMouseAddition();
 		addi.y = -addi.y;
 
-		Vector3 v3Origin = pTargetNode->GetWorldTransform() * Vector3(0, 0, 0);
+		Vector3 v3Origin = pSceneComponent->GetWorldTransform() * Vector3(0, 0, 0);
 
 //		m_pTargetNode->GetWorldTransform()
 
@@ -159,7 +171,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 			Vector3 addiPosition(0, 0, 0);
 
 			addiPosition.m[i] = MMath::Projection(Vector3(addi, 0.0f), m_v3NormalizedDirection);
-			pTargetNode->SetWorldPosition(pTargetNode->GetWorldPosition() + addiPosition);
+			pSceneComponent->SetWorldPosition(pSceneComponent->GetWorldPosition() + addiPosition);
 
 			break;
 		}
@@ -168,7 +180,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 		case MECoordHoverType::XZ:
 		case MECoordHoverType::YZ:
 		{
-			Vector3 v3CameraPos = pViewport->GetCamera()->GetWorldPosition();
+			Vector3 v3CameraPos = pCameraSceneComponent->GetWorldPosition();
 			
 			Vector3 v3RayDir;
 
@@ -193,7 +205,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 					if (n & (uint32_t)m_eCoordMoveType)
 					{
 						float fLength = MMath::Projection(v3Dir, m_vDirection[i]);
-						pTargetNode->SetWorldPosition(pTargetNode->GetWorldPosition() + m_vDirection[i] * fLength);
+						pSceneComponent->SetWorldPosition(pSceneComponent->GetWorldPosition() + m_vDirection[i] * fLength);
 					}
 				}
 
@@ -245,7 +257,7 @@ void MTransformCoord3D::Render(MIRenderer* pRenderer, MViewport* pViewport, MRen
 {
 	if (MGlobal::M_INVALID_INDEX == m_unSelectedID)
 		return;
-	M3DNode* pTargetNode = m_pEngine->GetObjectManager()->FindObject(m_unSelectedID)->DynamicCast<M3DNode>();
+	MNode* pTargetNode = m_pEngine->GetObjectManager()->FindObject(m_unSelectedID)->DynamicCast<MNode>();
 	if (nullptr == pTargetNode)
 		return;
 
@@ -302,11 +314,15 @@ void MTransformCoord3D::GetTranslationShapes(MPainter2DLine* lines, class MPaint
 {
 	if (MGlobal::M_INVALID_INDEX == m_unSelectedID)
 		return;
-	M3DNode* pTargetNode = m_pEngine->GetObjectManager()->FindObject(m_unSelectedID)->DynamicCast<M3DNode>();
+	MNode* pTargetNode = m_pEngine->GetObjectManager()->FindObject(m_unSelectedID)->DynamicCast<MNode>();
 	if (nullptr == pTargetNode)
 		return;
 
-	Vector3 v3Origin = pTargetNode->GetParentWorldTransform() * pTargetNode->GetPosition();
+	MSceneComponent* pSceneComponent = pTargetNode->GetComponent<MSceneComponent>();
+	if (!pSceneComponent)
+		return;
+
+	Vector3 v3Origin = pSceneComponent->GetParentWorldTransform() * pSceneComponent->GetPosition();
 	Vector3 v3EndPoint[3] = {
 		v3Origin + m_vDirection[0] * 10,
 		v3Origin + m_vDirection[1] * 10,

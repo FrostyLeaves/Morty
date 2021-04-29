@@ -17,7 +17,7 @@ class MORTY_API MSerializer
 
 public:
 	virtual void WriteToStruct(MStruct& srt) {};
-	virtual void ReadFromStruct(MStruct& srt) {};
+	virtual void ReadFromStruct(const MStruct& srt) {};
 
 	void Encode(MString& strCode);
 	bool Decode(MString& strCode);
@@ -26,7 +26,7 @@ public:
 	static T* FindWriteVariant(MStruct& srt, const MString& strName);
 
 	template <typename T>
-	static T* FindReadVariant(MStruct& srt, const MString& strName);
+	static const T* FindReadVariant(const MStruct& srt, const MString& strName);
 private:
 
 };
@@ -39,23 +39,24 @@ T* MSerializer::FindWriteVariant(MStruct& srt, const MString& strName)
 }
 
 template <typename T>
-T* MSerializer::FindReadVariant(MStruct& srt, const MString& strName)
+const T* MSerializer::FindReadVariant(const MStruct& srt, const MString& strName)
 {
-	MVariant* pVariant = srt.FindMember(strName);
+	const MVariant* pVariant = srt.FindMember(strName);
 	if (nullptr == pVariant)
 		return nullptr;
 
 	return pVariant->GetPointerUnsafe<T>();
 }
 
-#define M_SERIALIZER_BEGIN( STATE ) if(MStruct* pStruct = Find##STATE##Variant<MStruct>(srt, Class::GetClassTypeName())) {
+#define M_SERIALIZER_READ_BEGIN if(const MStruct* pStruct = FindReadVariant<MStruct>(srt, Class::GetClassTypeName())) {
+#define M_SERIALIZER_WRITE_BEGIN if(MStruct* pStruct = FindWriteVariant<MStruct>(srt, Class::GetClassTypeName())) {
 #define M_SERIALIZER_END }
 
 #define M_SERIALIZER_WRITE_VALUE( NAME, GET_FUNC) \
 	pStruct->AppendMVariant(NAME, GET_FUNC());
 
 #define M_SERIALIZER_READ_VALUE( NAME, SET_FUNC, TYPE) \
-	if(MVariant* pVariant = pStruct->FindMember(NAME)) \
+	if(const MVariant* pVariant = pStruct->FindMember(NAME)) \
 		if(auto pValue = pVariant->Get##TYPE()) \
 			SET_FUNC(*pValue);
 #endif

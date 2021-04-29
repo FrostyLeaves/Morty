@@ -3,24 +3,25 @@
 
 MMaterialGroup::MMaterialGroup()
 	: m_pMaterial(nullptr)
-	, m_vMeshInstances()
+	, m_vMeshComponents()
 	, m_bDirty(true)
 {
 
 }
 
-bool MMaterialGroup::InsertMeshInstance(MIMeshInstance* pMeshIns)
+bool MMaterialGroup::InsertMeshComponent(MRenderableMeshComponent* pMeshComponent)
 {
-	m_vMeshInstances.push_back(pMeshIns);
+	m_vMeshComponents.push_back(pMeshComponent);
 	SetDirty();
 	return true;
 }
 
-bool MMaterialGroup::RemoveMeshInstance(MIMeshInstance* pMeshIns)
+bool MMaterialGroup::RemoveMeshComponent(MRenderableMeshComponent* pMeshComponent)
 {
-	if (ERASE_FIRST_VECTOR(m_vMeshInstances, pMeshIns))
+	if (ERASE_FIRST_VECTOR(m_vMeshComponents, pMeshComponent))
 	{
 		SetDirty();
 		return true;
 	}
 }
+

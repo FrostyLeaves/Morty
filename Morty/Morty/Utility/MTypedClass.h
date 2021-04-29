@@ -50,6 +50,21 @@ MTypedInterfaceImplement(Class, BaseClass)\
 MTypedCreatorImplement(Class)\
 
 
+
+#define M_I_OBJECT(Class) \
+MTypedInterfaceSign(Class)
+
+#define M_OBJECT(Class) \
+MTypedClassSign(Class);
+
+#define M_I_OBJECT_IMPLEMENT(Class, BaseClass) \
+MTypedInterfaceImplement(Class, BaseClass)
+
+#define M_OBJECT_IMPLEMENT(Class, BaseClass)\
+MTypedClassImplement(Class, BaseClass)
+
+
+
 class MTypeIdentifier
 {
 public:
@@ -73,6 +88,15 @@ public:
 };
 
 typedef const MTypeIdentifier* MTypeIdentifierConstPointer;
+
+
+struct MDynamicTypeInfo
+{
+	MDynamicTypeInfo() :m_funcNew(nullptr), m_pType(nullptr) {}
+
+	std::function<class MTypedClass* (void)> m_funcNew;
+	MTypeIdentifierConstPointer m_pType;
+};
 
 class MORTY_API MTypedClass
 {
@@ -112,15 +136,28 @@ public:
 		return pTypeIdent == pClassIdent;
 	}
 
+	static bool IsType(MTypeIdentifierConstPointer a, MTypeIdentifierConstPointer b)
+	{
+		for (int i = a->m_unDeep - b->m_unDeep; i > 0; --i)
+			a = a->m_pBaseTypeIdentifier;
+
+		return a == b;
+	}
+
 	template<typename T>
 	static void RegisterTypedClass() {
 		const MString& strName = T::GetClassTypeIdentifier()->m_strName;
-		GetFactory()[strName] = &T::New;
+		MDynamicTypeInfo& info = GetFactory()[strName];
+		info.m_funcNew = &T::New;
+		info.m_pType = T::GetClassTypeIdentifier();
 	}
 
 	static MTypedClass* New(const MString& strTypeName);
+	static MTypeIdentifierConstPointer GetType(const MString& strTypeName);
 
-	static std::map<MString, std::function<MTypedClass* (void)> >& GetFactory();
+public:
+
+	static std::map<MString, MDynamicTypeInfo>& GetFactory();
 };
 
 template <typename T>

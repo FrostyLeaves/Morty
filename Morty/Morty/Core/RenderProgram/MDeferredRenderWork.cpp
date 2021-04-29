@@ -9,7 +9,6 @@
 #include "MResourceManager.h"
 #include "MMaterialResource.h"
 #include "Model/MMeshResource.h"
-#include "Model/MIMeshInstance.h"
 
 
 #include "MRenderGraph.h"
@@ -17,6 +16,8 @@
 #include "MRenderGraphTexture.h"
 
 #include "MDeferredRenderProgram.h"
+
+#include "MRenderableMeshComponent.h"
 
 M_OBJECT_IMPLEMENT(MDeferredRenderWork, MObject)
 
@@ -281,20 +282,20 @@ void MDeferredRenderWork::DrawNormalMesh(MRenderInfo& info)
 
 		info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, &m_FrameParamSet);
 
-		for (MIMeshInstance* pMeshIns : group.m_vMeshInstances)
+		for (MRenderableMeshComponent* pMeshComponent : group.m_vMeshComponents)
 		{
-			DrawMeshInstance(info, pMeshIns);
+			DrawMeshComponent(info, pMeshComponent);
 		}
 	}
 }
 
-void MDeferredRenderWork::DrawMeshInstance(MRenderInfo& info, MIMeshInstance* pMeshInstance)
+void MDeferredRenderWork::DrawMeshComponent(MRenderInfo& info, MRenderableMeshComponent* pMeshComponent)
 {
-	if (MSkeletonInstance* pSkeletonIns = pMeshInstance->GetSkeletonInstance())
+	if (MSkeletonInstance* pSkeletonIns = pMeshComponent->GetSkeletonInstance())
 	{
 		info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, pSkeletonIns->GetShaderParamSet());
 	}
 
-	info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, pMeshInstance->GetShaderMeshParamSet());
-	info.pRenderer->DrawMesh(info.pPrimaryCommand, pMeshInstance->GetMesh());
+	info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, pMeshComponent->GetShaderMeshParamSet());
+	info.pRenderer->DrawMesh(info.pPrimaryCommand, pMeshComponent->GetMesh());
 }

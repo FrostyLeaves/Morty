@@ -43,7 +43,6 @@ public:
 	void InitializeMaterial();
 	void ReleaseMaterial();
 
-
 	virtual void OnDelete() override;
 
 	void RenderUpdate(MRenderGraphNode* pGraphNode);
@@ -52,12 +51,10 @@ public:
 
 	void Lightning(MRenderGraphNode* pGraphNode);
 
-
 	void DrawNormalMesh(MRenderInfo& info);
 
-	void DrawMeshInstance(MRenderInfo& info, MIMeshInstance* pMeshInstance);
+	void DrawMeshComponent(MRenderInfo& info, MRenderableMeshComponent* pMeshInstance);
 
-	
 private:
 
 	MIRenderProgram* m_pRenderProgram;

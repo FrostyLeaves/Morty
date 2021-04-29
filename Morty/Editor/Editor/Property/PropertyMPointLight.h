@@ -1,20 +1,20 @@
-#ifndef _PROPERTY_MPOINTLIGHT_H_
+#ifndef _PROPERTY_MPOINT_LIGHT_COMPONENT_H_
 #define _PROPERTY_MPOINTLIGHT_H_
 
 #include "PropertyBase.h"
-#include "Light/MPointLight.h"
+#include "MPointLightComponent.h"
 
-class PropertyMPointLight : public PropertyBase
+class PropertyMPointLightComponent : public PropertyBase
 {
 public:
-	virtual void EditObject(MObject* pObject) override
+	virtual void EditNode(MNode* pNode) override
 	{
-		if (MPointLight* pNode = pObject->DynamicCast<MPointLight>())
+		if (MPointLightComponent* pComponent = pNode->GetComponent<MPointLightComponent>())
 		{
 			if (ShowNodeBegin("Light"))
 			{
-				PROPERTY_VALUE_EDIT(pNode, "Diffuse", MColor, GetDiffuseColor, SetDiffuseColor);
-				PROPERTY_VALUE_EDIT(pNode, "Specular", MColor, GetSpecularColor, SetSpecularColor);
+				PROPERTY_VALUE_EDIT(pComponent, "Color", MColor, GetColor, SetColor);
+				PROPERTY_VALUE_EDIT(pComponent, "Intensity", float, GetLightIntensity, SetLightIntensity);
 				ShowNodeEnd();
 			}
 		}

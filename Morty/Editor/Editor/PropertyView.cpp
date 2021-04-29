@@ -3,31 +3,30 @@
 #include "imgui.h"
 
 #include "MObject.h"
-#include "M3DNode.h"
 
-#include "PropertyM3DNode.h"
-#include "PropertyMCamera.h"
-#include "PropertyMPointLight.h"
+#include "PropertyMSceneComponent.h"
+#include "PropertyMCameraComponent.h"
 #include "PropertyMSpotLight.h"
-#include "PropertyMDirectionalLight.h"
-#include "PropertyMModelInstance.h"
-#include "PropertyMIModelMeshInstance.h"
+#include "PropertyMPointLight.h"
+#include "PropertyMDirectionalLightComponent.h"
+#include "PropertyMModelComponent.h"
+#include "PropertyMRenderableMeshComponent.h"
 
 #define REGISTER_PROPERTY( CLASS_NAME ) \
 	m_tCreatePropertyFactory[#CLASS_NAME] = []() {return new Property##CLASS_NAME(); };
 
 PropertyView::PropertyView()
 	: IBaseView()
-	, m_pEditorObject(nullptr)
+	, m_pEditorNode(nullptr)
 	, m_vPropertyList()
 {
-	REGISTER_PROPERTY(M3DNode);
-	REGISTER_PROPERTY(MCamera);
-	REGISTER_PROPERTY(MPointLight);
-	REGISTER_PROPERTY(MSpotLight);
-	REGISTER_PROPERTY(MDirectionalLight);
-	REGISTER_PROPERTY(MModelInstance);
-	REGISTER_PROPERTY(MIModelMeshInstance);
+	REGISTER_PROPERTY(MSceneComponent);
+	REGISTER_PROPERTY(MCameraComponent);
+	REGISTER_PROPERTY(MSpotLightComponent);
+	REGISTER_PROPERTY(MPointLightComponent);
+	REGISTER_PROPERTY(MDirectionalLightComponent);
+	REGISTER_PROPERTY(MModelComponent);
+	REGISTER_PROPERTY(MRenderableMeshComponent);
 }
 
 PropertyView::~PropertyView()
@@ -41,20 +40,20 @@ PropertyView::~PropertyView()
 	m_vPropertyList.clear();
 }
 
-void PropertyView::SetEditorObject(MObject* pObject)
+void PropertyView::SetEditorNode(MNode* pNode)
 {
-	if (m_pEditorObject == pObject)
+	if (m_pEditorNode == pNode)
 		return;
 
-	if (m_pEditorObject = pObject)
+	if (m_pEditorNode = pNode)
 	{
-		CreatePropertyList(pObject);
+		CreatePropertyList(pNode);
 	}
 }
 
 void PropertyView::Render()
 {
-	if (nullptr == m_pEditorObject)
+	if (nullptr == m_pEditorNode)
 		return;
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
@@ -63,7 +62,7 @@ void PropertyView::Render()
 	
 	unsigned int unID = 0;
 
-	EditObject(m_pEditorObject);
+	EditNode(m_pEditorNode);
 
 	ImGui::Columns(1);
 	ImGui::Separator();
@@ -86,18 +85,21 @@ void PropertyView::Input(MInputEvent* pEvent)
 
 }
 
-void PropertyView::EditObject(MObject* pObject)
+void PropertyView::EditNode(MNode* pNode)
 {
-	for (PropertyBase* pPropertyBase : m_vPropertyList)
+	if (pNode)
 	{
-		if (pPropertyBase)
+		for (PropertyBase* pPropertyBase : m_vPropertyList)
 		{
-			pPropertyBase->EditObject(pObject);
+			if (pPropertyBase)
+			{
+				pPropertyBase->EditNode(pNode);
+			}
 		}
 	}
 }
 
-void PropertyView::CreatePropertyList(MObject* pObject)
+void PropertyView::CreatePropertyList(MNode* pNode)
 {
 	for (PropertyBase* pPropertyBase : m_vPropertyList)
 	{
@@ -106,16 +108,15 @@ void PropertyView::CreatePropertyList(MObject* pObject)
 	}
 	m_vPropertyList.clear();
 
-	MTypeIdentifierConstPointer pointer = pObject->GetTypeIdentifier();
-	MString name = pObject->GetTypeName();
+	MString name = pNode->GetTypeName();
 
-	while (pointer)
+
+	auto vComponents = pNode->GetComponents();
+	for(MComponent* pComponent : vComponents)
 	{
-		if (auto func = m_tCreatePropertyFactory[pointer->m_strName])
+		if (auto func = m_tCreatePropertyFactory[pComponent->GetTypeIdentifier()->m_strName])
 		{
 			m_vPropertyList.push_front(func());
 		}
-
-		pointer = pointer->m_pBaseTypeIdentifier;
 	}
 }

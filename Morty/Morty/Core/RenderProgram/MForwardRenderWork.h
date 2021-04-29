@@ -18,6 +18,8 @@
 #include "MForwardRenderShaderParamSet.h"
 
 class MRenderGraphNode;
+class MModelComponent;
+class MRenderableMeshComponent;
 class MORTY_API MForwardRenderWork : public MObject
 {
 public:
@@ -43,14 +45,14 @@ protected:
 
 	void DrawNormalMesh(MRenderInfo& info);
 
-	void DrawModelInstance(MRenderInfo& info);
+	void DrawModelBoundingBox(MRenderInfo& info);
 	void DrawSkyBox(MRenderInfo& info);
 	void DrawPainter(MRenderInfo& info);
-	void DrawBoundingBox(MRenderInfo& info, MModelInstance* pModelIns);
+	void DrawBoundingBox(MRenderInfo& info, MModelComponent* pModelComponent);
 	void DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pModelIns);
 	void DrawCameraFrustum(MRenderInfo& info, MCamera* pCamera);
 
-	void DrawMeshInstance(MRenderInfo& info, MIMeshInstance* pMeshInstance);
+	void DrawMeshComponent(MRenderInfo& info, MRenderableMeshComponent* pMeshInstance);
 
 private:
 

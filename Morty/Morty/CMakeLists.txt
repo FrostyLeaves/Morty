@@ -77,6 +77,9 @@ source_group("Organizer/Node/Light" FILES ${MORTY_NODE_LIGHT_FILES})
 file(GLOB MORTY_NODE_MODEL_FILES Organizer/Node/Model/*.h Organizer/Node/Model/*.cpp )
 source_group("Organizer/Node/Model" FILES ${MORTY_NODE_MODEL_FILES})
 
+file(GLOB MORTY_COMPONENT_FILES Organizer/Component/*.h Organizer/Component/*.cpp )
+source_group("Organizer/Component" FILES ${MORTY_COMPONENT_FILES})
+
 
 ############################################################
 # Resource Loader
@@ -154,6 +157,7 @@ add_library(Morty STATIC
     ${MORTY_NODE_FILES}
     ${MORTY_NODE_LIGHT_FILES}
     ${MORTY_NODE_MODEL_FILES}
+    ${MORTY_COMPONENT_FILES}
 
     ${MORTY_RES_LOADER_FILES}
     ${MORTY_RES_MATERIAL_FILES}
@@ -195,6 +199,7 @@ set(MORTY_CODE_DIRECTORIES ${MORTY_CODE_DIRECTORIES}
         ${CMAKE_CURRENT_SOURCE_DIR}/Organizer/Node
         ${CMAKE_CURRENT_SOURCE_DIR}/Organizer/Node/Light
         ${CMAKE_CURRENT_SOURCE_DIR}/Organizer/Node/Model
+        ${CMAKE_CURRENT_SOURCE_DIR}/Organizer/Component
 
         ${CMAKE_CURRENT_SOURCE_DIR}/ResourceLoader
         ${CMAKE_CURRENT_SOURCE_DIR}/ResourceLoader/Material
@@ -289,6 +294,23 @@ target_include_directories(Morty
         ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/rapidjson/include/rapidjson
 )
 
+
+
+############################################################
+# Physics
+############################################################
+if(MORTY_BUILD_WITH_PHYSICS)
+
+include(../Cmake/add_bullet.cmake)
+
+if(BULLET_FOUND)
+    target_link_libraries(Morty PRIVATE BULLET::ALL)
+else()
+    message(FATAL_ERROR "Bullet not found.")
+endif()
+
+endif()
+
 set( MORTY_CODE_DIRECTORIES
     ${MORTY_CODE_DIRECTORIES}
     CACHE INTERNAL "Morty Source Code Directories"
@@ -303,3 +325,4 @@ set_target_properties(Morty PROPERTIES
          LIBRARY_OUTPUT_PATH_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/../out/build/Debug
          LIBRARY_OUTPUT_PATH_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/../out/build/Release
 )
+

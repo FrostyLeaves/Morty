@@ -17,8 +17,8 @@
 
 #include <vector>
 
+class MNode;
 class MScene;
-class MCamera;
 class MPainter;
 class MIRenderer;
 class MInputEvent;
@@ -40,8 +40,9 @@ public:
 	void SetScene(MScene* pScene);
 	MScene* GetScene(){ return m_pScene; }
 
-	void SetCamera(MCamera* pCamera);
-	MCamera* GetCamera() const;
+	void SetCamera(MNode* pCamera);
+	MNode* GetCamera() const;
+
 	bool IsUseDefaultCamera() { return nullptr == m_pUserCamera; }
 
 	void SetLeftTop(const Vector2& v2LeftTop) { m_v2LeftTop = v2LeftTop; }
@@ -91,10 +92,10 @@ public:
 	// Parameter: const MBoundsAABB & cMeshRenderAABB		所有响应光照的Mesh的AABB
 	// Parameter: const MBoundsAABB & cShadowRenderAABB		所有产生阴影的Mesh的AABB
 	//************************************
-	Matrix4 GetLightInverseProjection(MDirectionalLight* pLight, const MBoundsAABB& cMeshRenderAABB, const MBoundsAABB& cShadowRenderAABB);
+	Matrix4 GetLightInverseProjection(MNode* pLight, const MBoundsAABB& cMeshRenderAABB, const MBoundsAABB& cShadowRenderAABB);
 
-	void GetCameraFrustum(MCamera* pCamera, const float& fZNear, const float& fZFar, std::vector<Vector3>& vPoints);
-	void GetCameraFrustum(MCamera* pCamera, const float& fZNear, const float& fZFar, Vector3& v3NearTopLeft, Vector3& v3NearTopRight, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft, Vector3& v3FarTopLeft, Vector3& v3FarTopRight, Vector3& v3FarBottomRight, Vector3& v3FarBottomLeft);
+	void GetCameraFrustum(MNode* pCamera, const float& fZNear, const float& fZFar, std::vector<Vector3>& vPoints);
+	void GetCameraFrustum(MNode* pCamera, const float& fZNear, const float& fZFar, Vector3& v3NearTopLeft, Vector3& v3NearTopRight, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft, Vector3& v3FarTopLeft, Vector3& v3FarTopRight, Vector3& v3FarBottomRight, Vector3& v3FarBottomLeft);
 	void GetCameraFrustum(Vector3& v3NearTopLeft, Vector3& v3NearTopRight, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft, Vector3& v3FarTopLeft, Vector3& v3FarTopRight, Vector3& v3FarBottomRight, Vector3& v3FarBottomLeft);
 
 	static Matrix4 MatrixPerspectiveFovLH(const float& fFovYZAngle, const float& fScreenAspect, const float& fScreenNear, const float& fScreenFar);
@@ -109,7 +110,7 @@ public:
 	
 
 protected:
-	void SetValidCamera(MCamera* pCamera);
+	void SetValidCamera(MNode* pCamera);
 
 	void UpdateMatrix();
 
@@ -119,8 +120,8 @@ private:
 
 	MScene* m_pScene;
 	
-	MCamera* m_pUserCamera;
-	MCamera* m_pDefaultCamera;
+	MNode* m_pUserCamera;
+	MNode* m_pDefaultCamera;
 
 	Vector2 m_v2LeftTop;
 	Vector2 m_v2Size;

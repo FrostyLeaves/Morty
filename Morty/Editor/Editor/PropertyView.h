@@ -12,8 +12,7 @@
 #include <deque>
 #include <functional>
 
-class MObject;
-class M3DNode;
+class MNode;
 class PropertyBase;
 class PropertyView : public IBaseView
 {
@@ -23,7 +22,7 @@ public:
 
 
 public:
-	void SetEditorObject(MObject* pObject);
+	void SetEditorNode(MNode* pNode);
 
 	virtual void Render() override;
 
@@ -35,11 +34,11 @@ public:
 
 protected:
 
-	void EditObject(MObject* pObject);
-	void CreatePropertyList(MObject* pObject);
+	void EditNode(MNode* pNode);
+	void CreatePropertyList(MNode* pNode);
 
 private:
-	MObject* m_pEditorObject;
+	MNode* m_pEditorNode;
 	std::deque<PropertyBase*> m_vPropertyList;
 	
 	std::map<MString, std::function<PropertyBase*()>> m_tCreatePropertyFactory;

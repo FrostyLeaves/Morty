@@ -1,28 +1,25 @@
 #ifndef _EDITOR_CAMERA_H_
 #define _EDITOR_CAMERA_H_
 
-#include "MInputNode.h"
+#include "MInputComponent.h"
 
-class M3DNode;
-class MoveInputNode : public MInputNode
+class MNode;
+class MoveInputComponent : public MInputComponent
 {
 public:
-	MoveInputNode();
+	M_OBJECT(MoveInputComponent)
+public:
+	MoveInputComponent();
 
-	void SetMoveNode(M3DNode* pNode);
-
-	virtual void OnTick(const float& fDelta);
+	virtual void Tick(const float& fDelta) override;
 
 	std::map<unsigned int, bool> m_tKeyBoardDown;
 	
-	virtual void OnCreated() override;
+	virtual void Initialize() override;
 
 	float m_fMaxSpeed;
 	Vector2 m_v2MouseAddi;
 	Vector3 m_v3MoveSpeed;
-
-
-	M3DNode* m_pMoveNode;
 };
 
 #endif

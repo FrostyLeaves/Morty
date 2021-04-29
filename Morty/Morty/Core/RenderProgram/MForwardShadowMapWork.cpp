@@ -7,18 +7,19 @@
 #include "MResourceManager.h"
 #include "Material/MMaterialResource.h"
 
+#include "MNode.h"
 #include "MScene.h"
 #include "MSkeleton.h"
-#include "Model/MIMeshInstance.h"
-#include "Model/MModelInstance.h"
-#include "Light/MDirectionalLight.h"
-
 
 #include "MRenderGraph.h"
 #include "MRenderGraphNode.h"
 #include "MRenderGraphTexture.h"
 
 #include "MForwardRenderProgram.h"
+
+#include "MModelComponent.h"
+#include "MRenderableMeshComponent.h"
+#include "MDirectionalLightComponent.h"
 
 #include <float.h>
 
@@ -99,8 +100,7 @@ void MForwardShadowMapWork::Render(MRenderGraphNode* pGraphNode)
 	if (!pRenderPass)
 		return;
 
-	info.pDirectionalLight = info.pScene->FindActiveDirectionLight();
-	if (nullptr == info.pDirectionalLight)
+	if (nullptr == info.pDirectionalLightComponent)
 		return;
 
 	std::vector<MShadowRenderGroup> vShadowMeshGroup;
@@ -119,26 +119,42 @@ void MForwardShadowMapWork::Render(MRenderGraphNode* pGraphNode)
 
 void MForwardShadowMapWork::UpdateRenderInfo(MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup)
 {
-	Vector3 v3LightDir = info.pDirectionalLight->GetWorldDirection();
+	Vector3 v3LightDir = info.pDirectionalLightComponent->GetWorldDirection();
 
 	bool bGenerateShadow = false;
 	Vector3 v3ShadowMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
 	Vector3 v3ShadowMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
+	std::map<MSkeletonInstance*, size_t> tSkeletonToIndex;
 
 	vShadowMeshGroup.push_back(MShadowRenderGroup());
 
-	std::vector<MModelInstance*>& vModels = *info.pScene->GetAllModelInstance();
-	for (MModelInstance* pModelIns : vModels)
+	MComponentGroup* pMeshComponentGroup = info.pScene->FindComponents<MRenderableMeshComponent>();
+	if (!pMeshComponentGroup)
+		return;
+
+	for (MComponent* pComponent : pMeshComponentGroup->m_vComponent)
 	{
-		if (pModelIns->GetVisibleRecursively() && pModelIns->GetGenerateDirLightShadow())
+		MNode* pNode = pComponent->GetOwnerNode();
+		MRenderableMeshComponent* pMeshComponent = static_cast<MRenderableMeshComponent*>(pComponent);
+
+		if (pNode->GetVisibleRecursively() && pMeshComponent->GetGenerateDirLightShadow())
 		{
 			MShadowRenderGroup* pGroup = nullptr;
-			if (pModelIns->GetSkeleton())
+			if (MSkeletonInstance* pSkeletonInstance = pMeshComponent->GetSkeletonInstance())
 			{
-				vShadowMeshGroup.push_back(MShadowRenderGroup());
-				pGroup = &vShadowMeshGroup.back();
-				pGroup->pSkeletonInstance = pModelIns->GetSkeleton();
+				auto findResult = tSkeletonToIndex.find(pSkeletonInstance);
+				if (findResult == tSkeletonToIndex.end())
+				{
+					vShadowMeshGroup.push_back(MShadowRenderGroup());
+					tSkeletonToIndex[pSkeletonInstance] = vShadowMeshGroup.size() - 1;
+					pGroup = &vShadowMeshGroup.back();
+					pGroup->pSkeletonInstance = pSkeletonInstance;
+				}
+				else
+				{
+					pGroup = &vShadowMeshGroup[findResult->second];
+				}
 			}
 			else
 			{
@@ -146,17 +162,14 @@ void MForwardShadowMapWork::UpdateRenderInfo(MRenderInfo& info, std::vector<MSha
 			}
 			MShadowRenderGroup& group = *pGroup;
 
-			std::vector<MIMeshInstance*> vMeshIns;
-			pModelIns->FindChildrenByType(vMeshIns, static_cast<int>(MNode::MENodeChildType::EProtected));
-
-			for (MIMeshInstance* pMeshIns : vMeshIns)
+			
+			if (pNode->GetVisible() && pMeshComponent->GetGenerateDirLightShadow())
 			{
-				if (pMeshIns->GetVisible() && pMeshIns->GetGenerateDirLightShadow())
+				if (const MBoundsAABB* pBounds = pMeshComponent->GetBoundsAABB())
 				{
-					const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
 					if (info.pViewport->GetCameraFrustum()->ContainTest(*pBounds, v3LightDir) != MCameraFrustum::EOUTSIDE)
 					{
-						group.vMeshInstances.push_back(pMeshIns);
+						group.vMeshInstances.push_back(pMeshComponent);
 						pBounds->UnionMinMax(v3ShadowMin, v3ShadowMax);
 
 						bGenerateShadow = true;
@@ -175,7 +188,7 @@ void MForwardShadowMapWork::UpdateRenderInfo(MRenderInfo& info, std::vector<MSha
 		info.cShadowRenderAABB = info.cMeshRenderAABB;
 	}
 
-	info.m4DirLightInvProj = info.pViewport->GetLightInverseProjection(info.pDirectionalLight, info.cMeshRenderAABB, info.cShadowRenderAABB);
+	info.m4DirLightInvProj = info.pViewport->GetLightInverseProjection(info.pDirectionalLightComponent->GetOwnerNode(), info.cMeshRenderAABB, info.cShadowRenderAABB);
 }
 
 void MForwardShadowMapWork::RenderMesh(MRenderInfo& info, std::vector<MShadowRenderGroup>& vShadowMeshGroup)
@@ -213,7 +226,7 @@ void MForwardShadowMapWork::RenderMesh(MRenderInfo& info, std::vector<MShadowRen
 
 		info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, &m_FrameParamSet);
 
-		for (MIMeshInstance* pMeshIns : group.vMeshInstances)
+		for (MRenderableMeshComponent* pMeshIns : group.vMeshInstances)
 		{
 			info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, pMeshIns->GetShaderMeshParamSet());
 			info.pRenderer->DrawMesh(info.pPrimaryCommand, pMeshIns->GetMesh());

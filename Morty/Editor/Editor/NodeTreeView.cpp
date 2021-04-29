@@ -53,11 +53,11 @@ void NodeTreeView::Input(MInputEvent* pEvent)
 
 }
 
-MObject* NodeTreeView::GetSelectionNode()
+MNode* NodeTreeView::GetSelectionNode()
 {
 	if (MObject* pObject = m_pEngine->GetObjectManager()->FindObject(m_unSelectedObjectID))
 	{
-		return pObject;
+		return pObject->DynamicCast<MNode>();
 	}
 
 	return nullptr;

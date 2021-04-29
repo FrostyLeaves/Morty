@@ -25,7 +25,8 @@
 const TYPE* Get##TYPE_NAME() const { return m_eType == MEVariantType::E##TYPE_NAME ? (const TYPE*)m_pData : nullptr;} \
 \
 template<> TYPE* GetTypedData<TYPE>(){ return Get##TYPE_NAME(); }\
-
+\
+template<> const TYPE* GetTypedData<TYPE>() const { return Get##TYPE_NAME(); }\
 
 class MContainer;
 class MStruct;
@@ -80,6 +81,7 @@ public:
 	bool IsTrue() const { return m_pData && *((int*)m_pData) != 0; }
 
 	template<typename T> T* GetTypedData() { return nullptr; }
+	template<typename T> const T* GetTypedData() const { return nullptr; }
 
 	template<> bool* GetTypedData<bool>() { return GetBool(); }
 	bool* GetBool() { return m_eType == MEVariantType::EBool ? (bool*)(m_pData) : nullptr; }
@@ -174,10 +176,20 @@ public:
 		return nullptr;
 	}
 
+	template <typename T>
+	const T* GetMember(const uint32_t& unIndex) const
+	{
+		if (const MStructMember* pMember = GetMember(unIndex))
+			return pMember->var.GetTypedData<T>();
+		return nullptr;
+	}
+
 	const MContainer& operator = (const MContainer& var);
 	bool operator == (const MContainer& var) const;
 
 	MVariant& operator[](const uint32_t& unIndex);
+
+	const MVariant& operator[] (const uint32_t& unIndex) const;
 
 protected:
 
@@ -231,6 +243,26 @@ public:
 	bool FindMember(const MString& strName, T& result)
 	{
 		if (MVariant* pVar = FindMember(strName))
+		{
+			result = *pVar->GetTypedData<T>();
+			return true;
+		}
+
+		return false;
+	}
+
+	template<typename T>
+	const T* FindMember(const MString& strName) const
+	{
+		if (const MVariant* pVar = FindMember(strName))
+			return pVar->GetTypedData<T>();
+		return nullptr;
+	}
+
+	template<typename T>
+	bool FindMember(const MString& strName, T& result) const
+	{
+		if (const MVariant* pVar = FindMember(strName))
 		{
 			result = *pVar->GetTypedData<T>();
 			return true;

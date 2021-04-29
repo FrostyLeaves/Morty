@@ -13,12 +13,36 @@
 #include "MString.h"
 #include "MVariant.h"
 #include "MResource.h"
+#include "MComponent.h"
 #include "MSerializer.h"
 
 #include <vector>
 #include <functional>
 
 class MScene;
+
+
+class MORTY_API MComponentNotifyInfo
+{
+public:
+	struct MComponentNotifyCallFunction
+	{
+		const void* pComponentType;
+		std::function<void()> function;
+
+		bool operator ==(const MComponentNotifyCallFunction& cf) { return pComponentType == cf.pComponentType; }
+	};
+public:
+	MComponentNotifyInfo() :m_vComponentNotifyCallFunction() {}
+
+	void AddNotifyFunction(const void* pComponentType, const std::function<void()>& callback);
+	void RemoveNotifyFunction(const void* pComponentType);
+
+public:
+
+	std::vector<MComponentNotifyCallFunction> m_vComponentNotifyCallFunction;
+};
+
 class MORTY_API MNode : public MObject, public MSerializer
 {
 public:
@@ -34,6 +58,7 @@ public:
 	};
 
 	typedef std::function<bool(MNode*)> SearchNodeFunction;
+	typedef std::function<void(MNode*)> CallFunction;
 
 public:
 
@@ -52,6 +77,8 @@ public:
 	std::vector<MNode*> FindChildrenByName(const MString& strName);
 	std::vector<MNode*> FindChildrenByFunc(const SearchNodeFunction& func);
 
+	void CallRecursivelyFunction(const CallFunction& func);
+
 	void SetName(const MString& strName) { m_strName = strName; }
 	MString GetName(){ return m_strName; }
 
@@ -64,6 +91,37 @@ public:
 
 	bool AddNode(MNode* pNode) { return AddNodeImpl(pNode, MENodeChildType::EPublic); }
 	bool RemoveNode(MNode* pNode) { return !m_bDeleteMark && RemoveNodeImpl(pNode, MENodeChildType::EPublic); }
+
+
+public:
+
+	template <class T>
+	T* RegisterComponent();
+	MComponent* RegisterComponent(MTypeIdentifierConstPointer pComponentType);
+
+	template <class T>
+	void UnregisterComponent();
+	void UnregisterComponent(MTypeIdentifierConstPointer pComponentType);
+
+	template <class T>
+	T* GetComponent();
+	MComponent* GetComponent(MTypeIdentifierConstPointer pComponentType);
+
+	std::vector<MComponent*> GetComponents();
+
+	template <class T>
+	void RegisterComponentNotify(const MString& strNotifyName, const std::function<void()>& callback);
+	void RegisterComponentNotify(const MString& strNotifyName, const void* pComponentType, const std::function<void()>& callback);
+
+	template <class T>
+	void UnregisterComponentNotify(const MString& strNotifyName);
+	void UnregisterComponentNotify(const MString& strNotifyName, const void* pComponentType);
+
+	void SendComponentNotify(const MString& strSignalName);
+
+public:
+
+	void AddProtectedNode(MNode* pNode) { AddNodeImpl(pNode, MENodeChildType::EProtected); }
 
 protected:
 	virtual bool AddNodeImpl(MNode* pNode, const MENodeChildType& etype);
@@ -84,13 +142,16 @@ public:
 
 	bool Load(MResource* pResource);
 
-	static MNode* CreateNodeByVariant(MEngine* pEngine, MStruct& var);
+	static MNode* CreateNodeByVariant(MEngine* pEngine, const MStruct& var);
 
 	virtual void WriteToStruct(MStruct& srt) override;
-	virtual void ReadFromStruct(MStruct& srt) override;
+	virtual void ReadFromStruct(const MStruct& srt) override;
 
 	void WriteChildrenToStruct(MStruct& srt);
-	void ReadChildrenFromStruct(MStruct& srt);
+	void ReadChildrenFromStruct(const MStruct& srt);
+
+	void WriteComponentToStruct(MStruct& srt);
+	void ReadComponentFromStruct(const MStruct& srt);
 
 //Serialize End
 
@@ -120,6 +181,8 @@ protected:
 	MScene* m_pScene;
 	std::vector<MNode*> m_vChildren;
 	std::vector<MNode*> m_vProtectedChildren;
+	std::map<const void*, MComponent*> m_tComponents;
+	std::map<MString, MComponentNotifyInfo*> m_tComponentNotify;
 
 	bool m_bVisibleRecursively;
 
@@ -128,9 +191,6 @@ protected:
 	MString m_strName;
 	bool m_bVisible;
 };
-
-
-
 
 template <class T>
 T* MNode::FindFirstChildByType()
@@ -185,6 +245,38 @@ T* MNode::FindParentByType()
 	}
 
 	return nullptr;
+}
+
+template <class T>
+T* MNode::RegisterComponent()
+{
+	MTypeIdentifierConstPointer pComponentType = T::GetClassTypeIdentifier();
+	return static_cast<T*>(RegisterComponent(pComponentType));
+}
+
+template <class T>
+void MNode::UnregisterComponent()
+{
+	UnregisterComponent(T::GetClassTypeIdentifier());
+}
+
+template <class T>
+T* MNode::GetComponent()
+{
+	return static_cast<T*>(GetComponent(T::GetClassTypeIdentifier()));
+}
+
+
+template <class T>
+void MNode::RegisterComponentNotify(const MString& strNotifyName, const std::function<void()>& callback)
+{
+	RegisterComponentNotify(strNotifyName, T::GetClassTypeIdentifier(), callback);
+}
+
+template <class T>
+void MNode::UnregisterComponentNotify(const MString& strNotifyName)
+{
+	UnregisterComponentNotify(strNotifyName, T::GetClassTypeIdentifier());
 }
 
 #endif

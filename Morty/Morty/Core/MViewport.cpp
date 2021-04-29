@@ -1,12 +1,16 @@
 #include "MViewport.h"
+
+#include "MNode.h"
 #include "MScene.h"
-#include "MCamera.h"
 #include "MEngine.h"
 #include "MIRenderer.h"
 #include "MInputManager.h"
 
+#include "MSceneComponent.h"
+#include "MCameraComponent.h"
+#include "MDirectionalLightComponent.h"
+
 #include "MBounds.h"
-#include "Node/Light/MDirectionalLight.h"
 
 #include "MForwardRenderProgram.h"
 
@@ -54,6 +58,10 @@ MViewport::~MViewport()
 
 bool MViewport::ConvertWorldPointToViewport(const Vector3& v3WorldPos, Vector3& v2Result)
 {
+	MCameraComponent* pCameraComponent = GetCamera()->GetComponent<MCameraComponent>();
+	if (!pCameraComponent)
+		return false;
+
 	UpdateMatrix();
 
 	Vector4 pos = m_m4CameraInvProj * Vector4(v3WorldPos, 1.0f);
@@ -65,11 +73,19 @@ bool MViewport::ConvertWorldPointToViewport(const Vector3& v3WorldPos, Vector3& 
 
 	v2Result = Vector3((pos.x + 1.0) * 0.5 * GetWidth(), (pos.y + 1.0) * 0.5 * GetHeight(), pos.z);
 
-	return z >= GetCamera()->GetZNear();
+	return z >= pCameraComponent->GetZNear();
 }	
 
 void MViewport::ConvertViewportPointToWorld(const Vector2& v2ViewportPos, const float& fDepth, Vector3& v3Result)
 {
+	MCameraComponent* pCameraComponent = GetCamera()->GetComponent<MCameraComponent>();
+	if (!pCameraComponent)
+		return;
+
+	MSceneComponent* pSceneComponent = GetCamera()->GetComponent<MSceneComponent>();
+	if (!pSceneComponent)
+		return;
+
 	UpdateMatrix();
 
 	Matrix4 mat = m_m4CameraInvProj.Inverse();
@@ -77,9 +93,9 @@ void MViewport::ConvertViewportPointToWorld(const Vector2& v2ViewportPos, const 
 	float x = (v2ViewportPos.x / GetWidth()) * 2.0f - 1.0f;
 	float y = (v2ViewportPos.y / GetHeight()) * 2.0f - 1.0f;
 
-	Vector4 pos4 = mat * Vector4(x, y, GetCamera()->GetZNear(), 1.0f);
+	Vector4 pos4 = mat * Vector4(x, y, pCameraComponent->GetZNear(), 1.0f);
 	Vector3 pos = pos4 / pos4.w;
-	Vector3 dir = pos - GetCamera()->GetWorldPosition();
+	Vector3 dir = pos - pSceneComponent->GetWorldPosition();
 	dir.Normalize();
 
 	v3Result = pos + dir * fDepth;
@@ -87,6 +103,10 @@ void MViewport::ConvertViewportPointToWorld(const Vector2& v2ViewportPos, const 
 
 bool  MViewport::ConvertWorldLineToNormalizedDevice(const Vector3& v3Pos1, const Vector3& v3Pos2, Vector2& v3Rst1, Vector2& v3Rst2)
 {
+	MCameraComponent* pCameraComponent = GetCamera()->GetComponent<MCameraComponent>();
+	if (!pCameraComponent)
+		return false;
+
 	UpdateMatrix();
 
 	Vector4 v4Pos1 = m_m4CameraInvProj * Vector4(v3Pos1, 1.0f);
@@ -104,7 +124,7 @@ bool  MViewport::ConvertWorldLineToNormalizedDevice(const Vector3& v3Pos1, const
 		v4Pos2.y /= v4Pos2.w;
 	}
 
-	float znear = GetCamera()->GetZNear();
+	float znear = pCameraComponent->GetZNear();
 
 	v3Rst1 = v4Pos1;
 	v3Rst2 = v4Pos2;
@@ -117,6 +137,10 @@ bool  MViewport::ConvertWorldLineToNormalizedDevice(const Vector3& v3Pos1, const
 
 bool MViewport::ConvertWorldPointToNormalizedDevice(const Vector3& v3Pos, Vector2& v2Rst)
 {
+	MCameraComponent* pCameraComponent = GetCamera()->GetComponent<MCameraComponent>();
+	if (!pCameraComponent)
+		return false;
+
 	UpdateMatrix();
 
 	Vector4 v4Rst = m_m4CameraInvProj * Vector4(v3Pos, 1.0f);
@@ -127,7 +151,7 @@ bool MViewport::ConvertWorldPointToNormalizedDevice(const Vector3& v3Pos, Vector
 	}
 
 	v2Rst = v4Rst;
-	if (v4Rst.z < GetCamera()->GetZNear())
+	if (v4Rst.z < pCameraComponent->GetZNear())
 		return false;
 
 	return true;
@@ -146,7 +170,9 @@ void MViewport::OnCreated()
 	MObject::OnCreated();
 
 	//Init Default Camera.
-	m_pDefaultCamera = m_pEngine->GetObjectManager()->CreateObject<MCamera>();
+	m_pDefaultCamera = m_pEngine->GetObjectManager()->CreateObject<MNode>();
+	m_pDefaultCamera->RegisterComponent<MSceneComponent>();
+	m_pDefaultCamera->RegisterComponent<MCameraComponent>();
 }
 
 void MViewport::OnDelete()
@@ -194,16 +220,28 @@ Matrix4 MViewport::GetLightInverseProjection(MPointLight* pLight)
 	return Matrix4::IdentityMatrix;
 }
 
-Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight, const MBoundsAABB& cMeshRenderAABB, const MBoundsAABB& cShadowRenderAABB)
+Matrix4 MViewport::GetLightInverseProjection(MNode* pLight, const MBoundsAABB& cMeshRenderAABB, const MBoundsAABB& cShadowRenderAABB)
 {
 	if (nullptr == pLight)
 		return Matrix4::IdentityMatrix;
 
-	Matrix4 matLight(pLight->GetTransform().GetRotation());
+	MSceneComponent* pLightSceneComponent = pLight->GetComponent<MSceneComponent>();
+	if (nullptr == pLightSceneComponent)
+		return Matrix4::IdentityMatrix;
+	
+	MCameraComponent* pCameraComponent = GetCamera()->GetComponent<MCameraComponent>();
+	if (nullptr == pCameraComponent)
+		return Matrix4::IdentityMatrix;
+
+	MSceneComponent* pCameraSceneComponent = GetCamera()->GetComponent<MSceneComponent>();
+	if (nullptr == pCameraSceneComponent)
+		return Matrix4::IdentityMatrix;
+
+	Matrix4 matLight(pLightSceneComponent->GetTransform().GetRotation());
 	Matrix4 matLightInv = matLight.Inverse();
 
-	MCamera* pCamera = GetCamera();
-	Matrix4 matCameraInv = pCamera->GetWorldTransform().Inverse();
+	MNode* pCamera = GetCamera();
+	Matrix4 matCameraInv = pCameraSceneComponent->GetWorldTransform().Inverse();
 
 	std::vector<Vector3> vSceneBoundsPoints(8);
 	cMeshRenderAABB.GetPoints(vSceneBoundsPoints);
@@ -219,8 +257,8 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight, const MB
 		if (fSceneMaxZFar < z)
 			fSceneMaxZFar = z;
 	}
-	float fZValidNear = fSceneMinZNear > pCamera->GetZNear() ? fSceneMinZNear : pCamera->GetZNear();
-	float fZValidFar = fSceneMaxZFar < pCamera->GetZFar() ? fSceneMaxZFar : pCamera->GetZFar();
+	float fZValidNear = fSceneMinZNear > pCameraComponent->GetZNear() ? fSceneMinZNear : pCameraComponent->GetZNear();
+	float fZValidFar = fSceneMaxZFar < pCameraComponent->GetZFar() ? fSceneMaxZFar : pCameraComponent->GetZFar();
 
 	//获取相机视椎体在方向光Camera内的最小和最大X、Y值
 	std::vector<Vector3> vCameraBoundsPoints(8);
@@ -284,17 +322,25 @@ Matrix4 MViewport::GetLightInverseProjection(MDirectionalLight* pLight, const MB
 	return projMat * matLightInv;
 }
 
-void MViewport::GetCameraFrustum(MCamera* pCamera, const float& fZNear, const float& fZFar, Vector3& v3NearTopLeft, Vector3& v3NearTopRight, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft, Vector3& v3FarTopLeft, Vector3& v3FarTopRight, Vector3& v3FarBottomRight, Vector3& v3FarBottomLeft)
+void MViewport::GetCameraFrustum(MNode* pCamera, const float& fZNear, const float& fZFar, Vector3& v3NearTopLeft, Vector3& v3NearTopRight, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft, Vector3& v3FarTopLeft, Vector3& v3FarTopRight, Vector3& v3FarBottomRight, Vector3& v3FarBottomLeft)
 {
+	MCameraComponent* pCameraComponent = GetCamera()->GetComponent<MCameraComponent>();
+	if (nullptr == pCameraComponent)
+		return;
+
+	MSceneComponent* pSceneComponent = GetCamera()->GetComponent<MSceneComponent>();
+	if (nullptr == pSceneComponent)
+		return;
+
 	UpdateMatrix();
 
-	if (MCamera::MECameraType::EPerspective == pCamera->GetCameraType())
+	if (MCameraComponent::MECameraType::EPerspective == pCameraComponent->GetCameraType())
 	{
 		float fAspect = GetWidth() / GetHeight();
-		float fHalfHeightDivideZ = (pCamera->GetFov() * 0.5f * M_PI / 180.0f);
+		float fHalfHeightDivideZ = (pCameraComponent->GetFov() * 0.5f * M_PI / 180.0f);
 		float fHalfWidthDivideZ = fHalfHeightDivideZ * fAspect;
 
-		Matrix4 localToWorld = pCamera->GetWorldTransform();
+		Matrix4 localToWorld = pSceneComponent->GetWorldTransform();
 
 		v3NearTopLeft = localToWorld * (Vector3(-fHalfWidthDivideZ, +fHalfHeightDivideZ, 1) * fZNear);
 		v3NearTopRight = localToWorld * (Vector3(+fHalfWidthDivideZ, +fHalfHeightDivideZ, 1) * fZNear);
@@ -308,10 +354,10 @@ void MViewport::GetCameraFrustum(MCamera* pCamera, const float& fZNear, const fl
 	}
 	else
 	{
-		float fHalfWidth = pCamera->GetWidth() * 0.5f;
-		float fHalfHeight = pCamera->GetHeight() * 0.5f;
+		float fHalfWidth = pCameraComponent->GetWidth() * 0.5f;
+		float fHalfHeight = pCameraComponent->GetHeight() * 0.5f;
 
-		Matrix4 localToWorld = pCamera->GetWorldTransform();
+		Matrix4 localToWorld = pSceneComponent->GetWorldTransform();
 
 		v3NearTopLeft = localToWorld * Vector3(-fHalfWidth, +fHalfHeight, fZNear);
 		v3NearTopRight = localToWorld * Vector3(+fHalfWidth, +fHalfHeight, fZNear);
@@ -327,11 +373,15 @@ void MViewport::GetCameraFrustum(MCamera* pCamera, const float& fZNear, const fl
 
 void MViewport::GetCameraFrustum(Vector3& v3NearTopLeft, Vector3& v3NearTopRight, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft, Vector3& v3FarTopLeft, Vector3& v3FarTopRight, Vector3& v3FarBottomRight, Vector3& v3FarBottomLeft)
 {
-	MCamera* pCamera = GetCamera();
-	GetCameraFrustum(pCamera, pCamera->GetZNear(), pCamera->GetZFar(), v3NearTopLeft, v3NearTopRight, v3NearBottomRight, v3NearBottomLeft, v3FarTopLeft, v3FarTopRight, v3FarBottomRight,  v3FarBottomLeft);
+	MCameraComponent* pCameraComponent = GetCamera()->GetComponent<MCameraComponent>();
+	if (nullptr == pCameraComponent)
+		return;
+
+	MNode* pCamera = GetCamera();
+	GetCameraFrustum(pCamera, pCameraComponent->GetZNear(), pCameraComponent->GetZFar(), v3NearTopLeft, v3NearTopRight, v3NearBottomRight, v3NearBottomLeft, v3FarTopLeft, v3FarTopRight, v3FarBottomRight,  v3FarBottomLeft);
 }
 
-void MViewport::GetCameraFrustum(MCamera* pCamera, const float& fZNear, const float& fZFar, std::vector<Vector3>& vPoints)
+void MViewport::GetCameraFrustum(MNode* pCamera, const float& fZNear, const float& fZFar, std::vector<Vector3>& vPoints)
 {
 	GetCameraFrustum(pCamera, fZNear, fZFar, vPoints[0], vPoints[1], vPoints[2], vPoints[3], vPoints[4], vPoints[5], vPoints[6], vPoints[7]);
 }
@@ -351,13 +401,13 @@ void MViewport::SetScene(MScene* pScene)
 		m_pScene->AddAttachedViewport(this);
 		if (MNode* pRootNode = m_pScene->GetRootNode())
 		{
-			MCamera* pCamera = pRootNode->FindFirstChildByType<MCamera>();
+			MNode* pCamera = pRootNode->FindFirstChildByType<MNode>();
 			SetValidCamera(pCamera);
 		}
 	}
 }
 
-void MViewport::SetCamera(MCamera* pCamera)
+void MViewport::SetCamera(MNode* pCamera)
 {
 	if (m_pScene && pCamera && pCamera->GetScene() == m_pScene)
 	{
@@ -369,7 +419,7 @@ void MViewport::SetCamera(MCamera* pCamera)
 	}
 }
 
-void MViewport::SetValidCamera(MCamera* pCamera)
+void MViewport::SetValidCamera(MNode* pCamera)
 {
 	m_pUserCamera = pCamera;
 }
@@ -379,16 +429,24 @@ void MViewport::UpdateMatrix()
 	if (m_bCameraInvProjMatrixLocked)
 		return;
 
-	//Update Camera and Projection Matrix.
-	MCamera* pCamera = GetCamera();
-	Matrix4 projMat = pCamera->GetCameraType() == MCamera::MECameraType::EPerspective
-		? MatrixPerspectiveFovLH(pCamera->GetFov() * 0.5f, m_v2Size.x / m_v2Size.y, pCamera->GetZNear(), pCamera->GetZFar())
-		: MatrixOrthoOffCenterLH(-pCamera->GetWidth() * 0.5f, pCamera->GetWidth() * 0.5f, pCamera->GetHeight() * 0.5f, -pCamera->GetHeight() * 0.5f, pCamera->GetZNear(), pCamera->GetZFar());
+	MCameraComponent* pCameraComponent = GetCamera()->GetComponent<MCameraComponent>();
+	if (nullptr == pCameraComponent)
+		return;
 
-	m_m4CameraInvProj = projMat * pCamera->GetWorldTransform().Inverse();
+	MSceneComponent* pSceneComponent = GetCamera()->GetComponent<MSceneComponent>();
+	if (nullptr == pSceneComponent)
+		return;
+
+	//Update Camera and Projection Matrix.
+	MNode* pCamera = GetCamera();
+	Matrix4 projMat = pCameraComponent->GetCameraType() == MCameraComponent::MECameraType::EPerspective
+		? MatrixPerspectiveFovLH(pCameraComponent->GetFov() * 0.5f, m_v2Size.x / m_v2Size.y, pCameraComponent->GetZNear(), pCameraComponent->GetZFar())
+		: MatrixOrthoOffCenterLH(-pCameraComponent->GetWidth() * 0.5f, pCameraComponent->GetWidth() * 0.5f, pCameraComponent->GetHeight() * 0.5f, -pCameraComponent->GetHeight() * 0.5f, pCameraComponent->GetZNear(), pCameraComponent->GetZFar());
+
+	m_m4CameraInvProj = projMat * pSceneComponent->GetWorldTransform().Inverse();
 }
 
-MCamera* MViewport::GetCamera() const
+MNode* MViewport::GetCamera() const
 {
 	return m_pUserCamera ? m_pUserCamera : m_pDefaultCamera;
 }

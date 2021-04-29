@@ -449,7 +449,7 @@ void PropertyBase::EditSaveMResource(const MString& stringID, MResource* pResour
 		ImGui::SameLine();
 
 		char btn_name[64];
-		sprintf(btn_name, "Save_%d", ImGui::GetID(pResource));
+		sprintf(btn_name, "Save##_%d", ImGui::GetID(pResource));
 
 		if (ImGui::Button(btn_name, ImVec2(fWidth * 0.5f, 0)))
 			pResource->Save();

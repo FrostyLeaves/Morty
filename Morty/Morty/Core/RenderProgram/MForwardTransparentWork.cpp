@@ -5,7 +5,6 @@
 #include "MViewport.h"
 #include "MSkeleton.h"
 #include "MResourceManager.h"
-#include "Model/MIMeshInstance.h"
 #include "Texture/MTextureResource.h"
 #include "Material/MMaterialResource.h"
 
@@ -14,6 +13,8 @@
 #include "MRenderGraphTexture.h"
 
 #include "MForwardRenderWork.h"
+
+#include "MRenderableMeshComponent.h"
 
 M_OBJECT_IMPLEMENT(MForwardTransparentWork, MObject)
 
@@ -158,14 +159,14 @@ void MForwardTransparentWork::RenderDepthPeel(MRenderGraphNode* pGraphNode)
 			info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, &m_aFrameParamSet[i % 2]);
 			info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, pMaterial->GetMaterialParamSet());
 
-			for (MIMeshInstance* pMeshIns : group.m_vMeshInstances)
+			for (MRenderableMeshComponent* pMeshComponent : group.m_vMeshComponents)
 			{
-				if (MSkeletonInstance* pSkeletonIns = pMeshIns->GetSkeletonInstance())
+				if (MSkeletonInstance* pSkeletonIns = pMeshComponent->GetSkeletonInstance())
 				{
 					info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, pSkeletonIns->GetShaderParamSet());
 				}
-				info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, pMeshIns->GetShaderMeshParamSet());
-				info.pRenderer->DrawMesh(info.pPrimaryCommand, pMeshIns->GetMesh());
+				info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, pMeshComponent->GetShaderMeshParamSet());
+				info.pRenderer->DrawMesh(info.pPrimaryCommand, pMeshComponent->GetMesh());
 			}
 		}
 	}

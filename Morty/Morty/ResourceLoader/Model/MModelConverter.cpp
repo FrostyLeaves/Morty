@@ -6,22 +6,16 @@
 #include "MVertex.h"
 #include "MMeshResource.h"
 
-#include "MIDevice.h"
+#include "MNode.h"
 #include "MEngine.h"
+#include "MIDevice.h"
 
-#include "Model/MModelInstance.h"
 #include "Model/MModelResource.h"
-#include "Model/MStaticMeshInstance.h"
 #include "Model/MSkeletonResource.h"
 #include "Texture/MTextureResource.h"
 #include "Material/MMaterialResource.h"
 #include "Model/MSkeletalAnimationResource.h"
 #include "Node/MNodeResource.h"
-
-#include "MCamera.h"
-#include "Light/MSpotLight.h"
-#include "Light/MPointLight.h"
-#include "Light/MDirectionalLight.h"
 
 #include "MBounds.h"
 #include "MSkeleton.h"
@@ -34,6 +28,16 @@
 #include "MFileHelper.h"
 
 #include "Timer/MTimer.h"
+
+#include "MComponent.h"
+#include "MModelComponent.h"
+#include "MSceneComponent.h"
+#include "MCameraComponent.h"
+#include "MRenderableMeshComponent.h"
+
+#include "MSpotLightComponent.h"
+#include "MPointLightComponent.h"
+#include "MDirectionalLightComponent.h"
 
 #include <fstream>
 
@@ -63,8 +67,9 @@ MModelConverter::MModelConverter(MEngine* pEngine)
 , m_strResourcePath()
 , m_vMeshes()
 , m_pSkeleton(nullptr)
-, m_pModelInstance(nullptr)
+, m_pModelNode(nullptr)
 , m_vSkeletalAnimation()
+, eMaterialType(MModelConvertMaterialType::E_Default_Forward)
 {
 }
 
@@ -91,6 +96,7 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 	m_strResourcePath = convertInfo.strResourcePath;
 
 	auto time = MTimer::GetCurTime();
+	eMaterialType = convertInfo.eMaterialType;
 	if (!Load(convertInfo.strResourcePath))
 		return false;
 
@@ -101,6 +107,7 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 	MString strPath = convertInfo.strOutputDir + "/" + convertInfo.strOutputName + "/";
 
 	MFileHelper::MakeDir(convertInfo.strOutputDir + "/" + convertInfo.strOutputName);
+
 
 	if (m_pSkeleton)
 	{
@@ -141,7 +148,7 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 	pNodeResource->AddRef();
 
 	m_pEngine->GetResourceManager()->MoveTo(pNodeResource, strPath + convertInfo.strOutputName + "." + MGlobal::SUFFIX_NODE);
-	pNodeResource->SaveByNode(m_pModelInstance);
+	pNodeResource->SaveByNode(m_pModelNode);
 
 	pNodeResource->SubRef();
 	pNodeResource = nullptr;
@@ -154,7 +161,9 @@ bool MModelConverter::Load(const MString& strResourcePath)
 	m_pSkeleton = m_pEngine->GetResourceManager()->CreateResource<MSkeletonResource>();
 	m_pSkeleton->AddRef();
 
-	m_pModelInstance = m_pEngine->GetObjectManager()->CreateObject<MModelInstance>();
+	m_pModelNode = m_pEngine->GetObjectManager()->CreateObject<MNode>();
+	MSceneComponent* pSceneComponent = m_pModelNode->RegisterComponent<MSceneComponent>();
+	MModelComponent* pModelComponent = m_pModelNode->RegisterComponent<MModelComponent>();
 
 	std::vector<MString> vSearchPath = m_pEngine->GetResourceManager()->GetSearchPath();
 
@@ -184,7 +193,7 @@ bool MModelConverter::Load(const MString& strResourcePath)
 
 	//Bones
 	ProcessBones(scene);
-	m_pModelInstance->SetSkeletonTemplate(m_pSkeleton);
+	pModelComponent->SetSkeletonResource(m_pSkeleton);
 
 	//Meshes
 	ProcessNode(scene->mRootNode, scene);
@@ -237,12 +246,14 @@ void MModelConverter::ProcessNode(aiNode* pNode, const aiScene *pScene)
 		m_vMeshes.push_back(pChildMeshResource);
 
 
-		MStaticMeshInstance* pChildMeshNode = m_pEngine->GetObjectManager()->CreateObject<MStaticMeshInstance>();
-		pChildMeshNode->SetName(pChildMesh->mName.C_Str());
-		pChildMeshNode->SetAttachedModelInstance(m_pModelInstance);
-		pChildMeshNode->Load(pChildMeshResource);
+		MNode* pChildNode = m_pEngine->GetObjectManager()->CreateObject<MNode>();
+		pChildNode->SetName(pChildMesh->mName.C_Str());
+		
+		MSceneComponent* pSceneComponent = pChildNode->RegisterComponent<MSceneComponent>();
+		MRenderableMeshComponent* pMeshComponent = pChildNode->RegisterComponent<MRenderableMeshComponent>();
+		pMeshComponent->Load(pChildMeshResource);
 
-		GetMNodeFromNode(pScene, pNode)->AddNodeImpl(pChildMeshNode, MNode::MENodeChildType::EProtected);
+		GetMNodeFromNode(pScene, pNode)->AddNode(pChildNode);
 	}
 
 	for (uint32_t i = 0; i < pNode->mNumChildren; ++i)
@@ -474,43 +485,47 @@ void MModelConverter::ProcessLights(const aiScene* pScene)
 
 		MString strName = pLight->mName.C_Str();
 
-		MILight* pMLight = nullptr;
+		MNode* pMLight = nullptr;
 		switch (pLight->mType)
 		{
 		case aiLightSourceType::aiLightSource_POINT:
 		{
-			MPointLight* pPointLight = m_pEngine->GetObjectManager()->CreateObject<MPointLight>();
-			pPointLight->SetDiffuseColor(GetColor(pLight->mColorDiffuse));
-			pPointLight->SetSpecularColor(GetColor(pLight->mColorSpecular));
-			pPointLight->SetPosition(GetVector3(pLight->mPosition));
+			pMLight = m_pEngine->GetObjectManager()->CreateObject<MNode>();
+			MSceneComponent* pSceneComponent = pMLight->RegisterComponent<MSceneComponent>();
+			MPointLightComponent* pLightComponent = pMLight->RegisterComponent<MPointLightComponent>();
 
-			pMLight = pPointLight;
+			pSceneComponent->SetPosition(GetVector3(pLight->mPosition));
+			pLightComponent->SetColor(GetColor(pLight->mColorDiffuse));
+
 		}
 		break;
 
 		case aiLightSourceType::aiLightSource_DIRECTIONAL:
 		{
-			MDirectionalLight* pDirLight = m_pEngine->GetObjectManager()->CreateObject<MDirectionalLight>();
-			pDirLight->SetDiffuseColor(GetColor(pLight->mColorDiffuse));
-			pDirLight->SetSpecularColor(GetColor(pLight->mColorSpecular));
-			pDirLight->LookAt(GetVector3(pLight->mDirection), GetVector3((pLight->mUp)));
-			pDirLight->SetPosition(GetVector3(pLight->mPosition));
+			pMLight = m_pEngine->GetObjectManager()->CreateObject<MNode>();
 
-			pMLight = pDirLight;
+			MSceneComponent* pSceneComponent = pMLight->RegisterComponent<MSceneComponent>();
+			MDirectionalLightComponent* pLightComponent = pMLight->RegisterComponent<MDirectionalLightComponent>();
+
+			pSceneComponent->SetPosition(GetVector3(pLight->mPosition));
+			pSceneComponent->LookAt(GetVector3(pLight->mDirection), GetVector3((pLight->mUp)));
+			pLightComponent->SetColor(GetColor(pLight->mColorDiffuse));
+
 		}
 		break;
 		case aiLightSourceType::aiLightSource_SPOT:
 		{
-			MSpotLight* pSpotLight = m_pEngine->GetObjectManager()->CreateObject<MSpotLight>();
-			pSpotLight->SetDiffuseColor(GetColor(pLight->mColorDiffuse));
-			pSpotLight->SetSpecularColor(GetColor(pLight->mColorSpecular));
-			pSpotLight->LookAt(GetVector3(pLight->mDirection), GetVector3((pLight->mUp)));
-			pSpotLight->SetPosition(GetVector3(pLight->mPosition));
+			pMLight = m_pEngine->GetObjectManager()->CreateObject<MNode>();
+			MSceneComponent* pSceneComponent = pMLight->RegisterComponent<MSceneComponent>();
+			MSpotLightComponent* pLightComponent = pMLight->RegisterComponent<MSpotLightComponent>();
 
-			pSpotLight->SetInnerCutOff(pLight->mAngleInnerCone);
-			pSpotLight->SetOuterCutOff(pLight->mAngleOuterCone);
+			pSceneComponent->SetPosition(GetVector3(pLight->mPosition));
+			pSceneComponent->LookAt(GetVector3(pLight->mDirection), GetVector3((pLight->mUp)));
+			pLightComponent->SetColor(GetColor(pLight->mColorDiffuse));
 
-			pMLight = pSpotLight;
+			pLightComponent->SetInnerCutOff(pLight->mAngleInnerCone);
+			pLightComponent->SetOuterCutOff(pLight->mAngleOuterCone);
+
 		}
 		break;
 
@@ -526,18 +541,20 @@ void MModelConverter::ProcessCameras(const aiScene* pScene)
 	{
 		aiCamera* pCamera = pScene->mCameras[i];
 
-		MCamera* pMCamera = m_pEngine->GetObjectManager()->CreateObject<MCamera>();
+		MNode* pMCamera = m_pEngine->GetObjectManager()->CreateObject<MNode>();
+		MSceneComponent* pSceneComponent = pMCamera->RegisterComponent<MSceneComponent>();
+		MCameraComponent* pCameraComponent = pMCamera->RegisterComponent<MCameraComponent>();
 
-		pMCamera->SetCameraType(MCamera::MECameraType::EPerspective);
-		pMCamera->SetZNear(pCamera->mClipPlaneNear);
-		pMCamera->SetZFar(pCamera->mClipPlaneFar);
-		pMCamera->SetFov(pCamera->mHorizontalFOV);
+		pCameraComponent->SetCameraType(MCameraComponent::MECameraType::EPerspective);
+		pCameraComponent->SetZNear(pCamera->mClipPlaneNear);
+		pCameraComponent->SetZFar(pCamera->mClipPlaneFar);
+		pCameraComponent->SetFov(pCamera->mHorizontalFOV);
 
-		pMCamera->SetPosition(GetVector3(pCamera->mPosition));
-		pMCamera->LookAt(GetVector3(pCamera->mLookAt), GetVector3(pCamera->mUp));
+		pSceneComponent->SetPosition(GetVector3(pCamera->mPosition));
+		pSceneComponent->LookAt(GetVector3(pCamera->mLookAt), GetVector3(pCamera->mUp));
 		
 
-		GetMNodeFromNode(pScene, pScene->mRootNode)->AddNodeImpl(pMCamera, MNode::MENodeChildType::EProtected);
+		GetMNodeFromNode(pScene, pScene->mRootNode)->AddProtectedNode(pMCamera);
 	}
 }
 
@@ -626,71 +643,112 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 {
 	aiString strAmbient("$clr.ambient"), strDiffuse("$clr.diffuse"), strSpecular("$clr.specular"), strShininess("$mat.shininess");
 
-	MMaterialResource* pMaterial = m_pEngine->GetResourceManager()->CreateResource<MMaterialResource>();
-	
-	if (m_pSkeleton)
+	MMaterial* pMaterial = nullptr;
+	if (eMaterialType == MModelConvertMaterialType::E_PBR_Deferred)
 	{
-		MMaterialResource* pSkinnedMeshMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_MODEL_SKELETON_MESH);
-		pMaterial->CopyFrom(pSkinnedMeshMaterial);
+		MResource* pMeshVSResource = m_pEngine->GetResourceManager()->LoadResource("./Shader/model_gbuffer.mvs");
+		MResource* pMeshPSResource = m_pEngine->GetResourceManager()->LoadResource("./Shader/model_gbuffer.mps");
+
+		if (m_pSkeleton)
+		{
+			MMaterialResource* pSkinnedMeshMaterialRes = m_pEngine->GetResourceManager()->CreateResource<MMaterialResource>();
+			pSkinnedMeshMaterialRes->GetShaderMacro()->SetInnerMacro(MGlobal::MATERIAL_MACRO_SKELETON_ENABLE, "1");
+			pSkinnedMeshMaterialRes->LoadVertexShader(pMeshVSResource);
+			pSkinnedMeshMaterialRes->LoadPixelShader(pMeshPSResource);
+			pSkinnedMeshMaterialRes->AddRef();
+			pMaterial = pSkinnedMeshMaterialRes;
+		}
+		else
+		{
+			MMaterialResource* pStaticMeshMaterialRes = m_pEngine->GetResourceManager()->CreateResource<MMaterialResource>();
+			pStaticMeshMaterialRes->LoadVertexShader(pMeshVSResource);
+			pStaticMeshMaterialRes->LoadPixelShader(pMeshPSResource);
+			pStaticMeshMaterialRes->AddRef();
+			pMaterial = pStaticMeshMaterialRes;
+		}
 	}
 	else
 	{
-		MMaterialResource* pStaticMeshMaterial = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_MODEL_STATIC_MESH);
-		pMaterial->CopyFrom(pStaticMeshMaterial);
+		MResource* pMeshVSResource = m_pEngine->GetResourceManager()->LoadResource("./Shader/model.mvs");
+		MResource* pMeshPSResource = m_pEngine->GetResourceManager()->LoadResource("./Shader/model.mps");
+
+		if (m_pSkeleton)
+		{
+			MMaterialResource* pSkinnedMeshMaterialRes = m_pEngine->GetResourceManager()->CreateResource<MMaterialResource>();
+			pSkinnedMeshMaterialRes->GetShaderMacro()->SetInnerMacro(MGlobal::MATERIAL_MACRO_SKELETON_ENABLE, "1");
+			pSkinnedMeshMaterialRes->LoadVertexShader(pMeshVSResource);
+			pSkinnedMeshMaterialRes->LoadPixelShader(pMeshPSResource);
+			pSkinnedMeshMaterialRes->AddRef();
+			pMaterial = pSkinnedMeshMaterialRes;
+		}
+		else
+		{
+			MMaterialResource* pStaticMeshMaterialRes = m_pEngine->GetResourceManager()->CreateResource<MMaterialResource>();
+			pStaticMeshMaterialRes->LoadVertexShader(pMeshVSResource);
+			pStaticMeshMaterialRes->LoadPixelShader(pMeshPSResource);
+			pStaticMeshMaterialRes->AddRef();
+			pMaterial = pStaticMeshMaterialRes;
+		}
 	}
 
 	if(nMaterialIdx >= pScene->mNumMaterials)
 		return;
 
-	aiMaterial* pAiMaterial = pScene->mMaterials[nMaterialIdx];
-
-	Vector3 v3Ambient(1.0f, 1.0f, 1.0f), v3Diffuse(1.0f, 1.0f, 1.0f), v3Specular(1.0f, 1.0f, 1.0f);
-	float fShininess = 32.0f;
-	MString strTexPath;
-
-	for (int n = 0; n < pAiMaterial->mNumProperties; ++n)
+	MTextureResource* pDefaultTexture = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(MGlobal::DEFAULT_TEXTURE_WHITE);
+	for (size_t i = 0; i < pMaterial->GetTextureParams()->size(); ++i)
 	{
-		aiMaterialProperty* prop = pAiMaterial->mProperties[n];
-		if (prop->mKey == strAmbient)
-			memcpy(v3Ambient.m, prop->mData, sizeof(Vector3));
-		else if (prop->mKey == strDiffuse)
-			memcpy(v3Diffuse.m, prop->mData, sizeof(Vector3));
-		else if (prop->mKey == strSpecular)
-			memcpy(v3Specular.m, prop->mData, sizeof(Vector3));
-		else if (prop->mKey == strShininess)
-			memcpy(&fShininess, prop->mData, sizeof(float));
+		pMaterial->SetTexutreParam(i, pDefaultTexture);
 	}
 
-	if (0.0f == fShininess)
-		fShininess = 32.0f;
-
-	//Test Data, need read from file.
-	MStruct* pMaterialStruct = nullptr;
-	for (MShaderConstantParam* pParam : *pMaterial->GetShaderParams())
-	{
-		if (MStruct* pStruct = pParam->var.GetStruct())
-		{
-			if (MStruct* pMat = pStruct->FindMember("U_mat")->GetStruct())
-			{
-				pMaterialStruct = pMat;
-
-				pMat->SetMember("f3Ambient", v3Ambient);
-				pMat->SetMember("f3Diffuse", v3Diffuse);
-				pMat->SetMember("f3Specular", v3Specular);
-				pMat->SetMember("fShininess", fShininess);
-				pMat->SetMember("bUseNormalTex", false);
-				pMat->SetMember("fAlphaFactor", 1.0f);
-			}
-		}
-
-		continue;
-	}
-
-	MString strResourceFolder = MResource::GetFolder(m_strResourcePath);
-
-	aiString strDiffuseTextureFile, strNormalTextureFile;
-	pAiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &strDiffuseTextureFile);
-	pAiMaterial->GetTexture(aiTextureType_NORMALS, 0, &strNormalTextureFile);
+// 	aiMaterial* pAiMaterial = pScene->mMaterials[nMaterialIdx];
+// 
+// 	Vector3 v3Ambient(1.0f, 1.0f, 1.0f), v3Diffuse(1.0f, 1.0f, 1.0f), v3Specular(1.0f, 1.0f, 1.0f);
+// 	float fShininess = 32.0f;
+// 	MString strTexPath;
+// 
+// 	for (int n = 0; n < pAiMaterial->mNumProperties; ++n)
+// 	{
+// 		aiMaterialProperty* prop = pAiMaterial->mProperties[n];
+// 		if (prop->mKey == strAmbient)
+// 			memcpy(v3Ambient.m, prop->mData, sizeof(Vector3));
+// 		else if (prop->mKey == strDiffuse)
+// 			memcpy(v3Diffuse.m, prop->mData, sizeof(Vector3));
+// 		else if (prop->mKey == strSpecular)
+// 			memcpy(v3Specular.m, prop->mData, sizeof(Vector3));
+// 		else if (prop->mKey == strShininess)
+// 			memcpy(&fShininess, prop->mData, sizeof(float));
+// 	}
+// 
+// 	if (0.0f == fShininess)
+// 		fShininess = 32.0f;
+// 
+// 	//Test Data, need read from file.
+// 	MStruct* pMaterialStruct = nullptr;
+// 	for (MShaderConstantParam* pParam : *pMaterial->GetShaderParams())
+// 	{
+// 		if (MStruct* pStruct = pParam->var.GetStruct())
+// 		{
+// 			if (MStruct* pMat = pStruct->FindMember("U_mat")->GetStruct())
+// 			{
+// 				pMaterialStruct = pMat;
+// 
+// 				pMat->SetMember("f3Ambient", v3Ambient);
+// 				pMat->SetMember("f3Diffuse", v3Diffuse);
+// 				pMat->SetMember("f3Specular", v3Specular);
+// 				pMat->SetMember("fShininess", fShininess);
+// 				pMat->SetMember("bUseNormalTex", false);
+// 				pMat->SetMember("fAlphaFactor", 1.0f);
+// 			}
+// 		}
+// 
+// 		continue;
+// 	}
+// 
+// 	MString strResourceFolder = MResource::GetFolder(m_strResourcePath);
+// 
+// 	aiString strDiffuseTextureFile, strNormalTextureFile;
+// 	pAiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &strDiffuseTextureFile);
+// 	pAiMaterial->GetTexture(aiTextureType_NORMALS, 0, &strNormalTextureFile);
 
 // 	aiString strBaseColorTextureFile, strNormalCameraTextureFile, strEmissionTextureFile, 
 // 		strMetalnessTextureFile, strDiffuseRoughnessTextureFile, strAmbientOcclusionTextureFile;
@@ -700,53 +758,56 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 // 	pAiMaterial->GetTexture(aiTextureType_METALNESS, 0, &strMetalnessTextureFile);
 // 	pAiMaterial->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &strDiffuseRoughnessTextureFile);
 // 	pAiMaterial->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &strAmbientOcclusionTextureFile);
-	
-
-	MString strDiffuseFileName = MResource::GetFileName(MString(strDiffuseTextureFile.C_Str()));
-	MString strNormalFileName = MResource::GetFileName(MString(strNormalTextureFile.C_Str()));
-
-	MResource* pDiffuseTexRes = nullptr;
-	MResource* pNormalMapRes = nullptr;
-
-	if (!strDiffuseFileName.empty())
-		pDiffuseTexRes = m_pEngine->GetResourceManager()->LoadResource(strResourceFolder + "/tex/" + strDiffuseFileName);
-	else
-		pDiffuseTexRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(MGlobal::DEFAULT_TEXTURE_WHITE);
-
-	if (!strNormalFileName.empty())
-	{
-		pNormalMapRes = m_pEngine->GetResourceManager()->LoadResource(strResourceFolder + "/tex/" + strNormalFileName);
-		if (pMaterialStruct)
-			pMaterialStruct->SetMember("bUseNormalTex", true);
-
-	}
-	else
-		pNormalMapRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(MGlobal::DEFAULT_TEXTURE_NORMALMAP);
-
-	pMaterial->SetTexutreParam(MGlobal::SHADER_PARAM_NAME_DIFFUSE, pDiffuseTexRes);
-	pMaterial->SetTexutreParam(MGlobal::SHADER_PARAM_NAME_NORMAL, pNormalMapRes);
-	
+// 	
+// 
+// 	MString strDiffuseFileName = MResource::GetFileName(MString(strDiffuseTextureFile.C_Str()));
+// 	MString strNormalFileName = MResource::GetFileName(MString(strNormalTextureFile.C_Str()));
+// 
+// 	MResource* pDiffuseTexRes = nullptr;
+// 	MResource* pNormalMapRes = nullptr;
+// 
+// 	if (!strDiffuseFileName.empty())
+// 		pDiffuseTexRes = m_pEngine->GetResourceManager()->LoadResource(strResourceFolder + "/tex/" + strDiffuseFileName);
+// 	else
+// 		pDiffuseTexRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(MGlobal::DEFAULT_TEXTURE_WHITE);
+// 
+// 	if (!strNormalFileName.empty())
+// 	{
+// 		pNormalMapRes = m_pEngine->GetResourceManager()->LoadResource(strResourceFolder + "/tex/" + strNormalFileName);
+// 		if (pMaterialStruct)
+// 			pMaterialStruct->SetMember("bUseNormalTex", true);
+// 
+// 	}
+// 	else
+// 		pNormalMapRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MTextureResource>(MGlobal::DEFAULT_TEXTURE_NORMALMAP);
+// 
+// 	pMaterial->SetTexutreParam(MGlobal::SHADER_PARAM_NAME_DIFFUSE, pDiffuseTexRes);
+// 	pMaterial->SetTexutreParam(MGlobal::SHADER_PARAM_NAME_NORMAL, pNormalMapRes);
+// 	
 
 	m_vMaterials[nMaterialIdx] = pMaterial;
 }
 
-M3DNode* MModelConverter::GetMNodeFromNode(const aiScene* pScene, aiNode* pNode)
+MNode* MModelConverter::GetMNodeFromNode(const aiScene* pScene, aiNode* pNode)
 {
 	if (pScene->mRootNode == pNode)
-		return m_pModelInstance;
+		return m_pModelNode;
 
-	if (M3DNode* pMNode = m_tNodeMaps[pNode])
+	if (MNode* pMNode = m_tNodeMaps[pNode])
 		return pMNode;
 
 	Matrix4 matTransform;
 	CopyMatrix4(&matTransform, &pNode->mTransformation);
 
-	M3DNode* pMParent = GetMNodeFromNode(pScene, pNode->mParent);
+	MNode* pMParent = GetMNodeFromNode(pScene, pNode->mParent);
 
-	M3DNode* pMNode = m_pEngine->GetObjectManager()->CreateObject<M3DNode>();
+	MNode* pMNode = m_pEngine->GetObjectManager()->CreateObject<MNode>();
+	MSceneComponent* pSceneComponent = pMNode->RegisterComponent<MSceneComponent>();
+
 	pMNode->SetName(pNode->mName.C_Str());
-	pMNode->SetTransform(MTransform(matTransform));
-	pMParent->AddNodeImpl(pMNode, MNode::MENodeChildType::EProtected);
+	pSceneComponent->SetTransform(MTransform(matTransform));
+	pMParent->AddProtectedNode(pMNode);
+
 	m_tNodeMaps[pNode] = pMNode;
 
 	return pMNode;

@@ -7,6 +7,7 @@
 #include "MResource.h"
 #include "Property/PropertyBase.h"
 
+class MNode;
 class MScene;
 class MEngine;
 class MMaterial;
@@ -38,8 +39,9 @@ private:
 	PropertyBase m_propertyBase;
 
 	MEngine* m_pEngine;
-	MStaticMeshInstance* m_pMeshInstance;
-	MStaticMeshInstance* m_pSkeletonMeshInstance;
+
+	MNode* m_pStaticSphereMeshNode;
+	MNode* m_pSkeletonSphereMeshNode;
 
 	bool m_bShowPreview;
 	SceneTexture m_SceneTexture;

@@ -21,10 +21,8 @@
 #include "MObject.h"
 #include "Material/MMaterialResource.h"
 #include "MMaterial.h"
-#include "Model/MIMeshInstance.h"
 #include "MMesh.h"
 #include "MScene.h"
-#include "MCamera.h"
 #include "MIRenderTarget.h"
 #include "MTransformCoord.h"
 #include "MRenderGraphTexture.h"
@@ -45,6 +43,9 @@
 #include "NotifyManager.h"
 
 #include "ImGuiRenderable.h"
+
+#include "MCameraComponent.h"
+#include "MRenderableMeshComponent.h"
 
 MainEditor::MainEditor()
 	: MIRenderView()
@@ -79,6 +80,17 @@ void MainEditor::SetEditorNode(MNode* pNode)
 {
 	m_SceneTexture.GetScene()->SetRootNode(pNode);
 	m_pNodeTreeView->SetRootNode(pNode);
+
+	if (MViewport* pViewport = m_SceneTexture.GetViewport())
+	{
+		if (MComponentGroup* pComponentGroup = m_SceneTexture.GetScene()->FindComponents<MCameraComponent>())
+		{
+			if (!pComponentGroup->m_vComponent.empty())
+			{
+				pViewport->SetCamera(pComponentGroup->m_vComponent[0]->GetOwnerNode());
+			}
+		}
+	}
 }
 
 bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
@@ -451,7 +463,7 @@ void MainEditor::ShowProperty()
 		{
 			ImGui::Text(pNode->GetName().c_str());
 		}
-		m_pPropertyView->SetEditorObject(pNode);
+		m_pPropertyView->SetEditorNode(pNode);
 		m_SceneTexture.GetScene()->GetTransformCoord()->SetTarget3DNode(pNode);
 		m_pPropertyView->Render();
 	}
@@ -581,9 +593,10 @@ void MainEditor::Render()
 	
 	if (m_pMaterialView && m_bShowMaterial)
 	{
-		if (MIMeshInstance* pMeshIns = m_pNodeTreeView->GetSelectionNode()->DynamicCast<MIMeshInstance>())
+		if (MNode* pNode = m_pNodeTreeView->GetSelectionNode())
 		{
-			m_pMaterialView->SetMaterial(pMeshIns->GetMaterial());
+			if(MRenderableMeshComponent* pMeshComponent = pNode->GetComponent<MRenderableMeshComponent>())
+			m_pMaterialView->SetMaterial(pMeshComponent->GetMaterial());
 		}
 		m_pMaterialView->UpdateTexture(pRenderCommand);
 	}

@@ -3,6 +3,7 @@ import install_glslang
 import install_moltenVK
 import install_sdl
 import install_spirv_cross
+import install_bullet
 
 import sys
 import getopt
@@ -37,17 +38,20 @@ if __name__ == '__main__':
         install_sdl.build_for_windows()
         install_spirv_cross.build_for_windows()
         install_glslang.build_for_windows()
+        install_bullet.build_for_windows()
     elif platform == "MACOS":
         install_assimp.build_for_windows()
         install_sdl.build_for_windows()
         install_spirv_cross.build_for_windows()
         install_glslang.build_for_windows()
         install_moltenVK.build_for_macos()
+        install_bullet.build_for_macos()
     elif platform == "IOS":
         install_assimp.build_for_ios()
         install_sdl.build_for_ios()
         install_spirv_cross.build_for_ios()
         install_glslang.build_for_ios()
         install_moltenVK.build_for_ios()
+        install_bullet.build_for_ios()
     
 

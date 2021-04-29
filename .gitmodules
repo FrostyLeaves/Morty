@@ -25,3 +25,6 @@ url=https://github.com/FrostyLeaves/spot.git
 [submodule "Morty/ThirdParty/imgui-node-editor"]
 	path = Morty/ThirdParty/imgui-node-editor
 	url = https://github.com/thedmd/imgui-node-editor.git
+[submodule "Morty/ThirdParty/Bullet"]
+	path = Morty/ThirdParty/Bullet
+	url = https://github.com/bulletphysics/bullet3.git

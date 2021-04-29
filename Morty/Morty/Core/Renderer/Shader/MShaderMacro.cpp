@@ -141,28 +141,28 @@ void MShaderMacro::WriteToStruct(MStruct& srt)
 	}
 }
 
-void MShaderMacro::ReadFromStruct(MStruct& srt)
+void MShaderMacro::ReadFromStruct(const MStruct& srt)
 {
 	m_vMacroParams.clear();
 	m_vMortyMacroParams.clear();
 
-	if (MVariantArray* pArray = srt.FindMember<MVariantArray>("mat"))
+	if (const MVariantArray* pArray = srt.FindMember<MVariantArray>("mat"))
 	{
 		for (uint32_t i = 0; i < pArray->GetMemberCount(); i+=2)
 		{
-			MString* key = (*pArray)[i].GetString();
-			MString* value = (*pArray)[i + 1].GetString();
+			const MString* key = (*pArray)[i].GetString();
+			const MString* value = (*pArray)[i + 1].GetString();
 
 			m_vMacroParams.push_back({ *key, *value });
 		}
 	}
 
-	if (MVariantArray* pArray = srt.FindMember<MVariantArray>("morty"))
+	if (const MVariantArray* pArray = srt.FindMember<MVariantArray>("morty"))
 	{
 		for (uint32_t i = 0; i < pArray->GetMemberCount(); i += 2)
 		{
-			MString* key = (*pArray)[i].GetString();
-			MString* value = (*pArray)[i + 1].GetString();
+			const MString* key = (*pArray)[i].GetString();
+			const MString* value = (*pArray)[i + 1].GetString();
 
 			m_vMortyMacroParams.push_back({ *key, *value });
 		}

@@ -45,7 +45,7 @@ public:
 	MAnimNodeKey<Vector3>* m_vScalingKeys;
 
 	void WriteToStruct(MStruct& srt);
-	void ReadFromStruct(MStruct& srt);
+	void ReadFromStruct(const MStruct& srt);
 };
 
 class MORTY_API MSkeletonAnimMap
@@ -76,7 +76,7 @@ public:
 	void Update(const float& fTime, MSkeletonInstance* pSkeletonIns, const MSkeletonAnimMap& skelAnimMap);
 
 	void WriteToStruct(MStruct& srt);
-	void ReadFromStruct(MStruct& srt);
+	void ReadFromStruct(const MStruct& srt);
 
 public:
 	

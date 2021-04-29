@@ -1,15 +1,13 @@
 #include "MForwardRenderProgram.h"
 
+#include "MNode.h"
 #include "MScene.h"
 #include "MEngine.h"
-#include "MCamera.h"
 #include "MTexture.h"
 #include "MViewport.h"
 #include "MRenderGraph.h"
 
 #include "MMaterialGroup.h"
-#include "Model/MModelInstance.h"
-#include "Model/MIModelMeshInstance.h"
 #include "Material/MMaterialResource.h"
 
 #include "MForwardRenderWork.h"
@@ -17,6 +15,10 @@
 #include "MForwardTransparentWork.h"
 
 #include "MIRenderTarget.h"
+
+#include "MSceneComponent.h"
+#include "MCameraComponent.h"
+#include "MRenderableMeshComponent.h"
 
 #include <algorithm>
 #include <float.h>
@@ -89,6 +91,9 @@ void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport, 
 	if (!pViewport)
 		return;
 
+	MNode* pCameraNode = pViewport->GetCamera();
+	MScene* pScene = pViewport->GetScene();
+
 	MRenderInfo& info = *GetRenderInfo();
 
 	info = MRenderInfo();
@@ -97,10 +102,14 @@ void MForwardRenderProgram::Render(MIRenderer* pRenderer, MViewport* pViewport, 
 	info.unFrameIndex = pCommand->m_unFrameIdx;
 	info.pRenderer = pRenderer;
 	info.pViewport = pViewport;
-	info.pCamera = pViewport->GetCamera();
+	info.pCameraComponent = pCameraNode->GetComponent<MCameraComponent>();
+	info.pCameraSceneComponent = pCameraNode->GetComponent<MSceneComponent>();
+	info.pDirectionalLightComponent = pScene->FindActiveDirectionLight();
 	info.pScene = pViewport->GetScene();
 	info.pPrimaryCommand = pCommand;
 
+	if (!info.pCameraComponent || !info.pCameraSceneComponent)
+		return;
 
 	Render(info);
 }
@@ -166,17 +175,21 @@ void MForwardRenderProgram::GenerateRenderGroup(MRenderInfo& info)
 
 		pRenderGroup->m_pMaterial = pMaterialGroup->m_pMaterial;
 
-		for (MIMeshInstance* pMeshIns : pMaterialGroup->m_vMeshInstances)
+		for (MRenderableMeshComponent* pMeshComponent : pMaterialGroup->m_vMeshComponents)
 		{
-			if (!pMeshIns->GetVisibleRecursively())
+			MNode* pNode = pMeshComponent->GetOwnerNode();
+			if(!pNode)
 				continue;
 
-			if (MCameraFrustum::EOUTSIDE == info.pViewport->GetCameraFrustum()->ContainTest(*pMeshIns->GetBoundsAABB()))
+			if (!pNode->GetVisibleRecursively())
 				continue;
 
-			pRenderGroup->m_vMeshInstances.push_back(pMeshIns);
+			if (MCameraFrustum::EOUTSIDE == info.pViewport->GetCameraFrustum()->ContainTest(*pMeshComponent->GetBoundsAABB()))
+				continue;
 
-			const MBoundsAABB* pBounds = pMeshIns->GetBoundsAABB();
+			pRenderGroup->m_vMeshComponents.push_back(pMeshComponent);
+
+			const MBoundsAABB* pBounds = pMeshComponent->GetBoundsAABB();
 			pBounds->UnionMinMax(v3BoundsMin, v3BoundsMax);
 		}
 	}

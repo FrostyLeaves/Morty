@@ -484,3 +484,12 @@ MVariant& MContainer::operator[](const uint32_t& unIndex)
 	static MVariant uselessVar;
 	return uselessVar;
 }
+
+const MVariant& MContainer::operator[](const uint32_t& unIndex) const
+{
+	if (0 <= unIndex && unIndex < m_vMember.size())
+		return m_vMember[unIndex].var;
+
+	static MVariant uselessVar;
+	return uselessVar;
+}

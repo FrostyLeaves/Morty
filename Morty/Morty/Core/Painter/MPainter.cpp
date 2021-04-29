@@ -1,8 +1,12 @@
 #include "MPainter.h"
+
 #include "MMesh.h"
+#include "MNode.h"
 #include "MViewport.h"
-#include "MCamera.h"
+
 #include <algorithm>
+
+#include "MSceneComponent.h"
 
 Vector2 MPainter2DLine::GetDirection2D(MViewport* pViewport)
 {
@@ -184,7 +188,13 @@ bool MPainter3DLine::FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh)
 	if (nullptr == pViewport)
 		return false;
 
-	Vector3 v3CameraWorldPosition = pViewport->GetCamera()->GetWorldPosition();
+	MNode* pCameraNode = pViewport->GetCamera();
+	if (!pCameraNode)
+		return false;
+
+	MSceneComponent* pCameraSceneComponent = pCameraNode->GetComponent<MSceneComponent>();
+
+	Vector3 v3CameraWorldPosition = pCameraSceneComponent->GetWorldPosition();
 	Vector3 v3Center = (m_v3Begin + m_v3End) * 0.5;
 	Vector3 v3Normal = (v3CameraWorldPosition - v3Center).CrossProduct(m_v3End - m_v3Begin);
 	v3Normal.Normalize();

@@ -1,27 +1,31 @@
 #include "MaterialView.h"
+
+#include "MNode.h"
 #include "MScene.h"
-#include "MCamera.h"
 #include "MEngine.h"
 #include "MObject.h"
 #include "MTexture.h"
 #include "MMaterial.h"
 #include "MViewport.h"
 #include "MIRenderer.h"
-#include "Light/MDirectionalLight.h"
-#include "Model/MIMeshInstance.h"
-#include "Model/MModelInstance.h"
 #include "Model/MModelResource.h"
-#include "Model/MStaticMeshInstance.h"
 #include "MResourceManager.h"
 #include "Material/MMaterialResource.h"
 
 #include "imgui.h"
+
+#include "MSceneComponent.h"
+#include "MModelComponent.h"
+#include "MRenderableMeshComponent.h"
+#include "MDirectionalLightComponent.h"
 
 MaterialView::MaterialView()
 	: IBaseView()
 	, m_Resource()
 	, m_pMaterial(nullptr)
 	, m_bShowPreview(true)
+	, m_pStaticSphereMeshNode(nullptr)
+	, m_pSkeletonSphereMeshNode(nullptr)
 {
 
 }
@@ -43,22 +47,28 @@ void MaterialView::SetMaterial(MMaterial* pMaterial)
 
 	if (!m_pMaterial)
 	{
-		m_pMeshInstance->SetVisible(false);
-		m_pSkeletonMeshInstance->SetVisible(false);
+		m_pStaticSphereMeshNode->SetVisible(false);
+		m_pSkeletonSphereMeshNode->SetVisible(false);
 	}
 	else if (m_pMaterial->GetShaderMacro()->GetInnerMacro(MGlobal::MATERIAL_MACRO_SKELETON_ENABLE).empty())
 	{
-		m_pMeshInstance->SetVisible(true);
-		m_pSkeletonMeshInstance->SetVisible(false);
+		m_pStaticSphereMeshNode->SetVisible(true);
+		m_pSkeletonSphereMeshNode->SetVisible(false);
 	}
 	else
 	{
-		m_pMeshInstance->SetVisible(false);
-		m_pSkeletonMeshInstance->SetVisible(true);
+		m_pStaticSphereMeshNode->SetVisible(false);
+		m_pSkeletonSphereMeshNode->SetVisible(true);
 	}
 
-	m_pMeshInstance->SetMaterial(pMaterial);
-	m_pSkeletonMeshInstance->SetMaterial(pMaterial);
+	if (MRenderableMeshComponent* pMeshComponent = m_pStaticSphereMeshNode->GetComponent<MRenderableMeshComponent>())
+	{
+		pMeshComponent->SetMaterial(pMaterial);
+	}
+	if (MRenderableMeshComponent* pMeshComponent = m_pSkeletonSphereMeshNode->GetComponent<MRenderableMeshComponent>())
+	{
+		pMeshComponent->SetMaterial(pMaterial);
+	}
 }
 
 void MaterialView::UpdateTexture(MRenderCommand* pCommand)
@@ -107,31 +117,55 @@ void MaterialView::Initialize(MEngine* pEngine)
 	MNode* pRootNode = pScene->GetRootNode();
 	if (nullptr == pRootNode)
 	{
-		pRootNode = pEngine->GetObjectManager()->CreateObject<M3DNode>();
+		pRootNode = pEngine->GetObjectManager()->CreateObject<MNode>();
 		pScene->SetRootNode(pRootNode);
 	}
 
-	MCamera* pCamera = m_SceneTexture.GetViewport()->GetCamera();
-	pCamera->SetPosition(Vector3(0, 0, -5));
+	MNode* pCameraNode = m_SceneTexture.GetViewport()->GetCamera();
+	if (MSceneComponent* pCameraSceneComponent = pCameraNode->GetComponent<MSceneComponent>())
+	{
+		pCameraSceneComponent->SetPosition(Vector3(0, 0, -5));
+	}
 
-	m_pMeshInstance = m_pEngine->GetObjectManager()->CreateObject<MStaticMeshInstance>();
-	if(MResource* pResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/GeoSphere001.mesh"))
-		m_pMeshInstance->Load(pResource);
-	pRootNode->AddNode(m_pMeshInstance);
-	m_pMeshInstance->SetVisible(false);
+	m_pStaticSphereMeshNode = m_pEngine->GetObjectManager()->CreateObject<MNode>();
+	pRootNode->AddNode(m_pStaticSphereMeshNode);
+
+	if (MSceneComponent* pSceneComponent = m_pStaticSphereMeshNode->RegisterComponent<MSceneComponent>())
+	{
+
+	}
+
+	if (MRenderableMeshComponent* pMeshComponent = m_pStaticSphereMeshNode->RegisterComponent<MRenderableMeshComponent>())
+	{
+		if (MResource* pResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/GeoSphere001.mesh"))
+			pMeshComponent->Load(pResource);
+	}
+
+	m_pStaticSphereMeshNode->SetVisible(false);
 
 
-	MSkeletonResource* pSkeleton = m_pEngine->GetResourceManager()->CreateResource<MSkeletonResource>();
 
-	MModelInstance* pModelInstance = m_pEngine->GetObjectManager()->CreateObject<MModelInstance>();
-	pModelInstance->SetSkeletonTemplate(pSkeleton);
-	pRootNode->AddNode(pModelInstance);
+	m_pSkeletonSphereMeshNode = m_pEngine->GetObjectManager()->CreateObject<MNode>();
+	pRootNode->AddNode(m_pSkeletonSphereMeshNode);
+	
+	if (MSceneComponent* pSceneComponent = m_pSkeletonSphereMeshNode->RegisterComponent<MSceneComponent>())
+	{
 
-	m_pSkeletonMeshInstance = m_pEngine->GetObjectManager()->CreateObject<MStaticMeshInstance>();
-	if (MResource* pResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/GeoSphere001_anim.mesh"))
-		m_pSkeletonMeshInstance->Load(pResource);
-	pModelInstance->AddNode(m_pSkeletonMeshInstance);
-	m_pMeshInstance->SetVisible(false);
+	}
+
+	if (MModelComponent* pModelComponent = m_pSkeletonSphereMeshNode->RegisterComponent<MModelComponent>())
+	{
+		MSkeletonResource* pSkeleton = m_pEngine->GetResourceManager()->CreateResource<MSkeletonResource>();
+		pModelComponent->SetSkeletonResource(pSkeleton);
+	}
+
+	if (MRenderableMeshComponent* pMeshComponent = m_pSkeletonSphereMeshNode->RegisterComponent<MRenderableMeshComponent>())
+	{
+		if (MResource* pResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/GeoSphere001_anim.mesh"))
+			pMeshComponent->Load(pResource);
+	}
+
+	m_pSkeletonSphereMeshNode->SetVisible(false);
 
 
 
@@ -168,13 +202,22 @@ void MaterialView::Initialize(MEngine* pEngine)
 // 
 // 	pResource->SaveTo("./Model/Sphere/GeoSphere001_anim.mesh");
 
- 	MDirectionalLight* pDirLight = m_pEngine->GetObjectManager()->CreateObject<MDirectionalLight>();
+ 	MNode* pDirLight = m_pEngine->GetObjectManager()->CreateObject<MNode>();
  	pDirLight->SetName("DirLight");
  	pRootNode->AddNode(pDirLight);
 
-	Quaternion quat;
-	quat.SetEulerAngle(Vector3(-45, 45, 0));
-	pDirLight->SetRotation(Quaternion(quat));
+	if (MSceneComponent* pDirLightSceneComponent = pDirLight->RegisterComponent<MSceneComponent>())
+	{
+		Quaternion quat;
+		quat.SetEulerAngle(Vector3(-45, 45, 0));
+		pDirLightSceneComponent->SetRotation(Quaternion(quat));
+	}
+
+	if (MDirectionalLightComponent* pDirLightComponent = pDirLight->RegisterComponent<MDirectionalLightComponent>())
+	{
+		pDirLightComponent->SetLightIntensity(100.0f);
+	}
+	
 }
 
 void MaterialView::Release()
@@ -184,11 +227,11 @@ void MaterialView::Release()
 	m_SceneTexture.Release();
 
 
-	m_pMeshInstance->DeleteLater();
-	m_pMeshInstance = nullptr;
+	m_pSkeletonSphereMeshNode->DeleteLater();
+	m_pSkeletonSphereMeshNode = nullptr;
 
-	m_pSkeletonMeshInstance->DeleteLater();
-	m_pSkeletonMeshInstance = nullptr;
+	m_pStaticSphereMeshNode->DeleteLater();
+	m_pStaticSphereMeshNode = nullptr;
 }
 
 void MaterialView::Input(MInputEvent* pEvent)

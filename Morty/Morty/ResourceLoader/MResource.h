@@ -123,7 +123,7 @@ public:
 	MResource* operator = (MResource* pResource);
 
 template <class T>
-	T* GetResource() { return m_pResource->DynamicCast<T>(); }
+	T* GetResource() { return m_pResource ? m_pResource->DynamicCast<T>() : nullptr; }
 
 	void SetResChangedCallback(const MResChangedFunction& function)
 	{

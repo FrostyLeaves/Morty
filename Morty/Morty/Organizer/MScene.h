@@ -20,24 +20,33 @@
 
 class MNode;
 class MResource;
-class MModelInstance;
-class MCamera;
 class MSkyBox;
-class MDirectionalLight;
-class MPointLight;
-class MSpotLight;
 class MIRenderer;
 class MInputEvent;
 class MIRenderView;
 class MViewport;
 class MMaterial;
-class MIMeshInstance;
-class MIModelMeshInstance;
 class MTransformCoord3D;
-class MInputNode;
 class MShadowTextureRenderTarget;
 class MBoundsAABB;
 class MIRenderTarget;
+
+class MComponent;
+class MSpotLightComponent;
+class MPointLightComponent;
+class MDirectionalLightComponent;
+class MORTY_API MComponentGroup
+{
+public:
+
+	void AddComponent(MComponent* pComponent);
+	void RemoveComponent(MComponent* pComponent);
+
+public:
+
+	std::vector<MComponent*> m_vComponent;
+};
+
 class MORTY_API MScene : public MObject
 {
 public:
@@ -52,15 +61,24 @@ public:
 
 public:
 
-	MDirectionalLight* FindActiveDirectionLight();
-	void FindActivePointLights(const Vector3& v3WorldPosition, std::vector<MPointLight*>& vPointLights);
-	void FindActiveSpotLights(const Vector3& v3WorldPosition, std::vector<MSpotLight*>& vPointLights);
+	MDirectionalLightComponent* FindActiveDirectionLight();
+	void FindActivePointLights(const Vector3& v3WorldPosition, std::vector<MPointLightComponent*>& vPointLights);
+	void FindActiveSpotLights(const Vector3& v3WorldPosition, std::vector<MSpotLightComponent*>& vPointLights);
 
 	MSkyBox* GetSkyBox() { return m_pSkyBox; }
 	MTransformCoord3D* GetTransformCoord() { return m_pTransformCoord3D; }
 
 	std::vector<MMaterialGroup*>& GetMaterialGroup() { return m_vMaterialGroups; }
 
+	template <class T>
+	MComponentGroup* FindComponents();
+
+public:
+
+	//Dont call
+
+	void AddComponent(MComponent* pComponent);
+	void RemoveComponent(MComponent* pComponent);
 
 public:
 
@@ -80,33 +98,32 @@ public:
 	void RemoveAttachedViewport(MViewport* pViewport);
 	std::vector<MViewport*> GetViewports() { return m_vViewports; }
 
-	void InsertMaterialGroup(MIMeshInstance* pMeshInstance);
-	void RemoveMaterialGroup(MIMeshInstance* pMeshInstance);
-
-public:
-
-	void Load(MResource* pResource);
+	void InsertMaterialGroup(MRenderableMeshComponent* pNode);
+	void RemoveMaterialGroup(MRenderableMeshComponent* pNode);
 
 private:
-
-#define MSCENE_TYPED_VECTOR( TYPE ) \
-	public: std::vector<M##TYPE*>* GetAll##TYPE() {return &m_v##TYPE;} \
-	private: std::vector<M##TYPE*> m_v##TYPE;
 
 	MNode* m_pRootNode;
 	MSkyBox* m_pSkyBox;
 	MTransformCoord3D* m_pTransformCoord3D;
 
-	MSCENE_TYPED_VECTOR(DirectionalLight);
-	MSCENE_TYPED_VECTOR(PointLight);
-	MSCENE_TYPED_VECTOR(SpotLight);
-	MSCENE_TYPED_VECTOR(InputNode);
-	MSCENE_TYPED_VECTOR(ModelInstance);
+
+	std::map<const void*, MComponentGroup*> m_tComponents;
 
 private:
 	std::vector<MMaterialGroup*> m_vMaterialGroups;
 
 	std::vector<MViewport*> m_vViewports;
 };
+
+template <class T>
+MComponentGroup* MScene::FindComponents()
+{
+	auto findResult = m_tComponents.find(T::GetClassTypeIdentifier());
+	if (findResult == m_tComponents.end())
+		return nullptr;
+
+	return findResult->second;
+}
 
 #endif

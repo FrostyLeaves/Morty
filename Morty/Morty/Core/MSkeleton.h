@@ -25,7 +25,7 @@ public:
 	MBone();
 
 	void WriteToStruct(MStruct& srt);
-	void ReadFromStruct(MStruct& srt);
+	void ReadFromStruct(const MStruct& srt);
 public:
 	MString strName;
 	uint32_t unIndex;
@@ -62,7 +62,7 @@ public:
 public:
 
 	void WriteToStruct(MStruct& srt);
-	void ReadFromStruct(MStruct& srt);
+	void ReadFromStruct(const MStruct& srt);
 
 	virtual bool Load(const MString& strResourcePath) override;
 	virtual bool SaveTo(const MString& strResourcePath) override;

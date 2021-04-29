@@ -49,7 +49,7 @@ public:
 public:
 
 	virtual void WriteToStruct(MStruct& srt) override;
-	virtual void ReadFromStruct(MStruct& srt) override;
+	virtual void ReadFromStruct(const MStruct& srt) override;
 
 public:
 	Vector3 m_v3CenterPoint;
@@ -78,7 +78,7 @@ public:
 public:
 
 	virtual void WriteToStruct(MStruct& srt) override;
-	virtual void ReadFromStruct(MStruct& srt) override;
+	virtual void ReadFromStruct(const MStruct& srt) override;
 
 public:
 	Vector3 m_v3MinPoint;
@@ -108,7 +108,7 @@ public:
 public:
 
 	virtual void WriteToStruct(MStruct& srt) override;
-	virtual void ReadFromStruct(MStruct& srt) override;
+	virtual void ReadFromStruct(const MStruct& srt) override;
 
 public:
 

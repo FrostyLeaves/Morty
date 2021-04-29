@@ -2,7 +2,6 @@
 #include "MMath.h"
 #include "Vector.h"
 #include "MViewport.h"
-#include "MCamera.h"
 
 MCameraFrustum::MCameraFrustum()
 	: m_vPlanes()

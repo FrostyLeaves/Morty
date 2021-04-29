@@ -1,16 +1,18 @@
 #include "MForwardRenderShaderParamSet.h"
 
+#include "MNode.h"
 #include "MScene.h"
 #include "MEngine.h"
-#include "MCamera.h"
 #include "MSkyBox.h"
 #include "MPainter.h"
 #include "MViewport.h"
 #include "MIRenderer.h"
 
-#include "Light/MSpotLight.h"
-#include "Light/MPointLight.h"
-#include "Light/MDirectionalLight.h"
+#include "MSceneComponent.h"
+#include "MCameraComponent.h"
+#include "MSpotLightComponent.h"
+#include "MPointLightComponent.h"
+#include "MDirectionalLightComponent.h"
 
 MForwardRenderShaderParamSet::MForwardRenderShaderParamSet()
 	: MShaderParamSet(1)
@@ -151,16 +153,16 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 
 	if (m_pWorldInfoParam)
 	{
-		if (info.pDirectionalLight)
+		if (info.pDirectionalLightComponent)
 		{
-			(*m_pWorldInfoParam->var.GetStruct())[0] = info.pDirectionalLight->GetWorldDirection();
+			(*m_pWorldInfoParam->var.GetStruct())[0] = info.pDirectionalLightComponent->GetWorldDirection();
 		}
 
-		(*m_pWorldInfoParam->var.GetStruct())[1] = info.pViewport->GetCamera()->GetWorldPosition();
+		(*m_pWorldInfoParam->var.GetStruct())[1] = info.pCameraSceneComponent->GetWorldPosition();
 
 		(*m_pWorldInfoParam->var.GetStruct())[2] = info.pViewport->GetSize();
 
-		(*m_pWorldInfoParam->var.GetStruct())[3] = info.pViewport->GetCamera()->GetZNearFar();
+		(*m_pWorldInfoParam->var.GetStruct())[3] = info.pCameraComponent->GetZNearFar();
 
 		(*m_pWorldInfoParam->var.GetStruct())[4] = info.fDelta;
 
@@ -172,15 +174,15 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 	if (MShaderConstantParam* pLightParam = m_pLightInfoParam)
 	{
 		MVariant& varDirLightEnable = (*pLightParam->var.GetStruct())[3];
-		if (info.pDirectionalLight)
+		if (info.pDirectionalLightComponent)
 		{
 			varDirLightEnable = 500;
 			MVariant& varDirectionLight = (*pLightParam->var.GetStruct())[0];
 			{
 				MStruct& cLightStruct = *varDirectionLight.GetStruct();
 				{
-					cLightStruct[0] = info.pDirectionalLight->GetDiffuseColor().ToVector3() * info.pDirectionalLight->GetLightIntensity();
-					cLightStruct[1] = info.pDirectionalLight->GetSpecularColor().ToVector3();
+					cLightStruct[0] = info.pDirectionalLightComponent->GetColor().ToVector3() * info.pDirectionalLightComponent->GetLightIntensity();
+					cLightStruct[1] = info.pDirectionalLightComponent->GetColor().ToVector3() * info.pDirectionalLightComponent->GetLightIntensity();
 				}
 			}
 		}
@@ -192,23 +194,26 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 		MVariant& varPointLights = (*pLightParam->var.GetStruct())[1];
 		MVariant& varValidPointLights = (*pLightParam->var.GetStruct())[4];
 		{
-			std::vector<MPointLight*> vActivePointLights(MGlobal::MPOINT_LIGHT_MAX_NUMBER);
-			info.pScene->FindActivePointLights(info.pViewport->GetCamera()->GetWorldPosition(), vActivePointLights);
+			std::vector<MPointLightComponent*> vActivePointLights(MGlobal::MPOINT_LIGHT_MAX_NUMBER);
+			info.pScene->FindActivePointLights(info.pCameraSceneComponent->GetWorldPosition(), vActivePointLights);
 			varValidPointLights = 0;
 
 			MVariantArray& vPointLights = *varPointLights.GetArray();
 			for (uint32_t i = 0; i < vPointLights.GetMemberCount(); ++i)
 			{
-				if (MPointLight* pLight = vActivePointLights[i])
+				if (MPointLightComponent* pPointLightComponent = vActivePointLights[i])
 				{
+					MNode* pNode = pPointLightComponent->GetOwnerNode();
+					MSceneComponent* pSceneComponent = pNode->GetComponent<MSceneComponent>();
+					
 					MStruct& cPointLight = *vPointLights[i].GetStruct();
-					cPointLight[0] = pLight->GetWorldPosition();
-					cPointLight[1] = pLight->GetDiffuseColor().ToVector3();
-					cPointLight[2] = pLight->GetSpecularColor().ToVector3();
+					cPointLight[0] = pSceneComponent->GetWorldPosition();
+					cPointLight[1] = pPointLightComponent->GetColor().ToVector3() * pPointLightComponent->GetLightIntensity();
+					cPointLight[2] = pPointLightComponent->GetColor().ToVector3() * pPointLightComponent->GetLightIntensity();
 
-					cPointLight[3] = pLight->GetConstant();
-					cPointLight[4] = pLight->GetLinear();
-					cPointLight[5] = pLight->GetQuadratic();
+					cPointLight[3] = pPointLightComponent->GetConstant();
+					cPointLight[4] = pPointLightComponent->GetLinear();
+					cPointLight[5] = pPointLightComponent->GetQuadratic();
 
 					varValidPointLights = (int)i + 1;
 				}
@@ -219,24 +224,27 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 		MVariant& varSpotLights = (*pLightParam->var.GetStruct())[2];
 		MVariant& varValidSpotLights = (*pLightParam->var.GetStruct())[5];
 		{
-			std::vector<MSpotLight*> vActiveSpotLights(MGlobal::MSPOT_LIGHT_MAX_NUMBER);
-			info.pScene->FindActiveSpotLights(info.pViewport->GetCamera()->GetWorldPosition(), vActiveSpotLights);
+			std::vector<MSpotLightComponent*> vActiveSpotLights(MGlobal::MSPOT_LIGHT_MAX_NUMBER);
+			info.pScene->FindActiveSpotLights(info.pCameraSceneComponent->GetWorldPosition(), vActiveSpotLights);
 			varValidSpotLights = 0;
 
 			MVariantArray& vSpotLights = *varSpotLights.GetArray();
 			for (uint32_t i = 0; i < vSpotLights.GetMemberCount(); ++i)
 			{
-				if (MSpotLight* pLight = vActiveSpotLights[i])
+				if (MSpotLightComponent* pSpotLightComponent = vActiveSpotLights[i])
 				{
-					Vector3 f3SpotDirection = pLight->GetWorldDirection();
+					MNode* pNode = pSpotLightComponent->GetOwnerNode();
+					MSceneComponent* pSceneComponent = pNode->GetComponent<MSceneComponent>();
+
+					Vector3 f3SpotDirection = pSpotLightComponent->GetWorldDirection();
 					f3SpotDirection.Normalize();
 					MStruct& cSpotLight = *vSpotLights[i].GetStruct();
-					cSpotLight[0] = pLight->GetWorldPosition();
-					cSpotLight[1] = pLight->GetInnerCutOffRadius();
+					cSpotLight[0] = pSceneComponent->GetWorldPosition();
+					cSpotLight[1] = pSpotLightComponent->GetInnerCutOffRadius();
 					cSpotLight[2] = f3SpotDirection;
-					cSpotLight[3] = pLight->GetOuterCutOffRadius();
-					cSpotLight[4] = pLight->GetDiffuseColor().ToVector3();
-					cSpotLight[5] = pLight->GetSpecularColor().ToVector3();
+					cSpotLight[3] = pSpotLightComponent->GetOuterCutOffRadius();
+					cSpotLight[4] = pSpotLightComponent->GetColor().ToVector3() * pSpotLightComponent->GetLightIntensity();
+					cSpotLight[5] = pSpotLightComponent->GetColor().ToVector3() * pSpotLightComponent->GetLightIntensity();
 
 					varValidSpotLights = (int)i + 1;
 				}

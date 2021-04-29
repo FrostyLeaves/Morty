@@ -23,7 +23,7 @@ public:
 	virtual void Input(MInputEvent* pEvent) override;
 
 
-	MObject* GetSelectionNode();
+	MNode* GetSelectionNode();
 
 protected:
 

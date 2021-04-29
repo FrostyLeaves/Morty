@@ -1,34 +1,26 @@
 ﻿#include "MScene.h"
 #include "MFunction.h"
 #include "MEngine.h"
-#include "MCamera.h"
 #include "MSkyBox.h"
 
 #include "MIDevice.h"
 
-#include "Light/MDirectionalLight.h"
-#include "Light/MPointLight.h"
-#include "Light/MSpotLight.h"
-
 #include "Model/MMeshResource.h"
-#include "Model/MIModelMeshInstance.h"
-#include "Model/MStaticMeshInstance.h"
 #include "Material/MMaterialResource.h"
 
+#include "MNode.h"
 #include "MVertex.h"
 #include "MMaterial.h"
 #include "MIRenderer.h"
 #include "MIRenderView.h"
 #include "MViewport.h"
 #include "MTransformCoord.h"
-#include "Model/MModelInstance.h"
 #include "MBounds.h"
 #include "Model/MModelResource.h"
 #include "MPainter.h"
 #include "MEngine.h"
 #include "MResourceManager.h"
 #include "Material/MMaterialResource.h"
-#include "MInputNode.h"
 #include "MTexture.h"
 
 #include "MSkeleton.h"
@@ -38,6 +30,12 @@
 #include "MRenderStatistics.h"
 #endif
 
+#include "MSceneComponent.h"
+#include "MInputComponent.h"
+#include "MSpotLightComponent.h"
+#include "MPointLightComponent.h"
+#include "MRenderableMeshComponent.h"
+#include "MDirectionalLightComponent.h"
 
 #include <algorithm>
 
@@ -117,41 +115,56 @@ void MScene::RemoveAttachedViewport(MViewport* pViewport)
 	}
 }
 
-MDirectionalLight* MScene::FindActiveDirectionLight()
+MDirectionalLightComponent* MScene::FindActiveDirectionLight()
 {
-	if (m_vDirectionalLight.empty())
+	MComponentGroup* pComponentGroup = FindComponents<MDirectionalLightComponent>();
+	if (!pComponentGroup || pComponentGroup->m_vComponent.empty())
 		return nullptr;
 
-	return m_vDirectionalLight.back();
+	return static_cast<MDirectionalLightComponent*>(pComponentGroup->m_vComponent.back());
 }
 
-void MScene::FindActivePointLights(const Vector3& v3WorldPosition, std::vector<MPointLight*>& vPointLights)
+void MScene::FindActivePointLights(const Vector3& v3WorldPosition, std::vector<MPointLightComponent*>& vPointLights)
 {
-	static auto compareFunc = [v3WorldPosition](MPointLight* a, MPointLight* b) {
-		return (a->GetWorldPosition() - v3WorldPosition).Length() < (b->GetWorldPosition() - v3WorldPosition).Length();
+	MComponentGroup* pComponentGroup = FindComponents<MPointLightComponent>();
+	if (!pComponentGroup)
+		return;
+
+	static auto compareFunc = [v3WorldPosition](MComponent* a, MComponent* b) {
+		MSceneComponent* pComponentA = a->GetOwnerNode()->GetComponent<MSceneComponent>();
+		MSceneComponent* pComponentB = b->GetOwnerNode()->GetComponent<MSceneComponent>();
+
+		if (!pComponentA) return true;
+		if (!pComponentB) return false;
+
+		return (pComponentA->GetWorldPosition() - v3WorldPosition).Length() < (pComponentB->GetWorldPosition() - v3WorldPosition).Length();
 	};
 
-	if (m_vPointLight.size() <= vPointLights.size())
+	if (pComponentGroup->m_vComponent.size() <= vPointLights.size())
 	{
-		std::copy(m_vPointLight.begin(), m_vPointLight.end(), vPointLights.begin());
+		for (size_t i = 0; i < pComponentGroup->m_vComponent.size(); ++i)
+		{
+			vPointLights[i] = static_cast<MPointLightComponent*>(pComponentGroup->m_vComponent[i]);
+		}
 	}
-	else if (vPointLights.size() * 2 < m_vPointLight.size())
+	else if (vPointLights.size() * 2 < pComponentGroup->m_vComponent.size())
 	{
 		std::fill(vPointLights.begin(), vPointLights.end(), nullptr);
-		for (MPointLight* pLight : m_vPointLight)
+		for (MComponent* pComponent : pComponentGroup->m_vComponent)
 		{
-			for (std::vector<MPointLight*>::iterator iter = vPointLights.begin(); iter != vPointLights.end(); ++iter)
+			MPointLightComponent* pPointLightComponent = static_cast<MPointLightComponent*>(pComponent);
+			for (auto iter = vPointLights.begin(); iter != vPointLights.end(); ++iter)
 			{
 				if (*iter == nullptr)
 				{
-					(*iter) = pLight;
+					(*iter) = pPointLightComponent;
 					break;
 				}
-				else if (compareFunc(pLight, *iter))
+				else if (compareFunc(pPointLightComponent, *iter))
 				{
-					for (std::vector<MPointLight*>::iterator nextIter = vPointLights.end() - 1; nextIter != iter; --nextIter)
+					for (auto nextIter = vPointLights.end() - 1; nextIter != iter; --nextIter)
 						(*nextIter) = *(nextIter - 1);
-					(*iter) = pLight;
+					(*iter) = pPointLightComponent;
 					break;
 				}
 			}
@@ -159,38 +172,35 @@ void MScene::FindActivePointLights(const Vector3& v3WorldPosition, std::vector<M
 	}
 	else
 	{
-		std::sort(m_vPointLight.begin(), m_vPointLight.end(), compareFunc);
-		std::copy(m_vPointLight.begin(), m_vPointLight.begin() + vPointLights.size(), vPointLights.begin());
+		std::sort(pComponentGroup->m_vComponent.begin(), pComponentGroup->m_vComponent.end(), compareFunc);
+
+		for (size_t i = 0; i < vPointLights.size(); ++i)
+		{
+			vPointLights[i] = (static_cast<MPointLightComponent*>(pComponentGroup->m_vComponent[i]));
+		}
 	}
 }
 
-void MScene::FindActiveSpotLights(const Vector3& v3WorldPosition, std::vector<MSpotLight*>& vSpotLights)
+void MScene::FindActiveSpotLights(const Vector3& v3WorldPosition, std::vector<MSpotLightComponent*>& vSpotLights)
 {
-	for (uint32_t i = 0; i < vSpotLights.size() && i < m_vSpotLight.size(); ++i)
+	MComponentGroup* pComponentGroup = FindComponents<MSpotLightComponent>();
+	if (!pComponentGroup)
+		return;
+
+	for (uint32_t i = 0; i < vSpotLights.size() && i < pComponentGroup->m_vComponent.size(); ++i)
 	{
-		vSpotLights[i] = m_vSpotLight[i];
+		vSpotLights[i] = static_cast<MSpotLightComponent*>(pComponentGroup->m_vComponent[i]);
 	}
 }
 
 void MScene::OnNodeEnter(MNode* pNode)
 {
- 	if (MIMeshInstance* pMesh = pNode->DynamicCast<MIMeshInstance>())
-		InsertMaterialGroup(pMesh);
+	std::vector<MComponent*> vComponents = pNode->GetComponents();
 
-	else if (MCamera* pCamera = pNode->DynamicCast<MCamera>())
+	for (MComponent* pComponent : vComponents)
 	{
-		for (MViewport* pViewport : m_vViewports)
-		{
-			if (pViewport->IsUseDefaultCamera())
-				pViewport->SetCamera(pCamera);
-		}
+		AddComponent(pComponent);
 	}
-
-MSCENE_ON_NODE_ENTER(ModelInstance)
-MSCENE_ON_NODE_ENTER(DirectionalLight)
-MSCENE_ON_NODE_ENTER(PointLight)
-MSCENE_ON_NODE_ENTER(SpotLight)
-MSCENE_ON_NODE_ENTER(InputNode)
 }
 
 void MScene::OnNodeExit(MNode* pNode)
@@ -198,23 +208,70 @@ void MScene::OnNodeExit(MNode* pNode)
 	if (m_pRootNode == pNode)
 		m_pRootNode = nullptr;
 
- 	if (MIMeshInstance* pMesh = pNode->DynamicCast<MIMeshInstance>())
-		RemoveMaterialGroup(pMesh);
+	std::vector<MComponent*> vComponents = pNode->GetComponents();
 
-	else if (MCamera* pCamera = pNode->DynamicCast<MCamera>())
+	for (MComponent* pComponent : vComponents)
 	{
-		for (MViewport* pViewport : m_vViewports)
-		{
-			if (pViewport->GetCamera() == pCamera)
-				pViewport->SetCamera(nullptr);
-		}
+		RemoveComponent(pComponent);
 	}
+}
 
-MSCENE_ON_NODE_EXIT(ModelInstance)
-MSCENE_ON_NODE_EXIT(DirectionalLight)
-MSCENE_ON_NODE_EXIT(PointLight)
-MSCENE_ON_NODE_EXIT(SpotLight)
-MSCENE_ON_NODE_EXIT(InputNode)
+void MScene::AddComponent(MComponent* pComponent)
+{
+	if (!pComponent)
+		return;
+
+	if(MRenderableMeshComponent* pMeshComponent = pComponent->DynamicCast<MRenderableMeshComponent>())
+		InsertMaterialGroup(pMeshComponent);
+
+	MTypeIdentifierConstPointer pCmoponentType = pComponent->GetTypeIdentifier();
+
+	while (pCmoponentType && pCmoponentType != MComponent::GetClassTypeIdentifier())
+	{
+		MComponentGroup* pCompGroup = nullptr;
+		auto findResult = m_tComponents.find(pCmoponentType);
+		if (findResult == m_tComponents.end())
+		{
+			pCompGroup = new MComponentGroup();
+			m_tComponents[pCmoponentType] = pCompGroup;
+		}
+		else
+		{
+			pCompGroup = findResult->second;
+		}
+
+		if (pCompGroup)
+		{
+			pCompGroup->AddComponent(pComponent);
+		}
+
+		pCmoponentType = pCmoponentType->m_pBaseTypeIdentifier;
+	}
+}
+
+void MScene::RemoveComponent(MComponent* pComponent)
+{
+	if (!pComponent)
+		return;
+
+	if (MRenderableMeshComponent* pMeshComponent = pComponent->DynamicCast<MRenderableMeshComponent>())
+		RemoveMaterialGroup(pMeshComponent);
+
+	MTypeIdentifierConstPointer pCmoponentType = pComponent->GetTypeIdentifier();
+
+	while (pCmoponentType && pCmoponentType != MComponent::GetClassTypeIdentifier())
+	{
+		auto findResult = m_tComponents.find(pCmoponentType);
+
+		MComponentGroup* pCompGroup = findResult->second;
+
+		if (pCompGroup)
+		{
+			pCompGroup->RemoveComponent(pComponent);
+		}
+
+		pCmoponentType = pCmoponentType->m_pBaseTypeIdentifier;
+	}
 }
 
 void MScene::Render(MIRenderer* pRenderer, MViewport* pViewport, MIRenderTarget* pRenderTarget)
@@ -234,10 +291,17 @@ void MScene::Input(MInputEvent* pEvent, MViewport* pViewport)
 {
 	m_pTransformCoord3D->Input(pEvent, pViewport);
 
-	for (MInputNode* pNode : m_vInputNode)
+	auto findResult = m_tComponents.find(MInputComponent::GetClassTypeIdentifier());
+	if (findResult == m_tComponents.end())
+		return;
+
+	for (MComponent* pComponent : findResult->second->m_vComponent)
 	{
-		if (pNode->Input(pEvent, pViewport))
-			break;
+		if (MInputComponent* pInputComponent = static_cast<MInputComponent*>(pComponent))
+		{
+			if (pInputComponent->Input(pEvent, pViewport))
+				break;
+		}
 	}
 }
 
@@ -264,24 +328,24 @@ void MScene::SetRootNode(MNode* pRootNode)
 
 
 
-void MScene::InsertMaterialGroup(MIMeshInstance* pMeshInstance)
+void MScene::InsertMaterialGroup(MRenderableMeshComponent* pMeshComponent)
 {
-	if (!pMeshInstance->GetMaterial())
+	if (!pMeshComponent)
 		return;
 
-	MMaterial* pMaterial = pMeshInstance->GetMaterial();
+	MMaterial* pMaterial = pMeshComponent->GetMaterial();
 	std::vector<MMaterialGroup*>::iterator iter = std::lower_bound(m_vMaterialGroups.begin(), m_vMaterialGroups.end(), pMaterial, [](MMaterialGroup* a, MMaterial* b) {return a->m_pMaterial < b; });
 	MMaterialGroup* pGroup = nullptr;
 	if (iter == m_vMaterialGroups.end())
 	{
 		pGroup = new MMaterialGroup();
-		pGroup->m_pMaterial = pMeshInstance->GetMaterial();
+		pGroup->m_pMaterial = pMeshComponent->GetMaterial();
 		m_vMaterialGroups.push_back(pGroup);
 	}
 	else if ((*iter)->m_pMaterial != pMaterial)
 	{
 		pGroup = new MMaterialGroup();
-		pGroup->m_pMaterial = pMeshInstance->GetMaterial();
+		pGroup->m_pMaterial = pMeshComponent->GetMaterial();
 		m_vMaterialGroups.insert(iter, pGroup);
 	}
 	else
@@ -289,26 +353,36 @@ void MScene::InsertMaterialGroup(MIMeshInstance* pMeshInstance)
 		pGroup = *iter;
 	}
 
-	pGroup->InsertMeshInstance(pMeshInstance);
+	pGroup->InsertMeshComponent(pMeshComponent);
 }
 
-void MScene::RemoveMaterialGroup(MIMeshInstance* pMeshInstance)
+void MScene::RemoveMaterialGroup(MRenderableMeshComponent* pMeshComponent)
 {
-	if (!pMeshInstance->GetMaterial())
+	if (!pMeshComponent)
 		return;
 
-	MMaterial* pMaterial = pMeshInstance->GetMaterial();
+	MMaterial* pMaterial = pMeshComponent->GetMaterial();
 	std::vector<MMaterialGroup*>::iterator iter = std::lower_bound(m_vMaterialGroups.begin(), m_vMaterialGroups.end(), pMaterial, [](MMaterialGroup* a, MMaterial* b) {return a->m_pMaterial < b; });
 	if (iter == m_vMaterialGroups.end())
 		return;
 
 	MMaterialGroup* pGroup = *iter;
-	pGroup->RemoveMeshInstance(pMeshInstance);
+	pGroup->RemoveMeshComponent(pMeshComponent);
 
-	if (pGroup->m_vMeshInstances.empty())
+	if (pGroup->m_vMeshComponents.empty())
 	{
 		m_vMaterialGroups.erase(iter);
 		delete pGroup;
 		pGroup = nullptr;
 	}
+}
+
+void MComponentGroup::AddComponent(MComponent* pComponent)
+{
+	UNION_PUSH_BACK_VECTOR(m_vComponent, pComponent);
+}
+
+void MComponentGroup::RemoveComponent(MComponent* pComponent)
+{
+	ERASE_FIRST_VECTOR(m_vComponent, pComponent);
 }

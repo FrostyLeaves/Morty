@@ -9,7 +9,6 @@
 #include "Texture/MTextureResource.h"
 #include "Model/MMeshResource.h"
 
-#include "Node/Model/MStaticMeshInstance.h"
 
 
 M_OBJECT_IMPLEMENT(MSkyBox, MObject)

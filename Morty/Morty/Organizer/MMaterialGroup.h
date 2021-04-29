@@ -13,22 +13,22 @@
 #include <vector>
 
 class MMaterial;
-class MIMeshInstance;
+class MRenderableMeshComponent;
 class MORTY_API MMaterialGroup
 {
 public:
     MMaterialGroup();
 
 
-    bool InsertMeshInstance(MIMeshInstance* pMeshIns);
-    bool RemoveMeshInstance(MIMeshInstance* pMeshIns);
+    bool InsertMeshComponent(MRenderableMeshComponent* pMeshComponent);
+    bool RemoveMeshComponent(MRenderableMeshComponent* pMeshComponent);
 
     void SetDirty() { m_bDirty = true; }
 
 public:
 
 	MMaterial* m_pMaterial;
-	std::vector<MIMeshInstance*> m_vMeshInstances;
+	std::vector<MRenderableMeshComponent*> m_vMeshComponents;
 
 
     bool m_bDirty;

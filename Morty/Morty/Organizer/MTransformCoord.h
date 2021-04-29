@@ -15,7 +15,6 @@
 
 class MNode;
 class MIMesh;
-class M3DNode;
 class MViewport;
 class MIRenderer;
 class MInputEvent;
