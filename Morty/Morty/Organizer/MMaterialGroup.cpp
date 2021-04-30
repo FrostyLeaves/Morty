@@ -23,5 +23,7 @@ bool MMaterialGroup::RemoveMeshComponent(MRenderableMeshComponent* pMeshComponen
 		SetDirty();
 		return true;
 	}
+
+	return false;
 }
 

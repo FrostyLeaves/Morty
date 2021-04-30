@@ -29,8 +29,8 @@ def build_for_windows():
       ' --G "Visual Studio 16 Win64" '+
       ' -DCMAKE_INSTALL_PREFIX=' + BULLET_INSTALL_PATH +
       ' -DINSTALL_LIBS:BOOL=ON' +
-      ' -DCMAKE_CXX_FLAGS_DEBUG=/MDd' +
-      ' -DCMAKE_CXX_FLAGS_RELEASE=/MD' +
+      ' -DCMAKE_CXX_FLAGS_DEBUG=/MTd' +
+      ' -DCMAKE_CXX_FLAGS_RELEASE=/MT' +
       ' ' + BULLET_PATH
     )
 

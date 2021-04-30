@@ -28,6 +28,8 @@ def build_for_windows():
     os.system(CMAKE_PATH + 
       ' --G "Visual Studio 16 Win64" ' +
       " -DCMAKE_INSTALL_PREFIX=" + SPIRV_CROSS_INSTALL_PATH +
+      ' -DCMAKE_CXX_FLAGS_DEBUG=/MTd' +
+      ' -DCMAKE_CXX_FLAGS_RELEASE=/MT' +
       " " + SPIRV_CROSS_PATH)
 
 

@@ -22,6 +22,8 @@ def build_for_windows():
     os.system(CMAKE_PATH + 
       ' --G "Visual Studio 16 Win64" ' +
       " -DCMAKE_INSTALL_PREFIX=" + GLSLANG_INSTALL_PATH +
+      ' -DCMAKE_CXX_FLAGS_DEBUG=/MTd' +
+      ' -DCMAKE_CXX_FLAGS_RELEASE=/MT' +
       " -DCMAKE_DEBUG_POSTFIX=d" +
       " " + GLSLANG_PATH)
 

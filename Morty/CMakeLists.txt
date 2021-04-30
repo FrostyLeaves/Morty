@@ -16,6 +16,9 @@ else()
         message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
+set(CMAKE_CXX_FLAGS_DEBUG "/MTd")
+set(CMAKE_CXX_FLAGS_RELEASE "/MT")
+
 
 set(MORTY_BUILD_TARGET_RANGE "WIN" "MACOS" "IOS")
 set(MORTY_BUILD_TARGET "WIN" CACHE STRING "param for platform")
