@@ -40,6 +40,29 @@ def build_for_windows():
 
     shutil.rmtree(SDL_BUILD_PATH)
 
+
+def build_for_macos():
+
+    CMAKE_PATH = "cmake"
+
+    if not os.path.exists(SDL_BUILD_PATH):
+            os.makedirs(SDL_BUILD_PATH)
+            
+    os.chdir(SDL_BUILD_PATH)
+
+    os.system(CMAKE_PATH +
+      ' --G "XCode" '+
+      ' -DCMAKE_INSTALL_PREFIX=' + SDL_INSTALL_PATH +
+      ' ' + SDL_PATH
+    )
+
+    os.system(CMAKE_PATH + " --build ./ --target install --config Debug")
+    os.system(CMAKE_PATH + " --build ./ --target install --config Release")
+
+    os.chdir(WORK_PATH)
+
+    shutil.rmtree(SDL_BUILD_PATH)
+
 def build_for_ios():
 
     if not os.path.exists(SDL_BUILD_PATH):

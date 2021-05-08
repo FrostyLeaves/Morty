@@ -129,6 +129,34 @@ def build_for_windows():
 
     shutil.rmtree(ASSIMP_BUILD_PATH)
 
+
+def build_for_macos():
+
+    for root, _, files in os.walk(ASSIMP_PATH + "/code/AssetLib/AMF", topdown=False):
+        for name in files:
+            file_full_path = os.path.join(root, name)
+            procBOM(file_full_path, True)
+
+    CMAKE_PATH = "cmake"
+
+    if not os.path.exists(ASSIMP_BUILD_PATH):
+            os.makedirs(ASSIMP_BUILD_PATH)
+            
+    os.chdir(ASSIMP_BUILD_PATH)
+
+    os.system(CMAKE_PATH +
+      ' --G "XCode" '+
+      ' -DCMAKE_INSTALL_PREFIX=' + ASSIMP_INSTALL_PATH +
+      ' ' + ASSIMP_PATH
+    )
+
+    os.system(CMAKE_PATH + " --build ./ --target install --config Debug")
+    os.system(CMAKE_PATH + " --build ./ --target install --config Release")
+
+    os.chdir(WORK_PATH)
+
+    shutil.rmtree(ASSIMP_BUILD_PATH)
+
 def build_for_ios():
     os.chdir(ASSIMP_PATH + "/port/iOS")
 

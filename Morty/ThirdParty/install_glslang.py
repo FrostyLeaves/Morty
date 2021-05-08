@@ -40,6 +40,36 @@ def build_for_windows():
 
     shutil.rmtree(GLSLANG_BUILD_PATH)
 
+
+def build_for_macos():
+
+    CMAKE_PATH = "cmake"
+
+
+    if not os.path.exists(GLSLANG_BUILD_PATH):
+            os.makedirs(GLSLANG_BUILD_PATH)
+            
+    os.chdir(GLSLANG_BUILD_PATH)
+
+    os.system(CMAKE_PATH + 
+      ' --G "XCode" ' +
+      " -DCMAKE_INSTALL_PREFIX=" + GLSLANG_INSTALL_PATH +
+      " -DCMAKE_DEBUG_POSTFIX=d" +
+      " " + GLSLANG_PATH)
+
+
+    if not os.path.exists(GLSLANG_INSTALL_PATH): 
+        os.makedirs(GLSLANG_INSTALL_PATH)
+        
+    os.system(CMAKE_PATH + " --build ./ --target install --config Debug")
+    os.system(CMAKE_PATH + " --build ./ --target install --config Release")
+    
+
+    os.chdir(WORK_PATH)
+
+
+    shutil.rmtree(GLSLANG_BUILD_PATH)
+
 def build_for_ios():
 
     CMAKE_PATH = "cmake"
@@ -107,3 +137,6 @@ def build_for_ios():
     shutil.rmtree(GLSLANG_BUILD_PATH)
 
 
+
+
+build_for_windows()

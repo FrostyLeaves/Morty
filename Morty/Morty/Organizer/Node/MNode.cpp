@@ -1,4 +1,4 @@
-﻿#include "MNode.h"
+#include "MNode.h"
 #include "MScene.h"
 #include "MVariant.h"
 #include "Json/MJson.h"
@@ -443,7 +443,7 @@ void MNode::OnTick(const float& fDelta)
 MComponent* MNode::RegisterComponent(MTypeIdentifierConstPointer pComponentType)
 {
 	if (!MTypedClass::IsType(pComponentType, MComponent::GetClassTypeIdentifier()))
-		return false;
+		return nullptr;
 
 	auto findResult = m_tComponents.find(pComponentType);
 	if (findResult != m_tComponents.end())

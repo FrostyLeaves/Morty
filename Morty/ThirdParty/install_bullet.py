@@ -41,7 +41,28 @@ def build_for_windows():
 
     shutil.rmtree(BULLET_BUILD_PATH)
 
+def build_for_macos():
+
+    CMAKE_PATH = "cmake"
+
+    if not os.path.exists(BULLET_BUILD_PATH):
+            os.makedirs(BULLET_BUILD_PATH)
+            
+    os.chdir(BULLET_BUILD_PATH)
+
+    os.system(CMAKE_PATH +
+      ' --G "XCode" '+
+      ' -DCMAKE_INSTALL_PREFIX=' + BULLET_INSTALL_PATH +
+      ' -DINSTALL_LIBS:BOOL=ON' +
+      ' ' + BULLET_PATH
+    )
+
+    os.system(CMAKE_PATH + " --build ./ --target install --config Debug")
+    os.system(CMAKE_PATH + " --build ./ --target install --config Release")
+
+    os.chdir(WORK_PATH)
+
+    shutil.rmtree(BULLET_BUILD_PATH)
+
 def build_for_ios():
     pass
-
-build_for_windows()

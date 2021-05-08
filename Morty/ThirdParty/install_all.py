@@ -40,10 +40,10 @@ if __name__ == '__main__':
         install_glslang.build_for_windows()
         install_bullet.build_for_windows()
     elif platform == "MACOS":
-        install_assimp.build_for_windows()
-        install_sdl.build_for_windows()
-        install_spirv_cross.build_for_windows()
-        install_glslang.build_for_windows()
+        install_assimp.build_for_macos()
+        install_sdl.build_for_macos()
+        install_spirv_cross.build_for_macos()
+        install_glslang.build_for_macos()
         install_moltenVK.build_for_macos()
         install_bullet.build_for_macos()
     elif platform == "IOS":

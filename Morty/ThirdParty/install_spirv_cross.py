@@ -45,6 +45,41 @@ def build_for_windows():
 
     shutil.rmtree(SPIRV_CROSS_BUILD_PATH)
 
+
+def build_for_macos():
+
+
+    os.chdir(SPIRV_CROSS_PATH)
+    os.system("./checkout_glslang_spirv_tools.sh")
+    os.system("./build_glslang_spirv_tools.sh")
+    os.chdir(WORK_PATH)
+
+    CMAKE_PATH = "cmake"
+
+
+    if not os.path.exists(SPIRV_CROSS_BUILD_PATH):
+            os.makedirs(SPIRV_CROSS_BUILD_PATH)
+            
+    os.chdir(SPIRV_CROSS_BUILD_PATH)
+
+    os.system(CMAKE_PATH + 
+      ' --G "XCode" ' +
+      " -DCMAKE_INSTALL_PREFIX=" + SPIRV_CROSS_INSTALL_PATH +
+      " " + SPIRV_CROSS_PATH)
+
+
+    if not os.path.exists(SPIRV_CROSS_INSTALL_PATH): 
+        os.makedirs(SPIRV_CROSS_INSTALL_PATH)
+        
+    os.system(CMAKE_PATH + " --build ./ --target install --config Debug")
+    os.system(CMAKE_PATH + " --build ./ --target install --config Release")
+    
+
+    os.chdir(WORK_PATH)
+
+
+    shutil.rmtree(SPIRV_CROSS_BUILD_PATH)
+
 def build_for_ios():
 
 

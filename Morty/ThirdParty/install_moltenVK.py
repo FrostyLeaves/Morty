@@ -39,3 +39,4 @@ def build_for_ios():
 
     os.chdir(WORK_PATH)
 
+build_for_macos()

@@ -61,4 +61,4 @@ def build_for_windows():
 
     os.chdir(WORK_PATH)
 
-build_for_windows()
+build_for_macos()
