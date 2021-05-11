@@ -107,7 +107,7 @@ public:
 	T* GetComponent();
 	MComponent* GetComponent(MTypeIdentifierConstPointer pComponentType);
 
-	std::vector<MComponent*> GetComponents();
+	const std::vector<MComponent*>& GetComponents() const;
 
 	template <class T>
 	void RegisterComponentNotify(const MString& strNotifyName, const std::function<void()>& callback);
@@ -181,7 +181,7 @@ protected:
 	MScene* m_pScene;
 	std::vector<MNode*> m_vChildren;
 	std::vector<MNode*> m_vProtectedChildren;
-	std::map<const void*, MComponent*> m_tComponents;
+	std::vector<MComponent*> m_vComponents;
 	std::map<MString, MComponentNotifyInfo*> m_tComponentNotify;
 
 	bool m_bVisibleRecursively;

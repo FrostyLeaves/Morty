@@ -111,7 +111,7 @@ void PropertyView::CreatePropertyList(MNode* pNode)
 	MString name = pNode->GetTypeName();
 
 
-	auto vComponents = pNode->GetComponents();
+	auto& vComponents = pNode->GetComponents();
 	for(MComponent* pComponent : vComponents)
 	{
 		if (auto func = m_tCreatePropertyFactory[pComponent->GetTypeIdentifier()->m_strName])

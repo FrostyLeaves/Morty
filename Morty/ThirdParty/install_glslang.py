@@ -136,7 +136,3 @@ def build_for_ios():
     
     shutil.rmtree(GLSLANG_BUILD_PATH)
 
-
-
-
-build_for_windows()

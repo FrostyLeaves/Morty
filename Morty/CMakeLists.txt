@@ -31,10 +31,24 @@ if(NOT MORTY_BUILD_TARGET IN_LIST MORTY_BUILD_TARGET_RANGE)
 endif()
 
 
-
-if(MORTY_BUILD_TARGET STREQUAL "WIN")
-    set(CMAKE_CXX_FLAGS_DEBUG "/MTd")
-    set(CMAKE_CXX_FLAGS_RELEASE "/MT")
+if(MSVC)
+	set(CompilerFlags
+			CMAKE_CXX_FLAGS
+			CMAKE_CXX_FLAGS_DEBUG
+			CMAKE_CXX_FLAGS_RELEASE
+			CMAKE_CXX_FLAGS_MINSIZEREL
+			CMAKE_CXX_FLAGS_RELWITHDEBINFO
+			CMAKE_C_FLAGS
+			CMAKE_C_FLAGS_DEBUG
+			CMAKE_C_FLAGS_RELEASE
+			CMAKE_C_FLAGS_MINSIZEREL
+			CMAKE_C_FLAGS_RELWITHDEBINFO
+			)
+	foreach(CompilerFlag ${CompilerFlags})
+		string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+		set(${CompilerFlag} "${${CompilerFlag}}" CACHE STRING "msvc compiler flags" FORCE)
+		message("MSVC flags: ${CompilerFlag}:${${CompilerFlag}}")
+	endforeach()
 endif()
 
 

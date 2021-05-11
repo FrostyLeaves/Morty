@@ -238,9 +238,9 @@ void MNode::Tick(const float& fDelta)
 
 	OnTick(fDelta);
 
-	for (auto& pair : m_tComponents)
+	for (MComponent* pComponent : m_vComponents)
 	{
-		pair.second->Tick(fDelta);
+		pComponent->Tick(fDelta);
 	}
 
 	for (MNode* pChild : m_vProtectedChildren)
@@ -399,15 +399,12 @@ void MNode::WriteComponentToStruct(MStruct& srt)
 {
 	if (MVariantArray* pArray = FindWriteVariant<MVariantArray>(srt, "Components"))
 	{
-		for (auto& pair : m_tComponents)
+		for (MComponent* pComponent : m_vComponents)
 		{
-			if (MComponent* pComponent = pair.second)
-			{
-				pArray->AppendMVariant(MStruct());
-				MStruct& componentSrt = pArray->Back()->GetVarUnsafe<MStruct>();
-				pComponent->WriteToStruct(componentSrt);
-				componentSrt.AppendMVariant("ComponentType", pComponent->GetTypeIdentifier()->m_strName);
-			}
+			pArray->AppendMVariant(MStruct());
+			MStruct& componentSrt = pArray->Back()->GetVarUnsafe<MStruct>();
+			pComponent->WriteToStruct(componentSrt);
+			componentSrt.AppendMVariant("ComponentType", pComponent->GetTypeIdentifier()->m_strName);
 		}
 	}
 
@@ -445,16 +442,27 @@ MComponent* MNode::RegisterComponent(MTypeIdentifierConstPointer pComponentType)
 	if (!MTypedClass::IsType(pComponentType, MComponent::GetClassTypeIdentifier()))
 		return nullptr;
 
-	auto findResult = m_tComponents.find(pComponentType);
-	if (findResult != m_tComponents.end())
-		return findResult->second;
+	auto iter = std::lower_bound(m_vComponents.begin(), m_vComponents.end(), pComponentType, [](MComponent* a, MTypeIdentifierConstPointer b) {
+		return a->GetTypeIdentifier() < b;
+	});
+
+	if (iter != m_vComponents.end() && (*iter)->GetTypeIdentifier() == pComponentType)
+		return (*iter);
+	
 
 	MComponent* pCreateComponent = static_cast<MComponent*>(MTypedClass::New(pComponentType->m_strName));
 
 	pCreateComponent->SetOwnerNode(this);
 	pCreateComponent->Initialize();
 
-	m_tComponents[pComponentType] = pCreateComponent;
+	if (iter == m_vComponents.end())
+	{
+		m_vComponents.push_back(pCreateComponent);
+	}
+	else
+	{
+		m_vComponents.insert(iter, pCreateComponent);
+	}
 
 	if (MScene* pScene = GetScene())
 	{
@@ -469,21 +477,25 @@ void MNode::UnregisterComponent(MTypeIdentifierConstPointer pComponentType)
 	if (!MTypedClass::IsType(pComponentType, MComponent::GetClassTypeIdentifier()))
 		return;
 
-	auto findResult = m_tComponents.find(pComponentType);
-	if (findResult == m_tComponents.end())
-		return;
-
-	MComponent* pFoundComponent = findResult->second;
-	m_tComponents.erase(findResult);
-
-	if (MScene* pScene = GetScene())
+	for (auto iter = m_vComponents.begin(); iter != m_vComponents.end(); ++iter)
 	{
-		pScene->RemoveComponent(pFoundComponent);
-	}
+		if ((*iter)->GetTypeIdentifier() == pComponentType)
+		{
+			MComponent* pFoundComponent = (*iter);
+			m_vComponents.erase(iter);
 
-	pFoundComponent->Release();
-	delete pFoundComponent;
-	pFoundComponent = nullptr;
+			if (MScene* pScene = GetScene())
+			{
+				pScene->RemoveComponent(pFoundComponent);
+			}
+
+			pFoundComponent->Release();
+			delete pFoundComponent;
+			pFoundComponent = nullptr;
+
+			break;
+		}
+	}
 }
 
 MComponent* MNode::GetComponent(MTypeIdentifierConstPointer pComponentType)
@@ -491,23 +503,22 @@ MComponent* MNode::GetComponent(MTypeIdentifierConstPointer pComponentType)
 	if (!MTypedClass::IsType(pComponentType, MComponent::GetClassTypeIdentifier()))
 		return nullptr;
 
-	auto findResult = m_tComponents.find(pComponentType);
-	if (findResult == m_tComponents.end())
+	auto iter = std::lower_bound(m_vComponents.begin(), m_vComponents.end(), pComponentType, [](MComponent* a, MTypeIdentifierConstPointer b) {
+		return a->GetTypeIdentifier() < b;
+	});
+
+	if (iter == m_vComponents.end())
 		return nullptr;
 
-	return findResult->second;
+	if((*iter)->GetTypeIdentifier() == pComponentType)
+		return (*iter);
+
+	return nullptr;
 }
 
-std::vector<MComponent*> MNode::GetComponents()
+const std::vector<MComponent*>& MNode::GetComponents() const
 {
-	std::vector<MComponent*> vComponents;
-
-	for (auto& pair : m_tComponents)
-	{
-		vComponents.push_back(pair.second);
-	}
-
-	return vComponents;
+	return m_vComponents;
 }
 
 void MNode::RegisterComponentNotify(const MString& strNotifyName, const void* pComponentType, const std::function<void()>& callback)

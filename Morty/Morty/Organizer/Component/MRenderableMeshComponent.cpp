@@ -278,7 +278,7 @@ MModelComponent* MRenderableMeshComponent::GetAttachedModelComponent()
 			pNode = pNode->GetParent();
 		}
 	}
-	return nullptr;
+	return m_pModelComponent;
 }
 
 void MRenderableMeshComponent::OnTransformDirty()

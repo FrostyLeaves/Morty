@@ -195,7 +195,7 @@ void MScene::FindActiveSpotLights(const Vector3& v3WorldPosition, std::vector<MS
 
 void MScene::OnNodeEnter(MNode* pNode)
 {
-	std::vector<MComponent*> vComponents = pNode->GetComponents();
+	auto& vComponents = pNode->GetComponents();
 
 	for (MComponent* pComponent : vComponents)
 	{
@@ -208,7 +208,7 @@ void MScene::OnNodeExit(MNode* pNode)
 	if (m_pRootNode == pNode)
 		m_pRootNode = nullptr;
 
-	std::vector<MComponent*> vComponents = pNode->GetComponents();
+	auto& vComponents = pNode->GetComponents();
 
 	for (MComponent* pComponent : vComponents)
 	{
