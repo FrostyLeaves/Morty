@@ -132,7 +132,7 @@ float3 CalcDirectionLight(DirectionLight dirLight, float4 f4DirLightSpacePos, fl
 
         float3 f3LightColor = dirLight.f3Diffuse;
 
-        return CalcPBRLight(f3LightColor, f3CameraDir, f3LightDir, f3Normal, f3BaseColor, f3Albedo, fRoughness, fMetallic);
+        return shadow * CalcPBRLight(f3LightColor, f3CameraDir, f3LightDir, f3Normal, f3BaseColor, f3Albedo, fRoughness, fMetallic);
     }
 
     return float3(0, 0, 0);
@@ -140,8 +140,9 @@ float3 CalcDirectionLight(DirectionLight dirLight, float4 f4DirLightSpacePos, fl
 
 float3 GetWorldPosition(VS_OUT input)
 {
-    float2 pos = input.uv * 2.0 - 1.0;
-    pos.y = 1.0 - pos.y;
+    float2 uv = input.uv;
+    uv.y = 1.0 - uv.y;
+    float2 pos = uv * 2.0 - 1.0;
 
     float4 f4DepthColor = U_mat_fDepth.Sample(U_defaultSampler, input.uv);
 

@@ -107,11 +107,22 @@ int main(int argc, char* argv[])
 //    MResource* pNodeResourceBase = engine.GetResourceManager()->LoadResource("./Model/pbr/rustediron2/Sphere.mnode");
     if (MNodeResource* pNodeResource = pNodeResourceBase ? pNodeResourceBase->DynamicCast<MNodeResource>() : nullptr)
     {
-        MNode* pEditorNode = pNodeResource->CreateNode();
+			MNode* pEditorNode = pNodeResource->CreateNode();
+			pRootNode->AddNode(pEditorNode);
+			if (MSceneComponent* pComponent = pEditorNode->GetComponent<MSceneComponent>())
+			{
+				pComponent->SetRotation(Quaternion(Vector3(1.0, 0.0, 0.0), 90.0));
+			}
 
-        pRootNode->AddNode(pEditorNode);
+			MNode* pEditorNode1 = pNodeResource->CreateNode();
+			pRootNode->AddNode(pEditorNode1);
+			if (MSceneComponent* pComponent = pEditorNode1->GetComponent<MSceneComponent>())
+			{
+				pComponent->SetRotation(Quaternion(Vector3(1.0, 0.0, 0.0), 90.0));
+				pComponent->SetPosition(Vector3(0.0, 0.0, -50.0));
+			}
 
-		pEditorNode->RegisterComponent<MRigidBodyComponent>();
+		//pEditorNode->RegisterComponent<MRigidBodyComponent>();
     }
 
 	MNode* pDirectionalLight = engine.GetObjectManager()->CreateObject<MNode>();
