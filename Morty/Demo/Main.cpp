@@ -83,14 +83,14 @@ int main(int argc, char* argv[])
 	MEngine engine;
 	engine.Initialize("../../Resource");
 
-	std::ifstream ifs("./Model/output/BerP/BerP.mnode", std::ios::binary);
+	std::ifstream ifs("./Model/output/bullet/bullet.mnode", std::ios::binary);
 	if (!ifs.good())
 	{
 		{
 			MModelConvertInfo convertInfo;
-			convertInfo.strResourcePath = "Model/pbr/1793_Bermuda_Penny/1793BerP.obj";
+			convertInfo.strResourcePath = "Model/pbr/bullet/bullet.fbx";
 			convertInfo.strOutputDir = "./Model/output";
-			convertInfo.strOutputName = "BerP";
+			convertInfo.strOutputName = "bullet";
 			convertInfo.eMaterialType = MModelConvertMaterialType::E_PBR_Deferred;
 
 			MModelConverter conver(&engine);
@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
 	MNode* pRootNode = engine.GetObjectManager()->CreateObject<MNode>();
 	pRootNode->SetName("RootNode");
 
-	MResource* pNodeResourceBase = engine.GetResourceManager()->LoadResource("./Model/output/BerP/BerP.mnode");
+	MResource* pNodeResourceBase = engine.GetResourceManager()->LoadResource("./Model/output/bullet/bullet.mnode");
 //	MResource* pNodeResourceBase = engine.GetResourceManager()->LoadResource("./Model/output/bullet/bullet.mnode");
 //    MResource* pNodeResourceBase = engine.GetResourceManager()->LoadResource("./Model/pbr/rustediron2/Sphere.mnode");
     if (MNodeResource* pNodeResource = pNodeResourceBase ? pNodeResourceBase->DynamicCast<MNodeResource>() : nullptr)
@@ -122,7 +122,7 @@ int main(int argc, char* argv[])
 				pComponent->SetPosition(Vector3(0.0, 0.0, -50.0));
 			}
 
-		//pEditorNode->RegisterComponent<MRigidBodyComponent>();
+		pEditorNode->RegisterComponent<MRigidBodyComponent>();
     }
 
 	MNode* pDirectionalLight = engine.GetObjectManager()->CreateObject<MNode>();

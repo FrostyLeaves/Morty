@@ -39,6 +39,11 @@ public:
 
 public:
 
+    virtual void OnEnterScene(MScene* pScene) {}
+    virtual void OnExitScene(MScene* pScene) {}
+
+public:
+
     void SendComponentNotify(const MString& strSignalName);
 
 public:

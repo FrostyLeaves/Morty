@@ -47,12 +47,16 @@ if(MSVC)
 	foreach(CompilerFlag ${CompilerFlags})
 		string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
 		set(${CompilerFlag} "${${CompilerFlag}}" CACHE STRING "msvc compiler flags" FORCE)
-		message("MSVC flags: ${CompilerFlag}:${${CompilerFlag}}")
+		#message("MSVC flags: ${CompilerFlag}:${${CompilerFlag}}")
 	endforeach()
 endif()
 
 
 # 包含子项目。
+if(MORTY_BUILD_WITH_PHYSICS)
+message("Plugins/Physics")
+add_subdirectory ("Plugins/Physics")
+endif()
 add_subdirectory ("Morty")
 add_subdirectory ("Editor")
 add_subdirectory ("Demo")

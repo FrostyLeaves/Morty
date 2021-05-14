@@ -116,7 +116,7 @@ void PropertyView::CreatePropertyList(MNode* pNode)
 	{
 		if (auto func = m_tCreatePropertyFactory[pComponent->GetTypeIdentifier()->m_strName])
 		{
-			m_vPropertyList.push_front(func());
+			m_vPropertyList.push_back(func());
 		}
 	}
 }

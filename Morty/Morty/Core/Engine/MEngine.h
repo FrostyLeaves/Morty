@@ -18,6 +18,7 @@
 class MNode;
 class MScene;
 class MIDevice;
+class MIPlugin;
 class MIRenderer;
 class MIRenderView;
 class MObjectManager;
@@ -62,6 +63,17 @@ public:
 	MIDevice* GetDevice() { return m_pDevice; }
 	MIRenderer* GetRenderer() { return m_pRenderer; }
 
+
+public:
+
+	template<class T>
+	void RegisterPlugin();
+	void RegisterPlugin(MTypeIdentifierConstPointer type);
+
+	template<class T>
+	T* GetPlugin() { return static_cast<T*>(GetPlugin(T::GetClassTypeIdentifier())); }
+	MIPlugin* GetPlugin(MTypeIdentifierConstPointer pComponentType);
+
 protected:
 
 	bool InitializeDefaultResource();
@@ -73,7 +85,7 @@ private:
 
 	MProject m_Project;
 
-	//TODO 这个id值，应该是上层无感知的
+	//TODO 这个idx值，应该是上层无感知的
 	uint32_t m_unFrameIdx;
 
 	MObjectManager* m_pObjectManager;
@@ -82,6 +94,9 @@ private:
 	MScene* m_pScene;
 	MIDevice* m_pDevice;
 	MIRenderer* m_pRenderer;
+
+
+	std::vector<MIPlugin*> m_vPlugins;
 	
 	std::vector<MIRenderView*> m_vView;
 
@@ -96,5 +111,11 @@ private:
 
 	} m_cTickInfo;
 };
+
+template<class T>
+void MEngine::RegisterPlugin()
+{
+
+}
 
 #endif

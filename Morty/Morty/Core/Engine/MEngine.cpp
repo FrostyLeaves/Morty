@@ -18,6 +18,8 @@
 #include "DirectX11/MWindowsRenderView.h"
 #endif
 
+#include "MPlugin.h"
+
 #include "MNode.h"
 #include "MScene.h"
 #include "MMaterial.h"
@@ -163,6 +165,52 @@ void MEngine::SetMaxFPS(const int& nFPS)
 		m_cTickInfo.nMaxFPS = nFPS;
 		m_cTickInfo.fTickInterval = 1.0f / m_cTickInfo.nMaxFPS;
 	}
+}
+
+void MEngine::RegisterPlugin(MTypeIdentifierConstPointer type)
+{
+	if (!MTypedClass::IsType(type, MIPlugin::GetClassTypeIdentifier()))
+		return;
+
+	auto iter = std::lower_bound(m_vPlugins.begin(), m_vPlugins.end(), type, [](MIPlugin* a, MTypeIdentifierConstPointer b) {
+		return a->GetTypeIdentifier() < b;
+		});
+
+	if (iter != m_vPlugins.end() && (*iter)->GetTypeIdentifier() == type)
+		return;
+
+
+	MIPlugin* pPlugin = static_cast<MIPlugin*>(MTypedClass::New(type->m_strName));
+
+	pPlugin->Initialize();
+
+	if (iter == m_vPlugins.end())
+	{
+		m_vPlugins.push_back(pPlugin);
+	}
+	else
+	{
+		m_vPlugins.insert(iter, pPlugin);
+	}
+
+}
+
+MIPlugin* MEngine::GetPlugin(MTypeIdentifierConstPointer pComponentType)
+{
+	if (!MTypedClass::IsType(pComponentType, MIPlugin::GetClassTypeIdentifier()))
+		return nullptr;
+
+	auto iter = std::lower_bound(m_vPlugins.begin(), m_vPlugins.end(), pComponentType, [](MIPlugin* a, MTypeIdentifierConstPointer b) {
+		return a->GetTypeIdentifier() < b;
+		});
+
+	if (iter == m_vPlugins.end())
+		return nullptr;
+
+	if ((*iter)->GetTypeIdentifier() == pComponentType)
+		return (*iter);
+
+	return nullptr;
 }
 
 bool MEngine::InitializeDefaultResource()

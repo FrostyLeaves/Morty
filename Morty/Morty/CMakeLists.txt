@@ -26,40 +26,40 @@ file(GLOB MORTY_CORE_FILES Core/*.h Core/*.cpp)
 source_group("Core" FILES ${MORTY_CORE_FILES})
 
 file(GLOB MORTY_ENGINE_FILES Core/Engine/*.h Core/Engine/*.cpp)
-source_group("Core/Engine" FILES ${MORTY_ENGINE_FILES})
+source_group("Core\\Engine" FILES ${MORTY_ENGINE_FILES})
 
 file(GLOB MORTY_ANIMATION_FILES Core/Animation/*.h Core/Animation/*.cpp)
-source_group("Core/Animation" FILES ${MORTY_ANIMATION_FILES})
+source_group("Core\\Animation" FILES ${MORTY_ANIMATION_FILES})
 
 file(GLOB MORTY_INPUT_FILES Core/Input/*.h Core/Input/*.cpp )
-source_group("Core/Input" FILES ${MORTY_INPUT_FILES})
+source_group("Core\\Input" FILES ${MORTY_INPUT_FILES})
 
 file(GLOB MORTY_LOG_FILES Core/Log/*.h Core/Log/*.cpp )
-source_group("Core/Log" FILES ${MORTY_LOG_FILES})
+source_group("Core\\Log" FILES ${MORTY_LOG_FILES})
 
 file(GLOB MORTY_PAINTER_FILES Core/Painter/*.h Core/Painter/*.cpp )
-source_group("Core/Painter" FILES ${MORTY_PAINTER_FILES})
+source_group("Core\\Painter" FILES ${MORTY_PAINTER_FILES})
 
 file(GLOB MORTY_REF_COUNTER_FILES Core/RefCounter/*.h Core/RefCounter/*.cpp )
-source_group("Core/RefCounter" FILES ${MORTY_REF_COUNTER_FILES})
+source_group("Core\\RefCounter" FILES ${MORTY_REF_COUNTER_FILES})
 
 file(GLOB MORTY_RENDERER_FILES Core/Renderer/*.h Core/Renderer/*.cpp )
-source_group("Core/Renderer" FILES ${MORTY_RENDERER_FILES})
+source_group("Core\\Renderer" FILES ${MORTY_RENDERER_FILES})
 
 file(GLOB MORTY_SHADER_FILES Core/Renderer/Shader/*.h Core/Renderer/Shader/*.cpp )
-source_group("Core/Renderer/Shader" FILES ${MORTY_SHADER_FILES})
+source_group("Core\\Renderer\\Shader" FILES ${MORTY_SHADER_FILES})
 
 file(GLOB MORTY_VULKAN_PROGRAM_FILES Core/Renderer/Vulkan/*.h Core/Renderer/Vulkan/*.cpp )
-source_group("Core/Renderer/Vulkan" FILES ${MORTY_VULKAN_PROGRAM_FILES})
+source_group("Core\\Renderer\\Vulkan" FILES ${MORTY_VULKAN_PROGRAM_FILES})
 
 file(GLOB MORTY_DX11_PROGRAM_FILES Core/Renderer/DirectX11/*.h Core/Renderer/DirectX11/*.cpp )
-source_group("Core/Renderer/DirectX11" FILES ${MORTY_DX11_PROGRAM_FILES})
+source_group("Core\\Renderer\\DirectX11" FILES ${MORTY_DX11_PROGRAM_FILES})
 
 file(GLOB MORTY_RENDER_PROGRAM_FILES Core/RenderProgram/*.h Core/RenderProgram/*.cpp )
-source_group("Core/RenderProgram" FILES ${MORTY_RENDER_PROGRAM_FILES})
+source_group("Core\\RenderProgram" FILES ${MORTY_RENDER_PROGRAM_FILES})
 
 file(GLOB MORTY_RENDER_GRAPH_FILES Core/RenderGraph/*.h Core/RenderGraph/*.cpp )
-source_group("Core/RenderGraph" FILES ${MORTY_RENDER_GRAPH_FILES})
+source_group("Core\\RenderGraph" FILES ${MORTY_RENDER_GRAPH_FILES})
 
 
 ############################################################
@@ -69,16 +69,16 @@ file(GLOB MORTY_ORGANIZER_FILES Organizer/*.h Organizer/*.cpp )
 source_group("Organizer" FILES ${MORTY_ORGANIZER_FILES})
 
 file(GLOB MORTY_NODE_FILES Organizer/Node/*.h Organizer/Node/*.cpp )
-source_group("Organizer/Node" FILES ${MORTY_NODE_FILES})
+source_group("Organizer\\Node" FILES ${MORTY_NODE_FILES})
 
 file(GLOB MORTY_NODE_LIGHT_FILES Organizer/Node/Light/*.h Organizer/Node/Light/*.cpp )
-source_group("Organizer/Node/Light" FILES ${MORTY_NODE_LIGHT_FILES})
+source_group("Organizer\\Node\\Light" FILES ${MORTY_NODE_LIGHT_FILES})
 
 file(GLOB MORTY_NODE_MODEL_FILES Organizer/Node/Model/*.h Organizer/Node/Model/*.cpp )
-source_group("Organizer/Node/Model" FILES ${MORTY_NODE_MODEL_FILES})
+source_group("Organizer\\Node\\Model" FILES ${MORTY_NODE_MODEL_FILES})
 
 file(GLOB MORTY_COMPONENT_FILES Organizer/Component/*.h Organizer/Component/*.cpp )
-source_group("Organizer/Component" FILES ${MORTY_COMPONENT_FILES})
+source_group("Organizer\\Component" FILES ${MORTY_COMPONENT_FILES})
 
 
 ############################################################
@@ -88,22 +88,22 @@ file(GLOB MORTY_RES_LOADER_FILES ResourceLoader/*.h ResourceLoader/*.cpp )
 source_group("ResourceLoader" FILES ${MORTY_RES_LOADER_FILES})
 
 file(GLOB MORTY_RES_MATERIAL_FILES ResourceLoader/Material/*.h ResourceLoader/Material/*.cpp )
-source_group("ResourceLoader/Material" FILES ${MORTY_RES_MATERIAL_FILES})
+source_group("ResourceLoader\\Material" FILES ${MORTY_RES_MATERIAL_FILES})
 
 file(GLOB MORTY_RES_MODEL_FILES ResourceLoader/Model/*.h ResourceLoader/Model/*.cpp )
-source_group("ResourceLoader/Model" FILES ${MORTY_RES_MODEL_FILES})
+source_group("ResourceLoader\\Model" FILES ${MORTY_RES_MODEL_FILES})
 
 file(GLOB MORTY_RES_NODE_FILES ResourceLoader/Node/*.h ResourceLoader/Node/*.cpp )
-source_group("ResourceLoader/Node" FILES ${MORTY_RES_NODE_FILES})
+source_group("ResourceLoader\\Node" FILES ${MORTY_RES_NODE_FILES})
 
 file(GLOB MORTY_RES_RENDER_PASS_FILES ResourceLoader/RenderPass/*.h ResourceLoader/RenderPass/*.cpp )
-source_group("ResourceLoader/RenderPass" FILES ${MORTY_RES_RENDER_PASS_FILES})
+source_group("ResourceLoader\\RenderPass" FILES ${MORTY_RES_RENDER_PASS_FILES})
 
 file(GLOB MORTY_RES_SHADER_FILES ResourceLoader/Shader/*.h ResourceLoader/Shader/*.cpp )
-source_group("ResourceLoader/Shader" FILES ${MORTY_RES_SHADER_FILES})
+source_group("ResourceLoader\\Shader" FILES ${MORTY_RES_SHADER_FILES})
 
 file(GLOB MORTY_RES_TEXTURE_FILES ResourceLoader/Texture/*.h ResourceLoader/Texture/*.cpp )
-source_group("ResourceLoader/Texture" FILES ${MORTY_RES_TEXTURE_FILES})
+source_group("ResourceLoader\\Texture" FILES ${MORTY_RES_TEXTURE_FILES})
 
 
 ############################################################
@@ -113,13 +113,13 @@ file(GLOB MORTY_UTILITY_FILES Utility/*.h Utility/*.cpp )
 source_group("Utility" FILES ${MORTY_UTILITY_FILES})
 
 file(GLOB MORTY_JSON_FILES Utility/Json/*.h Utility/Json/*.cpp )
-source_group("Utility/Json" FILES ${MORTY_JSON_FILES})
+source_group("Utility\\Json" FILES ${MORTY_JSON_FILES})
 
 file(GLOB MORTY_TIMER_FILES Utility/Timer/*.h Utility/Timer/*.cpp )
-source_group("Utility/Timer" FILES ${MORTY_TIMER_FILES})
+source_group("Utility\\Timer" FILES ${MORTY_TIMER_FILES})
 
 file(GLOB MORTY_TYPE_FILES Utility/Type/*.h Utility/Type/*.cpp )
-source_group("Utility/Type" FILES ${MORTY_TYPE_FILES})
+source_group("Utility\\Type" FILES ${MORTY_TYPE_FILES})
 
 
 ############################################################
@@ -295,21 +295,6 @@ target_include_directories(Morty
 )
 
 
-
-############################################################
-# Physics
-############################################################
-if(MORTY_BUILD_WITH_PHYSICS)
-
-include(../Cmake/add_bullet.cmake)
-
-if(BULLET_FOUND)
-    target_link_libraries(Morty PRIVATE BULLET::ALL)
-else()
-    message(FATAL_ERROR "Bullet not found.")
-endif()
-
-endif()
 
 set( MORTY_CODE_DIRECTORIES
     ${MORTY_CODE_DIRECTORIES}

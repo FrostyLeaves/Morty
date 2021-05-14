@@ -200,6 +200,7 @@ void MScene::OnNodeEnter(MNode* pNode)
 	for (MComponent* pComponent : vComponents)
 	{
 		AddComponent(pComponent);
+		pComponent->OnEnterScene(this);
 	}
 }
 
@@ -213,6 +214,7 @@ void MScene::OnNodeExit(MNode* pNode)
 	for (MComponent* pComponent : vComponents)
 	{
 		RemoveComponent(pComponent);
+		pComponent->OnExitScene(this);
 	}
 }
 

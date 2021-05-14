@@ -16,6 +16,10 @@ add_executable(Demo Main.cpp
 target_link_libraries(Demo Morty)
 target_link_libraries(Demo Editor)
 
+if(MORTY_BUILD_WITH_PHYSICS)
+target_link_libraries(Demo Physics)
+endif()
+
 if(MORTY_BUILD_TARGET STREQUAL "WIN")
 
 #    add_custom_command(TARGET Demo POST_BUILD

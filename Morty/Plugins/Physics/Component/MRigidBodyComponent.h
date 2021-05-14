@@ -11,6 +11,7 @@
 #include "MGlobal.h"
 #include "MComponent.h"
 
+class MPhysicsWorld;
 class MORTY_API MRigidBodyComponent : public MComponent
 {
 public:
@@ -25,6 +26,13 @@ public:
     virtual void Initialize() override;
     virtual void Release() override;
 
+	virtual void OnEnterScene(MScene* pScene) override;
+	virtual void OnExitScene(MScene* pScene) override;
+
+public:
+
+	MPhysicsWorld* GetPhysicsWorld();
+
 	void InitializePhysics();
 	void ReleasePhysics();
 
@@ -35,6 +43,8 @@ public:
 
 private:
 
+
+	MPhysicsWorld* m_pPhysicsWorld;
 };
 
 
