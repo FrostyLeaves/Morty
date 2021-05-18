@@ -92,6 +92,7 @@ protected:
 	bool m_bShowNodeTree;
 	bool m_bShowProperty;
 	bool m_bShowRenderView;
+	bool m_bRenderToWindow;
 	bool m_bShowMaterial;
 	bool m_bShowResource;
 	bool m_bShowRenderGraph;

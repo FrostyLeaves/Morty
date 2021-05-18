@@ -236,6 +236,7 @@ void MVulkanPipelineManager::UnRegisterRenderPass(MRenderPass* pRenderPass)
 	
 
 	m_RenderPassIDPool.RecoveryID(id);
+	pRenderPass->SetRenderPassID(MGlobal::M_INVALID_INDEX);
 }
 
 void MVulkanPipelineManager::BindConstantParam(MShaderParamSet* pParamSet, MShaderConstantParam* pParam, const uint32_t& unIndex)

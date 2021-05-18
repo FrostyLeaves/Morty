@@ -46,7 +46,10 @@ public:
 
     void RecoveryID(const IDTYPE& id)
     {
-        m_vIDPool.push(id);
+        if (MGlobal::M_INVALID_INDEX != id)
+        {
+            m_vIDPool.push(id);
+        }
     }
 
 private:

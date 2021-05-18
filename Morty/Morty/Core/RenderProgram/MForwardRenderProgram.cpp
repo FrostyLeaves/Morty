@@ -13,6 +13,7 @@
 #include "MForwardRenderWork.h"
 #include "MForwardShadowMapWork.h"
 #include "MForwardTransparentWork.h"
+#include "MForwardDebugRenderWork.h"
 
 #include "MIRenderTarget.h"
 
@@ -52,8 +53,11 @@ void MForwardRenderProgram::Initialize()
 	m_pRenderWork = GetEngine()->GetObjectManager()->CreateObject<MForwardRenderWork>();
 	m_pRenderWork->Initialize(this);
 
-	m_pTransparentWork = GetEngine()->GetObjectManager()->CreateObject<MForwardTransparentWork>();
-	m_pTransparentWork->Initialize(this);
+ 	m_pTransparentWork = GetEngine()->GetObjectManager()->CreateObject<MForwardTransparentWork>();
+ 	m_pTransparentWork->Initialize(this);
+
+	m_pDebugWork = GetEngine()->GetObjectManager()->CreateObject<MForwardDebugRenderWork>();
+	m_pDebugWork->Initialize(this);
 
 }
 
@@ -75,6 +79,12 @@ void MForwardRenderProgram::Release()
 	{
 		m_pTransparentWork->DeleteLater();
 		m_pTransparentWork = nullptr;
+	}
+
+	if (m_pDebugWork)
+	{
+		m_pDebugWork->DeleteLater();
+		m_pDebugWork = nullptr;
 	}
 
 	if (m_pRenderGraph)

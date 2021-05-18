@@ -51,7 +51,8 @@ public:
 	void SetTarget3DNode(MNode* pNode);
 
 	bool Input(MInputEvent* pEvent, MViewport* pViewport);
-	void Render(MIRenderer* pRenderer, MViewport* pViewport, MRenderCommand* pCommand);
+
+	MIMesh* GetMesh(MViewport* pViewport);
 
 protected:
 

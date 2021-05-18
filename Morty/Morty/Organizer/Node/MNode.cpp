@@ -175,6 +175,12 @@ void MNode::CallRecursivelyFunction(const CallFunction& func)
 		func(pNode);
 		pNode->CallRecursivelyFunction(func);
 	}
+
+	for (MNode* pNode : m_vProtectedChildren)
+	{
+		func(pNode);
+		pNode->CallRecursivelyFunction(func);
+	}
 }
 
 bool MNode::RemoveNodeImpl(MNode* pNode, const MENodeChildType& etype)

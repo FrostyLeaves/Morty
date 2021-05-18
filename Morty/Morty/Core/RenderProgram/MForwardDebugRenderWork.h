@@ -1,13 +1,13 @@
 /**
- * @File         MForwardRenderWork
+ * @File         MForwardDebugRenderWork
  * 
- * @Created      2020-11-29 11:53:33
+ * @Created      2021-05-17 15:21:55
  *
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MFORWARDRENDERWORK_H_
-#define _M_MFORWARDRENDERWORK_H_
+#ifndef _M_MFORWARD_DEBUG_RENDER_WORK_H_
+#define _M_MFORWARD_DEBUG_RENDER_WORK_H_
 #include "MGlobal.h"
 #include "MObject.h"
 
@@ -20,12 +20,12 @@
 class MRenderGraphNode;
 class MModelComponent;
 class MRenderableMeshComponent;
-class MORTY_API MForwardRenderWork : public MObject
+class MORTY_API MForwardDebugRenderWork : public MObject
 {
 public:
-	M_OBJECT(MForwardRenderWork);
-    MForwardRenderWork();
-    virtual ~MForwardRenderWork();
+	M_OBJECT(MForwardDebugRenderWork);
+	MForwardDebugRenderWork();
+    virtual ~MForwardDebugRenderWork();
 
 public:
 	void Initialize(MIRenderProgram* pRenderProgram);
@@ -43,11 +43,11 @@ public:
 
 protected:
 
-	void DrawNormalMesh(MRenderInfo& info);
-	void DrawMeshComponent(MRenderInfo& info, MRenderableMeshComponent* pMeshInstance);
-
-	void DrawSkyBox(MRenderInfo& info);
-
+	void DrawModelBoundingBox(MRenderInfo& info);
+	void DrawPainter(MRenderInfo& info);
+	void DrawBoundingBox(MRenderInfo& info, MModelComponent* pModelComponent);
+	void DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pModelIns);
+	void DrawCameraFrustum(MRenderInfo& info, MCamera* pCamera);
 
 private:
 

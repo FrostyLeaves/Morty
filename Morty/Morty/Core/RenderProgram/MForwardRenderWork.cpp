@@ -150,12 +150,6 @@ void MForwardRenderWork::Render(MRenderGraphNode* pGraphNode)
 
 	DrawNormalMesh(info);
 
-	DrawPainter(info);
-
-	DrawModelBoundingBox(info);
-
-	//	DrawSkyBox(info);
-
 	info.pRenderer->EndRenderPass(info.pPrimaryCommand);
 }
 
@@ -186,25 +180,6 @@ void MForwardRenderWork::DrawMeshComponent(MRenderInfo& info, MRenderableMeshCom
 
 	info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, pMeshComponent->GetShaderMeshParamSet());
 	info.pRenderer->DrawMesh(info.pPrimaryCommand, pMeshComponent->GetMesh());
-}
-
-void MForwardRenderWork::DrawModelBoundingBox(MRenderInfo& info)
-{
-	MComponentGroup* pModelComponentGroup = info.pScene->FindComponents<MModelComponent>();
-	if (!pModelComponentGroup)
-		return;
-
-	for (MComponent* pComponent : pModelComponentGroup->m_vComponent)
-	{
-		MModelComponent* pModelComponent = static_cast<MModelComponent*>(pComponent);
-
-		if (pModelComponent->GetBoundingBoxVisiable())
-		{
-			DrawBoundingBox(info, pModelComponent);
-		}
-	}
-
-
 }
 
 void MForwardRenderWork::DrawSkyBox(MRenderInfo& info)
@@ -246,136 +221,4 @@ void MForwardRenderWork::DrawSkyBox(MRenderInfo& info)
 		}
 
 	}
-}
-
-void MForwardRenderWork::DrawPainter(MRenderInfo& info)
-{
-	MTransformCoord3D* pTransformCoord = info.pScene->GetTransformCoord();
-	pTransformCoord->Render(info.pRenderer, info.pViewport, info.pPrimaryCommand);
-}
-
-void MForwardRenderWork::DrawBoundingBox(MRenderInfo& info, MModelComponent* pModelComponent)
-{
-	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_DRAW3D);
-	MMaterial* pMaterial = pDraw3DMaterialRes;
-	if (!info.pRenderer->SetUseMaterial(info.pPrimaryCommand, pMaterial))
-		return;
-
-	info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, &m_FrameParamSet);
-
-	MBoundsAABB aabb = pModelComponent->GetBoundsAABB();
-
-	const Vector3& obmin = aabb.m_v3MinPoint;
-	const Vector3& obmax = aabb.m_v3MaxPoint;
-
-	Vector3 list[] = {
-		Vector3(obmin.x, obmin.y, obmin.z),
-		Vector3(obmax.x, obmin.y, obmin.z),
-		Vector3(obmax.x, obmax.y, obmin.z),
-		Vector3(obmin.x, obmax.y, obmin.z),
-
-		Vector3(obmin.x, obmin.y, obmax.z),
-		Vector3(obmax.x, obmin.y, obmax.z),
-		Vector3(obmax.x, obmax.y, obmax.z),
-		Vector3(obmin.x, obmax.y, obmax.z),
-	};
-
-	MMesh<MPainterVertex> meshs;
-	Vector2 begin, end;
-	for (int j = 0; j < 4; ++j)
-	{
-		for (int i = 0; i < 2; ++i)
-		{
-			MPainter3DLine line(list[j + i * 4], list[(j + 1) % 4 + i * 4], MColor(1, 1, 1, 1), 1.0f);
-
-			if (line.FillData(info.pViewport, meshs))
-			{
-				info.pRenderer->DrawMesh(info.pPrimaryCommand, &meshs);
-			}
-		}
-
-		MPainter3DLine line(list[j], list[(j + 4)], MColor(1, 1, 1, 1), 1.0f);
-		if (line.FillData(info.pViewport, meshs))
-		{
-			info.pRenderer->DrawMesh(info.pPrimaryCommand, &meshs);
-		}
-	}
-
-	meshs.DestroyBuffer(m_pEngine->GetDevice());
-}
-
-void MForwardRenderWork::DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pMeshIns)
-{
-	// 	MResource* pSphereResource = m_pEngine->GetResourceManager()->LoadResource("./Model/Sphere/Sphere.model");
-	// 	MMaterialResource* pStaticMeshMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(DEFAULT_MATERIAL_MODEL_STATIC_MESH);
-	// 
-	// 	MMaterial& mat = *pStaticMeshMaterialRes;
-	// 	mat.SetRasterizerType(MERasterizerType::ECullNone);
-	// 
-	// 	MShaderConstantParam* pMeshMatrixParam = MShaderBuffer::GetSharedParam(SHADER_PARAM_CODE_MESH_MATRIX);
-	// 	if (nullptr == pMeshMatrixParam)
-	// 		return;
-	// 
-	// 	if (!info.pRenderer->SetUseMaterial(pStaticMeshMaterialRes))
-	// 		return;
-	// 
-	// 	MTransform trans;
-	// 	if (MBoundsSphere* pSphere = pMeshIns->GetBoundsSphere())
-	// 	{
-	// 		float fScale = pSphere->m_fRadius / 3.8f;
-	// 		trans.SetPosition(pSphere->m_v3CenterPoint);
-	// 		trans.SetScale(Vector3(fScale, fScale, fScale));
-	// 	}
-	// 
-	// 	Matrix4 worldTrans = trans.GetMatrix();
-	// 	MStruct& cStruct = *pMeshMatrixParam->var.GetStruct();
-	// 	cStruct[0] = worldTrans;
-	// 
-	// 	pMeshMatrixParam->SetDirty();
-	// 	info.pRenderer->SetShaderParam(*pMeshMatrixParam);
-	// 
-	// 	if (MModelResource* pModelResource = dynamic_cast<MModelResource*>(pSphereResource))
-	// 	{
-	// 		for (MMeshResource* pMeshRes : pModelResource->GetMeshResources())
-	// 		{
-	// 			info.pRenderer->DrawMesh(pMeshRes->GetMesh());
-	// 		}
-	// 	}
-}
-
-void MForwardRenderWork::DrawCameraFrustum(MRenderInfo& info, MCamera* pCamera)
-{
-	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_DRAW3D);
-	MMaterial* pMaterial = pDraw3DMaterialRes;
-	if (!info.pRenderer->SetUseMaterial(info.pPrimaryCommand, pMaterial))
-		return;
-
-
-	Vector3 list[8];
-	info.pViewport->GetCameraFrustum(list[0], list[1], list[2], list[3], list[4], list[5], list[6], list[7]);
-
-	Vector2 begin, end;
-	for (int j = 0; j < 4; ++j)
-	{
-		for (int i = 0; i < 2; ++i)
-		{
-			MPainter3DLine line(list[j + i * 4], list[(j + 1) % 4 + i * 4], MColor(i == 0 ? 0 : 1, 1, 1, 1), 1.0f);
-
-			MMesh<MPainterVertex> meshs;
-			if (line.FillData(info.pViewport, meshs))
-			{
-				info.pRenderer->DrawMesh(info.pPrimaryCommand, &meshs);
-				meshs.DestroyBuffer(m_pEngine->GetDevice());
-			}
-		}
-
-		MPainter3DLine line(list[j], list[(j + 4)], MColor(1, 1, 1, 1), 1.0f);
-		MMesh<MPainterVertex> meshs;
-		if (line.FillData(info.pViewport, meshs))
-		{
-			info.pRenderer->DrawMesh(info.pPrimaryCommand, &meshs);
-			meshs.DestroyBuffer(m_pEngine->GetDevice());
-		}
-	}
-
 }

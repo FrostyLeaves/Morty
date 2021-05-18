@@ -20,7 +20,7 @@ MRenderPass::MRenderPass()
 	: m_vSubpass()
 	, m_vBackDesc()
 	, m_DepthDesc()
-	, m_unRenderPassID(0)
+	, m_unRenderPassID(MGlobal::M_INVALID_INDEX)
 	, m_VkRenderPass(VK_NULL_HANDLE)
 	, m_FrameBuffer()
 {

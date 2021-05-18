@@ -105,17 +105,23 @@ MBoundsAABB MModelComponent::GetBoundsAABB()
 	if (!pNode)
 		return aabb;
 
-	pNode->CallRecursivelyFunction([&aabb](MNode* pChild){
+	Vector3 min_pos(FLT_MAX, FLT_MAX, FLT_MAX), max_pos(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+	pNode->CallRecursivelyFunction([&](MNode* pChild){
+
+		MBoundsAABB* p2 = &aabb;
+
 		if (MRenderableMeshComponent* pMeshComponent = pChild->GetComponent<MRenderableMeshComponent>())
 		{
 			if (MBoundsAABB* pBounds = pMeshComponent->GetBoundsAABB())
 			{
-				aabb.UnionMinMax(pBounds->m_v3MinPoint, pBounds->m_v3MaxPoint);
+				pBounds->UnionMinMax(min_pos, max_pos);
 			}
 		}
 
 	});
 
+	aabb.SetMinMax(min_pos, max_pos);
 	return aabb;
 }
 

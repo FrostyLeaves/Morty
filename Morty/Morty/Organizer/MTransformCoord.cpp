@@ -253,19 +253,15 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 	return MECoordHoverType::None != m_eCoordHoverType;
 }
 
-void MTransformCoord3D::Render(MIRenderer* pRenderer, MViewport* pViewport, MRenderCommand* pCommand)
+MIMesh* MTransformCoord3D::GetMesh(MViewport* pViewport)
 {
+	m_pCoordRenderCache->Clean();
+
 	if (MGlobal::M_INVALID_INDEX == m_unSelectedID)
-		return;
+		return m_pCoordRenderCache;
 	MNode* pTargetNode = m_pEngine->GetObjectManager()->FindObject(m_unSelectedID)->DynamicCast<MNode>();
 	if (nullptr == pTargetNode)
-		return;
-
-	MMaterialResource* pMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_DRAW2D);
-	MMaterial* pMaterial = pMaterialRes;
-
-	if (!pRenderer->SetUseMaterial(pCommand, pMaterial))
-		return;
+		return m_pCoordRenderCache;
 
 	bool vVaild[3];
 	int vOrder[3];
@@ -274,7 +270,7 @@ void MTransformCoord3D::Render(MIRenderer* pRenderer, MViewport* pViewport, MRen
 	GetTranslationShapes(lines, rects, vVaild, vOrder, pViewport);
 
 	if (false == (vVaild[0] && vVaild[1] && vVaild[2]))
-		return;
+		return m_pCoordRenderCache;
 
 	if (m_eCoordHoverType != MECoordHoverType::None)
 	{
@@ -303,11 +299,7 @@ void MTransformCoord3D::Render(MIRenderer* pRenderer, MViewport* pViewport, MRen
 		}
 	}
 
-	if (m_pCoordRenderCache->GetIndicesLength() > 0)
-	{
-		pRenderer->DrawMesh(pCommand, m_pCoordRenderCache);
-		m_pCoordRenderCache->Clean();
-	}
+	return m_pCoordRenderCache;
 }
 
 void MTransformCoord3D::GetTranslationShapes(MPainter2DLine* lines, class MPainter2DRect* rects, bool* vValid, int* vOrder, MViewport* pViewport)

@@ -32,6 +32,7 @@ class MRenderCommand;
 class MIModelMeshInstance;
 class MForwardShadowMapWork;
 class MForwardTransparentWork;
+class MForwardDebugRenderWork;
 class MShadowTextureRenderTarget;
 
 class MORTY_API MForwardRenderProgram : public MIRenderProgram
@@ -74,6 +75,7 @@ protected:
 	MForwardShadowMapWork* m_pShadowMapWork;
 	MForwardRenderWork* m_pRenderWork;
 	MForwardTransparentWork* m_pTransparentWork;
+	MForwardDebugRenderWork* m_pDebugWork;
 
 	MColor m_cClearColor;
 

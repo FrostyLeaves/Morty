@@ -29,7 +29,7 @@ MMaterial::MMaterial()
 	, m_nVertexShaderIndex(0)
 	, m_nPixelShaderIndex(0)
 	, m_ShaderMacro()
-	, m_unMaterialID(0)
+	, m_unMaterialID(MGlobal::M_INVALID_INDEX)
 {
 	m_eResourceType = MEResourceType::Material;
     

@@ -12,6 +12,7 @@
 
 #include "MDeferredRenderWork.h"
 #include "MForwardShadowMapWork.h"
+#include "MForwardDebugRenderWork.h"
 #include "MForwardTransparentWork.h"
 
 #include "MIRenderTarget.h"
@@ -31,6 +32,7 @@ MDeferredRenderProgram::MDeferredRenderProgram()
 	, m_pShadowMapWork(nullptr)
 	, m_pRenderWork(nullptr)
 	, m_pTransparentWork(nullptr)
+	, m_pDebugWork(nullptr)
 	, m_pRenderGraph(nullptr)
 	, m_cClearColor(MColor::Black_T)
 {
@@ -55,6 +57,8 @@ void MDeferredRenderProgram::Initialize()
 	m_pTransparentWork = GetEngine()->GetObjectManager()->CreateObject<MForwardTransparentWork>();
 	m_pTransparentWork->Initialize(this);
 
+	m_pDebugWork = GetEngine()->GetObjectManager()->CreateObject<MForwardDebugRenderWork>();
+	m_pDebugWork->Initialize(this);
 }
 
 void MDeferredRenderProgram::Release()
@@ -75,6 +79,12 @@ void MDeferredRenderProgram::Release()
 	{
 		m_pTransparentWork->DeleteLater();
 		m_pTransparentWork = nullptr;
+	}
+
+	if (m_pDebugWork)
+	{
+		m_pDebugWork->DeleteLater();
+		m_pDebugWork = nullptr;
 	}
 
 	if (m_pRenderGraph)

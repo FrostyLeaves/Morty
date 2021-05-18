@@ -60,6 +60,7 @@ MainEditor::MainEditor()
 	, m_bShowNodeTree(true)
 	, m_bShowProperty(true)
 	, m_bShowRenderView(true)
+	, m_bRenderToWindow(false)
 	, m_bShowMaterial(false)
 	, m_bShowResource(false)
 	, m_bShowRenderGraph(false)
@@ -393,7 +394,9 @@ void MainEditor::ShowMenu()
 			if (ImGui::MenuItem("Resource", "", &m_bShowResource)) {}
 			if (ImGui::MenuItem("Message", "", &m_bShowMessage)) {}
 			if (ImGui::MenuItem("RenderGraph", "", &m_bShowRenderGraph)) {}
-			
+		
+			if (ImGui::MenuItem("Render to Window", "", &m_bRenderToWindow)) {}
+
 			ImGui::EndMenu();
 		}
 		
@@ -425,13 +428,17 @@ void MainEditor::ShowRenderView()
 		m_v2RenderViewSize.x = v2RenderViewSize.x;
 		m_v2RenderViewSize.y = v2RenderViewSize.y;
 
-		if (MRenderGraph* pRenderGraph = m_SceneTexture.GetRenderGraph())
+
+		if (!m_bRenderToWindow)
 		{
-			if (MRenderGraphTexture* pRenderGraphTexture = m_pRenderGraphView->GetSelectedOutputTexture())
+			if (MRenderGraph* pRenderGraph = m_SceneTexture.GetRenderGraph())
 			{
-				if (ImTextureID texid = pRenderGraphTexture->GetRenderTexture())
+				if (MRenderGraphTexture* pRenderGraphTexture = m_pRenderGraphView->GetSelectedOutputTexture())
 				{
-					ImGui::Image(texid, v2RenderViewSize);
+					if (ImTextureID texid = pRenderGraphTexture->GetRenderTexture())
+					{
+						ImGui::Image(texid, v2RenderViewSize);
+					}
 				}
 			}
 		}
@@ -575,18 +582,29 @@ void MainEditor::Render()
 #if MORTY_RENDER_DATA_STATISTICS
 	MRenderStatistics::GetInstance()->unTriangleCount = 0;
 #endif
-    
+
+	Vector2 pos, size;
+	if (m_bRenderToWindow)
 	{
-		MViewport* pViewport = m_SceneTexture.GetViewport();
-		pViewport->SetScreenPosition(Vector2(m_v2RenderViewPos.x, m_v2RenderViewPos.y));
-
-		if (m_SceneTexture.GetSize().x != m_v2RenderViewSize.x || m_SceneTexture.GetSize().y != m_v2RenderViewSize.y)
-		{
-			m_SceneTexture.SetSize(Vector2(m_v2RenderViewSize.x, m_v2RenderViewSize.y));
-		}
-
-		m_SceneTexture.UpdateTexture(pRenderCommand);
+		pos = Vector2(0.0f, 0.0f);
+		ImGuiIO& io = ImGui::GetIO();
+		size = Vector2(io.DisplaySize.x, io.DisplaySize.y);
 	}
+	else
+	{
+		pos = Vector2(m_v2RenderViewPos.x, m_v2RenderViewPos.y);
+		size = m_v2RenderViewSize;
+	}
+
+	MViewport* pViewport = m_SceneTexture.GetViewport();
+	pViewport->SetScreenPosition(pos);
+	if (m_SceneTexture.GetSize().x != size.x || m_SceneTexture.GetSize().y != size.y)
+	{
+		m_SceneTexture.SetSize(Vector2(size.x, size.y));
+	}
+
+	m_SceneTexture.UpdateTexture(pRenderCommand);
+
 	m_unTriangleCount = MRenderStatistics::GetInstance()->unTriangleCount;
 
 
@@ -604,6 +622,35 @@ void MainEditor::Render()
 	ImGui_ImplSDL2_NewFrame(m_pSDLWindow);
 
 	ImGui::NewFrame();
+
+	if (m_bRenderToWindow)
+	{
+		if (MRenderGraph* pRenderGraph = m_SceneTexture.GetRenderGraph())
+		{
+			if (MRenderGraphTexture* pRenderGraphTexture = m_pRenderGraphView->GetSelectedOutputTexture())
+			{
+				if (ImTextureID texid = pRenderGraphTexture->GetRenderTexture())
+				{
+					ImGuiIO& io = ImGui::GetIO();
+					ImGui::SetNextWindowPos(ImVec2(0, 0), 0, ImVec2(0, 0));
+					ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y));
+					ImGui::SetNextWindowBgAlpha(0);
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
+					ImGui::Begin("±³¾°", NULL, ImGuiWindowFlags_NoMove |
+						ImGuiWindowFlags_NoTitleBar |
+						ImGuiWindowFlags_NoBringToFrontOnFocus |
+						ImGuiWindowFlags_NoInputs |
+						ImGuiWindowFlags_NoCollapse |
+						ImGuiWindowFlags_NoResize |
+						ImGuiWindowFlags_NoScrollbar);
+					ImGui::Image(texid, ImGui::GetWindowSize());
+					ImGui::End();
+					ImGui::PopStyleVar(2);
+				}
+			}
+		}
+	}
 
 	ShowMenu();
 	ShowMaterial();

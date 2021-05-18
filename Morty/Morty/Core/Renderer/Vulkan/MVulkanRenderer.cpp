@@ -263,6 +263,8 @@ void MVulkanRenderer::DrawMesh(MRenderCommand* pCommand, MIMesh* pMesh, const ui
 	if (!pCommand || !pMesh)
 		return;
 
+	if (0 == nIdxCount)
+		return;
 
 	if (pMesh->GetNeedGenerate())
 		pMesh->GenerateBuffer(m_pDevice);//�����ʹ����һ��CommandBuffer
