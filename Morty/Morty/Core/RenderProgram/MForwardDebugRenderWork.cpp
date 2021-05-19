@@ -28,7 +28,10 @@ M_OBJECT_IMPLEMENT(MForwardDebugRenderWork, MObject)
 MForwardDebugRenderWork::MForwardDebugRenderWork()
     : MObject()
 	, m_pRenderProgram(nullptr)
-	, m_FrameParamSet()
+	, m_pBoundingDrawMaterial(nullptr)
+	, m_pTransformCoordDrawMaterial(nullptr)
+	, m_BoundingDrawMesh()
+	, m_TransformCoordDrawMesh()
 {
 }
 
@@ -40,6 +43,7 @@ void MForwardDebugRenderWork::Initialize(MIRenderProgram* pRenderProgram)
 {
 	m_pRenderProgram = pRenderProgram;
 
+	InitializeMaterial();
 	InitializeShaderParamSet();
 	InitializeRenderGraph();
 }
@@ -48,17 +52,16 @@ void MForwardDebugRenderWork::Release()
 {
 	ReleaseRenderGraph();
 	ReleaseShaderParamSet();
+	ReleaseMaterial();
 }
 
 
 void MForwardDebugRenderWork::InitializeShaderParamSet()
 {
-	m_FrameParamSet.InitializeShaderParamSet(GetEngine());
 }
 
 void MForwardDebugRenderWork::ReleaseShaderParamSet()
 {
-	m_FrameParamSet.ReleaseShaderParamSet(GetEngine());
 }
 
 void MForwardDebugRenderWork::InitializeRenderGraph()
@@ -90,6 +93,52 @@ void MForwardDebugRenderWork::ReleaseRenderGraph()
 {
 }
 
+void MForwardDebugRenderWork::InitializeMaterial()
+{
+	if (!m_pBoundingDrawMaterial)
+	{
+		MResource* vs = GetEngine()->GetResourceManager()->LoadResource("./Shader/draw3D.mvs");
+		MResource* ps = GetEngine()->GetResourceManager()->LoadResource("./Shader/draw3D.mps");
+		m_pBoundingDrawMaterial = GetEngine()->GetResourceManager()->CreateResource<MMaterialResource>();
+		m_pBoundingDrawMaterial->LoadVertexShader(vs);
+		m_pBoundingDrawMaterial->LoadPixelShader(ps);
+		m_pBoundingDrawMaterial->AddRef();
+	}
+
+	if (!m_pTransformCoordDrawMaterial)
+	{
+		MResource* vs = GetEngine()->GetResourceManager()->LoadResource("./Shader/draw.mvs");
+		MResource* ps = GetEngine()->GetResourceManager()->LoadResource("./Shader/draw.mps");
+		m_pTransformCoordDrawMaterial = GetEngine()->GetResourceManager()->CreateResource<MMaterialResource>();
+		m_pTransformCoordDrawMaterial->SetMaterialType(MEMaterialType::EDefault);
+		m_pTransformCoordDrawMaterial->SetRasterizerType(MERasterizerType::ECullNone);
+		m_pTransformCoordDrawMaterial->LoadVertexShader(vs);
+		m_pTransformCoordDrawMaterial->LoadPixelShader(ps);
+		m_pTransformCoordDrawMaterial->AddRef();
+	}
+}
+
+void MForwardDebugRenderWork::ReleaseMaterial()
+{
+	if (m_pBoundingDrawMaterial)
+	{
+		m_pBoundingDrawMaterial->SubRef();
+		m_pBoundingDrawMaterial = nullptr;
+	}
+
+	if (m_pTransformCoordDrawMaterial)
+	{
+		m_pTransformCoordDrawMaterial->SubRef();
+		m_pTransformCoordDrawMaterial = nullptr;
+	}
+
+	m_BoundingDrawMesh.DestroyBuffer(GetEngine()->GetDevice());
+	m_BoundingDrawMesh.Clean();
+
+	m_TransformCoordDrawMesh.DestroyBuffer(GetEngine()->GetDevice());
+	m_TransformCoordDrawMesh.Clean();
+}
+
 void MForwardDebugRenderWork::OnDelete()
 {
 	Release();
@@ -101,9 +150,6 @@ void MForwardDebugRenderWork::Render(MRenderGraphNode* pGraphNode)
 {
 	MRenderInfo& info = *m_pRenderProgram->GetRenderInfo();
 
-
-	m_FrameParamSet.UpdateShaderSharedParams(info);
-
 	info.pRenderer->BeginRenderPass(info.pPrimaryCommand, pGraphNode->GetRenderPass(), info.unFrameIndex);
 
 	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
@@ -114,7 +160,6 @@ void MForwardDebugRenderWork::Render(MRenderGraphNode* pGraphNode)
 
 	DrawModelBoundingBox(info);
 
-
 	info.pRenderer->EndRenderPass(info.pPrimaryCommand);
 }
 
@@ -124,38 +169,68 @@ void MForwardDebugRenderWork::DrawModelBoundingBox(MRenderInfo& info)
 	if (!pModelComponentGroup)
 		return;
 
+	if (!info.pRenderer->SetUseMaterial(info.pPrimaryCommand, m_pBoundingDrawMaterial))
+		return;
+
+	if (!info.pCameraSceneComponent)
+		return;
+
+	m_BoundingDrawMesh.DestroyBuffer(GetEngine()->GetDevice());
+	m_BoundingDrawMesh.Clean();
+
 	for (MComponent* pComponent : pModelComponentGroup->m_vComponent)
 	{
 		MModelComponent* pModelComponent = static_cast<MModelComponent*>(pComponent);
 
 		if (pModelComponent->GetBoundingBoxVisiable())
 		{
-			DrawBoundingBox(info, pModelComponent);
+			FillBoundingBoxMesh(info, pModelComponent);
 		}
 	}
+
+	if (MTransformCoord3D* pTransformCoord = info.pScene->GetTransformCoord())
+	{
+		pTransformCoord->FillMesh3D(info.pViewport, m_BoundingDrawMesh);
+	}
+	
+
+	if (MShaderParamSet* pParam = m_pBoundingDrawMaterial->GetMaterialParamSet())
+	{
+		if (MShaderConstantParam* pCameraMartixParam = pParam->FindConstantParam("CameraMatrix"))
+		{
+			if (MStruct* pCBuffer = pCameraMartixParam->var.GetStruct())
+			{
+				if (Matrix4* pCameraProj = pCBuffer->FindMember<Matrix4>("U_matCamProj"))
+				{
+					*pCameraProj = info.pViewport->GetCameraInverseProjection();
+					pCameraMartixParam->SetDirty();
+				}
+			}
+		}
+	}
+
+	info.pRenderer->DrawMesh(info.pPrimaryCommand, &m_BoundingDrawMesh);
 }
 
 void MForwardDebugRenderWork::DrawPainter(MRenderInfo& info)
 {
 	MTransformCoord3D* pTransformCoord = info.pScene->GetTransformCoord();
-
-	MMaterialResource* pMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_DRAW2D);
-	MMaterial* pMaterial = pMaterialRes;
-	if (!info.pRenderer->SetUseMaterial(info.pPrimaryCommand, pMaterial))
+	if (!pTransformCoord)
 		return;
 
-	info.pRenderer->DrawMesh(info.pPrimaryCommand, pTransformCoord->GetMesh(info.pViewport));
+	if (!info.pRenderer->SetUseMaterial(info.pPrimaryCommand, m_pTransformCoordDrawMaterial))
+		return;
+
+	m_TransformCoordDrawMesh.DestroyBuffer(GetEngine()->GetDevice());
+	m_TransformCoordDrawMesh.Clean();
+
+	pTransformCoord->FillMesh2D(info.pViewport, m_TransformCoordDrawMesh);
+
+	info.pRenderer->DrawMesh(info.pPrimaryCommand, &m_TransformCoordDrawMesh);
 }
 
-void MForwardDebugRenderWork::DrawBoundingBox(MRenderInfo& info, MModelComponent* pModelComponent)
+void MForwardDebugRenderWork::FillBoundingBoxMesh(MRenderInfo& info, MModelComponent* pModelComponent)
 {
-	MMaterialResource* pDraw3DMaterialRes = m_pEngine->GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_DRAW3D);
-	MMaterial* pMaterial = pDraw3DMaterialRes;
-	if (!info.pRenderer->SetUseMaterial(info.pPrimaryCommand, pMaterial))
-		return;
-
-	info.pRenderer->SetShaderParamSet(info.pPrimaryCommand, &m_FrameParamSet);
-
 	MBoundsAABB aabb = pModelComponent->GetBoundsAABB();
 
 	const Vector3& obmin = aabb.m_v3MinPoint;
@@ -173,28 +248,18 @@ void MForwardDebugRenderWork::DrawBoundingBox(MRenderInfo& info, MModelComponent
 		Vector3(obmin.x, obmax.y, obmax.z),
 	};
 
-	MMesh<MPainterVertex> meshs;
 	Vector2 begin, end;
 	for (int j = 0; j < 4; ++j)
 	{
 		for (int i = 0; i < 2; ++i)
 		{
 			MPainter3DLine line(list[j + i * 4], list[(j + 1) % 4 + i * 4], MColor(1, 1, 1, 1), 1.0f);
-
-			if (line.FillData(info.pViewport, meshs))
-			{
-				info.pRenderer->DrawMesh(info.pPrimaryCommand, &meshs);
-			}
+			line.FillData(info.pViewport, m_BoundingDrawMesh);
 		}
 
 		MPainter3DLine line(list[j], list[(j + 4)], MColor(1, 1, 1, 1), 1.0f);
-		if (line.FillData(info.pViewport, meshs))
-		{
-			info.pRenderer->DrawMesh(info.pPrimaryCommand, &meshs);
-		}
+		line.FillData(info.pViewport, m_BoundingDrawMesh);
 	}
-
-	meshs.DestroyBuffer(m_pEngine->GetDevice());
 }
 
 void MForwardDebugRenderWork::DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pMeshIns)

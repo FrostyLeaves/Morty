@@ -122,16 +122,24 @@ bool MPainter2DLine::TouchTest(const Vector2& pos, MViewport* pViewport)
 	return false;
 }
 
-MPainter2DRect::MPainter2DRect(const Vector2& point0, const Vector2& point1, const Vector2& point2, const Vector2& point3, const MColor& color) : MIPainterShape()
-, m_rectColor(color)
+MPainter2DShape::MPainter2DShape(const std::vector<Vector2>& points, const MColor& color)
+	: MIPainterShape()
+	, m_vPoint(points)
+	, m_rectColor(color)
 {
-	m_vPoint[0] = point0;
-	m_vPoint[1] = point1;
-	m_vPoint[2] = point2;
-	m_vPoint[3] = point3;
 }
 
-bool MPainter2DRect::FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh)
+uint32_t MPainter2DShape::GetVertexCount()
+{
+	return m_vPoint.size();
+}
+
+uint32_t MPainter2DShape::GetIndexCount()
+{
+	return (m_vPoint.size() - 2) * 3;
+}
+
+bool MPainter2DShape::FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh)
 {
 	if (nullptr == pViewport)
 		return false;
@@ -143,26 +151,24 @@ bool MPainter2DRect::FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh)
 	mesh.ResizeIndices(unIndicesLength + GetIndexCount(), 1);
 
 	Vector4 color = m_rectColor.ToVector4();
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < m_vPoint.size(); ++i)
 	{
 		mesh.GetVertices()[unVerticesLength + i].pos = m_vPoint[i];
 		mesh.GetVertices()[unVerticesLength + i].color = color;
 	}
 
-	static uint32_t const indices[] = {
-		0, 1, 2,
-		0, 2, 3,
-	};
-
-	for (uint32_t i = 0; i < 6; ++i)
-		mesh.GetIndices()[unIndicesLength + i] = unVerticesLength + indices[i];
-	
+	for (uint32_t i = 0; i < m_vPoint.size() - 2; ++i)
+	{
+		mesh.GetIndices()[unIndicesLength + i * 3 + 0] = unVerticesLength;
+		mesh.GetIndices()[unIndicesLength + i * 3 + 1] = unVerticesLength + i + 1;
+		mesh.GetIndices()[unIndicesLength + i * 3 + 2] = unVerticesLength + i + 2;
+	}
 
 	mesh.SetNeedUpload();
 	return true;
 }
 
-bool MPainter2DRect::TouchTest(const Vector2& pos, MViewport* pViewport)
+bool MPainter2DShape::TouchTest(const Vector2& pos, MViewport* pViewport)
 {
 	Vector2 normalPos = pos;
 	normalPos.x /= pViewport->GetWidth();
@@ -193,6 +199,11 @@ bool MPainter3DLine::FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh)
 		return false;
 
 	MSceneComponent* pCameraSceneComponent = pCameraNode->GetComponent<MSceneComponent>();
+
+	Vector3 v3Forward = pCameraSceneComponent->GetForward();
+	Vector3 v3LineDir = m_v3End - m_v3Begin;
+	v3LineDir.Normalize();
+	float dot = v3Forward * v3LineDir;
 
 	Vector3 v3CameraWorldPosition = pCameraSceneComponent->GetWorldPosition();
 	Vector3 v3Center = (m_v3Begin + m_v3End) * 0.5;

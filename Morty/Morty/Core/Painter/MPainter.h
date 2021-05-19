@@ -61,23 +61,23 @@ public:
 	float m_fThickness;
 };
 
-class MORTY_API MPainter2DRect : public MIPainterShape
+class MORTY_API MPainter2DShape : public MIPainterShape
 {
 public:
-	MPainter2DRect() : m_vPoint(), m_rectColor() {}
-	MPainter2DRect(const Vector2& point0, const Vector2& point1, const Vector2& point2, const Vector2& point3, const MColor& color);
+	MPainter2DShape() : m_vPoint(), m_rectColor() {}
+	MPainter2DShape(const std::vector<Vector2>& points, const MColor& color);
 
-	virtual ~MPainter2DRect() {}
+	virtual ~MPainter2DShape() {}
 
-	virtual uint32_t GetVertexCount() override { return 4; }
-	virtual uint32_t GetIndexCount() override { return 6; }
+	virtual uint32_t GetVertexCount() override;
+	virtual uint32_t GetIndexCount() override;
 
 	virtual bool FillData(MViewport* pViewport, MMesh<MPainterVertex>& mesh) override;
 	virtual bool TouchTest(const Vector2& pos, MViewport* pViewport) override;
 
 
 public:
-	Vector2 m_vPoint[4];
+	std::vector<Vector2> m_vPoint;
 	MColor m_rectColor;
 };
 

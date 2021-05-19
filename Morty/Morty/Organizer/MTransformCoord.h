@@ -13,6 +13,9 @@
 #include "Vector.h"
 #include "Type/MColor.h"
 
+#include "MMesh.h"
+#include "MPainter.h"
+
 class MNode;
 class MIMesh;
 class MViewport;
@@ -52,11 +55,12 @@ public:
 
 	bool Input(MInputEvent* pEvent, MViewport* pViewport);
 
-	MIMesh* GetMesh(MViewport* pViewport);
+	void FillMesh2D(MViewport* pViewport, MMesh<MPainterVertex>& mesh);
+	void FillMesh3D(MViewport* pViewport, MMesh<MPainterVertex>& mesh);
 
 protected:
 
-	void GetTranslationShapes(class MPainter2DLine* lines, class MPainter2DRect* rects, bool* vValid, int* vOrder, MViewport* pViewport);
+	void GetTranslationShapes(class MPainter2DLine* lines, class MPainter2DShape* rects, bool* vValid, int* vOrder, MViewport* pViewport);
 
 	uint32_t GetAxisIndex(const MECoordHoverType& eType);
 	
@@ -73,7 +77,6 @@ private:
 	MECoordHoverType m_eCoordHoverType;
 	MECoordHoverType m_eCoordMoveType;
 
-	MIMesh* m_pCoordRenderCache;
 };
 
 

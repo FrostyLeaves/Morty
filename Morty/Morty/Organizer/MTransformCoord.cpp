@@ -15,6 +15,7 @@
 #include "MViewport.h"
 
 #include "MSceneComponent.h"
+#include "MCameraComponent.h"
 
 #include "MInputManager.h"
 
@@ -30,19 +31,12 @@ MTransformCoord3D::MTransformCoord3D()
 	, m_unSelectedID(MGlobal::M_INVALID_INDEX)
 	, m_eCoordHoverType(MECoordHoverType::None)
 	, m_eCoordMoveType(MECoordHoverType::None)
-	, m_pCoordRenderCache(new MMesh<MPainterVertex>(true))
 {
 
 }
 
 MTransformCoord3D::~MTransformCoord3D()
 {
-	if (m_pCoordRenderCache)
-	{
-		m_pCoordRenderCache->DestroyBuffer(m_pEngine->GetDevice());
-		delete m_pCoordRenderCache;
-		m_pCoordRenderCache = nullptr;
-	}
 }
 
 void MTransformCoord3D::SetTarget3DNode(MNode* pNode)
@@ -81,7 +75,7 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 	bool vVaild[3];
 	int vOrder[3];
 	MPainter2DLine lines[3];
-	MPainter2DRect rects[3];
+	MPainter2DShape rects[3];
 	GetTranslationShapes(lines, rects, vVaild, vOrder, pViewport);
 
 
@@ -253,24 +247,22 @@ bool MTransformCoord3D::Input(MInputEvent* pEvent, MViewport* pViewport)
 	return MECoordHoverType::None != m_eCoordHoverType;
 }
 
-MIMesh* MTransformCoord3D::GetMesh(MViewport* pViewport)
+void MTransformCoord3D::FillMesh2D(MViewport* pViewport, MMesh<MPainterVertex>& mesh)
 {
-	m_pCoordRenderCache->Clean();
-
 	if (MGlobal::M_INVALID_INDEX == m_unSelectedID)
-		return m_pCoordRenderCache;
+		return;
 	MNode* pTargetNode = m_pEngine->GetObjectManager()->FindObject(m_unSelectedID)->DynamicCast<MNode>();
 	if (nullptr == pTargetNode)
-		return m_pCoordRenderCache;
+		return;
 
-	bool vVaild[3];
+	bool vVaild[3] = { false, false, false };
 	int vOrder[3];
 	MPainter2DLine lines[3];
-	MPainter2DRect rects[3];
+	MPainter2DShape rects[3];
 	GetTranslationShapes(lines, rects, vVaild, vOrder, pViewport);
 
 	if (false == (vVaild[0] && vVaild[1] && vVaild[2]))
-		return m_pCoordRenderCache;
+		return;
 
 	if (m_eCoordHoverType != MECoordHoverType::None)
 	{
@@ -286,23 +278,39 @@ MIMesh* MTransformCoord3D::GetMesh(MViewport* pViewport)
 	for (int oi = 2; oi >= 0; --oi)
 	{
 		int i = vOrder[oi];
-		if (vVaild[i] && lines[i].FillData(pViewport, *static_cast<MMesh<MPainterVertex>*>(m_pCoordRenderCache)))
-		{
-		}
+		vVaild[i] && lines[i].FillData(pViewport, mesh);
 	}
 
 	for (int oi = 0; oi < 3; ++oi)
 	{
 		int i = vOrder[oi];
-		if (vVaild[(i + 1) % 3] && vVaild[(i + 2) % 3] && rects[i].FillData(pViewport, *static_cast<MMesh<MPainterVertex>*>(m_pCoordRenderCache)))
-		{
-		}
+		vVaild[(i + 1) % 3] && vVaild[(i + 2) % 3] && rects[i].FillData(pViewport, mesh);
 	}
 
-	return m_pCoordRenderCache;
+	return;
 }
 
-void MTransformCoord3D::GetTranslationShapes(MPainter2DLine* lines, class MPainter2DRect* rects, bool* vValid, int* vOrder, MViewport* pViewport)
+void MTransformCoord3D::FillMesh3D(MViewport* pViewport, MMesh<MPainterVertex>& mesh)
+{
+//	if (m_eCoordMoveType == MECoordHoverType::None)
+//		return;
+
+	if (MGlobal::M_INVALID_INDEX == m_unSelectedID)
+		return;
+	MNode* pTargetNode = m_pEngine->GetObjectManager()->FindObject(m_unSelectedID)->DynamicCast<MNode>();
+	if (nullptr == pTargetNode)
+		return;
+
+	MSceneComponent* pSceneComponent =  pTargetNode->GetComponent<MSceneComponent>();
+	if (!pSceneComponent)
+		return;
+	
+	MPainter3DLine line(m_v3TransformOrigin, pSceneComponent->GetWorldPosition(), MColor(0.5f, 0.5f, 0.5f, 0.5f), 1.0f);
+
+	line.FillData(pViewport, mesh);
+}
+
+void MTransformCoord3D::GetTranslationShapes(MPainter2DLine* lines, class MPainter2DShape* rects, bool* vValid, int* vOrder, MViewport* pViewport)
 {
 	if (MGlobal::M_INVALID_INDEX == m_unSelectedID)
 		return;
@@ -321,50 +329,57 @@ void MTransformCoord3D::GetTranslationShapes(MPainter2DLine* lines, class MPaint
 		v3Origin + m_vDirection[2] * 10
 	};
 
-	float fMaxLength = 0.0001f;
-	Vector2 rit1, rit2, up1, up2, fwd1, fwd2;
-	vValid[0] = pViewport->ConvertWorldLineToNormalizedDevice(v3Origin, v3EndPoint[0], rit1, rit2);
-	vValid[1] = pViewport->ConvertWorldLineToNormalizedDevice(v3Origin, v3EndPoint[1], up1, up2);
-	vValid[2] = pViewport->ConvertWorldLineToNormalizedDevice(v3Origin, v3EndPoint[2], fwd1, fwd2);
+	Vector2 v2Start[3], v2End[3];
+	float length[3];
 
-	if (vValid[0] && fMaxLength < (rit2 - rit1).Length())
-		fMaxLength = (rit2 - rit1).Length();
-	if (vValid[1] && fMaxLength < (up2 - up1).Length())
-		fMaxLength = (up2 - up1).Length();
-	if (vValid[2] && fMaxLength < (fwd2 - fwd1).Length())
-		fMaxLength = (fwd2 - fwd1).Length();
-
-	if (vValid[0])
+	for (uint32_t i = 0; i < 3; ++i)
 	{
-		rit2 = rit1 + (rit2 - rit1) * (200.0f / pViewport->GetHeight()) / fMaxLength;
-		lines[0] = MPainter2DLine(rit1, rit2, m_vColor[0], 3.0f);
-	}
-	if (vValid[1])
-	{
-		up2 = up1 + (up2 - up1) * (200.0f / pViewport->GetHeight()) / fMaxLength;
-		lines[1] = MPainter2DLine(up1, up2, m_vColor[1], 3.0f);
-	}
-	if (vValid[2])
-	{
-		fwd2 = fwd1 + (fwd2 - fwd1) * (200.0f / pViewport->GetHeight()) / fMaxLength;
-		lines[2] = MPainter2DLine(fwd1, fwd2, m_vColor[2], 3.0f);
+		vValid[i] = pViewport->ConvertWorldLineToNormalizedDevice(v3Origin, v3EndPoint[i], v2Start[i], v2End[i]);
+		length[i] = (v2End[i] - v2Start[i]).Length();
 	}
 
-	if (vValid[1] && vValid[2])
-	{
-		Vector2 sp = MOVE(MOVE(up1, up1, up2, 0.25), fwd1, fwd2, 0.25);
-		rects[0] = MPainter2DRect(sp, MOVE(sp, up1, up2, 0.25), MOVE(MOVE(sp, up1, up2, 0.25), fwd1, fwd2, 0.25), MOVE(sp, fwd1, fwd2, 0.25), m_vColor[0]);
+
+	int vOrderIndex[3] = { 0, 1, 2 };
+	std::sort(vOrderIndex, vOrderIndex + 3, [&length](int a, int b)
+		{
+			return (length[a] < length[b]);
+		});
+
+	const float fAxisRenderLength = 0.5f;
+
+
+	for (uint32_t i = 0; i < 3; ++i) {
+		if (vValid[i])
+		{
+//			dir[i].Normalize();
+//			Vector2 addi = dir[i] * fAxisRenderLength * min(max(length[i] / length[vOrderIndex[1]], 0.1f), 1.0f);
+//			v2End[i] = v2Start[i] + addi;
+	
+			v2End[i] = v2Start[i] + (v2End[i] - v2Start[i]) * min(max(fAxisRenderLength / length[vOrderIndex[1]], 0.1f), 1.0f);
+
+			lines[i] = MPainter2DLine(v2Start[i], v2End[i], m_vColor[i], 3.0f);
+		}
 	}
-	if (vValid[0] && vValid[2])
+
+	for (uint32_t a = 0; a < 3; ++a)
 	{
-		Vector2 sp = MOVE(MOVE(rit1, rit1, rit2, 0.25), fwd1, fwd2, 0.25);
-		rects[1] = MPainter2DRect(sp, MOVE(sp, rit1, rit2, 0.25), MOVE(MOVE(sp, rit1, rit2, 0.25), fwd1, fwd2, 0.25), MOVE(sp, fwd1, fwd2, 0.25), m_vColor[1]);
+		for (uint32_t b = a + 1; b < 3; ++b)
+		{
+			if (vValid[a] && vValid[b])
+			{
+				Vector2 sp = MOVE(MOVE(v2Start[a], v2Start[a], v2End[a], 0.25), v2Start[b], v2End[b], 0.25);
+
+				Vector2 p0 = sp + (v2End[a] - v2Start[a]) * 0.25f;
+				Vector2 p1 = p0 + (v2End[b] - v2Start[b]) * 0.25f;
+				Vector2 p2 = sp + (v2End[b] - v2Start[b]) * 0.25f;
+
+
+
+				rects[3 - a - b] = MPainter2DShape({ sp, p0, p1, p2 }, m_vColor[3 - a - b]);
+			}
+		}
 	}
-	if (vValid[0] && vValid[1])
-	{
-		Vector2 sp = MOVE(MOVE(up1, up1, up2, 0.25), rit1, rit2, 0.25);
-		rects[2] = MPainter2DRect(sp, MOVE(sp, up1, up2, 0.25), MOVE(MOVE(sp, up1, up2, 0.25), rit1, rit2, 0.25), MOVE(sp, rit1, rit2, 0.25), m_vColor[2]);
-	}
+
 
 	vOrder[0] = 0;
 	vOrder[1] = 1;

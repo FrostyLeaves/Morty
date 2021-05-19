@@ -242,22 +242,6 @@ bool MEngine::InitializeDefaultResource()
 // 	pSkinnedMeshMaterialRes->LoadPixelShader(pMeshPBRPSResource);
 // 	pSkinnedMeshMaterialRes->AddRef();
 
-	MResource* pDraw2DVSResource = GetResourceManager()->LoadResource("./Shader/draw.mvs");
-	MResource* pDraw2DPSResource = GetResourceManager()->LoadResource("./Shader/draw.mps");
-	MMaterialResource* pDraw2DMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_DRAW2D);
-	pDraw2DMaterialRes->SetMaterialType(MEMaterialType::EDefault);
-	pDraw2DMaterialRes->SetRasterizerType(MERasterizerType::ECullNone);
-	pDraw2DMaterialRes->LoadVertexShader(pDraw2DVSResource);
-	pDraw2DMaterialRes->LoadPixelShader(pDraw2DPSResource);
-	pDraw2DMaterialRes->AddRef();
-
-	MResource* pDraw3DVSResource = GetResourceManager()->LoadResource("./Shader/draw3D.mvs");
-	MResource* pDraw3DPSResource = GetResourceManager()->LoadResource("./Shader/draw3D.mps");
-	MMaterialResource* pDraw3DMaterialRes = GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_DRAW3D);
-	pDraw3DMaterialRes->LoadVertexShader(pDraw3DVSResource);
-	pDraw3DMaterialRes->LoadPixelShader(pDraw3DPSResource);
-	pDraw3DMaterialRes->AddRef();
-
 	MResource* pEmptyVSResource = GetResourceManager()->LoadResource("./Shader/empty.mvs");
 	MResource* pEmptyPSResource = GetResourceManager()->LoadResource("./Shader/empty.mps");
 	MMaterialResource* pShadowStaticMaterial = GetResourceManager()->LoadVirtualResource<MMaterialResource>(MGlobal::DEFAULT_MATERIAL_SHADOW_STATIC);

@@ -1,5 +1,7 @@
-#include "inner_constant.hlsl"
-
+[[vk::binding(0,0)]]cbuffer CameraMatrix : register(b1)
+{
+    float4x4 U_matCamProj; // world to proj
+};
 struct VS_IN_DRAW3D
 {
     float3 pos : POSITION;

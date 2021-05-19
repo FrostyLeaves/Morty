@@ -14,6 +14,9 @@
 #include "Type/MColor.h"
 #include "MRenderPass.h"
 
+#include "MMesh.h"
+#include "MPainter.h"
+
 #include "MForwardRenderProgram.h"
 #include "MForwardRenderShaderParamSet.h"
 
@@ -37,6 +40,9 @@ public:
 	void InitializeRenderGraph();
 	void ReleaseRenderGraph();
 
+	void InitializeMaterial();
+	void ReleaseMaterial();
+
 	virtual void OnDelete() override;
 
 	void Render(MRenderGraphNode* pGraphNode);
@@ -45,14 +51,19 @@ protected:
 
 	void DrawModelBoundingBox(MRenderInfo& info);
 	void DrawPainter(MRenderInfo& info);
-	void DrawBoundingBox(MRenderInfo& info, MModelComponent* pModelComponent);
+	void FillBoundingBoxMesh(MRenderInfo& info, MModelComponent* pModelComponent);
 	void DrawBoundingSphere(MRenderInfo& info, MIMeshInstance* pModelIns);
 	void DrawCameraFrustum(MRenderInfo& info, MCamera* pCamera);
 
 private:
 
 	MIRenderProgram* m_pRenderProgram;
-	MForwardRenderShaderParamSet m_FrameParamSet;
+
+	MMaterial* m_pBoundingDrawMaterial;
+	MMaterial* m_pTransformCoordDrawMaterial;
+
+	MMesh<MPainterVertex> m_BoundingDrawMesh;
+	MMesh<MPainterVertex> m_TransformCoordDrawMesh;
 };
 
 #endif
