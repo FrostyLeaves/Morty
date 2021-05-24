@@ -30,8 +30,11 @@ public:
 
 	void CreateEmptyDynamicsWorld();
 
-	btRigidBody* CreateRigidBody(float mass, const btTransform* startTransform, btCollisionShape* shape);
-	void DeleteRigidBody(btRigidBody* body);
+	void AddRigidBody(btRigidBody* pRigidBody);
+	void RemoveRigidBody(btRigidBody* pRigidBody);
+
+
+	void Tick(const float& fDelta);
 
 private:
 

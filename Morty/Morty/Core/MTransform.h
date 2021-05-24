@@ -31,7 +31,7 @@ public:
 	void SetRotation(const Quaternion& rotation){ m_qtRotation = rotation; }
 	Quaternion GetRotation() const { return m_qtRotation; }
 
-	Matrix4 GetMatrix();
+	Matrix4 GetMatrix() const;
 
 	Matrix4 GetMatrixScale();
 

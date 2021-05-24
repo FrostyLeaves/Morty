@@ -39,7 +39,10 @@ void MPhysicsPlugin::Release()
 
 void MPhysicsPlugin::Tick(const float& fDelta)
 {
-
+	if (m_pPhysicsManager)
+	{
+		m_pPhysicsManager->Tick(fDelta);
+	}
 }
 
 MPhysicsManager* MPhysicsPlugin::GetPhysicsManager()

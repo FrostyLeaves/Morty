@@ -21,6 +21,10 @@ public:
 
 public:
 
+    void Tick(const float& fDelta);
+
+public:
+
     MPhysicsWorld* GetPhysicsWorld(const uint32_t& unSceneID);
     
 

@@ -149,6 +149,12 @@ void MEngine::Tick(float fDelta)
 //	MLogManager::GetInstance()->Log("fps:  %d", (int)(1.0f / fDelta));
 
 //	MLogManager::GetInstance()->Log("t:  %u", MRenderStatistics::GetInstance()->unTriangleCount);
+
+	for (MIPlugin* pPlugin : m_vPlugins)
+	{
+		pPlugin->Tick(fDelta);
+	}
+
 	MRenderStatistics::GetInstance()->unTriangleCount = 0;
 	if (m_pScene)
 	{

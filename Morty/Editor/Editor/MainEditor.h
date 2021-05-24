@@ -97,7 +97,6 @@ protected:
 	bool m_bShowResource;
 	bool m_bShowRenderGraph;
 
-
 	SceneTexture m_SceneTexture;
 
 	std::function<bool()> m_funcCloseCallback;

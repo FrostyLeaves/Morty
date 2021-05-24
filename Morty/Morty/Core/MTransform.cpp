@@ -21,7 +21,7 @@ MTransform::~MTransform()
 
 }
 
-Matrix4 MTransform::GetMatrix()
+Matrix4 MTransform::GetMatrix() const
 {
 	Matrix4 matmove = Matrix4::IdentityMatrix;
 	matmove.m[0][3] = m_v3Position.x;

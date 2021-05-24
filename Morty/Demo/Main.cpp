@@ -58,10 +58,12 @@
 
 #include "MSceneComponent.h"
 #include "MCameraComponent.h"
-#include "MRigidBodyComponent.h"
 #include "MDirectionalLightComponent.h"
 
 #include "MoveInputNode.h"
+
+#include "MRigidBodyComponent.h"
+#include "MPhysicsPlugin.h"
 
 #ifdef MORTY_EDITOR_ENABLE
 #include "MainEditor.h"
@@ -82,6 +84,7 @@ int main(int argc, char* argv[])
 
 	MEngine engine;
 	engine.Initialize("../../Resource");
+	engine.RegisterPlugin<MPhysicsPlugin>();
 
 	std::ifstream ifs("./Model/output/bullet/bullet.mnode", std::ios::binary);
 	if (!ifs.good())

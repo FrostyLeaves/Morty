@@ -66,6 +66,7 @@ void MRenderableMeshComponent::Release()
 		return;
 	}
 	pOwnerNode->UnregisterComponentNotify<MRenderableMeshComponent>(MString("TransformDirty"));
+	pOwnerNode->UnregisterComponentNotify<MRenderableMeshComponent>(MString("ParentChanged"));
 }
 
 void MRenderableMeshComponent::SetMaterial(MMaterial* pMaterial)

@@ -115,7 +115,7 @@ private:
 template<class T>
 void MEngine::RegisterPlugin()
 {
-
+	RegisterPlugin(T::GetClassTypeIdentifier());
 }
 
 #endif

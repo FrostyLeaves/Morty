@@ -39,32 +39,23 @@ void MPhysicsWorld::CreateEmptyDynamicsWorld()
 	m_dynamicsWorld->setGravity(btVector3(0, -10, 0));
 }
 
-btRigidBody* MPhysicsWorld::CreateRigidBody(float mass, const btTransform* startTransform, btCollisionShape* shape)
+void MPhysicsWorld::AddRigidBody(btRigidBody* pRigidBody)
 {
-	//rigidbody is dynamic if and only if mass is non zero, otherwise static
-	bool isDynamic = (mass != 0.f);
-
-	btVector3 localInertia(0, 0, 0);
-	if (isDynamic)
-		shape->calculateLocalInertia(mass, localInertia);
-
-	//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
-	btDefaultMotionState* myMotionState = new btDefaultMotionState(*startTransform);
-
-	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, myMotionState, shape, localInertia);
-
-	btRigidBody* body = new btRigidBody(cInfo);
-	//body->setContactProcessingThreshold(m_defaultContactProcessingThreshold);
-
-	body->setUserIndex(-1);
-	m_dynamicsWorld->addRigidBody(body);
-	return body;
+	if (m_dynamicsWorld)
+	{
+		m_dynamicsWorld->addRigidBody(pRigidBody);
+	}
 }
 
-void MPhysicsWorld::DeleteRigidBody(btRigidBody* body)
+void MPhysicsWorld::RemoveRigidBody(btRigidBody* pRigidBody)
 {
-	m_dynamicsWorld->removeRigidBody(body);
-	btMotionState* ms = body->getMotionState();
-	delete body;
-	delete ms;
+	m_dynamicsWorld->removeRigidBody(pRigidBody);
+}
+
+void MPhysicsWorld::Tick(const float& fDelta)
+{
+	if (m_dynamicsWorld)
+	{
+		m_dynamicsWorld->stepSimulation(fDelta, 10);
+	}
 }

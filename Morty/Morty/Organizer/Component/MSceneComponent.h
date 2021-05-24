@@ -22,11 +22,19 @@ public:
     MSceneComponent();
     virtual ~MSceneComponent();
 
+
+	virtual void Initialize() override;
+	virtual void Release() override;
+
 public:
 	void SetPosition(const Vector3& pos);
 	Vector3 GetPosition() { return m_transform.GetPosition(); }
+	
 	void SetWorldPosition(const Vector3& pos);
 	Vector3 GetWorldPosition();
+
+	void SetWorldRotation(const Quaternion& quat);
+	Quaternion GetWorldRotation();
 
 	void SetRotation(const Quaternion& quat);
 	Quaternion GetRotation() { return m_transform.GetRotation(); }
@@ -36,6 +44,8 @@ public:
 
 	void SetTransform(const MTransform& trans);
 	MTransform GetTransform() { return m_transform; }
+
+	void SetWorldTransform(const MTransform& trans);
 
 	void LookAt(const Vector3& v3TargetWorldPos, Vector3 v3UpDir);
 

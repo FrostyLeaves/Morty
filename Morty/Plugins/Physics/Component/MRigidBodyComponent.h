@@ -11,6 +11,9 @@
 #include "MGlobal.h"
 #include "MComponent.h"
 
+class btTransform;
+class btRigidBody;
+class btCollisionShape;
 class MPhysicsWorld;
 class MORTY_API MRigidBodyComponent : public MComponent
 {
@@ -23,11 +26,23 @@ public:
 
 public:
 
+	void SetWorldPosition(const Vector3& position);
+	Vector3 GetWorldPosition() const;
+
+	void SetWorldRotation(const Quaternion& quat);
+	Quaternion GetWorldRotation() const;
+
+
+public:
+
     virtual void Initialize() override;
     virtual void Release() override;
 
 	virtual void OnEnterScene(MScene* pScene) override;
 	virtual void OnExitScene(MScene* pScene) override;
+
+
+	virtual void Tick(const float& fDelta) override;
 
 public:
 
@@ -35,6 +50,9 @@ public:
 
 	void InitializePhysics();
 	void ReleasePhysics();
+
+	btRigidBody* CreateRigidBody(float mass, const btTransform* startTransform, btCollisionShape* shape);
+	void DeleteRigidBody(btRigidBody* pRigidBody);
 
 public:
 
@@ -45,6 +63,8 @@ private:
 
 
 	MPhysicsWorld* m_pPhysicsWorld;
+	btRigidBody* m_pRigidBody;
+	btCollisionShape* m_pShape;
 };
 
 

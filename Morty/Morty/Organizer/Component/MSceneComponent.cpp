@@ -22,6 +22,16 @@ MSceneComponent::~MSceneComponent()
 
 }
 
+void MSceneComponent::Initialize()
+{
+	Super::Initialize();
+}
+
+void MSceneComponent::Release()
+{
+	Super::Release();
+}
+
 void MSceneComponent::SetPosition(const Vector3& pos)
 {
 	m_transform.SetPosition(pos);
@@ -40,6 +50,18 @@ Vector3 MSceneComponent::GetWorldPosition()
 	return GetWorldTransform() * Vector3(0, 0, 0);
 }
 
+void MSceneComponent::SetWorldRotation(const Quaternion& quat)
+{
+	Quaternion localQuat = GetWorldToLocalTransform().GetRotation() * quat;
+
+	SetRotation(localQuat);
+}
+
+Quaternion MSceneComponent::GetWorldRotation()
+{
+	return GetWorldTransform().GetRotation();
+}
+
 void MSceneComponent::SetRotation(const Quaternion& quat)
 {
 	m_transform.SetRotation(quat);
@@ -56,6 +78,11 @@ void MSceneComponent::SetTransform(const MTransform& trans)
 {
 	m_transform = trans;
 	LocalTransformDirty();
+}
+
+void MSceneComponent::SetWorldTransform(const MTransform& trans)
+{
+
 }
 
 void MSceneComponent::LookAt(const Vector3& v3TargetWorldPos, Vector3 v3UpDir)
