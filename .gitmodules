@@ -1,27 +1,24 @@
-[submodule "Morty/ThirdParty/spot"]
-	path = Morty/ThirdParty/spot
-url=https://github.com/FrostyLeaves/spot.git
-[submodule "Morty/ThirdParty/SPIRV-Cross"]
-	path = Morty/ThirdParty/SPIRV-Cross
-	url = https://github.com/KhronosGroup/SPIRV-Cross.git
-[submodule "Morty/ThirdParty/rapidjson"]
-	path = Morty/ThirdParty/rapidjson
+[submodule "ThirdParty/spot"]
+	path = ThirdParty/spot
+	url = https://github.com/FrostyLeaves/spot.git
+[submodule "ThirdParty/rapidjson"]
+	path = ThirdParty/rapidjson
 	url = https://github.com/Tencent/rapidjson.git
-[submodule "Morty/ThirdParty/assimp"]
-	path = Morty/ThirdParty/assimp
-	url = https://github.com/assimp/assimp.git
-[submodule "Morty/ThirdParty/eigen"]
-	path = Morty/ThirdParty/eigen
+[submodule "ThirdParty/eigen"]
+	path = ThirdParty/eigen
 	url = https://github.com/libigl/eigen.git
-[submodule "Morty/ThirdParty/dirent"]
-	path = Morty/ThirdParty/dirent
+[submodule "ThirdParty/dirent"]
+	path = ThirdParty/dirent
 	url = https://github.com/tronkko/dirent.git
-[submodule "Morty/ThirdParty/MoltenVK"]
-	path = Morty/ThirdParty/MoltenVK
+[submodule "ThirdParty/MoltenVK"]
+	path = ThirdParty/MoltenVK
 	url = https://github.com/KhronosGroup/MoltenVK.git
-[submodule "Morty/ThirdParty/SDL"]
-	path = Morty/ThirdParty/SDL
+[submodule "ThirdParty/SDL"]
+	path = ThirdParty/SDL
 	url = https://github.com/SDL-mirror/SDL.git
 [submodule "Morty/ThirdParty/imgui-node-editor"]
 	path = Morty/ThirdParty/imgui-node-editor
 	url = https://github.com/thedmd/imgui-node-editor.git
+[submodule "ThirdParty/assimp"]
+	path = ThirdParty/assimp
+	url = https://github.com/assimp/assimp.git
