@@ -1,0 +1,24 @@
+#include "model_struct.hlsl"
+
+struct VS_IN_SKYBOX
+{
+    float3 pos : POSITION;
+};
+
+struct VS_OUT_SKYBOX
+{
+    float4 pos : SV_POSITION;
+    float3 uvw : UVW;
+};
+
+VS_OUT_SKYBOX VS(VS_IN_SKYBOX input)
+{
+    VS_OUT_SKYBOX output;
+
+    output.pos = mul(float4(input.pos, 1.0f), mul(U_matWorld, U_matCamProj));
+    output.pos.z = output.pos.w;
+
+    output.uvw = input.pos;
+
+    return output;
+}

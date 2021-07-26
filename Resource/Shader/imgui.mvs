@@ -1,0 +1,30 @@
+
+struct VS_INPUT
+{
+    float2 pos : POSITION;
+    float2 uv : TEXCOORD;
+    float4 color : COLOR;
+};
+
+struct VS_OUTPUT
+{
+    float4 pos : SV_POSITION;
+    float2 uv : TEXCOORD;
+    float4 color : COLOR;
+};
+
+[[vk::binding(0,0)]] cbuffer U_IMGUI : register(b1)
+{
+    float2 uScale;
+    float2 uTranslate;
+};
+
+VS_OUTPUT VS( VS_INPUT input)
+{
+    VS_OUTPUT output;
+
+    output.pos = float4(input.pos * uScale + uTranslate, 0.0f, 1.0f);
+    output.uv = input.uv;
+    output.color = input.color;
+    return output;
+}

@@ -1,0 +1,41 @@
+#include "MTaskNodeOutput.h"
+#include "MTaskNodeInput.h"
+
+#include "MTaskNode.h"
+#include "MFunction.h"
+
+MORTY_CLASS_IMPLEMENT(MTaskNodeOutput, MTypeClass)
+
+MTaskNodeOutput::MTaskNodeOutput()
+	: m_unIndex(0)
+	, m_strName("")
+	, pGraphNode(nullptr)
+	, vLinkedInput()
+{
+
+}
+
+MString MTaskNodeOutput::GetStringID() const
+{
+	if (!GetTaskNode())
+		return "";
+
+	return GetTaskNode()->GetNodeName() + "_Output_" + MStringHelper::ToString(m_unIndex);
+}
+
+void MTaskNodeOutput::LinkTo(MTaskNodeInput* pInput)
+{
+	if (pInput && UNION_PUSH_BACK_VECTOR(vLinkedInput, pInput))
+	{
+		pInput->pLinkedOutput = this;
+	}
+}
+
+void MTaskNodeOutput::UnLink(MTaskNodeInput* pInput)
+{
+	if (pInput->pLinkedOutput == this)
+	{
+		ERASE_FIRST_VECTOR(vLinkedInput, pInput);
+		pInput->pLinkedOutput = nullptr;
+	}
+}

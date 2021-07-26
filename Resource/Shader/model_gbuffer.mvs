@@ -1,0 +1,64 @@
+#include "model_struct.hlsl"
+
+struct VS_IN
+{
+    float3 pos : POSITION;
+
+#if SKELETON_ENABLE == 1
+    int bonesID[MBONES_PER_VERTEX] : BONES_ID;
+    float bonesWeight[MBONES_PER_VERTEX] : BONES_WEIGHT;
+#endif
+
+    float3 normal : NORMAL;
+    float3 tangent : TANGENT;
+    float3 bitangent : BITANGENT;
+    float2 uv : TEXCOORDS;
+};
+
+struct VS_OUT
+{
+    float4 pos : SV_POSITION;
+    float2 uv : TEXCOORD;
+    float depth : DEPTH;
+    
+    float3 normal : NORMAL;
+    float3 tangent : Tangent;
+    float3 bitangent : BITANGENT;
+};
+
+VS_OUT VS(VS_IN input)
+{
+    VS_OUT output;
+
+    output.uv.x = input.uv.x;
+    output.uv.y = input.uv.y;
+
+
+#if SKELETON_ENABLE == 1
+
+    float4x4 matBoneTransform = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    float fWeight = 1.0f;
+    for (int i = 0; i < MBONES_PER_VERTEX; ++i)
+    {
+        matBoneTransform += U_vBonesMatrix[input.bonesID[i]] * input.bonesWeight[i];
+        fWeight = fWeight - input.bonesWeight[i];
+    }
+    matBoneTransform += float4x4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1) * fWeight;
+
+    float4 posFromBones = mul(float4(input.pos, 1.0f), matBoneTransform);
+    output.pos = mul(posFromBones, mul(U_matWorld, U_matCamProj));
+
+#else
+    
+    output.pos = mul(float4(input.pos, 1.0f), mul(U_matWorld, U_matCamProj));
+
+#endif
+
+    output.depth = output.pos.z;
+
+    output.normal = normalize(mul(input.normal, U_matNormal));
+    output.tangent = normalize(mul(input.tangent, U_matNormal));
+    output.bitangent = normalize(cross(output.tangent, output.normal));
+
+    return output;
+}

@@ -1,0 +1,27 @@
+/**
+ * @File         MWindowsRenderView
+ * 
+ * @Created      2021-07-19 13:17:45
+ *
+ * @Author       Pobrecito
+**/
+
+#ifndef _M_MWINDOWSRENDERVIEW_H_
+#define _M_MWINDOWSRENDERVIEW_H_
+#include "MGlobal.h"
+
+
+class MORTY_API MWindowsRenderView
+{
+public:
+    MWindowsRenderView();
+    virtual ~MWindowsRenderView();
+
+public:
+
+private:
+
+};
+
+
+#endif

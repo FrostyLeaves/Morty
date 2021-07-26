@@ -1,0 +1,24 @@
+
+struct VS_IN_DRAW
+{
+    float3 pos : POSITION;
+    float4 color : COLOR;
+};
+
+struct VS_OUT_DRAW
+{
+    float4 pos : SV_POSITION;
+    float4 color : COLOR;
+};
+
+VS_OUT_DRAW VS(VS_IN_DRAW input)
+{
+    VS_OUT_DRAW output;
+
+    output.pos.xy = input.pos.xy;
+    output.pos.w = 1.0f;
+    output.pos.z = 0.0f;
+    output.color = input.color;
+
+    return output;
+}

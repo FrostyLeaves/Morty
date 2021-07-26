@@ -1,0 +1,23 @@
+#include "inner_constant.hlsl"
+
+struct VS_IN_DRAW3D
+{
+    float3 pos : POSITION;
+    float4 color : COLOR;
+};
+
+struct VS_OUT_DRAW3D
+{
+    float4 pos : SV_POSITION;
+    float4 color : COLOR;
+};
+
+VS_OUT_DRAW3D VS(VS_IN_DRAW3D input)
+{
+    VS_OUT_DRAW3D output;
+
+    output.pos = mul(float4(input.pos, 1.0f), U_matCamProj);
+    output.color = input.color;
+
+    return output;
+}

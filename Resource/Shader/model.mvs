@@ -1,0 +1,93 @@
+#include "light_forward.hlsl"
+
+struct VS_IN
+{
+    float3 pos : POSITION;
+
+#if SKELETON_ENABLE == 1
+    int bonesID[MBONES_PER_VERTEX] : BONES_ID;
+    float bonesWeight[MBONES_PER_VERTEX] : BONES_WEIGHT;
+#endif
+
+    float3 normal : NORMAL;
+    float3 tangent : TANGENT;
+    float3 bitangent : BITANGENT;
+    float2 uv : TEXCOORDS;
+};
+
+
+VS_OUT VS(VS_IN input)
+{
+    VS_OUT output;
+
+    output.uv.x = input.uv.x;
+    output.uv.y = input.uv.y;
+
+
+#if SKELETON_ENABLE == 1
+
+    float4x4 matBoneTransform = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    float fWeight = 1.0f;
+    for (int i = 0; i < MBONES_PER_VERTEX; ++i)
+    {
+        matBoneTransform += U_vBonesMatrix[input.bonesID[i]] * input.bonesWeight[i];
+        fWeight = fWeight - input.bonesWeight[i];
+    }
+    matBoneTransform += float4x4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1) * fWeight;
+
+    float4 posFromBones = mul(float4(input.pos, 1.0f), matBoneTransform);
+    output.pos = mul(posFromBones, mul(U_matWorld, U_matCamProj));
+
+    output.worldPos = mul(  mul(input.pos, float3x3(matBoneTransform)),   U_matWorld);
+    output.dirLightSpacePos = mul(  mul(  mul(float4(input.pos, 1.0f), matBoneTransform), U_matWorld), U_matLightProj);
+#else
+    
+    output.worldPos = mul(float4(input.pos, 1.0f), U_matWorld).xyz;
+    output.dirLightSpacePos = mul(float4(input.pos, 1.0f), mul(U_matWorld, U_matLightProj));
+    output.pos = mul(float4(input.pos, 1.0f), mul(U_matWorld, U_matCamProj));
+
+#endif
+
+#if MCALC_NORMAL_IN_VS
+
+    float3 f3ToCameraDir = normalize(U_f3CameraPosition - output.worldPos);
+
+    float3 T = mul(input.tangent, U_matNormal);
+    float3 N = mul(input.normal, U_matNormal);
+    float3 B = cross(T, N);
+    float3x3 TBN = float3x3(T,B,N);
+    TBN = transpose(TBN);//正交矩阵的转置矩阵==逆矩阵
+
+    output.dirLightDirTangentSpace = normalize(mul(U_f3DirectionLight , TBN));
+    output.toCameraDirTangentSpace = normalize(mul(f3ToCameraDir, TBN));
+
+    for(int i = 0; i < MPOINT_LIGHT_MAX_NUMBER; ++i)
+    {
+        float3 f3PointLightDir = U_pointLights[i].f3WorldPosition - output.worldPos;
+        output.pointLightDirTangentSpace[i] = normalize(mul(f3PointLightDir, TBN));
+    }
+
+    output.normal = normalize(mul(input.normal, U_matNormal));
+#else
+
+    output.normal = normalize(mul(input.normal, U_matNormal));
+    output.tangent = normalize(mul(input.tangent, U_matNormal));
+    output.bitangent = normalize(cross(output.tangent, output.normal));
+
+#endif
+
+    output.vertexPointLight = float3(0, 0, 0);
+
+    for(int i = MPOINT_LIGHT_PIXEL_NUMBER; i < min(MPOINT_LIGHT_MAX_NUMBER, U_nValidPointLightsNumber); ++i)
+    {
+        float3 f3CameraDir = normalize(U_f3CameraPosition - output.worldPos);
+        float3 f3LightDir = normalize(U_pointLights[i].f3WorldPosition - output.worldPos);
+        float4 f3AmbiColor = U_mat_texDiffuse.SampleLevel(U_defaultSampler, input.uv, 0);
+        float4 f3DiffColor = f3AmbiColor;
+        float4 f3SpecColor = f3AmbiColor;//U_mat_texSpecular.Sample(U_defaultSampler, input.uv);
+        output.vertexPointLight += CalcPointLight(U_pointLights[i], f3CameraDir, f3LightDir, output.normal, output.worldPos, f3DiffColor, f3SpecColor);
+    }
+
+
+    return output;
+}

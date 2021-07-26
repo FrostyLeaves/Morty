@@ -1,0 +1,1 @@
+adb push ../Resource /sdcard/Morty
