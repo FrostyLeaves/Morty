@@ -16,9 +16,15 @@
 [submodule "ThirdParty/SDL"]
 	path = ThirdParty/SDL
 	url = https://github.com/SDL-mirror/SDL.git
-[submodule "Morty/ThirdParty/imgui-node-editor"]
-	path = Morty/ThirdParty/imgui-node-editor
-	url = https://github.com/thedmd/imgui-node-editor.git
 [submodule "ThirdParty/assimp"]
 	path = ThirdParty/assimp
 	url = https://github.com/assimp/assimp.git
+[submodule "ThirdParty/imgui"]
+	path = ThirdParty/imgui
+	url = https://github.com/FrostyLeaves/imgui.git
+[submodule "ThirdParty/ImGuiFileDialog"]
+	path = ThirdParty/ImGuiFileDialog
+	url = https://github.com/FrostyLeaves/ImGuiFileDialog.git
+[submodule "ThirdParty/imgui-node-editor"]
+	path = ThirdParty/imgui-node-editor
+	url = https://github.com/thedmd/imgui-node-editor.git

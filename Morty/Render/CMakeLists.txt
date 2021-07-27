@@ -98,21 +98,21 @@ set_target_properties(Render PROPERTIES
 
 
 if(MORTY_BUILD_TARGET STREQUAL "WIN")
-    include(../Cmake/add_vulkan.cmake)
-    include(../Cmake/add_spirv.cmake)
-    include(../Cmake/add_assimp.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_vulkan.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_spirv.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_assimp.cmake)
 endif()
 
 if(MORTY_BUILD_TARGET STREQUAL "MACOS")
-    include(../Cmake/add_vulkan_macos.cmake)
-    include(../Cmake/add_spirv.cmake)
-    include(../Cmake/add_assimp.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_vulkan_macos.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_spirv.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_assimp.cmake)
 endif()
 
 if(MORTY_BUILD_TARGET STREQUAL "IOS")
-    include(../Cmake/add_vulkan_ios.cmake)
-    include(../Cmake/add_spirv_ios.cmake)
-    include(../Cmake/add_assimp_ios.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_vulkan_ios.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_spirv_ios.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_assimp_ios.cmake)
 endif()
 
 if(Vulkan_FOUND)

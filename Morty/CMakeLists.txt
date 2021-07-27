@@ -52,6 +52,9 @@ if(MSVC)
 endif()
 
 
+set(CMAKE_SCRIPT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../Cmake")
+set(THIRD_PARTY_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty")
+
 # 包含子项目。
 if(MORTY_BUILD_WITH_PHYSICS)
 message("Plugins/Physics")

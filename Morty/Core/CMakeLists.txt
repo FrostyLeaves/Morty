@@ -57,12 +57,12 @@ source_group("Core\\Variant" FILES ${CORE_VARIANT_FILES})
 ############################################################
 # spot
 ############################################################
-file(GLOB SPOT_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/spot/*.hpp
-                    ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/spot/*.cpp
-                    ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/spot/*.c
+file(GLOB SPOT_FILES ${THIRD_PARTY_PATH}/spot/*.hpp
+                    ${THIRD_PARTY_PATH}/spot/*.cpp
+                    ${THIRD_PARTY_PATH}/spot/*.c
 )
 source_group("spot" FILES ${SPOT_FILES})
-set(CORE_CODE_DIRECTORIES ${CORE_CODE_DIRECTORIES} ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/spot)
+set(CORE_CODE_DIRECTORIES ${CORE_CODE_DIRECTORIES} ${THIRD_PARTY_PATH}/spot)
 
 
 ############################################################
@@ -115,9 +115,9 @@ set(CORE_CODE_DIRECTORIES ${CORE_CODE_DIRECTORIES}
 ############################################################
 
 if(MORTY_BUILD_TARGET STREQUAL "WIN")
-    include(../Cmake/add_vulkan.cmake)
-    include(../Cmake/add_spirv.cmake)
-    include(../Cmake/add_assimp.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_vulkan.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_spirv.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_assimp.cmake)
 
     target_compile_definitions(Core
         PRIVATE CORE_EXPORTS
@@ -128,9 +128,9 @@ if(MORTY_BUILD_TARGET STREQUAL "WIN")
 endif()
 
 if(MORTY_BUILD_TARGET STREQUAL "MACOS")
-    include(../Cmake/add_vulkan_macos.cmake)
-    include(../Cmake/add_spirv.cmake)
-    include(../Cmake/add_assimp.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_vulkan_macos.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_spirv.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_assimp.cmake)
     target_compile_definitions(Core
         PUBLIC MORTY_MACOS
     )
@@ -138,9 +138,9 @@ if(MORTY_BUILD_TARGET STREQUAL "MACOS")
 endif()
 
 if(MORTY_BUILD_TARGET STREQUAL "IOS")
-    include(../Cmake/add_vulkan_ios.cmake)
-    include(../Cmake/add_spirv_ios.cmake)
-    include(../Cmake/add_assimp_ios.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_vulkan_ios.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_spirv_ios.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_assimp_ios.cmake)
     target_compile_definitions(Core
         PUBLIC MORTY_IOS
     )
@@ -176,7 +176,7 @@ endif()
 
 target_include_directories(Core
     PUBLIC
-        "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/MoltenVK/External/SPIRV-Cross"
+        "${THIRD_PARTY_PATH}/MoltenVK/External/SPIRV-Cross"
 )
 
 ############################################################
@@ -184,7 +184,7 @@ target_include_directories(Core
 ############################################################
 target_include_directories(Core
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/eigen/Eigen
+        ${THIRD_PARTY_PATH}/eigen/Eigen
 )
 
 ############################################################
@@ -192,7 +192,7 @@ target_include_directories(Core
 ############################################################
 target_include_directories(Core
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/rapidjson/include/rapidjson
+        ${THIRD_PARTY_PATH}/rapidjson/include/rapidjson
 )
 
 

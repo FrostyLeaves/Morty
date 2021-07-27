@@ -5,8 +5,6 @@
 # Render
 ############################################################
 
-set(IMGUI_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/ImGUI)
-
 file(GLOB EDITOR_MAIN_FILES Main/*.h Main/*.cpp)
 source_group("Main" FILES ${EDITOR_MAIN_FILES})
 
@@ -25,13 +23,13 @@ source_group("Widget" FILES ${EDITOR_WIDGET_FILES})
 ############################################################
 # ImGUI
 ############################################################
-file(GLOB EDITOR_IMGUI_FILES ${IMGUI_PATH}/*.h ${IMGUI_PATH}/*.cpp)
+file(GLOB EDITOR_IMGUI_FILES ${THIRD_PARTY_PATH}/imgui/*.h ${THIRD_PARTY_PATH}/imgui/*.cpp ${THIRD_PARTY_PATH}/imgui/backends/imgui_impl_vulkan.* ${THIRD_PARTY_PATH}/imgui/misc/cpp/imgui_stdlib.*)
 source_group("ImGUI" FILES ${EDITOR_IMGUI_FILES})
 
-file(GLOB EDITOR_IMGUI_FILE_DIALOG_FILES ${IMGUI_PATH}/ImGuiFileDialog/*.h ${IMGUI_PATH}/ImGuiFileDialog/*.cpp )
+file(GLOB EDITOR_IMGUI_FILE_DIALOG_FILES ${THIRD_PARTY_PATH}/ImGuiFileDialog/*.h ${THIRD_PARTY_PATH}/ImGuiFileDialog/*.cpp )
 source_group("ImGUI\\FileDialog" FILES ${EDITOR_IMGUI_FILE_DIALOG_FILES})
 
-file(GLOB EDITOR_IMGUI_NODE_EDITOR_FILES ${IMGUI_PATH}/../imgui-node-editor/*.h ${IMGUI_PATH}/../imgui-node-editor/*.cpp )
+file(GLOB EDITOR_IMGUI_NODE_EDITOR_FILES ${THIRD_PARTY_PATH}/imgui-node-editor/*.h ${THIRD_PARTY_PATH}/imgui-node-editor/*.cpp )
 source_group("ImGUI\\NodeEditor" FILES ${EDITOR_IMGUI_NODE_EDITOR_FILES})
 
 add_executable(Editor 
@@ -64,9 +62,11 @@ set(EDITOR_CODE_DIRECTORIES ${RENDER_CODE_DIRECTORIES}
         ${CMAKE_CURRENT_SOURCE_DIR}/Render
         ${CMAKE_CURRENT_SOURCE_DIR}/Utility
         ${CMAKE_CURRENT_SOURCE_DIR}/Widget
-        ${IMGUI_PATH}
-        ${IMGUI_PATH}/ImGuiFileDialog
-        ${IMGUI_PATH}/../imgui-node-editor
+        ${THIRD_PARTY_PATH}/imgui
+        ${THIRD_PARTY_PATH}/imgui/backends
+        ${THIRD_PARTY_PATH}/imgui/misc/cpp
+        ${THIRD_PARTY_PATH}/ImGuiFileDialog
+        ${THIRD_PARTY_PATH}/imgui-node-editor
 )
 
 set( EDITOR_CODE_DIRECTORIES
@@ -83,17 +83,17 @@ target_include_directories(Editor
 if(MORTY_BUILD_TARGET STREQUAL "WIN")
     target_include_directories(Editor
         PUBLIC 
-            ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/dirent/include
+            ${THIRD_PARTY_PATH}/dirent/include
     )
 endif()
 
 
 if(MORTY_BUILD_TARGET STREQUAL "WIN")
-    include(../Cmake/add_sdl.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_sdl.cmake)
 endif()
 
 if(MORTY_BUILD_TARGET STREQUAL "MACOS")
-    include(../Cmake/add_sdl.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_sdl.cmake)
 endif()
 
 
@@ -110,22 +110,22 @@ if(MORTY_BUILD_TARGET STREQUAL "WIN")
 
     add_custom_command(TARGET Editor POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/assimp/bin/assimp-vc142-mtd.dll"
+            "${THIRD_PARTY_PATH}/installs/assimp/bin/assimp-vc142-mtd.dll"
             $<TARGET_FILE_DIR:Editor>)
 
     add_custom_command(TARGET Editor POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/assimp/bin/assimp-vc142-mt.dll"
+            "${THIRD_PARTY_PATH}/installs/assimp/bin/assimp-vc142-mt.dll"
             $<TARGET_FILE_DIR:Editor>)
 
     add_custom_command(TARGET Editor POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/SDL/bin/SDL2d.dll"
+            "${THIRD_PARTY_PATH}/installs/SDL/bin/SDL2d.dll"
             $<TARGET_FILE_DIR:Editor>)
             
     add_custom_command(TARGET Editor POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/installs/SDL/bin/SDL2.dll"
+            "${THIRD_PARTY_PATH}/installs/SDL/bin/SDL2.dll"
             $<TARGET_FILE_DIR:Editor>)
 
 endif()
