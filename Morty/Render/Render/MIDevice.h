@@ -71,8 +71,9 @@ public:
 
 	virtual bool IsFinishedCommand(MIRenderCommand* pCommand) = 0;
 
-	virtual void NewFrame(const uint32_t& nIdx) {}
-	virtual void FrameFinish(const uint32_t& nIdx) {}
+	virtual void SubmitCommand(MIRenderCommand* pCommand) = 0;
+
+	virtual void Update() {}
 
 private:
 

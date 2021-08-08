@@ -16,12 +16,15 @@
 #include "MTaskNode.h"
 #include "MTaskGraph.h"
 #include "MRenderPass.h"
+#include "MRenderInfo.h"
+#include "MIRenderProgram.h"
+#include "MForwardRenderShaderParamSet.h"
 
 class MViewport;
 class MMaterial;
-class MRenderCommand;
+class MIRenderCommand;
 class MRenderableMeshComponent;
-class MORTY_API MForwardRenderProgram : public MTaskNode
+class MORTY_API MForwardRenderProgram : public MIRenderProgram
 {
 public:
 	MORTY_CLASS(MForwardRenderProgram);
@@ -31,21 +34,40 @@ public:
 
 public:
 
-	void Run(MTaskNode* pTaskNode);
+	void Render();
+
+	void RenderReady(MTaskNode* pTaskNode);
+
+	void RenderShadow(MTaskNode* pTaskNode);
+
+	void RenderForward(MTaskNode* pTaskNode);
+
+	virtual MTexture* GetOutputTexture() override { return m_pOutputTexture; }
+
+public:
+	virtual void OnCreated() override;
+	virtual void OnDelete() override;
+
 
 protected:
 
-	void Initialize();
-	void Release();
+	void DrawStaticMesh(MRenderInfo& info, MIRenderCommand* pCommand);
 
+	void GenerateRenderGroup(MRenderInfo& info);
 
-
-	void GenerateRenderGroup(MViewport* pViewport);
+	void UpdateFrameParams(MRenderInfo& info);
 
 protected:
 
-	MBoundsAABB cMeshRenderAABB;
-	std::map<MMaterial*, std::vector<MIMesh*>> m_tMaterialGroup;
+	MTaskGraph* m_pRenderGraph;
+
+	MRenderInfo m_renderInfo;
+	MForwardRenderShaderParamSet m_frameParamSet;
+
+
+	MTexture* m_pShadowMapTexture;
+	MTexture* m_pOutputTexture;
+	MTexture* m_pDepthTexture;
 };
 
 #endif

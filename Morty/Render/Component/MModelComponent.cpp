@@ -128,9 +128,9 @@ MBoundsAABB MModelComponent::GetBoundsAABB()
 	return aabb;
 }
 
-void MModelComponent::WriteToStruct(MStruct& srt)
+void MModelComponent::WriteToStruct(MStruct& srt, MComponentRefTable& refTable)
 {
-	Super::WriteToStruct(srt);
+	Super::WriteToStruct(srt, refTable);
 
 	M_SERIALIZER_WRITE_BEGIN;
 	M_SERIALIZER_WRITE_VALUE("SkeletonResource", GetSkeletonResourcePath)
@@ -138,9 +138,9 @@ void MModelComponent::WriteToStruct(MStruct& srt)
 	M_SERIALIZER_END;
 }
 
-void MModelComponent::ReadFromStruct(const MStruct& srt)
+void MModelComponent::ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable)
 {
-	Super::ReadFromStruct(srt);
+	Super::ReadFromStruct(srt, refTable);
 
 	M_SERIALIZER_READ_BEGIN;
 	M_SERIALIZER_READ_VALUE("SkeletonResource", SetSkeletonResourcePath, String);

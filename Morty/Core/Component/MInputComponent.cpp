@@ -21,12 +21,12 @@ bool MInputComponent::Input(MInputEvent* pEvent, MViewport* pViewport)
 	return false;
 }
 
-void MInputComponent::WriteToStruct(MStruct& srt)
+void MInputComponent::WriteToStruct(MStruct& srt, MComponentRefTable& refTable)
 {
-	Super::WriteToStruct(srt);
+	Super::WriteToStruct(srt, refTable);
 }
 
-void MInputComponent::ReadFromStruct(const MStruct& srt)
+void MInputComponent::ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable)
 {
-	Super::ReadFromStruct(srt);
+	Super::ReadFromStruct(srt, refTable);
 }

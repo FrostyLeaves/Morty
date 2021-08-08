@@ -44,9 +44,9 @@ void MCameraComponent::SetZFar(const float& fZFar)
 	m_fZFar = fZFar;
 }
 
-void MCameraComponent::WriteToStruct(MStruct& srt)
+void MCameraComponent::WriteToStruct(MStruct& srt, MComponentRefTable& refTable)
 {
-	Super::WriteToStruct(srt);
+	Super::WriteToStruct(srt, refTable);
 
 	M_SERIALIZER_WRITE_BEGIN;
 
@@ -60,9 +60,9 @@ void MCameraComponent::WriteToStruct(MStruct& srt)
 	M_SERIALIZER_END;
 }
 
-void MCameraComponent::ReadFromStruct(const MStruct& srt)
+void MCameraComponent::ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable)
 {
-	Super::ReadFromStruct(srt);
+	Super::ReadFromStruct(srt, refTable);
 
 	M_SERIALIZER_READ_BEGIN;
 

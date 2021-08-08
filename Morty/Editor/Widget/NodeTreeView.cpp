@@ -1,6 +1,7 @@
 #include "NodeTreeView.h"
 
 #include "MScene.h"
+#include "MEntity.h"
 #include "MEngine.h"
 #include "MObject.h"
 #include "MEntity.h"
@@ -12,8 +13,8 @@
 
 NodeTreeView::NodeTreeView()
 	: IBaseView()
-	, m_unRootNodeID(MGlobal::M_INVALID_INDEX)
-	, m_unSelectedObjectID(0)
+	, m_pScene(nullptr)
+	, m_nSelectedEntityID(0)
 {
 
 }
@@ -23,23 +24,28 @@ NodeTreeView::~NodeTreeView()
 
 }
 
-void NodeTreeView::SetRootNode(MEntity* pNode)
+void NodeTreeView::SetScene(MScene* pScene)
 {
-	if (pNode)
-		m_unRootNodeID = pNode->GetID();
-	else
-		m_unRootNodeID = MGlobal::M_INVALID_INDEX;
+	m_pScene = pScene;
 }
 
 void NodeTreeView::Render()
 {
+	if (!m_pScene)
+		return;
+
 	MObjectSystem* pObjectSystem = m_pEngine->FindSystem<MObjectSystem>();
 
-	if(MEntity* pRootNode = pObjectSystem->FindObject(m_unRootNodeID)->DynamicCast<MEntity>())
+	const auto& vEntity = m_pScene->GetAllEntity();
+	for(MEntity* pEntity : vEntity)
 	{
-		ImGui::Unindent(ImGui::GetTreeNodeToLabelSpacing());
-		RenderNode(pRootNode);
-		ImGui::Indent(ImGui::GetTreeNodeToLabelSpacing());
+		MSceneComponent* pSceneComponent = pEntity->GetComponent<MSceneComponent>();
+		if (!pSceneComponent || !pSceneComponent->GetParent())
+		{
+			ImGui::Unindent(ImGui::GetTreeNodeToLabelSpacing());
+			RenderNode(pEntity);
+			ImGui::Indent(ImGui::GetTreeNodeToLabelSpacing());
+		}
 	}
 }
 
@@ -60,14 +66,10 @@ void NodeTreeView::Input(MInputEvent* pEvent)
 
 MEntity* NodeTreeView::GetSelectionNode()
 {
-	MObjectSystem* pObjectSystem = m_pEngine->FindSystem<MObjectSystem>();
+	if(!m_pScene)
+		return nullptr;
 
-	if (MObject* pObject = pObjectSystem->FindObject(m_unSelectedObjectID))
-	{
-		return pObject->DynamicCast<MEntity>();
-	}
-
-	return nullptr;
+	return m_pScene->GetEntity(m_nSelectedEntityID);
 }
 
 void NodeTreeView::RenderNode(MEntity* pNode)
@@ -82,10 +84,10 @@ void NodeTreeView::RenderNode(MEntity* pNode)
 	ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_FramePadding;
 	if (vChildrenComponent.size() == 0)
 		node_flags |= ImGuiTreeNodeFlags_Leaf;
-	else if (pNode->GetID() == m_unRootNodeID)
-		node_flags |= ImGuiTreeNodeFlags_DefaultOpen;
+// 	else if (pNode->GetID() == m_unRootNodeID)
+// 		node_flags |= ImGuiTreeNodeFlags_DefaultOpen;
 
-	if (m_unSelectedObjectID == pNode->GetID())
+	if (m_nSelectedEntityID == pNode->GetID())
 		node_flags |= ImGuiTreeNodeFlags_Selected;
 
 
@@ -101,7 +103,7 @@ void NodeTreeView::RenderNode(MEntity* pNode)
 
 	if (ImGui::IsItemClicked())
 	{
-		m_unSelectedObjectID = pNode->GetID();
+		m_nSelectedEntityID = pNode->GetID();
 	}
 	if (bOpened)
 	{

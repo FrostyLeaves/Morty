@@ -23,10 +23,14 @@ source_group("Widget" FILES ${EDITOR_WIDGET_FILES})
 ############################################################
 # ImGUI
 ############################################################
-file(GLOB EDITOR_IMGUI_FILES ${THIRD_PARTY_PATH}/imgui/*.h ${THIRD_PARTY_PATH}/imgui/*.cpp ${THIRD_PARTY_PATH}/imgui/backends/imgui_impl_vulkan.* ${THIRD_PARTY_PATH}/imgui/misc/cpp/imgui_stdlib.*)
+file(GLOB EDITOR_IMGUI_FILES ${THIRD_PARTY_PATH}/imgui/*.h ${THIRD_PARTY_PATH}/imgui/*.cpp
+    ${THIRD_PARTY_PATH}/imgui/backends/imgui_impl_vulkan.*
+    ${THIRD_PARTY_PATH}/imgui/backends/imgui_impl_sdl.*
+    ${THIRD_PARTY_PATH}/imgui/misc/cpp/imgui_stdlib.*)
+
 source_group("ImGUI" FILES ${EDITOR_IMGUI_FILES})
 
-file(GLOB EDITOR_IMGUI_FILE_DIALOG_FILES ${THIRD_PARTY_PATH}/ImGuiFileDialog/*.h ${THIRD_PARTY_PATH}/ImGuiFileDialog/*.cpp )
+file(GLOB EDITOR_IMGUI_FILE_DIALOG_FILES ${THIRD_PARTY_PATH}/ImGuiFileDialog/ImGuiFileDialog/*.h ${THIRD_PARTY_PATH}/ImGuiFileDialog/ImGuiFileDialog/*.cpp )
 source_group("ImGUI\\FileDialog" FILES ${EDITOR_IMGUI_FILE_DIALOG_FILES})
 
 file(GLOB EDITOR_IMGUI_NODE_EDITOR_FILES ${THIRD_PARTY_PATH}/imgui-node-editor/*.h ${THIRD_PARTY_PATH}/imgui-node-editor/*.cpp )
@@ -65,7 +69,7 @@ set(EDITOR_CODE_DIRECTORIES ${RENDER_CODE_DIRECTORIES}
         ${THIRD_PARTY_PATH}/imgui
         ${THIRD_PARTY_PATH}/imgui/backends
         ${THIRD_PARTY_PATH}/imgui/misc/cpp
-        ${THIRD_PARTY_PATH}/ImGuiFileDialog
+        ${THIRD_PARTY_PATH}/ImGuiFileDialog/ImGuiFileDialog
         ${THIRD_PARTY_PATH}/imgui-node-editor
 )
 
@@ -97,12 +101,14 @@ if(MORTY_BUILD_TARGET STREQUAL "MACOS")
 endif()
 
 
-
 if(SDL2_FOUND)
     target_link_libraries(Editor PUBLIC SDL2::SDL2)
 else()
     message(FATAL_ERROR "SDL2 not found.")
 endif()
+
+
+target_compile_definitions(Editor PUBLIC IMGUI_USER_CONFIG="imgui_include.h")
 
 
 

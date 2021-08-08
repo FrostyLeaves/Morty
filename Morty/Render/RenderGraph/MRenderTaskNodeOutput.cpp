@@ -6,6 +6,7 @@ MRenderTaskNodeOutput::MRenderTaskNodeOutput()
 	: MTaskNodeOutput()
 	, m_bClear(true)
 	, m_clearColor(MColor::Black_T)
+	, m_pTexture(nullptr)
 {
 
 }

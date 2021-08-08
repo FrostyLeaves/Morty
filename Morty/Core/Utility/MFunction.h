@@ -19,6 +19,8 @@
 #define M_CLASS_FUNCTION_BIND_0(CLASS_FUNC, SELF) std::bind(&CLASS_FUNC, SELF)
 #define M_CLASS_FUNCTION_BIND_1(CLASS_FUNC, SELF) std::bind(&CLASS_FUNC, SELF, std::placeholders::_1)
 
+#define M_FUNCTION_BIND_2_3(CLASS_FUNC, PARAM_1, PARAM_2) std::bind(&CLASS_FUNC, PARAM_1, PARAM_2, std::placeholders::_1)
+
 template<typename T1, typename T2>
 void DELETE_CLEAR_MAP(std::map<T1, T2>& map)
 {
@@ -33,6 +35,16 @@ bool UNION_PUSH_BACK_VECTOR(std::vector<T>& vector, const T& value)
 {
 	for (T& v : vector)
 		if (v == value) return false;
+	vector.push_back(value);
+
+	return true;
+}
+
+template<typename T>
+bool UNION_PUSH_BACK_VECTOR(std::vector<T>& vector, const T& value, const std::function<bool(const T& a, const T& b)>& equalComp)
+{
+	for (T& v : vector)
+		if (equalComp(v, value)) return false;
 	vector.push_back(value);
 
 	return true;
@@ -54,6 +66,21 @@ bool ERASE_FIRST_VECTOR(std::vector<T>& vector, const T& value)
 }
 
 template<typename T>
+bool ERASE_FIRST_VECTOR(std::vector<T>& vector, const T& value, const std::function<bool(const T& a, const T& b)>& equalComp)
+{
+	for (auto iter = vector.begin(); iter != vector.end(); ++iter)
+	{
+		if (equalComp(*iter, value))
+		{
+			vector.erase(iter);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+template<typename T>
 uint32_t UNION_ORDER_PUSH_BACK_VECTOR(std::vector<T>& vector, const T& value, const std::function<bool(const T& a, const T& b)>& lessComp = std::less<T>(), const std::function<bool(const T& a, const T& b)>& equalComp = std::equal_to<T>())
 {
 	if (vector.empty())
@@ -65,13 +92,19 @@ uint32_t UNION_ORDER_PUSH_BACK_VECTOR(std::vector<T>& vector, const T& value, co
 	auto iter = std::lower_bound(vector.begin(), vector.end(), value, lessComp);
 
 	if (iter == vector.end())
+	{
 		vector.push_back(value);
+		return vector.size() - 1;
+	}
 	else if (equalComp(*iter, value))
 		return MGlobal::M_INVALID_INDEX;
 	else
-		vector.insert(iter, value);
+	{
+		iter = vector.insert(iter, value);
+		return iter - vector.begin();
+	}
 
-	return iter - vector.begin();
+	return MGlobal::M_INVALID_INDEX;
 }
 
 template<typename T>

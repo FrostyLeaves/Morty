@@ -33,6 +33,11 @@ void MVulkanObjectRecycleBin::EmptyTrash()
 	M_VULKAN_DESTROY_CLEAR(Event, vkDestroyEvent);
 	M_VULKAN_DESTROY_CLEAR(Sampler, vkDestroySampler);
 
+	for (VkFence& buffer : m_vFence)
+	{
+		vkDestroyFence(device, buffer, nullptr);
+	}
+
 	if (!m_vDescriptorSet.empty())
 	{
 		vkFreeDescriptorSets(device, m_pDevice->m_VkDescriptorPool, m_vDescriptorSet.size(), m_vDescriptorSet.data());

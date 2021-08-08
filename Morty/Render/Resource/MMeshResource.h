@@ -36,6 +36,10 @@ public:
 	MMeshResource();
     virtual ~MMeshResource();
 
+	static MString GetResourceTypeName() { return "Mesh"; }
+	static std::vector<MString> GetSuffixList() { return { "mesh" }; }
+
+
 	MString GetMeshName() { return m_strName; }
 	MEMeshVertexType GetMeshVertexType(){ return m_eVertexType; }
 	MIMesh* GetMesh() { return m_pMesh; }
@@ -51,9 +55,6 @@ public:
 	virtual bool SaveTo(const MString& strResourcePath) override;
 
 	virtual void OnDelete() override;
-
-	virtual MString GetResourceTypeName() { return "Mesh"; };
-	virtual std::vector<MString> GetSuffixList() { return {"mesh"}; };
 
 protected:
 

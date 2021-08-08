@@ -2,6 +2,7 @@
 
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
+
 #include "SDL.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -116,6 +117,8 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	for (IBaseView* pChild : m_vChildView)
 		pChild->Initialize(pEngine);
 
+	m_pNodeTreeView->SetScene(m_SceneTexture.GetScene());
+
 //	m_pTaskGraphView->SetRenderGraph(m_SceneTexture.GetRenderGraph());
 
 
@@ -126,8 +129,14 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	pEditorTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_1(MainEditor::MainLoop, this));
 
 	MTaskNode* pRenderTask = pMainGraph->AddNode<MTaskNode>("Editor_Render");
-	pRenderTask->SetThreadType(METhreadType::EMainThread);
+	pRenderTask->SetThreadType(METhreadType::ERenderThread);
 	pRenderTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_1(MainEditor::Render, this));
+
+	MTaskNode* pRenderSceneTask = pMainGraph->AddNode<MTaskNode>("Scene_Render");
+	pRenderSceneTask->SetThreadType(METhreadType::ERenderThread);
+	pRenderSceneTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_1(MainEditor::SceneRender, this));
+
+	pRenderSceneTask->AppendOutput()->LinkTo(pRenderTask->AppendInput());
 
 	return true;
 }
@@ -359,6 +368,20 @@ void MainEditor::ShowMenu()
 			ImGui::EndMenu();
 		}
 		
+		if (ImGui::BeginMenu("Edit"))
+		{
+			if (ImGui::MenuItem("Convert model"))
+			{
+
+			}
+
+			if (ImGui::MenuItem("Load model"))
+			{
+
+			}
+
+		}
+
 		ImGui::EndMainMenuBar();
 	}
 }
@@ -388,17 +411,17 @@ void MainEditor::ShowRenderView()
 		m_v2RenderViewSize.y = v2RenderViewSize.y;
 
 
-// 		if (!m_bRenderToWindow)
-// 		{
-// 			if (MTexture* pTexture = m_pTaskGraphView->GetSelectedOutputTexture())
-// 			{
-// 				if (ImTextureID texid = pTexture)
-// 				{
-// 					ImGui::Image(texid, v2RenderViewSize);
-// 				}
-// 			}
-// 			
-// 		}
+		if (!m_bRenderToWindow)
+		{
+			if (MTexture* pTexture = m_SceneTexture.GetTexture())
+			{
+				if (ImTextureID texid = pTexture)
+				{
+					ImGui::Image(texid, v2RenderViewSize);
+				}
+			}
+			
+		}
 	}
 	ImGui::End();
 }
@@ -513,9 +536,9 @@ void MainEditor::ShowRenderGraphView()
 void MainEditor::Render(MTaskNode* pNode)
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+	MIDevice* pDevice = pRenderSystem->GetDevice();
 
-
-	MIRenderCommand* pRenderCommand = pRenderSystem->NextFrame();
+	MIRenderCommand* pRenderCommand = pDevice->CreateRenderCommand();
 	MRenderTarget* pRenderTarget = GetNextRenderTarget();
 	pRenderTarget->BindPrimaryCommand(pRenderCommand);
 
@@ -550,7 +573,7 @@ void MainEditor::Render(MTaskNode* pNode)
 		m_SceneTexture.SetSize(Vector2(size.x, size.y));
 	}
 
-	m_SceneTexture.UpdateTexture(pRenderCommand);
+	//m_SceneTexture.UpdateTexture(pRenderCommand);
 
 	//m_unTriangleCount = MRenderStatistics::GetInstance()->unTriangleCount;
 
@@ -622,4 +645,9 @@ void MainEditor::Render(MTaskNode* pNode)
 	pRenderCommand->RenderCommandEnd();
 
 	Present(pRenderTarget);
+}
+
+void MainEditor::SceneRender(MTaskNode* pNode)
+{
+	m_SceneTexture.Render();
 }

@@ -21,6 +21,11 @@ MTaskGraphWalker::~MTaskGraphWalker()
 
 void MTaskGraphWalker::operator()(MTaskGraph* pTaskGraph)
 {
+	MEngine* pEngine = pTaskGraph->GetEngine();
+
+	if (!pEngine)
+		return;
+
 	if (!pTaskGraph->IsValid())
 		return;
 
@@ -28,7 +33,6 @@ void MTaskGraphWalker::operator()(MTaskGraph* pTaskGraph)
 		return;
 
 
-	MEngine* pEngine = pTaskGraph->GetEngine();
 	MThreadPool* pThreadPool = pEngine->GetThreadPool();
 
 	const std::vector<MTaskNode*>& vNodes = pTaskGraph->GetStartNodes();
@@ -40,10 +44,13 @@ void MTaskGraphWalker::operator()(MTaskGraph* pTaskGraph)
 	}
 
 	MTaskNode* pTaskNode = nullptr;
-	while (!m_vWaitTask.empty() || !m_vActiveTask.empty())
+	while (true)
 	{
 		{
 			std::unique_lock<std::mutex> lck(m_taskStatehMutex);
+
+			if (m_vWaitTask.empty() && m_vActiveTask.empty())
+				break;
 
 			if (m_vWaitTask.empty())
 				continue;

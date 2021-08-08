@@ -152,10 +152,12 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 
 	}
 
-	MResource* pNodeResource = pEntitySystem->PackEntity(m_pModelEntity);
+
+	MResource* pNodeResource = pEntitySystem->PackEntity(m_pScene, m_pScene->GetAllEntity());
 	pNodeResource->AddRef();
 
 	pResourceSystem->MoveTo(pNodeResource, strPath + convertInfo.strOutputName + ".entity");
+	pNodeResource->Save();
 
 	pNodeResource->SubRef();
 	pNodeResource = nullptr;
@@ -201,6 +203,8 @@ bool MModelConverter::Load(const MString& strResourcePath)
 	if (!scene)
 		return false;
 	
+
+	m_pModelEntity->SetName(scene->mRootNode->mName.C_Str());
 
 	//Bones
 	ProcessBones(scene);
@@ -254,7 +258,7 @@ void MModelConverter::ProcessNode(aiNode* pNode, const aiScene *pScene)
 			pChildMeshResource->m_eVertexType = MMeshResource::Normal;
 		}
 
-		pChildMeshResource->m_strName = pNode->mName.C_Str();
+		pChildMeshResource->m_strName = pChildMesh->mName.C_Str();
 		pChildMeshResource->m_SkeletonKeeper.SetResource(m_pSkeleton);
 		pChildMeshResource->m_MaterialKeeper.SetResource(GetMaterial(pScene, pChildMesh->mMaterialIndex));
 		pChildMeshResource->ResetBounds();
@@ -813,8 +817,8 @@ MEntity* MModelConverter::GetEntityFromNode(const aiScene* pScene, aiNode* pNode
 	if (pScene->mRootNode == pNode)
 		return m_pModelEntity;
 
-	if (MEntity* pEntity = m_tNodeMaps[pNode])
-		return pEntity;
+	if (m_tNodeMaps.find(pNode) != m_tNodeMaps.end())
+		return m_tNodeMaps[pNode];
 
 	Matrix4 matTransform;
 	CopyMatrix4(&matTransform, &pNode->mTransformation);

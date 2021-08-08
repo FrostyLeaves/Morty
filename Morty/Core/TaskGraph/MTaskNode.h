@@ -53,7 +53,9 @@ public:
 
 public:
 
+	virtual void OnCreated();
 	virtual void OnCompile();
+	virtual void OnDelete();
 
 public:
 

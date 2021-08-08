@@ -10,10 +10,12 @@
 #define _M_MRENDERSYSTEM_H_
 #include "MRenderGlobal.h"
 #include "MSystem.h"
+#include "MComponent.h"
 
 
 class MIDevice;
 class MTaskNode;
+class MViewport;
 class MIRenderCommand;
 class MORTY_API MRenderSystem : public MISystem
 {
@@ -26,17 +28,14 @@ public:
 public:
 
     void Update(MTaskNode* pNode);
-    
-
-    MIRenderCommand* NextFrame();
 
 public:
 
     MIDevice* GetDevice();
 
+public:
 
-    void CheckFrameFinish();
-    void WiteAllFrameFinish();
+    void OnTransformDirty(MComponent* pSender);
 
 public:
 
@@ -45,10 +44,7 @@ public:
 
 private:
 
-    MIDevice* m_pDevice;
-    uint32_t m_unFrameCount;
-
-    std::vector<MIRenderCommand*> m_vWaitRenderCommand;
+	MIDevice* m_pDevice;
 };
 
 

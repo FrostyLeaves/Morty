@@ -25,9 +25,12 @@ public:
 
 	MRenderTaskNodeOutput* AppendOutput();
 
-public:
+	MRenderPass* GetRenderPass() { return &m_renderpass; }
 
+public:
+	virtual void OnCreated() override;
 	virtual void OnCompile() override;
+	virtual void OnDelete() override;
 
 private:
 

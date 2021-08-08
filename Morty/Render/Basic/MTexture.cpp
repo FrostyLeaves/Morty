@@ -44,3 +44,15 @@ uint32_t MTexture::GetImageMemorySize(const METextureLayout& layout)
 	else
 		return 4;
 }
+
+MTexture* MTexture::CreateShadowMap()
+{
+	MTexture* pTexture = new MTexture();
+	pTexture->SetMipmapsEnable(false);
+	pTexture->SetReadable(false);
+	pTexture->SetRenderUsage(METextureRenderUsage::ERenderDepth);
+	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
+	pTexture->SetTextureLayout(METextureLayout::EDepth);
+
+	return pTexture;
+}

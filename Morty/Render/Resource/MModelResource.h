@@ -25,6 +25,9 @@ public:
 
 public:
 
+	static MString GetResourceTypeName() { return "Model"; }
+	static std::vector<MString> GetSuffixList() { return { "model" }; }
+
     MSkeletonResource* GetSkeleton() { return m_pSkeleton; }
     const std::vector<MMeshResource*>& GetMeshResources() { return m_vMeshes; }
 

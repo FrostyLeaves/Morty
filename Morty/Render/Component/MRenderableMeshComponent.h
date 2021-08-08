@@ -89,8 +89,8 @@ public:
 
 public:
 
-	virtual void WriteToStruct(MStruct& srt) override;
-	virtual void ReadFromStruct(const MStruct& srt) override;
+	virtual void WriteToStruct(MStruct& srt, MComponentRefTable& refTable) override;
+	virtual void ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable) override;
 
 protected:
 

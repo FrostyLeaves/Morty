@@ -76,6 +76,7 @@ struct MShaderTextureParam : public MShaderParam
 	uint32_t unCode;
 	uint32_t  eShaderType;
 	MTexture* pTexture;
+	void* pImageIdent;
 	METextureType eType;
 };
 

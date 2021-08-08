@@ -74,6 +74,10 @@ public:
 
 public:
 
+	static MTexture* CreateShadowMap();
+
+public:
+
 	//texture size.
 	Vector2 m_v2Size;
 
@@ -105,6 +109,10 @@ public:
 #endif
 
 };
+
+
+
+
 
 
 #endif

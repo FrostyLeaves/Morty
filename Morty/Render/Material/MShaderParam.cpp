@@ -53,6 +53,7 @@ MShaderConstantParam::MShaderConstantParam(const MShaderConstantParam& param, co
 MShaderTextureParam::MShaderTextureParam()
 	: MShaderParam()
 	, pTexture(nullptr)
+	, pImageIdent(nullptr)
 	, eType(METextureType::ETexture2D)
 
 {

@@ -16,6 +16,9 @@ MSceneComponent::MSceneComponent()
 	, m_bWorldToLocalTransformDirty(true)
 	, m_bVisible(true)
 	, m_bVisibleRecursively(true)
+
+	, m_attachParent()
+	, m_vAttachChildren()
 {
 
 }
@@ -143,6 +146,31 @@ void MSceneComponent::SetVisibleRecursively(const bool& bVisible)
 	}
 }
 
+void MSceneComponent::SetParent(MSceneComponent* pParent)
+{
+	if (pParent)
+	{
+		SetParentComponent(pParent->GetComponentID());
+	}
+	else
+	{
+		SetParentComponent(MComponentID());
+	}
+}
+
+MSceneComponent* MSceneComponent::GetParent()
+{
+	if (MScene* pScene = GetScene())
+	{
+		if (MComponent* pComponent = pScene->GetComponent(GetParentComponent()))
+		{
+			return pComponent->DynamicCast<MSceneComponent>();
+		}
+	}
+
+	return nullptr;
+}
+
 void MSceneComponent::LookAt(const Vector3& v3TargetWorldPos, Vector3 v3UpDir)
 {
 	v3UpDir.Normalize();
@@ -259,9 +287,9 @@ void MSceneComponent::CallRecursivelyFunction(MEntity* pEntity, std::function<vo
 	}
 }
 
-void MSceneComponent::WriteToStruct(MStruct& srt)
+void MSceneComponent::WriteToStruct(MStruct& srt, MComponentRefTable& refTable)
 {
-	Super::WriteToStruct(srt);
+	Super::WriteToStruct(srt, refTable);
 
 	M_SERIALIZER_WRITE_BEGIN;
 
@@ -269,18 +297,22 @@ void MSceneComponent::WriteToStruct(MStruct& srt)
 	M_SERIALIZER_WRITE_VALUE("Scale", GetScale);
 	M_SERIALIZER_WRITE_VALUE("Rotation", GetRotation);
 
+	M_SERIALIZER_WRITE_COMPONENT_REF("ParentRef", GetParent);
+
 	M_SERIALIZER_END;
 }
 
-void MSceneComponent::ReadFromStruct(const MStruct& srt)
+void MSceneComponent::ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable)
 {
-	Super::ReadFromStruct(srt);
+	Super::ReadFromStruct(srt, refTable);
 
 	M_SERIALIZER_READ_BEGIN;
 
 	M_SERIALIZER_READ_VALUE("Position", SetPosition, Vector3);
 	M_SERIALIZER_READ_VALUE("Scale", SetScale, Vector3);
 	M_SERIALIZER_READ_VALUE("Rotation", SetRotation, Quaternion);
+
+	M_SERIALIZER_READ_COMPONENT_REF("ParentRef", SetParent, MSceneComponent);
 
 	M_SERIALIZER_END;
 }
@@ -299,6 +331,8 @@ void MSceneComponent::LocalTransformDirty()
 		return;
 
 	m_bLocalTransformDirty = true;
+	m_bWorldTransformDirty = true;
+	m_bWorldToLocalTransformDirty = true;
 
 	SendComponentNotify("TransformDirty");
 

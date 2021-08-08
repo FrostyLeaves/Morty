@@ -14,6 +14,7 @@
 class MScene;
 class MEntity;
 class MResource;
+
 class MORTY_API MEntitySystem : public MISystem
 {
     MORTY_CLASS(MEntitySystem)
@@ -25,9 +26,9 @@ public:
 
     void AddChild(MEntity* pParent, MEntity* pChild);
 
-    MResource* PackEntity(MEntity* pEntity);
+    MResource* PackEntity(MScene* pScene, const std::vector<MEntity*>& vEntity);
 
-    MEntity* LoadEntity(MScene* pScene, MResource* pResource);
+    void LoadEntity(MScene* pScene, MResource* pResource);
 
 private:
 

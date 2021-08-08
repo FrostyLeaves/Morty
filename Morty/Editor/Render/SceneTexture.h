@@ -5,6 +5,7 @@
 #include "Vector.h"
 #include "MColor.h"
 
+
 #include <array>
 
 class MScene;
@@ -15,7 +16,7 @@ class MIRenderCommand;
 class MIRenderProgram;
 class MRenderTexture;
 class MIRenderTexture;
-
+class MForwardRenderProgram;
 class SceneTexture
 {
 public:
@@ -28,14 +29,15 @@ public:
 	void SetSize(const Vector2& v2Size);
 	Vector2 GetSize() const { return m_v2Size; }
 
-	void UpdateTexture(MIRenderCommand* pCommand);
-
 	MTexture* GetTexture();
 
 	MScene* GetScene() { return m_pScene; }
 	MViewport* GetViewport() { return m_pRenderViewport; }
 
 	void SetBackColor(const MColor& cColor);
+
+
+	void Render();
 
 protected:
 
@@ -46,7 +48,7 @@ protected:
 
 	MViewport* m_pRenderViewport;
 
-	MIRenderProgram* m_pRenderProgram;
+	MForwardRenderProgram* m_pRenderProgram;
 
 };
 

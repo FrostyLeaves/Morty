@@ -12,6 +12,7 @@
 #include "MColor.h"
 #include "MTaskNodeOutput.h"
 
+class MTexture;
 class MORTY_API MRenderTaskNodeOutput : public MTaskNodeOutput
 {
     MORTY_CLASS(MRenderTaskNodeOutput)
@@ -27,10 +28,15 @@ public:
 	void SetClearColor(const MColor& color) { m_clearColor = color; }
 	MColor GetClearColor() const { return m_clearColor; }
 
+	void SetTexture(MTexture* pTexture) { m_pTexture = pTexture; }
+	MTexture* GetTexture() { return m_pTexture; }
+
 private:
 
 	bool m_bClear;
 	MColor m_clearColor;
+
+	MTexture* m_pTexture;
 };
 
 

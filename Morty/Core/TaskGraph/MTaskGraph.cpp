@@ -34,7 +34,9 @@ bool MTaskGraph::AddNode(const MString& strNodeName, MTaskNode* pNode)
 	pNode->m_pGraph = this;
 
 	m_tTaskNode[strValidName] = pNode;
+	m_vTaskNode.push_back(pNode);
 
+	pNode->OnCreated();
 	return true;
 }
 
@@ -69,6 +71,8 @@ bool MTaskGraph::Compile()
 			m_vFinalTaskNode.push_back(pr.second);
 			queue.push(pr.second);
 		}
+
+		pr.second->OnCompile();
 	}
 
 	if (queue.empty())
@@ -109,4 +113,20 @@ bool MTaskGraph::Compile()
 void MTaskGraph::Run()
 {
 	MTaskGraphWalker()(this);
+}
+
+void MTaskGraph::OnDelete()
+{
+	for (MTaskNode* pTaskNode : m_vTaskNode)
+	{
+		pTaskNode->OnDelete();
+		delete pTaskNode;
+		pTaskNode = nullptr;
+	}
+
+	m_vStartTaskNode.clear();
+	m_vFinalTaskNode.clear();
+	m_tTaskNode.clear();
+
+	m_bValid = false;
 }

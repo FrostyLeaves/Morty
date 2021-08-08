@@ -28,6 +28,7 @@
 
 #include "MTexture.h"
 
+class MVulkanRenderCommand;
 class MORTY_API MVulkanDevice : public MIDevice
 {
 public:
@@ -69,8 +70,9 @@ public:
 
 	virtual bool IsFinishedCommand(MIRenderCommand* pCommand) override;
 
-	virtual void NewFrame(const uint32_t& nIdx) override;
-	virtual void FrameFinish(const uint32_t& nIdx) override;
+	virtual void SubmitCommand(MIRenderCommand* pCommand) override;
+
+	virtual void Update() override;
 
 public:
 
@@ -94,6 +96,9 @@ public:
 	bool GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 
+
+	void CheckFrameFinish();
+	void WaitFrameFinish();
 
 	VkCommandBuffer BeginCommands();
 	void EndCommands(VkCommandBuffer commandBuffer);
@@ -152,9 +157,18 @@ public:
 	VkDescriptorPool m_VkDescriptorPool;
 public:
 
+	struct MVkFrameData
+	{
+		MVulkanObjectRecycleBin* pRecycleBin;
+		std::vector<MVulkanRenderCommand*> vCommand;
+	};
+
 	MVulkanObjectRecycleBin* m_pRecycleBin;
-	MVulkanObjectRecycleBin* m_pFastRecycleBin;
-	std::map<uint32_t, MVulkanObjectRecycleBin*> m_tRecycleBin;
+
+	MVulkanObjectRecycleBin* m_pDefaultRecycleBin;
+	std::map<uint32_t, MVkFrameData> m_tFrameData;
+
+	uint32_t m_unFrameCount;
 };
 
 

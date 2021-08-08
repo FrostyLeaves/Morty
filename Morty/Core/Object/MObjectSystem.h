@@ -54,6 +54,10 @@ public:
 
 	void CleanRemoveObject();
 
+public:
+
+	virtual void Release() override;
+
 private:
 	MIDPool<MObjectID>* m_pObjectDB;
 

@@ -391,16 +391,20 @@ void MViewport::UpdateMatrix()
 	if (m_bCameraInvProjMatrixLocked)
 		return;
 
-	MCameraComponent* pCameraComponent = GetCamera()->GetComponent<MCameraComponent>();
+	MEntity* pCameraEntity = GetCamera();
+
+	if (!pCameraEntity)
+		return;
+
+	MCameraComponent* pCameraComponent = pCameraEntity->GetComponent<MCameraComponent>();
 	if (nullptr == pCameraComponent)
 		return;
 
-	MSceneComponent* pSceneComponent = GetCamera()->GetComponent<MSceneComponent>();
+	MSceneComponent* pSceneComponent = pCameraEntity->GetComponent<MSceneComponent>();
 	if (nullptr == pSceneComponent)
 		return;
 
 	//Update Camera and Projection Matrix.
-	MEntity* pCamera = GetCamera();
 	Matrix4 projMat = pCameraComponent->GetCameraType() == MCameraComponent::MECameraType::EPerspective
 		? MatrixPerspectiveFovLH(pCameraComponent->GetFov() * 0.5f, m_v2Size.x / m_v2Size.y, pCameraComponent->GetZNear(), pCameraComponent->GetZFar())
 		: MatrixOrthoOffCenterLH(-pCameraComponent->GetWidth() * 0.5f, pCameraComponent->GetWidth() * 0.5f, pCameraComponent->GetHeight() * 0.5f, -pCameraComponent->GetHeight() * 0.5f, pCameraComponent->GetZNear(), pCameraComponent->GetZFar());

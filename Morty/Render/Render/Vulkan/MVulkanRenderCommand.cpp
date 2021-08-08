@@ -5,17 +5,21 @@
 #include "MVertexBuffer.h"
 
 MVulkanRenderCommand::MVulkanRenderCommand()
+	:MIRenderCommand()
 {
 	m_pDevice = nullptr;
 
 	pUsingMaterial = nullptr;
 	pUsingPipelineLayoutData = nullptr;
 	m_vRenderPassStages = {};
-	m_aRenderFinishedCallback = {};
 
 	VkCommandBuffer m_VkCommandBuffer = VK_NULL_HANDLE;
 	VkFence m_VkRenderFinishedFence = VK_NULL_HANDLE;
 	VkSemaphore m_VkRenderFinishedSemaphore = VK_NULL_HANDLE;
+
+	m_vRenderWaitSemaphore = {};
+
+	m_bFinished = false;
 }
 
 MVulkanRenderCommand::~MVulkanRenderCommand()
@@ -354,9 +358,29 @@ void MVulkanRenderCommand::UpdateMipmaps(MTexture* pTexture)
 	m_pDevice->GenerateMipmaps(pTexture, pTexture->m_unMipmapLevel, m_VkCommandBuffer);
 }
 
-uint32_t MVulkanRenderCommand::GetFrameIndex()
+void MVulkanRenderCommand::CheckFinished()
 {
-	return m_unFrameIndex;
+	if (m_bFinished) return;
+
+	if (m_pDevice->IsFinishedCommand(this))
+	{
+		m_bFinished = true;
+
+		for (auto& callback : m_aRenderFinishedCallback)
+		{
+			callback();
+		}
+
+		m_aRenderFinishedCallback.clear();
+	}
+}
+
+void MVulkanRenderCommand::AddDependCommand(MIRenderCommand* pDependCommand)
+{
+	if (MVulkanRenderCommand* pVulkanCommand = static_cast<MVulkanRenderCommand*>(pDependCommand))
+	{
+		m_vRenderWaitSemaphore.push_back(pVulkanCommand->m_VkRenderFinishedSemaphore);
+	}
 }
 
 void MVulkanRenderCommand::UpdateShaderParam(MShaderParamSet* pParamSet, MShaderConstantParam* param)
@@ -382,10 +406,12 @@ void MVulkanRenderCommand::UpdateShaderParam(MShaderParamSet* pParamSet, MShader
 
 void MVulkanRenderCommand::UpdateShaderParam(MShaderParamSet* pParamSet, MShaderTextureParam* param)
 {
-	if (param->bDirty)
+	//texture generate buffer again. its imageIdent will diff.
+	if (param->bDirty || (param->pTexture && param->pImageIdent != param->pTexture->m_VkImageView))
 	{
 		m_pDevice->m_PipelineManager.BindTextureParam(pParamSet, param);
 		param->bDirty = false;
+		param->pImageIdent = param->pTexture ? param->pTexture->m_VkImageView : nullptr;
 	}
 }
 

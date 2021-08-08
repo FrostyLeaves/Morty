@@ -126,6 +126,8 @@ void MBoundsOBB::SetPoints(const MByte* vPoints, const uint32_t& unArrayLength, 
 
 void MBoundsOBB::WriteToStruct(MStruct& srt)
 {
+	MSerializer::WriteToStruct(srt);
+
 	srt.AppendMVariant("mat", m_matEigVectors);
 	srt.AppendMVariant("min", m_v3MinPoint);
 	srt.AppendMVariant("max", m_v3MaxPoint);
@@ -133,6 +135,8 @@ void MBoundsOBB::WriteToStruct(MStruct& srt)
 
 void MBoundsOBB::ReadFromStruct(const MStruct& srt)
 {
+	MSerializer::ReadFromStruct(srt);
+
 	srt.FindMember<Matrix3>("mat", m_matEigVectors);
 	srt.FindMember<Vector3>("min", m_v3MinPoint);
 	srt.FindMember<Vector3>("max", m_v3MaxPoint);
@@ -299,12 +303,14 @@ bool MBoundsAABB::IsIntersect(const MBoundsAABB& aabb) const
 
 void MBoundsAABB::WriteToStruct(MStruct& srt)
 {
+	MSerializer::WriteToStruct(srt);
 	srt.AppendMVariant("min", m_v3MinPoint);
 	srt.AppendMVariant("max", m_v3MaxPoint);
 }
 
 void MBoundsAABB::ReadFromStruct(const MStruct& srt)
 {
+	MSerializer::ReadFromStruct(srt);
 	srt.FindMember<Vector3>("min", m_v3MinPoint);
 	srt.FindMember<Vector3>("max", m_v3MaxPoint);
 
@@ -408,12 +414,16 @@ bool MBoundsSphere::IsContain(const Vector3& pos)
 
 void MBoundsSphere::WriteToStruct(MStruct& srt)
 {
+	MSerializer::WriteToStruct(srt);
+
 	srt.AppendMVariant("r", m_fRadius);
 	srt.AppendMVariant("c", m_v3CenterPoint);
 }
 
 void MBoundsSphere::ReadFromStruct(const MStruct& srt)
 {
+	MSerializer::ReadFromStruct(srt);
+
 	srt.FindMember<float>("r", m_fRadius);
 	srt.FindMember<Vector3>("c", m_v3CenterPoint);
 }

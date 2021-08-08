@@ -4,8 +4,8 @@
 
 #include "MTaskGraph.h"
 #include "MObjectSystem.h"
-#include "MEntitySystem.h"
-#include "MResourceSystem.h"
+
+#include "MCoreModule.h"
 
 MORTY_CLASS_IMPLEMENT(MEngine, MTypeClass)
 
@@ -26,12 +26,7 @@ bool MEngine::Initialize()
 {
 	m_threadPool.Initialize();
 
-
-	RegisterSystem<MObjectSystem>();
-	RegisterSystem<MEntitySystem>();
-	RegisterSystem<MResourceSystem>();
-
-	FindSystem<MResourceSystem>()->SetSearchPath({ MORTY_RESOURCE_PATH } );
+	MCoreModule::Register(this);
 
 	m_pMainTaskGraph = FindSystem<MObjectSystem>()->CreateObject<MTaskGraph>();
 

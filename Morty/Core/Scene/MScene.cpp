@@ -3,7 +3,14 @@
 #include "MEngine.h"
 #include "MComponent.h"
 
+#include "MComponentSystem.h"
+
 MORTY_CLASS_IMPLEMENT(MScene, MObject)
+
+static auto ComponentIDLessFunction = [](const MComponentID& a, const MComponentID& b) {
+	return a.pComponentType < b.pComponentType;
+};
+
 
 MScene::MScene()
 	: MObject()
@@ -59,7 +66,14 @@ MIComponentGroup* MScene::FindComponents(const MType* pComponentType)
 {
 	auto findResult = m_tComponents.find(pComponentType);
 	if (findResult == m_tComponents.end())
+	{
+		if (MIComponentGroup* pGroup = CreateComponents(pComponentType))
+		{
+			return m_tComponents[pComponentType] = pGroup;
+		}
+
 		return nullptr;
+	}
 
 	return findResult->second;
 }
@@ -80,6 +94,9 @@ MComponent* MScene::FindComponent(MEntity* entity, const MType* pComponentType)
 
 MComponent* MScene::GetComponent(const MComponentID& id)
 {
+	if (!id.IsValid())
+		return nullptr;
+
 	if (MIComponentGroup* pComponents = FindComponents(id.pComponentType))
 	{
 		return pComponents->FindComponent(id.nID);
@@ -98,7 +115,7 @@ MComponent* MScene::AddComponent(MEntity* entity, MIComponentGroup* pComponents)
 		return nullptr;
 
 	MComponentID compID = pComponents->AddComponent(entity);
-	UNION_ORDER_PUSH_BACK_VECTOR<MComponentID>(entity->m_vComponents, compID);
+	UNION_ORDER_PUSH_BACK_VECTOR<MComponentID>(entity->m_vComponents, compID, ComponentIDLessFunction);
 	MComponent* pComponent = pComponents->FindComponent(compID.nID);
 	return pComponent;
 }
@@ -108,6 +125,21 @@ MComponent* MScene::AddComponent(MEntity* entity, const MType* pComponentType)
 	if (MIComponentGroup* pComponents = FindComponents(pComponentType))
 	{
 		return AddComponent(entity, pComponents);
+	}
+
+	return nullptr;
+}
+
+MIComponentGroup* MScene::CreateComponents(const MType* pComponentType)
+{
+	if (MComponentSystem* pComponentSystem = GetEngine()->FindSystem<MComponentSystem>())
+	{
+		MIComponentGroup* pGroup = pComponentSystem->CreateComponentGroup(pComponentType);
+		if (pGroup)
+		{
+			pGroup->m_pScene = this;
+		}
+		return pGroup;
 	}
 
 	return nullptr;
@@ -123,12 +155,13 @@ void MScene::RemoveComponent(MEntity* entity, const MType* pComponentType)
 		return;
 
 	MComponentID id(pComponentType, 0);
-	ERASE_UNION_ORDER_VECTOR<MComponentID>(entity->m_vComponents, id
-		, [](const MComponentID& a, const MComponentID& b) {
-		return a.pComponentType < b.pComponentType;
-		}, [](const MComponentID& a, const MComponentID& b) {
-			return a.pComponentType == b.pComponentType;
-		});
+	size_t nIdx = FIND_ORDER_VECTOR<MComponentID, MComponentID>(entity->m_vComponents, id, ComponentIDLessFunction);
 
-	pComponents->RemoveComponent(entity->GetID());
+	id = entity->m_vComponents[nIdx];
+
+	if (id.pComponentType == pComponentType)
+	{
+		entity->m_vComponents.erase(entity->m_vComponents.begin() + nIdx);
+		pComponents->RemoveComponent(id.nID);
+	}
 }

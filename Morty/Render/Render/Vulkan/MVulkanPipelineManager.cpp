@@ -235,8 +235,10 @@ void MVulkanPipelineManager::UnRegisterRenderPass(MRenderPass* pRenderPass)
 		}
 	}
 	
-
-	m_RenderPassIDPool.RecoveryID(id);
+	if (id != MGlobal::M_INVALID_INDEX)
+	{
+		m_RenderPassIDPool.RecoveryID(id);
+	}
 	pRenderPass->SetRenderPassID(MGlobal::M_INVALID_INDEX);
 }
 

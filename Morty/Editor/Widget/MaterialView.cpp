@@ -78,10 +78,7 @@ void MaterialView::SetMaterial(MMaterial* pMaterial)
 
 void MaterialView::UpdateTexture(MIRenderCommand* pCommand)
 {
-	if (!m_bShowPreview)
-		return;
 
-	m_SceneTexture.UpdateTexture(pCommand);
 }
 
 void MaterialView::Render()

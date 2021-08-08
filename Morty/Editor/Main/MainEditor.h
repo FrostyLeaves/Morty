@@ -44,6 +44,7 @@ public:
 	bool MainLoop(MTaskNode* pNode);
 
 	void Render(MTaskNode* pNode);
+	void SceneRender(MTaskNode* pNode);
 
 public:
 

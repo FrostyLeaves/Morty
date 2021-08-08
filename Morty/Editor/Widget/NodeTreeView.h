@@ -3,6 +3,9 @@
 
 #include "IBaseView.h"
 
+#include "MEntity.h"
+
+class MScene;
 class MObject;
 class MEntity;
 class NodeTreeView : public IBaseView
@@ -13,7 +16,7 @@ public:
 
 
 public:
-	void SetRootNode(MEntity* pObject);
+	void SetScene(MScene* pScene);
 
 	virtual void Render() override;
 
@@ -30,9 +33,9 @@ protected:
 	void RenderNode(MEntity* pNode);
 
 private:
-	MObjectID m_unRootNodeID;
+	MScene* m_pScene;
 
-	MObjectID m_unSelectedObjectID;
+	MEntityID m_nSelectedEntityID;
 
 	MEngine* m_pEngine;
 };

@@ -30,7 +30,11 @@ public:
 
 	bool AddWork(const MThreadWork& work);
 
-	void ThreadRun(size_t nThreadIdx);
+	void ThreadRun(size_t nThreadIdx, MString strThreadName);
+
+	static std::thread::id GetCurrentThreadID();
+
+	static METhreadType GetCurrentThreadType();
 
 private:
 	std::mutex m_ConditionMutex;
@@ -43,6 +47,8 @@ private:
 	};
 
 	std::array<std::thread, M_MAX_THREAD_NUM> m_aThread;
+
+	static std::map<std::thread::id, METhreadType> s_tThreadType;
 
 	std::queue<MThreadWork> m_vWaitingWork;
 

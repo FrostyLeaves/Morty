@@ -104,15 +104,13 @@ void MEntity::DeleteSelf()
 	}
 }
 
-void MEntity::WriteToStruct(MStruct& srt)
+void MEntity::WriteToStruct(MStruct& srt, MComponentRefTable& refTable)
 {
-	MSerializer::WriteToStruct(srt);
-
 	M_SERIALIZER_WRITE_BEGIN;
 
 	M_SERIALIZER_WRITE_VALUE("Name", GetName);
 
-	if (MVariantArray* pComponentArray = FindWriteVariant<MVariantArray>(*pStruct, "Components"))
+	if (MVariantArray* pComponentArray = MSerializer::FindWriteVariant<MVariantArray>(*pStruct, "Components"))
 	{
 		std::vector<MComponent*>& vComponents = GetComponents();
 		for (MComponent* pComponent : vComponents)
@@ -120,7 +118,7 @@ void MEntity::WriteToStruct(MStruct& srt)
 			if (MStruct* pCompStruct = pComponentArray->AppendMVariant<MStruct>())
 			{
 				pCompStruct->AppendMVariant("ComponentType", pComponent->GetTypeName());
-				pComponent->WriteToStruct(*pCompStruct);
+				pComponent->WriteToStruct(*pCompStruct, refTable);
 			}
 		}
 	}
@@ -128,15 +126,13 @@ void MEntity::WriteToStruct(MStruct& srt)
 	M_SERIALIZER_END;
 }
 
-void MEntity::ReadFromStruct(const MStruct& srt)
+void MEntity::ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable)
 {
-	MSerializer::ReadFromStruct(srt);
-
 	M_SERIALIZER_READ_BEGIN;
 
 	M_SERIALIZER_READ_VALUE("Name", SetName, String);
 
-	if (const MVariantArray* pComponentArray = FindReadVariant<MVariantArray>(*pStruct, "Components"))
+	if (const MVariantArray* pComponentArray = MSerializer::FindReadVariant<MVariantArray>(*pStruct, "Components"))
 	{
 		for (size_t i = 0; i < pComponentArray->GetMemberCount(); ++i)
 		{
@@ -146,7 +142,7 @@ void MEntity::ReadFromStruct(const MStruct& srt)
 				{
 					if (MComponent* pComponent = GetScene()->AddComponent(this, MTypeClass::GetType(*pComponentTypeName)))
 					{
-						pComponent->ReadFromStruct(*pCompStruct);
+						pComponent->ReadFromStruct(*pCompStruct, refTable);
 					}
 				}
 			}

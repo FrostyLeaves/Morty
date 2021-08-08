@@ -23,6 +23,11 @@ MRenderTaskNodeOutput* MRenderTaskNode::AppendOutput()
 	return MTaskNode::AppendOutput<MRenderTaskNodeOutput>();
 }
 
+void MRenderTaskNode::OnCreated()
+{
+	Super::OnCreated();
+}
+
 void MRenderTaskNode::OnCompile()
 {
 	Super::OnCompile();
@@ -40,9 +45,8 @@ void MRenderTaskNode::OnCompile()
 	{
 		if (MRenderTaskNodeOutput* pOutput = m_vOutput[opIdx]->DynamicCast<MRenderTaskNodeOutput>())
 		{
-			if (MTexture* pRenderTexture = nullptr)
+			if (MTexture* pRenderTexture = pOutput->GetTexture())
 			{
-
 				if (pRenderTexture->GetRenderUsage() == METextureRenderUsage::ERenderBack)
 				{
 					m_renderpass.m_vBackTextures.push_back(pRenderTexture);
@@ -74,4 +78,12 @@ void MRenderTaskNode::OnCompile()
 
 
 	m_renderpass.GenerateBuffer(pDevice);
+}
+
+void MRenderTaskNode::OnDelete()
+{
+	Super::OnDelete();
+
+	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+	m_renderpass.DestroyBuffer(pRenderSystem->GetDevice());
 }

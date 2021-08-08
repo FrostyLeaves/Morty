@@ -45,7 +45,7 @@ MRenderableMeshComponent::MRenderableMeshComponent()
 
 MRenderableMeshComponent::~MRenderableMeshComponent()
 {
-	BindShaderParam(nullptr);
+	
 }
 
 void MRenderableMeshComponent::Initialize()
@@ -79,6 +79,7 @@ void MRenderableMeshComponent::Release()
 		pNotifyComponent->UnregisterComponentNotify<MRenderableMeshComponent>(MString("ParentChanged"));
 	}
 	
+	BindShaderParam(nullptr);
 }
 
 void MRenderableMeshComponent::SetMaterial(MMaterial* pMaterial)
@@ -300,9 +301,9 @@ void MRenderableMeshComponent::OnParentChanged()
 	m_bModelInstanceFound = false;
 }
 
-void MRenderableMeshComponent::WriteToStruct(MStruct& srt)
+void MRenderableMeshComponent::WriteToStruct(MStruct& srt, MComponentRefTable& refTable)
 {
-	Super::WriteToStruct(srt);
+	Super::WriteToStruct(srt, refTable);
 
 	M_SERIALIZER_WRITE_BEGIN;
 	M_SERIALIZER_WRITE_VALUE("GenDirShadow", GetGenerateDirLightShadow);
@@ -313,9 +314,9 @@ void MRenderableMeshComponent::WriteToStruct(MStruct& srt)
 	M_SERIALIZER_END;
 }
 
-void MRenderableMeshComponent::ReadFromStruct(const MStruct& srt)
+void MRenderableMeshComponent::ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable)
 {
-	Super::ReadFromStruct(srt);
+	Super::ReadFromStruct(srt, refTable);
 
 	M_SERIALIZER_READ_BEGIN;
 	M_SERIALIZER_READ_VALUE("GenDirShadow", SetGenerateDirLightShadow, Bool);

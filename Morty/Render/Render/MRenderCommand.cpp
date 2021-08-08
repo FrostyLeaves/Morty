@@ -53,3 +53,10 @@ MRenderPassStage::MRenderPassStage(MRenderPass* p, const uint32_t& n)
 {
 
 }
+
+MIRenderCommand::MIRenderCommand()
+	: m_unFrameIndex(0)
+	, m_aRenderFinishedCallback()
+{
+
+}

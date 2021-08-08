@@ -43,9 +43,13 @@ public:
 
 public:
 
+	virtual void OnDelete() override;
+
+public:
+
 	const std::vector<MTaskNode*>& GetStartNodes() { return m_vStartTaskNode; }
 	const std::vector<MTaskNode*>& GetFinalNodes() { return m_vFinalTaskNode; }
-	const std::vector<MTaskNode*> GetAllNodes() { return m_vTaskNode; }
+	const std::vector<MTaskNode*>& GetAllNodes() { return m_vTaskNode; }
 protected:
 
 	bool AddNode(const MString& strNodeName, MTaskNode* pGraphNode);
@@ -54,7 +58,7 @@ protected:
 protected:
 
 	std::map<MString, MTaskNode*> m_tTaskNode;
-    std::vector<MTaskNode*> m_vTaskNode;
+	std::vector<MTaskNode*> m_vTaskNode;
 
 	std::vector<MTaskNode*> m_vStartTaskNode;
 	std::vector<MTaskNode*> m_vFinalTaskNode;

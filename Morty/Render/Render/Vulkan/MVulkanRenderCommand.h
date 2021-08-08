@@ -44,9 +44,12 @@ public:
 	virtual bool DownloadTexture(MTexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback) override;
 	virtual bool CopyImageBuffer(MTexture* pSource, MTexture* pDest) override;
 	virtual void UpdateMipmaps(MTexture* pBuffer) override;
-	
-	virtual uint32_t GetFrameIndex() override;
 
+	virtual bool IsFinished() override { return m_bFinished; }
+	virtual void CheckFinished() override;
+
+	virtual void AddDependCommand(MIRenderCommand* pDependCommand) override;
+	
 	void UpdateShaderParam(MShaderParamSet* pParamSet, MShaderConstantParam* param);
 	void UpdateShaderParam(MShaderParamSet* pParamSet, MShaderTextureParam* param);
 
@@ -59,14 +62,14 @@ public:
 	MMaterial* pUsingMaterial;
 	MMaterialPipelineLayoutData* pUsingPipelineLayoutData;
 	std::stack<MRenderPassStage> m_vRenderPassStages;
-	std::vector<std::function<void()>> m_aRenderFinishedCallback;
 
 	VkCommandBuffer m_VkCommandBuffer;
 	VkFence m_VkRenderFinishedFence; // fence --> CPU
 	VkSemaphore m_VkRenderFinishedSemaphore; // semaphore --> GPU
 
+	std::vector<VkSemaphore> m_vRenderWaitSemaphore;
 
-	uint32_t m_unFrameIndex;
+	bool m_bFinished;
 };
 
 //TODO objectDestructor.FrameFinished;

@@ -50,6 +50,7 @@ MVulkanDevice::MVulkanDevice()
 	, m_VkDefaultSampler(VK_NULL_HANDLE)
 	, m_VkLessEqualSampler(VK_NULL_HANDLE)
 	, m_VkDescriptorPool(VK_NULL_HANDLE)
+	, m_unFrameCount(0)
 {
 
 }
@@ -102,22 +103,24 @@ bool MVulkanDevice::Initialize()
 
 void MVulkanDevice::Release()
 {
+	WaitFrameFinish();
+
 	m_PipelineManager.Release();
 	m_BufferPool.Release();
 	m_ShaderDefaultTexture.DestroyBuffer(this);
 
-	for (auto pr : m_tRecycleBin)
+	for (auto pr : m_tFrameData)
 	{
-		pr.second->Release();
-		delete pr.second;
-		pr.second = nullptr;
+		pr.second.pRecycleBin->Release();
+		delete pr.second.pRecycleBin;
+		pr.second.pRecycleBin = nullptr;
 	}
-	m_tRecycleBin.clear();
+	m_tFrameData.clear();
 	m_pRecycleBin = nullptr;
 
-	m_pFastRecycleBin->Release();
-	delete m_pFastRecycleBin;
-	m_pFastRecycleBin = nullptr;
+	m_pDefaultRecycleBin->Release();
+	delete m_pDefaultRecycleBin;
+	m_pDefaultRecycleBin = nullptr;
 
 	vkDestroySampler(m_VkDevice, m_VkDefaultSampler, nullptr);
 	vkDestroySampler(m_VkDevice, m_VkLessEqualSampler, nullptr);
@@ -264,7 +267,7 @@ int MVulkanDevice::GetPimpapSize(MTexture* pTexture)
 
 MVulkanObjectRecycleBin* MVulkanDevice::GetRecycleBin()
 {
-	return m_pRecycleBin ? m_pRecycleBin : m_pFastRecycleBin;
+	return m_pRecycleBin ? m_pRecycleBin : m_pDefaultRecycleBin;
 }
 
 bool MVulkanDevice::InitDepthFormat()
@@ -314,8 +317,8 @@ bool MVulkanDevice::InitSampler()
 
 bool MVulkanDevice::InitializeRecycleBin()
 {
-	m_pFastRecycleBin = new MVulkanObjectRecycleBin(this);
-	m_pFastRecycleBin->Initialize();
+	m_pDefaultRecycleBin = new MVulkanObjectRecycleBin(this);
+	m_pDefaultRecycleBin->Initialize();
 	return true;
 }
 
@@ -688,7 +691,6 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 	if (!pRenderPass)
 		return false;
 
-
 	if (VK_NULL_HANDLE != pRenderPass->m_VkRenderPass)
 	{
 		DestroyRenderPass(pRenderPass);
@@ -1044,6 +1046,7 @@ MIRenderCommand* MVulkanDevice::CreateRenderCommand()
 
 	vkCreateSemaphore(m_VkDevice, &semaphoreInfo, nullptr, &pCommand->m_VkRenderFinishedSemaphore);
 
+	m_tFrameData[m_unFrameCount].vCommand.push_back(pCommand);
 
 	return pCommand;
 }
@@ -1055,24 +1058,29 @@ void MVulkanDevice::RecoveryRenderCommand(MIRenderCommand* pRenderCommand)
 	if (!pCommand)
 		return;
 
-	//TODO cancel wait.
 	while (vkGetFenceStatus(m_VkDevice, pCommand->m_VkRenderFinishedFence) != VK_SUCCESS);
 
 	if (pCommand->m_VkCommandBuffer)
 	{
-		GetRecycleBin()->DestroyCommandBufferLater(pCommand->m_VkCommandBuffer);
+		//GetRecycleBin()->DestroyCommandBufferLater(pCommand->m_VkCommandBuffer);
+		
+		vkFreeCommandBuffers(m_VkDevice, m_VkCommandPool, 1, &pCommand->m_VkCommandBuffer);
 		pCommand->m_VkCommandBuffer = VK_NULL_HANDLE;
 	}
 
 	if (pCommand->m_VkRenderFinishedFence)
 	{
-		GetRecycleBin()->DestroyFenceLater(pCommand->m_VkRenderFinishedFence);
+		//GetRecycleBin()->DestroyFenceLater(pCommand->m_VkRenderFinishedFence);
+		
+		vkDestroyFence(m_VkDevice, pCommand->m_VkRenderFinishedFence, nullptr);
 		pCommand->m_VkRenderFinishedFence = VK_NULL_HANDLE;
 	}
 
 	if (pCommand->m_VkRenderFinishedSemaphore)
 	{
-		GetRecycleBin()->DestroySemaphoreLater(pCommand->m_VkRenderFinishedSemaphore);
+		//GetRecycleBin()->DestroySemaphoreLater(pCommand->m_VkRenderFinishedSemaphore);
+		
+		vkDestroySemaphore(m_VkDevice, pCommand->m_VkRenderFinishedSemaphore, nullptr);
 		pCommand->m_VkRenderFinishedSemaphore = VK_NULL_HANDLE;
 	}
 
@@ -1090,30 +1098,60 @@ bool MVulkanDevice::IsFinishedCommand(MIRenderCommand* pCommand)
 	return false;
 }
 
-void MVulkanDevice::NewFrame(const uint32_t& nIdx)
+void MVulkanDevice::SubmitCommand(MIRenderCommand* pCommand)
 {
-	m_tRecycleBin[nIdx] = m_pRecycleBin = new MVulkanObjectRecycleBin(this);
-	m_pRecycleBin->Initialize();
+	MVulkanRenderCommand* pRenderCommand = dynamic_cast<MVulkanRenderCommand*>(pCommand);
+	if (!pRenderCommand)
+		return;
+
+	//submit command
+	{
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+		std::vector<VkSemaphore>& vWaitSemaphoreBeforeSubmit = pRenderCommand->m_vRenderWaitSemaphore;
+
+		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		submitInfo.waitSemaphoreCount = vWaitSemaphoreBeforeSubmit.size();
+		submitInfo.pWaitSemaphores = vWaitSemaphoreBeforeSubmit.data();
+		submitInfo.pWaitDstStageMask = waitStages;
+
+		submitInfo.commandBufferCount = 1;
+		VkCommandBuffer commandBuffers[] = { pRenderCommand->m_VkCommandBuffer };
+		//TODO maybe mutil command buffers for every frame
+		submitInfo.pCommandBuffers = commandBuffers;
+
+		VkSemaphore signalSemaphores[] = { pRenderCommand->m_VkRenderFinishedSemaphore };
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = signalSemaphores;
+
+		VkFence vkInFightFence = pRenderCommand->m_VkRenderFinishedFence;
+		//m_VkInFlightFences = unsigned
+		vkResetFences(m_VkDevice, 1, &vkInFightFence);
+		if (vkQueueSubmit(m_VkGraphicsQueue, 1, &submitInfo, vkInFightFence) != VK_SUCCESS) {
+			throw std::runtime_error("failed to submit draw command buffer!");
+		}
+	}
 }
 
-void MVulkanDevice::FrameFinish(const uint32_t& nIdx)
+void MVulkanDevice::Update()
 {
-	if (MVulkanObjectRecycleBin* pRecycleBin = m_tRecycleBin[nIdx])
+	MIDevice::Update();
+
+	CheckFrameFinish();
+
+
+
+	if (m_pDefaultRecycleBin)
 	{
-		if (m_pRecycleBin == pRecycleBin)
-			m_pRecycleBin = nullptr;
-
-		m_tRecycleBin.erase(nIdx);
-
-		pRecycleBin->Release();
-		delete pRecycleBin;
-		pRecycleBin = nullptr;
+		m_pDefaultRecycleBin->EmptyTrash();
 	}
 
-	if (m_pFastRecycleBin)
-	{
-		m_pFastRecycleBin->EmptyTrash();
-	}
+	++m_unFrameCount;
+
+	m_tFrameData[m_unFrameCount] = {};
+	m_tFrameData[m_unFrameCount].pRecycleBin = m_pRecycleBin = new MVulkanObjectRecycleBin(this);
+	m_pRecycleBin->Initialize();
 }
 
 void MVulkanDevice::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
@@ -1532,6 +1570,53 @@ void MVulkanDevice::DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory
 {
 	vkDestroyBuffer(m_VkDevice, buffer, nullptr);
 	vkFreeMemory(m_VkDevice, bufferMemory, nullptr);
+}
+
+void MVulkanDevice::CheckFrameFinish()
+{
+	for (auto iter = m_tFrameData.begin(); iter != m_tFrameData.end();)
+	{
+		auto& vCommand = iter->second.vCommand;
+		bool bFinished = true;
+		for (MVulkanRenderCommand* pCommand : vCommand)
+		{
+			pCommand->CheckFinished();
+			bFinished &= pCommand->IsFinished();
+		}
+
+		if(bFinished)
+		{
+			for (MVulkanRenderCommand* pCommand : vCommand)
+			{
+				RecoveryRenderCommand(pCommand);
+			}
+
+			if (auto& pRecycleBin = iter->second.pRecycleBin)
+			{
+				if (m_pRecycleBin == pRecycleBin)
+					m_pRecycleBin = nullptr;
+
+				pRecycleBin->Release();
+				delete pRecycleBin;
+				pRecycleBin = nullptr;
+			}
+
+			GetEngine()->GetLogger()->Information("the Frame Finished: %d", iter->first);
+			iter = m_tFrameData.erase(iter);
+		}
+		else
+		{
+			++iter;
+		}
+	}
+}
+
+void MVulkanDevice::WaitFrameFinish()
+{
+	while (!m_tFrameData.empty())
+	{
+		CheckFrameFinish();
+	}
 }
 
 VkCommandBuffer MVulkanDevice::BeginCommands()

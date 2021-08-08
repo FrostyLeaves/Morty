@@ -33,9 +33,9 @@ Vector3 MDirectionalLightComponent::GetWorldDirection()
 	return pSceneComponent->GetWorldTransform().GetRotatePart() * m_v3Direction;
 }
 
-void MDirectionalLightComponent::WriteToStruct(MStruct& srt)
+void MDirectionalLightComponent::WriteToStruct(MStruct& srt, MComponentRefTable& refTable)
 {
-	Super::WriteToStruct(srt);
+	Super::WriteToStruct(srt, refTable);
 
 	M_SERIALIZER_WRITE_BEGIN;
 
@@ -45,9 +45,9 @@ void MDirectionalLightComponent::WriteToStruct(MStruct& srt)
 	M_SERIALIZER_END;
 }
 
-void MDirectionalLightComponent::ReadFromStruct(const MStruct& srt)
+void MDirectionalLightComponent::ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable)
 {
-	Super::ReadFromStruct(srt);
+	Super::ReadFromStruct(srt, refTable);
 
 	M_SERIALIZER_READ_BEGIN;
 

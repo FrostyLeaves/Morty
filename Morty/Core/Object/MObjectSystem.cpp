@@ -10,15 +10,7 @@ MObjectSystem::MObjectSystem()
 
 MObjectSystem::~MObjectSystem()
 {
-	for (std::map<MObjectID, MObject*>::iterator iter = m_tObjects.begin(); iter != m_tObjects.end(); ++iter)
-	{
-		delete iter->second;
-		iter->second = nullptr;
-	}
 
-	m_tObjects.clear();
-
-	delete m_pObjectDB;
 }
 
 void MObjectSystem::InitObject(MObject* pObject)
@@ -75,4 +67,27 @@ void MObjectSystem::CleanRemoveObject()
 		}
 	}
 
+}
+
+void MObjectSystem::Release()
+{
+	Super::Release();
+
+	while (!m_tObjects.empty() || !m_vRemoveObjects.empty())
+	{
+		std::map<MObjectID, MObject*> tObjects = std::move(m_tObjects);
+		m_tObjects = {};
+
+		for (std::map<MObjectID, MObject*>::iterator iter = tObjects.begin(); iter != tObjects.end(); ++iter)
+		{
+			iter->second->OnDelete();
+			delete iter->second;
+			iter->second = nullptr;
+		}
+
+		CleanRemoveObject();
+	}
+
+	delete m_pObjectDB;
+	m_pObjectDB = nullptr;
 }

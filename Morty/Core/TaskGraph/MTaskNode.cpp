@@ -90,7 +90,17 @@ void MTaskNode::Run()
 	}
 }
 
+void MTaskNode::OnCreated()
+{
+
+}
+
 void MTaskNode::OnCompile()
+{
+
+}
+
+void MTaskNode::OnDelete()
 {
 
 }

@@ -17,7 +17,7 @@
 #include <functional>
 
 class MScene;
-class MORTY_API MEntity : public MTypeClass, public MSerializer
+class MORTY_API MEntity : public MTypeClass
 {
 	MORTY_CLASS(MEntity)
 public:
@@ -58,8 +58,8 @@ public:
 	void DeleteSelf();
 
 public:
-	virtual void WriteToStruct(MStruct& srt) override;;
-	virtual void ReadFromStruct(const MStruct& srt) override;
+	virtual void WriteToStruct(MStruct& srt, MComponentRefTable& refTable);
+	virtual void ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable);
 
 protected:
 	MScene* m_pScene;

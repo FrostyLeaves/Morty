@@ -21,31 +21,6 @@
 
 class MResource;
 
-class MIComponentGroup
-{
-public:
-	virtual MComponentID AddComponent(MEntity* entity) = 0;
-	virtual void RemoveComponent(const size_t& id) = 0;
-
-	virtual MComponent* FindComponent(const size_t& id) = 0;
-};
-
-template<typename TYPE>
-class MORTY_API MComponentGroup : public MIComponentGroup
-{
-public:
-
-	virtual MComponentID AddComponent(MEntity* entity) override;
-	virtual void RemoveComponent(const size_t& id) override;
-	virtual MComponent* FindComponent(const size_t& id) override;
-
-public:
-	MScene* m_pScene;
-
-	std::vector<size_t> m_vFreeComponent;
-	std::vector<TYPE> m_vComponent;
-};
-
 class MORTY_API MScene : public MObject
 {
 public:
@@ -72,6 +47,8 @@ public:
 
 	MComponent* GetComponent(const MComponentID& id);
 
+	const std::vector<MEntity*>& GetAllEntity() const { return m_vEntity; }
+
 public:
 
 	virtual void Tick(const float& fDelta);
@@ -89,43 +66,13 @@ protected:
 
 	MComponent* AddComponent(MEntity* entity, MIComponentGroup* pComponents);
 
+	MIComponentGroup* CreateComponents(const MType* pComponentType);
+
 private:
 
 	std::vector<MEntity*> m_vEntity;
 	std::map<const MType*, MIComponentGroup*> m_tComponents;
 };
-
-
-template<typename TYPE>
-MComponentID MComponentGroup<TYPE>::AddComponent(MEntity* entity)
-{
-	if (m_vFreeComponent.empty())
-	{
-		size_t nResult = m_vComponent.size();
-		m_vComponent.resize(nResult + 1);
-		m_vComponent[nResult].MComponent::Initialize(m_pScene, entity->GetID());
-		return MComponentID(TYPE::GetClassType(), nResult);
-	}
-
-	size_t nResult = m_vFreeComponent.back();
-	m_vFreeComponent.pop_back();
-	m_vComponent[nResult].MComponent::Initialize(m_pScene, entity->GetID());
-	return MComponentID(TYPE::GetClassType(), nResult);
-}
-
-template<typename TYPE>
-void MComponentGroup<TYPE>::RemoveComponent(const size_t& id)
-{
-	m_vComponent[id].Release();
-	m_vFreeComponent.push_back(id);
-}
-
-template<typename TYPE>
-MComponent* MComponentGroup<TYPE>::FindComponent(const size_t& id)
-{
-	if (id < m_vComponent.size())
-		return &m_vComponent[id];
-}
 
 template <typename TYPE>
 MComponentGroup<TYPE>* MScene::FindComponents()

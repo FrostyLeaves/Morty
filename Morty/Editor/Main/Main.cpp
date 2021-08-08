@@ -10,6 +10,8 @@
 #include "SDL.h"
 #include <fstream>
 
+#include "MModelConverter.h"
+
 #ifdef MORTY_WIN
 #undef main
 #endif
@@ -23,6 +25,19 @@ int main()
 	//register module
 	MRenderModule::Register(&engine);
 
+
+	{
+		MModelConverter convert(&engine);
+
+		MModelConvertInfo info;
+		info.eMaterialType = MModelConvertMaterialType::E_Default_Forward;
+		info.strOutputDir = "D:/test";
+		info.strOutputName = "cat";
+		info.strResourcePath = "D:/project/Morty_Restructure/Resource/Model/cat.fbx";
+
+		convert.Convert(info);
+	}
+
 	bool bClosed = false;
 	
 	MainEditor editor;
@@ -35,7 +50,6 @@ int main()
 
 	//start run
 	engine.Start();
-
 
 	while (!bClosed)
 	{

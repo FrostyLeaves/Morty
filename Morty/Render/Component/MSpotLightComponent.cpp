@@ -52,9 +52,9 @@ Vector3 MSpotLightComponent::GetWorldDirection()
 	return pSceneComponent->GetWorldTransform().GetRotatePart() * Vector3(0.0f, 0.0f, 1.0f);
 }
 
-void MSpotLightComponent::WriteToStruct(MStruct& srt)
+void MSpotLightComponent::WriteToStruct(MStruct& srt, MComponentRefTable& refTable)
 {
-	Super::WriteToStruct(srt);
+	Super::WriteToStruct(srt, refTable);
 
 	M_SERIALIZER_WRITE_BEGIN;
 
@@ -66,9 +66,9 @@ void MSpotLightComponent::WriteToStruct(MStruct& srt)
 	M_SERIALIZER_END;
 }
 
-void MSpotLightComponent::ReadFromStruct(const MStruct& srt)
+void MSpotLightComponent::ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable)
 {
-	Super::ReadFromStruct(srt);
+	Super::ReadFromStruct(srt, refTable);
 
 	M_SERIALIZER_READ_BEGIN;
 

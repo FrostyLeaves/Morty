@@ -30,7 +30,7 @@ void MEntitySystem::AddChild(MEntity* pParent, MEntity* pChild)
 		return;
 
 	MSceneComponent* pParentComp = pParent->GetComponent<MSceneComponent>();
-	MSceneComponent* pChildComp = pParent->GetComponent<MSceneComponent>();
+	MSceneComponent* pChildComp = pChild->GetComponent<MSceneComponent>();
 
 	if (!pChildComp || !pParentComp)
 		return;
@@ -38,35 +38,51 @@ void MEntitySystem::AddChild(MEntity* pParent, MEntity* pChild)
 	pChildComp->SetParentComponent(pParentComp->GetComponentID());
 }
 
-MResource* MEntitySystem::PackEntity(MEntity* pEntity)
+MResource* MEntitySystem::PackEntity(MScene* pScene, const std::vector<MEntity*>& vEntity)
 {
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
 	MEntityResource* pResource = pResourceSystem->CreateResource<MEntityResource>();
 
-	pResource->m_entityStruct = MStruct();
+	pResource->m_entityStruct = MVariantArray();
 
-	pResource->m_entityStruct = MStruct();
-	pEntity->WriteToStruct(*pResource->m_entityStruct.GetStruct());
+	MComponentRefTable refTable(pScene);
+
+	for (MEntity* pEntity : vEntity)
+	{
+		if (MStruct* pStruct = pResource->m_entityStruct.GetArray()->AppendMVariant<MStruct>())
+		{
+			pEntity->WriteToStruct(*pStruct, refTable);
+		}
+	}
 
 	return pResource;
 }
 
-MEntity* MEntitySystem::LoadEntity(MScene* pScene, MResource* pResource)
+void MEntitySystem::LoadEntity(MScene* pScene, MResource* pResource)
 {
 	MEntityResource* pEntityResource = pResource->DynamicCast<MEntityResource>();
 	if (!pEntityResource)
-		return nullptr;
+		return;
 
-	MEntity* pEntity = pScene->CreateEntity();
-	if (!pEntity)
-		return nullptr;
 
-	if (MStruct* pStruct = pEntityResource->m_entityStruct.GetStruct())
+	if (const MVariantArray* pArray = pEntityResource->m_entityStruct.GetArray())
 	{
-		pEntity->ReadFromStruct(*pStruct);
+		MComponentRefTable refTable(pScene);
+
+		for (size_t i = 0; i < pArray->GetMemberCount(); ++i)
+		{
+			if (const MStruct* pStruct = pArray->GetMember<MStruct>(i))
+			{
+				if (MEntity* pEntity = pScene->CreateEntity())
+				{
+					pEntity->ReadFromStruct(*pStruct, refTable);
+				}
+			}
+		}
+
+		refTable.BindReference();
 	}
 
-	return pEntity;
 }
 

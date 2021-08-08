@@ -48,6 +48,12 @@ void MRenderPass::DestroyBuffer(MIDevice* pDevice)
 	pDevice->DestroyRenderPass(this);
 }
 
+void MRenderPass::Resize(MIDevice* pDevice)
+{
+	pDevice->DestroyFrameBuffer(this);
+	pDevice->GenerateFrameBuffer(this);
+}
+
 std::vector<MTexture*> MRenderPass::GetBackTexture()
 {
 	return m_vBackTextures;

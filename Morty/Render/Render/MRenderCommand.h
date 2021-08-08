@@ -57,6 +57,9 @@ class MORTY_API MIRenderCommand
 {
 public:
 
+	MIRenderCommand();
+	virtual ~MIRenderCommand() {}
+
 	virtual void SetViewport(const MViewportInfo& viewport) = 0;
 	virtual void SetScissor(const MScissorInfo& scissor) = 0;
 
@@ -78,7 +81,16 @@ public:
 	virtual bool CopyImageBuffer(MTexture* pSource, MTexture* pDest) = 0;
 	virtual void UpdateMipmaps(MTexture* pBuffer) = 0;
 
-	virtual uint32_t GetFrameIndex() = 0;
+	virtual bool IsFinished() = 0;
+	virtual void CheckFinished() = 0;
+
+	virtual void AddDependCommand(MIRenderCommand* pDependCommand) = 0;
+
+	uint32_t GetFrameIndex() { return m_unFrameIndex; }
+
+public:
+	uint32_t m_unFrameIndex;
+	std::vector<std::function<void()>> m_aRenderFinishedCallback;
 
 };
 

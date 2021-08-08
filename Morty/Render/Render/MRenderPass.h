@@ -49,6 +49,8 @@ public:
     void GenerateBuffer(MIDevice* pDevice);
     void DestroyBuffer(MIDevice* pDevice);
 
+    void Resize(MIDevice* pDevice);
+
 public:
 
     void SetRenderPassID(const uint32_t& unID) { m_unRenderPassID = unID; }

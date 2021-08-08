@@ -56,6 +56,9 @@ public:
 	void SetScale(const Vector3& scale);
 	Vector3 GetScale() { return m_transform.GetScale(); }
 
+	void SetParent(MSceneComponent* pParent);
+	MSceneComponent* GetParent();
+
 	void LookAt(const Vector3& v3TargetWorldPos, Vector3 v3UpDir);
 
 	Matrix4 GetParentWorldTransform();
@@ -79,8 +82,8 @@ public:
 
 public:
 
-	virtual void WriteToStruct(MStruct& srt) override;
-	virtual void ReadFromStruct(const MStruct& srt) override;
+	virtual void WriteToStruct(MStruct& srt, MComponentRefTable& refTable) override;
+	virtual void ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable) override;
 
 protected:
 
