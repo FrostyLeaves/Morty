@@ -81,10 +81,14 @@ public:
 	virtual bool CopyImageBuffer(MTexture* pSource, MTexture* pDest) = 0;
 	virtual void UpdateMipmaps(MTexture* pBuffer) = 0;
 
-	virtual bool IsFinished() = 0;
-	virtual void CheckFinished() = 0;
 
-	virtual void AddDependCommand(MIRenderCommand* pDependCommand) = 0;
+	virtual MIRenderCommand* CreateChildCommand() { return nullptr; }
+	virtual MIRenderCommand* GetChildCommand(const size_t& nIndex) { return nullptr; }
+	virtual void ExecuteChildCommand() {}
+
+
+	virtual bool IsFinished() { return false; }
+	virtual void CheckFinished() {}
 
 	uint32_t GetFrameIndex() { return m_unFrameIndex; }
 
@@ -93,6 +97,5 @@ public:
 	std::vector<std::function<void()>> m_aRenderFinishedCallback;
 
 };
-
 
 #endif

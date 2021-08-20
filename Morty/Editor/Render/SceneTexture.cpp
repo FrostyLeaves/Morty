@@ -6,7 +6,6 @@
 #include "MTexture.h"
 #include "MViewport.h"
 #include "MTaskGraph.h"
-#include "MRenderTaskNode.h"
 
 #include "MObjectSystem.h"
 #include "MEntitySystem.h"
@@ -14,7 +13,8 @@
 
 #include "MSceneComponent.h"
 #include "MCameraComponent.h"
-#include "MoveInputNode.h"
+#include "MMoveControllerComponent.h"
+#include "MDirectionalLightComponent.h"
 
 #include "MForwardRenderProgram.h"
 
@@ -22,7 +22,8 @@ SceneTexture::SceneTexture()
 	: m_pEngine(nullptr)
 	, m_pScene(nullptr)
 	, m_pRenderViewport(nullptr)
-	, m_pRenderProgram(nullptr)
+	, m_vRenderProgram()
+	, m_nImageCount(3)
 {
 
 }
@@ -32,9 +33,10 @@ SceneTexture::~SceneTexture()
 
 }
 
-void SceneTexture::Initialize(MEngine* pEngine)
+void SceneTexture::Initialize(MEngine* pEngine, const size_t& nImageCount)
 {
  	m_pEngine = pEngine;
+	m_nImageCount = nImageCount;
  
  	MObjectSystem* pObjectSystem = m_pEngine->FindSystem<MObjectSystem>();
 	m_pScene = pObjectSystem->CreateObject<MScene>();
@@ -48,25 +50,20 @@ void SceneTexture::Initialize(MEngine* pEngine)
 	pDefaultCamera->SetName("Camera");
 	if (MSceneComponent* pSceneComponent = pDefaultCamera->RegisterComponent<MSceneComponent>())
 	{
-		pSceneComponent->SetPosition(Vector3(0, 0, -20));
+		pSceneComponent->SetPosition(Vector3(0, 0, -75));
 	}
 	pDefaultCamera->RegisterComponent<MCameraComponent>();
-
-	pDefaultCamera->RegisterComponent<MoveInputComponent>();
+	pDefaultCamera->RegisterComponent<MMoveControllerComponent>();
 
 	m_pRenderViewport->SetCamera(pDefaultCamera);
 
-	m_pRenderProgram = pObjectSystem->CreateObject<MForwardRenderProgram>();
-	m_pRenderProgram->SetViewport(m_pRenderViewport);
+	m_vRenderProgram.resize(nImageCount);
+	for (size_t i = 0; i < nImageCount; ++i)
+	{
+		m_vRenderProgram[i] = pObjectSystem->CreateObject<MForwardRenderProgram>();
+		m_vRenderProgram[i]->SetViewport(m_pRenderViewport);
+	}
 
-	
-
-	MResourceSystem* pResourceSystem = m_pEngine->FindSystem<MResourceSystem>();
-	MEntitySystem* pEntitySystem = m_pEngine->FindSystem<MEntitySystem>();
-	
-	MResource* pResource = pResourceSystem->LoadResource("D:/test/cat/cat.entity");
-	pEntitySystem->LoadEntity(m_pScene, pResource);
-	
 }
 
 void SceneTexture::Release()
@@ -83,11 +80,12 @@ void SceneTexture::Release()
 		m_pRenderViewport = nullptr;
 	}
 
-	if (m_pRenderProgram)
+	for (MIRenderProgram* pRenderProgram : m_vRenderProgram)
 	{
-		m_pRenderProgram->DeleteLater();
-		m_pRenderProgram = nullptr;
+		pRenderProgram->DeleteLater();
+		pRenderProgram = nullptr;
 	}
+	m_vRenderProgram.clear();
 }
 
 void SceneTexture::SetSize(const Vector2& v2Size)
@@ -109,11 +107,11 @@ void SceneTexture::SetSize(const Vector2& v2Size)
 	}
 }
 
-MTexture* SceneTexture::GetTexture()
+MTexture* SceneTexture::GetTexture(const size_t& nImageIndex)
 {
-	if (m_pRenderProgram)
+	if (nImageIndex < m_vRenderProgram.size())
 	{
-		return m_pRenderProgram->GetOutputTexture();
+		return m_vRenderProgram[nImageIndex]->GetOutputTexture();
 	}
 
 	return nullptr;
@@ -123,10 +121,10 @@ void SceneTexture::SetBackColor(const MColor& cColor)
 {
 }
 
-void SceneTexture::Render()
+void SceneTexture::UpdateTexture(const size_t& nImageIndex, MIRenderCommand* pRenderCommand)
 {
-	if (m_pRenderProgram)
+	if (nImageIndex < m_vRenderProgram.size())
 	{
-		m_pRenderProgram->Render();
+		m_vRenderProgram[nImageIndex]->Render(pRenderCommand);
 	}
 }

@@ -56,3 +56,15 @@ MTexture* MTexture::CreateShadowMap()
 
 	return pTexture;
 }
+
+MTexture* MTexture::CreateRenderTarget()
+{
+	MTexture* pTexture = new MTexture();
+	pTexture->SetMipmapsEnable(false);
+	pTexture->SetReadable(false);
+	pTexture->SetRenderUsage(METextureRenderUsage::ERenderBack);
+	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
+	pTexture->SetTextureLayout(METextureLayout::ERGBA8);
+
+	return pTexture;
+}

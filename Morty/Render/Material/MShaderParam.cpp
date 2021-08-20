@@ -16,7 +16,7 @@ MShaderConstantParam::MShaderConstantParam()
 	, var()
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
-	m_VkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	m_VkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 
 	m_VkBuffer = VK_NULL_HANDLE;
 	m_VkBufferMemory = VK_NULL_HANDLE;

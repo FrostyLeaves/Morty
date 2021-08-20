@@ -8,6 +8,8 @@
 #include "MVertexBuffer.h"
 #include "MVulkanRenderCommand.h"
 
+#include <assert.h>
+
 #ifdef max
 #undef max
 #endif
@@ -31,8 +33,33 @@ const std::vector<const char*> ValidationLayers = {
 const std::vector<const char*> DeviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 	VK_KHR_MAINTENANCE1_EXTENSION_NAME,
+//	VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_EXTENSION_NAME,
+//	VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME
 };
 
+std::vector<const char*> InstanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME,
+#ifdef MORTY_MACOS
+		"VK_EXT_metal_surface",
+		"VK_MVK_macos_surface",
+#endif
+
+#ifdef MORTY_IOS
+		"VK_EXT_metal_surface",
+		"VK_MVK_ios_surface",
+		"VK_MVK_moltenvk",
+#endif
+
+#ifdef MORTY_WIN
+		"VK_KHR_surface",
+		VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
+#endif
+
+#ifdef MORTY_ANDROID
+		VK_KHR_ANDROID_SURFACE_EXTENSION_NAME,
+#endif
+
+//		"VK_KHR_get_physical_device_properties2"
+};
 
 MVulkanDevice::MVulkanDevice()
 	: MIDevice()
@@ -97,6 +124,25 @@ bool MVulkanDevice::Initialize()
 	InitSampler();
 
 	m_ShaderCompiler.Initialize();
+
+
+
+//log
+	GetEngine()->GetLogger()->Information("Vulkan Device Extensions:  ");
+	for (const char* svExtensionName : DeviceExtensions)
+	{
+		GetEngine()->GetLogger()->Information("    %s", svExtensionName);
+	}
+	GetEngine()->GetLogger()->Information("\n");
+
+
+	GetEngine()->GetLogger()->Information("Vulkan Instance Extensions:  ");
+	for (const char* svExtensionName : InstanceExtensions)
+	{
+		GetEngine()->GetLogger()->Information("    %s", svExtensionName);
+	}
+	GetEngine()->GetLogger()->Information("\n");
+
 
 	return true;
 }
@@ -267,7 +313,10 @@ int MVulkanDevice::GetPimpapSize(MTexture* pTexture)
 
 MVulkanObjectRecycleBin* MVulkanDevice::GetRecycleBin()
 {
-	return m_pRecycleBin ? m_pRecycleBin : m_pDefaultRecycleBin;
+	if (m_pRecycleBin)
+		return m_pRecycleBin;
+	
+	return m_pDefaultRecycleBin;
 }
 
 bool MVulkanDevice::InitDepthFormat()
@@ -1023,7 +1072,7 @@ bool MVulkanDevice::UnRegisterMaterial(MMaterial* pMaterial)
 
 MIRenderCommand* MVulkanDevice::CreateRenderCommand()
 {
-	MVulkanRenderCommand* pCommand = new MVulkanRenderCommand();
+	MVulkanPrimaryRenderCommand* pCommand = new MVulkanPrimaryRenderCommand();
 	pCommand->m_pDevice = this;
 
 	//New CommandBuffer
@@ -1053,8 +1102,8 @@ MIRenderCommand* MVulkanDevice::CreateRenderCommand()
 
 void MVulkanDevice::RecoveryRenderCommand(MIRenderCommand* pRenderCommand)
 {
-	MVulkanRenderCommand* pCommand = static_cast<MVulkanRenderCommand*>(pRenderCommand);
-	
+	MVulkanPrimaryRenderCommand* pCommand = dynamic_cast<MVulkanPrimaryRenderCommand*>(pRenderCommand);
+
 	if (!pCommand)
 		return;
 
@@ -1084,13 +1133,21 @@ void MVulkanDevice::RecoveryRenderCommand(MIRenderCommand* pRenderCommand)
 		pCommand->m_VkRenderFinishedSemaphore = VK_NULL_HANDLE;
 	}
 
+	for (MVulkanSecondaryRenderCommand* pSecondaryCommand : pCommand->m_vSecondaryCommand)
+	{
+		vkFreeCommandBuffers(m_VkDevice, m_VkCommandPool, 1, &pSecondaryCommand->m_VkCommandBuffer);
+		pSecondaryCommand->m_VkCommandBuffer = VK_NULL_HANDLE;
+	}
+
+	pCommand->m_vSecondaryCommand.clear();
+
 	//TODO Recovery
 	delete pCommand;
 }
 
 bool MVulkanDevice::IsFinishedCommand(MIRenderCommand* pCommand)
 {
-	if (MVulkanRenderCommand* pVulkanCommand = static_cast<MVulkanRenderCommand*>(pCommand))
+	if (MVulkanPrimaryRenderCommand* pVulkanCommand = static_cast<MVulkanPrimaryRenderCommand*>(pCommand))
 	{
 		return VK_SUCCESS == vkGetFenceStatus(m_VkDevice, pVulkanCommand->m_VkRenderFinishedFence);
 	}
@@ -1100,7 +1157,7 @@ bool MVulkanDevice::IsFinishedCommand(MIRenderCommand* pCommand)
 
 void MVulkanDevice::SubmitCommand(MIRenderCommand* pCommand)
 {
-	MVulkanRenderCommand* pRenderCommand = dynamic_cast<MVulkanRenderCommand*>(pCommand);
+	MVulkanPrimaryRenderCommand* pRenderCommand = dynamic_cast<MVulkanPrimaryRenderCommand*>(pCommand);
 	if (!pRenderCommand)
 		return;
 
@@ -1572,6 +1629,21 @@ void MVulkanDevice::DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory
 	vkFreeMemory(m_VkDevice, bufferMemory, nullptr);
 }
 
+MVulkanSecondaryRenderCommand* MVulkanDevice::CreateChildCommand(MVulkanPrimaryRenderCommand* pParentCommand)
+{
+	MVulkanSecondaryRenderCommand* pSecondaryCommand = new MVulkanSecondaryRenderCommand();
+	pSecondaryCommand->m_pDevice = this;
+
+	VkCommandBufferAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+	allocInfo.commandPool = m_VkCommandPool;
+	allocInfo.commandBufferCount = 1;
+	vkAllocateCommandBuffers(m_VkDevice, &allocInfo, &pSecondaryCommand->m_VkCommandBuffer);
+
+	return pSecondaryCommand;
+}
+
 void MVulkanDevice::CheckFrameFinish()
 {
 	for (auto iter = m_tFrameData.begin(); iter != m_tFrameData.end();)
@@ -1679,34 +1751,9 @@ bool MVulkanDevice::InitVulkanInstance()
 	createInfo.enabledLayerCount = 0;
 #endif
 
-	std::vector<const char*> enabledExtensions = { VK_KHR_SURFACE_EXTENSION_NAME,
-#ifdef MORTY_MACOS
-        "VK_EXT_metal_surface",
-        "VK_MVK_macos_surface"
-#endif
-        
-#ifdef MORTY_IOS
-        "VK_EXT_metal_surface",
-        "VK_MVK_ios_surface",
-        "VK_MVK_moltenvk"
-#endif
 
-#ifdef MORTY_WIN
-		"VK_KHR_surface",
-		"VK_KHR_win32_surface"
-#endif
-    };
-
-#if defined(MORTY_WIN)
-	enabledExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
-#elif defined(MORTY_ANDROID)
-	enabledExtensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
-#elif defined(MORTY_IOS)
-	//enabledExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
-#endif
-
-	createInfo.enabledExtensionCount = enabledExtensions.size();
-	createInfo.ppEnabledExtensionNames = enabledExtensions.data();
+	createInfo.enabledExtensionCount = InstanceExtensions.size();
+	createInfo.ppEnabledExtensionNames = InstanceExtensions.data();
 
 	VkResult result = vkCreateInstance(&createInfo, nullptr, &m_VkInstance);
 
@@ -1724,6 +1771,8 @@ bool MVulkanDevice::InitVulkanInstance()
 			"continuing.");
 		return false;
 	}
+
+	vkCmdPushDescriptorSet = reinterpret_cast<PFN_vkCmdPushDescriptorSetKHR>(vkGetInstanceProcAddr(m_VkInstance, "vkCmdPushDescriptorSetKHR"));
 
 	return true;
 }

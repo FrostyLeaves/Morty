@@ -15,7 +15,7 @@ public:
 	{
 		if (MModelComponent* pModelComponent = pEntity->GetComponent<MModelComponent>())
 		{
-			if (ShowNodeBegin("Model"))
+			if (ShowNodeBegin("ModelComponent"))
 			{
 
 				PROPERTY_VALUE_EDIT(pModelComponent, "Bounding", bool, GetBoundingBoxVisiable, SetBoundingBoxVisiable);

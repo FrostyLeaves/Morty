@@ -403,10 +403,10 @@ void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler
 		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
 		pParam->strName = res.name;
 
-		if (MGlobal::SHADER_PARAM_SET_MESH == pParam->unSet)
+		//if (MGlobal::SHADER_PARAM_SET_MESH == pParam->unSet)
 			pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-		else
-			pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		//else
+		//	pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		
 		ConvertVariant(compiler, type, pParam->var);
 

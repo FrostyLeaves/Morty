@@ -2,6 +2,7 @@
 #include "MEngine.h"
 #include "MEntity.h"
 
+#include "MInputSystem.h"
 #include "MNotifySystem.h"
 #include "MObjectSystem.h"
 #include "MEntitySystem.h"
@@ -16,7 +17,8 @@ bool MCoreModule::Register(MEngine* pEngine)
 {
 	if (!pEngine)
 		return false;
-
+	
+	pEngine->RegisterSystem<MInputSystem>();
 	pEngine->RegisterSystem<MNotifySystem>();
 	pEngine->RegisterSystem<MObjectSystem>();
 	pEngine->RegisterSystem<MEntitySystem>();

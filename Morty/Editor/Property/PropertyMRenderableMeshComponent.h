@@ -21,58 +21,63 @@ public:
 
 		if (MRenderableMeshComponent* pMeshComponent = pEntity->GetComponent<MRenderableMeshComponent>())
 		{
-			if (ShowNodeBegin("Model Mesh"))
+			if (ShowNodeBegin("MeshComponent"))
 			{
-				PROPERTY_VALUE_EDIT(pMeshComponent, "Draw Bounding", bool, GetDrawBoundingSphere, SetDrawBoundingSphere);
-				PROPERTY_VALUE_EDIT(pMeshComponent, "DirShadow", bool, GetGenerateDirLightShadow, SetGenerateDirLightShadow);
+				if (ShowNodeBegin("Model Mesh"))
+				{
+					PROPERTY_VALUE_EDIT(pMeshComponent, "Draw Bounding", bool, GetDrawBoundingSphere, SetDrawBoundingSphere);
+					PROPERTY_VALUE_EDIT(pMeshComponent, "DirShadow", bool, GetGenerateDirLightShadow, SetGenerateDirLightShadow);
 
-				ShowNodeEnd();
-			}
+					ShowNodeEnd();
+				}
 
-			if (ShowNodeBegin("Material"))
-			{
-				ShowValueBegin("Load");
+				if (ShowNodeBegin("Material"))
+				{
+					ShowValueBegin("Load");
 
-				MMaterial* pMaterial = pMeshComponent->GetMaterial();
-				EditMResource("material_file_dlg", MMaterialResource::GetResourceTypeName(), MMaterialResource::GetSuffixList(), pMaterial, [pMeshComponent](const MString& strNewFilePath) {
-					MResourceSystem* pResourceSystem = pMeshComponent->GetEngine()->FindSystem<MResourceSystem>();
-					if (MMaterial* pMaterial = dynamic_cast<MMaterial*>(pResourceSystem->LoadResource(strNewFilePath)))
+					MMaterial* pMaterial = pMeshComponent->GetMaterial();
+					EditMResource("material_file_dlg", MMaterialResource::GetResourceTypeName(), MMaterialResource::GetSuffixList(), pMaterial, [pMeshComponent](const MString& strNewFilePath) {
+						MResourceSystem* pResourceSystem = pMeshComponent->GetEngine()->FindSystem<MResourceSystem>();
+						if (MMaterial* pMaterial = dynamic_cast<MMaterial*>(pResourceSystem->LoadResource(strNewFilePath)))
+						{
+							pMeshComponent->SetMaterial(pMaterial);
+						};
+						});
+
+					ShowValueEnd();
+
+					ShowValueBegin("Instance");
+					if (ImGui::Button("Edit Material", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 					{
-						pMeshComponent->SetMaterial(pMaterial);
-					};
-					});
+						int nResID = MGlobal::M_INVALID_INDEX;
+						if (pMeshComponent->GetMaterial())
+							nResID = pMeshComponent->GetMaterial()->GetResourceID();
 
-				ShowValueEnd();
+						NotifyManager::GetInstance()->SendNotify("Edit Material", nResID);
+					}
+					ShowValueEnd();
 
-				ShowValueBegin("Instance");
-				if (ImGui::Button("Edit Material", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-				{
-					int nResID = MGlobal::M_INVALID_INDEX;
-					if (pMeshComponent->GetMaterial())
-						nResID = pMeshComponent->GetMaterial()->GetResourceID();
 
-					NotifyManager::GetInstance()->SendNotify("Edit Material", nResID);
+
+					ShowNodeEnd();
 				}
-				ShowValueEnd();
 
-
-
-				ShowNodeEnd();
-			}
-
-			if (ShowNodeBegin("Render"))
-			{
-				ShowValueBegin("ShadowType");
-				MRenderableMeshComponent::MEShadowType eType = pMeshComponent->GetShadowType();
-				int unSelected = (int)eType;
-				if (EditEnum({ "None", "OnlyDirection", "AllLights" }, unSelected))
+				if (ShowNodeBegin("Render"))
 				{
-					pMeshComponent->SetShadowType((MRenderableMeshComponent::MEShadowType)unSelected);
+					ShowValueBegin("ShadowType");
+					MRenderableMeshComponent::MEShadowType eType = pMeshComponent->GetShadowType();
+					int unSelected = (int)eType;
+					if (EditEnum({ "None", "OnlyDirection", "AllLights" }, unSelected))
+					{
+						pMeshComponent->SetShadowType((MRenderableMeshComponent::MEShadowType)unSelected);
+					}
+					ShowValueEnd();
+
+					PROPERTY_VALUE_EDIT_SPEED_MIN_MAX(pMeshComponent, "LOD", float, GetDetailLevel, SetDetailLevel, 1, 1, MGlobal::MESH_LOD_LEVEL_RANGE);
+
+
+					ShowNodeEnd();
 				}
-				ShowValueEnd();
-
-				PROPERTY_VALUE_EDIT_SPEED_MIN_MAX(pMeshComponent, "LOD", float, GetDetailLevel, SetDetailLevel, 1, 1, MGlobal::MESH_LOD_LEVEL_RANGE);
-
 
 				ShowNodeEnd();
 			}

@@ -23,21 +23,19 @@ public:
 	SceneTexture();
 	virtual ~SceneTexture();
 
-	void Initialize(MEngine* pEngine);
+	void Initialize(MEngine* pEngine, const size_t& nImageCount);
 	void Release();
 
 	void SetSize(const Vector2& v2Size);
 	Vector2 GetSize() const { return m_v2Size; }
 
-	MTexture* GetTexture();
+	MTexture* GetTexture(const size_t& nImageIndex);
+	void UpdateTexture(const size_t& nImageIndex, MIRenderCommand* pRenderCommand);
 
 	MScene* GetScene() { return m_pScene; }
 	MViewport* GetViewport() { return m_pRenderViewport; }
 
 	void SetBackColor(const MColor& cColor);
-
-
-	void Render();
 
 protected:
 
@@ -48,8 +46,9 @@ protected:
 
 	MViewport* m_pRenderViewport;
 
-	MForwardRenderProgram* m_pRenderProgram;
+	std::vector<MForwardRenderProgram*> m_vRenderProgram;
 
+	size_t m_nImageCount;
 };
 
 

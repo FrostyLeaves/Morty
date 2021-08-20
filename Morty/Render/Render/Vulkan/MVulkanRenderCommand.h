@@ -45,15 +45,13 @@ public:
 	virtual bool CopyImageBuffer(MTexture* pSource, MTexture* pDest) override;
 	virtual void UpdateMipmaps(MTexture* pBuffer) override;
 
-	virtual bool IsFinished() override { return m_bFinished; }
-	virtual void CheckFinished() override;
-
-	virtual void AddDependCommand(MIRenderCommand* pDependCommand) override;
-	
 	void UpdateShaderParam(MShaderParamSet* pParamSet, MShaderConstantParam* param);
 	void UpdateShaderParam(MShaderParamSet* pParamSet, MShaderTextureParam* param);
 
 	VkPipeline CreateGraphicsPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx);
+
+	void BindConstantParam(MShaderParamSet* pParamSet, MShaderConstantParam* pParam);
+	void BindTextureParam(MShaderParamSet* pParamSet, MShaderTextureParam* pParam);
 
 public:
 
@@ -64,10 +62,34 @@ public:
 	std::stack<MRenderPassStage> m_vRenderPassStages;
 
 	VkCommandBuffer m_VkCommandBuffer;
+};
+
+class MORTY_API MVulkanSecondaryRenderCommand : public MVulkanRenderCommand
+{
+public:
+
+};
+
+class MORTY_API MVulkanPrimaryRenderCommand : public MVulkanRenderCommand
+{
+public:
+	MVulkanPrimaryRenderCommand();
+
+	virtual bool IsFinished() override { return m_bFinished; }
+	virtual void CheckFinished() override;
+
+	virtual MIRenderCommand* CreateChildCommand() override;
+	virtual MIRenderCommand* GetChildCommand(const size_t& nIndex) override;
+	virtual void ExecuteChildCommand() override;
+
+public:
+
 	VkFence m_VkRenderFinishedFence; // fence --> CPU
 	VkSemaphore m_VkRenderFinishedSemaphore; // semaphore --> GPU
 
 	std::vector<VkSemaphore> m_vRenderWaitSemaphore;
+
+	std::vector<MVulkanSecondaryRenderCommand*> m_vSecondaryCommand;
 
 	bool m_bFinished;
 };

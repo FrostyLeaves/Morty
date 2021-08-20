@@ -48,6 +48,7 @@ public:
 public:
 
 	float GetFPS() { return 1.0f / m_time.fTimeDelta; }
+	float getTickDelta() { return m_time.fTimeDelta; }
 
 public:
 
@@ -73,6 +74,8 @@ public:
 
 	template<typename TYPE>
 	TYPE* FindSystem();
+
+	std::vector<MISystem*>& GetAllSystem() { return m_vSystem; }
 
 protected:
 

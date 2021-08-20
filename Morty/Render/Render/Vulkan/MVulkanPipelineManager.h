@@ -77,6 +77,7 @@ public:
 
     void GenerateShaderParamSet(MShaderParamSet* pParamSet);
     void DestroyShaderParamSet(MShaderParamSet* pParamSet);
+    void AllocateShaderParamSet(MShaderParamSet* pParamSet);
 
     void DestroyShaderParamSetImpl(MShaderParamSet* pParamSet);
 

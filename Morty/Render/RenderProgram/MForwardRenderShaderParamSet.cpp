@@ -138,8 +138,6 @@ void MForwardRenderShaderParamSet::ReleaseShaderParamSet(MEngine* pEngine)
 	DestroyBuffer(pRenderSystem->GetDevice());
 }
 
-
-
 void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 {
 	MViewport* pViewport = info.pViewport;
@@ -147,6 +145,9 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 
 	MScene* pScene = pViewport->GetScene();
 	if (!pScene) return;
+
+	info.pCameraEntity = pScene->FindFirstEntityByComponent<MCameraComponent>();
+	info.pDirectionalLightEntity = pScene->FindFirstEntityByComponent<MDirectionalLightComponent>();
 
 	pViewport->LockMatrix();
 
@@ -200,7 +201,7 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 		MVariant& varDirLightEnable = (*pLightParam->var.GetStruct())[3];
 		if (info.pDirectionalLightEntity)
 		{
-			varDirLightEnable = 500;
+			varDirLightEnable = true;
 			MVariant& varDirectionLight = (*pLightParam->var.GetStruct())[0];
 			{
 				MStruct& cLightStruct = *varDirectionLight.GetStruct();
@@ -284,6 +285,15 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 
 
 	pViewport->UnlockMatrix();
+}
+
+void MForwardRenderShaderParamSet::SetShadowMapTexture(MTexture* pTexture)
+{
+	if (m_pShadowTextureParam->pTexture != pTexture)
+	{
+		m_pShadowTextureParam->pTexture = pTexture;
+		m_pShadowTextureParam->SetDirty();
+	}
 }
 
 MForwardRenderTransparentShaderParamSet::MForwardRenderTransparentShaderParamSet()

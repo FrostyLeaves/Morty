@@ -19,6 +19,11 @@ public:
 	virtual void Initialize() {};
 	virtual void Release() {};
 
+
+	virtual void EngineTick(const float& fDelta) {}
+	virtual void SceneTick(MScene* pScene, const float& fDelta) {}
+
+
 	void SetEngine(MEngine* pEngine);
 	MEngine* GetEngine();
 

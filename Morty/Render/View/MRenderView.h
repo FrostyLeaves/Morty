@@ -79,6 +79,8 @@ public:
 
 	MEngine* GetEngine() { return m_pEngine; }
 
+	size_t GetImageCount() { return m_vRenderTarget.size(); }
+
 protected:
 
 #if RENDER_GRAPHICS == MORTY_VULKAN

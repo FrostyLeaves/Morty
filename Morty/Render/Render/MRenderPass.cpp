@@ -27,7 +27,6 @@ MRenderPass::MRenderPass()
 	m_vkExtent2D = VkExtent2D();
 	m_VkFrameBuffer = VK_NULL_HANDLE;
 	m_VkRenderPass = VK_NULL_HANDLE;
-	m_VkCommandBuffers = VK_NULL_HANDLE;
 #endif
 }
 
@@ -52,6 +51,15 @@ void MRenderPass::Resize(MIDevice* pDevice)
 {
 	pDevice->DestroyFrameBuffer(this);
 	pDevice->GenerateFrameBuffer(this);
+}
+
+Vector2 MRenderPass::GetFrameBufferSize()
+{
+#if RENDER_GRAPHICS == MORTY_VULKAN
+	return Vector2(m_vkExtent2D.width, m_vkExtent2D.height);
+#endif
+
+	return Vector2();
 }
 
 std::vector<MTexture*> MRenderPass::GetBackTexture()

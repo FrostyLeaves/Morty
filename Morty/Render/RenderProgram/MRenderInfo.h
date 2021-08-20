@@ -9,10 +9,14 @@
 
 class MIMesh;
 class MMaterial;
+class MIRenderCommand;
+class MSkeletonInstance;
 class MRenderableMeshComponent;
 struct MRenderInfo
 {
 	MRenderInfo();
+
+	uint32_t nFrameIndex;
 
 	// basic
 	float fDelta;
@@ -32,8 +36,12 @@ struct MRenderInfo
 	
 	// shadow
 	class MTexture* pShadowMapTexture;
-	Matrix4 m4DirLightInvProj;
+	Matrix4 m4DirLightInvProj; //valid if pDirectionalLightEntity enable.
+	std::map<MSkeletonInstance*, std::vector<MRenderableMeshComponent*>> m_tShadowGroupMesh;
 
+	// frame
+	MShaderParamSet* pFrameShaderParamSet;
+	MIRenderCommand* pPrimaryRenderCommand;
 
 	// mesh
 	std::map<MMaterial*, std::vector<MRenderableMeshComponent*>> m_tMaterialGroupMesh;

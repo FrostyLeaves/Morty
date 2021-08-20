@@ -22,7 +22,7 @@ public:
     MInputComponent();
     virtual ~MInputComponent();
 
-	typedef std::function<bool(MInputEvent*, MViewport*)> MInputCallback;
+	typedef std::function<bool(MInputComponent*, MInputEvent*, MViewport*)> MInputCallback;
 
 public:
 

@@ -158,7 +158,6 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
 	pCommand->SetViewport(MViewportInfo(0.0f, fb_height, fb_width, -fb_height));
 	m_pMaterial->SetMaterialType(MEMaterialType::EImGui);
 	m_pMaterial->SetRasterizerType(MERasterizerType::ECullNone);
-	pCommand->SetUseMaterial(m_pMaterial);
 
 	Vector2 scale;
 	scale.x = 2.0f / draw_data->DisplaySize.x;
@@ -176,6 +175,8 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
 			pParam->SetDirty();
 		}
 	}
+
+	pCommand->SetUseMaterial(m_pMaterial);
 
 	// Will project scissor/clipping rectangles into framebuffer space
 	ImVec2 clip_off = draw_data->DisplayPos;         // (0,0) unless using multi-viewports
@@ -196,11 +197,10 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
 			if (using_texture != pcmd->TextureId)
 			{
 				using_texture = pcmd->TextureId;
-				if (auto dest = GetTexturParamSet((MTexture*)(using_texture)))
+				MTexture* pTexture =(MTexture*)(using_texture);
+				if (auto dest = GetTexturParamSet(pTexture))
 				{
-					if (dest->nDestroyCount > 0) {
-						--dest->nDestroyCount;
-					}
+					dest->nDestroyCount = 0;
 					pCommand->SetShaderParamSet(dest->pParamSet);
 				}
 			}

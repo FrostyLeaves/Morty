@@ -50,6 +50,8 @@ MRenderableMeshComponent::~MRenderableMeshComponent()
 
 void MRenderableMeshComponent::Initialize()
 {
+	Super::Initialize();
+
 	MEntity* pEntity = GetEntity();
 	if (!pEntity)
 	{
@@ -80,6 +82,8 @@ void MRenderableMeshComponent::Release()
 	}
 	
 	BindShaderParam(nullptr);
+
+	Super::Release();
 }
 
 void MRenderableMeshComponent::SetMaterial(MMaterial* pMaterial)

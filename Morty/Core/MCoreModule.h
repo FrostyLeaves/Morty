@@ -10,7 +10,6 @@
 #define _M_MCOREMODULE_H_
 #include "MGlobal.h"
 
-
 class MEngine;
 class MORTY_API MCoreModule
 {
@@ -19,6 +18,5 @@ public:
 	static bool Register(MEngine* pEngine);
 
 };
-
 
 #endif

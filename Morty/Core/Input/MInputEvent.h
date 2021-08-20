@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MINPUTMANAGER_H_
-#define _M_MINPUTMANAGER_H_
+#ifndef _M_MINPUT_EVENT_H_
+#define _M_MINPUT_EVENT_H_
 #include "MGlobal.h"
 #include "Vector.h"
 
@@ -62,7 +62,9 @@ public:
 	Vector2 GetMouseAddition(){ return m_v2MousePositionAddition; }
 	MEMouseDownButton GetButton(){ return m_eEventButton; }
 	MEMouseInputType GetType(){ return m_eInputType; }
-		
+	
+	static bool IsButtonDown(const MEMouseDownButton& eButton);
+
 protected:
 
 	MEMouseDownButton m_eEventButton;
@@ -83,6 +85,8 @@ public:
 
 	uint32_t GetKey() { return m_unKeyIndex; }
 	MEKeyState GetType(){ return m_eInputType; }
+
+	static bool IsKeyDown(const int& nKey);
 
 protected:
 

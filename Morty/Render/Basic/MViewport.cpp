@@ -4,6 +4,7 @@
 #include "MScene.h"
 #include "MEngine.h"
 
+#include "MInputComponent.h"
 #include "MSceneComponent.h"
 #include "MCameraComponent.h"
 #include <float.h>
@@ -188,6 +189,20 @@ void MViewport::UnlockMatrix()
 
 void MViewport::Input(MInputEvent* pEvent)
 {
+	if (!m_pScene)
+		return;
+
+	MComponentGroup<MInputComponent>* pComponents = m_pScene->FindComponents<MInputComponent>();
+	if (!pComponents)
+		return;
+
+	for (MInputComponent& inputComponent : pComponents->m_vComponent)
+	{
+		if (inputComponent.IsValid())
+		{
+			inputComponent.Input(pEvent, this);
+		}
+	}
 }
 
 Matrix4 MViewport::GetLightInverseProjection(MPointLight* pLight)

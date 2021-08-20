@@ -71,7 +71,7 @@ void MComponent::SendComponentNotify(const MString& notify)
 	}
 }
 
-MEntity* MComponent::GetEntity()
+MEntity* MComponent::GetEntity() const
 {
 	if (m_pScene)
 	{
@@ -80,7 +80,7 @@ MEntity* MComponent::GetEntity()
 	return nullptr;
 }
 
-MEngine* MComponent::GetEngine()
+MEngine* MComponent::GetEngine() const
 {
 	if (!m_pScene)
 		return nullptr;

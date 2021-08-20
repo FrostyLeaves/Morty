@@ -73,7 +73,6 @@ struct MShaderTextureParam : public MShaderParam
 	MShaderTextureParam();
 
 	MString strName;
-	uint32_t unCode;
 	uint32_t  eShaderType;
 	MTexture* pTexture;
 	void* pImageIdent;
@@ -89,7 +88,6 @@ struct MShaderSampleParam : public MShaderParam
 {
 	MShaderSampleParam();
 	MString strName;
-	uint32_t unCode;
 	uint32_t  eShaderType;
 };
 

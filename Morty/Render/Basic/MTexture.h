@@ -75,6 +75,7 @@ public:
 public:
 
 	static MTexture* CreateShadowMap();
+	static MTexture* CreateRenderTarget();
 
 public:
 

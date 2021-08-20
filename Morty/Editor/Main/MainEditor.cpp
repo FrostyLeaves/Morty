@@ -21,7 +21,7 @@
 #include "MMaterial.h"
 #include "MFunction.h"
 #include "MTaskGraph.h"
-#include "MInputManager.h"
+#include "MInputEvent.h"
 #include "MRenderCommand.h"
 
 
@@ -38,6 +38,7 @@
 #include "MCameraComponent.h"
 #include "MRenderableMeshComponent.h"
 
+#include "MInputSystem.h"
 #include "MRenderSystem.h"
 
 
@@ -99,7 +100,7 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	m_pImGuiRenderable->Initialize();
 
 	//Setup Render
-	m_SceneTexture.Initialize(pEngine);
+	m_SceneTexture.Initialize(pEngine, GetImageCount());
 
 	m_pNodeTreeView = new NodeTreeView();
 	m_pPropertyView = new PropertyView();
@@ -125,19 +126,12 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	MTaskGraph* pMainGraph = GetEngine()->GetMainGraph();
 
 	MainEditorTask* pEditorTask = pMainGraph->AddNode<MainEditorTask>("Editor_Update");
-	pEditorTask->SetThreadType(METhreadType::EMainThread);
+	pEditorTask->SetThreadType(METhreadType::ECurrentThread);
 	pEditorTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_1(MainEditor::MainLoop, this));
 
 	MTaskNode* pRenderTask = pMainGraph->AddNode<MTaskNode>("Editor_Render");
 	pRenderTask->SetThreadType(METhreadType::ERenderThread);
 	pRenderTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_1(MainEditor::Render, this));
-
-	MTaskNode* pRenderSceneTask = pMainGraph->AddNode<MTaskNode>("Scene_Render");
-	pRenderSceneTask->SetThreadType(METhreadType::ERenderThread);
-	pRenderSceneTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_1(MainEditor::SceneRender, this));
-
-	pRenderSceneTask->AppendOutput()->LinkTo(pRenderTask->AppendInput());
-
 	return true;
 }
 
@@ -186,11 +180,11 @@ void MainEditor::OnResize(const int& nWidth, const int& nHeight)
 
 void MainEditor::Input(MInputEvent* pEvent)
 {
-	if (MMouseInputEvent* pMouseEvent = dynamic_cast<MMouseInputEvent*>(pEvent))
+	if (MInputSystem* pInputSystem = GetEngine()->FindSystem<MInputSystem>())
 	{
-		MMouseInputEvent event(*pMouseEvent);
-
+		pInputSystem->Input(pEvent);
 	}
+
 	m_SceneTexture.GetViewport()->Input(pEvent);
 }
 
@@ -224,18 +218,12 @@ bool MainEditor::MainLoop(MTaskNode* pNode)
 		else if (event.type == SDL_KEYDOWN && event.key.windowID == SDL_GetWindowID(m_pSDLWindow))
 		{
 			MKeyBoardInputEvent e(event.key.keysym.sym, MEKeyState::DOWN);
-			if (MViewport* pViewport = m_SceneTexture.GetViewport())
-			{
-				pViewport->Input(&e);
-			}
+			Input(&e);
 		}
 		else if (event.type == SDL_KEYUP && event.key.windowID == SDL_GetWindowID(m_pSDLWindow))
 		{
 			MKeyBoardInputEvent e(event.key.keysym.sym, MEKeyState::UP);
-			if (MViewport* pViewport = m_SceneTexture.GetViewport())
-			{
-				pViewport->Input(&e);
-			}
+			Input(&e);
 		}
 
 		else if (event.type == SDL_MOUSEBUTTONUP && event.button.windowID == SDL_GetWindowID(m_pSDLWindow))
@@ -246,10 +234,7 @@ bool MainEditor::MainLoop(MTaskNode* pNode)
 			if (event.button.button == 0x03) type = MMouseInputEvent::RightButton;
 
 			MMouseInputEvent e(type, MMouseInputEvent::ButtonUp);
-			if (MViewport* pViewport = m_SceneTexture.GetViewport())
-			{
-				pViewport->Input(&e);
-			}
+			Input(&e);
 		}
 
 		else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.windowID == SDL_GetWindowID(m_pSDLWindow))
@@ -260,10 +245,7 @@ bool MainEditor::MainLoop(MTaskNode* pNode)
 			if (event.button.button == 0x03) type = MMouseInputEvent::RightButton;
 
 			MMouseInputEvent e(type, MMouseInputEvent::ButtonDown);
-			if (MViewport* pViewport = m_SceneTexture.GetViewport())
-			{
-				pViewport->Input(&e);
-			}
+			Input(&e);
 		}
 
 		else if (event.type == SDL_MOUSEMOTION && event.button.windowID == SDL_GetWindowID(m_pSDLWindow))
@@ -277,16 +259,20 @@ bool MainEditor::MainLoop(MTaskNode* pNode)
 			MMouseInputEvent e(new_pos, new_pos - test_v2);
 			test_v2 = new_pos;
 
-			if (MViewport* pViewport = m_SceneTexture.GetViewport())
-			{
-				pViewport->Input(&e);
-			}
+			Input(&e);
 		}
 	}
 
 	if (bClosed)
 	{
 		m_funcCloseCallback();
+	}
+	else
+	{
+		if (MScene* pScene = m_SceneTexture.GetScene())
+		{
+			pScene->Tick(GetEngine()->getTickDelta());
+		}
 	}
 
 	return !bClosed;
@@ -386,7 +372,7 @@ void MainEditor::ShowMenu()
 	}
 }
 
-void MainEditor::ShowRenderView()
+void MainEditor::ShowRenderView(const size_t& nImageCount)
 {
 	if (!m_bShowRenderView)
 		return;
@@ -413,7 +399,7 @@ void MainEditor::ShowRenderView()
 
 		if (!m_bRenderToWindow)
 		{
-			if (MTexture* pTexture = m_SceneTexture.GetTexture())
+			if (MTexture* pTexture = m_SceneTexture.GetTexture(nImageCount))
 			{
 				if (ImTextureID texid = pTexture)
 				{
@@ -545,7 +531,10 @@ void MainEditor::Render(MTaskNode* pNode)
 	if (!pRenderCommand)
 		return;
 
+
+
 	pRenderCommand->RenderCommandBegin();
+
 
 #if MORTY_RENDER_DATA_STATISTICS
 	MRenderStatistics::GetInstance()->unTriangleCount = 0;
@@ -573,10 +562,12 @@ void MainEditor::Render(MTaskNode* pNode)
 		m_SceneTexture.SetSize(Vector2(size.x, size.y));
 	}
 
-	//m_SceneTexture.UpdateTexture(pRenderCommand);
+	//Update Scene
+	m_SceneTexture.UpdateTexture(pRenderTarget->unImageIndex, pRenderCommand);
+	pRenderCommand->SetRenderToTextureBarrier({ m_SceneTexture.GetTexture(pRenderTarget->unImageIndex) });
+
 
 	//m_unTriangleCount = MRenderStatistics::GetInstance()->unTriangleCount;
-
 
 	
 	if (m_pMaterialView && m_bShowMaterial)
@@ -595,7 +586,7 @@ void MainEditor::Render(MTaskNode* pNode)
 
 	if (m_bRenderToWindow)
 	{
-		if (MTexture* pTexture = m_SceneTexture.GetTexture())
+		if (MTexture* pTexture = m_SceneTexture.GetTexture(pRenderTarget->unImageIndex))
 		{
 			if (ImTextureID texid = pTexture)
 			{
@@ -621,7 +612,7 @@ void MainEditor::Render(MTaskNode* pNode)
 
 	ShowMenu();
 	ShowMaterial();
-	ShowRenderView();
+	ShowRenderView(pRenderTarget->unImageIndex);
 	ShowNodeTree();
 	ShowProperty();
 	ShowMessage();
@@ -649,5 +640,4 @@ void MainEditor::Render(MTaskNode* pNode)
 
 void MainEditor::SceneRender(MTaskNode* pNode)
 {
-	m_SceneTexture.Render();
 }

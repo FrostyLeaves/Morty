@@ -51,6 +51,8 @@ public:
 
     void Resize(MIDevice* pDevice);
 
+    Vector2 GetFrameBufferSize();
+
 public:
 
     void SetRenderPassID(const uint32_t& unID) { m_unRenderPassID = unID; }
@@ -81,9 +83,6 @@ public:
 
     //vulkan renderpass
     VkRenderPass m_VkRenderPass;
-
-    //vulkan render command buffer
-	VkCommandBuffer m_VkCommandBuffers;
 #endif
 };
 

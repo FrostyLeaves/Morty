@@ -13,8 +13,12 @@
 enum class METhreadType
 {
 	EAny = -2,
-	EMainThread = -1,
-	ERenderThread = 0
+	ECurrentThread = -1,
+	ERenderThread = 0,
+
+
+
+	ENameThreadNum
 };
 
 struct MORTY_API MThreadWork

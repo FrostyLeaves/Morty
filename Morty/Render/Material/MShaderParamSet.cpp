@@ -66,6 +66,9 @@ void MShaderParamSet::DestroyBuffer(MIDevice* pDevice)
 {
 	pDevice->DestroyShaderParamSet(this);
 	m_nDescriptorSetInitMaterialIdx = MGlobal::M_INVALID_INDEX;
+
+	for (MShaderConstantParam* pParam : m_vParams)
+		pDevice->DestroyShaderParamBuffer(pParam);
 }
 
 MShaderParamSet* MShaderParamSet::Clone()

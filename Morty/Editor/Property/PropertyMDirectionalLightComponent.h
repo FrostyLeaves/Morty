@@ -13,7 +13,7 @@ public:
 	{
 		if (MDirectionalLightComponent* pDirectonalLightComponent = pEntity->GetComponent<MDirectionalLightComponent>())
 		{
-			if (ShowNodeBegin("Light"))
+			if (ShowNodeBegin("DirLightComponent"))
 			{
 				PROPERTY_VALUE_EDIT(pDirectonalLightComponent, "Color", MColor, GetColor, SetColor);
 				PROPERTY_VALUE_EDIT(pDirectonalLightComponent, "Intensity", float, GetLightIntensity, SetLightIntensity);

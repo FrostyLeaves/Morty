@@ -29,6 +29,8 @@ public:
 
 	void UpdateShaderSharedParams(MRenderInfo& info);
 
+	void SetShadowMapTexture(MTexture* pTexture);
+
 public:
 
 	MShaderConstantParam* m_pWorldMatrixParam;

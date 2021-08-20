@@ -26,16 +26,17 @@ MThreadPool::~MThreadPool()
 
 void MThreadPool::Initialize()
 {
-
 	// Render Thread
-	m_aThread[0] = std::thread(&MThreadPool::ThreadRun, this, 0, "Thread Render");
-	m_aThread[0].detach();
-	s_tThreadType[m_aThread[0].get_id()] = METhreadType::ERenderThread;
+	size_t nRenderThreadIndex = size_t(METhreadType::ERenderThread);
+	m_aThread[nRenderThreadIndex] = std::thread(&MThreadPool::ThreadRun, this, METhreadType::ERenderThread, "Thread Render");
+	m_aThread[nRenderThreadIndex].detach();
+	s_tThreadType[m_aThread[nRenderThreadIndex].get_id()] = METhreadType::ERenderThread;
 
-	for (size_t i = 1; i < m_aThread.size(); ++i)
+
+	for (size_t i = size_t(METhreadType::ENameThreadNum); i < m_aThread.size(); ++i)
 	{
 		MString strThreadName = MString("Thread ") + MStringHelper::ToString(i);
-		m_aThread[i] = std::thread(&MThreadPool::ThreadRun, this, i, strThreadName);
+		m_aThread[i] = std::thread(&MThreadPool::ThreadRun, this, METhreadType::EAny, strThreadName);
 		m_aThread[i].detach();
 		s_tThreadType[m_aThread[i].get_id()] = METhreadType::EAny;
 	}
@@ -58,9 +59,19 @@ bool MThreadPool::AddWork(const MThreadWork& work)
 	if (!m_bInitialized)
 		return false;
 
-	if (work.eThreadType == METhreadType::EMainThread)
+	if (work.eThreadType == METhreadType::ECurrentThread)
 	{
 		work.funcWorkFunction();
+	}
+	else if (work.eThreadType != METhreadType::EAny && work.eThreadType == GetCurrentThreadType())
+	{
+		work.funcWorkFunction();
+	}
+	else if (work.eThreadType == METhreadType::ERenderThread)
+	{
+		std::unique_lock<std::mutex> lck(m_ConditionMutex);
+		m_vWaitingWorkForRender.push(work);
+		m_ConditionVariable.notify_all();
 	}
 	else
 	{
@@ -72,13 +83,23 @@ bool MThreadPool::AddWork(const MThreadWork& work)
 	return true;
 }
 
-void MThreadPool::ThreadRun(size_t nThreadIdx, MString strThreadName)
+void MThreadPool::ThreadRun(METhreadType eType, MString strThreadName)
 {
 #ifdef MORTY_WIN
 	std::wstring wstrThreadName;
 	MStringHelper::ConvertToWString(strThreadName, wstrThreadName);
 	SetThreadDescription(GetCurrentThread(), wstrThreadName.c_str());
 #endif
+
+	std::queue<MThreadWork>* vWorkQueue = nullptr;
+	if (eType == METhreadType::ERenderThread)
+	{
+		vWorkQueue = &m_vWaitingWorkForRender;
+	}
+	else
+	{
+		vWorkQueue = &m_vWaitingWork;
+	}
 
 	while (true)
 	{
@@ -91,15 +112,8 @@ void MThreadPool::ThreadRun(size_t nThreadIdx, MString strThreadName)
 				if (m_bClose)
 					return true;
 
-				if (m_vWaitingWork.empty())
+				if (vWorkQueue->empty())
 					return false;
-
-				auto& work = m_vWaitingWork.front();
-
-				if (work.eThreadType != METhreadType::EAny && (int)work.eThreadType != nThreadIdx)
-				{
-					return false;
-				}
 
 				return true;
 			});
@@ -110,8 +124,8 @@ void MThreadPool::ThreadRun(size_t nThreadIdx, MString strThreadName)
 				return;
 			}
 
-			work = m_vWaitingWork.front();
-			m_vWaitingWork.pop();
+			work = vWorkQueue->front();
+			vWorkQueue->pop();
 		}
 
 		work.funcWorkFunction();

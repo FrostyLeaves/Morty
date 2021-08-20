@@ -100,11 +100,10 @@ public:
 
     void Initialize(MScene* pScene, const MEntityID& id);
 
-    bool IsValid() { return m_bValid; }
+    bool IsValid() const { return m_bValid; }
 
     virtual void Initialize();
     virtual void Release();
-
 
 public:
 
@@ -116,9 +115,9 @@ public:
 
     void SendComponentNotify(const MString& notify);
 
-	MScene* GetScene() { return m_pScene; }
-	MEntity* GetEntity();
-    MEngine* GetEngine();
+	MScene* GetScene() const { return m_pScene; }
+	MEntity* GetEntity() const;
+    MEngine* GetEngine() const;
 
     void SetComponentID(const MComponentID& id) { m_id = id; }
     const MComponentID& GetComponentID() { return m_id; }
@@ -137,11 +136,11 @@ private:
 class MIComponentGroup
 {
 public:
+	virtual MComponent* FirstComponent() = 0;
 	virtual MComponentID AddComponent(MEntity* entity) = 0;
 	virtual void RemoveComponent(const size_t& id) = 0;
 
 	virtual MComponent* FindComponent(const size_t& id) = 0;
-
 
 public:
 	MScene* m_pScene = nullptr;
@@ -151,7 +150,7 @@ template<typename TYPE>
 class MORTY_API MComponentGroup : public MIComponentGroup
 {
 public:
-
+	virtual MComponent* FirstComponent() override;
 	virtual MComponentID AddComponent(MEntity* entity) override;
 	virtual void RemoveComponent(const size_t& id) override;
 	virtual MComponent* FindComponent(const size_t& id) override;
@@ -159,6 +158,18 @@ public:
 	std::vector<size_t> m_vFreeComponent;
 	std::vector<TYPE> m_vComponent;
 };
+
+template<typename TYPE>
+MComponent* MComponentGroup<TYPE>::FirstComponent()
+{
+	for (TYPE& comp : m_vComponent)
+	{
+		if (comp.IsValid())
+			return &comp;
+	}
+
+	return nullptr;
+}
 
 template<typename TYPE>
 MComponentID MComponentGroup<TYPE>::AddComponent(MEntity* entity)

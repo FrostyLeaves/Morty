@@ -85,4 +85,3 @@ void MEntitySystem::LoadEntity(MScene* pScene, MResource* pResource)
 	}
 
 }
-

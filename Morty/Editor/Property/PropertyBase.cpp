@@ -393,7 +393,7 @@ void PropertyBase::EditMResource(const MString& strDlgID, const MString& strReso
 	MString strSuffix = "";
 	for (const MString& suffix : vSuffixList)
 	{
-		strSuffix += "." + suffix + "\0";
+		strSuffix += "." + suffix + ",";
 	}
 	strSuffix += "\0";
 

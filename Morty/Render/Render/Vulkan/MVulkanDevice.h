@@ -29,6 +29,8 @@
 #include "MTexture.h"
 
 class MVulkanRenderCommand;
+class MVulkanPrimaryRenderCommand;
+class MVulkanSecondaryRenderCommand;
 class MORTY_API MVulkanDevice : public MIDevice
 {
 public:
@@ -96,6 +98,8 @@ public:
 	bool GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 
+
+	MVulkanSecondaryRenderCommand* CreateChildCommand(MVulkanPrimaryRenderCommand* pParentCommand);
 
 	void CheckFrameFinish();
 	void WaitFrameFinish();
@@ -169,6 +173,10 @@ public:
 	std::map<uint32_t, MVkFrameData> m_tFrameData;
 
 	uint32_t m_unFrameCount;
+
+public:
+
+	PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSet;
 };
 
 

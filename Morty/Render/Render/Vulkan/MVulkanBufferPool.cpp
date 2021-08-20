@@ -132,7 +132,7 @@ bool MVulkanBufferPool::AllowDynamicUniformBufferMemory(MShaderConstantParam* pP
 
 	pParam->m_VkBuffer = m_VkDynamicUniformBuffer;
 	pParam->m_VkBufferMemory = m_VkDynamicUniformMemory;
-	pParam->m_unMemoryOffset = allowInfo.begin + unVariantSize;
+	pParam->m_unMemoryOffset = allowInfo.begin;
 	pParam->m_pMemoryMapping = m_pDynamicUniformMemoryMapping;
 	pParam->m_unVkMemorySize = unVariantSize;
 
@@ -205,5 +205,9 @@ void MVulkanBufferPool::FreeDynamicUniformBufferMemory(MShaderConstantParam* pPa
 
 
 		m_pDevice->GetRecycleBin()->DestroyDynamicUniformMemoryLater(info);
+
+		pParam->m_VkBuffer = VK_NULL_HANDLE;
+		pParam->m_VkBufferMemory = VK_NULL_HANDLE;
+		pParam->m_unMemoryOffset = 0;
 	}
 }

@@ -20,6 +20,9 @@ class MORTY_API MRenderGlobal
 public:
 
 	static const char* SHADER_SKELETON_ENABLE;
+
+	static const char* MATERIAL_MACRO_SKELETON_ENABLE;
+
 };
 
 #endif

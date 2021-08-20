@@ -83,16 +83,16 @@ void MaterialView::UpdateTexture(MIRenderCommand* pCommand)
 
 void MaterialView::Render()
 {
-	if (m_pMaterial && m_bShowPreview)
-	{
-		if (void* pTexture = m_SceneTexture.GetTexture())
-		{
-			ImTextureID texid = pTexture;
-			float fImageSize = ImGui::GetContentRegionAvail().x;
-			ImGui::SameLine(fImageSize * 0.25f);
-			ImGui::Image(texid, ImVec2(fImageSize * 0.5f, fImageSize * 0.5f));
-		}
-	}
+// 	if (m_pMaterial && m_bShowPreview)
+// 	{
+// 		if (void* pTexture = m_SceneTexture.GetTexture())
+// 		{
+// 			ImTextureID texid = pTexture;
+// 			float fImageSize = ImGui::GetContentRegionAvail().x;
+// 			ImGui::SameLine(fImageSize * 0.25f);
+// 			ImGui::Image(texid, ImVec2(fImageSize * 0.5f, fImageSize * 0.5f));
+// 		}
+// 	}
 	if (m_pMaterial)
 	{
 
@@ -116,7 +116,7 @@ void MaterialView::Initialize(MEngine* pEngine)
 	MObjectSystem* pObjectSystem = pEngine->FindSystem<MObjectSystem>();
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
 
-	m_SceneTexture.Initialize(pEngine);
+	m_SceneTexture.Initialize(pEngine, 1);
 	m_SceneTexture.SetSize(Vector2(512, 512));
 
 

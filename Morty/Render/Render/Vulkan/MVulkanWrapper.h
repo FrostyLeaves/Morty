@@ -8,6 +8,7 @@
 
 #ifdef MORTY_WIN
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 #endif
 #ifdef MORTY_ANDROID
 #define VK_USE_PLATFORM_ANDROID_KHR

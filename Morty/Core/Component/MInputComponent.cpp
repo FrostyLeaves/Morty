@@ -16,7 +16,7 @@ MInputComponent::~MInputComponent()
 bool MInputComponent::Input(MInputEvent* pEvent, MViewport* pViewport)
 {
 	if (m_funcInputCallback)
-		return m_funcInputCallback(pEvent, pViewport);
+		return m_funcInputCallback(this, pEvent, pViewport);
 
 	return false;
 }

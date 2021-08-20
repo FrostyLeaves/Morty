@@ -11,7 +11,7 @@ public:
 	{
 		if (MPointLightComponent* pComponent = pEntity->GetComponent<MPointLightComponent>())
 		{
-			if (ShowNodeBegin("Light"))
+			if (ShowNodeBegin("PointLightComponent"))
 			{
 				PROPERTY_VALUE_EDIT(pComponent, "Color", MColor, GetColor, SetColor);
 				PROPERTY_VALUE_EDIT(pComponent, "Intensity", float, GetLightIntensity, SetLightIntensity);

@@ -37,6 +37,10 @@ public:
 
 	MEntity* GetEntity(const MEntityID& id);
 
+	template<typename TYPE>
+	MEntity* FindFirstEntityByComponent();
+	MEntity* FindFirstEntityByComponent(const MType* pComponentType);
+
 public:
 
 	template <class TYPE>
@@ -73,6 +77,12 @@ private:
 	std::vector<MEntity*> m_vEntity;
 	std::map<const MType*, MIComponentGroup*> m_tComponents;
 };
+
+template<typename TYPE>
+MEntity* MScene::FindFirstEntityByComponent()
+{
+	return FindFirstEntityByComponent(TYPE::GetClassType());
+}
 
 template <typename TYPE>
 MComponentGroup<TYPE>* MScene::FindComponents()

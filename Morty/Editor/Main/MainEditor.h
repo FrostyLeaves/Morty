@@ -58,7 +58,7 @@ public:
 
 	void ShowMenu();
 
-	void ShowRenderView();
+	void ShowRenderView(const size_t& nImageCount);
 	void ShowNodeTree();
 	void ShowProperty();
 	void ShowMaterial();

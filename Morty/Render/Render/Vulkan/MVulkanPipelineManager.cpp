@@ -263,8 +263,6 @@ void MVulkanPipelineManager::BindConstantParam(MShaderParamSet* pParamSet, MShad
 	descriptorWrite.pTexelBufferView = nullptr; // Optional
 
 	vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
-
-//	memset(pParam->bDirty, 1, sizeof(bool) * M_BUFFER_NUM);
 }
 
 void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShaderTextureParam* pParam)
@@ -371,8 +369,11 @@ MMaterialPipelineLayoutData* MVulkanPipelineManager::CreateMaterialPipelineLayou
 	{
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		
 		layoutInfo.bindingCount = vParamBinding[i].size();
 		layoutInfo.pBindings = vParamBinding[i].data();
+
+//		layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
 
 		vSetLayouts.push_back(VkDescriptorSetLayout());
 
@@ -437,7 +438,6 @@ void MVulkanPipelineManager::GenerateShaderParamSet(MShaderParamSet* pParamSet)
 	pParamSet->m_unLayoutDataIdx = pLayoutData->vShaderParamSets.size();
 	pLayoutData->vShaderParamSets.push_back(pParamSet);
 
-	
 	VkDescriptorSetLayout vkDescriptorSetLayout = pLayoutData->vSetLayouts[pParamSet->m_unKey];
 
 	VkDescriptorSetAllocateInfo allocInfo{};
@@ -445,7 +445,6 @@ void MVulkanPipelineManager::GenerateShaderParamSet(MShaderParamSet* pParamSet)
 	allocInfo.descriptorPool = m_pDevice->m_VkDescriptorPool;
 	allocInfo.descriptorSetCount = 1;
 	allocInfo.pSetLayouts = &vkDescriptorSetLayout;
-
 
 	VkDescriptorSet descriptorSet;
 	if (vkAllocateDescriptorSets(m_pDevice->m_VkDevice, &allocInfo, &descriptorSet) != VK_SUCCESS)
@@ -455,34 +454,58 @@ void MVulkanPipelineManager::GenerateShaderParamSet(MShaderParamSet* pParamSet)
 	}
 
 	pParamSet->m_VkDescriptorSet = descriptorSet;
-
-
-	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
-	{
-		m_pDevice->GenerateShaderParamBuffer(pParam);
-
-		BindConstantParam(pParamSet, pParam);
-	}
 }
 
-void MVulkanPipelineManager::DestroyShaderParamSet(MShaderParamSet* pParamSet)
+void MVulkanPipelineManager::AllocateShaderParamSet(MShaderParamSet* pParamSet)
 {
 	MMaterialPipelineLayoutData* pLayoutData = FindPipelineLayout(pParamSet->m_nDescriptorSetInitMaterialIdx);
 	if (!pLayoutData)
 		return;
 
-	if (MGlobal::M_INVALID_INDEX != pParamSet->m_unLayoutDataIdx)
+	if (pParamSet->m_VkDescriptorSet)
 	{
-		if (pParamSet->m_unLayoutDataIdx < pLayoutData->vShaderParamSets.size())
-		{
-			for (uint32_t i = pParamSet->m_unLayoutDataIdx; i < pLayoutData->vShaderParamSets.size() - 1; ++i)
-			{
-				pLayoutData->vShaderParamSets[i] = pLayoutData->vShaderParamSets[i + 1];
-				pLayoutData->vShaderParamSets[i]->m_unLayoutDataIdx = i;
-			}
+		m_pDevice->GetRecycleBin()->DestroyDescriptorSetLater(pParamSet->m_VkDescriptorSet);
+		pParamSet->m_VkDescriptorSet = VK_NULL_HANDLE;
+	}
 
-			pLayoutData->vShaderParamSets.pop_back();
+	VkDescriptorSetLayout vkDescriptorSetLayout = pLayoutData->vSetLayouts[pParamSet->m_unKey];
+
+	VkDescriptorSetAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = m_pDevice->m_VkDescriptorPool;
+	allocInfo.descriptorSetCount = 1;
+	allocInfo.pSetLayouts = &vkDescriptorSetLayout;
+
+	VkDescriptorSet descriptorSet;
+	if (vkAllocateDescriptorSets(m_pDevice->m_VkDevice, &allocInfo, &descriptorSet) != VK_SUCCESS)
+	{
+		m_pDevice->GetEngine()->GetLogger()->Error("MVulkanPipelineManager::AllocateShaderParamSet error: descriptor pool == 0");
+		return;
+	}
+
+	pParamSet->m_VkDescriptorSet = descriptorSet;
+}
+
+void MVulkanPipelineManager::DestroyShaderParamSet(MShaderParamSet* pParamSet)
+{
+	if (MMaterialPipelineLayoutData* pLayoutData = FindPipelineLayout(pParamSet->m_nDescriptorSetInitMaterialIdx))
+	{
+		if (MGlobal::M_INVALID_INDEX != pParamSet->m_unLayoutDataIdx)
+		{
+			if (pParamSet->m_unLayoutDataIdx < pLayoutData->vShaderParamSets.size())
+			{
+				for (uint32_t i = pParamSet->m_unLayoutDataIdx; i < pLayoutData->vShaderParamSets.size() - 1; ++i)
+				{
+					pLayoutData->vShaderParamSets[i] = pLayoutData->vShaderParamSets[i + 1];
+					pLayoutData->vShaderParamSets[i]->m_unLayoutDataIdx = i;
+				}
+
+				pLayoutData->vShaderParamSets.pop_back();
+			}
 		}
+
+		pParamSet->m_unLayoutDataIdx = MGlobal::M_INVALID_INDEX;
+		pParamSet->m_nDescriptorSetInitMaterialIdx = MGlobal::M_INVALID_INDEX;
 	}
 
 	DestroyShaderParamSetImpl(pParamSet);
@@ -498,21 +521,6 @@ void MVulkanPipelineManager::DestroyShaderParamSetImpl(MShaderParamSet* pParamSe
 		m_pDevice->GetRecycleBin()->DestroyDescriptorSetLater(pParamSet->m_VkDescriptorSet);
 		pParamSet->m_VkDescriptorSet = VK_NULL_HANDLE;
 	}
-
-	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
-	{
-		m_pDevice->DestroyShaderParamBuffer(pParam);
-		pParam->SetDirty();
-	}
-
-	for (MShaderTextureParam* pParam : pParamSet->m_vTextures)
-	{
-		pParam->SetDirty();
-	}
-
-
-	pParamSet->m_unLayoutDataIdx = MGlobal::M_INVALID_INDEX;
-	pParamSet->m_nDescriptorSetInitMaterialIdx = MGlobal::M_INVALID_INDEX;
 }
 
 #endif

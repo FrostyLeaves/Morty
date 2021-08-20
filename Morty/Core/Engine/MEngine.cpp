@@ -88,6 +88,11 @@ void MEngine::Update()
 
 void MEngine::Tick(const float& fDelta)
 {
+	for (MISystem* pSystem : m_vSystem)
+	{
+		pSystem->EngineTick(fDelta);
+	}
+
 	if (m_pMainTaskGraph)
 	{
 		m_pMainTaskGraph->Run();

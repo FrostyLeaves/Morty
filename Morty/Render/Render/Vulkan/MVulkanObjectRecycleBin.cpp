@@ -14,7 +14,8 @@ void MVulkanObjectRecycleBin::EmptyTrash()
 {
 #define M_VULKAN_DESTROY_CLEAR(VK_TYPE, VK_FUNC) \
 	for (Vk##VK_TYPE& buffer : m_v##VK_TYPE)\
-		VK_FUNC(device, buffer, nullptr);
+		VK_FUNC(device, buffer, nullptr); \
+	m_v##VK_TYPE.clear();
 
 	VkDevice device = m_pDevice->m_VkDevice;
 
@@ -34,24 +35,20 @@ void MVulkanObjectRecycleBin::EmptyTrash()
 	M_VULKAN_DESTROY_CLEAR(Sampler, vkDestroySampler);
 
 	for (VkFence& buffer : m_vFence)
-	{
 		vkDestroyFence(device, buffer, nullptr);
-	}
+	m_vFence.clear();
 
 	if (!m_vDescriptorSet.empty())
-	{
 		vkFreeDescriptorSets(device, m_pDevice->m_VkDescriptorPool, m_vDescriptorSet.size(), m_vDescriptorSet.data());
-	}
+	m_vDescriptorSet.clear();
 
 	for (VkCommandBuffer commandBuffer : m_vCommandBuffer)
-	{
 		vkFreeCommandBuffers(device, m_pDevice->m_VkCommandPool, 1, &commandBuffer);
-	}
+	m_vCommandBuffer.clear();
 
 	for (MemoryInfo& info : m_vDynamicUniformMemory)
-	{
 		m_pDevice->m_BufferPool.FreeDynamicUniformMemory(info);
-	}
+	m_vDynamicUniformMemory.clear();
 }
 
 bool MVulkanObjectRecycleBin::Initialize()

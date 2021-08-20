@@ -62,6 +62,20 @@ void MScene::OnDelete()
 	Super::OnDelete();
 }
 
+MEntity* MScene::FindFirstEntityByComponent(const MType* pComponentType)
+{
+	MIComponentGroup* pGroup = FindComponents(pComponentType);
+
+	if (!pGroup)
+		return nullptr;
+
+	MComponent* pComponent = pGroup->FirstComponent();
+	if (!pComponent)
+		return nullptr;
+
+	return pComponent->GetEntity();
+}
+
 MIComponentGroup* MScene::FindComponents(const MType* pComponentType)
 {
 	auto findResult = m_tComponents.find(pComponentType);
@@ -107,6 +121,16 @@ MComponent* MScene::GetComponent(const MComponentID& id)
 
 void MScene::Tick(const float& fDelta)
 {
+	MEngine* pEngine = GetEngine();
+	if (!pEngine)
+		return;
+
+	auto& vSystem = pEngine->GetAllSystem();
+
+	for (MISystem* pSystem : vSystem)
+	{
+		pSystem->SceneTick(this, fDelta);
+	}
 }
 
 MComponent* MScene::AddComponent(MEntity* entity, MIComponentGroup* pComponents)

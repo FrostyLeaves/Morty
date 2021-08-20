@@ -11,7 +11,11 @@ public:
 	{
 		if (MSceneComponent* pSceneComponent = pEntity->GetComponent<MSceneComponent>())
 		{
-			PROPERTY_NODE_EDIT(pSceneComponent, "Transform", MTransform, GetTransform, SetTransform);
+			if (ShowNodeBegin("SceneComponent"))
+			{
+				PROPERTY_NODE_EDIT(pSceneComponent, "Transform", MTransform, GetTransform, SetTransform);
+				ShowNodeEnd();
+			}
 		}
 	}
 };

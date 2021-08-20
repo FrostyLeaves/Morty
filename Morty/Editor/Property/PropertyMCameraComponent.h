@@ -11,7 +11,7 @@ public:
 	{
 		if (MCameraComponent* pCameraComponent = pEntity->GetComponent<MCameraComponent>())
 		{
-			if (ShowNodeBegin("Camera"))
+			if (ShowNodeBegin("CameraComponent"))
 			{
 				ShowValueBegin("Type");
 				MCameraComponent::MECameraType eType = pCameraComponent->GetCameraType();

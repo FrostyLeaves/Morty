@@ -30,7 +30,7 @@ public:
 
 	bool AddWork(const MThreadWork& work);
 
-	void ThreadRun(size_t nThreadIdx, MString strThreadName);
+	void ThreadRun(METhreadType eType, MString strThreadName);
 
 	static std::thread::id GetCurrentThreadID();
 
@@ -38,19 +38,16 @@ public:
 
 private:
 	std::mutex m_ConditionMutex;
-	std::condition_variable m_ConditionVariable;
 
-	struct MSubThreadWorkDesc {
-		std::thread thread;
-		size_t nWorkIdx;
-		std::condition_variable m_aFinishedCondVar;
-	};
+	std::condition_variable m_ConditionVariable;
 
 	std::array<std::thread, M_MAX_THREAD_NUM> m_aThread;
 
 	static std::map<std::thread::id, METhreadType> s_tThreadType;
 
 	std::queue<MThreadWork> m_vWaitingWork;
+
+	std::queue<MThreadWork> m_vWaitingWorkForRender;
 
 	bool m_bInitialized;
 
