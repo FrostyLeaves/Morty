@@ -59,11 +59,13 @@ MResource* MEntitySystem::PackEntity(MScene* pScene, const std::vector<MEntity*>
 	return pResource;
 }
 
-void MEntitySystem::LoadEntity(MScene* pScene, MResource* pResource)
+std::vector<MEntity*> MEntitySystem::LoadEntity(MScene* pScene, MResource* pResource)
 {
+	std::vector<MEntity*> vResult;
+
 	MEntityResource* pEntityResource = pResource->DynamicCast<MEntityResource>();
 	if (!pEntityResource)
-		return;
+		return vResult;
 
 
 	if (const MVariantArray* pArray = pEntityResource->m_entityStruct.GetArray())
@@ -77,6 +79,7 @@ void MEntitySystem::LoadEntity(MScene* pScene, MResource* pResource)
 				if (MEntity* pEntity = pScene->CreateEntity())
 				{
 					pEntity->ReadFromStruct(*pStruct, refTable);
+					vResult.push_back(pEntity);
 				}
 			}
 		}
@@ -84,4 +87,35 @@ void MEntitySystem::LoadEntity(MScene* pScene, MResource* pResource)
 		refTable.BindReference();
 	}
 
+	return vResult;
+}
+
+void MEntitySystem::FindAllComponentRecursively(MEntity* pEntity, const MType* pComponentType, std::vector<MComponent*>& vResult)
+{
+	if (!pEntity)
+		return;
+
+	MScene* pScene = pEntity->GetScene();
+	if (!pScene)
+		return;
+
+	if (MComponent* pFindResult = pEntity->GetComponent(pComponentType))
+	{
+		vResult.push_back(pFindResult);
+	}
+
+	MSceneComponent* pSceneComponent = pEntity->GetComponent<MSceneComponent>();
+	if (!pSceneComponent)
+		return;
+
+	for (const MComponentID& childID : pSceneComponent->GetChildrenComponent())
+	{
+		if (MComponent* pChildComponent = pScene->GetComponent(childID))
+		{
+			if (MEntity* pChildEntity = pChildComponent->GetEntity())
+			{
+				FindAllComponentRecursively(pChildEntity, pComponentType, vResult);
+			}
+		}
+	}
 }

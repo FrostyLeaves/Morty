@@ -17,6 +17,7 @@
 
 #include "MScene.h"
 #include "MSceneComponent.h"
+#include "MRenderableMeshComponent.h"
 #include "MDirectionalLightComponent.h"
 
 #ifdef MORTY_WIN
@@ -64,9 +65,23 @@ int main()
 		
 		MResource* pResource = pResourceSystem->LoadResource("D:/test/banana/banana.entity");
 
+		std::vector<MComponent*> vMeshComponents;
 		for (size_t i = 0; i < 2; ++i)
 		{
-			pEntitySystem->LoadEntity(pScene, pResource);
+			auto&& vEntity = pEntitySystem->LoadEntity(pScene, pResource);
+
+			for (MEntity* pEntity : vEntity)
+			{
+				pEntitySystem->FindAllComponentRecursively(pEntity, MRenderableMeshComponent::GetClassType(), vMeshComponents);
+			}
+		}
+
+		for (MComponent* pComponent : vMeshComponents)
+		{
+			if (MRenderableMeshComponent* pMeshComponent = pComponent->DynamicCast<MRenderableMeshComponent>())
+			{
+				pMeshComponent->SetGenerateDirLightShadow(true);
+			}
 		}
 
 		MEntity* pDirLight = pScene->CreateEntity();

@@ -14,6 +14,7 @@
 class MScene;
 class MEntity;
 class MResource;
+class MComponent;
 
 class MORTY_API MEntitySystem : public MISystem
 {
@@ -28,7 +29,9 @@ public:
 
     MResource* PackEntity(MScene* pScene, const std::vector<MEntity*>& vEntity);
 
-    void LoadEntity(MScene* pScene, MResource* pResource);
+    std::vector<MEntity*> LoadEntity(MScene* pScene, MResource* pResource);
+
+    void FindAllComponentRecursively(MEntity* pEntity, const MType* pComponentType, std::vector<MComponent*>& vResult);
 
 private:
 
