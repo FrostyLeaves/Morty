@@ -39,6 +39,9 @@ struct MRenderInfo
 	Matrix4 m4DirLightInvProj; //valid if pDirectionalLightEntity enable.
 	std::map<MSkeletonInstance*, std::vector<MRenderableMeshComponent*>> m_tShadowGroupMesh;
 
+	// transparent
+	std::map<MMaterial*, std::vector<MRenderableMeshComponent*>> m_tTransparentGroupMesh;
+
 	// frame
 	MShaderParamSet* pFrameShaderParamSet;
 	MIRenderCommand* pPrimaryRenderCommand;

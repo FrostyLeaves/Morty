@@ -10,11 +10,11 @@
 #define _M_MENTITYSYSTEM_H_
 #include "MGlobal.h"
 #include "MSystem.h"
+#include "MComponent.h"
 
 class MScene;
 class MEntity;
 class MResource;
-class MComponent;
 
 class MORTY_API MEntitySystem : public MISystem
 {
@@ -31,7 +31,7 @@ public:
 
     std::vector<MEntity*> LoadEntity(MScene* pScene, MResource* pResource);
 
-    void FindAllComponentRecursively(MEntity* pEntity, const MType* pComponentType, std::vector<MComponent*>& vResult);
+    void FindAllComponentRecursively(MEntity* pEntity, const MType* pComponentType, std::vector<MComponentID>& vResult);
 
 private:
 

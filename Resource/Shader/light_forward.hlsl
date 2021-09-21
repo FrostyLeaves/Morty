@@ -1,3 +1,5 @@
+#include "inner_constant.hlsl"
+#include "inner_functional.hlsl"
 #include "model_struct.hlsl"
 
 struct VS_OUT
@@ -100,8 +102,7 @@ float3 CalcDirectionLight(float4 f4DirLightSpacePos, float3 f3CameraDir, float3 
 
     if (fNdotL >= 0)
     {
-        //float shadow = CalcShadow(U_texShadowMap, f4DirLightSpacePos, fNdotL);
-        float shadow = 1.0f;
+        float shadow = CalcShadow(U_texShadowMap, f4DirLightSpacePos, fNdotL);
         float3 fReflectDir = reflect(f3LightDir, f3Normal);
         float fSpec = pow(max(dot(f3CameraDir, fReflectDir), 0.0f), U_mat.fShininess);
 

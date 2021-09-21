@@ -90,7 +90,7 @@ std::vector<MEntity*> MEntitySystem::LoadEntity(MScene* pScene, MResource* pReso
 	return vResult;
 }
 
-void MEntitySystem::FindAllComponentRecursively(MEntity* pEntity, const MType* pComponentType, std::vector<MComponent*>& vResult)
+void MEntitySystem::FindAllComponentRecursively(MEntity* pEntity, const MType* pComponentType, std::vector<MComponentID>& vResult)
 {
 	if (!pEntity)
 		return;
@@ -101,7 +101,7 @@ void MEntitySystem::FindAllComponentRecursively(MEntity* pEntity, const MType* p
 
 	if (MComponent* pFindResult = pEntity->GetComponent(pComponentType))
 	{
-		vResult.push_back(pFindResult);
+		vResult.push_back(pFindResult->GetComponentID());
 	}
 
 	MSceneComponent* pSceneComponent = pEntity->GetComponent<MSceneComponent>();

@@ -123,6 +123,9 @@ public:
 
 	MVulkanObjectRecycleBin* GetRecycleBin();
 
+	void SetDebugName(uint64_t object, const VkObjectType& type, const char* svDebugName);
+
+
 protected:
 	bool InitVulkanInstance();
 	bool InitPhysicalDevice();
@@ -177,6 +180,7 @@ public:
 public:
 
 	PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSet;
+	PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT;
 };
 
 

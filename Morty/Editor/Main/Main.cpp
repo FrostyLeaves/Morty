@@ -15,10 +15,14 @@
 #include "MEntitySystem.h"
 #include "MResourceSystem.h"
 
+#include "MMaterial.h"
+
 #include "MScene.h"
 #include "MSceneComponent.h"
 #include "MRenderableMeshComponent.h"
 #include "MDirectionalLightComponent.h"
+
+#include "MMaterialResource.h"
 
 #ifdef MORTY_WIN
 #undef main
@@ -62,11 +66,37 @@ int main()
 		MResourceSystem* pResourceSystem = engine.FindSystem<MResourceSystem>();
 		MEntitySystem* pEntitySystem = engine.FindSystem<MEntitySystem>();
 
+
+		MMeshResource* pCubeResource = pResourceSystem->CreateResource<MMeshResource>();
+		pCubeResource->LoadAsCube();
+
+		MEntity* pCubeEntity = pScene->CreateEntity();
+		pCubeEntity->SetName("Cube");
+		if (MSceneComponent* pSceneComponent = pCubeEntity->RegisterComponent<MSceneComponent>())
+		{
+			pSceneComponent->SetScale(Vector3(10.0f, 10.0f, 1.0f));
+		}
+		if (MRenderableMeshComponent* pMeshComponent = pCubeEntity->RegisterComponent<MRenderableMeshComponent>())
+		{
+			MMaterialResource* pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
+			pMaterial->LoadVertexShader("./Shader/model.mvs");
+			pMaterial->LoadPixelShader("./Shader/model.mps");
+
+			pMaterial->GetMaterialParamSet()->SetValue("f3Ambient", Vector3(1.0f, 1.0f, 1.0f));
+			pMaterial->GetMaterialParamSet()->SetValue("f3Diffuse", Vector3(1.0f, 1.0f, 1.0f));
+			pMaterial->GetMaterialParamSet()->SetValue("f3Specular", Vector3(1.0f, 1.0f, 1.0f));
+			pMaterial->GetMaterialParamSet()->SetValue("fAlphaFactor", 1.0f);
+			pMaterial->GetMaterialParamSet()->SetValue("fShininess", 32.0f);
+
+			pMeshComponent->Load(pCubeResource);
+			pMeshComponent->SetMaterial(pMaterial);
+		}
+
 		
 		MResource* pResource = pResourceSystem->LoadResource("D:/test/banana/banana.entity");
 
-		std::vector<MComponent*> vMeshComponents;
-		for (size_t i = 0; i < 2; ++i)
+		std::vector<MComponentID> vMeshComponents;
+		for (size_t i = 0; i < 1; ++i)
 		{
 			auto&& vEntity = pEntitySystem->LoadEntity(pScene, pResource);
 
@@ -76,12 +106,18 @@ int main()
 			}
 		}
 
-		for (MComponent* pComponent : vMeshComponents)
+		for (MComponentID& componentID : vMeshComponents)
 		{
-			if (MRenderableMeshComponent* pMeshComponent = pComponent->DynamicCast<MRenderableMeshComponent>())
+			if (MRenderableMeshComponent* pMeshComponent = pScene->GetComponent(componentID)->DynamicCast<MRenderableMeshComponent>())
 			{
 				pMeshComponent->SetGenerateDirLightShadow(true);
 			}
+		}
+
+		if (MRenderableMeshComponent* pMeshComponent = pScene->GetComponent(vMeshComponents[0])->DynamicCast<MRenderableMeshComponent>())
+		{
+	 		MMaterial* pMaterial = pMeshComponent->GetMaterial();
+			pMaterial->SetMaterialType(MEMaterialType::EDepthPeel);
 		}
 
 		MEntity* pDirLight = pScene->CreateEntity();

@@ -1,3 +1,5 @@
+#include "inner_constant.hlsl"
+#include "inner_functional.hlsl"
 #include "model_struct.hlsl"
 
 struct VS_OUT

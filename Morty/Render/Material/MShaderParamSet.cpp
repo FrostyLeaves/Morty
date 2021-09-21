@@ -57,6 +57,74 @@ MShaderConstantParam* MShaderParamSet::FindConstantParam(const MString& strParam
 	return nullptr;
 }
 
+MVariant* MShaderParamSet::FindValue(const MString& strName)
+{
+	for (MShaderConstantParam* pParam : m_vParams)
+	{
+		if (pParam->strName == strName)
+			return &pParam->var;
+		else if (MVariant* pVariant = FindValue(strName, pParam->var))
+			return pVariant;
+	}
+
+	return nullptr;
+}
+
+MVariant* MShaderParamSet::FindValue(const MString& strName, MVariant& value)
+{
+	if (MStruct* pStruct = value.GetStruct())
+	{
+		for (size_t i = 0; i < pStruct->GetMemberCount(); ++i)
+		{
+			if (MStruct::MContainer::MStructMember* pContainer = pStruct->GetMember(i))
+			{
+				if (pContainer->strName == strName)
+					return &pContainer->var;
+				else if (MVariant* pVariant = FindValue(strName, pContainer->var))
+					return pVariant;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+bool MShaderParamSet::SetValue(const MString& strName, const MVariant& value)
+{
+	for (MShaderConstantParam* pParam : m_vParams)
+	{
+		if (pParam->strName == strName)
+		{
+			if (SetValue(pParam->var, value))
+			{
+				pParam->SetDirty();
+				return true;
+			}
+		}
+		else if (MVariant* pVariant = FindValue(strName, pParam->var))
+		{
+			if (SetValue(*pVariant, value))
+			{
+				pParam->SetDirty();
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool MShaderParamSet::SetValue(MVariant& target, const MVariant& source)
+{
+	if (target.GetType() == source.GetType() && target.GetSize() == source.GetSize())
+	{
+		target = source;
+		return true;
+	}
+
+	return false;
+}
+
 void MShaderParamSet::GenerateBuffer(MIDevice* pDevice)
 {
 	pDevice->GenerateShaderParamSet(this);

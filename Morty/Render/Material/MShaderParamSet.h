@@ -26,6 +26,13 @@ public:
 
 	MShaderConstantParam* FindConstantParam(const MString& strParamName);
 
+
+	MVariant* FindValue(const MString& strName, MVariant& value);
+	MVariant* FindValue(const MString& strName);
+
+	bool SetValue(MVariant& target, const MVariant& source);
+	bool SetValue(const MString& strName, const MVariant& value);
+
 public:
 
 	MShaderConstantParam* FindConstantParam(const MShaderConstantParam* pParam) { return FindShaderParam(m_vParams, pParam); }

@@ -29,11 +29,14 @@ public:
 class MORTY_API MPassTargetDescription
 {
 public:
+
 	MPassTargetDescription();
 	MPassTargetDescription(const bool bClear, const MColor& cClearColor);
+	MPassTargetDescription(const bool bClear, const bool bAlready, const MColor& cClearColor);
 
 public:
 	bool bClearWhenRender;
+    bool bAlreadyRender;
 	MColor cClearColor;
 };
 
@@ -64,7 +67,6 @@ public:
 	std::vector<MSubpass> m_vSubpass;
 
     uint32_t m_unRenderPassID;
-
 
 public:
 

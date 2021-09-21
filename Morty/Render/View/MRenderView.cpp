@@ -407,8 +407,7 @@ MRenderTarget* MRenderView::GetNextRenderTarget()
 	
 	if (result != VK_SUCCESS)
 	{
-		assert(0);
-		return nullptr;// TODO while.
+		return nullptr;// windows minimize or other, don`t render.
 	}
 
 	if (m_vRenderTarget[unImageIndex].vkImageReadySemaphore)

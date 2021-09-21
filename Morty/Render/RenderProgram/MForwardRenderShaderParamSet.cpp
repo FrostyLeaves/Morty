@@ -147,7 +147,11 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 	if (!pScene) return;
 
 	info.pCameraEntity = pScene->FindFirstEntityByComponent<MCameraComponent>();
-	info.pDirectionalLightEntity = pScene->FindFirstEntityByComponent<MDirectionalLightComponent>();
+
+	if (!info.pDirectionalLightEntity)
+	{
+		info.pDirectionalLightEntity = pScene->FindFirstEntityByComponent<MDirectionalLightComponent>();
+	}
 
 	pViewport->LockMatrix();
 

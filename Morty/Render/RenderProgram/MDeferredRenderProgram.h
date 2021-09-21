@@ -1,13 +1,13 @@
 /**
- * @File         MForwardRenderProgram
+ * @File         MDeferredRenderProgram
  * 
  * @Created      2020-07-2 11:45:49
  *
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MFORWARDRENDERPROGRAM_H_
-#define _M_MFORWARDRENDERPROGRAM_H_
+#ifndef _M_MDEFERRED_RENDERPROGRAM_H_
+#define _M_MDEFERRED_RENDERPROGRAM_H_
 #include "MGlobal.h"
 
 #include "MType.h"
@@ -28,13 +28,13 @@ class MIRenderCommand;
 class MShadowMapRenderWork;
 class MTransparentRenderWork;
 class MRenderableMeshComponent;
-class MORTY_API MForwardRenderProgram : public MIRenderProgram
+class MORTY_API MDeferredRenderProgram : public MIRenderProgram
 {
 public:
-	MORTY_CLASS(MForwardRenderProgram);
+	MORTY_CLASS(MDeferredRenderProgram);
 
-	MForwardRenderProgram();
-    virtual ~MForwardRenderProgram();
+	MDeferredRenderProgram();
+    virtual ~MDeferredRenderProgram();
 
 public:
 
@@ -42,7 +42,9 @@ public:
 
 	void RenderReady(MTaskNode* pTaskNode);
 
-	void RenderForward(MTaskNode* pTaskNode);
+	void RenderGBuffer(MTaskNode* pTaskNode);
+
+	void RenderLightning(MTaskNode* pTaskNode);
 
 	void RenderShadow(MTaskNode* pTaskNode);
 
@@ -83,11 +85,16 @@ protected:
 
 	MForwardRenderShaderParamSet m_frameParamSet;
 
-	MRenderPass m_forwardRenderPass;
+	MRenderPass m_gbufferRenderPass;
+	MRenderPass m_lightningRenderPass;
 
 	MTexture* m_pFinalOutputTexture;
 
 	MIRenderCommand* m_pPrimaryCommand;
+
+
+	MIMesh* m_pScreenRectMesh;
+	MMaterial* m_pLightningMaterial;
 
 protected:
 

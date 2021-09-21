@@ -10,8 +10,8 @@ struct PS_OUT
     float fBackDepth: SV_Target3;
 };
 
-[[vk::input_attachment_index(2)]] [[vk::binding(7, 1)]] SubpassInput U_texSubpassInput0;
-[[vk::input_attachment_index(3)]] [[vk::binding(8, 1)]] SubpassInput U_texSubpassInput1;
+[[vk::input_attachment_index(0)]] [[vk::binding(7, 1)]] SubpassInput U_texSubpassInput0;
+[[vk::input_attachment_index(1)]] [[vk::binding(8, 1)]] SubpassInput U_texSubpassInput1;
 
 #else
 

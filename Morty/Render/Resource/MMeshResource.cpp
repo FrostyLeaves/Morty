@@ -193,6 +193,117 @@ void MMeshResource::OnDelete()
 	MResource::OnDelete();
 }
 
+void MMeshResource::LoadAsCube()
+{
+	m_eVertexType = MEMeshVertexType::Normal;
+
+	/*
+	Vector3 position;
+	Vector3 normal;
+	Vector3 tangent;
+	Vector3 bitangent;
+	Vector2 texCoords;
+	*/
+
+	/*
+     
+	   5 ___________4
+	    /|         /|
+	   / |        / |
+	0 /__|_______/1 |
+	 |   |_ _ _ |_ _|
+	 |  / 7     |  / 6
+	 | /        | /
+	 |/_________|/
+	 2           3
+
+	*/
+	static const Vector3 position[8] = {
+		{-1.0f, 1.0f, -1.0f},	//front left top
+		{1.0f, 1.0f, -1.0f},	//front right top
+		{-1.0f, -1.0f, -1.0f},	//front left bottom
+		{1.0f, -1.0f, -1.0f},	//front right bottom
+		{1.0f, 1.0f, 1.0f},		//back right top
+		{-1.0f, 1.0f, 1.0f},	//back left top
+		{1.0f, -1.0f, 1.0f},	//back right bottom
+		{-1.0f, -1.0f, 1.0f},	//back left bottom
+	};
+
+	static const Vector3 normal[6] = {
+		{0.0f, 0.0f, 1.0f},		//0 forward
+		{0.0f, 0.0f, -1.0f},	//1 back
+		{-1.0f, 0.0f, 0.0f},	//2 left
+		{1.0f, 0.0f, 0.0f},		//3 right
+		{0.0f, 0.0f, 1.0f},		//4 top
+		{0.0f, 0.0f, -1.0f},	//5 bottom
+	};
+
+	static const Vector2 uv[4] = {
+		{0.0f, 0.0f},
+		{0.0f, 1.0f},
+		{1.0f, 0.0f},
+		{1.0f, 1.0f},
+	};
+
+	static const MVertex cube[24] = {
+		//front
+		{ position[0], normal[1], normal[3], normal[5], uv[0] },
+		{ position[1], normal[1], normal[3], normal[5], uv[1] },
+		{ position[2], normal[1], normal[3], normal[5], uv[2] },
+		{ position[3], normal[1], normal[3], normal[5], uv[3] },
+
+		//back
+		{ position[4], normal[0], normal[2], normal[5], uv[0] },
+		{ position[5], normal[0], normal[2], normal[5], uv[1] },
+		{ position[6], normal[0], normal[2], normal[5], uv[2] },
+		{ position[7], normal[0], normal[2], normal[5], uv[3] },
+
+		//left
+		{ position[5], normal[2], normal[0], normal[5], uv[0] },
+		{ position[0], normal[2], normal[0], normal[5], uv[1] },
+		{ position[7], normal[2], normal[0], normal[5], uv[2] },
+		{ position[2], normal[2], normal[0], normal[5], uv[3] },
+
+		//right
+		{ position[1], normal[3], normal[0], normal[5], uv[0] },
+		{ position[4], normal[3], normal[0], normal[5], uv[1] },
+		{ position[3], normal[3], normal[0], normal[5], uv[2] },
+		{ position[6], normal[3], normal[0], normal[5], uv[3] },
+
+		//top
+		{ position[5], normal[4], normal[3], normal[1], uv[0] },
+		{ position[4], normal[4], normal[3], normal[1], uv[1] },
+		{ position[0], normal[4], normal[3], normal[1], uv[2] },
+		{ position[1], normal[4], normal[3], normal[1], uv[3] },
+
+		//bottom
+		{ position[6], normal[5], normal[2], normal[1], uv[0] },
+		{ position[7], normal[5], normal[2], normal[1], uv[1] },
+		{ position[3], normal[5], normal[2], normal[1], uv[2] },
+		{ position[2], normal[5], normal[2], normal[1], uv[3] },
+	};
+
+	static const uint32_t indices[36] = {
+		0, 1 ,2, 1, 3, 2,
+		4, 5, 6, 5, 7, 6,
+		8, 9, 10, 9, 11, 10,
+		12, 13, 14, 13, 15, 14,
+		16, 17, 18, 17, 19, 18,
+		20, 21, 22, 21, 23, 22
+	};
+
+	m_pMesh = NewMeshByType(m_eVertexType);
+
+	m_pMesh->ResizeVertices(24);
+	memcpy(m_pMesh->GetVertices(), cube, sizeof(cube));
+
+	m_pMesh->ResizeIndices(12, 3);
+	memcpy(m_pMesh->GetIndices(), indices, sizeof(indices));
+
+
+	
+}
+
 void MMeshResource::Clean()
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();

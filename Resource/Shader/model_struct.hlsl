@@ -1,6 +1,3 @@
-#include "inner_constant.hlsl"
-#include "inner_functional.hlsl"
-
 
 //VS    per mesh
 [[vk::binding(0,2)]]cbuffer _M_E_cbMeshMatrix : register(b0)

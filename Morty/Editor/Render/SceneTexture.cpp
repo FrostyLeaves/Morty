@@ -117,6 +117,16 @@ MTexture* SceneTexture::GetTexture(const size_t& nImageIndex)
 	return nullptr;
 }
 
+MTexture* SceneTexture::GetShadowmapTexture(const size_t& nImageIndex)
+{
+	if (nImageIndex < m_vRenderProgram.size())
+	{
+		return m_vRenderProgram[nImageIndex]->GetShadowmapTexture();
+	}
+
+	return nullptr;
+}
+
 void SceneTexture::SetBackColor(const MColor& cColor)
 {
 }

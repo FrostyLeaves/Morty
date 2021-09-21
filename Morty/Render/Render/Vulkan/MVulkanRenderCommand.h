@@ -53,6 +53,8 @@ public:
 	void BindConstantParam(MShaderParamSet* pParamSet, MShaderConstantParam* pParam);
 	void BindTextureParam(MShaderParamSet* pParamSet, MShaderTextureParam* pParam);
 
+	void SetTextureLayout(const std::vector<MTexture*>& vTextures, VkImageLayout newLayout);
+
 public:
 
 	MVulkanDevice* m_pDevice;
@@ -62,6 +64,8 @@ public:
 	std::stack<MRenderPassStage> m_vRenderPassStages;
 
 	VkCommandBuffer m_VkCommandBuffer;
+
+	std::map<MTexture*, VkImageLayout> m_tTextureLayout;
 };
 
 class MORTY_API MVulkanSecondaryRenderCommand : public MVulkanRenderCommand

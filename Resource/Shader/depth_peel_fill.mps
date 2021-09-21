@@ -1,6 +1,5 @@
-[[vk::binding(1,0)]]Texture2D frontTex;
-[[vk::binding(2,0)]]Texture2D backTex;
-[[vk::binding(3,0)]]sampler defaultSampler;
+[[vk::binding(1,0)]]Texture2D backTex;
+[[vk::binding(2,0)]]sampler defaultSampler;
 
 struct VS_OUT_DP
 {

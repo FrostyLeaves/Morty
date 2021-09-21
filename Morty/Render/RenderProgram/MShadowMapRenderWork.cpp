@@ -15,6 +15,7 @@
 
 #include "MSceneComponent.h"
 #include "MRenderableMeshComponent.h"
+#include "MDirectionalLightComponent.h"
 
 
 MORTY_CLASS_IMPLEMENT(MShadowMapRenderWork, MObject)
@@ -45,8 +46,8 @@ void MShadowMapRenderWork::OnCreated()
 
 	m_pShadowStaticMaterial = pResourceSystem->CreateResource<MMaterial>("Shadow Material");
 
-	MResource* pVertexShader = pResourceSystem->LoadResource("./Shader/empty.mvs");
-	MResource* pPixelShader = pResourceSystem->LoadResource("./Shader/empty.mps");
+	MResource* pVertexShader = pResourceSystem->LoadResource("./Shader/shadowmap.mvs");
+	MResource* pPixelShader = pResourceSystem->LoadResource("./Shader/shadowmap.mps");
 	m_pShadowStaticMaterial->LoadVertexShader(pVertexShader);
 	m_pShadowStaticMaterial->LoadPixelShader(pPixelShader);
 	m_pShadowStaticMaterial->SetRasterizerType(MERasterizerType::ECullFront);
@@ -102,21 +103,18 @@ void MShadowMapRenderWork::RenderShadow(MRenderInfo& info)
 		return;
 
 	MViewport* pViewport = info.pViewport;
-
-//	pCommand->RenderCommandBegin();
+	MTexture* pShadowmap = GetShadowMap();
 
 	pCommand->BeginRenderPass(&m_renderPass);
 
-	Vector2 v2LeftTop = pViewport->GetLeftTop();
-	Vector2 v2Size = pViewport->GetSize();
+	Vector2 v2LeftTop = Vector2(0.0f, 0.0f);
+	Vector2 v2Size = pShadowmap->GetSize();
 	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
-	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
+	pCommand->SetScissor(MScissorInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
 
 	DrawShadowMesh(info, pCommand);
 
 	pCommand->EndRenderPass();
-
-//	pCommand->RenderCommandEnd();
 }
 
 void MShadowMapRenderWork::DrawShadowMesh(MRenderInfo& info, MIRenderCommand* pCommand)
@@ -136,7 +134,7 @@ void MShadowMapRenderWork::DrawShadowMesh(MRenderInfo& info, MIRenderCommand* pC
 			pCommand->SetUseMaterial(m_pShadowStaticMaterial);
 		}
 
-		pCommand->SetShaderParamSet(info.pFrameShaderParamSet);
+		pCommand->SetShaderParamSet(&m_shadowParamSet);
 
 		std::vector<MRenderableMeshComponent*>& vMesh = pr.second;
 
@@ -164,8 +162,12 @@ void MShadowMapRenderWork::UpdateShadowRenderGroup(MRenderInfo& info)
 		return;
 
 	if (!info.pDirectionalLightEntity)
-		return;
+	{
+		info.pDirectionalLightEntity = pScene->FindFirstEntityByComponent<MDirectionalLightComponent>();
 
+		if(!info.pDirectionalLightEntity)
+			return;
+	}
 
 	MSceneComponent* pLightSceneComponent = info.pDirectionalLightEntity->GetComponent<MSceneComponent>();
 	if (!pLightSceneComponent)
@@ -188,6 +190,12 @@ void MShadowMapRenderWork::UpdateShadowRenderGroup(MRenderInfo& info)
 	{
 		if (!component.IsValid())
 			continue;
+
+		if (MMaterial* pMaterial = component.GetMaterial())
+		{
+			if(pMaterial->GetMaterialType() != MEMaterialType::EDefault)
+				continue;
+		}
 
 		MEntity* pEntity = component.GetEntity();
 

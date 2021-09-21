@@ -47,6 +47,9 @@ public:
 
 public:
 
+	void SetName(const MString& strName) { m_strTextureName = strName; }
+	MString GetName() const { return m_strTextureName; }
+
 	void SetSize(const Vector2& v2Size) { m_v2Size = v2Size; }
 	Vector2 GetSize() { return m_v2Size; }
 
@@ -76,8 +79,12 @@ public:
 
 	static MTexture* CreateShadowMap();
 	static MTexture* CreateRenderTarget();
+	static MTexture* CreateRenderTargetFloat32();
 
 public:
+
+	//name
+	MString m_strTextureName;
 
 	//texture size.
 	Vector2 m_v2Size;

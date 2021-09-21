@@ -64,6 +64,12 @@ void MVulkanRenderCommand::BeginRenderPass(MRenderPass* pRenderPass)
 {
 	//TODO check renderpass valid.
 
+	SetTextureLayout(pRenderPass->m_vBackTextures, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	
+	if (pRenderPass->m_pDepthTexture)
+	{
+		SetTextureLayout({ pRenderPass->m_pDepthTexture }, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+	}
 
 	VkRenderPassBeginInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -238,6 +244,10 @@ void MVulkanRenderCommand::SetShaderParamSet(MShaderParamSet* pParamSet)
 	for (MShaderTextureParam* pParam : pParamSet->m_vTextures)
 	{
 		bDirty |= pParam->bDirty;
+		if (pParam->pTexture)
+		{
+			bDirty |= pParam->pImageIdent != (pParam->pTexture ? pParam->pTexture->m_VkImageView : nullptr);
+		}
 	}
 
 	if (bDirty)
@@ -249,11 +259,14 @@ void MVulkanRenderCommand::SetShaderParamSet(MShaderParamSet* pParamSet)
 		{
 			// bind buffer to descriptor set.
 			m_pDevice->m_PipelineManager.BindConstantParam(pParamSet, pParam);
+			pParam->bDirty = false;
 		}
 
 		for (MShaderTextureParam* pParam : pParamSet->m_vTextures)
 		{
 			m_pDevice->m_PipelineManager.BindTextureParam(pParamSet, pParam);
+			pParam->pImageIdent = pParam->pTexture ? pParam->pTexture->m_VkImageView : nullptr;
+			pParam->bDirty = false;
 		}
 	}
 
@@ -262,26 +275,48 @@ void MVulkanRenderCommand::SetShaderParamSet(MShaderParamSet* pParamSet)
 
 bool MVulkanRenderCommand::SetRenderToTextureBarrier(const std::vector<MTexture*> vTextures)
 {
+	SetTextureLayout(vTextures, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	return true;
+}
+
+void MVulkanRenderCommand::SetTextureLayout(const std::vector<MTexture*>& vTextures, VkImageLayout newLayout)
+{
 	std::vector<VkImageMemoryBarrier> vImageBarrier;
 
 	for (uint32_t i = 0; i < vTextures.size(); ++i)
 	{
+		VkImageLayout oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		auto findResult = m_tTextureLayout.find(vTextures[i]);
+		if (findResult != m_tTextureLayout.end())
+			oldLayout = findResult->second;
+		
+		if(oldLayout == newLayout)
+			continue;
+
 		vImageBarrier.push_back(VkImageMemoryBarrier());
 		VkImageMemoryBarrier& imageMemoryBarrier = vImageBarrier.back();
 
 		imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		imageMemoryBarrier.oldLayout = vTextures[i]->m_VkImageLayout;
-		imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+		imageMemoryBarrier.oldLayout = oldLayout;
+		imageMemoryBarrier.newLayout = newLayout;
+
 		imageMemoryBarrier.image = vTextures[i]->m_VkTextureImage;
 
 		if (vTextures[i]->GetRenderUsage() == METextureRenderUsage::ERenderDepth)
 			imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1 };
 		else
 			imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
 		imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
 		imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
+		m_tTextureLayout[vTextures[i]] = newLayout;
 	}
+
+	if (vImageBarrier.empty())
+		return;
+
 	vkCmdPipelineBarrier(
 		m_VkCommandBuffer,
 		VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
@@ -290,8 +325,6 @@ bool MVulkanRenderCommand::SetRenderToTextureBarrier(const std::vector<MTexture*
 		0, nullptr,
 		0, nullptr,
 		vImageBarrier.size(), vImageBarrier.data());
-
-	return true;
 }
 
 bool MVulkanRenderCommand::DownloadTexture(MTexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback)
@@ -364,6 +397,8 @@ bool MVulkanRenderCommand::DownloadTexture(MTexture* pTexture, const uint32_t& u
 
 		m_pDevice->m_BufferPool.FreeReadBackBuffer(unMemoryID);
 		});
+
+	return true;
 }
 
 bool MVulkanRenderCommand::CopyImageBuffer(MTexture* pSource, MTexture* pDest)
@@ -406,8 +441,6 @@ void MVulkanRenderCommand::UpdateShaderParam(MShaderParamSet* pParamSet, MShader
 // 			memoryRange.size = param.m_unVkMemorySize;
 // 			vkFlushMappedMemoryRanges(m_pDevice->m_VkDevice, 1, &memoryRange);
 		}
-
-		param->bDirty = false;
 	}
 }
 

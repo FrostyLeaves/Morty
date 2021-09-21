@@ -64,9 +64,10 @@ MainEditor::MainEditor()
 	, m_bShowMaterial(false)
 	, m_bShowResource(false)
 	, m_bShowRenderGraph(false)
+	, m_bShowShadowMap(false)
 	, m_funcCloseCallback(nullptr)
 	, m_pSDLWindow(nullptr)
-    , m_v2DrawableSize(800.0f, 480.0f)
+    , m_v2DrawableSize(80.0f, 48.0f)
     , m_bWindowMinimized(false)
 {
 }
@@ -342,6 +343,7 @@ void MainEditor::ShowMenu()
 		if (ImGui::BeginMenu("View"))
 		{
 			if (ImGui::MenuItem("Render", "", &m_bShowRenderView)) {}
+			if (ImGui::MenuItem("DebugTexture", "", &m_bShowShadowMap)) {}
 			if (ImGui::MenuItem("NodeTree", "", &m_bShowNodeTree)) {}
 			if (ImGui::MenuItem("Property", "", &m_bShowProperty)) {}
 			if (ImGui::MenuItem("Material", "", &m_bShowMaterial)) {}
@@ -379,36 +381,43 @@ void MainEditor::ShowRenderView(const size_t& nImageCount)
 
 	if (ImGui::Begin("Render", &m_bShowRenderView, ImGuiWindowFlags_NoCollapse))
 	{
-		ImGuiStyle& style = ImGui::GetStyle();
-
-		ImVec2 v2RenderViewPos = ImGui::GetWindowPos();
-		ImVec2 v2RenderViewSize = ImGui::GetWindowSize();
-
-		v2RenderViewPos.x += style.WindowPadding.x;
-		v2RenderViewPos.y += ImGui::GetItemRectSize().y;
-
-		v2RenderViewSize.x -= style.WindowPadding.x * 2.0f;
-		v2RenderViewSize.y -= (style.WindowPadding.y * 2.0f + ImGui::GetItemRectSize().y * 2.0f);
-
-		m_v2RenderViewPos.x = v2RenderViewPos.x;
-		m_v2RenderViewPos.y = v2RenderViewPos.y;
-
-		m_v2RenderViewSize.x = v2RenderViewSize.x;
-		m_v2RenderViewSize.y = v2RenderViewSize.y;
-
-
 		if (!m_bRenderToWindow)
 		{
 			if (MTexture* pTexture = m_SceneTexture.GetTexture(nImageCount))
 			{
 				if (ImTextureID texid = pTexture)
 				{
-					ImGui::Image(texid, v2RenderViewSize);
+					Vector4 v4Rect = GetWidgetSize();
+
+					m_v2RenderViewPos.x = v4Rect.m[0];
+					m_v2RenderViewPos.y = v4Rect.m[1];
+
+					m_v2RenderViewSize.x = v4Rect.m[2];
+					m_v2RenderViewSize.y = v4Rect.m[3];
+
+					ImGui::Image(texid, ImVec2(m_v2RenderViewSize.x, m_v2RenderViewSize.y));
 				}
 			}
 			
 		}
 	}
+	ImGui::End();
+}
+
+void MainEditor::ShowShadowMapView(const size_t& nImageCount)
+{
+	if (ImGui::Begin("ShadowMap", &m_bShowShadowMap))
+	{
+		if (MTexture* pTexture = m_SceneTexture.GetTexture(nImageCount))
+		{
+			if (ImTextureID texid = pTexture)
+			{
+				Vector4 v4Rect = GetWidgetSize();
+				ImGui::Image(texid, ImVec2(v4Rect.z, v4Rect.w));
+			}
+		}
+	}
+
 	ImGui::End();
 }
 
@@ -519,6 +528,22 @@ void MainEditor::ShowRenderGraphView()
 	ImGui::End();
 }
 
+Vector4 MainEditor::GetWidgetSize()
+{
+	ImGuiStyle& style = ImGui::GetStyle();
+
+	ImVec2 v2RenderViewPos = ImGui::GetWindowPos();
+	ImVec2 v2RenderViewSize = ImGui::GetWindowSize();
+
+	v2RenderViewPos.x += style.WindowPadding.x;
+	v2RenderViewPos.y += ImGui::GetItemRectSize().y;
+
+	v2RenderViewSize.x -= style.WindowPadding.x * 2.0f;
+	v2RenderViewSize.y -= (style.WindowPadding.y * 2.0f + ImGui::GetItemRectSize().y * 2.0f);
+
+	return Vector4(v2RenderViewPos.x, v2RenderViewPos.y, v2RenderViewSize.x, v2RenderViewSize.y);
+}
+
 void MainEditor::Render(MTaskNode* pNode)
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
@@ -526,6 +551,10 @@ void MainEditor::Render(MTaskNode* pNode)
 
 	MIRenderCommand* pRenderCommand = pDevice->CreateRenderCommand();
 	MRenderTarget* pRenderTarget = GetNextRenderTarget();
+
+	if (!pRenderTarget)
+		return;
+
 	pRenderTarget->BindPrimaryCommand(pRenderCommand);
 
 	if (!pRenderCommand)
@@ -562,50 +591,58 @@ void MainEditor::Render(MTaskNode* pNode)
 		m_SceneTexture.SetSize(Vector2(size.x, size.y));
 	}
 
-	//Update Scene
-	m_SceneTexture.UpdateTexture(pRenderTarget->unImageIndex, pRenderCommand);
-	pRenderCommand->SetRenderToTextureBarrier({ m_SceneTexture.GetTexture(pRenderTarget->unImageIndex) });
+	ImGui_ImplSDL2_NewFrame(m_pSDLWindow);
+
+	ImGui::NewFrame();
 
 
-	//m_unTriangleCount = MRenderStatistics::GetInstance()->unTriangleCount;
-
-	
 	if (m_pMaterialView && m_bShowMaterial)
 	{
 		if (MEntity* pEntity = m_pNodeTreeView->GetSelectionNode())
 		{
-			if(MRenderableMeshComponent* pMeshComponent = pEntity->GetComponent<MRenderableMeshComponent>())
+			if (MRenderableMeshComponent* pMeshComponent = pEntity->GetComponent<MRenderableMeshComponent>())
 				m_pMaterialView->SetMaterial(pMeshComponent->GetMaterial());
 		}
 		m_pMaterialView->UpdateTexture(pRenderCommand);
 	}
 
-	ImGui_ImplSDL2_NewFrame(m_pSDLWindow);
 
-	ImGui::NewFrame();
-
-	if (m_bRenderToWindow)
+	//Update Scene
+	m_SceneTexture.UpdateTexture(pRenderTarget->unImageIndex, pRenderCommand);
+	if (MTexture* pRenderTexture = m_SceneTexture.GetTexture(pRenderTarget->unImageIndex))
 	{
-		if (MTexture* pTexture = m_SceneTexture.GetTexture(pRenderTarget->unImageIndex))
+		pRenderCommand->SetRenderToTextureBarrier({ pRenderTexture });
+
+
+		//m_unTriangleCount = MRenderStatistics::GetInstance()->unTriangleCount;
+
+
+		
+
+
+		if (m_bRenderToWindow)
 		{
-			if (ImTextureID texid = pTexture)
+			if (pRenderTexture)
 			{
-				ImGuiIO& io = ImGui::GetIO();
-				ImGui::SetNextWindowPos(ImVec2(0, 0), 0, ImVec2(0, 0));
-				ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y));
-				ImGui::SetNextWindowBgAlpha(0);
-				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-				ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
-				ImGui::Begin("±³¾°", NULL, ImGuiWindowFlags_NoMove |
-					ImGuiWindowFlags_NoTitleBar |
-					ImGuiWindowFlags_NoBringToFrontOnFocus |
-					ImGuiWindowFlags_NoInputs |
-					ImGuiWindowFlags_NoCollapse |
-					ImGuiWindowFlags_NoResize |
-					ImGuiWindowFlags_NoScrollbar);
-				ImGui::Image(texid, ImGui::GetWindowSize());
-				ImGui::End();
-				ImGui::PopStyleVar(2);
+				if (ImTextureID texid = pRenderTexture)
+				{
+					ImGuiIO& io = ImGui::GetIO();
+					ImGui::SetNextWindowPos(ImVec2(0, 0), 0, ImVec2(0, 0));
+					ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y));
+					ImGui::SetNextWindowBgAlpha(0);
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
+					ImGui::Begin("±³¾°", NULL, ImGuiWindowFlags_NoMove |
+						ImGuiWindowFlags_NoTitleBar |
+						ImGuiWindowFlags_NoBringToFrontOnFocus |
+						ImGuiWindowFlags_NoInputs |
+						ImGuiWindowFlags_NoCollapse |
+						ImGuiWindowFlags_NoResize |
+						ImGuiWindowFlags_NoScrollbar);
+					ImGui::Image(texid, ImGui::GetWindowSize());
+					ImGui::End();
+					ImGui::PopStyleVar(2);
+				}
 			}
 		}
 	}
@@ -613,6 +650,7 @@ void MainEditor::Render(MTaskNode* pNode)
 	ShowMenu();
 	ShowMaterial();
 	ShowRenderView(pRenderTarget->unImageIndex);
+	ShowShadowMapView(pRenderTarget->unImageIndex);
 	ShowNodeTree();
 	ShowProperty();
 	ShowMessage();

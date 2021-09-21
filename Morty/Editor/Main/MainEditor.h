@@ -59,12 +59,17 @@ public:
 	void ShowMenu();
 
 	void ShowRenderView(const size_t& nImageCount);
+	void ShowShadowMapView(const size_t& nImageCount);
 	void ShowNodeTree();
 	void ShowProperty();
 	void ShowMaterial();
 	void ShowMessage();
 	void ShowResource();
 	void ShowRenderGraphView();
+
+protected:
+
+	Vector4 GetWidgetSize();
 
 protected:
 
@@ -93,6 +98,7 @@ protected:
 	bool m_bShowMaterial;
 	bool m_bShowResource;
 	bool m_bShowRenderGraph;
+	bool m_bShowShadowMap;
 
 	SceneTexture m_SceneTexture;
 

@@ -29,10 +29,10 @@ void MShadowMapShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	m_pWorldMatrixParam = new MShaderConstantParam();
 	m_pWorldMatrixParam->unSet = 1;
 	m_pWorldMatrixParam->unBinding = 0;
+	m_pWorldMatrixParam->eShaderType = MEShaderParamType::EVertex;
 
 	MStruct worldMatrixSrt;
 	worldMatrixSrt.AppendMVariant("U_matCamProj", Matrix4());
-	worldMatrixSrt.AppendMVariant("U_matLightProj", Matrix4());
 
 	m_pWorldMatrixParam->var = worldMatrixSrt;
 
@@ -52,8 +52,6 @@ void MShadowMapShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 	{
 		MStruct& cStruct = *m_pWorldMatrixParam->var.GetStruct();
 		cStruct[0] = info.m4DirLightInvProj;
-		cStruct[1] = info.m4DirLightInvProj;
-		cStruct[2] = info.m4DirLightInvProj;
 
 		m_pWorldMatrixParam->SetDirty();
 	}

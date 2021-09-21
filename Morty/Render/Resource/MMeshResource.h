@@ -30,7 +30,7 @@ public:
 
 	enum MEMeshVertexType {
 		Normal = 0,
-		Skeleton = 1,
+		Skeleton,
 	};
 public:
 	MMeshResource();
@@ -55,6 +55,10 @@ public:
 	virtual bool SaveTo(const MString& strResourcePath) override;
 
 	virtual void OnDelete() override;
+
+public:
+
+	void LoadAsCube();
 
 protected:
 

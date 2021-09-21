@@ -80,6 +80,15 @@ MPassTargetDescription::MPassTargetDescription(const bool bClear, const MColor& 
 
 MPassTargetDescription::MPassTargetDescription()
 	: bClearWhenRender(true)
+	, bAlreadyRender(false)
 	, cClearColor(MColor::Black)
 {
+}
+
+MPassTargetDescription::MPassTargetDescription(const bool bClear, const bool bAlready, const MColor& cClearColor)
+	: bClearWhenRender(bClear)
+	, bAlreadyRender(bAlready)
+	, cClearColor(cClearColor)
+{
+
 }

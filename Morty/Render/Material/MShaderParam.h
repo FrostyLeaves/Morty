@@ -77,6 +77,9 @@ struct MShaderTextureParam : public MShaderParam
 	MTexture* pTexture;
 	void* pImageIdent;
 	METextureType eType;
+
+public:
+	void SetTexture(MTexture* pTexture);
 };
 
 struct MShaderSubpasssInputParam : public MShaderTextureParam

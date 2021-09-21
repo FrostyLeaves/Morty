@@ -3,7 +3,8 @@
 #include "MIDevice.h"
 
 MTexture::MTexture()
-	: m_v2Size(1.0, 1.0)
+	: m_strTextureName()
+	, m_v2Size(1.0, 1.0)
 	, m_eRenderType(METextureLayout::ERGBA8)
 	, m_eRenderUsage(METextureRenderUsage::EUnknow)
 	, m_eShaderUsage(METextureShaderUsage::EUnknow)
@@ -65,6 +66,18 @@ MTexture* MTexture::CreateRenderTarget()
 	pTexture->SetRenderUsage(METextureRenderUsage::ERenderBack);
 	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
 	pTexture->SetTextureLayout(METextureLayout::ERGBA8);
+
+	return pTexture;
+}
+
+MTexture* MTexture::CreateRenderTargetFloat32()
+{
+	MTexture* pTexture = new MTexture();
+	pTexture->SetMipmapsEnable(false);
+	pTexture->SetReadable(false);
+	pTexture->SetRenderUsage(METextureRenderUsage::ERenderBack);
+	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
+	pTexture->SetTextureLayout(METextureLayout::ER32);
 
 	return pTexture;
 }
