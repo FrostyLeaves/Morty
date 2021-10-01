@@ -43,8 +43,8 @@ int main()
 // 		MModelConverter convert(&engine);
 // 
 // 		MModelConvertInfo info;
-// 		info.eMaterialType = MModelConvertMaterialType::E_Default_Forward;
-// 		info.strOutputDir = "D:/test";
+// 		info.eMaterialType = MModelConvertMaterialType::E_PBR_Deferred;
+// 		info.strOutputDir = "D:/test_pbr";
 // 		info.strOutputName = "banana";
 // 		info.strResourcePath = "D:/project/Morty_Restructure/Resource/Model/banana/ripe-banana.obj";
 // 
@@ -114,11 +114,11 @@ int main()
 			}
 		}
 
-		if (MRenderableMeshComponent* pMeshComponent = pScene->GetComponent(vMeshComponents[0])->DynamicCast<MRenderableMeshComponent>())
-		{
-	 		MMaterial* pMaterial = pMeshComponent->GetMaterial();
-			pMaterial->SetMaterialType(MEMaterialType::EDepthPeel);
-		}
+// 		if (MRenderableMeshComponent* pMeshComponent = pScene->GetComponent(vMeshComponents[0])->DynamicCast<MRenderableMeshComponent>())
+// 		{
+// 	 		MMaterial* pMaterial = pMeshComponent->GetMaterial();
+// 			pMaterial->SetMaterialType(MEMaterialType::EDepthPeel);
+// 		}
 
 		MEntity* pDirLight = pScene->CreateEntity();
 		pDirLight->SetName("DirectionalLight");

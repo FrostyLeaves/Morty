@@ -8,3 +8,13 @@ MIRenderProgram::MIRenderProgram()
 {
 
 }
+
+std::vector<MTexture*> MIRenderProgram::GetOutputTextures()
+{
+	if (MTexture* pTexture = GetOutputTexture())
+	{
+		return { pTexture };
+	}
+
+	return {};
+}

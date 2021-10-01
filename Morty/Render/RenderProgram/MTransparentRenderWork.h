@@ -53,7 +53,8 @@ protected:
 	void InitializeFillRenderPass();
 	void ReleaseFillRenderPass();
 
-
+	void InitializeFrameShaderParams();
+	void ReleaseFrameShaderParams();
 private:
 
 	MTextureResource* m_pWhiteTexture;

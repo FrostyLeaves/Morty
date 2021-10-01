@@ -41,6 +41,8 @@
 #include "MInputSystem.h"
 #include "MRenderSystem.h"
 
+#include "MForwardRenderProgram.h"
+
 
 class MainEditorTask : public MTaskNode
 {
@@ -101,7 +103,7 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	m_pImGuiRenderable->Initialize();
 
 	//Setup Render
-	m_SceneTexture.Initialize(pEngine, GetImageCount());
+	m_SceneTexture.Initialize(pEngine, MForwardRenderProgram::GetClassTypeName(), GetImageCount());
 
 	m_pNodeTreeView = new NodeTreeView();
 	m_pPropertyView = new PropertyView();
@@ -368,6 +370,17 @@ void MainEditor::ShowMenu()
 
 			}
 
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("Tool"))
+		{
+			if (ImGui::MenuItem("Snip shot"))
+			{
+				m_SceneTexture.Snapshot("./test.png");
+			}
+
+			ImGui::EndMenu();
 		}
 
 		ImGui::EndMainMenuBar();

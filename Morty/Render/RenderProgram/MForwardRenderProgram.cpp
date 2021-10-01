@@ -68,10 +68,11 @@ void MForwardRenderProgram::RenderReady(MTaskNode* pTaskNode)
 
 
 	//Update RenderInfo
-	UpdateRenderGroup(m_renderInfo);
+	m_renderInfo.CollectRenderMesh();
+
 	if (m_pShadowMapWork)
 	{
-		m_pShadowMapWork->UpdateShadowRenderGroup(m_renderInfo);
+		m_renderInfo.CollectShadowMesh();
 	}
 
 
@@ -85,7 +86,7 @@ void MForwardRenderProgram::RenderReady(MTaskNode* pTaskNode)
 	//Resize FrameBuffer.
 	if (m_forwardRenderPass.GetFrameBufferSize() != pViewport->GetSize())
 	{
-		ResizeForwardRenderPass(pViewport->GetSize(), pRenderSystem->GetDevice());
+		pRenderSystem->ResizeFrameBuffer(m_forwardRenderPass, pViewport->GetSize());
 
 		if (m_pTransparentWork)
 		{
@@ -105,9 +106,12 @@ void MForwardRenderProgram::RenderForward(MTaskNode* pTaskNode)
 	MViewport* pViewport = m_renderInfo.pViewport;
 
 
-	if (MTexture* pShadowMap = GetShadowmapTexture())
+	if (m_pShadowMapWork)
 	{
-		pCommand->SetRenderToTextureBarrier({ pShadowMap });
+		if (MTexture* pShadowMap = m_pShadowMapWork->GetShadowMap())
+		{
+			pCommand->SetRenderToTextureBarrier({ pShadowMap });
+		}
 	}
 
 	pCommand->BeginRenderPass(&m_forwardRenderPass);
@@ -148,14 +152,22 @@ MTexture* MForwardRenderProgram::GetOutputTexture()
 	return m_pFinalOutputTexture;
 }
 
-MTexture* MForwardRenderProgram::GetShadowmapTexture()
+std::vector<MTexture*> MForwardRenderProgram::GetOutputTextures()
 {
+	std::vector<MTexture*> vResult;
+
+	if (m_pFinalOutputTexture)
+		vResult.push_back(m_pFinalOutputTexture);
+
 	if (m_pShadowMapWork)
 	{
-		return m_pShadowMapWork->GetShadowMap();
+		if (MTexture* pTexture = m_pShadowMapWork->GetShadowMap())
+		{
+			vResult.push_back(pTexture);
+		}
 	}
 
-	return nullptr;
+	return vResult;
 }
 
 void MForwardRenderProgram::DrawStaticMesh(MRenderInfo& info, MIRenderCommand* pCommand)
@@ -291,74 +303,8 @@ void MForwardRenderProgram::ReleaseFrameShaderParams()
 	m_frameParamSet.ReleaseShaderParamSet(GetEngine());
 }
 
-void MForwardRenderProgram::UpdateRenderGroup(MRenderInfo& info)
-{
-	MScene* pScene = info.pViewport->GetScene();
-
-	Vector3 v3BoundsMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
-	Vector3 v3BoundsMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-
-
-	MComponentGroup<MRenderableMeshComponent>* pMeshComponents = pScene->FindComponents<MRenderableMeshComponent>();
-
-	if (!pMeshComponents)
-		return;
-
-	for (MRenderableMeshComponent& meshComp : pMeshComponents->m_vComponent)
-	{
-		MMaterial* pMaterial = meshComp.GetMaterial();
-		if (!pMaterial)
-			continue;
-
-		MSceneComponent* pSceneComponent = meshComp.GetEntity()->GetComponent<MSceneComponent>();
-
-		if (!pSceneComponent->GetVisibleRecursively())
-			continue;
-
-		const MBoundsAABB* pBounds = meshComp.GetBoundsAABB();
-
-		if (MCameraFrustum::EOUTSIDE == info.pViewport->GetCameraFrustum().ContainTest(*pBounds))
-			continue;
-
-		if (pMaterial->GetMaterialType() == MEMaterialType::EDepthPeel)
-		{
-			auto& meshes = m_renderInfo.m_tTransparentGroupMesh[pMaterial];
-			meshes.push_back(&meshComp);
-		}
-		else
-		{
-			auto& meshes = m_renderInfo.m_tMaterialGroupMesh[pMaterial];
-			meshes.push_back(&meshComp);
-		}
-
-
-		pBounds->UnionMinMax(v3BoundsMin, v3BoundsMax);
-	}
-
-	m_renderInfo.cMeshRenderAABB.SetMinMax(v3BoundsMin, v3BoundsMax);
-}
-
 void MForwardRenderProgram::UpdateFrameParams(MRenderInfo& info)
 {
 	m_frameParamSet.UpdateShaderSharedParams(info);
 	info.pFrameShaderParamSet = &m_frameParamSet;
-}
-
-void MForwardRenderProgram::ResizeForwardRenderPass(const Vector2& v2Size, MIDevice* pDevice)
-{
-	for (MTexture* pTexture : m_forwardRenderPass.m_vBackTextures)
-	{
-		pTexture->SetSize(v2Size);
-		pTexture->DestroyBuffer(pDevice);
-		pTexture->GenerateBuffer(pDevice);
-	}
-
-	if (m_forwardRenderPass.m_pDepthTexture)
-	{
-		m_forwardRenderPass.m_pDepthTexture->SetSize(v2Size);
-		m_forwardRenderPass.m_pDepthTexture->DestroyBuffer(pDevice);
-		m_forwardRenderPass.m_pDepthTexture->GenerateBuffer(pDevice);
-	}
-
-	m_forwardRenderPass.Resize(pDevice);
 }

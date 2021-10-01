@@ -23,7 +23,7 @@ public:
 	SceneTexture();
 	virtual ~SceneTexture();
 
-	void Initialize(MEngine* pEngine, const size_t& nImageCount);
+	void Initialize(MEngine* pEngine, const MString& strRenderProgram, const size_t& nImageCount);
 	void Release();
 
 	void SetSize(const Vector2& v2Size);
@@ -38,6 +38,9 @@ public:
 
 	void SetBackColor(const MColor& cColor);
 
+
+	void Snapshot(const MString& strSnapshotPath);
+
 protected:
 
 	Vector2 m_v2Size;
@@ -47,9 +50,12 @@ protected:
 
 	MViewport* m_pRenderViewport;
 
-	std::vector<MForwardRenderProgram*> m_vRenderProgram;
+	std::vector<MIRenderProgram*> m_vRenderProgram;
 
 	size_t m_nImageCount;
+
+	bool m_bSnapshot;
+	MString m_strSnapshotPath;
 };
 
 

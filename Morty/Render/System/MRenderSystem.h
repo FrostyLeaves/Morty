@@ -11,7 +11,7 @@
 #include "MRenderGlobal.h"
 #include "MSystem.h"
 #include "MComponent.h"
-
+#include "MRenderPass.h"
 
 class MIDevice;
 class MTaskNode;
@@ -41,6 +41,12 @@ public:
 
     virtual void Initialize();
     virtual void Release();
+
+
+public:
+
+    void ResizeFrameBuffer(MRenderPass& renderpass, const Vector2& v2Size);
+    void ReleaseRenderpass(MRenderPass& renderpass);
 
 private:
 

@@ -35,7 +35,7 @@ MDeferredRenderProgram::MDeferredRenderProgram()
 	, m_pTransparentWork(nullptr)
 	, m_nFrameIndex(0)
 	, m_pFinalOutputTexture(nullptr)
-	, m_forwardRenderPass()
+	, m_gbufferRenderPass()
 	, m_pPrimaryCommand(nullptr)
 {
 	
@@ -68,10 +68,10 @@ void MDeferredRenderProgram::RenderReady(MTaskNode* pTaskNode)
 
 
 	//Update RenderInfo
-	UpdateRenderGroup(m_renderInfo);
+	m_renderInfo.CollectRenderMesh();
 	if (m_pShadowMapWork)
 	{
-		m_pShadowMapWork->UpdateShadowRenderGroup(m_renderInfo);
+		m_renderInfo.CollectShadowMesh();
 	}
 
 
@@ -83,14 +83,17 @@ void MDeferredRenderProgram::RenderReady(MTaskNode* pTaskNode)
 	}
 
 	//Resize FrameBuffer.
-	if (m_forwardRenderPass.GetFrameBufferSize() != pViewport->GetSize())
+	if (m_gbufferRenderPass.GetFrameBufferSize() != pViewport->GetSize())
 	{
-		ResizeForwardRenderPass(pViewport->GetSize(), pRenderSystem->GetDevice());
+		MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+
+		pRenderSystem->ResizeFrameBuffer(m_gbufferRenderPass, pViewport->GetSize());
+		pRenderSystem->ResizeFrameBuffer(m_lightningRenderPass, pViewport->GetSize());
 
 		if (m_pTransparentWork)
 		{
 			m_pTransparentWork->Resize(pViewport->GetSize());
-			m_pTransparentWork->SetRenderTarget(GetOutputTexture(), m_forwardRenderPass.m_pDepthTexture);
+			m_pTransparentWork->SetRenderTarget(GetOutputTexture(), m_gbufferRenderPass.m_pDepthTexture);
 		}
 	}
 }
@@ -110,7 +113,7 @@ void MDeferredRenderProgram::RenderGBuffer(MTaskNode* pTaskNode)
 		pCommand->SetRenderToTextureBarrier({ pShadowMap });
 	}
 
-	pCommand->BeginRenderPass(&m_forwardRenderPass);
+	pCommand->BeginRenderPass(&m_gbufferRenderPass);
 
 	Vector2 v2LeftTop = pViewport->GetLeftTop();
 	Vector2 v2Size = pViewport->GetSize();
@@ -124,7 +127,25 @@ void MDeferredRenderProgram::RenderGBuffer(MTaskNode* pTaskNode)
 
 void MDeferredRenderProgram::RenderLightning(MTaskNode* pTaskNode)
 {
+	MIRenderCommand* pCommand = m_renderInfo.pPrimaryRenderCommand;
 
+	pCommand->SetRenderToTextureBarrier(m_gbufferRenderPass.m_vBackTextures);
+
+	pCommand->BeginRenderPass(&m_lightningRenderPass);
+
+	Vector2 v2Size = m_lightningRenderPass.m_vBackTextures[0]->GetSize();
+
+	pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
+	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
+
+
+	if (pCommand->SetUseMaterial(m_pLightningMaterial))
+	{
+		pCommand->SetShaderParamSet(&m_frameParamSet);
+		pCommand->DrawMesh(m_pScreenRectMesh);
+	}
+
+	pCommand->EndRenderPass();
 }
 
 void MDeferredRenderProgram::RenderShadow(MTaskNode* pTaskNode)
@@ -151,6 +172,24 @@ void MDeferredRenderProgram::RenderTransparent(MTaskNode* pTaskNode)
 MTexture* MDeferredRenderProgram::GetOutputTexture()
 {
 	return m_pFinalOutputTexture;
+}
+
+std::vector<MTexture*> MDeferredRenderProgram::GetOutputTextures()
+{
+	std::vector<MTexture*> vResult;
+
+	if (m_pFinalOutputTexture)
+		vResult.push_back(m_pFinalOutputTexture);
+
+	if (m_pShadowMapWork)
+	{
+		if (MTexture* pTexture = m_pShadowMapWork->GetShadowMap())
+		{
+			vResult.push_back(pTexture);
+		}
+	}
+
+	return vResult;
 }
 
 MTexture* MDeferredRenderProgram::GetShadowmapTexture()
@@ -218,7 +257,7 @@ void MDeferredRenderProgram::OnCreated()
 	pRenderTransparentTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_1(MDeferredRenderProgram::RenderTransparent, this));
 
 	/*
-		RenderReady --> RenderShadowmap --> RenderForward --> RenderTransparent --> output				
+		RenderReady --> RenderShadowmap --> RenderGBuffer --> RenderLightning --> RenderTransparent --> output				
 	*/
 
  	pRenderReadyTask->AppendOutput()->LinkTo(pRenderShadowTask->AppendInput());
@@ -258,11 +297,11 @@ void MDeferredRenderProgram::InitializeRenderPass()
 		"Normal_Roughness",
 		"Depth"
 	};
-	vkSetDebugUtilsObjectNameEXT
 
 	for (const MString& strTextureName : aTextureName)
 	{
 		MTexture* pRenderTarget = MTexture::CreateRenderTarget();
+		pRenderTarget->SetName(strTextureName);
 		pRenderTarget->SetSize(v2Size);
 		pRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
 		m_gbufferRenderPass.m_vBackTextures.push_back(pRenderTarget);
@@ -274,30 +313,27 @@ void MDeferredRenderProgram::InitializeRenderPass()
 	m_gbufferRenderPass.m_pDepthTexture->GenerateBuffer(pRenderSystem->GetDevice());
 	m_gbufferRenderPass.m_DepthDesc.bClearWhenRender = true;
 	m_gbufferRenderPass.m_DepthDesc.cClearColor = MColor::White;
-
 	m_gbufferRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
 
-	m_pFinalOutputTexture = pRenderTarget;
+
+
+	MTexture* pLightningRenderTarget = MTexture::CreateRenderTarget();
+	pLightningRenderTarget->SetName("Lightning Output");
+	pLightningRenderTarget->SetSize(v2Size);
+	pLightningRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
+	m_lightningRenderPass.m_vBackTextures.push_back(pLightningRenderTarget);
+	m_lightningRenderPass.m_vBackDesc.push_back(MPassTargetDescription(true, MColor::Black_T));
+	m_lightningRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
+
+	m_pFinalOutputTexture = pLightningRenderTarget;
 }
 
 void MDeferredRenderProgram::ReleaseRenderPass()
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
-	for (MTexture* pTexture : m_forwardRenderPass.m_vBackTextures)
-	{
-		pTexture->DestroyBuffer(pRenderSystem->GetDevice());
-		delete pTexture;
-		pTexture = nullptr;
-	}
-	if (m_forwardRenderPass.m_pDepthTexture)
-	{
-		m_forwardRenderPass.m_pDepthTexture->DestroyBuffer(pRenderSystem->GetDevice());
-		delete m_forwardRenderPass.m_pDepthTexture;
-		m_forwardRenderPass.m_pDepthTexture = nullptr;
-	}
-
-	m_forwardRenderPass.DestroyBuffer(pRenderSystem->GetDevice());
+	pRenderSystem->ReleaseRenderpass(m_gbufferRenderPass);
+	pRenderSystem->ReleaseRenderpass(m_lightningRenderPass);
 }
 
 void MDeferredRenderProgram::InitializeFrameShaderParams()
@@ -310,74 +346,8 @@ void MDeferredRenderProgram::ReleaseFrameShaderParams()
 	m_frameParamSet.ReleaseShaderParamSet(GetEngine());
 }
 
-void MDeferredRenderProgram::UpdateRenderGroup(MRenderInfo& info)
-{
-	MScene* pScene = info.pViewport->GetScene();
-
-	Vector3 v3BoundsMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
-	Vector3 v3BoundsMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-
-
-	MComponentGroup<MRenderableMeshComponent>* pMeshComponents = pScene->FindComponents<MRenderableMeshComponent>();
-
-	if (!pMeshComponents)
-		return;
-
-	for (MRenderableMeshComponent& meshComp : pMeshComponents->m_vComponent)
-	{
-		MMaterial* pMaterial = meshComp.GetMaterial();
-		if (!pMaterial)
-			continue;
-
-		MSceneComponent* pSceneComponent = meshComp.GetEntity()->GetComponent<MSceneComponent>();
-
-		if (!pSceneComponent->GetVisibleRecursively())
-			continue;
-
-		const MBoundsAABB* pBounds = meshComp.GetBoundsAABB();
-
-		if (MCameraFrustum::EOUTSIDE == info.pViewport->GetCameraFrustum().ContainTest(*pBounds))
-			continue;
-
-		if (pMaterial->GetMaterialType() == MEMaterialType::EDepthPeel)
-		{
-			auto& meshes = m_renderInfo.m_tTransparentGroupMesh[pMaterial];
-			meshes.push_back(&meshComp);
-		}
-		else
-		{
-			auto& meshes = m_renderInfo.m_tMaterialGroupMesh[pMaterial];
-			meshes.push_back(&meshComp);
-		}
-
-
-		pBounds->UnionMinMax(v3BoundsMin, v3BoundsMax);
-	}
-
-	m_renderInfo.cMeshRenderAABB.SetMinMax(v3BoundsMin, v3BoundsMax);
-}
-
 void MDeferredRenderProgram::UpdateFrameParams(MRenderInfo& info)
 {
 	m_frameParamSet.UpdateShaderSharedParams(info);
 	info.pFrameShaderParamSet = &m_frameParamSet;
-}
-
-void MDeferredRenderProgram::ResizeForwardRenderPass(const Vector2& v2Size, MIDevice* pDevice)
-{
-	for (MTexture* pTexture : m_forwardRenderPass.m_vBackTextures)
-	{
-		pTexture->SetSize(v2Size);
-		pTexture->DestroyBuffer(pDevice);
-		pTexture->GenerateBuffer(pDevice);
-	}
-
-	if (m_forwardRenderPass.m_pDepthTexture)
-	{
-		m_forwardRenderPass.m_pDepthTexture->SetSize(v2Size);
-		m_forwardRenderPass.m_pDepthTexture->DestroyBuffer(pDevice);
-		m_forwardRenderPass.m_pDepthTexture->GenerateBuffer(pDevice);
-	}
-
-	m_forwardRenderPass.Resize(pDevice);
 }

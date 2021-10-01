@@ -279,9 +279,65 @@ bool MVulkanRenderCommand::SetRenderToTextureBarrier(const std::vector<MTexture*
 	return true;
 }
 
+VkPipelineStageFlags GetSrcPipelineStageFlags(VkImageLayout imageLayout)
+{
+	switch (imageLayout)
+	{
+	case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+	case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+		return VK_PIPELINE_STAGE_TRANSFER_BIT;
+
+	case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+		return VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+	case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+	case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+		return VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+
+	case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+		return VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+
+	case VK_IMAGE_LAYOUT_UNDEFINED:
+		return VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+
+	default:
+		return VK_PIPELINE_STAGE_NONE_KHR;
+	}
+
+	return VK_PIPELINE_STAGE_NONE_KHR;
+}
+
+VkPipelineStageFlags GetDstPipelineStageFlags(VkImageLayout imageLayout)
+{
+	switch (imageLayout)
+	{
+	case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+	case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+		return VK_PIPELINE_STAGE_TRANSFER_BIT;
+
+	case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+		return VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+	case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+	case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+		return VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+
+	case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+		return VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+
+	default:
+		return VK_PIPELINE_STAGE_NONE_KHR;
+	}
+
+	return VK_PIPELINE_STAGE_NONE_KHR;
+}
+
 void MVulkanRenderCommand::SetTextureLayout(const std::vector<MTexture*>& vTextures, VkImageLayout newLayout)
 {
 	std::vector<VkImageMemoryBarrier> vImageBarrier;
+
+	VkPipelineStageFlags srcPipelineStage = VK_PIPELINE_STAGE_NONE_KHR;
+	VkPipelineStageFlags dstPipelineStage = VK_PIPELINE_STAGE_NONE_KHR;
 
 	for (uint32_t i = 0; i < vTextures.size(); ++i)
 	{
@@ -293,25 +349,33 @@ void MVulkanRenderCommand::SetTextureLayout(const std::vector<MTexture*>& vTextu
 		if(oldLayout == newLayout)
 			continue;
 
+		VkImageSubresourceRange subresourceRange;
+		if (vTextures[i]->GetRenderUsage() == METextureRenderUsage::ERenderDepth)
+		{
+			subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+			subresourceRange.baseMipLevel = 0;
+			subresourceRange.levelCount = vTextures[i]->m_unMipmapLevel;
+			subresourceRange.baseArrayLayer = 0;
+			subresourceRange.layerCount = 1;
+		}
+		else
+		{
+			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			subresourceRange.baseMipLevel = 0;
+			subresourceRange.levelCount = vTextures[i]->m_unMipmapLevel;
+			subresourceRange.baseArrayLayer = 0;
+			subresourceRange.layerCount = 1;
+		}
+
 		vImageBarrier.push_back(VkImageMemoryBarrier());
 		VkImageMemoryBarrier& imageMemoryBarrier = vImageBarrier.back();
 
-		imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-
-		imageMemoryBarrier.oldLayout = oldLayout;
-		imageMemoryBarrier.newLayout = newLayout;
-
-		imageMemoryBarrier.image = vTextures[i]->m_VkTextureImage;
-
-		if (vTextures[i]->GetRenderUsage() == METextureRenderUsage::ERenderDepth)
-			imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1 };
-		else
-			imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-
-		imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-		imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		m_pDevice->TransitionImageLayout(imageMemoryBarrier, vTextures[i]->m_VkTextureImage, oldLayout, newLayout, subresourceRange);
 
 		m_tTextureLayout[vTextures[i]] = newLayout;
+
+		srcPipelineStage |= GetSrcPipelineStageFlags(oldLayout);
+		dstPipelineStage |= GetDstPipelineStageFlags(newLayout);
 	}
 
 	if (vImageBarrier.empty())
@@ -319,8 +383,8 @@ void MVulkanRenderCommand::SetTextureLayout(const std::vector<MTexture*>& vTextu
 
 	vkCmdPipelineBarrier(
 		m_VkCommandBuffer,
-		VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+		srcPipelineStage,
+		dstPipelineStage,
 		0,
 		0, nullptr,
 		0, nullptr,
@@ -335,12 +399,6 @@ bool MVulkanRenderCommand::DownloadTexture(MTexture* pTexture, const uint32_t& u
 	uint32_t unValidMipIdx = unMipIdx;
 	if (unValidMipIdx >= pTexture->m_unMipmapLevel)
 		unValidMipIdx = pTexture->m_unMipmapLevel - 1;
-
-	VkImageSubresourceRange vkSubresourceRange = {};
-	vkSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	vkSubresourceRange.baseMipLevel = 0;
-	vkSubresourceRange.levelCount = pTexture->m_unMipmapLevel;
-	vkSubresourceRange.layerCount = 1;
 
 	Vector2 size = pTexture->GetSize();
 	VkImage textureImage = pTexture->m_VkTextureImage;
@@ -384,11 +442,9 @@ bool MVulkanRenderCommand::DownloadTexture(MTexture* pTexture, const uint32_t& u
 
 
 
-	m_pDevice->TransitionImageLayout(textureImage, pTexture->m_VkImageLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vkSubresourceRange, m_VkCommandBuffer);
+	SetTextureLayout({ pTexture }, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
 	vkCmdCopyImageToBuffer(m_VkCommandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, readBackBuffer, 1, &region);
-
-	m_pDevice->TransitionImageLayout(textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pTexture->m_VkImageLayout, vkSubresourceRange, m_VkCommandBuffer);
 
 	m_aRenderFinishedCallback.push_back([=]() {
 
@@ -406,7 +462,25 @@ bool MVulkanRenderCommand::CopyImageBuffer(MTexture* pSource, MTexture* pDest)
 	if (!pSource || !pDest)
 		return false;
 
-	m_pDevice->CopyImageBuffer(pSource, pDest, m_VkCommandBuffer);
+	SetTextureLayout({ pSource }, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+	SetTextureLayout({ pDest }, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+	VkImageBlit blit{};
+	blit.srcOffsets[0] = { 0, 0, 0 };
+	blit.srcOffsets[1] = { static_cast<int32_t>(pSource->GetSize().x), static_cast<int32_t>(pSource->GetSize().y), 1 };
+	blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	blit.srcSubresource.mipLevel = 0;
+	blit.srcSubresource.baseArrayLayer = 0;
+	blit.srcSubresource.layerCount = 1;
+	blit.dstOffsets[0] = { 0, 0, 0 };
+	blit.dstOffsets[1] = { static_cast<int32_t>(pDest->GetSize().x), static_cast<int32_t>(pDest->GetSize().y), 1 };
+	blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	blit.dstSubresource.mipLevel = 0;
+	blit.dstSubresource.baseArrayLayer = 0;
+	blit.dstSubresource.layerCount = 1;
+
+	vkCmdBlitImage(m_VkCommandBuffer, pSource->m_VkTextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pDest->m_VkTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
+
 
 	return true;
 }

@@ -18,7 +18,7 @@ class MIRenderer;
 class MRenderInfo;
 class MRenderGraph;
 class MIMeshInstance;
-class MRenderCommand;
+class MIRenderCommand;
 struct MShaderConstantParam;
 class MORTY_API MIRenderProgram : public MObject
 {
@@ -27,11 +27,14 @@ public:
     MIRenderProgram();
     virtual ~MIRenderProgram() {}
 
-
     void SetViewport(MViewport* pViewport) { m_pViewport = pViewport; }
     MViewport* GetViewport() { return m_pViewport; }
 
+
+	virtual void Render(MIRenderCommand* pPrimaryCommand) = 0;
+
     virtual MTexture* GetOutputTexture() = 0;
+    virtual std::vector<MTexture*> GetOutputTextures();
 
 private:
 

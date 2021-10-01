@@ -35,8 +35,6 @@ public:
 
 	void UpdateShadowParams(MRenderInfo& info);
 
-	void UpdateShadowRenderGroup(MRenderInfo& info);
-
 public:
 
 	MTexture* GetShadowMap();

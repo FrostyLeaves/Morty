@@ -6,6 +6,7 @@
 #include "MTexture.h"
 #include "MViewport.h"
 #include "MTaskGraph.h"
+#include "MRenderCommand.h"
 
 #include "MObjectSystem.h"
 #include "MEntitySystem.h"
@@ -18,12 +19,16 @@
 
 #include "MForwardRenderProgram.h"
 
+#include "spot.hpp"
+
 SceneTexture::SceneTexture()
 	: m_pEngine(nullptr)
 	, m_pScene(nullptr)
 	, m_pRenderViewport(nullptr)
 	, m_vRenderProgram()
 	, m_nImageCount(3)
+	, m_bSnapshot(false)
+	, m_strSnapshotPath("")
 {
 
 }
@@ -33,7 +38,7 @@ SceneTexture::~SceneTexture()
 
 }
 
-void SceneTexture::Initialize(MEngine* pEngine, const size_t& nImageCount)
+void SceneTexture::Initialize(MEngine* pEngine, const MString& strRenderProgram, const size_t& nImageCount)
 {
  	m_pEngine = pEngine;
 	m_nImageCount = nImageCount;
@@ -60,7 +65,8 @@ void SceneTexture::Initialize(MEngine* pEngine, const size_t& nImageCount)
 	m_vRenderProgram.resize(nImageCount);
 	for (size_t i = 0; i < nImageCount; ++i)
 	{
-		m_vRenderProgram[i] = pObjectSystem->CreateObject<MForwardRenderProgram>();
+		MObject* pRenderProgram = pObjectSystem->CreateObject(strRenderProgram);
+		m_vRenderProgram[i] = pRenderProgram->DynamicCast<MIRenderProgram>();
 		m_vRenderProgram[i]->SetViewport(m_pRenderViewport);
 	}
 
@@ -121,7 +127,10 @@ MTexture* SceneTexture::GetShadowmapTexture(const size_t& nImageIndex)
 {
 	if (nImageIndex < m_vRenderProgram.size())
 	{
-		return m_vRenderProgram[nImageIndex]->GetShadowmapTexture();
+		std::vector<MTexture*>&& vTextures = m_vRenderProgram[nImageIndex]->GetOutputTextures();
+
+		if (vTextures.size() > 1)
+			return vTextures[1];
 	}
 
 	return nullptr;
@@ -131,10 +140,27 @@ void SceneTexture::SetBackColor(const MColor& cColor)
 {
 }
 
+void SceneTexture::Snapshot(const MString& strSnapshotPath)
+{
+	m_strSnapshotPath = strSnapshotPath;
+	m_bSnapshot = true;
+}
+
 void SceneTexture::UpdateTexture(const size_t& nImageIndex, MIRenderCommand* pRenderCommand)
 {
 	if (nImageIndex < m_vRenderProgram.size())
 	{
 		m_vRenderProgram[nImageIndex]->Render(pRenderCommand);
+
+		if (m_bSnapshot)
+		{
+			pRenderCommand->DownloadTexture(GetTexture(nImageIndex), 0, [=](void* pImageData, const Vector2& v2Size) {
+				
+				std::string&& data = spot::internals::encode_png(v2Size.x, v2Size.y, pImageData, 4);
+				spot::internals::writefile(m_strSnapshotPath, data);
+				});
+
+			m_bSnapshot = false;
+		}
 	}
 }

@@ -38,14 +38,11 @@ MTransparentRenderWork::~MTransparentRenderWork()
 
 void MTransparentRenderWork::OnCreated()
 {
-	InitializeMaterial();
 	InitializeMesh();
 	InitializeTexture();
+	InitializeMaterial();
+	InitializeFrameShaderParams();
 
-	for (uint32_t i = 0; i < 2; ++i)
-	{
-		m_aFrameParamSet[i].InitializeShaderParamSet(GetEngine());
-	}
 
 	InitializePeelRenderPass();
 	InitializeFillRenderPass();
@@ -56,14 +53,10 @@ void MTransparentRenderWork::OnDelete()
 	ReleaseFillRenderPass();
 	ReleasePeelRenderPass();
 
-	for (uint32_t i = 0; i < 2; ++i)
-	{
-		m_aFrameParamSet[i].ReleaseShaderParamSet(GetEngine());
-	}
-
+	ReleaseFrameShaderParams();
+	ReleaseMaterial();
 	ReleaseTexture();
 	ReleaseMesh();
-	ReleaseMaterial();
 
 	Super::OnDelete();
 }
@@ -175,32 +168,7 @@ void MTransparentRenderWork::Resize(const Vector2& v2Size)
 	m_fillRenderPass.m_vBackTextures[0] = m_pOutputTexture;
 	m_fillRenderPass.Resize(pRenderSystem->GetDevice());
 
-	for (MTexture* pTexture : m_peelRenderPass.m_vBackTextures)
-	{
-		pTexture->SetSize(v2Size);
-		pTexture->DestroyBuffer(pRenderSystem->GetDevice());
-		pTexture->GenerateBuffer(pRenderSystem->GetDevice());
-	}
-
-	m_peelRenderPass.Resize(pRenderSystem->GetDevice());
-
-
-	m_aFrameParamSet[0].m_pTransparentFrontTextureParam->pTexture = m_pFrontDepthForPassB;
-	m_aFrameParamSet[0].m_pTransparentFrontTextureParam->SetDirty();
-	m_aFrameParamSet[0].m_pTransparentBackTextureParam->pTexture = m_pBackDepthForPassB;
-	m_aFrameParamSet[0].m_pTransparentBackTextureParam->SetDirty();
-
-	m_aFrameParamSet[1].m_pTransparentFrontTextureParam->pTexture = m_pFrontDepthForPassA;
-	m_aFrameParamSet[1].m_pTransparentFrontTextureParam->SetDirty();
-	m_aFrameParamSet[1].m_pTransparentBackTextureParam->pTexture = m_pBackDepthForPassA;
-	m_aFrameParamSet[1].m_pTransparentBackTextureParam->SetDirty();
-
-
-	std::vector<MShaderTextureParam*>& params = *m_pDrawFillMaterial->GetTextureParams();
-	params[0]->pTexture = m_pFrontTexture;
-	params[0]->SetDirty();
-	params[1]->pTexture = m_pBackTexture;
-	params[1]->SetDirty();
+	pRenderSystem->ResizeFrameBuffer(m_peelRenderPass, v2Size);
 }
 
 void MTransparentRenderWork::InitializeMesh()
@@ -240,17 +208,24 @@ void MTransparentRenderWork::InitializeMaterial()
 	MResource* pDPBPSResource = pResourceSystem->LoadResource("./Shader/depth_peel_blend.mps");
 	MResource* pDPFPSResource = pResourceSystem->LoadResource("./Shader/depth_peel_fill.mps");
 
+	m_pDrawPeelMaterial = pResourceSystem->CreateResource<MMaterialResource>();
+	m_pDrawPeelMaterial->SetMaterialType(MEMaterialType::EDepthPeel);
+	m_pDrawPeelMaterial->LoadVertexShader(pDPVSResource);
+	m_pDrawPeelMaterial->LoadPixelShader(pDPFPSResource);
+	m_pDrawPeelMaterial->AddRef();
+
+
 	m_pDrawFillMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pDrawFillMaterial->SetMaterialType(MEMaterialType::ETransparentBlend);
 	m_pDrawFillMaterial->LoadVertexShader(pDPVSResource);
 	m_pDrawFillMaterial->LoadPixelShader(pDPBPSResource);
 	m_pDrawFillMaterial->AddRef();
 
-	m_pDrawPeelMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-	m_pDrawPeelMaterial->SetMaterialType(MEMaterialType::EDepthPeel);
-	m_pDrawPeelMaterial->LoadVertexShader(pDPVSResource);
-	m_pDrawPeelMaterial->LoadPixelShader(pDPFPSResource);
-	m_pDrawPeelMaterial->AddRef();
+	std::vector<MShaderTextureParam*>& params = *m_pDrawFillMaterial->GetTextureParams();
+	params[0]->pTexture = m_pFrontTexture;
+	params[0]->SetDirty();
+	params[1]->pTexture = m_pBackTexture;
+	params[1]->SetDirty();
 }
 
 void MTransparentRenderWork::ReleaseMaterial()
@@ -458,4 +433,25 @@ void MTransparentRenderWork::ReleaseFillRenderPass()
 	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
 
 	m_fillRenderPass.DestroyBuffer(pRenderSystem->GetDevice());
+}
+
+void MTransparentRenderWork::InitializeFrameShaderParams()
+{
+	m_aFrameParamSet[0].InitializeShaderParamSet(GetEngine());
+	m_aFrameParamSet[0].m_pTransparentFrontTextureParam->pTexture = m_pFrontDepthForPassB;
+	m_aFrameParamSet[0].m_pTransparentFrontTextureParam->SetDirty();
+	m_aFrameParamSet[0].m_pTransparentBackTextureParam->pTexture = m_pBackDepthForPassB;
+	m_aFrameParamSet[0].m_pTransparentBackTextureParam->SetDirty();
+
+	m_aFrameParamSet[1].InitializeShaderParamSet(GetEngine());
+	m_aFrameParamSet[1].m_pTransparentFrontTextureParam->pTexture = m_pFrontDepthForPassA;
+	m_aFrameParamSet[1].m_pTransparentFrontTextureParam->SetDirty();
+	m_aFrameParamSet[1].m_pTransparentBackTextureParam->pTexture = m_pBackDepthForPassA;
+	m_aFrameParamSet[1].m_pTransparentBackTextureParam->SetDirty();
+}
+
+void MTransparentRenderWork::ReleaseFrameShaderParams()
+{
+	m_aFrameParamSet[0].ReleaseShaderParamSet(GetEngine());
+	m_aFrameParamSet[1].ReleaseShaderParamSet(GetEngine());
 }

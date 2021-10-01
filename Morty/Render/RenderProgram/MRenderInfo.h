@@ -24,17 +24,24 @@ struct MRenderInfo
 	class MViewport* pViewport;
 
 
-	// component
+	//camera
 	MEntity* pCameraEntity;
 	MEntity* pDirectionalLightEntity;
 
 
-	// bounds
+	//bounds
 	MBoundsAABB cShadowRenderAABB;
 	MBoundsAABB cMeshRenderAABB;
-	
-	
-	// shadow
+
+
+	// frame
+	MShaderParamSet* pFrameShaderParamSet;
+	MIRenderCommand* pPrimaryRenderCommand;
+
+
+	//renderable
+
+	//shadow
 	class MTexture* pShadowMapTexture;
 	Matrix4 m4DirLightInvProj; //valid if pDirectionalLightEntity enable.
 	std::map<MSkeletonInstance*, std::vector<MRenderableMeshComponent*>> m_tShadowGroupMesh;
@@ -42,13 +49,15 @@ struct MRenderInfo
 	// transparent
 	std::map<MMaterial*, std::vector<MRenderableMeshComponent*>> m_tTransparentGroupMesh;
 
-	// frame
-	MShaderParamSet* pFrameShaderParamSet;
-	MIRenderCommand* pPrimaryRenderCommand;
-
 	// mesh
 	std::map<MMaterial*, std::vector<MRenderableMeshComponent*>> m_tMaterialGroupMesh;
 
+
+
+public:
+
+	void CollectRenderMesh();
+	void CollectShadowMesh();
 };
 
 

@@ -38,7 +38,7 @@ public:
 
 public:
 
-	void Render(MIRenderCommand* pPrimaryCommand);
+	virtual void Render(MIRenderCommand* pPrimaryCommand) override;
 
 	void RenderReady(MTaskNode* pTaskNode);
 
@@ -51,7 +51,7 @@ public:
 	void RenderTransparent(MTaskNode* pTaskNode);
 
 	virtual MTexture* GetOutputTexture() override;
-
+	virtual std::vector<MTexture*> GetOutputTextures() override;
 
 //debug
 
@@ -71,11 +71,7 @@ protected:
 
 	void DrawStaticMesh(MRenderInfo& info, MIRenderCommand* pCommand);
 
-	void UpdateRenderGroup(MRenderInfo& info);
-
 	void UpdateFrameParams(MRenderInfo& info);
-
-	void ResizeForwardRenderPass(const Vector2& v2Size, MIDevice* pDevice);
 
 protected:
 
