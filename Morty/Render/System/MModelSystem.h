@@ -21,6 +21,8 @@ public:
 
 public:
 
+    virtual void SceneTick(MScene* pScene, const float& fDelta) override;
+
     void UpdateAnimation(MScene* pScene, const float& fDelta);
 
 private:

@@ -37,6 +37,7 @@ MDeferredRenderProgram::MDeferredRenderProgram()
 	, m_pFinalOutputTexture(nullptr)
 	, m_gbufferRenderPass()
 	, m_pPrimaryCommand(nullptr)
+	, m_pLightningMaterial(nullptr)
 {
 	
 }
@@ -142,7 +143,7 @@ void MDeferredRenderProgram::RenderLightning(MTaskNode* pTaskNode)
 	if (pCommand->SetUseMaterial(m_pLightningMaterial))
 	{
 		pCommand->SetShaderParamSet(&m_frameParamSet);
-		pCommand->DrawMesh(m_pScreenRectMesh);
+		pCommand->DrawMesh(&m_ScreenDrawMesh);
 	}
 
 	pCommand->EndRenderPass();
@@ -234,7 +235,7 @@ void MDeferredRenderProgram::OnCreated()
 
 	m_pRenderGraph = pObjectSystem->CreateObject<MTaskGraph>();
 	m_pShadowMapWork = pObjectSystem->CreateObject<MShadowMapRenderWork>();
-	m_pTransparentWork = pObjectSystem->CreateObject<MTransparentRenderWork>();
+//	m_pTransparentWork = pObjectSystem->CreateObject<MTransparentRenderWork>();
 
 	MTaskNode* pRenderReadyTask = m_pRenderGraph->AddNode<MTaskNode>("Render_Ready");
 	pRenderReadyTask->SetThreadType(METhreadType::EAny);
@@ -267,6 +268,8 @@ void MDeferredRenderProgram::OnCreated()
 
 	InitializeFrameShaderParams();
 	InitializeRenderPass();
+	InitializeMaterial();
+	InitializeMesh();
 }
 
 void MDeferredRenderProgram::OnDelete()
@@ -283,6 +286,8 @@ void MDeferredRenderProgram::OnDelete()
 
 	ReleaseFrameShaderParams();
 	ReleaseRenderPass();
+	ReleaseMaterial();
+	ReleaseMesh();
 }
 
 void MDeferredRenderProgram::InitializeRenderPass()
@@ -344,6 +349,63 @@ void MDeferredRenderProgram::InitializeFrameShaderParams()
 void MDeferredRenderProgram::ReleaseFrameShaderParams()
 {
 	m_frameParamSet.ReleaseShaderParamSet(GetEngine());
+}
+
+void MDeferredRenderProgram::InitializeMaterial()
+{
+	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+
+	MResource* vs = pResourceSystem->LoadResource("./Shader/post_process_basic.mvs");
+	MResource* ps = pResourceSystem->LoadResource("./Shader/model_deferred.mps");
+
+
+	m_pLightningMaterial = pResourceSystem->CreateResource<MMaterialResource>();
+	m_pLightningMaterial->LoadVertexShader(vs);
+	m_pLightningMaterial->LoadPixelShader(ps);
+	m_pLightningMaterial->AddRef();
+
+	if (MShaderParamSet* pParams = m_pLightningMaterial->GetMaterialParamSet())
+	{
+		pParams->SetValue("U_mat_f3Base_fMetal", m_gbufferRenderPass.m_vBackTextures[0]);
+		pParams->SetValue("U_mat_f3Albedo_fAmbientOcc", m_gbufferRenderPass.m_vBackTextures[1]);
+		pParams->SetValue("U_mat_f3Normal_fRoughness", m_gbufferRenderPass.m_vBackTextures[2]);
+		pParams->SetValue("U_mat_fDepth", m_gbufferRenderPass.m_vBackTextures[3]);
+	}
+}
+
+void MDeferredRenderProgram::ReleaseMaterial()
+{
+	m_pLightningMaterial->SubRef();
+	m_pLightningMaterial = nullptr;
+}
+
+void MDeferredRenderProgram::InitializeMesh()
+{
+	MMesh<Vector2>& mesh = m_ScreenDrawMesh;
+	mesh.ResizeVertices(4);
+	Vector2* vVertices = (Vector2*)mesh.GetVertices();
+
+	vVertices[0] = Vector2(-1, -1);
+	vVertices[1] = Vector2(1, -1);
+	vVertices[2] = Vector2(-1, 1);
+	vVertices[3] = Vector2(1, 1);
+
+	mesh.ResizeIndices(2, 3);
+	uint32_t* vIndices = mesh.GetIndices();
+
+	vIndices[0] = 0;
+	vIndices[1] = 2;
+	vIndices[2] = 1;
+
+	vIndices[3] = 2;
+	vIndices[4] = 3;
+	vIndices[5] = 1;
+}
+
+void MDeferredRenderProgram::ReleaseMesh()
+{
+	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
+	m_ScreenDrawMesh.DestroyBuffer(pRenderSystem->GetDevice());
 }
 
 void MDeferredRenderProgram::UpdateFrameParams(MRenderInfo& info)

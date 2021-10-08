@@ -43,10 +43,10 @@ int main()
 // 		MModelConverter convert(&engine);
 // 
 // 		MModelConvertInfo info;
-// 		info.eMaterialType = MModelConvertMaterialType::E_PBR_Deferred;
-// 		info.strOutputDir = "D:/test_pbr";
-// 		info.strOutputName = "banana";
-// 		info.strResourcePath = "D:/project/Morty_Restructure/Resource/Model/banana/ripe-banana.obj";
+// 		info.eMaterialType = MModelConvertMaterialType::E_Default_Forward;
+// 		info.strOutputDir = "D:/test_pigeon";
+// 		info.strOutputName = "pigeon";
+// 		info.strResourcePath = "E:/Morty_Restructure/Resource/Model/pigeon/source/Pigeon_Animations.fbx";
 // 
 // 		convert.Convert(info);
 // 	}
@@ -93,7 +93,7 @@ int main()
 		}
 
 		
-		MResource* pResource = pResourceSystem->LoadResource("D:/test/banana/banana.entity");
+		MResource* pResource = pResourceSystem->LoadResource("D:/test_pigeon/pigeon/pigeon.entity");
 
 		std::vector<MComponentID> vMeshComponents;
 		for (size_t i = 0; i < 1; ++i)

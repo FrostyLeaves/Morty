@@ -24,6 +24,8 @@
 
 #include "MForwardRenderProgram.h"
 
+#include "MainEditor.h"
+
 MaterialView::MaterialView()
 	: IBaseView()
 	, m_Resource()
@@ -118,7 +120,7 @@ void MaterialView::Initialize(MEngine* pEngine)
 	MObjectSystem* pObjectSystem = pEngine->FindSystem<MObjectSystem>();
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
 
-	m_SceneTexture.Initialize(pEngine, MForwardRenderProgram::GetClassTypeName(), 1);
+	m_SceneTexture.Initialize(pEngine, MainEditor::GetRenderProgramName(), 1);
 	m_SceneTexture.SetSize(Vector2(512, 512));
 
 

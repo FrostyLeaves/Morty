@@ -3,6 +3,7 @@
 #include "MEntity.h"
 #include "MFunction.h"
 
+#include "MModelSystem.h"
 #include "MNotifySystem.h"
 #include "MRenderSystem.h"
 #include "MResourceSystem.h"
@@ -31,6 +32,8 @@ bool MRenderModule::Register(MEngine* pEngine)
 		return false;
 
 	MNotifySystem* pNotifySystem = pEngine->FindSystem<MNotifySystem>();
+
+	pEngine->RegisterSystem<MModelSystem>();
 
 	if (MRenderSystem* pRenderSystem = pEngine->RegisterSystem<MRenderSystem>())
 	{

@@ -17,6 +17,11 @@ MModelSystem::~MModelSystem()
 
 }
 
+void MModelSystem::SceneTick(MScene* pScene, const float& fDelta)
+{
+	UpdateAnimation(pScene, fDelta);
+}
+
 void MModelSystem::UpdateAnimation(MScene* pScene, const float& fDelta)
 {
 	bool bVisible = false;

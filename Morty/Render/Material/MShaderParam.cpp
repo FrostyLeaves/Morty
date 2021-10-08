@@ -63,6 +63,12 @@ MShaderTextureParam::MShaderTextureParam()
 #endif
 }
 
+void MShaderTextureParam::SetTexture(MTexture* pTexture)
+{
+	this->pTexture = pTexture;
+	SetDirty();
+}
+
 MShaderSampleParam::MShaderSampleParam()
 	: MShaderParam()
 {
