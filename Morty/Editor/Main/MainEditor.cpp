@@ -2,6 +2,7 @@
 
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
+#include "ImGuiFileDialog.h"
 
 #include "SDL.h"
 
@@ -58,10 +59,10 @@ MainEditor::MainEditor()
 	, m_pTaskGraphView(nullptr)
 	, m_pImGuiRenderable(nullptr)
 	, m_unTriangleCount(0)
-	, m_bShowMessage(true)
-	, m_bShowNodeTree(true)
-	, m_bShowProperty(true)
-	, m_bShowRenderView(true)
+	, m_bShowMessage(false)
+	, m_bShowNodeTree(false)
+	, m_bShowProperty(false)
+	, m_bShowRenderView(false)
 	, m_bRenderToWindow(false)
 	, m_bShowMaterial(false)
 	, m_bShowResource(false)
@@ -342,6 +343,27 @@ void MainEditor::ShowMenu()
 {
 	if (ImGui::BeginMainMenuBar())
 	{
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::MenuItem("Open", ""))
+			{
+				ImGuiFileDialog::Instance()->OpenModal("OpenFile", "Open", "entity\0\0", ".");
+			}
+
+			if (ImGui::MenuItem("Save", ""))
+			{
+
+			}
+
+			if (ImGui::MenuItem("Save as", ""))
+			{
+				ImGuiFileDialog::Instance()->OpenModal("Save As", "Open", "entity\0\0", "new");
+			}
+
+
+			ImGui::EndMenu();
+		}
+
 		if (ImGui::BeginMenu("View"))
 		{
 			if (ImGui::MenuItem("Render", "", &m_bShowRenderView)) {}
@@ -541,6 +563,41 @@ void MainEditor::ShowRenderGraphView()
 	ImGui::End();
 }
 
+void MainEditor::ShowDialog()
+{
+	if (ImGuiFileDialog::Instance()->Display("OpenFile"))
+	{
+		if (ImGuiFileDialog::Instance()->IsOk() == true)
+		{
+			std::map<std::string, std::string>&& files = ImGuiFileDialog::Instance()->GetSelection();
+
+			int a = 0;
+			++a;
+		}
+		ImGuiFileDialog::Instance()->Close();
+	}
+
+
+	if (ImGuiFileDialog::Instance()->Display("Save As"))
+	{
+		if (ImGuiFileDialog::Instance()->IsOk() == true)
+		{
+			std::string strFilePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+			std::string strCurrentFileName = ImGuiFileDialog::Instance()->GetCurrentFileName();
+
+
+			int a = 0;
+			++a;
+		}
+		ImGuiFileDialog::Instance()->Close();
+	}
+
+	if (ImGuiFileDialog::Instance()->Display("Convert Model"))
+	{
+
+	}
+}
+
 Vector4 MainEditor::GetWidgetSize()
 {
 	ImGuiStyle& style = ImGui::GetStyle();
@@ -669,6 +726,8 @@ void MainEditor::Render(MTaskNode* pNode)
 	ShowMessage();
 	ShowResource();
 	ShowRenderGraphView();
+	
+	ShowDialog();
 
 	// Rendering
 	ImGui::Render();

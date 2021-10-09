@@ -67,6 +67,8 @@ public:
 	void ShowResource();
 	void ShowRenderGraphView();
 
+	void ShowDialog();
+
 protected:
 
 	Vector4 GetWidgetSize();
