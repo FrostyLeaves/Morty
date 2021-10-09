@@ -123,17 +123,14 @@ MTexture* SceneTexture::GetTexture(const size_t& nImageIndex)
 	return nullptr;
 }
 
-MTexture* SceneTexture::GetShadowmapTexture(const size_t& nImageIndex)
+std::vector<MTexture*> SceneTexture::GetAllOutputTexture(const size_t& nImageIndex)
 {
 	if (nImageIndex < m_vRenderProgram.size())
 	{
-		std::vector<MTexture*>&& vTextures = m_vRenderProgram[nImageIndex]->GetOutputTextures();
-
-		if (vTextures.size() > 1)
-			return vTextures[1];
+		return m_vRenderProgram[nImageIndex]->GetOutputTextures();
 	}
 
-	return nullptr;
+	return {};
 }
 
 void SceneTexture::SetBackColor(const MColor& cColor)

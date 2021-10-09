@@ -89,6 +89,21 @@ MVariant* MShaderParamSet::FindValue(const MString& strName, MVariant& value)
 	return nullptr;
 }
 
+bool MShaderParamSet::SetValue(const MString& strName, MTexture* pTexture)
+{
+	for (MShaderTextureParam* pParam : m_vTextures)
+	{
+		if (pParam->strName == strName)
+		{
+			pParam->pTexture = pTexture;
+			pParam->SetDirty();
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool MShaderParamSet::SetValue(const MString& strName, const MVariant& value)
 {
 	for (MShaderConstantParam* pParam : m_vParams)

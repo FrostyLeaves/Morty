@@ -50,6 +50,8 @@ public:
 
 	void SetCloseCallback(const std::function<bool()>& callback) { m_funcCloseCallback = callback; }
 
+	static MString GetRenderProgramName() { return m_sRenderProgramName; }
+
 public:
 
 	void InitializeSDLWindow();
@@ -107,6 +109,7 @@ protected:
 	std::function<bool()> m_funcCloseCallback;
 
 	struct SDL_Window* m_pSDLWindow;
+	static MString m_sRenderProgramName;
 
 	ImGuiRenderable* m_pImGuiRenderable;
 

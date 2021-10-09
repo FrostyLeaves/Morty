@@ -30,7 +30,7 @@ public:
 	Vector2 GetSize() const { return m_v2Size; }
 
 	MTexture* GetTexture(const size_t& nImageIndex);
-	MTexture* GetShadowmapTexture(const size_t& nImageIndex);
+	std::vector<MTexture*> GetAllOutputTexture(const size_t& nImageIndex);
 	void UpdateTexture(const size_t& nImageIndex, MIRenderCommand* pRenderCommand);
 
 	MScene* GetScene() { return m_pScene; }

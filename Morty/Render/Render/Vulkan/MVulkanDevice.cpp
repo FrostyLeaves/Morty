@@ -943,7 +943,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 				VkAttachmentReference& vkAttachRef = vOutAttachmentRef[nSubpassIdx].back();
 
 				vkAttachRef.attachment = nBackIdx;
-				vkAttachRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				vkAttachRef.layout = VK_IMAGE_LAYOUT_GENERAL;
 
 				vUsedAttachIndex.insert(nBackIdx);
 			}

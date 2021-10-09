@@ -43,7 +43,10 @@
 #include "MRenderSystem.h"
 
 #include "MForwardRenderProgram.h"
+#include "MDeferredRenderProgram.h"
 
+
+MString MainEditor::m_sRenderProgramName = MForwardRenderProgram::GetClassTypeName();
 
 class MainEditorTask : public MTaskNode
 {
@@ -104,7 +107,7 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	m_pImGuiRenderable->Initialize();
 
 	//Setup Render
-	m_SceneTexture.Initialize(pEngine, MForwardRenderProgram::GetClassTypeName(), GetImageCount());
+	m_SceneTexture.Initialize(pEngine, m_sRenderProgramName, GetImageCount());
 
 	m_pNodeTreeView = new NodeTreeView();
 	m_pPropertyView = new PropertyView();
@@ -443,13 +446,27 @@ void MainEditor::ShowShadowMapView(const size_t& nImageCount)
 {
 	if (ImGui::Begin("ShadowMap", &m_bShowShadowMap))
 	{
-		if (MTexture* pTexture = m_SceneTexture.GetTexture(nImageCount))
+		std::vector<MTexture*> vTexture = m_SceneTexture.GetAllOutputTexture(nImageCount);
+		if(!vTexture.empty())
 		{
-			if (ImTextureID texid = pTexture)
+			Vector4 v4Rect = GetWidgetSize();
+			
+			// n * n
+			size_t n = std::ceil(std::sqrt(vTexture.size()));
+
+			Vector2 v2Size = Vector2(v4Rect.z / n, v4Rect.w / n);
+
+			int i = 0;
+			for (int i = 0; i < vTexture.size(); ++i)
 			{
-				Vector4 v4Rect = GetWidgetSize();
-				ImGui::Image(texid, ImVec2(v4Rect.z, v4Rect.w));
+				ImGui::Image(vTexture[i], ImVec2(v2Size.x, v2Size.y));
+
+				if ((i + 1) % n != 0)
+				{
+					ImGui::SameLine(v2Size.x * (i % n));
+				}
 			}
+		
 		}
 	}
 

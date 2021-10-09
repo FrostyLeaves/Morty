@@ -32,6 +32,7 @@ public:
 
 	bool SetValue(MVariant& target, const MVariant& source);
 	bool SetValue(const MString& strName, const MVariant& value);
+	bool SetValue(const MString& strName, MTexture* pTexture);
 
 public:
 

@@ -67,6 +67,12 @@ public:
 	void InitializeFrameShaderParams();
 	void ReleaseFrameShaderParams();
 
+	void InitializeMaterial();
+	void ReleaseMaterial();
+
+	void InitializeMesh();
+	void ReleaseMesh();
+
 protected:
 
 	void DrawStaticMesh(MRenderInfo& info, MIRenderCommand* pCommand);
@@ -89,7 +95,7 @@ protected:
 	MIRenderCommand* m_pPrimaryCommand;
 
 
-	MIMesh* m_pScreenRectMesh;
+	MMesh<Vector2> m_ScreenDrawMesh;
 	MMaterial* m_pLightningMaterial;
 
 protected:
