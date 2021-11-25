@@ -4,6 +4,10 @@
 #include "imgui_stdlib.h"
 #include "ImGuiFileDialog.h"
 
+#include "MEngine.h"
+#include "MThreadPool.h"
+#include "MModelConverter.h"
+
 #include "PropertyBase.h"
 
 static const char* svModelFilter = ".fbx\0.obj\0\0";
@@ -18,6 +22,7 @@ ModelConvertView::ModelConvertView()
 	, m_strOutputDir()
 	, m_strOutputName()
 	, m_nMaterialTypeEnum(0)
+	, m_pEngine(nullptr)
 {
 
 }
@@ -36,21 +41,22 @@ void ModelConvertView::Render()
 	ImGui::Separator();
 
 	prop.ShowValueBegin("Source File");
-	if (ImGui::Button(m_strSourcePath.c_str()))
+	float fWidth = ImGui::GetContentRegionAvailWidth();
+	if (ImGui::Button(m_strSourcePath.c_str(), ImVec2(fWidth, 0)))
 	{
 		ImGuiFileDialog::Instance()->OpenModal(svImportModelID, "Import", svModelFilter, "");
 	}
 	prop.ShowValueEnd();
 
 	prop.ShowValueBegin("Output Dir");
-	if (ImGui::Button(m_strOutputDir.c_str()))
+	if (ImGui::Button(m_strOutputDir.c_str(), ImVec2(fWidth, 0)))
 	{
-		ImGuiFileDialog::Instance()->OpenModal(svOutputFolderID, "Import", "", "");
+		ImGuiFileDialog::Instance()->OpenModal(svOutputFolderID, "Output", "", "");
 	}
 	prop.ShowValueEnd();
 
 	prop.ShowValueBegin("Output Name");
-	ImGui::InputText("Output Name", &m_strOutputName);
+	prop.EditMString(m_strOutputName);
 	prop.ShowValueEnd();
 
 	prop.ShowValueBegin("Material Type");
@@ -62,11 +68,22 @@ void ModelConvertView::Render()
 	ImGui::PopStyleVar();
 
 
-	ImGui::Button("Add");
+	{
+		float fWidth = ImGui::GetContentRegionAvailWidth();
+		if (ImGui::Button("Add", ImVec2(fWidth, 0.0f)))
+		{
+			if (!m_strSourcePath.empty() && !m_strOutputDir.empty() && !m_strOutputName.empty())
+			{
+				MModelConvertInfo info;
+				info.strResourcePath = m_strSourcePath;
+				info.strOutputDir = m_strOutputDir;
+				info.strOutputName = m_strOutputName;
+				info.eMaterialType = m_nMaterialTypeEnum == 0 ? MModelConvertMaterialType::E_Default_Forward : MModelConvertMaterialType::E_PBR_Deferred;
 
-
-
-
+				m_convertQueue.push(info);
+			}
+		}
+	}
 
 	if (ImGuiFileDialog::Instance()->Display(svImportModelID))
 	{
@@ -74,8 +91,11 @@ void ModelConvertView::Render()
 		{
 			std::map<std::string, std::string>&& files = ImGuiFileDialog::Instance()->GetSelection();
 
-			int a = 0;
-			++a;
+			for (auto pr : files)
+			{
+				m_strSourcePath = pr.second;
+				break;
+			}
 		}
 		ImGuiFileDialog::Instance()->Close();
 	}
@@ -85,23 +105,45 @@ void ModelConvertView::Render()
 	{
 		if (ImGuiFileDialog::Instance()->IsOk() == true)
 		{
-			std::string strFilePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-			std::string strCurrentFileName = ImGuiFileDialog::Instance()->GetCurrentFileName();
-
-
-			int a = 0;
-			++a;
+			m_strOutputDir = ImGuiFileDialog::Instance()->GetFilePathName();
 		}
 		ImGuiFileDialog::Instance()->Close();
+	}
+
+	if (!m_convertQueue.empty())
+	{
+		std::queue<MModelConvertInfo> convertQueue = m_convertQueue;
+		m_convertQueue = {};
+
+		MThreadWork work;
+		work.eThreadType = METhreadType::ECurrentThread;
+		work.funcWorkFunction = std::bind(&ModelConvertView::Convert, this, convertQueue);
+
+		m_pEngine->GetThreadPool()->AddWork(work);
 	}
 }
 
 void ModelConvertView::Initialize(MEngine* pEngine)
 {
-
+	m_pEngine = pEngine;
 }
 
 void ModelConvertView::Release()
 {
 
+}
+
+void ModelConvertView::Input(MInputEvent* pEvent)
+{
+	
+}
+
+void ModelConvertView::Convert(std::queue<MModelConvertInfo> convertQueue)
+{
+	while (!convertQueue.empty())
+	{
+		MModelConverter converter(m_pEngine);
+		converter.Convert(convertQueue.front());
+		convertQueue.pop();
+	}
 }

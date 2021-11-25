@@ -13,28 +13,6 @@
 unsigned int PropertyBase::m_unItemIDPool = 0;
 std::map<MString, unsigned int> PropertyBase::m_tItemID = std::map<MString, unsigned int>();
 
-static const char* vTitleList[] = {
-		"Default",
-		"Shader",
-		"Material",
-		"Texture",
-		"Node",
-		"Mesh",
-		"Skeleton",
-		"SkelAnim",
-};
-
-static const char* vFilterList[] = {
-	"\0\0",
-	".mvs\0.mps\0\0",
-	".matl\0\0",
-	".png,.jpg,.tga\0\0",
-	".node\0\0",
-	".mesh\0\0",
-	".mske\0\0",
-	".mseq\0\0"
-};
-
 bool PropertyBase::ShowNodeBegin(const MString& strNodeName)
 {
 	if (ShowNodeBeginWithEx(strNodeName))

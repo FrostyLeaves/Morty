@@ -17,6 +17,9 @@ public:
 	virtual void Release() = 0;
 
 	virtual void Input(MInputEvent* pEvent) = 0;
+
+
+	bool m_bVisiable = false;
 };
 
 

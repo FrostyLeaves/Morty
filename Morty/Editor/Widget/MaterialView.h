@@ -1,5 +1,5 @@
 #ifndef _MATERIAL_VIEW_H_
-#define _MATERIAL_VIEW_H_
+#define _LOG_VIEW_H_
 
 #include "IBaseView.h"
 #include "SceneTexture.h"

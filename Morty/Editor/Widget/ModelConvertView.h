@@ -25,6 +25,11 @@ public:
 
 	virtual void Initialize(MEngine* pEngine) override;
 	virtual void Release() override;
+	virtual void Input(MInputEvent* pEvent) override;
+
+public:
+
+	void Convert(std::queue<MModelConvertInfo> queue);
 
 private:
 
@@ -34,6 +39,9 @@ private:
 	std::string m_strOutputDir;
 	std::string m_strOutputName;
 	int m_nMaterialTypeEnum;
+
+
+	MEngine* m_pEngine;
 };
 
 

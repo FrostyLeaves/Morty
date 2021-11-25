@@ -18,6 +18,8 @@ class PropertyView;
 class MaterialView;
 class ResourceView;
 class TaskGraphView;
+class ModelConvertView;
+class MessageView;
 class MInputEvent;
 class MTaskNode;
 class MainEditor : public MRenderView
@@ -67,6 +69,7 @@ public:
 	void ShowMaterial();
 	void ShowMessage();
 	void ShowResource();
+	void ShowModelConvert();
 	void ShowRenderGraphView();
 
 	void ShowDialog();
@@ -82,6 +85,8 @@ protected:
 	MaterialView* m_pMaterialView;
 	ResourceView* m_pResourceView;
 	TaskGraphView* m_pTaskGraphView;
+	ModelConvertView* m_pModelConvertView;
+	MessageView* m_pMessageView;
 
 	std::vector<IBaseView*> m_vChildView;
 
@@ -94,16 +99,10 @@ protected:
 
 	unsigned int m_unTriangleCount;
 
-	bool m_bShowMessage;
-	bool m_bShowNodeTree;
-	bool m_bShowProperty;
-	bool m_bShowRenderView;
 	bool m_bRenderToWindow;
-	bool m_bShowMaterial;
-	bool m_bShowResource;
-	bool m_bShowRenderGraph;
-	bool m_bShowShadowMap;
-
+	bool m_bShowRenderView;
+	bool m_bShowDebugView;
+	
 	SceneTexture m_SceneTexture;
 
 	std::function<bool()> m_funcCloseCallback;

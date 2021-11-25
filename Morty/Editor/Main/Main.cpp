@@ -28,6 +28,9 @@
 #undef main
 #endif
 
+#define TEST_ANIMATION
+
+
 int main()
 {
 	//initialize
@@ -38,18 +41,6 @@ int main()
 	MRenderModule::Register(&engine);
 	MEditorModule::Register(&engine);
 
-
-// 	{
-// 		MModelConverter convert(&engine);
-// 
-// 		MModelConvertInfo info;
-// 		info.eMaterialType = MModelConvertMaterialType::E_Default_Forward;
-// 		info.strOutputDir = "D:/test_pigeon";
-// 		info.strOutputName = "pigeon";
-// 		info.strResourcePath = "E:/Morty_Restructure/Resource/Model/pigeon/source/Pigeon_Animations.fbx";
-// 
-// 		convert.Convert(info);
-// 	}
 
 	bool bClosed = false;
 	
@@ -93,12 +84,28 @@ int main()
 		}
 
 		
-		MResource* pResource = pResourceSystem->LoadResource("D:/test_pigeon/pigeon/pigeon.entity");
+#ifdef	TEST_ANIMATION
+
+		MResource* pPigeonResource = pResourceSystem->LoadResource("D:/test_pigeon/pigeon/pigeon.entity");
+		if(!pPigeonResource)
+		{
+			MModelConverter convert(&engine);
+
+			MModelConvertInfo info;
+			info.eMaterialType = MModelConvertMaterialType::E_Default_Forward;
+			info.strOutputDir = "D:/test_pigeon";
+			info.strOutputName = "pigeon";
+			info.strResourcePath = "./Model/pigeon/source/Pigeon_Animations.fbx";
+
+			convert.Convert(info);
+
+			pPigeonResource = pResourceSystem->LoadResource("D:/test_pigeon/pigeon/pigeon.entity");
+		}
 
 		std::vector<MComponentID> vMeshComponents;
 		for (size_t i = 0; i < 1; ++i)
 		{
-			auto&& vEntity = pEntitySystem->LoadEntity(pScene, pResource);
+			auto&& vEntity = pEntitySystem->LoadEntity(pScene, pPigeonResource);
 
 			for (MEntity* pEntity : vEntity)
 			{
@@ -113,6 +120,7 @@ int main()
 				pMeshComponent->SetGenerateDirLightShadow(true);
 			}
 		}
+#endif
 
 // 		if (MRenderableMeshComponent* pMeshComponent = pScene->GetComponent(vMeshComponents[0])->DynamicCast<MRenderableMeshComponent>())
 // 		{

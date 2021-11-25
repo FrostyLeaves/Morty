@@ -300,7 +300,12 @@ void MMeshResource::LoadAsCube()
 	m_pMesh->ResizeIndices(12, 3);
 	memcpy(m_pMesh->GetIndices(), indices, sizeof(indices));
 
-
+	m_BoundsOBB.m_matEigVectors = Matrix3(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	m_BoundsOBB.m_v3HalfLength = Vector3(1.0f, 1.0f, 1.0f);
+	m_BoundsOBB.m_v3MinPoint = Vector3(-1.0f, -1.0f, -1.0f);
+	m_BoundsOBB.m_v3MaxPoint = Vector3(1.0f, 1.0f, 1.0f);
+	
+	m_BoundsSphere.m_fRadius = std::sqrtf(3.0f);
 	
 }
 

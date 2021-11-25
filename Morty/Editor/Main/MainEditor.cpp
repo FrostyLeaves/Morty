@@ -31,6 +31,8 @@
 #include "MaterialView.h"
 #include "ResourceView.h"
 #include "TaskGraphView.h"
+#include "ModelConvertView.h"
+#include "MessageView.h"
 
 #include "NotifyManager.h"
 
@@ -60,17 +62,13 @@ MainEditor::MainEditor()
 	, m_pMaterialView(nullptr)
 	, m_pResourceView(nullptr)
 	, m_pTaskGraphView(nullptr)
+	, m_pModelConvertView(nullptr)
+	, m_pMessageView(nullptr)
 	, m_pImGuiRenderable(nullptr)
 	, m_unTriangleCount(0)
-	, m_bShowMessage(false)
-	, m_bShowNodeTree(false)
-	, m_bShowProperty(false)
-	, m_bShowRenderView(false)
 	, m_bRenderToWindow(false)
-	, m_bShowMaterial(false)
-	, m_bShowResource(false)
-	, m_bShowRenderGraph(false)
-	, m_bShowShadowMap(false)
+	, m_bShowRenderView(false)
+	, m_bShowDebugView(false)
 	, m_funcCloseCallback(nullptr)
 	, m_pSDLWindow(nullptr)
     , m_v2DrawableSize(80.0f, 48.0f)
@@ -114,13 +112,16 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	m_pMaterialView = new MaterialView();
 	m_pResourceView = new ResourceView();
 	m_pTaskGraphView = new TaskGraphView();
+	m_pModelConvertView = new ModelConvertView();
+	m_pMessageView = new MessageView();
 
 	m_vChildView.push_back(m_pNodeTreeView);
 	m_vChildView.push_back(m_pPropertyView);
 	m_vChildView.push_back(m_pMaterialView);
 	m_vChildView.push_back(m_pResourceView);
 	m_vChildView.push_back(m_pTaskGraphView);
-
+	m_vChildView.push_back(m_pModelConvertView);
+	m_vChildView.push_back(m_pMessageView);
 
 	for (IBaseView* pChild : m_vChildView)
 		pChild->Initialize(pEngine);
@@ -370,13 +371,14 @@ void MainEditor::ShowMenu()
 		if (ImGui::BeginMenu("View"))
 		{
 			if (ImGui::MenuItem("Render", "", &m_bShowRenderView)) {}
-			if (ImGui::MenuItem("DebugTexture", "", &m_bShowShadowMap)) {}
-			if (ImGui::MenuItem("NodeTree", "", &m_bShowNodeTree)) {}
-			if (ImGui::MenuItem("Property", "", &m_bShowProperty)) {}
-			if (ImGui::MenuItem("Material", "", &m_bShowMaterial)) {}
-			if (ImGui::MenuItem("Resource", "", &m_bShowResource)) {}
-			if (ImGui::MenuItem("Message", "", &m_bShowMessage)) {}
-			if (ImGui::MenuItem("RenderGraph", "", &m_bShowRenderGraph)) {}
+			if (ImGui::MenuItem("DebugTexture", "", &m_bShowDebugView)) {}
+			if (ImGui::MenuItem("NodeTree", "", &m_pNodeTreeView->m_bVisiable)) {}
+			if (ImGui::MenuItem("Property", "", &m_pPropertyView->m_bVisiable)) {}
+			if (ImGui::MenuItem("Material", "", &m_pMaterialView->m_bVisiable)) {}
+			if (ImGui::MenuItem("Resource", "", &m_pResourceView->m_bVisiable)) {}
+			if (ImGui::MenuItem("Message", "", &m_pMessageView->m_bVisiable)) {}
+			if (ImGui::MenuItem("ModelConvert", "", &m_pModelConvertView->m_bVisiable)) {}
+			if (ImGui::MenuItem("RenderGraph", "", &m_pTaskGraphView->m_bVisiable)) {}
 		
 			if (ImGui::MenuItem("Render to Window", "", &m_bRenderToWindow)) {}
 
@@ -444,7 +446,10 @@ void MainEditor::ShowRenderView(const size_t& nImageCount)
 
 void MainEditor::ShowShadowMapView(const size_t& nImageCount)
 {
-	if (ImGui::Begin("ShadowMap", &m_bShowShadowMap))
+	if (!m_bShowDebugView)
+		return;
+
+	if (ImGui::Begin("DebugView", &m_bShowDebugView))
 	{
 		std::vector<MTexture*> vTexture = m_SceneTexture.GetAllOutputTexture(nImageCount);
 		if(!vTexture.empty())
@@ -475,10 +480,10 @@ void MainEditor::ShowShadowMapView(const size_t& nImageCount)
 
 void MainEditor::ShowNodeTree()
 {
-	if (!m_bShowNodeTree)
+	if (!m_pNodeTreeView->m_bVisiable)
 		return;
 
-	if (ImGui::Begin("Scene", &m_bShowNodeTree))
+	if (ImGui::Begin("Scene", &m_pNodeTreeView->m_bVisiable))
 	{
 		m_pNodeTreeView->Render();
 	}
@@ -487,10 +492,10 @@ void MainEditor::ShowNodeTree()
 
 void MainEditor::ShowProperty()
 {
-	if (!m_bShowProperty)
+	if (!m_pPropertyView->m_bVisiable)
 		return;
 
-	if (ImGui::Begin("Property", &m_bShowProperty))
+	if (ImGui::Begin("Property", &m_pPropertyView->m_bVisiable))
 	{
 		MEntity* pNode = nullptr;
 		if (pNode = dynamic_cast<MEntity*>(m_pNodeTreeView->GetSelectionNode()))
@@ -505,10 +510,10 @@ void MainEditor::ShowProperty()
 
 void MainEditor::ShowMaterial()
 {
-	if (!m_bShowMaterial)
+	if (!m_pMaterialView->m_bVisiable)
 		return;
 
-	if (ImGui::Begin("Material", &m_bShowMaterial))
+	if (ImGui::Begin("Material", &m_pMaterialView->m_bVisiable))
 	{
 		m_pMaterialView->Render();
 	}
@@ -518,48 +523,18 @@ void MainEditor::ShowMaterial()
 
 void MainEditor::ShowMessage()
 {
-	if (!m_bShowMessage)
+	if (!m_pMessageView->m_bVisiable)
 		return;
 
-	const float DISTANCE = 10.0f;
-	static int corner = -1;
-	if (corner != -1)
-	{
-		ImGuiIO& io = ImGui::GetIO();
-
-		ImVec2 window_pos = ImVec2((corner & 1) ? io.DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? io.DisplaySize.y - DISTANCE : DISTANCE);
-		ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
-		ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-	}
-	ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
-	if (ImGui::Begin("Message", &m_bShowMessage, (corner != -1 ? ImGuiWindowFlags_NoMove : 0) | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
-	{
-		int nCurrentFps = (int)round(GetEngine()->GetFPS() / 5) * 5;
-		ImGui::Text("FPS: %d", nCurrentFps);
-#if MORTY_RENDER_DATA_STATISTICS
-		ImGui::Text("Triangle Count: %d", m_unTriangleCount);
-#endif
-
-		if (ImGui::BeginPopupContextWindow())
-		{
-			if (ImGui::MenuItem("Custom", NULL, corner == -1)) corner = -1;
-			if (ImGui::MenuItem("Top-left", NULL, corner == 0)) corner = 0;
-			if (ImGui::MenuItem("Top-right", NULL, corner == 1)) corner = 1;
-			if (ImGui::MenuItem("Bottom-left", NULL, corner == 2)) corner = 2;
-			if (ImGui::MenuItem("Bottom-right", NULL, corner == 3)) corner = 3;
-			if (ImGui::MenuItem("Close")) m_bShowMessage = false;
-			ImGui::EndPopup();
-		}
-	}
-	ImGui::End();
+	m_pMessageView->Render();
 }
 
 void MainEditor::ShowResource()
 {
-	if (!m_bShowResource)
+	if (!m_pResourceView->m_bVisiable)
 		return;
 
-	if (ImGui::Begin("Resource", &m_bShowResource))
+	if (ImGui::Begin("Resource", &m_pResourceView->m_bVisiable))
 	{
 		m_pResourceView->Render();
 	}
@@ -567,12 +542,25 @@ void MainEditor::ShowResource()
 	ImGui::End();
 }
 
-void MainEditor::ShowRenderGraphView()
+void MainEditor::ShowModelConvert()
 {
-	if (!m_bShowRenderGraph)
+	if (!m_pModelConvertView->m_bVisiable)
 		return;
 
-	if (ImGui::Begin("RenderGraph", &m_bShowRenderGraph))
+	if (ImGui::Begin("ModelConvert", &m_pModelConvertView->m_bVisiable))
+	{
+		m_pModelConvertView->Render();
+	}
+
+	ImGui::End();
+}
+
+void MainEditor::ShowRenderGraphView()
+{
+	if (!m_pTaskGraphView->m_bVisiable)
+		return;
+
+	if (ImGui::Begin("RenderGraph", &m_pTaskGraphView->m_bVisiable))
 	{
 		m_pTaskGraphView->Render();
 	}
@@ -683,7 +671,7 @@ void MainEditor::Render(MTaskNode* pNode)
 	ImGui::NewFrame();
 
 
-	if (m_pMaterialView && m_bShowMaterial)
+	if (m_pMaterialView && m_pMaterialView->m_bVisiable)
 	{
 		if (MEntity* pEntity = m_pNodeTreeView->GetSelectionNode())
 		{
@@ -743,6 +731,7 @@ void MainEditor::Render(MTaskNode* pNode)
 	ShowMessage();
 	ShowResource();
 	ShowRenderGraphView();
+	ShowModelConvert();
 	
 	ShowDialog();
 
