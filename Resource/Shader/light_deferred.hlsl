@@ -67,8 +67,8 @@ float3 CalcPBRLight(float3 f3LightColor, float3 f3CameraDir, float3 _f3LightDir,
     float3 F  = FresnelSchlick(max(dot(f3HalfDir, f3CameraDir), 0.0), f3BaseColor);
         
     float3 nominator    = NDF * G * F; 
-    float denominator = 4 * max(dot(f3Normal, f3CameraDir), 0.0) * max(dot(f3Normal, f3LightDir), 0.0) + 0.001; // 0.001 to prevent divide by zero.
-    float3 specular = nominator / denominator;
+    float denominator = 4 * max(dot(f3Normal, f3CameraDir), 0.0) * max(dot(f3Normal, f3LightDir), 0.0); // 0.001 to prevent divide by zero.
+    float3 specular = nominator / max(denominator, 0.001);
     
     // kS is equal to Fresnel
     float3 kS = F;

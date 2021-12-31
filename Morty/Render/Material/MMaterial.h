@@ -37,6 +37,7 @@ enum class MEMaterialType
 	ETransparentBlend,
 	EOutline,
 	EImGui,
+	EDeferred,
 
 	EMaterialTypeEnd,
 };

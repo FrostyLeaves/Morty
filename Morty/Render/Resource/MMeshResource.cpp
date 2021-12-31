@@ -11,7 +11,96 @@
 #include "MRenderSystem.h"
 #include "MResourceSystem.h"
 
+
 MORTY_CLASS_IMPLEMENT(MMeshResource, MResource)
+
+
+class MSphereFactory
+{
+public:
+
+	void operator()(int nLevel = 0);
+
+public:
+
+	std::vector<Vector3> m_vVertex;
+	std::vector<uint32_t> m_vIndices;
+
+	uint32_t addMidVertex(uint32_t v1, uint32_t v2);
+
+	std::map<uint32_t, uint32_t> m_tMidIndexCache;
+};
+
+uint32_t MSphereFactory::addMidVertex(uint32_t v1, uint32_t v2)
+{
+	uint32_t key = floor((v1 + v2) * (v1 + v2 + 1) / 2) + (std::min)(v1, v2);
+
+	auto&& findResult = m_tMidIndexCache.find(key);
+	if (findResult != m_tMidIndexCache.end())
+		return findResult->second;
+
+	m_vVertex.push_back((m_vVertex[v1] + m_vVertex[v2]) * 0.5f);
+
+	m_tMidIndexCache[key] = m_vVertex.size() - 1;
+	return m_vVertex.size() - 1;
+}
+
+void MSphereFactory::operator()(int nLevel/* = 0*/)
+{
+	const float t = (1.0f + sqrt(5.0f)) / 2.0f;
+
+	m_vVertex = {
+		Vector3(-1.0f, t, 0.0f),
+		Vector3(1.0f, t, 0.0f),
+		Vector3(-1.0f, -t, 0.0f),
+		Vector3(1.0f, -t, 0.0f),
+
+		Vector3(0.0f, -1.0f, t),
+		Vector3(0.0f, 1.0f, t),
+		Vector3(0.0f, -1.0f, -t),
+		Vector3(0.0f, 1.0f, -t),
+
+		Vector3(t, 0.0f, -1.0f),
+		Vector3(t, 0.0f, 1.0f),
+		Vector3(-t, 0.0f, -1.0f),
+		Vector3(-t, 0.0f, 1.0f),
+	};
+
+	m_vIndices = {
+		0, 11, 5, 0, 5, 1, 0, 1, 7, 0, 7, 10, 0, 10, 11,
+		1, 5, 9, 5, 11, 4, 11, 10, 2, 10, 7, 6, 7, 1, 8,
+		3, 9, 4, 3, 4, 2, 3, 2, 6, 3, 6, 8, 3, 8, 9,
+		4, 9, 5, 2, 4, 11, 6, 2, 10, 8, 6, 7, 9, 8, 1,
+	};
+
+	m_tMidIndexCache = {};
+
+
+	for (int i = 0; i < nLevel; ++i)
+	{
+		std::vector<uint32_t> newIndices(m_vIndices.size() * 4);
+
+		for (int indexIdx = 0; indexIdx < m_vIndices.size(); indexIdx += 3)
+		{
+			uint32_t& v1 = m_vIndices[indexIdx + 0];
+			uint32_t& v2 = m_vIndices[indexIdx + 1];
+			uint32_t& v3 = m_vIndices[indexIdx + 2];
+
+			uint32_t a = addMidVertex(v1, v2);
+			uint32_t b = addMidVertex(v2, v3);
+			uint32_t c = addMidVertex(v3, v1);
+
+			int idx = indexIdx * 4;
+			newIndices[idx + 0] = v1; newIndices[idx + 1] = a; newIndices[idx + 2] = c;
+			newIndices[idx + 3] = v2; newIndices[idx + 4] = b; newIndices[idx + 5] = a;
+			newIndices[idx + 6] = v3; newIndices[idx + 7] = c; newIndices[idx + 8] = b;
+			newIndices[idx + 9] = a; newIndices[idx + 10] = b; newIndices[idx + 11] = c;
+		}
+
+		m_vIndices.swap(newIndices);
+	}
+}
+
 
 MMeshResource::MMeshResource()
 	: m_eVertexType(MEMeshVertexType::Normal)
@@ -234,8 +323,8 @@ void MMeshResource::LoadAsCube()
 		{0.0f, 0.0f, -1.0f},	//1 back
 		{-1.0f, 0.0f, 0.0f},	//2 left
 		{1.0f, 0.0f, 0.0f},		//3 right
-		{0.0f, 0.0f, 1.0f},		//4 top
-		{0.0f, 0.0f, -1.0f},	//5 bottom
+		{0.0f, 1.0f, 0.0f},		//4 top
+		{0.0f, -1.0f, 0.0f},	//5 bottom
 	};
 
 	static const Vector2 uv[4] = {
@@ -307,6 +396,54 @@ void MMeshResource::LoadAsCube()
 	
 	m_BoundsSphere.m_fRadius = std::sqrtf(3.0f);
 	
+}
+
+void MMeshResource::LoadAsSphere()
+{
+	MSphereFactory sphereFactory;
+
+	sphereFactory(3);
+
+	m_eVertexType = MEMeshVertexType::Normal;
+
+	m_pMesh = NewMeshByType(m_eVertexType);
+
+	auto& vPoints = sphereFactory.m_vVertex;
+
+	auto& vIndices = sphereFactory.m_vIndices;
+
+	m_pMesh->ResizeVertices(vPoints.size());
+	for (int i = 0; i < vPoints.size(); ++i)
+	{
+		MVertex& vertex = ((MVertex*)m_pMesh->GetVertices())[i];
+		vPoints[i].Normalize();
+
+		vertex.position = vPoints[i];
+		vertex.normal = vPoints[i];
+
+		Vector3 t1 = vertex.normal.CrossProduct(Vector3::Forward);
+		Vector3 t2 = vertex.normal.CrossProduct(Vector3::Up);
+		
+		vertex.tangent = t1.Length() > t2.Length() ? t1 : t2;
+		vertex.bitangent = vertex.normal.CrossProduct(vertex.tangent);
+		
+		
+
+
+		float xzLength = sqrt(vPoints[i].x * vPoints[i].x + vPoints[i].z * vPoints[i].z);
+		vertex.texCoords.x = acos(vPoints[i].x / xzLength) / M_PI;
+		vertex.texCoords.y = acos(vPoints[i].y) / M_PI;
+	}
+
+	m_pMesh->ResizeIndices(vIndices.size(), 1);
+	memcpy(m_pMesh->GetIndices(), vIndices.data(), sizeof(uint32_t) * vIndices.size());
+
+	m_BoundsOBB.m_matEigVectors = Matrix3(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	m_BoundsOBB.m_v3HalfLength = Vector3(1.0f, 1.0f, 1.0f);
+	m_BoundsOBB.m_v3MinPoint = Vector3(-1.0f, -1.0f, -1.0f);
+	m_BoundsOBB.m_v3MaxPoint = Vector3(1.0f, 1.0f, 1.0f);
+
+	m_BoundsSphere.m_fRadius = std::sqrtf(1.0f);
 }
 
 void MMeshResource::Clean()

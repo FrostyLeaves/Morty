@@ -48,7 +48,8 @@
 #include "MDeferredRenderProgram.h"
 
 
-MString MainEditor::m_sRenderProgramName = MForwardRenderProgram::GetClassTypeName();
+//MString MainEditor::m_sRenderProgramName = MForwardRenderProgram::GetClassTypeName();
+MString MainEditor::m_sRenderProgramName = MDeferredRenderProgram::GetClassTypeName();
 
 class MainEditorTask : public MTaskNode
 {
@@ -66,7 +67,7 @@ MainEditor::MainEditor()
 	, m_pMessageView(nullptr)
 	, m_pImGuiRenderable(nullptr)
 	, m_unTriangleCount(0)
-	, m_bRenderToWindow(false)
+	, m_bRenderToWindow(true)
 	, m_bShowRenderView(false)
 	, m_bShowDebugView(false)
 	, m_funcCloseCallback(nullptr)
