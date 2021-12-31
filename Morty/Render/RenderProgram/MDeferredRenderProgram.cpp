@@ -91,6 +91,8 @@ void MDeferredRenderProgram::RenderReady(MTaskNode* pTaskNode)
 		pRenderSystem->ResizeFrameBuffer(m_gbufferRenderPass, pViewport->GetSize());
 		pRenderSystem->ResizeFrameBuffer(m_lightningRenderPass, pViewport->GetSize());
 
+		m_forwardRenderPass.Resize(pRenderDevice);
+
 		if (m_pTransparentWork)
 		{
 			m_pTransparentWork->Resize(pViewport->GetSize());
@@ -121,7 +123,7 @@ void MDeferredRenderProgram::RenderGBuffer(MTaskNode* pTaskNode)
 	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
 	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
 
-	DrawStaticMesh(m_renderInfo, pCommand);
+	DrawStaticMesh(m_renderInfo, pCommand, m_renderInfo.m_tDeferredMaterialGroupMesh);
 
 	pCommand->EndRenderPass();
 }
@@ -159,6 +161,28 @@ void MDeferredRenderProgram::RenderShadow(MTaskNode* pTaskNode)
 
 		m_frameParamSet.SetShadowMapTexture(pShadowMap);
 	}
+}
+
+void MDeferredRenderProgram::RenderForward(MTaskNode* pTaskNode)
+{
+	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+	MIDevice* pRenderDevice = pRenderSystem->GetDevice();
+
+	MIRenderCommand* pCommand = m_renderInfo.pPrimaryRenderCommand;
+
+	MViewport* pViewport = m_renderInfo.pViewport;
+
+
+	pCommand->BeginRenderPass(&m_forwardRenderPass);
+
+	Vector2 v2LeftTop = pViewport->GetLeftTop();
+	Vector2 v2Size = pViewport->GetSize();
+	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
+	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
+
+	DrawStaticMesh(m_renderInfo, pCommand, m_renderInfo.m_tMaterialGroupMesh);
+
+	pCommand->EndRenderPass();
 }
 
 void MDeferredRenderProgram::RenderTransparent(MTaskNode* pTaskNode)
@@ -203,10 +227,9 @@ MTexture* MDeferredRenderProgram::GetShadowmapTexture()
 	return nullptr;
 }
 
-void MDeferredRenderProgram::DrawStaticMesh(MRenderInfo& info, MIRenderCommand* pCommand)
+void MDeferredRenderProgram::DrawStaticMesh(MRenderInfo& info, MIRenderCommand* pCommand, std::map<MMaterial*, std::vector<MRenderableMeshComponent*>>& tMaterialGroup)
 {
-	auto& materialGroup = info.m_tMaterialGroupMesh;
-	for (auto& pr : materialGroup)
+	for (auto& pr : tMaterialGroup)
 	{
 		MMaterial* pMaterial = pr.first;
 		std::vector<MRenderableMeshComponent*>& vMesh = pr.second;
@@ -253,18 +276,23 @@ void MDeferredRenderProgram::OnCreated()
 	pRenderLightningTask->SetThreadType(METhreadType::EAny);
 	pRenderLightningTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_1(MDeferredRenderProgram::RenderLightning, this));
 
+	MTaskNode* pRenderForwardTask = m_pRenderGraph->AddNode<MTaskNode>("Render_Forward");
+	pRenderForwardTask->SetThreadType(METhreadType::EAny);
+	pRenderForwardTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_1(MDeferredRenderProgram::RenderForward, this));
+
 	MTaskNode* pRenderTransparentTask = m_pRenderGraph->AddNode<MTaskNode>("Render_Transparent");
 	pRenderTransparentTask->SetThreadType(METhreadType::EAny);
 	pRenderTransparentTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_1(MDeferredRenderProgram::RenderTransparent, this));
 
 	/*
-		RenderReady --> RenderShadowmap --> RenderGBuffer --> RenderLightning --> RenderTransparent --> output				
+		RenderReady --> RenderShadowmap --> RenderGBuffer --> RenderLightning --> RenderForward --> RenderTransparent --> output				
 	*/
 
  	pRenderReadyTask->AppendOutput()->LinkTo(pRenderShadowTask->AppendInput());
 	pRenderShadowTask->AppendOutput()->LinkTo(pRenderGBufferTask->AppendInput());
 	pRenderGBufferTask->AppendOutput()->LinkTo(pRenderLightningTask->AppendInput());
-	pRenderLightningTask->AppendOutput()->LinkTo(pRenderTransparentTask->AppendInput());
+	pRenderLightningTask->AppendOutput()->LinkTo(pRenderForwardTask->AppendInput());
+	pRenderForwardTask->AppendOutput()->LinkTo(pRenderTransparentTask->AppendInput());
 
 	InitializeFrameShaderParams();
 	InitializeRenderPass();
@@ -313,9 +341,11 @@ void MDeferredRenderProgram::InitializeRenderPass()
 		m_gbufferRenderPass.m_vBackDesc.push_back(MPassTargetDescription(true, MColor(0.0f, 0.0f, 0.0f, 1.0)));
 	}
 
-	m_gbufferRenderPass.m_pDepthTexture = MTexture::CreateShadowMap();
-	m_gbufferRenderPass.m_pDepthTexture->SetSize(v2Size);
-	m_gbufferRenderPass.m_pDepthTexture->GenerateBuffer(pRenderSystem->GetDevice());
+	MTexture* pDepthTexture = MTexture::CreateShadowMap();
+	pDepthTexture->SetSize(v2Size);
+	pDepthTexture->GenerateBuffer(pRenderSystem->GetDevice());
+	
+	m_gbufferRenderPass.m_pDepthTexture = pDepthTexture;
 	m_gbufferRenderPass.m_DepthDesc.bClearWhenRender = true;
 	m_gbufferRenderPass.m_DepthDesc.cClearColor = MColor::White;
 	m_gbufferRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
@@ -330,6 +360,16 @@ void MDeferredRenderProgram::InitializeRenderPass()
 	m_lightningRenderPass.m_vBackDesc.push_back(MPassTargetDescription(true, MColor::Black_T));
 	m_lightningRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
 
+
+
+	m_forwardRenderPass.m_vBackTextures.push_back(pLightningRenderTarget);
+	m_forwardRenderPass.m_vBackDesc.push_back(MPassTargetDescription(false, MColor::Black_T));
+	m_forwardRenderPass.m_pDepthTexture = pDepthTexture;
+	m_forwardRenderPass.m_DepthDesc.bClearWhenRender = false;
+	m_forwardRenderPass.m_DepthDesc.cClearColor = MColor::White;
+	m_forwardRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
+
+
 	m_pFinalOutputTexture = pLightningRenderTarget;
 }
 
@@ -339,6 +379,7 @@ void MDeferredRenderProgram::ReleaseRenderPass()
 
 	pRenderSystem->ReleaseRenderpass(m_gbufferRenderPass);
 	pRenderSystem->ReleaseRenderpass(m_lightningRenderPass);
+	pRenderSystem->ReleaseRenderpass(m_forwardRenderPass);
 }
 
 void MDeferredRenderProgram::InitializeFrameShaderParams()

@@ -52,6 +52,8 @@ struct MRenderInfo
 	// mesh
 	std::map<MMaterial*, std::vector<MRenderableMeshComponent*>> m_tMaterialGroupMesh;
 
+	// deferred, gbuffer
+	std::map<MMaterial*, std::vector<MRenderableMeshComponent*>> m_tDeferredMaterialGroupMesh;
 
 
 public:

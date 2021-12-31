@@ -688,6 +688,8 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 			pStaticMeshMaterialRes->AddRef();
 			pMaterial = pStaticMeshMaterialRes;
 		}
+
+		pMaterial->SetMaterialType(MEMaterialType::EDeferred);
 	}
 	else
 	{
@@ -711,6 +713,8 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 			pStaticMeshMaterialRes->AddRef();
 			pMaterial = pStaticMeshMaterialRes;
 		}
+
+		pMaterial->SetMaterialType(MEMaterialType::EDefault);
 	}
 
 	if(nMaterialIdx >= pScene->mNumMaterials)

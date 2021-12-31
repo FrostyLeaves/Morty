@@ -540,10 +540,8 @@ void GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPass, std::vector<V
 
 	MEMaterialType eType = pMaterial->GetMaterialType();
 
-	if (MEMaterialType::EDefault == eType)
+	if (MEMaterialType::EDefault == eType || MEMaterialType::EDeferred == eType)
 	{
-		//m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::EDefault], 0);
-
 		for (uint32_t i = 0; i < pRenderPass->m_vBackDesc.size(); ++i)
 		{
 			vBlendAttach.push_back({});
@@ -557,12 +555,9 @@ void GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPass, std::vector<V
 			attachStage.colorBlendOp = VK_BLEND_OP_ADD;
 			attachStage.alphaBlendOp = VK_BLEND_OP_ADD;
 		}
-
 	}
 	else if (MEMaterialType::EDepthPeel == eType)
 	{
-		//	m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::EReadNotWrite], 0);
-
 		if (pRenderPass->m_vBackDesc.size() < 4)
 			return;
 
@@ -612,7 +607,6 @@ void GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPass, std::vector<V
 	}
 	else if (MEMaterialType::ETransparentBlend == eType)
 	{
-		//m_pDevice->m_pD3dContext->OMSetDepthStencilState(m_vDepthStencilState[(int)MEDepthStencilType::ENotReadNotWrite], 0);
 		for (uint32_t i = 0; i < pRenderPass->m_vBackDesc.size(); ++i)
 		{
 			vBlendAttach.push_back({});
@@ -669,7 +663,7 @@ void GetDepthStencilStage(MMaterial* pMaterial, MRenderPass* pRenderPass, VkPipe
 
 	MEMaterialType eType = pMaterial->GetMaterialType();
 
-	if (MEMaterialType::EDefault == eType)
+	if (MEMaterialType::EDefault == eType || MEMaterialType::EDeferred == eType)
 	{
 		depthStencilInfo.depthTestEnable = VK_TRUE;
 		depthStencilInfo.depthWriteEnable = VK_TRUE;

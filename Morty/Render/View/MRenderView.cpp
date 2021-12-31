@@ -418,7 +418,7 @@ MRenderTarget* MRenderView::GetNextRenderTarget()
 
 	m_vRenderTarget[unImageIndex].vkImageReadySemaphore = vkImageReadySemaphore;
 
-	GetEngine()->GetLogger()->Information("the Image View: %d", unImageIndex);
+//	GetEngine()->GetLogger()->Information("the Image View: %d", unImageIndex);
 
 	//now, framebuffer is ready, commandbuffer is ready.
 	return &m_vRenderTarget[unImageIndex];

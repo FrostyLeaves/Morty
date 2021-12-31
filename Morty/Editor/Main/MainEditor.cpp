@@ -48,7 +48,8 @@
 #include "MDeferredRenderProgram.h"
 
 
-MString MainEditor::m_sRenderProgramName = MForwardRenderProgram::GetClassTypeName();
+//MString MainEditor::m_sRenderProgramName = MForwardRenderProgram::GetClassTypeName();
+MString MainEditor::m_sRenderProgramName = MDeferredRenderProgram::GetClassTypeName();
 
 class MainEditorTask : public MTaskNode
 {

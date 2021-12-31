@@ -48,6 +48,8 @@ public:
 
 	void RenderShadow(MTaskNode* pTaskNode);
 
+	void RenderForward(MTaskNode* pTaskNode);
+
 	void RenderTransparent(MTaskNode* pTaskNode);
 
 	virtual MTexture* GetOutputTexture() override;
@@ -75,7 +77,7 @@ public:
 
 protected:
 
-	void DrawStaticMesh(MRenderInfo& info, MIRenderCommand* pCommand);
+	void DrawStaticMesh(MRenderInfo& info, MIRenderCommand* pCommand, std::map<MMaterial*, std::vector<MRenderableMeshComponent*>>& tMaterialGroup);
 
 	void UpdateFrameParams(MRenderInfo& info);
 
@@ -87,6 +89,7 @@ protected:
 
 	MForwardRenderShaderParamSet m_frameParamSet;
 
+	MRenderPass m_forwardRenderPass;
 	MRenderPass m_gbufferRenderPass;
 	MRenderPass m_lightningRenderPass;
 

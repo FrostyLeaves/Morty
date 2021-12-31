@@ -60,6 +60,11 @@ void MRenderInfo::CollectRenderMesh()
 			auto& meshes = m_tTransparentGroupMesh[pMaterial];
 			meshes.push_back(&meshComp);
 		}
+		else if (pMaterial->GetMaterialType() == MEMaterialType::EDeferred)
+		{
+			auto& meshes = m_tTransparentGroupMesh[pMaterial];
+			meshes.push_back(&meshComp);
+		}
 		else
 		{
 			auto& meshes = m_tMaterialGroupMesh[pMaterial];

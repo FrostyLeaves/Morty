@@ -1747,7 +1747,7 @@ void MVulkanDevice::CheckFrameFinish()
 				pRecycleBin = nullptr;
 			}
 
-			GetEngine()->GetLogger()->Information("the Frame Finished: %d", iter->first);
+//			GetEngine()->GetLogger()->Information("the Frame Finished: %d", iter->first);
 			iter = m_tFrameData.erase(iter);
 		}
 		else

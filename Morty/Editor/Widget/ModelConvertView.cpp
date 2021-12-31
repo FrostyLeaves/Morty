@@ -10,7 +10,7 @@
 
 #include "PropertyBase.h"
 
-static const char* svModelFilter = ".fbx\0.obj\0\0";
+static const char* svModelFilter = ".fbx,.obj,.blend\0\0";
 
 const char* svImportModelID = "Import Model File";
 const char* svOutputFolderID = "Output Model Entity Dir";
