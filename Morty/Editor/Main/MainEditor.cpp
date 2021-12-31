@@ -66,7 +66,7 @@ MainEditor::MainEditor()
 	, m_pMessageView(nullptr)
 	, m_pImGuiRenderable(nullptr)
 	, m_unTriangleCount(0)
-	, m_bRenderToWindow(false)
+	, m_bRenderToWindow(true)
 	, m_bShowRenderView(false)
 	, m_bShowDebugView(false)
 	, m_funcCloseCallback(nullptr)
@@ -129,6 +129,9 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	m_pNodeTreeView->SetScene(m_SceneTexture.GetScene());
 
 //	m_pTaskGraphView->SetRenderGraph(m_SceneTexture.GetRenderGraph());
+
+	m_pNodeTreeView->m_bVisiable = true;
+	m_pPropertyView->m_bVisiable = true;
 
 
 	MTaskGraph* pMainGraph = GetEngine()->GetMainGraph();

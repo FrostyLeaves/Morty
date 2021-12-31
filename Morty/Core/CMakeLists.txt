@@ -148,7 +148,6 @@ if(MORTY_BUILD_TARGET STREQUAL "IOS")
 endif()
 
 
-
 if(Vulkan_FOUND)
     target_link_libraries(Core PUBLIC Vulkan::Vulkan)
 else()

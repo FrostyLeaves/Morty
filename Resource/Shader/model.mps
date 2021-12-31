@@ -39,6 +39,7 @@ PS_OUT PS(VS_OUT input) : SV_Target
         clip(fAlpha - 0.1f);
     }
 
+    
 #ifdef MTRANSPARENT_DEPTH_PEELING
 
     float fZDepth = input.pos.z;

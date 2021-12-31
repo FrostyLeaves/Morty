@@ -70,9 +70,10 @@ def build_for_windows():
 if __name__ == '__main__':
 
     platform = None
+    target = None
     
     try:
-        opts, _ = getopt.getopt(sys.argv[1:], 'p:', ["platform="])
+        opts, _ = getopt.getopt(sys.argv[1:], 'p:t:', ["platform=", "target="])
     except getopt.GetoptError as e:
         print(e)
         exit(-1)
@@ -85,13 +86,20 @@ if __name__ == '__main__':
                 print("Unknow platform: " + value)
                 print("Platform range: [WIN, MACOS, IOS]")
                 exit(-1)
+        elif opt in ("-t", "--target"):
+            if value in ("Debug", "Release"):
+                target = value
+            else:
+                print("Unknow target: " + value)
+                print("Platform range: [Debug, Release]")
+                exit(-1)
         else:
             print("Unknow param: " + opt)
     pass
 
     if platform == "WIN":
-        install_assimp.build_for_windows()
-        install_sdl.build_for_windows()
+        #install_assimp.build_for_windows()
+        #install_sdl.build_for_windows()
         #install_bullet.build_for_windows()
         build_for_windows()
     elif platform == "MACOS":

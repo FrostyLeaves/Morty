@@ -19,8 +19,8 @@ MRenderInfo::MRenderInfo()
 	, pShadowMapTexture(nullptr)
 	, pFrameShaderParamSet(nullptr)
 	, m4DirLightInvProj()
-	, cShadowRenderAABB()
-	, cMeshRenderAABB()
+	, cGenerateShadowRenderAABB()
+	, cCaclShadowRenderAABB()
 	, pPrimaryRenderCommand(nullptr)
 {
 
@@ -67,10 +67,13 @@ void MRenderInfo::CollectRenderMesh()
 		}
 
 
-		pBounds->UnionMinMax(v3BoundsMin, v3BoundsMax);
+		if (meshComp.GetShadowType() != MRenderableMeshComponent::MEShadowType::ENone)
+		{
+			pBounds->UnionMinMax(v3BoundsMin, v3BoundsMax);
+		}
 	}
 
-	cMeshRenderAABB.SetMinMax(v3BoundsMin, v3BoundsMax);
+	cCaclShadowRenderAABB.SetMinMax(v3BoundsMin, v3BoundsMax);
 }
 
 void MRenderInfo::CollectShadowMesh()
@@ -144,12 +147,12 @@ void MRenderInfo::CollectShadowMesh()
 
 	if (bGenerateShadow)
 	{
-		cShadowRenderAABB.SetMinMax(v3ShadowMin, v3ShadowMax);
+		cGenerateShadowRenderAABB.SetMinMax(v3ShadowMin, v3ShadowMax);
 	}
 	else
 	{
-		cShadowRenderAABB = cMeshRenderAABB;
+		cGenerateShadowRenderAABB = cCaclShadowRenderAABB;
 	}
 
-	m4DirLightInvProj = pViewport->GetLightInverseProjection(pDirectionalLightEntity,cMeshRenderAABB, cShadowRenderAABB);
+	m4DirLightInvProj = pViewport->GetLightInverseProjection(pDirectionalLightEntity,cCaclShadowRenderAABB, cGenerateShadowRenderAABB);
 }

@@ -411,6 +411,8 @@ Vector3 Matrix4::GetTranslation() const
 
  Quaternion Matrix4::GetRotation() const
  {
+	 Quaternion result;
+
  	Matrix4 mat = GetRotatePart();
  
  	float w, x, y, z;
@@ -440,37 +442,38 @@ Vector3 Matrix4::GetTranslation() const
 	switch (nBiggestIndex)
 	{
 	case 0:
-		return Quaternion(fBiggestValue, (m[1][2] - m[2][1]) * mult, (m[2][0] - m[0][2]) * mult, (m[0][1] - m[1][0]) * mult);
+		result = Quaternion(fBiggestValue, (m[1][2] - m[2][1]) * mult, (m[2][0] - m[0][2]) * mult, (m[0][1] - m[1][0]) * mult);
 		break;
 	case 1:
-		return Quaternion((m[1][2] - m[2][1]) * mult, fBiggestValue, (m[0][1] + m[1][0]) * mult, (m[2][0] + m[0][2]) * mult);
+		result = Quaternion((m[1][2] - m[2][1]) * mult, fBiggestValue, (m[0][1] + m[1][0]) * mult, (m[2][0] + m[0][2]) * mult);
 		break;
 	case 2:
-		return Quaternion((m[2][0] - m[0][2]) * mult, (m[0][1] + m[1][0]) * mult, fBiggestValue, (m[1][2] + m[2][1]) * mult);
+		result = Quaternion((m[2][0] - m[0][2]) * mult, (m[0][1] + m[1][0]) * mult, fBiggestValue, (m[1][2] + m[2][1]) * mult);
 		break;
 	case 3:
-		return Quaternion((m[0][1] - m[1][0]) * mult, (m[2][0] + m[0][2]) * mult, (m[1][2] + m[2][1]) * mult, fBiggestValue);
+		result = Quaternion((m[0][1] - m[1][0]) * mult, (m[2][0] + m[0][2]) * mult, (m[1][2] + m[2][1]) * mult, fBiggestValue);
 		break;
 	}
 #else
 	switch (nBiggestIndex)
 	{
 	case 0:
-		return Quaternion(fBiggestValue, (m[2][1] - m[1][2]) * mult, (m[0][2] - m[2][0]) * mult, (m[1][0] - m[0][1]) * mult);
+		result = Quaternion(fBiggestValue, (m[2][1] - m[1][2]) * mult, (m[0][2] - m[2][0]) * mult, (m[1][0] - m[0][1]) * mult);
 		break;
 	case 1:
-		return Quaternion((m[2][1] - m[1][2]) * mult, fBiggestValue, (m[0][1] + m[1][0]) * mult, (m[2][0] + m[0][2]) * mult);
+		result = Quaternion((m[2][1] - m[1][2]) * mult, fBiggestValue, (m[0][1] + m[1][0]) * mult, (m[2][0] + m[0][2]) * mult);
 		break;
 	case 2:
-		return Quaternion((m[0][2] - m[2][0]) * mult, (m[0][1] + m[1][0]) * mult, fBiggestValue, (m[1][2] + m[2][1]) * mult);
+		result = Quaternion((m[0][2] - m[2][0]) * mult, (m[0][1] + m[1][0]) * mult, fBiggestValue, (m[1][2] + m[2][1]) * mult);
 		break;
 	case 3:
-		return Quaternion((m[1][0] - m[0][1]) * mult, (m[2][0] + m[0][2]) * mult, (m[1][2] + m[2][1]) * mult, fBiggestValue);
+		result = Quaternion((m[1][0] - m[0][1]) * mult, (m[2][0] + m[0][2]) * mult, (m[1][2] + m[2][1]) * mult, fBiggestValue);
 		break;
 	}
 #endif
 
- 	return Quaternion();
+	result.Normalize();
+	return result;
  	
  }
 

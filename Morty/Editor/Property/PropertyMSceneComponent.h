@@ -14,6 +14,7 @@ public:
 			if (ShowNodeBegin("SceneComponent"))
 			{
 				PROPERTY_NODE_EDIT(pSceneComponent, "Transform", MTransform, GetTransform, SetTransform);
+				PROPERTY_VALUE_EDIT(pSceneComponent, "Visible", bool, GetVisible, SetVisible);
 				ShowNodeEnd();
 			}
 		}

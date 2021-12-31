@@ -234,8 +234,8 @@ void MMeshResource::LoadAsCube()
 		{0.0f, 0.0f, -1.0f},	//1 back
 		{-1.0f, 0.0f, 0.0f},	//2 left
 		{1.0f, 0.0f, 0.0f},		//3 right
-		{0.0f, 0.0f, 1.0f},		//4 top
-		{0.0f, 0.0f, -1.0f},	//5 bottom
+		{0.0f, 1.0f, 0.0f},		//4 top
+		{0.0f, -1.0f, 0.0f},	//5 bottom
 	};
 
 	static const Vector2 uv[4] = {

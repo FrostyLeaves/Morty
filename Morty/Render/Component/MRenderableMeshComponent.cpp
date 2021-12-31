@@ -134,8 +134,10 @@ void MRenderableMeshComponent::UpdateShaderMeshParam()
 
 		if (m_pNormalMatrixParam)
 		{
+			Quaternion quat =  worldTrans.GetRotation();
+			Matrix4 mat = quat;
 			//Transposed and Inverse.
-			Matrix3 matNormal(worldTrans.Transposed().Inverse(), 3, 3);
+			Matrix3 matNormal(worldTrans, 3, 3);
 
 			*m_pNormalMatrixParam = matNormal;
 		}

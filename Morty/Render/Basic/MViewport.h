@@ -91,7 +91,7 @@ public:
 	// Parameter: const MBoundsAABB & cMeshRenderAABB		所有响应光照的Mesh的AABB
 	// Parameter: const MBoundsAABB & cShadowRenderAABB		所有产生阴影的Mesh的AABB
 	//************************************
-	Matrix4 GetLightInverseProjection(MEntity* pLight, const MBoundsAABB& cMeshRenderAABB, const MBoundsAABB& cShadowRenderAABB);
+	Matrix4 GetLightInverseProjection(MEntity* pLight, const MBoundsAABB& cCaclShadowRenderAABB, const MBoundsAABB& cGenerateShadowAABB);
 
 	void GetCameraFrustum(MEntity* pCamera, const float& fZNear, const float& fZFar, std::vector<Vector3>& vPoints);
 	void GetCameraFrustum(MEntity* pCamera, const float& fZNear, const float& fZFar, Vector3& v3NearTopLeft, Vector3& v3NearTopRight, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft, Vector3& v3FarTopLeft, Vector3& v3FarTopRight, Vector3& v3FarBottomRight, Vector3& v3FarBottomLeft);

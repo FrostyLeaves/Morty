@@ -12,6 +12,7 @@
 
 #include "MEditorModule.h"
 
+#include "MSceneSystem.h"
 #include "MEntitySystem.h"
 #include "MResourceSystem.h"
 
@@ -20,6 +21,8 @@
 #include "MScene.h"
 #include "MSceneComponent.h"
 #include "MRenderableMeshComponent.h"
+
+#include "MPointLightComponent.h"
 #include "MDirectionalLightComponent.h"
 
 #include "MMaterialResource.h"
@@ -56,6 +59,7 @@ int main()
 	{
 		MResourceSystem* pResourceSystem = engine.FindSystem<MResourceSystem>();
 		MEntitySystem* pEntitySystem = engine.FindSystem<MEntitySystem>();
+		MSceneSystem* pSceneSystem = engine.FindSystem<MSceneSystem>();
 
 
 		MMeshResource* pCubeResource = pResourceSystem->CreateResource<MMeshResource>();
@@ -65,7 +69,7 @@ int main()
 		pCubeEntity->SetName("Cube");
 		if (MSceneComponent* pSceneComponent = pCubeEntity->RegisterComponent<MSceneComponent>())
 		{
-			pSceneComponent->SetScale(Vector3(10.0f, 10.0f, 1.0f));
+			pSceneComponent->SetScale(Vector3(100.0f, 1.0f, 100.0f));
 		}
 		if (MRenderableMeshComponent* pMeshComponent = pCubeEntity->RegisterComponent<MRenderableMeshComponent>())
 		{
@@ -107,6 +111,10 @@ int main()
 		{
 			auto&& vEntity = pEntitySystem->LoadEntity(pScene, pPigeonResource);
 
+			MSceneComponent* pSceneComponent = vEntity[2]->GetComponent<MSceneComponent>();
+			pSceneComponent->SetScale(Vector3(10, 10, 10));
+			pSceneComponent->SetRotation(Quaternion(Vector3(1, 0, 0), 90.0f));
+
 			for (MEntity* pEntity : vEntity)
 			{
 				pEntitySystem->FindAllComponentRecursively(pEntity, MRenderableMeshComponent::GetClassType(), vMeshComponents);
@@ -132,12 +140,23 @@ int main()
 		pDirLight->SetName("DirectionalLight");
 		if (MSceneComponent* pSceneComponent = pDirLight->RegisterComponent<MSceneComponent>())
 		{
-			//pSceneComponent->SetRotation(Quaternion(Vector3(1.0, 0.0, 0.0), 45.0f));
+			pSceneComponent->SetRotation(Quaternion(Vector3(1.0, 0.0, 0.0), 60.0f));
 		}
 		pDirLight->RegisterComponent<MDirectionalLightComponent>();
 
 
+		for (int i = 0; i < 1; ++i)
+		{
+			MEntity* pPointLight = pScene->CreateEntity();
+			pPointLight->SetName(MString("PointLight_") + MStringHelper::ToString(i));
+			
+			if (MSceneComponent* pSceneComponent = pPointLight->RegisterComponent<MSceneComponent>())
+			{
+				pSceneComponent->SetPosition(Vector3(-5 + i * 5, 5.0f, 0.0f));
+			}
 
+			pPointLight->RegisterComponent<MPointLightComponent>();
+		}
 	}
 
 	//start run

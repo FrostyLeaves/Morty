@@ -30,8 +30,8 @@ struct MRenderInfo
 
 
 	//bounds
-	MBoundsAABB cShadowRenderAABB;
-	MBoundsAABB cMeshRenderAABB;
+	MBoundsAABB cGenerateShadowRenderAABB;
+	MBoundsAABB cCaclShadowRenderAABB;
 
 
 	// frame
