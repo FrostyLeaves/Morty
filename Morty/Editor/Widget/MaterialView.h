@@ -22,7 +22,7 @@ public:
 public:
 	void SetMaterial(MMaterial* pMaterial);
 
-	void UpdateTexture(MIRenderCommand* pCommand);
+	SceneTexture& GetSceneTexture() { return m_SceneTexture; }
 
 	virtual void Render() override;
 

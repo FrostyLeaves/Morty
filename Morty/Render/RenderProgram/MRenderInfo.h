@@ -11,6 +11,7 @@ class MIMesh;
 class MMaterial;
 class MIRenderCommand;
 class MSkeletonInstance;
+class MDebugMeshComponent;
 class MRenderableMeshComponent;
 struct MRenderInfo
 {
@@ -28,6 +29,8 @@ struct MRenderInfo
 	MEntity* pCameraEntity;
 	MEntity* pDirectionalLightEntity;
 
+	// skybox
+	MEntity* pSkyBoxEntity;
 
 	//bounds
 	MBoundsAABB cGenerateShadowRenderAABB;
@@ -55,6 +58,8 @@ struct MRenderInfo
 	// deferred, gbuffer
 	std::map<MMaterial*, std::vector<MRenderableMeshComponent*>> m_tDeferredMaterialGroupMesh;
 
+	//debug
+	std::vector<MDebugMeshComponent*> m_vDebugMeshComponent;
 
 public:
 

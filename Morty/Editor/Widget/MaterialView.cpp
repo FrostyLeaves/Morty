@@ -80,23 +80,18 @@ void MaterialView::SetMaterial(MMaterial* pMaterial)
 	}
 }
 
-void MaterialView::UpdateTexture(MIRenderCommand* pCommand)
-{
-
-}
-
 void MaterialView::Render()
 {
-// 	if (m_pMaterial && m_bShowPreview)
-// 	{
-// 		if (void* pTexture = m_SceneTexture.GetTexture())
-// 		{
-// 			ImTextureID texid = pTexture;
-// 			float fImageSize = ImGui::GetContentRegionAvail().x;
-// 			ImGui::SameLine(fImageSize * 0.25f);
-// 			ImGui::Image(texid, ImVec2(fImageSize * 0.5f, fImageSize * 0.5f));
-// 		}
-// 	}
+ 	if (m_pMaterial && m_bShowPreview)
+ 	{
+ 		if (void* pTexture = m_SceneTexture.GetTexture(0))
+ 		{
+ 			ImTextureID texid = pTexture;
+ 			float fImageSize = ImGui::GetContentRegionAvail().x;
+ 			ImGui::SameLine(fImageSize * 0.25f);
+ 			ImGui::Image(texid, ImVec2(fImageSize * 0.5f, fImageSize * 0.5f));
+ 		}
+ 	}
 	if (m_pMaterial)
 	{
 
@@ -122,6 +117,7 @@ void MaterialView::Initialize(MEngine* pEngine)
 
 	m_SceneTexture.Initialize(pEngine, MainEditor::GetRenderProgramName(), 1);
 	m_SceneTexture.SetSize(Vector2(512, 512));
+	m_SceneTexture.SetBackColor(MColor(1.0f, 0.0f, 0.0f, 1.0f));
 
 
 	MScene* pScene = m_SceneTexture.GetScene();
@@ -135,6 +131,7 @@ void MaterialView::Initialize(MEngine* pEngine)
 		if (MSceneComponent* pCameraSceneComponent = pCameraNode->GetComponent<MSceneComponent>())
 		{
 			pCameraSceneComponent->SetPosition(Vector3(0, 0, -5));
+			pCameraSceneComponent->SetRotation(UnitQuaternion);
 		}
 	}
 
@@ -147,8 +144,9 @@ void MaterialView::Initialize(MEngine* pEngine)
 
 	if (MRenderableMeshComponent* pMeshComponent = m_pStaticSphereMeshNode->RegisterComponent<MRenderableMeshComponent>())
 	{
-		if (MResource* pResource = pResourceSystem->LoadResource("./Model/Sphere/GeoSphere001.mesh"))
-			pMeshComponent->Load(pResource);
+		MMeshResource* pMeshResource = pResourceSystem->CreateResource<MMeshResource>();
+		pMeshResource->LoadAsSphere();
+		pMeshComponent->Load(pMeshResource);
 	}
 
 	pSceneSystem->SetVisible(m_pStaticSphereMeshNode, false);
@@ -170,46 +168,13 @@ void MaterialView::Initialize(MEngine* pEngine)
 
 	if (MRenderableMeshComponent* pMeshComponent = m_pSkeletonSphereMeshNode->RegisterComponent<MRenderableMeshComponent>())
 	{
-		if (MResource* pResource = pResourceSystem->LoadResource("./Model/Sphere/GeoSphere001_anim.mesh"))
-			pMeshComponent->Load(pResource);
+		MMeshResource* pMeshResource = pResourceSystem->CreateResource<MMeshResource>();
+		pMeshResource->LoadAsSphere(MMeshResource::MEMeshVertexType::Skeleton);
+		pMeshComponent->Load(pMeshResource);
 	}
 
 	pSceneSystem->SetVisible(m_pSkeletonSphereMeshNode, false);
 
-
-
-
-
-// 	unsigned int nSize = pResource->GetMesh()->GetVerticesLength();
-// 	uint32_t nIdxSize = pResource->GetMesh()->GetIndicesLength();
-// 	MVertex* pVertex = (MVertex*)pResource->GetMesh()->GetVertices();
-// 	uint32_t* pIdxxx = pResource->GetMesh()->GetIndices();
-// 
-// 	MMesh<MVertexWithBones>* pNewVertex = new MMesh<MVertexWithBones>();
-// 	pNewVertex->CreateVertices(nSize);
-// 	pNewVertex->CreateIndices(pResource->GetMesh()->GetIndicesLength(), 1);
-// 
-// 	MVertexWithBones* pBoneVertex = pNewVertex->GetVertices();
-// 	uint32_t* pIndices = pNewVertex->GetIndices();
-// 
-// 	for (int i = 0; i < nSize; ++i)
-// 	{
-// 		memset(&(pBoneVertex[i]), 0, sizeof(MVertexWithBones));
-// 		pBoneVertex[i].position = pVertex[i].position;
-// 		pBoneVertex[i].bitangent = pVertex[i].bitangent;
-// 		pBoneVertex[i].normal = pVertex[i].normal;
-// 		pBoneVertex[i].tangent = pVertex[i].tangent;
-// 		pBoneVertex[i].texCoords = pVertex[i].texCoords;
-// 	}
-// 
-// 	memcpy(pIndices, pIdxxx, sizeof(uint32_t) * nIdxSize);
-// 	
-// 
-// 	pResource->m_pMesh = pNewVertex;
-// 	pResource->m_eVertexType = MMeshResource::Skeleton;
-// 
-// 
-// 	pResource->SaveTo("./Model/Sphere/GeoSphere001_anim.mesh");
 
  	MEntity* pDirLight = pScene->CreateEntity();
  	pDirLight->SetName("DirLight");
@@ -223,7 +188,7 @@ void MaterialView::Initialize(MEngine* pEngine)
 
 	if (MDirectionalLightComponent* pDirLightComponent = pDirLight->RegisterComponent<MDirectionalLightComponent>())
 	{
-		pDirLightComponent->SetLightIntensity(100.0f);
+		pDirLightComponent->SetLightIntensity(1.0f);
 	}
 	
 }

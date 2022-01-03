@@ -33,6 +33,7 @@ MViewport::MViewport()
 	: MObject()
 	, m_pScene(nullptr)
 	, m_pUserCamera(nullptr)
+	, m_m4Projection(Matrix4::IdentityMatrix)
 	, m_m4CameraInvProj(Matrix4::IdentityMatrix)
 	, m_bCameraInvProjMatrixLocked(false)
 	, m_v2LeftTop(0,0)
@@ -420,11 +421,11 @@ void MViewport::UpdateMatrix()
 		return;
 
 	//Update Camera and Projection Matrix.
-	Matrix4 projMat = pCameraComponent->GetCameraType() == MCameraComponent::MECameraType::EPerspective
+	m_m4Projection = pCameraComponent->GetCameraType() == MCameraComponent::MECameraType::EPerspective
 		? MatrixPerspectiveFovLH(pCameraComponent->GetFov() * 0.5f, m_v2Size.x / m_v2Size.y, pCameraComponent->GetZNear(), pCameraComponent->GetZFar())
 		: MatrixOrthoOffCenterLH(-pCameraComponent->GetWidth() * 0.5f, pCameraComponent->GetWidth() * 0.5f, pCameraComponent->GetHeight() * 0.5f, -pCameraComponent->GetHeight() * 0.5f, pCameraComponent->GetZNear(), pCameraComponent->GetZFar());
 
-	m_m4CameraInvProj = projMat * pSceneComponent->GetWorldTransform().Inverse();
+	m_m4CameraInvProj = m_m4Projection * pSceneComponent->GetWorldTransform().Inverse();
 }
 
 MEntity* MViewport::GetCamera() const

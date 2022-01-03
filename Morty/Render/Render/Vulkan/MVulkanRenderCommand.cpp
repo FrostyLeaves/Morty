@@ -346,8 +346,8 @@ void MVulkanRenderCommand::SetTextureLayout(const std::vector<MTexture*>& vTextu
 		if (findResult != m_tTextureLayout.end())
 			oldLayout = findResult->second;
 		
-		if(oldLayout == newLayout)
-			continue;
+//		if(oldLayout == newLayout)
+//			continue;
 
 		VkImageSubresourceRange subresourceRange;
 		if (vTextures[i]->GetRenderUsage() == METextureRenderUsage::ERenderDepth)

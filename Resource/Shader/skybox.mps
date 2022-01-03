@@ -1,6 +1,4 @@
-#include "inner_constant.hlsl"
-#include "inner_functional.hlsl"
-#include "model_struct.hlsl"
+#include "light_forward.hlsl"
 
 struct VS_OUT_SKYBOX
 {
@@ -8,11 +6,17 @@ struct VS_OUT_SKYBOX
     float3 uvw : UVW;
 };
 
-[[vk::binding(5,0)]]TextureCube SkyTexCube;
+[[vk::binding(6,0)]]TextureCube SkyTexCube;
 
 float4 PS(VS_OUT_SKYBOX input) : SV_Target
 {
     float4 color = SkyTexCube.Sample(U_defaultSampler, input.uvw);
+    
+    // HDR -> LDR
+    color.rgb = color.rgb / (color.rgb + float3(1.0));
+    // Gamma
+    color.rgb = pow(color.rgb, float3(1.0/2.2));
+
     return color;
 }
 

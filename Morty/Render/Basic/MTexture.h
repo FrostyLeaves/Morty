@@ -15,10 +15,18 @@
 
 class MIDevice;
 
+enum METextureType
+{
+	ETexture2D = 1,
+	ETextureCube = 2,
+};
+
 enum class METextureLayout
 {
 	ERGBA8 = 0,
 	ERGBA16,
+	ERGBA32,
+	ER8,
 	ER32,
 	EDepth,
 };
@@ -68,6 +76,9 @@ public:
 	void SetShaderUsage(const METextureShaderUsage& usage) { m_eShaderUsage = usage; }
 	METextureShaderUsage GetShaderUsage() const { return m_eShaderUsage; }
 
+	void SetTextureType(const METextureType& eType) { m_eTextureType = eType; }
+	METextureType GetTextureType() const { return m_eTextureType; }
+
 public:
 
 	void GenerateBuffer(MIDevice* pDevice, MByte* aImageData = nullptr);
@@ -80,6 +91,8 @@ public:
 	static MTexture* CreateShadowMap();
 	static MTexture* CreateRenderTarget();
 	static MTexture* CreateRenderTargetFloat32();
+
+	static MTexture* CreateCubeMap();
 
 public:
 
@@ -96,6 +109,8 @@ public:
 	METextureRenderUsage m_eRenderUsage;
 
 	METextureShaderUsage m_eShaderUsage;
+
+	METextureType m_eTextureType;
 
 	//CPU readable
 	bool m_bReadable;

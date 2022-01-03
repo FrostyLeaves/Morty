@@ -74,6 +74,7 @@ MTexture* MRenderPass::GetDepthTexture()
 
 MPassTargetDescription::MPassTargetDescription(const bool bClear, const MColor& cColor)
 	: bClearWhenRender(bClear)
+	, bAlreadyRender(false)
 	, cClearColor(cColor)
 {
 }

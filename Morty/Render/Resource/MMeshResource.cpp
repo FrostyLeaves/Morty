@@ -282,9 +282,67 @@ void MMeshResource::OnDelete()
 	MResource::OnDelete();
 }
 
-void MMeshResource::LoadAsCube()
+void MMeshResource::LoadAsPlane(MEMeshVertexType eVertexType/* = MEMeshVertexType::Normal*/, const Vector3& scale/* = Vector3::One */)
 {
-	m_eVertexType = MEMeshVertexType::Normal;
+	m_eVertexType = eVertexType;
+
+	m_pMesh = NewMeshByType(m_eVertexType);
+	m_pMesh->ResizeVertices(4);
+
+	/*
+		0 -------- 1
+		 |        |
+		 |        |
+		 |        |
+		2 -------- 3
+	*/
+	static const MVertex plane[4] = {
+		{ {-1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f} },
+		{ {1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f} },
+		{ {-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f} },
+		{ {1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f} }
+	};
+
+	if (MEMeshVertexType::Normal == eVertexType)
+	{
+		MVertex* vVertex = (MVertex*)m_pMesh->GetVertices();
+		memcpy(m_pMesh->GetVertices(), plane, sizeof(MVertex) * 4);
+		for (int i = 0; i < 4; ++i)
+		{
+			vVertex[i].position.x *= scale.x;
+			vVertex[i].position.y *= scale.y;
+		}
+	}
+	else if (MEMeshVertexType::Skeleton == eVertexType)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			MVertexWithBones* vVertex = (MVertexWithBones*)m_pMesh->GetVertices();
+			memcpy(&vVertex[i], &plane[i], sizeof(MVertexWithBones));
+
+			vVertex[i].position.x *= scale.x;
+			vVertex[i].position.y *= scale.y;
+		}
+	}
+
+	static const uint32_t indices[6] = {
+		0, 1 ,2, 1, 3, 2,
+	};
+
+	m_pMesh->ResizeIndices(2, 3);
+	memcpy(m_pMesh->GetIndices(), indices, sizeof(indices));
+
+	m_BoundsOBB.m_matEigVectors = Matrix3(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	m_BoundsOBB.m_v3HalfLength = Vector3(scale.x, scale.y, 0.001f);
+	m_BoundsOBB.m_v3MinPoint = -Vector3(-scale.x, -scale.y, -0.001f);
+	m_BoundsOBB.m_v3MaxPoint = Vector3(scale.x, scale.y, 0.001f);
+
+	m_BoundsSphere.m_fRadius = scale.Length();
+}
+
+void MMeshResource::LoadAsCube(MEMeshVertexType eVertexType/* = MEMeshVertexType::Normal*/)
+{
+	m_eVertexType = eVertexType;
 
 	/*
 	Vector3 position;
@@ -329,11 +387,12 @@ void MMeshResource::LoadAsCube()
 
 	static const Vector2 uv[4] = {
 		{0.0f, 0.0f},
-		{0.0f, 1.0f},
 		{1.0f, 0.0f},
+		{0.0f, 1.0f},
 		{1.0f, 1.0f},
 	};
 
+	
 	static const MVertex cube[24] = {
 		//front
 		{ position[0], normal[1], normal[3], normal[5], uv[0] },
@@ -383,28 +442,40 @@ void MMeshResource::LoadAsCube()
 
 	m_pMesh = NewMeshByType(m_eVertexType);
 
-	m_pMesh->ResizeVertices(24);
-	memcpy(m_pMesh->GetVertices(), cube, sizeof(cube));
+	if (MEMeshVertexType::Normal == eVertexType)
+	{
+		m_pMesh->ResizeVertices(24);
+		memcpy(m_pMesh->GetVertices(), cube, sizeof(MVertex) * 24);
+	}
+	else if(MEMeshVertexType::Skeleton == eVertexType)
+	{
+		m_pMesh->ResizeVertices(24);
+		for (int i = 0; i < 24; ++i)
+		{
+			MVertexWithBones* vVertex = (MVertexWithBones*)m_pMesh->GetVertices();
+			memcpy(&vVertex[i], &cube[i], sizeof(MVertexWithBones));
+		}
+	}
 
 	m_pMesh->ResizeIndices(12, 3);
 	memcpy(m_pMesh->GetIndices(), indices, sizeof(indices));
 
 	m_BoundsOBB.m_matEigVectors = Matrix3(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-	m_BoundsOBB.m_v3HalfLength = Vector3(1.0f, 1.0f, 1.0f);
-	m_BoundsOBB.m_v3MinPoint = Vector3(-1.0f, -1.0f, -1.0f);
-	m_BoundsOBB.m_v3MaxPoint = Vector3(1.0f, 1.0f, 1.0f);
+	m_BoundsOBB.m_v3HalfLength = Vector3::One;
+	m_BoundsOBB.m_v3MinPoint = -Vector3::One;
+	m_BoundsOBB.m_v3MaxPoint = Vector3::One;
 	
 	m_BoundsSphere.m_fRadius = std::sqrtf(3.0f);
 	
 }
 
-void MMeshResource::LoadAsSphere()
+void MMeshResource::LoadAsSphere(MEMeshVertexType eVertexType/* = MEMeshVertexType::Normal*/)
 {
 	MSphereFactory sphereFactory;
 
 	sphereFactory(3);
 
-	m_eVertexType = MEMeshVertexType::Normal;
+	m_eVertexType = eVertexType;
 
 	m_pMesh = NewMeshByType(m_eVertexType);
 
@@ -413,26 +484,49 @@ void MMeshResource::LoadAsSphere()
 	auto& vIndices = sphereFactory.m_vIndices;
 
 	m_pMesh->ResizeVertices(vPoints.size());
-	for (int i = 0; i < vPoints.size(); ++i)
+	if (eVertexType == MEMeshVertexType::Normal)
 	{
-		MVertex& vertex = ((MVertex*)m_pMesh->GetVertices())[i];
-		vPoints[i].Normalize();
+		for (int i = 0; i < vPoints.size(); ++i)
+		{
 
-		vertex.position = vPoints[i];
-		vertex.normal = vPoints[i];
+			MVertex& vertex = ((MVertex*)m_pMesh->GetVertices())[i];
+			vPoints[i].Normalize();
 
-		Vector3 t1 = vertex.normal.CrossProduct(Vector3::Forward);
-		Vector3 t2 = vertex.normal.CrossProduct(Vector3::Up);
-		
-		vertex.tangent = t1.Length() > t2.Length() ? t1 : t2;
-		vertex.bitangent = vertex.normal.CrossProduct(vertex.tangent);
-		
-		
+			vertex.position = vPoints[i];
+			vertex.normal = vPoints[i];
 
+			Vector3 t1 = vertex.normal.CrossProduct(Vector3::Forward);
+			Vector3 t2 = vertex.normal.CrossProduct(Vector3::Up);
 
-		float xzLength = sqrt(vPoints[i].x * vPoints[i].x + vPoints[i].z * vPoints[i].z);
-		vertex.texCoords.x = acos(vPoints[i].x / xzLength) / M_PI;
-		vertex.texCoords.y = acos(vPoints[i].y) / M_PI;
+			vertex.tangent = t1.Length() > t2.Length() ? t1 : t2;
+			vertex.bitangent = vertex.normal.CrossProduct(vertex.tangent);
+
+			float xzLength = sqrt(vPoints[i].x * vPoints[i].x + vPoints[i].z * vPoints[i].z);
+			vertex.texCoords.x = acos(vPoints[i].x / xzLength) / M_PI;
+			vertex.texCoords.y = acos(vPoints[i].y) / M_PI;
+		}
+	}
+	else if (eVertexType == MEMeshVertexType::Skeleton)
+	{
+		for (int i = 0; i < vPoints.size(); ++i)
+		{
+
+			MVertexWithBones& vertex = ((MVertexWithBones*)m_pMesh->GetVertices())[i];
+			vPoints[i].Normalize();
+
+			vertex.position = vPoints[i];
+			vertex.normal = vPoints[i];
+
+			Vector3 t1 = vertex.normal.CrossProduct(Vector3::Forward);
+			Vector3 t2 = vertex.normal.CrossProduct(Vector3::Up);
+
+			vertex.tangent = t1.Length() > t2.Length() ? t1 : t2;
+			vertex.bitangent = vertex.normal.CrossProduct(vertex.tangent);
+
+			float xzLength = sqrt(vPoints[i].x * vPoints[i].x + vPoints[i].z * vPoints[i].z);
+			vertex.texCoords.x = acos(vPoints[i].x / xzLength) / M_PI;
+			vertex.texCoords.y = acos(vPoints[i].y) / M_PI;
+		}
 	}
 
 	m_pMesh->ResizeIndices(vIndices.size(), 1);

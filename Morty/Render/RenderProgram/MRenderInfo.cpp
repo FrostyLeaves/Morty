@@ -16,6 +16,7 @@ MRenderInfo::MRenderInfo()
 	, pViewport(nullptr)
 	, pCameraEntity(nullptr)
 	, pDirectionalLightEntity(nullptr)
+	, pSkyBoxEntity(nullptr)
 	, pShadowMapTexture(nullptr)
 	, pFrameShaderParamSet(nullptr)
 	, m4DirLightInvProj()
@@ -62,7 +63,7 @@ void MRenderInfo::CollectRenderMesh()
 		}
 		else if (pMaterial->GetMaterialType() == MEMaterialType::EDeferred)
 		{
-			auto& meshes = m_tTransparentGroupMesh[pMaterial];
+			auto& meshes = m_tDeferredMaterialGroupMesh[pMaterial];
 			meshes.push_back(&meshComp);
 		}
 		else
@@ -122,7 +123,7 @@ void MRenderInfo::CollectShadowMesh()
 
 		if (MMaterial* pMaterial = component.GetMaterial())
 		{
-			if (pMaterial->GetMaterialType() != MEMaterialType::EDefault)
+			if (pMaterial->GetMaterialType() != MEMaterialType::EDefault && pMaterial->GetMaterialType() != MEMaterialType::EDeferred)
 				continue;
 		}
 

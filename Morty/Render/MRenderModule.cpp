@@ -64,7 +64,7 @@ bool MRenderModule::Register(MEngine* pEngine)
 		{
 			MByte byte[4];
 			byte[0] = byte[1] = byte[2] = byte[3] = 255;
-			pTexture->LoadFromMemory(byte, 1, 1, 32);
+			pTexture->LoadFromMemory(byte, 1, 1, 4);
 		}
 	}
 

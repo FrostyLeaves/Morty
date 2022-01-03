@@ -67,8 +67,8 @@ float3 CalcPointLight(PointLight pointLight, float3 f3CameraDir, float3 f3LightD
     float fDistance = length(pointLight.f3WorldPosition - f3WorldPixelPosition);
     float fAttenuation = 1.0f / (1.0f + pointLight.fLinear * fDistance + pointLight.fQuadratic * fDistance * fDistance);
 
-    return float3(     pointLight.f3Diffuse * U_mat.f3Diffuse * fDiff * f3DiffColor
-                     + pointLight.f3Specular * U_mat.f3Specular * fSpec * f3SpecColor
+    return float3(     pointLight.f3Intensity * U_mat.f3Diffuse * fDiff * f3DiffColor
+                     + pointLight.f3Intensity * U_mat.f3Specular * fSpec * f3SpecColor
                 ) * fAttenuation;
 }
 
@@ -85,8 +85,8 @@ float3 CalcSpotLight(SpotLight spotLight, float3 f3CameraDir, float3 f3LightDir,
         float fEpsilon = spotLight.fHalfInnerCutOff - spotLight.fHalfOuterCutOff;
         float fIntensity = clamp((fTheta - spotLight.fHalfOuterCutOff) / fEpsilon, 0.0, 1.0);
 
-        return float3(     spotLight.f3Diffuse * U_mat.f3Diffuse * fDiff * f3DiffColor
-                        + spotLight.f3Specular * U_mat.f3Specular * fSpec * f3SpecColor
+        return float3(     spotLight.f3Intensity * U_mat.f3Diffuse * fDiff * f3DiffColor
+                        + spotLight.f3Intensity * U_mat.f3Specular * fSpec * f3SpecColor
                     ) * fIntensity;
     }
     else
@@ -106,8 +106,8 @@ float3 CalcDirectionLight(float4 f4DirLightSpacePos, float3 f3CameraDir, float3 
         float3 fReflectDir = reflect(f3LightDir, f3Normal);
         float fSpec = pow(max(dot(f3CameraDir, fReflectDir), 0.0f), U_mat.fShininess);
 
-        return float3(     U_dirLight.f3Diffuse * U_mat.f3Diffuse * fNdotL * f3DiffColor
-                        + U_dirLight.f3Specular * U_mat.f3Specular * fSpec * f3SpecColor
+        return float3(     U_dirLight.f3Intensity * U_mat.f3Diffuse * fNdotL * f3DiffColor
+                        + U_dirLight.f3Intensity * U_mat.f3Specular * fSpec * f3SpecColor
                     ) * shadow;
     }
     else

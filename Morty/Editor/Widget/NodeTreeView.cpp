@@ -79,10 +79,10 @@ void NodeTreeView::RenderNode(MEntity* pNode)
 	MScene* pScene = pNode->GetScene();
 	MSceneComponent* pSceneComponent = pNode->GetComponent<MSceneComponent>();
 
-	auto vChildrenComponent = pSceneComponent->GetChildrenComponent();
+
 
 	ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_FramePadding;
-	if (vChildrenComponent.size() == 0)
+	if (!pSceneComponent || pSceneComponent->GetChildrenComponent().size() == 0)
 		node_flags |= ImGuiTreeNodeFlags_Leaf;
 // 	else if (pNode->GetID() == m_unRootNodeID)
 // 		node_flags |= ImGuiTreeNodeFlags_DefaultOpen;
@@ -107,10 +107,13 @@ void NodeTreeView::RenderNode(MEntity* pNode)
 	}
 	if (bOpened)
 	{
-		for (const auto& child : vChildrenComponent)
+		if (pSceneComponent)
 		{
-			MComponent* pComponent = pScene->GetComponent(child);
-			RenderNode(pComponent->GetEntity());
+			for (const auto& child : pSceneComponent->GetChildrenComponent())
+			{
+				MComponent* pComponent = pScene->GetComponent(child);
+				RenderNode(pComponent->GetEntity());
+			}
 		}
 		
 		ImGui::TreePop();

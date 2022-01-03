@@ -76,6 +76,8 @@ public:
 
 	virtual void Input(MInputEvent* pEvent);
 
+	const Matrix4& GetProjection() const { return m_m4Projection; }
+
 	const Matrix4& GetCameraInverseProjection() const { return m_m4CameraInvProj; }
 
 	Matrix4 GetLightInverseProjection(MPointLight* pLight);
@@ -127,6 +129,7 @@ private:
 	Vector2 m_v2ScreenPosition;
 	Vector2 m_v2ScreenScale;
 
+	Matrix4 m_m4Projection;
 	Matrix4 m_m4CameraInvProj;
 	bool m_bCameraInvProjMatrixLocked;
 

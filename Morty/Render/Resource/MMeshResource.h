@@ -58,9 +58,9 @@ public:
 
 public:
 
-	void LoadAsCube();
-
-	void LoadAsSphere();
+	void LoadAsPlane(MEMeshVertexType eVertexType = MEMeshVertexType::Normal, const Vector3& scale = Vector3::One);
+	void LoadAsCube(MEMeshVertexType eVertexType = MEMeshVertexType::Normal);
+	void LoadAsSphere(MEMeshVertexType eVertexType = MEMeshVertexType::Normal);
 
 
 protected:

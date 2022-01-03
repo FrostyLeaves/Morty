@@ -28,3 +28,6 @@
 [submodule "ThirdParty/imgui-node-editor"]
 	path = ThirdParty/imgui-node-editor
 	url = https://github.com/thedmd/imgui-node-editor.git
+[submodule "ThirdParty/stb"]
+	path = ThirdParty/stb
+	url = https://github.com/nothings/stb.git

@@ -247,9 +247,9 @@ void MTransparentRenderWork::InitializeTexture()
 
 	static MByte black[4] = { 0, 0 ,0 ,0 };
 	static MByte white[4] = { 255, 255 ,255 ,255 };
-	m_pBlackTexture->LoadFromMemory(black, 1, 1, 32);
+	m_pBlackTexture->LoadFromMemory(black, 1, 1, 4);
 
-	m_pWhiteTexture->LoadFromMemory(white, 1, 1, 32);
+	m_pWhiteTexture->LoadFromMemory(white, 1, 1, 4);
 
 	m_pBlackTexture->AddRef();
 	m_pWhiteTexture->AddRef();

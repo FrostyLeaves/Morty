@@ -8,16 +8,14 @@
 
 struct DirectionLight
 {
-    float3 f3Diffuse;
-    float3 f3Specular;
+    float3 f3Intensity;
 };
 
 struct PointLight
 {
     float3 f3WorldPosition;
 
-    float3 f3Diffuse;
-    float3 f3Specular;
+    float3 f3Intensity;
 
     float fConstant;
     float fLinear;
@@ -31,8 +29,7 @@ struct SpotLight
     float fHalfInnerCutOff;
     float3 f3Direction;
     float fHalfOuterCutOff;
-    float3 f3Diffuse;
-    float3 f3Specular;
+    float3 f3Intensity;
 };
 
 
@@ -40,10 +37,10 @@ struct SpotLight
 //VS    per render
 [[vk::binding(0,1)]]cbuffer _M_E_cbWorldMatrix : register(b1)
 {
+    float4x4 U_matProj;
     float4x4 U_matCamProj; // world to proj
     float4x4 U_matCamProjInv; // proj to world
     float4x4 U_matLightProj;
-
 };
 
 //VS & PS    per render
@@ -70,8 +67,6 @@ struct SpotLight
 };
 
 [[vk::binding(3,1)]]sampler U_defaultSampler : register(s0);
-[[vk::binding(4,1)]]SamplerComparisonState U_lessEqualSampler : register(s1);
-[[vk::binding(5,1)]]SamplerComparisonState U_greaterEqualSampler : register(s2);
 
 //Shadowmap
 [[vk::binding(6,1)]]Texture2D U_texShadowMap : register(t0);

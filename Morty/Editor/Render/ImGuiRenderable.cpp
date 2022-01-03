@@ -77,7 +77,7 @@ void ImGuiRenderable::InitializeFont()
 	size_t upload_size = width * height * 4 * sizeof(char);
 
 	MTextureResource* pFontTexture = pResourceSystem->CreateResource<MTextureResource>("ImGUI_Font");
-	pFontTexture->LoadFromMemory(pixels, width, height, 32);
+	pFontTexture->LoadFromMemory(pixels, width, height, 4);
 	m_FontTexture.SetResource(pFontTexture);
 
 	// Store our identifier
@@ -250,6 +250,7 @@ ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturParamSet(MTexture*
 			switch (key->GetTextureLayout())
 			{
 			case METextureLayout::EDepth:
+			case METextureLayout::ER8:
 			case METextureLayout::ER32:
 				pStruct->GetMember(0)->var = 1;
 				break;

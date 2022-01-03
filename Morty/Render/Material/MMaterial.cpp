@@ -65,8 +65,11 @@ void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)
 			{
 				if (pParam->strName == strName)
 				{
-					pParam->pTexture = pTexResource->GetTextureTemplate();
-					pParam->SetDirty();
+					if (pParam->pTexture != pTexResource->GetTextureTemplate())
+					{
+						pParam->pTexture = pTexResource->GetTextureTemplate();
+						pParam->SetDirty();
+					}
 					return true;
 				}
 			}
@@ -81,28 +84,23 @@ void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)
 		MShaderRefTextureParam* pParam = static_cast<MShaderRefTextureParam*>(GetMaterialParamSet()->m_vTextures[i]);
 		if (strName == pParam->strName)
 		{
-			if (pParam->eType == ETexture2D)
+			if (MTextureResource* pTexResource = dynamic_cast<MTextureResource*>(pResource))
 			{
-				if (MTextureResource* pTexResource = dynamic_cast<MTextureResource*>(pResource))
+				if (MTexture* pTexture = pTexResource->GetTextureTemplate())
 				{
-					pParam->m_TextureRef.SetResource(pResource);
-					pParam->m_TextureRef.SetResChangedCallback(funcResChangedFunction);
-
-					pParam->pTexture = pTexResource->GetTextureTemplate();
-					pParam->SetDirty();
+					if (pTexture->GetTextureType() != pParam->eType)
+					{
+						break;
+					}
 				}
+				
+				pParam->m_TextureRef.SetResource(pResource);
+				pParam->m_TextureRef.SetResChangedCallback(funcResChangedFunction);
+
+				pParam->pTexture = pTexResource->GetTextureTemplate();
+				pParam->SetDirty();
+				
 			}
-// 			else if (pParam->eType == ETextureCube)
-// 			{
-// 				if (MTextureCubeResource* pTexResource = dynamic_cast<MTextureCubeResource*>(pResource))
-// 				{
-// 					pParam->m_TextureRef.SetResource(pTexResource);
-// 					pParam->m_TextureRef.SetResChangedCallback(funcResChangedFunction);
-// 
-// 					pParam->pTexture = pTexResource->GetTextureCubeTemplate();
-// 					pParam->SetDirty();
-// 				}
-// 			}
 
 			break;
 		}

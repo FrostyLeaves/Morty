@@ -1,6 +1,4 @@
-#include "inner_constant.hlsl"
-#include "inner_functional.hlsl"
-#include "model_struct.hlsl"
+#include "light_forward.hlsl"
 
 struct VS_IN_SKYBOX
 {
@@ -17,7 +15,9 @@ VS_OUT_SKYBOX VS(VS_IN_SKYBOX input)
 {
     VS_OUT_SKYBOX output;
 
-    output.pos = mul(float4(input.pos, 1.0f), mul(U_matWorld, U_matCamProj));
+    output.pos = mul(float4(input.pos + U_f3CameraPosition, 1.0f), U_matCamProj);
+    
+    //set z to z-far.
     output.pos.z = output.pos.w;
 
     output.uvw = input.pos;

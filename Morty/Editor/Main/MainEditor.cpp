@@ -512,7 +512,7 @@ void MainEditor::ShowProperty()
 	ImGui::End();
 }
 
-void MainEditor::ShowMaterial()
+void MainEditor::ShowMaterial(const size_t& nImageCount)
 {
 	if (!m_pMaterialView->m_bVisiable)
 		return;
@@ -675,6 +675,7 @@ void MainEditor::Render(MTaskNode* pNode)
 	ImGui::NewFrame();
 
 
+	std::vector<MTexture*> vRenderTextures;
 	if (m_pMaterialView && m_pMaterialView->m_bVisiable)
 	{
 		if (MEntity* pEntity = m_pNodeTreeView->GetSelectionNode())
@@ -682,7 +683,18 @@ void MainEditor::Render(MTaskNode* pNode)
 			if (MRenderableMeshComponent* pMeshComponent = pEntity->GetComponent<MRenderableMeshComponent>())
 				m_pMaterialView->SetMaterial(pMeshComponent->GetMaterial());
 		}
-		m_pMaterialView->UpdateTexture(pRenderCommand);
+
+		SceneTexture& sceneTexture = m_pMaterialView->GetSceneTexture();
+
+		if (pRenderTarget->unImageIndex == 0)
+		{
+			sceneTexture.UpdateTexture(0, pRenderCommand);
+			if (MTexture* pTexture = sceneTexture.GetTexture(pRenderTarget->unImageIndex))
+			{
+				vRenderTextures.push_back(pTexture);
+			}
+		}
+
 	}
 
 
@@ -690,7 +702,9 @@ void MainEditor::Render(MTaskNode* pNode)
 	m_SceneTexture.UpdateTexture(pRenderTarget->unImageIndex, pRenderCommand);
 	if (MTexture* pRenderTexture = m_SceneTexture.GetTexture(pRenderTarget->unImageIndex))
 	{
-		pRenderCommand->SetRenderToTextureBarrier({ pRenderTexture });
+		vRenderTextures.push_back(pRenderTexture);
+
+		pRenderCommand->SetRenderToTextureBarrier(vRenderTextures);
 
 
 		//m_unTriangleCount = MRenderStatistics::GetInstance()->unTriangleCount;
@@ -727,7 +741,7 @@ void MainEditor::Render(MTaskNode* pNode)
 	}
 
 	ShowMenu();
-	ShowMaterial();
+	ShowMaterial(pRenderTarget->unImageIndex);
 	ShowRenderView(pRenderTarget->unImageIndex);
 	ShowShadowMapView(pRenderTarget->unImageIndex);
 	ShowNodeTree();

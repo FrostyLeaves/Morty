@@ -52,6 +52,8 @@ public:
 
 	void RenderTransparent(MTaskNode* pTaskNode);
 
+	void RenderDebug(MTaskNode* pTaskNode);
+
 	virtual MTexture* GetOutputTexture() override;
 	virtual std::vector<MTexture*> GetOutputTextures() override;
 
@@ -92,6 +94,7 @@ protected:
 	MRenderPass m_forwardRenderPass;
 	MRenderPass m_gbufferRenderPass;
 	MRenderPass m_lightningRenderPass;
+	MRenderPass m_debugRenderPass;
 
 	MTexture* m_pFinalOutputTexture;
 
@@ -99,7 +102,9 @@ protected:
 
 
 	MMesh<Vector2> m_ScreenDrawMesh;
+	MMesh<Vector3> m_SkyBoxDrawMesh;
 	MMaterial* m_pLightningMaterial;
+	MMaterial* m_pSkyBoxMaterial;
 
 protected:
 

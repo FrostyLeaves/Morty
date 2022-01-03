@@ -44,6 +44,7 @@ public:
 	static MColor White;
 	static MColor Black_T;
 	static MColor White_T;
+	static MColor Red;
 };
 
 

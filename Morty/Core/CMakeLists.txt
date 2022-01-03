@@ -64,6 +64,16 @@ file(GLOB SPOT_FILES ${THIRD_PARTY_PATH}/spot/*.hpp
 source_group("spot" FILES ${SPOT_FILES})
 set(CORE_CODE_DIRECTORIES ${CORE_CODE_DIRECTORIES} ${THIRD_PARTY_PATH}/spot)
 
+############################################################
+# stb
+############################################################
+file(GLOB STB_FILES ${THIRD_PARTY_PATH}/stb/*.h
+                    ${THIRD_PARTY_PATH}/stb/deprecated/*.h
+                    ${THIRD_PARTY_PATH}/stb/deprecated/*.c
+)
+
+source_group("stb" FILES ${STB_FILES})
+set(CORE_CODE_DIRECTORIES ${CORE_CODE_DIRECTORIES} ${THIRD_PARTY_PATH}/stb)
 
 ############################################################
 # add library
@@ -86,6 +96,7 @@ add_library(Core STATIC
     ${CORE_VARIANT_FILES}
 
     ${SPOT_FILES}
+    ${STB_FILES}
 )
 
 

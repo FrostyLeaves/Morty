@@ -33,15 +33,14 @@ struct MVertexWithBones
 		memset(bonesWeight, 0, sizeof(bonesID));
 	}
 	Vector3 position;
-
-	int bonesID[MGlobal::BONES_PER_VERTEX];
-	float bonesWeight[MGlobal::BONES_PER_VERTEX];
-
 	Vector3 normal;
 	Vector3 tangent;
 	Vector3 bitangent;
 	Vector2 texCoords;
 
+
+	int bonesID[MGlobal::BONES_PER_VERTEX];
+	float bonesWeight[MGlobal::BONES_PER_VERTEX];
 };
 
 

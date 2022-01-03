@@ -10,12 +10,12 @@
 #define _M_MSHADER_PARAM_H_
 #include "MGlobal.h"
 #include "MVariant.h"
+#include "MTexture.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 #include "MVulkanWrapper.h"
 #endif
 
-class MTexture;
 
 enum MEShaderParamType
 {
@@ -61,12 +61,6 @@ struct MORTY_API MShaderConstantParam : public MShaderParam
 #endif
 };
 
-
-enum METextureType
-{
-	ETexture2D = 1,
-	ETextureCube = 2,
-};
 
 struct MShaderTextureParam : public MShaderParam
 {

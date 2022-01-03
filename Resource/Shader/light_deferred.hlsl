@@ -100,7 +100,7 @@ float3 CalcSpotLight(SpotLight spotLight, float3 f3CameraDir, float3 f3LightDir,
         float fEpsilon = spotLight.fHalfInnerCutOff - spotLight.fHalfOuterCutOff;
         float fIntensity = clamp((fTheta - spotLight.fHalfOuterCutOff) / fEpsilon, 0.0, 1.0);
 
-        float3 f3LightColor = spotLight.f3Diffuse * fIntensity;
+        float3 f3LightColor = spotLight.f3Intensity * fIntensity;
                     
         return CalcPBRLight(f3LightColor, f3CameraDir, f3LightDir, f3Normal, f3BaseColor, f3Albedo, fRoughness, fMetallic);
     }
@@ -116,7 +116,7 @@ float3 CalcPointLight(PointLight pointLight, float3 worldPos, float3 f3CameraDir
     float fDistance = length(pointLight.f3WorldPosition - worldPos);
     float fAttenuation = 1.0f / (1.0f + pointLight.fLinear * fDistance + pointLight.fQuadratic * fDistance * fDistance);
 
-    float3 f3LightColor = pointLight.f3Diffuse * fAttenuation;
+    float3 f3LightColor = pointLight.f3Intensity * fAttenuation;
 
     return CalcPBRLight(f3LightColor, f3CameraDir, f3LightDir, f3Normal, f3BaseColor, f3Albedo, fRoughness, fMetallic);
 }
@@ -130,7 +130,7 @@ float3 CalcDirectionLight(DirectionLight dirLight, float4 f4DirLightSpacePos, fl
     {
         float shadow = CalcShadow(U_texShadowMap, f4DirLightSpacePos, fNdotL);
 
-        float3 f3LightColor = dirLight.f3Diffuse;
+        float3 f3LightColor = dirLight.f3Intensity;
 
         return CalcPBRLight(f3LightColor, f3CameraDir, f3LightDir, f3Normal, f3BaseColor, f3Albedo, fRoughness, fMetallic);
     }

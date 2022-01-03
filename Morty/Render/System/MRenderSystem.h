@@ -46,7 +46,7 @@ public:
 public:
 
     void ResizeFrameBuffer(MRenderPass& renderpass, const Vector2& v2Size);
-    void ReleaseRenderpass(MRenderPass& renderpass);
+    void ReleaseRenderpass(MRenderPass& renderpass, bool bClearTexture);
 
 private:
 

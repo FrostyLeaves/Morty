@@ -71,7 +71,7 @@ PS_OUT PS(VS_OUT input) : SV_Target
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
     // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
     output.f3Base_fMetal.rgb = lerp(float3(0.04), f3Albedo, fMetallic);
-    output.f3Base_fMetal.a = fMetallic;
+    output.f3Base_fMetal.a = 0.0f;
 
     output.f3Normal_fRoughness.rgb = GetNormal(input);
     output.f3Normal_fRoughness.a = fRoughness;

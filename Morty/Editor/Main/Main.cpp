@@ -20,8 +20,14 @@
 #include "MScene.h"
 #include "MSceneComponent.h"
 #include "MRenderableMeshComponent.h"
+
+#include "MSkyBoxComponent.h"
+#include "MPointLightComponent.h"
 #include "MDirectionalLightComponent.h"
 
+#include "MDebugMeshComponent.h"
+
+#include "MTextureResource.h"
 #include "MMaterialResource.h"
 
 #ifdef MORTY_WIN
@@ -30,7 +36,41 @@
 
 //#define TEST_ANIMATION
 
-#define TEST_PBR_RENDER
+#define TEST_PBR_RENDER_0
+
+//#define TEST_PBR_RENDER_1
+
+//#define TEST_POINT_LIGHT
+
+//#define TEST_BASIC_SHAPE
+
+#define TEST_SKY_BOX
+
+void SKY_BOX(MEngine* pEngine, MScene* pScene)
+{
+	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
+	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
+
+
+	MTextureResource* pCubeTexture = pResourceSystem->CreateResource<MTextureResource>();
+	pCubeTexture->ImportCubeMap({
+		"E:/projects/Morty_Restructure/Resource/Texture/Sky/Circus_Backstage/px.hdr",
+		"E:/projects/Morty_Restructure/Resource/Texture/Sky/Circus_Backstage/nx.hdr",
+		"E:/projects/Morty_Restructure/Resource/Texture/Sky/Circus_Backstage/py.hdr",
+		"E:/projects/Morty_Restructure/Resource/Texture/Sky/Circus_Backstage/ny.hdr",
+		"E:/projects/Morty_Restructure/Resource/Texture/Sky/Circus_Backstage/pz.hdr",
+		"E:/projects/Morty_Restructure/Resource/Texture/Sky/Circus_Backstage/nz.hdr"
+		},{ MTextureResource::PixelFormat::Float32 });
+
+
+	MEntity* pSkyBoxEntity = pScene->CreateEntity();
+	pSkyBoxEntity->SetName("SkyBox");
+	
+	if (MSkyBoxComponent* pSkyBoxComponent = pSkyBoxEntity->RegisterComponent<MSkyBoxComponent>())
+	{
+		pSkyBoxComponent->LoadTexture(pCubeTexture);
+	}
+}
 
 void SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 {
@@ -38,15 +78,15 @@ void SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
 
 	MMeshResource* pCubeResource = pResourceSystem->CreateResource<MMeshResource>();
-	pCubeResource->LoadAsSphere();
+	pCubeResource->LoadAsPlane();
 
-	MEntity* pCubeEntity = pScene->CreateEntity();
-	pCubeEntity->SetName("Cube");
-	if (MSceneComponent* pSceneComponent = pCubeEntity->RegisterComponent<MSceneComponent>())
+	MEntity* pSphereEntity = pScene->CreateEntity();
+	pSphereEntity->SetName("Sphere");
+	if (MSceneComponent* pSceneComponent = pSphereEntity->RegisterComponent<MSceneComponent>())
 	{
 		pSceneComponent->SetScale(Vector3(10.0f, 10.0f, 10.0f));
 	}
-	if (MRenderableMeshComponent* pMeshComponent = pCubeEntity->RegisterComponent<MRenderableMeshComponent>())
+	if (MRenderableMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderableMeshComponent>())
 	{
 		MMaterialResource* pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
@@ -60,8 +100,46 @@ void SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 		pMaterial->GetMaterialParamSet()->SetValue("fAlphaFactor", 1.0f);
 		pMaterial->GetMaterialParamSet()->SetValue("fShininess", 32.0f);
 
-		MResource* pTextureResource = pResourceSystem->LoadResource("./Texture/test.jpg");
+
+		MResource* pTextureResource = pResourceSystem->LoadResource("./Texture/test.png");
 		pMaterial->SetTexutreParam("U_mat_texDiffuse", pTextureResource);
+
+		pMeshComponent->Load(pCubeResource);
+		pMeshComponent->SetMaterial(pMaterial);
+	}
+}
+
+void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
+{
+	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
+	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
+
+	MMeshResource* pCubeResource = pResourceSystem->CreateResource<MMeshResource>();
+	pCubeResource->LoadAsSphere();
+
+	MEntity* pSphereEntity = pScene->CreateEntity();
+	pSphereEntity->SetName("Sphere_PBR");
+	if (MSceneComponent* pSceneComponent = pSphereEntity->RegisterComponent<MSceneComponent>())
+	{
+		pSceneComponent->SetScale(Vector3(10.0f, 10.0f, 10.0f));
+	}
+	if (MRenderableMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderableMeshComponent>())
+	{
+		MMaterialResource* pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
+
+		pMaterial->LoadVertexShader("./Shader/model_gbuffer.mvs");
+		pMaterial->LoadPixelShader("./Shader/model_gbuffer.mps");
+		pMaterial->SetMaterialType(MEMaterialType::EDeferred);
+
+		MResource* albedo = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_albedo.png");
+		MResource* normal = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_normal.png");
+		MResource* roughness = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_roughness.png");
+		MResource* ao = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_ao.png");
+		pMaterial->SetTexutreParam("U_mat_texAlbedo", albedo);
+		pMaterial->SetTexutreParam("U_mat_texNormal", normal);
+//		pMaterial->SetTexutreParam("U_mat_texMetallic", albedo);
+		pMaterial->SetTexutreParam("U_mat_texRoughness", roughness);
+		pMaterial->SetTexutreParam("U_mat_texAmbientOcc", ao);
 
 		pMeshComponent->Load(pCubeResource);
 		pMeshComponent->SetMaterial(pMaterial);
@@ -137,6 +215,45 @@ void ANIMATION_MODEL(MEngine* pEngine, MScene* pScene)
 	}
 }
 
+void ADD_POINT_LIGHT(MEngine* pEngine, MScene* pScene)
+{
+	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
+	MResource* pIconTexture = pResourceSystem->LoadResource("./Texture/Icon/point_light.png");
+
+	MMeshResource* pPanelMesh = pResourceSystem->CreateResource<MMeshResource>();
+	pPanelMesh->LoadAsPlane(MMeshResource::MEMeshVertexType::Normal, Vector3(10.0f, 10.0f, 1.0f));
+
+	MMaterialResource* pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
+
+	pMaterial->LoadVertexShader("./Shader/debug_model.mvs");
+	pMaterial->LoadPixelShader("./Shader/debug_model.mps");
+
+	pMaterial->SetTexutreParam("U_mat_texDiffuse", pIconTexture);
+
+	for (int i = 0; i < 9; ++i)
+	{
+		MString strEntityName = "PointLight_" + MStringHelper::ToString(i);
+
+		MEntity* pPointLight = pScene->CreateEntity();
+		pPointLight->SetName(strEntityName);
+
+		if (MSceneComponent* pSceneComponent = pPointLight->RegisterComponent<MSceneComponent>())
+		{
+			pSceneComponent->SetPosition(Vector3(i / 3 * 10.0f, 10.0f, i % 3 * 10.0f));
+		}
+
+		if (MPointLightComponent* pPointLightComponent = pPointLight->RegisterComponent<MPointLightComponent>())
+		{
+			pPointLightComponent->SetLightIntensity(100.0f);
+		}
+
+		if (MRenderableMeshComponent* pMeshComponent = pPointLight->RegisterComponent<MRenderableMeshComponent>())
+		{
+			pMeshComponent->Load(pPanelMesh);
+			pMeshComponent->SetMaterial(pMaterial);
+		}
+	}
+}
 
 
 int main()
@@ -165,15 +282,31 @@ int main()
 		MResourceSystem* pResourceSystem = engine.FindSystem<MResourceSystem>();
 		MEntitySystem* pEntitySystem = engine.FindSystem<MEntitySystem>();
 
-		
+
+#ifdef	TEST_BASIC_SHAPE
+		SPHERE_GENERATE(&engine, pScene);
+#endif
+
 #ifdef	TEST_ANIMATION
 		ANIMATION_MODEL(&engine, pScene);
 #endif
 
-#ifdef TEST_PBR_RENDER
+
+#ifdef TEST_PBR_RENDER_0
+		PBR_SHPERE(&engine, pScene);
+#endif
+
+#ifdef TEST_PBR_RENDER_1
 		PBR_MODEL(&engine, pScene);
 #endif
 
+#ifdef TEST_POINT_LIGHT
+		ADD_POINT_LIGHT(&engine, pScene);
+#endif
+
+#ifdef TEST_SKY_BOX
+		SKY_BOX(&engine, pScene);
+#endif
 
 		MEntity* pDirLight = pScene->CreateEntity();
 		pDirLight->SetName("DirectionalLight");

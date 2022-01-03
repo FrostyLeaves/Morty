@@ -66,7 +66,7 @@ public:
 	void ShowShadowMapView(const size_t& nImageCount);
 	void ShowNodeTree();
 	void ShowProperty();
-	void ShowMaterial();
+	void ShowMaterial(const size_t& nImageCount);
 	void ShowMessage();
 	void ShowResource();
 	void ShowModelConvert();

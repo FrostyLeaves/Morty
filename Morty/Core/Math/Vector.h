@@ -109,6 +109,7 @@ public:
 
 
 	static const Vector3 Zero;
+	static const Vector3 One;
 	static const Vector3 Right;
 	static const Vector3 Left;
 	static const Vector3 Up;

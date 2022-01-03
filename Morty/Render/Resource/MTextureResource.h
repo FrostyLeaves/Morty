@@ -16,6 +16,22 @@
 class MORTY_API MTextureResource : public MResource
 {
 public:
+	enum class PixelFormat
+	{
+		Byte8,
+		Float32,
+	};
+
+	struct ImportInfo
+	{
+		ImportInfo();
+		ImportInfo(PixelFormat pixelFormat);
+
+		PixelFormat ePixelFormat;
+	};
+
+
+public:
 	MORTY_CLASS(MTextureResource)
     MTextureResource();
     virtual ~MTextureResource();
@@ -23,11 +39,17 @@ public:
 	MTexture* GetTextureTemplate(){ return &m_texture; }
 
 	static MString GetResourceTypeName() { return "Texture"; }
-	static std::vector<MString> GetSuffixList() { return { "png", "jpg", "tga" }; }
+	static std::vector<MString> GetSuffixList() { return { "png", "jpg", "tga", "hdr", "tif"}; }
 
 public:
 
-	void LoadFromMemory(MByte* aByteData, const uint32_t& nWidth, const uint32_t& nHeight, const int& format = 32);
+	bool ImportTexture(const MString&  strResourcePath, const ImportInfo& importInfo);
+
+	bool ImportCubeMap(const std::array<MString, 6>& vResourcePath, const ImportInfo& importInfo);
+
+	
+
+	void LoadFromMemory(MByte* aByteData, const uint32_t& nWidth, const uint32_t& nHeight, const uint32_t& nChannel, PixelFormat ePixelFormat = PixelFormat::Byte8);
 
 public:
 
@@ -35,10 +57,13 @@ public:
 
 protected:
 
+	void LoadFromMemory(MByte* aByteData, MByte* aTargetData, const uint32_t& nWidth, const uint32_t& nHeight, const uint32_t& nChannel, PixelFormat ePixelFormat);
+
+protected:
+
 	virtual bool Load(const MString& strResourcePath) override;
 	virtual bool SaveTo(const MString& strResourcePath) override;
 private:
-
 
 	MTexture m_texture;
 

@@ -237,6 +237,9 @@ VkFormat MVulkanDevice::GetFormat(const METextureLayout& layout)
 {
 	switch (layout)
 	{
+	case METextureLayout::ER8:
+		return VK_FORMAT_R8_SRGB;
+		break;
 	case METextureLayout::ER32:
 		return VK_FORMAT_R32_SFLOAT;
 		break;
@@ -250,6 +253,10 @@ VkFormat MVulkanDevice::GetFormat(const METextureLayout& layout)
 
 	case METextureLayout::ERGBA16:
 		return VK_FORMAT_R16G16B16A16_SFLOAT;
+		break;
+
+	case METextureLayout::ERGBA32:
+		return VK_FORMAT_R32G32B32A32_SFLOAT;
 		break;
 
 	default:
@@ -317,6 +324,14 @@ VkImageLayout MVulkanDevice::GetImageLayout(MTexture* pTexture)
 	return VK_IMAGE_LAYOUT_UNDEFINED;
 }
 
+VkImageViewType MVulkanDevice::GetImageViewType(const METextureType& eType)
+{
+	if (METextureType::ETextureCube == eType)
+		return VK_IMAGE_VIEW_TYPE_CUBE;
+
+	return VK_IMAGE_VIEW_TYPE_2D;
+}
+
 int MVulkanDevice::GetPimpapSize(MTexture* pTexture)
 {
 	uint32_t unMipmap = 1;
@@ -327,6 +342,19 @@ int MVulkanDevice::GetPimpapSize(MTexture* pTexture)
 	}
 
 	return unMipmap;
+}
+
+int MVulkanDevice::GetLayerCount(MTexture* pTexture)
+{
+	if (!pTexture)
+		return 0;
+
+	if (pTexture->GetTextureType() == METextureType::ETextureCube)
+	{
+		return 6;
+	}
+
+	return 1;
 }
 
 MVulkanObjectRecycleBin* MVulkanDevice::GetRecycleBin()
@@ -533,8 +561,8 @@ void MVulkanDevice::UploadVertex(MVertexBuffer* ppVertexBuffer, MIMesh* pMesh)
 
 void MVulkanDevice::GenerateTexture(MTexture* pTexture, MByte* pData)
 {
-	uint64_t width = pTexture->GetSize().x;
-	uint64_t height = pTexture->GetSize().y;
+	uint32_t width = pTexture->GetSize().x;
+	uint32_t height = pTexture->GetSize().y;
 	VkFormat format = GetFormat(pTexture->GetTextureLayout());
 
 	VkImageUsageFlags usageFlags = GetUsageFlags(pTexture);
@@ -542,13 +570,21 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, MByte* pData)
 	VkImageAspectFlags aspectFlgas = GetAspectFlags(pTexture);
 	VkImageLayout defaultLayout = UndefinedImageLayout;
 
-	VkDeviceSize imageSize = static_cast<uint64_t>(MTexture::GetImageMemorySize(pTexture->GetTextureLayout())) * width * height;
-
-
 	VkImage textureImage = VK_NULL_HANDLE;
 	VkDeviceMemory textureImageMemory = VK_NULL_HANDLE;
+	VkImageCreateFlags createFlags = 0;
 
 	int unMipmap = GetPimpapSize(pTexture);
+
+	uint32_t unLayerCount = GetLayerCount(pTexture);
+
+	if (pTexture->GetTextureType() == METextureType::ETextureCube)
+	{
+		createFlags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+	}
+
+	VkDeviceSize imageSize = static_cast<uint64_t>(MTexture::GetImageMemorySize(pTexture->GetTextureLayout())) * width * height * unLayerCount;
+
 
 	if (pTexture->GetRenderUsage() == METextureRenderUsage::ERenderPresent)
 	{
@@ -556,7 +592,7 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, MByte* pData)
 		vkSubresourceRange.aspectMask = aspectFlgas;
 		vkSubresourceRange.baseMipLevel = 0;
 		vkSubresourceRange.levelCount = unMipmap;
-		vkSubresourceRange.layerCount = 1;
+		vkSubresourceRange.layerCount = unLayerCount;
 		TransitionImageLayout(pTexture->m_VkTextureImage, UndefinedImageLayout, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, vkSubresourceRange);
 
 
@@ -569,7 +605,7 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, MByte* pData)
 			assert(false);
 		}
 
-		CreateImage(width, height, unMipmap, format, VK_IMAGE_TILING_OPTIMAL, usageFlags, memoryFlags, defaultLayout, textureImage, textureImageMemory);
+		CreateImage(width, height, unMipmap, unLayerCount, format, VK_IMAGE_TILING_OPTIMAL, usageFlags, memoryFlags, defaultLayout, textureImage, textureImageMemory, createFlags);
 
 		if (pData && pTexture->GetShaderUsage() == METextureShaderUsage::ESampler)
 		{
@@ -586,11 +622,25 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, MByte* pData)
 			vkSubresourceRange.aspectMask = aspectFlgas;
 			vkSubresourceRange.baseMipLevel = 0;
 			vkSubresourceRange.levelCount = unMipmap;
-			vkSubresourceRange.layerCount = 1;
+			vkSubresourceRange.layerCount = unLayerCount;
 
-			TransitionImageLayout(textureImage, UndefinedImageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vkSubresourceRange);
-			CopyImageBuffer(stagingBuffer, textureImage, width, height, 1);
-			TransitionImageLayout(textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, vkSubresourceRange);
+			VkCommandBuffer commandBuffer = BeginCommands();
+			TransitionImageLayout(commandBuffer, textureImage, UndefinedImageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vkSubresourceRange);
+
+			VkBufferImageCopy region = {};
+			region.bufferOffset = 0;
+			region.bufferRowLength = 0;
+			region.bufferImageHeight = 0;
+			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			region.imageSubresource.mipLevel = 0;
+			region.imageSubresource.baseArrayLayer = 0;
+			region.imageSubresource.layerCount = unLayerCount;
+			region.imageOffset = { 0, 0, 0 };
+			region.imageExtent = { width, height, 1 };
+
+			vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+			TransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, vkSubresourceRange);
+			EndCommands(commandBuffer);
 
 			DestroyBuffer(stagingBuffer, stagingBufferMemory);
 		}
@@ -600,7 +650,7 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, MByte* pData)
 			vkSubresourceRange.aspectMask = aspectFlgas;
 			vkSubresourceRange.baseMipLevel = 0;
 			vkSubresourceRange.levelCount = unMipmap;
-			vkSubresourceRange.layerCount = 1;
+			vkSubresourceRange.layerCount = unLayerCount;
 			TransitionImageLayout(textureImage, UndefinedImageLayout, GetImageLayout(pTexture), vkSubresourceRange);
 		}
 
@@ -612,7 +662,7 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, MByte* pData)
 	}
 
 
-	pTexture->m_VkImageView = CreateImageView(pTexture->m_VkTextureImage, pTexture->m_VkTextureFormat, aspectFlgas, unMipmap);
+	pTexture->m_VkImageView = CreateImageView(pTexture->m_VkTextureImage, pTexture->m_VkTextureFormat, aspectFlgas, unMipmap, unLayerCount, pTexture->GetTextureType());
 	
 
 	if (unMipmap > 1)
@@ -1387,12 +1437,13 @@ void MVulkanDevice::GenerateMipmaps(MTexture* pBuffer, const uint32_t& unMipLeve
 	int32_t mipWidth = pBuffer->GetSize().x;
 	int32_t mipHeight = pBuffer->GetSize().y;
 	uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(pBuffer->GetSize().x, pBuffer->GetSize().y)))) + 1;
+	uint32_t unLayerCount = GetLayerCount(pBuffer);
 
 	VkImageSubresourceRange vkSubresourceRange = {};
 	vkSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	vkSubresourceRange.baseMipLevel = 0;
 	vkSubresourceRange.levelCount = unMipLevels;
-	vkSubresourceRange.layerCount = 1;
+	vkSubresourceRange.layerCount = unLayerCount;
 	TransitionImageLayout(commandBuffer, pBuffer->m_VkTextureImage, pBuffer->m_VkImageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vkSubresourceRange);
 
 	VkImageMemoryBarrier barrier{};
@@ -1402,7 +1453,7 @@ void MVulkanDevice::GenerateMipmaps(MTexture* pBuffer, const uint32_t& unMipLeve
 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount = 1;
+	barrier.subresourceRange.layerCount = unLayerCount;
 	barrier.subresourceRange.levelCount = 1;
 
 	for (uint32_t i = 1; i < mipLevels; ++i) {
@@ -1420,13 +1471,13 @@ void MVulkanDevice::GenerateMipmaps(MTexture* pBuffer, const uint32_t& unMipLeve
 		blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		blit.srcSubresource.mipLevel = i - 1;
 		blit.srcSubresource.baseArrayLayer = 0;
-		blit.srcSubresource.layerCount = 1;
+		blit.srcSubresource.layerCount = unLayerCount;
 		blit.dstOffsets[0] = { 0, 0, 0 };
 		blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
 		blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		blit.dstSubresource.mipLevel = i;
 		blit.dstSubresource.baseArrayLayer = 0;
-		blit.dstSubresource.layerCount = 1;
+		blit.dstSubresource.layerCount = unLayerCount;
 
 		vkCmdBlitImage(commandBuffer,
 			pBuffer->m_VkTextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
@@ -1563,18 +1614,18 @@ void MVulkanDevice::TransitionImageLayout(VkImageMemoryBarrier& imageMemoryBarri
 	}
 }
 
-VkImageView MVulkanDevice::CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, const uint32_t& unMipmap)
+VkImageView MVulkanDevice::CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, const uint32_t& unMipmap, const uint32_t& unLayerCount, const METextureType& eTextureType)
 {
 	VkImageViewCreateInfo viewInfo{};
 	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	viewInfo.image = image;
-	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	viewInfo.viewType = GetImageViewType(eTextureType);
 	viewInfo.format = format;
 	viewInfo.subresourceRange.aspectMask = aspectFlags;
 	viewInfo.subresourceRange.baseMipLevel = 0;
 	viewInfo.subresourceRange.levelCount = unMipmap;
 	viewInfo.subresourceRange.baseArrayLayer = 0;
-	viewInfo.subresourceRange.layerCount = 1;
+	viewInfo.subresourceRange.layerCount = unLayerCount;
 
 	VkImageView imageView;
 	if (vkCreateImageView(m_VkDevice, &viewInfo, nullptr, &imageView) != VK_SUCCESS)
@@ -1585,16 +1636,17 @@ VkImageView MVulkanDevice::CreateImageView(VkImage image, VkFormat format, VkIma
 	return imageView;
 }
 
-void MVulkanDevice::CreateImage(const uint32_t& unWidth, const uint32_t& unHeight, const uint32_t& unMipmap, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageLayout defaultLayout, VkImage& image, VkDeviceMemory& imageMemory)
+void MVulkanDevice::CreateImage(const uint32_t& unWidth, const uint32_t& unHeight, const uint32_t& unMipmap, const uint32_t& unLayerCount, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageLayout defaultLayout, VkImage& image, VkDeviceMemory& imageMemory, VkImageCreateFlags createFlag)
 {
 	VkImageCreateInfo imageInfo{};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	imageInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageInfo.flags = createFlag;
 	imageInfo.extent.width = VALUE_MAX(unWidth, 1);
 	imageInfo.extent.height = VALUE_MAX(unHeight, 1);
 	imageInfo.extent.depth = 1;
 	imageInfo.mipLevels = unMipmap;
-	imageInfo.arrayLayers = 1;
+	imageInfo.arrayLayers = unLayerCount;
 	imageInfo.format = format;
 	imageInfo.tiling = tiling;
 	imageInfo.initialLayout = defaultLayout;
@@ -1618,39 +1670,6 @@ void MVulkanDevice::CreateImage(const uint32_t& unWidth, const uint32_t& unHeigh
 	{
 		assert(false);
 	}
-
-	if (vkAllocateMemory(m_VkDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate image memory!");
-	}
-
-	vkBindImageMemory(m_VkDevice, image, imageMemory, 0);
-}
-
-void MVulkanDevice::CreateImageCube(const uint32_t& unWidth, const uint32_t& unHeight, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
-{
-	VkImageCreateInfo imageCreateInfo = {};
-	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageCreateInfo.format = format;
-	imageCreateInfo.mipLevels = 1;
-	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	imageCreateInfo.tiling = tiling;
-	imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	imageCreateInfo.initialLayout = UndefinedImageLayout;
-	imageCreateInfo.extent = { unWidth, unHeight, 1 };
-	imageCreateInfo.usage = usage;
-	imageCreateInfo.arrayLayers = 6;
-	imageCreateInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
-
-	vkCreateImage(m_VkDevice, &imageCreateInfo, nullptr, &image);
-
-	VkMemoryRequirements memRequirements;
-	vkGetImageMemoryRequirements(m_VkDevice, image, &memRequirements);
-
-	VkMemoryAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	allocInfo.allocationSize = memRequirements.size;
-	allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
 	if (vkAllocateMemory(m_VkDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate image memory!");

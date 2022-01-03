@@ -8,6 +8,7 @@ MTexture::MTexture()
 	, m_eRenderType(METextureLayout::ERGBA8)
 	, m_eRenderUsage(METextureRenderUsage::EUnknow)
 	, m_eShaderUsage(METextureShaderUsage::EUnknow)
+	, m_eTextureType(METextureType::ETexture2D)
 	, m_bReadable(false)
 	, m_bMipmapsEnable(false)
 	, m_unMipmapLevel(0)
@@ -42,6 +43,8 @@ uint32_t MTexture::GetImageMemorySize(const METextureLayout& layout)
 {
 	if (METextureLayout::ERGBA16 == layout)
 		return 8;
+	else if (METextureLayout::ERGBA32 == layout)
+		return 16;
 	else
 		return 4;
 }
@@ -78,6 +81,19 @@ MTexture* MTexture::CreateRenderTargetFloat32()
 	pTexture->SetRenderUsage(METextureRenderUsage::ERenderBack);
 	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
 	pTexture->SetTextureLayout(METextureLayout::ER32);
+
+	return pTexture;
+}
+
+MTexture* MTexture::CreateCubeMap()
+{
+	MTexture* pTexture = new MTexture();
+	pTexture->SetMipmapsEnable(false);
+	pTexture->SetReadable(false);
+	pTexture->SetRenderUsage(METextureRenderUsage::EUnknow);
+	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
+	pTexture->SetTextureLayout(METextureLayout::ERGBA8);
+	pTexture->SetTextureType(METextureType::ETextureCube);
 
 	return pTexture;
 }
