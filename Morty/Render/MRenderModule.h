@@ -17,6 +17,10 @@ public:
 
 	static bool Register(MEngine* pEngine);
 
+
+	static MString DefaultWhite;
+	static MString DefaultNormal;
+	static MString DefaultMetal;
 };
 
 

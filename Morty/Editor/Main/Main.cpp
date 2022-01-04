@@ -115,7 +115,7 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
 
 	MMeshResource* pCubeResource = pResourceSystem->CreateResource<MMeshResource>();
-	pCubeResource->LoadAsSphere();
+	pCubeResource->LoadAsCube();
 
 	MEntity* pSphereEntity = pScene->CreateEntity();
 	pSphereEntity->SetName("Sphere_PBR");
@@ -135,11 +135,14 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 		MResource* normal = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_normal.png");
 		MResource* roughness = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_roughness.png");
 		MResource* ao = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_ao.png");
+		MResource* height = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_height.png");
+		MResource* metal = pResourceSystem->LoadResource(MRenderModule::DefaultMetal);
 		pMaterial->SetTexutreParam("U_mat_texAlbedo", albedo);
 		pMaterial->SetTexutreParam("U_mat_texNormal", normal);
-//		pMaterial->SetTexutreParam("U_mat_texMetallic", albedo);
+		pMaterial->SetTexutreParam("U_mat_texMetallic", metal);
 		pMaterial->SetTexutreParam("U_mat_texRoughness", roughness);
 		pMaterial->SetTexutreParam("U_mat_texAmbientOcc", ao);
+		pMaterial->SetTexutreParam("U_mat_texHeight", height);
 
 		pMeshComponent->Load(pCubeResource);
 		pMeshComponent->SetMaterial(pMaterial);
@@ -314,7 +317,10 @@ int main()
 		{
 			//pSceneComponent->SetRotation(Quaternion(Vector3(1.0, 0.0, 0.0), 45.0f));
 		}
-		pDirLight->RegisterComponent<MDirectionalLightComponent>();
+		if (MDirectionalLightComponent* pLightComponent = pDirLight->RegisterComponent<MDirectionalLightComponent>())
+		{
+			pLightComponent->SetLightIntensity(250.0f);
+		}
 
 
 

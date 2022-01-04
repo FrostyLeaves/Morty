@@ -1,4 +1,5 @@
 ﻿#include "MModelConverter.h"
+#include "MRenderModule.h"
 
 #include "MMesh.h"
 #include "MTimer.h"
@@ -720,7 +721,7 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 	if(nMaterialIdx >= pScene->mNumMaterials)
 		return;
 
-	MTextureResource* pDefaultTexture = pResourceSystem->CreateResource<MTextureResource>("White_Texture");
+	MResource* pDefaultTexture = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
 	for (size_t i = 0; i < pMaterial->GetTextureParams()->size(); ++i)
 	{
 		pMaterial->SetTexutreParam(i, pDefaultTexture);

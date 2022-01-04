@@ -26,6 +26,10 @@
 
 #include "MTaskGraph.h"
 
+MString MRenderModule::DefaultWhite = "Default_White";
+MString MRenderModule::DefaultNormal = "Default_Normal";
+MString MRenderModule::DefaultMetal = "Default_Metal";
+
 bool MRenderModule::Register(MEngine* pEngine)
 {
 	if (!pEngine)
@@ -60,12 +64,27 @@ bool MRenderModule::Register(MEngine* pEngine)
 		pResourceSystem->RegisterResourceType<MSkeletalAnimationResource>();
 
 
-		if (MTextureResource* pTexture = pResourceSystem->CreateResource<MTextureResource>("White_Texture"))
+		if (MTextureResource* pTexture = pResourceSystem->CreateResource<MTextureResource>(DefaultWhite))
 		{
 			MByte byte[4];
 			byte[0] = byte[1] = byte[2] = byte[3] = 255;
 			pTexture->LoadFromMemory(byte, 1, 1, 4);
 		}
+
+		if (MTextureResource* pTexture = pResourceSystem->CreateResource<MTextureResource>(DefaultNormal))
+		{
+			MByte byte[3];
+			byte[0] = byte[1] = 0;
+			byte[2] = 255;
+			pTexture->LoadFromMemory(byte, 1, 1, 3);
+		}
+
+		if (MTextureResource* pTexture = pResourceSystem->CreateResource<MTextureResource>(DefaultMetal))
+		{
+			MByte byte = 255;
+			pTexture->LoadFromMemory(&byte, 1, 1, 1);
+		}
+
 	}
 
 	if (MComponentSystem* pComponentSystem = pEngine->FindSystem<MComponentSystem>())
