@@ -17,7 +17,7 @@ MTextureResource::MTextureResource()
 {
 	m_texture.SetMipmapsEnable(true);
 	m_texture.SetReadable(false);
-	m_texture.SetTextureLayout(METextureLayout::ERGBA8);
+	m_texture.SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
 	m_texture.SetRenderUsage(METextureRenderUsage::EUnknow);
 	m_texture.SetShaderUsage(METextureShaderUsage::ESampler);
 }
@@ -43,45 +43,7 @@ void MTextureResource::OnDelete()
 	m_texture.DestroyBuffer(pRenderSystem->GetDevice());
 }
 
-void MTextureResource::LoadFromMemory(MByte* aByteData, MByte* aTargetData, const uint32_t& unWidth, const uint32_t& unHeight, const uint32_t& nChannel, PixelFormat ePixelFormat)
-{
-	if (ePixelFormat == PixelFormat::Byte8)
-	{
-		MByte* m_data = (MByte*)(aTargetData);
-		const MByte* data = aByteData;
-
-		for (size_t i = 0, pix = 0, e = unWidth * unHeight; i < e; ++i, pix += 4)
-		{
-			for (size_t n = 0; n < nChannel; ++n)
-			{
-				m_data[pix + n] = *data++;
-			}
-			for (size_t n = nChannel; n < 4; ++n)
-			{
-				m_data[pix + n] = 255;
-			}
-		}
-	}
-	else
-	{
-		float* m_data = (float*)(aTargetData);
-		const float* data = (float*)aByteData;
-
-		for (size_t i = 0, pix = 0, e = unWidth * unHeight; i < e; ++i, pix += 4)
-		{
-			for (size_t n = 0; n < nChannel; ++n)
-			{
-				m_data[pix + n] = *data++;
-			}
-			for (size_t n = nChannel; n < 4; ++n)
-			{
-				m_data[pix + n] = 1.0f;
-			}
-		}
-	}
-}
-
-void MTextureResource::LoadFromMemory(MByte* aByteData, const uint32_t& unWidth, const uint32_t& unHeight, const uint32_t& nChannel, PixelFormat ePixelFormat/* = PixelFormat::Byte8 */)
+void MTextureResource::LoadFromMemory(MByte* aByteData, const uint32_t& unWidth, const uint32_t& unHeight, const uint32_t& nChannel, PixelFormat ePixelFormat/* = PixelFormat::Byte8 */, bool bCopyMemory/* = true*/)
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
@@ -97,15 +59,25 @@ void MTextureResource::LoadFromMemory(MByte* aByteData, const uint32_t& unWidth,
 
 	if (PixelFormat::Byte8 == ePixelFormat)
 	{
-		m_aByteData = new MByte[unWidth * unHeight * 4];
-		LoadFromMemory(aByteData, m_aByteData, unWidth, unHeight, nChannel, ePixelFormat);
-		m_texture.SetTextureLayout(METextureLayout::ERGBA8);
+		const size_t nSize = unWidth * unHeight * nChannel;
+
+		if (bCopyMemory)
+		{
+			m_aByteData = new MByte[nSize];
+			memcpy(m_aByteData, aByteData, nSize);
+		}
+		else
+		{
+			m_aByteData = aByteData;
+		}
+		m_texture.SetTextureLayout(GetTextureLayout(nChannel, ePixelFormat));
 	}
 	else if (PixelFormat::Float32 == ePixelFormat)
 	{
-		m_aByteData = new MByte[unWidth * unHeight * 4 * 4];
-		LoadFromMemory(aByteData, m_aByteData, unWidth, unHeight, nChannel, ePixelFormat);
-		m_texture.SetTextureLayout(METextureLayout::ERGBA32);
+		const size_t nSize = unWidth * unHeight * nChannel * 4;
+		m_aByteData = new MByte[nSize];
+		memcpy(m_aByteData, aByteData, nSize);
+		m_texture.SetTextureLayout(GetTextureLayout(nChannel, ePixelFormat));
 	}
 
 	m_texture.GenerateBuffer(pRenderSystem->GetDevice(), m_aByteData);
@@ -130,15 +102,13 @@ bool MTextureResource::ImportTexture(const MString& strResourcePath, const Impor
 	if (importInfo.ePixelFormat == PixelFormat::Byte8)
 	{
 		stbi_uc* data = stbi_load_from_memory((const stbi_uc*)buffer.data(), buffer.size(), &unWidth, &unHeight, &comp, 0);
-		LoadFromMemory((MByte*)data, unWidth, unHeight, comp, importInfo.ePixelFormat);
-		free(data);
+		LoadFromMemory((MByte*)data, unWidth, unHeight, comp, importInfo.ePixelFormat, false);
 		data = nullptr;
 	}
 	else if (importInfo.ePixelFormat == PixelFormat::Float32)
 	{
 		float* data = stbi_loadf_from_memory((const stbi_uc*)buffer.data(), buffer.size(), &unWidth, &unHeight, &comp, 0);
-		LoadFromMemory((MByte*)data, unWidth, unHeight, comp, importInfo.ePixelFormat);
-		free(data);
+		LoadFromMemory((MByte*)data, unWidth, unHeight, comp, importInfo.ePixelFormat, false);
 		data = nullptr;
 	}
 	else
@@ -156,7 +126,7 @@ bool MTextureResource::ImportCubeMap(const std::array<MString, 6>& vResourcePath
 
 	int unCubeMapWidth = 0;
 	int unCubeMapHeight = 0;
-	int unCubeMapComp = 0;
+	int unCubeMapChannel = 0;
 
 	std::array<MByte*, 6> vImageData = {};
 
@@ -175,17 +145,17 @@ bool MTextureResource::ImportCubeMap(const std::array<MString, 6>& vResourcePath
 
 		int unWidth = 0;
 		int unHeight = 0;
-		int unComp = 0;
+		int unChannel = 0;
 
 		std::vector<char> buffer((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
 		if (importInfo.ePixelFormat == PixelFormat::Byte8)
 		{
-			stbi_uc* data = stbi_load_from_memory((const stbi_uc*)buffer.data(), buffer.size(), &unWidth, &unHeight, &unComp, 0);
+			stbi_uc* data = stbi_load_from_memory((const stbi_uc*)buffer.data(), buffer.size(), &unWidth, &unHeight, &unChannel, 0);
 			vImageData[fileIdx] = (MByte*)data;
 		}
 		else if (importInfo.ePixelFormat == PixelFormat::Float32)
 		{
-			float* data = stbi_loadf_from_memory((const stbi_uc*)buffer.data(), buffer.size(), &unWidth, &unHeight, &unComp, 0);
+			float* data = stbi_loadf_from_memory((const stbi_uc*)buffer.data(), buffer.size(), &unWidth, &unHeight, &unChannel, 0);
 			vImageData[fileIdx] = (MByte*)data;
 		}
 		else
@@ -199,9 +169,9 @@ bool MTextureResource::ImportCubeMap(const std::array<MString, 6>& vResourcePath
 		{
 			unCubeMapWidth = unWidth;
 			unCubeMapHeight = unHeight;
-			unCubeMapComp = unComp;
+			unCubeMapChannel = unChannel;
 		}
-		else if (unCubeMapWidth != unWidth || unCubeMapHeight != unHeight || unCubeMapComp != unComp)
+		else if (unCubeMapWidth != unWidth || unCubeMapHeight != unHeight || unCubeMapChannel != unChannel)
 		{
 			bError = true;
 			break;
@@ -225,30 +195,66 @@ bool MTextureResource::ImportCubeMap(const std::array<MString, 6>& vResourcePath
 	int nTextureSize = 0;
 	if (PixelFormat::Byte8 == importInfo.ePixelFormat)
 	{
-		nTextureSize = unCubeMapWidth * unCubeMapHeight * 4;
+		nTextureSize = unCubeMapWidth * unCubeMapHeight * unCubeMapChannel;
 		m_aByteData = new MByte[nTextureSize * 6];
-		m_texture.SetTextureLayout(METextureLayout::ERGBA8);
+		m_texture.SetTextureLayout(GetTextureLayout(unCubeMapChannel, PixelFormat::Byte8));
 	}
 	else if (PixelFormat::Float32 == importInfo.ePixelFormat)
 	{
-		nTextureSize = unCubeMapWidth * unCubeMapHeight * 4 * 4;
+		nTextureSize = unCubeMapWidth * unCubeMapHeight * unCubeMapChannel * 4;
 		m_aByteData = new MByte[nTextureSize * 6];
-		m_texture.SetTextureLayout(METextureLayout::ERGBA32);
+		m_texture.SetTextureLayout(GetTextureLayout(unCubeMapChannel, PixelFormat::Float32));
 	}
-
 
 	m_texture.SetSize(Vector2(unCubeMapWidth, unCubeMapHeight));
 	m_texture.SetTextureType(METextureType::ETextureCube);
 
 	for (int nTexIdx = 0; nTexIdx < 6; ++nTexIdx)
 	{
-		LoadFromMemory(vImageData[nTexIdx], m_aByteData + nTextureSize * nTexIdx, unCubeMapWidth, unCubeMapHeight, unCubeMapComp, importInfo.ePixelFormat);
+		memcpy(m_aByteData + nTextureSize * nTexIdx, vImageData[nTexIdx], nTextureSize);
 		free(vImageData[nTexIdx]);
 		vImageData[nTexIdx] = nullptr;
 	}
 
 	m_texture.GenerateBuffer(pRenderSystem->GetDevice(), m_aByteData);
 	return true;
+}
+
+METextureLayout MTextureResource::GetTextureLayout(const uint32_t& nChannel, const PixelFormat& format)
+{
+	METextureLayout eResult = METextureLayout::E_UNKNOW;
+	if (PixelFormat::Byte8 == format)
+	{
+		static const std::array<METextureLayout, 4> sTextureLayout = {
+			METextureLayout::ER_UNORM_8,
+			METextureLayout::E_UNKNOW,
+			METextureLayout::ERGB_UNORM_8,
+			METextureLayout::ERGBA_UNORM_8,
+		};
+
+		if (0 <= nChannel && nChannel <= 4)
+		{
+			eResult = sTextureLayout[nChannel - 1];
+		}
+	}
+	else if (PixelFormat::Float32 == format)
+	{
+		static const std::array<METextureLayout, 4> sTextureLayout = {
+			METextureLayout::ER_FLOAT_32,
+			METextureLayout::E_UNKNOW,
+			METextureLayout::E_UNKNOW,
+			METextureLayout::ERGBA_FLOAT_32,
+		};
+
+		if (0 <= nChannel && nChannel <= 4)
+		{
+			eResult = sTextureLayout[nChannel - 1];
+		}
+	}
+
+	assert(METextureLayout::E_UNKNOW != eResult);
+
+	return eResult;
 }
 
 bool MTextureResource::Load(const MString& strResourcePath)

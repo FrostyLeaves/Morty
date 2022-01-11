@@ -23,11 +23,23 @@ enum METextureType
 
 enum class METextureLayout
 {
-	ERGBA8 = 0,
-	ERGBA16,
-	ERGBA32,
-	ER8,
-	ER32,
+	E_UNKNOW = 0,
+	
+	ER_UNORM_8,
+	ERG_UNORM_8,
+	ERGB_UNORM_8,
+	ERGBA_UNORM_8,
+
+	ER_FLOAT_16,
+	ERG_FLOAT_16,
+	ERGB_FLOAT_16,
+	ERGBA_FLOAT_16,
+
+	ER_FLOAT_32,
+	ERG_FLOAT_32,
+	ERGB_FLOAT_32,
+	ERGBA_FLOAT_32,
+
 	EDepth,
 };
 

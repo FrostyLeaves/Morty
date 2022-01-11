@@ -5,7 +5,7 @@
 MTexture::MTexture()
 	: m_strTextureName()
 	, m_v2Size(1.0, 1.0)
-	, m_eRenderType(METextureLayout::ERGBA8)
+	, m_eRenderType(METextureLayout::ERGBA_UNORM_8)
 	, m_eRenderUsage(METextureRenderUsage::EUnknow)
 	, m_eShaderUsage(METextureShaderUsage::EUnknow)
 	, m_eTextureType(METextureType::ETexture2D)
@@ -41,9 +41,9 @@ void MTexture::DestroyBuffer(MIDevice* pDevice)
 
 uint32_t MTexture::GetImageMemorySize(const METextureLayout& layout)
 {
-	if (METextureLayout::ERGBA16 == layout)
+	if (METextureLayout::ERGBA_FLOAT_16 == layout)
 		return 8;
-	else if (METextureLayout::ERGBA32 == layout)
+	else if (METextureLayout::ERGBA_FLOAT_32 == layout)
 		return 16;
 	else
 		return 4;
@@ -68,7 +68,7 @@ MTexture* MTexture::CreateRenderTarget()
 	pTexture->SetReadable(false);
 	pTexture->SetRenderUsage(METextureRenderUsage::ERenderBack);
 	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
-	pTexture->SetTextureLayout(METextureLayout::ERGBA8);
+	pTexture->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
 
 	return pTexture;
 }
@@ -80,7 +80,7 @@ MTexture* MTexture::CreateRenderTargetFloat32()
 	pTexture->SetReadable(false);
 	pTexture->SetRenderUsage(METextureRenderUsage::ERenderBack);
 	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
-	pTexture->SetTextureLayout(METextureLayout::ER32);
+	pTexture->SetTextureLayout(METextureLayout::ER_FLOAT_32);
 
 	return pTexture;
 }
@@ -92,7 +92,7 @@ MTexture* MTexture::CreateCubeMap()
 	pTexture->SetReadable(false);
 	pTexture->SetRenderUsage(METextureRenderUsage::EUnknow);
 	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
-	pTexture->SetTextureLayout(METextureLayout::ERGBA8);
+	pTexture->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
 	pTexture->SetTextureType(METextureType::ETextureCube);
 
 	return pTexture;

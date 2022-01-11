@@ -327,7 +327,7 @@ bool MRenderView::BindRenderPass()
 		m_vRenderTarget[i].vkImageReadySemaphore = VK_NULL_HANDLE;
 
 		MTexture* pTexture = new MTexture();
-		pTexture->SetTextureLayout(METextureLayout::ERGBA8);
+		pTexture->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
 		pTexture->SetRenderUsage(METextureRenderUsage::ERenderPresent);
 		pTexture->SetSize(size);
 		pTexture->m_VkTextureImage = vSwapchainImages[i];

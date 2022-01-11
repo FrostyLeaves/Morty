@@ -235,28 +235,63 @@ VkBool32 MVulkanDevice::FormatIsFilterable(VkFormat format, VkImageTiling tiling
 
 VkFormat MVulkanDevice::GetFormat(const METextureLayout& layout)
 {
+/*
+UNORM:		0		-> 0.0f		255 -> 1.0f
+SNORM:		-127	-> -1.0f	127 -> 1.0f		-128 (-2n-1) is not meaningful in SNORM, and simply clamps to -1.0f.
+
+USCALED:	0		-> 0.0f		255 -> 255.0f	range(0~255)
+SSCALED:	-128	-> -128.0f	127 -> 127.0f	range(-128~127)
+
+SRGB:		sRGB nonlinear encoding.
+
+UINT:		0		-> 1		255	-> 255
+
+UFLOAT:		0		-> 0		257	-> 257.0f	range(0, FLT_MAX)
+SFLOAT:		0		-> 0		257	-> 257.0f	range(-FLT_MAX, FLT_MAX)
+*/
+
 	switch (layout)
 	{
-	case METextureLayout::ER8:
-		return VK_FORMAT_R8_SRGB;
+	case METextureLayout::ER_UNORM_8:
+		return VK_FORMAT_R8_UNORM;
 		break;
-	case METextureLayout::ER32:
-		return VK_FORMAT_R32_SFLOAT;
+	case METextureLayout::ERG_UNORM_8:
+		return VK_FORMAT_R8G8_UNORM;
 		break;
-	case METextureLayout::EDepth:
-		return m_VkDepthTextureFormat;
+	case METextureLayout::ERGB_UNORM_8:
+		return VK_FORMAT_R8G8B8_UNORM;
+		break;
+	case METextureLayout::ERGBA_UNORM_8:
+		return VK_FORMAT_R8G8B8A8_UNORM;
 		break;
 
-	case METextureLayout::ERGBA8:
-		return VK_FORMAT_R8G8B8A8_SRGB;
+	case METextureLayout::ER_FLOAT_16:
+		return VK_FORMAT_R16_SFLOAT;
 		break;
-
-	case METextureLayout::ERGBA16:
+	case METextureLayout::ERG_FLOAT_16:
+		return VK_FORMAT_R16G16_SFLOAT;
+		break;
+	case METextureLayout::ERGB_FLOAT_16:
+		return VK_FORMAT_R16G16B16_SFLOAT;
+		break;
+	case METextureLayout::ERGBA_FLOAT_16:
 		return VK_FORMAT_R16G16B16A16_SFLOAT;
 		break;
 
-	case METextureLayout::ERGBA32:
+	case METextureLayout::ER_FLOAT_32:
+		return VK_FORMAT_R32_SFLOAT;
+		break;
+	case METextureLayout::ERG_FLOAT_32:
+		return VK_FORMAT_R32G32_SFLOAT;
+		break;
+	case METextureLayout::ERGB_FLOAT_32:
+		return VK_FORMAT_R32G32B32_SFLOAT;
+		break;
+	case METextureLayout::ERGBA_FLOAT_32:
 		return VK_FORMAT_R32G32B32A32_SFLOAT;
+		break;
+	case METextureLayout::EDepth:
+		return m_VkDepthTextureFormat;
 		break;
 
 	default:

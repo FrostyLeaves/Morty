@@ -250,8 +250,8 @@ ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturParamSet(MTexture*
 			switch (key->GetTextureLayout())
 			{
 			case METextureLayout::EDepth:
-			case METextureLayout::ER8:
-			case METextureLayout::ER32:
+			case METextureLayout::ER_UNORM_8:
+			case METextureLayout::ER_FLOAT_32:
 				pStruct->GetMember(0)->var = 1;
 				break;
 

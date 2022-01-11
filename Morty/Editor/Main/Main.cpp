@@ -25,8 +25,6 @@
 #include "MPointLightComponent.h"
 #include "MDirectionalLightComponent.h"
 
-#include "MDebugMeshComponent.h"
-
 #include "MTextureResource.h"
 #include "MMaterialResource.h"
 

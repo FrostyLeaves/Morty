@@ -53,28 +53,6 @@ source_group("Core\\Utility" FILES ${CORE_UTILITY_FILES})
 file(GLOB CORE_VARIANT_FILES Variant/*.h Variant/*.cpp )
 source_group("Core\\Variant" FILES ${CORE_VARIANT_FILES})
 
-
-############################################################
-# spot
-############################################################
-file(GLOB SPOT_FILES ${THIRD_PARTY_PATH}/spot/*.hpp
-                    ${THIRD_PARTY_PATH}/spot/*.cpp
-                    ${THIRD_PARTY_PATH}/spot/*.c
-)
-source_group("spot" FILES ${SPOT_FILES})
-set(CORE_CODE_DIRECTORIES ${CORE_CODE_DIRECTORIES} ${THIRD_PARTY_PATH}/spot)
-
-############################################################
-# stb
-############################################################
-file(GLOB STB_FILES ${THIRD_PARTY_PATH}/stb/*.h
-                    ${THIRD_PARTY_PATH}/stb/deprecated/*.h
-                    ${THIRD_PARTY_PATH}/stb/deprecated/*.c
-)
-
-source_group("stb" FILES ${STB_FILES})
-set(CORE_CODE_DIRECTORIES ${CORE_CODE_DIRECTORIES} ${THIRD_PARTY_PATH}/stb)
-
 ############################################################
 # add library
 ############################################################
@@ -94,9 +72,6 @@ add_library(Core STATIC
     ${CORE_TYPE_FILES}
     ${CORE_UTILITY_FILES}
     ${CORE_VARIANT_FILES}
-
-    ${SPOT_FILES}
-    ${STB_FILES}
 )
 
 

@@ -49,7 +49,7 @@ public:
 
 	
 
-	void LoadFromMemory(MByte* aByteData, const uint32_t& nWidth, const uint32_t& nHeight, const uint32_t& nChannel, PixelFormat ePixelFormat = PixelFormat::Byte8);
+	void LoadFromMemory(MByte* aByteData, const uint32_t& nWidth, const uint32_t& nHeight, const uint32_t& nChannel, PixelFormat ePixelFormat = PixelFormat::Byte8, bool bCopyMemory = true);
 
 public:
 
@@ -57,9 +57,7 @@ public:
 
 protected:
 
-	void LoadFromMemory(MByte* aByteData, MByte* aTargetData, const uint32_t& nWidth, const uint32_t& nHeight, const uint32_t& nChannel, PixelFormat ePixelFormat);
-
-protected:
+	METextureLayout GetTextureLayout(const uint32_t& nChannel, const PixelFormat& format);
 
 	virtual bool Load(const MString& strResourcePath) override;
 	virtual bool SaveTo(const MString& strResourcePath) override;
