@@ -53,6 +53,19 @@ const MType* MResourceSystem::GetResourceType(const MString& strResourcePath)
 	return m_tResSuffixToType[suffix];
 }
 
+MString MResourceSystem::GetFullPath(const MString& strRelativePath)
+{
+	for (MString& strSearchPath : m_vSearchPath)
+	{
+		std::string strFullpath = strSearchPath + strRelativePath;
+		std::ifstream ifs(strFullpath.c_str(), std::ios::binary);
+		if (ifs.good())
+			return strFullpath;
+	}
+
+	return "";
+}
+
 MResource* MResourceSystem::LoadResource(const MString& strResourcePath, const MType* type/* = nullptr*/)
 {
 	if (strResourcePath.empty())
@@ -69,21 +82,15 @@ MResource* MResourceSystem::LoadResource(const MString& strResourcePath, const M
 
 	if (pLoader = m_tResourceLoader[type])
 	{
-		for (MString strSearchPath : m_vSearchPath)
+		MString strFullPath = GetFullPath(strResourcePath);
+
+		if (pResource = pLoader->Load(this, strFullPath))
 		{
-			std::string strFullpath = strSearchPath + strResourcePath;
-			std::ifstream ifs(strFullpath.c_str(), std::ios::binary);
-			if (!ifs.good())
-				continue;
-
-			ifs.close();
-			if (pResource = pLoader->Load(this, strFullpath))
-			{
-				m_tPathResources[strResourcePath] = pResource;
-				break;
-			}
-
-			GetEngine()->GetLogger()->Error("Load Resource try to find: [path: %s]", (strSearchPath + "/" + strResourcePath).c_str());
+			m_tPathResources[strResourcePath] = pResource;
+		}
+		else
+		{
+			GetEngine()->GetLogger()->Error("Load Resource try to find: [path: %s]", strFullPath.empty() ? strResourcePath.c_str() : strFullPath.c_str());
 		}
 	}
 

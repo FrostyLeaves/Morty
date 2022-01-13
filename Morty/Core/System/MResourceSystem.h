@@ -42,6 +42,8 @@ public:
 
 	const MType* GetResourceType(const MString& strResourcePath);
 
+	MString GetFullPath(const MString& strRelativePath);
+
 	MResource* LoadResource(const MString& strResourcePath, const MType* type = nullptr);
 	void UnloadResource(MResource* pResource);
 	

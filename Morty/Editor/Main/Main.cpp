@@ -34,7 +34,7 @@
 
 //#define TEST_ANIMATION
 
-#define TEST_PBR_RENDER_0
+//#define TEST_PBR_RENDER_0
 
 //#define TEST_PBR_RENDER_1
 
@@ -52,12 +52,12 @@ void SKY_BOX(MEngine* pEngine, MScene* pScene)
 
 	MTextureResource* pCubeTexture = pResourceSystem->CreateResource<MTextureResource>();
 	pCubeTexture->ImportCubeMap({
-		"E:/projects/Morty_Restructure/Resource/Texture/Sky/Circus_Backstage/px.hdr",
-		"E:/projects/Morty_Restructure/Resource/Texture/Sky/Circus_Backstage/nx.hdr",
-		"E:/projects/Morty_Restructure/Resource/Texture/Sky/Circus_Backstage/py.hdr",
-		"E:/projects/Morty_Restructure/Resource/Texture/Sky/Circus_Backstage/ny.hdr",
-		"E:/projects/Morty_Restructure/Resource/Texture/Sky/Circus_Backstage/pz.hdr",
-		"E:/projects/Morty_Restructure/Resource/Texture/Sky/Circus_Backstage/nz.hdr"
+		"Texture/Sky/Circus_Backstage/px.hdr",
+		"Texture/Sky/Circus_Backstage/nx.hdr",
+		"Texture/Sky/Circus_Backstage/py.hdr",
+		"Texture/Sky/Circus_Backstage/ny.hdr",
+		"Texture/Sky/Circus_Backstage/pz.hdr",
+		"Texture/Sky/Circus_Backstage/nz.hdr"
 		},{ MTextureResource::PixelFormat::Float32 });
 
 

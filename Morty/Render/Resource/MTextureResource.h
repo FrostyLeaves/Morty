@@ -46,10 +46,8 @@ public:
 	bool ImportTexture(const MString&  strResourcePath, const ImportInfo& importInfo);
 
 	bool ImportCubeMap(const std::array<MString, 6>& vResourcePath, const ImportInfo& importInfo);
-
 	
-
-	void LoadFromMemory(MByte* aByteData, const uint32_t& nWidth, const uint32_t& nHeight, const uint32_t& nChannel, PixelFormat ePixelFormat = PixelFormat::Byte8, bool bCopyMemory = true);
+	void LoadFromMemory(MByte* aByteData, const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, PixelFormat ePixelFormat = PixelFormat::Byte8, bool bCopyMemory = true);
 
 public:
 
@@ -58,6 +56,8 @@ public:
 protected:
 
 	METextureLayout GetTextureLayout(const uint32_t& nChannel, const PixelFormat& format);
+
+protected:
 
 	virtual bool Load(const MString& strResourcePath) override;
 	virtual bool SaveTo(const MString& strResourcePath) override;
