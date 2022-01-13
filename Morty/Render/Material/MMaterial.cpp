@@ -603,3 +603,10 @@ MShaderRefTextureParam::MShaderRefTextureParam(const MShaderTextureParam& param)
 {
 
 }
+
+const MString MaterialKey::Albedo = "U_mat_texAlbedo";
+const MString MaterialKey::Normal = "U_mat_texNormal";
+const MString MaterialKey::Metallic = "U_mat_texMetallic";
+const MString MaterialKey::Roughness = "U_mat_texRoughness";
+const MString MaterialKey::AmbientOcc = "U_mat_texAmbientOcc";
+const MString MaterialKey::Height = "U_mat_texHeight";

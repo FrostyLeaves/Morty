@@ -341,17 +341,26 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 					ShowValueBegin(param->strName);
 					MResource* pResource = param->m_TextureRef.GetResource();
 
+					if (param->pTexture)
+					{
+						const ImGuiStyle& style = ImGui::GetStyle();
+						float fSize = ImGui::GetFontSize() + style.FramePadding.y * 2;
+						ShowTexture(param->pTexture, Vector2(fSize, fSize));
+						if (ImGui::IsItemHovered())
+						{
+							ImGui::BeginTooltip();
+							ShowTexture(param->pTexture, Vector2(128, 128));
+							ImGui::EndTooltip();
+						}
+						ImGui::SameLine();
+					}
+
 					EditMResource(strDlgName, MTextureResource::GetResourceTypeName(), MTextureResource::GetSuffixList(), pResource, [&param, &pMaterial](const MString& strNewFilePath) {
 
 						MResource* pNewResource = pMaterial->GetResourceSystem()->LoadResource(strNewFilePath);
 
 						pMaterial->SetTexutreParam(param->strName, pNewResource);
 						});
-
-					if (param->pTexture)
-					{
-						ShowTexture(param->pTexture);
-					}
 
 					ShowValueEnd();
 				}
@@ -464,22 +473,11 @@ void PropertyBase::EditSaveMResource(const MString& stringID, const MString& str
 	}
 }
 
-void PropertyBase::ShowTexture(MTexture* pTexture)
+void PropertyBase::ShowTexture(MTexture* pTexture, const Vector2& v2Size)
 {
-	const float fMaxImageSize = 200;
 	if (pTexture)
 	{
-		float fImageWidth = ImGui::GetContentRegionAvailWidth();
-		if (fImageWidth > fMaxImageSize)
-		{
-			ImGui::Spacing();
-			ImGui::SameLine((fImageWidth - fMaxImageSize) * 0.5f);
-			ImGui::Image(ImTextureID(pTexture), ImVec2(fMaxImageSize, fMaxImageSize));
-		}
-		else
-		{
-			ImGui::Image(ImTextureID(pTexture), ImVec2(fImageWidth, fImageWidth));
-		}
+		ImGui::Image(ImTextureID(pTexture), ImVec2(v2Size.x, v2Size.y));
 	}
 }
 

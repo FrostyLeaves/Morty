@@ -40,9 +40,9 @@
 
 //#define TEST_POINT_LIGHT
 
-//#define TEST_BASIC_SHAPE
+#define TEST_BASIC_SHAPE
 
-#define TEST_SKY_BOX
+//#define TEST_SKY_BOX
 
 void SKY_BOX(MEngine* pEngine, MScene* pScene)
 {
@@ -134,13 +134,13 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 		MResource* roughness = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_roughness.png");
 		MResource* ao = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_ao.png");
 		MResource* height = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_height.png");
-		MResource* metal = pResourceSystem->LoadResource(MRenderModule::DefaultMetal);
-		pMaterial->SetTexutreParam("U_mat_texAlbedo", albedo);
-		pMaterial->SetTexutreParam("U_mat_texNormal", normal);
-		pMaterial->SetTexutreParam("U_mat_texMetallic", metal);
-		pMaterial->SetTexutreParam("U_mat_texRoughness", roughness);
-		pMaterial->SetTexutreParam("U_mat_texAmbientOcc", ao);
-		pMaterial->SetTexutreParam("U_mat_texHeight", height);
+		MResource* metal = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
+		pMaterial->SetTexutreParam(MaterialKey::Albedo, albedo);
+		pMaterial->SetTexutreParam(MaterialKey::Normal, normal);
+		pMaterial->SetTexutreParam(MaterialKey::Metallic, metal);
+		pMaterial->SetTexutreParam(MaterialKey::Roughness, roughness);
+		pMaterial->SetTexutreParam(MaterialKey::AmbientOcc, ao);
+		pMaterial->SetTexutreParam(MaterialKey::Height, height);
 
 		pMeshComponent->Load(pCubeResource);
 		pMeshComponent->SetMaterial(pMaterial);

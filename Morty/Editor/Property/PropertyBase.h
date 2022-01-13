@@ -52,7 +52,7 @@ public:
 	void EditMResource(const MString& strDlgID, const MString& strResourceType, const std::vector<MString>& vSuffixList,  MResource* pDefaultResource, const std::function<void(const MString& strNewFilePath)>& funcLoadResource);
 	void EditSaveMResource(const MString& stringID, const MString& strResourceType, const std::vector<MString>& vSuffixList, MResource* pResource);
 
-	void ShowTexture(MTexture* pTexture);
+	void ShowTexture(MTexture* pTexture, const Vector2& v2Size);
 
 	//auto call ShowValue/ShowNode
 	bool EditMVariant(const MString& strVariantName, MVariant& value);

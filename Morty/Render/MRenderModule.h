@@ -18,9 +18,11 @@ public:
 	static bool Register(MEngine* pEngine);
 
 
-	static MString DefaultWhite;
-	static MString DefaultNormal;
-	static MString DefaultMetal;
+
+	static const MString DefaultWhite;
+	static const MString DefaultNormal;
+	static const MString Default_R8_One;
+	static const MString Default_R8_Zero;
 };
 
 

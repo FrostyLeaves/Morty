@@ -42,6 +42,17 @@ enum class MEMaterialType
 	EMaterialTypeEnd,
 };
 
+class MORTY_API MaterialKey
+{
+public:
+	static const MString Albedo;
+	static const MString Normal;
+	static const MString Metallic;
+	static const MString Roughness;
+	static const MString AmbientOcc;
+	static const MString Height;
+};
+
 struct MORTY_API MShaderRefTextureParam : public MShaderTextureParam
 {
 public:

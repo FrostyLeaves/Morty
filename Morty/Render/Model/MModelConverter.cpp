@@ -691,6 +691,13 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		}
 
 		pMaterial->SetMaterialType(MEMaterialType::EDeferred);
+
+		pMaterial->SetTexutreParam(MaterialKey::Albedo, pResourceSystem->LoadResource(MRenderModule::DefaultWhite));
+		pMaterial->SetTexutreParam(MaterialKey::Normal, pResourceSystem->LoadResource(MRenderModule::DefaultNormal));
+		pMaterial->SetTexutreParam(MaterialKey::Metallic, pResourceSystem->LoadResource(MRenderModule::Default_R8_One));
+		pMaterial->SetTexutreParam(MaterialKey::Roughness, pResourceSystem->LoadResource(MRenderModule::Default_R8_One));
+		pMaterial->SetTexutreParam(MaterialKey::AmbientOcc, pResourceSystem->LoadResource(MRenderModule::Default_R8_One));
+		pMaterial->SetTexutreParam(MaterialKey::Height, pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero));
 	}
 	else
 	{

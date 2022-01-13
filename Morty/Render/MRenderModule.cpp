@@ -26,9 +26,10 @@
 
 #include "MTaskGraph.h"
 
-MString MRenderModule::DefaultWhite = "Default_White";
-MString MRenderModule::DefaultNormal = "Default_Normal";
-MString MRenderModule::DefaultMetal = "Default_Metal";
+const MString MRenderModule::DefaultWhite = "Default_White";
+const MString MRenderModule::DefaultNormal = "Default_Normal";
+const MString MRenderModule::Default_R8_One = "Default_R8_One";
+const MString MRenderModule::Default_R8_Zero = "Default_R8_Zero";
 
 bool MRenderModule::Register(MEngine* pEngine)
 {
@@ -79,12 +80,17 @@ bool MRenderModule::Register(MEngine* pEngine)
 			pTexture->LoadFromMemory(byte, 1, 1, 3);
 		}
 
-		if (MTextureResource* pTexture = pResourceSystem->CreateResource<MTextureResource>(DefaultMetal))
+		if (MTextureResource* pTexture = pResourceSystem->CreateResource<MTextureResource>(Default_R8_One))
 		{
 			MByte byte = 255;
 			pTexture->LoadFromMemory(&byte, 1, 1, 1);
 		}
 
+		if (MTextureResource* pTexture = pResourceSystem->CreateResource<MTextureResource>(Default_R8_Zero))
+		{
+			MByte byte = 0;
+			pTexture->LoadFromMemory(&byte, 1, 1, 1);
+		}
 	}
 
 	if (MComponentSystem* pComponentSystem = pEngine->FindSystem<MComponentSystem>())
