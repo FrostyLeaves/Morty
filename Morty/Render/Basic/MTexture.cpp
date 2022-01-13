@@ -41,12 +41,40 @@ void MTexture::DestroyBuffer(MIDevice* pDevice)
 
 uint32_t MTexture::GetImageMemorySize(const METextureLayout& layout)
 {
-	if (METextureLayout::ERGBA_FLOAT_16 == layout)
-		return 8;
-	else if (METextureLayout::ERGBA_FLOAT_32 == layout)
-		return 16;
-	else
+	switch (layout)
+	{
+	case METextureLayout::E_UNKNOW:
+
+	case METextureLayout::ER_UNORM_8:
+		return 1;
+	case METextureLayout::ERG_UNORM_8:
+		return 2;
+	case METextureLayout::ERGB_UNORM_8:
+		return 3;
+	case METextureLayout::ERGBA_UNORM_8:
 		return 4;
+	case METextureLayout::ER_FLOAT_16:
+		return 2;
+	case METextureLayout::ERG_FLOAT_16:
+		return 4;
+	case METextureLayout::ERGB_FLOAT_16:
+		return 6;
+	case METextureLayout::ERGBA_FLOAT_16:
+		return 8;
+	case METextureLayout::ER_FLOAT_32:
+		return 4;
+	case METextureLayout::ERG_FLOAT_32:
+		return 8;
+	case METextureLayout::ERGB_FLOAT_32:
+		return 12;
+	case METextureLayout::ERGBA_FLOAT_32:
+		return 16;
+	case METextureLayout::EDepth:
+		return 4;
+	}
+
+	assert(false);
+	return 0;
 }
 
 MTexture* MTexture::CreateShadowMap()

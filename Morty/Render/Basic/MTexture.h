@@ -41,6 +41,8 @@ enum class METextureLayout
 	ERGBA_FLOAT_32,
 
 	EDepth,
+
+	E_NUM,
 };
 
 enum class METextureRenderUsage

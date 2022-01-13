@@ -259,7 +259,7 @@ SFLOAT:		0		-> 0		257	-> 257.0f	range(-FLT_MAX, FLT_MAX)
 		return VK_FORMAT_R8G8_UNORM;
 		break;
 	case METextureLayout::ERGB_UNORM_8:
-		return VK_FORMAT_R8G8B8_UNORM;
+		return VK_FORMAT_R8G8B8_SRGB;
 		break;
 	case METextureLayout::ERGBA_UNORM_8:
 		return VK_FORMAT_R8G8B8A8_UNORM;

@@ -36,11 +36,11 @@
 
 //#define TEST_PBR_RENDER_0
 
-//#define TEST_PBR_RENDER_1
+#define TEST_PBR_RENDER_1
 
 //#define TEST_POINT_LIGHT
 
-#define TEST_BASIC_SHAPE
+//#define TEST_BASIC_SHAPE
 
 //#define TEST_SKY_BOX
 
