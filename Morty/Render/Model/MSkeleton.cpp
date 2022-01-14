@@ -174,7 +174,7 @@ MSkeletonInstance::MSkeletonInstance(const MSkeleton* templateSke)
 	: m_pEngine(templateSke->GetEngine())
 	, m_pSkeletonTemplate(templateSke)
 	, m_bShaderParamSetDirty(true)
-	, m_pShaderParamSet(new MShaderParamSet(MGlobal::SHADER_PARAM_SET_SKELETON))
+	, m_pShaderParamSet(new MShaderParamSet(MRenderGlobal::SHADER_PARAM_SET_SKELETON))
 	, m_pShaderBonesArray(nullptr)
 {
 	m_vAllBones = m_pSkeletonTemplate->GetAllBones();
@@ -186,7 +186,7 @@ MSkeletonInstance::MSkeletonInstance(const MSkeletonInstance& instance)
 	: m_pEngine(instance.m_pEngine)
 	, m_pSkeletonTemplate(instance.m_pSkeletonTemplate)
 	, m_bShaderParamSetDirty(true)
-	, m_pShaderParamSet(new MShaderParamSet(MGlobal::SHADER_PARAM_SET_SKELETON))
+	, m_pShaderParamSet(new MShaderParamSet(MRenderGlobal::SHADER_PARAM_SET_SKELETON))
 	, m_pShaderBonesArray(nullptr)
 {
 	m_vAllBones = m_pSkeletonTemplate->GetAllBones();
@@ -272,7 +272,7 @@ MShaderParamSet* MSkeletonInstance::GetShaderParamSet()
 	{
 		const std::vector<MBone>& bones = GetAllBones();
 		uint32_t size = bones.size();
-		if (size > MGlobal::BONES_MAX_NUMBER) size = MGlobal::BONES_MAX_NUMBER;
+		if (size > MRenderGlobal::BONES_MAX_NUMBER) size = MRenderGlobal::BONES_MAX_NUMBER;
 
 		for (uint32_t i = 0; i < size; ++i)
 		{

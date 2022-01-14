@@ -8,10 +8,9 @@ struct VS_OUT
 };
 
 //Textures
-[[vk::binding(0,0)]]Texture2D U_mat_f3Base_fMetal;
-[[vk::binding(1,0)]]Texture2D U_mat_f3Albedo_fAmbientOcc;
-[[vk::binding(2,0)]]Texture2D U_mat_f3Normal_fRoughness;
-[[vk::binding(3,0)]]Texture2D U_mat_fDepth;
+[[vk::binding(0,0)]]Texture2D U_mat_f3Albedo_fMetallic;
+[[vk::binding(1,0)]]Texture2D U_mat_f2Normal_fRoughness_fAO;
+[[vk::binding(3,0)]]Texture2D U_mat_DepthMap;
 
 
 float DistributionGGX(float3 N, float3 H, float roughness)
@@ -138,16 +137,10 @@ float3 CalcDirectionLight(DirectionLight dirLight, float4 f4DirLightSpacePos, fl
     return float3(0, 0, 0);
 }
 
-float3 GetWorldPosition(VS_OUT input)
+float3 GetWorldPosition(VS_OUT input, float fDepth)
 {
     float2 pos = input.uv * 2.0 - 1.0;
     pos.y = 1.0 - pos.y;
-
-    float4 f4DepthColor = U_mat_fDepth.Sample(U_defaultSampler, input.uv);
-
-    float fDepth = Float4ToFloat(f4DepthColor);
-
-    fDepth = fDepth * (U_matZNearFar.y - U_matZNearFar.x) + U_matZNearFar.x;
 
     float4 f4ViewportToWorldPos = mul(float4(pos.x, pos.y, U_matZNearFar.x, 1.0f), U_matCamProjInv);
 
@@ -159,28 +152,32 @@ float3 GetWorldPosition(VS_OUT input)
 float3 AdditionAllLights(VS_OUT input, float3 f3Color)
 {
 
-    float4 f3Base_fMetal = U_mat_f3Base_fMetal.Sample(U_defaultSampler, input.uv);
-    float4 f3Albedo_fAmbientOcc = U_mat_f3Albedo_fAmbientOcc.Sample(U_defaultSampler, input.uv);
-    float4 f3Normal_fRoughness = U_mat_f3Normal_fRoughness.Sample(U_defaultSampler, input.uv);
+    float4 f3Albedo_fMetallic = U_mat_f3Albedo_fMetallic.Sample(U_defaultSampler, input.uv);
+    float4 f2Normal_fRoughness_fAO = U_mat_f2Normal_fRoughness_fAO.Sample(U_defaultSampler, input.uv);
 
-    float3 f3BaseColor = f3Base_fMetal.rgb;
-    float3 f3Albedo   = pow(f3Albedo_fAmbientOcc.rgb, float3(2.2));
-    float3 f3Normal = f3Normal_fRoughness.rgb;
-    f3Normal = normalize(f3Normal * 2.0 - 1.0);
+#if GBUFFER_UNIFIED_FORMAT
+    float4 f4Depth = U_mat_DepthMap.Sample(U_defaultSampler, input.uv);
+    float fDepth = Float4ToFloat(f4Depth) * (U_matZNearFar.y - U_matZNearFar.x) + U_matZNearFar.x;
+#else
+    float fDepth = U_mat_DepthMap.Sample(U_defaultSampler, input.uv).r;
+#endif
 
-    float fMetallic   = f3Base_fMetal.a;
-    float fAmbientOcc = f3Albedo_fAmbientOcc.a;
-    float fRoughness = f3Normal_fRoughness.a;
+    float3 f3Albedo = pow(f3Albedo_fMetallic.rgb, float3(2.2));
+    float fMetallic = f3Albedo_fMetallic.a; 
 
-    float3 f3WorldPosition = GetWorldPosition(input);
+    float3 f3Normal = float3(0.0);
+    f3Normal.rg = f2Normal_fRoughness_fAO.rg * 2.0 - 1.0;
+    f3Normal.b = 1.0f - f3Normal.r - f3Normal.g;
 
+    float fRoughness = f2Normal_fRoughness_fAO.b;
+    float fAmbientOcc = f2Normal_fRoughness_fAO.a;
 
+    float3 f3BaseColor = float3(0.04);
+    f3BaseColor = lerp(f3BaseColor, f3Albedo, fMetallic);
+    
 
+    float3 f3WorldPosition = GetWorldPosition(input, fDepth);
     float3 f3CameraDir = normalize(U_f3CameraPosition - f3WorldPosition);
-
-//    // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
-//    // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
-//    float3 f3BaseColor = lerp(float3(0.04), f3Albedo, fMetallic);
 
     if(U_bDirectionLightEnabled > 0)
     {
@@ -229,6 +226,7 @@ float3 AdditionAllLights(VS_OUT input, float3 f3Color)
                                     fMetallic
                                 );
     }
+
 
     float3 f3Ambient = float3(0.1) * f3Albedo * fAmbientOcc;
     

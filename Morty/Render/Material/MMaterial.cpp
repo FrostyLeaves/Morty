@@ -30,10 +30,10 @@ MMaterial::MMaterial()
 	, m_ShaderMacro()
 	, m_unMaterialID(MGlobal::M_INVALID_INDEX)
 {
-    m_vShaderSets[MGlobal::SHADER_PARAM_SET_MATERIAL] = MShaderParamSet(MGlobal::SHADER_PARAM_SET_MATERIAL);
-    m_vShaderSets[MGlobal::MGlobal::SHADER_PARAM_SET_FRAME] = MShaderParamSet(MGlobal::SHADER_PARAM_SET_FRAME);
-    m_vShaderSets[MGlobal::MGlobal::SHADER_PARAM_SET_MESH] = MShaderParamSet(MGlobal::SHADER_PARAM_SET_MESH);
-    m_vShaderSets[MGlobal::SHADER_PARAM_SET_SKELETON] = MShaderParamSet(MGlobal::SHADER_PARAM_SET_SKELETON);
+    m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MATERIAL] = MShaderParamSet(MRenderGlobal::SHADER_PARAM_SET_MATERIAL);
+    m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_FRAME] = MShaderParamSet(MRenderGlobal::SHADER_PARAM_SET_FRAME);
+    m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MESH] = MShaderParamSet(MRenderGlobal::SHADER_PARAM_SET_MESH);
+    m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_SKELETON] = MShaderParamSet(MRenderGlobal::SHADER_PARAM_SET_SKELETON);
 }
 
 MMaterial::~MMaterial()
@@ -43,17 +43,17 @@ MMaterial::~MMaterial()
 
 std::vector<MShaderConstantParam*>* MMaterial::GetShaderParams()
 {
-	return &m_vShaderSets[MGlobal::SHADER_PARAM_SET_MATERIAL].m_vParams;
+	return &m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MATERIAL].m_vParams;
 }
 
 std::vector<MShaderSampleParam*>* MMaterial::GetSampleParams()
 {
-	return &m_vShaderSets[MGlobal::SHADER_PARAM_SET_MATERIAL].m_vSamples;
+	return &m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MATERIAL].m_vSamples;
 }
 
 std::vector<MShaderTextureParam*>* MMaterial::GetTextureParams()
 {
-	return &m_vShaderSets[MGlobal::SHADER_PARAM_SET_MATERIAL].m_vTextures;
+	return &m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MATERIAL].m_vTextures;
 }
 
 void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)
@@ -146,7 +146,7 @@ void MMaterial::CopyFrom(const MResource* pResource)
 
 	m_ShaderMacro = pMaterial->m_ShaderMacro;
 	
-	for (uint32_t i = 0; i < MGlobal::BONES_MAX_NUMBER; ++i)
+	for (uint32_t i = 0; i < MRenderGlobal::BONES_MAX_NUMBER; ++i)
 	{
 		CopyShaderParamSet(m_vShaderSets[i], pMaterial->m_vShaderSets[i]);
 	}
@@ -501,7 +501,7 @@ void MMaterial::Unload()
 
 void MMaterial::BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderParamType& eType)
 {
-	for (uint32_t i = 0; i < MGlobal::SHADER_PARAM_SET_NUM; ++i)
+	for (uint32_t i = 0; i < MRenderGlobal::SHADER_PARAM_SET_NUM; ++i)
 	{
 		MShaderParamSet& bufferSet = pBuffer->m_vShaderSets[i];
 		MShaderParamSet& selfSet = m_vShaderSets[i];
@@ -558,7 +558,7 @@ void MMaterial::BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderParamType
 void MMaterial::UnbindShaderBuffer(const MEShaderParamType& eType)
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-	for (uint32_t i = 0; i < MGlobal::SHADER_PARAM_SET_NUM; ++i)
+	for (uint32_t i = 0; i < MRenderGlobal::SHADER_PARAM_SET_NUM; ++i)
 	{
 		MShaderParamSet& selfSet = m_vShaderSets[i];
 		std::vector<MShaderConstantParam*> vConstantParams = selfSet.RemoveConstantParam(eType);
@@ -583,7 +583,7 @@ void MMaterial::UnbindShaderBuffer(const MEShaderParamType& eType)
 void MMaterial::ClearParams()
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-	for (uint32_t i = 0; i < MGlobal::SHADER_PARAM_SET_NUM; ++i)
+	for (uint32_t i = 0; i < MRenderGlobal::SHADER_PARAM_SET_NUM; ++i)
 	{
 		m_vShaderSets[i].DestroyBuffer(pRenderSystem->GetDevice());
 		m_vShaderSets[i] = MShaderParamSet(i);

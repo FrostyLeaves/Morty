@@ -126,7 +126,7 @@ MMeshResource::~MMeshResource()
 
 MIMesh* MMeshResource::GetLevelMesh(const uint32_t unLevel)
 {
-	if (MGlobal::MESH_LOD_LEVEL_RANGE <= unLevel)
+	if (MRenderGlobal::MESH_LOD_LEVEL_RANGE <= unLevel)
 		return m_pMesh;
 
 	if (m_pMesh)

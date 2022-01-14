@@ -84,9 +84,9 @@ public:
 	std::vector<MShaderTextureParam*>* GetTextureParams();
 
 	MShaderParamSet* GetShaderParamSets() { return m_vShaderSets; }
-	MShaderParamSet* GetMaterialParamSet() { return &m_vShaderSets[MGlobal::SHADER_PARAM_SET_MATERIAL]; }
-	MShaderParamSet* GetFrameParamSet() { return &m_vShaderSets[MGlobal::SHADER_PARAM_SET_FRAME]; }
-	MShaderParamSet* GetMeshParamSet() { return &m_vShaderSets[MGlobal::SHADER_PARAM_SET_MESH]; }
+	MShaderParamSet* GetMaterialParamSet() { return &m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]; }
+	MShaderParamSet* GetFrameParamSet() { return &m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_FRAME]; }
+	MShaderParamSet* GetMeshParamSet() { return &m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MESH]; }
 
 	void SetTexutreParam(const MString& strName, MResource* pTexResource);
 	void SetTexutreParam(const uint32_t& unIndex, MResource* pTexResource);
@@ -142,7 +142,7 @@ protected:
 
 private:
 
-    MShaderParamSet m_vShaderSets[MGlobal::SHADER_PARAM_SET_NUM];
+    MShaderParamSet m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_NUM];
 	
 
 

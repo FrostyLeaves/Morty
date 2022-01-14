@@ -104,6 +104,7 @@ public:
 
 	static MTexture* CreateShadowMap();
 	static MTexture* CreateRenderTarget();
+	static MTexture* CreateRenderTargetGBuffer();
 	static MTexture* CreateRenderTargetFloat32();
 
 	static MTexture* CreateCubeMap();

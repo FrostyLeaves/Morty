@@ -31,7 +31,7 @@ MRenderableMeshComponent::MRenderableMeshComponent()
 	, m_BoundsAABB()
 	, m_BoundsSphere()
 	, m_eShadowType(MEShadowType::ENone)
-	, m_unDetailLevel(MGlobal::MESH_LOD_LEVEL_RANGE)
+	, m_unDetailLevel(MRenderGlobal::MESH_LOD_LEVEL_RANGE)
 
 	, m_bDrawBoundingSphere(false)
 	, m_bGenerateDirLightShadow(false)

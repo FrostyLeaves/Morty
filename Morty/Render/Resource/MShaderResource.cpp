@@ -64,7 +64,7 @@ bool MShaderResource::Load(const MString& strResourcePath)
 {
 	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
 
-	m_eShaderType = MResource::GetSuffix(strResourcePath) == MGlobal::SUFFIX_VERTEX_SHADER ? MEShaderType::EVertex : MEShaderType::EPixel;
+	m_eShaderType = MResource::GetSuffix(strResourcePath) == MRenderGlobal::SUFFIX_VERTEX_SHADER ? MEShaderType::EVertex : MEShaderType::EPixel;
 	m_strShaderPath = strResourcePath;
 	for (MShader* pShader : m_vShaders)
 	{

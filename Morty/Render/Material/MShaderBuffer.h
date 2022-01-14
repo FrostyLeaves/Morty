@@ -17,7 +17,7 @@ public:
     MShaderBuffer();
 	virtual ~MShaderBuffer() {}
 
-    MShaderParamSet m_vShaderSets[MGlobal::SHADER_PARAM_SET_NUM];
+    MShaderParamSet m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_NUM];
 	
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	VkShaderModule m_VkShaderModule;

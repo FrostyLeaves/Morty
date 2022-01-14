@@ -39,8 +39,8 @@ struct MVertexWithBones
 	Vector2 texCoords;
 
 
-	int bonesID[MGlobal::BONES_PER_VERTEX];
-	float bonesWeight[MGlobal::BONES_PER_VERTEX];
+	int bonesID[MRenderGlobal::BONES_PER_VERTEX];
+	float bonesWeight[MRenderGlobal::BONES_PER_VERTEX];
 };
 
 

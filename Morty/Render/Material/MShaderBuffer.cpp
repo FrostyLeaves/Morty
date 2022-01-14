@@ -7,10 +7,10 @@ MShaderBuffer::MShaderBuffer()
 	m_VkShaderModule = VK_NULL_HANDLE;
 #endif
 
-    m_vShaderSets[MGlobal::SHADER_PARAM_SET_MATERIAL] = MShaderParamSet(MGlobal::SHADER_PARAM_SET_MATERIAL);
-    m_vShaderSets[MGlobal::SHADER_PARAM_SET_FRAME] = MShaderParamSet(MGlobal::SHADER_PARAM_SET_FRAME);
-    m_vShaderSets[MGlobal::SHADER_PARAM_SET_MESH] = MShaderParamSet(MGlobal::SHADER_PARAM_SET_MESH);
-    m_vShaderSets[MGlobal::SHADER_PARAM_SET_SKELETON] = MShaderParamSet(MGlobal::SHADER_PARAM_SET_SKELETON);
+    m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MATERIAL] = MShaderParamSet(MRenderGlobal::SHADER_PARAM_SET_MATERIAL);
+    m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_FRAME] = MShaderParamSet(MRenderGlobal::SHADER_PARAM_SET_FRAME);
+    m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MESH] = MShaderParamSet(MRenderGlobal::SHADER_PARAM_SET_MESH);
+    m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_SKELETON] = MShaderParamSet(MRenderGlobal::SHADER_PARAM_SET_SKELETON);
 }
 
 MVertexShaderBuffer::MVertexShaderBuffer()

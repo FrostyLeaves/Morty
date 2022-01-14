@@ -300,9 +300,9 @@ void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShade
 
 MMaterialPipelineLayoutData* MVulkanPipelineManager::CreateMaterialPipelineLayout(MMaterial* pMaterial)
 {
-	std::vector<VkDescriptorSetLayoutBinding> vParamBinding[MGlobal::SHADER_PARAM_SET_NUM];
+	std::vector<VkDescriptorSetLayoutBinding> vParamBinding[MRenderGlobal::SHADER_PARAM_SET_NUM];
 	
-	for (uint32_t unSetIdx = 0; unSetIdx < MGlobal::SHADER_PARAM_SET_NUM; ++unSetIdx)
+	for (uint32_t unSetIdx = 0; unSetIdx < MRenderGlobal::SHADER_PARAM_SET_NUM; ++unSetIdx)
 	{
 		MShaderParamSet& paramSets = pMaterial->GetShaderParamSets()[unSetIdx];
 
@@ -365,7 +365,7 @@ MMaterialPipelineLayoutData* MVulkanPipelineManager::CreateMaterialPipelineLayou
 	std::vector<VkDescriptorSetLayout> vSetLayouts;
 	std::unordered_map<uint32_t, uint32_t> vParamLayoutsSet;
 
-	for (uint32_t i = 0; i < MGlobal::SHADER_PARAM_SET_NUM; ++i)
+	for (uint32_t i = 0; i < MRenderGlobal::SHADER_PARAM_SET_NUM; ++i)
 	{
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;

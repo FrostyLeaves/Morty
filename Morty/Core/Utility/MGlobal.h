@@ -59,28 +59,6 @@ class MORTY_API MGlobal
 public:
     static const int M_INVALID_INDEX = -1;
 
-    static const int SHADER_PARAM_SET_MATERIAL = 0;
-    static const int SHADER_PARAM_SET_FRAME = 1;
-    static const int SHADER_PARAM_SET_MESH = 2;
-	static const int SHADER_PARAM_SET_SKELETON = 3;
-	static const int SHADER_PARAM_SET_NUM = 4;
-
-    static const int BONES_PER_VERTEX = 4;
-    static const int BONES_MAX_NUMBER = 128;
-    static const int SHADOW_TEXTURE_SIZE = 1024;
-
-    static const int POINT_LIGHT_MAX_NUMBER = 8;
-    static const int POINT_LIGHT_PIXEL_NUMBER = 8;
-    static const int SPOT_LIGHT_MAX_NUMBER = 8;
-    static const int SPOT_LIGHT_PIXEL_NUMBER = 8;
-
-    static const int MESH_LOD_LEVEL_RANGE = 10;
-
-    static const bool VERTEX_NORMAL = false;
-
-
-    static const char* SUFFIX_VERTEX_SHADER;
-	static const char* SUFFIX_PIXEL_SHADER;
 };
 
 

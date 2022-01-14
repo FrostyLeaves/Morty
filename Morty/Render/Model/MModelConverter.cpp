@@ -397,7 +397,7 @@ void MModelConverter::BindVertexAndBones(aiMesh* pMesh, const aiScene* pScene, M
 					aiVertexWeight wgt = pBone->mWeights[wgtIndex];
 					MVertexWithBones& vertex = pMMesh->GetVertices()[wgt.mVertexId];
 
-					for (uint32_t boneIndex = 0; boneIndex < MGlobal::BONES_PER_VERTEX; ++boneIndex)
+					for (uint32_t boneIndex = 0; boneIndex < MRenderGlobal::BONES_PER_VERTEX; ++boneIndex)
 					{
 						if (0 == vertex.bonesWeight[boneIndex])
 						{
@@ -416,12 +416,12 @@ void MModelConverter::BindVertexAndBones(aiMesh* pMesh, const aiScene* pScene, M
 		MVertexWithBones& vertex = pMMesh->GetVertices()[i];
 
 		float fLength = 0.0f;
-		for (uint32_t n = 0; n < MGlobal::BONES_PER_VERTEX; ++n)
+		for (uint32_t n = 0; n < MRenderGlobal::BONES_PER_VERTEX; ++n)
 			fLength += vertex.bonesWeight[n];
 
 		if (fLength > 0.0f)
 		{
-			for (uint32_t n = 0; n < MGlobal::BONES_PER_VERTEX; ++n)
+			for (uint32_t n = 0; n < MRenderGlobal::BONES_PER_VERTEX; ++n)
 				vertex.bonesWeight[n] *= (1.0f / fLength);
 		}
 

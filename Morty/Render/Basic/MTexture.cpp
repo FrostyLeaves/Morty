@@ -101,6 +101,18 @@ MTexture* MTexture::CreateRenderTarget()
 	return pTexture;
 }
 
+MTexture* MTexture::CreateRenderTargetGBuffer()
+{
+	MTexture* pTexture = new MTexture();
+	pTexture->SetMipmapsEnable(false);
+	pTexture->SetReadable(false);
+	pTexture->SetRenderUsage(METextureRenderUsage::ERenderBack);
+	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
+	pTexture->SetTextureLayout(METextureLayout::ERGBA_FLOAT_32);
+
+	return pTexture;
+}
+
 MTexture* MTexture::CreateRenderTargetFloat32()
 {
 	MTexture* pTexture = new MTexture();

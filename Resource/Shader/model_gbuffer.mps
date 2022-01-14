@@ -39,10 +39,14 @@ struct Material
 
 struct PS_OUT
 {
-    float4 f3Base_fMetal: SV_Target0;
-    float4 f3Albedo_fAmbientOcc: SV_Target1;
-    float4 f3Normal_fRoughness: SV_Target2;
-    float4 fDepth: SV_Target3;
+    float4 f3Albedo_fMetallic: SV_Target0;
+    float4 f2Normal_fRoughness_fAO: SV_Target1;
+
+#if GBUFFER_UNIFIED_FORMAT
+    float4 f4Depth : SV_Target2;
+#else
+    float fDepth : SV_TARGET2;
+#endif
 };
 
 
@@ -81,26 +85,23 @@ PS_OUT PS(VS_OUT input) : SV_Target
     f3Normal = (f3Normal + 1.0f) * 0.5f;
 
 
-    float3 f3Albedo   = pow(U_mat_texAlbedo.Sample(U_defaultSampler, uv).rgb, float3(2.2));
+    float3 f3Albedo   = U_mat_texAlbedo.Sample(U_defaultSampler, uv).rgb;
     float fMetallic   = U_mat_texMetallic.Sample(U_defaultSampler, uv).r;
     float fRoughness  = U_mat_texRoughness.Sample(U_defaultSampler, uv).r;
     float fAmbientOcc = U_mat_texAmbientOcc.Sample(U_defaultSampler, uv).r;
 
-    // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
-    // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
-    output.f3Base_fMetal.rgb = lerp(float3(0.04), f3Albedo, fMetallic);
-    output.f3Base_fMetal.a = 0.0f;
+    output.f3Albedo_fMetallic.rgb = f3Albedo;
+    output.f3Albedo_fMetallic.a = fMetallic;
 
+    output.f2Normal_fRoughness_fAO.rg = f3Normal.rg;
+    output.f2Normal_fRoughness_fAO.b = fRoughness;
+    output.f2Normal_fRoughness_fAO.a = fAmbientOcc;
 
-
-
-    output.f3Normal_fRoughness.rgb = f3Normal;
-    output.f3Normal_fRoughness.a = fRoughness;
-
-    output.f3Albedo_fAmbientOcc.rgb = f3Albedo;
-    output.f3Albedo_fAmbientOcc.a = fAmbientOcc;
-
-    output.fDepth = FloatToFloat4((input.depth - U_matZNearFar.x) / (U_matZNearFar.y - U_matZNearFar.x));
+#if GBUFFER_UNIFIED_FORMAT
+    output.f4Depth = FloatToFloat4((input.depth - U_matZNearFar.x) / (U_matZNearFar.y - U_matZNearFar.x));
+#else
+    output.fDepth = input.depth;
+#endif
 
     return output;
 }

@@ -426,7 +426,7 @@ Vector3 Matrix4::GetTranslation() const
  	float fBiggestValue = vWXYZLength[0];
  	for (int i = 1; i < 4; ++i)
  	{
- 		if (fabs(fBiggestValue) < fabs(vWXYZLength[i]))
+ 		if ((fBiggestValue) < (vWXYZLength[i]))
  		{
  			nBiggestIndex = i;
  			fBiggestValue = vWXYZLength[i];

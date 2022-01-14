@@ -3,7 +3,7 @@
 #include "MLogger.h"
 #include "MFunction.h"
 #include "MModelResource.h"
-
+#include "MRenderGlobal.h"
 
 #include <float.h>
 
@@ -13,7 +13,7 @@
 MMultiLevelMesh::MMultiLevelMesh()
 	: m_pMesh(nullptr)
 	, m_pSortVertices(nullptr)
-	, m_vMeshesCache(MGlobal::MESH_LOD_LEVEL_RANGE)
+	, m_vMeshesCache(MRenderGlobal::MESH_LOD_LEVEL_RANGE)
 {
 	
 }
@@ -134,11 +134,11 @@ MIMesh* MMultiLevelMesh::CreateLevel(const uint32_t& unVertexNumber)
 MIMesh* MMultiLevelMesh::GetLevel(uint32_t unLevel)
 {
 	if (unLevel < 1) unLevel = 1;
-	if (unLevel > MGlobal::MESH_LOD_LEVEL_RANGE) unLevel = MGlobal::MESH_LOD_LEVEL_RANGE;
+	if (unLevel > MRenderGlobal::MESH_LOD_LEVEL_RANGE) unLevel = MRenderGlobal::MESH_LOD_LEVEL_RANGE;
 
 	if (m_vMeshesCache[unLevel] == nullptr)
 	{
-		uint32_t unVertexNumber = m_pMesh->GetVerticesLength() * (float)unLevel / MGlobal::MESH_LOD_LEVEL_RANGE;
+		uint32_t unVertexNumber = m_pMesh->GetVerticesLength() * (float)unLevel / MRenderGlobal::MESH_LOD_LEVEL_RANGE;
 		m_vMeshesCache[unLevel] = CreateLevel(unVertexNumber);
 	}
 

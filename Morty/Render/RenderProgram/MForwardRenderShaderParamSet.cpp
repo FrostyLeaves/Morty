@@ -73,7 +73,7 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	lightInfoSrt.AppendMVariant("U_dirLight", dirLightSrt);
 
 	MVariantArray pointLightArray;
-	for (uint32_t i = 0; i < MGlobal::POINT_LIGHT_MAX_NUMBER; ++i)
+	for (uint32_t i = 0; i < MRenderGlobal::POINT_LIGHT_MAX_NUMBER; ++i)
 	{
 		MStruct pointLight;
 		
@@ -90,7 +90,7 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	lightInfoSrt.AppendMVariant("U_spotLights", pointLightArray);
 
 	MVariantArray spotLightArray;
-	for (uint32_t i = 0; i < MGlobal::SPOT_LIGHT_MAX_NUMBER; ++i)
+	for (uint32_t i = 0; i < MRenderGlobal::SPOT_LIGHT_MAX_NUMBER; ++i)
 	{
 		MStruct spotLight;
 	
@@ -262,7 +262,7 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 
 				++nValidPointLights;
 
-				if (nValidPointLights >= MGlobal::POINT_LIGHT_MAX_NUMBER)
+				if (nValidPointLights >= MRenderGlobal::POINT_LIGHT_MAX_NUMBER)
 					break;
    			}
 

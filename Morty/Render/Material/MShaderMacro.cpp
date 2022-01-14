@@ -2,13 +2,15 @@
 #include "MVertex.h"
 #include "MFunction.h"
 
-const MString strBonesPerVertex = MStringHelper::ToString(MGlobal::BONES_PER_VERTEX);
-const MString strBonesMaxNumber = MStringHelper::ToString(MGlobal::BONES_MAX_NUMBER);
-const MString strShadowTextureSize = MStringHelper::ToString(MGlobal::SHADOW_TEXTURE_SIZE);
-const MString strPointLightMaxNumber = MStringHelper::ToString(MGlobal::POINT_LIGHT_MAX_NUMBER);
-const MString strPointLightPixelNumber = MStringHelper::ToString(MGlobal::POINT_LIGHT_PIXEL_NUMBER);
-const MString strSpotLightMaxNumber = MStringHelper::ToString(MGlobal::SPOT_LIGHT_MAX_NUMBER);
-const MString strSpotLightPixelNumber = MStringHelper::ToString(MGlobal::SPOT_LIGHT_PIXEL_NUMBER);
+#include "MRenderGlobal.h"
+
+const MString strBonesPerVertex = MStringHelper::ToString(MRenderGlobal::BONES_PER_VERTEX);
+const MString strBonesMaxNumber = MStringHelper::ToString(MRenderGlobal::BONES_MAX_NUMBER);
+const MString strShadowTextureSize = MStringHelper::ToString(MRenderGlobal::SHADOW_TEXTURE_SIZE);
+const MString strPointLightMaxNumber = MStringHelper::ToString(MRenderGlobal::POINT_LIGHT_MAX_NUMBER);
+const MString strPointLightPixelNumber = MStringHelper::ToString(MRenderGlobal::POINT_LIGHT_PIXEL_NUMBER);
+const MString strSpotLightMaxNumber = MStringHelper::ToString(MRenderGlobal::SPOT_LIGHT_MAX_NUMBER);
+const MString strSpotLightPixelNumber = MStringHelper::ToString(MRenderGlobal::SPOT_LIGHT_PIXEL_NUMBER);
 
 
 enum class METransparentPolicy
@@ -22,12 +24,13 @@ std::vector<std::pair<MString, MString>> MShaderMacro::s_vGlobalMacroParams = {
 	{"MBONES_PER_VERTEX", strBonesPerVertex},
 	{"MBONES_MAX_NUMBER", strBonesMaxNumber},
 	{"MSHADOW_TEXTURE_SIZE", strShadowTextureSize},
-	{"MCALC_NORMAL_IN_VS", MGlobal::VERTEX_NORMAL ? "true" : "false"},
+	{"MCALC_NORMAL_IN_VS", MRenderGlobal::VERTEX_NORMAL ? "true" : "false"},
 	{"MPOINT_LIGHT_MAX_NUMBER", strPointLightMaxNumber},
 	{"MPOINT_LIGHT_PIXEL_NUMBER", strPointLightPixelNumber},
 	{"MSPOT_LIGHT_MAX_NUMBER", strSpotLightMaxNumber},
 	{"MSPOT_LIGHT_PIXEL_NUMBER", strSpotLightPixelNumber},
 	{"MTRANSPARENT_POLICY", strTransparentPolicy},
+	{"GBUFFER_UNIFIED_FORMAT", MRenderGlobal::GBUFFER_UNIFIED_FORMAT ? "true" : "false"},
 };
 
 void MShaderMacro::SetInnerMacro(const MString& strKey, const MString& strValue)

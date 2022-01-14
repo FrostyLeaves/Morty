@@ -42,9 +42,9 @@ void NodeTreeView::Render()
 		MSceneComponent* pSceneComponent = pEntity->GetComponent<MSceneComponent>();
 		if (!pSceneComponent || !pSceneComponent->GetParent())
 		{
-			ImGui::Unindent(ImGui::GetTreeNodeToLabelSpacing());
+			//ImGui::Unindent(ImGui::GetTreeNodeToLabelSpacing());
 			RenderNode(pEntity);
-			ImGui::Indent(ImGui::GetTreeNodeToLabelSpacing());
+			//ImGui::Indent(ImGui::GetTreeNodeToLabelSpacing());
 		}
 	}
 }

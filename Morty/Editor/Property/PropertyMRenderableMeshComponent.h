@@ -73,7 +73,7 @@ public:
 					}
 					ShowValueEnd();
 
-					PROPERTY_VALUE_EDIT_SPEED_MIN_MAX(pMeshComponent, "LOD", float, GetDetailLevel, SetDetailLevel, 1, 1, MGlobal::MESH_LOD_LEVEL_RANGE);
+					PROPERTY_VALUE_EDIT_SPEED_MIN_MAX(pMeshComponent, "LOD", float, GetDetailLevel, SetDetailLevel, 1, 1, MRenderGlobal::MESH_LOD_LEVEL_RANGE);
 
 
 					ShowNodeEnd();
