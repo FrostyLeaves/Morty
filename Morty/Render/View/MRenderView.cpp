@@ -348,7 +348,7 @@ bool MRenderView::BindRenderPass()
 		pDepthTexture->GenerateBuffer(m_pDevice);
 		m_vRenderTarget[i].renderPass.m_pDepthTexture = pDepthTexture;
 		m_vRenderTarget[i].renderPass.m_vkExtent2D = m_VkExtend;
-		m_vRenderTarget[i].renderPass.m_DepthDesc.cClearColor = MColor::Black_T;
+		m_vRenderTarget[i].renderPass.m_DepthDesc.cClearColor = MColor::White;
 		m_vRenderTarget[i].renderPass.m_DepthDesc.bClearWhenRender = true;
 
 

@@ -48,6 +48,7 @@ struct SpotLight
 {
     float3 U_f3DirectionLight;
     float3 U_f3CameraPosition;
+    float3 U_f3CameraDirection;
 
     float2 U_f2ViewportSize;
     float2 U_matZNearFar;

@@ -40,22 +40,45 @@ struct Material
 struct PS_OUT
 {
     float4 f3Albedo_fMetallic: SV_Target0;
-    float4 f2Normal_fRoughness_fAO: SV_Target1;
-
-#if GBUFFER_UNIFIED_FORMAT
-    float4 f4Depth : SV_Target2;
-#else
-    float fDepth : SV_TARGET2;
-#endif
+    float4 f3Normal_fRoughness: SV_Target1;
+    float4 f3Position_fAmbientOcc: SV_Target2;
 };
 
 
 
 float2 ParallaxMapping(float2 uv, float3 f3ViewDir, float fScale)
 { 
-    float height =  U_mat_texHeight.Sample(U_defaultSampler, uv).r;    
-    float2 p = f3ViewDir.xy / f3ViewDir.z * (height * fScale);
-    return uv - p;    
+    const float fMinLayers = 8;
+    const float fMaxLayers = 32;
+
+    float fNumLayers = clamp(fMaxLayers, fMinLayers, abs(dot(float3(0.0f, 0.0f, 1.0f), f3ViewDir)));
+    float fLayerDepth = 1.0f / fNumLayers;
+
+    float fCurrentLayerDepth = 0.0f;
+
+    float2 P = f3ViewDir.xy / f3ViewDir.z * fScale;
+    float2 f2DeltaTexCoords = P / fNumLayers;
+
+    float2 f2CurrentTexCoords = uv;
+    float fCurrentDepthMapValue = U_mat_texHeight.Sample(U_defaultSampler, f2CurrentTexCoords).r;
+
+    while(fCurrentLayerDepth < fCurrentDepthMapValue)
+    {
+        f2CurrentTexCoords -= f2DeltaTexCoords;
+        fCurrentDepthMapValue = U_mat_texHeight.Sample(U_defaultSampler, f2CurrentTexCoords).r;
+
+        fCurrentLayerDepth += fLayerDepth;
+    }
+
+    float2 f2PrevTexCoords = f2CurrentTexCoords + f2DeltaTexCoords;
+
+    float fAfterDepth = fCurrentDepthMapValue - fCurrentLayerDepth;
+    float fBeforeDepth = U_mat_texHeight.Sample(U_defaultSampler, f2PrevTexCoords).r - fCurrentLayerDepth + fLayerDepth;
+
+    float fWeight = fAfterDepth / (fAfterDepth - fBeforeDepth);
+    float2 f2FinalTexCoords = f2PrevTexCoords * fWeight + f2CurrentTexCoords * (1.0f - fWeight);
+
+    return f2FinalTexCoords;
 }
 
 PS_OUT PS(VS_OUT input) : SV_Target
@@ -70,19 +93,26 @@ PS_OUT PS(VS_OUT input) : SV_Target
     float3 N = normalize(input.normal);
     float3x3 TBN = float3x3(T,B,N);
 
+
     if (U_mat.bUseHeightMap > 0)
     {
         float3 f3ViewDir = mul(U_f3CameraPosition, TBN) - mul(input.worldPos, TBN);
         f3ViewDir = normalize(f3ViewDir);
+//        float3 f3ViewDir = mul(U_f3CameraDirection, TBN);
         uv = ParallaxMapping(uv, f3ViewDir, U_mat.bUseHeightMap);
+        uv = saturate(uv);
     }
 
-    float3 f3Normal = float3(0.0f, 0.0f, -1.0f);
 
+
+    float3 f3Normal = float3(0.0f, 0.0f, 1.0f);
     f3Normal = U_mat_texNormal.Sample(U_defaultSampler, uv).xyz;
+    f3Normal = (f3Normal * 2.0f) - 1.0f;
     f3Normal = mul(f3Normal, TBN);
     f3Normal = normalize(f3Normal);
-    f3Normal = (f3Normal + 1.0f) * 0.5f;
+
+    //f3Normal = input.normal;
+    //f3Normal = (f3Normal + 1.0f) * 0.5f;
 
 
     float3 f3Albedo   = U_mat_texAlbedo.Sample(U_defaultSampler, uv).rgb;
@@ -93,16 +123,11 @@ PS_OUT PS(VS_OUT input) : SV_Target
     output.f3Albedo_fMetallic.rgb = f3Albedo;
     output.f3Albedo_fMetallic.a = fMetallic;
 
-    output.f2Normal_fRoughness_fAO.rg = f3Normal.rg;
-    output.f2Normal_fRoughness_fAO.b = fRoughness;
-    output.f2Normal_fRoughness_fAO.a = fAmbientOcc;
+    output.f3Normal_fRoughness.rgb = f3Normal;
+    output.f3Normal_fRoughness.a = fRoughness;
 
-#if GBUFFER_UNIFIED_FORMAT
-    output.f4Depth = FloatToFloat4((input.depth - U_matZNearFar.x) / (U_matZNearFar.y - U_matZNearFar.x));
-#else
-    output.fDepth = input.depth;
-#endif
+    output.f3Position_fAmbientOcc.rgb = input.worldPos;
+    output.f3Position_fAmbientOcc.a = fAmbientOcc;
 
     return output;
 }
-    

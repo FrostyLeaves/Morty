@@ -9,7 +9,8 @@ struct VS_OUT
 
 //Textures
 [[vk::binding(0,0)]]Texture2D U_mat_f3Albedo_fMetallic;
-[[vk::binding(1,0)]]Texture2D U_mat_f2Normal_fRoughness_fAO;
+[[vk::binding(1,0)]]Texture2D U_mat_f3Normal_fRoughness;
+[[vk::binding(2,0)]]Texture2D U_mat_f3Position_fAmbientOcc;
 [[vk::binding(3,0)]]Texture2D U_mat_DepthMap;
 
 
@@ -139,9 +140,11 @@ float3 CalcDirectionLight(DirectionLight dirLight, float4 f4DirLightSpacePos, fl
 
 float3 GetWorldPosition(VS_OUT input, float fDepth)
 {
-    float2 pos = input.uv * 2.0 - 1.0;
-    pos.y = 1.0 - pos.y;
+    float2 uv = input.uv;
+    uv.y = 1.0 - uv.y;
 
+    float2 pos = input.uv * 2.0 - 1.0;
+    
     float4 f4ViewportToWorldPos = mul(float4(pos.x, pos.y, U_matZNearFar.x, 1.0f), U_matCamProjInv);
 
     float3 f3WorldPosition = f4ViewportToWorldPos.xyz / f4ViewportToWorldPos.w;
@@ -151,32 +154,24 @@ float3 GetWorldPosition(VS_OUT input, float fDepth)
 
 float3 AdditionAllLights(VS_OUT input, float3 f3Color)
 {
-
     float4 f3Albedo_fMetallic = U_mat_f3Albedo_fMetallic.Sample(U_defaultSampler, input.uv);
-    float4 f2Normal_fRoughness_fAO = U_mat_f2Normal_fRoughness_fAO.Sample(U_defaultSampler, input.uv);
-
-#if GBUFFER_UNIFIED_FORMAT
-    float4 f4Depth = U_mat_DepthMap.Sample(U_defaultSampler, input.uv);
-    float fDepth = Float4ToFloat(f4Depth) * (U_matZNearFar.y - U_matZNearFar.x) + U_matZNearFar.x;
-#else
-    float fDepth = U_mat_DepthMap.Sample(U_defaultSampler, input.uv).r;
-#endif
+    float4 f3Normal_fRoughness = U_mat_f3Normal_fRoughness.Sample(U_defaultSampler, input.uv);
+    float4 f3Position_fAmbientOcc = U_mat_f3Position_fAmbientOcc.Sample(U_defaultSampler, input.uv);
 
     float3 f3Albedo = pow(f3Albedo_fMetallic.rgb, float3(2.2));
     float fMetallic = f3Albedo_fMetallic.a; 
 
-    float3 f3Normal = float3(0.0);
-    f3Normal.rg = f2Normal_fRoughness_fAO.rg * 2.0 - 1.0;
-    f3Normal.b = 1.0f - f3Normal.r - f3Normal.g;
-
-    float fRoughness = f2Normal_fRoughness_fAO.b;
-    float fAmbientOcc = f2Normal_fRoughness_fAO.a;
+    float3 f3Normal = f3Normal_fRoughness.rgb/* * 2.0 - 1.0*/;
+    float fRoughness = f3Normal_fRoughness.a;
+    
+    float fAmbientOcc = f3Position_fAmbientOcc.a;
 
     float3 f3BaseColor = float3(0.04);
     f3BaseColor = lerp(f3BaseColor, f3Albedo, fMetallic);
     
 
-    float3 f3WorldPosition = GetWorldPosition(input, fDepth);
+    //float3 f3WorldPosition = GetWorldPosition(input, fDepth);
+    float3 f3WorldPosition = f3Position_fAmbientOcc.rgb;
     float3 f3CameraDir = normalize(U_f3CameraPosition - f3WorldPosition);
 
     if(U_bDirectionLightEnabled > 0)
@@ -195,7 +190,7 @@ float3 AdditionAllLights(VS_OUT input, float3 f3Color)
                                         fMetallic
                                     );
     }
-    
+
     for(int i = 0; i < min(MPOINT_LIGHT_PIXEL_NUMBER, U_nValidPointLightsNumber); ++i)
     {
         float3 f3LightDir = normalize(U_pointLights[i].f3WorldPosition - f3WorldPosition);

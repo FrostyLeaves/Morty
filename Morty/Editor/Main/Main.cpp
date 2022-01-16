@@ -76,7 +76,7 @@ void SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
 
 	MMeshResource* pCubeResource = pResourceSystem->CreateResource<MMeshResource>();
-	pCubeResource->LoadAsPlane();
+	pCubeResource->LoadAsCube();
 
 	MEntity* pSphereEntity = pScene->CreateEntity();
 	pSphereEntity->SetName("Sphere");
@@ -99,8 +99,15 @@ void SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 		pMaterial->GetMaterialParamSet()->SetValue("fShininess", 32.0f);
 
 
-		MResource* pTextureResource = pResourceSystem->LoadResource("./Texture/test.png");
-		pMaterial->SetTexutreParam("U_mat_texDiffuse", pTextureResource);
+		MResource* diffuse = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_albedo.png");
+		MResource* normal = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_normal.png");
+		pMaterial->SetTexutreParam("U_mat_texDiffuse", diffuse);
+		pMaterial->SetTexutreParam("U_mat_texNormal", normal);
+
+		if (normal)
+		{
+			pMaterial->GetMaterialParamSet()->SetValue("bUseNormalTex", 1);
+		}
 
 		pMeshComponent->Load(pCubeResource);
 		pMeshComponent->SetMaterial(pMaterial);
@@ -113,7 +120,7 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
 
 	MMeshResource* pCubeResource = pResourceSystem->CreateResource<MMeshResource>();
-	pCubeResource->LoadAsCube();
+	pCubeResource->LoadAsSphere();
 
 	MEntity* pSphereEntity = pScene->CreateEntity();
 	pSphereEntity->SetName("Sphere_PBR");
@@ -134,7 +141,7 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 		MResource* roughness = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_roughness.png");
 		MResource* ao = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_ao.png");
 		MResource* height = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_height.png");
-		MResource* metal = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
+		MResource* metal = pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero);
 		pMaterial->SetTexutreParam(MaterialKey::Albedo, albedo);
 		pMaterial->SetTexutreParam(MaterialKey::Normal, normal);
 		pMaterial->SetTexutreParam(MaterialKey::Metallic, metal);
@@ -292,7 +299,6 @@ int main()
 		ANIMATION_MODEL(&engine, pScene);
 #endif
 
-
 #ifdef TEST_PBR_RENDER_0
 		PBR_SHPERE(&engine, pScene);
 #endif
@@ -317,7 +323,7 @@ int main()
 		}
 		if (MDirectionalLightComponent* pLightComponent = pDirLight->RegisterComponent<MDirectionalLightComponent>())
 		{
-			pLightComponent->SetLightIntensity(250.0f);
+			pLightComponent->SetLightIntensity(100.0f);
 		}
 
 

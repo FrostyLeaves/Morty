@@ -502,7 +502,7 @@ void MMeshResource::LoadAsSphere(MEMeshVertexType eVertexType/* = MEMeshVertexTy
 			vertex.bitangent = vertex.normal.CrossProduct(vertex.tangent);
 
 			float xzLength = sqrt(vPoints[i].x * vPoints[i].x + vPoints[i].z * vPoints[i].z);
-			vertex.texCoords.x = acos(vPoints[i].x / xzLength) / M_PI;
+			vertex.texCoords.x = 1.0f - acos(vPoints[i].x / xzLength) / M_PI;
 			vertex.texCoords.y = acos(vPoints[i].y) / M_PI;
 		}
 	}
@@ -524,7 +524,7 @@ void MMeshResource::LoadAsSphere(MEMeshVertexType eVertexType/* = MEMeshVertexTy
 			vertex.bitangent = vertex.normal.CrossProduct(vertex.tangent);
 
 			float xzLength = sqrt(vPoints[i].x * vPoints[i].x + vPoints[i].z * vPoints[i].z);
-			vertex.texCoords.x = acos(vPoints[i].x / xzLength) / M_PI;
+			vertex.texCoords.x = 1.0f - acos(vPoints[i].x / xzLength) / M_PI;
 			vertex.texCoords.y = acos(vPoints[i].y) / M_PI;
 		}
 	}

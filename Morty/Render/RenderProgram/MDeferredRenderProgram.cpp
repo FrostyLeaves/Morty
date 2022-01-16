@@ -254,6 +254,11 @@ std::vector<MTexture*> MDeferredRenderProgram::GetOutputTextures()
 		}
 	}
 
+	for (MTexture* pGBuffer : m_gbufferRenderPass.m_vBackTextures)
+	{
+		vResult.push_back(pGBuffer);
+	}
+
 	return vResult;
 }
 
@@ -371,12 +376,13 @@ void MDeferredRenderProgram::InitializeRenderPass()
 
 	const std::vector<std::pair<MString, MPassTargetDescription>> vTextureDesc = {
 		{"f3Albedo_fMetallic", {true, MColor::Black_T} },
-		{"f2Normal_fRoughness_fAO", {true, MColor::Black_T} },
+		{"U_mat_f3Normal_fRoughness", {true, MColor::Black_T} },
+		{"U_mat_f3Position_fAmbientOcc", {true, MColor::Black_T} },
 	};
 
 	for (auto& desc : vTextureDesc)
 	{
-		MTexture* pRenderTarget = MTexture::CreateRenderTarget();
+		MTexture* pRenderTarget = MTexture::CreateRenderTargetGBuffer();
 		pRenderTarget->SetName(desc.first);
 		pRenderTarget->SetSize(v2Size);
 		pRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
@@ -384,24 +390,24 @@ void MDeferredRenderProgram::InitializeRenderPass()
 		m_gbufferRenderPass.m_vBackDesc.push_back(desc.second);
 	}
 
-	if (MRenderGlobal::GBUFFER_UNIFIED_FORMAT)
-	{
-		MTexture* pDepthRenderTarget = MTexture::CreateRenderTarget();
-		pDepthRenderTarget->SetName("DepthMap");
-		pDepthRenderTarget->SetSize(v2Size);
-		pDepthRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
-		m_gbufferRenderPass.m_vBackTextures.push_back(pDepthRenderTarget);
-		m_gbufferRenderPass.m_vBackDesc.push_back({ true, MColor::Black_T });
-	}
-	else
-	{
-		MTexture* pDepthRenderTarget = MTexture::CreateRenderTargetFloat32();
-		pDepthRenderTarget->SetName("DepthMap");
-		pDepthRenderTarget->SetSize(v2Size);
-		pDepthRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
-		m_gbufferRenderPass.m_vBackTextures.push_back(pDepthRenderTarget);
-		m_gbufferRenderPass.m_vBackDesc.push_back({ true, MColor::Black_T });
-	}
+// 	if (MRenderGlobal::GBUFFER_UNIFIED_FORMAT)
+// 	{
+// 		MTexture* pDepthRenderTarget = MTexture::CreateRenderTarget();
+// 		pDepthRenderTarget->SetName("DepthMap");
+// 		pDepthRenderTarget->SetSize(v2Size);
+// 		pDepthRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
+// 		m_gbufferRenderPass.m_vBackTextures.push_back(pDepthRenderTarget);
+// 		m_gbufferRenderPass.m_vBackDesc.push_back({ true, MColor::Black_T });
+// 	}
+// 	else
+// 	{
+// 		MTexture* pDepthRenderTarget = MTexture::CreateRenderTargetFloat32();
+// 		pDepthRenderTarget->SetName("DepthMap");
+// 		pDepthRenderTarget->SetSize(v2Size);
+// 		pDepthRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
+// 		m_gbufferRenderPass.m_vBackTextures.push_back(pDepthRenderTarget);
+// 		m_gbufferRenderPass.m_vBackDesc.push_back({ true, MColor::Black_T });
+// 	}
 
 	MTexture* pDepthTexture = MTexture::CreateShadowMap();
 	pDepthTexture->SetSize(v2Size);
@@ -482,10 +488,10 @@ void MDeferredRenderProgram::InitializeMaterial()
 	if (MShaderParamSet* pParams = m_pLightningMaterial->GetMaterialParamSet())
 	{
 		pParams->SetValue("U_mat_f3Albedo_fMetallic", m_gbufferRenderPass.m_vBackTextures[0]);
-		pParams->SetValue("U_mat_f2Normal_fRoughness_fAO", m_gbufferRenderPass.m_vBackTextures[1]);
-		pParams->SetValue("U_mat_DepthMap", m_gbufferRenderPass.m_vBackTextures[2]);
+		pParams->SetValue("U_mat_f3Normal_fRoughness", m_gbufferRenderPass.m_vBackTextures[1]);
+		pParams->SetValue("U_mat_f3Position_fAmbientOcc", m_gbufferRenderPass.m_vBackTextures[2]);
+//		pParams->SetValue("U_mat_DepthMap", m_gbufferRenderPass.m_vBackTextures[3]);
 	}
-
 
 
 	MResource* skyboxVS = pResourceSystem->LoadResource("./Shader/skybox.mvs");

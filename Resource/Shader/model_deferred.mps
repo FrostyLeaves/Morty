@@ -17,5 +17,6 @@ PS_OUT PS(VS_OUT input) : SV_Target
     
     output.target0 = float4(GetPixelColor(input), 1.0f);
     
+
     return output;
 }

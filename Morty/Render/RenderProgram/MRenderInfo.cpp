@@ -160,5 +160,7 @@ void MRenderInfo::CollectShadowMesh()
 		cGenerateShadowRenderAABB = cCaclShadowRenderAABB;
 	}
 
-	m4DirLightInvProj = pViewport->GetLightInverseProjection(pDirectionalLightEntity,cCaclShadowRenderAABB, cGenerateShadowRenderAABB);
+//	m4DirLightInvProj = pViewport->GetLightInverseProjection(pDirectionalLightEntity,cCaclShadowRenderAABB, cGenerateShadowRenderAABB);
+
+	m4DirLightInvProj = Matrix4::IdentityMatrix;
 }

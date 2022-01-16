@@ -760,8 +760,8 @@ void MainEditor::Render(MTaskNode* pNode)
 
 	if (m_pImGuiRenderable)
 	{
-		pRenderCommand->BeginRenderPass(&pRenderTarget->renderPass);
 		m_pImGuiRenderable->Tick(0.0f);
+		pRenderCommand->BeginRenderPass(&pRenderTarget->renderPass);
 		m_pImGuiRenderable->Render(pRenderCommand);
 		pRenderCommand->EndRenderPass();
 	}

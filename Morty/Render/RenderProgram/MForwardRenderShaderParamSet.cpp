@@ -53,6 +53,7 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	MStruct worldInfoSrt;
 	worldInfoSrt.AppendMVariant("U_f3DirectionLight", Vector3());
 	worldInfoSrt.AppendMVariant("U_f3CameraPosition", Vector3());
+	worldInfoSrt.AppendMVariant("U_f3CameraDirection", Vector3());
 	worldInfoSrt.AppendMVariant("U_f2ViewportSize", Vector2());
 	worldInfoSrt.AppendMVariant("U_matZNearFar", Vector2());
 	worldInfoSrt.AppendMVariant("U_fDelta", float());
@@ -185,22 +186,23 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 			if (MSceneComponent* pSceneComponent = info.pCameraEntity->GetComponent<MSceneComponent>())
 			{
 				(*m_pWorldInfoParam->var.GetStruct())[1] = pSceneComponent->GetWorldPosition();
+				(*m_pWorldInfoParam->var.GetStruct())[2] = pSceneComponent->GetWorldForward();
 			}
 		}
 
-		(*m_pWorldInfoParam->var.GetStruct())[2] = info.pViewport->GetSize();
+		(*m_pWorldInfoParam->var.GetStruct())[3] = info.pViewport->GetSize();
 
 		if (info.pCameraEntity)
 		{
 			if (MCameraComponent* pCameraComponent = info.pCameraEntity->GetComponent<MCameraComponent>())
 			{
-				(*m_pWorldInfoParam->var.GetStruct())[3] = pCameraComponent->GetZNearFar();
+				(*m_pWorldInfoParam->var.GetStruct())[4] = pCameraComponent->GetZNearFar();
 			}
 		}
 
-		(*m_pWorldInfoParam->var.GetStruct())[4] = info.fDelta;
+		(*m_pWorldInfoParam->var.GetStruct())[5] = info.fDelta;
 
-		(*m_pWorldInfoParam->var.GetStruct())[5] = info.fGameTime;
+		(*m_pWorldInfoParam->var.GetStruct())[6] = info.fGameTime;
 
 		m_pWorldInfoParam->SetDirty();
 	}

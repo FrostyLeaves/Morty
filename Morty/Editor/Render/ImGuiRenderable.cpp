@@ -166,6 +166,7 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
 	translate.x = -1.0f - draw_data->DisplayPos.x * scale.x;
 	translate.y = -1.0f - draw_data->DisplayPos.y * scale.y;
 
+
 	if (MShaderConstantParam* pParam = m_pMaterial->GetMaterialParamSet()->m_vParams[0])
 	{
 		if (MStruct* pStruct = pParam->var.GetStruct())
