@@ -82,8 +82,8 @@ MVulkanDevice::MVulkanDevice()
 	, m_ShaderCompiler(this)
 	, m_BufferPool(this)
 	, m_VkDepthTextureFormat(VK_FORMAT_D32_SFLOAT_S8_UINT)
-	, m_VkDefaultSampler(VK_NULL_HANDLE)
-	, m_VkLessEqualSampler(VK_NULL_HANDLE)
+	, m_VkLinearSampler(VK_NULL_HANDLE)
+	, m_VkNearestSampler(VK_NULL_HANDLE)
 	, m_VkDescriptorPool(VK_NULL_HANDLE)
 	, m_unFrameCount(0)
 	, vkSetDebugUtilsObjectNameEXT()
@@ -177,8 +177,8 @@ void MVulkanDevice::Release()
 	delete m_pDefaultRecycleBin;
 	m_pDefaultRecycleBin = nullptr;
 
-	vkDestroySampler(m_VkDevice, m_VkDefaultSampler, nullptr);
-	vkDestroySampler(m_VkDevice, m_VkLessEqualSampler, nullptr);
+	vkDestroySampler(m_VkDevice, m_VkLinearSampler, nullptr);
+	vkDestroySampler(m_VkDevice, m_VkNearestSampler, nullptr);
 	vkDestroyDescriptorPool(m_VkDevice, m_VkDescriptorPool, nullptr);
 	vkDestroyCommandPool(m_VkDevice, m_VkCommandPool, nullptr);
 	vkDestroyDevice(m_VkDevice, nullptr);
@@ -445,13 +445,13 @@ bool MVulkanDevice::InitSampler()
 	samplerInfo.minLod = 0.0f;
 	samplerInfo.maxLod = VK_LOD_CLAMP_NONE;
 
-	if (vkCreateSampler(m_VkDevice, &samplerInfo, nullptr, &m_VkDefaultSampler) != VK_SUCCESS) {
+	if (vkCreateSampler(m_VkDevice, &samplerInfo, nullptr, &m_VkLinearSampler) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture sampler!");
 	}
 
-	samplerInfo.compareEnable = VK_TRUE;
-	samplerInfo.compareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-	if (vkCreateSampler(m_VkDevice, &samplerInfo, nullptr, &m_VkLessEqualSampler) != VK_SUCCESS) {
+	samplerInfo.magFilter = VK_FILTER_NEAREST;
+	samplerInfo.minFilter = VK_FILTER_NEAREST;
+	if (vkCreateSampler(m_VkDevice, &samplerInfo, nullptr, &m_VkNearestSampler) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture sampler!");
 	}
 

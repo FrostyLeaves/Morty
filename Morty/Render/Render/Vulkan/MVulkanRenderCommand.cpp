@@ -881,7 +881,7 @@ void MVulkanRenderCommand::BindTextureParam(MShaderParamSet* pParamSet, MShaderT
 		imageInfo.sampler = pTexture->m_VkSampler;
 
 		if (VK_NULL_HANDLE == imageInfo.sampler)
-			imageInfo.sampler = m_pDevice->m_VkDefaultSampler;
+			imageInfo.sampler = m_pDevice->m_VkLinearSampler;
 
 		VkWriteDescriptorSet descriptorWrite{};
 		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

@@ -1,6 +1,6 @@
 
 [[vk::binding(1,0)]]Texture2D U_HDR_OriginTex;
-[[vk::binding(2,0)]]sampler U_defaultSampler;
+[[vk::binding(2,0)]]sampler LinearSampler;
 [[vk::binding(3,0)]]float U_HDR_AverageLum;
 
 struct VS_OUT_GAUSSIAN
@@ -38,7 +38,7 @@ PS_OUT_HDR PS(VS_OUT_GAUSSIAN input) : SV_Target
 {
     PS_OUT_HDR output;
 
-    float4 f4Color = U_HDR_OriginTex.Sample(U_defaultSampler, input.uv);
+    float4 f4Color = U_HDR_OriginTex.Sample(LinearSampler, input.uv);
     f4Color.xyz = ACESToneMapping(f4Color.xyz, U_HDR_AverageLum);
     
     output.color0 = f4Color;

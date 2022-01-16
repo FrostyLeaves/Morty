@@ -88,7 +88,7 @@ float CalcShadow(Texture2D texShadowMap, float4 dirLightSpacePos, float fNdotL)
         float lighting = 0.0f;
         
         float pixelDepth = min(dirLightSpacePos.z / dirLightSpacePos.w, 1.0f);
-        float shadowDepth = texShadowMap.Sample(U_defaultSampler, shadowTexCoords.xy);
+        float shadowDepth = texShadowMap.Sample(LinearSampler, shadowTexCoords.xy);
 
         //current pixel is nearer.
         if (pixelDepth < shadowDepth + epsilon)

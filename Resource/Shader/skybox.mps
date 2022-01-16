@@ -10,7 +10,7 @@ struct VS_OUT_SKYBOX
 
 float4 PS(VS_OUT_SKYBOX input) : SV_Target
 {
-    float4 color = SkyTexCube.Sample(U_defaultSampler, input.uvw);
+    float4 color = SkyTexCube.Sample(LinearSampler, input.uvw);
     
     // HDR -> LDR
     color.rgb = color.rgb / (color.rgb + float3(1.0));

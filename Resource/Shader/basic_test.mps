@@ -15,7 +15,7 @@ struct VS_OUTPUT
 
 [[vk::binding(2,0)]]Texture2D image;
 
-[[vk::binding(3,0)]]sampler samp;
+[[vk::binding(3,0)]]sampler LinearSampler;
 
 float4 PS( VS_OUTPUT input) : SV_Target
 {
@@ -26,7 +26,7 @@ float4 PS( VS_OUTPUT input) : SV_Target
 
     float3 color = 0.5 + 0.5 * cos(time + uv.xyz + float3(0, 2, 4));
 
-    color = color * 0.5 + image.Sample(samp, float2(uv.x, uv.y)) * 0.5;
+    color = color * 0.5 + image.Sample(LinearSampler, float2(uv.x, uv.y)) * 0.5;
 
     return float4(color.x, color.y, color.z, 1.0f);
 }

@@ -34,15 +34,15 @@
 
 //#define TEST_ANIMATION
 
-//#define TEST_PBR_RENDER_0
+#define TEST_PBR_RENDER_0
 
-#define TEST_PBR_RENDER_1
+//#define TEST_PBR_RENDER_1
 
 //#define TEST_POINT_LIGHT
 
 //#define TEST_BASIC_SHAPE
 
-//#define TEST_SKY_BOX
+#define TEST_SKY_BOX
 
 void SKY_BOX(MEngine* pEngine, MScene* pScene)
 {
@@ -323,7 +323,7 @@ int main()
 		}
 		if (MDirectionalLightComponent* pLightComponent = pDirLight->RegisterComponent<MDirectionalLightComponent>())
 		{
-			pLightComponent->SetLightIntensity(100.0f);
+			pLightComponent->SetLightIntensity(1.0f);
 		}
 
 

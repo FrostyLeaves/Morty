@@ -67,7 +67,8 @@ struct SpotLight
     int U_nValidSpotLightsNumber;
 };
 
-[[vk::binding(3,1)]]sampler U_defaultSampler : register(s0);
+[[vk::binding(3,1)]]sampler LinearSampler : register(s0);
+[[vk::binding(4,1)]]sampler NearestSampler : register(s0);
 
 //Shadowmap
 [[vk::binding(6,1)]]Texture2D U_texShadowMap : register(t0);

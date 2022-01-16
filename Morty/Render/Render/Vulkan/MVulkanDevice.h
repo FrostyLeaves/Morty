@@ -160,8 +160,8 @@ public:
 
 	MTexture m_ShaderDefaultTexture;
 
-	VkSampler m_VkDefaultSampler;
-	VkSampler m_VkLessEqualSampler;
+	VkSampler m_VkLinearSampler;
+	VkSampler m_VkNearestSampler;
 
 	VkDescriptorPool m_VkDescriptorPool;
 public:

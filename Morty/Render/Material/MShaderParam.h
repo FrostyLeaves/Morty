@@ -24,6 +24,12 @@ enum MEShaderParamType
 	EBoth = 3,
 };
 
+enum class MESamplerType
+{
+	ENearest,
+	ELinear,
+};
+
 struct MORTY_API MShaderParam
 {
 public:
@@ -66,8 +72,6 @@ struct MShaderTextureParam : public MShaderParam
 {
 	MShaderTextureParam();
 
-	MString strName;
-	uint32_t  eShaderType;
 	MTexture* pTexture;
 	void* pImageIdent;
 	METextureType eType;
@@ -84,8 +88,15 @@ struct MShaderSubpasssInputParam : public MShaderTextureParam
 struct MShaderSampleParam : public MShaderParam
 {
 	MShaderSampleParam();
-	MString strName;
-	uint32_t  eShaderType;
+
+	MESamplerType eSamplerType;
+
+
+#if RENDER_GRAPHICS == MORTY_VULKAN
+	VkSampler m_VkSampler;
+#endif
+	
+
 };
 
 #endif

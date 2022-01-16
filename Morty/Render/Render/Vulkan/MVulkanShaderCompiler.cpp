@@ -439,11 +439,18 @@ void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler
 		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
 		pParam->strName = res.name;
 
+		if (!pParam->strName.empty())
+		{
+			if ('L' == pParam->strName[0])
+				pParam->eSamplerType = MESamplerType::ELinear;
+			else
+				pParam->eSamplerType = MESamplerType::ENearest;
+		}
+
 		pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
 
 		pShaderBuffer->m_vShaderSets[pParam->unSet].m_vSamples.push_back(pParam);
 	}
-
 
 	for (const spirv_cross::Resource& res : shaderResources.subpass_inputs)
 	{

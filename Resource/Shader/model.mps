@@ -26,7 +26,7 @@ PS_OUT PS(VS_OUT input) : SV_Target
 {
     PS_OUT output;
     
-    float4 f3AmbiColor = U_mat_texDiffuse.Sample(U_defaultSampler, input.uv);
+    float4 f3AmbiColor = U_mat_texDiffuse.Sample(LinearSampler, input.uv);
 
     float3 f3Color = U_mat.f3Ambient * f3AmbiColor.xyz * 0.2f;
 
@@ -34,7 +34,7 @@ PS_OUT PS(VS_OUT input) : SV_Target
 
     if (U_mat.bUseTransparentTex > 0)
     {
-        float4 transparentColor = U_mat_texTransparent.Sample(U_defaultSampler, input.uv);
+        float4 transparentColor = U_mat_texTransparent.Sample(LinearSampler, input.uv);
         fAlpha *= transparentColor.a;
         clip(fAlpha - 0.1f);
     }
@@ -64,7 +64,7 @@ PS_OUT PS(VS_OUT input) : SV_Target
 
     if (U_mat.bUseEmissiveTex > 0)
     {
-        float3 f3EmissiveColor = U_mat_texEmissive.Sample(U_defaultSampler, input.uv);
+        float3 f3EmissiveColor = U_mat_texEmissive.Sample(LinearSampler, input.uv);
         if(length(f3EmissiveColor) <= 0.0f)
         {
             f3Color = AdditionAllLights(f3Color, f3AmbiColor, input);
@@ -88,7 +88,7 @@ PS_OUT PS(VS_OUT input) : SV_Target
 #else
     if (U_mat.bUseEmissiveTex > 0)
     {
-        float3 f3EmissiveColor = U_mat_texEmissive.Sample(U_defaultSampler, input.uv);
+        float3 f3EmissiveColor = U_mat_texEmissive.Sample(LinearSampler, input.uv);
         if(length(f3EmissiveColor) <= 0.0f)
         {
             f3Color = AdditionAllLights(f3Color, f3AmbiColor, input);

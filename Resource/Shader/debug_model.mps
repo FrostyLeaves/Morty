@@ -9,7 +9,7 @@ PS_OUT PS(VS_OUT input) : SV_Target
 {
     PS_OUT output;
     
-    float4 f3AmbiColor = U_mat_texDiffuse.Sample(U_defaultSampler, input.uv);
+    float4 f3AmbiColor = U_mat_texDiffuse.Sample(LinearSampler, input.uv);
 
     if(f3AmbiColor.a < 0.8f)
         discard;

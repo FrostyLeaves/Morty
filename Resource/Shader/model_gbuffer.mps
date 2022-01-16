@@ -60,12 +60,12 @@ float2 ParallaxMapping(float2 uv, float3 f3ViewDir, float fScale)
     float2 f2DeltaTexCoords = P / fNumLayers;
 
     float2 f2CurrentTexCoords = uv;
-    float fCurrentDepthMapValue = U_mat_texHeight.Sample(U_defaultSampler, f2CurrentTexCoords).r;
+    float fCurrentDepthMapValue = U_mat_texHeight.Sample(LinearSampler, f2CurrentTexCoords).r;
 
     while(fCurrentLayerDepth < fCurrentDepthMapValue)
     {
         f2CurrentTexCoords -= f2DeltaTexCoords;
-        fCurrentDepthMapValue = U_mat_texHeight.Sample(U_defaultSampler, f2CurrentTexCoords).r;
+        fCurrentDepthMapValue = U_mat_texHeight.Sample(LinearSampler, f2CurrentTexCoords).r;
 
         fCurrentLayerDepth += fLayerDepth;
     }
@@ -73,7 +73,7 @@ float2 ParallaxMapping(float2 uv, float3 f3ViewDir, float fScale)
     float2 f2PrevTexCoords = f2CurrentTexCoords + f2DeltaTexCoords;
 
     float fAfterDepth = fCurrentDepthMapValue - fCurrentLayerDepth;
-    float fBeforeDepth = U_mat_texHeight.Sample(U_defaultSampler, f2PrevTexCoords).r - fCurrentLayerDepth + fLayerDepth;
+    float fBeforeDepth = U_mat_texHeight.Sample(LinearSampler, f2PrevTexCoords).r - fCurrentLayerDepth + fLayerDepth;
 
     float fWeight = fAfterDepth / (fAfterDepth - fBeforeDepth);
     float2 f2FinalTexCoords = f2PrevTexCoords * fWeight + f2CurrentTexCoords * (1.0f - fWeight);
@@ -106,7 +106,7 @@ PS_OUT PS(VS_OUT input) : SV_Target
 
 
     float3 f3Normal = float3(0.0f, 0.0f, 1.0f);
-    f3Normal = U_mat_texNormal.Sample(U_defaultSampler, uv).xyz;
+    f3Normal = U_mat_texNormal.Sample(LinearSampler, uv).xyz;
     f3Normal = (f3Normal * 2.0f) - 1.0f;
     f3Normal = mul(f3Normal, TBN);
     f3Normal = normalize(f3Normal);
@@ -115,10 +115,10 @@ PS_OUT PS(VS_OUT input) : SV_Target
     //f3Normal = (f3Normal + 1.0f) * 0.5f;
 
 
-    float3 f3Albedo   = U_mat_texAlbedo.Sample(U_defaultSampler, uv).rgb;
-    float fMetallic   = U_mat_texMetallic.Sample(U_defaultSampler, uv).r;
-    float fRoughness  = U_mat_texRoughness.Sample(U_defaultSampler, uv).r;
-    float fAmbientOcc = U_mat_texAmbientOcc.Sample(U_defaultSampler, uv).r;
+    float3 f3Albedo   = U_mat_texAlbedo.Sample(LinearSampler, uv).rgb;
+    float fMetallic   = U_mat_texMetallic.Sample(LinearSampler, uv).r;
+    float fRoughness  = U_mat_texRoughness.Sample(LinearSampler, uv).r;
+    float fAmbientOcc = U_mat_texAmbientOcc.Sample(LinearSampler, uv).r;
 
     output.f3Albedo_fMetallic.rgb = f3Albedo;
     output.f3Albedo_fMetallic.a = fMetallic;

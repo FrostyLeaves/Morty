@@ -278,7 +278,7 @@ void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShade
 		imageInfo.sampler = pTexture->m_VkSampler;
 
 		if (VK_NULL_HANDLE == imageInfo.sampler)
-			imageInfo.sampler = m_pDevice->m_VkDefaultSampler;
+			imageInfo.sampler = m_pDevice->m_VkLinearSampler;
 
 		VkWriteDescriptorSet descriptorWrite{};
 		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -353,10 +353,10 @@ MMaterialPipelineLayoutData* MVulkanPipelineManager::CreateMaterialPipelineLayou
 			if (param->eShaderType & MEShaderParamType::EPixel)
 				uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_FRAGMENT_BIT;
 
-			if (param->unBinding == 4)
-				uboLayoutBinding.pImmutableSamplers = &m_pDevice->m_VkLessEqualSampler;
+			if(param->eSamplerType == MESamplerType::ELinear)
+				uboLayoutBinding.pImmutableSamplers = &m_pDevice->m_VkLinearSampler;
 			else
-				uboLayoutBinding.pImmutableSamplers = &m_pDevice->m_VkDefaultSampler;
+				uboLayoutBinding.pImmutableSamplers = &m_pDevice->m_VkNearestSampler;
 
 			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
 		}

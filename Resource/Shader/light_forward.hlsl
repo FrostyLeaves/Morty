@@ -126,7 +126,7 @@ LightBasicInfo GetLightBasicInfo(VS_OUT input)
 
     if (U_mat.bUseNormalTex > 0)
     {
-        result.f3Normal = U_mat_texNormal.Sample(U_defaultSampler, input.uv).xyz;
+        result.f3Normal = U_mat_texNormal.Sample(LinearSampler, input.uv).xyz;
         result.f3Normal = result.f3Normal.rgb * 2.0f - 1.0f;
         result.f3Normal = normalize(result.f3Normal);
         
@@ -168,7 +168,7 @@ float3 AdditionAllLights(float3 f3Color, float4 f3AmbiColor, VS_OUT input)
     float3 f3SpecColor = f3AmbiColor.xyz;
 
     if (U_mat.bUseSpecularTex > 0)
-        f3SpecColor = U_mat_texSpecular.Sample(U_defaultSampler, input.uv).xyz;
+        f3SpecColor = U_mat_texSpecular.Sample(LinearSampler, input.uv).xyz;
 
     if(U_bDirectionLightEnabled > 0)
     {

@@ -154,9 +154,9 @@ float3 GetWorldPosition(VS_OUT input, float fDepth)
 
 float3 AdditionAllLights(VS_OUT input, float3 f3Color)
 {
-    float4 f3Albedo_fMetallic = U_mat_f3Albedo_fMetallic.Sample(U_defaultSampler, input.uv);
-    float4 f3Normal_fRoughness = U_mat_f3Normal_fRoughness.Sample(U_defaultSampler, input.uv);
-    float4 f3Position_fAmbientOcc = U_mat_f3Position_fAmbientOcc.Sample(U_defaultSampler, input.uv);
+    float4 f3Albedo_fMetallic = U_mat_f3Albedo_fMetallic.Sample(NearestSampler, input.uv);
+    float4 f3Normal_fRoughness = U_mat_f3Normal_fRoughness.Sample(NearestSampler, input.uv);
+    float4 f3Position_fAmbientOcc = U_mat_f3Position_fAmbientOcc.Sample(NearestSampler, input.uv);
 
     float3 f3Albedo = pow(f3Albedo_fMetallic.rgb, float3(2.2));
     float fMetallic = f3Albedo_fMetallic.a; 
