@@ -111,9 +111,7 @@ PS_OUT PS(VS_OUT input) : SV_Target
     f3Normal = mul(f3Normal, TBN);
     f3Normal = normalize(f3Normal);
 
-    //f3Normal = input.normal;
     //f3Normal = (f3Normal + 1.0f) * 0.5f;
-
 
     float3 f3Albedo   = U_mat_texAlbedo.Sample(LinearSampler, uv).rgb;
     float fMetallic   = U_mat_texMetallic.Sample(LinearSampler, uv).r;

@@ -125,6 +125,7 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	m_pShadowTextureParam->unBinding = 6;
 
 	m_pEnvironmentTextureParam = new MShaderTextureParam();
+	m_pEnvironmentTextureParam->eType = METextureType::ETextureCube;
 	m_pEnvironmentTextureParam->unSet = 1;
 	m_pEnvironmentTextureParam->unBinding = 7;
 	
@@ -136,6 +137,7 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	m_vSamples.push_back(pNearestSampler);
 
 	m_vTextures.push_back(m_pShadowTextureParam);
+	m_vTextures.push_back(m_pEnvironmentTextureParam);
 }
 
 void MForwardRenderShaderParamSet::ReleaseShaderParamSet(MEngine* pEngine)
@@ -225,6 +227,7 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 					MVariant& varEnvMapEnable = (*pLightParam->var.GetStruct())[6];
 					varEnvMapEnable = true;
 					m_pEnvironmentTextureParam->SetTexture(pEnvTexture);
+					m_pEnvironmentTextureParam->SetDirty();
 				}
 			}
 		}

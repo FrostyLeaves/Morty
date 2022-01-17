@@ -108,7 +108,7 @@ MTexture* MTexture::CreateRenderTargetGBuffer()
 	pTexture->SetReadable(false);
 	pTexture->SetRenderUsage(METextureRenderUsage::ERenderBack);
 	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
-	pTexture->SetTextureLayout(METextureLayout::ERGBA_FLOAT_32);
+	pTexture->SetTextureLayout(METextureLayout::ERGBA_FLOAT_16);
 
 	return pTexture;
 }

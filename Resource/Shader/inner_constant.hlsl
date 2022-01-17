@@ -73,4 +73,4 @@ struct SpotLight
 
 //Shadowmap
 [[vk::binding(6,1)]]Texture2D U_texShadowMap : register(t0);
-[[vk::binding(7,1)]]Texture2D U_texEnvironmentMap : register(t1);
+[[vk::binding(7,1)]]TextureCube U_texEnvironmentMap : register(t1);

@@ -34,7 +34,7 @@
 
 //#define TEST_ANIMATION
 
-//#define TEST_PBR_RENDER_0
+#define TEST_PBR_RENDER_0
 
 //#define TEST_PBR_RENDER_1
 
@@ -42,7 +42,7 @@
 
 //#define TEST_BASIC_SHAPE
 
-//#define TEST_SKY_BOX
+#define TEST_SKY_BOX
 
 void SKY_BOX(MEngine* pEngine, MScene* pScene)
 {
@@ -76,6 +76,7 @@ void SKY_BOX(MEngine* pEngine, MScene* pScene)
 	if (MSkyBoxComponent* pSkyBoxComponent = pSkyBoxEntity->RegisterComponent<MSkyBoxComponent>())
 	{
 		pSkyBoxComponent->LoadTexture(pCubeTexture);
+		pSkyBoxComponent->LoadEnvTexutre(pEnvironment);
 	}
 }
 
@@ -145,12 +146,22 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 		pMaterial->LoadPixelShader("./Shader/model_gbuffer.mps");
 		pMaterial->SetMaterialType(MEMaterialType::EDeferred);
 
+#if true
 		MResource* albedo = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_albedo.png");
 		MResource* normal = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_normal.png");
 		MResource* roughness = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_roughness.png");
 		MResource* ao = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_ao.png");
 		MResource* height = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_height.png");
 		MResource* metal = pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero);
+#else
+		MResource* albedo = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
+		MResource* normal = pResourceSystem->LoadResource(MRenderModule::DefaultNormal);
+		MResource* roughness = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
+		MResource* ao = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
+		MResource* metal = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
+		MResource* height = pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero);
+#endif
+
 		pMaterial->SetTexutreParam(MaterialKey::Albedo, albedo);
 		pMaterial->SetTexutreParam(MaterialKey::Normal, normal);
 		pMaterial->SetTexutreParam(MaterialKey::Metallic, metal);
