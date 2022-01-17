@@ -65,10 +65,12 @@ struct SpotLight
     int U_bDirectionLightEnabled;
     int U_nValidPointLightsNumber;
     int U_nValidSpotLightsNumber;
+    int U_bEnvironmentMapEnabled;
 };
 
 [[vk::binding(3,1)]]sampler LinearSampler : register(s0);
-[[vk::binding(4,1)]]sampler NearestSampler : register(s0);
+[[vk::binding(4,1)]]sampler NearestSampler : register(s1);
 
 //Shadowmap
 [[vk::binding(6,1)]]Texture2D U_texShadowMap : register(t0);
+[[vk::binding(7,1)]]Texture2D U_texEnvironmentMap : register(t1);

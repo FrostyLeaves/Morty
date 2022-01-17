@@ -29,11 +29,15 @@ public:
     void LoadTexture(MResource* pTexture);
     MResource* GetTexture();
 
-    void LoadEnvTexutre();
+    void LoadEnvTexutre(MResource* pTexture);
+    MResource* GetEnvTexture();
+
+    MTexture* GetEnvironmentTexture();
 
 private:
 
-    MResourceKeeper m_Texture;
+	MResourceKeeper m_Texture;
+	MResourceKeeper m_EnvTexture;
     
     MMaterial* m_pMaterial;
 };

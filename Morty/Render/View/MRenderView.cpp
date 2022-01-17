@@ -191,6 +191,11 @@ bool MRenderView::InitializeSwapchain()
 		swapchainExtent = caps.currentExtent;
 	}
 
+	if (swapchainExtent.width <= 0 || swapchainExtent.height <= 0)
+	{
+		GetEngine()->GetLogger()->Warning("Create VulkanRenderTarget Error : swapchain size: (%d, %d)", swapchainExtent.width, swapchainExtent.height);
+		return false;
+	}
 
 	uint32_t unPresentModeCount = 0;
 	result = vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_VkSurface, &unPresentModeCount, NULL);
@@ -400,6 +405,9 @@ void MRenderView::DestroyRenderPass()
 
 MRenderTarget* MRenderView::GetNextRenderTarget()
 {
+	if (VK_NULL_HANDLE == m_VkSwapchain)
+		return nullptr;
+
 	//get available image. by semaphore and index.
 	uint32_t unImageIndex = 0;
 	VkSemaphore vkImageReadySemaphore = GetSemaphore();

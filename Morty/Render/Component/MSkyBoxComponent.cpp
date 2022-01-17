@@ -31,3 +31,29 @@ MResource* MSkyBoxComponent::GetTexture()
 {
 	return m_Texture.GetResource();
 }
+
+void MSkyBoxComponent::LoadEnvTexutre(MResource* pTexture)
+{
+	if (!pTexture)
+		return;
+
+	if (MTextureResource* pTextureResource = pTexture->DynamicCast<MTextureResource>())
+	{
+		m_EnvTexture.SetResource(pTexture);
+	}
+}
+
+MResource* MSkyBoxComponent::GetEnvTexture()
+{
+	return m_EnvTexture.GetResource();
+}
+
+MTexture* MSkyBoxComponent::GetEnvironmentTexture()
+{
+	if (MTextureResource* pTexture = m_EnvTexture.GetResource<MTextureResource>())
+	{
+		return pTexture->GetTextureTemplate();
+	}
+
+	return nullptr;
+}

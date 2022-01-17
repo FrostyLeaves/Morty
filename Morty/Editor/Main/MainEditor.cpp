@@ -48,7 +48,6 @@
 #include "MDeferredRenderProgram.h"
 
 
-//MString MainEditor::m_sRenderProgramName = MForwardRenderProgram::GetClassTypeName();
 MString MainEditor::m_sRenderProgramName = MDeferredRenderProgram::GetClassTypeName();
 
 class MainEditorTask : public MTaskNode
@@ -129,8 +128,6 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 
 	m_pNodeTreeView->SetScene(m_SceneTexture.GetScene());
 
-//	m_pTaskGraphView->SetRenderGraph(m_SceneTexture.GetRenderGraph());
-
 	m_pNodeTreeView->m_bVisiable = true;
 	m_pPropertyView->m_bVisiable = true;
 
@@ -184,6 +181,10 @@ void MainEditor::OnResize(const int& nWidth, const int& nHeight)
 
     int w, h;
     SDL_Vulkan_GetDrawableSize(m_pSDLWindow, &w, &h);
+
+	if (w == 0 || h == 0)
+		return;
+
     m_v2DrawableSize.x = w;
     m_v2DrawableSize.y = h;
     
@@ -625,21 +626,20 @@ Vector4 MainEditor::GetWidgetSize()
 
 void MainEditor::Render(MTaskNode* pNode)
 {
+	if (GetMinimized())
+		return;
+
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 	MIDevice* pDevice = pRenderSystem->GetDevice();
-
-	MIRenderCommand* pRenderCommand = pDevice->CreateRenderCommand();
 	MRenderTarget* pRenderTarget = GetNextRenderTarget();
-
 	if (!pRenderTarget)
 		return;
 
-	pRenderTarget->BindPrimaryCommand(pRenderCommand);
-
+	MIRenderCommand* pRenderCommand = pDevice->CreateRenderCommand();
 	if (!pRenderCommand)
 		return;
 
-
+	pRenderTarget->BindPrimaryCommand(pRenderCommand);
 
 	pRenderCommand->RenderCommandBegin();
 

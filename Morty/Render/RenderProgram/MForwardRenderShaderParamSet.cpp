@@ -20,9 +20,8 @@ MForwardRenderShaderParamSet::MForwardRenderShaderParamSet()
 	, m_pWorldInfoParam(nullptr)
 	, m_pLightInfoParam(nullptr)
 	
-	, m_pDefaultSampleParam(nullptr)
-
 	, m_pShadowTextureParam(nullptr)
+	, m_pEnvironmentTextureParam(nullptr)
 
 {
 	
@@ -109,24 +108,32 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	lightInfoSrt.AppendMVariant("U_bDirectionLightEnabled", int(0));
 	lightInfoSrt.AppendMVariant("U_nValidPointLightsNumber", int(0));
 	lightInfoSrt.AppendMVariant("U_nValidSpotLightsNumber", int(0));
+	lightInfoSrt.AppendMVariant("U_bEnvironmentMapEnabled", int(0));
 
+	MShaderSampleParam* pLinearSampler = new MShaderSampleParam();
+	pLinearSampler->eSamplerType = MESamplerType::ELinear;
+	pLinearSampler->unSet = 1;
+	pLinearSampler->unBinding = 3;
 
-	m_pDefaultSampleParam = new MShaderSampleParam();
-	m_pDefaultSampleParam->unSet = 1;
-	m_pDefaultSampleParam->unBinding = 3;
+	MShaderSampleParam* pNearestSampler = new MShaderSampleParam();
+	pNearestSampler->eSamplerType = MESamplerType::ENearest;
+	pNearestSampler->unSet = 1;
+	pNearestSampler->unBinding = 4;
 
 	m_pShadowTextureParam = new MShaderTextureParam();
 	m_pShadowTextureParam->unSet = 1;
 	m_pShadowTextureParam->unBinding = 6;
-	
 
+	m_pEnvironmentTextureParam = new MShaderTextureParam();
+	m_pEnvironmentTextureParam->unSet = 1;
+	m_pEnvironmentTextureParam->unBinding = 7;
+	
 	m_vParams.push_back(m_pWorldMatrixParam);
 	m_vParams.push_back(m_pWorldInfoParam);
 	m_vParams.push_back(m_pLightInfoParam);
 
-
-	m_vSamples.push_back(m_pDefaultSampleParam);
-
+	m_vSamples.push_back(pLinearSampler);
+	m_vSamples.push_back(pNearestSampler);
 
 	m_vTextures.push_back(m_pShadowTextureParam);
 }
@@ -209,6 +216,19 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 
 	if (MShaderConstantParam* pLightParam = m_pLightInfoParam)
 	{
+		if (info.pSkyBoxEntity)
+		{
+			if (MSkyBoxComponent* pSkyBoxComponent = info.pSkyBoxEntity->GetComponent<MSkyBoxComponent>())
+			{
+				if (MTexture* pEnvTexture = pSkyBoxComponent->GetEnvironmentTexture())
+				{
+					MVariant& varEnvMapEnable = (*pLightParam->var.GetStruct())[6];
+					varEnvMapEnable = true;
+					m_pEnvironmentTextureParam->SetTexture(pEnvTexture);
+				}
+			}
+		}
+
 		MVariant& varDirLightEnable = (*pLightParam->var.GetStruct())[3];
 		if (info.pDirectionalLightEntity)
 		{

@@ -222,9 +222,22 @@ float3 AdditionAllLights(VS_OUT input, float3 f3Color)
                                 );
     }
 
+    float3 f3Ambient = float3(0.0);
 
-    float3 f3Ambient = float3(0.1) * f3Albedo * fAmbientOcc;
-    
+    if(U_bEnvironmentMapEnabled)
+    {
+        float3 kS = FresnelSchlick(max(dot(f3Normal, f3CameraDir), 0.0), f3BaseColor);
+        float3 kD = (1.0f - kS) * (1.0f - fMetallic);
+
+        float3 f3Irradiance = U_texEnvironmentMap.Sample(LinearSampler, WorldPos).rgb;
+
+        f3Ambient = f3Irradiance * f3Albedo * kD * fAmbientOcc;
+    }
+    else
+    {
+        f3Ambient = float3(0.1) * f3Albedo * fAmbientOcc;
+    }
+
     f3Color = f3Color + f3Ambient;
 
     // HDR tonemapping

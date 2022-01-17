@@ -34,7 +34,7 @@
 
 //#define TEST_ANIMATION
 
-#define TEST_PBR_RENDER_0
+//#define TEST_PBR_RENDER_0
 
 //#define TEST_PBR_RENDER_1
 
@@ -42,7 +42,7 @@
 
 //#define TEST_BASIC_SHAPE
 
-#define TEST_SKY_BOX
+//#define TEST_SKY_BOX
 
 void SKY_BOX(MEngine* pEngine, MScene* pScene)
 {
@@ -60,6 +60,15 @@ void SKY_BOX(MEngine* pEngine, MScene* pScene)
 		"Texture/Sky/Circus_Backstage/nz.hdr"
 		},{ MTextureResource::PixelFormat::Float32 });
 
+	MTextureResource* pEnvironment = pResourceSystem->CreateResource<MTextureResource>();
+	pEnvironment->ImportCubeMap({
+		"Texture/Sky/Circus_Backstage/Env/px.hdr",
+		"Texture/Sky/Circus_Backstage/Env/nx.hdr",
+		"Texture/Sky/Circus_Backstage/Env/py.hdr",
+		"Texture/Sky/Circus_Backstage/Env/ny.hdr",
+		"Texture/Sky/Circus_Backstage/Env/pz.hdr",
+		"Texture/Sky/Circus_Backstage/Env/nz.hdr"
+		}, {MTextureResource::PixelFormat::Float32});
 
 	MEntity* pSkyBoxEntity = pScene->CreateEntity();
 	pSkyBoxEntity->SetName("SkyBox");

@@ -37,9 +37,8 @@ public:
 	MShaderConstantParam* m_pWorldInfoParam;
 	MShaderConstantParam* m_pLightInfoParam;
 
-	MShaderSampleParam* m_pDefaultSampleParam;
-
 	MShaderTextureParam* m_pShadowTextureParam;
+	MShaderTextureParam* m_pEnvironmentTextureParam;
 };
 
 
