@@ -91,7 +91,8 @@ void MRenderView::Present(MRenderTarget* pRenderTarget)
 		VkFence vkInFightFence = pRenderCommand->m_VkRenderFinishedFence;
 		//m_VkInFlightFences = unsigned
 		vkResetFences(m_pDevice->m_VkDevice, 1, &vkInFightFence);
-		if (vkQueueSubmit(m_pDevice->m_VkGraphicsQueue, 1, &submitInfo, vkInFightFence) != VK_SUCCESS) {
+		VkResult success = vkQueueSubmit(m_pDevice->m_VkGraphicsQueue, 1, &submitInfo, vkInFightFence);
+		if (success != VK_SUCCESS) {
 			throw std::runtime_error("failed to submit draw command buffer!");
 		}
 	}

@@ -58,7 +58,7 @@ float3 CalcPBRLight(float3 f3LightColor, float3 f3CameraDir, float3 _f3LightDir,
 {
     float3 f3LightDir = -_f3LightDir;
 
-    // 视线方向 + 光照方向 的中间向量
+
     float3 f3HalfDir = normalize(f3CameraDir + f3LightDir);
 
     // Cook-Torrance BRDF
@@ -75,11 +75,11 @@ float3 CalcPBRLight(float3 f3LightColor, float3 f3CameraDir, float3 _f3LightDir,
     // for energy conservation, the diffuse and specular light can't
     // be above 1.0 (unless the surface emits light); to preserve this
     // relationship the diffuse component (kD) should equal 1.0 - kS.
-    float3 kD = float3(1.0) - kS;
+    float3 kD = float3(1.0, 1.0, 1.0) - kS;
     // multiply kD by the inverse metalness such that only non-metals 
     // have diffuse lighting, or a linear blend if partly metal (pure metals
     // have no diffuse light).
-    kD *= float3(1.0) - fMetallic;	  
+    kD *= float3(1.0, 1.0, 1.0) - fMetallic;	  
 
     // scale light by NdotL
     float NdotL = max(dot(f3Normal, f3LightDir), 0.0);        
@@ -158,7 +158,7 @@ float3 AdditionAllLights(VS_OUT input, float3 f3Color)
     float4 f3Normal_fRoughness = U_mat_f3Normal_fRoughness.Sample(NearestSampler, input.uv);
     float4 f3Position_fAmbientOcc = U_mat_f3Position_fAmbientOcc.Sample(NearestSampler, input.uv);
 
-    float3 f3Albedo = pow(f3Albedo_fMetallic.rgb, float3(2.2));
+    float3 f3Albedo = pow(f3Albedo_fMetallic.rgb, float3(2.2, 2.2, 2.2));
     float fMetallic = f3Albedo_fMetallic.a; 
 
     float3 f3Normal = f3Normal_fRoughness.rgb/* * 2.0 - 1.0*/;
@@ -166,7 +166,7 @@ float3 AdditionAllLights(VS_OUT input, float3 f3Color)
     
     float fAmbientOcc = f3Position_fAmbientOcc.a;
 
-    float3 f3BaseColor = float3(0.04);
+    float3 f3BaseColor = float3(0.04, 0.04, 0.04);
     f3BaseColor = lerp(f3BaseColor, f3Albedo, fMetallic);
     
 
@@ -222,7 +222,7 @@ float3 AdditionAllLights(VS_OUT input, float3 f3Color)
                                 );
     }
 
-    float3 f3Ambient = float3(0.0);
+    float3 f3Ambient = float3(0.0, 0.0, 0.0);
 
     if(U_bEnvironmentMapEnabled)
     {
@@ -235,15 +235,15 @@ float3 AdditionAllLights(VS_OUT input, float3 f3Color)
     }
     else
     {
-        f3Ambient = float3(0.1) * f3Albedo * fAmbientOcc;
+        f3Ambient = float3(0.1, 0.1, 0.1) * f3Albedo * fAmbientOcc;
     }
 
     f3Color = f3Color + f3Ambient;
 
     // HDR tonemapping
-    f3Color = f3Color / (f3Color + float3(1.0));
+    f3Color = f3Color / (f3Color + float3(1.0, 1.0, 1.0));
     // gamma correct
-    f3Color = pow(f3Color, float3(1.0/2.2)); 
+    f3Color = pow(f3Color, float3(1.0/2.2, 1.0/2.2, 1.0/2.2)); 
 
     return f3Color;
 }

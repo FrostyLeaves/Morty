@@ -133,6 +133,23 @@ void MTextureResource::LoadFromMemory(MByte* aByteData, const uint32_t& unWidth,
 	m_texture.GenerateBuffer(pRenderSystem->GetDevice(), m_aByteData);
 }
 
+void MTextureResource::CreateCubeMapRenderTarget(const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, const METextureLayout& eLayout)
+{
+	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+
+	if (nChannel == 2 || nChannel == 3)
+		nChannel = 4;
+
+	m_texture.SetReadable(true);
+	m_texture.SetTextureLayout(eLayout);
+	m_texture.SetSize(Vector2(nWidth, nHeight));
+	m_texture.SetRenderUsage(METextureRenderUsage::ERenderBack);
+	m_texture.SetShaderUsage(METextureShaderUsage::ESampler);
+	m_texture.SetTextureType(METextureType::ETextureCube);
+
+	m_texture.GenerateBuffer(pRenderSystem->GetDevice());
+}
+
 bool MTextureResource::ImportTexture(const MString& strResourcePath, const ImportInfo& importInfo)
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();

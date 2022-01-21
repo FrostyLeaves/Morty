@@ -6,11 +6,21 @@
 MSubpass::MSubpass()
 	: m_vInputIndex()
 	, m_vOutputIndex()
+	, m_unViewMask(0b11111111)
+	, m_unCorrelationMask(0b11111111)
 {
 
 }
 
 MSubpass::~MSubpass()
+{
+}
+
+MSubpass::MSubpass(const std::vector<uint32_t>& inputs, const std::vector<uint32_t>& outputs)
+	: m_vInputIndex(inputs)
+	, m_vOutputIndex(outputs)
+	, m_unViewMask(0b11111111)
+	, m_unCorrelationMask(0b11111111)
 {
 }
 
@@ -21,6 +31,7 @@ MRenderPass::MRenderPass()
 	, m_unRenderPassID(MGlobal::M_INVALID_INDEX)
 	, m_vBackTextures()
 	, m_pDepthTexture(nullptr)
+	, m_unViewNum(1)
 {
 
 #if RENDER_GRAPHICS == MORTY_VULKAN

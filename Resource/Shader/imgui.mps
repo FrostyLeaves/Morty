@@ -18,7 +18,7 @@ float4 PS( VS_OUTPUT input) : SV_Target
     
     else if(imageType == 1)
     {
-        return input.color * float(image.Sample(LinearSampler, input.uv));
+        return input.color * float(image.Sample(LinearSampler, input.uv).r);
     }
 
     else if(imageType == 2)

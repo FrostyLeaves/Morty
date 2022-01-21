@@ -140,6 +140,29 @@ bool MShaderParamSet::SetValue(MVariant& target, const MVariant& source)
 	return false;
 }
 
+bool MShaderParamSet::HasValue(const uint32_t& unBinding, const uint32_t& unSet)
+{
+	for (MShaderParam* pParam : m_vParams)
+	{
+		if (pParam->unSet == unSet && pParam->unBinding == unBinding)
+			return true;
+	}
+
+	for (MShaderParam* pParam : m_vTextures)
+	{
+		if (pParam->unSet == unSet && pParam->unBinding == unBinding)
+			return true;
+	}
+
+	for (MShaderParam* pParam : m_vSamples)
+	{
+		if (pParam->unSet == unSet && pParam->unBinding == unBinding)
+			return true;
+	}
+
+	return false;
+}
+
 void MShaderParamSet::GenerateBuffer(MIDevice* pDevice)
 {
 	pDevice->GenerateShaderParamSet(this);

@@ -3,11 +3,17 @@
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 #include <regex>
+#include <string>
+#include <locale>
+#include <codecvt>
 
 #include "Logger.h"
 #include "SpvTools.h"
 #include "GlslangToSpv.h"
 #include "ShaderLang.h"
+
+#include <atlbase.h>
+#include "dxcapi.h"
 
 #include "MResource.h"
 #include "MFileHelper.h"
@@ -135,7 +141,6 @@ public:
 
 	void SetLocalFolder(const MString& strLocalFolder) { m_strLocalFolder = strLocalFolder + "/"; }
 
-
 public:
 	virtual IncludeResult* includeSystem(const char* headerName, const char* includerName, size_t inclusionDepth) override
 	{
@@ -168,12 +173,70 @@ public:
 		}
 	}
 
+	
+
 private:
 
 	MString m_strLocalFolder;
 };
 
+struct MVulkanIncludeHandler : public IDxcIncludeHandler
+{
+	MVulkanIncludeHandler(CComPtr<IDxcUtils> pUtils,CComPtr<IDxcIncludeHandler> pDefaultIncludeHandler)
+		: m_pUtils(pUtils)
+		, m_pIncludeHandler(pDefaultIncludeHandler)
+		, m_vSearchPath()
+	{
+		
+	}
 
+	HRESULT STDMETHODCALLTYPE LoadSource(_In_ LPCWSTR pFilename, _COM_Outptr_result_maybenull_ IDxcBlob** ppIncludeSource) override
+	{
+		CComPtr<IDxcBlobEncoding> pEncoding;
+		HRESULT hr = m_pUtils->LoadFile(pFilename, nullptr, &pEncoding);
+		if (SUCCEEDED(hr))
+		{
+			*ppIncludeSource = pEncoding.Detach();
+		}
+		else
+		{
+			*ppIncludeSource = nullptr;
+		}
+		return hr;
+
+
+// 		HRESULT hr = m_pIncludeHandler->LoadSource(pFilename, ppIncludeSource);
+// 		if (SUCCEEDED(hr))
+// 		{
+// 			return hr;
+// 		}
+// 
+// 		for (const std::wstring& strParentPath : m_vSearchPath)
+// 		{
+// 			std::wstring path = strParentPath + L"/" + pFilename;
+// 			HRESULT hr = m_pIncludeHandler->LoadSource(path.c_str(), ppIncludeSource);
+// 			if (SUCCEEDED(hr))
+// 			{
+// 				return hr;
+// 			}
+// 		}
+
+		return -1;
+	}
+
+	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject) override
+	{
+		return m_pIncludeHandler->QueryInterface(riid, ppvObject);
+	}
+
+	ULONG STDMETHODCALLTYPE AddRef(void) override { return 0; }
+	ULONG STDMETHODCALLTYPE Release(void) override { return 0; }
+private:
+	CComPtr<IDxcUtils> m_pUtils;
+	CComPtr<IDxcIncludeHandler> m_pIncludeHandler;
+
+	std::vector<std::wstring> m_vSearchPath;
+};
 
 MVulkanShaderCompiler::MVulkanShaderCompiler(MVulkanDevice* pDevice)
 	: m_pDefaultBuiltInResource(InitResources())
@@ -203,6 +266,11 @@ bool MVulkanShaderCompiler::Initialize()
 }
 
 bool MVulkanShaderCompiler::CompileShader(const MString& strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv)
+{
+	return CompileHlslShader(strShaderPath, eShaderType, macro, vSpirv);
+}
+
+bool MVulkanShaderCompiler::CompileGlslShader(const MString& strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv)
 {
 	glslang::TProgram program;
 
@@ -243,7 +311,7 @@ bool MVulkanShaderCompiler::CompileShader(const MString& strShaderPath, const ME
 	// 		shader.setHlslIoMapping(true);
 
 
-	int ClientInputSemanticsVersion = 100;
+	int ClientInputSemanticsVersion = 120;
 	EShMessages messages = EShMsgDefault;
 
 	if (true)
@@ -256,8 +324,8 @@ bool MVulkanShaderCompiler::CompileShader(const MString& strShaderPath, const ME
 		shader.setEnvInput(glslang::EShSourceGlsl, eLanguageType, glslang::EShClientVulkan, ClientInputSemanticsVersion);
 	}
 
-	shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_0);
-	shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0);
+	shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_2);
+	shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_2);
 
 	MVulkanIncluder includer;
 
@@ -269,7 +337,7 @@ bool MVulkanShaderCompiler::CompileShader(const MString& strShaderPath, const ME
 	}
 	includer.SetLocalFolder(strShaderDirectory);
 
-	if (!shader.parse(m_pDefaultBuiltInResource, 100, false, messages, includer))
+	if (!shader.parse(m_pDefaultBuiltInResource, 120, false, messages, includer))
 	{
 		const char* a = shader.getInfoLog();
 		const char* b = shader.getInfoDebugLog();
@@ -287,25 +355,193 @@ bool MVulkanShaderCompiler::CompileShader(const MString& strShaderPath, const ME
 		spv::SpvBuildLogger logger;
 		glslang::SpvOptions spvOptions;
 #ifdef _DEBUG
-// crash
-//		 		spvOptions.generateDebugInfo = true;
-//		 		spvOptions.stripDebugInfo = true;
+		// crash
+		//		 		spvOptions.generateDebugInfo = true;
+		//		 		spvOptions.stripDebugInfo = true;
 #endif
 		glslang::GlslangToSpv(*program.getIntermediate(eLanguageType), vSpirv, &logger, &spvOptions);
 
-		if(!logger.getAllMessages().empty())
+		if (!logger.getAllMessages().empty())
 			m_pDevice->GetEngine()->GetLogger()->Information("%s", logger.getAllMessages().c_str());
-//		{
-// 			MString strOutputName = (strShaderPath + "v");
-// 			const char* svBinaryName = strOutputName.c_str();
-// 
-// 			glslang::OutputSpvBin(spirv, svBinaryName);
-// 		}
+		//		{
+		// 			MString strOutputName = (strShaderPath + "v");
+		// 			const char* svBinaryName = strOutputName.c_str();
+		// 
+		// 			glslang::OutputSpvBin(spirv, svBinaryName);
+		// 		}
 
 		return true;
 	}
 
 	return false;
+}
+
+
+bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv)
+{
+	MString strShaderPath = MFileHelper::FormatPath(_strShaderPath);
+	MStringHelper::Replace(strShaderPath, "/", "\\");
+
+	CComPtr<IDxcUtils> pUtils;
+	CComPtr<IDxcCompiler3> pCompiler;
+	DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&pUtils));
+	DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&pCompiler));
+
+	//
+	// Create default include handler. (You can create your own...)
+	//
+	CComPtr<IDxcIncludeHandler> pDefaultIncludeHandler;
+	pUtils->CreateDefaultIncludeHandler(&pDefaultIncludeHandler);
+	CComPtr<IDxcIncludeHandler> pIncludeHandler = new MVulkanIncludeHandler(pUtils, pDefaultIncludeHandler);
+
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> stow;
+
+	std::wstring wstrShaderPath = stow.from_bytes(strShaderPath);
+
+	std::vector<std::wstring> vCompArgs;
+	vCompArgs.push_back(wstrShaderPath);
+	
+//		L"-Fo", L"myshader.bin",     // Optional. Stored in the pdb. 
+//		L"-Fd", L"myshader.pdb",     // The file name of the pdb. This must either be supplied or the autogenerated file name must be used.
+//		L"-Qstrip_reflect",          // Strip reflection into a separate blob. 
+
+	//Debug
+#ifdef _DEBUG
+	vCompArgs.push_back(L"-Zs");
+#endif
+
+	//Macro
+	MPreamble UserPreamble;
+	ConvertMacroDXC(macro, UserPreamble);
+	if (UserPreamble.IsValid())
+	{
+		for (const std::pair<MString, MString>& m : macro.s_vGlobalMacroParams)
+		{
+			if(m.second.empty())
+				vCompArgs.push_back(std::wstring(L"-D ") + stow.from_bytes(m.first));
+			else
+				vCompArgs.push_back(std::wstring(L"-D ") + stow.from_bytes(m.first + "=" + m.second));
+		}
+
+		for (const std::pair<MString, MString>& m : macro.m_vMortyMacroParams)
+		{
+			if (m.second.empty())
+				vCompArgs.push_back(std::wstring(L"-D ") + stow.from_bytes(m.first));
+			else
+				vCompArgs.push_back(std::wstring(L"-D ") + stow.from_bytes(m.first + "=" + m.second));
+		}
+
+		for (const std::pair<MString, MString>& m : macro.m_vMacroParams)
+		{
+			if (m.second.empty())
+				vCompArgs.push_back(std::wstring(L"-D ") + stow.from_bytes(m.first));
+			else
+				vCompArgs.push_back(std::wstring(L"-D ") + stow.from_bytes(m.first + "=" + m.second));
+		}
+	}
+
+	if (MEShaderType::EVertex == eShaderType)
+	{
+		vCompArgs.push_back(L"-E VS");
+		vCompArgs.push_back(L"-T vs_6_1");
+	}
+	else if (MEShaderType::EPixel == eShaderType)
+	{
+		vCompArgs.push_back(L"-E PS");
+		vCompArgs.push_back(L"-T ps_6_1");
+	}
+	else
+		assert(false);
+
+	vCompArgs.push_back(L"-spirv");
+	vCompArgs.push_back(L"-fspv-extension=SPV_NV_ray_tracing");
+	vCompArgs.push_back(L"-fspv-extension=SPV_KHR_multiview");
+	vCompArgs.push_back(L"-fspv-extension=SPV_KHR_shader_draw_parameters");
+	vCompArgs.push_back(L"-fspv-extension=SPV_EXT_descriptor_indexing");
+
+
+	vCompArgs.push_back(L"-Od");
+
+	//
+	// Open source file.  
+	//
+	CComPtr<IDxcBlobEncoding> pSource = nullptr;
+	pUtils->LoadFile(wstrShaderPath.c_str(), nullptr, &pSource);
+	DxcBuffer Source;
+	Source.Ptr = pSource->GetBufferPointer();
+	Source.Size = pSource->GetBufferSize();
+	Source.Encoding = DXC_CP_ACP; // Assume BOM says UTF8 or UTF16 or this is ANSI text.
+
+	LPCWSTR* pszArgs = new LPCWSTR[vCompArgs.size()];
+
+	for(size_t i = 0; i < vCompArgs.size(); ++i)
+	{
+		pszArgs[i] = vCompArgs[i].c_str();
+	};
+
+	CComPtr<IDxcResult> pResults;
+	pCompiler->Compile(&Source, pszArgs, vCompArgs.size(), pDefaultIncludeHandler, IID_PPV_ARGS(&pResults));
+
+	
+	CComPtr<IDxcBlobUtf8> pErrors = nullptr;
+	pResults->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&pErrors), nullptr);
+	if (pErrors != nullptr && pErrors->GetStringLength() != 0)
+	{
+		m_pDevice->GetEngine()->GetLogger()->Warning("hlsl compile warning: %s", pErrors->GetStringPointer());
+	}
+
+	HRESULT hrStatus;
+	pResults->GetStatus(&hrStatus);
+	if (FAILED(hrStatus))
+	{
+		m_pDevice->GetEngine()->GetLogger()->Error("Compilation Failed.");
+		return false;
+	}
+
+	CComPtr<IDxcBlob> pShader = nullptr;
+	CComPtr<IDxcBlobUtf16> pShaderName = nullptr;
+	pResults->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&pShader), &pShaderName);
+	if (!pShader)
+		return false;
+
+// 	FILE* pFile = fopen((strShaderPath + ".spv").c_str(), "wb");
+// 	fwrite(pShader->GetBufferPointer(), 1, pShader->GetBufferSize(), pFile);
+// 	fclose(pFile);
+	
+	vSpirv.resize(pShader->GetBufferSize() / sizeof(uint32_t));
+	memcpy(vSpirv.data(), pShader->GetBufferPointer(), pShader->GetBufferSize());
+
+	return true;
+
+// 	//
+// 	// Save pdb.
+// 	//
+// 	CComPtr<IDxcBlob> pPDB = nullptr;
+// 	CComPtr<IDxcBlobUtf16> pPDBName = nullptr;
+// 	pResults->GetOutput(DXC_OUT_PDB, IID_PPV_ARGS(&pPDB), &pPDBName);
+// 	{
+// 		FILE* fp = NULL;
+// 
+// 		// Note that if you don't specify -Fd, a pdb name will be automatically generated. Use this file name to save the pdb so that PIX can find it quickly.
+// 		_wfopen_s(&fp, pPDBName->GetStringPointer(), L"wb");
+// 		fwrite(pPDB->GetBufferPointer(), pPDB->GetBufferSize(), 1, fp);
+// 		fclose(fp);
+// 	}
+
+// 	//
+// 	// Print hash.
+// 	//
+// 	CComPtr<IDxcBlob> pHash = nullptr;
+// 	pResults->GetOutput(DXC_OUT_SHADER_HASH, IID_PPV_ARGS(&pHash), nullptr);
+// 	if (pHash != nullptr)
+// 	{
+// 		wprintf(L"Hash: ");
+// 		DxcShaderHash* pHashBuf = (DxcShaderHash*)pHash->GetBufferPointer();
+// 		for (int i = 0; i < _countof(pHashBuf->HashDigest); i++)
+// 			wprintf(L"%x", pHashBuf->HashDigest[i]);
+// 		wprintf(L"\n");
+// 	}
+
 }
 
 void MVulkanShaderCompiler::ConvertMacro(const MShaderMacro& macro, MPreamble& preamble)
@@ -318,6 +554,18 @@ void MVulkanShaderCompiler::ConvertMacro(const MShaderMacro& macro, MPreamble& p
 
 	for (const std::pair<MString, MString>& m : macro.m_vMacroParams)
 		preamble.AddDef(m.first, m.second);
+}
+
+void MVulkanShaderCompiler::ConvertMacroDXC(const MShaderMacro& macro, MPreamble& preamble)
+{
+	for (const std::pair<MString, MString>& m : macro.s_vGlobalMacroParams)
+		preamble.AddDef2(m.first, m.second);
+
+	for (const std::pair<MString, MString>& m : macro.m_vMortyMacroParams)
+		preamble.AddDef2(m.first, m.second);
+
+	for (const std::pair<MString, MString>& m : macro.m_vMacroParams)
+		preamble.AddDef2(m.first, m.second);
 }
 
 void MVulkanShaderCompiler::GetVertexInputState(const spirv_cross::Compiler& compiler, MVertexShaderBuffer* pShaderBuffer)
@@ -373,6 +621,25 @@ void MVulkanShaderCompiler::GetVertexInputState(const spirv_cross::Compiler& com
 					m_pDevice->GetEngine()->GetLogger()->Error("Error: vertex input find intN ?");
 
 				unOffset += sizeof(int) * type.vecsize;
+			}
+			else if (spirv_cross::SPIRType::BaseType::UInt == type.basetype)
+			{
+				if (1 == type.vecsize)
+					attribute.format = VK_FORMAT_R32_UINT;
+				else if (2 == type.vecsize)
+					attribute.format = VK_FORMAT_R32G32_UINT;
+				else if (3 == type.vecsize)
+					attribute.format = VK_FORMAT_R32G32B32_UINT;
+				else if (4 == type.vecsize)
+					attribute.format = VK_FORMAT_R32G32B32A32_UINT;
+				else
+					m_pDevice->GetEngine()->GetLogger()->Error("Error: vertex input find intN ?");
+
+				unOffset += sizeof(int) * type.vecsize;
+			}
+			else
+			{
+				assert(false);
 			}
 
 			attributeDescriptions.push_back(attribute);
@@ -649,6 +916,19 @@ void MPreamble::AddDef(const MString& strName, const MString& strValue)
 	{
 		m_vProcesses.back().append(strName + "=" + strValue);
 		m_strText.append(strName + " " + strValue + "\n");
+	}
+}
+
+void MPreamble::AddDef2(const MString& strName, const MString& strValue)
+{
+	if (strValue.empty())
+	{
+		m_strText.append(strName);
+		m_strText.append(" ");
+	}
+	else
+	{
+		m_strText.append(strName + "=" + strValue + " ");
 	}
 }
 

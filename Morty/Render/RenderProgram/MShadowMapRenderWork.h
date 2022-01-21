@@ -50,7 +50,6 @@ private:
 	MMaterial* m_pShadowSkeletonMaterial;
 
 	MRenderPass m_renderPass;
-
 	MShadowMapShaderParamSet m_shadowParamSet;
 };
 

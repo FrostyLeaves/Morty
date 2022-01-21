@@ -10,6 +10,7 @@
 #define _M_MSTRING_H_
 
 #include <string>
+#include <vector>
 
 #ifdef MORTY_WIN
 #include <windows.h>
@@ -22,6 +23,30 @@ class MStringHelper
 {
 public:
 	static MString ToString(const int& value) { return std::to_string(value); }
+
+	static void Replace(MString& str, const MString& source, const MString& target)
+	{
+		std::string::size_type pos = 0;
+		while ((pos = str.find(source)) != std::string::npos)
+		{
+			str.replace(pos, source.length(), target);
+		}
+	}
+
+	static std::vector<MString> Slip(MString str, const MString& delimiter)
+	{
+		std::vector<MString> vResult;
+		size_t pos = 0;
+		std::string token;
+		while ((pos = str.find(delimiter)) != std::string::npos) {
+			vResult.push_back(str.substr(0, pos));
+			str.erase(0, pos + delimiter.length());
+		}
+		if(!str.empty())
+			vResult.push_back(str);
+
+		return vResult;
+	}
 
 #ifdef MORTY_WIN
 	static void ConvertToWString(const std::string& instr, std::wstring& outstr)

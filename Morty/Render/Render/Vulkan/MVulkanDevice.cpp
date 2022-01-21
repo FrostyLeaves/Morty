@@ -33,6 +33,7 @@ const std::vector<const char*> ValidationLayers = {
 const std::vector<const char*> DeviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 	VK_KHR_MAINTENANCE1_EXTENSION_NAME,
+	VK_KHR_MULTIVIEW_EXTENSION_NAME,
 //	VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_EXTENSION_NAME,
 //	VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME
 };
@@ -66,7 +67,7 @@ std::vector<const char*> InstanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME,
 		VK_KHR_ANDROID_SURFACE_EXTENSION_NAME,
 #endif
 
-//		"VK_KHR_get_physical_device_properties2"
+	VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME
 };
 
 MVulkanDevice::MVulkanDevice()
@@ -413,6 +414,16 @@ void MVulkanDevice::SetDebugName(uint64_t object, const VkObjectType& type, cons
 #endif
 }
 
+VkBool32 VKAPI_PTR OutputDebugUtilsMessenger(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+{
+	if (VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT == messageSeverity)
+	{
+		MVulkanDevice* pDevice = static_cast<MVulkanDevice*>(pUserData);
+		pDevice->GetEngine()->GetLogger()->Error(pCallbackData->pMessage);
+	}
+	return VK_FALSE;
+}
+
 bool MVulkanDevice::InitDepthFormat()
 {
 	std::vector<VkFormat> formats = { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT };
@@ -697,7 +708,7 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, MByte* pData)
 	}
 
 
-	pTexture->m_VkImageView = CreateImageView(pTexture->m_VkTextureImage, pTexture->m_VkTextureFormat, aspectFlgas, unMipmap, unLayerCount, pTexture->GetTextureType());
+	pTexture->m_VkImageView = CreateImageView(pTexture->m_VkTextureImage, pTexture->m_VkTextureFormat, aspectFlgas, unMipmap, unLayerCount, GetImageViewType(pTexture->GetTextureType()));
 	
 
 	if (unMipmap > 1)
@@ -978,12 +989,16 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 	std::vector<std::vector<VkAttachmentReference>> vOutDepthAttachmentRef;
 	std::vector<std::vector<VkAttachmentReference>> vInAttachmentRef;
 	std::vector<std::vector<uint32_t>> vUnusedAttachmentRef;
+	std::vector<uint32_t> vViewMask;
+	std::vector<uint32_t> vCorrelationMask;
 
 	// default subpass
 	if (pRenderPass->m_vSubpass.empty())
 	{
 		vOutAttachmentRef.resize(1);
 		vOutDepthAttachmentRef.resize(1);
+		vViewMask.push_back((1 << pRenderPass->GetViewNum()) - 1);
+		vCorrelationMask.push_back((1 << pRenderPass->GetViewNum()) - 1);
 
 		vSubpass.push_back(VkSubpassDescription());
 		VkSubpassDescription& vkSubpass = vSubpass.back();
@@ -1009,6 +1024,8 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 		vOutDepthAttachmentRef.resize(unSubpassNum);
 		vInAttachmentRef.resize(unSubpassNum);
 		vUnusedAttachmentRef.resize(unSubpassNum);
+		vViewMask.resize(unSubpassNum);
+		vCorrelationMask.resize(unSubpassNum);
 
 		for (uint32_t nSubpassIdx = 0; nSubpassIdx < unSubpassNum; ++nSubpassIdx)
 		{
@@ -1017,6 +1034,9 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 			vSubpass.push_back(VkSubpassDescription());
 			VkSubpassDescription& vkSubpass = vSubpass.back();
 			vkSubpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+
+			vViewMask[nSubpassIdx] = subpass.m_unViewMask;
+			vCorrelationMask[nSubpassIdx] = subpass.m_unCorrelationMask;
 
 			std::set<uint32_t> vUsedAttachIndex;
 
@@ -1090,6 +1110,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 		}
 	}
 
+
 	VkRenderPassCreateInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	renderPassInfo.attachmentCount = vAttachmentDesc.size();
@@ -1099,6 +1120,17 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 	renderPassInfo.dependencyCount = vSubpassDependencies.size();
 	renderPassInfo.pDependencies = vSubpassDependencies.data();
 
+	if (pRenderPass->GetViewNum() > 1)
+	{
+		VkRenderPassMultiviewCreateInfo renderPassMultiviewInfo{};
+		renderPassMultiviewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
+		renderPassMultiviewInfo.subpassCount = vSubpass.size();
+		renderPassMultiviewInfo.pViewMasks = vViewMask.data();
+		renderPassMultiviewInfo.correlationMaskCount = vSubpass.size();
+		renderPassMultiviewInfo.pCorrelationMasks = vCorrelationMask.data();
+
+		renderPassInfo.pNext = &renderPassMultiviewInfo;
+	}
 
 	if (vkCreateRenderPass(m_VkDevice, &renderPassInfo, nullptr, &pRenderPass->m_VkRenderPass) != VK_SUCCESS)
 	{
@@ -1158,7 +1190,7 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 		{
 			pBackTexture->GenerateBuffer(this);
 		}
-
+		
 		vAttachmentViews.push_back(pBackTexture->m_VkImageView);
 	}
 
@@ -1228,7 +1260,7 @@ bool MVulkanDevice::UnRegisterMaterial(MMaterial* pMaterial)
 	return m_PipelineManager.UnRegisterMaterial(pMaterial);
 }
 
-MIRenderCommand* MVulkanDevice::CreateRenderCommand()
+MIRenderCommand* MVulkanDevice::CreateRenderCommand(const MString& strCommandName)
 {
 	MVulkanPrimaryRenderCommand* pCommand = new MVulkanPrimaryRenderCommand();
 	pCommand->m_pDevice = this;
@@ -1241,6 +1273,7 @@ MIRenderCommand* MVulkanDevice::CreateRenderCommand()
 	allocInfo.commandBufferCount = 1;
 	vkAllocateCommandBuffers(m_VkDevice, &allocInfo, &pCommand->m_VkCommandBuffer);
 
+	SetDebugName((uint64_t)pCommand->m_VkCommandBuffer, VkObjectType::VK_OBJECT_TYPE_COMMAND_BUFFER, strCommandName.c_str());
 
 	VkFenceCreateInfo fenceInfo{};
 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -1649,12 +1682,12 @@ void MVulkanDevice::TransitionImageLayout(VkImageMemoryBarrier& imageMemoryBarri
 	}
 }
 
-VkImageView MVulkanDevice::CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, const uint32_t& unMipmap, const uint32_t& unLayerCount, const METextureType& eTextureType)
+VkImageView MVulkanDevice::CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, const uint32_t& unMipmap, const uint32_t& unLayerCount, const VkImageViewType& eViewType)
 {
 	VkImageViewCreateInfo viewInfo{};
 	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	viewInfo.image = image;
-	viewInfo.viewType = GetImageViewType(eTextureType);
+	viewInfo.viewType = eViewType;
 	viewInfo.format = format;
 	viewInfo.subresourceRange.aspectMask = aspectFlags;
 	viewInfo.subresourceRange.baseMipLevel = 0;
@@ -1850,7 +1883,7 @@ void MVulkanDevice::EndCommands(VkCommandBuffer commandBuffer)
 
 	vkQueueSubmit(m_VkGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 
-	vkQueueWaitIdle(m_VkGraphicsQueue);	//��ͣӦ�ó���ֱ������ύ�������е����й���
+	VkResult result = vkQueueWaitIdle(m_VkGraphicsQueue);	//��ͣӦ�ó���ֱ������ύ�������е����й���
 
 	vkFreeCommandBuffers(m_VkDevice, m_VkCommandPool, 1, &commandBuffer);
 }
@@ -1864,7 +1897,7 @@ bool MVulkanDevice::InitVulkanInstance()
 	appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
 	appInfo.pEngineName = "Morty Engine";
 	appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-	appInfo.apiVersion = VK_API_VERSION_1_0;
+	appInfo.apiVersion = VK_API_VERSION_1_2;
 
 	VkInstanceCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -1902,6 +1935,33 @@ bool MVulkanDevice::InitVulkanInstance()
 
 	vkCmdPushDescriptorSet = reinterpret_cast<PFN_vkCmdPushDescriptorSetKHR>(vkGetInstanceProcAddr(m_VkInstance, "vkCmdPushDescriptorSetKHR"));
 	vkSetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(vkGetInstanceProcAddr(m_VkInstance, "vkSetDebugUtilsObjectNameEXT"));
+
+#ifdef _DEBUG
+	// load kCreateDebugUtilsMessengerEXT
+	PFN_vkCreateDebugUtilsMessengerEXT pvkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_VkInstance, "vkCreateDebugUtilsMessengerEXT");
+	if (pvkCreateDebugUtilsMessengerEXT == NULL)
+		return false;
+
+	// create debug utils messenger
+	VkDebugUtilsMessengerCreateInfoEXT debug_utils_messenger_create_info = {};
+	debug_utils_messenger_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+	debug_utils_messenger_create_info.messageSeverity =
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
+	debug_utils_messenger_create_info.messageType =
+		VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+	debug_utils_messenger_create_info.pfnUserCallback = OutputDebugUtilsMessenger;
+	debug_utils_messenger_create_info.pUserData = this;
+
+	VkDebugUtilsMessengerEXT debug_utils_messenger;
+	if (VK_SUCCESS != pvkCreateDebugUtilsMessengerEXT(m_VkInstance, &debug_utils_messenger_create_info, NULL, &debug_utils_messenger))
+		return false;
+#endif
+
 	return true;
 }
 
@@ -1968,16 +2028,19 @@ bool MVulkanDevice::InitLogicalDevice()
 	VkPhysicalDeviceFeatures deviceFeatures = {};
 	vkGetPhysicalDeviceFeatures(m_VkPhysicalDevice, &deviceFeatures);
 
+	VkPhysicalDeviceVulkan11Features device11Features = {};
+	device11Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+	device11Features.multiview = VK_TRUE;
 
 	VkDeviceCreateInfo deviceInfo{};
 	deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	deviceInfo.pNext = NULL;
 	deviceInfo.flags = 0;
 	deviceInfo.queueCreateInfoCount = 1;
 	deviceInfo.pQueueCreateInfos = &queueInfo;
 	deviceInfo.enabledExtensionCount = DeviceExtensions.size();
 	deviceInfo.ppEnabledExtensionNames = DeviceExtensions.data();
 	deviceInfo.pEnabledFeatures = &deviceFeatures;
+	deviceInfo.pNext = &device11Features;
 
 	//����Ĭ���˵�ǰ�����壨nQueueFamilyIndex����֧���������͵Ĺ���
 	//���ܻ���ڲ�֧������ǰ��Ļ�ϻ��Ƶģ����������Ҫ�ڴ���logicalDevice֮ǰ�������ڵ�surface��Ȼ��check֧��֧�֡�

@@ -217,6 +217,40 @@ void MFileHelper::GetValidFileName(MString& strFileName)
 	
 }
 
+MString MFileHelper::FormatPath(MString strFilePath)
+{
+	MStringHelper::Replace(strFilePath, "\\", "/");
+
+	std::vector<MString> vPaths = MStringHelper::Slip(strFilePath, "/");
+
+	std::vector<MString> vClearPaths;
+	for (MString& path : vPaths)
+	{
+		if (path == "..")
+		{
+			if (!vClearPaths.empty())
+			{
+				vClearPaths.pop_back();
+			}
+		}
+		else if (path != ".")
+		{
+			vClearPaths.push_back(path);
+		}
+	}
+
+	if (vClearPaths.empty())
+		return "";
+
+	MString result = vClearPaths[0];
+	for (size_t i = 1; i < vClearPaths.size(); ++i)
+	{
+		result += "/" + vClearPaths[i];
+	}
+
+	return result;
+}
+
 MString MFileHelper::GetFileFolder(const MString& strFilePath)
 {
 	size_t n = strFilePath.find_last_of('/');

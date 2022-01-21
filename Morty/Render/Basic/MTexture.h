@@ -100,6 +100,8 @@ public:
 
 	static uint32_t GetImageMemorySize(const METextureLayout& layout);
 
+	uint32_t GetImageLayerNum() const;
+
 public:
 
 	static MTexture* CreateShadowMap();

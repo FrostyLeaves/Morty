@@ -17,6 +17,10 @@ if(NOT TARGET GLSLang) # this if is required for subsequent runs of CMake
         "${VULKAN_SDK}/Include/spirv_cross"
     )
 
+    set( DXC_INCLUDE
+        "${VULKAN_SDK}/Include/dxc"
+    )
+
 
 if(WIN32)
     set(PPRS "")
@@ -134,6 +138,13 @@ endif()
                                    IMPORTED_LOCATION_RELEASE "${VULKAN_SDK}/Lib/${PPRS}SPVRemapper${PPOS_R}"
     )
 
+    add_library(DXC::DXCompiler UNKNOWN IMPORTED)
+
+    set_target_properties(DXC::DXCompiler
+                    PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${DXC_INCLUDE}"
+                                    IMPORTED_LOCATION "${VULKAN_SDK}/Lib/dxcompiler.lib"
+    )
+
     add_library(SPIRV::ALL INTERFACE IMPORTED)
     set_property(TARGET SPIRV::ALL PROPERTY INTERFACE_LINK_LIBRARIES
                     GLSLang::GLSLang
@@ -149,8 +160,12 @@ endif()
                     SPIRV::Cpp
                     SPIRV::Tools
                     SPIRV::ToolsOpt
+                    DXC::DXCompiler
     )
 
 set(SPIRV_CROSS_FOUND True)
+
+
+
 
 endif()

@@ -67,7 +67,7 @@ public:
 	virtual bool RegisterMaterial(MMaterial* pMaterial) override;
 	virtual bool UnRegisterMaterial(MMaterial* pMaterial) override;
 
-	virtual MIRenderCommand* CreateRenderCommand() override;
+	virtual MIRenderCommand* CreateRenderCommand(const MString& strCommandName) override;
 	virtual void RecoveryRenderCommand(MIRenderCommand* pCommand) override;
 
 	virtual bool IsFinishedCommand(MIRenderCommand* pCommand) override;
@@ -91,7 +91,7 @@ public:
 	void TransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange subresourceRange);
 	void TransitionImageLayout(VkImageMemoryBarrier& imageMemoryBarrier, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange subresourceRange);
 
-	VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, const uint32_t& unMipmap, const uint32_t& unLayerCount, const METextureType& eTextureType);
+	VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, const uint32_t& unMipmap, const uint32_t& unLayerCount, const VkImageViewType& eViewType);
 
 	void CreateImage(const uint32_t& unWidth, const uint32_t& unHeight, const uint32_t& unMipmap, const uint32_t& unLayerCount, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageLayout defaultLayout, VkImage& image, VkDeviceMemory& imageMemory, VkImageCreateFlags createFlag);
 
@@ -126,7 +126,6 @@ public:
 	MVulkanObjectRecycleBin* GetRecycleBin();
 
 	void SetDebugName(uint64_t object, const VkObjectType& type, const char* svDebugName);
-
 
 protected:
 	bool InitVulkanInstance();

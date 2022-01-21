@@ -635,7 +635,7 @@ void MainEditor::Render(MTaskNode* pNode)
 	if (!pRenderTarget)
 		return;
 
-	MIRenderCommand* pRenderCommand = pDevice->CreateRenderCommand();
+	MIRenderCommand* pRenderCommand = pDevice->CreateRenderCommand("MainEditor RenderCommand");
 	if (!pRenderCommand)
 		return;
 

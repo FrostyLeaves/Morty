@@ -34,6 +34,7 @@ public:
 	bool SetValue(const MString& strName, const MVariant& value);
 	bool SetValue(const MString& strName, MTexture* pTexture);
 
+	bool HasValue(const uint32_t& unBinding, const uint32_t& unSet);
 public:
 
 	MShaderConstantParam* FindConstantParam(const MShaderConstantParam* pParam) { return FindShaderParam(m_vParams, pParam); }

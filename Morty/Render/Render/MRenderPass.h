@@ -14,15 +14,21 @@
 
 class MIDevice;
 class MTexture;
+
 class MORTY_API MSubpass
 {
 public:
     MSubpass();
     ~MSubpass();
 
+    MSubpass(const std::vector<uint32_t>& inputs, const std::vector<uint32_t>& outputs);
+
 public:
     std::vector<uint32_t> m_vInputIndex;
     std::vector<uint32_t> m_vOutputIndex;
+
+    uint32_t m_unViewMask;
+    uint32_t m_unCorrelationMask;
 
 };
 
@@ -61,6 +67,9 @@ public:
     void SetRenderPassID(const uint32_t& unID) { m_unRenderPassID = unID; }
     uint32_t GetRenderPassID() const { return m_unRenderPassID; }
 
+    void SetViewNum(const uint32_t& unNum) { m_unViewNum = unNum; }
+    uint32_t GetViewNum() const { return m_unViewNum; }
+
     std::vector<MTexture*> GetBackTexture();
     MTexture* GetDepthTexture();
 
@@ -69,6 +78,8 @@ public:
     uint32_t m_unRenderPassID;
 
 public:
+
+    uint32_t m_unViewNum;
 
     //render back to texture
 	std::vector<MTexture*> m_vBackTextures;

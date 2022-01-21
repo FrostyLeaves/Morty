@@ -1,0 +1,32 @@
+
+[[vk::binding(0,0)]]cbuffer cbMatrix
+{
+    float4x4 U_ModelViewProj[6];
+};
+
+struct VS_IN
+{
+    float3 pos : POSITION;
+    float3 normal : NORMAL;
+    float3 tangent : TANGENT;
+    float3 bitangent : BITANGENT;
+    float2 uv : TEXCOORDS;
+};
+
+struct VS_OUT
+{
+    float4 pos : SV_POSITION;
+    float3 uvw : UVW;
+    uint idx : TEST_IDX;
+};
+
+VS_OUT VS(VS_IN input, uint ViewIndex : SV_ViewID)
+{
+    VS_OUT output;
+
+    output.pos = mul(float4(input.pos, 1.0f), U_ModelViewProj[ViewIndex]);
+    output.uvw = input.pos;
+    output.idx = ViewIndex;
+
+    return output;
+}

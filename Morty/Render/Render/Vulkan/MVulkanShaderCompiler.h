@@ -35,6 +35,7 @@ public:
 	const std::vector<std::string>& GetProcesses() { return m_vProcesses; }
 
 	void AddDef(const MString& strName, const MString& strValue);
+	void AddDef2(const MString& strName, const MString& strValue);
 
 	void AddUndef(std::string undef);
 
@@ -64,11 +65,19 @@ public:
 
 	void ConvertMacro(const MShaderMacro& macro, MPreamble& preamble);
 
+	void ConvertMacroDXC(const MShaderMacro& macro, MPreamble& preamble);
+
 	void ConvertVariant(const spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, MVariant& variant);
 
 	bool ResetVariantType(const spirv_cross::SPIRType& type, MVariant& variant);
 
 	void ReadShaderPath(const MString& strShaderPath);
+
+
+private:
+
+	bool CompileGlslShader(const MString& strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv);
+	bool CompileHlslShader(const MString& strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv);
 
 private:
 	struct TBuiltInResource* m_pDefaultBuiltInResource;

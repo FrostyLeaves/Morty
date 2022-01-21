@@ -356,7 +356,7 @@ void MVulkanRenderCommand::SetTextureLayout(const std::vector<MTexture*>& vTextu
 			subresourceRange.baseMipLevel = 0;
 			subresourceRange.levelCount = vTextures[i]->m_unMipmapLevel;
 			subresourceRange.baseArrayLayer = 0;
-			subresourceRange.layerCount = 1;
+			subresourceRange.layerCount = vTextures[i]->GetImageLayerNum();
 		}
 		else
 		{
@@ -364,7 +364,7 @@ void MVulkanRenderCommand::SetTextureLayout(const std::vector<MTexture*>& vTextu
 			subresourceRange.baseMipLevel = 0;
 			subresourceRange.levelCount = vTextures[i]->m_unMipmapLevel;
 			subresourceRange.baseArrayLayer = 0;
-			subresourceRange.layerCount = 1;
+			subresourceRange.layerCount = vTextures[i]->GetImageLayerNum();
 		}
 
 		vImageBarrier.push_back(VkImageMemoryBarrier());
@@ -432,7 +432,7 @@ bool MVulkanRenderCommand::DownloadTexture(MTexture* pTexture, const uint32_t& u
 	region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	region.imageSubresource.mipLevel = unValidMipIdx;
 	region.imageSubresource.baseArrayLayer = 0;
-	region.imageSubresource.layerCount = 1;
+	region.imageSubresource.layerCount = pTexture->GetImageLayerNum();
 	region.imageOffset.x = 0;
 	region.imageOffset.y = 0;
 	region.imageOffset.z = 0;
@@ -471,13 +471,13 @@ bool MVulkanRenderCommand::CopyImageBuffer(MTexture* pSource, MTexture* pDest)
 	blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	blit.srcSubresource.mipLevel = 0;
 	blit.srcSubresource.baseArrayLayer = 0;
-	blit.srcSubresource.layerCount = 1;
+	blit.srcSubresource.layerCount = pSource->GetImageLayerNum();
 	blit.dstOffsets[0] = { 0, 0, 0 };
 	blit.dstOffsets[1] = { static_cast<int32_t>(pDest->GetSize().x), static_cast<int32_t>(pDest->GetSize().y), 1 };
 	blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	blit.dstSubresource.mipLevel = 0;
 	blit.dstSubresource.baseArrayLayer = 0;
-	blit.dstSubresource.layerCount = 1;
+	blit.dstSubresource.layerCount = pDest->GetImageLayerNum();
 
 	vkCmdBlitImage(m_VkCommandBuffer, pSource->m_VkTextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pDest->m_VkTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
 
@@ -739,7 +739,6 @@ VkPipeline MVulkanRenderCommand::CreateGraphicsPipeline(MMaterial* pMaterial, MR
 	viewportState.pViewports = &viewport;
 	viewportState.scissorCount = 1;
 	viewportState.pScissors = &scissor;
-
 
 	VkPipelineShaderStageCreateInfo vShaderStageInfo[] = {
 		pVertexShader->GetBuffer()->m_VkShaderStageInfo,

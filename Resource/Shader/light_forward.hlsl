@@ -130,14 +130,12 @@ LightBasicInfo GetLightBasicInfo(VS_OUT input)
         result.f3Normal = result.f3Normal.rgb * 2.0f - 1.0f;
         result.f3Normal = normalize(result.f3Normal);
         
-//如果在VS处理Normal
+//VS Normal
 #if MCALC_NORMAL_IN_VS
-        //使用法线贴图， 法向量在切线空间， CameraDir也在切线空间
         
         result.f3CameraDir = input.toCameraDirTangentSpace;
         result.f3DirLightDir = input.dirLightDirTangentSpace;
 #else
-        //使用法线贴图，法向量在view space，CameraDir也在view space
 
         float3 T = normalize(input.tangent);
         float3 B = normalize(input.bitangent);
@@ -151,7 +149,6 @@ LightBasicInfo GetLightBasicInfo(VS_OUT input)
     }
     else
     {
-        //没用法线贴图，法向量在view space，CameraDir也在view space
         result.f3Normal = input.normal;
         result.f3CameraDir = normalize(U_f3CameraPosition - input.worldPos);
         result.f3DirLightDir = U_f3DirectionLight;
@@ -185,7 +182,7 @@ float3 AdditionAllLights(float3 f3Color, float4 f3AmbiColor, VS_OUT input)
 
     for(int i = 0; i < min(MPOINT_LIGHT_PIXEL_NUMBER, U_nValidPointLightsNumber); ++i)
     {
-//如果在VS处理Normal
+
 #if MCALC_NORMAL_IN_VS
         float3 f3LightDir = input.pointLightDirTangentSpace[i];
 #else
@@ -203,7 +200,7 @@ float3 AdditionAllLights(float3 f3Color, float4 f3AmbiColor, VS_OUT input)
 
     for(int i = 0; i < min(MSPOT_LIGHT_PIXEL_NUMBER, U_nValidSpotLightsNumber); ++i)
     {
-//如果在VS处理Normal
+
 #if MCALC_NORMAL_IN_VS
         float3 f3LightDir = input.spotLightDirTangentSpace[i];
 #else

@@ -312,11 +312,7 @@ MMaterialPipelineLayoutData* MVulkanPipelineManager::CreateMaterialPipelineLayou
 			uboLayoutBinding.binding = param->unBinding;
 			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
 			uboLayoutBinding.descriptorCount = 1;
-			uboLayoutBinding.stageFlags = 0;
-			if (param->eShaderType & MEShaderParamType::EVertex)
-				uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_VERTEX_BIT;
-			if (param->eShaderType & MEShaderParamType::EPixel)
-				uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_FRAGMENT_BIT;
+			uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
 			uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
@@ -330,11 +326,7 @@ MMaterialPipelineLayoutData* MVulkanPipelineManager::CreateMaterialPipelineLayou
 			//uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
 			uboLayoutBinding.descriptorCount = 1;
-			uboLayoutBinding.stageFlags = 0;
-			if (param->eShaderType & MEShaderParamType::EVertex)
-				uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_VERTEX_BIT;
-			if (param->eShaderType & MEShaderParamType::EPixel)
-				uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_FRAGMENT_BIT;
+			uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
 			uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
@@ -347,11 +339,7 @@ MMaterialPipelineLayoutData* MVulkanPipelineManager::CreateMaterialPipelineLayou
 			uboLayoutBinding.binding = param->unBinding;
 			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
 			uboLayoutBinding.descriptorCount = 1;
-			uboLayoutBinding.stageFlags = 0;
-			if (param->eShaderType & MEShaderParamType::EVertex)
-				uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_VERTEX_BIT;
-			if (param->eShaderType & MEShaderParamType::EPixel)
-				uboLayoutBinding.stageFlags |= VK_SHADER_STAGE_FRAGMENT_BIT;
+			uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
 			if(param->eSamplerType == MESamplerType::ELinear)
 				uboLayoutBinding.pImmutableSamplers = &m_pDevice->m_VkLinearSampler;

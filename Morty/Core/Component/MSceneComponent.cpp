@@ -1,5 +1,6 @@
 #include "MSceneComponent.h"
 
+#include "MMath.h"
 #include "MScene.h"
 #include "MFunction.h"
 
@@ -177,18 +178,8 @@ void MSceneComponent::LookAt(const Vector3& v3TargetWorldPos, Vector3 v3UpDir)
 	Vector3 v3WorldPos = GetWorldPosition();
 
 	Vector3 v3Forward = v3TargetWorldPos - v3WorldPos;
-	v3Forward.Normalize();
 
-	Vector3 v3RightDir = v3UpDir.CrossProduct(v3Forward);
-	v3RightDir.Normalize();
-
-	v3UpDir = v3Forward.CrossProduct(v3RightDir);
-	v3UpDir.Normalize();
-
-	Matrix4 matRotate(v3RightDir.x, v3UpDir.x, v3Forward.x, 0,
-		v3RightDir.y, v3UpDir.y, v3Forward.y, 0,
-		v3RightDir.z, v3UpDir.z, v3Forward.z, 0,
-		0, 0, 0, 1);
+	Matrix4 matRotate = MMath::LookAt(v3Forward, v3UpDir);
 
 	Quaternion quat = matRotate.GetRotation();
 	quat.Normalize();

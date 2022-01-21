@@ -149,5 +149,10 @@ if(MORTY_BUILD_TARGET STREQUAL "WIN")
             "${THIRD_PARTY_PATH}/installs/SDL/bin/SDL2.dll"
             $<TARGET_FILE_DIR:Editor>)
 
+    add_custom_command(TARGET Editor POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$ENV{VULKAN_SDK}/Bin/dxcompiler.dll"
+            $<TARGET_FILE_DIR:Editor>)
+
 endif()
 

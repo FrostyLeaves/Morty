@@ -3,6 +3,7 @@
 #include "MScene.h"
 #include "MEntity.h"
 #include "MEngine.h"
+#include "MShader.h"
 #include "MViewport.h"
 
 #include "MSceneComponent.h"
@@ -36,6 +37,7 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	m_pWorldMatrixParam = new MShaderConstantParam();
 	m_pWorldMatrixParam->unSet = 1;
 	m_pWorldMatrixParam->unBinding = 0;
+	m_pWorldMatrixParam->eShaderType = (uint32_t)MEShaderType::EPixel | (uint32_t)MEShaderType::EVertex;
 
 	MStruct worldMatrixSrt;
 	worldMatrixSrt.AppendMVariant("U_matProj", Matrix4());
@@ -48,6 +50,7 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	m_pWorldInfoParam = new MShaderConstantParam();
 	m_pWorldInfoParam->unSet = 1;
 	m_pWorldInfoParam->unBinding = 1;
+	m_pWorldInfoParam->eShaderType = (uint32_t)MEShaderType::EPixel | (uint32_t)MEShaderType::EVertex;
 	
 	MStruct worldInfoSrt;
 	worldInfoSrt.AppendMVariant("U_f3DirectionLight", Vector3());
@@ -63,6 +66,7 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	m_pLightInfoParam = new MShaderConstantParam();
 	m_pLightInfoParam->unSet = 1;
 	m_pLightInfoParam->unBinding = 2;
+	m_pLightInfoParam->eShaderType = (uint32_t)MEShaderType::EPixel | (uint32_t)MEShaderType::EVertex;
 
 	m_pLightInfoParam->var = MStruct();
 	MStruct& lightInfoSrt = *m_pLightInfoParam->var.GetStruct();

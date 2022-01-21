@@ -27,6 +27,7 @@ class MMaterial;
 class MIRenderCommand;
 class MShadowMapRenderWork;
 class MTransparentRenderWork;
+class MEnvironmentMapRenderWork;
 class MRenderableMeshComponent;
 class MORTY_API MDeferredRenderProgram : public MIRenderProgram
 {
@@ -41,6 +42,8 @@ public:
 	virtual void Render(MIRenderCommand* pPrimaryCommand) override;
 
 	void RenderReady(MTaskNode* pTaskNode);
+
+	void RenderEnvironment(MTaskNode* pTaskNode);
 
 	void RenderGBuffer(MTaskNode* pTaskNode);
 
@@ -110,6 +113,7 @@ protected:
 
 	MShadowMapRenderWork* m_pShadowMapWork;
 	MTransparentRenderWork* m_pTransparentWork;
+	MEnvironmentMapRenderWork* m_pEnvironmentWork;
 
 	size_t m_nFrameIndex;
 };

@@ -49,6 +49,8 @@ public:
 	
 	void LoadFromMemory(MByte* aByteData, const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, PixelFormat ePixelFormat = PixelFormat::Byte8, bool bCopyMemory = true);
 
+	void CreateCubeMapRenderTarget(const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, const METextureLayout& eLayout);
+
 public:
 
 	virtual void OnDelete() override;

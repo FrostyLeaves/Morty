@@ -33,6 +33,7 @@ public:
 	//ͶӰ
 	static float Projection(const Vector3& v3Sour, const Vector3& v3Dest);
 
+	static Matrix4 LookAt(Vector3 forward, Vector3 up);
 
 	static float Rand_0_1();
 	static int RandInt(const int& nMin, const int& nMax);

@@ -55,6 +55,8 @@ public:
 
     static void GetValidFileName(MString& strFileName);
 
+    static MString FormatPath(MString strFilePath);
+
     static MString GetFileFolder(const MString& strFilePath);
     
 private:

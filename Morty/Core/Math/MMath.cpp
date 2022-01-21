@@ -34,6 +34,21 @@ float MMath::Projection(const Vector3& v3Sour, const Vector3& v3Dest)
 	return (v3Sour * v3Dest) / fLength / fLength;
 }
 
+Matrix4 MMath::LookAt(Vector3 forward, Vector3 up)
+{
+	Vector3 right = up.CrossProduct(forward);
+	up = forward.CrossProduct(right);
+
+	right.Normalize();
+	up.Normalize();
+	forward.Normalize();
+
+	return Matrix4(right.x, up.x, forward.x, 0,
+		right.y, up.y, forward.y, 0,
+		right.z, up.z, forward.z, 0,
+		0, 0, 0, 1);
+}
+
 float MMath::Rand_0_1()
 {
 	std::uniform_real_distribution<float> randomUniform(0, 1);

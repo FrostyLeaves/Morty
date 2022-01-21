@@ -77,6 +77,16 @@ uint32_t MTexture::GetImageMemorySize(const METextureLayout& layout)
 	return 0;
 }
 
+uint32_t MTexture::GetImageLayerNum() const
+{
+	if (GetTextureType() == ETexture2D)
+		return 1;
+	else if (GetTextureType() == ETextureCube)
+		return 6;
+
+	return 0;
+}
+
 MTexture* MTexture::CreateShadowMap()
 {
 	MTexture* pTexture = new MTexture();
