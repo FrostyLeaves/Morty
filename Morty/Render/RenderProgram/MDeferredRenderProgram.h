@@ -43,8 +43,6 @@ public:
 
 	void RenderReady(MTaskNode* pTaskNode);
 
-	void RenderEnvironment(MTaskNode* pTaskNode);
-
 	void RenderGBuffer(MTaskNode* pTaskNode);
 
 	void RenderLightning(MTaskNode* pTaskNode);
@@ -113,7 +111,6 @@ protected:
 
 	MShadowMapRenderWork* m_pShadowMapWork;
 	MTransparentRenderWork* m_pTransparentWork;
-	MEnvironmentMapRenderWork* m_pEnvironmentWork;
 
 	size_t m_nFrameIndex;
 };

@@ -6,6 +6,7 @@
 
 MVulkanRenderCommand::MVulkanRenderCommand()
 	:MIRenderCommand()
+	, m_aRenderFinishedCallback()
 {
 	m_pDevice = nullptr;
 
@@ -491,6 +492,11 @@ void MVulkanRenderCommand::UpdateMipmaps(MTexture* pTexture)
 		return;
 
 	m_pDevice->GenerateMipmaps(pTexture, pTexture->m_unMipmapLevel, m_VkCommandBuffer);
+}
+
+void MVulkanRenderCommand::addFinishedCallback(std::function<void()> func)
+{
+	m_aRenderFinishedCallback.push_back(func);
 }
 
 void MVulkanRenderCommand::UpdateShaderParam(MShaderParamSet* pParamSet, MShaderConstantParam* param)

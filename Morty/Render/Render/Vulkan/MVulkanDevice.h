@@ -158,11 +158,17 @@ public:
 	VkFormat m_VkDepthTextureFormat;
 
 	MTexture m_ShaderDefaultTexture;
+	MTexture m_ShaderDefaultTextureCube;
 
 	VkSampler m_VkLinearSampler;
 	VkSampler m_VkNearestSampler;
 
 	VkDescriptorPool m_VkDescriptorPool;
+
+
+#ifdef _DEBUG
+	VkDebugUtilsMessengerEXT m_VkDebugUtilsMessenger;
+#endif
 public:
 
 	struct MVkFrameData

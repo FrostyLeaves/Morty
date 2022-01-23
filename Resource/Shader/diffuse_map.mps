@@ -33,7 +33,7 @@ float4 PS(VS_OUT input) : SV_Target
             // tangent space to world
             float3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * f3Normal; 
 
-            f3Irradiance += U_SkyBox.SampleLevel(LinearSampler, sampleVec.xyz, 0).rgb * cos(theta) * sin(theta);
+            f3Irradiance += U_SkyBox.SampleLevel(LinearSampler, sampleVec, 0).rgb * cos(theta) * sin(theta);
             nrSamples = nrSamples + 1.0;
         }
     }

@@ -57,26 +57,21 @@ void MEnvironmentMapRenderWork::MarkUpdateEnvironment()
 	m_bUpdateNextFrame = true;
 }
 
-void MEnvironmentMapRenderWork::RenderEnvironment(MRenderInfo& info)
+void MEnvironmentMapRenderWork::RenderEnvironment(MIRenderCommand* pCommand, MSkyBoxComponent* pSkyBoxComponent)
 {
 	if (!m_bUpdateNextFrame)
+		return;
+
+	if (!pCommand)
+		return;
+
+	if (!pSkyBoxComponent)
 		return;
 
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 	MIDevice* pRenderDevice = pRenderSystem->GetDevice();
 
-	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
-	if (!pCommand)
-		return;
-
-	if (!info.pSkyBoxEntity)
-		return;
-
-	MSkyBoxComponent* pSkyBoxComponent = info.pSkyBoxEntity->GetComponent<MSkyBoxComponent>();
-	if (!pSkyBoxComponent)
-		return;
-
-	MResource* pSkyBoxTexture = pSkyBoxComponent->GetTexture();
+	MResource* pSkyBoxTexture = pSkyBoxComponent->GetSkyBoxResource();
 	if (m_DiffuseMaterial)
 	{
 		m_DiffuseMaterial->SetTexutreParam("U_SkyBox", pSkyBoxTexture);
@@ -99,7 +94,24 @@ void MEnvironmentMapRenderWork::RenderEnvironment(MRenderInfo& info)
 
 	pCommand->EndRenderPass();
 
+
+
+	if (MTextureResource* pDiffuseTexture = m_DiffuseEnvironmentMap.GetResource<MTextureResource>())
+	{
+		if (MTexture* pTexture = pDiffuseTexture->GetTextureTemplate())
+		{
+			pCommand->SetRenderToTextureBarrier({ pTexture });
+		}
+
+		pSkyBoxComponent->LoadDiffuseEnvResource(pDiffuseTexture);
+	}
+	
 	m_bUpdateNextFrame = false;
+}
+
+MResource* MEnvironmentMapRenderWork::GetDiffuseOutputTexture()
+{
+	return m_DiffuseEnvironmentMap.GetResource();
 }
 
 void MEnvironmentMapRenderWork::InitializeResource()
@@ -107,19 +119,19 @@ void MEnvironmentMapRenderWork::InitializeResource()
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
 	m_pCubeMesh = pResourceSystem->CreateResource<MMeshResource>("Environment Draw Mesh");
-	m_pCubeMesh->LoadAsCube(MMeshResource::MEMeshVertexType::Normal);
+	m_pCubeMesh->LoadAsSphere();
 	m_pCubeMesh->AddRef();
 
 	if (MTextureResource* pDiffuseCubeMapResource = pResourceSystem->CreateResource<MTextureResource>())
 	{
-		pDiffuseCubeMapResource->CreateCubeMapRenderTarget(EnvironmentTextureSize, EnvironmentTextureSize, 4, METextureLayout::ERGBA_FLOAT_16);
+		pDiffuseCubeMapResource->CreateCubeMapRenderTarget(EnvironmentTextureSize, EnvironmentTextureSize, 4, METextureLayout::ERGBA_FLOAT_32);
 
 		m_DiffuseEnvironmentMap.SetResource(pDiffuseCubeMapResource);
 	}
 
 	if (MTextureResource* pSpecularCubeMapResource = pResourceSystem->CreateResource<MTextureResource>())
 	{
-		pSpecularCubeMapResource->CreateCubeMapRenderTarget(EnvironmentTextureSize, EnvironmentTextureSize, 4, METextureLayout::ERGBA_FLOAT_16);
+		pSpecularCubeMapResource->CreateCubeMapRenderTarget(EnvironmentTextureSize, EnvironmentTextureSize, 4, METextureLayout::ERGBA_FLOAT_32);
 
 		m_SpecularEnvironmentMap.SetResource(pSpecularCubeMapResource);
 	}
@@ -139,15 +151,15 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-	Matrix4 m4Projection = MViewport::MatrixPerspectiveFovLH(45.0f, 1.0f, 0.1f, 10.0f);
+	Matrix4 m4Projection = MViewport::MatrixPerspectiveFovLH(45.0f, 1.0f, 0.1f, 100.0f);
 
 	Matrix4 vCmaeraView[6] = {
-		MMath::LookAt(Vector3(1.0f,  0.0f,  0.0f), Vector3(0.0f, 1.0f,  0.0f)),
 		MMath::LookAt(Vector3(-1.0f,  0.0f,  0.0f), Vector3(0.0f, 1.0f,  0.0f)),
-		MMath::LookAt(Vector3(0.0f,  1.0f,  0.0f), Vector3(0.0f,  0.0f, -1.0f)),
+		MMath::LookAt(Vector3(1.0f,  0.0f,  0.0f), Vector3(0.0f, 1.0f,  0.0f)),
 		MMath::LookAt(Vector3(0.0f, -1.0f,  0.0f), Vector3(0.0f,  0.0f, 1.0f)),
+		MMath::LookAt(Vector3(0.0f,  1.0f,  0.0f), Vector3(0.0f,  0.0f, -1.0f)),
 		MMath::LookAt(Vector3(0.0f,  0.0f,  1.0f), Vector3(0.0f, 1.0f,  0.0f)),
-		MMath::LookAt(Vector3(0.0f,  0.0f, -1.0f), Vector3(0.0f, 1.0f,  0.0f))
+		MMath::LookAt(Vector3(0.0f,  0.0f, -1.0f), Vector3(0.0f, 1.0f,  0.0f)),
 	};
 
 	for (uint32_t i = 0; i < 6; ++i)

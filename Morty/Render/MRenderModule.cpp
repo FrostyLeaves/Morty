@@ -6,6 +6,7 @@
 #include "MModelSystem.h"
 #include "MNotifySystem.h"
 #include "MRenderSystem.h"
+#include "MSkyBoxSystem.h"
 #include "MResourceSystem.h"
 #include "MComponentSystem.h"
 
@@ -53,6 +54,8 @@ bool MRenderModule::Register(MEngine* pEngine)
 			}
 		}
 	}
+
+	MSkyBoxSystem* pSkyBoxSystem = pEngine->RegisterSystem<MSkyBoxSystem>();
 
 	if (MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>())
 	{

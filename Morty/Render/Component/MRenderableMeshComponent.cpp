@@ -213,7 +213,7 @@ MBoundsAABB* MRenderableMeshComponent::GetBoundsAABB()
 
 	MMeshResource* pMeshResource = m_Mesh.GetResource<MMeshResource>();
 	if (!pMeshResource)
-		return nullptr;
+		return &m_BoundsAABB;
 
 	if (m_bBoundsAABBDirty && pMeshResource)
 	{

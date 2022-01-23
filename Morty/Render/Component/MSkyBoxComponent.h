@@ -26,18 +26,19 @@ public:
 
 public:
 
-    void LoadTexture(MResource* pTexture);
-    MResource* GetTexture();
+    void LoadSkyBoxResource(MResource* pTexture);
+    MResource* GetSkyBoxResource();
 
-    void LoadEnvTexutre(MResource* pTexture);
-    MResource* GetEnvTexture();
+    void LoadDiffuseEnvResource(MResource* pTexture);
 
-    MTexture* GetEnvironmentTexture();
+    MResource* GetDiffuseEnvResource();
+    MTexture* GetDiffuseTexture();
+
 
 private:
 
 	MResourceKeeper m_Texture;
-	MResourceKeeper m_EnvTexture;
+	MResourceKeeper m_DiffuseEnvTexture;
     
     MMaterial* m_pMaterial;
 };

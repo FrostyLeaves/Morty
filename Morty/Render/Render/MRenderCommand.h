@@ -90,11 +90,12 @@ public:
 	virtual bool IsFinished() { return false; }
 	virtual void CheckFinished() {}
 
+	virtual void addFinishedCallback(std::function<void()> func) = 0;
+
 	uint32_t GetFrameIndex() { return m_unFrameIndex; }
 
 public:
 	uint32_t m_unFrameIndex;
-	std::vector<std::function<void()>> m_aRenderFinishedCallback;
 
 };
 

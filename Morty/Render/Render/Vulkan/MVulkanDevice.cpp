@@ -164,6 +164,7 @@ void MVulkanDevice::Release()
 	m_PipelineManager.Release();
 	m_BufferPool.Release();
 	m_ShaderDefaultTexture.DestroyBuffer(this);
+	m_ShaderDefaultTextureCube.DestroyBuffer(this);
 
 	for (auto pr : m_tFrameData)
 	{
@@ -178,12 +179,17 @@ void MVulkanDevice::Release()
 	delete m_pDefaultRecycleBin;
 	m_pDefaultRecycleBin = nullptr;
 
+	PFN_vkDestroyDebugUtilsMessengerEXT pvkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_VkInstance, "vkDestroyDebugUtilsMessengerEXT");
+	pvkDestroyDebugUtilsMessengerEXT(m_VkInstance, m_VkDebugUtilsMessenger, nullptr);
+
 	vkDestroySampler(m_VkDevice, m_VkLinearSampler, nullptr);
 	vkDestroySampler(m_VkDevice, m_VkNearestSampler, nullptr);
 	vkDestroyDescriptorPool(m_VkDevice, m_VkDescriptorPool, nullptr);
 	vkDestroyCommandPool(m_VkDevice, m_VkCommandPool, nullptr);
 	vkDestroyDevice(m_VkDevice, nullptr);
 	vkDestroyInstance(m_VkInstance, NULL);
+
+
 }
 
 int MVulkanDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
@@ -1957,8 +1963,7 @@ bool MVulkanDevice::InitVulkanInstance()
 	debug_utils_messenger_create_info.pfnUserCallback = OutputDebugUtilsMessenger;
 	debug_utils_messenger_create_info.pUserData = this;
 
-	VkDebugUtilsMessengerEXT debug_utils_messenger;
-	if (VK_SUCCESS != pvkCreateDebugUtilsMessengerEXT(m_VkInstance, &debug_utils_messenger_create_info, NULL, &debug_utils_messenger))
+	if (VK_SUCCESS != pvkCreateDebugUtilsMessengerEXT(m_VkInstance, &debug_utils_messenger_create_info, NULL, &m_VkDebugUtilsMessenger))
 		return false;
 #endif
 
@@ -2079,6 +2084,7 @@ bool MVulkanDevice::InitDefaultTexture()
 	m_ShaderDefaultTexture.SetReadable(false);
 	m_ShaderDefaultTexture.SetRenderUsage(METextureRenderUsage::EUnknow);
 	m_ShaderDefaultTexture.SetShaderUsage(METextureShaderUsage::ESampler);
+	m_ShaderDefaultTexture.SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
 	m_ShaderDefaultTexture.SetSize(Vector2(4, 4));
 
 	MByte bytes[4 * 4 * 4];
@@ -2090,6 +2096,25 @@ bool MVulkanDevice::InitDefaultTexture()
 		bytes[i + 3] = 255;
 	}
 	m_ShaderDefaultTexture.GenerateBuffer(this, bytes);
+
+
+	m_ShaderDefaultTextureCube.SetMipmapsEnable(false);
+	m_ShaderDefaultTextureCube.SetReadable(false);
+	m_ShaderDefaultTextureCube.SetRenderUsage(METextureRenderUsage::EUnknow);
+	m_ShaderDefaultTextureCube.SetShaderUsage(METextureShaderUsage::ESampler);
+	m_ShaderDefaultTextureCube.SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
+	m_ShaderDefaultTextureCube.SetTextureType(METextureType::ETextureCube);
+	m_ShaderDefaultTextureCube.SetSize(Vector2(1, 1));
+
+	MByte cubeBytes[24];
+	for (size_t i = 0; i < 24; i += 4)
+	{
+		bytes[i + 0] = 255;
+		bytes[i + 1] = 255;
+		bytes[i + 2] = 255;
+		bytes[i + 3] = 255;
+	}
+	m_ShaderDefaultTextureCube.GenerateBuffer(this, bytes);
 
 	return true;
 }

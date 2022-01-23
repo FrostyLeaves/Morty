@@ -226,7 +226,7 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 		{
 			if (MSkyBoxComponent* pSkyBoxComponent = info.pSkyBoxEntity->GetComponent<MSkyBoxComponent>())
 			{
-				if (MTexture* pEnvTexture = pSkyBoxComponent->GetEnvironmentTexture())
+				if (MTexture* pEnvTexture = pSkyBoxComponent->GetDiffuseTexture())
 				{
 					MVariant& varEnvMapEnable = (*pLightParam->var.GetStruct())[6];
 					varEnvMapEnable = true;

@@ -12,7 +12,6 @@
 #include "GlslangToSpv.h"
 #include "ShaderLang.h"
 
-#include <atlbase.h>
 #include "dxcapi.h"
 
 #include "MResource.h"
@@ -182,7 +181,7 @@ private:
 
 struct MVulkanIncludeHandler : public IDxcIncludeHandler
 {
-	MVulkanIncludeHandler(CComPtr<IDxcUtils> pUtils,CComPtr<IDxcIncludeHandler> pDefaultIncludeHandler)
+	MVulkanIncludeHandler(IDxcUtils* pUtils, IDxcIncludeHandler* pDefaultIncludeHandler)
 		: m_pUtils(pUtils)
 		, m_pIncludeHandler(pDefaultIncludeHandler)
 		, m_vSearchPath()
@@ -192,36 +191,17 @@ struct MVulkanIncludeHandler : public IDxcIncludeHandler
 
 	HRESULT STDMETHODCALLTYPE LoadSource(_In_ LPCWSTR pFilename, _COM_Outptr_result_maybenull_ IDxcBlob** ppIncludeSource) override
 	{
-		CComPtr<IDxcBlobEncoding> pEncoding;
+		IDxcBlobEncoding* pEncoding = nullptr;
 		HRESULT hr = m_pUtils->LoadFile(pFilename, nullptr, &pEncoding);
 		if (SUCCEEDED(hr))
 		{
-			*ppIncludeSource = pEncoding.Detach();
+			*ppIncludeSource = pEncoding;
 		}
 		else
 		{
 			*ppIncludeSource = nullptr;
 		}
 		return hr;
-
-
-// 		HRESULT hr = m_pIncludeHandler->LoadSource(pFilename, ppIncludeSource);
-// 		if (SUCCEEDED(hr))
-// 		{
-// 			return hr;
-// 		}
-// 
-// 		for (const std::wstring& strParentPath : m_vSearchPath)
-// 		{
-// 			std::wstring path = strParentPath + L"/" + pFilename;
-// 			HRESULT hr = m_pIncludeHandler->LoadSource(path.c_str(), ppIncludeSource);
-// 			if (SUCCEEDED(hr))
-// 			{
-// 				return hr;
-// 			}
-// 		}
-
-		return -1;
 	}
 
 	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject) override
@@ -232,8 +212,8 @@ struct MVulkanIncludeHandler : public IDxcIncludeHandler
 	ULONG STDMETHODCALLTYPE AddRef(void) override { return 0; }
 	ULONG STDMETHODCALLTYPE Release(void) override { return 0; }
 private:
-	CComPtr<IDxcUtils> m_pUtils;
-	CComPtr<IDxcIncludeHandler> m_pIncludeHandler;
+	IDxcUtils* m_pUtils;
+	IDxcIncludeHandler* m_pIncludeHandler;
 
 	std::vector<std::wstring> m_vSearchPath;
 };
@@ -382,17 +362,19 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 	MString strShaderPath = MFileHelper::FormatPath(_strShaderPath);
 	MStringHelper::Replace(strShaderPath, "/", "\\");
 
-	CComPtr<IDxcUtils> pUtils;
-	CComPtr<IDxcCompiler3> pCompiler;
+	IDxcUtils* pUtils = nullptr;
 	DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&pUtils));
+	
+	 
+	IDxcCompiler3* pCompiler = nullptr;
 	DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&pCompiler));
 
-	//
 	// Create default include handler. (You can create your own...)
 	//
-	CComPtr<IDxcIncludeHandler> pDefaultIncludeHandler;
+	IDxcIncludeHandler* pDefaultIncludeHandler = nullptr;
 	pUtils->CreateDefaultIncludeHandler(&pDefaultIncludeHandler);
-	CComPtr<IDxcIncludeHandler> pIncludeHandler = new MVulkanIncludeHandler(pUtils, pDefaultIncludeHandler);
+
+	std::shared_ptr<MVulkanIncludeHandler> pIncludeHandler = std::make_shared<MVulkanIncludeHandler>(pUtils, pDefaultIncludeHandler);
 
 	std::wstring_convert<std::codecvt_utf8<wchar_t>> stow;
 
@@ -465,8 +447,9 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 	//
 	// Open source file.  
 	//
-	CComPtr<IDxcBlobEncoding> pSource = nullptr;
+	IDxcBlobEncoding* pSource = nullptr;
 	pUtils->LoadFile(wstrShaderPath.c_str(), nullptr, &pSource);
+
 	DxcBuffer Source;
 	Source.Ptr = pSource->GetBufferPointer();
 	Source.Size = pSource->GetBufferSize();
@@ -479,11 +462,12 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 		pszArgs[i] = vCompArgs[i].c_str();
 	};
 
-	CComPtr<IDxcResult> pResults;
-	pCompiler->Compile(&Source, pszArgs, vCompArgs.size(), pDefaultIncludeHandler, IID_PPV_ARGS(&pResults));
+	IDxcResult* pResults = nullptr;
+	pCompiler->Compile(&Source, pszArgs, vCompArgs.size(), pIncludeHandler.get(), IID_PPV_ARGS(&pResults));
 
+	delete[] pszArgs;
 	
-	CComPtr<IDxcBlobUtf8> pErrors = nullptr;
+	IDxcBlobUtf8* pErrors = nullptr;
 	pResults->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&pErrors), nullptr);
 	if (pErrors != nullptr && pErrors->GetStringLength() != 0)
 	{
@@ -498,49 +482,19 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 		return false;
 	}
 
-	CComPtr<IDxcBlob> pShader = nullptr;
-	CComPtr<IDxcBlobUtf16> pShaderName = nullptr;
-	pResults->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&pShader), &pShaderName);
+	IDxcBlob* pShader = nullptr;
+	IDxcBlobUtf16* pShaderNameTemp = nullptr;
+	pResults->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&pShader), &pShaderNameTemp);
+	std::shared_ptr<IDxcBlobUtf16> pShaderName(pShaderNameTemp);
+
 	if (!pShader)
 		return false;
 
-// 	FILE* pFile = fopen((strShaderPath + ".spv").c_str(), "wb");
-// 	fwrite(pShader->GetBufferPointer(), 1, pShader->GetBufferSize(), pFile);
-// 	fclose(pFile);
-	
 	vSpirv.resize(pShader->GetBufferSize() / sizeof(uint32_t));
 	memcpy(vSpirv.data(), pShader->GetBufferPointer(), pShader->GetBufferSize());
 
+
 	return true;
-
-// 	//
-// 	// Save pdb.
-// 	//
-// 	CComPtr<IDxcBlob> pPDB = nullptr;
-// 	CComPtr<IDxcBlobUtf16> pPDBName = nullptr;
-// 	pResults->GetOutput(DXC_OUT_PDB, IID_PPV_ARGS(&pPDB), &pPDBName);
-// 	{
-// 		FILE* fp = NULL;
-// 
-// 		// Note that if you don't specify -Fd, a pdb name will be automatically generated. Use this file name to save the pdb so that PIX can find it quickly.
-// 		_wfopen_s(&fp, pPDBName->GetStringPointer(), L"wb");
-// 		fwrite(pPDB->GetBufferPointer(), pPDB->GetBufferSize(), 1, fp);
-// 		fclose(fp);
-// 	}
-
-// 	//
-// 	// Print hash.
-// 	//
-// 	CComPtr<IDxcBlob> pHash = nullptr;
-// 	pResults->GetOutput(DXC_OUT_SHADER_HASH, IID_PPV_ARGS(&pHash), nullptr);
-// 	if (pHash != nullptr)
-// 	{
-// 		wprintf(L"Hash: ");
-// 		DxcShaderHash* pHashBuf = (DxcShaderHash*)pHash->GetBufferPointer();
-// 		for (int i = 0; i < _countof(pHashBuf->HashDigest); i++)
-// 			wprintf(L"%x", pHashBuf->HashDigest[i]);
-// 		wprintf(L"\n");
-// 	}
 
 }
 
@@ -669,6 +623,7 @@ void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler
 		pParam->unSet = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
 		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
 		pParam->strName = res.name;
+		MStringHelper::Replace(pParam->strName, "type.", "");
 
 		//if (MGlobal::SHADER_PARAM_SET_MESH == pParam->unSet)
 			pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;

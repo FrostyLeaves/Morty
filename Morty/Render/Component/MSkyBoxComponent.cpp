@@ -16,7 +16,7 @@ MSkyBoxComponent::~MSkyBoxComponent()
 
 }
 
-void MSkyBoxComponent::LoadTexture(MResource* pTexture)
+void MSkyBoxComponent::LoadSkyBoxResource(MResource* pTexture)
 {
 	if (!pTexture)
 		return;
@@ -27,30 +27,30 @@ void MSkyBoxComponent::LoadTexture(MResource* pTexture)
 	}
 }
 
-MResource* MSkyBoxComponent::GetTexture()
+MResource* MSkyBoxComponent::GetSkyBoxResource()
 {
 	return m_Texture.GetResource();
 }
 
-void MSkyBoxComponent::LoadEnvTexutre(MResource* pTexture)
+void MSkyBoxComponent::LoadDiffuseEnvResource(MResource* pTexture)
 {
 	if (!pTexture)
 		return;
 
 	if (MTextureResource* pTextureResource = pTexture->DynamicCast<MTextureResource>())
 	{
-		m_EnvTexture.SetResource(pTexture);
+		m_DiffuseEnvTexture.SetResource(pTexture);
 	}
 }
 
-MResource* MSkyBoxComponent::GetEnvTexture()
+MResource* MSkyBoxComponent::GetDiffuseEnvResource()
 {
-	return m_EnvTexture.GetResource();
+	return m_DiffuseEnvTexture.GetResource();
 }
 
-MTexture* MSkyBoxComponent::GetEnvironmentTexture()
+MTexture* MSkyBoxComponent::GetDiffuseTexture()
 {
-	if (MTextureResource* pTexture = m_EnvTexture.GetResource<MTextureResource>())
+	if (MTextureResource* pTexture = m_DiffuseEnvTexture.GetResource<MTextureResource>())
 	{
 		return pTexture->GetTextureTemplate();
 	}

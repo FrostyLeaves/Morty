@@ -16,7 +16,6 @@
 class MIDevice;
 class MTaskNode;
 class MViewport;
-class MIRenderCommand;
 class MORTY_API MRenderSystem : public MISystem
 {
 public:

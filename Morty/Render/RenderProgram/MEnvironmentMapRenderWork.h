@@ -18,6 +18,8 @@
 #include "MResource.h"
 
 class MMeshResource;
+class MIRenderCommand;
+class MSkyBoxComponent;
 class MORTY_API MEnvironmentMapRenderWork : public MObject
 {
 	MORTY_CLASS(MEnvironmentMapRenderWork)
@@ -34,7 +36,9 @@ public:
 
 	void MarkUpdateEnvironment();
 
-	void RenderEnvironment(MRenderInfo& info);
+	void RenderEnvironment(MIRenderCommand* pRenderCommand, MSkyBoxComponent* pSkyBoxComponent);
+
+	MResource* GetDiffuseOutputTexture();
 
 protected:
 

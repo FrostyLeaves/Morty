@@ -36,7 +36,6 @@ MDeferredRenderProgram::MDeferredRenderProgram()
 	, m_frameParamSet()
 	, m_pShadowMapWork(nullptr)
 	, m_pTransparentWork(nullptr)
-	, m_pEnvironmentWork(nullptr)
 	, m_nFrameIndex(0)
 	, m_pFinalOutputTexture(nullptr)
 	, m_gbufferRenderPass()
@@ -105,14 +104,6 @@ void MDeferredRenderProgram::RenderReady(MTaskNode* pTaskNode)
 			m_pTransparentWork->Resize(v2Size);
 			m_pTransparentWork->SetRenderTarget(GetOutputTexture(), m_gbufferRenderPass.m_pDepthTexture);
 		}
-	}
-}
-
-void MDeferredRenderProgram::RenderEnvironment(MTaskNode* pTaskNode)
-{
-	if (m_pEnvironmentWork)
-	{
-		m_pEnvironmentWork->RenderEnvironment(m_renderInfo);
 	}
 }
 
@@ -203,7 +194,7 @@ void MDeferredRenderProgram::RenderForward(MTaskNode* pTaskNode)
 	{
 		if (MSkyBoxComponent* pSkyBoxComponent = pSkyBox->GetComponent<MSkyBoxComponent>())
 		{
-			m_pSkyBoxMaterial->SetTexutreParam("SkyTexCube", pSkyBoxComponent->GetTexture());
+			m_pSkyBoxMaterial->SetTexutreParam("SkyTexCube", pSkyBoxComponent->GetSkyBoxResource());
 
 			pCommand->SetUseMaterial(m_pSkyBoxMaterial);
 			pCommand->SetShaderParamSet(m_renderInfo.pFrameShaderParamSet);
@@ -313,7 +304,6 @@ void MDeferredRenderProgram::OnCreated()
 
 	m_pRenderGraph = pObjectSystem->CreateObject<MTaskGraph>();
 	m_pShadowMapWork = pObjectSystem->CreateObject<MShadowMapRenderWork>();
-	m_pEnvironmentWork = pObjectSystem->CreateObject<MEnvironmentMapRenderWork>();
 //	m_pTransparentWork = pObjectSystem->CreateObject<MTransparentRenderWork>();
 
 	MTaskNode* pRenderReadyTask = m_pRenderGraph->AddNode<MTaskNode>("Render_Ready");
@@ -323,10 +313,6 @@ void MDeferredRenderProgram::OnCreated()
  	MTaskNode* pRenderShadowTask = m_pRenderGraph->AddNode<MTaskNode>("Render_Shadowmap");
  	pRenderShadowTask->SetThreadType(METhreadType::EAny);
  	pRenderShadowTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_1(MDeferredRenderProgram::RenderShadow, this));
-
-	MTaskNode* pRenderEnvironmentTask = m_pRenderGraph->AddNode<MTaskNode>("Render_Environment");
-	pRenderEnvironmentTask->SetThreadType(METhreadType::EAny);
-	pRenderEnvironmentTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_1(MDeferredRenderProgram::RenderEnvironment, this));
 
 	MTaskNode* pRenderGBufferTask = m_pRenderGraph->AddNode<MTaskNode>("Render_GBuffer");
 	pRenderGBufferTask->SetThreadType(METhreadType::EAny);
@@ -353,8 +339,7 @@ void MDeferredRenderProgram::OnCreated()
 	*/
 
  	pRenderReadyTask->AppendOutput()->LinkTo(pRenderShadowTask->AppendInput());
-	pRenderShadowTask->AppendOutput()->LinkTo(pRenderEnvironmentTask->AppendInput());
-	pRenderEnvironmentTask->AppendOutput()->LinkTo(pRenderGBufferTask->AppendInput());
+	pRenderShadowTask->AppendOutput()->LinkTo(pRenderGBufferTask->AppendInput());
 	pRenderGBufferTask->AppendOutput()->LinkTo(pRenderLightningTask->AppendInput());
 	pRenderLightningTask->AppendOutput()->LinkTo(pRenderForwardTask->AppendInput());
 	pRenderForwardTask->AppendOutput()->LinkTo(pRenderTransparentTask->AppendInput());

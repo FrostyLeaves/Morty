@@ -268,7 +268,21 @@ void MVulkanPipelineManager::BindConstantParam(MShaderParamSet* pParamSet, MShad
 void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShaderTextureParam* pParam)
 {
 	MTexture* pTexture = pParam->pTexture;
-	if (!pTexture) pTexture = &m_pDevice->m_ShaderDefaultTexture;
+	if (!pTexture)
+	{
+		if (pParam->eType == METextureType::ETexture2D)
+		{
+			pTexture = &m_pDevice->m_ShaderDefaultTexture;
+		}
+		else if (pParam->eType == METextureType::ETextureCube)
+		{
+			pTexture = &m_pDevice->m_ShaderDefaultTextureCube;
+		}
+		else
+		{
+			assert(false);
+		}
+	}
 
 	if (pTexture)
 	{

@@ -13,6 +13,7 @@
 #include "MEditorModule.h"
 
 #include "MEntitySystem.h"
+#include "MSkyBoxSystem.h"
 #include "MResourceSystem.h"
 
 #include "MMaterial.h"
@@ -48,6 +49,7 @@ void SKY_BOX(MEngine* pEngine, MScene* pScene)
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
 	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
+	MSkyBoxSystem* pSkyBoxSystem = pEngine->FindSystem<MSkyBoxSystem>();
 
 
 	MTextureResource* pCubeTexture = pResourceSystem->CreateResource<MTextureResource>();
@@ -60,6 +62,7 @@ void SKY_BOX(MEngine* pEngine, MScene* pScene)
 		"Texture/Sky/Circus_Backstage/nz.hdr"
 		},{ MTextureResource::PixelFormat::Float32 });
 
+/*
 	MTextureResource* pEnvironment = pResourceSystem->CreateResource<MTextureResource>();
 	pEnvironment->ImportCubeMap({
 		"Texture/Sky/Circus_Backstage/Env/px.hdr",
@@ -69,14 +72,16 @@ void SKY_BOX(MEngine* pEngine, MScene* pScene)
 		"Texture/Sky/Circus_Backstage/Env/pz.hdr",
 		"Texture/Sky/Circus_Backstage/Env/nz.hdr"
 		}, {MTextureResource::PixelFormat::Float32});
-
+*/
 	MEntity* pSkyBoxEntity = pScene->CreateEntity();
 	pSkyBoxEntity->SetName("SkyBox");
 	
 	if (MSkyBoxComponent* pSkyBoxComponent = pSkyBoxEntity->RegisterComponent<MSkyBoxComponent>())
 	{
-		pSkyBoxComponent->LoadTexture(pCubeTexture);
-		pSkyBoxComponent->LoadEnvTexutre(pEnvironment);
+		pSkyBoxComponent->LoadSkyBoxResource(pCubeTexture);
+		//pSkyBoxComponent->LoadDiffuseEnvResource(pEnvironment);
+
+		pSkyBoxSystem->GenerateEnvironmentTexture(pSkyBoxComponent);
 	}
 }
 
@@ -129,8 +134,32 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
 	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
 
-	MMeshResource* pCubeResource = pResourceSystem->CreateResource<MMeshResource>();
-	pCubeResource->LoadAsSphere();
+	MResource* pCubeMeshResource = nullptr;
+	
+	if (true)
+	{
+		MMeshResource* pMeshResource = pResourceSystem->CreateResource<MMeshResource>();
+		pMeshResource->LoadAsSphere();
+		pCubeMeshResource = pMeshResource;
+	}
+	else
+	{
+		pCubeMeshResource = pResourceSystem->LoadResource("D:/test_sphere/sphere/sphere.entity");
+		if (!pCubeMeshResource)
+		{
+			MModelConverter convert(pEngine);
+
+			MModelConvertInfo info;
+			info.eMaterialType = MModelConvertMaterialType::E_PBR_Deferred;
+			info.strOutputDir = "D:/test_sphere";
+			info.strOutputName = "sphere";
+			info.strResourcePath = "./Model/sphere.fbx";
+
+			convert.Convert(info);
+
+			pCubeMeshResource = pResourceSystem->LoadResource("D:/test_sphere/sphere/sphere.entity");
+		}
+	}
 
 	MEntity* pSphereEntity = pScene->CreateEntity();
 	pSphereEntity->SetName("Sphere_PBR");
@@ -169,7 +198,7 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 		pMaterial->SetTexutreParam(MaterialKey::AmbientOcc, ao);
 		pMaterial->SetTexutreParam(MaterialKey::Height, height);
 
-		pMeshComponent->Load(pCubeResource);
+		pMeshComponent->Load(pCubeMeshResource);
 		pMeshComponent->SetMaterial(pMaterial);
 	}
 }

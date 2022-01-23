@@ -45,6 +45,8 @@ public:
 	virtual bool CopyImageBuffer(MTexture* pSource, MTexture* pDest) override;
 	virtual void UpdateMipmaps(MTexture* pBuffer) override;
 
+	virtual void addFinishedCallback(std::function<void()> func) override;
+
 	void UpdateShaderParam(MShaderParamSet* pParamSet, MShaderConstantParam* param);
 	void UpdateShaderParam(MShaderParamSet* pParamSet, MShaderTextureParam* param);
 
@@ -54,6 +56,7 @@ public:
 	void BindTextureParam(MShaderParamSet* pParamSet, MShaderTextureParam* pParam);
 
 	void SetTextureLayout(const std::vector<MTexture*>& vTextures, VkImageLayout newLayout);
+
 
 public:
 
@@ -66,6 +69,8 @@ public:
 	VkCommandBuffer m_VkCommandBuffer;
 
 	std::map<MTexture*, VkImageLayout> m_tTextureLayout;
+
+	std::vector<std::function<void()>> m_aRenderFinishedCallback;
 };
 
 class MORTY_API MVulkanSecondaryRenderCommand : public MVulkanRenderCommand

@@ -25,7 +25,7 @@ VS_OUT VS(VS_IN input, uint ViewIndex : SV_ViewID)
     VS_OUT output;
 
     output.pos = mul(float4(input.pos, 1.0f), U_ModelViewProj[ViewIndex]);
-    output.uvw = input.pos;
+    output.uvw = input.normal;
     output.idx = ViewIndex;
 
     return output;
