@@ -200,6 +200,12 @@ void MEnvironmentMapRenderWork::ReleaseMaterial()
 		m_DiffuseMaterial->SubRef();
 		m_DiffuseMaterial = nullptr;
 	}
+
+	if (m_SpecularMaterial)
+	{
+		m_SpecularMaterial->SubRef();
+		m_SpecularMaterial = nullptr;
+	}
 }
 
 void MEnvironmentMapRenderWork::InitializeRenderPass()

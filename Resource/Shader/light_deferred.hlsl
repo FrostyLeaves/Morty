@@ -191,11 +191,11 @@ float3 AdditionAllLights(VS_OUT input, float3 f3Color)
                                     );
     }
 
-    for(int i = 0; i < min(MPOINT_LIGHT_PIXEL_NUMBER, U_nValidPointLightsNumber); ++i)
+    for(int nPointLightIdx = 0; nPointLightIdx < min(MPOINT_LIGHT_PIXEL_NUMBER, U_nValidPointLightsNumber); ++nPointLightIdx)
     {
-        float3 f3LightDir = normalize(U_pointLights[i].f3WorldPosition - f3WorldPosition);
+        float3 f3LightDir = normalize(U_pointLights[nPointLightIdx].f3WorldPosition - f3WorldPosition);
 
-        f3Color += CalcPointLight(  U_pointLights[i],
+        f3Color += CalcPointLight(  U_pointLights[nPointLightIdx],
                                     f3WorldPosition,
                                     f3CameraDir,
                                     f3LightDir,
@@ -207,10 +207,10 @@ float3 AdditionAllLights(VS_OUT input, float3 f3Color)
                                 );
     }
 
-    for(int i = 0; i < min(MSPOT_LIGHT_PIXEL_NUMBER, U_nValidSpotLightsNumber); ++i)
+    for(int nSpotLightIdx = 0; nSpotLightIdx < min(MSPOT_LIGHT_PIXEL_NUMBER, U_nValidSpotLightsNumber); ++nSpotLightIdx)
     {
-        float3 f3LightDir = normalize(U_spotLights[i].f3WorldPosition - f3WorldPosition);
-        f3Color += CalcSpotLight(   U_spotLights[i],
+        float3 f3LightDir = normalize(U_spotLights[nSpotLightIdx].f3WorldPosition - f3WorldPosition);
+        f3Color += CalcSpotLight(   U_spotLights[nSpotLightIdx],
                                     f3CameraDir,
                                     f3LightDir,
                                     f3Normal,

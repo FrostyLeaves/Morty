@@ -2,7 +2,7 @@
 
 struct PS_OUT
 {
-    float4 target0: SV_Target0;
+    float4 target0: SV_Target;
 };
 
 float3 GetPixelColor(VS_OUT input)
@@ -11,7 +11,7 @@ float3 GetPixelColor(VS_OUT input)
     return AdditionAllLights(input, f3Color);
 }
 
-PS_OUT PS(VS_OUT input) : SV_Target
+PS_OUT PS(VS_OUT input)
 {
     PS_OUT output;
     

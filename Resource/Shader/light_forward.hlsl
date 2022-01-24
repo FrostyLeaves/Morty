@@ -180,15 +180,15 @@ float3 AdditionAllLights(float3 f3Color, float4 f3AmbiColor, VS_OUT input)
     
     f3Color += input.vertexPointLight;
 
-    for(int i = 0; i < min(MPOINT_LIGHT_PIXEL_NUMBER, U_nValidPointLightsNumber); ++i)
+    for(int nPointLightIdx = 0; nPointLightIdx < min(MPOINT_LIGHT_PIXEL_NUMBER, U_nValidPointLightsNumber); ++nPointLightIdx)
     {
 
 #if MCALC_NORMAL_IN_VS
-        float3 f3LightDir = input.pointLightDirTangentSpace[i];
+        float3 f3LightDir = input.pointLightDirTangentSpace[nPointLightIdx];
 #else
-        float3 f3LightDir = normalize(U_pointLights[i].f3WorldPosition - input.worldPos);
+        float3 f3LightDir = normalize(U_pointLights[nPointLightIdx].f3WorldPosition - input.worldPos);
 #endif
-        f3Color += CalcPointLight(  U_pointLights[i],
+        f3Color += CalcPointLight(  U_pointLights[nPointLightIdx],
                                     cLightInfo.f3CameraDir,
                                     f3LightDir,
                                     cLightInfo.f3Normal,
@@ -198,15 +198,15 @@ float3 AdditionAllLights(float3 f3Color, float4 f3AmbiColor, VS_OUT input)
                                 );
     }
 
-    for(int i = 0; i < min(MSPOT_LIGHT_PIXEL_NUMBER, U_nValidSpotLightsNumber); ++i)
+    for(int nSpotLightIdx = 0; nSpotLightIdx < min(MSPOT_LIGHT_PIXEL_NUMBER, U_nValidSpotLightsNumber); ++nSpotLightIdx)
     {
 
 #if MCALC_NORMAL_IN_VS
-        float3 f3LightDir = input.spotLightDirTangentSpace[i];
+        float3 f3LightDir = input.spotLightDirTangentSpace[nSpotLightIdx];
 #else
-        float3 f3LightDir = normalize(U_spotLights[i].f3WorldPosition - input.worldPos);
+        float3 f3LightDir = normalize(U_spotLights[nSpotLightIdx].f3WorldPosition - input.worldPos);
 #endif
-        f3Color += CalcSpotLight(   U_spotLights[i],
+        f3Color += CalcSpotLight(   U_spotLights[nSpotLightIdx],
                                     cLightInfo.f3CameraDir,
                                     f3LightDir,
                                     cLightInfo.f3Normal,

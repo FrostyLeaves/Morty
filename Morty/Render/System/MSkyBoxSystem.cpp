@@ -32,6 +32,8 @@ void MSkyBoxSystem::EngineTick(const float& fDelta)
 		m_vGenerateQueue.pop();
 	}
 
+	if (!pSkyBoxComponent)
+		return;
 
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 	if (!pRenderSystem)

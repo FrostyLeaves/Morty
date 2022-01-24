@@ -81,7 +81,7 @@ float2 ParallaxMapping(float2 uv, float3 f3ViewDir, float fScale)
     return f2FinalTexCoords;
 }
 
-PS_OUT PS(VS_OUT input) : SV_Target
+PS_OUT PS(VS_OUT input)
 {
     PS_OUT output;
 

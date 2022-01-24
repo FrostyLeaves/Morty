@@ -538,10 +538,15 @@ void MVulkanDevice::GenerateVertex(MVertexBuffer* ppVertexBuffer, MIMesh* pMesh,
 		memcpy(data, pMesh->GetVertices(), (size_t)bufferSize);
 		vkUnmapMemory(m_VkDevice, vertexBufferMemory);
 
+		SetDebugName((uint64_t)vertexBuffer, VkObjectType::VK_OBJECT_TYPE_BUFFER, "VertexBuffer");
+
+
 		GenerateBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT , indexBuffer, indexBufferMemory);
 		vkMapMemory(m_VkDevice, indexBufferMemory, 0, indexBufferSize, 0, &data);
 		memcpy(data, pMesh->GetIndices(), (size_t)indexBufferSize);
 		vkUnmapMemory(m_VkDevice, indexBufferMemory);
+
+		SetDebugName((uint64_t)indexBuffer, VkObjectType::VK_OBJECT_TYPE_BUFFER, "IndexBuffer");
 	}
 	else
 	{
@@ -553,8 +558,9 @@ void MVulkanDevice::GenerateVertex(MVertexBuffer* ppVertexBuffer, MIMesh* pMesh,
 		memcpy(data, pMesh->GetVertices(), (size_t)bufferSize);
 		vkUnmapMemory(m_VkDevice, stagingBufferMemory);
 
-		
 		GenerateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+
+		SetDebugName((uint64_t)vertexBuffer, VkObjectType::VK_OBJECT_TYPE_BUFFER, "VertexBuffer");
 
 		CopyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
@@ -570,6 +576,8 @@ void MVulkanDevice::GenerateVertex(MVertexBuffer* ppVertexBuffer, MIMesh* pMesh,
 		vkUnmapMemory(m_VkDevice, stagingIdxBufferMemory);
 
 		GenerateBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+
+		SetDebugName((uint64_t)indexBuffer, VkObjectType::VK_OBJECT_TYPE_BUFFER, "IndexBuffer");
 
 		CopyBuffer(stagingIdxBuffer, indexBuffer, indexBufferSize);
 
