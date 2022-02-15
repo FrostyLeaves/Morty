@@ -78,7 +78,7 @@ bool MRenderModule::Register(MEngine* pEngine)
 		if (MTextureResource* pTexture = pResourceSystem->CreateResource<MTextureResource>(DefaultNormal))
 		{
 			MByte byte[3];
-			byte[0] = byte[1] = 0;
+			byte[0] = byte[1] = 127;
 			byte[2] = 255;
 			pTexture->LoadFromMemory(byte, 1, 1, 3);
 		}

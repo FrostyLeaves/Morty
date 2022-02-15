@@ -17,6 +17,7 @@
 #include "MSkyBoxComponent.h"
 
 
+const int SpecularMipmapCount = 7;
 const float EnvironmentTextureSize = 128.0f;
 
 MORTY_CLASS_IMPLEMENT(MEnvironmentMapRenderWork, MObject)
@@ -25,7 +26,7 @@ MEnvironmentMapRenderWork::MEnvironmentMapRenderWork()
 	: MObject()
 	, m_bUpdateNextFrame(true)
 	, m_DiffuseMaterial(nullptr)
-	, m_SpecularMaterial(nullptr)
+	, m_vSpecularMaterial()
 	, m_pCubeMesh(nullptr)
 {
 
@@ -68,6 +69,20 @@ void MEnvironmentMapRenderWork::RenderEnvironment(MIRenderCommand* pCommand, MSk
 	if (!pSkyBoxComponent)
 		return;
 
+	
+	RenderDiffuse(pCommand, pSkyBoxComponent);
+	RenderSpecular(pCommand, pSkyBoxComponent);
+	
+	m_bUpdateNextFrame = false;
+}
+
+MResource* MEnvironmentMapRenderWork::GetDiffuseOutputTexture()
+{
+	return m_DiffuseEnvironmentMap.GetResource();
+}
+
+void MEnvironmentMapRenderWork::RenderDiffuse(MIRenderCommand* pCommand, MSkyBoxComponent* pSkyBoxComponent)
+{
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 	MIDevice* pRenderDevice = pRenderSystem->GetDevice();
 
@@ -77,13 +92,9 @@ void MEnvironmentMapRenderWork::RenderEnvironment(MIRenderCommand* pCommand, MSk
 		m_DiffuseMaterial->SetTexutreParam("U_SkyBox", pSkyBoxTexture);
 	}
 
-	if (m_SpecularMaterial)
-	{
-		m_SpecularMaterial->SetTexutreParam("U_SkyBox", pSkyBoxTexture);
-	}
 
 	pCommand->BeginRenderPass(&m_DiffuseRenderPass);
-	
+
 	Vector2 v2LeftTop = Vector2(0.0f, 0.0f);
 	Vector2 v2Size = Vector2(EnvironmentTextureSize, EnvironmentTextureSize);
 	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
@@ -95,7 +106,6 @@ void MEnvironmentMapRenderWork::RenderEnvironment(MIRenderCommand* pCommand, MSk
 	pCommand->EndRenderPass();
 
 
-
 	if (MTextureResource* pDiffuseTexture = m_DiffuseEnvironmentMap.GetResource<MTextureResource>())
 	{
 		if (MTexture* pTexture = pDiffuseTexture->GetTextureTemplate())
@@ -105,13 +115,48 @@ void MEnvironmentMapRenderWork::RenderEnvironment(MIRenderCommand* pCommand, MSk
 
 		pSkyBoxComponent->LoadDiffuseEnvResource(pDiffuseTexture);
 	}
-	
-	m_bUpdateNextFrame = false;
 }
 
-MResource* MEnvironmentMapRenderWork::GetDiffuseOutputTexture()
+void MEnvironmentMapRenderWork::RenderSpecular(MIRenderCommand* pCommand, MSkyBoxComponent* pSkyBoxComponent)
 {
-	return m_DiffuseEnvironmentMap.GetResource();
+	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+	MIDevice* pRenderDevice = pRenderSystem->GetDevice();
+
+	MResource* pSkyBoxTexture = pSkyBoxComponent->GetSkyBoxResource();
+
+	MTexture* pSpecularTexture = m_SpecularEnvironmentMap.GetResource<MTextureResource>()->GetTextureTemplate();
+	
+
+	for (uint32_t nIdx = 0; nIdx < m_vSpecularRenderPass.size(); ++nIdx)
+	{
+		if (m_vSpecularMaterial[nIdx])
+		{
+			m_vSpecularMaterial[nIdx]->SetTexutreParam("U_SkyBox", pSkyBoxTexture);
+		}
+
+		pCommand->BeginRenderPass(&m_vSpecularRenderPass[nIdx]);
+
+		Vector2 v2LeftTop = Vector2(0.0f, 0.0f);
+		Vector2 v2Size = pSpecularTexture->GetMipmapSize(nIdx);
+
+		pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
+		pCommand->SetScissor(MScissorInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
+
+		pCommand->SetUseMaterial(m_vSpecularMaterial[nIdx]);
+		pCommand->DrawMesh(m_pCubeMesh->GetMesh());
+
+		pCommand->EndRenderPass();
+	}
+
+	if (MTextureResource* pSpecularTexture = m_SpecularEnvironmentMap.GetResource<MTextureResource>())
+	{
+		if (MTexture* pTexture = pSpecularTexture->GetTextureTemplate())
+		{
+			pCommand->SetRenderToTextureBarrier({ pTexture });
+		}
+
+		pSkyBoxComponent->LoadSpecularEnvResource(pSpecularTexture);
+	}
 }
 
 void MEnvironmentMapRenderWork::InitializeResource()
@@ -124,14 +169,14 @@ void MEnvironmentMapRenderWork::InitializeResource()
 
 	if (MTextureResource* pDiffuseCubeMapResource = pResourceSystem->CreateResource<MTextureResource>())
 	{
-		pDiffuseCubeMapResource->CreateCubeMapRenderTarget(EnvironmentTextureSize, EnvironmentTextureSize, 4, METextureLayout::ERGBA_FLOAT_32);
+		pDiffuseCubeMapResource->CreateCubeMapRenderTarget(EnvironmentTextureSize, EnvironmentTextureSize, 4, METextureLayout::ERGBA_FLOAT_16, false);
 
 		m_DiffuseEnvironmentMap.SetResource(pDiffuseCubeMapResource);
 	}
 
 	if (MTextureResource* pSpecularCubeMapResource = pResourceSystem->CreateResource<MTextureResource>())
 	{
-		pSpecularCubeMapResource->CreateCubeMapRenderTarget(EnvironmentTextureSize, EnvironmentTextureSize, 4, METextureLayout::ERGBA_FLOAT_32);
+		pSpecularCubeMapResource->CreateCubeMapRenderTarget(EnvironmentTextureSize, EnvironmentTextureSize, 4, METextureLayout::ERGBA_FLOAT_16, true);
 
 		m_SpecularEnvironmentMap.SetResource(pSpecularCubeMapResource);
 	}
@@ -168,10 +213,10 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 	}
 
 	m_DiffuseMaterial = pResourceSystem->CreateResource<MMaterial>("Diffuse CubeMap Material");
-	MResource* vs = pResourceSystem->LoadResource("Shader/diffuse_map.mvs");
-	MResource* ps = pResourceSystem->LoadResource("Shader/diffuse_map.mps");
+	MResource* vs = pResourceSystem->LoadResource("Shader/ibl_map.mvs");
+	MResource* diffuseps = pResourceSystem->LoadResource("Shader/diffuse_map.mps");
 	m_DiffuseMaterial->LoadVertexShader(vs);
-	m_DiffuseMaterial->LoadPixelShader(ps);
+	m_DiffuseMaterial->LoadPixelShader(diffuseps);
 	m_DiffuseMaterial->AddRef();
 
 	m_DiffuseMaterial->SetRasterizerType(MERasterizerType::ECullFront);
@@ -191,6 +236,44 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 			pParams->m_vParams[0]->SetDirty();
 		}
 	}
+
+
+	MResource* specularps = pResourceSystem->LoadResource("Shader/specular_map.mps");
+	m_vSpecularMaterial.resize(SpecularMipmapCount);
+	for (uint32_t nMipmap = 0; nMipmap < SpecularMipmapCount; ++nMipmap)
+	{
+		m_vSpecularMaterial[nMipmap] = pResourceSystem->CreateResource<MMaterial>(MString("Specular CubeMap Material_") + MStringHelper::ToString(nMipmap));
+		m_vSpecularMaterial[nMipmap]->LoadVertexShader(vs);
+		m_vSpecularMaterial[nMipmap]->LoadPixelShader(specularps);
+		m_vSpecularMaterial[nMipmap]->AddRef();
+		m_vSpecularMaterial[nMipmap]->SetRasterizerType(MERasterizerType::ECullFront);
+
+		if (MShaderParamSet* pParams = m_vSpecularMaterial[nMipmap]->GetMaterialParamSet())
+		{
+			if (MStruct* matrix = pParams->m_vParams[0]->var.GetStruct())
+			{
+				if (MVariantArray* mvp = matrix->FindMember<MVariantArray>("U_ModelViewProj"))
+				{
+					for (uint32_t i = 0; i < 6; ++i)
+					{
+						mvp->GetMember(i)->var = vCmaeraView[i];
+					}
+				}
+
+				pParams->m_vParams[0]->SetDirty();
+			}
+			if (MStruct* matrix = pParams->m_vParams[1]->var.GetStruct())
+			{
+				if (float* roughness = matrix->FindMember<float>("U_roughness"))
+				{
+					*roughness = (float)nMipmap / (float)(SpecularMipmapCount);
+				}
+
+				pParams->m_vParams[1]->SetDirty();
+			}
+		}
+	}
+
 }
 
 void MEnvironmentMapRenderWork::ReleaseMaterial()
@@ -201,11 +284,12 @@ void MEnvironmentMapRenderWork::ReleaseMaterial()
 		m_DiffuseMaterial = nullptr;
 	}
 
-	if (m_SpecularMaterial)
+	for (MMaterial* pMaterial : m_vSpecularMaterial)
 	{
-		m_SpecularMaterial->SubRef();
-		m_SpecularMaterial = nullptr;
+		pMaterial->SubRef();
+		pMaterial = nullptr;
 	}
+	m_vSpecularMaterial.clear();
 }
 
 void MEnvironmentMapRenderWork::InitializeRenderPass()
@@ -215,17 +299,19 @@ void MEnvironmentMapRenderWork::InitializeRenderPass()
 	MTextureResource* pDiffuseTexture = m_DiffuseEnvironmentMap.GetResource<MTextureResource>();
 	MTextureResource* pSpecularTexture = m_SpecularEnvironmentMap.GetResource<MTextureResource>();
 
-	m_DiffuseRenderPass.m_vBackTextures.push_back(pDiffuseTexture->GetTextureTemplate());
-	m_DiffuseRenderPass.m_vBackDesc.push_back({ true, MColor::Black_T });
+	m_DiffuseRenderPass.AddBackTexture(pDiffuseTexture->GetTextureTemplate(), { true, MColor::Black_T });
 
-	m_SpecularRenderPass.m_vBackTextures.push_back(pSpecularTexture->GetTextureTemplate());
-	m_SpecularRenderPass.m_vBackDesc.push_back({ true, MColor::Black_T });
+	m_vSpecularRenderPass.resize(SpecularMipmapCount);
+	for (uint32_t nMipmap = 0; nMipmap < SpecularMipmapCount; ++nMipmap)
+	{
+		m_vSpecularRenderPass[nMipmap].SetViewNum(6);
+		m_vSpecularRenderPass[nMipmap].AddBackTexture(pSpecularTexture->GetTextureTemplate(), { true, false, MColor::Black_T, nMipmap });
+		m_vSpecularRenderPass[nMipmap].GenerateBuffer(pRenderSystem->GetDevice());
+	}
 
 	m_DiffuseRenderPass.SetViewNum(6);
 	m_DiffuseRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
 
-	m_SpecularRenderPass.SetViewNum(6);
-	m_SpecularRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
 }
 
 void MEnvironmentMapRenderWork::ReleaseRenderPass()
@@ -233,5 +319,11 @@ void MEnvironmentMapRenderWork::ReleaseRenderPass()
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
 	m_DiffuseRenderPass.DestroyBuffer(pRenderSystem->GetDevice());
-	m_SpecularRenderPass.DestroyBuffer(pRenderSystem->GetDevice());
+
+	for (MRenderPass& renderpass : m_vSpecularRenderPass)
+	{
+		renderpass.DestroyBuffer(pRenderSystem->GetDevice());
+	}
+
+	m_vSpecularRenderPass.clear();
 }

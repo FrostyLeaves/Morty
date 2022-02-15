@@ -92,6 +92,7 @@ public:
 	void TransitionImageLayout(VkImageMemoryBarrier& imageMemoryBarrier, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange subresourceRange);
 
 	VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, const uint32_t& unMipmap, const uint32_t& unLayerCount, const VkImageViewType& eViewType);
+	VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, const uint32_t& unBaseMipmap, const uint32_t& unMipmapCount, const uint32_t& unLayerCount, const VkImageViewType& eViewType);
 
 	void CreateImage(const uint32_t& unWidth, const uint32_t& unHeight, const uint32_t& unMipmap, const uint32_t& unLayerCount, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageLayout defaultLayout, VkImage& image, VkDeviceMemory& imageMemory, VkImageCreateFlags createFlag);
 
@@ -120,7 +121,7 @@ public:
 	VkImageAspectFlags GetAspectFlags(MTexture* pTexture);
 	VkImageLayout GetImageLayout(MTexture* pTexture);
 	VkImageViewType GetImageViewType(const METextureType& eType);
-	int GetPimpapSize(MTexture* pTexture);
+	int GetMipmapCount(MTexture* pTexture);
 	int GetLayerCount(MTexture* pTexture);
 
 	MVulkanObjectRecycleBin* GetRecycleBin();

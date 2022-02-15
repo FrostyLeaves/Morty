@@ -91,7 +91,7 @@ void MForwardRenderProgram::RenderReady(MTaskNode* pTaskNode)
 		if (m_pTransparentWork)
 		{
 			m_pTransparentWork->Resize(pViewport->GetSize());
-			m_pTransparentWork->SetRenderTarget(GetOutputTexture(), m_forwardRenderPass.m_pDepthTexture);
+			m_pTransparentWork->SetRenderTarget(GetOutputTexture(), m_forwardRenderPass.GetDepthTexture());
 		}
 	}
 }
@@ -258,15 +258,13 @@ void MForwardRenderProgram::InitializeRenderPass()
 	MTexture* pRenderTarget = MTexture::CreateRenderTarget();
 	pRenderTarget->SetSize(v2Size);
 	pRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
-	m_forwardRenderPass.m_vBackTextures.push_back(pRenderTarget);
-	m_forwardRenderPass.m_vBackDesc.push_back(MPassTargetDescription(true, MColor(0.0f, 0.0f, 0.0f, 1.0)));
+	m_forwardRenderPass.AddBackTexture(pRenderTarget, { true, MColor(0.0f, 0.0f, 0.0f, 1.0) });
 
 
-	m_forwardRenderPass.m_pDepthTexture = MTexture::CreateShadowMap();
-	m_forwardRenderPass.m_pDepthTexture->SetSize(v2Size);
-	m_forwardRenderPass.m_pDepthTexture->GenerateBuffer(pRenderSystem->GetDevice());
-	m_forwardRenderPass.m_DepthDesc.bClearWhenRender = true;
-	m_forwardRenderPass.m_DepthDesc.cClearColor = MColor::White;
+	MTexture* pShadowMapTexture = MTexture::CreateShadowMap();
+	pShadowMapTexture->SetSize(v2Size);
+	pShadowMapTexture->GenerateBuffer(pRenderSystem->GetDevice());
+	m_forwardRenderPass.SetDepthTexture(pShadowMapTexture, { true, MColor::White });
 
 	m_forwardRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
 
@@ -277,17 +275,18 @@ void MForwardRenderProgram::ReleaseRenderPass()
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
-	for (MTexture* pTexture : m_forwardRenderPass.m_vBackTextures)
+	for (MBackTexture& tex : m_forwardRenderPass.m_vBackTextures)
 	{
-		pTexture->DestroyBuffer(pRenderSystem->GetDevice());
-		delete pTexture;
-		pTexture = nullptr;
+		tex.pTexture->DestroyBuffer(pRenderSystem->GetDevice());
+		delete tex.pTexture;
+		tex.pTexture = nullptr;
 	}
-	if (m_forwardRenderPass.m_pDepthTexture)
+	if (MTexture* pDepthTexture = m_forwardRenderPass.GetDepthTexture())
 	{
-		m_forwardRenderPass.m_pDepthTexture->DestroyBuffer(pRenderSystem->GetDevice());
-		delete m_forwardRenderPass.m_pDepthTexture;
-		m_forwardRenderPass.m_pDepthTexture = nullptr;
+		pDepthTexture->DestroyBuffer(pRenderSystem->GetDevice());
+		delete pDepthTexture;
+		pDepthTexture = nullptr;
+		m_forwardRenderPass.SetDepthTexture(nullptr, {});
 	}
 
 	m_forwardRenderPass.DestroyBuffer(pRenderSystem->GetDevice());

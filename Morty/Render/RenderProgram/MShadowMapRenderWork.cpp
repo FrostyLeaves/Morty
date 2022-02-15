@@ -60,11 +60,10 @@ void MShadowMapRenderWork::OnCreated()
 	m_pShadowSkeletonMaterial->SetRasterizerType(MERasterizerType::ECullFront);
 	m_pShadowSkeletonMaterial->AddRef();
 
-	m_renderPass.m_pDepthTexture = MTexture::CreateShadowMap();
-	m_renderPass.m_pDepthTexture->SetSize(Vector2(1024.0, 1024.0));
-	m_renderPass.m_pDepthTexture->GenerateBuffer(pRenderSystem->GetDevice());
-	m_renderPass.m_DepthDesc.bClearWhenRender = true;
-	m_renderPass.m_DepthDesc.cClearColor = MColor::White;
+	MTexture* pShadowMapTexture = MTexture::CreateShadowMap();
+	pShadowMapTexture->SetSize(Vector2(1024.0, 1024.0));
+	pShadowMapTexture->GenerateBuffer(pRenderSystem->GetDevice());
+	m_renderPass.SetDepthTexture(pShadowMapTexture, { true, MColor::White });
 	m_renderPass.GenerateBuffer(pRenderSystem->GetDevice());
 }
 
@@ -83,11 +82,11 @@ void MShadowMapRenderWork::OnDelete()
 	m_pShadowSkeletonMaterial = nullptr;
 
 
-	if (m_renderPass.m_pDepthTexture)
+	if (MTexture* pDepthTexture = m_renderPass.GetDepthTexture())
 	{
-		m_renderPass.m_pDepthTexture->DestroyBuffer(pRenderSystem->GetDevice());
-		delete m_renderPass.m_pDepthTexture;
-		m_renderPass.m_pDepthTexture = nullptr;
+		pDepthTexture->DestroyBuffer(pRenderSystem->GetDevice());
+		delete pDepthTexture;
+		pDepthTexture = nullptr;
 	}
 
 	m_renderPass.DestroyBuffer(pRenderSystem->GetDevice());
@@ -154,5 +153,5 @@ void MShadowMapRenderWork::UpdateShadowParams(MRenderInfo& info)
 
 MTexture* MShadowMapRenderWork::GetShadowMap()
 {
-	return m_renderPass.m_pDepthTexture;
+	return m_renderPass.GetDepthTexture();
 }

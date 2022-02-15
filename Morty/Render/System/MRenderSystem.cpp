@@ -69,18 +69,18 @@ void MRenderSystem::Release()
 
 void MRenderSystem::ResizeFrameBuffer(MRenderPass& renderpass, const Vector2& v2Size)
 {
-	for (MTexture* pTexture : renderpass.m_vBackTextures)
+	for (MBackTexture& tex : renderpass.m_vBackTextures)
 	{
-		pTexture->SetSize(v2Size);
-		pTexture->DestroyBuffer(GetDevice());
-		pTexture->GenerateBuffer(GetDevice());
+		tex.pTexture->SetSize(v2Size);
+		tex.pTexture->DestroyBuffer(GetDevice());
+		tex.pTexture->GenerateBuffer(GetDevice());
 	}
 
-	if (renderpass.m_pDepthTexture)
+	if (MTexture* pDepthTexture = renderpass.GetDepthTexture())
 	{
-		renderpass.m_pDepthTexture->SetSize(v2Size);
-		renderpass.m_pDepthTexture->DestroyBuffer(GetDevice());
-		renderpass.m_pDepthTexture->GenerateBuffer(GetDevice());
+		pDepthTexture->SetSize(v2Size);
+		pDepthTexture->DestroyBuffer(GetDevice());
+		pDepthTexture->GenerateBuffer(GetDevice());
 	}
 
 	renderpass.Resize(GetDevice());
@@ -90,24 +90,23 @@ void MRenderSystem::ReleaseRenderpass(MRenderPass& renderpass, bool bClearTextur
 {
 	if (bClearTexture)
 	{
-		for (MTexture* pTexture : renderpass.m_vBackTextures)
+		for (MBackTexture& tex : renderpass.m_vBackTextures)
 		{
-			pTexture->DestroyBuffer(GetDevice());
-			delete pTexture;
-			pTexture = nullptr;
+			tex.pTexture->DestroyBuffer(GetDevice());
+			delete tex.pTexture;
+			tex.pTexture = nullptr;
 		}
 
-		if (renderpass.m_pDepthTexture)
+		if (MTexture* pDepthTexture = renderpass.GetDepthTexture())
 		{
-			renderpass.m_pDepthTexture->DestroyBuffer(GetDevice());
-			delete renderpass.m_pDepthTexture;
-			renderpass.m_pDepthTexture = nullptr;
+			pDepthTexture->DestroyBuffer(GetDevice());
+			delete pDepthTexture;
+			pDepthTexture = nullptr;
 		}
 	}
 	
 	renderpass.m_vBackTextures.clear();
-	renderpass.m_vBackDesc.clear();
-	renderpass.m_pDepthTexture = nullptr;
+	renderpass.SetDepthTexture(nullptr, {});
 
 	renderpass.DestroyBuffer(GetDevice());
 }

@@ -46,6 +46,10 @@ public:
 		return value;
 	}
 
+	//x: r; y: theta; z: phi
+	static Vector3 ConvertToSphericalCoord(const Vector3& pos);
+	static Vector3 ConvertFormSphericalCoord(const Vector3& pos);
+
 private:
 
 	static std::default_random_engine s_randomEngine;

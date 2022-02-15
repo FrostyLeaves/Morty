@@ -60,3 +60,23 @@ int MMath::RandInt(const int& nMin, const int& nMax)
 	std::uniform_int_distribution<int> randomUniform(nMin, nMax);
 	return randomUniform(s_randomEngine);
 }
+
+Vector3 MMath::ConvertToSphericalCoord(const Vector3& pos)
+{
+	float fLength = pos.Length();
+	float theta = acosf(pos.y / fLength);
+	float phi = atan2f(pos.z, pos.x);
+
+	return Vector3(fLength, theta, phi);
+}
+
+Vector3 MMath::ConvertFormSphericalCoord(const Vector3& pos)
+{
+	const float& fLength = pos.x;
+	const float& theta = pos.y;
+	const float& phi = pos.z;
+
+	return Vector3(fLength * sin(theta) * cos(phi),
+	fLength * cos(theta),
+	fLength * sin(theta) * sin(phi));
+}

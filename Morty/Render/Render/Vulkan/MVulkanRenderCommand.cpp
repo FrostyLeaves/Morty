@@ -65,11 +65,11 @@ void MVulkanRenderCommand::BeginRenderPass(MRenderPass* pRenderPass)
 {
 	//TODO check renderpass valid.
 
-	SetTextureLayout(pRenderPass->m_vBackTextures, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	SetTextureLayout(pRenderPass->GetBackTextures(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 	
-	if (pRenderPass->m_pDepthTexture)
+	if (MTexture* pDepthTexture = pRenderPass->GetDepthTexture())
 	{
-		SetTextureLayout({ pRenderPass->m_pDepthTexture }, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		SetTextureLayout({ pDepthTexture }, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 	}
 
 	VkRenderPassBeginInfo renderPassInfo{};
@@ -84,11 +84,11 @@ void MVulkanRenderCommand::BeginRenderPass(MRenderPass* pRenderPass)
 	std::vector<VkClearValue> vClearValues(unBackNum);
 	for (uint32_t i = 0; i < unBackNum; ++i)
 	{
-		MColor color = pRenderPass->m_vBackDesc[i].cClearColor;
+		MColor color = pRenderPass->m_vBackTextures[i].desc.cClearColor;
 		vClearValues[i].color = { color.r, color.g, color.b, color.a };
 	}
 
-	if (pRenderPass->m_pDepthTexture)
+	if (MTexture* pTexture = pRenderPass->GetDepthTexture())
 	{
 		vClearValues.push_back({});
 		vClearValues.back().depthStencil = { 1.0f, 0 };
@@ -548,7 +548,7 @@ void GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPass, std::vector<V
 
 	if (MEMaterialType::EDefault == eType || MEMaterialType::EDeferred == eType)
 	{
-		for (uint32_t i = 0; i < pRenderPass->m_vBackDesc.size(); ++i)
+		for (uint32_t i = 0; i < pRenderPass->m_vBackTextures.size(); ++i)
 		{
 			vBlendAttach.push_back({});
 			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
@@ -564,7 +564,7 @@ void GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPass, std::vector<V
 	}
 	else if (MEMaterialType::EDepthPeel == eType)
 	{
-		if (pRenderPass->m_vBackDesc.size() < 4)
+		if (pRenderPass->m_vBackTextures.size() < 4)
 			return;
 
 		vBlendAttach.resize(4);
@@ -613,7 +613,7 @@ void GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPass, std::vector<V
 	}
 	else if (MEMaterialType::ETransparentBlend == eType)
 	{
-		for (uint32_t i = 0; i < pRenderPass->m_vBackDesc.size(); ++i)
+		for (uint32_t i = 0; i < pRenderPass->m_vBackTextures.size(); ++i)
 		{
 			vBlendAttach.push_back({});
 			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
@@ -629,7 +629,7 @@ void GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPass, std::vector<V
 	}
 	else if (MEMaterialType::EImGui == eType)
 	{
-		for (uint32_t i = 0; i < pRenderPass->m_vBackDesc.size(); ++i)
+		for (uint32_t i = 0; i < pRenderPass->m_vBackTextures.size(); ++i)
 		{
 			vBlendAttach.push_back({});
 			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();

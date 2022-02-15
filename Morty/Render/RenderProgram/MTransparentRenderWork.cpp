@@ -165,7 +165,6 @@ void MTransparentRenderWork::RenderDepthPeel(MRenderInfo& info)
 void MTransparentRenderWork::Resize(const Vector2& v2Size)
 {
 	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
-	m_fillRenderPass.m_vBackTextures[0] = m_pOutputTexture;
 	m_fillRenderPass.Resize(pRenderSystem->GetDevice());
 
 	pRenderSystem->ResizeFrameBuffer(m_peelRenderPass, v2Size);
@@ -353,23 +352,17 @@ void MTransparentRenderWork::InitializePeelRenderPass()
 {
 	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
 
-	m_peelRenderPass.m_vBackTextures.push_back(m_pFrontTexture);
-	m_peelRenderPass.m_vBackDesc.push_back(MPassTargetDescription(true, MColor::Black_T));
+	m_peelRenderPass.AddBackTexture(m_pFrontTexture, { true, MColor::Black_T });
 	
-	m_peelRenderPass.m_vBackTextures.push_back(m_pBackTexture);
-	m_peelRenderPass.m_vBackDesc.push_back(MPassTargetDescription(true, MColor::Black_T));
+	m_peelRenderPass.AddBackTexture(m_pBackTexture, { true, MColor::Black_T });
 	
-	m_peelRenderPass.m_vBackTextures.push_back(m_pFrontDepthForPassA);
-	m_peelRenderPass.m_vBackDesc.push_back(MPassTargetDescription(true, MColor::White));
+	m_peelRenderPass.AddBackTexture(m_pFrontDepthForPassA, { true, MColor::White });
 	
-	m_peelRenderPass.m_vBackTextures.push_back(m_pBackDepthForPassA);
-	m_peelRenderPass.m_vBackDesc.push_back(MPassTargetDescription(true, MColor::Black_T));
+	m_peelRenderPass.AddBackTexture(m_pBackDepthForPassA, { true, MColor::Black_T });
 	
-	m_peelRenderPass.m_vBackTextures.push_back(m_pFrontDepthForPassB);
-	m_peelRenderPass.m_vBackDesc.push_back(MPassTargetDescription(true, MColor::White));
+	m_peelRenderPass.AddBackTexture(m_pFrontDepthForPassB, { true, MColor::White });
 	
-	m_peelRenderPass.m_vBackTextures.push_back(m_pBackDepthForPassB);
-	m_peelRenderPass.m_vBackDesc.push_back(MPassTargetDescription(true, MColor::Black_T));
+	m_peelRenderPass.AddBackTexture(m_pBackDepthForPassB, { true, MColor::Black_T });
 
 
 	static const uint32_t SUB_PASS_NUM = 6;
@@ -422,8 +415,7 @@ void MTransparentRenderWork::InitializeFillRenderPass()
 	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
 
 
-	m_fillRenderPass.m_vBackTextures.push_back(m_pOutputTexture);
-	m_fillRenderPass.m_vBackDesc.push_back(MPassTargetDescription(false, true, MColor::Black_T));
+	m_fillRenderPass.AddBackTexture(m_pOutputTexture, { false, true, MColor::Black_T });
 
 	m_fillRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
 }

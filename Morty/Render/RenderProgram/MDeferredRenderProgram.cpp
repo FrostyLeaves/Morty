@@ -25,6 +25,7 @@
 #include "MTransparentRenderWork.h"
 #include "MEnvironmentMapRenderWork.h"
 
+#include "MTextureResource.h"
 #include "MMaterialResource.h"
 
 MORTY_CLASS_IMPLEMENT(MDeferredRenderProgram, MIRenderProgram)
@@ -102,7 +103,7 @@ void MDeferredRenderProgram::RenderReady(MTaskNode* pTaskNode)
 		if (m_pTransparentWork)
 		{
 			m_pTransparentWork->Resize(v2Size);
-			m_pTransparentWork->SetRenderTarget(GetOutputTexture(), m_gbufferRenderPass.m_pDepthTexture);
+			m_pTransparentWork->SetRenderTarget(GetOutputTexture(), m_gbufferRenderPass.GetDepthTexture());
 		}
 	}
 }
@@ -138,11 +139,11 @@ void MDeferredRenderProgram::RenderLightning(MTaskNode* pTaskNode)
 {
 	MIRenderCommand* pCommand = m_renderInfo.pPrimaryRenderCommand;
 
-	pCommand->SetRenderToTextureBarrier(m_gbufferRenderPass.m_vBackTextures);
+	pCommand->SetRenderToTextureBarrier(m_gbufferRenderPass.GetBackTextures());
 
 	pCommand->BeginRenderPass(&m_lightningRenderPass);
 
-	Vector2 v2Size = m_lightningRenderPass.m_vBackTextures[0]->GetSize();
+	Vector2 v2Size = m_lightningRenderPass.GetFrameBufferSize();
 
 	pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
 	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
@@ -255,9 +256,9 @@ std::vector<MTexture*> MDeferredRenderProgram::GetOutputTextures()
 		}
 	}
 
-	for (MTexture* pGBuffer : m_gbufferRenderPass.m_vBackTextures)
+	for (MBackTexture& tex: m_gbufferRenderPass.m_vBackTextures)
 	{
-		vResult.push_back(pGBuffer);
+		vResult.push_back(tex.pTexture);
 	}
 
 	return vResult;
@@ -387,36 +388,14 @@ void MDeferredRenderProgram::InitializeRenderPass()
 		pRenderTarget->SetName(desc.first);
 		pRenderTarget->SetSize(v2Size);
 		pRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
-		m_gbufferRenderPass.m_vBackTextures.push_back(pRenderTarget);
-		m_gbufferRenderPass.m_vBackDesc.push_back(desc.second);
+		m_gbufferRenderPass.AddBackTexture(pRenderTarget, desc.second);
 	}
-
-// 	if (MRenderGlobal::GBUFFER_UNIFIED_FORMAT)
-// 	{
-// 		MTexture* pDepthRenderTarget = MTexture::CreateRenderTarget();
-// 		pDepthRenderTarget->SetName("DepthMap");
-// 		pDepthRenderTarget->SetSize(v2Size);
-// 		pDepthRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
-// 		m_gbufferRenderPass.m_vBackTextures.push_back(pDepthRenderTarget);
-// 		m_gbufferRenderPass.m_vBackDesc.push_back({ true, MColor::Black_T });
-// 	}
-// 	else
-// 	{
-// 		MTexture* pDepthRenderTarget = MTexture::CreateRenderTargetFloat32();
-// 		pDepthRenderTarget->SetName("DepthMap");
-// 		pDepthRenderTarget->SetSize(v2Size);
-// 		pDepthRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
-// 		m_gbufferRenderPass.m_vBackTextures.push_back(pDepthRenderTarget);
-// 		m_gbufferRenderPass.m_vBackDesc.push_back({ true, MColor::Black_T });
-// 	}
 
 	MTexture* pDepthTexture = MTexture::CreateShadowMap();
 	pDepthTexture->SetSize(v2Size);
 	pDepthTexture->GenerateBuffer(pRenderSystem->GetDevice());
 	
-	m_gbufferRenderPass.m_pDepthTexture = pDepthTexture;
-	m_gbufferRenderPass.m_DepthDesc.bClearWhenRender = true;
-	m_gbufferRenderPass.m_DepthDesc.cClearColor = MColor::White;
+	m_gbufferRenderPass.SetDepthTexture(pDepthTexture, { true, MColor::White });
 	m_gbufferRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
 
 
@@ -425,27 +404,18 @@ void MDeferredRenderProgram::InitializeRenderPass()
 	pLightningRenderTarget->SetName("Lightning Output");
 	pLightningRenderTarget->SetSize(v2Size);
 	pLightningRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
-	m_lightningRenderPass.m_vBackTextures.push_back(pLightningRenderTarget);
-	m_lightningRenderPass.m_vBackDesc.push_back(MPassTargetDescription(true, MColor::Black_T));
+	m_lightningRenderPass.AddBackTexture(pLightningRenderTarget, { true, MColor::Black_T });
 	m_lightningRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
 
 
 
-	m_forwardRenderPass.m_vBackTextures.push_back(pLightningRenderTarget);
-	m_forwardRenderPass.m_vBackDesc.push_back(MPassTargetDescription(false, true, MColor::Black_T));
-	m_forwardRenderPass.m_pDepthTexture = pDepthTexture;
-	m_forwardRenderPass.m_DepthDesc.bClearWhenRender = false;
-	m_forwardRenderPass.m_DepthDesc.bAlreadyRender = true;
-	m_forwardRenderPass.m_DepthDesc.cClearColor = MColor::White;
+	m_forwardRenderPass.AddBackTexture(pLightningRenderTarget, { false, true, MColor::Black_T });
+	m_forwardRenderPass.SetDepthTexture(pDepthTexture, { false, true, MColor::White });
 	m_forwardRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
 
 
-	m_debugRenderPass.m_vBackTextures.push_back(pLightningRenderTarget);
-	m_debugRenderPass.m_vBackDesc.push_back(MPassTargetDescription(false, true, MColor::Black_T));
-	m_debugRenderPass.m_pDepthTexture = pDepthTexture;
-	m_debugRenderPass.m_DepthDesc.bClearWhenRender = false;
-	m_debugRenderPass.m_DepthDesc.bAlreadyRender = true;
-	m_debugRenderPass.m_DepthDesc.cClearColor = MColor::White;
+	m_debugRenderPass.AddBackTexture(pLightningRenderTarget, { false, true, MColor::Black_T });
+	m_debugRenderPass.SetDepthTexture(pDepthTexture, { false, true, MColor::White });
 	m_debugRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
 
 
@@ -466,6 +436,17 @@ void MDeferredRenderProgram::ReleaseRenderPass()
 void MDeferredRenderProgram::InitializeFrameShaderParams()
 {
 	m_frameParamSet.InitializeShaderParamSet(GetEngine());
+
+
+	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+
+	MResource* pBrdfTexture = pResourceSystem->LoadResource("/Texture/ibl_brdf_lut.png");
+
+	if (MTextureResource* pTexture = pBrdfTexture->DynamicCast<MTextureResource>())
+	{
+		m_BrdfTexture.SetResource(pBrdfTexture);
+		m_frameParamSet.SetBrdfMapTexture(pTexture->GetTextureTemplate());
+	}
 }
 
 void MDeferredRenderProgram::ReleaseFrameShaderParams()
@@ -488,9 +469,9 @@ void MDeferredRenderProgram::InitializeMaterial()
 
 	if (MShaderParamSet* pParams = m_pLightningMaterial->GetMaterialParamSet())
 	{
-		pParams->SetValue("U_mat_f3Albedo_fMetallic", m_gbufferRenderPass.m_vBackTextures[0]);
-		pParams->SetValue("U_mat_f3Normal_fRoughness", m_gbufferRenderPass.m_vBackTextures[1]);
-		pParams->SetValue("U_mat_f3Position_fAmbientOcc", m_gbufferRenderPass.m_vBackTextures[2]);
+		pParams->SetValue("U_mat_f3Albedo_fMetallic", m_gbufferRenderPass.m_vBackTextures[0].pTexture);
+		pParams->SetValue("U_mat_f3Normal_fRoughness", m_gbufferRenderPass.m_vBackTextures[1].pTexture);
+		pParams->SetValue("U_mat_f3Position_fAmbientOcc", m_gbufferRenderPass.m_vBackTextures[2].pTexture);
 //		pParams->SetValue("U_mat_DepthMap", m_gbufferRenderPass.m_vBackTextures[3]);
 	}
 

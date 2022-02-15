@@ -3,6 +3,7 @@
 #include "MEngine.h"
 #include "MMultiLevelMesh.h"
 
+#include "MMath.h"
 #include "MJson.h"
 #include "MVertex.h"
 #include "MVariant.h"
@@ -484,6 +485,7 @@ void MMeshResource::LoadAsSphere(MEMeshVertexType eVertexType/* = MEMeshVertexTy
 	auto& vIndices = sphereFactory.m_vIndices;
 
 	m_pMesh->ResizeVertices(vPoints.size());
+
 	if (eVertexType == MEMeshVertexType::Normal)
 	{
 		for (int i = 0; i < vPoints.size(); ++i)
@@ -495,15 +497,31 @@ void MMeshResource::LoadAsSphere(MEMeshVertexType eVertexType/* = MEMeshVertexTy
 			vertex.position = vPoints[i];
 			vertex.normal = vPoints[i];
 
-			Vector3 t1 = vertex.normal.CrossProduct(Vector3::Forward);
-			Vector3 t2 = vertex.normal.CrossProduct(Vector3::Up);
+			Vector3 sph = MMath::ConvertToSphericalCoord(vertex.position);
 
-			vertex.tangent = t1.Length() > t2.Length() ? t1 : t2;
-			vertex.bitangent = vertex.normal.CrossProduct(vertex.tangent);
+			const float& fLength = sph.x;
+			const float& theta = sph.y;
+			const float& phi = sph.z;
 
-			float xzLength = sqrt(vPoints[i].x * vPoints[i].x + vPoints[i].z * vPoints[i].z);
-			vertex.texCoords.x = 1.0f - acos(vPoints[i].x / xzLength) / M_PI;
-			vertex.texCoords.y = acos(vPoints[i].y) / M_PI;
+			float theta_bitangent = theta + M_PI * 0.5f;
+			float phi_bitangent = phi;
+			if (theta_bitangent >= M_PI)
+			{
+				theta_bitangent = M_PI * 2.0f - theta_bitangent;
+				phi_bitangent = fmodf(phi_bitangent + M_PI, M_PI * 2.0f);
+			}
+			
+			vertex.bitangent = MMath::ConvertFormSphericalCoord(Vector3(fLength, theta_bitangent, phi_bitangent));
+			vertex.bitangent.Normalize();
+
+			vertex.tangent = vertex.normal.CrossProduct(vertex.bitangent);
+			vertex.tangent.Normalize();
+
+
+
+
+			vertex.texCoords.x = phi / (M_PI * 2);
+			vertex.texCoords.y = theta / (M_PI);
 		}
 	}
 	else if (eVertexType == MEMeshVertexType::Skeleton)

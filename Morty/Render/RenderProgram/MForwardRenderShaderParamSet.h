@@ -30,6 +30,7 @@ public:
 	void UpdateShaderSharedParams(MRenderInfo& info);
 
 	void SetShadowMapTexture(MTexture* pTexture);
+	void SetBrdfMapTexture(MTexture* pTexture);
 
 public:
 
@@ -38,7 +39,9 @@ public:
 	MShaderConstantParam* m_pLightInfoParam;
 
 	MShaderTextureParam* m_pShadowTextureParam;
-	MShaderTextureParam* m_pEnvironmentTextureParam;
+	MShaderTextureParam* m_pDiffuseMapTextureParam;
+	MShaderTextureParam* m_pSpecularMapTextureParam;
+	MShaderTextureParam* m_pBrdfMapTextureParam;
 };
 
 

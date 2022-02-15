@@ -93,6 +93,9 @@ public:
 	void SetTextureType(const METextureType& eType) { m_eTextureType = eType; }
 	METextureType GetTextureType() const { return m_eTextureType; }
 
+
+	Vector2 GetMipmapSize(const uint32_t& nMipmapLevel);
+
 public:
 
 	void GenerateBuffer(MIDevice* pDevice, MByte* aImageData = nullptr);

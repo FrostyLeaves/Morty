@@ -30,15 +30,20 @@ public:
     MResource* GetSkyBoxResource();
 
     void LoadDiffuseEnvResource(MResource* pTexture);
+    void LoadSpecularEnvResource(MResource* pTexture);
 
     MResource* GetDiffuseEnvResource();
     MTexture* GetDiffuseTexture();
+
+    MResource* GetSpecularEnvResource();
+    MTexture* GetSpecularTexture();
 
 
 private:
 
 	MResourceKeeper m_Texture;
 	MResourceKeeper m_DiffuseEnvTexture;
+	MResourceKeeper m_SpecularEnvTexture;
     
     MMaterial* m_pMaterial;
 };

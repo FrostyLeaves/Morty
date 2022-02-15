@@ -22,7 +22,9 @@ MForwardRenderShaderParamSet::MForwardRenderShaderParamSet()
 	, m_pLightInfoParam(nullptr)
 	
 	, m_pShadowTextureParam(nullptr)
-	, m_pEnvironmentTextureParam(nullptr)
+	, m_pDiffuseMapTextureParam(nullptr)
+	, m_pSpecularMapTextureParam(nullptr)
+	, m_pBrdfMapTextureParam(nullptr)
 
 {
 	
@@ -128,10 +130,20 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	m_pShadowTextureParam->unSet = 1;
 	m_pShadowTextureParam->unBinding = 6;
 
-	m_pEnvironmentTextureParam = new MShaderTextureParam();
-	m_pEnvironmentTextureParam->eType = METextureType::ETextureCube;
-	m_pEnvironmentTextureParam->unSet = 1;
-	m_pEnvironmentTextureParam->unBinding = 7;
+	m_pDiffuseMapTextureParam = new MShaderTextureParam();
+	m_pDiffuseMapTextureParam->eType = METextureType::ETextureCube;
+	m_pDiffuseMapTextureParam->unSet = 1;
+	m_pDiffuseMapTextureParam->unBinding = 7;
+
+	m_pSpecularMapTextureParam = new MShaderTextureParam();
+	m_pSpecularMapTextureParam->eType = METextureType::ETextureCube;
+	m_pSpecularMapTextureParam->unSet = 1;
+	m_pSpecularMapTextureParam->unBinding = 8;
+
+	m_pBrdfMapTextureParam = new MShaderTextureParam();
+	m_pBrdfMapTextureParam->eType = METextureType::ETexture2D;
+	m_pBrdfMapTextureParam->unSet = 1;
+	m_pBrdfMapTextureParam->unBinding = 9;
 	
 	m_vParams.push_back(m_pWorldMatrixParam);
 	m_vParams.push_back(m_pWorldInfoParam);
@@ -141,7 +153,9 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	m_vSamples.push_back(pNearestSampler);
 
 	m_vTextures.push_back(m_pShadowTextureParam);
-	m_vTextures.push_back(m_pEnvironmentTextureParam);
+	m_vTextures.push_back(m_pDiffuseMapTextureParam);
+	m_vTextures.push_back(m_pSpecularMapTextureParam);
+	m_vTextures.push_back(m_pBrdfMapTextureParam);
 }
 
 void MForwardRenderShaderParamSet::ReleaseShaderParamSet(MEngine* pEngine)
@@ -166,10 +180,10 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 		info.pDirectionalLightEntity = pScene->FindFirstEntityByComponent<MDirectionalLightComponent>();
 	}
 
-	if (!info.pSkyBoxEntity)
-	{
-		info.pSkyBoxEntity = pScene->FindFirstEntityByComponent<MSkyBoxComponent>();
-	}
+ 	if (!info.pSkyBoxEntity)
+ 	{
+ 		info.pSkyBoxEntity = pScene->FindFirstEntityByComponent<MSkyBoxComponent>();
+ 	}
 
 	pViewport->LockMatrix();
 
@@ -230,8 +244,13 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 				{
 					MVariant& varEnvMapEnable = (*pLightParam->var.GetStruct())[6];
 					varEnvMapEnable = true;
-					m_pEnvironmentTextureParam->SetTexture(pEnvTexture);
-					m_pEnvironmentTextureParam->SetDirty();
+					m_pDiffuseMapTextureParam->SetTexture(pEnvTexture);
+					m_pDiffuseMapTextureParam->SetDirty();
+				}
+				if (MTexture* pEnvTexture = pSkyBoxComponent->GetSpecularTexture())
+				{
+					m_pSpecularMapTextureParam->SetTexture(pEnvTexture);
+					m_pSpecularMapTextureParam->SetDirty();
 				}
 			}
 		}
@@ -341,6 +360,15 @@ void MForwardRenderShaderParamSet::SetShadowMapTexture(MTexture* pTexture)
 	{
 		m_pShadowTextureParam->pTexture = pTexture;
 		m_pShadowTextureParam->SetDirty();
+	}
+}
+
+void MForwardRenderShaderParamSet::SetBrdfMapTexture(MTexture* pTexture)
+{
+	if (m_pBrdfMapTextureParam->pTexture != pTexture)
+	{
+		m_pBrdfMapTextureParam->pTexture = pTexture;
+		m_pBrdfMapTextureParam->SetDirty();
 	}
 }
 

@@ -43,6 +43,17 @@ void MSkyBoxComponent::LoadDiffuseEnvResource(MResource* pTexture)
 	}
 }
 
+void MSkyBoxComponent::LoadSpecularEnvResource(MResource* pTexture)
+{
+	if (!pTexture)
+		return;
+
+	if (MTextureResource* pTextureResource = pTexture->DynamicCast<MTextureResource>())
+	{
+		m_SpecularEnvTexture.SetResource(pTexture);
+	}
+}
+
 MResource* MSkyBoxComponent::GetDiffuseEnvResource()
 {
 	return m_DiffuseEnvTexture.GetResource();
@@ -51,6 +62,21 @@ MResource* MSkyBoxComponent::GetDiffuseEnvResource()
 MTexture* MSkyBoxComponent::GetDiffuseTexture()
 {
 	if (MTextureResource* pTexture = m_DiffuseEnvTexture.GetResource<MTextureResource>())
+	{
+		return pTexture->GetTextureTemplate();
+	}
+
+	return nullptr;
+}
+
+MResource* MSkyBoxComponent::GetSpecularEnvResource()
+{
+	return m_SpecularEnvTexture.GetResource();
+}
+
+MTexture* MSkyBoxComponent::GetSpecularTexture()
+{
+	if (MTextureResource* pTexture = m_SpecularEnvTexture.GetResource<MTextureResource>())
 	{
 		return pTexture->GetTextureTemplate();
 	}

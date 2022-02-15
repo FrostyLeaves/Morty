@@ -1,5 +1,6 @@
 #include "inner_constant.hlsl"
 #include "inner_functional.hlsl"
+#include "brdf_functional.hlsl"
 
 struct VS_OUT
 {
@@ -14,45 +15,6 @@ struct VS_OUT
 [[vk::binding(3,0)]]Texture2D U_mat_DepthMap;
 
 
-float DistributionGGX(float3 N, float3 H, float roughness)
-{
-    float a = roughness * roughness;
-    float a2 = a*a;
-    float NdotH = max(dot(N, H), 0.0);
-    float NdotH2 = NdotH*NdotH;
-
-    float nom   = a2;
-    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
-    denom = NUM_PI * denom * denom;
-
-    return nom / denom;
-}
-
-float GeometrySchlickGGX(float NdotV, float roughness)
-{
-    float r = (roughness + 1.0);
-    float k = (r*r) / 8.0;
-
-    float nom   = NdotV;
-    float denom = NdotV * (1.0 - k) + k;
-
-    return nom / denom;
-}
-
-float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
-{
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
-    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
-    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
-
-    return ggx1 * ggx2;
-}
-
-float3 FresnelSchlick(float cosTheta, float3 F0)
-{
-    return F0 + (1.0 - F0) * pow(max(1.0 - cosTheta, 0.0), 5.0);
-}
 
 float3 CalcPBRLight(float3 f3LightColor, float3 f3CameraDir, float3 _f3LightDir, float3 f3Normal, float3 f3BaseColor, float3 f3Albedo, float fRoughness, float fMetallic)
 {
@@ -161,7 +123,8 @@ float3 AdditionAllLights(VS_OUT input, float3 f3Color)
     float3 f3Albedo = pow(f3Albedo_fMetallic.rgb, float3(2.2, 2.2, 2.2));
     float fMetallic = f3Albedo_fMetallic.a; 
 
-    float3 f3Normal = f3Normal_fRoughness.rgb/* * 2.0 - 1.0*/;
+    float3 f3Normal = f3Normal_fRoughness.rgb;
+
     float fRoughness = f3Normal_fRoughness.a;
     
     float fAmbientOcc = f3Position_fAmbientOcc.a;
@@ -229,9 +192,16 @@ float3 AdditionAllLights(VS_OUT input, float3 f3Color)
         float3 kS = FresnelSchlick(max(dot(f3Normal, f3CameraDir), 0.0), f3BaseColor);
         float3 kD = (1.0f - kS) * (1.0f - fMetallic);
 
-        float3 f3Irradiance = U_texEnvironmentMap.SampleLevel(LinearSampler, f3Normal, 0).rgb;
+        float3 f3Irradiance = U_texIrradianceMap.SampleLevel(LinearSampler, f3Normal, 0).rgb;
+        float3 f3Diffuse = f3Irradiance * f3Albedo;
 
-        f3Ambient = f3Irradiance * f3Albedo * kD * fAmbientOcc;
+        const float MAX_REFLECTION_LOD = 4.0f;
+        float3 f3Reflect = reflect(-f3CameraDir, f3Normal); 
+        float3 f3PrefilteredColor = U_texPrefilterMap.SampleLevel(LinearSampler, f3Reflect,  fRoughness * MAX_REFLECTION_LOD).rgb;    
+        float2 brdf  = U_texBrdfLUT.Sample(LinearSampler, float2(max(dot(f3Normal, f3CameraDir), 0.0), fRoughness)).rg;
+        float3 f3Specular = f3PrefilteredColor * (kS * brdf.x + brdf.y);
+
+        f3Ambient = (kD * f3Diffuse + f3Specular) * fAmbientOcc;
     }
     else
     {

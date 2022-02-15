@@ -341,23 +341,15 @@ bool MRenderView::BindRenderPass()
 		pTexture->m_VkImageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 		pTexture->m_VkTextureFormat = m_VkColorFormat;
 		pTexture->GenerateBuffer(m_pDevice);
-		m_vRenderTarget[i].renderPass.m_vBackTextures.push_back(pTexture);
-		MPassTargetDescription desc;
-		desc.cClearColor = MColor::Black_T;
-		desc.bClearWhenRender = true;
-		m_vRenderTarget[i].renderPass.m_vBackDesc.push_back(desc);
+		m_vRenderTarget[i].renderPass.AddBackTexture(pTexture, { true, MColor::Black_T });
 
 		MTexture* pDepthTexture = new MTexture();
 		pDepthTexture->SetTextureLayout(METextureLayout::EDepth);
 		pDepthTexture->SetRenderUsage(METextureRenderUsage::ERenderDepth);
 		pDepthTexture->SetSize(size);
 		pDepthTexture->GenerateBuffer(m_pDevice);
-		m_vRenderTarget[i].renderPass.m_pDepthTexture = pDepthTexture;
+		m_vRenderTarget[i].renderPass.SetDepthTexture(pDepthTexture, { true, MColor::White });
 		m_vRenderTarget[i].renderPass.m_vkExtent2D = m_VkExtend;
-		m_vRenderTarget[i].renderPass.m_DepthDesc.cClearColor = MColor::White;
-		m_vRenderTarget[i].renderPass.m_DepthDesc.bClearWhenRender = true;
-
-
 		m_vRenderTarget[i].renderPass.GenerateBuffer(m_pDevice);
 	}
 
@@ -376,19 +368,21 @@ void MRenderView::DestroyRenderPass()
 			rendertarget.vkImageReadySemaphore = VK_NULL_HANDLE;
 		}
 
-		for (MTexture* pTexture : rendertarget.renderPass.m_vBackTextures)
+		for (MBackTexture& tex : rendertarget.renderPass.m_vBackTextures)
 		{
-			pTexture->DestroyBuffer(m_pDevice);
-			delete pTexture;
+			tex.pTexture->DestroyBuffer(m_pDevice);
+			delete tex.pTexture;
+			tex.pTexture = nullptr;
 		}
 
 		rendertarget.renderPass.m_vBackTextures.clear();
 
-		if (rendertarget.renderPass.m_pDepthTexture)
+		if (MTexture* pDepthTexture = rendertarget.renderPass.GetDepthTexture())
 		{
-			rendertarget.renderPass.m_pDepthTexture->DestroyBuffer(m_pDevice);
-			delete rendertarget.renderPass.m_pDepthTexture;
-			rendertarget.renderPass.m_pDepthTexture = nullptr;
+			pDepthTexture->DestroyBuffer(m_pDevice);
+			delete pDepthTexture;
+			pDepthTexture = nullptr;
+			rendertarget.renderPass.SetDepthTexture(nullptr, {});
 		}
 
 		rendertarget.renderPass.DestroyBuffer(m_pDevice);

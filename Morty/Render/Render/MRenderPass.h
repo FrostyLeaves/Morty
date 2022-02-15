@@ -39,11 +39,25 @@ public:
 	MPassTargetDescription();
 	MPassTargetDescription(const bool bClear, const MColor& cClearColor);
 	MPassTargetDescription(const bool bClear, const bool bAlready, const MColor& cClearColor);
+	MPassTargetDescription(const bool bClear, const bool bAlready, const MColor& cClearColor, const uint32_t& nMipmap);
 
 public:
 	bool bClearWhenRender;
     bool bAlreadyRender;
 	MColor cClearColor;
+    uint32_t nMipmapLevel;
+};
+
+struct MORTY_API MBackTexture
+{
+    MBackTexture();
+
+    MTexture* pTexture;
+    MPassTargetDescription desc;
+
+#if RENDER_GRAPHICS == MORTY_VULKAN
+    VkImageView m_VkImageView;
+#endif
 };
 
 class MORTY_API MRenderPass
@@ -64,14 +78,17 @@ public:
 
 public:
 
+    void AddBackTexture(MTexture* pBackTexture, const MPassTargetDescription& desc);
+    void SetDepthTexture(MTexture* pDepthTexture, const MPassTargetDescription& desc);
+
+    std::vector<MTexture*> GetBackTextures();
+    MTexture* GetDepthTexture();
+
     void SetRenderPassID(const uint32_t& unID) { m_unRenderPassID = unID; }
     uint32_t GetRenderPassID() const { return m_unRenderPassID; }
 
     void SetViewNum(const uint32_t& unNum) { m_unViewNum = unNum; }
     uint32_t GetViewNum() const { return m_unViewNum; }
-
-    std::vector<MTexture*> GetBackTexture();
-    MTexture* GetDepthTexture();
 
 	std::vector<MSubpass> m_vSubpass;
 
@@ -82,19 +99,17 @@ public:
     uint32_t m_unViewNum;
 
     //render back to texture
-	std::vector<MTexture*> m_vBackTextures;
-	std::vector<MPassTargetDescription> m_vBackDesc;
+	std::vector<MBackTexture> m_vBackTextures;
 
     //render depth to texture
-	MTexture* m_pDepthTexture;
-	MPassTargetDescription m_DepthDesc;
+    MBackTexture m_DepthTexture;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
     //vulkan frame buffer.
     VkFramebuffer m_VkFrameBuffer;
 	VkExtent2D m_vkExtent2D;
 
-    //vulkan renderpass
+    //vulkan render pass
     VkRenderPass m_VkRenderPass;
 #endif
 };

@@ -133,7 +133,7 @@ void MTextureResource::LoadFromMemory(MByte* aByteData, const uint32_t& unWidth,
 	m_texture.GenerateBuffer(pRenderSystem->GetDevice(), m_aByteData);
 }
 
-void MTextureResource::CreateCubeMapRenderTarget(const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, const METextureLayout& eLayout)
+void MTextureResource::CreateCubeMapRenderTarget(const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, const METextureLayout& eLayout, const bool& bMipmapEnable)
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
@@ -146,6 +146,7 @@ void MTextureResource::CreateCubeMapRenderTarget(const uint32_t& nWidth, const u
 	m_texture.SetRenderUsage(METextureRenderUsage::ERenderBack);
 	m_texture.SetShaderUsage(METextureShaderUsage::ESampler);
 	m_texture.SetTextureType(METextureType::ETextureCube);
+	m_texture.SetMipmapsEnable(bMipmapEnable);
 
 	m_texture.GenerateBuffer(pRenderSystem->GetDevice());
 }

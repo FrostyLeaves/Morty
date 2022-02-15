@@ -26,11 +26,9 @@ MSubpass::MSubpass(const std::vector<uint32_t>& inputs, const std::vector<uint32
 
 MRenderPass::MRenderPass()
 	: m_vSubpass()
-	, m_vBackDesc()
-	, m_DepthDesc()
 	, m_unRenderPassID(MGlobal::M_INVALID_INDEX)
 	, m_vBackTextures()
-	, m_pDepthTexture(nullptr)
+	, m_DepthTexture()
 	, m_unViewNum(1)
 {
 
@@ -73,20 +71,41 @@ Vector2 MRenderPass::GetFrameBufferSize()
 	return Vector2();
 }
 
-std::vector<MTexture*> MRenderPass::GetBackTexture()
+void MRenderPass::AddBackTexture(MTexture* pBackTexture, const MPassTargetDescription& desc)
 {
-	return m_vBackTextures;
+	MBackTexture backTexture;
+	backTexture.pTexture = pBackTexture;
+	backTexture.desc = desc;
+
+	m_vBackTextures.push_back(backTexture);
+}
+
+void MRenderPass::SetDepthTexture(MTexture* pDepthTexture, const MPassTargetDescription& desc)
+{
+	m_DepthTexture.pTexture = pDepthTexture;
+	m_DepthTexture.desc = desc;
+}
+
+std::vector<MTexture*> MRenderPass::GetBackTextures()
+{
+	std::vector<MTexture*> vTextures;
+
+	for (MBackTexture& tex : m_vBackTextures)
+		vTextures.push_back(tex.pTexture);
+
+	return vTextures;
 }
 
 MTexture* MRenderPass::GetDepthTexture()
 {
-	return m_pDepthTexture;
+	return m_DepthTexture.pTexture;
 }
 
 MPassTargetDescription::MPassTargetDescription(const bool bClear, const MColor& cColor)
 	: bClearWhenRender(bClear)
 	, bAlreadyRender(false)
 	, cClearColor(cColor)
+	, nMipmapLevel(0)
 {
 }
 
@@ -94,13 +113,33 @@ MPassTargetDescription::MPassTargetDescription()
 	: bClearWhenRender(true)
 	, bAlreadyRender(false)
 	, cClearColor(MColor::Black)
+	, nMipmapLevel(0)
 {
 }
 
-MPassTargetDescription::MPassTargetDescription(const bool bClear, const bool bAlready, const MColor& cClearColor)
+MPassTargetDescription::MPassTargetDescription(const bool bClear, const bool bAlready, const MColor& cColor)
 	: bClearWhenRender(bClear)
 	, bAlreadyRender(bAlready)
-	, cClearColor(cClearColor)
+	, cClearColor(cColor)
+	, nMipmapLevel(0)
 {
 
+}
+
+MPassTargetDescription::MPassTargetDescription(const bool bClear, const bool bAlready, const MColor& cColor, const uint32_t& nMipmap)
+	: bClearWhenRender(bClear)
+	, bAlreadyRender(bAlready)
+	, cClearColor(cColor)
+	, nMipmapLevel(nMipmap)
+{
+
+}
+
+MBackTexture::MBackTexture()
+	: pTexture(nullptr)
+	, desc()
+{
+#if RENDER_GRAPHICS == MORTY_VULKAN
+	m_VkImageView = VK_NULL_HANDLE;
+#endif
 }

@@ -42,6 +42,12 @@ public:
 
 protected:
 
+	void RenderDiffuse(MIRenderCommand* pRenderCommand, MSkyBoxComponent* pSkyBoxComponent);
+
+	void RenderSpecular(MIRenderCommand* pRenderCommand, MSkyBoxComponent* pSkyBoxComponent);
+
+protected:
+
 	void InitializeResource();
 	void ReleaseResource();
 
@@ -56,7 +62,7 @@ private:
 	bool m_bUpdateNextFrame;
 
 	MMaterial* m_DiffuseMaterial;
-	MMaterial* m_SpecularMaterial;
+	std::vector<MMaterial*> m_vSpecularMaterial;
 
 	MMeshResource* m_pCubeMesh;
 
@@ -64,8 +70,7 @@ private:
 	MResourceKeeper m_SpecularEnvironmentMap;
 
 	MRenderPass m_DiffuseRenderPass;
-	MRenderPass m_SpecularRenderPass;
-
+	std::vector<MRenderPass> m_vSpecularRenderPass;
 };
 
 #endif

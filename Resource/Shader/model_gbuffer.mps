@@ -21,6 +21,8 @@ struct Material
     float fAlphaFactor;
     float bUseHeightMap;
     
+    float fMetallic;
+    float fRoughness;
 };
 
 //PS
@@ -111,18 +113,16 @@ PS_OUT PS(VS_OUT input)
     f3Normal = mul(f3Normal, TBN);
     f3Normal = normalize(f3Normal);
 
-    //f3Normal = (f3Normal + 1.0f) * 0.5f;
-
     float3 f3Albedo   = U_mat_texAlbedo.Sample(LinearSampler, uv).rgb;
     float fMetallic   = U_mat_texMetallic.Sample(LinearSampler, uv).r;
     float fRoughness  = U_mat_texRoughness.Sample(LinearSampler, uv).r;
     float fAmbientOcc = U_mat_texAmbientOcc.Sample(LinearSampler, uv).r;
 
     output.f3Albedo_fMetallic.rgb = f3Albedo;
-    output.f3Albedo_fMetallic.a = fMetallic;
+    output.f3Albedo_fMetallic.a = fMetallic * U_mat.fMetallic;
 
     output.f3Normal_fRoughness.rgb = f3Normal;
-    output.f3Normal_fRoughness.a = fRoughness;
+    output.f3Normal_fRoughness.a = fRoughness * U_mat.fRoughness;
 
     output.f3Position_fAmbientOcc.rgb = input.worldPos;
     output.f3Position_fAmbientOcc.a = fAmbientOcc;

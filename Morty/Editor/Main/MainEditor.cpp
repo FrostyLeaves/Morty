@@ -643,7 +643,7 @@ void MainEditor::Render(MTaskNode* pNode)
 
 	pRenderCommand->RenderCommandBegin();
 
-
+	
 #if MORTY_RENDER_DATA_STATISTICS
 	MRenderStatistics::GetInstance()->unTriangleCount = 0;
 #endif
@@ -765,11 +765,11 @@ void MainEditor::Render(MTaskNode* pNode)
 		m_pImGuiRenderable->Render(pRenderCommand);
 		pRenderCommand->EndRenderPass();
 	}
-
-
+	
 	pRenderCommand->RenderCommandEnd();
 
 	Present(pRenderTarget);
+	
 }
 
 void MainEditor::SceneRender(MTaskNode* pNode)

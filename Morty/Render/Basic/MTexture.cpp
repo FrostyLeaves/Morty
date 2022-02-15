@@ -29,6 +29,20 @@ MTexture::~MTexture()
 
 }
 
+Vector2 MTexture::GetMipmapSize(const uint32_t& nMipmapLevel)
+{
+	uint32_t w = static_cast<uint32_t>(GetSize().x);
+	uint32_t h = static_cast<uint32_t>(GetSize().y);
+
+	for (int i = 0; i < nMipmapLevel; ++i)
+	{
+		w = w / 2;
+		h = h / 2;
+	}
+
+	return Vector2(w, h);
+}
+
 void MTexture::GenerateBuffer(MIDevice* pDevice, MByte* aImageData /*= nullptr*/)
 {
 	pDevice->GenerateTexture(this, aImageData);

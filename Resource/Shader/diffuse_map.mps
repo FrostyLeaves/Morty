@@ -2,7 +2,9 @@
 [[vk::binding(1,0)]]TextureCube U_SkyBox;
 [[vk::binding(2,0)]]sampler LinearSampler;
 
-#define NUM_PI (3.1415926535898)
+#ifndef NUM_PI
+    #define NUM_PI (3.1415926535898)
+#endif
 
 struct VS_OUT
 {

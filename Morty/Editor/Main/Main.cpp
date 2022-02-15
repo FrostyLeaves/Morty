@@ -41,6 +41,8 @@
 
 //#define TEST_POINT_LIGHT
 
+#define TEST_DIR_LIGHT
+
 //#define TEST_BASIC_SHAPE
 
 #define TEST_SKY_BOX
@@ -144,7 +146,7 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 	}
 	else
 	{
-		pCubeMeshResource = pResourceSystem->LoadResource("D:/test_sphere/sphere/sphere.entity");
+		pCubeMeshResource = pResourceSystem->LoadResource("D:/test_sphere/sphere/GeoSphere001_0.mesh");
 		if (!pCubeMeshResource)
 		{
 			MModelConverter convert(pEngine);
@@ -157,7 +159,7 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 
 			convert.Convert(info);
 
-			pCubeMeshResource = pResourceSystem->LoadResource("D:/test_sphere/sphere/sphere.entity");
+			pCubeMeshResource = pResourceSystem->LoadResource("D:/test_sphere/sphere/GeoSphere001_0.mesh");
 		}
 	}
 
@@ -175,7 +177,7 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 		pMaterial->LoadPixelShader("./Shader/model_gbuffer.mps");
 		pMaterial->SetMaterialType(MEMaterialType::EDeferred);
 
-#if true
+#if false
 		MResource* albedo = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_albedo.png");
 		MResource* normal = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_normal.png");
 		MResource* roughness = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_roughness.png");
@@ -197,6 +199,9 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 		pMaterial->SetTexutreParam(MaterialKey::Roughness, roughness);
 		pMaterial->SetTexutreParam(MaterialKey::AmbientOcc, ao);
 		pMaterial->SetTexutreParam(MaterialKey::Height, height);
+
+		pMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
+		pMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);
 
 		pMeshComponent->Load(pCubeMeshResource);
 		pMeshComponent->SetMaterial(pMaterial);
@@ -364,6 +369,7 @@ int main()
 		SKY_BOX(&engine, pScene);
 #endif
 
+#ifdef TEST_DIR_LIGHT
 		MEntity* pDirLight = pScene->CreateEntity();
 		pDirLight->SetName("DirectionalLight");
 		if (MSceneComponent* pSceneComponent = pDirLight->RegisterComponent<MSceneComponent>())
@@ -374,7 +380,7 @@ int main()
 		{
 			pLightComponent->SetLightIntensity(1.0f);
 		}
-
+#endif
 
 
 	}

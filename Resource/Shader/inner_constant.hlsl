@@ -1,5 +1,9 @@
 
-#define NUM_PI (3.1415926535898)
+
+#ifndef NUM_PI
+    #define NUM_PI (3.1415926535898)
+#endif
+
 #define NUM_BIAS (0.000001f)
 
 #if MTRANSPARENT_POLICY == 1 && MEN_TRANSPARENT == 1
@@ -68,9 +72,11 @@ struct SpotLight
     int U_bEnvironmentMapEnabled;
 };
 
-[[vk::binding(3,1)]]sampler LinearSampler : register(s0);
-[[vk::binding(4,1)]]sampler NearestSampler : register(s1);
+[[vk::binding(3,1)]]sampler LinearSampler;
+[[vk::binding(4,1)]]sampler NearestSampler;
 
 //Shadowmap
-[[vk::binding(6,1)]]Texture2D U_texShadowMap : register(t0);
-[[vk::binding(7,1)]]TextureCube U_texEnvironmentMap : register(t1);
+[[vk::binding(6,1)]]Texture2D U_texShadowMap;
+[[vk::binding(7,1)]]TextureCube U_texIrradianceMap;
+[[vk::binding(8,1)]]TextureCube U_texPrefilterMap;
+[[vk::binding(9,1)]]Texture2D U_texBrdfLUT;

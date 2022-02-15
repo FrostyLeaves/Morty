@@ -13,6 +13,7 @@
 #include "MType.h"
 #include "MMesh.h"
 #include "MBounds.h"
+#include "MResource.h"
 #include "MTaskNode.h"
 #include "MTaskGraph.h"
 #include "MRenderPass.h"
@@ -106,6 +107,9 @@ protected:
 	MMesh<Vector3> m_SkyBoxDrawMesh;
 	MMaterial* m_pLightningMaterial;
 	MMaterial* m_pSkyBoxMaterial;
+
+
+	MResourceKeeper m_BrdfTexture;
 
 protected:
 
