@@ -52,7 +52,7 @@ public:
 	static void ConvertToWString(const std::string& instr, std::wstring& outstr)
 	{
 		// Assumes std::string is encoded in the current Windows ANSI codepage
-		int bufferlen = ::MultiByteToWideChar(CP_ACP, 0, instr.c_str(), instr.size(), NULL, 0);
+		int bufferlen = ::MultiByteToWideChar(CP_ACP, 0, instr.c_str(), static_cast<int>(instr.size()), NULL, 0);
 
 		if (bufferlen == 0)
 		{
@@ -63,7 +63,7 @@ public:
 		// Allocate new LPWSTR - must deallocate it later
 		outstr.resize(bufferlen);
 
-		::MultiByteToWideChar(CP_ACP, 0, instr.c_str(), instr.size(), (LPWSTR)outstr.data(), bufferlen);
+		::MultiByteToWideChar(CP_ACP, 0, instr.c_str(), static_cast<int>(instr.size()), (LPWSTR)outstr.data(), bufferlen);
 
 		// Ensure wide string is null terminated
 		outstr[bufferlen] = '\0';

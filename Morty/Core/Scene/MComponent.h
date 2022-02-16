@@ -21,8 +21,8 @@ class MComponent;
 class MORTY_API MComponentID
 {
 public:
-    MComponentID() : pComponentType(nullptr), nID(0) {}
-    MComponentID(const MType* type, const size_t& id) : pComponentType(type), nID(id) {}
+    MComponentID() : pComponentType(nullptr), nPrimaryIdx(0), nSecondaryIdx(0) {}
+    MComponentID(const MType* type, const size_t& pid, const size_t& sid) : pComponentType(type), nPrimaryIdx(pid), nSecondaryIdx(sid) {}
 
     bool IsValid() const;
 
@@ -34,7 +34,8 @@ public:
 
 public:
     const MType* pComponentType;
-    size_t nID;
+	size_t nPrimaryIdx;
+    size_t nSecondaryIdx;
 };
 
 class MORTY_API MComponentRefTable
@@ -138,12 +139,27 @@ class MIComponentGroup
 public:
 	virtual MComponent* FirstComponent() = 0;
 	virtual MComponentID AddComponent(MEntity* entity) = 0;
-	virtual void RemoveComponent(const size_t& id) = 0;
+	virtual void RemoveComponent(const MComponentID& id) = 0;
 
-	virtual MComponent* FindComponent(const size_t& id) = 0;
+	virtual MComponent* FindComponent(const size_t& pid, const size_t& sid) = 0;
+
+	MComponent* FindComponent(const MComponentID& id) {
+		return FindComponent(id.nPrimaryIdx, id.nSecondaryIdx);
+	}
 
 public:
 	MScene* m_pScene = nullptr;
+};
+
+template<typename TYPE>
+struct MORTY_API MComponentVector
+{
+public:
+
+	static const size_t ArraySize = 64;
+
+	std::array<TYPE, MComponentVector::ArraySize> vComponents = {};
+	size_t nMaxAllowIndex = 0;
 };
 
 template<typename TYPE>
@@ -152,20 +168,27 @@ class MORTY_API MComponentGroup : public MIComponentGroup
 public:
 	virtual MComponent* FirstComponent() override;
 	virtual MComponentID AddComponent(MEntity* entity) override;
-	virtual void RemoveComponent(const size_t& id) override;
-	virtual MComponent* FindComponent(const size_t& id) override;
+	virtual void RemoveComponent(const MComponentID& id) override;
+	virtual MComponent* FindComponent(const size_t& pid, const size_t& sid) override;
 
-	std::vector<size_t> m_vFreeComponent;
-	std::vector<TYPE> m_vComponent;
+
+private:
+	std::vector<MComponentID> m_vFreeComponent;
+	std::vector<MComponentVector<TYPE>> m_vComponentVector;
 };
 
 template<typename TYPE>
 MComponent* MComponentGroup<TYPE>::FirstComponent()
 {
-	for (TYPE& comp : m_vComponent)
+	for (auto iter = m_vComponentVector.begin(); iter != m_vComponentVector.end(); ++iter)
 	{
-		if (comp.IsValid())
-			return &comp;
+		for (auto it = iter->vComponents.begin(); it != iter->vComponents.end(); ++it)
+		{
+			if (it->IsValid())
+			{
+				return &(*it);
+			}
+		}
 	}
 
 	return nullptr;
@@ -176,34 +199,68 @@ MComponentID MComponentGroup<TYPE>::AddComponent(MEntity* entity)
 {
 	if (m_vFreeComponent.empty())
 	{
-		size_t nResult = m_vComponent.size();
-		m_vComponent.resize(nResult + 1);
-		MComponentID id = MComponentID(TYPE::GetClassType(), nResult);
-		m_vComponent[nResult].SetComponentID(id);
-		m_vComponent[nResult].MComponent::Initialize(m_pScene, entity->GetID());
+		int nPrimIdx = 0;
+		for (auto iter = m_vComponentVector.begin(); iter != m_vComponentVector.end(); ++iter, ++nPrimIdx)
+		{
+			MComponentVector<TYPE>& compVec = (*iter);
+			if (compVec.nMaxAllowIndex < compVec.ArraySize)
+			{
+				size_t nSecIdx = compVec.nMaxAllowIndex++;
+
+				MComponentID id = MComponentID(TYPE::GetClassType(), nPrimIdx, nSecIdx);
+				compVec.vComponents[nSecIdx].SetComponentID(id);
+				compVec.vComponents[nSecIdx].MComponent::Initialize(m_pScene, entity->GetID());
+
+				return id;
+			}
+		}
+
+		m_vComponentVector.push_back(MComponentVector<TYPE>());
+		MComponentVector<TYPE>& compVec = m_vComponentVector.back();
+		size_t nSecIdx = compVec.nMaxAllowIndex++;
+
+		MComponentID id = MComponentID(TYPE::GetClassType(), nPrimIdx, nSecIdx);
+		compVec.vComponents[nSecIdx].SetComponentID(id);
+		compVec.vComponents[nSecIdx].MComponent::Initialize(m_pScene, entity->GetID());
 		return id;
 	}
 
-	size_t nResult = m_vFreeComponent.back();
+	MComponentID nResult = m_vFreeComponent.back();
 	m_vFreeComponent.pop_back();
-	MComponentID id = MComponentID(TYPE::GetClassType(), nResult);
-	m_vComponent[nResult].SetComponentID(id);
-	m_vComponent[nResult].MComponent::Initialize(m_pScene, entity->GetID());
-	return id;
+	
+	MComponent* pComponent = FindComponent(nResult.nPrimaryIdx, nResult.nSecondaryIdx);
+	assert(pComponent && !pComponent->IsValid());
+
+	pComponent->SetComponentID(nResult);
+	pComponent->MComponent::Initialize(m_pScene, entity->GetID());
+	return nResult;
 }
 
 template<typename TYPE>
-void MComponentGroup<TYPE>::RemoveComponent(const size_t& id)
+void MComponentGroup<TYPE>::RemoveComponent(const MComponentID& id)
 {
-	m_vComponent[id].Release();
+	MComponent* pComponent = FindComponent(id.nPrimaryIdx, id.nSecondaryIdx);
+	if (!pComponent)
+		return;
+
+	if (!pComponent->IsValid())
+		return;
+
+	pComponent->Release();
 	m_vFreeComponent.push_back(id);
 }
 
 template<typename TYPE>
-MComponent* MComponentGroup<TYPE>::FindComponent(const size_t& id)
+MComponent* MComponentGroup<TYPE>::FindComponent(const size_t& pid, const size_t& sid)
 {
-	if (id < m_vComponent.size())
-		return &m_vComponent[id];
+	if (pid < m_vComponentVector.size())
+	{
+		MComponentVector<TYPE>& compVec = m_vComponentVector[pid];
+		if (sid < compVec.ArraySize)
+		{
+			return &compVec.vComponents[sid];
+		}
+	}
 
 	return nullptr;
 }

@@ -8,8 +8,6 @@
 #include "MVertexBuffer.h"
 #include "MVulkanRenderCommand.h"
 
-#include <assert.h>
-
 #ifdef max
 #undef max
 #endif

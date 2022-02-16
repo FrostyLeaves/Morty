@@ -164,7 +164,7 @@ public:
 
 	MStructMember* GetMember(const uint32_t& unIndex) { return unIndex < m_vMember.size() ? &m_vMember[unIndex] : nullptr; }
 	const MStructMember* GetMember(const uint32_t& unIndex) const { return unIndex < m_vMember.size() ? &m_vMember[unIndex] : nullptr; }
-	uint32_t GetMemberCount() const { return m_vMember.size(); }
+	size_t GetMemberCount() const { return m_vMember.size(); }
 
 	MVariant* Back();
 

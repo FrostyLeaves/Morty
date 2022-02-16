@@ -47,6 +47,8 @@ MEntity* MScene::GetEntity(const MEntityID& id)
 {
 	if (id < m_vEntity.size())
 		return m_vEntity[id];
+
+	return nullptr;
 }
 
 void MScene::OnCreated()
@@ -58,6 +60,9 @@ void MScene::OnCreated()
 void MScene::OnDelete()
 {
 	//TODO remove all component.
+
+	
+	
 
 	Super::OnDelete();
 }
@@ -100,7 +105,7 @@ MComponent* MScene::FindComponent(MEntity* entity, const MType* pComponentType)
 		if (iter == entity->m_vComponents.end())
 			return nullptr;
 
-		return pComponents->FindComponent(iter->nID);
+		return pComponents->FindComponent(*iter);
 	}
 
 	return nullptr;
@@ -113,7 +118,7 @@ MComponent* MScene::GetComponent(const MComponentID& id)
 
 	if (MIComponentGroup* pComponents = FindComponents(id.pComponentType))
 	{
-		return pComponents->FindComponent(id.nID);
+		return pComponents->FindComponent(id);
 	}
 
 	return nullptr;
@@ -140,7 +145,7 @@ MComponent* MScene::AddComponent(MEntity* entity, MIComponentGroup* pComponents)
 
 	MComponentID compID = pComponents->AddComponent(entity);
 	UNION_ORDER_PUSH_BACK_VECTOR<MComponentID>(entity->m_vComponents, compID, ComponentIDLessFunction);
-	MComponent* pComponent = pComponents->FindComponent(compID.nID);
+	MComponent* pComponent = pComponents->FindComponent(compID);
 	return pComponent;
 }
 
@@ -178,7 +183,7 @@ void MScene::RemoveComponent(MEntity* entity, const MType* pComponentType)
 	if (!pComponents)
 		return;
 
-	MComponentID id(pComponentType, 0);
+	MComponentID id(pComponentType, 0, 0);
 	size_t nIdx = FIND_ORDER_VECTOR<MComponentID, MComponentID>(entity->m_vComponents, id, ComponentIDLessFunction);
 
 	id = entity->m_vComponents[nIdx];
@@ -186,6 +191,6 @@ void MScene::RemoveComponent(MEntity* entity, const MType* pComponentType)
 	if (id.pComponentType == pComponentType)
 	{
 		entity->m_vComponents.erase(entity->m_vComponents.begin() + nIdx);
-		pComponents->RemoveComponent(id.nID);
+		pComponents->RemoveComponent(id);
 	}
 }

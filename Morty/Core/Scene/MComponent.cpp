@@ -90,7 +90,7 @@ MEngine* MComponent::GetEngine() const
 
 bool MComponentID::operator==(const MComponentID& id) const
 {
-	return pComponentType == id.pComponentType && nID == id.nID;
+	return pComponentType == id.pComponentType && nPrimaryIdx == id.nPrimaryIdx && nSecondaryIdx == id.nSecondaryIdx;
 }
 
 bool MComponentID::operator==(const MType* pType) const
@@ -105,7 +105,12 @@ bool MComponentID::operator<(const MComponentID& id) const
 	else if (pComponentType > id.pComponentType)
 		return false;
 
-	return nID < id.nID;
+	if (nPrimaryIdx < id.nPrimaryIdx)
+		return true;
+	else if (nPrimaryIdx > id.nPrimaryIdx)
+		return false;
+
+	return nSecondaryIdx < id.nSecondaryIdx;
 }
 
 bool MComponentID::operator<(const MType* pType) const
