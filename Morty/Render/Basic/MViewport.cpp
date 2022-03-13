@@ -197,7 +197,7 @@ void MViewport::Input(MInputEvent* pEvent)
 	if (!pComponents)
 		return;
 
-	for (MInputComponent& inputComponent : pComponents->m_vComponent)
+	for (MInputComponent& inputComponent : pComponents->m_vComponents)
 	{
 		if (inputComponent.IsValid())
 		{

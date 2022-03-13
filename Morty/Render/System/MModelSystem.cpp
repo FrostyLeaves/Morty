@@ -28,7 +28,7 @@ void MModelSystem::UpdateAnimation(MScene* pScene, const float& fDelta)
 	MSkeletalAnimController* pController = nullptr;
 	if (MComponentGroup<MModelComponent>* pModelComponents = pScene->FindComponents<MModelComponent>())
 	{
-		for (MModelComponent& modelComponent : pModelComponents->m_vComponent)
+		for (MModelComponent& modelComponent : pModelComponents->m_vComponents)
 		{
 			if (modelComponent.IsValid())
 			{

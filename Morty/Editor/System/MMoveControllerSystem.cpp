@@ -31,7 +31,7 @@ void MMoveControllerSystem::SceneTick(MScene* pScene, const float& fDelta)
 	if (!pComponents)
 		return;
 
-	for (MMoveControllerComponent& comp : pComponents->m_vComponent)
+	for (MMoveControllerComponent& comp : pComponents->m_vComponents)
 	{
 		if (comp.IsValid())
 		{

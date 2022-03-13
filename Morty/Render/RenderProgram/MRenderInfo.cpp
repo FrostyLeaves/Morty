@@ -40,7 +40,7 @@ void MRenderInfo::CollectRenderMesh()
 	if (!pMeshComponents)
 		return;
 
-	for (MRenderableMeshComponent& meshComp : pMeshComponents->m_vComponent)
+	for (MRenderableMeshComponent& meshComp : pMeshComponents->m_vComponents)
 	{
 		MMaterial* pMaterial = meshComp.GetMaterial();
 		if (!pMaterial)
@@ -116,7 +116,7 @@ void MRenderInfo::CollectShadowMesh()
 	std::map<MSkeletonInstance*, size_t> tSkeletonToIndex;
 
 
-	for (MRenderableMeshComponent& component : pMeshComponentGroup->m_vComponent)
+	for (MRenderableMeshComponent& component : pMeshComponentGroup->m_vComponents)
 	{
 		if (!component.IsValid())
 			continue;

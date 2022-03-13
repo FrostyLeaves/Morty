@@ -31,8 +31,6 @@ public:
 public:
 
 	MEntity* CreateEntity();
-	MEntity* LoadEntity();
-	MEntity* LoadEntity(MResource* pResource, const MComponentID& defaultParentSceneComponent);
 	void DeleteEntity(MEntity* pEntity);
 
 	MEntity* GetEntity(const MEntityID& id);

@@ -279,7 +279,7 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
    		MVariant& varValidPointLights = (*pLightParam->var.GetStruct())[4];
    		{
 			MComponentGroup<MPointLightComponent>* pComponentGroup = pScene->FindComponents<MPointLightComponent>();
-			std::vector<MPointLightComponent>& vActivePointLights = pComponentGroup->m_vComponent;
+			auto& vActivePointLights = pComponentGroup->m_vComponents;
 			
    			//info.pScene->FindActivePointLights(info.pCameraSceneComponent->GetWorldPosition(), vActivePointLights);
 			int nValidPointLights = 0;
