@@ -59,15 +59,13 @@ void MScene::OnCreated()
 
 void MScene::OnDelete()
 {
-	//TODO remove all component.
-	m_vEntity.clear();
-	
 	for (auto pr : m_tComponents)
 	{
 		pr.second->RemoveAllComponents();
 	}
 	m_tComponents.clear();
 
+	m_vEntity.clear();
 
 	Super::OnDelete();
 }

@@ -7,7 +7,7 @@ MORTY_CLASS_IMPLEMENT(MSerializer, MTypeClass)
 MSerializer::MSerializer()
 	: m_unReferenceIdx(MGlobal::M_INVALID_INDEX)
 {
-
+	
 }
 
 void MSerializer::WriteToStruct(MStruct& srt)

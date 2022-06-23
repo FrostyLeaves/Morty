@@ -31,3 +31,6 @@
 [submodule "ThirdParty/stb"]
 	path = ThirdParty/stb
 	url = https://github.com/nothings/stb.git
+[submodule "ThirdParty/flatbuffers"]
+	path = ThirdParty/flatbuffers
+	url = https://github.com/google/flatbuffers.git

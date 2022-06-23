@@ -86,6 +86,7 @@ MResource* MResourceSystem::LoadResource(const MString& strResourcePath, const M
 
 		if (pResource = pLoader->Load(this, strFullPath))
 		{
+			pResource->m_strResourcePath = strResourcePath;
 			m_tPathResources[strResourcePath] = pResource;
 		}
 		else

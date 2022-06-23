@@ -146,6 +146,31 @@ void ImGuiRenderable::Tick(const float& fDelta)
 	UpdateMesh();
 }
 
+void ImGuiRenderable::WaitTextureReady(MIRenderCommand* pCommand)
+{
+	std::set<ImTextureID> tTextures;
+
+	auto draw_data = ImGui::GetDrawData();
+	for (int n = 0; n < draw_data->CmdListsCount; n++)
+	{
+		const ImDrawList* cmd_list = draw_data->CmdLists[n];
+		for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
+		{
+			const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
+			tTextures.insert(pcmd->TextureId);
+		}
+	}
+
+
+	for (const ImTextureID& texid : tTextures)
+	{
+		if (MTexture* pTexture = (MTexture*)(texid))
+		{
+			pCommand->SetRenderToTextureBarrier({ pTexture });
+		}
+	}
+}
+
 void ImGuiRenderable::Render(MIRenderCommand* pCommand)
 {
 	auto draw_data = ImGui::GetDrawData();

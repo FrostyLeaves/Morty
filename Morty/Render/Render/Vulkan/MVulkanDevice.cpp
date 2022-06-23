@@ -240,21 +240,6 @@ VkBool32 MVulkanDevice::FormatIsFilterable(VkFormat format, VkImageTiling tiling
 
 VkFormat MVulkanDevice::GetFormat(const METextureLayout& layout)
 {
-/*
-UNORM:		0		-> 0.0f		255 -> 1.0f
-SNORM:		-127	-> -1.0f	127 -> 1.0f		-128 (-2n-1) is not meaningful in SNORM, and simply clamps to -1.0f.
-
-USCALED:	0		-> 0.0f		255 -> 255.0f	range(0~255)
-SSCALED:	-128	-> -128.0f	127 -> 127.0f	range(-128~127)
-
-SRGB:		sRGB nonlinear encoding.
-
-UINT:		0		-> 1		255	-> 255
-
-UFLOAT:		0		-> 0		257	-> 257.0f	range(0, FLT_MAX)
-SFLOAT:		0		-> 0		257	-> 257.0f	range(-FLT_MAX, FLT_MAX)
-*/
-
 	switch (layout)
 	{
 	case METextureLayout::ER_UNORM_8:
@@ -264,7 +249,7 @@ SFLOAT:		0		-> 0		257	-> 257.0f	range(-FLT_MAX, FLT_MAX)
 		return VK_FORMAT_R8G8_UNORM;
 		break;
 	case METextureLayout::ERGB_UNORM_8:
-		return VK_FORMAT_R8G8B8_SRGB;
+		return VK_FORMAT_R8G8B8_UNORM;
 		break;
 	case METextureLayout::ERGBA_UNORM_8:
 		return VK_FORMAT_R8G8B8A8_UNORM;

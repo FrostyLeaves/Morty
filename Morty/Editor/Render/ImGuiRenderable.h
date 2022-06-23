@@ -37,6 +37,8 @@ public:
 
 
 	void Tick(const float& fDelta);
+
+	void WaitTextureReady(MIRenderCommand* pCommand);
 	void Render(MIRenderCommand* pCommand);
 	
 

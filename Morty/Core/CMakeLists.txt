@@ -53,6 +53,8 @@ source_group("Core\\Utility" FILES ${CORE_UTILITY_FILES})
 file(GLOB CORE_VARIANT_FILES Variant/*.h Variant/*.cpp )
 source_group("Core\\Variant" FILES ${CORE_VARIANT_FILES})
 
+file(GLOB CORE_FLATBUFFER_FILES Flatbuffer/*.h Flatbuffer/*.cpp )
+source_group("Core\\Flatbuffer" FILES ${CORE_FLATBUFFER_FILES})
 ############################################################
 # add library
 ############################################################
@@ -72,6 +74,7 @@ add_library(Core STATIC
     ${CORE_TYPE_FILES}
     ${CORE_UTILITY_FILES}
     ${CORE_VARIANT_FILES}
+    ${CORE_FLATBUFFER_FILES}
 )
 
 
@@ -94,6 +97,7 @@ set(CORE_CODE_DIRECTORIES ${CORE_CODE_DIRECTORIES}
         ${CMAKE_CURRENT_SOURCE_DIR}/Type
         ${CMAKE_CURRENT_SOURCE_DIR}/Utility
         ${CMAKE_CURRENT_SOURCE_DIR}/Variant
+        ${CMAKE_CURRENT_SOURCE_DIR}/Flatbuffer
 )
 
 ############################################################
@@ -104,6 +108,7 @@ if(MORTY_BUILD_TARGET STREQUAL "WIN")
     include(${CMAKE_SCRIPT_PATH}/add_vulkan.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_spirv.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_assimp.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_flatbuffer.cmake)
 
     target_compile_definitions(Core
         PRIVATE CORE_EXPORTS
@@ -117,6 +122,7 @@ if(MORTY_BUILD_TARGET STREQUAL "MACOS")
     include(${CMAKE_SCRIPT_PATH}/add_vulkan_macos.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_spirv.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_assimp.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_flatbuffer.cmake)
     target_compile_definitions(Core
         PUBLIC MORTY_MACOS
     )
@@ -127,6 +133,7 @@ if(MORTY_BUILD_TARGET STREQUAL "IOS")
     include(${CMAKE_SCRIPT_PATH}/add_vulkan_ios.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_spirv_ios.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_assimp_ios.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_flatbuffer_ios.cmake)
     target_compile_definitions(Core
         PUBLIC MORTY_IOS
     )
@@ -145,6 +152,13 @@ if(assimp_FOUND)
 else()
     message(FATAL_ERROR "Assimp not found.")
 endif()
+
+if(flatbuffers_FOUND)
+    target_link_libraries(Core PRIVATE flatbuffers::flatbuffers)
+else()
+    message(FATAL_ERROR "flatbuffers not found.")
+endif()
+
 
 if(SPIRV_CROSS_FOUND)
     target_include_directories(Core
@@ -195,5 +209,6 @@ target_include_directories(Core
 set_target_properties(Core PROPERTIES
          LIBRARY_OUTPUT_PATH_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/../out/build/Debug
          LIBRARY_OUTPUT_PATH_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/../out/build/Release
+         LINK_FLAGS "/ignore:4099"
 )
 

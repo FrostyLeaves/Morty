@@ -6,6 +6,7 @@ from ThirdParty import install_assimp
 from ThirdParty import install_moltenVK
 from ThirdParty import install_sdl
 from ThirdParty import install_bullet
+from ThirdParty import install_flatbuffers
 
 
 WORK_PATH = os.getcwd()
@@ -101,17 +102,18 @@ if __name__ == '__main__':
         #install_assimp.build_for_windows()
         #install_sdl.build_for_windows()
         #install_bullet.build_for_windows()
-        build_for_windows()
+        install_flatbuffers.build_for_windows()
+        #build_for_windows()
     elif platform == "MACOS":
-        install_assimp.build_for_macos()
-        install_sdl.build_for_macos()
-        install_moltenVK.build_for_macos()
+        #install_assimp.build_for_macos()
+        #install_sdl.build_for_macos()
+        #install_moltenVK.build_for_macos()
         #install_bullet.build_for_macos()
         build_for_macos()
     elif platform == "IOS":
-        install_assimp.build_for_ios()
-        install_sdl.build_for_ios()
-        install_moltenVK.build_for_ios()
+        #install_assimp.build_for_ios()
+        #install_sdl.build_for_ios()
+        #install_moltenVK.build_for_ios()
         #install_bullet.build_for_ios()
         build_for_ios()
     else:

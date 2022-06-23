@@ -119,6 +119,7 @@ target_include_directories(Render
 set_target_properties(Render PROPERTIES
          LIBRARY_OUTPUT_PATH_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/../out/build/Debug
          LIBRARY_OUTPUT_PATH_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/../out/build/Release
+         LINK_FLAGS "/ignore:4099"
 )
 
 

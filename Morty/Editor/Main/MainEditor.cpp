@@ -761,6 +761,7 @@ void MainEditor::Render(MTaskNode* pNode)
 	if (m_pImGuiRenderable)
 	{
 		m_pImGuiRenderable->Tick(0.0f);
+		m_pImGuiRenderable->WaitTextureReady(pRenderCommand);
 		pRenderCommand->BeginRenderPass(&pRenderTarget->renderPass);
 		m_pImGuiRenderable->Render(pRenderCommand);
 		pRenderCommand->EndRenderPass();

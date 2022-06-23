@@ -75,6 +75,7 @@ if(MORTY_BUILD_TARGET STREQUAL "IOS")
             MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_LIST_DIR}/info.plist"
             XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "@executable_path/Frameworks"
             RESOURCE "${DEMO_INNER_RESOURCE}"
+            LINK_FLAGS "/ignore:4099"
     )
 
     set(DEMO_RESOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../Resource)

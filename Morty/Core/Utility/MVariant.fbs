@@ -1,0 +1,13 @@
+﻿namespace Morty;
+
+
+union MVariantData
+{
+	int = 1,
+	float = 2,
+}
+
+table MVariant
+{
+	data:MVariantData;
+}

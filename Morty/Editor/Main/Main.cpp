@@ -177,13 +177,13 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 		pMaterial->LoadPixelShader("./Shader/model_gbuffer.mps");
 		pMaterial->SetMaterialType(MEMaterialType::EDeferred);
 
-#if false
+#if true
 		MResource* albedo = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_albedo.png");
 		MResource* normal = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_normal.png");
 		MResource* roughness = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_roughness.png");
 		MResource* ao = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_ao.png");
 		MResource* height = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_height.png");
-		MResource* metal = pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero);
+		MResource* metal = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
 #else
 		MResource* albedo = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
 		MResource* normal = pResourceSystem->LoadResource(MRenderModule::DefaultNormal);

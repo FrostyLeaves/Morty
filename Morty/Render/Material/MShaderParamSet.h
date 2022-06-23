@@ -84,8 +84,8 @@ protected:
 template <typename ParamType>
 ParamType* MShaderParamSet::FindShaderParam(std::vector<ParamType*>& vVector, const MShaderParam* pParam)
 {
-	uint32_t unNum = vVector.size();
-	for (uint32_t i = 0; i < unNum; ++i)
+	size_t unNum = vVector.size();
+	for (size_t i = 0; i < unNum; ++i)
 	{
 		ParamType* param = vVector[i];
 
