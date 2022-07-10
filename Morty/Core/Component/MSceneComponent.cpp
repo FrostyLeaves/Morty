@@ -4,6 +4,8 @@
 #include "MScene.h"
 #include "MFunction.h"
 
+#include "Flatbuffer/MSceneComponent_generated.h"
+
 MORTY_CLASS_IMPLEMENT(MSceneComponent, MComponent)
 
 MSceneComponent::MSceneComponent()
@@ -114,6 +116,12 @@ void MSceneComponent::SetParentComponent(const MComponentID& parent)
 			SetVisibleRecursively(pParentScene->GetVisibleRecursively() & GetVisible());
 			bParentValid = true;
 		}
+
+		m_parentGuid = pParent->GetEntity()->GetID();
+	}
+	else
+	{
+		m_parentGuid = MGuid::invalid;
 	}
 
 
@@ -278,34 +286,60 @@ void MSceneComponent::CallRecursivelyFunction(MEntity* pEntity, std::function<vo
 	}
 }
 
-void MSceneComponent::WriteToStruct(MStruct& srt, MComponentRefTable& refTable)
+flatbuffers::Offset<void> MSceneComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	Super::WriteToStruct(srt, refTable);
+	flatbuffers::Offset<void> fbsuper = Super::Serialize(fbb);
 
-	M_SERIALIZER_WRITE_BEGIN;
+	mfbs::MSceneComponentBuilder compBuilder(fbb);
 
-	M_SERIALIZER_WRITE_VALUE("Position", GetPosition);
-	M_SERIALIZER_WRITE_VALUE("Scale", GetScale);
-	M_SERIALIZER_WRITE_VALUE("Rotation", GetRotation);
+	Vector3 positon = GetPosition();
+	Vector3 scale = GetScale();
+	Quaternion rotation = GetRotation();
+	compBuilder.add_position(reinterpret_cast<mfbs::Vector3*>(&positon));
+	compBuilder.add_scale(reinterpret_cast<mfbs::Vector3*>(&scale));
+	compBuilder.add_rotation(reinterpret_cast<mfbs::Quaternion*>(&rotation));
 
-	M_SERIALIZER_WRITE_COMPONENT_REF("ParentRef", GetParent);
+	if (MSceneComponent* pParent = GetParent())
+	{
+		if (MEntity* pParentEntity = pParent->GetEntity())
+		{
+			MGuid id = pParentEntity->GetID();
+			mfbs::MGuid fbguid(id.data[0], id.data[1], id.data[2], id.data[3]);
+			compBuilder.add_parent(&fbguid);
+		}
+	}
 
-	M_SERIALIZER_END;
+	compBuilder.add_super(flatbuffers::Offset<mfbs::MComponent>(fbsuper.o));
+
+	return compBuilder.Finish().Union();
 }
 
-void MSceneComponent::ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable)
+void MSceneComponent::Deserialize(const void* pBufferPointer)
 {
-	Super::ReadFromStruct(srt, refTable);
+	const mfbs::MSceneComponent* fbComponent = reinterpret_cast<const mfbs::MSceneComponent*>(pBufferPointer);
 
-	M_SERIALIZER_READ_BEGIN;
+	Super::Deserialize(fbComponent->super());
 
-	M_SERIALIZER_READ_VALUE("Position", SetPosition, Vector3);
-	M_SERIALIZER_READ_VALUE("Scale", SetScale, Vector3);
-	M_SERIALIZER_READ_VALUE("Rotation", SetRotation, Quaternion);
+	SetPosition(*reinterpret_cast<const Vector3*>(fbComponent->position()));
+	SetScale(*reinterpret_cast<const Vector3*>(fbComponent->scale()));
+	SetRotation(*reinterpret_cast<const Quaternion*>(fbComponent->rotation()));
 
-	M_SERIALIZER_READ_COMPONENT_REF("ParentRef", SetParent, MSceneComponent);
+	const mfbs::MGuid* fbguid = fbComponent->parent();
+	MGuid id(fbguid->data0(), fbguid->data1(), fbguid->data2(), fbguid->data3());
+	
+	m_parentGuid = id;
+}
 
-	M_SERIALIZER_END;
+void MSceneComponent::PostDeserialize()
+{
+	if (MEntity* pEntity = GetScene()->GetEntity(m_parentGuid))
+	{
+		SetParent(pEntity->GetComponent<MSceneComponent>());
+	}
+	else
+	{
+		assert(pEntity);
+	}
 }
 
 void MSceneComponent::WorldTransformDirty()

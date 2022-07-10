@@ -5,6 +5,7 @@ Flatc_Path = "../ThirdParty/installs/flatbuffers/bin/flatc.exe"
 
 Root_Path = [
     "../Morty/Core",
+    "../Morty/Render",
     "../Morty/Editor",
 ]
 
@@ -25,7 +26,7 @@ def gen_all_fbs(path, include_path, output_path, flat_exec):
         elif cur_path.endswith("fbs"):
             cmd =(flat_exec +
             ' --cpp' +
-            ' -I ' + include_path +
+            include_path +
             ' -o ' + output_path + '/' + 
             ' ' + cur_path + 
             ' --gen-object-api')
@@ -36,9 +37,15 @@ def main(argv):
 
     flat_exec = os.path.abspath('../ThirdParty/installs/flatbuffers/bin/flatc.exe')
 
+    include_path = ''
     for path in Root_Path:
         abs_path = os.path.abspath(path)
-        gen_all_fbs(abs_path, abs_path, abs_path + "/Flatbuffer", flat_exec)
+        include_path += ' -I ' + abs_path + ' '
+    
+    
+    for path in Root_Path:
+        abs_path = os.path.abspath(path)
+        gen_all_fbs(abs_path, include_path, abs_path + "/Flatbuffer", flat_exec)
 
 
 if __name__ == "__main__":

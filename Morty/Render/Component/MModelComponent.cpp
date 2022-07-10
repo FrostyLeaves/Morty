@@ -11,6 +11,8 @@ MORTY_CLASS_IMPLEMENT(MModelComponent, MComponent)
 #include "MSceneComponent.h"
 #include "MRenderableMeshComponent.h"
 
+#include "Flatbuffer/MModelComponent_generated.h"
+
 MModelComponent::MModelComponent()
 	: MComponent()
 	, m_SkeletonResource()
@@ -128,22 +130,24 @@ MBoundsAABB MModelComponent::GetBoundsAABB()
 	return aabb;
 }
 
-void MModelComponent::WriteToStruct(MStruct& srt, MComponentRefTable& refTable)
+flatbuffers::Offset<void> MModelComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	Super::WriteToStruct(srt, refTable);
+	auto&& fb_ske_resource = fbb.CreateString(GetSkeletonResourcePath());
+	auto&& fb_super = Super::Serialize(fbb).o;
 
-	M_SERIALIZER_WRITE_BEGIN;
-	M_SERIALIZER_WRITE_VALUE("SkeletonResource", GetSkeletonResourcePath)
+	mfbs::MModelComponentBuilder builder(fbb);
 
-	M_SERIALIZER_END;
+	builder.add_skeleton_resource_path(fb_ske_resource);
+	builder.add_super(fb_super);
+
+	return builder.Finish().Union();
 }
 
-void MModelComponent::ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable)
+void MModelComponent::Deserialize(const void* pBufferPointer)
 {
-	Super::ReadFromStruct(srt, refTable);
+	const mfbs::MModelComponent* pComponent = reinterpret_cast<const mfbs::MModelComponent*>(pBufferPointer);
 
-	M_SERIALIZER_READ_BEGIN;
-	M_SERIALIZER_READ_VALUE("SkeletonResource", SetSkeletonResourcePath, String);
+	Super::Deserialize(pComponent->super());
 
-	M_SERIALIZER_END;
+	SetSkeletonResourcePath(pComponent->skeleton_resource_path()->c_str());
 }

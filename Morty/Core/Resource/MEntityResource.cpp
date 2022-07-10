@@ -17,18 +17,10 @@ MEntityResource::~MEntityResource()
 
 bool MEntityResource::Load(const MString& strResourcePath)
 {
-	MString strCode;
-	if (!MFileHelper::ReadString(strResourcePath, strCode))
-		return false;
-
-	return MJson::JsonToMVariant(strCode, m_entityStruct);
+	return MFileHelper::ReadString(strResourcePath, m_entityData);
 }
 
 bool MEntityResource::SaveTo(const MString& strResourcePath)
 {
-	MString strCode;
-
-	MJson::MVariantToJson(m_entityStruct, strCode);
-
-	return MFileHelper::WriteString(strResourcePath, strCode);
+	return MFileHelper::WriteString(strResourcePath, m_entityData);
 }

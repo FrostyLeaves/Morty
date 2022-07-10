@@ -5,6 +5,8 @@ MORTY_CLASS_IMPLEMENT(MSpotLightComponent, MComponent)
 #include "MEntity.h"
 #include "MSceneComponent.h"
 
+#include "Flatbuffer/MSpotLightComponent_generated.h"
+
 MSpotLightComponent::MSpotLightComponent()
 	: MComponent()
 	, m_f3Color(1.0f, 1.0f, 1.0f)
@@ -52,30 +54,28 @@ Vector3 MSpotLightComponent::GetWorldDirection()
 	return pSceneComponent->GetWorldTransform().GetRotatePart() * Vector3(0.0f, 0.0f, 1.0f);
 }
 
-void MSpotLightComponent::WriteToStruct(MStruct& srt, MComponentRefTable& refTable)
+flatbuffers::Offset<void> MSpotLightComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	Super::WriteToStruct(srt, refTable);
+	mfbs::MSpotLightComponentBuilder builder(fbb);
 
-	M_SERIALIZER_WRITE_BEGIN;
+	builder.add_color(reinterpret_cast<mfbs::Vector4*>(&GetColorVector()));
+	builder.add_light_intensity(GetLightIntensity());
+	builder.add_inner_cut_off_angle(GetInnerCutOff());
+	builder.add_outer_cut_off_angle(GetOuterCutOff());
 
-	M_SERIALIZER_WRITE_VALUE("Color", GetColorVector);
-	M_SERIALIZER_WRITE_VALUE("LightIntensity", GetLightIntensity);
-	M_SERIALIZER_WRITE_VALUE("InnerCutOffAngle", GetInnerCutOff);
-	M_SERIALIZER_WRITE_VALUE("OuterCutOffAngle", GetOuterCutOff);
+	builder.add_super(Super::Serialize(fbb).o);
 
-	M_SERIALIZER_END;
+	return builder.Finish().Union();
 }
 
-void MSpotLightComponent::ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable)
+void MSpotLightComponent::Deserialize(const void* pBufferPointer)
 {
-	Super::ReadFromStruct(srt, refTable);
+	const mfbs::MSpotLightComponent* pComponent = reinterpret_cast<const mfbs::MSpotLightComponent*>(pBufferPointer);
 
-	M_SERIALIZER_READ_BEGIN;
+	SetColorVector(*reinterpret_cast<const Vector4*>(pComponent->color()));
+	SetLightIntensity(pComponent->light_intensity());
+	SetInnerCutOff(pComponent->inner_cut_off_angle());
+	SetOuterCutOff(pComponent->outer_cut_off_angle());
 
-	M_SERIALIZER_READ_VALUE("Color", SetColorVector, Vector4);
-	M_SERIALIZER_READ_VALUE("LightIntensity", SetLightIntensity, Float);
-	M_SERIALIZER_READ_VALUE("InnerCutOffAngle", SetInnerCutOff, Float);
-	M_SERIALIZER_READ_VALUE("OuterCutOffAngle", SetOuterCutOff, Float);
-
-	M_SERIALIZER_END;
+	Super::Deserialize(pComponent->super());
 }

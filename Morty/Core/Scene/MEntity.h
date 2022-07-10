@@ -10,7 +10,7 @@
 #define _M_MNODE_H_
 #include "MGlobal.h"
 #include "MString.h"
-#include "MEntityID.h"
+#include "MGuid.h"
 #include "MComponent.h"
 #include "MSerializer.h"
 #include "crossguid/guid.hpp"
@@ -24,12 +24,12 @@ class MORTY_API MEntity : public MTypeClass
 	MORTY_CLASS(MEntity)
 public:
     MEntity();
-	MEntity(MScene* pScene, const MEntityID& nID);
+	MEntity(MScene* pScene, const MGuid& nID);
     virtual ~MEntity();	//Release memory
 
 public:
 
-	MEntityID GetID() const { return m_id; }
+	MGuid GetID() const { return m_id; }
 
 public:
 
@@ -60,12 +60,13 @@ public:
 	void DeleteSelf();
 
 public:
-	virtual void WriteToStruct(MStruct& srt, MComponentRefTable& refTable);
-	virtual void ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable);
+	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& builder);
+	void Deserialize(const void* pBufferPointer);
+	void PostDeserialize();
 
 protected:
 	MScene* m_pScene;
-	MEntityID m_id;
+	MGuid m_id;
 	MString m_strName;
 
 	friend class MScene;

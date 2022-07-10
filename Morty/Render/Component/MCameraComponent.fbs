@@ -1,0 +1,17 @@
+include "Scene/MComponent.fbs";
+namespace mfbs;
+
+table MCameraComponent
+{
+	super: MComponent;
+	camera_type: int;
+	fov: float;
+	znear: float;
+	zfar: float;
+	width: float;
+	height: float;
+}
+
+root_type MCameraComponent;
+
+file_identifier "MFBS";

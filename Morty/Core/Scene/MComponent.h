@@ -11,9 +11,11 @@
 #include "MGlobal.h"
 #include "MType.h"
 
-#include "MEntityID.h"
+#include "MGuid.h"
 #include "MSerializer.h"
 #include "MBlockVector.h"
+
+#include "flatbuffers/flatbuffer_builder.h"
 
 class MScene;
 class MEntity;
@@ -101,7 +103,7 @@ public:
 
 public:
 
-    void Initialize(MScene* pScene, const MEntityID& id);
+    void Initialize(MScene* pScene, const MGuid& id);
 
     bool IsValid() const { return m_bValid; }
 
@@ -110,9 +112,9 @@ public:
 
 public:
 
-    virtual void WriteToStruct(MStruct& srt, MComponentRefTable& refTable);
-
-    virtual void ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable);
+    virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb);
+    virtual void Deserialize(const void* pBufferPointer);
+	virtual void PostDeserialize();
 
 public:
 
@@ -130,7 +132,7 @@ private:
 	MComponentID m_id;
 
 private:
-	MEntityID m_entityID;
+	MGuid m_entityID;
     MScene* m_pScene;
 
     bool m_bValid;

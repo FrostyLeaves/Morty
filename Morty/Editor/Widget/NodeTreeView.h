@@ -35,7 +35,7 @@ protected:
 private:
 	MScene* m_pScene;
 
-	MEntityID m_nSelectedEntityID;
+	MGuid m_nSelectedEntityID;
 
 	MEngine* m_pEngine;
 };

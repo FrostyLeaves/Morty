@@ -1,60 +1,60 @@
 ﻿# CMakeList.txt: Core 的 CMake 项目，在此处包括源代码并定义
 # 项目特定的逻辑。
 #
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.10)
 
 set(CORE_CODE_DIRECTORIES)
 
 ############################################################
 # Core
 ############################################################
-file(GLOB CORE_CORE_FILES *.h *.cpp)
-source_group("Core" FILES ${CORE_CORE_FILES})
-
 file(GLOB CORE_COMPONENT_FILES Component/*.h Component/*.cpp)
-source_group("Core\\Component" FILES ${CORE_COMPONENT_FILES})
+source_group("Component" FILES ${CORE_COMPONENT_FILES})
 
 file(GLOB CORE_ENGINE_FILES Engine/*.h Engine/*.cpp)
-source_group("Core\\Engine" FILES ${CORE_ENGINE_FILES})
+source_group("Engine" FILES ${CORE_ENGINE_FILES})
 
 file(GLOB CORE_INPUT_FILES Input/*.h Input/*.cpp)
-source_group("Core\\Input" FILES ${CORE_INPUT_FILES})
+source_group("Input" FILES ${CORE_INPUT_FILES})
 
 file(GLOB CORE_MATH_FILES Math/*.h Math/*.cpp )
-source_group("Core\\Math" FILES ${CORE_MATH_FILES})
+source_group("Math" FILES ${CORE_MATH_FILES})
+
+file(GLOB CORE_MODULE_FILES Module/*.h Module/*.cpp )
+source_group("Module" FILES ${CORE_MODULE_FILES})
 
 file(GLOB CORE_OBJECT_FILES Object/*.h Object/*.cpp )
-source_group("Core\\Object" FILES ${CORE_OBJECT_FILES})
+source_group("Object" FILES ${CORE_OBJECT_FILES})
 
 file(GLOB CORE_POINTER_FILES Pointer/*.h Pointer/*.cpp )
-source_group("Core\\Pointer" FILES ${CORE_POINTER_FILES})
+source_group("Pointer" FILES ${CORE_POINTER_FILES})
 
 file(GLOB CORE_RESOURCE_FILES Resource/*.h Resource/*.cpp )
-source_group("Core\\Resource" FILES ${CORE_RESOURCE_FILES})
+source_group("Resource" FILES ${CORE_RESOURCE_FILES})
 
 file(GLOB CORE_SCENE_FILES Scene/*.h Scene/*.cpp )
-source_group("Core\\Scene" FILES ${CORE_SCENE_FILES})
+source_group("Scene" FILES ${CORE_SCENE_FILES})
 
 file(GLOB CORE_SYSTEM_FILES System/*.h System/*.cpp )
-source_group("Core\\System" FILES ${CORE_SYSTEM_FILES})
+source_group("System" FILES ${CORE_SYSTEM_FILES})
 
 file(GLOB CORE_TASK_GRAPH_FILES TaskGraph/*.h TaskGraph/*.cpp )
-source_group("Core\\TaskGraph" FILES ${CORE_TASK_GRAPH_FILES})
+source_group("TaskGraph" FILES ${CORE_TASK_GRAPH_FILES})
 
 file(GLOB CORE_THREAD_FILES Thread/*.h Thread/*.cpp )
-source_group("Core\\Thread" FILES ${CORE_THREAD_FILES})
+source_group("Thread" FILES ${CORE_THREAD_FILES})
 
 file(GLOB CORE_TYPE_FILES Type/*.h Type/*.cpp )
-source_group("Core\\Type" FILES ${CORE_TYPE_FILES})
+source_group("Type" FILES ${CORE_TYPE_FILES})
 
 file(GLOB CORE_UTILITY_FILES Utility/*.h Utility/*.cpp )
-source_group("Core\\Utility" FILES ${CORE_UTILITY_FILES})
+source_group("Utility" FILES ${CORE_UTILITY_FILES})
 
 file(GLOB CORE_VARIANT_FILES Variant/*.h Variant/*.cpp )
-source_group("Core\\Variant" FILES ${CORE_VARIANT_FILES})
+source_group("Variant" FILES ${CORE_VARIANT_FILES})
 
 file(GLOB CORE_FLATBUFFER_FILES Flatbuffer/*.h Flatbuffer/*.cpp )
-source_group("Core\\Flatbuffer" FILES ${CORE_FLATBUFFER_FILES})
+source_group("Flatbuffer" FILES ${CORE_FLATBUFFER_FILES})
 ############################################################
 # add library
 ############################################################
@@ -64,6 +64,7 @@ add_library(Core STATIC
     ${CORE_ENGINE_FILES}
     ${CORE_INPUT_FILES}
     ${CORE_MATH_FILES}
+    ${CORE_MODULE_FILES}
     ${CORE_OBJECT_FILES}
     ${CORE_POINTER_FILES}
     ${CORE_RESOURCE_FILES}
@@ -87,6 +88,7 @@ set(CORE_CODE_DIRECTORIES ${CORE_CODE_DIRECTORIES}
         ${CMAKE_CURRENT_SOURCE_DIR}/Engine
         ${CMAKE_CURRENT_SOURCE_DIR}/Input
         ${CMAKE_CURRENT_SOURCE_DIR}/Math
+        ${CMAKE_CURRENT_SOURCE_DIR}/Module
         ${CMAKE_CURRENT_SOURCE_DIR}/Scene
         ${CMAKE_CURRENT_SOURCE_DIR}/System
         ${CMAKE_CURRENT_SOURCE_DIR}/Object
@@ -157,7 +159,7 @@ else()
 endif()
 
 if(flatbuffers_FOUND)
-    target_link_libraries(Core PRIVATE flatbuffers::flatbuffers)
+    target_link_libraries(Core PUBLIC flatbuffers::flatbuffers)
 else()
     message(FATAL_ERROR "flatbuffers not found.")
 endif()

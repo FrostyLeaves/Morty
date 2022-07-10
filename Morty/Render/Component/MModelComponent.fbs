@@ -1,0 +1,12 @@
+include "Scene/MComponent.fbs";
+namespace mfbs;
+
+table MModelComponent
+{
+	super: MComponent;
+	skeleton_resource_path: string;
+}
+
+root_type MModelComponent;
+
+file_identifier "MFBS";

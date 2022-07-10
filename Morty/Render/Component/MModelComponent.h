@@ -50,8 +50,8 @@ public:
 
 public:
 
-	virtual void WriteToStruct(MStruct& srt, MComponentRefTable& refTable) override;
-	virtual void ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable) override;
+	virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb);
+	virtual void Deserialize(const void* pBufferPointer);
 
 private:
 

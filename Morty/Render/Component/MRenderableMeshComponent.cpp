@@ -19,6 +19,8 @@ MORTY_CLASS_IMPLEMENT(MRenderableMeshComponent, MComponent)
 #include "MRenderSystem.h"
 #include "MResourceSystem.h"
 
+#include "Flatbuffer/MRenderableMeshComponent_generated.h"
+
 MRenderableMeshComponent::MRenderableMeshComponent()
 	: MComponent()
 	, m_Mesh()
@@ -307,30 +309,41 @@ void MRenderableMeshComponent::OnParentChanged()
 	m_bModelInstanceFound = false;
 }
 
-void MRenderableMeshComponent::WriteToStruct(MStruct& srt, MComponentRefTable& refTable)
+flatbuffers::Offset<void> MRenderableMeshComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	Super::WriteToStruct(srt, refTable);
+	auto fb_super = Super::Serialize(fbb).o;
+	auto&& fb_material_path = fbb.CreateString(GetMaterialPath());
+	auto&& fb_mesh_path = fbb.CreateString(GetMeshResourcePath());
+	mfbs::MRenderableMeshComponentBuilder builder(fbb);
 
-	M_SERIALIZER_WRITE_BEGIN;
-	M_SERIALIZER_WRITE_VALUE("GenDirShadow", GetGenerateDirLightShadow);
-	M_SERIALIZER_WRITE_VALUE("DrawBounding", GetDrawBoundingSphere);
-	M_SERIALIZER_WRITE_VALUE("LOD", (int)GetDetailLevel);
-	M_SERIALIZER_WRITE_VALUE("MaterialPath", GetMaterialPath);
-	M_SERIALIZER_WRITE_VALUE("MeshPath", GetMeshResourcePath);
-	M_SERIALIZER_END;
+	builder.add_gen_dir_shadow(GetGenerateDirLightShadow());
+	builder.add_draw_bounding(GetDrawBoundingSphere());
+	builder.add_lod((int)GetDetailLevel());
+	builder.add_material_path(fb_material_path);
+	builder.add_mesh_path(fb_mesh_path);
+	builder.add_super(fb_super);
+
+
+	return builder.Finish().Union();
 }
 
-void MRenderableMeshComponent::ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable)
+void MRenderableMeshComponent::Deserialize(const void* pBufferPointer)
 {
-	Super::ReadFromStruct(srt, refTable);
+	const mfbs::MRenderableMeshComponent* pComponent = reinterpret_cast<const mfbs::MRenderableMeshComponent*>(pBufferPointer);
 
-	M_SERIALIZER_READ_BEGIN;
-	M_SERIALIZER_READ_VALUE("GenDirShadow", SetGenerateDirLightShadow, Bool);
-	M_SERIALIZER_READ_VALUE("DrawBounding", SetDrawBoundingSphere, Bool);
-	M_SERIALIZER_READ_VALUE("LOD", SetDetailLevel, Int);
-	M_SERIALIZER_READ_VALUE("MaterialPath", SetMaterialPath, String);
-	M_SERIALIZER_READ_VALUE("MeshPath", SetMeshResourcePath, String);
-	M_SERIALIZER_END;
+	Super::Deserialize(pComponent->super());
+
+	SetGenerateDirLightShadow(pComponent->gen_dir_shadow());
+	SetDrawBoundingSphere(pComponent->draw_bounding());
+	SetDetailLevel(pComponent->lod());
+	if (const flatbuffers::String* fb_mat_path = pComponent->material_path())
+	{
+		SetMaterialPath(fb_mat_path->c_str());
+	}
+	if (const flatbuffers::String* fb_mesh_path = pComponent->mesh_path())
+	{
+		SetMeshResourcePath(fb_mesh_path->c_str());
+	}
 }
 
 void MRenderableMeshComponent::BindShaderParam(MMaterial* pMaterial)

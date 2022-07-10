@@ -1,0 +1,11 @@
+﻿include "Scene/MEntity.fbs";
+namespace mfbs;
+
+table MEntityResource
+{
+	entity: [MEntity];
+}
+
+root_type MEntityResource;
+
+file_identifier "MFBS";

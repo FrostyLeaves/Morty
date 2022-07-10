@@ -26,9 +26,14 @@ MScene::~MScene()
 
 MEntity* MScene::CreateEntity()
 {
-	MEntityID id = MEntityID::generate();
-	MEntity* pEntity = new MEntity(this, id);
-	m_vEntity[id] = pEntity;
+	MGuid id = MGuid::generate();
+	return CreateEntity(id);
+}
+
+MEntity* MScene::CreateEntity(const MGuid& guid)
+{
+	MEntity* pEntity = new MEntity(this, guid);
+	m_vEntity[guid] = pEntity;
 
 	return pEntity;
 }
@@ -48,7 +53,7 @@ void MScene::DeleteEntity(MEntity* pEntity)
 	}
 }
 
-MEntity* MScene::GetEntity(const MEntityID& id)
+MEntity* MScene::GetEntity(const MGuid& id)
 {
 	auto findResult = m_vEntity.find(id);
 	if (findResult != m_vEntity.end())

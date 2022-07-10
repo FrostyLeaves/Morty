@@ -25,6 +25,8 @@ public:
 	static MString GetResourceTypeName() { return "Entity"; }
 	static std::vector<MString> GetSuffixList() { return { "entity" }; }
 
+    MString& GetData() { return m_entityData; }
+
 protected:
 
     virtual bool Load(const MString& strResourcePath) override;
@@ -33,7 +35,7 @@ protected:
 private:
 
     friend class MEntitySystem;
-    MVariant m_entityStruct;
+    MString m_entityData;
 };
 
 

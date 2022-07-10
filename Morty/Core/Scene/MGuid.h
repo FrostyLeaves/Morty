@@ -8,7 +8,6 @@
 
 #ifndef _M_GUID_H_
 #define _M_GUID_H_
-#include "crossguid/guid.hpp"
 
 #include "MGlobal.h"
 
@@ -16,6 +15,7 @@ class MORTY_API MGuid
 {
 public:
 	MGuid();
+	MGuid(const uint32_t& data0, const uint32_t& data1, const uint32_t& data2, const uint32_t& data3);
 
 	static MGuid generate();
 
@@ -30,7 +30,7 @@ public:
 	
 	static MGuid invalid;
 
-	xg::Guid m_id;
+	std::array<uint32_t, 4> data;
 };
 
 

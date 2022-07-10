@@ -82,8 +82,9 @@ public:
 
 public:
 
-	virtual void WriteToStruct(MStruct& srt, MComponentRefTable& refTable) override;
-	virtual void ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable) override;
+	virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
+	virtual void Deserialize(const void* pBufferPointer) override;
+	virtual void PostDeserialize() override;
 
 protected:
 
@@ -109,6 +110,7 @@ private:
 	bool m_bVisible;
 	bool m_bVisibleRecursively;
 
+	MGuid m_parentGuid;
 	MComponentID m_attachParent;
 	std::vector<MComponentID> m_vAttachChildren;
 };

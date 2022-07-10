@@ -1,0 +1,17 @@
+include "Scene/MComponent.fbs";
+include "Math/Vector.fbs";
+namespace mfbs;
+
+table MPointLightComponent
+{
+	super: MComponent;
+	color: Vector4;
+	light_intensity: float;
+	constant: float;
+	linear: float;
+	quadratic: float;
+}
+
+root_type MPointLightComponent;
+
+file_identifier "MFBS";

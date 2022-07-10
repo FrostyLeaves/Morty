@@ -11,6 +11,9 @@
 
 #include "MResourceSystem.h"
 
+#include "flatbuffers/flatbuffer_builder.h"
+#include "Flatbuffer/MEntityResource_generated.h"
+
 MORTY_CLASS_IMPLEMENT(MEntitySystem, MISystem)
 
 MEntitySystem::MEntitySystem()
@@ -44,17 +47,27 @@ MResource* MEntitySystem::PackEntity(MScene* pScene, const std::vector<MEntity*>
 
 	MEntityResource* pResource = pResourceSystem->CreateResource<MEntityResource>();
 
-	pResource->m_entityStruct = MVariantArray();
+	flatbuffers::FlatBufferBuilder fbb;
 
-	MComponentRefTable refTable(pScene);
-
+	std::vector<flatbuffers::Offset<mfbs::MEntity>> entityVector;
 	for (MEntity* pEntity : vEntity)
-	{
-		if (MStruct* pStruct = pResource->m_entityStruct.GetArray()->AppendMVariant<MStruct>())
-		{
-			pEntity->WriteToStruct(*pStruct, refTable);
-		}
+	{		
+		flatbuffers::Offset<void>&& entity = pEntity->Serialize(fbb);
+		entityVector.push_back(entity.o);
 	}
+
+	auto&& fb_entity = fbb.CreateVector(entityVector);
+
+	mfbs::MEntityResourceBuilder builder(fbb);
+
+	builder.add_entity(fb_entity);
+
+	flatbuffers::Offset<mfbs::MEntityResource>&& root = builder.Finish();
+
+	fbb.Finish(root);
+
+	pResource->GetData().clear();
+	pResource->GetData().append((char*)fbb.GetBufferPointer(), fbb.GetSize());
 
 	return pResource;
 }
@@ -68,25 +81,30 @@ std::vector<MEntity*> MEntitySystem::LoadEntity(MScene* pScene, MResource* pReso
 		return vResult;
 
 
-	if (const MVariantArray* pArray = pEntityResource->m_entityStruct.GetArray())
+	flatbuffers::FlatBufferBuilder fbb;
+	fbb.PushBytes((const uint8_t*)pEntityResource->GetData().data(), pEntityResource->GetData().size());
+
+	const mfbs::MEntityResource* fbResource = mfbs::GetMEntityResource(fbb.GetCurrentBufferPointer());
+
+	const flatbuffers::Vector<flatbuffers::Offset<mfbs::MEntity>>& vEntity = *fbResource->entity();
+
+	for (int i = 0; i < vEntity.Length(); ++i)
 	{
-		MComponentRefTable refTable(pScene);
+		const mfbs::MEntity* fb_entity = vEntity.Get(i);
+		MGuid guid = MGuid(fb_entity->id()->data0(), fb_entity->id()->data1(), fb_entity->id()->data2(), fb_entity->id()->data3());
 
-		for (size_t i = 0; i < pArray->GetMemberCount(); ++i)
-		{
-			if (const MStruct* pStruct = pArray->GetMember<MStruct>(i))
-			{
-				if (MEntity* pEntity = pScene->CreateEntity())
-				{
-					pEntity->ReadFromStruct(*pStruct, refTable);
-					vResult.push_back(pEntity);
-				}
-			}
-		}
+		MEntity* pEntity = pScene->CreateEntity(guid);
+		pEntity->Deserialize(fb_entity);
 
-		refTable.BindReference();
+		vResult.push_back(pEntity);
 	}
 
+	for (int i = 0; i < vResult.size(); ++i)
+	{
+		vResult[i]->PostDeserialize();
+	}
+
+	
 	return vResult;
 }
 

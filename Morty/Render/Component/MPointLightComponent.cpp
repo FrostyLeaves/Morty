@@ -1,5 +1,7 @@
 #include "MPointLightComponent.h"
 
+#include "Flatbuffer/MPointLightComponent_generated.h"
+
 MORTY_CLASS_IMPLEMENT(MPointLightComponent, MComponent)
 
 MPointLightComponent::MPointLightComponent()
@@ -18,32 +20,30 @@ MPointLightComponent::~MPointLightComponent()
 
 }
 
-void MPointLightComponent::WriteToStruct(MStruct& srt, MComponentRefTable& refTable)
+flatbuffers::Offset<void> MPointLightComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	Super::WriteToStruct(srt, refTable);
+	mfbs::MPointLightComponentBuilder builder(fbb);
 
-	M_SERIALIZER_WRITE_BEGIN;
+	builder.add_color(reinterpret_cast<mfbs::Vector4*>(&GetColorVector()));
+	builder.add_light_intensity(GetLightIntensity());
+	builder.add_constant(GetConstant());
+	builder.add_linear(GetLinear());
+	builder.add_quadratic(GetQuadratic());
 
-	M_SERIALIZER_WRITE_VALUE("Color", GetColorVector);
-	M_SERIALIZER_WRITE_VALUE("LightIntensity", GetLightIntensity);
-	M_SERIALIZER_WRITE_VALUE("Constant", GetConstant);
-	M_SERIALIZER_WRITE_VALUE("Linear", GetLinear);
-	M_SERIALIZER_WRITE_VALUE("Quadratic", GetQuadratic);
+	builder.add_super(Super::Serialize(fbb).o);
 
-	M_SERIALIZER_END;
+	return builder.Finish().Union();
 }
 
-void MPointLightComponent::ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable)
+void MPointLightComponent::Deserialize(const void* pBufferPointer)
 {
-	Super::ReadFromStruct(srt, refTable);
+	const mfbs::MPointLightComponent* pComponent = reinterpret_cast<const mfbs::MPointLightComponent*>(pBufferPointer);
 
-	M_SERIALIZER_READ_BEGIN;
+	SetColorVector(*reinterpret_cast<const Vector4*>(pComponent->color()));
+	SetLightIntensity(pComponent->light_intensity());
+	SetConstant(pComponent->constant());
+	SetLinear(pComponent->linear());
+	SetQuadratic(pComponent->quadratic());
 
-	M_SERIALIZER_READ_VALUE("Color", SetColorVector, Vector4);
-	M_SERIALIZER_READ_VALUE("LightIntensity", SetLightIntensity, Float);
-	M_SERIALIZER_READ_VALUE("Constant", SetConstant, Float);
-	M_SERIALIZER_READ_VALUE("Linear", SetLinear, Float);
-	M_SERIALIZER_READ_VALUE("Quadratic", SetQuadratic, Float);
-
-	M_SERIALIZER_END;
+	Super::Deserialize(pComponent->super());
 }

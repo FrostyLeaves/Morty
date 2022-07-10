@@ -45,8 +45,8 @@ public:
 
 public:
 
-	virtual void WriteToStruct(MStruct& srt, MComponentRefTable& refTable) override;
-	virtual void ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable) override;
+	virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
+	virtual void Deserialize(const void* pBufferPointer) override;
 
 private:
 	MColor m_f3Color;

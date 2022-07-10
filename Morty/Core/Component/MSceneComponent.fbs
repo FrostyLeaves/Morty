@@ -1,5 +1,8 @@
 include "Math/Vector.fbs";
+include "Math/Quaternion.fbs";
 include "Scene/MComponent.fbs";
+include "Scene/MGuid.fbs";
+
 namespace mfbs;
 
 table MSceneComponent
@@ -9,7 +12,9 @@ table MSceneComponent
     scale: Vector3;
     rotation: Quaternion;
 
-	parent: MComponentID;
+	parent: MGuid;
 }
+
+root_type MSceneComponent;
 
 file_identifier "MFBS";

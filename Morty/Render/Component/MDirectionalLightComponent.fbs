@@ -1,0 +1,14 @@
+include "Scene/MComponent.fbs";
+include "Math/Vector.fbs";
+namespace mfbs;
+
+table MDirectionalLightComponent
+{
+	super: MComponent;
+	color: Vector4;
+	light_intensity: float;
+}
+
+root_type MDirectionalLightComponent;
+
+file_identifier "MFBS";

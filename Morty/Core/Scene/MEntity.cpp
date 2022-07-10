@@ -10,6 +10,8 @@
 
 #include "MFunction.h"
 
+#include "Flatbuffer/MEntity_generated.h"
+
 MORTY_CLASS_IMPLEMENT(MEntity, MTypeClass)
 
 MEntity::MEntity()
@@ -20,7 +22,7 @@ MEntity::MEntity()
 {
 }
 
-MEntity::MEntity(MScene* pScene, const MEntityID& nID)
+MEntity::MEntity(MScene* pScene, const MGuid& nID)
 	: MTypeClass()
 	, m_pScene(pScene)
 	, m_id(nID)
@@ -104,50 +106,62 @@ void MEntity::DeleteSelf()
 	}
 }
 
-void MEntity::WriteToStruct(MStruct& srt, MComponentRefTable& refTable)
+flatbuffers::Offset<void> MEntity::Serialize(flatbuffers::FlatBufferBuilder& builder)
 {
-	M_SERIALIZER_WRITE_BEGIN;
+	MGuid id = GetID();
+	mfbs::MGuid fbguid(id.data[0], id.data[1], id.data[2], id.data[3]);
+	auto&& fbname = builder.CreateString(GetName());
 
-	M_SERIALIZER_WRITE_VALUE("Name", GetName);
-
-	if (MVariantArray* pComponentArray = MSerializer::FindWriteVariant<MVariantArray>(*pStruct, "Components"))
+	std::vector<flatbuffers::Offset<mfbs::AnyComponent >> vFbComponents;
+	std::vector<MComponent*>&& vComponents = GetComponents();
+	for (MComponent* pComponent : vComponents)
 	{
-		std::vector<MComponent*>& vComponents = GetComponents();
-		for (MComponent* pComponent : vComponents)
-		{
-			if (MStruct* pCompStruct = pComponentArray->AppendMVariant<MStruct>())
-			{
-				pCompStruct->AppendMVariant("ComponentType", pComponent->GetTypeName());
-				pComponent->WriteToStruct(*pCompStruct, refTable);
-			}
-		}
+		flatbuffers::FlatBufferBuilder compBuilder;
+		flatbuffers::Offset<void>&& componentRoot = pComponent->Serialize(compBuilder);
+		compBuilder.Finish(componentRoot);
+
+		flatbuffers::Offset<flatbuffers::Vector<uint8_t>>&& fbdata = builder.CreateVector(compBuilder.GetBufferPointer(), compBuilder.GetSize());
+		flatbuffers::Offset<mfbs::AnyComponent>&& fbcomponent = mfbs::CreateAnyComponent(builder, builder.CreateString(pComponent->GetTypeName()), fbdata);
+
+		vFbComponents.push_back(fbcomponent);
 	}
 
-	M_SERIALIZER_END;
+	auto&& fb_components = builder.CreateVector(vFbComponents);
+
+	mfbs::MEntityBuilder entityBuilder(builder);
+
+	entityBuilder.add_id(&fbguid);
+	entityBuilder.add_name(fbname);
+	entityBuilder.add_components(fb_components);
+
+	return entityBuilder.Finish().Union();
 }
 
-void MEntity::ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable)
+void MEntity::Deserialize(const void* pBufferPointer)
 {
-	M_SERIALIZER_READ_BEGIN;
+	const mfbs::MEntity* fbEntity = reinterpret_cast<const mfbs::MEntity *>(pBufferPointer);
 
-	M_SERIALIZER_READ_VALUE("Name", SetName, String);
+	const mfbs::MGuid* fbguid = fbEntity->id();
+	m_id = MGuid(fbguid->data0(), fbguid->data1(), fbguid->data2(), fbguid->data3());
+	m_strName = fbEntity->name()->c_str();
 
-	if (const MVariantArray* pComponentArray = MSerializer::FindReadVariant<MVariantArray>(*pStruct, "Components"))
+	for (auto&& fbcomponent : *fbEntity->components())
 	{
-		for (size_t i = 0; i < pComponentArray->GetMemberCount(); ++i)
+		MString type = fbcomponent->type()->c_str();
+
+		const MType* pType = MTypeClass::GetType(type);
+		MComponent* pComponent = GetScene()->AddComponent(this, pType);
+		pComponent->Deserialize(fbcomponent->data()->data());
+	}
+}
+
+void MEntity::PostDeserialize()
+{
+	for (MComponentID& compid : m_vComponents)
+	{
+		if (MComponent* pComponent = GetScene()->GetComponent(compid))
 		{
-			if (const MStruct* pCompStruct = pComponentArray->GetMember<MStruct>(i))
-			{
-				if (const MString* pComponentTypeName = pCompStruct->FindMember<MString>("ComponentType"))
-				{
-					if (MComponent* pComponent = GetScene()->AddComponent(this, MTypeClass::GetType(*pComponentTypeName)))
-					{
-						pComponent->ReadFromStruct(*pCompStruct, refTable);
-					}
-				}
-			}
+			pComponent->PostDeserialize();
 		}
 	}
-
-	M_SERIALIZER_END;
 }

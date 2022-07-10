@@ -30,11 +30,6 @@ public:
 
 	virtual bool Input(MInputEvent* pEvent, MViewport* pViewport);
 	
-public:
-
-	virtual void WriteToStruct(MStruct& srt, MComponentRefTable& refTable) override;
-	virtual void ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable) override;
-
 private:
 
 	MInputCallback m_funcInputCallback;

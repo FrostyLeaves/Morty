@@ -1,5 +1,7 @@
 #include "MDirectionalLightComponent.h"
 
+#include "Flatbuffer/MDirectionalLightComponent_generated.h"
+
 MORTY_CLASS_IMPLEMENT(MDirectionalLightComponent, MComponent)
 
 #include "MScene.h"
@@ -33,26 +35,24 @@ Vector3 MDirectionalLightComponent::GetWorldDirection()
 	return pSceneComponent->GetWorldTransform().GetRotatePart() * m_v3Direction;
 }
 
-void MDirectionalLightComponent::WriteToStruct(MStruct& srt, MComponentRefTable& refTable)
+flatbuffers::Offset<void> MDirectionalLightComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	Super::WriteToStruct(srt, refTable);
+	mfbs::MDirectionalLightComponentBuilder builder(fbb);
 
-	M_SERIALIZER_WRITE_BEGIN;
+	builder.add_color(reinterpret_cast<mfbs::Vector4*>(&GetColorVector()));
+	builder.add_light_intensity(GetLightIntensity());
 
-	M_SERIALIZER_WRITE_VALUE("Color", GetColorVector);
-	M_SERIALIZER_WRITE_VALUE("LightIntensity", GetLightIntensity);
+	builder.add_super(Super::Serialize(fbb).o);
 
-	M_SERIALIZER_END;
+	return builder.Finish().Union();
 }
 
-void MDirectionalLightComponent::ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable)
+void MDirectionalLightComponent::Deserialize(const void* pBufferPointer)
 {
-	Super::ReadFromStruct(srt, refTable);
+	const mfbs::MDirectionalLightComponent* pComponent = reinterpret_cast<const mfbs::MDirectionalLightComponent*>(pBufferPointer);
 
-	M_SERIALIZER_READ_BEGIN;
+	SetColorVector(*reinterpret_cast<const Vector4*>(pComponent->color()));
+	SetLightIntensity(pComponent->light_intensity());
 
-	M_SERIALIZER_READ_VALUE("Color", SetColorVector, Vector4);
-	M_SERIALIZER_READ_VALUE("LightIntensity", SetLightIntensity, Float);
-
-	M_SERIALIZER_END;
+	Super::Deserialize(pComponent->super());
 }

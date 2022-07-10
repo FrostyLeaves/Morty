@@ -1,0 +1,20 @@
+﻿include "Scene/MGuid.fbs";
+namespace mfbs;
+
+table AnyComponent
+{
+	type: string;
+	data: [ubyte];
+}
+
+table MEntity
+{
+	id: MGuid;
+	name: string;
+
+	components: [AnyComponent];
+}
+
+root_type MEntity;
+
+file_identifier "MFBS";

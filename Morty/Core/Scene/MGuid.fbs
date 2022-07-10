@@ -1,0 +1,11 @@
+﻿namespace mfbs;
+
+struct MGuid
+{
+	data0: uint;
+	data1: uint;
+	data2: uint;
+	data3: uint;
+}
+
+file_identifier "MFBS";

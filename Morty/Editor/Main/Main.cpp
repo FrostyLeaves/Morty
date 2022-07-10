@@ -33,7 +33,7 @@
 #undef main
 #endif
 
-//#define TEST_ANIMATION
+#define TEST_ANIMATION
 
 #define TEST_PBR_RENDER_0
 

@@ -31,9 +31,10 @@ public:
 public:
 
 	MEntity* CreateEntity();
+	MEntity* CreateEntity(const MGuid& guid);
 	void DeleteEntity(MEntity* pEntity);
 
-	MEntity* GetEntity(const MEntityID& id);
+	MEntity* GetEntity(const MGuid& id);
 
 	template<typename TYPE>
 	MEntity* FindFirstEntityByComponent();
@@ -72,7 +73,7 @@ protected:
 
 private:
 
-	std::map<MEntityID, MEntity*> m_vEntity;
+	std::map<MGuid, MEntity*> m_vEntity;
 	std::map<const MType*, MIComponentGroup*> m_tComponents;
 };
 

@@ -463,7 +463,7 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 	};
 
 	IDxcResult* pResults = nullptr;
-	pCompiler->Compile(&Source, pszArgs, vCompArgs.size(), pIncludeHandler.get(), IID_PPV_ARGS(&pResults));
+	HRESULT hrCompile = pCompiler->Compile(&Source, pszArgs, vCompArgs.size(), pIncludeHandler.get(), IID_PPV_ARGS(&pResults));
 
 	delete[] pszArgs;
 	

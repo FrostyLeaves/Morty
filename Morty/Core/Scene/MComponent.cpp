@@ -7,6 +7,8 @@ MORTY_CLASS_IMPLEMENT(MComponent, MTypeClass)
 
 #include "MNotifySystem.h"
 
+#include "Flatbuffer/MComponent_generated.h"
+
 MComponent::MComponent()
 	: MTypeClass()
 	, m_id()
@@ -22,7 +24,7 @@ MComponent::~MComponent()
 
 }
 
-void MComponent::Initialize(MScene* pScene, const MEntityID& id)
+void MComponent::Initialize(MScene* pScene, const MGuid& id)
 {
 	m_pScene = pScene;
 	m_entityID = id;
@@ -40,24 +42,22 @@ void MComponent::Release()
 	m_bValid = false;
 }
 
-void MComponent::WriteToStruct(MStruct& srt, MComponentRefTable& refTable)
+flatbuffers::Offset<void> MComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	M_SERIALIZER_WRITE_BEGIN
+	mfbs::MComponentBuilder compBuilder(fbb);
 
-	uint32_t nIndex = refTable.FindOrAdd(GetComponentID());
-	srt.AppendMVariant("RefIndex", int(nIndex));
-
-	M_SERIALIZER_END
+	return compBuilder.Finish().Union();
 }
 
-void MComponent::ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable)
+void MComponent::Deserialize(const void* pBufferPointer)
 {
-	M_SERIALIZER_READ_BEGIN
+	const mfbs::MComponent* fbcomponent = reinterpret_cast<const mfbs::MComponent*>(pBufferPointer);
 
-	uint32_t nIndex = *srt.FindMember<int>("RefIndex");
-	refTable.AddRef(GetComponentID(), nIndex);
 
-	M_SERIALIZER_END
+}
+
+void MComponent::PostDeserialize()
+{
 }
 
 void MComponent::SendComponentNotify(const MString& notify)

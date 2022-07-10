@@ -21,7 +21,7 @@ class MModelInstance;
 class MModelComponent;
 class MShaderParamSet;
 class MSkeletonInstance;
-class MShaderConstantParam;
+struct MShaderConstantParam;
 class MORTY_API MRenderableMeshComponent : public MComponent
 {
 public:
@@ -89,8 +89,8 @@ public:
 
 public:
 
-	virtual void WriteToStruct(MStruct& srt, MComponentRefTable& refTable) override;
-	virtual void ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable) override;
+	virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
+	virtual void Deserialize(const void* pBufferPointer) override;
 
 protected:
 

@@ -1,7 +1,7 @@
 ﻿# CMakeList.txt: 顶层 CMake 项目文件，在此处执行全局配置
 # 并包含子项目。
 #
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.10)
 
 project ("Morty")
 
@@ -22,6 +22,10 @@ elseif(COMPILER_SUPPORTS_CXX0X)
 else()
     message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
+
+if(MSVC)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
+endif(MSVC)
 
 set(MORTY_BUILD_TARGET_RANGE "WIN" "MACOS" "IOS")
 set(MORTY_BUILD_TARGET "WIN" CACHE STRING "param for platform")

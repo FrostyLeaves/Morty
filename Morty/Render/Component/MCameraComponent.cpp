@@ -2,6 +2,8 @@
 
 #include "MEngine.h"
 
+#include "Flatbuffer/MCameraComponent_generated.h"
+
 MORTY_CLASS_IMPLEMENT(MCameraComponent, MComponent)
 
 MCameraComponent::MCameraComponent()
@@ -44,34 +46,32 @@ void MCameraComponent::SetZFar(const float& fZFar)
 	m_fZFar = fZFar;
 }
 
-void MCameraComponent::WriteToStruct(MStruct& srt, MComponentRefTable& refTable)
+flatbuffers::Offset<void> MCameraComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	Super::WriteToStruct(srt, refTable);
+	mfbs::MCameraComponentBuilder builder(fbb);
 
-	M_SERIALIZER_WRITE_BEGIN;
+	builder.add_camera_type((int)GetCameraType());
+	builder.add_fov(GetFov());
+	builder.add_znear(GetZNear());
+	builder.add_zfar(GetZFar());
+	builder.add_width(GetWidth());
+	builder.add_height(GetHeight());
 
-	M_SERIALIZER_WRITE_VALUE("CameraType", (int)GetCameraType);
-	M_SERIALIZER_WRITE_VALUE("Fov", GetFov);
-	M_SERIALIZER_WRITE_VALUE("ZNear", GetZNear);
-	M_SERIALIZER_WRITE_VALUE("ZFar", GetZFar);
-	M_SERIALIZER_WRITE_VALUE("Width", GetWidth);
-	M_SERIALIZER_WRITE_VALUE("Height", GetHeight);
+	builder.add_super(Super::Serialize(fbb).o);
 
-	M_SERIALIZER_END;
+	return builder.Finish().Union();
 }
 
-void MCameraComponent::ReadFromStruct(const MStruct& srt, MComponentRefTable& refTable)
+void MCameraComponent::Deserialize(const void* pBufferPointer)
 {
-	Super::ReadFromStruct(srt, refTable);
+	const mfbs::MCameraComponent* pComponent = reinterpret_cast<const mfbs::MCameraComponent*>(pBufferPointer);
 
-	M_SERIALIZER_READ_BEGIN;
+	Super::Deserialize(pComponent->super());
 
-	M_SERIALIZER_READ_VALUE("CameraType", SetCameraType, Enum<MECameraType>);
-	M_SERIALIZER_READ_VALUE("Fov", SetFov, Float);
-	M_SERIALIZER_READ_VALUE("ZNear", SetZNear, Float);
-	M_SERIALIZER_READ_VALUE("ZFar", SetZFar, Float);
-	M_SERIALIZER_READ_VALUE("Width", SetWidth, Float);
-	M_SERIALIZER_READ_VALUE("Height", SetHeight, Float);
-
-	M_SERIALIZER_END;
+	SetCameraType((MECameraType)pComponent->camera_type());
+	SetFov(pComponent->fov());
+	SetZNear(pComponent->znear());
+	SetZFar(pComponent->zfar());
+	SetWidth(pComponent->width());
+	SetHeight(pComponent->height());
 }

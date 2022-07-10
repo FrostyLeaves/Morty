@@ -14,7 +14,7 @@
 NodeTreeView::NodeTreeView()
 	: IBaseView()
 	, m_pScene(nullptr)
-	, m_nSelectedEntityID(MEntityID::invalid)
+	, m_nSelectedEntityID(MGuid::invalid)
 {
 
 }

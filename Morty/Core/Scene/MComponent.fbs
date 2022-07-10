@@ -1,15 +1,10 @@
 include "Math/Vector.fbs";
 namespace mfbs;
 
-table MComponentID
-{
-	componentType: uint;
-	nPrimaryIdx: uint;
-	nSecondaryIdx: uint;
-}
-
 table MComponent
 {
 }
+
+root_type MComponent;
 
 file_identifier "MFBS";
