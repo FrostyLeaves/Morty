@@ -287,7 +287,6 @@ iOSInjectionProject/
 # End of https://www.gitignore.io/api/swift,xcode,Cobjective-c,osx
 Morty/out
 Morty/.vs/
-ThirdParty/
 ThirdParty/installs
 ThirdParty/__pycache__/
 *_generated.h
