@@ -11,6 +11,7 @@
 #include "MGlobal.h"
 #include "MType.h"
 
+#include "MEntityID.h"
 #include "MSerializer.h"
 #include "MBlockVector.h"
 

@@ -290,3 +290,4 @@ Morty/.vs/
 ThirdParty/
 ThirdParty/installs
 ThirdParty/__pycache__/
+*_generated.h

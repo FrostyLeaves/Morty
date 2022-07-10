@@ -36,7 +36,6 @@
 typedef unsigned long MObjectID;
 typedef unsigned long MResourceID;
 typedef unsigned char MByte;
-typedef size_t MEntityID;
 
 
 #include <map>

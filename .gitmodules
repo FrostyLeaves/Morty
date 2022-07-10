@@ -34,3 +34,6 @@
 [submodule "ThirdParty/flatbuffers"]
 	path = ThirdParty/flatbuffers
 	url = https://github.com/google/flatbuffers.git
+[submodule "ThirdParty/crossguid"]
+	path = ThirdParty/crossguid
+	url = https://github.com/graeme-hill/crossguid.git

@@ -10,8 +10,10 @@
 #define _M_MNODE_H_
 #include "MGlobal.h"
 #include "MString.h"
+#include "MEntityID.h"
 #include "MComponent.h"
 #include "MSerializer.h"
+#include "crossguid/guid.hpp"
 
 #include <vector>
 #include <functional>

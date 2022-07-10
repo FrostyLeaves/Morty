@@ -15,7 +15,7 @@ MORTY_CLASS_IMPLEMENT(MEntity, MTypeClass)
 MEntity::MEntity()
 	: MTypeClass()
 	, m_pScene(nullptr)
-	, m_id(0)
+	, m_id()
 	, m_strName("")
 {
 }

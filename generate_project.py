@@ -7,6 +7,7 @@ from ThirdParty import install_moltenVK
 from ThirdParty import install_sdl
 from ThirdParty import install_bullet
 from ThirdParty import install_flatbuffers
+from ThirdParty import install_crossguid
 
 
 WORK_PATH = os.getcwd()
@@ -102,7 +103,8 @@ if __name__ == '__main__':
         #install_assimp.build_for_windows()
         #install_sdl.build_for_windows()
         #install_bullet.build_for_windows()
-        install_flatbuffers.build_for_windows()
+        #install_flatbuffers.build_for_windows()
+        install_crossguid.build_for_windows()
         #build_for_windows()
     elif platform == "MACOS":
         #install_assimp.build_for_macos()

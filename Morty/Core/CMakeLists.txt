@@ -109,6 +109,7 @@ if(MORTY_BUILD_TARGET STREQUAL "WIN")
     include(${CMAKE_SCRIPT_PATH}/add_spirv.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_assimp.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_flatbuffer.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_crossguid.cmake)
 
     target_compile_definitions(Core
         PRIVATE CORE_EXPORTS
@@ -123,6 +124,7 @@ if(MORTY_BUILD_TARGET STREQUAL "MACOS")
     include(${CMAKE_SCRIPT_PATH}/add_spirv.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_assimp.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_flatbuffer.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_crossguid.cmake)
     target_compile_definitions(Core
         PUBLIC MORTY_MACOS
     )
@@ -134,6 +136,7 @@ if(MORTY_BUILD_TARGET STREQUAL "IOS")
     include(${CMAKE_SCRIPT_PATH}/add_spirv_ios.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_assimp_ios.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_flatbuffer_ios.cmake)
+    include(${CMAKE_SCRIPT_PATH}/add_crossguid_ios.cmake)
     target_compile_definitions(Core
         PUBLIC MORTY_IOS
     )
@@ -159,6 +162,11 @@ else()
     message(FATAL_ERROR "flatbuffers not found.")
 endif()
 
+if(crossguid_FOUND)
+    target_link_libraries(Core PUBLIC crossguid)
+else()
+    message(FATAL_ERROR "crossguid not found.")
+endif()
 
 if(SPIRV_CROSS_FOUND)
     target_include_directories(Core
@@ -193,8 +201,6 @@ target_include_directories(Core
     PUBLIC
         ${THIRD_PARTY_PATH}/rapidjson/include/rapidjson
 )
-
-
 
 set( CORE_CODE_DIRECTORIES
     ${CORE_CODE_DIRECTORIES}

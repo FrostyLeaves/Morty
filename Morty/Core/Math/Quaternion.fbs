@@ -1,0 +1,11 @@
+namespace mfbs;
+
+struct Quaternion
+{
+    x:float;
+    y:float;
+    z:float;
+    w:float;
+}
+
+file_identifier "MFBS";

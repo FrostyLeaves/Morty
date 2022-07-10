@@ -1,13 +1,82 @@
-﻿namespace Morty;
+﻿include "Math/Vector.fbs";
+include "Math/Matrix.fbs";
+include "Math/Quaternion.fbs";
+namespace mfbs;
 
+enum MEVariantType : byte
+{
+	ENone = 0,
+	EBool = 1,
+	EInt = 2,
+	EFloat = 3,
+	EVector2 = 4,
+	EVector3 = 5,
+	EVector4 = 6,
+	EMatrix3 = 7,
+	EMatrix4 = 8,
+	EQuaternion = 9,
+	EStruct = 10,
+	EArray = 11,
+	EString = 12,
+	EUser = 13,
+}
+
+struct Bool
+{
+	value:bool;
+}
+
+struct Int
+{
+	value:int;
+}
+
+struct Float
+{
+	value:float;
+}
+
+table MStructMember
+{
+	name: string(key);
+	value: MVariant;
+	offset: uint;
+}
+
+table MStruct
+{
+	member:[MStructMember];
+}
+
+table MVariantArray
+{
+	member:[MVariant];
+}
+
+table MString
+{
+	value: string;
+}
 
 union MVariantData
 {
-	int = 1,
-	float = 2,
+	Bool,
+	Int,
+	Float,
+	Vector2,
+	Vector3,
+	Vector4,
+	Matrix3,
+	Matrix4,
+	Quaternion,
+	MStruct,
+	MVariantArray,
+	MString,
 }
 
 table MVariant
 {
 	data:MVariantData;
 }
+
+file_identifier "MFBS";

@@ -1,4 +1,4 @@
-namespace Morty;
+namespace mfbs;
 
 struct Vector2
 {

@@ -1,0 +1,15 @@
+include "Math/Vector.fbs";
+include "Scene/MComponent.fbs";
+namespace mfbs;
+
+table MSceneComponent
+{
+	super: MComponent;
+    position: Vector3;
+    scale: Vector3;
+    rotation: Quaternion;
+
+	parent: MComponentID;
+}
+
+file_identifier "MFBS";

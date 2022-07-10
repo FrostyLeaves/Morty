@@ -26,8 +26,9 @@ MScene::~MScene()
 
 MEntity* MScene::CreateEntity()
 {
-	MEntity* pEntity = new MEntity(this, m_vEntity.size());
-	m_vEntity.push_back(pEntity);
+	MEntityID id = MEntityID::generate();
+	MEntity* pEntity = new MEntity(this, id);
+	m_vEntity[id] = pEntity;
 
 	return pEntity;
 }
@@ -40,13 +41,18 @@ void MScene::DeleteEntity(MEntity* pEntity)
 
 	pEntity->UnregisterAllComponent();
 
-	m_vEntity.erase(std::remove(m_vEntity.begin(), m_vEntity.end(), pEntity));
+	auto findResult = m_vEntity.find(pEntity->GetID());
+	if (findResult != m_vEntity.end())
+	{
+		m_vEntity.erase(findResult);
+	}
 }
 
 MEntity* MScene::GetEntity(const MEntityID& id)
 {
-	if (id < m_vEntity.size())
-		return m_vEntity[id];
+	auto findResult = m_vEntity.find(id);
+	if (findResult != m_vEntity.end())
+		return findResult->second;
 
 	return nullptr;
 }
@@ -125,6 +131,16 @@ MComponent* MScene::GetComponent(const MComponentID& id)
 	}
 
 	return nullptr;
+}
+
+std::vector<MEntity*> MScene::GetAllEntity() const
+{
+	std::vector<MEntity*> result; 
+	for (const auto& pr : m_vEntity)
+	{
+		result.push_back(pr.second);
+	}
+	return result;
 }
 
 void MScene::Tick(const float& fDelta)

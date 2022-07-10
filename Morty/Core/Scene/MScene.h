@@ -49,7 +49,7 @@ public:
 
 	MComponent* GetComponent(const MComponentID& id);
 
-	const std::vector<MEntity*>& GetAllEntity() const { return m_vEntity; }
+	std::vector<MEntity*> GetAllEntity() const;
 
 public:
 
@@ -72,7 +72,7 @@ protected:
 
 private:
 
-	std::vector<MEntity*> m_vEntity;
+	std::map<MEntityID, MEntity*> m_vEntity;
 	std::map<const MType*, MIComponentGroup*> m_tComponents;
 };
 

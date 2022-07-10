@@ -154,7 +154,8 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 	}
 
 
-	MResource* pNodeResource = pEntitySystem->PackEntity(m_pScene, m_pScene->GetAllEntity());
+	auto&& vAllEntity = m_pScene->GetAllEntity();
+	MResource* pNodeResource = pEntitySystem->PackEntity(m_pScene, vAllEntity);
 	pNodeResource->AddRef();
 
 	pResourceSystem->MoveTo(pNodeResource, strPath + convertInfo.strOutputName + ".entity");

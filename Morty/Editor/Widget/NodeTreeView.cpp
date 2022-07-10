@@ -14,7 +14,7 @@
 NodeTreeView::NodeTreeView()
 	: IBaseView()
 	, m_pScene(nullptr)
-	, m_nSelectedEntityID(0)
+	, m_nSelectedEntityID(MEntityID::invalid)
 {
 
 }
@@ -36,7 +36,7 @@ void NodeTreeView::Render()
 
 	MObjectSystem* pObjectSystem = m_pEngine->FindSystem<MObjectSystem>();
 
-	const auto& vEntity = m_pScene->GetAllEntity();
+	auto&& vEntity = m_pScene->GetAllEntity();
 	for(MEntity* pEntity : vEntity)
 	{
 		MSceneComponent* pSceneComponent = pEntity->GetComponent<MSceneComponent>();
