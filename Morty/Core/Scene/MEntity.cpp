@@ -145,13 +145,20 @@ void MEntity::Deserialize(const void* pBufferPointer)
 	m_id = MGuid(fbguid->data0(), fbguid->data1(), fbguid->data2(), fbguid->data3());
 	m_strName = fbEntity->name()->c_str();
 
-	for (auto&& fbcomponent : *fbEntity->components())
+	const flatbuffers::Vector<flatbuffers::Offset<mfbs::AnyComponent>>& vfbcomponents = *fbEntity->components();
+
+	for (int i = 0; i < vfbcomponents.Length(); ++i)
 	{
+		auto&& fbcomponent = vfbcomponents.Get(i);
+
 		MString type = fbcomponent->type()->c_str();
 
 		const MType* pType = MTypeClass::GetType(type);
 		MComponent* pComponent = GetScene()->AddComponent(this, pType);
-		pComponent->Deserialize(fbcomponent->data()->data());
+
+		flatbuffers::FlatBufferBuilder fbb;
+		fbb.PushBytes(fbcomponent->data()->data(), fbcomponent->data()->size());
+		pComponent->Deserialize(fbb);
 	}
 }
 

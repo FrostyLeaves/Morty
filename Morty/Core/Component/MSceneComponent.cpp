@@ -20,6 +20,7 @@ MSceneComponent::MSceneComponent()
 	, m_bVisible(true)
 	, m_bVisibleRecursively(true)
 
+	, m_parentGuid(MGuid::invalid)
 	, m_attachParent()
 	, m_vAttachChildren()
 {
@@ -314,6 +315,12 @@ flatbuffers::Offset<void> MSceneComponent::Serialize(flatbuffers::FlatBufferBuil
 	return compBuilder.Finish().Union();
 }
 
+void MSceneComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
+{
+	const mfbs::MSceneComponent* fbcomponent = mfbs::GetMSceneComponent(fbb.GetCurrentBufferPointer());
+	Deserialize(fbcomponent);
+}
+
 void MSceneComponent::Deserialize(const void* pBufferPointer)
 {
 	const mfbs::MSceneComponent* fbComponent = reinterpret_cast<const mfbs::MSceneComponent*>(pBufferPointer);
@@ -324,10 +331,10 @@ void MSceneComponent::Deserialize(const void* pBufferPointer)
 	SetScale(*reinterpret_cast<const Vector3*>(fbComponent->scale()));
 	SetRotation(*reinterpret_cast<const Quaternion*>(fbComponent->rotation()));
 
-	const mfbs::MGuid* fbguid = fbComponent->parent();
-	MGuid id(fbguid->data0(), fbguid->data1(), fbguid->data2(), fbguid->data3());
-	
-	m_parentGuid = id;
+	if (const mfbs::MGuid* fbguid = fbComponent->parent())
+	{
+		m_parentGuid = MGuid(fbguid->data0(), fbguid->data1(), fbguid->data2(), fbguid->data3());
+	}
 }
 
 void MSceneComponent::PostDeserialize()
@@ -338,7 +345,7 @@ void MSceneComponent::PostDeserialize()
 	}
 	else
 	{
-		assert(pEntity);
+		assert(pEntity || m_parentGuid == MGuid::invalid);
 	}
 }
 

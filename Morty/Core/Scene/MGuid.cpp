@@ -1,7 +1,7 @@
 #include "MGuid.h"
 #include "crossguid/guid.hpp"
 
-MGuid MGuid::invalid = MGuid();
+MGuid MGuid::invalid = MGuid(0, 0, 0, 0);
 
 MGuid::MGuid()
 	: data()
@@ -41,6 +41,11 @@ bool MGuid::operator== (const MGuid& other) const
 		return false;
 	
 	return true;
+}
+
+bool MGuid::operator!= (const MGuid& other) const
+{
+	return !operator==(other);
 }
 
 bool MGuid::operator< (const MGuid& other) const

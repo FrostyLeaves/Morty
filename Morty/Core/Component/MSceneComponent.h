@@ -83,6 +83,7 @@ public:
 public:
 
 	virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
+	virtual void Deserialize(flatbuffers::FlatBufferBuilder& fbb) override;
 	virtual void Deserialize(const void* pBufferPointer) override;
 	virtual void PostDeserialize() override;
 

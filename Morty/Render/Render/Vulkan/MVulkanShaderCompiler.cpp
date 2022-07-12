@@ -471,12 +471,12 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 	pResults->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&pErrors), nullptr);
 	if (pErrors != nullptr && pErrors->GetStringLength() != 0)
 	{
-		m_pDevice->GetEngine()->GetLogger()->Warning("hlsl compile warning: %s", pErrors->GetStringPointer());
+		m_pDevice->GetEngine()->GetLogger()->Information("hlsl compile output: \n%s", pErrors->GetStringPointer());
 	}
 
 	HRESULT hrStatus;
 	pResults->GetStatus(&hrStatus);
-	if (FAILED(hrStatus))
+	if (FAILED(hrCompile))
 	{
 		m_pDevice->GetEngine()->GetLogger()->Error("Compilation Failed.");
 		return false;

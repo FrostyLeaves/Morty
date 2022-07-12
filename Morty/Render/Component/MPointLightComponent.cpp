@@ -35,6 +35,12 @@ flatbuffers::Offset<void> MPointLightComponent::Serialize(flatbuffers::FlatBuffe
 	return builder.Finish().Union();
 }
 
+void MPointLightComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
+{
+	const mfbs::MPointLightComponent* fbcomponent = mfbs::GetMPointLightComponent(fbb.GetCurrentBufferPointer());
+	Deserialize(fbcomponent);
+}
+
 void MPointLightComponent::Deserialize(const void* pBufferPointer)
 {
 	const mfbs::MPointLightComponent* pComponent = reinterpret_cast<const mfbs::MPointLightComponent*>(pBufferPointer);

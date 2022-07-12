@@ -327,6 +327,12 @@ flatbuffers::Offset<void> MRenderableMeshComponent::Serialize(flatbuffers::FlatB
 	return builder.Finish().Union();
 }
 
+void MRenderableMeshComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
+{
+	const mfbs::MRenderableMeshComponent* fbcomponent = mfbs::GetMRenderableMeshComponent(fbb.GetCurrentBufferPointer());
+	Deserialize(fbcomponent);
+}
+
 void MRenderableMeshComponent::Deserialize(const void* pBufferPointer)
 {
 	const mfbs::MRenderableMeshComponent* pComponent = reinterpret_cast<const mfbs::MRenderableMeshComponent*>(pBufferPointer);

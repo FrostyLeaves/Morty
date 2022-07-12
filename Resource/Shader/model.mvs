@@ -38,7 +38,7 @@ VS_OUT VS(VS_IN input)
     float4 posFromBones = mul(float4(input.pos, 1.0f), matBoneTransform);
     output.pos = mul(posFromBones, mul(U_matWorld, U_matCamProj));
 
-    output.worldPos = mul(  mul(input.pos, float3x3(matBoneTransform)),   U_matWorld);
+    output.worldPos = mul(  mul(input.pos, (float3x3)(matBoneTransform)),   U_matWorld);
     output.dirLightSpacePos = mul(  mul(  mul(float4(input.pos, 1.0f), matBoneTransform), U_matWorld), U_matLightProj);
 #else
     

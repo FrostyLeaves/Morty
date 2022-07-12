@@ -387,6 +387,7 @@ bool MMaterial::LoadVertexShader(MResource* pResource)
 					MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 					if (!m_pVertexShader->CompileShader(pRenderSystem->GetDevice()))
 					{
+						assert(false);
 						m_pVertexShader = nullptr;
 						return false;
 					}

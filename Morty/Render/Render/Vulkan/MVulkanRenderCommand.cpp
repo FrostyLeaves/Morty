@@ -161,6 +161,8 @@ void MVulkanRenderCommand::DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, c
 
 bool MVulkanRenderCommand::SetUseMaterial(MMaterial* pMaterial)
 {
+	assert(pMaterial->GetVertexShader() && pMaterial->GetPixelShader());
+
 	//must begin renderpass
 	if (m_vRenderPassStages.empty())
 		return false;

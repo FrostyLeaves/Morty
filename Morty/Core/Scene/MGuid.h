@@ -24,6 +24,7 @@ public:
 
 	const MGuid& operator= (const MGuid& other);
 	bool operator== (const MGuid& other) const ;
+	bool operator!= (const MGuid& other) const;
 	bool operator< (const MGuid& other) const;
 
 public:

@@ -62,6 +62,12 @@ flatbuffers::Offset<void> MCameraComponent::Serialize(flatbuffers::FlatBufferBui
 	return builder.Finish().Union();
 }
 
+void MCameraComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
+{
+	const mfbs::MCameraComponent* fbcomponent = mfbs::GetMCameraComponent(fbb.GetCurrentBufferPointer());
+	Deserialize(fbcomponent);
+}
+
 void MCameraComponent::Deserialize(const void* pBufferPointer)
 {
 	const mfbs::MCameraComponent* pComponent = reinterpret_cast<const mfbs::MCameraComponent*>(pBufferPointer);

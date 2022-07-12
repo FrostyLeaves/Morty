@@ -52,8 +52,11 @@ flatbuffers::Offset<void> MComponent::Serialize(flatbuffers::FlatBufferBuilder& 
 void MComponent::Deserialize(const void* pBufferPointer)
 {
 	const mfbs::MComponent* fbcomponent = reinterpret_cast<const mfbs::MComponent*>(pBufferPointer);
+}
 
-
+void MComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
+{
+	const mfbs::MComponent* fbcomponent = mfbs::GetMComponent(fbb.GetCurrentBufferPointer());
 }
 
 void MComponent::PostDeserialize()

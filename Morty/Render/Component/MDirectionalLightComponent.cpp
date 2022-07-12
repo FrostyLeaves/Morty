@@ -47,6 +47,12 @@ flatbuffers::Offset<void> MDirectionalLightComponent::Serialize(flatbuffers::Fla
 	return builder.Finish().Union();
 }
 
+void MDirectionalLightComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
+{
+	const mfbs::MDirectionalLightComponent* fbcomponent = mfbs::GetMDirectionalLightComponent(fbb.GetCurrentBufferPointer());
+	Deserialize(fbcomponent);
+}
+
 void MDirectionalLightComponent::Deserialize(const void* pBufferPointer)
 {
 	const mfbs::MDirectionalLightComponent* pComponent = reinterpret_cast<const mfbs::MDirectionalLightComponent*>(pBufferPointer);

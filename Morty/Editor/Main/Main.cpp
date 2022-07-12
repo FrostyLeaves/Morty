@@ -35,7 +35,7 @@
 
 #define TEST_ANIMATION
 
-#define TEST_PBR_RENDER_0
+//#define TEST_PBR_RENDER_0
 
 //#define TEST_PBR_RENDER_1
 
@@ -45,7 +45,7 @@
 
 //#define TEST_BASIC_SHAPE
 
-#define TEST_SKY_BOX
+//#define TEST_SKY_BOX
 
 void SKY_BOX(MEngine* pEngine, MScene* pScene)
 {
