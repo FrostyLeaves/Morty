@@ -8,7 +8,7 @@
 
 #ifndef _M_MCOMPONENT_H_
 #define _M_MCOMPONENT_H_
-#include "Core/Utility/MGlobal.h"
+#include "MGlobal.h"
 #include "MType.h"
 
 #include "MGuid.h"
