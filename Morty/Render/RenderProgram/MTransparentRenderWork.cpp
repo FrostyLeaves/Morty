@@ -140,7 +140,7 @@ void MTransparentRenderWork::RenderDepthPeel(MRenderInfo& info)
 
 		for (auto& pr : info.m_tTransparentGroupMesh)
 		{
-			MMaterial* pMaterial = pr.first;
+			std::shared_ptr<MMaterial> pMaterial = pr.first;
 			//Ê¹ÓÃ²ÄÖÊ
 			if (!pCommand->SetUseMaterial(pMaterial))
 				continue;
@@ -149,7 +149,7 @@ void MTransparentRenderWork::RenderDepthPeel(MRenderInfo& info)
 
 			for (MRenderableMeshComponent* pMeshComponent : pr.second)
 			{
-				if (MSkeletonInstance* pSkeletonIns = pMeshComponent->GetSkeletonInstance())
+				if (std::shared_ptr<MSkeletonInstance> pSkeletonIns = pMeshComponent->GetSkeletonInstance())
 				{
 					pCommand->SetShaderParamSet(pSkeletonIns->GetShaderParamSet());
 				}
@@ -203,9 +203,9 @@ void MTransparentRenderWork::InitializeMaterial()
 {
 	MResourceSystem* pResourceSystem = m_pEngine->FindSystem<MResourceSystem>();
 
-	MResource* pDPVSResource = pResourceSystem->LoadResource("./Shader/depth_peel_blend.mvs");
-	MResource* pDPBPSResource = pResourceSystem->LoadResource("./Shader/depth_peel_blend.mps");
-	MResource* pDPFPSResource = pResourceSystem->LoadResource("./Shader/depth_peel_fill.mps");
+	std::shared_ptr<MResource> pDPVSResource = pResourceSystem->LoadResource("./Shader/depth_peel_blend.mvs");
+	std::shared_ptr<MResource> pDPBPSResource = pResourceSystem->LoadResource("./Shader/depth_peel_blend.mps");
+	std::shared_ptr<MResource> pDPFPSResource = pResourceSystem->LoadResource("./Shader/depth_peel_fill.mps");
 
 	m_pDrawPeelMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pDrawPeelMaterial->SetMaterialType(MEMaterialType::EDepthPeel);

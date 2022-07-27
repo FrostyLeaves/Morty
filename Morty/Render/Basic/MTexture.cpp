@@ -3,7 +3,7 @@
 #include "MIDevice.h"
 
 MTexture::MTexture()
-	: m_strTextureName()
+	: m_strTextureName("Texture_Default")
 	, m_v2Size(1.0, 1.0)
 	, m_eRenderType(METextureLayout::ERGBA_UNORM_8)
 	, m_eRenderUsage(METextureRenderUsage::EUnknow)
@@ -104,6 +104,7 @@ uint32_t MTexture::GetImageLayerNum() const
 MTexture* MTexture::CreateShadowMap()
 {
 	MTexture* pTexture = new MTexture();
+	pTexture->SetName("Shadow Map Texture");
 	pTexture->SetMipmapsEnable(false);
 	pTexture->SetReadable(false);
 	pTexture->SetRenderUsage(METextureRenderUsage::ERenderDepth);
@@ -116,6 +117,7 @@ MTexture* MTexture::CreateShadowMap()
 MTexture* MTexture::CreateRenderTarget()
 {
 	MTexture* pTexture = new MTexture();
+	pTexture->SetName("Render Target Texture");
 	pTexture->SetMipmapsEnable(false);
 	pTexture->SetReadable(false);
 	pTexture->SetRenderUsage(METextureRenderUsage::ERenderBack);
@@ -128,6 +130,7 @@ MTexture* MTexture::CreateRenderTarget()
 MTexture* MTexture::CreateRenderTargetGBuffer()
 {
 	MTexture* pTexture = new MTexture();
+	pTexture->SetName("GBuffer Texture");
 	pTexture->SetMipmapsEnable(false);
 	pTexture->SetReadable(false);
 	pTexture->SetRenderUsage(METextureRenderUsage::ERenderBack);
@@ -140,6 +143,7 @@ MTexture* MTexture::CreateRenderTargetGBuffer()
 MTexture* MTexture::CreateRenderTargetFloat32()
 {
 	MTexture* pTexture = new MTexture();
+	pTexture->SetName("Render Target Float32 Texture");
 	pTexture->SetMipmapsEnable(false);
 	pTexture->SetReadable(false);
 	pTexture->SetRenderUsage(METextureRenderUsage::ERenderBack);
@@ -152,6 +156,7 @@ MTexture* MTexture::CreateRenderTargetFloat32()
 MTexture* MTexture::CreateCubeMap()
 {
 	MTexture* pTexture = new MTexture();
+	pTexture->SetName("CubeMap Texture");
 	pTexture->SetMipmapsEnable(false);
 	pTexture->SetReadable(false);
 	pTexture->SetRenderUsage(METextureRenderUsage::EUnknow);

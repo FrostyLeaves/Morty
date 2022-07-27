@@ -26,16 +26,16 @@ public:
 
 public:
 
-    void LoadSkyBoxResource(MResource* pTexture);
-    MResource* GetSkyBoxResource();
+    void LoadSkyBoxResource(std::shared_ptr<MResource> pTexture);
+    std::shared_ptr<MResource> GetSkyBoxResource();
 
-    void LoadDiffuseEnvResource(MResource* pTexture);
-    void LoadSpecularEnvResource(MResource* pTexture);
+    void LoadDiffuseEnvResource(std::shared_ptr<MResource> pTexture);
+    void LoadSpecularEnvResource(std::shared_ptr<MResource> pTexture);
 
-    MResource* GetDiffuseEnvResource();
+    std::shared_ptr<MResource> GetDiffuseEnvResource();
     MTexture* GetDiffuseTexture();
 
-    MResource* GetSpecularEnvResource();
+    std::shared_ptr<MResource> GetSpecularEnvResource();
     MTexture* GetSpecularTexture();
 
 
@@ -45,7 +45,7 @@ private:
 	MResourceKeeper m_DiffuseEnvTexture;
 	MResourceKeeper m_SpecularEnvTexture;
     
-    MMaterial* m_pMaterial;
+    std::shared_ptr<MMaterial> m_pMaterial;
 };
 
 

@@ -73,7 +73,7 @@ public:
 	virtual void DrawMesh(MIMesh* pMesh) = 0;
 	virtual void DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, const uint32_t& nIdxCount, const uint32_t& nVrtOffset) = 0;
 
-	virtual bool SetUseMaterial(MMaterial* pMaterial) = 0;
+	virtual bool SetUseMaterial(std::shared_ptr<MMaterial> pMaterial) = 0;
 	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) = 0;
 
 	virtual bool SetRenderToTextureBarrier(const std::vector<MTexture*> vTextures) = 0;

@@ -333,6 +333,7 @@ bool MRenderView::BindRenderPass()
 		m_vRenderTarget[i].vkImageReadySemaphore = VK_NULL_HANDLE;
 
 		MTexture* pTexture = new MTexture();
+		pTexture->SetName("Editor Render View");
 		pTexture->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
 		pTexture->SetRenderUsage(METextureRenderUsage::ERenderPresent);
 		pTexture->SetSize(size);
@@ -344,6 +345,7 @@ bool MRenderView::BindRenderPass()
 		m_vRenderTarget[i].renderPass.AddBackTexture(pTexture, { true, MColor::Black_T });
 
 		MTexture* pDepthTexture = new MTexture();
+		pDepthTexture->SetName("Editor Depth View");
 		pDepthTexture->SetTextureLayout(METextureLayout::EDepth);
 		pDepthTexture->SetRenderUsage(METextureRenderUsage::ERenderDepth);
 		pDepthTexture->SetSize(size);

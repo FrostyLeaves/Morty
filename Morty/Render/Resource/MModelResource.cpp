@@ -17,7 +17,7 @@ MModelResource::~MModelResource()
 {
 }
 
-void MModelResource::SetSkeletonResource(MSkeletonResource* pSkeleton)
+void MModelResource::SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeleton)
 {
     if (m_pSkeleton)
         m_pSkeleton->SubRef();
@@ -28,14 +28,14 @@ void MModelResource::SetSkeletonResource(MSkeletonResource* pSkeleton)
         m_pSkeleton->AddRef();
 }
 
-void MModelResource::GetMeshResources(const std::vector<MMeshResource*>& vMeshes)
+void MModelResource::GetMeshResources(const std::vector<std::shared_ptr<MMeshResource>>& vMeshes)
 {
-    for (MMeshResource* pMeshRes : m_vMeshes)
+    for (std::shared_ptr<MMeshResource> pMeshRes : m_vMeshes)
         pMeshRes->SubRef();
 
     m_vMeshes = vMeshes;
 
-	for (MMeshResource* pMeshRes : m_vMeshes)
+	for (std::shared_ptr<MMeshResource> pMeshRes : m_vMeshes)
 		pMeshRes->AddRef();
 }
 
@@ -47,7 +47,7 @@ void MModelResource::OnDelete()
         m_pSkeleton = nullptr;
     }
 
-	for (MMeshResource* pMeshRes : m_vMeshes)
+	for (std::shared_ptr<MMeshResource> pMeshRes : m_vMeshes)
 		pMeshRes->SubRef();
 
     m_vMeshes.clear();
@@ -70,7 +70,7 @@ bool MModelResource::Load(const MString& strResourcePath)
     
     if (MString* pSkePath = pStruct->FindMember<MString>("ske"))
     {
-        m_pSkeleton = pResourceSystem->LoadResource(*pSkePath)->DynamicCast<MSkeletonResource>();
+        m_pSkeleton = MTypeClass::DynamicCast<MSkeletonResource>(pResourceSystem->LoadResource(*pSkePath));
         m_pSkeleton->AddRef();
     }
 
@@ -80,9 +80,9 @@ bool MModelResource::Load(const MString& strResourcePath)
         {
             if (MString* pMeshPath = pMeshPathArray->GetMember(i)->var.GetString())
             {
-                if (MResource* pRes = pResourceSystem->LoadResource(*pMeshPath))
+                if (std::shared_ptr<MResource> pRes = pResourceSystem->LoadResource(*pMeshPath))
                 {
-                    MMeshResource* pMeshRes = pRes->DynamicCast<MMeshResource>();
+                    std::shared_ptr<MMeshResource> pMeshRes = MTypeClass::DynamicCast<MMeshResource>(pRes);
                     pMeshRes->AddRef();
 
                     m_vMeshes.push_back(pMeshRes);
@@ -106,7 +106,7 @@ bool MModelResource::SaveTo(const MString& strResourcePath)
 
     if (MVariantArray* pMeshArray = srt.AppendMVariant<MVariantArray>("mesh"))
     {
-        for (MMeshResource* pMeshRes : m_vMeshes)
+        for (std::shared_ptr<MMeshResource> pMeshRes : m_vMeshes)
         {
             pMeshArray->AppendMVariant(pMeshRes->GetResourcePath());
         }

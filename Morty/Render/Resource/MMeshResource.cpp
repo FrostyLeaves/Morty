@@ -211,14 +211,14 @@ bool MMeshResource::Load(const MString& strResourcePath)
 	{
 		if (!pSkeleton->empty())
 		{
-			MResource* pResource = pResourceSystem->LoadResource(*pSkeleton);
+			std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(*pSkeleton);
 			m_SkeletonKeeper.SetResource(pResource);
 		}
 	}
 
 	if (MString* pMaterial = pHeader->FindMember<MString>("mat"))
 	{
-		MResource* pResource = pResourceSystem->LoadResource(*pMaterial);
+		std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(*pMaterial);
 		m_MaterialKeeper.SetResource(pResource);
 	}
 

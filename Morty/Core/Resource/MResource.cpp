@@ -77,7 +77,12 @@ MResourceSystem* MResource::GetResourceSystem()
 	return nullptr;
 }
 
-void MResource::ReplaceFrom(MResource* pResource)
+std::shared_ptr<MResource> MResource::GetShared()
+{
+	return m_self.lock();
+}
+
+void MResource::ReplaceFrom(std::shared_ptr<MResource> pResource)
 {
 	if (pResource->GetType() != GetType())
 		return;
@@ -103,7 +108,7 @@ void MResource::ReplaceFrom(MResource* pResource)
 
 void MResource::OnReferenceZero()
 {
-	GetResourceSystem()->UnloadResource(this);
+	GetResourceSystem()->UnloadResource(GetShared());
 } 
 
 void MResource::OnReload(const uint32_t& eReloadType)
@@ -122,7 +127,7 @@ MResourceKeeper::MResourceKeeper()
 
 }
 
-MResourceKeeper::MResourceKeeper(MResource* pResource)
+MResourceKeeper::MResourceKeeper(std::shared_ptr<MResource> pResource)
 	: m_funcReloadCallback(nullptr)
 	, m_pResource(nullptr)
 {
@@ -141,9 +146,9 @@ MResourceKeeper::~MResourceKeeper()
 	SetResource(nullptr);
 }
 
-void MResourceKeeper::SetResource(MResource* pResource)
+void MResourceKeeper::SetResource(std::shared_ptr<MResource> pResource)
 {
-	MResource* pOldResource = m_pResource;
+	std::shared_ptr<MResource> pOldResource = m_pResource;
 	if (m_pResource)
 	{
 		std::vector<MResourceKeeper*>::iterator iter = std::find(m_pResource->m_vKeeper.begin(), m_pResource->m_vKeeper.end(), this);
@@ -173,7 +178,7 @@ const MResourceKeeper& MResourceKeeper::operator=(const MResourceKeeper& keeper)
 	return keeper;
 }
 
-MResource* MResourceKeeper::operator=(MResource* pResource)
+std::shared_ptr<MResource> MResourceKeeper::operator=(std::shared_ptr<MResource> pResource)
 {
 	m_funcReloadCallback = nullptr;
 	SetResource(pResource);

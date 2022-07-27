@@ -17,12 +17,12 @@ struct PS_OUT
 
 struct PS_OUT
 {
-    float4 target0: SV_Target0;
+    float4 target0: SV_Target;
 };
 
 #endif
 
-PS_OUT PS(VS_OUT input) : SV_Target
+PS_OUT PS(VS_OUT input)
 {
     PS_OUT output;
     
@@ -88,7 +88,7 @@ PS_OUT PS(VS_OUT input) : SV_Target
 #else
     if (U_mat.bUseEmissiveTex > 0)
     {
-        float3 f3EmissiveColor = U_mat_texEmissive.Sample(LinearSampler, input.uv);
+        float3 f3EmissiveColor = U_mat_texEmissive.Sample(LinearSampler, input.uv).xyz;
         if(length(f3EmissiveColor) <= 0.0f)
         {
             f3Color = AdditionAllLights(f3Color, f3AmbiColor, input);

@@ -8,7 +8,7 @@ void PropertyMModelComponent::EditAnimation(MModelComponent* pModelComponent)
 {
 	
 	MSkeletalAnimController* pController = pModelComponent->GetSkeletalAnimationController();
-	MSkeletalAnimation* pCurrentAnimResource = pController ? pController->GetAnimation() : nullptr;
+	std::shared_ptr<MSkeletalAnimation> pCurrentAnimResource = pController ? pController->GetAnimation() : nullptr;
 
 	static auto ModelLoadFunc = [&pModelComponent](const MString& strNewFilePath) {
 

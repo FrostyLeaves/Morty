@@ -51,6 +51,8 @@ public:
 
 	MString GetResourcePath() { return m_strResourcePath; }
 
+	std::shared_ptr<MResource> GetShared();
+
 public:
 
 	virtual void OnCreated() {}
@@ -62,9 +64,9 @@ public:
 	virtual bool Save() { return SaveTo(m_strResourcePath); }
 	virtual bool SaveTo(const MString& strResourcePath) { return true; }
 
-	virtual void CopyFrom(const MResource* pResource) {}
+	virtual void CopyFrom(std::shared_ptr<const MResource> pResource) {}
 
-	void ReplaceFrom(MResource* pResource);
+	void ReplaceFrom(std::shared_ptr<MResource> pResource);
 protected:
 
 	virtual bool Load(const MString& strResourcePath) = 0;
@@ -85,6 +87,8 @@ protected:
 
 	std::vector<MResourceKeeper*> m_vKeeper;
 
+	std::weak_ptr<MResource> m_self;
+
 };
 
 class MORTY_API MResourceKeeper
@@ -94,20 +98,20 @@ public:
 	typedef std::function<bool(const uint32_t& eReloadType)> MResChangedFunction;
 public:
 	MResourceKeeper();
-	MResourceKeeper(MResource* pResource);
+	MResourceKeeper(std::shared_ptr<MResource> pResource);
 	MResourceKeeper(const MResourceKeeper& cHolder);
 	virtual ~MResourceKeeper();
 
 	MString GetResourcePath() const { return m_pResource ? m_pResource->GetResourcePath() : ""; }
 
-	void SetResource(MResource* pResource);
-	MResource* GetResource(){ return m_pResource; }
+	void SetResource(std::shared_ptr<MResource> pResource);
+	std::shared_ptr<MResource> GetResource(){ return m_pResource; }
 
 	const MResourceKeeper& operator = (const MResourceKeeper& keeper);
-	MResource* operator = (MResource* pResource);
+	std::shared_ptr<MResource> operator = (std::shared_ptr<MResource> pResource);
 
-template <class T>
-	T* GetResource() { return m_pResource ? m_pResource->DynamicCast<T>() : nullptr; }
+	template <class T>
+	std::shared_ptr<T> GetResource() { return m_pResource ? std::dynamic_pointer_cast<T>(m_pResource) : nullptr; }
 
 	void SetResChangedCallback(const MResChangedFunction& function)
 	{
@@ -119,7 +123,7 @@ private:
 	friend class MResource;
 	MResChangedFunction m_funcReloadCallback;
 
-	MResource* m_pResource;
+	std::shared_ptr<MResource> m_pResource;
 };
 
 #endif

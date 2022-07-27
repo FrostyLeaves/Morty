@@ -41,7 +41,7 @@ MaterialView::~MaterialView()
 {
 }
 
-void MaterialView::SetMaterial(MMaterial* pMaterial)
+void MaterialView::SetMaterial(std::shared_ptr<MMaterial> pMaterial)
 {
 	if (m_pMaterial == pMaterial)
 		return;
@@ -144,7 +144,7 @@ void MaterialView::Initialize(MEngine* pEngine)
 
 	if (MRenderableMeshComponent* pMeshComponent = m_pStaticSphereMeshNode->RegisterComponent<MRenderableMeshComponent>())
 	{
-		MMeshResource* pMeshResource = pResourceSystem->CreateResource<MMeshResource>();
+		std::shared_ptr<MMeshResource> pMeshResource = pResourceSystem->CreateResource<MMeshResource>();
 		pMeshResource->LoadAsSphere();
 		pMeshComponent->Load(pMeshResource);
 	}
@@ -162,13 +162,13 @@ void MaterialView::Initialize(MEngine* pEngine)
 
 	if (MModelComponent* pModelComponent = m_pSkeletonSphereMeshNode->RegisterComponent<MModelComponent>())
 	{
-		MSkeletonResource* pSkeleton = pResourceSystem->CreateResource<MSkeletonResource>();
+		std::shared_ptr<MSkeletonResource> pSkeleton = pResourceSystem->CreateResource<MSkeletonResource>();
 		pModelComponent->SetSkeletonResource(pSkeleton);
 	}
 
 	if (MRenderableMeshComponent* pMeshComponent = m_pSkeletonSphereMeshNode->RegisterComponent<MRenderableMeshComponent>())
 	{
-		MMeshResource* pMeshResource = pResourceSystem->CreateResource<MMeshResource>();
+		std::shared_ptr<MMeshResource> pMeshResource = pResourceSystem->CreateResource<MMeshResource>();
 		pMeshResource->LoadAsSphere(MMeshResource::MEMeshVertexType::Skeleton);
 		pMeshComponent->Load(pMeshResource);
 	}

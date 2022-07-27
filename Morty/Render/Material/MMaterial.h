@@ -88,8 +88,8 @@ public:
 	MShaderParamSet* GetFrameParamSet() { return &m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_FRAME]; }
 	MShaderParamSet* GetMeshParamSet() { return &m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MESH]; }
 
-	void SetTexutreParam(const MString& strName, MResource* pTexResource);
-	void SetTexutreParam(const uint32_t& unIndex, MResource* pTexResource);
+	void SetTexutreParam(const MString& strName, std::shared_ptr<MResource> pTexResource);
+	void SetTexutreParam(const uint32_t& unIndex, std::shared_ptr<MResource> pTexResource);
 
 	MShaderConstantParam* FindShaderParam(const MString& strName);
 
@@ -99,16 +99,16 @@ public:
 	void SetMaterialType(const MEMaterialType& eType);
 	MEMaterialType GetMaterialType() const { return m_eMaterialType; }
 
-	bool LoadVertexShader(MResource* pResource);
-	bool LoadPixelShader(MResource* pResource);
+	bool LoadVertexShader(std::shared_ptr<MResource> pResource);
+	bool LoadPixelShader(std::shared_ptr<MResource> pResource);
 
 	bool LoadVertexShader(const MString& strResource);
 	bool LoadPixelShader(const MString& strResource);
 
 public:
 
-	MResource* GetVertexShaderResource() { return m_VertexResource.GetResource(); }
-	MResource* GetPixelShaderResource() { return m_PixelResource.GetResource(); }
+	std::shared_ptr<MResource> GetVertexShaderResource() { return m_VertexResource.GetResource(); }
+	std::shared_ptr<MResource> GetPixelShaderResource() { return m_PixelResource.GetResource(); }
 
 	MShaderMacro* GetShaderMacro() { return &m_ShaderMacro; }
 	
@@ -122,7 +122,7 @@ public:
 
 	void Unload();
 
-	virtual void CopyFrom(const MResource* pResource) override;
+	virtual void CopyFrom(std::shared_ptr<const MResource> pResource) override;
 
 	virtual void Encode(MString& strCode) override;
 	virtual void Decode(MString& strCode) override;

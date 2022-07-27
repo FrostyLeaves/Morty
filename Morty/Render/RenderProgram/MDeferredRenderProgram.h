@@ -81,7 +81,7 @@ public:
 
 protected:
 
-	void DrawStaticMesh(MRenderInfo& info, MIRenderCommand* pCommand, std::map<MMaterial*, std::vector<MRenderableMeshComponent*>>& tMaterialGroup);
+	void DrawStaticMesh(MRenderInfo& info, MIRenderCommand* pCommand, std::map<std::shared_ptr<MMaterial>, std::vector<MRenderableMeshComponent*>>& tMaterialGroup);
 
 	void UpdateFrameParams(MRenderInfo& info);
 
@@ -105,8 +105,8 @@ protected:
 
 	MMesh<Vector2> m_ScreenDrawMesh;
 	MMesh<Vector3> m_SkyBoxDrawMesh;
-	MMaterial* m_pLightningMaterial;
-	MMaterial* m_pSkyBoxMaterial;
+	std::shared_ptr<MMaterial> m_pLightningMaterial;
+	std::shared_ptr<MMaterial> m_pSkyBoxMaterial;
 
 
 	MResourceKeeper m_BrdfTexture;

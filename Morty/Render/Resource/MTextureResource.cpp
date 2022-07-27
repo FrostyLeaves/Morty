@@ -129,6 +129,7 @@ void MTextureResource::LoadFromMemory(MByte* aByteData, const uint32_t& unWidth,
 		m_aByteData = aByteData;
 	}
 
+	m_texture.SetName(m_strResourcePath);
 	m_texture.SetTextureLayout(GetTextureLayout(nChannel, ePixelFormat));
 	m_texture.GenerateBuffer(pRenderSystem->GetDevice(), m_aByteData);
 }
@@ -140,6 +141,7 @@ void MTextureResource::CreateCubeMapRenderTarget(const uint32_t& nWidth, const u
 	if (nChannel == 2 || nChannel == 3)
 		nChannel = 4;
 
+	m_texture.SetName("CubeMapRenderTarget");
 	m_texture.SetReadable(true);
 	m_texture.SetTextureLayout(eLayout);
 	m_texture.SetSize(Vector2(nWidth, nHeight));
@@ -320,6 +322,7 @@ bool MTextureResource::ImportCubeMap(const std::array<MString, 6>& vResourcePath
 		vImageData[nTexIdx] = nullptr;
 	}
 	
+	m_texture.SetName(vResourcePath[0]);
 	m_texture.SetSize(Vector2(unCubeMapWidth, unCubeMapHeight));
 	m_texture.SetTextureType(METextureType::ETextureCube);
 	m_texture.SetTextureLayout(GetTextureLayout(unCubeMapChannel, importInfo.ePixelFormat));

@@ -84,12 +84,12 @@ MModelConverter::~MModelConverter()
 		m_pSkeleton = nullptr;
 	}
 
-	for (MMeshResource* pMeshRes : m_vMeshes)
+	for (std::shared_ptr<MMeshResource> pMeshRes : m_vMeshes)
 		pMeshRes->SubRef();
 	
 	m_vMeshes.clear();
 
-	for (MSkeletalAnimationResource* pAnim : m_vSkeletalAnimation)
+	for (std::shared_ptr<MSkeletalAnimationResource> pAnim : m_vSkeletalAnimation)
 		pAnim->SubRef();
 
 	m_vSkeletalAnimation.clear();
@@ -136,7 +136,7 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 
 	for (int i = 0; i < m_vMeshes.size(); ++i)
 	{
-		MMeshResource* pMeshResource = m_vMeshes[i];
+		std::shared_ptr<MMeshResource> pMeshResource = m_vMeshes[i];
 		MString strMeshFileName = strPath + pMeshResource->GetMeshName() + "_" + MStringHelper::ToString(i);
 
 		
@@ -144,7 +144,7 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 		pMeshResource->Save();
 	}
 
-	for (MSkeletalAnimation* pAnimResource : m_vSkeletalAnimation)
+	for (std::shared_ptr<MSkeletalAnimation> pAnimResource : m_vSkeletalAnimation)
 	{
 		MString strValidFileName = pAnimResource->GetName();
 		MFileHelper::GetValidFileName(strValidFileName);
@@ -155,7 +155,7 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 
 
 	auto&& vAllEntity = m_pScene->GetAllEntity();
-	MResource* pNodeResource = pEntitySystem->PackEntity(m_pScene, vAllEntity);
+	std::shared_ptr<MResource> pNodeResource = pEntitySystem->PackEntity(m_pScene, vAllEntity);
 	pNodeResource->AddRef();
 
 	pResourceSystem->MoveTo(pNodeResource, strPath + convertInfo.strOutputName + ".entity");
@@ -237,7 +237,7 @@ void MModelConverter::ProcessNode(aiNode* pNode, const aiScene *pScene)
 	{
 		aiMesh* pChildMesh = pScene->mMeshes[pNode->mMeshes[i]];
 
-		MMeshResource* pChildMeshResource = pResourceSystem->CreateResource<MMeshResource>();
+		std::shared_ptr<MMeshResource> pChildMeshResource = pResourceSystem->CreateResource<MMeshResource>();
 		pChildMeshResource->AddRef();
 
 		if (m_pSkeleton)
@@ -589,7 +589,7 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 	{
 		aiAnimation* pAnimation = pScene->mAnimations[i];
 
-		MSkeletalAnimationResource* pMAnimation = pResourceSystem->CreateResource<MSkeletalAnimationResource>();
+		std::shared_ptr<MSkeletalAnimationResource> pMAnimation = pResourceSystem->CreateResource<MSkeletalAnimationResource>();
 		pMAnimation->AddRef();
 
 		m_vSkeletalAnimation.push_back(pMAnimation);
@@ -667,15 +667,15 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 
 	aiString strAmbient("$clr.ambient"), strDiffuse("$clr.diffuse"), strSpecular("$clr.specular"), strShininess("$mat.shininess");
 
-	MMaterial* pMaterial = nullptr;
+	std::shared_ptr<MMaterial> pMaterial = nullptr;
 	if (eMaterialType == MModelConvertMaterialType::E_PBR_Deferred)
 	{
-		MResource* pMeshVSResource = pResourceSystem->LoadResource("./Shader/model_gbuffer.mvs");
-		MResource* pMeshPSResource = pResourceSystem->LoadResource("./Shader/model_gbuffer.mps");
+		std::shared_ptr<MResource> pMeshVSResource = pResourceSystem->LoadResource("./Shader/model_gbuffer.mvs");
+		std::shared_ptr<MResource> pMeshPSResource = pResourceSystem->LoadResource("./Shader/model_gbuffer.mps");
 
 		if (m_pSkeleton)
 		{
-			MMaterialResource* pSkinnedMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
+			std::shared_ptr<MMaterialResource> pSkinnedMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
 			pSkinnedMeshMaterialRes->GetShaderMacro()->SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, "1");
 			pSkinnedMeshMaterialRes->LoadVertexShader(pMeshVSResource);
 			pSkinnedMeshMaterialRes->LoadPixelShader(pMeshPSResource);
@@ -684,7 +684,7 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		}
 		else
 		{
-			MMaterialResource* pStaticMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
+			std::shared_ptr<MMaterialResource> pStaticMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
 			pStaticMeshMaterialRes->LoadVertexShader(pMeshVSResource);
 			pStaticMeshMaterialRes->LoadPixelShader(pMeshPSResource);
 			pStaticMeshMaterialRes->AddRef();
@@ -702,12 +702,12 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 	}
 	else
 	{
-		MResource* pMeshVSResource = pResourceSystem->LoadResource("./Shader/model.mvs");
-		MResource* pMeshPSResource = pResourceSystem->LoadResource("./Shader/model.mps");
+		std::shared_ptr<MResource> pMeshVSResource = pResourceSystem->LoadResource("./Shader/model.mvs");
+		std::shared_ptr<MResource> pMeshPSResource = pResourceSystem->LoadResource("./Shader/model.mps");
 
 		if (m_pSkeleton)
 		{
-			MMaterialResource* pSkinnedMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
+			std::shared_ptr<MMaterialResource> pSkinnedMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
 			pSkinnedMeshMaterialRes->GetShaderMacro()->SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, "1");
 			pSkinnedMeshMaterialRes->LoadVertexShader(pMeshVSResource);
 			pSkinnedMeshMaterialRes->LoadPixelShader(pMeshPSResource);
@@ -716,7 +716,7 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		}
 		else
 		{
-			MMaterialResource* pStaticMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
+			std::shared_ptr<MMaterialResource> pStaticMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
 			pStaticMeshMaterialRes->LoadVertexShader(pMeshVSResource);
 			pStaticMeshMaterialRes->LoadPixelShader(pMeshPSResource);
 			pStaticMeshMaterialRes->AddRef();
@@ -729,7 +729,7 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 	if(nMaterialIdx >= pScene->mNumMaterials)
 		return;
 
-	MResource* pDefaultTexture = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
+	std::shared_ptr<MResource> pDefaultTexture = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
 	for (size_t i = 0; i < pMaterial->GetTextureParams()->size(); ++i)
 	{
 		pMaterial->SetTexutreParam(i, pDefaultTexture);
@@ -798,8 +798,8 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 // 	MString strDiffuseFileName = MResource::GetFileName(MString(strDiffuseTextureFile.C_Str()));
 // 	MString strNormalFileName = MResource::GetFileName(MString(strNormalTextureFile.C_Str()));
 // 
-// 	MResource* pDiffuseTexRes = nullptr;
-// 	MResource* pNormalMapRes = nullptr;
+// 	std::shared_ptr<MResource> pDiffuseTexRes = nullptr;
+// 	std::shared_ptr<MResource> pNormalMapRes = nullptr;
 // 
 // 	if (!strDiffuseFileName.empty())
 // 		pDiffuseTexRes = pResourceSystem->LoadResource(strResourceFolder + "/tex/" + strDiffuseFileName);
@@ -851,7 +851,7 @@ MEntity* MModelConverter::GetEntityFromNode(const aiScene* pScene, aiNode* pNode
 	return pEntity;
 }
 
-MMaterial* MModelConverter::GetMaterial(const aiScene* pScene, const uint32_t& nMaterialIdx)
+std::shared_ptr<MMaterial> MModelConverter::GetMaterial(const aiScene* pScene, const uint32_t& nMaterialIdx)
 {
 	if (m_vMaterials.size() <= nMaterialIdx)
 		m_vMaterials.resize(static_cast<size_t>(nMaterialIdx) + 1);

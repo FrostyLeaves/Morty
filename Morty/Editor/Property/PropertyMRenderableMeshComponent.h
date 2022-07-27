@@ -35,10 +35,10 @@ public:
 				{
 					ShowValueBegin("Load");
 
-					MMaterial* pMaterial = pMeshComponent->GetMaterial();
+					std::shared_ptr<MMaterial> pMaterial = pMeshComponent->GetMaterial();
 					EditMResource("material_file_dlg", MMaterialResource::GetResourceTypeName(), MMaterialResource::GetSuffixList(), pMaterial, [pMeshComponent](const MString& strNewFilePath) {
 						MResourceSystem* pResourceSystem = pMeshComponent->GetEngine()->FindSystem<MResourceSystem>();
-						if (MMaterial* pMaterial = dynamic_cast<MMaterial*>(pResourceSystem->LoadResource(strNewFilePath)))
+						if (std::shared_ptr<MMaterial> pMaterial = MTypeClass::DynamicCast<MMaterial>(pResourceSystem->LoadResource(strNewFilePath)))
 						{
 							pMeshComponent->SetMaterial(pMaterial);
 						};

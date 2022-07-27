@@ -26,8 +26,8 @@ MResourceSystem::MResourceSystem()
 
 MResourceSystem::~MResourceSystem()
 {
-	DELETE_CLEAR_MAP(m_tResourceLoader);
-	DELETE_CLEAR_MAP(m_tResources);
+	//DELETE_CLEAR_MAP(m_tResourceLoader);
+	//DELETE_CLEAR_MAP(m_tResources);
 }
 
 void MResourceSystem::SetSearchPath(const std::vector<MString>& vSearchPath)
@@ -66,16 +66,16 @@ MString MResourceSystem::GetFullPath(const MString& strRelativePath)
 	return "";
 }
 
-MResource* MResourceSystem::LoadResource(const MString& strResourcePath, const MType* type/* = nullptr*/)
+std::shared_ptr<MResource> MResourceSystem::LoadResource(const MString& strResourcePath, const MType* type/* = nullptr*/)
 {
 	if (strResourcePath.empty())
 		return nullptr;
 
-	std::map<MString, MResource*>::iterator iter = m_tPathResources.find(strResourcePath);
+	std::map<MString, std::shared_ptr<MResource>>::iterator iter = m_tPathResources.find(strResourcePath);
 	if (iter != m_tPathResources.end())
 		return iter->second;
 
-	MResource* pResource = nullptr;
+	std::shared_ptr<MResource> pResource = nullptr;
 	MResourceLoader* pLoader = nullptr;
 	if (nullptr == type)
 		type = GetResourceType(strResourcePath);
@@ -84,9 +84,8 @@ MResource* MResourceSystem::LoadResource(const MString& strResourcePath, const M
 	{
 		MString strFullPath = GetFullPath(strResourcePath);
 
-		if (pResource = pLoader->Load(this, strFullPath))
+		if (pResource = pLoader->Load(this, strFullPath, strResourcePath))
 		{
-			pResource->m_strResourcePath = strResourcePath;
 			m_tPathResources[strResourcePath] = pResource;
 		}
 		else
@@ -106,7 +105,7 @@ MResource* MResourceSystem::LoadResource(const MString& strResourcePath, const M
 	return pResource;
 }
 
-void MResourceSystem::UnloadResource(MResource* pResource)
+void MResourceSystem::UnloadResource(std::shared_ptr<MResource> pResource)
 {
 	if (nullptr == pResource)
 		return;
@@ -119,12 +118,12 @@ void MResourceSystem::UnloadResource(MResource* pResource)
 	m_tResources.erase(pResource->GetResourceID());
 
 	pResource->OnDelete();
-	delete pResource;
+	pResource = nullptr;
 }
 
 void MResourceSystem::Reload(const MString& strResourcePath)
 {
-	std::map<MString, MResource*>::iterator iter = m_tPathResources.find(strResourcePath);
+	std::map<MString, std::shared_ptr<MResource>>::iterator iter = m_tPathResources.find(strResourcePath);
 	if (iter != m_tPathResources.end())
 	{
 		iter->second->Load(strResourcePath);
@@ -132,9 +131,9 @@ void MResourceSystem::Reload(const MString& strResourcePath)
 	}
 }
 
-MResource* MResourceSystem::FindResourceByID(const MResourceID& unID)
+std::shared_ptr<MResource> MResourceSystem::FindResourceByID(const MResourceID& unID)
 {
-	std::map<MResourceID, MResource*>::iterator iter = m_tResources.find(unID);
+	std::map<MResourceID, std::shared_ptr<MResource>>::iterator iter = m_tResources.find(unID);
 
 	if (iter == m_tResources.end())
 		return nullptr;
@@ -142,12 +141,12 @@ MResource* MResourceSystem::FindResourceByID(const MResourceID& unID)
 	return iter->second;
 }
 
-void MResourceSystem::MoveTo(MResource* pResource, const MString& strTargetPath)
+void MResourceSystem::MoveTo(std::shared_ptr<MResource> pResource, const MString& strTargetPath)
 {
 	MString strOldPath = pResource->m_strResourcePath;
 	m_tPathResources.erase(strOldPath);
 
-	MResource* pTargetResource = m_tPathResources[strTargetPath];
+	std::shared_ptr<MResource> pTargetResource = m_tPathResources[strTargetPath];
 	
 	pResource->m_strResourcePath = strTargetPath;
 	m_tPathResources[strTargetPath] = pResource;

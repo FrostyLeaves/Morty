@@ -28,11 +28,11 @@ public:
 	static MString GetResourceTypeName() { return "Model"; }
 	static std::vector<MString> GetSuffixList() { return { "model" }; }
 
-    MSkeletonResource* GetSkeleton() { return m_pSkeleton; }
-    const std::vector<MMeshResource*>& GetMeshResources() { return m_vMeshes; }
+    std::shared_ptr<MSkeletonResource> GetSkeleton() { return m_pSkeleton; }
+    const std::vector<std::shared_ptr<MMeshResource>>& GetMeshResources() { return m_vMeshes; }
 
-    void SetSkeletonResource(MSkeletonResource* pSkeleton);
-    void GetMeshResources(const std::vector<MMeshResource*>& vMeshes);
+    void SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeleton);
+    void GetMeshResources(const std::vector<std::shared_ptr<MMeshResource>>& vMeshes);
 
 public:
 
@@ -46,8 +46,8 @@ private:
 
     friend class MModelConverter;
 
-    MSkeletonResource* m_pSkeleton;
-    std::vector<MMeshResource*> m_vMeshes;
+    std::shared_ptr<MSkeletonResource> m_pSkeleton;
+    std::vector<std::shared_ptr<MMeshResource>> m_vMeshes;
 };
 
 #endif

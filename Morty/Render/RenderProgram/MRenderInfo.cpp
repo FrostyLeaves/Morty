@@ -42,7 +42,7 @@ void MRenderInfo::CollectRenderMesh()
 
 	for (MRenderableMeshComponent& meshComp : pMeshComponents->m_vComponents)
 	{
-		MMaterial* pMaterial = meshComp.GetMaterial();
+		std::shared_ptr<MMaterial> pMaterial = meshComp.GetMaterial();
 		if (!pMaterial)
 			continue;
 
@@ -121,7 +121,7 @@ void MRenderInfo::CollectShadowMesh()
 		if (!component.IsValid())
 			continue;
 
-		if (MMaterial* pMaterial = component.GetMaterial())
+		if (std::shared_ptr<MMaterial> pMaterial = component.GetMaterial())
 		{
 			if (pMaterial->GetMaterialType() != MEMaterialType::EDefault && pMaterial->GetMaterialType() != MEMaterialType::EDeferred)
 				continue;
@@ -133,7 +133,7 @@ void MRenderInfo::CollectShadowMesh()
 
 		if (pSceneComponent->GetVisibleRecursively() && component.GetGenerateDirLightShadow())
 		{
-			MSkeletonInstance* pSkeletonInstance = component.GetSkeletonInstance();
+			std::shared_ptr<MSkeletonInstance> pSkeletonInstance = component.GetSkeletonInstance();
 
 			auto& vMeshes = m_tShadowGroupMesh[pSkeletonInstance];
 

@@ -175,7 +175,7 @@ void MForwardRenderProgram::DrawStaticMesh(MRenderInfo& info, MIRenderCommand* p
 	auto& materialGroup = info.m_tMaterialGroupMesh;
 	for (auto& pr : materialGroup)
 	{
-		MMaterial* pMaterial = pr.first;
+		std::shared_ptr<MMaterial> pMaterial = pr.first;
 		std::vector<MRenderableMeshComponent*>& vMesh = pr.second;
 
 		pCommand->SetUseMaterial(pMaterial);
@@ -183,7 +183,7 @@ void MForwardRenderProgram::DrawStaticMesh(MRenderInfo& info, MIRenderCommand* p
 
 		for (MRenderableMeshComponent* pMeshComponent : vMesh)
 		{
-			if (MSkeletonInstance* pSkeletonIns = pMeshComponent->GetSkeletonInstance())
+			if (std::shared_ptr<MSkeletonInstance> pSkeletonIns = pMeshComponent->GetSkeletonInstance())
 			{
 				pCommand->SetShaderParamSet(pSkeletonIns->GetShaderParamSet());
 			}

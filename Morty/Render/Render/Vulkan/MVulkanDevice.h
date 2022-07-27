@@ -64,8 +64,8 @@ public:
 	virtual bool GenerateFrameBuffer(MRenderPass* pRenderPass) override;
 	virtual void DestroyFrameBuffer(MRenderPass* pRenderPass) override;
 
-	virtual bool RegisterMaterial(MMaterial* pMaterial) override;
-	virtual bool UnRegisterMaterial(MMaterial* pMaterial) override;
+	virtual bool RegisterMaterial(std::shared_ptr<MMaterial> pMaterial) override;
+	virtual bool UnRegisterMaterial(std::shared_ptr<MMaterial> pMaterial) override;
 
 	virtual MIRenderCommand* CreateRenderCommand(const MString& strCommandName) override;
 	virtual void RecoveryRenderCommand(MIRenderCommand* pCommand) override;

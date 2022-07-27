@@ -62,7 +62,7 @@ void MVulkanPipelineManager::Release()
 	m_tPipelineTable.clear();
 }
 
-VkPipeline MVulkanPipelineManager::FindPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx)
+VkPipeline MVulkanPipelineManager::FindPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx)
 {
 	uint32_t unMaterialID = pMaterial->GetMaterialID();
 	uint32_t unRenderPassID = pRenderPass->GetRenderPassID();
@@ -87,7 +87,7 @@ VkPipeline MVulkanPipelineManager::FindPipeline(MMaterial* pMaterial, MRenderPas
 	return pPipelines->vSubpassPipeline[unSubpassIdx];
 }
 
-void MVulkanPipelineManager::SetPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx, VkPipeline pipeline)
+void MVulkanPipelineManager::SetPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx, VkPipeline pipeline)
 {
 	uint32_t unMaterialID = pMaterial->GetMaterialID();
 	uint32_t unRenderPassID = pRenderPass->GetRenderPassID();
@@ -127,7 +127,7 @@ void MVulkanPipelineManager::SetPipeline(MMaterial* pMaterial, MRenderPass* pRen
 	pRenderPassGroup->vSubpassPipeline[unSubpassIdx] = pipeline;
 }
 
-MMaterialPipelineLayoutData* MVulkanPipelineManager::FindOrCreatePipelineLayout(MMaterial* pMaterial)
+MMaterialPipelineLayoutData* MVulkanPipelineManager::FindOrCreatePipelineLayout(std::shared_ptr<MMaterial> pMaterial)
 {
 	uint32_t id = pMaterial->GetMaterialID();
 
@@ -153,7 +153,7 @@ MMaterialPipelineLayoutData* MVulkanPipelineManager::FindPipelineLayout(const ui
 	return m_vPipelineLayouts[nMaterialIdx];
 }
 
-bool MVulkanPipelineManager::RegisterMaterial(MMaterial* pMaterial)
+bool MVulkanPipelineManager::RegisterMaterial(std::shared_ptr<MMaterial> pMaterial)
 {
 	uint32_t id = m_MaterialIDPool.GetNewID();
 	pMaterial->SetMaterialID(id);
@@ -163,7 +163,7 @@ bool MVulkanPipelineManager::RegisterMaterial(MMaterial* pMaterial)
 	return true;
 }
 
-bool MVulkanPipelineManager::UnRegisterMaterial(MMaterial* pMaterial)
+bool MVulkanPipelineManager::UnRegisterMaterial(std::shared_ptr<MMaterial> pMaterial)
 {
 	uint32_t id = pMaterial->GetMaterialID();
 	if (m_tMaterialMap.find(id) == m_tMaterialMap.end())
@@ -312,7 +312,7 @@ void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShade
 	}
 }
 
-MMaterialPipelineLayoutData* MVulkanPipelineManager::CreateMaterialPipelineLayout(MMaterial* pMaterial)
+MMaterialPipelineLayoutData* MVulkanPipelineManager::CreateMaterialPipelineLayout(std::shared_ptr<MMaterial> pMaterial)
 {
 	std::vector<VkDescriptorSetLayoutBinding> vParamBinding[MRenderGlobal::SHADER_PARAM_SET_NUM];
 	

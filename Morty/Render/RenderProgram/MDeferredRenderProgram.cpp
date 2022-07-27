@@ -274,11 +274,11 @@ MTexture* MDeferredRenderProgram::GetShadowmapTexture()
 	return nullptr;
 }
 
-void MDeferredRenderProgram::DrawStaticMesh(MRenderInfo& info, MIRenderCommand* pCommand, std::map<MMaterial*, std::vector<MRenderableMeshComponent*>>& tMaterialGroup)
+void MDeferredRenderProgram::DrawStaticMesh(MRenderInfo& info, MIRenderCommand* pCommand, std::map<std::shared_ptr<MMaterial>, std::vector<MRenderableMeshComponent*>>& tMaterialGroup)
 {
 	for (auto& pr : tMaterialGroup)
 	{
-		MMaterial* pMaterial = pr.first;
+		std::shared_ptr<MMaterial> pMaterial = pr.first;
 		std::vector<MRenderableMeshComponent*>& vMesh = pr.second;
 
 		pCommand->SetUseMaterial(pMaterial);
@@ -286,7 +286,7 @@ void MDeferredRenderProgram::DrawStaticMesh(MRenderInfo& info, MIRenderCommand* 
 
 		for (MRenderableMeshComponent* pMeshComponent : vMesh)
 		{
-			if (MSkeletonInstance* pSkeletonIns = pMeshComponent->GetSkeletonInstance())
+			if (std::shared_ptr<MSkeletonInstance> pSkeletonIns = pMeshComponent->GetSkeletonInstance())
 			{
 				pCommand->SetShaderParamSet(pSkeletonIns->GetShaderParamSet());
 			}
@@ -440,9 +440,9 @@ void MDeferredRenderProgram::InitializeFrameShaderParams()
 
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-	MResource* pBrdfTexture = pResourceSystem->LoadResource("/Texture/ibl_brdf_lut.png");
+	std::shared_ptr<MResource> pBrdfTexture = pResourceSystem->LoadResource("/Texture/ibl_brdf_lut.png");
 
-	if (MTextureResource* pTexture = pBrdfTexture->DynamicCast<MTextureResource>())
+	if (std::shared_ptr<MTextureResource> pTexture = MTypeClass::DynamicCast<MTextureResource>(pBrdfTexture))
 	{
 		m_BrdfTexture.SetResource(pBrdfTexture);
 		m_frameParamSet.SetBrdfMapTexture(pTexture->GetTextureTemplate());
@@ -458,8 +458,8 @@ void MDeferredRenderProgram::InitializeMaterial()
 {
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-	MResource* vs = pResourceSystem->LoadResource("./Shader/post_process_basic.mvs");
-	MResource* ps = pResourceSystem->LoadResource("./Shader/model_deferred.mps");
+	std::shared_ptr<MResource> vs = pResourceSystem->LoadResource("./Shader/post_process_basic.mvs");
+	std::shared_ptr<MResource> ps = pResourceSystem->LoadResource("./Shader/model_deferred.mps");
 
 
 	m_pLightningMaterial = pResourceSystem->CreateResource<MMaterialResource>();
@@ -476,8 +476,8 @@ void MDeferredRenderProgram::InitializeMaterial()
 	}
 
 
-	MResource* skyboxVS = pResourceSystem->LoadResource("./Shader/skybox.mvs");
-	MResource* skyboxPS = pResourceSystem->LoadResource("./Shader/skybox.mps");
+	std::shared_ptr<MResource> skyboxVS = pResourceSystem->LoadResource("./Shader/skybox.mvs");
+	std::shared_ptr<MResource> skyboxPS = pResourceSystem->LoadResource("./Shader/skybox.mps");
 	m_pSkyBoxMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pSkyBoxMaterial->SetRasterizerType(MERasterizerType::ECullNone);
 	m_pSkyBoxMaterial->LoadVertexShader(skyboxVS);

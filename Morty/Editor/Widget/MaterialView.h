@@ -20,7 +20,7 @@ public:
 	virtual ~MaterialView();
 
 public:
-	void SetMaterial(MMaterial* pMaterial);
+	void SetMaterial(std::shared_ptr<MMaterial> pMaterial);
 
 	SceneTexture& GetSceneTexture() { return m_SceneTexture; }
 
@@ -35,7 +35,7 @@ protected:
 
 private:
 	MResourceKeeper m_Resource;
-	MMaterial* m_pMaterial;
+	std::shared_ptr<MMaterial> m_pMaterial;
 	PropertyBase m_propertyBase;
 
 	MEngine* m_pEngine;

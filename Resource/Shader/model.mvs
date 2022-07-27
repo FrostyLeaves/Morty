@@ -38,7 +38,7 @@ VS_OUT VS(VS_IN input)
     float4 posFromBones = mul(float4(input.pos, 1.0f), matBoneTransform);
     output.pos = mul(posFromBones, mul(U_matWorld, U_matCamProj));
 
-    output.worldPos = mul(  mul(input.pos, (float3x3)(matBoneTransform)),   U_matWorld);
+    output.worldPos = mul(  mul(input.pos, (float3x3)(matBoneTransform)),   (float3x3)(U_matWorld));
     output.dirLightSpacePos = mul(  mul(  mul(float4(input.pos, 1.0f), matBoneTransform), U_matWorld), U_matLightProj);
 #else
     
@@ -61,10 +61,10 @@ VS_OUT VS(VS_IN input)
     output.dirLightDirTangentSpace = normalize(mul(U_f3DirectionLight , TBN));
     output.toCameraDirTangentSpace = normalize(mul(f3ToCameraDir, TBN));
 
-    for(int i = 0; i < MPOINT_LIGHT_MAX_NUMBER; ++i)
+    for(int pointIdx = 0; pointIdx < MPOINT_LIGHT_MAX_NUMBER; ++pointIdx)
     {
-        float3 f3PointLightDir = U_pointLights[i].f3WorldPosition - output.worldPos;
-        output.pointLightDirTangentSpace[i] = normalize(mul(f3PointLightDir, TBN));
+        float3 f3PointLightDir = U_pointLights[pointIdx].f3WorldPosition - output.worldPos;
+        output.pointLightDirTangentSpace[pointIdx] = normalize(mul(f3PointLightDir, TBN));
     }
 
     output.normal = normalize(mul(input.normal, U_matNormal));
@@ -78,14 +78,14 @@ VS_OUT VS(VS_IN input)
 
     output.vertexPointLight = float3(0, 0, 0);
 
-    for(int i = MPOINT_LIGHT_PIXEL_NUMBER; i < min(MPOINT_LIGHT_MAX_NUMBER, U_nValidPointLightsNumber); ++i)
+    for(int pixelPointIdx = MPOINT_LIGHT_PIXEL_NUMBER; pixelPointIdx < min(MPOINT_LIGHT_MAX_NUMBER, U_nValidPointLightsNumber); ++pixelPointIdx)
     {
         float3 f3CameraDir = normalize(U_f3CameraPosition - output.worldPos);
-        float3 f3LightDir = normalize(U_pointLights[i].f3WorldPosition - output.worldPos);
+        float3 f3LightDir = normalize(U_pointLights[pixelPointIdx].f3WorldPosition - output.worldPos);
         float4 f3AmbiColor = U_mat_texDiffuse.SampleLevel(LinearSampler, input.uv, 0);
         float4 f3DiffColor = f3AmbiColor;
         float4 f3SpecColor = f3AmbiColor;//U_mat_texSpecular.Sample(LinearSampler, input.uv);
-        output.vertexPointLight += CalcPointLight(U_pointLights[i], f3CameraDir, f3LightDir, output.normal, output.worldPos, f3DiffColor, f3SpecColor);
+        output.vertexPointLight += CalcPointLight(U_pointLights[pixelPointIdx], f3CameraDir, f3LightDir, output.normal, output.worldPos, f3DiffColor.xyz, f3SpecColor.xyz);
     }
 
 

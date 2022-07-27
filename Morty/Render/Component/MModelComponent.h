@@ -13,8 +13,8 @@
 
 #include "MBounds.h"
 #include "MResource.h"
+#include "MSkeletonResource.h"
 
-class MSkeleton;
 class MSkeletonInstance;
 class MSkeletalAnimController;
 class MORTY_API MModelComponent : public MComponent
@@ -27,15 +27,15 @@ public:
 
 public:
 
-	void SetSkeletonResource(MSkeleton* pSkeleton);
+	void SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeleton);
 	void SetSkeletonResourcePath(const MString& strSkeletonPath);
 	MString GetSkeletonResourcePath() const;
 
-	MSkeletonInstance* GetSkeleton() { return m_pSkeleton; }
+	std::shared_ptr<MSkeletonInstance> GetSkeleton() { return m_pSkeleton; }
 
 public:
 
-	bool PlayAnimation(MResource* pAnimation);
+	bool PlayAnimation(std::shared_ptr<MResource> pAnimation);
 	bool PlayAnimation(const MString& strAnimationName);
 	void RemoveAnimation();
 	MSkeletalAnimController* GetSkeletalAnimationController();
@@ -58,7 +58,7 @@ private:
 
 	MResourceKeeper m_SkeletonResource;
 
-	MSkeletonInstance* m_pSkeleton;
+	std::shared_ptr<MSkeletonInstance> m_pSkeleton;
 	MSkeletalAnimController* m_pCurrentAnimationController;
 
 	bool m_bBoundingBoxVisiable;

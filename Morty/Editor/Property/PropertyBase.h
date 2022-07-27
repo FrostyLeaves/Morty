@@ -48,9 +48,9 @@ public:
 	bool EditMColor(MColor& value);
 	bool EditMString(MString& value);
 
-	bool EditMMaterial(MMaterial* pMaterial);
-	void EditMResource(const MString& strDlgID, const MString& strResourceType, const std::vector<MString>& vSuffixList,  MResource* pDefaultResource, const std::function<void(const MString& strNewFilePath)>& funcLoadResource);
-	void EditSaveMResource(const MString& stringID, const MString& strResourceType, const std::vector<MString>& vSuffixList, MResource* pResource);
+	bool EditMMaterial(std::shared_ptr<MMaterial> pMaterial);
+	void EditMResource(const MString& strDlgID, const MString& strResourceType, const std::vector<MString>& vSuffixList,  std::shared_ptr<MResource> pDefaultResource, const std::function<void(const MString& strNewFilePath)>& funcLoadResource);
+	void EditSaveMResource(const MString& stringID, const MString& strResourceType, const std::vector<MString>& vSuffixList, std::shared_ptr<MResource> pResource);
 
 	void ShowTexture(MTexture* pTexture, const Vector2& v2Size);
 

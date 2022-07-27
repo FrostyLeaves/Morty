@@ -170,7 +170,7 @@ void MSkeleton::RebuildBonesMap()
 	}
 }
 
-MSkeletonInstance::MSkeletonInstance(const MSkeleton* templateSke)
+MSkeletonInstance::MSkeletonInstance(std::shared_ptr<const MSkeleton> templateSke)
 	: m_pEngine(templateSke->GetEngine())
 	, m_pSkeletonTemplate(templateSke)
 	, m_bShaderParamSetDirty(true)

@@ -79,7 +79,7 @@ protected:
 
 	MEntity* GetEntityFromNode(const aiScene* pScene, aiNode* pNode);
 
-	MMaterial* GetMaterial(const aiScene* pScene, const uint32_t& nMaterialIdx);
+	std::shared_ptr<MMaterial> GetMaterial(const aiScene* pScene, const uint32_t& nMaterialIdx);
 
 	MEngine* GetEngine() { return m_pEngine; }
 
@@ -90,15 +90,15 @@ private:
 
 	MString m_strResourcePath;
 
-	std::vector<MMeshResource*> m_vMeshes;
-	std::vector<MMaterial*> m_vMaterials;
+	std::vector<std::shared_ptr<MMeshResource>> m_vMeshes;
+	std::vector<std::shared_ptr<MMaterial>> m_vMaterials;
 
 	std::map<aiNode*, MEntity*> m_tNodeMaps;
 
-	MSkeletonResource* m_pSkeleton;
+	std::shared_ptr<MSkeletonResource> m_pSkeleton;
 	MEntity* m_pModelEntity;;
 
-	std::vector<MSkeletalAnimation*> m_vSkeletalAnimation;
+	std::vector<std::shared_ptr<MSkeletalAnimation>> m_vSkeletalAnimation;
 
 	MModelConvertMaterialType eMaterialType;
 

@@ -64,16 +64,16 @@ public:
 
 public:
 
-	MSkeleton* GetSkeletonTemplate();
+	std::shared_ptr<MSkeleton> GetSkeletonTemplate();
 
-	MResource* GetSkeletonResource() { return m_Skeleton.GetResource(); }
+	std::shared_ptr<MResource> GetSkeletonResource() { return m_Skeleton.GetResource(); }
 
 	uint32_t GetIndex() { return m_unIndex; }
 	MString GetName() { return m_strName; }
 	float GetTicksDuration() { return m_fTicksDuration; }
 	float GetTicksPerSecond() { return m_fTicksPerSecond; }
 
-	void Update(const float& fTime, MSkeletonInstance* pSkeletonIns, const MSkeletonAnimMap& skelAnimMap);
+	void Update(const float& fTime, std::shared_ptr<MSkeletonInstance> pSkeletonIns, const MSkeletonAnimMap& skelAnimMap);
 
 	void WriteToStruct(MStruct& srt);
 	void ReadFromStruct(const MStruct& srt);
@@ -112,7 +112,7 @@ public:
 	MSkeletalAnimController();
 	virtual ~MSkeletalAnimController();
 
-	bool Initialize(MSkeletonInstance* pSkeletonIns, MSkeletalAnimation* pAnimation);
+	bool Initialize(std::shared_ptr<MSkeletonInstance> pSkeletonIns, std::shared_ptr<MSkeletalAnimation> pAnimation);
 
 public:
 
@@ -129,15 +129,15 @@ public:
 
 	virtual MEAnimControllerState GetState() override { return m_eState; }
 
-	MSkeletalAnimation* GetAnimation() { return m_pAnimation; }
+	std::shared_ptr<MSkeletalAnimation> GetAnimation() { return m_pAnimation; }
 
 protected:
 
 	void BindMapping();
 
 private:
-	MSkeletonInstance* m_pSkeletonIns;
-	MSkeletalAnimation* m_pAnimation;
+	std::shared_ptr<MSkeletonInstance> m_pSkeletonIns;
+	std::shared_ptr<MSkeletalAnimation> m_pAnimation;
 	MResourceKeeper m_AnimResource;
 
 	bool m_bInitialized;

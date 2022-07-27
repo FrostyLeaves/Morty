@@ -625,10 +625,7 @@ void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler
 		pParam->strName = res.name;
 		MStringHelper::Replace(pParam->strName, "type.", "");
 
-		//if (MGlobal::SHADER_PARAM_SET_MESH == pParam->unSet)
-			pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-		//else
-		//	pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 		
 		ConvertVariant(compiler, type, pParam->var);
 

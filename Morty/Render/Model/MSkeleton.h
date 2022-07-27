@@ -83,11 +83,11 @@ private:
 class MORTY_API MSkeletonInstance
 {
 public:
-	MSkeletonInstance(const MSkeleton* templateSke);
+	MSkeletonInstance(std::shared_ptr<const MSkeleton> templateSke);
 	MSkeletonInstance(const MSkeletonInstance& instance);
 	~MSkeletonInstance();
 
-	const MSkeleton* GetSkeletonTemplate() const { return m_pSkeletonTemplate; }
+	std::shared_ptr<const MSkeleton> GetSkeletonTemplate() const { return m_pSkeletonTemplate; }
 
 	MBone* FindBoneByName(const MString& strName);
 
@@ -104,7 +104,7 @@ public:
 
 private:
 	MEngine* m_pEngine;
-	const MSkeleton* m_pSkeletonTemplate;
+	std::shared_ptr<const MSkeleton> m_pSkeletonTemplate;
 	std::vector<MBone> m_vAllBones;
 
 	bool m_bShaderParamSetDirty;

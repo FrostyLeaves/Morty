@@ -46,8 +46,8 @@ protected:
 private:
 
 
-	MMaterial* m_pShadowStaticMaterial;
-	MMaterial* m_pShadowSkeletonMaterial;
+	std::shared_ptr<MMaterial> m_pShadowStaticMaterial;
+	std::shared_ptr<MMaterial> m_pShadowSkeletonMaterial;
 
 	MRenderPass m_renderPass;
 	MShadowMapShaderParamSet m_shadowParamSet;

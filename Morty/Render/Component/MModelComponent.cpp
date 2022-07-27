@@ -28,17 +28,16 @@ MModelComponent::~MModelComponent()
 
 }
 
-void MModelComponent::SetSkeletonResource(MSkeleton* pSkeleton)
+void MModelComponent::SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeleton)
 {
 	if (m_pSkeleton)
 	{
-		delete m_pSkeleton;
 		m_pSkeleton = nullptr;
 	}
 
 	if (pSkeleton)
 	{
-		m_pSkeleton = new MSkeletonInstance(pSkeleton);
+		m_pSkeleton = std::make_shared<MSkeletonInstance>(pSkeleton);
 	}
 
 
@@ -48,9 +47,9 @@ void MModelComponent::SetSkeletonResource(MSkeleton* pSkeleton)
 void MModelComponent::SetSkeletonResourcePath(const MString& strSkeletonPath)
 {
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-	if (MResource* pResource = pResourceSystem->LoadResource(strSkeletonPath))
+	if (std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(strSkeletonPath))
 	{
-		SetSkeletonResource(pResource->DynamicCast<MSkeletonResource>());
+		SetSkeletonResource(MTypeClass::DynamicCast<MSkeletonResource>(pResource));
 	}
 }
 
@@ -62,7 +61,7 @@ MString MModelComponent::GetSkeletonResourcePath() const
 bool MModelComponent::PlayAnimation(const MString& strAnimationName)
 {
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-	if (MResource* pAnimResource = pResourceSystem->LoadResource(strAnimationName))
+	if (std::shared_ptr<MResource> pAnimResource = pResourceSystem->LoadResource(strAnimationName))
 	{
 		return PlayAnimation(pAnimResource);
 	}
@@ -70,11 +69,11 @@ bool MModelComponent::PlayAnimation(const MString& strAnimationName)
 	return false;
 }
 
-bool MModelComponent::PlayAnimation(MResource* pAnimation)
+bool MModelComponent::PlayAnimation(std::shared_ptr<MResource> pAnimation)
 {
 	RemoveAnimation();
 
-	if (MSkeletalAnimationResource* pAnimRes = pAnimation->DynamicCast<MSkeletalAnimationResource>())
+	if (std::shared_ptr<MSkeletalAnimationResource> pAnimRes = MTypeClass::DynamicCast<MSkeletalAnimationResource>(pAnimation))
 	{
 		MSkeletalAnimController* pController = new MSkeletalAnimController();
 		if (pController->Initialize(m_pSkeleton, pAnimRes))

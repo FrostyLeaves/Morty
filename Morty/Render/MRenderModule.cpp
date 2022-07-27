@@ -68,14 +68,14 @@ bool MRenderModule::Register(MEngine* pEngine)
 		pResourceSystem->RegisterResourceType<MSkeletalAnimationResource>();
 
 
-		if (MTextureResource* pTexture = pResourceSystem->CreateResource<MTextureResource>(DefaultWhite))
+		if (std::shared_ptr<MTextureResource> pTexture = pResourceSystem->CreateResource<MTextureResource>(DefaultWhite))
 		{
 			MByte byte[4];
 			byte[0] = byte[1] = byte[2] = byte[3] = 255;
 			pTexture->LoadFromMemory(byte, 1, 1, 4);
 		}
 
-		if (MTextureResource* pTexture = pResourceSystem->CreateResource<MTextureResource>(DefaultNormal))
+		if (std::shared_ptr<MTextureResource> pTexture = pResourceSystem->CreateResource<MTextureResource>(DefaultNormal))
 		{
 			MByte byte[3];
 			byte[0] = byte[1] = 127;
@@ -83,13 +83,13 @@ bool MRenderModule::Register(MEngine* pEngine)
 			pTexture->LoadFromMemory(byte, 1, 1, 3);
 		}
 
-		if (MTextureResource* pTexture = pResourceSystem->CreateResource<MTextureResource>(Default_R8_One))
+		if (std::shared_ptr<MTextureResource> pTexture = pResourceSystem->CreateResource<MTextureResource>(Default_R8_One))
 		{
 			MByte byte = 255;
 			pTexture->LoadFromMemory(&byte, 1, 1, 1);
 		}
 
-		if (MTextureResource* pTexture = pResourceSystem->CreateResource<MTextureResource>(Default_R8_Zero))
+		if (std::shared_ptr<MTextureResource> pTexture = pResourceSystem->CreateResource<MTextureResource>(Default_R8_Zero))
 		{
 			MByte byte = 0;
 			pTexture->LoadFromMemory(&byte, 1, 1, 1);

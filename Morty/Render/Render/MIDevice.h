@@ -63,8 +63,8 @@ public:
 	virtual bool GenerateFrameBuffer(MRenderPass* pRenderPass) = 0;
 	virtual void DestroyFrameBuffer(MRenderPass* pRenderPass) = 0;
 
-	virtual bool RegisterMaterial(MMaterial* pMaterial) { return true; };
-	virtual bool UnRegisterMaterial(MMaterial* pMaterial) { return true; };
+	virtual bool RegisterMaterial(std::shared_ptr<MMaterial> pMaterial) { return true; };
+	virtual bool UnRegisterMaterial(std::shared_ptr<MMaterial> pMaterial) { return true; };
 
 	virtual MIRenderCommand* CreateRenderCommand(const MString& strCommandName) = 0;
 	virtual void RecoveryRenderCommand(MIRenderCommand* pCommand) = 0;

@@ -36,7 +36,7 @@ struct MMaterialPipelineLayoutData
 {
     MMaterialPipelineLayoutData();
 
-    MMaterial* pMaterial;
+    std::shared_ptr<MMaterial> pMaterial;
     VkPipelineLayout pipelineLayout;
     std::vector<VkDescriptorSetLayout> vSetLayouts;
     std::vector<MShaderParamSet*> vShaderParamSets;
@@ -52,16 +52,16 @@ public:
 
 public:
 
-    VkPipeline FindPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx);
+    VkPipeline FindPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx);
 
-    void SetPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx, VkPipeline pipeline);
+    void SetPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx, VkPipeline pipeline);
 
-	MMaterialPipelineLayoutData* FindOrCreatePipelineLayout(MMaterial* pMaterial);
+	MMaterialPipelineLayoutData* FindOrCreatePipelineLayout(std::shared_ptr<MMaterial> pMaterial);
 	MMaterialPipelineLayoutData* FindPipelineLayout(const uint32_t& nMaterialIdx);
 
 public:
-	bool RegisterMaterial(MMaterial* pMaterial);
-	bool UnRegisterMaterial(MMaterial* pMaterial);
+	bool RegisterMaterial(std::shared_ptr<MMaterial> pMaterial);
+	bool UnRegisterMaterial(std::shared_ptr<MMaterial> pMaterial);
 
     void RegisterRenderPass(MRenderPass* pRenderPass);
     void UnRegisterRenderPass(MRenderPass* pRenderPass);
@@ -72,7 +72,7 @@ public:
 
     void BindTextureParam(MShaderParamSet* pParamSet, MShaderTextureParam* pParam);
 
-    MMaterialPipelineLayoutData* CreateMaterialPipelineLayout(MMaterial* pMaterial);
+    MMaterialPipelineLayoutData* CreateMaterialPipelineLayout(std::shared_ptr<MMaterial> pMaterial);
     void DestroyMaterialPipelineLayout(MMaterialPipelineLayoutData* pLayoutData);
 
     void GenerateShaderParamSet(MShaderParamSet* pParamSet);
@@ -90,7 +90,7 @@ private:
 
     std::vector<MMaterialPipelineLayoutData*> m_vPipelineLayouts;
 
-	std::map<uint32_t, MMaterial*> m_tMaterialMap;
+	std::map<uint32_t, std::shared_ptr<MMaterial>> m_tMaterialMap;
 
     MVulkanDevice* m_pDevice;
 

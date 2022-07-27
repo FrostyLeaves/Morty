@@ -37,7 +37,7 @@ public:
 	virtual void DrawMesh(MIMesh* pMesh) override;
 	virtual void DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, const uint32_t& nIdxCount, const uint32_t& nVrtOffset) override;
 
-	virtual bool SetUseMaterial(MMaterial* pMaterial) override;
+	virtual bool SetUseMaterial(std::shared_ptr<MMaterial> pMaterial) override;
 	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) override;
 
 	virtual bool SetRenderToTextureBarrier(const std::vector<MTexture*> vTextures) override;
@@ -50,7 +50,7 @@ public:
 	void UpdateShaderParam(MShaderParamSet* pParamSet, MShaderConstantParam* param);
 	void UpdateShaderParam(MShaderParamSet* pParamSet, MShaderTextureParam* param);
 
-	VkPipeline CreateGraphicsPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx);
+	VkPipeline CreateGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx);
 
 	void BindConstantParam(MShaderParamSet* pParamSet, MShaderConstantParam* pParam);
 	void BindTextureParam(MShaderParamSet* pParamSet, MShaderTextureParam* pParam);
@@ -62,7 +62,7 @@ public:
 
 	MVulkanDevice* m_pDevice;
 
-	MMaterial* pUsingMaterial;
+	std::shared_ptr<MMaterial> pUsingMaterial;
 	MMaterialPipelineLayoutData* pUsingPipelineLayoutData;
 	std::stack<MRenderPassStage> m_vRenderPassStages;
 

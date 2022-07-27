@@ -46,8 +46,8 @@ void MShadowMapRenderWork::OnCreated()
 
 	m_pShadowStaticMaterial = pResourceSystem->CreateResource<MMaterial>("Shadow Material");
 
-	MResource* pVertexShader = pResourceSystem->LoadResource("./Shader/shadowmap.mvs");
-	MResource* pPixelShader = pResourceSystem->LoadResource("./Shader/shadowmap.mps");
+	std::shared_ptr<MResource> pVertexShader = pResourceSystem->LoadResource("./Shader/shadowmap.mvs");
+	std::shared_ptr<MResource> pPixelShader = pResourceSystem->LoadResource("./Shader/shadowmap.mps");
 	m_pShadowStaticMaterial->LoadVertexShader(pVertexShader);
 	m_pShadowStaticMaterial->LoadPixelShader(pPixelShader);
 	m_pShadowStaticMaterial->SetRasterizerType(MERasterizerType::ECullFront);
@@ -123,7 +123,7 @@ void MShadowMapRenderWork::DrawShadowMesh(MRenderInfo& info, MIRenderCommand* pC
 	auto& materialGroup = info.m_tShadowGroupMesh;
 	for (auto& pr : materialGroup)
 	{
-		if (MSkeletonInstance* pSkeletonIns = pr.first)
+		if (std::shared_ptr<MSkeletonInstance> pSkeletonIns = pr.first)
 		{
 			pCommand->SetUseMaterial(m_pShadowSkeletonMaterial);
 			pCommand->SetShaderParamSet(pSkeletonIns->GetShaderParamSet());

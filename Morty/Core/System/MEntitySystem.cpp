@@ -41,11 +41,11 @@ void MEntitySystem::AddChild(MEntity* pParent, MEntity* pChild)
 	pChildComp->SetParentComponent(pParentComp->GetComponentID());
 }
 
-MResource* MEntitySystem::PackEntity(MScene* pScene, const std::vector<MEntity*>& vEntity)
+std::shared_ptr<MResource> MEntitySystem::PackEntity(MScene* pScene, const std::vector<MEntity*>& vEntity)
 {
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-	MEntityResource* pResource = pResourceSystem->CreateResource<MEntityResource>();
+	std::shared_ptr<MEntityResource> pResource = pResourceSystem->CreateResource<MEntityResource>();
 
 	flatbuffers::FlatBufferBuilder fbb;
 
@@ -72,7 +72,7 @@ MResource* MEntitySystem::PackEntity(MScene* pScene, const std::vector<MEntity*>
 	return pResource;
 }
 
-std::vector<MEntity*> MEntitySystem::LoadEntity(MScene* pScene, MResource* pResource)
+std::vector<MEntity*> MEntitySystem::LoadEntity(MScene* pScene, std::shared_ptr<MResource> pResource)
 {
 	std::vector<MEntity*> vResult;
 

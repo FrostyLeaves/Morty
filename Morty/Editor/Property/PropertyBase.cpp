@@ -234,12 +234,12 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
 	return bModified;
 }
 
-bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
+bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 {
 	bool bModified = false;
 
 	
-	if (MMaterialResource* pResource = pMaterial)
+	if (std::shared_ptr<MMaterial> pResource = pMaterial)
 	{
 		{
 			ShowValueBegin("Save");
@@ -339,7 +339,7 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 					MString strDlgName = "file_dlg_tex_" + MStringHelper::ToString(i);
 
 					ShowValueBegin(param->strName);
-					MResource* pResource = param->m_TextureRef.GetResource();
+					std::shared_ptr<MResource> pResource = param->m_TextureRef.GetResource();
 
 					if (param->pTexture)
 					{
@@ -357,7 +357,7 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 
 					EditMResource(strDlgName, MTextureResource::GetResourceTypeName(), MTextureResource::GetSuffixList(), pResource, [&param, &pMaterial](const MString& strNewFilePath) {
 
-						MResource* pNewResource = pMaterial->GetResourceSystem()->LoadResource(strNewFilePath);
+						std::shared_ptr<MResource> pNewResource = pMaterial->GetResourceSystem()->LoadResource(strNewFilePath);
 
 						pMaterial->SetTexutreParam(param->strName, pNewResource);
 						});
@@ -374,7 +374,7 @@ bool PropertyBase::EditMMaterial(MMaterial* pMaterial)
 	return bModified;
 }
 
-void PropertyBase::EditMResource(const MString& strDlgID, const MString& strResourceType, const std::vector<MString>& vSuffixList, MResource* pResource, const std::function<void(const MString & strNewFilePath)>& funcLoadResource)
+void PropertyBase::EditMResource(const MString& strDlgID, const MString& strResourceType, const std::vector<MString>& vSuffixList, std::shared_ptr<MResource> pResource, const std::function<void(const MString & strNewFilePath)>& funcLoadResource)
 {
 	//".mvs\0.mps\0\0",
 	MString strSuffix = "";
@@ -422,7 +422,7 @@ void PropertyBase::EditMResource(const MString& strDlgID, const MString& strReso
 	}
 }
 
-void PropertyBase::EditSaveMResource(const MString& stringID, const MString& strResourceType, const std::vector<MString>& vSuffixList, MResource* pResource)
+void PropertyBase::EditSaveMResource(const MString& stringID, const MString& strResourceType, const std::vector<MString>& vSuffixList, std::shared_ptr<MResource> pResource)
 {
 	//".mvs\0.mps\0\0",
 	MString strSuffix = "";
@@ -446,7 +446,7 @@ void PropertyBase::EditSaveMResource(const MString& stringID, const MString& str
 		ImGui::SameLine();
 
 		char btn_name[64];
-		sprintf(btn_name, "Save##_%d", ImGui::GetID(pResource));
+		sprintf(btn_name, "Save##_%d", ImGui::GetID(pResource.get()));
 
 		if (ImGui::Button(btn_name, ImVec2(fWidth * 0.5f, 0)))
 			pResource->Save();

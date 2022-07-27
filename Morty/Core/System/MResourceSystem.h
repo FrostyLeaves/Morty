@@ -32,10 +32,10 @@ public:
 	bool RegisterResourceType();
 
 	template<typename TYPE>
-	TYPE* CreateResource();
+	std::shared_ptr<TYPE> CreateResource();
 
 	template<typename TYPE>
-	TYPE* CreateResource(const MString& strResourcePath);
+	std::shared_ptr<TYPE> CreateResource(const MString& strResourcePath);
 
 	void SetSearchPath(const std::vector<MString>& vSearchPath);
 	std::vector<MString> GetSearchPath() const { return m_vSearchPath; }
@@ -44,23 +44,23 @@ public:
 
 	MString GetFullPath(const MString& strRelativePath);
 
-	MResource* LoadResource(const MString& strResourcePath, const MType* type = nullptr);
-	void UnloadResource(MResource* pResource);
+	std::shared_ptr<MResource> LoadResource(const MString& strResourcePath, const MType* type = nullptr);
+	void UnloadResource(std::shared_ptr<MResource> pResource);
 	
 	void Reload(const MString& strResourcePath);
 
-	MResource* FindResourceByID(const MResourceID& unID);
+	std::shared_ptr<MResource> FindResourceByID(const MResourceID& unID);
 
-	std::map<MResourceID, MResource*>* GetAllResources() { return &m_tResources; }
+	std::map<MResourceID, std::shared_ptr<MResource>>* GetAllResources() { return &m_tResources; }
 
-	void MoveTo(MResource* pResource, const MString& strTargetPath);
+	void MoveTo(std::shared_ptr<MResource> pResource, const MString& strTargetPath);
 
 private:
 
 	std::map<const MType*, MResourceLoader*> m_tResourceLoader;
 
-	std::map<MResourceID, MResource*> m_tResources;
-	std::map<MString, MResource*> m_tPathResources;
+	std::map<MResourceID, std::shared_ptr<MResource>> m_tResources;
+	std::map<MString, std::shared_ptr<MResource>> m_tPathResources;
 
 	MIDPool<MResourceID> m_ResourceDB;
 	std::map<MString, const MType*> m_tResSuffixToType;
@@ -98,12 +98,13 @@ bool MResourceSystem::RegisterResourceType()
 }
 
 template<typename TYPE>
-TYPE* MResourceSystem::CreateResource()
+std::shared_ptr<TYPE> MResourceSystem::CreateResource()
 {
 	if (!MTypeClass::IsType<TYPE, MResource>())
 		return nullptr;
 
-	TYPE* pResource = new TYPE();
+	std::shared_ptr<TYPE> pResource = std::make_shared<TYPE>();
+	pResource->m_self = pResource;
 	pResource->m_unResourceID = m_ResourceDB.GetNewID();
 	pResource->m_pEngine = GetEngine();
 	m_tResources[pResource->m_unResourceID] = pResource;
@@ -114,12 +115,12 @@ TYPE* MResourceSystem::CreateResource()
 
 
 template<typename TYPE>
-TYPE* MResourceSystem::CreateResource(const MString& strResourcePath)
+std::shared_ptr<TYPE> MResourceSystem::CreateResource(const MString& strResourcePath)
 {
-	if (MResource* pResource = m_tPathResources[strResourcePath])
-		return dynamic_cast<TYPE*>(pResource);
+	if (std::shared_ptr<MResource> pResource = m_tPathResources[strResourcePath])
+		return std::dynamic_pointer_cast<TYPE>(pResource);
 
-	TYPE* pResource = CreateResource<TYPE>();
+	std::shared_ptr<TYPE> pResource = CreateResource<TYPE>();
 	pResource->m_strResourcePath = strResourcePath;
 	m_tPathResources[strResourcePath] = pResource;
 

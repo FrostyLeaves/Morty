@@ -38,7 +38,7 @@ public:
 
 	void RenderEnvironment(MIRenderCommand* pRenderCommand, MSkyBoxComponent* pSkyBoxComponent);
 
-	MResource* GetDiffuseOutputTexture();
+	std::shared_ptr<MResource> GetDiffuseOutputTexture();
 
 protected:
 
@@ -61,10 +61,10 @@ private:
 
 	bool m_bUpdateNextFrame;
 
-	MMaterial* m_DiffuseMaterial;
-	std::vector<MMaterial*> m_vSpecularMaterial;
+	std::shared_ptr<MMaterial> m_DiffuseMaterial;
+	std::vector<std::shared_ptr<MMaterial>> m_vSpecularMaterial;
 
-	MMeshResource* m_pCubeMesh;
+	std::shared_ptr<MMeshResource> m_pCubeMesh;
 
 	MResourceKeeper m_DiffuseEnvironmentMap;
 	MResourceKeeper m_SpecularEnvironmentMap;

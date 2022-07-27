@@ -43,8 +43,8 @@ public:
 	virtual void Initialize() override;
 	virtual void Release() override;
 
-	void SetMaterial(MMaterial* pMaterial);
-	MMaterial* GetMaterial();
+	void SetMaterial(std::shared_ptr<MMaterial> pMaterial);
+	std::shared_ptr<MMaterial> GetMaterial();
 
 	MShaderParamSet* GetShaderMeshParamSet();
 	void UpdateShaderMeshParam();
@@ -52,7 +52,7 @@ public:
 	bool SetMaterialPath(const MString& strPath);
 	MString GetMaterialPath();
 
-	void Load(MResource* pResource);
+	void Load(std::shared_ptr<MResource> pResource);
 
 	void SetMeshResourcePath(const MString& strResourcePath);
 	MString GetMeshResourcePath() { return m_Mesh.GetResourcePath(); }
@@ -64,7 +64,7 @@ public:
 	MBoundsAABB* GetBoundsAABB();
 	MBoundsSphere* GetBoundsSphere();
 	
-	MSkeletonInstance* GetSkeletonInstance();
+	std::shared_ptr<MSkeletonInstance> GetSkeletonInstance();
 
 	void SetShadowType(const MEShadowType& eType) { m_eShadowType = eType; }
 	MEShadowType GetShadowType() { return m_eShadowType; }
@@ -95,7 +95,7 @@ public:
 
 protected:
 
-	void BindShaderParam(MMaterial* pMaterial);
+	void BindShaderParam(std::shared_ptr<MMaterial> pMaterial);
 
 protected:
 

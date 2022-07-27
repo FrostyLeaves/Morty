@@ -46,7 +46,7 @@ public:
 	MIMesh* GetLevelMesh(const uint32_t unLevel);
 	const MBoundsOBB* GetMeshesDefaultOBB() { return &m_BoundsOBB; }
 	const MBoundsSphere* GetMeshesDefaultSphere() { return &m_BoundsSphere; }
-	MResource* GetDefaultMaterial() { return m_MaterialKeeper.GetResource(); }
+	std::shared_ptr<MResource> GetDefaultMaterial() { return m_MaterialKeeper.GetResource(); }
 
 
 public:

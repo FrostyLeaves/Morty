@@ -15,7 +15,7 @@
 public: \
 static const MType* GetClassType(); \
 static MString GetClassTypeName(){ return Class::GetClassType()->m_strName;}\
-virtual const MType* GetType() { return Class::GetClassType(); }; \
+virtual const MType* GetType() const { return Class::GetClassType(); }; \
 
 
 #define M_TYPE_IMPLEMENT(CurrClass, BaseClass) \
@@ -96,8 +96,8 @@ public:
 
 	MORTY_CLASS(MTypeClass)
 
-		template <class T>
-	T* DynamicCast()
+	template <class T>
+	T* DynamicCast() const
 	{
 		if (nullptr == this) return nullptr;
 		const MType* pTypeIdent = GetType();
@@ -109,6 +109,18 @@ public:
 			return (T*)(this);
 		return nullptr;
 	}
+
+	template<class Target, class Source>
+	static std::shared_ptr<Target> DynamicCast(std::shared_ptr<Source> pointer)
+	{
+		if (nullptr == pointer) return nullptr;
+		if (Target* ptr = (pointer.get())->DynamicCast<Target>())
+		{
+			return std::shared_ptr<Target>(std::move(pointer), ptr);
+		}
+		return nullptr;
+	}
+
 
 	template<typename T1, typename T2>
 	static bool IsType()

@@ -25,12 +25,12 @@ MSkeletalAnimation::~MSkeletalAnimation()
 
 }
 
-MSkeleton* MSkeletalAnimation::GetSkeletonTemplate()
+std::shared_ptr<MSkeleton> MSkeletalAnimation::GetSkeletonTemplate()
 {
 	return m_Skeleton.GetResource<MSkeletonResource>();
 }
 
-void MSkeletalAnimation::Update(const float& fTime, MSkeletonInstance* pSkeletonIns, const MSkeletonAnimMap& skelAnimMap)
+void MSkeletalAnimation::Update(const float& fTime, std::shared_ptr<MSkeletonInstance> pSkeletonIns, const MSkeletonAnimMap& skelAnimMap)
 {
 	std::vector<MBone>& bones = pSkeletonIns->GetAllBones();
 
@@ -174,7 +174,7 @@ void MSkeletalAnimation::WriteToStruct(MStruct& srt)
 {
 	if (MString* pSkePath = srt.AppendMVariant<MString>("ske"))
 	{
-		if (MResource* pSkeletonRes = m_Skeleton.GetResource())
+		if (std::shared_ptr<MResource> pSkeletonRes = m_Skeleton.GetResource())
 		{
 			*pSkePath = pSkeletonRes->GetResourcePath();
 		}
@@ -207,7 +207,7 @@ void MSkeletalAnimation::ReadFromStruct(const MStruct& srt)
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 	if (const MString* pSkePath = srt.FindMember<MString>("ske"))
 	{
-		if (MResource* pSkeletonRes = pResourceSystem->LoadResource(*pSkePath))
+		if (std::shared_ptr<MResource> pSkeletonRes = pResourceSystem->LoadResource(*pSkePath))
 		{
 			m_Skeleton = pSkeletonRes;
 		}
@@ -368,7 +368,7 @@ MSkeletalAnimController::~MSkeletalAnimController()
 
 }
 
-bool MSkeletalAnimController::Initialize(MSkeletonInstance* pSkeletonIns, MSkeletalAnimation* pAnimation)
+bool MSkeletalAnimController::Initialize(std::shared_ptr<MSkeletonInstance> pSkeletonIns, std::shared_ptr<MSkeletalAnimation> pAnimation)
 {
 	if (!pAnimation)
 		return false;

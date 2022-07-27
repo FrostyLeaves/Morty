@@ -88,7 +88,7 @@ void MRenderableMeshComponent::Release()
 	Super::Release();
 }
 
-void MRenderableMeshComponent::SetMaterial(MMaterial* pMaterial)
+void MRenderableMeshComponent::SetMaterial(std::shared_ptr<MMaterial> pMaterial)
 {
 	if (m_Material.GetResource() == pMaterial)
 		return;
@@ -97,9 +97,9 @@ void MRenderableMeshComponent::SetMaterial(MMaterial* pMaterial)
 	BindShaderParam(pMaterial);
 }
 
-MMaterial* MRenderableMeshComponent::GetMaterial()
+std::shared_ptr<MMaterial> MRenderableMeshComponent::GetMaterial()
 {
-	return static_cast<MMaterial*>(m_Material.GetResource());
+	return std::static_pointer_cast<MMaterial>(m_Material.GetResource());
 }
 
 MShaderParamSet* MRenderableMeshComponent::GetShaderMeshParamSet()
@@ -153,9 +153,9 @@ void MRenderableMeshComponent::UpdateShaderMeshParam()
 bool MRenderableMeshComponent::SetMaterialPath(const MString& strPath)
 {
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-	if (MResource* pResource = pResourceSystem->LoadResource(strPath))
+	if (std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(strPath))
 	{
-		if (MMaterialResource* pMaterialRes = pResource->DynamicCast<MMaterialResource>())
+		if (std::shared_ptr<MMaterialResource> pMaterialRes = MTypeClass::DynamicCast<MMaterialResource>(pResource))
 		{
 			SetMaterial(pMaterialRes);
 			return true;
@@ -170,18 +170,18 @@ MString MRenderableMeshComponent::GetMaterialPath()
 	return GetMaterial() ? GetMaterial()->GetResourcePath() : "";
 }
 
-void MRenderableMeshComponent::Load(MResource* pResource)
+void MRenderableMeshComponent::Load(std::shared_ptr<MResource> pResource)
 {
 	if (!pResource)
 		return;
 
-	if (MMeshResource* pMeshResource = pResource->DynamicCast<MMeshResource>())
+	if (std::shared_ptr<MMeshResource> pMeshResource = MTypeClass::DynamicCast<MMeshResource>(pResource))
 	{
 		m_Mesh.SetResource(pResource);
 
 		if (m_Material.GetResource() == nullptr)
 		{
-			MMaterial* pMaterial = pMeshResource->GetDefaultMaterial()->DynamicCast<MMaterial>();
+			std::shared_ptr<MMaterial> pMaterial = MTypeClass::DynamicCast<MMaterial>(pMeshResource->GetDefaultMaterial());
 			SetMaterial(pMaterial);
 		}
 	}
@@ -190,13 +190,13 @@ void MRenderableMeshComponent::Load(MResource* pResource)
 void MRenderableMeshComponent::SetMeshResourcePath(const MString& strResourcePath)
 {
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-	MResource* pResource = pResourceSystem->LoadResource(strResourcePath);
+	std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(strResourcePath);
 	Load(pResource);
 }
 
 MIMesh* MRenderableMeshComponent::GetMesh()
 {
-	MMeshResource* pMeshResource = m_Mesh.GetResource<MMeshResource>();
+	std::shared_ptr<MMeshResource> pMeshResource = m_Mesh.GetResource<MMeshResource>();
 	if (!pMeshResource)
 		return nullptr;
 	
@@ -213,7 +213,7 @@ MBoundsAABB* MRenderableMeshComponent::GetBoundsAABB()
 	if (!pSceneComponent)
 		return &m_BoundsAABB;
 
-	MMeshResource* pMeshResource = m_Mesh.GetResource<MMeshResource>();
+	std::shared_ptr<MMeshResource> pMeshResource = m_Mesh.GetResource<MMeshResource>();
 	if (!pMeshResource)
 		return &m_BoundsAABB;
 
@@ -238,7 +238,7 @@ MBoundsSphere* MRenderableMeshComponent::GetBoundsSphere()
 	if (!pSceneComponent)
 		return &m_BoundsSphere;
 
-	MMeshResource* pMeshResource = m_Mesh.GetResource<MMeshResource>();
+	std::shared_ptr<MMeshResource> pMeshResource = m_Mesh.GetResource<MMeshResource>();
 	if (!pMeshResource)
 		return nullptr;
 
@@ -263,7 +263,7 @@ MBoundsSphere* MRenderableMeshComponent::GetBoundsSphere()
 	return &m_BoundsSphere;
 }
 
-MSkeletonInstance* MRenderableMeshComponent::GetSkeletonInstance()
+std::shared_ptr<MSkeletonInstance> MRenderableMeshComponent::GetSkeletonInstance()
 {
 	if (MModelComponent* pModelComponent = GetAttachedModelComponent())
 		return pModelComponent->GetSkeleton();
@@ -352,7 +352,7 @@ void MRenderableMeshComponent::Deserialize(const void* pBufferPointer)
 	}
 }
 
-void MRenderableMeshComponent::BindShaderParam(MMaterial* pMaterial)
+void MRenderableMeshComponent::BindShaderParam(std::shared_ptr<MMaterial> pMaterial)
 {
 	if (m_pShaderParamSet)
 	{

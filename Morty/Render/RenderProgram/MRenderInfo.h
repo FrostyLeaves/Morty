@@ -47,16 +47,16 @@ struct MRenderInfo
 	//shadow
 	class MTexture* pShadowMapTexture;
 	Matrix4 m4DirLightInvProj; //valid if pDirectionalLightEntity enable.
-	std::map<MSkeletonInstance*, std::vector<MRenderableMeshComponent*>> m_tShadowGroupMesh;
+	std::map<std::shared_ptr<MSkeletonInstance>, std::vector<MRenderableMeshComponent*>> m_tShadowGroupMesh;
 
 	// transparent
-	std::map<MMaterial*, std::vector<MRenderableMeshComponent*>> m_tTransparentGroupMesh;
+	std::map<std::shared_ptr<MMaterial>, std::vector<MRenderableMeshComponent*>> m_tTransparentGroupMesh;
 
 	// mesh
-	std::map<MMaterial*, std::vector<MRenderableMeshComponent*>> m_tMaterialGroupMesh;
+	std::map<std::shared_ptr<MMaterial>, std::vector<MRenderableMeshComponent*>> m_tMaterialGroupMesh;
 
 	// deferred, gbuffer
-	std::map<MMaterial*, std::vector<MRenderableMeshComponent*>> m_tDeferredMaterialGroupMesh;
+	std::map<std::shared_ptr<MMaterial>, std::vector<MRenderableMeshComponent*>> m_tDeferredMaterialGroupMesh;
 
 	//debug
 	std::vector<MDebugMeshComponent*> m_vDebugMeshComponent;

@@ -36,7 +36,7 @@ void ResourceView::Render()
 
 	MResourceSystem* pResourceSystem = m_pEngine->FindSystem<MResourceSystem>();
 
-	std::map<MResourceID, MResource*>& resources = *pResourceSystem->GetAllResources();
+	std::map<MResourceID, std::shared_ptr<MResource>>& resources = *pResourceSystem->GetAllResources();
 	int ITEMS_COUNT = resources.size();
 	ImGuiListClipper clipper(ITEMS_COUNT);  // Also demonstrate using the clipper for large list
 	
@@ -50,7 +50,7 @@ void ResourceView::Render()
 
 		for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
 		{
-			MResource* pResource = iter->second;
+			std::shared_ptr<MResource> pResource = iter->second;
 			ImGui::Text("%lu", pResource->GetResourceID());
 			ImGui::NextColumn();
 			ImGui::Text(pResource->GetTypeName().c_str());

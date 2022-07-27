@@ -56,10 +56,10 @@ std::vector<MShaderTextureParam*>* MMaterial::GetTextureParams()
 	return &m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MATERIAL].m_vTextures;
 }
 
-void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)
+void MMaterial::SetTexutreParam(const MString& strName, std::shared_ptr<MResource> pResource)
 {
 	static auto funcResChangedFunction = [this, strName, pResource](const uint32_t& eReloadType) {
-		if (MTextureResource* pTexResource = dynamic_cast<MTextureResource*>(pResource))
+		if (std::shared_ptr<MTextureResource> pTexResource = MTypeClass::DynamicCast<MTextureResource>(pResource))
 		{
 			for (MShaderTextureParam* pParam : GetMaterialParamSet()->m_vTextures)
 			{
@@ -84,7 +84,7 @@ void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)
 		MShaderRefTextureParam* pParam = static_cast<MShaderRefTextureParam*>(GetMaterialParamSet()->m_vTextures[i]);
 		if (strName == pParam->strName)
 		{
-			if (MTextureResource* pTexResource = dynamic_cast<MTextureResource*>(pResource))
+			if (std::shared_ptr<MTextureResource> pTexResource = MTypeClass::DynamicCast<MTextureResource>(pResource))
 			{
 				if (MTexture* pTexture = pTexResource->GetTextureTemplate())
 				{
@@ -107,7 +107,7 @@ void MMaterial::SetTexutreParam(const MString& strName, MResource* pResource)
 	} 
 }
 
-void MMaterial::SetTexutreParam(const uint32_t& unIndex, MResource* pTexResource)
+void MMaterial::SetTexutreParam(const uint32_t& unIndex, std::shared_ptr<MResource> pTexResource)
 {
 	if (unIndex >= GetMaterialParamSet()->m_vTextures.size())
 		return;
@@ -126,11 +126,11 @@ MShaderConstantParam* MMaterial::FindShaderParam(const MString& strName)
 	return nullptr;
 }
 
-void MMaterial::CopyFrom(const MResource* pResource)
+void MMaterial::CopyFrom(std::shared_ptr<const MResource> pResource)
 {
 	Unload();
 
-	const MMaterialResource* pMaterial = dynamic_cast<const MMaterialResource*>(pResource);
+	std::shared_ptr<const  MMaterialResource> pMaterial = MTypeClass::DynamicCast<const MMaterialResource>(pResource);
 	if (nullptr == pMaterial)
 		return;
 
@@ -230,13 +230,13 @@ void MMaterial::Decode(MString& strCode)
 
 	if (MString* pVSResourcePath = pVS->GetString())
 	{
-		MResource* pVSRes = pSystem->LoadResource(*pVSResourcePath);
+		std::shared_ptr<MResource> pVSRes = pSystem->LoadResource(*pVSResourcePath);
 		LoadVertexShader(pVSRes);
 	}
 	
 	if (MString* pPSResourcePath = pPS->GetString())
 	{
-		MResource* pPsRes = pSystem->LoadResource(*pPSResourcePath);
+		std::shared_ptr<MResource> pPsRes = pSystem->LoadResource(*pPSResourcePath);
 		LoadPixelShader(pPsRes);
 	}
 
@@ -247,7 +247,7 @@ void MMaterial::Decode(MString& strCode)
 		MStruct::MStructMember* pMember = textures.GetMember(i);
 		if (MString* pResourcePath = pMember->var.GetString())
 		{
-			MResource* pTextureRes = pSystem->LoadResource(*pResourcePath);
+			std::shared_ptr<MResource> pTextureRes = pSystem->LoadResource(*pResourcePath);
 			SetTexutreParam(pMember->strName, pTextureRes);
 		}
 	}
@@ -330,9 +330,11 @@ void MMaterial::SetRasterizerType(const MERasterizerType& eType)
 
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
-	if (pRenderSystem->GetDevice()->UnRegisterMaterial(this))
+	std::shared_ptr<MMaterial> self = MTypeClass::DynamicCast<MMaterial>(GetShared());
+
+	if (pRenderSystem->GetDevice()->UnRegisterMaterial(self))
 	{
-		pRenderSystem->GetDevice()->RegisterMaterial(this);
+		pRenderSystem->GetDevice()->RegisterMaterial(self);
 	}
 }
 
@@ -362,16 +364,18 @@ void MMaterial::SetMaterialType(const MEMaterialType& eType)
 
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
-	if (pRenderSystem->GetDevice()->UnRegisterMaterial(this))
+	std::shared_ptr<MMaterial> self = MTypeClass::DynamicCast<MMaterial>(GetShared());
+
+	if (pRenderSystem->GetDevice()->UnRegisterMaterial(self))
 	{
-		pRenderSystem->GetDevice()->RegisterMaterial(this);
+		pRenderSystem->GetDevice()->RegisterMaterial(self);
 	}
 }
 
-bool MMaterial::LoadVertexShader(MResource* pResource)
+bool MMaterial::LoadVertexShader(std::shared_ptr<MResource> pResource)
 {
 
-	if (MShaderResource* pShaderResource = dynamic_cast<MShaderResource*>(pResource))
+	if (std::shared_ptr<MShaderResource> pShaderResource = MTypeClass::DynamicCast<MShaderResource>(pResource))
 	{
 		if (MEShaderType::EVertex == pShaderResource->GetShaderType())
 		{
@@ -412,15 +416,15 @@ bool MMaterial::LoadVertexShader(MResource* pResource)
 bool MMaterial::LoadVertexShader(const MString& strResource)
 {
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-	if (MResource* pResource = pResourceSystem->LoadResource(strResource))
+	if (std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(strResource))
 		return LoadVertexShader(pResource);
 
 	return false;
 }
 
-bool MMaterial::LoadPixelShader(MResource* pResource)
+bool MMaterial::LoadPixelShader(std::shared_ptr<MResource> pResource)
 {
-	if (MShaderResource* pShaderResource = dynamic_cast<MShaderResource*>(pResource))
+	if (std::shared_ptr<MShaderResource> pShaderResource = MTypeClass::DynamicCast<MShaderResource>(pResource))
 	{
 		if (MEShaderType::EPixel == pShaderResource->GetShaderType())
 		{
@@ -460,7 +464,7 @@ bool MMaterial::LoadPixelShader(MResource* pResource)
 bool MMaterial::LoadPixelShader(const MString& strResource)
 {
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-	if (MResource* pResource = pResourceSystem->LoadResource(strResource))
+	if (std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(strResource))
 		return LoadPixelShader(pResource);
 
 	return false;
@@ -470,8 +474,10 @@ void MMaterial::OnCreated()
 {
 	Super::OnCreated();
 
+	std::shared_ptr<MMaterial> self = MTypeClass::DynamicCast<MMaterial>(GetShared());
+
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-	pRenderSystem->GetDevice()->RegisterMaterial(this);
+	pRenderSystem->GetDevice()->RegisterMaterial(self);
 }
 
 void MMaterial::OnDelete()
@@ -479,7 +485,8 @@ void MMaterial::OnDelete()
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 	if (pRenderSystem->GetDevice())
 	{
-		pRenderSystem->GetDevice()->UnRegisterMaterial(this);
+		std::shared_ptr<MMaterial> self = MTypeClass::DynamicCast<MMaterial>(GetShared());
+		pRenderSystem->GetDevice()->UnRegisterMaterial(self);
 	}
 
 	m_VertexResource.SetResource(nullptr);

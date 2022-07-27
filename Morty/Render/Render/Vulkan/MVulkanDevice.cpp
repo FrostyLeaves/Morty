@@ -745,10 +745,18 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, MByte* pData)
 		pTexture->m_VkSampler = depthSampler;
 	}
 
+
+	assert(!pTexture->GetName().empty());
 	if (!pTexture->GetName().empty())
 	{
 		SetDebugName((uint64_t)pTexture->m_VkTextureImage, VkObjectType::VK_OBJECT_TYPE_IMAGE, pTexture->GetName().c_str());
 		SetDebugName((uint64_t)pTexture->m_VkImageView, VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, pTexture->GetName().c_str());
+	}
+
+	if (pTexture->GetName() == "Texture_Default")
+	{
+		int a = 0;
+		++a;
 	}
 }
 
@@ -1268,12 +1276,12 @@ void MVulkanDevice::DestroyFrameBuffer(MRenderPass* pRenderPass)
 	}
 }
 
-bool MVulkanDevice::RegisterMaterial(MMaterial* pMaterial)
+bool MVulkanDevice::RegisterMaterial(std::shared_ptr<MMaterial> pMaterial)
 {
 	return m_PipelineManager.RegisterMaterial(pMaterial);
 }
 
-bool MVulkanDevice::UnRegisterMaterial(MMaterial* pMaterial)
+bool MVulkanDevice::UnRegisterMaterial(std::shared_ptr<MMaterial> pMaterial)
 {
 	return m_PipelineManager.UnRegisterMaterial(pMaterial);
 }
@@ -2097,6 +2105,7 @@ bool MVulkanDevice::InitCommandPool()
 
 bool MVulkanDevice::InitDefaultTexture()
 {
+	m_ShaderDefaultTexture.SetName("Shader Default Texture");
 	m_ShaderDefaultTexture.SetMipmapsEnable(false);
 	m_ShaderDefaultTexture.SetReadable(false);
 	m_ShaderDefaultTexture.SetRenderUsage(METextureRenderUsage::EUnknow);
@@ -2115,6 +2124,7 @@ bool MVulkanDevice::InitDefaultTexture()
 	m_ShaderDefaultTexture.GenerateBuffer(this, bytes);
 
 
+	m_ShaderDefaultTextureCube.SetName("Shader Default Texture Cube");
 	m_ShaderDefaultTextureCube.SetMipmapsEnable(false);
 	m_ShaderDefaultTextureCube.SetReadable(false);
 	m_ShaderDefaultTextureCube.SetRenderUsage(METextureRenderUsage::EUnknow);

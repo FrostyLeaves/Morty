@@ -159,7 +159,7 @@ void MVulkanRenderCommand::DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, c
 	}
 }
 
-bool MVulkanRenderCommand::SetUseMaterial(MMaterial* pMaterial)
+bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 {
 	assert(pMaterial->GetVertexShader() && pMaterial->GetPixelShader());
 
@@ -537,7 +537,7 @@ void MVulkanRenderCommand::UpdateShaderParam(MShaderParamSet* pParamSet, MShader
 	}
 }
 
-void GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPass, std::vector<VkPipelineColorBlendAttachmentState>& vBlendAttach, VkPipelineColorBlendStateCreateInfo& blendInfo)
+void GetBlendStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, std::vector<VkPipelineColorBlendAttachmentState>& vBlendAttach, VkPipelineColorBlendStateCreateInfo& blendInfo)
 {
 
 
@@ -656,7 +656,7 @@ void GetBlendStage(MMaterial* pMaterial, MRenderPass* pRenderPass, std::vector<V
 
 }
 
-void GetDepthStencilStage(MMaterial* pMaterial, MRenderPass* pRenderPass, VkPipelineDepthStencilStateCreateInfo& depthStencilInfo)
+void GetDepthStencilStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, VkPipelineDepthStencilStateCreateInfo& depthStencilInfo)
 {
 	depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	depthStencilInfo.pNext = NULL;
@@ -699,7 +699,7 @@ void GetDepthStencilStage(MMaterial* pMaterial, MRenderPass* pRenderPass, VkPipe
 	}
 }
 
-VkPipeline MVulkanRenderCommand::CreateGraphicsPipeline(MMaterial* pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx)
+VkPipeline MVulkanRenderCommand::CreateGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx)
 {
 	if (!pMaterial)
 		return VK_NULL_HANDLE;

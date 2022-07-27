@@ -57,11 +57,11 @@ protected:
 	void ReleaseFrameShaderParams();
 private:
 
-	MTextureResource* m_pWhiteTexture;
-	MTextureResource* m_pBlackTexture;
+	std::shared_ptr<MTextureResource> m_pWhiteTexture;
+	std::shared_ptr<MTextureResource> m_pBlackTexture;
 
-	MMaterial* m_pDrawFillMaterial;
-	MMaterial* m_pDrawPeelMaterial;
+	std::shared_ptr<MMaterial> m_pDrawFillMaterial;
+	std::shared_ptr<MMaterial> m_pDrawPeelMaterial;
 
 	MTexture* m_pOutputTexture;
 	MTexture* m_pDepthTexture;

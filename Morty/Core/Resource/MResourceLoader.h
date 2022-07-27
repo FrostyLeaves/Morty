@@ -21,17 +21,22 @@ public:
 
 public:
 
-	virtual MResource* Create(MResourceSystem* pManager) = 0;
-	virtual MResource* Load(MResourceSystem* pManager, const MString& svPath) = 0;
+	virtual std::shared_ptr<MResource> Create(MResourceSystem* pManager) = 0;
+	virtual std::shared_ptr<MResource> Load(MResourceSystem* pManager, const MString& svFullPath, const MString& svPath) = 0;
 
 protected:
 
-	bool ResourceLoad(MResource* pResource, const MString& svPath)
+	bool ResourceLoad(std::shared_ptr<MResource> pResource, const MString& svPath)
 	{
 		if (pResource->Load(svPath))
 			return true;
 
 		return false;
+	}
+
+	void SetResourcePath(std::shared_ptr<MResource> pResource, const MString& svPath)
+	{
+		pResource->m_strResourcePath = svPath;
 	}
 
 
@@ -52,17 +57,18 @@ public:
 
 public:
 
-	virtual MResource* Create(MResourceSystem* pManager) override
+	virtual std::shared_ptr<MResource> Create(MResourceSystem* pManager) override
 	{
 		return pManager->CreateResource<RESOURCE_TYPE>();
 	}
 
-	virtual MResource* Load(MResourceSystem* pManager, const MString& svPath) override
+	virtual std::shared_ptr<MResource> Load(MResourceSystem* pManager, const MString& svFullPath, const MString& svPath) override
 	{
-		RESOURCE_TYPE* pResource = pManager->CreateResource<RESOURCE_TYPE>();
+		std::shared_ptr<RESOURCE_TYPE> pResource = pManager->CreateResource<RESOURCE_TYPE>();
 		if (pResource)
 		{
-			if (ResourceLoad(pResource, svPath))
+			SetResourcePath(pResource, svPath);
+			if (ResourceLoad(pResource, svFullPath))
 			{
 				return pResource;
 			}
