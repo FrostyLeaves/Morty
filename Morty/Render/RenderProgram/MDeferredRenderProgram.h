@@ -85,6 +85,8 @@ protected:
 
 	void UpdateFrameParams(MRenderInfo& info);
 
+	void CollectRenderMesh(MRenderInfo& info);
+
 protected:
 
 	MTaskGraph* m_pRenderGraph;

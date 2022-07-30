@@ -84,14 +84,12 @@ float3 CalcPointLight(PointLight pointLight, float3 worldPos, float3 f3CameraDir
 }
 
 // point light
-float3 CalcDirectionLight(DirectionLight dirLight, float4 f4DirLightSpacePos, float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3BaseColor, float3 f3Albedo, float fRoughness, float fMetallic)
+float3 CalcDirectionLight(DirectionLight dirLight, float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3BaseColor, float3 f3Albedo, float fRoughness, float fMetallic)
 {
     float fNdotL = dot(f3Normal, -f3LightDir);
 
     if (fNdotL >= 0)
     {
-        float shadow = CalcShadow(U_texShadowMap, f4DirLightSpacePos, fNdotL);
-
         float3 f3LightColor = dirLight.f3Intensity;
 
         return CalcPBRLight(f3LightColor, f3CameraDir, f3LightDir, f3Normal, f3BaseColor, f3Albedo, fRoughness, fMetallic);
@@ -140,10 +138,12 @@ float3 AdditionAllLights(VS_OUT input, float3 f3Color)
     if(U_bDirectionLightEnabled > 0)
     {
         float3 f3DirLightDir = U_f3DirectionLight;
-        float4 f3DirLightSpacePos = mul(float4(f3WorldPosition, 1.0f), U_matLightProj);
+        float4 f4DirLightSpacePos = mul(float4(f3WorldPosition, 1.0f), U_matLightProj);
+        
+        float fNdotL = dot(f3Normal, -f3DirLightDir);
+        float shadow = CalcShadow(U_texShadowMap, f4DirLightSpacePos, fNdotL);
 
-        f3Color += CalcDirectionLight(  U_dirLight,
-                                        f3DirLightSpacePos,
+        f3Color += shadow * CalcDirectionLight(  U_dirLight,
                                         f3CameraDir,
                                         f3DirLightDir,
                                         f3Normal,

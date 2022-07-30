@@ -96,13 +96,12 @@ float3 CalcSpotLight(SpotLight spotLight, float3 f3CameraDir, float3 f3LightDir,
 }
 
 // direction light
-float3 CalcDirectionLight(float4 f4DirLightSpacePos, float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3DiffColor, float3 f3SpecColor)
+float3 CalcDirectionLight(float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3DiffColor, float3 f3SpecColor)
 {
     float fNdotL = dot(f3Normal, -f3LightDir);
 
     if (fNdotL >= 0)
     {
-        float shadow = CalcShadow(U_texShadowMap, f4DirLightSpacePos, fNdotL);
         float3 fReflectDir = reflect(f3LightDir, f3Normal);
         float fSpec = pow(max(dot(f3CameraDir, fReflectDir), 0.0f), U_mat.fShininess);
 
@@ -169,8 +168,10 @@ float3 AdditionAllLights(float3 f3Color, float4 f3AmbiColor, VS_OUT input)
 
     if(U_bDirectionLightEnabled > 0)
     {
-        f3Color += CalcDirectionLight(  input.dirLightSpacePos,
-                                        cLightInfo.f3CameraDir,
+        float fNdotL = dot(cLightInfo.f3Normal, -cLightInfo.f3DirLightDir);
+        float shadow = CalcShadow(U_texShadowMap, input.dirLightSpacePos, fNdotL);
+
+        f3Color += shadow * CalcDirectionLight(  cLightInfo.f3CameraDir,
                                         cLightInfo.f3DirLightDir,
                                         cLightInfo.f3Normal,
                                         f3DiffColor,

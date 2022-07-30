@@ -73,10 +73,11 @@ void MDeferredRenderProgram::RenderReady(MTaskNode* pTaskNode)
 
 
 	//Update RenderInfo
-	m_renderInfo.CollectRenderMesh();
+	CollectRenderMesh(m_renderInfo);
+
 	if (m_pShadowMapWork)
 	{
-		m_renderInfo.CollectShadowMesh();
+		m_pShadowMapWork->CollectShadowMesh(m_renderInfo);
 	}
 
 
@@ -198,7 +199,7 @@ void MDeferredRenderProgram::RenderForward(MTaskNode* pTaskNode)
 			m_pSkyBoxMaterial->SetTexutreParam("SkyTexCube", pSkyBoxComponent->GetSkyBoxResource());
 
 			pCommand->SetUseMaterial(m_pSkyBoxMaterial);
-			pCommand->SetShaderParamSet(m_renderInfo.pFrameShaderParamSet);
+			pCommand->SetShaderParamSet(&m_frameParamSet);
 			pCommand->DrawMesh(&m_SkyBoxDrawMesh);
 		}
 	}
@@ -282,7 +283,7 @@ void MDeferredRenderProgram::DrawStaticMesh(MRenderInfo& info, MIRenderCommand* 
 		std::vector<MRenderableMeshComponent*>& vMesh = pr.second;
 
 		pCommand->SetUseMaterial(pMaterial);
-		pCommand->SetShaderParamSet(info.pFrameShaderParamSet);
+		pCommand->SetShaderParamSet(&m_frameParamSet);
 
 		for (MRenderableMeshComponent* pMeshComponent : vMesh)
 		{
@@ -556,5 +557,61 @@ void MDeferredRenderProgram::ReleaseMesh()
 void MDeferredRenderProgram::UpdateFrameParams(MRenderInfo& info)
 {
 	m_frameParamSet.UpdateShaderSharedParams(info);
-	info.pFrameShaderParamSet = &m_frameParamSet;
+}
+
+void MDeferredRenderProgram::CollectRenderMesh(MRenderInfo& info)
+{
+	MViewport* pViewport = info.pViewport;
+
+	MScene* pScene = pViewport->GetScene();
+
+	Vector3 v3BoundsMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
+	Vector3 v3BoundsMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+
+	MComponentGroup<MRenderableMeshComponent>* pMeshComponents = pScene->FindComponents<MRenderableMeshComponent>();
+
+	if (!pMeshComponents)
+		return;
+
+	for (MRenderableMeshComponent& meshComp : pMeshComponents->m_vComponents)
+	{
+		std::shared_ptr<MMaterial> pMaterial = meshComp.GetMaterial();
+		if (!pMaterial)
+			continue;
+
+		MSceneComponent* pSceneComponent = meshComp.GetEntity()->GetComponent<MSceneComponent>();
+
+		if (!pSceneComponent->GetVisibleRecursively())
+			continue;
+
+		const MBoundsAABB* pBounds = meshComp.GetBoundsAABB();
+
+		if (MCameraFrustum::EOUTSIDE == pViewport->GetCameraFrustum().ContainTest(*pBounds))
+			continue;
+
+		if (pMaterial->GetMaterialType() == MEMaterialType::EDepthPeel)
+		{
+			auto& meshes = info.m_tTransparentGroupMesh[pMaterial];
+			meshes.push_back(&meshComp);
+		}
+		else if (pMaterial->GetMaterialType() == MEMaterialType::EDeferred)
+		{
+			auto& meshes = info.m_tDeferredMaterialGroupMesh[pMaterial];
+			meshes.push_back(&meshComp);
+		}
+		else
+		{
+			auto& meshes = info.m_tMaterialGroupMesh[pMaterial];
+			meshes.push_back(&meshComp);
+		}
+
+
+		if (meshComp.GetShadowType() != MRenderableMeshComponent::MEShadowType::ENone)
+		{
+			pBounds->UnionMinMax(v3BoundsMin, v3BoundsMax);
+		}
+	}
+
+	info.cCaclSceneRenderAABB.SetMinMax(v3BoundsMin, v3BoundsMax);
 }

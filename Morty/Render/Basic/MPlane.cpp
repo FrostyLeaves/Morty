@@ -21,3 +21,8 @@ float MPlane::GetDistance(const Vector3& position)
 {
 	return ((position * m_v4Plane.GetVector3()) + m_v4Plane.w) / m_v4Plane.GetVector3().Length();
 }
+
+void MPlane::MoveInNormal(const float& distance)
+{
+	m_v4Plane.w -= distance;
+}

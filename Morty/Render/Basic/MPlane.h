@@ -25,6 +25,8 @@ public:
 
 	float GetDistance(const Vector3& position);
 
+	void MoveInNormal(const float& distance);
+
 public:
 	
 	//ax + by + cz + d = 0

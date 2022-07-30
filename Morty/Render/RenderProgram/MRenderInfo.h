@@ -8,47 +8,54 @@
 #include "MShaderParamSet.h"
 
 class MIMesh;
+class MTexture;
 class MMaterial;
 class MIRenderCommand;
 class MSkeletonInstance;
 class MDebugMeshComponent;
 class MRenderableMeshComponent;
+
+
+struct MCascadedShadowInfo
+{
+	MTexture* pShadowMapTexture;
+	Matrix4 m4DirLightInvProj;
+	std::map<std::shared_ptr<MSkeletonInstance>, std::vector<MRenderableMeshComponent*>> m_tShadowGroupMesh;
+};
+
 struct MRenderInfo
 {
 	MRenderInfo();
 
 	uint32_t nFrameIndex;
 
-	// basic
+	/************************** basic **************************/
 	float fDelta;
 	float fGameTime;
 	class MViewport* pViewport;
 
-
-	//camera
-	MEntity* pCameraEntity;
-	MEntity* pDirectionalLightEntity;
-
-	// skybox
-	MEntity* pSkyBoxEntity;
-
-	//bounds
-	MBoundsAABB cGenerateShadowRenderAABB;
-	MBoundsAABB cCaclShadowRenderAABB;
-
-
-	// frame
-	MShaderParamSet* pFrameShaderParamSet;
+	/************************** render **************************/
 	MIRenderCommand* pPrimaryRenderCommand;
 
 
-	//renderable
+	/************************** camera **************************/
+	MEntity* pCameraEntity;
+	MEntity* pDirectionalLightEntity;
 
-	//shadow
-	class MTexture* pShadowMapTexture;
-	Matrix4 m4DirLightInvProj; //valid if pDirectionalLightEntity enable.
-	std::map<std::shared_ptr<MSkeletonInstance>, std::vector<MRenderableMeshComponent*>> m_tShadowGroupMesh;
 
+	/************************** skybox **************************/
+	MEntity* pSkyBoxEntity;
+
+
+	/************************** scene **************************/
+	MBoundsAABB cCaclSceneRenderAABB;
+
+
+	/************************** shadow **************************/
+	std::array<MCascadedShadowInfo, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> cCascadedShadow;
+
+
+	/************************** mesh **************************/
 	// transparent
 	std::map<std::shared_ptr<MMaterial>, std::vector<MRenderableMeshComponent*>> m_tTransparentGroupMesh;
 
@@ -58,13 +65,12 @@ struct MRenderInfo
 	// deferred, gbuffer
 	std::map<std::shared_ptr<MMaterial>, std::vector<MRenderableMeshComponent*>> m_tDeferredMaterialGroupMesh;
 
+
 	//debug
 	std::vector<MDebugMeshComponent*> m_vDebugMeshComponent;
 
 public:
 
-	void CollectRenderMesh();
-	void CollectShadowMesh();
 };
 
 

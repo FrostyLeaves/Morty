@@ -41,6 +41,8 @@ public:
 	//只对某个方向指向的视锥体截面做测试
 	MEContainType ContainTest(const MBoundsAABB& aabb, const Vector3& v3Direction);
 
+	std::vector<MCameraFrustum> CutFrustum(const std::vector<float>& percent);
+
 protected:
 
 	MPlane m_vPlanes[6];

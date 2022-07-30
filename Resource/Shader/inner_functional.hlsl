@@ -70,7 +70,7 @@ float DecodeExpV4( float4 pack )
 }
 
 //shadow
-float CalcShadow(Texture2D texShadowMap, float4 dirLightSpacePos, float fNdotL)
+float CalcShadow(Texture2D texShadowMap, float4 dirLightSpacePos, float3 f3PixelDepth, float fNdotL)
 {
     float2 shadowTexCoords;
     shadowTexCoords.x = 0.5f + (dirLightSpacePos.x / dirLightSpacePos.w * 0.5f);

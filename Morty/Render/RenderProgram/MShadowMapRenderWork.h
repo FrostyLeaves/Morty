@@ -31,6 +31,8 @@ public:
 
 public:
 
+	void CollectShadowMesh(MRenderInfo& info);
+
 	void RenderShadow(MRenderInfo& info);
 
 	void UpdateShadowParams(MRenderInfo& info);
@@ -51,6 +53,7 @@ private:
 
 	MRenderPass m_renderPass;
 	MShadowMapShaderParamSet m_shadowParamSet;
+
 };
 
 

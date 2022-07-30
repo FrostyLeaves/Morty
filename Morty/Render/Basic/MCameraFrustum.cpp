@@ -134,3 +134,26 @@ MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const MBoundsAABB& aab
 	return MEContainType::ENOTOUTSIDE;
 }
 
+std::vector<MCameraFrustum> MCameraFrustum::CutFrustum(const std::vector<float>& percent)
+{
+	size_t nSize = percent.size();
+
+	std::vector<MCameraFrustum> vResult(nSize);
+
+	Vector3 dir = m_vPlanes[4].m_v4Plane;
+
+	float fPercent = 1.0f;
+	float fNearFarDistance = fabs(m_vPlanes[5].m_v4Plane.w - m_vPlanes[4].m_v4Plane.w);
+
+	for (size_t nIdx = 0; nIdx < nSize; ++nIdx)
+	{
+		MCameraFrustum& cf = vResult[nIdx];
+		cf = *this;
+
+		fPercent = fabs(fPercent - percent[nIdx]);
+		cf.m_vPlanes[5].MoveInNormal(-fNearFarDistance * fPercent);
+	}
+
+	m_vPlanes[5];
+}
+

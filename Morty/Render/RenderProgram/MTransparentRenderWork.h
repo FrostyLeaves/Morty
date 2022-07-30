@@ -10,7 +10,11 @@
 #define _M_TRANSPARENT_RENDER_WORK_H_
 #include "MGlobal.h"
 #include "MObject.h"
-#include "MForwardRenderProgram.h"
+
+#include "MMesh.h"
+#include "MRenderInfo.h"
+#include "MRenderPass.h"
+#include "MForwardRenderShaderParamSet.h"
 
 #include <array>
 

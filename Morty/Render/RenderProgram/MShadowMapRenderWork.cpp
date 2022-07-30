@@ -102,14 +102,8 @@ void MShadowMapRenderWork::RenderShadow(MRenderInfo& info)
 		return;
 
 	MViewport* pViewport = info.pViewport;
-	MTexture* pShadowmap = GetShadowMap();
 
 	pCommand->BeginRenderPass(&m_renderPass);
-
-	Vector2 v2LeftTop = Vector2(0.0f, 0.0f);
-	Vector2 v2Size = pShadowmap->GetSize();
-	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
-	pCommand->SetScissor(MScissorInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
 
 	DrawShadowMesh(info, pCommand);
 
@@ -118,31 +112,72 @@ void MShadowMapRenderWork::RenderShadow(MRenderInfo& info)
 
 void MShadowMapRenderWork::DrawShadowMesh(MRenderInfo& info, MIRenderCommand* pCommand)
 {
-
-
-	auto& materialGroup = info.m_tShadowGroupMesh;
-	for (auto& pr : materialGroup)
+	MTexture* pShadowmap = GetShadowMap();
+	
+	size_t nCascadedSize = info.cCascadedShadow.size();
+	if (nCascadedSize == 0)
 	{
-		if (std::shared_ptr<MSkeletonInstance> pSkeletonIns = pr.first)
+		return;
+	}
+
+	size_t nRowSize = size_t(ceil(sqrtf(float(nCascadedSize))));
+	size_t nCascadedIdx = 0;
+
+	Vector2 v2LeftTop = Vector2(0.0f, 0.0f);
+	Vector2 v2Size = pShadowmap->GetSize();
+	Vector2 v2ScascadedTextureSize = Vector2(v2Size.x / nRowSize, v2Size.y / nRowSize);
+
+	for (size_t nRowIdx = 0; nRowIdx < nRowSize; ++nRowIdx)
+	{
+		for (size_t nColIdx = 0; nColIdx < nRowSize; ++nColIdx)
 		{
-			pCommand->SetUseMaterial(m_pShadowSkeletonMaterial);
-			pCommand->SetShaderParamSet(pSkeletonIns->GetShaderParamSet());
+			MCascadedShadowInfo& csInfo = info.cCascadedShadow[nCascadedIdx];
+
+			float x = v2LeftTop.x + v2ScascadedTextureSize.x * nRowIdx;
+			float y = v2LeftTop.y + v2ScascadedTextureSize.y * nColIdx;
+			float w = v2ScascadedTextureSize.x;
+			float h = v2ScascadedTextureSize.y;
+
+			pCommand->SetViewport(MViewportInfo(x, y, w, h));
+			pCommand->SetScissor(MScissorInfo(x, y, w, h));
+
+			auto& materialGroup = csInfo.m_tShadowGroupMesh;
+			for (auto& pr : materialGroup)
+			{
+				if (std::shared_ptr<MSkeletonInstance> pSkeletonIns = pr.first)
+				{
+					pCommand->SetUseMaterial(m_pShadowSkeletonMaterial);
+					pCommand->SetShaderParamSet(pSkeletonIns->GetShaderParamSet());
+				}
+				else
+				{
+					pCommand->SetUseMaterial(m_pShadowStaticMaterial);
+				}
+
+				pCommand->SetShaderParamSet(&m_shadowParamSet);
+
+				std::vector<MRenderableMeshComponent*>& vMesh = pr.second;
+
+				for (MRenderableMeshComponent* pMeshComponent : vMesh)
+				{
+					pCommand->SetShaderParamSet(pMeshComponent->GetShaderMeshParamSet());
+					pCommand->DrawMesh(pMeshComponent->GetMesh());
+				}
+			}
+
+			if (++nCascadedIdx >= nCascadedSize)
+			{
+				break;
+			}
 		}
-		else
+
+		if (nCascadedIdx >= nCascadedSize)
 		{
-			pCommand->SetUseMaterial(m_pShadowStaticMaterial);
-		}
-
-		pCommand->SetShaderParamSet(&m_shadowParamSet);
-
-		std::vector<MRenderableMeshComponent*>& vMesh = pr.second;
-
-		for (MRenderableMeshComponent* pMeshComponent : vMesh)
-		{
-			pCommand->SetShaderParamSet(pMeshComponent->GetShaderMeshParamSet());
-			pCommand->DrawMesh(pMeshComponent->GetMesh());
+			break;
 		}
 	}
+
+	
 
 }
 
@@ -155,3 +190,99 @@ MTexture* MShadowMapRenderWork::GetShadowMap()
 {
 	return m_renderPass.GetDepthTexture();
 }
+
+void MShadowMapRenderWork::CollectShadowMesh(MRenderInfo& info)
+{
+	MViewport* pViewport = info.pViewport;
+
+	if (!pViewport)
+		return;
+
+	MScene* pScene = pViewport->GetScene();
+	if (!pScene)
+		return;
+
+	if (!info.pDirectionalLightEntity)
+	{
+		info.pDirectionalLightEntity = pScene->FindFirstEntityByComponent<MDirectionalLightComponent>();
+
+		if (!info.pDirectionalLightEntity)
+			return;
+	}
+
+	MSceneComponent* pLightSceneComponent = info.pDirectionalLightEntity->GetComponent<MSceneComponent>();
+	if (!pLightSceneComponent)
+		return;
+
+	MComponentGroup<MRenderableMeshComponent>* pMeshComponentGroup = pScene->FindComponents<MRenderableMeshComponent>();
+	if (!pMeshComponentGroup)
+		return;
+
+	Vector3 v3LightDir = pLightSceneComponent->GetForward();
+
+	struct CascadedData
+	{
+		bool bGenerateShadow = false;
+		Vector3 v3ShadowMin = Vector3(+FLT_MAX, +FLT_MAX, +FLT_MAX);
+		Vector3 v3ShadowMax = Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+	} vCascadedData[MRenderGlobal::CASCADED_SHADOW_MAP_NUM];
+
+	MCameraFrustum cameraFrustum = pViewport->GetCameraFrustum();
+	std::vector<MCameraFrustum>&& vCutFrustum = cameraFrustum.CutFrustum(std::vector<float>(MRenderGlobal::CASCADED_SHADOW_MAP_NUM, 1.0f / MRenderGlobal::CASCADED_SHADOW_MAP_NUM));
+
+	for (MRenderableMeshComponent& component : pMeshComponentGroup->m_vComponents)
+	{
+		if (!component.IsValid())
+			continue;
+
+		if (std::shared_ptr<MMaterial> pMaterial = component.GetMaterial())
+		{
+			if (pMaterial->GetMaterialType() != MEMaterialType::EDefault && pMaterial->GetMaterialType() != MEMaterialType::EDeferred)
+				continue;
+		}
+
+		MEntity* pEntity = component.GetEntity();
+
+		MSceneComponent* pSceneComponent = pEntity->GetComponent<MSceneComponent>();
+
+		if (pSceneComponent->GetVisibleRecursively() && component.GetGenerateDirLightShadow())
+		{
+			std::shared_ptr<MSkeletonInstance> pSkeletonInstance = component.GetSkeletonInstance();
+
+			if (const MBoundsAABB* pBounds = component.GetBoundsAABB())
+			{
+				for (size_t nCascadedIdx = 0; nCascadedIdx < vCutFrustum.size(); ++nCascadedIdx)
+				{
+					CascadedData& cd = vCascadedData[nCascadedIdx];
+
+					if (vCutFrustum[nCascadedIdx].ContainTest(*pBounds, v3LightDir) != MCameraFrustum::EOUTSIDE)
+					{
+						auto& vMeshes = info.cCascadedShadow[nCascadedIdx].m_tShadowGroupMesh[pSkeletonInstance];
+
+						vMeshes.push_back(&component);
+						pBounds->UnionMinMax(cd.v3ShadowMin, cd.v3ShadowMax);
+						cd.bGenerateShadow = true;
+					}
+				}
+			}
+		}
+	}
+
+	for (size_t nCascadedIdx = 0; nCascadedIdx < vCutFrustum.size(); ++nCascadedIdx)
+	{
+		CascadedData& cd = vCascadedData[nCascadedIdx];
+		MBoundsAABB cGenerateShadowRenderAABB;
+
+		if (cd.bGenerateShadow)
+		{
+			cGenerateShadowRenderAABB.SetMinMax(cd.v3ShadowMin, cd.v3ShadowMax);
+		}
+		else
+		{
+			cGenerateShadowRenderAABB = info.cCaclSceneRenderAABB;
+		}
+		info.cCascadedShadow[nCascadedIdx].m4DirLightInvProj = pViewport->GetLightInverseProjection(info.pDirectionalLightEntity, info.cCaclSceneRenderAABB, cGenerateShadowRenderAABB);
+	}
+}
+

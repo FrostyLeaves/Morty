@@ -47,6 +47,8 @@ public:
 	static const char* SUFFIX_PIXEL_SHADER;
 
 	static const bool GBUFFER_UNIFIED_FORMAT;
+
+	static const int CASCADED_SHADOW_MAP_NUM = 4;
 };
 
 #endif
