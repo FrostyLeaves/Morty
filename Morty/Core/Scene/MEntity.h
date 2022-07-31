@@ -8,11 +8,11 @@
 
 #ifndef _M_MNODE_H_
 #define _M_MNODE_H_
-#include "MGlobal.h"
-#include "MString.h"
-#include "MGuid.h"
-#include "MComponent.h"
-#include "MSerializer.h"
+#include "Utility/MGlobal.h"
+#include "Utility/MString.h"
+#include "Scene/MGuid.h"
+#include "Component/MComponent.h"
+#include "Utility/MSerializer.h"
 #include "crossguid/guid.hpp"
 
 #include <vector>

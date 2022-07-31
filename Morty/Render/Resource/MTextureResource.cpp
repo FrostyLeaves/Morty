@@ -1,10 +1,10 @@
-﻿#include "MTextureResource.h"
+﻿#include "Resource/MTextureResource.h"
 
-#include "MEngine.h"
-#include "MIDevice.h"
+#include "Engine/MEngine.h"
+#include "Render/MIDevice.h"
 
-#include "MRenderSystem.h"
-#include "MResourceSystem.h"
+#include "System/MRenderSystem.h"
+#include "System/MResourceSystem.h"
 
 #include "spot.hpp"
 #include "stb_image.h"
@@ -148,6 +148,7 @@ void MTextureResource::CreateCubeMapRenderTarget(const uint32_t& nWidth, const u
 	m_texture.SetRenderUsage(METextureRenderUsage::ERenderBack);
 	m_texture.SetShaderUsage(METextureShaderUsage::ESampler);
 	m_texture.SetTextureType(METextureType::ETextureCube);
+	m_texture.SetImageLayerNum(6);
 	m_texture.SetMipmapsEnable(bMipmapEnable);
 
 	m_texture.GenerateBuffer(pRenderSystem->GetDevice());
@@ -325,6 +326,7 @@ bool MTextureResource::ImportCubeMap(const std::array<MString, 6>& vResourcePath
 	m_texture.SetName(vResourcePath[0]);
 	m_texture.SetSize(Vector2(unCubeMapWidth, unCubeMapHeight));
 	m_texture.SetTextureType(METextureType::ETextureCube);
+	m_texture.SetImageLayerNum(6);
 	m_texture.SetTextureLayout(GetTextureLayout(unCubeMapChannel, importInfo.ePixelFormat));
 
 

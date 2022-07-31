@@ -1,16 +1,16 @@
-﻿#include "MMeshResource.h"
-#include "MModelResource.h"
-#include "MEngine.h"
-#include "MMultiLevelMesh.h"
+﻿#include "Resource/MMeshResource.h"
+#include "Resource/MModelResource.h"
+#include "Engine/MEngine.h"
+#include "Model/MMultiLevelMesh.h"
 
-#include "MMath.h"
-#include "MJson.h"
-#include "MVertex.h"
-#include "MVariant.h"
-#include "MFileHelper.h"
+#include "Math/MMath.h"
+#include "Utility/MJson.h"
+#include "Render/MVertex.h"
+#include "Utility/MVariant.h"
+#include "Utility/MFileHelper.h"
 
-#include "MRenderSystem.h"
-#include "MResourceSystem.h"
+#include "System/MRenderSystem.h"
+#include "System/MResourceSystem.h"
 
 
 MORTY_CLASS_IMPLEMENT(MMeshResource, MResource)

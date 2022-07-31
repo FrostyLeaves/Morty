@@ -1,17 +1,17 @@
-#include "MCoreModule.h"
-#include "MEngine.h"
-#include "MEntity.h"
+#include "Module/MCoreModule.h"
+#include "Engine/MEngine.h"
+#include "Scene/MEntity.h"
 
-#include "MInputSystem.h"
-#include "MNotifySystem.h"
-#include "MObjectSystem.h"
-#include "MEntitySystem.h"
-#include "MResourceSystem.h"
-#include "MComponentSystem.h"
+#include "System/MInputSystem.h"
+#include "System/MNotifySystem.h"
+#include "System/MObjectSystem.h"
+#include "System/MEntitySystem.h"
+#include "System/MResourceSystem.h"
+#include "System/MComponentSystem.h"
 
-#include "MSceneComponent.h"
-#include "MInputComponent.h"
-#include "MNotifyComponent.h"
+#include "Component/MSceneComponent.h"
+#include "Component/MInputComponent.h"
+#include "Component/MNotifyComponent.h"
 
 bool MCoreModule::Register(MEngine* pEngine)
 {

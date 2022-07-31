@@ -9,7 +9,7 @@
 #ifndef _M_MMATERIALRESOURCE_H_
 #define _M_MMATERIALRESOURCE_H_
 
-#include "MMaterial.h"
+#include "Material/MMaterial.h"
 #define MMaterialResource MMaterial
 
 #endif

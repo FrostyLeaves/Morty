@@ -1,6 +1,6 @@
-#include "PropertyMModelComponent.h"
-#include "MSkeletalAnimation.h"
-#include "MSkeletalAnimationResource.h"
+#include "Property/PropertyMModelComponent.h"
+#include "Model/MSkeletalAnimation.h"
+#include "Resource/MSkeletalAnimationResource.h"
 
 #include "imgui.h"
 

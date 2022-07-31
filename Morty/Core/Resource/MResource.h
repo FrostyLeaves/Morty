@@ -8,9 +8,8 @@
 
 #ifndef _M_MRESOURCE_H_
 #define _M_MRESOURCE_H_
-#include "MGlobal.h"
-#include "MType.h"
-#include "MRefCounter.h"
+#include "Utility/MGlobal.h"
+#include "Type/MType.h"
 
 #include <vector>
 #include <functional>
@@ -23,7 +22,7 @@ class MObject;
 
 enum class MEResourceType;
 
-class MORTY_API MResource : public MTypeClass, public MRefCounter
+class MORTY_API MResource : public MTypeClass
 {
 	MORTY_INTERFACE(MResource)
 public:
@@ -71,8 +70,6 @@ protected:
 
 	virtual bool Load(const MString& strResourcePath) = 0;
 
-	virtual void OnReferenceZero() override;
-	
 	void OnReload(const uint32_t& eReloadType = EResReloadType::EDefault);
 
 protected:

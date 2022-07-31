@@ -1,12 +1,12 @@
-#include "MVulkanDevice.h"
-#include "MMesh.h"
-#include "MEngine.h"
-#include "MTexture.h"
-#include "MResource.h"
-#include "MFileHelper.h"
-#include "MShaderParam.h"
-#include "MVertexBuffer.h"
-#include "MVulkanRenderCommand.h"
+#include "Render/Vulkan/MVulkanDevice.h"
+#include "Render/MMesh.h"
+#include "Engine/MEngine.h"
+#include "Basic/MTexture.h"
+#include "Resource/MResource.h"
+#include "Utility/MFileHelper.h"
+#include "Material/MShaderParam.h"
+#include "Render/MVertexBuffer.h"
+#include "Render/Vulkan/MVulkanRenderCommand.h"
 
 #ifdef max
 #undef max
@@ -163,6 +163,7 @@ void MVulkanDevice::Release()
 	m_BufferPool.Release();
 	m_ShaderDefaultTexture.DestroyBuffer(this);
 	m_ShaderDefaultTextureCube.DestroyBuffer(this);
+	m_ShaderDefaultTextureArray.DestroyBuffer(this);
 
 	for (auto pr : m_tFrameData)
 	{
@@ -349,12 +350,34 @@ VkImageLayout MVulkanDevice::GetImageLayout(MTexture* pTexture)
 	return VK_IMAGE_LAYOUT_UNDEFINED;
 }
 
-VkImageViewType MVulkanDevice::GetImageViewType(const METextureType& eType)
+VkImageViewType MVulkanDevice::GetImageViewType(MTexture* pTexture)
 {
-	if (METextureType::ETextureCube == eType)
+	if (METextureType::ETextureCube == pTexture->GetTextureType())
 		return VK_IMAGE_VIEW_TYPE_CUBE;
+	else if (METextureType::ETexture2DArray == pTexture->GetTextureType())
+		return VK_IMAGE_VIEW_TYPE_2D_ARRAY;
 
 	return VK_IMAGE_VIEW_TYPE_2D;
+}
+
+VkImageCreateFlags MVulkanDevice::GetImageCreateFlags(MTexture* pTexture)
+{
+	if (pTexture->GetTextureType() == METextureType::ETextureCube)
+		return VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+	else if (pTexture->GetTextureType() == METextureType::ETexture2DArray)
+		return 0;
+
+	return 0;
+}
+
+VkImageType MVulkanDevice::GetImageType(MTexture* pTexture)
+{
+	if (pTexture->GetTextureType() == METextureType::ETextureCube)
+		return VK_IMAGE_TYPE_2D;
+	else if (pTexture->GetTextureType() == METextureType::ETexture2DArray)
+		return VK_IMAGE_TYPE_2D;
+
+	return VK_IMAGE_TYPE_2D;
 }
 
 int MVulkanDevice::GetMipmapCount(MTexture* pTexture)
@@ -374,12 +397,7 @@ int MVulkanDevice::GetLayerCount(MTexture* pTexture)
 	if (!pTexture)
 		return 0;
 
-	if (pTexture->GetTextureType() == METextureType::ETextureCube)
-	{
-		return 6;
-	}
-
-	return 1;
+	return pTexture->GetImageLayerNum();
 }
 
 MVulkanObjectRecycleBin* MVulkanDevice::GetRecycleBin()
@@ -467,7 +485,7 @@ bool MVulkanDevice::InitializeRecycleBin()
 
 bool MVulkanDevice::InitDescriptorPool()
 {
-	uint32_t unSwapChainNum = 500;
+	uint32_t unSwapChainNum = 50000;
 
 	std::vector<VkDescriptorPoolSize> vPoolSize(5);
 	vPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -615,19 +633,12 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, MByte* pData)
 
 	VkImage textureImage = VK_NULL_HANDLE;
 	VkDeviceMemory textureImageMemory = VK_NULL_HANDLE;
-	VkImageCreateFlags createFlags = 0;
-
+	VkImageCreateFlags createFlags = GetImageCreateFlags(pTexture);
+	VkImageType imageType = GetImageType(pTexture);
 	int unMipmap = GetMipmapCount(pTexture);
-
 	uint32_t unLayerCount = GetLayerCount(pTexture);
 
-	if (pTexture->GetTextureType() == METextureType::ETextureCube)
-	{
-		createFlags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
-	}
-
 	VkDeviceSize imageSize = static_cast<uint64_t>(MTexture::GetImageMemorySize(pTexture->GetTextureLayout())) * width * height * unLayerCount;
-
 
 	if (pTexture->GetRenderUsage() == METextureRenderUsage::ERenderPresent)
 	{
@@ -648,7 +659,7 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, MByte* pData)
 			assert(false);
 		}
 
-		CreateImage(width, height, unMipmap, unLayerCount, format, VK_IMAGE_TILING_OPTIMAL, usageFlags, memoryFlags, defaultLayout, textureImage, textureImageMemory, createFlags);
+		CreateImage(width, height, unMipmap, unLayerCount, format, VK_IMAGE_TILING_OPTIMAL, usageFlags, memoryFlags, defaultLayout, textureImage, textureImageMemory, createFlags, imageType);
 
 		if (pData && pTexture->GetShaderUsage() == METextureShaderUsage::ESampler)
 		{
@@ -705,7 +716,7 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, MByte* pData)
 	}
 
 
-	pTexture->m_VkImageView = CreateImageView(pTexture->m_VkTextureImage, pTexture->m_VkTextureFormat, aspectFlgas, unMipmap, unLayerCount, GetImageViewType(pTexture->GetTextureType()));
+	pTexture->m_VkImageView = CreateImageView(pTexture->m_VkTextureImage, pTexture->m_VkTextureFormat, aspectFlgas, unMipmap, unLayerCount, GetImageViewType(pTexture));
 	
 
 	if (unMipmap > 1)
@@ -751,13 +762,12 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, MByte* pData)
 	{
 		SetDebugName((uint64_t)pTexture->m_VkTextureImage, VkObjectType::VK_OBJECT_TYPE_IMAGE, pTexture->GetName().c_str());
 		SetDebugName((uint64_t)pTexture->m_VkImageView, VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, pTexture->GetName().c_str());
+		if (pTexture->m_VkTextureImageMemory)
+		{
+			SetDebugName((uint64_t)pTexture->m_VkTextureImageMemory, VkObjectType::VK_OBJECT_TYPE_DEVICE_MEMORY, pTexture->GetName().c_str());
+		}
 	}
 
-	if (pTexture->GetName() == "Texture_Default")
-	{
-		int a = 0;
-		++a;
-	}
 }
 
 void MVulkanDevice::DestroyTexture(MTexture* pTexture)
@@ -997,13 +1007,13 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 	std::vector<uint32_t> vViewMask;
 	std::vector<uint32_t> vCorrelationMask;
 
-	// default subpass
+	// m_ShaderDefaultTexture subpass
 	if (pRenderPass->m_vSubpass.empty())
 	{
 		vOutAttachmentRef.resize(1);
 		vOutDepthAttachmentRef.resize(1);
-		vViewMask.push_back((1 << pRenderPass->GetViewNum()) - 1);
-		vCorrelationMask.push_back((1 << pRenderPass->GetViewNum()) - 1);
+		vViewMask.push_back((1 << pRenderPass->GetViewportNum()) - 1);
+		vCorrelationMask.push_back((1 << pRenderPass->GetViewportNum()) - 1);
 
 		vSubpass.push_back(VkSubpassDescription());
 		VkSubpassDescription& vkSubpass = vSubpass.back();
@@ -1125,7 +1135,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 	renderPassInfo.dependencyCount = vSubpassDependencies.size();
 	renderPassInfo.pDependencies = vSubpassDependencies.data();
 
-	if (pRenderPass->GetViewNum() > 1)
+	if (pRenderPass->GetViewportNum() > 1)
 	{
 		VkRenderPassMultiviewCreateInfo renderPassMultiviewInfo{};
 		renderPassMultiviewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
@@ -1174,7 +1184,7 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 		MBackTexture& backTexture = pRenderPass->m_vBackTextures[backIdx];
 		if (!backTexture.pTexture)
 		{
-			GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateRenderPass error: bt == nullptr");
+			GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateFrameBuffer error: bt == nullptr");
 			return false;
 		}
 
@@ -1191,7 +1201,7 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 			if (backTexture.m_VkImageView == VK_NULL_HANDLE)
 			{
 				MTexture* pTexture = backTexture.pTexture;
-				backTexture.m_VkImageView = CreateImageView(pTexture->m_VkTextureImage, pTexture->m_VkTextureFormat, GetAspectFlags(pTexture), backTexture.desc.nMipmapLevel, 1, GetLayerCount(pTexture), GetImageViewType(pTexture->GetTextureType()));
+				backTexture.m_VkImageView = CreateImageView(pTexture->m_VkTextureImage, pTexture->m_VkTextureFormat, GetAspectFlags(pTexture), backTexture.desc.nMipmapLevel, 1, GetLayerCount(pTexture), GetImageViewType(pTexture));
 				v2Size = pTexture->GetMipmapSize(backTexture.desc.nMipmapLevel);
 			}
 			imageView = backTexture.m_VkImageView;
@@ -1203,7 +1213,7 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 				v2FrameBufferSize = v2Size;
 			else
 			{
-				GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateRenderPass error: different size");
+				GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateFrameBuffer error: different size");
 				return false;
 			}
 		}
@@ -1221,7 +1231,7 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 				v2FrameBufferSize = pDepthTexture->GetSize();
 			else
 			{
-				GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateRenderPass error: different size");
+				GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateFrameBuffer error: different size");
 				return false;
 			}
 		}
@@ -1249,8 +1259,11 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 
 	pRenderPass->m_vkExtent2D.width = v2FrameBufferSize.x;
 	pRenderPass->m_vkExtent2D.height = v2FrameBufferSize.y;
-	vkCreateFramebuffer(m_VkDevice, &framebufferInfo, nullptr, &pRenderPass->m_VkFrameBuffer);
-
+	VkResult result = vkCreateFramebuffer(m_VkDevice, &framebufferInfo, nullptr, &pRenderPass->m_VkFrameBuffer);
+	if (VK_SUCCESS != result)
+	{
+		GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateFrameBuffer error: vulkan result: %s", std::to_string(result).c_str());
+	}
 
 	return true;
 }
@@ -1735,11 +1748,11 @@ VkImageView MVulkanDevice::CreateImageView(VkImage image, VkFormat format, VkIma
 	return imageView;
 }
 
-void MVulkanDevice::CreateImage(const uint32_t& unWidth, const uint32_t& unHeight, const uint32_t& unMipmap, const uint32_t& unLayerCount, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageLayout defaultLayout, VkImage& image, VkDeviceMemory& imageMemory, VkImageCreateFlags createFlag)
+void MVulkanDevice::CreateImage(const uint32_t& unWidth, const uint32_t& unHeight, const uint32_t& unMipmap, const uint32_t& unLayerCount, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageLayout defaultLayout, VkImage& image, VkDeviceMemory& imageMemory, VkImageCreateFlags createFlag, VkImageType imageType)
 {
 	VkImageCreateInfo imageInfo{};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageInfo.imageType = imageType;
 	imageInfo.flags = createFlag;
 	imageInfo.extent.width = VALUE_MAX(unWidth, 1);
 	imageInfo.extent.height = VALUE_MAX(unHeight, 1);
@@ -2111,10 +2124,10 @@ bool MVulkanDevice::InitDefaultTexture()
 	m_ShaderDefaultTexture.SetRenderUsage(METextureRenderUsage::EUnknow);
 	m_ShaderDefaultTexture.SetShaderUsage(METextureShaderUsage::ESampler);
 	m_ShaderDefaultTexture.SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
-	m_ShaderDefaultTexture.SetSize(Vector2(4, 4));
+	m_ShaderDefaultTexture.SetSize(Vector2(1, 1));
 
-	MByte bytes[4 * 4 * 4];
-	for (size_t i = 0; i < 4 * 4 * 4; i += 4)
+	MByte bytes[4];
+	for (size_t i = 0; i < 4; i += 4)
 	{
 		bytes[i + 0] = 255;
 		bytes[i + 1] = 255;
@@ -2131,17 +2144,39 @@ bool MVulkanDevice::InitDefaultTexture()
 	m_ShaderDefaultTextureCube.SetShaderUsage(METextureShaderUsage::ESampler);
 	m_ShaderDefaultTextureCube.SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
 	m_ShaderDefaultTextureCube.SetTextureType(METextureType::ETextureCube);
+	m_ShaderDefaultTextureCube.SetImageLayerNum(6);
 	m_ShaderDefaultTextureCube.SetSize(Vector2(1, 1));
 
 	MByte cubeBytes[24];
 	for (size_t i = 0; i < 24; i += 4)
 	{
-		bytes[i + 0] = 255;
-		bytes[i + 1] = 255;
-		bytes[i + 2] = 255;
-		bytes[i + 3] = 255;
+		cubeBytes[i + 0] = 255;
+		cubeBytes[i + 1] = 255;
+		cubeBytes[i + 2] = 255;
+		cubeBytes[i + 3] = 255;
 	}
-	m_ShaderDefaultTextureCube.GenerateBuffer(this, bytes);
+	m_ShaderDefaultTextureCube.GenerateBuffer(this, cubeBytes);
+
+
+	m_ShaderDefaultTextureArray.SetName("Shader Default Texture Array");
+	m_ShaderDefaultTextureArray.SetMipmapsEnable(false);
+	m_ShaderDefaultTextureArray.SetReadable(false);
+	m_ShaderDefaultTextureArray.SetRenderUsage(METextureRenderUsage::EUnknow);
+	m_ShaderDefaultTextureArray.SetShaderUsage(METextureShaderUsage::ESampler);
+	m_ShaderDefaultTextureArray.SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
+	m_ShaderDefaultTextureArray.SetTextureType(METextureType::ETexture2DArray);
+	m_ShaderDefaultTextureArray.SetImageLayerNum(1);
+	m_ShaderDefaultTextureArray.SetSize(Vector2(1, 1));
+
+	MByte arrayBytes[4];
+	for (size_t i = 0; i < 4; i += 4)
+	{
+		arrayBytes[i + 0] = 255;
+		arrayBytes[i + 1] = 255;
+		arrayBytes[i + 2] = 255;
+		arrayBytes[i + 3] = 255;
+	}
+	m_ShaderDefaultTextureArray.GenerateBuffer(this, arrayBytes);
 
 	return true;
 }

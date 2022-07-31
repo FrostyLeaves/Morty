@@ -8,14 +8,13 @@
 
 #ifndef _M_MMATERIAL_H_
 #define _M_MMATERIAL_H_
-#include "MGlobal.h"
-#include "MResource.h"
-#include "MResource.h"
-#include "MRefCounter.h"
+#include "Utility/MGlobal.h"
+#include "Resource/MResource.h"
+#include "Resource/MResource.h"
 
 #include "MShaderMacro.h"
 #include "MShaderBuffer.h"
-#include "MShaderParamSet.h"
+#include "Material/MShaderParamSet.h"
 
 #include <vector>
 

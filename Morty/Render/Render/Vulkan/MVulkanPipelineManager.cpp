@@ -1,11 +1,11 @@
-﻿#include "MVulkanPipelineManager.h"
+﻿#include "Render/Vulkan/MVulkanPipelineManager.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
-#include "MEngine.h"
-#include "MMaterial.h"
-#include "MFunction.h"
-#include "MVulkanDevice.h"
+#include "Engine/MEngine.h"
+#include "Material/MMaterial.h"
+#include "Utility/MFunction.h"
+#include "Render/Vulkan/MVulkanDevice.h"
 
 MMaterialPipelineLayoutData::MMaterialPipelineLayoutData()
 	: pMaterial(nullptr)
@@ -60,6 +60,8 @@ void MVulkanPipelineManager::Release()
 	}
 
 	m_tPipelineTable.clear();
+
+	m_tMaterialMap.clear();
 }
 
 VkPipeline MVulkanPipelineManager::FindPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx)
@@ -277,6 +279,10 @@ void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShade
 		else if (pParam->eType == METextureType::ETextureCube)
 		{
 			pTexture = &m_pDevice->m_ShaderDefaultTextureCube;
+		}
+		else if (pParam->eType == METextureType::ETexture2DArray)
+		{
+			pTexture = &m_pDevice->m_ShaderDefaultTextureArray;
 		}
 		else
 		{

@@ -1,8 +1,8 @@
-﻿#include "MVulkanRenderCommand.h"
+﻿#include "Render/Vulkan/MVulkanRenderCommand.h"
 
-#include "MMesh.h"
-#include "MMaterial.h"
-#include "MVertexBuffer.h"
+#include "Render/MMesh.h"
+#include "Material/MMaterial.h"
+#include "Render/MVertexBuffer.h"
 
 MVulkanRenderCommand::MVulkanRenderCommand()
 	:MIRenderCommand()
@@ -298,7 +298,7 @@ VkPipelineStageFlags GetSrcPipelineStageFlags(VkImageLayout imageLayout)
 		return VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
 
 	case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-		return VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		return VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 
 	case VK_IMAGE_LAYOUT_UNDEFINED:
 		return VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;

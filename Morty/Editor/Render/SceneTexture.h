@@ -1,9 +1,9 @@
 #ifndef _SCENE_TEXTURE_H_
 #define _SCENE_TEXTURE_H_
 
-#include "MGlobal.h"
-#include "Vector.h"
-#include "MColor.h"
+#include "Utility/MGlobal.h"
+#include "Math/Vector.h"
+#include "Utility/MColor.h"
 
 
 #include <array>
@@ -33,8 +33,8 @@ public:
 	std::vector<MTexture*> GetAllOutputTexture(const size_t& nImageIndex);
 	void UpdateTexture(const size_t& nImageIndex, MIRenderCommand* pRenderCommand);
 
-	MScene* GetScene() { return m_pScene; }
-	MViewport* GetViewport() { return m_pRenderViewport; }
+	MScene* GetScene() const { return m_pScene; }
+	MViewport* GetViewport() const { return m_pRenderViewport; }
 
 	void SetBackColor(const MColor& cColor);
 

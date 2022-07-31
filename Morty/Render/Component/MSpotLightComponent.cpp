@@ -1,9 +1,9 @@
-#include "MSpotLightComponent.h"
+#include "Component/MSpotLightComponent.h"
 
 MORTY_CLASS_IMPLEMENT(MSpotLightComponent, MComponent)
 
-#include "MEntity.h"
-#include "MSceneComponent.h"
+#include "Scene/MEntity.h"
+#include "Component/MSceneComponent.h"
 
 #include "Flatbuffer/MSpotLightComponent_generated.h"
 

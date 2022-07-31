@@ -8,12 +8,12 @@
 
 #ifndef _M_MRENDERABLE_MESH_COMPONENT_H_
 #define _M_MRENDERABLE_MESH_COMPONENT_H_
-#include "MGlobal.h"
-#include "MComponent.h"
+#include "Utility/MGlobal.h"
+#include "Component/MComponent.h"
 
-#include "MMath.h"
-#include "MResource.h"
-#include "MMeshResource.h"
+#include "Math/MMath.h"
+#include "Resource/MResource.h"
+#include "Resource/MMeshResource.h"
 
 class MBoundsAABB;
 class MBoundsSphere;

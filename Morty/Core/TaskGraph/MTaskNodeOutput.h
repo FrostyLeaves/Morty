@@ -8,9 +8,9 @@
 
 #ifndef _M_MTASKNODEOUTPUT_H_
 #define _M_MTASKNODEOUTPUT_H_
-#include "MGlobal.h"
-#include "MType.h"
-#include "MVariant.h"
+#include "Utility/MGlobal.h"
+#include "Type/MType.h"
+#include "Utility/MVariant.h"
 
 class MTaskNode;
 class MTaskNodeInput;

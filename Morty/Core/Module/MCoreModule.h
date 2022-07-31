@@ -8,7 +8,7 @@
 
 #ifndef _M_MCOREMODULE_H_
 #define _M_MCOREMODULE_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
 class MEngine;
 class MORTY_API MCoreModule

@@ -8,12 +8,12 @@
 
 #ifndef _M_MVIEWPORT_H_
 #define _M_MVIEWPORT_H_
-#include "MGlobal.h"
-#include "MObject.h"
-#include "Vector.h"
-#include "Matrix.h"
-#include "MBounds.h"
-#include "MCameraFrustum.h"
+#include "Utility/MGlobal.h"
+#include "Object/MObject.h"
+#include "Math/Vector.h"
+#include "Math/Matrix.h"
+#include "Utility/MBounds.h"
+#include "Basic/MCameraFrustum.h"
 
 #include <vector>
 
@@ -79,29 +79,6 @@ public:
 	const Matrix4& GetProjection() const { return m_m4Projection; }
 
 	const Matrix4& GetCameraInverseProjection() const { return m_m4CameraInvProj; }
-
-	Matrix4 GetLightInverseProjection(MPointLight* pLight);
-
-	
-	//************************************
-	// Method:    GetLightInverseProjection
-	// FullName:  MViewport::GetLightInverseProjection
-	// Access:    public 
-	// Returns:   Matrix4
-	// Qualifier:
-	// Parameter: MDirectionalLight * pLight				方向光
-	// Parameter: const MBoundsAABB & cMeshRenderAABB		所有响应光照的Mesh的AABB
-	// Parameter: const MBoundsAABB & cShadowRenderAABB		所有产生阴影的Mesh的AABB
-	//************************************
-	Matrix4 GetLightInverseProjection(MEntity* pLight, const MBoundsAABB& cCaclShadowRenderAABB, const MBoundsAABB& cGenerateShadowAABB);
-
-	void GetCameraFrustum(MEntity* pCamera, const float& fZNear, const float& fZFar, std::vector<Vector3>& vPoints);
-	void GetCameraFrustum(MEntity* pCamera, const float& fZNear, const float& fZFar, Vector3& v3NearTopLeft, Vector3& v3NearTopRight, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft, Vector3& v3FarTopLeft, Vector3& v3FarTopRight, Vector3& v3FarBottomRight, Vector3& v3FarBottomLeft);
-	void GetCameraFrustum(Vector3& v3NearTopLeft, Vector3& v3NearTopRight, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft, Vector3& v3FarTopLeft, Vector3& v3FarTopRight, Vector3& v3FarBottomRight, Vector3& v3FarBottomLeft);
-
-	static Matrix4 MatrixPerspectiveFovLH(const float& fFovYZAngle, const float& fScreenAspect, const float& fScreenNear, const float& fScreenFar);
-	static Matrix4 MatrixOrthoOffCenterLH(const float& fLeft, const float& fRight, const float& fTop, const float& fBottom, const float& fNear, const float& fFar);
-
 
 	void SetScreenPosition(const Vector2& v2Position) { m_v2ScreenPosition = v2Position; }
 	void SetScreenScale(const Vector2& v2Scale) { m_v2ScreenScale = v2Scale; }

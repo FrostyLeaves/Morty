@@ -8,9 +8,9 @@
 
 #ifndef _M_MBOUNDS_H_
 #define _M_MBOUNDS_H_
-#include "MGlobal.h"
-#include "Vector.h"
-#include "MSerializer.h"
+#include "Utility/MGlobal.h"
+#include "Math/Vector.h"
+#include "Utility/MSerializer.h"
 
 #include <vector>
 
@@ -39,7 +39,7 @@ public:
 
 	void GetPoints(std::vector<Vector3>& vPoints) const;
 
-	//¸üÐÂv3minºÍv3max£¬ÒÔÈÃv3min-v3maxµÄ·¶Î§°üÀ¨¸ÃBounds£¬¼´È¡²¢¼¯
+	//ï¿½ï¿½ï¿½ï¿½v3minï¿½ï¿½v3maxï¿½ï¿½ï¿½ï¿½ï¿½ï¿½v3min-v3maxï¿½Ä·ï¿½Î§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Boundsï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½
 	void UnionMinMax(Vector3& v3min, Vector3& v3max) const;
 
 	bool IsIntersect(const MBoundsAABB& aabb) const;

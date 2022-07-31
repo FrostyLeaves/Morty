@@ -3,8 +3,8 @@
 
 #include "imgui.h"
 
-#include "MMesh.h"
-#include "MResource.h"
+#include "Render/MMesh.h"
+#include "Resource/MResource.h"
 
 #include <map>
 
@@ -51,7 +51,7 @@ protected:
 		MShaderParamSet* pParamSet;
 	};
 
-	MImGuiTextureDest* GetTexturParamSet(MTexture* key);
+	MImGuiTextureDest* GetTexturParamSet(ImGuiTexture tex);
 
 private:
 
@@ -61,7 +61,7 @@ private:
 	std::shared_ptr<MMaterial> m_pMaterial;
 	MResourceKeeper m_FontTexture;
 
-	std::map<MTexture*, MImGuiTextureDest*> m_tImGuiDrawTexture;
+	std::map<ImGuiTexture, MImGuiTextureDest*> m_tImGuiDrawTexture;
 };
 
 

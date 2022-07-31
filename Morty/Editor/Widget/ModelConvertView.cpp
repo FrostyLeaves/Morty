@@ -4,11 +4,11 @@
 #include "imgui_stdlib.h"
 #include "ImGuiFileDialog.h"
 
-#include "MEngine.h"
-#include "MThreadPool.h"
-#include "MModelConverter.h"
+#include "Engine/MEngine.h"
+#include "Thread/MThreadPool.h"
+#include "Model/MModelConverter.h"
 
-#include "PropertyBase.h"
+#include "Property/PropertyBase.h"
 
 static const char* svModelFilter = ".fbx,.obj,.blend\0\0";
 

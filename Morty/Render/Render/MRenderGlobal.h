@@ -8,10 +8,10 @@
 
 #ifndef _M_MRENDER_INCLUDE_H_
 #define _M_MRENDER_INCLUDE_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
-#include "MVulkanWrapper.h"
+#include "Render/Vulkan/MVulkanWrapper.h"
 #endif
 
 

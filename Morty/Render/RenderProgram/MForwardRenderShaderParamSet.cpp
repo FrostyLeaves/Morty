@@ -1,19 +1,19 @@
 #include "MForwardRenderShaderParamSet.h"
 
-#include "MScene.h"
-#include "MEntity.h"
-#include "MEngine.h"
-#include "MShader.h"
-#include "MViewport.h"
+#include "Scene/MScene.h"
+#include "Scene/MEntity.h"
+#include "Engine/MEngine.h"
+#include "Material/MShader.h"
+#include "Basic/MViewport.h"
 
-#include "MSceneComponent.h"
-#include "MCameraComponent.h"
-#include "MSkyBoxComponent.h"
-#include "MSpotLightComponent.h"
-#include "MPointLightComponent.h"
-#include "MDirectionalLightComponent.h"
+#include "Component/MSceneComponent.h"
+#include "Component/MCameraComponent.h"
+#include "Component/MSkyBoxComponent.h"
+#include "Component/MSpotLightComponent.h"
+#include "Component/MPointLightComponent.h"
+#include "Component/MDirectionalLightComponent.h"
 
-#include "MRenderSystem.h"
+#include "System/MRenderSystem.h"
 
 MForwardRenderShaderParamSet::MForwardRenderShaderParamSet()
 	: MShaderParamSet(1)
@@ -45,7 +45,13 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	worldMatrixSrt.AppendMVariant("U_matProj", Matrix4());
 	worldMatrixSrt.AppendMVariant("U_matCamProj", Matrix4());
 	worldMatrixSrt.AppendMVariant("U_matCamProjInv", Matrix4());
-	worldMatrixSrt.AppendMVariant("U_matLightProj", Matrix4());
+
+	MVariantArray matLightProjArray;
+	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
+	{
+		matLightProjArray.AppendMVariant<Matrix4>();
+	}
+	worldMatrixSrt.AppendMVariant("U_matLightProj", matLightProjArray);
 
 	m_pWorldMatrixParam->var = worldMatrixSrt;
 
@@ -129,6 +135,7 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	m_pShadowTextureParam = new MShaderTextureParam();
 	m_pShadowTextureParam->unSet = 1;
 	m_pShadowTextureParam->unBinding = 6;
+	m_pShadowTextureParam->eType = METextureType::ETexture2DArray;
 
 	m_pDiffuseMapTextureParam = new MShaderTextureParam();
 	m_pDiffuseMapTextureParam->eType = METextureType::ETextureCube;
@@ -192,8 +199,15 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 		MStruct& cStruct = *m_pWorldMatrixParam->var.GetStruct();
 		cStruct[0] = info.pViewport->GetProjection();
 		cStruct[1] = info.pViewport->GetCameraInverseProjection();
-		cStruct[2] = info.pViewport->GetCameraInverseProjection().Inverse();
-		cStruct[3] = info.m4DirLightInvProj;
+ 		cStruct[2] = info.pViewport->GetCameraInverseProjection().Inverse();
+
+		if (MVariantArray* pDirLightInvProjArray = cStruct[3].GetArray())
+		{
+			for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
+			{
+				(*pDirLightInvProjArray)[nCascadedIdx] = info.cCascadedShadow[nCascadedIdx].m4DirLightInvProj;
+			}
+		}
 
 		m_pWorldMatrixParam->SetDirty();
 	}

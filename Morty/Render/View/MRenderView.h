@@ -8,13 +8,13 @@
 
 #ifndef _M_MRENDERVIEW_H_
 #define _M_MRENDERVIEW_H_
-#include "MRenderGlobal.h"
+#include "Render/MRenderGlobal.h"
 
-#include "MEngine.h"
-#include "MRenderPass.h"
+#include "Engine/MEngine.h"
+#include "Render/MRenderPass.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
-#include "MVulkanDevice.h"
+#include "Render/Vulkan/MVulkanDevice.h"
 #endif
 
 class MTaskNode;

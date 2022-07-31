@@ -1,8 +1,8 @@
 #ifndef _PROPERTY_SPOT_LIGHT_COMPONENT_H_
 #define _PROPERTY_SPOT_LIGHT_COMPONENT_H_
 
-#include "PropertyBase.h"
-#include "MSpotLightComponent.h"
+#include "Property/PropertyBase.h"
+#include "Component/MSpotLightComponent.h"
 
 class PropertyMSpotLightComponent : public PropertyBase
 {

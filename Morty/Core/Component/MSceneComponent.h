@@ -8,10 +8,10 @@
 
 #ifndef _M_MSCENECOMPONENT_H_
 #define _M_MSCENECOMPONENT_H_
-#include "MGlobal.h"
-#include "MComponent.h"
+#include "Utility/MGlobal.h"
+#include "Component/MComponent.h"
 
-#include "MTransform.h"
+#include "Utility/MTransform.h"
 
 
 class MORTY_API MSceneComponent : public MComponent

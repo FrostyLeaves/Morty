@@ -8,7 +8,7 @@
 
 #ifndef _M_MTASKNODEINPUT_H_
 #define _M_MTASKNODEINPUT_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
 class MTaskNode;
 class MTaskNodeOutput;

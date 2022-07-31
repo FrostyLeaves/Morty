@@ -1,11 +1,11 @@
-#include "MSkeletalAnimation.h"
-#include "MMath.h"
-#include "MJson.h"
-#include "MEngine.h"
-#include "MFileHelper.h"
-#include "MResourceSystem.h"
-#include "MSkeletonResource.h"
-#include "MSkeletalAnimationResource.h"
+#include "Model/MSkeletalAnimation.h"
+#include "Math/MMath.h"
+#include "Utility/MJson.h"
+#include "Engine/MEngine.h"
+#include "Utility/MFileHelper.h"
+#include "System/MResourceSystem.h"
+#include "Resource/MSkeletonResource.h"
+#include "Resource/MSkeletalAnimationResource.h"
 
 MORTY_CLASS_IMPLEMENT(MSkeletalAnimation, MResource)
 

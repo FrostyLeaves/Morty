@@ -1,11 +1,11 @@
 #ifndef _MATERIAL_VIEW_H_
-#define _LOG_VIEW_H_
+#define _MATERIAL_VIEW_H_
 
-#include "IBaseView.h"
-#include "SceneTexture.h"
+#include "Main/IBaseView.h"
+#include "Render/SceneTexture.h"
 
-#include "MResource.h"
-#include "PropertyBase.h"
+#include "Resource/MResource.h"
+#include "Property/PropertyBase.h"
 
 class MScene;
 class MEntity;

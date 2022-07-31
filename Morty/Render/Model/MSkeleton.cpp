@@ -1,11 +1,11 @@
-#include "MSkeleton.h"
+#include "Model/MSkeleton.h"
 #include <algorithm>
 
-#include "MJson.h"
-#include "MEngine.h"
-#include "MFileHelper.h"
-#include "MRenderSystem.h"
-#include "MShaderParamSet.h"
+#include "Utility/MJson.h"
+#include "Engine/MEngine.h"
+#include "Utility/MFileHelper.h"
+#include "System/MRenderSystem.h"
+#include "Material/MShaderParamSet.h"
 
 MORTY_CLASS_IMPLEMENT(MSkeleton, MResource)
 

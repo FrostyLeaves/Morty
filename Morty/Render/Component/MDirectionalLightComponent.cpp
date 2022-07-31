@@ -1,11 +1,11 @@
-#include "MDirectionalLightComponent.h"
+#include "Component/MDirectionalLightComponent.h"
 
 #include "Flatbuffer/MDirectionalLightComponent_generated.h"
 
 MORTY_CLASS_IMPLEMENT(MDirectionalLightComponent, MComponent)
 
-#include "MScene.h"
-#include "MSceneComponent.h"
+#include "Scene/MScene.h"
+#include "Component/MSceneComponent.h"
 
 MDirectionalLightComponent::MDirectionalLightComponent()
 	: MComponent()

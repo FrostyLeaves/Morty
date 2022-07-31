@@ -8,9 +8,9 @@
 
 #ifndef _M_MENGINE_H_
 #define _M_MENGINE_H_
-#include "MGlobal.h"
-#include "MLogger.h"
-#include "MThreadPool.h"
+#include "Utility/MGlobal.h"
+#include "Utility/MLogger.h"
+#include "Thread/MThreadPool.h"
 
 #include <vector>
 

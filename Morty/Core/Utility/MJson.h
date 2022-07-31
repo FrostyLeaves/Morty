@@ -8,8 +8,8 @@
 
 #ifndef _M_MJSON_H_
 #define _M_MJSON_H_
-#include "MGlobal.h"
-#include "MVariant.h"
+#include "Utility/MGlobal.h"
+#include "Utility/MVariant.h"
 
 class GenericValue;
 class MORTY_API MJson

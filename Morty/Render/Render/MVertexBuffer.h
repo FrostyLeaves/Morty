@@ -8,7 +8,7 @@
 
 #ifndef _M_MVERTEXBUFFER_H_
 #define _M_MVERTEXBUFFER_H_
-#include "MRenderGlobal.h"
+#include "Render/MRenderGlobal.h"
 
 
 class MORTY_API MVertexBuffer

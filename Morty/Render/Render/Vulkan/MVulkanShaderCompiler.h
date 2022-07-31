@@ -8,11 +8,11 @@
 
 #ifndef _M_VULKANMSHADERCOMPILER_H_
 #define _M_VULKANMSHADERCOMPILER_H_
-#include "MRenderGlobal.h"
+#include "Render/MRenderGlobal.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
-#include "MShader.h"
+#include "Material/MShader.h"
 
 #ifdef max
 #undef max

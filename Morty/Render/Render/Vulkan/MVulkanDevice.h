@@ -8,25 +8,25 @@
 
 #ifndef _M_MVULKANDEVICE_H_
 #define _M_MVULKANDEVICE_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
-#include "MIDevice.h"
+#include "Render/MIDevice.h"
 
 #include <vector>
-#include "MVulkanWrapper.h"
+#include "Render/Vulkan/MVulkanWrapper.h"
 
 #ifdef MORTY_WIN
 #include "vulkan/vulkan_core.h"
 #endif
 
-#include "MVulkanObjectRecycleBin.h"
-#include "MVulkanShaderCompiler.h"
-#include "MVulkanPipelineManager.h"
-#include "MVulkanBufferPool.h"
+#include "Render/Vulkan/MVulkanObjectRecycleBin.h"
+#include "Render/Vulkan/MVulkanShaderCompiler.h"
+#include "Render/Vulkan/MVulkanPipelineManager.h"
+#include "Render/Vulkan/MVulkanBufferPool.h"
 
-#include "MTexture.h"
+#include "Basic/MTexture.h"
 
 class MVulkanRenderCommand;
 class MVulkanPrimaryRenderCommand;
@@ -94,7 +94,7 @@ public:
 	VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, const uint32_t& unMipmap, const uint32_t& unLayerCount, const VkImageViewType& eViewType);
 	VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, const uint32_t& unBaseMipmap, const uint32_t& unMipmapCount, const uint32_t& unLayerCount, const VkImageViewType& eViewType);
 
-	void CreateImage(const uint32_t& unWidth, const uint32_t& unHeight, const uint32_t& unMipmap, const uint32_t& unLayerCount, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageLayout defaultLayout, VkImage& image, VkDeviceMemory& imageMemory, VkImageCreateFlags createFlag);
+	void CreateImage(const uint32_t& unWidth, const uint32_t& unHeight, const uint32_t& unMipmap, const uint32_t& unLayerCount, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageLayout defaultLayout, VkImage& image, VkDeviceMemory& imageMemory, VkImageCreateFlags createFlag, VkImageType imageType);
 
 	bool GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory);
@@ -120,7 +120,9 @@ public:
 	VkImageUsageFlags GetUsageFlags(MTexture* pTexture);
 	VkImageAspectFlags GetAspectFlags(MTexture* pTexture);
 	VkImageLayout GetImageLayout(MTexture* pTexture);
-	VkImageViewType GetImageViewType(const METextureType& eType);
+	VkImageViewType GetImageViewType(MTexture* pTexture);
+	VkImageCreateFlags GetImageCreateFlags(MTexture* pTexture);
+	VkImageType GetImageType(MTexture* pTexture);
 	int GetMipmapCount(MTexture* pTexture);
 	int GetLayerCount(MTexture* pTexture);
 
@@ -160,6 +162,7 @@ public:
 
 	MTexture m_ShaderDefaultTexture;
 	MTexture m_ShaderDefaultTextureCube;
+	MTexture m_ShaderDefaultTextureArray;
 
 	VkSampler m_VkLinearSampler;
 	VkSampler m_VkNearestSampler;

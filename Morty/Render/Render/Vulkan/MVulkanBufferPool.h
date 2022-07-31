@@ -8,12 +8,12 @@
 
 #ifndef _M_MVULKAN_BUFFERPOOL_H_
 #define _M_MVULKAN_BUFFERPOOL_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
-#include "MVulkanWrapper.h"
+#include "Render/Vulkan/MVulkanWrapper.h"
 #include "MMemoryPool.h"
-#include "MIDPool.h"
+#include "Utility/MIDPool.h"
 #include <vector>
 #include <map>
 

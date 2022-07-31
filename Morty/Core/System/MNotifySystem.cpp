@@ -1,7 +1,7 @@
-#include "MNotifySystem.h"
+#include "System/MNotifySystem.h"
 
-#include "MScene.h"
-#include "MFunction.h"
+#include "Scene/MScene.h"
+#include "Utility/MFunction.h"
 
 MORTY_CLASS_IMPLEMENT(MNotifySystem, MISystem)
 

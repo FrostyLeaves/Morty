@@ -1,9 +1,9 @@
-﻿#include "MRenderView.h"
+﻿#include "View/MRenderView.h"
 #if RENDER_GRAPHICS == MORTY_VULKAN
-#include "MVulkanRenderCommand.h"
+#include "Render/Vulkan/MVulkanRenderCommand.h"
 #endif
 
-#include "MRenderSystem.h"
+#include "System/MRenderSystem.h"
 
 MRenderView::MRenderView()
 	: m_pEngine(nullptr)

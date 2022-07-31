@@ -8,10 +8,10 @@
 
 #ifndef _M_MTASKNODE_H_
 #define _M_MTASKNODE_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
-#include "MType.h"
-#include "MThreadWork.h"
+#include "Type/MType.h"
+#include "Thread/MThreadWork.h"
 
 class MTaskGraph;
 class MTaskNodeInput;

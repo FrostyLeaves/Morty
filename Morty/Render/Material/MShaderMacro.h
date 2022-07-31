@@ -8,8 +8,8 @@
 
 #ifndef _M_MSHADER_MACRO_H_
 #define _M_MSHADER_MACRO_H_
-#include "MGlobal.h"
-#include "MVariant.h"
+#include "Utility/MGlobal.h"
+#include "Utility/MVariant.h"
 
 #include <vector>
 

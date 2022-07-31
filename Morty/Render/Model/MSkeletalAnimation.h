@@ -8,14 +8,14 @@
 
 #ifndef _M_MSKELETALANIMATION_H_
 #define _M_MSKELETALANIMATION_H_
-#include "MGlobal.h"
-#include "Vector.h"
-#include "MSkeleton.h"
-#include "MResource.h"
-#include "Quaternion.h"
-#include "MTransform.h"
+#include "Utility/MGlobal.h"
+#include "Math/Vector.h"
+#include "Model/MSkeleton.h"
+#include "Resource/MResource.h"
+#include "Math/Quaternion.h"
+#include "Utility/MTransform.h"
 #include "MIAnimation.h"
-#include "MSerializer.h"
+#include "Utility/MSerializer.h"
 
 #include <vector>
 

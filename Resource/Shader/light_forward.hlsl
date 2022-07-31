@@ -23,8 +23,6 @@ struct VS_OUT
     float3 vertexPointLight : VERTEXX_POINT_LIGHT;
 
     float3 worldPos : POSITION;
-
-    float4 dirLightSpacePos : DIRLIGHTSPACEPOS;
 };
 
 
@@ -107,7 +105,7 @@ float3 CalcDirectionLight(float3 f3CameraDir, float3 f3LightDir, float3 f3Normal
 
         return float3(     U_dirLight.f3Intensity * U_mat.f3Diffuse * fNdotL * f3DiffColor
                         + U_dirLight.f3Intensity * U_mat.f3Specular * fSpec * f3SpecColor
-                    ) * shadow;
+                    );
     }
     else
     {
@@ -169,7 +167,7 @@ float3 AdditionAllLights(float3 f3Color, float4 f3AmbiColor, VS_OUT input)
     if(U_bDirectionLightEnabled > 0)
     {
         float fNdotL = dot(cLightInfo.f3Normal, -cLightInfo.f3DirLightDir);
-        float shadow = CalcShadow(U_texShadowMap, input.dirLightSpacePos, fNdotL);
+        float shadow = 1.0; //CalcShadow(U_texShadowMap, input.dirLightSpacePos, input.pos, fNdotL);
 
         f3Color += shadow * CalcDirectionLight(  cLightInfo.f3CameraDir,
                                         cLightInfo.f3DirLightDir,

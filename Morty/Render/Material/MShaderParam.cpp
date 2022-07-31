@@ -1,5 +1,5 @@
-#include "MShaderParam.h"
-#include "MTexture.h"
+#include "Material/MShaderParam.h"
+#include "Basic/MTexture.h"
 
 MShaderParam::MShaderParam()
 	: strName()

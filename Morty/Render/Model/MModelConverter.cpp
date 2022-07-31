@@ -1,45 +1,45 @@
-﻿#include "MModelConverter.h"
+﻿#include "Model/MModelConverter.h"
 #include "MRenderModule.h"
 
-#include "MMesh.h"
-#include "MTimer.h"
-#include "MScene.h"
-#include "MVertex.h"
-#include "MLogger.h"
-#include "MEngine.h"
-#include "MIDevice.h"
+#include "Render/MMesh.h"
+#include "Utility/MTimer.h"
+#include "Scene/MScene.h"
+#include "Render/MVertex.h"
+#include "Utility/MLogger.h"
+#include "Engine/MEngine.h"
+#include "Render/MIDevice.h"
 
-#include "MMeshResource.h"
-#include "MModelResource.h"
-#include "MEntityResource.h"
-#include "MTextureResource.h"
-#include "MMaterialResource.h"
-#include "MSkeletonResource.h"
-#include "MSkeletalAnimationResource.h"
+#include "Resource/MMeshResource.h"
+#include "Resource/MModelResource.h"
+#include "Resource/MEntityResource.h"
+#include "Resource/MTextureResource.h"
+#include "Resource/MMaterialResource.h"
+#include "Resource/MSkeletonResource.h"
+#include "Resource/MSkeletalAnimationResource.h"
 
-#include "MBounds.h"
-#include "MSkeleton.h"
-#include "MSkeletalAnimation.h"
+#include "Utility/MBounds.h"
+#include "Model/MSkeleton.h"
+#include "Model/MSkeletalAnimation.h"
 
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
 
-#include "MFileHelper.h"
+#include "Utility/MFileHelper.h"
 
 
-#include "MComponent.h"
-#include "MModelComponent.h"
-#include "MSceneComponent.h"
-#include "MCameraComponent.h"
-#include "MSpotLightComponent.h"
-#include "MPointLightComponent.h"
-#include "MRenderableMeshComponent.h"
-#include "MDirectionalLightComponent.h"
+#include "Component/MComponent.h"
+#include "Component/MModelComponent.h"
+#include "Component/MSceneComponent.h"
+#include "Component/MCameraComponent.h"
+#include "Component/MSpotLightComponent.h"
+#include "Component/MPointLightComponent.h"
+#include "Component/MRenderableMeshComponent.h"
+#include "Component/MDirectionalLightComponent.h"
 
-#include "MEntitySystem.h"
-#include "MObjectSystem.h"
-#include "MResourceSystem.h"
+#include "System/MEntitySystem.h"
+#include "System/MObjectSystem.h"
+#include "System/MResourceSystem.h"
 
 #include <fstream>
 
@@ -80,17 +80,10 @@ MModelConverter::~MModelConverter()
 {
 	if (m_pSkeleton)
 	{
-		m_pSkeleton->SubRef();
 		m_pSkeleton = nullptr;
 	}
 
-	for (std::shared_ptr<MMeshResource> pMeshRes : m_vMeshes)
-		pMeshRes->SubRef();
-	
 	m_vMeshes.clear();
-
-	for (std::shared_ptr<MSkeletalAnimationResource> pAnim : m_vSkeletalAnimation)
-		pAnim->SubRef();
 
 	m_vSkeletalAnimation.clear();
 }
@@ -156,12 +149,10 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 
 	auto&& vAllEntity = m_pScene->GetAllEntity();
 	std::shared_ptr<MResource> pNodeResource = pEntitySystem->PackEntity(m_pScene, vAllEntity);
-	pNodeResource->AddRef();
 
 	pResourceSystem->MoveTo(pNodeResource, strPath + convertInfo.strOutputName + ".entity");
 	pNodeResource->Save();
 
-	pNodeResource->SubRef();
 	pNodeResource = nullptr;
 
 	return true;
@@ -173,7 +164,6 @@ bool MModelConverter::Load(const MString& strResourcePath)
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
 	m_pSkeleton = pResourceSystem->CreateResource<MSkeletonResource>();
-	m_pSkeleton->AddRef();
 
 	m_pModelEntity = m_pScene->CreateEntity();
 	
@@ -238,7 +228,6 @@ void MModelConverter::ProcessNode(aiNode* pNode, const aiScene *pScene)
 		aiMesh* pChildMesh = pScene->mMeshes[pNode->mMeshes[i]];
 
 		std::shared_ptr<MMeshResource> pChildMeshResource = pResourceSystem->CreateResource<MMeshResource>();
-		pChildMeshResource->AddRef();
 
 		if (m_pSkeleton)
 		{
@@ -465,7 +454,6 @@ void MModelConverter::ProcessBones(const aiScene* pScene)
 
 	if (m_pSkeleton->GetAllBones().empty())
 	{
-		m_pSkeleton->SubRef();
 		m_pSkeleton = nullptr;
 	}
 	else
@@ -590,7 +578,6 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 		aiAnimation* pAnimation = pScene->mAnimations[i];
 
 		std::shared_ptr<MSkeletalAnimationResource> pMAnimation = pResourceSystem->CreateResource<MSkeletalAnimationResource>();
-		pMAnimation->AddRef();
 
 		m_vSkeletalAnimation.push_back(pMAnimation);
 
@@ -679,7 +666,6 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 			pSkinnedMeshMaterialRes->GetShaderMacro()->SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, "1");
 			pSkinnedMeshMaterialRes->LoadVertexShader(pMeshVSResource);
 			pSkinnedMeshMaterialRes->LoadPixelShader(pMeshPSResource);
-			pSkinnedMeshMaterialRes->AddRef();
 			pMaterial = pSkinnedMeshMaterialRes;
 		}
 		else
@@ -687,7 +673,6 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 			std::shared_ptr<MMaterialResource> pStaticMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
 			pStaticMeshMaterialRes->LoadVertexShader(pMeshVSResource);
 			pStaticMeshMaterialRes->LoadPixelShader(pMeshPSResource);
-			pStaticMeshMaterialRes->AddRef();
 			pMaterial = pStaticMeshMaterialRes;
 		}
 
@@ -711,7 +696,6 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 			pSkinnedMeshMaterialRes->GetShaderMacro()->SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, "1");
 			pSkinnedMeshMaterialRes->LoadVertexShader(pMeshVSResource);
 			pSkinnedMeshMaterialRes->LoadPixelShader(pMeshPSResource);
-			pSkinnedMeshMaterialRes->AddRef();
 			pMaterial = pSkinnedMeshMaterialRes;
 		}
 		else
@@ -719,7 +703,6 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 			std::shared_ptr<MMaterialResource> pStaticMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
 			pStaticMeshMaterialRes->LoadVertexShader(pMeshVSResource);
 			pStaticMeshMaterialRes->LoadPixelShader(pMeshPSResource);
-			pStaticMeshMaterialRes->AddRef();
 			pMaterial = pStaticMeshMaterialRes;
 		}
 

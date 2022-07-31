@@ -1,15 +1,15 @@
-#include "MModelComponent.h"
+#include "Component/MModelComponent.h"
 
 MORTY_CLASS_IMPLEMENT(MModelComponent, MComponent)
 
-#include "MEntity.h"
-#include "MEngine.h"
-#include "MResourceSystem.h"
-#include "MSkeletonResource.h"
-#include "MSkeletalAnimationResource.h"
+#include "Scene/MEntity.h"
+#include "Engine/MEngine.h"
+#include "System/MResourceSystem.h"
+#include "Resource/MSkeletonResource.h"
+#include "Resource/MSkeletalAnimationResource.h"
 
-#include "MSceneComponent.h"
-#include "MRenderableMeshComponent.h"
+#include "Component/MSceneComponent.h"
+#include "Component/MRenderableMeshComponent.h"
 
 #include "Flatbuffer/MModelComponent_generated.h"
 

@@ -1,9 +1,9 @@
 #include "MTaskGraphWalker.h"
 
-#include "MEngine.h"
-#include "MFunction.h"
-#include "MTaskGraph.h"
-#include "MThreadPool.h"
+#include "Engine/MEngine.h"
+#include "Utility/MFunction.h"
+#include "TaskGraph/MTaskGraph.h"
+#include "Thread/MThreadPool.h"
 
 MTaskGraphWalker::MTaskGraphWalker()
 	: m_vWaitTask()

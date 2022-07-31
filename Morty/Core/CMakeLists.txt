@@ -82,23 +82,23 @@ add_library(Core STATIC
 ############################################################
 # header search path
 ############################################################
-set(CORE_CODE_DIRECTORIES ${CORE_CODE_DIRECTORIES}
-        ${CMAKE_CURRENT_SOURCE_DIR}/
-        ${CMAKE_CURRENT_SOURCE_DIR}/Component
-        ${CMAKE_CURRENT_SOURCE_DIR}/Engine
-        ${CMAKE_CURRENT_SOURCE_DIR}/Input
-        ${CMAKE_CURRENT_SOURCE_DIR}/Math
-        ${CMAKE_CURRENT_SOURCE_DIR}/Module
-        ${CMAKE_CURRENT_SOURCE_DIR}/Scene
-        ${CMAKE_CURRENT_SOURCE_DIR}/System
-        ${CMAKE_CURRENT_SOURCE_DIR}/Object
-        ${CMAKE_CURRENT_SOURCE_DIR}/Pointer
-        ${CMAKE_CURRENT_SOURCE_DIR}/Resource
-        ${CMAKE_CURRENT_SOURCE_DIR}/TaskGraph
-        ${CMAKE_CURRENT_SOURCE_DIR}/Thread
-        ${CMAKE_CURRENT_SOURCE_DIR}/Type
-        ${CMAKE_CURRENT_SOURCE_DIR}/Utility
-        ${CMAKE_CURRENT_SOURCE_DIR}/Variant
+set(CORE_CODE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CORE_CODE_DIRECTORIES}
+        #${CMAKE_CURRENT_SOURCE_DIR}/Component
+        #${CMAKE_CURRENT_SOURCE_DIR}/Engine
+        #${CMAKE_CURRENT_SOURCE_DIR}/Input
+        #${CMAKE_CURRENT_SOURCE_DIR}/Math
+        #${CMAKE_CURRENT_SOURCE_DIR}/Module
+        #${CMAKE_CURRENT_SOURCE_DIR}/Scene
+        #${CMAKE_CURRENT_SOURCE_DIR}/System
+        #${CMAKE_CURRENT_SOURCE_DIR}/Object
+        #${CMAKE_CURRENT_SOURCE_DIR}/Pointer
+        #${CMAKE_CURRENT_SOURCE_DIR}/Resource
+        #${CMAKE_CURRENT_SOURCE_DIR}/TaskGraph
+        #${CMAKE_CURRENT_SOURCE_DIR}/Thread
+        #${CMAKE_CURRENT_SOURCE_DIR}/Type
+        #${CMAKE_CURRENT_SOURCE_DIR}/Utility
+        #${CMAKE_CURRENT_SOURCE_DIR}/Variant
         ${CMAKE_CURRENT_SOURCE_DIR}/Flatbuffer
 )
 

@@ -1,4 +1,4 @@
-#include "MThreadWork.h"
+#include "Thread/MThreadWork.h"
 
 MThreadWork::MThreadWork()
 	: funcWorkFunction()

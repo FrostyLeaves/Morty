@@ -5,8 +5,8 @@
 #include <functional>
 #include <string>
 
-#include "MEngine.h"
-#include "MVulkanRenderTarget.h"
+#include "Engine/MEngine.h"
+#include "Render/Vulkan/MVulkanRenderTarget.h"
 
 MAndroidRenderView::MAndroidRenderView()
 	: MIRenderView()

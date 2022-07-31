@@ -4,8 +4,8 @@
 #include <map>
 #include <functional>
 
-#include "MString.h"
-#include "MVariant.h"
+#include "Utility/MString.h"
+#include "Utility/MVariant.h"
 
 #define NOTIFY_FUNC(PTR, CLASS_FUNC) (std::bind(&CLASS_FUNC, PTR, std::placeholders::_1))
 

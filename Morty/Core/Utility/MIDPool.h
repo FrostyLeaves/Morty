@@ -8,7 +8,7 @@
 
 #ifndef _M_MIDPOOL_H_
 #define _M_MIDPOOL_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 #include <queue>
 
 template<typename IDTYPE>

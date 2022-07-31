@@ -1,7 +1,7 @@
-#include "MCameraFrustum.h"
-#include "MMath.h"
-#include "Vector.h"
-#include "MViewport.h"
+#include "Basic/MCameraFrustum.h"
+#include "Math/MMath.h"
+#include "Math/Vector.h"
+#include "Basic/MViewport.h"
 
 MCameraFrustum::MCameraFrustum()
 	: m_vPlanes()
@@ -142,7 +142,8 @@ std::vector<MCameraFrustum> MCameraFrustum::CutFrustum(const std::vector<float>&
 
 	Vector3 dir = m_vPlanes[4].m_v4Plane;
 
-	float fPercent = 1.0f;
+	float fNearPercent = 0.0f;
+	float fFarPercent = 1.0f;
 	float fNearFarDistance = fabs(m_vPlanes[5].m_v4Plane.w - m_vPlanes[4].m_v4Plane.w);
 
 	for (size_t nIdx = 0; nIdx < nSize; ++nIdx)
@@ -150,10 +151,13 @@ std::vector<MCameraFrustum> MCameraFrustum::CutFrustum(const std::vector<float>&
 		MCameraFrustum& cf = vResult[nIdx];
 		cf = *this;
 
-		fPercent = fabs(fPercent - percent[nIdx]);
-		cf.m_vPlanes[5].MoveInNormal(-fNearFarDistance * fPercent);
+		fFarPercent = fabs(fFarPercent - percent[nIdx]);
+		cf.m_vPlanes[4].MoveInNormal(-fNearFarDistance * fNearPercent);
+		cf.m_vPlanes[5].MoveInNormal(-fNearFarDistance * fFarPercent);
+		fNearPercent = fabs(fNearPercent + percent[nIdx]);
 	}
 
-	m_vPlanes[5];
+
+	return vResult;
 }
 

@@ -8,10 +8,10 @@
 
 #ifndef _M_MTRANSFORM_H_
 #define _M_MTRANSFORM_H_
-#include "MGlobal.h"
-#include "Vector.h"
-#include "Matrix.h"
-#include "Quaternion.h"
+#include "Utility/MGlobal.h"
+#include "Math/Vector.h"
+#include "Math/Matrix.h"
+#include "Math/Quaternion.h"
 
 class MORTY_API MTransform
 {

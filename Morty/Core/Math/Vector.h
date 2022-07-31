@@ -1,8 +1,8 @@
 #ifndef _VECTOR_H_
 #define _VECTOR_H_
 
-#include "MGlobal.h"
-#include "Matrix.h"
+#include "Utility/MGlobal.h"
+#include "Math/Matrix.h"
 
 class Vector3;
 class Vector4;

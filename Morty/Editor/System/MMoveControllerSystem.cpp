@@ -1,12 +1,12 @@
-#include "MMoveControllerSystem.h"
+#include "System/MMoveControllerSystem.h"
 
-#include "MScene.h"
-#include "MInputEvent.h"
+#include "Scene/MScene.h"
+#include "Input/MInputEvent.h"
 
-#include "MSceneComponent.h"
-#include "MMoveControllerComponent.h"
+#include "Component/MSceneComponent.h"
+#include "Component/MMoveControllerComponent.h"
 
-#include "MInputSystem.h"
+#include "System/MInputSystem.h"
 
 MORTY_CLASS_IMPLEMENT(MMoveControllerSystem, MISystem)
 

@@ -8,8 +8,8 @@
 
 #ifndef _M_MMATH_H_
 #define _M_MMATH_H_
-#include "MGlobal.h"
-#include "Matrix.h"
+#include "Utility/MGlobal.h"
+#include "Math/Matrix.h"
 
 #include <random>
 
@@ -27,7 +27,7 @@ public:
 
 	static Matrix4 GetScaleAndRotation(const Matrix4& mat);
 
-	//射线和平面求交点
+	//锟斤拷锟竭猴拷平锟斤拷锟襟交碉拷
 	static bool RayToPlane(const Vector3& v3RayOrigin, const Vector3& v3RayDirection, const Vector3& v3PlaneOrigin, const Vector3& v3PlaneNormal, Vector3& v3HitPoint);
 
 	//投影

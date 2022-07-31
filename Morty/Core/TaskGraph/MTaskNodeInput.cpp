@@ -1,7 +1,7 @@
-#include "MTaskNodeInput.h"
-#include "MTaskNodeOutput.h"
+#include "TaskGraph/MTaskNodeInput.h"
+#include "TaskGraph/MTaskNodeOutput.h"
 
-#include "MTaskNode.h"
+#include "TaskGraph/MTaskNode.h"
 
 MTaskNodeInput::MTaskNodeInput()
 	: m_unIndex(0)

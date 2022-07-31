@@ -8,7 +8,7 @@
 
 #ifndef _M_MWINDOWSRENDERVIEW_H_
 #define _M_MWINDOWSRENDERVIEW_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
 
 class MORTY_API MWindowsRenderView

@@ -1,7 +1,7 @@
 #ifndef _I_BASE_VIEW_H_
 #define _I_BASE_VIEW_H_
 
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
 class MEngine;
 class MInputEvent;

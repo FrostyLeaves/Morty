@@ -8,8 +8,8 @@
 
 #ifndef _M_MTASKGRAPHWALKER_H_
 #define _M_MTASKGRAPHWALKER_H_
-#include "MGlobal.h"
-#include "MThreadWork.h"
+#include "Utility/MGlobal.h"
+#include "Thread/MThreadWork.h"
 
 class MTaskNode;
 class MTaskGraph;

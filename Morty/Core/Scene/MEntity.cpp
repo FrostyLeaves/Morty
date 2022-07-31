@@ -1,14 +1,14 @@
-#include "MEntity.h"
-#include "MScene.h"
-#include "MEngine.h"
-#include "MVariant.h"
-#include "MFileHelper.h"
-#include "MObjectSystem.h"
+#include "Scene/MEntity.h"
+#include "Scene/MScene.h"
+#include "Engine/MEngine.h"
+#include "Utility/MVariant.h"
+#include "Utility/MFileHelper.h"
+#include "System/MObjectSystem.h"
 
-#include "MScene.h"
-#include "MComponent.h"
+#include "Scene/MScene.h"
+#include "Component/MComponent.h"
 
-#include "MFunction.h"
+#include "Utility/MFunction.h"
 
 #include "Flatbuffer/MEntity_generated.h"
 

@@ -1,6 +1,6 @@
-﻿#include "MMesh.h"
-#include "MIDevice.h"
-#include "MVertex.h"
+﻿#include "Render/MMesh.h"
+#include "Render/MIDevice.h"
+#include "Render/MVertex.h"
 
 MIMesh::MIMesh(const bool& bModifiable/* = false*/)
 	: m_vVertices(nullptr)

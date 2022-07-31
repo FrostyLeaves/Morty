@@ -8,14 +8,14 @@
 
 #ifndef _M_MENVIRONMENTMAPRENDERWORK_H_
 #define _M_MENVIRONMENTMAPRENDERWORK_H_
-#include "MGlobal.h"
-#include "MObject.h"
+#include "Utility/MGlobal.h"
+#include "Object/MObject.h"
 
 #include "MRenderInfo.h"
-#include "MRenderPass.h"
+#include "Render/MRenderPass.h"
 #include "MShadowMapShaderParamSet.h"
 
-#include "MResource.h"
+#include "Resource/MResource.h"
 
 class MMeshResource;
 class MIRenderCommand;

@@ -1,12 +1,12 @@
 #ifndef _PROPERTY_MODEL_COMPONENT_H_
 #define _PROPERTY_MODEL_COMPONENT_H_
 
-#include "PropertyBase.h"
-#include "MModelComponent.h"
+#include "Property/PropertyBase.h"
+#include "Component/MModelComponent.h"
 
-#include "MEngine.h"
+#include "Engine/MEngine.h"
 
-#include "NotifyManager.h"
+#include "Utility/NotifyManager.h"
 
 class PropertyMModelComponent : public PropertyBase
 {

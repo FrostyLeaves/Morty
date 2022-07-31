@@ -1,7 +1,7 @@
 #ifndef _MMOVE_CONTROLLER_COMPONENT_H_
 #define _MMOVE_CONTROLLER_COMPONENT_H_
 
-#include "MComponent.h"
+#include "Component/MComponent.h"
 
 class MNode;
 class MMoveControllerComponent : public MComponent

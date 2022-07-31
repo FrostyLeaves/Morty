@@ -1,15 +1,15 @@
 #include "ImGuiRenderable.h"
 
-#include "MEngine.h"
-#include "MTexture.h"
-#include "MMaterial.h"
-#include "MShaderParamSet.h"
-#include "MRenderCommand.h"
+#include "Engine/MEngine.h"
+#include "Basic/MTexture.h"
+#include "Material/MMaterial.h"
+#include "Material/MShaderParamSet.h"
+#include "Render/MRenderCommand.h"
 
-#include "MTextureResource.h"
+#include "Resource/MTextureResource.h"
 
-#include "MRenderSystem.h"
-#include "MResourceSystem.h"
+#include "System/MRenderSystem.h"
+#include "System/MResourceSystem.h"
 
 ImGuiRenderable::ImGuiRenderable(MEngine* pEngine)
 	: m_pEngine(pEngine)
@@ -81,7 +81,7 @@ void ImGuiRenderable::InitializeFont()
 	m_FontTexture.SetResource(pFontTexture);
 
 	// Store our identifier
-	io.Fonts->TexID = pFontTexture->GetTextureTemplate();
+	io.Fonts->TexID = { pFontTexture->GetTextureTemplate(), 0 };
 
 }
 
@@ -103,7 +103,6 @@ void ImGuiRenderable::InitializeMaterial()
 	MResourceSystem* pResourceSystem = m_pEngine->FindSystem<MResourceSystem>();
 
 	m_pMaterial = pResourceSystem->CreateResource<MMaterial>();
-	m_pMaterial->AddRef();
 
 	m_pMaterial->LoadVertexShader("Shader/imgui.mvs");
 	m_pMaterial->LoadPixelShader("Shader/imgui.mps");
@@ -113,7 +112,6 @@ void ImGuiRenderable::ReleaseMaterial()
 {
 	if (m_pMaterial)
 	{
-		m_pMaterial->SubRef();
 		m_pMaterial = nullptr;
 	}
 }
@@ -164,7 +162,7 @@ void ImGuiRenderable::WaitTextureReady(MIRenderCommand* pCommand)
 
 	for (const ImTextureID& texid : tTextures)
 	{
-		if (MTexture* pTexture = (MTexture*)(texid))
+		if (MTexture* pTexture = texid.pTexture)
 		{
 			pCommand->SetRenderToTextureBarrier({ pTexture });
 		}
@@ -212,7 +210,7 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
 	// (Because we merged all buffers into a single one, we maintain our own offset into them)
 	int global_vtx_offset = 0;
 	int global_idx_offset = 0;
-	void* using_texture = nullptr;
+	ImGuiTexture using_texture = {nullptr, 0};
 	for (int n = 0; n < draw_data->CmdListsCount; n++)
 	{
 		const ImDrawList* cmd_list = draw_data->CmdLists[n];
@@ -223,11 +221,16 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
 			if (using_texture != pcmd->TextureId)
 			{
 				using_texture = pcmd->TextureId;
-				MTexture* pTexture =(MTexture*)(using_texture);
-				if (auto dest = GetTexturParamSet(pTexture))
+				MTexture* pTexture = using_texture.pTexture;
+				if (auto dest = GetTexturParamSet(using_texture))
 				{
 					dest->nDestroyCount = 0;
 					pCommand->SetShaderParamSet(dest->pParamSet);
+				}
+				else
+				{
+					int a = 0;
+					++a;
 				}
 			}
 
@@ -257,7 +260,7 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
 	}
 }
 
-ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturParamSet(MTexture* key)
+ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturParamSet(ImGuiTexture key)
 {
 	auto findResult = m_tImGuiDrawTexture.find(key);
 
@@ -265,15 +268,25 @@ ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturParamSet(MTexture*
 	{
 		MImGuiTextureDest* pDest = new MImGuiTextureDest();
 
-		pDest->pTexture = key;
+		pDest->pTexture = key.pTexture;
 		pDest->nDestroyCount = 0;
 		pDest->pParamSet = m_pMaterial->GetMeshParamSet()->Clone();
-		pDest->pParamSet->m_vTextures[0]->pTexture = key;
-		pDest->pParamSet->m_vTextures[0]->SetDirty();
+
+		if (key.pTexture->GetTextureType() == METextureType::ETexture2D)
+		{
+			pDest->pParamSet->m_vTextures[0]->pTexture = key.pTexture;
+			pDest->pParamSet->m_vTextures[0]->SetDirty();
+		}
+		else if (key.pTexture->GetTextureType() == METextureType::ETexture2DArray)
+		{
+			pDest->pParamSet->m_vTextures[1]->pTexture = key.pTexture;
+			pDest->pParamSet->m_vTextures[1]->SetDirty();
+		}
+
 		
 		if (MStruct* pStruct = pDest->pParamSet->m_vParams[0]->var.GetStruct())
 		{
-			switch (key->GetTextureLayout())
+			switch (key.pTexture->GetTextureLayout())
 			{
 			case METextureLayout::EDepth:
 			case METextureLayout::ER_UNORM_8:
@@ -285,6 +298,17 @@ ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturParamSet(MTexture*
 				pStruct->GetMember(0)->var = 0;
 				break;
 			}
+
+			if (key.pTexture->GetTextureType() == METextureType::ETexture2D)
+			{
+				pStruct->GetMember(1)->var = 0;
+			}
+			else if (key.pTexture->GetTextureType() == METextureType::ETexture2DArray)
+			{
+				pStruct->GetMember(1)->var = 1;
+				pStruct->GetMember(2)->var = key.nArrayIdx;
+			}
+
 			pDest->pParamSet->m_vParams[0]->SetDirty();
 		}
 

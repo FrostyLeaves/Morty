@@ -1,8 +1,8 @@
-#include "MModelResource.h"
-#include "MEngine.h"
-#include "MJson.h"
-#include "MFileHelper.h"
-#include "MResourceSystem.h"
+#include "Resource/MModelResource.h"
+#include "Engine/MEngine.h"
+#include "Utility/MJson.h"
+#include "Utility/MFileHelper.h"
+#include "System/MResourceSystem.h"
 
 MORTY_INTERFACE_IMPLEMENT(MModelResource, MResource)
 
@@ -19,36 +19,20 @@ MModelResource::~MModelResource()
 
 void MModelResource::SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeleton)
 {
-    if (m_pSkeleton)
-        m_pSkeleton->SubRef();
-    
     m_pSkeleton = pSkeleton;
-
-    if (m_pSkeleton)
-        m_pSkeleton->AddRef();
 }
 
 void MModelResource::GetMeshResources(const std::vector<std::shared_ptr<MMeshResource>>& vMeshes)
 {
-    for (std::shared_ptr<MMeshResource> pMeshRes : m_vMeshes)
-        pMeshRes->SubRef();
-
     m_vMeshes = vMeshes;
-
-	for (std::shared_ptr<MMeshResource> pMeshRes : m_vMeshes)
-		pMeshRes->AddRef();
 }
 
 void MModelResource::OnDelete()
 {
     if (m_pSkeleton)
     {
-        m_pSkeleton->SubRef();
         m_pSkeleton = nullptr;
     }
-
-	for (std::shared_ptr<MMeshResource> pMeshRes : m_vMeshes)
-		pMeshRes->SubRef();
 
     m_vMeshes.clear();
 }
@@ -71,7 +55,6 @@ bool MModelResource::Load(const MString& strResourcePath)
     if (MString* pSkePath = pStruct->FindMember<MString>("ske"))
     {
         m_pSkeleton = MTypeClass::DynamicCast<MSkeletonResource>(pResourceSystem->LoadResource(*pSkePath));
-        m_pSkeleton->AddRef();
     }
 
     if (MVariantArray* pMeshPathArray = pStruct->FindMember<MVariantArray>("mesh"))
@@ -83,7 +66,6 @@ bool MModelResource::Load(const MString& strResourcePath)
                 if (std::shared_ptr<MResource> pRes = pResourceSystem->LoadResource(*pMeshPath))
                 {
                     std::shared_ptr<MMeshResource> pMeshRes = MTypeClass::DynamicCast<MMeshResource>(pRes);
-                    pMeshRes->AddRef();
 
                     m_vMeshes.push_back(pMeshRes);
                 }

@@ -8,8 +8,8 @@
 
 #ifndef _M_MSCENESYSTEM_H_
 #define _M_MSCENESYSTEM_H_
-#include "MGlobal.h"
-#include "MSystem.h"
+#include "Utility/MGlobal.h"
+#include "Engine/MSystem.h"
 
 class MEntity;
 class MORTY_API MSceneSystem : public MISystem

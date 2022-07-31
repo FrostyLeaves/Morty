@@ -1,8 +1,8 @@
-#include "MSkyBoxComponent.h"
+#include "Component/MSkyBoxComponent.h"
 
 MORTY_CLASS_IMPLEMENT(MSkyBoxComponent, MComponent)
 
-#include "MTextureResource.h"
+#include "Resource/MTextureResource.h"
 
 MSkyBoxComponent::MSkyBoxComponent()
 	: MComponent()

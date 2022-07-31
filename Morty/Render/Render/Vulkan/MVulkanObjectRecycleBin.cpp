@@ -1,5 +1,5 @@
-#include "MVulkanObjectRecycleBin.h"
-#include "MVulkanDevice.h"
+#include "Render/Vulkan/MVulkanObjectRecycleBin.h"
+#include "Render/Vulkan/MVulkanDevice.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 

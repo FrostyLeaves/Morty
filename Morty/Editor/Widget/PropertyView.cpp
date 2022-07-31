@@ -2,15 +2,15 @@
 
 #include "imgui.h"
 
-#include "MObject.h"
+#include "Object/MObject.h"
 
-#include "PropertyMSceneComponent.h"
-#include "PropertyMCameraComponent.h"
-#include "PropertyMSpotLight.h"
-#include "PropertyMPointLight.h"
-#include "PropertyMDirectionalLightComponent.h"
-#include "PropertyMModelComponent.h"
-#include "PropertyMRenderableMeshComponent.h"
+#include "Property/PropertyMSceneComponent.h"
+#include "Property/PropertyMCameraComponent.h"
+#include "Property/PropertyMSpotLight.h"
+#include "Property/PropertyMPointLight.h"
+#include "Property/PropertyMDirectionalLightComponent.h"
+#include "Property/PropertyMModelComponent.h"
+#include "Property/PropertyMRenderableMeshComponent.h"
 
 #define REGISTER_PROPERTY( CLASS_NAME ) \
 	m_tCreatePropertyFactory[#CLASS_NAME] = []() {return new Property##CLASS_NAME(); };

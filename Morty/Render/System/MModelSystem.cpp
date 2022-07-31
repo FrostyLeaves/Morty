@@ -1,9 +1,9 @@
-#include "MModelSystem.h"
+#include "System/MModelSystem.h"
 
-#include "MScene.h"
-#include "MSkeletalAnimation.h"
-#include "MModelComponent.h"
-#include "MSceneComponent.h"
+#include "Scene/MScene.h"
+#include "Model/MSkeletalAnimation.h"
+#include "Component/MModelComponent.h"
+#include "Component/MSceneComponent.h"
 
 MORTY_CLASS_IMPLEMENT(MModelSystem, MISystem)
 

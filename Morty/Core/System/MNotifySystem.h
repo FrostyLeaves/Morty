@@ -8,9 +8,9 @@
 
 #ifndef _M_MNOTIFYSYSTEM_H_
 #define _M_MNOTIFYSYSTEM_H_
-#include "MGlobal.h"
-#include "MSystem.h"
-#include "MComponent.h"
+#include "Utility/MGlobal.h"
+#include "Engine/MSystem.h"
+#include "Component/MComponent.h"
 
 typedef std::function<void(MComponent* pComponent)> MNotifyFunction;
 

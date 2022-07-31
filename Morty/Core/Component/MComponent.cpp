@@ -1,11 +1,11 @@
-#include "MComponent.h"
+#include "Component/MComponent.h"
 
 MORTY_CLASS_IMPLEMENT(MComponent, MTypeClass)
 
-#include "MScene.h"
-#include "MEntity.h"
+#include "Scene/MScene.h"
+#include "Scene/MEntity.h"
 
-#include "MNotifySystem.h"
+#include "System/MNotifySystem.h"
 
 #include "Flatbuffer/MComponent_generated.h"
 

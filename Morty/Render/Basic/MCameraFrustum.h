@@ -10,9 +10,9 @@
 
 #ifndef _M_MCAMERAFRUSTUM_H_
 #define _M_MCAMERAFRUSTUM_H_
-#include "MGlobal.h"
-#include "MBounds.h"
-#include "MPlane.h"
+#include "Utility/MGlobal.h"
+#include "Utility/MBounds.h"
+#include "Basic/MPlane.h"
 
 class MViewport;
 class MORTY_API MCameraFrustum
@@ -20,10 +20,10 @@ class MORTY_API MCameraFrustum
 public:
 	enum MEContainType
 	{
-		EOUTSIDE = 0,	//ÔÚÍâ²¿
-		ENOTOUTSIDE = 1,//²»ÔÚÍâ²¿
-		EINSIDE = 3,	//°üº¬
-		EINTERSECT = 5,	//½»²æ
+		EOUTSIDE = 0,	//ï¿½ï¿½ï¿½â²¿
+		ENOTOUTSIDE = 1,//ï¿½ï¿½ï¿½ï¿½ï¿½â²¿
+		EINSIDE = 3,	//ï¿½ï¿½ï¿½ï¿½
+		EINTERSECT = 5,	//ï¿½ï¿½ï¿½ï¿½
 	};
 
 
@@ -38,7 +38,7 @@ public:
 	MEContainType ContainTest(const MBoundsAABB& aabb);
 	MEContainType ContainTest(const MBoundsSphere& sphere);
 
-	//Ö»¶ÔÄ³¸ö·½ÏòÖ¸ÏòµÄÊÓ×¶Ìå½ØÃæ×ö²âÊÔ
+	//Ö»ï¿½ï¿½Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½×¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	MEContainType ContainTest(const MBoundsAABB& aabb, const Vector3& v3Direction);
 
 	std::vector<MCameraFrustum> CutFrustum(const std::vector<float>& percent);

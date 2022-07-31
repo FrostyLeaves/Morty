@@ -8,12 +8,12 @@
 
 #ifndef _M_MVULKANPIPELINEMANAGER_H_
 #define _M_MVULKANPIPELINEMANAGER_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
-#include "MIDPool.h"
-#include "MRenderPass.h"
+#include "Utility/MIDPool.h"
+#include "Render/MRenderPass.h"
 
 class MMaterial;
 class MVulkanDevice;

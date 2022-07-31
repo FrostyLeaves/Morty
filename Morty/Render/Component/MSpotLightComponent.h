@@ -8,11 +8,11 @@
 
 #ifndef _M_MSPOTLIGHTCOMPONENT_H_
 #define _M_MSPOTLIGHTCOMPONENT_H_
-#include "MGlobal.h"
-#include "MComponent.h"
+#include "Utility/MGlobal.h"
+#include "Component/MComponent.h"
 
-#include "Vector.h"
-#include "MColor.h"
+#include "Math/Vector.h"
+#include "Utility/MColor.h"
 
 class MORTY_API MSpotLightComponent : public MComponent
 {

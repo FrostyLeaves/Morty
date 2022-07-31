@@ -1,11 +1,11 @@
-﻿#include "MShaderResource.h"
-#include "MMath.h"
-#include "MEngine.h"
-#include "MIDevice.h"
-#include "MShader.h"
+﻿#include "Resource/MShaderResource.h"
+#include "Math/MMath.h"
+#include "Engine/MEngine.h"
+#include "Render/MIDevice.h"
+#include "Material/MShader.h"
 
-#include "MRenderSystem.h"
-#include "MResourceSystem.h"
+#include "System/MRenderSystem.h"
+#include "System/MResourceSystem.h"
 
 MORTY_CLASS_IMPLEMENT(MShaderResource, MResource)
 

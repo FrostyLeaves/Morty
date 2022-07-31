@@ -1,7 +1,7 @@
 #ifndef _M_VULKAN_WRAPPER_H_
 #define _M_VULKAN_WRAPPER_H_
 
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
 //test for macos
 #include <vulkan/vulkan.h>

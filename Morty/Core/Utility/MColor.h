@@ -8,8 +8,8 @@
 
 #ifndef _M_MCOLOR_H_
 #define _M_MCOLOR_H_
-#include "MGlobal.h"
-#include "Vector.h"
+#include "Utility/MGlobal.h"
+#include "Math/Vector.h"
 
 class MORTY_API MColor
 {

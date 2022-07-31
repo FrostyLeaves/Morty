@@ -11,11 +11,11 @@
 
 #ifndef _M_MESHRESOURCE_H_
 #define _M_MESHRESOURCE_H_
-#include "MGlobal.h"
-#include "MString.h"
-#include "MMesh.h"
-#include "MResource.h"
-#include "MBounds.h"
+#include "Utility/MGlobal.h"
+#include "Utility/MString.h"
+#include "Render/MMesh.h"
+#include "Resource/MResource.h"
+#include "Utility/MBounds.h"
 
 #include <map>
 

@@ -1,6 +1,6 @@
-﻿#include "MObject.h"
-#include "MEngine.h"
-#include "MObjectSystem.h"
+﻿#include "Object/MObject.h"
+#include "Engine/MEngine.h"
+#include "System/MObjectSystem.h"
 
 MORTY_CLASS_IMPLEMENT(MObject, MTypeClass)
 

@@ -1,15 +1,16 @@
 #ifndef _MAIN_EDITOR_H_
 #define _MAIN_EDITOR_H_
 
-#include "MVariant.h"
-#include "MRenderPass.h"
-#include "SceneTexture.h"
-#include "MTexture.h"
+#include "Utility/MVariant.h"
+#include "Render/MRenderPass.h"
+#include "Render/SceneTexture.h"
+#include "Basic/MTexture.h"
 
-#include "MRenderView.h"
+#include "View/MRenderView.h"
 
 class MNode;
 class MScene;
+class MViewport;
 class ImGuiRenderable;
 class MStaticMeshInstance;
 class IBaseView;
@@ -29,7 +30,8 @@ public:
 	MainEditor();
 	virtual ~MainEditor();
 
-	MScene* GetScene() { return m_SceneTexture.GetScene(); }
+	MScene* GetScene() const { return m_SceneTexture.GetScene(); }
+	MViewport* GetViewport() const { return m_SceneTexture.GetViewport(); }
 
 	bool Initialize(MEngine* pEngine, const char* svWindowName);
 	void Release();

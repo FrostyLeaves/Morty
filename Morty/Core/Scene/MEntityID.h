@@ -10,7 +10,7 @@
 #define _M_GUID_H_
 #include "crossguid/guid.hpp"
 
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
 class MORTY_API MGuid
 {

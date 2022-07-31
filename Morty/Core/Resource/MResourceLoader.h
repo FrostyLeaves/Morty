@@ -8,9 +8,9 @@
 
 #ifndef _M_MRESOURCELOADER_H_
 #define _M_MRESOURCELOADER_H_
-#include "MGlobal.h"
-#include "MString.h"
-#include "MResource.h"
+#include "Utility/MGlobal.h"
+#include "Utility/MString.h"
+#include "Resource/MResource.h"
 
 class MResourceSystem;
 class MORTY_API MResourceLoader

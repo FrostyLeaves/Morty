@@ -8,8 +8,8 @@
 
 #ifndef _M_MTYPECLASS_H_
 #define _M_MTYPECLASS_H_
-#include "MGlobal.h"
-#include "MString.h"
+#include "Utility/MGlobal.h"
+#include "Utility/MString.h"
 
 #define M_TYPE_DECL(Class) \
 public: \

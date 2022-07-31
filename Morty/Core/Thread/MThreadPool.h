@@ -8,10 +8,10 @@
 
 #ifndef _M_MTHREADPOOL_H_
 #define _M_MTHREADPOOL_H_
-#include "MGlobal.h"
-#include "MType.h"
+#include "Utility/MGlobal.h"
+#include "Type/MType.h"
 
-#include "MThreadWork.h"
+#include "Thread/MThreadWork.h"
 
 #define M_MAX_THREAD_NUM 10
 

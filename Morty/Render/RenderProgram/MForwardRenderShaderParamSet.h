@@ -8,9 +8,9 @@
 
 #ifndef _M_MFORWARD_RENDER_SHADER_PARAM_SET_H_
 #define _M_MFORWARD_RENDER_SHADER_PARAM_SET_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 #include "MRenderInfo.h"
-#include "MShaderParamSet.h"
+#include "Material/MShaderParamSet.h"
 
 
 class MEngine;

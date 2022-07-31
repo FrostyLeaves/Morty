@@ -8,9 +8,9 @@
 
 #ifndef _M_MTEXTURE_H_
 #define _M_MTEXTURE_H_
-#include "MRenderGlobal.h"
+#include "Render/MRenderGlobal.h"
 
-#include "Vector.h"
+#include "Math/Vector.h"
 #include <array>
 
 class MIDevice;
@@ -19,6 +19,7 @@ enum METextureType
 {
 	ETexture2D = 1,
 	ETextureCube = 2,
+	ETexture2DArray = 3,
 };
 
 enum class METextureLayout
@@ -78,6 +79,9 @@ public:
 	void SetTextureLayout(const METextureLayout& eLayout) { m_eRenderType = eLayout; }
 	METextureLayout GetTextureLayout() { return m_eRenderType; }
 
+	void SetImageLayerNum(const size_t& unNum) { m_unImageLayerNum = unNum; }
+	size_t GetImageLayerNum() const { return m_unImageLayerNum; }
+
 	void SetReadable(const bool& bReadable) { m_bReadable = bReadable; }
 	bool GetReadable() { return m_bReadable; }
 
@@ -103,11 +107,10 @@ public:
 
 	static uint32_t GetImageMemorySize(const METextureLayout& layout);
 
-	uint32_t GetImageLayerNum() const;
-
 public:
 
 	static MTexture* CreateShadowMap();
+	static MTexture* CreateShadowMapArray(const size_t& nArraySize);
 	static MTexture* CreateRenderTarget();
 	static MTexture* CreateRenderTargetGBuffer();
 	static MTexture* CreateRenderTargetFloat32();
@@ -139,6 +142,10 @@ public:
 	bool m_bMipmapsEnable;
 
 	int m_unMipmapLevel;
+
+private:
+
+	size_t m_unImageLayerNum;
 
 public:
 

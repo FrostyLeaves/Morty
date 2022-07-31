@@ -8,7 +8,7 @@
 
 #ifndef _M_MSHADER_H_
 #define _M_MSHADER_H_
-#include "MRenderGlobal.h"
+#include "Render/MRenderGlobal.h"
 
 #include "MShaderMacro.h"
 #include "MShaderBuffer.h"

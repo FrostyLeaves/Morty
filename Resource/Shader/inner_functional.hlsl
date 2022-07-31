@@ -70,15 +70,22 @@ float DecodeExpV4( float4 pack )
 }
 
 //shadow
-float CalcShadow(Texture2D texShadowMap, float4 dirLightSpacePos, float3 f3PixelDepth, float fNdotL)
+float CalcShadow(Texture2DArray texShadowMap, float3 f3WorldPosition, float fDepth, float fNdotL)
 {
+
+    float index = fDepth / (1.0 / CASCADED_SHADOW_MAP_NUM);
+
+    index = floor(index);
+
+    float4 f4DirLightSpacePos = mul(float4(f3WorldPosition, 1.0f), U_matLightProj[index]);
+
     float2 shadowTexCoords;
-    shadowTexCoords.x = 0.5f + (dirLightSpacePos.x / dirLightSpacePos.w * 0.5f);
+    shadowTexCoords.x = 0.5f + (f4DirLightSpacePos.x / f4DirLightSpacePos.w * 0.5f);
 
     //DirectX Y 1 -> 0
-    shadowTexCoords.y = 0.5f - (dirLightSpacePos.y / dirLightSpacePos.w * 0.5f);
+    shadowTexCoords.y = 0.5f - (f4DirLightSpacePos.y / f4DirLightSpacePos.w * 0.5f);
     //Vulkan Y 0 -> 1
-//    shadowTexCoords.y = 0.5f + (dirLightSpacePos.y / dirLightSpacePos.w * 0.5f);
+//    shadowTexCoords.y = 0.5f + (f4DirLightSpacePos.y / f4DirLightSpacePos.w * 0.5f);
     
 	if (saturate(shadowTexCoords.x) == shadowTexCoords.x && saturate(shadowTexCoords.y) == shadowTexCoords.y)
     {     
@@ -87,8 +94,8 @@ float CalcShadow(Texture2D texShadowMap, float4 dirLightSpacePos, float3 f3Pixel
 
         float lighting = 0.0f;
         
-        float pixelDepth = min(dirLightSpacePos.z / dirLightSpacePos.w, 1.0f);
-        float shadowDepth = texShadowMap.Sample(LinearSampler, shadowTexCoords.xy).r;
+        float pixelDepth = min(f4DirLightSpacePos.z / f4DirLightSpacePos.w, 1.0f);
+        float shadowDepth = texShadowMap.Sample(LinearSampler, float3(shadowTexCoords.xy, index)).r;
 
         //current pixel is nearer.
         if (pixelDepth < shadowDepth + epsilon)

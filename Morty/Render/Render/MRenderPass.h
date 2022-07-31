@@ -8,9 +8,9 @@
 
 #ifndef _M_MRENDERPASS_H_
 #define _M_MRENDERPASS_H_
-#include "MRenderGlobal.h"
+#include "Render/MRenderGlobal.h"
 
-#include "MColor.h"
+#include "Utility/MColor.h"
 
 class MIDevice;
 class MTexture;
@@ -87,8 +87,14 @@ public:
     void SetRenderPassID(const uint32_t& unID) { m_unRenderPassID = unID; }
     uint32_t GetRenderPassID() const { return m_unRenderPassID; }
 
-    void SetViewNum(const uint32_t& unNum) { m_unViewNum = unNum; }
-    uint32_t GetViewNum() const { return m_unViewNum; }
+
+    /* Multi Viewport.
+    * 
+    * @param unNum: size of viewport.
+    * 
+    */
+    void SetViewportNum(const uint32_t& unNum) { m_unViewNum = unNum; }
+    uint32_t GetViewportNum() const { return m_unViewNum; }
 
 	std::vector<MSubpass> m_vSubpass;
 

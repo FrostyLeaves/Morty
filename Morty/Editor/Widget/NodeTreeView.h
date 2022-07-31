@@ -1,9 +1,9 @@
 #ifndef _NODE_TREE_VIEW_H_
 #define _NODE_TREE_VIEW_H_
 
-#include "IBaseView.h"
+#include "Main/IBaseView.h"
 
-#include "MEntity.h"
+#include "Scene/MEntity.h"
 
 class MScene;
 class MObject;

@@ -4,36 +4,40 @@
 #include "SDL.h"
 #include <fstream>
 
-#include "MEngine.h"
+#include "Engine/MEngine.h"
 #include "MainEditor.h"
 
 #include "MRenderModule.h"
-#include "MModelConverter.h"
+#include "Model/MModelConverter.h"
 
-#include "MEditorModule.h"
+#include "Module/MEditorModule.h"
 
-#include "MEntitySystem.h"
-#include "MSkyBoxSystem.h"
-#include "MResourceSystem.h"
+#include "System/MEntitySystem.h"
+#include "System/MSkyBoxSystem.h"
+#include "System/MResourceSystem.h"
+#include "System/MRenderSystem.h"
 
-#include "MMaterial.h"
+#include "Material/MMaterial.h"
 
-#include "MScene.h"
-#include "MSceneComponent.h"
-#include "MRenderableMeshComponent.h"
+#include "Scene/MScene.h"
+#include "Component/MSceneComponent.h"
+#include "Component/MRenderableMeshComponent.h"
 
-#include "MSkyBoxComponent.h"
-#include "MPointLightComponent.h"
-#include "MDirectionalLightComponent.h"
+#include "Component/MSkyBoxComponent.h"
+#include "Component/MPointLightComponent.h"
+#include "Component/MDirectionalLightComponent.h"
 
-#include "MTextureResource.h"
-#include "MMaterialResource.h"
+#include "Component/MCameraComponent.h"
+#include "Component/MDebugRenderComponent.h"
+
+#include "Resource/MTextureResource.h"
+#include "Resource/MMaterialResource.h"
 
 #ifdef MORTY_WIN
 #undef main
 #endif
 
-#define TEST_ANIMATION
+//#define TEST_ANIMATION
 
 //#define TEST_PBR_RENDER_0
 
@@ -46,6 +50,106 @@
 //#define TEST_BASIC_SHAPE
 
 #define TEST_SKY_BOX
+
+#define TEST_SHADOW_MAP
+
+void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
+{
+	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
+	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
+
+	std::shared_ptr<MMeshResource> pCubeResource = pResourceSystem->CreateResource<MMeshResource>();
+	pCubeResource->LoadAsCube();
+
+	std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
+
+	pMaterial->LoadVertexShader("./Shader/model_gbuffer.mvs");
+	pMaterial->LoadPixelShader("./Shader/model_gbuffer.mps");
+	pMaterial->SetMaterialType(MEMaterialType::EDeferred);
+
+	std::shared_ptr<MResource> albedo = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
+	std::shared_ptr<MResource> normal = pResourceSystem->LoadResource(MRenderModule::DefaultNormal);
+	std::shared_ptr<MResource> roughness = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
+	std::shared_ptr<MResource> ao = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
+	std::shared_ptr<MResource> metal = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
+	std::shared_ptr<MResource> height = pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero);
+
+	pMaterial->SetTexutreParam(MaterialKey::Albedo, albedo);
+	pMaterial->SetTexutreParam(MaterialKey::Normal, normal);
+	pMaterial->SetTexutreParam(MaterialKey::Metallic, metal);
+	pMaterial->SetTexutreParam(MaterialKey::Roughness, roughness);
+	pMaterial->SetTexutreParam(MaterialKey::AmbientOcc, ao);
+	pMaterial->SetTexutreParam(MaterialKey::Height, height);
+
+	pMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
+	pMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);
+
+
+	MEntity* pFloorEntity = pScene->CreateEntity();
+	pFloorEntity->SetName("Floor");
+	if (MSceneComponent* pSceneComponent = pFloorEntity->RegisterComponent<MSceneComponent>())
+	{
+		pSceneComponent->SetPosition(Vector3(0, 0, 0));
+		pSceneComponent->SetScale(Vector3(1000.0f, 1.0f, 1000.0f));
+	}
+	if (MRenderableMeshComponent* pMeshComponent = pFloorEntity->RegisterComponent<MRenderableMeshComponent>())
+	{
+		std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
+
+		pMaterial->LoadVertexShader("./Shader/model_gbuffer.mvs");
+		pMaterial->LoadPixelShader("./Shader/model_gbuffer.mps");
+		pMaterial->SetMaterialType(MEMaterialType::EDeferred);
+
+		std::shared_ptr<MResource> albedo = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
+		std::shared_ptr<MResource> normal = pResourceSystem->LoadResource(MRenderModule::DefaultNormal);
+		std::shared_ptr<MResource> roughness = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
+		std::shared_ptr<MResource> ao = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
+		std::shared_ptr<MResource> metal = pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero);
+		std::shared_ptr<MResource> height = pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero);
+
+		pMaterial->SetTexutreParam(MaterialKey::Albedo, albedo);
+		pMaterial->SetTexutreParam(MaterialKey::Normal, normal);
+		pMaterial->SetTexutreParam(MaterialKey::Metallic, metal);
+		pMaterial->SetTexutreParam(MaterialKey::Roughness, roughness);
+		pMaterial->SetTexutreParam(MaterialKey::AmbientOcc, ao);
+		pMaterial->SetTexutreParam(MaterialKey::Height, height);
+
+		pMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
+		pMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);
+
+		pMeshComponent->Load(pCubeResource);
+		pMeshComponent->SetMaterial(pMaterial);
+	}
+
+	MEntity* pCubeFolder = pScene->CreateEntity();
+	pCubeFolder->SetName("Cube Folder");
+	MSceneComponent* pCubeFolderComponent = pCubeFolder->RegisterComponent<MSceneComponent>();
+
+	const float distance = 10;
+	const size_t nNum = 1;
+	for (size_t x = 0; x < nNum; ++x)
+	{
+		for (size_t y = 0; y < nNum; ++y)
+		{
+			MEntity* pSphereEntity = pScene->CreateEntity();
+			pSphereEntity->SetName("Sphere_" + std::to_string(x) + "_" + std::to_string(y));
+			if (MSceneComponent* pSceneComponent = pSphereEntity->RegisterComponent<MSceneComponent>())
+			{
+				pSceneComponent->SetPosition(Vector3(x * distance, 10, y * distance));
+				pSceneComponent->SetScale(Vector3(1.0f, 1.0f, 1.0f));
+				pSceneComponent->SetParentComponent(pCubeFolderComponent->GetComponentID());
+			}
+			if (MRenderableMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderableMeshComponent>())
+			{
+				pMeshComponent->SetGenerateDirLightShadow(true);
+				pMeshComponent->SetShadowType(MRenderableMeshComponent::MEShadowType::EOnlyDirectional);
+				pMeshComponent->Load(pCubeResource);
+				pMeshComponent->SetMaterial(pMaterial);
+			}
+		}
+
+	}
+}
 
 void SKY_BOX(MEngine* pEngine, MScene* pScene)
 {
@@ -343,6 +447,7 @@ int main()
 	{
 		MResourceSystem* pResourceSystem = engine.FindSystem<MResourceSystem>();
 		MEntitySystem* pEntitySystem = engine.FindSystem<MEntitySystem>();
+		MRenderSystem* pRenderSystem = engine.FindSystem<MRenderSystem>();
 
 
 #ifdef	TEST_BASIC_SHAPE
@@ -380,6 +485,13 @@ int main()
 		{
 			pLightComponent->SetLightIntensity(1.0f);
 		}
+#endif
+
+
+#ifdef TEST_SHADOW_MAP
+
+		SHADOW_MAP_TEST(&engine, pScene);
+
 #endif
 
 

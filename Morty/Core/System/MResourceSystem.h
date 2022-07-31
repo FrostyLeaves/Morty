@@ -8,11 +8,11 @@
 
 #ifndef _M_MRESOURCE_SYSTEM_H_
 #define _M_MRESOURCE_SYSTEM_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
-#include "MIDPool.h"
-#include "MSystem.h"
-#include "MResourceLoader.h"
+#include "Utility/MIDPool.h"
+#include "Engine/MSystem.h"
+#include "Resource/MResourceLoader.h"
 
 #include <vector>
 #include <map>
@@ -54,6 +54,10 @@ public:
 	std::map<MResourceID, std::shared_ptr<MResource>>* GetAllResources() { return &m_tResources; }
 
 	void MoveTo(std::shared_ptr<MResource> pResource, const MString& strTargetPath);
+
+public:
+
+	virtual void Release() override;
 
 private:
 

@@ -1,4 +1,4 @@
-#include "MComponentSystem.h"
+#include "System/MComponentSystem.h"
 
 MORTY_CLASS_IMPLEMENT(MComponentSystem, MISystem)
 

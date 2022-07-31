@@ -1,9 +1,9 @@
-#include "MJson.h"
+#include "Utility/MJson.h"
 #include "document.h"
 #include "writer.h"
 #include "stringbuffer.h"
 
-#include "MVariant.h"
+#include "Utility/MVariant.h"
 
 using namespace rapidjson;
 

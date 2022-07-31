@@ -8,10 +8,10 @@
 
 #ifndef _M_MENTITYRESOURCE_H_
 #define _M_MENTITYRESOURCE_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
-#include "MVariant.h"
-#include "MResource.h"
+#include "Utility/MVariant.h"
+#include "Resource/MResource.h"
 
 class MORTY_API MEntityResource : public MResource
 {

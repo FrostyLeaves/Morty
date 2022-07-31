@@ -8,10 +8,10 @@
 
 #ifndef _M_MMOVECONTROLLERSYSTEM_H_
 #define _M_MMOVECONTROLLERSYSTEM_H_
-#include "MGlobal.h"
-#include "MSystem.h"
+#include "Utility/MGlobal.h"
+#include "Engine/MSystem.h"
 
-#include "Vector.h"
+#include "Math/Vector.h"
 
 class MMoveControllerComponent;
 class MORTY_API MMoveControllerSystem : public MISystem

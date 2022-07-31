@@ -8,7 +8,7 @@
 
 #ifndef _M_MBLOCKVECTOR_H_
 #define _M_MBLOCKVECTOR_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
 #include <iterator>
 
@@ -147,6 +147,8 @@ bool MBlockVectorIter<TYPE, SIZE>::operator>=(const MBlockVectorIter& iter) cons
 template<typename TYPE, size_t SIZE>
 class MORTY_API MBlockVector
 {
+public:
+	MBlockVector();
 
 public:
 	MBlockVectorIter<TYPE, SIZE> begin();
@@ -168,8 +170,15 @@ public:
 		size_t nValidNum = 0;
 	};
 
-	std::vector<MBlockArray> vPrimaryArray = { MBlockArray() };
+	std::vector<std::unique_ptr<MBlockArray>> vPrimaryArray;
 };
+
+template<typename TYPE, size_t SIZE>
+MBlockVector<TYPE, SIZE>::MBlockVector<TYPE, SIZE>()
+	: vPrimaryArray()
+{
+	vPrimaryArray.push_back(std::make_unique<MBlockArray>());
+}
 
 template<typename TYPE, size_t SIZE>
 TYPE* MBlockVector<TYPE, SIZE>::get(const size_t& pid, const size_t& sid)
@@ -177,9 +186,9 @@ TYPE* MBlockVector<TYPE, SIZE>::get(const size_t& pid, const size_t& sid)
 	if (pid < vPrimaryArray.size())
 	{
 		auto& vec = vPrimaryArray[pid];
-		if (sid < vec.nValidNum)
+		if (sid < vec->nValidNum)
 		{
-			return &(vec.vSecondaryArray[sid]);
+			return &(vec->vSecondaryArray[sid]);
 		}
 	}
 
@@ -189,19 +198,19 @@ TYPE* MBlockVector<TYPE, SIZE>::get(const size_t& pid, const size_t& sid)
 template<typename TYPE, size_t SIZE>
 TYPE& MBlockVector<TYPE, SIZE>::push_back(const TYPE& value)
 {
-	if (vPrimaryArray.back().nValidNum == SIZE)
+	if (vPrimaryArray.back()->nValidNum == SIZE)
 	{
-		vPrimaryArray.push_back({});
-		MBlockArray& arr = vPrimaryArray.back();
-		arr.vSecondaryArray[0] = value;
-		arr.nValidNum = 1;
-		return arr.vSecondaryArray[0];
+		vPrimaryArray.push_back(std::make_unique<MBlockArray>());
+		std::unique_ptr<MBlockArray>& arr = vPrimaryArray.back();
+		arr->vSecondaryArray[0] = value;
+		arr->nValidNum = 1;
+		return arr->vSecondaryArray[0];
 	}
 	else
 	{
-		MBlockArray& arr = vPrimaryArray.back();
-		arr.vSecondaryArray[arr.nValidNum++] = value;
-		return arr.vSecondaryArray[arr.nValidNum - 1];
+		std::unique_ptr<MBlockArray>& arr = vPrimaryArray.back();
+		arr->vSecondaryArray[arr->nValidNum++] = value;
+		return arr->vSecondaryArray[arr->nValidNum - 1];
 	}
 }
 
@@ -210,8 +219,8 @@ void MBlockVector<TYPE, SIZE>::pop_back()
 {
 	if (vPrimaryArray.back().nValidNum > 1)
 	{
-		MBlockArray& arr = vPrimaryArray.back();
-		--arr.nValidNum;
+		std::unique_ptr<MBlockArray>& arr = vPrimaryArray.back();
+		--arr->nValidNum;
 	}
 	else if (vPrimaryArray.back().nValidNum == 1)
 	{
@@ -239,7 +248,7 @@ MBlockVectorIter<TYPE, SIZE> MBlockVector<TYPE, SIZE>::begin()
 template<typename TYPE, size_t SIZE>
 MBlockVectorIter<TYPE, SIZE> MBlockVector<TYPE, SIZE>::end()
 {
-	return MBlockVectorIter<TYPE, SIZE>(*this, vPrimaryArray.size() - 1, vPrimaryArray.back().nValidNum);
+	return MBlockVectorIter<TYPE, SIZE>(*this, vPrimaryArray.size() - 1, vPrimaryArray.back()->nValidNum);
 }
 
 template<typename TYPE, size_t SIZE>
@@ -252,13 +261,13 @@ void MBlockVector<TYPE, SIZE>::clear()
 template<typename TYPE, size_t SIZE>
 TYPE& MBlockVectorIter<TYPE, SIZE>::operator*()
 {
-	return vArray.vPrimaryArray[nPrimaryIdx].vSecondaryArray[nSecondaryIdx];
+	return vArray.vPrimaryArray[nPrimaryIdx]->vSecondaryArray[nSecondaryIdx];
 }
 
 template<typename TYPE, size_t SIZE>
 TYPE* MBlockVectorIter<TYPE, SIZE>::operator->()
 {
-	return &(vArray.vPrimaryArray[nPrimaryIdx].vSecondaryArray[nSecondaryIdx]);
+	return &(vArray.vPrimaryArray[nPrimaryIdx]->vSecondaryArray[nSecondaryIdx]);
 }
 
 #endif

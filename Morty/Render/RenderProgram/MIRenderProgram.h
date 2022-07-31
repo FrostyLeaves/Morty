@@ -8,8 +8,8 @@
 
 #ifndef _M_MIRENDERPROGRAM_H_
 #define _M_MIRENDERPROGRAM_H_
-#include "MGlobal.h"
-#include "MObject.h"
+#include "Utility/MGlobal.h"
+#include "Object/MObject.h"
 
 class MScene;
 class MTexture;

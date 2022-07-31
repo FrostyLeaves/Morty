@@ -1,4 +1,4 @@
-#include "MPointLightComponent.h"
+#include "Component/MPointLightComponent.h"
 
 #include "Flatbuffer/MPointLightComponent_generated.h"
 

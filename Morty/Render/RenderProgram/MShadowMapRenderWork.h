@@ -8,11 +8,11 @@
 
 #ifndef _M_MSHADOWMAPRENDERWORK_H_
 #define _M_MSHADOWMAPRENDERWORK_H_
-#include "MGlobal.h"
-#include "MObject.h"
+#include "Utility/MGlobal.h"
+#include "Object/MObject.h"
 
 #include "MRenderInfo.h"
-#include "MRenderPass.h"
+#include "Render/MRenderPass.h"
 #include "MShadowMapShaderParamSet.h"
 
 class MTaskNode;
@@ -44,6 +44,13 @@ public:
 protected:
 
 	void DrawShadowMesh(MRenderInfo& info, MIRenderCommand* pCommand);
+
+
+
+	Matrix4 GetLightInverseProjection_MinBoundsAABB(MRenderInfo& info, const MBoundsAABB& cGenerateShadowAABB, float fZNear, float fZFar);
+
+	Matrix4 GetLightInverseProjection_MaxBoundsSphere(MRenderInfo& info, const MBoundsAABB& cGenerateShadowAABB, float fZNear, float fZFar);
+
 
 private:
 

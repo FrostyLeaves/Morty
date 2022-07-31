@@ -1,6 +1,6 @@
-﻿#include "MTexture.h"
+﻿#include "Basic/MTexture.h"
 
-#include "MIDevice.h"
+#include "Render/MIDevice.h"
 
 MTexture::MTexture()
 	: m_strTextureName("Texture_Default")
@@ -12,6 +12,7 @@ MTexture::MTexture()
 	, m_bReadable(false)
 	, m_bMipmapsEnable(false)
 	, m_unMipmapLevel(0)
+	, m_unImageLayerNum(1)
 {
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -91,16 +92,6 @@ uint32_t MTexture::GetImageMemorySize(const METextureLayout& layout)
 	return 0;
 }
 
-uint32_t MTexture::GetImageLayerNum() const
-{
-	if (GetTextureType() == ETexture2D)
-		return 1;
-	else if (GetTextureType() == ETextureCube)
-		return 6;
-
-	return 0;
-}
-
 MTexture* MTexture::CreateShadowMap()
 {
 	MTexture* pTexture = new MTexture();
@@ -110,6 +101,21 @@ MTexture* MTexture::CreateShadowMap()
 	pTexture->SetRenderUsage(METextureRenderUsage::ERenderDepth);
 	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
 	pTexture->SetTextureLayout(METextureLayout::EDepth);
+
+	return pTexture;
+}
+
+MTexture* MTexture::CreateShadowMapArray(const size_t& nArraySize)
+{
+	MTexture* pTexture = new MTexture();
+	pTexture->SetName("Shadow Map Texture Array");
+	pTexture->SetMipmapsEnable(false);
+	pTexture->SetReadable(false);
+	pTexture->SetRenderUsage(METextureRenderUsage::ERenderDepth);
+	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
+	pTexture->SetTextureLayout(METextureLayout::EDepth);
+	pTexture->SetTextureType(METextureType::ETexture2DArray);
+	pTexture->SetImageLayerNum(nArraySize);
 
 	return pTexture;
 }
@@ -163,6 +169,7 @@ MTexture* MTexture::CreateCubeMap()
 	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
 	pTexture->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
 	pTexture->SetTextureType(METextureType::ETextureCube);
+	pTexture->SetImageLayerNum(6);
 
 	return pTexture;
 }

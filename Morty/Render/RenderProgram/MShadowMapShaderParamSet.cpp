@@ -1,17 +1,17 @@
 #include "MShadowMapShaderParamSet.h"
 
-#include "MScene.h"
-#include "MEntity.h"
-#include "MEngine.h"
-#include "MViewport.h"
+#include "Scene/MScene.h"
+#include "Scene/MEntity.h"
+#include "Engine/MEngine.h"
+#include "Basic/MViewport.h"
 
-#include "MSceneComponent.h"
-#include "MCameraComponent.h"
-#include "MSpotLightComponent.h"
-#include "MPointLightComponent.h"
-#include "MDirectionalLightComponent.h"
+#include "Component/MSceneComponent.h"
+#include "Component/MCameraComponent.h"
+#include "Component/MSpotLightComponent.h"
+#include "Component/MPointLightComponent.h"
+#include "Component/MDirectionalLightComponent.h"
 
-#include "MRenderSystem.h"
+#include "System/MRenderSystem.h"
 
 MShadowMapShaderParamSet::MShadowMapShaderParamSet()
 	: MShaderParamSet(1)
@@ -32,7 +32,14 @@ void MShadowMapShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	m_pWorldMatrixParam->eShaderType = MEShaderParamType::EVertex;
 
 	MStruct worldMatrixSrt;
-	worldMatrixSrt.AppendMVariant("U_matCamProj", Matrix4());
+
+	MVariantArray matCamProjArray;
+	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
+	{
+		matCamProjArray.AppendMVariant<Matrix4>();
+	}
+	worldMatrixSrt.AppendMVariant("U_matCamProj", matCamProjArray);
+	
 
 	m_pWorldMatrixParam->var = worldMatrixSrt;
 
@@ -51,7 +58,14 @@ void MShadowMapShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 	if (m_pWorldMatrixParam)
 	{
 		MStruct& cStruct = *m_pWorldMatrixParam->var.GetStruct();
-		cStruct[0] = info.m4DirLightInvProj;
+
+		if (MVariantArray* pCamProjArray = cStruct.GetMember<MVariantArray>(0))
+		{
+			for (size_t nCascadedIdx = 0; nCascadedIdx < info.cCascadedShadow.size(); ++nCascadedIdx)
+			{
+				(*pCamProjArray)[nCascadedIdx] = info.cCascadedShadow[nCascadedIdx].m4DirLightInvProj;
+			}
+		}
 
 		m_pWorldMatrixParam->SetDirty();
 	}

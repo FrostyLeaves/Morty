@@ -1,4 +1,4 @@
-#include "MGuid.h"
+#include "Scene/MGuid.h"
 #include "crossguid/guid.hpp"
 
 MGuid MGuid::invalid = MGuid(0, 0, 0, 0);

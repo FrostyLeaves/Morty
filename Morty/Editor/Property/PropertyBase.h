@@ -1,13 +1,13 @@
 #ifndef _PROPERTY_BASE_H_
 #define _PROPERTY_BASE_H_
 
-#include "MEntity.h"
-#include "MString.h"
-#include "Vector.h"
-#include "MVariant.h"
-#include "MTransform.h"
-#include "MColor.h"
-#include "MResourceSystem.h"
+#include "Scene/MEntity.h"
+#include "Utility/MString.h"
+#include "Math/Vector.h"
+#include "Utility/MVariant.h"
+#include "Utility/MTransform.h"
+#include "Utility/MColor.h"
+#include "System/MResourceSystem.h"
 
 #include <map>
 #include <functional>

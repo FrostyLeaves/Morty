@@ -8,12 +8,12 @@
 
 #ifndef _M_MTASKGRAPH_H_
 #define _M_MTASKGRAPH_H_
-#include "MGlobal.h"
-#include "MObject.h"
+#include "Utility/MGlobal.h"
+#include "Object/MObject.h"
 
-#include "MTaskNode.h"
-#include "MTaskNodeInput.h"
-#include "MTaskNodeOutput.h"
+#include "TaskGraph/MTaskNode.h"
+#include "TaskGraph/MTaskNodeInput.h"
+#include "TaskGraph/MTaskNodeOutput.h"
 
 class MTaskNode;
 class MORTY_API MTaskGraph : public MObject

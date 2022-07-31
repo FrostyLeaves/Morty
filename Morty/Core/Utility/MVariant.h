@@ -10,10 +10,10 @@
 
 #ifndef _M_VARIANT_H_
 #define _M_VARIANT_H_
-#include "MGlobal.h"
-#include "MString.h"
-#include "Vector.h"
-#include "Matrix.h"
+#include "Utility/MGlobal.h"
+#include "Utility/MString.h"
+#include "Math/Vector.h"
+#include "Math/Matrix.h"
 #include <vector>
 #include <map>
 #include <unordered_map>  

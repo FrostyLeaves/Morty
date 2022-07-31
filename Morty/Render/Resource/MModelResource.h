@@ -8,11 +8,11 @@
 
 #ifndef _M_MMODELRESOURCE_H_
 #define _M_MMODELRESOURCE_H_
-#include "MGlobal.h"
-#include "MResource.h"
+#include "Utility/MGlobal.h"
+#include "Resource/MResource.h"
 
-#include "MMeshResource.h"
-#include "MSkeletonResource.h"
+#include "Resource/MMeshResource.h"
+#include "Resource/MSkeletonResource.h"
 
 class MSkeleton;
 class MSkeletalAnimation;

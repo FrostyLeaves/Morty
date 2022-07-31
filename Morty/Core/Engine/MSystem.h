@@ -1,8 +1,8 @@
 #ifndef _M_SYSTEM_H_
 #define _M_SYSTEM_H_
 
-#include "MGlobal.h"
-#include "MType.h"
+#include "Utility/MGlobal.h"
+#include "Type/MType.h"
 
 class MScene;
 class MEngine;

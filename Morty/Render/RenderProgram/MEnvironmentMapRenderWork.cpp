@@ -1,20 +1,20 @@
-#include "MEnvironmentMapRenderWork.h"
+#include "RenderProgram/MEnvironmentMapRenderWork.h"
 
-#include "MMath.h"
-#include "MEngine.h"
-#include "MEntity.h"
-#include "MViewport.h"
-#include "MRenderCommand.h"
+#include "Math/MMath.h"
+#include "Engine/MEngine.h"
+#include "Scene/MEntity.h"
+#include "Basic/MViewport.h"
+#include "Render/MRenderCommand.h"
 
-#include "MMaterial.h"
+#include "Material/MMaterial.h"
 
-#include "MRenderSystem.h"
-#include "MResourceSystem.h"
+#include "System/MRenderSystem.h"
+#include "System/MResourceSystem.h"
 
-#include "MMeshResource.h"
-#include "MTextureResource.h"
+#include "Resource/MMeshResource.h"
+#include "Resource/MTextureResource.h"
 
-#include "MSkyBoxComponent.h"
+#include "Component/MSkyBoxComponent.h"
 
 
 const int SpecularMipmapCount = 7;
@@ -165,7 +165,6 @@ void MEnvironmentMapRenderWork::InitializeResource()
 
 	m_pCubeMesh = pResourceSystem->CreateResource<MMeshResource>("Environment Draw Mesh");
 	m_pCubeMesh->LoadAsSphere();
-	m_pCubeMesh->AddRef();
 
 	if (std::shared_ptr<MTextureResource> pDiffuseCubeMapResource = pResourceSystem->CreateResource<MTextureResource>())
 	{
@@ -184,7 +183,6 @@ void MEnvironmentMapRenderWork::InitializeResource()
 
 void MEnvironmentMapRenderWork::ReleaseResource()
 {
-	m_pCubeMesh->SubRef();
 	m_pCubeMesh = nullptr;
 
 	m_DiffuseEnvironmentMap.SetResource(nullptr);
@@ -196,7 +194,7 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-	Matrix4 m4Projection = MViewport::MatrixPerspectiveFovLH(45.0f, 1.0f, 0.1f, 100.0f);
+	Matrix4 m4Projection = MRenderSystem::MatrixPerspectiveFovLH(45.0f, 1.0f, 0.1f, 100.0f);
 
 	Matrix4 vCmaeraView[6] = {
 		MMath::LookAt(Vector3(-1.0f,  0.0f,  0.0f), Vector3(0.0f, 1.0f,  0.0f)),
@@ -217,7 +215,6 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 	std::shared_ptr<MResource> diffuseps = pResourceSystem->LoadResource("Shader/diffuse_map.mps");
 	m_DiffuseMaterial->LoadVertexShader(vs);
 	m_DiffuseMaterial->LoadPixelShader(diffuseps);
-	m_DiffuseMaterial->AddRef();
 
 	m_DiffuseMaterial->SetRasterizerType(MERasterizerType::ECullFront);
 
@@ -245,7 +242,6 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 		m_vSpecularMaterial[nMipmap] = pResourceSystem->CreateResource<MMaterial>(MString("Specular CubeMap Material_") + MStringHelper::ToString(nMipmap));
 		m_vSpecularMaterial[nMipmap]->LoadVertexShader(vs);
 		m_vSpecularMaterial[nMipmap]->LoadPixelShader(specularps);
-		m_vSpecularMaterial[nMipmap]->AddRef();
 		m_vSpecularMaterial[nMipmap]->SetRasterizerType(MERasterizerType::ECullFront);
 
 		if (MShaderParamSet* pParams = m_vSpecularMaterial[nMipmap]->GetMaterialParamSet())
@@ -280,13 +276,11 @@ void MEnvironmentMapRenderWork::ReleaseMaterial()
 {
 	if (m_DiffuseMaterial)
 	{
-		m_DiffuseMaterial->SubRef();
 		m_DiffuseMaterial = nullptr;
 	}
 
 	for (std::shared_ptr<MMaterial> pMaterial : m_vSpecularMaterial)
 	{
-		pMaterial->SubRef();
 		pMaterial = nullptr;
 	}
 	m_vSpecularMaterial.clear();
@@ -304,12 +298,12 @@ void MEnvironmentMapRenderWork::InitializeRenderPass()
 	m_vSpecularRenderPass.resize(SpecularMipmapCount);
 	for (uint32_t nMipmap = 0; nMipmap < SpecularMipmapCount; ++nMipmap)
 	{
-		m_vSpecularRenderPass[nMipmap].SetViewNum(6);
+		m_vSpecularRenderPass[nMipmap].SetViewportNum(6);
 		m_vSpecularRenderPass[nMipmap].AddBackTexture(pSpecularTexture->GetTextureTemplate(), { true, false, MColor::Black_T, nMipmap });
 		m_vSpecularRenderPass[nMipmap].GenerateBuffer(pRenderSystem->GetDevice());
 	}
 
-	m_DiffuseRenderPass.SetViewNum(6);
+	m_DiffuseRenderPass.SetViewportNum(6);
 	m_DiffuseRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
 
 }

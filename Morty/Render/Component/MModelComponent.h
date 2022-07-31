@@ -8,12 +8,12 @@
 
 #ifndef _M_MMODELCOMPONENT_H_
 #define _M_MMODELCOMPONENT_H_
-#include "MGlobal.h"
-#include "MComponent.h"
+#include "Utility/MGlobal.h"
+#include "Component/MComponent.h"
 
-#include "MBounds.h"
-#include "MResource.h"
-#include "MSkeletonResource.h"
+#include "Utility/MBounds.h"
+#include "Resource/MResource.h"
+#include "Resource/MSkeletonResource.h"
 
 class MSkeletonInstance;
 class MSkeletalAnimController;

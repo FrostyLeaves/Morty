@@ -1,9 +1,9 @@
-﻿#include "MResourceSystem.h"
+﻿#include "System/MResourceSystem.h"
 
-#include "MEngine.h"
-#include "MFunction.h"
-#include "MResource.h"
-#include "MResourceLoader.h"
+#include "Engine/MEngine.h"
+#include "Utility/MFunction.h"
+#include "Resource/MResource.h"
+#include "Resource/MResourceLoader.h"
 
 #include <vector>
 #include <cassert>
@@ -68,6 +68,12 @@ MString MResourceSystem::GetFullPath(const MString& strRelativePath)
 
 std::shared_ptr<MResource> MResourceSystem::LoadResource(const MString& strResourcePath, const MType* type/* = nullptr*/)
 {
+	if (strResourcePath == "Default_White")
+	{
+		int a = 0;
+		++a;
+	}
+
 	if (strResourcePath.empty())
 		return nullptr;
 
@@ -160,4 +166,17 @@ void MResourceSystem::MoveTo(std::shared_ptr<MResource> pResource, const MString
 			pKeeper->SetResource(pResource);
 		}
 	}
+}
+
+
+void MResourceSystem::Release()
+{
+	for (auto&& pr : m_tResources)
+	{
+		pr.second->OnDelete();
+		pr.second = nullptr;
+	}
+
+	m_tResources.clear();
+	m_tPathResources.clear();
 }

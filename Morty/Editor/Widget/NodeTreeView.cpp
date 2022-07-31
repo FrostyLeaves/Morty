@@ -1,12 +1,12 @@
 #include "NodeTreeView.h"
 
-#include "MScene.h"
-#include "MEntity.h"
-#include "MEngine.h"
-#include "MObject.h"
-#include "MEntity.h"
-#include "MObjectSystem.h"
-#include "MSceneComponent.h"
+#include "Scene/MScene.h"
+#include "Scene/MEntity.h"
+#include "Engine/MEngine.h"
+#include "Object/MObject.h"
+#include "Scene/MEntity.h"
+#include "System/MObjectSystem.h"
+#include "Component/MSceneComponent.h"
 
 #include "imgui.h"
 

@@ -1,7 +1,7 @@
-#include "MSceneSystem.h"
-#include "MEntity.h"
+#include "System/MSceneSystem.h"
+#include "Scene/MEntity.h"
 
-#include "MSceneComponent.h"
+#include "Component/MSceneComponent.h"
 
 MORTY_CLASS_IMPLEMENT(MSceneSystem, MISystem)
 

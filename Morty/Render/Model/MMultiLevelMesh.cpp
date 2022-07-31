@@ -1,9 +1,9 @@
-#include "MMultiLevelMesh.h"
+#include "Model/MMultiLevelMesh.h"
 
-#include "MLogger.h"
-#include "MFunction.h"
-#include "MModelResource.h"
-#include "MRenderGlobal.h"
+#include "Utility/MLogger.h"
+#include "Utility/MFunction.h"
+#include "Resource/MModelResource.h"
+#include "Render/MRenderGlobal.h"
 
 #include <float.h>
 

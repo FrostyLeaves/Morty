@@ -8,8 +8,8 @@
 
 #ifndef _M_MSKELETONRESOURCE_H_
 #define _M_MSKELETONRESOURCE_H_
-#include "MGlobal.h"
-#include "MSkeleton.h"
+#include "Utility/MGlobal.h"
+#include "Model/MSkeleton.h"
 
 #define MSkeletonResource MSkeleton
 

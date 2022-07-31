@@ -8,9 +8,9 @@
 
 #ifndef _M_MSKELETALANIMATIONRESOURCE_H_
 #define _M_MSKELETALANIMATIONRESOURCE_H_
-#include "MGlobal.h"
-#include "MResource.h"
-#include "MSkeletalAnimation.h"
+#include "Utility/MGlobal.h"
+#include "Resource/MResource.h"
+#include "Model/MSkeletalAnimation.h"
 
 #define MSkeletalAnimationResource MSkeletalAnimation
 

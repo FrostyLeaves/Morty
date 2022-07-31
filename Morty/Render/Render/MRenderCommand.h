@@ -8,9 +8,9 @@
 
 #ifndef _M_MIRenderCommand_H_
 #define _M_MIRenderCommand_H_
-#include "MRenderGlobal.h"
+#include "Render/MRenderGlobal.h"
 
-#include "Vector.h"
+#include "Math/Vector.h"
 
 class MIMesh;
 class MTexture;

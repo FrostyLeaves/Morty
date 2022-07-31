@@ -8,17 +8,17 @@
 
 #ifndef _M_MDEFERRED_RENDERPROGRAM_H_
 #define _M_MDEFERRED_RENDERPROGRAM_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
-#include "MType.h"
-#include "MMesh.h"
-#include "MBounds.h"
-#include "MResource.h"
-#include "MTaskNode.h"
-#include "MTaskGraph.h"
-#include "MRenderPass.h"
+#include "Type/MType.h"
+#include "Render/MMesh.h"
+#include "Utility/MBounds.h"
+#include "Resource/MResource.h"
+#include "TaskGraph/MTaskNode.h"
+#include "TaskGraph/MTaskGraph.h"
+#include "Render/MRenderPass.h"
 #include "MRenderInfo.h"
-#include "MIRenderProgram.h"
+#include "RenderProgram/MIRenderProgram.h"
 
 #include "MShadowMapShaderParamSet.h"
 #include "MForwardRenderShaderParamSet.h"

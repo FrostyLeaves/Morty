@@ -8,12 +8,12 @@
 
 #ifndef _M_TRANSPARENT_RENDER_WORK_H_
 #define _M_TRANSPARENT_RENDER_WORK_H_
-#include "MGlobal.h"
-#include "MObject.h"
+#include "Utility/MGlobal.h"
+#include "Object/MObject.h"
 
-#include "MMesh.h"
+#include "Render/MMesh.h"
 #include "MRenderInfo.h"
-#include "MRenderPass.h"
+#include "Render/MRenderPass.h"
 #include "MForwardRenderShaderParamSet.h"
 
 #include <array>

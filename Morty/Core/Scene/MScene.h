@@ -8,13 +8,13 @@
 
 #ifndef _M_MSCENE_H_
 #define _M_MSCENE_H_
-#include "MGlobal.h"
-#include "MObject.h"
+#include "Utility/MGlobal.h"
+#include "Object/MObject.h"
 
-#include "MEntity.h"
-#include "Matrix.h"
-#include "MEngine.h"
-#include "MComponent.h"
+#include "Scene/MEntity.h"
+#include "Math/Matrix.h"
+#include "Engine/MEngine.h"
+#include "Component/MComponent.h"
 
 #include <vector>
 #include <functional>

@@ -8,11 +8,11 @@
 
 #ifndef _M_MINPUTSYSTEM_H_
 #define _M_MINPUTSYSTEM_H_
-#include "MGlobal.h"
-#include "MSystem.h"
+#include "Utility/MGlobal.h"
+#include "Engine/MSystem.h"
 
-#include "Vector.h"
-#include "MInputEvent.h"
+#include "Math/Vector.h"
+#include "Input/MInputEvent.h"
 
 class MORTY_API MInputSystem : public MISystem
 {

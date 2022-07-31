@@ -44,7 +44,7 @@ struct SpotLight
     float4x4 U_matProj;
     float4x4 U_matCamProj; // world to proj
     float4x4 U_matCamProjInv; // proj to world
-    float4x4 U_matLightProj;
+    float4x4 U_matLightProj[CASCADED_SHADOW_MAP_NUM];
 };
 
 //VS & PS    per render
@@ -76,7 +76,7 @@ struct SpotLight
 [[vk::binding(4,1)]]sampler NearestSampler;
 
 //Shadowmap
-[[vk::binding(6,1)]]Texture2D U_texShadowMap;
+[[vk::binding(6,1)]]Texture2DArray U_texShadowMap;
 [[vk::binding(7,1)]]TextureCube U_texIrradianceMap;
 [[vk::binding(8,1)]]TextureCube U_texPrefilterMap;
 [[vk::binding(9,1)]]Texture2D U_texBrdfLUT;

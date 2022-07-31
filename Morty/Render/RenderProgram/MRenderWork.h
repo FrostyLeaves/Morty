@@ -8,9 +8,9 @@
 
 #ifndef _M_MRENDERWORK_H_
 #define _M_MRENDERWORK_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
-#include "MObject.h"
+#include "Object/MObject.h"
 
 class MORTY_API MRenderWork : public MObject
 {

@@ -8,7 +8,7 @@
 
 #ifndef _M_MMEMORY_POOL_H_
 #define _M_MMEMORY_POOL_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
 #include <map>
 #include <vector>

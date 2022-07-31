@@ -1,23 +1,23 @@
-#include "MRenderableMeshComponent.h"
+#include "Component/MRenderableMeshComponent.h"
 
 MORTY_CLASS_IMPLEMENT(MRenderableMeshComponent, MComponent)
 
-#include "MScene.h"
-#include "MEntity.h"
-#include "MEngine.h"
-#include "MMaterial.h"
-#include "MFunction.h"
+#include "Scene/MScene.h"
+#include "Scene/MEntity.h"
+#include "Engine/MEngine.h"
+#include "Material/MMaterial.h"
+#include "Utility/MFunction.h"
 
-#include "MMeshResource.h"
-#include "MMaterialResource.h"
+#include "Resource/MMeshResource.h"
+#include "Resource/MMaterialResource.h"
 
 
-#include "MSceneComponent.h"
-#include "MModelComponent.h"
-#include "MNotifyComponent.h"
+#include "Component/MSceneComponent.h"
+#include "Component/MModelComponent.h"
+#include "Component/MNotifyComponent.h"
 
-#include "MRenderSystem.h"
-#include "MResourceSystem.h"
+#include "System/MRenderSystem.h"
+#include "System/MResourceSystem.h"
 
 #include "Flatbuffer/MRenderableMeshComponent_generated.h"
 

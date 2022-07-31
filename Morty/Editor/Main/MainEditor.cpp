@@ -7,45 +7,44 @@
 #include "SDL.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
-#include "MRenderGlobal.h"
-#include "MVulkanDevice.h"
+#include "Render/MRenderGlobal.h"
+#include "Render/Vulkan/MVulkanDevice.h"
 #include <SDL_vulkan.h>
 #endif
 
-#include "MMesh.h"
-#include "Matrix.h"
-#include "MScene.h"
-#include "MEngine.h"
-#include "MObject.h"
-#include "MTexture.h"
-#include "MViewport.h"
-#include "MMaterial.h"
-#include "MFunction.h"
-#include "MTaskGraph.h"
-#include "MInputEvent.h"
-#include "MRenderCommand.h"
+#include "Render/MMesh.h"
+#include "Math/Matrix.h"
+#include "Scene/MScene.h"
+#include "Engine/MEngine.h"
+#include "Object/MObject.h"
+#include "Basic/MTexture.h"
+#include "Basic/MViewport.h"
+#include "Material/MMaterial.h"
+#include "Utility/MFunction.h"
+#include "TaskGraph/MTaskGraph.h"
+#include "Input/MInputEvent.h"
+#include "Render/MRenderCommand.h"
 
 
-#include "NodeTreeView.h"
-#include "PropertyView.h"
-#include "MaterialView.h"
-#include "ResourceView.h"
-#include "TaskGraphView.h"
-#include "ModelConvertView.h"
-#include "MessageView.h"
+#include "Widget/NodeTreeView.h"
+#include "Widget/PropertyView.h"
+#include "Widget/MaterialView.h"
+#include "Widget/ResourceView.h"
+#include "Widget/TaskGraphView.h"
+#include "Widget/ModelConvertView.h"
+#include "Widget/MessageView.h"
 
-#include "NotifyManager.h"
+#include "Utility/NotifyManager.h"
 
-#include "ImGuiRenderable.h"
+#include "Render/ImGuiRenderable.h"
 
-#include "MCameraComponent.h"
-#include "MRenderableMeshComponent.h"
+#include "Component/MCameraComponent.h"
+#include "Component/MRenderableMeshComponent.h"
 
-#include "MInputSystem.h"
-#include "MRenderSystem.h"
+#include "System/MInputSystem.h"
+#include "System/MRenderSystem.h"
 
-#include "MForwardRenderProgram.h"
-#include "MDeferredRenderProgram.h"
+#include "RenderProgram/MDeferredRenderProgram.h"
 
 
 MString MainEditor::m_sRenderProgramName = MDeferredRenderProgram::GetClassTypeName();
@@ -430,18 +429,17 @@ void MainEditor::ShowRenderView(const size_t& nImageCount)
 		{
 			if (MTexture* pTexture = m_SceneTexture.GetTexture(nImageCount))
 			{
-				if (ImTextureID texid = pTexture)
-				{
-					Vector4 v4Rect = GetWidgetSize();
+				ImTextureID texid = { pTexture, 0 };
 
-					m_v2RenderViewPos.x = v4Rect.m[0];
-					m_v2RenderViewPos.y = v4Rect.m[1];
+				Vector4 v4Rect = GetWidgetSize();
 
-					m_v2RenderViewSize.x = v4Rect.m[2];
-					m_v2RenderViewSize.y = v4Rect.m[3];
+				m_v2RenderViewPos.x = v4Rect.m[0];
+				m_v2RenderViewPos.y = v4Rect.m[1];
 
-					ImGui::Image(texid, ImVec2(m_v2RenderViewSize.x, m_v2RenderViewSize.y));
-				}
+				m_v2RenderViewSize.x = v4Rect.m[2];
+				m_v2RenderViewSize.y = v4Rect.m[3];
+
+				ImGui::Image(texid, ImVec2(m_v2RenderViewSize.x, m_v2RenderViewSize.y));
 			}
 			
 		}
@@ -459,23 +457,33 @@ void MainEditor::ShowShadowMapView(const size_t& nImageCount)
 		std::vector<MTexture*> vTexture = m_SceneTexture.GetAllOutputTexture(nImageCount);
 		if(!vTexture.empty())
 		{
-			Vector4 v4Rect = GetWidgetSize();
-			
-			// n * n
-			size_t n = std::ceil(std::sqrt(vTexture.size()));
-
-			Vector2 v2Size = Vector2(v4Rect.z / n, v4Rect.w / n);
-
-			int i = 0;
-			for (int i = 0; i < vTexture.size(); ++i)
+			size_t nImageSize = 0;
+			for (MTexture* pTexture : vTexture)
 			{
-				ImGui::Image(vTexture[i], ImVec2(v2Size.x, v2Size.y));
-
-				if ((i + 1) % n != 0)
+				if (pTexture)
 				{
-					ImGui::SameLine(v2Size.x * (i % n));
+					nImageSize += pTexture->GetImageLayerNum();
 				}
 			}
+			
+			// n * n
+			size_t nRowCount = std::ceil(std::sqrt(nImageSize));
+
+			Vector4 v4Rect = GetWidgetSize();
+
+			Vector2 v2Size = Vector2((v4Rect.z) / nRowCount, (v4Rect.w) / nRowCount);
+
+			ImGui::Columns(nRowCount);
+			for (size_t nTexIdx = 0; nTexIdx < vTexture.size(); ++nTexIdx)
+			{
+				for (size_t nLayerIdx = 0; nLayerIdx < vTexture[nTexIdx]->GetImageLayerNum(); ++nLayerIdx)
+				{
+					ImGui::Image({ vTexture[nTexIdx], nLayerIdx }, ImVec2(v2Size.x, v2Size.y));
+
+					ImGui::NextColumn();
+				}
+			}
+			ImGui::Columns(1);
 		
 		}
 	}
@@ -717,25 +725,24 @@ void MainEditor::Render(MTaskNode* pNode)
 		{
 			if (pRenderTexture)
 			{
-				if (ImTextureID texid = pRenderTexture)
-				{
-					ImGuiIO& io = ImGui::GetIO();
-					ImGui::SetNextWindowPos(ImVec2(0, 0), 0, ImVec2(0, 0));
-					ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y));
-					ImGui::SetNextWindowBgAlpha(0);
-					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-					ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
-					ImGui::Begin("±³¾°", NULL, ImGuiWindowFlags_NoMove |
-						ImGuiWindowFlags_NoTitleBar |
-						ImGuiWindowFlags_NoBringToFrontOnFocus |
-						ImGuiWindowFlags_NoInputs |
-						ImGuiWindowFlags_NoCollapse |
-						ImGuiWindowFlags_NoResize |
-						ImGuiWindowFlags_NoScrollbar);
-					ImGui::Image(texid, ImGui::GetWindowSize());
-					ImGui::End();
-					ImGui::PopStyleVar(2);
-				}
+				
+				ImGuiIO& io = ImGui::GetIO();
+				ImGui::SetNextWindowPos(ImVec2(0, 0), 0, ImVec2(0, 0));
+				ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y));
+				ImGui::SetNextWindowBgAlpha(0);
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
+				ImGui::Begin("ï¿½ï¿½ï¿½ï¿½", NULL, ImGuiWindowFlags_NoMove |
+					ImGuiWindowFlags_NoTitleBar |
+					ImGuiWindowFlags_NoBringToFrontOnFocus |
+					ImGuiWindowFlags_NoInputs |
+					ImGuiWindowFlags_NoCollapse |
+					ImGuiWindowFlags_NoResize |
+					ImGuiWindowFlags_NoScrollbar);
+				ImGui::Image({ pRenderTexture, 0 }, ImGui::GetWindowSize());
+				ImGui::End();
+				ImGui::PopStyleVar(2);
+				
 			}
 		}
 	}

@@ -1,4 +1,4 @@
-#include "MVulkanShaderCompiler.h"
+#include "Render/Vulkan/MVulkanShaderCompiler.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
@@ -14,12 +14,12 @@
 
 #include "dxcapi.h"
 
-#include "MResource.h"
-#include "MFileHelper.h"
+#include "Resource/MResource.h"
+#include "Utility/MFileHelper.h"
 
-#include "MEngine.h"
-#include "MLogger.h"
-#include "MVulkanDevice.h"
+#include "Engine/MEngine.h"
+#include "Utility/MLogger.h"
+#include "Render/Vulkan/MVulkanDevice.h"
 
 TBuiltInResource* InitResources()
 {
@@ -541,7 +541,7 @@ void MVulkanShaderCompiler::GetVertexInputState(const spirv_cross::Compiler& com
 		for (uint32_t nArrayIdx = 0; nArrayIdx < unArraySize; ++nArrayIdx)
 		{
 			VkVertexInputAttributeDescription attribute = {};
-			attribute.binding = 0; // Ëü¶ÔÓ¦µÄÊÇvertexBindingDescriptionCount£¬ÎÒÃÇÄ¿Ç°Ö»ÓÐÒ»¸ö£¬Õâ¸öÖµÐ´ËÀÁËÊÇ0
+			attribute.binding = 0; // ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½vertexBindingDescriptionCountï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿Ç°Ö»ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÖµÐ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0
 			attribute.location = unLocation;
 			attribute.offset = unOffset;
 
@@ -642,7 +642,14 @@ void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler
 		pParam->strName = res.name;
 
 		if (type.image.dim == spv::Dim::DimCube)
+		{
 			pParam->eType = METextureType::ETextureCube;
+		}
+
+		else if (type.image.arrayed)
+		{
+			pParam->eType = METextureType::ETexture2DArray;
+		}
 
 		pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 
@@ -716,7 +723,7 @@ void MVulkanShaderCompiler::ConvertVariant(const spirv_cross::Compiler& compiler
 		break;
 	}
 
-	//Êý×éÅÐ¶Ï
+	//ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½
 	if (type.array.empty())
 	{
 		variant.Move(tempVariant);
@@ -756,7 +763,7 @@ bool MVulkanShaderCompiler::ResetVariantType(const spirv_cross::SPIRType& type, 
 		return true;
 
 	case spirv_cross::SPIRType::BaseType::UInt:
-		variant = bool();		// TODO  spirv»á°Ñbool×ª³ÉUInt£¬ÒÔºóÏë°ì·¨½â¾ö°É¡£¡£
+		variant = bool();		// TODO  spirvï¿½ï¿½ï¿½bool×ªï¿½ï¿½UIntï¿½ï¿½ï¿½Ôºï¿½ï¿½ï¿½ì·¨ï¿½ï¿½ï¿½ï¿½É¡ï¿½ï¿½ï¿½
 		return true;
 
 	case spirv_cross::SPIRType::BaseType::Float:

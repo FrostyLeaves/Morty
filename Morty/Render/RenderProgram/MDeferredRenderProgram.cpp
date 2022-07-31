@@ -1,32 +1,32 @@
 #include "MDeferredRenderProgram.h"
 
-#include "MScene.h"
-#include "MEngine.h"
-#include "MIDevice.h"
-#include "MTexture.h"
-#include "MViewport.h"
-#include "MFunction.h"
-#include "MSkeleton.h"
-#include "MTaskNode.h"
-#include "MMaterial.h"
-#include "MTaskNodeOutput.h"
+#include "Scene/MScene.h"
+#include "Engine/MEngine.h"
+#include "Render/MIDevice.h"
+#include "Basic/MTexture.h"
+#include "Basic/MViewport.h"
+#include "Utility/MFunction.h"
+#include "Model/MSkeleton.h"
+#include "TaskGraph/MTaskNode.h"
+#include "Material/MMaterial.h"
+#include "TaskGraph/MTaskNodeOutput.h"
 
-#include "MRenderCommand.h"
+#include "Render/MRenderCommand.h"
 
-#include "MSceneComponent.h"
-#include "MSkyBoxComponent.h"
-#include "MRenderableMeshComponent.h"
+#include "Component/MSceneComponent.h"
+#include "Component/MSkyBoxComponent.h"
+#include "Component/MRenderableMeshComponent.h"
 
-#include "MObjectSystem.h"
-#include "MRenderSystem.h"
-#include "MResourceSystem.h"
+#include "System/MObjectSystem.h"
+#include "System/MRenderSystem.h"
+#include "System/MResourceSystem.h"
 
 #include "MShadowMapRenderWork.h"
 #include "MTransparentRenderWork.h"
-#include "MEnvironmentMapRenderWork.h"
+#include "RenderProgram/MEnvironmentMapRenderWork.h"
 
-#include "MTextureResource.h"
-#include "MMaterialResource.h"
+#include "Resource/MTextureResource.h"
+#include "Resource/MMaterialResource.h"
 
 MORTY_CLASS_IMPLEMENT(MDeferredRenderProgram, MIRenderProgram)
 
@@ -70,7 +70,7 @@ void MDeferredRenderProgram::RenderReady(MTaskNode* pTaskNode)
 	m_renderInfo.nFrameIndex = m_nFrameIndex++;
 	m_renderInfo.pViewport = pViewport;
 	m_renderInfo.pPrimaryRenderCommand = m_pPrimaryCommand;
-
+	m_renderInfo.pCameraEntity = pViewport->GetCamera();
 
 	//Update RenderInfo
 	CollectRenderMesh(m_renderInfo);
@@ -140,7 +140,9 @@ void MDeferredRenderProgram::RenderLightning(MTaskNode* pTaskNode)
 {
 	MIRenderCommand* pCommand = m_renderInfo.pPrimaryRenderCommand;
 
-	pCommand->SetRenderToTextureBarrier(m_gbufferRenderPass.GetBackTextures());
+	std::vector<MTexture*> vTextures = m_gbufferRenderPass.GetBackTextures();
+	vTextures.push_back(m_gbufferRenderPass.GetDepthTexture());
+	pCommand->SetRenderToTextureBarrier(vTextures);
 
 	pCommand->BeginRenderPass(&m_lightningRenderPass);
 
@@ -234,6 +236,10 @@ void MDeferredRenderProgram::RenderDebug(MTaskNode* pTaskNode)
 	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
 	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
 
+
+
+
+
 	pCommand->EndRenderPass();
 }
 
@@ -260,6 +266,11 @@ std::vector<MTexture*> MDeferredRenderProgram::GetOutputTextures()
 	for (MBackTexture& tex: m_gbufferRenderPass.m_vBackTextures)
 	{
 		vResult.push_back(tex.pTexture);
+	}
+
+	if (m_gbufferRenderPass.m_DepthTexture.pTexture)
+	{
+		vResult.push_back(m_gbufferRenderPass.m_DepthTexture.pTexture);
 	}
 
 	return vResult;
@@ -380,7 +391,7 @@ void MDeferredRenderProgram::InitializeRenderPass()
 	const std::vector<std::pair<MString, MPassTargetDescription>> vTextureDesc = {
 		{"f3Albedo_fMetallic", {true, MColor::Black_T} },
 		{"U_mat_f3Normal_fRoughness", {true, MColor::Black_T} },
-		{"U_mat_f3Position_fAmbientOcc", {true, MColor::Black_T} },
+		{"U_mat_f3Position_fAmbientOcc", {true, MColor::Black_T} }
 	};
 
 	for (auto& desc : vTextureDesc)
@@ -466,14 +477,13 @@ void MDeferredRenderProgram::InitializeMaterial()
 	m_pLightningMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pLightningMaterial->LoadVertexShader(vs);
 	m_pLightningMaterial->LoadPixelShader(ps);
-	m_pLightningMaterial->AddRef();
 
 	if (MShaderParamSet* pParams = m_pLightningMaterial->GetMaterialParamSet())
 	{
 		pParams->SetValue("U_mat_f3Albedo_fMetallic", m_gbufferRenderPass.m_vBackTextures[0].pTexture);
 		pParams->SetValue("U_mat_f3Normal_fRoughness", m_gbufferRenderPass.m_vBackTextures[1].pTexture);
 		pParams->SetValue("U_mat_f3Position_fAmbientOcc", m_gbufferRenderPass.m_vBackTextures[2].pTexture);
-//		pParams->SetValue("U_mat_DepthMap", m_gbufferRenderPass.m_vBackTextures[3]);
+		pParams->SetValue("U_mat_DepthMap", m_gbufferRenderPass.m_DepthTexture.pTexture);
 	}
 
 
@@ -483,15 +493,12 @@ void MDeferredRenderProgram::InitializeMaterial()
 	m_pSkyBoxMaterial->SetRasterizerType(MERasterizerType::ECullNone);
 	m_pSkyBoxMaterial->LoadVertexShader(skyboxVS);
 	m_pSkyBoxMaterial->LoadPixelShader(skyboxPS);
-	m_pSkyBoxMaterial->AddRef();
 }
 
 void MDeferredRenderProgram::ReleaseMaterial()
 {
-	m_pLightningMaterial->SubRef();
 	m_pLightningMaterial = nullptr;
 
-	m_pSkyBoxMaterial->SubRef();
 	m_pSkyBoxMaterial = nullptr;
 }
 

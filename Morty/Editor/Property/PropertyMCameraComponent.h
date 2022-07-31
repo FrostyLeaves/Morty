@@ -1,8 +1,8 @@
 #ifndef _PROPERTY_CAMERA_COMPONENT_H_
 #define _PROPERTY_CAMERA_COMPONENT_H_
 
-#include "PropertyBase.h"
-#include "MCameraComponent.h"
+#include "Property/PropertyBase.h"
+#include "Component/MCameraComponent.h"
 
 class PropertyMCameraComponent : public PropertyBase
 {

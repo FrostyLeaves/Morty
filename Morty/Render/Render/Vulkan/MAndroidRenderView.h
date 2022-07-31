@@ -8,12 +8,12 @@
 
 #ifndef _M_ANDROID_RENDERVIEW_H_
 #define _M_ANDROID_RENDERVIEW_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
 #ifdef MORTY_ANDROID
 
 #include "MIRenderView.h"
-#include "MString.h"
+#include "Utility/MString.h"
 
 
 class MORTY_API MAndroidRenderView : public MIRenderView

@@ -1,7 +1,7 @@
-#include "MTaskNode.h"
-#include "MTaskGraph.h"
-#include "MTaskNodeInput.h"
-#include "MTaskNodeOutput.h"
+#include "TaskGraph/MTaskNode.h"
+#include "TaskGraph/MTaskGraph.h"
+#include "TaskGraph/MTaskNodeInput.h"
+#include "TaskGraph/MTaskNodeOutput.h"
 
 MORTY_CLASS_IMPLEMENT(MTaskNode, MTypeClass)
 

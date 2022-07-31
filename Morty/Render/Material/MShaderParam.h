@@ -8,12 +8,12 @@
 
 #ifndef _M_MSHADER_PARAM_H_
 #define _M_MSHADER_PARAM_H_
-#include "MGlobal.h"
-#include "MVariant.h"
-#include "MTexture.h"
+#include "Utility/MGlobal.h"
+#include "Utility/MVariant.h"
+#include "Basic/MTexture.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
-#include "MVulkanWrapper.h"
+#include "Render/Vulkan/MVulkanWrapper.h"
 #endif
 
 

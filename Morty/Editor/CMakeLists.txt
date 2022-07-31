@@ -33,7 +33,7 @@ source_group("Widget" FILES ${EDITOR_WIDGET_FILES})
 # ImGUI
 ############################################################
 file(GLOB EDITOR_IMGUI_FILES ${THIRD_PARTY_PATH}/imgui/*.h ${THIRD_PARTY_PATH}/imgui/*.cpp
-    ${THIRD_PARTY_PATH}/imgui/backends/imgui_impl_vulkan.*
+#    ${THIRD_PARTY_PATH}/imgui/backends/imgui_impl_vulkan.*
     ${THIRD_PARTY_PATH}/imgui/backends/imgui_impl_sdl.*
     ${THIRD_PARTY_PATH}/imgui/misc/cpp/imgui_stdlib.*)
 
@@ -72,15 +72,16 @@ endif()
 ############################################################
 # header search path
 ############################################################
-set(EDITOR_CODE_DIRECTORIES ${RENDER_CODE_DIRECTORIES}
-        ${CMAKE_CURRENT_SOURCE_DIR}/Component
-        ${CMAKE_CURRENT_SOURCE_DIR}/Main
-        ${CMAKE_CURRENT_SOURCE_DIR}/Module
-        ${CMAKE_CURRENT_SOURCE_DIR}/Property
-        ${CMAKE_CURRENT_SOURCE_DIR}/Render
-        ${CMAKE_CURRENT_SOURCE_DIR}/System
-        ${CMAKE_CURRENT_SOURCE_DIR}/Utility
-        ${CMAKE_CURRENT_SOURCE_DIR}/Widget
+set(EDITOR_CODE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}
+        ${EDITOR_CODE_DIRECTORIES}
+        #${CMAKE_CURRENT_SOURCE_DIR}/Component
+        #${CMAKE_CURRENT_SOURCE_DIR}/Main
+        #${CMAKE_CURRENT_SOURCE_DIR}/Module
+        #${CMAKE_CURRENT_SOURCE_DIR}/Property
+        #${CMAKE_CURRENT_SOURCE_DIR}/Render
+        #${CMAKE_CURRENT_SOURCE_DIR}/System
+        #${CMAKE_CURRENT_SOURCE_DIR}/Utility
+        #${CMAKE_CURRENT_SOURCE_DIR}/Widget
         ${THIRD_PARTY_PATH}/imgui
         ${THIRD_PARTY_PATH}/imgui/backends
         ${THIRD_PARTY_PATH}/imgui/misc/cpp
@@ -123,7 +124,7 @@ else()
 endif()
 
 
-target_compile_definitions(Editor PUBLIC IMGUI_USER_CONFIG="imgui_include.h")
+target_compile_definitions(Editor PUBLIC IMGUI_USER_CONFIG="Utility/imgui_include.h")
 
 
 

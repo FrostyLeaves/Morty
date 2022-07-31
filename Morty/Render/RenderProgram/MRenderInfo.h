@@ -1,11 +1,11 @@
 #ifndef M_RENDER_INFO_H_
 #define M_RENDER_INFO_H_
 
-#include "MGlobal.h"
-#include "Vector.h"
-#include "MBounds.h"
-#include "MComponent.h"
-#include "MShaderParamSet.h"
+#include "Utility/MGlobal.h"
+#include "Math/Vector.h"
+#include "Utility/MBounds.h"
+#include "Component/MComponent.h"
+#include "Material/MShaderParamSet.h"
 
 class MIMesh;
 class MTexture;
@@ -18,9 +18,7 @@ class MRenderableMeshComponent;
 
 struct MCascadedShadowInfo
 {
-	MTexture* pShadowMapTexture;
 	Matrix4 m4DirLightInvProj;
-	std::map<std::shared_ptr<MSkeletonInstance>, std::vector<MRenderableMeshComponent*>> m_tShadowGroupMesh;
 };
 
 struct MRenderInfo
@@ -53,6 +51,7 @@ struct MRenderInfo
 
 	/************************** shadow **************************/
 	std::array<MCascadedShadowInfo, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> cCascadedShadow;
+	std::map<std::shared_ptr<MSkeletonInstance>, std::vector<MRenderableMeshComponent*>> m_tShadowGroupMesh;
 
 
 	/************************** mesh **************************/

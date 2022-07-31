@@ -1,4 +1,4 @@
-#include "MIRenderProgram.h"
+#include "RenderProgram/MIRenderProgram.h"
 
 MORTY_INTERFACE_IMPLEMENT(MIRenderProgram, MObject)
 

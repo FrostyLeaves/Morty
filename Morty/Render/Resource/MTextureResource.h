@@ -8,10 +8,10 @@
 
 #ifndef _M_MTEXTURERESOURCE_H_
 #define _M_MTEXTURERESOURCE_H_
-#include "MGlobal.h"
-#include "MResource.h"
+#include "Utility/MGlobal.h"
+#include "Resource/MResource.h"
 
-#include "MTexture.h"
+#include "Basic/MTexture.h"
 
 class MORTY_API MTextureResource : public MResource
 {

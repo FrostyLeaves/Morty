@@ -1,7 +1,7 @@
 #ifndef _TASK_GRAPH_VIEW_H_
 #define _TASK_GRAPH_VIEW_H_
 
-#include "IBaseView.h"
+#include "Main/IBaseView.h"
 
 class MNode;
 class MObject;

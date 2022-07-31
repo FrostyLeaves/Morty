@@ -8,8 +8,8 @@
 
 #ifndef _M_MSHADERPARAMSET_H_
 #define _M_MSHADERPARAMSET_H_
-#include "MGlobal.h"
-#include "MShaderParam.h"
+#include "Utility/MGlobal.h"
+#include "Material/MShaderParam.h"
 
 #include <vector>
 

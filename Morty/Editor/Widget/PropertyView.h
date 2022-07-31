@@ -1,13 +1,13 @@
 #ifndef _PROPERTY_VIEW_H_
 #define _PROPERTY_VIEW_H_
 
-#include "IBaseView.h"
+#include "Main/IBaseView.h"
 
-#include "Vector.h"
-#include "MColor.h"
-#include "MString.h"
-#include "MTransform.h"
-#include "MVariant.h"
+#include "Math/Vector.h"
+#include "Utility/MColor.h"
+#include "Utility/MString.h"
+#include "Utility/MTransform.h"
+#include "Utility/MVariant.h"
 
 #include <map>
 #include <deque>

@@ -54,9 +54,11 @@ VS_OUT VS(VS_IN input)
     output.worldPos = mul(posFromBones, U_matWorld).xyz;
 
 #else
+
+    float4 f4WorldPosition = mul(float4(input.pos, 1.0f), U_matWorld);
     
-    output.pos = mul(float4(input.pos, 1.0f), mul(U_matWorld, U_matCamProj));
-    output.worldPos = mul(float4(input.pos, 1.0f), U_matWorld).xyz;
+    output.pos = mul(f4WorldPosition, U_matCamProj);
+    output.worldPos = f4WorldPosition.xyz;
 
 #endif
 

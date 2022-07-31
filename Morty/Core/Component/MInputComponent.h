@@ -8,8 +8,8 @@
 
 #ifndef _M_MINPUTCOMPONENT_H_
 #define _M_MINPUTCOMPONENT_H_
-#include "MGlobal.h"
-#include "MComponent.h"
+#include "Utility/MGlobal.h"
+#include "Component/MComponent.h"
 
 
 class MViewport;

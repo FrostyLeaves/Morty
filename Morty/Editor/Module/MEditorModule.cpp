@@ -1,11 +1,11 @@
 #include "MEditorModule.h"
-#include "MEngine.h"
-#include "MEntity.h"
+#include "Engine/MEngine.h"
+#include "Scene/MEntity.h"
 
-#include "MComponentSystem.h"
-#include "MMoveControllerSystem.h"
+#include "System/MComponentSystem.h"
+#include "System/MMoveControllerSystem.h"
 
-#include "MMoveControllerComponent.h"
+#include "Component/MMoveControllerComponent.h"
 
 bool MEditorModule::Register(MEngine* pEngine)
 {

@@ -1,13 +1,13 @@
 #include "MRenderInfo.h"
 
 
-#include "MScene.h"
-#include "MViewport.h"
-#include "MMaterial.h"
+#include "Scene/MScene.h"
+#include "Basic/MViewport.h"
+#include "Material/MMaterial.h"
 
-#include "MSceneComponent.h"
-#include "MRenderableMeshComponent.h"
-#include "MDirectionalLightComponent.h"
+#include "Component/MSceneComponent.h"
+#include "Component/MRenderableMeshComponent.h"
+#include "Component/MDirectionalLightComponent.h"
 
 MRenderInfo::MRenderInfo()
 	: nFrameIndex(0)
@@ -17,8 +17,6 @@ MRenderInfo::MRenderInfo()
 	, pCameraEntity(nullptr)
 	, pDirectionalLightEntity(nullptr)
 	, pSkyBoxEntity(nullptr)
-	, pShadowMapTexture(nullptr)
-	, m4DirLightInvProj()
 	, cCaclSceneRenderAABB()
 	, pPrimaryRenderCommand(nullptr)
 {

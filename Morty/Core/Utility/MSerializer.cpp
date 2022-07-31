@@ -1,5 +1,5 @@
-#include "MSerializer.h"
-#include "MJson.h"
+#include "Utility/MSerializer.h"
+#include "Utility/MJson.h"
 
 MORTY_CLASS_IMPLEMENT(MSerializer, MTypeClass)
 

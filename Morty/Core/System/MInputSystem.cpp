@@ -1,6 +1,6 @@
-#include "MInputSystem.h"
+#include "System/MInputSystem.h"
 
-#include "MInputEvent.h"
+#include "Input/MInputEvent.h"
 
 MORTY_CLASS_IMPLEMENT(MInputSystem, MISystem)
 

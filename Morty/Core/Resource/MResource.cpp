@@ -1,7 +1,7 @@
-﻿#include "MResource.h"
-#include "MEngine.h"
-#include "MResourceSystem.h"
-#include "MFileHelper.h"
+﻿#include "Resource/MResource.h"
+#include "Engine/MEngine.h"
+#include "System/MResourceSystem.h"
+#include "Utility/MFileHelper.h"
 
 MORTY_INTERFACE_IMPLEMENT(MResource, MTypeClass)
 
@@ -95,21 +95,14 @@ void MResource::ReplaceFrom(std::shared_ptr<MResource> pResource)
 		//pKeeper->SetResource(pResource);
 
 		pKeeper->m_pResource = pResource;
-		pResource->AddRef();
 		pResource->m_vKeeper.push_back(pKeeper);
 
 		if (pKeeper->m_funcReloadCallback)
 		{
 			pKeeper->m_funcReloadCallback(EResReloadType::EDefault);
 		}
-		this->SubRef();
 	}
 }
-
-void MResource::OnReferenceZero()
-{
-	GetResourceSystem()->UnloadResource(GetShared());
-} 
 
 void MResource::OnReload(const uint32_t& eReloadType)
 {
@@ -160,13 +153,7 @@ void MResourceKeeper::SetResource(std::shared_ptr<MResource> pResource)
 	
 	if (m_pResource = pResource)
 	{
-		m_pResource->AddRef();
 		m_pResource->m_vKeeper.push_back(this);
-	}
-
-	if (pOldResource)
-	{
-		pOldResource->SubRef();
 	}
 }
 

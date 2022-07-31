@@ -8,7 +8,7 @@
 
 #ifndef _M_MTHREADWORK_H_
 #define _M_MTHREADWORK_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
 enum class METhreadType
 {

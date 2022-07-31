@@ -1,8 +1,8 @@
 #ifndef _PROPERTY_MPOINT_LIGHT_COMPONENT_H_
 #define _PROPERTY_MPOINTLIGHT_H_
 
-#include "PropertyBase.h"
-#include "MPointLightComponent.h"
+#include "Property/PropertyBase.h"
+#include "Component/MPointLightComponent.h"
 
 class PropertyMPointLightComponent : public PropertyBase
 {

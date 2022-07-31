@@ -1,10 +1,10 @@
-#include "PropertyBase.h"
+#include "Property/PropertyBase.h"
 
-#include "MTimer.h"
-#include "MMaterial.h"
-#include "MTextureResource.h"
-#include "MMaterialResource.h"
-#include "MResourceSystem.h"
+#include "Utility/MTimer.h"
+#include "Material/MMaterial.h"
+#include "Resource/MTextureResource.h"
+#include "Resource/MMaterialResource.h"
+#include "System/MResourceSystem.h"
 
 #include "imgui.h"
 #include "imgui_stdlib.h"
@@ -477,7 +477,7 @@ void PropertyBase::ShowTexture(MTexture* pTexture, const Vector2& v2Size)
 {
 	if (pTexture)
 	{
-		ImGui::Image(ImTextureID(pTexture), ImVec2(v2Size.x, v2Size.y));
+		ImGui::Image({ pTexture, 0 }, ImVec2(v2Size.x, v2Size.y));
 	}
 }
 

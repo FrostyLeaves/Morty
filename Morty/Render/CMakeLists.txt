@@ -91,19 +91,19 @@ add_library(Render STATIC
 ############################################################
 # header search path
 ############################################################
-set(RENDER_CODE_DIRECTORIES ${RENDER_CODE_DIRECTORIES}
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/Basic
-        ${CMAKE_CURRENT_SOURCE_DIR}/Component
-        ${CMAKE_CURRENT_SOURCE_DIR}/Material
-        ${CMAKE_CURRENT_SOURCE_DIR}/Model
-        ${CMAKE_CURRENT_SOURCE_DIR}/Render
-        ${CMAKE_CURRENT_SOURCE_DIR}/Render/Vulkan
-        ${CMAKE_CURRENT_SOURCE_DIR}/RenderGraph
-        ${CMAKE_CURRENT_SOURCE_DIR}/RenderProgram
-        ${CMAKE_CURRENT_SOURCE_DIR}/Resource
-        ${CMAKE_CURRENT_SOURCE_DIR}/System
-        ${CMAKE_CURRENT_SOURCE_DIR}/View
+set(RENDER_CODE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}
+        ${RENDER_CODE_DIRECTORIES}
+        #${CMAKE_CURRENT_SOURCE_DIR}/Basic
+        #${CMAKE_CURRENT_SOURCE_DIR}/Component
+        #${CMAKE_CURRENT_SOURCE_DIR}/Material
+        #${CMAKE_CURRENT_SOURCE_DIR}/Model
+        #${CMAKE_CURRENT_SOURCE_DIR}/Render
+        #${CMAKE_CURRENT_SOURCE_DIR}/Render/Vulkan
+        #${CMAKE_CURRENT_SOURCE_DIR}/RenderGraph
+        #${CMAKE_CURRENT_SOURCE_DIR}/RenderProgram
+        #${CMAKE_CURRENT_SOURCE_DIR}/Resource
+        #${CMAKE_CURRENT_SOURCE_DIR}/System
+        #${CMAKE_CURRENT_SOURCE_DIR}/View
 )
 
 set( RENDER_CODE_DIRECTORIES

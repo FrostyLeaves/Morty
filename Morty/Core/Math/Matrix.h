@@ -1,10 +1,10 @@
 ﻿#ifndef _MATRIX_H_
 #define _MATRIX_H_
 
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
-#include "Vector.h"
-#include "Quaternion.h"
+#include "Math/Vector.h"
+#include "Math/Quaternion.h"
 
 class Vector3;
 class Vector4;

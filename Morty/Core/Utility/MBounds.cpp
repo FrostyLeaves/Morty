@@ -1,9 +1,9 @@
-#include "MBounds.h"
+#include "Utility/MBounds.h"
 #include "Dense"
 #include "Eigenvalues"
-#include "Matrix.h"
-#include "MMath.h"
-#include "MTimer.h"
+#include "Math/Matrix.h"
+#include "Math/MMath.h"
+#include "Utility/MTimer.h"
 
 #include <float.h>
 

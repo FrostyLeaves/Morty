@@ -8,7 +8,7 @@
 
 #ifndef _M_MTIMER_H_
 #define _M_MTIMER_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
 
 class MORTY_API MTimer

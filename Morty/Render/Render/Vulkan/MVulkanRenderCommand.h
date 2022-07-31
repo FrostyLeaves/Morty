@@ -8,12 +8,12 @@
 
 #ifndef _M_MVULKANRENDERCOMMAND_H_
 #define _M_MVULKANRENDERCOMMAND_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
-#include "MVulkanDevice.h"
-#include "MRenderCommand.h"
+#include "Render/Vulkan/MVulkanDevice.h"
+#include "Render/MRenderCommand.h"
 
 class MTexture;
 class MORTY_API MVulkanRenderCommand : public MIRenderCommand

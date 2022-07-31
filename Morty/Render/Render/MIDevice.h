@@ -8,10 +8,10 @@
 
 #ifndef _M_MIDEVICE_H_
 #define _M_MIDEVICE_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
-#include "MShader.h"
-#include "MRenderPass.h"
+#include "Material/MShader.h"
+#include "Render/MRenderPass.h"
 
 class MVertexBuffer;
 class MIMesh;

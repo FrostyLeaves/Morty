@@ -8,8 +8,8 @@
 
 #ifndef _M_MINPUT_EVENT_H_
 #define _M_MINPUT_EVENT_H_
-#include "MGlobal.h"
-#include "Vector.h"
+#include "Utility/MGlobal.h"
+#include "Math/Vector.h"
 
 #include <vector>
 #include <functional>

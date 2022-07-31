@@ -8,8 +8,8 @@
 
 #ifndef _M_MSHADERBUFFER_H_
 #define _M_MSHADERBUFFER_H_
-#include "MRenderGlobal.h"
-#include "MShaderParamSet.h"
+#include "Render/MRenderGlobal.h"
+#include "Material/MShaderParamSet.h"
 
 class MORTY_API MShaderBuffer
 {

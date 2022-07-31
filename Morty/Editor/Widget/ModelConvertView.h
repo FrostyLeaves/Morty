@@ -5,12 +5,12 @@
 #include <queue>
 #include <functional>
 
-#include "MString.h"
-#include "MVariant.h"
-#include "MModelConverter.h"
+#include "Utility/MString.h"
+#include "Utility/MVariant.h"
+#include "Model/MModelConverter.h"
 
 
-#include "IBaseView.h"
+#include "Main/IBaseView.h"
 
 class IBaseView;
 class ModelConvertView : public IBaseView

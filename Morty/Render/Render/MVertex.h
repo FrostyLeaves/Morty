@@ -8,9 +8,9 @@
 
 #ifndef _M_MVERTEX_H_
 #define _M_MVERTEX_H_
-#include "MRenderGlobal.h"
-#include "Vector.h"
-#include "MString.h"
+#include "Render/MRenderGlobal.h"
+#include "Math/Vector.h"
+#include "Utility/MString.h"
 
 
 //顶点

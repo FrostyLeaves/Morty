@@ -1,11 +1,11 @@
-﻿#include "MEngine.h"
-#include "MSystem.h"
-#include "MTimer.h"
+﻿#include "Engine/MEngine.h"
+#include "Engine/MSystem.h"
+#include "Utility/MTimer.h"
 
-#include "MTaskGraph.h"
-#include "MObjectSystem.h"
+#include "TaskGraph/MTaskGraph.h"
+#include "System/MObjectSystem.h"
 
-#include "MCoreModule.h"
+#include "Module/MCoreModule.h"
 
 MORTY_CLASS_IMPLEMENT(MEngine, MTypeClass)
 

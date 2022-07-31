@@ -8,10 +8,10 @@
 
 #ifndef _M_MSKYBOXSYSTEM_H_
 #define _M_MSKYBOXSYSTEM_H_
-#include "MGlobal.h"
-#include "MSystem.h"
+#include "Utility/MGlobal.h"
+#include "Engine/MSystem.h"
 
-#include "MComponent.h"
+#include "Component/MComponent.h"
 
 class MIRenderCommand;
 class MSkyBoxComponent;

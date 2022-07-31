@@ -1,12 +1,12 @@
-#include "MMoveControllerComponent.h"
+#include "Component/MMoveControllerComponent.h"
 
-#include "MEntity.h"
-#include "MEngine.h"
-#include "MObject.h"
-#include "MInputEvent.h"
+#include "Scene/MEntity.h"
+#include "Engine/MEngine.h"
+#include "Object/MObject.h"
+#include "Input/MInputEvent.h"
 
-#include "MInputComponent.h"
-#include "MSceneComponent.h"
+#include "Component/MInputComponent.h"
+#include "Component/MSceneComponent.h"
 
 MORTY_CLASS_IMPLEMENT(MMoveControllerComponent, MComponent)
 

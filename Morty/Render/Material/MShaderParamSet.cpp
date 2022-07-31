@@ -1,7 +1,7 @@
-#include "MShaderParamSet.h"
-#include "MIDevice.h"
+#include "Material/MShaderParamSet.h"
+#include "Render/MIDevice.h"
 #if RENDER_GRAPHICS == MORTY_VULKAN
-#include "MVulkanDevice.h"
+#include "Render/Vulkan/MVulkanDevice.h"
 #endif
 
 MShaderParamSet::MShaderParamSet()

@@ -1,11 +1,11 @@
 #include "TaskGraphView.h"
 
-#include "MEngine.h"
-#include "MObject.h"
-#include "MTaskNode.h"
-#include "MTaskGraph.h"
-#include "MTaskNodeInput.h"
-#include "MTaskNodeOutput.h"
+#include "Engine/MEngine.h"
+#include "Object/MObject.h"
+#include "TaskGraph/MTaskNode.h"
+#include "TaskGraph/MTaskGraph.h"
+#include "TaskGraph/MTaskNodeInput.h"
+#include "TaskGraph/MTaskNodeOutput.h"
 
 #include "imgui.h"
 #include "imgui_node_editor.h"

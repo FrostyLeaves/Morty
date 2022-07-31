@@ -8,11 +8,11 @@
 
 #ifndef _M_MVULKANOBJECTDESTRUCTOR_H_
 #define _M_MVULKANOBJECTDESTRUCTOR_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 #include "MMemoryPool.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
-#include "MVulkanWrapper.h"
+#include "Render/Vulkan/MVulkanWrapper.h"
 
 #include <vector>
 

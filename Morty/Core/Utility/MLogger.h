@@ -8,8 +8,8 @@
 
 #ifndef _M_MLOGGER_H_
 #define _M_MLOGGER_H_
-#include "MGlobal.h"
-#include "MString.h"
+#include "Utility/MGlobal.h"
+#include "Utility/MString.h"
 
 #ifdef MORTY_WIN
 #include <windows.h>

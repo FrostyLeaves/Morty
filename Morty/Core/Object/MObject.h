@@ -8,11 +8,11 @@
 
 #ifndef _M_MOBJECT_H_
 #define _M_MOBJECT_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
-#include "MType.h"
-#include "MIDPool.h"
-#include "MString.h"
+#include "Type/MType.h"
+#include "Utility/MIDPool.h"
+#include "Utility/MString.h"
 
 #include <vector>
 #include <map>

@@ -8,8 +8,8 @@
 
 #ifndef _M_MMESH_H_
 #define _M_MMESH_H_
-#include "MGlobal.h"
-#include "Vector.h"
+#include "Utility/MGlobal.h"
+#include "Math/Vector.h"
 #include <vector>
 
 class MIDevice;

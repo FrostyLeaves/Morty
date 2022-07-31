@@ -8,7 +8,7 @@
 
 #ifndef _M_MRENDERPIPELINE_H_
 #define _M_MRENDERPIPELINE_H_
-#include "MRenderGlobal.h"
+#include "Render/MRenderGlobal.h"
 
 
 class MMaterial;

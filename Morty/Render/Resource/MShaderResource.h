@@ -8,12 +8,12 @@
 
 #ifndef _M_MSHADERRESOURCE_H_
 #define _M_MSHADERRESOURCE_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
 #include <map>
 
-#include "MResource.h"
-#include "MShader.h"
+#include "Resource/MResource.h"
+#include "Material/MShader.h"
 
 
 class MORTY_API MShaderResource : public MResource

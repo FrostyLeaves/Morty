@@ -8,10 +8,10 @@
 
 #ifndef _M_MSKYBOXCOMPONENT_H_
 #define _M_MSKYBOXCOMPONENT_H_
-#include "MGlobal.h"
-#include "MComponent.h"
+#include "Utility/MGlobal.h"
+#include "Component/MComponent.h"
 
-#include "MResource.h"
+#include "Resource/MResource.h"
 
 class MTexture;
 class MMaterial;

@@ -1,4 +1,4 @@
-#include "MNotifyComponent.h"
+#include "Component/MNotifyComponent.h"
 
 
 void MComponentNotifyInfo::AddNotifyFunction(const MType* pComponentType, const std::function<void()>& callback)

@@ -1,5 +1,5 @@
-#include "MMath.h"
-#include "MTimer.h"
+#include "Math/MMath.h"
+#include "Utility/MTimer.h"
 
 std::default_random_engine MMath::s_randomEngine(MTimer::GetCurTime());
 

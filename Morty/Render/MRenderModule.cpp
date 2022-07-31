@@ -1,31 +1,32 @@
 #include "MRenderModule.h"
-#include "MEngine.h"
-#include "MEntity.h"
-#include "MFunction.h"
+#include "Engine/MEngine.h"
+#include "Scene/MEntity.h"
+#include "Utility/MFunction.h"
 
-#include "MModelSystem.h"
-#include "MNotifySystem.h"
-#include "MRenderSystem.h"
-#include "MSkyBoxSystem.h"
-#include "MResourceSystem.h"
-#include "MComponentSystem.h"
+#include "System/MModelSystem.h"
+#include "System/MNotifySystem.h"
+#include "System/MRenderSystem.h"
+#include "System/MSkyBoxSystem.h"
+#include "System/MResourceSystem.h"
+#include "System/MComponentSystem.h"
 
-#include "MMeshResource.h"
-#include "MShaderResource.h"
-#include "MEntityResource.h"
-#include "MTextureResource.h"
-#include "MMaterialResource.h"
-#include "MSkeletonResource.h"
-#include "MSkeletalAnimationResource.h"
+#include "Resource/MMeshResource.h"
+#include "Resource/MShaderResource.h"
+#include "Resource/MEntityResource.h"
+#include "Resource/MTextureResource.h"
+#include "Resource/MMaterialResource.h"
+#include "Resource/MSkeletonResource.h"
+#include "Resource/MSkeletalAnimationResource.h"
 
-#include "MModelComponent.h"
-#include "MCameraComponent.h"
-#include "MSpotLightComponent.h"
-#include "MPointLightComponent.h"
-#include "MRenderableMeshComponent.h"
-#include "MDirectionalLightComponent.h"
+#include "Component/MModelComponent.h"
+#include "Component/MCameraComponent.h"
+#include "Component/MSpotLightComponent.h"
+#include "Component/MPointLightComponent.h"
+#include "Component/MRenderableMeshComponent.h"
+#include "Component/MDirectionalLightComponent.h"
+#include "Component/MDebugRenderComponent.h"
 
-#include "MTaskGraph.h"
+#include "TaskGraph/MTaskGraph.h"
 
 const MString MRenderModule::DefaultWhite = "Default_White";
 const MString MRenderModule::DefaultNormal = "Default_Normal";
@@ -104,6 +105,7 @@ bool MRenderModule::Register(MEngine* pEngine)
 		pComponentSystem->RegisterComponent<MPointLightComponent>();
 		pComponentSystem->RegisterComponent<MRenderableMeshComponent>();
 		pComponentSystem->RegisterComponent<MDirectionalLightComponent>();
+		pComponentSystem->RegisterComponent<MDebugRenderComponent>();
 	}
 	
 

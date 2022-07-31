@@ -8,7 +8,7 @@
 
 #ifndef _M_MRENDERMODULE_H_
 #define _M_MRENDERMODULE_H_
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
 class MEngine;
 class MORTY_API MRenderModule
@@ -16,7 +16,6 @@ class MORTY_API MRenderModule
 public:
 
 	static bool Register(MEngine* pEngine);
-
 
 
 	static const MString DefaultWhite;

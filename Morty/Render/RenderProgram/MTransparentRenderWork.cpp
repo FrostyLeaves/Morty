@@ -1,17 +1,17 @@
 #include "MTransparentRenderWork.h"
 
-#include "MEngine.h"
-#include "MViewport.h"
-#include "MSkeleton.h"
-#include "MRenderCommand.h"
+#include "Engine/MEngine.h"
+#include "Basic/MViewport.h"
+#include "Model/MSkeleton.h"
+#include "Render/MRenderCommand.h"
 
-#include "MRenderSystem.h"
-#include "MResourceSystem.h"
+#include "System/MRenderSystem.h"
+#include "System/MResourceSystem.h"
 
-#include "MTextureResource.h"
-#include "MMaterialResource.h"
+#include "Resource/MTextureResource.h"
+#include "Resource/MMaterialResource.h"
 
-#include "MRenderableMeshComponent.h"
+#include "Component/MRenderableMeshComponent.h"
 
 MORTY_CLASS_IMPLEMENT(MTransparentRenderWork, MObject)
 
@@ -140,7 +140,7 @@ void MTransparentRenderWork::RenderDepthPeel(MRenderInfo& info)
 		for (auto& pr : info.m_tTransparentGroupMesh)
 		{
 			std::shared_ptr<MMaterial> pMaterial = pr.first;
-			//Ê¹ÓÃ²ÄÖÊ
+			//Ê¹ï¿½Ã²ï¿½ï¿½ï¿½
 			if (!pCommand->SetUseMaterial(pMaterial))
 				continue;
 
@@ -210,14 +210,12 @@ void MTransparentRenderWork::InitializeMaterial()
 	m_pDrawPeelMaterial->SetMaterialType(MEMaterialType::EDepthPeel);
 	m_pDrawPeelMaterial->LoadVertexShader(pDPVSResource);
 	m_pDrawPeelMaterial->LoadPixelShader(pDPFPSResource);
-	m_pDrawPeelMaterial->AddRef();
 
 
 	m_pDrawFillMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pDrawFillMaterial->SetMaterialType(MEMaterialType::ETransparentBlend);
 	m_pDrawFillMaterial->LoadVertexShader(pDPVSResource);
 	m_pDrawFillMaterial->LoadPixelShader(pDPBPSResource);
-	m_pDrawFillMaterial->AddRef();
 
 	std::vector<MShaderTextureParam*>& params = *m_pDrawFillMaterial->GetTextureParams();
 	params[0]->pTexture = m_pFrontTexture;
@@ -228,10 +226,8 @@ void MTransparentRenderWork::InitializeMaterial()
 
 void MTransparentRenderWork::ReleaseMaterial()
 {
-	m_pDrawFillMaterial->SubRef();
 	m_pDrawFillMaterial = nullptr;
 
-	m_pDrawPeelMaterial->SubRef();
 	m_pDrawPeelMaterial = nullptr;
 }
 
@@ -246,11 +242,7 @@ void MTransparentRenderWork::InitializeTexture()
 	static MByte black[4] = { 0, 0 ,0 ,0 };
 	static MByte white[4] = { 255, 255 ,255 ,255 };
 	m_pBlackTexture->LoadFromMemory(black, 1, 1, 4);
-
 	m_pWhiteTexture->LoadFromMemory(white, 1, 1, 4);
-
-	m_pBlackTexture->AddRef();
-	m_pWhiteTexture->AddRef();
 
 
 	Vector2 size(512, 512);
@@ -290,9 +282,6 @@ void MTransparentRenderWork::ReleaseTexture()
 
 	m_pBlackTexture->GetTextureTemplate()->DestroyBuffer(pRenderSystem->GetDevice());
 	m_pWhiteTexture->GetTextureTemplate()->DestroyBuffer(pRenderSystem->GetDevice());
-
-	m_pBlackTexture->SubRef();
-	m_pWhiteTexture->SubRef();
 
 	m_pBlackTexture = nullptr;
 	m_pWhiteTexture = nullptr;

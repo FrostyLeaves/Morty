@@ -1,14 +1,14 @@
-#include "MSkyBoxSystem.h"
+#include "System/MSkyBoxSystem.h"
 
-#include "MEngine.h"
-#include "MIDevice.h"
-#include "MRenderCommand.h"
+#include "Engine/MEngine.h"
+#include "Render/MIDevice.h"
+#include "Render/MRenderCommand.h"
 
-#include "MObjectSystem.h"
-#include "MRenderSystem.h"
+#include "System/MObjectSystem.h"
+#include "System/MRenderSystem.h"
 
-#include "MSkyBoxComponent.h"
-#include "MEnvironmentMapRenderWork.h"
+#include "Component/MSkyBoxComponent.h"
+#include "RenderProgram/MEnvironmentMapRenderWork.h"
 
 MORTY_CLASS_IMPLEMENT(MSkyBoxSystem, MISystem)
 

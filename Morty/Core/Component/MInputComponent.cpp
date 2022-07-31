@@ -1,4 +1,4 @@
-#include "MInputComponent.h"
+#include "Component/MInputComponent.h"
 
 MORTY_CLASS_IMPLEMENT(MInputComponent, MComponent)
 

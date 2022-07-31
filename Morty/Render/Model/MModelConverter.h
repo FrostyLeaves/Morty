@@ -10,12 +10,12 @@
 
 #ifndef _M_MODELCONVERTER_H_
 #define _M_MODELCONVERTER_H_
-#include "MGlobal.h"
-#include "MResource.h"
-#include "MString.h"
-#include "MVertex.h"
-#include "MMesh.h"
-#include "MSkeletonResource.h"
+#include "Utility/MGlobal.h"
+#include "Resource/MResource.h"
+#include "Utility/MString.h"
+#include "Render/MVertex.h"
+#include "Render/MMesh.h"
+#include "Resource/MSkeletonResource.h"
 
 #include <map>
 

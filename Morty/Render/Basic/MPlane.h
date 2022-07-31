@@ -10,8 +10,8 @@
 
 #ifndef _M_MPLANE_H_
 #define _M_MPLANE_H_
-#include "MGlobal.h"
-#include "Vector.h"
+#include "Utility/MGlobal.h"
+#include "Math/Vector.h"
 
 class MPlane
 {

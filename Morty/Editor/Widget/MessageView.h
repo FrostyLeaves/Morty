@@ -1,7 +1,7 @@
 #ifndef _MESSAGE_VIEW_H_
 #define _MESSAGE_VIEW_H_
 
-#include "IBaseView.h"
+#include "Main/IBaseView.h"
 
 
 class MessageView : public IBaseView

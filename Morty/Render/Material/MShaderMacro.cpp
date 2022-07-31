@@ -1,8 +1,8 @@
 ﻿#include "MShaderMacro.h"
-#include "MVertex.h"
-#include "MFunction.h"
+#include "Render/MVertex.h"
+#include "Utility/MFunction.h"
 
-#include "MRenderGlobal.h"
+#include "Render/MRenderGlobal.h"
 
 const MString strBonesPerVertex = MStringHelper::ToString(MRenderGlobal::BONES_PER_VERTEX);
 const MString strBonesMaxNumber = MStringHelper::ToString(MRenderGlobal::BONES_MAX_NUMBER);
@@ -11,6 +11,7 @@ const MString strPointLightMaxNumber = MStringHelper::ToString(MRenderGlobal::PO
 const MString strPointLightPixelNumber = MStringHelper::ToString(MRenderGlobal::POINT_LIGHT_PIXEL_NUMBER);
 const MString strSpotLightMaxNumber = MStringHelper::ToString(MRenderGlobal::SPOT_LIGHT_MAX_NUMBER);
 const MString strSpotLightPixelNumber = MStringHelper::ToString(MRenderGlobal::SPOT_LIGHT_PIXEL_NUMBER);
+const MString strCascadedShadowMapNumber = MStringHelper::ToString(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
 
 
 enum class METransparentPolicy
@@ -31,6 +32,7 @@ std::vector<std::pair<MString, MString>> MShaderMacro::s_vGlobalMacroParams = {
 	{"MSPOT_LIGHT_PIXEL_NUMBER", strSpotLightPixelNumber},
 	{"MTRANSPARENT_POLICY", strTransparentPolicy},
 	{"GBUFFER_UNIFIED_FORMAT", MRenderGlobal::GBUFFER_UNIFIED_FORMAT ? "true" : "false"},
+	{"CASCADED_SHADOW_MAP_NUM", strCascadedShadowMapNumber},
 };
 
 void MShaderMacro::SetInnerMacro(const MString& strKey, const MString& strValue)

@@ -1,17 +1,17 @@
 #ifndef _PROPERTY_RENDERABLE_MESH_COMPONENT_H_
 #define _PROPERTY_RENDERABLE_MESH_COMPONENT_H_
 
-#include "PropertyBase.h"
-#include "MRenderableMeshComponent.h"
+#include "Property/PropertyBase.h"
+#include "Component/MRenderableMeshComponent.h"
 
 #include "imgui.h"
-#include "MEntity.h"
-#include "MEngine.h"
-#include "MMaterial.h"
-#include "NotifyManager.h"
+#include "Scene/MEntity.h"
+#include "Engine/MEngine.h"
+#include "Material/MMaterial.h"
+#include "Utility/NotifyManager.h"
 
-#include "MResourceSystem.h"
-#include "MMaterialResource.h"
+#include "System/MResourceSystem.h"
+#include "Resource/MMaterialResource.h"
 
 class PropertyMRenderableMeshComponent : public PropertyBase
 {

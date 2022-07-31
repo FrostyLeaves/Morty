@@ -2,7 +2,7 @@
 #define _RESOURCE_VIEW_H_
 
 
-#include "IBaseView.h"
+#include "Main/IBaseView.h"
 
 
 class ResourceView : public IBaseView

@@ -1,9 +1,9 @@
-﻿#include "MScene.h"
-#include "MFunction.h"
-#include "MEngine.h"
-#include "MComponent.h"
+﻿#include "Scene/MScene.h"
+#include "Utility/MFunction.h"
+#include "Engine/MEngine.h"
+#include "Component/MComponent.h"
 
-#include "MComponentSystem.h"
+#include "System/MComponentSystem.h"
 
 MORTY_CLASS_IMPLEMENT(MScene, MObject)
 

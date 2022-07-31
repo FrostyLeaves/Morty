@@ -2,9 +2,9 @@
 
 #include "imgui.h"
 
-#include "MEngine.h"
-#include "MResource.h"
-#include "MResourceSystem.h"
+#include "Engine/MEngine.h"
+#include "Resource/MResource.h"
+#include "System/MResourceSystem.h"
 
 ResourceView::ResourceView()
 	: IBaseView()
@@ -57,7 +57,7 @@ void ResourceView::Render()
 			ImGui::NextColumn();
 			ImGui::Text(pResource->GetResourcePath().c_str());
 			ImGui::NextColumn();
-			ImGui::Text("%u", pResource->GetRefNumber());
+			ImGui::Text("%u", pResource.use_count());
 			ImGui::NextColumn();
 
 			++iter;

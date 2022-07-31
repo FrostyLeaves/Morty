@@ -8,11 +8,11 @@
 
 #ifndef _M_MSKELETON_H_
 #define _M_MSKELETON_H_
-#include "MGlobal.h"
-#include "Matrix.h"
-#include "MString.h"
-#include "MVariant.h"
-#include "MResource.h"
+#include "Utility/MGlobal.h"
+#include "Math/Matrix.h"
+#include "Utility/MString.h"
+#include "Utility/MVariant.h"
+#include "Resource/MResource.h"
 #include <vector>
 #include <map>
 

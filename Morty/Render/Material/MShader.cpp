@@ -1,6 +1,6 @@
-﻿#include "MShader.h"
-#include "MIDevice.h"
-#include "MVertex.h"
+﻿#include "Material/MShader.h"
+#include "Render/MIDevice.h"
+#include "Render/MVertex.h"
 
 #include <vector>
 

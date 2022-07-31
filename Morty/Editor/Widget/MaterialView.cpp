@@ -1,30 +1,30 @@
 #include "MaterialView.h"
 
-#include "MScene.h"
-#include "MEntity.h"
-#include "MEngine.h"
-#include "MObject.h"
-#include "MTexture.h"
-#include "MMaterial.h"
-#include "MViewport.h"
-#include "MMaterialResource.h"
+#include "Scene/MScene.h"
+#include "Scene/MEntity.h"
+#include "Engine/MEngine.h"
+#include "Object/MObject.h"
+#include "Basic/MTexture.h"
+#include "Material/MMaterial.h"
+#include "Basic/MViewport.h"
+#include "Resource/MMaterialResource.h"
 
 #include "imgui.h"
 
-#include "MSceneSystem.h"
-#include "MObjectSystem.h"
-#include "MResourceSystem.h"
+#include "System/MSceneSystem.h"
+#include "System/MObjectSystem.h"
+#include "System/MResourceSystem.h"
 
-#include "MSceneComponent.h"
-#include "MModelComponent.h"
-#include "MRenderableMeshComponent.h"
-#include "MDirectionalLightComponent.h"
+#include "Component/MSceneComponent.h"
+#include "Component/MModelComponent.h"
+#include "Component/MRenderableMeshComponent.h"
+#include "Component/MDirectionalLightComponent.h"
 
-#include "MSkeletonResource.h"
+#include "Resource/MSkeletonResource.h"
 
-#include "MForwardRenderProgram.h"
+#include "RenderProgram/MIRenderProgram.h"
 
-#include "MainEditor.h"
+#include "Main/MainEditor.h"
 
 MaterialView::MaterialView()
 	: IBaseView()
@@ -84,12 +84,11 @@ void MaterialView::Render()
 {
  	if (m_pMaterial && m_bShowPreview)
  	{
- 		if (void* pTexture = m_SceneTexture.GetTexture(0))
+ 		if (MTexture* pTexture = m_SceneTexture.GetTexture(0))
  		{
- 			ImTextureID texid = pTexture;
  			float fImageSize = ImGui::GetContentRegionAvail().x;
  			ImGui::SameLine(fImageSize * 0.25f);
- 			ImGui::Image(texid, ImVec2(fImageSize * 0.5f, fImageSize * 0.5f));
+ 			ImGui::Image({ pTexture, 0 }, ImVec2(fImageSize * 0.5f, fImageSize * 0.5f));
  		}
  	}
 	if (m_pMaterial)

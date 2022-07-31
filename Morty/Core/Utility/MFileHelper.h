@@ -8,8 +8,8 @@
 
 #ifndef _M_MFILEHELPER_H_
 #define _M_MFILEHELPER_H_
-#include "MGlobal.h"
-#include "MString.h"
+#include "Utility/MGlobal.h"
+#include "Utility/MString.h"
 
 #include <vector>
 

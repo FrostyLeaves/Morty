@@ -1,6 +1,6 @@
-#include "MCameraComponent.h"
+#include "Component/MCameraComponent.h"
 
-#include "MEngine.h"
+#include "Engine/MEngine.h"
 
 #include "Flatbuffer/MCameraComponent_generated.h"
 
@@ -10,7 +10,7 @@ MCameraComponent::MCameraComponent()
 	: MComponent()
 	, m_eCameraType(MECameraType::EPerspective)
 	, m_fFov(40.0f)
-	, m_fZNear(0.1f)
+	, m_fZNear(1.0f)
 	, m_fZFar(500.0f)
 	, m_fWidth(50)
 	, m_fHeight(50)

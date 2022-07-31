@@ -9,7 +9,7 @@
 #ifndef _M_GUID_H_
 #define _M_GUID_H_
 
-#include "MGlobal.h"
+#include "Utility/MGlobal.h"
 
 class MORTY_API MGuid
 {

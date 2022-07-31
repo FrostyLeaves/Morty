@@ -50,7 +50,7 @@ typedef unsigned char MByte;
 #include <algorithm>
 #include <functional>
 
-#include "MString.h"
+#include "Utility/MString.h"
 
 
 class MORTY_API MGlobal

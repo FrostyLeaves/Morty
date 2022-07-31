@@ -10,8 +10,8 @@
 
 #ifndef _M_MMULTILEVELMESH_H_
 #define _M_MMULTILEVELMESH_H_
-#include "MMesh.h"
-#include "MResource.h"
+#include "Render/MMesh.h"
+#include "Resource/MResource.h"
 #include <vector>
 
 class MORTY_API MMultiLevelMesh

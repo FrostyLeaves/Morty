@@ -4,7 +4,7 @@
 //VS    per render
 [[vk::binding(0,1)]]cbuffer _M_E_cbWorldMatrix : register(b1)
 {
-    float4x4 U_matCamProj; // world to proj
+    float4x4 U_matCamProj[CASCADED_SHADOW_MAP_NUM]; // world to proj
 };
 
 
@@ -30,7 +30,7 @@ struct VS_OUT_EMPTY
     float4 pos : SV_POSITION;
 };
 
-VS_OUT_EMPTY VS(VS_IN input)
+VS_OUT_EMPTY VS(VS_IN input, uint ViewIndex : SV_ViewID)
 {
     VS_OUT_EMPTY output;
 
@@ -46,10 +46,10 @@ VS_OUT_EMPTY VS(VS_IN input)
     matBoneTransform += float4x4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1) * fWeight;
 
     float4 posFromBones = mul(float4(input.pos, 1.0f), matBoneTransform);
-    output.pos = mul(posFromBones, mul(U_matWorld, U_matCamProj));
+    output.pos = mul(posFromBones, mul(U_matWorld, U_matCamProj[ViewIndex]));
 
 #else
-    output.pos = mul(float4(input.pos, 1.0f), mul(U_matWorld, U_matCamProj));
+    output.pos = mul(float4(input.pos, 1.0f), mul(U_matWorld, U_matCamProj[ViewIndex]));
 #endif
     return output;
 }

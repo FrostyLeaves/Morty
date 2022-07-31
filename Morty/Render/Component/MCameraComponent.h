@@ -8,11 +8,11 @@
 
 #ifndef _M_MCAMERACOMPONENT_H_
 #define _M_MCAMERACOMPONENT_H_
-#include "MGlobal.h"
-#include "MComponent.h"
-#include "MCameraFrustum.h"
+#include "Utility/MGlobal.h"
+#include "Component/MComponent.h"
+#include "Basic/MCameraFrustum.h"
 
-#include "Vector.h"
+#include "Math/Vector.h"
 
 class MORTY_API MCameraComponent : public MComponent
 {

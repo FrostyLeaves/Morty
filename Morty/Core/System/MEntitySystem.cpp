@@ -1,15 +1,15 @@
-#include "MEntitySystem.h"
+#include "System/MEntitySystem.h"
 
-#include "MScene.h"
-#include "MEntity.h"
-#include "MEngine.h"
-#include "MVariant.h"
+#include "Scene/MScene.h"
+#include "Scene/MEntity.h"
+#include "Engine/MEngine.h"
+#include "Utility/MVariant.h"
 
-#include "MSceneComponent.h"
+#include "Component/MSceneComponent.h"
 
-#include "MEntityResource.h"
+#include "Resource/MEntityResource.h"
 
-#include "MResourceSystem.h"
+#include "System/MResourceSystem.h"
 
 #include "flatbuffers/flatbuffer_builder.h"
 #include "Flatbuffer/MEntityResource_generated.h"

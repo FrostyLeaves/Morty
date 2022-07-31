@@ -1,8 +1,8 @@
 #ifndef _PROPERTY_MDIRECTIONALLIGHT_H_
 #define _PROPERTY_MDIRECTIONALLIGHT_H_
 
-#include "PropertyBase.h"
-#include "MDirectionalLightComponent.h"
+#include "Property/PropertyBase.h"
+#include "Component/MDirectionalLightComponent.h"
 
 
 

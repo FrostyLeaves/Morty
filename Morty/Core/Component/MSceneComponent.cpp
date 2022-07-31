@@ -1,8 +1,8 @@
-#include "MSceneComponent.h"
+#include "Component/MSceneComponent.h"
 
-#include "MMath.h"
-#include "MScene.h"
-#include "MFunction.h"
+#include "Math/MMath.h"
+#include "Scene/MScene.h"
+#include "Utility/MFunction.h"
 
 #include "Flatbuffer/MSceneComponent_generated.h"
 
