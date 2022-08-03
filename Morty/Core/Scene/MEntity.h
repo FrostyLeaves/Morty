@@ -70,7 +70,7 @@ protected:
 	MString m_strName;
 
 	friend class MScene;
-	std::vector<MComponentID> m_vComponents;
+	std::map<const MType*, MComponent*> m_tComponents;
 };
 
 template <class T>

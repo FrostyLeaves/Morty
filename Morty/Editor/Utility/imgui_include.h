@@ -8,14 +8,18 @@
 struct ImDrawVert{ImVec2 pos;ImVec2 uv;ImColor col;};
 
 
-
+class MTexture;
 struct ImGuiTexture
 {
-    class MTexture* pTexture = nullptr;
+    MTexture* pTexture = nullptr;
     size_t nArrayIdx = 0;
 
     ImGuiTexture() : pTexture(nullptr), nArrayIdx(0) {}
 
+    operator intptr_t() const { return (intptr_t)pTexture; }
+
+    ImGuiTexture(void* tex) : pTexture((MTexture*)tex), nArrayIdx(0) {}
+    
     ImGuiTexture(class MTexture* tex, size_t arrIdx) : pTexture(tex), nArrayIdx(arrIdx) {}
 
     bool operator==(const ImGuiTexture& other)

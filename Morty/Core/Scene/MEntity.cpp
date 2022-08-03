@@ -46,11 +46,11 @@ void MEntity::UnregisterComponent(const MType* pComponentType)
 
 void MEntity::UnregisterAllComponent()
 {
-	std::vector<MComponentID> vect = m_vComponents;
+	auto components = m_tComponents;
 
-	for (const MComponentID& id : vect)
+	for (auto& pr : components)
 	{
-		UnregisterComponent(id.pComponentType);
+		UnregisterComponent(pr.first);
 	}
 }
 
@@ -59,13 +59,7 @@ bool MEntity::HasComponent(const MType* pComponentType)
 	if (!m_pScene)
 		return false;
 
-	for (const MComponentID& id : m_vComponents)
-	{
-		if (id.pComponentType == pComponentType)
-			return true;
-	}
-
-	return false;
+	return m_tComponents.find(pComponentType) != m_tComponents.end();
 }
 
 MComponent* MEntity::GetComponent(const MType* pComponentType)
@@ -73,16 +67,22 @@ MComponent* MEntity::GetComponent(const MType* pComponentType)
 	if (!m_pScene)
 		return nullptr;
 
-	return m_pScene->FindComponent(this, pComponentType);
+	auto&& findResult = m_tComponents.find(pComponentType);
+	if (findResult != m_tComponents.end())
+	{
+		return findResult->second;
+	}
+
+	return nullptr;
 }
 
 std::vector<MComponent*> MEntity::GetComponents()
 {
 	std::vector<MComponent*> vResult;
 
-	for (auto id : m_vComponents)
+	for (auto& pr : m_tComponents)
 	{
-		vResult.push_back(m_pScene->GetComponent(id));
+		vResult.push_back(pr.second);
 	}
 
 	return vResult;
@@ -164,9 +164,9 @@ void MEntity::Deserialize(const void* pBufferPointer)
 
 void MEntity::PostDeserialize()
 {
-	for (MComponentID& compid : m_vComponents)
+	for (auto& pr : m_tComponents)
 	{
-		if (MComponent* pComponent = GetScene()->GetComponent(compid))
+		if (MComponent* pComponent = pr.second)
 		{
 			pComponent->PostDeserialize();
 		}

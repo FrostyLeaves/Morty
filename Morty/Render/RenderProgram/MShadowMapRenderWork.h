@@ -52,6 +52,9 @@ protected:
 	Matrix4 GetLightInverseProjection_MaxBoundsSphere(MRenderInfo& info, const MBoundsAABB& cGenerateShadowAABB, float fZNear, float fZFar);
 
 
+
+	void CalculateFrustumForCascadesShadowMap(MRenderInfo& info);
+
 private:
 
 

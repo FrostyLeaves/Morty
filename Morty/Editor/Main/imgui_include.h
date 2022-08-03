@@ -8,7 +8,7 @@
 struct ImDrawVert{ImVec2 pos;ImVec2 uv;ImColor col;};
 
 
-
+// TODO PushID((void*)ImGuiTexture) is conflicting.
 struct ImGuiTexture
 {
     class MTexture* pTexture = nullptr;
@@ -17,6 +17,8 @@ struct ImGuiTexture
     ImGuiTexture() : pTexture(nullptr), nArrayIdx(0) {}
 
     ImGuiTexture(class MTexture* tex, size_t arrIdx) : pTexture(tex), nArrayIdx(arrIdx) {}
+
+    operator intptr_t() const { return (intptr_t)(pTexture); }
 
     bool operator==(const ImGuiTexture& other)
     {

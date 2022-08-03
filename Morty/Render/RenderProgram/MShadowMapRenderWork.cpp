@@ -367,11 +367,106 @@ Matrix4 MShadowMapRenderWork::GetLightInverseProjection_MaxBoundsSphere(MRenderI
 	);
 
 	return projMat * matLightInv;
+}
+
+void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& info)
+{
+	if (!info.pCameraEntity)
+	{
+		return;
+	}
+
+	MSceneComponent* pLightSceneComponent = info.pDirectionalLightEntity->GetComponent<MSceneComponent>();
+	if (!pLightSceneComponent)
+		return;
+
+	MCameraComponent* pCameraComponent = info.pCameraEntity->GetComponent<MCameraComponent>();
+	if (!pCameraComponent)
+		return;
 
 
+	float minZ = pCameraComponent->GetZNear();
+	float maxZ = pCameraComponent->GetZFar();
+
+	float range = maxZ - minZ;
+	float ratio = maxZ / minZ;
+
+	const float fCascadeSplitLambda = 0.95f;
 
 
-	return Matrix4();
+	//example: { 0.25, 0.50, 0.75, 1.00 }
+	std::array<float, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadeSplits;
+
+	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
+	{
+		float p = (nCascadedIdx + 1) / static_cast<float>(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
+		float log = minZ * std::pow(ratio, p);
+		float uniform = minZ + range * p;
+		float d = fCascadeSplitLambda * (log - uniform) + uniform;
+		vCascadeSplits[nCascadedIdx] = (d - minZ) / range;
+	}
+
+	//获取相机视椎体在方向光Camera内的最小和最大X、Y值
+	std::vector<Vector3> vCameraFrustumPoints(8);
+	MRenderSystem::GetCameraFrustumPoints(info.pCameraEntity, info.pViewport->GetSize(), minZ, maxZ, vCameraFrustumPoints);
+
+	Matrix4 matLight(pLightSceneComponent->GetTransform().GetRotation());
+	Matrix4 matLightInv = matLight.Inverse();
+
+	float fCameraBoundsLightSpaceMaxZ = -FLT_MAX;
+	for (uint32_t i = 0; i < 8; ++i)
+	{
+		vCameraFrustumPoints[i] = matLightInv * vCameraFrustumPoints[i];
+	}
+
+
+	float fLastSplitDist = 0.0f;
+	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
+	{
+		std::vector<Vector3> vCascadedFrustumPoints = vCameraFrustumPoints;
+
+		Vector3 v3FrustumCenter = Vector3(0.0f, 0.0f, 0.0f);
+		for (size_t nPointIdx = 0; nPointIdx < 4; ++nPointIdx)
+		{
+			Vector3 dist = vCascadedFrustumPoints[nPointIdx + 4] - vCascadedFrustumPoints[nPointIdx];
+			vCascadedFrustumPoints[nPointIdx + 4] = vCascadedFrustumPoints[nPointIdx] + (dist * vCascadeSplits[nCascadedIdx]);
+			vCascadedFrustumPoints[nPointIdx] = vCascadedFrustumPoints[nPointIdx] + (dist * fLastSplitDist);
+
+			v3FrustumCenter += vCameraFrustumPoints[nPointIdx];
+			v3FrustumCenter += vCameraFrustumPoints[nPointIdx + 4];
+		}
+
+		v3FrustumCenter = v3FrustumCenter / 8.0f;
+
+		float fBoundsSphereRadius = 0.0f;
+		for (uint32_t nPointIdx = 0; nPointIdx < 8; ++nPointIdx)
+		{
+			float fDistance = (vCascadedFrustumPoints[nPointIdx] - v3FrustumCenter).Length();
+			fBoundsSphereRadius = (std::max)(fBoundsSphereRadius, fDistance);
+		}
+		fBoundsSphereRadius = std::ceil(fBoundsSphereRadius * 16.0f) / 16.0f;
+
+
+		float radius = fBoundsSphereRadius;
+		float centerX = v3FrustumCenter.x;
+		float centerY = v3FrustumCenter.y;
+		float centerZ = v3FrustumCenter.z;
+
+		Matrix4 projMat = MRenderSystem::MatrixOrthoOffCenterLH(
+			centerX - radius,
+			centerX + radius,
+			centerY + radius,
+			centerY - radius,
+			0.0f,
+			radius * 2.0f
+		);
+
+
+		info.cCascadedShadow[nCascadedIdx].fSplitDepth = (minZ + vCascadeSplits[nCascadedIdx] * range) * -1.0f;;
+		info.cCascadedShadow[nCascadedIdx].m4DirLightInvProj = projMat * matLightInv;
+
+		fLastSplitDist = vCascadeSplits[nCascadedIdx];
+	}
 }
 
 void MShadowMapRenderWork::UpdateShadowParams(MRenderInfo& info)
@@ -409,11 +504,11 @@ void MShadowMapRenderWork::CollectShadowMesh(MRenderInfo& info)
 	if (!pLightSceneComponent)
 		return;
 
-	MCameraComponent* pCameraComponent = pViewport->GetCamera()->GetComponent<MCameraComponent>();
+	MCameraComponent* pCameraComponent = info.pCameraEntity->GetComponent<MCameraComponent>();
 	if (!pCameraComponent)
 		return;
 
-	MSceneComponent* pCameraSceneComponent = pViewport->GetCamera()->GetComponent<MSceneComponent>();
+	MSceneComponent* pCameraSceneComponent = info.pCameraEntity->GetComponent<MSceneComponent>();
 	if (!pCameraSceneComponent)
 		return;
 
@@ -508,7 +603,9 @@ void MShadowMapRenderWork::CollectShadowMesh(MRenderInfo& info)
 			cGenerateShadowRenderAABB = info.cCaclSceneRenderAABB;
 		}
 
-		info.cCascadedShadow[nCascadedIdx].m4DirLightInvProj = GetLightInverseProjection_MinBoundsAABB(info, cGenerateShadowRenderAABB, cd.fZNear, cd.fZFar);
+		CalculateFrustumForCascadesShadowMap(info);
+
+		//info.cCascadedShadow[nCascadedIdx].m4DirLightInvProj = GetLightInverseProjection_MinBoundsAABB(info, cGenerateShadowRenderAABB, cd.fZNear, cd.fZFar);
 	}
 }
 

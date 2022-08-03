@@ -88,7 +88,7 @@ std::vector<MEntity*> MEntitySystem::LoadEntity(MScene* pScene, std::shared_ptr<
 
 	const flatbuffers::Vector<flatbuffers::Offset<mfbs::MEntity>>& vEntity = *fbResource->entity();
 
-	for (int i = 0; i < vEntity.Length(); ++i)
+	for (int i = 0; i < vEntity.size(); ++i)
 	{
 		const mfbs::MEntity* fb_entity = vEntity.Get(i);
 		MGuid guid = MGuid(fb_entity->id()->data0(), fb_entity->id()->data1(), fb_entity->id()->data2(), fb_entity->id()->data3());
