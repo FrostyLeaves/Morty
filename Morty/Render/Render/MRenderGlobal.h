@@ -31,7 +31,7 @@ public:
 
 	static const int BONES_PER_VERTEX = 4;
 	static const int BONES_MAX_NUMBER = 128;
-	static const int SHADOW_TEXTURE_SIZE = 1024;
+	static const int SHADOW_TEXTURE_SIZE = 4096;
 
 	static const int POINT_LIGHT_MAX_NUMBER = 8;
 	static const int POINT_LIGHT_PIXEL_NUMBER = 8;

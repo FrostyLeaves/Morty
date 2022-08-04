@@ -457,7 +457,7 @@ void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& inf
 			centerX + radius,
 			centerY + radius,
 			centerY - radius,
-			0.0f,
+			-radius * 2.0f,
 			radius * 2.0f
 		);
 

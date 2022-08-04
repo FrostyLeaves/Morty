@@ -126,7 +126,7 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 	MSceneComponent* pCubeFolderComponent = pCubeFolder->RegisterComponent<MSceneComponent>();
 
 	const float distance = 10;
-	const size_t nNum = 10;
+	const size_t nNum = 2;
 	for (size_t x = 0; x < nNum; ++x)
 	{
 		for (size_t y = 0; y < nNum; ++y)

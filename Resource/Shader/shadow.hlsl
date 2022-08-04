@@ -14,7 +14,7 @@ float CalcShadow(Texture2DArray texShadowMap, float3 f3WorldPosition, float fDep
             nCascadeIndex = nSplitIdx + 1;
         }
     }
-    
+
     float4 f4DirLightSpacePos = mul(float4(f3WorldPosition, 1.0f), U_matLightProj[nCascadeIndex]);
 
     float2 shadowTexCoords;
@@ -33,7 +33,7 @@ float CalcShadow(Texture2DArray texShadowMap, float3 f3WorldPosition, float fDep
         float lighting = 0.0f;
         
         float pixelDepth = min(f4DirLightSpacePos.z / f4DirLightSpacePos.w, 1.0f);
-        float shadowDepth = texShadowMap.Sample(LinearSampler, float3(shadowTexCoords.xy, nCascadeIndex)).r;
+        float shadowDepth = texShadowMap.Sample(NearestSampler, float3(shadowTexCoords.xy, nCascadeIndex)).r;
 
         //current pixel is nearer.
         if (pixelDepth < shadowDepth + epsilon)

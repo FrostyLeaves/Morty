@@ -241,6 +241,8 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 				(*pSplitDepthArray)[nCascadedIdx] = info.cCascadedShadow[nCascadedIdx].fSplitDepth;
 			}
 		}
+
+		m_pShadowInfoParam->SetDirty();
 	}
 
 	if (m_pWorldInfoParam)
