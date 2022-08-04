@@ -1,3 +1,5 @@
+#ifndef _M_INNER_CONSTANT_HLSL_
+#define _M_INNER_CONSTANT_HLSL_
 
 
 #ifndef NUM_PI
@@ -41,14 +43,13 @@ struct SpotLight
 //VS    per render
 [[vk::binding(0,1)]]cbuffer _M_E_cbWorldMatrix : register(b1)
 {
-    float4x4 U_matProj;
+    float4x4 U_matView; // world to view
     float4x4 U_matCamProj; // world to proj
     float4x4 U_matCamProjInv; // proj to world
-    float4x4 U_matLightProj[CASCADED_SHADOW_MAP_NUM];
 };
 
 //VS & PS    per render
-[[vk::binding(1,1)]]cbuffer _M_E_cbWorldInfo : register(b4)
+[[vk::binding(1,1)]]cbuffer _M_E_cbWorldInfo : register(b2)
 {
     float3 U_f3DirectionLight;
     float3 U_f3CameraPosition;
@@ -72,11 +73,20 @@ struct SpotLight
     int U_bEnvironmentMapEnabled;
 };
 
-[[vk::binding(3,1)]]sampler LinearSampler;
-[[vk::binding(4,1)]]sampler NearestSampler;
+[[vk::binding(3,1)]]cbuffer _M_E_cbShadowInfo : register(b4)
+{
+    float4x4 U_matLightProj[CASCADED_SHADOW_MAP_NUM];
+    float U_vCascadeSplits[CASCADED_SHADOW_MAP_NUM];
+};
+
+[[vk::binding(4,1)]]sampler LinearSampler;
+[[vk::binding(5,1)]]sampler NearestSampler;
 
 //Shadowmap
 [[vk::binding(6,1)]]Texture2DArray U_texShadowMap;
 [[vk::binding(7,1)]]TextureCube U_texIrradianceMap;
 [[vk::binding(8,1)]]TextureCube U_texPrefilterMap;
 [[vk::binding(9,1)]]Texture2D U_texBrdfLUT;
+
+
+#endif

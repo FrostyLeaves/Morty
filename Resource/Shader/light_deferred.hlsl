@@ -1,6 +1,7 @@
 #include "inner_constant.hlsl"
 #include "inner_functional.hlsl"
 #include "brdf_functional.hlsl"
+#include "shadow.hlsl"
 
 struct VS_OUT
 {

@@ -2032,7 +2032,7 @@ bool MVulkanDevice::InitPhysicalDevice()
 	for (uint32_t i = 0; i < nDeviceCount; i++)
 	{
 		vkGetPhysicalDeviceProperties(vPhysicalDevices[i], &m_VkPhysicalDeviceProperties);
-		GetEngine()->GetLogger()->Information("API Version:    %d.%d.%d\n",
+		GetEngine()->GetLogger()->Information("Vulkan API Version:    %d.%d.%d\n",
 			VK_VERSION_MAJOR(m_VkPhysicalDeviceProperties.apiVersion),
 			VK_VERSION_MINOR(m_VkPhysicalDeviceProperties.apiVersion),
 			VK_VERSION_PATCH(m_VkPhysicalDeviceProperties.apiVersion));

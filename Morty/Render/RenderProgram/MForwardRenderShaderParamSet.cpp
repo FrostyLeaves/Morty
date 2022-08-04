@@ -20,6 +20,7 @@ MForwardRenderShaderParamSet::MForwardRenderShaderParamSet()
 	, m_pWorldMatrixParam(nullptr)
 	, m_pWorldInfoParam(nullptr)
 	, m_pLightInfoParam(nullptr)
+	, m_pShadowInfoParam(nullptr)
 	
 	, m_pShadowTextureParam(nullptr)
 	, m_pDiffuseMapTextureParam(nullptr)
@@ -42,16 +43,9 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	m_pWorldMatrixParam->eShaderType = (uint32_t)MEShaderType::EPixel | (uint32_t)MEShaderType::EVertex;
 
 	MStruct worldMatrixSrt;
-	worldMatrixSrt.AppendMVariant("U_matProj", Matrix4());
+	worldMatrixSrt.AppendMVariant("U_matView", Matrix4());
 	worldMatrixSrt.AppendMVariant("U_matCamProj", Matrix4());
 	worldMatrixSrt.AppendMVariant("U_matCamProjInv", Matrix4());
-
-	MVariantArray matLightProjArray;
-	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
-	{
-		matLightProjArray.AppendMVariant<Matrix4>();
-	}
-	worldMatrixSrt.AppendMVariant("U_matLightProj", matLightProjArray);
 
 	m_pWorldMatrixParam->var = worldMatrixSrt;
 
@@ -59,8 +53,9 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	m_pWorldInfoParam->unSet = 1;
 	m_pWorldInfoParam->unBinding = 1;
 	m_pWorldInfoParam->eShaderType = (uint32_t)MEShaderType::EPixel | (uint32_t)MEShaderType::EVertex;
-	
-	MStruct worldInfoSrt;
+	m_pWorldInfoParam->var = MStruct();
+
+	MStruct& worldInfoSrt = *m_pWorldInfoParam->var.GetStruct();
 	worldInfoSrt.AppendMVariant("U_f3DirectionLight", Vector3());
 	worldInfoSrt.AppendMVariant("U_f3CameraPosition", Vector3());
 	worldInfoSrt.AppendMVariant("U_f3CameraDirection", Vector3());
@@ -69,14 +64,13 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	worldInfoSrt.AppendMVariant("U_fDelta", float());
 	worldInfoSrt.AppendMVariant("U_fGameTime", float());
 
-	m_pWorldInfoParam->var = worldInfoSrt;
 
 	m_pLightInfoParam = new MShaderConstantParam();
 	m_pLightInfoParam->unSet = 1;
 	m_pLightInfoParam->unBinding = 2;
 	m_pLightInfoParam->eShaderType = (uint32_t)MEShaderType::EPixel | (uint32_t)MEShaderType::EVertex;
-
 	m_pLightInfoParam->var = MStruct();
+
 	MStruct& lightInfoSrt = *m_pLightInfoParam->var.GetStruct();
 	
 	MStruct dirLightSrt;
@@ -122,15 +116,39 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	lightInfoSrt.AppendMVariant("U_nValidSpotLightsNumber", int(0));
 	lightInfoSrt.AppendMVariant("U_bEnvironmentMapEnabled", int(0));
 
+
+	m_pShadowInfoParam = new MShaderConstantParam();
+	m_pShadowInfoParam->unSet = 1;
+	m_pShadowInfoParam->unBinding = 3;
+	m_pShadowInfoParam->eShaderType = (uint32_t)MEShaderType::EPixel | (uint32_t)MEShaderType::EVertex;
+	m_pShadowInfoParam->var = MStruct();
+
+	MStruct& shadowInfoSrt = *m_pShadowInfoParam->var.GetStruct();
+
+	MVariantArray matLightProjArray;
+	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
+	{
+		matLightProjArray.AppendMVariant<Matrix4>();
+	}
+	shadowInfoSrt.AppendMVariant("U_matLightProj", matLightProjArray);
+
+	MVariantArray matCascadeSplitArray;
+	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
+	{
+		matCascadeSplitArray.AppendMVariant<float>();
+	}
+	shadowInfoSrt.AppendMVariant("U_vCascadeSplits", matCascadeSplitArray);
+
+
 	MShaderSampleParam* pLinearSampler = new MShaderSampleParam();
 	pLinearSampler->eSamplerType = MESamplerType::ELinear;
 	pLinearSampler->unSet = 1;
-	pLinearSampler->unBinding = 3;
+	pLinearSampler->unBinding = 4;
 
 	MShaderSampleParam* pNearestSampler = new MShaderSampleParam();
 	pNearestSampler->eSamplerType = MESamplerType::ENearest;
 	pNearestSampler->unSet = 1;
-	pNearestSampler->unBinding = 4;
+	pNearestSampler->unBinding = 5;
 
 	m_pShadowTextureParam = new MShaderTextureParam();
 	m_pShadowTextureParam->unSet = 1;
@@ -155,6 +173,7 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	m_vParams.push_back(m_pWorldMatrixParam);
 	m_vParams.push_back(m_pWorldInfoParam);
 	m_vParams.push_back(m_pLightInfoParam);
+	m_vParams.push_back(m_pShadowInfoParam);
 
 	m_vSamples.push_back(pLinearSampler);
 	m_vSamples.push_back(pNearestSampler);
@@ -197,11 +216,17 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 	if (m_pWorldMatrixParam)
 	{
 		MStruct& cStruct = *m_pWorldMatrixParam->var.GetStruct();
-		cStruct[0] = info.pViewport->GetProjection();
+		cStruct[0] = info.pCameraEntity->GetComponent<MSceneComponent>()->GetWorldTransform().Inverse();
 		cStruct[1] = info.pViewport->GetCameraInverseProjection();
  		cStruct[2] = info.pViewport->GetCameraInverseProjection().Inverse();
 
-		if (MVariantArray* pDirLightInvProjArray = cStruct[3].GetArray())
+		m_pWorldMatrixParam->SetDirty();
+	}
+
+	if (m_pShadowInfoParam)
+	{
+		MStruct& cStruct = *m_pShadowInfoParam->var.GetStruct();
+		if (MVariantArray* pDirLightInvProjArray = cStruct[0].GetArray())
 		{
 			for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
 			{
@@ -209,7 +234,13 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 			}
 		}
 
-		m_pWorldMatrixParam->SetDirty();
+		if (MVariantArray* pSplitDepthArray = cStruct[1].GetArray())
+		{
+			for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
+			{
+				(*pSplitDepthArray)[nCascadedIdx] = info.cCascadedShadow[nCascadedIdx].fSplitDepth;
+			}
+		}
 	}
 
 	if (m_pWorldInfoParam)

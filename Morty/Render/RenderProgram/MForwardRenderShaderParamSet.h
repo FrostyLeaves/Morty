@@ -33,10 +33,14 @@ public:
 	void SetBrdfMapTexture(MTexture* pTexture);
 
 public:
-
+	/*_M_E_cbWorldMatrix*/
 	MShaderConstantParam* m_pWorldMatrixParam;
+	/*_M_E_cbWorldInfo*/
 	MShaderConstantParam* m_pWorldInfoParam;
+	/*_M_E_cbLights*/
 	MShaderConstantParam* m_pLightInfoParam;
+	/*_M_E_cbShadowInfo*/
+	MShaderConstantParam* m_pShadowInfoParam;
 
 	MShaderTextureParam* m_pShadowTextureParam;
 	MShaderTextureParam* m_pDiffuseMapTextureParam;

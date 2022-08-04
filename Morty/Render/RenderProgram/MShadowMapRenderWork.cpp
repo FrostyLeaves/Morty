@@ -432,8 +432,8 @@ void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& inf
 			vCascadedFrustumPoints[nPointIdx + 4] = vCascadedFrustumPoints[nPointIdx] + (dist * vCascadeSplits[nCascadedIdx]);
 			vCascadedFrustumPoints[nPointIdx] = vCascadedFrustumPoints[nPointIdx] + (dist * fLastSplitDist);
 
-			v3FrustumCenter += vCameraFrustumPoints[nPointIdx];
-			v3FrustumCenter += vCameraFrustumPoints[nPointIdx + 4];
+			v3FrustumCenter += vCascadedFrustumPoints[nPointIdx];
+			v3FrustumCenter += vCascadedFrustumPoints[nPointIdx + 4];
 		}
 
 		v3FrustumCenter = v3FrustumCenter / 8.0f;
@@ -462,7 +462,7 @@ void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& inf
 		);
 
 
-		info.cCascadedShadow[nCascadedIdx].fSplitDepth = (minZ + vCascadeSplits[nCascadedIdx] * range) * -1.0f;;
+		info.cCascadedShadow[nCascadedIdx].fSplitDepth = (minZ + vCascadeSplits[nCascadedIdx] * range);
 		info.cCascadedShadow[nCascadedIdx].m4DirLightInvProj = projMat * matLightInv;
 
 		fLastSplitDist = vCascadeSplits[nCascadedIdx];
@@ -604,8 +604,6 @@ void MShadowMapRenderWork::CollectShadowMesh(MRenderInfo& info)
 		}
 
 		CalculateFrustumForCascadesShadowMap(info);
-
-		//info.cCascadedShadow[nCascadedIdx].m4DirLightInvProj = GetLightInverseProjection_MinBoundsAABB(info, cGenerateShadowRenderAABB, cd.fZNear, cd.fZFar);
 	}
 }
 
