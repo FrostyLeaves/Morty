@@ -184,7 +184,7 @@ Matrix4 MShadowMapRenderWork::GetLightInverseProjection_MinBoundsAABB(MRenderInf
 	std::vector<Vector3> vSceneBoundsPoints(8);
 	info.cCaclSceneRenderAABB.GetPoints(vSceneBoundsPoints);
 
-	//计算相机的有效ZNear和ZFar.
+	//锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟叫Near锟斤拷ZFar.
 	float fSceneMinZNear = FLT_MAX, fSceneMaxZFar = -FLT_MAX;
 	for (uint32_t i = 0; i < 8; ++i)
 	{
@@ -198,7 +198,7 @@ Matrix4 MShadowMapRenderWork::GetLightInverseProjection_MinBoundsAABB(MRenderInf
 	float fZValidNear = fSceneMinZNear > fZNear ? fSceneMinZNear : fZNear;
 	float fZValidFar = fSceneMaxZFar < fZFar ? fSceneMaxZFar : fZFar;
 
-	//获取相机视椎体在方向光Camera内的最小和最大X、Y值
+	//锟斤拷取锟斤拷锟斤拷锟阶碉拷锟斤拷诜锟斤拷锟斤拷Camera锟节碉拷锟斤拷小锟斤拷锟斤拷锟絏锟斤拷Y值
 	std::vector<Vector3> vCameraBoundsPoints(8);
 	MRenderSystem::GetCameraFrustumPoints(info.pCameraEntity, info.pViewport->GetSize(), fZValidNear, (std::max)(fZValidNear, fZValidFar), vCameraBoundsPoints);
 
@@ -222,7 +222,7 @@ Matrix4 MShadowMapRenderWork::GetLightInverseProjection_MinBoundsAABB(MRenderInf
 	std::vector<Vector3> vShadowModelBoundsPoints(8);
 	cGenerateShadowAABB.GetPoints(vShadowModelBoundsPoints);
 
-	//计算Scene的AABB盒在方向光Camera内的最小和最大Z值
+	//锟斤拷锟斤拷Scene锟斤拷AABB锟斤拷锟节凤拷锟斤拷锟紺amera锟节碉拷锟斤拷小锟斤拷锟斤拷锟絑值
 	Vector3 v3SceneMin(FLT_MAX, FLT_MAX, FLT_MAX);
 	Vector3 v3SceneMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 	for (uint32_t i = 0; i < 8; ++i)
@@ -237,8 +237,8 @@ Matrix4 MShadowMapRenderWork::GetLightInverseProjection_MinBoundsAABB(MRenderInf
 		if (v3SceneMax.z < pos.z) v3SceneMax.z = pos.z;
 	}
 
-	//x和y取视椎体和SceneAABB的交集， zMin取SceneAABB的，因为相机后面的模型也会生成Shadow
-	//zMax取交集，超过视椎体的Shadow不需要渲染。
+	//x锟斤拷y取锟斤拷椎锟斤拷锟絊ceneAABB锟侥斤拷锟斤拷锟斤拷 zMin取SceneAABB锟侥ｏ拷锟斤拷为锟斤拷锟斤拷锟斤拷锟斤拷模锟斤拷也锟斤拷锟斤拷锟斤拷Shadow
+	//zMax取锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷椎锟斤拷锟絊hadow锟斤拷锟斤拷要锟斤拷染锟斤拷
 
 	float fLeft = (std::max)(v3CameraMin.x, v3SceneMin.x);
 	float fRight = (std::min)(v3CameraMax.x, v3SceneMax.x);
@@ -300,7 +300,7 @@ Matrix4 MShadowMapRenderWork::GetLightInverseProjection_MaxBoundsSphere(MRenderI
 	std::vector<Vector3> vSceneBoundsPoints(8);
 	info.cCaclSceneRenderAABB.GetPoints(vSceneBoundsPoints);
 
-	//计算相机的有效ZNear和ZFar.
+	//锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟叫Near锟斤拷ZFar.
 	float fSceneMinZNear = FLT_MAX, fSceneMaxZFar = -FLT_MAX;
 	for (uint32_t i = 0; i < 8; ++i)
 	{
@@ -312,7 +312,7 @@ Matrix4 MShadowMapRenderWork::GetLightInverseProjection_MaxBoundsSphere(MRenderI
 			fSceneMaxZFar = z;
 	}
 
-	//获取相机视椎体在方向光Camera内的最小和最大X、Y值
+	//锟斤拷取锟斤拷锟斤拷锟阶碉拷锟斤拷诜锟斤拷锟斤拷Camera锟节碉拷锟斤拷小锟斤拷锟斤拷锟絏锟斤拷Y值
 	std::vector<Vector3> vCameraBoundsPoints(8);
 	MRenderSystem::GetCameraFrustumPoints(info.pCameraEntity, info.pViewport->GetSize(), fZNear, fZFar, vCameraBoundsPoints);
 
@@ -334,7 +334,7 @@ Matrix4 MShadowMapRenderWork::GetLightInverseProjection_MaxBoundsSphere(MRenderI
 	std::vector<Vector3> vShadowModelBoundsPoints(8);
 	cGenerateShadowAABB.GetPoints(vShadowModelBoundsPoints);
 
-	//计算Scene的AABB盒在方向光Camera内的最小和最大Z值
+	//锟斤拷锟斤拷Scene锟斤拷AABB锟斤拷锟节凤拷锟斤拷锟紺amera锟节碉拷锟斤拷小锟斤拷锟斤拷锟絑值
 	Vector3 v3SceneMin(FLT_MAX, FLT_MAX, FLT_MAX);
 	Vector3 v3SceneMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 	for (uint32_t i = 0; i < 8; ++i)
@@ -349,8 +349,8 @@ Matrix4 MShadowMapRenderWork::GetLightInverseProjection_MaxBoundsSphere(MRenderI
 		if (v3SceneMax.z < pos.z) v3SceneMax.z = pos.z;
 	}
 
-	//x和y取视椎体和SceneAABB的交集， zMin取SceneAABB的，因为相机后面的模型也会生成Shadow
-	//zMax取交集，超过视椎体的Shadow不需要渲染。
+	//x锟斤拷y取锟斤拷椎锟斤拷锟絊ceneAABB锟侥斤拷锟斤拷锟斤拷 zMin取SceneAABB锟侥ｏ拷锟斤拷为锟斤拷锟斤拷锟斤拷锟斤拷模锟斤拷也锟斤拷锟斤拷锟斤拷Shadow
+	//zMax取锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷椎锟斤拷锟絊hadow锟斤拷锟斤拷要锟斤拷染锟斤拷
 
 	float radius = cameraFrustumSphere.m_fRadius * 0.5f;
 	float centerX = cameraFrustumSphere.m_v3CenterPoint.x;
@@ -406,7 +406,7 @@ void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& inf
 		vCascadeSplits[nCascadedIdx] = (d - minZ) / range;
 	}
 
-	//获取相机视椎体在方向光Camera内的最小和最大X、Y值
+	//锟斤拷取锟斤拷锟斤拷锟阶碉拷锟斤拷诜锟斤拷锟斤拷Camera锟节碉拷锟斤拷小锟斤拷锟斤拷锟絏锟斤拷Y值
 	std::vector<Vector3> vCameraFrustumPoints(8);
 	MRenderSystem::GetCameraFrustumPoints(info.pCameraEntity, info.pViewport->GetSize(), minZ, maxZ, vCameraFrustumPoints);
 
