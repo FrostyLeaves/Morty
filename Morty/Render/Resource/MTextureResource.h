@@ -44,6 +44,7 @@ public:
 public:
 
 	bool ImportTexture(const MString&  strResourcePath, const ImportInfo& importInfo);
+	bool ImportTextureFromMemory(char* buffer, size_t nSize, const ImportInfo& importInfo);
 
 	bool ImportCubeMap(const std::array<MString, 6>& vResourcePath, const ImportInfo& importInfo);
 	

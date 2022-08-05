@@ -28,6 +28,7 @@ class MEntity;
 class MSkeleton;
 class MMeshResource;
 class MModelInstance;
+class MTextureResource;
 class MSkeletalAnimation;
 
 enum class MModelConvertMaterialType
@@ -76,6 +77,7 @@ protected:
 
 	void ProcessMaterial(const aiScene* pScene, const uint32_t& nMaterialIdx);
 
+	void ProcessTexture(const aiScene* pScene);
 
 	MEntity* GetEntityFromNode(const aiScene* pScene, aiNode* pNode);
 
@@ -92,6 +94,7 @@ private:
 
 	std::vector<std::shared_ptr<MMeshResource>> m_vMeshes;
 	std::vector<std::shared_ptr<MMaterial>> m_vMaterials;
+	std::map < MString, std::shared_ptr<MTextureResource>> m_tTextures;
 
 	std::map<aiNode*, MEntity*> m_tNodeMaps;
 

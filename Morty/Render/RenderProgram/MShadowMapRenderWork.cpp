@@ -62,7 +62,7 @@ void MShadowMapRenderWork::OnCreated()
 	m_pShadowSkeletonMaterial->SetRasterizerType(MERasterizerType::ECullFront);
 
 	MTexture* pShadowMapTexture = MTexture::CreateShadowMapArray(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
-	pShadowMapTexture->SetSize(Vector2(1024.0, 1024.0));
+	pShadowMapTexture->SetSize(Vector2(MRenderGlobal::SHADOW_TEXTURE_SIZE, MRenderGlobal::SHADOW_TEXTURE_SIZE));
 	pShadowMapTexture->GenerateBuffer(pRenderSystem->GetDevice());
 
 
@@ -457,8 +457,8 @@ void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& inf
 			centerX + radius,
 			centerY + radius,
 			centerY - radius,
-			0.0f,
-			radius * 2.0f
+			centerZ - radius,
+			centerZ + radius
 		);
 
 

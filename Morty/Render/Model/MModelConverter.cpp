@@ -198,6 +198,9 @@ bool MModelConverter::Load(const MString& strResourcePath)
 
 	m_pModelEntity->SetName(scene->mRootNode->mName.C_Str());
 
+	//Textures
+	ProcessTexture(scene);
+
 	//Bones
 	ProcessBones(scene);
 	pModelComponent->SetSkeletonResource(m_pSkeleton);
@@ -652,7 +655,6 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 {
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-	aiString strAmbient("$clr.ambient"), strDiffuse("$clr.diffuse"), strSpecular("$clr.specular"), strShininess("$mat.shininess");
 
 	std::shared_ptr<MMaterial> pMaterial = nullptr;
 	if (eMaterialType == MModelConvertMaterialType::E_PBR_Deferred)
@@ -718,92 +720,127 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		pMaterial->SetTexutreParam(i, pDefaultTexture);
 	}
 
-// 	aiMaterial* pAiMaterial = pScene->mMaterials[nMaterialIdx];
-// 
-// 	Vector3 v3Ambient(1.0f, 1.0f, 1.0f), v3Diffuse(1.0f, 1.0f, 1.0f), v3Specular(1.0f, 1.0f, 1.0f);
-// 	float fShininess = 32.0f;
-// 	MString strTexPath;
-// 
-// 	for (int n = 0; n < pAiMaterial->mNumProperties; ++n)
-// 	{
-// 		aiMaterialProperty* prop = pAiMaterial->mProperties[n];
-// 		if (prop->mKey == strAmbient)
-// 			memcpy(v3Ambient.m, prop->mData, sizeof(Vector3));
-// 		else if (prop->mKey == strDiffuse)
-// 			memcpy(v3Diffuse.m, prop->mData, sizeof(Vector3));
-// 		else if (prop->mKey == strSpecular)
-// 			memcpy(v3Specular.m, prop->mData, sizeof(Vector3));
-// 		else if (prop->mKey == strShininess)
-// 			memcpy(&fShininess, prop->mData, sizeof(float));
-// 	}
-// 
-// 	if (0.0f == fShininess)
-// 		fShininess = 32.0f;
-// 
-// 	//Test Data, need read from file.
-// 	MStruct* pMaterialStruct = nullptr;
-// 	for (MShaderConstantParam* pParam : *pMaterial->GetShaderParams())
-// 	{
-// 		if (MStruct* pStruct = pParam->var.GetStruct())
-// 		{
-// 			if (MStruct* pMat = pStruct->FindMember("U_mat")->GetStruct())
-// 			{
-// 				pMaterialStruct = pMat;
-// 
-// 				pMat->SetMember("f3Ambient", v3Ambient);
-// 				pMat->SetMember("f3Diffuse", v3Diffuse);
-// 				pMat->SetMember("f3Specular", v3Specular);
-// 				pMat->SetMember("fShininess", fShininess);
-// 				pMat->SetMember("bUseNormalTex", false);
-// 				pMat->SetMember("fAlphaFactor", 1.0f);
-// 			}
-// 		}
-// 
-// 		continue;
-// 	}
-// 
-// 	MString strResourceFolder = MResource::GetFolder(m_strResourcePath);
-// 
-// 	aiString strDiffuseTextureFile, strNormalTextureFile;
-// 	pAiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &strDiffuseTextureFile);
-// 	pAiMaterial->GetTexture(aiTextureType_NORMALS, 0, &strNormalTextureFile);
+	aiMaterial* pAiMaterial = pScene->mMaterials[nMaterialIdx];
 
-// 	aiString strBaseColorTextureFile, strNormalCameraTextureFile, strEmissionTextureFile, 
-// 		strMetalnessTextureFile, strDiffuseRoughnessTextureFile, strAmbientOcclusionTextureFile;
-// 	pAiMaterial->GetTexture(aiTextureType_BASE_COLOR, 0, &strBaseColorTextureFile);
-// 	pAiMaterial->GetTexture(aiTextureType_NORMAL_CAMERA, 0, &strNormalCameraTextureFile);
-// 	pAiMaterial->GetTexture(aiTextureType_EMISSION_COLOR, 0, &strEmissionTextureFile);
-// 	pAiMaterial->GetTexture(aiTextureType_METALNESS, 0, &strMetalnessTextureFile);
-// 	pAiMaterial->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &strDiffuseRoughnessTextureFile);
-// 	pAiMaterial->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &strAmbientOcclusionTextureFile);
-// 	
-// 
-// 	MString strDiffuseFileName = MResource::GetFileName(MString(strDiffuseTextureFile.C_Str()));
-// 	MString strNormalFileName = MResource::GetFileName(MString(strNormalTextureFile.C_Str()));
-// 
-// 	std::shared_ptr<MResource> pDiffuseTexRes = nullptr;
-// 	std::shared_ptr<MResource> pNormalMapRes = nullptr;
-// 
-// 	if (!strDiffuseFileName.empty())
-// 		pDiffuseTexRes = pResourceSystem->LoadResource(strResourceFolder + "/tex/" + strDiffuseFileName);
-// 	else
-// 		pDiffuseTexRes = pResourceSystem->LoadVirtualResource<MTextureResource>(MGlobal::DEFAULT_TEXTURE_WHITE);
-// 
-// 	if (!strNormalFileName.empty())
-// 	{
-// 		pNormalMapRes = pResourceSystem->LoadResource(strResourceFolder + "/tex/" + strNormalFileName);
-// 		if (pMaterialStruct)
-// 			pMaterialStruct->SetMember("bUseNormalTex", true);
-// 
-// 	}
-// 	else
-// 		pNormalMapRes = pResourceSystem->LoadVirtualResource<MTextureResource>(MGlobal::DEFAULT_TEXTURE_NORMALMAP);
-// 
-// 	pMaterial->SetTexutreParam(MGlobal::SHADER_PARAM_NAME_DIFFUSE, pDiffuseTexRes);
-// 	pMaterial->SetTexutreParam(MGlobal::SHADER_PARAM_NAME_NORMAL, pNormalMapRes);
-// 	
+	if (eMaterialType == MModelConvertMaterialType::E_Default_Forward)
+	{
+		Vector3 v3Ambient(1.0f, 1.0f, 1.0f), v3Diffuse(1.0f, 1.0f, 1.0f), v3Specular(1.0f, 1.0f, 1.0f);
+		float fShininess = 32.0f;
+
+		static const aiString strAmbient("$clr.ambient"), strDiffuse("$clr.diffuse"), strSpecular("$clr.specular"), strShininess("$mat.shininess");
+		for (int n = 0; n < pAiMaterial->mNumProperties; ++n)
+		{
+			aiMaterialProperty* prop = pAiMaterial->mProperties[n];
+			if (prop->mKey == strAmbient)
+				memcpy(v3Ambient.m, prop->mData, sizeof(Vector3));
+			else if (prop->mKey == strDiffuse)
+				memcpy(v3Diffuse.m, prop->mData, sizeof(Vector3));
+			else if (prop->mKey == strSpecular)
+				memcpy(v3Specular.m, prop->mData, sizeof(Vector3));
+			else if (prop->mKey == strShininess)
+				memcpy(&fShininess, prop->mData, sizeof(float));
+		}
+
+		if (0.0f == fShininess)
+			fShininess = 32.0f;
+
+		MStruct* pMaterialStruct = nullptr;
+		for (MShaderConstantParam* pParam : *pMaterial->GetShaderParams())
+		{
+			if (MStruct* pStruct = pParam->var.GetStruct())
+			{
+				if (MStruct* pMat = pStruct->FindMember("U_mat")->GetStruct())
+				{
+					pMaterialStruct = pMat;
+
+					pMat->SetMember("f3Ambient", v3Ambient);
+					pMat->SetMember("f3Diffuse", v3Diffuse);
+					pMat->SetMember("f3Specular", v3Specular);
+					pMat->SetMember("fShininess", fShininess);
+					pMat->SetMember("bUseNormalTex", false);
+					pMat->SetMember("fAlphaFactor", 1.0f);
+				}
+			}
+		}
+	}
+
+
+	static const std::map<aiTextureType, MString> TextureMapping = {
+
+		//forward
+		{aiTextureType_DIFFUSE, "U_mat_texDiffuse"},
+		{aiTextureType_NORMALS, "U_mat_texNormal"},
+		{aiTextureType_SPECULAR, "U_mat_texSpecular"},
+
+
+		//pbr
+		{aiTextureType_BASE_COLOR, "U_mat_texAlbedo"},
+		{aiTextureType_NORMAL_CAMERA, "U_mat_texNormal"},
+		{aiTextureType_EMISSION_COLOR, "U_mat_texEmission"},
+		{aiTextureType_METALNESS, "U_mat_texMetallic"},
+		{aiTextureType_DIFFUSE_ROUGHNESS, "U_mat_texRoughness"},
+		{aiTextureType_AMBIENT_OCCLUSION, "U_mat_texAmbientOcc"},
+	};
+
+
+	for (auto&& pr : TextureMapping)
+	{
+		aiString strTextureFileName;
+		pAiMaterial->GetTexture(pr.first, 0, &strTextureFileName);
+
+		auto findResult = m_tTextures.find(strTextureFileName.C_Str());
+		if (findResult != m_tTextures.end())
+		{
+			std::shared_ptr<MTextureResource>& pTexture = findResult->second;
+
+			pMaterial->SetTexutreParam(pr.second, pTexture);
+		}
+	}
 
 	m_vMaterials[nMaterialIdx] = pMaterial;
+}
+
+void MModelConverter::ProcessTexture(const aiScene* pScene)
+{
+	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+
+	for (size_t nTextureIdx = 0; nTextureIdx < pScene->mNumTextures; ++nTextureIdx)
+	{
+		if (aiTexture* aiTexture = pScene->mTextures[nTextureIdx])
+		{
+			auto&& pTextureResource = pResourceSystem->CreateResource<MTextureResource>();
+
+			//embedded texture
+			if (aiTexture->mHeight == 0)
+			{
+				pTextureResource->ImportTextureFromMemory(reinterpret_cast<char*>(aiTexture->pcData), aiTexture->mWidth, MTextureResource::ImportInfo(MTextureResource::PixelFormat::Byte8));
+			}
+			else
+			{
+				const size_t nWidth = aiTexture->mWidth;
+				const size_t nHeight = aiTexture->mHeight;
+				const size_t nSize = nWidth * nHeight * 4;
+				unsigned char* buffer = new unsigned char[nSize];
+
+				memcpy(buffer, aiTexture->pcData, nSize);
+
+				char temp = 0;
+				for (size_t i = 0; i < nSize; i += 4)
+				{
+					temp = buffer[i];
+					buffer[i] = buffer[i + 1];
+					buffer[i + 1] = buffer[i + 2];
+					buffer[i + 2] = buffer[i + 3];
+					buffer[i + 3] = temp;
+				}
+
+				pTextureResource->LoadFromMemory(buffer, nWidth, nHeight, 4, MTextureResource::PixelFormat::Byte8, false);
+
+			}
+
+			m_tTextures[aiTexture->mFilename.C_Str()] = pTextureResource;
+		}
+	}
 }
 
 MEntity* MModelConverter::GetEntityFromNode(const aiScene* pScene, aiNode* pNode)

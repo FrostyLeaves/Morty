@@ -154,6 +154,33 @@ void MTextureResource::CreateCubeMapRenderTarget(const uint32_t& nWidth, const u
 	m_texture.GenerateBuffer(pRenderSystem->GetDevice());
 }
 
+bool MTextureResource::ImportTextureFromMemory(char* buffer, size_t nSize, const ImportInfo& importInfo)
+{
+	int unWidth = 0;
+	int unHeight = 0;
+	int comp;
+
+	if (importInfo.ePixelFormat == PixelFormat::Byte8)
+	{
+		stbi_uc* data = stbi_load_from_memory((const stbi_uc*)buffer, nSize, &unWidth, &unHeight, &comp, 0);
+		LoadFromMemory((MByte*)data, unWidth, unHeight, comp, importInfo.ePixelFormat, false);
+		data = nullptr;
+	}
+	else if (importInfo.ePixelFormat == PixelFormat::Float32)
+	{
+		float* data = stbi_loadf_from_memory((const stbi_uc*)buffer, nSize, &unWidth, &unHeight, &comp, 0);
+		LoadFromMemory((MByte*)data, unWidth, unHeight, comp, importInfo.ePixelFormat, false);
+		data = nullptr;
+	}
+	else
+	{
+		GetEngine()->GetLogger()->Error("Load Texture Error: unknow format.");
+		return false;
+	}
+
+	return true;
+}
+
 bool MTextureResource::ImportTexture(const MString& strResourcePath, const ImportInfo& importInfo)
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
@@ -166,29 +193,7 @@ bool MTextureResource::ImportTexture(const MString& strResourcePath, const Impor
 
 	std::vector<char> buffer((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
 
-	int unWidth = 0;
-	int unHeight = 0;
-	int comp;
-
-	if (importInfo.ePixelFormat == PixelFormat::Byte8)
-	{
-		stbi_uc* data = stbi_load_from_memory((const stbi_uc*)buffer.data(), buffer.size(), &unWidth, &unHeight, &comp, 0);
-		LoadFromMemory((MByte*)data, unWidth, unHeight, comp, importInfo.ePixelFormat, false);
-		data = nullptr;
-	}
-	else if (importInfo.ePixelFormat == PixelFormat::Float32)
-	{
-		float* data = stbi_loadf_from_memory((const stbi_uc*)buffer.data(), buffer.size(), &unWidth, &unHeight, &comp, 0);
-		LoadFromMemory((MByte*)data, unWidth, unHeight, comp, importInfo.ePixelFormat, false);
-		data = nullptr;
-	}
-	else
-	{
-		GetEngine()->GetLogger()->Error("Load Texture Error: unknow format.");
-		return false;
-	}
-
-	return true;
+	return ImportTextureFromMemory(buffer.data(), buffer.size(), importInfo);
 }
 
 bool MTextureResource::ImportCubeMap(const std::array<MString, 6>& vResourcePath, const ImportInfo& importInfo)
