@@ -413,10 +413,20 @@ void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& inf
 	Matrix4 matLight(pLightSceneComponent->GetTransform().GetRotation());
 	Matrix4 matLightInv = matLight.Inverse();
 
+	std::vector<Vector3> vSceneBoundsPoints(8);
+	info.cCaclSceneRenderAABB.GetPoints(vSceneBoundsPoints);
+
 	float fCameraBoundsLightSpaceMaxZ = -FLT_MAX;
+	float fSceneMinZ = FLT_MAX, fSceneMaxZ = -FLT_MAX;
 	for (uint32_t i = 0; i < 8; ++i)
 	{
 		vCameraFrustumPoints[i] = matLightInv * vCameraFrustumPoints[i];
+
+		float z = (matLightInv * vSceneBoundsPoints[i]).z;
+		if (fSceneMinZ > z)
+			fSceneMinZ = z;
+		if (fSceneMaxZ < z)
+			fSceneMaxZ = z;
 	}
 
 
@@ -457,7 +467,7 @@ void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& inf
 			centerX + radius,
 			centerY + radius,
 			centerY - radius,
-			centerZ - radius,
+			(std::min)(centerZ - radius, fSceneMinZ),
 			centerZ + radius
 		);
 
