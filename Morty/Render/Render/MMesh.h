@@ -12,42 +12,47 @@
 #include "Math/Vector.h"
 #include <vector>
 
+#include "MBuffer.h"
+
 class MIDevice;
-class MVertexBuffer;
+class MBuffer;
 struct MVertex;
 class MMaterial;
 
 class MORTY_API MIMesh
 {
 public:
-	MIMesh(const bool& bModifiable = false);
+	MIMesh(const bool& nDynamicMesh = false);
 	virtual ~MIMesh();
 
-	virtual MVertexBuffer* GetBuffer() { return m_pVertexBuffer; }
+	MBuffer* GetVertexBuffer() { return &m_vertexBuffer; }
+	MBuffer* GetIndexBuffer() { return &m_indexBuffer; }
 
-	virtual bool GetNeedGenerate(){ return nullptr == m_pVertexBuffer || m_bNeedGenerate; }
-	virtual bool GetNeedUpload() { return m_bNeedUpload; }
-	virtual void SetNeedUpload(){ m_bNeedUpload = true; }
-
+	void SetDirty();
 	virtual void GenerateBuffer(MIDevice* pDevice);
 	virtual void UploadBuffer(MIDevice* pDevice);
 	virtual void DestroyBuffer(MIDevice* pDevice);
-	virtual uint32_t GetVerticesLength() const { return m_unVerticesLength; }
-	virtual uint32_t GetIndicesLength()  const { return m_unIndicesLength; }
-	void* GetVertices() { return m_vVertices; }
-	const void* GetVertices() const { return m_vVertices; }
-	virtual const uint32_t* GetIndices() const { return m_vIndices; }
-	virtual uint32_t* GetIndices() { return m_vIndices; }
+	void* GetVertices() { return m_vertexBuffer.GetData(); }
+	const void* GetVertices() const { return m_vertexBuffer.GetData(); }
+	virtual const uint32_t* GetIndices() const { return reinterpret_cast<const uint32_t*>(m_indexBuffer.GetData()); }
+	virtual uint32_t* GetIndices() { return reinterpret_cast<uint32_t*>(m_indexBuffer.GetData()); }
 
 	virtual uint32_t GetVertexStructSize() const = 0;
 
-	virtual MIMesh* Copy(const bool& bModifiable = false) const = 0;
+	virtual uint32_t GetVerticesNum() const;
+	virtual uint32_t GetIndicesNum() const;
+
+	uint32_t GetVerticesSize() const { return m_vertexBuffer.GetSize(); }
+
+	virtual MIMesh* Clone(const bool& bDynamic = false) const = 0;
+
 
 public:
 
 	virtual void CreateVertices(const uint32_t& unSize) = 0;
-	virtual void CreateIndices(const uint32_t& unSize, const uint32_t& unIndexSize);
 	virtual void ResizeVertices(const uint32_t& unSize) = 0;
+
+	virtual void CreateIndices(const uint32_t& unSize, const uint32_t& unIndexSize);
 	virtual void ResizeIndices(const uint32_t& unSize, const uint32_t& unIndexSize);
 
 	virtual void Clean()
@@ -57,38 +62,24 @@ public:
 	}
 
 protected:
+	MBuffer m_vertexBuffer;
+	MBuffer m_indexBuffer;
 
-	void* m_vVertices;
-	uint32_t* m_vIndices;
-	uint32_t m_unVerticesLength;
-	uint32_t m_unIndicesLength;
-
-	uint32_t m_unVerticesArraySize;
-	uint32_t m_unIndicesArraySize;
-
-	MVertexBuffer* m_pVertexBuffer;
-
-	bool m_bNeedGenerate;
-	bool m_bNeedUpload;
-	bool m_bModifiable;
 };
 
 template <class VERTEX_TYPE>
 class MORTY_API MMesh : public MIMesh
 {
 public:
-	MMesh(const bool& bModifiable = false)
-		: MIMesh(bModifiable){}
+	MMesh(const bool& nDynamicMesh = false)
+		: MIMesh(nDynamicMesh){}
 	virtual ~MMesh(){}
 
-	virtual MIMesh* Copy(const bool& bModifiable = false) const override
+	virtual MIMesh* Clone(const bool& bDynamic = false) const override
 	{
-		MMesh<VERTEX_TYPE>* pNewMesh = new MMesh<VERTEX_TYPE>(bModifiable);
-		pNewMesh->ResizeIndices(GetIndicesLength(), 1);
-		pNewMesh->ResizeVertices(GetVerticesLength());
-
-		memcpy(pNewMesh->m_vIndices, m_vIndices, m_unIndicesLength * sizeof(uint32_t));
-		memcpy(pNewMesh->m_vVertices, m_vVertices, m_unVerticesLength * sizeof(VERTEX_TYPE));
+		MMesh<VERTEX_TYPE>* pNewMesh = new MMesh<VERTEX_TYPE>(bDynamic);
+		pNewMesh->m_vertexBuffer = m_vertexBuffer;
+		pNewMesh->m_indexBuffer = m_indexBuffer;
 
 		return pNewMesh;
 	}
@@ -101,46 +92,23 @@ public:
 
 	virtual void CreateVertices(const uint32_t& unSize) override
 	{
-		if (m_unVerticesArraySize < unSize)
+		if (m_vertexBuffer.GetSize() < unSize * sizeof(VERTEX_TYPE))
 		{
-			if (nullptr != m_vVertices)
-			{
-				delete[] (VERTEX_TYPE*)m_vVertices;
-				m_vVertices = nullptr;
-			}
-
-			m_vVertices = new VERTEX_TYPE[unSize];
-			m_unVerticesArraySize = unSize;
-
-			m_bNeedGenerate = true;
+			m_vertexBuffer.ReallocMemory(unSize * sizeof(VERTEX_TYPE));
 		}
-
-		m_unVerticesLength = unSize;
 	}
 
 	virtual void ResizeVertices(const uint32_t& unSize) override
 	{
-		if (m_unVerticesArraySize < unSize)
+		if (m_vertexBuffer.GetSize() < unSize * sizeof(VERTEX_TYPE))
 		{
-			VERTEX_TYPE* vertices = new VERTEX_TYPE[unSize];
-			if (nullptr != m_vVertices)
-			{
-				memcpy(vertices, m_vVertices, m_unVerticesLength * sizeof(VERTEX_TYPE));
-				delete[](VERTEX_TYPE*)m_vVertices;
-			}
-
-			m_vVertices = vertices;
-			m_unVerticesArraySize = unSize;
-
-			m_bNeedGenerate = true;
+			m_vertexBuffer.ReallocMemory(unSize * sizeof(VERTEX_TYPE));
 		}
-
-		m_unVerticesLength = unSize;
 	}
 
 	VERTEX_TYPE* GetVertices()
 	{
-		return static_cast<VERTEX_TYPE*>(m_vVertices);
+		return reinterpret_cast<VERTEX_TYPE*>(m_vertexBuffer.GetData());
 	}
 };
 

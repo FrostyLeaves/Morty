@@ -101,7 +101,7 @@ def procBOM(strPath, bAdd):
         f.write(fcontent)
         f.close()
 
-def build_for_windows():
+def build_for_windows( cmake_generator ):
 
     for root, _, files in os.walk(ASSIMP_PATH + "/code/AssetLib/AMF", topdown=False):
         for name in files:
@@ -116,7 +116,7 @@ def build_for_windows():
     os.chdir(ASSIMP_BUILD_PATH)
 
     os.system(CMAKE_PATH +
-      ' -G "Visual Studio 16 2019" '+
+      ' -G "' + cmake_generator + '" '+
       ' -DCMAKE_INSTALL_PREFIX=' + ASSIMP_INSTALL_PATH +
       ' -DCMAKE_CXX_FLAGS_DEBUG=/MTd' +
       ' -DCMAKE_CXX_FLAGS_RELEASE=/MT' +

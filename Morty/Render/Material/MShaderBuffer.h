@@ -50,5 +50,14 @@ public:
 
 };
 
+class MComputeShaderBuffer : public MShaderBuffer
+{
+public:
+	MComputeShaderBuffer();
+	virtual ~MComputeShaderBuffer() {}
+
+#if RENDER_GRAPHICS == MORTY_VULKAN
+#endif
+};
 
 #endif

@@ -49,6 +49,11 @@ public:
 	void AppendSampleParam(MShaderSampleParam* pParam, const uint32_t& eShaderType) { return AppendShaderParam(m_vSamples, pParam, eShaderType); }
 	std::vector<MShaderSampleParam*> RemoveSampleParam(const uint32_t& eShaderType) { return RemoveShaderParam<MShaderSampleParam>(m_vSamples, eShaderType); }
 
+	MShaderStorageParam* FindStorageParam(const MShaderStorageParam* pParam) { return FindShaderParam(m_vStorages, pParam); }
+	void AppendStorageParam(MShaderStorageParam* pParam, const uint32_t& eShaderType) { return AppendShaderParam(m_vStorages, pParam, eShaderType); }
+	std::vector<MShaderStorageParam*> RemoveStorageParam(const uint32_t& eShaderType) { return RemoveShaderParam<MShaderStorageParam>(m_vStorages, eShaderType); }
+
+
 	void GenerateBuffer(MIDevice* pDevice);
 	void DestroyBuffer(MIDevice* pDevice);
 
@@ -58,6 +63,7 @@ public:
 	std::vector<MShaderConstantParam*> m_vParams;
 	std::vector<MShaderTextureParam*> m_vTextures;
 	std::vector<MShaderSampleParam*> m_vSamples;
+	std::vector<MShaderStorageParam*> m_vStorages;
 
 public:
 	uint32_t m_unKey;

@@ -51,6 +51,8 @@ protected:
 
 	bool AllowDynamicUniformBufferMemory(MShaderConstantParam* pParam);
 
+    bool AllowDynamicStorageBufferMemory(MShaderConstantParam* pParam);
+
 	void FreeUniformBufferMemory(MShaderConstantParam* pParam);
 
 	void FreeDynamicUniformBufferMemory(MShaderConstantParam* pParam);

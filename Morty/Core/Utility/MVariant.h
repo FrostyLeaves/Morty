@@ -100,10 +100,6 @@ public:
 	M_VAR_GET_FUNC(MVariantArray, Array);
 
 	float* CastFloatUnsafe() const { return (float*)m_pData; }
-
-	template <typename T>
-	T& GetVarUnsafe() const { return *(T*)m_pData; }
-
 	template <typename T>
 	T* GetPointerUnsafe() const { return (T*)m_pData; }
 
@@ -128,7 +124,22 @@ public:
 private:
 
 	void Clean();
-	MByte* m_pData;
+
+	union 
+	{
+		int* intValue;
+		float* floatValue;
+		Vector2* vector2Value;
+		Vector3* vector3Value;
+		Vector4* vector4Value;
+		Quaternion* quaternionValue;
+		Matrix3* matrix3Value;
+		Matrix4* matrix4Value;
+		MStruct* structValue;
+		MVariantArray* arrayValue;
+
+		MByte* m_pData;
+	};
 	MEVariantType m_eType;
 	uint32_t m_unByteSize;
 };
@@ -159,14 +170,9 @@ public:
 	uint32_t GetSize() const;
 	MByte* GetData();
 
-	//For Serialize
-	void MemcpyData(MByte* pData);
-
 	MStructMember* GetMember(const uint32_t& unIndex) { return unIndex < m_vMember.size() ? &m_vMember[unIndex] : nullptr; }
 	const MStructMember* GetMember(const uint32_t& unIndex) const { return unIndex < m_vMember.size() ? &m_vMember[unIndex] : nullptr; }
 	size_t GetMemberCount() const { return m_vMember.size(); }
-
-	MVariant* Back();
 
 	template <typename T>
 	T* GetMember(const uint32_t& unIndex)
@@ -185,10 +191,8 @@ public:
 	}
 
 	const MContainer& operator = (const MContainer& var);
-	bool operator == (const MContainer& var) const;
 
 	MVariant& operator[](const uint32_t& unIndex);
-
 	const MVariant& operator[] (const uint32_t& unIndex) const;
 
 protected:
@@ -200,10 +204,10 @@ protected:
 
 	MVariant::MEVariantType m_ContainerType;
 	uint32_t m_unByteSize;
-	unsigned char* m_pData;
+	std::vector<MByte> m_data;
 	std::vector<MStructMember> m_vMember;
 
-	static uint32_t s_unPackSize;
+	static uint32_t s_unPackageSize;
 };
 
 class MORTY_API MStruct : public MContainer
@@ -212,37 +216,22 @@ public:
 	MStruct();
 	virtual ~MStruct() {}
 
-
-	uint32_t AppendMVariant(const MString& strName, const MVariant& var);
-
-	template<typename T>
-	T* AppendMVariant(const MString& strName)
-	{
-		MStructMember sm;
-		sm.strName = strName;
-		sm.var = T();
-
-		uint32_t unIndex = m_tVariantMap[strName] = AppendStructMember(sm);
-
-		return m_vMember[unIndex].var.GetTypedData<T>();
-	}
-
-	void SetMember(const MString& strName, const MVariant& var);
-	MVariant* FindMember(const MString& strName);
-	const MVariant* FindMember(const MString& strName) const;
+	void SetValue(const MString& strName, const MVariant& var);
+	MVariant* GetValue(const MString& strName);
+	const MVariant* GetValue(const MString& strName) const;
 
 	template<typename T>
-	T* FindMember(const MString& strName)
+	T* GetValue(const MString& strName)
 	{
-		if (MVariant* pVar = FindMember(strName))
+		if (MVariant* pVar = GetValue(strName))
 			return pVar->GetTypedData<T>();
 		return nullptr;
 	}
 
 	template<typename T>
-	bool FindMember(const MString& strName, T& result)
+	bool GetValue(const MString& strName, T& result)
 	{
-		if (MVariant* pVar = FindMember(strName))
+		if (MVariant* pVar = GetValue(strName))
 		{
 			result = *pVar->GetTypedData<T>();
 			return true;
@@ -252,17 +241,17 @@ public:
 	}
 
 	template<typename T>
-	const T* FindMember(const MString& strName) const
+	const T* GetValue(const MString& strName) const
 	{
-		if (const MVariant* pVar = FindMember(strName))
+		if (const MVariant* pVar = GetValue(strName))
 			return pVar->GetTypedData<T>();
 		return nullptr;
 	}
 
 	template<typename T>
-	bool FindMember(const MString& strName, T& result) const
+	bool GetValue(const MString& strName, T& result) const
 	{
-		if (const MVariant* pVar = FindMember(strName))
+		if (const MVariant* pVar = GetValue(strName))
 		{
 			result = *pVar->GetTypedData<T>();
 			return true;
@@ -283,33 +272,17 @@ public:
 	MVariantArray();
 	virtual ~MVariantArray() {}
 
-	void AppendMVariant(const MVariant& var);
-
-//	void Resize(const uint32_t& unSize, const MVariant& var);
+	void AppendValue(const MVariant& var);
 
 	void Move(MVariantArray& sour);
 
 	template<typename T>
-	T* AppendMVariant()
+	T* AppendValue()
 	{
-		AppendMVariant(T());
+		AppendValue(T());
 		return  m_vMember.back().var.GetTypedData<T>();
 	}
 };
 
-// void MVariantArray::Resize(const uint32_t& unSize, const MVariant& var)
-// {
-// 	m_vMember.resize(unSize, MStructMember());
-// 	uint32_t unWidth = var.GetSize() / s_unPackSize;
-// 	if (var.GetSize() % s_unPackSize) unWidth += 1;
-// 	
-// 	for (uint32_t i = 0; i < unSize; ++i)
-// 	{
-// 		m_vMember[i].unBeginOffset = unWidth * s_unPackSize * i;
-// 		m_vMember[i].var = var;
-// 	}
-// 
-// 	m_unByteSize = unSize * unWidth * s_unPackSize;
-// }
 
 #endif

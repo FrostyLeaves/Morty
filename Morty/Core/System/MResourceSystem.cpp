@@ -133,7 +133,7 @@ void MResourceSystem::Reload(const MString& strResourcePath)
 	if (iter != m_tPathResources.end())
 	{
 		iter->second->Load(strResourcePath);
-		iter->second->OnReload(MResource::EResReloadType::EDefault);
+		iter->second->OnReload();
 	}
 }
 

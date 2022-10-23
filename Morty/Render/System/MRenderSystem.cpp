@@ -196,14 +196,14 @@ Matrix4 MRenderSystem::MatrixPerspectiveFovLH(const float& fFovYZAngle, const fl
 {
 
 	Matrix4 mProjMatrix;
-	//Çå³ýÎª0
+	//ï¿½ï¿½ï¿½Îª0
 	memset(&mProjMatrix, 0, sizeof(mProjMatrix));
 
 
-	//¶ÈÊý×ª»¯Îª»¡¶È
+	//ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½
 	float angle = fFovYZAngle * M_PI / 180.0f;
 
-	//Çó³ö¸÷Àà²ÎÊý
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	float s1 = 1 / (fScreenAspect * (float)tan(angle));
 	float s2 = 1 / tan(angle);
 	float a = fScreenFar / (fScreenFar - fScreenNear);

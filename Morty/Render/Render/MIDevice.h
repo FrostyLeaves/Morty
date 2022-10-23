@@ -15,6 +15,7 @@
 
 class MVertexBuffer;
 class MIMesh;
+class MBuffer;
 class MTextureBuffer;
 class MRenderTextureBuffer;
 class MDepthTextureBuffer;
@@ -41,9 +42,10 @@ public:
 
 
 public:
-	virtual void GenerateVertex(MVertexBuffer* ppVertexBuffer, MIMesh* pMesh, const bool& bModifiable = false) = 0;
-	virtual void DestroyVertex(MVertexBuffer* ppVertexBuffer) = 0;
-	virtual void UploadVertex(MVertexBuffer* ppVertexBuffer, MIMesh* pMesh) = 0;
+
+	virtual void GenerateBuffer(MBuffer* pBuffer) = 0;
+	virtual void DestroyBuffer(MBuffer* pBuffer) = 0;
+	virtual void UploadBuffer(MBuffer* pBuffer) = 0;
 
 	virtual void GenerateTexture(MTexture* pTexture, MByte* pData = nullptr) = 0;
 	virtual void DestroyTexture(MTexture* pTexture) = 0;

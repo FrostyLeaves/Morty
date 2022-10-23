@@ -43,20 +43,4 @@ struct MVertexWithBones
 	float bonesWeight[MRenderGlobal::BONES_PER_VERTEX];
 };
 
-
-class MORTY_API MVertexBuffer
-{
-public:
-	MVertexBuffer();
-	~MVertexBuffer() {}
-
-#if RENDER_GRAPHICS == MORTY_VULKAN
-	VkBuffer m_VkVertexBuffer;
-	VkDeviceMemory m_VkVertexBufferMemory;
-	VkBuffer m_VkIndexBuffer;
-	VkDeviceMemory m_VkIndexBufferMemory;
-#endif
-};
-
-
 #endif

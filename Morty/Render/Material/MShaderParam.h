@@ -21,7 +21,7 @@ enum MEShaderParamType
 {
 	EVertex = 1,
 	EPixel = 2,
-	EBoth = 3,
+	ECompute = 4,
 };
 
 enum class MESamplerType
@@ -29,6 +29,8 @@ enum class MESamplerType
 	ENearest,
 	ELinear,
 };
+
+class MBuffer;
 
 struct MORTY_API MShaderParam
 {
@@ -72,12 +74,25 @@ struct MShaderTextureParam : public MShaderParam
 {
 	MShaderTextureParam();
 
+public:
+	virtual void SetTexture(MTexture* pTexture);
+	virtual MTexture* GetTexture() { return pTexture; }
+
+public:
 	MTexture* pTexture;
 	void* pImageIdent;
 	METextureType eType;
 
+};
+
+struct MShaderStorageParam : public MShaderParam
+{
+	MShaderStorageParam();
+
+
 public:
-	void SetTexture(MTexture* pTexture);
+	MBuffer* pBuffer;
+	bool bWritable;
 };
 
 struct MShaderSubpasssInputParam : public MShaderTextureParam

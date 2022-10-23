@@ -99,12 +99,6 @@ public:
 
 	float* CastFloatUnsafe() const { return (float*)m_pData; }
 
-	template <typename T>
-	T& GetVarUnsafe() const { return *(T*)m_pData; }
-
-	template <typename T>
-	T* GetPointerUnsafe() const { return (T*)m_pData; }
-
 	template<typename T>
 	T* GetEnum() { return (T*)GetInt(); }
 
@@ -201,10 +195,10 @@ public:
 	virtual ~MStruct() {}
 
 
-	uint32_t AppendMVariant(const MString& strName, const MVariant& var);
+	uint32_t AppendValue(const MString& strName, const MVariant& var);
 
 	template<typename T>
-	T* AppendMVariant(const MString& strName)
+	T* AppendValue(const MString& strName)
 	{
 		MStructMember sm;
 		sm.strName = strName;
@@ -251,16 +245,16 @@ public:
 	MVariantArray();
 	virtual ~MVariantArray() {}
 
-	void AppendMVariant(const MVariant& var);
+	void AppendValue(const MVariant& var);
 
 //	void Resize(const uint32_t& unSize, const MVariant& var);
 
 	void Move(MVariantArray& sour);
 
 	template<typename T>
-	T* AppendMVariant()
+	T* AppendValue()
 	{
-		AppendMVariant(T());
+		AppendValue(T());
 		return  m_vMember.back().var.GetTypedData<T>();
 	}
 };

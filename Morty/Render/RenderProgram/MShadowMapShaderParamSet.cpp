@@ -36,9 +36,9 @@ void MShadowMapShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	MVariantArray matCamProjArray;
 	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
 	{
-		matCamProjArray.AppendMVariant<Matrix4>();
+		matCamProjArray.AppendValue<Matrix4>();
 	}
-	worldMatrixSrt.AppendMVariant("U_matCamProj", matCamProjArray);
+	worldMatrixSrt.SetValue("U_matCamProj", matCamProjArray);
 	
 
 	m_pWorldMatrixParam->var = worldMatrixSrt;

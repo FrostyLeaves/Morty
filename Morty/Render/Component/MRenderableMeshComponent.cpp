@@ -375,8 +375,8 @@ void MRenderableMeshComponent::BindShaderParam(std::shared_ptr<MMaterial> pMater
 			{
 				if (MStruct* pSrt = m_pTransformParam->var.GetStruct())
 				{
-					m_pWorldMatrixParam = pSrt->FindMember<Matrix4>("U_matWorld");
-					m_pNormalMatrixParam = pSrt->FindMember<Matrix3>("U_matNormal");
+					m_pWorldMatrixParam = pSrt->GetValue<Matrix4>("U_matWorld");
+					m_pNormalMatrixParam = pSrt->GetValue<Matrix3>("U_matNormal");
 				}
 			}
 		}

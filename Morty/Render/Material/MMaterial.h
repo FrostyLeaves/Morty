@@ -11,8 +11,10 @@
 #include "Utility/MGlobal.h"
 #include "Resource/MResource.h"
 #include "Resource/MResource.h"
+#include "Resource/MTextureResource.h"
 
 #include "MShaderMacro.h"
+#include "MShaderGroup.h"
 #include "MShaderBuffer.h"
 #include "Material/MShaderParamSet.h"
 
@@ -52,15 +54,6 @@ public:
 	static const MString Height;
 };
 
-struct MORTY_API MShaderRefTextureParam : public MShaderTextureParam
-{
-public:
-	MShaderRefTextureParam();
-	MShaderRefTextureParam(const MShaderTextureParam& param);
-
-	MResourceKeeper m_TextureRef;
-};
-
 class MShader;
 class MShaderResource;
 class MORTY_API MMaterial : public MResource
@@ -75,20 +68,21 @@ public:
 
 public:
 
-	MShader* GetVertexShader(){ return m_pVertexShader; }
-	MShader* GetPixelShader() { return m_pPixelShader; }
+	MShader* GetVertexShader(){ return m_shaderGroup.GetVertexShader(); }
+	MShader* GetPixelShader() { return m_shaderGroup.GetPixelShader(); }
+	MShader* GetComputeShader() { return m_shaderGroup.GetComputeShader(); }
 
 	std::vector<MShaderConstantParam*>* GetShaderParams();
 	std::vector<MShaderSampleParam*>* GetSampleParams();
 	std::vector<MShaderTextureParam*>* GetTextureParams();
 
-	MShaderParamSet* GetShaderParamSets() { return m_vShaderSets; }
-	MShaderParamSet* GetMaterialParamSet() { return &m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]; }
-	MShaderParamSet* GetFrameParamSet() { return &m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_FRAME]; }
-	MShaderParamSet* GetMeshParamSet() { return &m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MESH]; }
+	std::array<MShaderParamSet, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParamSets() { return m_shaderGroup.GetShaderParamSets(); }
+	const std::array<MShaderParamSet, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParamSets() const { return m_shaderGroup.GetShaderParamSets(); }
+	MShaderParamSet* GetMaterialParamSet() { return &m_shaderGroup.GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]; }
+	MShaderParamSet* GetFrameParamSet() { return &m_shaderGroup.GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_FRAME]; }
+	MShaderParamSet* GetMeshParamSet() { return &m_shaderGroup.GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MESH]; }
 
-	void SetTexutreParam(const MString& strName, std::shared_ptr<MResource> pTexResource);
-	void SetTexutreParam(const uint32_t& unIndex, std::shared_ptr<MResource> pTexResource);
+	void SetTexutre(const MString& strName, std::shared_ptr<MResource> pTexResource);
 
 	MShaderConstantParam* FindShaderParam(const MString& strName);
 
@@ -100,16 +94,18 @@ public:
 
 	bool LoadVertexShader(std::shared_ptr<MResource> pResource);
 	bool LoadPixelShader(std::shared_ptr<MResource> pResource);
+	bool LoadComputeShader(std::shared_ptr<MResource> pResource);
 
 	bool LoadVertexShader(const MString& strResource);
 	bool LoadPixelShader(const MString& strResource);
+	bool LoadComputeShader(const MString& strResource);
 
 public:
 
-	std::shared_ptr<MResource> GetVertexShaderResource() { return m_VertexResource.GetResource(); }
-	std::shared_ptr<MResource> GetPixelShaderResource() { return m_PixelResource.GetResource(); }
+	std::shared_ptr<MResource> GetVertexShaderResource() { return m_shaderGroup.GetVertexShaderResource(); }
+	std::shared_ptr<MResource> GetPixelShaderResource() { return m_shaderGroup.GetPixelShaderResource(); }
 
-	MShaderMacro* GetShaderMacro() { return &m_ShaderMacro; }
+	MShaderMacro& GetShaderMacro() { return m_shaderGroup.GetShaderMacro(); }
 	
 	void SetMaterialID(const uint32_t& unID) { m_unMaterialID = unID; }
 	uint32_t GetMaterialID() { return m_unMaterialID; }
@@ -132,35 +128,12 @@ protected:
 
 	virtual bool Load(const MString& strResourcePath) override;
 
-	void CopyShaderParamSet(MShaderParamSet& target, const MShaderParamSet& source);
-
-	void BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderParamType& eType);
-	void UnbindShaderBuffer(const MEShaderParamType& eType);
-
-	void ClearParams();
-
 private:
 
-    MShaderParamSet m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_NUM];
-	
-
-
-	
-private:
-
-	//Material
-	MResourceKeeper m_VertexResource;
-	MResourceKeeper m_PixelResource;
-
-	MShader* m_pVertexShader;
-	MShader* m_pPixelShader;
+	MShaderGroup m_shaderGroup;
 
 	MERasterizerType m_eRasterizerType;
 	MEMaterialType m_eMaterialType;
-
-	int m_nVertexShaderIndex;
-	int m_nPixelShaderIndex;
-	MShaderMacro m_ShaderMacro;
 
 	uint32_t m_unMaterialID;
 };

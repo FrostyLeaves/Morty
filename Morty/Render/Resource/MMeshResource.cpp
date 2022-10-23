@@ -162,23 +162,23 @@ bool MMeshResource::Load(const MString& strResourcePath)
 	if (!pHeader) return false;
 
 	int nVertexType = 0;
-	if (!pHeader->FindMember<int>("t", nVertexType))
+	if (!pHeader->GetValue<int>("t", nVertexType))
 		return false;
 	m_eVertexType = (MEMeshVertexType)nVertexType;
 
 	int nVertexBegin, nVertexEnd, nVertexNum;
 	int nIndexBegin, nIndexEnd, nIndexNum;
-	if (!pHeader->FindMember<int>("v1", nVertexBegin))
+	if (!pHeader->GetValue<int>("v1", nVertexBegin))
 		return false;
-	if (!pHeader->FindMember<int>("v2", nVertexNum))
+	if (!pHeader->GetValue<int>("v2", nVertexNum))
 		return false;
-	if (!pHeader->FindMember<int>("v3", nVertexEnd))
+	if (!pHeader->GetValue<int>("v3", nVertexEnd))
 		return false;
-	if (!pHeader->FindMember<int>("i1", nIndexBegin))
+	if (!pHeader->GetValue<int>("i1", nIndexBegin))
 		return false;
-	if (!pHeader->FindMember<int>("i2", nIndexNum))
+	if (!pHeader->GetValue<int>("i2", nIndexNum))
 		return false;
-	if (!pHeader->FindMember<int>("i3", nIndexEnd))
+	if (!pHeader->GetValue<int>("i3", nIndexEnd))
 		return false;
 
 	m_pMesh = NewMeshByType(m_eVertexType);
@@ -195,19 +195,19 @@ bool MMeshResource::Load(const MString& strResourcePath)
 	m_pMesh->ResizeIndices(nIndexNum, 1);
 	memcpy(m_pMesh->GetIndices(), format.m_vBody[0].pData + nIndexBegin, nIndexEnd - nIndexBegin);
 
-	pHeader->FindMember<MString>("n", m_strName);
+	pHeader->GetValue<MString>("n", m_strName);
 
-	if (MStruct* pBoundsObb = pHeader->FindMember<MStruct>("obb"))
+	if (MStruct* pBoundsObb = pHeader->GetValue<MStruct>("obb"))
 	{
 		m_BoundsOBB.ReadFromStruct(*pBoundsObb);
 	}
 
-	if (MStruct* pBoundsSphere = pHeader->FindMember<MStruct>("sph"))
+	if (MStruct* pBoundsSphere = pHeader->GetValue<MStruct>("sph"))
 	{
 		m_BoundsSphere.ReadFromStruct(*pBoundsSphere);
 	}
 
-	if (MString* pSkeleton = pHeader->FindMember<MString>("ske"))
+	if (MString* pSkeleton = pHeader->GetValue<MString>("ske"))
 	{
 		if (!pSkeleton->empty())
 		{
@@ -216,7 +216,7 @@ bool MMeshResource::Load(const MString& strResourcePath)
 		}
 	}
 
-	if (MString* pMaterial = pHeader->FindMember<MString>("mat"))
+	if (MString* pMaterial = pHeader->GetValue<MString>("mat"))
 	{
 		std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(*pMaterial);
 		m_MaterialKeeper.SetResource(pResource);
@@ -230,42 +230,37 @@ bool MMeshResource::SaveTo(const MString& strResourcePath)
 	MVariant headerVar = MStruct();
 	MStruct* pHeader = headerVar.GetStruct();
 
-	pHeader->AppendMVariant("t", (int)m_eVertexType);
+	pHeader->SetValue("t", (int)m_eVertexType);
 
 	int nVertexBegin = 0;
-	int nVertexNum = m_pMesh->GetVerticesLength();
+	int nVertexNum = m_pMesh->GetVerticesNum();
 	int nVertexEnd = nVertexBegin + nVertexNum * m_pMesh->GetVertexStructSize();
 
 	int nIndexBegin = nVertexEnd;
-	int nIndexNum = m_pMesh->GetIndicesLength();
+	int nIndexNum = m_pMesh->GetIndicesNum();
 	int nIndexEnd = nIndexBegin + nIndexNum * sizeof(uint32_t);
 
-	pHeader->AppendMVariant("v1", nVertexBegin);
-	pHeader->AppendMVariant("v2", nVertexNum);
-	pHeader->AppendMVariant("v3", nVertexEnd);
+	pHeader->SetValue("v1", nVertexBegin);
+	pHeader->SetValue("v2", nVertexNum);
+	pHeader->SetValue("v3", nVertexEnd);
 
-	pHeader->AppendMVariant("i1", nIndexBegin);
-	pHeader->AppendMVariant("i2", nIndexNum);
-	pHeader->AppendMVariant("i3", nIndexEnd);
+	pHeader->SetValue("i1", nIndexBegin);
+	pHeader->SetValue("i2", nIndexNum);
+	pHeader->SetValue("i3", nIndexEnd);
 
 
-	pHeader->AppendMVariant("n", m_strName);
+	pHeader->SetValue("n", m_strName);
 
-	if(MStruct* pObbSrt = pHeader->AppendMVariant<MStruct>("obb"))
+	pHeader->SetValue("obb", MStruct());
+	if(MStruct* pObbSrt = pHeader->GetValue<MStruct>("obb"))
 		m_BoundsOBB.WriteToStruct(*pObbSrt);
-	
-	if (MStruct* pSphSrt = pHeader->AppendMVariant<MStruct>("sph"))
+
+	pHeader->SetValue("sph", MStruct());
+	if (MStruct* pSphSrt = pHeader->GetValue<MStruct>("sph"))
 		m_BoundsSphere.WriteToStruct(*pSphSrt);
 
-	if (MString* pSkeleton = pHeader->AppendMVariant<MString>("ske"))
-	{
-		*pSkeleton = m_SkeletonKeeper.GetResourcePath();
-	}
-
-	if (MString* pMaterial = pHeader->AppendMVariant<MString>("mat"))
-	{
-		*pMaterial = m_MaterialKeeper.GetResourcePath();
-	}
+	pHeader->SetValue("ske", m_SkeletonKeeper.GetResourcePath());
+	pHeader->SetValue("mat", m_MaterialKeeper.GetResourcePath());
 
 	MMortyFileFormat format;
 	MJson::MVariantToJson(headerVar, format.m_strHead);
@@ -574,8 +569,8 @@ void MMeshResource::ResetBounds()
 {
 	if (m_pMesh)
 	{
-		m_BoundsOBB.SetPoints((const MByte*)m_pMesh->GetVertices(), m_pMesh->GetVerticesLength(), 0, m_pMesh->GetVertexStructSize());
-		m_BoundsSphere.SetPoints((const MByte*)m_pMesh->GetVertices(), m_pMesh->GetVerticesLength(), 0, m_pMesh->GetVertexStructSize());
+		m_BoundsOBB.SetPoints((const MByte*)m_pMesh->GetVertices(), m_pMesh->GetVerticesNum(), 0, m_pMesh->GetVertexStructSize());
+		m_BoundsSphere.SetPoints((const MByte*)m_pMesh->GetVertices(), m_pMesh->GetVerticesNum(), 0, m_pMesh->GetVertexStructSize());
 	}
 }
 

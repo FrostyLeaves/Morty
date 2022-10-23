@@ -20,3 +20,7 @@ MVertexShaderBuffer::MVertexShaderBuffer()
 MPixelShaderBuffer::MPixelShaderBuffer()
 {
 }
+
+MComputeShaderBuffer::MComputeShaderBuffer()
+{
+}

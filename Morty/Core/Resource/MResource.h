@@ -26,13 +26,6 @@ class MORTY_API MResource : public MTypeClass
 {
 	MORTY_INTERFACE(MResource)
 public:
-	enum EResReloadType
-	{
-		EDefault = 0,
-
-		EUserDef = 1000,
-	};
-public:
     MResource();
     virtual ~MResource();
 
@@ -70,7 +63,7 @@ protected:
 
 	virtual bool Load(const MString& strResourcePath) = 0;
 
-	void OnReload(const uint32_t& eReloadType = EResReloadType::EDefault);
+	void OnReload();
 
 protected:
     
@@ -92,7 +85,7 @@ class MORTY_API MResourceKeeper
 {
 public:
 	
-	typedef std::function<bool(const uint32_t& eReloadType)> MResChangedFunction;
+	typedef std::function<bool()> MResChangedFunction;
 public:
 	MResourceKeeper();
 	MResourceKeeper(std::shared_ptr<MResource> pResource);

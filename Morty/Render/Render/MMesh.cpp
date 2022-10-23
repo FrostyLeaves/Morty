@@ -1,99 +1,91 @@
 ﻿#include "Render/MMesh.h"
+
+#include "MBuffer.h"
+#include "MBuffer.h"
 #include "Render/MIDevice.h"
 #include "Render/MVertex.h"
 
-MIMesh::MIMesh(const bool& bModifiable/* = false*/)
-	: m_vVertices(nullptr)
-	, m_vIndices(nullptr)
-	, m_unVerticesLength(0)
-	, m_unIndicesLength(0)
-	, m_pVertexBuffer(nullptr)
-	, m_bNeedGenerate(true)
-	, m_bNeedUpload(false)
-	, m_bModifiable(bModifiable)
-	, m_unVerticesArraySize(0)
-	, m_unIndicesArraySize(0)
+MIMesh::MIMesh(const bool& bDynamicMesh/* = false*/)
+	: m_vertexBuffer()
+	, m_indexBuffer()
 {
-    
+    if (bDynamicMesh)
+    {
+		m_vertexBuffer.m_eMemoryType = MBuffer::MMemoryType::EHostVisible;
+		m_indexBuffer.m_eMemoryType = MBuffer::MMemoryType::EHostVisible;
+    }
+    else
+    {
+		m_vertexBuffer.m_eMemoryType = MBuffer::MMemoryType::EDeviceLocal;
+		m_indexBuffer.m_eMemoryType = MBuffer::MMemoryType::EDeviceLocal;
+    }
+
+	m_vertexBuffer.m_eUsageType = MBuffer::MUsageType::EVertex;
+	m_indexBuffer.m_eUsageType = MBuffer::MUsageType::EIndex;
+
+#if _DEBUG
+	m_vertexBuffer.m_strDebugBufferName = "VertexBuffer";
+	m_indexBuffer.m_strDebugBufferName = "IndexBuffer";
+#endif
 }
 
 MIMesh::~MIMesh()
 {
-	if (nullptr != m_vVertices)
-		delete[] m_vVertices;
-	if (nullptr != m_vIndices)
-		delete[] m_vIndices;
+}
+
+uint32_t MIMesh::GetVerticesNum() const
+{
+	return m_vertexBuffer.GetSize() / GetVertexStructSize();
+}
+
+uint32_t MIMesh::GetIndicesNum() const
+{
+	return m_indexBuffer.GetSize() / sizeof(uint32_t);
 }
 
 void MIMesh::CreateIndices(const uint32_t& unSize, const uint32_t& unIndexSize)
 {
-	if (m_unIndicesArraySize < unSize * unIndexSize)
+	if (m_indexBuffer.GetSize() < unSize * unIndexSize)
 	{
-		if (nullptr != m_vIndices)
-		{
-			delete[] m_vIndices;
-			m_vIndices = nullptr;
-		}
-
-		m_vIndices = new uint32_t[unSize * unIndexSize];
-		m_unIndicesArraySize = unSize * unIndexSize;
-
-		m_bNeedGenerate = true;
+		m_indexBuffer.ReallocMemory(unSize * unIndexSize * sizeof(uint32_t));
 	}
-
-	m_unIndicesLength = unSize * unIndexSize;
 }
 
 void MIMesh::ResizeIndices(const uint32_t& unSize, const uint32_t& unIndexSize)
 {
-	if (m_unIndicesArraySize < unSize * unIndexSize)
+	if (m_indexBuffer.GetSize() < unSize * unIndexSize)
 	{
-		uint32_t* indices = new uint32_t[unSize * unIndexSize];
-		
-		if (nullptr != m_vIndices)
-		{
-			memcpy(indices, m_vIndices, m_unIndicesLength * sizeof(uint32_t));
-			delete[] m_vIndices;
-		}
+		m_indexBuffer.ReallocMemory(unSize * unIndexSize * sizeof(uint32_t));
+	}
+}
 
-		m_vIndices = indices;
-		m_unIndicesArraySize = unSize * unIndexSize;
-
-		m_bNeedGenerate = true;
+void MIMesh::SetDirty()
+{
+	if (m_vertexBuffer.m_eStageType == MBuffer::MStageType::ESynced)
+	{
+		m_vertexBuffer.m_eStageType = MBuffer::MStageType::EWaitSync;
 	}
 
-	m_unIndicesLength = unSize * unIndexSize;
+	if (m_indexBuffer.m_eStageType == MBuffer::MStageType::ESynced)
+	{
+		m_indexBuffer.m_eStageType = MBuffer::MStageType::EWaitSync;
+	}
 }
 
 void MIMesh::GenerateBuffer(MIDevice* pDevice)
 {
-	if (m_pVertexBuffer)
-	{
-		DestroyBuffer(pDevice);
-	}
-
-	m_pVertexBuffer = new MVertexBuffer();
-	pDevice->GenerateVertex(m_pVertexBuffer, this, m_bModifiable);
-	m_bNeedGenerate = false;
+	m_vertexBuffer.GenerateBuffer(pDevice);
+	m_indexBuffer.GenerateBuffer(pDevice);
 }
 
 void MIMesh::UploadBuffer(MIDevice* pDevice)
 {
-	if (m_bModifiable && m_pVertexBuffer)
-		pDevice->UploadVertex(m_pVertexBuffer, this);
-	else
-		GenerateBuffer(pDevice);
-
-	m_bNeedUpload = false;
-
+	m_vertexBuffer.UploadBuffer(pDevice);
+	m_indexBuffer.UploadBuffer(pDevice);
 }
 
 void MIMesh::DestroyBuffer(MIDevice* pDevice)
 {
-	if (m_pVertexBuffer)
-	{
-		pDevice->DestroyVertex(m_pVertexBuffer);
-		delete m_pVertexBuffer;
-		m_pVertexBuffer = nullptr;
-	}
+	m_vertexBuffer.DestroyBuffer(pDevice);
+	m_indexBuffer.DestroyBuffer(pDevice);
 }

@@ -415,8 +415,6 @@ Vector3 Matrix4::GetTranslation() const
 
  	Matrix4 mat = GetRotatePart();
  
- 	float w, x, y, z;
-
  	float vWXYZLength[4] = { mat.m[0][0] + mat.m[1][1] + mat.m[2][2],
  	mat.m[0][0] - mat.m[1][1] - mat.m[2][2],
  	mat.m[1][1] - mat.m[0][0] - mat.m[2][2],

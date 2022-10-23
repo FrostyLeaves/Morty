@@ -52,9 +52,10 @@ public:
 
 public:
 
-    VkPipeline FindPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx);
+    VkPipeline FindGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx);
+    VkPipeline FindComputePipeline(std::shared_ptr<MMaterial> pMaterial);
 
-    void SetPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx, VkPipeline pipeline);
+    void SetGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx, VkPipeline pipeline);
 
 	MMaterialPipelineLayoutData* FindOrCreatePipelineLayout(std::shared_ptr<MMaterial> pMaterial);
 	MMaterialPipelineLayoutData* FindPipelineLayout(const uint32_t& nMaterialIdx);

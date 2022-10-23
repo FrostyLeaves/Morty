@@ -16,7 +16,7 @@ def find_cmake(path):
         return file_path
     return None
 
-def build_for_windows():
+def build_for_windows( cmake_generator ):
 
     CMAKE_PATH = "cmake"
 
@@ -26,7 +26,7 @@ def build_for_windows():
     os.chdir(BULLET_BUILD_PATH)
 
     os.system(CMAKE_PATH +
-      ' -G "Visual Studio 16 2019" '+
+      ' -G "' + cmake_generator + '" '+
       ' -DCMAKE_INSTALL_PREFIX=' + BULLET_INSTALL_PATH +
       ' -DINSTALL_LIBS:BOOL=ON' +
       ' -DCMAKE_CXX_FLAGS_DEBUG=/MTd' +

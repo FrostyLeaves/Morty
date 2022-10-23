@@ -88,38 +88,41 @@ MSkeletalAnimNode::~MSkeletalAnimNode()
 
 void MSkeletalAnimNode::WriteToStruct(MStruct& srt)
 {
-	if (MVariantArray* pArray = srt.AppendMVariant<MVariantArray>("p"))
+	srt.SetValue("p", MVariantArray());
+	if (MVariantArray* pArray = srt.GetValue<MVariantArray>("p"))
 	{
 		for (int i = 0; i < m_unPositionKeysNum; ++i)
 		{
-			if (MStruct* pNode = pArray->AppendMVariant<MStruct>())
+			if (MStruct* pNode = pArray->AppendValue<MStruct>())
 			{
-				pNode->AppendMVariant("t", m_vPositionKeys[i].mTime);
-				pNode->AppendMVariant("v", m_vPositionKeys[i].mValue);
+				pNode->SetValue("t", m_vPositionKeys[i].mTime);
+				pNode->SetValue("v", m_vPositionKeys[i].mValue);
 			}
 		}
 	}
 
-	if (MVariantArray* pArray = srt.AppendMVariant<MVariantArray>("r"))
+	srt.SetValue("r", MVariantArray());
+	if (MVariantArray* pArray = srt.GetValue<MVariantArray>("r"))
 	{
 		for (int i = 0; i < m_unRotationKeysNum; ++i)
 		{
-			if (MStruct* pNode = pArray->AppendMVariant<MStruct>())
+			if (MStruct* pNode = pArray->AppendValue<MStruct>())
 			{
-				pNode->AppendMVariant("t", m_vRotationKeys[i].mTime);
-				pNode->AppendMVariant("v", m_vRotationKeys[i].mValue);
+				pNode->SetValue("t", m_vRotationKeys[i].mTime);
+				pNode->SetValue("v", m_vRotationKeys[i].mValue);
 			}
 		}
 	}
 
-	if (MVariantArray* pArray = srt.AppendMVariant<MVariantArray>("s"))
+	srt.SetValue("s", MVariantArray());
+	if (MVariantArray* pArray = srt.GetValue<MVariantArray>("s"))
 	{
 		for (int i = 0; i < m_unScalingKeysNum; ++i)
 		{
-			if (MStruct* pNode = pArray->AppendMVariant<MStruct>())
+			if (MStruct* pNode = pArray->AppendValue<MStruct>())
 			{
-				pNode->AppendMVariant("t", m_vScalingKeys[i].mTime);
-				pNode->AppendMVariant("v", m_vScalingKeys[i].mValue);
+				pNode->SetValue("t", m_vScalingKeys[i].mTime);
+				pNode->SetValue("v", m_vScalingKeys[i].mValue);
 			}
 		}
 	}
@@ -127,7 +130,7 @@ void MSkeletalAnimNode::WriteToStruct(MStruct& srt)
 
 void MSkeletalAnimNode::ReadFromStruct(const MStruct& srt)
 {
-	if (const MVariantArray* pArray = srt.FindMember<MVariantArray>("p"))
+	if (const MVariantArray* pArray = srt.GetValue<MVariantArray>("p"))
 	{
 		m_unPositionKeysNum = pArray->GetMemberCount();
 		m_vPositionKeys = new MAnimNodeKey<Vector3>[m_unPositionKeysNum];
@@ -135,13 +138,13 @@ void MSkeletalAnimNode::ReadFromStruct(const MStruct& srt)
 		{
 			if (const MStruct* pNode = pArray->GetMember(i)->var.GetStruct())
 			{
-				pNode->FindMember("t", m_vPositionKeys[i].mTime);
-				pNode->FindMember("v", m_vPositionKeys[i].mValue);
+				pNode->GetValue("t", m_vPositionKeys[i].mTime);
+				pNode->GetValue("v", m_vPositionKeys[i].mValue);
 			}
 		}
 	}
 
-	if (const MVariantArray* pArray = srt.FindMember<MVariantArray>("r"))
+	if (const MVariantArray* pArray = srt.GetValue<MVariantArray>("r"))
 	{
 		m_unRotationKeysNum = pArray->GetMemberCount();
 		m_vRotationKeys = new MAnimNodeKey<Quaternion>[m_unRotationKeysNum];
@@ -149,13 +152,13 @@ void MSkeletalAnimNode::ReadFromStruct(const MStruct& srt)
 		{
 			if (const MStruct* pNode = pArray->GetMember(i)->var.GetStruct())
 			{
-				pNode->FindMember("t", m_vRotationKeys[i].mTime);
-				pNode->FindMember("v", m_vRotationKeys[i].mValue);
+				pNode->GetValue("t", m_vRotationKeys[i].mTime);
+				pNode->GetValue("v", m_vRotationKeys[i].mValue);
 			}
 		}
 	}
 
-	if (const MVariantArray* pArray = srt.FindMember<MVariantArray>("s"))
+	if (const MVariantArray* pArray = srt.GetValue<MVariantArray>("s"))
 	{
 		m_unScalingKeysNum = pArray->GetMemberCount();
 		m_vScalingKeys = new MAnimNodeKey<Vector3>[m_unScalingKeysNum];
@@ -163,8 +166,8 @@ void MSkeletalAnimNode::ReadFromStruct(const MStruct& srt)
 		{
 			if (const MStruct* pNode = pArray->GetMember(i)->var.GetStruct())
 			{
-				pNode->FindMember("t", m_vScalingKeys[i].mTime);
-				pNode->FindMember("v", m_vScalingKeys[i].mValue);
+				pNode->GetValue("t", m_vScalingKeys[i].mTime);
+				pNode->GetValue("v", m_vScalingKeys[i].mValue);
 			}
 		}
 	}
@@ -172,28 +175,24 @@ void MSkeletalAnimNode::ReadFromStruct(const MStruct& srt)
 
 void MSkeletalAnimation::WriteToStruct(MStruct& srt)
 {
-	if (MString* pSkePath = srt.AppendMVariant<MString>("ske"))
+	if (std::shared_ptr<MResource> pSkeletonRes = m_Skeleton.GetResource())
 	{
-		if (std::shared_ptr<MResource> pSkeletonRes = m_Skeleton.GetResource())
-		{
-			*pSkePath = pSkeletonRes->GetResourcePath();
-		}
+		srt.SetValue("ske", pSkeletonRes->GetResourcePath());
 	}
 
-	if (MString* pName = srt.AppendMVariant<MString>("name"))
-		*pName = m_strName;
+	srt.SetValue("name", m_strName);
 
-	if (float* pTime = srt.AppendMVariant<float>("dur"))
-		*pTime = m_fTicksDuration;
+	srt.SetValue("dur", m_fTicksDuration);
 
-	if (float* pTime = srt.AppendMVariant<float>("sec"))
-		*pTime = m_fTicksPerSecond;
+	srt.SetValue("sec", m_fTicksPerSecond);
 
-	if (MVariantArray* pNodeArray = srt.AppendMVariant<MVariantArray>("nodes"))
+	srt.SetValue("nodes", MVariantArray());
+
+	if (MVariantArray* pNodeArray = srt.GetValue<MVariantArray>("nodes"))
 	{
 		for (MSkeletalAnimNode& node : m_vSkeletalAnimNodes)
 		{
-			if (MStruct* pNodeSrt = pNodeArray->AppendMVariant<MStruct>())
+			if (MStruct* pNodeSrt = pNodeArray->AppendValue<MStruct>())
 			{
 				node.WriteToStruct(*pNodeSrt);
 			}
@@ -205,7 +204,7 @@ void MSkeletalAnimation::WriteToStruct(MStruct& srt)
 void MSkeletalAnimation::ReadFromStruct(const MStruct& srt)
 {
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-	if (const MString* pSkePath = srt.FindMember<MString>("ske"))
+	if (const MString* pSkePath = srt.GetValue<MString>("ske"))
 	{
 		if (std::shared_ptr<MResource> pSkeletonRes = pResourceSystem->LoadResource(*pSkePath))
 		{
@@ -213,13 +212,13 @@ void MSkeletalAnimation::ReadFromStruct(const MStruct& srt)
 		}
 	}
 
-	srt.FindMember<MString>("name", m_strName);
+	srt.GetValue<MString>("name", m_strName);
 
-	srt.FindMember<float>("dur", m_fTicksDuration);
+	srt.GetValue<float>("dur", m_fTicksDuration);
 
-	srt.FindMember<float>("sec", m_fTicksPerSecond);
+	srt.GetValue<float>("sec", m_fTicksPerSecond);
 
-	if (const MVariantArray* pNodeArray = srt.FindMember<MVariantArray>("nodes"))
+	if (const MVariantArray* pNodeArray = srt.GetValue<MVariantArray>("nodes"))
 	{
 		uint32_t nSize = pNodeArray->GetMemberCount();
 		m_vSkeletalAnimNodes.resize(nSize);

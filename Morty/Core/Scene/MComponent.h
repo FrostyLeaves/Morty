@@ -74,7 +74,7 @@ public:
 
 #define M_SERIALIZER_WRITE_COMPONENT_REF( NAME, REF_GET_FUNC) \
 	MComponent* pComponent = REF_GET_FUNC(); \
-	pStruct->AppendMVariant(NAME, int(refTable.FindOrAdd(pComponent ? pComponent->GetComponentID() : MComponentID()))); \
+	pStruct->AppendValue(NAME, int(refTable.FindOrAdd(pComponent ? pComponent->GetComponentID() : MComponentID()))); \
 
 #define M_SERIALIZER_READ_COMPONENT_REF( NAME, REF_SET_FUNC, TYPE) \
 	if(const MVariant* pVariant = pStruct->FindMember(NAME)) \

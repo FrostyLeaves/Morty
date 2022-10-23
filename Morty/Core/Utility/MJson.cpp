@@ -130,9 +130,11 @@ void JsonValueToMVariant(Value* pValue, MVariant& variant)
 			MStruct& sut = *variant.GetStruct();
 			for (Value::MemberIterator iter = pValue->MemberBegin(); iter != pValue->MemberEnd(); ++iter)
 			{
-				uint32_t nIndex = sut.AppendMVariant(iter->name.GetString(), MVariant());
-				MVariant& child = sut.GetMember(nIndex)->var;
-				JsonValueToMVariant(&(iter->value), child);
+				sut.SetValue(iter->name.GetString(), MVariant());
+				if (MVariant* child = sut.GetValue(iter->name.GetString()))
+				{
+					JsonValueToMVariant(&(iter->value), *child);
+				}
 			}
 		}
 	}
@@ -146,7 +148,7 @@ void JsonValueToMVariant(Value* pValue, MVariant& variant)
 		MVariantArray& srt = *variant.GetArray();
 		for (uint32_t i = 0; i < unSize; ++i)
 		{
-			srt.AppendMVariant(MVariant());
+			srt.AppendValue(MVariant());
 			MVariant& child = srt.GetMember(srt.GetMemberCount() - 1)->var;
 			JsonValueToMVariant(&value[i], child);
 		}

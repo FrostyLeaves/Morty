@@ -99,17 +99,17 @@ void MResource::ReplaceFrom(std::shared_ptr<MResource> pResource)
 
 		if (pKeeper->m_funcReloadCallback)
 		{
-			pKeeper->m_funcReloadCallback(EResReloadType::EDefault);
+			pKeeper->m_funcReloadCallback();
 		}
 	}
 }
 
-void MResource::OnReload(const uint32_t& eReloadType)
+void MResource::OnReload()
 {
 	for (MResourceKeeper* pKeeper : m_vKeeper)
 	{
 		if (pKeeper->m_funcReloadCallback)
-			pKeeper->m_funcReloadCallback(eReloadType);
+			pKeeper->m_funcReloadCallback();
 	}
 }
 

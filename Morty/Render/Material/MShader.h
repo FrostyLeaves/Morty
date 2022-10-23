@@ -17,7 +17,8 @@ enum class MEShaderType
 {
 	ENone = 0,
 	EVertex = 1,
-	EPixel = 2
+	EPixel = 2,
+	ECompute = 3,
 };
 
 

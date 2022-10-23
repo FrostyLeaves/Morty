@@ -127,21 +127,23 @@ bool MShaderMacro::Compare(const MShaderMacro& macro)
 
 void MShaderMacro::WriteToStruct(MStruct& srt)
 {
-	if (MVariantArray* pArray = srt.AppendMVariant<MVariantArray>("mat"))
+	srt.SetValue("mat", MVariantArray());
+	if (MVariantArray* pArray = srt.GetValue<MVariantArray>("mat"))
 	{
 		for (auto pairs : m_vMacroParams)
 		{
-			pArray->AppendMVariant(pairs.first);
-			pArray->AppendMVariant(pairs.second);
+			pArray->AppendValue(pairs.first);
+			pArray->AppendValue(pairs.second);
 		}
 	}
-	
-	if (MVariantArray* pArray = srt.AppendMVariant<MVariantArray>("morty"))
+
+	srt.SetValue("morty", MVariantArray());
+	if (MVariantArray* pArray = srt.GetValue<MVariantArray>("morty"))
 	{
 		for (auto pairs : m_vMortyMacroParams)
 		{
-			pArray->AppendMVariant(pairs.first);
-			pArray->AppendMVariant(pairs.second);
+			pArray->AppendValue(pairs.first);
+			pArray->AppendValue(pairs.second);
 		}
 	}
 }
@@ -151,7 +153,7 @@ void MShaderMacro::ReadFromStruct(const MStruct& srt)
 	m_vMacroParams.clear();
 	m_vMortyMacroParams.clear();
 
-	if (const MVariantArray* pArray = srt.FindMember<MVariantArray>("mat"))
+	if (const MVariantArray* pArray = srt.GetValue<MVariantArray>("mat"))
 	{
 		for (uint32_t i = 0; i < pArray->GetMemberCount(); i+=2)
 		{
@@ -162,7 +164,7 @@ void MShaderMacro::ReadFromStruct(const MStruct& srt)
 		}
 	}
 
-	if (const MVariantArray* pArray = srt.FindMember<MVariantArray>("morty"))
+	if (const MVariantArray* pArray = srt.GetValue<MVariantArray>("morty"))
 	{
 		for (uint32_t i = 0; i < pArray->GetMemberCount(); i += 2)
 		{
