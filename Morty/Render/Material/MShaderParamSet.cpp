@@ -95,8 +95,7 @@ bool MShaderParamSet::SetValue(const MString& strName, MTexture* pTexture)
 	{
 		if (pParam->strName == strName)
 		{
-			pParam->pTexture = pTexture;
-			pParam->SetDirty();
+			pParam->SetTexture(pTexture);
 			return true;
 		}
 	}

@@ -54,7 +54,7 @@ void ImGuiRenderable::UpdateMesh()
 			idx_dst += cmd_list->IdxBuffer.Size;
 		}
 
-		m_Mesh.SetNeedUpload();
+		m_Mesh.SetDirty();
 	}
 }
 

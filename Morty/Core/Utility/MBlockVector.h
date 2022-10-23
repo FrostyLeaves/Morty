@@ -174,7 +174,7 @@ public:
 };
 
 template<typename TYPE, size_t SIZE>
-MBlockVector<TYPE, SIZE>::MBlockVector<TYPE, SIZE>()
+MBlockVector<TYPE, SIZE>::MBlockVector()
 	: vPrimaryArray()
 {
 	vPrimaryArray.push_back(std::make_unique<MBlockArray>());

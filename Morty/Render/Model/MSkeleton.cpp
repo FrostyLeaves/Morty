@@ -22,34 +22,30 @@ void MBone::WriteToStruct(MStruct& srt)
 {
 	MVariantArray vChildren;
 	for (uint32_t unChildIdx : vChildrenIndices)
-		vChildren.AppendMVariant((int)unChildIdx);
+		vChildren.AppendValue((int)unChildIdx);
 
-	srt.AppendMVariant("Name", strName);
-	srt.AppendMVariant("Index", (int)unIndex);
-	srt.AppendMVariant("ParentIndex", (int)unParentIndex);
-	srt.AppendMVariant("matTrans", m_matTransform);
-	srt.AppendMVariant("matOffset", m_matOffsetMatrix);
-	srt.AppendMVariant("Children", vChildren);
+	srt.SetValue("Name", strName);
+	srt.SetValue("Index", (int)unIndex);
+	srt.SetValue("ParentIndex", (int)unParentIndex);
+	srt.SetValue("matTrans", m_matTransform);
+	srt.SetValue("matOffset", m_matOffsetMatrix);
+	srt.SetValue("Children", vChildren);
 }
 
 void MBone::ReadFromStruct(const MStruct& srt)
 {
-	if (const MString* pName = srt.FindMember<MString>("Name"))
-		strName = *pName;
+	srt.GetValue<MString>("Name", strName);
 
-	if (const int* pIndex = srt.FindMember<int>("Index"))
-		unIndex = *pIndex;
+	if (const int* value = srt.GetValue<int>("Index"))
+		unIndex = *value;
 
-	if (const int* pParentIndex = srt.FindMember<int>("ParentIndex"))
-		unParentIndex = *pParentIndex;
+	if (const int* value = srt.GetValue<int>("ParentIndex"))
+		unParentIndex = *value;
 
-	if (const Matrix4* pMatTrans = srt.FindMember<Matrix4>("matTrans"))
-		m_matTransform = *pMatTrans;
-
-	if (const Matrix4* pMatOffset = srt.FindMember<Matrix4>("matOffset"))
-		m_matOffsetMatrix = *pMatOffset;
-
-	if (const MVariantArray* pChildren = srt.FindMember<MVariantArray>("Children"))
+	srt.GetValue<Matrix4>("matTrans", m_matTransform);
+	srt.GetValue<Matrix4>("matOffset", m_matOffsetMatrix);
+		
+	if (const MVariantArray* pChildren = srt.GetValue<MVariantArray>("Children"))
 	{
 		uint32_t unChildrenCount = pChildren->GetMemberCount();
 		vChildrenIndices.resize(unChildrenCount);
@@ -255,17 +251,17 @@ MShaderParamSet* MSkeletonInstance::GetShaderParamSet()
 
 		MVariantArray bonesArr;
 		for (int i = 0; i < 128; ++i)
-			bonesArr.AppendMVariant<Matrix4>();
+			bonesArr.AppendValue<Matrix4>();
 
 		MStruct bonesSrt;
-		uint32_t nIdx = bonesSrt.AppendMVariant("U_vBonesMatrix", bonesArr);
+		bonesSrt.SetValue("U_vBonesMatrix", bonesArr);
 
 		pBonesSet->var = bonesSrt;
 
 		m_pShaderParamSet->m_vParams.push_back(pBonesSet);
 	//	m_pShaderParamSet->GenerateBuffer(m_pEngine->GetDevice());
 
-		m_pShaderBonesArray = pBonesSet->var.GetStruct()->GetMember(nIdx)->var.GetArray();
+		m_pShaderBonesArray = pBonesSet->var.GetStruct()->GetValue<MVariantArray>("U_vBonesMatrix");
 	}
 
 	if (m_bShaderParamSetDirty)
@@ -296,13 +292,13 @@ void MSkeleton::WriteToStruct(MStruct& srt)
 {
 	std::vector<MBone>& vBones = m_vAllBones;
 
-	srt.AppendMVariant("Bones", MVariantArray());
-	MVariantArray* pArray = srt.FindMember("Bones")->GetArray();
+	srt.SetValue("Bones", MVariantArray());
+	MVariantArray* pArray = srt.GetValue("Bones")->GetArray();
 
 	for (uint32_t i = 0; i < vBones.size(); ++i)
 	{
 		MBone bone = vBones[i];
-		pArray->AppendMVariant(MStruct());
+		pArray->AppendValue(MStruct());
 		MStruct& boneSrt = *(*pArray)[i].GetStruct();
 
 		bone.WriteToStruct(boneSrt);
@@ -311,7 +307,7 @@ void MSkeleton::WriteToStruct(MStruct& srt)
 
 void MSkeleton::ReadFromStruct(const MStruct& srt)
 {
-	if (const MVariant* pBonesVar = srt.FindMember("Bones"))
+	if (const MVariant* pBonesVar = srt.GetValue("Bones"))
 	{
 		if (const MVariantArray* pBonesArray = pBonesVar->GetArray())
 		{

@@ -59,7 +59,7 @@ void MaterialView::SetMaterial(std::shared_ptr<MMaterial> pMaterial)
 		pSceneSystem->SetVisible(m_pStaticSphereMeshNode, false);
 		pSceneSystem->SetVisible(m_pSkeletonSphereMeshNode, false);
 	}
-	else if (m_pMaterial->GetShaderMacro()->GetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE).empty())
+	else if (m_pMaterial->GetShaderMacro().GetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE).empty())
 	{
 		pSceneSystem->SetVisible(m_pStaticSphereMeshNode, true);
 		pSceneSystem->SetVisible(m_pSkeletonSphereMeshNode, false);

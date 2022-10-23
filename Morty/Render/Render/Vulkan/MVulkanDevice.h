@@ -28,6 +28,7 @@
 
 #include "Basic/MTexture.h"
 
+class MBuffer;
 class MVulkanRenderCommand;
 class MVulkanPrimaryRenderCommand;
 class MVulkanSecondaryRenderCommand;
@@ -42,9 +43,9 @@ public:
 	virtual void Release() override;
 
 public:
-	virtual void GenerateVertex(MVertexBuffer* ppVertexBuffer, MIMesh* pMesh, const bool& bModifiable = false) override;
-	virtual void DestroyVertex(MVertexBuffer* ppVertexBuffer) override;
-	virtual void UploadVertex(MVertexBuffer* ppVertexBuffer, MIMesh* pMesh) override;
+	virtual void GenerateBuffer(MBuffer* pBuffer) override;
+	virtual void DestroyBuffer(MBuffer* pBuffer) override;
+	virtual void UploadBuffer(MBuffer* pBuffer) override;
 
 	virtual void GenerateTexture(MTexture* pTexture, MByte* pData = nullptr) override;
 	virtual void DestroyTexture(MTexture* pTexture) override;

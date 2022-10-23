@@ -43,9 +43,9 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	m_pWorldMatrixParam->eShaderType = (uint32_t)MEShaderType::EPixel | (uint32_t)MEShaderType::EVertex;
 
 	MStruct worldMatrixSrt;
-	worldMatrixSrt.AppendMVariant("U_matView", Matrix4());
-	worldMatrixSrt.AppendMVariant("U_matCamProj", Matrix4());
-	worldMatrixSrt.AppendMVariant("U_matCamProjInv", Matrix4());
+	worldMatrixSrt.SetValue("U_matView", Matrix4());
+	worldMatrixSrt.SetValue("U_matCamProj", Matrix4());
+	worldMatrixSrt.SetValue("U_matCamProjInv", Matrix4());
 
 	m_pWorldMatrixParam->var = worldMatrixSrt;
 
@@ -56,13 +56,13 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	m_pWorldInfoParam->var = MStruct();
 
 	MStruct& worldInfoSrt = *m_pWorldInfoParam->var.GetStruct();
-	worldInfoSrt.AppendMVariant("U_f3DirectionLight", Vector3());
-	worldInfoSrt.AppendMVariant("U_f3CameraPosition", Vector3());
-	worldInfoSrt.AppendMVariant("U_f3CameraDirection", Vector3());
-	worldInfoSrt.AppendMVariant("U_f2ViewportSize", Vector2());
-	worldInfoSrt.AppendMVariant("U_matZNearFar", Vector2());
-	worldInfoSrt.AppendMVariant("U_fDelta", float());
-	worldInfoSrt.AppendMVariant("U_fGameTime", float());
+	worldInfoSrt.SetValue("U_f3DirectionLight", Vector3());
+	worldInfoSrt.SetValue("U_f3CameraPosition", Vector3());
+	worldInfoSrt.SetValue("U_f3CameraDirection", Vector3());
+	worldInfoSrt.SetValue("U_f2ViewportSize", Vector2());
+	worldInfoSrt.SetValue("U_matZNearFar", Vector2());
+	worldInfoSrt.SetValue("U_fDelta", float());
+	worldInfoSrt.SetValue("U_fGameTime", float());
 
 
 	m_pLightInfoParam = new MShaderConstantParam();
@@ -74,47 +74,47 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	MStruct& lightInfoSrt = *m_pLightInfoParam->var.GetStruct();
 	
 	MStruct dirLightSrt;
-	dirLightSrt.AppendMVariant("f3Intensity", Vector3());
+	dirLightSrt.SetValue("f3Intensity", Vector3());
 	
-	lightInfoSrt.AppendMVariant("U_dirLight", dirLightSrt);
+	lightInfoSrt.SetValue("U_dirLight", dirLightSrt);
 
 	MVariantArray pointLightArray;
 	for (uint32_t i = 0; i < MRenderGlobal::POINT_LIGHT_MAX_NUMBER; ++i)
 	{
 		MStruct pointLight;
 		
-		pointLight.AppendMVariant("f3WorldPosition", Vector3());
-		pointLight.AppendMVariant("f3Intensity", Vector3());
+		pointLight.SetValue("f3WorldPosition", Vector3());
+		pointLight.SetValue("f3Intensity", Vector3());
 
-		pointLight.AppendMVariant("fConstant", float(0.0f));
-		pointLight.AppendMVariant("fLinear", float(0.0f));
-		pointLight.AppendMVariant("fQuadratic", float(0.0f));
+		pointLight.SetValue("fConstant", float(0.0f));
+		pointLight.SetValue("fLinear", float(0.0f));
+		pointLight.SetValue("fQuadratic", float(0.0f));
 		
-		pointLightArray.AppendMVariant(pointLight);
+		pointLightArray.AppendValue(pointLight);
 	}
 
-	lightInfoSrt.AppendMVariant("U_spotLights", pointLightArray);
+	lightInfoSrt.SetValue("U_spotLights", pointLightArray);
 
 	MVariantArray spotLightArray;
 	for (uint32_t i = 0; i < MRenderGlobal::SPOT_LIGHT_MAX_NUMBER; ++i)
 	{
 		MStruct spotLight;
 	
-		spotLight.AppendMVariant("f3WorldPosition", Vector3());
-		spotLight.AppendMVariant("fHalfInnerCutOff", float(0.0f));
-		spotLight.AppendMVariant("f3Direction", Vector3());
-		spotLight.AppendMVariant("fHalfOuterCutOff", float(0.0f));
-		spotLight.AppendMVariant("f3Intensity", Vector3());
+		spotLight.SetValue("f3WorldPosition", Vector3());
+		spotLight.SetValue("fHalfInnerCutOff", float(0.0f));
+		spotLight.SetValue("f3Direction", Vector3());
+		spotLight.SetValue("fHalfOuterCutOff", float(0.0f));
+		spotLight.SetValue("f3Intensity", Vector3());
 
-		spotLightArray.AppendMVariant(spotLight);
+		spotLightArray.AppendValue(spotLight);
 	}
 
-	lightInfoSrt.AppendMVariant("U_pointLights", spotLightArray);
+	lightInfoSrt.SetValue("U_pointLights", spotLightArray);
 
-	lightInfoSrt.AppendMVariant("U_bDirectionLightEnabled", int(0));
-	lightInfoSrt.AppendMVariant("U_nValidPointLightsNumber", int(0));
-	lightInfoSrt.AppendMVariant("U_nValidSpotLightsNumber", int(0));
-	lightInfoSrt.AppendMVariant("U_bEnvironmentMapEnabled", int(0));
+	lightInfoSrt.SetValue("U_bDirectionLightEnabled", int(0));
+	lightInfoSrt.SetValue("U_nValidPointLightsNumber", int(0));
+	lightInfoSrt.SetValue("U_nValidSpotLightsNumber", int(0));
+	lightInfoSrt.SetValue("U_bEnvironmentMapEnabled", int(0));
 
 
 	m_pShadowInfoParam = new MShaderConstantParam();
@@ -128,16 +128,16 @@ void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 	MVariantArray matLightProjArray;
 	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
 	{
-		matLightProjArray.AppendMVariant<Matrix4>();
+		matLightProjArray.AppendValue<Matrix4>();
 	}
-	shadowInfoSrt.AppendMVariant("U_matLightProj", matLightProjArray);
+	shadowInfoSrt.SetValue("U_matLightProj", matLightProjArray);
 
 	MVariantArray matCascadeSplitArray;
 	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
 	{
-		matCascadeSplitArray.AppendMVariant<float>();
+		matCascadeSplitArray.AppendValue<float>();
 	}
-	shadowInfoSrt.AppendMVariant("U_vCascadeSplits", matCascadeSplitArray);
+	shadowInfoSrt.SetValue("U_vCascadeSplits", matCascadeSplitArray);
 
 
 	MShaderSampleParam* pLinearSampler = new MShaderSampleParam();
@@ -403,19 +403,17 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 
 void MForwardRenderShaderParamSet::SetShadowMapTexture(MTexture* pTexture)
 {
-	if (m_pShadowTextureParam->pTexture != pTexture)
+	if (m_pShadowTextureParam->GetTexture() != pTexture)
 	{
-		m_pShadowTextureParam->pTexture = pTexture;
-		m_pShadowTextureParam->SetDirty();
+		m_pShadowTextureParam->SetTexture(pTexture);
 	}
 }
 
 void MForwardRenderShaderParamSet::SetBrdfMapTexture(MTexture* pTexture)
 {
-	if (m_pBrdfMapTextureParam->pTexture != pTexture)
+	if (m_pBrdfMapTextureParam->GetTexture() != pTexture)
 	{
-		m_pBrdfMapTextureParam->pTexture = pTexture;
-		m_pBrdfMapTextureParam->SetDirty();
+		m_pBrdfMapTextureParam->SetTexture(pTexture);
 	}
 }
 

@@ -64,7 +64,7 @@ void MVulkanPipelineManager::Release()
 	m_tMaterialMap.clear();
 }
 
-VkPipeline MVulkanPipelineManager::FindPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx)
+VkPipeline MVulkanPipelineManager::FindGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx)
 {
 	uint32_t unMaterialID = pMaterial->GetMaterialID();
 	uint32_t unRenderPassID = pRenderPass->GetRenderPassID();
@@ -89,7 +89,12 @@ VkPipeline MVulkanPipelineManager::FindPipeline(std::shared_ptr<MMaterial> pMate
 	return pPipelines->vSubpassPipeline[unSubpassIdx];
 }
 
-void MVulkanPipelineManager::SetPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx, VkPipeline pipeline)
+VkPipeline MVulkanPipelineManager::FindComputePipeline(std::shared_ptr<MMaterial> pMaterial)
+{
+	return VK_NULL_HANDLE;
+}
+
+void MVulkanPipelineManager::SetGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx, VkPipeline pipeline)
 {
 	uint32_t unMaterialID = pMaterial->GetMaterialID();
 	uint32_t unRenderPassID = pRenderPass->GetRenderPassID();
@@ -269,7 +274,7 @@ void MVulkanPipelineManager::BindConstantParam(MShaderParamSet* pParamSet, MShad
 
 void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShaderTextureParam* pParam)
 {
-	MTexture* pTexture = pParam->pTexture;
+	MTexture* pTexture = pParam->GetTexture();
 	if (!pTexture)
 	{
 		if (pParam->eType == METextureType::ETexture2D)

@@ -77,6 +77,16 @@ MShaderSampleParam::MShaderSampleParam()
 #endif
 }
 
+MShaderStorageParam::MShaderStorageParam()
+	: MShaderParam()
+	, pBuffer(nullptr)
+	, bWritable(false)
+{
+#if RENDER_GRAPHICS == MORTY_VULKAN
+	m_VkDescriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+#endif
+}
+
 MShaderSubpasssInputParam::MShaderSubpasssInputParam()
 	: MShaderTextureParam()
 {

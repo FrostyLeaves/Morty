@@ -248,7 +248,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 		}
 
 		{
-			MShaderMacro& shaderMacro = *pMaterial->GetShaderMacro();
+			MShaderMacro& shaderMacro = pMaterial->GetShaderMacro();
 			float fWidth = ImGui::GetContentRegionAvailWidth();
 			if (ShowNodeBeginWithEx("Macro"))
 			{
@@ -333,13 +333,13 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 			std::vector<MShaderTextureParam*>& vParams = *pMaterial->GetTextureParams();
 			for (unsigned int i = 0; i < vParams.size(); ++i)
 			{
-				if (MShaderRefTextureParam* param = dynamic_cast<MShaderRefTextureParam*>(vParams[i]))
+				if (MTextureResourceParam* param = dynamic_cast<MTextureResourceParam*>(vParams[i]))
 				{
 
 					MString strDlgName = "file_dlg_tex_" + MStringHelper::ToString(i);
 
 					ShowValueBegin(param->strName);
-					std::shared_ptr<MResource> pResource = param->m_TextureRef.GetResource();
+					std::shared_ptr<MTextureResource> pResource = param->GetTextureResource();
 
 					if (param->pTexture)
 					{
@@ -359,7 +359,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 						std::shared_ptr<MResource> pNewResource = pMaterial->GetResourceSystem()->LoadResource(strNewFilePath);
 
-						pMaterial->SetTexutreParam(param->strName, pNewResource);
+						pMaterial->SetTexutre(param->strName, pNewResource);
 						});
 
 					ShowValueEnd();

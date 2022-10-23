@@ -89,7 +89,7 @@ private:
 	EngineStage m_eStage;
 
 
-	std::map<const MType*, int> m_tSystem;
+	std::map<const MType*, size_t> m_tSystem;
 	std::vector<MISystem*> m_vSystem;
 
 	MTaskGraph* m_pMainTaskGraph;

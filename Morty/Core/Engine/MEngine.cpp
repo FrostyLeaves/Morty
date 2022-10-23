@@ -48,6 +48,7 @@ void MEngine::Release()
 		pSystem = nullptr;
 	}
 
+	m_tSystem.clear();
 	m_vSystem.clear();
 }
 

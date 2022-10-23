@@ -52,12 +52,12 @@ bool MModelResource::Load(const MString& strResourcePath)
     if (!pStruct)
         return false;
     
-    if (MString* pSkePath = pStruct->FindMember<MString>("ske"))
+    if (MString* pSkePath = pStruct->GetValue<MString>("ske"))
     {
         m_pSkeleton = MTypeClass::DynamicCast<MSkeletonResource>(pResourceSystem->LoadResource(*pSkePath));
     }
 
-    if (MVariantArray* pMeshPathArray = pStruct->FindMember<MVariantArray>("mesh"))
+    if (MVariantArray* pMeshPathArray = pStruct->GetValue<MVariantArray>("mesh"))
     {
         for (uint32_t i = 0; i < pMeshPathArray->GetMemberCount(); ++i)
         {
@@ -83,14 +83,15 @@ bool MModelResource::SaveTo(const MString& strResourcePath)
 
     if (m_pSkeleton)
     {
-        srt.AppendMVariant("ske", m_pSkeleton->GetResourcePath());
+        srt.SetValue("ske", m_pSkeleton->GetResourcePath());
     }
 
-    if (MVariantArray* pMeshArray = srt.AppendMVariant<MVariantArray>("mesh"))
+    srt.SetValue("mesh", MVariantArray());
+    if (MVariantArray* pMeshArray = srt.GetValue<MVariantArray>("mesh"))
     {
         for (std::shared_ptr<MMeshResource> pMeshRes : m_vMeshes)
         {
-            pMeshArray->AppendMVariant(pMeshRes->GetResourcePath());
+            pMeshArray->AppendValue(pMeshRes->GetResourcePath());
         }
     }
 

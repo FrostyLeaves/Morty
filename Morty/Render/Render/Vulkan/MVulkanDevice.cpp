@@ -1,5 +1,6 @@
 #include "Render/Vulkan/MVulkanDevice.h"
 #include "Render/MMesh.h"
+#include "Render/MBuffer.h"
 #include "Engine/MEngine.h"
 #include "Basic/MTexture.h"
 #include "Resource/MResource.h"
@@ -519,104 +520,89 @@ bool MVulkanDevice::InitDescriptorPool()
 	return true;
 }
 
-void MVulkanDevice::GenerateVertex(MVertexBuffer* ppVertexBuffer, MIMesh* pMesh, const bool& bModifiable /*= false*/)
+void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer)
 {
-	void* data = nullptr;
 
-	VkDeviceSize bufferSize = static_cast<uint64_t>(pMesh->GetVerticesLength()) * static_cast<uint64_t>(pMesh->GetVertexStructSize());
-	VkDeviceSize indexBufferSize = sizeof(uint32_t) * pMesh->GetIndicesLength();
+	VkDeviceSize unBufferSize = static_cast<uint64_t>(pBuffer->m_data.size());
 
-	VkBuffer vertexBuffer;
-	VkDeviceMemory vertexBufferMemory;
+	void* pMapMemory = nullptr;
+	VkBuffer vkBuffer;
+	VkDeviceMemory vkDeviceMemory;
 
-	VkBuffer indexBuffer;
-	VkDeviceMemory indexBufferMemory;
+	VkBufferUsageFlags vkBufferUsageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
-	if (bModifiable)
+	if (MBuffer::MUsageType::EVertex == pBuffer->m_eUsageType)
 	{
-		GenerateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexBuffer, vertexBufferMemory);
-		vkMapMemory(m_VkDevice, vertexBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, pMesh->GetVertices(), (size_t)bufferSize);
-		vkUnmapMemory(m_VkDevice, vertexBufferMemory);
-
-		SetDebugName((uint64_t)vertexBuffer, VkObjectType::VK_OBJECT_TYPE_BUFFER, "VertexBuffer");
-
-
-		GenerateBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT , indexBuffer, indexBufferMemory);
-		vkMapMemory(m_VkDevice, indexBufferMemory, 0, indexBufferSize, 0, &data);
-		memcpy(data, pMesh->GetIndices(), (size_t)indexBufferSize);
-		vkUnmapMemory(m_VkDevice, indexBufferMemory);
-
-		SetDebugName((uint64_t)indexBuffer, VkObjectType::VK_OBJECT_TYPE_BUFFER, "IndexBuffer");
+		vkBufferUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	}
+	else if (MBuffer::MUsageType::EIndex == pBuffer->m_eUsageType)
+	{
+		vkBufferUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 	}
 	else
 	{
+		assert(false);
+	}
+
+	if (MBuffer::MMemoryType::EHostVisible == pBuffer->m_eMemoryType)
+	{
+		GenerateBuffer(unBufferSize, vkBufferUsageFlags, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vkBuffer, vkDeviceMemory);
+		vkMapMemory(m_VkDevice, vkDeviceMemory, 0, unBufferSize, 0, &pMapMemory);
+		memcpy(pMapMemory, pBuffer->GetData(), static_cast<size_t>(unBufferSize));
+		vkUnmapMemory(m_VkDevice, vkDeviceMemory);
+	}
+	else if (MBuffer::MMemoryType::EDeviceLocal == pBuffer->m_eMemoryType)
+	{
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
-		GenerateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+		GenerateBuffer(unBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
-		vkMapMemory(m_VkDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, pMesh->GetVertices(), (size_t)bufferSize);
+		vkMapMemory(m_VkDevice, stagingBufferMemory, 0, unBufferSize, 0, &pMapMemory);
+		memcpy(pMapMemory, pBuffer->GetData(), (size_t)unBufferSize);
 		vkUnmapMemory(m_VkDevice, stagingBufferMemory);
 
-		GenerateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+		GenerateBuffer(unBufferSize, vkBufferUsageFlags, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vkBuffer, vkDeviceMemory);
 
-		SetDebugName((uint64_t)vertexBuffer, VkObjectType::VK_OBJECT_TYPE_BUFFER, "VertexBuffer");
-
-		CopyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+		CopyBuffer(stagingBuffer, vkBuffer, unBufferSize);
 
 		DestroyBuffer(stagingBuffer, stagingBufferMemory);
-
-
-		VkBuffer stagingIdxBuffer;
-		VkDeviceMemory stagingIdxBufferMemory;
-		GenerateBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingIdxBuffer, stagingIdxBufferMemory);
-
-		vkMapMemory(m_VkDevice, stagingIdxBufferMemory, 0, indexBufferSize, 0, &data);
-		memcpy(data, pMesh->GetIndices(), (size_t)indexBufferSize);
-		vkUnmapMemory(m_VkDevice, stagingIdxBufferMemory);
-
-		GenerateBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
-
-		SetDebugName((uint64_t)indexBuffer, VkObjectType::VK_OBJECT_TYPE_BUFFER, "IndexBuffer");
-
-		CopyBuffer(stagingIdxBuffer, indexBuffer, indexBufferSize);
-
-		DestroyBuffer(stagingIdxBuffer, stagingIdxBufferMemory);
 	}
 
-	ppVertexBuffer->m_VkVertexBuffer = vertexBuffer;
-	ppVertexBuffer->m_VkVertexBufferMemory = vertexBufferMemory;
-	ppVertexBuffer->m_VkIndexBuffer = indexBuffer;
-	ppVertexBuffer->m_VkIndexBufferMemory = indexBufferMemory;
+	SetDebugName(reinterpret_cast<uint64_t>(vkBuffer), VkObjectType::VK_OBJECT_TYPE_BUFFER, pBuffer->m_strDebugBufferName.c_str());
+
+	pBuffer->m_VkBuffer = vkBuffer;
+	pBuffer->m_VkDeviceMemory = vkDeviceMemory;
+	pBuffer->m_eStageType = MBuffer::MStageType::ESynced;
 }
 
-void MVulkanDevice::DestroyVertex(MVertexBuffer* ppVertexBuffer)
+void MVulkanDevice::DestroyBuffer(MBuffer* pBuffer)
 {
-	if (!ppVertexBuffer)
+	if(!pBuffer)
+	{
 		return;
+	}
 
-	GetRecycleBin()->DestroyBufferLater(ppVertexBuffer->m_VkVertexBuffer);
-	GetRecycleBin()->DestroyDeviceMemoryLater(ppVertexBuffer->m_VkVertexBufferMemory);
-	GetRecycleBin()->DestroyBufferLater(ppVertexBuffer->m_VkIndexBuffer);
-	GetRecycleBin()->DestroyDeviceMemoryLater(ppVertexBuffer->m_VkIndexBufferMemory);	
+	GetRecycleBin()->DestroyBufferLater(pBuffer->m_VkBuffer);
+	GetRecycleBin()->DestroyDeviceMemoryLater(pBuffer->m_VkDeviceMemory);
+
+	pBuffer->m_eStageType = MBuffer::MStageType::EUnknow;
 }
 
-void MVulkanDevice::UploadVertex(MVertexBuffer* ppVertexBuffer, MIMesh* pMesh)
+void MVulkanDevice::UploadBuffer(MBuffer* pBuffer)
 {
+	if(!pBuffer)
 	{
-		void* data = nullptr;
-		uint32_t unSize = pMesh->GetVerticesLength() * pMesh->GetVertexStructSize();
-		vkMapMemory(m_VkDevice, ppVertexBuffer->m_VkVertexBufferMemory, 0, unSize, 0, &data);
-		memcpy(data, pMesh->GetVertices(), unSize);
-		vkUnmapMemory(m_VkDevice, ppVertexBuffer->m_VkVertexBufferMemory);
+		return;
 	}
+
+	if (MBuffer::MMemoryType::EHostVisible == pBuffer->m_eMemoryType)
 	{
 		void* data = nullptr;
-		uint32_t unSize = pMesh->GetIndicesLength() * sizeof(uint32_t);
-		vkMapMemory(m_VkDevice, ppVertexBuffer->m_VkIndexBufferMemory, 0, unSize, 0, &data);
-		memcpy(data, pMesh->GetIndices(), unSize);
-		vkUnmapMemory(m_VkDevice, ppVertexBuffer->m_VkIndexBufferMemory);
+		vkMapMemory(m_VkDevice, pBuffer->m_VkDeviceMemory, 0, pBuffer->GetSize(), 0, &data);
+		memcpy(data, pBuffer->GetData(), pBuffer->GetSize());
+		vkUnmapMemory(m_VkDevice, pBuffer->m_VkDeviceMemory);
+
+		pBuffer->m_eStageType = MBuffer::MStageType::ESynced;
 	}
 }
 
@@ -821,9 +807,24 @@ bool MVulkanDevice::CompileShader(MShader* pShader)
 
 	VkPipelineShaderStageCreateInfo shaderStageInfo{};
 	shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	shaderStageInfo.stage = pShader->GetType() == MEShaderType::EVertex ? VK_SHADER_STAGE_VERTEX_BIT : VK_SHADER_STAGE_FRAGMENT_BIT;
 	shaderStageInfo.module = shaderModule;
-	shaderStageInfo.pName = pShader->GetType() == MEShaderType::EVertex ? "VS" : "PS";
+
+	if (pShader->GetType() == MEShaderType::EVertex)
+	{
+		shaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+		shaderStageInfo.pName = "VS";
+	}
+	else if (pShader->GetType() == MEShaderType::EPixel)
+	{
+		shaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+		shaderStageInfo.pName = "PS";
+	}
+	else
+	{
+		shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+		shaderStageInfo.pName = "CS";
+	}
+
 
 
 	shaderStageInfo.pSpecializationInfo = nullptr;
@@ -838,6 +839,12 @@ bool MVulkanDevice::CompileShader(MShader* pShader)
 	else if (MEShaderType::EPixel == pShader->GetType())
 	{
 		MPixelShaderBuffer* pBuffer = new MPixelShaderBuffer();
+		pShaderBuffer = pBuffer;
+	}
+	else if (MEShaderType::ECompute == pShader->GetType())
+	{
+		MComputeShaderBuffer* pBuffer = new MComputeShaderBuffer();
+		m_ShaderCompiler.GetComputeInputState(compiler, pBuffer);
 		pShaderBuffer = pBuffer;
 	}
 

@@ -360,7 +360,7 @@ bool MVulkanShaderCompiler::CompileGlslShader(const MString& strShaderPath, cons
 bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv)
 {
 	MString strShaderPath = MFileHelper::FormatPath(_strShaderPath);
-	MStringHelper::Replace(strShaderPath, "/", "\\");
+	//MStringHelper::Replace(strShaderPath, "/", "\\");
 
 	IDxcUtils* pUtils = nullptr;
 	DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&pUtils));
@@ -431,6 +431,11 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 	{
 		vCompArgs.push_back(L"-E PS");
 		vCompArgs.push_back(L"-T ps_6_1");
+	}
+	else if (MEShaderType::ECompute == eShaderType)
+	{
+		vCompArgs.push_back(L"-E CS");
+		vCompArgs.push_back(L"-T cs_6_1");
 	}
 	else
 		assert(false);
@@ -611,9 +616,36 @@ void MVulkanShaderCompiler::GetVertexInputState(const spirv_cross::Compiler& com
 	pShaderBuffer->m_vBindingDescs = { bindingDescription };
 }
 
+
+void MVulkanShaderCompiler::GetComputeInputState(const spirv_cross::Compiler& compiler, MComputeShaderBuffer* pShaderBuffer)
+{
+	spirv_cross::ShaderResources shaderResources = compiler.get_shader_resources();
+}
+
 void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler, MShaderBuffer* pShaderBuffer)
 {
 	spirv_cross::ShaderResources shaderResources = compiler.get_shader_resources();
+
+	for (const spirv_cross::Resource& res : shaderResources.storage_buffers)
+	{
+		const spirv_cross::SPIRType& type = compiler.get_type(res.type_id);
+
+		MShaderStorageParam* pParam = new MShaderStorageParam();
+		pParam->unSet = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
+		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
+		pParam->strName = res.name;
+		MStringHelper::Replace(pParam->strName, "type.", "");
+
+		const std::string& uav_name = compiler.get_name(res.id);
+
+		spirv_cross::Bitset buffer_flags = compiler.get_buffer_block_flags(res.id);
+		pParam->bWritable = !buffer_flags.get(spv::DecorationNonWritable);
+
+
+		pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+
+		pShaderBuffer->m_vShaderSets[pParam->unSet].m_vStorages.push_back(pParam);
+	}
 
 	for (const spirv_cross::Resource& res : shaderResources.uniform_buffers)
 	{
@@ -714,7 +746,7 @@ void MVulkanShaderCompiler::ConvertVariant(const spirv_cross::Compiler& compiler
 
 			MVariant child;
 			ConvertVariant(compiler, childType, child);
-			srt.AppendMVariant(strName, child);
+			srt.SetValue(strName, child);
 		}
 		break;
 	}
@@ -737,7 +769,7 @@ void MVulkanShaderCompiler::ConvertVariant(const spirv_cross::Compiler& compiler
 
 		for (uint32_t i = 0; i < unArraySize; ++i)
 		{
-			varArray.AppendMVariant(tempVariant);
+			varArray.AppendValue(tempVariant);
 		}
 	}
 

@@ -56,7 +56,7 @@ void MShadowMapRenderWork::OnCreated()
 	m_pShadowStaticMaterial->SetRasterizerType(MERasterizerType::ECullFront);
 
 	m_pShadowSkeletonMaterial = pResourceSystem->CreateResource<MMaterial>("Shadow Material With Skeleton");
-	m_pShadowSkeletonMaterial->GetShaderMacro()->SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, "1");
+	m_pShadowSkeletonMaterial->GetShaderMacro().SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, "1");
 	m_pShadowSkeletonMaterial->LoadVertexShader(pVertexShader);
 	m_pShadowSkeletonMaterial->LoadPixelShader(pPixelShader);
 	m_pShadowSkeletonMaterial->SetRasterizerType(MERasterizerType::ECullFront);

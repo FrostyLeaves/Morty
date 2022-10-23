@@ -128,7 +128,7 @@ void MVulkanRenderCommand::DrawMesh(MIMesh* pMesh)
 	if (!pMesh)
 		return;
 
-	DrawMesh(pMesh, 0, pMesh->GetIndicesLength(), 0);
+	DrawMesh(pMesh, 0, pMesh->GetIndicesNum(), 0);
 }
 
 void MVulkanRenderCommand::DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, const uint32_t& nIdxCount, const uint32_t& nVrtOffset)
@@ -139,24 +139,27 @@ void MVulkanRenderCommand::DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, c
 	if (0 == nIdxCount)
 		return;
 
-	if (pMesh->GetNeedGenerate())
-		pMesh->GenerateBuffer(m_pDevice);
+	MBuffer* pVertexBuffer = pMesh->GetVertexBuffer();
+	MBuffer* pIndexBuffer = pMesh->GetIndexBuffer();
 
-	if (pMesh->GetNeedUpload())
-		pMesh->UploadBuffer(m_pDevice);
-
-	if (MVertexBuffer* pBuffer = pMesh->GetBuffer())
+	if (!pVertexBuffer || !pIndexBuffer)
 	{
-		VkBuffer vertexBuffers[] = { pBuffer->m_VkVertexBuffer };
-		VkDeviceSize offsets[] = { 0 };
-		vkCmdBindVertexBuffers(m_VkCommandBuffer, 0, 1, vertexBuffers, offsets);
-		vkCmdBindIndexBuffer(m_VkCommandBuffer, pBuffer->m_VkIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-		vkCmdDrawIndexed(m_VkCommandBuffer, nIdxCount, 1, nIdxOffset, nVrtOffset, 0);
+		return;
+	}
+
+	UpdateBuffer(pVertexBuffer);
+	UpdateBuffer(pIndexBuffer);
+
+	VkBuffer vertexBuffers[] = { pVertexBuffer->m_VkBuffer };
+	VkDeviceSize offsets[] = { 0 };
+	vkCmdBindVertexBuffers(m_VkCommandBuffer, 0, 1, vertexBuffers, offsets);
+	vkCmdBindIndexBuffer(m_VkCommandBuffer, pIndexBuffer->m_VkBuffer, 0, VK_INDEX_TYPE_UINT32);
+	vkCmdDrawIndexed(m_VkCommandBuffer, nIdxCount, 1, nIdxOffset, nVrtOffset, 0);
 
 #if MORTY_RENDER_DATA_STATISTICS
 		MRenderStatistics::GetInstance()->unTriangleCount += pMesh->GetIndicesLength() / 3;
 #endif
-	}
+	
 }
 
 bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
@@ -180,11 +183,11 @@ bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 	pUsingMaterial = pMaterial;
 	pUsingPipelineLayoutData = pPipelineLayoutData;
 
-	VkPipeline vkPipeline = m_pDevice->m_PipelineManager.FindPipeline(pMaterial, stage.pRenderPass, stage.nSubpassIdx);
+	VkPipeline vkPipeline = m_pDevice->m_PipelineManager.FindGraphicsPipeline(pMaterial, stage.pRenderPass, stage.nSubpassIdx);
 	if (!vkPipeline)
 	{
 		vkPipeline = CreateGraphicsPipeline(pMaterial, stage.pRenderPass, stage.nSubpassIdx);
-		m_pDevice->m_PipelineManager.SetPipeline(pMaterial, stage.pRenderPass, stage.nSubpassIdx, vkPipeline);
+		m_pDevice->m_PipelineManager.SetGraphicsPipeline(pMaterial, stage.pRenderPass, stage.nSubpassIdx, vkPipeline);
 	}
 
 	if (vkPipeline)
@@ -201,18 +204,6 @@ bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 	return false;
 }
-
-/*
-
-1. Create Pipeline and PipelineLayout from material. 
-
-2. Life cycle of DescriptorSetLayout depends on Pipeline. DescriptorSetLayout will be destroy when destroy Pipeline.
-
-3. Generate VkDescriptorSet, need DescriptorSetLayout.
-
-4. 
-
-*/
 
 void MVulkanRenderCommand::SetShaderParamSet(MShaderParamSet* pParamSet)
 {
@@ -247,9 +238,9 @@ void MVulkanRenderCommand::SetShaderParamSet(MShaderParamSet* pParamSet)
 	for (MShaderTextureParam* pParam : pParamSet->m_vTextures)
 	{
 		bDirty |= pParam->bDirty;
-		if (pParam->pTexture)
+		if (MTexture* pTexture = pParam->GetTexture())
 		{
-			bDirty |= pParam->pImageIdent != (pParam->pTexture ? pParam->pTexture->m_VkImageView : nullptr);
+			bDirty |= pParam->pImageIdent != (pTexture->m_VkImageView);
 		}
 	}
 
@@ -268,12 +259,41 @@ void MVulkanRenderCommand::SetShaderParamSet(MShaderParamSet* pParamSet)
 		for (MShaderTextureParam* pParam : pParamSet->m_vTextures)
 		{
 			m_pDevice->m_PipelineManager.BindTextureParam(pParamSet, pParam);
-			pParam->pImageIdent = pParam->pTexture ? pParam->pTexture->m_VkImageView : nullptr;
+			pParam->pImageIdent = pParam->GetTexture() ? pParam->GetTexture()->m_VkImageView : nullptr;
 			pParam->bDirty = false;
 		}
 	}
 
 	vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pUsingPipelineLayoutData->pipelineLayout, pParamSet->m_unKey, 1, &pParamSet->m_VkDescriptorSet, vDynamicOffsets.size(), vDynamicOffsets.data());
+}
+
+bool MVulkanRenderCommand::DispatchComputeJob(std::shared_ptr<MMaterial> pMaterial)
+{
+	assert(pMaterial->GetComputeShader());
+
+	if (nullptr == pMaterial)
+	{
+		return true;
+	}
+
+	VkPipeline vkPipeline = m_pDevice->m_PipelineManager.FindComputePipeline(pMaterial);
+	if (!vkPipeline)
+	{
+	}
+
+	if (vkPipeline)
+	{
+		vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
+
+		MShaderParamSet* pParamSet = pMaterial->GetMaterialParamSet();
+
+
+		SetShaderParamSet(pParamSet);
+
+		return true;
+	}
+
+	return false;
 }
 
 bool MVulkanRenderCommand::SetRenderToTextureBarrier(const std::vector<MTexture*> vTextures)
@@ -501,6 +521,24 @@ void MVulkanRenderCommand::addFinishedCallback(std::function<void()> func)
 	m_aRenderFinishedCallback.push_back(func);
 }
 
+void MVulkanRenderCommand::UpdateBuffer(MBuffer* pBuffer)
+{
+	if (!pBuffer)
+	{
+		return;
+	}
+
+	if (pBuffer->m_eStageType == MBuffer::MStageType::EWaitAllow)
+	{
+		pBuffer->DestroyBuffer(m_pDevice);
+		pBuffer->GenerateBuffer(m_pDevice);
+	}
+	else if (pBuffer->m_eStageType == MBuffer::MStageType::EWaitSync)
+	{
+		pBuffer->UploadBuffer(m_pDevice);
+	}
+}
+
 void MVulkanRenderCommand::UpdateShaderParam(MShaderParamSet* pParamSet, MShaderConstantParam* param)
 {
 	//if (VK_NULL_HANDLE == param->m_VkBuffer)
@@ -529,11 +567,11 @@ void MVulkanRenderCommand::UpdateShaderParam(MShaderParamSet* pParamSet, MShader
 void MVulkanRenderCommand::UpdateShaderParam(MShaderParamSet* pParamSet, MShaderTextureParam* param)
 {
 	//texture generate buffer again. its imageIdent will diff.
-	if (param->bDirty || (param->pTexture && param->pImageIdent != param->pTexture->m_VkImageView))
+	if (param->bDirty || (param->GetTexture() && param->pImageIdent != param->GetTexture()->m_VkImageView))
 	{
 		m_pDevice->m_PipelineManager.BindTextureParam(pParamSet, param);
 		param->bDirty = false;
-		param->pImageIdent = param->pTexture ? param->pTexture->m_VkImageView : nullptr;
+		param->pImageIdent = param->GetTexture() ? param->GetTexture()->m_VkImageView : nullptr;
 	}
 }
 
@@ -803,7 +841,6 @@ VkPipeline MVulkanRenderCommand::CreateGraphicsPipeline(std::shared_ptr<MMateria
 	VkPipelineColorBlendStateCreateInfo blendInfo = {};
 	VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
 
-	//��vkCreateGraphicsPipelines֮ǰ��vBlendAttach���ܱ��ͷ�
 	std::vector<VkPipelineColorBlendAttachmentState> vBlendAttach;
 	GetBlendStage(pMaterial, pRenderPass, vBlendAttach, blendInfo);
 
@@ -844,9 +881,41 @@ VkPipeline MVulkanRenderCommand::CreateGraphicsPipeline(std::shared_ptr<MMateria
 
 	VkPipeline graphicsPipeline = VK_NULL_HANDLE;
 	if (vkCreateGraphicsPipelines(m_pDevice->m_VkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
+	{
 		return VK_NULL_HANDLE;
+	}
 
 	return graphicsPipeline;
+}
+
+VkPipeline MVulkanRenderCommand::CreateComputePipeline(std::shared_ptr<MMaterial> pMaterial)
+{
+	MShader* pComputeShader = pMaterial->GetComputeShader();
+
+	if (nullptr == pComputeShader)
+		return VK_NULL_HANDLE;
+
+	if (nullptr == pComputeShader->GetBuffer())
+		return VK_NULL_HANDLE;
+
+	MShaderBuffer* pComputeShaderBuffer = pComputeShader->GetBuffer();
+
+	VkComputePipelineCreateInfo pipelineInfo;
+	pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+	pipelineInfo.pNext = VK_NULL_HANDLE;
+	pipelineInfo.stage = pComputeShaderBuffer->m_VkShaderStageInfo;
+
+	// TODO 
+	// fill pipelineInfo.stage.pSpecializationInfo
+
+
+	VkPipeline computePipeline;
+	if (vkCreateComputePipelines(m_pDevice->m_VkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &computePipeline) != VK_SUCCESS)
+	{
+		return VK_NULL_HANDLE;
+	}
+
+	return computePipeline;
 }
 
 void MVulkanRenderCommand::BindConstantParam(MShaderParamSet* pParamSet, MShaderConstantParam* pParam)
@@ -877,7 +946,7 @@ void MVulkanRenderCommand::BindConstantParam(MShaderParamSet* pParamSet, MShader
 
 void MVulkanRenderCommand::BindTextureParam(MShaderParamSet* pParamSet, MShaderTextureParam* pParam)
 {
-	MTexture* pTexture = pParam->pTexture;
+	MTexture* pTexture = pParam->GetTexture();
 	if (!pTexture) pTexture = &m_pDevice->m_ShaderDefaultTexture;
 
 	if (pTexture)

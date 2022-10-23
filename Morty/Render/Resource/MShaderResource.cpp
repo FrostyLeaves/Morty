@@ -18,17 +18,6 @@ MShaderResource::MShaderResource()
 
 MShaderResource::~MShaderResource()
 {
-	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
-	
-	for (MShader* pShader : m_vShaders)
-	{
-		pShader->CleanShader(pRenderSystem->GetDevice());
-		delete pShader;
-		pShader = nullptr;
-	}
-
-	m_vShaders.clear();
-
 }
 
 MShader* MShaderResource::GetShaderByIndex(const int& nIndex)
@@ -57,6 +46,19 @@ int MShaderResource::FindShaderByMacroParam(const MShaderMacro& macro)
 
 void MShaderResource::OnDelete()
 {
+	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
+	assert(pRenderSystem);
+
+	for (MShader* pShader : m_vShaders)
+	{
+		pShader->CleanShader(pRenderSystem->GetDevice());
+		delete pShader;
+		pShader = nullptr;
+	}
+
+	m_vShaders.clear();
+
+
 	MResource::OnDelete();
 }
 
@@ -64,7 +66,16 @@ bool MShaderResource::Load(const MString& strResourcePath)
 {
 	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
 
-	m_eShaderType = MResource::GetSuffix(strResourcePath) == MRenderGlobal::SUFFIX_VERTEX_SHADER ? MEShaderType::EVertex : MEShaderType::EPixel;
+	MString strPathSuffix = MResource::GetSuffix(strResourcePath);
+
+	if (strPathSuffix == MRenderGlobal::SUFFIX_VERTEX_SHADER)
+		m_eShaderType = MEShaderType::EVertex;
+	else if (strPathSuffix == MRenderGlobal::SUFFIX_PIXEL_SHADER)
+		m_eShaderType = MEShaderType::EPixel;
+	else
+		m_eShaderType = MEShaderType::ECompute;
+
+
 	m_strShaderPath = strResourcePath;
 	for (MShader* pShader : m_vShaders)
 	{

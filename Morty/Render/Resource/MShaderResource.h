@@ -24,7 +24,7 @@ public:
     virtual ~MShaderResource();
 
 	static MString GetResourceTypeName() { return "Shader"; }
-	static std::vector<MString> GetSuffixList() { return { "mvs", "mps" }; }
+	static std::vector<MString> GetSuffixList() { return { "mvs", "mps", "mcs" }; }
 
 public:
 

@@ -404,7 +404,7 @@ void MModelConverter::BindVertexAndBones(aiMesh* pMesh, const aiScene* pScene, M
 		}
 	}
 
-	for (uint32_t i = 0; i < pMMesh->GetVerticesLength(); ++i)
+	for (uint32_t i = 0; i < pMMesh->GetVerticesNum(); ++i)
 	{
 		MVertexWithBones& vertex = pMMesh->GetVertices()[i];
 
@@ -665,7 +665,7 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		if (m_pSkeleton)
 		{
 			std::shared_ptr<MMaterialResource> pSkinnedMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
-			pSkinnedMeshMaterialRes->GetShaderMacro()->SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, "1");
+			pSkinnedMeshMaterialRes->GetShaderMacro().SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, "1");
 			pSkinnedMeshMaterialRes->LoadVertexShader(pMeshVSResource);
 			pSkinnedMeshMaterialRes->LoadPixelShader(pMeshPSResource);
 			pMaterial = pSkinnedMeshMaterialRes;
@@ -680,12 +680,12 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 
 		pMaterial->SetMaterialType(MEMaterialType::EDeferred);
 
-		pMaterial->SetTexutreParam(MaterialKey::Albedo, pResourceSystem->LoadResource(MRenderModule::DefaultWhite));
-		pMaterial->SetTexutreParam(MaterialKey::Normal, pResourceSystem->LoadResource(MRenderModule::DefaultNormal));
-		pMaterial->SetTexutreParam(MaterialKey::Metallic, pResourceSystem->LoadResource(MRenderModule::Default_R8_One));
-		pMaterial->SetTexutreParam(MaterialKey::Roughness, pResourceSystem->LoadResource(MRenderModule::Default_R8_One));
-		pMaterial->SetTexutreParam(MaterialKey::AmbientOcc, pResourceSystem->LoadResource(MRenderModule::Default_R8_One));
-		pMaterial->SetTexutreParam(MaterialKey::Height, pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero));
+		pMaterial->SetTexutre(MaterialKey::Albedo, pResourceSystem->LoadResource(MRenderModule::DefaultWhite));
+		pMaterial->SetTexutre(MaterialKey::Normal, pResourceSystem->LoadResource(MRenderModule::DefaultNormal));
+		pMaterial->SetTexutre(MaterialKey::Metallic, pResourceSystem->LoadResource(MRenderModule::Default_R8_One));
+		pMaterial->SetTexutre(MaterialKey::Roughness, pResourceSystem->LoadResource(MRenderModule::Default_R8_One));
+		pMaterial->SetTexutre(MaterialKey::AmbientOcc, pResourceSystem->LoadResource(MRenderModule::Default_R8_One));
+		pMaterial->SetTexutre(MaterialKey::Height, pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero));
 	}
 	else
 	{
@@ -695,7 +695,7 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		if (m_pSkeleton)
 		{
 			std::shared_ptr<MMaterialResource> pSkinnedMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
-			pSkinnedMeshMaterialRes->GetShaderMacro()->SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, "1");
+			pSkinnedMeshMaterialRes->GetShaderMacro().SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, "1");
 			pSkinnedMeshMaterialRes->LoadVertexShader(pMeshVSResource);
 			pSkinnedMeshMaterialRes->LoadPixelShader(pMeshPSResource);
 			pMaterial = pSkinnedMeshMaterialRes;
@@ -717,7 +717,7 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 	std::shared_ptr<MResource> pDefaultTexture = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
 	for (size_t i = 0; i < pMaterial->GetTextureParams()->size(); ++i)
 	{
-		pMaterial->SetTexutreParam(i, pDefaultTexture);
+		pMaterial->SetTexutre(pMaterial->GetTextureParams()->at(i)->strName, pDefaultTexture);
 	}
 
 	aiMaterial* pAiMaterial = pScene->mMaterials[nMaterialIdx];
@@ -749,16 +749,16 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		{
 			if (MStruct* pStruct = pParam->var.GetStruct())
 			{
-				if (MStruct* pMat = pStruct->FindMember("U_mat")->GetStruct())
+				if (MStruct* pMat = pStruct->GetValue("U_mat")->GetStruct())
 				{
 					pMaterialStruct = pMat;
 
-					pMat->SetMember("f3Ambient", v3Ambient);
-					pMat->SetMember("f3Diffuse", v3Diffuse);
-					pMat->SetMember("f3Specular", v3Specular);
-					pMat->SetMember("fShininess", fShininess);
-					pMat->SetMember("bUseNormalTex", false);
-					pMat->SetMember("fAlphaFactor", 1.0f);
+					pMat->SetValue("f3Ambient", v3Ambient);
+					pMat->SetValue("f3Diffuse", v3Diffuse);
+					pMat->SetValue("f3Specular", v3Specular);
+					pMat->SetValue("fShininess", fShininess);
+					pMat->SetValue("bUseNormalTex", false);
+					pMat->SetValue("fAlphaFactor", 1.0f);
 				}
 			}
 		}
@@ -793,7 +793,7 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		{
 			std::shared_ptr<MTextureResource>& pTexture = findResult->second;
 
-			pMaterial->SetTexutreParam(pr.second, pTexture);
+			pMaterial->SetTexutre(pr.second, pTexture);
 		}
 	}
 

@@ -66,7 +66,7 @@ TYPE* MTaskNodeOutput::GetValue(const MString& strName)
 template<typename TYPE>
 void MTaskNodeOutput::SetValue(const MString& strName, const TYPE& value)
 {
-	m_outputValue.AppendMVariant(strName, value);
+	m_outputValue.AppendValue(strName, value);
 }
 
 #endif

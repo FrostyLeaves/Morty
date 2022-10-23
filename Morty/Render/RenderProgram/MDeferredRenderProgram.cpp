@@ -198,7 +198,7 @@ void MDeferredRenderProgram::RenderForward(MTaskNode* pTaskNode)
 	{
 		if (MSkyBoxComponent* pSkyBoxComponent = pSkyBox->GetComponent<MSkyBoxComponent>())
 		{
-			m_pSkyBoxMaterial->SetTexutreParam("SkyTexCube", pSkyBoxComponent->GetSkyBoxResource());
+			m_pSkyBoxMaterial->SetTexutre("SkyTexCube", pSkyBoxComponent->GetSkyBoxResource());
 
 			pCommand->SetUseMaterial(m_pSkyBoxMaterial);
 			pCommand->SetShaderParamSet(&m_frameParamSet);

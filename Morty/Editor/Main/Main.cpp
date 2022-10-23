@@ -32,6 +32,7 @@
 
 #include "Resource/MTextureResource.h"
 #include "Resource/MMaterialResource.h"
+#include "Resource/MShaderResource.h"
 
 #ifdef MORTY_WIN
 #undef main
@@ -74,12 +75,12 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 	std::shared_ptr<MResource> metal = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
 	std::shared_ptr<MResource> height = pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero);
 
-	pMaterial->SetTexutreParam(MaterialKey::Albedo, albedo);
-	pMaterial->SetTexutreParam(MaterialKey::Normal, normal);
-	pMaterial->SetTexutreParam(MaterialKey::Metallic, metal);
-	pMaterial->SetTexutreParam(MaterialKey::Roughness, roughness);
-	pMaterial->SetTexutreParam(MaterialKey::AmbientOcc, ao);
-	pMaterial->SetTexutreParam(MaterialKey::Height, height);
+	pMaterial->SetTexutre(MaterialKey::Albedo, albedo);
+	pMaterial->SetTexutre(MaterialKey::Normal, normal);
+	pMaterial->SetTexutre(MaterialKey::Metallic, metal);
+	pMaterial->SetTexutre(MaterialKey::Roughness, roughness);
+	pMaterial->SetTexutre(MaterialKey::AmbientOcc, ao);
+	pMaterial->SetTexutre(MaterialKey::Height, height);
 
 	pMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
 	pMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);
@@ -107,12 +108,12 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 		std::shared_ptr<MResource> metal = pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero);
 		std::shared_ptr<MResource> height = pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero);
 
-		pMaterial->SetTexutreParam(MaterialKey::Albedo, albedo);
-		pMaterial->SetTexutreParam(MaterialKey::Normal, normal);
-		pMaterial->SetTexutreParam(MaterialKey::Metallic, metal);
-		pMaterial->SetTexutreParam(MaterialKey::Roughness, roughness);
-		pMaterial->SetTexutreParam(MaterialKey::AmbientOcc, ao);
-		pMaterial->SetTexutreParam(MaterialKey::Height, height);
+		pMaterial->SetTexutre(MaterialKey::Albedo, albedo);
+		pMaterial->SetTexutre(MaterialKey::Normal, normal);
+		pMaterial->SetTexutre(MaterialKey::Metallic, metal);
+		pMaterial->SetTexutre(MaterialKey::Roughness, roughness);
+		pMaterial->SetTexutre(MaterialKey::AmbientOcc, ao);
+		pMaterial->SetTexutre(MaterialKey::Height, height);
 
 		pMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
 		pMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);
@@ -222,8 +223,8 @@ void SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 
 		std::shared_ptr<MResource> diffuse = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_albedo.png");
 		std::shared_ptr<MResource> normal = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_normal.png");
-		pMaterial->SetTexutreParam("U_mat_texDiffuse", diffuse);
-		pMaterial->SetTexutreParam("U_mat_texNormal", normal);
+		pMaterial->SetTexutre("U_mat_texDiffuse", diffuse);
+		pMaterial->SetTexutre("U_mat_texNormal", normal);
 
 		if (normal)
 		{
@@ -297,12 +298,12 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 		std::shared_ptr<MResource> height = pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero);
 #endif
 
-		pMaterial->SetTexutreParam(MaterialKey::Albedo, albedo);
-		pMaterial->SetTexutreParam(MaterialKey::Normal, normal);
-		pMaterial->SetTexutreParam(MaterialKey::Metallic, metal);
-		pMaterial->SetTexutreParam(MaterialKey::Roughness, roughness);
-		pMaterial->SetTexutreParam(MaterialKey::AmbientOcc, ao);
-		pMaterial->SetTexutreParam(MaterialKey::Height, height);
+		pMaterial->SetTexutre(MaterialKey::Albedo, albedo);
+		pMaterial->SetTexutre(MaterialKey::Normal, normal);
+		pMaterial->SetTexutre(MaterialKey::Metallic, metal);
+		pMaterial->SetTexutre(MaterialKey::Roughness, roughness);
+		pMaterial->SetTexutre(MaterialKey::AmbientOcc, ao);
+		pMaterial->SetTexutre(MaterialKey::Height, height);
 
 		pMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
 		pMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);
@@ -394,7 +395,7 @@ void ADD_POINT_LIGHT(MEngine* pEngine, MScene* pScene)
 	pMaterial->LoadVertexShader("./Shader/debug_model.mvs");
 	pMaterial->LoadPixelShader("./Shader/debug_model.mps");
 
-	pMaterial->SetTexutreParam("U_mat_texDiffuse", pIconTexture);
+	pMaterial->SetTexutre("U_mat_texDiffuse", pIconTexture);
 
 	for (int i = 0; i < 9; ++i)
 	{
@@ -442,6 +443,17 @@ int main()
 		bClosed = true;
 		return true;
 		});
+
+
+	auto&& pResource = engine.FindSystem<MResourceSystem>()->LoadResource("D://cull.mcs");
+
+	auto&& pShaderResource = std::dynamic_pointer_cast<MShaderResource>(pResource);
+
+
+	int idx = pShaderResource->FindShaderByMacroParam(MShaderMacro());
+	engine.FindSystem<MRenderSystem>()->GetDevice()->CompileShader(pShaderResource->GetShaderByIndex(idx));
+
+	engine.FindSystem<MResourceSystem>()->UnloadResource(pResource);
 
 	if (MScene* pScene = editor.GetScene())
 	{

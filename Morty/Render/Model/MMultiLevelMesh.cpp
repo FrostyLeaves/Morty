@@ -25,8 +25,8 @@ void MMultiLevelMesh::BindMesh(const MIMesh* pMesh)
 	const MByte* pVertices = (MByte*)pMesh->GetVertices();
 	const uint32_t* vIndices = pMesh->GetIndices();
 	uint32_t unVertexSize = pMesh->GetVertexStructSize();
-	uint32_t unVerticesLength = pMesh->GetVerticesLength();
-	uint32_t unIndicesLength = pMesh->GetIndicesLength();
+	uint32_t unVerticesLength = pMesh->GetVerticesNum();
+	uint32_t unIndicesLength = pMesh->GetIndicesNum();
 
 	m_vIndexToMap.resize(unVerticesLength);
 	m_vMap.resize(unVerticesLength);
@@ -85,7 +85,7 @@ void MMultiLevelMesh::BindMesh(const MIMesh* pMesh)
 		m_vMap[i] = (m_vMap[i] == -1) ? 0 : m_vIndexToMap[m_vMap[i]];
 	}
 
-	uint32_t unMemorySize = pMesh->GetVertexStructSize() * pMesh->GetVerticesLength();
+	uint32_t unMemorySize = pMesh->GetVerticesSize();
 	m_pSortVertices = new MByte[unMemorySize];
 
 	for (uint32_t i = 0; i < unVerticesLength; ++i) {
@@ -97,9 +97,9 @@ MIMesh* MMultiLevelMesh::CreateLevel(const uint32_t& unVertexNumber)
 {
 	const uint32_t* vIndices = m_pMesh->GetIndices();
 	uint32_t unVertexSize = m_pMesh->GetVertexStructSize();
-	uint32_t unIndicesLength = m_pMesh->GetIndicesLength();
+	uint32_t unIndicesLength = m_pMesh->GetIndicesNum();
 
-	MIMesh* pMesh = m_pMesh->Copy();
+	MIMesh* pMesh = m_pMesh->Clone();
 	uint32_t* vNewIndices = pMesh->GetIndices();
 	uint32_t ni = 0;
 
@@ -138,7 +138,7 @@ MIMesh* MMultiLevelMesh::GetLevel(uint32_t unLevel)
 
 	if (m_vMeshesCache[unLevel] == nullptr)
 	{
-		uint32_t unVertexNumber = m_pMesh->GetVerticesLength() * (float)unLevel / MRenderGlobal::MESH_LOD_LEVEL_RANGE;
+		uint32_t unVertexNumber = m_pMesh->GetVerticesNum() * (float)unLevel / MRenderGlobal::MESH_LOD_LEVEL_RANGE;
 		m_vMeshesCache[unLevel] = CreateLevel(unVertexNumber);
 	}
 
