@@ -201,9 +201,9 @@ void MTransparentRenderWork::InitializeMaterial()
 {
 	MResourceSystem* pResourceSystem = m_pEngine->FindSystem<MResourceSystem>();
 
-	std::shared_ptr<MResource> pDPVSResource = pResourceSystem->LoadResource("./Shader/depth_peel_blend.mvs");
-	std::shared_ptr<MResource> pDPBPSResource = pResourceSystem->LoadResource("./Shader/depth_peel_blend.mps");
-	std::shared_ptr<MResource> pDPFPSResource = pResourceSystem->LoadResource("./Shader/depth_peel_fill.mps");
+	std::shared_ptr<MResource> pDPVSResource = pResourceSystem->LoadResource("Shader/depth_peel_blend.mvs");
+	std::shared_ptr<MResource> pDPBPSResource = pResourceSystem->LoadResource("Shader/depth_peel_blend.mps");
+	std::shared_ptr<MResource> pDPFPSResource = pResourceSystem->LoadResource("Shader/depth_peel_fill.mps");
 
 	m_pDrawPeelMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pDrawPeelMaterial->SetMaterialType(MEMaterialType::EDepthPeel);

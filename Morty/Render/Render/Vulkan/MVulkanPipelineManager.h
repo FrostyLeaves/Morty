@@ -18,6 +18,7 @@
 class MMaterial;
 class MVulkanDevice;
 class MShaderParamSet;
+class MComputeDispatcher;
 struct MShaderTextureParam;
 struct MShaderConstantParam;
 
@@ -42,6 +43,11 @@ struct MMaterialPipelineLayoutData
     std::vector<MShaderParamSet*> vShaderParamSets;
 };
 
+struct MComputeDispatcherData
+{
+    VkPipeline vkPipeline;
+};
+
 class MORTY_API MVulkanPipelineManager
 {
 public:
@@ -52,10 +58,8 @@ public:
 
 public:
 
-    VkPipeline FindGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx);
-    VkPipeline FindComputePipeline(std::shared_ptr<MMaterial> pMaterial);
-
-    void SetGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx, VkPipeline pipeline);
+    VkPipeline FindOrCreateGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx);
+    VkPipeline FindOrCreateComputePipeline(std::shared_ptr<MComputeDispatcher> pComputeDispatcher);
 
 	MMaterialPipelineLayoutData* FindOrCreatePipelineLayout(std::shared_ptr<MMaterial> pMaterial);
 	MMaterialPipelineLayoutData* FindPipelineLayout(const uint32_t& nMaterialIdx);
@@ -67,6 +71,9 @@ public:
     void RegisterRenderPass(MRenderPass* pRenderPass);
     void UnRegisterRenderPass(MRenderPass* pRenderPass);
 
+    bool RegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher);
+    bool UnRegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher);
+
 public:
 
 	void BindConstantParam(MShaderParamSet* pParamSet, MShaderConstantParam* pParam);
@@ -75,6 +82,9 @@ public:
 
     MMaterialPipelineLayoutData* CreateMaterialPipelineLayout(std::shared_ptr<MMaterial> pMaterial);
     void DestroyMaterialPipelineLayout(MMaterialPipelineLayoutData* pLayoutData);
+
+    VkPipeline CreateGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx);
+    VkPipeline CreateComputePipeline(std::shared_ptr<MComputeDispatcher> pComputeDispatcher);
 
     void GenerateShaderParamSet(MShaderParamSet* pParamSet);
     void DestroyShaderParamSet(MShaderParamSet* pParamSet);
@@ -86,12 +96,17 @@ private:
 
 	MRepeatIDPool<uint32_t> m_MaterialIDPool;
     MRepeatIDPool<uint32_t> m_RenderPassIDPool;
+    MRepeatIDPool<uint32_t> m_ComputeDispatcherIDPool;
 
     std::vector<MMaterialPipelineGroup*> m_tPipelineTable;
 
     std::vector<MMaterialPipelineLayoutData*> m_vPipelineLayouts;
 
 	std::map<uint32_t, std::shared_ptr<MMaterial>> m_tMaterialMap;
+
+    std::vector<MComputeDispatcherData*> m_tComputeDispatcherData;
+
+    std::map<uint32_t, MComputeDispatcher*> m_tComputeDispatcherMap;
 
     MVulkanDevice* m_pDevice;
 

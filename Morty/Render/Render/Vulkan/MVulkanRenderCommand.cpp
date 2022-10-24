@@ -1,8 +1,10 @@
 ﻿#include "Render/Vulkan/MVulkanRenderCommand.h"
 
 #include "Render/MMesh.h"
-#include "Material/MMaterial.h"
 #include "Render/MVertexBuffer.h"
+
+#include "Material/MMaterial.h"
+#include "Material/MComputeDispatcher.h"
 
 MVulkanRenderCommand::MVulkanRenderCommand()
 	:MIRenderCommand()
@@ -183,12 +185,7 @@ bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 	pUsingMaterial = pMaterial;
 	pUsingPipelineLayoutData = pPipelineLayoutData;
 
-	VkPipeline vkPipeline = m_pDevice->m_PipelineManager.FindGraphicsPipeline(pMaterial, stage.pRenderPass, stage.nSubpassIdx);
-	if (!vkPipeline)
-	{
-		vkPipeline = CreateGraphicsPipeline(pMaterial, stage.pRenderPass, stage.nSubpassIdx);
-		m_pDevice->m_PipelineManager.SetGraphicsPipeline(pMaterial, stage.pRenderPass, stage.nSubpassIdx, vkPipeline);
-	}
+	VkPipeline vkPipeline = m_pDevice->m_PipelineManager.FindOrCreateGraphicsPipeline(pMaterial, stage.pRenderPass, stage.nSubpassIdx);
 
 	if (vkPipeline)
 	{
@@ -267,16 +264,16 @@ void MVulkanRenderCommand::SetShaderParamSet(MShaderParamSet* pParamSet)
 	vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pUsingPipelineLayoutData->pipelineLayout, pParamSet->m_unKey, 1, &pParamSet->m_VkDescriptorSet, vDynamicOffsets.size(), vDynamicOffsets.data());
 }
 
-bool MVulkanRenderCommand::DispatchComputeJob(std::shared_ptr<MMaterial> pMaterial)
+bool MVulkanRenderCommand::DispatchComputeJob(std::shared_ptr<MComputeDispatcher> pComputeDispatcher)
 {
-	assert(pMaterial->GetComputeShader());
+	assert(pComputeDispatcher->GetComputeShader());
 
-	if (nullptr == pMaterial)
+	if (nullptr == pComputeDispatcher)
 	{
 		return true;
 	}
 
-	VkPipeline vkPipeline = m_pDevice->m_PipelineManager.FindComputePipeline(pMaterial);
+	VkPipeline vkPipeline = m_pDevice->m_PipelineManager.FindOrCreateComputePipeline(pComputeDispatcher);
 	if (!vkPipeline)
 	{
 	}
@@ -285,10 +282,10 @@ bool MVulkanRenderCommand::DispatchComputeJob(std::shared_ptr<MMaterial> pMateri
 	{
 		vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
 
-		MShaderParamSet* pParamSet = pMaterial->GetMaterialParamSet();
-
-
-		SetShaderParamSet(pParamSet);
+		for (MShaderParamSet& params : pComputeDispatcher->GetShaderParamSets())
+		{
+			SetShaderParamSet(&params);
+		}
 
 		return true;
 	}
@@ -573,349 +570,6 @@ void MVulkanRenderCommand::UpdateShaderParam(MShaderParamSet* pParamSet, MShader
 		param->bDirty = false;
 		param->pImageIdent = param->GetTexture() ? param->GetTexture()->m_VkImageView : nullptr;
 	}
-}
-
-void GetBlendStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, std::vector<VkPipelineColorBlendAttachmentState>& vBlendAttach, VkPipelineColorBlendStateCreateInfo& blendInfo)
-{
-
-
-	blendInfo = {};
-	blendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-	blendInfo.logicOpEnable = VK_FALSE;
-	blendInfo.logicOp = VK_LOGIC_OP_COPY;
-
-	MEMaterialType eType = pMaterial->GetMaterialType();
-
-	if (MEMaterialType::EDefault == eType || MEMaterialType::EDeferred == eType)
-	{
-		for (uint32_t i = 0; i < pRenderPass->m_vBackTextures.size(); ++i)
-		{
-			vBlendAttach.push_back({});
-			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
-			attachStage.blendEnable = VK_TRUE;
-			attachStage.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-			attachStage.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-			attachStage.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-			attachStage.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-			attachStage.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-			attachStage.colorBlendOp = VK_BLEND_OP_ADD;
-			attachStage.alphaBlendOp = VK_BLEND_OP_ADD;
-		}
-	}
-	else if (MEMaterialType::EDepthPeel == eType)
-	{
-		if (pRenderPass->m_vBackTextures.size() < 4)
-			return;
-
-		vBlendAttach.resize(4);
-
-
-		{//Front
-			vBlendAttach[0].blendEnable = VK_TRUE;
-			vBlendAttach[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-			vBlendAttach[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
-			vBlendAttach[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-			vBlendAttach[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
-			vBlendAttach[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
-			vBlendAttach[0].colorBlendOp = VK_BLEND_OP_ADD;
-			vBlendAttach[0].alphaBlendOp = VK_BLEND_OP_ADD;
-		}
-		{//Back
-			vBlendAttach[1].blendEnable = VK_TRUE;
-			vBlendAttach[1].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-			vBlendAttach[1].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			vBlendAttach[1].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			vBlendAttach[1].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-			vBlendAttach[1].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-			vBlendAttach[1].colorBlendOp = VK_BLEND_OP_ADD;
-			vBlendAttach[1].alphaBlendOp = VK_BLEND_OP_ADD;
-		}
-		{//Front Depth
-			vBlendAttach[2].blendEnable = VK_TRUE;
-			vBlendAttach[2].colorWriteMask = VK_COLOR_COMPONENT_R_BIT;
-			vBlendAttach[2].dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
-			vBlendAttach[2].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-			vBlendAttach[2].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-			vBlendAttach[2].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-			vBlendAttach[2].colorBlendOp = VK_BLEND_OP_MIN;
-			vBlendAttach[2].alphaBlendOp = VK_BLEND_OP_MIN;
-		}
-		{//Back Depth
-			vBlendAttach[3].blendEnable = VK_TRUE;
-			vBlendAttach[3].colorWriteMask = VK_COLOR_COMPONENT_R_BIT;
-			vBlendAttach[3].dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
-			vBlendAttach[3].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-			vBlendAttach[3].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-			vBlendAttach[3].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-			vBlendAttach[3].colorBlendOp = VK_BLEND_OP_MAX;
-			vBlendAttach[3].alphaBlendOp = VK_BLEND_OP_MAX;
-		}
-	}
-	else if (MEMaterialType::ETransparentBlend == eType)
-	{
-		for (uint32_t i = 0; i < pRenderPass->m_vBackTextures.size(); ++i)
-		{
-			vBlendAttach.push_back({});
-			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
-			attachStage.blendEnable = VK_TRUE;
-			attachStage.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-			attachStage.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			attachStage.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-			attachStage.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-			attachStage.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-			attachStage.colorBlendOp = VK_BLEND_OP_ADD;
-			attachStage.alphaBlendOp = VK_BLEND_OP_MAX;
-		}
-	}
-	else if (MEMaterialType::EImGui == eType)
-	{
-		for (uint32_t i = 0; i < pRenderPass->m_vBackTextures.size(); ++i)
-		{
-			vBlendAttach.push_back({});
-			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
-			attachStage.blendEnable = VK_TRUE;
-			attachStage.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-			attachStage.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			attachStage.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-			attachStage.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-			attachStage.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			attachStage.colorBlendOp = VK_BLEND_OP_ADD;
-			attachStage.alphaBlendOp = VK_BLEND_OP_ADD;
-		}
-
-	}
-
-	blendInfo.attachmentCount = vBlendAttach.size();
-	blendInfo.pAttachments = vBlendAttach.data();
-	blendInfo.blendConstants[0] = 0.0f;
-	blendInfo.blendConstants[1] = 0.0f;
-	blendInfo.blendConstants[2] = 0.0f;
-	blendInfo.blendConstants[3] = 0.0f;
-
-}
-
-void GetDepthStencilStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, VkPipelineDepthStencilStateCreateInfo& depthStencilInfo)
-{
-	depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	depthStencilInfo.pNext = NULL;
-	depthStencilInfo.flags = 0;
-	depthStencilInfo.depthTestEnable = VK_TRUE;
-	depthStencilInfo.depthWriteEnable = VK_TRUE;
-	depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-	depthStencilInfo.depthBoundsTestEnable = VK_FALSE;
-	depthStencilInfo.minDepthBounds = 0;
-	depthStencilInfo.maxDepthBounds = 0;
-	depthStencilInfo.stencilTestEnable = VK_FALSE;
-
-	MEMaterialType eType = pMaterial->GetMaterialType();
-
-	if (MEMaterialType::EDefault == eType || MEMaterialType::EDeferred == eType)
-	{
-		depthStencilInfo.depthTestEnable = VK_TRUE;
-		depthStencilInfo.depthWriteEnable = VK_TRUE;
-		depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-		depthStencilInfo.stencilTestEnable = VK_FALSE;
-	}
-	else if (MEMaterialType::EDepthPeel == eType)
-	{
-		depthStencilInfo.depthTestEnable = VK_TRUE;
-		depthStencilInfo.depthWriteEnable = VK_FALSE;
-		depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-		depthStencilInfo.stencilTestEnable = VK_FALSE;
-	}
-	else if (MEMaterialType::ETransparentBlend == eType)
-	{
-		depthStencilInfo.depthTestEnable = VK_FALSE;
-		depthStencilInfo.depthWriteEnable = VK_FALSE;
-		depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-		depthStencilInfo.stencilTestEnable = VK_FALSE;
-	}
-	else if (MEMaterialType::EImGui == eType)
-	{
-		depthStencilInfo = {};
-		depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	}
-}
-
-VkPipeline MVulkanRenderCommand::CreateGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx)
-{
-	if (!pMaterial)
-		return VK_NULL_HANDLE;
-
-	MShader* pVertexShader = pMaterial->GetVertexShader();
-	MShader* pPixelShader = pMaterial->GetPixelShader();
-
-	if (nullptr == pVertexShader || nullptr == pPixelShader)
-		return VK_NULL_HANDLE;
-
-	if (nullptr == pVertexShader->GetBuffer())
-		return VK_NULL_HANDLE;
-	if (nullptr == pPixelShader->GetBuffer())
-		return VK_NULL_HANDLE;
-
-
-	std::vector<VkDynamicState> dynamicStates = {
-	VK_DYNAMIC_STATE_VIEWPORT,
-	VK_DYNAMIC_STATE_SCISSOR,
-	VK_DYNAMIC_STATE_LINE_WIDTH
-	};
-	VkPipelineDynamicStateCreateInfo dynamicState{};
-	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-	dynamicState.dynamicStateCount = dynamicStates.size();
-	dynamicState.pDynamicStates = dynamicStates.data();
-
-
-
-	VkRect2D scissor{};
-	scissor.offset = { 0, 0 };
-	scissor.extent.width = UINT_MAX;	//default
-	scissor.extent.height = UINT_MAX;
-
-	VkViewport viewport{};
-	viewport.x = 0;
-	viewport.y = 0;
-	viewport.width = 512;
-	viewport.height = 512;
-	viewport.minDepth = 0;
-	viewport.maxDepth = 1;
-
-	VkPipelineViewportStateCreateInfo viewportState = {};
-	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-	viewportState.viewportCount = 1;
-	viewportState.pViewports = &viewport;
-	viewportState.scissorCount = 1;
-	viewportState.pScissors = &scissor;
-
-	VkPipelineShaderStageCreateInfo vShaderStageInfo[] = {
-		pVertexShader->GetBuffer()->m_VkShaderStageInfo,
-		pPixelShader->GetBuffer()->m_VkShaderStageInfo,
-	};
-
-	MVertexShaderBuffer* pVertexShaderBuffer = static_cast<MVertexShaderBuffer*>(pVertexShader->GetBuffer());
-
-	VkPipelineVertexInputStateCreateInfo inputStateInfo = {};
-	inputStateInfo = VkPipelineVertexInputStateCreateInfo{};
-	inputStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	inputStateInfo.vertexBindingDescriptionCount = pVertexShaderBuffer->m_vBindingDescs.size();
-	inputStateInfo.pVertexBindingDescriptions = pVertexShaderBuffer->m_vBindingDescs.data();
-	inputStateInfo.vertexAttributeDescriptionCount = pVertexShaderBuffer->m_vAttributeDescs.size();
-	inputStateInfo.pVertexAttributeDescriptions = pVertexShaderBuffer->m_vAttributeDescs.data();
-
-	//Rasterization
-	VkPipelineRasterizationStateCreateInfo rasterizationState = {};
-	rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-	rasterizationState.depthClampEnable = VK_FALSE;
-	rasterizationState.lineWidth = 1.0f;
-	rasterizationState.frontFace = VK_FRONT_FACE_CLOCKWISE;
-	rasterizationState.depthBiasEnable = VK_FALSE;
-	rasterizationState.depthBiasConstantFactor = 0.0f; // Optional
-	rasterizationState.depthBiasClamp = 0.0f; // Optional
-	rasterizationState.depthBiasSlopeFactor = 0.0f; // Optional
-
-	switch (pMaterial->GetRasterizerType())
-	{
-	case MERasterizerType::ECullNone:
-		rasterizationState.cullMode = VK_CULL_MODE_NONE;
-		rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
-		break;
-
-	case MERasterizerType::ECullBack:
-		rasterizationState.cullMode = VK_CULL_MODE_BACK_BIT;		//vulkan inverse
-		rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
-		break;
-
-	case MERasterizerType::ECullFront:
-		rasterizationState.cullMode = VK_CULL_MODE_FRONT_BIT;
-		rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
-		break;
-	case MERasterizerType::EWireframe:
-		rasterizationState.cullMode = VK_CULL_MODE_NONE;
-		rasterizationState.polygonMode = VK_POLYGON_MODE_LINE;
-		break;
-	default:
-		break;
-	}
-
-
-
-	VkPipelineColorBlendStateCreateInfo blendInfo = {};
-	VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
-
-	std::vector<VkPipelineColorBlendAttachmentState> vBlendAttach;
-	GetBlendStage(pMaterial, pRenderPass, vBlendAttach, blendInfo);
-
-	GetDepthStencilStage(pMaterial, pRenderPass, depthStencilInfo);
-
-	VkPipelineLayout pipelineLayout = m_pDevice->m_PipelineManager.FindOrCreatePipelineLayout(pMaterial)->pipelineLayout;
-
-	VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
-	inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-	inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-	inputAssemblyState.primitiveRestartEnable = VK_FALSE;
-
-	VkPipelineMultisampleStateCreateInfo multisampleState = {};
-	multisampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-	multisampleState.sampleShadingEnable = VK_FALSE;
-	multisampleState.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-	multisampleState.minSampleShading = 1.0f; // Optional
-	multisampleState.pSampleMask = nullptr; // Optional
-	multisampleState.alphaToCoverageEnable = VK_FALSE; // Optional
-	multisampleState.alphaToOneEnable = VK_FALSE; // Optional
-
-	VkGraphicsPipelineCreateInfo pipelineInfo{};
-	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	pipelineInfo.stageCount = 2;
-	pipelineInfo.pDynamicState = &dynamicState;
-	pipelineInfo.pStages = vShaderStageInfo;
-	pipelineInfo.pVertexInputState = &inputStateInfo;
-	pipelineInfo.pInputAssemblyState = &inputAssemblyState;
-	pipelineInfo.pViewportState = &viewportState;
-	pipelineInfo.pRasterizationState = &rasterizationState;
-	pipelineInfo.pMultisampleState = &multisampleState;
-	pipelineInfo.pColorBlendState = &blendInfo;
-	pipelineInfo.pDepthStencilState = &depthStencilInfo;
-	pipelineInfo.layout = pipelineLayout;
-	pipelineInfo.renderPass = pRenderPass->m_VkRenderPass;
-	pipelineInfo.subpass = nSubpassIdx;
-	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-
-	VkPipeline graphicsPipeline = VK_NULL_HANDLE;
-	if (vkCreateGraphicsPipelines(m_pDevice->m_VkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
-	{
-		return VK_NULL_HANDLE;
-	}
-
-	return graphicsPipeline;
-}
-
-VkPipeline MVulkanRenderCommand::CreateComputePipeline(std::shared_ptr<MMaterial> pMaterial)
-{
-	MShader* pComputeShader = pMaterial->GetComputeShader();
-
-	if (nullptr == pComputeShader)
-		return VK_NULL_HANDLE;
-
-	if (nullptr == pComputeShader->GetBuffer())
-		return VK_NULL_HANDLE;
-
-	MShaderBuffer* pComputeShaderBuffer = pComputeShader->GetBuffer();
-
-	VkComputePipelineCreateInfo pipelineInfo;
-	pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-	pipelineInfo.pNext = VK_NULL_HANDLE;
-	pipelineInfo.stage = pComputeShaderBuffer->m_VkShaderStageInfo;
-
-	// TODO 
-	// fill pipelineInfo.stage.pSpecializationInfo
-
-
-	VkPipeline computePipeline;
-	if (vkCreateComputePipelines(m_pDevice->m_VkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &computePipeline) != VK_SUCCESS)
-	{
-		return VK_NULL_HANDLE;
-	}
-
-	return computePipeline;
 }
 
 void MVulkanRenderCommand::BindConstantParam(MShaderParamSet* pParamSet, MShaderConstantParam* pParam)

@@ -1306,6 +1306,16 @@ bool MVulkanDevice::UnRegisterMaterial(std::shared_ptr<MMaterial> pMaterial)
 	return m_PipelineManager.UnRegisterMaterial(pMaterial);
 }
 
+bool MVulkanDevice::RegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher)
+{
+	return m_PipelineManager.RegisterComputeDispatcher(pComputeDispatcher);
+}
+
+bool MVulkanDevice::UnRegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher)
+{
+	return m_PipelineManager.UnRegisterComputeDispatcher(pComputeDispatcher);
+}
+
 MIRenderCommand* MVulkanDevice::CreateRenderCommand(const MString& strCommandName)
 {
 	MVulkanPrimaryRenderCommand* pCommand = new MVulkanPrimaryRenderCommand();

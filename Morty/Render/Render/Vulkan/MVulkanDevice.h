@@ -68,6 +68,9 @@ public:
 	virtual bool RegisterMaterial(std::shared_ptr<MMaterial> pMaterial) override;
 	virtual bool UnRegisterMaterial(std::shared_ptr<MMaterial> pMaterial) override;
 
+	virtual bool RegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher) override;
+	virtual bool UnRegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher) override;
+
 	virtual MIRenderCommand* CreateRenderCommand(const MString& strCommandName) override;
 	virtual void RecoveryRenderCommand(MIRenderCommand* pCommand) override;
 

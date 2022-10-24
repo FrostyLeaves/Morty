@@ -49,8 +49,8 @@ void MShadowMapRenderWork::OnCreated()
 
 	m_pShadowStaticMaterial = pResourceSystem->CreateResource<MMaterial>("Shadow Material");
 
-	std::shared_ptr<MResource> pVertexShader = pResourceSystem->LoadResource("./Shader/shadowmap.mvs");
-	std::shared_ptr<MResource> pPixelShader = pResourceSystem->LoadResource("./Shader/shadowmap.mps");
+	std::shared_ptr<MResource> pVertexShader = pResourceSystem->LoadResource("Shader/shadowmap.mvs");
+	std::shared_ptr<MResource> pPixelShader = pResourceSystem->LoadResource("Shader/shadowmap.mps");
 	m_pShadowStaticMaterial->LoadVertexShader(pVertexShader);
 	m_pShadowStaticMaterial->LoadPixelShader(pPixelShader);
 	m_pShadowStaticMaterial->SetRasterizerType(MERasterizerType::ECullFront);

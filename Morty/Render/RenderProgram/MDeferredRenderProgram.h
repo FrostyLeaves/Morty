@@ -44,6 +44,8 @@ public:
 
 	void RenderReady(MTaskNode* pTaskNode);
 
+	void RenderCulling(MTaskNode* pTaskNode);
+
 	void RenderGBuffer(MTaskNode* pTaskNode);
 
 	void RenderLightning(MTaskNode* pTaskNode);

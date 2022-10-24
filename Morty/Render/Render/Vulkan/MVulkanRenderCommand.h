@@ -40,7 +40,7 @@ public:
 	virtual bool SetUseMaterial(std::shared_ptr<MMaterial> pMaterial) override;
 	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) override;
 
-	virtual bool DispatchComputeJob(std::shared_ptr<MMaterial> pMaterial) override;
+	virtual bool DispatchComputeJob(std::shared_ptr<MComputeDispatcher> pMaterial) override;
 
 	virtual bool SetRenderToTextureBarrier(const std::vector<MTexture*> vTextures) override;
 	virtual bool DownloadTexture(MTexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback) override;
@@ -54,8 +54,6 @@ public:
 	void UpdateShaderParam(MShaderParamSet* pParamSet, MShaderConstantParam* param);
 	void UpdateShaderParam(MShaderParamSet* pParamSet, MShaderTextureParam* param);
 
-	VkPipeline CreateGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx);
-	VkPipeline CreateComputePipeline(std::shared_ptr<MMaterial> pMaterial);
 
 	void BindConstantParam(MShaderParamSet* pParamSet, MShaderConstantParam* pParam);
 	void BindTextureParam(MShaderParamSet* pParamSet, MShaderTextureParam* pParam);

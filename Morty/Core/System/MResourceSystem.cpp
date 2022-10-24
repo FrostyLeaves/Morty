@@ -68,12 +68,6 @@ MString MResourceSystem::GetFullPath(const MString& strRelativePath)
 
 std::shared_ptr<MResource> MResourceSystem::LoadResource(const MString& strResourcePath, const MType* type/* = nullptr*/)
 {
-	if (strResourcePath == "Default_White")
-	{
-		int a = 0;
-		++a;
-	}
-
 	if (strResourcePath.empty())
 		return nullptr;
 

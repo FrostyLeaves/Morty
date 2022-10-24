@@ -30,16 +30,19 @@ public:
 	
 public:
 
-	MShader* GetComputeShader() { return m_shaderGroup.GetComputeShader(); }
-
 	bool LoadComputeShader(std::shared_ptr<MResource> pResource);
 	bool LoadComputeShader(const MString& strResource);
 
 public:
 
 	std::shared_ptr<MResource> GetComputeShaderResource() { return m_shaderGroup.GetComputeShaderResource(); }
+	std::array<MShaderParamSet, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParamSets() { return m_shaderGroup.GetShaderParamSets(); }
+	MShader* GetComputeShader();
 
 	MShaderMacro& GetShaderMacro() { return m_shaderGroup.GetShaderMacro(); }
+
+	void SetDispatcherID(const uint32_t& nID) { m_unDispatcherID = nID; }
+	uint32_t GetDispatcherID() const { return m_unDispatcherID; }
 
 public:
 
@@ -50,6 +53,21 @@ public:
 private:
 
 	MShaderGroup m_shaderGroup;
+
+	uint32_t m_unDispatcherID;
+
+public:
+
+
+	void GeneratePipeline();
+	void DestroyPipeline();
+
+
+#if RENDER_GRAPHICS == MORTY_VULKAN
+
+	VkPipeline m_VkPipeline;
+
+#endif
 };
 
 #endif

@@ -43,13 +43,24 @@ bool MComputeDispatcher::LoadComputeShader(const MString& strResource)
 	return false;
 }
 
+MShader* MComputeDispatcher::GetComputeShader()
+{
+	return m_shaderGroup.GetComputeShader();
+}
+
 void MComputeDispatcher::OnCreated()
 {
 	Super::OnCreated();
+
+	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+	pRenderSystem->GetDevice()->RegisterComputeDispatcher(this);
 }
 
 void MComputeDispatcher::OnDelete()
 {
+	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+	pRenderSystem->GetDevice()->UnRegisterComputeDispatcher(this);
+
 	m_shaderGroup.ClearShader(GetEngine());
 		
 	Super::OnDelete();

@@ -72,6 +72,10 @@ void MDeferredRenderProgram::RenderReady(MTaskNode* pTaskNode)
 	m_renderInfo.pPrimaryRenderCommand = m_pPrimaryCommand;
 	m_renderInfo.pCameraEntity = pViewport->GetCamera();
 
+
+	//Culling
+
+
 	//Update RenderInfo
 	CollectRenderMesh(m_renderInfo);
 
@@ -107,6 +111,14 @@ void MDeferredRenderProgram::RenderReady(MTaskNode* pTaskNode)
 			m_pTransparentWork->SetRenderTarget(GetOutputTexture(), m_gbufferRenderPass.GetDepthTexture());
 		}
 	}
+}
+
+void MDeferredRenderProgram::RenderCulling(MTaskNode* pTaskNode)
+{
+	MEngine* pEngine = GetEngine();
+	MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
+	MIDevice* pRenderDevice = pRenderSystem->GetDevice();
+	MViewport* pViewport = GetViewport();
 }
 
 void MDeferredRenderProgram::RenderGBuffer(MTaskNode* pTaskNode)
@@ -452,7 +464,7 @@ void MDeferredRenderProgram::InitializeFrameShaderParams()
 
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-	std::shared_ptr<MResource> pBrdfTexture = pResourceSystem->LoadResource("/Texture/ibl_brdf_lut.png");
+	std::shared_ptr<MResource> pBrdfTexture = pResourceSystem->LoadResource("Texture/ibl_brdf_lut.png");
 
 	if (std::shared_ptr<MTextureResource> pTexture = MTypeClass::DynamicCast<MTextureResource>(pBrdfTexture))
 	{
@@ -470,8 +482,8 @@ void MDeferredRenderProgram::InitializeMaterial()
 {
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-	std::shared_ptr<MResource> vs = pResourceSystem->LoadResource("./Shader/post_process_basic.mvs");
-	std::shared_ptr<MResource> ps = pResourceSystem->LoadResource("./Shader/model_deferred.mps");
+	std::shared_ptr<MResource> vs = pResourceSystem->LoadResource("Shader/post_process_basic.mvs");
+	std::shared_ptr<MResource> ps = pResourceSystem->LoadResource("Shader/model_deferred.mps");
 
 
 	m_pLightningMaterial = pResourceSystem->CreateResource<MMaterialResource>();
@@ -487,8 +499,8 @@ void MDeferredRenderProgram::InitializeMaterial()
 	}
 
 
-	std::shared_ptr<MResource> skyboxVS = pResourceSystem->LoadResource("./Shader/skybox.mvs");
-	std::shared_ptr<MResource> skyboxPS = pResourceSystem->LoadResource("./Shader/skybox.mps");
+	std::shared_ptr<MResource> skyboxVS = pResourceSystem->LoadResource("Shader/skybox.mvs");
+	std::shared_ptr<MResource> skyboxPS = pResourceSystem->LoadResource("Shader/skybox.mps");
 	m_pSkyBoxMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pSkyBoxMaterial->SetRasterizerType(MERasterizerType::ECullNone);
 	m_pSkyBoxMaterial->LoadVertexShader(skyboxVS);

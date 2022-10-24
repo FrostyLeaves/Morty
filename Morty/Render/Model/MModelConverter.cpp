@@ -659,8 +659,8 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 	std::shared_ptr<MMaterial> pMaterial = nullptr;
 	if (eMaterialType == MModelConvertMaterialType::E_PBR_Deferred)
 	{
-		std::shared_ptr<MResource> pMeshVSResource = pResourceSystem->LoadResource("./Shader/model_gbuffer.mvs");
-		std::shared_ptr<MResource> pMeshPSResource = pResourceSystem->LoadResource("./Shader/model_gbuffer.mps");
+		std::shared_ptr<MResource> pMeshVSResource = pResourceSystem->LoadResource("Shader/model_gbuffer.mvs");
+		std::shared_ptr<MResource> pMeshPSResource = pResourceSystem->LoadResource("Shader/model_gbuffer.mps");
 
 		if (m_pSkeleton)
 		{
@@ -689,8 +689,8 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 	}
 	else
 	{
-		std::shared_ptr<MResource> pMeshVSResource = pResourceSystem->LoadResource("./Shader/model.mvs");
-		std::shared_ptr<MResource> pMeshPSResource = pResourceSystem->LoadResource("./Shader/model.mps");
+		std::shared_ptr<MResource> pMeshVSResource = pResourceSystem->LoadResource("Shader/model.mvs");
+		std::shared_ptr<MResource> pMeshPSResource = pResourceSystem->LoadResource("Shader/model.mps");
 
 		if (m_pSkeleton)
 		{

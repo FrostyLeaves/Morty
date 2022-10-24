@@ -25,6 +25,7 @@ class MIRenderTarget;
 class MTextureRenderTarget;
 struct MShaderConstantParam;
 class MMaterial;
+class MComputeDispatcher;
 class MIRenderCommand;
 
 class MORTY_API MIDevice
@@ -67,6 +68,9 @@ public:
 
 	virtual bool RegisterMaterial(std::shared_ptr<MMaterial> pMaterial) { return true; };
 	virtual bool UnRegisterMaterial(std::shared_ptr<MMaterial> pMaterial) { return true; };
+
+	virtual bool RegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher) { return true; };
+	virtual bool UnRegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher) { return true; };
 
 	virtual MIRenderCommand* CreateRenderCommand(const MString& strCommandName) = 0;
 	virtual void RecoveryRenderCommand(MIRenderCommand* pCommand) = 0;

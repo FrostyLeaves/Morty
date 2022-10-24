@@ -17,6 +17,7 @@ class MTexture;
 class MMaterial;
 class MRenderPass;
 class MShaderParamSet;
+class MComputeDispatcher;
 class MMaterialPipelineLayoutData;
 
 
@@ -76,7 +77,7 @@ public:
 	virtual bool SetUseMaterial(std::shared_ptr<MMaterial> pMaterial) = 0;
 	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) = 0;
 
-	virtual bool DispatchComputeJob(std::shared_ptr<MMaterial> pMaterial) = 0;
+	virtual bool DispatchComputeJob(std::shared_ptr<MComputeDispatcher> pMaterial) = 0;
 
 	virtual bool SetRenderToTextureBarrier(const std::vector<MTexture*> vTextures) = 0;
 	virtual bool DownloadTexture(MTexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback) = 0;

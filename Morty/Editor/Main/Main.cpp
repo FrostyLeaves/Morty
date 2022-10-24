@@ -64,8 +64,8 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 
 	std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
-	pMaterial->LoadVertexShader("./Shader/model_gbuffer.mvs");
-	pMaterial->LoadPixelShader("./Shader/model_gbuffer.mps");
+	pMaterial->LoadVertexShader("Shader/model_gbuffer.mvs");
+	pMaterial->LoadPixelShader("Shader/model_gbuffer.mps");
 	pMaterial->SetMaterialType(MEMaterialType::EDeferred);
 
 	std::shared_ptr<MResource> albedo = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
@@ -97,8 +97,8 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 	{
 		std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
-		pMaterial->LoadVertexShader("./Shader/model_gbuffer.mvs");
-		pMaterial->LoadPixelShader("./Shader/model_gbuffer.mps");
+		pMaterial->LoadVertexShader("Shader/model_gbuffer.mvs");
+		pMaterial->LoadPixelShader("Shader/model_gbuffer.mps");
 		pMaterial->SetMaterialType(MEMaterialType::EDeferred);
 
 		std::shared_ptr<MResource> albedo = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
@@ -211,8 +211,8 @@ void SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 		std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
 
-		pMaterial->LoadVertexShader("./Shader/model.mvs");
-		pMaterial->LoadPixelShader("./Shader/model.mps");
+		pMaterial->LoadVertexShader("Shader/model.mvs");
+		pMaterial->LoadPixelShader("Shader/model.mps");
 
 		pMaterial->GetMaterialParamSet()->SetValue("f3Ambient", Vector3(1.0f, 1.0f, 1.0f));
 		pMaterial->GetMaterialParamSet()->SetValue("f3Diffuse", Vector3(1.0f, 1.0f, 1.0f));
@@ -278,16 +278,16 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 	{
 		std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
-		pMaterial->LoadVertexShader("./Shader/model_gbuffer.mvs");
-		pMaterial->LoadPixelShader("./Shader/model_gbuffer.mps");
+		pMaterial->LoadVertexShader("Shader/model_gbuffer.mvs");
+		pMaterial->LoadPixelShader("Shader/model_gbuffer.mps");
 		pMaterial->SetMaterialType(MEMaterialType::EDeferred);
 
 #if true
-		std::shared_ptr<MResource> albedo = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_albedo.png");
-		std::shared_ptr<MResource> normal = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_normal.png");
-		std::shared_ptr<MResource> roughness = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_roughness.png");
-		std::shared_ptr<MResource> ao = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_ao.png");
-		std::shared_ptr<MResource> height = pResourceSystem->LoadResource("./Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_height.png");
+		std::shared_ptr<MResource> albedo = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_albedo.png");
+		std::shared_ptr<MResource> normal = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_normal.png");
+		std::shared_ptr<MResource> roughness = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_roughness.png");
+		std::shared_ptr<MResource> ao = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_ao.png");
+		std::shared_ptr<MResource> height = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_height.png");
 		std::shared_ptr<MResource> metal = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
 #else
 		std::shared_ptr<MResource> albedo = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
@@ -385,15 +385,15 @@ void ANIMATION_MODEL(MEngine* pEngine, MScene* pScene)
 void ADD_POINT_LIGHT(MEngine* pEngine, MScene* pScene)
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
-	std::shared_ptr<MResource> pIconTexture = pResourceSystem->LoadResource("./Texture/Icon/point_light.png");
+	std::shared_ptr<MResource> pIconTexture = pResourceSystem->LoadResource("Texture/Icon/point_light.png");
 
 	std::shared_ptr<MMeshResource> pPanelMesh = pResourceSystem->CreateResource<MMeshResource>();
 	pPanelMesh->LoadAsPlane(MMeshResource::MEMeshVertexType::Normal, Vector3(10.0f, 10.0f, 1.0f));
 
 	std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
-	pMaterial->LoadVertexShader("./Shader/debug_model.mvs");
-	pMaterial->LoadPixelShader("./Shader/debug_model.mps");
+	pMaterial->LoadVertexShader("Shader/debug_model.mvs");
+	pMaterial->LoadPixelShader("Shader/debug_model.mps");
 
 	pMaterial->SetTexutre("U_mat_texDiffuse", pIconTexture);
 
@@ -445,7 +445,7 @@ int main()
 		});
 
 
-	auto&& pResource = engine.FindSystem<MResourceSystem>()->LoadResource("D://cull.mcs");
+	auto&& pResource = engine.FindSystem<MResourceSystem>()->LoadResource("Shader/cull.mcs");
 
 	auto&& pShaderResource = std::dynamic_pointer_cast<MShaderResource>(pResource);
 
