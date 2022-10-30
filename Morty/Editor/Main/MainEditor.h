@@ -12,7 +12,6 @@ class MNode;
 class MScene;
 class MViewport;
 class ImGuiRenderable;
-class MStaticMeshInstance;
 class IBaseView;
 class NodeTreeView;
 class PropertyView;

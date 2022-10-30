@@ -26,6 +26,7 @@
 class MViewport;
 class MMaterial;
 class MIRenderCommand;
+class MComputeDispatcher;
 class MShadowMapRenderWork;
 class MTransparentRenderWork;
 class MEnvironmentMapRenderWork;
@@ -81,6 +82,9 @@ public:
 	void InitializeMesh();
 	void ReleaseMesh();
 
+	void InitializeCullingComputeDispatcher();
+	void ReleaseCullingComputeDispatcher();
+
 protected:
 
 	void DrawStaticMesh(MRenderInfo& info, MIRenderCommand* pCommand, std::map<std::shared_ptr<MMaterial>, std::vector<MRenderableMeshComponent*>>& tMaterialGroup);
@@ -101,6 +105,8 @@ protected:
 	MRenderPass m_gbufferRenderPass;
 	MRenderPass m_lightningRenderPass;
 	MRenderPass m_debugRenderPass;
+
+	MComputeDispatcher* m_pCullingComputeDispatcher;
 
 	MTexture* m_pFinalOutputTexture;
 

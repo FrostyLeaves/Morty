@@ -21,7 +21,7 @@ class MShaderParamSet;
 class MComputeDispatcher;
 struct MShaderTextureParam;
 struct MShaderConstantParam;
-
+struct MShaderStorageParam;
 
 struct MRenderPassPipelines
 {
@@ -59,7 +59,7 @@ public:
 public:
 
     VkPipeline FindOrCreateGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx);
-    VkPipeline FindOrCreateComputePipeline(std::shared_ptr<MComputeDispatcher> pComputeDispatcher);
+    VkPipeline FindOrCreateComputePipeline(MComputeDispatcher* pComputeDispatcher);
 
 	MMaterialPipelineLayoutData* FindOrCreatePipelineLayout(std::shared_ptr<MMaterial> pMaterial);
 	MMaterialPipelineLayoutData* FindPipelineLayout(const uint32_t& nMaterialIdx);
@@ -80,11 +80,13 @@ public:
 
     void BindTextureParam(MShaderParamSet* pParamSet, MShaderTextureParam* pParam);
 
+    void BindStorageParam(MShaderParamSet* pParamSEt, MShaderStorageParam* pParam);
+
     MMaterialPipelineLayoutData* CreateMaterialPipelineLayout(std::shared_ptr<MMaterial> pMaterial);
     void DestroyMaterialPipelineLayout(MMaterialPipelineLayoutData* pLayoutData);
 
     VkPipeline CreateGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx);
-    VkPipeline CreateComputePipeline(std::shared_ptr<MComputeDispatcher> pComputeDispatcher);
+    VkPipeline CreateComputePipeline(MComputeDispatcher* pComputeDispatcher);
 
     void GenerateShaderParamSet(MShaderParamSet* pParamSet);
     void DestroyShaderParamSet(MShaderParamSet* pParamSet);

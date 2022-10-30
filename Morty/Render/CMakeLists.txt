@@ -38,6 +38,9 @@ source_group("RenderProgram" FILES ${RENDER_RENDER_PROGRAM_FILES})
 file(GLOB RENDER_RESOURCE_FILES Resource/*.h Resource/*.cpp)
 source_group("Resource" FILES ${RENDER_RESOURCE_FILES})
 
+file(GLOB RENDER_SUBSYSTEM_FILES SubSystem/*.h SubSystem/*.cpp)
+source_group("SubSystem" FILES ${RENDER_SUBSYSTEM_FILES})
+
 file(GLOB RENDER_SYSTEM_FILES System/*.h System/*.cpp)
 source_group("System" FILES ${RENDER_SYSTEM_FILES})
 
@@ -80,6 +83,7 @@ add_library(Render STATIC
     ${RENDER_MATERIAL_FILES}
     ${RENDER_MODEL_FILES}
     ${RENDER_RESOURCE_FILES}
+    ${RENDER_SUBSYSTEM_FILES}
     ${RENDER_SYSTEM_FILES}
     ${RENDER_VIEW_FILES}
 
@@ -93,17 +97,6 @@ add_library(Render STATIC
 ############################################################
 set(RENDER_CODE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}
         ${RENDER_CODE_DIRECTORIES}
-        #${CMAKE_CURRENT_SOURCE_DIR}/Basic
-        #${CMAKE_CURRENT_SOURCE_DIR}/Component
-        #${CMAKE_CURRENT_SOURCE_DIR}/Material
-        #${CMAKE_CURRENT_SOURCE_DIR}/Model
-        #${CMAKE_CURRENT_SOURCE_DIR}/Render
-        #${CMAKE_CURRENT_SOURCE_DIR}/Render/Vulkan
-        #${CMAKE_CURRENT_SOURCE_DIR}/RenderGraph
-        #${CMAKE_CURRENT_SOURCE_DIR}/RenderProgram
-        #${CMAKE_CURRENT_SOURCE_DIR}/Resource
-        #${CMAKE_CURRENT_SOURCE_DIR}/System
-        #${CMAKE_CURRENT_SOURCE_DIR}/View
 )
 
 set( RENDER_CODE_DIRECTORIES

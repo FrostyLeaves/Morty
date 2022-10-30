@@ -78,6 +78,9 @@ public:
 	void SetGenerateDirLightShadow(const bool& bGenerate) { m_bGenerateDirLightShadow = bGenerate; }
 	bool GetGenerateDirLightShadow() const { return m_bGenerateDirLightShadow; }
 
+	void SetBatchInstanceEnable(const bool& bBatch);
+	bool GetBatchInstanceEnable() const { return m_bBatchInstanceEnable; }
+
 	MModelComponent* GetAttachedModelComponent();
 
 public:
@@ -119,6 +122,7 @@ protected:
 
 	bool m_bDrawBoundingSphere;
 	bool m_bGenerateDirLightShadow;
+	bool m_bBatchInstanceEnable;
 	bool m_bModelInstanceFound;
 	bool m_bTransformParamDirty;
 	bool m_bBoundsAABBDirty;

@@ -11,8 +11,9 @@
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
 
-#include "Scene/MEntity.h"
 #include "Math/Matrix.h"
+#include "Scene/MEntity.h"
+#include "Scene/MSubSystem.h"
 #include "Engine/MEngine.h"
 #include "Component/MComponent.h"
 
@@ -20,7 +21,6 @@
 #include <functional>
 
 class MResource;
-
 class MORTY_API MScene : public MObject
 {
 public:
@@ -42,6 +42,11 @@ public:
 
 public:
 
+	template<typename TYPE>
+	TYPE* AddComponent(MEntity* entity);
+	MComponent* AddComponent(MEntity* entity, const MType* pComponentType);
+	void RemoveComponent(MEntity* entity, const MType* pComponentType);
+
 	template <class TYPE>
 	MComponentGroup<TYPE>* FindComponents();
 	MIComponentGroup* FindComponents(const MType* pComponentType);
@@ -54,16 +59,19 @@ public:
 
 public:
 
+	template <class TYPE>
+	TYPE* RegisterSubSystem();
+
+protected:
+
+	void RegisterSubSystem(const MType* pSubSystemType, MISubSystem* pSubSystem);
+
+public:
+
 	virtual void Tick(const float& fDelta);
 
 	virtual void OnCreated() override;
 	virtual void OnDelete() override;
-
-	template<typename TYPE>
-	TYPE* AddComponent(MEntity* entity);
-	MComponent* AddComponent(MEntity* entity, const MType* pComponentType);
-	void RemoveComponent(MEntity* entity, const MType* pComponentType);
-
 
 protected:
 
@@ -75,6 +83,7 @@ private:
 
 	std::map<MGuid, MEntity*> m_vEntity;
 	std::map<const MType*, MIComponentGroup*> m_tComponents;
+	std::map<const MType*, MISubSystem*> m_tSubSystems;
 };
 
 template<typename TYPE>
@@ -99,6 +108,20 @@ MComponentGroup<TYPE>* MScene::FindComponents()
 	}
 
 	return static_cast<MComponentGroup<TYPE>*>(pResult);
+}
+
+template<class TYPE>
+inline TYPE* MScene::RegisterSubSystem()
+{
+	auto findResult = m_tSubSystems.find(TYPE::GetClassType());
+	if (findResult != m_tSubSystems.end())
+	{
+		return findResult->second;
+	}
+
+	TYPE* pSubSystem = new TYPE();
+	RegisterSubSystem(TYPE::GetClassType(), pSubSystem);
+	return pSubSystem;
 }
 
 template<typename TYPE>

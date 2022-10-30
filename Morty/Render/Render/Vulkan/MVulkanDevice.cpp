@@ -520,10 +520,10 @@ bool MVulkanDevice::InitDescriptorPool()
 	return true;
 }
 
-void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer)
+void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer, const std::vector<MByte>& initialData)
 {
 
-	VkDeviceSize unBufferSize = static_cast<uint64_t>(pBuffer->m_data.size());
+	VkDeviceSize unBufferSize = static_cast<uint64_t>(pBuffer->GetSize());
 
 	void* pMapMemory = nullptr;
 	VkBuffer vkBuffer;
@@ -531,13 +531,21 @@ void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer)
 
 	VkBufferUsageFlags vkBufferUsageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
-	if (MBuffer::MUsageType::EVertex == pBuffer->m_eUsageType)
+	if (MBuffer::MUsageType::EVertex & pBuffer->m_eUsageType)
 	{
 		vkBufferUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 	}
-	else if (MBuffer::MUsageType::EIndex == pBuffer->m_eUsageType)
+	else if (MBuffer::MUsageType::EIndex & pBuffer->m_eUsageType)
 	{
 		vkBufferUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+	}
+	else if (MBuffer::MUsageType::EStorage & pBuffer->m_eUsageType)
+	{
+		vkBufferUsageFlags |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+	}
+	else if (MBuffer::MUsageType::EUniform & pBuffer->m_eUsageType)
+	{
+		vkBufferUsageFlags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 	}
 	else
 	{
@@ -547,25 +555,32 @@ void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer)
 	if (MBuffer::MMemoryType::EHostVisible == pBuffer->m_eMemoryType)
 	{
 		GenerateBuffer(unBufferSize, vkBufferUsageFlags, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vkBuffer, vkDeviceMemory);
-		vkMapMemory(m_VkDevice, vkDeviceMemory, 0, unBufferSize, 0, &pMapMemory);
-		memcpy(pMapMemory, pBuffer->GetData(), static_cast<size_t>(unBufferSize));
-		vkUnmapMemory(m_VkDevice, vkDeviceMemory);
+
+		if (initialData.size() >= unBufferSize)
+		{
+			vkMapMemory(m_VkDevice, vkDeviceMemory, 0, unBufferSize, 0, &pMapMemory);
+			memcpy(pMapMemory, initialData.data(), static_cast<size_t>(unBufferSize));
+			vkUnmapMemory(m_VkDevice, vkDeviceMemory);
+		}
 	}
 	else if (MBuffer::MMemoryType::EDeviceLocal == pBuffer->m_eMemoryType)
 	{
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		GenerateBuffer(unBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-		vkMapMemory(m_VkDevice, stagingBufferMemory, 0, unBufferSize, 0, &pMapMemory);
-		memcpy(pMapMemory, pBuffer->GetData(), (size_t)unBufferSize);
-		vkUnmapMemory(m_VkDevice, stagingBufferMemory);
-
 		GenerateBuffer(unBufferSize, vkBufferUsageFlags, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vkBuffer, vkDeviceMemory);
 
-		CopyBuffer(stagingBuffer, vkBuffer, unBufferSize);
+		if (initialData.size() >= unBufferSize)
+		{
+			VkBuffer stagingBuffer;
+			VkDeviceMemory stagingBufferMemory;
+			GenerateBuffer(unBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
-		DestroyBuffer(stagingBuffer, stagingBufferMemory);
+			vkMapMemory(m_VkDevice, stagingBufferMemory, 0, unBufferSize, 0, &pMapMemory);
+			memcpy(pMapMemory, initialData.data(), (size_t)unBufferSize);
+			vkUnmapMemory(m_VkDevice, stagingBufferMemory);
+
+			CopyBuffer(stagingBuffer, vkBuffer, unBufferSize);
+
+			DestroyBuffer(stagingBuffer, stagingBufferMemory);
+		}
 	}
 
 	SetDebugName(reinterpret_cast<uint64_t>(vkBuffer), VkObjectType::VK_OBJECT_TYPE_BUFFER, pBuffer->m_strDebugBufferName.c_str());
@@ -588,7 +603,7 @@ void MVulkanDevice::DestroyBuffer(MBuffer* pBuffer)
 	pBuffer->m_eStageType = MBuffer::MStageType::EUnknow;
 }
 
-void MVulkanDevice::UploadBuffer(MBuffer* pBuffer)
+void MVulkanDevice::UploadBuffer(MBuffer* pBuffer, const std::vector<MByte>& data)
 {
 	if(!pBuffer)
 	{
@@ -597,12 +612,15 @@ void MVulkanDevice::UploadBuffer(MBuffer* pBuffer)
 
 	if (MBuffer::MMemoryType::EHostVisible == pBuffer->m_eMemoryType)
 	{
-		void* data = nullptr;
-		vkMapMemory(m_VkDevice, pBuffer->m_VkDeviceMemory, 0, pBuffer->GetSize(), 0, &data);
-		memcpy(data, pBuffer->GetData(), pBuffer->GetSize());
-		vkUnmapMemory(m_VkDevice, pBuffer->m_VkDeviceMemory);
+		if (data.size() >= pBuffer->GetSize())
+		{
+			void* dataMapping = nullptr;
+			vkMapMemory(m_VkDevice, pBuffer->m_VkDeviceMemory, 0, pBuffer->GetSize(), 0, &dataMapping);
+			memcpy(dataMapping, data.data(), pBuffer->GetSize());
+			vkUnmapMemory(m_VkDevice, pBuffer->m_VkDeviceMemory);
 
-		pBuffer->m_eStageType = MBuffer::MStageType::ESynced;
+			pBuffer->m_eStageType = MBuffer::MStageType::ESynced;
+		}
 	}
 }
 

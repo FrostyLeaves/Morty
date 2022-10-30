@@ -1,5 +1,7 @@
 ﻿#include "Render/Vulkan/MVulkanPipelineManager.h"
 
+#include "Render/MBuffer.h"
+
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 #include "Engine/MEngine.h"
@@ -107,7 +109,7 @@ VkPipeline MVulkanPipelineManager::FindOrCreateGraphicsPipeline(std::shared_ptr<
 	return pPipelines->vSubpassPipeline[unSubpassIdx];
 }
 
-VkPipeline MVulkanPipelineManager::FindOrCreateComputePipeline(std::shared_ptr<MComputeDispatcher> pComputeDispatcher)
+VkPipeline MVulkanPipelineManager::FindOrCreateComputePipeline(MComputeDispatcher* pComputeDispatcher)
 {
 	uint32_t unDispatcherID = pComputeDispatcher->GetDispatcherID();
 
@@ -355,8 +357,33 @@ void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShade
 	}
 }
 
+void MVulkanPipelineManager::BindStorageParam(MShaderParamSet* pParamSet, MShaderStorageParam* pParam)
+{
+	const MBuffer* pBuffer = pParam->pBuffer;
+
+	VkDescriptorBufferInfo bufferInfo{};
+	bufferInfo.buffer = pBuffer->m_VkBuffer;
+	bufferInfo.offset = 0;
+	bufferInfo.range = pBuffer->GetSize();
+
+	VkWriteDescriptorSet descriptorWrite{};
+	descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorWrite.dstSet = pParamSet->m_VkDescriptorSet;
+	descriptorWrite.dstBinding = pParam->unBinding;
+	descriptorWrite.dstArrayElement = 0;
+
+	descriptorWrite.descriptorType = pParam->m_VkDescriptorType;
+	descriptorWrite.descriptorCount = 1;
+
+	descriptorWrite.pBufferInfo = &bufferInfo;
+	descriptorWrite.pImageInfo = nullptr; // Optional
+	descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+}
+
 MMaterialPipelineLayoutData* MVulkanPipelineManager::CreateMaterialPipelineLayout(std::shared_ptr<MMaterial> pMaterial)
 {
+	std::vector<VkDescriptorSetLayout> vSetLayouts;
 	std::vector<VkDescriptorSetLayoutBinding> vParamBinding[MRenderGlobal::SHADER_PARAM_SET_NUM];
 	
 	for (uint32_t unSetIdx = 0; unSetIdx < MRenderGlobal::SHADER_PARAM_SET_NUM; ++unSetIdx)
@@ -405,20 +432,23 @@ MMaterialPipelineLayoutData* MVulkanPipelineManager::CreateMaterialPipelineLayou
 
 			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
 		}
-	}
 
-	std::vector<VkDescriptorSetLayout> vSetLayouts;
-	std::unordered_map<uint32_t, uint32_t> vParamLayoutsSet;
+		for (MShaderStorageParam* param : paramSets.m_vStorages)
+		{
+			VkDescriptorSetLayoutBinding uboLayoutBinding{};
+			uboLayoutBinding.binding = param->unBinding;
+			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
+			uboLayoutBinding.descriptorCount = 1;
+			uboLayoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 
-	for (uint32_t i = 0; i < MRenderGlobal::SHADER_PARAM_SET_NUM; ++i)
-	{
+			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
+		}
+
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		
-		layoutInfo.bindingCount = vParamBinding[i].size();
-		layoutInfo.pBindings = vParamBinding[i].data();
-
-//		layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
+		layoutInfo.bindingCount = vParamBinding[unSetIdx].size();
+		layoutInfo.pBindings = vParamBinding[unSetIdx].data();
 
 		vSetLayouts.push_back(VkDescriptorSetLayout());
 
@@ -784,7 +814,7 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(std::shared_ptr<MMater
 	return graphicsPipeline;
 }
 
-VkPipeline MVulkanPipelineManager::CreateComputePipeline(std::shared_ptr<MComputeDispatcher> pComputeDispatcher)
+VkPipeline MVulkanPipelineManager::CreateComputePipeline(MComputeDispatcher* pComputeDispatcher)
 {
 	MShader* pComputeShader = pComputeDispatcher->GetComputeShader();
 

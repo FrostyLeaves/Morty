@@ -18,8 +18,7 @@ const MBuffer& MBuffer::operator=(const MBuffer& other)
 #if _DEBUG
 	m_strDebugBufferName = other.m_strDebugBufferName;
 #endif
-
-	m_data = other.m_data;
+	
 	m_eMemoryType = other.m_eMemoryType;
 	m_eUsageType = other.m_eUsageType;
 
@@ -30,18 +29,18 @@ const MBuffer& MBuffer::operator=(const MBuffer& other)
 
 void MBuffer::ReallocMemory(const size_t& unNewSize)
 {
-	m_data.resize(unNewSize);
+	m_unDataSize = unNewSize;
 	m_eStageType = MBuffer::MStageType::EWaitAllow;
 }
 
-void MBuffer::GenerateBuffer(MIDevice* pDevice)
+void MBuffer::GenerateBuffer(MIDevice* pDevice, const std::vector<MByte>& initialData)
 {
-	pDevice->GenerateBuffer(this);
+	pDevice->GenerateBuffer(this, initialData);
 }
 
-void MBuffer::UploadBuffer(MIDevice* pDevice)
+void MBuffer::UploadBuffer(MIDevice* pDevice, const std::vector<MByte>& data)
 {
-	pDevice->UploadBuffer(this);
+	pDevice->UploadBuffer(this, data);
 }
 
 void MBuffer::DestroyBuffer(MIDevice* pDevice)

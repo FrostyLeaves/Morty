@@ -9,10 +9,11 @@
 #ifndef _M_MVULKAN_BUFFERPOOL_H_
 #define _M_MVULKAN_BUFFERPOOL_H_
 #include "Utility/MGlobal.h"
+#include "Utility/MMemoryPool.h"
+#include "Render/MBuffer.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 #include "Render/Vulkan/MVulkanWrapper.h"
-#include "MMemoryPool.h"
 #include "Utility/MIDPool.h"
 #include <vector>
 #include <map>
@@ -51,8 +52,6 @@ protected:
 
 	bool AllowDynamicUniformBufferMemory(MShaderConstantParam* pParam);
 
-    bool AllowDynamicStorageBufferMemory(MShaderConstantParam* pParam);
-
 	void FreeUniformBufferMemory(MShaderConstantParam* pParam);
 
 	void FreeDynamicUniformBufferMemory(MShaderConstantParam* pParam);
@@ -69,7 +68,6 @@ private:
 	VkBuffer m_VkDynamicUniformBuffer;
 	VkDeviceMemory m_VkDynamicUniformMemory;
 	MByte* m_pDynamicUniformMemoryMapping;
-
 
     uint32_t m_unReadBackBufferMemorySize;
     MMemoryPool m_ReadBackMemoryPool;

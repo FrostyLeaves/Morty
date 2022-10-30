@@ -32,10 +32,12 @@ public:
 	virtual void GenerateBuffer(MIDevice* pDevice);
 	virtual void UploadBuffer(MIDevice* pDevice);
 	virtual void DestroyBuffer(MIDevice* pDevice);
-	void* GetVertices() { return m_vertexBuffer.GetData(); }
-	const void* GetVertices() const { return m_vertexBuffer.GetData(); }
-	virtual const uint32_t* GetIndices() const { return reinterpret_cast<const uint32_t*>(m_indexBuffer.GetData()); }
-	virtual uint32_t* GetIndices() { return reinterpret_cast<uint32_t*>(m_indexBuffer.GetData()); }
+	void* GetVertices() { return m_vVertexData.data(); }
+	const void* GetVertices() const { return m_vVertexData.data(); }
+	const std::vector<MByte>& GetVerticesVector() const { return m_vVertexData; }
+	const std::vector<MByte>& GetIndicesVector() const { return m_vIndexData; }
+	virtual const uint32_t* GetIndices() const { return reinterpret_cast<const uint32_t*>(m_vIndexData.data()); }
+	virtual uint32_t* GetIndices() { return reinterpret_cast<uint32_t*>(m_vIndexData.data()); }
 
 	virtual uint32_t GetVertexStructSize() const = 0;
 
@@ -64,6 +66,9 @@ public:
 protected:
 	MBuffer m_vertexBuffer;
 	MBuffer m_indexBuffer;
+
+	std::vector<MByte> m_vVertexData;
+	std::vector<MByte> m_vIndexData;
 
 };
 
@@ -95,6 +100,7 @@ public:
 		if (m_vertexBuffer.GetSize() < unSize * sizeof(VERTEX_TYPE))
 		{
 			m_vertexBuffer.ReallocMemory(unSize * sizeof(VERTEX_TYPE));
+			m_vVertexData.resize(unSize * sizeof(VERTEX_TYPE));
 		}
 	}
 
@@ -103,12 +109,13 @@ public:
 		if (m_vertexBuffer.GetSize() < unSize * sizeof(VERTEX_TYPE))
 		{
 			m_vertexBuffer.ReallocMemory(unSize * sizeof(VERTEX_TYPE));
+			m_vVertexData.resize(unSize * sizeof(VERTEX_TYPE));
 		}
 	}
 
 	VERTEX_TYPE* GetVertices()
 	{
-		return reinterpret_cast<VERTEX_TYPE*>(m_vertexBuffer.GetData());
+		return reinterpret_cast<VERTEX_TYPE*>(m_vVertexData.data());
 	}
 };
 

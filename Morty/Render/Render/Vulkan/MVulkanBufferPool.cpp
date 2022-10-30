@@ -74,10 +74,7 @@ bool MVulkanBufferPool::AllowBufferMemory(MShaderConstantParam* pParam)
 
 	if (pParam->m_VkDescriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
 		return AllowDynamicUniformBufferMemory(pParam);
-
-	if (pParam->m_VkDescriptorType == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC)
-		return AllowDynamicStorageBufferMemory(pParam);
-
+	
 	return false;
 }
 
@@ -141,12 +138,6 @@ bool MVulkanBufferPool::AllowDynamicUniformBufferMemory(MShaderConstantParam* pP
 
 
 	return true;
-}
-
-bool MVulkanBufferPool::AllowDynamicStorageBufferMemory(MShaderConstantParam* pParam)
-{
-
-	return false;
 }
 
 void MVulkanBufferPool::FreeBufferMemory(MShaderConstantParam* pParam)

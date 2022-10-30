@@ -1,0 +1,1 @@
+#include "MBatchGroupComponent.h"

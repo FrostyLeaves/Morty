@@ -35,6 +35,9 @@ source_group("Resource" FILES ${CORE_RESOURCE_FILES})
 file(GLOB CORE_SCENE_FILES Scene/*.h Scene/*.cpp )
 source_group("Scene" FILES ${CORE_SCENE_FILES})
 
+file(GLOB EDITOR_SUBSYSTEM_FILES SubSystem/*.h SubSystem/*.cpp)
+source_group("SubSystem" FILES ${EDITOR_SUBSYSTEM_FILES})
+
 file(GLOB CORE_SYSTEM_FILES System/*.h System/*.cpp )
 source_group("System" FILES ${CORE_SYSTEM_FILES})
 
@@ -69,6 +72,7 @@ add_library(Core STATIC
     ${CORE_POINTER_FILES}
     ${CORE_RESOURCE_FILES}
     ${CORE_SCENE_FILES}
+    ${EDITOR_SUBSYSTEM_FILES}
     ${CORE_SYSTEM_FILES}
     ${CORE_TASK_GRAPH_FILES}
     ${CORE_THREAD_FILES}

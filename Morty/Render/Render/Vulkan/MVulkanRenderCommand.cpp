@@ -149,8 +149,8 @@ void MVulkanRenderCommand::DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, c
 		return;
 	}
 
-	UpdateBuffer(pVertexBuffer);
-	UpdateBuffer(pIndexBuffer);
+	UpdateBuffer(pVertexBuffer, pMesh->GetVerticesVector());
+	UpdateBuffer(pIndexBuffer, pMesh->GetIndicesVector());
 
 	VkBuffer vertexBuffers[] = { pVertexBuffer->m_VkBuffer };
 	VkDeviceSize offsets[] = { 0 };
@@ -264,7 +264,7 @@ void MVulkanRenderCommand::SetShaderParamSet(MShaderParamSet* pParamSet)
 	vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pUsingPipelineLayoutData->pipelineLayout, pParamSet->m_unKey, 1, &pParamSet->m_VkDescriptorSet, vDynamicOffsets.size(), vDynamicOffsets.data());
 }
 
-bool MVulkanRenderCommand::DispatchComputeJob(std::shared_ptr<MComputeDispatcher> pComputeDispatcher)
+bool MVulkanRenderCommand::DispatchComputeJob(MComputeDispatcher* pComputeDispatcher)
 {
 	assert(pComputeDispatcher->GetComputeShader());
 
@@ -518,7 +518,7 @@ void MVulkanRenderCommand::addFinishedCallback(std::function<void()> func)
 	m_aRenderFinishedCallback.push_back(func);
 }
 
-void MVulkanRenderCommand::UpdateBuffer(MBuffer* pBuffer)
+void MVulkanRenderCommand::UpdateBuffer(MBuffer* pBuffer, const std::vector<MByte>& data)
 {
 	if (!pBuffer)
 	{
@@ -528,11 +528,11 @@ void MVulkanRenderCommand::UpdateBuffer(MBuffer* pBuffer)
 	if (pBuffer->m_eStageType == MBuffer::MStageType::EWaitAllow)
 	{
 		pBuffer->DestroyBuffer(m_pDevice);
-		pBuffer->GenerateBuffer(m_pDevice);
+		pBuffer->GenerateBuffer(m_pDevice, data);
 	}
 	else if (pBuffer->m_eStageType == MBuffer::MStageType::EWaitSync)
 	{
-		pBuffer->UploadBuffer(m_pDevice);
+		pBuffer->UploadBuffer(m_pDevice, data);
 	}
 }
 

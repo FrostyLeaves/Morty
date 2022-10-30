@@ -40,7 +40,7 @@ public:
 	virtual bool SetUseMaterial(std::shared_ptr<MMaterial> pMaterial) override;
 	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) override;
 
-	virtual bool DispatchComputeJob(std::shared_ptr<MComputeDispatcher> pMaterial) override;
+	virtual bool DispatchComputeJob(MComputeDispatcher* pComputeDispatcher) override;
 
 	virtual bool SetRenderToTextureBarrier(const std::vector<MTexture*> vTextures) override;
 	virtual bool DownloadTexture(MTexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback) override;
@@ -49,7 +49,7 @@ public:
 
 	virtual void addFinishedCallback(std::function<void()> func) override;
 
-	void UpdateBuffer(MBuffer* pBuffer);
+	void UpdateBuffer(MBuffer* pBuffer, const std::vector<MByte>& data);
 
 	void UpdateShaderParam(MShaderParamSet* pParamSet, MShaderConstantParam* param);
 	void UpdateShaderParam(MShaderParamSet* pParamSet, MShaderTextureParam* param);

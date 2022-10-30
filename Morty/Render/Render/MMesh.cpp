@@ -20,8 +20,8 @@ MIMesh::MIMesh(const bool& bDynamicMesh/* = false*/)
 		m_indexBuffer.m_eMemoryType = MBuffer::MMemoryType::EDeviceLocal;
     }
 
-	m_vertexBuffer.m_eUsageType = MBuffer::MUsageType::EVertex;
-	m_indexBuffer.m_eUsageType = MBuffer::MUsageType::EIndex;
+	m_vertexBuffer.m_eUsageType &= MBuffer::MUsageType::EVertex;
+	m_indexBuffer.m_eUsageType &= MBuffer::MUsageType::EIndex;
 
 #if _DEBUG
 	m_vertexBuffer.m_strDebugBufferName = "VertexBuffer";
@@ -48,6 +48,7 @@ void MIMesh::CreateIndices(const uint32_t& unSize, const uint32_t& unIndexSize)
 	if (m_indexBuffer.GetSize() < unSize * unIndexSize)
 	{
 		m_indexBuffer.ReallocMemory(unSize * unIndexSize * sizeof(uint32_t));
+		m_vIndexData.resize(unSize * unIndexSize * sizeof(uint32_t));
 	}
 }
 
@@ -56,6 +57,7 @@ void MIMesh::ResizeIndices(const uint32_t& unSize, const uint32_t& unIndexSize)
 	if (m_indexBuffer.GetSize() < unSize * unIndexSize)
 	{
 		m_indexBuffer.ReallocMemory(unSize * unIndexSize * sizeof(uint32_t));
+		m_vIndexData.resize(unSize * unIndexSize * sizeof(uint32_t));
 	}
 }
 
@@ -74,14 +76,14 @@ void MIMesh::SetDirty()
 
 void MIMesh::GenerateBuffer(MIDevice* pDevice)
 {
-	m_vertexBuffer.GenerateBuffer(pDevice);
-	m_indexBuffer.GenerateBuffer(pDevice);
+	m_vertexBuffer.GenerateBuffer(pDevice, m_vVertexData);
+	m_indexBuffer.GenerateBuffer(pDevice, m_vIndexData);
 }
 
 void MIMesh::UploadBuffer(MIDevice* pDevice)
 {
-	m_vertexBuffer.UploadBuffer(pDevice);
-	m_indexBuffer.UploadBuffer(pDevice);
+	m_vertexBuffer.UploadBuffer(pDevice, m_vVertexData);
+	m_indexBuffer.UploadBuffer(pDevice, m_vIndexData);
 }
 
 void MIMesh::DestroyBuffer(MIDevice* pDevice)

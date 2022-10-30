@@ -70,6 +70,12 @@ void MScene::OnCreated()
 
 void MScene::OnDelete()
 {
+	for (auto pr : m_tSubSystems)
+	{
+		delete pr.second;
+	}
+	m_tSubSystems.clear();
+
 	for (auto pr : m_tComponents)
 	{
 		pr.second->RemoveAllComponents();
@@ -143,6 +149,12 @@ std::vector<MEntity*> MScene::GetAllEntity() const
 		result.push_back(pr.second);
 	}
 	return result;
+}
+
+void MScene::RegisterSubSystem(const MType* pSubSystemType, MISubSystem* pSubSystem)
+{
+	m_tSubSystems[pSubSystemType] = pSubSystem;
+	pSubSystem->SetScene(this);
 }
 
 void MScene::Tick(const float& fDelta)

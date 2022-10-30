@@ -9,6 +9,7 @@
 #include "Model/MSkeleton.h"
 #include "TaskGraph/MTaskNode.h"
 #include "Material/MMaterial.h"
+#include "Material/MComputeDispatcher.h"
 #include "TaskGraph/MTaskNodeOutput.h"
 
 #include "Render/MRenderCommand.h"
@@ -40,6 +41,7 @@ MDeferredRenderProgram::MDeferredRenderProgram()
 	, m_nFrameIndex(0)
 	, m_pFinalOutputTexture(nullptr)
 	, m_gbufferRenderPass()
+	, m_pCullingComputeDispatcher(nullptr)
 	, m_pPrimaryCommand(nullptr)
 	, m_pLightningMaterial(nullptr)
 {
@@ -119,6 +121,8 @@ void MDeferredRenderProgram::RenderCulling(MTaskNode* pTaskNode)
 	MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
 	MIDevice* pRenderDevice = pRenderSystem->GetDevice();
 	MViewport* pViewport = GetViewport();
+
+	m_pPrimaryCommand->DispatchComputeJob(m_pCullingComputeDispatcher);
 }
 
 void MDeferredRenderProgram::RenderGBuffer(MTaskNode* pTaskNode)
@@ -335,6 +339,10 @@ void MDeferredRenderProgram::OnCreated()
 	pRenderReadyTask->SetThreadType(METhreadType::EAny);
 	pRenderReadyTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_1(MDeferredRenderProgram::RenderReady, this));
 
+	MTaskNode* pRenderCullingTask = m_pRenderGraph->AddNode<MTaskNode>("Render_Culling");
+	pRenderCullingTask->SetThreadType(METhreadType::EAny);
+	pRenderCullingTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_1(MDeferredRenderProgram::RenderCulling, this));
+
  	MTaskNode* pRenderShadowTask = m_pRenderGraph->AddNode<MTaskNode>("Render_Shadowmap");
  	pRenderShadowTask->SetThreadType(METhreadType::EAny);
  	pRenderShadowTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_1(MDeferredRenderProgram::RenderShadow, this));
@@ -360,10 +368,11 @@ void MDeferredRenderProgram::OnCreated()
 	pRenderDebugTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_1(MDeferredRenderProgram::RenderDebug, this));
 
 	/*
-		RenderReady --> RenderShadowmap --> pRenderEnvironmentTask --> RenderGBuffer --> RenderLightning --> RenderForward --> RenderTransparent --> RenderDebug --> output				
+		RenderReady --> RenderCulling --> RenderShadowmap --> pRenderEnvironmentTask --> RenderGBuffer --> RenderLightning --> RenderForward --> RenderTransparent --> RenderDebug --> output				
 	*/
 
- 	pRenderReadyTask->AppendOutput()->LinkTo(pRenderShadowTask->AppendInput());
+ 	pRenderReadyTask->AppendOutput()->LinkTo(pRenderCullingTask->AppendInput());
+	pRenderCullingTask->AppendOutput()->LinkTo(pRenderShadowTask->AppendInput());
 	pRenderShadowTask->AppendOutput()->LinkTo(pRenderGBufferTask->AppendInput());
 	pRenderGBufferTask->AppendOutput()->LinkTo(pRenderLightningTask->AppendInput());
 	pRenderLightningTask->AppendOutput()->LinkTo(pRenderForwardTask->AppendInput());
@@ -374,6 +383,8 @@ void MDeferredRenderProgram::OnCreated()
 	InitializeRenderPass();
 	InitializeMaterial();
 	InitializeMesh();
+
+	InitializeCullingComputeDispatcher();
 }
 
 void MDeferredRenderProgram::OnDelete()
@@ -571,6 +582,24 @@ void MDeferredRenderProgram::ReleaseMesh()
 	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
 	m_ScreenDrawMesh.DestroyBuffer(pRenderSystem->GetDevice());
 	m_SkyBoxDrawMesh.DestroyBuffer(pRenderSystem->GetDevice());
+}
+
+void MDeferredRenderProgram::InitializeCullingComputeDispatcher()
+{
+	MObjectSystem* pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
+
+	m_pCullingComputeDispatcher = pObjectSystem->CreateObject<MComputeDispatcher>();
+	m_pCullingComputeDispatcher->LoadComputeShader("Shader/cull.mcs");
+
+
+
+
+}
+
+void MDeferredRenderProgram::ReleaseCullingComputeDispatcher()
+{
+	m_pCullingComputeDispatcher->DeleteLater();
+	m_pCullingComputeDispatcher = nullptr;
 }
 
 void MDeferredRenderProgram::UpdateFrameParams(MRenderInfo& info)

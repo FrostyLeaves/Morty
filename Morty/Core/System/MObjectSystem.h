@@ -32,10 +32,10 @@ public:
 
 	void InitObject(MObject* pObject);
 
-	template<typename Object_TYPE>
-	Object_TYPE* CreateObject()
+	template<typename OBJECT_TYPE>
+	OBJECT_TYPE* CreateObject()
 	{
-		Object_TYPE* pObject = new Object_TYPE();
+		OBJECT_TYPE* pObject = new OBJECT_TYPE();
 		if (!dynamic_cast<MObject*>(pObject))
 		{
 			delete pObject;

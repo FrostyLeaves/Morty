@@ -43,9 +43,9 @@ public:
 	virtual void Release() override;
 
 public:
-	virtual void GenerateBuffer(MBuffer* pBuffer) override;
+	virtual void GenerateBuffer(MBuffer* pBuffer, const std::vector<MByte>& initialData) override;
 	virtual void DestroyBuffer(MBuffer* pBuffer) override;
-	virtual void UploadBuffer(MBuffer* pBuffer) override;
+	virtual void UploadBuffer(MBuffer* pBuffer, const std::vector<MByte>& data) override;
 
 	virtual void GenerateTexture(MTexture* pTexture, MByte* pData = nullptr) override;
 	virtual void DestroyTexture(MTexture* pTexture) override;

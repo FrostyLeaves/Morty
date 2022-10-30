@@ -9,7 +9,7 @@
 #ifndef _M_MVULKANOBJECTDESTRUCTOR_H_
 #define _M_MVULKANOBJECTDESTRUCTOR_H_
 #include "Utility/MGlobal.h"
-#include "MMemoryPool.h"
+#include "Utility/MMemoryPool.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 #include "Render/Vulkan/MVulkanWrapper.h"

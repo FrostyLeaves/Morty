@@ -12,7 +12,6 @@ class MEntity;
 class MEngine;
 class MMaterial;
 class MInputEvent;
-class MStaticMeshInstance;
 class MaterialView : public IBaseView
 {
 public:

@@ -22,11 +22,13 @@ public:
         EDeviceLocal = 2,
     };
 
-    enum class MUsageType
+    struct MUsageType
     {
-	    EUnknow = 0,
-        EVertex = 1,
-        EIndex = 2,
+        static const uint32_t EUnknow = 0;
+        static const uint32_t EVertex = 1;
+        static const uint32_t EIndex = 2;
+        static const uint32_t EStorage = 4;
+        static const uint32_t EUniform = 8;
     };
 
     enum class MStageType
@@ -48,12 +50,10 @@ public:
 public:
 
     void ReallocMemory(const size_t& unNewSize); 
-    size_t GetSize() const { return m_data.size(); }
-    MByte* GetData() { return m_data.data(); }
-    const MByte* GetData() const { return m_data.data(); }
+    size_t GetSize() const { return m_unDataSize; }
 
-    void GenerateBuffer(MIDevice* pDevice);
-    void UploadBuffer(MIDevice* pDevice);
+    void GenerateBuffer(MIDevice* pDevice, const std::vector<MByte>& initialData);
+    void UploadBuffer(MIDevice* pDevice, const std::vector<MByte>& data);
     void DestroyBuffer(MIDevice* pDevice);
 
 public:
@@ -65,10 +65,12 @@ public:
     MString m_strDebugBufferName = "";
 #endif
 
-    std::vector<MByte> m_data = {};
+    MByte* m_mappingData = nullptr;
+
+    size_t m_unDataSize = 0;
 
     MMemoryType m_eMemoryType = MMemoryType::EUnknow;
-    MUsageType m_eUsageType = MUsageType::EUnknow;
+    uint32_t m_eUsageType = 0;
     MStageType m_eStageType = MStageType::EUnknow;
 };
 

@@ -14,7 +14,6 @@ MORTY_CLASS_IMPLEMENT(MRenderableMeshComponent, MComponent)
 
 #include "Component/MSceneComponent.h"
 #include "Component/MModelComponent.h"
-#include "Component/MNotifyComponent.h"
 
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
@@ -60,12 +59,6 @@ void MRenderableMeshComponent::Initialize()
 		GetEngine()->GetLogger()->Error("Component Initialize, OwnerNode == nullptr, Type: %s", GetTypeName().c_str());
 		return;
 	}
-
-	if (MNotifyComponent* pNotifyComponent = pEntity->GetComponent<MNotifyComponent>())
-	{
-		pNotifyComponent->RegisterComponentNotify<MRenderableMeshComponent>(MString("TransformDirty"), M_CLASS_FUNCTION_BIND_0(MRenderableMeshComponent::OnTransformDirty, this));
-		pNotifyComponent->RegisterComponentNotify<MRenderableMeshComponent>(MString("ParentChanged"), M_CLASS_FUNCTION_BIND_0(MRenderableMeshComponent::OnParentChanged, this));
-	}
 }
 
 void MRenderableMeshComponent::Release()
@@ -75,12 +68,6 @@ void MRenderableMeshComponent::Release()
 	{
 		GetEngine()->GetLogger()->Error("Component Release, OwnerNode == nullptr, Type: %s", GetTypeName().c_str());
 		return;
-	}
-
-	if (MNotifyComponent* pNotifyComponent = pEntity->GetComponent<MNotifyComponent>())
-	{
-		pNotifyComponent->UnregisterComponentNotify<MRenderableMeshComponent>(MString("TransformDirty"));
-		pNotifyComponent->UnregisterComponentNotify<MRenderableMeshComponent>(MString("ParentChanged"));
 	}
 	
 	BindShaderParam(nullptr);
@@ -95,6 +82,11 @@ void MRenderableMeshComponent::SetMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 	m_Material.SetResource(pMaterial);
 	BindShaderParam(pMaterial);
+
+	if (GetBatchInstanceEnable())
+	{
+		SendComponentNotify("MeshBatchChanged");
+	}
 }
 
 std::shared_ptr<MMaterial> MRenderableMeshComponent::GetMaterial()
@@ -184,6 +176,11 @@ void MRenderableMeshComponent::Load(std::shared_ptr<MResource> pResource)
 			std::shared_ptr<MMaterial> pMaterial = MTypeClass::DynamicCast<MMaterial>(pMeshResource->GetDefaultMaterial());
 			SetMaterial(pMaterial);
 		}
+
+		if (GetBatchInstanceEnable())
+		{
+			SendComponentNotify("MeshBatchChanged");
+		}
 	}
 }
 
@@ -269,6 +266,15 @@ std::shared_ptr<MSkeletonInstance> MRenderableMeshComponent::GetSkeletonInstance
 		return pModelComponent->GetSkeleton();
 
 	return nullptr;
+}
+
+void MRenderableMeshComponent::SetBatchInstanceEnable(const bool& bBatch)
+{
+	if (m_bBatchInstanceEnable != bBatch)
+	{
+		m_bBatchInstanceEnable = bBatch;
+		SendComponentNotify("MeshBatchChanged");
+	}
 }
 
 MModelComponent* MRenderableMeshComponent::GetAttachedModelComponent()

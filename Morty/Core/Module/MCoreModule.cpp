@@ -11,7 +11,6 @@
 
 #include "Component/MSceneComponent.h"
 #include "Component/MInputComponent.h"
-#include "Component/MNotifyComponent.h"
 
 bool MCoreModule::Register(MEngine* pEngine)
 {
@@ -32,7 +31,6 @@ bool MCoreModule::Register(MEngine* pEngine)
 	{
 		pComponentSystem->RegisterComponent<MSceneComponent>();
 		pComponentSystem->RegisterComponent<MInputComponent>();
-		pComponentSystem->RegisterComponent<MNotifyComponent>();
 	}
 
 	return true;
