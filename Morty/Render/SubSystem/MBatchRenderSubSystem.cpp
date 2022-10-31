@@ -54,45 +54,45 @@ void MBatchRenderSubSystem::RegisterComponent(MRenderableMeshComponent* pCompone
 		return;
 	}
 
-	std::map<std::weak_ptr<MMaterial>, MBatchInstanceData*> m_tMaterialToBatchInstanceTable;
-	std::map<MRenderableMeshComponent*, MBatchInstanceData*> m_tComponentToBatchInstanceTable;
+	std::map<std::weak_ptr<MMaterial>, MMaterialBatchGroup*> m_tMaterialToBatchInstanceTable;
+	std::map<MRenderableMeshComponent*, MMaterialBatchGroup*> m_tComponentToBatchInstanceTable;
 
-	MBatchInstanceData* pBatchInstanceData = nullptr;
+	MMaterialBatchGroup* pMaterialBatchGroup = nullptr;
 
 	auto findResultByMaterial = m_tMaterialToBatchInstanceTable.find(pMaterial);
 	if (findResultByMaterial == m_tMaterialToBatchInstanceTable.end())
 	{
-		pBatchInstanceData = new MBatchInstanceData();
-		pBatchInstanceData->pMaterial = pMaterial;
+		pMaterialBatchGroup = new MMaterialBatchGroup();
+		pMaterialBatchGroup->pMaterial = pMaterial;
 
 
-		m_tMaterialToBatchInstanceTable[pMaterial] = pBatchInstanceData;
+		m_tMaterialToBatchInstanceTable[pMaterial] = pMaterialBatchGroup;
 	}
 	else
 	{
-		pBatchInstanceData = findResultByMaterial->second;
+		pMaterialBatchGroup = findResultByMaterial->second;
 	}
 
-	m_tComponentToBatchInstanceTable[pComponent] = pBatchInstanceData;
+	m_tComponentToBatchInstanceTable[pComponent] = pMaterialBatchGroup;
 
 
-	MSharedMeshComponentGroup* pSharedGroup = nullptr;
+	MSharedMeshData* pSharedMesh = nullptr;
 
-	auto findResultByMesh = pBatchInstanceData->m_tMeshToGroup.find(pMesh);
-	if (findResultByMesh == pBatchInstanceData->m_tMeshToGroup.end())
+	auto findResultByMesh = pMaterialBatchGroup->m_tSharedMesh.find(pMesh);
+	if (findResultByMesh == pMaterialBatchGroup->m_tSharedMesh.end())
 	{
-		pSharedGroup = new MSharedMeshComponentGroup();
-		pSharedGroup->pMesh = pMesh;
+		pSharedMesh = new MSharedMeshData();
+		pSharedMesh->pMesh = pMesh;
 
-		pBatchInstanceData->m_tMeshToGroup[pMesh] = pSharedGroup;
+		pMaterialBatchGroup->m_tSharedMesh[pMesh] = pSharedMesh;
 	}
 	else
 	{
-		pSharedGroup = findResultByMesh->second;
+		pSharedMesh = findResultByMesh->second;
 	}
 
-	pBatchInstanceData->m_tComponentToGroup[pComponent] = pSharedGroup;
-	pSharedGroup->m_tComponents.insert(pComponent);
+	pMaterialBatchGroup->m_tComponentToSharedMesh[pComponent] = pSharedMesh;
+	pSharedMesh->m_tComponents.insert(pComponent);
 }
 
 void MBatchRenderSubSystem::UnregisterComponent(MRenderableMeshComponent* pComponent)
@@ -103,32 +103,32 @@ void MBatchRenderSubSystem::UnregisterComponent(MRenderableMeshComponent* pCompo
 		return;
 	}
 
-	MBatchInstanceData* pBatchInstanceData = findResultByComponent->second;
+	MMaterialBatchGroup* pMaterialBatchGroup = findResultByComponent->second;
 	m_tComponentToBatchInstanceTable.erase(findResultByComponent);
 
 
-	auto findResultFromSharedGroup = pBatchInstanceData->m_tComponentToGroup.find(pComponent);
-	if (findResultFromSharedGroup != pBatchInstanceData->m_tComponentToGroup.end())
+	auto findResultFromSharedGroup = pMaterialBatchGroup->m_tComponentToSharedMesh.find(pComponent);
+	if (findResultFromSharedGroup != pMaterialBatchGroup->m_tComponentToSharedMesh.end())
 	{
-		MSharedMeshComponentGroup* pSharedGroup = findResultFromSharedGroup->second;
-		pBatchInstanceData->m_tComponentToGroup.erase(findResultFromSharedGroup);
+		MSharedMeshData* pSharedMesh = findResultFromSharedGroup->second;
+		pMaterialBatchGroup->m_tComponentToSharedMesh.erase(findResultFromSharedGroup);
 
-		pSharedGroup->m_tComponents.erase(pComponent);
+		pSharedMesh->m_tComponents.erase(pComponent);
 
 
-		if (pSharedGroup->m_tComponents.empty())
+		if (pSharedMesh->m_tComponents.empty())
 		{
-			pBatchInstanceData->m_tMeshToGroup.erase(pSharedGroup->pMesh);
-			delete pSharedGroup;
-			pSharedGroup = nullptr;
+			pMaterialBatchGroup->m_tSharedMesh.erase(pSharedMesh->pMesh);
+			delete pSharedMesh;
+			pSharedMesh = nullptr;
 		}
 	}
 
-	if (pBatchInstanceData->m_tComponentToGroup.empty())
+	if (pMaterialBatchGroup->m_tComponentToSharedMesh.empty())
 	{
-		m_tMaterialToBatchInstanceTable.erase(pBatchInstanceData->pMaterial);
-		delete pBatchInstanceData;
-		pBatchInstanceData = nullptr;
+		m_tMaterialToBatchInstanceTable.erase(pMaterialBatchGroup->pMaterial);
+		delete pMaterialBatchGroup;
+		pMaterialBatchGroup = nullptr;
 	}
 
 
@@ -136,4 +136,18 @@ void MBatchRenderSubSystem::UnregisterComponent(MRenderableMeshComponent* pCompo
 
 void MBatchRenderSubSystem::OnBatchMeshChanged(MComponent* pSender)
 {
+	if (!pSender)
+	{
+		return;
+	}
+
+	if (MRenderableMeshComponent* pComponent = pSender->DynamicCast<MRenderableMeshComponent>())
+	{
+		UnregisterComponent(pComponent);
+
+		if (pComponent->GetBatchInstanceEnable())
+		{
+			RegisterComponent(pComponent);
+		}
+	}
 }

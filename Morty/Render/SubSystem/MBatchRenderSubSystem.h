@@ -2,6 +2,7 @@
 #define _M_BATCH_RENDER_SUB_SYSTEM_H_
 
 #include "Utility/MGlobal.h"
+#include "Render/MBuffer.h"
 #include "Scene/MSubSystem.h"
 
 class MIMesh;
@@ -9,6 +10,33 @@ class MScene;
 class MEngine;
 class MMaterial;
 class MRenderableMeshComponent;
+
+
+class MBatchMeshBuffer : public MBuffer
+{
+public:
+	struct MMeshCluster
+	{
+		size_t unBeginOffset;
+	};
+
+
+public:
+	MBatchMeshBuffer();
+
+	uint32_t AllowMeshCluster();
+	void FreeMeshCluster(const uint32_t& idx);
+
+	MByte* GetMeshCluster(const uint32_t& idx);
+
+private:
+	
+	std::map<uint32_t, MMeshCluster> m_tClusterTable;
+
+	static constexpr size_t ClusterSize = 64u;
+};
+
+
 class MORTY_API MBatchRenderSubSystem : public MISubSystem
 {
 public:
@@ -16,17 +44,20 @@ public:
 
 public:
 
-	struct MSharedMeshComponentGroup
+	struct MSharedMeshData
 	{
 		MIMesh* pMesh;
 		std::set<MRenderableMeshComponent*> m_tComponents;
+		std::vector<size_t> m_vClusters;
 	};
 
-	struct MBatchInstanceData
+	struct MMaterialBatchGroup
 	{
 		std::weak_ptr<MMaterial> pMaterial;
-		std::map<MIMesh*, MSharedMeshComponentGroup*> m_tMeshToGroup;
-		std::map<MRenderableMeshComponent*, MSharedMeshComponentGroup*> m_tComponentToGroup;
+		std::map<MIMesh*, MSharedMeshData*> m_tSharedMesh;
+		std::map<MRenderableMeshComponent*, MSharedMeshData*> m_tComponentToSharedMesh;
+
+		MBatchMeshBuffer m_meshBuffer;
 	};
 
 public:
@@ -51,8 +82,8 @@ public:
 
 private:
 
-	std::map<std::weak_ptr<MMaterial>, MBatchInstanceData*> m_tMaterialToBatchInstanceTable;
-	std::map<MRenderableMeshComponent*, MBatchInstanceData*> m_tComponentToBatchInstanceTable;
+	std::map<std::weak_ptr<MMaterial>, MMaterialBatchGroup*> m_tMaterialToBatchInstanceTable;
+	std::map<MRenderableMeshComponent*, MMaterialBatchGroup*> m_tComponentToBatchInstanceTable;
 
 };
 
