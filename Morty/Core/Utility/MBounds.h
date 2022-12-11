@@ -100,6 +100,7 @@ public:
 
 	void SetPoints(const MByte* vPoints, const uint32_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize);
 
+	void AddPoint(const Vector3& pos);
 
 	bool IsContain(const Vector3& pos);
 

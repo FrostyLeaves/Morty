@@ -149,8 +149,8 @@ void MVulkanRenderCommand::DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, c
 		return;
 	}
 
-	UpdateBuffer(pVertexBuffer, pMesh->GetVerticesVector());
-	UpdateBuffer(pIndexBuffer, pMesh->GetIndicesVector());
+	UpdateBuffer(pVertexBuffer, pMesh->GetVerticesVector().data(), pMesh->GetVerticesVector().size());
+	UpdateBuffer(pIndexBuffer, pMesh->GetIndicesVector().data(), pMesh->GetIndicesVector().size());
 
 	VkBuffer vertexBuffers[] = { pVertexBuffer->m_VkBuffer };
 	VkDeviceSize offsets[] = { 0 };
@@ -162,6 +162,16 @@ void MVulkanRenderCommand::DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, c
 		MRenderStatistics::GetInstance()->unTriangleCount += pMesh->GetIndicesLength() / 3;
 #endif
 	
+}
+
+void MVulkanRenderCommand::DrawIndexedIndirect(const MBuffer* pVertexBuffer, const MBuffer* pIndexBuffer, const MBuffer* pCommandsBuffer, const size_t& offset, const size_t& count)
+{
+	VkBuffer vertexBuffers[] = { pVertexBuffer->m_VkBuffer };
+	VkDeviceSize offsets[] = { 0 };
+	vkCmdBindVertexBuffers(m_VkCommandBuffer, 0, 1, vertexBuffers, offsets);
+	vkCmdBindIndexBuffer(m_VkCommandBuffer, pIndexBuffer->m_VkBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+	vkCmdDrawIndexedIndirect(m_VkCommandBuffer, pCommandsBuffer->m_VkBuffer, offset, count, sizeof(VkDrawIndexedIndirectCommand));
 }
 
 bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
@@ -224,8 +234,8 @@ void MVulkanRenderCommand::SetShaderParamSet(MShaderParamSet* pParamSet)
 	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
 	{
 		bDirty |= pParam->bDirty;
-		// generate buffer and fill it.
-		UpdateShaderParam(pParamSet, pParam);
+		// generate buffer and fill data.
+		UpdateShaderParam(pParam);
 
 		if (pParam->m_VkDescriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
 		{
@@ -241,30 +251,57 @@ void MVulkanRenderCommand::SetShaderParamSet(MShaderParamSet* pParamSet)
 		}
 	}
 
+	for (MShaderStorageParam* pParam : pParamSet->m_vStorages)
+	{
+		bDirty |= pParam->bDirty;
+	}
+
 	if (bDirty)
 	{
 		//alloc a new descriptor set.
 		m_pDevice->m_PipelineManager.AllocateShaderParamSet(pParamSet);
 
+		std::vector<VkWriteDescriptorSet> vWriteDescriptorSet;
+
 		for (MShaderConstantParam* pParam : pParamSet->m_vParams)
 		{
 			// bind buffer to descriptor set.
-			m_pDevice->m_PipelineManager.BindConstantParam(pParamSet, pParam);
+			vWriteDescriptorSet.push_back({});
+			VkWriteDescriptorSet& writeDescriptorSet = vWriteDescriptorSet.back();
+			m_pDevice->m_PipelineManager.BindConstantParam(pParam, writeDescriptorSet);
+			writeDescriptorSet.dstSet = pParamSet->m_VkDescriptorSet;
+
 			pParam->bDirty = false;
 		}
 
 		for (MShaderTextureParam* pParam : pParamSet->m_vTextures)
 		{
-			m_pDevice->m_PipelineManager.BindTextureParam(pParamSet, pParam);
+			vWriteDescriptorSet.push_back({});
+			VkWriteDescriptorSet& writeDescriptorSet = vWriteDescriptorSet.back();
+			m_pDevice->m_PipelineManager.BindTextureParam(pParam, writeDescriptorSet);
+			writeDescriptorSet.dstSet = pParamSet->m_VkDescriptorSet;
+
 			pParam->pImageIdent = pParam->GetTexture() ? pParam->GetTexture()->m_VkImageView : nullptr;
 			pParam->bDirty = false;
 		}
+
+		for (MShaderStorageParam* pParam : pParamSet->m_vStorages)
+		{
+			vWriteDescriptorSet.push_back({});
+			VkWriteDescriptorSet& writeDescriptorSet = vWriteDescriptorSet.back();
+			m_pDevice->m_PipelineManager.BindStorageParam(pParam, writeDescriptorSet);
+			writeDescriptorSet.dstSet = pParamSet->m_VkDescriptorSet;
+
+			pParam->bDirty = false;
+		}
+
+		vkUpdateDescriptorSets(m_pDevice->m_VkDevice, vWriteDescriptorSet.size(), vWriteDescriptorSet.data(), 0, nullptr);
 	}
 
 	vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pUsingPipelineLayoutData->pipelineLayout, pParamSet->m_unKey, 1, &pParamSet->m_VkDescriptorSet, vDynamicOffsets.size(), vDynamicOffsets.data());
 }
 
-bool MVulkanRenderCommand::DispatchComputeJob(MComputeDispatcher* pComputeDispatcher)
+bool MVulkanRenderCommand::DispatchComputeJob(MComputeDispatcher* pComputeDispatcher, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ)
 {
 	assert(pComputeDispatcher->GetComputeShader());
 
@@ -287,15 +324,74 @@ bool MVulkanRenderCommand::DispatchComputeJob(MComputeDispatcher* pComputeDispat
 			SetShaderParamSet(&params);
 		}
 
+		vkCmdDispatch(m_VkCommandBuffer, nGroupX, nGroupY, nGroupZ);
+
 		return true;
 	}
 
 	return false;
 }
 
-bool MVulkanRenderCommand::SetRenderToTextureBarrier(const std::vector<MTexture*> vTextures)
+bool MVulkanRenderCommand::AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures)
 {
 	SetTextureLayout(vTextures, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	return true;
+}
+
+bool MVulkanRenderCommand::AddComputeToGraphBarrier(const std::vector<MBuffer*> vBuffers)
+{
+
+	std::vector<VkBufferMemoryBarrier> bufferBarriers;
+	for(MBuffer* pBuffer : vBuffers)
+	{
+		VkBufferMemoryBarrier bufferBarrier;
+		bufferBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+		bufferBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+		bufferBarrier.srcQueueFamilyIndex = m_pDevice->m_nComputeFamilyIndex;
+		bufferBarrier.dstQueueFamilyIndex = m_pDevice->m_nGraphicsFamilyIndex;
+		bufferBarrier.size = VK_WHOLE_SIZE;
+		bufferBarrier.buffer = pBuffer->m_VkBuffer;
+		bufferBarriers.push_back(bufferBarrier);
+	}
+
+	vkCmdPipelineBarrier(
+		m_VkCommandBuffer,
+		VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+		VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
+		0,
+		0, nullptr,
+		static_cast<uint32_t>(bufferBarriers.size()), bufferBarriers.data(),
+		0, nullptr);
+
+
+	return true;
+}
+
+bool MVulkanRenderCommand::AddGraphToComputeBarrier(const std::vector<MBuffer*> vBuffers)
+{
+	std::vector<VkBufferMemoryBarrier> bufferBarriers;
+	for (MBuffer* pBuffer : vBuffers)
+	{
+		VkBufferMemoryBarrier bufferBarrier;
+		bufferBarrier.srcAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+		bufferBarrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+		bufferBarrier.srcQueueFamilyIndex = m_pDevice->m_nGraphicsFamilyIndex;
+		bufferBarrier.dstQueueFamilyIndex = m_pDevice->m_nComputeFamilyIndex;
+		bufferBarrier.size = VK_WHOLE_SIZE;
+		bufferBarrier.buffer = pBuffer->m_VkBuffer;
+		bufferBarriers.push_back(bufferBarrier);
+	}
+
+	vkCmdPipelineBarrier(
+		m_VkCommandBuffer,
+		VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
+		VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+		0,
+		0, nullptr,
+		static_cast<uint32_t>(bufferBarriers.size()), bufferBarriers.data(),
+		0, nullptr);
+
+
 	return true;
 }
 
@@ -518,7 +614,7 @@ void MVulkanRenderCommand::addFinishedCallback(std::function<void()> func)
 	m_aRenderFinishedCallback.push_back(func);
 }
 
-void MVulkanRenderCommand::UpdateBuffer(MBuffer* pBuffer, const std::vector<MByte>& data)
+void MVulkanRenderCommand::UpdateBuffer(MBuffer* pBuffer, const MByte* data, const size_t& size)
 {
 	if (!pBuffer)
 	{
@@ -528,109 +624,31 @@ void MVulkanRenderCommand::UpdateBuffer(MBuffer* pBuffer, const std::vector<MByt
 	if (pBuffer->m_eStageType == MBuffer::MStageType::EWaitAllow)
 	{
 		pBuffer->DestroyBuffer(m_pDevice);
-		pBuffer->GenerateBuffer(m_pDevice, data);
+		pBuffer->GenerateBuffer(m_pDevice, data, size);
 	}
 	else if (pBuffer->m_eStageType == MBuffer::MStageType::EWaitSync)
 	{
-		pBuffer->UploadBuffer(m_pDevice, data);
+		pBuffer->UploadBuffer(m_pDevice, data, size);
 	}
 }
 
-void MVulkanRenderCommand::UpdateShaderParam(MShaderParamSet* pParamSet, MShaderConstantParam* param)
+void MVulkanRenderCommand::UpdateShaderParam(MShaderConstantParam* param)
 {
-	//if (VK_NULL_HANDLE == param->m_VkBuffer)
-	//	return;
+	m_pDevice->DestroyShaderParamBuffer(param);
+	m_pDevice->GenerateShaderParamBuffer(param);
 
-	if (param->bDirty)
+	if (param->m_pMemoryMapping)
 	{
-		m_pDevice->DestroyShaderParamBuffer(param);
-		m_pDevice->GenerateShaderParamBuffer(param);
+		memcpy(param->m_pMemoryMapping + param->m_unMemoryOffset, param->var.GetData(), param->var.GetSize());
 
-		if (param->m_pMemoryMapping)
-		{
-			memcpy(param->m_pMemoryMapping + param->m_unMemoryOffset, param->var.GetData(), param->var.GetSize());
-
-//			TODO android 或其它平台可能需要手动刷新一下缓存
-// 			VkMappedMemoryRange memoryRange = {};
-// 			memoryRange.sType = VkStructureType::VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-// 			memoryRange.memory = param.m_VkBufferMemory[pCommand->m_unFrameIdx];
-// 			memoryRange.offset = param.m_unMemoryOffset[pCommand->m_unFrameIdx];
-// 			memoryRange.size = param.m_unVkMemorySize;
-// 			vkFlushMappedMemoryRanges(m_pDevice->m_VkDevice, 1, &memoryRange);
-		}
-	}
-}
-
-void MVulkanRenderCommand::UpdateShaderParam(MShaderParamSet* pParamSet, MShaderTextureParam* param)
-{
-	//texture generate buffer again. its imageIdent will diff.
-	if (param->bDirty || (param->GetTexture() && param->pImageIdent != param->GetTexture()->m_VkImageView))
-	{
-		m_pDevice->m_PipelineManager.BindTextureParam(pParamSet, param);
-		param->bDirty = false;
-		param->pImageIdent = param->GetTexture() ? param->GetTexture()->m_VkImageView : nullptr;
-	}
-}
-
-void MVulkanRenderCommand::BindConstantParam(MShaderParamSet* pParamSet, MShaderConstantParam* pParam)
-{
-	VkDescriptorBufferInfo bufferInfo{};
-	bufferInfo.buffer = pParam->m_VkBuffer;
-	bufferInfo.offset = 0;
-	bufferInfo.range = pParam->var.GetSize();
-
-	VkWriteDescriptorSet descriptorWrite{};
-	descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorWrite.dstSet = pParamSet->m_VkDescriptorSet;
-	descriptorWrite.dstBinding = pParam->unBinding;
-	descriptorWrite.dstArrayElement = 0;
-
-	descriptorWrite.descriptorType = pParam->m_VkDescriptorType;
-	descriptorWrite.descriptorCount = 1;
-
-	descriptorWrite.pBufferInfo = &bufferInfo;
-	descriptorWrite.pImageInfo = nullptr; // Optional
-	descriptorWrite.pTexelBufferView = nullptr; // Optional
-
-	//vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
-
-	MMaterialPipelineLayoutData* pLayoutData = m_pDevice->m_PipelineManager.FindPipelineLayout(pParamSet->m_nDescriptorSetInitMaterialIdx);
-	m_pDevice->vkCmdPushDescriptorSet(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pLayoutData->pipelineLayout, pParam->unSet, 1, &descriptorWrite);
-}
-
-void MVulkanRenderCommand::BindTextureParam(MShaderParamSet* pParamSet, MShaderTextureParam* pParam)
-{
-	MTexture* pTexture = pParam->GetTexture();
-	if (!pTexture) pTexture = &m_pDevice->m_ShaderDefaultTexture;
-
-	if (pTexture)
-	{
-		VkDescriptorImageInfo imageInfo = {};
-		imageInfo.imageView = pTexture->m_VkImageView;
-		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		imageInfo.sampler = pTexture->m_VkSampler;
-
-		if (VK_NULL_HANDLE == imageInfo.sampler)
-			imageInfo.sampler = m_pDevice->m_VkLinearSampler;
-
-		VkWriteDescriptorSet descriptorWrite{};
-		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrite.dstSet = pParamSet->m_VkDescriptorSet;
-		descriptorWrite.dstBinding = pParam->unBinding;
-		descriptorWrite.dstArrayElement = 0;
-
-		descriptorWrite.descriptorType = pParam->m_VkDescriptorType;
-		descriptorWrite.descriptorCount = 1;
-
-		descriptorWrite.pBufferInfo = nullptr;
-		descriptorWrite.pImageInfo = &imageInfo;
-		descriptorWrite.pTexelBufferView = nullptr;
-
-		//A VkDescripotrSet can only be updated once on per render. .
-		//vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
-
-		MMaterialPipelineLayoutData* pLayoutData = m_pDevice->m_PipelineManager.FindPipelineLayout(pParamSet->m_nDescriptorSetInitMaterialIdx);
-		m_pDevice->vkCmdPushDescriptorSet(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pLayoutData->pipelineLayout, pParam->unSet, 1, &descriptorWrite);
+#ifndef MORTY_WIN
+ 		VkMappedMemoryRange memoryRange = {};
+ 		memoryRange.sType = VkStructureType::VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+ 		memoryRange.memory = param->m_VkBufferMemory;
+ 		memoryRange.offset = param->m_unMemoryOffset;
+ 		memoryRange.size = param->m_unVkMemorySize;
+ 		vkFlushMappedMemoryRanges(m_pDevice->m_VkDevice, 1, &memoryRange);
+#endif
 	}
 }
 

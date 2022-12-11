@@ -395,16 +395,21 @@ void MBoundsSphere::SetPoints(const MByte* vPoints, const uint32_t& unArrayLengt
 	{
 		const Vector3& pos = *(Vector3*)(vPointer + unOffset);
 
-		fLength = (pos - m_v3CenterPoint).Length();
-		if (fLength > m_fRadius)
-		{
-			direct = pos - m_v3CenterPoint;
-			direct.Normalize();
-			m_v3CenterPoint = (m_v3CenterPoint + direct * (fLength - m_fRadius) * 0.5f);
-			m_fRadius = (fLength + m_fRadius) * 0.5f;
-		}
+		AddPoint(pos);
 	}
 
+}
+
+void MBoundsSphere::AddPoint(const Vector3& pos)
+{
+	float fLength = (pos - m_v3CenterPoint).Length();
+	if (fLength > m_fRadius)
+	{
+		Vector3 direct = pos - m_v3CenterPoint;
+		direct.Normalize();
+		m_v3CenterPoint = (m_v3CenterPoint + direct * (fLength - m_fRadius) * 0.5f);
+		m_fRadius = (fLength + m_fRadius) * 0.5f;
+	}
 }
 
 bool MBoundsSphere::IsContain(const Vector3& pos)

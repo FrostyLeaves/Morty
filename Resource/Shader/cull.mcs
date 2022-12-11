@@ -1,15 +1,21 @@
-// Copyright 2020 Google LLC
 
-#define MAX_LOD_LEVEL_COUNT 6
-[[vk::constant_id(0)]] const int MAX_LOD_LEVEL = 5;
+struct LOD
+{
+	uint firstIndex;
+	uint indexCount;
+	float distance;
+	float _pad0;
+};
 
 struct InstanceData
 {
 	float3 pos;
 	float scale;
+
+	LOD lods[MESH_LOD_LEVEL_RANGE];
 };
 
-StructuredBuffer<InstanceData> instances : register(t0);
+[[vk::binding(0,0)]] StructuredBuffer<InstanceData> instances;
 
 // Same layout as VkDrawIndexedIndirectCommand
 struct IndexedIndirectCommand
@@ -21,37 +27,26 @@ struct IndexedIndirectCommand
 	uint firstInstance;
 };
 
-RWStructuredBuffer<IndexedIndirectCommand> indirectDraws : register(u1);
+[[vk::binding(1,0)]] RWStructuredBuffer<IndexedIndirectCommand> indirectDraws;
 
 // Binding 2: Uniform block object with matrices
 struct UBO
 {
-	float4x4 projection;
-	float4x4 modelview;
 	float4 cameraPos;
 	float4 frustumPlanes[6];
 };
 
-cbuffer ubo : register(b2) { UBO ubo; }
+[[vk::binding(2,0)]] cbuffer ubo { UBO ubo; }
 
 // Binding 3: Indirect draw stats
 struct UBOOut
 {
 	uint drawCount;
-	uint lodCount[MAX_LOD_LEVEL_COUNT];
-};
-RWStructuredBuffer<UBOOut> uboOut : register(u3);
-
-// Binding 4: level-of-detail information
-struct LOD
-{
-	uint firstIndex;
-	uint indexCount;
-	float distance;
-	float _pad0;
+	uint lodCount[MESH_LOD_LEVEL_RANGE];
 };
 
-StructuredBuffer<LOD> lods : register(t4);
+[[vk::binding(3,0)]] RWStructuredBuffer<UBOOut> uboOut;
+
 
 [numthreads(16, 1, 1)]
 bool frustumCheck(float4 pos, float radius)
@@ -77,7 +72,7 @@ void CS(uint3 GlobalInvocationID : SV_DispatchThreadID )
 	if (idx == 0)
 	{
 		InterlockedExchange(uboOut[0].drawCount, 0, temp);
-		for (uint i = 0; i < MAX_LOD_LEVEL + 1; i++)
+		for (uint i = 0; i < MESH_LOD_LEVEL_RANGE + 1; i++)
 		{
 			InterlockedExchange(uboOut[0].lodCount[i], 0, temp);
 		}
@@ -94,17 +89,21 @@ void CS(uint3 GlobalInvocationID : SV_DispatchThreadID )
 		InterlockedAdd(uboOut[0].drawCount, 1, temp);
 
 		// Select appropriate LOD level based on distance to camera
-		uint lodLevel = MAX_LOD_LEVEL;
-		for (uint i = 0; i < MAX_LOD_LEVEL; i++)
+		uint lodLevel = MESH_LOD_LEVEL_RANGE;
+		for (uint i = 0; i < MESH_LOD_LEVEL_RANGE; i++)
 		{
-			if (distance(instances[idx].pos.xyz, ubo.cameraPos.xyz) < lods[i].distance)
+			if (distance(instances[idx].pos.xyz, ubo.cameraPos.xyz) < instances[idx].lods[i].distance)
 			{
 				lodLevel = i;
 				break;
 			}
 		}
-		indirectDraws[idx].firstIndex = lods[lodLevel].firstIndex;
-		indirectDraws[idx].indexCount = lods[lodLevel].indexCount;
+		
+		indirectDraws[idx].vertexOffset = 0;
+		indirectDraws[idx].firstInstance = 0;
+		indirectDraws[idx].firstIndex = instances[idx].lods[lodLevel].firstIndex;
+		indirectDraws[idx].indexCount = instances[idx].lods[lodLevel].indexCount;
+		
 		// Update stats
 		InterlockedAdd(uboOut[0].lodCount[lodLevel], 1, temp);
 	}

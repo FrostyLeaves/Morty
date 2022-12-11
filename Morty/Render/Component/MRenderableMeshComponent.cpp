@@ -197,7 +197,7 @@ MIMesh* MRenderableMeshComponent::GetMesh()
 	if (!pMeshResource)
 		return nullptr;
 	
-	return pMeshResource->GetLevelMesh(GetDetailLevel());
+	return pMeshResource->GetMesh();
 }
 
 MBoundsAABB* MRenderableMeshComponent::GetBoundsAABB()

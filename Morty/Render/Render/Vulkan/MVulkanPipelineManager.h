@@ -76,11 +76,11 @@ public:
 
 public:
 
-	void BindConstantParam(MShaderParamSet* pParamSet, MShaderConstantParam* pParam);
+	void BindConstantParam(MShaderConstantParam* pParam, VkWriteDescriptorSet& writeDescriptorSet);
 
-    void BindTextureParam(MShaderParamSet* pParamSet, MShaderTextureParam* pParam);
+    void BindTextureParam(MShaderTextureParam* pParam, VkWriteDescriptorSet& writeDescriptorSet);
 
-    void BindStorageParam(MShaderParamSet* pParamSEt, MShaderStorageParam* pParam);
+    void BindStorageParam(MShaderStorageParam* pParam, VkWriteDescriptorSet& writeDescriptorSet);
 
     MMaterialPipelineLayoutData* CreateMaterialPipelineLayout(std::shared_ptr<MMaterial> pMaterial);
     void DestroyMaterialPipelineLayout(MMaterialPipelineLayoutData* pLayoutData);

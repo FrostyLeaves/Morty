@@ -24,6 +24,9 @@
 
 #include "MShadowMapRenderWork.h"
 #include "MTransparentRenderWork.h"
+#include "Component/MCameraComponent.h"
+#include "MergeInstancing/M​MergeInstancingSubSystem.h"
+#include "Render/MVertex.h"
 #include "RenderProgram/MEnvironmentMapRenderWork.h"
 
 #include "Resource/MTextureResource.h"
@@ -44,6 +47,8 @@ MDeferredRenderProgram::MDeferredRenderProgram()
 	, m_pCullingComputeDispatcher(nullptr)
 	, m_pPrimaryCommand(nullptr)
 	, m_pLightningMaterial(nullptr)
+	, m_cullingInstanceBuffer()
+	, m_cullingIndirectDrawBuffer()
 {
 	
 }
@@ -121,8 +126,142 @@ void MDeferredRenderProgram::RenderCulling(MTaskNode* pTaskNode)
 	MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
 	MIDevice* pRenderDevice = pRenderSystem->GetDevice();
 	MViewport* pViewport = GetViewport();
+	MScene* pScene = pViewport->GetScene();
 
-	m_pPrimaryCommand->DispatchComputeJob(m_pCullingComputeDispatcher);
+
+
+	MMergeInstancingSubSystem* pMergeInstancingSubSystem = pScene->GetSubSystem<MMergeInstancingSubSystem>();
+	if (!pMergeInstancingSubSystem)
+	{
+		return;
+	}
+
+	auto&& tBatchInstanceTable = pMergeInstancingSubSystem->GetMaterialToBatchInstanceTable();
+
+	std::vector<MMergeInstanceCullData> vInstanceCullData;
+
+	struct MMaterialCullingGroup
+	{
+		std::shared_ptr<MMaterial> pMaterial;
+		size_t nBeginIdx;
+		size_t nSize;
+	};
+
+	std::vector<MMaterialCullingGroup> vMaterialCullingGroup;
+
+	for (auto&& pr : tBatchInstanceTable)
+	{
+		if (MMaterialBatchGroup* pMaterialBatchgGroup = pr.second)
+		{
+			for (MRenderableMeshComponent* pMeshComponent : pMaterialBatchgGroup->vMeshComponent)
+			{
+				vMaterialCullingGroup.push_back({});
+				MMaterialCullingGroup& materialCullingGroup = vMaterialCullingGroup.back();
+				materialCullingGroup.pMaterial = pMeshComponent->GetMaterial();
+				materialCullingGroup.nBeginIdx = vInstanceCullData.size();
+				materialCullingGroup.nSize = 0;
+
+				if (MSceneComponent* pSceneComponent = pMeshComponent->GetEntity()->GetComponent<MSceneComponent>())
+				{
+					const std::vector<MMergeInstancingMesh::MMeshClusterData>& vMeshClusterGroup = pMergeInstancingSubSystem->GetMeshClusterGroup(pMeshComponent->GetMesh());
+
+					for (const MMergeInstancingMesh::MMeshClusterData& clusterData : vMeshClusterGroup)
+					{
+						vInstanceCullData.push_back({});
+						MMergeInstanceCullData& cullData = vInstanceCullData.back();
+						materialCullingGroup.nSize++;
+
+						cullData.position = pSceneComponent->GetWorldPosition();
+						cullData.radius = clusterData.boundsShpere.m_fRadius;
+
+						for (size_t nLodIdx = 0; nLodIdx < MRenderGlobal::MESH_LOD_LEVEL_RANGE; ++nLodIdx)
+						{
+							//TODO LOD
+							cullData.lods[nLodIdx].distance = 500 * (1 + nLodIdx) / MRenderGlobal::MESH_LOD_LEVEL_RANGE;
+							cullData.lods[nLodIdx].firstIndex = clusterData.memoryInfo.begin;
+							cullData.lods[nLodIdx].indexCount = clusterData.memoryInfo.size / sizeof(uint32_t);
+						}
+					}
+				}
+			}
+
+		}
+	}
+
+	size_t unCullingBufferSize = vInstanceCullData.size() * sizeof(MMergeInstanceCullData);
+	if (m_cullingInstanceBuffer.GetSize() < unCullingBufferSize)
+	{
+		m_cullingInstanceBuffer.ReallocMemory(unCullingBufferSize);
+		m_cullingInstanceBuffer.DestroyBuffer(pRenderSystem->GetDevice());
+		m_cullingInstanceBuffer.GenerateBuffer(pRenderSystem->GetDevice(), reinterpret_cast<MByte*>(vInstanceCullData.data()), unCullingBufferSize);
+	}
+	else
+	{
+		m_cullingInstanceBuffer.UploadBuffer(pRenderSystem->GetDevice(), reinterpret_cast<MByte*>(vInstanceCullData.data()), unCullingBufferSize);
+	}
+
+	size_t unDrawBufferSize = vInstanceCullData.size() * sizeof(MDrawIndexedIndirectData);
+	if (m_cullingIndirectDrawBuffer.GetSize() < unDrawBufferSize)
+	{
+
+		m_cullingIndirectDrawBuffer.ReallocMemory(unDrawBufferSize);
+		m_cullingIndirectDrawBuffer.DestroyBuffer(pRenderSystem->GetDevice());
+		m_cullingIndirectDrawBuffer.GenerateBuffer(pRenderSystem->GetDevice(), nullptr, unDrawBufferSize);
+	}
+
+
+	MShaderParamSet params = m_pCullingComputeDispatcher->GetShaderParamSets()[0];
+
+	if (MShaderStorageParam* pStorageParam = params.FindStorageParam("instances"))
+	{
+		pStorageParam->pBuffer = &m_cullingInstanceBuffer;
+		pStorageParam->SetDirty();
+	}
+
+	if (MShaderStorageParam* pStorageParam = params.FindStorageParam("indirectDraws"))
+	{
+		pStorageParam->pBuffer = &m_cullingIndirectDrawBuffer;
+		pStorageParam->SetDirty();
+	}
+
+	if (MShaderConstantParam* pConstantParam = params.FindConstantParam("ubo"))
+	{
+		if (MStruct* sut = pConstantParam->var.GetStruct())
+		{
+			sut->SetValue("cameraPos", Vector4());
+			if (MVariantArray* pFrustumArray = sut->GetValue<MVariantArray>("frustumPlanes"))
+			{
+				MCameraFrustum& cameraFrustum = pViewport->GetCameraFrustum();
+				for (size_t planeIdx = 0; planeIdx < 6; ++planeIdx)
+				{
+					(*pFrustumArray)[planeIdx] = cameraFrustum.GetPlane(planeIdx).m_v4Plane;
+				}
+			}
+		}
+
+		pConstantParam->SetDirty();
+	}
+
+	m_pPrimaryCommand->AddGraphToComputeBarrier({ &m_cullingIndirectDrawBuffer });
+
+	m_pPrimaryCommand->DispatchComputeJob(m_pCullingComputeDispatcher, vInstanceCullData.size() / 16, 1, 1);
+
+	m_pPrimaryCommand->AddComputeToGraphBarrier({ &m_cullingIndirectDrawBuffer });
+
+
+	if (const MMergeInstancingMesh* pMergeMesh = pMergeInstancingSubSystem->GetMergeInstancingMesh())
+	{
+		for (MMaterialCullingGroup& group : vMaterialCullingGroup)
+		{
+			m_pPrimaryCommand->SetUseMaterial(group.pMaterial);
+			m_pPrimaryCommand->SetShaderParamSet(&m_frameParamSet);
+
+			//Binding MVP 
+			//m_pPrimaryCommand->SetShaderParamSet(pMeshComponent->GetShaderMeshParamSet());
+			
+			m_pPrimaryCommand->DrawIndexedIndirect(pMergeMesh->GetVertexBuffer(), pMergeMesh->GetIndexBuffer(), &m_cullingIndirectDrawBuffer, group.nBeginIdx * sizeof(MDrawIndexedIndirectData), group.nSize);
+		}
+	}
 }
 
 void MDeferredRenderProgram::RenderGBuffer(MTaskNode* pTaskNode)
@@ -137,7 +276,7 @@ void MDeferredRenderProgram::RenderGBuffer(MTaskNode* pTaskNode)
 
 	if (MTexture* pShadowMap = GetShadowmapTexture())
 	{
-		pCommand->SetRenderToTextureBarrier({ pShadowMap });
+		pCommand->AddRenderToTextureBarrier({ pShadowMap });
 	}
 
 	pCommand->BeginRenderPass(&m_gbufferRenderPass);
@@ -158,7 +297,7 @@ void MDeferredRenderProgram::RenderLightning(MTaskNode* pTaskNode)
 
 	std::vector<MTexture*> vTextures = m_gbufferRenderPass.GetBackTextures();
 	vTextures.push_back(m_gbufferRenderPass.GetDepthTexture());
-	pCommand->SetRenderToTextureBarrier(vTextures);
+	pCommand->AddRenderToTextureBarrier(vTextures);
 
 	pCommand->BeginRenderPass(&m_lightningRenderPass);
 
@@ -592,7 +731,11 @@ void MDeferredRenderProgram::InitializeCullingComputeDispatcher()
 	m_pCullingComputeDispatcher->LoadComputeShader("Shader/cull.mcs");
 
 
+	m_cullingInstanceBuffer.m_eMemoryType = MBuffer::MMemoryType::EHostVisible;
+	m_cullingInstanceBuffer.m_eUsageType = MBuffer::MUsageType::EStorage;
 
+	m_cullingIndirectDrawBuffer.m_eMemoryType = MBuffer::MMemoryType::EDeviceLocal;
+	m_cullingIndirectDrawBuffer.m_eUsageType = MBuffer::MUsageType::EStorage;
 
 }
 
@@ -635,30 +778,33 @@ void MDeferredRenderProgram::CollectRenderMesh(MRenderInfo& info)
 
 		const MBoundsAABB* pBounds = meshComp.GetBoundsAABB();
 
-		if (MCameraFrustum::EOUTSIDE == pViewport->GetCameraFrustum().ContainTest(*pBounds))
-			continue;
-
-		if (pMaterial->GetMaterialType() == MEMaterialType::EDepthPeel)
-		{
-			auto& meshes = info.m_tTransparentGroupMesh[pMaterial];
-			meshes.push_back(&meshComp);
-		}
-		else if (pMaterial->GetMaterialType() == MEMaterialType::EDeferred)
-		{
-			auto& meshes = info.m_tDeferredMaterialGroupMesh[pMaterial];
-			meshes.push_back(&meshComp);
-		}
-		else
-		{
-			auto& meshes = info.m_tMaterialGroupMesh[pMaterial];
-			meshes.push_back(&meshComp);
-		}
-
-
 		if (meshComp.GetShadowType() != MRenderableMeshComponent::MEShadowType::ENone)
 		{
 			pBounds->UnionMinMax(v3BoundsMin, v3BoundsMax);
 		}
+
+		if (!meshComp.GetBatchInstanceEnable())
+		{
+			if (MCameraFrustum::EOUTSIDE == pViewport->GetCameraFrustum().ContainTest(*pBounds))
+				continue;
+
+			if (pMaterial->GetMaterialType() == MEMaterialType::EDepthPeel)
+			{
+				auto& meshes = info.m_tTransparentGroupMesh[pMaterial];
+				meshes.push_back(&meshComp);
+			}
+			else if (pMaterial->GetMaterialType() == MEMaterialType::EDeferred)
+			{
+				auto& meshes = info.m_tDeferredMaterialGroupMesh[pMaterial];
+				meshes.push_back(&meshComp);
+			}
+			else
+			{
+				auto& meshes = info.m_tMaterialGroupMesh[pMaterial];
+				meshes.push_back(&meshComp);
+			}
+		}
+
 	}
 
 	info.cCaclSceneRenderAABB.SetMinMax(v3BoundsMin, v3BoundsMax);

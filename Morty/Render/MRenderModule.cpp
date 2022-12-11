@@ -25,6 +25,9 @@
 #include "Component/MRenderableMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 #include "Component/MDebugRenderComponent.h"
+#include "MergeInstancing/M​MergeInstancingSubSystem.h"
+#include "Scene/MScene.h"
+#include "System/MObjectSystem.h"
 
 #include "TaskGraph/MTaskGraph.h"
 
@@ -107,7 +110,29 @@ bool MRenderModule::Register(MEngine* pEngine)
 		pComponentSystem->RegisterComponent<MDirectionalLightComponent>();
 		pComponentSystem->RegisterComponent<MDebugRenderComponent>();
 	}
+
+
+	if (MObjectSystem* pObjectSystem = pEngine->FindSystem<MObjectSystem>())
+	{
+		pObjectSystem->RegisterPostCreateObject(MRenderModule::OnObjectPostCreate);
+	}
 	
 
 	return true;
+}
+
+void MRenderModule::OnObjectPostCreate(MObject* pObject)
+{
+	if (!pObject)
+	{
+		return;
+	}
+
+	if(pObject->GetType() == MScene::GetClassType())
+	{
+		if (MScene* pScene = pObject->DynamicCast<MScene>())
+		{
+			pScene->RegisterSubSystem<MMergeInstancingSubSystem>();
+		}
+	}
 }

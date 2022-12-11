@@ -38,7 +38,7 @@ public:
 	static const int SPOT_LIGHT_MAX_NUMBER = 8;
 	static const int SPOT_LIGHT_PIXEL_NUMBER = 8;
 
-	static const int MESH_LOD_LEVEL_RANGE = 10;
+	static const int MESH_LOD_LEVEL_RANGE = 3;
 
 	static const bool VERTEX_NORMAL = false;
 
@@ -49,6 +49,8 @@ public:
 	static const bool GBUFFER_UNIFIED_FORMAT;
 
 	static const int CASCADED_SHADOW_MAP_NUM = 4;
+
+	static const size_t MERGE_INSTANCING_MAX_NUM = 128;
 };
 
 #endif

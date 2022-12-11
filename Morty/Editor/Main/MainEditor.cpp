@@ -712,7 +712,7 @@ void MainEditor::Render(MTaskNode* pNode)
 	{
 		vRenderTextures.push_back(pRenderTexture);
 
-		pRenderCommand->SetRenderToTextureBarrier(vRenderTextures);
+		pRenderCommand->AddRenderToTextureBarrier(vRenderTextures);
 
 
 		//m_unTriangleCount = MRenderStatistics::GetInstance()->unTriangleCount;

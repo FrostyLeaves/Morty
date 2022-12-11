@@ -43,9 +43,9 @@ public:
 	virtual void Release() override;
 
 public:
-	virtual void GenerateBuffer(MBuffer* pBuffer, const std::vector<MByte>& initialData) override;
+	virtual void GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, const size_t& unDataSize) override;
 	virtual void DestroyBuffer(MBuffer* pBuffer) override;
-	virtual void UploadBuffer(MBuffer* pBuffer, const std::vector<MByte>& data) override;
+	virtual void UploadBuffer(MBuffer* pBuffer, const size_t& unBeginOffset, const MByte* data, const size_t& unDataSize) override;
 
 	virtual void GenerateTexture(MTexture* pTexture, MByte* pData = nullptr) override;
 	virtual void DestroyTexture(MTexture* pTexture) override;
@@ -114,6 +114,7 @@ public:
 
 	int FindQueueGraphicsFamilies(VkPhysicalDevice device);
 	int FindQueuePresentFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
+	int FindQueueComputeFamilies(VkPhysicalDevice device);
 
 	int FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	int FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
@@ -156,7 +157,11 @@ public:
 	VkDevice m_VkDevice;
 	VkQueue m_VkGraphicsQueue;
 
-	VkCommandPool m_VkCommandPool;
+	int m_nGraphicsFamilyIndex = 0;
+	int m_nComputeFamilyIndex = 0;
+
+
+	VkCommandPool m_VkGraphCommandPool;
 
 	MVulkanShaderCompiler m_ShaderCompiler;
 	MVulkanPipelineManager m_PipelineManager;

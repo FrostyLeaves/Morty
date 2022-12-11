@@ -164,7 +164,7 @@ void ImGuiRenderable::WaitTextureReady(MIRenderCommand* pCommand)
 	{
 		if (MTexture* pTexture = texid.pTexture)
 		{
-			pCommand->SetRenderToTextureBarrier({ pTexture });
+			pCommand->AddRenderToTextureBarrier({ pTexture });
 		}
 	}
 }

@@ -63,6 +63,7 @@ struct MORTY_API MShaderConstantParam : public MShaderParam
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	VkBuffer m_VkBuffer;
 	VkDeviceMemory m_VkBufferMemory;
+	VkDescriptorBufferInfo m_VkBufferInfo;
 	uint32_t m_unMemoryOffset;
 	MByte* m_pMemoryMapping;
 	uint32_t m_unVkMemorySize;
@@ -83,6 +84,10 @@ public:
 	void* pImageIdent;
 	METextureType eType;
 
+#if RENDER_GRAPHICS == MORTY_VULKAN
+	VkDescriptorImageInfo m_VkImageInfo;
+
+#endif
 };
 
 struct MShaderStorageParam : public MShaderParam
@@ -93,6 +98,11 @@ struct MShaderStorageParam : public MShaderParam
 public:
 	MBuffer* pBuffer;
 	bool bWritable;
+
+#if RENDER_GRAPHICS == MORTY_VULKAN
+	VkDescriptorBufferInfo m_VkBufferInfo;
+#endif
+
 };
 
 struct MShaderSubpasssInputParam : public MShaderTextureParam

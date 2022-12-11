@@ -32,7 +32,7 @@ public:
 	virtual void GenerateBuffer(MIDevice* pDevice);
 	virtual void UploadBuffer(MIDevice* pDevice);
 	virtual void DestroyBuffer(MIDevice* pDevice);
-	void* GetVertices() { return m_vVertexData.data(); }
+	MByte* GetVertices() { return m_vVertexData.data(); }
 	const void* GetVertices() const { return m_vVertexData.data(); }
 	const std::vector<MByte>& GetVerticesVector() const { return m_vVertexData; }
 	const std::vector<MByte>& GetIndicesVector() const { return m_vIndexData; }
@@ -40,11 +40,13 @@ public:
 	virtual uint32_t* GetIndices() { return reinterpret_cast<uint32_t*>(m_vIndexData.data()); }
 
 	virtual uint32_t GetVertexStructSize() const = 0;
+	uint32_t GetIndexStructSize() const { return sizeof(uint32_t); }
 
 	virtual uint32_t GetVerticesNum() const;
 	virtual uint32_t GetIndicesNum() const;
 
-	uint32_t GetVerticesSize() const { return m_vertexBuffer.GetSize(); }
+	size_t GetVerticesSize() const { return m_vertexBuffer.GetSize(); }
+	size_t GetIndicesSize() const { return m_indexBuffer.GetSize(); }
 
 	virtual MIMesh* Clone(const bool& bDynamic = false) const = 0;
 

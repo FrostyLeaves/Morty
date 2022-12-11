@@ -283,16 +283,11 @@ bool MVulkanPipelineManager::UnRegisterComputeDispatcher(MComputeDispatcher* pCo
 	return true;
 }
 
-void MVulkanPipelineManager::BindConstantParam(MShaderParamSet* pParamSet, MShaderConstantParam* pParam)
+void MVulkanPipelineManager::BindConstantParam(MShaderConstantParam* pParam, VkWriteDescriptorSet& descriptorWrite)
 {
-	VkDescriptorBufferInfo bufferInfo{};
-	bufferInfo.buffer = pParam->m_VkBuffer;
-	bufferInfo.offset = 0;
-	bufferInfo.range = pParam->var.GetSize();
+	VkDescriptorBufferInfo& bufferInfo = pParam->m_VkBufferInfo;
 
-	VkWriteDescriptorSet descriptorWrite{};
 	descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorWrite.dstSet = pParamSet->m_VkDescriptorSet;
 	descriptorWrite.dstBinding = pParam->unBinding;
 	descriptorWrite.dstArrayElement = 0;
 
@@ -302,11 +297,9 @@ void MVulkanPipelineManager::BindConstantParam(MShaderParamSet* pParamSet, MShad
 	descriptorWrite.pBufferInfo = &bufferInfo;
 	descriptorWrite.pImageInfo = nullptr; // Optional
 	descriptorWrite.pTexelBufferView = nullptr; // Optional
-
-	vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
 }
 
-void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShaderTextureParam* pParam)
+void MVulkanPipelineManager::BindTextureParam(MShaderTextureParam* pParam, VkWriteDescriptorSet& descriptorWrite)
 {
 	MTexture* pTexture = pParam->GetTexture();
 	if (!pTexture)
@@ -331,17 +324,17 @@ void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShade
 
 	if (pTexture)
 	{
-		VkDescriptorImageInfo imageInfo = {};
+		VkDescriptorImageInfo& imageInfo = pParam->m_VkImageInfo;
 		imageInfo.imageView = pTexture->m_VkImageView;
 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		imageInfo.sampler = pTexture->m_VkSampler;
 
 		if (VK_NULL_HANDLE == imageInfo.sampler)
+		{
 			imageInfo.sampler = m_pDevice->m_VkLinearSampler;
+		}
 
-		VkWriteDescriptorSet descriptorWrite{};
 		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrite.dstSet = pParamSet->m_VkDescriptorSet;
 		descriptorWrite.dstBinding = pParam->unBinding;
 		descriptorWrite.dstArrayElement = 0;
 
@@ -353,22 +346,19 @@ void MVulkanPipelineManager::BindTextureParam(MShaderParamSet* pParamSet, MShade
 		descriptorWrite.pTexelBufferView = nullptr;
 
 		//A VkDescripotrSet can only be updated once on per render. .
-		vkUpdateDescriptorSets(m_pDevice->m_VkDevice, 1, &descriptorWrite, 0, nullptr);
 	}
 }
 
-void MVulkanPipelineManager::BindStorageParam(MShaderParamSet* pParamSet, MShaderStorageParam* pParam)
+void MVulkanPipelineManager::BindStorageParam(MShaderStorageParam* pParam, VkWriteDescriptorSet& descriptorWrite)
 {
 	const MBuffer* pBuffer = pParam->pBuffer;
 
-	VkDescriptorBufferInfo bufferInfo{};
+	VkDescriptorBufferInfo& bufferInfo = pParam->m_VkBufferInfo;
 	bufferInfo.buffer = pBuffer->m_VkBuffer;
 	bufferInfo.offset = 0;
 	bufferInfo.range = pBuffer->GetSize();
 
-	VkWriteDescriptorSet descriptorWrite{};
 	descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorWrite.dstSet = pParamSet->m_VkDescriptorSet;
 	descriptorWrite.dstBinding = pParam->unBinding;
 	descriptorWrite.dstArrayElement = 0;
 

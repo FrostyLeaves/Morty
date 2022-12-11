@@ -36,30 +36,29 @@ public:
 
 	virtual void DrawMesh(MIMesh* pMesh) override;
 	virtual void DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, const uint32_t& nIdxCount, const uint32_t& nVrtOffset) override;
+	virtual void DrawIndexedIndirect(const MBuffer* pVertexBuffer, const MBuffer* pIndexBuffer, const MBuffer* pCommandsBuffer, const size_t& offset, const size_t& count) override;
+
 
 	virtual bool SetUseMaterial(std::shared_ptr<MMaterial> pMaterial) override;
 	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) override;
 
-	virtual bool DispatchComputeJob(MComputeDispatcher* pComputeDispatcher) override;
+	virtual bool DispatchComputeJob(MComputeDispatcher* pComputeDispatcher, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ) override;
 
-	virtual bool SetRenderToTextureBarrier(const std::vector<MTexture*> vTextures) override;
+	virtual bool AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures) override;
+	virtual bool AddComputeToGraphBarrier(const std::vector<MBuffer*> vBuffers) override;
+	virtual bool AddGraphToComputeBarrier(const std::vector<MBuffer*> vBuffers) override;
 	virtual bool DownloadTexture(MTexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback) override;
 	virtual bool CopyImageBuffer(MTexture* pSource, MTexture* pDest) override;
 	virtual void UpdateMipmaps(MTexture* pBuffer) override;
 
 	virtual void addFinishedCallback(std::function<void()> func) override;
 
-	void UpdateBuffer(MBuffer* pBuffer, const std::vector<MByte>& data);
+	void UpdateBuffer(MBuffer* pBuffer, const MByte* data, const size_t& size);
 
-	void UpdateShaderParam(MShaderParamSet* pParamSet, MShaderConstantParam* param);
-	void UpdateShaderParam(MShaderParamSet* pParamSet, MShaderTextureParam* param);
+	void UpdateShaderParam(MShaderConstantParam* param);
 
-
-	void BindConstantParam(MShaderParamSet* pParamSet, MShaderConstantParam* pParam);
-	void BindTextureParam(MShaderParamSet* pParamSet, MShaderTextureParam* pParam);
-
+	
 	void SetTextureLayout(const std::vector<MTexture*>& vTextures, VkImageLayout newLayout);
-
 
 public:
 

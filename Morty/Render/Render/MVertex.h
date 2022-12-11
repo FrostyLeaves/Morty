@@ -12,6 +12,9 @@
 #include "Math/Vector.h"
 #include "Utility/MString.h"
 
+#if RENDER_GRAPHICS == MORTY_VULKAN
+#include "Render/Vulkan/MVulkanWrapper.h"
+#endif
 
 //顶点
 struct MVertex
@@ -42,5 +45,27 @@ struct MVertexWithBones
 	int bonesID[MRenderGlobal::BONES_PER_VERTEX];
 	float bonesWeight[MRenderGlobal::BONES_PER_VERTEX];
 };
+
+
+struct MMergeInstanceCullData
+{
+	Vector3 position;
+	float radius;
+
+	struct LOD
+	{
+		uint32_t firstIndex;
+		uint32_t indexCount;
+		float distance;
+		float _pad0;
+	} lods[MRenderGlobal::MESH_LOD_LEVEL_RANGE];
+};
+
+
+#if RENDER_GRAPHICS == MORTY_VULKAN
+typedef VkDrawIndexedIndirectCommand MDrawIndexedIndirectData;
+#endif
+
+
 
 #endif

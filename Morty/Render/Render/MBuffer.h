@@ -52,8 +52,8 @@ public:
     void ReallocMemory(const size_t& unNewSize); 
     size_t GetSize() const { return m_unDataSize; }
 
-    void GenerateBuffer(MIDevice* pDevice, const std::vector<MByte>& initialData);
-    void UploadBuffer(MIDevice* pDevice, const std::vector<MByte>& data);
+    void GenerateBuffer(MIDevice* pDevice, const MByte* data, const size_t& size);
+    void UploadBuffer(MIDevice* pDevice, const MByte* data, const size_t& size);
     void DestroyBuffer(MIDevice* pDevice);
 
 public:

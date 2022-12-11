@@ -32,13 +32,15 @@ public:
 
 public:
 
+	const MPlane& GetPlane(const size_t& idx) const;
+
 	void UpdateFromCameraInvProj(const Matrix4& m4CameraInvProj);
 
 	MEContainType ContainTest(const Vector3& position);
 	MEContainType ContainTest(const MBoundsAABB& aabb);
 	MEContainType ContainTest(const MBoundsSphere& sphere);
 
-	//ֻ��ĳ������ָ�����׶�����������
+
 	MEContainType ContainTest(const MBoundsAABB& aabb, const Vector3& v3Direction);
 
 	std::vector<MCameraFrustum> CutFrustum(const std::vector<float>& percent);

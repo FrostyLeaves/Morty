@@ -11,12 +11,14 @@
 #include "Utility/MGlobal.h"
 
 class MEngine;
+class MObject;
 class MORTY_API MRenderModule
 {
 public:
 
 	static bool Register(MEngine* pEngine);
 
+	static void OnObjectPostCreate(MObject* pObject);
 
 	static const MString DefaultWhite;
 	static const MString DefaultNormal;

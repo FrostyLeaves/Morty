@@ -12,6 +12,7 @@ const MString strPointLightPixelNumber = MStringHelper::ToString(MRenderGlobal::
 const MString strSpotLightMaxNumber = MStringHelper::ToString(MRenderGlobal::SPOT_LIGHT_MAX_NUMBER);
 const MString strSpotLightPixelNumber = MStringHelper::ToString(MRenderGlobal::SPOT_LIGHT_PIXEL_NUMBER);
 const MString strCascadedShadowMapNumber = MStringHelper::ToString(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
+const MString strMeshLODLevelRangeNumber = MStringHelper::ToString(MRenderGlobal::MESH_LOD_LEVEL_RANGE);
 
 
 enum class METransparentPolicy
@@ -33,6 +34,7 @@ std::vector<std::pair<MString, MString>> MShaderMacro::s_vGlobalMacroParams = {
 	{"MTRANSPARENT_POLICY", strTransparentPolicy},
 	{"GBUFFER_UNIFIED_FORMAT", MRenderGlobal::GBUFFER_UNIFIED_FORMAT ? "true" : "false"},
 	{"CASCADED_SHADOW_MAP_NUM", strCascadedShadowMapNumber},
+	{"MESH_LOD_LEVEL_RANGE", strMeshLODLevelRangeNumber},
 };
 
 void MShaderMacro::SetInnerMacro(const MString& strKey, const MString& strValue)

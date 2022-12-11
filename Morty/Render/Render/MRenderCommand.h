@@ -13,6 +13,7 @@
 #include "Math/Vector.h"
 
 class MIMesh;
+class MBuffer;
 class MTexture;
 class MMaterial;
 class MRenderPass;
@@ -73,13 +74,16 @@ public:
 
 	virtual void DrawMesh(MIMesh* pMesh) = 0;
 	virtual void DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, const uint32_t& nIdxCount, const uint32_t& nVrtOffset) = 0;
+	virtual void DrawIndexedIndirect(const MBuffer* pVertexBuffer, const MBuffer* pIndexBuffer, const MBuffer* pCommandsBuffer, const size_t& offset, const size_t& count) = 0;
 
 	virtual bool SetUseMaterial(std::shared_ptr<MMaterial> pMaterial) = 0;
 	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) = 0;
 
-	virtual bool DispatchComputeJob(MComputeDispatcher* pMaterial) = 0;
+	virtual bool DispatchComputeJob(MComputeDispatcher* pMaterial, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ) = 0;
 
-	virtual bool SetRenderToTextureBarrier(const std::vector<MTexture*> vTextures) = 0;
+	virtual bool AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures) = 0;
+	virtual bool AddComputeToGraphBarrier(const std::vector<MBuffer*> vBuffers) = 0;
+	virtual bool AddGraphToComputeBarrier(const std::vector<MBuffer*> vBuffers) = 0;
 	virtual bool DownloadTexture(MTexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback) = 0;
 	virtual bool CopyImageBuffer(MTexture* pSource, MTexture* pDest) = 0;
 	virtual void UpdateMipmaps(MTexture* pBuffer) = 0;

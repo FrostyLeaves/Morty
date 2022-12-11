@@ -79,7 +79,7 @@ void MTransparentRenderWork::Render(MRenderInfo& info)
 	if (!pCommand)
 		return;
 
-	pCommand->SetRenderToTextureBarrier({ m_pFrontTexture, m_pBackTexture });
+	pCommand->AddRenderToTextureBarrier({ m_pFrontTexture, m_pBackTexture });
 
 	pCommand->BeginRenderPass(&m_fillRenderPass);
 
@@ -110,7 +110,7 @@ void MTransparentRenderWork::RenderDepthPeel(MRenderInfo& info)
 	m_aFrameParamSet[1].UpdateShaderSharedParams(info);
 
 
-	pCommand->SetRenderToTextureBarrier({ m_pDepthTexture });
+	pCommand->AddRenderToTextureBarrier({ m_pDepthTexture });
 
 	pCommand->BeginRenderPass(&m_peelRenderPass);
 

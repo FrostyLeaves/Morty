@@ -25,7 +25,7 @@ public:
 public:
 
 	MShaderConstantParam* FindConstantParam(const MString& strParamName);
-
+	MShaderStorageParam* FindStorageParam(const MString& strParamName);
 
 	MVariant* FindValue(const MString& strName, MVariant& value);
 	MVariant* FindValue(const MString& strName);

@@ -110,7 +110,7 @@ void MEnvironmentMapRenderWork::RenderDiffuse(MIRenderCommand* pCommand, MSkyBox
 	{
 		if (MTexture* pTexture = pDiffuseTexture->GetTextureTemplate())
 		{
-			pCommand->SetRenderToTextureBarrier({ pTexture });
+			pCommand->AddRenderToTextureBarrier({ pTexture });
 		}
 
 		pSkyBoxComponent->LoadDiffuseEnvResource(pDiffuseTexture);
@@ -152,7 +152,7 @@ void MEnvironmentMapRenderWork::RenderSpecular(MIRenderCommand* pCommand, MSkyBo
 	{
 		if (MTexture* pTexture = pSpecularTexture->GetTextureTemplate())
 		{
-			pCommand->SetRenderToTextureBarrier({ pTexture });
+			pCommand->AddRenderToTextureBarrier({ pTexture });
 		}
 
 		pSkyBoxComponent->LoadSpecularEnvResource(pSpecularTexture);

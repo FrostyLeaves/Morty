@@ -65,7 +65,6 @@ public:
 
 	void Update();
 
-
 public:
 
 	template<typename TYPE>
@@ -76,6 +75,7 @@ public:
 	TYPE* FindSystem();
 
 	std::vector<MISystem*>& GetAllSystem() { return m_vSystem; }
+
 
 protected:
 

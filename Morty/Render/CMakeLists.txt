@@ -20,6 +20,9 @@ source_group("Component" FILES ${RENDER_COMPONENT_FILES})
 file(GLOB RENDER_MATERIAL_FILES Material/*.h Material/*.cpp)
 source_group("Material" FILES ${RENDER_MATERIAL_FILES})
 
+file(GLOB RENDER_MERGE_INSTANCING_FILES MergeInstancing/*.h MergeInstancing/*.cpp)
+source_group("MergeInstancing" FILES ${RENDER_MERGE_INSTANCING_FILES})
+
 file(GLOB RENDER_MODEL_FILES Model/*.h Model/*.cpp)
 source_group("Model" FILES ${RENDER_MODEL_FILES})
 
@@ -81,6 +84,7 @@ add_library(Render STATIC
     ${RENDER_RENDER_GRAPH_FILES}
     ${RENDER_RENDER_PROGRAM_FILES}
     ${RENDER_MATERIAL_FILES}
+    ${RENDER_MERGE_INSTANCING_FILES}
     ${RENDER_MODEL_FILES}
     ${RENDER_RESOURCE_FILES}
     ${RENDER_SUBSYSTEM_FILES}

@@ -33,14 +33,14 @@ void MBuffer::ReallocMemory(const size_t& unNewSize)
 	m_eStageType = MBuffer::MStageType::EWaitAllow;
 }
 
-void MBuffer::GenerateBuffer(MIDevice* pDevice, const std::vector<MByte>& initialData)
+void MBuffer::GenerateBuffer(MIDevice* pDevice, const MByte* data, const size_t& size)
 {
-	pDevice->GenerateBuffer(this, initialData);
+	pDevice->GenerateBuffer(this, data, size);
 }
 
-void MBuffer::UploadBuffer(MIDevice* pDevice, const std::vector<MByte>& data)
+void MBuffer::UploadBuffer(MIDevice* pDevice, const MByte* data, const size_t& size)
 {
-	pDevice->UploadBuffer(this, data);
+	pDevice->UploadBuffer(this, 0, data, size);
 }
 
 void MBuffer::DestroyBuffer(MIDevice* pDevice)

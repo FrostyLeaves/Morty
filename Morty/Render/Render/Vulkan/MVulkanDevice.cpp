@@ -76,7 +76,7 @@ MVulkanDevice::MVulkanDevice()
 	, m_VkPhysicalDeviceProperties({})
 	, m_VkDevice(VK_NULL_HANDLE)
 	, m_VkGraphicsQueue(VK_NULL_HANDLE)
-	, m_VkCommandPool(VK_NULL_HANDLE)
+	, m_VkGraphCommandPool(VK_NULL_HANDLE)
 	, m_pRecycleBin(nullptr)
 	, m_PipelineManager(this)
 	, m_ShaderCompiler(this)
@@ -185,7 +185,7 @@ void MVulkanDevice::Release()
 	vkDestroySampler(m_VkDevice, m_VkLinearSampler, nullptr);
 	vkDestroySampler(m_VkDevice, m_VkNearestSampler, nullptr);
 	vkDestroyDescriptorPool(m_VkDevice, m_VkDescriptorPool, nullptr);
-	vkDestroyCommandPool(m_VkDevice, m_VkCommandPool, nullptr);
+	vkDestroyCommandPool(m_VkDevice, m_VkGraphCommandPool, nullptr);
 	vkDestroyDevice(m_VkDevice, nullptr);
 	vkDestroyInstance(m_VkInstance, NULL);
 
@@ -520,7 +520,7 @@ bool MVulkanDevice::InitDescriptorPool()
 	return true;
 }
 
-void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer, const std::vector<MByte>& initialData)
+void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, const size_t& unDataSize)
 {
 
 	VkDeviceSize unBufferSize = static_cast<uint64_t>(pBuffer->GetSize());
@@ -556,10 +556,10 @@ void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer, const std::vector<MByte>& i
 	{
 		GenerateBuffer(unBufferSize, vkBufferUsageFlags, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vkBuffer, vkDeviceMemory);
 
-		if (initialData.size() >= unBufferSize)
+		if (initialData && unDataSize >= unBufferSize)
 		{
 			vkMapMemory(m_VkDevice, vkDeviceMemory, 0, unBufferSize, 0, &pMapMemory);
-			memcpy(pMapMemory, initialData.data(), static_cast<size_t>(unBufferSize));
+			memcpy(pMapMemory, initialData, static_cast<size_t>(unBufferSize));
 			vkUnmapMemory(m_VkDevice, vkDeviceMemory);
 		}
 	}
@@ -567,14 +567,14 @@ void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer, const std::vector<MByte>& i
 	{
 		GenerateBuffer(unBufferSize, vkBufferUsageFlags, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vkBuffer, vkDeviceMemory);
 
-		if (initialData.size() >= unBufferSize)
+		if (initialData && unDataSize >= unBufferSize)
 		{
 			VkBuffer stagingBuffer;
 			VkDeviceMemory stagingBufferMemory;
 			GenerateBuffer(unBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 			vkMapMemory(m_VkDevice, stagingBufferMemory, 0, unBufferSize, 0, &pMapMemory);
-			memcpy(pMapMemory, initialData.data(), (size_t)unBufferSize);
+			memcpy(pMapMemory, initialData, (size_t)unBufferSize);
 			vkUnmapMemory(m_VkDevice, stagingBufferMemory);
 
 			CopyBuffer(stagingBuffer, vkBuffer, unBufferSize);
@@ -603,24 +603,26 @@ void MVulkanDevice::DestroyBuffer(MBuffer* pBuffer)
 	pBuffer->m_eStageType = MBuffer::MStageType::EUnknow;
 }
 
-void MVulkanDevice::UploadBuffer(MBuffer* pBuffer, const std::vector<MByte>& data)
+void MVulkanDevice::UploadBuffer(MBuffer* pBuffer, const size_t& unBeginOffset, const MByte* data, const size_t& unDataSize)
 {
 	if(!pBuffer)
 	{
 		return;
 	}
-
+	
 	if (MBuffer::MMemoryType::EHostVisible == pBuffer->m_eMemoryType)
 	{
-		if (data.size() >= pBuffer->GetSize())
-		{
-			void* dataMapping = nullptr;
-			vkMapMemory(m_VkDevice, pBuffer->m_VkDeviceMemory, 0, pBuffer->GetSize(), 0, &dataMapping);
-			memcpy(dataMapping, data.data(), pBuffer->GetSize());
-			vkUnmapMemory(m_VkDevice, pBuffer->m_VkDeviceMemory);
+		size_t unMappingSize = (std::min)(unDataSize, pBuffer->GetSize() - unBeginOffset);
+		void* dataMapping = nullptr;
+		vkMapMemory(m_VkDevice, pBuffer->m_VkDeviceMemory, unBeginOffset, unMappingSize, 0, &dataMapping);
+		memcpy(dataMapping, data, unMappingSize);
+		vkUnmapMemory(m_VkDevice, pBuffer->m_VkDeviceMemory);
 
-			pBuffer->m_eStageType = MBuffer::MStageType::ESynced;
-		}
+		pBuffer->m_eStageType = MBuffer::MStageType::ESynced;
+	}
+	else
+	{
+		assert(false);
 	}
 }
 
@@ -1343,7 +1345,7 @@ MIRenderCommand* MVulkanDevice::CreateRenderCommand(const MString& strCommandNam
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandPool = m_VkCommandPool;
+	allocInfo.commandPool = m_VkGraphCommandPool;
 	allocInfo.commandBufferCount = 1;
 	vkAllocateCommandBuffers(m_VkDevice, &allocInfo, &pCommand->m_VkCommandBuffer);
 
@@ -1378,7 +1380,7 @@ void MVulkanDevice::RecoveryRenderCommand(MIRenderCommand* pRenderCommand)
 	{
 		//GetRecycleBin()->DestroyCommandBufferLater(pCommand->m_VkCommandBuffer);
 		
-		vkFreeCommandBuffers(m_VkDevice, m_VkCommandPool, 1, &pCommand->m_VkCommandBuffer);
+		vkFreeCommandBuffers(m_VkDevice, m_VkGraphCommandPool, 1, &pCommand->m_VkCommandBuffer);
 		pCommand->m_VkCommandBuffer = VK_NULL_HANDLE;
 	}
 
@@ -1400,7 +1402,7 @@ void MVulkanDevice::RecoveryRenderCommand(MIRenderCommand* pRenderCommand)
 
 	for (MVulkanSecondaryRenderCommand* pSecondaryCommand : pCommand->m_vSecondaryCommand)
 	{
-		vkFreeCommandBuffers(m_VkDevice, m_VkCommandPool, 1, &pSecondaryCommand->m_VkCommandBuffer);
+		vkFreeCommandBuffers(m_VkDevice, m_VkGraphCommandPool, 1, &pSecondaryCommand->m_VkCommandBuffer);
 		pSecondaryCommand->m_VkCommandBuffer = VK_NULL_HANDLE;
 	}
 
@@ -1877,7 +1879,7 @@ MVulkanSecondaryRenderCommand* MVulkanDevice::CreateChildCommand(MVulkanPrimaryR
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-	allocInfo.commandPool = m_VkCommandPool;
+	allocInfo.commandPool = m_VkGraphCommandPool;
 	allocInfo.commandBufferCount = 1;
 	vkAllocateCommandBuffers(m_VkDevice, &allocInfo, &pSecondaryCommand->m_VkCommandBuffer);
 
@@ -1936,7 +1938,7 @@ VkCommandBuffer MVulkanDevice::BeginCommands()
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandPool = m_VkCommandPool;
+	allocInfo.commandPool = m_VkGraphCommandPool;
 	allocInfo.commandBufferCount = 1;
 
 	VkCommandBuffer commandBuffer;
@@ -1964,7 +1966,7 @@ void MVulkanDevice::EndCommands(VkCommandBuffer commandBuffer)
 
 	VkResult result = vkQueueWaitIdle(m_VkGraphicsQueue);	//��ͣӦ�ó���ֱ������ύ�������е����й���
 
-	vkFreeCommandBuffers(m_VkDevice, m_VkCommandPool, 1, &commandBuffer);
+	vkFreeCommandBuffers(m_VkDevice, m_VkGraphCommandPool, 1, &commandBuffer);
 }
 
 bool MVulkanDevice::InitVulkanInstance()
@@ -2085,22 +2087,36 @@ bool MVulkanDevice::InitPhysicalDevice()
 		return false;
 	}
 
+	m_nGraphicsFamilyIndex = FindQueueGraphicsFamilies(m_VkPhysicalDevice);
+	m_nComputeFamilyIndex = FindQueueComputeFamilies(m_VkPhysicalDevice);
 
 	return true;
 }
 
 bool MVulkanDevice::InitLogicalDevice()
 {
-	int nQueueFamilyIndex = FindQueueGraphicsFamilies(m_VkPhysicalDevice);
+
+	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos{};
 
 	float priorities[] = { 1.0f };	//range 0~1
 	VkDeviceQueueCreateInfo queueInfo{};
 	queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 	queueInfo.pNext = NULL;
 	queueInfo.flags = 0;
-	queueInfo.queueFamilyIndex = nQueueFamilyIndex;
+	queueInfo.queueFamilyIndex = m_nGraphicsFamilyIndex;
 	queueInfo.queueCount = 1;
-	queueInfo.pQueuePriorities = &priorities[0];
+	queueInfo.pQueuePriorities = priorities;
+	queueCreateInfos.push_back(queueInfo);
+
+	if (m_nComputeFamilyIndex != m_nGraphicsFamilyIndex)
+	{
+		VkDeviceQueueCreateInfo queueInfo{};
+		queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queueInfo.queueFamilyIndex = m_nComputeFamilyIndex;
+		queueInfo.queueCount = 1;
+		queueInfo.pQueuePriorities = priorities;
+		queueCreateInfos.push_back(queueInfo);
+	}
 
 
 	VkPhysicalDeviceFeatures deviceFeatures = {};
@@ -2113,16 +2129,14 @@ bool MVulkanDevice::InitLogicalDevice()
 	VkDeviceCreateInfo deviceInfo{};
 	deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	deviceInfo.flags = 0;
-	deviceInfo.queueCreateInfoCount = 1;
-	deviceInfo.pQueueCreateInfos = &queueInfo;
+	deviceInfo.queueCreateInfoCount = queueCreateInfos.size();
+	deviceInfo.pQueueCreateInfos = queueCreateInfos.data();
 	deviceInfo.enabledExtensionCount = DeviceExtensions.size();
 	deviceInfo.ppEnabledExtensionNames = DeviceExtensions.data();
 	deviceInfo.pEnabledFeatures = &deviceFeatures;
 	deviceInfo.pNext = &device11Features;
 
-	//����Ĭ���˵�ǰ�����壨nQueueFamilyIndex����֧���������͵Ĺ���
-	//���ܻ���ڲ�֧������ǰ��Ļ�ϻ��Ƶģ����������Ҫ�ڴ���logicalDevice֮ǰ�������ڵ�surface��Ȼ��check֧��֧�֡�
-	//���̫�����ˣ��Ȳ�����
+
 	VkResult result = vkCreateDevice(m_VkPhysicalDevice, &deviceInfo, NULL, &m_VkDevice);
 	if (result != VK_SUCCESS)
 	{
@@ -2130,21 +2144,20 @@ bool MVulkanDevice::InitLogicalDevice()
 		return false;
 	}
 
-	vkGetDeviceQueue(m_VkDevice, nQueueFamilyIndex, 0, &m_VkGraphicsQueue);
+	vkGetDeviceQueue(m_VkDevice, nQueueFamilyGraphIndex, 0, &m_VkGraphicsQueue);
 
 	return true;
 }
 
 bool MVulkanDevice::InitCommandPool()
 {
-	uint32_t unQueueFamilyIndex = FindQueueGraphicsFamilies(m_VkPhysicalDevice);
 
 	VkCommandPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	poolInfo.queueFamilyIndex = unQueueFamilyIndex;
+	poolInfo.queueFamilyIndex = m_nGraphicsFamilyIndex;
 	poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Optional
 
-	if (vkCreateCommandPool(m_VkDevice, &poolInfo, nullptr, &m_VkCommandPool) != VK_SUCCESS)
+	if (vkCreateCommandPool(m_VkDevice, &poolInfo, nullptr, &m_VkGraphCommandPool) != VK_SUCCESS)
 		return false;
 
 
@@ -2221,6 +2234,9 @@ bool MVulkanDevice::IsDeviceSuitable(VkPhysicalDevice device)
 	if (-1 == FindQueueGraphicsFamilies(device))
 		return false;
 
+	if (-1 == FindQueueComputeFamilies(device))
+		return false;
+
 	if (!CheckDeviceExtensionSupport(device))
 		return false;
 
@@ -2274,6 +2290,28 @@ int MVulkanDevice::FindQueuePresentFamilies(VkPhysicalDevice device, VkSurfaceKH
 	}
 
 	return nPresentFamily;
+}
+
+int MVulkanDevice::FindQueueComputeFamilies(VkPhysicalDevice device)
+{
+	int graphicsFamily = -1;
+
+	uint32_t unQueueFamilyCount = 0;
+	vkGetPhysicalDeviceQueueFamilyProperties(device, &unQueueFamilyCount, nullptr);
+
+	std::vector<VkQueueFamilyProperties> vQueueProperties(unQueueFamilyCount);
+	vkGetPhysicalDeviceQueueFamilyProperties(device, &unQueueFamilyCount, vQueueProperties.data());
+
+	for (int i = 0; i < unQueueFamilyCount; ++i)
+	{
+		if (vQueueProperties[i].queueCount > 0 && vQueueProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
+			graphicsFamily = i;
+
+		if (graphicsFamily >= 0)
+			break;
+	}
+
+	return graphicsFamily;
 }
 
 bool MVulkanDevice::CheckDeviceExtensionSupport(VkPhysicalDevice device)

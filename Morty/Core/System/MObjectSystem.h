@@ -16,8 +16,6 @@
 #include "Object/MObject.h"
 #include "Engine/MSystem.h"
 
-#include <map>
-#include <vector>
 
 class MEngine;
 class MORTY_API MObjectSystem : public MISystem
@@ -55,6 +53,11 @@ public:
 	void CleanRemoveObject();
 
 public:
+	typedef std::function<void(MObject*)> PostCreateObjectFunction;
+
+	void RegisterPostCreateObject(const PostCreateObjectFunction& func);
+
+public:
 
 	virtual void Release() override;
 
@@ -64,6 +67,8 @@ private:
 	std::map<MObjectID, MObject*> m_tObjects;
 
 	std::vector<MObjectID> m_vRemoveObjects;
+
+	std::vector<PostCreateObjectFunction> m_vPostCreateObjectFunction;
 };
 
 #endif

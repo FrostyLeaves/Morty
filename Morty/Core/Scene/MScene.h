@@ -62,6 +62,9 @@ public:
 	template <class TYPE>
 	TYPE* RegisterSubSystem();
 
+	template <class TYPE>
+	TYPE* GetSubSystem();
+
 protected:
 
 	void RegisterSubSystem(const MType* pSubSystemType, MISubSystem* pSubSystem);
@@ -116,12 +119,24 @@ inline TYPE* MScene::RegisterSubSystem()
 	auto findResult = m_tSubSystems.find(TYPE::GetClassType());
 	if (findResult != m_tSubSystems.end())
 	{
-		return findResult->second;
+		return static_cast<TYPE*>(findResult->second);
 	}
 
 	TYPE* pSubSystem = new TYPE();
 	RegisterSubSystem(TYPE::GetClassType(), pSubSystem);
 	return pSubSystem;
+}
+
+template<class TYPE>
+inline TYPE* MScene::GetSubSystem()
+{
+	auto findResult = m_tSubSystems.find(TYPE::GetClassType());
+	if (findResult != m_tSubSystems.end())
+	{
+		return static_cast<TYPE*>(findResult->second);
+	}
+
+	return nullptr;
 }
 
 template<typename TYPE>

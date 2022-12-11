@@ -1,5 +1,6 @@
 ﻿#include "System/MObjectSystem.h"
 #include "Engine/MEngine.h"
+#include "MObjectSystem.h"
 
 MORTY_CLASS_IMPLEMENT(MObjectSystem, MISystem)
 
@@ -21,6 +22,12 @@ void MObjectSystem::InitObject(MObject* pObject)
 	m_tObjects[pObject->m_unObjectID] = pObject;
 
 	pObject->OnCreated();
+
+
+	for(auto&& func : m_vPostCreateObjectFunction)
+	{
+		func(pObject);
+	}
 }
 
 MObject* MObjectSystem::CreateObject(const MString& strTypeName)
@@ -67,6 +74,11 @@ void MObjectSystem::CleanRemoveObject()
 		}
 	}
 
+}
+
+void MObjectSystem::RegisterPostCreateObject(const PostCreateObjectFunction& func)
+{
+	m_vPostCreateObjectFunction.push_back(func);
 }
 
 void MObjectSystem::Release()

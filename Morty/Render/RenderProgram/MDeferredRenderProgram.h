@@ -106,6 +106,10 @@ protected:
 	MRenderPass m_lightningRenderPass;
 	MRenderPass m_debugRenderPass;
 
+
+	MShaderConstantParam* m_pIndirectTransformParam;
+	MBuffer m_cullingInstanceBuffer;
+	MBuffer m_cullingIndirectDrawBuffer;
 	MComputeDispatcher* m_pCullingComputeDispatcher;
 
 	MTexture* m_pFinalOutputTexture;

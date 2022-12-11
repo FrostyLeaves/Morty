@@ -20,8 +20,8 @@ MIMesh::MIMesh(const bool& bDynamicMesh/* = false*/)
 		m_indexBuffer.m_eMemoryType = MBuffer::MMemoryType::EDeviceLocal;
     }
 
-	m_vertexBuffer.m_eUsageType &= MBuffer::MUsageType::EVertex;
-	m_indexBuffer.m_eUsageType &= MBuffer::MUsageType::EIndex;
+	m_vertexBuffer.m_eUsageType |= MBuffer::MUsageType::EVertex;
+	m_indexBuffer.m_eUsageType |= MBuffer::MUsageType::EIndex;
 
 #if _DEBUG
 	m_vertexBuffer.m_strDebugBufferName = "VertexBuffer";
@@ -76,14 +76,14 @@ void MIMesh::SetDirty()
 
 void MIMesh::GenerateBuffer(MIDevice* pDevice)
 {
-	m_vertexBuffer.GenerateBuffer(pDevice, m_vVertexData);
-	m_indexBuffer.GenerateBuffer(pDevice, m_vIndexData);
+	m_vertexBuffer.GenerateBuffer(pDevice, m_vVertexData.data(), m_vVertexData.size());
+	m_indexBuffer.GenerateBuffer(pDevice, m_vIndexData.data(), m_vIndexData.size());
 }
 
 void MIMesh::UploadBuffer(MIDevice* pDevice)
 {
-	m_vertexBuffer.UploadBuffer(pDevice, m_vVertexData);
-	m_indexBuffer.UploadBuffer(pDevice, m_vIndexData);
+	m_vertexBuffer.UploadBuffer(pDevice, m_vVertexData.data(), m_vVertexData.size());
+	m_indexBuffer.UploadBuffer(pDevice, m_vIndexData.data(), m_vIndexData.size());
 }
 
 void MIMesh::DestroyBuffer(MIDevice* pDevice)

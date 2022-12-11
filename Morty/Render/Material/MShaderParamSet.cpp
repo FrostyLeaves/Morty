@@ -57,6 +57,17 @@ MShaderConstantParam* MShaderParamSet::FindConstantParam(const MString& strParam
 	return nullptr;
 }
 
+MShaderStorageParam* MShaderParamSet::FindStorageParam(const MString& strParamName)
+{
+	for (MShaderStorageParam* pParam : m_vStorages)
+	{
+		if (pParam->strName == strParamName)
+			return pParam;
+	}
+
+	return nullptr;
+}
+
 MVariant* MShaderParamSet::FindValue(const MString& strName)
 {
 	for (MShaderConstantParam* pParam : m_vParams)

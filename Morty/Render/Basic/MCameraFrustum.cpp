@@ -12,6 +12,11 @@ MCameraFrustum::~MCameraFrustum()
 {
 }
 
+const MPlane& MCameraFrustum::GetPlane(const size_t& idx) const
+{
+	return m_vPlanes[(std::min)(idx, size_t(6))];
+}
+
 void MCameraFrustum::UpdateFromCameraInvProj(const Matrix4& m4CameraInvProj)
 {
 	const Matrix4& m4 = m4CameraInvProj;
