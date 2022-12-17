@@ -32,16 +32,6 @@ MSceneComponent::~MSceneComponent()
 
 }
 
-void MSceneComponent::Initialize()
-{
-	Super::Initialize();
-}
-
-void MSceneComponent::Release()
-{
-	Super::Release();
-}
-
 bool MSceneComponent::GetVisibleRecursively()
 {
 	return m_bVisibleRecursively;

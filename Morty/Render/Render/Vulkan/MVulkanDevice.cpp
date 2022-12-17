@@ -582,6 +582,10 @@ void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, c
 			DestroyBuffer(stagingBuffer, stagingBufferMemory);
 		}
 	}
+	else
+	{
+		assert(false);
+	}
 
 	SetDebugName(reinterpret_cast<uint64_t>(vkBuffer), VkObjectType::VK_OBJECT_TYPE_BUFFER, pBuffer->m_strDebugBufferName.c_str());
 
@@ -1837,6 +1841,7 @@ bool MVulkanDevice::GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
 
 	if (vkCreateBuffer(m_VkDevice, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
 	{
+		GetEngine()->GetLogger()->Error("vkCreateBuffer failed. file: %s, line: %d", __FILE__, __LINE__);
 		return false;
 	}
 
@@ -1850,12 +1855,14 @@ bool MVulkanDevice::GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
 
 	if (MGlobal::M_INVALID_INDEX == allocInfo.memoryTypeIndex)
 	{
+		GetEngine()->GetLogger()->Error("memoryTypeIndex invalid. file: %s, line: %d", __FILE__, __LINE__);
 		vkDestroyBuffer(m_VkDevice, buffer, nullptr);
 		return false;
 	}
 
 	if (vkAllocateMemory(m_VkDevice, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
 	{
+		GetEngine()->GetLogger()->Error("vkAllocateMemory failed. file: %s, line: %d", __FILE__, __LINE__);
 		vkDestroyBuffer(m_VkDevice, buffer, nullptr);
 		return false;
 	}
@@ -2144,7 +2151,7 @@ bool MVulkanDevice::InitLogicalDevice()
 		return false;
 	}
 
-	vkGetDeviceQueue(m_VkDevice, nQueueFamilyGraphIndex, 0, &m_VkGraphicsQueue);
+	vkGetDeviceQueue(m_VkDevice, m_nGraphicsFamilyIndex, 0, &m_VkGraphicsQueue);
 
 	return true;
 }

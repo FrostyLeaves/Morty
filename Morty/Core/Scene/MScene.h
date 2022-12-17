@@ -124,6 +124,7 @@ inline TYPE* MScene::RegisterSubSystem()
 
 	TYPE* pSubSystem = new TYPE();
 	RegisterSubSystem(TYPE::GetClassType(), pSubSystem);
+	pSubSystem->Initialize();
 	return pSubSystem;
 }
 

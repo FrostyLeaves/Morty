@@ -25,17 +25,13 @@ public:
 
 public:
 
-    virtual void EngineTick(const float& fDelta);
-
 public:
 
     void GenerateEnvironmentTexture(MSkyBoxComponent* pComponent);
 
 private:
 
-
-
-    std::queue<MSkyBoxComponent*> m_vGenerateQueue;
+    void GenerateEnvironmentWork(MSkyBoxComponent* pComponent);
 };
 
 

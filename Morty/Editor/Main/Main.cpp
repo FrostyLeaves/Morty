@@ -54,6 +54,63 @@
 
 #define TEST_SHADOW_MAP
 
+#define TEST_MERGE_INSTANCING
+
+void CREATE_INSTANCING_ENTITY(MEngine* pEngine, MScene* pScene)
+{
+
+	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
+	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
+
+	std::shared_ptr<MMeshResource> pMeshResource = pResourceSystem->CreateResource<MMeshResource>();
+	pMeshResource->LoadAsSphere();
+
+	std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
+
+	pMaterial->LoadVertexShader("Shader/model_gbuffer.mvs");
+	pMaterial->LoadPixelShader("Shader/model_gbuffer.mps");
+	pMaterial->SetMaterialType(MEMaterialType::EDeferred);
+
+	std::shared_ptr<MResource> albedo = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_albedo.png");
+	std::shared_ptr<MResource> normal = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_normal.png");
+	std::shared_ptr<MResource> roughness = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_roughness.png");
+	std::shared_ptr<MResource> ao = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_ao.png");
+	std::shared_ptr<MResource> height = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_height.png");
+	std::shared_ptr<MResource> metal = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
+
+	pMaterial->SetTexutre(MaterialKey::Albedo, albedo);
+	pMaterial->SetTexutre(MaterialKey::Normal, normal);
+	pMaterial->SetTexutre(MaterialKey::Metallic, metal);
+	pMaterial->SetTexutre(MaterialKey::Roughness, roughness);
+	pMaterial->SetTexutre(MaterialKey::AmbientOcc, ao);
+	pMaterial->SetTexutre(MaterialKey::Height, height);
+
+	pMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
+	pMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);
+	
+
+
+	for (int x = 0; x < 5; ++x)
+	{
+		for (int y = 0; y < 5; ++y)
+		{
+			MEntity* pSphereEntity = pScene->CreateEntity();
+			pSphereEntity->SetName("Sphere_PBR");
+			if (MSceneComponent* pSceneComponent = pSphereEntity->RegisterComponent<MSceneComponent>())
+			{
+				pSceneComponent->SetPosition(Vector3(x * 10, y * 10, 0.0f));
+				pSceneComponent->SetScale(Vector3(4.0f, 4.0f, 4.0f));
+			}
+			if (MRenderableMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderableMeshComponent>())
+			{
+				pMeshComponent->Load(pMeshResource);
+				pMeshComponent->SetMaterial(pMaterial);
+				pMeshComponent->SetBatchInstanceEnable(true);
+			}
+		}
+	}
+}
+
 void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
@@ -445,16 +502,6 @@ int main()
 		});
 
 
-	auto&& pResource = engine.FindSystem<MResourceSystem>()->LoadResource("Shader/cull.mcs");
-
-	auto&& pShaderResource = std::dynamic_pointer_cast<MShaderResource>(pResource);
-
-
-	int idx = pShaderResource->FindShaderByMacroParam(MShaderMacro());
-	engine.FindSystem<MRenderSystem>()->GetDevice()->CompileShader(pShaderResource->GetShaderByIndex(idx));
-
-	engine.FindSystem<MResourceSystem>()->UnloadResource(pResource);
-
 	if (MScene* pScene = editor.GetScene())
 	{
 		MResourceSystem* pResourceSystem = engine.FindSystem<MResourceSystem>();
@@ -506,6 +553,13 @@ int main()
 
 #endif
 
+
+
+#ifdef TEST_MERGE_INSTANCING
+
+		CREATE_INSTANCING_ENTITY(&engine, pScene);
+
+#endif
 
 	}
 

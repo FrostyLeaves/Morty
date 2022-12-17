@@ -12,12 +12,10 @@ const size_t VertexMemoryMaxSize = 1024 * 1024 * 10;
 const size_t IndexMemoryMaxSize = 1024 * 1024 * 100;
 
 MMergeInstancingMesh::MMergeInstancingMesh()
-	: MeshVertexStructSize(sizeof(MMesh<MVertex>))
+	: MeshVertexStructSize(sizeof(MVertex))
 	, m_vertexMemoryPool(VertexMemoryMaxSize * MeshVertexStructSize)
 	, m_indexMemoryPool(IndexMemoryMaxSize * sizeof(uint32_t))
 {
-	m_vertexBuffer.ReallocMemory(VertexMemoryMaxSize);
-	
 }
 
 
@@ -25,11 +23,15 @@ void MMergeInstancingMesh::OnCreated()
 {
 	Super::OnCreated();
 
-
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
+	m_vertexBuffer = MBuffer::CreateHostVisibleVertexBuffer();
 	m_vertexBuffer.ReallocMemory(VertexMemoryMaxSize);
 	m_vertexBuffer.GenerateBuffer(pRenderSystem->GetDevice(), nullptr, 0);
+
+	m_indexBuffer = MBuffer::CreateHostVisibleIndexBuffer();
+	m_indexBuffer.ReallocMemory(IndexMemoryMaxSize);
+	m_indexBuffer.GenerateBuffer(pRenderSystem->GetDevice(), nullptr, 0);
 }
 
 void MMergeInstancingMesh::OnDelete()
@@ -37,6 +39,7 @@ void MMergeInstancingMesh::OnDelete()
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
 	m_vertexBuffer.DestroyBuffer(pRenderSystem->GetDevice());
+	m_indexBuffer.DestroyBuffer(pRenderSystem->GetDevice());
 
 
 	Super::OnDelete();
@@ -95,14 +98,14 @@ bool MMergeInstancingMesh::RegisterMesh(MIMesh* pMesh)
 			break;
 		}
 
-		std::array<uint32_t, ClusterSize> vIndexData;
+		std::array<uint32_t, ClusterSize> vClusterIndexData;
 
 		size_t nClusterIndexIdx = 0;
 		while (nClusterIndexIdx < ClusterSize)
 		{
 			uint32_t originIndex = vIndexData[(std::min)(nMeshIndexIdx + nClusterIndexIdx, unIndexNum - 1)];
 			uint32_t globalIndex = unVertexBeginIndex + originIndex;
-			vIndexData[nClusterIndexIdx] = globalIndex;
+			vClusterIndexData[nClusterIndexIdx] = globalIndex;
 
 			clusterData.boundsShpere.AddPoint(vVertex[originIndex].position);
 
@@ -110,7 +113,7 @@ bool MMergeInstancingMesh::RegisterMesh(MIMesh* pMesh)
 		}
 
 		indexClusterData.push_back(clusterData);
-		pDevice->UploadBuffer(&m_indexBuffer, clusterData.memoryInfo.begin, reinterpret_cast<const MByte*>(vIndexData.data()), clusterData.memoryInfo.size);
+		pDevice->UploadBuffer(&m_indexBuffer, clusterData.memoryInfo.begin, reinterpret_cast<const MByte*>(vClusterIndexData.data()), clusterData.memoryInfo.size);
 
 		
 		nMeshIndexIdx += ClusterSize;

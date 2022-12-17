@@ -23,9 +23,6 @@ public:
     virtual ~MSceneComponent();
 
 
-	virtual void Initialize() override;
-	virtual void Release() override;
-
 public:
 //property
 

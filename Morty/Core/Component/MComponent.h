@@ -42,56 +42,6 @@ public:
     size_t nSecondaryIdx;
 };
 
-class MORTY_API MComponentRefTable
-{
-public:
-
-	MComponentRefTable(MScene* pScene);
-
-	struct RefBindFunction {
-		std::function<void(MComponent* pSerializer)> func;
-		uint32_t nIndex;
-	};
-
-	void AddRef(const MComponentID& compID, const uint32_t& nIndex);
-    MComponentID Find(const uint32_t& nIndex);
-	uint32_t FindOrAdd(const MComponentID& compID);
-
-	void BindReference();
-
-	void AddReferenceFunction(std::function<void(MComponent* pSerializer)> func, const uint32_t& nIdx);
-
-public:
-    MScene* m_pScene;
-
-	std::map<MComponentID, uint32_t> m_tRefToIndex;
-	std::map<uint32_t, MComponentID> m_tIndexToRef;
-
-	uint32_t m_Count = 0;
-
-	std::vector<RefBindFunction> m_vRefBindFunction;
-};
-
-#define M_SERIALIZER_WRITE_COMPONENT_REF( NAME, REF_GET_FUNC) \
-	MComponent* pComponent = REF_GET_FUNC(); \
-	pStruct->AppendValue(NAME, int(refTable.FindOrAdd(pComponent ? pComponent->GetComponentID() : MComponentID()))); \
-
-#define M_SERIALIZER_READ_COMPONENT_REF( NAME, REF_SET_FUNC, TYPE) \
-	if(const MVariant* pVariant = pStruct->FindMember(NAME)) \
-		if(auto pValue = pVariant->GetInt()) {\
-			uint32_t nIndex = *pValue; \
-			MScene* pScene = GetScene(); \
-			MComponentID self = GetComponentID(); \
-			refTable.AddReferenceFunction([=](MComponent* target){ \
-				if(!target) return; \
-				if (MComponent* pSelfBase = pScene->GetComponent(self)){ \
-					if(Class* pSelfComponent = pSelfBase->DynamicCast<Class>()) { \
-						pSelfComponent->REF_SET_FUNC(target->DynamicCast<TYPE>()); \
-					} \
-				} \
-			}, nIndex);\
-		}
-
 class MORTY_API MComponent : public MTypeClass
 {
 public:
@@ -104,11 +54,10 @@ public:
 public:
 
     void Initialize(MScene* pScene, const MGuid& id);
+    virtual void Release();
 
     bool IsValid() const { return m_bValid; }
 
-    virtual void Initialize();
-    virtual void Release();
 
 public:
 

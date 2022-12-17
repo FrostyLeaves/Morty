@@ -34,7 +34,7 @@ void MNotifySystem::RegisterNotify(const MString& strNotifyName, MNotifyFunction
 		if (a.target_type() != b.target_type())
 			return false;
 
-		if (*a.target<void(*)(MComponent*)>() != *b.target<void(*)(MComponent*)>())
+		if (*a.target<void(MComponent*)>() != *b.target<void(MComponent*)>())
 			return false;
 
 		return false;

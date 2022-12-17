@@ -2,8 +2,8 @@
 
 struct MeshMatrix
 {
-    float4x4 U_matWorld;
-    float3x3 U_matNormal;
+    float4x4 matWorld;
+    float3x3 matNormal;
 }
 
 //VS    per mesh
@@ -45,6 +45,7 @@ float4x4 GetMeshWorldMatrix()
 {
 #ifdef DRAW_MESH_MERGE_INSTANCING
 
-
 #endif
+
+    return U_matWorld;
 };

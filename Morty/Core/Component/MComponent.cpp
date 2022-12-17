@@ -29,11 +29,6 @@ void MComponent::Initialize(MScene* pScene, const MGuid& id)
 	m_pScene = pScene;
 	m_entityID = id;
 
-	Initialize();
-}
-
-void MComponent::Initialize()
-{
 	m_bValid = true;
 }
 
@@ -124,59 +119,4 @@ bool MComponentID::operator<(const MType* pType) const
 bool MComponentID::IsValid() const
 {
 	return pComponentType;
-}
-
-MComponentRefTable::MComponentRefTable(MScene* pScene)
-	: m_pScene(pScene)
-{
-}
-
-void MComponentRefTable::AddRef(const MComponentID& compID, const uint32_t& nIndex)
-{
-	m_tIndexToRef[nIndex] = compID;
-	m_tRefToIndex[compID] = nIndex;
-}
-
-MComponentID MComponentRefTable::Find(const uint32_t& nIndex)
-{
-	auto findResult = m_tIndexToRef.find(nIndex);
-
-	if (findResult == m_tIndexToRef.end())
-		return MComponentID();
-
-	return findResult->second;
-}
-
-uint32_t MComponentRefTable::FindOrAdd(const MComponentID& compID)
-{
-	if (!compID.IsValid())
-		return 0;
-
-	auto findResult = m_tRefToIndex.find(compID);
-
-	if (findResult == m_tRefToIndex.end())
-	{
-		m_tRefToIndex[compID] = ++m_Count;
-		m_tIndexToRef[m_Count] = compID;
-		return m_Count;
-	}
-
-	return findResult->second;
-}
-
-void MComponentRefTable::BindReference()
-{
-	for (auto& f : m_vRefBindFunction)
-	{
-		MComponent* pComponent = m_pScene->GetComponent(Find(f.nIndex));
-		f.func(pComponent);
-	}
-}
-
-void MComponentRefTable::AddReferenceFunction(std::function<void(MComponent* pSerializer)> func, const uint32_t& nIdx)
-{
-	RefBindFunction f;
-	f.func = func;
-	f.nIndex = nIdx;
-	m_vRefBindFunction.push_back(f);
 }

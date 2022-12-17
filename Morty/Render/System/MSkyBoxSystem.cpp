@@ -9,6 +9,8 @@
 
 #include "Component/MSkyBoxComponent.h"
 #include "RenderProgram/MEnvironmentMapRenderWork.h"
+#include "TaskGraph/MTaskGraph.h"
+#include "Utility/MFunction.h"
 
 MORTY_CLASS_IMPLEMENT(MSkyBoxSystem, MISystem)
 
@@ -22,16 +24,8 @@ MSkyBoxSystem::~MSkyBoxSystem()
 {
 }
 
-void MSkyBoxSystem::EngineTick(const float& fDelta)
+void MSkyBoxSystem::GenerateEnvironmentWork(MSkyBoxComponent* pSkyBoxComponent)
 {
-	MSkyBoxComponent* pSkyBoxComponent = nullptr;
-
-	while (!pSkyBoxComponent && !m_vGenerateQueue.empty())
-	{
-		pSkyBoxComponent = m_vGenerateQueue.front();
-		m_vGenerateQueue.pop();
-	}
-
 	if (!pSkyBoxComponent)
 		return;
 
@@ -69,5 +63,10 @@ void MSkyBoxSystem::EngineTick(const float& fDelta)
 
 void MSkyBoxSystem::GenerateEnvironmentTexture(MSkyBoxComponent* pComponent)
 {
-	m_vGenerateQueue.push(pComponent);
+	MThreadPool* pThreadPool = GetEngine()->GetThreadPool();
+
+	MThreadWork work;
+	work.eThreadType = METhreadType::ERenderThread;
+	work.funcWorkFunction = M_CLASS_FUNCTION_BIND_1_0(MSkyBoxSystem::GenerateEnvironmentWork, this, pComponent);
+	pThreadPool->AddWork(work);
 }

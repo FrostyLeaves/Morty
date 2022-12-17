@@ -135,11 +135,11 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 
 	MainEditorTask* pEditorTask = pMainGraph->AddNode<MainEditorTask>("Editor_Update");
 	pEditorTask->SetThreadType(METhreadType::ECurrentThread);
-	pEditorTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_1(MainEditor::MainLoop, this));
+	pEditorTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MainEditor::MainLoop, this));
 
 	MTaskNode* pRenderTask = pMainGraph->AddNode<MTaskNode>("Editor_Render");
 	pRenderTask->SetThreadType(METhreadType::ERenderThread);
-	pRenderTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_1(MainEditor::Render, this));
+	pRenderTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MainEditor::Render, this));
 	return true;
 }
 

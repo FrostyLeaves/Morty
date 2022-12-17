@@ -13,6 +13,43 @@ MBuffer::~MBuffer()
 	
 }
 
+
+MBuffer MBuffer::CreateVertexBuffer()
+{
+	MBuffer buffer;
+	buffer.m_eUsageType = MUsageType::EVertex;
+	buffer.m_eMemoryType = MMemoryType::EDeviceLocal;
+
+	return buffer;
+}
+
+MBuffer MBuffer::CreateHostVisibleVertexBuffer()
+{
+	MBuffer buffer;
+	buffer.m_eUsageType = MUsageType::EVertex;
+	buffer.m_eMemoryType = MMemoryType::EHostVisible;
+
+	return buffer;
+}
+
+MBuffer MBuffer::CreateIndexBuffer()
+{
+	MBuffer buffer;
+	buffer.m_eUsageType = MUsageType::EIndex;
+	buffer.m_eMemoryType = MMemoryType::EDeviceLocal;
+
+	return buffer;
+}
+
+MBuffer MBuffer::CreateHostVisibleIndexBuffer()
+{
+	MBuffer buffer;
+	buffer.m_eUsageType = MUsageType::EIndex;
+	buffer.m_eMemoryType = MMemoryType::EHostVisible;
+
+	return buffer;
+}
+
 const MBuffer& MBuffer::operator=(const MBuffer& other)
 {
 #if _DEBUG

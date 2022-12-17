@@ -144,7 +144,7 @@ bool MVulkanBufferPool::AllowDynamicUniformBufferMemory(MShaderConstantParam* pP
 
 	VkDescriptorBufferInfo& bufferInfo = pParam->m_VkBufferInfo;
 	bufferInfo.buffer = m_VkDynamicUniformBuffer;
-	bufferInfo.offset = allowInfo.begin;
+	bufferInfo.offset = 0; //allowInfo.begin; //The real data starting at param->m_unMemoryOffset + VkDescriptorBufferInfo::offset.
 	bufferInfo.range = unVariantSize;
 
 	return true;

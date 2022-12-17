@@ -47,14 +47,14 @@ bool MRenderModule::Register(MEngine* pEngine)
 
 	if (MRenderSystem* pRenderSystem = pEngine->RegisterSystem<MRenderSystem>())
 	{
-		pNotifySystem->RegisterNotify("TransformDirty", M_CLASS_FUNCTION_BIND_1(MRenderSystem::OnTransformDirty, pRenderSystem));
+		pNotifySystem->RegisterNotify("TransformDirty", M_CLASS_FUNCTION_BIND_0_1(MRenderSystem::OnTransformDirty, pRenderSystem));
 
 		if (MTaskGraph* pTaskGraph = pEngine->GetMainGraph())
 		{
 			if (MTaskNode* pTaskNode = pTaskGraph->AddNode<MTaskNode>("Render_Update"))
 			{
 				pTaskNode->SetThreadType(METhreadType::ERenderThread);
-				pTaskNode->BindTaskFunction(M_CLASS_FUNCTION_BIND_1(MRenderSystem::Update, pRenderSystem));
+				pTaskNode->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MRenderSystem::Update, pRenderSystem));
 			}
 		}
 	}

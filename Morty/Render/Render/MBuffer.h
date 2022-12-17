@@ -45,6 +45,14 @@ public:
     ~MBuffer();
 
 
+    static MBuffer CreateVertexBuffer();
+    static MBuffer CreateHostVisibleVertexBuffer();
+    static MBuffer CreateIndexBuffer();
+    static MBuffer CreateHostVisibleIndexBuffer();
+
+
+public:
+
     const MBuffer& operator=(const MBuffer& other);
 
 public:

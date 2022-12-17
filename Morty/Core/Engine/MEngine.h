@@ -91,6 +91,7 @@ private:
 
 	std::map<const MType*, size_t> m_tSystem;
 	std::vector<MISystem*> m_vSystem;
+	std::set<const MType*> m_tSubSystemType;
 
 	MTaskGraph* m_pMainTaskGraph;
 

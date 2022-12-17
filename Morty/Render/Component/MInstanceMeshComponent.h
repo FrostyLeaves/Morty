@@ -40,6 +40,7 @@ public:
 	};
 public:
 
+	virtual void Initialize() override;
 	virtual void Release() override;
 
 	void SetMaterial(std::shared_ptr<MMaterial> pMaterial);
@@ -121,7 +122,7 @@ protected:
 
 	bool m_bDrawBoundingSphere;
 	bool m_bGenerateDirLightShadow;
-	bool m_bBatchInstanceEnable = false;
+	bool m_bBatchInstanceEnable;
 	bool m_bModelInstanceFound;
 	bool m_bTransformParamDirty;
 	bool m_bBoundsAABBDirty;

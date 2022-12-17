@@ -16,10 +16,13 @@
 #define M_RETURN_OVER_RANGE(I, MIN, MAX, ...)\
 	if (I < MIN || I >= MAX) return ##__VA_ARGS__;
 
-#define M_CLASS_FUNCTION_BIND_0(CLASS_FUNC, SELF) std::bind(&CLASS_FUNC, SELF)
-#define M_CLASS_FUNCTION_BIND_1(CLASS_FUNC, SELF) std::bind(&CLASS_FUNC, SELF, std::placeholders::_1)
+#define M_CLASS_FUNCTION_BIND_0_0(CLASS_FUNC, SELF) std::bind(&CLASS_FUNC, SELF)
+#define M_CLASS_FUNCTION_BIND_0_1(CLASS_FUNC, SELF) std::bind(&CLASS_FUNC, SELF, std::placeholders::_1)
+#define M_CLASS_FUNCTION_BIND_0_2(CLASS_FUNC, SELF) std::bind(&CLASS_FUNC, SELF, std::placeholders::_1, std::placeholders::_2)
 
-#define M_FUNCTION_BIND_2_3(CLASS_FUNC, PARAM_1, PARAM_2) std::bind(&CLASS_FUNC, PARAM_1, PARAM_2, std::placeholders::_1)
+#define M_CLASS_FUNCTION_BIND_1_0(CLASS_FUNC, SELF, PARAM_0) std::bind(&CLASS_FUNC, SELF, PARAM_0)
+#define M_CLASS_FUNCTION_BIND_1_1(CLASS_FUNC, SELF, PARAM_0) std::bind(&CLASS_FUNC, SELF, PARAM_0, std::placeholders::_1)
+
 
 template<typename T1, typename T2>
 void DELETE_CLEAR_MAP(std::map<T1, T2>& map)
