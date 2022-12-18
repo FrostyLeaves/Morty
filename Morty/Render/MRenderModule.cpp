@@ -25,7 +25,7 @@
 #include "Component/MRenderableMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 #include "Component/MDebugRenderComponent.h"
-#include "MergeInstancing/M​MergeInstancingSubSystem.h"
+#include "MergeInstancing/MMergeInstancingSubSystem.h"
 #include "Scene/MScene.h"
 #include "System/MObjectSystem.h"
 

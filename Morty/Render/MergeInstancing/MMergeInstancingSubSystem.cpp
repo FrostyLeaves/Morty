@@ -1,4 +1,4 @@
-#include "M​MergeInstancingSubSystem.h"
+#include "MMergeInstancingSubSystem.h"
 #include "Component/MRenderableMeshComponent.h"
 
 #include "Utility/MFunction.h"

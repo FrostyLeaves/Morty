@@ -65,7 +65,7 @@ public:
 	MVulkanDevice* m_pDevice;
 
 	std::shared_ptr<MMaterial> pUsingMaterial;
-	MMaterialPipelineLayoutData* pUsingPipelineLayoutData;
+	std::shared_ptr<MMaterialPipelineGroup> pUsingPipelineGroup;
 	std::stack<MRenderPassStage> m_vRenderPassStages;
 
 	VkCommandBuffer m_VkCommandBuffer;

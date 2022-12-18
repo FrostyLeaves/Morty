@@ -25,7 +25,7 @@
 #include "MShadowMapRenderWork.h"
 #include "MTransparentRenderWork.h"
 #include "Component/MCameraComponent.h"
-#include "MergeInstancing/M​MergeInstancingSubSystem.h"
+#include "MergeInstancing/MMergeInstancingSubSystem.h"
 #include "Render/MVertex.h"
 #include "RenderProgram/MEnvironmentMapRenderWork.h"
 

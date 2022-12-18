@@ -15,6 +15,7 @@
 #include "Utility/MIDPool.h"
 #include "Render/MRenderPass.h"
 
+class MShaderGroup;
 class MMaterial;
 class MVulkanDevice;
 class MShaderParamSet;
@@ -28,23 +29,26 @@ struct MRenderPassPipelines
     std::vector<VkPipeline> vSubpassPipeline;
 };
 
-struct MMaterialPipelineGroup
+struct MPipelineLayout
 {
-    std::vector<MRenderPassPipelines*> vRenderPassGroup;
-};
-
-struct MMaterialPipelineLayoutData
-{
-    MMaterialPipelineLayoutData();
-
-    std::shared_ptr<MMaterial> pMaterial;
     VkPipelineLayout pipelineLayout;
     std::vector<VkDescriptorSetLayout> vSetLayouts;
+
+};
+
+struct MMaterialPipelineGroup
+{
+    MPipelineLayout layouts;
+
     std::vector<MShaderParamSet*> vShaderParamSets;
+
+    std::map<uint32_t, MRenderPassPipelines> vRenderPassPipeline;
 };
 
 struct MComputeDispatcherData
 {
+    MPipelineLayout layouts;
+
     VkPipeline vkPipeline;
 };
 
@@ -61,8 +65,8 @@ public:
     VkPipeline FindOrCreateGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx);
     VkPipeline FindOrCreateComputePipeline(MComputeDispatcher* pComputeDispatcher);
 
-	MMaterialPipelineLayoutData* FindOrCreatePipelineLayout(std::shared_ptr<MMaterial> pMaterial);
-	MMaterialPipelineLayoutData* FindPipelineLayout(const uint32_t& nMaterialIdx);
+	std::shared_ptr<MMaterialPipelineGroup> FindOrCreatePipelineGroup(std::shared_ptr<MMaterial> pMaterial);
+    std::shared_ptr<MMaterialPipelineGroup> FindPipelineGroup(const uint32_t& nMaterialID) const;
 
 public:
 	bool RegisterMaterial(std::shared_ptr<MMaterial> pMaterial);
@@ -82,17 +86,19 @@ public:
 
     void BindStorageParam(MShaderStorageParam* pParam, VkWriteDescriptorSet& writeDescriptorSet);
 
-    MMaterialPipelineLayoutData* CreateMaterialPipelineLayout(std::shared_ptr<MMaterial> pMaterial);
-    void DestroyMaterialPipelineLayout(MMaterialPipelineLayoutData* pLayoutData);
+    MPipelineLayout CreateMaterialPipelineGroup(const MShaderGroup* pShaderGroup, VkShaderStageFlags vkShaderStageFlags);
 
-    VkPipeline CreateGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx);
-    VkPipeline CreateComputePipeline(MComputeDispatcher* pComputeDispatcher);
+    void DestroyMaterialPipelineLayout(const std::shared_ptr<MMaterialPipelineGroup>& pLayoutData) const;
+    void DestroyMaterialPipeline(const std::shared_ptr<MMaterialPipelineGroup>& pLayoutData) const;
+
+    VkPipeline CreateGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, VkPipelineLayout pipelineLayout, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx);
+    VkPipeline CreateComputePipeline(MComputeDispatcher* pComputeDispatcher, VkPipelineLayout pipelineLayout);
 
     void GenerateShaderParamSet(MShaderParamSet* pParamSet);
     void DestroyShaderParamSet(MShaderParamSet* pParamSet);
     void AllocateShaderParamSet(MShaderParamSet* pParamSet);
 
-    void DestroyShaderParamSetImpl(MShaderParamSet* pParamSet);
+    void DestroyShaderParamSetImpl(MShaderParamSet* pParamSet) const;
 
 private:
 
@@ -100,13 +106,11 @@ private:
     MRepeatIDPool<uint32_t> m_RenderPassIDPool;
     MRepeatIDPool<uint32_t> m_ComputeDispatcherIDPool;
 
-    std::vector<MMaterialPipelineGroup*> m_tPipelineTable;
-
-    std::vector<MMaterialPipelineLayoutData*> m_vPipelineLayouts;
+    std::vector<std::shared_ptr<MMaterialPipelineGroup>> m_tPipelineTable;
 
 	std::map<uint32_t, std::shared_ptr<MMaterial>> m_tMaterialMap;
 
-    std::vector<MComputeDispatcherData*> m_tComputeDispatcherData;
+    std::vector<std::shared_ptr<MComputeDispatcherData>> m_tComputeDispatcherData;
 
     std::map<uint32_t, MComputeDispatcher*> m_tComputeDispatcherMap;
 

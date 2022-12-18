@@ -13,7 +13,7 @@ MVulkanRenderCommand::MVulkanRenderCommand()
 	m_pDevice = nullptr;
 
 	pUsingMaterial = nullptr;
-	pUsingPipelineLayoutData = nullptr;
+	pUsingPipelineGroup = nullptr;
 	m_vRenderPassStages = {};
 
 	m_VkCommandBuffer = VK_NULL_HANDLE;
@@ -185,15 +185,15 @@ bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 	if (nullptr == pMaterial)
 	{
 		pUsingMaterial = nullptr;
-		pUsingPipelineLayoutData = nullptr;
+		pUsingPipelineGroup = nullptr;
 		return true;
 	}
 
 	MRenderPassStage stage = m_vRenderPassStages.top();
-	MMaterialPipelineLayoutData* pPipelineLayoutData = m_pDevice->m_PipelineManager.FindOrCreatePipelineLayout(pMaterial);
+	std::shared_ptr<MMaterialPipelineGroup> pPipelineGroup = m_pDevice->m_PipelineManager.FindOrCreatePipelineGroup(pMaterial);
 
 	pUsingMaterial = pMaterial;
-	pUsingPipelineLayoutData = pPipelineLayoutData;
+	pUsingPipelineGroup = pPipelineGroup;
 
 	VkPipeline vkPipeline = m_pDevice->m_PipelineManager.FindOrCreateGraphicsPipeline(pMaterial, stage.pRenderPass, stage.nSubpassIdx);
 
@@ -214,17 +214,16 @@ bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 void MVulkanRenderCommand::SetShaderParamSet(MShaderParamSet* pParamSet)
 {
-	MMaterialPipelineLayoutData* pLayoutData = m_pDevice->m_PipelineManager.FindPipelineLayout(pParamSet->m_nDescriptorSetInitMaterialIdx);
-	if (!pLayoutData)
+	std::shared_ptr<MMaterialPipelineGroup> pPipelineGroup = m_pDevice->m_PipelineManager.FindPipelineGroup(pParamSet->m_nDescriptorSetInitMaterialIdx);
+	if (!pPipelineGroup)
 	{
 		if (!pUsingMaterial)
-			return;
-		if (!pUsingPipelineLayoutData)
 			return;
 
 		pParamSet->DestroyBuffer(m_pDevice);
 
 		pParamSet->m_nDescriptorSetInitMaterialIdx = pUsingMaterial->GetMaterialID();
+		pPipelineGroup = m_pDevice->m_PipelineManager.FindPipelineGroup(pParamSet->m_nDescriptorSetInitMaterialIdx);
 
 		pParamSet->GenerateBuffer(m_pDevice);
 	}
@@ -298,7 +297,7 @@ void MVulkanRenderCommand::SetShaderParamSet(MShaderParamSet* pParamSet)
 		vkUpdateDescriptorSets(m_pDevice->m_VkDevice, vWriteDescriptorSet.size(), vWriteDescriptorSet.data(), 0, nullptr);
 	}
 
-	vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pUsingPipelineLayoutData->pipelineLayout, pParamSet->m_unKey, 1, &pParamSet->m_VkDescriptorSet, vDynamicOffsets.size(), vDynamicOffsets.data());
+	vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pPipelineGroup->layouts.pipelineLayout, pParamSet->m_unKey, 1, &pParamSet->m_VkDescriptorSet, vDynamicOffsets.size(), vDynamicOffsets.data());
 }
 
 bool MVulkanRenderCommand::DispatchComputeJob(MComputeDispatcher* pComputeDispatcher, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ)
@@ -311,13 +310,10 @@ bool MVulkanRenderCommand::DispatchComputeJob(MComputeDispatcher* pComputeDispat
 	}
 
 	VkPipeline vkPipeline = m_pDevice->m_PipelineManager.FindOrCreateComputePipeline(pComputeDispatcher);
-	if (!vkPipeline)
-	{
-	}
 
 	if (vkPipeline)
 	{
-		vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
+		vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, vkPipeline);
 
 		for (MShaderParamSet& params : pComputeDispatcher->GetShaderParamSets())
 		{
@@ -345,12 +341,15 @@ bool MVulkanRenderCommand::AddComputeToGraphBarrier(const std::vector<MBuffer*> 
 	for(MBuffer* pBuffer : vBuffers)
 	{
 		VkBufferMemoryBarrier bufferBarrier;
+		bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+		bufferBarrier.pNext = nullptr;
 		bufferBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
 		bufferBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
 		bufferBarrier.srcQueueFamilyIndex = m_pDevice->m_nComputeFamilyIndex;
 		bufferBarrier.dstQueueFamilyIndex = m_pDevice->m_nGraphicsFamilyIndex;
-		bufferBarrier.size = VK_WHOLE_SIZE;
 		bufferBarrier.buffer = pBuffer->m_VkBuffer;
+		bufferBarrier.offset = 0;
+		bufferBarrier.size = VK_WHOLE_SIZE;
 		bufferBarriers.push_back(bufferBarrier);
 	}
 
@@ -373,12 +372,15 @@ bool MVulkanRenderCommand::AddGraphToComputeBarrier(const std::vector<MBuffer*> 
 	for (MBuffer* pBuffer : vBuffers)
 	{
 		VkBufferMemoryBarrier bufferBarrier;
+		bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+		bufferBarrier.pNext = nullptr;
 		bufferBarrier.srcAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
 		bufferBarrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
 		bufferBarrier.srcQueueFamilyIndex = m_pDevice->m_nGraphicsFamilyIndex;
 		bufferBarrier.dstQueueFamilyIndex = m_pDevice->m_nComputeFamilyIndex;
-		bufferBarrier.size = VK_WHOLE_SIZE;
 		bufferBarrier.buffer = pBuffer->m_VkBuffer;
+		bufferBarrier.offset = 0;
+		bufferBarrier.size = VK_WHOLE_SIZE;
 		bufferBarriers.push_back(bufferBarrier);
 	}
 

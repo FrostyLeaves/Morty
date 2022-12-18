@@ -49,18 +49,6 @@ MRenderableMeshComponent::~MRenderableMeshComponent()
 	
 }
 
-void MRenderableMeshComponent::Initialize()
-{
-	Super::Initialize();
-
-	MEntity* pEntity = GetEntity();
-	if (!pEntity)
-	{
-		GetEngine()->GetLogger()->Error("Component Initialize, OwnerNode == nullptr, Type: %s", GetTypeName().c_str());
-		return;
-	}
-}
-
 void MRenderableMeshComponent::Release()
 {
 	MEntity* pEntity = GetEntity();

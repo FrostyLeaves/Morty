@@ -428,6 +428,7 @@ VkBool32 VKAPI_PTR OutputDebugUtilsMessenger(VkDebugUtilsMessageSeverityFlagBits
 	{
 		MVulkanDevice* pDevice = static_cast<MVulkanDevice*>(pUserData);
 		pDevice->GetEngine()->GetLogger()->Error(pCallbackData->pMessage);
+		assert(false);
 	}
 	return VK_FALSE;
 }

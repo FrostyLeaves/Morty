@@ -40,6 +40,7 @@ public:
 	MShader* GetComputeShader();
 
 	MShaderMacro& GetShaderMacro() { return m_shaderGroup.GetShaderMacro(); }
+	const MShaderGroup& GetShaderGroup() const { return m_shaderGroup; }
 
 	void SetDispatcherID(const uint32_t& nID) { m_unDispatcherID = nID; }
 	uint32_t GetDispatcherID() const { return m_unDispatcherID; }

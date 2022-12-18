@@ -106,6 +106,7 @@ public:
 	std::shared_ptr<MResource> GetPixelShaderResource() { return m_shaderGroup.GetPixelShaderResource(); }
 
 	MShaderMacro& GetShaderMacro() { return m_shaderGroup.GetShaderMacro(); }
+	const MShaderGroup& GetShaderGroup() const { return m_shaderGroup; }
 	
 	void SetMaterialID(const uint32_t& unID) { m_unMaterialID = unID; }
 	uint32_t GetMaterialID() { return m_unMaterialID; }
