@@ -14,7 +14,7 @@
 
 
 class MEngine;
-class MORTY_API MForwardRenderShaderParamSet : public MShaderParamSet
+class MORTY_API MForwardRenderShaderParamSet : public MShaderPropertyBlock
 {
 public:
 

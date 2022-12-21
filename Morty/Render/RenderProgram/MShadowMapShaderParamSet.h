@@ -14,7 +14,7 @@
 
 
 class MEngine;
-class MORTY_API MShadowMapShaderParamSet : public MShaderParamSet
+class MORTY_API MShadowMapShaderParamSet : public MShaderPropertyBlock
 {
 public:
 
@@ -31,7 +31,7 @@ public:
 
 public:
 
-	MShaderConstantParam* m_pWorldMatrixParam;
+	std::shared_ptr<MShaderConstantParam> m_pWorldMatrixParam;
 };
 
 

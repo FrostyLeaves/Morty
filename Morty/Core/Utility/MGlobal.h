@@ -37,7 +37,6 @@ typedef unsigned long MObjectID;
 typedef unsigned long MResourceID;
 typedef unsigned char MByte;
 
-
 #include <map>
 #include <set>
 #include <stack>
@@ -51,6 +50,9 @@ typedef unsigned char MByte;
 #include <functional>
 
 #include "Utility/MString.h"
+
+
+#define MORTY_ASSERT assert
 
 
 class MORTY_API MGlobal

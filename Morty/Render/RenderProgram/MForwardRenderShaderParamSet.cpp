@@ -16,7 +16,7 @@
 #include "System/MRenderSystem.h"
 
 MForwardRenderShaderParamSet::MForwardRenderShaderParamSet()
-	: MShaderParamSet(1)
+	: MShaderPropertyBlock(nullptr, 1)
 	, m_pWorldMatrixParam(nullptr)
 	, m_pWorldInfoParam(nullptr)
 	, m_pLightInfoParam(nullptr)

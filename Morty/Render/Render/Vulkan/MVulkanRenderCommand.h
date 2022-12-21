@@ -19,8 +19,8 @@ class MTexture;
 class MORTY_API MVulkanRenderCommand : public MIRenderCommand
 {
 public:
-    MVulkanRenderCommand();
-    virtual ~MVulkanRenderCommand();
+    explicit MVulkanRenderCommand() = default;
+    virtual ~MVulkanRenderCommand() = default;
 
 public:
 
@@ -40,7 +40,7 @@ public:
 
 
 	virtual bool SetUseMaterial(std::shared_ptr<MMaterial> pMaterial) override;
-	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) override;
+	virtual void SetShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet) override;
 
 	virtual bool DispatchComputeJob(MComputeDispatcher* pComputeDispatcher, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ) override;
 
@@ -55,24 +55,23 @@ public:
 
 	void UpdateBuffer(MBuffer* pBuffer, const MByte* data, const size_t& size);
 
-	void UpdateShaderParam(MShaderConstantParam* param);
+	void UpdateShaderParam(std::shared_ptr<MShaderConstantParam> param);
 
 	
 	void SetTextureLayout(const std::vector<MTexture*>& vTextures, VkImageLayout newLayout);
 
 public:
 
-	MVulkanDevice* m_pDevice;
+	MVulkanDevice* m_pDevice = nullptr;
 
-	std::shared_ptr<MMaterial> pUsingMaterial;
-	std::shared_ptr<MMaterialPipelineGroup> pUsingPipelineGroup;
+	std::shared_ptr<MPipeline> pUsingPipeline = nullptr;
 	std::stack<MRenderPassStage> m_vRenderPassStages;
 
-	VkCommandBuffer m_VkCommandBuffer;
+	VkCommandBuffer m_VkCommandBuffer = VK_NULL_HANDLE;
 
 	std::map<MTexture*, VkImageLayout> m_tTextureLayout;
 
-	std::vector<std::function<void()>> m_aRenderFinishedCallback;
+	std::vector<std::function<void()>> m_aRenderFinishedCallback = {};
 };
 
 class MORTY_API MVulkanSecondaryRenderCommand : public MVulkanRenderCommand

@@ -54,17 +54,20 @@ public:
 	virtual bool CompileShader(MShader* pShader) = 0;
 	virtual void CleanShader(MShader* pShader) = 0;
 
-	virtual bool GenerateShaderParamSet(MShaderParamSet* pParamSet) = 0;
-	virtual void DestroyShaderParamSet(MShaderParamSet* pParamSet) = 0;
+	virtual bool GenerateShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet) = 0;
+	virtual void DestroyShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet) = 0;
 
-	virtual bool GenerateShaderParamBuffer(MShaderConstantParam* pParam) = 0;
-	virtual void DestroyShaderParamBuffer(MShaderConstantParam* pParam) = 0;
+	virtual bool GenerateShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam) = 0;
+	virtual void DestroyShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam) = 0;
 
 	virtual bool GenerateRenderPass(MRenderPass* pRenderPass) = 0;
 	virtual void DestroyRenderPass(MRenderPass* pRenderPass) = 0;
 
 	virtual bool GenerateFrameBuffer(MRenderPass* pRenderPass) = 0;
 	virtual void DestroyFrameBuffer(MRenderPass* pRenderPass) = 0;
+
+	virtual bool GenerateShaderProgram(MShaderProgram* pShaderProgram) = 0;
+	virtual void DestroyShaderProgram(MShaderProgram* pShaderProgram) = 0;
 
 	virtual bool RegisterMaterial(std::shared_ptr<MMaterial> pMaterial) { return true; };
 	virtual bool UnRegisterMaterial(std::shared_ptr<MMaterial> pMaterial) { return true; };

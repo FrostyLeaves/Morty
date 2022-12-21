@@ -4,51 +4,63 @@
 #include "Render/Vulkan/MVulkanDevice.h"
 #endif
 
-MShaderParamSet::MShaderParamSet()
+MShaderPropertyBlock::MShaderPropertyBlock()
 	: m_vParams()
 	, m_vTextures()
 	, m_vSamples()
 	, m_unKey(0)
+	, m_pShaderProgram()
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	m_VkDescriptorSet = VK_NULL_HANDLE;
-	m_nDescriptorSetInitMaterialIdx = MGlobal::M_INVALID_INDEX;
 	m_unLayoutDataIdx = MGlobal::M_INVALID_INDEX;
 #endif
 }
 
-MShaderParamSet::MShaderParamSet(const uint32_t& unKey)
+MShaderPropertyBlock::MShaderPropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram, const uint32_t& unKey)
 	: m_vParams()
 	, m_vTextures()
 	, m_vSamples()
 	, m_unKey(unKey)
+	, m_pShaderProgram(pShaderProgram)
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	m_VkDescriptorSet = VK_NULL_HANDLE;
-	m_nDescriptorSetInitMaterialIdx = MGlobal::M_INVALID_INDEX;
 	m_unLayoutDataIdx = MGlobal::M_INVALID_INDEX;
 #endif
 }
 
-MShaderParamSet::~MShaderParamSet()
+MShaderPropertyBlock::~MShaderPropertyBlock()
 {
-	for (MShaderConstantParam* pParam : m_vParams)
-		delete pParam;
+	for (auto& pParam : m_vParams)
+	{
+		pParam = nullptr;
+	}
 
-	for (MShaderTextureParam* pParam : m_vTextures)
-		delete pParam;
+	for (auto& pParam : m_vTextures)
+	{
+		pParam = nullptr;
+	}
 
-	for (MShaderSampleParam* pParam : m_vSamples)
-		delete pParam;
+	for (auto& pParam : m_vSamples)
+	{
+		pParam = nullptr;
+	}
+
+	for (auto& pParam : m_vStorages)
+	{
+		pParam = nullptr;
+	}
 
 	m_vParams.clear();
 	m_vTextures.clear();
 	m_vSamples.clear();
+	m_vStorages.clear();
 }
 
-MShaderConstantParam* MShaderParamSet::FindConstantParam(const MString& strParamName)
+std::shared_ptr<MShaderConstantParam> MShaderPropertyBlock::FindConstantParam(const MString& strParamName)
 {
-	for (MShaderConstantParam* pParam : m_vParams)
+	for (std::shared_ptr<MShaderConstantParam>& pParam : m_vParams)
 	{
 		if (pParam->strName == strParamName)
 			return pParam;
@@ -57,9 +69,9 @@ MShaderConstantParam* MShaderParamSet::FindConstantParam(const MString& strParam
 	return nullptr;
 }
 
-MShaderStorageParam* MShaderParamSet::FindStorageParam(const MString& strParamName)
+std::shared_ptr<MShaderStorageParam> MShaderPropertyBlock::FindStorageParam(const MString& strParamName)
 {
-	for (MShaderStorageParam* pParam : m_vStorages)
+	for (std::shared_ptr<MShaderStorageParam>& pParam : m_vStorages)
 	{
 		if (pParam->strName == strParamName)
 			return pParam;
@@ -68,9 +80,9 @@ MShaderStorageParam* MShaderParamSet::FindStorageParam(const MString& strParamNa
 	return nullptr;
 }
 
-MVariant* MShaderParamSet::FindValue(const MString& strName)
+MVariant* MShaderPropertyBlock::FindValue(const MString& strName)
 {
-	for (MShaderConstantParam* pParam : m_vParams)
+	for (std::shared_ptr<MShaderConstantParam>& pParam : m_vParams)
 	{
 		if (pParam->strName == strName)
 			return &pParam->var;
@@ -81,7 +93,7 @@ MVariant* MShaderParamSet::FindValue(const MString& strName)
 	return nullptr;
 }
 
-MVariant* MShaderParamSet::FindValue(const MString& strName, MVariant& value)
+MVariant* MShaderPropertyBlock::FindValue(const MString& strName, MVariant& value)
 {
 	if (MStruct* pStruct = value.GetStruct())
 	{
@@ -100,9 +112,9 @@ MVariant* MShaderParamSet::FindValue(const MString& strName, MVariant& value)
 	return nullptr;
 }
 
-bool MShaderParamSet::SetValue(const MString& strName, MTexture* pTexture)
+bool MShaderPropertyBlock::SetValue(const MString& strName, MTexture* pTexture)
 {
-	for (MShaderTextureParam* pParam : m_vTextures)
+	for (std::shared_ptr<MShaderTextureParam>& pParam : m_vTextures)
 	{
 		if (pParam->strName == strName)
 		{
@@ -114,9 +126,9 @@ bool MShaderParamSet::SetValue(const MString& strName, MTexture* pTexture)
 	return false;
 }
 
-bool MShaderParamSet::SetValue(const MString& strName, const MVariant& value)
+bool MShaderPropertyBlock::SetValue(const MString& strName, const MVariant& value)
 {
-	for (MShaderConstantParam* pParam : m_vParams)
+	for (std::shared_ptr<MShaderConstantParam>& pParam : m_vParams)
 	{
 		if (pParam->strName == strName)
 		{
@@ -139,7 +151,7 @@ bool MShaderParamSet::SetValue(const MString& strName, const MVariant& value)
 	return false;
 }
 
-bool MShaderParamSet::SetValue(MVariant& target, const MVariant& source)
+bool MShaderPropertyBlock::SetValue(MVariant& target, const MVariant& source)
 {
 	if (target.GetType() == source.GetType() && target.GetSize() == source.GetSize())
 	{
@@ -150,21 +162,21 @@ bool MShaderParamSet::SetValue(MVariant& target, const MVariant& source)
 	return false;
 }
 
-bool MShaderParamSet::HasValue(const uint32_t& unBinding, const uint32_t& unSet)
+bool MShaderPropertyBlock::HasValue(const uint32_t& unBinding, const uint32_t& unSet)
 {
-	for (MShaderParam* pParam : m_vParams)
+	for (std::shared_ptr<MShaderConstantParam>& pParam : m_vParams)
 	{
 		if (pParam->unSet == unSet && pParam->unBinding == unBinding)
 			return true;
 	}
 
-	for (MShaderParam* pParam : m_vTextures)
+	for (std::shared_ptr<MShaderTextureParam>& pParam : m_vTextures)
 	{
 		if (pParam->unSet == unSet && pParam->unBinding == unBinding)
 			return true;
 	}
 
-	for (MShaderParam* pParam : m_vSamples)
+	for (std::shared_ptr<MShaderSampleParam>& pParam : m_vSamples)
 	{
 		if (pParam->unSet == unSet && pParam->unBinding == unBinding)
 			return true;
@@ -173,36 +185,48 @@ bool MShaderParamSet::HasValue(const uint32_t& unBinding, const uint32_t& unSet)
 	return false;
 }
 
-void MShaderParamSet::GenerateBuffer(MIDevice* pDevice)
+void MShaderPropertyBlock::GenerateBuffer(MIDevice* pDevice)
 {
 	pDevice->GenerateShaderParamSet(this);
 }
 
-void MShaderParamSet::DestroyBuffer(MIDevice* pDevice)
+void MShaderPropertyBlock::DestroyBuffer(MIDevice* pDevice)
 {
 	pDevice->DestroyShaderParamSet(this);
-	m_nDescriptorSetInitMaterialIdx = MGlobal::M_INVALID_INDEX;
 
-	for (MShaderConstantParam* pParam : m_vParams)
+	for (std::shared_ptr<MShaderConstantParam>& pParam : m_vParams)
+	{
 		pDevice->DestroyShaderParamBuffer(pParam);
+	}
 }
 
-MShaderParamSet* MShaderParamSet::Clone()
+std::shared_ptr<MShaderPropertyBlock> MShaderPropertyBlock::Clone()
 {
-	MShaderParamSet* pParamSet = new MShaderParamSet(m_unKey);
+	std::shared_ptr<MShaderPropertyBlock> pParamSet = MShaderPropertyBlock::MakeShared(m_pShaderProgram.lock(), m_unKey);
 
 	pParamSet->m_vParams.resize(m_vParams.size());
 	pParamSet->m_vTextures.resize(m_vTextures.size());
 	pParamSet->m_vSamples.resize(m_vSamples.size());
 
 	for (uint32_t i = 0; i < m_vParams.size(); ++i)
-		pParamSet->m_vParams[i] = new MShaderConstantParam(*m_vParams[i], 0);
+		pParamSet->m_vParams[i] = std::make_shared<MShaderConstantParam>(*m_vParams[i], 0);
 
 	for (uint32_t i = 0; i < m_vTextures.size(); ++i)
-		pParamSet->m_vTextures[i] = new MShaderTextureParam(*m_vTextures[i]);
+		pParamSet->m_vTextures[i] = std::make_shared<MShaderTextureParam>(*m_vTextures[i]);
 
 	for (uint32_t i = 0; i < m_vSamples.size(); ++i)
-		pParamSet->m_vSamples[i] = new MShaderSampleParam(*m_vSamples[i]);
+		pParamSet->m_vSamples[i] = std::make_shared<MShaderSampleParam>(*m_vSamples[i]);
+	
+	for (uint32_t i = 0; i < m_vStorages.size(); ++i)
+		pParamSet->m_vStorages[i] = std::make_shared<MShaderStorageParam>(*m_vSamples[i]);
 
 	return pParamSet;
+}
+
+std::shared_ptr<MShaderPropertyBlock> MShaderPropertyBlock::MakeShared(const std::shared_ptr<MShaderProgram>& pShaderProgram, const uint32_t& unKey)
+{
+	std::shared_ptr<MShaderPropertyBlock> pResult = std::make_shared<MShaderPropertyBlock>(pShaderProgram, unKey);
+	pResult->m_pSelfPointer = pResult;
+
+	return pResult;
 }

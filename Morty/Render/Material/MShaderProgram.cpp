@@ -1,4 +1,4 @@
-#include "MShaderGroup.h"
+#include "MShaderProgram.h"
 
 #include "Material/MShader.h"
 #include "MShaderBuffer.h"
@@ -16,9 +16,9 @@
 #include "Utility/MVariant.h"
 
 
-MORTY_CLASS_IMPLEMENT(MShaderGroup, MTypeClass)
+MORTY_CLASS_IMPLEMENT(MShaderProgram, MTypeClass)
 
-MShaderGroup::MShaderGroup()
+MShaderProgram::MShaderProgram(EUsage usage)
 	: MTypeClass()
 	, m_VertexResource(nullptr)
 	, m_PixelResource(nullptr)
@@ -30,19 +30,27 @@ MShaderGroup::MShaderGroup()
 	, m_nPixelShaderIndex(0)
 	, m_nComputeShaderIndex(0)
 	, m_ShaderMacro()
+	, m_eUsage(usage)
 {
-    m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MATERIAL] = MShaderParamSet(MRenderGlobal::SHADER_PARAM_SET_MATERIAL);
-    m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_FRAME] = MShaderParamSet(MRenderGlobal::SHADER_PARAM_SET_FRAME);
-    m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MESH] = MShaderParamSet(MRenderGlobal::SHADER_PARAM_SET_MESH);
-    m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_SKELETON] = MShaderParamSet(MRenderGlobal::SHADER_PARAM_SET_SKELETON);
+    m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MATERIAL] = MShaderPropertyBlock::MakeShared(GetShared(), MRenderGlobal::SHADER_PARAM_SET_MATERIAL);
+    m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_FRAME] = MShaderPropertyBlock::MakeShared(GetShared(), MRenderGlobal::SHADER_PARAM_SET_FRAME);
+    m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MESH] = MShaderPropertyBlock::MakeShared(GetShared(), MRenderGlobal::SHADER_PARAM_SET_MESH);
+    m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_SKELETON] = MShaderPropertyBlock::MakeShared(GetShared(), MRenderGlobal::SHADER_PARAM_SET_SKELETON);
 }
 
-MShaderGroup::~MShaderGroup()
+std::shared_ptr<MShaderProgram> MShaderProgram::MakeShared(EUsage usage)
+{
+	std::shared_ptr<MShaderProgram> pResult = std::make_shared<MShaderProgram>(usage);
+	pResult->m_pSelfPointer = pResult;
+	return pResult;
+}
+
+MShaderProgram::~MShaderProgram()
 {
 
 }
 
-bool MShaderGroup::LoadVertexShader(MEngine* pEngine, std::shared_ptr<MResource> pResource)
+bool MShaderProgram::LoadVertexShader(MEngine* pEngine, std::shared_ptr<MResource> pResource)
 {
 	if (std::shared_ptr<MShaderResource> pShaderResource = MTypeClass::DynamicCast<MShaderResource>(pResource))
 	{
@@ -60,7 +68,7 @@ bool MShaderGroup::LoadVertexShader(MEngine* pEngine, std::shared_ptr<MResource>
 					MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
 					if (!m_pVertexShader->CompileShader(pRenderSystem->GetDevice()))
 					{
-						assert(false);
+						MORTY_ASSERT(false);
 						m_pVertexShader = nullptr;
 						return false;
 					}
@@ -83,7 +91,7 @@ bool MShaderGroup::LoadVertexShader(MEngine* pEngine, std::shared_ptr<MResource>
 	return false;
 }
 
-bool MShaderGroup::LoadPixelShader(MEngine* pEngine, std::shared_ptr<MResource> pResource)
+bool MShaderProgram::LoadPixelShader(MEngine* pEngine, std::shared_ptr<MResource> pResource)
 {
 	if (std::shared_ptr<MShaderResource> pShaderResource = MTypeClass::DynamicCast<MShaderResource>(pResource))
 	{
@@ -122,7 +130,7 @@ bool MShaderGroup::LoadPixelShader(MEngine* pEngine, std::shared_ptr<MResource> 
 	return false;
 }
 
-bool MShaderGroup::LoadComputeShader(MEngine* pEngine, std::shared_ptr<MResource> pResource)
+bool MShaderProgram::LoadComputeShader(MEngine* pEngine, std::shared_ptr<MResource> pResource)
 {
 	if (std::shared_ptr<MShaderResource> pShaderResource = MTypeClass::DynamicCast<MShaderResource>(pResource))
 	{
@@ -161,16 +169,16 @@ bool MShaderGroup::LoadComputeShader(MEngine* pEngine, std::shared_ptr<MResource
 	return false;
 }
 
-void MShaderGroup::BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderParamType& eType)
+void MShaderProgram::BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderParamType& eType)
 {
 	for (uint32_t i = 0; i < MRenderGlobal::SHADER_PARAM_SET_NUM; ++i)
 	{
-		MShaderParamSet& bufferSet = pBuffer->m_vShaderSets[i];
-		MShaderParamSet& selfSet = m_vShaderSets[i];
+		std::shared_ptr<MShaderPropertyBlock>& pPropertyTemplate = pBuffer->m_vShaderSets[i];
+		std::shared_ptr<MShaderPropertyBlock>& pProgramProperty = m_vShaderSets[i];
 
-		for (MShaderConstantParam* pBufferParam : bufferSet.m_vParams)
+		for (const std::shared_ptr<MShaderConstantParam>& pBufferParam : pPropertyTemplate->m_vParams)
 		{
-			if (MShaderConstantParam* pSelfParam = selfSet.FindConstantParam(pBufferParam))
+			if (std::shared_ptr<MShaderConstantParam> pSelfParam = pProgramProperty->FindConstantParam(pBufferParam))
 			{
 				pSelfParam->eShaderType |= eType;
 				MVariant temp;
@@ -181,97 +189,81 @@ void MShaderGroup::BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderParamT
 			}
 			else
 			{
-				MShaderConstantParam* pParam = new MShaderConstantParam(*pBufferParam, 0);
+				std::shared_ptr<MShaderConstantParam> pParam = std::make_shared<MShaderConstantParam>(*pBufferParam, 0);
 				pParam->eShaderType = eType;
-				selfSet.AppendConstantParam(pParam, eType);
+				pProgramProperty->AppendConstantParam(pParam, eType);
 			}
 		}
 
-		for (MShaderTextureParam* pBufferParam : bufferSet.m_vTextures)
+		for (const std::shared_ptr<MShaderTextureParam>& pBufferParam : pPropertyTemplate->m_vTextures)
 		{
-			if (MShaderTextureParam* pSelfParam = selfSet.FindTextureParam(pBufferParam))
+			if (std::shared_ptr<MShaderTextureParam> pSelfParam = pProgramProperty->FindTextureParam(pBufferParam))
 			{
 				pSelfParam->eShaderType |= eType;
 			}
 			else
 			{
-				MShaderTextureParam* pParam = new MTextureResourceParam(*pBufferParam);
+				std::shared_ptr<MShaderTextureParam> pParam = std::make_shared<MTextureResourceParam>(*pBufferParam);
 				pParam->eShaderType = eType;
-				selfSet.AppendTextureParam(pParam, eType);
+				pProgramProperty->AppendTextureParam(pParam, eType);
 			}
 		}
 
-		for (MShaderSampleParam* pBufferParam : bufferSet.m_vSamples)
+		for (const std::shared_ptr<MShaderSampleParam>& pBufferParam : pPropertyTemplate->m_vSamples)
 		{
-			if (MShaderSampleParam* pSelfParam = selfSet.FindSampleParam(pBufferParam))
+			if (std::shared_ptr<MShaderSampleParam> pSelfParam = pProgramProperty->FindSampleParam(pBufferParam))
 			{
 				pSelfParam->eShaderType |= eType;
 			}
 			else
 			{
-				MShaderSampleParam* pParam = new MShaderSampleParam(*pBufferParam);
+				std::shared_ptr<MShaderSampleParam> pParam = std::make_shared<MShaderSampleParam>(*pBufferParam);
 				pParam->eShaderType = eType;
-				selfSet.AppendSampleParam(pParam, eType);
+				pProgramProperty->AppendSampleParam(pParam, eType);
 			}
 		}
 
-		for (MShaderStorageParam* pBufferParam : bufferSet.m_vStorages)
+		for (const std::shared_ptr<MShaderStorageParam>& pBufferParam : pPropertyTemplate->m_vStorages)
 		{
-			if (MShaderStorageParam* pSelfParam = selfSet.FindStorageParam(pBufferParam))
+			if (std::shared_ptr<MShaderStorageParam> pSelfParam = pProgramProperty->FindStorageParam(pBufferParam))
 			{
 				pSelfParam->eShaderType |= eType;
 			}
 			else
 			{
-				MShaderStorageParam* pParam = new MShaderStorageParam(*pBufferParam);
+				std::shared_ptr<MShaderStorageParam> pParam = std::make_shared<MShaderStorageParam>(*pBufferParam);
 				pParam->eShaderType = eType;
-				selfSet.AppendStorageParam(pParam, eType);
+				pProgramProperty->AppendStorageParam(pParam, eType);
 			}
 		}
 	}
 }
 
-void MShaderGroup::UnbindShaderBuffer(MEngine* pEngine, const MEShaderParamType& eType)
+void MShaderProgram::UnbindShaderBuffer(MEngine* pEngine, const MEShaderParamType& eType)
 {
 	MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
 	for (uint32_t i = 0; i < MRenderGlobal::SHADER_PARAM_SET_NUM; ++i)
 	{
-		MShaderParamSet& selfSet = m_vShaderSets[i];
-		std::vector<MShaderConstantParam*> vConstantParams = selfSet.RemoveConstantParam(eType);
-		std::vector<MShaderTextureParam*> vTextureParams = selfSet.RemoveTextureParam(eType);
-		std::vector<MShaderSampleParam*> vSampleParams = selfSet.RemoveSampleParam(eType);
-		std::vector<MShaderStorageParam*> vStorageParams = selfSet.RemoveStorageParam(eType);
+		std::shared_ptr<MShaderPropertyBlock>& pProgramProperty = m_vShaderSets[i];
+		std::vector<std::shared_ptr<MShaderConstantParam>>&& vConstantParams = pProgramProperty->RemoveConstantParam(eType);
+		std::vector<std::shared_ptr<MShaderTextureParam>>&& vTextureParams = pProgramProperty->RemoveTextureParam(eType);
+		std::vector<std::shared_ptr<MShaderSampleParam>>&& vSampleParams = pProgramProperty->RemoveSampleParam(eType);
+		std::vector<std::shared_ptr<MShaderStorageParam>>&& vStorageParams = pProgramProperty->RemoveStorageParam(eType);
 
-		for (MShaderConstantParam* pParam : vConstantParams)
+		for (std::shared_ptr<MShaderConstantParam>& pParam : vConstantParams)
 		{
 			pRenderSystem->GetDevice()->DestroyShaderParamBuffer(pParam);
-			delete pParam;
-		}
-
-		for (MShaderTextureParam* pParam : vTextureParams)
-		{
-			delete pParam;
-		}
-
-		for (MShaderSampleParam* pParam : vSampleParams)
-		{
-			delete pParam;
-		}
-
-		for (MShaderStorageParam* pParam : vStorageParams)
-		{
-			delete pParam;
 		}
 	}
 }
 
-void MShaderGroup::ClearShader(MEngine* pEngine)
+void MShaderProgram::ClearShader(MEngine* pEngine)
 {
 	MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
 	for (uint32_t i = 0; i < MRenderGlobal::SHADER_PARAM_SET_NUM; ++i)
 	{
-		m_vShaderSets[i].DestroyBuffer(pRenderSystem->GetDevice());
-		m_vShaderSets[i] = MShaderParamSet(i);
+		m_vShaderSets[i]->DestroyBuffer(pRenderSystem->GetDevice());
+		m_vShaderSets[i] = nullptr;
 	}
 
 	m_VertexResource.SetResource(nullptr);
@@ -287,40 +279,68 @@ void MShaderGroup::ClearShader(MEngine* pEngine)
 	m_nComputeShaderIndex = 0;
 }
 
-void MShaderGroup::CopyShaderParams(MEngine* pEngine, MShaderParamSet& target, const MShaderParamSet& source)
+void MShaderProgram::CopyShaderParams(MEngine* pEngine, const std::shared_ptr<MShaderPropertyBlock>& target, const std::shared_ptr<const MShaderPropertyBlock>& source)
 {
 	MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
 
-	target.DestroyBuffer(pRenderSystem->GetDevice());
+	target->DestroyBuffer(pRenderSystem->GetDevice());
 
-	target.m_vParams.resize(source.m_vParams.size());
-	for (uint32_t i = 0; i < source.m_vParams.size(); ++i)
+	target->m_vParams.resize(source->m_vParams.size());
+	for (uint32_t i = 0; i < source->m_vParams.size(); ++i)
 	{
-		target.m_vParams[i] = new MShaderConstantParam(*source.m_vParams[i], 0);
+		target->m_vParams[i] = std::make_shared<MShaderConstantParam>(*source->m_vParams[i], 0);
 	}
 
-	target.m_vTextures.resize(source.m_vTextures.size());
-	for (uint32_t i = 0; i < source.m_vTextures.size(); ++i)
+	target->m_vTextures.resize(source->m_vTextures.size());
+	for (uint32_t i = 0; i < source->m_vTextures.size(); ++i)
 	{
-		MTextureResourceParam* pSource = static_cast<MTextureResourceParam*>(source.m_vTextures[i]);
-		MTextureResourceParam* pParam = new MTextureResourceParam(*pSource);
+		std::shared_ptr<MTextureResourceParam> pSource = std::dynamic_pointer_cast<MTextureResourceParam>(source->m_vTextures[i]);
+		std::shared_ptr<MTextureResourceParam> pParam = std::make_shared<MTextureResourceParam>(*pSource);
 
 		pParam->SetTexture(pSource->GetTextureResource());
 
-		target.m_vTextures[i] = pParam;
+		target->m_vTextures[i] = pParam;
 	}
 
-	target.m_vSamples.resize(source.m_vSamples.size());
-	for (uint32_t i = 0; i < source.m_vSamples.size(); ++i)
+	target->m_vSamples.resize(source->m_vSamples.size());
+	for (uint32_t i = 0; i < source->m_vSamples.size(); ++i)
 	{
-		target.m_vSamples[i] = new MShaderSampleParam(*source.m_vSamples[i]);
+		target->m_vSamples[i] = std::make_shared<MShaderSampleParam>(*source->m_vSamples[i]);
 	}
 
-	target.m_vStorages.resize(source.m_vStorages.size());
-	for (uint32_t i = 0; i < source.m_vStorages.size(); ++i)
+	target->m_vStorages.resize(source->m_vStorages.size());
+	for (uint32_t i = 0; i < source->m_vStorages.size(); ++i)
 	{
-		target.m_vStorages[i] = new MShaderStorageParam(*source.m_vStorages[i]);
+		target->m_vStorages[i] = std::make_shared<MShaderStorageParam>(*source->m_vStorages[i]);
 	}
+}
+
+std::shared_ptr<MShaderPropertyBlock> MShaderProgram::AllocShaderParamSet(size_t nSetIdx)
+{
+	std::shared_ptr<MShaderPropertyBlock> pShaderParamSet = m_vShaderSets[nSetIdx]->Clone();
+	m_tShaderParamSetInstance.insert(pShaderParamSet);
+
+	return pShaderParamSet;
+}
+
+void MShaderProgram::ReleaseShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pShaderParamSet)
+{
+	m_tShaderParamSetInstance.erase(pShaderParamSet);
+}
+
+void MShaderProgram::GenerateProgram(MIDevice* pDevice)
+{
+
+}
+
+void MShaderProgram::DestroyProgram(MIDevice* pDevice)
+{
+
+}
+
+std::shared_ptr<MShaderProgram> MShaderProgram::GetShared() const
+{
+	return m_pSelfPointer.lock();
 }
 
 MTextureResourceParam::MTextureResourceParam()

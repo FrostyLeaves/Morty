@@ -156,7 +156,7 @@ MComponentID MComponentGroup<TYPE>::AddComponent(MEntity* entity)
 	m_vFreeComponent.pop_back();
 	
 	MComponent* pComponent = FindComponent(nResult.nPrimaryIdx, nResult.nSecondaryIdx);
-	assert(pComponent && !pComponent->IsValid());
+	MORTY_ASSERT(pComponent && !pComponent->IsValid());
 
 	pComponent->SetComponentID(nResult);
 	pComponent->MComponent::Initialize(m_pScene, entity->GetID());

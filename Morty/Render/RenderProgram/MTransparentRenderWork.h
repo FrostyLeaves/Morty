@@ -82,7 +82,7 @@ private:
 
 	MRenderPass m_peelRenderPass;
 	MRenderPass m_fillRenderPass;
-	MForwardRenderTransparentShaderParamSet m_aFrameParamSet[2];
+	std::array<std::shared_ptr<MForwardRenderTransparentShaderParamSet>, 2> m_aFramePropertyBlock;
 };
 
 #endif

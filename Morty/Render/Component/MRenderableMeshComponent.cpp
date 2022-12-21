@@ -75,7 +75,7 @@ std::shared_ptr<MMaterial> MRenderableMeshComponent::GetMaterial()
 	return std::static_pointer_cast<MMaterial>(m_Material.GetResource());
 }
 
-MShaderParamSet* MRenderableMeshComponent::GetShaderMeshParamSet()
+std::shared_ptr<MShaderPropertyBlock> MRenderableMeshComponent::GetShaderMeshParamSet()
 {
 	if (m_bTransformParamDirty)
 	{
@@ -345,16 +345,15 @@ void MRenderableMeshComponent::BindShaderParam(std::shared_ptr<MMaterial> pMater
 	{
 		MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 		m_pShaderParamSet->DestroyBuffer(pRenderSystem->GetDevice());
-		delete m_pShaderParamSet;
-		m_pShaderParamSet = nullptr;
 		m_pTransformParam = nullptr;
 		m_pWorldMatrixParam = nullptr;
 		m_pNormalMatrixParam = nullptr;
+		m_pShaderParamSet = nullptr;
 	}
 
 	if (pMaterial)
 	{
-		if (MShaderParamSet* pParamSet = pMaterial->GetMeshParamSet())
+		if (std::shared_ptr<MShaderPropertyBlock> pParamSet = pMaterial->GetMeshParamSet())
 		{
 			m_pShaderParamSet = pParamSet->Clone();
 

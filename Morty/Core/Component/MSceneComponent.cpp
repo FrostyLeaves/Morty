@@ -335,7 +335,7 @@ void MSceneComponent::PostDeserialize()
 	}
 	else
 	{
-		assert(pEntity || m_parentGuid == MGuid::invalid);
+		MORTY_ASSERT(pEntity || m_parentGuid == MGuid::invalid);
 	}
 }
 

@@ -17,7 +17,7 @@ public:
     MShaderBuffer();
 	virtual ~MShaderBuffer() {}
 
-    MShaderParamSet m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_NUM];
+    std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM> m_vShaderSets;
 	
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	VkShaderModule m_VkShaderModule;

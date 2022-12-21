@@ -113,7 +113,7 @@ float Quaternion::Length() const
 void Quaternion::Normalize()
 {
 	float length = Length();
-	assert(length > 0.0f);
+	MORTY_ASSERT(length > 0.0f);
 
 	w = w / length;
 	x = x / length;

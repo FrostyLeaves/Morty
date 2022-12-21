@@ -88,7 +88,7 @@ uint32_t MTexture::GetImageMemorySize(const METextureLayout& layout)
 		return 4;
 	}
 
-	assert(false);
+	MORTY_ASSERT(false);
 	return 0;
 }
 

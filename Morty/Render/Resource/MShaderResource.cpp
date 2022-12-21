@@ -47,7 +47,7 @@ int MShaderResource::FindShaderByMacroParam(const MShaderMacro& macro)
 void MShaderResource::OnDelete()
 {
 	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
-	assert(pRenderSystem);
+	MORTY_ASSERT(pRenderSystem);
 
 	for (MShader* pShader : m_vShaders)
 	{

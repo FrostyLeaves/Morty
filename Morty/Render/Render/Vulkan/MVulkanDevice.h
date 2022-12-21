@@ -53,17 +53,20 @@ public:
 	virtual bool CompileShader(MShader* pShader) override;
 	virtual void CleanShader(MShader* pShader) override;
 
-	virtual bool GenerateShaderParamSet(MShaderParamSet* pParamSet) override;
-	virtual void DestroyShaderParamSet(MShaderParamSet* pParamSet) override;
+	virtual bool GenerateShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet) override;
+	virtual void DestroyShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet) override;
 
-	virtual bool GenerateShaderParamBuffer(MShaderConstantParam* pParam) override;
-	virtual void DestroyShaderParamBuffer(MShaderConstantParam* pParam) override;
+	virtual bool GenerateShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam) override;
+	virtual void DestroyShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam) override;
 
 	virtual bool GenerateRenderPass(MRenderPass* pRenderPass) override;
 	virtual void DestroyRenderPass(MRenderPass* pRenderPass) override;
 
 	virtual bool GenerateFrameBuffer(MRenderPass* pRenderPass) override;
 	virtual void DestroyFrameBuffer(MRenderPass* pRenderPass) override;
+
+	virtual bool GenerateShaderProgram(MShaderProgram* pShaderProgram) override;
+	virtual void DestroyShaderProgram(MShaderProgram* pShaderProgram) override;
 
 	virtual bool RegisterMaterial(std::shared_ptr<MMaterial> pMaterial) override;
 	virtual bool UnRegisterMaterial(std::shared_ptr<MMaterial> pMaterial) override;

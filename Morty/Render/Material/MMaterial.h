@@ -14,7 +14,7 @@
 #include "Resource/MTextureResource.h"
 
 #include "MShaderMacro.h"
-#include "MShaderGroup.h"
+#include "MShaderProgram.h"
 #include "MShaderBuffer.h"
 #include "Material/MShaderParamSet.h"
 
@@ -68,23 +68,23 @@ public:
 
 public:
 
-	MShader* GetVertexShader(){ return m_shaderGroup.GetVertexShader(); }
-	MShader* GetPixelShader() { return m_shaderGroup.GetPixelShader(); }
-	MShader* GetComputeShader() { return m_shaderGroup.GetComputeShader(); }
+	MShader* GetVertexShader(){ return m_pShaderProgram->GetVertexShader(); }
+	MShader* GetPixelShader() { return m_pShaderProgram->GetPixelShader(); }
+	MShader* GetComputeShader() { return m_pShaderProgram->GetComputeShader(); }
 
-	std::vector<MShaderConstantParam*>* GetShaderParams();
-	std::vector<MShaderSampleParam*>* GetSampleParams();
-	std::vector<MShaderTextureParam*>* GetTextureParams();
+	std::vector<std::shared_ptr<MShaderConstantParam>>& GetShaderParams();
+	std::vector<std::shared_ptr<MShaderSampleParam>>& GetSampleParams();
+	std::vector<std::shared_ptr<MShaderTextureParam>>& GetTextureParams();
 
-	std::array<MShaderParamSet, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParamSets() { return m_shaderGroup.GetShaderParamSets(); }
-	const std::array<MShaderParamSet, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParamSets() const { return m_shaderGroup.GetShaderParamSets(); }
-	MShaderParamSet* GetMaterialParamSet() { return &m_shaderGroup.GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]; }
-	MShaderParamSet* GetFrameParamSet() { return &m_shaderGroup.GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_FRAME]; }
-	MShaderParamSet* GetMeshParamSet() { return &m_shaderGroup.GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MESH]; }
+	std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParamSets() { return m_pShaderProgram->GetShaderParamSets(); }
+	const std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParamSets() const { return m_pShaderProgram->GetShaderParamSets(); }
+	std::shared_ptr<MShaderPropertyBlock> GetMaterialParamSet() { return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]; }
+	std::shared_ptr<MShaderPropertyBlock> GetFrameParamSet() { return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_FRAME]; }
+	std::shared_ptr<MShaderPropertyBlock> GetMeshParamSet() { return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MESH]; }
 
 	void SetTexutre(const MString& strName, std::shared_ptr<MResource> pTexResource);
 
-	MShaderConstantParam* FindShaderParam(const MString& strName);
+	std::shared_ptr<MShaderConstantParam> FindShaderParam(const MString& strName);
 
 	void SetRasterizerType(const MERasterizerType& eType);
 	MERasterizerType GetRasterizerType() const { return m_eRasterizerType; }
@@ -102,11 +102,11 @@ public:
 
 public:
 
-	std::shared_ptr<MResource> GetVertexShaderResource() { return m_shaderGroup.GetVertexShaderResource(); }
-	std::shared_ptr<MResource> GetPixelShaderResource() { return m_shaderGroup.GetPixelShaderResource(); }
+	std::shared_ptr<MResource> GetVertexShaderResource() { return m_pShaderProgram->GetVertexShaderResource(); }
+	std::shared_ptr<MResource> GetPixelShaderResource() { return m_pShaderProgram->GetPixelShaderResource(); }
 
-	MShaderMacro& GetShaderMacro() { return m_shaderGroup.GetShaderMacro(); }
-	const MShaderGroup& GetShaderGroup() const { return m_shaderGroup; }
+	MShaderMacro& GetShaderMacro() { return m_pShaderProgram->GetShaderMacro(); }
+	std::shared_ptr<MShaderProgram> GetShaderProgram() const { return m_pShaderProgram; }
 	
 	void SetMaterialID(const uint32_t& unID) { m_unMaterialID = unID; }
 	uint32_t GetMaterialID() { return m_unMaterialID; }
@@ -131,7 +131,7 @@ protected:
 
 private:
 
-	MShaderGroup m_shaderGroup;
+	std::shared_ptr<MShaderProgram> m_pShaderProgram;
 
 	MERasterizerType m_eRasterizerType;
 	MEMaterialType m_eMaterialType;

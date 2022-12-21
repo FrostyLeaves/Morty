@@ -165,7 +165,7 @@ Vector3 Vector3::operator-(void) const
 
 Vector3 Vector3::operator/(const float& value) const
 {
-	assert(value != 0.0f);
+	MORTY_ASSERT(value != 0.0f);
 
 	return operator*(1.0f / value);
 }
@@ -260,7 +260,7 @@ const Vector4& Vector4::operator/=(const float& value)
 
 Vector4 Vector4::operator/(const float& value) const
 {
-	assert(value != 0.0f);
+	MORTY_ASSERT(value != 0.0f);
 
 	return operator*(1.0f / value);
 }

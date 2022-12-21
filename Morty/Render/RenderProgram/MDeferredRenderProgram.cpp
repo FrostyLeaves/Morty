@@ -215,21 +215,21 @@ void MDeferredRenderProgram::RenderCulling(MTaskNode* pTaskNode)
 	}
 
 
-	MShaderParamSet params = m_pCullingComputeDispatcher->GetShaderParamSets()[0];
+	const std::shared_ptr<MShaderPropertyBlock>& params = m_pCullingComputeDispatcher->GetShaderParamSets()[0];
 
-	if (MShaderStorageParam* pStorageParam = params.FindStorageParam("instances"))
+	if (std::shared_ptr<MShaderStorageParam>&& pStorageParam = params->FindStorageParam("instances"))
 	{
 		pStorageParam->pBuffer = &m_cullingInstanceBuffer;
 		pStorageParam->SetDirty();
 	}
 
-	if (MShaderStorageParam* pStorageParam = params.FindStorageParam("indirectDraws"))
+	if (std::shared_ptr<MShaderStorageParam>&& pStorageParam = params->FindStorageParam("indirectDraws"))
 	{
 		pStorageParam->pBuffer = &m_cullingIndirectDrawBuffer;
 		pStorageParam->SetDirty();
 	}
 
-	if (MShaderConstantParam* pConstantParam = params.FindConstantParam("ubo"))
+	if (std::shared_ptr<MShaderConstantParam>&& pConstantParam = params->FindConstantParam("ubo"))
 	{
 		if (MStruct* sut = pConstantParam->var.GetStruct())
 		{
@@ -259,7 +259,7 @@ void MDeferredRenderProgram::RenderCulling(MTaskNode* pTaskNode)
 		for (MMaterialCullingGroup& group : vMaterialCullingGroup)
 		{
 			m_pPrimaryCommand->SetUseMaterial(group.pMaterial);
-			m_pPrimaryCommand->SetShaderParamSet(&m_frameParamSet);
+			m_pPrimaryCommand->SetShaderParamSet(m_frameParamSet);
 
 			//Binding MVP 
 			//m_pPrimaryCommand->SetShaderParamSet(pMeshComponent->GetShaderMeshParamSet());
@@ -314,7 +314,7 @@ void MDeferredRenderProgram::RenderLightning(MTaskNode* pTaskNode)
 
 	if (pCommand->SetUseMaterial(m_pLightningMaterial))
 	{
-		pCommand->SetShaderParamSet(&m_frameParamSet);
+		pCommand->SetShaderParamSet(m_frameParamSet);
 		pCommand->DrawMesh(&m_ScreenDrawMesh);
 	}
 
@@ -361,7 +361,7 @@ void MDeferredRenderProgram::RenderForward(MTaskNode* pTaskNode)
 			m_pSkyBoxMaterial->SetTexutre("SkyTexCube", pSkyBoxComponent->GetSkyBoxResource());
 
 			pCommand->SetUseMaterial(m_pSkyBoxMaterial);
-			pCommand->SetShaderParamSet(&m_frameParamSet);
+			pCommand->SetShaderParamSet(m_frameParamSet);
 			pCommand->DrawMesh(&m_SkyBoxDrawMesh);
 		}
 	}
@@ -454,7 +454,7 @@ void MDeferredRenderProgram::DrawStaticMesh(MRenderInfo& info, MIRenderCommand* 
 		std::vector<MRenderableMeshComponent*>& vMesh = pr.second;
 
 		pCommand->SetUseMaterial(pMaterial);
-		pCommand->SetShaderParamSet(&m_frameParamSet);
+		pCommand->SetShaderParamSet(m_frameParamSet);
 
 		for (MRenderableMeshComponent* pMeshComponent : vMesh)
 		{
@@ -645,7 +645,7 @@ void MDeferredRenderProgram::InitializeMaterial()
 	m_pLightningMaterial->LoadVertexShader(vs);
 	m_pLightningMaterial->LoadPixelShader(ps);
 
-	if (MShaderParamSet* pParams = m_pLightningMaterial->GetMaterialParamSet())
+	if (std::shared_ptr<MShaderPropertyBlock>&& pParams = m_pLightningMaterial->GetMaterialParamSet())
 	{
 		pParams->SetValue("U_mat_f3Albedo_fMetallic", m_gbufferRenderPass.m_vBackTextures[0].pTexture);
 		pParams->SetValue("U_mat_f3Normal_fRoughness", m_gbufferRenderPass.m_vBackTextures[1].pTexture);

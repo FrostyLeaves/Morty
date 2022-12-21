@@ -15,7 +15,7 @@
 #include "Object/MObject.h"
 
 #include "MShaderMacro.h"
-#include "MShaderGroup.h"
+#include "MShaderProgram.h"
 #include "MShaderBuffer.h"
 #include "Material/MShaderParamSet.h"
 
@@ -35,12 +35,12 @@ public:
 
 public:
 
-	std::shared_ptr<MResource> GetComputeShaderResource() { return m_shaderGroup.GetComputeShaderResource(); }
-	std::array<MShaderParamSet, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParamSets() { return m_shaderGroup.GetShaderParamSets(); }
+	std::shared_ptr<MResource> GetComputeShaderResource() { return m_pShaderProgram->GetComputeShaderResource(); }
+	std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParamSets() { return  m_pShaderProgram->GetShaderParamSets(); }
 	MShader* GetComputeShader();
 
-	MShaderMacro& GetShaderMacro() { return m_shaderGroup.GetShaderMacro(); }
-	const MShaderGroup& GetShaderGroup() const { return m_shaderGroup; }
+	MShaderMacro& GetShaderMacro() { return m_pShaderProgram->GetShaderMacro(); }
+	std::shared_ptr<MShaderProgram> GetShaderProgram() const { return m_pShaderProgram; }
 
 	void SetDispatcherID(const uint32_t& nID) { m_unDispatcherID = nID; }
 	uint32_t GetDispatcherID() const { return m_unDispatcherID; }
@@ -53,7 +53,7 @@ public:
 
 private:
 
-	MShaderGroup m_shaderGroup;
+	std::shared_ptr<MShaderProgram> m_pShaderProgram;
 
 	uint32_t m_unDispatcherID;
 

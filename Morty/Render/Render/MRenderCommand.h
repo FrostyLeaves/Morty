@@ -17,7 +17,7 @@ class MBuffer;
 class MTexture;
 class MMaterial;
 class MRenderPass;
-class MShaderParamSet;
+class MShaderPropertyBlock;
 class MComputeDispatcher;
 class MMaterialPipelineLayoutData;
 
@@ -77,7 +77,7 @@ public:
 	virtual void DrawIndexedIndirect(const MBuffer* pVertexBuffer, const MBuffer* pIndexBuffer, const MBuffer* pCommandsBuffer, const size_t& offset, const size_t& count) = 0;
 
 	virtual bool SetUseMaterial(std::shared_ptr<MMaterial> pMaterial) = 0;
-	virtual void SetShaderParamSet(MShaderParamSet* pParamSet) = 0;
+	virtual void SetShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet) = 0;
 
 	virtual bool DispatchComputeJob(MComputeDispatcher* pMaterial, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ) = 0;
 

@@ -428,7 +428,7 @@ VkBool32 VKAPI_PTR OutputDebugUtilsMessenger(VkDebugUtilsMessageSeverityFlagBits
 	{
 		MVulkanDevice* pDevice = static_cast<MVulkanDevice*>(pUserData);
 		pDevice->GetEngine()->GetLogger()->Error(pCallbackData->pMessage);
-		assert(false);
+		MORTY_ASSERT(false);
 	}
 	return VK_FALSE;
 }
@@ -550,7 +550,7 @@ void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, c
 	}
 	else
 	{
-		assert(false);
+		MORTY_ASSERT(false);
 	}
 
 	if (MBuffer::MMemoryType::EHostVisible == pBuffer->m_eMemoryType)
@@ -585,7 +585,7 @@ void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, c
 	}
 	else
 	{
-		assert(false);
+		MORTY_ASSERT(false);
 	}
 
 	SetDebugName(reinterpret_cast<uint64_t>(vkBuffer), VkObjectType::VK_OBJECT_TYPE_BUFFER, pBuffer->m_strDebugBufferName.c_str());
@@ -627,7 +627,7 @@ void MVulkanDevice::UploadBuffer(MBuffer* pBuffer, const size_t& unBeginOffset, 
 	}
 	else
 	{
-		assert(false);
+		MORTY_ASSERT(false);
 	}
 }
 
@@ -667,7 +667,7 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, MByte* pData)
 	{
 		if (pTexture->m_VkTextureImage)
 		{
-			assert(false);
+			MORTY_ASSERT(false);
 		}
 
 		CreateImage(width, height, unMipmap, unLayerCount, format, VK_IMAGE_TILING_OPTIMAL, usageFlags, memoryFlags, defaultLayout, textureImage, textureImageMemory, createFlags, imageType);
@@ -768,7 +768,7 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, MByte* pData)
 	}
 
 
-	assert(!pTexture->GetName().empty());
+	MORTY_ASSERT(!pTexture->GetName().empty());
 	if (!pTexture->GetName().empty())
 	{
 		SetDebugName((uint64_t)pTexture->m_VkTextureImage, VkObjectType::VK_OBJECT_TYPE_IMAGE, pTexture->GetName().c_str());
@@ -897,7 +897,7 @@ void MVulkanDevice::CleanShader(MShader* pShader)
 	pShader->SetBuffer(nullptr);
 }
 
-bool MVulkanDevice::GenerateShaderParamSet(MShaderParamSet* pParamSet)
+bool MVulkanDevice::GenerateShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet)
 {
 	if (!pParamSet)
 		return false;
@@ -907,7 +907,7 @@ bool MVulkanDevice::GenerateShaderParamSet(MShaderParamSet* pParamSet)
 	return true;
 }
 
-void MVulkanDevice::DestroyShaderParamSet(MShaderParamSet* pParamSet)
+void MVulkanDevice::DestroyShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet)
 {
 	if (pParamSet)
 	{
@@ -915,7 +915,7 @@ void MVulkanDevice::DestroyShaderParamSet(MShaderParamSet* pParamSet)
 	}
 }
 
-bool MVulkanDevice::GenerateShaderParamBuffer(MShaderConstantParam* pParam)
+bool MVulkanDevice::GenerateShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam)
 {
 	if (!pParam)
 		return false;
@@ -927,7 +927,7 @@ bool MVulkanDevice::GenerateShaderParamBuffer(MShaderConstantParam* pParam)
 	return m_BufferPool.AllowBufferMemory(pParam);
 }
 
-void MVulkanDevice::DestroyShaderParamBuffer(MShaderConstantParam* pParam)
+void MVulkanDevice::DestroyShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam)
 {
 	if (!pParam)
 		return;
@@ -1319,6 +1319,17 @@ void MVulkanDevice::DestroyFrameBuffer(MRenderPass* pRenderPass)
 			backTexture.m_VkImageView = VK_NULL_HANDLE;
 		}
 	}
+}
+
+
+bool MVulkanDevice::GenerateShaderProgram(MShaderProgram* pShaderProgram)
+{
+	m_PipelineManager.GenerateShaderProgram(pShaderProgram);
+}
+
+void MVulkanDevice::DestroyShaderProgram(MShaderProgram* pShaderProgram)
+{
+	m_PipelineManager.DestroyShaderProgram(pShaderProgram);
 }
 
 bool MVulkanDevice::RegisterMaterial(std::shared_ptr<MMaterial> pMaterial)
@@ -1727,7 +1738,7 @@ void MVulkanDevice::TransitionImageLayout(VkImageMemoryBarrier& imageMemoryBarri
 		break;
 
 	default:
-		assert(false);
+		MORTY_ASSERT(false);
 	}
 
 	switch (newLayout)
@@ -1759,7 +1770,7 @@ void MVulkanDevice::TransitionImageLayout(VkImageMemoryBarrier& imageMemoryBarri
 		imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 		break;
 	default:
-		assert(false);
+		MORTY_ASSERT(false);
 	}
 }
 
@@ -1822,7 +1833,7 @@ void MVulkanDevice::CreateImage(const uint32_t& unWidth, const uint32_t& unHeigh
 
 	if (MGlobal::M_INVALID_INDEX == allocInfo.memoryTypeIndex)
 	{
-		assert(false);
+		MORTY_ASSERT(false);
 	}
 
 	if (vkAllocateMemory(m_VkDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {

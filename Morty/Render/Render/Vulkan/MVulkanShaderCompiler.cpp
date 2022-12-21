@@ -438,7 +438,7 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 		vCompArgs.push_back(L"-T cs_6_1");
 	}
 	else
-		assert(false);
+		MORTY_ASSERT(false);
 
 	vCompArgs.push_back(L"-spirv");
 	vCompArgs.push_back(L"-fspv-extension=SPV_NV_ray_tracing");
@@ -598,7 +598,7 @@ void MVulkanShaderCompiler::GetVertexInputState(const spirv_cross::Compiler& com
 			}
 			else
 			{
-				assert(false);
+				MORTY_ASSERT(false);
 			}
 
 			attributeDescriptions.push_back(attribute);

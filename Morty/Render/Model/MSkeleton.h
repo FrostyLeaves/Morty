@@ -17,7 +17,7 @@
 #include <map>
 
 class MBoundsOBB;
-class MShaderParamSet;
+class MShaderPropertyBlock;
 
 class MORTY_API MBone
 {
@@ -98,7 +98,7 @@ public:
 
 	void ResetOriginPose();
 
-	MShaderParamSet* GetShaderParamSet();
+	std::shared_ptr<MShaderPropertyBlock> GetShaderParamSet();
 
 	void SetDirty();
 
@@ -109,8 +109,8 @@ private:
 
 	bool m_bShaderParamSetDirty;
 
-	MShaderParamSet* m_pShaderParamSet;
-	MVariantArray* m_pShaderBonesArray;
+	std::shared_ptr<MShaderPropertyBlock> m_pShaderParamSet = nullptr;
+	MVariantArray* m_pShaderBonesArray = nullptr;
 };
 
 #endif

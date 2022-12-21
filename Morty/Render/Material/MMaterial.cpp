@@ -19,7 +19,7 @@ MORTY_CLASS_IMPLEMENT(MMaterial, MResource)
 
 MMaterial::MMaterial()
 	: MResource()
-	, m_shaderGroup()
+	, m_pShaderProgram(MShaderProgram::MakeShared(MShaderProgram::EUsage::EGraphics))
 	, m_eRasterizerType(MERasterizerType::ECullBack)
 	, m_eMaterialType(MEMaterialType::EDefault)
 	, m_unMaterialID(MGlobal::M_INVALID_INDEX)
@@ -30,26 +30,26 @@ MMaterial::~MMaterial()
 {
 }
 
-std::vector<MShaderConstantParam*>* MMaterial::GetShaderParams()
+std::vector<std::shared_ptr<MShaderConstantParam>>& MMaterial::GetShaderParams()
 {
-	return &m_shaderGroup.GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL].m_vParams;
+	return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]->m_vParams;
 }
 
-std::vector<MShaderSampleParam*>* MMaterial::GetSampleParams()
+std::vector<std::shared_ptr<MShaderSampleParam>>& MMaterial::GetSampleParams()
 {
-	return &m_shaderGroup.GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL].m_vSamples;
+	return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]->m_vSamples;
 }
 
-std::vector<MShaderTextureParam*>* MMaterial::GetTextureParams()
+std::vector<std::shared_ptr<MShaderTextureParam>>& MMaterial::GetTextureParams()
 {
-	return &m_shaderGroup.GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL].m_vTextures;
+	return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]->m_vTextures;
 }
 
 void MMaterial::SetTexutre(const MString& strName, std::shared_ptr<MResource> pResource)
 {
 	for (int i = 0; i < GetMaterialParamSet()->m_vTextures.size(); ++i)
 	{
-		MTextureResourceParam* pParam = static_cast<MTextureResourceParam*>(GetMaterialParamSet()->m_vTextures[i]);
+		const std::shared_ptr<MTextureResourceParam>& pParam = std::dynamic_pointer_cast<MTextureResourceParam>(GetMaterialParamSet()->m_vTextures[i]);
 		if (strName == pParam->strName)
 		{
 			if (std::shared_ptr<MTextureResource> pTexResource = MTypeClass::DynamicCast<MTextureResource>(pResource))
@@ -70,9 +70,9 @@ void MMaterial::SetTexutre(const MString& strName, std::shared_ptr<MResource> pR
 	} 
 }
 
-MShaderConstantParam* MMaterial::FindShaderParam(const MString& strName)
+std::shared_ptr<MShaderConstantParam> MMaterial::FindShaderParam(const MString& strName)
 {
-	for (MShaderConstantParam* pParam : GetMaterialParamSet()->m_vParams)
+	for (const std::shared_ptr<MShaderConstantParam>& pParam : GetMaterialParamSet()->m_vParams)
 	{
 		if (pParam->strName == strName)
 			return pParam;
@@ -93,11 +93,11 @@ void MMaterial::CopyFrom(std::shared_ptr<const MResource> pResource)
 	m_eRasterizerType = pMaterial->m_eRasterizerType;
 	m_eMaterialType = pMaterial->m_eMaterialType;
 
-	m_shaderGroup = pMaterial->m_shaderGroup;
+	*m_pShaderProgram = *pMaterial->m_pShaderProgram;
 
 	for (uint32_t i = 0; i < MRenderGlobal::SHADER_PARAM_SET_NUM; ++i)
 	{
-		m_shaderGroup.CopyShaderParams(GetEngine(), GetShaderParamSets()[i], pMaterial->GetShaderParamSets()[i]);
+		MShaderProgram::CopyShaderParams(GetEngine(), GetShaderParamSets()[i], pMaterial->GetShaderParamSets()[i]);
 	}
 }
 
@@ -116,9 +116,9 @@ void MMaterial::Encode(MString& strCode)
 	material.SetValue("macro", macro);
 
 	MStruct vTextures;
-	for (MShaderTextureParam* pParam : GetMaterialParamSet()->m_vTextures)
+	for (const std::shared_ptr<MShaderTextureParam>& pParam : GetMaterialParamSet()->m_vTextures)
 	{
-		MTextureResourceParam* pRefParam = static_cast<MTextureResourceParam*>(pParam);
+		std::shared_ptr<MTextureResourceParam> pRefParam = std::dynamic_pointer_cast<MTextureResourceParam>(pParam);
 
 		if (auto&& pTextureResource = pRefParam->GetTextureResource())
 			vTextures.SetValue(pRefParam->strName, pTextureResource->GetResourcePath());
@@ -129,7 +129,7 @@ void MMaterial::Encode(MString& strCode)
 	material.SetValue("textures", vTextures);
 
 	MStruct vParams;
-	for (MShaderConstantParam* pParam : GetMaterialParamSet()->m_vParams)
+	for (std::shared_ptr<MShaderConstantParam> pParam : GetMaterialParamSet()->m_vParams)
 	{
 		vParams.SetValue(pParam->strName, pParam->var);
 	}
@@ -292,7 +292,7 @@ void MMaterial::SetMaterialType(const MEMaterialType& eType)
 
 bool MMaterial::LoadVertexShader(std::shared_ptr<MResource> pResource)
 {
-	bool bResult = m_shaderGroup.LoadVertexShader(GetEngine(), pResource);
+	bool bResult = m_pShaderProgram->LoadVertexShader(GetEngine(), pResource);
 
 	OnReload();
 
@@ -310,7 +310,7 @@ bool MMaterial::LoadVertexShader(const MString& strResource)
 
 bool MMaterial::LoadPixelShader(std::shared_ptr<MResource> pResource)
 {
-	bool bResult = m_shaderGroup.LoadPixelShader(GetEngine(), pResource);
+	bool bResult = m_pShaderProgram->LoadPixelShader(GetEngine(), pResource);
 
 	OnReload();
 
@@ -328,7 +328,7 @@ bool MMaterial::LoadPixelShader(const MString& strResource)
 
 bool MMaterial::LoadComputeShader(std::shared_ptr<MResource> pResource)
 {
-	bool bResult = m_shaderGroup.LoadComputeShader(GetEngine(), pResource);
+	bool bResult = m_pShaderProgram->LoadComputeShader(GetEngine(), pResource);
 
 	OnReload();
 
@@ -363,14 +363,14 @@ void MMaterial::OnDelete()
 		pRenderSystem->GetDevice()->UnRegisterMaterial(self);
 	}
 
-	m_shaderGroup.ClearShader(GetEngine());
+	m_pShaderProgram->ClearShader(GetEngine());
 		
 	MResource::OnDelete();
 }
 
 void MMaterial::Unload()
 {
-	m_shaderGroup.ClearShader(GetEngine());
+	m_pShaderProgram->ClearShader(GetEngine());
 }
 
 const MString MaterialKey::Albedo = "U_mat_texAlbedo";

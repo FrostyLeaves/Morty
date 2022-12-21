@@ -12,7 +12,7 @@ class MEngine;
 class MTexture;
 class MIRenderer;
 class MIRenderCommand;
-class MShaderParamSet;
+class MShaderPropertyBlock;
 class ImGuiRenderable
 {
 public:
@@ -48,7 +48,7 @@ protected:
 	{
 		int nDestroyCount;
 		MTexture* pTexture;
-		MShaderParamSet* pParamSet;
+		std::shared_ptr<MShaderPropertyBlock> pParamSet;
 	};
 
 	MImGuiTextureDest* GetTexturParamSet(ImGuiTexture tex);

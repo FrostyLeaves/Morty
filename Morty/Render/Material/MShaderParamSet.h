@@ -1,31 +1,34 @@
 /**
- * @File         MShaderParamSet
+ * @File         MShaderPropertyBlock
  * 
  * @Created      2020-07-20 14:26:56
  *
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSHADERPARAMSET_H_
-#define _M_MSHADERPARAMSET_H_
+#ifndef _M_MSHADER_PROPERTY_BLOCK_H_
+#define _M_MSHADER_PROPERTY_BLOCK_H_
 #include "Utility/MGlobal.h"
 #include "Material/MShaderParam.h"
 
 #include <vector>
 
 class MIDevice;
-class MORTY_API MShaderParamSet
+class MShaderProgram;
+class MORTY_API MShaderPropertyBlock
 {
 public:
-	MShaderParamSet();
-	MShaderParamSet(const uint32_t& unKey);
+	MShaderPropertyBlock();
+	explicit MShaderPropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram, const uint32_t& unKey);
 
-    virtual ~MShaderParamSet();
+    virtual ~MShaderPropertyBlock();
+
+	static std::shared_ptr<MShaderPropertyBlock> MakeShared(const std::shared_ptr<MShaderProgram>& pShaderProgram, const uint32_t& unKey);
 
 public:
 
-	MShaderConstantParam* FindConstantParam(const MString& strParamName);
-	MShaderStorageParam* FindStorageParam(const MString& strParamName);
+	std::shared_ptr<MShaderConstantParam> FindConstantParam(const MString& strParamName);
+	std::shared_ptr<MShaderStorageParam> FindStorageParam(const MString& strParamName);
 
 	MVariant* FindValue(const MString& strName, MVariant& value);
 	MVariant* FindValue(const MString& strName);
@@ -37,63 +40,65 @@ public:
 	bool HasValue(const uint32_t& unBinding, const uint32_t& unSet);
 public:
 
-	MShaderConstantParam* FindConstantParam(const MShaderConstantParam* pParam) { return FindShaderParam(m_vParams, pParam); }
-	void AppendConstantParam(MShaderConstantParam* pParam, const uint32_t& eShaderType) { return AppendShaderParam(m_vParams, pParam, eShaderType); }
-	std::vector<MShaderConstantParam*> RemoveConstantParam(const uint32_t& eShaderType) { return RemoveShaderParam<MShaderConstantParam>(m_vParams, eShaderType); }
+	std::shared_ptr<MShaderConstantParam> FindConstantParam(std::shared_ptr<const MShaderConstantParam> pParam) { return FindShaderParam(m_vParams, pParam); }
+	void AppendConstantParam(std::shared_ptr<MShaderConstantParam> pParam, const uint32_t& eShaderType) { return AppendShaderParam(m_vParams, pParam, eShaderType); }
+	std::vector<std::shared_ptr<MShaderConstantParam>> RemoveConstantParam(const uint32_t& eShaderType) { return RemoveShaderParam<MShaderConstantParam>(m_vParams, eShaderType); }
 
-	MShaderTextureParam* FindTextureParam(const MShaderTextureParam* pParam) { return FindShaderParam(m_vTextures, pParam); }
-	void AppendTextureParam(MShaderTextureParam* pParam, const uint32_t& eShaderType) { return AppendShaderParam(m_vTextures, pParam, eShaderType); }
-	std::vector<MShaderTextureParam*> RemoveTextureParam(const uint32_t& eShaderType) { return RemoveShaderParam<MShaderTextureParam>(m_vTextures, eShaderType); }
+	std::shared_ptr<MShaderTextureParam> FindTextureParam(std::shared_ptr<const MShaderTextureParam> pParam) { return FindShaderParam(m_vTextures, pParam); }
+	void AppendTextureParam(std::shared_ptr<MShaderTextureParam> pParam, const uint32_t& eShaderType) { return AppendShaderParam(m_vTextures, pParam, eShaderType); }
+	std::vector<std::shared_ptr<MShaderTextureParam>> RemoveTextureParam(const uint32_t& eShaderType) { return RemoveShaderParam<MShaderTextureParam>(m_vTextures, eShaderType); }
 
-	MShaderSampleParam* FindSampleParam(const MShaderSampleParam* pParam) { return FindShaderParam(m_vSamples, pParam); }
-	void AppendSampleParam(MShaderSampleParam* pParam, const uint32_t& eShaderType) { return AppendShaderParam(m_vSamples, pParam, eShaderType); }
-	std::vector<MShaderSampleParam*> RemoveSampleParam(const uint32_t& eShaderType) { return RemoveShaderParam<MShaderSampleParam>(m_vSamples, eShaderType); }
+	std::shared_ptr<MShaderSampleParam> FindSampleParam(std::shared_ptr<const MShaderSampleParam> pParam) { return FindShaderParam(m_vSamples, pParam); }
+	void AppendSampleParam(std::shared_ptr<MShaderSampleParam> pParam, const uint32_t& eShaderType) { return AppendShaderParam(m_vSamples, pParam, eShaderType); }
+	std::vector<std::shared_ptr<MShaderSampleParam>> RemoveSampleParam(const uint32_t& eShaderType) { return RemoveShaderParam<MShaderSampleParam>(m_vSamples, eShaderType); }
 
-	MShaderStorageParam* FindStorageParam(const MShaderStorageParam* pParam) { return FindShaderParam(m_vStorages, pParam); }
-	void AppendStorageParam(MShaderStorageParam* pParam, const uint32_t& eShaderType) { return AppendShaderParam(m_vStorages, pParam, eShaderType); }
-	std::vector<MShaderStorageParam*> RemoveStorageParam(const uint32_t& eShaderType) { return RemoveShaderParam<MShaderStorageParam>(m_vStorages, eShaderType); }
+	std::shared_ptr<MShaderStorageParam> FindStorageParam(std::shared_ptr<const MShaderStorageParam> pParam) { return FindShaderParam(m_vStorages, pParam); }
+	void AppendStorageParam(std::shared_ptr<MShaderStorageParam> pParam, const uint32_t& eShaderType) { return AppendShaderParam(m_vStorages, pParam, eShaderType); }
+	std::vector<std::shared_ptr<MShaderStorageParam>> RemoveStorageParam(const uint32_t& eShaderType) { return RemoveShaderParam<MShaderStorageParam>(m_vStorages, eShaderType); }
 
 
 	void GenerateBuffer(MIDevice* pDevice);
 	void DestroyBuffer(MIDevice* pDevice);
 
-	MShaderParamSet* Clone();
+	std::shared_ptr<MShaderPropertyBlock> Clone();
+	std::shared_ptr<MShaderProgram> GetShaderProgram() const { return m_pShaderProgram.lock(); }
 
 public:
-	std::vector<MShaderConstantParam*> m_vParams;
-	std::vector<MShaderTextureParam*> m_vTextures;
-	std::vector<MShaderSampleParam*> m_vSamples;
-	std::vector<MShaderStorageParam*> m_vStorages;
+	std::vector<std::shared_ptr<MShaderConstantParam>> m_vParams;
+	std::vector<std::shared_ptr<MShaderTextureParam>> m_vTextures;
+	std::vector<std::shared_ptr<MShaderSampleParam>> m_vSamples;
+	std::vector<std::shared_ptr<MShaderStorageParam>> m_vStorages;
 
 public:
 	uint32_t m_unKey;
+	std::weak_ptr<MShaderProgram> m_pShaderProgram;
+	std::weak_ptr<MShaderPropertyBlock> m_pSelfPointer;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	VkDescriptorSet m_VkDescriptorSet;
-	int m_nDescriptorSetInitMaterialIdx;
 	uint32_t m_unLayoutDataIdx;
 #endif
 
 protected:
 
 	template <typename ParamType>
-	ParamType* FindShaderParam(std::vector<ParamType*>& vVector, const MShaderParam* pParam);
+	std::shared_ptr<ParamType> FindShaderParam(std::vector<std::shared_ptr<ParamType>>& vVector, const std::shared_ptr<const ParamType> pParam);
 
     template <typename ParamType>
-	void AppendShaderParam(std::vector<ParamType*>& vVector, ParamType* pParam, const uint32_t& eShaderType);
+	void AppendShaderParam(std::vector<std::shared_ptr<ParamType>>& vVector, std::shared_ptr<ParamType> pParam, const uint32_t& eShaderType);
 
 	template <typename ParamType>
-	std::vector<ParamType*> RemoveShaderParam(std::vector<ParamType*>& vVector, const uint32_t& eShaderType);
+	std::vector<std::shared_ptr<ParamType>> RemoveShaderParam(std::vector<std::shared_ptr<ParamType>>& vVector, const uint32_t& eShaderType);
 
 };
 
 template <typename ParamType>
-ParamType* MShaderParamSet::FindShaderParam(std::vector<ParamType*>& vVector, const MShaderParam* pParam)
+std::shared_ptr<ParamType> MShaderPropertyBlock::FindShaderParam(std::vector<std::shared_ptr<ParamType>>& vVector, const std::shared_ptr<const ParamType> pParam)
 {
 	size_t unNum = vVector.size();
 	for (size_t i = 0; i < unNum; ++i)
 	{
-		ParamType* param = vVector[i];
+		std::shared_ptr<ParamType> param = vVector[i];
 
 		if (pParam->unSet == param->unSet && pParam->unBinding == param->unBinding)
 		{
@@ -105,19 +110,19 @@ ParamType* MShaderParamSet::FindShaderParam(std::vector<ParamType*>& vVector, co
 }
 
 template <typename ParamType>
-void MShaderParamSet::AppendShaderParam(std::vector<ParamType*>& vVector, ParamType* pParam, const uint32_t& eShaderType)
+void MShaderPropertyBlock::AppendShaderParam(std::vector<std::shared_ptr<ParamType>>& vVector, std::shared_ptr<ParamType> pParam, const uint32_t& eShaderType)
 {
 	vVector.push_back(pParam);
 }
 
 template <typename ParamType>
-std::vector<ParamType*> MShaderParamSet::RemoveShaderParam(std::vector<ParamType*>& vVector, const uint32_t& eShaderType)
+std::vector<std::shared_ptr<ParamType>> MShaderPropertyBlock::RemoveShaderParam(std::vector<std::shared_ptr<ParamType>>& vVector, const uint32_t& eShaderType)
 {
-	std::vector<ParamType*> vResult;
+	std::vector<std::shared_ptr<ParamType>> vResult;
 
 	for (auto iter = vVector.begin(); iter != vVector.end();)
 	{
-		ParamType* param = *iter;
+		std::shared_ptr<ParamType> param = *iter;
 
 		if (param->eShaderType & eShaderType)
 		{

@@ -1,13 +1,13 @@
 /**
- * @File         MShaderGroup
+ * @File         MShaderProgram
  * 
  * @Created      2019-08-27 19:22:28
  *
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSHADER_GROUP_H_
-#define _M_MSHADER_GROUP_H_
+#ifndef _M_MSHADER_PROGRAM_H_
+#define _M_MSHADER_PROGRAM_H_
 #include "Utility/MGlobal.h"
 #include "Resource/MResource.h"
 #include "Resource/MResource.h"
@@ -37,12 +37,26 @@ private:
 
 class MShader;
 class MShaderResource;
-class MORTY_API MShaderGroup : public MTypeClass
+class MORTY_API MShaderProgram : public MTypeClass
 {
 public:
-	MORTY_CLASS(MShaderGroup)
-	MShaderGroup();
-    virtual ~MShaderGroup();
+	enum class EUsage
+	{
+		EUnknow,
+		EGraphics,
+		ECompute,
+	};
+
+public:
+	MORTY_CLASS(MShaderProgram)
+
+protected:
+	explicit MShaderProgram() = default;
+	explicit MShaderProgram(EUsage usage);
+
+public:
+    virtual ~MShaderProgram();
+	static std::shared_ptr<MShaderProgram> MakeShared(EUsage usage);
 
 public:
 
@@ -63,38 +77,57 @@ public:
 	std::vector<MShaderSampleParam*>* GetSampleParams();
 	std::vector<MShaderTextureParam*>* GetTextureParams();
 
-	const std::array<MShaderParamSet, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParamSets() const { return m_vShaderSets; }
-	std::array<MShaderParamSet, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParamSets() { return m_vShaderSets; }
+	const std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParamSets() const { return m_vShaderSets; }
+	std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParamSets() { return m_vShaderSets; }
+
+	EUsage GetUsage() const { return m_eUsage; }
+
+	void GenerateProgram(MIDevice* pDevice);
+	void DestroyProgram(MIDevice* pDevice);
 
 public:
 
-	void CopyShaderParamSet(MShaderParamSet& target, const MShaderParamSet& source);
+	std::shared_ptr<MShaderProgram> GetShared() const;
 
 	void BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderParamType& eType);
 	void UnbindShaderBuffer(MEngine* pEngine, const MEShaderParamType& eType);
 
 	void ClearShader(MEngine* pEngine);
 	
-	void CopyShaderParams(MEngine* pEngine, MShaderParamSet& target, const MShaderParamSet& source);
+	static void CopyShaderParams(MEngine* pEngine, const std::shared_ptr<MShaderPropertyBlock>& target, const std::shared_ptr<const MShaderPropertyBlock>& source);
+
+	std::shared_ptr<MShaderPropertyBlock> AllocShaderParamSet(size_t nSetIdx);
+	void ReleaseShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pShaderParamSet);
 
 protected:
 
-    std::array<MShaderParamSet, MRenderGlobal::SHADER_PARAM_SET_NUM> m_vShaderSets;
+    std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM> m_vShaderSets;
+	std::set<std::shared_ptr<MShaderPropertyBlock>> m_tShaderParamSetInstance;
+
+	std::weak_ptr<MShaderProgram> m_pSelfPointer;
 	
-	//Material
-	MResourceKeeper m_VertexResource;
-	MResourceKeeper m_PixelResource;
-	MResourceKeeper m_ComputeResource;
+	MResourceKeeper m_VertexResource = nullptr;
+	MResourceKeeper m_PixelResource = nullptr;
+	MResourceKeeper m_ComputeResource = nullptr;
 
-	MShader* m_pVertexShader;
-	MShader* m_pPixelShader;
-	MShader* m_pComputeShader;
+	MShader* m_pVertexShader = nullptr;
+	MShader* m_pPixelShader = nullptr;
+	MShader* m_pComputeShader = nullptr;
 
-	int m_nVertexShaderIndex;
-	int m_nPixelShaderIndex;
-	int m_nComputeShaderIndex;
+	int m_nVertexShaderIndex = 0;
+	int m_nPixelShaderIndex = 0;
+	int m_nComputeShaderIndex = 0;
 
 	MShaderMacro m_ShaderMacro;
+	EUsage m_eUsage = EUsage::EUnknow;
+
+
+public:
+
+#if RENDER_GRAPHICS == MORTY_VULKAN
+	VkPipelineLayout m_vkPipelineLayout = VK_NULL_HANDLE;
+	std::vector<VkDescriptorSetLayout> m_vDescriptorSetLayouts = {};
+#endif
 };
 
 #endif

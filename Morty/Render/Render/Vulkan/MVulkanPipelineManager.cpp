@@ -25,188 +25,55 @@ MVulkanPipelineManager::~MVulkanPipelineManager()
 
 void MVulkanPipelineManager::Release()
 {
-
-	for (std::shared_ptr<MMaterialPipelineGroup>& pMaterialGroup : m_tPipelineTable)
+	for (auto& pr: m_tPipelineTable)
 	{
-		if (pMaterialGroup)
+		if (pr.second)
 		{
-			DestroyMaterialPipeline(pMaterialGroup);
-			DestroyMaterialPipelineLayout(pMaterialGroup);
+			DestroyPipeline(pr.second);
 		}
 	}
 
 	m_tPipelineTable.clear();
-
 	m_tMaterialMap.clear();
 }
 
-VkPipeline MVulkanPipelineManager::FindOrCreateGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& unSubpassIdx)
+std::shared_ptr<MGraphicsPipeline> MVulkanPipelineManager::FindOrCreateGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass)
 {
-	const uint32_t unRenderPassID = pRenderPass->GetRenderPassID();
+	MPipelineKey key(pMaterial->GetShaderProgram(), pRenderPass);
 
-	const std::shared_ptr<MMaterialPipelineGroup> pMaterialGroup = FindOrCreatePipelineGroup(pMaterial);
-
-	const VkPipelineLayout pipelineLayout = pMaterialGroup->layouts.pipelineLayout;
-
-	MRenderPassPipelines& pipelines = pMaterialGroup->vRenderPassPipeline[unRenderPassID];
-
-	if (pipelines.vSubpassPipeline.size() < unSubpassIdx + 1)
+	auto&& findResult = m_tPipelineTable.find(key);
+	if (findResult != m_tPipelineTable.end())
 	{
-		pipelines.vSubpassPipeline.resize(unSubpassIdx + 1, VK_NULL_HANDLE);
+		return std::dynamic_pointer_cast<MGraphicsPipeline>(findResult->second);
 	}
 
-	if (VK_NULL_HANDLE == pipelines.vSubpassPipeline[unSubpassIdx])
+	std::shared_ptr<MGraphicsPipeline> pPipeline = std::make_shared<MGraphicsPipeline>();
+	m_tPipelineTable[key] = pPipeline;
+
+	for (size_t nSubPassIdx = 0; nSubPassIdx < pRenderPass->m_vSubpass.size(); ++nSubPassIdx)
 	{
-		pipelines.vSubpassPipeline[unSubpassIdx] = CreateGraphicsPipeline(pMaterial, pipelineLayout, pRenderPass, unSubpassIdx);
+		pPipeline->m_vSubpassPipeline.push_back(CreateGraphicsPipeline(pMaterial, pRenderPass, nSubPassIdx));
 	}
 
-	return pipelines.vSubpassPipeline[unSubpassIdx];
+	return pPipeline;
 }
 
-VkPipeline MVulkanPipelineManager::FindOrCreateComputePipeline(MComputeDispatcher* pComputeDispatcher)
+std::shared_ptr<MComputePipeline>  MVulkanPipelineManager::FindOrCreateComputePipeline(MComputeDispatcher* pComputeDispatcher)
 {
-	uint32_t unDispatcherID = pComputeDispatcher->GetDispatcherID();
+	MPipelineKey key(pComputeDispatcher->GetShaderProgram(), nullptr);
 
-
-	if (m_tComputeDispatcherData.size() < unDispatcherID + 1)
+	auto&& findResult = m_tPipelineTable.find(key);
+	if (findResult != m_tPipelineTable.end())
 	{
-		m_tComputeDispatcherData.resize(unDispatcherID + 1, nullptr);
+		return std::dynamic_pointer_cast<MComputePipeline>(findResult->second);
 	}
 
-	std::shared_ptr<MComputeDispatcherData>& pDispatcherData = m_tComputeDispatcherData[unDispatcherID];
-	if (!pDispatcherData)
-	{
-		pDispatcherData = std::make_shared<MComputeDispatcherData>();
-		m_tComputeDispatcherData[unDispatcherID] = pDispatcherData;
+	std::shared_ptr<MComputePipeline> pPipeline = std::make_shared<MComputePipeline>();
+	m_tPipelineTable[key] = pPipeline;
 
-		pDispatcherData->layouts = CreateMaterialPipelineGroup(&pComputeDispatcher->GetShaderGroup(), VK_SHADER_STAGE_COMPUTE_BIT);
-	}
-
-	if (VK_NULL_HANDLE == pDispatcherData->vkPipeline)
-	{
-		pDispatcherData->vkPipeline = CreateComputePipeline(pComputeDispatcher, pDispatcherData->layouts.pipelineLayout);
-	}
+	pPipeline->m_vkPipeline = CreateComputePipeline(pComputeDispatcher);
 	
-	return pDispatcherData->vkPipeline;
-}
-
-std::shared_ptr<MMaterialPipelineGroup> MVulkanPipelineManager::FindOrCreatePipelineGroup(std::shared_ptr<MMaterial> pMaterial)
-{
-	uint32_t id = pMaterial->GetMaterialID();
-
-	if (m_tPipelineTable.size() < id + 1)
-		m_tPipelineTable.resize(id + 1);
-
-	if (nullptr != m_tPipelineTable[id])
-		return m_tPipelineTable[id];
-
-	m_tPipelineTable[id] = std::make_shared<MMaterialPipelineGroup>();
-	m_tPipelineTable[id]->layouts = CreateMaterialPipelineGroup(&pMaterial->GetShaderGroup(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-
-	return m_tPipelineTable[id];
-}
-
-std::shared_ptr<MMaterialPipelineGroup> MVulkanPipelineManager::FindPipelineGroup(const uint32_t& nMaterialID) const
-{
-	if (nMaterialID < m_tPipelineTable.size())
-	{
-		return m_tPipelineTable[nMaterialID];
-	}
-
-	return nullptr;
-}
-
-MPipelineLayout MVulkanPipelineManager::CreateMaterialPipelineGroup(const MShaderGroup* pShaderGroup, VkShaderStageFlags vkShaderStageFlags)
-{
-	std::vector<VkDescriptorSetLayout> vSetLayouts;
-	std::vector<VkDescriptorSetLayoutBinding> vParamBinding[MRenderGlobal::SHADER_PARAM_SET_NUM];
-
-	for (uint32_t unSetIdx = 0; unSetIdx < MRenderGlobal::SHADER_PARAM_SET_NUM; ++unSetIdx)
-	{
-		const MShaderParamSet& paramSets = pShaderGroup->GetShaderParamSets()[unSetIdx];
-
-		for (MShaderConstantParam* param : paramSets.m_vParams)
-		{
-			VkDescriptorSetLayoutBinding uboLayoutBinding{};
-			uboLayoutBinding.binding = param->unBinding;
-			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
-			uboLayoutBinding.descriptorCount = 1;
-			uboLayoutBinding.stageFlags = vkShaderStageFlags;
-
-			uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
-
-			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
-		}
-
-		for (MShaderTextureParam* param : paramSets.m_vTextures)
-		{
-			VkDescriptorSetLayoutBinding uboLayoutBinding{};
-			uboLayoutBinding.binding = param->unBinding;
-			//uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
-			uboLayoutBinding.descriptorCount = 1;
-			uboLayoutBinding.stageFlags = vkShaderStageFlags;
-
-			uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
-
-			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
-		}
-
-		for (MShaderSampleParam* param : paramSets.m_vSamples)
-		{
-			VkDescriptorSetLayoutBinding uboLayoutBinding{};
-			uboLayoutBinding.binding = param->unBinding;
-			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
-			uboLayoutBinding.descriptorCount = 1;
-			uboLayoutBinding.stageFlags = vkShaderStageFlags;
-
-			if (param->eSamplerType == MESamplerType::ELinear)
-				uboLayoutBinding.pImmutableSamplers = &m_pDevice->m_VkLinearSampler;
-			else
-				uboLayoutBinding.pImmutableSamplers = &m_pDevice->m_VkNearestSampler;
-
-			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
-		}
-
-		for (MShaderStorageParam* param : paramSets.m_vStorages)
-		{
-			VkDescriptorSetLayoutBinding uboLayoutBinding{};
-			uboLayoutBinding.binding = param->unBinding;
-			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
-			uboLayoutBinding.descriptorCount = 1;
-			uboLayoutBinding.stageFlags = vkShaderStageFlags;
-
-			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
-		}
-
-		VkDescriptorSetLayoutCreateInfo layoutInfo{};
-		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-
-		layoutInfo.bindingCount = vParamBinding[unSetIdx].size();
-		layoutInfo.pBindings = vParamBinding[unSetIdx].data();
-
-		vSetLayouts.push_back(VkDescriptorSetLayout());
-
-		if (vkCreateDescriptorSetLayout(m_pDevice->m_VkDevice, &layoutInfo, nullptr, &vSetLayouts.back()) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create descriptor set layout!");
-		}
-	}
-
-	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = vSetLayouts.size();
-	pipelineLayoutInfo.pSetLayouts = vSetLayouts.data();
-
-	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
-
-	if (vkCreatePipelineLayout(m_pDevice->m_VkDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
-		return {};
-
-	MPipelineLayout layouts;
-	layouts.pipelineLayout = pipelineLayout;
-	layouts.vSetLayouts = vSetLayouts;
-
-	return layouts;
+	return pPipeline;
 }
 
 bool MVulkanPipelineManager::RegisterMaterial(std::shared_ptr<MMaterial> pMaterial)
@@ -228,17 +95,19 @@ bool MVulkanPipelineManager::UnRegisterMaterial(std::shared_ptr<MMaterial> pMate
 	m_tMaterialMap.erase(id);
 	m_MaterialIDPool.RecoveryID(id);
 
-	if (id < m_tPipelineTable.size())
+	for (auto iter = m_tPipelineTable.begin(); iter != m_tPipelineTable.end(); )
 	{
-		if (m_tPipelineTable[id])
+		if(iter->first == pMaterial->GetShaderProgram())
 		{
-			DestroyMaterialPipeline(m_tPipelineTable[id]);
-			DestroyMaterialPipelineLayout(m_tPipelineTable[id]);
-
-			m_tPipelineTable[id] = nullptr;
+			DestroyPipeline(iter->second);
+			iter = m_tPipelineTable.erase(iter);
+		}
+		else
+		{
+			++iter;
 		}
 	}
-
+	
 	return true;
 }
 
@@ -249,150 +118,26 @@ void MVulkanPipelineManager::RegisterRenderPass(MRenderPass* pRenderPass)
 
 void MVulkanPipelineManager::UnRegisterRenderPass(MRenderPass* pRenderPass)
 {
-	uint32_t id = pRenderPass->GetRenderPassID();
-
-	for (std::shared_ptr<MMaterialPipelineGroup>& pMaterialGroup : m_tPipelineTable)
+	for (auto iter = m_tPipelineTable.begin(); iter != m_tPipelineTable.end(); )
 	{
-		auto&& findResult = pMaterialGroup->vRenderPassPipeline.find(id);
-
-		if (findResult != pMaterialGroup->vRenderPassPipeline.end())
+		if (iter->first == pRenderPass)
 		{
-			MRenderPassPipelines& pPipelines = findResult->second;
-			
-			for (VkPipeline& pipeline : pPipelines.vSubpassPipeline)
-			{
-				m_pDevice->GetRecycleBin()->DestroyPipelineLater(pipeline);
-			}
-
-			pMaterialGroup->vRenderPassPipeline.erase(findResult);
+			DestroyPipeline(iter->second);
+			iter = m_tPipelineTable.erase(iter);
+		}
+		else
+		{
+			++iter;
 		}
 	}
-	
+
+	uint32_t id = pRenderPass->GetRenderPassID();
+
 	if (id != MGlobal::M_INVALID_INDEX)
 	{
 		m_RenderPassIDPool.RecoveryID(id);
 	}
 	pRenderPass->SetRenderPassID(MGlobal::M_INVALID_INDEX);
-}
-
-bool MVulkanPipelineManager::RegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher)
-{
-	uint32_t id = m_ComputeDispatcherIDPool.GetNewID();
-	pComputeDispatcher->SetDispatcherID(id);
-
-	m_tComputeDispatcherMap[id] = pComputeDispatcher;
-
-	return true;
-}
-
-bool MVulkanPipelineManager::UnRegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher)
-{
-	uint32_t id = pComputeDispatcher->GetDispatcherID();
-	if (m_tComputeDispatcherMap.find(id) == m_tComputeDispatcherMap.end())
-		return false;
-
-	m_tComputeDispatcherMap.erase(id);
-	m_ComputeDispatcherIDPool.RecoveryID(id);
-
-	if (id < m_tComputeDispatcherData.size())
-	{
-		if (m_tComputeDispatcherData[id])
-		{
-			m_pDevice->GetRecycleBin()->DestroyPipelineLater(m_tComputeDispatcherData[id]->vkPipeline);
-
-			m_tComputeDispatcherData[id] = nullptr;
-		}
-	}
-
-	return true;
-}
-
-void MVulkanPipelineManager::BindConstantParam(MShaderConstantParam* pParam, VkWriteDescriptorSet& descriptorWrite)
-{
-	VkDescriptorBufferInfo& bufferInfo = pParam->m_VkBufferInfo;
-
-	descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorWrite.dstBinding = pParam->unBinding;
-	descriptorWrite.dstArrayElement = 0;
-
-	descriptorWrite.descriptorType = pParam->m_VkDescriptorType;
-	descriptorWrite.descriptorCount = 1;
-
-	descriptorWrite.pBufferInfo = &bufferInfo;
-	descriptorWrite.pImageInfo = nullptr; // Optional
-	descriptorWrite.pTexelBufferView = nullptr; // Optional
-}
-
-void MVulkanPipelineManager::BindTextureParam(MShaderTextureParam* pParam, VkWriteDescriptorSet& descriptorWrite)
-{
-	MTexture* pTexture = pParam->GetTexture();
-	if (!pTexture)
-	{
-		if (pParam->eType == METextureType::ETexture2D)
-		{
-			pTexture = &m_pDevice->m_ShaderDefaultTexture;
-		}
-		else if (pParam->eType == METextureType::ETextureCube)
-		{
-			pTexture = &m_pDevice->m_ShaderDefaultTextureCube;
-		}
-		else if (pParam->eType == METextureType::ETexture2DArray)
-		{
-			pTexture = &m_pDevice->m_ShaderDefaultTextureArray;
-		}
-		else
-		{
-			assert(false);
-		}
-	}
-
-	if (pTexture)
-	{
-		VkDescriptorImageInfo& imageInfo = pParam->m_VkImageInfo;
-		imageInfo.imageView = pTexture->m_VkImageView;
-		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		imageInfo.sampler = pTexture->m_VkSampler;
-
-		if (VK_NULL_HANDLE == imageInfo.sampler)
-		{
-			imageInfo.sampler = m_pDevice->m_VkLinearSampler;
-		}
-
-		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrite.dstBinding = pParam->unBinding;
-		descriptorWrite.dstArrayElement = 0;
-
-		descriptorWrite.descriptorType = pParam->m_VkDescriptorType;
-		descriptorWrite.descriptorCount = 1;
-
-		descriptorWrite.pBufferInfo = nullptr;
-		descriptorWrite.pImageInfo = &imageInfo;
-		descriptorWrite.pTexelBufferView = nullptr;
-
-		//A VkDescripotrSet can only be updated once on per render. .
-	}
-}
-
-void MVulkanPipelineManager::BindStorageParam(MShaderStorageParam* pParam, VkWriteDescriptorSet& descriptorWrite)
-{
-	const MBuffer* pBuffer = pParam->pBuffer;
-
-	VkDescriptorBufferInfo& bufferInfo = pParam->m_VkBufferInfo;
-	bufferInfo.buffer = pBuffer->m_VkBuffer;
-	bufferInfo.offset = 0;
-	bufferInfo.range = pBuffer->GetSize();
-
-	descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorWrite.dstBinding = pParam->unBinding;
-	descriptorWrite.dstArrayElement = 0;
-
-	descriptorWrite.descriptorType = pParam->m_VkDescriptorType;
-	descriptorWrite.descriptorCount = 1;
-
-	descriptorWrite.pBufferInfo = &bufferInfo;
-	descriptorWrite.pImageInfo = nullptr; // Optional
-	descriptorWrite.pTexelBufferView = nullptr; // Optional
-
 }
 
 void MVulkanPipelineManager::DestroyMaterialPipelineLayout(const std::shared_ptr<MMaterialPipelineGroup>& pMaterialGroup) const
@@ -418,18 +163,44 @@ void MVulkanPipelineManager::DestroyMaterialPipelineLayout(const std::shared_ptr
 	pMaterialGroup->layouts.vSetLayouts.clear();
 }
 
-void MVulkanPipelineManager::DestroyMaterialPipeline(const std::shared_ptr<MMaterialPipelineGroup>& pMaterialGroup) const
+void MVulkanPipelineManager::DestroyPipeline(const std::shared_ptr<MPipeline>& pipeline)
 {
-	if (!pMaterialGroup)
+	if (!pipeline)
+	{
+		return;
+	}
+
+	if (std::shared_ptr<MGraphicsPipeline> graphicsPipeline = std::dynamic_pointer_cast<MGraphicsPipeline>(pipeline))
+	{
+		DestroyGraphicsPipeline(graphicsPipeline);
+	}
+	if (std::shared_ptr<MComputePipeline> graphicsPipeline = std::dynamic_pointer_cast<MComputePipeline>(pipeline))
+	{
+		DestroyComputePipeline(graphicsPipeline);
+	}
+}
+
+void MVulkanPipelineManager::DestroyGraphicsPipeline(const std::shared_ptr<MGraphicsPipeline>& pGraphicsPipeline)
+{
+	if (!pGraphicsPipeline)
+	{
+		return;
+	}
+
+	for (auto& pipeline : pGraphicsPipeline->m_vSubpassPipeline)
+	{
+		m_pDevice->GetRecycleBin()->DestroyPipelineLater(pipeline);
+		pipeline = nullptr;
+	}
+}
+
+void MVulkanPipelineManager::DestroyComputePipeline(const std::shared_ptr<MComputePipeline>& pComputePipeline)
+{
+	if (!pComputePipeline)
 		return;
 
-	for (auto& pr : pMaterialGroup->vRenderPassPipeline)
-	{
-		for (VkPipeline pipeline : pr.second.vSubpassPipeline)
-		{
-			m_pDevice->GetRecycleBin()->DestroyPipelineLater(pipeline);
-		}
-	}
+	m_pDevice->GetRecycleBin()->DestroyPipelineLater(pComputePipeline->m_vkPipeline);
+	pComputePipeline->m_vkPipeline = nullptr;
 }
 
 void GetBlendStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, std::vector<VkPipelineColorBlendAttachmentState>& vBlendAttach, VkPipelineColorBlendStateCreateInfo& blendInfo)
@@ -592,10 +363,12 @@ void GetDepthStencilStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRe
 	}
 }
 
-VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, VkPipelineLayout pipelineLayout, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx)
+VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx)
 {
 	if (!pMaterial)
 		return VK_NULL_HANDLE;
+
+	VkPipelineLayout vkPipelineLayout = pMaterial->GetShaderProgram()->m_vkPipelineLayout;
 
 	MShader* pVertexShader = pMaterial->GetVertexShader();
 	MShader* pPixelShader = pMaterial->GetPixelShader();
@@ -727,7 +500,7 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(std::shared_ptr<MMater
 	pipelineInfo.pMultisampleState = &multisampleState;
 	pipelineInfo.pColorBlendState = &blendInfo;
 	pipelineInfo.pDepthStencilState = &depthStencilInfo;
-	pipelineInfo.layout = pipelineLayout;
+	pipelineInfo.layout = vkPipelineLayout;
 	pipelineInfo.renderPass = pRenderPass->m_VkRenderPass;
 	pipelineInfo.subpass = nSubpassIdx;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
@@ -741,8 +514,9 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(std::shared_ptr<MMater
 	return graphicsPipeline;
 }
 
-VkPipeline MVulkanPipelineManager::CreateComputePipeline(MComputeDispatcher* pComputeDispatcher, VkPipelineLayout pipelineLayout)
+VkPipeline MVulkanPipelineManager::CreateComputePipeline(MComputeDispatcher* pComputeDispatcher)
 {
+	VkPipelineLayout pipelineLayout = pComputeDispatcher->GetShaderProgram()->m_vkPipelineLayout;
 	MShader* pComputeShader = pComputeDispatcher->GetComputeShader();
 
 	if (nullptr == pComputeShader)
@@ -774,13 +548,119 @@ VkPipeline MVulkanPipelineManager::CreateComputePipeline(MComputeDispatcher* pCo
 	return computePipeline;
 }
 
+void MVulkanPipelineManager::GenerateShaderProgram(MShaderProgram* pShaderProgram)
+{
+	VkShaderStageFlags vkShaderStageFlags = pShaderProgram->GetUsage() == MShaderProgram::EUsage::ECompute ? VK_SHADER_STAGE_COMPUTE_BIT : VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	std::vector<VkDescriptorSetLayout> vSetLayouts;
+	std::vector<VkDescriptorSetLayoutBinding> vParamBinding[MRenderGlobal::SHADER_PARAM_SET_NUM];
+
+	for (uint32_t unSetIdx = 0; unSetIdx < MRenderGlobal::SHADER_PARAM_SET_NUM; ++unSetIdx)
+	{
+		const MShaderParamSet& paramSets = pShaderProgram->GetShaderParamSets()[unSetIdx];
+
+		for (MShaderConstantParam* param : paramSets.m_vParams)
+		{
+			VkDescriptorSetLayoutBinding uboLayoutBinding{};
+			uboLayoutBinding.binding = param->unBinding;
+			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
+			uboLayoutBinding.descriptorCount = 1;
+			uboLayoutBinding.stageFlags = vkShaderStageFlags;
+
+			uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+
+			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
+		}
+
+		for (MShaderTextureParam* param : paramSets.m_vTextures)
+		{
+			VkDescriptorSetLayoutBinding uboLayoutBinding{};
+			uboLayoutBinding.binding = param->unBinding;
+			//uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
+			uboLayoutBinding.descriptorCount = 1;
+			uboLayoutBinding.stageFlags = vkShaderStageFlags;
+
+			uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+
+			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
+		}
+
+		for (MShaderSampleParam* param : paramSets.m_vSamples)
+		{
+			VkDescriptorSetLayoutBinding uboLayoutBinding{};
+			uboLayoutBinding.binding = param->unBinding;
+			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
+			uboLayoutBinding.descriptorCount = 1;
+			uboLayoutBinding.stageFlags = vkShaderStageFlags;
+
+			if (param->eSamplerType == MESamplerType::ELinear)
+				uboLayoutBinding.pImmutableSamplers = &m_pDevice->m_VkLinearSampler;
+			else
+				uboLayoutBinding.pImmutableSamplers = &m_pDevice->m_VkNearestSampler;
+
+			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
+		}
+
+		for (MShaderStorageParam* param : paramSets.m_vStorages)
+		{
+			VkDescriptorSetLayoutBinding uboLayoutBinding{};
+			uboLayoutBinding.binding = param->unBinding;
+			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
+			uboLayoutBinding.descriptorCount = 1;
+			uboLayoutBinding.stageFlags = vkShaderStageFlags;
+
+			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
+		}
+
+		VkDescriptorSetLayoutCreateInfo layoutInfo{};
+		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+
+		layoutInfo.bindingCount = vParamBinding[unSetIdx].size();
+		layoutInfo.pBindings = vParamBinding[unSetIdx].data();
+
+		vSetLayouts.push_back(VkDescriptorSetLayout());
+
+		if (vkCreateDescriptorSetLayout(m_pDevice->m_VkDevice, &layoutInfo, nullptr, &vSetLayouts.back()) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create descriptor set layout!");
+		}
+	}
+
+	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pipelineLayoutInfo.setLayoutCount = vSetLayouts.size();
+	pipelineLayoutInfo.pSetLayouts = vSetLayouts.data();
+
+	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+
+	if (vkCreatePipelineLayout(m_pDevice->m_VkDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
+	{
+		return;
+	}
+
+
+	pShaderProgram->m_vkPipelineLayout = pipelineLayout;
+	pShaderProgram->m_vDescriptorSetLayouts = std::move(vSetLayouts);
+}
+
+void MVulkanPipelineManager::DestroyShaderProgram(MShaderProgram* pShaderProgram)
+{
+	m_pDevice->GetRecycleBin()->DestroyPipelineLayoutLater(pShaderProgram->m_vkPipelineLayout);
+
+	for (VkDescriptorSetLayout& layout : pShaderProgram->m_vDescriptorSetLayouts)
+	{
+		m_pDevice->GetRecycleBin()->DestroyDescriptorSetLayoutLater(layout);
+	}
+
+	pShaderProgram->m_vkPipelineLayout = VK_NULL_HANDLE;
+	pShaderProgram->m_vDescriptorSetLayouts = {};
+}
+
 void MVulkanPipelineManager::GenerateShaderParamSet(MShaderParamSet* pParamSet)
 {
-	std::shared_ptr<MMaterialPipelineGroup> pPipelineGroup = FindPipelineGroup(pParamSet->m_nDescriptorSetInitMaterialIdx);
-	if (!pPipelineGroup)
-		return;
+	MShaderProgram* pShaderProgram = nullptr;
 
-	if (pParamSet->m_unKey >= pPipelineGroup->layouts.vSetLayouts.size())
+	if (pParamSet->m_unKey >= pShaderProgram->m_vDescriptorSetLayouts.size())
 		return;
 
 	pParamSet->m_unLayoutDataIdx = pPipelineGroup->vShaderParamSets.size();
@@ -806,9 +686,7 @@ void MVulkanPipelineManager::GenerateShaderParamSet(MShaderParamSet* pParamSet)
 
 void MVulkanPipelineManager::AllocateShaderParamSet(MShaderParamSet* pParamSet)
 {
-	std::shared_ptr<MMaterialPipelineGroup> pPipelineGroup = FindPipelineGroup(pParamSet->m_nDescriptorSetInitMaterialIdx);
-	if (!pPipelineGroup)
-		return;
+	MShaderProgram* pShaderProgram = nullptr;
 
 	if (pParamSet->m_VkDescriptorSet)
 	{
@@ -816,7 +694,7 @@ void MVulkanPipelineManager::AllocateShaderParamSet(MShaderParamSet* pParamSet)
 		pParamSet->m_VkDescriptorSet = VK_NULL_HANDLE;
 	}
 
-	VkDescriptorSetLayout vkDescriptorSetLayout = pPipelineGroup->layouts.vSetLayouts[pParamSet->m_unKey];
+	VkDescriptorSetLayout vkDescriptorSetLayout = pShaderProgram->m_vDescriptorSetLayouts[pParamSet->m_unKey];
 
 	VkDescriptorSetAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -836,7 +714,8 @@ void MVulkanPipelineManager::AllocateShaderParamSet(MShaderParamSet* pParamSet)
 
 void MVulkanPipelineManager::DestroyShaderParamSet(MShaderParamSet* pParamSet)
 {
-	std::shared_ptr<MMaterialPipelineGroup> pPipelineGroup = FindPipelineGroup(pParamSet->m_nDescriptorSetInitMaterialIdx);
+	MShaderProgram* pShaderProgram = nullptr;
+
 	{
 		if (MGlobal::M_INVALID_INDEX != pParamSet->m_unLayoutDataIdx)
 		{
@@ -853,7 +732,6 @@ void MVulkanPipelineManager::DestroyShaderParamSet(MShaderParamSet* pParamSet)
 		}
 
 		pParamSet->m_unLayoutDataIdx = MGlobal::M_INVALID_INDEX;
-		pParamSet->m_nDescriptorSetInitMaterialIdx = MGlobal::M_INVALID_INDEX;
 	}
 
 	DestroyShaderParamSetImpl(pParamSet);
@@ -870,5 +748,95 @@ void MVulkanPipelineManager::DestroyShaderParamSetImpl(MShaderParamSet* pParamSe
 		pParamSet->m_VkDescriptorSet = VK_NULL_HANDLE;
 	}
 }
+
+
+void MVulkanPipelineManager::BindConstantParam(MShaderConstantParam* pParam, VkWriteDescriptorSet& descriptorWrite)
+{
+	VkDescriptorBufferInfo& bufferInfo = pParam->m_VkBufferInfo;
+
+	descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorWrite.dstBinding = pParam->unBinding;
+	descriptorWrite.dstArrayElement = 0;
+
+	descriptorWrite.descriptorType = pParam->m_VkDescriptorType;
+	descriptorWrite.descriptorCount = 1;
+
+	descriptorWrite.pBufferInfo = &bufferInfo;
+	descriptorWrite.pImageInfo = nullptr; // Optional
+	descriptorWrite.pTexelBufferView = nullptr; // Optional
+}
+
+void MVulkanPipelineManager::BindTextureParam(MShaderTextureParam* pParam, VkWriteDescriptorSet& descriptorWrite)
+{
+	MTexture* pTexture = pParam->GetTexture();
+	if (!pTexture)
+	{
+		if (pParam->eType == METextureType::ETexture2D)
+		{
+			pTexture = &m_pDevice->m_ShaderDefaultTexture;
+		}
+		else if (pParam->eType == METextureType::ETextureCube)
+		{
+			pTexture = &m_pDevice->m_ShaderDefaultTextureCube;
+		}
+		else if (pParam->eType == METextureType::ETexture2DArray)
+		{
+			pTexture = &m_pDevice->m_ShaderDefaultTextureArray;
+		}
+		else
+		{
+			MORTY_ASSERT(false);
+		}
+	}
+
+	if (pTexture)
+	{
+		VkDescriptorImageInfo& imageInfo = pParam->m_VkImageInfo;
+		imageInfo.imageView = pTexture->m_VkImageView;
+		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfo.sampler = pTexture->m_VkSampler;
+
+		if (VK_NULL_HANDLE == imageInfo.sampler)
+		{
+			imageInfo.sampler = m_pDevice->m_VkLinearSampler;
+		}
+
+		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descriptorWrite.dstBinding = pParam->unBinding;
+		descriptorWrite.dstArrayElement = 0;
+
+		descriptorWrite.descriptorType = pParam->m_VkDescriptorType;
+		descriptorWrite.descriptorCount = 1;
+
+		descriptorWrite.pBufferInfo = nullptr;
+		descriptorWrite.pImageInfo = &imageInfo;
+		descriptorWrite.pTexelBufferView = nullptr;
+
+		//A VkDescripotrSet can only be updated once on per render. .
+	}
+}
+
+void MVulkanPipelineManager::BindStorageParam(MShaderStorageParam* pParam, VkWriteDescriptorSet& descriptorWrite)
+{
+	const MBuffer* pBuffer = pParam->pBuffer;
+
+	VkDescriptorBufferInfo& bufferInfo = pParam->m_VkBufferInfo;
+	bufferInfo.buffer = pBuffer->m_VkBuffer;
+	bufferInfo.offset = 0;
+	bufferInfo.range = pBuffer->GetSize();
+
+	descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorWrite.dstBinding = pParam->unBinding;
+	descriptorWrite.dstArrayElement = 0;
+
+	descriptorWrite.descriptorType = pParam->m_VkDescriptorType;
+	descriptorWrite.descriptorCount = 1;
+
+	descriptorWrite.pBufferInfo = &bufferInfo;
+	descriptorWrite.pImageInfo = nullptr; // Optional
+	descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+}
+
 
 #endif

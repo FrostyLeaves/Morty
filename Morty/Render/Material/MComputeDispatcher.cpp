@@ -19,7 +19,7 @@ MORTY_CLASS_IMPLEMENT(MComputeDispatcher, MObject)
 
 MComputeDispatcher::MComputeDispatcher()
 	: MObject()
-	, m_shaderGroup()
+	, m_pShaderProgram(MShaderProgram::MakeShared(MShaderProgram::EUsage::ECompute))
 {
 }
 
@@ -29,7 +29,7 @@ MComputeDispatcher::~MComputeDispatcher()
 
 bool MComputeDispatcher::LoadComputeShader(std::shared_ptr<MResource> pResource)
 {
-	bool bResult = m_shaderGroup.LoadComputeShader(GetEngine(), pResource);
+	bool bResult = m_pShaderProgram->LoadComputeShader(GetEngine(), pResource);
 	
 	return bResult;
 }
@@ -45,7 +45,7 @@ bool MComputeDispatcher::LoadComputeShader(const MString& strResource)
 
 MShader* MComputeDispatcher::GetComputeShader()
 {
-	return m_shaderGroup.GetComputeShader();
+	return m_pShaderProgram->GetComputeShader();
 }
 
 void MComputeDispatcher::OnCreated()
@@ -61,7 +61,7 @@ void MComputeDispatcher::OnDelete()
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 	pRenderSystem->GetDevice()->UnRegisterComputeDispatcher(this);
 
-	m_shaderGroup.ClearShader(GetEngine());
+	m_pShaderProgram->ClearShader(GetEngine());
 		
 	Super::OnDelete();
 }

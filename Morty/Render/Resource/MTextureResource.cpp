@@ -371,7 +371,7 @@ METextureLayout MTextureResource::GetTextureLayout(const uint32_t& nChannel, con
 		}
 	}
 
-	assert(METextureLayout::E_UNKNOW != eResult);
+	MORTY_ASSERT(METextureLayout::E_UNKNOW != eResult);
 
 	return eResult;
 }

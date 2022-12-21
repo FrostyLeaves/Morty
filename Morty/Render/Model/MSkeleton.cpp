@@ -170,7 +170,7 @@ MSkeletonInstance::MSkeletonInstance(std::shared_ptr<const MSkeleton> templateSk
 	: m_pEngine(templateSke->GetEngine())
 	, m_pSkeletonTemplate(templateSke)
 	, m_bShaderParamSetDirty(true)
-	, m_pShaderParamSet(new MShaderParamSet(MRenderGlobal::SHADER_PARAM_SET_SKELETON))
+	, m_pShaderParamSet(MShaderPropertyBlock::MakeShared(nullptr, MRenderGlobal::SHADER_PARAM_SET_SKELETON))
 	, m_pShaderBonesArray(nullptr)
 {
 	m_vAllBones = m_pSkeletonTemplate->GetAllBones();
@@ -182,7 +182,7 @@ MSkeletonInstance::MSkeletonInstance(const MSkeletonInstance& instance)
 	: m_pEngine(instance.m_pEngine)
 	, m_pSkeletonTemplate(instance.m_pSkeletonTemplate)
 	, m_bShaderParamSetDirty(true)
-	, m_pShaderParamSet(new MShaderParamSet(MRenderGlobal::SHADER_PARAM_SET_SKELETON))
+	, m_pShaderParamSet(MShaderPropertyBlock::MakeShared(nullptr, MRenderGlobal::SHADER_PARAM_SET_SKELETON))
 	, m_pShaderBonesArray(nullptr)
 {
 	m_vAllBones = m_pSkeletonTemplate->GetAllBones();
@@ -241,7 +241,7 @@ void MSkeletonInstance::ResetOriginPose()
 }
 
 
-MShaderParamSet* MSkeletonInstance::GetShaderParamSet()
+std::shared_ptr<MShaderPropertyBlock> MSkeletonInstance::GetShaderParamSet()
 {
 	if (!m_pShaderBonesArray)
 	{

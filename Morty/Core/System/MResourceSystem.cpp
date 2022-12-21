@@ -97,7 +97,7 @@ std::shared_ptr<MResource> MResourceSystem::LoadResource(const MString& strResou
 	if (nullptr == pResource)
 	{
 #ifdef _DEBUG
-	//	assert(false);
+	//	MORTY_ASSERT(false);
 #endif
 		GetEngine()->GetLogger()->Error("Load Resource failed: [path: %s]", strResourcePath.c_str());
 	}

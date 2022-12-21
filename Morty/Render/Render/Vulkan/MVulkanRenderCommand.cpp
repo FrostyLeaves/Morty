@@ -6,25 +6,6 @@
 #include "Material/MMaterial.h"
 #include "Material/MComputeDispatcher.h"
 
-MVulkanRenderCommand::MVulkanRenderCommand()
-	:MIRenderCommand()
-	, m_aRenderFinishedCallback()
-{
-	m_pDevice = nullptr;
-
-	pUsingMaterial = nullptr;
-	pUsingPipelineGroup = nullptr;
-	m_vRenderPassStages = {};
-
-	m_VkCommandBuffer = VK_NULL_HANDLE;
-
-}
-
-MVulkanRenderCommand::~MVulkanRenderCommand()
-{
-
-}
-
 void MVulkanRenderCommand::SetViewport(const MViewportInfo& viewport)
 {
 	VkViewport vkViewport = {};
@@ -176,7 +157,7 @@ void MVulkanRenderCommand::DrawIndexedIndirect(const MBuffer* pVertexBuffer, con
 
 bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 {
-	assert(pMaterial->GetVertexShader() && pMaterial->GetPixelShader());
+	MORTY_ASSERT(pMaterial->GetVertexShader() && pMaterial->GetPixelShader());
 
 	//must begin renderpass
 	if (m_vRenderPassStages.empty())
@@ -184,24 +165,23 @@ bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 	if (nullptr == pMaterial)
 	{
-		pUsingMaterial = nullptr;
-		pUsingPipelineGroup = nullptr;
+		pUsingPipeline = nullptr;
 		return true;
 	}
 
 	MRenderPassStage stage = m_vRenderPassStages.top();
-	std::shared_ptr<MMaterialPipelineGroup> pPipelineGroup = m_pDevice->m_PipelineManager.FindOrCreatePipelineGroup(pMaterial);
+	pUsingPipeline = m_pDevice->m_PipelineManager.FindOrCreateGraphicsPipeline(pMaterial, stage.pRenderPass);
 
-	pUsingMaterial = pMaterial;
-	pUsingPipelineGroup = pPipelineGroup;
+	std::shared_ptr<MPipeline> pPipeline = m_pDevice->m_PipelineManager.FindOrCreateGraphicsPipeline(pMaterial, stage.pRenderPass);
 
-	VkPipeline vkPipeline = m_pDevice->m_PipelineManager.FindOrCreateGraphicsPipeline(pMaterial, stage.pRenderPass, stage.nSubpassIdx);
-
-	if (vkPipeline)
+	if (std::shared_ptr<MGraphicsPipeline> pGraphicsPipeline = std::dynamic_pointer_cast<MGraphicsPipeline>(pPipeline))
 	{
+		VkPipeline vkPipeline = pGraphicsPipeline->GetSubpassPipeline(stage.nSubpassIdx);
+		MORTY_ASSERT(vkPipeline != VK_NULL_HANDLE);
+
 		vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
 
-		MShaderParamSet* pParamSet = pMaterial->GetMaterialParamSet();
+		std::shared_ptr<MShaderPropertyBlock>&& pParamSet = pMaterial->GetMaterialParamSet();
 
 
 		SetShaderParamSet(pParamSet);
@@ -212,25 +192,19 @@ bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 	return false;
 }
 
-void MVulkanRenderCommand::SetShaderParamSet(MShaderParamSet* pParamSet)
+void MVulkanRenderCommand::SetShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock)
 {
-	std::shared_ptr<MMaterialPipelineGroup> pPipelineGroup = m_pDevice->m_PipelineManager.FindPipelineGroup(pParamSet->m_nDescriptorSetInitMaterialIdx);
-	if (!pPipelineGroup)
+	std::shared_ptr<MShaderProgram> pShaderPropgram = pPropertyBlock->GetShaderProgram();
+	MORTY_ASSERT(pShaderPropgram);
+	
+	if (VK_NULL_HANDLE == pPropertyBlock->m_VkDescriptorSet)
 	{
-		if (!pUsingMaterial)
-			return;
-
-		pParamSet->DestroyBuffer(m_pDevice);
-
-		pParamSet->m_nDescriptorSetInitMaterialIdx = pUsingMaterial->GetMaterialID();
-		pPipelineGroup = m_pDevice->m_PipelineManager.FindPipelineGroup(pParamSet->m_nDescriptorSetInitMaterialIdx);
-
-		pParamSet->GenerateBuffer(m_pDevice);
+		pPropertyBlock->GenerateBuffer(m_pDevice);
 	}
 
 	bool bDirty = false;
 	std::vector<uint32_t> vDynamicOffsets;
-	for (MShaderConstantParam* pParam : pParamSet->m_vParams)
+	for (std::shared_ptr<MShaderConstantParam> pParam : pPropertyBlock->m_vParams)
 	{
 		bDirty |= pParam->bDirty;
 		// generate buffer and fill data.
@@ -241,7 +215,7 @@ void MVulkanRenderCommand::SetShaderParamSet(MShaderParamSet* pParamSet)
 			vDynamicOffsets.push_back(pParam->m_unMemoryOffset);
 		}
 	}
-	for (MShaderTextureParam* pParam : pParamSet->m_vTextures)
+	for (std::shared_ptr<MShaderTextureParam> pParam : pPropertyBlock->m_vTextures)
 	{
 		bDirty |= pParam->bDirty;
 		if (MTexture* pTexture = pParam->GetTexture())
@@ -250,7 +224,7 @@ void MVulkanRenderCommand::SetShaderParamSet(MShaderParamSet* pParamSet)
 		}
 	}
 
-	for (MShaderStorageParam* pParam : pParamSet->m_vStorages)
+	for (std::shared_ptr<MShaderStorageParam> pParam : pPropertyBlock->m_vStorages)
 	{
 		bDirty |= pParam->bDirty;
 	}
@@ -258,38 +232,38 @@ void MVulkanRenderCommand::SetShaderParamSet(MShaderParamSet* pParamSet)
 	if (bDirty)
 	{
 		//alloc a new descriptor set.
-		m_pDevice->m_PipelineManager.AllocateShaderParamSet(pParamSet);
+		m_pDevice->m_PipelineManager.AllocateShaderParamSet(pPropertyBlock);
 
 		std::vector<VkWriteDescriptorSet> vWriteDescriptorSet;
 
-		for (MShaderConstantParam* pParam : pParamSet->m_vParams)
+		for (std::shared_ptr<MShaderConstantParam> pParam : pPropertyBlock->m_vParams)
 		{
 			// bind buffer to descriptor set.
 			vWriteDescriptorSet.push_back({});
 			VkWriteDescriptorSet& writeDescriptorSet = vWriteDescriptorSet.back();
 			m_pDevice->m_PipelineManager.BindConstantParam(pParam, writeDescriptorSet);
-			writeDescriptorSet.dstSet = pParamSet->m_VkDescriptorSet;
+			writeDescriptorSet.dstSet = pPropertyBlock->m_VkDescriptorSet;
 
 			pParam->bDirty = false;
 		}
 
-		for (MShaderTextureParam* pParam : pParamSet->m_vTextures)
+		for (std::shared_ptr<MShaderTextureParam> pParam : pPropertyBlock->m_vTextures)
 		{
 			vWriteDescriptorSet.push_back({});
 			VkWriteDescriptorSet& writeDescriptorSet = vWriteDescriptorSet.back();
 			m_pDevice->m_PipelineManager.BindTextureParam(pParam, writeDescriptorSet);
-			writeDescriptorSet.dstSet = pParamSet->m_VkDescriptorSet;
+			writeDescriptorSet.dstSet = pPropertyBlock->m_VkDescriptorSet;
 
 			pParam->pImageIdent = pParam->GetTexture() ? pParam->GetTexture()->m_VkImageView : nullptr;
 			pParam->bDirty = false;
 		}
 
-		for (MShaderStorageParam* pParam : pParamSet->m_vStorages)
+		for (std::shared_ptr<MShaderStorageParam> pParam : pPropertyBlock->m_vStorages)
 		{
 			vWriteDescriptorSet.push_back({});
 			VkWriteDescriptorSet& writeDescriptorSet = vWriteDescriptorSet.back();
 			m_pDevice->m_PipelineManager.BindStorageParam(pParam, writeDescriptorSet);
-			writeDescriptorSet.dstSet = pParamSet->m_VkDescriptorSet;
+			writeDescriptorSet.dstSet = pPropertyBlock->m_VkDescriptorSet;
 
 			pParam->bDirty = false;
 		}
@@ -297,27 +271,27 @@ void MVulkanRenderCommand::SetShaderParamSet(MShaderParamSet* pParamSet)
 		vkUpdateDescriptorSets(m_pDevice->m_VkDevice, vWriteDescriptorSet.size(), vWriteDescriptorSet.data(), 0, nullptr);
 	}
 
-	vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pPipelineGroup->layouts.pipelineLayout, pParamSet->m_unKey, 1, &pParamSet->m_VkDescriptorSet, vDynamicOffsets.size(), vDynamicOffsets.data());
+	vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pShaderPropgram->m_vkPipelineLayout, pPropertyBlock->m_unKey, 1, &pPropertyBlock->m_VkDescriptorSet, vDynamicOffsets.size(), vDynamicOffsets.data());
 }
 
 bool MVulkanRenderCommand::DispatchComputeJob(MComputeDispatcher* pComputeDispatcher, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ)
 {
-	assert(pComputeDispatcher->GetComputeShader());
+	MORTY_ASSERT(pComputeDispatcher->GetComputeShader());
 
 	if (nullptr == pComputeDispatcher)
 	{
 		return true;
 	}
 
-	VkPipeline vkPipeline = m_pDevice->m_PipelineManager.FindOrCreateComputePipeline(pComputeDispatcher);
+	std::shared_ptr<MPipeline> pPipeline = m_pDevice->m_PipelineManager.FindOrCreateComputePipeline(pComputeDispatcher);
 
-	if (vkPipeline)
+	if (std::shared_ptr<MComputePipeline> pComputePipeline = std::dynamic_pointer_cast<MComputePipeline>(pPipeline))
 	{
-		vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, vkPipeline);
+		vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pComputePipeline->m_vkPipeline);
 
-		for (MShaderParamSet& params : pComputeDispatcher->GetShaderParamSets())
+		for (const std::shared_ptr<MShaderPropertyBlock>& params : pComputeDispatcher->GetShaderParamSets())
 		{
-			SetShaderParamSet(&params);
+			SetShaderParamSet(params);
 		}
 
 		vkCmdDispatch(m_VkCommandBuffer, nGroupX, nGroupY, nGroupZ);
@@ -634,7 +608,7 @@ void MVulkanRenderCommand::UpdateBuffer(MBuffer* pBuffer, const MByte* data, con
 	}
 }
 
-void MVulkanRenderCommand::UpdateShaderParam(MShaderConstantParam* param)
+void MVulkanRenderCommand::UpdateShaderParam(std::shared_ptr<MShaderConstantParam> param)
 {
 	m_pDevice->DestroyShaderParamBuffer(param);
 	m_pDevice->GenerateShaderParamBuffer(param);

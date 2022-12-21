@@ -14,7 +14,7 @@
 #include "System/MRenderSystem.h"
 
 MShadowMapShaderParamSet::MShadowMapShaderParamSet()
-	: MShaderParamSet(1)
+	: MShaderPropertyBlock(nullptr, 1)
 	, m_pWorldMatrixParam(nullptr)
 {
 	
@@ -26,7 +26,7 @@ MShadowMapShaderParamSet::~MShadowMapShaderParamSet()
 
 void MShadowMapShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
 {
-	m_pWorldMatrixParam = new MShaderConstantParam();
+	m_pWorldMatrixParam = std::make_shared<MShaderConstantParam>();
 	m_pWorldMatrixParam->unSet = 1;
 	m_pWorldMatrixParam->unBinding = 0;
 	m_pWorldMatrixParam->eShaderType = MEShaderParamType::EVertex;
