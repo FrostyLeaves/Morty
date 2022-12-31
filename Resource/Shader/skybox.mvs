@@ -1,21 +1,21 @@
 #include "light_forward.hlsl"
 
-struct VS_IN_SKYBOX
+struct VS_IN
 {
     float3 pos : POSITION;
 };
 
-struct VS_OUT_SKYBOX
+struct VS_OUTPUT
 {
     float4 pos : SV_POSITION;
     float3 uvw : UVW;
 };
 
-VS_OUT_SKYBOX VS(VS_IN_SKYBOX input)
+VS_OUTPUT VS_MAIN(VS_IN input)
 {
-    VS_OUT_SKYBOX output;
+    VS_OUTPUT output;
 
-    output.pos = mul(float4(input.pos + U_f3CameraPosition, 1.0f), U_matCamProj);
+    output.pos = mul(float4(input.pos + u_f3CameraPosition, 1.0f), u_matCamProj);
     
     //set z to z-far.
     output.pos.z = output.pos.w;

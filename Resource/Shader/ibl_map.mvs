@@ -1,7 +1,7 @@
 
 [[vk::binding(0,0)]]cbuffer cbMatrix
 {
-    float4x4 U_ModelViewProj[6];
+    float4x4 u_ModelViewProj[6];
 };
 
 struct VS_IN
@@ -20,11 +20,11 @@ struct VS_OUT
     uint idx : TEST_IDX;
 };
 
-VS_OUT VS(VS_IN input, uint ViewIndex : SV_ViewID)
+VS_OUT VS_MAIN(VS_IN input, uint ViewIndex : SV_ViewID)
 {
     VS_OUT output;
 
-    output.pos = mul(float4(input.pos, 1.0f), U_ModelViewProj[ViewIndex]);
+    output.pos = mul(float4(input.pos, 1.0f), u_ModelViewProj[ViewIndex]);
     output.uvw = input.normal;
     output.idx = ViewIndex;
 

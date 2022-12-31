@@ -69,10 +69,7 @@ public:
 	bool BindRenderPass();
 
 	void DestroyRenderPass();
-
-	VkSemaphore GetSemaphore();
-	VkSemaphore CreateSemaphore();
-
+	
 #endif
 
 public:
@@ -95,7 +92,6 @@ protected:
 	VkExtent2D m_VkExtend;
 
 	MVulkanDevice* m_pDevice;
-	std::queue<VkSemaphore> m_vImageReadySemaphore;
 #endif
 
 	std::vector<MRenderTarget> m_vRenderTarget;

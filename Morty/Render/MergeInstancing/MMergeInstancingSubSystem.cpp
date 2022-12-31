@@ -179,7 +179,7 @@ MMaterialBatchGroup* MMergeInstancingSubSystem::GetMaterialBatchGroup(std::share
 	return pMaterialBatchGroup;
 }
 
-const std::vector<MMergeInstancingMesh::MMeshClusterData>& MMergeInstancingSubSystem::GetMeshClusterGroup(MIMesh* pMesh)
+const std::vector<MMergeInstancingMesh::MClusterData>& MMergeInstancingSubSystem::GetMeshClusterGroup(MIMesh* pMesh)
 {
 	const MMergeInstancingMesh::MMeshMergeData&  meshMergeData = m_pMergeMesh->FindMesh(pMesh);
 

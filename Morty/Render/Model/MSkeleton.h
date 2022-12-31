@@ -109,7 +109,7 @@ private:
 
 	bool m_bShaderParamSetDirty;
 
-	std::shared_ptr<MShaderPropertyBlock> m_pShaderParamSet = nullptr;
+	std::shared_ptr<MShaderPropertyBlock> m_pShaderPropertyBlock = nullptr;
 	MVariantArray* m_pShaderBonesArray = nullptr;
 };
 

@@ -1,5 +1,5 @@
 /**
- * @File         MForwardRenderProgram
+ * @File         MForwardRenderShaderPropertyBlock
  * 
  * @Created      2020-07-2 11:45:49
  *
@@ -14,18 +14,20 @@
 
 
 class MEngine;
-class MORTY_API MForwardRenderShaderParamSet : public MShaderPropertyBlock
+class MORTY_API MForwardRenderShaderPropertyBlock
 {
 public:
 
-	MForwardRenderShaderParamSet();
-	virtual ~MForwardRenderShaderParamSet();
+	MForwardRenderShaderPropertyBlock();
+	virtual ~MForwardRenderShaderPropertyBlock();
 
 public:
 
-	virtual void InitializeShaderParamSet(MEngine* pEngine);
+	virtual void BindMaterial(const std::shared_ptr<MMaterial>& pMaterial);
 	virtual void ReleaseShaderParamSet(MEngine* pEngine);
 
+
+	const std::shared_ptr<MShaderPropertyBlock>& GetShaderPropertyBlock() const { return m_pShaderPropertyBlock; }
 
 	void UpdateShaderSharedParams(MRenderInfo& info);
 
@@ -33,36 +35,39 @@ public:
 	void SetBrdfMapTexture(MTexture* pTexture);
 
 public:
-	/*_M_E_cbWorldMatrix*/
-	MShaderConstantParam* m_pWorldMatrixParam;
-	/*_M_E_cbWorldInfo*/
-	MShaderConstantParam* m_pWorldInfoParam;
-	/*_M_E_cbLights*/
-	MShaderConstantParam* m_pLightInfoParam;
-	/*_M_E_cbShadowInfo*/
-	MShaderConstantParam* m_pShadowInfoParam;
+	/*cbSceneMatrix*/
+	std::shared_ptr<MShaderConstantParam> m_pWorldMatrixParam = nullptr;
+	/*cbSceneInformation*/
+	std::shared_ptr<MShaderConstantParam> m_pWorldInfoParam = nullptr;
+	/*cbLightInformation*/
+	std::shared_ptr<MShaderConstantParam> m_pLightInfoParam = nullptr;
+	/*cbShadowInformation*/
+	std::shared_ptr<MShaderConstantParam> m_pShadowInfoParam = nullptr;
 
-	MShaderTextureParam* m_pShadowTextureParam;
-	MShaderTextureParam* m_pDiffuseMapTextureParam;
-	MShaderTextureParam* m_pSpecularMapTextureParam;
-	MShaderTextureParam* m_pBrdfMapTextureParam;
+	std::shared_ptr<MShaderTextureParam> m_pShadowTextureParam = nullptr;
+	std::shared_ptr<MShaderTextureParam> m_pDiffuseMapTextureParam = nullptr;
+	std::shared_ptr<MShaderTextureParam> m_pSpecularMapTextureParam = nullptr;
+	std::shared_ptr<MShaderTextureParam> m_pBrdfMapTextureParam = nullptr;
+
+protected:
+	std::shared_ptr<MShaderPropertyBlock> m_pShaderPropertyBlock = nullptr;
 };
 
 
-class MForwardRenderTransparentShaderParamSet : public MForwardRenderShaderParamSet
+class MForwardRenderTransparentShaderPropertyBlock : public MForwardRenderShaderPropertyBlock
 {
 public:
-	MForwardRenderTransparentShaderParamSet();
-	virtual ~MForwardRenderTransparentShaderParamSet();
+	MForwardRenderTransparentShaderPropertyBlock();
+	virtual ~MForwardRenderTransparentShaderPropertyBlock();
 
 
-	virtual void InitializeShaderParamSet(MEngine* pEngine) override;
+	virtual void BindMaterial(const std::shared_ptr<MMaterial>& pMaterial) override;
 	virtual void ReleaseShaderParamSet(MEngine* pEngine) override;
 
 public:
 
-	MShaderTextureParam* m_pTransparentFrontTextureParam;
-	MShaderTextureParam* m_pTransparentBackTextureParam;
+	std::shared_ptr<MShaderTextureParam> m_pTransparentFrontTextureParam = nullptr;
+	std::shared_ptr<MShaderTextureParam> m_pTransparentBackTextureParam = nullptr;
 };
 
 

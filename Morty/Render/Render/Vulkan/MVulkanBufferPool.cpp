@@ -92,6 +92,7 @@ bool MVulkanBufferPool::AllowUniformBufferMemory(const std::shared_ptr<MShaderCo
 	{
 
 		FreeUniformBufferMemory(pParam);
+		MORTY_ASSERT(false);
 		return false;
 	}
 
@@ -116,8 +117,10 @@ bool MVulkanBufferPool::AllowUniformBufferMemory(const std::shared_ptr<MShaderCo
 bool MVulkanBufferPool::AllowDynamicUniformBufferMemory(const std::shared_ptr<MShaderConstantParam>& pParam)
 {
 	if (pParam->m_VkBuffer != VK_NULL_HANDLE)
+	{
+		MORTY_ASSERT(VK_NULL_HANDLE == pParam->m_VkBuffer);
 		return false;
-
+	}
 	uint32_t unVariantSize = pParam->var.GetSize();
 
 	if (unVariantSize > 0) {
@@ -128,6 +131,7 @@ bool MVulkanBufferPool::AllowDynamicUniformBufferMemory(const std::shared_ptr<MS
 
 	if (!m_DynamicUniformMemoryPool.AllowMemory(unVariantSize, allowInfo))
 	{
+		MORTY_ASSERT(false);
 		m_DynamicUniformMemoryPool.FreeMemory(allowInfo);
 		return false;
 	}
@@ -145,7 +149,7 @@ bool MVulkanBufferPool::AllowDynamicUniformBufferMemory(const std::shared_ptr<MS
 	VkDescriptorBufferInfo& bufferInfo = pParam->m_VkBufferInfo;
 	bufferInfo.buffer = m_VkDynamicUniformBuffer;
 	bufferInfo.offset = 0; //allowInfo.begin; //The real data starting at param->m_unMemoryOffset + VkDescriptorBufferInfo::offset.
-	bufferInfo.range = unVariantSize;
+	bufferInfo.range = pParam->var.GetSize();
 
 	return true;
 }

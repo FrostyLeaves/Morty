@@ -45,7 +45,7 @@ public:
 	void SetMaterial(std::shared_ptr<MMaterial> pMaterial);
 	std::shared_ptr<MMaterial> GetMaterial();
 
-	std::shared_ptr<MShaderPropertyBlock> GetShaderMeshParamSet();
+	const std::shared_ptr<MShaderPropertyBlock>& GetShaderMeshParamSet();
 	void UpdateShaderMeshParam();
 
 	bool SetMaterialPath(const MString& strPath);
@@ -104,7 +104,7 @@ protected:
 	MResourceKeeper m_Mesh;
 	MResourceKeeper m_Material;
 
-	std::shared_ptr<MShaderPropertyBlock> m_pShaderParamSet;
+	std::shared_ptr<MShaderPropertyBlock> m_pShaderPropertyBlock;
 	std::shared_ptr<MShaderConstantParam> m_pTransformParam;
 
 	Matrix4* m_pWorldMatrixParam;

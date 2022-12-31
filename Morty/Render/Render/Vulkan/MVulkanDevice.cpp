@@ -42,7 +42,7 @@ const VkImageLayout UndefinedImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
 std::vector<const char*> InstanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME,
 
-#ifdef _DEBUG
+#ifdef MORTY_DEBUG
 		VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
 #endif
 
@@ -411,7 +411,7 @@ MVulkanObjectRecycleBin* MVulkanDevice::GetRecycleBin()
 
 void MVulkanDevice::SetDebugName(uint64_t object, const VkObjectType& type, const char* svDebugName)
 {
-#if _DEBUG
+#if MORTY_DEBUG
 	VkDebugUtilsObjectNameInfoEXT vkObjectName;
 	vkObjectName.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
 	vkObjectName.objectType = type;
@@ -489,21 +489,36 @@ bool MVulkanDevice::InitDescriptorPool()
 {
 	uint32_t unSwapChainNum = 50000;
 
-	std::vector<VkDescriptorPoolSize> vPoolSize(5);
-	vPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	vPoolSize[0].descriptorCount = unSwapChainNum;
-
-	vPoolSize[1].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-	vPoolSize[1].descriptorCount = unSwapChainNum;
-
-	vPoolSize[2].type = VK_DESCRIPTOR_TYPE_SAMPLER;
-	vPoolSize[2].descriptorCount = unSwapChainNum;
-
-	vPoolSize[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	vPoolSize[3].descriptorCount = unSwapChainNum;
-
-	vPoolSize[4].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-	vPoolSize[4].descriptorCount = unSwapChainNum;
+	std::vector<VkDescriptorPoolSize> vPoolSize = {
+		{
+			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			unSwapChainNum,
+		},
+		{
+			VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+			unSwapChainNum,
+		},
+		{
+			VK_DESCRIPTOR_TYPE_SAMPLER,
+			unSwapChainNum,
+		},
+		{
+			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			unSwapChainNum,
+		},
+		{
+			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+			unSwapChainNum,
+		},
+		{
+			VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+			unSwapChainNum,
+		},
+		{
+			VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC,
+			unSwapChainNum,
+		},
+	};
 
 	VkDescriptorPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -536,19 +551,24 @@ void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, c
 	{
 		vkBufferUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 	}
-	else if (MBuffer::MUsageType::EIndex & pBuffer->m_eUsageType)
+	if (MBuffer::MUsageType::EIndex & pBuffer->m_eUsageType)
 	{
 		vkBufferUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 	}
-	else if (MBuffer::MUsageType::EStorage & pBuffer->m_eUsageType)
+	if (MBuffer::MUsageType::EStorage & pBuffer->m_eUsageType)
 	{
 		vkBufferUsageFlags |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 	}
-	else if (MBuffer::MUsageType::EUniform & pBuffer->m_eUsageType)
+	if (MBuffer::MUsageType::EUniform & pBuffer->m_eUsageType)
 	{
 		vkBufferUsageFlags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 	}
-	else
+	if (MBuffer::MUsageType::EIndirect & pBuffer->m_eUsageType)
+	{
+		vkBufferUsageFlags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+	}
+
+	if (pBuffer->m_eUsageType == 0)
 	{
 		MORTY_ASSERT(false);
 	}
@@ -837,17 +857,17 @@ bool MVulkanDevice::CompileShader(MShader* pShader)
 	if (pShader->GetType() == MEShaderType::EVertex)
 	{
 		shaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-		shaderStageInfo.pName = "VS";
+		shaderStageInfo.pName = "VS_MAIN";
 	}
 	else if (pShader->GetType() == MEShaderType::EPixel)
 	{
 		shaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-		shaderStageInfo.pName = "PS";
+		shaderStageInfo.pName = "PS_MAIN";
 	}
 	else
 	{
 		shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-		shaderStageInfo.pName = "CS";
+		shaderStageInfo.pName = "CS_MAIN";
 	}
 
 
@@ -901,9 +921,7 @@ bool MVulkanDevice::GenerateShaderParamSet(const std::shared_ptr<MShaderProperty
 {
 	if (!pParamSet)
 		return false;
-
-	m_PipelineManager.GenerateShaderParamSet(pParamSet);
-
+	
 	return true;
 }
 
@@ -1325,6 +1343,7 @@ void MVulkanDevice::DestroyFrameBuffer(MRenderPass* pRenderPass)
 bool MVulkanDevice::GenerateShaderProgram(MShaderProgram* pShaderProgram)
 {
 	m_PipelineManager.GenerateShaderProgram(pShaderProgram);
+	return true;
 }
 
 void MVulkanDevice::DestroyShaderProgram(MShaderProgram* pShaderProgram)
@@ -2005,7 +2024,7 @@ bool MVulkanDevice::InitVulkanInstance()
 	createInfo.flags = 0;
 	createInfo.pApplicationInfo = &appInfo;
 	
-#if _DEBUG
+#if MORTY_DEBUG
 	createInfo.enabledLayerCount = static_cast<uint32_t>(ValidationLayers.size());
 	createInfo.ppEnabledLayerNames = ValidationLayers.data();
 #else
@@ -2036,7 +2055,7 @@ bool MVulkanDevice::InitVulkanInstance()
 	vkCmdPushDescriptorSet = reinterpret_cast<PFN_vkCmdPushDescriptorSetKHR>(vkGetInstanceProcAddr(m_VkInstance, "vkCmdPushDescriptorSetKHR"));
 	vkSetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(vkGetInstanceProcAddr(m_VkInstance, "vkSetDebugUtilsObjectNameEXT"));
 
-#ifdef _DEBUG
+#ifdef MORTY_DEBUG
 	// load kCreateDebugUtilsMessengerEXT
 	PFN_vkCreateDebugUtilsMessengerEXT pvkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_VkInstance, "vkCreateDebugUtilsMessengerEXT");
 	if (pvkCreateDebugUtilsMessengerEXT == NULL)

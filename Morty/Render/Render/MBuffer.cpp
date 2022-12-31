@@ -52,7 +52,7 @@ MBuffer MBuffer::CreateHostVisibleIndexBuffer()
 
 const MBuffer& MBuffer::operator=(const MBuffer& other)
 {
-#if _DEBUG
+#if MORTY_DEBUG
 	m_strDebugBufferName = other.m_strDebugBufferName;
 #endif
 	

@@ -1,11 +1,11 @@
 #include "brdf_functional.hlsl"
 
-[[vk::binding(1,0)]]TextureCube U_SkyBox;
+[[vk::binding(1,0)]]TextureCube u_texSkyBox;
 [[vk::binding(2,0)]]sampler LinearSampler;
 
 [[vk::binding(3,0)]]cbuffer cbParam
 {
-    float U_roughness;
+    float u_roughness;
 };
 
 struct VS_OUT
@@ -15,7 +15,7 @@ struct VS_OUT
     uint idx : TEST_IDX;
 };
 
-float4 PS(VS_OUT input) : SV_Target
+float4 PS_MAIN(VS_OUT input) : SV_Target
 {
     float3 f3Normal = normalize(input.uvw);
 
@@ -31,14 +31,14 @@ float4 PS(VS_OUT input) : SV_Target
     {
         // generates a sample vector that's biased towards the preferred alignment direction (importance sampling).
         float2 Xi = Hammersley(i, SAMPLE_COUNT);
-        float3 H = ImportanceSampleGGX(Xi, f3Normal, U_roughness);
+        float3 H = ImportanceSampleGGX(Xi, f3Normal, u_roughness);
         float3 L  = normalize(2.0 * dot(V, H) * H - V);
 
         float NdotL = max(dot(f3Normal, L), 0.0);
         if(NdotL > 0.0)
         {
             // sample from the environment's mip level based on roughness/pdf
-            float D   = DistributionGGX(f3Normal, H, U_roughness);
+            float D   = DistributionGGX(f3Normal, H, u_roughness);
             float NdotH = max(dot(f3Normal, H), 0.0);
             float HdotV = max(dot(H, V), 0.0);
             float pdf = D * NdotH / (4.0 * HdotV) + 0.0001; 
@@ -47,9 +47,9 @@ float4 PS(VS_OUT input) : SV_Target
             float saTexel  = 4.0 * NUM_PI / (6.0 * resolution * resolution);
             float saSample = 1.0 / (float(SAMPLE_COUNT) * pdf + 0.0001);
 
-            float mipLevel = U_roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel); 
+            float mipLevel = u_roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel); 
             
-            f3PrefilteredColor += U_SkyBox.SampleLevel(LinearSampler, L, mipLevel).rgb * NdotL;
+            f3PrefilteredColor += u_texSkyBox.SampleLevel(LinearSampler, L, mipLevel).rgb * NdotL;
             totalWeight      += NdotL;
         }
     }

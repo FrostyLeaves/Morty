@@ -47,12 +47,7 @@ float2 IntegrateBRDF(float NdotV, float roughness)
     return float2(A, B);
 }
 
-void main() 
-{
-
-}
-
-float4 PS(VS_OUT input) : SV_Target
+float4 PS_MAIN(VS_OUT input) : SV_Target
 {
     float2 integratedBRDF = IntegrateBRDF(TexCoords.x, TexCoords.y);
     FragColor = integratedBRDF;

@@ -24,6 +24,7 @@
 
 #include "MShadowMapRenderWork.h"
 #include "MTransparentRenderWork.h"
+#include "MGPUCullingRenderWork.h"
 #include "Component/MCameraComponent.h"
 #include "MergeInstancing/MMergeInstancingSubSystem.h"
 #include "Render/MVertex.h"
@@ -38,17 +39,15 @@ MDeferredRenderProgram::MDeferredRenderProgram()
 	: MIRenderProgram()
 	, m_pRenderGraph(nullptr)
 	, m_renderInfo()
-	, m_frameParamSet()
+	, m_forwardFramePropertyBlock()
 	, m_pShadowMapWork(nullptr)
 	, m_pTransparentWork(nullptr)
+	, m_pGPUCullingRenderWork(nullptr)
 	, m_nFrameIndex(0)
 	, m_pFinalOutputTexture(nullptr)
 	, m_gbufferRenderPass()
-	, m_pCullingComputeDispatcher(nullptr)
 	, m_pPrimaryCommand(nullptr)
 	, m_pLightningMaterial(nullptr)
-	, m_cullingInstanceBuffer()
-	, m_cullingIndirectDrawBuffer()
 {
 	
 }
@@ -122,151 +121,14 @@ void MDeferredRenderProgram::RenderReady(MTaskNode* pTaskNode)
 
 void MDeferredRenderProgram::RenderCulling(MTaskNode* pTaskNode)
 {
-	MEngine* pEngine = GetEngine();
-	MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
-	MIDevice* pRenderDevice = pRenderSystem->GetDevice();
-	MViewport* pViewport = GetViewport();
-	MScene* pScene = pViewport->GetScene();
-
-
-
-	MMergeInstancingSubSystem* pMergeInstancingSubSystem = pScene->GetSubSystem<MMergeInstancingSubSystem>();
-	if (!pMergeInstancingSubSystem)
+	if (m_pGPUCullingRenderWork && m_bGPUCullingUpdate)
 	{
-		return;
+		m_pGPUCullingRenderWork->CollectCullingGroup(m_renderInfo);
+		m_bGPUCullingUpdate = false;
 	}
 
-	auto&& tBatchInstanceTable = pMergeInstancingSubSystem->GetMaterialToBatchInstanceTable();
-
-	std::vector<MMergeInstanceCullData> vInstanceCullData;
-
-	struct MMaterialCullingGroup
-	{
-		std::shared_ptr<MMaterial> pMaterial;
-		size_t nBeginIdx;
-		size_t nSize;
-	};
-
-	std::vector<MMaterialCullingGroup> vMaterialCullingGroup;
-
-	for (auto&& pr : tBatchInstanceTable)
-	{
-		if (MMaterialBatchGroup* pMaterialBatchgGroup = pr.second)
-		{
-			for (MRenderableMeshComponent* pMeshComponent : pMaterialBatchgGroup->vMeshComponent)
-			{
-				vMaterialCullingGroup.push_back({});
-				MMaterialCullingGroup& materialCullingGroup = vMaterialCullingGroup.back();
-				materialCullingGroup.pMaterial = pMeshComponent->GetMaterial();
-				materialCullingGroup.nBeginIdx = vInstanceCullData.size();
-				materialCullingGroup.nSize = 0;
-
-				if (MSceneComponent* pSceneComponent = pMeshComponent->GetEntity()->GetComponent<MSceneComponent>())
-				{
-					const std::vector<MMergeInstancingMesh::MMeshClusterData>& vMeshClusterGroup = pMergeInstancingSubSystem->GetMeshClusterGroup(pMeshComponent->GetMesh());
-
-					for (const MMergeInstancingMesh::MMeshClusterData& clusterData : vMeshClusterGroup)
-					{
-						vInstanceCullData.push_back({});
-						MMergeInstanceCullData& cullData = vInstanceCullData.back();
-						materialCullingGroup.nSize++;
-
-						cullData.position = pSceneComponent->GetWorldPosition();
-						cullData.radius = clusterData.boundsShpere.m_fRadius;
-
-						for (size_t nLodIdx = 0; nLodIdx < MRenderGlobal::MESH_LOD_LEVEL_RANGE; ++nLodIdx)
-						{
-							//TODO LOD
-							cullData.lods[nLodIdx].distance = 500 * (1 + nLodIdx) / MRenderGlobal::MESH_LOD_LEVEL_RANGE;
-							cullData.lods[nLodIdx].firstIndex = clusterData.memoryInfo.begin;
-							cullData.lods[nLodIdx].indexCount = clusterData.memoryInfo.size / sizeof(uint32_t);
-						}
-					}
-				}
-			}
-
-		}
-	}
-
-	if (vInstanceCullData.empty())
-	{
-		return;
-	}
-
-	size_t unCullingBufferSize = vInstanceCullData.size() * sizeof(MMergeInstanceCullData);
-	if (m_cullingInstanceBuffer.GetSize() < unCullingBufferSize)
-	{
-		m_cullingInstanceBuffer.ReallocMemory(unCullingBufferSize);
-		m_cullingInstanceBuffer.DestroyBuffer(pRenderSystem->GetDevice());
-		m_cullingInstanceBuffer.GenerateBuffer(pRenderSystem->GetDevice(), reinterpret_cast<MByte*>(vInstanceCullData.data()), unCullingBufferSize);
-	}
-	else
-	{
-		m_cullingInstanceBuffer.UploadBuffer(pRenderSystem->GetDevice(), reinterpret_cast<MByte*>(vInstanceCullData.data()), unCullingBufferSize);
-	}
-
-	size_t unDrawBufferSize = vInstanceCullData.size() * sizeof(MDrawIndexedIndirectData);
-	if (m_cullingIndirectDrawBuffer.GetSize() < unDrawBufferSize)
-	{
-
-		m_cullingIndirectDrawBuffer.ReallocMemory(unDrawBufferSize);
-		m_cullingIndirectDrawBuffer.DestroyBuffer(pRenderSystem->GetDevice());
-		m_cullingIndirectDrawBuffer.GenerateBuffer(pRenderSystem->GetDevice(), nullptr, unDrawBufferSize);
-	}
-
-
-	const std::shared_ptr<MShaderPropertyBlock>& params = m_pCullingComputeDispatcher->GetShaderParamSets()[0];
-
-	if (std::shared_ptr<MShaderStorageParam>&& pStorageParam = params->FindStorageParam("instances"))
-	{
-		pStorageParam->pBuffer = &m_cullingInstanceBuffer;
-		pStorageParam->SetDirty();
-	}
-
-	if (std::shared_ptr<MShaderStorageParam>&& pStorageParam = params->FindStorageParam("indirectDraws"))
-	{
-		pStorageParam->pBuffer = &m_cullingIndirectDrawBuffer;
-		pStorageParam->SetDirty();
-	}
-
-	if (std::shared_ptr<MShaderConstantParam>&& pConstantParam = params->FindConstantParam("ubo"))
-	{
-		if (MStruct* sut = pConstantParam->var.GetStruct())
-		{
-			sut->SetValue("cameraPos", Vector4());
-			if (MVariantArray* pFrustumArray = sut->GetValue<MVariantArray>("frustumPlanes"))
-			{
-				MCameraFrustum& cameraFrustum = pViewport->GetCameraFrustum();
-				for (size_t planeIdx = 0; planeIdx < 6; ++planeIdx)
-				{
-					(*pFrustumArray)[planeIdx] = cameraFrustum.GetPlane(planeIdx).m_v4Plane;
-				}
-			}
-		}
-
-		pConstantParam->SetDirty();
-	}
-
-	m_pPrimaryCommand->AddGraphToComputeBarrier({ &m_cullingIndirectDrawBuffer });
-
-	m_pPrimaryCommand->DispatchComputeJob(m_pCullingComputeDispatcher, vInstanceCullData.size() / 16, 1, 1);
-
-	m_pPrimaryCommand->AddComputeToGraphBarrier({ &m_cullingIndirectDrawBuffer });
-
-
-	if (const MMergeInstancingMesh* pMergeMesh = pMergeInstancingSubSystem->GetMergeInstancingMesh())
-	{
-		for (MMaterialCullingGroup& group : vMaterialCullingGroup)
-		{
-			m_pPrimaryCommand->SetUseMaterial(group.pMaterial);
-			m_pPrimaryCommand->SetShaderParamSet(m_frameParamSet);
-
-			//Binding MVP 
-			//m_pPrimaryCommand->SetShaderParamSet(pMeshComponent->GetShaderMeshParamSet());
-			
-			m_pPrimaryCommand->DrawIndexedIndirect(pMergeMesh->GetVertexBuffer(), pMergeMesh->GetIndexBuffer(), &m_cullingIndirectDrawBuffer, group.nBeginIdx * sizeof(MDrawIndexedIndirectData), group.nSize);
-		}
-	}
+	m_pGPUCullingRenderWork->UpdateCameraFrustum(m_renderInfo);
+	m_pGPUCullingRenderWork->DispatchCullingJob(m_renderInfo);
 }
 
 void MDeferredRenderProgram::RenderGBuffer(MTaskNode* pTaskNode)
@@ -293,6 +155,23 @@ void MDeferredRenderProgram::RenderGBuffer(MTaskNode* pTaskNode)
 
 	DrawStaticMesh(m_renderInfo, pCommand, m_renderInfo.m_tDeferredMaterialGroupMesh);
 
+
+	if (m_pGPUCullingRenderWork)
+	{
+		const MBuffer* pDrawIndirectBuffer = m_pGPUCullingRenderWork->GetDrawIndirectBuffer();
+		const std::vector<MMaterialCullingGroup>& vCullingInstanceGroup = m_pGPUCullingRenderWork->GetCullingInstanceGroup();
+		for (const MMaterialCullingGroup& group : vCullingInstanceGroup)
+		{
+			pCommand->SetUseMaterial(group.pMaterial);
+			pCommand->SetShaderParamSet(m_forwardFramePropertyBlock.GetShaderPropertyBlock());
+
+			//Binding MVP
+			pCommand->SetShaderParamSet(group.pMeshTransformProperty);
+
+			pCommand->DrawIndexedIndirect(group.pVertexBuffer, group.pIndexBuffer, pDrawIndirectBuffer, group.nClusterBeginIdx * sizeof(MDrawIndexedIndirectData), group.nClusterCount);
+		}
+	}
+
 	pCommand->EndRenderPass();
 }
 
@@ -314,7 +193,7 @@ void MDeferredRenderProgram::RenderLightning(MTaskNode* pTaskNode)
 
 	if (pCommand->SetUseMaterial(m_pLightningMaterial))
 	{
-		pCommand->SetShaderParamSet(m_frameParamSet);
+		pCommand->SetShaderParamSet(m_forwardFramePropertyBlock.GetShaderPropertyBlock());
 		pCommand->DrawMesh(&m_ScreenDrawMesh);
 	}
 
@@ -325,11 +204,11 @@ void MDeferredRenderProgram::RenderShadow(MTaskNode* pTaskNode)
 {
 	if (m_pShadowMapWork)
 	{
-		m_pShadowMapWork->RenderShadow(m_renderInfo);
+		m_pShadowMapWork->RenderShadow(m_renderInfo, nullptr /*m_pGPUCullingRenderWork*/);
 
 		MTexture* pShadowMap = m_pShadowMapWork->GetShadowMap();
 
-		m_frameParamSet.SetShadowMapTexture(pShadowMap);
+		m_forwardFramePropertyBlock.SetShadowMapTexture(pShadowMap);
 	}
 }
 
@@ -361,7 +240,7 @@ void MDeferredRenderProgram::RenderForward(MTaskNode* pTaskNode)
 			m_pSkyBoxMaterial->SetTexutre("SkyTexCube", pSkyBoxComponent->GetSkyBoxResource());
 
 			pCommand->SetUseMaterial(m_pSkyBoxMaterial);
-			pCommand->SetShaderParamSet(m_frameParamSet);
+			pCommand->SetShaderParamSet(m_forwardFramePropertyBlock.GetShaderPropertyBlock());
 			pCommand->DrawMesh(&m_SkyBoxDrawMesh);
 		}
 	}
@@ -454,7 +333,7 @@ void MDeferredRenderProgram::DrawStaticMesh(MRenderInfo& info, MIRenderCommand* 
 		std::vector<MRenderableMeshComponent*>& vMesh = pr.second;
 
 		pCommand->SetUseMaterial(pMaterial);
-		pCommand->SetShaderParamSet(m_frameParamSet);
+		pCommand->SetShaderParamSet(m_forwardFramePropertyBlock.GetShaderPropertyBlock());
 
 		for (MRenderableMeshComponent* pMeshComponent : vMesh)
 		{
@@ -478,6 +357,7 @@ void MDeferredRenderProgram::OnCreated()
 	m_pRenderGraph = pObjectSystem->CreateObject<MTaskGraph>();
 	m_pShadowMapWork = pObjectSystem->CreateObject<MShadowMapRenderWork>();
 //	m_pTransparentWork = pObjectSystem->CreateObject<MTransparentRenderWork>();
+	m_pGPUCullingRenderWork = pObjectSystem->CreateObject<MGPUCullingRenderWork>();
 
 	MTaskNode* pRenderReadyTask = m_pRenderGraph->AddNode<MTaskNode>("Render_Ready");
 	pRenderReadyTask->SetThreadType(METhreadType::EAny);
@@ -523,12 +403,10 @@ void MDeferredRenderProgram::OnCreated()
 	pRenderForwardTask->AppendOutput()->LinkTo(pRenderTransparentTask->AppendInput());
 	pRenderTransparentTask->AppendOutput()->LinkTo(pRenderDebugTask->AppendInput());
 
-	InitializeFrameShaderParams();
 	InitializeRenderPass();
 	InitializeMaterial();
+	InitializeFrameShaderParams();
 	InitializeMesh();
-
-	InitializeCullingComputeDispatcher();
 }
 
 void MDeferredRenderProgram::OnDelete()
@@ -540,8 +418,23 @@ void MDeferredRenderProgram::OnDelete()
 	m_pRenderGraph->DeleteLater();
 	m_pRenderGraph = nullptr;
 
-	m_pShadowMapWork->DeleteLater();
-	m_pShadowMapWork = nullptr;
+	if (m_pShadowMapWork)
+	{
+		m_pShadowMapWork->DeleteLater();
+		m_pShadowMapWork = nullptr;
+	}
+
+	if (m_pTransparentWork)
+	{
+		m_pTransparentWork->DeleteLater();
+		m_pTransparentWork = nullptr;
+	}
+
+	if (m_pGPUCullingRenderWork)
+	{
+		m_pGPUCullingRenderWork->DeleteLater();
+		m_pGPUCullingRenderWork = nullptr;
+	}
 
 	ReleaseFrameShaderParams();
 	ReleaseRenderPass();
@@ -557,27 +450,26 @@ void MDeferredRenderProgram::InitializeRenderPass()
 
 	const std::vector<std::pair<MString, MPassTargetDescription>> vTextureDesc = {
 		{"f3Albedo_fMetallic", {true, MColor::Black_T} },
-		{"U_mat_f3Normal_fRoughness", {true, MColor::Black_T} },
-		{"U_mat_f3Position_fAmbientOcc", {true, MColor::Black_T} }
+		{"u_mat_f3Normal_fRoughness", {true, MColor::Black_T} },
+		{"u_mat_f3Position_fAmbientOcc", {true, MColor::Black_T} }
 	};
 
-	for (auto& desc : vTextureDesc)
+	for (auto desc : vTextureDesc)
 	{
 		MTexture* pRenderTarget = MTexture::CreateRenderTargetGBuffer();
 		pRenderTarget->SetName(desc.first);
 		pRenderTarget->SetSize(v2Size);
 		pRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
+		
 		m_gbufferRenderPass.AddBackTexture(pRenderTarget, desc.second);
 	}
 
 	MTexture* pDepthTexture = MTexture::CreateShadowMap();
 	pDepthTexture->SetSize(v2Size);
 	pDepthTexture->GenerateBuffer(pRenderSystem->GetDevice());
-	
+
 	m_gbufferRenderPass.SetDepthTexture(pDepthTexture, { true, MColor::White });
 	m_gbufferRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
-
-
 
 	MTexture* pLightningRenderTarget = MTexture::CreateRenderTarget();
 	pLightningRenderTarget->SetName("Lightning Output");
@@ -604,7 +496,7 @@ void MDeferredRenderProgram::InitializeRenderPass()
 void MDeferredRenderProgram::ReleaseRenderPass()
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-
+	
 	pRenderSystem->ReleaseRenderpass(m_gbufferRenderPass, true);
 	pRenderSystem->ReleaseRenderpass(m_lightningRenderPass, true);
 
@@ -614,23 +506,31 @@ void MDeferredRenderProgram::ReleaseRenderPass()
 
 void MDeferredRenderProgram::InitializeFrameShaderParams()
 {
-	m_frameParamSet.InitializeShaderParamSet(GetEngine());
-
-
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+
+	std::shared_ptr<MResource> forwardVS = pResourceSystem->LoadResource("Shader/model_gbuffer.mvs");
+	std::shared_ptr<MResource> forwardPS = pResourceSystem->LoadResource("Shader/model_gbuffer.mps");
+	m_pForwardMaterial = pResourceSystem->CreateResource<MMaterialResource>();
+	m_pForwardMaterial->SetRasterizerType(MERasterizerType::ECullBack);
+	m_pForwardMaterial->LoadVertexShader(forwardVS);
+	m_pForwardMaterial->LoadPixelShader(forwardPS);
+
+	m_forwardFramePropertyBlock.BindMaterial(m_pForwardMaterial);
 
 	std::shared_ptr<MResource> pBrdfTexture = pResourceSystem->LoadResource("Texture/ibl_brdf_lut.png");
 
 	if (std::shared_ptr<MTextureResource> pTexture = MTypeClass::DynamicCast<MTextureResource>(pBrdfTexture))
 	{
 		m_BrdfTexture.SetResource(pBrdfTexture);
-		m_frameParamSet.SetBrdfMapTexture(pTexture->GetTextureTemplate());
+		m_forwardFramePropertyBlock.SetBrdfMapTexture(pTexture->GetTextureTemplate());
 	}
 }
 
 void MDeferredRenderProgram::ReleaseFrameShaderParams()
 {
-	m_frameParamSet.ReleaseShaderParamSet(GetEngine());
+	m_forwardFramePropertyBlock.ReleaseShaderParamSet(GetEngine());
+
+	m_pForwardMaterial = nullptr;
 }
 
 void MDeferredRenderProgram::InitializeMaterial()
@@ -647,10 +547,10 @@ void MDeferredRenderProgram::InitializeMaterial()
 
 	if (std::shared_ptr<MShaderPropertyBlock>&& pParams = m_pLightningMaterial->GetMaterialParamSet())
 	{
-		pParams->SetValue("U_mat_f3Albedo_fMetallic", m_gbufferRenderPass.m_vBackTextures[0].pTexture);
-		pParams->SetValue("U_mat_f3Normal_fRoughness", m_gbufferRenderPass.m_vBackTextures[1].pTexture);
-		pParams->SetValue("U_mat_f3Position_fAmbientOcc", m_gbufferRenderPass.m_vBackTextures[2].pTexture);
-		pParams->SetValue("U_mat_DepthMap", m_gbufferRenderPass.m_DepthTexture.pTexture);
+		pParams->SetValue("u_mat_f3Albedo_fMetallic", m_gbufferRenderPass.m_vBackTextures[0].pTexture);
+		pParams->SetValue("u_mat_f3Normal_fRoughness", m_gbufferRenderPass.m_vBackTextures[1].pTexture);
+		pParams->SetValue("u_mat_f3Position_fAmbientOcc", m_gbufferRenderPass.m_vBackTextures[2].pTexture);
+		pParams->SetValue("u_mat_DepthMap", m_gbufferRenderPass.m_DepthTexture.pTexture);
 	}
 
 
@@ -660,6 +560,7 @@ void MDeferredRenderProgram::InitializeMaterial()
 	m_pSkyBoxMaterial->SetRasterizerType(MERasterizerType::ECullNone);
 	m_pSkyBoxMaterial->LoadVertexShader(skyboxVS);
 	m_pSkyBoxMaterial->LoadPixelShader(skyboxPS);
+
 }
 
 void MDeferredRenderProgram::ReleaseMaterial()
@@ -728,31 +629,9 @@ void MDeferredRenderProgram::ReleaseMesh()
 	m_SkyBoxDrawMesh.DestroyBuffer(pRenderSystem->GetDevice());
 }
 
-void MDeferredRenderProgram::InitializeCullingComputeDispatcher()
-{
-	MObjectSystem* pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
-
-	m_pCullingComputeDispatcher = pObjectSystem->CreateObject<MComputeDispatcher>();
-	m_pCullingComputeDispatcher->LoadComputeShader("Shader/cull.mcs");
-
-
-	m_cullingInstanceBuffer.m_eMemoryType = MBuffer::MMemoryType::EHostVisible;
-	m_cullingInstanceBuffer.m_eUsageType = MBuffer::MUsageType::EStorage;
-
-	m_cullingIndirectDrawBuffer.m_eMemoryType = MBuffer::MMemoryType::EDeviceLocal;
-	m_cullingIndirectDrawBuffer.m_eUsageType = MBuffer::MUsageType::EStorage;
-
-}
-
-void MDeferredRenderProgram::ReleaseCullingComputeDispatcher()
-{
-	m_pCullingComputeDispatcher->DeleteLater();
-	m_pCullingComputeDispatcher = nullptr;
-}
-
 void MDeferredRenderProgram::UpdateFrameParams(MRenderInfo& info)
 {
-	m_frameParamSet.UpdateShaderSharedParams(info);
+	m_forwardFramePropertyBlock.UpdateShaderSharedParams(info);
 }
 
 void MDeferredRenderProgram::CollectRenderMesh(MRenderInfo& info)

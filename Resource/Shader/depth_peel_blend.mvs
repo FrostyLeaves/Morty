@@ -1,17 +1,17 @@
-struct VS_IN_SLICE
+struct VS_IN
 {
     float2 pos : POSITION;
 };
 
-struct VS_OUT_DP
+struct VS_OUT
 {
     float4 pos : SV_POSITION;
     float2 uv : TEXCOORD;
 };
 
-VS_OUT_DP VS(VS_IN_SLICE input)
+VS_OUT VS_MAIN(VS_IN input)
 {
-    VS_OUT_DP output;
+    VS_OUT output;
 
     output.pos.xy = input.pos.xy;
     output.pos.w = 1.0f;

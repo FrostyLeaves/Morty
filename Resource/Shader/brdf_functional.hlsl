@@ -83,3 +83,36 @@ float3 ImportanceSampleGGX(float2 Xi, float3 N, float roughness)
 	return normalize(sampleVec);
 }
 // ----------------------------------------------------------------------------
+
+// Cook-Torrance BRDF
+float3 BRDF(float3 f3LightColor, float3 f3CameraDir, float3 _f3LightDir, float3 f3Normal, float3 f3BaseColor, float3 f3Albedo, float fRoughness, float fMetallic)
+{
+    float3 f3LightInverseDir = -_f3LightDir;
+
+    float3 f3HalfDir = normalize(f3CameraDir + f3LightInverseDir);
+
+    float NDF = DistributionGGX(f3Normal, f3HalfDir, fRoughness);
+    float G   = GeometrySmith(f3Normal, f3CameraDir, f3LightInverseDir, fRoughness);
+    float3 F  = FresnelSchlick(max(dot(f3HalfDir, f3CameraDir), 0.0), f3BaseColor);
+        
+    float3 nominator    = NDF * G * F; 
+    float denominator = 4 * max(dot(f3Normal, f3CameraDir), 0.0) * max(dot(f3Normal, f3LightInverseDir), 0.0); // 0.001 to prevent divide by zero.
+    float3 specular = nominator / max(denominator, 0.001);
+    
+    // kS is equal to Fresnel
+    float3 kS = F;
+    // for energy conservation, the diffuse and specular light can't
+    // be above 1.0 (unless the surface emits light); to preserve this
+    // relationship the diffuse component (kD) should equal 1.0 - kS.
+    float3 kD = float3(1.0, 1.0, 1.0) - kS;
+    // multiply kD by the inverse metalness such that only non-metals 
+    // have diffuse lighting, or a linear blend if partly metal (pure metals
+    // have no diffuse light).
+    kD *= float3(1.0, 1.0, 1.0) - fMetallic;	  
+
+    // scale light by NdotL
+    float NdotL = max(dot(f3Normal, f3LightInverseDir), 0.0);        
+
+    // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+    return (kD * f3Albedo / NUM_PI + specular) * f3LightColor * NdotL;
+}

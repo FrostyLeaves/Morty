@@ -17,7 +17,7 @@ struct VS_OUTPUT
 
 [[vk::binding(3,0)]]sampler LinearSampler;
 
-float4 PS( VS_OUTPUT input) : SV_Target
+float4 PS_MAIN( VS_OUTPUT input) : SV_Target
 {
     float3 uv = float3(0, 0, 0);
 

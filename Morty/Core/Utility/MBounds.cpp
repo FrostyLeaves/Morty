@@ -361,7 +361,7 @@ void MBoundsSphere::SetPoints(const MByte* vPoints, const uint32_t& unArrayLengt
 	const MByte* vPointer = vPoints;
 	for (uint32_t i = 0; i < unArrayLength; ++i, vPointer += unDataSize)
 	{
-		const Vector3& pos = *(Vector3*)(vPointer + unOffset);
+		const Vector3& pos = *reinterpret_cast<const Vector3*>(vPointer + unOffset);
 		if (v3Min.x > pos.x)
 			v3Min.x = pos.x;
 		if (v3Min.y > pos.y)

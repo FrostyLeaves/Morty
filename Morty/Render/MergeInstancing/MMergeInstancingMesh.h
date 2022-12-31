@@ -30,7 +30,7 @@ public:
 
 public:
 
-	struct MMeshClusterData
+	struct MClusterData
 	{
 		MemoryInfo memoryInfo;
 		MBoundsSphere boundsShpere;
@@ -39,8 +39,7 @@ public:
 	struct MMeshMergeData
 	{
 		MemoryInfo vertexMemoryInfo;
-		
-		std::vector<MMeshClusterData> vIndexData;
+		std::vector<MClusterData> vIndexData;
 	};
 
 public:

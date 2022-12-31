@@ -67,9 +67,15 @@ bool MMemoryPool::AllowMemory(const uint32_t& unVariantSize, MemoryInfo& info)
 
 void MMemoryPool::FreeMemory(MemoryInfo& info)
 {
-	auto iter = std::lower_bound(m_vFreeMemory.begin(), m_vFreeMemory.end(), info);
+	if (m_vFreeMemory.empty())
+	{
+		m_vFreeMemory.push_back(info);
+		return;
+	}
 
-	if (m_vFreeMemory.end() - iter <= 1)
+	auto findResult = std::lower_bound(m_vFreeMemory.begin(), m_vFreeMemory.end(), info);
+
+	if (m_vFreeMemory.end() == findResult)
 	{
 		MemoryInfo& back = m_vFreeMemory.back();
 		if (back.begin + back.size == info.begin)
@@ -77,31 +83,39 @@ void MMemoryPool::FreeMemory(MemoryInfo& info)
 		else
 			m_vFreeMemory.push_back(info);
 	}
-	else if (iter == m_vFreeMemory.begin())
+	else if (m_vFreeMemory.begin() == findResult)
 	{
 		MemoryInfo& front = m_vFreeMemory.front();
 		if (info.begin + info.size == front.begin)
 		{
 			front.begin = info.begin;
-			front.size -= info.size;
+			front.size += info.size;
 		}
 		else
 			m_vFreeMemory.insert(m_vFreeMemory.begin(), info);
 	}
 	else
 	{
-		MemoryInfo& prev = *(iter - 1);
-		MemoryInfo& next = *(iter + 1);
-		if (prev.begin + prev.size == info.begin)
+		auto prev = findResult - 1;
+		
+		if (prev->begin + prev->size == info.begin)
 		{
-			prev.size += info.size;
+			prev->size += info.size;
+
+			if (prev->begin + prev->size == findResult->begin)
+			{
+				prev->size += findResult->size;
+				m_vFreeMemory.erase(findResult);
+			}
 		}
-		else if (info.begin + info.size == next.begin)
+		else if (info.begin + info.size == findResult->begin)
 		{
-			next.begin -= info.size;
-			next.size += info.size;
+			findResult->begin = info.begin;
+			findResult->size += info.size;
 		}
 		else
-			m_vFreeMemory.insert(iter, info);
+		{
+			m_vFreeMemory.insert(findResult, info); 
+		}
 	}
 }

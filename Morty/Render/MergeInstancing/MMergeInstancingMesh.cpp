@@ -72,7 +72,7 @@ bool MMergeInstancingMesh::RegisterMesh(MIMesh* pMesh)
 
 
 	MemoryInfo vertexMemoryInfo;
-	std::vector<MMeshClusterData> indexClusterData;
+	std::vector<MClusterData> indexClusterData;
 
 	if (!m_vertexMemoryPool.AllowMemory(unVertexSize, vertexMemoryInfo))
 	{
@@ -85,32 +85,34 @@ bool MMergeInstancingMesh::RegisterMesh(MIMesh* pMesh)
 
 	pDevice->UploadBuffer(&m_vertexBuffer, vertexMemoryInfo.begin, vVertexData, unVertexSize);
 
+	MORTY_ASSERT(vertexMemoryInfo.begin % MeshVertexStructSize == 0);
 
-	size_t unVertexBeginIndex = vertexMemoryInfo.begin / MeshVertexStructSize;
+	const size_t unVertexBeginIndex = vertexMemoryInfo.begin / MeshVertexStructSize;
 	size_t nMeshIndexIdx = 0;
 	bool bMemoryAllowFailed = false;
 	while (nMeshIndexIdx < unIndexNum)
 	{
-		MMeshClusterData clusterData;
+		MClusterData clusterData;
 		if (!m_indexMemoryPool.AllowMemory(ClusterSize * pMesh->GetIndexStructSize(), clusterData.memoryInfo))
 		{
+			MORTY_ASSERT(false);
 			bMemoryAllowFailed = true;
 			break;
 		}
 
-		std::array<uint32_t, ClusterSize> vClusterIndexData;
+		std::array<uint32_t, ClusterSize> vClusterIndexData = {};
 
-		size_t nClusterIndexIdx = 0;
-		while (nClusterIndexIdx < ClusterSize)
+		Vector3 boundsVertex[ClusterSize];
+		for (size_t nClusterIndexIdx = 0; nClusterIndexIdx < ClusterSize; ++nClusterIndexIdx)
 		{
-			uint32_t originIndex = vIndexData[(std::min)(nMeshIndexIdx + nClusterIndexIdx, unIndexNum - 1)];
-			uint32_t globalIndex = unVertexBeginIndex + originIndex;
+			const uint32_t originIndex = vIndexData[(std::min)(nMeshIndexIdx + nClusterIndexIdx, unIndexNum - 1)];
+			const uint32_t globalIndex = unVertexBeginIndex + originIndex;
 			vClusterIndexData[nClusterIndexIdx] = globalIndex;
 
-			clusterData.boundsShpere.AddPoint(vVertex[originIndex].position);
-
-			++nClusterIndexIdx;
+			boundsVertex[nClusterIndexIdx] = vVertex[originIndex].position;
 		}
+
+		clusterData.boundsShpere.SetPoints(reinterpret_cast<const MByte*>(boundsVertex), ClusterSize, 0, sizeof(Vector3));
 
 		indexClusterData.push_back(clusterData);
 		pDevice->UploadBuffer(&m_indexBuffer, clusterData.memoryInfo.begin, reinterpret_cast<const MByte*>(vClusterIndexData.data()), clusterData.memoryInfo.size);
@@ -123,7 +125,7 @@ bool MMergeInstancingMesh::RegisterMesh(MIMesh* pMesh)
 	{
 		m_vertexMemoryPool.FreeMemory(vertexMemoryInfo);
 
-		for (MMeshClusterData& clusterData : indexClusterData)
+		for (MClusterData& clusterData : indexClusterData)
 		{
 			m_indexMemoryPool.FreeMemory(clusterData.memoryInfo);
 		}
@@ -156,7 +158,7 @@ void MMergeInstancingMesh::UnregisterMesh(MIMesh* pMesh)
 	
 	m_vertexMemoryPool.FreeMemory(meshMergeData.vertexMemoryInfo);
 
-	for(MMeshClusterData& clusterData : meshMergeData.vIndexData)
+	for(MClusterData& clusterData : meshMergeData.vIndexData)
 	{
 		m_indexMemoryPool.FreeMemory(clusterData.memoryInfo);
 	}

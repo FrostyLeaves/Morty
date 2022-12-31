@@ -7,11 +7,10 @@ struct PS_OUT
 
 float3 GetPixelColor(VS_OUT input)
 {
-    float3 f3Color = float3(0.0, 0.0, 0.0);
-    return AdditionAllLights(input, f3Color);
+    return AdditionAllLights(input);
 }
 
-PS_OUT PS(VS_OUT input)
+PS_OUT PS_MAIN(VS_OUT input)
 {
     PS_OUT output;
     

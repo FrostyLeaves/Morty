@@ -23,6 +23,7 @@
 #include "MShadowMapShaderParamSet.h"
 #include "MForwardRenderShaderParamSet.h"
 
+class MGPUCullingRenderWork;
 class MViewport;
 class MMaterial;
 class MIRenderCommand;
@@ -59,6 +60,8 @@ public:
 
 	void RenderDebug(MTaskNode* pTaskNode);
 
+
+
 	virtual MTexture* GetOutputTexture() override;
 	virtual std::vector<MTexture*> GetOutputTextures() override;
 
@@ -82,9 +85,6 @@ public:
 	void InitializeMesh();
 	void ReleaseMesh();
 
-	void InitializeCullingComputeDispatcher();
-	void ReleaseCullingComputeDispatcher();
-
 protected:
 
 	void DrawStaticMesh(MRenderInfo& info, MIRenderCommand* pCommand, std::map<std::shared_ptr<MMaterial>, std::vector<MRenderableMeshComponent*>>& tMaterialGroup);
@@ -99,18 +99,11 @@ protected:
 
 	MRenderInfo m_renderInfo;
 
-	MForwardRenderShaderParamSet m_frameParamSet;
 
 	MRenderPass m_forwardRenderPass;
 	MRenderPass m_gbufferRenderPass;
 	MRenderPass m_lightningRenderPass;
 	MRenderPass m_debugRenderPass;
-
-
-	MShaderConstantParam* m_pIndirectTransformParam;
-	MBuffer m_cullingInstanceBuffer;
-	MBuffer m_cullingIndirectDrawBuffer;
-	MComputeDispatcher* m_pCullingComputeDispatcher;
 
 	MTexture* m_pFinalOutputTexture;
 
@@ -122,6 +115,9 @@ protected:
 	std::shared_ptr<MMaterial> m_pLightningMaterial;
 	std::shared_ptr<MMaterial> m_pSkyBoxMaterial;
 
+	std::shared_ptr<MMaterial> m_pForwardMaterial;
+	MForwardRenderShaderPropertyBlock m_forwardFramePropertyBlock;
+
 
 	MResourceKeeper m_BrdfTexture;
 
@@ -129,6 +125,8 @@ protected:
 
 	MShadowMapRenderWork* m_pShadowMapWork;
 	MTransparentRenderWork* m_pTransparentWork;
+	MGPUCullingRenderWork* m_pGPUCullingRenderWork;
+	bool m_bGPUCullingUpdate = true;
 
 	size_t m_nFrameIndex;
 };

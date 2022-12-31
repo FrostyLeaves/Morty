@@ -1,37 +1,40 @@
 /**
- * @File         MShadowMapShaderParamSet
+ * @File         MShadowMapShaderPropertyBlock
  * 
  * @Created      2020-07-2 11:45:49
  *
  * @Author       DoubleYe
 **/
 
-#ifndef _M_SHADOW_MAP_SHADER_PARAM_SET_H_
-#define _M_SHADOW_MAP_SHADER_PARAM_SET_H_
+#ifndef _M_SHADOW_MAP_SHADER_PROPERTY_BLOCK_H_
+#define _M_SHADOW_MAP_SHADER_PROPERTY_BLOCK_H_
 #include "Utility/MGlobal.h"
 #include "MRenderInfo.h"
 #include "Material/MShaderParamSet.h"
 
 
 class MEngine;
-class MORTY_API MShadowMapShaderParamSet : public MShaderPropertyBlock
+class MORTY_API MShadowMapShaderPropertyBlock
 {
 public:
 
-	MShadowMapShaderParamSet();
-	virtual ~MShadowMapShaderParamSet();
+	MShadowMapShaderPropertyBlock();
+	virtual ~MShadowMapShaderPropertyBlock();
 
 public:
 
-	virtual void InitializeShaderParamSet(MEngine* pEngine);
-	virtual void ReleaseShaderParamSet(MEngine* pEngine);
+	void BindMaterial(const std::shared_ptr<MMaterial>& pMaterial);
+	void ReleaseShaderParamSet(MEngine* pEngine);
+
+	const std::shared_ptr<MShaderPropertyBlock>& GetShaderPropertyBlock() const { return m_pShaderPropertyBlock; }
 
 
-	void UpdateShaderSharedParams(MRenderInfo& info);
+	void UpdateShaderSharedParams(MRenderInfo& info) const;
 
-public:
+protected:
 
-	std::shared_ptr<MShaderConstantParam> m_pWorldMatrixParam;
+	std::shared_ptr<MShaderPropertyBlock> m_pShaderPropertyBlock = nullptr;
+	std::shared_ptr<MShaderConstantParam> m_pWorldMatrixParam = nullptr;
 };
 
 

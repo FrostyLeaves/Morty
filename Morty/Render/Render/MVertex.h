@@ -8,6 +8,7 @@
 
 #ifndef _M_MVERTEX_H_
 #define _M_MVERTEX_H_
+#include "deprecated/stb.h"
 #include "Render/MRenderGlobal.h"
 #include "Math/Vector.h"
 #include "Utility/MString.h"
@@ -66,6 +67,12 @@ struct MMergeInstanceCullData
 typedef VkDrawIndexedIndirectCommand MDrawIndexedIndirectData;
 #endif
 
+
+struct MMergeInstanceDrawCallOutput
+{
+	uint32_t drawCount = 0;
+	uint32_t lodCount[MRenderGlobal::MESH_LOD_LEVEL_RANGE] = {};
+};
 
 
 #endif

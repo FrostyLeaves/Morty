@@ -1,12 +1,12 @@
 
-[[vk::binding(3,0)]]float2 U_GaussianBlurOffset;
+[[vk::binding(3,0)]]float2 GaussianBlurOffset;
 
-struct VS_IN_GAUSSIAN
+struct VS_IN
 {
     float2 pos : POSITION;
 };
 
-struct VS_OUT_GAUSSIAN
+struct VS_OUT
 {
     float4 pos : SV_POSITION;
     float2 uv : TEXCOORD;
@@ -15,9 +15,9 @@ struct VS_OUT_GAUSSIAN
     float4 uv45 : TEXCOORD45;
 };
 
-VS_OUT_GAUSSIAN VS(VS_IN_GAUSSIAN input)
+VS_OUT VS_MAIN(VS_IN input)
 {
-    VS_OUT_GAUSSIAN output;
+    VS_OUT output;
 
     output.pos.xy = input.pos.xy;
     output.pos.w = 1.0f;
@@ -25,9 +25,9 @@ VS_OUT_GAUSSIAN VS(VS_IN_GAUSSIAN input)
     output.uv.x = output.pos.x * 0.5f + 0.5f;
     output.uv.y = 0.5f - output.pos.y * 0.5f;
 
-    output.uv01 = saturate(output.uv.xyxy + U_GaussianBlurOffset.xyxy * float4(1, 1, -1, -1));
-    output.uv23 = saturate(output.uv.xyxy + U_GaussianBlurOffset.xyxy * float4(1, 1, -1, -1) * 2.0);
-    output.uv45 = saturate(output.uv.xyxy + U_GaussianBlurOffset.xyxy * float4(1, 1, -1, -1) * 6.0);
+    output.uv01 = saturate(output.uv.xyxy + GaussianBlurOffset.xyxy * float4(1, 1, -1, -1));
+    output.uv23 = saturate(output.uv.xyxy + GaussianBlurOffset.xyxy * float4(1, 1, -1, -1) * 2.0);
+    output.uv45 = saturate(output.uv.xyxy + GaussianBlurOffset.xyxy * float4(1, 1, -1, -1) * 6.0);
 
-return output;
+    return output;
 }

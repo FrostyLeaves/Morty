@@ -12,7 +12,7 @@ struct VS_OUT_POST
     float2 uv : TEXCOORD;
 };
 
-VS_OUT_POST VS(VS_IN_POST input)
+VS_OUT_POST VS_MAIN(VS_IN_POST input)
 {
     VS_OUT_POST output;
 

@@ -13,6 +13,8 @@ const MString strSpotLightMaxNumber = MStringHelper::ToString(MRenderGlobal::SPO
 const MString strSpotLightPixelNumber = MStringHelper::ToString(MRenderGlobal::SPOT_LIGHT_PIXEL_NUMBER);
 const MString strCascadedShadowMapNumber = MStringHelper::ToString(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
 const MString strMeshLODLevelRangeNumber = MStringHelper::ToString(MRenderGlobal::MESH_LOD_LEVEL_RANGE);
+const MString strMergeInstancingMaxNumber = MStringHelper::ToString(MRenderGlobal::MERGE_INSTANCING_MAX_NUM);
+const MString strMergeInstancingClusterMaxNumber = MStringHelper::ToString(MRenderGlobal::MERGE_INSTANCING_CLUSTER_MAX_NUM);
 
 
 enum class METransparentPolicy
@@ -35,6 +37,8 @@ std::vector<std::pair<MString, MString>> MShaderMacro::s_vGlobalMacroParams = {
 	{"GBUFFER_UNIFIED_FORMAT", MRenderGlobal::GBUFFER_UNIFIED_FORMAT ? "true" : "false"},
 	{"CASCADED_SHADOW_MAP_NUM", strCascadedShadowMapNumber},
 	{"MESH_LOD_LEVEL_RANGE", strMeshLODLevelRangeNumber},
+	{"MERGE_INSTANCING_MAX_NUM", strMergeInstancingMaxNumber},
+	{"MERGE_INSTANCING_CLUSTER_MAX_NUM", strMergeInstancingClusterMaxNumber},
 };
 
 void MShaderMacro::SetInnerMacro(const MString& strKey, const MString& strValue)
@@ -100,7 +104,7 @@ void MShaderMacro::RemoveMacro(const MString& strKey)
 bool MShaderMacro::Compare(const MShaderMacro& macro)
 {
 	uint32_t unSize = m_vMacroParams.size();
-	uint32_t unMortySize = m_vMacroParams.size();
+	uint32_t unMortySize = m_vMortyMacroParams.size();
 	if (unSize != macro.m_vMacroParams.size())
 		return false;
 	if (unMortySize != macro.m_vMortyMacroParams.size())

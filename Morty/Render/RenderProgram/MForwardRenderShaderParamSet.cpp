@@ -12,16 +12,15 @@
 #include "Component/MSpotLightComponent.h"
 #include "Component/MPointLightComponent.h"
 #include "Component/MDirectionalLightComponent.h"
+#include "Material/MMaterial.h"
 
 #include "System/MRenderSystem.h"
 
-MForwardRenderShaderParamSet::MForwardRenderShaderParamSet()
-	: MShaderPropertyBlock(nullptr, 1)
-	, m_pWorldMatrixParam(nullptr)
+MForwardRenderShaderPropertyBlock::MForwardRenderShaderPropertyBlock()
+	: m_pWorldMatrixParam(nullptr)
 	, m_pWorldInfoParam(nullptr)
 	, m_pLightInfoParam(nullptr)
 	, m_pShadowInfoParam(nullptr)
-	
 	, m_pShadowTextureParam(nullptr)
 	, m_pDiffuseMapTextureParam(nullptr)
 	, m_pSpecularMapTextureParam(nullptr)
@@ -31,167 +30,34 @@ MForwardRenderShaderParamSet::MForwardRenderShaderParamSet()
 	
 }
 
-MForwardRenderShaderParamSet::~MForwardRenderShaderParamSet()
+MForwardRenderShaderPropertyBlock::~MForwardRenderShaderPropertyBlock()
 {
 }
 
-void MForwardRenderShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
+void MForwardRenderShaderPropertyBlock::BindMaterial(const std::shared_ptr<MMaterial>& pMaterial)
 {
-	m_pWorldMatrixParam = new MShaderConstantParam();
-	m_pWorldMatrixParam->unSet = 1;
-	m_pWorldMatrixParam->unBinding = 0;
-	m_pWorldMatrixParam->eShaderType = (uint32_t)MEShaderType::EPixel | (uint32_t)MEShaderType::EVertex;
+	m_pShaderPropertyBlock = pMaterial->GetFrameParamSet()->Clone();
 
-	MStruct worldMatrixSrt;
-	worldMatrixSrt.SetValue("U_matView", Matrix4());
-	worldMatrixSrt.SetValue("U_matCamProj", Matrix4());
-	worldMatrixSrt.SetValue("U_matCamProjInv", Matrix4());
+	MORTY_ASSERT(m_pWorldMatrixParam = m_pShaderPropertyBlock->FindConstantParam("cbSceneMatrix"));
+	MORTY_ASSERT(m_pWorldInfoParam = m_pShaderPropertyBlock->FindConstantParam("cbSceneInformation"));
+	MORTY_ASSERT(m_pLightInfoParam = m_pShaderPropertyBlock->FindConstantParam("cbLightInformation"));
+	MORTY_ASSERT(m_pShadowInfoParam = m_pShaderPropertyBlock->FindConstantParam("cbShadowInformation"));
 
-	m_pWorldMatrixParam->var = worldMatrixSrt;
-
-	m_pWorldInfoParam = new MShaderConstantParam();
-	m_pWorldInfoParam->unSet = 1;
-	m_pWorldInfoParam->unBinding = 1;
-	m_pWorldInfoParam->eShaderType = (uint32_t)MEShaderType::EPixel | (uint32_t)MEShaderType::EVertex;
-	m_pWorldInfoParam->var = MStruct();
-
-	MStruct& worldInfoSrt = *m_pWorldInfoParam->var.GetStruct();
-	worldInfoSrt.SetValue("U_f3DirectionLight", Vector3());
-	worldInfoSrt.SetValue("U_f3CameraPosition", Vector3());
-	worldInfoSrt.SetValue("U_f3CameraDirection", Vector3());
-	worldInfoSrt.SetValue("U_f2ViewportSize", Vector2());
-	worldInfoSrt.SetValue("U_matZNearFar", Vector2());
-	worldInfoSrt.SetValue("U_fDelta", float());
-	worldInfoSrt.SetValue("U_fGameTime", float());
-
-
-	m_pLightInfoParam = new MShaderConstantParam();
-	m_pLightInfoParam->unSet = 1;
-	m_pLightInfoParam->unBinding = 2;
-	m_pLightInfoParam->eShaderType = (uint32_t)MEShaderType::EPixel | (uint32_t)MEShaderType::EVertex;
-	m_pLightInfoParam->var = MStruct();
-
-	MStruct& lightInfoSrt = *m_pLightInfoParam->var.GetStruct();
-	
-	MStruct dirLightSrt;
-	dirLightSrt.SetValue("f3Intensity", Vector3());
-	
-	lightInfoSrt.SetValue("U_dirLight", dirLightSrt);
-
-	MVariantArray pointLightArray;
-	for (uint32_t i = 0; i < MRenderGlobal::POINT_LIGHT_MAX_NUMBER; ++i)
-	{
-		MStruct pointLight;
-		
-		pointLight.SetValue("f3WorldPosition", Vector3());
-		pointLight.SetValue("f3Intensity", Vector3());
-
-		pointLight.SetValue("fConstant", float(0.0f));
-		pointLight.SetValue("fLinear", float(0.0f));
-		pointLight.SetValue("fQuadratic", float(0.0f));
-		
-		pointLightArray.AppendValue(pointLight);
-	}
-
-	lightInfoSrt.SetValue("U_spotLights", pointLightArray);
-
-	MVariantArray spotLightArray;
-	for (uint32_t i = 0; i < MRenderGlobal::SPOT_LIGHT_MAX_NUMBER; ++i)
-	{
-		MStruct spotLight;
-	
-		spotLight.SetValue("f3WorldPosition", Vector3());
-		spotLight.SetValue("fHalfInnerCutOff", float(0.0f));
-		spotLight.SetValue("f3Direction", Vector3());
-		spotLight.SetValue("fHalfOuterCutOff", float(0.0f));
-		spotLight.SetValue("f3Intensity", Vector3());
-
-		spotLightArray.AppendValue(spotLight);
-	}
-
-	lightInfoSrt.SetValue("U_pointLights", spotLightArray);
-
-	lightInfoSrt.SetValue("U_bDirectionLightEnabled", int(0));
-	lightInfoSrt.SetValue("U_nValidPointLightsNumber", int(0));
-	lightInfoSrt.SetValue("U_nValidSpotLightsNumber", int(0));
-	lightInfoSrt.SetValue("U_bEnvironmentMapEnabled", int(0));
-
-
-	m_pShadowInfoParam = new MShaderConstantParam();
-	m_pShadowInfoParam->unSet = 1;
-	m_pShadowInfoParam->unBinding = 3;
-	m_pShadowInfoParam->eShaderType = (uint32_t)MEShaderType::EPixel | (uint32_t)MEShaderType::EVertex;
-	m_pShadowInfoParam->var = MStruct();
-
-	MStruct& shadowInfoSrt = *m_pShadowInfoParam->var.GetStruct();
-
-	MVariantArray matLightProjArray;
-	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
-	{
-		matLightProjArray.AppendValue<Matrix4>();
-	}
-	shadowInfoSrt.SetValue("U_matLightProj", matLightProjArray);
-
-	MVariantArray matCascadeSplitArray;
-	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
-	{
-		matCascadeSplitArray.AppendValue<float>();
-	}
-	shadowInfoSrt.SetValue("U_vCascadeSplits", matCascadeSplitArray);
-
-
-	MShaderSampleParam* pLinearSampler = new MShaderSampleParam();
-	pLinearSampler->eSamplerType = MESamplerType::ELinear;
-	pLinearSampler->unSet = 1;
-	pLinearSampler->unBinding = 4;
-
-	MShaderSampleParam* pNearestSampler = new MShaderSampleParam();
-	pNearestSampler->eSamplerType = MESamplerType::ENearest;
-	pNearestSampler->unSet = 1;
-	pNearestSampler->unBinding = 5;
-
-	m_pShadowTextureParam = new MShaderTextureParam();
-	m_pShadowTextureParam->unSet = 1;
-	m_pShadowTextureParam->unBinding = 6;
-	m_pShadowTextureParam->eType = METextureType::ETexture2DArray;
-
-	m_pDiffuseMapTextureParam = new MShaderTextureParam();
-	m_pDiffuseMapTextureParam->eType = METextureType::ETextureCube;
-	m_pDiffuseMapTextureParam->unSet = 1;
-	m_pDiffuseMapTextureParam->unBinding = 7;
-
-	m_pSpecularMapTextureParam = new MShaderTextureParam();
-	m_pSpecularMapTextureParam->eType = METextureType::ETextureCube;
-	m_pSpecularMapTextureParam->unSet = 1;
-	m_pSpecularMapTextureParam->unBinding = 8;
-
-	m_pBrdfMapTextureParam = new MShaderTextureParam();
-	m_pBrdfMapTextureParam->eType = METextureType::ETexture2D;
-	m_pBrdfMapTextureParam->unSet = 1;
-	m_pBrdfMapTextureParam->unBinding = 9;
-	
-	m_vParams.push_back(m_pWorldMatrixParam);
-	m_vParams.push_back(m_pWorldInfoParam);
-	m_vParams.push_back(m_pLightInfoParam);
-	m_vParams.push_back(m_pShadowInfoParam);
-
-	m_vSamples.push_back(pLinearSampler);
-	m_vSamples.push_back(pNearestSampler);
-
-	m_vTextures.push_back(m_pShadowTextureParam);
-	m_vTextures.push_back(m_pDiffuseMapTextureParam);
-	m_vTextures.push_back(m_pSpecularMapTextureParam);
-	m_vTextures.push_back(m_pBrdfMapTextureParam);
+	MORTY_ASSERT(m_pShadowTextureParam = m_pShaderPropertyBlock->FindTextureParam("u_texShadowMap"));
+	MORTY_ASSERT(m_pDiffuseMapTextureParam = m_pShaderPropertyBlock->FindTextureParam("u_texIrradianceMap"));
+	MORTY_ASSERT(m_pSpecularMapTextureParam = m_pShaderPropertyBlock->FindTextureParam("u_texPrefilterMap"));
+	MORTY_ASSERT(m_pBrdfMapTextureParam = m_pShaderPropertyBlock->FindTextureParam("u_texBrdfLUT"));
 }
 
-void MForwardRenderShaderParamSet::ReleaseShaderParamSet(MEngine* pEngine)
+void MForwardRenderShaderPropertyBlock::ReleaseShaderParamSet(MEngine* pEngine)
 {
 	MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
 
-	DestroyBuffer(pRenderSystem->GetDevice());
+	m_pShaderPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
+	m_pShaderPropertyBlock = nullptr;
 }
 
-void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
+void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& info)
 {
 	MViewport* pViewport = info.pViewport;
 	if (!pViewport) return;
@@ -281,7 +147,7 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 		m_pWorldInfoParam->SetDirty();
 	}
 
-	if (MShaderConstantParam* pLightParam = m_pLightInfoParam)
+	if (const std::shared_ptr<MShaderConstantParam>& pLightParam = m_pLightInfoParam)
 	{
 		if (info.pSkyBoxEntity)
 		{
@@ -401,7 +267,7 @@ void MForwardRenderShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
 	pViewport->UnlockMatrix();
 }
 
-void MForwardRenderShaderParamSet::SetShadowMapTexture(MTexture* pTexture)
+void MForwardRenderShaderPropertyBlock::SetShadowMapTexture(MTexture* pTexture)
 {
 	if (m_pShadowTextureParam->GetTexture() != pTexture)
 	{
@@ -409,7 +275,7 @@ void MForwardRenderShaderParamSet::SetShadowMapTexture(MTexture* pTexture)
 	}
 }
 
-void MForwardRenderShaderParamSet::SetBrdfMapTexture(MTexture* pTexture)
+void MForwardRenderShaderPropertyBlock::SetBrdfMapTexture(MTexture* pTexture)
 {
 	if (m_pBrdfMapTextureParam->GetTexture() != pTexture)
 	{
@@ -417,35 +283,28 @@ void MForwardRenderShaderParamSet::SetBrdfMapTexture(MTexture* pTexture)
 	}
 }
 
-MForwardRenderTransparentShaderParamSet::MForwardRenderTransparentShaderParamSet()
-	: MForwardRenderShaderParamSet()
+MForwardRenderTransparentShaderPropertyBlock::MForwardRenderTransparentShaderPropertyBlock()
+	: MForwardRenderShaderPropertyBlock()
 	, m_pTransparentFrontTextureParam(nullptr)
 	, m_pTransparentBackTextureParam(nullptr)
 {
 
 }
 
-MForwardRenderTransparentShaderParamSet::~MForwardRenderTransparentShaderParamSet()
+MForwardRenderTransparentShaderPropertyBlock::~MForwardRenderTransparentShaderPropertyBlock()
 {
 
 }
 
-void MForwardRenderTransparentShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
+void MForwardRenderTransparentShaderPropertyBlock::BindMaterial(const std::shared_ptr<MMaterial>& pMaterial)
 {
-	MForwardRenderShaderParamSet::InitializeShaderParamSet(pEngine);
+	MForwardRenderShaderPropertyBlock::BindMaterial(pMaterial);
 
-	m_pTransparentFrontTextureParam = new MShaderSubpasssInputParam();
-	m_pTransparentFrontTextureParam->unSet = 1;
-	m_pTransparentFrontTextureParam->unBinding = 7;
-	m_pTransparentBackTextureParam = new MShaderSubpasssInputParam();
-	m_pTransparentBackTextureParam->unSet = 1;
-	m_pTransparentBackTextureParam->unBinding = 8;
-
-	m_vTextures.push_back(m_pTransparentFrontTextureParam);
-	m_vTextures.push_back(m_pTransparentBackTextureParam);
+	MORTY_ASSERT(m_pTransparentFrontTextureParam = m_pShaderPropertyBlock->FindTextureParam("u_texSubpassInput0"));
+	MORTY_ASSERT(m_pTransparentBackTextureParam = m_pShaderPropertyBlock->FindTextureParam("u_texSubpassInput1"));
 }
 
-void MForwardRenderTransparentShaderParamSet::ReleaseShaderParamSet(MEngine* pEngine)
+void MForwardRenderTransparentShaderPropertyBlock::ReleaseShaderParamSet(MEngine* pEngine)
 {
-	MForwardRenderShaderParamSet::ReleaseShaderParamSet(pEngine);
+	MForwardRenderShaderPropertyBlock::ReleaseShaderParamSet(pEngine);
 }

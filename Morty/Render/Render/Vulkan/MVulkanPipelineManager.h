@@ -25,13 +25,6 @@ struct MShaderTextureParam;
 struct MShaderConstantParam;
 struct MShaderStorageParam;
 
-struct MComputeDispatcherData
-{
-    MPipelineLayout layouts;
-
-    VkPipeline vkPipeline;
-};
-
 class MORTY_API MVulkanPipelineManager
 {
 public:
@@ -50,7 +43,7 @@ public:
             return pShaderProgram == other.pShaderProgram && pRenderPass == other.pRenderPass;
         }
 
-        bool operator == (const std::shared_ptr<const MShaderProgram> _pShaderProgram) const {
+        bool operator == (const std::shared_ptr<MShaderProgram>& _pShaderProgram) const {
             return pShaderProgram == _pShaderProgram;
         }
 
@@ -67,6 +60,13 @@ public:
         }
     };
 
+    struct MORTY_API MPipelineLayout
+    {
+        VkPipelineLayout vkPipelineLayout = VK_NULL_HANDLE;
+        std::vector<VkDescriptorSetLayout> vDescriptorSetLayouts = {};
+    };
+
+
 public:
     MVulkanPipelineManager(MVulkanDevice* pDevice);
     virtual ~MVulkanPipelineManager();
@@ -82,32 +82,37 @@ public:
 	bool RegisterMaterial(std::shared_ptr<MMaterial> pMaterial);
 	bool UnRegisterMaterial(std::shared_ptr<MMaterial> pMaterial);
 
+    bool RegisterComputeDispatcher(MComputeDispatcher* pDispatcher);
+    bool UnRegisterComputeDispatcher(MComputeDispatcher* pDispatcher);
+
     void RegisterRenderPass(MRenderPass* pRenderPass);
     void UnRegisterRenderPass(MRenderPass* pRenderPass);
 
 public:
 
-    void DestroyPipeline(const std::shared_ptr<MPipeline>& pipeline);
+    void DestroyPipeline(const std::shared_ptr<MPipeline>& pPipeline);
+    void DestroyPipelineLayout(const std::shared_ptr<MPipeline>& pPipeline);
     void DestroyGraphicsPipeline(const std::shared_ptr<MGraphicsPipeline>& pGraphicsPipeline);
     void DestroyComputePipeline(const std::shared_ptr<MComputePipeline>& pComputePipeline);
 
-    VkPipeline CreateGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx);
-    VkPipeline CreateComputePipeline(MComputeDispatcher* pComputeDispatcher);
+    VkPipeline CreateGraphicsPipeline(const std::shared_ptr<MPipeline>& pPipeline, std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx);
+    VkPipeline CreateComputePipeline(const std::shared_ptr<MPipeline>& pPipeline, MComputeDispatcher* pComputeDispatcher);
 
     void GenerateShaderProgram(MShaderProgram* pShaderProgram);
     void DestroyShaderProgram(MShaderProgram* pShaderProgram);
 
-    void GenerateShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet);
+    void AllocateShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet, const std::shared_ptr<MPipeline>& pPipeline);
     void DestroyShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet);
-    void AllocateShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet);
 
     void DestroyShaderParamSetImpl(const std::shared_ptr<MShaderPropertyBlock>& pParamSet) const;
 
 public:
 
-    void BindConstantParam(MShaderConstantParam* pParam, VkWriteDescriptorSet& writeDescriptorSet);
-    void BindTextureParam(MShaderTextureParam* pParam, VkWriteDescriptorSet& writeDescriptorSet);
-    void BindStorageParam(MShaderStorageParam* pParam, VkWriteDescriptorSet& writeDescriptorSet);
+    void GeneratePipelineLayout(const std::shared_ptr<MPipeline>& pPipeline, const std::shared_ptr<MShaderProgram>& pShaderProgram);
+
+    void BindConstantParam(const std::shared_ptr<MShaderConstantParam> pParam, VkWriteDescriptorSet& writeDescriptorSet);
+    void BindTextureParam(const std::shared_ptr<MShaderTextureParam> pParam, VkWriteDescriptorSet& writeDescriptorSet);
+    void BindStorageParam(const std::shared_ptr<MShaderStorageParam> pParam, VkWriteDescriptorSet& writeDescriptorSet);
 
 private:
 
@@ -116,12 +121,6 @@ private:
     MRepeatIDPool<uint32_t> m_ComputeDispatcherIDPool;
 
     std::map<MPipelineKey, std::shared_ptr<MPipeline>> m_tPipelineTable;
-
-	std::map<uint32_t, std::shared_ptr<MMaterial>> m_tMaterialMap;
-
-    std::vector<std::shared_ptr<MComputeDispatcherData>> m_tComputeDispatcherData;
-
-    std::map<uint32_t, MComputeDispatcher*> m_tComputeDispatcherMap;
 
     MVulkanDevice* m_pDevice;
 

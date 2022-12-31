@@ -7,3 +7,11 @@ VkPipeline MGraphicsPipeline::GetSubpassPipeline(size_t nSubPassIdx)
 
     return VK_NULL_HANDLE;
 }
+
+MComputePipeline::MComputePipeline()
+	: MPipeline()
+{
+#if RENDER_GRAPHICS == MORTY_VULKAN
+     m_vkPipelineBindPoint = VK_PIPELINE_BIND_POINT_COMPUTE;
+#endif
+}

@@ -1,11 +1,11 @@
 
-struct VS_OUT_DRAW3D
+struct VS_OUT
 {
     float4 pos : SV_POSITION;
     float4 color : COLOR;
 };
 
-float4 PS(VS_OUT_DRAW3D input) : SV_Target
+float4 PS_MAIN(VS_OUT input) : SV_Target
 {
     return input.color;
 }

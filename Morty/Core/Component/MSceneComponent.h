@@ -47,6 +47,8 @@ public:
 	void SetWorldRotation(const Quaternion& quat);
 	Quaternion GetWorldRotation();
 
+	Vector3 GetWorldScale();
+
 	void SetRotation(const Quaternion& quat);
 	Quaternion GetRotation() { return m_transform.GetRotation(); }
 

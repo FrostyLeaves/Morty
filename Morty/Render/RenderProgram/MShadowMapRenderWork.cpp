@@ -1,5 +1,6 @@
 #include "MShadowMapRenderWork.h"
 
+#include "MGPUCullingRenderWork.h"
 #include "Scene/MScene.h"
 #include "Engine/MEngine.h"
 #include "Render/MIDevice.h"
@@ -17,6 +18,7 @@
 #include "Component/MCameraComponent.h"
 #include "Component/MRenderableMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
+#include "Render/MVertex.h"
 
 #include "Utility/MBounds.h"
 
@@ -25,10 +27,6 @@ MORTY_CLASS_IMPLEMENT(MShadowMapRenderWork, MObject)
 
 MShadowMapRenderWork::MShadowMapRenderWork()
 	: MObject()
-	, m_pShadowStaticMaterial(nullptr)
-	, m_pShadowSkeletonMaterial(nullptr)
-	, m_shadowParamSet()
-	, m_renderPass()
 {
 
 }
@@ -41,8 +39,6 @@ MShadowMapRenderWork::~MShadowMapRenderWork()
 void MShadowMapRenderWork::OnCreated()
 {
 	Super::OnCreated();
-
-	m_shadowParamSet.InitializeShaderParamSet(GetEngine());
 
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
@@ -61,6 +57,12 @@ void MShadowMapRenderWork::OnCreated()
 	m_pShadowSkeletonMaterial->LoadPixelShader(pPixelShader);
 	m_pShadowSkeletonMaterial->SetRasterizerType(MERasterizerType::ECullFront);
 
+	m_pShadowGPUDrivenMaterial = pResourceSystem->CreateResource<MMaterial>("Shadow Material GPU Driven");
+	m_pShadowGPUDrivenMaterial->LoadVertexShader(pVertexShader);
+	m_pShadowGPUDrivenMaterial->LoadPixelShader(pPixelShader);
+	m_pShadowGPUDrivenMaterial->SetRasterizerType(MERasterizerType::ECullFront);
+	m_pShadowGPUDrivenMaterial->GetShaderMacro().AddUnionMacro("DRAW_MESH_MERGE_INSTANCING");
+
 	MTexture* pShadowMapTexture = MTexture::CreateShadowMapArray(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
 	pShadowMapTexture->SetSize(Vector2(MRenderGlobal::SHADOW_TEXTURE_SIZE, MRenderGlobal::SHADOW_TEXTURE_SIZE));
 	pShadowMapTexture->GenerateBuffer(pRenderSystem->GetDevice());
@@ -69,6 +71,9 @@ void MShadowMapRenderWork::OnCreated()
 	m_renderPass.SetViewportNum(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
 	m_renderPass.SetDepthTexture(pShadowMapTexture, { true, MColor::White });
 	m_renderPass.GenerateBuffer(pRenderSystem->GetDevice());
+
+
+	m_shadowPropertyBlock.BindMaterial(m_pShadowStaticMaterial);
 }
 
 void MShadowMapRenderWork::OnDelete()
@@ -77,11 +82,11 @@ void MShadowMapRenderWork::OnDelete()
 
 	Super::OnDelete();
 
-	m_shadowParamSet.ReleaseShaderParamSet(GetEngine());
+	m_shadowPropertyBlock.ReleaseShaderParamSet(GetEngine());
 
 	m_pShadowStaticMaterial = nullptr;
 	m_pShadowSkeletonMaterial = nullptr;
-
+	m_pShadowGPUDrivenMaterial = nullptr;
 
 	if (MTexture* pDepthTexture = m_renderPass.GetDepthTexture())
 	{
@@ -93,7 +98,7 @@ void MShadowMapRenderWork::OnDelete()
 	m_renderPass.DestroyBuffer(pRenderSystem->GetDevice());
 }
 
-void MShadowMapRenderWork::RenderShadow(MRenderInfo& info)
+void MShadowMapRenderWork::RenderShadow(MRenderInfo& info, MGPUCullingRenderWork* pGPUCullingRenderWork)
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 	MIDevice* pRenderDevice = pRenderSystem->GetDevice();
@@ -102,26 +107,13 @@ void MShadowMapRenderWork::RenderShadow(MRenderInfo& info)
 	if (!pCommand)
 		return;
 
-	MViewport* pViewport = info.pViewport;
-
-	pCommand->BeginRenderPass(&m_renderPass);
-
-	DrawShadowMesh(info, pCommand);
-
-	pCommand->EndRenderPass();
-}
-
-void MShadowMapRenderWork::DrawShadowMesh(MRenderInfo& info, MIRenderCommand* pCommand)
-{
 	MTexture* pShadowmap = GetShadowMap();
-	
+
 	size_t nCascadedSize = info.cCascadedShadow.size();
 	if (nCascadedSize == 0)
 	{
 		return;
 	}
-
-	size_t nRowSize = size_t(ceil(sqrtf(float(nCascadedSize))));
 
 	Vector2 v2LeftTop = Vector2(0.0f, 0.0f);
 	Vector2 v2Size = pShadowmap->GetSize();
@@ -131,9 +123,21 @@ void MShadowMapRenderWork::DrawShadowMesh(MRenderInfo& info, MIRenderCommand* pC
 	float w = v2Size.x;
 	float h = v2Size.y;
 
+
+	pCommand->BeginRenderPass(&m_renderPass);
+
 	pCommand->SetViewport(MViewportInfo(x, y, w, h));
 	pCommand->SetScissor(MScissorInfo(x, y, w, h));
 
+	DrawShadowMesh(info, pCommand);
+	DrawShadowMesh(pGPUCullingRenderWork, pCommand);
+
+	pCommand->EndRenderPass();
+}
+
+void MShadowMapRenderWork::DrawShadowMesh(MRenderInfo& info, MIRenderCommand* pCommand)
+{
+	
 	auto& materialGroup = info.m_tShadowGroupMesh;
 	for (auto& pr : materialGroup)
 	{
@@ -147,7 +151,7 @@ void MShadowMapRenderWork::DrawShadowMesh(MRenderInfo& info, MIRenderCommand* pC
 			pCommand->SetUseMaterial(m_pShadowStaticMaterial);
 		}
 
-		pCommand->SetShaderParamSet(&m_shadowParamSet);
+		pCommand->SetShaderParamSet(m_shadowPropertyBlock.GetShaderPropertyBlock());
 
 		std::vector<MRenderableMeshComponent*>& vMesh = pr.second;
 
@@ -155,6 +159,23 @@ void MShadowMapRenderWork::DrawShadowMesh(MRenderInfo& info, MIRenderCommand* pC
 		{
 			pCommand->SetShaderParamSet(pMeshComponent->GetShaderMeshParamSet());
 			pCommand->DrawMesh(pMeshComponent->GetMesh());
+		}
+	}
+}
+
+void MShadowMapRenderWork::DrawShadowMesh(MGPUCullingRenderWork* pGPUCullingRenderWork, MIRenderCommand* pCommand)
+{
+	if (pGPUCullingRenderWork)
+	{
+		const MBuffer* pDrawIndirectBuffer = pGPUCullingRenderWork->GetDrawIndirectBuffer();
+		const std::vector<MMaterialCullingGroup>& vCullingInstanceGroup = pGPUCullingRenderWork->GetCullingInstanceGroup();
+		for (const MMaterialCullingGroup& group : vCullingInstanceGroup)
+		{
+			pCommand->SetUseMaterial(m_pShadowGPUDrivenMaterial);
+			pCommand->SetShaderParamSet(m_shadowPropertyBlock.GetShaderPropertyBlock());
+			pCommand->SetShaderParamSet(group.pMeshTransformProperty);
+
+			pCommand->DrawIndexedIndirect(group.pVertexBuffer, group.pIndexBuffer, pDrawIndirectBuffer, group.nClusterBeginIdx * sizeof(MDrawIndexedIndirectData), group.nClusterCount);
 		}
 	}
 }
@@ -253,13 +274,13 @@ Matrix4 MShadowMapRenderWork::GetLightInverseProjection_MinBoundsAABB(MRenderInf
 	float centerY = (fBottom + fTop) * 0.5f;
 
 	/*
-	Matrix4 projMat = MatrixOrthoOffCenterLH(
+	Matrix4 projMat = MRenderSystem::MatrixOrthoOffCenterLH(
 		fLeft,
-		fLeft + MAX(width, height),
-		fBottom + MAX(width, height),
+		fLeft + (std::max)(width, height),
+		fBottom + (std::max)(width, height),
 		fBottom,
 		v3SceneMin.z,
-		MIN(v3CameraMax.z, v3SceneMax.z)
+		(std::min)(v3CameraMax.z, v3SceneMax.z)
 	);
 	*/
 
@@ -369,7 +390,7 @@ Matrix4 MShadowMapRenderWork::GetLightInverseProjection_MaxBoundsSphere(MRenderI
 	return projMat * matLightInv;
 }
 
-void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& info)
+void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& info, const std::array<CascadedData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>& vCascadedData)
 {
 	if (!info.pCameraEntity)
 	{
@@ -384,51 +405,19 @@ void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& inf
 	if (!pCameraComponent)
 		return;
 
+	const float fNearZ = pCameraComponent->GetZNear();
+	const float fFarZ = pCameraComponent->GetZFar();
 
-	float minZ = pCameraComponent->GetZNear();
-	float maxZ = pCameraComponent->GetZFar();
-
-	float range = maxZ - minZ;
-	float ratio = maxZ / minZ;
-
-	const float fCascadeSplitLambda = 0.95f;
-
-
-	//example: { 0.25, 0.50, 0.75, 1.00 }
-	std::array<float, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadeSplits;
-
-	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
-	{
-		float p = (nCascadedIdx + 1) / static_cast<float>(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
-		float log = minZ * std::pow(ratio, p);
-		float uniform = minZ + range * p;
-		float d = fCascadeSplitLambda * (log - uniform) + uniform;
-		vCascadeSplits[nCascadedIdx] = (d - minZ) / range;
-	}
-
-	//��ȡ�����׵���ڷ����Camera�ڵ���С�����X��Yֵ
 	std::vector<Vector3> vCameraFrustumPoints(8);
-	MRenderSystem::GetCameraFrustumPoints(info.pCameraEntity, info.pViewport->GetSize(), minZ, maxZ, vCameraFrustumPoints);
+	MRenderSystem::GetCameraFrustumPoints(info.pCameraEntity, info.pViewport->GetSize(), fNearZ, fFarZ, vCameraFrustumPoints);
 
 	Matrix4 matLight(pLightSceneComponent->GetTransform().GetRotation());
 	Matrix4 matLightInv = matLight.Inverse();
 
-	std::vector<Vector3> vSceneBoundsPoints(8);
-	info.cCaclSceneRenderAABB.GetPoints(vSceneBoundsPoints);
-
-	float fCameraBoundsLightSpaceMaxZ = -FLT_MAX;
-	float fSceneMinZ = FLT_MAX, fSceneMaxZ = -FLT_MAX;
-	for (uint32_t i = 0; i < 8; ++i)
+	for (size_t i = 0; i < 8; ++i)
 	{
 		vCameraFrustumPoints[i] = matLightInv * vCameraFrustumPoints[i];
-
-		float z = (matLightInv * vSceneBoundsPoints[i]).z;
-		if (fSceneMinZ > z)
-			fSceneMinZ = z;
-		if (fSceneMaxZ < z)
-			fSceneMaxZ = z;
 	}
-
 
 	float fLastSplitDist = 0.0f;
 	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
@@ -439,8 +428,10 @@ void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& inf
 		for (size_t nPointIdx = 0; nPointIdx < 4; ++nPointIdx)
 		{
 			Vector3 dist = vCascadedFrustumPoints[nPointIdx + 4] - vCascadedFrustumPoints[nPointIdx];
-			vCascadedFrustumPoints[nPointIdx + 4] = vCascadedFrustumPoints[nPointIdx] + (dist * vCascadeSplits[nCascadedIdx]);
+
+			vCascadedFrustumPoints[nPointIdx + 4] = vCascadedFrustumPoints[nPointIdx] + (dist * vCascadedData[nCascadedIdx].fCascadeSplit);
 			vCascadedFrustumPoints[nPointIdx] = vCascadedFrustumPoints[nPointIdx] + (dist * fLastSplitDist);
+			fLastSplitDist = (std::max)(0.0f, vCascadedData[nCascadedIdx].fCascadeSplit - 0.1f);
 
 			v3FrustumCenter += vCascadedFrustumPoints[nPointIdx];
 			v3FrustumCenter += vCascadedFrustumPoints[nPointIdx + 4];
@@ -457,31 +448,35 @@ void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& inf
 		fBoundsSphereRadius = std::ceil(fBoundsSphereRadius * 16.0f) / 16.0f;
 
 
-		float radius = fBoundsSphereRadius;
-		float centerX = v3FrustumCenter.x;
-		float centerY = v3FrustumCenter.y;
-		float centerZ = v3FrustumCenter.z;
+		std::vector<Vector3> vPscBoundsPoints(8);
+		vCascadedData[nCascadedIdx].cPcsBounds.GetPoints(vPscBoundsPoints);
+		float fPscBoundsInLightSpaceMinZ = FLT_MAX;
+		for (uint32_t i = 0; i < 8; ++i)
+		{
+			const float z = (matLightInv * vPscBoundsPoints[i]).z;
+			if (fPscBoundsInLightSpaceMinZ > z)
+			{
+				fPscBoundsInLightSpaceMinZ = z;
+			}
+		}
 
 		Matrix4 projMat = MRenderSystem::MatrixOrthoOffCenterLH(
-			centerX - radius,
-			centerX + radius,
-			centerY + radius,
-			centerY - radius,
-			(std::min)(centerZ - radius, fSceneMinZ),
-			centerZ + radius
+			v3FrustumCenter.x - fBoundsSphereRadius,
+			v3FrustumCenter.x + fBoundsSphereRadius,
+			v3FrustumCenter.y + fBoundsSphereRadius,
+			v3FrustumCenter.y - fBoundsSphereRadius,
+			(std::min)(v3FrustumCenter.z - fBoundsSphereRadius, fPscBoundsInLightSpaceMinZ),
+			v3FrustumCenter.z + fBoundsSphereRadius
 		);
 
-
-		info.cCascadedShadow[nCascadedIdx].fSplitDepth = (minZ + vCascadeSplits[nCascadedIdx] * range);
+		info.cCascadedShadow[nCascadedIdx].fSplitDepth = vCascadedData[nCascadedIdx].fFarZ;
 		info.cCascadedShadow[nCascadedIdx].m4DirLightInvProj = projMat * matLightInv;
-
-		fLastSplitDist = vCascadeSplits[nCascadedIdx];
 	}
 }
 
 void MShadowMapRenderWork::UpdateShadowParams(MRenderInfo& info)
 {
-	m_shadowParamSet.UpdateShaderSharedParams(info);
+	m_shadowPropertyBlock.UpdateShaderSharedParams(info);
 }
 
 MTexture* MShadowMapRenderWork::GetShadowMap()
@@ -528,30 +523,31 @@ void MShadowMapRenderWork::CollectShadowMesh(MRenderInfo& info)
 
 	Vector3 v3LightDir = pLightSceneComponent->GetForward();
 
-	struct CascadedData
-	{
-		bool bGenerateShadow = false;
-		Vector3 v3ShadowMin = Vector3(+FLT_MAX, +FLT_MAX, +FLT_MAX);
-		Vector3 v3ShadowMax = Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+	std::array<CascadedData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadedData;
 
-		float fZNear = 0.0f;
-		float fZFar = 0.0f;
 
-		MCameraFrustum cCameraFrustum;
+	const float fNearZ = pCameraComponent->GetZNear();
+	const float fFarZ = pCameraComponent->GetZFar();
 
-	} vCascadedData[MRenderGlobal::CASCADED_SHADOW_MAP_NUM];
+	const float fRange = fFarZ - fNearZ;
+	const float fRatio = fFarZ / fNearZ;
 
-	MCameraFrustum cameraFrustum = pViewport->GetCameraFrustum();
-
-	float fZNear = pCameraComponent->GetZNear();
-	float fZFar = pCameraComponent->GetZFar();
-	float fZDepth = fZFar - fZNear;
+	const float fCascadeSplitLambda = 0.95f;
+	float fLastSplit = 0.0f;
 	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
 	{
-		vCascadedData[nCascadedIdx].fZNear = fZNear + (fZDepth / MRenderGlobal::CASCADED_SHADOW_MAP_NUM) * nCascadedIdx;
-		vCascadedData[nCascadedIdx].fZFar = fZNear + (fZDepth / MRenderGlobal::CASCADED_SHADOW_MAP_NUM) * (nCascadedIdx + 1);
+		const float p = (nCascadedIdx + 1) / static_cast<float>(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
+		const float log = fNearZ * std::pow(fRatio, p);
+		const float uniform = fNearZ + fRange * p;
+		const float d = fCascadeSplitLambda * (log - uniform) + uniform;
 
-		Matrix4 m4CameraInvProj = pRenderSystem->GetCameraInverseProjection(pViewport, pCameraComponent, pCameraSceneComponent);
+		const float fSplit = (d - fNearZ) / fRange;
+		vCascadedData[nCascadedIdx].fCascadeSplit = fSplit;
+		vCascadedData[nCascadedIdx].fNearZ = fNearZ + fRange * fLastSplit;
+		vCascadedData[nCascadedIdx].fFarZ = fNearZ + fRange * fSplit;
+		fLastSplit = fSplit;
+
+		Matrix4 m4CameraInvProj = pRenderSystem->GetCameraInverseProjection(pViewport, pCameraComponent, pCameraSceneComponent, vCascadedData[nCascadedIdx].fNearZ, vCascadedData[nCascadedIdx].fFarZ);
 		vCascadedData[nCascadedIdx].cCameraFrustum.UpdateFromCameraInvProj(m4CameraInvProj);
 	}
 
@@ -576,7 +572,7 @@ void MShadowMapRenderWork::CollectShadowMesh(MRenderInfo& info)
 
 			if (const MBoundsAABB* pBounds = component.GetBoundsAABB())
 			{
-				bool bAddRender = false;
+				bool bRenderEnable = false;
 
 				for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
 				{
@@ -586,11 +582,11 @@ void MShadowMapRenderWork::CollectShadowMesh(MRenderInfo& info)
 					{
 						pBounds->UnionMinMax(cd.v3ShadowMin, cd.v3ShadowMax);
 						cd.bGenerateShadow = true;
-						bAddRender = true;
+						bRenderEnable = true;
 					}
 				}
 
-				if (bAddRender)
+				if (bRenderEnable)
 				{
 					auto& vMeshes = info.m_tShadowGroupMesh[pSkeletonInstance];
 					vMeshes.push_back(&component);
@@ -602,18 +598,18 @@ void MShadowMapRenderWork::CollectShadowMesh(MRenderInfo& info)
 	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
 	{
 		CascadedData& cd = vCascadedData[nCascadedIdx];
-		MBoundsAABB cGenerateShadowRenderAABB;
 
 		if (cd.bGenerateShadow)
 		{
-			cGenerateShadowRenderAABB.SetMinMax(cd.v3ShadowMin, cd.v3ShadowMax);
+			cd.cPcsBounds.SetMinMax(cd.v3ShadowMin, cd.v3ShadowMax);
 		}
 		else
 		{
-			cGenerateShadowRenderAABB = info.cCaclSceneRenderAABB;
+			cd.cPcsBounds = info.cCaclSceneRenderAABB;
 		}
 
-		CalculateFrustumForCascadesShadowMap(info);
 	}
+
+	CalculateFrustumForCascadesShadowMap(info, vCascadedData);
 }
 

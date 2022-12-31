@@ -67,6 +67,11 @@ Quaternion MSceneComponent::GetWorldRotation()
 	return GetWorldTransform().GetRotation();
 }
 
+Vector3 MSceneComponent::GetWorldScale()
+{
+	return GetWorldTransform().GetScale();
+}
+
 void MSceneComponent::SetRotation(const Quaternion& quat)
 {
 	m_transform.SetRotation(quat);

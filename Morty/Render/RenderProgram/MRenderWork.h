@@ -12,6 +12,10 @@
 
 #include "Object/MObject.h"
 
+class MBuffer;
+class MMaterial;
+class MShaderPropertyBlock;
+
 class MORTY_API MRenderWork : public MObject
 {
     MORTY_CLASS(MRenderWork)

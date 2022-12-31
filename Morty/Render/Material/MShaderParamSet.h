@@ -18,17 +18,20 @@ class MShaderProgram;
 class MORTY_API MShaderPropertyBlock
 {
 public:
-	MShaderPropertyBlock();
+	explicit MShaderPropertyBlock();
 	explicit MShaderPropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram, const uint32_t& unKey);
+	explicit MShaderPropertyBlock(const MShaderPropertyBlock& other);
 
     virtual ~MShaderPropertyBlock();
 
 	static std::shared_ptr<MShaderPropertyBlock> MakeShared(const std::shared_ptr<MShaderProgram>& pShaderProgram, const uint32_t& unKey);
+	static std::shared_ptr<MShaderPropertyBlock> MakeShared(const std::shared_ptr<MShaderPropertyBlock>& other);
 
 public:
 
 	std::shared_ptr<MShaderConstantParam> FindConstantParam(const MString& strParamName);
 	std::shared_ptr<MShaderStorageParam> FindStorageParam(const MString& strParamName);
+	std::shared_ptr<MShaderTextureParam> FindTextureParam(const MString& strParamName);
 
 	MVariant* FindValue(const MString& strName, MVariant& value);
 	MVariant* FindValue(const MString& strName);
@@ -60,7 +63,8 @@ public:
 	void GenerateBuffer(MIDevice* pDevice);
 	void DestroyBuffer(MIDevice* pDevice);
 
-	std::shared_ptr<MShaderPropertyBlock> Clone();
+	std::shared_ptr<MShaderPropertyBlock> Clone() const;
+	std::shared_ptr<MShaderPropertyBlock> GetShared() const;
 	std::shared_ptr<MShaderProgram> GetShaderProgram() const { return m_pShaderProgram.lock(); }
 
 public:

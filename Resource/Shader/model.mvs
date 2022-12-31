@@ -16,7 +16,7 @@ struct VS_IN
 };
 
 
-VS_OUT VS(VS_IN input)
+VS_OUT VS_MAIN(VS_IN input, uint INSTANCE_ID : SV_InstanceID)
 {
     VS_OUT output;
 
@@ -30,60 +30,60 @@ VS_OUT VS(VS_IN input)
     float fWeight = 1.0f;
     for (int i = 0; i < MBONES_PER_VERTEX; ++i)
     {
-        matBoneTransform += U_vBonesMatrix[input.bonesID[i]] * input.bonesWeight[i];
+        matBoneTransform += u_vBonesMatrix[input.bonesID[i]] * input.bonesWeight[i];
         fWeight = fWeight - input.bonesWeight[i];
     }
     matBoneTransform += float4x4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1) * fWeight;
 
     float4 posFromBones = mul(float4(input.pos, 1.0f), matBoneTransform);
-    output.pos = mul(posFromBones, mul(U_matWorld, U_matCamProj));
+    output.pos = mul(posFromBones, mul(MESH_WORLD_MATRIX, u_matCamProj));
 
-    output.worldPos = mul(  mul(input.pos, (float3x3)(matBoneTransform)),   (float3x3)(U_matWorld));
+    output.worldPos = mul(  mul(input.pos, (float3x3)(matBoneTransform)),   (float3x3)(MESH_WORLD_MATRIX));
 #else
     
-    output.worldPos = mul(float4(input.pos, 1.0f), U_matWorld).xyz;
-    output.pos = mul(float4(input.pos, 1.0f), mul(U_matWorld, U_matCamProj));
+    output.worldPos = mul(float4(input.pos, 1.0f), MESH_WORLD_MATRIX).xyz;
+    output.pos = mul(float4(input.pos, 1.0f), mul(MESH_WORLD_MATRIX, u_matCamProj));
 
 #endif
 
 #if MCALC_NORMAL_IN_VS
 
-    float3 f3ToCameraDir = normalize(U_f3CameraPosition - output.worldPos);
+    float3 f3ToCameraDir = normalize(u_f3CameraPosition - output.worldPos);
 
-    float3 T = mul(input.tangent, U_matNormal);
-    float3 N = mul(input.normal, U_matNormal);
+    float3 T = mul(input.tangent, MESH_NORMAL_MATRIX);
+    float3 N = mul(input.normal, MESH_NORMAL_MATRIX);
     float3 B = cross(T, N);
     float3x3 TBN = float3x3(T,B,N);
     TBN = transpose(TBN);//正交矩阵的转置矩阵==逆矩阵
 
-    output.dirLightDirTangentSpace = normalize(mul(U_f3DirectionLight , TBN));
+    output.dirLightDirTangentSpace = normalize(mul(u_f3DirectionLight , TBN));
     output.toCameraDirTangentSpace = normalize(mul(f3ToCameraDir, TBN));
 
     for(int pointIdx = 0; pointIdx < MPOINT_LIGHT_MAX_NUMBER; ++pointIdx)
     {
-        float3 f3PointLightDir = U_pointLights[pointIdx].f3WorldPosition - output.worldPos;
+        float3 f3PointLightDir = u_vPointLights[pointIdx].f3WorldPosition - output.worldPos;
         output.pointLightDirTangentSpace[pointIdx] = normalize(mul(f3PointLightDir, TBN));
     }
 
-    output.normal = normalize(mul(input.normal, U_matNormal));
+    output.normal = normalize(mul(input.normal, MESH_NORMAL_MATRIX));
 #else
 
-    output.normal = normalize(mul(input.normal, U_matNormal));
-    output.tangent = normalize(mul(input.tangent, U_matNormal));
+    output.normal = normalize(mul(input.normal, MESH_NORMAL_MATRIX));
+    output.tangent = normalize(mul(input.tangent, MESH_NORMAL_MATRIX));
     output.bitangent = normalize(cross(output.tangent, output.normal));
 
 #endif
 
     output.vertexPointLight = float3(0, 0, 0);
 
-    for(int pixelPointIdx = MPOINT_LIGHT_PIXEL_NUMBER; pixelPointIdx < min(MPOINT_LIGHT_MAX_NUMBER, U_nValidPointLightsNumber); ++pixelPointIdx)
+    for(int pixelPointIdx = MPOINT_LIGHT_PIXEL_NUMBER; pixelPointIdx < min(MPOINT_LIGHT_MAX_NUMBER, u_nValidPointLightsNumber); ++pixelPointIdx)
     {
-        float3 f3CameraDir = normalize(U_f3CameraPosition - output.worldPos);
-        float3 f3LightDir = normalize(U_pointLights[pixelPointIdx].f3WorldPosition - output.worldPos);
-        float4 f3AmbiColor = U_mat_texDiffuse.SampleLevel(LinearSampler, input.uv, 0);
+        float3 f3CameraDir = normalize(u_f3CameraPosition - output.worldPos);
+        float3 f3LightDir = normalize(u_vPointLights[pixelPointIdx].f3WorldPosition - output.worldPos);
+        float4 f3AmbiColor = u_texDiffuse.SampleLevel(LinearSampler, input.uv, 0);
         float4 f3DiffColor = f3AmbiColor;
-        float4 f3SpecColor = f3AmbiColor;//U_mat_texSpecular.Sample(LinearSampler, input.uv);
-        output.vertexPointLight += CalcPointLight(U_pointLights[pixelPointIdx], f3CameraDir, f3LightDir, output.normal, output.worldPos, f3DiffColor.xyz, f3SpecColor.xyz);
+        float4 f3SpecColor = f3AmbiColor;//u_texSpecular.Sample(LinearSampler, input.uv);
+        output.vertexPointLight += AdditionPointLight(u_vPointLights[pixelPointIdx], f3CameraDir, f3LightDir, output.normal, output.worldPos, f3DiffColor.xyz, f3SpecColor.xyz);
     }
 
 

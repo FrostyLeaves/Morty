@@ -30,7 +30,7 @@ struct VS_OUT
     float3 worldPos : WORLD_POS;
 };
 
-VS_OUT VS(VS_IN input)
+VS_OUT VS_MAIN(VS_IN input, uint INSTANCE_ID : SV_InstanceID)
 {
     VS_OUT output;
 
@@ -44,28 +44,28 @@ VS_OUT VS(VS_IN input)
     float fWeight = 1.0f;
     for (int i = 0; i < MBONES_PER_VERTEX; ++i)
     {
-        matBoneTransform += U_vBonesMatrix[input.bonesID[i]] * input.bonesWeight[i];
+        matBoneTransform += u_vBonesMatrix[input.bonesID[i]] * input.bonesWeight[i];
         fWeight = fWeight - input.bonesWeight[i];
     }
     matBoneTransform += float4x4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1) * fWeight;
 
     float4 posFromBones = mul(float4(input.pos, 1.0f), matBoneTransform);
-    output.pos = mul(posFromBones, mul(U_matWorld, U_matCamProj));
-    output.worldPos = mul(posFromBones, U_matWorld).xyz;
+    output.pos = mul(posFromBones, mul(MESH_WORLD_MATRIX, u_matCamProj));
+    output.worldPos = mul(posFromBones, MESH_WORLD_MATRIX).xyz;
 
 #else
 
-    float4 f4WorldPosition = mul(float4(input.pos, 1.0f), U_matWorld);
+    float4 f4WorldPosition = mul(float4(input.pos, 1.0f), MESH_WORLD_MATRIX);
     
-    output.pos = mul(f4WorldPosition, U_matCamProj);
+    output.pos = mul(f4WorldPosition, u_matCamProj);
     output.worldPos = f4WorldPosition.xyz;
 
 #endif
 
     output.depth = output.pos.z;
 
-    output.normal = normalize(mul(input.normal, U_matNormal));
-    output.tangent = normalize(mul(input.tangent, U_matNormal));
+    output.normal = normalize(mul(input.normal, MESH_NORMAL_MATRIX));
+    output.tangent = normalize(mul(input.tangent, MESH_NORMAL_MATRIX));
     output.bitangent = normalize(cross(output.tangent, output.normal));
 
     return output;

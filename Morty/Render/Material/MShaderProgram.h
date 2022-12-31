@@ -50,14 +50,14 @@ public:
 public:
 	MORTY_CLASS(MShaderProgram)
 
-protected:
+public:
 	explicit MShaderProgram() = default;
 	explicit MShaderProgram(EUsage usage);
 
 public:
     virtual ~MShaderProgram();
 	static std::shared_ptr<MShaderProgram> MakeShared(EUsage usage);
-
+	void InitializeShaderPropertyBlock();
 public:
 
 	bool LoadVertexShader(MEngine* pEngine, std::shared_ptr<MResource> pResource);
@@ -121,13 +121,6 @@ protected:
 	MShaderMacro m_ShaderMacro;
 	EUsage m_eUsage = EUsage::EUnknow;
 
-
-public:
-
-#if RENDER_GRAPHICS == MORTY_VULKAN
-	VkPipelineLayout m_vkPipelineLayout = VK_NULL_HANDLE;
-	std::vector<VkDescriptorSetLayout> m_vDescriptorSetLayouts = {};
-#endif
 };
 
 #endif

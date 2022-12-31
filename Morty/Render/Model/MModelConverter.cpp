@@ -715,9 +715,9 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		return;
 
 	std::shared_ptr<MResource> pDefaultTexture = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
-	for (size_t i = 0; i < pMaterial->GetTextureParams()->size(); ++i)
+	for (size_t i = 0; i < pMaterial->GetTextureParams().size(); ++i)
 	{
-		pMaterial->SetTexutre(pMaterial->GetTextureParams()->at(i)->strName, pDefaultTexture);
+		pMaterial->SetTexutre(pMaterial->GetTextureParams()[i]->strName, pDefaultTexture);
 	}
 
 	aiMaterial* pAiMaterial = pScene->mMaterials[nMaterialIdx];
@@ -745,11 +745,11 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 			fShininess = 32.0f;
 
 		MStruct* pMaterialStruct = nullptr;
-		for (MShaderConstantParam* pParam : *pMaterial->GetShaderParams())
+		for (const std::shared_ptr<MShaderConstantParam>& pParam : pMaterial->GetShaderParams())
 		{
 			if (MStruct* pStruct = pParam->var.GetStruct())
 			{
-				if (MStruct* pMat = pStruct->GetValue("U_mat")->GetStruct())
+				if (MStruct* pMat = pStruct->GetValue("u_xMaterial")->GetStruct())
 				{
 					pMaterialStruct = pMat;
 
@@ -768,18 +768,18 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 	static const std::map<aiTextureType, MString> TextureMapping = {
 
 		//forward
-		{aiTextureType_DIFFUSE, "U_mat_texDiffuse"},
-		{aiTextureType_NORMALS, "U_mat_texNormal"},
-		{aiTextureType_SPECULAR, "U_mat_texSpecular"},
+		{aiTextureType_DIFFUSE, "u_texDiffuse"},
+		{aiTextureType_NORMALS, "u_texNormal"},
+		{aiTextureType_SPECULAR, "u_texSpecular"},
 
 
 		//pbr
-		{aiTextureType_BASE_COLOR, "U_mat_texAlbedo"},
-		{aiTextureType_NORMAL_CAMERA, "U_mat_texNormal"},
-		{aiTextureType_EMISSION_COLOR, "U_mat_texEmission"},
-		{aiTextureType_METALNESS, "U_mat_texMetallic"},
-		{aiTextureType_DIFFUSE_ROUGHNESS, "U_mat_texRoughness"},
-		{aiTextureType_AMBIENT_OCCLUSION, "U_mat_texAmbientOcc"},
+		{aiTextureType_BASE_COLOR, "u_mat_texAlbedo"},
+		{aiTextureType_NORMAL_CAMERA, "u_texNormal"},
+		{aiTextureType_EMISSION_COLOR, "u_mat_texEmission"},
+		{aiTextureType_METALNESS, "u_mat_texMetallic"},
+		{aiTextureType_DIFFUSE_ROUGHNESS, "u_mat_texRoughness"},
+		{aiTextureType_AMBIENT_OCCLUSION, "u_mat_texAmbientOcc"},
 	};
 
 

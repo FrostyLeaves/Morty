@@ -41,6 +41,7 @@ MShaderConstantParam::MShaderConstantParam(const MShaderConstantParam& param, co
 	m_VkDescriptorType = param.m_VkDescriptorType;
 
 	m_VkBuffer = VK_NULL_HANDLE;
+	m_VkBufferInfo = { VK_NULL_HANDLE, 0, 0 };
 	m_VkBufferMemory = VK_NULL_HANDLE;
 	m_unMemoryOffset = 0;
 	m_pMemoryMapping = 0;
@@ -84,6 +85,7 @@ MShaderStorageParam::MShaderStorageParam()
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	m_VkDescriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	m_VkBufferInfo = { VK_NULL_HANDLE, 0, 0 };
 #endif
 }
 

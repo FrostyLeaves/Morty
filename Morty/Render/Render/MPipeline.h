@@ -17,8 +17,8 @@ class MShaderPropertyBlock;
 
 struct MORTY_API MPipelineLayout
 {
-    VkPipelineLayout pipelineLayout;
-    std::vector<VkDescriptorSetLayout> vSetLayouts;
+    VkPipelineLayout vkPipelineLayout;
+    std::vector<VkDescriptorSetLayout> vDescriptorSetLayouts;
 };
 
 class MORTY_API MPipeline
@@ -28,15 +28,11 @@ public:
     virtual ~MPipeline() = default;
 
 public:
-    std::shared_ptr<MPipelineLayout> m_pPipelineLayout = nullptr;
+    std::set<std::shared_ptr<MShaderPropertyBlock>> m_tShaderPropertyBlocks = {};
 
-    std::vector<std::shared_ptr<MShaderPropertyBlock>> vShaderParamSets = {};
-
-#if RENDER_GRAPHICS == MORTY_VULKAN
-    VkPipelineLayout m_vkPipelineLayout = VK_NULL_HANDLE;
-#endif 
+    MPipelineLayout m_pipelineLayout;
+    VkPipelineBindPoint m_vkPipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 };
-
 
 class MORTY_API MGraphicsPipeline : public MPipeline
 {
@@ -56,7 +52,7 @@ public:
 class MORTY_API MComputePipeline : public MPipeline
 {
 public:
-
+    MComputePipeline();
 
 public:
 

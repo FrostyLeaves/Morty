@@ -1,6 +1,6 @@
 #include "light_forward.hlsl"
 
-struct VS_OUT_SKYBOX
+struct VS_OUTPUT
 {
     float4 pos : SV_POSITION;
     float3 uvw : UVW;
@@ -8,7 +8,7 @@ struct VS_OUT_SKYBOX
 
 [[vk::binding(7,0)]]TextureCube SkyTexCube;
 
-float4 PS(VS_OUT_SKYBOX input) : SV_Target
+float4 PS_MAIN(VS_OUTPUT input) : SV_Target
 {
     float4 color = SkyTexCube.Sample(LinearSampler, input.uvw);
     

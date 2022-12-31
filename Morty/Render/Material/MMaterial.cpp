@@ -81,6 +81,24 @@ std::shared_ptr<MShaderConstantParam> MMaterial::FindShaderParam(const MString& 
 	return nullptr;
 }
 
+std::shared_ptr<MShaderSampleParam> MMaterial::FindSample(const MString& strName)
+{
+	for (const std::shared_ptr<MShaderSampleParam>& pParam : GetMaterialParamSet()->m_vSamples)
+	{
+		if (pParam->strName == strName)
+			return pParam;
+	}
+}
+
+std::shared_ptr<MShaderTextureParam> MMaterial::FindTexture(const MString& strName)
+{
+	for (const std::shared_ptr<MShaderTextureParam>& pParam : GetMaterialParamSet()->m_vTextures)
+	{
+		if (pParam->strName == strName)
+			return pParam;
+	}
+}
+
 void MMaterial::CopyFrom(std::shared_ptr<const MResource> pResource)
 {
 	Unload();
@@ -373,9 +391,9 @@ void MMaterial::Unload()
 	m_pShaderProgram->ClearShader(GetEngine());
 }
 
-const MString MaterialKey::Albedo = "U_mat_texAlbedo";
-const MString MaterialKey::Normal = "U_mat_texNormal";
-const MString MaterialKey::Metallic = "U_mat_texMetallic";
-const MString MaterialKey::Roughness = "U_mat_texRoughness";
-const MString MaterialKey::AmbientOcc = "U_mat_texAmbientOcc";
-const MString MaterialKey::Height = "U_mat_texHeight";
+const MString MaterialKey::Albedo = "u_mat_texAlbedo";
+const MString MaterialKey::Normal = "u_texNormal";
+const MString MaterialKey::Metallic = "u_mat_texMetallic";
+const MString MaterialKey::Roughness = "u_mat_texRoughness";
+const MString MaterialKey::AmbientOcc = "u_mat_texAmbientOcc";
+const MString MaterialKey::Height = "u_mat_texHeight";

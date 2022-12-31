@@ -19,6 +19,10 @@
     #define MORTY_API
 #endif
 
+#if _DEBUG
+#define MORTY_DEBUG true
+#endif
+
 
 #ifndef M_PI 
 #define M_PI (3.14159265358979323846)

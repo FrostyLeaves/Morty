@@ -66,6 +66,7 @@ private:
 
 	std::shared_ptr<MMaterial> m_pDrawFillMaterial;
 	std::shared_ptr<MMaterial> m_pDrawPeelMaterial;
+	std::shared_ptr<MMaterial> m_pForwardMaterial;
 
 	MTexture* m_pOutputTexture;
 	MTexture* m_pDepthTexture;
@@ -82,7 +83,7 @@ private:
 
 	MRenderPass m_peelRenderPass;
 	MRenderPass m_fillRenderPass;
-	std::array<std::shared_ptr<MForwardRenderTransparentShaderParamSet>, 2> m_aFramePropertyBlock;
+	std::array<MForwardRenderTransparentShaderPropertyBlock, 2> m_aFramePropertyBlock;
 };
 
 #endif

@@ -85,6 +85,8 @@ public:
 	void SetTexutre(const MString& strName, std::shared_ptr<MResource> pTexResource);
 
 	std::shared_ptr<MShaderConstantParam> FindShaderParam(const MString& strName);
+	std::shared_ptr<MShaderSampleParam> FindSample(const MString& strName);
+	std::shared_ptr<MShaderTextureParam> FindTexture(const MString& strName);
 
 	void SetRasterizerType(const MERasterizerType& eType);
 	MERasterizerType GetRasterizerType() const { return m_eRasterizerType; }
@@ -106,7 +108,7 @@ public:
 	std::shared_ptr<MResource> GetPixelShaderResource() { return m_pShaderProgram->GetPixelShaderResource(); }
 
 	MShaderMacro& GetShaderMacro() { return m_pShaderProgram->GetShaderMacro(); }
-	std::shared_ptr<MShaderProgram> GetShaderProgram() const { return m_pShaderProgram; }
+	const std::shared_ptr<MShaderProgram>& GetShaderProgram() const { return m_pShaderProgram; }
 	
 	void SetMaterialID(const uint32_t& unID) { m_unMaterialID = unID; }
 	uint32_t GetMaterialID() { return m_unMaterialID; }

@@ -1,6 +1,6 @@
 
 
-[[vk::binding(1,0)]]Texture2D U_Post_Texture;
+[[vk::binding(1,0)]]Texture2D u_texFilterTexture;
 [[vk::binding(2,0)]]sampler LinearSampler;
 
 struct VS_OUT_POST
@@ -9,7 +9,7 @@ struct VS_OUT_POST
     float2 uv : TEXCOORD;
 };
 
-float4 PS(VS_OUT_POST input) : SV_Target
+float4 PS_MAIN(VS_OUT_POST input) : SV_Target
 {
-    return U_Post_Texture.Sample(LinearSampler, input.uv);
+    return u_texFilterTexture.Sample(LinearSampler, input.uv);
 }

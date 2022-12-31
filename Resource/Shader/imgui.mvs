@@ -13,17 +13,17 @@ struct VS_OUTPUT
     float4 color : COLOR;
 };
 
-[[vk::binding(0,0)]] cbuffer U_IMGUI : register(b1)
+[[vk::binding(0,0)]] cbuffer u_IMGUI : register(b1)
 {
-    float2 uScale;
-    float2 uTranslate;
+    float2 u_f2Scale;
+    float2 u_f2Translate;
 };
 
-VS_OUTPUT VS( VS_INPUT input)
+VS_OUTPUT VS_MAIN( VS_INPUT input)
 {
     VS_OUTPUT output;
 
-    output.pos = float4(input.pos * uScale + uTranslate, 0.0f, 1.0f);
+    output.pos = float4(input.pos * u_f2Scale + u_f2Translate, 0.0f, 1.0f);
     output.uv = input.uv;
     output.color = input.color;
     return output;

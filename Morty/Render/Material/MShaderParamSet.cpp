@@ -21,6 +21,7 @@ MShaderPropertyBlock::MShaderPropertyBlock(const std::shared_ptr<MShaderProgram>
 	: m_vParams()
 	, m_vTextures()
 	, m_vSamples()
+	, m_vStorages()
 	, m_unKey(unKey)
 	, m_pShaderProgram(pShaderProgram)
 {
@@ -28,6 +29,28 @@ MShaderPropertyBlock::MShaderPropertyBlock(const std::shared_ptr<MShaderProgram>
 	m_VkDescriptorSet = VK_NULL_HANDLE;
 	m_unLayoutDataIdx = MGlobal::M_INVALID_INDEX;
 #endif
+}
+
+MShaderPropertyBlock::MShaderPropertyBlock(const MShaderPropertyBlock& other)
+	: m_unKey(other.m_unKey)
+	, m_pShaderProgram(other.m_pShaderProgram)
+{
+	m_vParams.resize(m_vParams.size());
+	m_vTextures.resize(m_vTextures.size());
+	m_vSamples.resize(m_vSamples.size());
+	m_vStorages.resize(m_vStorages.size());
+
+	for (uint32_t i = 0; i < m_vParams.size(); ++i)
+		m_vParams[i] = std::make_shared<MShaderConstantParam>(*m_vParams[i], 0);
+
+	for (uint32_t i = 0; i < m_vTextures.size(); ++i)
+		m_vTextures[i] = std::make_shared<MShaderTextureParam>(*m_vTextures[i]);
+
+	for (uint32_t i = 0; i < m_vSamples.size(); ++i)
+		m_vSamples[i] = std::make_shared<MShaderSampleParam>(*m_vSamples[i]);
+
+	for (uint32_t i = 0; i < m_vStorages.size(); ++i)
+		m_vStorages[i] = std::make_shared<MShaderStorageParam>(*m_vStorages[i]);
 }
 
 MShaderPropertyBlock::~MShaderPropertyBlock()
@@ -72,6 +95,17 @@ std::shared_ptr<MShaderConstantParam> MShaderPropertyBlock::FindConstantParam(co
 std::shared_ptr<MShaderStorageParam> MShaderPropertyBlock::FindStorageParam(const MString& strParamName)
 {
 	for (std::shared_ptr<MShaderStorageParam>& pParam : m_vStorages)
+	{
+		if (pParam->strName == strParamName)
+			return pParam;
+	}
+
+	return nullptr;
+}
+
+std::shared_ptr<MShaderTextureParam> MShaderPropertyBlock::FindTextureParam(const MString& strParamName)
+{
+	for (std::shared_ptr<MShaderTextureParam>& pParam : m_vTextures)
 	{
 		if (pParam->strName == strParamName)
 			return pParam;
@@ -187,12 +221,12 @@ bool MShaderPropertyBlock::HasValue(const uint32_t& unBinding, const uint32_t& u
 
 void MShaderPropertyBlock::GenerateBuffer(MIDevice* pDevice)
 {
-	pDevice->GenerateShaderParamSet(this);
+	pDevice->GenerateShaderParamSet(GetShared());
 }
 
 void MShaderPropertyBlock::DestroyBuffer(MIDevice* pDevice)
 {
-	pDevice->DestroyShaderParamSet(this);
+	pDevice->DestroyShaderParamSet(GetShared());
 
 	for (std::shared_ptr<MShaderConstantParam>& pParam : m_vParams)
 	{
@@ -200,13 +234,14 @@ void MShaderPropertyBlock::DestroyBuffer(MIDevice* pDevice)
 	}
 }
 
-std::shared_ptr<MShaderPropertyBlock> MShaderPropertyBlock::Clone()
+std::shared_ptr<MShaderPropertyBlock> MShaderPropertyBlock::Clone() const
 {
 	std::shared_ptr<MShaderPropertyBlock> pParamSet = MShaderPropertyBlock::MakeShared(m_pShaderProgram.lock(), m_unKey);
 
 	pParamSet->m_vParams.resize(m_vParams.size());
 	pParamSet->m_vTextures.resize(m_vTextures.size());
 	pParamSet->m_vSamples.resize(m_vSamples.size());
+	pParamSet->m_vStorages.resize(m_vStorages.size());
 
 	for (uint32_t i = 0; i < m_vParams.size(); ++i)
 		pParamSet->m_vParams[i] = std::make_shared<MShaderConstantParam>(*m_vParams[i], 0);
@@ -218,14 +253,27 @@ std::shared_ptr<MShaderPropertyBlock> MShaderPropertyBlock::Clone()
 		pParamSet->m_vSamples[i] = std::make_shared<MShaderSampleParam>(*m_vSamples[i]);
 	
 	for (uint32_t i = 0; i < m_vStorages.size(); ++i)
-		pParamSet->m_vStorages[i] = std::make_shared<MShaderStorageParam>(*m_vSamples[i]);
+		pParamSet->m_vStorages[i] = std::make_shared<MShaderStorageParam>(*m_vStorages[i]);
 
 	return pParamSet;
+}
+
+std::shared_ptr<MShaderPropertyBlock> MShaderPropertyBlock::GetShared() const
+{
+	return m_pSelfPointer.lock();
 }
 
 std::shared_ptr<MShaderPropertyBlock> MShaderPropertyBlock::MakeShared(const std::shared_ptr<MShaderProgram>& pShaderProgram, const uint32_t& unKey)
 {
 	std::shared_ptr<MShaderPropertyBlock> pResult = std::make_shared<MShaderPropertyBlock>(pShaderProgram, unKey);
+	pResult->m_pSelfPointer = pResult;
+
+	return pResult;
+}
+
+std::shared_ptr<MShaderPropertyBlock> MShaderPropertyBlock::MakeShared(const std::shared_ptr<MShaderPropertyBlock>& other)
+{
+	std::shared_ptr<MShaderPropertyBlock> pResult = std::make_shared<MShaderPropertyBlock>(*other);
 	pResult->m_pSelfPointer = pResult;
 
 	return pResult;

@@ -3,57 +3,37 @@
 #include "Scene/MScene.h"
 #include "Scene/MEntity.h"
 #include "Engine/MEngine.h"
-#include "Basic/MViewport.h"
-
-#include "Component/MSceneComponent.h"
-#include "Component/MCameraComponent.h"
-#include "Component/MSpotLightComponent.h"
-#include "Component/MPointLightComponent.h"
-#include "Component/MDirectionalLightComponent.h"
-
+#include "Material/MMaterial.h"
 #include "System/MRenderSystem.h"
 
-MShadowMapShaderParamSet::MShadowMapShaderParamSet()
-	: MShaderPropertyBlock(nullptr, 1)
+MShadowMapShaderPropertyBlock::MShadowMapShaderPropertyBlock()
+	: m_pShaderPropertyBlock(nullptr)
 	, m_pWorldMatrixParam(nullptr)
 {
 	
 }
 
-MShadowMapShaderParamSet::~MShadowMapShaderParamSet()
+MShadowMapShaderPropertyBlock::~MShadowMapShaderPropertyBlock()
 {
 }
 
-void MShadowMapShaderParamSet::InitializeShaderParamSet(MEngine* pEngine)
+void MShadowMapShaderPropertyBlock::BindMaterial(const std::shared_ptr<MMaterial>& pMaterial)
 {
-	m_pWorldMatrixParam = std::make_shared<MShaderConstantParam>();
-	m_pWorldMatrixParam->unSet = 1;
-	m_pWorldMatrixParam->unBinding = 0;
-	m_pWorldMatrixParam->eShaderType = MEShaderParamType::EVertex;
+	MORTY_ASSERT(m_pShaderPropertyBlock = pMaterial->GetFrameParamSet()->Clone());
 
-	MStruct worldMatrixSrt;
-
-	MVariantArray matCamProjArray;
-	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
-	{
-		matCamProjArray.AppendValue<Matrix4>();
-	}
-	worldMatrixSrt.SetValue("U_matCamProj", matCamProjArray);
-	
-
-	m_pWorldMatrixParam->var = worldMatrixSrt;
-
-	m_vParams.push_back(m_pWorldMatrixParam);
+	MORTY_ASSERT(m_pWorldMatrixParam = m_pShaderPropertyBlock->FindConstantParam("cbSceneMatrix"));
 }
 
-void MShadowMapShaderParamSet::ReleaseShaderParamSet(MEngine* pEngine)
+void MShadowMapShaderPropertyBlock::ReleaseShaderParamSet(MEngine* pEngine)
 {
 	MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
 
-	DestroyBuffer(pRenderSystem->GetDevice());
+	m_pShaderPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
+	m_pShaderPropertyBlock = nullptr;
+	m_pWorldMatrixParam = nullptr;
 }
 
-void MShadowMapShaderParamSet::UpdateShaderSharedParams(MRenderInfo& info)
+void MShadowMapShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& info) const
 {
 	if (m_pWorldMatrixParam)
 	{

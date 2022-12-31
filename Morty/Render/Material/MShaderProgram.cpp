@@ -32,18 +32,24 @@ MShaderProgram::MShaderProgram(EUsage usage)
 	, m_ShaderMacro()
 	, m_eUsage(usage)
 {
-    m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MATERIAL] = MShaderPropertyBlock::MakeShared(GetShared(), MRenderGlobal::SHADER_PARAM_SET_MATERIAL);
-    m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_FRAME] = MShaderPropertyBlock::MakeShared(GetShared(), MRenderGlobal::SHADER_PARAM_SET_FRAME);
-    m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MESH] = MShaderPropertyBlock::MakeShared(GetShared(), MRenderGlobal::SHADER_PARAM_SET_MESH);
-    m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_SKELETON] = MShaderPropertyBlock::MakeShared(GetShared(), MRenderGlobal::SHADER_PARAM_SET_SKELETON);
+}
+
+void MShaderProgram::InitializeShaderPropertyBlock()
+{
+	m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MATERIAL] = MShaderPropertyBlock::MakeShared(GetShared(), MRenderGlobal::SHADER_PARAM_SET_MATERIAL);
+	m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_FRAME] = MShaderPropertyBlock::MakeShared(GetShared(), MRenderGlobal::SHADER_PARAM_SET_FRAME);
+	m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MESH] = MShaderPropertyBlock::MakeShared(GetShared(), MRenderGlobal::SHADER_PARAM_SET_MESH);
+	m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_SKELETON] = MShaderPropertyBlock::MakeShared(GetShared(), MRenderGlobal::SHADER_PARAM_SET_SKELETON);
 }
 
 std::shared_ptr<MShaderProgram> MShaderProgram::MakeShared(EUsage usage)
 {
 	std::shared_ptr<MShaderProgram> pResult = std::make_shared<MShaderProgram>(usage);
 	pResult->m_pSelfPointer = pResult;
+	pResult->InitializeShaderPropertyBlock();
 	return pResult;
 }
+
 
 MShaderProgram::~MShaderProgram()
 {
@@ -330,12 +336,12 @@ void MShaderProgram::ReleaseShaderParamSet(const std::shared_ptr<MShaderProperty
 
 void MShaderProgram::GenerateProgram(MIDevice* pDevice)
 {
-
+	pDevice->GenerateShaderProgram(this);
 }
 
 void MShaderProgram::DestroyProgram(MIDevice* pDevice)
 {
-
+	pDevice->DestroyShaderProgram(this);
 }
 
 std::shared_ptr<MShaderProgram> MShaderProgram::GetShared() const

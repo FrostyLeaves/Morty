@@ -48,9 +48,10 @@ public:
 
 	static const bool GBUFFER_UNIFIED_FORMAT;
 
-	static const int CASCADED_SHADOW_MAP_NUM = 4;
+	static constexpr int CASCADED_SHADOW_MAP_NUM = 4;
 
-	static const size_t MERGE_INSTANCING_MAX_NUM = 128;
+	static const size_t MERGE_INSTANCING_MAX_NUM;
+	static const size_t MERGE_INSTANCING_CLUSTER_MAX_NUM;
 };
 
 #endif

@@ -23,7 +23,7 @@ MIMesh::MIMesh(const bool& bDynamicMesh/* = false*/)
 	m_vertexBuffer.m_eUsageType |= MBuffer::MUsageType::EVertex;
 	m_indexBuffer.m_eUsageType |= MBuffer::MUsageType::EIndex;
 
-#if _DEBUG
+#if MORTY_DEBUG
 	m_vertexBuffer.m_strDebugBufferName = "VertexBuffer";
 	m_indexBuffer.m_strDebugBufferName = "IndexBuffer";
 #endif
@@ -45,7 +45,7 @@ uint32_t MIMesh::GetIndicesNum() const
 
 void MIMesh::CreateIndices(const uint32_t& unSize, const uint32_t& unIndexSize)
 {
-	if (m_indexBuffer.GetSize() < unSize * unIndexSize)
+	if (m_indexBuffer.GetSize() < unSize * unIndexSize * sizeof(uint32_t))
 	{
 		m_indexBuffer.ReallocMemory(unSize * unIndexSize * sizeof(uint32_t));
 		m_vIndexData.resize(unSize * unIndexSize * sizeof(uint32_t));
@@ -54,7 +54,7 @@ void MIMesh::CreateIndices(const uint32_t& unSize, const uint32_t& unIndexSize)
 
 void MIMesh::ResizeIndices(const uint32_t& unSize, const uint32_t& unIndexSize)
 {
-	if (m_indexBuffer.GetSize() < unSize * unIndexSize)
+	if (m_indexBuffer.GetSize() < unSize * unIndexSize * sizeof(uint32_t))
 	{
 		m_indexBuffer.ReallocMemory(unSize * unIndexSize * sizeof(uint32_t));
 		m_vIndexData.resize(unSize * unIndexSize * sizeof(uint32_t));

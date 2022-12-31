@@ -22,6 +22,17 @@ struct MCascadedShadowInfo
 	Matrix4 m4DirLightInvProj;
 };
 
+struct MMaterialCullingGroup
+{
+	std::shared_ptr<MMaterial> pMaterial = nullptr;
+	std::shared_ptr<MShaderPropertyBlock> pMeshTransformProperty = nullptr;
+	size_t nClusterBeginIdx = 0;
+	size_t nClusterCount = 0;
+	size_t nTransformCount = 0;
+	const MBuffer* pVertexBuffer = nullptr;
+	const MBuffer* pIndexBuffer = nullptr;
+};
+
 struct MRenderInfo
 {
 	MRenderInfo();

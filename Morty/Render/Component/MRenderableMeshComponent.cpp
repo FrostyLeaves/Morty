@@ -24,7 +24,7 @@ MRenderableMeshComponent::MRenderableMeshComponent()
 	: MComponent()
 	, m_Mesh()
 	, m_Material()
-	, m_pShaderParamSet(nullptr)
+	, m_pShaderPropertyBlock(nullptr)
 	, m_pTransformParam(nullptr)
 	, m_pWorldMatrixParam(nullptr)
 	, m_pNormalMatrixParam(nullptr)
@@ -75,14 +75,14 @@ std::shared_ptr<MMaterial> MRenderableMeshComponent::GetMaterial()
 	return std::static_pointer_cast<MMaterial>(m_Material.GetResource());
 }
 
-std::shared_ptr<MShaderPropertyBlock> MRenderableMeshComponent::GetShaderMeshParamSet()
+const std::shared_ptr<MShaderPropertyBlock>& MRenderableMeshComponent::GetShaderMeshParamSet()
 {
 	if (m_bTransformParamDirty)
 	{
 		UpdateShaderMeshParam();
 	}
 
-	return m_pShaderParamSet;
+	return m_pShaderPropertyBlock;
 }
 
 void MRenderableMeshComponent::UpdateShaderMeshParam()
@@ -341,28 +341,28 @@ void MRenderableMeshComponent::Deserialize(const void* pBufferPointer)
 
 void MRenderableMeshComponent::BindShaderParam(std::shared_ptr<MMaterial> pMaterial)
 {
-	if (m_pShaderParamSet)
+	if (m_pShaderPropertyBlock)
 	{
 		MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-		m_pShaderParamSet->DestroyBuffer(pRenderSystem->GetDevice());
+		m_pShaderPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
+		m_pShaderPropertyBlock = nullptr;
 		m_pTransformParam = nullptr;
 		m_pWorldMatrixParam = nullptr;
 		m_pNormalMatrixParam = nullptr;
-		m_pShaderParamSet = nullptr;
 	}
 
 	if (pMaterial)
 	{
-		if (std::shared_ptr<MShaderPropertyBlock> pParamSet = pMaterial->GetMeshParamSet())
+		if (std::shared_ptr<MShaderPropertyBlock> pTemplatePropertyBlock = pMaterial->GetMeshParamSet())
 		{
-			m_pShaderParamSet = pParamSet->Clone();
+			m_pShaderPropertyBlock = pTemplatePropertyBlock->Clone();
 
-			if (m_pTransformParam = m_pShaderParamSet->FindConstantParam("_M_E_cbMeshMatrix"))
+			if (m_pTransformParam = m_pShaderPropertyBlock->FindConstantParam("_M_E_cbMeshMatrix"))
 			{
 				if (MStruct* pSrt = m_pTransformParam->var.GetStruct())
 				{
-					m_pWorldMatrixParam = pSrt->GetValue<Matrix4>("U_matWorld");
-					m_pNormalMatrixParam = pSrt->GetValue<Matrix3>("U_matNormal");
+					m_pWorldMatrixParam = pSrt->GetValue<Matrix4>("u_matWorld");
+					m_pNormalMatrixParam = pSrt->GetValue<Matrix3>("u_matNormal");
 				}
 			}
 		}

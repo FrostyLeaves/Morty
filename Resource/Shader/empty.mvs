@@ -22,7 +22,7 @@ struct VS_OUT_EMPTY
     float4 pos : SV_POSITION;
 };
 
-VS_OUT_EMPTY VS(VS_IN input)
+VS_OUT_EMPTY VS_MAIN(VS_IN input)
 {
     VS_OUT_EMPTY output;
 
@@ -32,16 +32,16 @@ VS_OUT_EMPTY VS(VS_IN input)
     float fWeight = 1.0f;
     for (int i = 0; i < MBONES_PER_VERTEX; ++i)
     {
-        matBoneTransform += U_vBonesMatrix[input.bonesID[i]] * input.bonesWeight[i];
+        matBoneTransform += u_vBonesMatrix[input.bonesID[i]] * input.bonesWeight[i];
         fWeight = fWeight - input.bonesWeight[i];
     }
     matBoneTransform += float4x4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1) * fWeight;
 
-    float4 posFromBones = mul(float4(input.pos, 1.0f), matBoneTransform);
-    output.pos = mul(posFromBones, mul(U_matWorld, U_matCamProj));
+    float4 f4PositionFromBones = mul(float4(input.pos, 1.0f), matBoneTransform);
+    output.pos = mul(f4PositionFromBones, mul(MESH_WORLD_MATRIX, u_matCamProj));
 
 #else
-    output.pos = mul(float4(input.pos, 1.0f), mul(U_matWorld, U_matCamProj));
+    output.pos = mul(float4(input.pos, 1.0f), mul(MESH_WORLD_MATRIX, u_matCamProj));
 #endif
     return output;
 }

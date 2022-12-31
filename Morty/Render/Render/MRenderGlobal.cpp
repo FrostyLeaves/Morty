@@ -8,4 +8,6 @@ const char* MRenderGlobal::SUFFIX_PIXEL_SHADER = "mps";
 
 const bool MRenderGlobal::GBUFFER_UNIFIED_FORMAT = false;
 
-const int MRenderGlobal::SHADOW_TEXTURE_SIZE = 2048;
+const int MRenderGlobal::SHADOW_TEXTURE_SIZE = 4096;
+const size_t MRenderGlobal::MERGE_INSTANCING_MAX_NUM = 128;
+const size_t MRenderGlobal::MERGE_INSTANCING_CLUSTER_MAX_NUM = 1024;

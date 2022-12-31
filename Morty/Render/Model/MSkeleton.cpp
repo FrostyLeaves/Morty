@@ -170,7 +170,7 @@ MSkeletonInstance::MSkeletonInstance(std::shared_ptr<const MSkeleton> templateSk
 	: m_pEngine(templateSke->GetEngine())
 	, m_pSkeletonTemplate(templateSke)
 	, m_bShaderParamSetDirty(true)
-	, m_pShaderParamSet(MShaderPropertyBlock::MakeShared(nullptr, MRenderGlobal::SHADER_PARAM_SET_SKELETON))
+	, m_pShaderPropertyBlock(MShaderPropertyBlock::MakeShared(nullptr, MRenderGlobal::SHADER_PARAM_SET_SKELETON))
 	, m_pShaderBonesArray(nullptr)
 {
 	m_vAllBones = m_pSkeletonTemplate->GetAllBones();
@@ -182,7 +182,7 @@ MSkeletonInstance::MSkeletonInstance(const MSkeletonInstance& instance)
 	: m_pEngine(instance.m_pEngine)
 	, m_pSkeletonTemplate(instance.m_pSkeletonTemplate)
 	, m_bShaderParamSetDirty(true)
-	, m_pShaderParamSet(MShaderPropertyBlock::MakeShared(nullptr, MRenderGlobal::SHADER_PARAM_SET_SKELETON))
+	, m_pShaderPropertyBlock(MShaderPropertyBlock::MakeShared(nullptr, MRenderGlobal::SHADER_PARAM_SET_SKELETON))
 	, m_pShaderBonesArray(nullptr)
 {
 	m_vAllBones = m_pSkeletonTemplate->GetAllBones();
@@ -192,12 +192,11 @@ MSkeletonInstance::~MSkeletonInstance()
 {
 	m_pShaderBonesArray = nullptr;
 
-	if (m_pShaderParamSet)
+	if (m_pShaderPropertyBlock)
 	{
 		MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
-		m_pShaderParamSet->DestroyBuffer(pRenderSystem->GetDevice());
-		delete m_pShaderParamSet;
-		m_pShaderParamSet = nullptr;
+		m_pShaderPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
+		m_pShaderPropertyBlock = nullptr;
 	}
 }
 
@@ -245,7 +244,7 @@ std::shared_ptr<MShaderPropertyBlock> MSkeletonInstance::GetShaderParamSet()
 {
 	if (!m_pShaderBonesArray)
 	{
-		MShaderConstantParam* pBonesSet = new MShaderConstantParam();
+		std::shared_ptr<MShaderConstantParam> pBonesSet = std::make_shared<MShaderConstantParam>();
 		pBonesSet->unSet = 3;
 		pBonesSet->unBinding = 0;
 
@@ -254,14 +253,14 @@ std::shared_ptr<MShaderPropertyBlock> MSkeletonInstance::GetShaderParamSet()
 			bonesArr.AppendValue<Matrix4>();
 
 		MStruct bonesSrt;
-		bonesSrt.SetValue("U_vBonesMatrix", bonesArr);
+		bonesSrt.SetValue("u_vBonesMatrix", bonesArr);
 
 		pBonesSet->var = bonesSrt;
 
-		m_pShaderParamSet->m_vParams.push_back(pBonesSet);
+		m_pShaderPropertyBlock->m_vParams.push_back(pBonesSet);
 	//	m_pShaderParamSet->GenerateBuffer(m_pEngine->GetDevice());
 
-		m_pShaderBonesArray = pBonesSet->var.GetStruct()->GetValue<MVariantArray>("U_vBonesMatrix");
+		m_pShaderBonesArray = pBonesSet->var.GetStruct()->GetValue<MVariantArray>("u_vBonesMatrix");
 	}
 
 	if (m_bShaderParamSetDirty)
@@ -275,12 +274,12 @@ std::shared_ptr<MShaderPropertyBlock> MSkeletonInstance::GetShaderParamSet()
 			(*m_pShaderBonesArray)[i] = bones[i].m_matWorldTransform;
 		}
 
-		m_pShaderParamSet->m_vParams[0]->SetDirty();
+		m_pShaderPropertyBlock->m_vParams[0]->SetDirty();
 
 		m_bShaderParamSetDirty = false;
 	}
 
-	return m_pShaderParamSet;
+	return m_pShaderPropertyBlock;
 }
 
 void MSkeletonInstance::SetDirty()

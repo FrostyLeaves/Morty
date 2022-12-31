@@ -29,6 +29,7 @@ public:
         static const uint32_t EIndex = 2;
         static const uint32_t EStorage = 4;
         static const uint32_t EUniform = 8;
+        static const uint32_t EIndirect = 16;
     };
 
     enum class MStageType
@@ -69,7 +70,7 @@ public:
     VkBuffer m_VkBuffer = VK_NULL_HANDLE;
     VkDeviceMemory m_VkDeviceMemory = VK_NULL_HANDLE;
 #endif
-#if _DEBUG
+#if MORTY_DEBUG
     MString m_strDebugBufferName = "";
 #endif
 

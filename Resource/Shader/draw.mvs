@@ -1,19 +1,19 @@
 
-struct VS_IN_DRAW
+struct VS_IN
 {
     float3 pos : POSITION;
     float4 color : COLOR;
 };
 
-struct VS_OUT_DRAW
+struct VS_OUT
 {
     float4 pos : SV_POSITION;
     float4 color : COLOR;
 };
 
-VS_OUT_DRAW VS(VS_IN_DRAW input)
+VS_OUT VS_MAIN(VS_IN input)
 {
-    VS_OUT_DRAW output;
+    VS_OUT output;
 
     output.pos.xy = input.pos.xy;
     output.pos.w = 1.0f;

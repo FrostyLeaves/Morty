@@ -89,7 +89,7 @@ void MEnvironmentMapRenderWork::RenderDiffuse(MIRenderCommand* pCommand, MSkyBox
 	std::shared_ptr<MResource> pSkyBoxTexture = pSkyBoxComponent->GetSkyBoxResource();
 	if (m_DiffuseMaterial)
 	{
-		m_DiffuseMaterial->SetTexutre("U_SkyBox", pSkyBoxTexture);
+		m_DiffuseMaterial->SetTexutre("u_SkyBox", pSkyBoxTexture);
 	}
 
 
@@ -131,7 +131,7 @@ void MEnvironmentMapRenderWork::RenderSpecular(MIRenderCommand* pCommand, MSkyBo
 	{
 		if (m_vSpecularMaterial[nIdx])
 		{
-			m_vSpecularMaterial[nIdx]->SetTexutre("U_SkyBox", pSkyBoxTexture);
+			m_vSpecularMaterial[nIdx]->SetTexutre("u_SkyBox", pSkyBoxTexture);
 		}
 
 		pCommand->BeginRenderPass(&m_vSpecularRenderPass[nIdx]);
@@ -218,11 +218,11 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 
 	m_DiffuseMaterial->SetRasterizerType(MERasterizerType::ECullFront);
 
-	if (MShaderParamSet* pParams = m_DiffuseMaterial->GetMaterialParamSet())
+	if (const std::shared_ptr<MShaderPropertyBlock>& pParams = m_DiffuseMaterial->GetMaterialParamSet())
 	{
 		if (MStruct* matrix = pParams->m_vParams[0]->var.GetStruct())
 		{
-			if (MVariantArray* mvp = matrix->GetValue<MVariantArray>("U_ModelViewProj"))
+			if (MVariantArray* mvp = matrix->GetValue<MVariantArray>("u_ModelViewProj"))
 			{
 				for (uint32_t i = 0; i < 6; ++i)
 				{
@@ -244,11 +244,11 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 		m_vSpecularMaterial[nMipmap]->LoadPixelShader(specularps);
 		m_vSpecularMaterial[nMipmap]->SetRasterizerType(MERasterizerType::ECullFront);
 
-		if (MShaderParamSet* pParams = m_vSpecularMaterial[nMipmap]->GetMaterialParamSet())
+		if (const std::shared_ptr<MShaderPropertyBlock>& pParams = m_vSpecularMaterial[nMipmap]->GetMaterialParamSet())
 		{
 			if (MStruct* matrix = pParams->m_vParams[0]->var.GetStruct())
 			{
-				if (MVariantArray* mvp = matrix->GetValue<MVariantArray>("U_ModelViewProj"))
+				if (MVariantArray* mvp = matrix->GetValue<MVariantArray>("u_ModelViewProj"))
 				{
 					for (uint32_t i = 0; i < 6; ++i)
 					{
@@ -260,7 +260,7 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 			}
 			if (MStruct* matrix = pParams->m_vParams[1]->var.GetStruct())
 			{
-				if (float* roughness = matrix->GetValue<float>("U_roughness"))
+				if (float* roughness = matrix->GetValue<float>("u_roughness"))
 				{
 					*roughness = (float)nMipmap / (float)(SpecularMipmapCount);
 				}

@@ -25,19 +25,19 @@ struct Material
     float fRoughness;
 };
 
-//PS
+//Material
 [[vk::binding(0,0)]]cbuffer cbMaterial
 {
-    Material U_mat;
+    Material u_xMaterial;
 };
 
 //Textures
-[[vk::binding(1,0)]]Texture2D U_mat_texAlbedo;
-[[vk::binding(2,0)]]Texture2D U_mat_texNormal;
-[[vk::binding(3,0)]]Texture2D U_mat_texMetallic;
-[[vk::binding(4,0)]]Texture2D U_mat_texRoughness;
-[[vk::binding(5,0)]]Texture2D U_mat_texAmbientOcc;
-[[vk::binding(6,0)]]Texture2D U_mat_texHeight;
+[[vk::binding(1,0)]]Texture2D u_mat_texAlbedo;
+[[vk::binding(2,0)]]Texture2D u_texNormal;
+[[vk::binding(3,0)]]Texture2D u_mat_texMetallic;
+[[vk::binding(4,0)]]Texture2D u_mat_texRoughness;
+[[vk::binding(5,0)]]Texture2D u_mat_texAmbientOcc;
+[[vk::binding(6,0)]]Texture2D u_mat_texHeight;
 
 struct PS_OUT
 {
@@ -62,12 +62,12 @@ float2 ParallaxMapping(float2 uv, float3 f3ViewDir, float fScale)
     float2 f2DeltaTexCoords = P / fNumLayers;
 
     float2 f2CurrentTexCoords = uv;
-    float fCurrentDepthMapValue = U_mat_texHeight.Sample(LinearSampler, f2CurrentTexCoords).r;
+    float fCurrentDepthMapValue = u_mat_texHeight.Sample(LinearSampler, f2CurrentTexCoords).r;
 
     while(fCurrentLayerDepth < fCurrentDepthMapValue)
     {
         f2CurrentTexCoords -= f2DeltaTexCoords;
-        fCurrentDepthMapValue = U_mat_texHeight.Sample(LinearSampler, f2CurrentTexCoords).r;
+        fCurrentDepthMapValue = u_mat_texHeight.Sample(LinearSampler, f2CurrentTexCoords).r;
 
         fCurrentLayerDepth += fLayerDepth;
     }
@@ -75,7 +75,7 @@ float2 ParallaxMapping(float2 uv, float3 f3ViewDir, float fScale)
     float2 f2PrevTexCoords = f2CurrentTexCoords + f2DeltaTexCoords;
 
     float fAfterDepth = fCurrentDepthMapValue - fCurrentLayerDepth;
-    float fBeforeDepth = U_mat_texHeight.Sample(LinearSampler, f2PrevTexCoords).r - fCurrentLayerDepth + fLayerDepth;
+    float fBeforeDepth = u_mat_texHeight.Sample(LinearSampler, f2PrevTexCoords).r - fCurrentLayerDepth + fLayerDepth;
 
     float fWeight = fAfterDepth / (fAfterDepth - fBeforeDepth);
     float2 f2FinalTexCoords = f2PrevTexCoords * fWeight + f2CurrentTexCoords * (1.0f - fWeight);
@@ -83,7 +83,7 @@ float2 ParallaxMapping(float2 uv, float3 f3ViewDir, float fScale)
     return f2FinalTexCoords;
 }
 
-PS_OUT PS(VS_OUT input)
+PS_OUT PS_MAIN(VS_OUT input)
 {
     PS_OUT output;
 
@@ -96,33 +96,33 @@ PS_OUT PS(VS_OUT input)
     float3x3 TBN = float3x3(T,B,N);
 
 
-    if (U_mat.bUseHeightMap > 0)
+    if (u_xMaterial.bUseHeightMap > 0)
     {
-        float3 f3ViewDir = mul(U_f3CameraPosition, TBN) - mul(input.worldPos, TBN);
+        float3 f3ViewDir = mul(u_f3CameraPosition, TBN) - mul(input.worldPos, TBN);
         f3ViewDir = normalize(f3ViewDir);
-//        float3 f3ViewDir = mul(U_f3CameraDirection, TBN);
-        uv = ParallaxMapping(uv, f3ViewDir, U_mat.bUseHeightMap);
+//        float3 f3ViewDir = mul(u_f3CameraDirection, TBN);
+        uv = ParallaxMapping(uv, f3ViewDir, u_xMaterial.bUseHeightMap);
         uv = saturate(uv);
     }
 
 
 
     float3 f3Normal = float3(0.0f, 0.0f, 1.0f);
-    f3Normal = U_mat_texNormal.Sample(LinearSampler, uv).xyz;
+    f3Normal = u_texNormal.Sample(LinearSampler, uv).xyz;
     f3Normal = (f3Normal * 2.0f) - 1.0f;
     f3Normal = mul(f3Normal, TBN);
     f3Normal = normalize(f3Normal);
 
-    float3 f3Albedo   = U_mat_texAlbedo.Sample(LinearSampler, uv).rgb;
-    float fMetallic   = U_mat_texMetallic.Sample(LinearSampler, uv).r;
-    float fRoughness  = U_mat_texRoughness.Sample(LinearSampler, uv).r;
-    float fAmbientOcc = U_mat_texAmbientOcc.Sample(LinearSampler, uv).r;
+    float3 f3Albedo   = u_mat_texAlbedo.Sample(LinearSampler, uv).rgb;
+    float fMetallic   = u_mat_texMetallic.Sample(LinearSampler, uv).r;
+    float fRoughness  = u_mat_texRoughness.Sample(LinearSampler, uv).r;
+    float fAmbientOcc = u_mat_texAmbientOcc.Sample(LinearSampler, uv).r;
 
     output.f3Albedo_fMetallic.rgb = f3Albedo;
-    output.f3Albedo_fMetallic.a = fMetallic * U_mat.fMetallic;
+    output.f3Albedo_fMetallic.a = fMetallic * u_xMaterial.fMetallic;
 
     output.f3Normal_fRoughness.rgb = f3Normal;
-    output.f3Normal_fRoughness.a = fRoughness * U_mat.fRoughness;
+    output.f3Normal_fRoughness.a = fRoughness * u_xMaterial.fRoughness;
 
     output.f3Position_fAmbientOcc.rgb = input.worldPos;
     output.f3Position_fAmbientOcc.a = fAmbientOcc;

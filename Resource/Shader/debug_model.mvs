@@ -10,14 +10,14 @@ struct VS_IN
 };
 
 
-VS_OUT VS(VS_IN input)
+VS_OUT VS_MAIN(VS_IN input)
 {
     VS_OUT output;
 
     output.uv.x = input.uv.x;
     output.uv.y = input.uv.y;
 
-    float4x4 mat = mul(U_matWorld, U_matCamProj);
+    float4x4 mat = mul(MESH_WORLD_MATRIX, u_matCamProj);
 
     float4x4 mmm = { 1.0f, 0.0f, 0.0f, 0.0f,
                      0.0f, 1.0f, 0.0f, 0.0f,

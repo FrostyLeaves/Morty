@@ -318,8 +318,8 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 		}
 
 		{
-			std::vector<MShaderConstantParam* >& vParams = *pMaterial->GetShaderParams();
-			for (MShaderConstantParam* param : vParams)
+			const std::vector<std::shared_ptr<MShaderConstantParam>>& vParams = pMaterial->GetShaderParams();
+			for (const std::shared_ptr<MShaderConstantParam>& param : vParams)
 			{
 				if (EditMVariant(param->strName, param->var))
 				{
@@ -330,10 +330,10 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 		}
 
 		{
-			std::vector<MShaderTextureParam*>& vParams = *pMaterial->GetTextureParams();
+			std::vector< std::shared_ptr<MShaderTextureParam>>& vParams = pMaterial->GetTextureParams();
 			for (unsigned int i = 0; i < vParams.size(); ++i)
 			{
-				if (MTextureResourceParam* param = dynamic_cast<MTextureResourceParam*>(vParams[i]))
+				if (const std::shared_ptr<MTextureResourceParam>& param = std::dynamic_pointer_cast<MTextureResourceParam>(vParams[i]))
 				{
 
 					MString strDlgName = "file_dlg_tex_" + MStringHelper::ToString(i);

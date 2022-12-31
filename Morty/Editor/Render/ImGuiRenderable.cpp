@@ -190,7 +190,7 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
 	translate.y = -1.0f - draw_data->DisplayPos.y * scale.y;
 
 
-	if (MShaderConstantParam* pParam = m_pMaterial->GetMaterialParamSet()->m_vParams[0])
+	if (const std::shared_ptr<MShaderConstantParam>& pParam = m_pMaterial->GetMaterialParamSet()->m_vParams[0])
 	{
 		if (MStruct* pStruct = pParam->var.GetStruct())
 		{

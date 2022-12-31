@@ -22,7 +22,6 @@ struct PointLight
     float3 f3WorldPosition;
 
     float3 f3Intensity;
-
     float fConstant;
     float fLinear;
     float fQuadratic;
@@ -41,52 +40,52 @@ struct SpotLight
 
 
 //VS    per render
-[[vk::binding(0,1)]]cbuffer _M_E_cbWorldMatrix : register(b1)
+[[vk::binding(0,1)]]cbuffer cbSceneMatrix : register(b1)
 {
-    float4x4 U_matView; // world to view
-    float4x4 U_matCamProj; // world to proj
-    float4x4 U_matCamProjInv; // proj to world
+    float4x4 u_matView; // world to view
+    float4x4 u_matCamProj; // world to proj
+    float4x4 u_matCamProjInv; // proj to world
 };
 
 //VS & PS    per render
-[[vk::binding(1,1)]]cbuffer _M_E_cbWorldInfo : register(b2)
+[[vk::binding(1,1)]]cbuffer cbSceneInformation : register(b2)
 {
-    float3 U_f3DirectionLight;
-    float3 U_f3CameraPosition;
-    float3 U_f3CameraDirection;
+    float3 u_f3DirectionLight;
+    float3 u_f3CameraPosition;
+    float3 u_f3CameraDirection;
 
-    float2 U_f2ViewportSize;
-    float2 U_matZNearFar;
-    float U_fDelta;
-    float U_fGameTime;
+    float2 u_f2ViewportSize;
+    float2 u_matZNearFar;
+    float u_fDelta;
+    float u_fGameTime;
 };
 
 //PS    per render
-[[vk::binding(2,1)]]cbuffer _M_E_cbLights : register(b3)
+[[vk::binding(2,1)]]cbuffer cbLightInformation : register(b3)
 {
-    DirectionLight U_dirLight;
-    PointLight U_pointLights[MPOINT_LIGHT_MAX_NUMBER];
-    SpotLight U_spotLights[MSPOT_LIGHT_MAX_NUMBER];
-    int U_bDirectionLightEnabled;
-    int U_nValidPointLightsNumber;
-    int U_nValidSpotLightsNumber;
-    int U_bEnvironmentMapEnabled;
+    DirectionLight u_xDirectionalLight;
+    PointLight u_vPointLights[MPOINT_LIGHT_MAX_NUMBER];
+    SpotLight u_vSpotLights[MSPOT_LIGHT_MAX_NUMBER];
+    int u_bDirectionLightEnabled;
+    int u_nValidPointLightsNumber;
+    int u_nValidSpotLightsNumber;
+    int u_bEnvironmentMapEnabled;
 };
 
-[[vk::binding(3,1)]]cbuffer _M_E_cbShadowInfo : register(b4)
+[[vk::binding(3,1)]]cbuffer cbShadowInformation : register(b4)
 {
-    float4x4 U_matLightProj[CASCADED_SHADOW_MAP_NUM];
-    float U_vCascadeSplits[CASCADED_SHADOW_MAP_NUM];
+    float4x4 u_vLightProjectionMatrix[CASCADED_SHADOW_MAP_NUM];
+    float u_vCascadeSplits[CASCADED_SHADOW_MAP_NUM];
 };
 
 [[vk::binding(4,1)]]sampler LinearSampler;
 [[vk::binding(5,1)]]sampler NearestSampler;
 
 //Shadowmap
-[[vk::binding(6,1)]]Texture2DArray U_texShadowMap;
-[[vk::binding(7,1)]]TextureCube U_texIrradianceMap;
-[[vk::binding(8,1)]]TextureCube U_texPrefilterMap;
-[[vk::binding(9,1)]]Texture2D U_texBrdfLUT;
+[[vk::binding(6,1)]]Texture2DArray u_texShadowMap;
+[[vk::binding(7,1)]]TextureCube u_texIrradianceMap;
+[[vk::binding(8,1)]]TextureCube u_texPrefilterMap;
+[[vk::binding(9,1)]]Texture2D u_texBrdfLUT;
 
 
 #endif

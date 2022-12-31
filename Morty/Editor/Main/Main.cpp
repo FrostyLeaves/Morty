@@ -52,7 +52,7 @@
 
 #define TEST_SKY_BOX
 
-#define TEST_SHADOW_MAP
+//#define TEST_SHADOW_MAP
 
 #define TEST_MERGE_INSTANCING
 
@@ -67,6 +67,7 @@ void CREATE_INSTANCING_ENTITY(MEngine* pEngine, MScene* pScene)
 
 	std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
+	pMaterial->GetShaderMacro().AddUnionMacro("DRAW_MESH_MERGE_INSTANCING");
 	pMaterial->LoadVertexShader("Shader/model_gbuffer.mvs");
 	pMaterial->LoadPixelShader("Shader/model_gbuffer.mps");
 	pMaterial->SetMaterialType(MEMaterialType::EDeferred);
@@ -94,18 +95,21 @@ void CREATE_INSTANCING_ENTITY(MEngine* pEngine, MScene* pScene)
 	{
 		for (int y = 0; y < 5; ++y)
 		{
-			MEntity* pSphereEntity = pScene->CreateEntity();
-			pSphereEntity->SetName("Sphere_PBR");
-			if (MSceneComponent* pSceneComponent = pSphereEntity->RegisterComponent<MSceneComponent>())
+			for (int z = 0; z < 40; ++z)
 			{
-				pSceneComponent->SetPosition(Vector3(x * 10, y * 10, 0.0f));
-				pSceneComponent->SetScale(Vector3(4.0f, 4.0f, 4.0f));
-			}
-			if (MRenderableMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderableMeshComponent>())
-			{
-				pMeshComponent->Load(pMeshResource);
-				pMeshComponent->SetMaterial(pMaterial);
-				pMeshComponent->SetBatchInstanceEnable(true);
+				MEntity* pSphereEntity = pScene->CreateEntity();
+				pSphereEntity->SetName("Sphere_Instancing_" + MStringHelper::ToString(x * 1000 + y * 1000 + z));
+				if (MSceneComponent* pSceneComponent = pSphereEntity->RegisterComponent<MSceneComponent>())
+				{
+					pSceneComponent->SetPosition(Vector3(x * 10, y * 10, z * 10));
+					pSceneComponent->SetScale(Vector3(4.0f, 4.0f, 4.0f));
+				}
+				if (MRenderableMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderableMeshComponent>())
+				{
+					pMeshComponent->Load(pMeshResource);
+					pMeshComponent->SetMaterial(pMaterial);
+					pMeshComponent->SetBatchInstanceEnable(true);
+				}
 			}
 		}
 	}
@@ -117,64 +121,81 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
 
 	std::shared_ptr<MMeshResource> pCubeResource = pResourceSystem->CreateResource<MMeshResource>();
-	pCubeResource->LoadAsCube();
+	pCubeResource->LoadAsSphere();
 
-	std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
+	std::shared_ptr<MMaterialResource> pForwardMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
-	pMaterial->LoadVertexShader("Shader/model_gbuffer.mvs");
-	pMaterial->LoadPixelShader("Shader/model_gbuffer.mps");
-	pMaterial->SetMaterialType(MEMaterialType::EDeferred);
+	{
+		pForwardMaterial->LoadVertexShader("Shader/model.mvs");
+		pForwardMaterial->LoadPixelShader("Shader/model.mps");
+		pForwardMaterial->SetMaterialType(MEMaterialType::EDefault);
 
-	std::shared_ptr<MResource> albedo = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
-	std::shared_ptr<MResource> normal = pResourceSystem->LoadResource(MRenderModule::DefaultNormal);
-	std::shared_ptr<MResource> roughness = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
-	std::shared_ptr<MResource> ao = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
-	std::shared_ptr<MResource> metal = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
-	std::shared_ptr<MResource> height = pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero);
+		pForwardMaterial->GetMaterialParamSet()->SetValue("f3Ambient", Vector3(1.0f, 1.0f, 1.0f));
+		pForwardMaterial->GetMaterialParamSet()->SetValue("f3Diffuse", Vector3(1.0f, 1.0f, 1.0f));
+		pForwardMaterial->GetMaterialParamSet()->SetValue("f3Specular", Vector3(1.0f, 1.0f, 1.0f));
+		pForwardMaterial->GetMaterialParamSet()->SetValue("fAlphaFactor", 1.0f);
+		pForwardMaterial->GetMaterialParamSet()->SetValue("fShininess", 32.0f);
 
-	pMaterial->SetTexutre(MaterialKey::Albedo, albedo);
-	pMaterial->SetTexutre(MaterialKey::Normal, normal);
-	pMaterial->SetTexutre(MaterialKey::Metallic, metal);
-	pMaterial->SetTexutre(MaterialKey::Roughness, roughness);
-	pMaterial->SetTexutre(MaterialKey::AmbientOcc, ao);
-	pMaterial->SetTexutre(MaterialKey::Height, height);
+		std::shared_ptr<MResource> diffuse = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
+		std::shared_ptr<MResource> normal = pResourceSystem->LoadResource(MRenderModule::DefaultNormal);
+		pForwardMaterial->SetTexutre("u_texDiffuse", diffuse);
+		pForwardMaterial->SetTexutre("u_texNormal", normal);
+	}
 
-	pMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
-	pMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);
 
+	std::shared_ptr<MMaterialResource> pDeferredMaterial = pResourceSystem->CreateResource<MMaterialResource>();
+
+	{
+		pDeferredMaterial->LoadVertexShader("Shader/model_gbuffer.mvs");
+		pDeferredMaterial->LoadPixelShader("Shader/model_gbuffer.mps");
+		pDeferredMaterial->SetMaterialType(MEMaterialType::EDeferred);
+
+		std::shared_ptr<MResource> albedo = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
+		std::shared_ptr<MResource> normal = pResourceSystem->LoadResource(MRenderModule::DefaultNormal);
+		std::shared_ptr<MResource> roughness = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
+		std::shared_ptr<MResource> ao = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
+		std::shared_ptr<MResource> metal = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
+		std::shared_ptr<MResource> height = pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero);
+
+		pDeferredMaterial->SetTexutre(MaterialKey::Albedo, albedo);
+		pDeferredMaterial->SetTexutre(MaterialKey::Normal, normal);
+		pDeferredMaterial->SetTexutre(MaterialKey::Metallic, metal);
+		pDeferredMaterial->SetTexutre(MaterialKey::Roughness, roughness);
+		pDeferredMaterial->SetTexutre(MaterialKey::AmbientOcc, ao);
+		pDeferredMaterial->SetTexutre(MaterialKey::Height, height);
+
+		pDeferredMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
+		pDeferredMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);
+	}
 
 	MEntity* pFloorEntity = pScene->CreateEntity();
 	pFloorEntity->SetName("Floor");
 	if (MSceneComponent* pSceneComponent = pFloorEntity->RegisterComponent<MSceneComponent>())
 	{
 		pSceneComponent->SetPosition(Vector3(0, 0, 0));
-		pSceneComponent->SetScale(Vector3(1000.0f, 1.0f, 1000.0f));
+		pSceneComponent->SetScale(Vector3(100.0f, 1.0f, 100.0f));
 	}
 	if (MRenderableMeshComponent* pMeshComponent = pFloorEntity->RegisterComponent<MRenderableMeshComponent>())
 	{
 		std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
-		pMaterial->LoadVertexShader("Shader/model_gbuffer.mvs");
-		pMaterial->LoadPixelShader("Shader/model_gbuffer.mps");
-		pMaterial->SetMaterialType(MEMaterialType::EDeferred);
+		pMaterial->LoadVertexShader("Shader/model.mvs");
+		pMaterial->LoadPixelShader("Shader/model.mps");
+		pMaterial->SetMaterialType(MEMaterialType::EDefault);
 
-		std::shared_ptr<MResource> albedo = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
+		pMaterial->GetMaterialParamSet()->SetValue("f3Ambient", Vector3(0.5f, 0.5f, 0.5f));
+		pMaterial->GetMaterialParamSet()->SetValue("f3Diffuse", Vector3(0.5f, 0.5f, 0.5f));
+		pMaterial->GetMaterialParamSet()->SetValue("f3Specular", Vector3(1.0f, 1.0f, 1.0f));
+		pMaterial->GetMaterialParamSet()->SetValue("fAlphaFactor", 1.0f);
+		pMaterial->GetMaterialParamSet()->SetValue("fShininess", 32.0f);
+
+		std::shared_ptr<MResource> diffuse = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
 		std::shared_ptr<MResource> normal = pResourceSystem->LoadResource(MRenderModule::DefaultNormal);
-		std::shared_ptr<MResource> roughness = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
-		std::shared_ptr<MResource> ao = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
-		std::shared_ptr<MResource> metal = pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero);
-		std::shared_ptr<MResource> height = pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero);
+		pMaterial->SetTexutre("u_texDiffuse", diffuse);
+		pMaterial->SetTexutre("u_texNormal", normal);
 
-		pMaterial->SetTexutre(MaterialKey::Albedo, albedo);
-		pMaterial->SetTexutre(MaterialKey::Normal, normal);
-		pMaterial->SetTexutre(MaterialKey::Metallic, metal);
-		pMaterial->SetTexutre(MaterialKey::Roughness, roughness);
-		pMaterial->SetTexutre(MaterialKey::AmbientOcc, ao);
-		pMaterial->SetTexutre(MaterialKey::Height, height);
-
-		pMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
-		pMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);
-
+		std::shared_ptr<MMeshResource> pCubeResource = pResourceSystem->CreateResource<MMeshResource>();
+		pCubeResource->LoadAsCube();
 		pMeshComponent->Load(pCubeResource);
 		pMeshComponent->SetMaterial(pMaterial);
 	}
@@ -194,7 +215,7 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 			if (MSceneComponent* pSceneComponent = pSphereEntity->RegisterComponent<MSceneComponent>())
 			{
 				pSceneComponent->SetPosition(Vector3(x * distance, 10, y * distance));
-				pSceneComponent->SetScale(Vector3(1.0f, 1.0f, 1.0f));
+				pSceneComponent->SetScale(Vector3(1.0f, 1.0f, 1.0f) * (y + 1));
 				pSceneComponent->SetParentComponent(pCubeFolderComponent->GetComponentID());
 			}
 			if (MRenderableMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderableMeshComponent>())
@@ -202,7 +223,15 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 				pMeshComponent->SetGenerateDirLightShadow(true);
 				pMeshComponent->SetShadowType(MRenderableMeshComponent::MEShadowType::EOnlyDirectional);
 				pMeshComponent->Load(pCubeResource);
-				pMeshComponent->SetMaterial(pMaterial);
+
+				if (x % 2 == 0)
+				{
+					pMeshComponent->SetMaterial(pForwardMaterial);
+				}
+				else
+				{
+					pMeshComponent->SetMaterial(pDeferredMaterial);
+				}
 			}
 		}
 
@@ -217,6 +246,7 @@ void SKY_BOX(MEngine* pEngine, MScene* pScene)
 
 
 	std::shared_ptr<MTextureResource> pCubeTexture = pResourceSystem->CreateResource<MTextureResource>();
+
 	pCubeTexture->ImportCubeMap({
 		"Texture/Sky/Circus_Backstage/px.hdr",
 		"Texture/Sky/Circus_Backstage/nx.hdr",
@@ -224,7 +254,8 @@ void SKY_BOX(MEngine* pEngine, MScene* pScene)
 		"Texture/Sky/Circus_Backstage/ny.hdr",
 		"Texture/Sky/Circus_Backstage/pz.hdr",
 		"Texture/Sky/Circus_Backstage/nz.hdr"
-		},{ MTextureResource::PixelFormat::Float32 });
+		}, { MTextureResource::PixelFormat::Float32 });
+	
 
 /*
 	std::shared_ptr<MTextureResource> pEnvironment = pResourceSystem->CreateResource<MTextureResource>();
@@ -280,8 +311,8 @@ void SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 
 		std::shared_ptr<MResource> diffuse = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_albedo.png");
 		std::shared_ptr<MResource> normal = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_normal.png");
-		pMaterial->SetTexutre("U_mat_texDiffuse", diffuse);
-		pMaterial->SetTexutre("U_mat_texNormal", normal);
+		pMaterial->SetTexutre("u_texDiffuse", diffuse);
+		pMaterial->SetTexutre("u_texNormal", normal);
 
 		if (normal)
 		{
@@ -452,7 +483,7 @@ void ADD_POINT_LIGHT(MEngine* pEngine, MScene* pScene)
 	pMaterial->LoadVertexShader("Shader/debug_model.mvs");
 	pMaterial->LoadPixelShader("Shader/debug_model.mps");
 
-	pMaterial->SetTexutre("U_mat_texDiffuse", pIconTexture);
+	pMaterial->SetTexutre("u_texDiffuse", pIconTexture);
 
 	for (int i = 0; i < 9; ++i)
 	{

@@ -34,7 +34,6 @@ void MVulkanPipelineManager::Release()
 	}
 
 	m_tPipelineTable.clear();
-	m_tMaterialMap.clear();
 }
 
 std::shared_ptr<MGraphicsPipeline> MVulkanPipelineManager::FindOrCreateGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass)
@@ -47,18 +46,32 @@ std::shared_ptr<MGraphicsPipeline> MVulkanPipelineManager::FindOrCreateGraphicsP
 		return std::dynamic_pointer_cast<MGraphicsPipeline>(findResult->second);
 	}
 
+	const std::shared_ptr<MShaderProgram>& pShaderProgram = pMaterial->GetShaderProgram();
+
+	if (!pShaderProgram)
+	{
+		MORTY_ASSERT(pShaderProgram);
+		return nullptr;
+	}
+
 	std::shared_ptr<MGraphicsPipeline> pPipeline = std::make_shared<MGraphicsPipeline>();
 	m_tPipelineTable[key] = pPipeline;
 
+	if (pRenderPass->m_vSubpass.empty())
+	{
+		pPipeline->m_vSubpassPipeline.push_back(CreateGraphicsPipeline(pPipeline, pMaterial, pRenderPass, 0));
+		return pPipeline;
+	}
+
 	for (size_t nSubPassIdx = 0; nSubPassIdx < pRenderPass->m_vSubpass.size(); ++nSubPassIdx)
 	{
-		pPipeline->m_vSubpassPipeline.push_back(CreateGraphicsPipeline(pMaterial, pRenderPass, nSubPassIdx));
+		pPipeline->m_vSubpassPipeline.push_back(CreateGraphicsPipeline(pPipeline, pMaterial, pRenderPass, nSubPassIdx));
 	}
 
 	return pPipeline;
 }
 
-std::shared_ptr<MComputePipeline>  MVulkanPipelineManager::FindOrCreateComputePipeline(MComputeDispatcher* pComputeDispatcher)
+std::shared_ptr<MComputePipeline> MVulkanPipelineManager::FindOrCreateComputePipeline(MComputeDispatcher* pComputeDispatcher)
 {
 	MPipelineKey key(pComputeDispatcher->GetShaderProgram(), nullptr);
 
@@ -68,52 +81,45 @@ std::shared_ptr<MComputePipeline>  MVulkanPipelineManager::FindOrCreateComputePi
 		return std::dynamic_pointer_cast<MComputePipeline>(findResult->second);
 	}
 
+	const std::shared_ptr<MShaderProgram>& pShaderProgram = pComputeDispatcher->GetShaderProgram();
+
+	if (!pShaderProgram)
+	{
+		MORTY_ASSERT(pShaderProgram);
+		return nullptr;
+	}
+
 	std::shared_ptr<MComputePipeline> pPipeline = std::make_shared<MComputePipeline>();
 	m_tPipelineTable[key] = pPipeline;
 
-	pPipeline->m_vkPipeline = CreateComputePipeline(pComputeDispatcher);
+	pPipeline->m_vkPipeline = CreateComputePipeline(pPipeline, pComputeDispatcher);
 	
 	return pPipeline;
 }
 
 bool MVulkanPipelineManager::RegisterMaterial(std::shared_ptr<MMaterial> pMaterial)
 {
-	uint32_t id = m_MaterialIDPool.GetNewID();
-	pMaterial->SetMaterialID(id);
-
-	m_tMaterialMap[id] = pMaterial;
-
 	return true;
 }
 
 bool MVulkanPipelineManager::UnRegisterMaterial(std::shared_ptr<MMaterial> pMaterial)
 {
-	uint32_t id = pMaterial->GetMaterialID();
-	if (m_tMaterialMap.find(id) == m_tMaterialMap.end())
-		return false;
-
-	m_tMaterialMap.erase(id);
-	m_MaterialIDPool.RecoveryID(id);
-
-	for (auto iter = m_tPipelineTable.begin(); iter != m_tPipelineTable.end(); )
-	{
-		if(iter->first == pMaterial->GetShaderProgram())
-		{
-			DestroyPipeline(iter->second);
-			iter = m_tPipelineTable.erase(iter);
-		}
-		else
-		{
-			++iter;
-		}
-	}
-	
 	return true;
 }
 
 void MVulkanPipelineManager::RegisterRenderPass(MRenderPass* pRenderPass)
 {
 	pRenderPass->SetRenderPassID(m_RenderPassIDPool.GetNewID());
+}
+
+bool MVulkanPipelineManager::RegisterComputeDispatcher(MComputeDispatcher* pDispatcher)
+{
+	return true;
+}
+
+bool MVulkanPipelineManager::UnRegisterComputeDispatcher(MComputeDispatcher* pDispatcher)
+{
+	return true;
 }
 
 void MVulkanPipelineManager::UnRegisterRenderPass(MRenderPass* pRenderPass)
@@ -140,29 +146,6 @@ void MVulkanPipelineManager::UnRegisterRenderPass(MRenderPass* pRenderPass)
 	pRenderPass->SetRenderPassID(MGlobal::M_INVALID_INDEX);
 }
 
-void MVulkanPipelineManager::DestroyMaterialPipelineLayout(const std::shared_ptr<MMaterialPipelineGroup>& pMaterialGroup) const
-{
-	if (!pMaterialGroup)
-		return;
-
-	if (pMaterialGroup->layouts.pipelineLayout)
-	{
-		m_pDevice->GetRecycleBin()->DestroyPipelineLayoutLater(pMaterialGroup->layouts.pipelineLayout);
-
-		for (VkDescriptorSetLayout& layout : pMaterialGroup->layouts.vSetLayouts)
-			m_pDevice->GetRecycleBin()->DestroyDescriptorSetLayoutLater(layout);
-
-		pMaterialGroup->layouts.pipelineLayout = VK_NULL_HANDLE;
-	}
-
-	for (MShaderParamSet* pParamSet : pMaterialGroup->vShaderParamSets)
-	{
-		DestroyShaderParamSetImpl(pParamSet);
-	}
-	pMaterialGroup->vShaderParamSets.clear();
-	pMaterialGroup->layouts.vSetLayouts.clear();
-}
-
 void MVulkanPipelineManager::DestroyPipeline(const std::shared_ptr<MPipeline>& pipeline)
 {
 	if (!pipeline)
@@ -178,6 +161,119 @@ void MVulkanPipelineManager::DestroyPipeline(const std::shared_ptr<MPipeline>& p
 	{
 		DestroyComputePipeline(graphicsPipeline);
 	}
+
+	for (const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock : pipeline->m_tShaderPropertyBlocks)
+	{
+		DestroyShaderParamSetImpl(pPropertyBlock);
+	}
+
+	DestroyPipelineLayout(pipeline);
+
+	pipeline->m_tShaderPropertyBlocks.clear();
+}
+
+void MVulkanPipelineManager::GeneratePipelineLayout(const std::shared_ptr<MPipeline>& pPipeline, const std::shared_ptr<MShaderProgram>& pShaderProgram)
+{
+	VkShaderStageFlags vkShaderStageFlags = pShaderProgram->GetUsage() == MShaderProgram::EUsage::ECompute ? VK_SHADER_STAGE_COMPUTE_BIT : VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	std::vector<VkDescriptorSetLayout> vSetLayouts;
+	std::vector<VkDescriptorSetLayoutBinding> vParamBinding[MRenderGlobal::SHADER_PARAM_SET_NUM];
+
+	for (uint32_t unSetIdx = 0; unSetIdx < MRenderGlobal::SHADER_PARAM_SET_NUM; ++unSetIdx)
+	{
+		std::shared_ptr<MShaderPropertyBlock> pPropertyBlock = pShaderProgram->GetShaderParamSets()[unSetIdx];
+
+		for (const std::shared_ptr<MShaderConstantParam>& param : pPropertyBlock->m_vParams)
+		{
+			VkDescriptorSetLayoutBinding uboLayoutBinding{};
+			uboLayoutBinding.binding = param->unBinding;
+			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
+			uboLayoutBinding.descriptorCount = 1;
+			uboLayoutBinding.stageFlags = vkShaderStageFlags;
+
+			uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+
+			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
+		}
+
+		for (const std::shared_ptr<MShaderTextureParam>& param : pPropertyBlock->m_vTextures)
+		{
+			VkDescriptorSetLayoutBinding uboLayoutBinding{};
+			uboLayoutBinding.binding = param->unBinding;
+			//uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
+			uboLayoutBinding.descriptorCount = 1;
+			uboLayoutBinding.stageFlags = vkShaderStageFlags;
+
+			uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+
+			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
+		}
+
+		for (const std::shared_ptr<MShaderSampleParam>& param : pPropertyBlock->m_vSamples)
+		{
+			VkDescriptorSetLayoutBinding uboLayoutBinding{};
+			uboLayoutBinding.binding = param->unBinding;
+			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
+			uboLayoutBinding.descriptorCount = 1;
+			uboLayoutBinding.stageFlags = vkShaderStageFlags;
+
+			if (param->eSamplerType == MESamplerType::ELinear)
+				uboLayoutBinding.pImmutableSamplers = &m_pDevice->m_VkLinearSampler;
+			else
+				uboLayoutBinding.pImmutableSamplers = &m_pDevice->m_VkNearestSampler;
+
+			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
+		}
+
+		for (const std::shared_ptr<MShaderStorageParam>& param : pPropertyBlock->m_vStorages)
+		{
+			VkDescriptorSetLayoutBinding uboLayoutBinding{};
+			uboLayoutBinding.binding = param->unBinding;
+			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
+			uboLayoutBinding.descriptorCount = 1;
+			uboLayoutBinding.stageFlags = vkShaderStageFlags;
+
+			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
+		}
+
+		VkDescriptorSetLayoutCreateInfo layoutInfo{};
+		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+
+		layoutInfo.bindingCount = vParamBinding[unSetIdx].size();
+		layoutInfo.pBindings = vParamBinding[unSetIdx].data();
+
+		vSetLayouts.push_back(VkDescriptorSetLayout());
+
+		if (vkCreateDescriptorSetLayout(m_pDevice->m_VkDevice, &layoutInfo, nullptr, &vSetLayouts.back()) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create descriptor set layout!");
+		}
+	}
+
+	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pipelineLayoutInfo.setLayoutCount = vSetLayouts.size();
+	pipelineLayoutInfo.pSetLayouts = vSetLayouts.data();
+
+	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+
+	MORTY_ASSERT(vkCreatePipelineLayout(m_pDevice->m_VkDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) == VK_SUCCESS);
+
+	pPipeline->m_pipelineLayout.vkPipelineLayout = pipelineLayout;
+	pPipeline->m_pipelineLayout.vDescriptorSetLayouts = std::move(vSetLayouts);
+}
+
+void MVulkanPipelineManager::DestroyPipelineLayout(const std::shared_ptr<MPipeline>& pPipeline)
+{
+	m_pDevice->GetRecycleBin()->DestroyPipelineLayoutLater(pPipeline->m_pipelineLayout.vkPipelineLayout);
+
+	for (VkDescriptorSetLayout& layout : pPipeline->m_pipelineLayout.vDescriptorSetLayouts)
+	{
+		m_pDevice->GetRecycleBin()->DestroyDescriptorSetLayoutLater(layout);
+	}
+
+	pPipeline->m_pipelineLayout.vkPipelineLayout = VK_NULL_HANDLE;
+	pPipeline->m_pipelineLayout.vDescriptorSetLayouts = {};
 }
 
 void MVulkanPipelineManager::DestroyGraphicsPipeline(const std::shared_ptr<MGraphicsPipeline>& pGraphicsPipeline)
@@ -363,12 +459,26 @@ void GetDepthStencilStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRe
 	}
 }
 
-VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx)
+VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<MPipeline>& pPipeline, std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx)
 {
 	if (!pMaterial)
+	{
+		MORTY_ASSERT(pMaterial);
 		return VK_NULL_HANDLE;
+	}
 
-	VkPipelineLayout vkPipelineLayout = pMaterial->GetShaderProgram()->m_vkPipelineLayout;
+	if(pPipeline->m_pipelineLayout.vkPipelineLayout == VK_NULL_HANDLE)
+	{
+		GeneratePipelineLayout(pPipeline, pMaterial->GetShaderProgram());
+	}
+
+	VkPipelineLayout vkPipelineLayout = pPipeline->m_pipelineLayout.vkPipelineLayout;
+
+	if (VK_NULL_HANDLE == vkPipelineLayout)
+	{
+		MORTY_ASSERT(vkPipelineLayout);
+		return VK_NULL_HANDLE;
+	}
 
 	MShader* pVertexShader = pMaterial->GetVertexShader();
 	MShader* pPixelShader = pMaterial->GetPixelShader();
@@ -514,9 +624,21 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(std::shared_ptr<MMater
 	return graphicsPipeline;
 }
 
-VkPipeline MVulkanPipelineManager::CreateComputePipeline(MComputeDispatcher* pComputeDispatcher)
+VkPipeline MVulkanPipelineManager::CreateComputePipeline(const std::shared_ptr<MPipeline>& pPipeline, MComputeDispatcher* pComputeDispatcher)
 {
-	VkPipelineLayout pipelineLayout = pComputeDispatcher->GetShaderProgram()->m_vkPipelineLayout;
+	if (VK_NULL_HANDLE == pPipeline->m_pipelineLayout.vkPipelineLayout)
+	{
+		GeneratePipelineLayout(pPipeline, pComputeDispatcher->GetShaderProgram());
+	}
+
+	VkPipelineLayout vkPipelineLayout = pPipeline->m_pipelineLayout.vkPipelineLayout;
+	if (VK_NULL_HANDLE == vkPipelineLayout)
+	{
+		MORTY_ASSERT(vkPipelineLayout);
+		return VK_NULL_HANDLE;
+	}
+
+
 	MShader* pComputeShader = pComputeDispatcher->GetComputeShader();
 
 	if (nullptr == pComputeShader)
@@ -532,8 +654,9 @@ VkPipeline MVulkanPipelineManager::CreateComputePipeline(MComputeDispatcher* pCo
 	pipelineInfo.pNext = VK_NULL_HANDLE;
 	pipelineInfo.flags = 0;
 	pipelineInfo.stage = pComputeShaderBuffer->m_VkShaderStageInfo;
-	pipelineInfo.layout = pipelineLayout;
-
+	pipelineInfo.layout = vkPipelineLayout;
+	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+	pipelineInfo.basePipelineIndex = 0;
 
 	// TODO 
 	// fill pipelineInfo.stage.pSpecializationInfo
@@ -550,151 +673,30 @@ VkPipeline MVulkanPipelineManager::CreateComputePipeline(MComputeDispatcher* pCo
 
 void MVulkanPipelineManager::GenerateShaderProgram(MShaderProgram* pShaderProgram)
 {
-	VkShaderStageFlags vkShaderStageFlags = pShaderProgram->GetUsage() == MShaderProgram::EUsage::ECompute ? VK_SHADER_STAGE_COMPUTE_BIT : VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-
-	std::vector<VkDescriptorSetLayout> vSetLayouts;
-	std::vector<VkDescriptorSetLayoutBinding> vParamBinding[MRenderGlobal::SHADER_PARAM_SET_NUM];
-
-	for (uint32_t unSetIdx = 0; unSetIdx < MRenderGlobal::SHADER_PARAM_SET_NUM; ++unSetIdx)
-	{
-		const MShaderParamSet& paramSets = pShaderProgram->GetShaderParamSets()[unSetIdx];
-
-		for (MShaderConstantParam* param : paramSets.m_vParams)
-		{
-			VkDescriptorSetLayoutBinding uboLayoutBinding{};
-			uboLayoutBinding.binding = param->unBinding;
-			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
-			uboLayoutBinding.descriptorCount = 1;
-			uboLayoutBinding.stageFlags = vkShaderStageFlags;
-
-			uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
-
-			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
-		}
-
-		for (MShaderTextureParam* param : paramSets.m_vTextures)
-		{
-			VkDescriptorSetLayoutBinding uboLayoutBinding{};
-			uboLayoutBinding.binding = param->unBinding;
-			//uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
-			uboLayoutBinding.descriptorCount = 1;
-			uboLayoutBinding.stageFlags = vkShaderStageFlags;
-
-			uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
-
-			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
-		}
-
-		for (MShaderSampleParam* param : paramSets.m_vSamples)
-		{
-			VkDescriptorSetLayoutBinding uboLayoutBinding{};
-			uboLayoutBinding.binding = param->unBinding;
-			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
-			uboLayoutBinding.descriptorCount = 1;
-			uboLayoutBinding.stageFlags = vkShaderStageFlags;
-
-			if (param->eSamplerType == MESamplerType::ELinear)
-				uboLayoutBinding.pImmutableSamplers = &m_pDevice->m_VkLinearSampler;
-			else
-				uboLayoutBinding.pImmutableSamplers = &m_pDevice->m_VkNearestSampler;
-
-			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
-		}
-
-		for (MShaderStorageParam* param : paramSets.m_vStorages)
-		{
-			VkDescriptorSetLayoutBinding uboLayoutBinding{};
-			uboLayoutBinding.binding = param->unBinding;
-			uboLayoutBinding.descriptorType = param->m_VkDescriptorType;
-			uboLayoutBinding.descriptorCount = 1;
-			uboLayoutBinding.stageFlags = vkShaderStageFlags;
-
-			vParamBinding[unSetIdx].push_back(uboLayoutBinding);
-		}
-
-		VkDescriptorSetLayoutCreateInfo layoutInfo{};
-		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-
-		layoutInfo.bindingCount = vParamBinding[unSetIdx].size();
-		layoutInfo.pBindings = vParamBinding[unSetIdx].data();
-
-		vSetLayouts.push_back(VkDescriptorSetLayout());
-
-		if (vkCreateDescriptorSetLayout(m_pDevice->m_VkDevice, &layoutInfo, nullptr, &vSetLayouts.back()) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create descriptor set layout!");
-		}
-	}
-
-	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = vSetLayouts.size();
-	pipelineLayoutInfo.pSetLayouts = vSetLayouts.data();
-
-	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
-
-	if (vkCreatePipelineLayout(m_pDevice->m_VkDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
-	{
-		return;
-	}
-
-
-	pShaderProgram->m_vkPipelineLayout = pipelineLayout;
-	pShaderProgram->m_vDescriptorSetLayouts = std::move(vSetLayouts);
+	
 }
 
 void MVulkanPipelineManager::DestroyShaderProgram(MShaderProgram* pShaderProgram)
 {
-	m_pDevice->GetRecycleBin()->DestroyPipelineLayoutLater(pShaderProgram->m_vkPipelineLayout);
-
-	for (VkDescriptorSetLayout& layout : pShaderProgram->m_vDescriptorSetLayouts)
-	{
-		m_pDevice->GetRecycleBin()->DestroyDescriptorSetLayoutLater(layout);
-	}
-
-	pShaderProgram->m_vkPipelineLayout = VK_NULL_HANDLE;
-	pShaderProgram->m_vDescriptorSetLayouts = {};
+	
 }
 
-void MVulkanPipelineManager::GenerateShaderParamSet(MShaderParamSet* pParamSet)
+void MVulkanPipelineManager::AllocateShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock, const std::shared_ptr<MPipeline>& pPipeline)
 {
-	MShaderProgram* pShaderProgram = nullptr;
+	std::shared_ptr<MShaderProgram> pShaderProgram = pPropertyBlock->GetShaderProgram();
 
-	if (pParamSet->m_unKey >= pShaderProgram->m_vDescriptorSetLayouts.size())
-		return;
-
-	pParamSet->m_unLayoutDataIdx = pPipelineGroup->vShaderParamSets.size();
-	pPipelineGroup->vShaderParamSets.push_back(pParamSet);
-
-	VkDescriptorSetLayout vkDescriptorSetLayout = pPipelineGroup->layouts.vSetLayouts[pParamSet->m_unKey];
-
-	VkDescriptorSetAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = m_pDevice->m_VkDescriptorPool;
-	allocInfo.descriptorSetCount = 1;
-	allocInfo.pSetLayouts = &vkDescriptorSetLayout;
-
-	VkDescriptorSet descriptorSet;
-	if (vkAllocateDescriptorSets(m_pDevice->m_VkDevice, &allocInfo, &descriptorSet) != VK_SUCCESS)
+	if (pPropertyBlock->m_VkDescriptorSet)
 	{
-		m_pDevice->GetEngine()->GetLogger()->Error("MVulkanPipelineManager::CreateMaterialDescriptorSet error: descriptor pool == 0");
-		return;
+		m_pDevice->GetRecycleBin()->DestroyDescriptorSetLater(pPropertyBlock->m_VkDescriptorSet);
+		pPropertyBlock->m_VkDescriptorSet = VK_NULL_HANDLE;
 	}
 
-	pParamSet->m_VkDescriptorSet = descriptorSet;
-}
+	MORTY_ASSERT(VK_NULL_HANDLE == pPropertyBlock->m_VkDescriptorSet);
+	MORTY_ASSERT(VK_NULL_HANDLE != pPipeline->m_pipelineLayout.vkPipelineLayout);
 
-void MVulkanPipelineManager::AllocateShaderParamSet(MShaderParamSet* pParamSet)
-{
-	MShaderProgram* pShaderProgram = nullptr;
-
-	if (pParamSet->m_VkDescriptorSet)
-	{
-		m_pDevice->GetRecycleBin()->DestroyDescriptorSetLater(pParamSet->m_VkDescriptorSet);
-		pParamSet->m_VkDescriptorSet = VK_NULL_HANDLE;
-	}
-
-	VkDescriptorSetLayout vkDescriptorSetLayout = pShaderProgram->m_vDescriptorSetLayouts[pParamSet->m_unKey];
+	//pPipeline->m_tShaderPropertyBlocks.insert(pPropertyBlock);
+	VkDescriptorSetLayout vkDescriptorSetLayout = pPipeline->m_pipelineLayout.vDescriptorSetLayouts[pPropertyBlock->m_unKey];
+	MORTY_ASSERT(VK_NULL_HANDLE != vkDescriptorSetLayout);
 
 	VkDescriptorSetAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -709,35 +711,17 @@ void MVulkanPipelineManager::AllocateShaderParamSet(MShaderParamSet* pParamSet)
 		return;
 	}
 
-	pParamSet->m_VkDescriptorSet = descriptorSet;
+	pPropertyBlock->m_VkDescriptorSet = descriptorSet;
 }
 
-void MVulkanPipelineManager::DestroyShaderParamSet(MShaderParamSet* pParamSet)
+void MVulkanPipelineManager::DestroyShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock)
 {
-	MShaderProgram* pShaderProgram = nullptr;
+	std::shared_ptr<MShaderProgram> pShaderProgram = pPropertyBlock->GetShaderProgram();
 
-	{
-		if (MGlobal::M_INVALID_INDEX != pParamSet->m_unLayoutDataIdx)
-		{
-			if (pParamSet->m_unLayoutDataIdx < pPipelineGroup->vShaderParamSets.size())
-			{
-				for (uint32_t i = pParamSet->m_unLayoutDataIdx; i < pPipelineGroup->vShaderParamSets.size() - 1; ++i)
-				{
-					pPipelineGroup->vShaderParamSets[i] = pPipelineGroup->vShaderParamSets[i + 1];
-					pPipelineGroup->vShaderParamSets[i]->m_unLayoutDataIdx = i;
-				}
-
-				pPipelineGroup->vShaderParamSets.pop_back();
-			}
-		}
-
-		pParamSet->m_unLayoutDataIdx = MGlobal::M_INVALID_INDEX;
-	}
-
-	DestroyShaderParamSetImpl(pParamSet);
+	DestroyShaderParamSetImpl(pPropertyBlock);
 }
 
-void MVulkanPipelineManager::DestroyShaderParamSetImpl(MShaderParamSet* pParamSet) const
+void MVulkanPipelineManager::DestroyShaderParamSetImpl(const std::shared_ptr<MShaderPropertyBlock>& pParamSet) const
 {
 	if (!pParamSet)
 		return;
@@ -749,10 +733,10 @@ void MVulkanPipelineManager::DestroyShaderParamSetImpl(MShaderParamSet* pParamSe
 	}
 }
 
-
-void MVulkanPipelineManager::BindConstantParam(MShaderConstantParam* pParam, VkWriteDescriptorSet& descriptorWrite)
+void MVulkanPipelineManager::BindConstantParam(const std::shared_ptr<MShaderConstantParam> pParam, VkWriteDescriptorSet& descriptorWrite)
 {
 	VkDescriptorBufferInfo& bufferInfo = pParam->m_VkBufferInfo;
+	MORTY_ASSERT(VK_NULL_HANDLE != bufferInfo.buffer);
 
 	descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	descriptorWrite.dstBinding = pParam->unBinding;
@@ -766,7 +750,7 @@ void MVulkanPipelineManager::BindConstantParam(MShaderConstantParam* pParam, VkW
 	descriptorWrite.pTexelBufferView = nullptr; // Optional
 }
 
-void MVulkanPipelineManager::BindTextureParam(MShaderTextureParam* pParam, VkWriteDescriptorSet& descriptorWrite)
+void MVulkanPipelineManager::BindTextureParam(const std::shared_ptr<MShaderTextureParam> pParam, VkWriteDescriptorSet& descriptorWrite)
 {
 	MTexture* pTexture = pParam->GetTexture();
 	if (!pTexture)
@@ -816,9 +800,15 @@ void MVulkanPipelineManager::BindTextureParam(MShaderTextureParam* pParam, VkWri
 	}
 }
 
-void MVulkanPipelineManager::BindStorageParam(MShaderStorageParam* pParam, VkWriteDescriptorSet& descriptorWrite)
+void MVulkanPipelineManager::BindStorageParam(const std::shared_ptr<MShaderStorageParam> pParam, VkWriteDescriptorSet& descriptorWrite)
 {
 	const MBuffer* pBuffer = pParam->pBuffer;
+
+	if (!pBuffer)
+	{
+		MORTY_ASSERT(pBuffer);
+		return;
+	}
 
 	VkDescriptorBufferInfo& bufferInfo = pParam->m_VkBufferInfo;
 	bufferInfo.buffer = pBuffer->m_VkBuffer;

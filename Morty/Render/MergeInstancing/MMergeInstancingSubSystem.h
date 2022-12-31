@@ -30,8 +30,8 @@ public:
 
 struct MORTY_API MMaterialBatchGroup
 {
-	std::shared_ptr<MMaterial> pMaterial;
-	std::set<MRenderableMeshComponent*> vMeshComponent;
+	std::shared_ptr<MMaterial> pMaterial = nullptr;
+	std::set<MRenderableMeshComponent*> vMeshComponent = {};
 };
 
 class MORTY_API MMergeInstancingSubSystem : public MISubSystem
@@ -61,7 +61,7 @@ public:
 	MMaterialBatchGroup* GetMaterialBatchGroup(std::shared_ptr<MMaterial> pMaterial);
 	const std::map<std::shared_ptr<MMaterial>, MMaterialBatchGroup*>& GetMaterialToBatchInstanceTable() { return m_tMaterialToBatchInstanceTable; }
 
-	const std::vector<MMergeInstancingMesh::MMeshClusterData>& GetMeshClusterGroup(MIMesh* pMesh);
+	const std::vector<MMergeInstancingMesh::MClusterData>& GetMeshClusterGroup(MIMesh* pMesh);
 
 	const MMergeInstancingMesh* GetMergeInstancingMesh() const { return m_pMergeMesh; }
 public:

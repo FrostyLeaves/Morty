@@ -43,49 +43,49 @@ struct Material
 //PS
 [[vk::binding(0,0)]]cbuffer cbMaterial
 {
-    Material U_mat;
+    Material u_xMaterial;
 };
 
-[[vk::binding(1,0)]]Texture2D U_mat_texDiffuse;
-[[vk::binding(2,0)]]Texture2D U_mat_texNormal;
-[[vk::binding(3,0)]]Texture2D U_mat_texSpecular;
-[[vk::binding(4,0)]]Texture2D U_mat_texTransparent;
-[[vk::binding(5,0)]]Texture2D U_mat_texEmissive;
+[[vk::binding(1,0)]]Texture2D u_texDiffuse;
+[[vk::binding(2,0)]]Texture2D u_texNormal;
+[[vk::binding(3,0)]]Texture2D u_texSpecular;
+[[vk::binding(4,0)]]Texture2D u_texTransparent;
+[[vk::binding(5,0)]]Texture2D u_texEmissive;
 
 
 
 // point light
-float3 CalcPointLight(PointLight pointLight, float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3WorldPixelPosition, float3 f3DiffColor, float3 f3SpecColor)
+float3 AdditionPointLight(PointLight pointLight, float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3WorldPixelPosition, float3 f3DiffColor, float3 f3SpecColor)
 {
 
     float fDiff = max(dot(f3Normal, f3LightDir), 0.0f);
 
     float3 fReflectDir = reflect(-f3LightDir, f3Normal);
-    float fSpec = pow(max(dot(f3CameraDir, fReflectDir), 0.0f), U_mat.fShininess);
+    float fSpec = pow(max(dot(f3CameraDir, fReflectDir), 0.0f), u_xMaterial.fShininess);
 
     float fDistance = length(pointLight.f3WorldPosition - f3WorldPixelPosition);
     float fAttenuation = 1.0f / (1.0f + pointLight.fLinear * fDistance + pointLight.fQuadratic * fDistance * fDistance);
 
-    return float3(     pointLight.f3Intensity * U_mat.f3Diffuse * fDiff * f3DiffColor
-                     + pointLight.f3Intensity * U_mat.f3Specular * fSpec * f3SpecColor
+    return float3(     pointLight.f3Intensity * u_xMaterial.f3Diffuse * fDiff * f3DiffColor
+                     + pointLight.f3Intensity * u_xMaterial.f3Specular * fSpec * f3SpecColor
                 ) * fAttenuation;
 }
 
 // spot light
-float3 CalcSpotLight(SpotLight spotLight, float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3WorldPixelPosition, float3 f3DiffColor, float3 f3SpecColor)
+float3 AdditionSpotLight(SpotLight spotLight, float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3WorldPixelPosition, float3 f3DiffColor, float3 f3SpecColor)
 {
     float fTheta = dot(spotLight.f3Direction, -f3LightDir);
     if (fTheta > spotLight.fHalfOuterCutOff)
     {
         float fDiff = max(dot(f3Normal, f3LightDir), 0.0f);
         float3 fReflectDir = reflect(-f3LightDir, f3Normal);
-        float fSpec = pow(max(dot(f3CameraDir, fReflectDir), 0.0f), U_mat.fShininess);
+        float fSpec = pow(max(dot(f3CameraDir, fReflectDir), 0.0f), u_xMaterial.fShininess);
 
         float fEpsilon = spotLight.fHalfInnerCutOff - spotLight.fHalfOuterCutOff;
         float fIntensity = clamp((fTheta - spotLight.fHalfOuterCutOff) / fEpsilon, 0.0, 1.0);
 
-        return float3(     spotLight.f3Intensity * U_mat.f3Diffuse * fDiff * f3DiffColor
-                        + spotLight.f3Intensity * U_mat.f3Specular * fSpec * f3SpecColor
+        return float3(     spotLight.f3Intensity * u_xMaterial.f3Diffuse * fDiff * f3DiffColor
+                        + spotLight.f3Intensity * u_xMaterial.f3Specular * fSpec * f3SpecColor
                     ) * fIntensity;
     }
     else
@@ -95,17 +95,17 @@ float3 CalcSpotLight(SpotLight spotLight, float3 f3CameraDir, float3 f3LightDir,
 }
 
 // direction light
-float3 CalcDirectionLight(float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3DiffColor, float3 f3SpecColor)
+float3 AdditionDirectionLight(float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3DiffColor, float3 f3SpecColor)
 {
     float fNdotL = dot(f3Normal, -f3LightDir);
 
     if (fNdotL >= 0)
     {
         float3 fReflectDir = reflect(f3LightDir, f3Normal);
-        float fSpec = pow(max(dot(f3CameraDir, fReflectDir), 0.0f), U_mat.fShininess);
+        float fSpec = pow(max(dot(f3CameraDir, fReflectDir), 0.0f), u_xMaterial.fShininess);
 
-        return float3(     U_dirLight.f3Intensity * U_mat.f3Diffuse * fNdotL * f3DiffColor
-                        + U_dirLight.f3Intensity * U_mat.f3Specular * fSpec * f3SpecColor
+        return float3(     u_xDirectionalLight.f3Intensity * u_xMaterial.f3Diffuse * fNdotL * f3DiffColor
+                        + u_xDirectionalLight.f3Intensity * u_xMaterial.f3Specular * fSpec * f3SpecColor
                     );
     }
     else
@@ -122,9 +122,9 @@ LightBasicInfo GetLightBasicInfo(VS_OUT input)
     result.f3DirLightDir = float3(0.0f, 0.0f, 1.0f);
     
 
-    if (U_mat.bUseNormalTex > 0)
+    if (u_xMaterial.bUseNormalTex > 0)
     {
-        result.f3Normal = U_mat_texNormal.Sample(LinearSampler, input.uv).xyz;
+        result.f3Normal = u_texNormal.Sample(LinearSampler, input.uv).xyz;
         result.f3Normal = result.f3Normal.rgb * 2.0f - 1.0f;
         result.f3Normal = normalize(result.f3Normal);
         
@@ -141,15 +141,15 @@ LightBasicInfo GetLightBasicInfo(VS_OUT input)
         float3x3 TBN = float3x3(T,B,N);
 
         result.f3Normal = mul(result.f3Normal, TBN);
-        result.f3CameraDir = normalize(U_f3CameraPosition - input.worldPos);
-        result.f3DirLightDir = U_f3DirectionLight;
+        result.f3CameraDir = normalize(u_f3CameraPosition - input.worldPos);
+        result.f3DirLightDir = u_f3DirectionLight;
 #endif
     }
     else
     {
         result.f3Normal = input.normal;
-        result.f3CameraDir = normalize(U_f3CameraPosition - input.worldPos);
-        result.f3DirLightDir = U_f3DirectionLight;
+        result.f3CameraDir = normalize(u_f3CameraPosition - input.worldPos);
+        result.f3DirLightDir = u_f3DirectionLight;
     }
 
     return result;
@@ -162,15 +162,14 @@ float3 AdditionAllLights(float3 f3Color, float4 f3AmbiColor, VS_OUT input)
     float3 f3DiffColor = f3AmbiColor.xyz;
     float3 f3SpecColor = f3AmbiColor.xyz;
 
-    if (U_mat.bUseSpecularTex > 0)
-        f3SpecColor = U_mat_texSpecular.Sample(LinearSampler, input.uv).xyz;
+    if (u_xMaterial.bUseSpecularTex > 0)
+        f3SpecColor = u_texSpecular.Sample(LinearSampler, input.uv).xyz;
 
-    if(U_bDirectionLightEnabled > 0)
+    if(u_bDirectionLightEnabled > 0)
     {
-        float fNdotL = dot(cLightInfo.f3Normal, -cLightInfo.f3DirLightDir);
-        float shadow = 1.0; //CalcShadow(U_texShadowMap, input.dirLightSpacePos, input.pos, fNdotL);
+        float shadow = GetDirectionShadow(u_texShadowMap, input.worldPos, cLightInfo.f3Normal, -cLightInfo.f3DirLightDir);
 
-        f3Color += shadow * CalcDirectionLight(  cLightInfo.f3CameraDir,
+        f3Color += shadow * AdditionDirectionLight(  cLightInfo.f3CameraDir,
                                         cLightInfo.f3DirLightDir,
                                         cLightInfo.f3Normal,
                                         f3DiffColor,
@@ -180,15 +179,15 @@ float3 AdditionAllLights(float3 f3Color, float4 f3AmbiColor, VS_OUT input)
     
     f3Color += input.vertexPointLight;
 
-    for(int nPointLightIdx = 0; nPointLightIdx < min(MPOINT_LIGHT_PIXEL_NUMBER, U_nValidPointLightsNumber); ++nPointLightIdx)
+    for(int nPointLightIdx = 0; nPointLightIdx < min(MPOINT_LIGHT_PIXEL_NUMBER, u_nValidPointLightsNumber); ++nPointLightIdx)
     {
 
 #if MCALC_NORMAL_IN_VS
         float3 f3LightDir = input.pointLightDirTangentSpace[nPointLightIdx];
 #else
-        float3 f3LightDir = normalize(U_pointLights[nPointLightIdx].f3WorldPosition - input.worldPos);
+        float3 f3LightDir = normalize(u_vPointLights[nPointLightIdx].f3WorldPosition - input.worldPos);
 #endif
-        f3Color += CalcPointLight(  U_pointLights[nPointLightIdx],
+        f3Color += AdditionPointLight(  u_vPointLights[nPointLightIdx],
                                     cLightInfo.f3CameraDir,
                                     f3LightDir,
                                     cLightInfo.f3Normal,
@@ -198,15 +197,15 @@ float3 AdditionAllLights(float3 f3Color, float4 f3AmbiColor, VS_OUT input)
                                 );
     }
 
-    for(int nSpotLightIdx = 0; nSpotLightIdx < min(MSPOT_LIGHT_PIXEL_NUMBER, U_nValidSpotLightsNumber); ++nSpotLightIdx)
+    for(int nSpotLightIdx = 0; nSpotLightIdx < min(MSPOT_LIGHT_PIXEL_NUMBER, u_nValidSpotLightsNumber); ++nSpotLightIdx)
     {
 
 #if MCALC_NORMAL_IN_VS
         float3 f3LightDir = input.spotLightDirTangentSpace[nSpotLightIdx];
 #else
-        float3 f3LightDir = normalize(U_spotLights[nSpotLightIdx].f3WorldPosition - input.worldPos);
+        float3 f3LightDir = normalize(u_vSpotLights[nSpotLightIdx].f3WorldPosition - input.worldPos);
 #endif
-        f3Color += CalcSpotLight(   U_spotLights[nSpotLightIdx],
+        f3Color += AdditionSpotLight(   u_vSpotLights[nSpotLightIdx],
                                     cLightInfo.f3CameraDir,
                                     f3LightDir,
                                     cLightInfo.f3Normal,

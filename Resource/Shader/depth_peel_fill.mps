@@ -1,7 +1,7 @@
-[[vk::binding(1,0)]]Texture2D backTex;
+[[vk::binding(1,0)]]Texture2D BackTexture;
 [[vk::binding(2,0)]]sampler LinearSampler;
 
-struct VS_OUT_DP
+struct VS_OUT
 {
     float4 pos : SV_POSITION;
     float2 uv : TEXCOORD;
@@ -15,14 +15,14 @@ struct PS_OUT
     float fBackDepth: SV_Target3;
 };
 
-PS_OUT PS(VS_OUT_DP input) : SV_Target
+PS_OUT PS_MAIN(VS_OUT input) : SV_Target
 {
     PS_OUT output;
 
     output.f4FrontColor = float4(0, 0, 0, 0);
     output.fBackColor = float4(0, 0, 0, 0);
     output.fFrontDepth = 0;
-    output.fBackDepth = backTex.Sample(LinearSampler, input.uv);
+    output.fBackDepth = BackTexture.Sample(LinearSampler, input.uv);
 
     return output;
 }

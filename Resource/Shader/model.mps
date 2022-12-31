@@ -10,8 +10,8 @@ struct PS_OUT
     float fBackDepth: SV_Target3;
 };
 
-[[vk::input_attachment_index(0)]] [[vk::binding(7, 1)]] SubpassInput U_texSubpassInput0;
-[[vk::input_attachment_index(1)]] [[vk::binding(8, 1)]] SubpassInput U_texSubpassInput1;
+[[vk::input_attachment_index(0)]] [[vk::binding(10, 1)]] SubpassInput u_texSubpassInput0;
+[[vk::input_attachment_index(1)]] [[vk::binding(11, 1)]] SubpassInput u_texSubpassInput1;
 
 #else
 
@@ -22,19 +22,19 @@ struct PS_OUT
 
 #endif
 
-PS_OUT PS(VS_OUT input)
+PS_OUT PS_MAIN(VS_OUT input)
 {
     PS_OUT output;
     
-    float4 f3AmbiColor = U_mat_texDiffuse.Sample(LinearSampler, input.uv);
+    float4 f3AmbiColor = u_texDiffuse.Sample(LinearSampler, input.uv);
 
-    float3 f3Color = U_mat.f3Ambient * f3AmbiColor.xyz * 0.2f;
+    float3 f3Color = u_xMaterial.f3Ambient * f3AmbiColor.xyz * 0.2f;
 
-    float fAlpha = saturate(U_mat.fAlphaFactor) * f3AmbiColor.w;
+    float fAlpha = saturate(u_xMaterial.fAlphaFactor) * f3AmbiColor.w;
 
-    if (U_mat.bUseTransparentTex > 0)
+    if (u_xMaterial.bUseTransparentTex > 0)
     {
-        float4 transparentColor = U_mat_texTransparent.Sample(LinearSampler, input.uv);
+        float4 transparentColor = u_texTransparent.Sample(LinearSampler, input.uv);
         fAlpha *= transparentColor.a;
         clip(fAlpha - 0.1f);
     }
@@ -43,8 +43,8 @@ PS_OUT PS(VS_OUT input)
 #ifdef MTRANSPARENT_DEPTH_PEELING
 
     float fZDepth = input.pos.z;
-    float fZFront = U_texSubpassInput0.SubpassLoad();
-    float fZBack = U_texSubpassInput1.SubpassLoad();
+    float fZFront = u_texSubpassInput0.SubpassLoad();
+    float fZBack = u_texSubpassInput1.SubpassLoad();
 
     output.f4FrontColor = float4(0, 0, 0, 0);
     output.fBackColor = float4(0, 0, 0, 0);
@@ -62,9 +62,9 @@ PS_OUT PS(VS_OUT input)
         return output;
     }
 
-    if (U_mat.bUseEmissiveTex > 0)
+    if (u_xMaterial.bUseEmissiveTex > 0)
     {
-        float3 f3EmissiveColor = U_mat_texEmissive.Sample(LinearSampler, input.uv);
+        float3 f3EmissiveColor = u_texEmissive.Sample(LinearSampler, input.uv);
         if(length(f3EmissiveColor) <= 0.0f)
         {
             f3Color = AdditionAllLights(f3Color, f3AmbiColor, input);
@@ -86,9 +86,9 @@ PS_OUT PS(VS_OUT input)
     else
         output.fBackColor = float4(f3Color, fAlpha);
 #else
-    if (U_mat.bUseEmissiveTex > 0)
+    if (u_xMaterial.bUseEmissiveTex > 0)
     {
-        float3 f3EmissiveColor = U_mat_texEmissive.Sample(LinearSampler, input.uv).xyz;
+        float3 f3EmissiveColor = u_texEmissive.Sample(LinearSampler, input.uv).xyz;
         if(length(f3EmissiveColor) <= 0.0f)
         {
             f3Color = AdditionAllLights(f3Color, f3AmbiColor, input);

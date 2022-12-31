@@ -161,18 +161,21 @@ bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 	//must begin renderpass
 	if (m_vRenderPassStages.empty())
+	{
+		MORTY_ASSERT(!m_vRenderPassStages.empty());
 		return false;
+	}
 
 	if (nullptr == pMaterial)
 	{
+		MORTY_ASSERT(nullptr != pMaterial);
 		pUsingPipeline = nullptr;
 		return true;
 	}
 
 	MRenderPassStage stage = m_vRenderPassStages.top();
-	pUsingPipeline = m_pDevice->m_PipelineManager.FindOrCreateGraphicsPipeline(pMaterial, stage.pRenderPass);
-
 	std::shared_ptr<MPipeline> pPipeline = m_pDevice->m_PipelineManager.FindOrCreateGraphicsPipeline(pMaterial, stage.pRenderPass);
+	MORTY_ASSERT(pUsingPipeline = pPipeline);
 
 	if (std::shared_ptr<MGraphicsPipeline> pGraphicsPipeline = std::dynamic_pointer_cast<MGraphicsPipeline>(pPipeline))
 	{
@@ -192,15 +195,42 @@ bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 	return false;
 }
 
+bool MVulkanRenderCommand::DispatchComputeJob(MComputeDispatcher* pComputeDispatcher, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ)
+{
+	MORTY_ASSERT(pComputeDispatcher->GetComputeShader());
+
+	if (nullptr == pComputeDispatcher)
+	{
+		return true;
+	}
+
+	std::shared_ptr<MPipeline> pPipeline = m_pDevice->m_PipelineManager.FindOrCreateComputePipeline(pComputeDispatcher);
+	MORTY_ASSERT(pUsingPipeline = pPipeline);
+
+	if (std::shared_ptr<MComputePipeline> pComputePipeline = std::dynamic_pointer_cast<MComputePipeline>(pPipeline))
+	{
+		VkPipeline vkPipeline = pComputePipeline->m_vkPipeline;
+		MORTY_ASSERT(VK_NULL_HANDLE != vkPipeline);
+
+		vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, vkPipeline);
+
+		for (const std::shared_ptr<MShaderPropertyBlock>& params : pComputeDispatcher->GetShaderParamSets())
+		{
+			SetShaderParamSet(params);
+		}
+
+		vkCmdDispatch(m_VkCommandBuffer, nGroupX, nGroupY, nGroupZ);
+
+		return true;
+	}
+
+	return false;
+}
+
 void MVulkanRenderCommand::SetShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock)
 {
 	std::shared_ptr<MShaderProgram> pShaderPropgram = pPropertyBlock->GetShaderProgram();
 	MORTY_ASSERT(pShaderPropgram);
-	
-	if (VK_NULL_HANDLE == pPropertyBlock->m_VkDescriptorSet)
-	{
-		pPropertyBlock->GenerateBuffer(m_pDevice);
-	}
 
 	bool bDirty = false;
 	std::vector<uint32_t> vDynamicOffsets;
@@ -232,7 +262,7 @@ void MVulkanRenderCommand::SetShaderParamSet(const std::shared_ptr<MShaderProper
 	if (bDirty)
 	{
 		//alloc a new descriptor set.
-		m_pDevice->m_PipelineManager.AllocateShaderParamSet(pPropertyBlock);
+		m_pDevice->m_PipelineManager.AllocateShaderParamSet(pPropertyBlock, pUsingPipeline);
 
 		std::vector<VkWriteDescriptorSet> vWriteDescriptorSet;
 
@@ -270,36 +300,18 @@ void MVulkanRenderCommand::SetShaderParamSet(const std::shared_ptr<MShaderProper
 
 		vkUpdateDescriptorSets(m_pDevice->m_VkDevice, vWriteDescriptorSet.size(), vWriteDescriptorSet.data(), 0, nullptr);
 	}
-
-	vkCmdBindDescriptorSets(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pShaderPropgram->m_vkPipelineLayout, pPropertyBlock->m_unKey, 1, &pPropertyBlock->m_VkDescriptorSet, vDynamicOffsets.size(), vDynamicOffsets.data());
-}
-
-bool MVulkanRenderCommand::DispatchComputeJob(MComputeDispatcher* pComputeDispatcher, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ)
-{
-	MORTY_ASSERT(pComputeDispatcher->GetComputeShader());
-
-	if (nullptr == pComputeDispatcher)
+	else if (VK_NULL_HANDLE == pPropertyBlock->m_VkDescriptorSet)
 	{
-		return true;
+		//alloc a new descriptor set.
+		m_pDevice->m_PipelineManager.AllocateShaderParamSet(pPropertyBlock, pUsingPipeline);
+
 	}
 
-	std::shared_ptr<MPipeline> pPipeline = m_pDevice->m_PipelineManager.FindOrCreateComputePipeline(pComputeDispatcher);
+	MORTY_ASSERT(VK_NULL_HANDLE != pUsingPipeline->m_pipelineLayout.vkPipelineLayout);
+	MORTY_ASSERT(VK_NULL_HANDLE != pPropertyBlock->m_VkDescriptorSet);
 
-	if (std::shared_ptr<MComputePipeline> pComputePipeline = std::dynamic_pointer_cast<MComputePipeline>(pPipeline))
-	{
-		vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pComputePipeline->m_vkPipeline);
-
-		for (const std::shared_ptr<MShaderPropertyBlock>& params : pComputeDispatcher->GetShaderParamSets())
-		{
-			SetShaderParamSet(params);
-		}
-
-		vkCmdDispatch(m_VkCommandBuffer, nGroupX, nGroupY, nGroupZ);
-
-		return true;
-	}
-
-	return false;
+	VkPipelineBindPoint vkPipelineBindPoint = pUsingPipeline->m_vkPipelineBindPoint;
+	vkCmdBindDescriptorSets(m_VkCommandBuffer, vkPipelineBindPoint, pUsingPipeline->m_pipelineLayout.vkPipelineLayout, pPropertyBlock->m_unKey, 1, &pPropertyBlock->m_VkDescriptorSet, vDynamicOffsets.size(), vDynamicOffsets.data());
 }
 
 bool MVulkanRenderCommand::AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures)
@@ -612,6 +624,8 @@ void MVulkanRenderCommand::UpdateShaderParam(std::shared_ptr<MShaderConstantPara
 {
 	m_pDevice->DestroyShaderParamBuffer(param);
 	m_pDevice->GenerateShaderParamBuffer(param);
+
+	MORTY_ASSERT(param->m_pMemoryMapping);
 
 	if (param->m_pMemoryMapping)
 	{

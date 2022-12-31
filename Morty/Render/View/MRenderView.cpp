@@ -97,15 +97,12 @@ void MRenderView::Present(MRenderTarget* pRenderTarget)
 		}
 	}
 
-
-
 	// present 
 	{
-
 		VkPresentInfoKHR presentInfo{};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-		std::vector<VkSemaphore> vSignalSemaphores = { pRenderCommand->m_VkRenderFinishedSemaphore };
+		std::vector<VkSemaphore> vSignalSemaphores = { pRenderCommand-> m_VkRenderFinishedSemaphore };
 
 		presentInfo.waitSemaphoreCount = vSignalSemaphores.size();
 		presentInfo.pWaitSemaphores = vSignalSemaphores.data();
@@ -115,6 +112,8 @@ void MRenderView::Present(MRenderTarget* pRenderTarget)
 		presentInfo.pImageIndices = &pRenderTarget->unImageIndex;
 		presentInfo.pResults = nullptr; // Optional
 		vkQueuePresentKHR(m_VkPresentQueue, &presentInfo);
+
+		vkDeviceWaitIdle(m_pDevice->m_VkDevice);
 	}
 }
 
@@ -126,35 +125,6 @@ void MRenderView::InitializeForVulkan(MIDevice* pDevice, VkSurfaceKHR surface)
 	m_VkSurface = surface;
 
 	Resize(Vector2(m_unWidht, m_unHeight));
-}
-
-VkSemaphore MRenderView::CreateSemaphore()
-{
-	VkSemaphore result = VK_NULL_HANDLE;
-
-	//Create WaitSemaphore
-	VkSemaphoreCreateInfo semaphoreInfo{};
-	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-	if (vkCreateSemaphore(m_pDevice->m_VkDevice, &semaphoreInfo, nullptr, &result) != VK_SUCCESS)
-	{
-		m_pEngine->GetLogger()->Error("MRenderView::InitializeForVulkan Error: Create semaphore failed.");
-	}
-
-	return result;
-}
-
-VkSemaphore MRenderView::GetSemaphore()
-{
-	if (m_vImageReadySemaphore.empty())
-	{
-		m_vImageReadySemaphore.push(CreateSemaphore());
-	}
-
-	VkSemaphore result = m_vImageReadySemaphore.front();
-	m_vImageReadySemaphore.pop();
-
-	return result;
 }
 
 #endif
@@ -391,12 +361,6 @@ void MRenderView::DestroyRenderPass()
 		rendertarget.pPrimaryCommand = nullptr;
 	}
 
-	while (!m_vImageReadySemaphore.empty())
-	{
-		m_pDevice->GetRecycleBin()->DestroySemaphoreLater(m_vImageReadySemaphore.front());
-		m_vImageReadySemaphore.pop();
-	}
-
 	m_vRenderTarget.clear();
 }
 
@@ -407,7 +371,12 @@ MRenderTarget* MRenderView::GetNextRenderTarget()
 
 	//get available image. by semaphore and index.
 	uint32_t unImageIndex = 0;
-	VkSemaphore vkImageReadySemaphore = GetSemaphore();
+	VkSemaphore vkImageReadySemaphore = VK_NULL_HANDLE;
+	VkSemaphoreCreateInfo semaphoreInfo{};
+	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	MORTY_ASSERT(vkCreateSemaphore(m_pDevice->m_VkDevice, &semaphoreInfo, nullptr, &vkImageReadySemaphore) == VK_SUCCESS);
+
 	VkResult result = vkAcquireNextImageKHR(m_pDevice->m_VkDevice, m_VkSwapchain, UINT64_MAX, vkImageReadySemaphore, VK_NULL_HANDLE, &unImageIndex);
 	
 	if (result != VK_SUCCESS)
@@ -417,7 +386,7 @@ MRenderTarget* MRenderView::GetNextRenderTarget()
 
 	if (m_vRenderTarget[unImageIndex].vkImageReadySemaphore)
 	{
-		m_vImageReadySemaphore.push(m_vRenderTarget[unImageIndex].vkImageReadySemaphore);
+		m_pDevice->GetRecycleBin()->DestroySemaphoreLater(m_vRenderTarget[unImageIndex].vkImageReadySemaphore);
 		m_vRenderTarget[unImageIndex].vkImageReadySemaphore = nullptr;
 	}
 

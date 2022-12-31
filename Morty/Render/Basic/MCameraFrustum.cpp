@@ -14,17 +14,17 @@ MCameraFrustum::~MCameraFrustum()
 
 const MPlane& MCameraFrustum::GetPlane(const size_t& idx) const
 {
-	return m_vPlanes[(std::min)(idx, size_t(6))];
+	return m_vPlanes[(std::min)(idx, static_cast<size_t>(6))];
 }
 
 void MCameraFrustum::UpdateFromCameraInvProj(const Matrix4& m4CameraInvProj)
 {
 	const Matrix4& m4 = m4CameraInvProj;
 
-	Vector4 c0 = m4.Row(0);
-	Vector4 c1 = m4.Row(1);
-	Vector4 c2 = m4.Row(2);
-	Vector4 c3 = m4.Row(3);
+	const Vector4 c0 = m4.Row(0);
+	const Vector4 c1 = m4.Row(1);
+	const Vector4 c2 = m4.Row(2);
+	const Vector4 c3 = m4.Row(3);
 	
 	m_vPlanes[0].m_v4Plane = -c3 - c0;	//Left
 	m_vPlanes[1].m_v4Plane = c0 - c3;	//Right

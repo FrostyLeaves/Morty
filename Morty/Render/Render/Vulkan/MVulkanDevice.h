@@ -182,7 +182,7 @@ public:
 	VkDescriptorPool m_VkDescriptorPool;
 
 
-#ifdef _DEBUG
+#ifdef MORTY_DEBUG
 	VkDebugUtilsMessengerEXT m_VkDebugUtilsMessenger;
 #endif
 public:
