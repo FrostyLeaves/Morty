@@ -1,4 +1,10 @@
 #include "inner_constant.hlsl"
+#include "Shadow/PCSS.hlsl"
+
+
+#define PCF_ENABLE true
+#define PCSS_ENABLE true
+
 
 //shadow
 float GetDirectionShadow(Texture2DArray texShadowMap, float3 f3WorldPosition, float3 f3Normal, float3 f3LightInverseDirection)
@@ -25,19 +31,30 @@ float GetDirectionShadow(Texture2DArray texShadowMap, float3 f3WorldPosition, fl
     
 	if (saturate(shadowTexCoords.x) == shadowTexCoords.x && saturate(shadowTexCoords.y) == shadowTexCoords.y)
     {     
-        float margin = acos(saturate(fNdotL));
-        float epsilon = clamp(margin / 1.570796, 0.001f, 0.003f);
+        float fMargin = acos(saturate(fNdotL));
+        float fEpsilon = clamp(fMargin / 1.570796, 0.001f, 0.003f);
 
-        float pixelDepth = min(f4DirLightSpacePos.z / f4DirLightSpacePos.w, 1.0f);
-        float shadowDepth = texShadowMap.Sample(NearestSampler, float3(shadowTexCoords.xy, nCascadeIndex)).r;
+        fEpsilon = fEpsilon / (nCascadeIndex + 1);
 
-        //current pixel is nearer.
-        if (pixelDepth < shadowDepth + epsilon )
-        {
-            return 1.0f;
-        }
+        float fPixelDepth = min(f4DirLightSpacePos.z / f4DirLightSpacePos.w, 1.0f);
+       
+        float fLightSize = u_xDirectionalLight.fLightSize;
+    
+#if PCSS_ENABLE
 
-        return 0.0f;
+        return PCSS(texShadowMap, nCascadeIndex, shadowTexCoords, fLightSize, fPixelDepth, fEpsilon);
+    
+#elif PCF_ENABLE
+
+        return PCF(texShadowMap, nCascadeIndex, shadowTexCoords, fPixelDepth, 10.0f, fEpsilon);
+
+#else
+        float fPixelDepth = texShadowMap.Sample(NearestSampler, float3(shadowTexCoords.xy, nCascadeIndex)).r;
+        
+        //pixelDepth < fPixelDepth + fEpsilon
+        return step(pixelDepth, fPixelDepth + fEpsilon);
+#endif
+
     }
 
     return 1.0f;

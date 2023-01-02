@@ -23,6 +23,9 @@ source_group("Render" FILES ${EDITOR_RENDER_FILES})
 file(GLOB EDITOR_SYSTEM_FILES System/*.h System/*.cpp)
 source_group("System" FILES ${EDITOR_SYSTEM_FILES})
 
+file(GLOB EDITOR_TEST_FILES Test/*.h Test/*.cpp)
+source_group("Test" FILES ${EDITOR_TEST_FILES})
+
 file(GLOB EDITOR_UTILITY_FILES Utility/*.h Utility/*.cpp)
 source_group("Utility" FILES ${EDITOR_UTILITY_FILES})
 
@@ -52,6 +55,7 @@ add_executable(Editor
         ${EDITOR_PROPERTY_FILES}
         ${EDITOR_RENDER_FILES}
         ${EDITOR_SYSTEM_FILES}
+        ${EDITOR_TEST_FILES}
         ${EDITOR_UTILITY_FILES}
         ${EDITOR_WIDGET_FILES}
         ${EDITOR_IMGUI_FILES}

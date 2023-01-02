@@ -25,7 +25,7 @@ public:
 	static MString GetResourceTypeName() { return "Entity"; }
 	static std::vector<MString> GetSuffixList() { return { "entity" }; }
 
-    MString& GetData() { return m_entityData; }
+    std::vector<MByte>& GetData() { return m_entityData; }
 
 protected:
 
@@ -35,7 +35,7 @@ protected:
 private:
 
     friend class MEntitySystem;
-    MString m_entityData;
+    std::vector<MByte> m_entityData;
 };
 
 

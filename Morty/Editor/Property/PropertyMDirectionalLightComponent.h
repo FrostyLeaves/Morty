@@ -17,6 +17,7 @@ public:
 			{
 				PROPERTY_VALUE_EDIT(pDirectonalLightComponent, "Color", MColor, GetColor, SetColor);
 				PROPERTY_VALUE_EDIT(pDirectonalLightComponent, "Intensity", float, GetLightIntensity, SetLightIntensity);
+				PROPERTY_VALUE_EDIT(pDirectonalLightComponent, "LightSize", float, GetLightSize, SetLightSize);
 
 				ShowNodeEnd();
 			}

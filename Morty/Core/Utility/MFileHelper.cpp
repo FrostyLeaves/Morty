@@ -109,6 +109,40 @@ bool MFileHelper::ReadString(const MString& strFilePath, MString& strData)
 	return true;
 }
 
+bool MFileHelper::WriteData(const MString& strFilePath, const std::vector<MByte>& vData)
+{
+	std::ofstream file(strFilePath.c_str(), std::ios::binary);
+
+	if (!file.is_open())
+		return false;
+
+	file.write(reinterpret_cast<const char*>(vData.data()), vData.size() * sizeof(MByte));
+
+	file.close();
+}
+
+bool MFileHelper::ReadData(const MString& strFilePath, std::vector<MByte>& vData)
+{
+	std::ifstream file(strFilePath.c_str(), std::ios::binary);
+
+	if (!file.is_open())
+		return false;
+
+	file.seekg(0, std::ios::end);
+	int len = file.tellg();
+	file.seekg(0, std::ios::beg);
+
+	vData.resize(len);
+
+	std::ostringstream tmp;
+	tmp << file.rdbuf();
+	std::string value = tmp.str();
+
+ 	memcpy(vData.data(), value.data(), sizeof(MByte) * len);
+
+	file.close();
+}
+
 bool MFileHelper::WriteFormatFile(const MString& strFilePath, const MMortyFileFormat& format)
 {
 	std::ofstream file(strFilePath.c_str(), std::ios::ate | std::ios::binary);

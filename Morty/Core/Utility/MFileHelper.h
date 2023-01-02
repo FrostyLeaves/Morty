@@ -49,6 +49,10 @@ public:
 
 	static bool ReadString(const MString& strFilePath, MString& strData);
 
+    static bool WriteData(const MString& strFilePath, const std::vector<MByte>& vData);
+
+    static bool ReadData(const MString& strFilePath, std::vector<MByte>& vData);
+
     static bool WriteFormatFile(const MString& strFilePath, const MMortyFileFormat& format);
 
     static bool ReadFormatFile(const MString& strFilePath, MMortyFileFormat& format);

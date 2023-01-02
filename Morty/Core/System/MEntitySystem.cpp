@@ -67,7 +67,8 @@ std::shared_ptr<MResource> MEntitySystem::PackEntity(MScene* pScene, const std::
 	fbb.Finish(root);
 
 	pResource->GetData().clear();
-	pResource->GetData().append((char*)fbb.GetBufferPointer(), fbb.GetSize());
+	pResource->GetData().resize(fbb.GetSize());
+	memcpy(pResource->GetData().data(), (MByte*)fbb.GetBufferPointer(), fbb.GetSize() * sizeof(MByte));
 
 	return pResource;
 }
@@ -90,8 +91,13 @@ std::vector<MEntity*> MEntitySystem::LoadEntity(MScene* pScene, std::shared_ptr<
 
 	for (int i = 0; i < vEntity.size(); ++i)
 	{
+		MGuid guid = MGuid::generate();
+
 		const mfbs::MEntity* fb_entity = vEntity.Get(i);
-		MGuid guid = MGuid(fb_entity->id()->data0(), fb_entity->id()->data1(), fb_entity->id()->data2(), fb_entity->id()->data3());
+		if (fb_entity->id())
+		{
+			guid = MGuid(fb_entity->id()->data0(), fb_entity->id()->data1(), fb_entity->id()->data2(), fb_entity->id()->data3());
+		}
 
 		MEntity* pEntity = pScene->CreateEntity(guid);
 		pEntity->Deserialize(fb_entity);

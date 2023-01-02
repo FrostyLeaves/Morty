@@ -54,6 +54,9 @@ void MGPUCullingRenderWork::OnCreated()
 	m_cullingIndirectDrawBuffer.m_eMemoryType = MBuffer::MMemoryType::EDeviceLocal;
 	m_cullingIndirectDrawBuffer.m_eUsageType = MBuffer::MUsageType::EStorage | MBuffer::MUsageType::EIndirect;
 
+	//m_cullingIndirectDrawShadowBuffer.m_eMemoryType = MBuffer::MMemoryType::EDeviceLocal;
+	//m_cullingIndirectDrawShadowBuffer.m_eUsageType = MBuffer::MUsageType::EStorage | MBuffer::MUsageType::EIndirect;
+
 	m_cullingDrawCallBuffer.m_eMemoryType = MBuffer::MMemoryType::EDeviceLocal;
 	m_cullingDrawCallBuffer.m_eUsageType = MBuffer::MUsageType::EStorage;
 
@@ -61,6 +64,7 @@ void MGPUCullingRenderWork::OnCreated()
 	m_cullingInstanceBuffer.m_strDebugBufferName = "Culling Instance Buffer";
 	m_cullingIndirectDrawBuffer.m_strDebugBufferName = "Culling Indirect Draw Buffer";
 	m_cullingDrawCallBuffer.m_strDebugBufferName = "Culling Draw Call";
+	//m_cullingIndirectDrawShadowBuffer.m_strDebugBufferName = "Culling Indirect Draw Shadow Buffer";
 #endif
 
 }
@@ -76,6 +80,7 @@ void MGPUCullingRenderWork::OnDelete()
 
 	m_cullingInstanceBuffer.DestroyBuffer(pRenderSystem->GetDevice());
 	m_cullingIndirectDrawBuffer.DestroyBuffer(pRenderSystem->GetDevice());
+	//m_cullingIndirectDrawShadowBuffer.DestroyBuffer(pRenderSystem->GetDevice());
 	m_cullingDrawCallBuffer.DestroyBuffer(pRenderSystem->GetDevice());
 }
 
@@ -233,6 +238,15 @@ void MGPUCullingRenderWork::CollectCullingGroup(MRenderInfo& info)
 		m_cullingIndirectDrawBuffer.GenerateBuffer(pRenderSystem->GetDevice(), nullptr, unDrawBufferSize);
 	}
 
+	/*
+	if (m_cullingIndirectDrawShadowBuffer.GetSize() < unDrawBufferSize)
+	{
+		m_cullingIndirectDrawShadowBuffer.ReallocMemory(unDrawBufferSize);
+		m_cullingIndirectDrawShadowBuffer.DestroyBuffer(pRenderSystem->GetDevice());
+		m_cullingIndirectDrawShadowBuffer.GenerateBuffer(pRenderSystem->GetDevice(), nullptr, unDrawBufferSize);
+	}
+	*/
+
 	const size_t unDrawCallBufferSize = m_vInstanceCullData.size() * sizeof(MMergeInstanceDrawCallOutput);
 	if (m_cullingDrawCallBuffer.GetSize() < unDrawCallBufferSize)
 	{
@@ -255,6 +269,14 @@ void MGPUCullingRenderWork::CollectCullingGroup(MRenderInfo& info)
 		pStorageParam->pBuffer = &m_cullingIndirectDrawBuffer;
 		pStorageParam->SetDirty();
 	}
+
+	/*
+	if (std::shared_ptr<MShaderStorageParam>&& pStorageParam = params->FindStorageParam("indirectShadowDraws"))
+	{
+		pStorageParam->pBuffer = &m_cullingIndirectDrawShadowBuffer;
+		pStorageParam->SetDirty();
+	}
+	*/
 
 	if (std::shared_ptr<MShaderStorageParam>&& pStorageParam = params->FindStorageParam("uboOut"))
 	{
@@ -295,13 +317,18 @@ void MGPUCullingRenderWork::UpdateCameraFrustum(MRenderInfo& info)
 
 void MGPUCullingRenderWork::DispatchCullingJob(MRenderInfo& info)
 {
+	if (m_cullingIndirectDrawBuffer.GetSize() == 0)
+	{
+		return;
+	}
+
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
 
-	pCommand->AddGraphToComputeBarrier({ &m_cullingIndirectDrawBuffer });
+	pCommand->AddGraphToComputeBarrier({ &m_cullingIndirectDrawBuffer, /*&m_cullingIndirectDrawShadowBuffer*/ });
 
 	pCommand->DispatchComputeJob(m_pCullingComputeDispatcher, m_vInstanceCullData.size() / 16 + (m_vInstanceCullData.size() % 16 ? 1 : 0), 1, 1);
 
-	pCommand->AddComputeToGraphBarrier({ &m_cullingIndirectDrawBuffer });
+	pCommand->AddComputeToGraphBarrier({ &m_cullingIndirectDrawBuffer, /*&m_cullingIndirectDrawShadowBuffer*/ });
 }
 
 void MGPUCullingRenderWork::ClearCullingGroup()

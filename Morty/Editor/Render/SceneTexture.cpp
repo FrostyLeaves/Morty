@@ -21,6 +21,8 @@
 
 #include "spot.hpp"
 
+#define MUTIL_RENDER_PROGRAM false
+
 SceneTexture::SceneTexture()
 	: m_pEngine(nullptr)
 	, m_pScene(nullptr)
@@ -65,6 +67,9 @@ void SceneTexture::Initialize(MEngine* pEngine, const MString& strRenderProgram,
 
 	m_pRenderViewport->SetCamera(pDefaultCamera);
 
+
+
+#if MUTIL_RENDER_PROGRAM
 	m_vRenderProgram.resize(nImageCount);
 	for (size_t i = 0; i < nImageCount; ++i)
 	{
@@ -72,7 +77,12 @@ void SceneTexture::Initialize(MEngine* pEngine, const MString& strRenderProgram,
 		m_vRenderProgram[i] = pRenderProgram->DynamicCast<MIRenderProgram>();
 		m_vRenderProgram[i]->SetViewport(m_pRenderViewport);
 	}
-
+#else
+	MObject* pRenderProgramObject = pObjectSystem->CreateObject(strRenderProgram);
+	MIRenderProgram* pRenderProgram = pRenderProgramObject->DynamicCast<MIRenderProgram>();
+	pRenderProgram->SetViewport(m_pRenderViewport);
+	m_vRenderProgram.resize(nImageCount, pRenderProgram);
+#endif
 }
 
 void SceneTexture::Release()

@@ -141,8 +141,8 @@ void MEntity::Deserialize(const void* pBufferPointer)
 {
 	const mfbs::MEntity* fbEntity = reinterpret_cast<const mfbs::MEntity *>(pBufferPointer);
 
-	const mfbs::MGuid* fbguid = fbEntity->id();
-	m_id = MGuid(fbguid->data0(), fbguid->data1(), fbguid->data2(), fbguid->data3());
+	//const mfbs::MGuid * fbguid = fbEntity->id();
+	//m_id = MGuid(fbguid->data0(), fbguid->data1(), fbguid->data2(), fbguid->data3());
 	m_strName = fbEntity->name()->c_str();
 
 	const flatbuffers::Vector<flatbuffers::Offset<mfbs::AnyComponent>>& vfbcomponents = *fbEntity->components();

@@ -17,10 +17,10 @@ MEntityResource::~MEntityResource()
 
 bool MEntityResource::Load(const MString& strResourcePath)
 {
-	return MFileHelper::ReadString(strResourcePath, m_entityData);
+	return MFileHelper::ReadData(strResourcePath, m_entityData);
 }
 
 bool MEntityResource::SaveTo(const MString& strResourcePath)
 {
-	return MFileHelper::WriteString(strResourcePath, m_entityData);
+	return MFileHelper::WriteData(strResourcePath, m_entityData);
 }

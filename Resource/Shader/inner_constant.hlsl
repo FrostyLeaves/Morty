@@ -4,6 +4,7 @@
 
 #ifndef NUM_PI
     #define NUM_PI (3.1415926535898)
+    #define NUM_PI2 (6.283185307179586)
 #endif
 
 #define NUM_BIAS (0.000001f)
@@ -15,6 +16,7 @@
 struct DirectionLight
 {
     float3 f3Intensity;
+    float fLightSize;
 };
 
 struct PointLight

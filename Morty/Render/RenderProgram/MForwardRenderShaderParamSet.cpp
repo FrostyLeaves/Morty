@@ -179,6 +179,7 @@ void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& in
 					if (MDirectionalLightComponent* pLightComponent = info.pDirectionalLightEntity->GetComponent<MDirectionalLightComponent>())
 					{
 						cLightStruct[0] = pLightComponent->GetColor().ToVector3() * pLightComponent->GetLightIntensity();
+						cLightStruct[1] = pLightComponent->GetLightSize();
 					}
 				}
 			}

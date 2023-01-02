@@ -39,6 +39,9 @@ public:
 	void SetLightIntensity(const float& fIntensity) { m_fIntensity = fIntensity; }
 	float GetLightIntensity() const { return m_fIntensity; }
 
+	void SetLightSize(const float& fLightSize) { m_fLightSize = fLightSize; }
+	float GetLightSize() const { return m_fLightSize; }
+
 public:
 
 	virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
@@ -50,6 +53,7 @@ private:
 	Vector3 m_v3Direction;
 	MColor m_f3Color;
 	float m_fIntensity;
+	float m_fLightSize = 5.0f;
 
 };
 

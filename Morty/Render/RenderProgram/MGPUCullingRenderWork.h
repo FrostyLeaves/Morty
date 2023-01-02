@@ -43,12 +43,14 @@ public:
 	const std::vector<MMaterialCullingGroup>& GetCullingInstanceGroup() const { return m_vCullingInstanceGroup; }
 
 	const MBuffer* GetDrawIndirectBuffer() const { return &m_cullingIndirectDrawBuffer; }
+//	const MBuffer* GetDrawShadowIndirectBuffer() const { return &m_cullingIndirectDrawShadowBuffer; }
 
 private:
 
 	MShaderConstantParam* m_pIndirectTransformParam;
 	MBuffer m_cullingInstanceBuffer;
 	MBuffer m_cullingIndirectDrawBuffer;
+//	MBuffer m_cullingIndirectDrawShadowBuffer;
 	MBuffer m_cullingDrawCallBuffer;
 	MComputeDispatcher* m_pCullingComputeDispatcher;
 	std::vector<MMaterialCullingGroup> m_vCullingInstanceGroup;
