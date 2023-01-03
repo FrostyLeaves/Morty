@@ -20,7 +20,7 @@ public:
 				PROPERTY_VALUE_EDIT(pDirectonalLightComponent, "LightSize", float, GetLightSize, SetLightSize);
 
 				ShowNodeEnd();
-			}
+			} 
 		}
 	}
 };

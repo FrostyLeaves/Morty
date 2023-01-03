@@ -1,7 +1,9 @@
 #include "inner_constant.hlsl"
 
-#define NUM_SAMPLES 20
+#define NUM_SAMPLES 50
 #define NUM_RINGS 10
+
+#define NEAR_PLANE 0.01f
 
 float Rand_UV(const float2 uv)
 { 
@@ -55,12 +57,15 @@ void UniformDiskSamples( const float2 f2RandomSeed, out float2 vPoissonDisk[NUM_
     }
 }
 
-float FindBlocker(Texture2DArray texShadowMap, uint nCascadeIndex, float2 f2TexCoords, float fReceiverDepth)
+float FindBlocker(Texture2DArray texShadowMap, uint nCascadeIndex, float2 f2TexCoords, float fLightSize, float4 f4DirLightSpacePos, float fReceiverDepth)
 {
-    float fBlockerPixelNum = 0;
+    float fBlockerPixelNum = 0.0f;
     float fBlockDepth = 0.0f;
 
-    float fSearchRadius = 3.0f / MSHADOW_TEXTURE_SIZE;
+    float fLightSpaceZ = f4DirLightSpacePos.z;
+
+    //float fSearchRadius = 5.0f / MSHADOW_TEXTURE_SIZE;
+    float fSearchRadius = (fLightSize / MSHADOW_TEXTURE_SIZE) * (fLightSpaceZ - NEAR_PLANE) / fLightSpaceZ;
 
     float2 vPoissonDisk[NUM_SAMPLES];
     PoissonDiskSamples(f2TexCoords, vPoissonDisk);
@@ -69,14 +74,14 @@ float FindBlocker(Texture2DArray texShadowMap, uint nCascadeIndex, float2 f2TexC
     {
         float2 texCoords = saturate(f2TexCoords + vPoissonDisk[i] * fSearchRadius);
 
-        float fShadowDepth = texShadowMap.Sample( NearestSampler, float3(texCoords, nCascadeIndex) ).r;
+        float fShadowDepth = texShadowMap.Sample( LinearSampler, float3(texCoords, nCascadeIndex) ).r;
 
         //fShadowDepth < fReceiverDepth
-        fBlockerPixelNum += step(fShadowDepth, fReceiverDepth);
-        fBlockDepth += step(fShadowDepth, fReceiverDepth) * fShadowDepth;
+        fBlockerPixelNum += (1.0f - step(fReceiverDepth, fShadowDepth));
+        fBlockDepth += (1.0f - step(fReceiverDepth, fShadowDepth)) * fShadowDepth;
     }
 
-    if ( 0.0f == fBlockerPixelNum )
+    if ( fBlockerPixelNum < 1.0f )
     {
         return -1.0f;
     }
@@ -97,7 +102,7 @@ float PCF(Texture2DArray texShadowMap, uint nCascadeIndex, float2 f2TexCoords, f
     {
         float2 texCoords = saturate(f2TexCoords + vPoissonDisk[i] * fFilterRadiusUV);
 
-        float fShadowDepth = texShadowMap.Sample( NearestSampler, float3(texCoords, nCascadeIndex) ).r;
+        float fShadowDepth = texShadowMap.Sample( LinearSampler, float3(texCoords, nCascadeIndex) ).r;
 
         fVisibility += step(fPixelDepth, fShadowDepth + fEpsilon);
     }
@@ -105,12 +110,12 @@ float PCF(Texture2DArray texShadowMap, uint nCascadeIndex, float2 f2TexCoords, f
     return fVisibility / NUM_SAMPLES;
 }
 
-float PCSS(Texture2DArray texShadowMap, uint nCascadeIndex, float2 f2TexCoords, float fLightSize, float fPixelDepth, float fEpsilon)
+float PCSS(Texture2DArray texShadowMap, uint nCascadeIndex, float2 f2TexCoords, float fLightSize, float4 f4DirLightSpacePos, float fPixelDepth, float fEpsilon)
 {
     float fReceiverDepth = fPixelDepth;
 
     // STEP 1: avgblocker depth 
-    float fBlockerDepth = FindBlocker(texShadowMap, nCascadeIndex, f2TexCoords, fReceiverDepth);
+    float fBlockerDepth = FindBlocker(texShadowMap, nCascadeIndex, f2TexCoords, fLightSize, f4DirLightSpacePos, fReceiverDepth);
 
     if(fBlockerDepth < 0.0f)
     {

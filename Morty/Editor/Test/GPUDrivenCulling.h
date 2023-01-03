@@ -12,7 +12,7 @@
 #include "Resource/MMaterialResource.h"
 
 
-void CREATE_INSTANCING_ENTITY(MEngine* pEngine, MScene* pScene)
+void GPU_DRIVEN_CULLING_TEST(MEngine* pEngine, MScene* pScene)
 {
 
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
@@ -46,6 +46,8 @@ void CREATE_INSTANCING_ENTITY(MEngine* pEngine, MScene* pScene)
 	pMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);
 
 
+	MEntity* pFolderEntity = pScene->CreateEntity();
+	MSceneComponent* pFolderSceneComponent = pFolderEntity->RegisterComponent<MSceneComponent>();
 
 	for (int x = 0; x < 5; ++x)
 	{
@@ -59,6 +61,7 @@ void CREATE_INSTANCING_ENTITY(MEngine* pEngine, MScene* pScene)
 				{
 					pSceneComponent->SetPosition(Vector3(x * 10, y * 10, z * 10));
 					pSceneComponent->SetScale(Vector3(4.0f, 4.0f, 4.0f));
+					pSceneComponent->SetParent(pFolderSceneComponent);
 				}
 				if (MRenderableMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderableMeshComponent>())
 				{

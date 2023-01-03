@@ -11,6 +11,9 @@ MORTY_INTERFACE_IMPLEMENT(MMergeInstancingMesh, MObject)
 const size_t VertexMemoryMaxSize = 1024 * 1024 * 10;
 const size_t IndexMemoryMaxSize = 1024 * 1024 * 100;
 
+
+#define CLUSTER_MESH_ENABLE false
+
 MMergeInstancingMesh::MMergeInstancingMesh()
 	: MeshVertexStructSize(sizeof(MVertex))
 	, m_vertexMemoryPool(VertexMemoryMaxSize * MeshVertexStructSize)
@@ -79,6 +82,12 @@ bool MMergeInstancingMesh::RegisterMesh(MIMesh* pMesh)
 		return false;
 	}
 
+#if CLUSTER_MESH_ENABLE
+	const size_t nClusterSize = ClusterSize;
+#else
+	const size_t nClusterSize = unIndexNum;
+#endif
+
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
 	MIDevice* pDevice = pRenderSystem->GetDevice();
@@ -93,17 +102,17 @@ bool MMergeInstancingMesh::RegisterMesh(MIMesh* pMesh)
 	while (nMeshIndexIdx < unIndexNum)
 	{
 		MClusterData clusterData;
-		if (!m_indexMemoryPool.AllowMemory(ClusterSize * pMesh->GetIndexStructSize(), clusterData.memoryInfo))
+		if (!m_indexMemoryPool.AllowMemory(nClusterSize * pMesh->GetIndexStructSize(), clusterData.memoryInfo))
 		{
 			MORTY_ASSERT(false);
 			bMemoryAllowFailed = true;
 			break;
 		}
 
-		std::array<uint32_t, ClusterSize> vClusterIndexData = {};
+		std::vector<uint32_t> vClusterIndexData(nClusterSize);
 
-		Vector3 boundsVertex[ClusterSize];
-		for (size_t nClusterIndexIdx = 0; nClusterIndexIdx < ClusterSize; ++nClusterIndexIdx)
+		std::vector<Vector3> boundsVertex(nClusterSize);
+		for (size_t nClusterIndexIdx = 0; nClusterIndexIdx < nClusterSize; ++nClusterIndexIdx)
 		{
 			const uint32_t originIndex = vIndexData[(std::min)(nMeshIndexIdx + nClusterIndexIdx, unIndexNum - 1)];
 			const uint32_t globalIndex = unVertexBeginIndex + originIndex;
@@ -112,13 +121,13 @@ bool MMergeInstancingMesh::RegisterMesh(MIMesh* pMesh)
 			boundsVertex[nClusterIndexIdx] = vVertex[originIndex].position;
 		}
 
-		clusterData.boundsShpere.SetPoints(reinterpret_cast<const MByte*>(boundsVertex), ClusterSize, 0, sizeof(Vector3));
+		clusterData.boundsShpere.SetPoints(reinterpret_cast<const MByte*>(boundsVertex.data()), nClusterSize, 0, sizeof(Vector3));
 
 		indexClusterData.push_back(clusterData);
 		pDevice->UploadBuffer(&m_indexBuffer, clusterData.memoryInfo.begin, reinterpret_cast<const MByte*>(vClusterIndexData.data()), clusterData.memoryInfo.size);
 
 		
-		nMeshIndexIdx += ClusterSize;
+		nMeshIndexIdx += nClusterSize;
 	}
 
 	if (bMemoryAllowFailed)

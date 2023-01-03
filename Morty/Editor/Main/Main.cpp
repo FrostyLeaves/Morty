@@ -26,6 +26,7 @@
 
 #include "Test/ShadowMap.h"
 #include "Test/EnvironmentCubemap.h"
+#include "Test/GPUDrivenCulling.h"
 #include "Test/LoadModel.h"
 
 
@@ -60,9 +61,9 @@ int main()
 
 	SHADOW_MAP_TEST(&engine, pScene);
 	
-	LOAD_MODEL_TEST(&engine, pScene);
+	//LOAD_MODEL_TEST(&engine, pScene);
 
-
+	//GPU_DRIVEN_CULLING_TEST(&engine, pScene);
 
 
 	//start run

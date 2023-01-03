@@ -42,11 +42,11 @@ float GetDirectionShadow(Texture2DArray texShadowMap, float3 f3WorldPosition, fl
     
 #if PCSS_ENABLE
 
-        return PCSS(texShadowMap, nCascadeIndex, shadowTexCoords, fLightSize, fPixelDepth, fEpsilon);
+        return PCSS(texShadowMap, nCascadeIndex, shadowTexCoords, fLightSize, f4DirLightSpacePos, fPixelDepth, fEpsilon);
     
 #elif PCF_ENABLE
 
-        return PCF(texShadowMap, nCascadeIndex, shadowTexCoords, fPixelDepth, 10.0f, fEpsilon);
+        return PCF(texShadowMap, nCascadeIndex, shadowTexCoords, fPixelDepth, 5.0f, fEpsilon);
 
 #else
         float fPixelDepth = texShadowMap.Sample(NearestSampler, float3(shadowTexCoords.xy, nCascadeIndex)).r;

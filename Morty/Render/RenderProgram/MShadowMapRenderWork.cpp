@@ -562,6 +562,11 @@ void MShadowMapRenderWork::CollectShadowMesh(MRenderInfo& info)
 				continue;
 		}
 
+		if (component.GetBatchInstanceEnable())
+		{
+			continue;
+		}
+
 		MEntity* pEntity = component.GetEntity();
 
 		MSceneComponent* pSceneComponent = pEntity->GetComponent<MSceneComponent>();

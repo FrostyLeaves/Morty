@@ -204,7 +204,8 @@ void MDeferredRenderProgram::RenderShadow(MTaskNode* pTaskNode)
 {
 	if (m_pShadowMapWork)
 	{
-		m_pShadowMapWork->RenderShadow(m_renderInfo, m_pGPUCullingRenderWork);
+		//m_pShadowMapWork->RenderShadow(m_renderInfo, m_pGPUCullingRenderWork);
+		m_pShadowMapWork->RenderShadow(m_renderInfo, nullptr);
 
 		MTexture* pShadowMap = m_pShadowMapWork->GetShadowMap();
 
