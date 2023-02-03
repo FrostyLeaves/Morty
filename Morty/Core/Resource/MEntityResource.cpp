@@ -1,6 +1,5 @@
 #include "Resource/MEntityResource.h"
 
-#include "Utility/MJson.h"
 #include "Utility/MFileHelper.h"
 
 MORTY_CLASS_IMPLEMENT(MEntityResource, MResource)

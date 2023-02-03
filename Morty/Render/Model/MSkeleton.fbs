@@ -1,0 +1,15 @@
+include "Math/Vector.fbs";
+include "Math/Quaternion.fbs";
+include "Math/Matrix.fbs";
+include "MBone.fbs";
+
+namespace mfbs;
+
+table MSkeleton
+{
+	bones: [MBone];
+}
+
+root_type MSkeleton;
+
+file_identifier "MFBS";

@@ -50,7 +50,8 @@ source_group("System" FILES ${RENDER_SYSTEM_FILES})
 file(GLOB RENDER_VIEW_FILES View/*.h View/*.cpp)
 source_group("View" FILES ${RENDER_VIEW_FILES})
 
-
+file(GLOB RENDER_FLATBUFFER_FILES Flatbuffer/*.h Flatbuffer/*.cpp )
+source_group("Flatbuffer" FILES ${RENDER_FLATBUFFER_FILES})
 ############################################################
 # spot
 ############################################################
@@ -79,6 +80,7 @@ add_library(Render STATIC
     ${RENDER_MODULE_FILES}
     ${RENDER_BASIC_FILES}
     ${RENDER_COMPONENT_FILES}
+    ${RENDER_FLATBUFFER_FILES}
     ${RENDER_RENDER_FILES}
     ${RENDER_RENDER_VULKAN_FILES}
     ${RENDER_RENDER_GRAPH_FILES}

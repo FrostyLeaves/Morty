@@ -14,8 +14,8 @@ MSpotLightComponent::MSpotLightComponent()
 	, m_fInnerCutOffAngle(90.0f)
 	, m_fOuterCutOffAngle(90.0f)
 {
-	m_fInnerCutOffRadius = cos(m_fInnerCutOffAngle * 0.5f * M_PI / 180.0f);
-	m_fOuterCutOffRadius = cos(m_fOuterCutOffAngle * 0.5f * M_PI / 180.0f);
+	m_fInnerCutOffRadius = cosf(m_fInnerCutOffAngle * 0.5f * M_PI / 180.0f);
+	m_fOuterCutOffRadius = cosf(m_fOuterCutOffAngle * 0.5f * M_PI / 180.0f);
 }
 
 MSpotLightComponent::~MSpotLightComponent()

@@ -101,14 +101,14 @@ protected:
 
 protected:
 
-	MResourceKeeper m_Mesh;
-	MResourceKeeper m_Material;
+	MResourceRef m_Mesh;
+	MResourceRef m_Material;
 
 	std::shared_ptr<MShaderPropertyBlock> m_pShaderPropertyBlock;
 	std::shared_ptr<MShaderConstantParam> m_pTransformParam;
 
-	Matrix4* m_pWorldMatrixParam;
-	Matrix3* m_pNormalMatrixParam;
+	MVariant m_worldMatrixParam;
+	MVariant m_normalMatrixParam;
 
 	MModelComponent* m_pModelComponent;
 

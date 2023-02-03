@@ -17,7 +17,7 @@ public:
 			{
 				PROPERTY_VALUE_EDIT(pDirectonalLightComponent, "Color", MColor, GetColor, SetColor);
 				PROPERTY_VALUE_EDIT(pDirectonalLightComponent, "Intensity", float, GetLightIntensity, SetLightIntensity);
-				PROPERTY_VALUE_EDIT(pDirectonalLightComponent, "LightSize", float, GetLightSize, SetLightSize);
+				PROPERTY_VALUE_EDIT_SPEED_MIN_MAX(pDirectonalLightComponent, "LightSize", float, GetLightSize, SetLightSize, 0.01f, 0.0f, 1000.0f);
 
 				ShowNodeEnd();
 			} 

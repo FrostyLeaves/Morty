@@ -53,6 +53,9 @@ typedef unsigned char MByte;
 #include <algorithm>
 #include <functional>
 
+#include <flatbuffers/buffer.h>
+#include <flatbuffers/flatbuffer_builder.h>
+
 #include "Utility/MString.h"
 
 

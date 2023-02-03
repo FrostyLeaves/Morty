@@ -5,14 +5,14 @@
 #include "Resource/MTextureResource.h"
 #include "Resource/MMaterialResource.h"
 #include "Engine/MEngine.h"
+#include "Flatbuffer/MMaterial_generated.h"
 #include "Render/MIDevice.h"
 #include "Utility/MFileHelper.h"
 
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
 
-#include "Utility/MJson.h"
-#include "Utility/MVariant.h"
+#include "Variant/MVariant.h"
 
 
 MORTY_CLASS_IMPLEMENT(MMaterial, MResource)
@@ -119,120 +119,91 @@ void MMaterial::CopyFrom(std::shared_ptr<const MResource> pResource)
 	}
 }
 
-void MMaterial::Encode(MString& strCode)
+flatbuffers::Offset<void> MMaterial::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	strCode.clear();
+	const auto fbVertexShader = MResourceRef(GetVertexShaderResource()).Serialize(fbb);
+	const auto fbPixelShader = MResourceRef(GetPixelShaderResource()).Serialize(fbb);
+	const auto fbMacro = GetShaderMacro().Serialize(fbb);
 
-	MStruct material;
-	material.SetValue("VS", GetVertexShaderResource()->GetResourcePath());
-	material.SetValue("PS", GetPixelShaderResource()->GetResourcePath());
-	material.SetValue("RasterizerType", static_cast<int>(m_eRasterizerType));
-	material.SetValue("MaterialType", static_cast<int>(m_eMaterialType));
-
-	MStruct macro;
-	GetShaderMacro().WriteToStruct(macro);
-	material.SetValue("macro", macro);
-
-	MStruct vTextures;
+	std::vector<flatbuffers::Offset<mfbs::MMaterialTexture>> vTextures;
 	for (const std::shared_ptr<MShaderTextureParam>& pParam : GetMaterialParamSet()->m_vTextures)
 	{
-		std::shared_ptr<MTextureResourceParam> pRefParam = std::dynamic_pointer_cast<MTextureResourceParam>(pParam);
+		const std::shared_ptr<MTextureResourceParam> pResourceParam = std::dynamic_pointer_cast<MTextureResourceParam>(pParam);
+		const auto fbName = fbb.CreateString(pResourceParam->strName);
+		const auto fbTexture = MResourceRef(pResourceParam->GetTextureResource()).Serialize(fbb);
 
-		if (auto&& pTextureResource = pRefParam->GetTextureResource())
-			vTextures.SetValue(pRefParam->strName, pTextureResource->GetResourcePath());
-		else
-			vTextures.SetValue(pRefParam->strName, "");
+		mfbs::MMaterialTextureBuilder builder(fbb);
+		builder.add_name(fbName);
+		builder.add_texture(fbTexture.o);
+		vTextures.push_back(builder.Finish());
 	}
 
-	material.SetValue("textures", vTextures);
-
-	MStruct vParams;
+	std::vector<flatbuffers::Offset<mfbs::MMaterialProperty>> vProperty;
 	for (std::shared_ptr<MShaderConstantParam> pParam : GetMaterialParamSet()->m_vParams)
 	{
-		vParams.SetValue(pParam->strName, pParam->var);
+		const auto fbName = fbb.CreateString(pParam->strName);
+		const auto fbProperty = pParam->var.Serialize(fbb);
+
+		mfbs::MMaterialPropertyBuilder builder(fbb);
+		builder.add_name(fbName);
+		builder.add_property(fbProperty.o);
+		vProperty.push_back(builder.Finish());
 	}
 
-	material.SetValue("params", vParams);
+	const auto fbTextures = fbb.CreateVector(vTextures);
+	const auto fbProperty = fbb.CreateVector(vProperty);
 
+	mfbs::MMaterialBuilder builder(fbb);
 
-	MVariant variant(material);
+	builder.add_vertex_resource(fbVertexShader.o);
+	builder.add_pixel_resource(fbPixelShader.o);
+	builder.add_material_macro(fbMacro.o);
+	builder.add_material_type(static_cast<mfbs::MEMaterialType>(m_eMaterialType));
+	builder.add_rasterizer_type(static_cast<mfbs::MERasterizerType>(m_eRasterizerType));
 
+	builder.add_material_textures(fbTextures);
+	builder.add_material_property(fbProperty);
 
-	MJson::MVariantToJson(variant, strCode);
+	return builder.Finish().Union();
 }
 
-void MMaterial::Decode(MString& strCode)
+void MMaterial::Deserialize(const void* pBufferPointer)
 {
-	MResourceSystem* pSystem = m_pEngine->FindSystem<MResourceSystem>();
+	const mfbs::MMaterial* fbData = reinterpret_cast<const mfbs::MMaterial*>(pBufferPointer);
 
-	MVariant variant;
-	MJson::JsonToMVariant(strCode, variant);
+	m_pShaderProgram->ClearShader(GetEngine());
+	GetShaderMacro().Deserialize(fbData->material_macro());
+	MResourceRef vertexShader, pixelShader;
+	vertexShader.Deserialize(GetEngine(), fbData->vertex_resource());
+	pixelShader.Deserialize(GetEngine(), fbData->pixel_resource());
+	m_pShaderProgram->LoadVertexShader(GetEngine(), vertexShader.GetResource());
+	m_pShaderProgram->LoadPixelShader(GetEngine(), pixelShader.GetResource());
 
-	MStruct& material = *variant.GetStruct();
-
-	MVariant* pVS = material.GetValue("VS");
-	MVariant* pPS = material.GetValue("PS");
-	MVariant* pRasterizerType = material.GetValue("RasterizerType");
-	MVariant* pMaterialType = material.GetValue("MaterialType");
-	MVariant* pMacro = material.GetValue("macro");
-	MVariant* pTextures = material.GetValue("textures");
-	MVariant* pParams = material.GetValue("params");
-
-	if (nullptr == pVS) return;
-	if (nullptr == pPS) return;
-	if (nullptr == pRasterizerType) return;
-	if (nullptr == pMaterialType) return;
-	if (nullptr == pMacro) return;
-	if (nullptr == pTextures) return;
-	if (nullptr == pParams) return;
-
-	if(int* pType = pRasterizerType->GetInt())
-		SetRasterizerType(MERasterizerType(*pType));
-	
-	if(int* pType = pMaterialType->GetInt())
-		SetMaterialType(MEMaterialType(*pType));
-
-	MStruct& macro = *pMacro->GetStruct();
-	GetShaderMacro().ReadFromStruct(macro);
-
-	if (MString* pVSResourcePath = pVS->GetString())
+	if (fbData->material_property())
 	{
-		std::shared_ptr<MResource> pVSRes = pSystem->LoadResource(*pVSResourcePath);
-		LoadVertexShader(pVSRes);
-	}
-	
-	if (MString* pPSResourcePath = pPS->GetString())
-	{
-		std::shared_ptr<MResource> pPsRes = pSystem->LoadResource(*pPSResourcePath);
-		LoadPixelShader(pPsRes);
-	}
-
-
-	MStruct& textures = *pTextures->GetStruct();
-	for (uint32_t i = 0; i < textures.GetMemberCount(); ++i)
-	{
-		MStruct::MStructMember* pMember = textures.GetMember(i);
-		if (MString* pResourcePath = pMember->var.GetString())
+		const size_t nPropertyNum = fbData->material_property()->size();
+		for (size_t nIdx = 0; nIdx < nPropertyNum; ++nIdx)
 		{
-			std::shared_ptr<MResource> pTextureRes = pSystem->LoadResource(*pResourcePath);
-			SetTexutre(pMember->strName, pTextureRes);
+			const auto fbProperty = fbData->material_property()->Get(nIdx);
+
+			MVariant value;
+			value.Deserialize(fbProperty->property());
+
+			GetMaterialParamSet()->SetValue(fbProperty->name()->c_str(), value);
 		}
 	}
 
-	auto& vShaderParams = GetMaterialParamSet()->m_vParams;
-
-	MStruct& params = *pParams->GetStruct();
-	for (uint32_t i = 0; i < params.GetMemberCount(); ++i)
+	if (fbData->material_textures())
 	{
-		MStruct::MStructMember* pMember = params.GetMember(i);
-		for (uint32_t j = 0; j < vShaderParams.size(); ++j)
+		const size_t nTextureNum = fbData->material_textures()->size();
+		for (size_t nIdx = 0; nIdx < nTextureNum; ++nIdx)
 		{
-			if (vShaderParams[j]->strName == pMember->strName)
-			{
-				vShaderParams[i]->var.MergeFrom(pMember->var);
-				vShaderParams[i]->SetDirty();
-				break;
-			}
+			const auto fbTexture = fbData->material_textures()->Get(nIdx);
+
+			MResourceRef texture;
+			texture.Deserialize(GetEngine(), fbTexture->texture());
+
+			GetMaterialParamSet()->SetValue(fbTexture->name()->c_str(), texture.GetResource());
 		}
 	}
 
@@ -240,19 +211,25 @@ void MMaterial::Decode(MString& strCode)
 
 bool MMaterial::SaveTo(const MString& strResourcePath)
 {
-	MString strCode;
-	Encode(strCode);
+	flatbuffers::FlatBufferBuilder fbb;
+	Serialize(fbb);
 
-	return MFileHelper::WriteString(strResourcePath, strCode);
+	std::vector<MByte> data(fbb.GetSize());
+	memcpy(data.data(), (MByte*)fbb.GetBufferPointer(), fbb.GetSize() * sizeof(MByte));
+
+	return MFileHelper::WriteData(strResourcePath, data);
 }
 
 bool MMaterial::Load(const MString& strResourcePath)
 {
-	MString strCode;
-	if (!MFileHelper::ReadString(strResourcePath, strCode))
-		return false;
+	std::vector<MByte> data;
+	MFileHelper::ReadData(strResourcePath, data);
 
-	Decode(strCode);
+	flatbuffers::FlatBufferBuilder fbb;
+	fbb.PushBytes((const uint8_t*)data.data(), data.size());
+
+	const mfbs::MMaterial* fbMeshResource = mfbs::GetMMaterial(fbb.GetCurrentBufferPointer());
+	Deserialize(fbMeshResource);
 
 	return true;
 }

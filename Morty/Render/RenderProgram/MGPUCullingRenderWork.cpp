@@ -139,13 +139,13 @@ void MGPUCullingRenderWork::CollectCullingGroup(MRenderInfo& info)
 		MORTY_ASSERT(pTransformParam);
 		pTransformParam->SetDirty();
 
-		pTransformArray = pTransformParam->var.GetStruct()->GetValue<MVariantArray>("u_meshMatrix");
+		pTransformArray = &pTransformParam->var.GetValue<MVariantStruct>().GetVariant<MVariantArray>("u_meshMatrix");
 		MORTY_ASSERT(pTransformArray);
 
-		pClusterArray = pTransformParam->var.GetStruct()->GetValue<MVariantArray>("u_meshClusterIndex");
+		pClusterArray = &pTransformParam->var.GetValue<MVariantStruct>().GetVariant<MVariantArray>("u_meshClusterIndex");
 		MORTY_ASSERT(pClusterArray);
 
-		int* pInstanceBeginIndex = pTransformParam->var.GetStruct()->GetValue<int>("u_meshInstanceBeginIndex");
+		int* pInstanceBeginIndex = &pTransformParam->var.GetValue<MVariantStruct>().GetVariant<int>("u_meshInstanceBeginIndex");
 		MORTY_ASSERT(pInstanceBeginIndex);
 		(*pInstanceBeginIndex) = nInstanceCount;
 	};
@@ -171,13 +171,13 @@ void MGPUCullingRenderWork::CollectCullingGroup(MRenderInfo& info)
 			Matrix4 matWorld = pSceneComponent->GetWorldTransform();
 			Matrix3 matNormal = Matrix3(matWorld, 3, 3);
 
-			if (pMaterialCullingGroup->nTransformCount >= pTransformArray->GetMemberCount())
+			if (pMaterialCullingGroup->nTransformCount >= pTransformArray->MemberNum())
 			{
 				createNewGroupFunc(pr.first, pMaterialBatchGroup);
 			}
 
-			(*pTransformArray)[pMaterialCullingGroup->nTransformCount].GetStruct()->GetMember(0)->var = matWorld;
-			(*pTransformArray)[pMaterialCullingGroup->nTransformCount].GetStruct()->GetMember(1)->var = matNormal;
+			(*pTransformArray)[pMaterialCullingGroup->nTransformCount].GetValue<MVariantStruct>().SetVariant("matWorld", matWorld);
+			(*pTransformArray)[pMaterialCullingGroup->nTransformCount].GetValue<MVariantStruct>().SetVariant("matNormal", matNormal);
 			++pMaterialCullingGroup->nTransformCount;
 
 			const std::vector<MMergeInstancingMesh::MClusterData>& vMeshClusterGroup = pMergeInstancingSubSystem->GetMeshClusterGroup(pMeshComponent->GetMesh());
@@ -198,15 +198,15 @@ void MGPUCullingRenderWork::CollectCullingGroup(MRenderInfo& info)
 					cullData.lods[nLodIdx].indexCount = clusterData.memoryInfo.size / sizeof(uint32_t);
 				}
 
-				if (pMaterialCullingGroup->nClusterCount >= pClusterArray->GetMemberCount())
+				if (pMaterialCullingGroup->nClusterCount >= pClusterArray->MemberNum())
 				{
 					createNewGroupFunc(pr.first, pMaterialBatchGroup);
-					(*pTransformArray)[pMaterialCullingGroup->nTransformCount].GetStruct()->GetMember(0)->var = matWorld;
-					(*pTransformArray)[pMaterialCullingGroup->nTransformCount].GetStruct()->GetMember(1)->var = matNormal;
+					(*pTransformArray)[pMaterialCullingGroup->nTransformCount].GetValue<MVariantStruct>().SetVariant("matWorld", matWorld);
+					(*pTransformArray)[pMaterialCullingGroup->nTransformCount].GetValue<MVariantStruct>().SetVariant("matNormal", matNormal);
 					++pMaterialCullingGroup->nTransformCount;
 				}
 
-				(*pClusterArray)[pMaterialCullingGroup->nClusterCount] = static_cast<int>(pMaterialCullingGroup->nTransformCount - 1);
+				(*pClusterArray)[pMaterialCullingGroup->nClusterCount].SetValue(static_cast<int>(pMaterialCullingGroup->nTransformCount - 1));
 				++pMaterialCullingGroup->nClusterCount;
 				m_vInstanceCullData.push_back(cullData);
 			}
@@ -294,19 +294,19 @@ void MGPUCullingRenderWork::UpdateCameraFrustum(MRenderInfo& info)
 
 	if (std::shared_ptr<MShaderConstantParam>&& pConstantParam = params->FindConstantParam("ubo"))
 	{
-		if (MStruct* sut = pConstantParam->var.GetStruct())
+		MVariantStruct& sut = pConstantParam->var.GetValue<MVariantStruct>();
 		{
 			MORTY_ASSERT(info.pCameraEntity);
 			MSceneComponent* pCameraSceneComponent = info.pCameraEntity->GetComponent<MSceneComponent>();
 			MORTY_ASSERT(pCameraSceneComponent);
-			sut->SetValue("cameraPos", Vector4(pCameraSceneComponent->GetWorldPosition(), 1.0f));
-			if (MVariantArray* pFrustumArray = sut->GetValue<MVariantArray>("frustumPlanes"))
+			sut.SetVariant("cameraPos", Vector4(pCameraSceneComponent->GetWorldPosition(), 1.0f));
+			MVariantArray& cFrustumArray = sut.GetVariant<MVariantArray>("frustumPlanes");
 			{
 				MCameraFrustum& cameraFrustum = pViewport->GetCameraFrustum();
 				for (size_t planeIdx = 0; planeIdx < 6; ++planeIdx)
 				{
 					const Vector4& plane = cameraFrustum.GetPlane(planeIdx).m_v4Plane;
-					(*pFrustumArray)[planeIdx] = plane / Vector3(plane.x, plane.y, plane.z).Length();
+					cFrustumArray[planeIdx].SetValue(plane / Vector3(plane.x, plane.y, plane.z).Length());
 				}
 			}
 		}

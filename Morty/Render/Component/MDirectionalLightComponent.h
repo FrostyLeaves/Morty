@@ -53,7 +53,7 @@ private:
 	Vector3 m_v3Direction;
 	MColor m_f3Color;
 	float m_fIntensity;
-	float m_fLightSize = 5.0f;
+	float m_fLightSize = 1.0f;
 
 };
 

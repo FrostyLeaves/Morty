@@ -5,7 +5,7 @@
 #include <functional>
 
 #include "Utility/MString.h"
-#include "Utility/MVariant.h"
+#include "Variant/MVariant.h"
 
 #define NOTIFY_FUNC(PTR, CLASS_FUNC) (std::bind(&CLASS_FUNC, PTR, std::placeholders::_1))
 

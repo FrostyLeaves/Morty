@@ -81,30 +81,30 @@ void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& in
 
 	if (m_pWorldMatrixParam)
 	{
-		MStruct& cStruct = *m_pWorldMatrixParam->var.GetStruct();
-		cStruct[0] = info.pCameraEntity->GetComponent<MSceneComponent>()->GetWorldTransform().Inverse();
-		cStruct[1] = info.pViewport->GetCameraInverseProjection();
- 		cStruct[2] = info.pViewport->GetCameraInverseProjection().Inverse();
+		MVariantStruct& cStruct = m_pWorldMatrixParam->var.GetValue<MVariantStruct>();
+		cStruct.SetVariant("u_matView",info.pCameraEntity->GetComponent<MSceneComponent>()->GetWorldTransform().Inverse());
+		cStruct.SetVariant("u_matCamProj", info.pViewport->GetCameraInverseProjection());
+ 		cStruct.SetVariant("u_matCamProjInv", info.pViewport->GetCameraInverseProjection().Inverse());
 
 		m_pWorldMatrixParam->SetDirty();
 	}
 
 	if (m_pShadowInfoParam)
 	{
-		MStruct& cStruct = *m_pShadowInfoParam->var.GetStruct();
-		if (MVariantArray* pDirLightInvProjArray = cStruct[0].GetArray())
+		MVariantStruct& cStruct = m_pShadowInfoParam->var.GetValue<MVariantStruct>();
+		MVariantArray& cDirLightInvProjArray = cStruct.GetVariant<MVariantArray>("u_vLightProjectionMatrix");
 		{
 			for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
 			{
-				(*pDirLightInvProjArray)[nCascadedIdx] = info.cCascadedShadow[nCascadedIdx].m4DirLightInvProj;
+				cDirLightInvProjArray.SetVariant(nCascadedIdx, info.cCascadedShadow[nCascadedIdx].m4DirLightInvProj);
 			}
 		}
 
-		if (MVariantArray* pSplitDepthArray = cStruct[1].GetArray())
+		MVariantArray& cSplitDepthArray = cStruct.GetVariant<MVariantArray>("u_vCascadeSplits");
 		{
 			for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
 			{
-				(*pSplitDepthArray)[nCascadedIdx] = info.cCascadedShadow[nCascadedIdx].fSplitDepth;
+				cSplitDepthArray.SetVariant(nCascadedIdx, info.cCascadedShadow[nCascadedIdx].fSplitRange);
 			}
 		}
 
@@ -113,11 +113,12 @@ void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& in
 
 	if (m_pWorldInfoParam)
 	{
+		MVariantStruct& cWorldInfo = m_pWorldInfoParam->var.GetValue<MVariantStruct>();
 		if (info.pDirectionalLightEntity)
 		{
 			if (MSceneComponent* pSceneComponent = info.pDirectionalLightEntity->GetComponent<MSceneComponent>())
 			{
-				(*m_pWorldInfoParam->var.GetStruct())[0] = pSceneComponent->GetForward();
+				cWorldInfo.SetVariant("u_f3DirectionLight",pSceneComponent->GetForward());
 			}
 		}
 
@@ -125,38 +126,39 @@ void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& in
 		{
 			if (MSceneComponent* pSceneComponent = info.pCameraEntity->GetComponent<MSceneComponent>())
 			{
-				(*m_pWorldInfoParam->var.GetStruct())[1] = pSceneComponent->GetWorldPosition();
-				(*m_pWorldInfoParam->var.GetStruct())[2] = pSceneComponent->GetWorldForward();
+				cWorldInfo.SetVariant("u_f3CameraPosition", pSceneComponent->GetWorldPosition());
+				cWorldInfo.SetVariant("u_f3CameraDirection", pSceneComponent->GetWorldForward());
 			}
 		}
 
-		(*m_pWorldInfoParam->var.GetStruct())[3] = info.pViewport->GetSize();
+		cWorldInfo.SetVariant("u_f2ViewportSize", info.pViewport->GetSize());
 
 		if (info.pCameraEntity)
 		{
 			if (MCameraComponent* pCameraComponent = info.pCameraEntity->GetComponent<MCameraComponent>())
 			{
-				(*m_pWorldInfoParam->var.GetStruct())[4] = pCameraComponent->GetZNearFar();
+				cWorldInfo.SetVariant("u_matZNearFar", pCameraComponent->GetZNearFar());
 			}
 		}
 
-		(*m_pWorldInfoParam->var.GetStruct())[5] = info.fDelta;
+		cWorldInfo.SetVariant("u_fDelta", info.fDelta);
 
-		(*m_pWorldInfoParam->var.GetStruct())[6] = info.fGameTime;
+		cWorldInfo.SetVariant("u_fGameTime", info.fGameTime);
 
 		m_pWorldInfoParam->SetDirty();
 	}
 
 	if (const std::shared_ptr<MShaderConstantParam>& pLightParam = m_pLightInfoParam)
 	{
+		MVariantStruct& cLightStruct = pLightParam->var.GetValue<MVariantStruct>();
+
 		if (info.pSkyBoxEntity)
 		{
 			if (MSkyBoxComponent* pSkyBoxComponent = info.pSkyBoxEntity->GetComponent<MSkyBoxComponent>())
 			{
 				if (MTexture* pEnvTexture = pSkyBoxComponent->GetDiffuseTexture())
 				{
-					MVariant& varEnvMapEnable = (*pLightParam->var.GetStruct())[6];
-					varEnvMapEnable = true;
+					cLightStruct.SetVariant("u_bEnvironmentMapEnabled", true);
 					m_pDiffuseMapTextureParam->SetTexture(pEnvTexture);
 					m_pDiffuseMapTextureParam->SetDirty();
 				}
@@ -168,29 +170,25 @@ void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& in
 			}
 		}
 
-		MVariant& varDirLightEnable = (*pLightParam->var.GetStruct())[3];
 		if (info.pDirectionalLightEntity)
 		{
-			varDirLightEnable = true;
-			MVariant& varDirectionLight = (*pLightParam->var.GetStruct())[0];
+			cLightStruct.SetVariant("u_bDirectionLightEnabled", 1);
 			{
-				MStruct& cLightStruct = *varDirectionLight.GetStruct();
+				MVariantStruct& cDirectionLightStruct = cLightStruct.GetVariant<MVariantStruct>("u_xDirectionalLight");
 				{
 					if (MDirectionalLightComponent* pLightComponent = info.pDirectionalLightEntity->GetComponent<MDirectionalLightComponent>())
 					{
-						cLightStruct[0] = pLightComponent->GetColor().ToVector3() * pLightComponent->GetLightIntensity();
-						cLightStruct[1] = pLightComponent->GetLightSize();
+						cDirectionLightStruct.SetVariant("f3Intensity",pLightComponent->GetColor().ToVector3() * pLightComponent->GetLightIntensity());
+						cDirectionLightStruct.SetVariant("fLightSize", pLightComponent->GetLightSize());
 					}
 				}
 			}
 		}
 		else
 		{
-			varDirLightEnable = false;
+			cLightStruct.SetVariant("u_bDirectionLightEnabled", 0);
 		}
 
-   		MVariant& varPointLights = (*pLightParam->var.GetStruct())[1];
-   		MVariant& varValidPointLights = (*pLightParam->var.GetStruct())[4];
    		{
 			MComponentGroup<MPointLightComponent>* pComponentGroup = pScene->FindComponents<MPointLightComponent>();
 			auto& vActivePointLights = pComponentGroup->m_vComponents;
@@ -198,7 +196,7 @@ void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& in
    			//info.pScene->FindActivePointLights(info.pCameraSceneComponent->GetWorldPosition(), vActivePointLights);
 			int nValidPointLights = 0;
  
-   			MVariantArray& vPointLights = *varPointLights.GetArray();
+   			MVariantArray& vPointLights = cLightStruct.GetVariant<MVariantArray>("u_vPointLights");
    			for (MPointLightComponent& lightComponent : vActivePointLights)
    			{
 				if (!lightComponent.IsValid())
@@ -214,13 +212,13 @@ void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& in
 				if (!pSceneComponent)
 					break;
 				
-				MStruct& cPointLight = *vPointLights[nValidPointLights].GetStruct();
-				cPointLight[0] = pSceneComponent->GetWorldPosition();
-				cPointLight[1] = pPointLightComponent->GetColor().ToVector3() * pPointLightComponent->GetLightIntensity();
+				MVariantStruct& cPointLight = vPointLights.GetVariant<MVariantStruct>(nValidPointLights);
+				cPointLight.SetVariant("f3WorldPosition", pSceneComponent->GetWorldPosition());
+				cPointLight.SetVariant("f3Intensity", pPointLightComponent->GetColor().ToVector3()* pPointLightComponent->GetLightIntensity());
 
-				cPointLight[2] = pPointLightComponent->GetConstant();
-				cPointLight[3] = pPointLightComponent->GetLinear();
-				cPointLight[4] = pPointLightComponent->GetQuadratic();
+				cPointLight.SetVariant("fConstant",pPointLightComponent->GetConstant());
+				cPointLight.SetVariant("fLinear", pPointLightComponent->GetLinear());
+				cPointLight.SetVariant("fQuadratic",pPointLightComponent->GetQuadratic());
 
 				++nValidPointLights;
 
@@ -228,7 +226,7 @@ void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& in
 					break;
    			}
 
-			varValidPointLights = nValidPointLights;
+			cLightStruct.SetVariant("u_nValidPointLightsNumber", nValidPointLights);
    		}
 /*
    		MVariant& varSpotLights = (*pLightParam->var.GetStruct())[2];

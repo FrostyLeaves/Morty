@@ -37,13 +37,13 @@ void MShadowMapShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& info) 
 {
 	if (m_pWorldMatrixParam)
 	{
-		MStruct& cStruct = *m_pWorldMatrixParam->var.GetStruct();
+		MVariantStruct& cStruct = m_pWorldMatrixParam->var.GetValue<MVariantStruct>();
 
-		if (MVariantArray* pCamProjArray = cStruct.GetMember<MVariantArray>(0))
+		MVariantArray& cCamProjArray = cStruct.GetVariant<MVariantArray>("u_matCamProj");
 		{
 			for (size_t nCascadedIdx = 0; nCascadedIdx < info.cCascadedShadow.size(); ++nCascadedIdx)
 			{
-				(*pCamProjArray)[nCascadedIdx] = info.cCascadedShadow[nCascadedIdx].m4DirLightInvProj;
+				cCamProjArray[nCascadedIdx].SetValue(info.cCascadedShadow[nCascadedIdx].m4DirLightInvProj);
 			}
 		}
 

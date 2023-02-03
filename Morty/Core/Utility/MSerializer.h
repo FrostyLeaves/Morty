@@ -10,7 +10,7 @@
 #define _M_MSERIALIZER_H_
 #include "Utility/MGlobal.h"
 #include "Type/MType.h"
-#include "Utility/MVariant.h"
+#include "Variant/MVariant.h"
 
 class MORTY_API MSerializer : public MTypeClass
 {

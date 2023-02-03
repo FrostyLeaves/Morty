@@ -78,9 +78,9 @@ public:
 
 	std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParamSets() { return m_pShaderProgram->GetShaderParamSets(); }
 	const std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParamSets() const { return m_pShaderProgram->GetShaderParamSets(); }
-	std::shared_ptr<MShaderPropertyBlock> GetMaterialParamSet() { return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]; }
-	std::shared_ptr<MShaderPropertyBlock> GetFrameParamSet() { return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_FRAME]; }
-	std::shared_ptr<MShaderPropertyBlock> GetMeshParamSet() { return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MESH]; }
+	std::shared_ptr<MShaderPropertyBlock> GetMaterialParamSet() const { return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]; }
+	std::shared_ptr<MShaderPropertyBlock> GetFrameParamSet() const { return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_FRAME]; }
+	std::shared_ptr<MShaderPropertyBlock> GetMeshParamSet() const { return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MESH]; }
 
 	void SetTexutre(const MString& strName, std::shared_ptr<MResource> pTexResource);
 
@@ -104,10 +104,10 @@ public:
 
 public:
 
-	std::shared_ptr<MResource> GetVertexShaderResource() { return m_pShaderProgram->GetVertexShaderResource(); }
-	std::shared_ptr<MResource> GetPixelShaderResource() { return m_pShaderProgram->GetPixelShaderResource(); }
+	std::shared_ptr<MResource> GetVertexShaderResource() const { return m_pShaderProgram->GetVertexShaderResource(); }
+	std::shared_ptr<MResource> GetPixelShaderResource() const { return m_pShaderProgram->GetPixelShaderResource(); }
 
-	MShaderMacro& GetShaderMacro() { return m_pShaderProgram->GetShaderMacro(); }
+	MShaderMacro& GetShaderMacro() const { return m_pShaderProgram->GetShaderMacro(); }
 	const std::shared_ptr<MShaderProgram>& GetShaderProgram() const { return m_pShaderProgram; }
 	
 	void SetMaterialID(const uint32_t& unID) { m_unMaterialID = unID; }
@@ -122,8 +122,8 @@ public:
 
 	virtual void CopyFrom(std::shared_ptr<const MResource> pResource) override;
 
-	virtual void Encode(MString& strCode) override;
-	virtual void Decode(MString& strCode) override;
+	virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	virtual void Deserialize(const void* pBufferPointer);
 
 	virtual bool SaveTo(const MString& strResourcePath) override;
 

@@ -53,7 +53,7 @@ public:
 						if (pMeshComponent->GetMaterial())
 							nResID = pMeshComponent->GetMaterial()->GetResourceID();
 
-						NotifyManager::GetInstance()->SendNotify("Edit Material", nResID);
+						NotifyManager::GetInstance()->SendNotify("Edit Material", MVariant(nResID));
 					}
 					ShowValueEnd();
 

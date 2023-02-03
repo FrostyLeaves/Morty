@@ -1,6 +1,6 @@
 include "Math/Vector.fbs";
 include "Math/Quaternion.fbs";
-include "Scene/MComponent.fbs";
+include "Component/MComponent.fbs";
 include "Scene/MGuid.fbs";
 
 namespace mfbs;

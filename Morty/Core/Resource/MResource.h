@@ -16,7 +16,7 @@
 
 class MResourceLoader;
 class MResourceSystem;
-class MResourceKeeper;
+class MResourceRef;
 class MEngine;
 class MObject;
 
@@ -69,44 +69,49 @@ protected:
     
     friend class MResourceSystem;
 	friend class MResourceLoader;
-	friend class MResourceKeeper;
+	friend class MResourceRef;
 
 	MString m_strResourcePath;
     MResourceID m_unResourceID;
 	MEngine* m_pEngine;
 
-	std::vector<MResourceKeeper*> m_vKeeper;
+	std::vector<MResourceRef*> m_vKeeper;
 
 	std::weak_ptr<MResource> m_self;
 
 };
 
-class MORTY_API MResourceKeeper
+class MORTY_API MResourceRef final
 {
 public:
 	
 	typedef std::function<bool()> MResChangedFunction;
 public:
-	MResourceKeeper();
-	MResourceKeeper(std::shared_ptr<MResource> pResource);
-	MResourceKeeper(const MResourceKeeper& cHolder);
-	virtual ~MResourceKeeper();
+	MResourceRef();
+	MResourceRef(std::shared_ptr<MResource> pResource);
+	MResourceRef(const MResourceRef& cHolder);
+	virtual ~MResourceRef();
 
 	MString GetResourcePath() const { return m_pResource ? m_pResource->GetResourcePath() : ""; }
 
 	void SetResource(std::shared_ptr<MResource> pResource);
-	std::shared_ptr<MResource> GetResource(){ return m_pResource; }
+	std::shared_ptr<MResource> GetResource() const { return m_pResource; }
 
-	const MResourceKeeper& operator = (const MResourceKeeper& keeper);
+	const MResourceRef& operator = (const MResourceRef& keeper);
 	std::shared_ptr<MResource> operator = (std::shared_ptr<MResource> pResource);
 
 	template <class T>
-	std::shared_ptr<T> GetResource() { return m_pResource ? std::dynamic_pointer_cast<T>(m_pResource) : nullptr; }
+	std::shared_ptr<T> GetResource() const { return m_pResource ? std::dynamic_pointer_cast<T>(m_pResource) : nullptr; }
 
 	void SetResChangedCallback(const MResChangedFunction& function)
 	{
 		m_funcReloadCallback = function;
 	}
+
+public:
+
+	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	void Deserialize(MEngine* pEngine, const void* pBufferPointer);
 
 private:
 

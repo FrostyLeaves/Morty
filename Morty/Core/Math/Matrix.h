@@ -6,6 +6,12 @@
 #include "Math/Vector.h"
 #include "Math/Quaternion.h"
 
+namespace mfbs
+{
+	struct Matrix3;
+	struct Matrix4;
+}
+
 class Vector3;
 class Vector4;
 class Quaternion;
@@ -43,6 +49,11 @@ public:
 
 	Matrix3 operator * (const float& value) const;
 	Matrix3 operator / (const float& value) const;
+
+public:
+
+	const mfbs::Matrix3* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	void Deserialize(const void* pBufferPointer);
 
 public:
 	float m[3][4];
@@ -100,9 +111,14 @@ public:
 
 	Vector3 GetScale() const;
 
+
+public:
+
+	const mfbs::Matrix4* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	void Deserialize(const void* pBufferPointer);
+
 public:
 	float m[4][4];
-
 
 	static const Matrix4 IdentityMatrix;
 private:

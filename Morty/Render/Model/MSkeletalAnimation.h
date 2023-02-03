@@ -19,33 +19,21 @@
 
 #include <vector>
 
+#include "Flatbuffer/MSkeletalAnimation_generated.h"
+
 class MORTY_API MSkeletalAnimNode
 {
 public:
-	template <typename T>
-	class MAnimNodeKey
-	{
-	public:
-		MAnimNodeKey() :mTime(0.0f), mValue() {}
-	public:
-		float mTime;
-		T mValue;
-	};
 
-	MSkeletalAnimNode();
-	~MSkeletalAnimNode();
+	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	void Deserialize(flatbuffers::FlatBufferBuilder& fbb);
+	void Deserialize(const void* pBufferPointer);
 
 public:
 
-	uint32_t m_unPositionKeysNum;
-	uint32_t m_unRotationKeysNum;
-	uint32_t m_unScalingKeysNum;
-	MAnimNodeKey<Vector3>* m_vPositionKeys;
-	MAnimNodeKey<Quaternion>* m_vRotationKeys;
-	MAnimNodeKey<Vector3>* m_vScalingKeys;
-
-	void WriteToStruct(MStruct& srt);
-	void ReadFromStruct(const MStruct& srt);
+	std::vector<mfbs::MSkeletalPositionKey> m_vPositionTrack;
+	std::vector<mfbs::MSkeletalRotationKey> m_vRotationTrack;
+	std::vector<mfbs::MSkeletalScaleKey> m_vScaleTrack;
 };
 
 class MORTY_API MSkeletonAnimMap
@@ -75,8 +63,10 @@ public:
 
 	void Update(const float& fTime, std::shared_ptr<MSkeletonInstance> pSkeletonIns, const MSkeletonAnimMap& skelAnimMap);
 
-	void WriteToStruct(MStruct& srt);
-	void ReadFromStruct(const MStruct& srt);
+public:
+
+	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	void Deserialize(const void* pBufferPointer);
 
 public:
 	
@@ -97,7 +87,7 @@ protected:
 private:
 	friend class MModelConverter;
 	std::vector<MSkeletalAnimNode> m_vSkeletalAnimNodes;
-	MResourceKeeper m_Skeleton;
+	MResourceRef m_Skeleton;
 
 	uint32_t m_unIndex;
 	MString m_strName;
@@ -138,7 +128,7 @@ protected:
 private:
 	std::shared_ptr<MSkeletonInstance> m_pSkeletonIns;
 	std::shared_ptr<MSkeletalAnimation> m_pAnimation;
-	MResourceKeeper m_AnimResource;
+	MResourceRef m_AnimResource;
 
 	bool m_bInitialized;
 

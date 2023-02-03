@@ -1,0 +1,18 @@
+
+namespace mfbs;
+
+table MShaderMacroPair
+{
+    key: string;
+    value: string;
+}
+
+table MShaderMacro
+{
+	material_macro: [MShaderMacroPair];
+    inner_macro: [MShaderMacroPair];
+}
+
+root_type MShaderMacro;
+
+file_identifier "MFBS";

@@ -1,4 +1,4 @@
-include "Scene/MComponent.fbs";
+include "Component/MComponent.fbs";
 include "Math/Vector.fbs";
 namespace mfbs;
 

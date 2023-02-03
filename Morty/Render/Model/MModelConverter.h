@@ -92,7 +92,7 @@ private:
 
 	MString m_strResourcePath;
 
-	std::vector<std::shared_ptr<MMeshResource>> m_vMeshes;
+	std::vector<std::pair<MString, std::shared_ptr<MMeshResource>>> m_vMeshes;
 	std::vector<std::shared_ptr<MMaterial>> m_vMaterials;
 	std::map < MString, std::shared_ptr<MTextureResource>> m_tTextures;
 

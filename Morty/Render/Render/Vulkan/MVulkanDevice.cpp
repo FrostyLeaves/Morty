@@ -13,6 +13,11 @@
 #undef max
 #endif
 
+#ifdef min
+#undef min
+#endif
+
+
 #define VALUE_MAX(a, b)(a > b ? a : b)
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -35,6 +40,9 @@ const std::vector<const char*> DeviceExtensions = {
 	VK_KHR_MULTIVIEW_EXTENSION_NAME,
 //	VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_EXTENSION_NAME,
 //	VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME
+#ifdef MORTY_DEBUG
+	VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME,
+#endif
 };
 
 
@@ -65,6 +73,7 @@ std::vector<const char*> InstanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME,
 #ifdef MORTY_ANDROID
 		VK_KHR_ANDROID_SURFACE_EXTENSION_NAME,
 #endif
+
 
 	VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME
 };

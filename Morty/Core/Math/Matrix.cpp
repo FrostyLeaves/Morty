@@ -1,6 +1,8 @@
 ﻿#include "Math/Matrix.h"
 #include <cmath>
 
+#include "Matrix_generated.h"
+
 const Matrix4 Matrix4::IdentityMatrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
 
 Matrix4::Matrix4()
@@ -216,6 +218,16 @@ Matrix3 Matrix3::operator/(const float& value) const
 	return *this * (1.0f / value);
 }
 
+const mfbs::Matrix3* Matrix3::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
+{
+	return reinterpret_cast<const mfbs::Matrix3*>(this);
+}
+
+void Matrix3::Deserialize(const void* pBufferPointer)
+{
+	memcpy(this, pBufferPointer, sizeof(Matrix3));
+}
+
 Matrix3 Matrix3::operator*(const float& value) const
 {
 	Matrix3 result;
@@ -382,6 +394,16 @@ Vector3 Matrix4::GetScale() const
 	v3Scale.z = Vector3(m[2][0], m[2][1], m[2][2]).Length();
 
 	return v3Scale;
+}
+
+const mfbs::Matrix4* Matrix4::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
+{
+	return reinterpret_cast<const mfbs::Matrix4*>(this);
+}
+
+void Matrix4::Deserialize(const void* pBufferPointer)
+{
+	memcpy(this, pBufferPointer, sizeof(Matrix4));
 }
 
 

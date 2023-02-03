@@ -1,0 +1,15 @@
+include "Math/Vector.fbs";
+include "Math/Matrix.fbs";
+
+namespace mfbs;
+
+table MBoundsOBB
+{
+    matrix: Matrix3;
+    min: Vector3;
+    max: Vector3;
+}
+
+root_type MBoundsOBB;
+
+file_identifier "MFBS";

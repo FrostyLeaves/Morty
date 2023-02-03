@@ -418,23 +418,35 @@ void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& inf
 	{
 		vCameraFrustumPoints[i] = matLightInv * vCameraFrustumPoints[i];
 	}
+	
+	const float fCascadedTransitionRange = 0.25f;
+
+	std::array<Matrix4, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadeProjectionMatrix;
+	std::array<Vector3, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadeFrustumCenter;
+	std::array<float, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadeFrustumRadius;
+	std::array<float, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadeTransitionRange;
+	std::array<float, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vPscBoundsInLightSpaceMinZ;
+
 
 	float fLastSplitDist = 0.0f;
 	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
 	{
 		std::vector<Vector3> vCascadedFrustumPoints = vCameraFrustumPoints;
 
+		float fTransitionRange = (vCascadedData[nCascadedIdx].fCascadeSplit - fLastSplitDist) * fCascadedTransitionRange;
+
 		Vector3 v3FrustumCenter = Vector3(0.0f, 0.0f, 0.0f);
 		for (size_t nPointIdx = 0; nPointIdx < 4; ++nPointIdx)
 		{
 			Vector3 dist = vCascadedFrustumPoints[nPointIdx + 4] - vCascadedFrustumPoints[nPointIdx];
 
-			vCascadedFrustumPoints[nPointIdx + 4] = vCascadedFrustumPoints[nPointIdx] + (dist * vCascadedData[nCascadedIdx].fCascadeSplit);
+			vCascadedFrustumPoints[nPointIdx + 4] = vCascadedFrustumPoints[nPointIdx] + dist * std::min(vCascadedData[nCascadedIdx].fCascadeSplit + fTransitionRange, 1.0f);
 			vCascadedFrustumPoints[nPointIdx] = vCascadedFrustumPoints[nPointIdx] + (dist * fLastSplitDist);
-			fLastSplitDist = (std::max)(0.0f, vCascadedData[nCascadedIdx].fCascadeSplit - 0.1f);
+			fLastSplitDist = vCascadedData[nCascadedIdx].fCascadeSplit;
 
 			v3FrustumCenter += vCascadedFrustumPoints[nPointIdx];
 			v3FrustumCenter += vCascadedFrustumPoints[nPointIdx + 4];
+
 		}
 
 		v3FrustumCenter = v3FrustumCenter / 8.0f;
@@ -448,9 +460,9 @@ void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& inf
 		fBoundsSphereRadius = std::ceil(fBoundsSphereRadius * 16.0f) / 16.0f;
 
 
+		float fPscBoundsInLightSpaceMinZ = FLT_MAX;
 		std::vector<Vector3> vPscBoundsPoints(8);
 		vCascadedData[nCascadedIdx].cPcsBounds.GetPoints(vPscBoundsPoints);
-		float fPscBoundsInLightSpaceMinZ = FLT_MAX;
 		for (uint32_t i = 0; i < 8; ++i)
 		{
 			const float z = (matLightInv * vPscBoundsPoints[i]).z;
@@ -460,17 +472,45 @@ void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& inf
 			}
 		}
 
-		Matrix4 projMat = MRenderSystem::MatrixOrthoOffCenterLH(
+		vCascadeProjectionMatrix[nCascadedIdx] = MRenderSystem::MatrixOrthoOffCenterLH(
 			v3FrustumCenter.x - fBoundsSphereRadius,
 			v3FrustumCenter.x + fBoundsSphereRadius,
 			v3FrustumCenter.y + fBoundsSphereRadius,
 			v3FrustumCenter.y - fBoundsSphereRadius,
-			(std::min)(v3FrustumCenter.z - fBoundsSphereRadius, fPscBoundsInLightSpaceMinZ),
+			//(std::min)(v3FrustumCenter.z - fBoundsSphereRadius, fPscBoundsInLightSpaceMinZ),
+			fPscBoundsInLightSpaceMinZ,
 			v3FrustumCenter.z + fBoundsSphereRadius
 		);
 
-		info.cCascadedShadow[nCascadedIdx].fSplitDepth = vCascadedData[nCascadedIdx].fFarZ;
-		info.cCascadedShadow[nCascadedIdx].m4DirLightInvProj = projMat * matLightInv;
+		vCascadeFrustumCenter[nCascadedIdx] = v3FrustumCenter;
+		vCascadeFrustumRadius[nCascadedIdx] = fBoundsSphereRadius;
+		vCascadeTransitionRange[nCascadedIdx] = fTransitionRange;
+		vPscBoundsInLightSpaceMinZ[nCascadedIdx] = fPscBoundsInLightSpaceMinZ;
+	}
+
+	float fMinLightSpaceZValue = FLT_MAX;
+	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
+	{
+	    //if (fMinLightSpaceZValue > vCascadeFrustumCenter[nCascadedIdx].z - vCascadeFrustumRadius[nCascadedIdx])
+		//{
+		//	fMinLightSpaceZValue = vCascadeFrustumCenter[nCascadedIdx].z - vCascadeFrustumRadius[nCascadedIdx];
+		//}
+
+		if (fMinLightSpaceZValue > vPscBoundsInLightSpaceMinZ[nCascadedIdx])
+		{
+			fMinLightSpaceZValue = vPscBoundsInLightSpaceMinZ[nCascadedIdx];
+		}
+	}
+
+    for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
+	{
+		const Vector4 v4NearZPositionNDCSpace = vCascadeProjectionMatrix[nCascadedIdx] * Vector4(0.0f, 0.0f, fMinLightSpaceZValue, 1.0f);
+
+		info.cCascadedShadow[nCascadedIdx].fSplitRange.x = fNearZ + (fFarZ - fNearZ) * vCascadedData[nCascadedIdx].fCascadeSplit;
+		info.cCascadedShadow[nCascadedIdx].fSplitRange.y = fNearZ + (fFarZ - fNearZ) * (vCascadedData[nCascadedIdx].fCascadeSplit + vCascadeTransitionRange[nCascadedIdx]);
+		info.cCascadedShadow[nCascadedIdx].fSplitRange.z = vCascadeFrustumRadius[nCascadedIdx] * 2.0f;
+		info.cCascadedShadow[nCascadedIdx].fSplitRange.w = v4NearZPositionNDCSpace.z / v4NearZPositionNDCSpace.w;
+		info.cCascadedShadow[nCascadedIdx].m4DirLightInvProj = vCascadeProjectionMatrix[nCascadedIdx] * matLightInv;
 	}
 }
 
@@ -525,6 +565,7 @@ void MShadowMapRenderWork::CollectShadowMesh(MRenderInfo& info)
 
 	std::array<CascadedData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadedData;
 
+	const float fCascadeSplitLambda = 0.95f;
 
 	const float fNearZ = pCameraComponent->GetZNear();
 	const float fFarZ = pCameraComponent->GetZFar();
@@ -532,7 +573,6 @@ void MShadowMapRenderWork::CollectShadowMesh(MRenderInfo& info)
 	const float fRange = fFarZ - fNearZ;
 	const float fRatio = fFarZ / fNearZ;
 
-	const float fCascadeSplitLambda = 0.95f;
 	float fLastSplit = 0.0f;
 	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
 	{

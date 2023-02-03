@@ -9,7 +9,7 @@
 #ifndef _M_MSHADER_PARAM_H_
 #define _M_MSHADER_PARAM_H_
 #include "Utility/MGlobal.h"
-#include "Utility/MVariant.h"
+#include "Variant/MVariant.h"
 #include "Basic/MTexture.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN

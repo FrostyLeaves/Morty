@@ -40,22 +40,25 @@ table MStructMember
 {
 	name: string(key);
 	value: MVariant;
-	offset: uint;
+	relative_offset: uint;
 }
 
-table MStruct
+table MVariantStruct
 {
 	member:[MStructMember];
+	size: uint;
+}
+
+table MArrayMember
+{
+	value: MVariant;
+	relative_offset: uint;
 }
 
 table MVariantArray
 {
-	member:[MVariant];
-}
-
-table MString
-{
-	value: string;
+	member:[MArrayMember];
+	size: uint;
 }
 
 union MVariantData
@@ -68,15 +71,15 @@ union MVariantData
 	Vector4,
 	Matrix3,
 	Matrix4,
-	Quaternion,
-	MStruct,
+	MVariantStruct,
 	MVariantArray,
-	MString,
 }
 
 table MVariant
 {
 	data:MVariantData;
 }
+
+root_type MVariant;
 
 file_identifier "MFBS";

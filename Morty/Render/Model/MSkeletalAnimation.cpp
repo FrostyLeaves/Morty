@@ -1,7 +1,7 @@
 #include "Model/MSkeletalAnimation.h"
 #include "Math/MMath.h"
-#include "Utility/MJson.h"
 #include "Engine/MEngine.h"
+#include "Flatbuffer/MSkeletalAnimation_generated.h"
 #include "Utility/MFileHelper.h"
 #include "System/MResourceSystem.h"
 #include "Resource/MSkeletonResource.h"
@@ -68,167 +68,87 @@ void MSkeletalAnimation::Update(const float& fTime, std::shared_ptr<MSkeletonIns
 	pSkeletonIns->SetDirty();
 }
 
-MSkeletalAnimNode::MSkeletalAnimNode()
-	: m_unPositionKeysNum(0)
-	, m_unRotationKeysNum(0)
-	, m_unScalingKeysNum(0)
-	, m_vPositionKeys(nullptr)
-	, m_vRotationKeys(nullptr)
-	, m_vScalingKeys(nullptr)
+flatbuffers::Offset<void> MSkeletalAnimNode::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
+	mfbs::MSkeletalAnimNodeBuilder builder(fbb);
 
+	builder.add_position_track(fbb.CreateVectorOfStructs(m_vPositionTrack));
+	builder.add_rotation_track(fbb.CreateVectorOfStructs(m_vRotationTrack));
+	builder.add_scale_track(fbb.CreateVectorOfStructs(m_vScaleTrack));
+
+	return builder.Finish().Union();
 }
 
-MSkeletalAnimNode::~MSkeletalAnimNode()
+void MSkeletalAnimNode::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	if (m_vPositionKeys) delete[] m_vPositionKeys;
-	if (m_vRotationKeys) delete[] m_vRotationKeys;
-	if (m_vScalingKeys) delete[] m_vScalingKeys;
+	const mfbs::MSkeletalAnimNode* fbcomponent = mfbs::GetMSkeletalAnimNode(fbb.GetCurrentBufferPointer());
+	Deserialize(fbcomponent);
 }
 
-void MSkeletalAnimNode::WriteToStruct(MStruct& srt)
+void MSkeletalAnimNode::Deserialize(const void* pBufferPointer)
 {
-	srt.SetValue("p", MVariantArray());
-	if (MVariantArray* pArray = srt.GetValue<MVariantArray>("p"))
+	const mfbs::MSkeletalAnimNode* fbData = reinterpret_cast<const mfbs::MSkeletalAnimNode*>(pBufferPointer);
+
+	m_vPositionTrack.resize(fbData->position_track()->size());
+	for (size_t nIdx = 0; nIdx < fbData->position_track()->size(); ++nIdx)
 	{
-		for (int i = 0; i < m_unPositionKeysNum; ++i)
-		{
-			if (MStruct* pNode = pArray->AppendValue<MStruct>())
-			{
-				pNode->SetValue("t", m_vPositionKeys[i].mTime);
-				pNode->SetValue("v", m_vPositionKeys[i].mValue);
-			}
-		}
+		m_vPositionTrack[nIdx] = *fbData->position_track()->Get(nIdx);
 	}
 
-	srt.SetValue("r", MVariantArray());
-	if (MVariantArray* pArray = srt.GetValue<MVariantArray>("r"))
+	m_vRotationTrack.resize(fbData->rotation_track()->size());
+	for (size_t nIdx = 0; nIdx < fbData->rotation_track()->size(); ++nIdx)
 	{
-		for (int i = 0; i < m_unRotationKeysNum; ++i)
-		{
-			if (MStruct* pNode = pArray->AppendValue<MStruct>())
-			{
-				pNode->SetValue("t", m_vRotationKeys[i].mTime);
-				pNode->SetValue("v", m_vRotationKeys[i].mValue);
-			}
-		}
+		m_vRotationTrack[nIdx] = *fbData->rotation_track()->Get(nIdx);
 	}
 
-	srt.SetValue("s", MVariantArray());
-	if (MVariantArray* pArray = srt.GetValue<MVariantArray>("s"))
+	m_vScaleTrack.resize(fbData->scale_track()->size());
+	for (size_t nIdx = 0; nIdx < fbData->scale_track()->size(); ++nIdx)
 	{
-		for (int i = 0; i < m_unScalingKeysNum; ++i)
-		{
-			if (MStruct* pNode = pArray->AppendValue<MStruct>())
-			{
-				pNode->SetValue("t", m_vScalingKeys[i].mTime);
-				pNode->SetValue("v", m_vScalingKeys[i].mValue);
-			}
-		}
+		m_vScaleTrack[nIdx] = *fbData->scale_track()->Get(nIdx);
 	}
 }
 
-void MSkeletalAnimNode::ReadFromStruct(const MStruct& srt)
+flatbuffers::Offset<void> MSkeletalAnimation::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	if (const MVariantArray* pArray = srt.GetValue<MVariantArray>("p"))
+	std::vector<flatbuffers::Offset<mfbs::MSkeletalAnimNode>> fbAnimNode;
+	for (const MSkeletalAnimNode& node : m_vSkeletalAnimNodes)
 	{
-		m_unPositionKeysNum = pArray->GetMemberCount();
-		m_vPositionKeys = new MAnimNodeKey<Vector3>[m_unPositionKeysNum];
-		for (int i = 0; i < m_unPositionKeysNum; ++i)
-		{
-			if (const MStruct* pNode = pArray->GetMember(i)->var.GetStruct())
-			{
-				pNode->GetValue("t", m_vPositionKeys[i].mTime);
-				pNode->GetValue("v", m_vPositionKeys[i].mValue);
-			}
-		}
+		fbAnimNode.push_back(node.Serialize(fbb).o);
 	}
+	auto fbAnimNodeOffset = fbb.CreateVector(fbAnimNode);
+	auto fbResource = m_Skeleton.Serialize(fbb);
 
-	if (const MVariantArray* pArray = srt.GetValue<MVariantArray>("r"))
-	{
-		m_unRotationKeysNum = pArray->GetMemberCount();
-		m_vRotationKeys = new MAnimNodeKey<Quaternion>[m_unRotationKeysNum];
-		for (int i = 0; i < m_unRotationKeysNum; ++i)
-		{
-			if (const MStruct* pNode = pArray->GetMember(i)->var.GetStruct())
-			{
-				pNode->GetValue("t", m_vRotationKeys[i].mTime);
-				pNode->GetValue("v", m_vRotationKeys[i].mValue);
-			}
-		}
-	}
+	mfbs::MSkeletalAnimationBuilder builder(fbb);
 
-	if (const MVariantArray* pArray = srt.GetValue<MVariantArray>("s"))
-	{
-		m_unScalingKeysNum = pArray->GetMemberCount();
-		m_vScalingKeys = new MAnimNodeKey<Vector3>[m_unScalingKeysNum];
-		for (int i = 0; i < m_unScalingKeysNum; ++i)
-		{
-			if (const MStruct* pNode = pArray->GetMember(i)->var.GetStruct())
-			{
-				pNode->GetValue("t", m_vScalingKeys[i].mTime);
-				pNode->GetValue("v", m_vScalingKeys[i].mValue);
-			}
-		}
-	}
+	builder.add_name(fbb.CreateString(m_strName));
+	builder.add_duration(m_fTicksDuration);
+	builder.add_speed(m_fTicksPerSecond);
+	builder.add_skeleton_resource(fbResource.o);
+	builder.add_animation_node(fbAnimNodeOffset);
+
+	return builder.Finish().Union();
 }
 
-void MSkeletalAnimation::WriteToStruct(MStruct& srt)
+void MSkeletalAnimation::Deserialize(const void* pBufferPointer)
 {
-	if (std::shared_ptr<MResource> pSkeletonRes = m_Skeleton.GetResource())
+	const mfbs::MSkeletalAnimation* fbData = reinterpret_cast<const mfbs::MSkeletalAnimation*>(pBufferPointer);
+
+	m_strName = fbData->name()->str();
+	m_fTicksDuration = fbData->duration();
+	m_fTicksPerSecond = fbData->speed();
+	m_Skeleton.Deserialize(GetEngine(), fbData->skeleton_resource());
+
+	if (fbData->animation_node())
 	{
-		srt.SetValue("ske", pSkeletonRes->GetResourcePath());
-	}
-
-	srt.SetValue("name", m_strName);
-
-	srt.SetValue("dur", m_fTicksDuration);
-
-	srt.SetValue("sec", m_fTicksPerSecond);
-
-	srt.SetValue("nodes", MVariantArray());
-
-	if (MVariantArray* pNodeArray = srt.GetValue<MVariantArray>("nodes"))
-	{
-		for (MSkeletalAnimNode& node : m_vSkeletalAnimNodes)
+		m_vSkeletalAnimNodes.resize(fbData->animation_node()->size());
+		for (size_t nIdx = 0; nIdx < fbData->animation_node()->size(); ++nIdx)
 		{
-			if (MStruct* pNodeSrt = pNodeArray->AppendValue<MStruct>())
-			{
-				node.WriteToStruct(*pNodeSrt);
-			}
-			
+			m_vSkeletalAnimNodes[nIdx].Deserialize(fbData->animation_node()->Get(nIdx));
 		}
 	}
-}
-
-void MSkeletalAnimation::ReadFromStruct(const MStruct& srt)
-{
-	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-	if (const MString* pSkePath = srt.GetValue<MString>("ske"))
+	else
 	{
-		if (std::shared_ptr<MResource> pSkeletonRes = pResourceSystem->LoadResource(*pSkePath))
-		{
-			m_Skeleton = pSkeletonRes;
-		}
-	}
-
-	srt.GetValue<MString>("name", m_strName);
-
-	srt.GetValue<float>("dur", m_fTicksDuration);
-
-	srt.GetValue<float>("sec", m_fTicksPerSecond);
-
-	if (const MVariantArray* pNodeArray = srt.GetValue<MVariantArray>("nodes"))
-	{
-		uint32_t nSize = pNodeArray->GetMemberCount();
-		m_vSkeletalAnimNodes.resize(nSize);
-		for (uint32_t i = 0 ; i < nSize; ++i)
-		{
-			if (const MStruct* pNodeSrt = pNodeArray->GetMember(i)->var.GetStruct())
-			{
-				m_vSkeletalAnimNodes[i].ReadFromStruct(*pNodeSrt);
-			}
-		}
+		m_vSkeletalAnimNodes.clear();
 	}
 }
 
@@ -241,72 +161,93 @@ void MSkeletalAnimation::OnDelete()
 
 bool MSkeletalAnimation::FindTransform(const float& fTime, const MSkeletalAnimNode& animNode, MTransform& trans)
 {
-	if (animNode.m_unPositionKeysNum + animNode.m_unRotationKeysNum + animNode.m_unScalingKeysNum == 0)
+	if (animNode.m_vPositionTrack.size() + animNode.m_vRotationTrack.size() + animNode.m_vScaleTrack.size() == 0)
 		return false;
 
 	Vector3 v3Position, v3Scale;
 	Quaternion quatRotation;
 
-	for (int i = animNode.m_unPositionKeysNum - 1; i >= 0; --i)
+	for (int i = animNode.m_vPositionTrack.size() - 1; i >= 0; --i)
 	{
-		const MSkeletalAnimNode::MAnimNodeKey<Vector3>& curkey = animNode.m_vPositionKeys[i];
-		if (fTime >= curkey.mTime)
+		const auto& curkey = animNode.m_vPositionTrack[i];
+		if (fTime >= curkey.time())
 		{
-			if (i == animNode.m_unPositionKeysNum - 1)
+			if (i == animNode.m_vPositionTrack.size() - 1)
 			{
-				v3Position = curkey.mValue;
+				v3Position = curkey.value();
 			}
 			else
 			{
-				const MSkeletalAnimNode::MAnimNodeKey<Vector3>& nextKey = animNode.m_vPositionKeys[i + 1];
-				if (nextKey.mTime - curkey.mTime > 1e-6f)
-					v3Position = MMath::Lerp(curkey.mValue, nextKey.mValue, (fTime - curkey.mTime) / (nextKey.mTime - curkey.mTime));
+				const auto& nextKey = animNode.m_vPositionTrack[i + 1];
+				if (nextKey.time() - curkey.time() > 1e-6f)
+				{
+					Vector3 current, next;
+					current.Deserialize(&curkey.value());
+					next.Deserialize(&nextKey.value());
+					v3Position = MMath::Lerp(current, next, (fTime - curkey.time()) / (nextKey.time() - curkey.time()));
+				}
 				else
-					v3Position = nextKey.mValue;
+				{
+					v3Position.Deserialize(&nextKey.value());
+				}
 			}
 			
 			break;
 		}
 	}
 
-	for (int i = animNode.m_unRotationKeysNum - 1; i >= 0; --i)
+	for (int i = animNode.m_vRotationTrack.size() - 1; i >= 0; --i)
 	{
-		const MSkeletalAnimNode::MAnimNodeKey<Quaternion>& curkey = animNode.m_vRotationKeys[i];
-		if (fTime >= curkey.mTime)
+		const auto& curkey = animNode.m_vRotationTrack[i];
+		if (fTime >= curkey.time())
 		{
-			if (i == animNode.m_unRotationKeysNum - 1)
+			if (i == animNode.m_vRotationTrack.size() - 1)
 			{
-				quatRotation = curkey.mValue;
+				quatRotation = curkey.value();
 			}
 			else
 			{
-				const MSkeletalAnimNode::MAnimNodeKey<Quaternion>& nextKey = animNode.m_vRotationKeys[i + 1];
-				if (nextKey.mTime - curkey.mTime > 1e-6f)
-					quatRotation = Quaternion::Slerp(curkey.mValue, nextKey.mValue, (fTime - curkey.mTime) / (nextKey.mTime - curkey.mTime));
+				const auto& nextKey = animNode.m_vRotationTrack[i + 1];
+				if (nextKey.time() - curkey.time() > 1e-6f)
+				{
+					Quaternion current, next;
+					current.Deserialize(&curkey.value());
+					next.Deserialize(&nextKey.value());
+					quatRotation = Quaternion::Slerp(current, next, (fTime - curkey.time()) / (nextKey.time() - curkey.time()));
+				}
 				else
-					quatRotation = nextKey.mValue;
+				{
+					quatRotation.Deserialize(&nextKey.value());
+				}
 			}
 
 			break;
 		}
 	}
 
-	for (int i = animNode.m_unScalingKeysNum - 1; i >= 0; --i)
+	for (int i = animNode.m_vScaleTrack.size() - 1; i >= 0; --i)
 	{
-		const MSkeletalAnimNode::MAnimNodeKey<Vector3>& curkey = animNode.m_vScalingKeys[i];
-		if (fTime >= curkey.mTime)
+		const auto& curkey = animNode.m_vScaleTrack[i];
+		if (fTime >= curkey.time())
 		{
-			if (i == animNode.m_unScalingKeysNum - 1)
+			if (i == animNode.m_vScaleTrack.size() - 1)
 			{
-				v3Scale = curkey.mValue;
+				v3Scale = curkey.value();
 			}
 			else
 			{
-				const MSkeletalAnimNode::MAnimNodeKey<Vector3>& nextKey = animNode.m_vScalingKeys[i + 1];
-				if (nextKey.mTime - curkey.mTime > 1e-6f)
-					v3Scale = MMath::Lerp(curkey.mValue, nextKey.mValue, (fTime - curkey.mTime) / (nextKey.mTime - curkey.mTime));
+				const auto& nextKey = animNode.m_vScaleTrack[i + 1];
+				if (nextKey.time() - curkey.time() > 1e-6f)
+				{
+					Vector3 current, next;
+					current.Deserialize(&curkey.value());
+					next.Deserialize(&nextKey.value());
+					v3Scale = MMath::Lerp(current, next, (fTime - curkey.time()) / (nextKey.time() - curkey.time()));
+				}
 				else
-					v3Scale = nextKey.mValue;
+				{
+					v3Scale.Deserialize(&nextKey.value());
+				}
 			}
 
 			break;
@@ -322,33 +263,27 @@ bool MSkeletalAnimation::FindTransform(const float& fTime, const MSkeletalAnimNo
 
 bool MSkeletalAnimation::Load(const MString& strResourcePath)
 {
-	MString code;
-	if (!MFileHelper::ReadString(strResourcePath, code))
-		return false;
+	std::vector<MByte> data;
+	MFileHelper::ReadData(strResourcePath, data);
 
-	MVariant var;
-	MJson::JsonToMVariant(code, var);
-	if (MStruct* pSrt = var.GetStruct())
-	{
-		ReadFromStruct(*pSrt);
+	flatbuffers::FlatBufferBuilder fbb;
+	fbb.PushBytes((const uint8_t*)data.data(), data.size());
 
-		return true;
-	}
+	const mfbs::MSkeletalAnimation* fbAnimation = mfbs::GetMSkeletalAnimation(fbb.GetCurrentBufferPointer());
 
-	return false;
+	Deserialize(fbAnimation);
+	return true;
 }
 
 bool MSkeletalAnimation::SaveTo(const MString& strResourcePath)
 {
-	MVariant var = MStruct();
-	MStruct& srt = *var.GetStruct();
+	flatbuffers::FlatBufferBuilder fbb;
+	Serialize(fbb);
 
-	WriteToStruct(srt);
+	std::vector<MByte> data(fbb.GetSize());
+	memcpy(data.data(), (MByte*)fbb.GetBufferPointer(), fbb.GetSize() * sizeof(MByte));
 
-	MString code;
-	MJson::MVariantToJson(srt, code);
-
-	return MFileHelper::WriteString(strResourcePath, code);
+	return MFileHelper::WriteData(strResourcePath, data);
 }
 
 MSkeletalAnimController::MSkeletalAnimController()

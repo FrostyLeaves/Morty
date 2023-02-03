@@ -1,0 +1,10 @@
+﻿namespace mfbs;
+
+table MResourceRef
+{
+	path: string;
+}
+
+root_type MResourceRef;
+
+file_identifier "MFBS";

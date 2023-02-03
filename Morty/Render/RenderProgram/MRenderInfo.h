@@ -18,7 +18,7 @@ class MRenderableMeshComponent;
 
 struct MCascadedShadowInfo
 {
-	float fSplitDepth;
+	Vector4 fSplitRange;//far, far + 0.1
 	Matrix4 m4DirLightInvProj;
 };
 

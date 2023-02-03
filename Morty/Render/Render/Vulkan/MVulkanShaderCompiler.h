@@ -18,6 +18,10 @@
 #undef max
 #endif
 
+#ifdef min
+#undef min
+#endif
+
 #include "spirv_cross.hpp"
 #include "spirv_parser.hpp"
 

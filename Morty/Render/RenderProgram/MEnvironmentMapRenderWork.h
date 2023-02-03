@@ -66,8 +66,8 @@ private:
 
 	std::shared_ptr<MMeshResource> m_pCubeMesh;
 
-	MResourceKeeper m_DiffuseEnvironmentMap;
-	MResourceKeeper m_SpecularEnvironmentMap;
+	MResourceRef m_DiffuseEnvironmentMap;
+	MResourceRef m_SpecularEnvironmentMap;
 
 	MRenderPass m_DiffuseRenderPass;
 	std::vector<MRenderPass> m_vSpecularRenderPass;

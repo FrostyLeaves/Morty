@@ -12,8 +12,7 @@
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
 
-#include "Utility/MJson.h"
-#include "Utility/MVariant.h"
+#include "Variant/MVariant.h"
 
 
 MORTY_CLASS_IMPLEMENT(MShaderProgram, MTypeClass)
@@ -187,10 +186,7 @@ void MShaderProgram::BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderPara
 			if (std::shared_ptr<MShaderConstantParam> pSelfParam = pProgramProperty->FindConstantParam(pBufferParam))
 			{
 				pSelfParam->eShaderType |= eType;
-				MVariant temp;
-				temp.Move(pSelfParam->var);
-				pSelfParam->var = pBufferParam->var;
-				pSelfParam->var.MergeFrom(temp);
+				pSelfParam->var = MVariant::Clone(pBufferParam->var);
 				pSelfParam->SetDirty();
 			}
 			else

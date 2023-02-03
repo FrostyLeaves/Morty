@@ -220,14 +220,12 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 
 	if (const std::shared_ptr<MShaderPropertyBlock>& pParams = m_DiffuseMaterial->GetMaterialParamSet())
 	{
-		if (MStruct* matrix = pParams->m_vParams[0]->var.GetStruct())
+		MVariantStruct& matrix = pParams->m_vParams[0]->var.GetValue<MVariantStruct>();
 		{
-			if (MVariantArray* mvp = matrix->GetValue<MVariantArray>("u_ModelViewProj"))
+			MVariantArray& mvp = matrix.GetVariant<MVariantArray>("u_ModelViewProj");
+			for (uint32_t i = 0; i < 6; ++i)
 			{
-				for (uint32_t i = 0; i < 6; ++i)
-				{
-					mvp->GetMember(i)->var = vCmaeraView[i];
-				}
+				mvp.SetVariant(i, vCmaeraView[i]);
 			}
 
 			pParams->m_vParams[0]->SetDirty();
@@ -246,25 +244,21 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 
 		if (const std::shared_ptr<MShaderPropertyBlock>& pParams = m_vSpecularMaterial[nMipmap]->GetMaterialParamSet())
 		{
-			if (MStruct* matrix = pParams->m_vParams[0]->var.GetStruct())
 			{
-				if (MVariantArray* mvp = matrix->GetValue<MVariantArray>("u_ModelViewProj"))
+				MVariantStruct& matrix = pParams->m_vParams[0]->var.GetValue<MVariantStruct>();
+				MVariantArray& mvp = matrix.GetVariant<MVariantArray>("u_ModelViewProj");
+				
+				for (uint32_t i = 0; i < 6; ++i)
 				{
-					for (uint32_t i = 0; i < 6; ++i)
-					{
-						mvp->GetMember(i)->var = vCmaeraView[i];
-					}
+					mvp.SetVariant(i, vCmaeraView[i]);
 				}
 
 				pParams->m_vParams[0]->SetDirty();
 			}
-			if (MStruct* matrix = pParams->m_vParams[1]->var.GetStruct())
-			{
-				if (float* roughness = matrix->GetValue<float>("u_roughness"))
-				{
-					*roughness = (float)nMipmap / (float)(SpecularMipmapCount);
-				}
 
+			{
+				MVariantStruct& matrix = pParams->m_vParams[1]->var.GetValue<MVariantStruct>();
+				matrix.SetVariant<float>("u_roughness", (float)nMipmap / (float)(SpecularMipmapCount));
 				pParams->m_vParams[1]->SetDirty();
 			}
 		}

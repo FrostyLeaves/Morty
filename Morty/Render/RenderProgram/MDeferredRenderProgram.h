@@ -119,7 +119,7 @@ protected:
 	MForwardRenderShaderPropertyBlock m_forwardFramePropertyBlock;
 
 
-	MResourceKeeper m_BrdfTexture;
+	MResourceRef m_BrdfTexture;
 
 protected:
 

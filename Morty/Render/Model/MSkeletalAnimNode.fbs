@@ -1,0 +1,33 @@
+include "Math/Vector.fbs";
+include "Math/Quaternion.fbs";
+
+namespace mfbs;
+
+struct MSkeletalPositionKey
+{
+	time: float;
+	value: Vector3;
+}
+
+struct MSkeletalRotationKey
+{
+	time: float;
+	value: Quaternion;
+}
+
+struct MSkeletalScaleKey
+{
+	time: float;
+	value: Vector3;
+}
+
+table MSkeletalAnimNode
+{
+	position_track: [MSkeletalPositionKey];
+	rotation_track: [MSkeletalRotationKey];
+	scale_track: [MSkeletalScaleKey];
+}
+
+root_type MSkeletalAnimNode;
+
+file_identifier "MFBS";

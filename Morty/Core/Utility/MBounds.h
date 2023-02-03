@@ -46,8 +46,8 @@ public:
 
 public:
 
-	virtual void WriteToStruct(MStruct& srt) override;
-	virtual void ReadFromStruct(const MStruct& srt) override;
+	virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	virtual void Deserialize(const void* pBufferPointer);
 
 public:
 	Vector3 m_v3CenterPoint;
@@ -72,11 +72,10 @@ public:
 
 	void SetPoints(const MByte* vPoints, const uint32_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize);
 	
-
 public:
 
-	virtual void WriteToStruct(MStruct& srt) override;
-	virtual void ReadFromStruct(const MStruct& srt) override;
+	virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	virtual void Deserialize(const void* pBufferPointer);
 
 public:
 	Vector3 m_v3MinPoint;
@@ -106,8 +105,8 @@ public:
 
 public:
 
-	virtual void WriteToStruct(MStruct& srt) override;
-	virtual void ReadFromStruct(const MStruct& srt) override;
+	virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	virtual void Deserialize(const void* pBufferPointer);
 
 public:
 

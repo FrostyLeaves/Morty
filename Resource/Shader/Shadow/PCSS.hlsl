@@ -1,6 +1,6 @@
 #include "inner_constant.hlsl"
 
-#define NUM_SAMPLES 50
+#define NUM_SAMPLES 100
 #define NUM_RINGS 10
 
 #define NEAR_PLANE 0.01f
@@ -30,7 +30,7 @@ void PoissonDiskSamples( const float2 f2RandomSeed, out float2 vPoissonDisk[NUM_
 
     for ( int i = 0; i < NUM_SAMPLES; ++i )
     {
-        vPoissonDisk[i] = float2( cos( angle ), sin( angle ) ) * pow( radius, 0.75 );
+        vPoissonDisk[i] = float2( cos( angle ), sin( angle ) ) * pow( radius, 0.75 );   //range [-1, 1]
         radius += radiusStep;
         angle += ANGLE_STEP;
     }
@@ -57,18 +57,12 @@ void UniformDiskSamples( const float2 f2RandomSeed, out float2 vPoissonDisk[NUM_
     }
 }
 
-float FindBlocker(Texture2DArray texShadowMap, uint nCascadeIndex, float2 f2TexCoords, float fLightSize, float4 f4DirLightSpacePos, float fReceiverDepth)
+float FindBlocker(Texture2DArray texShadowMap, uint nCascadeIndex, float2 f2TexCoords, float fReceiverDepth, float fLightRadiusNDCSpace, float2 vPoissonDisk[NUM_SAMPLES])
 {
     float fBlockerPixelNum = 0.0f;
     float fBlockDepth = 0.0f;
 
-    float fLightSpaceZ = f4DirLightSpacePos.z;
-
-    //float fSearchRadius = 5.0f / MSHADOW_TEXTURE_SIZE;
-    float fSearchRadius = (fLightSize / MSHADOW_TEXTURE_SIZE) * (fLightSpaceZ - NEAR_PLANE) / fLightSpaceZ;
-
-    float2 vPoissonDisk[NUM_SAMPLES];
-    PoissonDiskSamples(f2TexCoords, vPoissonDisk);
+    float fSearchRadius = fLightRadiusNDCSpace;
 
     for (int i = 0; i < NUM_SAMPLES; ++i)
     {
@@ -89,33 +83,37 @@ float FindBlocker(Texture2DArray texShadowMap, uint nCascadeIndex, float2 f2TexC
     return fBlockDepth / fBlockerPixelNum;
 }
 
-float PCF(Texture2DArray texShadowMap, uint nCascadeIndex, float2 f2TexCoords, float fPixelDepth, float fFilterRadius, float fEpsilon)
+float PCF_With_PoissonDisk(Texture2DArray texShadowMap, uint nCascadeIndex, float2 f2TexCoords, float fReceiverDepth, float fFilterRadiusNDCSpace, float fEpsilon, float2 vPoissonDisk[NUM_SAMPLES])
 {
     float fVisibility = 0.0f;
 
-    float fFilterRadiusUV = fFilterRadius / MSHADOW_TEXTURE_SIZE;
-
-    float2 vPoissonDisk[NUM_SAMPLES];
-    PoissonDiskSamples(f2TexCoords, vPoissonDisk);
-        
     for (int i = 0; i < NUM_SAMPLES; ++i)
     {
-        float2 texCoords = saturate(f2TexCoords + vPoissonDisk[i] * fFilterRadiusUV);
+        float2 texCoords = saturate(f2TexCoords + vPoissonDisk[i] * fFilterRadiusNDCSpace);
 
         float fShadowDepth = texShadowMap.Sample( LinearSampler, float3(texCoords, nCascadeIndex) ).r;
+        fVisibility += step(fReceiverDepth, fShadowDepth + fEpsilon);
 
-        fVisibility += step(fPixelDepth, fShadowDepth + fEpsilon);
     }
 
     return fVisibility / NUM_SAMPLES;
 }
 
-float PCSS(Texture2DArray texShadowMap, uint nCascadeIndex, float2 f2TexCoords, float fLightSize, float4 f4DirLightSpacePos, float fPixelDepth, float fEpsilon)
+float PCF(Texture2DArray texShadowMap, uint nCascadeIndex, float2 f2TexCoords, float fReceiverDepth, float fFilterRadiusNDCSpace, float fEpsilon)
 {
-    float fReceiverDepth = fPixelDepth;
+    float2 vPoissonDisk[NUM_SAMPLES];
+    PoissonDiskSamples(f2TexCoords, vPoissonDisk);
+        
+    return PCF_With_PoissonDisk(texShadowMap, nCascadeIndex, f2TexCoords, fReceiverDepth, fFilterRadiusNDCSpace, fEpsilon, vPoissonDisk);
+}
+
+float PCSS(Texture2DArray texShadowMap, uint nCascadeIndex, float2 f2TexCoords, float fReceiverDepth, float fLightRadiusNDCSpace, float fLightPosNDCSpace, float fEpsilon)
+{
+    float2 vPoissonDisk[NUM_SAMPLES];
+    PoissonDiskSamples(f2TexCoords, vPoissonDisk);
 
     // STEP 1: avgblocker depth 
-    float fBlockerDepth = FindBlocker(texShadowMap, nCascadeIndex, f2TexCoords, fLightSize, f4DirLightSpacePos, fReceiverDepth);
+    float fBlockerDepth = FindBlocker(texShadowMap, nCascadeIndex, f2TexCoords, fReceiverDepth, fLightRadiusNDCSpace, vPoissonDisk);
 
     if(fBlockerDepth < 0.0f)
     {
@@ -123,10 +121,20 @@ float PCSS(Texture2DArray texShadowMap, uint nCascadeIndex, float2 f2TexCoords, 
     }
 
     // STEP 2: penumbra size
-    float fPenumbra = fLightSize * (fPixelDepth - fBlockerDepth) / fBlockerDepth;
 
-    //fPenumbra = fPenumbra / (nCascadeIndex + 1);
+    //relative to near z --> relative to light position.
+    float fBlockerDepthWithOffset = fBlockerDepth - fLightPosNDCSpace + fReceiverDepth;
+    float fReceiverDepthWithOffset = fReceiverDepth - fLightPosNDCSpace + fReceiverDepth;
+    fBlockerDepthWithOffset = min(fBlockerDepthWithOffset, fReceiverDepthWithOffset);
+
+    // fReceiverDepth += fReceiverDepth; //use fReceiverDepth as LightPosition.z
+    // fBlockerDepth += fReceiverDepth;
+    float fScale = (fReceiverDepthWithOffset - fBlockerDepthWithOffset) / (fBlockerDepthWithOffset);
+    fScale = max(fScale, 0.0f);
+    float fPenumbraRadius = fLightRadiusNDCSpace * fScale;
 
     // STEP 3: filtering
-    return PCF(texShadowMap, nCascadeIndex, f2TexCoords, fPixelDepth, fPenumbra, fEpsilon);
+    float fShadowValue = PCF_With_PoissonDisk(texShadowMap, nCascadeIndex, f2TexCoords, fReceiverDepth, fPenumbraRadius, fEpsilon, vPoissonDisk);
+
+    return fShadowValue;
 }

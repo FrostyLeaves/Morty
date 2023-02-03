@@ -2,6 +2,8 @@
 #include <cmath>
 #include <cassert>
 
+#include "Quaternion_generated.h"
+
 Quaternion::Quaternion()
 	: w(1)
 	, x(0)
@@ -37,6 +39,25 @@ Quaternion::Quaternion(const Vector3& vAxis, const float& fAngle)
 	, z(0)
 {
 	RotateAxis(vAxis, fAngle);
+}
+
+Quaternion::Quaternion(const mfbs::Quaternion& value)
+	: w(value.w())
+	, x(value.x())
+	, y(value.y())
+	, z(value.z())
+{
+	
+}
+
+const mfbs::Quaternion* Quaternion::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
+{
+	return reinterpret_cast<const mfbs::Quaternion*>(this);
+}
+
+void Quaternion::Deserialize(const void* pBufferPointer)
+{
+	memcpy(this, pBufferPointer, sizeof(Quaternion));
 }
 
 Quaternion Quaternion::operator-(void) const

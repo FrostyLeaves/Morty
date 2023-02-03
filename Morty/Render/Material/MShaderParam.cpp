@@ -30,7 +30,7 @@ MShaderConstantParam::MShaderConstantParam()
 MShaderConstantParam::MShaderConstantParam(const MShaderConstantParam& param, const int& unNone)
 {
 	strName = param.strName;
-	var = param.var;
+	var = MVariant::Clone(param.var);
 	eShaderType = param.eShaderType;
 
 	SetDirty();

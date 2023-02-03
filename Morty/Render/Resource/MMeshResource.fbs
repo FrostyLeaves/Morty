@@ -1,0 +1,32 @@
+include "Math/Vector.fbs";
+include "Math/Quaternion.fbs";
+include "Math/Matrix.fbs";
+include "Utility/MBoundsOBB.fbs";
+include "Utility/MBoundsSphere.fbs";
+include "Model/MSkeleton.fbs";
+include "Resource/MResourceRef.fbs";
+
+namespace mfbs;
+
+enum MEMeshVertexType:byte
+{
+    normal = 0,
+    skeleton = 1,
+}
+
+table MMeshResource
+{
+	bounds_obb: MBoundsOBB;
+    bounds_sphere: MBoundsSphere;
+
+    skeleton_resource: MResourceRef;
+
+    vertex_type: MEMeshVertexType;
+
+    vertex: [byte];
+    index: [uint];
+}
+
+root_type MMeshResource;
+
+file_identifier "MFBS";

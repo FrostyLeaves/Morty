@@ -33,11 +33,10 @@ public:
 	std::shared_ptr<MShaderStorageParam> FindStorageParam(const MString& strParamName);
 	std::shared_ptr<MShaderTextureParam> FindTextureParam(const MString& strParamName);
 
-	MVariant* FindValue(const MString& strName, MVariant& value);
-	MVariant* FindValue(const MString& strName);
 
-	bool SetValue(MVariant& target, const MVariant& source);
-	bool SetValue(const MString& strName, const MVariant& value);
+	template<typename TYPE>
+	bool SetValue(const MString& strName, const TYPE& value);
+
 	bool SetValue(const MString& strName, MTexture* pTexture);
 
 	bool HasValue(const uint32_t& unBinding, const uint32_t& unSet);
@@ -95,6 +94,58 @@ protected:
 	std::vector<std::shared_ptr<ParamType>> RemoveShaderParam(std::vector<std::shared_ptr<ParamType>>& vVector, const uint32_t& eShaderType);
 
 };
+
+template<typename TYPE>
+inline bool SetValueRecursive(MVariant& variant, const MString& strName, const TYPE& value)
+{
+	if (variant.IsType<MVariantStruct>())
+	{
+		MVariant& findResult = variant.GetValue<MVariantStruct>().FindVariant(strName);
+		if (findResult.IsType<TYPE>())
+		{
+			findResult.SetValue(value);
+			return true;
+		}
+
+		for (auto member : variant.GetValue<MVariantStruct>().GetMember())
+		{
+			MVariant& child = member.second;
+		    if (child.IsType<MVariantStruct>())
+		    {
+		        if (SetValueRecursive(child, strName, value))
+		        {
+					return true;
+		        }
+		    }
+		}
+	}
+
+	return false;
+}
+
+template<typename TYPE>
+inline bool MShaderPropertyBlock::SetValue(const MString& strName, const TYPE& value)
+{
+	for (std::shared_ptr<MShaderConstantParam>& pParam : m_vParams)
+	{
+		if (pParam->var.IsType<TYPE>() && pParam->strName == strName)
+		{
+			pParam->var.SetValue(value);
+			pParam->SetDirty();
+			return true;
+		}
+		else if (pParam->var.GetType() == MEVariantType::EStruct)
+		{
+		    if (SetValueRecursive(pParam->var, strName, value))
+		    {
+				pParam->SetDirty();
+				return true;
+		    }
+		}
+	}
+
+	return false;
+}
 
 template <typename ParamType>
 std::shared_ptr<ParamType> MShaderPropertyBlock::FindShaderParam(std::vector<std::shared_ptr<ParamType>>& vVector, const std::shared_ptr<const ParamType> pParam)

@@ -1,0 +1,19 @@
+include "Math/Vector.fbs";
+include "Math/Quaternion.fbs";
+include "Math/Matrix.fbs";
+
+namespace mfbs;
+
+table MBone
+{
+	name: string;
+	index: uint;
+	parent: uint;
+	transform: Matrix4;
+	offset: Matrix4;
+	children: [uint];
+}
+
+root_type MBone;
+
+file_identifier "MFBS";

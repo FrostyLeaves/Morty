@@ -2,6 +2,8 @@
 #include <cmath>
 #include <cassert>
 
+#include "Vector_generated.h"
+
 
 Vector3::Vector3(const float& _x, const float& _y, const float& _z)
 	: x(_x)
@@ -49,6 +51,14 @@ Vector3::Vector3(const Vector4& vec4)
 	, z(vec4.z)
 {
 
+}
+
+Vector3::Vector3(const mfbs::Vector3& value)
+	: x(value.x())
+	, y(value.y())
+	, z(value.z())
+{
+	
 }
 
 float Vector3::Length() const
@@ -401,4 +411,34 @@ Vector2 Vector2::operator-(const Vector2& value) const
 Vector2 Vector2::operator-(void) const
 {
 	return Vector2(-x, -y);
+}
+
+const mfbs::Vector2* Vector2::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
+{
+	return reinterpret_cast<const mfbs::Vector2*>(this);
+}
+
+void Vector2::Deserialize(const void* pBufferPointer)
+{
+	memcpy(this, pBufferPointer, sizeof(Vector2));
+}
+
+const mfbs::Vector3* Vector3::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
+{
+	return reinterpret_cast<const mfbs::Vector3*>(this);
+}
+
+void Vector3::Deserialize(const void* pBufferPointer)
+{
+	memcpy(this, pBufferPointer, sizeof(Vector3));
+}
+
+const mfbs::Vector4* Vector4::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
+{
+	return reinterpret_cast<const mfbs::Vector4*>(this);
+}
+
+void Vector4::Deserialize(const void* pBufferPointer)
+{
+	memcpy(this, pBufferPointer, sizeof(Vector4));
 }

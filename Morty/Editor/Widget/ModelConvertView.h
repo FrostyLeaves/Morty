@@ -6,7 +6,6 @@
 #include <functional>
 
 #include "Utility/MString.h"
-#include "Utility/MVariant.h"
 #include "Model/MModelConverter.h"
 
 

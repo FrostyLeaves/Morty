@@ -41,9 +41,9 @@ public:
 
 private:
 
-	MResourceKeeper m_Texture;
-	MResourceKeeper m_DiffuseEnvTexture;
-	MResourceKeeper m_SpecularEnvTexture;
+	MResourceRef m_Texture;
+	MResourceRef m_DiffuseEnvTexture;
+	MResourceRef m_SpecularEnvTexture;
     
     std::shared_ptr<MMaterial> m_pMaterial;
 };

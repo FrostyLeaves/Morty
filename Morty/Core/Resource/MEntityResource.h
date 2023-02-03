@@ -10,7 +10,6 @@
 #define _M_MENTITYRESOURCE_H_
 #include "Utility/MGlobal.h"
 
-#include "Utility/MVariant.h"
 #include "Resource/MResource.h"
 
 class MORTY_API MEntityResource : public MResource

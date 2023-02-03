@@ -152,7 +152,7 @@ void MResourceSystem::MoveTo(std::shared_ptr<MResource> pResource, const MString
 	{
 		//Set As Memory Resource
 		pTargetResource->m_strResourcePath = "";
-		for (MResourceKeeper* pKeeper : pTargetResource->m_vKeeper)
+		for (MResourceRef* pKeeper : pTargetResource->m_vKeeper)
 		{
 			pKeeper->SetResource(pResource);
 		}

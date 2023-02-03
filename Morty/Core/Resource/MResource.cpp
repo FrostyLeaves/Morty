@@ -1,4 +1,7 @@
 ﻿#include "Resource/MResource.h"
+
+#include <MResourceRef_generated.h>
+
 #include "Engine/MEngine.h"
 #include "System/MResourceSystem.h"
 #include "Utility/MFileHelper.h"
@@ -14,7 +17,7 @@ MResource::MResource()
 
 MResource::~MResource()
 {
-	for (MResourceKeeper* pKeeper : m_vKeeper)
+	for (MResourceRef* pKeeper : m_vKeeper)
 	{
 		pKeeper->m_pResource = nullptr;
 	}
@@ -87,10 +90,10 @@ void MResource::ReplaceFrom(std::shared_ptr<MResource> pResource)
 	if (pResource->GetType() != GetType())
 		return;
 
-	std::vector<MResourceKeeper*> keeps = m_vKeeper;
+	std::vector<MResourceRef*> keeps = m_vKeeper;
 	m_vKeeper.clear();
 
-	for (MResourceKeeper* pKeeper : keeps)
+	for (MResourceRef* pKeeper : keeps)
 	{
 		//pKeeper->SetResource(pResource);
 
@@ -106,45 +109,45 @@ void MResource::ReplaceFrom(std::shared_ptr<MResource> pResource)
 
 void MResource::OnReload()
 {
-	for (MResourceKeeper* pKeeper : m_vKeeper)
+	for (MResourceRef* pKeeper : m_vKeeper)
 	{
 		if (pKeeper->m_funcReloadCallback)
 			pKeeper->m_funcReloadCallback();
 	}
 }
 
-MResourceKeeper::MResourceKeeper()
+MResourceRef::MResourceRef()
 	: m_funcReloadCallback(nullptr)
 	, m_pResource(nullptr)
 {
 
 }
 
-MResourceKeeper::MResourceKeeper(std::shared_ptr<MResource> pResource)
+MResourceRef::MResourceRef(std::shared_ptr<MResource> pResource)
 	: m_funcReloadCallback(nullptr)
 	, m_pResource(nullptr)
 {
 	SetResource(pResource);
 }
 
-MResourceKeeper::MResourceKeeper(const MResourceKeeper& cHolder)
+MResourceRef::MResourceRef(const MResourceRef& cHolder)
 	: m_funcReloadCallback(cHolder.m_funcReloadCallback)
 	, m_pResource(nullptr)
 {
 	SetResource(cHolder.m_pResource);
 }
 
-MResourceKeeper::~MResourceKeeper()
+MResourceRef::~MResourceRef()
 {
 	SetResource(nullptr);
 }
 
-void MResourceKeeper::SetResource(std::shared_ptr<MResource> pResource)
+void MResourceRef::SetResource(std::shared_ptr<MResource> pResource)
 {
 	std::shared_ptr<MResource> pOldResource = m_pResource;
 	if (m_pResource)
 	{
-		std::vector<MResourceKeeper*>::iterator iter = std::find(m_pResource->m_vKeeper.begin(), m_pResource->m_vKeeper.end(), this);
+		std::vector<MResourceRef*>::iterator iter = std::find(m_pResource->m_vKeeper.begin(), m_pResource->m_vKeeper.end(), this);
 		if (m_pResource->m_vKeeper.end() != iter)
 		{
 			m_pResource->m_vKeeper.erase(iter);
@@ -157,7 +160,7 @@ void MResourceKeeper::SetResource(std::shared_ptr<MResource> pResource)
 	}
 }
 
-const MResourceKeeper& MResourceKeeper::operator=(const MResourceKeeper& keeper)
+const MResourceRef& MResourceRef::operator=(const MResourceRef& keeper)
 {
 	m_funcReloadCallback = keeper.m_funcReloadCallback;
 	SetResource(keeper.m_pResource);
@@ -165,10 +168,43 @@ const MResourceKeeper& MResourceKeeper::operator=(const MResourceKeeper& keeper)
 	return keeper;
 }
 
-std::shared_ptr<MResource> MResourceKeeper::operator=(std::shared_ptr<MResource> pResource)
+std::shared_ptr<MResource> MResourceRef::operator=(std::shared_ptr<MResource> pResource)
 {
 	m_funcReloadCallback = nullptr;
 	SetResource(pResource);
 
 	return pResource;
+}
+
+flatbuffers::Offset<void> MResourceRef::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
+{
+	flatbuffers::Offset<flatbuffers::String> fbPath;
+	if (m_pResource)
+	{
+		fbPath = fbb.CreateString(m_pResource->GetResourcePath());
+	}
+
+	mfbs::MResourceRefBuilder builder(fbb);
+
+	if (m_pResource)
+	{
+		builder.add_path(fbPath);
+	}
+
+	return builder.Finish().Union();
+}
+
+void MResourceRef::Deserialize(MEngine* pEngine, const void* pBufferPointer)
+{
+	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
+
+	const mfbs::MResourceRef* fbData = reinterpret_cast<const mfbs::MResourceRef*>(pBufferPointer);
+
+	std::shared_ptr<MResource> pResource = nullptr;
+	if (fbData->path())
+	{
+		pResource = pResourceSystem->LoadResource(fbData->path()->c_str());
+	}
+
+	SetResource(pResource);
 }

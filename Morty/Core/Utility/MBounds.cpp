@@ -7,6 +7,10 @@
 
 #include <float.h>
 
+#include "MBoundsAABB_generated.h"
+#include "MBoundsOBB_generated.h"
+#include "MBoundsSphere_generated.h"
+
 MBoundsOBB::MBoundsOBB(const Vector3* vPoints, const uint32_t& unArrayLength)
 {
 	SetPoints((MByte*)vPoints, unArrayLength, 0, sizeof(Vector3));
@@ -124,22 +128,24 @@ void MBoundsOBB::SetPoints(const MByte* vPoints, const uint32_t& unArrayLength, 
 	m_v3HalfLength = (v3MaxPoint - v3MinPoint) * 0.5;
 }
 
-void MBoundsOBB::WriteToStruct(MStruct& srt)
+flatbuffers::Offset<void> MBoundsOBB::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	MSerializer::WriteToStruct(srt);
+	mfbs::MBoundsOBBBuilder builder(fbb);
 
-	srt.SetValue("mat", m_matEigVectors);
-	srt.SetValue("min", m_v3MinPoint);
-	srt.SetValue("max", m_v3MaxPoint);
+	builder.add_matrix(m_matEigVectors.Serialize(fbb));
+	builder.add_min(m_v3MinPoint.Serialize(fbb));
+	builder.add_max(m_v3MaxPoint.Serialize(fbb));
+
+	return builder.Finish().Union();
 }
 
-void MBoundsOBB::ReadFromStruct(const MStruct& srt)
+void MBoundsOBB::Deserialize(const void* pBufferPointer)
 {
-	MSerializer::ReadFromStruct(srt);
+	const mfbs::MBoundsOBB* fbData = reinterpret_cast<const mfbs::MBoundsOBB*>(pBufferPointer);
 
-	srt.GetValue<Matrix3>("mat", m_matEigVectors);
-	srt.GetValue<Vector3>("min", m_v3MinPoint);
-	srt.GetValue<Vector3>("max", m_v3MaxPoint);
+	m_matEigVectors.Deserialize(fbData->matrix());
+	m_v3MinPoint.Deserialize(fbData->min());
+	m_v3MaxPoint.Deserialize(fbData->max());
 
 	m_v3CenterPoint = (m_v3MaxPoint + m_v3MinPoint) * 0.5;
 	m_v3HalfLength = (m_v3MaxPoint - m_v3MinPoint) * 0.5;
@@ -301,18 +307,22 @@ bool MBoundsAABB::IsIntersect(const MBoundsAABB& aabb) const
 	return bXIntersect && bYIntersect && bZIntersect;
 }
 
-void MBoundsAABB::WriteToStruct(MStruct& srt)
+flatbuffers::Offset<void> MBoundsAABB::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	MSerializer::WriteToStruct(srt);
-	srt.SetValue("min", m_v3MinPoint);
-	srt.SetValue("max", m_v3MaxPoint);
+	mfbs::MBoundsAABBBuilder builder(fbb);
+
+	builder.add_min(m_v3MinPoint.Serialize(fbb));
+	builder.add_max(m_v3MaxPoint.Serialize(fbb));
+
+	return builder.Finish().Union();
 }
 
-void MBoundsAABB::ReadFromStruct(const MStruct& srt)
+void MBoundsAABB::Deserialize(const void* pBufferPointer)
 {
-	MSerializer::ReadFromStruct(srt);
-	srt.GetValue<Vector3>("min", m_v3MinPoint);
-	srt.GetValue<Vector3>("max", m_v3MaxPoint);
+	const mfbs::MBoundsAABB* fbData = reinterpret_cast<const mfbs::MBoundsAABB*>(pBufferPointer);
+
+	m_v3MinPoint.Deserialize(fbData->min());
+	m_v3MaxPoint.Deserialize(fbData->max());
 
 	SetMinMax(m_v3MinPoint, m_v3MaxPoint);
 }
@@ -417,20 +427,22 @@ bool MBoundsSphere::IsContain(const Vector3& pos)
 	return (pos - m_v3CenterPoint).Length() <= m_fRadius;
 }
 
-void MBoundsSphere::WriteToStruct(MStruct& srt)
+flatbuffers::Offset<void> MBoundsSphere::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	MSerializer::WriteToStruct(srt);
+	mfbs::MBoundsSphereBuilder builder(fbb);
 
-	srt.SetValue("r", m_fRadius);
-	srt.SetValue("c", m_v3CenterPoint);
+	builder.add_center(m_v3CenterPoint.Serialize(fbb));
+	builder.add_radius(m_fRadius);
+
+	return builder.Finish().Union();
 }
 
-void MBoundsSphere::ReadFromStruct(const MStruct& srt)
+void MBoundsSphere::Deserialize(const void* pBufferPointer)
 {
-	MSerializer::ReadFromStruct(srt);
+	const mfbs::MBoundsSphere* fbData = reinterpret_cast<const mfbs::MBoundsSphere*>(pBufferPointer);
 
-	srt.GetValue<float>("r", m_fRadius);
-	srt.GetValue<Vector3>("c", m_v3CenterPoint);
+	m_v3CenterPoint.Deserialize(fbData->center());
+	m_fRadius = fbData->radius();
 }
 
 void MPointsSphere::RandomSwap()

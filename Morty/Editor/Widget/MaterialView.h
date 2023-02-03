@@ -33,7 +33,7 @@ public:
 protected:
 
 private:
-	MResourceKeeper m_Resource;
+	MResourceRef m_Resource;
 	std::shared_ptr<MMaterial> m_pMaterial;
 	PropertyBase m_propertyBase;
 

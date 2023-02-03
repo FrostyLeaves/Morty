@@ -129,10 +129,9 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 
 	for (int i = 0; i < m_vMeshes.size(); ++i)
 	{
-		std::shared_ptr<MMeshResource> pMeshResource = m_vMeshes[i];
-		MString strMeshFileName = strPath + pMeshResource->GetMeshName() + "_" + MStringHelper::ToString(i);
+		std::shared_ptr<MMeshResource> pMeshResource = m_vMeshes[i].second;
+		MString strMeshFileName = strPath + m_vMeshes[i].first + "_" + MStringHelper::ToString(i);
 
-		
 		pResourceSystem->MoveTo(pMeshResource, strMeshFileName + ".mesh");
 		pMeshResource->Save();
 	}
@@ -252,11 +251,11 @@ void MModelConverter::ProcessNode(aiNode* pNode, const aiScene *pScene)
 			pChildMeshResource->m_eVertexType = MMeshResource::Normal;
 		}
 
-		pChildMeshResource->m_strName = pChildMesh->mName.C_Str();
+		MString strMeshName = pChildMesh->mName.C_Str();
 		pChildMeshResource->m_SkeletonKeeper.SetResource(m_pSkeleton);
 		pChildMeshResource->m_MaterialKeeper.SetResource(GetMaterial(pScene, pChildMesh->mMaterialIndex));
 		pChildMeshResource->ResetBounds();
-		m_vMeshes.push_back(pChildMeshResource);
+		m_vMeshes.push_back({ strMeshName, pChildMeshResource });
 
 
 		MEntity* pChildEntity = m_pScene->CreateEntity();
@@ -602,48 +601,28 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 			{
 				MSkeletalAnimNode& mAnimNode = pMAnimation->m_vSkeletalAnimNodes[pBone->unIndex];
 
-				mAnimNode.m_unPositionKeysNum = pNodeAnim->mNumPositionKeys;
-				mAnimNode.m_unRotationKeysNum = pNodeAnim->mNumRotationKeys;
-				mAnimNode.m_unScalingKeysNum = pNodeAnim->mNumScalingKeys;
-				
-				if (mAnimNode.m_unPositionKeysNum > 0)
+				if (pNodeAnim->mNumPositionKeys > 0)
 				{
-					mAnimNode.m_vPositionKeys = new MSkeletalAnimNode::MAnimNodeKey<Vector3>[mAnimNode.m_unPositionKeysNum];
-					for (unsigned keyIndex = 0; keyIndex < mAnimNode.m_unPositionKeysNum; ++keyIndex)
+					for (unsigned keyIndex = 0; keyIndex < pNodeAnim->mNumPositionKeys; ++keyIndex)
 					{
-						MSkeletalAnimNode::MAnimNodeKey<Vector3>& dkey = mAnimNode.m_vPositionKeys[keyIndex];
 						const aiVectorKey& skey = pNodeAnim->mPositionKeys[keyIndex];
-						dkey.mTime = skey.mTime;
-						dkey.mValue.x = skey.mValue.x;
-						dkey.mValue.y = skey.mValue.y;
-						dkey.mValue.z = skey.mValue.z;
+						mAnimNode.m_vPositionTrack.push_back({ static_cast<float>(skey.mTime), mfbs::Vector3(skey.mValue.x, skey.mValue.y, skey.mValue.z) });
 					}
 				}
-				if (mAnimNode.m_unRotationKeysNum > 0)
+				if (pNodeAnim->mNumRotationKeys > 0)
 				{
-					mAnimNode.m_vRotationKeys = new MSkeletalAnimNode::MAnimNodeKey<Quaternion>[mAnimNode.m_unRotationKeysNum];
-					for (unsigned keyIndex = 0; keyIndex < mAnimNode.m_unRotationKeysNum; ++keyIndex)
+					for (unsigned keyIndex = 0; keyIndex < pNodeAnim->mNumRotationKeys; ++keyIndex)
 					{
-						MSkeletalAnimNode::MAnimNodeKey<Quaternion>& dkey = mAnimNode.m_vRotationKeys[keyIndex];
 						const aiQuatKey& skey = pNodeAnim->mRotationKeys[keyIndex];
-						dkey.mTime = skey.mTime;
-						dkey.mValue.w = skey.mValue.w;
-						dkey.mValue.x = skey.mValue.x;
-						dkey.mValue.y = skey.mValue.y;
-						dkey.mValue.z = skey.mValue.z;
+						mAnimNode.m_vRotationTrack.push_back({ static_cast<float>(skey.mTime), mfbs::Quaternion(skey.mValue.x, skey.mValue.y,skey.mValue.z,skey.mValue.w) });
 					}
 				}
-				if (mAnimNode.m_unScalingKeysNum > 0)
+				if (pNodeAnim->mNumScalingKeys > 0)
 				{
-					mAnimNode.m_vScalingKeys = new MSkeletalAnimNode::MAnimNodeKey<Vector3>[mAnimNode.m_unScalingKeysNum];
-					for (unsigned keyIndex = 0; keyIndex < mAnimNode.m_unScalingKeysNum; ++keyIndex)
+					for (unsigned keyIndex = 0; keyIndex < pNodeAnim->mNumScalingKeys; ++keyIndex)
 					{
-						MSkeletalAnimNode::MAnimNodeKey<Vector3>& dkey = mAnimNode.m_vScalingKeys[keyIndex];
 						const aiVectorKey& skey = pNodeAnim->mScalingKeys[keyIndex];
-						dkey.mTime = skey.mTime;
-						dkey.mValue.x = skey.mValue.x;
-						dkey.mValue.y = skey.mValue.y;
-						dkey.mValue.z = skey.mValue.z;
+						mAnimNode.m_vScaleTrack.push_back({static_cast<float>(skey.mTime), mfbs::Vector3(skey.mValue.x, skey.mValue.y, skey.mValue.z) });
 					}
 				}
 			}
@@ -747,20 +726,23 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		MStruct* pMaterialStruct = nullptr;
 		for (const std::shared_ptr<MShaderConstantParam>& pParam : pMaterial->GetShaderParams())
 		{
-			if (MStruct* pStruct = pParam->var.GetStruct())
-			{
-				if (MStruct* pMat = pStruct->GetValue("u_xMaterial")->GetStruct())
-				{
-					pMaterialStruct = pMat;
 
-					pMat->SetValue("f3Ambient", v3Ambient);
-					pMat->SetValue("f3Diffuse", v3Diffuse);
-					pMat->SetValue("f3Specular", v3Specular);
-					pMat->SetValue("fShininess", fShininess);
-					pMat->SetValue("bUseNormalTex", false);
-					pMat->SetValue("fAlphaFactor", 1.0f);
-				}
-			}
+			MVariantStruct materialData;
+			MVariantStructBuilder materialBuilder(materialData);
+			materialBuilder.AppendVariant("f3Ambient", v3Ambient);
+			materialBuilder.AppendVariant("f3Diffuse", v3Diffuse);
+			materialBuilder.AppendVariant("f3Specular", v3Specular);
+			materialBuilder.AppendVariant("fShininess", fShininess);
+			materialBuilder.AppendVariant("bUseNormalTex", false);
+			materialBuilder.AppendVariant("fAlphaFactor", 1.0f);
+			materialBuilder.Finish();
+
+			MVariantStruct shaderParam;
+			MVariantStructBuilder shaderParamBuilder(shaderParam);
+			shaderParamBuilder.AppendVariant("u_xMaterial", materialData);
+			shaderParamBuilder.Finish();
+
+			pParam->var = std::move(MVariant(shaderParam));
 		}
 	}
 

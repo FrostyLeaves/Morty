@@ -1,0 +1,52 @@
+include "Resource/MResourceRef.fbs";
+include "Variant/MVariant.fbs";
+include "Material/MShaderMacro.fbs";
+
+namespace mfbs;
+
+enum MERasterizerType: byte
+{
+	EWireframe = 0,
+	ECullNone = 1,
+	ECullBack = 2,
+	ECullFront = 3,
+}
+
+enum MEMaterialType: byte
+{
+	EDefault = 0,
+	EDepthPeel = 1,
+	ETransparentBlend = 2,
+	EOutline = 3,
+	EImGui = 4,
+	EDeferred = 5,
+}
+
+table MMaterialProperty
+{
+	name: string;
+	property: MVariant;
+}
+
+table MMaterialTexture
+{
+	name: string;
+	texture: MResourceRef;
+}
+
+table MMaterial
+{
+    vertex_resource: MResourceRef;
+    pixel_resource: MResourceRef;
+
+    rasterizer_type: MERasterizerType;
+    material_type: MEMaterialType;
+    
+	material_macro: MShaderMacro;
+    material_property: [MMaterialProperty];
+	material_textures: [MMaterialTexture];
+}
+
+root_type MMaterial;
+
+file_identifier "MFBS";

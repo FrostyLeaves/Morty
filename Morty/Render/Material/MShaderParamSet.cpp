@@ -114,38 +114,6 @@ std::shared_ptr<MShaderTextureParam> MShaderPropertyBlock::FindTextureParam(cons
 	return nullptr;
 }
 
-MVariant* MShaderPropertyBlock::FindValue(const MString& strName)
-{
-	for (std::shared_ptr<MShaderConstantParam>& pParam : m_vParams)
-	{
-		if (pParam->strName == strName)
-			return &pParam->var;
-		else if (MVariant* pVariant = FindValue(strName, pParam->var))
-			return pVariant;
-	}
-
-	return nullptr;
-}
-
-MVariant* MShaderPropertyBlock::FindValue(const MString& strName, MVariant& value)
-{
-	if (MStruct* pStruct = value.GetStruct())
-	{
-		for (size_t i = 0; i < pStruct->GetMemberCount(); ++i)
-		{
-			if (MStruct::MContainer::MStructMember* pContainer = pStruct->GetMember(i))
-			{
-				if (pContainer->strName == strName)
-					return &pContainer->var;
-				else if (MVariant* pVariant = FindValue(strName, pContainer->var))
-					return pVariant;
-			}
-		}
-	}
-
-	return nullptr;
-}
-
 bool MShaderPropertyBlock::SetValue(const MString& strName, MTexture* pTexture)
 {
 	for (std::shared_ptr<MShaderTextureParam>& pParam : m_vTextures)
@@ -155,42 +123,6 @@ bool MShaderPropertyBlock::SetValue(const MString& strName, MTexture* pTexture)
 			pParam->SetTexture(pTexture);
 			return true;
 		}
-	}
-
-	return false;
-}
-
-bool MShaderPropertyBlock::SetValue(const MString& strName, const MVariant& value)
-{
-	for (std::shared_ptr<MShaderConstantParam>& pParam : m_vParams)
-	{
-		if (pParam->strName == strName)
-		{
-			if (SetValue(pParam->var, value))
-			{
-				pParam->SetDirty();
-				return true;
-			}
-		}
-		else if (MVariant* pVariant = FindValue(strName, pParam->var))
-		{
-			if (SetValue(*pVariant, value))
-			{
-				pParam->SetDirty();
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
-bool MShaderPropertyBlock::SetValue(MVariant& target, const MVariant& source)
-{
-	if (target.GetType() == source.GetType() && target.GetSize() == source.GetSize())
-	{
-		target = source;
-		return true;
 	}
 
 	return false;

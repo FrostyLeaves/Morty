@@ -4,7 +4,7 @@
 #include "Scene/MEntity.h"
 #include "Utility/MString.h"
 #include "Math/Vector.h"
-#include "Utility/MVariant.h"
+#include "Variant/MVariant.h"
 #include "Utility/MTransform.h"
 #include "Utility/MColor.h"
 #include "System/MResourceSystem.h"
@@ -63,11 +63,11 @@ public:
 	template<class T>
 	T& GetTempValue(const MString& strValueName, const T& defaultValue)
 	{
-		unsigned int unRotateID = GetID(strValueName);
-		if (m_tTempValue[unRotateID].GetType() == MVariant::MEVariantType::ENone)
+		const unsigned int unRotateID = GetID(strValueName);
+		if (m_tTempValue[unRotateID].GetType() == MEVariantType::ENone)
 			m_tTempValue[unRotateID] = MVariant(defaultValue);
 
-		T& result = *((T*)(m_tTempValue[unRotateID].GetData()));
+		T& result = m_tTempValue[unRotateID].GetValue<T>();
 
 		return result;
 	}

@@ -1,8 +1,9 @@
 #include "Model/MSkeleton.h"
 #include <algorithm>
 
-#include "Utility/MJson.h"
 #include "Engine/MEngine.h"
+#include "Flatbuffer/MBone_generated.h"
+#include "Flatbuffer/MSkeleton_generated.h"
 #include "Utility/MFileHelper.h"
 #include "System/MRenderSystem.h"
 #include "Material/MShaderParamSet.h"
@@ -18,43 +19,39 @@ MBone::MBone()
 
 }
 
-void MBone::WriteToStruct(MStruct& srt)
+flatbuffers::Offset<void> MBone::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	MVariantArray vChildren;
-	for (uint32_t unChildIdx : vChildrenIndices)
-		vChildren.AppendValue((int)unChildIdx);
+	auto fbName = fbb.CreateString(strName);
+	auto fbTransform = m_matTransform.Serialize(fbb);
+	auto fbOffset = m_matOffsetMatrix.Serialize(fbb);
+	auto fbChildren = fbb.CreateVector(vChildrenIndices);
 
-	srt.SetValue("Name", strName);
-	srt.SetValue("Index", (int)unIndex);
-	srt.SetValue("ParentIndex", (int)unParentIndex);
-	srt.SetValue("matTrans", m_matTransform);
-	srt.SetValue("matOffset", m_matOffsetMatrix);
-	srt.SetValue("Children", vChildren);
+	mfbs::MBoneBuilder builder(fbb);
+
+	builder.add_name(fbName);
+	builder.add_index(unIndex);
+	builder.add_parent(unParentIndex);
+	builder.add_transform(fbTransform);
+	builder.add_offset(fbOffset);
+	builder.add_children(fbChildren);
+
+	return builder.Finish().Union();
 }
 
-void MBone::ReadFromStruct(const MStruct& srt)
+void MBone::Deserialize(const void* pBufferPointer)
 {
-	srt.GetValue<MString>("Name", strName);
+	const mfbs::MBone* fbData = reinterpret_cast<const mfbs::MBone*>(pBufferPointer);
 
-	if (const int* value = srt.GetValue<int>("Index"))
-		unIndex = *value;
+	strName = fbData->name()->c_str();
+	unIndex = fbData->index();
+	unParentIndex = fbData->parent();
+	m_matTransform.Deserialize(fbData->transform());
+	m_matOffsetMatrix.Deserialize(fbData->offset());
 
-	if (const int* value = srt.GetValue<int>("ParentIndex"))
-		unParentIndex = *value;
-
-	srt.GetValue<Matrix4>("matTrans", m_matTransform);
-	srt.GetValue<Matrix4>("matOffset", m_matOffsetMatrix);
-		
-	if (const MVariantArray* pChildren = srt.GetValue<MVariantArray>("Children"))
+	vChildrenIndices.resize(fbData->children()->size());
+	for (size_t idx = 0; idx < fbData->children()->size(); ++idx)
 	{
-		uint32_t unChildrenCount = pChildren->GetMemberCount();
-		vChildrenIndices.resize(unChildrenCount);
-
-		for (uint32_t cldIdx = 0; cldIdx < unChildrenCount; ++cldIdx)
-		{
-			if (const int* pIndex = pChildren->GetMember<int>(cldIdx))
-				vChildrenIndices[cldIdx] = *pIndex;
-		}
+		vChildrenIndices[idx] = fbData->children()->Get(idx);
 	}
 }
 
@@ -249,18 +246,22 @@ std::shared_ptr<MShaderPropertyBlock> MSkeletonInstance::GetShaderParamSet()
 		pBonesSet->unBinding = 0;
 
 		MVariantArray bonesArr;
+		MVariantArrayBuilder builder(bonesArr);
 		for (int i = 0; i < 128; ++i)
-			bonesArr.AppendValue<Matrix4>();
+		{
+			builder.AppendVariant(Matrix4());
+		}
 
-		MStruct bonesSrt;
-		bonesSrt.SetValue("u_vBonesMatrix", bonesArr);
+		MVariantStruct bonesSrt;
+		MVariantStructBuilder srtBuilder(bonesSrt);
+		srtBuilder.AppendVariant("u_vBonesMatrix", bonesArr);
+		srtBuilder.Finish();
 
-		pBonesSet->var = bonesSrt;
+		pBonesSet->var = std::move(MVariant(bonesSrt));
 
 		m_pShaderPropertyBlock->m_vParams.push_back(pBonesSet);
-	//	m_pShaderParamSet->GenerateBuffer(m_pEngine->GetDevice());
 
-		m_pShaderBonesArray = pBonesSet->var.GetStruct()->GetValue<MVariantArray>("u_vBonesMatrix");
+		m_pShaderBonesArray = &pBonesSet->var.GetValue<MVariantStruct>().GetVariant<MVariantArray>("u_vBonesMatrix");
 	}
 
 	if (m_bShaderParamSetDirty)
@@ -271,7 +272,7 @@ std::shared_ptr<MShaderPropertyBlock> MSkeletonInstance::GetShaderParamSet()
 
 		for (uint32_t i = 0; i < size; ++i)
 		{
-			(*m_pShaderBonesArray)[i] = bones[i].m_matWorldTransform;
+			(*m_pShaderBonesArray)[i].SetValue(bones[i].m_matWorldTransform);
 		}
 
 		m_pShaderPropertyBlock->m_vParams[0]->SetDirty();
@@ -287,72 +288,52 @@ void MSkeletonInstance::SetDirty()
 	m_bShaderParamSetDirty = true;
 }
 
-void MSkeleton::WriteToStruct(MStruct& srt)
+flatbuffers::Offset<void> MSkeleton::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	std::vector<MBone>& vBones = m_vAllBones;
+	std::vector<flatbuffers::Offset<mfbs::MBone>> vBoneOffset;
 
-	srt.SetValue("Bones", MVariantArray());
-	MVariantArray* pArray = srt.GetValue("Bones")->GetArray();
+	auto fbBones = fbb.CreateVector(vBoneOffset);
 
-	for (uint32_t i = 0; i < vBones.size(); ++i)
-	{
-		MBone bone = vBones[i];
-		pArray->AppendValue(MStruct());
-		MStruct& boneSrt = *(*pArray)[i].GetStruct();
+	mfbs::MSkeletonBuilder builder(fbb);
 
-		bone.WriteToStruct(boneSrt);
-	}
+	builder.add_bones(fbBones);
+
+	return builder.Finish().Union();
 }
 
-void MSkeleton::ReadFromStruct(const MStruct& srt)
+void MSkeleton::Deserialize(const void* pBufferPointer)
 {
-	if (const MVariant* pBonesVar = srt.GetValue("Bones"))
+	const mfbs::MSkeleton* fbData = reinterpret_cast<const mfbs::MSkeleton*>(pBufferPointer);
+
+	m_vAllBones.resize(fbData->bones()->size());
+	for (size_t idx = 0; idx < fbData->bones()->size(); ++idx)
 	{
-		if (const MVariantArray* pBonesArray = pBonesVar->GetArray())
-		{
-			uint32_t unBonesCount = pBonesArray->GetMemberCount();
-
-			m_vAllBones.resize(unBonesCount);
-
-			for (uint32_t i = 0; i < unBonesCount; ++i)
-			{
-				const MVariant& boneVar = pBonesArray->GetMember(i)->var;
-				if (const MStruct* pBoneSrt = boneVar.GetStruct())
-				{
-					MBone& bone = m_vAllBones[i];
-
-					bone.ReadFromStruct(*pBoneSrt);
-				}
-			}
-		}
+		m_vAllBones[idx].Deserialize(fbData->bones()->Get(idx));
 	}
 }
 
 bool MSkeleton::Load(const MString& strResourcePath)
 {
-	MString code;
-	if (!MFileHelper::ReadString(strResourcePath, code))
-		return false;
+	std::vector<MByte> data;
+	MFileHelper::ReadData(strResourcePath, data);
 
-	MVariant var;
-	MJson::JsonToMVariant(code, var);
+	flatbuffers::FlatBufferBuilder fbb;
+	fbb.PushBytes((const uint8_t*)data.data(), data.size());
 
-	MStruct& srt = *var.GetStruct();
-	ReadFromStruct(srt);
+	const mfbs::MSkeleton* fbSkeleton = mfbs::GetMSkeleton(fbb.GetCurrentBufferPointer());
 
+	Deserialize(fbSkeleton);
 	return true;
 }
 
 bool MSkeleton::SaveTo(const MString& strResourcePath)
 {
-	MVariant var = MStruct();
-	MStruct& srt = *var.GetStruct();
+	flatbuffers::FlatBufferBuilder fbb;
+	Serialize(fbb);
 
-	WriteToStruct(srt);
+	std::vector<MByte> data(fbb.GetSize());
+	memcpy(data.data(), (MByte*)fbb.GetBufferPointer(), fbb.GetSize() * sizeof(MByte));
 
-	MString code;
-	MJson::MVariantToJson(var, code);
-
-	return MFileHelper::WriteString(strResourcePath, code);
+	return MFileHelper::WriteData(strResourcePath, data);
 }
 

@@ -189,44 +189,42 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
 
 	switch (value.GetType())
 	{
-	case MVariant::MEVariantType::EBool:
+	case MEVariantType::EBool:
 		ShowValueBegin(strVariantName);
-		bModified |= Editbool(*value.GetBool());
+		bModified |= Editbool(value.GetValue<bool>());
 		ShowValueEnd();
 		break;
 
-	case MVariant::MEVariantType::EFloat:
-	case MVariant::MEVariantType::EInt:
+	case MEVariantType::EFloat:
+	case MEVariantType::EInt:
 		ShowValueBegin(strVariantName);
-		bModified |= Editfloat(*value.CastFloatUnsafe());
+		bModified |= Editfloat(value.GetValue<float>());
 		ShowValueEnd();
 		break;
 
-	case MVariant::MEVariantType::EVector3:
+	case MEVariantType::EVector3:
 		ShowValueBegin(strVariantName);
-		bModified |= EditVector3(value.CastFloatUnsafe());
+		bModified |= EditVector3(value.GetValue<Vector3>());
 		ShowValueEnd();
 		break;
 
-	case MVariant::MEVariantType::EArray:
-	case MVariant::MEVariantType::EStruct:
+	case MEVariantType::EArray:
+	case MEVariantType::EStruct:
 	if(ShowNodeBegin(strVariantName))
 	{
-		MContainer* pStruct = value.GetContainer();
-		unsigned int unCount = pStruct->GetMemberCount();
-		for (unsigned int i = 0; i < unCount; ++i)
+		MVariantStruct& sut = value.GetValue<MVariantStruct>();
+		size_t nCount = 0;
+		for (auto& iter : sut.GetMember())
 		{
-			if (MContainer::MStructMember* pMember = pStruct->GetMember(i))
-			{
-				bModified |= EditMVariant(pMember->strName.empty() ? MStringHelper::ToString(i) : pMember->strName, pMember->var);
-			}
+			bModified |= EditMVariant(iter.first.empty() ? MStringHelper::ToString(nCount) : iter.first, sut.GetVariant<MVariant>(iter.first));
+			nCount++;
 		}
 
 		ShowNodeEnd();
 		break;
 	}
 
-	case MVariant::MEVariantType::ENone:
+	case MEVariantType::ENone:
 	default:
 		break;
 	}

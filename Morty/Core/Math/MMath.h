@@ -21,7 +21,7 @@ public:
 	static T Lerp(const T& a, const T& b, float fSmooth)
 	{
 		fSmooth = fSmooth < 0 ? 0 : fSmooth > 1.0f ? 1.0f : fSmooth;
-		return a * (1 - fSmooth) + b * (fSmooth);
+		return a * (1.0f - fSmooth) + b * (fSmooth);
 	}
 
 

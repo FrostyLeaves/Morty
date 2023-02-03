@@ -192,10 +192,10 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
 
 	if (const std::shared_ptr<MShaderConstantParam>& pParam = m_pMaterial->GetMaterialParamSet()->m_vParams[0])
 	{
-		if (MStruct* pStruct = pParam->var.GetStruct())
+		MVariantStruct& imguiUniform = pParam->var.GetValue<MVariantStruct>();
 		{
-			pStruct->GetMember(0)->var = scale;
-			pStruct->GetMember(1)->var = translate;
+			imguiUniform.SetVariant("u_f2Scale", scale);
+			imguiUniform.SetVariant("u_f2Translate", translate);
 			pParam->SetDirty();
 		}
 	}
@@ -284,29 +284,29 @@ ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturParamSet(ImGuiText
 		}
 
 		
-		if (MStruct* pStruct = pDest->pParamSet->m_vParams[0]->var.GetStruct())
+		MVariantStruct& imguiUniform = pDest->pParamSet->m_vParams[0]->var.GetValue<MVariantStruct>();
 		{
 			switch (key.pTexture->GetTextureLayout())
 			{
 			case METextureLayout::EDepth:
 			case METextureLayout::ER_UNORM_8:
 			case METextureLayout::ER_FLOAT_32:
-				pStruct->GetMember(0)->var = 1;
+				imguiUniform.SetVariant("u_nImageType", 1);
 				break;
 
 			default:
-				pStruct->GetMember(0)->var = 0;
+				imguiUniform.SetVariant("u_nImageType", 0);
 				break;
 			}
 
 			if (key.pTexture->GetTextureType() == METextureType::ETexture2D)
 			{
-				pStruct->GetMember(1)->var = 0;
+				imguiUniform.SetVariant("u_nImageArray", 0);
 			}
 			else if (key.pTexture->GetTextureType() == METextureType::ETexture2DArray)
 			{
-				pStruct->GetMember(1)->var = 1;
-				pStruct->GetMember(2)->var = key.nArrayIdx;
+				imguiUniform.SetVariant("u_nImageArray", 1);
+				imguiUniform.SetVariant("u_nImageIndex", static_cast<int>(key.nArrayIdx));
 			}
 
 			pDest->pParamSet->m_vParams[0]->SetDirty();

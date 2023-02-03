@@ -1,4 +1,4 @@
-include "Scene/MComponent.fbs";
+include "Component/MComponent.fbs";
 namespace mfbs;
 
 table MCameraComponent

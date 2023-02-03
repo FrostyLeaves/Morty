@@ -1,12 +1,12 @@
 ﻿#include "Resource/MMeshResource.h"
 #include "Resource/MModelResource.h"
 #include "Engine/MEngine.h"
+#include "Flatbuffer/MMeshResource_generated.h"
 #include "Model/MMultiLevelMesh.h"
 
 #include "Math/MMath.h"
-#include "Utility/MJson.h"
 #include "Render/MVertex.h"
-#include "Utility/MVariant.h"
+#include "Variant/MVariant.h"
 #include "Utility/MFileHelper.h"
 
 #include "System/MRenderSystem.h"
@@ -144,131 +144,72 @@ MIMesh* MMeshResource::GetLevelMesh(const uint32_t unLevel)
 	return nullptr;
 }
 
-bool MMeshResource::Load(const MString& strResourcePath)
+flatbuffers::Offset<void> MMeshResource::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+	auto fbSkeletonResource = m_SkeletonKeeper.Serialize(fbb);
+	auto fbObb = m_BoundsOBB.Serialize(fbb);
+	auto fbSphere = m_BoundsSphere.Serialize(fbb);
+	auto fbVertex = fbb.CreateVector(m_pMesh->GetVerticesVector());
+	auto fbIndex = fbb.CreateVector(m_pMesh->GetIndicesVector());
 
+	mfbs::MMeshResourceBuilder builder(fbb);
+
+	builder.add_skeleton_resource(fbSkeletonResource.o);
+	builder.add_bounds_obb(fbObb.o);
+	builder.add_bounds_sphere(fbSphere.o);
+	builder.add_vertex_type(static_cast<mfbs::MEMeshVertexType>(m_eVertexType));
+	builder.add_vertex(fbVertex.o);
+	builder.add_index(fbIndex.o);
+
+	return builder.Finish().Union();
+}
+
+void MMeshResource::Deserialize(const void* pBufferPointer)
+{
 	Clean();
 
-	MMortyFileFormat format;
-	if (false == MFileHelper::ReadFormatFile(strResourcePath, format))
-		return false;
+	const mfbs::MMeshResource* fbData = reinterpret_cast<const mfbs::MMeshResource*>(pBufferPointer);
 
-	MVariant headerVar;
-	if (false == MJson::JsonToMVariant(format.m_strHead, headerVar))
-		return false;
-
-	MStruct* pHeader = headerVar.GetStruct();
-	if (!pHeader) return false;
-
-	int nVertexType = 0;
-	if (!pHeader->GetValue<int>("t", nVertexType))
-		return false;
-	m_eVertexType = (MEMeshVertexType)nVertexType;
-
-	int nVertexBegin, nVertexEnd, nVertexNum;
-	int nIndexBegin, nIndexEnd, nIndexNum;
-	if (!pHeader->GetValue<int>("v1", nVertexBegin))
-		return false;
-	if (!pHeader->GetValue<int>("v2", nVertexNum))
-		return false;
-	if (!pHeader->GetValue<int>("v3", nVertexEnd))
-		return false;
-	if (!pHeader->GetValue<int>("i1", nIndexBegin))
-		return false;
-	if (!pHeader->GetValue<int>("i2", nIndexNum))
-		return false;
-	if (!pHeader->GetValue<int>("i3", nIndexEnd))
-		return false;
-
+	m_eVertexType = static_cast<MEMeshVertexType>(fbData->vertex_type());
 	m_pMesh = NewMeshByType(m_eVertexType);
 
-	if (m_pMesh->GetVertexStructSize() * nVertexNum != nVertexEnd - nVertexBegin)
-		return false;
-
-	if (sizeof(uint32_t) * nIndexNum != nIndexEnd - nIndexBegin)
-		return false;
-
+	const size_t nVertexNum = fbData->vertex()->size() / m_pMesh->GetVertexStructSize();
 	m_pMesh->ResizeVertices(nVertexNum);
-	memcpy(m_pMesh->GetVertices(), format.m_vBody[0].pData + nVertexBegin, nVertexEnd - nVertexBegin);
+	memcpy(m_pMesh->GetVertices(), fbData->vertex()->data(), nVertexNum * m_pMesh->GetVertexStructSize());
 
+	const size_t nIndexNum = fbData->index()->size();
 	m_pMesh->ResizeIndices(nIndexNum, 1);
-	memcpy(m_pMesh->GetIndices(), format.m_vBody[0].pData + nIndexBegin, nIndexEnd - nIndexBegin);
+	memcpy(m_pMesh->GetIndices(), fbData->index()->data(), nIndexNum * sizeof(uint32_t));
 
-	pHeader->GetValue<MString>("n", m_strName);
+	m_BoundsOBB.Deserialize(fbData->bounds_obb());
+	m_BoundsSphere.Deserialize(fbData->bounds_sphere());
 
-	if (MStruct* pBoundsObb = pHeader->GetValue<MStruct>("obb"))
-	{
-		m_BoundsOBB.ReadFromStruct(*pBoundsObb);
-	}
+	m_SkeletonKeeper.Deserialize(GetEngine(), pBufferPointer);
+}
 
-	if (MStruct* pBoundsSphere = pHeader->GetValue<MStruct>("sph"))
-	{
-		m_BoundsSphere.ReadFromStruct(*pBoundsSphere);
-	}
+bool MMeshResource::Load(const MString& strResourcePath)
+{
+	std::vector<MByte> data;
+	MFileHelper::ReadData(strResourcePath, data);
 
-	if (MString* pSkeleton = pHeader->GetValue<MString>("ske"))
-	{
-		if (!pSkeleton->empty())
-		{
-			std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(*pSkeleton);
-			m_SkeletonKeeper.SetResource(pResource);
-		}
-	}
+	flatbuffers::FlatBufferBuilder fbb;
+	fbb.PushBytes((const uint8_t*)data.data(), data.size());
 
-	if (MString* pMaterial = pHeader->GetValue<MString>("mat"))
-	{
-		std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(*pMaterial);
-		m_MaterialKeeper.SetResource(pResource);
-	}
+	const mfbs::MMeshResource* fbMeshResource = mfbs::GetMMeshResource(fbb.GetCurrentBufferPointer());
+	Deserialize(fbMeshResource);
 
 	return true;
 }
 
 bool MMeshResource::SaveTo(const MString& strResourcePath)
 {
-	MVariant headerVar = MStruct();
-	MStruct* pHeader = headerVar.GetStruct();
+	flatbuffers::FlatBufferBuilder fbb;
+	Serialize(fbb);
 
-	pHeader->SetValue("t", (int)m_eVertexType);
+	std::vector<MByte> data(fbb.GetSize());
+	memcpy(data.data(), (MByte*)fbb.GetBufferPointer(), fbb.GetSize() * sizeof(MByte));
 
-	int nVertexBegin = 0;
-	int nVertexNum = m_pMesh->GetVerticesNum();
-	int nVertexEnd = nVertexBegin + nVertexNum * m_pMesh->GetVertexStructSize();
-
-	int nIndexBegin = nVertexEnd;
-	int nIndexNum = m_pMesh->GetIndicesNum();
-	int nIndexEnd = nIndexBegin + nIndexNum * sizeof(uint32_t);
-
-	pHeader->SetValue("v1", nVertexBegin);
-	pHeader->SetValue("v2", nVertexNum);
-	pHeader->SetValue("v3", nVertexEnd);
-
-	pHeader->SetValue("i1", nIndexBegin);
-	pHeader->SetValue("i2", nIndexNum);
-	pHeader->SetValue("i3", nIndexEnd);
-
-
-	pHeader->SetValue("n", m_strName);
-
-	pHeader->SetValue("obb", MStruct());
-	if(MStruct* pObbSrt = pHeader->GetValue<MStruct>("obb"))
-		m_BoundsOBB.WriteToStruct(*pObbSrt);
-
-	pHeader->SetValue("sph", MStruct());
-	if (MStruct* pSphSrt = pHeader->GetValue<MStruct>("sph"))
-		m_BoundsSphere.WriteToStruct(*pSphSrt);
-
-	pHeader->SetValue("ske", m_SkeletonKeeper.GetResourcePath());
-	pHeader->SetValue("mat", m_MaterialKeeper.GetResourcePath());
-
-	MMortyFileFormat format;
-	MJson::MVariantToJson(headerVar, format.m_strHead);
-
-	format.PushBackBody(m_pMesh->GetVertices(), nVertexEnd - nVertexBegin);
-	format.PushBackBody(m_pMesh->GetIndices(), nIndexEnd - nIndexBegin);
-
-	return MFileHelper::WriteFormatFile(strResourcePath, format);
+	return MFileHelper::WriteData(strResourcePath, data);
 }
 
 void MMeshResource::OnDelete()

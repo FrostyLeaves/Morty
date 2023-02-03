@@ -1,6 +1,7 @@
 #ifndef _VECTOR_H_
 #define _VECTOR_H_
 
+#include "Vector_generated.h"
 #include "Utility/MGlobal.h"
 #include "Math/Matrix.h"
 
@@ -40,6 +41,12 @@ public:
 
 	const Vector2& operator *= (const float& value);
 	const Vector2& operator /= (const float& value);
+
+public:
+
+	const mfbs::Vector2* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	void Deserialize(const void* pBufferPointer);
+
 public:
 	union
 	{
@@ -63,6 +70,7 @@ public:
 	Vector3(const Vector3& vec3);
 	Vector3(const Vector4& vec4);
 	Vector3(const float& x, const float& y, const float& z);
+	Vector3(const mfbs::Vector3& value);
 
 	float Length() const;
 	void Normalize();
@@ -96,6 +104,11 @@ public:
 	bool operator == (const Vector3& value) const;
 
 public:
+
+	const mfbs::Vector3* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	void Deserialize(const void* pBufferPointer);
+
+public:
 	union
 	{
 		struct
@@ -119,8 +132,7 @@ public:
 
 };
 
-Vector3 operator * (const float& value, const Vector3& vector);
-
+Vector3 operator* (const float& value, const Vector3& vector);
 
 typedef Vector3 ColorRGB;
 
@@ -150,6 +162,11 @@ public:
     
 	float Length() const;
 	void Normalize();
+
+public:
+
+	const mfbs::Vector4* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	void Deserialize(const void* pBufferPointer);
 
 public:
 	union

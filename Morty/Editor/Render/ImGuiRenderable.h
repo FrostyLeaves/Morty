@@ -59,7 +59,7 @@ private:
 
 	MMesh<ImDrawVert> m_Mesh;
 	std::shared_ptr<MMaterial> m_pMaterial;
-	MResourceKeeper m_FontTexture;
+	MResourceRef m_FontTexture;
 
 	std::map<ImGuiTexture, MImGuiTextureDest*> m_tImGuiDrawTexture;
 };

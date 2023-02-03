@@ -29,10 +29,10 @@ public:
 	virtual MTexture* GetTexture() override;
 
 	void SetTexture(const std::shared_ptr<MTextureResource>& pTextureResource);
-	std::shared_ptr<MTextureResource> GetTextureResource() { return m_TextureRef.GetResource<MTextureResource>(); }
+	std::shared_ptr<MTextureResource> GetTextureResource() const { return m_TextureRef.GetResource<MTextureResource>(); }
 
 private:
-	MResourceKeeper m_TextureRef;
+	MResourceRef m_TextureRef;
 };
 
 class MShader;
@@ -64,9 +64,9 @@ public:
 	bool LoadPixelShader(MEngine* pEngine, std::shared_ptr<MResource> pResource);
 	bool LoadComputeShader(MEngine* pEngine, std::shared_ptr<MResource> pResource);
 
-	std::shared_ptr<MResource> GetVertexShaderResource() { return m_VertexResource.GetResource(); }
-	std::shared_ptr<MResource> GetPixelShaderResource() { return m_PixelResource.GetResource(); }
-	std::shared_ptr<MResource> GetComputeShaderResource() { return m_ComputeResource.GetResource(); }
+	std::shared_ptr<MResource> GetVertexShaderResource() const { return m_VertexResource.GetResource(); }
+	std::shared_ptr<MResource> GetPixelShaderResource() const { return m_PixelResource.GetResource(); }
+	std::shared_ptr<MResource> GetComputeShaderResource() const { return m_ComputeResource.GetResource(); }
 
 	MShader* GetVertexShader(){ return m_pVertexShader; }
 	MShader* GetPixelShader() { return m_pPixelShader; }
@@ -106,9 +106,9 @@ protected:
 
 	std::weak_ptr<MShaderProgram> m_pSelfPointer;
 	
-	MResourceKeeper m_VertexResource = nullptr;
-	MResourceKeeper m_PixelResource = nullptr;
-	MResourceKeeper m_ComputeResource = nullptr;
+	MResourceRef m_VertexResource = nullptr;
+	MResourceRef m_PixelResource = nullptr;
+	MResourceRef m_ComputeResource = nullptr;
 
 	MShader* m_pVertexShader = nullptr;
 	MShader* m_pPixelShader = nullptr;

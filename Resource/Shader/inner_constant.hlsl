@@ -77,7 +77,11 @@ struct SpotLight
 [[vk::binding(3,1)]]cbuffer cbShadowInformation : register(b4)
 {
     float4x4 u_vLightProjectionMatrix[CASCADED_SHADOW_MAP_NUM];
-    float u_vCascadeSplits[CASCADED_SHADOW_MAP_NUM];
+    //x: cascade split max range
+    //y: x * 1.25f
+    //z: cascade ortho matrix width
+    //w: light position z in projection space.
+    float4 u_vCascadeSplits[CASCADED_SHADOW_MAP_NUM];   
 };
 
 [[vk::binding(4,1)]]sampler LinearSampler;

@@ -120,6 +120,7 @@ if(MORTY_BUILD_TARGET STREQUAL "WIN")
     target_compile_definitions(Core
         PRIVATE CORE_EXPORTS
         PUBLIC MORTY_WIN
+        PUBLIC NOMINMAX
         PUBLIC MORTY_RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../Resource"
     )
 #    message(FATAL_ERROR WIN)

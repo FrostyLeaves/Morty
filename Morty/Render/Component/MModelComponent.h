@@ -57,7 +57,7 @@ public:
 
 private:
 
-	MResourceKeeper m_SkeletonResource;
+	MResourceRef m_SkeletonResource;
 
 	std::shared_ptr<MSkeletonInstance> m_pSkeleton;
 	MSkeletalAnimController* m_pCurrentAnimationController;

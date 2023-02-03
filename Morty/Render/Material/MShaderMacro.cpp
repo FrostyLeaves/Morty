@@ -1,4 +1,6 @@
 ﻿#include "MShaderMacro.h"
+
+#include "Flatbuffer/MShaderMacro_generated.h"
 #include "Render/MVertex.h"
 #include "Utility/MFunction.h"
 
@@ -131,53 +133,53 @@ bool MShaderMacro::Compare(const MShaderMacro& macro)
 	return true;
 }
 
-void MShaderMacro::WriteToStruct(MStruct& srt)
+flatbuffers::Offset<void> MShaderMacro::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	srt.SetValue("mat", MVariantArray());
-	if (MVariantArray* pArray = srt.GetValue<MVariantArray>("mat"))
+	std::vector<flatbuffers::Offset<mfbs::MShaderMacroPair>> vMaterialMacroPairs;
+	for (auto pairs : m_vMacroParams)
 	{
-		for (auto pairs : m_vMacroParams)
-		{
-			pArray->AppendValue(pairs.first);
-			pArray->AppendValue(pairs.second);
-		}
+		auto fbKey = fbb.CreateString(pairs.first);
+		auto fbValue = fbb.CreateString(pairs.second);
+		mfbs::MShaderMacroPairBuilder builder(fbb);
+		builder.add_key(fbKey);
+		builder.add_value(fbValue);
+		vMaterialMacroPairs.push_back(builder.Finish().o);
 	}
 
-	srt.SetValue("morty", MVariantArray());
-	if (MVariantArray* pArray = srt.GetValue<MVariantArray>("morty"))
+	std::vector<flatbuffers::Offset<mfbs::MShaderMacroPair>> vInnerMacroPairs;
+	for (auto pairs : m_vMortyMacroParams)
 	{
-		for (auto pairs : m_vMortyMacroParams)
-		{
-			pArray->AppendValue(pairs.first);
-			pArray->AppendValue(pairs.second);
-		}
+		auto fbKey = fbb.CreateString(pairs.first);
+		auto fbValue = fbb.CreateString(pairs.second);
+		mfbs::MShaderMacroPairBuilder builder(fbb);
+		builder.add_key(fbKey);
+		builder.add_value(fbValue);
+		vInnerMacroPairs.push_back(builder.Finish().o);
 	}
+
+	const auto fbMaterialMacro = fbb.CreateVector(vMaterialMacroPairs);
+	const auto fbInnerMacro = fbb.CreateVector(vInnerMacroPairs);
+	mfbs::MShaderMacroBuilder builder(fbb);
+
+	builder.add_material_macro(fbMaterialMacro);
+	builder.add_inner_macro(fbInnerMacro);
+
+	return builder.Finish().Union();
 }
 
-void MShaderMacro::ReadFromStruct(const MStruct& srt)
+void MShaderMacro::Deserialize(const void* pBufferPointer)
 {
+	const mfbs::MShaderMacro* fbData = reinterpret_cast<const mfbs::MShaderMacro*>(pBufferPointer);
+
 	m_vMacroParams.clear();
-	m_vMortyMacroParams.clear();
-
-	if (const MVariantArray* pArray = srt.GetValue<MVariantArray>("mat"))
+	for (auto pair : *fbData->material_macro())
 	{
-		for (uint32_t i = 0; i < pArray->GetMemberCount(); i+=2)
-		{
-			const MString* key = (*pArray)[i].GetString();
-			const MString* value = (*pArray)[i + 1].GetString();
-
-			m_vMacroParams.push_back({ *key, *value });
-		}
+		m_vMacroParams.push_back({ pair->key()->c_str(), pair->value()->c_str() });
 	}
 
-	if (const MVariantArray* pArray = srt.GetValue<MVariantArray>("morty"))
+	m_vMortyMacroParams.clear();
+	for(auto pair : *fbData->inner_macro())
 	{
-		for (uint32_t i = 0; i < pArray->GetMemberCount(); i += 2)
-		{
-			const MString* key = (*pArray)[i].GetString();
-			const MString* value = (*pArray)[i + 1].GetString();
-
-			m_vMortyMacroParams.push_back({ *key, *value });
-		}
+		m_vMortyMacroParams.push_back({ pair->key()->c_str(), pair->value()->c_str() });
 	}
 }

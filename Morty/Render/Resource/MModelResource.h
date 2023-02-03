@@ -28,13 +28,16 @@ public:
 	static MString GetResourceTypeName() { return "Model"; }
 	static std::vector<MString> GetSuffixList() { return { "model" }; }
 
-    std::shared_ptr<MSkeletonResource> GetSkeleton() { return m_pSkeleton; }
+    std::shared_ptr<MSkeletonResource> GetSkeleton() { return m_skeleton.GetResource<MSkeletonResource>(); }
     const std::vector<std::shared_ptr<MMeshResource>>& GetMeshResources() { return m_vMeshes; }
 
     void SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeleton);
     void GetMeshResources(const std::vector<std::shared_ptr<MMeshResource>>& vMeshes);
 
 public:
+
+    flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+    void Deserialize(const void* pBufferPointer);
 
     virtual bool Load(const MString& strResourcePath) override;
 
@@ -46,7 +49,7 @@ private:
 
     friend class MModelConverter;
 
-    std::shared_ptr<MSkeletonResource> m_pSkeleton;
+	MResourceRef m_skeleton;
     std::vector<std::shared_ptr<MMeshResource>> m_vMeshes;
 };
 

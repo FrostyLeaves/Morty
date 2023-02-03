@@ -9,7 +9,7 @@
 #ifndef _M_MSHADER_MACRO_H_
 #define _M_MSHADER_MACRO_H_
 #include "Utility/MGlobal.h"
-#include "Utility/MVariant.h"
+#include "Variant/MVariant.h"
 
 #include <vector>
 
@@ -26,8 +26,8 @@ public:
 	void SetInnerMacro(const MString& strKey, const MString& strValue);
 	MString GetInnerMacro(const MString& strKey);
 
-	void WriteToStruct(MStruct& srt);
-	void ReadFromStruct(const MStruct& srt);
+	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	void Deserialize(const void* pBufferPointer);
 
 protected:
 

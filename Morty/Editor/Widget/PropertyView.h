@@ -7,7 +7,6 @@
 #include "Utility/MColor.h"
 #include "Utility/MString.h"
 #include "Utility/MTransform.h"
-#include "Utility/MVariant.h"
 
 #include <map>
 #include <deque>

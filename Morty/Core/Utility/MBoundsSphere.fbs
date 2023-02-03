@@ -1,0 +1,14 @@
+include "Math/Vector.fbs";
+include "Math/Matrix.fbs";
+
+namespace mfbs;
+
+table MBoundsSphere
+{
+    center: Vector3;
+    radius: float;
+}
+
+root_type MBoundsSphere;
+
+file_identifier "MFBS";

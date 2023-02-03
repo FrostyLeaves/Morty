@@ -40,7 +40,6 @@ public:
 	static std::vector<MString> GetSuffixList() { return { "mesh" }; }
 
 
-	MString GetMeshName() { return m_strName; }
 	MEMeshVertexType GetMeshVertexType(){ return m_eVertexType; }
 	MIMesh* GetMesh() { return m_pMesh; }
 	MIMesh* GetLevelMesh(const uint32_t unLevel);
@@ -50,6 +49,9 @@ public:
 
 
 public:
+
+	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	void Deserialize(const void* pBufferPointer);
 
 	virtual bool Load(const MString& strResourcePath) override;
 	virtual bool SaveTo(const MString& strResourcePath) override;
@@ -76,13 +78,12 @@ private:
 	friend class MEngine;
 	friend class MModelConverter;
     
-	MString m_strName;
 	MEMeshVertexType m_eVertexType;
 	MIMesh* m_pMesh;
 	MBoundsOBB m_BoundsOBB;
 	MBoundsSphere m_BoundsSphere;
-	MResourceKeeper m_MaterialKeeper;
-	MResourceKeeper m_SkeletonKeeper;
+	MResourceRef m_MaterialKeeper;
+	MResourceRef m_SkeletonKeeper;
 
 	MMultiLevelMesh* m_pMeshDetailMap;
 };

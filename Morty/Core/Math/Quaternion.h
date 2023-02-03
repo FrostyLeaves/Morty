@@ -6,6 +6,11 @@
 #include "Math/Vector.h"
 #include "Math/Matrix.h"
 
+namespace mfbs
+{
+	struct Quaternion;
+}
+
 class Vector3;
 class Matrix4;
 class MORTY_API Quaternion
@@ -15,6 +20,11 @@ public:
 	Quaternion(const float& w, const float& x, const float& y, const float& z);
 	Quaternion(const float& w, const Vector3& v);
 	Quaternion(const Vector3& vAxis, const float& fAngle);
+	Quaternion(const mfbs::Quaternion& value);
+
+public:
+	const mfbs::Quaternion* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	void Deserialize(const void* pBufferPointer);
 
 public:
 

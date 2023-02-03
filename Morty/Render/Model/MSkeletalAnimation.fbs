@@ -1,0 +1,20 @@
+include "Math/Vector.fbs";
+include "Math/Quaternion.fbs";
+include "Model/MSkeletalAnimNode.fbs";
+include "Resource/MResourceRef.fbs";
+
+namespace mfbs;
+
+table MSkeletalAnimation
+{
+	name: string;
+	duration: float;
+	speed: float;
+
+	skeleton_resource: MResourceRef;
+	animation_node: [MSkeletalAnimNode];
+}
+
+root_type MSkeletalAnimation;
+
+file_identifier "MFBS";

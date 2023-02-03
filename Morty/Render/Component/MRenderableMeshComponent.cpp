@@ -26,8 +26,6 @@ MRenderableMeshComponent::MRenderableMeshComponent()
 	, m_Material()
 	, m_pShaderPropertyBlock(nullptr)
 	, m_pTransformParam(nullptr)
-	, m_pWorldMatrixParam(nullptr)
-	, m_pNormalMatrixParam(nullptr)
 	, m_pModelComponent(nullptr)
 	, m_BoundsAABB()
 	, m_BoundsSphere()
@@ -102,19 +100,19 @@ void MRenderableMeshComponent::UpdateShaderMeshParam()
 	{
 		Matrix4 worldTrans = pSceneComponent->GetWorldTransform();
 
-		if (m_pWorldMatrixParam)
+		if (m_worldMatrixParam.IsValid())
 		{
-			*m_pWorldMatrixParam = worldTrans;
+			m_worldMatrixParam.SetValue(worldTrans);
 		}
 
-		if (m_pNormalMatrixParam)
+		if (m_normalMatrixParam.IsValid())
 		{
 			Quaternion quat =  worldTrans.GetRotation();
 			Matrix4 mat = quat;
 			//Transposed and Inverse.
 			Matrix3 matNormal(worldTrans, 3, 3);
 
-			*m_pNormalMatrixParam = matNormal;
+			m_normalMatrixParam.SetValue(matNormal);
 		}
 
 		m_pTransformParam->SetDirty();
@@ -347,8 +345,8 @@ void MRenderableMeshComponent::BindShaderParam(std::shared_ptr<MMaterial> pMater
 		m_pShaderPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
 		m_pShaderPropertyBlock = nullptr;
 		m_pTransformParam = nullptr;
-		m_pWorldMatrixParam = nullptr;
-		m_pNormalMatrixParam = nullptr;
+		m_worldMatrixParam = MVariant();
+		m_normalMatrixParam = MVariant();
 	}
 
 	if (pMaterial)
@@ -359,10 +357,10 @@ void MRenderableMeshComponent::BindShaderParam(std::shared_ptr<MMaterial> pMater
 
 			if (m_pTransformParam = m_pShaderPropertyBlock->FindConstantParam("_M_E_cbMeshMatrix"))
 			{
-				if (MStruct* pSrt = m_pTransformParam->var.GetStruct())
+				MVariantStruct& srt = m_pTransformParam->var.GetValue<MVariantStruct>();
 				{
-					m_pWorldMatrixParam = pSrt->GetValue<Matrix4>("u_matWorld");
-					m_pNormalMatrixParam = pSrt->GetValue<Matrix3>("u_matNormal");
+					m_worldMatrixParam = srt.FindVariant("u_matWorld");
+					m_normalMatrixParam = srt.FindVariant("u_matNormal");
 				}
 			}
 		}

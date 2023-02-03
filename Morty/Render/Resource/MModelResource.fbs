@@ -1,0 +1,13 @@
+include "Resource/MResourceRef.fbs";
+
+namespace mfbs;
+
+table MModelResource
+{
+    skeleton_resource: MResourceRef;
+    mesh_resources: [MResourceRef];
+}
+
+root_type MModelResource;
+
+file_identifier "MFBS";

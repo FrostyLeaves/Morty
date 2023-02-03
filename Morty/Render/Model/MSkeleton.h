@@ -11,7 +11,7 @@
 #include "Utility/MGlobal.h"
 #include "Math/Matrix.h"
 #include "Utility/MString.h"
-#include "Utility/MVariant.h"
+#include "Variant/MVariant.h"
 #include "Resource/MResource.h"
 #include <vector>
 #include <map>
@@ -24,8 +24,9 @@ class MORTY_API MBone
 public:
 	MBone();
 
-	void WriteToStruct(MStruct& srt);
-	void ReadFromStruct(const MStruct& srt);
+	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	void Deserialize(const void* pBufferPointer);
+
 public:
 	MString strName;
 	uint32_t unIndex;
@@ -62,8 +63,8 @@ public:
 
 public:
 
-	void WriteToStruct(MStruct& srt);
-	void ReadFromStruct(const MStruct& srt);
+	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	void Deserialize(const void* pBufferPointer);
 
 	virtual bool Load(const MString& strResourcePath) override;
 	virtual bool SaveTo(const MString& strResourcePath) override;

@@ -14,264 +14,641 @@
 #include "Utility/MString.h"
 #include "Math/Vector.h"
 #include "Math/Matrix.h"
+#include "MVariantMemory.h"
+
+
 #include <vector>
 #include <map>
 #include <unordered_map>  
 
-
-#define M_VAR_GET_FUNC(TYPE, TYPE_NAME)\
- TYPE* Get##TYPE_NAME() { return m_eType == MEVariantType::E##TYPE_NAME ? (TYPE*)m_pData : nullptr;} \
-\
-const TYPE* Get##TYPE_NAME() const { return m_eType == MEVariantType::E##TYPE_NAME ? (const TYPE*)m_pData : nullptr;} \
-\
-template<> TYPE* GetTypedData<TYPE>(){ return Get##TYPE_NAME(); }\
-
-
-class MContainer;
-class MStruct;
+class MVariantStruct;
 class MVariantArray;
+
+enum class MEVariantType
+{
+	ENone,
+	EBool,
+	EInt,
+	EFloat,
+	EVector2,
+	EVector3,
+	EVector4,
+	EMatrix3,
+	EMatrix4,
+	EStruct,
+	EArray,
+};
 
 class MORTY_API MVariant
 {
 public:
 
-	enum class MEVariantType
-	{
-		ENone,
-		EBool,
-		EInt,
-		EFloat,
-		EVector2,
-		EVector3,
-		EVector4,
-		EMatrix3,
-		EMatrix4,
-		EQuaternion,
-		EStruct,
-		EArray,
-		EString,		//Not for shader.
-		EUser,
-	};
+	MVariant() = default;
+	~MVariant() = default;
 
-	MVariant();
-	MVariant(const bool& var);
-	MVariant(const int& var);
-	MVariant(const float& var);
-	MVariant(const Vector2& var);
-	MVariant(const Vector3& var);
-	MVariant(const Vector4& var);
-	MVariant(const Matrix3& var);
-	MVariant(const Matrix4& var);
-	MVariant(const Quaternion& var);
-	MVariant(const MStruct& var);
-	MVariant(const MVariantArray& var);
-	MVariant(const MVariant& var);
-	MVariant(const MString& var);
+	template<typename TYPE>
+	explicit MVariant(const TYPE& value);
 
-	template<typename T>
-	MVariant(const T& var);
+	static MVariant Clone(const MVariant& value, std::shared_ptr<MVariantMemory> pMemory = nullptr, size_t nOffset = 0);
 
+	MVariant(const MVariant& value) = default;
+	MVariant(const std::shared_ptr<MVariantMemory>& pMemory, size_t nOffset, size_t nSize, MEVariantType eType);
+
+	template<typename TYPE>
+	static MEVariantType Type();
+
+	template<typename TYPE>
+	static size_t TypeSize() { return TypeSize(Type<TYPE>()); }
+	static size_t TypeSize(MEVariantType eType);
+
+	template<typename TYPE>
+	bool IsType() const { return m_eType == Type<TYPE>(); }
+	bool IsValid() const { return GetType() != MEVariantType::ENone; }
+
+	size_t GetOffset() const;
+	size_t GetSize() const;
 	MByte* GetData() const;
-	void MemcpyData(MByte* pData);
+	MEVariantType GetType() const;
 
-	uint32_t GetSize() const;
-	MEVariantType GetType() const { return m_eType; }
+	template<typename TYPE>
+	TYPE& GetValue();
 
-	bool IsTrue() const { return m_pData && *((int*)m_pData) != 0; }
+	template<typename TYPE>
+	const TYPE& GetValue() const;
 
-	template<typename T> T* GetTypedData() { return nullptr; }
+	template<typename TYPE>
+	void SetValue(const TYPE& value);
 
-	template<> bool* GetTypedData<bool>() { return GetBool(); }
-	bool* GetBool() { return m_eType == MEVariantType::EBool ? (bool*)(m_pData) : nullptr; }
-	const bool* GetBool() const { return m_eType == MEVariantType::EBool ? (const bool*)(m_pData) : nullptr; }
+public:
 
-	M_VAR_GET_FUNC(int, Int);
-	M_VAR_GET_FUNC(float, Float);
-	M_VAR_GET_FUNC(MString, String);
-	M_VAR_GET_FUNC(Vector2, Vector2);
-	M_VAR_GET_FUNC(Vector3, Vector3);
-	M_VAR_GET_FUNC(Vector4, Vector4);
-	M_VAR_GET_FUNC(Quaternion, Quaternion);
-	M_VAR_GET_FUNC(Matrix3, Matrix3);
-	M_VAR_GET_FUNC(Matrix4, Matrix4);
-	M_VAR_GET_FUNC(MStruct, Struct);
-	M_VAR_GET_FUNC(MVariantArray, Array);
+	const MVariant& operator=(const MVariant& other);
+	void operator=(MVariant&& other);
 
-	float* CastFloatUnsafe() const { return (float*)m_pData; }
+	void ResetMemory(const std::shared_ptr<MVariantMemory>& pMemory, size_t nOffset);
 
-	template<typename T>
-	T* GetEnum() { return (T*)GetInt(); }
+public:
 
-	template<typename T>
-	const T* GetEnum() const { return (const T*)GetInt(); }
-
-	MContainer* GetContainer() { return (MContainer*)m_pData; }
-	const MContainer* GetContainer() const { return (const MContainer*)m_pData; }
-
-	const MVariant& operator = (const MVariant& var);
-
-	~MVariant();
-
-	void Move(MVariant& var);
-
-	//从另一个var合并过来值
-	void MergeFrom(const MVariant& var);
+	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	void Deserialize(const void* pBufferPointer, std::shared_ptr<MVariantMemory> pMemory = nullptr, size_t nOffset = 0);
 
 private:
 
-	void Clean();
-	MByte* m_pData;
-	MEVariantType m_eType;
-	uint32_t m_unByteSize;
+	size_t m_nOffset = 0;
+	size_t m_nSize = 0;
+	MEVariantType m_eType = MEVariantType::ENone;
+
+	std::shared_ptr<MVariantMemory> m_pMemory = nullptr;
+	std::shared_ptr<MVariantStruct> m_pStruct = nullptr;
+	std::shared_ptr<MVariantArray> m_pArray = nullptr;
 };
 
-template<typename T>
-MVariant::MVariant(const T& var)
+class MORTY_API MVariantStruct
 {
-	m_eType = MEVariantType::EUser;
-	m_unByteSize = sizeof(T);
-	m_pData = (unsigned char*)new T();
-	memcpy(m_pData, &var, sizeof(T));
+public:
+	friend class MVariantStructBuilder;
+	MVariantStruct();
+
+private:
+
+	template<typename TYPE>
+	void AppendVariant(const MString& strName, const TYPE& value);
+
+	template<typename TYPE>
+	void AppendContainer(const MString& strName, const TYPE& value);
+
+public:
+
+	bool HasVariant(const MString& strName);
+
+	template<typename TYPE>
+	TYPE& GetVariant(const MString& strName);
+
+	template<typename TYPE>
+	void SetVariant(const MString& strName, const TYPE& value);
+
+	MVariant& FindVariant(const MString& strName);
+
+	MByte* Data() const { return m_pMemory->Data() + m_nOffset; }
+	size_t Size() const { return m_nSize; }
+	size_t Offset() const { return m_nOffset; }
+
+	void ResetMemory(const std::shared_ptr<MVariantMemory>& pMemory, size_t nOffset);
+
+	static std::shared_ptr<MVariantStruct> Clone(const std::shared_ptr<MVariantStruct>& source, std::shared_ptr<MVariantMemory> pMemory = nullptr, size_t nOffset = 0);
+
+	const std::map<MString, MVariant>& GetMember() { return m_tMember; }
+
+public:
+
+	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	void Deserialize(const void* pBufferPointer, std::shared_ptr<MVariantMemory> pMemory = nullptr, size_t nOffset = 0);
+
+private:
+
+	std::shared_ptr<MVariantMemory> m_pMemory = nullptr;
+	size_t m_nOffset = 0;
+	size_t m_nSize = 0;
+	std::map<MString, MVariant> m_tMember;
+	bool m_bLocked = false;
+};
+
+class MORTY_API MVariantStructBuilder final
+{
+public:
+	explicit MVariantStructBuilder(MVariantStruct& sut) : m_struct(sut) {}
+	~MVariantStructBuilder()
+	{
+		MORTY_ASSERT(m_struct.m_bLocked);
+	}
+
+	template<typename TYPE>
+	void AppendVariant(const MString& strName, const TYPE& value)
+	{
+		MORTY_ASSERT(!m_struct.m_bLocked);
+		m_struct.AppendVariant(strName, value);
+	}
+
+	void Finish() const
+	{
+		m_struct.m_bLocked = true;
+	}
+
+private:
+	MVariantStruct& m_struct;
+};
+
+typedef MVariantStruct MStruct;
+
+class MORTY_API MVariantArray
+{
+public:
+	friend class MVariantArrayBuilder;
+	MVariantArray();
+
+private:
+
+	template<typename TYPE>
+	void AppendVariant(const TYPE& value);
+
+	template<typename TYPE>
+	void AppendContainer(const TYPE& value);
+
+public:
+
+	template<typename TYPE>
+	TYPE& GetVariant(const size_t& nIdx);
+
+	template<typename TYPE>
+	void SetVariant(const size_t& nIdx, const TYPE& value);
+
+	MVariant& operator[](const size_t& nIdx);
+
+	MByte* Data() const { return m_pMemory->Data() + m_nOffset; }
+	size_t Size() const { return m_nSize; }
+	size_t Offset() const { return m_nOffset; }
+	size_t MemberNum() const { return m_tMember.size(); }
+
+	void ResetMemory(const std::shared_ptr<MVariantMemory>& pMemory, size_t nOffset);
+
+	static std::shared_ptr<MVariantArray> Clone(const std::shared_ptr<MVariantArray>& source, std::shared_ptr<MVariantMemory> pMemory = nullptr, size_t nOffset = 0);
+
+	const std::vector<MVariant>& GetMember() const { return m_tMember; }
+
+public:
+
+	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	void Deserialize(const void* pBufferPointer, std::shared_ptr<MVariantMemory> pMemory = nullptr, size_t nOffset = 0);
+
+private:
+
+	std::shared_ptr<MVariantMemory> m_pMemory = nullptr;
+	size_t m_nOffset = 0;
+	size_t m_nSize = 0;
+	std::vector<MVariant> m_tMember;
+	bool m_bLocked = false;
+};
+
+class MORTY_API MVariantArrayBuilder final
+{
+public:
+	explicit MVariantArrayBuilder(MVariantArray& sut) : m_array(sut) {}
+
+	~MVariantArrayBuilder()
+	{
+		MORTY_ASSERT(m_array.m_bLocked);
+	}
+
+	template<typename TYPE>
+	void AppendVariant(const TYPE& value)
+	{
+		MORTY_ASSERT(!m_array.m_bLocked);
+		m_array.AppendVariant(value);
+	}
+
+	void Finish() const
+	{
+		m_array.m_bLocked = true;
+	}
+
+private:
+	MVariantArray& m_array;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+template<typename TYPE>
+inline MVariant::MVariant(const TYPE& value)
+{
+	MORTY_ASSERT(MVariant::Type<TYPE>() != MEVariantType::ENone);
+
+	m_pMemory = std::make_shared<MVariantMemory>();
+	m_nSize = MVariant::TypeSize<TYPE>();
+	m_nOffset = m_pMemory->AllocMemory(m_nSize);
+	m_eType = MVariant::Type<TYPE>();
 }
 
-class MORTY_API MContainer
+template<>
+inline MVariant::MVariant(const MVariantStruct& value)
 {
-public:
-	MContainer();
-	MContainer(const MContainer& var);
-	virtual ~MContainer();
+	m_pStruct = std::make_shared<MVariantStruct>(value);
+	m_nOffset = value.Offset();
+	m_nSize = value.Size();
+	m_eType = MEVariantType::EStruct;
+}
 
-	struct MStructMember
-	{
-		MString strName;
-		MVariant var;
-		uint32_t unBeginOffset;
-	};
-
-	uint32_t GetSize() const;
-	MByte* GetData();
-
-	//For Serialize
-	void MemcpyData(MByte* pData);
-
-	MStructMember* GetMember(const uint32_t& unIndex) { return unIndex < m_vMember.size() ? &m_vMember[unIndex] : nullptr; }
-	const MStructMember* GetMember(const uint32_t& unIndex) const { return unIndex < m_vMember.size() ? &m_vMember[unIndex] : nullptr; }
-	uint32_t GetMemberCount() const { return m_vMember.size(); }
-
-	MVariant* Back();
-
-	template <typename T>
-	T* GetMember(const uint32_t& unIndex)
-	{
-		if (MStructMember* pMember = GetMember(unIndex))
-			return pMember->var.GetTypedData<T>();
-		return nullptr;
-	}
-
-	const MContainer& operator = (const MContainer& var);
-	bool operator == (const MContainer& var) const;
-
-	MVariant& operator[](const uint32_t& unIndex);
-
-protected:
-
-	//will move mem.var to owner var of array
-	uint32_t AppendStructMember(MStructMember& mem);
-
-protected:
-
-	MVariant::MEVariantType m_ContainerType;
-	uint32_t m_unByteSize;
-	unsigned char* m_pData;
-	std::vector<MStructMember> m_vMember;
-
-	static uint32_t s_unPackSize;
-};
-
-class MORTY_API MStruct : public MContainer
+template<>
+inline MVariant::MVariant(const MVariantArray& value)
 {
-public:
-	MStruct();
-	virtual ~MStruct() {}
+	m_pArray = std::make_shared<MVariantArray>(value);
+	m_nOffset = value.Offset();
+	m_nSize = value.Size();
+	m_eType = MEVariantType::EArray;
+}
 
-
-	uint32_t AppendValue(const MString& strName, const MVariant& var);
-
-	template<typename T>
-	T* AppendValue(const MString& strName)
-	{
-		MStructMember sm;
-		sm.strName = strName;
-		sm.var = T();
-
-		uint32_t unIndex = m_tVariantMap[strName] = AppendStructMember(sm);
-
-		return m_vMember[unIndex].var.GetTypedData<T>();
-	}
-
-	void SetMember(const MString& strName, const MVariant& var);
-	MVariant* FindMember(const MString& strName);
-	const MVariant* FindMember(const MString& strName) const;
-
-	template<typename T>
-	T* FindMember(const MString& strName)
-	{
-		if (MVariant* pVar = FindMember(strName))
-			return pVar->GetTypedData<T>();
-		return nullptr;
-	}
-
-	template<typename T>
-	bool FindMember(const MString& strName, T& result)
-	{
-		if (MVariant* pVar = FindMember(strName))
-		{
-			result = *pVar->GetTypedData<T>();
-			return true;
-		}
-
-		return false;
-	}
-
-	void Move(MStruct& sour);
-
-protected:
-	std::unordered_map< MString, uint32_t> m_tVariantMap;
-};
-
-class MORTY_API MVariantArray : public MContainer
+template<typename TYPE>
+inline TYPE& MVariant::GetValue()
 {
-public:
-	MVariantArray();
-	virtual ~MVariantArray() {}
+	MORTY_ASSERT(m_pMemory);
+	MORTY_ASSERT(GetType() == MVariant::Type<TYPE>());
+	TYPE& value = *reinterpret_cast<TYPE*>(m_pMemory->Data() + m_nOffset);
+	return value;
+}
 
-	void AppendValue(const MVariant& var);
+template<typename TYPE>
+inline const TYPE& MVariant::GetValue() const
+{
+	MORTY_ASSERT(m_pMemory);
+	MORTY_ASSERT(GetType() == MVariant::Type<TYPE>());
+	const TYPE& value = *reinterpret_cast<TYPE*>(m_pMemory->Data() + m_nOffset);
+	return value;
+}
 
-//	void Resize(const uint32_t& unSize, const MVariant& var);
+template<>
+inline MVariantStruct& MVariant::GetValue<MVariantStruct>()
+{
+	MORTY_ASSERT(m_pStruct);
+	return *m_pStruct;
+}
 
-	void Move(MVariantArray& sour);
+template<>
+inline const MVariantStruct& MVariant::GetValue<MVariantStruct>() const
+{
+	MORTY_ASSERT(m_pStruct);
+	return *m_pStruct;
+}
 
-	template<typename T>
-	T* AppendValue()
+template<>
+inline MVariantArray& MVariant::GetValue<MVariantArray>()
+{
+	MORTY_ASSERT(m_pArray);
+	return *m_pArray;
+}
+
+template<>
+inline const MVariantArray& MVariant::GetValue<MVariantArray>() const
+{
+	MORTY_ASSERT(m_pArray);
+	return *m_pArray;
+}
+
+template<typename TYPE>
+inline void MVariant::SetValue(const TYPE& value)
+{
+	MORTY_ASSERT(Type<TYPE>() == GetType());
+	MORTY_ASSERT(Type<TYPE>() != MEVariantType::EArray);
+	MORTY_ASSERT(Type<TYPE>() != MEVariantType::EStruct);
+	MORTY_ASSERT(m_pMemory);
+
+	memcpy(m_pMemory->Data() + m_nOffset, &value, m_nSize);
+}
+
+template<typename TYPE>
+inline MEVariantType MVariant::Type()
+{
+	MORTY_ASSERT(false);
+	return MEVariantType::ENone;
+}
+
+template<>
+inline MEVariantType MVariant::Type<bool>()
+{
+	return MEVariantType::EBool;
+}
+
+template<>
+inline MEVariantType MVariant::Type<int>()
+{
+	return MEVariantType::EInt;
+}
+
+template<>
+inline MEVariantType MVariant::Type<float>()
+{
+	return MEVariantType::EFloat;
+}
+
+template<>
+inline MEVariantType MVariant::Type<Vector2>()
+{
+	return MEVariantType::EVector2;
+}
+
+template<>
+inline MEVariantType MVariant::Type<Vector3>()
+{
+	return MEVariantType::EVector3;
+}
+
+template<>
+inline MEVariantType MVariant::Type<Vector4>()
+{
+	return MEVariantType::EVector4;
+}
+
+template<>
+inline MEVariantType MVariant::Type<Matrix3>()
+{
+	return MEVariantType::EMatrix3;
+}
+
+template<>
+inline MEVariantType MVariant::Type<Matrix4>()
+{
+	return MEVariantType::EMatrix4;
+}
+
+template<>
+inline MEVariantType MVariant::Type<MVariantStruct>()
+{
+	return MEVariantType::EStruct;
+}
+
+template<>
+inline MEVariantType MVariant::Type<MVariantArray>()
+{
+	return MEVariantType::EArray;
+}
+
+
+template<typename TYPE>
+void MVariantStruct::AppendVariant(const MString& strName, const TYPE& value)
+{
+	MORTY_ASSERT(!m_bLocked);
+	const size_t nSize = MVariant::TypeSize<TYPE>();
+	const size_t nOffset = m_pMemory->AllocMemory(nSize);
+
+	m_nSize = nOffset + nSize - m_nOffset;
+
+	MVariant& member = m_tMember[strName];
+	member = std::move(MVariant(m_pMemory, nOffset, nSize, MVariant::Type<TYPE>()));
+
+	memcpy(m_pMemory->Data() + nOffset, &value, member.GetSize());
+}
+
+template<>
+inline void MVariantStruct::AppendVariant<MVariant>(const MString& strName, const MVariant& value)
+{
+	MORTY_ASSERT(!m_bLocked);
+	if(value.IsType<MVariantStruct>())
 	{
-		AppendValue(T());
-		return  m_vMember.back().var.GetTypedData<T>();
+		return AppendContainer(strName, value.GetValue<MVariantStruct>());
 	}
-};
+	if (value.IsType<MVariantArray>())
+	{
+		return AppendContainer(strName, value.GetValue<MVariantArray>());
+	}
 
-// void MVariantArray::Resize(const uint32_t& unSize, const MVariant& var)
-// {
-// 	m_vMember.resize(unSize, MStructMember());
-// 	uint32_t unWidth = var.GetSize() / s_unPackSize;
-// 	if (var.GetSize() % s_unPackSize) unWidth += 1;
-// 	
-// 	for (uint32_t i = 0; i < unSize; ++i)
-// 	{
-// 		m_vMember[i].unBeginOffset = unWidth * s_unPackSize * i;
-// 		m_vMember[i].var = var;
-// 	}
-// 
-// 	m_unByteSize = unSize * unWidth * s_unPackSize;
-// }
+	const size_t nSize = value.GetSize();
+	const size_t nOffset = m_pMemory->AllocMemory(nSize);
+
+	m_nSize = nOffset + nSize - m_nOffset;
+
+	MVariant& member = m_tMember[strName];
+	member = std::move(MVariant(m_pMemory, nOffset, nSize, value.GetType()));
+
+	memcpy(m_pMemory->Data() + nOffset, &value, member.GetSize());
+}
+
+template<>
+inline void MVariantStruct::AppendVariant<MVariantStruct>(const MString& strName, const MVariantStruct& value)
+{
+	MORTY_ASSERT(!m_bLocked);
+	return AppendContainer(strName, value);
+}
+
+template<>
+inline void MVariantStruct::AppendVariant<MVariantArray>(const MString& strName, const MVariantArray& value)
+{
+	MORTY_ASSERT(!m_bLocked);
+	return AppendContainer(strName, value);
+}
+
+template<typename TYPE>
+inline void MVariantStruct::AppendContainer(const MString& strName, const TYPE& value)
+{
+	MORTY_ASSERT(!m_bLocked);
+	const size_t nSize = value.Size();
+	const size_t nOffset = m_pMemory->AllocMemory(value.Size());
+
+	MVariant& member = m_tMember[strName];
+
+	TYPE innerValue = value;
+	innerValue.ResetMemory(m_pMemory, nOffset);
+
+	member = std::move(MVariant(innerValue));
+
+	memcpy(m_pMemory->Data() + nOffset, value.Data(), nSize);
+
+	m_nSize = m_pMemory->Size() - m_nOffset;
+}
+
+template<typename TYPE>
+inline TYPE& MVariantStruct::GetVariant(const MString& strName)
+{
+	MORTY_ASSERT(m_bLocked);
+	MVariant& member = FindVariant(strName);
+	return member.GetValue<TYPE>();
+}
+
+
+template<>
+inline MVariant& MVariantStruct::GetVariant<MVariant>(const MString& strName)
+{
+	MORTY_ASSERT(m_bLocked);
+	auto& findResult = m_tMember.find(strName);
+	if (findResult == m_tMember.end())
+	{
+		static MVariant InvalidValue;
+		return InvalidValue;
+	}
+
+	MVariant& member = findResult->second;
+	return member;
+}
+
+template<typename TYPE>
+inline void MVariantStruct::SetVariant(const MString& strName, const TYPE& value)
+{
+	MORTY_ASSERT(m_bLocked);
+	auto& findResult = m_tMember.find(strName);
+	if (findResult == m_tMember.end())
+	{
+		return;
+	}
+
+	MVariant& member = findResult->second;
+	return member.SetValue(value);
+}
+
+template<>
+inline void MVariantStruct::SetVariant<MVariant>(const MString& strName, const MVariant& value)
+{
+	MORTY_ASSERT(m_bLocked);
+	MORTY_ASSERT(value.GetType() != MEVariantType::ENone);
+	MORTY_ASSERT(value.GetType() != MEVariantType::EArray);
+	MORTY_ASSERT(value.GetType() != MEVariantType::EStruct);
+
+	auto& findResult = m_tMember.find(strName);
+	if (findResult == m_tMember.end())
+	{
+		return;
+	}
+
+	MVariant& member = findResult->second;
+	return member.SetValue(value);
+}
+
+template<typename TYPE>
+void MVariantArray::AppendVariant(const TYPE& value)
+{
+	MORTY_ASSERT(!m_bLocked);
+	const size_t nSize = MVariant::TypeSize<TYPE>();
+	const size_t nOffset = m_pMemory->AllocMemory(nSize);
+
+	MVariant member = MVariant(m_pMemory, nOffset, nSize, MVariant::Type<TYPE>());
+	memcpy(m_pMemory->Data() + nOffset, &value, member.GetSize());
+
+	m_tMember.push_back(member);
+	m_pMemory->ByteAlignment();
+
+	m_nSize = m_pMemory->Size() - m_nOffset;
+}
+
+template<>
+inline void MVariantArray::AppendVariant<MVariant>(const MVariant& value)
+{
+	MORTY_ASSERT(!m_bLocked);
+	if (value.IsType<MVariantStruct>())
+	{
+		return AppendContainer<MVariantStruct>(value.GetValue<MVariantStruct>());
+	}
+	if (value.IsType<MVariantArray>())
+	{
+		return AppendContainer<MVariantArray>(value.GetValue<MVariantArray>());
+	}
+
+	const size_t nSize = value.GetSize();
+	const size_t nOffset = m_pMemory->AllocMemory(nSize);
+
+	MVariant member = MVariant(m_pMemory, nOffset, nSize, value.GetType());
+	memcpy(m_pMemory->Data() + nOffset, &value, member.GetSize());
+
+	m_tMember.push_back(member);
+	m_pMemory->ByteAlignment();
+
+	m_nSize = m_pMemory->Size() - m_nOffset;
+}
+
+template<>
+inline void MVariantArray::AppendVariant<MVariantStruct>(const MVariantStruct& value)
+{
+	MORTY_ASSERT(!m_bLocked);
+	return AppendContainer(value);
+}
+
+template<>
+inline void MVariantArray::AppendVariant<MVariantArray>(const MVariantArray& value)
+{
+	MORTY_ASSERT(!m_bLocked);
+	return AppendContainer(value);
+}
+
+template<typename TYPE>
+inline void MVariantArray::AppendContainer(const TYPE& value)
+{
+	MORTY_ASSERT(!m_bLocked);
+	const size_t nSize = value.Size();
+	const size_t nOffset = m_pMemory->AllocMemory(value.Size());
+
+	TYPE innerValue = value;
+	innerValue.ResetMemory(m_pMemory, nOffset);
+	MVariant& member = MVariant(innerValue);
+
+	memcpy(m_pMemory->Data() + nOffset, value.Data(), nSize);
+
+	m_tMember.push_back(member);
+	m_pMemory->ByteAlignment();
+
+	m_nSize = m_pMemory->Size() - m_nOffset;
+}
+
+template<typename TYPE>
+inline TYPE& MVariantArray::GetVariant(const size_t& nIdx)
+{
+	MORTY_ASSERT(m_bLocked);
+	if (nIdx >= m_tMember.size())
+	{
+		MORTY_ASSERT(nIdx < m_tMember.size());
+		static TYPE InvalidValue;
+		return InvalidValue;
+	}
+
+	MVariant& member = m_tMember[nIdx];
+	return member.GetValue<TYPE>();
+}
+
+template<typename TYPE>
+inline void MVariantArray::SetVariant(const size_t& nIdx, const TYPE& value)
+{
+	MORTY_ASSERT(m_bLocked);
+	if (nIdx >= m_tMember.size())
+	{
+		MORTY_ASSERT(nIdx < m_tMember.size());
+		return;
+	}
+
+	MVariant& member = m_tMember[nIdx];
+	return member.SetValue(value);
+}
+
 
 #endif
