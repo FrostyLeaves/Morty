@@ -33,10 +33,10 @@ public:
     void LoadSpecularEnvResource(std::shared_ptr<MResource> pTexture);
 
     std::shared_ptr<MResource> GetDiffuseEnvResource();
-    MTexture* GetDiffuseTexture();
+    std::shared_ptr<MTexture> GetDiffuseTexture();
 
     std::shared_ptr<MResource> GetSpecularEnvResource();
-    MTexture* GetSpecularTexture();
+    std::shared_ptr<MTexture> GetSpecularTexture();
 
 
 private:

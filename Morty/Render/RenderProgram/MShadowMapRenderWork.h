@@ -61,7 +61,7 @@ public:
 
 public:
 
-	MTexture* GetShadowMap();
+	std::shared_ptr<MTexture> GetShadowMap();
 
 protected:
 

@@ -659,12 +659,12 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 
 		pMaterial->SetMaterialType(MEMaterialType::EDeferred);
 
-		pMaterial->SetTexutre(MaterialKey::Albedo, pResourceSystem->LoadResource(MRenderModule::DefaultWhite));
-		pMaterial->SetTexutre(MaterialKey::Normal, pResourceSystem->LoadResource(MRenderModule::DefaultNormal));
-		pMaterial->SetTexutre(MaterialKey::Metallic, pResourceSystem->LoadResource(MRenderModule::Default_R8_One));
-		pMaterial->SetTexutre(MaterialKey::Roughness, pResourceSystem->LoadResource(MRenderModule::Default_R8_One));
-		pMaterial->SetTexutre(MaterialKey::AmbientOcc, pResourceSystem->LoadResource(MRenderModule::Default_R8_One));
-		pMaterial->SetTexutre(MaterialKey::Height, pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero));
+		pMaterial->SetTexture(MaterialKey::Albedo, pResourceSystem->LoadResource(MRenderModule::DefaultWhite));
+		pMaterial->SetTexture(MaterialKey::Normal, pResourceSystem->LoadResource(MRenderModule::DefaultNormal));
+		pMaterial->SetTexture(MaterialKey::Metallic, pResourceSystem->LoadResource(MRenderModule::Default_R8_One));
+		pMaterial->SetTexture(MaterialKey::Roughness, pResourceSystem->LoadResource(MRenderModule::Default_R8_One));
+		pMaterial->SetTexture(MaterialKey::AmbientOcc, pResourceSystem->LoadResource(MRenderModule::Default_R8_One));
+		pMaterial->SetTexture(MaterialKey::Height, pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero));
 	}
 	else
 	{
@@ -696,7 +696,7 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 	std::shared_ptr<MResource> pDefaultTexture = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
 	for (size_t i = 0; i < pMaterial->GetTextureParams().size(); ++i)
 	{
-		pMaterial->SetTexutre(pMaterial->GetTextureParams()[i]->strName, pDefaultTexture);
+		pMaterial->SetTexture(pMaterial->GetTextureParams()[i]->strName, pDefaultTexture);
 	}
 
 	aiMaterial* pAiMaterial = pScene->mMaterials[nMaterialIdx];
@@ -723,27 +723,13 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		if (0.0f == fShininess)
 			fShininess = 32.0f;
 
-		MStruct* pMaterialStruct = nullptr;
-		for (const std::shared_ptr<MShaderConstantParam>& pParam : pMaterial->GetShaderParams())
-		{
+		pMaterial->GetMaterialParamSet()->SetValue("f3Ambient", v3Ambient);
+		pMaterial->GetMaterialParamSet()->SetValue("f3Diffuse", v3Diffuse);
+		pMaterial->GetMaterialParamSet()->SetValue("f3Specular", v3Specular);
+		pMaterial->GetMaterialParamSet()->SetValue("fShininess", fShininess);
+		pMaterial->GetMaterialParamSet()->SetValue("bUseNormalTex", 0);
+		pMaterial->GetMaterialParamSet()->SetValue("fAlphaFactor", 1.0f);
 
-			MVariantStruct materialData;
-			MVariantStructBuilder materialBuilder(materialData);
-			materialBuilder.AppendVariant("f3Ambient", v3Ambient);
-			materialBuilder.AppendVariant("f3Diffuse", v3Diffuse);
-			materialBuilder.AppendVariant("f3Specular", v3Specular);
-			materialBuilder.AppendVariant("fShininess", fShininess);
-			materialBuilder.AppendVariant("bUseNormalTex", false);
-			materialBuilder.AppendVariant("fAlphaFactor", 1.0f);
-			materialBuilder.Finish();
-
-			MVariantStruct shaderParam;
-			MVariantStructBuilder shaderParamBuilder(shaderParam);
-			shaderParamBuilder.AppendVariant("u_xMaterial", materialData);
-			shaderParamBuilder.Finish();
-
-			pParam->var = std::move(MVariant(shaderParam));
-		}
 	}
 
 
@@ -775,7 +761,7 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		{
 			std::shared_ptr<MTextureResource>& pTexture = findResult->second;
 
-			pMaterial->SetTexutre(pr.second, pTexture);
+			pMaterial->SetTexture(pr.second, pTexture);
 		}
 	}
 

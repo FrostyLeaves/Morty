@@ -36,7 +36,7 @@ public:
     MTextureResource();
     virtual ~MTextureResource();
 
-	MTexture* GetTextureTemplate(){ return &m_texture; }
+	std::shared_ptr<MTexture> GetTextureTemplate(){ return m_pTexture; }
 
 	static MString GetResourceTypeName() { return "Texture"; }
 	static std::vector<MString> GetSuffixList() { return { "png", "jpg", "tga", "hdr", "tif"}; }
@@ -65,8 +65,8 @@ protected:
 	virtual bool Load(const MString& strResourcePath) override;
 	virtual bool SaveTo(const MString& strResourcePath) override;
 private:
-
-	MTexture m_texture;
+	
+	std::shared_ptr<MTexture> m_pTexture;
 
 	MByte* m_aByteData;
 };

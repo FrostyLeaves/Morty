@@ -178,18 +178,15 @@ std::shared_ptr<MResource> MResourceRef::operator=(std::shared_ptr<MResource> pR
 
 flatbuffers::Offset<void> MResourceRef::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	flatbuffers::Offset<flatbuffers::String> fbPath;
+	flatbuffers::Offset<flatbuffers::String> fbPath = flatbuffers::Offset<flatbuffers::String>(0);
 	if (m_pResource)
 	{
 		fbPath = fbb.CreateString(m_pResource->GetResourcePath());
 	}
 
 	mfbs::MResourceRefBuilder builder(fbb);
-
-	if (m_pResource)
-	{
-		builder.add_path(fbPath);
-	}
+	
+	builder.add_path(fbPath);
 
 	return builder.Finish().Union();
 }
@@ -203,7 +200,8 @@ void MResourceRef::Deserialize(MEngine* pEngine, const void* pBufferPointer)
 	std::shared_ptr<MResource> pResource = nullptr;
 	if (fbData->path())
 	{
-		pResource = pResourceSystem->LoadResource(fbData->path()->c_str());
+		MString strPath = fbData->path()->str();
+		pResource = pResourceSystem->LoadResource(strPath);
 	}
 
 	SetResource(pResource);

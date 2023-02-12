@@ -45,7 +45,7 @@ std::vector<std::shared_ptr<MShaderTextureParam>>& MMaterial::GetTextureParams()
 	return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]->m_vTextures;
 }
 
-void MMaterial::SetTexutre(const MString& strName, std::shared_ptr<MResource> pResource)
+void MMaterial::SetTexture(const MString& strName, std::shared_ptr<MResource> pResource)
 {
 	for (int i = 0; i < GetMaterialParamSet()->m_vTextures.size(); ++i)
 	{
@@ -54,7 +54,7 @@ void MMaterial::SetTexutre(const MString& strName, std::shared_ptr<MResource> pR
 		{
 			if (std::shared_ptr<MTextureResource> pTexResource = MTypeClass::DynamicCast<MTextureResource>(pResource))
 			{
-				if (MTexture* pTexture = pTexResource->GetTextureTemplate())
+				if (std::shared_ptr<MTexture> pTexture = pTexResource->GetTextureTemplate())
 				{
 					if (pTexture->GetTextureType() != pParam->eType)
 					{
@@ -172,12 +172,17 @@ void MMaterial::Deserialize(const void* pBufferPointer)
 	const mfbs::MMaterial* fbData = reinterpret_cast<const mfbs::MMaterial*>(pBufferPointer);
 
 	m_pShaderProgram->ClearShader(GetEngine());
+	m_pShaderProgram = MShaderProgram::MakeShared(MShaderProgram::EUsage::EGraphics);
+
 	GetShaderMacro().Deserialize(fbData->material_macro());
 	MResourceRef vertexShader, pixelShader;
 	vertexShader.Deserialize(GetEngine(), fbData->vertex_resource());
 	pixelShader.Deserialize(GetEngine(), fbData->pixel_resource());
-	m_pShaderProgram->LoadVertexShader(GetEngine(), vertexShader.GetResource());
-	m_pShaderProgram->LoadPixelShader(GetEngine(), pixelShader.GetResource());
+
+	MORTY_ASSERT(LoadVertexShader(vertexShader.GetResource()));
+	MORTY_ASSERT(LoadPixelShader(pixelShader.GetResource()));
+
+
 
 	if (fbData->material_property())
 	{
@@ -185,11 +190,13 @@ void MMaterial::Deserialize(const void* pBufferPointer)
 		for (size_t nIdx = 0; nIdx < nPropertyNum; ++nIdx)
 		{
 			const auto fbProperty = fbData->material_property()->Get(nIdx);
+			MString strPropertyName = fbProperty->name()->c_str();
 
-			MVariant value;
-			value.Deserialize(fbProperty->property());
-
-			GetMaterialParamSet()->SetValue(fbProperty->name()->c_str(), value);
+			if (std::shared_ptr<MShaderConstantParam> pConstantParam = GetMaterialParamSet()->FindConstantParam(strPropertyName))
+			{
+				pConstantParam->var.Deserialize(fbProperty->property());
+				pConstantParam->SetDirty();
+			}
 		}
 	}
 
@@ -200,10 +207,13 @@ void MMaterial::Deserialize(const void* pBufferPointer)
 		{
 			const auto fbTexture = fbData->material_textures()->Get(nIdx);
 
-			MResourceRef texture;
-			texture.Deserialize(GetEngine(), fbTexture->texture());
+			MResourceRef resource;
+			resource.Deserialize(GetEngine(), fbTexture->texture());
 
-			GetMaterialParamSet()->SetValue(fbTexture->name()->c_str(), texture.GetResource());
+			if( auto pTextureResource = resource.GetResource<MTextureResource>())
+			{
+				SetTexture(fbTexture->name()->c_str(), pTextureResource);
+			}
 		}
 	}
 
@@ -212,7 +222,8 @@ void MMaterial::Deserialize(const void* pBufferPointer)
 bool MMaterial::SaveTo(const MString& strResourcePath)
 {
 	flatbuffers::FlatBufferBuilder fbb;
-	Serialize(fbb);
+	auto fbData = Serialize(fbb);
+	fbb.Finish(fbData);
 
 	std::vector<MByte> data(fbb.GetSize());
 	memcpy(data.data(), (MByte*)fbb.GetBufferPointer(), fbb.GetSize() * sizeof(MByte));

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <memory>
 
 #define ImDrawIdx uint32_t
 
@@ -11,16 +12,16 @@ struct ImDrawVert{ImVec2 pos;ImVec2 uv;ImColor col;};
 class MTexture;
 struct ImGuiTexture
 {
-    MTexture* pTexture = nullptr;
+    std::shared_ptr<MTexture> pTexture = nullptr;
     size_t nArrayIdx = 0;
 
     ImGuiTexture() : pTexture(nullptr), nArrayIdx(0) {}
 
-    operator intptr_t() const { return (intptr_t)pTexture; }
+    operator intptr_t() const { return (intptr_t)pTexture.get(); }
 
     ImGuiTexture(void* tex) : pTexture((MTexture*)tex), nArrayIdx(0) {}
     
-    ImGuiTexture(class MTexture* tex, size_t arrIdx) : pTexture(tex), nArrayIdx(arrIdx) {}
+    ImGuiTexture(std::shared_ptr<MTexture> tex, size_t arrIdx) : pTexture(tex), nArrayIdx(arrIdx) {}
 
     bool operator==(const ImGuiTexture& other)
     {

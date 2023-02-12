@@ -29,7 +29,6 @@ void MMergeInstancingSubSystem::Initialize()
 	if (MNotifySystem* pNotifySystem = GetEngine()->FindSystem<MNotifySystem>())
 	{
 		pNotifySystem->RegisterNotify("MeshBatchChanged", M_CLASS_FUNCTION_BIND_0_1(MMergeInstancingSubSystem::OnBatchMeshChanged, this));
-		pNotifySystem->RegisterNotify("TransformDirty", M_CLASS_FUNCTION_BIND_0_1(MMergeInstancingSubSystem::OnTransformDirty, this));
 	}
 
 	if (MObjectSystem* pObjectSystem = GetEngine()->FindSystem<MObjectSystem>())
@@ -206,9 +205,4 @@ void MMergeInstancingSubSystem::OnBatchMeshChanged(MComponent* pSender)
 			UnregisterMaterial(pComponent);
 		}
 	}
-}
-
-void MMergeInstancingSubSystem::OnTransformDirty(MComponent* pSender)
-{
-	
 }

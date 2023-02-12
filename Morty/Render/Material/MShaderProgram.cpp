@@ -246,15 +246,17 @@ void MShaderProgram::UnbindShaderBuffer(MEngine* pEngine, const MEShaderParamTyp
 	MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
 	for (uint32_t i = 0; i < MRenderGlobal::SHADER_PARAM_SET_NUM; ++i)
 	{
-		std::shared_ptr<MShaderPropertyBlock>& pProgramProperty = m_vShaderSets[i];
-		std::vector<std::shared_ptr<MShaderConstantParam>>&& vConstantParams = pProgramProperty->RemoveConstantParam(eType);
-		std::vector<std::shared_ptr<MShaderTextureParam>>&& vTextureParams = pProgramProperty->RemoveTextureParam(eType);
-		std::vector<std::shared_ptr<MShaderSampleParam>>&& vSampleParams = pProgramProperty->RemoveSampleParam(eType);
-		std::vector<std::shared_ptr<MShaderStorageParam>>&& vStorageParams = pProgramProperty->RemoveStorageParam(eType);
-
-		for (std::shared_ptr<MShaderConstantParam>& pParam : vConstantParams)
+		if (std::shared_ptr<MShaderPropertyBlock> pProgramProperty = m_vShaderSets[i])
 		{
-			pRenderSystem->GetDevice()->DestroyShaderParamBuffer(pParam);
+			std::vector<std::shared_ptr<MShaderConstantParam>>&& vConstantParams = pProgramProperty->RemoveConstantParam(eType);
+			pProgramProperty->RemoveTextureParam(eType);
+			pProgramProperty->RemoveSampleParam(eType);
+			pProgramProperty->RemoveStorageParam(eType);
+
+			for (std::shared_ptr<MShaderConstantParam>& pParam : vConstantParams)
+			{
+				pRenderSystem->GetDevice()->DestroyShaderParamBuffer(pParam);
+			}
 		}
 	}
 }
@@ -359,7 +361,7 @@ MTextureResourceParam::MTextureResourceParam(const MShaderTextureParam& param)
 
 }
 
-void MTextureResourceParam::SetTexture(MTexture* pTexture)
+void MTextureResourceParam::SetTexture(std::shared_ptr<MTexture> pTexture)
 {
 	m_TextureRef.SetResource(nullptr);
 
@@ -375,9 +377,10 @@ void MTextureResourceParam::SetTexture(const std::shared_ptr<MTextureResource>& 
 
 	m_TextureRef.SetResource(pTextureResource);
 	m_TextureRef.SetResChangedCallback(onResourceChangedFunction);
+	SetDirty();
 }
 
-MTexture* MTextureResourceParam::GetTexture()
+std::shared_ptr<MTexture> MTextureResourceParam::GetTexture()
 {
 	if (auto&& pTextureResource = m_TextureRef.GetResource<MTextureResource>())
 	{

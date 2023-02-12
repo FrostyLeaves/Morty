@@ -23,7 +23,7 @@ void GPU_DRIVEN_CULLING_TEST(MEngine* pEngine, MScene* pScene)
 
 	std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
-	pMaterial->GetShaderMacro().AddUnionMacro("DRAW_MESH_MERGE_INSTANCING");
+	pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_MERGE_INSTANCING);
 	pMaterial->LoadVertexShader("Shader/model_gbuffer.mvs");
 	pMaterial->LoadPixelShader("Shader/model_gbuffer.mps");
 	pMaterial->SetMaterialType(MEMaterialType::EDeferred);
@@ -35,12 +35,12 @@ void GPU_DRIVEN_CULLING_TEST(MEngine* pEngine, MScene* pScene)
 	std::shared_ptr<MResource> height = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_height.png");
 	std::shared_ptr<MResource> metal = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
 
-	pMaterial->SetTexutre(MaterialKey::Albedo, albedo);
-	pMaterial->SetTexutre(MaterialKey::Normal, normal);
-	pMaterial->SetTexutre(MaterialKey::Metallic, metal);
-	pMaterial->SetTexutre(MaterialKey::Roughness, roughness);
-	pMaterial->SetTexutre(MaterialKey::AmbientOcc, ao);
-	pMaterial->SetTexutre(MaterialKey::Height, height);
+	pMaterial->SetTexture(MaterialKey::Albedo, albedo);
+	pMaterial->SetTexture(MaterialKey::Normal, normal);
+	pMaterial->SetTexture(MaterialKey::Metallic, metal);
+	pMaterial->SetTexture(MaterialKey::Roughness, roughness);
+	pMaterial->SetTexture(MaterialKey::AmbientOcc, ao);
+	pMaterial->SetTexture(MaterialKey::Height, height);
 
 	pMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
 	pMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);

@@ -258,13 +258,13 @@ void MGPUCullingRenderWork::CollectCullingGroup(MRenderInfo& info)
 
 	const std::shared_ptr<MShaderPropertyBlock>& params = m_pCullingComputeDispatcher->GetShaderParamSets()[0];
 
-	if (std::shared_ptr<MShaderStorageParam>&& pStorageParam = params->FindStorageParam("instances"))
+	if (std::shared_ptr<MShaderStorageParam> pStorageParam = params->FindStorageParam("instances"))
 	{
 		pStorageParam->pBuffer = &m_cullingInstanceBuffer;
 		pStorageParam->SetDirty();
 	}
 
-	if (std::shared_ptr<MShaderStorageParam>&& pStorageParam = params->FindStorageParam("indirectDraws"))
+	if (std::shared_ptr<MShaderStorageParam> pStorageParam = params->FindStorageParam("indirectDraws"))
 	{
 		pStorageParam->pBuffer = &m_cullingIndirectDrawBuffer;
 		pStorageParam->SetDirty();

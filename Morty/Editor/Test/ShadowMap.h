@@ -34,8 +34,8 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 
 		std::shared_ptr<MResource> diffuse = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
 		std::shared_ptr<MResource> normal = pResourceSystem->LoadResource(MRenderModule::DefaultNormal);
-		pForwardMaterial->SetTexutre("u_texDiffuse", diffuse);
-		pForwardMaterial->SetTexutre("u_texNormal", normal);
+		pForwardMaterial->SetTexture("u_texDiffuse", diffuse);
+		pForwardMaterial->SetTexture("u_texNormal", normal);
 	}
 
 
@@ -52,12 +52,12 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 		std::shared_ptr<MResource> metal = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
 		std::shared_ptr<MResource> height = pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero);
 
-		pDeferredMaterial->SetTexutre(MaterialKey::Albedo, albedo);
-		pDeferredMaterial->SetTexutre(MaterialKey::Normal, normal);
-		pDeferredMaterial->SetTexutre(MaterialKey::Metallic, metal);
-		pDeferredMaterial->SetTexutre(MaterialKey::Roughness, roughness);
-		pDeferredMaterial->SetTexutre(MaterialKey::AmbientOcc, ao);
-		pDeferredMaterial->SetTexutre(MaterialKey::Height, height);
+		pDeferredMaterial->SetTexture(MaterialKey::Albedo, albedo);
+		pDeferredMaterial->SetTexture(MaterialKey::Normal, normal);
+		pDeferredMaterial->SetTexture(MaterialKey::Metallic, metal);
+		pDeferredMaterial->SetTexture(MaterialKey::Roughness, roughness);
+		pDeferredMaterial->SetTexture(MaterialKey::AmbientOcc, ao);
+		pDeferredMaterial->SetTexture(MaterialKey::Height, height);
 
 		pDeferredMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
 		pDeferredMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);
@@ -86,8 +86,8 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 
 		std::shared_ptr<MResource> diffuse = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
 		std::shared_ptr<MResource> normal = pResourceSystem->LoadResource(MRenderModule::DefaultNormal);
-		pMaterial->SetTexutre("u_texDiffuse", diffuse);
-		pMaterial->SetTexutre("u_texNormal", normal);
+		pMaterial->SetTexture("u_texDiffuse", diffuse);
+		pMaterial->SetTexture("u_texNormal", normal);
 
 		std::shared_ptr<MMeshResource> pCubeResource = pResourceSystem->CreateResource<MMeshResource>();
 		pCubeResource->LoadAsCube();

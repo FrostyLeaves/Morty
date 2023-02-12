@@ -32,7 +32,7 @@ public:
 	virtual void OnCreated() override;
 	virtual void OnDelete() override;
 
-	void SetRenderTarget(MTexture* pOutputTexture, MTexture* pDepthTexture);
+	void SetRenderTarget(std::shared_ptr<MTexture> pOutputTexture, std::shared_ptr<MTexture> pDepthTexture);
 
     void Render(MRenderInfo& info);
 
@@ -68,16 +68,16 @@ private:
 	std::shared_ptr<MMaterial> m_pDrawPeelMaterial;
 	std::shared_ptr<MMaterial> m_pForwardMaterial;
 
-	MTexture* m_pOutputTexture;
-	MTexture* m_pDepthTexture;
-	MTexture* m_pDefaultOutputTexture;
+	std::shared_ptr<MTexture> m_pOutputTexture;
+	std::shared_ptr<MTexture> m_pDepthTexture;
+	std::shared_ptr<MTexture> m_pDefaultOutputTexture;
 
-	MTexture* m_pFrontTexture;
-	MTexture* m_pBackTexture;
-	MTexture* m_pFrontDepthForPassA;
-	MTexture* m_pBackDepthForPassA;
-	MTexture* m_pFrontDepthForPassB;
-	MTexture* m_pBackDepthForPassB;
+	std::shared_ptr<MTexture> m_pFrontTexture;
+	std::shared_ptr<MTexture> m_pBackTexture;
+	std::shared_ptr<MTexture> m_pFrontDepthForPassA;
+	std::shared_ptr<MTexture> m_pBackDepthForPassA;
+	std::shared_ptr<MTexture> m_pFrontDepthForPassB;
+	std::shared_ptr<MTexture> m_pBackDepthForPassB;
 
 	MMesh<Vector2> m_TransparentDrawMesh;
 

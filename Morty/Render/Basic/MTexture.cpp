@@ -92,9 +92,9 @@ uint32_t MTexture::GetImageMemorySize(const METextureLayout& layout)
 	return 0;
 }
 
-MTexture* MTexture::CreateShadowMap()
+std::shared_ptr<MTexture> MTexture::CreateShadowMap()
 {
-	MTexture* pTexture = new MTexture();
+	std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
 	pTexture->SetName("Shadow Map Texture");
 	pTexture->SetMipmapsEnable(false);
 	pTexture->SetReadable(false);
@@ -105,9 +105,9 @@ MTexture* MTexture::CreateShadowMap()
 	return pTexture;
 }
 
-MTexture* MTexture::CreateShadowMapArray(const size_t& nArraySize)
+std::shared_ptr<MTexture> MTexture::CreateShadowMapArray(const size_t& nArraySize)
 {
-	MTexture* pTexture = new MTexture();
+	std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
 	pTexture->SetName("Shadow Map Texture Array");
 	pTexture->SetMipmapsEnable(false);
 	pTexture->SetReadable(false);
@@ -120,9 +120,9 @@ MTexture* MTexture::CreateShadowMapArray(const size_t& nArraySize)
 	return pTexture;
 }
 
-MTexture* MTexture::CreateRenderTarget()
+std::shared_ptr<MTexture> MTexture::CreateRenderTarget()
 {
-	MTexture* pTexture = new MTexture();
+	std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
 	pTexture->SetName("Render Target Texture");
 	pTexture->SetMipmapsEnable(false);
 	pTexture->SetReadable(false);
@@ -133,9 +133,9 @@ MTexture* MTexture::CreateRenderTarget()
 	return pTexture;
 }
 
-MTexture* MTexture::CreateRenderTargetGBuffer()
+std::shared_ptr<MTexture> MTexture::CreateRenderTargetGBuffer()
 {
-	MTexture* pTexture = new MTexture();
+	std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
 	pTexture->SetName("GBuffer Texture");
 	pTexture->SetMipmapsEnable(false);
 	pTexture->SetReadable(false);
@@ -146,9 +146,9 @@ MTexture* MTexture::CreateRenderTargetGBuffer()
 	return pTexture;
 }
 
-MTexture* MTexture::CreateRenderTargetFloat32()
+std::shared_ptr<MTexture> MTexture::CreateRenderTargetFloat32()
 {
-	MTexture* pTexture = new MTexture();
+	std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
 	pTexture->SetName("Render Target Float32 Texture");
 	pTexture->SetMipmapsEnable(false);
 	pTexture->SetReadable(false);
@@ -159,9 +159,9 @@ MTexture* MTexture::CreateRenderTargetFloat32()
 	return pTexture;
 }
 
-MTexture* MTexture::CreateCubeMap()
+std::shared_ptr<MTexture> MTexture::CreateCubeMap()
 {
-	MTexture* pTexture = new MTexture();
+	std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
 	pTexture->SetName("CubeMap Texture");
 	pTexture->SetMipmapsEnable(false);
 	pTexture->SetReadable(false);

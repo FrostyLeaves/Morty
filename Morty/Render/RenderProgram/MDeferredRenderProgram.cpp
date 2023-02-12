@@ -141,9 +141,9 @@ void MDeferredRenderProgram::RenderGBuffer(MTaskNode* pTaskNode)
 	MViewport* pViewport = m_renderInfo.pViewport;
 
 
-	if (MTexture* pShadowMap = GetShadowmapTexture())
+	if (std::shared_ptr<MTexture> pShadowMap = GetShadowmapTexture())
 	{
-		pCommand->AddRenderToTextureBarrier({ pShadowMap });
+		pCommand->AddRenderToTextureBarrier({ pShadowMap.get() });
 	}
 
 	pCommand->BeginRenderPass(&m_gbufferRenderPass);
@@ -179,8 +179,13 @@ void MDeferredRenderProgram::RenderLightning(MTaskNode* pTaskNode)
 {
 	MIRenderCommand* pCommand = m_renderInfo.pPrimaryRenderCommand;
 
-	std::vector<MTexture*> vTextures = m_gbufferRenderPass.GetBackTextures();
-	vTextures.push_back(m_gbufferRenderPass.GetDepthTexture());
+	std::vector<MTexture*> vTextures;
+	for (auto pTexture : m_gbufferRenderPass.GetBackTextures())
+	{
+		vTextures.push_back(pTexture.get());
+	}
+	vTextures.push_back(m_gbufferRenderPass.GetDepthTexture().get());
+
 	pCommand->AddRenderToTextureBarrier(vTextures);
 
 	pCommand->BeginRenderPass(&m_lightningRenderPass);
@@ -207,7 +212,7 @@ void MDeferredRenderProgram::RenderShadow(MTaskNode* pTaskNode)
 		//m_pShadowMapWork->RenderShadow(m_renderInfo, m_pGPUCullingRenderWork);
 		m_pShadowMapWork->RenderShadow(m_renderInfo, nullptr);
 
-		MTexture* pShadowMap = m_pShadowMapWork->GetShadowMap();
+		std::shared_ptr<MTexture> pShadowMap = m_pShadowMapWork->GetShadowMap();
 
 		m_forwardFramePropertyBlock.SetShadowMapTexture(pShadowMap);
 	}
@@ -238,7 +243,7 @@ void MDeferredRenderProgram::RenderForward(MTaskNode* pTaskNode)
 	{
 		if (MSkyBoxComponent* pSkyBoxComponent = pSkyBox->GetComponent<MSkyBoxComponent>())
 		{
-			m_pSkyBoxMaterial->SetTexutre("SkyTexCube", pSkyBoxComponent->GetSkyBoxResource());
+			m_pSkyBoxMaterial->SetTexture("SkyTexCube", pSkyBoxComponent->GetSkyBoxResource());
 
 			pCommand->SetUseMaterial(m_pSkyBoxMaterial);
 			pCommand->SetShaderParamSet(m_forwardFramePropertyBlock.GetShaderPropertyBlock());
@@ -283,21 +288,21 @@ void MDeferredRenderProgram::RenderDebug(MTaskNode* pTaskNode)
 	pCommand->EndRenderPass();
 }
 
-MTexture* MDeferredRenderProgram::GetOutputTexture()
+std::shared_ptr<MTexture> MDeferredRenderProgram::GetOutputTexture()
 {
 	return m_pFinalOutputTexture;
 }
 
-std::vector<MTexture*> MDeferredRenderProgram::GetOutputTextures()
+std::vector<std::shared_ptr<MTexture>> MDeferredRenderProgram::GetOutputTextures()
 {
-	std::vector<MTexture*> vResult;
+	std::vector<std::shared_ptr<MTexture>> vResult;
 
 	if (m_pFinalOutputTexture)
 		vResult.push_back(m_pFinalOutputTexture);
 
 	if (m_pShadowMapWork)
 	{
-		if (MTexture* pTexture = m_pShadowMapWork->GetShadowMap())
+		if (std::shared_ptr<MTexture> pTexture = m_pShadowMapWork->GetShadowMap())
 		{
 			vResult.push_back(pTexture);
 		}
@@ -316,7 +321,7 @@ std::vector<MTexture*> MDeferredRenderProgram::GetOutputTextures()
 	return vResult;
 }
 
-MTexture* MDeferredRenderProgram::GetShadowmapTexture()
+std::shared_ptr<MTexture> MDeferredRenderProgram::GetShadowmapTexture()
 {
 	if (m_pShadowMapWork)
 	{
@@ -457,7 +462,7 @@ void MDeferredRenderProgram::InitializeRenderPass()
 
 	for (auto desc : vTextureDesc)
 	{
-		MTexture* pRenderTarget = MTexture::CreateRenderTargetGBuffer();
+		std::shared_ptr<MTexture> pRenderTarget = MTexture::CreateRenderTargetGBuffer();
 		pRenderTarget->SetName(desc.first);
 		pRenderTarget->SetSize(v2Size);
 		pRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
@@ -465,14 +470,14 @@ void MDeferredRenderProgram::InitializeRenderPass()
 		m_gbufferRenderPass.AddBackTexture(pRenderTarget, desc.second);
 	}
 
-	MTexture* pDepthTexture = MTexture::CreateShadowMap();
+	std::shared_ptr<MTexture> pDepthTexture = MTexture::CreateShadowMap();
 	pDepthTexture->SetSize(v2Size);
 	pDepthTexture->GenerateBuffer(pRenderSystem->GetDevice());
 
 	m_gbufferRenderPass.SetDepthTexture(pDepthTexture, { true, MColor::White });
 	m_gbufferRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
 
-	MTexture* pLightningRenderTarget = MTexture::CreateRenderTarget();
+	std::shared_ptr<MTexture> pLightningRenderTarget = MTexture::CreateRenderTarget();
 	pLightningRenderTarget->SetName("Lightning Output");
 	pLightningRenderTarget->SetSize(v2Size);
 	pLightningRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
@@ -548,10 +553,10 @@ void MDeferredRenderProgram::InitializeMaterial()
 
 	if (std::shared_ptr<MShaderPropertyBlock>&& pParams = m_pLightningMaterial->GetMaterialParamSet())
 	{
-		pParams->SetValue("u_mat_f3Albedo_fMetallic", m_gbufferRenderPass.m_vBackTextures[0].pTexture);
-		pParams->SetValue("u_mat_f3Normal_fRoughness", m_gbufferRenderPass.m_vBackTextures[1].pTexture);
-		pParams->SetValue("u_mat_f3Position_fAmbientOcc", m_gbufferRenderPass.m_vBackTextures[2].pTexture);
-		pParams->SetValue("u_mat_DepthMap", m_gbufferRenderPass.m_DepthTexture.pTexture);
+		pParams->SetTexture("u_mat_f3Albedo_fMetallic", m_gbufferRenderPass.m_vBackTextures[0].pTexture);
+		pParams->SetTexture("u_mat_f3Normal_fRoughness", m_gbufferRenderPass.m_vBackTextures[1].pTexture);
+		pParams->SetTexture("u_mat_f3Position_fAmbientOcc", m_gbufferRenderPass.m_vBackTextures[2].pTexture);
+		pParams->SetTexture("u_mat_DepthMap", m_gbufferRenderPass.m_DepthTexture.pTexture);
 	}
 
 

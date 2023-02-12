@@ -443,6 +443,8 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 	else
 		MORTY_ASSERT(false);
 
+	//vCompArgs.push_back(L"-enable-templates");
+
 	vCompArgs.push_back(L"-spirv");
 	vCompArgs.push_back(L"-fspv-extension=SPV_NV_ray_tracing");
 	vCompArgs.push_back(L"-fspv-extension=SPV_KHR_multiview");
@@ -647,10 +649,9 @@ void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler
 		std::shared_ptr<MShaderStorageParam> pParam = std::make_shared<MShaderStorageParam>();
 		pParam->unSet = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
 		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
-		pParam->strName = res.name;
-		MStringHelper::Replace(pParam->strName, "type.", "");
 
 		const std::string& uav_name = compiler.get_name(res.id);
+		pParam->strName = uav_name;
 
 		spirv_cross::Bitset buffer_flags = compiler.get_buffer_block_flags(res.id);
 		pParam->bWritable = !buffer_flags.get(spv::DecorationNonWritable);
@@ -668,8 +669,10 @@ void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler
 		std::shared_ptr<MShaderConstantParam> pParam = std::make_shared<MShaderConstantParam>();
 		pParam->unSet = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
 		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
-		pParam->strName = res.name;
-		MStringHelper::Replace(pParam->strName, "type.", "");
+//		MStringHelper::Replace(pParam->strName, "type.", "");
+
+		const std::string& uav_name = compiler.get_name(res.id);
+		pParam->strName = uav_name;
 
 		pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 		

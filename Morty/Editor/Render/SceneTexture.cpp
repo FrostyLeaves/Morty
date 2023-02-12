@@ -126,7 +126,7 @@ void SceneTexture::SetSize(const Vector2& v2Size)
 	}
 }
 
-MTexture* SceneTexture::GetTexture(const size_t& nImageIndex)
+std::shared_ptr<MTexture> SceneTexture::GetTexture(const size_t& nImageIndex)
 {
 	if (nImageIndex < m_vRenderProgram.size())
 	{
@@ -136,7 +136,7 @@ MTexture* SceneTexture::GetTexture(const size_t& nImageIndex)
 	return nullptr;
 }
 
-std::vector<MTexture*> SceneTexture::GetAllOutputTexture(const size_t& nImageIndex)
+std::vector<std::shared_ptr<MTexture>> SceneTexture::GetAllOutputTexture(const size_t& nImageIndex)
 {
 	if (nImageIndex < m_vRenderProgram.size())
 	{
@@ -164,7 +164,7 @@ void SceneTexture::UpdateTexture(const size_t& nImageIndex, MIRenderCommand* pRe
 
 		if (m_bSnapshot)
 		{
-			pRenderCommand->DownloadTexture(GetTexture(nImageIndex), 0, [=](void* pImageData, const Vector2& v2Size) {
+			pRenderCommand->DownloadTexture(GetTexture(nImageIndex).get(), 0, [=](void* pImageData, const Vector2& v2Size) {
 				
 				std::string&& data = spot::internals::encode_png(v2Size.x, v2Size.y, pImageData, 4);
 				spot::internals::writefile(m_strSnapshotPath, data);

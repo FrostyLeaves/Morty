@@ -48,11 +48,17 @@ void MVulkanRenderCommand::BeginRenderPass(MRenderPass* pRenderPass)
 {
 	//TODO check renderpass valid.
 
-	SetTextureLayout(pRenderPass->GetBackTextures(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-	
-	if (MTexture* pDepthTexture = pRenderPass->GetDepthTexture())
+	std::vector<MTexture*> vTextures;
+	for (auto pTexture : pRenderPass->GetBackTextures())
 	{
-		SetTextureLayout({ pDepthTexture }, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		vTextures.push_back(pTexture.get());
+	}
+
+	SetTextureLayout(vTextures, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	
+	if (std::shared_ptr<MTexture> pDepthTexture = pRenderPass->GetDepthTexture())
+	{
+		SetTextureLayout({ pDepthTexture.get() }, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 	}
 
 	VkRenderPassBeginInfo renderPassInfo{};
@@ -71,7 +77,7 @@ void MVulkanRenderCommand::BeginRenderPass(MRenderPass* pRenderPass)
 		vClearValues[i].color = { color.r, color.g, color.b, color.a };
 	}
 
-	if (MTexture* pTexture = pRenderPass->GetDepthTexture())
+	if (std::shared_ptr<MTexture> pTexture = pRenderPass->GetDepthTexture())
 	{
 		vClearValues.push_back({});
 		vClearValues.back().depthStencil = { 1.0f, 0 };
@@ -248,7 +254,7 @@ void MVulkanRenderCommand::SetShaderParamSet(const std::shared_ptr<MShaderProper
 	for (std::shared_ptr<MShaderTextureParam> pParam : pPropertyBlock->m_vTextures)
 	{
 		bDirty |= pParam->bDirty;
-		if (MTexture* pTexture = pParam->GetTexture())
+		if (std::shared_ptr<MTexture> pTexture = pParam->GetTexture())
 		{
 			bDirty |= pParam->pImageIdent != (pTexture->m_VkImageView);
 		}

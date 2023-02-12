@@ -195,8 +195,13 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
 		ShowValueEnd();
 		break;
 
-	case MEVariantType::EFloat:
 	case MEVariantType::EInt:
+		ShowValueBegin(strVariantName);
+		bModified |= Editbool(value.GetValue<int>());
+		ShowValueEnd();
+		break;
+
+	case MEVariantType::EFloat:
 		ShowValueBegin(strVariantName);
 		bModified |= Editfloat(value.GetValue<float>());
 		ShowValueEnd();
@@ -252,7 +257,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 			{
 				ShowNodeExBegin("Add Macro");
 				ImGui::SetNextItemWidth(fWidth * 0.7f);
-				MString& addKey = GetTempValue<MString>("AddShaderMacro", "");
+				static MString addKey = "";
 				EditMString(addKey);
 				ImGui::SameLine();
 				if (ImGui::Button("+", ImVec2(fWidth * 0.3f, 0)))
@@ -339,15 +344,15 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 					ShowValueBegin(param->strName);
 					std::shared_ptr<MTextureResource> pResource = param->GetTextureResource();
 
-					if (param->pTexture)
+					if (auto pPreviewTexture = param->GetTexture())
 					{
 						const ImGuiStyle& style = ImGui::GetStyle();
 						float fSize = ImGui::GetFontSize() + style.FramePadding.y * 2;
-						ShowTexture(param->pTexture, Vector2(fSize, fSize));
+						ShowTexture(pPreviewTexture, Vector2(fSize, fSize));
 						if (ImGui::IsItemHovered())
 						{
 							ImGui::BeginTooltip();
-							ShowTexture(param->pTexture, Vector2(128, 128));
+							ShowTexture(pPreviewTexture, Vector2(128, 128));
 							ImGui::EndTooltip();
 						}
 						ImGui::SameLine();
@@ -357,7 +362,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 						std::shared_ptr<MResource> pNewResource = pMaterial->GetResourceSystem()->LoadResource(strNewFilePath);
 
-						pMaterial->SetTexutre(param->strName, pNewResource);
+						pMaterial->SetTexture(param->strName, pNewResource);
 						});
 
 					ShowValueEnd();
@@ -471,7 +476,7 @@ void PropertyBase::EditSaveMResource(const MString& stringID, const MString& str
 	}
 }
 
-void PropertyBase::ShowTexture(MTexture* pTexture, const Vector2& v2Size)
+void PropertyBase::ShowTexture(std::shared_ptr<MTexture> pTexture, const Vector2& v2Size)
 {
 	if (pTexture)
 	{

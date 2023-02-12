@@ -156,13 +156,13 @@ void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& in
 		{
 			if (MSkyBoxComponent* pSkyBoxComponent = info.pSkyBoxEntity->GetComponent<MSkyBoxComponent>())
 			{
-				if (MTexture* pEnvTexture = pSkyBoxComponent->GetDiffuseTexture())
+				if (std::shared_ptr<MTexture> pEnvTexture = pSkyBoxComponent->GetDiffuseTexture())
 				{
-					cLightStruct.SetVariant("u_bEnvironmentMapEnabled", true);
+					cLightStruct.SetVariant("u_bEnvironmentMapEnabled", 1);
 					m_pDiffuseMapTextureParam->SetTexture(pEnvTexture);
 					m_pDiffuseMapTextureParam->SetDirty();
 				}
-				if (MTexture* pEnvTexture = pSkyBoxComponent->GetSpecularTexture())
+				if (std::shared_ptr<MTexture> pEnvTexture = pSkyBoxComponent->GetSpecularTexture())
 				{
 					m_pSpecularMapTextureParam->SetTexture(pEnvTexture);
 					m_pSpecularMapTextureParam->SetDirty();
@@ -266,7 +266,7 @@ void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& in
 	pViewport->UnlockMatrix();
 }
 
-void MForwardRenderShaderPropertyBlock::SetShadowMapTexture(MTexture* pTexture)
+void MForwardRenderShaderPropertyBlock::SetShadowMapTexture(std::shared_ptr<MTexture> pTexture)
 {
 	if (m_pShadowTextureParam->GetTexture() != pTexture)
 	{
@@ -274,7 +274,7 @@ void MForwardRenderShaderPropertyBlock::SetShadowMapTexture(MTexture* pTexture)
 	}
 }
 
-void MForwardRenderShaderPropertyBlock::SetBrdfMapTexture(MTexture* pTexture)
+void MForwardRenderShaderPropertyBlock::SetBrdfMapTexture(std::shared_ptr<MTexture> pTexture)
 {
 	if (m_pBrdfMapTextureParam->GetTexture() != pTexture)
 	{

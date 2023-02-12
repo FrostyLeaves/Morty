@@ -28,7 +28,8 @@
 #include "Test/EnvironmentCubemap.h"
 #include "Test/GPUDrivenCulling.h"
 #include "Test/LoadModel.h"
-
+#include "Test/LoadModel_Sponza.h"
+#include "Test/Pbr.h"
 
 
 int main()
@@ -57,11 +58,15 @@ int main()
 	MORTY_ASSERT(pScene);
 
 
-	//ENVIRONMENT_CUBEMAP_TEST(&engine, pScene);
+	ENVIRONMENT_CUBEMAP_TEST(&engine, pScene);
 
 	SHADOW_MAP_TEST(&engine, pScene);
-	
-	//LOAD_MODEL_TEST(&engine, pScene);
+
+//	PBR_SHPERE(&engine, pScene);
+
+//	LOAD_MODEL_TEST(&engine, pScene);
+
+	LOAD_MODEL_SPONZA_TEST(&engine, pScene);
 
 	//GPU_DRIVEN_CULLING_TEST(&engine, pScene);
 

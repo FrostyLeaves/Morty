@@ -75,12 +75,12 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 		std::shared_ptr<MResource> height = pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero);
 #endif
 
-		pMaterial->SetTexutre(MaterialKey::Albedo, albedo);
-		pMaterial->SetTexutre(MaterialKey::Normal, normal);
-		pMaterial->SetTexutre(MaterialKey::Metallic, metal);
-		pMaterial->SetTexutre(MaterialKey::Roughness, roughness);
-		pMaterial->SetTexutre(MaterialKey::AmbientOcc, ao);
-		pMaterial->SetTexutre(MaterialKey::Height, height);
+		pMaterial->SetTexture(MaterialKey::Albedo, albedo);
+		pMaterial->SetTexture(MaterialKey::Normal, normal);
+		pMaterial->SetTexture(MaterialKey::Metallic, metal);
+		pMaterial->SetTexture(MaterialKey::Roughness, roughness);
+		pMaterial->SetTexture(MaterialKey::AmbientOcc, ao);
+		pMaterial->SetTexture(MaterialKey::Height, height);
 
 		pMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
 		pMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);

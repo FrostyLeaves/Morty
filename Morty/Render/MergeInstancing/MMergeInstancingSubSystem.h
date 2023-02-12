@@ -67,7 +67,6 @@ public:
 public:
 
 	void OnBatchMeshChanged(MComponent* pSender);
-	void OnTransformDirty(MComponent* pSender);
 
 private:
 

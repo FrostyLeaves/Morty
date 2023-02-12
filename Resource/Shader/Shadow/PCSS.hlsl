@@ -127,8 +127,6 @@ float PCSS(Texture2DArray texShadowMap, uint nCascadeIndex, float2 f2TexCoords, 
     float fReceiverDepthWithOffset = fReceiverDepth - fLightPosNDCSpace + fReceiverDepth;
     fBlockerDepthWithOffset = min(fBlockerDepthWithOffset, fReceiverDepthWithOffset);
 
-    // fReceiverDepth += fReceiverDepth; //use fReceiverDepth as LightPosition.z
-    // fBlockerDepth += fReceiverDepth;
     float fScale = (fReceiverDepthWithOffset - fBlockerDepthWithOffset) / (fBlockerDepthWithOffset);
     fScale = max(fScale, 0.0f);
     float fPenumbraRadius = fLightRadiusNDCSpace * fScale;

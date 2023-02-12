@@ -59,7 +59,7 @@ std::shared_ptr<MResource> MSkyBoxComponent::GetDiffuseEnvResource()
 	return m_DiffuseEnvTexture.GetResource();
 }
 
-MTexture* MSkyBoxComponent::GetDiffuseTexture()
+std::shared_ptr<MTexture> MSkyBoxComponent::GetDiffuseTexture()
 {
 	if (std::shared_ptr<MTextureResource> pTexture = m_DiffuseEnvTexture.GetResource<MTextureResource>())
 	{
@@ -74,7 +74,7 @@ std::shared_ptr<MResource> MSkyBoxComponent::GetSpecularEnvResource()
 	return m_SpecularEnvTexture.GetResource();
 }
 
-MTexture* MSkyBoxComponent::GetSpecularTexture()
+std::shared_ptr<MTexture> MSkyBoxComponent::GetSpecularTexture()
 {
 	if (std::shared_ptr<MTextureResource> pTexture = m_SpecularEnvTexture.GetResource<MTextureResource>())
 	{

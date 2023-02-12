@@ -34,9 +34,6 @@ struct IndexedIndirectCommand
 	uint firstInstance;
 };
 
-
-
-
 [[vk::binding(0,0)]] StructuredBuffer<InstanceData> instances;
 
 [[vk::binding(1,0)]] RWStructuredBuffer<IndexedIndirectCommand> indirectDraws;

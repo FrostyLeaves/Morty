@@ -33,8 +33,8 @@ public:
 
 	virtual void Render(MIRenderCommand* pPrimaryCommand) = 0;
 
-    virtual MTexture* GetOutputTexture() = 0;
-    virtual std::vector<MTexture*> GetOutputTextures();
+    virtual std::shared_ptr<MTexture> GetOutputTexture() = 0;
+    virtual std::vector<std::shared_ptr<MTexture>> GetOutputTextures();
 
 private:
 

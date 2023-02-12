@@ -89,7 +89,7 @@ void MEnvironmentMapRenderWork::RenderDiffuse(MIRenderCommand* pCommand, MSkyBox
 	std::shared_ptr<MResource> pSkyBoxTexture = pSkyBoxComponent->GetSkyBoxResource();
 	if (m_DiffuseMaterial)
 	{
-		m_DiffuseMaterial->SetTexutre("u_SkyBox", pSkyBoxTexture);
+		m_DiffuseMaterial->SetTexture("u_SkyBox", pSkyBoxTexture);
 	}
 
 
@@ -108,9 +108,9 @@ void MEnvironmentMapRenderWork::RenderDiffuse(MIRenderCommand* pCommand, MSkyBox
 
 	if (std::shared_ptr<MTextureResource> pDiffuseTexture = m_DiffuseEnvironmentMap.GetResource<MTextureResource>())
 	{
-		if (MTexture* pTexture = pDiffuseTexture->GetTextureTemplate())
+		if (std::shared_ptr<MTexture> pTexture = pDiffuseTexture->GetTextureTemplate())
 		{
-			pCommand->AddRenderToTextureBarrier({ pTexture });
+			pCommand->AddRenderToTextureBarrier({ pTexture.get() });
 		}
 
 		pSkyBoxComponent->LoadDiffuseEnvResource(pDiffuseTexture);
@@ -124,14 +124,14 @@ void MEnvironmentMapRenderWork::RenderSpecular(MIRenderCommand* pCommand, MSkyBo
 
 	std::shared_ptr<MResource> pSkyBoxTexture = pSkyBoxComponent->GetSkyBoxResource();
 
-	MTexture* pSpecularTexture = m_SpecularEnvironmentMap.GetResource<MTextureResource>()->GetTextureTemplate();
+	std::shared_ptr<MTexture> pSpecularTexture = m_SpecularEnvironmentMap.GetResource<MTextureResource>()->GetTextureTemplate();
 	
 
 	for (uint32_t nIdx = 0; nIdx < m_vSpecularRenderPass.size(); ++nIdx)
 	{
 		if (m_vSpecularMaterial[nIdx])
 		{
-			m_vSpecularMaterial[nIdx]->SetTexutre("u_SkyBox", pSkyBoxTexture);
+			m_vSpecularMaterial[nIdx]->SetTexture("u_SkyBox", pSkyBoxTexture);
 		}
 
 		pCommand->BeginRenderPass(&m_vSpecularRenderPass[nIdx]);
@@ -150,9 +150,9 @@ void MEnvironmentMapRenderWork::RenderSpecular(MIRenderCommand* pCommand, MSkyBo
 
 	if (std::shared_ptr<MTextureResource> pSpecularTexture = m_SpecularEnvironmentMap.GetResource<MTextureResource>())
 	{
-		if (MTexture* pTexture = pSpecularTexture->GetTextureTemplate())
+		if (std::shared_ptr<MTexture> pTexture = pSpecularTexture->GetTextureTemplate())
 		{
-			pCommand->AddRenderToTextureBarrier({ pTexture });
+			pCommand->AddRenderToTextureBarrier({ pTexture.get()});
 		}
 
 		pSkyBoxComponent->LoadSpecularEnvResource(pSpecularTexture);
@@ -293,7 +293,7 @@ void MEnvironmentMapRenderWork::InitializeRenderPass()
 	for (uint32_t nMipmap = 0; nMipmap < SpecularMipmapCount; ++nMipmap)
 	{
 		m_vSpecularRenderPass[nMipmap].SetViewportNum(6);
-		m_vSpecularRenderPass[nMipmap].AddBackTexture(pSpecularTexture->GetTextureTemplate(), { true, false, MColor::Black_T, nMipmap });
+		m_vSpecularRenderPass[nMipmap].AddBackTexture(pSpecularTexture->GetTextureTemplate(), {true, false, MColor::Black_T, nMipmap});
 		m_vSpecularRenderPass[nMipmap].GenerateBuffer(pRenderSystem->GetDevice());
 	}
 

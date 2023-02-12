@@ -62,12 +62,12 @@ public:
 
 
 
-	virtual MTexture* GetOutputTexture() override;
-	virtual std::vector<MTexture*> GetOutputTextures() override;
+	virtual std::shared_ptr<MTexture> GetOutputTexture() override;
+	virtual std::vector<std::shared_ptr<MTexture>> GetOutputTextures() override;
 
 //debug
 
-	MTexture* GetShadowmapTexture();
+	std::shared_ptr<MTexture> GetShadowmapTexture();
 
 public:
 	virtual void OnCreated() override;
@@ -105,7 +105,7 @@ protected:
 	MRenderPass m_lightningRenderPass;
 	MRenderPass m_debugRenderPass;
 
-	MTexture* m_pFinalOutputTexture;
+	std::shared_ptr<MTexture> m_pFinalOutputTexture;
 
 	MIRenderCommand* m_pPrimaryCommand;
 

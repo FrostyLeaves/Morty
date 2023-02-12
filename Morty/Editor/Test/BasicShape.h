@@ -42,8 +42,8 @@ void SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 
 		std::shared_ptr<MResource> diffuse = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_albedo.png");
 		std::shared_ptr<MResource> normal = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_normal.png");
-		pMaterial->SetTexutre("u_texDiffuse", diffuse);
-		pMaterial->SetTexutre("u_texNormal", normal);
+		pMaterial->SetTexture("u_texDiffuse", diffuse);
+		pMaterial->SetTexture("u_texNormal", normal);
 
 		if (normal)
 		{

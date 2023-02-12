@@ -20,20 +20,20 @@ MByte* Malloc(const size_t& nSize)
 
 MTextureResource::MTextureResource()
 	: MResource()
-	, m_texture()
+	, m_pTexture(std::make_shared<MTexture>())
 	, m_aByteData(nullptr)
 {
-	m_texture.SetMipmapsEnable(true);
-	m_texture.SetReadable(false);
-	m_texture.SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
-	m_texture.SetRenderUsage(METextureRenderUsage::EUnknow);
-	m_texture.SetShaderUsage(METextureShaderUsage::ESampler);
+	m_pTexture->SetMipmapsEnable(true);
+	m_pTexture->SetReadable(false);
+	m_pTexture->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
+	m_pTexture->SetRenderUsage(METextureRenderUsage::EUnknow);
+	m_pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
 }
 
 MTextureResource::~MTextureResource()
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-	m_texture.DestroyBuffer(pRenderSystem->GetDevice());
+	m_pTexture->DestroyBuffer(pRenderSystem->GetDevice());
 }
 
 template <typename T>
@@ -81,16 +81,16 @@ void MTextureResource::OnDelete()
 
 
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-	m_texture.DestroyBuffer(pRenderSystem->GetDevice());
+	m_pTexture->DestroyBuffer(pRenderSystem->GetDevice());
 }
 
 void MTextureResource::LoadFromMemory(MByte* aByteData, const uint32_t& unWidth, const uint32_t& unHeight, uint32_t nChannel, PixelFormat ePixelFormat/* = PixelFormat::Byte8 */, bool bCopyMemory/* = true*/)
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
-	m_texture.DestroyBuffer(pRenderSystem->GetDevice());
+	m_pTexture->DestroyBuffer(pRenderSystem->GetDevice());
 
-	m_texture.SetSize(Vector2(unWidth, unHeight));
+	m_pTexture->SetSize(Vector2(unWidth, unHeight));
 
 	if (m_aByteData)
 	{
@@ -129,9 +129,9 @@ void MTextureResource::LoadFromMemory(MByte* aByteData, const uint32_t& unWidth,
 		m_aByteData = aByteData;
 	}
 
-	m_texture.SetName(m_strResourcePath);
-	m_texture.SetTextureLayout(GetTextureLayout(nChannel, ePixelFormat));
-	m_texture.GenerateBuffer(pRenderSystem->GetDevice(), m_aByteData);
+	m_pTexture->SetName(m_strResourcePath);
+	m_pTexture->SetTextureLayout(GetTextureLayout(nChannel, ePixelFormat));
+	m_pTexture->GenerateBuffer(pRenderSystem->GetDevice(), m_aByteData);
 }
 
 void MTextureResource::CreateCubeMapRenderTarget(const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, const METextureLayout& eLayout, const bool& bMipmapEnable)
@@ -141,17 +141,17 @@ void MTextureResource::CreateCubeMapRenderTarget(const uint32_t& nWidth, const u
 	if (nChannel == 2 || nChannel == 3)
 		nChannel = 4;
 
-	m_texture.SetName("CubeMapRenderTarget");
-	m_texture.SetReadable(true);
-	m_texture.SetTextureLayout(eLayout);
-	m_texture.SetSize(Vector2(nWidth, nHeight));
-	m_texture.SetRenderUsage(METextureRenderUsage::ERenderBack);
-	m_texture.SetShaderUsage(METextureShaderUsage::ESampler);
-	m_texture.SetTextureType(METextureType::ETextureCube);
-	m_texture.SetImageLayerNum(6);
-	m_texture.SetMipmapsEnable(bMipmapEnable);
+	m_pTexture->SetName("CubeMapRenderTarget");
+	m_pTexture->SetReadable(true);
+	m_pTexture->SetTextureLayout(eLayout);
+	m_pTexture->SetSize(Vector2(nWidth, nHeight));
+	m_pTexture->SetRenderUsage(METextureRenderUsage::ERenderBack);
+	m_pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
+	m_pTexture->SetTextureType(METextureType::ETextureCube);
+	m_pTexture->SetImageLayerNum(6);
+	m_pTexture->SetMipmapsEnable(bMipmapEnable);
 
-	m_texture.GenerateBuffer(pRenderSystem->GetDevice());
+	m_pTexture->GenerateBuffer(pRenderSystem->GetDevice());
 }
 
 bool MTextureResource::ImportTextureFromMemory(char* buffer, size_t nSize, const ImportInfo& importInfo)
@@ -328,14 +328,14 @@ bool MTextureResource::ImportCubeMap(const std::array<MString, 6>& vResourcePath
 		vImageData[nTexIdx] = nullptr;
 	}
 	
-	m_texture.SetName(vResourcePath[0]);
-	m_texture.SetSize(Vector2(unCubeMapWidth, unCubeMapHeight));
-	m_texture.SetTextureType(METextureType::ETextureCube);
-	m_texture.SetImageLayerNum(6);
-	m_texture.SetTextureLayout(GetTextureLayout(unCubeMapChannel, importInfo.ePixelFormat));
+	m_pTexture->SetName(vResourcePath[0]);
+	m_pTexture->SetSize(Vector2(unCubeMapWidth, unCubeMapHeight));
+	m_pTexture->SetTextureType(METextureType::ETextureCube);
+	m_pTexture->SetImageLayerNum(6);
+	m_pTexture->SetTextureLayout(GetTextureLayout(unCubeMapChannel, importInfo.ePixelFormat));
 
 
-	m_texture.GenerateBuffer(pRenderSystem->GetDevice(), m_aByteData);
+	m_pTexture->GenerateBuffer(pRenderSystem->GetDevice(), m_aByteData);
 	return true;
 }
 

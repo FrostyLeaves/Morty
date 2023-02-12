@@ -71,7 +71,7 @@ Vector2 MRenderPass::GetFrameBufferSize()
 	return Vector2();
 }
 
-void MRenderPass::AddBackTexture(MTexture* pBackTexture, const MPassTargetDescription& desc)
+void MRenderPass::AddBackTexture(std::shared_ptr<MTexture> pBackTexture, const MPassTargetDescription& desc)
 {
 	MBackTexture backTexture;
 	backTexture.pTexture = pBackTexture;
@@ -80,15 +80,15 @@ void MRenderPass::AddBackTexture(MTexture* pBackTexture, const MPassTargetDescri
 	m_vBackTextures.push_back(backTexture);
 }
 
-void MRenderPass::SetDepthTexture(MTexture* pDepthTexture, const MPassTargetDescription& desc)
+void MRenderPass::SetDepthTexture(std::shared_ptr<MTexture> pDepthTexture, const MPassTargetDescription& desc)
 {
 	m_DepthTexture.pTexture = pDepthTexture;
 	m_DepthTexture.desc = desc;
 }
 
-std::vector<MTexture*> MRenderPass::GetBackTextures()
+std::vector<std::shared_ptr<MTexture>> MRenderPass::GetBackTextures()
 {
-	std::vector<MTexture*> vTextures;
+	std::vector<std::shared_ptr<MTexture>> vTextures;
 
 	for (MBackTexture& tex : m_vBackTextures)
 		vTextures.push_back(tex.pTexture);
@@ -96,7 +96,7 @@ std::vector<MTexture*> MRenderPass::GetBackTextures()
 	return vTextures;
 }
 
-MTexture* MRenderPass::GetDepthTexture()
+std::shared_ptr<MTexture> MRenderPass::GetDepthTexture()
 {
 	return m_DepthTexture.pTexture;
 }

@@ -47,7 +47,7 @@ protected:
 	struct MImGuiTextureDest
 	{
 		int nDestroyCount;
-		MTexture* pTexture;
+		std::shared_ptr<MTexture> pTexture;
 		std::shared_ptr<MShaderPropertyBlock> pParamSet;
 	};
 

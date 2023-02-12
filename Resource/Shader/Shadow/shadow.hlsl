@@ -41,9 +41,10 @@ float GetDirectionShadowFromCascadeLevel(
         return PCF(texShadowMap, nCascadeIndex, shadowTexCoords, fPixelDepth, fLightRadiusNDCSpace, fEpsilon);
 
 #else
-        float fPixelDepth = texShadowMap.Sample(NearestSampler, float3(shadowTexCoords.xy, nCascadeIndex)).r;
-        //pixelDepth < fPixelDepth + fEpsilon
-        return step(fPixelDepth, fPixelDepth + fEpsilon);
+        float fPixelDepth = min(f4DirLightSpacePos.z / f4DirLightSpacePos.w, 1.0f);
+        float fShadowDepth = texShadowMap.Sample(NearestSampler, float3(shadowTexCoords.xy, nCascadeIndex)).r;
+        //fShadowDepth < fPixelDepth + fEpsilon
+        return 1.0f - step(fShadowDepth, fPixelDepth + fEpsilon);
 #endif
 
     }
@@ -61,7 +62,11 @@ float GetDirectionShadow(Texture2DArray texShadowMap, float3 f3WorldPosition, fl
 
     // Get cascade index for the current fragment's view position
     uint nCascadeIndex = 0;
+
+#if CSM_TRANSITION
     float fCascadeTransitionLerp = 1.0f;
+#endif
+
     for(uint nSplitIdx = 0; nSplitIdx < CASCADED_SHADOW_MAP_NUM - 1; ++nSplitIdx)
     {
         if (fCameraDistance > u_vCascadeSplits[nSplitIdx].y)

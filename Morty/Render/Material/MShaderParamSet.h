@@ -15,14 +15,16 @@
 
 class MIDevice;
 class MShaderProgram;
-class MORTY_API MShaderPropertyBlock
+class MORTY_API MShaderPropertyBlock final
 {
 public:
 	explicit MShaderPropertyBlock();
+	~MShaderPropertyBlock() = default;
+
 	explicit MShaderPropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram, const uint32_t& unKey);
 	explicit MShaderPropertyBlock(const MShaderPropertyBlock& other);
 
-    virtual ~MShaderPropertyBlock();
+	const MShaderPropertyBlock& operator=(const MShaderPropertyBlock& other) = delete;
 
 	static std::shared_ptr<MShaderPropertyBlock> MakeShared(const std::shared_ptr<MShaderProgram>& pShaderProgram, const uint32_t& unKey);
 	static std::shared_ptr<MShaderPropertyBlock> MakeShared(const std::shared_ptr<MShaderPropertyBlock>& other);
@@ -37,9 +39,10 @@ public:
 	template<typename TYPE>
 	bool SetValue(const MString& strName, const TYPE& value);
 
-	bool SetValue(const MString& strName, MTexture* pTexture);
+	bool SetTexture(const MString& strName, std::shared_ptr<MTexture> pTexture);
 
 	bool HasValue(const uint32_t& unBinding, const uint32_t& unSet);
+
 public:
 
 	std::shared_ptr<MShaderConstantParam> FindConstantParam(std::shared_ptr<const MShaderConstantParam> pParam) { return FindShaderParam(m_vParams, pParam); }
@@ -71,6 +74,8 @@ public:
 	std::vector<std::shared_ptr<MShaderTextureParam>> m_vTextures;
 	std::vector<std::shared_ptr<MShaderSampleParam>> m_vSamples;
 	std::vector<std::shared_ptr<MShaderStorageParam>> m_vStorages;
+
+	std::map<MString, MVariantArray> m_tInstanceTable;
 
 public:
 	uint32_t m_unKey;
@@ -144,6 +149,7 @@ inline bool MShaderPropertyBlock::SetValue(const MString& strName, const TYPE& v
 		}
 	}
 
+	MORTY_ASSERT(false);
 	return false;
 }
 

@@ -427,7 +427,7 @@ void MainEditor::ShowRenderView(const size_t& nImageCount)
 	{
 		if (!m_bRenderToWindow)
 		{
-			if (MTexture* pTexture = m_SceneTexture.GetTexture(nImageCount))
+			if (std::shared_ptr<MTexture> pTexture = m_SceneTexture.GetTexture(nImageCount))
 			{
 				ImTextureID texid = { pTexture, 0 };
 
@@ -454,11 +454,11 @@ void MainEditor::ShowShadowMapView(const size_t& nImageCount)
 
 	if (ImGui::Begin("DebugView", &m_bShowDebugView))
 	{
-		std::vector<MTexture*> vTexture = m_SceneTexture.GetAllOutputTexture(nImageCount);
+		std::vector<std::shared_ptr<MTexture>> vTexture = m_SceneTexture.GetAllOutputTexture(nImageCount);
 		if(!vTexture.empty())
 		{
 			size_t nImageSize = 0;
-			for (MTexture* pTexture : vTexture)
+			for (std::shared_ptr<MTexture> pTexture : vTexture)
 			{
 				if (pTexture)
 				{
@@ -697,9 +697,9 @@ void MainEditor::Render(MTaskNode* pNode)
 		if (pRenderTarget->unImageIndex == 0)
 		{
 			sceneTexture.UpdateTexture(0, pRenderCommand);
-			if (MTexture* pTexture = sceneTexture.GetTexture(pRenderTarget->unImageIndex))
+			if (std::shared_ptr<MTexture> pTexture = sceneTexture.GetTexture(pRenderTarget->unImageIndex))
 			{
-				vRenderTextures.push_back(pTexture);
+				vRenderTextures.push_back(pTexture.get());
 			}
 		}
 
@@ -708,9 +708,9 @@ void MainEditor::Render(MTaskNode* pNode)
 
 	//Update Scene
 	m_SceneTexture.UpdateTexture(pRenderTarget->unImageIndex, pRenderCommand);
-	if (MTexture* pRenderTexture = m_SceneTexture.GetTexture(pRenderTarget->unImageIndex))
+	if (std::shared_ptr<MTexture> pRenderTexture = m_SceneTexture.GetTexture(pRenderTarget->unImageIndex))
 	{
-		vRenderTextures.push_back(pRenderTexture);
+		vRenderTextures.push_back(pRenderTexture.get());
 
 		pRenderCommand->AddRenderToTextureBarrier(vRenderTextures);
 

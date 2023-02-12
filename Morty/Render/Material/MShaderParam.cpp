@@ -64,7 +64,7 @@ MShaderTextureParam::MShaderTextureParam()
 #endif
 }
 
-void MShaderTextureParam::SetTexture(MTexture* pTexture)
+void MShaderTextureParam::SetTexture(std::shared_ptr<MTexture> pTexture)
 {
 	this->pTexture = pTexture;
 	SetDirty();

@@ -162,9 +162,9 @@ void ImGuiRenderable::WaitTextureReady(MIRenderCommand* pCommand)
 
 	for (const ImTextureID& texid : tTextures)
 	{
-		if (MTexture* pTexture = texid.pTexture)
+		if (std::shared_ptr<MTexture> pTexture = texid.pTexture)
 		{
-			pCommand->AddRenderToTextureBarrier({ pTexture });
+			pCommand->AddRenderToTextureBarrier({ pTexture.get() });
 		}
 	}
 }
@@ -221,7 +221,7 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
 			if (using_texture != pcmd->TextureId)
 			{
 				using_texture = pcmd->TextureId;
-				MTexture* pTexture = using_texture.pTexture;
+				std::shared_ptr<MTexture> pTexture = using_texture.pTexture;
 				if (auto dest = GetTexturParamSet(using_texture))
 				{
 					dest->nDestroyCount = 0;

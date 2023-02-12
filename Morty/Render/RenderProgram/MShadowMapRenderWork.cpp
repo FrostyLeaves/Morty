@@ -61,9 +61,9 @@ void MShadowMapRenderWork::OnCreated()
 	m_pShadowGPUDrivenMaterial->LoadVertexShader(pVertexShader);
 	m_pShadowGPUDrivenMaterial->LoadPixelShader(pPixelShader);
 	m_pShadowGPUDrivenMaterial->SetRasterizerType(MERasterizerType::ECullFront);
-	m_pShadowGPUDrivenMaterial->GetShaderMacro().AddUnionMacro("DRAW_MESH_MERGE_INSTANCING");
+	m_pShadowGPUDrivenMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_MERGE_INSTANCING);
 
-	MTexture* pShadowMapTexture = MTexture::CreateShadowMapArray(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
+	std::shared_ptr<MTexture> pShadowMapTexture = MTexture::CreateShadowMapArray(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
 	pShadowMapTexture->SetSize(Vector2(MRenderGlobal::SHADOW_TEXTURE_SIZE, MRenderGlobal::SHADOW_TEXTURE_SIZE));
 	pShadowMapTexture->GenerateBuffer(pRenderSystem->GetDevice());
 
@@ -88,10 +88,9 @@ void MShadowMapRenderWork::OnDelete()
 	m_pShadowSkeletonMaterial = nullptr;
 	m_pShadowGPUDrivenMaterial = nullptr;
 
-	if (MTexture* pDepthTexture = m_renderPass.GetDepthTexture())
+	if (std::shared_ptr<MTexture> pDepthTexture = m_renderPass.GetDepthTexture())
 	{
 		pDepthTexture->DestroyBuffer(pRenderSystem->GetDevice());
-		delete pDepthTexture;
 		pDepthTexture = nullptr;
 	}
 
@@ -107,7 +106,7 @@ void MShadowMapRenderWork::RenderShadow(MRenderInfo& info, MGPUCullingRenderWork
 	if (!pCommand)
 		return;
 
-	MTexture* pShadowmap = GetShadowMap();
+	std::shared_ptr<MTexture> pShadowmap = GetShadowMap();
 
 	size_t nCascadedSize = info.cCascadedShadow.size();
 	if (nCascadedSize == 0)
@@ -519,7 +518,7 @@ void MShadowMapRenderWork::UpdateShadowParams(MRenderInfo& info)
 	m_shadowPropertyBlock.UpdateShaderSharedParams(info);
 }
 
-MTexture* MShadowMapRenderWork::GetShadowMap()
+std::shared_ptr<MTexture> MShadowMapRenderWork::GetShadowMap()
 {
 	return m_renderPass.GetDepthTexture();
 }

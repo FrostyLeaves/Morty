@@ -52,8 +52,9 @@ void MSkyBoxSystem::GenerateEnvironmentWork(MSkyBoxComponent* pSkyBoxComponent)
 		if (pSkyBoxComponent)
 		{
 			pSkyBoxComponent->LoadDiffuseEnvResource(pRenderWork->GetDiffuseOutputTexture());
-			pRenderWork->DeleteLater();
 		}
+
+    	pRenderWork->DeleteLater();
 	});
 
 	pCommand->RenderCommandEnd();

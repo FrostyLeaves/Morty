@@ -25,7 +25,7 @@ void ADD_POINT_LIGHT(MEngine* pEngine, MScene* pScene)
 	pMaterial->LoadVertexShader("Shader/debug_model.mvs");
 	pMaterial->LoadPixelShader("Shader/debug_model.mps");
 
-	pMaterial->SetTexutre("u_texDiffuse", pIconTexture);
+	pMaterial->SetTexture("u_texDiffuse", pIconTexture);
 
 	for (int i = 0; i < 9; ++i)
 	{

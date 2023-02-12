@@ -29,8 +29,8 @@ public:
 	void SetSize(const Vector2& v2Size);
 	Vector2 GetSize() const { return m_v2Size; }
 
-	MTexture* GetTexture(const size_t& nImageIndex);
-	std::vector<MTexture*> GetAllOutputTexture(const size_t& nImageIndex);
+	std::shared_ptr<MTexture> GetTexture(const size_t& nImageIndex);
+	std::vector<std::shared_ptr<MTexture>> GetAllOutputTexture(const size_t& nImageIndex);
 	void UpdateTexture(const size_t& nImageIndex, MIRenderCommand* pRenderCommand);
 
 	MScene* GetScene() const { return m_pScene; }

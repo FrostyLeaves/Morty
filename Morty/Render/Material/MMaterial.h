@@ -82,7 +82,7 @@ public:
 	std::shared_ptr<MShaderPropertyBlock> GetFrameParamSet() const { return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_FRAME]; }
 	std::shared_ptr<MShaderPropertyBlock> GetMeshParamSet() const { return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MESH]; }
 
-	void SetTexutre(const MString& strName, std::shared_ptr<MResource> pTexResource);
+	void SetTexture(const MString& strName, std::shared_ptr<MResource> pTexResource);
 
 	std::shared_ptr<MShaderConstantParam> FindShaderParam(const MString& strName);
 	std::shared_ptr<MShaderSampleParam> FindSample(const MString& strName);

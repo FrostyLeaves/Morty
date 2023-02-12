@@ -177,14 +177,14 @@ void MMeshResource::Deserialize(const void* pBufferPointer)
 	m_pMesh->ResizeVertices(nVertexNum);
 	memcpy(m_pMesh->GetVertices(), fbData->vertex()->data(), nVertexNum * m_pMesh->GetVertexStructSize());
 
-	const size_t nIndexNum = fbData->index()->size();
+	const size_t nIndexNum = fbData->index()->size() / sizeof(uint32_t);
 	m_pMesh->ResizeIndices(nIndexNum, 1);
 	memcpy(m_pMesh->GetIndices(), fbData->index()->data(), nIndexNum * sizeof(uint32_t));
 
 	m_BoundsOBB.Deserialize(fbData->bounds_obb());
 	m_BoundsSphere.Deserialize(fbData->bounds_sphere());
 
-	m_SkeletonKeeper.Deserialize(GetEngine(), pBufferPointer);
+	m_SkeletonKeeper.Deserialize(GetEngine(), fbData->skeleton_resource());
 }
 
 bool MMeshResource::Load(const MString& strResourcePath)
@@ -204,7 +204,8 @@ bool MMeshResource::Load(const MString& strResourcePath)
 bool MMeshResource::SaveTo(const MString& strResourcePath)
 {
 	flatbuffers::FlatBufferBuilder fbb;
-	Serialize(fbb);
+	auto fbData =	Serialize(fbb);
+	fbb.Finish(fbData);
 
 	std::vector<MByte> data(fbb.GetSize());
 	memcpy(data.data(), (MByte*)fbb.GetBufferPointer(), fbb.GetSize() * sizeof(MByte));

@@ -302,7 +302,7 @@ bool MRenderView::BindRenderPass()
 		m_vRenderTarget[i].pPrimaryCommand = nullptr;
 		m_vRenderTarget[i].vkImageReadySemaphore = VK_NULL_HANDLE;
 
-		MTexture* pTexture = new MTexture();
+		std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
 		pTexture->SetName("Editor Render View");
 		pTexture->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
 		pTexture->SetRenderUsage(METextureRenderUsage::ERenderPresent);
@@ -314,7 +314,7 @@ bool MRenderView::BindRenderPass()
 		pTexture->GenerateBuffer(m_pDevice);
 		m_vRenderTarget[i].renderPass.AddBackTexture(pTexture, { true, MColor::Black_T });
 
-		MTexture* pDepthTexture = new MTexture();
+		std::shared_ptr<MTexture> pDepthTexture = std::make_shared<MTexture>();
 		pDepthTexture->SetName("Editor Depth View");
 		pDepthTexture->SetTextureLayout(METextureLayout::EDepth);
 		pDepthTexture->SetRenderUsage(METextureRenderUsage::ERenderDepth);
@@ -343,17 +343,14 @@ void MRenderView::DestroyRenderPass()
 		for (MBackTexture& tex : rendertarget.renderPass.m_vBackTextures)
 		{
 			tex.pTexture->DestroyBuffer(m_pDevice);
-			delete tex.pTexture;
 			tex.pTexture = nullptr;
 		}
 
 		rendertarget.renderPass.m_vBackTextures.clear();
 
-		if (MTexture* pDepthTexture = rendertarget.renderPass.GetDepthTexture())
+		if (std::shared_ptr<MTexture> pDepthTexture = rendertarget.renderPass.GetDepthTexture())
 		{
 			pDepthTexture->DestroyBuffer(m_pDevice);
-			delete pDepthTexture;
-			pDepthTexture = nullptr;
 			rendertarget.renderPass.SetDepthTexture(nullptr, {});
 		}
 

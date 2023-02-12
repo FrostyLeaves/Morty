@@ -20,7 +20,7 @@ public:
 	MORTY_CLASS(MSceneComponent)
 public:
     MSceneComponent();
-    virtual ~MSceneComponent();
+    ~MSceneComponent() override;
 
 
 public:
@@ -30,7 +30,7 @@ public:
 	MTransform GetTransform() { return m_transform; }
 
 	void SetParentComponent(const MComponentID& parent);
-	MComponentID GetParentComponent() { return m_attachParent; }
+	MComponentID GetParentComponent() const { return m_attachParent; }
 
 	void SetVisible(const bool& bVisible);
 	bool GetVisible() const { return m_bVisible; }
@@ -39,7 +39,7 @@ public:
 
 public:
 	void SetPosition(const Vector3& pos);
-	Vector3 GetPosition() { return m_transform.GetPosition(); }
+	Vector3 GetPosition() const { return m_transform.GetPosition(); }
 	
 	void SetWorldPosition(const Vector3& pos);
 	Vector3 GetWorldPosition();
@@ -50,10 +50,10 @@ public:
 	Vector3 GetWorldScale();
 
 	void SetRotation(const Quaternion& quat);
-	Quaternion GetRotation() { return m_transform.GetRotation(); }
+	Quaternion GetRotation() const { return m_transform.GetRotation(); }
 
 	void SetScale(const Vector3& scale);
-	Vector3 GetScale() { return m_transform.GetScale(); }
+	Vector3 GetScale() const { return m_transform.GetScale(); }
 
 	void SetParent(MSceneComponent* pParent);
 	MSceneComponent* GetParent();

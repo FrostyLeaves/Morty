@@ -477,11 +477,13 @@ void MVariantStruct::Deserialize(const void* pBufferPointer, std::shared_ptr<MVa
 			const MString strName = fbMember->name()->c_str();
 
 			MVariant variant(m_pMemory, nOffset, 0, MEVariantType::ENone);
-			variant.Deserialize(fbMember->value());
+			variant.Deserialize(fbMember->value(), pMemory, nOffset);
 
 			m_tMember[strName] = std::move(variant);
 	    }
 	}
+
+	m_bLocked = true;
 }
 
 flatbuffers::Offset<void> MVariantArray::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
@@ -522,9 +524,11 @@ void MVariantArray::Deserialize(const void* pBufferPointer, std::shared_ptr<MVar
 			const size_t nOffset = fbMember->relative_offset() + m_nOffset;
 
 			MVariant variant(m_pMemory, nOffset, 0, MEVariantType::ENone);
-			variant.Deserialize(fbMember->value());
+			variant.Deserialize(fbMember->value(), pMemory, nOffset);
 
 			m_tMember.emplace_back(std::move(variant));
 		}
 	}
+
+	m_bLocked = true;
 }

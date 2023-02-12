@@ -84,7 +84,7 @@ void MaterialView::Render()
 {
  	if (m_pMaterial && m_bShowPreview)
  	{
- 		if (MTexture* pTexture = m_SceneTexture.GetTexture(0))
+ 		if (std::shared_ptr<MTexture> pTexture = m_SceneTexture.GetTexture(0))
  		{
  			float fImageSize = ImGui::GetContentRegionAvail().x;
  			ImGui::SameLine(fImageSize * 0.25f);

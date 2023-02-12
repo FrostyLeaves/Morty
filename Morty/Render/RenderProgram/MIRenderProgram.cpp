@@ -9,9 +9,9 @@ MIRenderProgram::MIRenderProgram()
 
 }
 
-std::vector<MTexture*> MIRenderProgram::GetOutputTextures()
+std::vector<std::shared_ptr<MTexture>> MIRenderProgram::GetOutputTextures()
 {
-	if (MTexture* pTexture = GetOutputTexture())
+	if (std::shared_ptr<MTexture> pTexture = GetOutputTexture())
 	{
 		return { pTexture };
 	}

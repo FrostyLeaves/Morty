@@ -76,11 +76,11 @@ struct MShaderTextureParam : public MShaderParam
 	MShaderTextureParam();
 
 public:
-	virtual void SetTexture(MTexture* pTexture);
-	virtual MTexture* GetTexture() { return pTexture; }
+	virtual void SetTexture(std::shared_ptr<MTexture> pTexture);
+	virtual std::shared_ptr<MTexture> GetTexture() { return pTexture; }
 
 public:
-	MTexture* pTexture;
+	std::shared_ptr<MTexture> pTexture;
 	void* pImageIdent;
 	METextureType eType;
 

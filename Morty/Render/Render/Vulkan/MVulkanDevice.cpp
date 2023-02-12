@@ -171,9 +171,12 @@ void MVulkanDevice::Release()
 
 	m_PipelineManager.Release();
 	m_BufferPool.Release();
-	m_ShaderDefaultTexture.DestroyBuffer(this);
-	m_ShaderDefaultTextureCube.DestroyBuffer(this);
-	m_ShaderDefaultTextureArray.DestroyBuffer(this);
+	m_ShaderDefaultTexture->DestroyBuffer(this);
+	m_ShaderDefaultTexture = nullptr;
+	m_ShaderDefaultTextureCube->DestroyBuffer(this);
+	m_ShaderDefaultTextureCube = nullptr;
+	m_ShaderDefaultTextureArray->DestroyBuffer(this);
+	m_ShaderDefaultTextureArray = nullptr;
 
 	for (auto pr : m_tFrameData)
 	{
@@ -1023,7 +1026,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 
 	}
 
-	MTexture* pDepthTexture = pRenderPass->GetDepthTexture();
+	std::shared_ptr<MTexture> pDepthTexture = pRenderPass->GetDepthTexture();
 	if (pDepthTexture)
 	{
 		if (pDepthTexture->m_VkTextureImage == VK_NULL_HANDLE)
@@ -1259,8 +1262,8 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 		{
 			if (backTexture.m_VkImageView == VK_NULL_HANDLE)
 			{
-				MTexture* pTexture = backTexture.pTexture;
-				backTexture.m_VkImageView = CreateImageView(pTexture->m_VkTextureImage, pTexture->m_VkTextureFormat, GetAspectFlags(pTexture), backTexture.desc.nMipmapLevel, 1, GetLayerCount(pTexture), GetImageViewType(pTexture));
+				std::shared_ptr<MTexture> pTexture = backTexture.pTexture;
+				backTexture.m_VkImageView = CreateImageView(pTexture->m_VkTextureImage, pTexture->m_VkTextureFormat, GetAspectFlags(pTexture.get()), backTexture.desc.nMipmapLevel, 1, GetLayerCount(pTexture.get()), GetImageViewType(pTexture.get()));
 				v2Size = pTexture->GetMipmapSize(backTexture.desc.nMipmapLevel);
 			}
 			imageView = backTexture.m_VkImageView;
@@ -1280,7 +1283,7 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 		vAttachmentViews.push_back(imageView);
 	}
 
-	MTexture* pDepthTexture = pRenderPass->GetDepthTexture();
+	std::shared_ptr<MTexture> pDepthTexture = pRenderPass->GetDepthTexture();
 
 	if (pDepthTexture)
 	{
@@ -2213,13 +2216,15 @@ bool MVulkanDevice::InitCommandPool()
 
 bool MVulkanDevice::InitDefaultTexture()
 {
-	m_ShaderDefaultTexture.SetName("Shader Default Texture");
-	m_ShaderDefaultTexture.SetMipmapsEnable(false);
-	m_ShaderDefaultTexture.SetReadable(false);
-	m_ShaderDefaultTexture.SetRenderUsage(METextureRenderUsage::EUnknow);
-	m_ShaderDefaultTexture.SetShaderUsage(METextureShaderUsage::ESampler);
-	m_ShaderDefaultTexture.SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
-	m_ShaderDefaultTexture.SetSize(Vector2(1, 1));
+	m_ShaderDefaultTexture = std::make_shared<MTexture>();
+
+	m_ShaderDefaultTexture->SetName("Shader Default Texture");
+	m_ShaderDefaultTexture->SetMipmapsEnable(false);
+	m_ShaderDefaultTexture->SetReadable(false);
+	m_ShaderDefaultTexture->SetRenderUsage(METextureRenderUsage::EUnknow);
+	m_ShaderDefaultTexture->SetShaderUsage(METextureShaderUsage::ESampler);
+	m_ShaderDefaultTexture->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
+	m_ShaderDefaultTexture->SetSize(Vector2(1, 1));
 
 	MByte bytes[4];
 	for (size_t i = 0; i < 4; i += 4)
@@ -2229,18 +2234,19 @@ bool MVulkanDevice::InitDefaultTexture()
 		bytes[i + 2] = 255;
 		bytes[i + 3] = 255;
 	}
-	m_ShaderDefaultTexture.GenerateBuffer(this, bytes);
+	m_ShaderDefaultTexture->GenerateBuffer(this, bytes);
 
+	m_ShaderDefaultTextureCube = std::make_shared<MTexture>();
 
-	m_ShaderDefaultTextureCube.SetName("Shader Default Texture Cube");
-	m_ShaderDefaultTextureCube.SetMipmapsEnable(false);
-	m_ShaderDefaultTextureCube.SetReadable(false);
-	m_ShaderDefaultTextureCube.SetRenderUsage(METextureRenderUsage::EUnknow);
-	m_ShaderDefaultTextureCube.SetShaderUsage(METextureShaderUsage::ESampler);
-	m_ShaderDefaultTextureCube.SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
-	m_ShaderDefaultTextureCube.SetTextureType(METextureType::ETextureCube);
-	m_ShaderDefaultTextureCube.SetImageLayerNum(6);
-	m_ShaderDefaultTextureCube.SetSize(Vector2(1, 1));
+	m_ShaderDefaultTextureCube->SetName("Shader Default Texture Cube");
+	m_ShaderDefaultTextureCube->SetMipmapsEnable(false);
+	m_ShaderDefaultTextureCube->SetReadable(false);
+	m_ShaderDefaultTextureCube->SetRenderUsage(METextureRenderUsage::EUnknow);
+	m_ShaderDefaultTextureCube->SetShaderUsage(METextureShaderUsage::ESampler);
+	m_ShaderDefaultTextureCube->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
+	m_ShaderDefaultTextureCube->SetTextureType(METextureType::ETextureCube);
+	m_ShaderDefaultTextureCube->SetImageLayerNum(6);
+	m_ShaderDefaultTextureCube->SetSize(Vector2(1, 1));
 
 	MByte cubeBytes[24];
 	for (size_t i = 0; i < 24; i += 4)
@@ -2250,18 +2256,19 @@ bool MVulkanDevice::InitDefaultTexture()
 		cubeBytes[i + 2] = 255;
 		cubeBytes[i + 3] = 255;
 	}
-	m_ShaderDefaultTextureCube.GenerateBuffer(this, cubeBytes);
+	m_ShaderDefaultTextureCube->GenerateBuffer(this, cubeBytes);
 
+	m_ShaderDefaultTextureArray = std::make_shared<MTexture>();
 
-	m_ShaderDefaultTextureArray.SetName("Shader Default Texture Array");
-	m_ShaderDefaultTextureArray.SetMipmapsEnable(false);
-	m_ShaderDefaultTextureArray.SetReadable(false);
-	m_ShaderDefaultTextureArray.SetRenderUsage(METextureRenderUsage::EUnknow);
-	m_ShaderDefaultTextureArray.SetShaderUsage(METextureShaderUsage::ESampler);
-	m_ShaderDefaultTextureArray.SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
-	m_ShaderDefaultTextureArray.SetTextureType(METextureType::ETexture2DArray);
-	m_ShaderDefaultTextureArray.SetImageLayerNum(1);
-	m_ShaderDefaultTextureArray.SetSize(Vector2(1, 1));
+	m_ShaderDefaultTextureArray->SetName("Shader Default Texture Array");
+	m_ShaderDefaultTextureArray->SetMipmapsEnable(false);
+	m_ShaderDefaultTextureArray->SetReadable(false);
+	m_ShaderDefaultTextureArray->SetRenderUsage(METextureRenderUsage::EUnknow);
+	m_ShaderDefaultTextureArray->SetShaderUsage(METextureShaderUsage::ESampler);
+	m_ShaderDefaultTextureArray->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
+	m_ShaderDefaultTextureArray->SetTextureType(METextureType::ETexture2DArray);
+	m_ShaderDefaultTextureArray->SetImageLayerNum(1);
+	m_ShaderDefaultTextureArray->SetSize(Vector2(1, 1));
 
 	MByte arrayBytes[4];
 	for (size_t i = 0; i < 4; i += 4)
@@ -2271,7 +2278,7 @@ bool MVulkanDevice::InitDefaultTexture()
 		arrayBytes[i + 2] = 255;
 		arrayBytes[i + 3] = 255;
 	}
-	m_ShaderDefaultTextureArray.GenerateBuffer(this, arrayBytes);
+	m_ShaderDefaultTextureArray->GenerateBuffer(this, arrayBytes);
 
 	return true;
 }

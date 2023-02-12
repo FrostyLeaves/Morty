@@ -52,7 +52,7 @@ struct MORTY_API MBackTexture
 {
     MBackTexture();
 
-    MTexture* pTexture;
+    std::shared_ptr<MTexture> pTexture;
     MPassTargetDescription desc;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -78,11 +78,11 @@ public:
 
 public:
 
-    void AddBackTexture(MTexture* pBackTexture, const MPassTargetDescription& desc);
-    void SetDepthTexture(MTexture* pDepthTexture, const MPassTargetDescription& desc);
+    void AddBackTexture(std::shared_ptr<MTexture> pBackTexture, const MPassTargetDescription& desc);
+    void SetDepthTexture(std::shared_ptr<MTexture> pDepthTexture, const MPassTargetDescription& desc);
 
-    std::vector<MTexture*> GetBackTextures();
-    MTexture* GetDepthTexture();
+    std::vector<std::shared_ptr<MTexture>> GetBackTextures();
+    std::shared_ptr<MTexture> GetDepthTexture();
 
     void SetRenderPassID(const uint32_t& unID) { m_unRenderPassID = unID; }
     uint32_t GetRenderPassID() const { return m_unRenderPassID; }

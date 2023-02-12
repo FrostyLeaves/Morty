@@ -752,20 +752,20 @@ void MVulkanPipelineManager::BindConstantParam(const std::shared_ptr<MShaderCons
 
 void MVulkanPipelineManager::BindTextureParam(const std::shared_ptr<MShaderTextureParam> pParam, VkWriteDescriptorSet& descriptorWrite)
 {
-	MTexture* pTexture = pParam->GetTexture();
+	std::shared_ptr<MTexture> pTexture = pParam->GetTexture();
 	if (!pTexture)
 	{
 		if (pParam->eType == METextureType::ETexture2D)
 		{
-			pTexture = &m_pDevice->m_ShaderDefaultTexture;
+			pTexture = m_pDevice->m_ShaderDefaultTexture;
 		}
 		else if (pParam->eType == METextureType::ETextureCube)
 		{
-			pTexture = &m_pDevice->m_ShaderDefaultTextureCube;
+			pTexture = m_pDevice->m_ShaderDefaultTextureCube;
 		}
 		else if (pParam->eType == METextureType::ETexture2DArray)
 		{
-			pTexture = &m_pDevice->m_ShaderDefaultTextureArray;
+			pTexture = m_pDevice->m_ShaderDefaultTextureArray;
 		}
 		else
 		{

@@ -61,7 +61,7 @@ void MTransparentRenderWork::OnDelete()
 	Super::OnDelete();
 }
 
-void MTransparentRenderWork::SetRenderTarget(MTexture* pOutputTexture, MTexture* pDepthTexture)
+void MTransparentRenderWork::SetRenderTarget(std::shared_ptr<MTexture> pOutputTexture, std::shared_ptr<MTexture> pDepthTexture)
 {
 	if (m_pOutputTexture = pOutputTexture)
 	{
@@ -80,7 +80,7 @@ void MTransparentRenderWork::Render(MRenderInfo& info)
 	if (!pCommand)
 		return;
 
-	pCommand->AddRenderToTextureBarrier({ m_pFrontTexture, m_pBackTexture });
+	pCommand->AddRenderToTextureBarrier({ m_pFrontTexture.get(), m_pBackTexture.get() });
 
 	pCommand->BeginRenderPass(&m_fillRenderPass);
 
@@ -111,7 +111,7 @@ void MTransparentRenderWork::RenderDepthPeel(MRenderInfo& info)
 	m_aFramePropertyBlock[1].UpdateShaderSharedParams(info);
 
 
-	pCommand->AddRenderToTextureBarrier({ m_pDepthTexture });
+	pCommand->AddRenderToTextureBarrier({ m_pDepthTexture.get() });
 
 	pCommand->BeginRenderPass(&m_peelRenderPass);
 
@@ -287,49 +287,42 @@ void MTransparentRenderWork::ReleaseTexture()
 	if (m_pFrontTexture)
 	{
 		m_pFrontTexture->DestroyBuffer(pRenderSystem->GetDevice());
-		delete m_pFrontTexture;
 		m_pFrontTexture = nullptr;
 	}
 
 	if (m_pBackTexture)
 	{
 		m_pBackTexture->DestroyBuffer(pRenderSystem->GetDevice());
-		delete m_pBackTexture;
 		m_pBackTexture = nullptr;
 	}
 
 	if (m_pFrontDepthForPassA)
 	{
 		m_pFrontDepthForPassA->DestroyBuffer(pRenderSystem->GetDevice());
-		delete m_pFrontDepthForPassA;
 		m_pFrontDepthForPassA = nullptr;
 	}
 
 	if (m_pBackDepthForPassA)
 	{
 		m_pBackDepthForPassA->DestroyBuffer(pRenderSystem->GetDevice());
-		delete m_pBackDepthForPassA;
 		m_pBackDepthForPassA = nullptr;
 	}
 
 	if (m_pFrontDepthForPassB)
 	{
 		m_pFrontDepthForPassB->DestroyBuffer(pRenderSystem->GetDevice());
-		delete m_pFrontDepthForPassB;
 		m_pFrontDepthForPassB = nullptr;
 	}
 
 	if (m_pBackDepthForPassB)
 	{
 		m_pBackDepthForPassB->DestroyBuffer(pRenderSystem->GetDevice());
-		delete m_pBackDepthForPassB;
 		m_pBackDepthForPassB = nullptr;
 	}
 
 	if (m_pDefaultOutputTexture)
 	{
 		m_pDefaultOutputTexture->DestroyBuffer(pRenderSystem->GetDevice());
-		delete m_pDefaultOutputTexture;
 		m_pDefaultOutputTexture = nullptr;
 	}
 }

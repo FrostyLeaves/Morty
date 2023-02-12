@@ -31,8 +31,8 @@ public:
 
 	void UpdateShaderSharedParams(MRenderInfo& info);
 
-	void SetShadowMapTexture(MTexture* pTexture);
-	void SetBrdfMapTexture(MTexture* pTexture);
+	void SetShadowMapTexture(std::shared_ptr<MTexture> pTexture);
+	void SetBrdfMapTexture(std::shared_ptr<MTexture> pTexture);
 
 public:
 	/*cbSceneMatrix*/

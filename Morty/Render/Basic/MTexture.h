@@ -109,13 +109,13 @@ public:
 
 public:
 
-	static MTexture* CreateShadowMap();
-	static MTexture* CreateShadowMapArray(const size_t& nArraySize);
-	static MTexture* CreateRenderTarget();
-	static MTexture* CreateRenderTargetGBuffer();
-	static MTexture* CreateRenderTargetFloat32();
+	static std::shared_ptr<MTexture> CreateShadowMap();
+	static std::shared_ptr<MTexture> CreateShadowMapArray(const size_t& nArraySize);
+	static std::shared_ptr<MTexture> CreateRenderTarget();
+	static std::shared_ptr<MTexture> CreateRenderTargetGBuffer();
+	static std::shared_ptr<MTexture> CreateRenderTargetFloat32();
 
-	static MTexture* CreateCubeMap();
+	static std::shared_ptr<MTexture> CreateCubeMap();
 
 public:
 

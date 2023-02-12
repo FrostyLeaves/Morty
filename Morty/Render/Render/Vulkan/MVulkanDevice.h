@@ -172,9 +172,9 @@ public:
 
 	VkFormat m_VkDepthTextureFormat;
 
-	MTexture m_ShaderDefaultTexture;
-	MTexture m_ShaderDefaultTextureCube;
-	MTexture m_ShaderDefaultTextureArray;
+	std::shared_ptr<MTexture> m_ShaderDefaultTexture;
+	std::shared_ptr<MTexture> m_ShaderDefaultTextureCube;
+	std::shared_ptr<MTexture> m_ShaderDefaultTextureArray;
 
 	VkSampler m_VkLinearSampler;
 	VkSampler m_VkNearestSampler;
