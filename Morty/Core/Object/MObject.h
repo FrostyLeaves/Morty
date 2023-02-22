@@ -51,8 +51,6 @@ protected:
 	
 private:
 	bool		m_bDeleteMark;
-
-	std::vector<MAutoPtr*> m_vPointer;
 };
 
 

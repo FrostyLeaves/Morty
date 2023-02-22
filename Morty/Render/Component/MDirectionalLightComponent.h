@@ -42,6 +42,9 @@ public:
 	void SetLightSize(const float& fLightSize) { m_fLightSize = fLightSize; }
 	float GetLightSize() const { return m_fLightSize; }
 
+	void SetLightEnable(const bool& bLightEnable) { m_bEnable = bLightEnable; }
+	bool GetLightEnable() const { return m_bEnable; }
+
 public:
 
 	virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
@@ -54,6 +57,7 @@ private:
 	MColor m_f3Color;
 	float m_fIntensity;
 	float m_fLightSize = 1.0f;
+	bool m_bEnable = true;
 
 };
 

@@ -24,7 +24,7 @@ void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
 		MModelConverter convert(pEngine);
 
 		MModelConvertInfo info;
-		info.eMaterialType = MModelConvertMaterialType::E_Default_Forward;
+		info.eMaterialType = MModelConvertMaterialType::E_PBR_Deferred;
 		info.strOutputDir = "./Sponza";
 		info.strOutputName = "Sponza";
 		info.strResourcePath = "./Model/Sponza/sponza.obj";

@@ -12,6 +12,20 @@
 #include "Resource/MMeshResource.h"
 #include "Resource/MMaterialResource.h"
 
+void ADD_DIRECTIONAL_LIGHT(MEngine* pEngine, MScene* pScene)
+{
+	MEntity* pDirLight = pScene->CreateEntity();
+	pDirLight->SetName("DirectionalLight");
+	if (MSceneComponent* pSceneComponent = pDirLight->RegisterComponent<MSceneComponent>())
+	{
+		pSceneComponent->SetRotation(Quaternion(Vector3(1.0, 0.0, 0.0), 45.0f));
+	}
+	if (MDirectionalLightComponent* pLightComponent = pDirLight->RegisterComponent<MDirectionalLightComponent>())
+	{
+		pLightComponent->SetLightIntensity(1.0f);
+	}
+}
+
 void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
@@ -155,14 +169,4 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 	}
 
 
-	MEntity* pDirLight = pScene->CreateEntity();
-	pDirLight->SetName("DirectionalLight");
-	if (MSceneComponent* pSceneComponent = pDirLight->RegisterComponent<MSceneComponent>())
-	{
-		pSceneComponent->SetRotation(Quaternion(Vector3(1.0, 0.0, 0.0), 45.0f));
-	}
-	if (MDirectionalLightComponent* pLightComponent = pDirLight->RegisterComponent<MDirectionalLightComponent>())
-	{
-		pLightComponent->SetLightIntensity(1.0f);
-	}
 }

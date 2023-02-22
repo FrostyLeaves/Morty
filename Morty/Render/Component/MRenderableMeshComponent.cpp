@@ -335,6 +335,9 @@ void MRenderableMeshComponent::Deserialize(const void* pBufferPointer)
 	{
 		SetMeshResourcePath(fb_mesh_path->c_str());
 	}
+
+	OnTransformDirty();
+	OnParentChanged();
 }
 
 void MRenderableMeshComponent::BindShaderParam(std::shared_ptr<MMaterial> pMaterial)

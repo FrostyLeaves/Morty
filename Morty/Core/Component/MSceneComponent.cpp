@@ -291,9 +291,9 @@ flatbuffers::Offset<void> MSceneComponent::Serialize(flatbuffers::FlatBufferBuil
 	Vector3 positon = GetPosition();
 	Vector3 scale = GetScale();
 	Quaternion rotation = GetRotation();
-	compBuilder.add_position(reinterpret_cast<mfbs::Vector3*>(&positon));
-	compBuilder.add_scale(reinterpret_cast<mfbs::Vector3*>(&scale));
-	compBuilder.add_rotation(reinterpret_cast<mfbs::Quaternion*>(&rotation));
+	compBuilder.add_position(positon.Serialize(fbb));
+	compBuilder.add_scale(scale.Serialize(fbb));
+	compBuilder.add_rotation(rotation.Serialize(fbb));
 
 	if (MSceneComponent* pParent = GetParent())
 	{
@@ -322,14 +322,25 @@ void MSceneComponent::Deserialize(const void* pBufferPointer)
 
 	Super::Deserialize(fbComponent->super());
 
-	SetPosition(*reinterpret_cast<const Vector3*>(fbComponent->position()));
-	SetScale(*reinterpret_cast<const Vector3*>(fbComponent->scale()));
-	SetRotation(*reinterpret_cast<const Quaternion*>(fbComponent->rotation()));
+	Vector3 position;
+	position.Deserialize(fbComponent->position());
+
+	Vector3 scale;
+	scale.Deserialize(fbComponent->scale());
+
+	Quaternion rotation;
+	rotation.Deserialize(fbComponent->rotation());
+
+	SetPosition(position);
+	SetScale(scale);
+	SetRotation(rotation);
 
 	if (const mfbs::MGuid* fbguid = fbComponent->parent())
 	{
 		m_parentGuid = MGuid(fbguid->data0(), fbguid->data1(), fbguid->data2(), fbguid->data3());
 	}
+
+
 }
 
 void MSceneComponent::PostDeserialize()

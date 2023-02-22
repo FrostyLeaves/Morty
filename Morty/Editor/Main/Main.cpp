@@ -57,10 +57,11 @@ int main()
 	MScene* pScene = editor.GetScene();
 	MORTY_ASSERT(pScene);
 
+	ADD_DIRECTIONAL_LIGHT(&engine, pScene);
 
 	ENVIRONMENT_CUBEMAP_TEST(&engine, pScene);
 
-	SHADOW_MAP_TEST(&engine, pScene);
+//	SHADOW_MAP_TEST(&engine, pScene);
 
 //	PBR_SHPERE(&engine, pScene);
 

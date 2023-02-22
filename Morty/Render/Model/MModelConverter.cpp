@@ -732,36 +732,76 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 
 	}
 
-
-	static const std::map<aiTextureType, MString> TextureMapping = {
-
-		//forward
-		{aiTextureType_DIFFUSE, "u_texDiffuse"},
-		{aiTextureType_NORMALS, "u_texNormal"},
-		{aiTextureType_SPECULAR, "u_texSpecular"},
+	const std::map<aiTextureType, MString>* pTextureMapping = nullptr;
 
 
-		//pbr
-		{aiTextureType_BASE_COLOR, "u_mat_texAlbedo"},
-		{aiTextureType_NORMAL_CAMERA, "u_texNormal"},
-		{aiTextureType_EMISSION_COLOR, "u_mat_texEmission"},
-		{aiTextureType_METALNESS, "u_mat_texMetallic"},
-		{aiTextureType_DIFFUSE_ROUGHNESS, "u_mat_texRoughness"},
-		{aiTextureType_AMBIENT_OCCLUSION, "u_mat_texAmbientOcc"},
-	};
-
-
-	for (auto&& pr : TextureMapping)
+	if (eMaterialType == MModelConvertMaterialType::E_Default_Forward)
 	{
-		aiString strTextureFileName;
-		pAiMaterial->GetTexture(pr.first, 0, &strTextureFileName);
+		static const std::map<aiTextureType, MString> ForwardTextureMapping = {
+			//forward
+			{aiTextureType_DIFFUSE, "u_texDiffuse"},
+			{aiTextureType_NORMALS, "u_texNormal"},
+			{aiTextureType_SPECULAR, "u_texSpecular"},
 
-		auto findResult = m_tTextures.find(strTextureFileName.C_Str());
+			{aiTextureType_BASE_COLOR, "u_texDiffuse"},
+			{aiTextureType_NORMAL_CAMERA, "u_texNormal"},
+		};
+
+		pTextureMapping = &ForwardTextureMapping;
+	}
+	else if (eMaterialType == MModelConvertMaterialType::E_PBR_Deferred)
+	{
+		static const std::map<aiTextureType, MString> PbrTextureMapping = {
+			{aiTextureType_DIFFUSE, MaterialKey::Albedo},
+			{aiTextureType_NORMALS, MaterialKey::Normal},
+
+			{aiTextureType_BASE_COLOR, MaterialKey::Albedo},
+			{aiTextureType_NORMAL_CAMERA, MaterialKey::Normal},
+			{aiTextureType_EMISSION_COLOR, "u_mat_texEmission"},
+			{aiTextureType_METALNESS, MaterialKey::Metallic},
+			{aiTextureType_DIFFUSE_ROUGHNESS, MaterialKey::Roughness},
+			{aiTextureType_AMBIENT_OCCLUSION, MaterialKey::AmbientOcc},
+		};
+
+		pTextureMapping = &PbrTextureMapping;
+	}
+    else
+    {
+		MORTY_ASSERT(false);
+    }
+
+	for (auto&& pr : *pTextureMapping)
+	{
+		aiString aiTextureFileName;
+		pAiMaterial->GetTexture(pr.first, 0, &aiTextureFileName);
+
+		MString strTextureFileName = aiTextureFileName.C_Str();
+		if (strTextureFileName.empty())
+		{
+			continue;
+		}
+
+		auto findResult = m_tTextures.find(aiTextureFileName.C_Str());
 		if (findResult != m_tTextures.end())
 		{
 			std::shared_ptr<MTextureResource>& pTexture = findResult->second;
 
 			pMaterial->SetTexture(pr.second, pTexture);
+		}
+		else
+		{
+		    if (pResourceSystem->GetResourceType(strTextureFileName) == MTextureResource::GetClassType())
+		    {
+				MString strFullPath = MFileHelper::GetFileFolder(m_strResourcePath) + "/" + strTextureFileName;
+				const std::shared_ptr<MResource> pTexture = pResourceSystem->LoadResource(strFullPath, MTextureResource::GetClassType());
+				m_tTextures[strTextureFileName] = MTypeClass::DynamicCast<MTextureResource>(pTexture);
+
+				pMaterial->SetTexture(pr.second, pTexture);
+		    }
+			else
+			{
+				MORTY_ASSERT(false);
+			}
 		}
 	}
 

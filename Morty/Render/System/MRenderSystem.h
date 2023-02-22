@@ -55,7 +55,7 @@ public:
     Matrix4 GetCameraInverseProjection(MViewport* pViewport, MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent);
     Matrix4 GetCameraInverseProjection(MViewport* pViewport, MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent, float fZNear, float fZFar);
 
-
+    
 public:
 
     static void GetCameraFrustumPoints(MEntity* pCamera

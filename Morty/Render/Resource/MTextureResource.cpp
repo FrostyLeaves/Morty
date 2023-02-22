@@ -158,18 +158,19 @@ bool MTextureResource::ImportTextureFromMemory(char* buffer, size_t nSize, const
 {
 	int unWidth = 0;
 	int unHeight = 0;
-	int comp;
+	int comp = 4;
+	int reqComp = 4;
 
 	if (importInfo.ePixelFormat == PixelFormat::Byte8)
 	{
-		stbi_uc* data = stbi_load_from_memory((const stbi_uc*)buffer, nSize, &unWidth, &unHeight, &comp, 0);
-		LoadFromMemory((MByte*)data, unWidth, unHeight, comp, importInfo.ePixelFormat, false);
+		stbi_uc* data = stbi_load_from_memory((const stbi_uc*)buffer, nSize, &unWidth, &unHeight, &comp, reqComp);
+		LoadFromMemory((MByte*)data, unWidth, unHeight, reqComp, importInfo.ePixelFormat, false);
 		data = nullptr;
 	}
 	else if (importInfo.ePixelFormat == PixelFormat::Float32)
 	{
-		float* data = stbi_loadf_from_memory((const stbi_uc*)buffer, nSize, &unWidth, &unHeight, &comp, 0);
-		LoadFromMemory((MByte*)data, unWidth, unHeight, comp, importInfo.ePixelFormat, false);
+		float* data = stbi_loadf_from_memory((const stbi_uc*)buffer, nSize, &unWidth, &unHeight, &comp, reqComp);
+		LoadFromMemory((MByte*)data, unWidth, unHeight, reqComp, importInfo.ePixelFormat, false);
 		data = nullptr;
 	}
 	else

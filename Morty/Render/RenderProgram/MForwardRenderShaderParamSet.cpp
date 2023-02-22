@@ -72,6 +72,17 @@ void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& in
 		info.pDirectionalLightEntity = pScene->FindFirstEntityByComponent<MDirectionalLightComponent>();
 	}
 
+	if (info.pDirectionalLightEntity)
+	{
+		if (const auto pLightComponent = info.pDirectionalLightEntity->GetComponent<MDirectionalLightComponent>())
+		{
+			if (!pLightComponent->GetLightEnable())
+			{
+				info.pDirectionalLightEntity = nullptr;
+			}
+		}
+	}
+
  	if (!info.pSkyBoxEntity)
  	{
  		info.pSkyBoxEntity = pScene->FindFirstEntityByComponent<MSkyBoxComponent>();

@@ -174,6 +174,9 @@ void MMaterial::Deserialize(const void* pBufferPointer)
 	m_pShaderProgram->ClearShader(GetEngine());
 	m_pShaderProgram = MShaderProgram::MakeShared(MShaderProgram::EUsage::EGraphics);
 
+	m_eMaterialType = static_cast<MEMaterialType>(fbData->material_type());
+	m_eRasterizerType = static_cast<MERasterizerType>(fbData->rasterizer_type());
+
 	GetShaderMacro().Deserialize(fbData->material_macro());
 	MResourceRef vertexShader, pixelShader;
 	vertexShader.Deserialize(GetEngine(), fbData->vertex_resource());

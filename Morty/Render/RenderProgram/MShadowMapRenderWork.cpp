@@ -471,12 +471,14 @@ void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& inf
 			}
 		}
 
+
 		vCascadeProjectionMatrix[nCascadedIdx] = MRenderSystem::MatrixOrthoOffCenterLH(
 			v3FrustumCenter.x - fBoundsSphereRadius,
 			v3FrustumCenter.x + fBoundsSphereRadius,
 			v3FrustumCenter.y + fBoundsSphereRadius,
 			v3FrustumCenter.y - fBoundsSphereRadius,
 			//(std::min)(v3FrustumCenter.z - fBoundsSphereRadius, fPscBoundsInLightSpaceMinZ),
+			//v3FrustumCenter.z - fBoundsSphereRadius,
 			fPscBoundsInLightSpaceMinZ,
 			v3FrustumCenter.z + fBoundsSphereRadius
 		);
@@ -485,6 +487,7 @@ void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& inf
 		vCascadeFrustumRadius[nCascadedIdx] = fBoundsSphereRadius;
 		vCascadeTransitionRange[nCascadedIdx] = fTransitionRange;
 		vPscBoundsInLightSpaceMinZ[nCascadedIdx] = fPscBoundsInLightSpaceMinZ;
+		//vPscBoundsInLightSpaceMinZ[nCascadedIdx] = v3FrustumCenter.z - fBoundsSphereRadius;
 	}
 
 	float fMinLightSpaceZValue = FLT_MAX;
