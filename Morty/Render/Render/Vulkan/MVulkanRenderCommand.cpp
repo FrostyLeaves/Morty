@@ -36,6 +36,8 @@ void MVulkanRenderCommand::RenderCommandBegin()
 
 	//Begin Command Buffer
 	vkBeginCommandBuffer(m_VkCommandBuffer, &beginInfo);
+
+	m_nDrawCallCount = 0;
 }
 
 void MVulkanRenderCommand::RenderCommandEnd()
@@ -145,9 +147,7 @@ void MVulkanRenderCommand::DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, c
 	vkCmdBindIndexBuffer(m_VkCommandBuffer, pIndexBuffer->m_VkBuffer, 0, VK_INDEX_TYPE_UINT32);
 	vkCmdDrawIndexed(m_VkCommandBuffer, nIdxCount, 1, nIdxOffset, nVrtOffset, 0);
 
-#if MORTY_RENDER_DATA_STATISTICS
-		MRenderStatistics::GetInstance()->unTriangleCount += pMesh->GetIndicesLength() / 3;
-#endif
+	++m_nDrawCallCount;
 	
 }
 
@@ -239,30 +239,32 @@ void MVulkanRenderCommand::SetShaderParamSet(const std::shared_ptr<MShaderProper
 	MORTY_ASSERT(pShaderPropgram);
 
 	bool bDirty = false;
-	std::vector<uint32_t> vDynamicOffsets;
 	for (std::shared_ptr<MShaderConstantParam> pParam : pPropertyBlock->m_vParams)
 	{
-		bDirty |= pParam->bDirty;
-		// generate buffer and fill data.
-		UpdateShaderParam(pParam);
-
-		if (pParam->m_VkDescriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
+		if (pParam->bDirty)
 		{
-			vDynamicOffsets.push_back(pParam->m_unMemoryOffset);
+			bDirty = true;
+			// generate buffer and fill data.
+			UpdateShaderParam(pParam);
+			pParam->bDirty = false;
 		}
+
 	}
 	for (std::shared_ptr<MShaderTextureParam> pParam : pPropertyBlock->m_vTextures)
 	{
-		bDirty |= pParam->bDirty;
-		if (std::shared_ptr<MTexture> pTexture = pParam->GetTexture())
+		auto pImageIdent = pParam->GetTexture() ? pParam->GetTexture()->m_VkImageView : nullptr;
+		if (pParam->bDirty || pParam->pImageIdent != pImageIdent)
 		{
-			bDirty |= pParam->pImageIdent != (pTexture->m_VkImageView);
+			bDirty = true;
+			pParam->bDirty = false;
+			pParam->pImageIdent = pImageIdent;
 		}
 	}
 
 	for (std::shared_ptr<MShaderStorageParam> pParam : pPropertyBlock->m_vStorages)
 	{
 		bDirty |= pParam->bDirty;
+		pParam->bDirty = false;
 	}
 
 	if (bDirty)
@@ -279,8 +281,6 @@ void MVulkanRenderCommand::SetShaderParamSet(const std::shared_ptr<MShaderProper
 			VkWriteDescriptorSet& writeDescriptorSet = vWriteDescriptorSet.back();
 			m_pDevice->m_PipelineManager.BindConstantParam(pParam, writeDescriptorSet);
 			writeDescriptorSet.dstSet = pPropertyBlock->m_VkDescriptorSet;
-
-			pParam->bDirty = false;
 		}
 
 		for (std::shared_ptr<MShaderTextureParam> pParam : pPropertyBlock->m_vTextures)
@@ -289,9 +289,6 @@ void MVulkanRenderCommand::SetShaderParamSet(const std::shared_ptr<MShaderProper
 			VkWriteDescriptorSet& writeDescriptorSet = vWriteDescriptorSet.back();
 			m_pDevice->m_PipelineManager.BindTextureParam(pParam, writeDescriptorSet);
 			writeDescriptorSet.dstSet = pPropertyBlock->m_VkDescriptorSet;
-
-			pParam->pImageIdent = pParam->GetTexture() ? pParam->GetTexture()->m_VkImageView : nullptr;
-			pParam->bDirty = false;
 		}
 
 		for (std::shared_ptr<MShaderStorageParam> pParam : pPropertyBlock->m_vStorages)
@@ -300,8 +297,6 @@ void MVulkanRenderCommand::SetShaderParamSet(const std::shared_ptr<MShaderProper
 			VkWriteDescriptorSet& writeDescriptorSet = vWriteDescriptorSet.back();
 			m_pDevice->m_PipelineManager.BindStorageParam(pParam, writeDescriptorSet);
 			writeDescriptorSet.dstSet = pPropertyBlock->m_VkDescriptorSet;
-
-			pParam->bDirty = false;
 		}
 
 		vkUpdateDescriptorSets(m_pDevice->m_VkDevice, vWriteDescriptorSet.size(), vWriteDescriptorSet.data(), 0, nullptr);
@@ -315,6 +310,15 @@ void MVulkanRenderCommand::SetShaderParamSet(const std::shared_ptr<MShaderProper
 
 	MORTY_ASSERT(VK_NULL_HANDLE != pUsingPipeline->m_pipelineLayout.vkPipelineLayout);
 	MORTY_ASSERT(VK_NULL_HANDLE != pPropertyBlock->m_VkDescriptorSet);
+
+	std::vector<uint32_t> vDynamicOffsets;
+	for (std::shared_ptr<MShaderConstantParam> pParam : pPropertyBlock->m_vParams)
+	{
+		if (pParam->m_VkDescriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
+		{
+			vDynamicOffsets.push_back(pParam->m_unMemoryOffset);
+		}
+	}
 
 	VkPipelineBindPoint vkPipelineBindPoint = pUsingPipeline->m_vkPipelineBindPoint;
 	vkCmdBindDescriptorSets(m_VkCommandBuffer, vkPipelineBindPoint, pUsingPipeline->m_pipelineLayout.vkPipelineLayout, pPropertyBlock->m_unKey, 1, &pPropertyBlock->m_VkDescriptorSet, vDynamicOffsets.size(), vDynamicOffsets.data());

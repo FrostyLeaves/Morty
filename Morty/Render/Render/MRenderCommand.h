@@ -101,8 +101,11 @@ public:
 
 	uint32_t GetFrameIndex() { return m_unFrameIndex; }
 
+	size_t GetDrawCallCount() const { return m_nDrawCallCount; }
+
 public:
 	uint32_t m_unFrameIndex;
+	size_t m_nDrawCallCount = 0;
 
 };
 

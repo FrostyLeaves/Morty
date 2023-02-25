@@ -35,9 +35,9 @@ public:
 
 	Matrix4 GetMatrixScale();
 
-	Vector3 GetUp() { return Matrix4(m_qtRotation) * Vector3(0, 1, 0); }
-	Vector3 GetForward() { return Matrix4(m_qtRotation) * Vector3(0, 0, 1); }
-	Vector3 GetRight() { return Matrix4(m_qtRotation) * Vector3(1, 0, 0); }
+	Vector3 GetUp() const { return Matrix4(m_qtRotation) * Vector3(0, 1, 0); }
+	Vector3 GetForward() const { return Matrix4(m_qtRotation) * Vector3(0, 0, 1); }
+	Vector3 GetRight() const { return Matrix4(m_qtRotation) * Vector3(1, 0, 0); }
 
 private:
 

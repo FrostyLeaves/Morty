@@ -112,13 +112,13 @@ void MRenderSystem::ReleaseRenderpass(MRenderPass& renderpass, bool bClearTextur
 	renderpass.DestroyBuffer(GetDevice());
 }
 
-Matrix4 MRenderSystem::GetCameraInverseProjection(MViewport* pViewport, MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent)
+Matrix4 MRenderSystem::GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent) const
 {
 	return GetCameraInverseProjection(pViewport, pCameraComponent, pSceneComponent, pCameraComponent->GetZNear(), pCameraComponent->GetZFar());
 
 }
 
-Matrix4 MRenderSystem::GetCameraInverseProjection(MViewport* pViewport, MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent, float fZNear, float fZFar)
+Matrix4 MRenderSystem::GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent, float fZNear, float fZFar) const
 {
 	//Update Camera and Projection Matrix.
 	Matrix4 m4Projection = pCameraComponent->GetCameraType() == MCameraComponent::MECameraType::EPerspective

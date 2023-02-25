@@ -32,9 +32,9 @@ void MessageView::Render()
 	{
 		int nCurrentFps = (int)round(m_pEngine->GetFPS() / 5) * 5;
 		ImGui::Text("FPS: %d", nCurrentFps);
-#if MORTY_RENDER_DATA_STATISTICS
-		ImGui::Text("Triangle Count: %d", m_unTriangleCount);
-#endif
+
+		ImGui::Text("Draw Call Count: %u", m_nDrawCallCount);
+
 
 		if (ImGui::BeginPopupContextWindow())
 		{

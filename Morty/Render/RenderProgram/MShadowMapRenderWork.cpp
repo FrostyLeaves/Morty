@@ -49,18 +49,18 @@ void MShadowMapRenderWork::OnCreated()
 	std::shared_ptr<MResource> pPixelShader = pResourceSystem->LoadResource("Shader/shadowmap.mps");
 	m_pShadowStaticMaterial->LoadVertexShader(pVertexShader);
 	m_pShadowStaticMaterial->LoadPixelShader(pPixelShader);
-	m_pShadowStaticMaterial->SetRasterizerType(MERasterizerType::ECullFront);
+	m_pShadowStaticMaterial->SetRasterizerType(MERasterizerType::ECullNone);
 
 	m_pShadowSkeletonMaterial = pResourceSystem->CreateResource<MMaterial>("Shadow Material With Skeleton");
 	m_pShadowSkeletonMaterial->GetShaderMacro().SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, "1");
 	m_pShadowSkeletonMaterial->LoadVertexShader(pVertexShader);
 	m_pShadowSkeletonMaterial->LoadPixelShader(pPixelShader);
-	m_pShadowSkeletonMaterial->SetRasterizerType(MERasterizerType::ECullFront);
+	m_pShadowSkeletonMaterial->SetRasterizerType(MERasterizerType::ECullNone);
 
 	m_pShadowGPUDrivenMaterial = pResourceSystem->CreateResource<MMaterial>("Shadow Material GPU Driven");
 	m_pShadowGPUDrivenMaterial->LoadVertexShader(pVertexShader);
 	m_pShadowGPUDrivenMaterial->LoadPixelShader(pPixelShader);
-	m_pShadowGPUDrivenMaterial->SetRasterizerType(MERasterizerType::ECullFront);
+	m_pShadowGPUDrivenMaterial->SetRasterizerType(MERasterizerType::ECullNone);
 	m_pShadowGPUDrivenMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_MERGE_INSTANCING);
 
 	std::shared_ptr<MTexture> pShadowMapTexture = MTexture::CreateShadowMapArray(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
@@ -460,16 +460,23 @@ void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& inf
 
 
 		float fPscBoundsInLightSpaceMinZ = FLT_MAX;
-		std::vector<Vector3> vPscBoundsPoints(8);
-		vCascadedData[nCascadedIdx].cPcsBounds.GetPoints(vPscBoundsPoints);
-		for (uint32_t i = 0; i < 8; ++i)
+		if (vCascadedData[nCascadedIdx].bGenerateShadow)
 		{
-			const float z = (matLightInv * vPscBoundsPoints[i]).z;
-			if (fPscBoundsInLightSpaceMinZ > z)
+			std::vector<Vector3> vPscBoundsPoints(8);
+			vCascadedData[nCascadedIdx].cPcsBounds.GetPoints(vPscBoundsPoints);
+			for (uint32_t i = 0; i < 8; ++i)
 			{
-				fPscBoundsInLightSpaceMinZ = z;
+				const float z = (matLightInv * vPscBoundsPoints[i]).z;
+				if (fPscBoundsInLightSpaceMinZ > z)
+				{
+					fPscBoundsInLightSpaceMinZ = z;
+				}
 			}
 		}
+        else
+        {
+			fPscBoundsInLightSpaceMinZ = v3FrustumCenter.z - fBoundsSphereRadius;
+        }
 
 
 		vCascadeProjectionMatrix[nCascadedIdx] = MRenderSystem::MatrixOrthoOffCenterLH(
@@ -478,7 +485,6 @@ void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& inf
 			v3FrustumCenter.y + fBoundsSphereRadius,
 			v3FrustumCenter.y - fBoundsSphereRadius,
 			//(std::min)(v3FrustumCenter.z - fBoundsSphereRadius, fPscBoundsInLightSpaceMinZ),
-			//v3FrustumCenter.z - fBoundsSphereRadius,
 			fPscBoundsInLightSpaceMinZ,
 			v3FrustumCenter.z + fBoundsSphereRadius
 		);
@@ -486,18 +492,13 @@ void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& inf
 		vCascadeFrustumCenter[nCascadedIdx] = v3FrustumCenter;
 		vCascadeFrustumRadius[nCascadedIdx] = fBoundsSphereRadius;
 		vCascadeTransitionRange[nCascadedIdx] = fTransitionRange;
-		vPscBoundsInLightSpaceMinZ[nCascadedIdx] = fPscBoundsInLightSpaceMinZ;
 		//vPscBoundsInLightSpaceMinZ[nCascadedIdx] = v3FrustumCenter.z - fBoundsSphereRadius;
+		vPscBoundsInLightSpaceMinZ[nCascadedIdx] = fPscBoundsInLightSpaceMinZ;
 	}
 
 	float fMinLightSpaceZValue = FLT_MAX;
 	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
 	{
-	    //if (fMinLightSpaceZValue > vCascadeFrustumCenter[nCascadedIdx].z - vCascadeFrustumRadius[nCascadedIdx])
-		//{
-		//	fMinLightSpaceZValue = vCascadeFrustumCenter[nCascadedIdx].z - vCascadeFrustumRadius[nCascadedIdx];
-		//}
-
 		if (fMinLightSpaceZValue > vPscBoundsInLightSpaceMinZ[nCascadedIdx])
 		{
 			fMinLightSpaceZValue = vPscBoundsInLightSpaceMinZ[nCascadedIdx];
@@ -528,13 +529,15 @@ std::shared_ptr<MTexture> MShadowMapRenderWork::GetShadowMap()
 
 void MShadowMapRenderWork::CollectShadowMesh(MRenderInfo& info)
 {
-	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+	const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
-	MViewport* pViewport = info.pViewport;
+	const MViewport* pViewport = info.pViewport;
 
 	if (!pViewport)
+	{
+		MORTY_ASSERT(pViewport);
 		return;
-
+	}
 	MScene* pScene = pViewport->GetScene();
 	if (!pScene)
 		return;
@@ -542,28 +545,38 @@ void MShadowMapRenderWork::CollectShadowMesh(MRenderInfo& info)
 	if (!info.pDirectionalLightEntity)
 	{
 		info.pDirectionalLightEntity = pScene->FindFirstEntityByComponent<MDirectionalLightComponent>();
-
 		if (!info.pDirectionalLightEntity)
+		{
+			MORTY_ASSERT(info.pDirectionalLightEntity);
 			return;
+		}
 	}
 
-	MSceneComponent* pLightSceneComponent = info.pDirectionalLightEntity->GetComponent<MSceneComponent>();
+	const MSceneComponent* pLightSceneComponent = info.pDirectionalLightEntity->GetComponent<MSceneComponent>();
 	if (!pLightSceneComponent)
+	{
+		MORTY_ASSERT(pLightSceneComponent);
 		return;
-
-	MCameraComponent* pCameraComponent = info.pCameraEntity->GetComponent<MCameraComponent>();
+	}
+	const MCameraComponent* pCameraComponent = info.pCameraEntity->GetComponent<MCameraComponent>();
 	if (!pCameraComponent)
+	{
+		MORTY_ASSERT(pCameraComponent);
 		return;
-
+	}
 	MSceneComponent* pCameraSceneComponent = info.pCameraEntity->GetComponent<MSceneComponent>();
 	if (!pCameraSceneComponent)
+	{
+		MORTY_ASSERT(pCameraSceneComponent);
 		return;
-
+	}
 	MComponentGroup<MRenderableMeshComponent>* pMeshComponentGroup = pScene->FindComponents<MRenderableMeshComponent>();
 	if (!pMeshComponentGroup)
+	{
+		MORTY_ASSERT(pMeshComponentGroup);
 		return;
-
-	Vector3 v3LightDir = pLightSceneComponent->GetForward();
+	}
+	const Vector3 v3LightDir = pLightSceneComponent->GetForward();
 
 	std::array<CascadedData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadedData;
 

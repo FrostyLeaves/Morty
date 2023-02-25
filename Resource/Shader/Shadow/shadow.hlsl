@@ -3,8 +3,8 @@
 
 
 #define PCF_ENABLE false
-#define PCSS_ENABLE true
-#define CSM_TRANSITION true
+#define PCSS_ENABLE false
+#define CSM_TRANSITION false
 
 float GetDirectionShadowFromCascadeLevel(
     Texture2DArray texShadowMap
@@ -44,7 +44,7 @@ float GetDirectionShadowFromCascadeLevel(
         float fPixelDepth = min(f4DirLightSpacePos.z / f4DirLightSpacePos.w, 1.0f);
         float fShadowDepth = texShadowMap.Sample(NearestSampler, float3(shadowTexCoords.xy, nCascadeIndex)).r;
         //fShadowDepth < fPixelDepth + fEpsilon
-        return 1.0f - step(fShadowDepth, fPixelDepth + fEpsilon);
+        return 1.0f - step(fShadowDepth + fEpsilon, fPixelDepth);
 #endif
 
     }

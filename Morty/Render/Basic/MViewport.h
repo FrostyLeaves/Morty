@@ -36,7 +36,7 @@ public:
 public:
 
 	void SetScene(MScene* pScene);
-	MScene* GetScene(){ return m_pScene; }
+	MScene* GetScene() const { return m_pScene; }
 
 	void SetCamera(MEntity* pCamera);
 	MEntity* GetCamera() const;

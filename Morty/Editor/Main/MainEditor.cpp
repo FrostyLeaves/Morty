@@ -186,8 +186,8 @@ void MainEditor::OnResize(const int& nWidth, const int& nHeight)
 
     m_v2DrawableSize.x = w;
     m_v2DrawableSize.y = h;
-    
-    MRenderView::Resize(m_v2DrawableSize);
+
+	m_bWindowResized = true;
 }
 
 void MainEditor::Input(MInputEvent* pEvent)
@@ -637,6 +637,12 @@ void MainEditor::Render(MTaskNode* pNode)
 	if (GetMinimized())
 		return;
 
+	if (m_bWindowResized)
+	{
+		MRenderView::Resize(m_v2DrawableSize);
+		m_bWindowResized = false;
+	}
+
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 	MIDevice* pDevice = pRenderSystem->GetDevice();
 	MRenderTarget* pRenderTarget = GetNextRenderTarget();
@@ -714,13 +720,6 @@ void MainEditor::Render(MTaskNode* pNode)
 
 		pRenderCommand->AddRenderToTextureBarrier(vRenderTextures);
 
-
-		//m_unTriangleCount = MRenderStatistics::GetInstance()->unTriangleCount;
-
-
-		
-
-
 		if (m_bRenderToWindow)
 		{
 			if (pRenderTexture)
@@ -775,6 +774,8 @@ void MainEditor::Render(MTaskNode* pNode)
 	}
 	
 	pRenderCommand->RenderCommandEnd();
+
+	m_pMessageView->SetDrawCallCount(pRenderCommand->GetDrawCallCount());
 
 	Present(pRenderTarget);
 	

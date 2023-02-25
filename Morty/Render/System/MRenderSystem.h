@@ -52,8 +52,8 @@ public:
 
     std::vector<MCameraFrustum> GetCameraFrustum(MViewport* pViewport, MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent, size_t nSize);
 
-    Matrix4 GetCameraInverseProjection(MViewport* pViewport, MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent);
-    Matrix4 GetCameraInverseProjection(MViewport* pViewport, MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent, float fZNear, float fZFar);
+    Matrix4 GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent) const;
+    Matrix4 GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent, float fZNear, float fZFar) const;
 
     
 public:

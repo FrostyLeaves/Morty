@@ -65,9 +65,9 @@ public:
 	Matrix4 GetWorldTransform();
 	Matrix4 GetLocalTransform();
 
-	Vector3 GetUp() { return m_transform.GetUp(); }
-	Vector3 GetForward() { return m_transform.GetForward(); }
-	Vector3 GetRight() { return m_transform.GetRight(); }
+	Vector3 GetUp() const { return m_transform.GetUp(); }
+	Vector3 GetForward() const { return m_transform.GetForward(); }
+	Vector3 GetRight() const { return m_transform.GetRight(); }
 
 	Vector3 GetWorldUp();
 	Vector3 GetWorldForward();

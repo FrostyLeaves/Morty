@@ -72,6 +72,7 @@ public:
 	std::map<MTexture*, VkImageLayout> m_tTextureLayout;
 
 	std::vector<std::function<void()>> m_aRenderFinishedCallback = {};
+	
 };
 
 class MORTY_API MVulkanSecondaryRenderCommand : public MVulkanRenderCommand

@@ -688,16 +688,17 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		}
 
 		pMaterial->SetMaterialType(MEMaterialType::EDefault);
+
+		std::shared_ptr<MResource> pDefaultTexture = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
+		for (size_t i = 0; i < pMaterial->GetTextureParams().size(); ++i)
+		{
+			pMaterial->SetTexture(pMaterial->GetTextureParams()[i]->strName, pDefaultTexture);
+		}
+
 	}
 
 	if(nMaterialIdx >= pScene->mNumMaterials)
 		return;
-
-	std::shared_ptr<MResource> pDefaultTexture = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
-	for (size_t i = 0; i < pMaterial->GetTextureParams().size(); ++i)
-	{
-		pMaterial->SetTexture(pMaterial->GetTextureParams()[i]->strName, pDefaultTexture);
-	}
 
 	aiMaterial* pAiMaterial = pScene->mMaterials[nMaterialIdx];
 

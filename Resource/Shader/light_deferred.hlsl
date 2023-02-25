@@ -137,8 +137,6 @@ float3 AdditionAllLights(VS_OUT input)
         
         float shadow = GetDirectionShadow(u_texShadowMap, f3WorldPosition, f3Normal, -f3DirLightDir);
 
-        f3Ambient = f3Ambient * shadow;
-
         f3Color += shadow * AdditionDirectionLight(  u_xDirectionalLight, f3CameraDir, f3DirLightDir, f3Normal,
                                         f3BaseColor, f3Albedo, fRoughness, fMetallic );
     }

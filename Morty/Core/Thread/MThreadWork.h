@@ -12,7 +12,8 @@
 
 enum class METhreadType
 {
-	EAny = -2,
+	EAny = -3,
+	EMainThread = -2,
 	ECurrentThread = -1,
 	ERenderThread = 0,
 

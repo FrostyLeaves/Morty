@@ -94,6 +94,7 @@ protected:
 
     Vector2 m_v2DrawableSize;
     bool m_bWindowMinimized;
+	bool m_bWindowResized = false;
     
 	Vector2 m_v2RenderViewPos;
 	Vector2 m_v2RenderViewSize;

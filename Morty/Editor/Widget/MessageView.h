@@ -17,9 +17,13 @@ public:
 	virtual void Release() override;
 	virtual void Input(MInputEvent* pEvent) override;
 
+	void SetDrawCallCount(size_t nCount) { m_nDrawCallCount = nCount; }
+
 private:
 
 	MEngine* m_pEngine;
+
+	size_t m_nDrawCallCount = 0;
 };
 
 #endif

@@ -36,24 +36,24 @@ public:
 	MECameraType GetCameraType() const { return m_eCameraType; }
 
 	void SetFov(const float& fFov);
-	float GetFov() { return m_fFov; }
+	float GetFov() const { return m_fFov; }
 
 	void SetZNear(const float& fZNear);
-	float GetZNear() { return m_fZNear; }
+	float GetZNear() const { return m_fZNear; }
 
 	void SetZFar(const float& fZFar);
-	float GetZFar() { return m_fZFar; }
+	float GetZFar() const { return m_fZFar; }
 
 	//Orthographic
 	void SetWidth(const float& fWidth) { m_fWidth = fWidth; }
-	float GetWidth() { return m_fWidth; }
+	float GetWidth() const { return m_fWidth; }
 
 	void SetHeight(const float& fHeight) { m_fHeight = fHeight; }
-	float GetHeight() { return m_fHeight; }
+	float GetHeight() const { return m_fHeight; }
 
 public:
 	void SetZNearFar(const Vector2& fZNearFar) { SetZNear(fZNearFar.x); SetZFar(fZNearFar.y); }
-	Vector2 GetZNearFar() { return Vector2(GetZNear(), GetZFar()); }
+	Vector2 GetZNearFar() const { return Vector2(GetZNear(), GetZFar()); }
 
 public:
 
