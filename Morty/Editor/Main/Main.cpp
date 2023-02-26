@@ -59,7 +59,7 @@ int main()
 
 	ADD_DIRECTIONAL_LIGHT(&engine, pScene);
 
-//	ENVIRONMENT_CUBEMAP_TEST(&engine, pScene);
+ 	ENVIRONMENT_CUBEMAP_TEST(&engine, pScene);
 
 //	SHADOW_MAP_TEST(&engine, pScene);
 

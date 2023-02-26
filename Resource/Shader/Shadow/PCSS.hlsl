@@ -1,6 +1,6 @@
 #include "inner_constant.hlsl"
 
-#define NUM_SAMPLES 100
+#define NUM_SAMPLES 50
 #define NUM_RINGS 10
 
 #define NEAR_PLANE 0.01f

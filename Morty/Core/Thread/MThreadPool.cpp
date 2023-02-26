@@ -32,6 +32,7 @@ void MThreadPool::Initialize()
 
 	if (bSingleThreadMode)
 	{
+		m_bInitialized = true;
 		return;
 	}
 
@@ -69,7 +70,10 @@ void MThreadPool::Release()
 bool MThreadPool::AddWork(const MThreadWork& work)
 {
 	if (!m_bInitialized)
+	{
+		MORTY_ASSERT(m_bInitialized);
 		return false;
+	}
 
 	if (bSingleThreadMode)
 	{

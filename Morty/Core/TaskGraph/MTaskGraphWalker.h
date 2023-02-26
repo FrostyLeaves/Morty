@@ -25,7 +25,7 @@ public:
 
 public:
     MTaskGraphWalker();
-    virtual ~MTaskGraphWalker();
+    ~MTaskGraphWalker() = default;
 
 public:
 
@@ -33,7 +33,7 @@ public:
 
 private:
 
-    bool CheckNodeActive(MTaskNode* pNode);
+    bool CheckNodeActive(MTaskNode* pNode) const;
 
     MThreadWork CreateThreadWork(MTaskNode* pNode);
 

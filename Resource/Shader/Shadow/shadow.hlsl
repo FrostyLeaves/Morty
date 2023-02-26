@@ -3,8 +3,8 @@
 
 
 #define PCF_ENABLE false
-#define PCSS_ENABLE false
-#define CSM_TRANSITION false
+#define PCSS_ENABLE true
+#define CSM_TRANSITION true
 
 float GetDirectionShadowFromCascadeLevel(
     Texture2DArray texShadowMap

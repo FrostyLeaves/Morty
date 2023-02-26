@@ -421,7 +421,6 @@ void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& inf
 	const float fCascadedTransitionRange = 0.25f;
 
 	std::array<Matrix4, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadeProjectionMatrix;
-	std::array<Vector3, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadeFrustumCenter;
 	std::array<float, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadeFrustumRadius;
 	std::array<float, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadeTransitionRange;
 	std::array<float, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vPscBoundsInLightSpaceMinZ;
@@ -484,15 +483,12 @@ void MShadowMapRenderWork::CalculateFrustumForCascadesShadowMap(MRenderInfo& inf
 			v3FrustumCenter.x + fBoundsSphereRadius,
 			v3FrustumCenter.y + fBoundsSphereRadius,
 			v3FrustumCenter.y - fBoundsSphereRadius,
-			//(std::min)(v3FrustumCenter.z - fBoundsSphereRadius, fPscBoundsInLightSpaceMinZ),
 			fPscBoundsInLightSpaceMinZ,
 			v3FrustumCenter.z + fBoundsSphereRadius
 		);
 
-		vCascadeFrustumCenter[nCascadedIdx] = v3FrustumCenter;
 		vCascadeFrustumRadius[nCascadedIdx] = fBoundsSphereRadius;
 		vCascadeTransitionRange[nCascadedIdx] = fTransitionRange;
-		//vPscBoundsInLightSpaceMinZ[nCascadedIdx] = v3FrustumCenter.z - fBoundsSphereRadius;
 		vPscBoundsInLightSpaceMinZ[nCascadedIdx] = fPscBoundsInLightSpaceMinZ;
 	}
 

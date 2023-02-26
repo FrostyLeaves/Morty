@@ -14,11 +14,6 @@ MTaskGraphWalker::MTaskGraphWalker()
 
 }
 
-MTaskGraphWalker::~MTaskGraphWalker()
-{
-
-}
-
 void MTaskGraphWalker::operator()(MTaskGraph* pTaskGraph)
 {
 	MEngine* pEngine = pTaskGraph->GetEngine();
@@ -69,9 +64,10 @@ void MTaskGraphWalker::operator()(MTaskGraph* pTaskGraph)
 	}
 }
 
-bool MTaskGraphWalker::CheckNodeActive(MTaskNode* pNode)
+bool MTaskGraphWalker::CheckNodeActive(MTaskNode* pNode) const
 {
-	if (m_tNodeState[pNode] != METaskState::Wait)
+	const auto findState = m_tNodeState.find(pNode);
+	if (findState != m_tNodeState.end() && findState->second != METaskState::Wait)
 		return false;
 
 	for (size_t nInputIdx = 0; nInputIdx < pNode->GetInputSize(); ++nInputIdx)
@@ -80,7 +76,8 @@ bool MTaskGraphWalker::CheckNodeActive(MTaskNode* pNode)
 
 		if (MTaskNode* pDependNode = pInput->GetLinkedNode())
 		{
-			if (m_tNodeState[pDependNode] != METaskState::Finish)
+			const auto findDependState = m_tNodeState.find(pDependNode);
+			if (findDependState == m_tNodeState.end() || findDependState->second != METaskState::Finish)
 			{
 				return false;
 			}
@@ -95,13 +92,8 @@ MThreadWork MTaskGraphWalker::CreateThreadWork(MTaskNode* pTaskNode)
 	MThreadWork work;
 	work.eThreadType = pTaskNode->GetThreadType();
 	work.funcWorkFunction = [=]() {
-
 		pTaskNode->Run();
-
-		{
-			std::unique_lock<std::mutex> lck(m_taskStatehMutex);
-			OnTaskFinishedCallback(pTaskNode);
-		}
+		OnTaskFinishedCallback(pTaskNode);
 	};
 
 	return work;
@@ -109,6 +101,8 @@ MThreadWork MTaskGraphWalker::CreateThreadWork(MTaskNode* pTaskNode)
 
 void MTaskGraphWalker::OnTaskFinishedCallback(MTaskNode* pTaskNode)
 {
+	std::unique_lock<std::mutex> lck(m_taskStatehMutex);
+
 	m_tNodeState[pTaskNode] = METaskState::Finish;
 
 	for (size_t i = 0; i < pTaskNode->GetOutputSize(); ++i)
