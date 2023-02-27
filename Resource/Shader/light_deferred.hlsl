@@ -109,7 +109,7 @@ float3 AdditionAllLights(VS_OUT input)
 
     if(u_bEnvironmentMapEnabled)
     {
-        float3 kS = FresnelSchlick(max(dot(f3Normal, f3CameraDir), 0.0), f3BaseColor);
+        float3 kS = FresnelSchlickRoughness(max(dot(f3Normal, f3CameraDir), 0.0), f3BaseColor, fRoughness);
         float3 kD = (1.0f - kS) * (1.0f - fMetallic);
 
         float3 f3Irradiance = u_texIrradianceMap.SampleLevel(LinearSampler, f3Normal, 0).rgb;

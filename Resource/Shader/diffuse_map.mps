@@ -1,5 +1,5 @@
 
-[[vk::binding(1,0)]]TextureCube SkyBoxTextureCube;
+[[vk::binding(1,0)]]TextureCube u_texSkyBox;
 [[vk::binding(2,0)]]sampler LinearSampler;
 
 #ifndef NUM_PI
@@ -35,7 +35,7 @@ float4 PS_MAIN(VS_OUT input) : SV_Target
             // tangent space to world
             float3 f3SampleDirection = f3TangentSample.x * f3RightDirection + f3TangentSample.y * f3UpDirection + f3TangentSample.z * f3Normal; 
 
-            f3Irradiance += SkyBoxTextureCube.SampleLevel(LinearSampler, f3SampleDirection, 0).rgb * cos(theta) * sin(theta);
+            f3Irradiance += u_texSkyBox.SampleLevel(LinearSampler, f3SampleDirection, 0).rgb * cos(theta) * sin(theta);
             fNrSamples = fNrSamples + 1.0;
         }
     }
