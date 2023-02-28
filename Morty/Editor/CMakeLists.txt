@@ -136,16 +136,6 @@ if(MORTY_BUILD_TARGET STREQUAL "WIN")
 
     add_custom_command(TARGET Editor POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${THIRD_PARTY_PATH}/installs/assimp/bin/assimp-vc142-mtd.dll"
-            $<TARGET_FILE_DIR:Editor>)
-
-    add_custom_command(TARGET Editor POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${THIRD_PARTY_PATH}/installs/assimp/bin/assimp-vc142-mt.dll"
-            $<TARGET_FILE_DIR:Editor>)
-
-    add_custom_command(TARGET Editor POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${THIRD_PARTY_PATH}/installs/SDL/bin/SDL2d.dll"
             $<TARGET_FILE_DIR:Editor>)
             

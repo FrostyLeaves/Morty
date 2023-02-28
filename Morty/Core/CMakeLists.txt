@@ -111,9 +111,6 @@ set(CORE_CODE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}
 ############################################################
 
 if(MORTY_BUILD_TARGET STREQUAL "WIN")
-    include(${CMAKE_SCRIPT_PATH}/add_vulkan.cmake)
-    include(${CMAKE_SCRIPT_PATH}/add_spirv.cmake)
-    include(${CMAKE_SCRIPT_PATH}/add_assimp.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_flatbuffer.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_crossguid.cmake)
 
@@ -127,9 +124,6 @@ if(MORTY_BUILD_TARGET STREQUAL "WIN")
 endif()
 
 if(MORTY_BUILD_TARGET STREQUAL "MACOS")
-    include(${CMAKE_SCRIPT_PATH}/add_vulkan_macos.cmake)
-    include(${CMAKE_SCRIPT_PATH}/add_spirv.cmake)
-    include(${CMAKE_SCRIPT_PATH}/add_assimp.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_flatbuffer.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_crossguid.cmake)
     target_compile_definitions(Core
@@ -139,28 +133,12 @@ if(MORTY_BUILD_TARGET STREQUAL "MACOS")
 endif()
 
 if(MORTY_BUILD_TARGET STREQUAL "IOS")
-    include(${CMAKE_SCRIPT_PATH}/add_vulkan_ios.cmake)
-    include(${CMAKE_SCRIPT_PATH}/add_spirv_ios.cmake)
-    include(${CMAKE_SCRIPT_PATH}/add_assimp_ios.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_flatbuffer_ios.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_crossguid_ios.cmake)
     target_compile_definitions(Core
         PUBLIC MORTY_IOS
     )
 #    message(FATAL_ERROR IOS)
-endif()
-
-
-if(Vulkan_FOUND)
-    target_link_libraries(Core PUBLIC Vulkan::Vulkan)
-else()
-    message(FATAL_ERROR "Vulkan not found.")
-endif()
-
-if(assimp_FOUND)
-    target_link_libraries(Core PRIVATE assimp::assimp)
-else()
-    message(FATAL_ERROR "Assimp not found.")
 endif()
 
 if(flatbuffers_FOUND)
@@ -175,38 +153,12 @@ else()
     message(FATAL_ERROR "crossguid not found.")
 endif()
 
-if(SPIRV_CROSS_FOUND)
-    target_include_directories(Core
-        PUBLIC
-            SPIRV_INCLUDE_PATH
-    )
-
-    target_link_directories(Core PRIVATE SPIRV_LIBRARY_PATH)
-    target_link_libraries(Core PRIVATE SPIRV::ALL)
-else()
-    message(FATAL_ERROR "SPIRV_CROSS not found.")
-endif()
-
-
-target_include_directories(Core
-    PUBLIC
-        "${THIRD_PARTY_PATH}/MoltenVK/External/SPIRV-Cross"
-)
-
 ############################################################
 # Eigen
 ############################################################
 target_include_directories(Core
     PUBLIC
         ${THIRD_PARTY_PATH}/eigen/Eigen
-)
-
-############################################################
-# rapidjson
-############################################################
-target_include_directories(Core
-    PUBLIC
-        ${THIRD_PARTY_PATH}/rapidjson/include/rapidjson
 )
 
 set( CORE_CODE_DIRECTORIES
