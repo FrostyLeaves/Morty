@@ -17,7 +17,6 @@ class NodeTreeView;
 class PropertyView;
 class MaterialView;
 class ResourceView;
-class TaskGraphView;
 class ModelConvertView;
 class MessageView;
 class MInputEvent;
@@ -71,7 +70,6 @@ public:
 	void ShowMessage();
 	void ShowResource();
 	void ShowModelConvert();
-	void ShowRenderGraphView();
 
 	void ShowDialog();
 
@@ -85,7 +83,6 @@ protected:
 	PropertyView* m_pPropertyView;
 	MaterialView* m_pMaterialView;
 	ResourceView* m_pResourceView;
-	TaskGraphView* m_pTaskGraphView;
 	ModelConvertView* m_pModelConvertView;
 	MessageView* m_pMessageView;
 

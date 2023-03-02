@@ -24,6 +24,7 @@
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
+#include "assimp/pbrmaterial.h"
 
 #include "Utility/MFileHelper.h"
 
@@ -49,7 +50,7 @@ void CopyMatrix4(Matrix4* matdest, aiMatrix4x4* matsour)
 	{
 		for (uint32_t c = 0; c < 4; ++c)
 		{
-			matdest->m[r][c] = (*matsour)[r][c];
+			matdest->m[r][c] = (*matsour)[c][r];
 		}
 	}
 }
@@ -96,9 +97,11 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 	m_pScene = pObjectSystem->CreateObject<MScene>();
 
 	m_strResourcePath = convertInfo.strResourcePath;
+	bImportCamera = convertInfo.bImportCamera;
+	bImportLights = convertInfo.bImportLights;
+	eMaterialType = convertInfo.eMaterialType;
 
 	auto time = MTimer::GetCurTime();
-	eMaterialType = convertInfo.eMaterialType;
 	if (!Load(convertInfo.strResourcePath))
 		return false;
 
@@ -164,11 +167,6 @@ bool MModelConverter::Load(const MString& strResourcePath)
 
 	m_pSkeleton = pResourceSystem->CreateResource<MSkeletonResource>();
 
-	m_pModelEntity = m_pScene->CreateEntity();
-	
-	MSceneComponent* pSceneComponent = m_pScene->AddComponent<MSceneComponent>(m_pModelEntity);
-	MModelComponent* pModelComponent = m_pScene->AddComponent<MModelComponent>(m_pModelEntity);
-
 	std::vector<MString> vSearchPath = pResourceSystem->GetSearchPath();
 
 
@@ -195,7 +193,8 @@ bool MModelConverter::Load(const MString& strResourcePath)
 		return false;
 	
 
-	m_pModelEntity->SetName(scene->mRootNode->mName.C_Str());
+	m_pModelEntity = GetEntityFromNode(scene, scene->mRootNode);
+	MModelComponent* pModelComponent = m_pScene->AddComponent<MModelComponent>(m_pModelEntity);
 
 	//Textures
 	ProcessTexture(scene);
@@ -210,11 +209,17 @@ bool MModelConverter::Load(const MString& strResourcePath)
 	//Animation
 	ProcessAnimation(scene);
 
-	//Lights
-	ProcessLights(scene);
+	if (bImportLights)
+	{
+		//Lights
+		ProcessLights(scene);
+	}
 
-	//Cameras
-	ProcessCameras(scene);
+	if (bImportCamera)
+	{
+		//Cameras
+		ProcessCameras(scene);
+	}
 
 	return true;
 }
@@ -499,6 +504,7 @@ void MModelConverter::ProcessLights(const aiScene* pScene)
 		MString strName = pLight->mName.C_Str();
 
 		MEntity* pLightEntity = m_pScene->CreateEntity();
+		pLightEntity->SetName(strName);
 		switch (pLight->mType)
 		{
 		case aiLightSourceType::aiLightSource_POINT:
@@ -551,8 +557,10 @@ void MModelConverter::ProcessCameras(const aiScene* pScene)
 	for (uint32_t i = 0; i < pScene->mNumCameras; ++i)
 	{
 		aiCamera* pCamera = pScene->mCameras[i];
+		MString strName = pCamera->mName.C_Str();
 
 		MEntity* pCameraEntity = m_pScene->CreateEntity();
+		pCameraEntity->SetName(strName);
 		MSceneComponent* pSceneComponent = m_pScene->AddComponent<MSceneComponent>(pCameraEntity);
 		MCameraComponent* pCameraComponent = m_pScene->AddComponent<MCameraComponent>(pCameraEntity);
 
@@ -758,10 +766,10 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 
 			{aiTextureType_BASE_COLOR, MaterialKey::Albedo},
 			{aiTextureType_NORMAL_CAMERA, MaterialKey::Normal},
-			{aiTextureType_EMISSION_COLOR, "u_mat_texEmission"},
 			{aiTextureType_METALNESS, MaterialKey::Metallic},
 			{aiTextureType_DIFFUSE_ROUGHNESS, MaterialKey::Roughness},
 			{aiTextureType_AMBIENT_OCCLUSION, MaterialKey::AmbientOcc},
+			{aiTextureType_EMISSION_COLOR, MaterialKey::Emission},
 		};
 
 		pTextureMapping = &PbrTextureMapping;
@@ -843,7 +851,9 @@ void MModelConverter::ProcessTexture(const aiScene* pScene)
 					buffer[i + 3] = temp;
 				}
 
-				pTextureResource->LoadFromMemory(buffer, nWidth, nHeight, 4, MTextureResource::PixelFormat::Byte8, false);
+				pTextureResource->LoadFromMemory(buffer, nWidth, nHeight, 4, MTextureResource::PixelFormat::Byte8);
+				delete[] buffer;
+				buffer = nullptr;
 
 			}
 
@@ -856,16 +866,11 @@ MEntity* MModelConverter::GetEntityFromNode(const aiScene* pScene, aiNode* pNode
 {
 	MEntitySystem* pEntitySystem = GetEngine()->FindSystem<MEntitySystem>();
 
-	if (pScene->mRootNode == pNode)
-		return m_pModelEntity;
-
 	if (m_tNodeMaps.find(pNode) != m_tNodeMaps.end())
 		return m_tNodeMaps[pNode];
 
 	Matrix4 matTransform;
 	CopyMatrix4(&matTransform, &pNode->mTransformation);
-
-	MEntity* pParentEntity = GetEntityFromNode(pScene, pNode->mParent);
 
 	MEntity* pEntity = m_pScene->CreateEntity();
 	MSceneComponent* pSceneComponent = m_pScene->AddComponent<MSceneComponent>(pEntity);
@@ -873,7 +878,13 @@ MEntity* MModelConverter::GetEntityFromNode(const aiScene* pScene, aiNode* pNode
 	pEntity->SetName(pNode->mName.C_Str());
 	pSceneComponent->SetTransform(MTransform(matTransform));
 
-	pEntitySystem->AddChild(pParentEntity, pEntity);
+	if (pNode->mParent)
+	{
+		if (MEntity* pParentEntity = GetEntityFromNode(pScene, pNode->mParent))
+		{
+			pEntitySystem->AddChild(pParentEntity, pEntity);
+		}
+	}
 
 	m_tNodeMaps[pNode] = pEntity;
 

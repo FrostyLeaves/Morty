@@ -2,7 +2,23 @@
   "version": "0.0.1",
   "description": "",
   "dependencies": [
-    "rapidjson",
-    "assimp"
+    "assimp",
+    "crossguid",
+    "directx-dxc",
+    "eigen3",
+    "flatbuffers",
+    {
+      "name": "sdl2",
+      "default-features": false,
+      "features": [ "vulkan" ]
+    },
+    {
+      "name": "imgui",
+      "default-features": false,
+      "features": [
+        "sdl2-binding"
+      ]
+    },
+    "stb"
   ]
 }

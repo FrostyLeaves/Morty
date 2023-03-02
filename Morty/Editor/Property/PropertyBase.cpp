@@ -252,7 +252,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 		{
 			MShaderMacro& shaderMacro = pMaterial->GetShaderMacro();
-			float fWidth = ImGui::GetContentRegionAvailWidth();
+			float fWidth = ImGui::GetContentRegionAvail().x;
 			if (ShowNodeBeginWithEx("Macro"))
 			{
 				ShowNodeExBegin("Add Macro");
@@ -289,7 +289,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 		{
 			ShowValueBegin("Shader");
-			if (ImGui::Button("Reload Shader", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+			if (ImGui::Button("Reload Shader", ImVec2(ImGui::GetContentRegionAvail().x, 0)))
 			{
 				MString strResPathVS = pResource->GetVertexShaderResource()->GetResourcePath();
 				pResource->GetResourceSystem()->Reload(strResPathVS);
@@ -399,7 +399,7 @@ void PropertyBase::EditMResource(const MString& strDlgID, const MString& strReso
 		strButtonLabel = strResourcePathName = "null";
 	}
 
-	bool bButtonDown = ImGui::Button(strButtonLabel.c_str(), ImVec2(ImGui::GetContentRegionAvailWidth(), 0));
+	bool bButtonDown = ImGui::Button(strButtonLabel.c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0));
 	if (ImGui::IsItemHovered() && !strResourcePathName.empty())
 		ImGui::SetTooltip(strResourcePathName.c_str());
 
@@ -440,7 +440,7 @@ void PropertyBase::EditSaveMResource(const MString& stringID, const MString& str
 		MString strResourcePathName = pResource->GetResourcePath();
 		MString strButtonLabel = pResource->GetFileName(strResourcePathName);
 
-		float fWidth = ImGui::GetContentRegionAvailWidth();
+		float fWidth = ImGui::GetContentRegionAvail().x;
 
 		bool bButtonDown = ImGui::Button("Save To", ImVec2(fWidth * 0.5f, 0));
 		if (ImGui::IsItemHovered() && !strResourcePathName.empty())

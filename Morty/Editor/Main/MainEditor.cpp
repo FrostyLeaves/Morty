@@ -1,7 +1,7 @@
 #include "MainEditor.h"
 
 #include "imgui.h"
-#include "imgui_impl_sdl.h"
+#include "imgui_impl_sdl2.h"
 #include "ImGuiFileDialog.h"
 
 #include "SDL.h"
@@ -30,7 +30,6 @@
 #include "Widget/PropertyView.h"
 #include "Widget/MaterialView.h"
 #include "Widget/ResourceView.h"
-#include "Widget/TaskGraphView.h"
 #include "Widget/ModelConvertView.h"
 #include "Widget/MessageView.h"
 
@@ -60,7 +59,6 @@ MainEditor::MainEditor()
 	, m_pPropertyView(nullptr)
 	, m_pMaterialView(nullptr)
 	, m_pResourceView(nullptr)
-	, m_pTaskGraphView(nullptr)
 	, m_pModelConvertView(nullptr)
 	, m_pMessageView(nullptr)
 	, m_pImGuiRenderable(nullptr)
@@ -110,7 +108,6 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	m_pPropertyView = new PropertyView();
 	m_pMaterialView = new MaterialView();
 	m_pResourceView = new ResourceView();
-	m_pTaskGraphView = new TaskGraphView();
 	m_pModelConvertView = new ModelConvertView();
 	m_pMessageView = new MessageView();
 
@@ -118,7 +115,6 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	m_vChildView.push_back(m_pPropertyView);
 	m_vChildView.push_back(m_pMaterialView);
 	m_vChildView.push_back(m_pResourceView);
-	m_vChildView.push_back(m_pTaskGraphView);
 	m_vChildView.push_back(m_pModelConvertView);
 	m_vChildView.push_back(m_pMessageView);
 
@@ -235,6 +231,11 @@ bool MainEditor::MainLoop(MTaskNode* pNode)
 		else if (event.type == SDL_KEYUP && event.key.windowID == SDL_GetWindowID(m_pSDLWindow))
 		{
 			MKeyBoardInputEvent e(event.key.keysym.sym, MEKeyState::UP);
+			Input(&e);
+		}
+		else if (event.type == SDL_TEXTEDITING && event.key.windowID == SDL_GetWindowID(m_pSDLWindow))
+		{
+			MKeyBoardInputEvent e(event.key.keysym.sym, MEKeyState::DOWN);
 			Input(&e);
 		}
 
@@ -382,7 +383,6 @@ void MainEditor::ShowMenu()
 			if (ImGui::MenuItem("Resource", "", &m_pResourceView->m_bVisiable)) {}
 			if (ImGui::MenuItem("Message", "", &m_pMessageView->m_bVisiable)) {}
 			if (ImGui::MenuItem("ModelConvert", "", &m_pModelConvertView->m_bVisiable)) {}
-			if (ImGui::MenuItem("RenderGraph", "", &m_pTaskGraphView->m_bVisiable)) {}
 		
 			if (ImGui::MenuItem("Render to Window", "", &m_bRenderToWindow)) {}
 
@@ -568,19 +568,6 @@ void MainEditor::ShowModelConvert()
 	ImGui::End();
 }
 
-void MainEditor::ShowRenderGraphView()
-{
-	if (!m_pTaskGraphView->m_bVisiable)
-		return;
-
-	if (ImGui::Begin("RenderGraph", &m_pTaskGraphView->m_bVisiable))
-	{
-		m_pTaskGraphView->Render();
-	}
-
-	ImGui::End();
-}
-
 void MainEditor::ShowDialog()
 {
 	if (ImGuiFileDialog::Instance()->Display("OpenFile"))
@@ -754,7 +741,6 @@ void MainEditor::Render(MTaskNode* pNode)
 	ShowProperty();
 	ShowMessage();
 	ShowResource();
-	ShowRenderGraphView();
 	ShowModelConvert();
 	
 	ShowDialog();

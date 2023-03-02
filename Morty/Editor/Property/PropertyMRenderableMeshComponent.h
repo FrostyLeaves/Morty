@@ -47,7 +47,7 @@ public:
 					ShowValueEnd();
 
 					ShowValueBegin("Instance");
-					if (ImGui::Button("Edit Material", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+					if (ImGui::Button("Edit Material", ImVec2(ImGui::GetContentRegionAvail().x, 0)))
 					{
 						int nResID = MGlobal::M_INVALID_INDEX;
 						if (pMeshComponent->GetMaterial())

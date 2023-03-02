@@ -52,26 +52,6 @@ source_group("View" FILES ${RENDER_VIEW_FILES})
 
 file(GLOB RENDER_FLATBUFFER_FILES Flatbuffer/*.h Flatbuffer/*.cpp )
 source_group("Flatbuffer" FILES ${RENDER_FLATBUFFER_FILES})
-############################################################
-# spot
-############################################################
-file(GLOB SPOT_FILES ${THIRD_PARTY_PATH}/spot/*.hpp
-                    ${THIRD_PARTY_PATH}/spot/*.cpp
-                    ${THIRD_PARTY_PATH}/spot/*.c
-)
-source_group("spot" FILES ${SPOT_FILES})
-set(RENDER_CODE_DIRECTORIES ${RENDER_CODE_DIRECTORIES} ${THIRD_PARTY_PATH}/spot)
-
-############################################################
-# stb
-############################################################
-file(GLOB STB_FILES ${THIRD_PARTY_PATH}/stb/*.h
-                    ${THIRD_PARTY_PATH}/stb/deprecated/*.h
-                    ${THIRD_PARTY_PATH}/stb/deprecated/*.c
-)
-source_group("stb" FILES ${STB_FILES})
-set(RENDER_CODE_DIRECTORIES ${RENDER_CODE_DIRECTORIES} ${THIRD_PARTY_PATH}/stb)
-
 
 ############################################################
 # add library
@@ -123,29 +103,25 @@ set_target_properties(Render PROPERTIES
 
 
 if(MORTY_BUILD_TARGET STREQUAL "WIN")
-    include(${CMAKE_SCRIPT_PATH}/add_vulkan.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_spirv.cmake)
-    include(${CMAKE_SCRIPT_PATH}/add_assimp.cmake)
 endif()
 
 if(MORTY_BUILD_TARGET STREQUAL "MACOS")
-    include(${CMAKE_SCRIPT_PATH}/add_vulkan_macos.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_spirv.cmake)
-    include(${CMAKE_SCRIPT_PATH}/add_assimp.cmake)
 endif()
 
 if(MORTY_BUILD_TARGET STREQUAL "IOS")
-    include(${CMAKE_SCRIPT_PATH}/add_vulkan_ios.cmake)
     include(${CMAKE_SCRIPT_PATH}/add_spirv_ios.cmake)
-    include(${CMAKE_SCRIPT_PATH}/add_assimp_ios.cmake)
 endif()
 
+find_package(Vulkan REQUIRED)
 if(Vulkan_FOUND)
     target_link_libraries(Render PUBLIC Vulkan::Vulkan)
 else()
     message(FATAL_ERROR "Vulkan not found.")
 endif()
 
+find_package(assimp CONFIG REQUIRED)
 if(assimp_FOUND)
     target_link_libraries(Render PRIVATE assimp::assimp)
 else()
@@ -156,6 +132,21 @@ if(SPIRV_CROSS_FOUND)
     target_link_libraries(Render PUBLIC SPIRV::ALL)
 else()
     message(FATAL_ERROR "SPIRV_CROSS not found.")
+endif()
+
+find_package(directx-dxc CONFIG REQUIRED)
+if(directx-dxc_FOUND)
+    target_link_libraries(Render PRIVATE Microsoft::DirectXShaderCompiler)
+else()
+    message(FATAL_ERROR "directx-dxc not found.")
+endif()
+
+find_package(Stb REQUIRED)
+if(Stb_FOUND)
+    target_compile_definitions(Render PRIVATE STB_IMAGE_IMPLEMENTATION )
+    target_include_directories(Render PRIVATE ${Stb_INCLUDE_DIR})
+else()
+    message(FATAL_ERROR "Stb not found.")
 endif()
 
 target_link_libraries(Render PUBLIC Core)

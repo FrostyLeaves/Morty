@@ -37,12 +37,14 @@ Vector3 MDirectionalLightComponent::GetWorldDirection()
 
 flatbuffers::Offset<void> MDirectionalLightComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
+	auto fbSuper = Super::Serialize(fbb).o;
+
 	mfbs::MDirectionalLightComponentBuilder builder(fbb);
 
 	builder.add_color(reinterpret_cast<mfbs::Vector4*>(&GetColorVector()));
 	builder.add_light_intensity(GetLightIntensity());
 
-	builder.add_super(Super::Serialize(fbb).o);
+	builder.add_super(fbSuper);
 
 	return builder.Finish().Union();
 }

@@ -56,6 +56,8 @@ Vector3 MSpotLightComponent::GetWorldDirection()
 
 flatbuffers::Offset<void> MSpotLightComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
+	auto fbSuper = Super::Serialize(fbb).o;
+
 	mfbs::MSpotLightComponentBuilder builder(fbb);
 
 	builder.add_color(reinterpret_cast<mfbs::Vector4*>(&GetColorVector()));
@@ -63,7 +65,7 @@ flatbuffers::Offset<void> MSpotLightComponent::Serialize(flatbuffers::FlatBuffer
 	builder.add_inner_cut_off_angle(GetInnerCutOff());
 	builder.add_outer_cut_off_angle(GetOuterCutOff());
 
-	builder.add_super(Super::Serialize(fbb).o);
+	builder.add_super(fbSuper);
 
 	return builder.Finish().Union();
 }

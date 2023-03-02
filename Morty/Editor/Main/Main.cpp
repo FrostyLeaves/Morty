@@ -67,6 +67,8 @@ int main()
 
 //	LOAD_MODEL_TEST(&engine, pScene);
 
+//	LOAD_MODEL_TRANSLATION_TEST(&engine, pScene);
+
 	LOAD_MODEL_SPONZA_TEST(&engine, pScene);
 
 	//GPU_DRIVEN_CULLING_TEST(&engine, pScene);

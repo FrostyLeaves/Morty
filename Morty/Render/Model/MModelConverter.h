@@ -43,6 +43,8 @@ struct MORTY_API MModelConvertInfo
 	MString strOutputDir;
 	MString strOutputName;
 	
+	bool bImportCamera = false;
+	bool bImportLights = true;
 	MModelConvertMaterialType eMaterialType;
 };
 
@@ -103,6 +105,9 @@ private:
 
 	std::vector<std::shared_ptr<MSkeletalAnimation>> m_vSkeletalAnimation;
 
+
+	bool bImportCamera = false;
+	bool bImportLights = true;
 	MModelConvertMaterialType eMaterialType;
 
 };

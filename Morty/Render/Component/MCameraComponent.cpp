@@ -48,6 +48,8 @@ void MCameraComponent::SetZFar(const float& fZFar)
 
 flatbuffers::Offset<void> MCameraComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
+	auto fbSuper = Super::Serialize(fbb).o;
+
 	mfbs::MCameraComponentBuilder builder(fbb);
 
 	builder.add_camera_type((int)GetCameraType());
@@ -57,7 +59,7 @@ flatbuffers::Offset<void> MCameraComponent::Serialize(flatbuffers::FlatBufferBui
 	builder.add_width(GetWidth());
 	builder.add_height(GetHeight());
 
-	builder.add_super(Super::Serialize(fbb).o);
+	builder.add_super(fbSuper);
 
 	return builder.Finish().Union();
 }

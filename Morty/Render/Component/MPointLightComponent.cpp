@@ -22,6 +22,8 @@ MPointLightComponent::~MPointLightComponent()
 
 flatbuffers::Offset<void> MPointLightComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
+	auto super = Super::Serialize(fbb).o;
+
 	mfbs::MPointLightComponentBuilder builder(fbb);
 
 	builder.add_color(reinterpret_cast<mfbs::Vector4*>(&GetColorVector()));
@@ -30,7 +32,7 @@ flatbuffers::Offset<void> MPointLightComponent::Serialize(flatbuffers::FlatBuffe
 	builder.add_linear(GetLinear());
 	builder.add_quadratic(GetQuadratic());
 
-	builder.add_super(Super::Serialize(fbb).o);
+	builder.add_super(super);
 
 	return builder.Finish().Union();
 }

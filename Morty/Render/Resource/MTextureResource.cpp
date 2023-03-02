@@ -6,7 +6,6 @@
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
 
-#include "spot.hpp"
 #include "stb_image.h"
 
 MORTY_CLASS_IMPLEMENT(MTextureResource, MResource)
@@ -84,7 +83,7 @@ void MTextureResource::OnDelete()
 	m_pTexture->DestroyBuffer(pRenderSystem->GetDevice());
 }
 
-void MTextureResource::LoadFromMemory(MByte* aByteData, const uint32_t& unWidth, const uint32_t& unHeight, uint32_t nChannel, PixelFormat ePixelFormat/* = PixelFormat::Byte8 */, bool bCopyMemory/* = true*/)
+void MTextureResource::LoadFromMemory(MByte* aByteData, const uint32_t& unWidth, const uint32_t& unHeight, uint32_t nChannel, PixelFormat ePixelFormat/* = PixelFormat::Byte8 */)
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
@@ -109,14 +108,8 @@ void MTextureResource::LoadFromMemory(MByte* aByteData, const uint32_t& unWidth,
 			m_aByteData = FillChannelNum<float>(aByteData, nSize, nChannel, 4, { 0.0f, 0.0f, 0.0f, 1.0f });
 
 		nChannel = 4;
-
-		if (!bCopyMemory)
-		{
-			delete[] aByteData;
-		}
 	}
-
-	else if (bCopyMemory)
+	else
 	{
 		if (PixelFormat::Byte8 == ePixelFormat)
 			m_aByteData = Malloc<MByte>(nSize);
@@ -124,14 +117,16 @@ void MTextureResource::LoadFromMemory(MByte* aByteData, const uint32_t& unWidth,
 			m_aByteData = Malloc<float>(nSize);
 		memcpy(m_aByteData, aByteData, nSize);
 	}
-	else
-	{
-		m_aByteData = aByteData;
-	}
 
 	m_pTexture->SetName(m_strResourcePath);
 	m_pTexture->SetTextureLayout(GetTextureLayout(nChannel, ePixelFormat));
 	m_pTexture->GenerateBuffer(pRenderSystem->GetDevice(), m_aByteData);
+
+	if (m_aByteData)
+	{
+		delete[] m_aByteData;
+		m_aByteData = nullptr;
+	}
 }
 
 void MTextureResource::CreateCubeMapRenderTarget(const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, const METextureLayout& eLayout, const bool& bMipmapEnable)
@@ -164,13 +159,15 @@ bool MTextureResource::ImportTextureFromMemory(char* buffer, size_t nSize, const
 	if (importInfo.ePixelFormat == PixelFormat::Byte8)
 	{
 		stbi_uc* data = stbi_load_from_memory((const stbi_uc*)buffer, nSize, &unWidth, &unHeight, &comp, reqComp);
-		LoadFromMemory((MByte*)data, unWidth, unHeight, reqComp, importInfo.ePixelFormat, false);
+		LoadFromMemory((MByte*)data, unWidth, unHeight, reqComp, importInfo.ePixelFormat);
+		stbi_image_free(data);
 		data = nullptr;
 	}
 	else if (importInfo.ePixelFormat == PixelFormat::Float32)
 	{
 		float* data = stbi_loadf_from_memory((const stbi_uc*)buffer, nSize, &unWidth, &unHeight, &comp, reqComp);
-		LoadFromMemory((MByte*)data, unWidth, unHeight, reqComp, importInfo.ePixelFormat, false);
+		LoadFromMemory((MByte*)data, unWidth, unHeight, reqComp, importInfo.ePixelFormat);
+		stbi_image_free(data);
 		data = nullptr;
 	}
 	else
@@ -267,7 +264,7 @@ bool MTextureResource::ImportCubeMap(const std::array<MString, 6>& vResourcePath
 		{
 			if (vImageData[i])
 			{
-				free(vImageData[i]);
+				stbi_image_free(vImageData[i]);
 				vImageData[i] = nullptr;
 			}
 		}
@@ -337,6 +334,13 @@ bool MTextureResource::ImportCubeMap(const std::array<MString, 6>& vResourcePath
 
 
 	m_pTexture->GenerateBuffer(pRenderSystem->GetDevice(), m_aByteData);
+
+	if (m_aByteData)
+	{
+		delete[] m_aByteData;
+		m_aByteData = nullptr;
+	}
+
 	return true;
 }
 

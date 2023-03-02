@@ -48,7 +48,7 @@ public:
 
 	bool ImportCubeMap(const std::array<MString, 6>& vResourcePath, const ImportInfo& importInfo);
 	
-	void LoadFromMemory(MByte* aByteData, const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, PixelFormat ePixelFormat = PixelFormat::Byte8, bool bCopyMemory = true);
+	void LoadFromMemory(MByte* aByteData, const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, PixelFormat ePixelFormat = PixelFormat::Byte8);
 
 	void CreateCubeMapRenderTarget(const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, const METextureLayout& eLayout, const bool& bMipmapEnable);
 

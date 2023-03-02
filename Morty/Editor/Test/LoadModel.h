@@ -53,3 +53,27 @@ void LOAD_MODEL_TEST(MEngine* pEngine, MScene* pScene)
 		}
 	}
 }
+
+void LOAD_MODEL_TRANSLATION_TEST(MEngine* pEngine, MScene* pScene)
+{
+	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
+	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
+
+	std::shared_ptr<MResource> pModelResource = pResourceSystem->LoadResource("./TestTranslation/TestTranslation/TestTranslation.entity");
+	if (!pModelResource)
+	{
+		MModelConverter convert(pEngine);
+
+		MModelConvertInfo info;
+		info.eMaterialType = MModelConvertMaterialType::E_Default_Forward;
+		info.strOutputDir = "./TestTranslation";
+		info.strOutputName = "TestTranslation";
+		info.strResourcePath = "./Model/test_translation.gltf";
+
+		convert.Convert(info);
+
+		pModelResource = pResourceSystem->LoadResource("./TestTranslation/TestTranslation/TestTranslation.entity");
+	}
+
+	auto vEntity = pEntitySystem->LoadEntity(pScene, pModelResource);
+}

@@ -388,3 +388,4 @@ const MString MaterialKey::Metallic = "u_mat_texMetallic";
 const MString MaterialKey::Roughness = "u_mat_texRoughness";
 const MString MaterialKey::AmbientOcc = "u_mat_texAmbientOcc";
 const MString MaterialKey::Height = "u_mat_texHeight";
+const MString MaterialKey::Emission = "u_mat_texEmission";

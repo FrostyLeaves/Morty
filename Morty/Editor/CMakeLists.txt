@@ -1,6 +1,5 @@
 ﻿cmake_minimum_required (VERSION 3.10)
 
-
 ############################################################
 # Render
 ############################################################
@@ -35,18 +34,8 @@ source_group("Widget" FILES ${EDITOR_WIDGET_FILES})
 ############################################################
 # ImGUI
 ############################################################
-file(GLOB EDITOR_IMGUI_FILES ${THIRD_PARTY_PATH}/imgui/*.h ${THIRD_PARTY_PATH}/imgui/*.cpp
-#    ${THIRD_PARTY_PATH}/imgui/backends/imgui_impl_vulkan.*
-    ${THIRD_PARTY_PATH}/imgui/backends/imgui_impl_sdl.*
-    ${THIRD_PARTY_PATH}/imgui/misc/cpp/imgui_stdlib.*)
-
-source_group("ImGUI" FILES ${EDITOR_IMGUI_FILES})
-
 file(GLOB EDITOR_IMGUI_FILE_DIALOG_FILES ${THIRD_PARTY_PATH}/ImGuiFileDialog/ImGuiFileDialog/*.h ${THIRD_PARTY_PATH}/ImGuiFileDialog/ImGuiFileDialog/*.cpp )
 source_group("ImGUI\\FileDialog" FILES ${EDITOR_IMGUI_FILE_DIALOG_FILES})
-
-file(GLOB EDITOR_IMGUI_NODE_EDITOR_FILES ${THIRD_PARTY_PATH}/imgui-node-editor/*.h ${THIRD_PARTY_PATH}/imgui-node-editor/*.cpp )
-source_group("ImGUI\\NodeEditor" FILES ${EDITOR_IMGUI_NODE_EDITOR_FILES})
 
 add_executable(Editor 
         ${EDITOR_COMPONENT_FILES}
@@ -60,7 +49,6 @@ add_executable(Editor
         ${EDITOR_WIDGET_FILES}
         ${EDITOR_IMGUI_FILES}
         ${EDITOR_IMGUI_FILE_DIALOG_FILES}
-        ${EDITOR_IMGUI_NODE_EDITOR_FILES}
 )
 
 
@@ -78,19 +66,7 @@ endif()
 ############################################################
 set(EDITOR_CODE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}
         ${EDITOR_CODE_DIRECTORIES}
-        #${CMAKE_CURRENT_SOURCE_DIR}/Component
-        #${CMAKE_CURRENT_SOURCE_DIR}/Main
-        #${CMAKE_CURRENT_SOURCE_DIR}/Module
-        #${CMAKE_CURRENT_SOURCE_DIR}/Property
-        #${CMAKE_CURRENT_SOURCE_DIR}/Render
-        #${CMAKE_CURRENT_SOURCE_DIR}/System
-        #${CMAKE_CURRENT_SOURCE_DIR}/Utility
-        #${CMAKE_CURRENT_SOURCE_DIR}/Widget
-        ${THIRD_PARTY_PATH}/imgui
-        ${THIRD_PARTY_PATH}/imgui/backends
-        ${THIRD_PARTY_PATH}/imgui/misc/cpp
         ${THIRD_PARTY_PATH}/ImGuiFileDialog/ImGuiFileDialog
-        ${THIRD_PARTY_PATH}/imgui-node-editor
 )
 
 set( EDITOR_CODE_DIRECTORIES
@@ -104,50 +80,28 @@ target_include_directories(Editor
 )
 
 
-if(MORTY_BUILD_TARGET STREQUAL "WIN")
-    target_include_directories(Editor
-        PUBLIC 
-            ${THIRD_PARTY_PATH}/dirent/include
-    )
-endif()
-
-
-if(MORTY_BUILD_TARGET STREQUAL "WIN")
-    include(${CMAKE_SCRIPT_PATH}/add_sdl.cmake)
-endif()
-
-if(MORTY_BUILD_TARGET STREQUAL "MACOS")
-    include(${CMAKE_SCRIPT_PATH}/add_sdl.cmake)
-endif()
-
-
+find_package(SDL2 CONFIG REQUIRED)
 if(SDL2_FOUND)
     target_link_libraries(Editor PUBLIC SDL2::SDL2)
 else()
     message(FATAL_ERROR "SDL2 not found.")
 endif()
 
-
-target_compile_definitions(Editor PUBLIC IMGUI_USER_CONFIG="Utility/imgui_include.h")
-
-
-
-if(MORTY_BUILD_TARGET STREQUAL "WIN")
-
-    add_custom_command(TARGET Editor POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${THIRD_PARTY_PATH}/installs/SDL/bin/SDL2d.dll"
-            $<TARGET_FILE_DIR:Editor>)
-            
-    add_custom_command(TARGET Editor POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${THIRD_PARTY_PATH}/installs/SDL/bin/SDL2.dll"
-            $<TARGET_FILE_DIR:Editor>)
-
-    add_custom_command(TARGET Editor POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "$ENV{VULKAN_SDK}/Bin/dxcompiler.dll"
-            $<TARGET_FILE_DIR:Editor>)
-
+find_package(imgui CONFIG REQUIRED)
+if(imgui_FOUND)
+    target_link_libraries(Editor PUBLIC imgui::imgui)
+    target_compile_definitions(Editor
+        PUBLIC IMGUI_USER_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/Utility/imgui_include.h"
+    )
+else()
+    message(FATAL_ERROR "imgui not found.")
 endif()
 
+find_package(Stb REQUIRED)
+if(Stb_FOUND)
+    target_compile_definitions(Editor PRIVATE STB_IMAGE_IMPLEMENTATION )
+    target_compile_definitions(Editor PRIVATE STB_IMAGE_WRITE_IMPLEMENTATION )
+    target_include_directories(Editor PRIVATE ${Stb_INCLUDE_DIR})
+else()
+    message(FATAL_ERROR "Stb not found.")
+endif()

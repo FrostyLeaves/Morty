@@ -53,7 +53,7 @@ void PropertyMModelComponent::EditAnimation(MModelComponent* pModelComponent)
 		ShowValueBegin("State");
 
 
-		float width = ImGui::GetContentRegionAvailWidth();
+		float width = ImGui::GetContentRegionAvail().x;
 
 		float fPercent = pController->GetPercent();
 		ImGui::SetNextItemWidth(width * 0.75f);

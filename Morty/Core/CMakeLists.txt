@@ -88,32 +88,10 @@ add_library(Core STATIC
 ############################################################
 set(CORE_CODE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}
         ${CORE_CODE_DIRECTORIES}
-        #${CMAKE_CURRENT_SOURCE_DIR}/Component
-        #${CMAKE_CURRENT_SOURCE_DIR}/Engine
-        #${CMAKE_CURRENT_SOURCE_DIR}/Input
-        #${CMAKE_CURRENT_SOURCE_DIR}/Math
-        #${CMAKE_CURRENT_SOURCE_DIR}/Module
-        #${CMAKE_CURRENT_SOURCE_DIR}/Scene
-        #${CMAKE_CURRENT_SOURCE_DIR}/System
-        #${CMAKE_CURRENT_SOURCE_DIR}/Object
-        #${CMAKE_CURRENT_SOURCE_DIR}/Pointer
-        #${CMAKE_CURRENT_SOURCE_DIR}/Resource
-        #${CMAKE_CURRENT_SOURCE_DIR}/TaskGraph
-        #${CMAKE_CURRENT_SOURCE_DIR}/Thread
-        #${CMAKE_CURRENT_SOURCE_DIR}/Type
-        #${CMAKE_CURRENT_SOURCE_DIR}/Utility
-        #${CMAKE_CURRENT_SOURCE_DIR}/Variant
         ${CMAKE_CURRENT_SOURCE_DIR}/Flatbuffer
 )
 
-############################################################
-# ThirdParty
-############################################################
-
 if(MORTY_BUILD_TARGET STREQUAL "WIN")
-    include(${CMAKE_SCRIPT_PATH}/add_flatbuffer.cmake)
-    include(${CMAKE_SCRIPT_PATH}/add_crossguid.cmake)
-
     target_compile_definitions(Core
         PRIVATE CORE_EXPORTS
         PUBLIC MORTY_WIN
@@ -124,8 +102,6 @@ if(MORTY_BUILD_TARGET STREQUAL "WIN")
 endif()
 
 if(MORTY_BUILD_TARGET STREQUAL "MACOS")
-    include(${CMAKE_SCRIPT_PATH}/add_flatbuffer.cmake)
-    include(${CMAKE_SCRIPT_PATH}/add_crossguid.cmake)
     target_compile_definitions(Core
         PUBLIC MORTY_MACOS
     )
@@ -133,33 +109,37 @@ if(MORTY_BUILD_TARGET STREQUAL "MACOS")
 endif()
 
 if(MORTY_BUILD_TARGET STREQUAL "IOS")
-    include(${CMAKE_SCRIPT_PATH}/add_flatbuffer_ios.cmake)
-    include(${CMAKE_SCRIPT_PATH}/add_crossguid_ios.cmake)
     target_compile_definitions(Core
         PUBLIC MORTY_IOS
     )
 #    message(FATAL_ERROR IOS)
 endif()
 
-if(flatbuffers_FOUND)
-    target_link_libraries(Core PUBLIC flatbuffers::flatbuffers)
-else()
-    message(FATAL_ERROR "flatbuffers not found.")
-endif()
 
+############################################################
+# ThirdParty
+############################################################
+
+find_package(crossguid CONFIG REQUIRED)
 if(crossguid_FOUND)
     target_link_libraries(Core PUBLIC crossguid)
 else()
     message(FATAL_ERROR "crossguid not found.")
 endif()
 
-############################################################
-# Eigen
-############################################################
-target_include_directories(Core
-    PUBLIC
-        ${THIRD_PARTY_PATH}/eigen/Eigen
-)
+find_package(Eigen3 CONFIG REQUIRED)
+if(Eigen3_FOUND)
+    target_link_libraries(Core PUBLIC Eigen3::Eigen)
+else()
+    message(FATAL_ERROR "Eigen3 not found.")
+endif()
+
+find_package(flatbuffers CONFIG REQUIRED)
+if(flatbuffers_FOUND)
+    target_link_libraries(Core PUBLIC flatbuffers::flatbuffers)
+else()
+    message(FATAL_ERROR "flatbuffers not found.")
+endif()
 
 set( CORE_CODE_DIRECTORIES
     ${CORE_CODE_DIRECTORIES}

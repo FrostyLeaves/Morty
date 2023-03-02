@@ -19,7 +19,7 @@
 
 #include "RenderProgram/MIRenderProgram.h""
 
-#include "spot.hpp"
+#include "stb_image_write.h"
 
 #define MUTIL_RENDER_PROGRAM false
 
@@ -165,9 +165,7 @@ void SceneTexture::UpdateTexture(const size_t& nImageIndex, MIRenderCommand* pRe
 		if (m_bSnapshot)
 		{
 			pRenderCommand->DownloadTexture(GetTexture(nImageIndex).get(), 0, [=](void* pImageData, const Vector2& v2Size) {
-				
-				std::string&& data = spot::internals::encode_png(v2Size.x, v2Size.y, pImageData, 4);
-				spot::internals::writefile(m_strSnapshotPath, data);
+				stbi_write_png(m_strSnapshotPath.c_str(), v2Size.x, v2Size.y, 4, pImageData, v2Size.x * 4);
 				});
 
 			m_bSnapshot = false;

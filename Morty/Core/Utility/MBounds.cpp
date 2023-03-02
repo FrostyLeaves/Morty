@@ -1,6 +1,5 @@
 #include "Utility/MBounds.h"
-#include "Dense"
-#include "Eigenvalues"
+#include "Eigen/Eigenvalues"
 #include "Math/Matrix.h"
 #include "Math/MMath.h"
 #include "Utility/MTimer.h"

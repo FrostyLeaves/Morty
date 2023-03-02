@@ -27,7 +27,9 @@ void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
 		info.eMaterialType = MModelConvertMaterialType::E_PBR_Deferred;
 		info.strOutputDir = "./Sponza";
 		info.strOutputName = "Sponza";
-		info.strResourcePath = "./Model/Sponza/sponza.obj";
+		info.strResourcePath = "./Model/Sponza/NewSponza_Main_glTF_002.gltf";
+		info.bImportCamera = false;
+		info.bImportLights = false;
 
 		convert.Convert(info);
 

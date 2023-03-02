@@ -86,8 +86,6 @@ private:
 	bool CompileHlslShader(const MString& strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv);
 
 private:
-	struct TBuiltInResource* m_pDefaultBuiltInResource;
-
 	MVulkanDevice* m_pDevice;
 };
 

@@ -1,39 +1,9 @@
-[submodule "ThirdParty/spot"]
-	path = ThirdParty/spot
-	url = https://github.com/FrostyLeaves/spot.git
-[submodule "ThirdParty/rapidjson"]
-	path = ThirdParty/rapidjson
-	url = https://github.com/Tencent/rapidjson.git
-[submodule "ThirdParty/eigen"]
-	path = ThirdParty/eigen
-	url = https://github.com/libigl/eigen.git
-[submodule "ThirdParty/dirent"]
-	path = ThirdParty/dirent
-	url = https://github.com/tronkko/dirent.git
 [submodule "ThirdParty/MoltenVK"]
 	path = ThirdParty/MoltenVK
 	url = https://github.com/KhronosGroup/MoltenVK.git
-[submodule "ThirdParty/SDL"]
-	path = ThirdParty/SDL
-	url = https://github.com/SDL-mirror/SDL.git
-[submodule "ThirdParty/imgui"]
-	path = ThirdParty/imgui
-	url = https://github.com/FrostyLeaves/imgui.git
 [submodule "ThirdParty/ImGuiFileDialog"]
 	path = ThirdParty/ImGuiFileDialog
 	url = https://github.com/FrostyLeaves/ImGuiFileDialog.git
-[submodule "ThirdParty/imgui-node-editor"]
-	path = ThirdParty/imgui-node-editor
-	url = https://github.com/thedmd/imgui-node-editor.git
-[submodule "ThirdParty/stb"]
-	path = ThirdParty/stb
-	url = https://github.com/nothings/stb.git
-[submodule "ThirdParty/flatbuffers"]
-	path = ThirdParty/flatbuffers
-	url = https://github.com/google/flatbuffers.git
-[submodule "ThirdParty/crossguid"]
-	path = ThirdParty/crossguid
-	url = https://github.com/graeme-hill/crossguid.git
 [submodule "ThirdParty/vcpkg"]
 	path = ThirdParty/vcpkg
 	url = git@github.com:microsoft/vcpkg.git

@@ -52,6 +52,7 @@ public:
 	static const MString Roughness;
 	static const MString AmbientOcc;
 	static const MString Height;
+	static const MString Emission;
 };
 
 class MShader;

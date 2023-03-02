@@ -41,7 +41,7 @@ void ModelConvertView::Render()
 	ImGui::Separator();
 
 	prop.ShowValueBegin("Source File");
-	float fWidth = ImGui::GetContentRegionAvailWidth();
+	float fWidth = ImGui::GetContentRegionAvail().x;
 	if (ImGui::Button(m_strSourcePath.c_str(), ImVec2(fWidth, 0)))
 	{
 		ImGuiFileDialog::Instance()->OpenModal(svImportModelID, "Import", svModelFilter, "");
@@ -69,7 +69,7 @@ void ModelConvertView::Render()
 
 
 	{
-		float fWidth = ImGui::GetContentRegionAvailWidth();
+		float fWidth = ImGui::GetContentRegionAvail().x;
 		if (ImGui::Button("Add", ImVec2(fWidth, 0.0f)))
 		{
 			if (!m_strSourcePath.empty() && !m_strOutputDir.empty() && !m_strOutputName.empty())

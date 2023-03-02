@@ -1,13 +1,32 @@
 #coding:UTF-8
-import sys, getopt, os, time
-
-Flatc_Path = "../ThirdParty/installs/flatbuffers/bin/flatc.exe"
+import sys, getopt, os, time, shutil
 
 Root_Path = [
     "../Morty/Core",
     "../Morty/Render",
     "../Morty/Editor",
 ]
+
+#create from chatGPT
+def find_executable(name, path=None):
+    if path is None:
+        path = os.environ.get('PATH', '').split(os.pathsep)
+
+    if sys.platform == 'win32':
+        name = f'{name}.exe'
+
+    for dir in path:
+        for root, dirs, files in os.walk(dir):
+            if name in files:
+                file_path = os.path.join(root, name)
+                if os.access(file_path, os.X_OK):
+                    absolute_path = os.path.abspath(file_path)
+                    return absolute_path
+
+    return None
+
+
+
 
 def headerDocument(className):
     return headerTemaplateString.format(className.upper(), className, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), "Pobrecito" )
@@ -35,7 +54,10 @@ def gen_all_fbs(path, include_path, output_path, flat_exec):
             
 def main(argv):
 
-    flat_exec = os.path.abspath('../ThirdParty/installs/flatbuffers/bin/flatc.exe')
+    flat_exec = find_executable('flatc', path=['../ThirdParty/vcpkg/packages'])
+    if flat_exec == None:
+        print("error: can`t find flatc program.")
+    print('faltc path: ', flat_exec)
 
     include_path = ''
     for path in Root_Path:
