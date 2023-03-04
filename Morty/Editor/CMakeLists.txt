@@ -34,7 +34,7 @@ source_group("Widget" FILES ${EDITOR_WIDGET_FILES})
 ############################################################
 # ImGUI
 ############################################################
-file(GLOB EDITOR_IMGUI_FILE_DIALOG_FILES ${THIRD_PARTY_PATH}/ImGuiFileDialog/ImGuiFileDialog/*.h ${THIRD_PARTY_PATH}/ImGuiFileDialog/ImGuiFileDialog/*.cpp )
+file(GLOB EDITOR_IMGUI_FILE_DIALOG_FILES ${THIRD_PARTY_PATH}/ImGuiFileDialog/*.h ${THIRD_PARTY_PATH}/ImGuiFileDialog/*.cpp )
 source_group("ImGUI\\FileDialog" FILES ${EDITOR_IMGUI_FILE_DIALOG_FILES})
 
 add_executable(Editor 
@@ -66,7 +66,7 @@ endif()
 ############################################################
 set(EDITOR_CODE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}
         ${EDITOR_CODE_DIRECTORIES}
-        ${THIRD_PARTY_PATH}/ImGuiFileDialog/ImGuiFileDialog
+        ${THIRD_PARTY_PATH}/ImGuiFileDialog
 )
 
 set( EDITOR_CODE_DIRECTORIES

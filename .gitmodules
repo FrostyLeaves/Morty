@@ -1,9 +1,7 @@
-[submodule "ThirdParty/MoltenVK"]
-	path = ThirdParty/MoltenVK
-	url = https://github.com/KhronosGroup/MoltenVK.git
 [submodule "ThirdParty/ImGuiFileDialog"]
 	path = ThirdParty/ImGuiFileDialog
-	url = https://github.com/FrostyLeaves/ImGuiFileDialog.git
+	url = git@github.com:aiekick/ImGuiFileDialog.git
+	branch = Lib_Only
 [submodule "ThirdParty/vcpkg"]
 	path = ThirdParty/vcpkg
 	url = git@github.com:microsoft/vcpkg.git

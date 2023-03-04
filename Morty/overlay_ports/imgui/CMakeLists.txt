@@ -3,6 +3,7 @@ project(imgui CXX)
 
 set(CMAKE_DEBUG_POSTFIX d)
 
+
 if(APPLE)
     set(CMAKE_CXX_STANDARD 11)
     enable_language(OBJCXX)
