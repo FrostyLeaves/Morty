@@ -24,7 +24,7 @@ void MObjectSystem::InitObject(MObject* pObject)
 	pObject->OnCreated();
 
 
-	for(auto&& func : m_vPostCreateObjectFunction)
+	for(auto func : m_vPostCreateObjectFunction)
 	{
 		func(pObject);
 	}

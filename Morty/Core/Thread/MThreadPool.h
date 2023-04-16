@@ -3,7 +3,7 @@
  * 
  * @Created      2021-07-08 18:15:33
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MTHREADPOOL_H_

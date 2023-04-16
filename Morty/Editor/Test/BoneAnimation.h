@@ -37,7 +37,7 @@ void BONE_ANIMATION_TEST(MEngine* pEngine, MScene* pScene)
 	std::vector<MComponentID> vMeshComponents;
 	for (size_t i = 0; i < 1; ++i)
 	{
-		auto&& vEntity = pEntitySystem->LoadEntity(pScene, pPigeonResource);
+		auto vEntity = pEntitySystem->LoadEntity(pScene, pPigeonResource);
 
 		for (MEntity* pEntity : vEntity)
 		{

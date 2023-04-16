@@ -14,11 +14,6 @@ class MMaterial;
 class MComponent;
 class MRenderableMeshComponent;
 
-struct MMeshCluster
-{
-	size_t unBeginOffset;
-};
-
 class MMergeInstancingMesh : public MObject
 {
 	MORTY_INTERFACE(MMergeInstancingMesh)

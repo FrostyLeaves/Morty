@@ -1,4 +1,4 @@
-#ifdef DRAW_MESH_MERGE_INSTANCING
+#if DRAW_MESH_INSTANCING_UNIFORM
 
     struct MeshMatrix
     {
@@ -13,6 +13,16 @@
         int u_meshClusterIndex[MERGE_INSTANCING_CLUSTER_MAX_NUM];
         int u_meshInstanceBeginIndex;
     };
+
+#elif DRAW_MESH_INSTANCING_STORAGE
+    
+    struct MeshMatrix
+    {
+        float4x4 matWorld;
+        float3x3 matNormal;
+    };
+
+    [[vk::binding(0,2)]] StructuredBuffer<MeshMatrix> u_meshMatrix;
 
 #else
 
@@ -41,17 +51,18 @@ struct LightBasicInfo
     float3 f3DirLightDir;
 };
 
-
-#ifdef DRAW_MESH_MERGE_INSTANCING
+#if DRAW_MESH_INSTANCING_UNIFORM
     #define MESH_WORLD_MATRIX u_meshMatrix[u_meshClusterIndex[INSTANCE_ID - u_meshInstanceBeginIndex]].matWorld
+#elif DRAW_MESH_INSTANCING_STORAGE
+    #define MESH_WORLD_MATRIX u_meshMatrix[INSTANCE_ID].matWorld
 #else
     #define MESH_WORLD_MATRIX u_matWorld
 #endif
 
-
-
-#ifdef DRAW_MESH_MERGE_INSTANCING
+#if DRAW_MESH_INSTANCING_UNIFORM
     #define MESH_NORMAL_MATRIX u_meshMatrix[u_meshClusterIndex[INSTANCE_ID - u_meshInstanceBeginIndex]].matNormal
+#elif DRAW_MESH_INSTANCING_STORAGE
+    #define MESH_NORMAL_MATRIX u_meshMatrix[INSTANCE_ID].matNormal
 #else
     #define MESH_NORMAL_MATRIX u_matNormal
 #endif

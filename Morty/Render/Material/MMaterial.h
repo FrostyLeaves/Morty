@@ -71,7 +71,6 @@ public:
 
 	MShader* GetVertexShader(){ return m_pShaderProgram->GetVertexShader(); }
 	MShader* GetPixelShader() { return m_pShaderProgram->GetPixelShader(); }
-	MShader* GetComputeShader() { return m_pShaderProgram->GetComputeShader(); }
 
 	std::vector<std::shared_ptr<MShaderConstantParam>>& GetShaderParams();
 	std::vector<std::shared_ptr<MShaderSampleParam>>& GetSampleParams();
@@ -97,11 +96,12 @@ public:
 
 	bool LoadVertexShader(std::shared_ptr<MResource> pResource);
 	bool LoadPixelShader(std::shared_ptr<MResource> pResource);
-	bool LoadComputeShader(std::shared_ptr<MResource> pResource);
 
 	bool LoadVertexShader(const MString& strResource);
 	bool LoadPixelShader(const MString& strResource);
-	bool LoadComputeShader(const MString& strResource);
+
+	void SetBatchInstanceEnable(const bool& bBatch) { m_bBatchInstanceEnable = bBatch; }
+	bool GetBatchInstanceEnable() const { return m_bBatchInstanceEnable; }
 
 public:
 
@@ -111,9 +111,6 @@ public:
 	MShaderMacro& GetShaderMacro() const { return m_pShaderProgram->GetShaderMacro(); }
 	const std::shared_ptr<MShaderProgram>& GetShaderProgram() const { return m_pShaderProgram; }
 	
-	void SetMaterialID(const uint32_t& unID) { m_unMaterialID = unID; }
-	uint32_t GetMaterialID() { return m_unMaterialID; }
-
 public:
 
 	virtual void OnCreated() override;
@@ -139,7 +136,7 @@ private:
 	MERasterizerType m_eRasterizerType;
 	MEMaterialType m_eMaterialType;
 
-	uint32_t m_unMaterialID;
+	bool m_bBatchInstanceEnable = false;
 };
 
 #endif

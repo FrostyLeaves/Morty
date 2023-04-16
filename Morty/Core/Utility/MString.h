@@ -17,7 +17,7 @@
 #endif
 
 typedef std::string MString;
-
+typedef std::string_view MStringView;
 
 class MStringHelper
 {

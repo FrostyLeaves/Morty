@@ -162,7 +162,7 @@ void MResourceSystem::MoveTo(std::shared_ptr<MResource> pResource, const MString
 
 void MResourceSystem::Release()
 {
-	for (auto&& pr : m_tResources)
+	for (auto pr : m_tResources)
 	{
 		pr.second->OnDelete();
 		pr.second = nullptr;

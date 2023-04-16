@@ -19,7 +19,7 @@ public:
     
     IDTYPE GetNewID()
     {
-        return ++m_IDPool;
+        return m_IDPool++;
     }
     
 private:
@@ -35,7 +35,7 @@ public:
 	IDTYPE GetNewID()
 	{
         if(m_vIDPool.empty())
-		    return ++m_IDPool;
+		    return m_IDPool++;
         else
         {
             IDTYPE id = m_vIDPool.front();

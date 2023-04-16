@@ -3,7 +3,7 @@
  * 
  * @Created      2021-07-19 13:17:36
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MRENDERVIEW_H_
@@ -20,7 +20,7 @@
 class MTaskNode;
 class MIRenderCommand;
 
-class MORTY_API MRenderTarget
+class MORTY_API MViewRenderTarget
 {
 public:
 
@@ -56,8 +56,8 @@ public:
 
 	virtual void Render(MTaskNode* pTaskNode) {}
 
-	MRenderTarget* GetNextRenderTarget();
-	void Present(MRenderTarget* pRenderTarget);
+	MViewRenderTarget* GetNextRenderTarget();
+	void Present(MViewRenderTarget* pRenderTarget);
 
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -94,7 +94,7 @@ protected:
 	MVulkanDevice* m_pDevice;
 #endif
 
-	std::vector<MRenderTarget> m_vRenderTarget;
+	std::vector<MViewRenderTarget> m_vRenderTarget;
 
 private:
 

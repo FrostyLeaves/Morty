@@ -17,7 +17,6 @@ MRenderInfo::MRenderInfo()
 	, pCameraEntity(nullptr)
 	, pDirectionalLightEntity(nullptr)
 	, pSkyBoxEntity(nullptr)
-	, cCaclSceneRenderAABB()
 	, pPrimaryRenderCommand(nullptr)
 {
 

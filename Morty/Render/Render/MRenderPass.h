@@ -48,15 +48,18 @@ public:
     uint32_t nMipmapLevel;
 };
 
-struct MORTY_API MBackTexture
+struct MORTY_API MRenderTarget
 {
-    MBackTexture();
+    MRenderTarget() = default;
+    MRenderTarget(const std::shared_ptr<MTexture> pTexture, const MPassTargetDescription& desc)
+    : pTexture(pTexture)
+    , desc(desc){}
 
-    std::shared_ptr<MTexture> pTexture;
+    std::shared_ptr<MTexture> pTexture = nullptr;
     MPassTargetDescription desc;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
-    VkImageView m_VkImageView;
+    VkImageView m_VkImageView = VK_NULL_HANDLE;
 #endif
 };
 
@@ -78,11 +81,13 @@ public:
 
 public:
 
+    void AddBackTexture(const MRenderTarget& backTexture);
+    void SetDepthTexture(const MRenderTarget& backTexture);
     void AddBackTexture(std::shared_ptr<MTexture> pBackTexture, const MPassTargetDescription& desc);
     void SetDepthTexture(std::shared_ptr<MTexture> pDepthTexture, const MPassTargetDescription& desc);
 
-    std::vector<std::shared_ptr<MTexture>> GetBackTextures();
-    std::shared_ptr<MTexture> GetDepthTexture();
+    std::vector<std::shared_ptr<MTexture>> GetBackTextures() const;
+    std::shared_ptr<MTexture> GetDepthTexture() const;
 
     void SetRenderPassID(const uint32_t& unID) { m_unRenderPassID = unID; }
     uint32_t GetRenderPassID() const { return m_unRenderPassID; }
@@ -105,10 +110,10 @@ public:
     uint32_t m_unViewNum;
 
     //render back to texture
-	std::vector<MBackTexture> m_vBackTextures;
+	std::vector<MRenderTarget> m_vBackTextures;
 
     //render depth to texture
-    MBackTexture m_DepthTexture;
+    MRenderTarget m_DepthTexture;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
     //vulkan frame buffer.

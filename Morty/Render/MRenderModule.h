@@ -3,7 +3,7 @@
  * 
  * @Created      2021-07-19 11:50:59
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MRENDERMODULE_H_

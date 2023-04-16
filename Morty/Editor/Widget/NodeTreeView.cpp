@@ -36,7 +36,7 @@ void NodeTreeView::Render()
 
 	MObjectSystem* pObjectSystem = m_pEngine->FindSystem<MObjectSystem>();
 
-	auto&& vEntity = m_pScene->GetAllEntity();
+	auto vEntity = m_pScene->GetAllEntity();
 	for(MEntity* pEntity : vEntity)
 	{
 		MSceneComponent* pSceneComponent = pEntity->GetComponent<MSceneComponent>();

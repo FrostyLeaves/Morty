@@ -3,7 +3,7 @@
  * 
  * @Created      2022-07-30 21:54:49
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MDEBUGRENDERCOMPONENT_H_

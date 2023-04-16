@@ -2,6 +2,7 @@
 
 MORTY_CLASS_IMPLEMENT(MSkyBoxComponent, MComponent)
 
+#include "MRenderNotify.h"
 #include "Resource/MTextureResource.h"
 
 MSkyBoxComponent::MSkyBoxComponent()
@@ -21,10 +22,19 @@ void MSkyBoxComponent::LoadSkyBoxResource(std::shared_ptr<MResource> pTexture)
 	if (!pTexture)
 		return;
 
-	if (std::shared_ptr<MTextureResource> pTextureResource = MTypeClass::DynamicCast<MTextureResource>(pTexture))
+	std::shared_ptr<MTextureResource> pTextureResource = MTypeClass::DynamicCast<MTextureResource>(pTexture);
+	if (!pTextureResource)
 	{
-		m_Texture.SetResource(pTexture);
+		return;
 	}
+
+	if (m_Texture.GetResource() == pTexture)
+	{
+		return;
+	}
+
+	m_Texture.SetResource(pTexture);
+	SendComponentNotify(MRenderNotify::NOTIFY_SKYBOX_TEX_CHANGED);
 }
 
 std::shared_ptr<MResource> MSkyBoxComponent::GetSkyBoxResource()
@@ -37,10 +47,19 @@ void MSkyBoxComponent::LoadDiffuseEnvResource(std::shared_ptr<MResource> pTextur
 	if (!pTexture)
 		return;
 
-	if (std::shared_ptr<MTextureResource> pTextureResource = MTypeClass::DynamicCast<MTextureResource>(pTexture))
+	std::shared_ptr<MTextureResource> pTextureResource = MTypeClass::DynamicCast<MTextureResource>(pTexture);
+	if (!pTextureResource)
 	{
-		m_DiffuseEnvTexture.SetResource(pTexture);
+		return;
 	}
+
+    if (m_DiffuseEnvTexture.GetResource() == pTexture)
+    {
+		return;
+	}
+
+	m_DiffuseEnvTexture.SetResource(pTexture);
+	SendComponentNotify(MRenderNotify::NOTIFY_DIFFUSE_ENV_TEX_CHANGED);
 }
 
 void MSkyBoxComponent::LoadSpecularEnvResource(std::shared_ptr<MResource> pTexture)
@@ -48,10 +67,19 @@ void MSkyBoxComponent::LoadSpecularEnvResource(std::shared_ptr<MResource> pTextu
 	if (!pTexture)
 		return;
 
-	if (std::shared_ptr<MTextureResource> pTextureResource = MTypeClass::DynamicCast<MTextureResource>(pTexture))
+	std::shared_ptr<MTextureResource> pTextureResource = MTypeClass::DynamicCast<MTextureResource>(pTexture);
+	if (!pTextureResource)
 	{
-		m_SpecularEnvTexture.SetResource(pTexture);
+		return;
 	}
+
+	if (m_SpecularEnvTexture.GetResource() == pTexture)
+	{
+		return;
+	}
+	
+    m_SpecularEnvTexture.SetResource(pTexture);
+	SendComponentNotify(MRenderNotify::NOTIFY_SPECULAR_ENV_TEX_CHANGED);
 }
 
 std::shared_ptr<MResource> MSkyBoxComponent::GetDiffuseEnvResource()

@@ -14,6 +14,7 @@
 
 #include <vector>
 
+class MObject;
 class MISystem;
 class MTaskGraph;
 class MORTY_API MEngine : public MTypeClass
@@ -77,9 +78,16 @@ public:
 	std::vector<MISystem*>& GetAllSystem() { return m_vSystem; }
 
 
+	template<typename TYPE>
+	TYPE* RegisterGlobalObject();
+	MObject* FindGlobalObject(const MType* type);
+	template<typename TYPE>
+    TYPE* FindGlobalObject();
+
 protected:
 
 	void RegisterSystem(MISystem* pSystem);
+	void RegisterGlobalObject(const MType* type);
 
 	void Tick(const float& fDelta);
 
@@ -93,6 +101,8 @@ private:
 	std::vector<MISystem*> m_vSystem;
 	std::set<const MType*> m_tSubSystemType;
 
+	std::map<const MType*, MObject*> m_tGlobalObject;
+
 	MTaskGraph* m_pMainTaskGraph;
 
 	MLogger m_logger;
@@ -104,7 +114,19 @@ private:
 template<typename TYPE>
 TYPE* MEngine::FindSystem()
 {
-	return FindSystem(TYPE::GetClassType())->DynamicCast<TYPE>();
+	auto pSystem = FindSystem(TYPE::GetClassType());
+	if (pSystem)
+	{
+		return pSystem->DynamicCast<TYPE>();
+	}
+	
+	return nullptr;
+}
+
+template<typename TYPE>
+TYPE* MEngine::FindGlobalObject()
+{
+	return FindGlobalObject(TYPE::GetClassType())->DynamicCast<TYPE>();
 }
 
 template<typename TYPE>
@@ -119,5 +141,16 @@ TYPE* MEngine::RegisterSystem()
 
 	return nullptr;
 }
+
+template<typename TYPE>
+TYPE* MEngine::RegisterGlobalObject()
+{
+	if (MTypeClass::IsType<TYPE, MObject>())
+	{
+		RegisterGlobalObject(TYPE::GetClassType());
+		return FindGlobalObject(TYPE::GetClassType())->DynamicCast<TYPE>();
+	}
+}
+
 
 #endif

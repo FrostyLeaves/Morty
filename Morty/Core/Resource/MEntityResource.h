@@ -3,7 +3,7 @@
  * 
  * @Created      2021-07-20 10:48:24
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MENTITYRESOURCE_H_

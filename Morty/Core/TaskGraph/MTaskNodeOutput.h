@@ -3,7 +3,7 @@
  * 
  * @Created      2021-07-08 11:48:17
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MTASKNODEOUTPUT_H_

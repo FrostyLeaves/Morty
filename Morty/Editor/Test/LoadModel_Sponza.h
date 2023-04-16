@@ -11,7 +11,56 @@
 #include "Resource/MMeshResource.h"
 #include "Resource/MMaterialResource.h"
 #include "Widget/ModelConvertView.h"
+#include "Model/MTextureConverter.h"
 
+
+class MSponzaTextureDelegate : public MITextureDelegate
+{
+public:
+
+	MSponzaTextureDelegate(MEngine* pEngine) : m_pEngine(pEngine) {}
+
+	std::shared_ptr<MTextureResource> GetTexture(const MString& strFullPath, MEModelTextureUsage eUsage) override
+	{
+		std::pair<MString, MEModelTextureUsage> key(strFullPath, eUsage);
+
+		if (m_tTextures.find(key) != m_tTextures.end())
+		{
+			return m_tTextures[key];
+		}
+
+		MResourceSystem* pResourceSystem = m_pEngine->FindSystem<MResourceSystem>();
+
+		auto pResource = pResourceSystem->LoadResource(strFullPath, MTextureResource::GetClassType());
+		if (!pResource)
+		{
+			MORTY_ASSERT(pResource);
+			return nullptr;
+		}
+
+		std::shared_ptr<MTextureResource> pTexture = MTypeClass::DynamicCast<MTextureResource>(pResource);
+
+		if (eUsage == MEModelTextureUsage::Metallic)
+		{
+			pTexture = MTextureConverter::ConvertSingleChannel(pTexture, 2);
+		}
+		else if (eUsage == MEModelTextureUsage::Roughness)
+		{	
+			pTexture = MTextureConverter::ConvertSingleChannel(pTexture, 1);
+		}
+
+		m_tTextures[key] = pTexture;
+
+		return pTexture;
+	}
+	
+
+private:
+
+	std::map<std::pair<MString, MEModelTextureUsage>, std::shared_ptr<MTextureResource> > m_tTextures;
+
+	MEngine* m_pEngine = nullptr;
+};
 
 void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
 {
@@ -30,6 +79,7 @@ void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
 		info.strResourcePath = "./Model/Sponza/NewSponza_Main_glTF_002.gltf";
 		info.bImportCamera = false;
 		info.bImportLights = false;
+		info.pTextureDelegate = std::make_shared<MSponzaTextureDelegate>(pEngine);
 
 		convert.Convert(info);
 
@@ -39,7 +89,7 @@ void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
 	std::vector<MComponentID> vMeshComponents;
 	for (size_t i = 0; i < 1; ++i)
 	{
-		auto&& vEntity = pEntitySystem->LoadEntity(pScene, pModelResource);
+		auto vEntity = pEntitySystem->LoadEntity(pScene, pModelResource);
 
 		for (MEntity* pEntity : vEntity)
 		{
@@ -67,7 +117,7 @@ void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
 	/*
 	for (auto pMaterial : tMaterials)
 	{
-		pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_MERGE_INSTANCING);
+		pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_UNIFORM, "true");
 		pMaterial->LoadVertexShader(pMaterial->GetVertexShaderResource());
 		pMaterial->LoadPixelShader(pMaterial->GetPixelShaderResource());
 	}

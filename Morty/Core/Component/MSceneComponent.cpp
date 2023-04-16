@@ -4,6 +4,8 @@
 #include "Scene/MScene.h"
 #include "Utility/MFunction.h"
 
+#include "Module/MCoreNotify.h"
+
 #include "Flatbuffer/MSceneComponent_generated.h"
 
 MORTY_CLASS_IMPLEMENT(MSceneComponent, MComponent)
@@ -360,7 +362,7 @@ void MSceneComponent::WorldTransformDirty()
 	m_bWorldTransformDirty = true;
 	m_bWorldToLocalTransformDirty = true;
 
-	SendComponentNotify("TransformDirty");
+	SendComponentNotify(MCoreNotify::NOTIFY_TRANSFORM_CHANGED);
 }
 
 void MSceneComponent::LocalTransformDirty()
@@ -372,7 +374,7 @@ void MSceneComponent::LocalTransformDirty()
 	m_bWorldTransformDirty = true;
 	m_bWorldToLocalTransformDirty = true;
 
-	SendComponentNotify("TransformDirty");
+	SendComponentNotify(MCoreNotify::NOTIFY_TRANSFORM_CHANGED);
 
 	WorldTransformDirtyRecursively();
 }

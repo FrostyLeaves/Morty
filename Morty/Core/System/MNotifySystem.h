@@ -3,7 +3,7 @@
  * 
  * @Created      2021-08-06 13:58:11
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MNOTIFYSYSTEM_H_
@@ -24,14 +24,14 @@ public:
 
 public:
 
-    void SendNotify(const MString& strNotifyName, MScene* pScene, const MComponentID& senderID);
+    void SendNotify(const char* strNotifyName, MScene* pScene, const MComponentID& senderID);
 
-    void RegisterNotify(const MString& strNotifyName, MNotifyFunction func);
-    void UnregisterNotify(const MString& strNotifyName, MNotifyFunction func);
+    void RegisterNotify(const char* strNotifyName, MNotifyFunction func);
+    void UnregisterNotify(const char* strNotifyName, MNotifyFunction func);
 
 private:
 
-    std::map<MString, std::vector<MNotifyFunction>> m_tNotifyTable;
+    std::map<const char*, std::vector<MNotifyFunction>> m_tNotifyTable;
 
 };
 

@@ -46,6 +46,11 @@ struct MVertexWithBones
 	float bonesWeight[MRenderGlobal::BONES_PER_VERTEX];
 };
 
+struct MMeshInstanceTransform
+{
+	Matrix4 transform;
+	Matrix3 normalTransform;
+};
 
 struct MMergeInstanceCullData
 {

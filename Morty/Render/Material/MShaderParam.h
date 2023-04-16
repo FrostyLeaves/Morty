@@ -61,12 +61,12 @@ struct MORTY_API MShaderConstantParam : public MShaderParam
 
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
-	VkBuffer m_VkBuffer;
-	VkDeviceMemory m_VkBufferMemory;
-	VkDescriptorBufferInfo m_VkBufferInfo;
-	uint32_t m_unMemoryOffset;
-	MByte* m_pMemoryMapping;
-	uint32_t m_unVkMemorySize;
+	VkBuffer m_VkBuffer = VK_NULL_HANDLE;
+	VkDeviceMemory m_VkBufferMemory = VK_NULL_HANDLE;
+	VkDescriptorBufferInfo m_VkBufferInfo = { VK_NULL_HANDLE, 0, 0 };
+	uint32_t m_unMemoryOffset = 0;
+	MByte* m_pMemoryMapping = 0;
+	uint32_t m_unVkMemorySize = 0;
 #endif
 };
 

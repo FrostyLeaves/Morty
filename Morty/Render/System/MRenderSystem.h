@@ -3,7 +3,7 @@
  * 
  * @Created      2021-07-15 11:10:16
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MRENDERSYSTEM_H_
@@ -17,6 +17,7 @@
 class MIDevice;
 class MTaskNode;
 class MViewport;
+class MMeshManager;
 class MSceneComponent;
 class MCameraComponent;
 class MORTY_API MRenderSystem : public MISystem
@@ -33,11 +34,7 @@ public:
 
 public:
 
-    MIDevice* GetDevice();
-
-public:
-
-    void OnTransformDirty(MComponent* pSender);
+    MIDevice* GetDevice() const;
 
 public:
 
@@ -52,8 +49,8 @@ public:
 
     std::vector<MCameraFrustum> GetCameraFrustum(MViewport* pViewport, MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent, size_t nSize);
 
-    Matrix4 GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent) const;
-    Matrix4 GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent, float fZNear, float fZFar) const;
+    static Matrix4 GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent);
+    static Matrix4 GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent, float fZNear, float fZFar);
 
     
 public:
@@ -80,7 +77,7 @@ public:
 
 private:
 
-	MIDevice* m_pDevice;
+	MIDevice* m_pDevice = nullptr;
 };
 
 

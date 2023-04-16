@@ -19,6 +19,16 @@ class MBuffer;
 struct MVertex;
 class MMaterial;
 
+
+struct MMeshDrawable
+{
+#if RENDER_GRAPHICS == MORTY_VULKAN
+	VkBuffer vertexBuffer = VK_NULL_HANDLE;
+#endif
+	size_t nBeginOffset = 0;
+	size_t nSize = 0;
+};
+
 class MORTY_API MIMesh
 {
 public:

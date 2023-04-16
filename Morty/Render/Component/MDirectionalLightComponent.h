@@ -3,7 +3,7 @@
  * 
  * @Created      2021-04-27 14:08:25
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MDIRECTIONALLIGHTCOMPONENT_H_

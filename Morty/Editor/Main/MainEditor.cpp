@@ -632,7 +632,7 @@ void MainEditor::Render(MTaskNode* pNode)
 
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 	MIDevice* pDevice = pRenderSystem->GetDevice();
-	MRenderTarget* pRenderTarget = GetNextRenderTarget();
+	MViewRenderTarget* pRenderTarget = GetNextRenderTarget();
 	if (!pRenderTarget)
 		return;
 

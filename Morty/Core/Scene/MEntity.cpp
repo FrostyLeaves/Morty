@@ -67,7 +67,7 @@ MComponent* MEntity::GetComponent(const MType* pComponentType)
 	if (!m_pScene)
 		return nullptr;
 
-	auto&& findResult = m_tComponents.find(pComponentType);
+	auto findResult = m_tComponents.find(pComponentType);
 	if (findResult != m_tComponents.end())
 	{
 		return findResult->second;
@@ -110,7 +110,7 @@ flatbuffers::Offset<void> MEntity::Serialize(flatbuffers::FlatBufferBuilder& bui
 {
 	MGuid id = GetID();
 	mfbs::MGuid fbguid(id.data[0], id.data[1], id.data[2], id.data[3]);
-	auto&& fbname = builder.CreateString(GetName());
+	auto fbname = builder.CreateString(GetName());
 
 	std::vector<flatbuffers::Offset<mfbs::AnyComponent >> vFbComponents;
 	std::vector<MComponent*>&& vComponents = GetComponents();
@@ -126,7 +126,7 @@ flatbuffers::Offset<void> MEntity::Serialize(flatbuffers::FlatBufferBuilder& bui
 		vFbComponents.push_back(fbcomponent);
 	}
 
-	auto&& fb_components = builder.CreateVector(vFbComponents);
+	auto fb_components = builder.CreateVector(vFbComponents);
 
 	mfbs::MEntityBuilder entityBuilder(builder);
 
@@ -149,7 +149,7 @@ void MEntity::Deserialize(const void* pBufferPointer)
 
 	for (int i = 0; i < vfbcomponents.Length(); ++i)
 	{
-		auto&& fbcomponent = vfbcomponents.Get(i);
+		auto fbcomponent = vfbcomponents.Get(i);
 
 		MString type = fbcomponent->type()->c_str();
 

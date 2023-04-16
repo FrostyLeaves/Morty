@@ -3,7 +3,7 @@
  * 
  * @Created      2021-07-09 10:52:57
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MTHREADWORK_H_

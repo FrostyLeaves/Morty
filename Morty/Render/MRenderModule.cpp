@@ -25,11 +25,20 @@
 #include "Component/MRenderableMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 #include "Component/MDebugRenderComponent.h"
+
+#include "Shadow/MShadowMapManager.h"
+#include "Manager/MEnvironmentManager.h"
+
 #include "MergeInstancing/MMergeInstancingSubSystem.h"
+#include "MergeInstancing/MRenderableMeshManager.h"
 #include "Scene/MScene.h"
 #include "System/MObjectSystem.h"
 
+#include "Mesh/MMeshManager.h"
+
 #include "TaskGraph/MTaskGraph.h"
+
+#include "Module/MCoreNotify.h"
 
 const MString MRenderModule::DefaultWhite = "Default_White";
 const MString MRenderModule::DefaultNormal = "Default_Normal";
@@ -47,8 +56,6 @@ bool MRenderModule::Register(MEngine* pEngine)
 
 	if (MRenderSystem* pRenderSystem = pEngine->RegisterSystem<MRenderSystem>())
 	{
-		pNotifySystem->RegisterNotify("TransformDirty", M_CLASS_FUNCTION_BIND_0_1(MRenderSystem::OnTransformDirty, pRenderSystem));
-
 		if (MTaskGraph* pTaskGraph = pEngine->GetMainGraph())
 		{
 			if (MTaskNode* pTaskNode = pTaskGraph->AddNode<MTaskNode>("Render_Update"))
@@ -100,6 +107,8 @@ bool MRenderModule::Register(MEngine* pEngine)
 		}
 	}
 
+	pEngine->RegisterGlobalObject<MMeshManager>();
+
 	if (MComponentSystem* pComponentSystem = pEngine->FindSystem<MComponentSystem>())
 	{
 		pComponentSystem->RegisterComponent<MModelComponent>();
@@ -132,7 +141,10 @@ void MRenderModule::OnObjectPostCreate(MObject* pObject)
 	{
 		if (MScene* pScene = pObject->DynamicCast<MScene>())
 		{
-			pScene->RegisterSubSystem<MMergeInstancingSubSystem>();
+			pScene->RegisterManager<MMergeInstancingSubSystem>();
+			pScene->RegisterManager<MRenderableMeshManager>();
+			pScene->RegisterManager<MEnvironmentManager>();
+			pScene->RegisterManager<MShadowMapManager>();
 		}
 	}
 }

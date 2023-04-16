@@ -3,7 +3,7 @@
  * 
  * @Created      2021-04-26 16:26:56
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MCOMPONENT_H_
@@ -13,7 +13,7 @@
 
 #include "Scene/MGuid.h"
 #include "Utility/MSerializer.h"
-#include "Utility/MBlockVector.h"
+#include "Container/MBlockVector.h"
 
 #include "flatbuffers/flatbuffer_builder.h"
 
@@ -68,7 +68,7 @@ public:
 
 public:
 
-    void SendComponentNotify(const MString& notify);
+    void SendComponentNotify(const char* notify);
 
 	MScene* GetScene() const { return m_pScene; }
 	MEntity* GetEntity() const;

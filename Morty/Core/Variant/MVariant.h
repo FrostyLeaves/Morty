@@ -16,11 +16,6 @@
 #include "Math/Matrix.h"
 #include "MVariantMemory.h"
 
-
-#include <vector>
-#include <map>
-#include <unordered_map>  
-
 class MVariantStruct;
 class MVariantArray;
 

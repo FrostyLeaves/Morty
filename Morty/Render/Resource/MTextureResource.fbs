@@ -1,0 +1,24 @@
+include "Resource/MResourceRef.fbs";
+
+namespace mfbs;
+
+enum PixelFormat:byte
+{
+    unknow = 0,
+    byte8 = 1,
+    float32 = 2,
+}
+
+table MTextureResource
+{
+    width: uint;
+    height: uint;
+    pixel_format: PixelFormat;
+    data: [byte];
+    channel: uint;
+
+}
+
+root_type MTextureResource;
+
+file_identifier "MFBS";

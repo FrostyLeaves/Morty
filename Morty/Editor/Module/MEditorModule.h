@@ -3,7 +3,7 @@
  * 
  * @Created      2021-08-20 11:38:47
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MEDITORMODULE_H_

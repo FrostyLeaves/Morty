@@ -58,7 +58,7 @@ void MComponent::PostDeserialize()
 {
 }
 
-void MComponent::SendComponentNotify(const MString& notify)
+void MComponent::SendComponentNotify(const char* notify)
 {
 	if (MEngine* pEngine = GetEngine())
 	{

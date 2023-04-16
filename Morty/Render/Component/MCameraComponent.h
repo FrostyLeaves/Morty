@@ -3,7 +3,7 @@
  * 
  * @Created      2021-04-27 14:04:21
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MCAMERACOMPONENT_H_

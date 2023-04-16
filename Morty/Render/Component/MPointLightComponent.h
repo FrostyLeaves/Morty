@@ -3,7 +3,7 @@
  * 
  * @Created      2021-04-27 14:08:35
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MPOINTLIGHTCOMPONENT_H_

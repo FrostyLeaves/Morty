@@ -156,7 +156,7 @@ void MMergeInstancingMesh::UnregisterMesh(MIMesh* pMesh)
 		return;
 	}
 
-	auto&& findResult = m_tMeshTable.find(pMesh);
+	auto findResult = m_tMeshTable.find(pMesh);
 	if (findResult == m_tMeshTable.end())
 	{
 		return;
@@ -177,7 +177,7 @@ void MMergeInstancingMesh::UnregisterMesh(MIMesh* pMesh)
 
 const MMergeInstancingMesh::MMeshMergeData& MMergeInstancingMesh::FindMesh(MIMesh* pMesh)
 {
-	auto&& findResult = m_tMeshTable.find(pMesh);
+	auto findResult = m_tMeshTable.find(pMesh);
 	if (findResult == m_tMeshTable.end())
 	{
 		static MMeshMergeData InvalidData;

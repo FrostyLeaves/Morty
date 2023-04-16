@@ -1,0 +1,112 @@
+
+struct LOD
+{
+	uint firstIndex;
+	uint indexCount;
+	float distance;
+	float _pad0;
+};
+
+struct InstanceData
+{
+	float3 pos;
+	float scale;
+
+	LOD lods[MESH_LOD_LEVEL_RANGE];
+};
+
+struct UBOOut
+{
+	uint drawCount;
+	uint lodCount[MESH_LOD_LEVEL_RANGE];
+
+	float3 cPcsBoundsMin[CASCADED_SHADOW_MAP_NUM];
+	float3 cPcsBoundsMax[CASCADED_SHADOW_MAP_NUM];
+};
+
+// Same layout as VkDrawIndexedIndirectCommand
+struct IndexedIndirectCommand
+{
+	uint indexCount;
+	uint instanceCount;
+	uint firstIndex;
+	uint vertexOffset;
+	uint firstInstance;
+};
+
+[[vk::binding(0,0)]] StructuredBuffer<InstanceData> instances;
+
+[[vk::binding(1,0)]] RWStructuredBuffer<IndexedIndirectCommand> indirectDraws;
+
+[[vk::binding(2,0)]] RWStructuredBuffer<UBOOut> uboOut;
+
+[[vk::binding(3,0)]] cbuffer ubo
+{
+	float4 cameraPos;
+	float4 frustumPlanes[6];
+}
+
+[numthreads(16, 1, 1)]
+bool FrustumContainTest(float4 pos, float radius)
+{
+	// Check sphere against frustum planes
+	for (int i = 0; i < 6; i++)
+	{
+		if (dot(pos, frustumPlanes[i]) / length(frustumPlanes[i].xyz) > radius)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+[numthreads(16, 1, 1)]
+void CS_MAIN(uint3 GlobalInvocationID : SV_DispatchThreadID )
+{
+	uint idx = GlobalInvocationID.x;
+	uint temp;
+
+	// Clear stats on first invocation
+	if (idx == 0)
+	{
+		InterlockedExchange(uboOut[0].drawCount, 0, temp);
+		for (uint i = 0; i < MESH_LOD_LEVEL_RANGE + 1; i++)
+		{
+			InterlockedExchange(uboOut[0].lodCount[i], 0, temp);
+		}
+	}
+
+	float4 pos = float4(instances[idx].pos.xyz, 1.0);
+
+	// Check if object is within current viewing frustum
+	if (FrustumContainTest(pos, instances[idx].scale))
+	{
+		indirectDraws[idx].instanceCount = 1;
+
+		// Increase number of indirect draw counts
+		InterlockedAdd(uboOut[0].drawCount, 1, temp);
+
+		// Select appropriate LOD level based on distance to camera
+		uint lodLevel = MESH_LOD_LEVEL_RANGE;
+		for (uint i = 0; i < MESH_LOD_LEVEL_RANGE; i++)
+		{
+			if (distance(instances[idx].pos.xyz, cameraPos.xyz) < instances[idx].lods[i].distance)
+			{
+				lodLevel = i;
+				break;
+			}
+		}
+
+		indirectDraws[idx].vertexOffset = 0;
+		indirectDraws[idx].firstInstance = idx;
+		indirectDraws[idx].firstIndex = instances[idx].lods[lodLevel].firstIndex;
+		indirectDraws[idx].indexCount = instances[idx].lods[lodLevel].indexCount;
+		
+		// Update stats
+		InterlockedAdd(uboOut[0].lodCount[lodLevel], 1, temp);
+	}
+	else
+	{
+		indirectDraws[idx].instanceCount = 0;
+	}
+}

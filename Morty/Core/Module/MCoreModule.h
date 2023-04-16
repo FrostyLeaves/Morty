@@ -3,7 +3,7 @@
  * 
  * @Created      2021-08-03 14:54:21
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MCOREMODULE_H_

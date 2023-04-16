@@ -23,7 +23,7 @@ void GPU_DRIVEN_CULLING_TEST(MEngine* pEngine, MScene* pScene)
 
 	std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
-	pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_MERGE_INSTANCING);
+	pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_UNIFORM, "true");
 	pMaterial->LoadVertexShader("Shader/model_gbuffer.mvs");
 	pMaterial->LoadPixelShader("Shader/model_gbuffer.mps");
 	pMaterial->SetMaterialType(MEMaterialType::EDeferred);
@@ -44,6 +44,8 @@ void GPU_DRIVEN_CULLING_TEST(MEngine* pEngine, MScene* pScene)
 
 	pMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
 	pMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);
+	pMaterial->SetBatchInstanceEnable(true);
+
 
 
 	MEntity* pFolderEntity = pScene->CreateEntity();
@@ -67,7 +69,6 @@ void GPU_DRIVEN_CULLING_TEST(MEngine* pEngine, MScene* pScene)
 				{
 					pMeshComponent->Load(pMeshResource);
 					pMeshComponent->SetMaterial(pMaterial);
-					pMeshComponent->SetBatchInstanceEnable(true);
 				}
 			}
 		}

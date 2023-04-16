@@ -83,8 +83,8 @@ void MMoveControllerSystem::UpdateTransform(MMoveControllerComponent* pComponent
 		Vector3 up = Vector3(0, 1, 0);
 
 		Vector3 right = pSceneComponent->GetRight();
-		Quaternion quat = pSceneComponent->GetRotation() * Quaternion(up, v2MouseAddi.x * 0.25f) * Quaternion(right, v2MouseAddi.y * 0.25f);
-		pSceneComponent->SetRotation(quat);
+		Vector3 rotatedForward = pSceneComponent->GetForward() * Quaternion(up, -v2MouseAddi.x * 0.25f) * Quaternion(right, -v2MouseAddi.y * 0.25f);
+		pSceneComponent->LookAt(pSceneComponent->GetWorldPosition() + rotatedForward, up);
 	}
 
 	float fLength = v3MoveSpeed.Length();

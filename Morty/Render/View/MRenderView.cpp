@@ -61,7 +61,7 @@ void MRenderView::Release()
 	}
 }
 
-void MRenderView::Present(MRenderTarget* pRenderTarget)
+void MRenderView::Present(MViewRenderTarget* pRenderTarget)
 {
 	MVulkanPrimaryRenderCommand* pRenderCommand = dynamic_cast<MVulkanPrimaryRenderCommand*>(pRenderTarget->pPrimaryCommand);
 	if (!pRenderCommand)
@@ -332,7 +332,7 @@ bool MRenderView::BindRenderPass()
 void MRenderView::DestroyRenderPass()
 {
 
-	for (MRenderTarget rendertarget : m_vRenderTarget)
+	for (MViewRenderTarget rendertarget : m_vRenderTarget)
 	{
 		if (rendertarget.vkImageReadySemaphore)
 		{
@@ -340,7 +340,7 @@ void MRenderView::DestroyRenderPass()
 			rendertarget.vkImageReadySemaphore = VK_NULL_HANDLE;
 		}
 
-		for (MBackTexture& tex : rendertarget.renderPass.m_vBackTextures)
+		for (MRenderTarget& tex : rendertarget.renderPass.m_vBackTextures)
 		{
 			tex.pTexture->DestroyBuffer(m_pDevice);
 			tex.pTexture = nullptr;
@@ -361,7 +361,7 @@ void MRenderView::DestroyRenderPass()
 	m_vRenderTarget.clear();
 }
 
-MRenderTarget* MRenderView::GetNextRenderTarget()
+MViewRenderTarget* MRenderView::GetNextRenderTarget()
 {
 	if (VK_NULL_HANDLE == m_VkSwapchain)
 		return nullptr;

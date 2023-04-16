@@ -3,7 +3,7 @@
  * 
  * @Created      2022-01-01 21:44:08
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MSKYBOXCOMPONENT_H_

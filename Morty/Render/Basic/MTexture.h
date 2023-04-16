@@ -111,7 +111,7 @@ public:
 
 	static std::shared_ptr<MTexture> CreateShadowMap();
 	static std::shared_ptr<MTexture> CreateShadowMapArray(const size_t& nArraySize);
-	static std::shared_ptr<MTexture> CreateRenderTarget();
+	static std::shared_ptr<MTexture> CreateRenderTarget(METextureLayout eLayout = METextureLayout::ERGBA_UNORM_8);
 	static std::shared_ptr<MTexture> CreateRenderTargetGBuffer();
 	static std::shared_ptr<MTexture> CreateRenderTargetFloat32();
 

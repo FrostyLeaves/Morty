@@ -375,6 +375,11 @@ void MTextureResourceParam::SetTexture(const std::shared_ptr<MTextureResource>& 
 		return true;
 	};
 
+	if (m_TextureRef.GetResource<MTextureResource>() == pTextureResource)
+	{
+		return;
+	}
+
 	m_TextureRef.SetResource(pTextureResource);
 	m_TextureRef.SetResChangedCallback(onResourceChangedFunction);
 	SetDirty();
@@ -382,7 +387,7 @@ void MTextureResourceParam::SetTexture(const std::shared_ptr<MTextureResource>& 
 
 std::shared_ptr<MTexture> MTextureResourceParam::GetTexture()
 {
-	if (auto&& pTextureResource = m_TextureRef.GetResource<MTextureResource>())
+	if (auto pTextureResource = m_TextureRef.GetResource<MTextureResource>())
 	{
 		return pTextureResource->GetTextureTemplate();
 	}

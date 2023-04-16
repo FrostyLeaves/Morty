@@ -36,7 +36,7 @@ uint32_t MSphereFactory::addMidVertex(uint32_t v1, uint32_t v2)
 {
 	uint32_t key = floor((v1 + v2) * (v1 + v2 + 1) / 2) + (std::min)(v1, v2);
 
-	auto&& findResult = m_tMidIndexCache.find(key);
+	auto findResult = m_tMidIndexCache.find(key);
 	if (findResult != m_tMidIndexCache.end())
 		return findResult->second;
 

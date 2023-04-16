@@ -8,19 +8,7 @@
 #include "System/MRenderSystem.h"
 #include "System/MNotifySystem.h"
 
-MORTY_INTERFACE_IMPLEMENT(MMergeInstancingSubSystem, MISubSystem)
-
-MMergeInstancingSubSystem::MMergeInstancingSubSystem()
-	: MISubSystem()
-	, m_pMergeMesh(nullptr)
-{
-
-}
-
-MMergeInstancingSubSystem::~MMergeInstancingSubSystem()
-{
-
-}
+MORTY_INTERFACE_IMPLEMENT(MMergeInstancingSubSystem, IManager)
 
 void MMergeInstancingSubSystem::Initialize()
 {
@@ -30,12 +18,6 @@ void MMergeInstancingSubSystem::Initialize()
 	{
 		pNotifySystem->RegisterNotify("MeshBatchChanged", M_CLASS_FUNCTION_BIND_0_1(MMergeInstancingSubSystem::OnBatchMeshChanged, this));
 	}
-
-	if (MObjectSystem* pObjectSystem = GetEngine()->FindSystem<MObjectSystem>())
-	{
-		m_pMergeMesh = pObjectSystem->CreateObject<MMergeInstancingMesh>();
-	}
-
 }
 
 void MMergeInstancingSubSystem::Release()
@@ -45,11 +27,6 @@ void MMergeInstancingSubSystem::Release()
 		pNotifySystem->UnregisterNotify("MeshBatchChanged", M_CLASS_FUNCTION_BIND_0_1(MMergeInstancingSubSystem::OnBatchMeshChanged, this));
 	}
 
-	if (m_pMergeMesh)
-	{
-		m_pMergeMesh->DeleteLater();
-		m_pMergeMesh = nullptr;
-	}
 
 	Super::Release();
 }
@@ -62,7 +39,7 @@ void MMergeInstancingSubSystem::RegisterMaterial(MRenderableMeshComponent* pComp
 {
 	std::shared_ptr<MMaterial> pNewMaterial = pComponent->GetMaterial();
 
-	auto&& findResult = m_tComponentMaterialTable.find(pComponent);
+	auto findResult = m_tComponentMaterialTable.find(pComponent);
 	if (findResult != m_tComponentMaterialTable.end())
 	{
 		std::shared_ptr<MMaterial> pOldMaterial = findResult->second;
@@ -87,7 +64,7 @@ void MMergeInstancingSubSystem::RegisterMaterial(MRenderableMeshComponent* pComp
 
 void MMergeInstancingSubSystem::UnregisterMaterial(MRenderableMeshComponent* pComponent)
 {
-	auto&& findResult = m_tComponentMaterialTable.find(pComponent);
+	auto findResult = m_tComponentMaterialTable.find(pComponent);
 	if (findResult != m_tComponentMaterialTable.end())
 	{
 		std::shared_ptr<MMaterial> pOldMaterial = findResult->second;
@@ -111,7 +88,7 @@ void MMergeInstancingSubSystem::RegisterMesh(MRenderableMeshComponent* pComponen
 {
 	MIMesh* pNewMesh = pComponent->GetMesh();
 
-	auto&& findResult = m_tComponentMeshTable.find(pComponent);
+	auto findResult = m_tComponentMeshTable.find(pComponent);
 	if (findResult != m_tComponentMeshTable.end())
 	{
 		MIMesh* pOldMesh = findResult->second;
@@ -131,7 +108,6 @@ void MMergeInstancingSubSystem::RegisterMesh(MRenderableMeshComponent* pComponen
 		if (m_tMeshReferenceCount.find(pNewMesh) == m_tMeshReferenceCount.end())
 		{
 			m_tMeshReferenceCount[pNewMesh] = 1;
-			m_pMergeMesh->RegisterMesh(pNewMesh);
 		}
 		else
 		{
@@ -144,7 +120,7 @@ void MMergeInstancingSubSystem::RegisterMesh(MRenderableMeshComponent* pComponen
 
 void MMergeInstancingSubSystem::UnregisterMesh(MRenderableMeshComponent* pComponent)
 {
-	auto&& findResult = m_tComponentMeshTable.find(pComponent);
+	auto findResult = m_tComponentMeshTable.find(pComponent);
 	if (findResult != m_tComponentMeshTable.end())
 	{
 		if (MIMesh* pOldMesh = findResult->second)
@@ -153,7 +129,6 @@ void MMergeInstancingSubSystem::UnregisterMesh(MRenderableMeshComponent* pCompon
 			if (m_tMeshReferenceCount[pOldMesh] == 0)
 			{
 				m_tMeshReferenceCount.erase(pOldMesh);
-				m_pMergeMesh->UnregisterMesh(pOldMesh);
 			}
 		}
 		m_tComponentMeshTable.erase(pComponent);
@@ -163,7 +138,7 @@ void MMergeInstancingSubSystem::UnregisterMesh(MRenderableMeshComponent* pCompon
 
 MMaterialBatchGroup* MMergeInstancingSubSystem::GetMaterialBatchGroup(std::shared_ptr<MMaterial> pMaterial)
 {
-	auto&& findResult = m_tMaterialToBatchInstanceTable.find(pMaterial);
+	auto findResult = m_tMaterialToBatchInstanceTable.find(pMaterial);
 	if (findResult != m_tMaterialToBatchInstanceTable.end())
 	{
 		return findResult->second;
@@ -178,13 +153,6 @@ MMaterialBatchGroup* MMergeInstancingSubSystem::GetMaterialBatchGroup(std::share
 	return pMaterialBatchGroup;
 }
 
-const std::vector<MMergeInstancingMesh::MClusterData>& MMergeInstancingSubSystem::GetMeshClusterGroup(MIMesh* pMesh)
-{
-	const MMergeInstancingMesh::MMeshMergeData&  meshMergeData = m_pMergeMesh->FindMesh(pMesh);
-
-	return meshMergeData.vIndexData;
-}
-
 void MMergeInstancingSubSystem::OnBatchMeshChanged(MComponent* pSender)
 {
 	if (!pSender)
@@ -192,6 +160,7 @@ void MMergeInstancingSubSystem::OnBatchMeshChanged(MComponent* pSender)
 		return;
 	}
 
+	/*
 	if (MRenderableMeshComponent* pComponent = pSender->DynamicCast<MRenderableMeshComponent>())
 	{
 		if (pComponent->GetBatchInstanceEnable())
@@ -205,4 +174,5 @@ void MMergeInstancingSubSystem::OnBatchMeshChanged(MComponent* pSender)
 			UnregisterMaterial(pComponent);
 		}
 	}
+	*/
 }

@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <float.h>
+#include <filesystem>
 
 #ifdef MORTY_WIN
 #include  <io.h>
@@ -111,6 +112,9 @@ bool MFileHelper::ReadString(const MString& strFilePath, MString& strData)
 
 bool MFileHelper::WriteData(const MString& strFilePath, const std::vector<MByte>& vData)
 {
+	std::filesystem::path path{ strFilePath };
+	std::filesystem::create_directories(path.parent_path());
+
 	std::ofstream file(strFilePath.c_str(), std::ios::binary);
 
 	if (!file.is_open())
@@ -285,7 +289,7 @@ MString MFileHelper::FormatPath(MString strFilePath)
 	return result;
 }
 
-MString MFileHelper::GetFileFolder(const MString& strFilePath)
+MString MFileHelper::GetFileFolder(MStringView strFilePath)
 {
 	size_t n = strFilePath.find_last_of('/');
 
@@ -293,4 +297,16 @@ MString MFileHelper::GetFileFolder(const MString& strFilePath)
 		return "";
 
 	return MString(strFilePath.data(), n);
+}
+
+MString MFileHelper::GetFileName(MStringView strFullPath)
+{
+	std::filesystem::path path{ strFullPath };
+	return path.stem().string();
+}
+
+MString MFileHelper::ReplaceFileName(MStringView strFullPath, MStringView strNewFileName)
+{
+	std::filesystem::path path{ strFullPath };
+	return path.replace_filename(strNewFileName).string();
 }

@@ -36,12 +36,12 @@ public:
 
 	void UpdateFromCameraInvProj(const Matrix4& m4CameraInvProj);
 
-	MEContainType ContainTest(const Vector3& position);
-	MEContainType ContainTest(const MBoundsAABB& aabb);
-	MEContainType ContainTest(const MBoundsSphere& sphere);
+	MEContainType ContainTest(const Vector3& position) const;
+	MEContainType ContainTest(const MBoundsAABB& aabb) const;
+	MEContainType ContainTest(const MBoundsSphere& sphere) const;
 
 
-	MEContainType ContainTest(const MBoundsAABB& aabb, const Vector3& v3Direction);
+	MEContainType ContainTest(const MBoundsAABB& aabb, const Vector3& v3Direction) const;
 
 	std::vector<MCameraFrustum> CutFrustum(const std::vector<float>& percent);
 

@@ -3,7 +3,7 @@
  * 
  * @Created      2021-04-26 16:51:46
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MRENDERABLE_MESH_COMPONENT_H_
@@ -45,9 +45,6 @@ public:
 	void SetMaterial(std::shared_ptr<MMaterial> pMaterial);
 	std::shared_ptr<MMaterial> GetMaterial();
 
-	const std::shared_ptr<MShaderPropertyBlock>& GetShaderMeshParamSet();
-	void UpdateShaderMeshParam();
-
 	bool SetMaterialPath(const MString& strPath);
 	MString GetMaterialPath();
 
@@ -55,6 +52,8 @@ public:
 
 	void SetMeshResourcePath(const MString& strResourcePath);
 	MString GetMeshResourcePath() { return m_Mesh.GetResourcePath(); }
+
+	MResourceRef GetMeshResource() const { return m_Mesh; }
 
 public:
 
@@ -74,11 +73,8 @@ public:
 	void SetDrawBoundingSphere(const bool& bDrawable) { m_bDrawBoundingSphere = bDrawable; }
 	bool GetDrawBoundingSphere() { return m_bDrawBoundingSphere; }
 
-	void SetGenerateDirLightShadow(const bool& bGenerate) { m_bGenerateDirLightShadow = bGenerate; }
+	void SetGenerateDirLightShadow(const bool& bGenerate);
 	bool GetGenerateDirLightShadow() const { return m_bGenerateDirLightShadow; }
-
-	void SetBatchInstanceEnable(const bool& bBatch);
-	bool GetBatchInstanceEnable() const { return m_bBatchInstanceEnable; }
 
 	MModelComponent* GetAttachedModelComponent();
 
@@ -97,15 +93,8 @@ public:
 
 protected:
 
-	void BindShaderParam(std::shared_ptr<MMaterial> pMaterial);
-
-protected:
-
 	MResourceRef m_Mesh;
 	MResourceRef m_Material;
-
-	std::shared_ptr<MShaderPropertyBlock> m_pShaderPropertyBlock;
-	std::shared_ptr<MShaderConstantParam> m_pTransformParam;
 
 	MVariant m_worldMatrixParam;
 	MVariant m_normalMatrixParam;
@@ -120,8 +109,7 @@ protected:
 
 
 	bool m_bDrawBoundingSphere;
-	bool m_bGenerateDirLightShadow;
-	bool m_bBatchInstanceEnable = false;
+	bool m_bGenerateDirLightShadow = false;
 	bool m_bModelInstanceFound;
 	bool m_bTransformParamDirty;
 	bool m_bBoundsAABBDirty;

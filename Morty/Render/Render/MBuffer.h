@@ -3,7 +3,7 @@
  * 
  * @Created      2022-09-20 15:33:13
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MBUFFER_H_
@@ -63,6 +63,7 @@ public:
 
     void GenerateBuffer(MIDevice* pDevice, const MByte* data, const size_t& size);
     void UploadBuffer(MIDevice* pDevice, const MByte* data, const size_t& size);
+    void UploadBuffer(MIDevice* pDevice, size_t nBeginOffset, const MByte* data, const size_t& size);
     void DestroyBuffer(MIDevice* pDevice);
 
 public:

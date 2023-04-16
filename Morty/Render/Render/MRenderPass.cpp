@@ -71,9 +71,21 @@ Vector2 MRenderPass::GetFrameBufferSize()
 	return Vector2();
 }
 
+void MRenderPass::AddBackTexture(const MRenderTarget& backTexture)
+{
+	MORTY_ASSERT(backTexture.pTexture);
+
+	m_vBackTextures.push_back(backTexture);
+}
+
+void MRenderPass::SetDepthTexture(const MRenderTarget& backTexture)
+{
+	m_DepthTexture = backTexture;
+}
+
 void MRenderPass::AddBackTexture(std::shared_ptr<MTexture> pBackTexture, const MPassTargetDescription& desc)
 {
-	MBackTexture backTexture;
+	MRenderTarget backTexture;
 	backTexture.pTexture = pBackTexture;
 	backTexture.desc = desc;
 
@@ -86,17 +98,17 @@ void MRenderPass::SetDepthTexture(std::shared_ptr<MTexture> pDepthTexture, const
 	m_DepthTexture.desc = desc;
 }
 
-std::vector<std::shared_ptr<MTexture>> MRenderPass::GetBackTextures()
+std::vector<std::shared_ptr<MTexture>> MRenderPass::GetBackTextures() const
 {
 	std::vector<std::shared_ptr<MTexture>> vTextures;
 
-	for (MBackTexture& tex : m_vBackTextures)
+	for (const MRenderTarget& tex : m_vBackTextures)
 		vTextures.push_back(tex.pTexture);
 
 	return vTextures;
 }
 
-std::shared_ptr<MTexture> MRenderPass::GetDepthTexture()
+std::shared_ptr<MTexture> MRenderPass::GetDepthTexture() const
 {
 	return m_DepthTexture.pTexture;
 }
@@ -133,13 +145,4 @@ MPassTargetDescription::MPassTargetDescription(const bool bClear, const bool bAl
 	, nMipmapLevel(nMipmap)
 {
 
-}
-
-MBackTexture::MBackTexture()
-	: pTexture(nullptr)
-	, desc()
-{
-#if RENDER_GRAPHICS == MORTY_VULKAN
-	m_VkImageView = VK_NULL_HANDLE;
-#endif
 }

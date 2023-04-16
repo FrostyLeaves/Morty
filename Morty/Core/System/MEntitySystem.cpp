@@ -56,7 +56,7 @@ std::shared_ptr<MResource> MEntitySystem::PackEntity(MScene* pScene, const std::
 		entityVector.push_back(entity.o);
 	}
 
-	auto&& fb_entity = fbb.CreateVector(entityVector);
+	auto fb_entity = fbb.CreateVector(entityVector);
 
 	mfbs::MEntityResourceBuilder builder(fbb);
 

@@ -20,25 +20,32 @@
 #include "MRenderInfo.h"
 #include "RenderProgram/MIRenderProgram.h"
 
-#include "MShadowMapShaderParamSet.h"
-#include "MForwardRenderShaderParamSet.h"
+#include "Shadow/MShadowMapShaderPropertyBlock.h"
+#include "MForwardRenderShaderPropertyBlock.h"
+#include "RenderWork/MDebugRenderWork.h"
+#include "RenderWork/MDeferredLightingRenderWork.h"
+#include "RenderWork/MForwardRenderWork.h"
+#include "RenderWork/MGBufferRenderWork.h"
+#include "RenderWork/MGPUCullingRenderWork.h"
+#include "RenderWork/MPostProcessRenderWork.h"
+#include "RenderWork/MShadowMapRenderWork.h"
+#include "RenderWork/MTransparentRenderWork.h"
 
-class MGPUCullingRenderWork;
+class IGBufferAdapter;
+class IPropertyBlockAdapter;
+class ITextureInputAdapter;
 class MViewport;
 class MMaterial;
 class MIRenderCommand;
 class MComputeDispatcher;
-class MShadowMapRenderWork;
-class MTransparentRenderWork;
-class MEnvironmentMapRenderWork;
 class MRenderableMeshComponent;
 class MORTY_API MDeferredRenderProgram : public MIRenderProgram
 {
 public:
 	MORTY_CLASS(MDeferredRenderProgram);
 
-	MDeferredRenderProgram();
-    virtual ~MDeferredRenderProgram();
+	MDeferredRenderProgram() = default;
+    virtual ~MDeferredRenderProgram() = default;
 
 public:
 
@@ -58,77 +65,85 @@ public:
 
 	void RenderTransparent(MTaskNode* pTaskNode);
 
-	void RenderDebug(MTaskNode* pTaskNode);
+	void RenderPostProcess(MTaskNode* pTaskNode);
 
+	void RenderDebug(MTaskNode* pTaskNode);
 
 
 	virtual std::shared_ptr<MTexture> GetOutputTexture() override;
 	virtual std::vector<std::shared_ptr<MTexture>> GetOutputTextures() override;
 
-//debug
-
-	std::shared_ptr<MTexture> GetShadowmapTexture();
-
 public:
 	virtual void OnCreated() override;
 	virtual void OnDelete() override;
 
-	void InitializeRenderPass();
-	void ReleaseRenderPass();
+	void InitializeRenderTarget();
+	void ReleaseRenderTarget();
 
 	void InitializeFrameShaderParams();
 	void ReleaseFrameShaderParams();
 
-	void InitializeMaterial();
-	void ReleaseMaterial();
+	void InitializeRenderWork();
+	void ReleaseRenderWork();
 
-	void InitializeMesh();
-	void ReleaseMesh();
+	void InitializeRenderGraph();
 
 protected:
-
-	void DrawStaticMesh(MRenderInfo& info, MIRenderCommand* pCommand, std::map<std::shared_ptr<MMaterial>, std::vector<MRenderableMeshComponent*>>& tMaterialGroup);
 
 	void UpdateFrameParams(MRenderInfo& info);
 
-	void CollectRenderMesh(MRenderInfo& info);
+
+
+	template<typename TYPE>
+	IRenderWork* RegisterRenderWork()
+	{
+		if (m_tRenderWork.find(TYPE::GetClassType()) != m_tRenderWork.end())
+		{
+			return m_tRenderWork[TYPE::GetClassType()].get();
+		}
+		m_tRenderWork[TYPE::GetClassType()] = std::make_unique<TYPE>();
+		m_tRenderWork[TYPE::GetClassType()]->Initialize(GetEngine());
+		return m_tRenderWork[TYPE::GetClassType()].get();
+	}
+
+	template<typename TYPE>
+	TYPE* GetRenderWork()
+	{
+		const auto& findResult = m_tRenderWork.find(TYPE::GetClassType());
+		if (findResult != m_tRenderWork.end())
+		{
+			IRenderWork* pRenderWork = findResult->second.get();
+			return reinterpret_cast<TYPE*>(pRenderWork);
+		}
+
+		return nullptr;
+	}
 
 protected:
-
-	MTaskGraph* m_pRenderGraph;
 
 	MRenderInfo m_renderInfo;
 
-
-	MRenderPass m_forwardRenderPass;
-	MRenderPass m_gbufferRenderPass;
-	MRenderPass m_lightningRenderPass;
-	MRenderPass m_debugRenderPass;
-
-	std::shared_ptr<MTexture> m_pFinalOutputTexture;
-
-	MIRenderCommand* m_pPrimaryCommand;
+	MTaskGraph* m_pRenderGraph = nullptr;
+	MIRenderCommand* m_pPrimaryCommand = nullptr;
 
 
-	MMesh<Vector2> m_ScreenDrawMesh;
-	MMesh<Vector3> m_SkyBoxDrawMesh;
-	std::shared_ptr<MMaterial> m_pLightningMaterial;
-	std::shared_ptr<MMaterial> m_pSkyBoxMaterial;
 
-	std::shared_ptr<MMaterial> m_pForwardMaterial;
-	MForwardRenderShaderPropertyBlock m_forwardFramePropertyBlock;
-
-
-	MResourceRef m_BrdfTexture;
+	std::vector<std::shared_ptr<MTexture>> m_vRenderTargets;
+	std::shared_ptr<MTexture> m_pFinalOutputTexture = nullptr;
 
 protected:
 
-	MShadowMapRenderWork* m_pShadowMapWork;
-	MTransparentRenderWork* m_pTransparentWork;
-	MGPUCullingRenderWork* m_pGPUCullingRenderWork;
+	ITextureInputAdapter* m_pShadowMapAdapter = nullptr;
+	std::unique_ptr<IGBufferAdapter> m_pGBufferAdapter = nullptr;
+
+	std::shared_ptr<MShadowMapShaderPropertyBlock> m_pShadowPropertyAdapter = nullptr;
+	std::shared_ptr<MForwardRenderShaderPropertyBlock> m_pFramePropertyAdapter = nullptr;
+
+	std::unordered_map<const MType*, std::unique_ptr<IRenderWork>> m_tRenderWork;
+
 	bool m_bGPUCullingUpdate = true;
 
-	size_t m_nFrameIndex;
+	size_t m_nFrameIndex = 0;
 };
 
 #endif

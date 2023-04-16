@@ -44,6 +44,27 @@
 
 #include <fstream>
 
+static const std::map<aiTextureType, MEModelTextureUsage> TextureUsageMapping = {
+			{aiTextureType_DIFFUSE, MEModelTextureUsage::BaseColor},
+			{aiTextureType_NORMALS, MEModelTextureUsage::Normal},
+
+			{aiTextureType_BASE_COLOR, MEModelTextureUsage::BaseColor},
+			{aiTextureType_NORMAL_CAMERA, MEModelTextureUsage::Normal},
+			{aiTextureType_METALNESS, MEModelTextureUsage::Metallic},
+			{aiTextureType_DIFFUSE_ROUGHNESS, MEModelTextureUsage::Roughness},
+			{aiTextureType_AMBIENT_OCCLUSION, MEModelTextureUsage::AmbientOcc},
+			{aiTextureType_EMISSION_COLOR, MEModelTextureUsage::Emission},
+};
+
+static const std::map<MEModelTextureUsage, MString> ShaderNameMapping = {
+			{MEModelTextureUsage::BaseColor, MaterialKey::Albedo},
+			{MEModelTextureUsage::Normal, MaterialKey::Normal},
+			{MEModelTextureUsage::Metallic, MaterialKey::Metallic},
+			{MEModelTextureUsage::Roughness, MaterialKey::Roughness},
+			{MEModelTextureUsage::AmbientOcc, MaterialKey::AmbientOcc},
+			{MEModelTextureUsage::Emission, MaterialKey::Emission},
+};
+
 void CopyMatrix4(Matrix4* matdest, aiMatrix4x4* matsour)
 {
 	for (uint32_t r = 0; r < 4; ++r)
@@ -100,6 +121,7 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 	bImportCamera = convertInfo.bImportCamera;
 	bImportLights = convertInfo.bImportLights;
 	eMaterialType = convertInfo.eMaterialType;
+	m_pTextureDelegate = convertInfo.pTextureDelegate;
 
 	auto time = MTimer::GetCurTime();
 	if (!Load(convertInfo.strResourcePath))
@@ -118,6 +140,27 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 	{
 		pResourceSystem->MoveTo(m_pSkeleton, strPath + convertInfo.strOutputName + ".ske");
 		m_pSkeleton->Save();
+	}
+
+	for (auto pr : m_tRawTextures)
+	{
+		if (pr.second)
+		{
+			std::shared_ptr<MTextureResource> pTextureResource = pr.second;
+			MString strValidFileName = pr.first;
+			pResourceSystem->MoveTo(pTextureResource, strPath + strValidFileName + ".mtex");
+			pTextureResource->Save();
+		}
+	}
+
+	for (auto pTexture : m_tFileTextures)
+	{
+		if (pTexture)
+		{
+			MString strValidFileName = MFileHelper::GetFileName(pTexture->GetResourcePath());
+			pResourceSystem->MoveTo(pTexture, strPath + strValidFileName + ".mtex");
+			pTexture->Save();
+		}
 	}
 
 	for (int i = 0; i < m_vMaterials.size(); ++i)
@@ -149,7 +192,7 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 	}
 
 
-	auto&& vAllEntity = m_pScene->GetAllEntity();
+	auto vAllEntity = m_pScene->GetAllEntity();
 	std::shared_ptr<MResource> pNodeResource = pEntitySystem->PackEntity(m_pScene, vAllEntity);
 
 	pResourceSystem->MoveTo(pNodeResource, strPath + convertInfo.strOutputName + ".entity");
@@ -667,6 +710,8 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 
 		pMaterial->SetMaterialType(MEMaterialType::EDeferred);
 
+		pMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
+		pMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);
 		pMaterial->SetTexture(MaterialKey::Albedo, pResourceSystem->LoadResource(MRenderModule::DefaultWhite));
 		pMaterial->SetTexture(MaterialKey::Normal, pResourceSystem->LoadResource(MRenderModule::DefaultNormal));
 		pMaterial->SetTexture(MaterialKey::Metallic, pResourceSystem->LoadResource(MRenderModule::Default_R8_One));
@@ -750,10 +795,7 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 			//forward
 			{aiTextureType_DIFFUSE, "u_texDiffuse"},
 			{aiTextureType_NORMALS, "u_texNormal"},
-			{aiTextureType_SPECULAR, "u_texSpecular"},
-
-			{aiTextureType_BASE_COLOR, "u_texDiffuse"},
-			{aiTextureType_NORMAL_CAMERA, "u_texNormal"},
+			{aiTextureType_SPECULAR, "u_texSpecular"}
 		};
 
 		pTextureMapping = &ForwardTextureMapping;
@@ -779,7 +821,7 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		MORTY_ASSERT(false);
     }
 
-	for (auto&& pr : *pTextureMapping)
+	for (auto pr : *pTextureMapping)
 	{
 		aiString aiTextureFileName;
 		pAiMaterial->GetTexture(pr.first, 0, &aiTextureFileName);
@@ -790,8 +832,8 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 			continue;
 		}
 
-		auto findResult = m_tTextures.find(aiTextureFileName.C_Str());
-		if (findResult != m_tTextures.end())
+		auto findResult = m_tRawTextures.find(aiTextureFileName.C_Str());
+		if (findResult != m_tRawTextures.end())
 		{
 			std::shared_ptr<MTextureResource>& pTexture = findResult->second;
 
@@ -802,10 +844,18 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		    if (pResourceSystem->GetResourceType(strTextureFileName) == MTextureResource::GetClassType())
 		    {
 				MString strFullPath = MFileHelper::GetFileFolder(m_strResourcePath) + "/" + strTextureFileName;
-				const std::shared_ptr<MResource> pTexture = pResourceSystem->LoadResource(strFullPath, MTextureResource::GetClassType());
-				m_tTextures[strTextureFileName] = MTypeClass::DynamicCast<MTextureResource>(pTexture);
+				std::shared_ptr<MResource> pTexture = nullptr;
+				if (m_pTextureDelegate)
+				{
+					pTexture = m_pTextureDelegate->GetTexture(strFullPath, TextureUsageMapping.at(pr.first));
+				}
+				else
+				{
+					pTexture = pResourceSystem->LoadResource(strFullPath, MTextureResource::GetClassType());
+				}
 
 				pMaterial->SetTexture(pr.second, pTexture);
+				m_tFileTextures.insert(pTexture);
 		    }
 			else
 			{
@@ -825,7 +875,7 @@ void MModelConverter::ProcessTexture(const aiScene* pScene)
 	{
 		if (aiTexture* aiTexture = pScene->mTextures[nTextureIdx])
 		{
-			auto&& pTextureResource = pResourceSystem->CreateResource<MTextureResource>();
+			auto pTextureResource = pResourceSystem->CreateResource<MTextureResource>();
 
 			//embedded texture
 			if (aiTexture->mHeight == 0)
@@ -857,7 +907,7 @@ void MModelConverter::ProcessTexture(const aiScene* pScene)
 
 			}
 
-			m_tTextures[aiTexture->mFilename.C_Str()] = pTextureResource;
+			m_tRawTextures[aiTexture->mFilename.C_Str()] = pTextureResource;
 		}
 	}
 }

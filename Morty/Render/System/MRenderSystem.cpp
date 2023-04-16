@@ -3,6 +3,7 @@
 
 #include "Scene/MScene.h"
 #include "Engine/MEngine.h"
+#include "Mesh/MMeshManager.h"
 #include "Render/Vulkan/MVulkanDevice.h"
 #include "Render/Vulkan/MVulkanRenderCommand.h"
 
@@ -11,6 +12,7 @@
 #include "Basic/MViewport.h"
 #include "Component/MSceneComponent.h"
 #include "Component/MCameraComponent.h"
+#include "System/MObjectSystem.h"
 
 MORTY_CLASS_IMPLEMENT(MRenderSystem, MISystem)
 
@@ -32,22 +34,9 @@ void MRenderSystem::Update(MTaskNode* pNode)
 
 }
 
-MIDevice* MRenderSystem::GetDevice()
+MIDevice* MRenderSystem::GetDevice() const
 {
 	return m_pDevice;
-}
-
-void MRenderSystem::OnTransformDirty(MComponent* pSender)
-{
-	if (!pSender)
-		return;
-
-	MEntity* pEntity = pSender->GetEntity();
-
-	if (MRenderableMeshComponent* pMeshComponent = pEntity->GetComponent<MRenderableMeshComponent>())
-	{
-		pMeshComponent->OnTransformDirty();
-	}
 }
 
 void MRenderSystem::Initialize()
@@ -72,28 +61,37 @@ void MRenderSystem::Release()
 
 void MRenderSystem::ResizeFrameBuffer(MRenderPass& renderpass, const Vector2& v2Size)
 {
-	for (MBackTexture& tex : renderpass.m_vBackTextures)
+	for (MRenderTarget& tex : renderpass.m_vBackTextures)
 	{
-		tex.pTexture->SetSize(v2Size);
-		tex.pTexture->DestroyBuffer(GetDevice());
-		tex.pTexture->GenerateBuffer(GetDevice());
+		if (tex.pTexture->GetSize() != v2Size)
+		{
+			tex.pTexture->SetSize(v2Size);
+			tex.pTexture->DestroyBuffer(GetDevice());
+			tex.pTexture->GenerateBuffer(GetDevice());
+		}
 	}
 
 	if (std::shared_ptr<MTexture> pDepthTexture = renderpass.GetDepthTexture())
 	{
-		pDepthTexture->SetSize(v2Size);
-		pDepthTexture->DestroyBuffer(GetDevice());
-		pDepthTexture->GenerateBuffer(GetDevice());
+		if (pDepthTexture->GetSize() != v2Size)
+		{
+			pDepthTexture->SetSize(v2Size);
+			pDepthTexture->DestroyBuffer(GetDevice());
+			pDepthTexture->GenerateBuffer(GetDevice());
+		}
 	}
 
-	renderpass.Resize(GetDevice());
+	if (renderpass.GetFrameBufferSize() != v2Size)
+	{
+		renderpass.Resize(GetDevice());
+	}
 }
 
 void MRenderSystem::ReleaseRenderpass(MRenderPass& renderpass, bool bClearTexture)
 {
 	if (bClearTexture)
 	{
-		for (MBackTexture& tex : renderpass.m_vBackTextures)
+		for (MRenderTarget& tex : renderpass.m_vBackTextures)
 		{
 			tex.pTexture->DestroyBuffer(GetDevice());
 			tex.pTexture = nullptr;
@@ -112,13 +110,13 @@ void MRenderSystem::ReleaseRenderpass(MRenderPass& renderpass, bool bClearTextur
 	renderpass.DestroyBuffer(GetDevice());
 }
 
-Matrix4 MRenderSystem::GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent) const
+Matrix4 MRenderSystem::GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent)
 {
 	return GetCameraInverseProjection(pViewport, pCameraComponent, pSceneComponent, pCameraComponent->GetZNear(), pCameraComponent->GetZFar());
 
 }
 
-Matrix4 MRenderSystem::GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent, float fZNear, float fZFar) const
+Matrix4 MRenderSystem::GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent, float fZNear, float fZFar)
 {
 	//Update Camera and Projection Matrix.
 	Matrix4 m4Projection = pCameraComponent->GetCameraType() == MCameraComponent::MECameraType::EPerspective

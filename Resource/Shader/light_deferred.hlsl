@@ -161,11 +161,10 @@ float3 AdditionAllLights(VS_OUT input)
 
     f3Color = f3Color + f3Ambient;
 
-
     // HDR tonemapping
-    f3Color = f3Color / (f3Color + float3(1.0, 1.0, 1.0));
+    //f3Color = f3Color / (f3Color + float3(1.0, 1.0, 1.0));
     // gamma correct
-    f3Color = pow(f3Color, float3(1.0/2.2, 1.0/2.2, 1.0/2.2)); 
+    //f3Color = pow(f3Color, float3(1.0/2.2, 1.0/2.2, 1.0/2.2)); 
 
     return f3Color;
 }

@@ -22,7 +22,6 @@ MMaterial::MMaterial()
 	, m_pShaderProgram(MShaderProgram::MakeShared(MShaderProgram::EUsage::EGraphics))
 	, m_eRasterizerType(MERasterizerType::ECullBack)
 	, m_eMaterialType(MEMaterialType::EDefault)
-	, m_unMaterialID(MGlobal::M_INVALID_INDEX)
 {
 }
 
@@ -331,24 +330,6 @@ bool MMaterial::LoadPixelShader(const MString& strResource)
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 	if (std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(strResource))
 		return LoadPixelShader(pResource);
-
-	return false;
-}
-
-bool MMaterial::LoadComputeShader(std::shared_ptr<MResource> pResource)
-{
-	bool bResult = m_pShaderProgram->LoadComputeShader(GetEngine(), pResource);
-
-	OnReload();
-
-	return bResult;
-}
-
-bool MMaterial::LoadComputeShader(const MString& strResource)
-{
-	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-	if (std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(strResource))
-		return LoadComputeShader(pResource);
 
 	return false;
 }

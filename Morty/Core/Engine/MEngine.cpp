@@ -41,7 +41,7 @@ void MEngine::Release()
 
 	m_threadPool.Release();
 
-	for (MISystem* pSystem : m_vSystem)
+	for (auto& pSystem : m_vSystem)
 	{
 		pSystem->Release();
 		delete pSystem;
@@ -111,12 +111,32 @@ void MEngine::RegisterSystem(MISystem* pSystem)
 	m_tSystem[pSystem->GetType()] = m_vSystem.size() - 1;
 }
 
+void MEngine::RegisterGlobalObject(const MType* type)
+{
+	if (FindGlobalObject(type))
+		return;
+
+    MObject* pObject = FindSystem<MObjectSystem>()->CreateObject(type->m_strName);
+	m_tGlobalObject[type] = pObject;
+}
+
 MISystem* MEngine::FindSystem(const MType* type)
 {
 	auto find = m_tSystem.find(type);
 	if (find != m_tSystem.end())
+	{
 		return m_vSystem[find->second];
+	}
+	return nullptr;
+}
 
+MObject* MEngine::FindGlobalObject(const MType* type)
+{
+	auto find = m_tGlobalObject.find(type);
+	if (find != m_tGlobalObject.end())
+	{
+		return find->second;
+	}
 	return nullptr;
 }
 

@@ -3,7 +3,7 @@
  * 
  * @Created      2021-04-27 11:53:18
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MMODELCOMPONENT_H_

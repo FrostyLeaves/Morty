@@ -1,10 +1,9 @@
-#ifndef _M_MERGE_INSTANCING_SUB_SYSTEM_H_
-#define _M_MERGE_INSTANCING_SUB_SYSTEM_H_
+#ifndef _M_MERGE_INSTANCING_MANAGER_H_
+#define _M_MERGE_INSTANCING_MANAGER_H_
 
 #include "Utility/MGlobal.h"
 #include "Render/MBuffer.h"
-#include "Scene/MSubSystem.h"
-#include "MMergeInstancingMesh.h"
+#include "Scene/MManager.h"
 
 
 class MIMesh;
@@ -16,16 +15,9 @@ class MShaderConstantParam;
 class MRenderableMeshComponent;
 
 
-class MBatchMeshBuffer : public MBuffer
+struct MORTY_API MRenderableStaticMesh
 {
-public:
-	MBatchMeshBuffer();
-
-	uint32_t AllowMeshCluster();
-	void FreeMeshCluster(const uint32_t& idx);
-
-	MByte* GetMeshCluster(const uint32_t& idx);
-
+	MIMesh* pMesh;
 };
 
 struct MORTY_API MMaterialBatchGroup
@@ -34,15 +26,12 @@ struct MORTY_API MMaterialBatchGroup
 	std::set<MRenderableMeshComponent*> vMeshComponent = {};
 };
 
-class MORTY_API MMergeInstancingSubSystem : public MISubSystem
+class MORTY_API MMergeInstancingSubSystem : public IManager
 {
 public:
 	MORTY_INTERFACE(MMergeInstancingSubSystem)
 
 public:
-
-	MMergeInstancingSubSystem();
-	virtual ~MMergeInstancingSubSystem();
 
 	virtual void Initialize() override;
 	virtual void Release() override;
@@ -61,16 +50,12 @@ public:
 	MMaterialBatchGroup* GetMaterialBatchGroup(std::shared_ptr<MMaterial> pMaterial);
 	const std::map<std::shared_ptr<MMaterial>, MMaterialBatchGroup*>& GetMaterialToBatchInstanceTable() { return m_tMaterialToBatchInstanceTable; }
 
-	const std::vector<MMergeInstancingMesh::MClusterData>& GetMeshClusterGroup(MIMesh* pMesh);
-
-	const MMergeInstancingMesh* GetMergeInstancingMesh() const { return m_pMergeMesh; }
 public:
 
 	void OnBatchMeshChanged(MComponent* pSender);
 
 private:
 
-	MMergeInstancingMesh* m_pMergeMesh;
 	std::map<MRenderableMeshComponent*, MIMesh*> m_tComponentMeshTable;
 	std::map<MRenderableMeshComponent*, std::shared_ptr<MMaterial>> m_tComponentMaterialTable;
 	std::map<MIMesh*, int> m_tMeshReferenceCount;

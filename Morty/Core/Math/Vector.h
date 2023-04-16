@@ -158,7 +158,7 @@ public:
 	const Vector4& operator *= (const float& value);
 	const Vector4& operator /= (const float& value);
 
-    Vector3& GetVector3();
+    Vector3& GetVector3() const;
     
 	float Length() const;
 	void Normalize();

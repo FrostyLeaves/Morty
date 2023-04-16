@@ -49,7 +49,9 @@ VS_OUT_EMPTY VS_MAIN(VS_IN input, uint ViewIndex : SV_ViewID, uint INSTANCE_ID :
     output.pos = mul(posFromBones, mul(MESH_WORLD_MATRIX, u_matCamProj[ViewIndex]));
 
 #else
-    output.pos = mul(float4(input.pos, 1.0f), mul(MESH_WORLD_MATRIX, u_matCamProj[ViewIndex]));
+
+    float4x4 matWorld = MESH_WORLD_MATRIX;
+    output.pos = mul(float4(input.pos, 1.0f), mul(matWorld, u_matCamProj[ViewIndex]));
 #endif
     return output;
 }

@@ -21,9 +21,9 @@ public:
 
 public:
 
-	bool IsOnFront(const Vector3& position);
+	bool IsOnFront(const Vector3& position) const;
 
-	float GetDistance(const Vector3& position);
+	float GetDistance(const Vector3& position) const;
 
 	void MoveInNormal(const float& distance);
 

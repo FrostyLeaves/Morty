@@ -3,7 +3,7 @@
  * 
  * @Created      2022-07-23 22:09:42
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MPIPELINE_H_

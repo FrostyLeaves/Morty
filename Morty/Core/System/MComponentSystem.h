@@ -3,7 +3,7 @@
  * 
  * @Created      2021-08-03 14:21:17
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MCOMPONENTSYSTEM_H_

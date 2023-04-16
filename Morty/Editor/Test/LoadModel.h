@@ -37,7 +37,7 @@ void LOAD_MODEL_TEST(MEngine* pEngine, MScene* pScene)
 	std::vector<MComponentID> vMeshComponents;
 	for (size_t i = 0; i < 1; ++i)
 	{
-		auto&& vEntity = pEntitySystem->LoadEntity(pScene, pModelResource);
+		auto vEntity = pEntitySystem->LoadEntity(pScene, pModelResource);
 
 		for (MEntity* pEntity : vEntity)
 		{

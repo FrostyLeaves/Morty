@@ -290,7 +290,7 @@ const Vector4& Vector4::operator*=(const float& value)
 	return *this = *this * value;
 }
 
-Vector3& Vector4::GetVector3()
+Vector3& Vector4::GetVector3() const
 {
     return *((Vector3*)(this));
 }

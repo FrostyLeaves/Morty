@@ -46,6 +46,7 @@ public:
 	virtual void GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, const size_t& unDataSize) override;
 	virtual void DestroyBuffer(MBuffer* pBuffer) override;
 	virtual void UploadBuffer(MBuffer* pBuffer, const size_t& unBeginOffset, const MByte* data, const size_t& unDataSize) override;
+	virtual void ResizeBuffer(MBuffer* pBuffer, const size_t& nNewSize) override;
 
 	virtual void GenerateTexture(MTexture* pTexture, MByte* pData = nullptr) override;
 	virtual void DestroyTexture(MTexture* pTexture) override;
@@ -87,7 +88,7 @@ public:
 
 	VkPhysicalDevice GetPhysicalDevice() { return m_VkPhysicalDevice; }
 
-	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkBufferCopy region);
 	void CopyImageBuffer(VkBuffer srcBuffer, VkImage image, const uint32_t& width, const uint32_t& height, const uint32_t& unCount);
 
 	void CopyImageBuffer(MTexture* pSource, MTexture* pDestination, VkCommandBuffer buffer = VK_NULL_HANDLE);
@@ -103,6 +104,8 @@ public:
 
 	void CreateImage(const uint32_t& unWidth, const uint32_t& unHeight, const uint32_t& unMipmap, const uint32_t& unLayerCount, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageLayout defaultLayout, VkImage& image, VkDeviceMemory& imageMemory, VkImageCreateFlags createFlag, VkImageType imageType);
 
+	VkBufferUsageFlags GetBufferUsageFlags(MBuffer* pBuffer) const;
+	VkMemoryPropertyFlags GetMemoryFlags(MBuffer* pBuffer) const;
 	bool GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 

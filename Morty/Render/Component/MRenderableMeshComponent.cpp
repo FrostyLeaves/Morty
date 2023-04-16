@@ -2,6 +2,7 @@
 
 MORTY_CLASS_IMPLEMENT(MRenderableMeshComponent, MComponent)
 
+#include "MRenderNotify.h"
 #include "Scene/MScene.h"
 #include "Scene/MEntity.h"
 #include "Engine/MEngine.h"
@@ -24,8 +25,6 @@ MRenderableMeshComponent::MRenderableMeshComponent()
 	: MComponent()
 	, m_Mesh()
 	, m_Material()
-	, m_pShaderPropertyBlock(nullptr)
-	, m_pTransformParam(nullptr)
 	, m_pModelComponent(nullptr)
 	, m_BoundsAABB()
 	, m_BoundsSphere()
@@ -33,7 +32,6 @@ MRenderableMeshComponent::MRenderableMeshComponent()
 	, m_unDetailLevel(MRenderGlobal::MESH_LOD_LEVEL_RANGE)
 
 	, m_bDrawBoundingSphere(false)
-	, m_bGenerateDirLightShadow(false)
 	, m_bModelInstanceFound(false)
 	, m_bTransformParamDirty(true)
 	, m_bBoundsAABBDirty(true)
@@ -49,8 +47,6 @@ MRenderableMeshComponent::~MRenderableMeshComponent()
 
 void MRenderableMeshComponent::Release()
 {
-	BindShaderParam(nullptr);
-
 	Super::Release();
 }
 
@@ -60,65 +56,12 @@ void MRenderableMeshComponent::SetMaterial(std::shared_ptr<MMaterial> pMaterial)
 		return;
 
 	m_Material.SetResource(pMaterial);
-	BindShaderParam(pMaterial);
-
-	if (GetBatchInstanceEnable())
-	{
-		SendComponentNotify("MeshBatchChanged");
-	}
+	SendComponentNotify(MRenderNotify::NOTIFY_MATERIAL_CHANGED);
 }
 
 std::shared_ptr<MMaterial> MRenderableMeshComponent::GetMaterial()
 {
 	return std::static_pointer_cast<MMaterial>(m_Material.GetResource());
-}
-
-const std::shared_ptr<MShaderPropertyBlock>& MRenderableMeshComponent::GetShaderMeshParamSet()
-{
-	if (m_bTransformParamDirty)
-	{
-		UpdateShaderMeshParam();
-	}
-
-	return m_pShaderPropertyBlock;
-}
-
-void MRenderableMeshComponent::UpdateShaderMeshParam()
-{
-	MEntity* pEntity = GetEntity();
-	if (!pEntity)
-		return;
-
-	MSceneComponent* pSceneComponent = pEntity->GetComponent<MSceneComponent>();
-	if (!pSceneComponent)
-	{
-		GetEngine()->GetLogger()->Error("RenderableMeshComponent: SceneComponent Not Found!");
-		return;
-	}
-
-	if (m_pTransformParam)
-	{
-		Matrix4 worldTrans = pSceneComponent->GetWorldTransform();
-
-		if (m_worldMatrixParam.IsValid())
-		{
-			m_worldMatrixParam.SetValue(worldTrans);
-		}
-
-		if (m_normalMatrixParam.IsValid())
-		{
-			Quaternion quat =  worldTrans.GetRotation();
-			Matrix4 mat = quat;
-			//Transposed and Inverse.
-			Matrix3 matNormal(worldTrans, 3, 3);
-
-			m_normalMatrixParam.SetValue(matNormal);
-		}
-
-		m_pTransformParam->SetDirty();
-	}
-
-	m_bTransformParamDirty = false;
 }
 
 bool MRenderableMeshComponent::SetMaterialPath(const MString& strPath)
@@ -149,16 +92,12 @@ void MRenderableMeshComponent::Load(std::shared_ptr<MResource> pResource)
 	if (std::shared_ptr<MMeshResource> pMeshResource = MTypeClass::DynamicCast<MMeshResource>(pResource))
 	{
 		m_Mesh.SetResource(pResource);
+		SendComponentNotify(MRenderNotify::NOTIFY_MESH_CHANGED);
 
 		if (m_Material.GetResource() == nullptr)
 		{
 			std::shared_ptr<MMaterial> pMaterial = MTypeClass::DynamicCast<MMaterial>(pMeshResource->GetDefaultMaterial());
 			SetMaterial(pMaterial);
-		}
-
-		if (GetBatchInstanceEnable())
-		{
-			SendComponentNotify("MeshBatchChanged");
 		}
 	}
 }
@@ -247,12 +186,12 @@ std::shared_ptr<MSkeletonInstance> MRenderableMeshComponent::GetSkeletonInstance
 	return nullptr;
 }
 
-void MRenderableMeshComponent::SetBatchInstanceEnable(const bool& bBatch)
+void MRenderableMeshComponent::SetGenerateDirLightShadow(const bool& bGenerate)
 {
-	if (m_bBatchInstanceEnable != bBatch)
+	if (m_bGenerateDirLightShadow != bGenerate)
 	{
-		m_bBatchInstanceEnable = bBatch;
-		SendComponentNotify("MeshBatchChanged");
+		m_bGenerateDirLightShadow = bGenerate;
+		SendComponentNotify(MRenderNotify::NOTIFY_GENERATE_SHADOW_CHANGED);
 	}
 }
 
@@ -297,8 +236,8 @@ void MRenderableMeshComponent::OnParentChanged()
 flatbuffers::Offset<void> MRenderableMeshComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
 	auto fb_super = Super::Serialize(fbb).o;
-	auto&& fb_material_path = fbb.CreateString(GetMaterialPath());
-	auto&& fb_mesh_path = fbb.CreateString(GetMeshResourcePath());
+	auto fb_material_path = fbb.CreateString(GetMaterialPath());
+	auto fb_mesh_path = fbb.CreateString(GetMeshResourcePath());
 	mfbs::MRenderableMeshComponentBuilder builder(fbb);
 
 	builder.add_gen_dir_shadow(GetGenerateDirLightShadow());
@@ -338,34 +277,4 @@ void MRenderableMeshComponent::Deserialize(const void* pBufferPointer)
 
 	OnTransformDirty();
 	OnParentChanged();
-}
-
-void MRenderableMeshComponent::BindShaderParam(std::shared_ptr<MMaterial> pMaterial)
-{
-	if (m_pShaderPropertyBlock)
-	{
-		MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-		m_pShaderPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
-		m_pShaderPropertyBlock = nullptr;
-		m_pTransformParam = nullptr;
-		m_worldMatrixParam = MVariant();
-		m_normalMatrixParam = MVariant();
-	}
-
-	if (pMaterial)
-	{
-		if (std::shared_ptr<MShaderPropertyBlock> pTemplatePropertyBlock = pMaterial->GetMeshParamSet())
-		{
-			m_pShaderPropertyBlock = pTemplatePropertyBlock->Clone();
-
-			if (m_pTransformParam = m_pShaderPropertyBlock->FindConstantParam("_M_E_cbMeshMatrix"))
-			{
-				MVariantStruct& srt = m_pTransformParam->var.GetValue<MVariantStruct>();
-				{
-					m_worldMatrixParam = srt.FindVariant("u_matWorld");
-					m_normalMatrixParam = srt.FindVariant("u_matNormal");
-				}
-			}
-		}
-	}
 }

@@ -47,6 +47,7 @@ public:
 	virtual void GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, const size_t& unDataSize) = 0;
 	virtual void DestroyBuffer(MBuffer* pBuffer) = 0;
 	virtual void UploadBuffer(MBuffer* pBuffer, const size_t& unBeginOffset, const MByte* data, const size_t& unDataSize) = 0;
+	virtual void ResizeBuffer(MBuffer* pBuffer, const size_t& nNewSize) = 0;
 
 	virtual void GenerateTexture(MTexture* pTexture, MByte* pData = nullptr) = 0;
 	virtual void DestroyTexture(MTexture* pTexture) = 0;

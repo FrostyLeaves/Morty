@@ -13,7 +13,7 @@
 
 #include "Math/Matrix.h"
 #include "Scene/MEntity.h"
-#include "Scene/MSubSystem.h"
+#include "Scene/MManager.h"
 #include "Engine/MEngine.h"
 #include "Component/MComponent.h"
 
@@ -60,14 +60,14 @@ public:
 public:
 
 	template <class TYPE>
-	TYPE* RegisterSubSystem();
+	TYPE* RegisterManager();
 
 	template <class TYPE>
-	TYPE* GetSubSystem();
+	TYPE* GetManager();
 
 protected:
 
-	void RegisterSubSystem(const MType* pSubSystemType, MISubSystem* pSubSystem);
+	void RegisterManager(const MType* pManagerType, IManager* pManager);
 
 public:
 
@@ -86,7 +86,8 @@ private:
 
 	std::map<MGuid, MEntity*> m_vEntity;
 	std::map<const MType*, MIComponentGroup*> m_tComponents;
-	std::map<const MType*, MISubSystem*> m_tSubSystems;
+	std::map<const MType*, IManager*> m_tManager;
+	std::map<const MType*, std::vector<IManager*>> m_tComponentRegister;
 };
 
 template<typename TYPE>
@@ -114,25 +115,25 @@ MComponentGroup<TYPE>* MScene::FindComponents()
 }
 
 template<class TYPE>
-inline TYPE* MScene::RegisterSubSystem()
+inline TYPE* MScene::RegisterManager()
 {
-	auto findResult = m_tSubSystems.find(TYPE::GetClassType());
-	if (findResult != m_tSubSystems.end())
+	auto findResult = m_tManager.find(TYPE::GetClassType());
+	if (findResult != m_tManager.end())
 	{
 		return static_cast<TYPE*>(findResult->second);
 	}
 
-	TYPE* pSubSystem = new TYPE();
-	RegisterSubSystem(TYPE::GetClassType(), pSubSystem);
-	pSubSystem->Initialize();
-	return pSubSystem;
+	TYPE* pManager = new TYPE();
+	RegisterManager(TYPE::GetClassType(), pManager);
+	pManager->Initialize();
+	return pManager;
 }
 
 template<class TYPE>
-inline TYPE* MScene::GetSubSystem()
+inline TYPE* MScene::GetManager()
 {
-	auto findResult = m_tSubSystems.find(TYPE::GetClassType());
-	if (findResult != m_tSubSystems.end())
+	auto findResult = m_tManager.find(TYPE::GetClassType());
+	if (findResult != m_tManager.end())
 	{
 		return static_cast<TYPE*>(findResult->second);
 	}

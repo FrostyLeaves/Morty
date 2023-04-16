@@ -8,78 +8,13 @@ set(CORE_CODE_DIRECTORIES)
 ############################################################
 # Core
 ############################################################
-file(GLOB CORE_COMPONENT_FILES Component/*.h Component/*.cpp)
-source_group("Component" FILES ${CORE_COMPONENT_FILES})
+file(GLOB_RECURSE CORE_All_FILES *.h *.cpp)
 
-file(GLOB CORE_ENGINE_FILES Engine/*.h Engine/*.cpp)
-source_group("Engine" FILES ${CORE_ENGINE_FILES})
-
-file(GLOB CORE_INPUT_FILES Input/*.h Input/*.cpp)
-source_group("Input" FILES ${CORE_INPUT_FILES})
-
-file(GLOB CORE_MATH_FILES Math/*.h Math/*.cpp )
-source_group("Math" FILES ${CORE_MATH_FILES})
-
-file(GLOB CORE_MODULE_FILES Module/*.h Module/*.cpp )
-source_group("Module" FILES ${CORE_MODULE_FILES})
-
-file(GLOB CORE_OBJECT_FILES Object/*.h Object/*.cpp )
-source_group("Object" FILES ${CORE_OBJECT_FILES})
-
-file(GLOB CORE_POINTER_FILES Pointer/*.h Pointer/*.cpp )
-source_group("Pointer" FILES ${CORE_POINTER_FILES})
-
-file(GLOB CORE_RESOURCE_FILES Resource/*.h Resource/*.cpp )
-source_group("Resource" FILES ${CORE_RESOURCE_FILES})
-
-file(GLOB CORE_SCENE_FILES Scene/*.h Scene/*.cpp )
-source_group("Scene" FILES ${CORE_SCENE_FILES})
-
-file(GLOB EDITOR_SUBSYSTEM_FILES SubSystem/*.h SubSystem/*.cpp)
-source_group("SubSystem" FILES ${EDITOR_SUBSYSTEM_FILES})
-
-file(GLOB CORE_SYSTEM_FILES System/*.h System/*.cpp )
-source_group("System" FILES ${CORE_SYSTEM_FILES})
-
-file(GLOB CORE_TASK_GRAPH_FILES TaskGraph/*.h TaskGraph/*.cpp )
-source_group("TaskGraph" FILES ${CORE_TASK_GRAPH_FILES})
-
-file(GLOB CORE_THREAD_FILES Thread/*.h Thread/*.cpp )
-source_group("Thread" FILES ${CORE_THREAD_FILES})
-
-file(GLOB CORE_TYPE_FILES Type/*.h Type/*.cpp )
-source_group("Type" FILES ${CORE_TYPE_FILES})
-
-file(GLOB CORE_UTILITY_FILES Utility/*.h Utility/*.cpp )
-source_group("Utility" FILES ${CORE_UTILITY_FILES})
-
-file(GLOB CORE_VARIANT_FILES Variant/*.h Variant/*.cpp )
-source_group("Variant" FILES ${CORE_VARIANT_FILES})
-
-file(GLOB CORE_FLATBUFFER_FILES Flatbuffer/*.h Flatbuffer/*.cpp )
-source_group("Flatbuffer" FILES ${CORE_FLATBUFFER_FILES})
 ############################################################
 # add library
 ############################################################
 add_library(Core STATIC 
-    ${CORE_CORE_FILES}
-    ${CORE_COMPONENT_FILES}
-    ${CORE_ENGINE_FILES}
-    ${CORE_INPUT_FILES}
-    ${CORE_MATH_FILES}
-    ${CORE_MODULE_FILES}
-    ${CORE_OBJECT_FILES}
-    ${CORE_POINTER_FILES}
-    ${CORE_RESOURCE_FILES}
-    ${CORE_SCENE_FILES}
-    ${EDITOR_SUBSYSTEM_FILES}
-    ${CORE_SYSTEM_FILES}
-    ${CORE_TASK_GRAPH_FILES}
-    ${CORE_THREAD_FILES}
-    ${CORE_TYPE_FILES}
-    ${CORE_UTILITY_FILES}
-    ${CORE_VARIANT_FILES}
-    ${CORE_FLATBUFFER_FILES}
+    ${CORE_All_FILES}
 )
 
 

@@ -61,7 +61,7 @@ int main()
 
  	ENVIRONMENT_CUBEMAP_TEST(&engine, pScene);
 
-//	SHADOW_MAP_TEST(&engine, pScene);
+	SHADOW_MAP_TEST(&engine, pScene);
 
 //	PBR_SHPERE(&engine, pScene);
 
@@ -71,8 +71,7 @@ int main()
 
 //	LOAD_MODEL_SPONZA_TEST(&engine, pScene);
 
-	//GPU_DRIVEN_CULLING_TEST(&engine, pScene);
-
+//	GPU_DRIVEN_CULLING_TEST(&engine, pScene);
 
 	//start run
 	engine.Start();

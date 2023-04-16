@@ -120,7 +120,7 @@ std::shared_ptr<MTexture> MTexture::CreateShadowMapArray(const size_t& nArraySiz
 	return pTexture;
 }
 
-std::shared_ptr<MTexture> MTexture::CreateRenderTarget()
+std::shared_ptr<MTexture> MTexture::CreateRenderTarget(METextureLayout eLayout/*= METextureLayout::ERGBA_UNORM_8*/)
 {
 	std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
 	pTexture->SetName("Render Target Texture");
@@ -128,7 +128,7 @@ std::shared_ptr<MTexture> MTexture::CreateRenderTarget()
 	pTexture->SetReadable(false);
 	pTexture->SetRenderUsage(METextureRenderUsage::ERenderBack);
 	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
-	pTexture->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
+	pTexture->SetTextureLayout(eLayout);
 
 	return pTexture;
 }

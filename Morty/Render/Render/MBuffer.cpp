@@ -80,6 +80,11 @@ void MBuffer::UploadBuffer(MIDevice* pDevice, const MByte* data, const size_t& s
 	pDevice->UploadBuffer(this, 0, data, size);
 }
 
+void MBuffer::UploadBuffer(MIDevice* pDevice, size_t nBeginOffset, const MByte* data, const size_t& size)
+{
+	pDevice->UploadBuffer(this, nBeginOffset, data, size);
+}
+
 void MBuffer::DestroyBuffer(MIDevice* pDevice)
 {
 	pDevice->DestroyBuffer(this);

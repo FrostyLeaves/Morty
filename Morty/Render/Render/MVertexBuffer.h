@@ -3,7 +3,7 @@
  * 
  * @Created      2021-07-14 18:55:04
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MVERTEXBUFFER_H_

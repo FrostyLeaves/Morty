@@ -38,6 +38,8 @@ void MVulkanRenderCommand::RenderCommandBegin()
 	vkBeginCommandBuffer(m_VkCommandBuffer, &beginInfo);
 
 	m_nDrawCallCount = 0;
+
+	pUsingPipeline = nullptr;
 }
 
 void MVulkanRenderCommand::RenderCommandEnd()
@@ -141,24 +143,61 @@ void MVulkanRenderCommand::DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, c
 	UpdateBuffer(pVertexBuffer, pMesh->GetVerticesVector().data(), pMesh->GetVerticesVector().size());
 	UpdateBuffer(pIndexBuffer, pMesh->GetIndicesVector().data(), pMesh->GetIndicesVector().size());
 
-	VkBuffer vertexBuffers[] = { pVertexBuffer->m_VkBuffer };
-	VkDeviceSize offsets[] = { 0 };
-	vkCmdBindVertexBuffers(m_VkCommandBuffer, 0, 1, vertexBuffers, offsets);
-	vkCmdBindIndexBuffer(m_VkCommandBuffer, pIndexBuffer->m_VkBuffer, 0, VK_INDEX_TYPE_UINT32);
-	vkCmdDrawIndexed(m_VkCommandBuffer, nIdxCount, 1, nIdxOffset, nVrtOffset, 0);
+	DrawMesh(pVertexBuffer, pIndexBuffer, nVrtOffset, nIdxOffset, nIdxCount);
+}
+
+void MVulkanRenderCommand::DrawMesh(const MBuffer* pVertexBuffer, const MBuffer* pIndexBuffer, const size_t nVertexOffset, const size_t nIndexOffset, const size_t nIndexCount)
+{
+	if (!pVertexBuffer || !pIndexBuffer)
+	{
+		MORTY_ASSERT(pVertexBuffer && pIndexBuffer);
+		return;
+	}
+
+	if (pVertexBuffer->m_VkBuffer == VK_NULL_HANDLE || pIndexBuffer->m_VkBuffer == VK_NULL_HANDLE)
+	{
+		MORTY_ASSERT(pVertexBuffer->m_VkBuffer != VK_NULL_HANDLE && pIndexBuffer->m_VkBuffer != VK_NULL_HANDLE);
+		return;
+	}
+
+	if (pUsingVertex != pVertexBuffer)
+	{
+		const VkBuffer vertexBuffers[] = { pVertexBuffer->m_VkBuffer };
+		constexpr VkDeviceSize offsets[] = { 0 };
+		vkCmdBindVertexBuffers(m_VkCommandBuffer, 0, 1, vertexBuffers, offsets);
+		pUsingVertex = pVertexBuffer;
+	}
+
+	if (pUsingIndex != pIndexBuffer)
+	{
+		vkCmdBindIndexBuffer(m_VkCommandBuffer, pIndexBuffer->m_VkBuffer, 0, VK_INDEX_TYPE_UINT32);
+		pUsingIndex = pIndexBuffer;
+	}
+
+	vkCmdDrawIndexed(m_VkCommandBuffer, nIndexCount, 1, nIndexOffset, nVertexOffset, 0);
 
 	++m_nDrawCallCount;
-	
 }
 
 void MVulkanRenderCommand::DrawIndexedIndirect(const MBuffer* pVertexBuffer, const MBuffer* pIndexBuffer, const MBuffer* pCommandsBuffer, const size_t& offset, const size_t& count)
 {
-	VkBuffer vertexBuffers[] = { pVertexBuffer->m_VkBuffer };
-	VkDeviceSize offsets[] = { 0 };
-	vkCmdBindVertexBuffers(m_VkCommandBuffer, 0, 1, vertexBuffers, offsets);
-	vkCmdBindIndexBuffer(m_VkCommandBuffer, pIndexBuffer->m_VkBuffer, 0, VK_INDEX_TYPE_UINT32);
+	if (pUsingVertex != pVertexBuffer)
+	{
+		const VkBuffer vertexBuffers[] = { pVertexBuffer->m_VkBuffer };
+		constexpr VkDeviceSize offsets[] = { 0 };
+		vkCmdBindVertexBuffers(m_VkCommandBuffer, 0, 1, vertexBuffers, offsets);
+		pUsingVertex = pVertexBuffer;
+	}
+
+	if (pUsingIndex != pIndexBuffer)
+	{
+		vkCmdBindIndexBuffer(m_VkCommandBuffer, pIndexBuffer->m_VkBuffer, 0, VK_INDEX_TYPE_UINT32);
+		pUsingIndex = pIndexBuffer;
+	}
 
 	vkCmdDrawIndexedIndirect(m_VkCommandBuffer, pCommandsBuffer->m_VkBuffer, offset, count, sizeof(VkDrawIndexedIndirectCommand));
+
+	++m_nDrawCallCount;
 }
 
 bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
@@ -179,6 +218,9 @@ bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 		return true;
 	}
 
+	pUsingVertex = nullptr;
+	pUsingIndex = nullptr;
+
 	MRenderPassStage stage = m_vRenderPassStages.top();
 	std::shared_ptr<MPipeline> pPipeline = m_pDevice->m_PipelineManager.FindOrCreateGraphicsPipeline(pMaterial, stage.pRenderPass);
 	MORTY_ASSERT(pUsingPipeline = pPipeline);
@@ -191,7 +233,6 @@ bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 		vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
 
 		std::shared_ptr<MShaderPropertyBlock>&& pParamSet = pMaterial->GetMaterialParamSet();
-
 
 		SetShaderParamSet(pParamSet);
 
@@ -330,11 +371,11 @@ bool MVulkanRenderCommand::AddRenderToTextureBarrier(const std::vector<MTexture*
 	return true;
 }
 
-bool MVulkanRenderCommand::AddComputeToGraphBarrier(const std::vector<MBuffer*> vBuffers)
+bool MVulkanRenderCommand::AddComputeToGraphBarrier(const std::vector<const MBuffer*> vBuffers)
 {
 
 	std::vector<VkBufferMemoryBarrier> bufferBarriers;
-	for(MBuffer* pBuffer : vBuffers)
+	for(const MBuffer* pBuffer : vBuffers)
 	{
 		VkBufferMemoryBarrier bufferBarrier;
 		bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
@@ -362,10 +403,10 @@ bool MVulkanRenderCommand::AddComputeToGraphBarrier(const std::vector<MBuffer*> 
 	return true;
 }
 
-bool MVulkanRenderCommand::AddGraphToComputeBarrier(const std::vector<MBuffer*> vBuffers)
+bool MVulkanRenderCommand::AddGraphToComputeBarrier(const std::vector<const MBuffer*> vBuffers)
 {
 	std::vector<VkBufferMemoryBarrier> bufferBarriers;
-	for (MBuffer* pBuffer : vBuffers)
+	for (const MBuffer* pBuffer : vBuffers)
 	{
 		VkBufferMemoryBarrier bufferBarrier;
 		bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;

@@ -131,8 +131,8 @@ MBoundsAABB MModelComponent::GetBoundsAABB()
 
 flatbuffers::Offset<void> MModelComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	auto&& fb_ske_resource = fbb.CreateString(GetSkeletonResourcePath());
-	auto&& fb_super = Super::Serialize(fbb).o;
+	auto fb_ske_resource = fbb.CreateString(GetSkeletonResourcePath());
+	auto fb_super = Super::Serialize(fbb).o;
 
 	mfbs::MModelComponentBuilder builder(fbb);
 

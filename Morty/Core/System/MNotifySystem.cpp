@@ -15,7 +15,7 @@ MNotifySystem::~MNotifySystem()
 
 }
 
-void MNotifySystem::SendNotify(const MString& strNotifyName, MScene* pScene, const MComponentID& senderID)
+void MNotifySystem::SendNotify(const char* strNotifyName, MScene* pScene, const MComponentID& senderID)
 {
 	auto findResult = m_tNotifyTable.find(strNotifyName);
 	if (findResult != m_tNotifyTable.end())
@@ -28,7 +28,7 @@ void MNotifySystem::SendNotify(const MString& strNotifyName, MScene* pScene, con
 	}
 }
 
-void MNotifySystem::RegisterNotify(const MString& strNotifyName, MNotifyFunction func)
+void MNotifySystem::RegisterNotify(const char* strNotifyName, MNotifyFunction func)
 {
 	UNION_PUSH_BACK_VECTOR<MNotifyFunction>(m_tNotifyTable[strNotifyName], func, [](const MNotifyFunction& a, const MNotifyFunction& b) {
 		if (a.target_type() != b.target_type())
@@ -41,7 +41,7 @@ void MNotifySystem::RegisterNotify(const MString& strNotifyName, MNotifyFunction
 		});
 }
 
-void MNotifySystem::UnregisterNotify(const MString& strNotifyName, MNotifyFunction func)
+void MNotifySystem::UnregisterNotify(const char* strNotifyName, MNotifyFunction func)
 {
 	auto findResult = m_tNotifyTable.find(strNotifyName);
 	if (findResult != m_tNotifyTable.end())

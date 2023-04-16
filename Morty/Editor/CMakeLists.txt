@@ -3,33 +3,7 @@
 ############################################################
 # Render
 ############################################################
-
-file(GLOB EDITOR_COMPONENT_FILES Component/*.h Component/*.cpp)
-source_group("Component" FILES ${EDITOR_COMPONENT_FILES})
-
-file(GLOB EDITOR_MAIN_FILES Main/*.h Main/*.cpp)
-source_group("Main" FILES ${EDITOR_MAIN_FILES})
-
-file(GLOB EDITOR_MODULE_FILES Module/*.h Module/*.cpp)
-source_group("Module" FILES ${EDITOR_MODULE_FILES})
-
-file(GLOB EDITOR_PROPERTY_FILES Property/*.h Property/*.cpp)
-source_group("Property" FILES ${EDITOR_PROPERTY_FILES})
-
-file(GLOB EDITOR_RENDER_FILES Render/*.h Render/*.cpp)
-source_group("Render" FILES ${EDITOR_RENDER_FILES})
-
-file(GLOB EDITOR_SYSTEM_FILES System/*.h System/*.cpp)
-source_group("System" FILES ${EDITOR_SYSTEM_FILES})
-
-file(GLOB EDITOR_TEST_FILES Test/*.h Test/*.cpp)
-source_group("Test" FILES ${EDITOR_TEST_FILES})
-
-file(GLOB EDITOR_UTILITY_FILES Utility/*.h Utility/*.cpp)
-source_group("Utility" FILES ${EDITOR_UTILITY_FILES})
-
-file(GLOB EDITOR_WIDGET_FILES Widget/*.h Widget/*.cpp)
-source_group("Widget" FILES ${EDITOR_WIDGET_FILES})
+file(GLOB_RECURSE EDITOR_All_FILES *.h *.cpp)
 
 ############################################################
 # ImGUI
@@ -38,15 +12,8 @@ file(GLOB EDITOR_IMGUI_FILE_DIALOG_FILES ${THIRD_PARTY_PATH}/ImGuiFileDialog/*.h
 source_group("ImGUI\\FileDialog" FILES ${EDITOR_IMGUI_FILE_DIALOG_FILES})
 
 add_executable(Editor 
-        ${EDITOR_COMPONENT_FILES}
-        ${EDITOR_MAIN_FILES}
-        ${EDITOR_MODULE_FILES}
-        ${EDITOR_PROPERTY_FILES}
-        ${EDITOR_RENDER_FILES}
-        ${EDITOR_SYSTEM_FILES}
-        ${EDITOR_TEST_FILES}
-        ${EDITOR_UTILITY_FILES}
-        ${EDITOR_WIDGET_FILES}
+        ${EDITOR_All_FILES}
+
         ${EDITOR_IMGUI_FILES}
         ${EDITOR_IMGUI_FILE_DIALOG_FILES}
 )

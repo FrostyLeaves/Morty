@@ -550,44 +550,18 @@ bool MVulkanDevice::InitDescriptorPool()
 
 void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, const size_t& unDataSize)
 {
-
 	VkDeviceSize unBufferSize = static_cast<uint64_t>(pBuffer->GetSize());
 
 	void* pMapMemory = nullptr;
 	VkBuffer vkBuffer;
 	VkDeviceMemory vkDeviceMemory;
 
-	VkBufferUsageFlags vkBufferUsageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-
-	if (MBuffer::MUsageType::EVertex & pBuffer->m_eUsageType)
-	{
-		vkBufferUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-	}
-	if (MBuffer::MUsageType::EIndex & pBuffer->m_eUsageType)
-	{
-		vkBufferUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-	}
-	if (MBuffer::MUsageType::EStorage & pBuffer->m_eUsageType)
-	{
-		vkBufferUsageFlags |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-	}
-	if (MBuffer::MUsageType::EUniform & pBuffer->m_eUsageType)
-	{
-		vkBufferUsageFlags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-	}
-	if (MBuffer::MUsageType::EIndirect & pBuffer->m_eUsageType)
-	{
-		vkBufferUsageFlags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
-	}
-
-	if (pBuffer->m_eUsageType == 0)
-	{
-		MORTY_ASSERT(false);
-	}
+	VkBufferUsageFlags vkBufferUsageFlags = GetBufferUsageFlags(pBuffer);
+	VkMemoryPropertyFlags vkMemoryFlags = GetMemoryFlags(pBuffer);
 
 	if (MBuffer::MMemoryType::EHostVisible == pBuffer->m_eMemoryType)
 	{
-		GenerateBuffer(unBufferSize, vkBufferUsageFlags, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vkBuffer, vkDeviceMemory);
+		GenerateBuffer(unBufferSize, vkBufferUsageFlags, vkMemoryFlags, vkBuffer, vkDeviceMemory);
 
 		if (initialData && unDataSize >= unBufferSize)
 		{
@@ -598,7 +572,7 @@ void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, c
 	}
 	else if (MBuffer::MMemoryType::EDeviceLocal == pBuffer->m_eMemoryType)
 	{
-		GenerateBuffer(unBufferSize, vkBufferUsageFlags, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vkBuffer, vkDeviceMemory);
+		GenerateBuffer(unBufferSize, vkBufferUsageFlags, vkMemoryFlags, vkBuffer, vkDeviceMemory);
 
 		if (initialData && unDataSize >= unBufferSize)
 		{
@@ -610,7 +584,8 @@ void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, c
 			memcpy(pMapMemory, initialData, (size_t)unBufferSize);
 			vkUnmapMemory(m_VkDevice, stagingBufferMemory);
 
-			CopyBuffer(stagingBuffer, vkBuffer, unBufferSize);
+			VkBufferCopy region = { 0, 0, unBufferSize };
+			CopyBuffer(stagingBuffer, vkBuffer, region);
 
 			DestroyBuffer(stagingBuffer, stagingBufferMemory);
 		}
@@ -621,6 +596,31 @@ void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, c
 	}
 
 	SetDebugName(reinterpret_cast<uint64_t>(vkBuffer), VkObjectType::VK_OBJECT_TYPE_BUFFER, pBuffer->m_strDebugBufferName.c_str());
+
+	pBuffer->m_VkBuffer = vkBuffer;
+	pBuffer->m_VkDeviceMemory = vkDeviceMemory;
+	pBuffer->m_eStageType = MBuffer::MStageType::ESynced;
+}
+
+void MVulkanDevice::ResizeBuffer(MBuffer* pBuffer, const size_t& nNewSize)
+{
+	if (VK_NULL_HANDLE == pBuffer->m_VkBuffer)
+	{
+		GenerateBuffer(pBuffer, nullptr, nNewSize);
+		return;
+	}
+
+	VkBuffer vkBuffer;
+	VkDeviceMemory vkDeviceMemory;
+
+	VkBufferUsageFlags vkBufferUsageFlags = GetBufferUsageFlags(pBuffer);
+	VkMemoryPropertyFlags vkMemoryFlags = GetMemoryFlags(pBuffer);
+
+	GenerateBuffer(nNewSize, vkBufferUsageFlags, vkMemoryFlags, vkBuffer, vkDeviceMemory);
+
+	VkBufferCopy region = { 0, 0, pBuffer->GetSize() };
+	CopyBuffer(pBuffer->m_VkBuffer, vkBuffer, region);
+	DestroyBuffer(pBuffer->m_VkBuffer, pBuffer->m_VkDeviceMemory);
 
 	pBuffer->m_VkBuffer = vkBuffer;
 	pBuffer->m_VkDeviceMemory = vkDeviceMemory;
@@ -659,7 +659,19 @@ void MVulkanDevice::UploadBuffer(MBuffer* pBuffer, const size_t& unBeginOffset, 
 	}
 	else
 	{
-		MORTY_ASSERT(false);
+		VkBuffer stagingBuffer;
+		VkDeviceMemory stagingBufferMemory;
+		void* dataMapping = nullptr;
+		GenerateBuffer(unDataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+		vkMapMemory(m_VkDevice, stagingBufferMemory, 0, unDataSize, 0, &dataMapping);
+		memcpy(dataMapping, data, (size_t)unDataSize);
+		vkUnmapMemory(m_VkDevice, stagingBufferMemory);
+
+		const VkBufferCopy region = { 0, unBeginOffset, unDataSize };
+		CopyBuffer(stagingBuffer, pBuffer->m_VkBuffer, region);
+
+		DestroyBuffer(stagingBuffer, stagingBufferMemory);
 	}
 }
 
@@ -982,7 +994,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 
 	for (uint32_t i = 0; i < unBackNum; ++i)
 	{
-		MBackTexture& backTexture = pRenderPass->m_vBackTextures[i];
+		MRenderTarget& backTexture = pRenderPass->m_vBackTextures[i];
 		if (!backTexture.pTexture)
 		{
 			GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateRenderPass error: bt == nullptr");
@@ -993,6 +1005,8 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 		{
 			backTexture.pTexture->GenerateBuffer(this);
 		}
+		
+		MORTY_ASSERT(backTexture.desc.bClearWhenRender || backTexture.desc.bAlreadyRender);
 
 		vAttachmentDesc.push_back({});
 		VkAttachmentDescription& colorAttachment = vAttachmentDesc.back();
@@ -1243,7 +1257,7 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 	uint32_t unBackNum = pRenderPass->m_vBackTextures.size();
 	for (uint32_t backIdx = 0; backIdx < unBackNum; ++backIdx)
 	{
-		MBackTexture& backTexture = pRenderPass->m_vBackTextures[backIdx];
+		MRenderTarget& backTexture = pRenderPass->m_vBackTextures[backIdx];
 		if (!backTexture.pTexture)
 		{
 			GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateFrameBuffer error: bt == nullptr");
@@ -1341,7 +1355,7 @@ void MVulkanDevice::DestroyFrameBuffer(MRenderPass* pRenderPass)
 		pRenderPass->m_VkFrameBuffer = VK_NULL_HANDLE;
 	}
 
-	for (MBackTexture& backTexture : pRenderPass->m_vBackTextures)
+	for (MRenderTarget& backTexture : pRenderPass->m_vBackTextures)
 	{
 		if (backTexture.m_VkImageView)
 		{
@@ -1525,13 +1539,11 @@ void MVulkanDevice::Update()
 	m_pRecycleBin->Initialize();
 }
 
-void MVulkanDevice::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+void MVulkanDevice::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkBufferCopy region)
 {
 	VkCommandBuffer commandBuffer = BeginCommands();
 
-	VkBufferCopy copyRegion{};
-	copyRegion.size = size;
-	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &region);
 
 	EndCommands(commandBuffer);
 }
@@ -1872,6 +1884,58 @@ void MVulkanDevice::CreateImage(const uint32_t& unWidth, const uint32_t& unHeigh
 	}
 
 	vkBindImageMemory(m_VkDevice, image, imageMemory, 0);
+}
+
+VkBufferUsageFlags MVulkanDevice::GetBufferUsageFlags(MBuffer* pBuffer) const
+{
+	if (pBuffer->m_eUsageType == 0)
+	{
+		MORTY_ASSERT(false);
+	}
+
+	VkBufferUsageFlags vkBufferUsageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
+	if (MBuffer::MUsageType::EVertex & pBuffer->m_eUsageType)
+	{
+		vkBufferUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	}
+	if (MBuffer::MUsageType::EIndex & pBuffer->m_eUsageType)
+	{
+		vkBufferUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+	}
+	if (MBuffer::MUsageType::EStorage & pBuffer->m_eUsageType)
+	{
+		vkBufferUsageFlags |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+	}
+	if (MBuffer::MUsageType::EUniform & pBuffer->m_eUsageType)
+	{
+		vkBufferUsageFlags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+	}
+	if (MBuffer::MUsageType::EIndirect & pBuffer->m_eUsageType)
+	{
+		vkBufferUsageFlags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+	}
+
+
+	return vkBufferUsageFlags;
+}
+
+VkMemoryPropertyFlags MVulkanDevice::GetMemoryFlags(MBuffer* pBuffer) const
+{
+	if (MBuffer::MMemoryType::EHostVisible == pBuffer->m_eMemoryType)
+	{
+		return VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+	}
+	else if (MBuffer::MMemoryType::EDeviceLocal == pBuffer->m_eMemoryType)
+	{
+		return VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+	}
+	else
+	{
+		MORTY_ASSERT(false);
+	}
+	
+	return VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 }
 
 bool MVulkanDevice::GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)

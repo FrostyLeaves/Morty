@@ -3,7 +3,7 @@
  * 
  * @Created      2021-04-27 14:19:01
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MINPUTCOMPONENT_H_

@@ -3,7 +3,7 @@
  * 
  * @Created      2021-04-26 17:17:56
  *
- * @Author       Pobrecito
+ * @Author       DoubleYe
 **/
 
 #ifndef _M_MSCENECOMPONENT_H_

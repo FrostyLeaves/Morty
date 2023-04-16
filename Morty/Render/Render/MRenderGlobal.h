@@ -50,10 +50,12 @@ public:
 
 	static constexpr int CASCADED_SHADOW_MAP_NUM = 4;
 
-	static const char* DRAW_MESH_MERGE_INSTANCING;
+	static const char* DRAW_MESH_INSTANCING_UNIFORM;
+	static const char* DRAW_MESH_INSTANCING_STORAGE;
 
 	static const size_t MERGE_INSTANCING_MAX_NUM;
 	static const size_t MERGE_INSTANCING_CLUSTER_MAX_NUM;
+
 };
 
 #endif

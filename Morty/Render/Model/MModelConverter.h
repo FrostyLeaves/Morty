@@ -37,6 +37,23 @@ enum class MModelConvertMaterialType
 	E_PBR_Deferred
 };
 
+enum class MEModelTextureUsage
+{
+	Unknow = 0,
+	BaseColor,
+	Normal,
+	Metallic,
+	Roughness,
+	AmbientOcc,
+	Emission,
+};
+
+class MORTY_API MITextureDelegate
+{
+public:
+	virtual std::shared_ptr<MTextureResource> GetTexture(const MString& strFullPath, MEModelTextureUsage eUsage) = 0;
+};
+
 struct MORTY_API MModelConvertInfo
 {
 	MString strResourcePath;
@@ -46,6 +63,8 @@ struct MORTY_API MModelConvertInfo
 	bool bImportCamera = false;
 	bool bImportLights = true;
 	MModelConvertMaterialType eMaterialType;
+
+	std::shared_ptr<MITextureDelegate> pTextureDelegate;
 };
 
 class MORTY_API MModelConverter
@@ -96,7 +115,8 @@ private:
 
 	std::vector<std::pair<MString, std::shared_ptr<MMeshResource>>> m_vMeshes;
 	std::vector<std::shared_ptr<MMaterial>> m_vMaterials;
-	std::map < MString, std::shared_ptr<MTextureResource>> m_tTextures;
+	std::map<MString, std::shared_ptr<MTextureResource>> m_tRawTextures;
+	std::set<std::shared_ptr<MResource>> m_tFileTextures;
 
 	std::map<aiNode*, MEntity*> m_tNodeMaps;
 
@@ -109,6 +129,9 @@ private:
 	bool bImportCamera = false;
 	bool bImportLights = true;
 	MModelConvertMaterialType eMaterialType;
+
+
+	std::shared_ptr<MITextureDelegate> m_pTextureDelegate;
 
 };
 

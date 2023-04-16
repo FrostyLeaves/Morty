@@ -40,7 +40,7 @@ std::shared_ptr<MGraphicsPipeline> MVulkanPipelineManager::FindOrCreateGraphicsP
 {
 	MPipelineKey key(pMaterial->GetShaderProgram(), pRenderPass);
 
-	auto&& findResult = m_tPipelineTable.find(key);
+	auto findResult = m_tPipelineTable.find(key);
 	if (findResult != m_tPipelineTable.end())
 	{
 		return std::dynamic_pointer_cast<MGraphicsPipeline>(findResult->second);
@@ -75,7 +75,7 @@ std::shared_ptr<MComputePipeline> MVulkanPipelineManager::FindOrCreateComputePip
 {
 	MPipelineKey key(pComputeDispatcher->GetShaderProgram(), nullptr);
 
-	auto&& findResult = m_tPipelineTable.find(key);
+	auto findResult = m_tPipelineTable.find(key);
 	if (findResult != m_tPipelineTable.end())
 	{
 		return std::dynamic_pointer_cast<MComputePipeline>(findResult->second);

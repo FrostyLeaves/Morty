@@ -61,7 +61,11 @@ public:
 
     static MString FormatPath(MString strFilePath);
 
-    static MString GetFileFolder(const MString& strFilePath);
+    static MString GetFileFolder(MStringView strFilePath);
+
+    static MString GetFileName(MStringView strFullPath);
+
+    static MString ReplaceFileName(MStringView strFullPath, MStringView strNewFileName);
     
 private:
 

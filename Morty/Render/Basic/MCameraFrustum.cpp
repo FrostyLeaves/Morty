@@ -35,7 +35,7 @@ void MCameraFrustum::UpdateFromCameraInvProj(const Matrix4& m4CameraInvProj)
 
 }
 
-MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const Vector3& position)
+MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const Vector3& position) const
 {
 	for (uint32_t i = 0; i < 6; ++i)
 	{
@@ -46,7 +46,7 @@ MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const Vector3& positio
 	return MEContainType::EINSIDE;
 }
 
-MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const MBoundsSphere& sphere)
+MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const MBoundsSphere& sphere) const
 {
 	bool bIntersectable = false;
 
@@ -68,7 +68,7 @@ MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const MBoundsSphere& s
 	return MEContainType::EINSIDE;
 }
 
-MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const MBoundsAABB& aabb)
+MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const MBoundsAABB& aabb) const
 {
 	bool bIntersectable = false;
 
@@ -107,7 +107,7 @@ MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const MBoundsAABB& aab
 	return MEContainType::EINSIDE;
 }
 
-MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const MBoundsAABB& aabb, const Vector3& v3Direction)
+MCameraFrustum::MEContainType MCameraFrustum::ContainTest(const MBoundsAABB& aabb, const Vector3& v3Direction) const
 {
 	Vector3 v3NVertex;
 
