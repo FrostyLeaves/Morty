@@ -55,6 +55,7 @@ public:
 
 	static const size_t MERGE_INSTANCING_MAX_NUM;
 	static const size_t MERGE_INSTANCING_CLUSTER_MAX_NUM;
+	static const size_t MESH_TRANSFORM_IN_UNIFORM_MAX_NUM;
 
 };
 

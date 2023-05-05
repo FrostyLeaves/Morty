@@ -109,17 +109,15 @@ void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
 			}
 
 			pMeshComponent->SetGenerateDirLightShadow(true);
-		//	pMeshComponent->SetBatchInstanceEnable(true);
 		}
 
 	}
-
-	/*
+	
 	for (auto pMaterial : tMaterials)
 	{
-		pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_UNIFORM, "true");
+		pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, "true");
 		pMaterial->LoadVertexShader(pMaterial->GetVertexShaderResource());
 		pMaterial->LoadPixelShader(pMaterial->GetPixelShaderResource());
 	}
-	*/
+	
 }

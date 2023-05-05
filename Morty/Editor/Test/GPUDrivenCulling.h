@@ -44,6 +44,7 @@ void GPU_DRIVEN_CULLING_TEST(MEngine* pEngine, MScene* pScene)
 
 	pMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
 	pMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);
+	pMaterial->GetMaterialParamSet()->SetValue("f4Albedo", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 	pMaterial->SetBatchInstanceEnable(true);
 
 

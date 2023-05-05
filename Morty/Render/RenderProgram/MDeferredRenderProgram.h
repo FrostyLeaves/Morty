@@ -22,15 +22,18 @@
 
 #include "Shadow/MShadowMapShaderPropertyBlock.h"
 #include "MForwardRenderShaderPropertyBlock.h"
+#include "Culling/MCascadedShadowCulling.h"
+#include "Culling/MInstanceCulling.h"
 #include "RenderWork/MDebugRenderWork.h"
 #include "RenderWork/MDeferredLightingRenderWork.h"
 #include "RenderWork/MForwardRenderWork.h"
 #include "RenderWork/MGBufferRenderWork.h"
-#include "RenderWork/MGPUCullingRenderWork.h"
 #include "RenderWork/MPostProcessRenderWork.h"
 #include "RenderWork/MShadowMapRenderWork.h"
 #include "RenderWork/MTransparentRenderWork.h"
 
+class MSceneCulling;
+class MSceneGPUCulling;
 class IGBufferAdapter;
 class IPropertyBlockAdapter;
 class ITextureInputAdapter;
@@ -52,9 +55,7 @@ public:
 	virtual void Render(MIRenderCommand* pPrimaryCommand) override;
 
 	void RenderReady(MTaskNode* pTaskNode);
-
-	void RenderCulling(MTaskNode* pTaskNode);
-
+	
 	void RenderGBuffer(MTaskNode* pTaskNode);
 
 	void RenderLightning(MTaskNode* pTaskNode);
@@ -138,6 +139,11 @@ protected:
 
 	std::shared_ptr<MShadowMapShaderPropertyBlock> m_pShadowPropertyAdapter = nullptr;
 	std::shared_ptr<MForwardRenderShaderPropertyBlock> m_pFramePropertyAdapter = nullptr;
+
+	std::shared_ptr<CameraFrustumCulling> m_pCameraFrustumCulling = nullptr;
+	std::shared_ptr<MCascadedShadowCulling> m_pShadowCulling = nullptr;
+	std::shared_ptr<MSceneCulling> m_pCpuCulling = nullptr;
+	std::shared_ptr<MSceneGPUCulling> m_pGpuCulling = nullptr;
 
 	std::unordered_map<const MType*, std::unique_ptr<IRenderWork>> m_tRenderWork;
 

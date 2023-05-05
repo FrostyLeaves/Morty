@@ -19,9 +19,6 @@ struct UBOOut
 {
 	uint drawCount;
 	uint lodCount[MESH_LOD_LEVEL_RANGE];
-
-	float3 cPcsBoundsMin[CASCADED_SHADOW_MAP_NUM];
-	float3 cPcsBoundsMax[CASCADED_SHADOW_MAP_NUM];
 };
 
 // Same layout as VkDrawIndexedIndirectCommand
@@ -44,6 +41,7 @@ struct IndexedIndirectCommand
 {
 	float4 cameraPos;
 	float4 frustumPlanes[6];
+	float3 lightDir;
 }
 
 [numthreads(16, 1, 1)]
@@ -52,9 +50,13 @@ bool FrustumContainTest(float4 pos, float radius)
 	// Check sphere against frustum planes
 	for (int i = 0; i < 6; i++)
 	{
-		if (dot(pos, frustumPlanes[i]) / length(frustumPlanes[i].xyz) > radius)
+		float3 v3PlaneNormal = frustumPlanes[i].xyz;
+		if (dot(lightDir, v3PlaneNormal) >= 0.0f)
 		{
-			return false;
+			if (dot(pos, frustumPlanes[i]) > radius)
+			{
+				return false;
+			}
 		}
 	}
 	return true;
@@ -70,7 +72,7 @@ void CS_MAIN(uint3 GlobalInvocationID : SV_DispatchThreadID )
 	if (idx == 0)
 	{
 		InterlockedExchange(uboOut[0].drawCount, 0, temp);
-		for (uint i = 0; i < MESH_LOD_LEVEL_RANGE + 1; i++)
+		for (uint i = 0; i < MESH_LOD_LEVEL_RANGE + 1; ++i)
 		{
 			InterlockedExchange(uboOut[0].lodCount[i], 0, temp);
 		}

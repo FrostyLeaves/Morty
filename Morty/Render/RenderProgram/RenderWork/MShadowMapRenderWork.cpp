@@ -1,6 +1,5 @@
 #include "MShadowMapRenderWork.h"
 
-#include "MGPUCullingRenderWork.h"
 #include "Scene/MScene.h"
 #include "Engine/MEngine.h"
 #include "Render/MIDevice.h"

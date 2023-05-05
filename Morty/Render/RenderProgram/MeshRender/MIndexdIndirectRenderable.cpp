@@ -1,4 +1,4 @@
-#include "MGPUDrivenRender.h"
+#include "MIndexdIndirectRenderable.h"
 
 #include "Scene/MScene.h"
 #include "Engine/MEngine.h"
@@ -17,6 +17,7 @@
 #include "Component/MCameraComponent.h"
 #include "Component/MRenderableMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
+#include "Culling/MInstanceCulling.h"
 #include "Render/MVertex.h"
 
 #include "Utility/MBounds.h"
@@ -24,27 +25,27 @@
 
 #include "MergeInstancing/MRenderableMeshGroup.h"
 
-void MGPUDrivenRender::SetScene(MScene* pScene)
+void MIndexdIndirectRenderable::SetScene(MScene* pScene)
 {
 	m_pScene = pScene;
 }
 
-void MGPUDrivenRender::SetDrawIndirect(const std::shared_ptr<IDrawIndirectAdapter>& pDrawIndirectAdapter)
+void MIndexdIndirectRenderable::SetMaterialFilter(std::shared_ptr<IMaterialFilter> pFilter)
 {
-	m_pDrawIndirectAdapter = pDrawIndirectAdapter;
+	pMaterialFilter = pFilter;
 }
 
-void MGPUDrivenRender::SetFramePropertyBlockAdapter(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter)
+void MIndexdIndirectRenderable::SetFramePropertyBlockAdapter(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter)
 {
 	m_pFramePropertyAdapter = pAdapter;
 }
 
-void MGPUDrivenRender::SetMeshInstancePropertyBlockAdapter(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter)
+void MIndexdIndirectRenderable::SetInstanceCulling(const std::shared_ptr<MInstanceCulling>& pCullingAdapter)
 {
-	m_pMeshPropertyAdapter = pAdapter;
+	m_pCullingAdapter = pCullingAdapter;
 }
 
-void MGPUDrivenRender::Render(MIRenderCommand* pCommand)
+void MIndexdIndirectRenderable::Render(MIRenderCommand* pCommand)
 {
 	if (!m_pScene)
 	{
@@ -58,33 +59,55 @@ void MGPUDrivenRender::Render(MIRenderCommand* pCommand)
 		return;
 	}
 
-	
-	const size_t nDrawIndirectNum = m_pDrawIndirectAdapter->GetCount();
-	if (nDrawIndirectNum == 0)
+	MScene* pScene = m_pScene;
+	const MMeshManager* pMeshManager = pScene->GetEngine()->FindGlobalObject<MMeshManager>();
+
+	const MBuffer* drawIndirectBuffer = m_pCullingAdapter->GetDrawIndirectBuffer();
+	const std::vector<MMaterialCullingGroup>& vCullingResult = m_pCullingAdapter->GetCullingInstanceGroup();
+
+	if (!drawIndirectBuffer || drawIndirectBuffer->m_VkBuffer == VK_NULL_HANDLE)
 	{
 		return;
 	}
 
-	MScene* pScene = m_pScene;
-	const MMeshManager* pMeshManager = pScene->GetEngine()->FindGlobalObject<MMeshManager>();
-	const MBuffer* pDrawIndirectBuffer = m_pDrawIndirectAdapter->GetDrawIndirectBuffer();
-
-	const auto pMaterial = m_pDrawIndirectAdapter->GetMaterial();
-	pCommand->SetUseMaterial(pMaterial);
-	
-	auto vPropertyBlock = m_pFramePropertyAdapter->GetPropertyBlock();
-	for (const auto& property : vPropertyBlock)
+	for (const auto& group : vCullingResult)
 	{
-		pCommand->SetShaderParamSet(property);
+		if (group.nIndirectCount == 0)
+		{
+			continue;
+		}
+
+		const auto& pMaterial = group.pMaterial;
+		if (pMaterial == nullptr)
+		{
+			MORTY_ASSERT(pMaterial);
+			continue;
+		}
+
+		if (pMaterialFilter && !pMaterialFilter->Filter(pMaterial))
+		{
+			continue;
+		}
+
+		pCommand->SetUseMaterial(pMaterial);
+
+		const auto vPropertyBlock = m_pFramePropertyAdapter->GetPropertyBlock();
+		for (const auto& property : vPropertyBlock)
+		{
+			pCommand->SetShaderParamSet(property);
+		}
+
+		pCommand->SetShaderParamSet(group.pMeshTransformProperty);
+
+		pCommand->DrawIndexedIndirect(
+			pMeshManager->GetVertexBuffer(),
+			pMeshManager->GetIndexBuffer(),
+			drawIndirectBuffer,
+			group.nIndirectBeginIdx * sizeof(MDrawIndexedIndirectData),
+			group.nIndirectCount
+		);
 	}
 
-	pCommand->DrawIndexedIndirect(
-		pMeshManager->GetVertexBuffer(),
-		pMeshManager->GetIndexBuffer(),
-		pDrawIndirectBuffer,
-		m_pDrawIndirectAdapter->GetOffset(),
-		m_pDrawIndirectAdapter->GetCount()
-	);
 }
 
 void MComputeDispatcherRender::SetComputeDispatcher(const std::shared_ptr<IComputeDispatcherAdapter>& pComputeDispatcher)

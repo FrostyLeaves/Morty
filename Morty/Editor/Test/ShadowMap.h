@@ -75,6 +75,7 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 
 		pDeferredMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
 		pDeferredMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);
+		pDeferredMaterial->GetMaterialParamSet()->SetValue("f4Albedo", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 	}
 
 	MEntity* pFloorEntity = pScene->CreateEntity();

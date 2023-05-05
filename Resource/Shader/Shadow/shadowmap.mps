@@ -1,4 +1,4 @@
-#include "model_struct.hlsl"
+#include "../model_struct.hlsl"
 
 struct VS_OUT_EMPTY
 {

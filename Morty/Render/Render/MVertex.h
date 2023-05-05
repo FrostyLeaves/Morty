@@ -78,5 +78,12 @@ struct MMergeInstanceDrawCallOutput
 	uint32_t lodCount[MRenderGlobal::MESH_LOD_LEVEL_RANGE] = {};
 };
 
+struct MShadowGpuDrivenOutput
+{
+	uint32_t drawCount;
+	uint32_t lodCount[MRenderGlobal::MESH_LOD_LEVEL_RANGE];
+};
+
+
 
 #endif

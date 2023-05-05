@@ -26,6 +26,7 @@ void MRenderableMeshManager::Initialize()
 
 	if (MNotifySystem* pNotifySystem = GetEngine()->FindSystem<MNotifySystem>())
 	{
+		pNotifySystem->RegisterNotify(MCoreNotify::NOTIFY_VISIBLE_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MRenderableMeshManager::OnVisibleChanged, this));
 		pNotifySystem->RegisterNotify(MCoreNotify::NOTIFY_TRANSFORM_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MRenderableMeshManager::OnTransformChanged, this));
 		pNotifySystem->RegisterNotify(MRenderNotify::NOTIFY_MATERIAL_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MRenderableMeshManager::OnMaterialChanged, this));
 		pNotifySystem->RegisterNotify(MRenderNotify::NOTIFY_MESH_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MRenderableMeshManager::OnMeshChanged, this));
@@ -36,10 +37,13 @@ void MRenderableMeshManager::Release()
 {
 	if (MNotifySystem* pNotifySystem = GetEngine()->FindSystem<MNotifySystem>())
 	{
+		pNotifySystem->UnregisterNotify(MCoreNotify::NOTIFY_VISIBLE_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MRenderableMeshManager::OnVisibleChanged, this));
 		pNotifySystem->UnregisterNotify(MCoreNotify::NOTIFY_TRANSFORM_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MRenderableMeshManager::OnTransformChanged, this));
 		pNotifySystem->UnregisterNotify(MRenderNotify::NOTIFY_MATERIAL_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MRenderableMeshManager::OnMaterialChanged, this));
 		pNotifySystem->UnregisterNotify(MRenderNotify::NOTIFY_MESH_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MRenderableMeshManager::OnMeshChanged, this));
 	}
+
+	Clean();
 
 	Super::Release();
 }
@@ -64,6 +68,12 @@ void MRenderableMeshManager::SceneTick(MScene* pScene, const float& fDelta)
 		UpdateTransform(pComponent);
 	}
 	m_tWaitUpdateTransformComponent.clear();
+
+	for (auto pComponent : m_tWaitUpdateVisibleComponent)
+	{
+	    
+	}
+	m_tWaitUpdateVisibleComponent.clear();
 }
 
 void MRenderableMeshManager::OnTransformChanged(MComponent* pComponent)
@@ -91,6 +101,14 @@ void MRenderableMeshManager::OnMeshChanged(MComponent* pComponent)
 	}
 }
 
+void MRenderableMeshManager::OnVisibleChanged(MComponent* pComponent)
+{
+	if (auto pMeshComponent = pComponent->GetEntity()->GetComponent<MRenderableMeshComponent>())
+	{
+		m_tWaitUpdateVisibleComponent.insert(pMeshComponent);
+	}
+}
+
 void MRenderableMeshManager::AddQueueUpdateTransform(MRenderableMeshComponent* pComponent)
 {
 	m_tWaitUpdateTransformComponent.insert(pComponent);
@@ -106,11 +124,17 @@ void MRenderableMeshManager::AddQueueUpdateRenderGroup(MRenderableMeshComponent*
 	m_tWaitUpdateRenderGroupComponent.insert(pComponent);
 }
 
+void MRenderableMeshManager::AddQueueUpdateVisible(MRenderableMeshComponent* pComponent)
+{
+	m_tWaitUpdateVisibleComponent.insert(pComponent);
+}
+
 void MRenderableMeshManager::RemoveComponent(MRenderableMeshComponent* pComponent)
 {
 	m_tWaitUpdateMeshComponent.erase(pComponent);
 	m_tWaitUpdateTransformComponent.erase(pComponent);
 	m_tWaitUpdateRenderGroupComponent.erase(pComponent);
+	m_tWaitUpdateVisibleComponent.erase(pComponent);
 
 	BindMesh(pComponent, nullptr);
 	RemoveComponentFromGroup(pComponent);
@@ -127,6 +151,18 @@ std::vector<MRenderableMaterialGroup*> MRenderableMeshManager::FindGroupFromMate
 		{
 			vRenderableGroup.push_back(pr.second);
 		}
+	}
+
+	return vRenderableGroup;
+}
+
+std::vector<MRenderableMaterialGroup*> MRenderableMeshManager::GetAllMaterialGroup() const
+{
+	std::vector<MRenderableMaterialGroup*> vRenderableGroup;
+	const auto& tMaterialGroup = GetRenderableMaterialGroup();
+	for (auto pr : tMaterialGroup)
+	{
+		vRenderableGroup.push_back(pr.second);
 	}
 
 	return vRenderableGroup;
@@ -199,6 +235,46 @@ void MRenderableMeshManager::UpdateTransform(MRenderableMeshComponent* pComponen
 	}
 
 	pMaterialGroup->UpdateTransform(pComponent);
+}
+
+void MRenderableMeshManager::UpdateVisible(MRenderableMeshComponent* pComponent)
+{
+	MSceneComponent* pSceneComponent = pComponent->GetEntity()->GetComponent<MSceneComponent>();
+	if (!pSceneComponent)
+	{
+		return;
+	}
+
+	const auto findResult = m_tComponentTable.find(pComponent);
+	if (findResult == m_tComponentTable.end())
+	{
+		return;
+	}
+
+	MRenderableMaterialGroup* pMaterialGroup = findResult->second;
+	if (!pMaterialGroup)
+	{
+		MORTY_ASSERT(pMaterialGroup);
+		return;
+	}
+
+
+	pMaterialGroup->UpdateVisible(pComponent, pSceneComponent->GetVisibleRecursively());
+}
+
+void MRenderableMeshManager::Clean()
+{
+	for (auto pr : m_tRenderableMaterialGroup)
+	{
+		MRenderableMaterialGroup* pMaterialGroup = pr.second;
+		pMaterialGroup->Release(GetEngine());
+		delete pMaterialGroup;
+	}
+	m_tRenderableMaterialGroup.clear();
+	m_tComponentTable.clear();
+
+	m_tMeshReferenceTable.clear();
+    m_tMeshReferenceComponentTable.clear();
 }
 
 void MRenderableMeshManager::BindMesh(MRenderableMeshComponent* pComponent, MIMesh* pMesh)

@@ -1,13 +1,7 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.8)
 project(imgui CXX)
 
 set(CMAKE_DEBUG_POSTFIX d)
-
-
-if(APPLE)
-    set(CMAKE_CXX_STANDARD 11)
-    enable_language(OBJCXX)
-endif()
 
 add_library(${PROJECT_NAME} "")
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
@@ -28,8 +22,6 @@ target_sources(
         ${CMAKE_CURRENT_SOURCE_DIR}/imgui_widgets.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp
 )
-
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
 
 if(IMGUI_BUILD_ALLEGRO5_BINDING)
     find_path(ALLEGRO5_INCLUDE_DIRS allegro5/allegro.h)
@@ -67,7 +59,6 @@ endif()
 
 if(IMGUI_BUILD_METAL_BINDING)
     target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_metal.mm)
-    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_metal.mm PROPERTIES COMPILE_FLAGS -fobjc-weak)
 endif()
 
 if(IMGUI_BUILD_OPENGL2_BINDING)
@@ -85,13 +76,7 @@ endif()
 if(IMGUI_BUILD_SDL2_BINDING)
     find_package(SDL2 CONFIG REQUIRED)
     target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2)
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_sdl2.cpp)
-endif()
-
-if(IMGUI_BUILD_SDL2_RENDERER_BINDING)
-    find_package(SDL2 CONFIG REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2)
-    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_sdlrenderer.cpp)
+    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_sdl.cpp)
 endif()
 
 if(IMGUI_BUILD_VULKAN_BINDING)
@@ -179,6 +164,11 @@ if(NOT IMGUI_SKIP_HEADERS)
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_glut.h DESTINATION include)
     endif()
 
+    if(IMGUI_COPY_MARMALADE_BINDING)
+        file(GLOB MARMALADE_BINDING_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_marmalade.*)
+        install(FILES ${MARMALADE_BINDING_SRCS} DESTINATION include/bindings)
+    endif()
+
     if(IMGUI_BUILD_METAL_BINDING)
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_metal.h DESTINATION include)
     endif()
@@ -202,11 +192,7 @@ if(NOT IMGUI_SKIP_HEADERS)
     endif()
 
     if(IMGUI_BUILD_SDL2_BINDING)
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_sdl2.h DESTINATION include)
-    endif()
-
-    if(IMGUI_BUILD_SDL2_RENDERER_BINDING)
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_sdlrenderer.h DESTINATION include)
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_sdl.h DESTINATION include)
     endif()
 
     if(IMGUI_BUILD_VULKAN_BINDING)

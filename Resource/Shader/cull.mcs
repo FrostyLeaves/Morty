@@ -19,9 +19,6 @@ struct UBOOut
 {
 	uint drawCount;
 	uint lodCount[MESH_LOD_LEVEL_RANGE];
-
-	float3 cPcsBoundsMin[CASCADED_SHADOW_MAP_NUM];
-	float3 cPcsBoundsMax[CASCADED_SHADOW_MAP_NUM];
 };
 
 // Same layout as VkDrawIndexedIndirectCommand
@@ -38,15 +35,12 @@ struct IndexedIndirectCommand
 
 [[vk::binding(1,0)]] RWStructuredBuffer<IndexedIndirectCommand> indirectDraws;
 
-//[[vk::binding(2,0)]] RWStructuredBuffer<IndexedIndirectCommand> indirectShadowDraws;
-
 [[vk::binding(2,0)]] RWStructuredBuffer<UBOOut> uboOut;
 
 [[vk::binding(3,0)]] cbuffer ubo
 {
 	float4 cameraPos;
 	float4 frustumPlanes[6];
-//	float4 shadowFrustumPlanes[CASCADED_SHADOW_MAP_NUM * 6];
 }	
 
 
@@ -63,20 +57,6 @@ bool FrustumContainTest(float4 pos, float radius)
 	}
 	return true;
 }
-
-// [numthreads(16, 1, 1)]
-// bool ShadowFrustumContainTest(float4 pos, float radius)
-// {
-// 	// Check sphere against frustum planes
-// 	for (int i = 0; i < 6; i++)
-// 	{
-// 		if (dot(pos, frustumPlanes[i]) / length(frustumPlanes[i].xyz) > radius)
-// 		{
-// 			return false;
-// 		}
-// 	}
-// 	return true;
-// }
 
 [numthreads(16, 1, 1)]
 void CS_MAIN(uint3 GlobalInvocationID : SV_DispatchThreadID )

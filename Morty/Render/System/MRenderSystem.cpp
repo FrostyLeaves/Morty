@@ -110,6 +110,15 @@ void MRenderSystem::ReleaseRenderpass(MRenderPass& renderpass, bool bClearTextur
 	renderpass.DestroyBuffer(GetDevice());
 }
 
+MCameraFrustum MRenderSystem::GetCameraFrustum(MViewport* pViewport, MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent)
+{
+	MCameraFrustum cameraFrustum;
+	const Matrix4 matCameraInverseProj = GetCameraInverseProjection(pViewport, pCameraComponent, pSceneComponent);
+	cameraFrustum.UpdateFromCameraInvProj(matCameraInverseProj);
+
+	return cameraFrustum;
+}
+
 Matrix4 MRenderSystem::GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent)
 {
 	return GetCameraInverseProjection(pViewport, pCameraComponent, pSceneComponent, pCameraComponent->GetZNear(), pCameraComponent->GetZFar());

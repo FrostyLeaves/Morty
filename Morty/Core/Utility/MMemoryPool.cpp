@@ -2,9 +2,9 @@
 
 #include <algorithm>
 
-MMemoryPool::MMemoryPool(const uint32_t& unPoolSize)
-	: m_unBufferMemorySize(0)
-	, m_vFreeMemory()
+MMemoryPool::MMemoryPool(const size_t& unPoolSize)
+	: m_vFreeMemory()
+    , m_nMaxMemorySize(unPoolSize)
 {
 
 	MemoryInfo info;

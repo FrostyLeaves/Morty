@@ -18,22 +18,6 @@ class MRenderableMeshComponent;
 
 
 
-struct MORTY_API MCascadedShadowSceneData
-{
-	bool bGenerateShadow = false;
-	//range: 0.0 - 1.0f
-	float fCascadeSplit = 0.0f;
-	float fNearZ = 0.0f;
-	float fFarZ = 0.0f;
-
-	//Potential Shadow Caster.
-	Vector3 v3ShadowMin = Vector3(+FLT_MAX, +FLT_MAX, +FLT_MAX);
-	Vector3 v3ShadowMax = Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-	MBoundsAABB cPcsBounds;
-	
-	MCameraFrustum cCameraFrustum;
-};
-
 class MORTY_API MShadowMapUtil
 {
 public:
@@ -41,7 +25,9 @@ public:
 	static std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> CascadedSplitCameraFrustum(MViewport* pViewport);
 
 	static std::array<MCascadedShadowRenderData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> CalculateRenderData(
-		MViewport* pViewport, MEntity* pCameraEntity, const std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>& vCascadedData);
+		MViewport* pViewport, MEntity* pCameraEntity,
+		const std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>& vCascadedData,
+		const std::array<MBoundsAABB, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>& vCascadedPcsBounds);
 
 
 	//static Matrix4 GetLightInverseProjection_MinBoundsAABB(MRenderInfo& info, const MBoundsAABB& cGenerateShadowAABB, float fZNear, float fZFar);

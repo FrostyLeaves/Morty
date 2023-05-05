@@ -38,7 +38,6 @@ public:
 
 	void SetBackColor(const MColor& cColor);
 
-
 	void Snapshot(const MString& strSnapshotPath);
 
 protected:

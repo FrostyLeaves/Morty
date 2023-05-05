@@ -238,6 +238,31 @@ Matrix3 Matrix3::operator*(const float& value) const
 	return result;
 }
 
+Matrix3 Matrix3::operator*(const Matrix3& mat) const
+{
+	Matrix3 result;
+	for (int i = 0; i < 3; ++i)
+		for (int k = 0; k < 3; ++k)
+			for (int j = 0; j < 3; ++j)
+				result.m[i][j] += m[i][k] * mat.m[k][j];
+
+	return result;
+
+}
+
+Vector3 Matrix3::operator* (const Vector3& value) const
+{
+	Vector3 result;//w == 1
+	for (int i = 0; i < 3; ++i)
+	{
+		for (int j = 0; j < 3; ++j)
+		{
+			result.m[i] += m[i][j] * value.m[j];
+		}
+	}
+	return result;
+}
+
 Matrix3::Matrix3()
 {
 	memset(m, 0, sizeof(m));

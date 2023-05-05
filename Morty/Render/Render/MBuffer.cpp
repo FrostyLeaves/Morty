@@ -89,3 +89,8 @@ void MBuffer::DestroyBuffer(MIDevice* pDevice)
 {
 	pDevice->DestroyBuffer(this);
 }
+
+void MBuffer::DownloadBuffer(MIDevice* pDevice, MByte* data, const size_t& size)
+{
+	pDevice->DownloadBuffer(this, data, size);
+}

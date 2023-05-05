@@ -602,29 +602,19 @@ void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, c
 	pBuffer->m_eStageType = MBuffer::MStageType::ESynced;
 }
 
-void MVulkanDevice::ResizeBuffer(MBuffer* pBuffer, const size_t& nNewSize)
+void MVulkanDevice::DownloadBuffer(MBuffer* pBuffer, MByte* outputData, const size_t& nSize)
 {
-	if (VK_NULL_HANDLE == pBuffer->m_VkBuffer)
+	if (MBuffer::MMemoryType::EHostVisible == pBuffer->m_eMemoryType)
 	{
-		GenerateBuffer(pBuffer, nullptr, nNewSize);
-		return;
+		void* pMapMemory = nullptr;
+		vkMapMemory(m_VkDevice, pBuffer->m_VkDeviceMemory, 0, nSize, 0, &pMapMemory);
+		memcpy(outputData, pMapMemory, static_cast<size_t>(nSize));
+		vkUnmapMemory(m_VkDevice, pBuffer->m_VkDeviceMemory);
 	}
-
-	VkBuffer vkBuffer;
-	VkDeviceMemory vkDeviceMemory;
-
-	VkBufferUsageFlags vkBufferUsageFlags = GetBufferUsageFlags(pBuffer);
-	VkMemoryPropertyFlags vkMemoryFlags = GetMemoryFlags(pBuffer);
-
-	GenerateBuffer(nNewSize, vkBufferUsageFlags, vkMemoryFlags, vkBuffer, vkDeviceMemory);
-
-	VkBufferCopy region = { 0, 0, pBuffer->GetSize() };
-	CopyBuffer(pBuffer->m_VkBuffer, vkBuffer, region);
-	DestroyBuffer(pBuffer->m_VkBuffer, pBuffer->m_VkDeviceMemory);
-
-	pBuffer->m_VkBuffer = vkBuffer;
-	pBuffer->m_VkDeviceMemory = vkDeviceMemory;
-	pBuffer->m_eStageType = MBuffer::MStageType::ESynced;
+    else
+    {
+		MORTY_ASSERT(false);
+    }
 }
 
 void MVulkanDevice::DestroyBuffer(MBuffer* pBuffer)

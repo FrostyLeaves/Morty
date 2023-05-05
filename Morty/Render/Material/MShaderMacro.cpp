@@ -16,7 +16,10 @@ const MString strSpotLightPixelNumber = MStringHelper::ToString(MRenderGlobal::S
 const MString strCascadedShadowMapNumber = MStringHelper::ToString(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
 const MString strMeshLODLevelRangeNumber = MStringHelper::ToString(MRenderGlobal::MESH_LOD_LEVEL_RANGE);
 const MString strMergeInstancingMaxNumber = MStringHelper::ToString(MRenderGlobal::MERGE_INSTANCING_MAX_NUM);
+const MString strTransformInUniformMaxNumber = MStringHelper::ToString(MRenderGlobal::MESH_TRANSFORM_IN_UNIFORM_MAX_NUM);
 const MString strMergeInstancingClusterMaxNumber = MStringHelper::ToString(MRenderGlobal::MERGE_INSTANCING_CLUSTER_MAX_NUM);
+
+
 
 
 enum class METransparentPolicy
@@ -41,6 +44,7 @@ std::vector<std::pair<MString, MString>> MShaderMacro::s_vGlobalMacroParams = {
 	{"MESH_LOD_LEVEL_RANGE", strMeshLODLevelRangeNumber},
 	{"MERGE_INSTANCING_MAX_NUM", strMergeInstancingMaxNumber},
 	{"MERGE_INSTANCING_CLUSTER_MAX_NUM", strMergeInstancingClusterMaxNumber},
+	{"MESH_TRANSFORM_IN_UNIFORM_MAX_NUM", strTransformInUniformMaxNumber},
 };
 
 void MShaderMacro::SetInnerMacro(const MString& strKey, const MString& strValue)
@@ -101,6 +105,13 @@ void MShaderMacro::RemoveMacro(const MString& strKey)
 		, [](const std::pair<MString, MString>& a, const std::pair<MString, MString>& b) { return a.first < b.first; }
 	, [](const std::pair<MString, MString>& a, const std::pair<MString, MString>& b) { return a.first == b.first; }
 	);
+}
+
+bool MShaderMacro::HasMacro(const MString& strKey)
+{
+	return FIND_ORDER_VECTOR<std::pair<MString, MString>, MString>(m_vMacroParams, strKey, [](const std::pair<MString, MString>& a, const MString& b) {
+		return a.first < b;
+	}) < m_vMacroParams.size();
 }
 
 bool MShaderMacro::Compare(const MShaderMacro& macro)

@@ -21,6 +21,7 @@ struct Material
     float fAlphaFactor;
     float bUseHeightMap;
     
+    float4 f4Albedo;
     float fMetallic;
     float fRoughness;
 };
@@ -118,7 +119,7 @@ PS_OUT PS_MAIN(VS_OUT input)
     float fRoughness  = u_mat_texRoughness.Sample(LinearSampler, uv).r;
     float fAmbientOcc = u_mat_texAmbientOcc.Sample(LinearSampler, uv).r;
 
-    output.f3Albedo_fMetallic.rgb = f3Albedo;
+    output.f3Albedo_fMetallic.rgb = f3Albedo * u_xMaterial.f4Albedo.rgb;
     output.f3Albedo_fMetallic.a = fMetallic * u_xMaterial.fMetallic;
 
     output.f3Normal_fRoughness.rgb = f3Normal;

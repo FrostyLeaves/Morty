@@ -29,7 +29,7 @@ public:
     
 
 public:
-    MMemoryPool(const uint32_t& unPoolSize);
+    MMemoryPool(const size_t& nPoolSize);
     virtual ~MMemoryPool();
 
 public:
@@ -38,8 +38,10 @@ public:
 
     void FreeMemory(MemoryInfo& info);
 
+    size_t GetMaxMemorySize() const { return m_nMaxMemorySize; }
+
 private:
-    uint32_t m_unBufferMemorySize;
+    size_t m_nMaxMemorySize = 0;
 
     std::vector<MemoryInfo> m_vFreeMemory;
 };

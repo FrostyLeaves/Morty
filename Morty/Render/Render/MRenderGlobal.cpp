@@ -15,3 +15,5 @@ const char* MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE = "DRAW_MESH_INSTANCING_
 
 const size_t MRenderGlobal::MERGE_INSTANCING_MAX_NUM = 128;
 const size_t MRenderGlobal::MERGE_INSTANCING_CLUSTER_MAX_NUM = 1024;
+
+const size_t MRenderGlobal::MESH_TRANSFORM_IN_UNIFORM_MAX_NUM = 128;

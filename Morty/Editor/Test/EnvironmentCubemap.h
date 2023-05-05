@@ -19,6 +19,7 @@ void ENVIRONMENT_CUBEMAP_TEST(MEngine* pEngine, MScene* pScene)
 
 	std::shared_ptr<MTextureResource> pCubeTexture = pResourceSystem->CreateResource<MTextureResource>();
 
+	/*
 	pCubeTexture->ImportCubeMap({
 		"Texture/Sky/HDR_041/px.hdr",
 		"Texture/Sky/HDR_041/nx.hdr",
@@ -26,6 +27,16 @@ void ENVIRONMENT_CUBEMAP_TEST(MEngine* pEngine, MScene* pScene)
 		"Texture/Sky/HDR_041/ny.hdr",
 		"Texture/Sky/HDR_041/pz.hdr",
 		"Texture/Sky/HDR_041/nz.hdr"
+		}, { MTextureResource::PixelFormat::Float32 });
+    */
+
+	pCubeTexture->ImportCubeMap({
+		"Texture/Sky/Circus_Backstage/px.hdr",
+		"Texture/Sky/Circus_Backstage/nx.hdr",
+		"Texture/Sky/Circus_Backstage/py.hdr",
+		"Texture/Sky/Circus_Backstage/ny.hdr",
+		"Texture/Sky/Circus_Backstage/pz.hdr",
+		"Texture/Sky/Circus_Backstage/nz.hdr"
 		}, { MTextureResource::PixelFormat::Float32 });
 
 

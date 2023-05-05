@@ -65,6 +65,7 @@ public:
     void UploadBuffer(MIDevice* pDevice, const MByte* data, const size_t& size);
     void UploadBuffer(MIDevice* pDevice, size_t nBeginOffset, const MByte* data, const size_t& size);
     void DestroyBuffer(MIDevice* pDevice);
+    void DownloadBuffer(MIDevice* pDevice, MByte* data, const size_t& size);
 
 public:
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -74,8 +75,6 @@ public:
 #if MORTY_DEBUG
     MString m_strDebugBufferName = "";
 #endif
-
-    MByte* m_mappingData = nullptr;
 
     size_t m_unDataSize = 0;
 

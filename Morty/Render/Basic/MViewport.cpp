@@ -35,9 +35,6 @@ MViewport::MViewport()
 	: MObject()
 	, m_pScene(nullptr)
 	, m_pUserCamera(nullptr)
-	, m_m4Projection(Matrix4::IdentityMatrix)
-	, m_m4CameraInvProj(Matrix4::IdentityMatrix)
-	, m_bCameraInvProjMatrixLocked(false)
 	, m_v2LeftTop(0,0)
 	, m_v2Size(0, 0)
 	, m_v2ScreenPosition(0, 0)
@@ -54,11 +51,20 @@ bool MViewport::ConvertWorldPointToViewport(const Vector3& v3WorldPos, Vector3& 
 {
 	MCameraComponent* pCameraComponent = GetCamera()->GetComponent<MCameraComponent>();
 	if (!pCameraComponent)
+	{
 		return false;
+	}
 
-	UpdateMatrix();
+	MSceneComponent* pSceneComponent = GetCamera()->GetComponent<MSceneComponent>();
+	if (!pSceneComponent)
+	{
+		return false;
+	}
 
-	Vector4 pos = m_m4CameraInvProj * Vector4(v3WorldPos, 1.0f);
+	Matrix4 m4CameraInvProj = MRenderSystem::GetCameraInverseProjection(this, pCameraComponent, pSceneComponent);
+
+
+	Vector4 pos = m4CameraInvProj * Vector4(v3WorldPos, 1.0f);
 	float z = pos.z;
 	if (fabs(pos.w) > 1e-6)
 	{
@@ -74,15 +80,19 @@ void MViewport::ConvertViewportPointToWorld(const Vector2& v2ViewportPos, const 
 {
 	MCameraComponent* pCameraComponent = GetCamera()->GetComponent<MCameraComponent>();
 	if (!pCameraComponent)
+	{
 		return;
+	}
 
 	MSceneComponent* pSceneComponent = GetCamera()->GetComponent<MSceneComponent>();
 	if (!pSceneComponent)
+	{
 		return;
+	}
 
-	UpdateMatrix();
+	Matrix4 m4CameraInvProj = MRenderSystem::GetCameraInverseProjection(this, pCameraComponent, pSceneComponent);
 
-	Matrix4 mat = m_m4CameraInvProj.Inverse();
+	Matrix4 mat = m4CameraInvProj.Inverse();
 
 	float x = (v2ViewportPos.x / GetWidth()) * 2.0f - 1.0f;
 	float y = (v2ViewportPos.y / GetHeight()) * 2.0f - 1.0f;
@@ -99,12 +109,21 @@ bool  MViewport::ConvertWorldLineToNormalizedDevice(const Vector3& v3Pos1, const
 {
 	MCameraComponent* pCameraComponent = GetCamera()->GetComponent<MCameraComponent>();
 	if (!pCameraComponent)
+	{
 		return false;
+	}
 
-	UpdateMatrix();
+	MSceneComponent* pSceneComponent = GetCamera()->GetComponent<MSceneComponent>();
+	if (!pSceneComponent)
+	{
+		return false;
+	}
 
-	Vector4 v4Pos1 = m_m4CameraInvProj * Vector4(v3Pos1, 1.0f);
-	Vector4 v4Pos2 = m_m4CameraInvProj * Vector4(v3Pos2, 1.0f);
+	Matrix4 m4CameraInvProj = MRenderSystem::GetCameraInverseProjection(this, pCameraComponent, pSceneComponent);
+
+
+	Vector4 v4Pos1 = m4CameraInvProj * Vector4(v3Pos1, 1.0f);
+	Vector4 v4Pos2 = m4CameraInvProj * Vector4(v3Pos2, 1.0f);
 
 	if (fabs(v4Pos1.w) > 1e-6)
 	{
@@ -133,11 +152,19 @@ bool MViewport::ConvertWorldPointToNormalizedDevice(const Vector3& v3Pos, Vector
 {
 	MCameraComponent* pCameraComponent = GetCamera()->GetComponent<MCameraComponent>();
 	if (!pCameraComponent)
+	{
 		return false;
+	}
 
-	UpdateMatrix();
+	MSceneComponent* pSceneComponent = GetCamera()->GetComponent<MSceneComponent>();
+	if (!pSceneComponent)
+	{
+		return false;
+	}
 
-	Vector4 v4Rst = m_m4CameraInvProj * Vector4(v3Pos, 1.0f);
+	Matrix4 m4CameraInvProj = MRenderSystem::GetCameraInverseProjection(this, pCameraComponent, pSceneComponent);
+
+	Vector4 v4Rst = m4CameraInvProj * Vector4(v3Pos, 1.0f);
 	if (fabs(v4Rst.w) > 1e-6)
 	{
 		v4Rst.x /= v4Rst.w;
@@ -177,17 +204,6 @@ void MViewport::OnDelete()
 void MViewport::SetSize(const Vector2& v2Size)
 {
 	m_v2Size = v2Size;
-}
-void MViewport::LockMatrix()
-{
-	UpdateMatrix();
-	m_cameraFrustum.UpdateFromCameraInvProj(this->GetCameraInverseProjection());
-	m_bCameraInvProjMatrixLocked = true;
-}
-
-void MViewport::UnlockMatrix()
-{
-	m_bCameraInvProjMatrixLocked = false;
 }
 
 void MViewport::Input(MInputEvent* pEvent)
@@ -231,31 +247,6 @@ void MViewport::SetCamera(MEntity* pCamera)
 void MViewport::SetValidCamera(MEntity* pCamera)
 {
 	m_pUserCamera = pCamera;
-}
-
-void MViewport::UpdateMatrix()
-{
-	if (m_bCameraInvProjMatrixLocked)
-		return;
-
-	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-	if (!pRenderSystem)
-		return;
-
-	MEntity* pCameraEntity = GetCamera();
-
-	if (!pCameraEntity)
-		return;
-
-	MCameraComponent* pCameraComponent = pCameraEntity->GetComponent<MCameraComponent>();
-	if (nullptr == pCameraComponent)
-		return;
-
-	MSceneComponent* pSceneComponent = pCameraEntity->GetComponent<MSceneComponent>();
-	if (nullptr == pSceneComponent)
-		return;
-
-	m_m4CameraInvProj = pRenderSystem->GetCameraInverseProjection(this, pCameraComponent, pSceneComponent);
 }
 
 MEntity* MViewport::GetCamera() const

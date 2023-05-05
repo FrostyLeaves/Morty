@@ -134,15 +134,26 @@ void MSceneComponent::SetVisible(const bool& bVisible)
 	m_bVisible = bVisible;
 
 	MSceneComponent* pParentComponent = GetScene()->GetComponent(GetParentComponent())->DynamicCast<MSceneComponent>();
-	if(pParentComponent)
+	if (pParentComponent)
+	{
 		SetVisibleRecursively(pParentComponent->GetVisibleRecursively() & m_bVisible);
+	}
 	else
+	{
 		SetVisibleRecursively(m_bVisible);
+    }
 }
 
 void MSceneComponent::SetVisibleRecursively(const bool& bVisible)
 {
+	if (m_bVisibleRecursively == bVisible)
+	{
+		return;
+	}
+
 	m_bVisibleRecursively = bVisible;
+
+	SendComponentNotify(MCoreNotify::NOTIFY_VISIBLE_CHANGED);
 
 	for (auto& child : m_vAttachChildren)
 	{

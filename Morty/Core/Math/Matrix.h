@@ -50,6 +50,9 @@ public:
 	Matrix3 operator * (const float& value) const;
 	Matrix3 operator / (const float& value) const;
 
+	Matrix3 operator*(const Matrix3& mat) const;
+	Vector3 operator* (const Vector3& value) const;
+
 public:
 
 	const mfbs::Matrix3* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;

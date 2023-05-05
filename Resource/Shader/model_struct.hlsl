@@ -2,36 +2,48 @@
 
     struct MeshMatrix
     {
-        float4x4 matWorld;
-        float3x3 matNormal;
+        float4x4 u_matWorld;
+        float3x3 u_matNormal;
     };
 
     //VS    per mesh
-    [[vk::binding(0,2)]]cbuffer _M_E_cbMeshMatrix : register(b0)
+    [[vk::binding(0,2)]] cbuffer u_meshMatrix
     {
-        MeshMatrix u_meshMatrix[MERGE_INSTANCING_MAX_NUM];
-        int u_meshClusterIndex[MERGE_INSTANCING_CLUSTER_MAX_NUM];
+        MeshMatrix u_meshMatrix[MESH_TRANSFORM_IN_UNIFORM_MAX_NUM];
         int u_meshInstanceBeginIndex;
-    };
+    }
+
+    #define MESH_WORLD_MATRIX u_meshMatrix[INSTANCE_ID - u_meshInstanceBeginIndex].u_matWorld
+    #define MESH_NORMAL_MATRIX u_meshMatrix[INSTANCE_ID - u_meshInstanceBeginIndex].u_matNormal
 
 #elif DRAW_MESH_INSTANCING_STORAGE
     
     struct MeshMatrix
     {
-        float4x4 matWorld;
-        float3x3 matNormal;
+        float4x4 u_matWorld;
+        float3x3 u_matNormal;
     };
 
     [[vk::binding(0,2)]] StructuredBuffer<MeshMatrix> u_meshMatrix;
+    [[vk::binding(1,2)]] cbuffer u_meshMatrix
+    {
+        int u_meshInstanceBeginIndex;
+    }
+
+    #define MESH_WORLD_MATRIX u_meshMatrix[INSTANCE_ID - u_meshInstanceBeginIndex].u_matWorld
+    #define MESH_NORMAL_MATRIX u_meshMatrix[INSTANCE_ID - u_meshInstanceBeginIndex].u_matNormal
 
 #else
 
     //VS    per mesh
-    [[vk::binding(0,2)]]cbuffer _M_E_cbMeshMatrix : register(b0)
+    [[vk::binding(0,2)]]cbuffer u_meshMatrix : register(b0)
     {
         float4x4 u_matWorld;
         float3x3 u_matNormal;
     };
+
+    #define MESH_WORLD_MATRIX u_matWorld
+    #define MESH_NORMAL_MATRIX u_matNormal
 
 #endif
 
@@ -50,19 +62,3 @@ struct LightBasicInfo
     float3 f3CameraDir;
     float3 f3DirLightDir;
 };
-
-#if DRAW_MESH_INSTANCING_UNIFORM
-    #define MESH_WORLD_MATRIX u_meshMatrix[u_meshClusterIndex[INSTANCE_ID - u_meshInstanceBeginIndex]].matWorld
-#elif DRAW_MESH_INSTANCING_STORAGE
-    #define MESH_WORLD_MATRIX u_meshMatrix[INSTANCE_ID].matWorld
-#else
-    #define MESH_WORLD_MATRIX u_matWorld
-#endif
-
-#if DRAW_MESH_INSTANCING_UNIFORM
-    #define MESH_NORMAL_MATRIX u_meshMatrix[u_meshClusterIndex[INSTANCE_ID - u_meshInstanceBeginIndex]].matNormal
-#elif DRAW_MESH_INSTANCING_STORAGE
-    #define MESH_NORMAL_MATRIX u_meshMatrix[INSTANCE_ID].matNormal
-#else
-    #define MESH_NORMAL_MATRIX u_matNormal
-#endif

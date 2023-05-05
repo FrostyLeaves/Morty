@@ -46,7 +46,7 @@ public:
 	virtual void GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, const size_t& unDataSize) override;
 	virtual void DestroyBuffer(MBuffer* pBuffer) override;
 	virtual void UploadBuffer(MBuffer* pBuffer, const size_t& unBeginOffset, const MByte* data, const size_t& unDataSize) override;
-	virtual void ResizeBuffer(MBuffer* pBuffer, const size_t& nNewSize) override;
+	virtual void DownloadBuffer(MBuffer* pBuffer, MByte* outputData, const size_t& nSize) override;
 
 	virtual void GenerateTexture(MTexture* pTexture, MByte* pData = nullptr) override;
 	virtual void DestroyTexture(MTexture* pTexture) override;

@@ -47,11 +47,10 @@ public:
     void ResizeFrameBuffer(MRenderPass& renderpass, const Vector2& v2Size);
     void ReleaseRenderpass(MRenderPass& renderpass, bool bClearTexture);
 
-    std::vector<MCameraFrustum> GetCameraFrustum(MViewport* pViewport, MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent, size_t nSize);
+    static MCameraFrustum GetCameraFrustum(MViewport* pViewport, MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent);
 
     static Matrix4 GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent);
     static Matrix4 GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent, float fZNear, float fZFar);
-
     
 public:
 

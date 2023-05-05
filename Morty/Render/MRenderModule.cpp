@@ -29,7 +29,6 @@
 #include "Shadow/MShadowMapManager.h"
 #include "Manager/MEnvironmentManager.h"
 
-#include "MergeInstancing/MMergeInstancingSubSystem.h"
 #include "MergeInstancing/MRenderableMeshManager.h"
 #include "Scene/MScene.h"
 #include "System/MObjectSystem.h"
@@ -141,7 +140,6 @@ void MRenderModule::OnObjectPostCreate(MObject* pObject)
 	{
 		if (MScene* pScene = pObject->DynamicCast<MScene>())
 		{
-			pScene->RegisterManager<MMergeInstancingSubSystem>();
 			pScene->RegisterManager<MRenderableMeshManager>();
 			pScene->RegisterManager<MEnvironmentManager>();
 			pScene->RegisterManager<MShadowMapManager>();

@@ -40,6 +40,7 @@ private:
 
 
     MViewport* m_pViewport;
+
 };
 
 #endif

@@ -54,9 +54,6 @@ public:
 	float GetWidth() { return m_v2Size.x; }
 	float GetHeight() { return m_v2Size.y; }
 
-	MCameraFrustum& GetCameraFrustum() { return m_cameraFrustum; }
-
-
 	bool ConvertWorldPointToViewport(const Vector3& v3WorldPos, Vector3& v3Result);
 
 	void ConvertViewportPointToWorld(const Vector2& v2ViewportPos, const float& fDepth, Vector3& v3Result);
@@ -71,14 +68,7 @@ public:
 	virtual void OnCreated() override;
 	virtual void OnDelete() override;
 
-	void LockMatrix();
-	void UnlockMatrix();
-
 	virtual void Input(MInputEvent* pEvent);
-
-	const Matrix4& GetProjection() const { return m_m4Projection; }
-
-	const Matrix4& GetCameraInverseProjection() const { return m_m4CameraInvProj; }
 
 	void SetScreenPosition(const Vector2& v2Position) { m_v2ScreenPosition = v2Position; }
 	void SetScreenScale(const Vector2& v2Scale) { m_v2ScreenScale = v2Scale; }
@@ -89,9 +79,6 @@ public:
 
 protected:
 	void SetValidCamera(MEntity* pCamera);
-
-	void UpdateMatrix();
-
 
 
 private:
@@ -105,12 +92,6 @@ private:
 
 	Vector2 m_v2ScreenPosition;
 	Vector2 m_v2ScreenScale;
-
-	Matrix4 m_m4Projection;
-	Matrix4 m_m4CameraInvProj;
-	bool m_bCameraInvProjMatrixLocked;
-
-	MCameraFrustum m_cameraFrustum;
 };
 
 

@@ -21,7 +21,8 @@ public:
 	size_t AddItem(const KEY_TYPE& key, const VALUE_TYPE& value);
 	void RemoveItem(const KEY_TYPE& key);
 	bool HasItem(const KEY_TYPE& key);
-	VALUE_TYPE* FindItem(const KEY_TYPE& key);
+	size_t GetItemIdx(const KEY_TYPE& key);
+    VALUE_TYPE* FindItem(const KEY_TYPE& key);
 
 
 	const std::vector<CacheItem>& GetItems() const { return m_vItem; }
@@ -31,9 +32,6 @@ public:
 	MRepeatIDPool<size_t> m_itemPool;
 
 };
-
-
-#endif
 
 template<typename KEY_TYPE, typename VALUE_TYPE>
 inline size_t MRenderInstanceCache<KEY_TYPE, VALUE_TYPE>::AddItem(const KEY_TYPE& key, const VALUE_TYPE& value)
@@ -83,6 +81,18 @@ inline bool MRenderInstanceCache<KEY_TYPE, VALUE_TYPE>::HasItem(const KEY_TYPE& 
 }
 
 template<typename KEY_TYPE, typename VALUE_TYPE>
+inline size_t MRenderInstanceCache<KEY_TYPE, VALUE_TYPE>::GetItemIdx(const KEY_TYPE& key)
+{
+	const auto findResult = m_tTable.find(key);
+	if (findResult == m_tTable.end())
+	{
+		return MGlobal::M_INVALID_INDEX;
+	}
+
+	return findResult->second;
+}
+
+template<typename KEY_TYPE, typename VALUE_TYPE>
 inline VALUE_TYPE* MRenderInstanceCache<KEY_TYPE, VALUE_TYPE>::FindItem(const KEY_TYPE& key)
 {
 	const auto findResult = m_tTable.find(key);
@@ -95,3 +105,6 @@ inline VALUE_TYPE* MRenderInstanceCache<KEY_TYPE, VALUE_TYPE>::FindItem(const KE
 	auto& item = m_vItem[nIdx];
 	return &item.value;
 }
+
+
+#endif

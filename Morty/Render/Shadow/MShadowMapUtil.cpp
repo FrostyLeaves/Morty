@@ -78,51 +78,13 @@ std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> MSh
 		vCascadedData[nCascadedIdx].cCameraFrustum.UpdateFromCameraInvProj(m4CameraInvProj);
 	}
 
-	for (MRenderableMeshComponent& component : pMeshComponentGroup->m_vComponents)
-	{
-		if (!component.IsValid())
-			continue;
-
-		MEntity* pEntity = component.GetEntity();
-		MSceneComponent* pSceneComponent = pEntity->GetComponent<MSceneComponent>();
-
-		if (pSceneComponent->GetVisibleRecursively() && component.GetGenerateDirLightShadow())
-		{
-			std::shared_ptr<MSkeletonInstance> pSkeletonInstance = component.GetSkeletonInstance();
-
-			if (const MBoundsAABB* pBounds = component.GetBoundsAABB())
-			{
-				for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
-				{
-					MCascadedShadowSceneData& cd = vCascadedData[nCascadedIdx];
-
-					if (cd.cCameraFrustum.ContainTest(*pBounds, v3LightDir) != MCameraFrustum::EOUTSIDE)
-					{
-						pBounds->UnionMinMax(cd.v3ShadowMin, cd.v3ShadowMax);
-						cd.bGenerateShadow = true;
-					}
-				}
-			}
-		}
-	}
-
-	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
-	{
-		MCascadedShadowSceneData& cd = vCascadedData[nCascadedIdx];
-
-		if (cd.bGenerateShadow)
-		{
-			cd.cPcsBounds.SetMinMax(cd.v3ShadowMin, cd.v3ShadowMax);
-		}
-
-	}
-
 	return vCascadedData;
 }
 
 std::array<MCascadedShadowRenderData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>
 	MShadowMapUtil::CalculateRenderData(MViewport* pViewport, MEntity* pCameraEntity,
-	const std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>& vCascadedData)
+	const std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>& vCascadedData,
+	const std::array<MBoundsAABB, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>& vCascadedPcsBounds)
 {
 
 	MScene* pScene = pViewport->GetScene();
@@ -200,23 +162,17 @@ std::array<MCascadedShadowRenderData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>
 		fBoundsSphereRadius = std::ceil(fBoundsSphereRadius * 16.0f) / 16.0f;
 
 
-		float fPscBoundsInLightSpaceMinZ = FLT_MAX;
-		if (vCascadedData[nCascadedIdx].bGenerateShadow)
+		float fPscBoundsInLightSpaceMinZ = v3FrustumCenter.z - fBoundsSphereRadius;
+		
+		std::vector<Vector3> vPscBoundsPoints(8);
+		vCascadedPcsBounds[nCascadedIdx].GetPoints(vPscBoundsPoints);
+		for (uint32_t i = 0; i < 8; ++i)
 		{
-			std::vector<Vector3> vPscBoundsPoints(8);
-			vCascadedData[nCascadedIdx].cPcsBounds.GetPoints(vPscBoundsPoints);
-			for (uint32_t i = 0; i < 8; ++i)
+			const float z = (matLightInv * vPscBoundsPoints[i]).z;
+			if (fPscBoundsInLightSpaceMinZ > z)
 			{
-				const float z = (matLightInv * vPscBoundsPoints[i]).z;
-				if (fPscBoundsInLightSpaceMinZ > z)
-				{
-					fPscBoundsInLightSpaceMinZ = z;
-				}
+				fPscBoundsInLightSpaceMinZ = z;
 			}
-		}
-		else
-		{
-			fPscBoundsInLightSpaceMinZ = v3FrustumCenter.z - fBoundsSphereRadius;
 		}
 
 		vCascadeProjectionMatrix[nCascadedIdx] = MRenderSystem::MatrixOrthoOffCenterLH(

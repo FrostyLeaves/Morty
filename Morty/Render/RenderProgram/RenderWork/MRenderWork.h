@@ -75,8 +75,8 @@ public:
 
     virtual std::shared_ptr<MMaterial> GetMaterial() const = 0;
     virtual const MBuffer* GetDrawIndirectBuffer() const = 0;
-    virtual const size_t GetOffset() const { return 0; }
-    virtual const size_t GetCount() const = 0;
+    virtual size_t GetOffset() const { return 0; }
+    virtual size_t GetCount() const = 0;
 };
 
 class MORTY_API ICullingDispatchAdapter

@@ -712,6 +712,7 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 
 		pMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
 		pMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);
+		pMaterial->GetMaterialParamSet()->SetValue("f4Albedo", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 		pMaterial->SetTexture(MaterialKey::Albedo, pResourceSystem->LoadResource(MRenderModule::DefaultWhite));
 		pMaterial->SetTexture(MaterialKey::Normal, pResourceSystem->LoadResource(MRenderModule::DefaultNormal));
 		pMaterial->SetTexture(MaterialKey::Metallic, pResourceSystem->LoadResource(MRenderModule::Default_R8_One));

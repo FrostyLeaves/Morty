@@ -1,6 +1,7 @@
 #ifndef M_RENDER_INFO_H_
 #define M_RENDER_INFO_H_
 
+#include "Basic/MCameraFrustum.h"
 #include "Utility/MGlobal.h"
 #include "Math/Vector.h"
 #include "Utility/MBounds.h"
@@ -19,11 +20,18 @@ struct MMaterialCullingGroup
 {
 	std::shared_ptr<MMaterial> pMaterial = nullptr;
 	std::shared_ptr<MShaderPropertyBlock> pMeshTransformProperty = nullptr;
-	size_t nClusterBeginIdx = 0;
-	size_t nClusterCount = 0;
-	size_t nTransformCount = 0;
-	const MBuffer* pVertexBuffer = nullptr;
-	const MBuffer* pIndexBuffer = nullptr;
+	size_t nIndirectBeginIdx = 0;
+	size_t nIndirectCount = 0;
+};
+
+struct MORTY_API MCascadedShadowSceneData
+{
+	//range: 0.0 - 1.0f
+	float fCascadeSplit = 0.0f;
+	float fNearZ = 0.0f;
+	float fFarZ = 0.0f;
+
+	MCameraFrustum cCameraFrustum;
 };
 
 struct MORTY_API MCascadedShadowRenderData
@@ -31,7 +39,6 @@ struct MORTY_API MCascadedShadowRenderData
 	Vector4 fSplitRange;//far, far + 0.1
 	Matrix4 m4DirLightInvProj;
 };
-
 
 struct MRenderInfo
 {
@@ -50,6 +57,8 @@ struct MRenderInfo
 	/************************** camera **************************/
 	MEntity* pCameraEntity;
 	MEntity* pDirectionalLightEntity;
+	Matrix4 m4CameraInverseProjection;
+	MCameraFrustum cameraFrustum;
 
 	/************************** shadow **************************/
 	std::array<MCascadedShadowRenderData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> shadowRenderInfo;

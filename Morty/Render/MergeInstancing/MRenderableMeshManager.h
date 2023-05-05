@@ -42,15 +42,18 @@ public:
 	void OnTransformChanged(MComponent* pComponent);
 	void OnMaterialChanged(MComponent* pComponent);
 	void OnMeshChanged(MComponent* pComponent);
+	void OnVisibleChanged(MComponent* pComponent);
 
 	void AddQueueUpdateTransform(MRenderableMeshComponent* pComponent);
 	void AddQueueUpdateMesh(MRenderableMeshComponent* pComponent);
 	void AddQueueUpdateRenderGroup(MRenderableMeshComponent* pComponent);
+	void AddQueueUpdateVisible(MRenderableMeshComponent* pComponent);
 	void RemoveComponent(MRenderableMeshComponent* pComponent);
 
 	const std::map<std::shared_ptr<MMaterial>, MRenderableMaterialGroup*>& GetRenderableMaterialGroup() const { return m_tRenderableMaterialGroup; };
 
 	std::vector<MRenderableMaterialGroup*> FindGroupFromMaterialType(MEMaterialType eType) const;
+	std::vector<MRenderableMaterialGroup*> GetAllMaterialGroup() const;
 
 protected:
 
@@ -62,11 +65,16 @@ protected:
 	void UpdateTransform(MSceneComponent* pComponent);
 	void UpdateTransform(MRenderableMeshComponent* pComponent);
 
+	void UpdateVisible(MRenderableMeshComponent* pComponent);
+
+	void Clean();
+
 private:
 
 	std::set<MRenderableMeshComponent*> m_tWaitUpdateTransformComponent;
 	std::set<MRenderableMeshComponent*> m_tWaitUpdateMeshComponent;
 	std::set<MRenderableMeshComponent*> m_tWaitUpdateRenderGroupComponent;
+	std::set<MRenderableMeshComponent*> m_tWaitUpdateVisibleComponent;
 
 	std::map<MRenderableMeshComponent*, MRenderableMaterialGroup*> m_tComponentTable;
 	std::map<std::shared_ptr<MMaterial>,MRenderableMaterialGroup*> m_tRenderableMaterialGroup;

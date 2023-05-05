@@ -95,14 +95,12 @@ void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& in
  		info.pSkyBoxEntity = pScene->FindFirstEntityByComponent<MSkyBoxComponent>();
  	}
 
-	pViewport->LockMatrix();
-
 	if (m_pWorldMatrixParam)
 	{
 		MVariantStruct& cStruct = m_pWorldMatrixParam->var.GetValue<MVariantStruct>();
 		cStruct.SetVariant("u_matView",info.pCameraEntity->GetComponent<MSceneComponent>()->GetWorldTransform().Inverse());
-		cStruct.SetVariant("u_matCamProj", info.pViewport->GetCameraInverseProjection());
- 		cStruct.SetVariant("u_matCamProjInv", info.pViewport->GetCameraInverseProjection().Inverse());
+		cStruct.SetVariant("u_matCamProj", info.m4CameraInverseProjection);
+ 		cStruct.SetVariant("u_matCamProjInv", info.m4CameraInverseProjection.Inverse());
 
 		m_pWorldMatrixParam->SetDirty();
 	}
@@ -280,8 +278,6 @@ void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& in
 		pLightParam->SetDirty();
 	}
 
-
-	pViewport->UnlockMatrix();
 }
 
 void MForwardRenderShaderPropertyBlock::SetShadowMapTexture(std::shared_ptr<MTexture> pTexture)
