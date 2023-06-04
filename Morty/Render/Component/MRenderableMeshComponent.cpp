@@ -50,18 +50,28 @@ void MRenderableMeshComponent::Release()
 	Super::Release();
 }
 
-void MRenderableMeshComponent::SetMaterial(std::shared_ptr<MMaterial> pMaterial)
+void MRenderableMeshComponent::SetMaterial(std::shared_ptr<MMaterialResource> pMaterial)
 {
 	if (m_Material.GetResource() == pMaterial)
 		return;
 
-	m_Material.SetResource(pMaterial);
+	m_Material = pMaterial;
 	SendComponentNotify(MRenderNotify::NOTIFY_MATERIAL_CHANGED);
+}
+
+std::shared_ptr<MMaterialResource> MRenderableMeshComponent::GetMaterialResource() const
+{
+	return m_Material.GetResource<MMaterialResource>();
 }
 
 std::shared_ptr<MMaterial> MRenderableMeshComponent::GetMaterial()
 {
-	return std::static_pointer_cast<MMaterial>(m_Material.GetResource());
+	if (auto pMaterialResource = m_Material.GetResource<MMaterialResource>())
+	{
+		return pMaterialResource->GetMaterial();
+	}
+
+	return nullptr;
 }
 
 bool MRenderableMeshComponent::SetMaterialPath(const MString& strPath)
@@ -69,19 +79,14 @@ bool MRenderableMeshComponent::SetMaterialPath(const MString& strPath)
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 	if (std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(strPath))
 	{
-		if (std::shared_ptr<MMaterialResource> pMaterialRes = MTypeClass::DynamicCast<MMaterialResource>(pResource))
+		if (std::shared_ptr<MMaterialResource> pMaterialResource = MTypeClass::DynamicCast<MMaterialResource>(pResource))
 		{
-			SetMaterial(pMaterialRes);
+			SetMaterial(pMaterialResource);
 			return true;
 		}
 	}
 
 	return false;
-}
-
-MString MRenderableMeshComponent::GetMaterialPath()
-{
-	return GetMaterial() ? GetMaterial()->GetResourcePath() : "";
 }
 
 void MRenderableMeshComponent::Load(std::shared_ptr<MResource> pResource)
@@ -93,12 +98,6 @@ void MRenderableMeshComponent::Load(std::shared_ptr<MResource> pResource)
 	{
 		m_Mesh.SetResource(pResource);
 		SendComponentNotify(MRenderNotify::NOTIFY_MESH_CHANGED);
-
-		if (m_Material.GetResource() == nullptr)
-		{
-			std::shared_ptr<MMaterial> pMaterial = MTypeClass::DynamicCast<MMaterial>(pMeshResource->GetDefaultMaterial());
-			SetMaterial(pMaterial);
-		}
 	}
 }
 
@@ -178,7 +177,7 @@ MBoundsSphere* MRenderableMeshComponent::GetBoundsSphere()
 	return &m_BoundsSphere;
 }
 
-std::shared_ptr<MSkeletonInstance> MRenderableMeshComponent::GetSkeletonInstance()
+MSkeletonInstance* MRenderableMeshComponent::GetSkeletonInstance()
 {
 	if (MModelComponent* pModelComponent = GetAttachedModelComponent())
 		return pModelComponent->GetSkeleton();
@@ -193,6 +192,11 @@ void MRenderableMeshComponent::SetGenerateDirLightShadow(const bool& bGenerate)
 		m_bGenerateDirLightShadow = bGenerate;
 		SendComponentNotify(MRenderNotify::NOTIFY_GENERATE_SHADOW_CHANGED);
 	}
+}
+
+void MRenderableMeshComponent::SetSceneCullEnable(bool bEnable)
+{
+	m_bSceneCullEnable = bEnable;
 }
 
 MModelComponent* MRenderableMeshComponent::GetAttachedModelComponent()
@@ -236,15 +240,15 @@ void MRenderableMeshComponent::OnParentChanged()
 flatbuffers::Offset<void> MRenderableMeshComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
 	auto fb_super = Super::Serialize(fbb).o;
-	auto fb_material_path = fbb.CreateString(GetMaterialPath());
-	auto fb_mesh_path = fbb.CreateString(GetMeshResourcePath());
+	auto fb_material = m_Material.Serialize(fbb).o;
+	auto fb_mesh = m_Mesh.Serialize(fbb).o;
 	mfbs::MRenderableMeshComponentBuilder builder(fbb);
 
 	builder.add_gen_dir_shadow(GetGenerateDirLightShadow());
 	builder.add_draw_bounding(GetDrawBoundingSphere());
 	builder.add_lod((int)GetDetailLevel());
-	builder.add_material_path(fb_material_path);
-	builder.add_mesh_path(fb_mesh_path);
+	builder.add_material(fb_material);
+	builder.add_mesh(fb_mesh);
 	builder.add_super(fb_super);
 
 
@@ -259,6 +263,8 @@ void MRenderableMeshComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 
 void MRenderableMeshComponent::Deserialize(const void* pBufferPointer)
 {
+	auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+
 	const mfbs::MRenderableMeshComponent* pComponent = reinterpret_cast<const mfbs::MRenderableMeshComponent*>(pBufferPointer);
 
 	Super::Deserialize(pComponent->super());
@@ -266,14 +272,14 @@ void MRenderableMeshComponent::Deserialize(const void* pBufferPointer)
 	SetGenerateDirLightShadow(pComponent->gen_dir_shadow());
 	SetDrawBoundingSphere(pComponent->draw_bounding());
 	SetDetailLevel(pComponent->lod());
-	if (const flatbuffers::String* fb_mat_path = pComponent->material_path())
-	{
-		SetMaterialPath(fb_mat_path->c_str());
-	}
-	if (const flatbuffers::String* fb_mesh_path = pComponent->mesh_path())
-	{
-		SetMeshResourcePath(fb_mesh_path->c_str());
-	}
+
+	MResourceRef material;
+	material.Deserialize(pResourceSystem, pComponent->material());
+	SetMaterial(material.GetResource<MMaterialResource>());
+
+	MResourceRef mesh;
+	mesh.Deserialize(pResourceSystem, pComponent->mesh());
+	Load(mesh.GetResource());
 
 	OnTransformDirty();
 	OnParentChanged();

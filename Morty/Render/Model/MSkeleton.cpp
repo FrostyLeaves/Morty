@@ -7,9 +7,9 @@
 #include "Utility/MFileHelper.h"
 #include "System/MRenderSystem.h"
 #include "Material/MShaderParamSet.h"
+#include "MergeInstancing/InstanceBatch/MInstanceBatchGroup.h"
 
-MORTY_CLASS_IMPLEMENT(MSkeleton, MResource)
-
+MORTY_CLASS_IMPLEMENT(MSkeleton, MTypeClass)
 
 MBone::MBone()
 	: m_matTransform(Matrix4::IdentityMatrix)
@@ -53,18 +53,6 @@ void MBone::Deserialize(const void* pBufferPointer)
 	{
 		vChildrenIndices[idx] = fbData->children()->Get(idx);
 	}
-}
-
-MSkeleton::MSkeleton()
-	: m_tBonesMap()
-	, m_vAllBones()
-{
-
-}
-
-MSkeleton::~MSkeleton()
-{
-
 }
 
 void MSkeleton::CopyAllBones(std::vector<MBone*>& allBones)
@@ -163,131 +151,6 @@ void MSkeleton::RebuildBonesMap()
 	}
 }
 
-MSkeletonInstance::MSkeletonInstance(std::shared_ptr<const MSkeleton> templateSke)
-	: m_pEngine(templateSke->GetEngine())
-	, m_pSkeletonTemplate(templateSke)
-	, m_bShaderParamSetDirty(true)
-	, m_pShaderPropertyBlock(MShaderPropertyBlock::MakeShared(nullptr, MRenderGlobal::SHADER_PARAM_SET_SKELETON))
-	, m_pShaderBonesArray(nullptr)
-{
-	m_vAllBones = m_pSkeletonTemplate->GetAllBones();
-
-	ResetOriginPose();
-}
-
-MSkeletonInstance::MSkeletonInstance(const MSkeletonInstance& instance)
-	: m_pEngine(instance.m_pEngine)
-	, m_pSkeletonTemplate(instance.m_pSkeletonTemplate)
-	, m_bShaderParamSetDirty(true)
-	, m_pShaderPropertyBlock(MShaderPropertyBlock::MakeShared(nullptr, MRenderGlobal::SHADER_PARAM_SET_SKELETON))
-	, m_pShaderBonesArray(nullptr)
-{
-	m_vAllBones = m_pSkeletonTemplate->GetAllBones();
-}
-
-MSkeletonInstance::~MSkeletonInstance()
-{
-	m_pShaderBonesArray = nullptr;
-
-	if (m_pShaderPropertyBlock)
-	{
-		MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
-		m_pShaderPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
-		m_pShaderPropertyBlock = nullptr;
-	}
-}
-
-MBone* MSkeletonInstance::FindBoneByName(const MString& strName)
-{
-	const MBone* pBoneTemp = m_pSkeletonTemplate->FindBoneByName(strName);
-	if (nullptr == pBoneTemp)
-		return nullptr;
-
-	return &m_vAllBones[pBoneTemp->unIndex];
-}
-
-const MBone* MSkeletonInstance::FindBoneTemplateByName(const MString& strName)
-{
-	return m_pSkeletonTemplate->FindBoneByName(strName);
-}
-
-const MBone* MSkeletonInstance::GetBoneTemplateByIndex(const uint32_t& unIndex)
-{
-	return &m_pSkeletonTemplate->GetAllBones()[unIndex];
-}
-
-void MSkeletonInstance::ResetOriginPose()
-{
-	for (MBone& bone : m_vAllBones)
-	{
-		if (bone.unParentIndex != MGlobal::M_INVALID_INDEX)
-		{
-			bone.m_matWorldTransform = m_vAllBones[bone.unParentIndex].m_matWorldTransform * bone.m_matTransform;
-		}
-		else
-		{
-			bone.m_matWorldTransform = bone.m_matTransform;
-		}
-	}
-
-	for (MBone& bone : m_vAllBones)
-	{
-		bone.m_matWorldTransform = bone.m_matWorldTransform * bone.m_matOffsetMatrix;
-	}
-}
-
-
-std::shared_ptr<MShaderPropertyBlock> MSkeletonInstance::GetShaderParamSet()
-{
-	if (!m_pShaderBonesArray)
-	{
-		std::shared_ptr<MShaderConstantParam> pBonesSet = std::make_shared<MShaderConstantParam>();
-		pBonesSet->unSet = 3;
-		pBonesSet->unBinding = 0;
-
-		MVariantArray bonesArr;
-		MVariantArrayBuilder builder(bonesArr);
-		for (int i = 0; i < 128; ++i)
-		{
-			builder.AppendVariant(Matrix4());
-		}
-
-		MVariantStruct bonesSrt;
-		MVariantStructBuilder srtBuilder(bonesSrt);
-		srtBuilder.AppendVariant("u_vBonesMatrix", bonesArr);
-		srtBuilder.Finish();
-
-		pBonesSet->var = std::move(MVariant(bonesSrt));
-
-		m_pShaderPropertyBlock->m_vParams.push_back(pBonesSet);
-
-		m_pShaderBonesArray = &pBonesSet->var.GetValue<MVariantStruct>().GetVariant<MVariantArray>("u_vBonesMatrix");
-	}
-
-	if (m_bShaderParamSetDirty)
-	{
-		const std::vector<MBone>& bones = GetAllBones();
-		uint32_t size = bones.size();
-		if (size > MRenderGlobal::BONES_MAX_NUMBER) size = MRenderGlobal::BONES_MAX_NUMBER;
-
-		for (uint32_t i = 0; i < size; ++i)
-		{
-			(*m_pShaderBonesArray)[i].SetValue(bones[i].m_matWorldTransform);
-		}
-
-		m_pShaderPropertyBlock->m_vParams[0]->SetDirty();
-
-		m_bShaderParamSetDirty = false;
-	}
-
-	return m_pShaderPropertyBlock;
-}
-
-void MSkeletonInstance::SetDirty()
-{
-	m_bShaderParamSetDirty = true;
-}
-
 flatbuffers::Offset<void> MSkeleton::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
 	std::vector<flatbuffers::Offset<mfbs::MBone>> vBoneOffset;
@@ -311,29 +174,3 @@ void MSkeleton::Deserialize(const void* pBufferPointer)
 		m_vAllBones[idx].Deserialize(fbData->bones()->Get(idx));
 	}
 }
-
-bool MSkeleton::Load(const MString& strResourcePath)
-{
-	std::vector<MByte> data;
-	MFileHelper::ReadData(strResourcePath, data);
-
-	flatbuffers::FlatBufferBuilder fbb;
-	fbb.PushBytes((const uint8_t*)data.data(), data.size());
-
-	const mfbs::MSkeleton* fbSkeleton = mfbs::GetMSkeleton(fbb.GetCurrentBufferPointer());
-
-	Deserialize(fbSkeleton);
-	return true;
-}
-
-bool MSkeleton::SaveTo(const MString& strResourcePath)
-{
-	flatbuffers::FlatBufferBuilder fbb;
-	Serialize(fbb);
-
-	std::vector<MByte> data(fbb.GetSize());
-	memcpy(data.data(), (MByte*)fbb.GetBufferPointer(), fbb.GetSize() * sizeof(MByte));
-
-	return MFileHelper::WriteData(strResourcePath, data);
-}
-

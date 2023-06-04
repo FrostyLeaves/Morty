@@ -13,7 +13,6 @@ MShaderPropertyBlock::MShaderPropertyBlock()
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	m_VkDescriptorSet = VK_NULL_HANDLE;
-	m_unLayoutDataIdx = MGlobal::M_INVALID_INDEX;
 #endif
 }
 
@@ -27,7 +26,6 @@ MShaderPropertyBlock::MShaderPropertyBlock(const std::shared_ptr<MShaderProgram>
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	m_VkDescriptorSet = VK_NULL_HANDLE;
-	m_unLayoutDataIdx = MGlobal::M_INVALID_INDEX;
 #endif
 }
 

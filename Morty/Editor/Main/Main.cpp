@@ -22,15 +22,13 @@
 #endif
 
 
-
-
 #include "Test/ShadowMap.h"
 #include "Test/EnvironmentCubemap.h"
 #include "Test/GPUDrivenCulling.h"
 #include "Test/LoadModel.h"
 #include "Test/LoadModel_Sponza.h"
 #include "Test/Pbr.h"
-
+#include "Test/Floor.h"
 
 int main()
 {
@@ -57,11 +55,15 @@ int main()
 	MScene* pScene = editor.GetScene();
 	MORTY_ASSERT(pScene);
 
+
+
 	ADD_DIRECTIONAL_LIGHT(&engine, pScene);
 
- 	ENVIRONMENT_CUBEMAP_TEST(&engine, pScene);
+	CREATE_FLOOR(&engine, pScene);
 
-//	SHADOW_MAP_TEST(&engine, pScene);
+// 	ENVIRONMENT_CUBEMAP_TEST(&engine, pScene);
+
+	SHADOW_MAP_TEST(&engine, pScene);
 
 //	PBR_SHPERE(&engine, pScene);
 
@@ -69,7 +71,7 @@ int main()
 
 //	LOAD_MODEL_TRANSLATION_TEST(&engine, pScene);
 
-	LOAD_MODEL_SPONZA_TEST(&engine, pScene);
+//	LOAD_MODEL_SPONZA_TEST(&engine, pScene);
 
 //	GPU_DRIVEN_CULLING_TEST(&engine, pScene);
 

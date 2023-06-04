@@ -27,8 +27,6 @@ class MORTY_API MDeferredLightingRenderWork : public ISinglePassRenderWork
 	void SetShadowMap(const std::shared_ptr<ITextureInputAdapter>& pAdapter);
 	void SetFrameProperty(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter);
 
-	std::shared_ptr<ITextureInputAdapter> CreateOutput() const;
-
 private:
 
 	std::shared_ptr<IPropertyBlockAdapter> m_pFramePropertyAdapter = nullptr;

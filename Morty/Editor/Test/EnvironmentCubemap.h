@@ -8,6 +8,7 @@
 #include "Resource/MMaterialResource.h"
 
 #include "Component/MSkyBoxComponent.h"
+#include "Resource/MTextureResourceUtil.h"
 
 //https://matheowis.github.io/HDRI-to-CubeMap/
 
@@ -27,17 +28,19 @@ void ENVIRONMENT_CUBEMAP_TEST(MEngine* pEngine, MScene* pScene)
 		"Texture/Sky/HDR_041/ny.hdr",
 		"Texture/Sky/HDR_041/pz.hdr",
 		"Texture/Sky/HDR_041/nz.hdr"
-		}, { MTextureResource::PixelFormat::Float32 });
+		}, { MTextureResource::MTexturePixelFormat::Float32 });
     */
 
-	pCubeTexture->ImportCubeMap({
+	auto resourceData = MTextureResourceUtil::ImportCubeMap({
 		"Texture/Sky/Circus_Backstage/px.hdr",
 		"Texture/Sky/Circus_Backstage/nx.hdr",
 		"Texture/Sky/Circus_Backstage/py.hdr",
 		"Texture/Sky/Circus_Backstage/ny.hdr",
 		"Texture/Sky/Circus_Backstage/pz.hdr",
 		"Texture/Sky/Circus_Backstage/nz.hdr"
-		}, { MTextureResource::PixelFormat::Float32 });
+		}, { MTexturePixelFormat::Float32 });
+
+	pCubeTexture->Load(resourceData);
 
 
 	MEntity* pSkyBoxEntity = pScene->CreateEntity();

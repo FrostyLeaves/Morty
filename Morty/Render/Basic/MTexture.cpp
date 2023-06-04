@@ -44,7 +44,7 @@ Vector2 MTexture::GetMipmapSize(const uint32_t& nMipmapLevel)
 	return Vector2(w, h);
 }
 
-void MTexture::GenerateBuffer(MIDevice* pDevice, MByte* aImageData /*= nullptr*/)
+void MTexture::GenerateBuffer(MIDevice* pDevice, const MByte* aImageData /*= nullptr*/)
 {
 	pDevice->GenerateTexture(this, aImageData);
 }

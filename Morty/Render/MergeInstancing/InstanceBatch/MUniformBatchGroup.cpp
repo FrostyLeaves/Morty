@@ -67,11 +67,11 @@ bool MUniformBatchGroup::CanAddMeshInstance() const
 	return m_nCurrentInstanceNum < m_nMaxInstanceNum;
 }
 
-void MUniformBatchGroup::AddMeshInstance(MRenderableMeshComponent* pComponent)
+void MUniformBatchGroup::AddMeshInstance(MMeshInstanceKey key, MMeshInstanceRenderProxy proxy)
 {
-	if(!pComponent)
+	if(!key)
 	{
-		MORTY_ASSERT(pComponent);
+		MORTY_ASSERT(key);
 		return;
 	}
 
@@ -87,79 +87,58 @@ void MUniformBatchGroup::AddMeshInstance(MRenderableMeshComponent* pComponent)
 		return;
 	}
 
-	if (m_tInstanceCache.HasItem(pComponent))
+	if (m_tInstanceCache.HasItem(key))
 	{
 		MORTY_ASSERT(false);
 		return;
 	}
 
-	MResourceRef meshResource = pComponent->GetMeshResource();
-	auto pMeshResource = meshResource.GetResource<MMeshResource>();
-	if (!pMeshResource)
-	{
-		return;
-	}
-
-	const size_t nCurrentIdx = m_tInstanceCache.AddItem(pComponent, {});
-
-	MRenderableMeshInstance& instance = *m_tInstanceCache.FindItem(pComponent);
-	instance.bVisible = true;
-	instance.pMesh = pMeshResource->GetMesh();
-	instance.bounds = *pMeshResource->GetMeshesDefaultOBB();
+	const size_t nCurrentIdx = m_tInstanceCache.AddItem(key, {});
 	++m_nCurrentInstanceNum;
 	
 
-	UpdateTransform(pComponent);
+	UpdateMeshInstance(key, proxy);
 }
 
-void MUniformBatchGroup::RemoveMeshInstance(MRenderableMeshComponent* pComponent)
+void MUniformBatchGroup::RemoveMeshInstance(MMeshInstanceKey key)
 {
-	const auto pInstance = m_tInstanceCache.FindItem(pComponent);
+	const auto pInstance = m_tInstanceCache.FindItem(key);
 	if (nullptr == pInstance)
 	{
 		MORTY_ASSERT(false);
 		return;
 	}
 	
-	m_tInstanceCache.RemoveItem(pComponent);
+	m_tInstanceCache.RemoveItem(key);
 	--m_nCurrentInstanceNum;
 }
 
-void MUniformBatchGroup::UpdateTransform(MRenderableMeshComponent* pComponent)
+void MUniformBatchGroup::UpdateMeshInstance(MMeshInstanceKey key, MMeshInstanceRenderProxy proxy)
 {
-	const auto pInstance = m_tInstanceCache.FindItem(pComponent);
+	const auto pInstance = m_tInstanceCache.FindItem(key);
 	if (nullptr == pInstance)
 	{
 		return;
 	}
-
-	MSceneComponent* pSceneComponent = pComponent->GetEntity()->GetComponent<MSceneComponent>();
-	if (!pSceneComponent)
-	{
-		MORTY_ASSERT(pSceneComponent);
-		return;
-	}
-
-	size_t nIdx = m_tInstanceCache.GetItemIdx(pComponent);
-	Matrix4 matWorldTrans = pSceneComponent->GetWorldTransform();
+	
+	size_t nIdx = m_tInstanceCache.GetItemIdx(key);
 
 	//Transposed and Inverse.
-	Matrix3 matNormal(matWorldTrans, 3, 3);
+	Matrix3 matNormal(proxy.worldTransform, 3, 3);
 	m_vTransformArray[nIdx].normalMatrix.SetValue(matNormal);
-	m_vTransformArray[nIdx].worldMatrix.SetValue(matWorldTrans);
+	m_vTransformArray[nIdx].worldMatrix.SetValue(proxy.worldTransform);
 	m_pTransformParam->SetDirty();
-
-	const Vector3 v3Position = pSceneComponent->GetWorldPosition();
-	pInstance->boundsWithTransform.SetBoundsOBB(v3Position, matWorldTrans, pInstance->bounds);
+	
+	*pInstance = proxy;
 }
 
-MRenderableMeshInstance* MUniformBatchGroup::FindMeshInstance(MRenderableMeshComponent* pComponent)
+MMeshInstanceRenderProxy* MUniformBatchGroup::FindMeshInstance(MMeshInstanceKey key)
 {
-	auto result = m_tInstanceCache.FindItem(pComponent);
+	auto result = m_tInstanceCache.FindItem(key);
 	return result;
 }
 
-void MUniformBatchGroup::InstanceExecute(std::function<void(const MRenderableMeshInstance&, size_t nIdx)> func)
+void MUniformBatchGroup::InstanceExecute(std::function<void(const MMeshInstanceRenderProxy&, size_t nIdx)> func)
 {
 	const auto& items = m_tInstanceCache.GetItems();
 	for (size_t nIdx = 0; nIdx < items.size(); ++nIdx)

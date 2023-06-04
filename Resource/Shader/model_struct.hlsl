@@ -40,6 +40,8 @@
     {
         float4x4 u_matWorld;
         float3x3 u_matNormal;
+
+        int u_meshInstanceBeginIndex;
     };
 
     #define MESH_WORLD_MATRIX u_matWorld

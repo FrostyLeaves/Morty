@@ -11,6 +11,17 @@
 #include "Utility/MGlobal.h"
 
 #include "Resource/MResource.h"
+#include "Resource/MResourceLoader.h"
+
+struct MORTY_API MEntityResourceData : public MResourceData
+{
+public:
+	//RawData
+    std::vector<MByte> aEntityData;
+
+    void LoadBuffer(const std::vector<MByte>& buffer) override;
+    std::vector<MByte> SaveBuffer() const override;
+};
 
 class MORTY_API MEntityResource : public MResource
 {
@@ -19,23 +30,35 @@ public:
     MEntityResource();
     virtual ~MEntityResource();
 
-public:
-
-	static MString GetResourceTypeName() { return "Entity"; }
-	static std::vector<MString> GetSuffixList() { return { "entity" }; }
-
-    std::vector<MByte>& GetData() { return m_entityData; }
-
+    const MByte* GetData() const;
+    size_t GetSize() const;
+    
 protected:
 
-    virtual bool Load(const MString& strResourcePath) override;
-    virtual bool SaveTo(const MString& strResourcePath) override;
+    bool Load(std::unique_ptr<MResourceData>& pResourceData) override;
+    bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
 
 private:
 
     friend class MEntitySystem;
-    std::vector<MByte> m_entityData;
+
+    std::unique_ptr<MResourceData> m_pResourceData = nullptr;
 };
 
+class MORTY_API MEntityResourceLoader : public MResourceLoader
+{
+public:
+    MEntityResourceLoader() = default;
+    virtual ~MEntityResourceLoader() = default;
 
+public:
+
+    static MString GetResourceTypeName() { return "Entity"; }
+    static std::vector<MString> GetSuffixList() { return { "entity" }; }
+
+    std::shared_ptr<MResource> Create(MResourceSystem* pManager) override;
+
+    std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath, const MString& svPath) override;
+
+};
 #endif

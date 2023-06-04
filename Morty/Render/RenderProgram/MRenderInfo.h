@@ -28,16 +28,19 @@ struct MORTY_API MCascadedShadowSceneData
 {
 	//range: 0.0 - 1.0f
 	float fCascadeSplit = 0.0f;
+	float fTransitionRange = 0.0f;
 	float fNearZ = 0.0f;
 	float fFarZ = 0.0f;
+	float fOverFarZ = 0.0f;
 
 	MCameraFrustum cCameraFrustum;
 };
 
 struct MORTY_API MCascadedShadowRenderData
 {
-	Vector4 fSplitRange;//far, far + 0.1
 	Matrix4 m4DirLightInvProj;
+	Vector4 fSplitRange;//far, far + 0.1
+	MBoundsSphere boundsSphere;
 };
 
 struct MRenderInfo

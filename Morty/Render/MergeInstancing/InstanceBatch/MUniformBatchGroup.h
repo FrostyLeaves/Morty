@@ -33,12 +33,12 @@ public:
 	void Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pMaterial) override;
 	void Release(MEngine* pEngine) override;
 	bool CanAddMeshInstance() const override;
-	void AddMeshInstance(MRenderableMeshComponent* pComponent) override;
-	void RemoveMeshInstance(MRenderableMeshComponent* pComponent) override;
-	void UpdateTransform(MRenderableMeshComponent* pComponent) override;
+	void AddMeshInstance(MMeshInstanceKey key, MMeshInstanceRenderProxy proxy) override;
+	void RemoveMeshInstance(MMeshInstanceKey key) override;
+	void UpdateMeshInstance(MMeshInstanceKey key, MMeshInstanceRenderProxy proxy) override;
 	std::shared_ptr<MShaderPropertyBlock> GetMeshProperty() const override { return m_pShaderPropertyBlock; }
-	MRenderableMeshInstance* FindMeshInstance(MRenderableMeshComponent* pComponent) override;
-	void InstanceExecute(std::function<void(const MRenderableMeshInstance&, size_t nIdx)> func) override;
+	MMeshInstanceRenderProxy* FindMeshInstance(MMeshInstanceKey key) override;
+	void InstanceExecute(std::function<void(const MMeshInstanceRenderProxy&, size_t nIdx)> func) override;
 
 private:
 
@@ -46,7 +46,7 @@ private:
 	std::shared_ptr<MMaterial> m_pMaterial = nullptr;
 	std::shared_ptr<MShaderPropertyBlock> m_pShaderPropertyBlock = nullptr;
 	std::shared_ptr<MShaderConstantParam> m_pTransformParam = nullptr;
-	MRenderInstanceCache<MRenderableMeshComponent*, MRenderableMeshInstance> m_tInstanceCache;
+	MRenderInstanceCache<MMeshInstanceKey, MMeshInstanceRenderProxy> m_tInstanceCache;
 
 	std::vector<MTransformVariant> m_vTransformArray;
 	size_t m_nCurrentInstanceNum = 0;

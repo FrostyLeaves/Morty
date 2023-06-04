@@ -10,6 +10,21 @@
 #define _M_MMATERIALRESOURCE_H_
 
 #include "Material/MMaterial.h"
-#define MMaterialResource MMaterial
+
+class MORTY_API MMaterialResource : public MMaterial
+{
+public:
+	MORTY_CLASS(MMaterialResource);
+
+	std::shared_ptr<MMaterial> GetMaterial() const;
+
+	bool Load(std::unique_ptr<MResourceData>& pResourceData) override;
+	virtual bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
+
+private:
+
+	std::unique_ptr<MResourceData> m_pResourceData = nullptr;
+
+};
 
 #endif

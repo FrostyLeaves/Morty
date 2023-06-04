@@ -19,6 +19,8 @@
 typedef std::string MString;
 typedef std::string_view MStringView;
 
+typedef std::string MPath;
+
 class MStringHelper
 {
 public:

@@ -1,0 +1,46 @@
+#include "../inner_constant.hlsl"
+#include "../model_struct.hlsl"
+
+
+struct VS_IN
+{
+    float3 pos : POSITION;
+
+#if SKELETON_ENABLE == 1
+    int bonesID[MBONES_PER_VERTEX] : BONES_ID;
+    float bonesWeight[MBONES_PER_VERTEX] : BONES_WEIGHT;
+#endif
+
+    float3 normal : NORMAL;
+    float3 tangent : TANGENT;
+    float3 bitangent : BITANGENT;
+    float2 uv : TEXCOORDS;
+};
+
+struct VS_OUTPUT
+{
+    float4 pos : SV_POSITION;
+    float3 near_pos : NEAR_POS;
+    float3 far_pos : FAR_POS;
+};
+
+VS_OUTPUT VS_MAIN(VS_IN input, uint nVertexIdx: SV_VertexID)
+{
+    VS_OUTPUT output;
+
+    float4 pos = float4(input.pos, 1.0f);
+    float4 near_pos = mul(float4(pos.xy, 0.0f, 1.0f), u_matCamProjInv);
+    float4 far_pos = mul(float4(pos.xy, 1.0f, 1.0f), u_matCamProjInv);
+
+    output.near_pos = near_pos.xyz / near_pos.w;
+    output.far_pos = far_pos.xyz / far_pos.w;
+
+    float t = -output.near_pos.y / (output.far_pos.y - output.near_pos.y);
+    float3 f3WorldPosition = output.near_pos + t * (output.far_pos - output.near_pos);
+
+    float4 world_pos = mul(float4(f3WorldPosition, 1.0f), u_matCamProj);
+
+    output.pos = pos;
+    output.pos.z = world_pos.z / world_pos.w;
+    return output;
+}

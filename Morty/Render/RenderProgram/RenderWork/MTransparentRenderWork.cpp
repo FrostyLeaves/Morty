@@ -3,6 +3,7 @@
 #include "Engine/MEngine.h"
 #include "Basic/MViewport.h"
 #include "Model/MSkeleton.h"
+#include "Model/MSkeletonInstance.h"
 #include "Render/MRenderCommand.h"
 
 #include "System/MRenderSystem.h"
@@ -14,6 +15,7 @@
 #include "Component/MRenderableMeshComponent.h"
 
 #include "Mesh/MMeshManager.h"
+#include "Resource/MTextureResourceUtil.h"
 
 MORTY_CLASS_IMPLEMENT(MTransparentRenderWork, MObject)
 
@@ -173,7 +175,7 @@ void MTransparentRenderWork::RenderDepthPeel(MRenderInfo& info)
 			}
 			for (MRenderableMeshComponent* pMeshComponent : pr.second)
 			{
-				if (std::shared_ptr<MSkeletonInstance> pSkeletonIns = pMeshComponent->GetSkeletonInstance())
+				if (MSkeletonInstance* pSkeletonIns = pMeshComponent->GetSkeletonInstance())
 				{
 					pCommand->SetShaderParamSet(pSkeletonIns->GetShaderParamSet());
 				}
@@ -235,8 +237,9 @@ void MTransparentRenderWork::InitializeTexture()
 
 	static MByte black[4] = { 0, 0 ,0 ,0 };
 	static MByte white[4] = { 255, 255 ,255 ,255 };
-	m_pBlackTexture->LoadFromMemory(black, 1, 1, 4);
-	m_pWhiteTexture->LoadFromMemory(white, 1, 1, 4);
+
+	m_pBlackTexture->Load(MTextureResourceUtil::LoadFromMemory("Transparent_Black", black, 1, 1, 4));
+	m_pWhiteTexture->Load(MTextureResourceUtil::LoadFromMemory("Transparent_White", white, 1, 1, 4));
 
 
 	Vector2 size(512, 512);

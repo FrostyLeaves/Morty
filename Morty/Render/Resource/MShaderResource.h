@@ -12,46 +12,58 @@
 
 #include <map>
 
-#include "Resource/MResource.h"
 #include "Material/MShader.h"
+#include "Resource/MResource.h"
+#include "Resource/MResourceLoader.h"
 
+
+class MORTY_API MShaderResourceData : public MResourceData
+{
+public:
+	//RawData
+	MEShaderType eShaderType;
+	MString strShaderPath;
+
+
+	void LoadBuffer(const std::vector<MByte>& buffer) override;
+	std::vector<MByte> SaveBuffer() const override;
+};
 
 class MORTY_API MShaderResource : public MResource
 {
 public:
 	MORTY_CLASS(MShaderResource)
-    MShaderResource();
-    virtual ~MShaderResource();
-
-	static MString GetResourceTypeName() { return "Shader"; }
-	static std::vector<MString> GetSuffixList() { return { "mvs", "mps", "mcs" }; }
+    MShaderResource() = default;
+    ~MShaderResource() override = default;
 
 public:
 
     MShader* GetShaderByIndex(const int& nIndex);
     int FindShaderByMacroParam(const MShaderMacro& macro);
 
-	MEShaderType GetShaderType() { return m_eShaderType; }
+	MEShaderType GetShaderType() const;
 
-public:
+	bool Load(std::unique_ptr<MResourceData>& pResourceData) override;
+	bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
 
 	virtual void OnDelete() override;
 
-protected:
-
-	virtual bool Load(const MString& strResourcePath) override;
-
 private:
-
-    MEShaderType m_eShaderType;
-    MString m_strShaderPath;
 
     std::vector<MShader*> m_vShaders;
-
-
-private:
+	std::unique_ptr<MResourceData> m_pResourceData = nullptr;
 
 };
 
+class MORTY_API MShaderResourceLoader : public MResourceLoader
+{
+public:
+
+	static MString GetResourceTypeName() { return "Shader"; }
+	static std::vector<MString> GetSuffixList() { return { "mvs", "mps", "mcs" }; }
+
+	std::shared_ptr<MResource> Create(MResourceSystem* pManager) override;
+	std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath, const MString& svPath) override;
+};
 
 #endif

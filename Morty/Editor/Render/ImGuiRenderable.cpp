@@ -7,6 +7,7 @@
 #include "Render/MRenderCommand.h"
 
 #include "Resource/MTextureResource.h"
+#include "Resource/MTextureResourceUtil.h"
 
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
@@ -77,7 +78,7 @@ void ImGuiRenderable::InitializeFont()
 	size_t upload_size = width * height * 4 * sizeof(char);
 
 	std::shared_ptr<MTextureResource> pFontTexture = pResourceSystem->CreateResource<MTextureResource>("ImGUI_Font");
-	pFontTexture->LoadFromMemory(pixels, width, height, 4);
+	pFontTexture->Load(MTextureResourceUtil::LoadFromMemory("ImGUI_Font", pixels, width, height, 4));
 	m_FontTexture.SetResource(pFontTexture);
 
 	// Store our identifier

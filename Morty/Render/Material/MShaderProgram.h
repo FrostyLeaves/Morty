@@ -71,6 +71,8 @@ public:
 	MShader* GetVertexShader(){ return m_pVertexShader; }
 	MShader* GetPixelShader() { return m_pPixelShader; }
 	MShader* GetComputeShader() { return m_pComputeShader; }
+
+	void SetShaderMacro(const MShaderMacro& macro) { m_ShaderMacro = macro; }
 	MShaderMacro& GetShaderMacro() { return m_ShaderMacro; }
 
 	std::vector<MShaderConstantParam*>* GetShaderParams();

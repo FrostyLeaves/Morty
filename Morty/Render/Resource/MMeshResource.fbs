@@ -19,8 +19,6 @@ table MMeshResource
 	bounds_obb: MBoundsOBB;
     bounds_sphere: MBoundsSphere;
 
-    skeleton_resource: MResourceRef;
-
     vertex_type: MEMeshVertexType;
 
     vertex: [byte];

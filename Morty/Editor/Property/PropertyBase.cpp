@@ -9,6 +9,8 @@
 #include "imgui.h"
 #include "imgui_stdlib.h"
 #include "ImGuiFileDialog.h"
+#include "Engine/MEngine.h"
+#include "Resource/MMaterialResourceData.h"
 
 unsigned int PropertyBase::m_unItemIDPool = 0;
 std::map<MString, unsigned int> PropertyBase::m_tItemID = std::map<MString, unsigned int>();
@@ -246,7 +248,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 	{
 		{
 			ShowValueBegin("Save");
-			EditSaveMResource("material_save_dlg", MMaterialResource::GetResourceTypeName(), MMaterialResource::GetSuffixList(), pMaterial);
+			EditSaveMResource("material_save_dlg", MMaterialResourceLoader::GetResourceTypeName(), MMaterialResourceLoader::GetSuffixList(), pMaterial);
 			ShowValueEnd();
 		}
 
@@ -358,7 +360,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 						ImGui::SameLine();
 					}
 
-					EditMResource(strDlgName, MTextureResource::GetResourceTypeName(), MTextureResource::GetSuffixList(), pResource, [&param, &pMaterial](const MString& strNewFilePath) {
+					EditMResource(strDlgName, MTextureResourceLoader::GetResourceTypeName(), MTextureResourceLoader::GetSuffixList(), pResource, [&param, &pMaterial](const MString& strNewFilePath) {
 
 						std::shared_ptr<MResource> pNewResource = pMaterial->GetResourceSystem()->LoadResource(strNewFilePath);
 
@@ -452,7 +454,10 @@ void PropertyBase::EditSaveMResource(const MString& stringID, const MString& str
 		sprintf(btn_name, "Save##_%d", ImGui::GetID(pResource.get()));
 
 		if (ImGui::Button(btn_name, ImVec2(fWidth * 0.5f, 0)))
-			pResource->Save();
+		{
+			auto pResourceSystem = pResource->GetEngine()->FindSystem<MResourceSystem>();
+			pResourceSystem->SaveResource(pResource);
+		}
 
 		if (bButtonDown)
 		{
@@ -465,7 +470,9 @@ void PropertyBase::EditSaveMResource(const MString& stringID, const MString& str
 			if (ImGuiFileDialog::Instance()->IsOk() == true)
 			{
 				std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-				pResource->SaveTo(filePathName);
+				auto pResourceSystem = pResource->GetEngine()->FindSystem<MResourceSystem>();
+				pResourceSystem->MoveTo(pResource, filePathName);
+				pResourceSystem->SaveResource(pResource);
 			}
 			ImGuiFileDialog::Instance()->Close();
 		}

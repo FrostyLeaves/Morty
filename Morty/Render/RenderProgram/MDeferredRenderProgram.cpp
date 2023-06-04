@@ -52,7 +52,7 @@
 MORTY_CLASS_IMPLEMENT(MDeferredRenderProgram, MIRenderProgram)
 
 
-#define GPU_CULLING_ENABLE true
+#define GPU_CULLING_ENABLE false
 
 
 void MDeferredRenderProgram::Render(MIRenderCommand* pPrimaryCommand)
@@ -228,7 +228,7 @@ void MDeferredRenderProgram::InitializeRenderGraph()
 
 
 	/*
-		RenderReady --> RenderCulling --> RenderShadowmap --> pRenderEnvironmentTask --> RenderGBuffer --> RenderLightning --> RenderForward --> RenderTransparent --> RenderDebug --> output
+		RenderReady --> RenderCulling --> RenderShadowmap --> RenderGBuffer --> RenderLightning --> RenderForward --> RenderTransparent --> RenderDebug --> output
 	*/
 
 	pRenderReadyTask->AppendOutput()->LinkTo(pRenderShadowTask->AppendInput());
@@ -301,17 +301,17 @@ void MDeferredRenderProgram::InitializeRenderTarget()
 		{ {pLightningRenderTarget, {false, true, MColor::Black_T }} },
 		{ pDepthTexture, {false, true, MColor::Black_T} });
 
-	GetRenderWork<MDebugRenderWork>()->SetRenderTarget(
-		{ {pLightningRenderTarget, {false, true, MColor::Black_T }} },
-		{ pDepthTexture, {false, true, MColor::Black_T} });
-
 	GetRenderWork<MPostProcessRenderWork>()->SetRenderTarget(
 		{ {pPostProcessOutput, {true, false, MColor::Black_T }} });
+
+	GetRenderWork<MDebugRenderWork>()->SetRenderTarget(
+		{ {pPostProcessOutput, {false, true, MColor::Black_T }} },
+		{ pDepthTexture, {false, true, MColor::Black_T} });
 
 	m_pFinalOutputTexture = pPostProcessOutput;
 
 
-	GetRenderWork<MPostProcessRenderWork>()->SetInputTexture(GetRenderWork<MDeferredLightingRenderWork>()->CreateOutput());
+	GetRenderWork<MPostProcessRenderWork>()->SetInputTexture(GetRenderWork<MForwardRenderWork>()->CreateOutput());
 }
 
 void MDeferredRenderProgram::ReleaseRenderTarget()
@@ -483,5 +483,23 @@ void MDeferredRenderProgram::RenderPostProcess(MTaskNode* pTaskNode)
 void MDeferredRenderProgram::RenderDebug(MTaskNode* pTaskNode)
 {
 	MORTY_ASSERT(GetRenderWork<MDebugRenderWork>());
-	GetRenderWork<MDebugRenderWork>()->Render(m_renderInfo);
+
+	//Current viewport.
+	MViewport* pViewport = m_renderInfo.pViewport;
+	MScene* pScene = pViewport->GetScene();
+
+	//Render static mesh.
+	MIndexdIndirectRenderable indirectMesh;
+	indirectMesh.SetScene(pScene);
+	indirectMesh.SetFramePropertyBlockAdapter(m_pFramePropertyAdapter);
+	indirectMesh.SetMaterialFilter(std::make_shared<MMaterialTypeFilter>(MEMaterialType::ECustom));
+#if GPU_CULLING_ENABLE
+	indirectMesh.SetInstanceCulling(m_pGpuCulling);
+#else
+	indirectMesh.SetInstanceCulling(m_pCpuCulling);
+#endif
+
+	GetRenderWork<MDebugRenderWork>()->Render(m_renderInfo, {
+		&indirectMesh
+		});
 }

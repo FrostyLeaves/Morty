@@ -20,13 +20,17 @@ class MSceneComponent;
 class MRenderableMeshComponent;
 
 
-struct MORTY_API MRenderableMeshInstance
+struct MORTY_API MMeshInstanceRenderProxy
 {
 	bool bVisible = true;
+	bool bCullEnable = true;
 	MIMesh* pMesh = nullptr;
+	Matrix4 worldTransform = Matrix4::IdentityMatrix;
 	MBoundsOBB bounds;
 	MBoundsAABB boundsWithTransform;
 };
+
+typedef MRenderableMeshComponent* MMeshInstanceKey;
 
 class MORTY_API MInstanceBatchGroup
 {
@@ -34,16 +38,13 @@ public:
 	virtual void Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pMaterial) = 0;
 	virtual void Release(MEngine* pEngine) = 0;
 	virtual bool CanAddMeshInstance() const = 0;
-	virtual void AddMeshInstance(MRenderableMeshComponent* pComponent) = 0;
-	virtual void RemoveMeshInstance(MRenderableMeshComponent* pComponent) = 0;
+	virtual void AddMeshInstance(MMeshInstanceKey key, MMeshInstanceRenderProxy proxy) = 0;
+	virtual void RemoveMeshInstance(MMeshInstanceKey key) = 0;
+	virtual void UpdateMeshInstance(MMeshInstanceKey key, MMeshInstanceRenderProxy proxy) = 0;
 	virtual std::shared_ptr<MShaderPropertyBlock> GetMeshProperty() const = 0;
-	virtual MRenderableMeshInstance* FindMeshInstance(MRenderableMeshComponent* pComponent) = 0;
-	virtual void InstanceExecute(std::function<void(const MRenderableMeshInstance&, size_t nIdx)> func) = 0;
-
-	virtual void UpdateTransform(MRenderableMeshComponent* pComponent) = 0;
-
-	void UpdateMesh(MRenderableMeshComponent* pComponent);
-	void UpdateVisible(MRenderableMeshComponent* pComponent, bool bVisible);
+	virtual MMeshInstanceRenderProxy* FindMeshInstance(MMeshInstanceKey key) = 0;
+	virtual void InstanceExecute(std::function<void(const MMeshInstanceRenderProxy&, size_t nIdx)> func) = 0;
+	void UpdateVisible(MMeshInstanceKey key, bool bVisible);
 };
 
 #endif

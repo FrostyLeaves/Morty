@@ -11,6 +11,7 @@
 
 #include "Resource/MMeshResource.h"
 #include "Resource/MMaterialResource.h"
+#include "Resource/MMeshResourceUtil.h"
 
 void ADD_DIRECTIONAL_LIGHT(MEngine* pEngine, MScene* pScene)
 {
@@ -18,7 +19,7 @@ void ADD_DIRECTIONAL_LIGHT(MEngine* pEngine, MScene* pScene)
 	pDirLight->SetName("DirectionalLight");
 	if (MSceneComponent* pSceneComponent = pDirLight->RegisterComponent<MSceneComponent>())
 	{
-		pSceneComponent->SetRotation(Quaternion(Vector3(1.0, 0.0, 0.0), 45.0f));
+		pSceneComponent->SetRotation(Quaternion(Vector3(1.0, 0.0, 0.0), 0.0f));
 	}
 	if (MDirectionalLightComponent* pLightComponent = pDirLight->RegisterComponent<MDirectionalLightComponent>())
 	{
@@ -32,7 +33,7 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
 
 	std::shared_ptr<MMeshResource> pCubeResource = pResourceSystem->CreateResource<MMeshResource>();
-	pCubeResource->LoadAsSphere();
+	pCubeResource->Load(MMeshResourceUtil::CreateSphere());
 
 	std::shared_ptr<MMaterialResource> pForwardMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	{
@@ -105,7 +106,7 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 		pMaterial->SetTexture("u_texNormal", normal);
 
 		std::shared_ptr<MMeshResource> pCubeResource = pResourceSystem->CreateResource<MMeshResource>();
-		pCubeResource->LoadAsCube();
+		pCubeResource->Load(MMeshResourceUtil::CreateCube(MEMeshVertexType::Normal));
 		pMeshComponent->Load(pCubeResource);
 		pMeshComponent->SetMaterial(pMaterial);
 	}
@@ -152,8 +153,8 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 		pSphereEntity->SetName("Cube");
 		if (MSceneComponent* pSceneComponent = pSphereEntity->RegisterComponent<MSceneComponent>())
 		{
-			pSceneComponent->SetPosition(Vector3(-5 + 20, 5, -5));
-			pSceneComponent->SetScale(Vector3(2.0f, 10.0f, 2.0f));
+			pSceneComponent->SetPosition(Vector3(-5 + 20, 5, 40));
+			pSceneComponent->SetScale(Vector3(20.0f, 200.0f, 2.0f));
 			pSceneComponent->SetParentComponent(pCubeFolderComponent->GetComponentID());
 		}
 		if (MRenderableMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderableMeshComponent>())
@@ -162,7 +163,7 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 			pMeshComponent->SetShadowType(MRenderableMeshComponent::MEShadowType::EOnlyDirectional);
 
 			std::shared_ptr<MMeshResource> pCubeResource = pResourceSystem->CreateResource<MMeshResource>();
-			pCubeResource->LoadAsCube();
+			pCubeResource->Load(MMeshResourceUtil::CreateCube(MEMeshVertexType::Normal));
 			pMeshComponent->Load(pCubeResource);
 			
 			pMeshComponent->SetMaterial(pForwardMaterial);

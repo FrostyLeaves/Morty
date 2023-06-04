@@ -31,12 +31,12 @@ public:
 
 	bool CanAddMeshInstance() const override;
 
-	void AddMeshInstance(MRenderableMeshComponent* pComponent) override;
-	void RemoveMeshInstance(MRenderableMeshComponent* pComponent) override;
-	void UpdateTransform(MRenderableMeshComponent* pComponent) override;
+	void AddMeshInstance(MMeshInstanceKey key, MMeshInstanceRenderProxy proxy) override;
+	void RemoveMeshInstance(MMeshInstanceKey key) override;
+	void UpdateMeshInstance(MMeshInstanceKey key, MMeshInstanceRenderProxy proxy) override;
 	std::shared_ptr<MShaderPropertyBlock> GetMeshProperty() const override { return m_pShaderPropertyBlock; }
-	MRenderableMeshInstance* FindMeshInstance(MRenderableMeshComponent* pComponent) override;
-	void InstanceExecute(std::function<void(const MRenderableMeshInstance&, size_t nIdx)> func) override;
+	MMeshInstanceRenderProxy* FindMeshInstance(MMeshInstanceKey key) override;
+	void InstanceExecute(std::function<void(const MMeshInstanceRenderProxy&, size_t nIdx)> func) override;
 
 private:
 	MEngine* m_pEngine = nullptr;
@@ -45,7 +45,7 @@ private:
 	std::shared_ptr<MShaderStorageParam> m_pTransformParam = nullptr;
 
 	std::vector<MemoryInfo> m_vTransformArray;
-	MRenderInstanceCache<MRenderableMeshComponent*, MRenderableMeshInstance> m_tInstanceCache;
+	MRenderInstanceCache<MMeshInstanceKey, MMeshInstanceRenderProxy> m_tInstanceCache;
 	MStorageVariant m_transformBuffer;
 };
 

@@ -27,13 +27,13 @@ public:
 	void Release(MEngine* pEngine) override;
 
 	bool CanAddMeshInstance() const override;
-	void AddMeshInstance(MRenderableMeshComponent* pComponent) override;
-	void RemoveMeshInstance(MRenderableMeshComponent* pComponent) override;
-	void UpdateTransform(MRenderableMeshComponent* pComponent) override;
+	void AddMeshInstance(MMeshInstanceKey key, MMeshInstanceRenderProxy proxy) override;
+	void RemoveMeshInstance(MMeshInstanceKey key) override;
+	void UpdateMeshInstance(MMeshInstanceKey key, MMeshInstanceRenderProxy proxy) override;
 
 	std::shared_ptr<MShaderPropertyBlock> GetMeshProperty() const override { return m_pShaderPropertyBlock; }
-	MRenderableMeshInstance* FindMeshInstance(MRenderableMeshComponent* pComponent) override { return &m_instance; }
-	void InstanceExecute(std::function<void(const MRenderableMeshInstance&, size_t nIdx)> func) override;
+	MMeshInstanceRenderProxy* FindMeshInstance(MMeshInstanceKey key) override { return &m_instance; }
+	void InstanceExecute(std::function<void(const MMeshInstanceRenderProxy&, size_t nIdx)> func) override;
 
 private:
 	MEngine* m_pEngine = nullptr;
@@ -41,7 +41,7 @@ private:
 	std::shared_ptr<MShaderPropertyBlock> m_pShaderPropertyBlock = nullptr;
 	std::shared_ptr<MShaderConstantParam> m_pTransformParam = nullptr;
 
-	MRenderableMeshInstance m_instance;
+	MMeshInstanceRenderProxy m_instance;
 	bool m_bInstanceValid = false;
 	MVariant m_worldMatrix;
 	MVariant m_normalMatrix;

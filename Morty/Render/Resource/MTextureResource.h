@@ -12,25 +12,40 @@
 #include "Resource/MResource.h"
 
 #include "Basic/MTexture.h"
+#include "Resource/MResourceLoader.h"
+
+enum class MTexturePixelFormat
+{
+	Unknow,
+	Byte8,
+	Float32,
+};
+
+struct MTextureImportInfo
+{
+	MTextureImportInfo();
+	MTextureImportInfo(MTexturePixelFormat pixelFormat);
+
+	MTexturePixelFormat ePixelFormat;
+};
+
+struct MORTY_API MTextureResourceData : public MFbResourceData
+{
+public:
+	size_t nWidth = 0;
+	size_t nHeight = 0;
+	MTexturePixelFormat ePixelFormat = MTexturePixelFormat::Unknow;
+	std::vector<MByte> aByteData{};
+	size_t nChannel = 0;
+
+	MString strTextureName = "";
+
+	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
+	void Deserialize(const void* pBufferPointer) override;
+};
 
 class MORTY_API MTextureResource : public MResource
 {
-public:
-	enum class PixelFormat
-	{
-		Unknow,
-		Byte8,
-		Float32,
-	};
-
-	struct ImportInfo
-	{
-		ImportInfo();
-		ImportInfo(PixelFormat pixelFormat);
-
-		PixelFormat ePixelFormat;
-	};
-
 public:
 	MORTY_CLASS(MTextureResource)
     MTextureResource();
@@ -38,54 +53,43 @@ public:
 
 	std::shared_ptr<MTexture> GetTextureTemplate(){ return m_pTexture; }
 
-	static MString GetResourceTypeName() { return "Texture"; }
-	static std::vector<MString> GetSuffixList() { return { "png", "jpg", "tga", "hdr", "tif", "mtex"}; }
-
 public:
 
 	METextureLayout GetTextureLayout() const;
-	PixelFormat GetPixelFormat() const { return m_ePixelFormat; }
-	size_t GetChannel() const { return m_nChannel; }
+	MTexturePixelFormat GetPixelFormat() const;
+	size_t GetChannel() const;
 	size_t GetWidth() const;
 	size_t GetHeight() const;
-	const std::vector<MByte>& GetRawData() const { return m_aByteData; }
+	const MByte* GetRawData() const;
 	
 public:
-
-	bool ImportTexture(const MString&  strResourcePath, const ImportInfo& importInfo);
-	bool ImportTextureFromMemory(char* buffer, size_t nSize, const ImportInfo& importInfo);
-
-	bool ImportCubeMap(const std::array<MString, 6>& vResourcePath, const ImportInfo& importInfo);
-	
-	void LoadFromMemory(const MByte* aByteData, const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, PixelFormat ePixelFormat = PixelFormat::Byte8);
 
 	void CreateCubeMapRenderTarget(const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, const METextureLayout& eLayout, const bool& bMipmapEnable);
 
-public:
-
 	virtual void OnDelete() override;
 
+	bool Load(std::unique_ptr<MResourceData>& pResourceData) override;
+	virtual bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
+
 protected:
 
-	METextureLayout GetTextureLayout(const uint32_t& nChannel, const PixelFormat& format);
+	METextureLayout GetTextureLayout(const uint32_t& nChannel, const MTexturePixelFormat& format);
 
-protected:
-
-	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
-	void Deserialize(const void* pBufferPointer);
-
-	virtual bool Load(const MString& strResourcePath) override;
-	virtual bool SaveTo(const MString& strResourcePath) override;
 private:
-	
-	std::shared_ptr<MTexture> m_pTexture;
 
-
-	//RawData
-	std::vector<MByte> m_aByteData;
-	PixelFormat m_ePixelFormat = PixelFormat::Unknow;
-	size_t m_nChannel = 0;
+	std::shared_ptr<MTexture> m_pTexture = nullptr;
+	std::unique_ptr<MResourceData> m_pResourceData = nullptr;
 };
 
+class MORTY_API MTextureResourceLoader : public MResourceLoader
+{
+public:
+
+	static MString GetResourceTypeName() { return "Texture"; }
+	static std::vector<MString> GetSuffixList() { return { "png", "jpg", "tga", "hdr", "tif", "mtex" }; }
+
+	std::shared_ptr<MResource> Create(MResourceSystem* pManager) override;
+	std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath, const MString& svPath) override;
+};
 
 #endif

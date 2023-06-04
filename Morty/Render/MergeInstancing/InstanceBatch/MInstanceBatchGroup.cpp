@@ -1,16 +1,8 @@
 #include "MInstanceBatchGroup.h"
 
-void MInstanceBatchGroup::UpdateMesh(MRenderableMeshComponent* pComponent)
+void MInstanceBatchGroup::UpdateVisible(MMeshInstanceKey key, bool bVisible)
 {
-    if (auto pInstance = FindMeshInstance(pComponent))
-    {
-        pInstance->pMesh = pComponent->GetMesh();
-    }
-}
-
-void MInstanceBatchGroup::UpdateVisible(MRenderableMeshComponent* pComponent, bool bVisible)
-{
-    if (auto pInstance = FindMeshInstance(pComponent))
+    if (auto pInstance = FindMeshInstance(key))
     {
         pInstance->bVisible = bVisible;
     }

@@ -103,7 +103,10 @@ void MEngine::Tick(const float& fDelta)
 void MEngine::RegisterSystem(MISystem* pSystem)
 {
 	if (FindSystem(pSystem->GetType()))
+	{
+		MORTY_ASSERT(!FindSystem(pSystem->GetType()));
 		return;
+	}
 
 	pSystem->SetEngine(this);
 	pSystem->Initialize();

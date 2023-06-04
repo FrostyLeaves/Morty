@@ -8,6 +8,27 @@
 
 MORTY_INTERFACE_IMPLEMENT(MResource, MTypeClass)
 
+
+void MFbResourceData::LoadBuffer(const std::vector<MByte>& buffer)
+{
+	flatbuffers::FlatBufferBuilder fbb;
+	fbb.PushBytes((const uint8_t*)buffer.data(), buffer.size());
+	Deserialize(fbb.GetCurrentBufferPointer());
+}
+
+std::vector<MByte> MFbResourceData::SaveBuffer() const
+{
+	flatbuffers::FlatBufferBuilder fbb;
+	auto fbData = Serialize(fbb);
+	fbb.Finish(fbData);
+
+	std::vector<MByte> data(fbb.GetSize());
+	memcpy(data.data(), (MByte*)fbb.GetBufferPointer(), fbb.GetSize() * sizeof(MByte));
+
+	return data;
+}
+
+
 MResource::MResource()
 : m_unResourceID(0)
 , m_pEngine(nullptr)
@@ -80,7 +101,7 @@ MResourceSystem* MResource::GetResourceSystem()
 	return nullptr;
 }
 
-std::shared_ptr<MResource> MResource::GetShared()
+std::shared_ptr<MResource> MResource::GetShared() const
 {
 	return m_self.lock();
 }
@@ -178,11 +199,12 @@ std::shared_ptr<MResource> MResourceRef::operator=(std::shared_ptr<MResource> pR
 
 flatbuffers::Offset<void> MResourceRef::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	flatbuffers::Offset<flatbuffers::String> fbPath = flatbuffers::Offset<flatbuffers::String>(0);
-	if (m_pResource)
+	if (!m_pResource)
 	{
-		fbPath = fbb.CreateString(m_pResource->GetResourcePath());
+		return {};
 	}
+
+	auto fbPath = fbb.CreateString(m_pResource->GetResourcePath());
 
 	mfbs::MResourceRefBuilder builder(fbb);
 	
@@ -191,11 +213,13 @@ flatbuffers::Offset<void> MResourceRef::Serialize(flatbuffers::FlatBufferBuilder
 	return builder.Finish().Union();
 }
 
-void MResourceRef::Deserialize(MEngine* pEngine, const void* pBufferPointer)
+void MResourceRef::Deserialize(MResourceSystem* pResourceSystem, const void* pBufferPointer)
 {
-	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
-
 	const mfbs::MResourceRef* fbData = reinterpret_cast<const mfbs::MResourceRef*>(pBufferPointer);
+	if(!fbData)
+	{
+		return;
+	}
 
 	std::shared_ptr<MResource> pResource = nullptr;
 	if (fbData->path())

@@ -67,6 +67,11 @@ void MShadowMapRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 	pCommand->EndRenderPass();
 }
 
+void MShadowMapRenderWork::Resize(Vector2 size)
+{
+    //Shadow map can`t resize.
+}
+
 std::shared_ptr<ITextureInputAdapter> MShadowMapRenderWork::GetShadowMap() const
 {
 	auto pShadowMap = std::make_shared<ShadowMapTexture>();

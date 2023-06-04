@@ -95,5 +95,9 @@ void MMoveControllerSystem::UpdateTransform(MMoveControllerComponent* pComponent
 	}
 
 	pComponent->SetMoveSpeed(v3MoveSpeed * 0.8f);
-	pSceneComponent->SetPosition(pSceneComponent->GetPosition() + v3MoveSpeed);
+
+	if (abs(fLength) > 1e-3)
+	{
+		pSceneComponent->SetPosition(pSceneComponent->GetPosition() + v3MoveSpeed);
+	}
 }

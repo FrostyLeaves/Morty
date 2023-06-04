@@ -63,11 +63,11 @@ bool MStorageBatchGroup::CanAddMeshInstance() const
 	return true;
 }
 
-void MStorageBatchGroup::AddMeshInstance(MRenderableMeshComponent* pComponent)
+void MStorageBatchGroup::AddMeshInstance(MMeshInstanceKey key, MMeshInstanceRenderProxy proxy)
 {
-	if(!pComponent)
+	if(!key)
 	{
-		MORTY_ASSERT(pComponent);
+		MORTY_ASSERT(key);
 		return;
 	}
 
@@ -77,21 +77,14 @@ void MStorageBatchGroup::AddMeshInstance(MRenderableMeshComponent* pComponent)
 		return;
 	}
 
-	if (m_tInstanceCache.HasItem(pComponent))
+	if (m_tInstanceCache.HasItem(key))
 	{
 		MORTY_ASSERT(false);
 		return;
 	}
-
-	MResourceRef meshResource = pComponent->GetMeshResource();
-	auto pMeshResource = meshResource.GetResource<MMeshResource>();
-	if (!pMeshResource)
-	{
-		return;
-	}
-
+	
 	const MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
-	const size_t nCurrentIdx = m_tInstanceCache.AddItem(pComponent, {});
+	const size_t nCurrentIdx = m_tInstanceCache.AddItem(key, {});
 	const size_t nItemNum = m_tInstanceCache.GetItems().size();
 	const size_t nTransformBufferSize = nItemNum * TransformStructSize;
 	if (m_transformBuffer.GetSize() < nTransformBufferSize)
@@ -104,63 +97,51 @@ void MStorageBatchGroup::AddMeshInstance(MRenderableMeshComponent* pComponent)
 		m_vTransformArray.resize(nItemNum);
 	}
 
-	MRenderableMeshInstance& instance = *m_tInstanceCache.FindItem(pComponent);
-	instance.bVisible = true;
-	instance.pMesh = pMeshResource->GetMesh();
-	instance.bounds = *pMeshResource->GetMeshesDefaultOBB();
 	m_vTransformArray[nCurrentIdx].begin = nCurrentIdx * TransformStructSize;
 	m_vTransformArray[nCurrentIdx].size = TransformStructSize;
 	
-	UpdateTransform(pComponent);
+	UpdateMeshInstance(key, proxy);
 }
 
-void MStorageBatchGroup::RemoveMeshInstance(MRenderableMeshComponent* pComponent)
+void MStorageBatchGroup::RemoveMeshInstance(MMeshInstanceKey key)
 {
-	const auto pInstance = m_tInstanceCache.FindItem(pComponent);
+	const auto pInstance = m_tInstanceCache.FindItem(key);
 	if (nullptr == pInstance)
 	{
 		MORTY_ASSERT(false);
 		return;
 	}
 	
-	m_tInstanceCache.RemoveItem(pComponent);
+	m_tInstanceCache.RemoveItem(key);
 }
 
-void MStorageBatchGroup::UpdateTransform(MRenderableMeshComponent* pComponent)
+void MStorageBatchGroup::UpdateMeshInstance(MMeshInstanceKey key, MMeshInstanceRenderProxy proxy)
 {
-	const auto pInstance = m_tInstanceCache.FindItem(pComponent);
+	const auto pInstance = m_tInstanceCache.FindItem(key);
 	if (nullptr == pInstance)
 	{
 		return;
 	}
 
-	MSceneComponent* pSceneComponent = pComponent->GetEntity()->GetComponent<MSceneComponent>();
-	if (!pSceneComponent)
-	{
-		MORTY_ASSERT(pSceneComponent);
-		return;
-	}
-
 	const MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
-	const size_t nCurrentIdx = m_tInstanceCache.GetItemIdx(pComponent);
+	const size_t nCurrentIdx = m_tInstanceCache.GetItemIdx(key);
 	const auto& transformMemory = m_vTransformArray[nCurrentIdx];
 
 	MMeshInstanceTransform data;
-	data.transform = pSceneComponent->GetWorldTransform();
+	data.transform = proxy.worldTransform;
 	data.normalTransform = Matrix3(data.transform, 3, 3);
 	m_transformBuffer.UploadBuffer(pRenderSystem->GetDevice(), transformMemory.begin, reinterpret_cast<const MByte*>(&data), transformMemory.size);
-
-	const Vector3 v3Position = pSceneComponent->GetWorldPosition();
-	pInstance->boundsWithTransform.SetBoundsOBB(v3Position, data.transform, pInstance->bounds);
+	
+	*pInstance = proxy;
 }
 
-MRenderableMeshInstance* MStorageBatchGroup::FindMeshInstance(MRenderableMeshComponent* pComponent)
+MMeshInstanceRenderProxy* MStorageBatchGroup::FindMeshInstance(MMeshInstanceKey key)
 {
-	auto result = m_tInstanceCache.FindItem(pComponent);
+	auto result = m_tInstanceCache.FindItem(key);
 	return result;
 }
 
-void MStorageBatchGroup::InstanceExecute(std::function<void(const MRenderableMeshInstance&, size_t nIdx)> func)
+void MStorageBatchGroup::InstanceExecute(std::function<void(const MMeshInstanceRenderProxy&, size_t nIdx)> func)
 {
 	const auto& items = m_tInstanceCache.GetItems();
 	for (size_t nIdx = 0; nIdx < items.size(); ++nIdx)

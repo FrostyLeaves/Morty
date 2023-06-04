@@ -102,7 +102,7 @@ public:
 
 public:
 
-	void GenerateBuffer(MIDevice* pDevice, MByte* aImageData = nullptr);
+	void GenerateBuffer(MIDevice* pDevice, const MByte* aImageData = nullptr);
 	void DestroyBuffer(MIDevice* pDevice);
 
 	static uint32_t GetImageMemorySize(const METextureLayout& layout);

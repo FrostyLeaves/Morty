@@ -665,7 +665,7 @@ void MVulkanDevice::UploadBuffer(MBuffer* pBuffer, const size_t& unBeginOffset, 
 	}
 }
 
-void MVulkanDevice::GenerateTexture(MTexture* pTexture, MByte* pData)
+void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MByte* pData)
 {
 	uint32_t width = pTexture->GetSize().x;
 	uint32_t height = pTexture->GetSize().y;
@@ -1365,16 +1365,6 @@ bool MVulkanDevice::GenerateShaderProgram(MShaderProgram* pShaderProgram)
 void MVulkanDevice::DestroyShaderProgram(MShaderProgram* pShaderProgram)
 {
 	m_PipelineManager.DestroyShaderProgram(pShaderProgram);
-}
-
-bool MVulkanDevice::RegisterMaterial(std::shared_ptr<MMaterial> pMaterial)
-{
-	return m_PipelineManager.RegisterMaterial(pMaterial);
-}
-
-bool MVulkanDevice::UnRegisterMaterial(std::shared_ptr<MMaterial> pMaterial)
-{
-	return m_PipelineManager.UnRegisterMaterial(pMaterial);
 }
 
 bool MVulkanDevice::RegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher)

@@ -134,6 +134,8 @@ TYPE* MEngine::RegisterSystem()
 {
 	if (MTypeClass::IsType<TYPE, MISystem>())
 	{
+		MORTY_ASSERT(MTypeClass::GetClassType() != MISystem::GetClassType());
+
 		TYPE* pSystem = new TYPE();
 		RegisterSystem(pSystem);
 		return pSystem;

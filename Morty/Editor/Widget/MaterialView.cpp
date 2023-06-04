@@ -25,6 +25,7 @@
 #include "RenderProgram/MIRenderProgram.h"
 
 #include "Main/MainEditor.h"
+#include "Resource/MMeshResourceUtil.h"
 
 MaterialView::MaterialView()
 	: IBaseView()
@@ -41,7 +42,7 @@ MaterialView::~MaterialView()
 {
 }
 
-void MaterialView::SetMaterial(std::shared_ptr<MMaterial> pMaterial)
+void MaterialView::SetMaterial(std::shared_ptr<MMaterialResource> pMaterial)
 {
 	if (m_pMaterial == pMaterial)
 		return;
@@ -144,7 +145,7 @@ void MaterialView::Initialize(MEngine* pEngine)
 	if (MRenderableMeshComponent* pMeshComponent = m_pStaticSphereMeshNode->RegisterComponent<MRenderableMeshComponent>())
 	{
 		std::shared_ptr<MMeshResource> pMeshResource = pResourceSystem->CreateResource<MMeshResource>();
-		pMeshResource->LoadAsSphere();
+		pMeshResource->Load(MMeshResourceUtil::CreateSphere());
 		pMeshComponent->Load(pMeshResource);
 	}
 
@@ -168,7 +169,7 @@ void MaterialView::Initialize(MEngine* pEngine)
 	if (MRenderableMeshComponent* pMeshComponent = m_pSkeletonSphereMeshNode->RegisterComponent<MRenderableMeshComponent>())
 	{
 		std::shared_ptr<MMeshResource> pMeshResource = pResourceSystem->CreateResource<MMeshResource>();
-		pMeshResource->LoadAsSphere(MMeshResource::MEMeshVertexType::Skeleton);
+		pMeshResource->Load(MMeshResourceUtil::CreateSphere(MEMeshVertexType::Skeleton));
 		pMeshComponent->Load(pMeshResource);
 	}
 

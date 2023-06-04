@@ -69,22 +69,53 @@ std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> MSh
 		const float d = fCascadeSplitLambda * (log - uniform) + uniform;
 
 		const float fSplit = (d - fNearZ) / fRange;
+		//const float fSplit = float(nCascadedIdx + 1) / (MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
+		const float fCascadedTransitionRange = 0.25f;
+		float fTransitionRange = (fSplit - fLastSplit) * fCascadedTransitionRange;
+
 		vCascadedData[nCascadedIdx].fCascadeSplit = fSplit;
+		vCascadedData[nCascadedIdx].fTransitionRange = fTransitionRange;
 		vCascadedData[nCascadedIdx].fNearZ = fNearZ + fRange * fLastSplit;
 		vCascadedData[nCascadedIdx].fFarZ = fNearZ + fRange * fSplit;
+		vCascadedData[nCascadedIdx].fOverFarZ = fNearZ + fRange * (fSplit + fTransitionRange);
 		fLastSplit = fSplit;
 
-		Matrix4 m4CameraInvProj = MRenderSystem::GetCameraInverseProjection(pViewport, pCameraComponent, pCameraSceneComponent, vCascadedData[nCascadedIdx].fNearZ, vCascadedData[nCascadedIdx].fFarZ);
+		Matrix4 m4CameraInvProj = MRenderSystem::GetCameraInverseProjection(pViewport, pCameraComponent, pCameraSceneComponent, vCascadedData[nCascadedIdx].fNearZ, vCascadedData[nCascadedIdx].fOverFarZ);
 		vCascadedData[nCascadedIdx].cCameraFrustum.UpdateFromCameraInvProj(m4CameraInvProj);
 	}
 
 	return vCascadedData;
 }
 
+
+MBoundsSphere ConvertSphere(const MBoundsSphere& sphere, Matrix4 mat)
+{
+	MBoundsSphere result = sphere;
+
+	result.m_v3CenterPoint = mat * result.m_v3CenterPoint;
+
+	return result;
+}
+
+MBoundsAABB ConvertAABB(const MBoundsAABB& aabb, Matrix4 mat)
+{
+	std::vector<Vector3> points(8);
+	std::vector<Vector3> convertPoints(8);
+	aabb.GetPoints(points);
+	for (size_t i = 0; i < 8; ++i)
+	{
+		convertPoints[i] = mat * points[i];
+	}
+
+	MBoundsAABB result;
+	result.SetPoints(convertPoints);
+	return result;
+}
+
 std::array<MCascadedShadowRenderData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>
-	MShadowMapUtil::CalculateRenderData(MViewport* pViewport, MEntity* pCameraEntity,
+MShadowMapUtil::CalculateRenderData(MViewport* pViewport, MEntity* pCameraEntity,
 	const std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>& vCascadedData,
-	const std::array<MBoundsAABB, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>& vCascadedPcsBounds)
+	const std::array<MBoundsAABB, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>& vCascadedPscBounds)
 {
 
 	MScene* pScene = pViewport->GetScene();
@@ -111,82 +142,111 @@ std::array<MCascadedShadowRenderData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>
 	const float fNearZ = pCameraComponent->GetZNear();
 	const float fFarZ = pCameraComponent->GetZFar();
 
-	std::vector<Vector3> vCameraFrustumPoints(8);
-	MRenderSystem::GetCameraFrustumPoints(pCameraEntity, pViewport->GetSize(), fNearZ, fFarZ, vCameraFrustumPoints);
-
 	Matrix4 matLight(pLightSceneComponent->GetTransform().GetRotation());
 	Matrix4 matLightInv = matLight.Inverse();
 
-	for (size_t i = 0; i < 8; ++i)
-	{
-		vCameraFrustumPoints[i] = matLightInv * vCameraFrustumPoints[i];
-	}
-
-	const float fCascadedTransitionRange = 0.25f;
-
 	std::array<Matrix4, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadeProjectionMatrix;
-	std::array<float, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadeFrustumRadius;
-	std::array<float, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadeTransitionRange;
+	std::array<float, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadeFrustumWidth;
 	std::array<float, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vPscBoundsInLightSpaceMinZ;
-
-
-	float fLastSplitDist = 0.0f;
 	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
 	{
-		std::vector<Vector3> vCascadedFrustumPoints = vCameraFrustumPoints;
+		float fLastSplitDist = nCascadedIdx ? vCascadedData[nCascadedIdx - 1].fCascadeSplit : 0.0f;
+		float fCurrSplitDist = vCascadedData[nCascadedIdx].fCascadeSplit;
 
-		float fTransitionRange = (vCascadedData[nCascadedIdx].fCascadeSplit - fLastSplitDist) * fCascadedTransitionRange;
+		float fCascadedNearZ = fNearZ + (fFarZ - fNearZ) * fLastSplitDist;
+		float fCascadedFarZ = fNearZ + (fFarZ - fNearZ) * fCurrSplitDist;
 
-		Vector3 v3FrustumCenter = Vector3(0.0f, 0.0f, 0.0f);
-		for (size_t nPointIdx = 0; nPointIdx < 4; ++nPointIdx)
+		std::vector<Vector3> vCascadedFrustumPointsInWorldSpace(8);
+		MRenderSystem::GetCameraFrustumPoints(pCameraEntity, pViewport->GetSize(), fCascadedNearZ, fCascadedFarZ, vCascadedFrustumPointsInWorldSpace);
+		MBoundsSphere cCascadedFrustumSphereInWorldSpace;
+		cCascadedFrustumSphereInWorldSpace.SetPoints(vCascadedFrustumPointsInWorldSpace);
+
+		MBoundsSphere cascadedFrustumSphereInLightSpace = cCascadedFrustumSphereInWorldSpace;
+		cascadedFrustumSphereInLightSpace.m_v3CenterPoint = matLightInv * cascadedFrustumSphereInLightSpace.m_v3CenterPoint;
+
+		MBoundsAABB cascadedAABBBoundsInLightSpace;
+		cascadedAABBBoundsInLightSpace.SetMinMax(
+			cascadedFrustumSphereInLightSpace.m_v3CenterPoint - Vector3::Fill(cascadedFrustumSphereInLightSpace.m_fRadius),
+			cascadedFrustumSphereInLightSpace.m_v3CenterPoint + Vector3::Fill(cascadedFrustumSphereInLightSpace.m_fRadius)
+		);
+
+		MBoundsAABB lightFrustumInLightSpace = cascadedAABBBoundsInLightSpace;
+
+		if (true)
 		{
-			Vector3 dist = vCascadedFrustumPoints[nPointIdx + 4] - vCascadedFrustumPoints[nPointIdx];
-
-			vCascadedFrustumPoints[nPointIdx + 4] = vCascadedFrustumPoints[nPointIdx] + dist * std::min(vCascadedData[nCascadedIdx].fCascadeSplit + fTransitionRange, 1.0f);
-			vCascadedFrustumPoints[nPointIdx] = vCascadedFrustumPoints[nPointIdx] + (dist * fLastSplitDist);
-			fLastSplitDist = vCascadedData[nCascadedIdx].fCascadeSplit;
-
-			v3FrustumCenter += vCascadedFrustumPoints[nPointIdx];
-			v3FrustumCenter += vCascadedFrustumPoints[nPointIdx + 4];
-
-		}
-
-		v3FrustumCenter = v3FrustumCenter / 8.0f;
-
-		float fBoundsSphereRadius = 0.0f;
-		for (uint32_t nPointIdx = 0; nPointIdx < 8; ++nPointIdx)
-		{
-			float fDistance = (vCascadedFrustumPoints[nPointIdx] - v3FrustumCenter).Length();
-			fBoundsSphereRadius = (std::max)(fBoundsSphereRadius, fDistance);
-		}
-		fBoundsSphereRadius = std::ceil(fBoundsSphereRadius * 16.0f) / 16.0f;
-
-
-		float fPscBoundsInLightSpaceMinZ = v3FrustumCenter.z - fBoundsSphereRadius;
-		
-		std::vector<Vector3> vPscBoundsPoints(8);
-		vCascadedPcsBounds[nCascadedIdx].GetPoints(vPscBoundsPoints);
-		for (uint32_t i = 0; i < 8; ++i)
-		{
-			const float z = (matLightInv * vPscBoundsPoints[i]).z;
-			if (fPscBoundsInLightSpaceMinZ > z)
+			if (vCascadedPscBounds[nCascadedIdx].m_v3HalfLength.Length() > 1e-3)
 			{
-				fPscBoundsInLightSpaceMinZ = z;
+				MBoundsAABB pscInLightSpace = ConvertAABB(vCascadedPscBounds[nCascadedIdx], matLightInv);
+
+				Vector3 min = lightFrustumInLightSpace.m_v3MinPoint;
+				Vector3 max = lightFrustumInLightSpace.m_v3MaxPoint;
+				for (size_t nIdx = 0; nIdx < 3; ++nIdx)
+				{
+					min.m[nIdx] = (std::max)(min.m[nIdx], pscInLightSpace.m_v3MinPoint.m[nIdx]);
+					max.m[nIdx] = (std::min)(max.m[nIdx], pscInLightSpace.m_v3MaxPoint.m[nIdx]);
+
+					min.m[nIdx] = (std::min)(min.m[nIdx], max.m[nIdx]);
+				}
+				min.z = pscInLightSpace.m_v3MinPoint.z;
+				max.z = std::min(pscInLightSpace.m_v3MaxPoint.z, max.z);
+				lightFrustumInLightSpace.SetMinMax(min, max);
+
+				lightFrustumInLightSpace.m_v3HalfLength.x = lightFrustumInLightSpace.m_v3HalfLength.y = std::max(lightFrustumInLightSpace.m_v3HalfLength.x, lightFrustumInLightSpace.m_v3HalfLength.y);
+				lightFrustumInLightSpace.SetMinMax(
+					lightFrustumInLightSpace.m_v3CenterPoint - lightFrustumInLightSpace.m_v3HalfLength,
+					lightFrustumInLightSpace.m_v3CenterPoint + lightFrustumInLightSpace.m_v3HalfLength
+				);
 			}
 		}
 
+		if (true)
+		{	//https://learn.microsoft.com/en-us/windows/win32/dxtecharts/common-techniques-to-improve-shadow-depth-maps#moving-the-light-in-texel-sized-increments
+
+			float fCascadedFrustumSphereLength = cCascadedFrustumSphereInWorldSpace.m_fRadius * 2.0f;
+			Vector3 cameraFrustumLength = Vector3::Fill(fCascadedFrustumSphereLength);
+			Vector2 worldUnitsPerTexel = {
+				cameraFrustumLength.x / MRenderGlobal::SHADOW_TEXTURE_SIZE,
+				cameraFrustumLength.y / MRenderGlobal::SHADOW_TEXTURE_SIZE,
+			};
+
+			/*
+			Vector2 worldUnitsPerTexel = {
+				16,
+				16,
+			};
+			*/
+
+			Vector3 min = lightFrustumInLightSpace.m_v3MinPoint;
+			Vector3 max = lightFrustumInLightSpace.m_v3MaxPoint;
+			Vector3 length = max - min;
+			min.x = std::floor(min.x / worldUnitsPerTexel.x) * worldUnitsPerTexel.x;
+			min.y = std::floor(min.y / worldUnitsPerTexel.y) * worldUnitsPerTexel.y;
+			length.x = std::ceil(length.x / worldUnitsPerTexel.x) * worldUnitsPerTexel.x;
+			length.y = std::ceil(length.y / worldUnitsPerTexel.y) * worldUnitsPerTexel.y;
+			max.x = min.x + length.x;
+			max.y = min.y + length.y;
+			lightFrustumInLightSpace.SetMinMax(min, max);
+		}
+
+		//max bounds
+		float fLightProjectionLeft = lightFrustumInLightSpace.m_v3MinPoint.x;
+		float fLightProjectionRight = lightFrustumInLightSpace.m_v3MaxPoint.x;
+		float fLightProjectionTop = lightFrustumInLightSpace.m_v3MaxPoint.y;
+		float fLightProjectionBottom = lightFrustumInLightSpace.m_v3MinPoint.y;
+		float fLightProjectionBack = lightFrustumInLightSpace.m_v3MinPoint.z;
+		float fLightProjectionFront = lightFrustumInLightSpace.m_v3MaxPoint.z;
+
 		vCascadeProjectionMatrix[nCascadedIdx] = MRenderSystem::MatrixOrthoOffCenterLH(
-			v3FrustumCenter.x - fBoundsSphereRadius,
-			v3FrustumCenter.x + fBoundsSphereRadius,
-			v3FrustumCenter.y + fBoundsSphereRadius,
-			v3FrustumCenter.y - fBoundsSphereRadius,
-			fPscBoundsInLightSpaceMinZ,
-			v3FrustumCenter.z + fBoundsSphereRadius
+			fLightProjectionLeft,
+			fLightProjectionRight,
+			fLightProjectionTop,
+			fLightProjectionBottom,
+			fLightProjectionBack,
+			fLightProjectionFront
 		);
 
-		vCascadeFrustumRadius[nCascadedIdx] = fBoundsSphereRadius;
-		vCascadeTransitionRange[nCascadedIdx] = fTransitionRange;
-		vPscBoundsInLightSpaceMinZ[nCascadedIdx] = fPscBoundsInLightSpaceMinZ;
+		vCascadeFrustumWidth[nCascadedIdx] = fLightProjectionRight - fLightProjectionLeft;
+		vPscBoundsInLightSpaceMinZ[nCascadedIdx] = fLightProjectionBack;
 	}
 
 	float fMinLightSpaceZValue = FLT_MAX;
@@ -198,219 +258,17 @@ std::array<MCascadedShadowRenderData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>
 		}
 	}
 
-
 	std::array<MCascadedShadowRenderData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> cRenderData;
 	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
 	{
 		const Vector4 v4NearZPositionNDCSpace = vCascadeProjectionMatrix[nCascadedIdx] * Vector4(0.0f, 0.0f, fMinLightSpaceZValue, 1.0f);
 
 		cRenderData[nCascadedIdx].fSplitRange.x = fNearZ + (fFarZ - fNearZ) * vCascadedData[nCascadedIdx].fCascadeSplit;
-		cRenderData[nCascadedIdx].fSplitRange.y = fNearZ + (fFarZ - fNearZ) * (vCascadedData[nCascadedIdx].fCascadeSplit + vCascadeTransitionRange[nCascadedIdx]);
-		cRenderData[nCascadedIdx].fSplitRange.z = vCascadeFrustumRadius[nCascadedIdx] * 2.0f;
+		cRenderData[nCascadedIdx].fSplitRange.y = fNearZ + (fFarZ - fNearZ) * (vCascadedData[nCascadedIdx].fCascadeSplit + vCascadedData[nCascadedIdx].fTransitionRange);
+		cRenderData[nCascadedIdx].fSplitRange.z = vCascadeFrustumWidth[nCascadedIdx];
 		cRenderData[nCascadedIdx].fSplitRange.w = v4NearZPositionNDCSpace.z / v4NearZPositionNDCSpace.w;
 		cRenderData[nCascadedIdx].m4DirLightInvProj = vCascadeProjectionMatrix[nCascadedIdx] * matLightInv;
 	}
 
 	return cRenderData;
 }
-
-/*
-Matrix4 MShadowMapUtil::GetLightInverseProjection_MaxBoundsSphere(MRenderInfo& info, const MBoundsAABB& cGenerateShadowAABB, float fZNear, float fZFar)
-{
-	if (nullptr == info.pDirectionalLightEntity)
-		return Matrix4::IdentityMatrix;
-
-	MSceneComponent* pLightSceneComponent = info.pDirectionalLightEntity->GetComponent<MSceneComponent>();
-	if (nullptr == pLightSceneComponent)
-		return Matrix4::IdentityMatrix;
-
-	MCameraComponent* pCameraComponent = info.pCameraEntity->GetComponent<MCameraComponent>();
-	if (nullptr == pCameraComponent)
-		return Matrix4::IdentityMatrix;
-
-	MSceneComponent* pCameraSceneComponent = info.pCameraEntity->GetComponent<MSceneComponent>();
-	if (nullptr == pCameraSceneComponent)
-		return Matrix4::IdentityMatrix;
-
-	Matrix4 matLight(pLightSceneComponent->GetTransform().GetRotation());
-	Matrix4 matLightInv = matLight.Inverse();
-
-	Matrix4 matCameraInv = pCameraSceneComponent->GetWorldTransform().Inverse();
-
-	std::vector<Vector3> vSceneBoundsPoints(8);
-	info.cCaclSceneRenderAABB.GetPoints(vSceneBoundsPoints);
-
-	//�����������ЧZNear��ZFar.
-	float fSceneMinZNear = FLT_MAX, fSceneMaxZFar = -FLT_MAX;
-	for (uint32_t i = 0; i < 8; ++i)
-	{
-		float z = (matCameraInv * vSceneBoundsPoints[i]).z;
-
-		if (fSceneMinZNear > z)
-			fSceneMinZNear = z;
-		if (fSceneMaxZFar < z)
-			fSceneMaxZFar = z;
-	}
-
-	//��ȡ�����׵���ڷ����Camera�ڵ���С�����X��Yֵ
-	std::vector<Vector3> vCameraBoundsPoints(8);
-	MRenderSystem::GetCameraFrustumPoints(info.pCameraEntity, info.pViewport->GetSize(), fZNear, fZFar, vCameraBoundsPoints);
-
-	MBoundsSphere cameraFrustumSphere;
-
-	float fCameraBoundsLightSpaceMaxZ = -FLT_MAX;
-	for (uint32_t i = 0; i < 8; ++i)
-	{
-		vCameraBoundsPoints[i] = matLightInv * vCameraBoundsPoints[i];
-
-		if (fCameraBoundsLightSpaceMaxZ < vCameraBoundsPoints[i].z)
-			fCameraBoundsLightSpaceMaxZ = vCameraBoundsPoints[i].z;
-
-		vCameraBoundsPoints[i].z = 0.0f;
-	}
-
-	cameraFrustumSphere.SetPoints(vCameraBoundsPoints.data(), vCameraBoundsPoints.size(), 0, sizeof(Vector3));
-
-	std::vector<Vector3> vShadowModelBoundsPoints(8);
-	cGenerateShadowAABB.GetPoints(vShadowModelBoundsPoints);
-
-	//����Scene��AABB���ڷ����Camera�ڵ���С�����Zֵ
-	Vector3 v3SceneMin(FLT_MAX, FLT_MAX, FLT_MAX);
-	Vector3 v3SceneMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-	for (uint32_t i = 0; i < 8; ++i)
-	{
-		Vector3 pos = matLightInv * vShadowModelBoundsPoints[i];
-		if (v3SceneMin.x > pos.x) v3SceneMin.x = pos.x;
-		if (v3SceneMin.y > pos.y) v3SceneMin.y = pos.y;
-		if (v3SceneMin.z > pos.z) v3SceneMin.z = pos.z;
-
-		if (v3SceneMax.x < pos.x) v3SceneMax.x = pos.x;
-		if (v3SceneMax.y < pos.y) v3SceneMax.y = pos.y;
-		if (v3SceneMax.z < pos.z) v3SceneMax.z = pos.z;
-	}
-
-	//x��yȡ��׵���SceneAABB�Ľ����� zMinȡSceneAABB�ģ���Ϊ��������ģ��Ҳ������Shadow
-	//zMaxȡ������������׵���Shadow����Ҫ��Ⱦ��
-
-	float radius = cameraFrustumSphere.m_fRadius * 0.5f;
-	float centerX = cameraFrustumSphere.m_v3CenterPoint.x;
-	float centerY = cameraFrustumSphere.m_v3CenterPoint.y;
-	float centerZ = cameraFrustumSphere.m_v3CenterPoint.z;
-
-	Matrix4 projMat = MRenderSystem::MatrixOrthoOffCenterLH(
-		centerX - radius,
-		centerX + radius,
-		centerY + radius,
-		centerY - radius,
-		v3SceneMin.z,
-		(std::min)(fCameraBoundsLightSpaceMaxZ, v3SceneMax.z)
-	);
-
-	return projMat * matLightInv;
-}
-
-Matrix4 MShadowMapUtil::GetLightInverseProjection_MinBoundsAABB(MRenderInfo& info, const MBoundsAABB& cGenerateShadowAABB, float fZNear, float fZFar)
-{
-	if (nullptr == info.pDirectionalLightEntity)
-		return Matrix4::IdentityMatrix;
-
-	MSceneComponent* pLightSceneComponent = info.pDirectionalLightEntity->GetComponent<MSceneComponent>();
-	if (nullptr == pLightSceneComponent)
-		return Matrix4::IdentityMatrix;
-
-	MCameraComponent* pCameraComponent = info.pCameraEntity->GetComponent<MCameraComponent>();
-	if (nullptr == pCameraComponent)
-		return Matrix4::IdentityMatrix;
-
-	MSceneComponent* pCameraSceneComponent = info.pCameraEntity->GetComponent<MSceneComponent>();
-	if (nullptr == pCameraSceneComponent)
-		return Matrix4::IdentityMatrix;
-
-	Matrix4 matLight(pLightSceneComponent->GetTransform().GetRotation());
-	Matrix4 matLightInv = matLight.Inverse();
-
-	Matrix4 matCameraInv = pCameraSceneComponent->GetWorldTransform().Inverse();
-
-	std::vector<Vector3> vSceneBoundsPoints(8);
-	info.cCaclSceneRenderAABB.GetPoints(vSceneBoundsPoints);
-
-	//�����������ЧZNear��ZFar.
-	float fSceneMinZNear = FLT_MAX, fSceneMaxZFar = -FLT_MAX;
-	for (uint32_t i = 0; i < 8; ++i)
-	{
-		float z = (matCameraInv * vSceneBoundsPoints[i]).z;
-
-		if (fSceneMinZNear > z)
-			fSceneMinZNear = z;
-		if (fSceneMaxZFar < z)
-			fSceneMaxZFar = z;
-	}
-	float fZValidNear = fSceneMinZNear > fZNear ? fSceneMinZNear : fZNear;
-	float fZValidFar = fSceneMaxZFar < fZFar ? fSceneMaxZFar : fZFar;
-
-	//��ȡ�����׵���ڷ����Camera�ڵ���С�����X��Yֵ
-	std::vector<Vector3> vCameraBoundsPoints(8);
-	MRenderSystem::GetCameraFrustumPoints(info.pCameraEntity, info.pViewport->GetSize(), fZValidNear, (std::max)(fZValidNear, fZValidFar), vCameraBoundsPoints);
-
-	MBoundsAABB aabbCameraFrustum(vCameraBoundsPoints);
-	aabbCameraFrustum.GetPoints(vCameraBoundsPoints);
-
-	Vector3 v3CameraMin(FLT_MAX, FLT_MAX, FLT_MAX);
-	Vector3 v3CameraMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-	for (uint32_t i = 0; i < 8; ++i)
-	{
-		Vector3 pos = matLightInv * vCameraBoundsPoints[i];
-		if (v3CameraMin.x > pos.x) v3CameraMin.x = pos.x;
-		if (v3CameraMin.y > pos.y) v3CameraMin.y = pos.y;
-		if (v3CameraMin.z > pos.z) v3CameraMin.z = pos.z;
-
-		if (v3CameraMax.x < pos.x) v3CameraMax.x = pos.x;
-		if (v3CameraMax.y < pos.y) v3CameraMax.y = pos.y;
-		if (v3CameraMax.z < pos.z) v3CameraMax.z = pos.z;
-	}
-
-	std::vector<Vector3> vShadowModelBoundsPoints(8);
-	cGenerateShadowAABB.GetPoints(vShadowModelBoundsPoints);
-
-	//����Scene��AABB���ڷ����Camera�ڵ���С�����Zֵ
-	Vector3 v3SceneMin(FLT_MAX, FLT_MAX, FLT_MAX);
-	Vector3 v3SceneMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-	for (uint32_t i = 0; i < 8; ++i)
-	{
-		Vector3 pos = matLightInv * vShadowModelBoundsPoints[i];
-		if (v3SceneMin.x > pos.x) v3SceneMin.x = pos.x;
-		if (v3SceneMin.y > pos.y) v3SceneMin.y = pos.y;
-		if (v3SceneMin.z > pos.z) v3SceneMin.z = pos.z;
-
-		if (v3SceneMax.x < pos.x) v3SceneMax.x = pos.x;
-		if (v3SceneMax.y < pos.y) v3SceneMax.y = pos.y;
-		if (v3SceneMax.z < pos.z) v3SceneMax.z = pos.z;
-	}
-
-	//x��yȡ��׵���SceneAABB�Ľ����� zMinȡSceneAABB�ģ���Ϊ��������ģ��Ҳ������Shadow
-	//zMaxȡ������������׵���Shadow����Ҫ��Ⱦ��
-
-	float fLeft = (std::max)(v3CameraMin.x, v3SceneMin.x);
-	float fRight = (std::min)(v3CameraMax.x, v3SceneMax.x);
-	float fBottom = (std::max)(v3CameraMin.y, v3SceneMin.y);
-	float fTop = (std::min)(v3CameraMax.y, v3SceneMax.y);
-
-	float width = fRight - fLeft;
-	float height = fTop - fBottom;
-
-	float size = (std::max)(width, height);
-	float centerX = (fLeft + fRight) * 0.5f;
-	float centerY = (fBottom + fTop) * 0.5f;
-
-	Matrix4 projMat = MRenderSystem::MatrixOrthoOffCenterLH(
-		centerX - size * 0.5f,
-		centerX + size * 0.5f,
-		centerY + size * 0.5f,
-		centerY - size * 0.5f,
-		v3SceneMin.z,
-		(std::min)(v3CameraMax.z, v3SceneMax.z)
-	);
-
-	return projMat * matLightInv;
-}
-*/

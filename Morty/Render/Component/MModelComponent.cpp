@@ -4,12 +4,14 @@ MORTY_CLASS_IMPLEMENT(MModelComponent, MComponent)
 
 #include "Scene/MEntity.h"
 #include "Engine/MEngine.h"
-#include "System/MResourceSystem.h"
 #include "Resource/MSkeletonResource.h"
 #include "Resource/MSkeletalAnimationResource.h"
+#include "Model/MSkeletonInstance.h"
 
 #include "Component/MSceneComponent.h"
 #include "Component/MRenderableMeshComponent.h"
+#include "System/MObjectSystem.h"
+#include "System/MResourceSystem.h"
 
 #include "Flatbuffer/MModelComponent_generated.h"
 
@@ -28,20 +30,30 @@ MModelComponent::~MModelComponent()
 
 }
 
-void MModelComponent::SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeleton)
+void MModelComponent::Release()
 {
 	if (m_pSkeleton)
 	{
+		m_pSkeleton->DeleteLater();
 		m_pSkeleton = nullptr;
 	}
+}
 
-	if (pSkeleton)
+void MModelComponent::SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeletonRsource)
+{
+	if (!m_pSkeleton)
 	{
-		m_pSkeleton = std::make_shared<MSkeletonInstance>(pSkeleton);
+		auto pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
+		m_pSkeleton = pObjectSystem->CreateObject<MSkeletonInstance>();
+	}
+
+	if (m_pSkeleton)
+	{
+		m_pSkeleton->SetSkeletonResource(pSkeletonRsource);
 	}
 
 
-	m_SkeletonResource.SetResource(pSkeleton);
+	m_SkeletonResource = pSkeletonRsource;
 }
 
 void MModelComponent::SetSkeletonResourcePath(const MString& strSkeletonPath)

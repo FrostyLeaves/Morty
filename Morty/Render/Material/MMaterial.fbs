@@ -31,13 +31,13 @@ table MMaterialProperty
 table MMaterialTexture
 {
 	name: string;
-	texture: MResourceRef;
+	texture: string;
 }
 
 table MMaterial
 {
-    vertex_resource: MResourceRef;
-    pixel_resource: MResourceRef;
+    vertex_resource: string;
+    pixel_resource: string;
 
     rasterizer_type: MERasterizerType;
     material_type: MEMaterialType;

@@ -12,6 +12,7 @@
 
 #include "System/MResourceSystem.h"
 #include "Resource/MMaterialResource.h"
+#include "Resource/MMaterialResourceData.h"
 
 class PropertyMRenderableMeshComponent : public PropertyBase
 {
@@ -35,12 +36,12 @@ public:
 				{
 					ShowValueBegin("Load");
 
-					std::shared_ptr<MMaterial> pMaterial = pMeshComponent->GetMaterial();
-					EditMResource("material_file_dlg", MMaterialResource::GetResourceTypeName(), MMaterialResource::GetSuffixList(), pMaterial, [pMeshComponent](const MString& strNewFilePath) {
+					auto pMaterialResource = pMeshComponent->GetMaterialResource();
+					EditMResource("material_file_dlg", MMaterialResourceLoader::GetResourceTypeName(), MMaterialResourceLoader::GetSuffixList(), pMaterialResource, [pMeshComponent](const MString& strNewFilePath) {
 						MResourceSystem* pResourceSystem = pMeshComponent->GetEngine()->FindSystem<MResourceSystem>();
-						if (std::shared_ptr<MMaterial> pMaterial = MTypeClass::DynamicCast<MMaterial>(pResourceSystem->LoadResource(strNewFilePath)))
+						if (std::shared_ptr<MMaterialResource> pMaterialResource = MTypeClass::DynamicCast<MMaterialResource>(pResourceSystem->LoadResource(strNewFilePath)))
 						{
-							pMeshComponent->SetMaterial(pMaterial);
+							pMeshComponent->SetMaterial(pMaterialResource);
 						};
 						});
 

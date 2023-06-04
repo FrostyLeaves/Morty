@@ -31,10 +31,15 @@ void MSkyBoxRender::Render(MIRenderCommand* pCommand)
 		return;
 	}
 
-	MMeshManager* pMeshManager = m_pScene->GetEngine()->FindGlobalObject<MMeshManager>();
-	MEnvironmentManager* pEnvironment = m_pScene->GetManager<MEnvironmentManager>();
+	const MMeshManager* pMeshManager = m_pScene->GetEngine()->FindGlobalObject<MMeshManager>();
+	const MEnvironmentManager* pEnvironment = m_pScene->GetManager<MEnvironmentManager>();
 
-	auto pMaterial = pEnvironment->GetMaterial();
+	if (!pEnvironment->HasEnvironmentComponent())
+	{
+		return;
+	}
+
+	const auto pMaterial = pEnvironment->GetMaterial();
 	if (!pMaterial)
 	{
 		MORTY_ASSERT(pMaterial);
@@ -43,7 +48,7 @@ void MSkyBoxRender::Render(MIRenderCommand* pCommand)
 
 	pCommand->SetUseMaterial(pMaterial);
 
-	auto vPropertyBlock = m_pFramePropertyAdapter->GetPropertyBlock();
+	const auto vPropertyBlock = m_pFramePropertyAdapter->GetPropertyBlock();
 	for (const auto& property : vPropertyBlock)
 	{
 		pCommand->SetShaderParamSet(property);

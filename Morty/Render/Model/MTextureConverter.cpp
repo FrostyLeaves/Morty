@@ -1,17 +1,18 @@
 ﻿#include "MTextureConverter.h"
 
 #include "Engine/MEngine.h"
+#include "Resource/MTextureResourceUtil.h"
 #include "Utility/MFileHelper.h"
 #include "System/MResourceSystem.h"
 
 template <typename TYPE>
-std::vector<MByte> ConvertSingleChannelData(const std::vector<MByte>& vData, size_t nWidth, size_t nHeight, size_t nChannel)
+std::vector<MByte> ConvertSingleChannelData(const MByte* vData, size_t nWidth, size_t nHeight, size_t nChannel)
 {
     MORTY_ASSERT(nChannel < 4);
 
     std::vector<MByte> result(nWidth * nHeight * sizeof(TYPE));
 
-    const TYPE* pData = reinterpret_cast<const TYPE*>(vData.data());
+    const TYPE* pData = reinterpret_cast<const TYPE*>(vData);
     TYPE* pResult = reinterpret_cast<TYPE*>(result.data());
     for (size_t w = 0; w < nWidth; ++w)
     {
@@ -34,11 +35,11 @@ std::shared_ptr<MTextureResource> MTextureConverter::ConvertSingleChannel(std::s
 
     std::vector<MByte> convertData;
     
-    if (MTextureResource::PixelFormat::Byte8 == ePixelFormat)
+    if (MTexturePixelFormat::Byte8 == ePixelFormat)
     {
         convertData = ConvertSingleChannelData<MByte>(rawData, nWidth, nHeight, nChannel);
     }
-    else if (MTextureResource::PixelFormat::Float32 == ePixelFormat)
+    else if (MTexturePixelFormat::Float32 == ePixelFormat)
     {
         convertData = ConvertSingleChannelData<float>(rawData, nWidth, nHeight, nChannel);
     }
@@ -57,7 +58,7 @@ std::shared_ptr<MTextureResource> MTextureConverter::ConvertSingleChannel(std::s
     MString strNewResourcePath = MFileHelper::ReplaceFileName(strResourcePath, strFileName);
 
     auto pResult = pResourceSystem->CreateResource<MTextureResource>(strNewResourcePath);
-    pResult->LoadFromMemory(convertData.data(), nWidth, nHeight, 1, ePixelFormat);
+    pResult->Load(MTextureResourceUtil::LoadFromMemory(strNewResourcePath, convertData.data(), nWidth, nHeight, 1, ePixelFormat));
 
     return pResult;
 }

@@ -6,12 +6,10 @@
 #include "System/MResourceSystem.h"
 #include "Resource/MSkeletonResource.h"
 #include "Resource/MSkeletalAnimationResource.h"
-
-MORTY_CLASS_IMPLEMENT(MSkeletalAnimation, MResource)
+#include "Model/MSkeletonInstance.h"
 
 MSkeletalAnimation::MSkeletalAnimation()
 	: MIAnimation()
-	, m_Skeleton()
 	, m_unIndex(0)
 	, m_strName()
 	, m_fTicksDuration(0.0f)
@@ -25,12 +23,7 @@ MSkeletalAnimation::~MSkeletalAnimation()
 
 }
 
-std::shared_ptr<MSkeleton> MSkeletalAnimation::GetSkeletonTemplate()
-{
-	return m_Skeleton.GetResource<MSkeletonResource>();
-}
-
-void MSkeletalAnimation::Update(const float& fTime, std::shared_ptr<MSkeletonInstance> pSkeletonIns, const MSkeletonAnimMap& skelAnimMap)
+void MSkeletalAnimation::Update(const float& fTime, MSkeletonInstance* pSkeletonIns, const MSkeletonAnimMap& skelAnimMap) const
 {
 	std::vector<MBone>& bones = pSkeletonIns->GetAllBones();
 
@@ -44,7 +37,7 @@ void MSkeletalAnimation::Update(const float& fTime, std::shared_ptr<MSkeletonIns
 		if(MGlobal::M_INVALID_INDEX == nAnimNodeIndex)
 			continue;
 
-		MSkeletalAnimNode& animNode = m_vSkeletalAnimNodes[nAnimNodeIndex];
+		const MSkeletalAnimNode& animNode = m_vSkeletalAnimNodes[nAnimNodeIndex];
 		Matrix4 matParentTrans = bone.unParentIndex == MGlobal::M_INVALID_INDEX ? Matrix4::IdentityMatrix : bones[bone.unParentIndex].m_matWorldTransform;
 
 		MTransform trans;
@@ -66,6 +59,11 @@ void MSkeletalAnimation::Update(const float& fTime, std::shared_ptr<MSkeletonIns
 	}
 
 	pSkeletonIns->SetDirty();
+}
+
+void MSkeletalAnimation::SetSkeletonTemplate(MSkeleton* pSkeleton)
+{
+	m_pSkeleton = pSkeleton;
 }
 
 flatbuffers::Offset<void> MSkeletalAnimNode::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
@@ -116,14 +114,12 @@ flatbuffers::Offset<void> MSkeletalAnimation::Serialize(flatbuffers::FlatBufferB
 		fbAnimNode.push_back(node.Serialize(fbb).o);
 	}
 	auto fbAnimNodeOffset = fbb.CreateVector(fbAnimNode);
-	auto fbResource = m_Skeleton.Serialize(fbb);
 
 	mfbs::MSkeletalAnimationBuilder builder(fbb);
 
 	builder.add_name(fbb.CreateString(m_strName));
 	builder.add_duration(m_fTicksDuration);
 	builder.add_speed(m_fTicksPerSecond);
-	builder.add_skeleton_resource(fbResource.o);
 	builder.add_animation_node(fbAnimNodeOffset);
 
 	return builder.Finish().Union();
@@ -136,7 +132,6 @@ void MSkeletalAnimation::Deserialize(const void* pBufferPointer)
 	m_strName = fbData->name()->str();
 	m_fTicksDuration = fbData->duration();
 	m_fTicksPerSecond = fbData->speed();
-	m_Skeleton.Deserialize(GetEngine(), fbData->skeleton_resource());
 
 	if (fbData->animation_node())
 	{
@@ -152,14 +147,7 @@ void MSkeletalAnimation::Deserialize(const void* pBufferPointer)
 	}
 }
 
-void MSkeletalAnimation::OnDelete()
-{
-	m_Skeleton.SetResource(nullptr);
-
-	Super::OnDelete();
-}
-
-bool MSkeletalAnimation::FindTransform(const float& fTime, const MSkeletalAnimNode& animNode, MTransform& trans)
+bool MSkeletalAnimation::FindTransform(const float& fTime, const MSkeletalAnimNode& animNode, MTransform& trans) const
 {
 	if (animNode.m_vPositionTrack.size() + animNode.m_vRotationTrack.size() + animNode.m_vScaleTrack.size() == 0)
 		return false;
@@ -261,31 +249,6 @@ bool MSkeletalAnimation::FindTransform(const float& fTime, const MSkeletalAnimNo
 	return true;
 }
 
-bool MSkeletalAnimation::Load(const MString& strResourcePath)
-{
-	std::vector<MByte> data;
-	MFileHelper::ReadData(strResourcePath, data);
-
-	flatbuffers::FlatBufferBuilder fbb;
-	fbb.PushBytes((const uint8_t*)data.data(), data.size());
-
-	const mfbs::MSkeletalAnimation* fbAnimation = mfbs::GetMSkeletalAnimation(fbb.GetCurrentBufferPointer());
-
-	Deserialize(fbAnimation);
-	return true;
-}
-
-bool MSkeletalAnimation::SaveTo(const MString& strResourcePath)
-{
-	flatbuffers::FlatBufferBuilder fbb;
-	Serialize(fbb);
-
-	std::vector<MByte> data(fbb.GetSize());
-	memcpy(data.data(), (MByte*)fbb.GetBufferPointer(), fbb.GetSize() * sizeof(MByte));
-
-	return MFileHelper::WriteData(strResourcePath, data);
-}
-
 MSkeletalAnimController::MSkeletalAnimController()
 	: m_pSkeletonIns(nullptr)
 	, m_pAnimation(nullptr)
@@ -302,20 +265,17 @@ MSkeletalAnimController::~MSkeletalAnimController()
 
 }
 
-bool MSkeletalAnimController::Initialize(std::shared_ptr<MSkeletonInstance> pSkeletonIns, std::shared_ptr<MSkeletalAnimation> pAnimation)
+bool MSkeletalAnimController::Initialize(MSkeletonInstance* pSkeletonIns, std::shared_ptr<MSkeletalAnimationResource> pAnimationResource)
 {
-	if (!pAnimation)
+	if (!pAnimationResource)
 		return false;
 
 	if (m_bInitialized)
 		return false;
 
-	if (nullptr == pSkeletonIns || nullptr == pAnimation)
-		return false;
-
 	m_pSkeletonIns = pSkeletonIns;
-	m_AnimResource = pAnimation;
-	m_pAnimation = pAnimation;
+	m_AnimResource = pAnimationResource;
+	m_pAnimation = pAnimationResource->GetAnimation();
 
 	BindMapping();
 
@@ -398,6 +358,11 @@ float MSkeletalAnimController::GetPercent()
 		return 0.0f;
 
 	return m_fTicks / m_pAnimation->GetTicksDuration() * 100.0f;
+}
+
+std::shared_ptr<MSkeletalAnimationResource> MSkeletalAnimController::GetAnimationResource() const
+{
+	return m_AnimResource.GetResource<MSkeletalAnimationResource>();
 }
 
 void MSkeletalAnimController::BindMapping()

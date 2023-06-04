@@ -12,6 +12,7 @@
 #include "Resource/MMaterialResource.h"
 #include "Widget/ModelConvertView.h"
 #include "Model/MTextureConverter.h"
+#include "Utility/MTimer.h"
 
 
 class MSponzaTextureDelegate : public MITextureDelegate
@@ -31,7 +32,7 @@ public:
 
 		MResourceSystem* pResourceSystem = m_pEngine->FindSystem<MResourceSystem>();
 
-		auto pResource = pResourceSystem->LoadResource(strFullPath, MTextureResource::GetClassType());
+		auto pResource = pResourceSystem->LoadResource(strFullPath);
 		if (!pResource)
 		{
 			MORTY_ASSERT(pResource);
@@ -67,8 +68,16 @@ void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
 	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
 
+
+	auto time = MTimer::GetCurTime();
+
 	std::shared_ptr<MResource> pModelResource = pResourceSystem->LoadResource("./Sponza/Sponza/Sponza.entity");
-	if (!pModelResource)
+
+	time = MTimer::GetCurTime() - time;
+
+	pEngine->GetLogger()->Log("Load sponza scene time: %lld", time);
+
+    if (!pModelResource)
 	{
 		MModelConverter convert(pEngine);
 
@@ -111,13 +120,6 @@ void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
 			pMeshComponent->SetGenerateDirLightShadow(true);
 		}
 
-	}
-	
-	for (auto pMaterial : tMaterials)
-	{
-		pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, "true");
-		pMaterial->LoadVertexShader(pMaterial->GetVertexShaderResource());
-		pMaterial->LoadPixelShader(pMaterial->GetPixelShaderResource());
 	}
 	
 }

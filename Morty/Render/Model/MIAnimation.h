@@ -14,8 +14,8 @@ class MEngine;
 class MORTY_API MIAnimation
 {
 public:
-    MIAnimation();
-    virtual ~MIAnimation();
+    MIAnimation() = default;
+    virtual ~MIAnimation() = default;
 
 };
 

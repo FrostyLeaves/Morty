@@ -21,17 +21,8 @@ class MORTY_API MDebugRenderWork : public ISinglePassRenderWork
 	MORTY_CLASS(MDebugRenderWork)
 public:
 
-	void Initialize(MEngine* pEngine) override;
-	void Release(MEngine* pEngine) override;
+	void Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
 
-	void InitializeMaterial();
-	void ReleaseMaterial();
-
-	void Render(MRenderInfo& info);
-
-private:
-
-	std::shared_ptr<MMaterial> m_pSkyBoxMaterial;
 };
 
 

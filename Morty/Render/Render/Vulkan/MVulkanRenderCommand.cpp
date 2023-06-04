@@ -232,7 +232,7 @@ bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 		vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
 
-		std::shared_ptr<MShaderPropertyBlock>&& pParamSet = pMaterial->GetMaterialParamSet();
+		std::shared_ptr<MShaderPropertyBlock> pParamSet = pMaterial->GetMaterialParamSet();
 
 		SetShaderParamSet(pParamSet);
 

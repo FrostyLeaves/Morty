@@ -609,7 +609,7 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 	if (true)
 	{
 		std::shared_ptr<MMeshResource> pMeshResource = pResourceSystem->CreateResource<MMeshResource>();
-		pMeshResource->LoadAsSphere();
+		pMeshResource->Load(MMeshResourceUtil::CreateSphere());
 		pCubeMeshResource = pMeshResource;
 	}
 	else

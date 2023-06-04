@@ -21,7 +21,7 @@ class MTexture;
 class MMaterial;
 class MRenderPass;
 class MShaderPropertyBlock;
-struct MRenderableMeshInstance;
+struct MMeshInstanceRenderProxy;
 
 class MORTY_API ITextureInputAdapter
 {
@@ -65,7 +65,7 @@ class MORTY_API IRenderableFilter
 {
 public:
     virtual ~IRenderableFilter() = default;
-    virtual bool Filter(const MRenderableMeshInstance* instance) const = 0;
+    virtual bool Filter(const MMeshInstanceRenderProxy* instance) const = 0;
 };
 
 class MORTY_API IDrawIndirectAdapter

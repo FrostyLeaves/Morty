@@ -40,13 +40,13 @@ public:
 	Matrix4 m_matWorldTransform;
 };
 
-class MORTY_API MSkeleton : public MResource
+class MORTY_API MSkeleton : public MTypeClass
 {
 public:
 	MORTY_CLASS(MSkeleton)
 public:
-	MSkeleton();
-	virtual ~MSkeleton();
+	MSkeleton() = default;
+	virtual ~MSkeleton() = default;
 	
 	const std::map<MString, uint32_t>& GetBonesMap() const { return m_tBonesMap; }
 
@@ -61,57 +61,15 @@ public:
 
 	const std::vector<MBone>& GetAllBones() const { return m_vAllBones; }
 
-public:
-
 	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
 	void Deserialize(const void* pBufferPointer);
 
-	virtual bool Load(const MString& strResourcePath) override;
-	virtual bool SaveTo(const MString& strResourcePath) override;
-
-	static MString GetResourceTypeName() { return "Skeleton"; };
-	static std::vector<MString> GetSuffixList() { return {"ske"}; };
-
 private:
-	friend class MModelResource;
 	friend class MSkeletonResource;
 
 private:
 	std::map<MString, uint32_t> m_tBonesMap;
 	std::vector<MBone> m_vAllBones;
-};
-
-class MORTY_API MSkeletonInstance
-{
-public:
-	MSkeletonInstance(std::shared_ptr<const MSkeleton> templateSke);
-	MSkeletonInstance(const MSkeletonInstance& instance);
-	~MSkeletonInstance();
-
-	std::shared_ptr<const MSkeleton> GetSkeletonTemplate() const { return m_pSkeletonTemplate; }
-
-	MBone* FindBoneByName(const MString& strName);
-
-	const MBone* FindBoneTemplateByName(const MString& strName);
-	const MBone* GetBoneTemplateByIndex(const uint32_t& unIndex);
-
-	std::vector<MBone>& GetAllBones() { return m_vAllBones; }
-
-	void ResetOriginPose();
-
-	std::shared_ptr<MShaderPropertyBlock> GetShaderParamSet();
-
-	void SetDirty();
-
-private:
-	MEngine* m_pEngine;
-	std::shared_ptr<const MSkeleton> m_pSkeletonTemplate;
-	std::vector<MBone> m_vAllBones;
-
-	bool m_bShaderParamSetDirty;
-
-	std::shared_ptr<MShaderPropertyBlock> m_pShaderPropertyBlock = nullptr;
-	MVariantArray* m_pShaderBonesArray = nullptr;
 };
 
 #endif

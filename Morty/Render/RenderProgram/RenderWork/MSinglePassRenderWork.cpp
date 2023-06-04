@@ -45,6 +45,23 @@ std::shared_ptr<MTexture> ISinglePassRenderWork::GetDepthTexture() const
 	return m_renderPass.GetDepthTexture();
 }
 
+class MSingleRenderWorkOutput : public ITextureInputAdapter
+{
+public:
+
+	virtual std::shared_ptr<MTexture> GetTexture() { return pTexture; }
+
+	std::shared_ptr<MTexture> pTexture = nullptr;
+};
+
+std::shared_ptr<ITextureInputAdapter> ISinglePassRenderWork::CreateOutput() const
+{
+	auto pOutput = std::make_shared<MSingleRenderWorkOutput>();
+	pOutput->pTexture = m_renderPass.m_vBackTextures[0].pTexture;
+
+	return pOutput;
+}
+
 void ISinglePassRenderWork::Resize(Vector2 size)
 {
 	if (m_renderPass.GetFrameBufferSize() != size)

@@ -112,6 +112,10 @@ void MSceneComponent::SetParentComponent(const MComponentID& parent)
 		{
 			pParentScene->AddChild(this);
 			SetVisibleRecursively(pParentScene->GetVisibleRecursively() & GetVisible());
+
+			WorldTransformDirty();
+			WorldTransformDirtyRecursively();
+
 			bParentValid = true;
 		}
 

@@ -103,6 +103,8 @@ public:
 
 	bool operator == (const Vector3& value) const;
 
+	static Vector3 Fill(float value) { return Vector3(value, value, value); }
+
 public:
 
 	const mfbs::Vector3* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;

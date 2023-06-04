@@ -1,4 +1,4 @@
-#include "MRenderableMeshGroup.h"
+#include "MRenderableMaterialGroup.h"
 
 #include "Scene/MEntity.h"
 #include "Engine/MEngine.h"
@@ -46,22 +46,34 @@ void MRenderableMaterialGroup::Release(MEngine* pEngine)
 	m_vRenderableMeshGroup.clear();
 }
 
-void MRenderableMaterialGroup::AddMeshInstance(MRenderableMeshComponent* pComponent)
+MMeshInstanceRenderProxy MRenderableMaterialGroup::CreateProxyFromComponent(MRenderableMeshComponent* pComponent)
 {
-	MSceneComponent* pSceneComponent = pComponent->GetEntity()->GetComponent<MSceneComponent>();
-	if (!pComponent)
+	MMeshInstanceRenderProxy proxy;
+	proxy.bVisible = true;
+	proxy.bCullEnable = pComponent->GetSceneCullEnable();
+
+	if (MSceneComponent* pSceneComponent = pComponent->GetEntity()->GetComponent<MSceneComponent>())
 	{
-		MORTY_ASSERT(false);
-		return;
+		proxy.worldTransform = pSceneComponent->GetWorldTransform();
+	}
+	else
+	{
+		proxy.worldTransform = Matrix4::IdentityMatrix;
+	}
+	
+	if (auto pMeshResource = pComponent->GetMeshResource().GetResource<MMeshResource>())
+	{
+		proxy.pMesh = pMeshResource->GetMesh();
+		proxy.bounds = *pMeshResource->GetMeshesDefaultOBB();
+		proxy.boundsWithTransform.SetBoundsOBB(proxy.worldTransform.GetTranslation(), proxy.worldTransform, proxy.bounds);
 	}
 
-	if (!pSceneComponent)
-	{
-		MORTY_ASSERT(false);
-		return;
-	}
+	return proxy;
+}
 
-	const auto findResult = m_tMeshComponentTable.find(pComponent);
+void MRenderableMaterialGroup::AddMeshInstance(MMeshInstanceKey key, MMeshInstanceRenderProxy proxy)
+{
+	const auto findResult = m_tMeshComponentTable.find(key);
 	if (findResult != m_tMeshComponentTable.end())
 	{
 		MORTY_ASSERT(false);
@@ -94,14 +106,14 @@ void MRenderableMaterialGroup::AddMeshInstance(MRenderableMeshComponent* pCompon
 		return;
 	}
 
-	pMeshGroup->AddMeshInstance(pComponent);
-	m_tMeshComponentTable[pComponent] = nMeshGroupIdx;
+	pMeshGroup->AddMeshInstance(key, proxy);
+	m_tMeshComponentTable[key] = nMeshGroupIdx;
 
 }
 
-void MRenderableMaterialGroup::RemoveMeshInstance(MRenderableMeshComponent* pComponent)
+void MRenderableMaterialGroup::RemoveMeshInstance(MMeshInstanceKey key)
 {
-	const auto findResult = m_tMeshComponentTable.find(pComponent);
+	const auto findResult = m_tMeshComponentTable.find(key);
 	if(findResult == m_tMeshComponentTable.end())
 	{
 		MORTY_ASSERT(false);
@@ -117,43 +129,25 @@ void MRenderableMaterialGroup::RemoveMeshInstance(MRenderableMeshComponent* pCom
 		return;
 	}
 
-	m_vRenderableMeshGroup[nIdx]->RemoveMeshInstance(pComponent);
+	m_vRenderableMeshGroup[nIdx]->RemoveMeshInstance(key);
 }
 
-void MRenderableMaterialGroup::UpdateTransform(MRenderableMeshComponent* pComponent)
+void MRenderableMaterialGroup::UpdateMeshInstance(MMeshInstanceKey key, MMeshInstanceRenderProxy proxy)
 {
-	const auto findResult = m_tMeshComponentTable.find(pComponent);
+	const auto findResult = m_tMeshComponentTable.find(key);
 	if (findResult == m_tMeshComponentTable.end())
 	{
 		return;
 	}
 
-	size_t nIdx = findResult->second;
-	m_vRenderableMeshGroup[nIdx]->UpdateTransform(pComponent);
-}
-
-void MRenderableMaterialGroup::UpdateMesh(MRenderableMeshComponent* pComponent)
-{
-	const auto findResult = m_tMeshComponentTable.find(pComponent);
-	if (findResult == m_tMeshComponentTable.end())
+	if (!key)
 	{
+		MORTY_ASSERT(false);
 		return;
 	}
 
 	size_t nIdx = findResult->second;
-	m_vRenderableMeshGroup[nIdx]->UpdateMesh(pComponent);
-}
-
-void MRenderableMaterialGroup::UpdateVisible(MRenderableMeshComponent* pComponent, bool bVisible)
-{
-	const auto findResult = m_tMeshComponentTable.find(pComponent);
-	if (findResult == m_tMeshComponentTable.end())
-	{
-		return;
-	}
-
-	size_t nIdx = findResult->second;
-	m_vRenderableMeshGroup[nIdx]->UpdateVisible(pComponent, bVisible);
+	m_vRenderableMeshGroup[nIdx]->UpdateMeshInstance(key, proxy);
 }
 
 bool MRenderableMaterialGroup::IsEmpty() const

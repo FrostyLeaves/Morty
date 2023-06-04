@@ -42,6 +42,7 @@ public:
 	//����v3min��v3max������v3min-v3max�ķ�Χ������Bounds����ȡ����
 	void UnionMinMax(Vector3& v3min, Vector3& v3max) const;
 
+	MBoundsAABB IntersectAABB(const MBoundsAABB& aabb) const;
 	bool IsIntersect(const MBoundsAABB& aabb) const;
 
 public:
@@ -98,6 +99,8 @@ public:
 	}
 
 	void SetPoints(const MByte* vPoints, const uint32_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize);
+
+	void SetPoints(const std::vector<Vector3>& vPoints);
 
 	void AddPoint(const Vector3& pos);
 

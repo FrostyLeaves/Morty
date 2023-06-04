@@ -2,10 +2,11 @@
 
 #include "Scene/MScene.h"
 #include "MRenderNotify.h"
+#include "Render/MVertex.h"
 #include "Engine/MEngine.h"
 #include "Utility/MFunction.h"
 #include "Module/MCoreNotify.h"
-#include "Render/MVertex.h"
+#include "TaskGraph/MTaskGraph.h"
 #include "Mesh/MMeshManager.h"
 #include "Material/MComputeDispatcher.h"
 
@@ -36,6 +37,12 @@ void MShadowMapManager::Initialize()
 		pNotifySystem->RegisterNotify(MRenderNotify::NOTIFY_MESH_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MShadowMapManager::OnMeshChanged, this));
 		pNotifySystem->RegisterNotify(MRenderNotify::NOTIFY_GENERATE_SHADOW_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MShadowMapManager::OnGenerateShadowChanged, this));
 	}
+
+	if (m_pUpdateTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>("RenderMeshManagerUpdate"))
+	{
+		m_pUpdateTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MShadowMapManager::RenderUpdate, this));
+		m_pUpdateTask->SetThreadType(METhreadType::ERenderThread);
+	}
 }
 
 void MShadowMapManager::Release()
@@ -58,6 +65,29 @@ std::set<const MType*> MShadowMapManager::RegisterComponentType() const
 
 void MShadowMapManager::RegisterComponent(MComponent* pComponent)
 {
+	if (!pComponent)
+	{
+		return;
+	}
+
+	const auto pMeshComponent = pComponent->DynamicCast<MRenderableMeshComponent>();
+	if (!pMeshComponent)
+	{
+		return;
+	}
+
+	auto pMaterial = pMeshComponent->GetMaterial();
+	if (!pMaterial)
+	{
+		return;
+	}
+
+	if (!IsGenerateShadowMaterial(pMaterial->GetMaterialType()))
+	{
+		return;
+	}
+
+	m_tWaitAddComponent[pMeshComponent] = MRenderableMaterialGroup::CreateProxyFromComponent(pMeshComponent);
 }
 
 void MShadowMapManager::UnregisterComponent(MComponent* pComponent)
@@ -73,43 +103,45 @@ void MShadowMapManager::UnregisterComponent(MComponent* pComponent)
 		return;
 	}
 
-	m_tWaitUpdateTransformComponent.erase(pMeshComponent);
-	m_tWaitUpdateMeshComponent.erase(pMeshComponent);
-	m_tWaitUpdateGenerateShadowComponent.erase(pMeshComponent);
-
-	if (pMeshComponent->GetGenerateDirLightShadow())
-	{
-		RemoveComponentFromCache(pMeshComponent);
-	}
+	m_tWaitUpdateComponent.erase(pMeshComponent);
+	m_tWaitRemoveComponent.insert(pMeshComponent);
 }
 
-void MShadowMapManager::SceneTick(MScene* pScene, const float& fDelta)
+void MShadowMapManager::RenderUpdate(MTaskNode* pNode)
 {
-	for (auto pComponent : m_tWaitUpdateMeshComponent)
+	if (!m_tWaitRemoveComponent.empty())
 	{
-		UpdateComponentMesh(pComponent);
+		for (auto& key : m_tWaitRemoveComponent)
+		{
+			m_staticShadowGroup.RemoveMeshInstance(key);
+		}
+		m_tWaitRemoveComponent.clear();
 	}
-	m_tWaitUpdateMeshComponent.clear();
 
-	for (auto pComponent : m_tWaitUpdateTransformComponent)
+	if (!m_tWaitAddComponent.empty())
 	{
-		UpdateBoundsInWorld(pComponent);
+		for (auto& [key, proxy] : m_tWaitUpdateComponent)
+		{
+			m_staticShadowGroup.AddMeshInstance(key, proxy);
+		}
+		m_tWaitAddComponent.clear();
 	}
-	m_tWaitUpdateTransformComponent.clear();
 
-	for (auto pComponent : m_tWaitUpdateGenerateShadowComponent)
+	if (!m_tWaitUpdateComponent.empty())
 	{
-		UpdateGenerateShadow(pComponent);
+		for (auto& [key, proxy] : m_tWaitUpdateComponent)
+		{
+			m_staticShadowGroup.UpdateMeshInstance(key, proxy);
+		}
+		m_tWaitUpdateComponent.clear();
 	}
-	m_tWaitUpdateGenerateShadowComponent.clear();
-
 }
 
 void MShadowMapManager::OnTransformChanged(MComponent* pComponent)
 {
 	if (auto pMeshComponent = pComponent->GetEntity()->GetComponent<MRenderableMeshComponent>())
 	{
-		AddQueueUpdateTransform(pMeshComponent);
+		AddToUpdateQueue(pMeshComponent);
 	}
 }
 
@@ -117,7 +149,7 @@ void MShadowMapManager::OnMeshChanged(MComponent* pComponent)
 {
 	if (auto pMeshComponent = pComponent->DynamicCast<MRenderableMeshComponent>())
 	{
-		AddQueueUpdateMesh(pMeshComponent);
+		AddToUpdateQueue(pMeshComponent);
 	}
 }
 
@@ -125,23 +157,19 @@ void MShadowMapManager::OnGenerateShadowChanged(MComponent* pComponent)
 {
 	if (auto pMeshComponent = pComponent->DynamicCast<MRenderableMeshComponent>())
 	{
-		AddQueueUpdateGenerateShadow(pMeshComponent);
+		AddToUpdateQueue(pMeshComponent);
 	}
 }
 
-void MShadowMapManager::AddQueueUpdateTransform(MRenderableMeshComponent* pComponent)
+bool MShadowMapManager::IsGenerateShadowMaterial(MEMaterialType eType) const
 {
-	m_tWaitUpdateTransformComponent.insert(pComponent);
+	return eType == MEMaterialType::EDefault
+        || eType == MEMaterialType::EDeferred;
 }
 
-void MShadowMapManager::AddQueueUpdateMesh(MRenderableMeshComponent* pComponent)
+void MShadowMapManager::AddToUpdateQueue(MRenderableMeshComponent* pComponent)
 {
-	m_tWaitUpdateMeshComponent.insert(pComponent);
-}
-
-void MShadowMapManager::AddQueueUpdateGenerateShadow(MRenderableMeshComponent* pComponent)
-{
-	m_tWaitUpdateGenerateShadowComponent.insert(pComponent);
+	m_tWaitUpdateComponent[pComponent] = MRenderableMaterialGroup::CreateProxyFromComponent(pComponent);
 }
 
 void MShadowMapManager::InitializeMaterial()
@@ -163,43 +191,7 @@ void MShadowMapManager::ReleaseMaterial()
 	m_staticShadowGroup.Release(GetEngine());
 }
 
-void MShadowMapManager::AddComponentToCache(MRenderableMeshComponent* pComponent)
-{
-	m_staticShadowGroup.AddMeshInstance(pComponent);
-}
-
 void MShadowMapManager::RemoveComponentFromCache(MRenderableMeshComponent* pComponent)
 {
 	m_staticShadowGroup.RemoveMeshInstance(pComponent);
-}
-
-void MShadowMapManager::UpdateBoundsInWorld(MRenderableMeshComponent* pComponent)
-{
-	m_staticShadowGroup.UpdateTransform(pComponent);
-}
-
-void MShadowMapManager::UpdateComponentMesh(MRenderableMeshComponent* pComponent)
-{
-	m_staticShadowGroup.UpdateMesh(pComponent);
-}
-
-void MShadowMapManager::UpdateGenerateShadow(MRenderableMeshComponent* pComponent)
-{
-    MSceneComponent* pSceneComponent = pComponent->GetEntity()->GetComponent<MSceneComponent>();
-	if(!pSceneComponent)
-	{
-		MORTY_ASSERT(pSceneComponent);
-		return;
-	}
-
-	const bool bGenerateShadow = pComponent->GetGenerateDirLightShadow() && pSceneComponent->GetVisibleRecursively();
-
-	if (bGenerateShadow)
-	{
-		m_staticShadowGroup.AddMeshInstance(pComponent);
-	}
-	else
-	{
-		m_staticShadowGroup.RemoveMeshInstance(pComponent);
-	}
 }

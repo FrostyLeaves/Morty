@@ -7,12 +7,12 @@
 #include "RenderProgram/MRenderInfo.h"
 
 
-struct MRenderableMeshInstance;
+struct MMeshInstanceRenderProxy;
 class MORTY_API IMeshInstanceFilter
 {
 public:
     virtual ~IMeshInstanceFilter() = default;
-    virtual bool Filter(const MRenderableMeshInstance* instance) const = 0;
+    virtual bool Filter(const MMeshInstanceRenderProxy* instance) const = 0;
 };
 
 class MORTY_API IMaterialFilter
@@ -28,7 +28,7 @@ class CameraFrustumCulling : public IMeshInstanceFilter
 public:
     void UpdateCameraFrustum(Matrix4 cameraInvProj);
 
-    bool Filter(const MRenderableMeshInstance* instance) const override;
+    bool Filter(const MMeshInstanceRenderProxy* instance) const override;
 
 private:
 

@@ -36,10 +36,10 @@ public:
 	void OnDiffuseEnvTextureChanged(MComponent* pComponent);
 	void OnSpecularEnvTextureChanged(MComponent* pComponent);
 
-
 	void UpdateSkyBoxMaterial(MSkyBoxComponent* pComponent);
 
-	std::shared_ptr<MMaterial> GetMaterial() const { return m_pSkyBoxMaterial; }
+	bool HasEnvironmentComponent() const;
+	std::shared_ptr<MMaterial> GetMaterial() const;
 
 protected:
 
@@ -48,11 +48,11 @@ protected:
 
 private:
 
-	std::shared_ptr<MMaterial> m_pSkyBoxMaterial = nullptr;
 	MSkyBoxComponent* m_pCurrentSkyBoxComponent = nullptr;
 
 	std::set<MSkyBoxComponent*> m_tAllSkyBoxComponent;
-
+	std::shared_ptr<MMaterial> m_pSkyBoxMaterial = nullptr;
+	MResourceRef m_pMaterialResource = nullptr;
 };
 
 #endif

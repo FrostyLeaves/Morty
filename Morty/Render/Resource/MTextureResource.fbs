@@ -2,7 +2,7 @@ include "Resource/MResourceRef.fbs";
 
 namespace mfbs;
 
-enum PixelFormat:byte
+enum MTexturePixelFormat:byte
 {
     unknow = 0,
     byte8 = 1,
@@ -13,7 +13,7 @@ table MTextureResource
 {
     width: uint;
     height: uint;
-    pixel_format: PixelFormat;
+    pixel_format: MTexturePixelFormat;
     data: [byte];
     channel: uint;
 

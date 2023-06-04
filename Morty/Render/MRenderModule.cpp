@@ -38,6 +38,8 @@
 #include "TaskGraph/MTaskGraph.h"
 
 #include "Module/MCoreNotify.h"
+#include "Resource/MMaterialResourceData.h"
+#include "Resource/MTextureResourceUtil.h"
 
 const MString MRenderModule::DefaultWhite = "Default_White";
 const MString MRenderModule::DefaultNormal = "Default_Normal";
@@ -50,39 +52,28 @@ bool MRenderModule::Register(MEngine* pEngine)
 		return false;
 
 	MNotifySystem* pNotifySystem = pEngine->FindSystem<MNotifySystem>();
+	MTaskGraph* pTaskGraph = pEngine->GetMainGraph();
 
 	pEngine->RegisterSystem<MModelSystem>();
 
-	if (MRenderSystem* pRenderSystem = pEngine->RegisterSystem<MRenderSystem>())
-	{
-		if (MTaskGraph* pTaskGraph = pEngine->GetMainGraph())
-		{
-			if (MTaskNode* pTaskNode = pTaskGraph->AddNode<MTaskNode>("Render_Update"))
-			{
-				pTaskNode->SetThreadType(METhreadType::ERenderThread);
-				pTaskNode->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MRenderSystem::Update, pRenderSystem));
-			}
-		}
-	}
-
+	MRenderSystem* pRenderSystem = pEngine->RegisterSystem<MRenderSystem>();
 	MSkyBoxSystem* pSkyBoxSystem = pEngine->RegisterSystem<MSkyBoxSystem>();
 
 	if (MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>())
 	{
-		pResourceSystem->RegisterResourceType<MMeshResource>();
-		pResourceSystem->RegisterResourceType<MShaderResource>();
-		pResourceSystem->RegisterResourceType<MEntityResource>();
-		pResourceSystem->RegisterResourceType<MTextureResource>();
-		pResourceSystem->RegisterResourceType<MMaterialResource>();
-		pResourceSystem->RegisterResourceType<MSkeletonResource>();
-		pResourceSystem->RegisterResourceType<MSkeletalAnimationResource>();
+		pResourceSystem->RegisterResourceLoader<MMeshResourceLoader>();
+		pResourceSystem->RegisterResourceLoader<MShaderResourceLoader>();
+		pResourceSystem->RegisterResourceLoader<MTextureResourceLoader>();
+		pResourceSystem->RegisterResourceLoader<MMaterialResourceLoader>();
+		pResourceSystem->RegisterResourceLoader<MSkeletonResourceLoader>();
+		pResourceSystem->RegisterResourceLoader<MSkeletalAnimationLoader>();
 
 
 		if (std::shared_ptr<MTextureResource> pTexture = pResourceSystem->CreateResource<MTextureResource>(DefaultWhite))
 		{
 			MByte byte[4];
 			byte[0] = byte[1] = byte[2] = byte[3] = 255;
-			pTexture->LoadFromMemory(byte, 1, 1, 4);
+ 			pTexture->Load(MTextureResourceUtil::LoadFromMemory("Default_White", byte, 1, 1, 4));
 		}
 
 		if (std::shared_ptr<MTextureResource> pTexture = pResourceSystem->CreateResource<MTextureResource>(DefaultNormal))
@@ -90,19 +81,19 @@ bool MRenderModule::Register(MEngine* pEngine)
 			MByte byte[3];
 			byte[0] = byte[1] = 127;
 			byte[2] = 255;
-			pTexture->LoadFromMemory(byte, 1, 1, 3);
+			pTexture->Load(MTextureResourceUtil::LoadFromMemory("Default_Normal", byte, 1, 1, 3));
 		}
 
 		if (std::shared_ptr<MTextureResource> pTexture = pResourceSystem->CreateResource<MTextureResource>(Default_R8_One))
 		{
 			MByte byte = 255;
-			pTexture->LoadFromMemory(&byte, 1, 1, 1);
+			pTexture->Load(MTextureResourceUtil::LoadFromMemory("R8_One", & byte, 1, 1, 1));
 		}
 
 		if (std::shared_ptr<MTextureResource> pTexture = pResourceSystem->CreateResource<MTextureResource>(Default_R8_Zero))
 		{
 			MByte byte = 0;
-			pTexture->LoadFromMemory(&byte, 1, 1, 1);
+			pTexture->Load(MTextureResourceUtil::LoadFromMemory("R8_Zero", & byte, 1, 1, 1));
 		}
 	}
 
@@ -124,7 +115,10 @@ bool MRenderModule::Register(MEngine* pEngine)
 	{
 		pObjectSystem->RegisterPostCreateObject(MRenderModule::OnObjectPostCreate);
 	}
-	
+
+	MTaskNode* pRenderUpdateTask = pTaskGraph->AddNode<MTaskNode>("Render_Update");
+	pRenderUpdateTask->SetThreadType(METhreadType::ERenderThread);
+	pRenderUpdateTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MRenderSystem::Update, pRenderSystem));
 
 	return true;
 }

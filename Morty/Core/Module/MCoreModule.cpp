@@ -12,6 +12,9 @@
 #include "Component/MSceneComponent.h"
 #include "Component/MInputComponent.h"
 
+#include "Resource/MEntityResource.h"
+#include "Resource/MResourceAsyncLoadSystem.h"
+
 bool MCoreModule::Register(MEngine* pEngine)
 {
 	if (!pEngine)
@@ -25,7 +28,11 @@ bool MCoreModule::Register(MEngine* pEngine)
 	if (MResourceSystem* pResourceSystem = pEngine->RegisterSystem<MResourceSystem>())
 	{
 		pResourceSystem->SetSearchPath({ MORTY_RESOURCE_PATH });
+
+		pResourceSystem->RegisterResourceLoader<MEntityResourceLoader>();
 	}
+
+	pEngine->RegisterSystem<MResourceAsyncLoadSystem>();
 
 	if (MComponentSystem* pComponentSystem = pEngine->RegisterSystem<MComponentSystem>())
 	{

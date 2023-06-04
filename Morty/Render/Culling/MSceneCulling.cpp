@@ -2,11 +2,11 @@
 
 #include "Component/MSceneComponent.h"
 #include "Engine/MEngine.h"
-#include "MergeInstancing/MRenderableMeshGroup.h"
 #include "Mesh/MMeshManager.h"
 #include "Scene/MEntity.h"
 #include "Shadow/MShadowMapUtil.h"
 #include "System/MRenderSystem.h"
+#include "MergeInstancing/MRenderableMaterialGroup.h"
 
 
 void MSceneCulling::Initialize(MEngine* pEngine)
@@ -43,7 +43,7 @@ void MSceneCulling::Culling(const std::vector<MRenderableMaterialGroup*>& vInsta
 	{
 		int nIndirectBeginIdx = vDrawIndirectData.size();
 		const auto pMeshProperty = pInstanceBatchGroup->GetMeshProperty();
-		pMeshProperty->SetValue("u_meshInstanceBeginIndex", nIndirectBeginIdx);
+		pMeshProperty->SetValue("u_meshInstanceBeginIndex", 0);
 
 		m_vCullingInstanceGroup.push_back({});
 		MMaterialCullingGroup* pMaterialCullingGroup = &m_vCullingInstanceGroup.back();
@@ -66,7 +66,7 @@ void MSceneCulling::Culling(const std::vector<MRenderableMaterialGroup*>& vInsta
 		{
 			createNewGroupFunc(pMaterialGroup->GetMaterial(), pInstanceGroup);
 
-			pInstanceGroup->InstanceExecute([&](const MRenderableMeshInstance& instance, size_t nIdx)
+			pInstanceGroup->InstanceExecute([&](const MMeshInstanceRenderProxy& instance, size_t nIdx)
 			{
 				for(const auto& pFilter : m_vFilter)
 				{

@@ -4,6 +4,7 @@
 #include "MRenderNotify.h"
 #include "Utility/MFunction.h"
 
+#include "System/MObjectSystem.h"
 #include "System/MNotifySystem.h"
 #include "System/MResourceSystem.h"
 #include "Component/MSceneComponent.h"
@@ -133,6 +134,16 @@ void MEnvironmentManager::UpdateSkyBoxMaterial(MSkyBoxComponent* pComponent)
 	}
 
 	m_pSkyBoxMaterial->SetTexture("SkyTexCube", pComponent->GetSkyBoxResource());
+}
+
+bool MEnvironmentManager::HasEnvironmentComponent() const
+{
+	return m_pCurrentSkyBoxComponent != nullptr;
+}
+
+std::shared_ptr<MMaterial> MEnvironmentManager::GetMaterial() const
+{
+	return m_pSkyBoxMaterial;
 }
 
 void MEnvironmentManager::InitializeMaterial()

@@ -16,53 +16,61 @@
 #include "Render/MMesh.h"
 #include "Resource/MResource.h"
 #include "Utility/MBounds.h"
+#include "Resource/MResourceLoader.h"
 
 #include <map>
 
 class MIMesh;
 class MSkeleton;
 class MMultiLevelMesh;
-class MModelResource;
+
+
+enum class MEMeshVertexType
+{
+	Normal = 0,
+	Skeleton,
+};
+
+struct MORTY_API MMeshResourceData : public MFbResourceData
+{
+public:
+	//RawData
+	MEMeshVertexType eVertexType = MEMeshVertexType::Normal;
+	MIMesh* pMesh = nullptr;
+	MBoundsOBB boundsOBB;
+	MBoundsSphere boundsSphere;
+	
+	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
+	void Deserialize(const void* pBufferPointer) override;
+
+};
+
 class MORTY_API MMeshResource : public MResource
 {
 public:
 	MORTY_CLASS(MMeshResource);
 
-	enum MEMeshVertexType {
-		Normal = 0,
-		Skeleton,
-	};
 public:
 	MMeshResource();
     virtual ~MMeshResource();
 
-	static MString GetResourceTypeName() { return "Mesh"; }
-	static std::vector<MString> GetSuffixList() { return { "mesh" }; }
-
-
-	MEMeshVertexType GetMeshVertexType(){ return m_eVertexType; }
+	MEMeshVertexType GetMeshVertexType() const;
 	MIMesh* GetMesh() { return m_pMesh; }
 	MIMesh* GetLevelMesh(const uint32_t unLevel);
-	const MBoundsOBB* GetMeshesDefaultOBB() { return &m_BoundsOBB; }
-	const MBoundsSphere* GetMeshesDefaultSphere() { return &m_BoundsSphere; }
-	std::shared_ptr<MResource> GetDefaultMaterial() { return m_MaterialKeeper.GetResource(); }
+	const MBoundsOBB* GetMeshesDefaultOBB() const;
+	const MBoundsSphere* GetMeshesDefaultSphere() const;
 
 
 public:
 
-	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
-	void Deserialize(const void* pBufferPointer);
-
-	virtual bool Load(const MString& strResourcePath) override;
-	virtual bool SaveTo(const MString& strResourcePath) override;
+	bool Load(std::unique_ptr<MResourceData>& pResourceData) override;
+	virtual bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
 
 	virtual void OnDelete() override;
 
 public:
 
-	void LoadAsPlane(MEMeshVertexType eVertexType = MEMeshVertexType::Normal, const Vector3& scale = Vector3::One);
-	void LoadAsCube(MEMeshVertexType eVertexType = MEMeshVertexType::Normal);
-	void LoadAsSphere(MEMeshVertexType eVertexType = MEMeshVertexType::Normal);
+	static MIMesh* CreateMeshFromType(const MEMeshVertexType& eType);
 
 
 protected:
@@ -71,21 +79,21 @@ protected:
 	
 	void ResetBounds();
 
-	MIMesh* NewMeshByType(const MEMeshVertexType& eType);
-
 private:
 
 	friend class MEngine;
 	friend class MModelConverter;
-    
-	MEMeshVertexType m_eVertexType;
-	MIMesh* m_pMesh;
-	MBoundsOBB m_BoundsOBB;
-	MBoundsSphere m_BoundsSphere;
-	MResourceRef m_MaterialKeeper;
-	MResourceRef m_SkeletonKeeper;
 
-	MMultiLevelMesh* m_pMeshDetailMap;
+	MIMesh* m_pMesh = nullptr;
+	std::unique_ptr<MResourceData> m_pResourceData = nullptr;
+
+	MMultiLevelMesh* m_pMeshDetailMap = nullptr;
 };
 
+class MORTY_API MMeshResourceLoader : public MResourceLoaderTemplate<MMeshResource, MMeshResourceData>
+{
+public:
+	static MString GetResourceTypeName() { return "Mesh"; }
+	static std::vector<MString> GetSuffixList() { return { "mesh" }; }
+};
 #endif

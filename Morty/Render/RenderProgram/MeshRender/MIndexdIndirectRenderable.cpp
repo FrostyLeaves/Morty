@@ -22,8 +22,7 @@
 
 #include "Utility/MBounds.h"
 #include "Mesh/MMeshManager.h"
-
-#include "MergeInstancing/MRenderableMeshGroup.h"
+#include "MergeInstancing/MRenderableMaterialGroup.h"
 
 void MIndexdIndirectRenderable::SetScene(MScene* pScene)
 {

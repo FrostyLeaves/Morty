@@ -297,6 +297,25 @@ void MBoundsAABB::UnionMinMax(Vector3& v3Min, Vector3& v3Max) const
 		v3Max.z = m_v3MaxPoint.z;
 }
 
+MBoundsAABB MBoundsAABB::IntersectAABB(const MBoundsAABB& aabb) const
+{
+	MBoundsAABB result;
+
+	Vector3 min = m_v3MinPoint;
+	Vector3 max = m_v3MaxPoint;
+
+	for (size_t nIdx = 0; nIdx < 3; ++nIdx)
+	{
+		min.m[nIdx] = (std::max)(min.m[nIdx], aabb.m_v3MinPoint.m[nIdx]);
+		max.m[nIdx] = (std::min)(max.m[nIdx], aabb.m_v3MaxPoint.m[nIdx]);
+
+		min.m[nIdx] = (std::min)(min.m[nIdx], max.m[nIdx]);
+	}
+
+	result.SetMinMax(min, max);
+	return result;
+}
+
 bool MBoundsAABB::IsIntersect(const MBoundsAABB& aabb) const
 {
 	bool bXIntersect = (aabb.m_v3MinPoint.x <= m_v3MaxPoint.x) && (m_v3MinPoint.x <= aabb.m_v3MaxPoint.x);
@@ -359,6 +378,11 @@ MBoundsSphere::MBoundsSphere()
 	, m_fRadius(0.0f)
 {
 
+}
+
+void MBoundsSphere::SetPoints(const std::vector<Vector3>& vPoints)
+{
+	SetPoints(vPoints.data(), vPoints.size(), 0, sizeof(Vector3));
 }
 
 void MBoundsSphere::SetPoints(const MByte* vPoints, const uint32_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize)

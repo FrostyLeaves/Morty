@@ -1,0 +1,15 @@
+include "Resource/MResourceRef.fbs";
+include "Model/MSkeletalAnimation.fbs";
+
+namespace mfbs;
+
+table MSkeletalAnimationResource
+{
+	animation: MSkeletalAnimation;
+	
+	skeleton: string;
+}
+
+root_type MSkeletalAnimationResource;
+
+file_identifier "MFBS";

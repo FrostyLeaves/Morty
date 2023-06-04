@@ -31,7 +31,9 @@ private:
     MEntity* m_pCameraEntity = nullptr;
     MEntity* m_pDirectionalLight = nullptr;
     MBuffer m_drawIndirectBuffer;
-    std::array<MBoundsAABB, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> m_vCascadedPcsBounds;
+
+    //Potential Shadow Caster
+    std::array<MBoundsAABB, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> m_vCascadedPscBounds;
     std::array<MCascadedShadowRenderData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> m_vCascadedRenderData;
     std::vector<MMaterialCullingGroup> m_vCullingInstanceGroup;
 

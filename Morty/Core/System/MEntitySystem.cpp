@@ -52,7 +52,7 @@ std::shared_ptr<MResource> MEntitySystem::PackEntity(MScene* pScene, const std::
 	std::vector<flatbuffers::Offset<mfbs::MEntity>> entityVector;
 	for (MEntity* pEntity : vEntity)
 	{		
-		flatbuffers::Offset<void>&& entity = pEntity->Serialize(fbb);
+		flatbuffers::Offset<void> entity = pEntity->Serialize(fbb);
 		entityVector.push_back(entity.o);
 	}
 
@@ -66,9 +66,11 @@ std::shared_ptr<MResource> MEntitySystem::PackEntity(MScene* pScene, const std::
 
 	fbb.Finish(root);
 
-	pResource->GetData().clear();
-	pResource->GetData().resize(fbb.GetSize());
-	memcpy(pResource->GetData().data(), (MByte*)fbb.GetBufferPointer(), fbb.GetSize() * sizeof(MByte));
+	std::unique_ptr<MEntityResourceData> pEntityResourceData = std::make_unique<MEntityResourceData>();
+	pEntityResourceData->aEntityData.resize(fbb.GetSize());
+	memcpy(pEntityResourceData->aEntityData.data(), (MByte*)fbb.GetBufferPointer(), fbb.GetSize() * sizeof(MByte));
+	std::unique_ptr<MResourceData> pResourceData = std::move(pEntityResourceData);
+	pResource->Load(pResourceData);
 
 	return pResource;
 }
@@ -81,9 +83,14 @@ std::vector<MEntity*> MEntitySystem::LoadEntity(MScene* pScene, std::shared_ptr<
 	if (!pEntityResource)
 		return vResult;
 
+	if (!pEntityResource->GetData() || !pEntityResource->GetSize())
+	{
+		GetEngine()->GetLogger()->Error("Load null entity resource.");
+		return {};
+	}
 
 	flatbuffers::FlatBufferBuilder fbb;
-	fbb.PushBytes((const uint8_t*)pEntityResource->GetData().data(), pEntityResource->GetData().size());
+	fbb.PushBytes((const uint8_t*)pEntityResource->GetData(), pEntityResource->GetSize());
 
 	const mfbs::MEntityResource* fbResource = mfbs::GetMEntityResource(fbb.GetCurrentBufferPointer());
 

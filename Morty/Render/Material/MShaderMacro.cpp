@@ -183,14 +183,26 @@ void MShaderMacro::Deserialize(const void* pBufferPointer)
 	const mfbs::MShaderMacro* fbData = reinterpret_cast<const mfbs::MShaderMacro*>(pBufferPointer);
 
 	m_vMacroParams.clear();
-	for (auto pair : *fbData->material_macro())
+	m_vMortyMacroParams.clear();
+
+	if (!pBufferPointer)
 	{
-		m_vMacroParams.push_back({ pair->key()->c_str(), pair->value()->c_str() });
+		return;
 	}
 
-	m_vMortyMacroParams.clear();
-	for(auto pair : *fbData->inner_macro())
+	if (fbData->material_macro())
 	{
-		m_vMortyMacroParams.push_back({ pair->key()->c_str(), pair->value()->c_str() });
+		for (auto pair : *fbData->material_macro())
+		{
+			m_vMacroParams.push_back({ pair->key()->c_str(), pair->value()->c_str() });
+		}
+	}
+
+	if (fbData->inner_macro())
+	{
+		for (auto pair : *fbData->inner_macro())
+		{
+			m_vMortyMacroParams.push_back({ pair->key()->c_str(), pair->value()->c_str() });
+		}
 	}
 }

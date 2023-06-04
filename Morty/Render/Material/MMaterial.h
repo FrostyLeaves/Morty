@@ -9,8 +9,7 @@
 #ifndef _M_MMATERIAL_H_
 #define _M_MMATERIAL_H_
 #include "Utility/MGlobal.h"
-#include "Resource/MResource.h"
-#include "Resource/MResource.h"
+#include "Object/MObject.h"
 #include "Resource/MTextureResource.h"
 
 #include "MShaderMacro.h"
@@ -39,6 +38,7 @@ enum class MEMaterialType
 	EOutline,
 	EImGui,
 	EDeferred,
+	ECustom,
 
 	EMaterialTypeEnd,
 };
@@ -60,12 +60,9 @@ class MShaderResource;
 class MORTY_API MMaterial : public MResource
 {
 public:
-	MORTY_CLASS(MMaterial)
+	MORTY_INTERFACE(MMaterial)
     MMaterial();
     virtual ~MMaterial();
-
-	static MString GetResourceTypeName() { return "Material"; }
-	static std::vector<MString> GetSuffixList() { return { "mat" }; }
 
 public:
 
@@ -108,33 +105,23 @@ public:
 	std::shared_ptr<MResource> GetVertexShaderResource() const { return m_pShaderProgram->GetVertexShaderResource(); }
 	std::shared_ptr<MResource> GetPixelShaderResource() const { return m_pShaderProgram->GetPixelShaderResource(); }
 
+	void SetShaderMacro(const MShaderMacro& macro);
 	MShaderMacro& GetShaderMacro() const { return m_pShaderProgram->GetShaderMacro(); }
 	const std::shared_ptr<MShaderProgram>& GetShaderProgram() const { return m_pShaderProgram; }
 	
 public:
 
-	virtual void OnCreated() override;
-	virtual void OnDelete() override;
+	virtual void OnCreated();
+	virtual void OnDelete();
 
 	void Unload();
-
-	virtual void CopyFrom(std::shared_ptr<const MResource> pResource) override;
-
-	virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
-	virtual void Deserialize(const void* pBufferPointer);
-
-	virtual bool SaveTo(const MString& strResourcePath) override;
-
-protected:
-
-	virtual bool Load(const MString& strResourcePath) override;
 
 private:
 
 	std::shared_ptr<MShaderProgram> m_pShaderProgram;
 
-	MERasterizerType m_eRasterizerType;
 	MEMaterialType m_eMaterialType;
+	MERasterizerType m_eRasterizerType;
 
 	bool m_bBatchInstanceEnable = false;
 };

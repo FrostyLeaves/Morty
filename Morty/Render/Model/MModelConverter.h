@@ -19,6 +19,9 @@
 
 #include <map>
 
+#include "Resource/MMaterialResource.h"
+
+class MSkeletalAnimationResource;
 struct aiNode;
 struct aiScene;
 struct aiMesh;
@@ -84,11 +87,11 @@ protected:
 	void ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh);
 	void ProcessMeshIndices(aiMesh* pMesh, const aiScene* pScene, MIMesh* pMMesh);
 
-	void BindVertexAndBones(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh);
+	void BindVertexAndBones(MSkeleton* pSkeleton, aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh);
 
 	void ProcessBones(const aiScene* pScene);
-	void RecordBones(aiNode* pNode, const aiScene* pScene);
-	void BindBones(aiNode* pNode, const aiScene* pScene, MBone* pParent = nullptr);
+	void RecordBones(MSkeleton* pSkeleton, aiNode* pNode, const aiScene* pScene);
+	void BindBones(MSkeleton* pSkeleton, aiNode* pNode, const aiScene* pScene, MBone* pParent = nullptr);
 
 	void ProcessLights(const aiScene* pScene);
 
@@ -102,7 +105,7 @@ protected:
 
 	MEntity* GetEntityFromNode(const aiScene* pScene, aiNode* pNode);
 
-	std::shared_ptr<MMaterial> GetMaterial(const aiScene* pScene, const uint32_t& nMaterialIdx);
+	std::shared_ptr<MMaterialResource> GetMaterial(const aiScene* pScene, const uint32_t& nMaterialIdx);
 
 	MEngine* GetEngine() { return m_pEngine; }
 
@@ -114,16 +117,16 @@ private:
 	MString m_strResourcePath;
 
 	std::vector<std::pair<MString, std::shared_ptr<MMeshResource>>> m_vMeshes;
-	std::vector<std::shared_ptr<MMaterial>> m_vMaterials;
+	std::vector<std::shared_ptr<MMaterialResource>> m_vMaterials;
 	std::map<MString, std::shared_ptr<MTextureResource>> m_tRawTextures;
 	std::set<std::shared_ptr<MResource>> m_tFileTextures;
 
 	std::map<aiNode*, MEntity*> m_tNodeMaps;
 
-	std::shared_ptr<MSkeletonResource> m_pSkeleton;
+	std::shared_ptr<MSkeletonResource> m_pSkeletonResource;
 	MEntity* m_pModelEntity;;
 
-	std::vector<std::shared_ptr<MSkeletalAnimation>> m_vSkeletalAnimation;
+	std::vector<std::shared_ptr<MSkeletalAnimationResource>> m_vSkeletalAnimation;
 
 
 	bool bImportCamera = false;

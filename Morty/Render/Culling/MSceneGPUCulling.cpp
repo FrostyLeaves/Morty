@@ -2,7 +2,6 @@
 
 #include "Component/MSceneComponent.h"
 #include "Engine/MEngine.h"
-#include "MergeInstancing/MRenderableMeshGroup.h"
 #include "Mesh/MMeshManager.h"
 #include "Scene/MEntity.h"
 #include "Shadow/MShadowMapUtil.h"
@@ -10,6 +9,7 @@
 #include "Material/MComputeDispatcher.h"
 #include "System/MObjectSystem.h"
 #include "Render/MRenderCommand.h"
+#include "MergeInstancing/MRenderableMaterialGroup.h"
 
 void MSceneGPUCulling::Initialize(MEngine* pEngine)
 {
@@ -148,7 +148,7 @@ void MSceneGPUCulling::Culling(const std::vector<MRenderableMaterialGroup*>& vIn
 		{
 			createNewGroupFunc(pMaterialGroup->GetMaterial(), pInstanceGroup);
 
-			pInstanceGroup->InstanceExecute([&](const MRenderableMeshInstance& instance, size_t nIdx)
+			pInstanceGroup->InstanceExecute([&](const MMeshInstanceRenderProxy& instance, size_t nIdx)
 			{
 				for(const auto& pFilter : m_vFilter)
 				{

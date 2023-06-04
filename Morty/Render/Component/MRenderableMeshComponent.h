@@ -15,6 +15,7 @@
 #include "Resource/MResource.h"
 #include "Resource/MMeshResource.h"
 
+class MMaterialResource;
 class MBoundsAABB;
 class MBoundsSphere;
 class MModelInstance;
@@ -42,11 +43,11 @@ public:
 
 	virtual void Release() override;
 
-	void SetMaterial(std::shared_ptr<MMaterial> pMaterial);
+	void SetMaterial(std::shared_ptr<MMaterialResource> pMaterial);
+	std::shared_ptr<MMaterialResource> GetMaterialResource() const;
 	std::shared_ptr<MMaterial> GetMaterial();
 
 	bool SetMaterialPath(const MString& strPath);
-	MString GetMaterialPath();
 
 	void Load(std::shared_ptr<MResource> pResource);
 
@@ -62,7 +63,7 @@ public:
 	MBoundsAABB* GetBoundsAABB();
 	MBoundsSphere* GetBoundsSphere();
 	
-	std::shared_ptr<MSkeletonInstance> GetSkeletonInstance();
+	MSkeletonInstance* GetSkeletonInstance();
 
 	void SetShadowType(const MEShadowType& eType) { m_eShadowType = eType; }
 	MEShadowType GetShadowType() { return m_eShadowType; }
@@ -75,6 +76,9 @@ public:
 
 	void SetGenerateDirLightShadow(const bool& bGenerate);
 	bool GetGenerateDirLightShadow() const { return m_bGenerateDirLightShadow; }
+
+	void SetSceneCullEnable(bool bEnable);
+	bool GetSceneCullEnable() const { return m_bSceneCullEnable; }
 
 	MModelComponent* GetAttachedModelComponent();
 
@@ -107,7 +111,7 @@ protected:
 	MEShadowType m_eShadowType;
 	uint32_t m_unDetailLevel;
 
-
+	bool m_bSceneCullEnable = true;
 	bool m_bDrawBoundingSphere;
 	bool m_bGenerateDirLightShadow = false;
 	bool m_bModelInstanceFound;

@@ -83,8 +83,7 @@ public:
 	std::weak_ptr<MShaderPropertyBlock> m_pSelfPointer;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
-	VkDescriptorSet m_VkDescriptorSet;
-	uint32_t m_unLayoutDataIdx;
+	VkDescriptorSet m_VkDescriptorSet = VK_NULL_HANDLE;
 #endif
 
 protected:

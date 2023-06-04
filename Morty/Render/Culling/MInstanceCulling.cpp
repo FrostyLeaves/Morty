@@ -6,8 +6,13 @@ void CameraFrustumCulling::UpdateCameraFrustum(Matrix4 cameraInvProj)
 	m_cameraFrustum.UpdateFromCameraInvProj(cameraInvProj);
 }
 
-bool CameraFrustumCulling::Filter(const MRenderableMeshInstance* instance) const
+bool CameraFrustumCulling::Filter(const MMeshInstanceRenderProxy* instance) const
 {
+	if (!instance->bCullEnable)
+	{
+		return true;
+	}
+
 	const MBoundsAABB& bounds = instance->boundsWithTransform;
 	if (MCameraFrustum::EOUTSIDE == m_cameraFrustum.ContainTest(bounds))
 	{

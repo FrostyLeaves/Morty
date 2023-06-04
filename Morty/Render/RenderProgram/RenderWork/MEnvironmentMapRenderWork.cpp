@@ -15,6 +15,7 @@
 #include "Resource/MTextureResource.h"
 
 #include "Component/MSkyBoxComponent.h"
+#include "Resource/MMeshResourceUtil.h"
 
 
 const int SpecularMipmapCount = 7;
@@ -164,7 +165,7 @@ void MEnvironmentMapRenderWork::InitializeResource()
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
 	m_pCubeMesh = pResourceSystem->CreateResource<MMeshResource>("Environment Draw Mesh");
-	m_pCubeMesh->LoadAsSphere();
+	m_pCubeMesh->Load(MMeshResourceUtil::CreateSphere());
 
 	if (std::shared_ptr<MTextureResource> pDiffuseCubeMapResource = pResourceSystem->CreateResource<MTextureResource>())
 	{

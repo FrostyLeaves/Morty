@@ -21,6 +21,7 @@
 
 #include "Flatbuffer/MSkeletalAnimation_generated.h"
 
+class MSkeletonInstance;
 class MORTY_API MSkeletalAnimNode
 {
 public:
@@ -43,51 +44,39 @@ public:
 	std::vector<uint32_t> m_vAnimToSkel;
 };
 
-class MORTY_API MSkeletalAnimation : public MIAnimation, public MResource
+class MORTY_API MSkeletalAnimation : public MIAnimation
 {
 public:
-	MORTY_CLASS(MSkeletalAnimation);
     MSkeletalAnimation();
     virtual ~MSkeletalAnimation();
 
 public:
 
-	std::shared_ptr<MSkeleton> GetSkeletonTemplate();
 
-	std::shared_ptr<MResource> GetSkeletonResource() { return m_Skeleton.GetResource(); }
+	uint32_t GetIndex() const { return m_unIndex; }
+	MString GetName() const { return m_strName; }
+	float GetTicksDuration() const { return m_fTicksDuration; }
+	float GetTicksPerSecond() const { return m_fTicksPerSecond; }
 
-	uint32_t GetIndex() { return m_unIndex; }
-	MString GetName() { return m_strName; }
-	float GetTicksDuration() { return m_fTicksDuration; }
-	float GetTicksPerSecond() { return m_fTicksPerSecond; }
+	void Update(const float& fTime, MSkeletonInstance* pSkeletonIns, const MSkeletonAnimMap& skelAnimMap) const;
 
-	void Update(const float& fTime, std::shared_ptr<MSkeletonInstance> pSkeletonIns, const MSkeletonAnimMap& skelAnimMap);
-
-public:
+	void SetSkeletonTemplate(MSkeleton* pSkeleton);
+	MSkeleton* GetSkeletonTemplate() const { return m_pSkeleton; }
 
 	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
 	void Deserialize(const void* pBufferPointer);
-
-public:
-	
-	virtual void OnDelete() override;
-
-public:
-
-	virtual bool Load(const MString& strResourcePath) override;
-	virtual bool SaveTo(const MString& strResourcePath) override;
 
 	static MString GetResourceTypeName() { return "Animation"; };
 	static std::vector<MString> GetSuffixList() { return { "anim" }; };
 
 protected:
 
-	bool FindTransform(const float& fTime, const MSkeletalAnimNode& animNode, MTransform& trans);
+	bool FindTransform(const float& fTime, const MSkeletalAnimNode& animNode, MTransform& trans) const;
 
 private:
 	friend class MModelConverter;
 	std::vector<MSkeletalAnimNode> m_vSkeletalAnimNodes;
-	MResourceRef m_Skeleton;
+	MSkeleton* m_pSkeleton = nullptr;
 
 	uint32_t m_unIndex;
 	MString m_strName;
@@ -95,6 +84,7 @@ private:
 	float m_fTicksPerSecond;
 };
 
+class MSkeletonInstance;
 class MSkeletalAnimationResource;
 class MORTY_API MSkeletalAnimController : public MIAnimController
 {
@@ -102,7 +92,7 @@ public:
 	MSkeletalAnimController();
 	virtual ~MSkeletalAnimController();
 
-	bool Initialize(std::shared_ptr<MSkeletonInstance> pSkeletonIns, std::shared_ptr<MSkeletalAnimation> pAnimation);
+	bool Initialize(MSkeletonInstance* pSkeletonIns, std::shared_ptr<MSkeletalAnimationResource> pAnimationResource);
 
 public:
 
@@ -119,15 +109,16 @@ public:
 
 	virtual MEAnimControllerState GetState() override { return m_eState; }
 
-	std::shared_ptr<MSkeletalAnimation> GetAnimation() { return m_pAnimation; }
+	const MSkeletalAnimation* GetAnimation() const { return m_pAnimation; }
+	std::shared_ptr<MSkeletalAnimationResource> GetAnimationResource() const;
 
 protected:
 
 	void BindMapping();
 
 private:
-	std::shared_ptr<MSkeletonInstance> m_pSkeletonIns;
-	std::shared_ptr<MSkeletalAnimation> m_pAnimation;
+	MSkeletonInstance* m_pSkeletonIns = nullptr;
+	const MSkeletalAnimation* m_pAnimation = nullptr;
 	MResourceRef m_AnimResource;
 
 	bool m_bInitialized;

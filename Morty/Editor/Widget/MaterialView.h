@@ -10,7 +10,7 @@
 class MScene;
 class MEntity;
 class MEngine;
-class MMaterial;
+class MMaterialResource;
 class MInputEvent;
 class MaterialView : public IBaseView
 {
@@ -19,7 +19,7 @@ public:
 	virtual ~MaterialView();
 
 public:
-	void SetMaterial(std::shared_ptr<MMaterial> pMaterial);
+	void SetMaterial(std::shared_ptr<MMaterialResource> pMaterial);
 
 	SceneTexture& GetSceneTexture() { return m_SceneTexture; }
 
@@ -34,7 +34,7 @@ protected:
 
 private:
 	MResourceRef m_Resource;
-	std::shared_ptr<MMaterial> m_pMaterial;
+	std::shared_ptr<MMaterialResource> m_pMaterial;
 	PropertyBase m_propertyBase;
 
 	MEngine* m_pEngine;

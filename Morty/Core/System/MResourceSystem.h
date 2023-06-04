@@ -25,11 +25,13 @@ class MResourceLoader;
 class MORTY_API MResourceSystem : public MISystem
 {
 public:
+	MORTY_CLASS(MResourceSystem)
+
 	MResourceSystem();
 	virtual ~MResourceSystem();
 
 	template <typename TYPE>
-	bool RegisterResourceType();
+	bool RegisterResourceLoader();
 
 	template<typename TYPE>
 	std::shared_ptr<TYPE> CreateResource();
@@ -40,14 +42,14 @@ public:
 	void SetSearchPath(const std::vector<MString>& vSearchPath);
 	std::vector<MString> GetSearchPath() const { return m_vSearchPath; }
 
-	const MType* GetResourceType(const MString& strResourcePath);
-
 	MString GetFullPath(const MString& strRelativePath);
 
-	std::shared_ptr<MResource> LoadResource(const MString& strResourcePath, const MType* type = nullptr);
+	std::shared_ptr<MResource> LoadResource(const MString& strResourcePath, bool bAsyncLoad = false);
 	void UnloadResource(std::shared_ptr<MResource> pResource);
-	
+	void SaveResource(std::shared_ptr<MResource> pResource);
+
 	void Reload(const MString& strResourcePath);
+	std::shared_ptr<MResourceLoader> CreateLoader(const MString& strResourcePath);
 
 	std::shared_ptr<MResource> FindResourceByID(const MResourceID& unID);
 
@@ -55,48 +57,38 @@ public:
 
 	void MoveTo(std::shared_ptr<MResource> pResource, const MString& strTargetPath);
 
-public:
+	void SaveTo(std::shared_ptr<MResource> pResource, const MString& strTargetPath);
 
 	virtual void Release() override;
 
 private:
-
-	std::map<const MType*, MResourceLoader*> m_tResourceLoader;
-
+	
 	std::map<MResourceID, std::shared_ptr<MResource>> m_tResources;
 	std::map<MString, std::shared_ptr<MResource>> m_tPathResources;
 
 	MIDPool<MResourceID> m_ResourceDB;
-	std::map<MString, const MType*> m_tResSuffixToType;
-
+	std::map<MString, std::function<std::shared_ptr<MResourceLoader>()>> m_tResourceLoader;
 
 	std::vector<MString> m_vSearchPath;
 
 };
 
 template <typename TYPE>
-bool MResourceSystem::RegisterResourceType()
+bool MResourceSystem::RegisterResourceLoader()
 {
-	if (!MTypeClass::IsType<TYPE, MResource>())
-		return false;
-
 	MString strTypeName = TYPE::GetResourceTypeName();
 	std::vector<MString> vSuffixNameList = TYPE::GetSuffixList();
-
-	MResourceLoader* pLoader = new MResourceLoaderTemp<TYPE>();
+	
 	for (const MString& suffix : vSuffixNameList)
 	{
-		if (m_tResSuffixToType.find(suffix) != m_tResSuffixToType.end())
+		if (m_tResourceLoader.find(suffix) != m_tResourceLoader.end())
 		{
 			GetEngine()->GetLogger()->Error("file suffix is already registed. suffix: %s", suffix);
 			continue;
 		}
-		m_tResSuffixToType[suffix] = TYPE::GetClassType();
+		m_tResourceLoader[suffix] = []() { return std::make_unique<TYPE>(); };
 	}
 
-	m_tResourceLoader[TYPE::GetClassType()] = pLoader;
-	pLoader->m_strResourceTypeName = strTypeName;
-	pLoader->m_vResourceSuffixList = vSuffixNameList;
 
 	return true;
 }

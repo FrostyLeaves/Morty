@@ -51,11 +51,11 @@ bool MNoneBatchGroup::CanAddMeshInstance() const
 	return !m_bInstanceValid;
 }
 
-void MNoneBatchGroup::AddMeshInstance(MRenderableMeshComponent* pComponent)
+void MNoneBatchGroup::AddMeshInstance(MMeshInstanceKey key, MMeshInstanceRenderProxy proxy)
 {
-	if(!pComponent)
+	if(!key)
 	{
-		MORTY_ASSERT(pComponent);
+		MORTY_ASSERT(key);
 		return;
 	}
 
@@ -70,61 +70,37 @@ void MNoneBatchGroup::AddMeshInstance(MRenderableMeshComponent* pComponent)
 		MORTY_ASSERT(!m_bInstanceValid);
 		return;
 	}
-
-	MResourceRef meshResource = pComponent->GetMeshResource();
-	auto pMeshResource = meshResource.GetResource<MMeshResource>();
-	if (!pMeshResource)
-	{
-		return;
-	}
-
-	m_instance.pMesh = pMeshResource->GetMesh();
-	m_instance.bounds = *pMeshResource->GetMeshesDefaultOBB();
-	m_instance.bVisible = true;
-
-	UpdateTransform(pComponent);
+	
+	UpdateMeshInstance(key, proxy);
 
 	m_bInstanceValid = true;
 }
 
-void MNoneBatchGroup::RemoveMeshInstance(MRenderableMeshComponent* pComponent)
+void MNoneBatchGroup::RemoveMeshInstance(MMeshInstanceKey key)
 {
 	m_bInstanceValid = false;
 }
 
-void MNoneBatchGroup::UpdateTransform(MRenderableMeshComponent* pComponent)
+void MNoneBatchGroup::UpdateMeshInstance(MMeshInstanceKey key, MMeshInstanceRenderProxy proxy)
 {
-	MSceneComponent* pSceneComponent = pComponent->GetEntity()->GetComponent<MSceneComponent>();
-	if (!pSceneComponent)
-	{
-		MORTY_ASSERT(pSceneComponent);
-		return;
-	}
-	
-	Matrix4 worldTrans = pSceneComponent->GetWorldTransform();
-
 	if (m_worldMatrix.IsValid())
 	{
-		m_worldMatrix.SetValue(worldTrans);
+		m_worldMatrix.SetValue(proxy.worldTransform);
 	}
 
 	if (m_normalMatrix.IsValid())
 	{
 		//Transposed and Inverse.
-		Matrix3 matNormal(worldTrans, 3, 3);
+		Matrix3 matNormal(proxy.worldTransform, 3, 3);
 
 		m_normalMatrix.SetValue(matNormal);
 	}
 
 	m_pTransformParam->SetDirty();
-
-
-	const Matrix4 matWorldTrans = pSceneComponent->GetWorldTransform();
-	const Vector3 v3Position = pSceneComponent->GetWorldPosition();
-	m_instance.boundsWithTransform.SetBoundsOBB(v3Position, matWorldTrans, m_instance.bounds);
+	m_instance = proxy;
 }
 
-void MNoneBatchGroup::InstanceExecute(std::function<void(const MRenderableMeshInstance&, size_t nIdx)> func)
+void MNoneBatchGroup::InstanceExecute(std::function<void(const MMeshInstanceRenderProxy&, size_t nIdx)> func)
 {
 	func(m_instance, 0);
 }

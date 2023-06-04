@@ -5,6 +5,8 @@
 #include "Render/MMesh.h"
 #include "Render/MVertex.h"
 #include "System/MRenderSystem.h"
+#include "TaskGraph/MTaskGraph.h"
+#include "Utility/MFunction.h"
 
 MORTY_CLASS_IMPLEMENT(MMeshManager, MObject)
 
@@ -37,6 +39,10 @@ void MMeshManager::OnCreated()
 
 	InitializeScreenRect();
 	InitializeSkyBox();
+
+	MTaskNode* pUploadBufferTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>("Upload Mesh Buffer");
+	pUploadBufferTask->SetThreadType(METhreadType::ERenderThread);
+	pUploadBufferTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MMeshManager::UploadBufferTask, this));
 }
 
 void MMeshManager::OnDelete()
@@ -122,69 +128,30 @@ void MMeshManager::ReleaseSkyBox()
 	m_pSkyBox = nullptr;
 }
 
-bool MMeshManager::RegisterMesh(MIMesh* pMesh)
+size_t MMeshManager::RoundIndexSize(size_t unIndexNum)
 {
-	if (!pMesh)
-	{
-		MORTY_ASSERT(pMesh);
-		return false;
-	}
+	return size_t((unIndexNum / ClusterSize) + (unIndexNum % ClusterSize ? 1 : 0)) * ClusterSize;;
+}
 
-//	if (pMesh->GetVertexStructSize() != MeshVertexStructSize)
-//	{
-//		MORTY_ASSERT(pMesh->GetVertexStructSize() == MeshVertexStructSize);
-//		return false;
-//	}
-
-	if (m_tMeshTable.find(pMesh) != m_tMeshTable.end())
-	{
-		MORTY_ASSERT(m_tMeshTable.find(pMesh) == m_tMeshTable.end());
-		return true;
-	}
-
+void MMeshManager::UploadBuffer(MIMesh* pMesh)
+{
 	const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 	MIDevice* pDevice = pRenderSystem->GetDevice();
+	MMeshData& meshMergeData = m_tMeshTable[pMesh];
 
+	const MByte* vVertexData = pMesh->GetVertices();
+	const MVertex* vVertex = reinterpret_cast<const MVertex*>(vVertexData);
+	const uint32_t* vIndexData = pMesh->GetIndices();
 	const size_t unVertexSize = pMesh->GetVerticesSize();
-	const size_t unIndexSize = pMesh->GetIndicesSize();
 	const size_t unIndexNum = pMesh->GetIndicesNum();
 	const size_t unVertexStructSize = pMesh->GetVertexStructSize();
-	const size_t unRoundIndexNum = ((unIndexNum / ClusterSize) + (unIndexNum % ClusterSize ? 1 : 0)) * ClusterSize;
-
-	size_t unAllocVertexMemory = unVertexSize;
-	unAllocVertexMemory += unVertexStructSize;
-	if (unAllocVertexMemory % VertexAllocByteAlignment)
-	{
-		unAllocVertexMemory = (unAllocVertexMemory / VertexAllocByteAlignment + 1) * VertexAllocByteAlignment;
-	}
-
-	MByte* vVertexData = pMesh->GetVertices();
-	MVertex* vVertex = reinterpret_cast<MVertex*>(vVertexData);
-	uint32_t* vIndexData = pMesh->GetIndices();
-
-
-	std::vector<MClusterData> meshClusterData;
-
-	//alloc vertex memory
-	MemoryInfo vertexMemoryInfo;
-	if (!m_vertexMemoryPool.AllowMemory(unAllocVertexMemory, vertexMemoryInfo))
-	{
-		MORTY_ASSERT(false);
-		return false;
-	}
-
-	MemoryInfo indexMemoryInfo;
-	if (!m_indexMemoryPool.AllowMemory(unRoundIndexNum * pMesh->GetIndexStructSize(), indexMemoryInfo))
-	{
-		MORTY_ASSERT(false);
-
-		m_vertexMemoryPool.FreeMemory(vertexMemoryInfo);
-		return false;
-	}
+	const size_t unRoundIndexNum = RoundIndexSize(unIndexNum);
+	const MemoryInfo& vertexMemoryInfo = meshMergeData.vertexMemoryInfo;
+	const MemoryInfo& indexMemoryInfo = meshMergeData.indexMemoryInfo;
 
 	//redirect index to global vertex space.
 	std::vector<uint32_t> vRedirectIndex(unRoundIndexNum);
-	
+
 	MemoryInfo indexInfo;
 	indexInfo.begin = indexMemoryInfo.begin / sizeof(uint32_t);
 	indexInfo.size = indexMemoryInfo.size / sizeof(uint32_t);
@@ -203,8 +170,8 @@ bool MMeshManager::RegisterMesh(MIMesh* pMesh)
 	const size_t nNewVertexIndexBegin = vertexInfo.begin / unVertexStructSize;
 
 
-
 	size_t nCurrentIndex = 0;
+	std::vector<MClusterData> meshClusterData;
 	while (nCurrentIndex < unRoundIndexNum)
 	{
 		MClusterData indexMemoryData;
@@ -241,13 +208,80 @@ bool MMeshManager::RegisterMesh(MIMesh* pMesh)
 		reinterpret_cast<const MByte*>(vRedirectIndex.data()),
 		indexMemoryInfo.size);
 
+	meshMergeData.vertexInfo = vertexInfo;
+	meshMergeData.indexInfo = indexInfo;
+	meshMergeData.vClusterData = std::move(meshClusterData);
+}
+
+void MMeshManager::UploadBufferTask(MTaskNode* pNode)
+{
+	if (m_vUploadQueue.empty())
+	{
+		return;
+	}
+
+	std::vector<MIMesh*> vUploadQueue;
+	{
+		std::lock_guard lock(m_uploadMutex);
+		vUploadQueue.swap(m_vUploadQueue);
+	}
+
+	for (MIMesh* pMesh : vUploadQueue)
+	{
+		UploadBuffer(pMesh);
+	}
+}
+
+bool MMeshManager::RegisterMesh(MIMesh* pMesh)
+{
+	if (!pMesh)
+	{
+		return false;
+	}
+
+	if (m_tMeshTable.find(pMesh) != m_tMeshTable.end())
+	{
+		return true;
+	}
+
+	const size_t unVertexSize = pMesh->GetVerticesSize();
+	const size_t unIndexNum = pMesh->GetIndicesNum();
+	const size_t unVertexStructSize = pMesh->GetVertexStructSize();
+	const size_t unRoundIndexNum = RoundIndexSize(unIndexNum);
+
+	size_t unAllocVertexMemory = unVertexSize;
+	unAllocVertexMemory += unVertexStructSize;
+	if (unAllocVertexMemory % VertexAllocByteAlignment)
+	{
+		unAllocVertexMemory = (unAllocVertexMemory / VertexAllocByteAlignment + 1) * VertexAllocByteAlignment;
+	}
+
+
+	//alloc vertex memory
+	MemoryInfo vertexMemoryInfo;
+	if (!m_vertexMemoryPool.AllowMemory(unAllocVertexMemory, vertexMemoryInfo))
+	{
+		MORTY_ASSERT(false);
+		return false;
+	}
+
+	MemoryInfo indexMemoryInfo;
+	if (!m_indexMemoryPool.AllowMemory(unRoundIndexNum * pMesh->GetIndexStructSize(), indexMemoryInfo))
+	{
+		MORTY_ASSERT(false);
+
+		m_vertexMemoryPool.FreeMemory(vertexMemoryInfo);
+		return false;
+	}
 
 	MMeshData& meshMergeData = m_tMeshTable[pMesh];
-	meshMergeData.vertexInfo = vertexInfo;
 	meshMergeData.vertexMemoryInfo = vertexMemoryInfo;
-	meshMergeData.indexInfo = indexInfo;
 	meshMergeData.indexMemoryInfo = indexMemoryInfo;
-	meshMergeData.vClusterData = std::move(meshClusterData);
+
+	{
+		std::lock_guard lock(m_uploadMutex);
+		m_vUploadQueue.push_back(pMesh);
+	}
 
 	return true;
 }

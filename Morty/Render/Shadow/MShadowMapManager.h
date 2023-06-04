@@ -11,13 +11,14 @@
 #include "Render/MRenderInstanceCache.h"
 #include "Shadow/MShadowMapUtil.h"
 #include "Component/MRenderableMeshComponent.h"
-#include "MergeInstancing/MRenderableMeshGroup.h"
+#include "MergeInstancing/MRenderableMaterialGroup.h"
 
 
 class MIMesh;
 class MScene;
 class MEngine;
 class MMaterial;
+class MTaskNode;
 class MComponent;
 class MComputeDispatcher;
 class MShaderConstantParam;
@@ -48,39 +49,36 @@ public:
 	void RegisterComponent(MComponent* pComponent) override;
 	void UnregisterComponent(MComponent* pComponent) override;
 
-	void SceneTick(MScene* pScene, const float& fDelta) override;
+	void RenderUpdate(MTaskNode* pNode);
+	MTaskNode* GetUpdateTask() const { return m_pUpdateTask; }
 
 	void OnTransformChanged(MComponent* pComponent);
 	void OnMeshChanged(MComponent* pComponent);
 	void OnGenerateShadowChanged(MComponent* pComponent);
 
+	bool IsGenerateShadowMaterial(MEMaterialType eType) const;
 
 	MRenderableMaterialGroup* GetStaticShadowGroup() { return &m_staticShadowGroup; }
 
 
 protected:
 
-	void AddQueueUpdateTransform(MRenderableMeshComponent* pComponent);
-	void AddQueueUpdateMesh(MRenderableMeshComponent* pComponent);
-	void AddQueueUpdateGenerateShadow(MRenderableMeshComponent* pComponent);
+	void AddToUpdateQueue(MRenderableMeshComponent* pComponent);
 
 
 	void InitializeMaterial();
 	void ReleaseMaterial();
 
-	void AddComponentToCache(MRenderableMeshComponent* pComponent);
 	void RemoveComponentFromCache(MRenderableMeshComponent* pComponent);
-	void UpdateBoundsInWorld(MRenderableMeshComponent* pComponent);
-	void UpdateComponentMesh(MRenderableMeshComponent* pComponent);
-	void UpdateGenerateShadow(MRenderableMeshComponent* pComponent);
 
 private:
 
-	std::set<MRenderableMeshComponent*> m_tWaitUpdateTransformComponent;
-	std::set<MRenderableMeshComponent*> m_tWaitUpdateMeshComponent;
-	std::set<MRenderableMeshComponent*> m_tWaitUpdateGenerateShadowComponent;
+	std::map<MRenderableMeshComponent*, MMeshInstanceRenderProxy> m_tWaitAddComponent;
+	std::map<MRenderableMeshComponent*, MMeshInstanceRenderProxy> m_tWaitUpdateComponent;
+	std::set<MRenderableMeshComponent*> m_tWaitRemoveComponent;
 	
 	MRenderableMaterialGroup m_staticShadowGroup;
+	MTaskNode* m_pUpdateTask = nullptr;
 };
 
 #endif

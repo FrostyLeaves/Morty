@@ -27,11 +27,13 @@ public:
 
 public:
 
-	void SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeleton);
+	void Release() override;
+
+	void SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeletonRsource);
 	void SetSkeletonResourcePath(const MString& strSkeletonPath);
 	MString GetSkeletonResourcePath() const;
 
-	std::shared_ptr<MSkeletonInstance> GetSkeleton() { return m_pSkeleton; }
+	MSkeletonInstance* GetSkeleton() const { return m_pSkeleton; }
 
 public:
 
@@ -59,7 +61,7 @@ private:
 
 	MResourceRef m_SkeletonResource;
 
-	std::shared_ptr<MSkeletonInstance> m_pSkeleton;
+	MSkeletonInstance* m_pSkeleton = nullptr;
 	MSkeletalAnimController* m_pCurrentAnimationController;
 
 	bool m_bBoundingBoxVisiable;

@@ -11,75 +11,49 @@
 #include "Utility/MGlobal.h"
 #include "Utility/MString.h"
 #include "Resource/MResource.h"
+#include "System/MResourceSystem.h"
+#include "Utility/MFileHelper.h"
 
 class MResourceSystem;
 class MORTY_API MResourceLoader
 {
 public:
-	MResourceLoader() {}
-	virtual ~MResourceLoader() {}
+	MResourceLoader() = default;
+	virtual ~MResourceLoader() = default;
 
 public:
 
 	virtual std::shared_ptr<MResource> Create(MResourceSystem* pManager) = 0;
-	virtual std::shared_ptr<MResource> Load(MResourceSystem* pManager, const MString& svFullPath, const MString& svPath) = 0;
 
-protected:
+	virtual std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath, const MString& svPath) = 0;
 
-	bool ResourceLoad(std::shared_ptr<MResource> pResource, const MString& svPath)
-	{
-		if (pResource->Load(svPath))
-			return true;
+	MString strResourcePath;
+	MString strResourceFullPath;
 
-		return false;
-	}
-
-	void SetResourcePath(std::shared_ptr<MResource> pResource, const MString& svPath)
-	{
-		pResource->m_strResourcePath = svPath;
-	}
-
-
-
-private:
-
-	friend class MResourceSystem;
-	MString m_strResourceTypeName;
-	std::vector<MString> m_vResourceSuffixList;
+	std::shared_ptr<MResource> pResource = nullptr;
+	std::unique_ptr<MResourceData> pResourceData = nullptr;
 };
 
-template <typename RESOURCE_TYPE>
-class MORTY_API MResourceLoaderTemp : public MResourceLoader
+template<typename RESOURCE_TYPE, typename RESOURCE_DATA_TYPE>
+class MORTY_API MResourceLoaderTemplate : public MResourceLoader
 {
 public:
-	MResourceLoaderTemp() {}
-	virtual ~MResourceLoaderTemp() {}
-
-public:
-
-	virtual std::shared_ptr<MResource> Create(MResourceSystem* pManager) override
+	std::shared_ptr<MResource> Create(MResourceSystem* pManager) override
 	{
 		return pManager->CreateResource<RESOURCE_TYPE>();
 	}
 
-	virtual std::shared_ptr<MResource> Load(MResourceSystem* pManager, const MString& svFullPath, const MString& svPath) override
+	std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath, const MString& svPath) override
 	{
-		std::shared_ptr<RESOURCE_TYPE> pResource = pManager->CreateResource<RESOURCE_TYPE>();
-		if (pResource)
-		{
-			SetResourcePath(pResource, svPath);
-			if (ResourceLoad(pResource, svFullPath))
-			{
-				return pResource;
-			}
-			pManager->UnloadResource(pResource);
-		}
-		return nullptr;
+		std::unique_ptr<RESOURCE_DATA_TYPE> pResourceData = std::make_unique<RESOURCE_DATA_TYPE>();
+
+		std::vector<MByte> data;
+		MFileHelper::ReadData(svFullPath, data);
+
+		pResourceData->LoadBuffer(data);
+		return pResourceData;
 	}
-	
-private:
 
 };
-
 
 #endif

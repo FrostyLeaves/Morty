@@ -2,11 +2,11 @@
 
 #include "Component/MSceneComponent.h"
 #include "Engine/MEngine.h"
-#include "MergeInstancing/MRenderableMeshGroup.h"
 #include "Mesh/MMeshManager.h"
 #include "Scene/MEntity.h"
 #include "Shadow/MShadowMapUtil.h"
 #include "System/MRenderSystem.h"
+#include "MergeInstancing/MRenderableMaterialGroup.h"
 
 
 void MCascadedShadowCulling::Initialize(MEngine* pEngine)
@@ -64,7 +64,7 @@ void MCascadedShadowCulling::Culling(const std::vector<MRenderableMaterialGroup*
 	{
 		int nIndirectBeginIdx = vDrawIndirectData.size();
 		const auto pMeshProperty = pInstanceBatchGroup->GetMeshProperty();
-		pMeshProperty->SetValue("u_meshInstanceBeginIndex", nIndirectBeginIdx);
+		pMeshProperty->SetValue("u_meshInstanceBeginIndex", 0);
 
 		m_vCullingInstanceGroup.push_back({});
 		MMaterialCullingGroup* pMaterialCullingGroup = &m_vCullingInstanceGroup.back();
@@ -99,30 +99,35 @@ void MCascadedShadowCulling::Culling(const std::vector<MRenderableMaterialGroup*
 		{
 			createNewGroupFunc(pMaterialGroup->GetMaterial(), pInstanceGroup);
 
-			pInstanceGroup->InstanceExecute([&](const MRenderableMeshInstance& instance, size_t nIdx)
+			pInstanceGroup->InstanceExecute([&](const MMeshInstanceRenderProxy& instance, size_t nIdx)
 			{
 				const MBoundsAABB& bounds = instance.boundsWithTransform;
 
+				size_t nOutsideCount = 0;
 			    for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
 			    {
 				    if (MCameraFrustum::EOUTSIDE == vCascadedData[nCascadedIdx].cCameraFrustum.ContainTest(bounds, v3LightDirection))
 				    {
+						++nOutsideCount;
 					    continue;
 				    }
 
 					vShadowBoundsValid[nCascadedIdx] = true;
 					bounds.UnionMinMax(vShadowBoundsMin[nCascadedIdx], vShadowBoundsMax[nCascadedIdx]);
-
-				    const MMeshManager::MMeshData& data = pMeshManager->FindMesh(instance.pMesh);
-				    const MDrawIndexedIndirectData indirectData = {
-				    data.indexInfo.size,
-						    1,
-						    data.indexInfo.begin,
-						    0,
-						    static_cast<uint32_t>(nIdx)
-				    };
-				    vDrawIndirectData.push_back(indirectData);
 			    }
+
+				if (nOutsideCount < MRenderGlobal::CASCADED_SHADOW_MAP_NUM)
+				{
+					const MMeshManager::MMeshData& data = pMeshManager->FindMesh(instance.pMesh);
+					const MDrawIndexedIndirectData indirectData = {
+					data.indexInfo.size,
+							1,
+							data.indexInfo.begin,
+							0,
+							static_cast<uint32_t>(nIdx)
+					};
+					vDrawIndirectData.push_back(indirectData);
+				}
 			});
 
 			if (!m_vCullingInstanceGroup.empty())
@@ -150,13 +155,13 @@ void MCascadedShadowCulling::Culling(const std::vector<MRenderableMaterialGroup*
 	{
 		if (vShadowBoundsValid[nCascadedIdx])
 		{
-			m_vCascadedPcsBounds[nCascadedIdx].SetMinMax(vShadowBoundsMin[nCascadedIdx], vShadowBoundsMax[nCascadedIdx]);
+			m_vCascadedPscBounds[nCascadedIdx].SetMinMax(vShadowBoundsMin[nCascadedIdx], vShadowBoundsMax[nCascadedIdx]);
 		}
 		else
 		{
-			m_vCascadedPcsBounds[nCascadedIdx].SetMinMax(Vector3::Zero, Vector3::Zero);
+			m_vCascadedPscBounds[nCascadedIdx].SetMinMax(Vector3::Zero, Vector3::Zero);
 		}
 	}
 
-	m_vCascadedRenderData = MShadowMapUtil::CalculateRenderData(m_pViewport, m_pCameraEntity, vCascadedData, m_vCascadedPcsBounds);
+	m_vCascadedRenderData = MShadowMapUtil::CalculateRenderData(m_pViewport, m_pCameraEntity, vCascadedData, m_vCascadedPscBounds);
 }

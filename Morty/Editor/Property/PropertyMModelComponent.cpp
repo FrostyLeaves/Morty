@@ -8,7 +8,7 @@ void PropertyMModelComponent::EditAnimation(MModelComponent* pModelComponent)
 {
 	
 	MSkeletalAnimController* pController = pModelComponent->GetSkeletalAnimationController();
-	std::shared_ptr<MSkeletalAnimation> pCurrentAnimResource = pController ? pController->GetAnimation() : nullptr;
+	auto pCurrentAnimResource = pController ? pController->GetAnimationResource() : nullptr;
 
 	static auto ModelLoadFunc = [&pModelComponent](const MString& strNewFilePath) {
 
@@ -35,7 +35,7 @@ void PropertyMModelComponent::EditAnimation(MModelComponent* pModelComponent)
 		}
 	};
 	ShowValueBegin("Animation");
-	EditMResource("skelanim_file_dlg", MSkeletalAnimationResource::GetResourceTypeName(), MSkeletalAnimationResource::GetSuffixList(), pCurrentAnimResource, ModelLoadFunc);
+	EditMResource("skelanim_file_dlg", MSkeletalAnimationLoader::GetResourceTypeName(), MSkeletalAnimationLoader::GetSuffixList(), pCurrentAnimResource, ModelLoadFunc);
 
 	ShowValueEnd();
 

@@ -48,7 +48,7 @@ public:
 	virtual void UploadBuffer(MBuffer* pBuffer, const size_t& unBeginOffset, const MByte* data, const size_t& unDataSize) override;
 	virtual void DownloadBuffer(MBuffer* pBuffer, MByte* outputData, const size_t& nSize) override;
 
-	virtual void GenerateTexture(MTexture* pTexture, MByte* pData = nullptr) override;
+	virtual void GenerateTexture(MTexture* pTexture, const MByte* pData = nullptr) override;
 	virtual void DestroyTexture(MTexture* pTexture) override;
 
 	virtual bool CompileShader(MShader* pShader) override;
@@ -68,9 +68,6 @@ public:
 
 	virtual bool GenerateShaderProgram(MShaderProgram* pShaderProgram) override;
 	virtual void DestroyShaderProgram(MShaderProgram* pShaderProgram) override;
-
-	virtual bool RegisterMaterial(std::shared_ptr<MMaterial> pMaterial) override;
-	virtual bool UnRegisterMaterial(std::shared_ptr<MMaterial> pMaterial) override;
 
 	virtual bool RegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher) override;
 	virtual bool UnRegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher) override;

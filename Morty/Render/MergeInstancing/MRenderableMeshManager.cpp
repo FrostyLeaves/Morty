@@ -17,6 +17,7 @@
 #include "Module/MCoreNotify.h"
 
 #include "Mesh/MMeshManager.h"
+#include "TaskGraph/MTaskGraph.h"
 
 MORTY_INTERFACE_IMPLEMENT(MRenderableMeshManager, IManager)
 
@@ -30,6 +31,12 @@ void MRenderableMeshManager::Initialize()
 		pNotifySystem->RegisterNotify(MCoreNotify::NOTIFY_TRANSFORM_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MRenderableMeshManager::OnTransformChanged, this));
 		pNotifySystem->RegisterNotify(MRenderNotify::NOTIFY_MATERIAL_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MRenderableMeshManager::OnMaterialChanged, this));
 		pNotifySystem->RegisterNotify(MRenderNotify::NOTIFY_MESH_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MRenderableMeshManager::OnMeshChanged, this));
+	}
+
+	if (m_pUpdateTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>("RenderMeshManagerUpdate"))
+	{
+		m_pUpdateTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MRenderableMeshManager::RenderUpdate, this));
+		m_pUpdateTask->SetThreadType(METhreadType::ERenderThread);
 	}
 }
 
@@ -48,56 +55,87 @@ void MRenderableMeshManager::Release()
 	Super::Release();
 }
 
-void MRenderableMeshManager::SceneTick(MScene* pScene, const float& fDelta)
+void MRenderableMeshManager::RenderUpdate(MTaskNode* pNode)
 {
-	for(auto pComponent : m_tWaitUpdateRenderGroupComponent)
+	for (auto& [material, group] : m_tRenderableMaterialGroup)
 	{
-		RemoveComponentFromGroup(pComponent);
-		AddComponentToGroup(pComponent);
-	}
-	m_tWaitUpdateRenderGroupComponent.clear();
+		if (!group->tWaitRemoveComponent.empty())
+		{
+			for (const auto& key : group->tWaitRemoveComponent)
+			{
+				group->materialGroup.RemoveMeshInstance(key);
+			}
+			group->tWaitRemoveComponent.clear();
+		}
 
-	for (auto pComponent : m_tWaitUpdateMeshComponent)
-	{
-		BindMesh(pComponent, pComponent->GetMesh());
-	}
-	m_tWaitUpdateMeshComponent.clear();
+		if (!group->tWaitAddComponent.empty())
+		{
+			for (auto& [key, proxy] : group->tWaitAddComponent)
+			{
+				group->materialGroup.AddMeshInstance(key, proxy);
+			}
+			group->tWaitAddComponent.clear();
+		}
 
-	for (auto pComponent : m_tWaitUpdateTransformComponent)
-	{
-		UpdateTransform(pComponent);
-	}
-	m_tWaitUpdateTransformComponent.clear();
+		if (!group->tWaitUpdateComponent.empty())
+		{
+			for (auto& [key, proxy] : group->tWaitUpdateComponent)
+			{
+				group->materialGroup.UpdateMeshInstance(key, proxy);
+			}
+			group->tWaitUpdateComponent.clear();
+		}
 
-	for (auto pComponent : m_tWaitUpdateVisibleComponent)
-	{
-	    
+		if (group->materialGroup.IsEmpty())
+		{
+			m_tRenderableMaterialGroup.erase(group->materialGroup.GetMaterial());
+			group->materialGroup.Release(GetEngine());
+			delete group;
+		}
 	}
-	m_tWaitUpdateVisibleComponent.clear();
+
 }
 
 void MRenderableMeshManager::OnTransformChanged(MComponent* pComponent)
 {
 	if (MRenderableMeshComponent* pMeshComponent = pComponent->GetEntity()->GetComponent<MRenderableMeshComponent>())
 	{
-		AddQueueUpdateTransform(pMeshComponent);
+		UpdateMeshInstance(pMeshComponent, MRenderableMaterialGroup::CreateProxyFromComponent(pMeshComponent));
 	}
 }
 
 void MRenderableMeshManager::OnMaterialChanged(MComponent* pComponent)
 {
-	if (MRenderableMeshComponent* pMeshComponent = pComponent->DynamicCast<MRenderableMeshComponent>())
+	MRenderableMeshComponent* pMeshComponent = pComponent->DynamicCast<MRenderableMeshComponent>();
+	if (!pMeshComponent)
 	{
-		AddQueueUpdateRenderGroup(pMeshComponent);
+		return;
 	}
+
+    RemoveComponentFromGroup(pMeshComponent);
+
+	auto pMaterial = pMeshComponent->GetMaterial();
+	if (!pMaterial)
+	{
+		return;
+	}
+
+	if (!IsRenderableMeshMaterial(pMaterial->GetMaterialType()))
+	{
+		return;
+	}
+
+    AddComponentToGroup(pMeshComponent);
 }
 
 void MRenderableMeshManager::OnMeshChanged(MComponent* pComponent)
 {
 	if (MRenderableMeshComponent* pMeshComponent = pComponent->DynamicCast<MRenderableMeshComponent>())
 	{
-		AddQueueUpdateMesh(pMeshComponent);
-		AddQueueUpdateRenderGroup(pMeshComponent);
+		//TODO remove it.
+		GetEngine()->FindGlobalObject<MMeshManager>()->RegisterMesh(pMeshComponent->GetMesh());
+
+		UpdateMeshInstance(pMeshComponent, MRenderableMaterialGroup::CreateProxyFromComponent(pMeshComponent));
 	}
 }
 
@@ -105,51 +143,24 @@ void MRenderableMeshManager::OnVisibleChanged(MComponent* pComponent)
 {
 	if (auto pMeshComponent = pComponent->GetEntity()->GetComponent<MRenderableMeshComponent>())
 	{
-		m_tWaitUpdateVisibleComponent.insert(pMeshComponent);
+		UpdateMeshInstance(pMeshComponent, MRenderableMaterialGroup::CreateProxyFromComponent(pMeshComponent));
 	}
-}
-
-void MRenderableMeshManager::AddQueueUpdateTransform(MRenderableMeshComponent* pComponent)
-{
-	m_tWaitUpdateTransformComponent.insert(pComponent);
-}
-
-void MRenderableMeshManager::AddQueueUpdateMesh(MRenderableMeshComponent* pComponent)
-{
-	m_tWaitUpdateMeshComponent.insert(pComponent);
-}
-
-void MRenderableMeshManager::AddQueueUpdateRenderGroup(MRenderableMeshComponent* pComponent)
-{
-	m_tWaitUpdateRenderGroupComponent.insert(pComponent);
-}
-
-void MRenderableMeshManager::AddQueueUpdateVisible(MRenderableMeshComponent* pComponent)
-{
-	m_tWaitUpdateVisibleComponent.insert(pComponent);
 }
 
 void MRenderableMeshManager::RemoveComponent(MRenderableMeshComponent* pComponent)
 {
-	m_tWaitUpdateMeshComponent.erase(pComponent);
-	m_tWaitUpdateTransformComponent.erase(pComponent);
-	m_tWaitUpdateRenderGroupComponent.erase(pComponent);
-	m_tWaitUpdateVisibleComponent.erase(pComponent);
-
-	BindMesh(pComponent, nullptr);
 	RemoveComponentFromGroup(pComponent);
 }
 
 std::vector<MRenderableMaterialGroup*> MRenderableMeshManager::FindGroupFromMaterialType(MEMaterialType eType) const
 {
 	std::vector<MRenderableMaterialGroup*> vRenderableGroup;
-	const auto& tMaterialGroup = GetRenderableMaterialGroup();
-	for (auto pr : tMaterialGroup)
+	for (auto pr : m_tRenderableMaterialGroup)
 	{
 		auto pMaterial = pr.first;
 		if (pMaterial->GetMaterialType() == eType)
 		{
-			vRenderableGroup.push_back(pr.second);
+			vRenderableGroup.push_back(&pr.second->materialGroup);
 		}
 	}
 
@@ -159,13 +170,19 @@ std::vector<MRenderableMaterialGroup*> MRenderableMeshManager::FindGroupFromMate
 std::vector<MRenderableMaterialGroup*> MRenderableMeshManager::GetAllMaterialGroup() const
 {
 	std::vector<MRenderableMaterialGroup*> vRenderableGroup;
-	const auto& tMaterialGroup = GetRenderableMaterialGroup();
-	for (auto pr : tMaterialGroup)
+	for (auto pr : m_tRenderableMaterialGroup)
 	{
-		vRenderableGroup.push_back(pr.second);
+		vRenderableGroup.push_back(&pr.second->materialGroup);
 	}
 
 	return vRenderableGroup;
+}
+
+bool MRenderableMeshManager::IsRenderableMeshMaterial(MEMaterialType eType) const
+{
+	return eType == MEMaterialType::EDefault
+		|| eType == MEMaterialType::EDeferred
+        || eType == MEMaterialType::ECustom;
 }
 
 void MRenderableMeshManager::AddComponentToGroup(MRenderableMeshComponent* pComponent)
@@ -179,16 +196,16 @@ void MRenderableMeshManager::AddComponentToGroup(MRenderableMeshComponent* pComp
 	const auto findResult = m_tRenderableMaterialGroup.find(pMaterial);
 	if (findResult != m_tRenderableMaterialGroup.end())
 	{
-		findResult->second->AddMeshInstance(pComponent);
+		findResult->second->tWaitAddComponent[pComponent] = MRenderableMaterialGroup::CreateProxyFromComponent(pComponent);
 		m_tComponentTable[pComponent] = findResult->second;
 		return;
 	}
 
-	auto pRenderableGroup = new MRenderableMaterialGroup();
+	auto pRenderableGroup = new MaterialGroup();
 	m_tRenderableMaterialGroup[pMaterial] = pRenderableGroup;
-	pRenderableGroup->Initialize(GetEngine(), pMaterial);
+	pRenderableGroup->materialGroup.Initialize(GetEngine(), pMaterial);
 
-	pRenderableGroup->AddMeshInstance(pComponent);
+	pRenderableGroup->tWaitAddComponent[pComponent] = MRenderableMaterialGroup::CreateProxyFromComponent(pComponent);
 	m_tComponentTable[pComponent] = pRenderableGroup;
 }
 
@@ -200,26 +217,15 @@ void MRenderableMeshManager::RemoveComponentFromGroup(MRenderableMeshComponent* 
 		return;
 	}
 
-	MRenderableMaterialGroup* pMaterialGroup = findResult->second;
+	auto group = findResult->second;
 
-	pMaterialGroup->RemoveMeshInstance(pComponent);
-	if (pMaterialGroup->IsEmpty())
-	{
-		m_tRenderableMaterialGroup.erase(pMaterialGroup->GetMaterial());
-		pMaterialGroup->Release(GetEngine());
-		delete pMaterialGroup;
-	}
-
+	group->tWaitAddComponent.erase(pComponent);
+	group->tWaitUpdateComponent.erase(pComponent);
+	group->tWaitRemoveComponent.insert(pComponent);
 	m_tComponentTable.erase(findResult);
 }
 
-void MRenderableMeshManager::UpdateTransform(MSceneComponent* pComponent)
-{
-	auto pMeshComponent = pComponent->GetEntity()->GetComponent<MRenderableMeshComponent>();
-	UpdateTransform(pMeshComponent);
-}
-
-void MRenderableMeshManager::UpdateTransform(MRenderableMeshComponent* pComponent)
+void MRenderableMeshManager::UpdateMeshInstance(MRenderableMeshComponent* pComponent, MMeshInstanceRenderProxy proxy)
 {
 	const auto findResult = m_tComponentTable.find(pComponent);
 	if (findResult == m_tComponentTable.end())
@@ -227,107 +233,25 @@ void MRenderableMeshManager::UpdateTransform(MRenderableMeshComponent* pComponen
 		return;
 	}
 
-	MRenderableMaterialGroup* pMaterialGroup = findResult->second;
+	auto pMaterialGroup = findResult->second;
 	if (!pMaterialGroup)
 	{
 		MORTY_ASSERT(pMaterialGroup);
 		return;
 	}
 
-	pMaterialGroup->UpdateTransform(pComponent);
-}
-
-void MRenderableMeshManager::UpdateVisible(MRenderableMeshComponent* pComponent)
-{
-	MSceneComponent* pSceneComponent = pComponent->GetEntity()->GetComponent<MSceneComponent>();
-	if (!pSceneComponent)
-	{
-		return;
-	}
-
-	const auto findResult = m_tComponentTable.find(pComponent);
-	if (findResult == m_tComponentTable.end())
-	{
-		return;
-	}
-
-	MRenderableMaterialGroup* pMaterialGroup = findResult->second;
-	if (!pMaterialGroup)
-	{
-		MORTY_ASSERT(pMaterialGroup);
-		return;
-	}
-
-
-	pMaterialGroup->UpdateVisible(pComponent, pSceneComponent->GetVisibleRecursively());
+	pMaterialGroup->tWaitUpdateComponent[pComponent] = proxy;
 }
 
 void MRenderableMeshManager::Clean()
 {
 	for (auto pr : m_tRenderableMaterialGroup)
 	{
-		MRenderableMaterialGroup* pMaterialGroup = pr.second;
-		pMaterialGroup->Release(GetEngine());
-		delete pMaterialGroup;
+		auto* group = pr.second;
+		group->materialGroup.Release(GetEngine());
+		delete group;
 	}
+
 	m_tRenderableMaterialGroup.clear();
 	m_tComponentTable.clear();
-
-	m_tMeshReferenceTable.clear();
-    m_tMeshReferenceComponentTable.clear();
-}
-
-void MRenderableMeshManager::BindMesh(MRenderableMeshComponent* pComponent, MIMesh* pMesh)
-{
-	MMeshReferenceMap* pOriginReference = nullptr;
-	MMeshReferenceMap* pNewReference = nullptr;
-
-	auto findResult = m_tMeshReferenceComponentTable.find(pComponent);
-	if (findResult != m_tMeshReferenceComponentTable.end())
-	{
-		pOriginReference = findResult->second;
-	}
-
-	if (pMesh)
-	{
-		auto findMesh = m_tMeshReferenceTable.find(pMesh);
-		if (findMesh == m_tMeshReferenceTable.end())
-		{
-			pNewReference = new MMeshReferenceMap();
-			pNewReference->pMesh = pMesh;
-			m_tMeshReferenceTable[pMesh] = pNewReference;
-
-			MMeshManager* pMeshManager = GetScene()->GetEngine()->FindGlobalObject<MMeshManager>();
-			if (!pMeshManager->HasMesh(pMesh))
-			{
-				pMeshManager->RegisterMesh(pMesh);
-			}
-		}
-		else
-		{
-			pNewReference = findMesh->second;
-		}
-	}
-
-	if (pOriginReference == pNewReference)
-	{
-		return;
-	}
-
-	if (pOriginReference)
-	{
-		pOriginReference->tComponents.erase(pComponent);
-		if (pOriginReference->tComponents.empty())
-		{
-			MMeshManager* pMeshManager = GetScene()->GetEngine()->FindGlobalObject<MMeshManager>();
-			pMeshManager->UnregisterMesh(pOriginReference->pMesh);
-
-			m_tMeshReferenceTable.erase(pOriginReference->pMesh);
-		}
-	}
-
-	if (pNewReference)
-	{
-		pNewReference->tComponents.insert(pComponent);
-	}
 }

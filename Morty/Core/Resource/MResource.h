@@ -22,6 +22,27 @@ class MObject;
 
 enum class MEResourceType;
 
+class MORTY_API MResourceData
+{
+public:
+	MResourceData() = default;
+	virtual ~MResourceData() = default;
+
+	virtual void LoadBuffer(const std::vector<MByte>& buffer) = 0;
+	virtual std::vector<MByte> SaveBuffer() const = 0;
+};
+
+class MORTY_API MFbResourceData : public MResourceData
+{
+public:
+
+	virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const = 0;
+	virtual void Deserialize(const void* pBufferPointer) = 0;
+
+	void LoadBuffer(const std::vector<MByte>& buffer) override;
+	std::vector<MByte> SaveBuffer() const override;
+};
+
 class MORTY_API MResource : public MTypeClass
 {
 	MORTY_INTERFACE(MResource)
@@ -43,25 +64,17 @@ public:
 
 	MString GetResourcePath() { return m_strResourcePath; }
 
-	std::shared_ptr<MResource> GetShared();
+	std::shared_ptr<MResource> GetShared() const;
 
 public:
 
 	virtual void OnCreated() {}
 	virtual void OnDelete() {}
 
-	virtual void Decode(MString& strCode) {}
-	virtual void Encode(MString& strCode) {}
-
-	virtual bool Save() { return SaveTo(m_strResourcePath); }
-	virtual bool SaveTo(const MString& strResourcePath) { return true; }
-
-	virtual void CopyFrom(std::shared_ptr<const MResource> pResource) {}
+	virtual bool Load(std::unique_ptr<MResourceData>& pResourceData) { return false; };
+	virtual bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) { return false; }
 
 	void ReplaceFrom(std::shared_ptr<MResource> pResource);
-protected:
-
-	virtual bool Load(const MString& strResourcePath) = 0;
 
 	void OnReload();
 
@@ -99,6 +112,7 @@ public:
 
 	const MResourceRef& operator = (const MResourceRef& keeper);
 	std::shared_ptr<MResource> operator = (std::shared_ptr<MResource> pResource);
+	bool operator == (const MResourceRef& other) const { return GetResource() == other.GetResource(); }
 
 	template <class T>
 	std::shared_ptr<T> GetResource() const { return m_pResource ? std::dynamic_pointer_cast<T>(m_pResource) : nullptr; }
@@ -111,7 +125,7 @@ public:
 public:
 
 	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
-	void Deserialize(MEngine* pEngine, const void* pBufferPointer);
+	void Deserialize(MResourceSystem* pResourceSystem, const void* pBufferPointer);
 
 private:
 

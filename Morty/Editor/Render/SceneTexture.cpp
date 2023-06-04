@@ -20,6 +20,8 @@
 #include "RenderProgram/MIRenderProgram.h""
 
 #include "stb_image_write.h"
+#include "MergeInstancing/MRenderableMeshManager.h"
+#include "Shadow/MShadowMapManager.h"
 
 #define MUTIL_RENDER_PROGRAM false
 
@@ -57,9 +59,6 @@ void SceneTexture::Initialize(MEngine* pEngine, const MString& strRenderProgram,
 	pDefaultCamera->SetName("Camera");
 	if (MSceneComponent* pSceneComponent = pDefaultCamera->RegisterComponent<MSceneComponent>())
 	{
-//		pSceneComponent->SetPosition(Vector3(42, 40, 16));
-//		pSceneComponent->SetRotation(Quaternion(Vector3(1, 0, 0), 45));
-
 		pSceneComponent->SetPosition(Vector3(0, 0, -50));
 	}
 	pDefaultCamera->RegisterComponent<MCameraComponent>();
@@ -83,6 +82,15 @@ void SceneTexture::Initialize(MEngine* pEngine, const MString& strRenderProgram,
 	pRenderProgram->SetViewport(m_pRenderViewport);
 	m_vRenderProgram.resize(nImageCount, pRenderProgram);
 #endif
+
+
+	if (m_pUpdateTask = m_pEngine->GetMainGraph()->AddNode<MTaskNode>("SceneTextureUpdate"))
+	{
+		m_pUpdateTask->SetThreadType(METhreadType::ERenderThread);
+
+		GetScene()->GetManager<MRenderableMeshManager>()->GetUpdateTask()->AppendOutput()->LinkTo(m_pUpdateTask->AppendInput());
+		GetScene()->GetManager<MShadowMapManager>()->GetUpdateTask()->AppendOutput()->LinkTo(m_pUpdateTask->AppendInput());
+	}
 }
 
 void SceneTexture::Release()

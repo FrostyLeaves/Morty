@@ -22,7 +22,7 @@
 #include "Utility/MBounds.h"
 #include "Mesh/MMeshManager.h"
 
-#include "MergeInstancing/MRenderableMeshGroup.h"
+#include "MergeInstancing/MRenderableMaterialGroup.h"
 #include "Culling/MInstanceCulling.h"
 
 void MMaterialGroupRenderable::SetScene(MScene* pScene)
@@ -89,7 +89,7 @@ void MMaterialGroupRenderable::Render(MIRenderCommand* pCommand)
 		{
 			pCommand->SetShaderParamSet(pMeshGroup->GetMeshProperty());
 
-			auto func = [=](const MRenderableMeshInstance& meshInstance, size_t)
+			auto func = [=](const MMeshInstanceRenderProxy& meshInstance, size_t)
 			{
 				if (!meshInstance.bVisible)
 				{

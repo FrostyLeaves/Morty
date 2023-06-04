@@ -30,11 +30,9 @@ public:
     template<typename TYPE>
     TYPE* AddNode(const MString& strNodeName);
 
-    MTaskNode* FindNode(const MString& strNodeName) const;
-
 	bool IsValid() const { return m_bValid; }
 
-    virtual bool Compile();
+    bool Compile();
 
 	void RequireCompile() { m_bRequireCompile = true; }
 	bool NeedCompile() const { return m_bRequireCompile; }
@@ -54,10 +52,9 @@ protected:
 
 	bool AddNode(const MString& strNodeName, MTaskNode* pGraphNode);
 
-
 protected:
 
-	std::map<MString, MTaskNode*> m_tTaskNode;
+	std::set<MTaskNode*> m_tTaskNode;
 	std::vector<MTaskNode*> m_vTaskNode;
 
 	std::vector<MTaskNode*> m_vStartTaskNode;

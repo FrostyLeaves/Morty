@@ -136,6 +136,9 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 	MTaskNode* pRenderTask = pMainGraph->AddNode<MTaskNode>("Editor_Render");
 	pRenderTask->SetThreadType(METhreadType::ERenderThread);
 	pRenderTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MainEditor::Render, this));
+
+	m_SceneTexture.GetUpdateTask()->AppendOutput()->LinkTo(pRenderTask->AppendInput());
+
 	return true;
 }
 
@@ -682,7 +685,7 @@ void MainEditor::Render(MTaskNode* pNode)
 		if (MEntity* pEntity = m_pNodeTreeView->GetSelectionNode())
 		{
 			if (MRenderableMeshComponent* pMeshComponent = pEntity->GetComponent<MRenderableMeshComponent>())
-				m_pMaterialView->SetMaterial(pMeshComponent->GetMaterial());
+				m_pMaterialView->SetMaterial(pMeshComponent->GetMaterialResource());
 		}
 
 		SceneTexture& sceneTexture = m_pMaterialView->GetSceneTexture();

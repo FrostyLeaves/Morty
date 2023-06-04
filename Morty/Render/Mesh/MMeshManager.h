@@ -7,6 +7,7 @@
 #include "Utility/MBounds.h"
 #include "Utility/MMemoryPool.h"
 
+class MTaskNode;
 class MIMesh;
 class MScene;
 class MEngine;
@@ -48,7 +49,7 @@ public:
 	bool HasMesh(MIMesh* pMesh) const;
 	const MMeshData& FindMesh(MIMesh* pMesh) const;
 
-	MIMesh* GetScreenRect() const;;
+	MIMesh* GetScreenRect() const;
 	MIMesh* GetSkyBox() const;
 
 public:
@@ -62,6 +63,11 @@ private:
 	void InitializeSkyBox();
 	void ReleaseSkyBox();
 
+	size_t RoundIndexSize(size_t nIndexSize);
+	void UploadBuffer(MIMesh* pMesh);
+
+	void UploadBufferTask(MTaskNode* pNode);
+
 	const size_t MeshVertexStructSize;
 
 	MBuffer m_vertexBuffer;
@@ -71,10 +77,14 @@ private:
 	MMemoryPool m_indexMemoryPool;
 
 	std::map<MIMesh*, MMeshData> m_tMeshTable;
-
-
+	
 	std::unique_ptr<MIMesh> m_pScreenRect = nullptr;
 	std::unique_ptr<MIMesh> m_pSkyBox = nullptr;
+
+
+// render thread.
+	std::mutex m_uploadMutex;
+	std::vector<MIMesh*> m_vUploadQueue;
 };
 
 

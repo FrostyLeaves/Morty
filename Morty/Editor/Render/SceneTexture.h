@@ -8,6 +8,7 @@
 
 #include <array>
 
+class MTaskNode;
 class MScene;
 class MEngine;
 class MViewport;
@@ -40,6 +41,8 @@ public:
 
 	void Snapshot(const MString& strSnapshotPath);
 
+	MTaskNode* GetUpdateTask() const { return m_pUpdateTask; }
+
 protected:
 
 	Vector2 m_v2Size;
@@ -55,6 +58,8 @@ protected:
 
 	bool m_bSnapshot;
 	MString m_strSnapshotPath;
+
+	MTaskNode* m_pUpdateTask = nullptr;
 };
 
 

@@ -137,20 +137,3 @@ void MDeferredLightingRenderWork::SetFrameProperty(const std::shared_ptr<IProper
 {
 	m_pFramePropertyAdapter = pAdapter;
 }
-
-class MLightingOutput : public ITextureInputAdapter
-{
-public:
-
-	virtual std::shared_ptr<MTexture> GetTexture() { return pTexture; }
-
-	std::shared_ptr<MTexture> pTexture = nullptr;
-};
-
-std::shared_ptr<ITextureInputAdapter> MDeferredLightingRenderWork::CreateOutput() const
-{
-	auto pOutput = std::make_shared< MLightingOutput>();
-	pOutput->pTexture = m_renderPass.m_vBackTextures[0].pTexture;
-
-	return pOutput;
-}

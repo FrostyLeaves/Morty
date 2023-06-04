@@ -79,9 +79,6 @@ public:
     std::shared_ptr<MComputePipeline> FindOrCreateComputePipeline(MComputeDispatcher* pComputeDispatcher);
 
 public:
-	bool RegisterMaterial(std::shared_ptr<MMaterial> pMaterial);
-	bool UnRegisterMaterial(std::shared_ptr<MMaterial> pMaterial);
-
     bool RegisterComputeDispatcher(MComputeDispatcher* pDispatcher);
     bool UnRegisterComputeDispatcher(MComputeDispatcher* pDispatcher);
 

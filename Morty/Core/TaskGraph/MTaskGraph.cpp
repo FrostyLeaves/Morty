@@ -22,31 +22,14 @@ bool MTaskGraph::AddNode(const MString& strNodeName, MTaskNode* pNode)
 	if (!pNode)
 		return false;
 
-	MString strValidName = strNodeName;
-
-	int i = 0;
-	while (FindNode(strValidName))
-	{
-		strValidName = strNodeName + "_" + MStringHelper::ToString(++i);
-	}
-
-	pNode->m_strNodeName = strValidName;
+	pNode->m_strNodeName = strNodeName;
 	pNode->m_pGraph = this;
 
-	m_tTaskNode[strValidName] = pNode;
+	m_tTaskNode.insert(pNode);
 	m_vTaskNode.push_back(pNode);
 
 	pNode->OnCreated();
 	return true;
-}
-
-MTaskNode* MTaskGraph::FindNode(const MString& strNodeName) const
-{
-	auto iter = m_tTaskNode.find(strNodeName);
-	if (iter != m_tTaskNode.end())
-		return iter->second;
-
-	return nullptr;
 }
 
 bool MTaskGraph::Compile()
@@ -57,22 +40,22 @@ bool MTaskGraph::Compile()
 	m_vStartTaskNode.clear();
 	m_vFinalTaskNode.clear();
 
-	for (auto& pr : m_tTaskNode)
+	for (auto& pNode : m_tTaskNode)
 	{
-		pr.second->m_nPriorityLevel = 0;
+		pNode->m_nPriorityLevel = 0;
 
-		if (pr.second->IsStartNode())
+		if (pNode->IsStartNode())
 		{
-			m_vStartTaskNode.push_back(pr.second);
+			m_vStartTaskNode.push_back(pNode);
 		}
 
-		if (pr.second->IsFinalNode())
+		if (pNode->IsFinalNode())
 		{
-			m_vFinalTaskNode.push_back(pr.second);
-			queue.push(pr.second);
+			m_vFinalTaskNode.push_back(pNode);
+			queue.push(pNode);
 		}
 
-		pr.second->OnCompile();
+		pNode->OnCompile();
 	}
 
 	if (queue.empty())

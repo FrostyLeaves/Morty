@@ -97,16 +97,6 @@ std::shared_ptr<MComputePipeline> MVulkanPipelineManager::FindOrCreateComputePip
 	return pPipeline;
 }
 
-bool MVulkanPipelineManager::RegisterMaterial(std::shared_ptr<MMaterial> pMaterial)
-{
-	return true;
-}
-
-bool MVulkanPipelineManager::UnRegisterMaterial(std::shared_ptr<MMaterial> pMaterial)
-{
-	return true;
-}
-
 void MVulkanPipelineManager::RegisterRenderPass(MRenderPass* pRenderPass)
 {
 	pRenderPass->SetRenderPassID(m_RenderPassIDPool.GetNewID());
@@ -308,23 +298,7 @@ void GetBlendStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPas
 
 	MEMaterialType eType = pMaterial->GetMaterialType();
 
-	if (MEMaterialType::EDefault == eType || MEMaterialType::EDeferred == eType)
-	{
-		for (uint32_t i = 0; i < pRenderPass->m_vBackTextures.size(); ++i)
-		{
-			vBlendAttach.push_back({});
-			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
-			attachStage.blendEnable = VK_TRUE;
-			attachStage.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-			attachStage.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-			attachStage.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-			attachStage.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-			attachStage.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-			attachStage.colorBlendOp = VK_BLEND_OP_ADD;
-			attachStage.alphaBlendOp = VK_BLEND_OP_ADD;
-		}
-	}
-	else if (MEMaterialType::EDepthPeel == eType)
+	if (MEMaterialType::EDepthPeel == eType)
 	{
 		if (pRenderPass->m_vBackTextures.size() < 4)
 			return;
@@ -406,6 +380,38 @@ void GetBlendStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPas
 		}
 
 	}
+	else if(MEMaterialType::ECustom == eType)
+	{
+		for (uint32_t i = 0; i < pRenderPass->m_vBackTextures.size(); ++i)
+		{
+			vBlendAttach.push_back({});
+			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
+			attachStage.blendEnable = VK_TRUE;
+			attachStage.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+			attachStage.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			attachStage.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			attachStage.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+			attachStage.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			attachStage.colorBlendOp = VK_BLEND_OP_ADD;
+			attachStage.alphaBlendOp = VK_BLEND_OP_MAX;
+		}
+	}
+    else
+    {
+		for (uint32_t i = 0; i < pRenderPass->m_vBackTextures.size(); ++i)
+		{
+			vBlendAttach.push_back({});
+			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
+			attachStage.blendEnable = VK_TRUE;
+			attachStage.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+			attachStage.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+			attachStage.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+			attachStage.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+			attachStage.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			attachStage.colorBlendOp = VK_BLEND_OP_ADD;
+			attachStage.alphaBlendOp = VK_BLEND_OP_ADD;
+		}
+    }
 
 	blendInfo.attachmentCount = vBlendAttach.size();
 	blendInfo.pAttachments = vBlendAttach.data();
@@ -431,14 +437,7 @@ void GetDepthStencilStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRe
 
 	MEMaterialType eType = pMaterial->GetMaterialType();
 
-	if (MEMaterialType::EDefault == eType || MEMaterialType::EDeferred == eType)
-	{
-		depthStencilInfo.depthTestEnable = VK_TRUE;
-		depthStencilInfo.depthWriteEnable = VK_TRUE;
-		depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-		depthStencilInfo.stencilTestEnable = VK_FALSE;
-	}
-	else if (MEMaterialType::EDepthPeel == eType)
+	if (MEMaterialType::EDepthPeel == eType)
 	{
 		depthStencilInfo.depthTestEnable = VK_TRUE;
 		depthStencilInfo.depthWriteEnable = VK_FALSE;
@@ -457,6 +456,13 @@ void GetDepthStencilStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRe
 		depthStencilInfo = {};
 		depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	}
+    else
+    {
+		depthStencilInfo.depthTestEnable = VK_TRUE;
+		depthStencilInfo.depthWriteEnable = VK_TRUE;
+		depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+		depthStencilInfo.stencilTestEnable = VK_FALSE;
+    }
 }
 
 VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<MPipeline>& pPipeline, std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx)
@@ -753,7 +759,7 @@ void MVulkanPipelineManager::BindConstantParam(const std::shared_ptr<MShaderCons
 void MVulkanPipelineManager::BindTextureParam(const std::shared_ptr<MShaderTextureParam> pParam, VkWriteDescriptorSet& descriptorWrite)
 {
 	std::shared_ptr<MTexture> pTexture = pParam->GetTexture();
-	if (!pTexture)
+	if (!pTexture || pTexture->m_VkImageView == VK_NULL_HANDLE)
 	{
 		if (pParam->eType == METextureType::ETexture2D)
 		{
