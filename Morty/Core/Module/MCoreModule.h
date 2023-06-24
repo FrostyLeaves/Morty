@@ -10,13 +10,14 @@
 #define _M_MCOREMODULE_H_
 #include "Utility/MGlobal.h"
 
+class MObject;
 class MEngine;
 class MORTY_API MCoreModule
 {
 public:
 
 	static bool Register(MEngine* pEngine);
-
+	static void OnObjectPostCreate(MObject* pObject);
 };
 
 #endif

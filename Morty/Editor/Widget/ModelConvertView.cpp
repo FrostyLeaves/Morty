@@ -24,7 +24,7 @@ ModelConvertView::ModelConvertView()
 	, m_nMaterialTypeEnum(0)
 	, m_pEngine(nullptr)
 {
-
+	m_strViewName = "ModelConvert";
 }
 
 ModelConvertView::~ModelConvertView()

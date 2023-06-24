@@ -24,6 +24,8 @@ public:
 	static const MString DefaultNormal;
 	static const MString Default_R8_One;
 	static const MString Default_R8_Zero;
+
+	static const MString DefaultAnimationMaterial;
 };
 
 

@@ -34,7 +34,7 @@ class MORTY_API IPropertyBlockAdapter
 {
 public:
     virtual ~IPropertyBlockAdapter() = default;
-    virtual std::vector<std::shared_ptr<MShaderPropertyBlock>> GetPropertyBlock() const = 0;
+    virtual std::shared_ptr<MShaderPropertyBlock> GetPropertyBlock() const = 0;
 };
 
 class MORTY_API IRenderPassAdapter

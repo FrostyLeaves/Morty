@@ -7,7 +7,7 @@
 #include "System/MResourceSystem.h"
 
 #include "Component/MSceneComponent.h"
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 
 #include "Resource/MMeshResource.h"
 #include "Resource/MMaterialResource.h"
@@ -44,7 +44,7 @@ void ADD_POINT_LIGHT(MEngine* pEngine, MScene* pScene)
 			pPointLightComponent->SetLightIntensity(100.0f);
 		}
 
-		if (MRenderableMeshComponent* pMeshComponent = pPointLight->RegisterComponent<MRenderableMeshComponent>())
+		if (MRenderMeshComponent* pMeshComponent = pPointLight->RegisterComponent<MRenderMeshComponent>())
 		{
 			pMeshComponent->Load(pPanelMesh);
 			pMeshComponent->SetMaterial(pMaterial);

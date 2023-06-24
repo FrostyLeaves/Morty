@@ -20,6 +20,8 @@ public:
 	static constexpr char* NOTIFY_DIFFUSE_ENV_TEX_CHANGED = "Diffuse Environment Text Changed";
 	static constexpr char* NOTIFY_SPECULAR_ENV_TEX_CHANGED = "Specular Environment Text Changed";
 	static constexpr char* NOTIFY_GENERATE_SHADOW_CHANGED = "Generate Shadow Changed";
+	static constexpr char* NOTIFY_ANIMATION_POSE_CHANGED = "Animation Pose Changed";
+	static constexpr char* NOTIFY_ATTACHED_SKELETON_CHANGED = "Attached Skeleton Changed";
 };
 
 #endif

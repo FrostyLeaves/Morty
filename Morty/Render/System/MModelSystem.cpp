@@ -1,5 +1,6 @@
 #include "System/MModelSystem.h"
 
+#include "MRenderNotify.h"
 #include "Scene/MScene.h"
 #include "Model/MSkeletalAnimation.h"
 #include "Component/MModelComponent.h"
@@ -46,6 +47,7 @@ void MModelSystem::UpdateAnimation(MScene* pScene, const float& fDelta)
 					if (pController->GetState() == MIAnimController::EPlay)
 					{
 						pController->Update(fDelta, bVisible);
+						modelComponent.SendComponentNotify(MRenderNotify::NOTIFY_ANIMATION_POSE_CHANGED);
 					}
 				}
 			}

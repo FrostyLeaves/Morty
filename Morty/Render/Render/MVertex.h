@@ -50,6 +50,7 @@ struct MMeshInstanceTransform
 {
 	Matrix4 transform;
 	Matrix3 normalTransform;
+	Vector4 instanceIndex;
 };
 
 struct MMergeInstanceCullData

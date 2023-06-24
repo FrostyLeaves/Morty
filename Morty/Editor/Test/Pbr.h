@@ -6,7 +6,7 @@
 #include "System/MResourceSystem.h"
 
 #include "Component/MSceneComponent.h"
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 
 #include "Resource/MMeshResource.h"
 #include "Resource/MMaterialResource.h"
@@ -649,7 +649,7 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 			{
 				pSceneComponent->SetPosition(Vector3(2.0f * nMetallicIdx, 2.0f * nRoughnessIdx, 2.0f));
 			}
-			if (MRenderableMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderableMeshComponent>())
+			if (MRenderMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderMeshComponent>())
 			{
 				std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
@@ -680,7 +680,7 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 				pMaterial->SetTexture(MaterialKey::AmbientOcc, ao);
 				pMaterial->SetTexture(MaterialKey::Height, height);
 
-				auto material = pMaterial->GetMaterialParamSet()->FindConstantParam("cbMaterial");
+				auto material = pMaterial->GetMaterialPropertyBlock()->FindConstantParam("cbMaterial");
 
 				MStruct materialSut = material->var.GetValue<MStruct>();
 				MStruct uxMaterial = materialSut.GetVariant<MStruct>("u_xMaterial");

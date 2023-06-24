@@ -14,7 +14,7 @@ class MMaterial;
 class MComponent;
 class MShaderConstantParam;
 class MShaderPropertyBlock;
-class MRenderableMeshComponent;
+class MRenderMeshComponent;
 
 
 

@@ -6,7 +6,7 @@
 #include "Material/MMaterial.h"
 
 #include "Component/MSceneComponent.h"
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 
 MRenderInfo::MRenderInfo()

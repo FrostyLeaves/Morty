@@ -30,7 +30,7 @@ struct MORTY_API MMaterialResourceData : public MFbResourceData
 	MPath pixelShader;
 	MShaderMacro shaderMacro;
 	MEMaterialType eMaterialType;
-	MERasterizerType eRasterizerType;
+	MECullMode eCullMode;
 
 	std::vector<Property> vProperty;
 	std::vector<Texture> vTextures;

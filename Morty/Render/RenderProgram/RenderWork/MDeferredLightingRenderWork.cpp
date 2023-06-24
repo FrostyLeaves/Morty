@@ -15,7 +15,7 @@
 
 #include "Component/MSceneComponent.h"
 #include "Component/MCameraComponent.h"
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 #include "Render/MVertex.h"
 
@@ -79,11 +79,9 @@ void MDeferredLightingRenderWork::Render(MRenderInfo& info)
 
 	if (pCommand->SetUseMaterial(m_pLightningMaterial))
 	{
-		auto vPropertyBlock = m_pFramePropertyAdapter->GetPropertyBlock();
-		for (const auto& property : vPropertyBlock)
-		{
-			pCommand->SetShaderParamSet(property);
-		}
+		auto pPropertyBlock = m_pFramePropertyAdapter->GetPropertyBlock();
+		pCommand->SetShaderPropertyBlock(pPropertyBlock);
+		
 		pCommand->DrawMesh(pMeshManager->GetScreenRect());
 	}
 
@@ -118,7 +116,7 @@ void MDeferredLightingRenderWork::SetGBuffer(const std::shared_ptr<IGBufferAdapt
 {
 	MORTY_ASSERT(m_pGBufferAdapter = pAdapter);
 
-	if (std::shared_ptr<MShaderPropertyBlock>& pParams = m_pLightningMaterial->GetMaterialParamSet())
+	if (std::shared_ptr<MShaderPropertyBlock>& pParams = m_pLightningMaterial->GetMaterialPropertyBlock())
 	{
 		const auto& vTextures = pAdapter->GetBackTextures();
 		pParams->SetTexture("u_mat_f3Albedo_fMetallic", vTextures[0]);

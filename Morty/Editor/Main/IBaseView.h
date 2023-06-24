@@ -18,7 +18,13 @@ public:
 
 	virtual void Input(MInputEvent* pEvent) = 0;
 
+	MString GetName() const { return m_strViewName; }
+	bool GetVisible() const { return m_bVisiable; }
+	void SetVisible(bool bVisible) { m_bVisiable = bVisible; }
 
+
+protected:
+	MString m_strViewName = "";
 	bool m_bVisiable = false;
 };
 

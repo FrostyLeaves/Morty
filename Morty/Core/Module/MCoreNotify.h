@@ -15,6 +15,7 @@ class MORTY_API MCoreNotify
 public:
     static constexpr char* NOTIFY_VISIBLE_CHANGED = "Visible Changed";
     static constexpr char* NOTIFY_TRANSFORM_CHANGED = "Transform Changed";
+    static constexpr char* NOTIFY_PARENT_CHANGED = "Parent Changed";
 };
 
 #endif

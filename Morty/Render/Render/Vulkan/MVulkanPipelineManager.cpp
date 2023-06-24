@@ -154,7 +154,7 @@ void MVulkanPipelineManager::DestroyPipeline(const std::shared_ptr<MPipeline>& p
 
 	for (const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock : pipeline->m_tShaderPropertyBlocks)
 	{
-		DestroyShaderParamSetImpl(pPropertyBlock);
+		DestroyShaderPropertyBlockImpl(pPropertyBlock);
 	}
 
 	DestroyPipelineLayout(pipeline);
@@ -171,7 +171,7 @@ void MVulkanPipelineManager::GeneratePipelineLayout(const std::shared_ptr<MPipel
 
 	for (uint32_t unSetIdx = 0; unSetIdx < MRenderGlobal::SHADER_PARAM_SET_NUM; ++unSetIdx)
 	{
-		std::shared_ptr<MShaderPropertyBlock> pPropertyBlock = pShaderProgram->GetShaderParamSets()[unSetIdx];
+		std::shared_ptr<MShaderPropertyBlock> pPropertyBlock = pShaderProgram->GetShaderPropertyBlocks()[unSetIdx];
 
 		for (const std::shared_ptr<MShaderConstantParam>& param : pPropertyBlock->m_vParams)
 		{
@@ -556,23 +556,23 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<
 	rasterizationState.depthBiasClamp = 0.0f; // Optional
 	rasterizationState.depthBiasSlopeFactor = 0.0f; // Optional
 
-	switch (pMaterial->GetRasterizerType())
+	switch (pMaterial->GetCullMode())
 	{
-	case MERasterizerType::ECullNone:
+	case MECullMode::ECullNone:
 		rasterizationState.cullMode = VK_CULL_MODE_NONE;
 		rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
 		break;
 
-	case MERasterizerType::ECullBack:
+	case MECullMode::ECullBack:
 		rasterizationState.cullMode = VK_CULL_MODE_BACK_BIT;		//vulkan inverse
 		rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
 		break;
 
-	case MERasterizerType::ECullFront:
+	case MECullMode::ECullFront:
 		rasterizationState.cullMode = VK_CULL_MODE_FRONT_BIT;
 		rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
 		break;
-	case MERasterizerType::EWireframe:
+	case MECullMode::EWireframe:
 		rasterizationState.cullMode = VK_CULL_MODE_NONE;
 		rasterizationState.polygonMode = VK_POLYGON_MODE_LINE;
 		break;
@@ -687,7 +687,7 @@ void MVulkanPipelineManager::DestroyShaderProgram(MShaderProgram* pShaderProgram
 	
 }
 
-void MVulkanPipelineManager::AllocateShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock, const std::shared_ptr<MPipeline>& pPipeline)
+void MVulkanPipelineManager::AllocateShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock, const std::shared_ptr<MPipeline>& pPipeline)
 {
 	std::shared_ptr<MShaderProgram> pShaderProgram = pPropertyBlock->GetShaderProgram();
 
@@ -713,29 +713,29 @@ void MVulkanPipelineManager::AllocateShaderParamSet(const std::shared_ptr<MShade
 	VkDescriptorSet descriptorSet;
 	if (vkAllocateDescriptorSets(m_pDevice->m_VkDevice, &allocInfo, &descriptorSet) != VK_SUCCESS)
 	{
-		m_pDevice->GetEngine()->GetLogger()->Error("MVulkanPipelineManager::AllocateShaderParamSet error: descriptor pool == 0");
+		m_pDevice->GetEngine()->GetLogger()->Error("MVulkanPipelineManager::AllocateShaderPropertyBlock error: descriptor pool == 0");
 		return;
 	}
 
 	pPropertyBlock->m_VkDescriptorSet = descriptorSet;
 }
 
-void MVulkanPipelineManager::DestroyShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock)
+void MVulkanPipelineManager::DestroyShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock)
 {
 	std::shared_ptr<MShaderProgram> pShaderProgram = pPropertyBlock->GetShaderProgram();
 
-	DestroyShaderParamSetImpl(pPropertyBlock);
+	DestroyShaderPropertyBlockImpl(pPropertyBlock);
 }
 
-void MVulkanPipelineManager::DestroyShaderParamSetImpl(const std::shared_ptr<MShaderPropertyBlock>& pParamSet) const
+void MVulkanPipelineManager::DestroyShaderPropertyBlockImpl(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) const
 {
-	if (!pParamSet)
+	if (!pPropertyBlock)
 		return;
 
-	if (pParamSet->m_VkDescriptorSet)
+	if (pPropertyBlock->m_VkDescriptorSet)
 	{
-		m_pDevice->GetRecycleBin()->DestroyDescriptorSetLater(pParamSet->m_VkDescriptorSet);
-		pParamSet->m_VkDescriptorSet = VK_NULL_HANDLE;
+		m_pDevice->GetRecycleBin()->DestroyDescriptorSetLater(pPropertyBlock->m_VkDescriptorSet);
+		pPropertyBlock->m_VkDescriptorSet = VK_NULL_HANDLE;
 	}
 }
 
@@ -810,9 +810,9 @@ void MVulkanPipelineManager::BindStorageParam(const std::shared_ptr<MShaderStora
 {
 	const MBuffer* pBuffer = pParam->pBuffer;
 
-	if (!pBuffer)
+	if (!pBuffer || !pBuffer->m_VkBuffer)
 	{
-		MORTY_ASSERT(pBuffer);
+		MORTY_ASSERT(pBuffer && pBuffer->m_VkBuffer);
 		return;
 	}
 

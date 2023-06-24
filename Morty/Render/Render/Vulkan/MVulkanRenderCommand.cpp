@@ -232,9 +232,9 @@ bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 		vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
 
-		std::shared_ptr<MShaderPropertyBlock> pParamSet = pMaterial->GetMaterialParamSet();
+		std::shared_ptr<MShaderPropertyBlock> pPropertyBlock = pMaterial->GetMaterialPropertyBlock();
 
-		SetShaderParamSet(pParamSet);
+		SetShaderPropertyBlock(pPropertyBlock);
 
 		return true;
 	}
@@ -261,9 +261,9 @@ bool MVulkanRenderCommand::DispatchComputeJob(MComputeDispatcher* pComputeDispat
 
 		vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, vkPipeline);
 
-		for (const std::shared_ptr<MShaderPropertyBlock>& params : pComputeDispatcher->GetShaderParamSets())
+		for (const std::shared_ptr<MShaderPropertyBlock>& params : pComputeDispatcher->GetShaderPropertyBlocks())
 		{
-			SetShaderParamSet(params);
+			SetShaderPropertyBlock(params);
 		}
 
 		vkCmdDispatch(m_VkCommandBuffer, nGroupX, nGroupY, nGroupZ);
@@ -274,11 +274,8 @@ bool MVulkanRenderCommand::DispatchComputeJob(MComputeDispatcher* pComputeDispat
 	return false;
 }
 
-void MVulkanRenderCommand::SetShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock)
+void MVulkanRenderCommand::SetShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock)
 {
-	std::shared_ptr<MShaderProgram> pShaderPropgram = pPropertyBlock->GetShaderProgram();
-	MORTY_ASSERT(pShaderPropgram);
-
 	bool bDirty = false;
 	for (std::shared_ptr<MShaderConstantParam> pParam : pPropertyBlock->m_vParams)
 	{
@@ -291,6 +288,7 @@ void MVulkanRenderCommand::SetShaderParamSet(const std::shared_ptr<MShaderProper
 		}
 
 	}
+
 	for (std::shared_ptr<MShaderTextureParam> pParam : pPropertyBlock->m_vTextures)
 	{
 		auto pImageIdent = pParam->GetTexture() ? pParam->GetTexture()->m_VkImageView : nullptr;
@@ -311,7 +309,7 @@ void MVulkanRenderCommand::SetShaderParamSet(const std::shared_ptr<MShaderProper
 	if (bDirty)
 	{
 		//alloc a new descriptor set.
-		m_pDevice->m_PipelineManager.AllocateShaderParamSet(pPropertyBlock, pUsingPipeline);
+		m_pDevice->m_PipelineManager.AllocateShaderPropertyBlock(pPropertyBlock, pUsingPipeline);
 
 		std::vector<VkWriteDescriptorSet> vWriteDescriptorSet;
 
@@ -345,7 +343,7 @@ void MVulkanRenderCommand::SetShaderParamSet(const std::shared_ptr<MShaderProper
 	else if (VK_NULL_HANDLE == pPropertyBlock->m_VkDescriptorSet)
 	{
 		//alloc a new descriptor set.
-		m_pDevice->m_PipelineManager.AllocateShaderParamSet(pPropertyBlock, pUsingPipeline);
+		m_pDevice->m_PipelineManager.AllocateShaderPropertyBlock(pPropertyBlock, pUsingPipeline);
 
 	}
 

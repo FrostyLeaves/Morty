@@ -61,7 +61,7 @@ public:
 	bool operator<=(const MBlockVectorIter& iter) const;
 	bool operator>=(const MBlockVectorIter& iter) const;
 
-
+	size_t id() const { return nPrimaryIdx * SIZE + nSecondaryIdx; }
 	size_t pid() const { return nPrimaryIdx; }
 	size_t sid() const { return nSecondaryIdx; }
 
@@ -158,6 +158,7 @@ public:
 	void pop_back();
 	void clear();
 
+	TYPE* get(const size_t& id) { return get(id / SIZE, id % SIZE); }
 	TYPE* get(const size_t& pid, const size_t& sid);
 
 public:

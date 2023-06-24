@@ -6,7 +6,7 @@
 #include "System/MResourceSystem.h"
 
 #include "Component/MSceneComponent.h"
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 
 #include "Resource/MMeshResource.h"
 #include "Resource/MMaterialResource.h"
@@ -41,14 +41,14 @@ void BONE_ANIMATION_TEST(MEngine* pEngine, MScene* pScene)
 
 		for (MEntity* pEntity : vEntity)
 		{
-			pEntitySystem->FindAllComponentRecursively(pEntity, MRenderableMeshComponent::GetClassType(), vMeshComponents);
+			pEntitySystem->FindAllComponentRecursively(pEntity, MRenderMeshComponent::GetClassType(), vMeshComponents);
 
 		}
 	}
 
 	for (MComponentID& componentID : vMeshComponents)
 	{
-		if (MRenderableMeshComponent* pMeshComponent = pScene->GetComponent(componentID)->DynamicCast<MRenderableMeshComponent>())
+		if (MRenderMeshComponent* pMeshComponent = pScene->GetComponent(componentID)->DynamicCast<MRenderMeshComponent>())
 		{
 			pMeshComponent->SetGenerateDirLightShadow(true);
 		}

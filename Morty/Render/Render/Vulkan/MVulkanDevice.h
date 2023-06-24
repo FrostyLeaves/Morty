@@ -54,8 +54,8 @@ public:
 	virtual bool CompileShader(MShader* pShader) override;
 	virtual void CleanShader(MShader* pShader) override;
 
-	virtual bool GenerateShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet) override;
-	virtual void DestroyShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet) override;
+	virtual bool GenerateShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) override;
+	virtual void DestroyShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) override;
 
 	virtual bool GenerateShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam) override;
 	virtual void DestroyShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam) override;

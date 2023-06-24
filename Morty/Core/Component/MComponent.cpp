@@ -5,7 +5,7 @@ MORTY_CLASS_IMPLEMENT(MComponent, MTypeClass)
 #include "Scene/MScene.h"
 #include "Scene/MEntity.h"
 
-#include "System/MNotifySystem.h"
+#include "System/MNotifyManager.h"
 
 #include "Flatbuffer/MComponent_generated.h"
 
@@ -54,15 +54,15 @@ void MComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 	const mfbs::MComponent* fbcomponent = mfbs::GetMComponent(fbb.GetCurrentBufferPointer());
 }
 
-void MComponent::PostDeserialize()
+void MComponent::PostDeserialize(const std::map<MGuid, MGuid>& tRedirectGuid)
 {
 }
 
 void MComponent::SendComponentNotify(const char* notify)
 {
-	if (MEngine* pEngine = GetEngine())
+	if (MScene* pScene = GetScene())
 	{
-		if (MNotifySystem* pNotifySystem = pEngine->FindSystem<MNotifySystem>())
+		if (MNotifyManager* pNotifySystem = pScene->GetManager<MNotifyManager>())
 		{
 			pNotifySystem->SendNotify(notify, GetScene(), GetComponentID());
 		}
@@ -88,7 +88,7 @@ MEngine* MComponent::GetEngine() const
 
 bool MComponentID::operator==(const MComponentID& id) const
 {
-	return pComponentType == id.pComponentType && nPrimaryIdx == id.nPrimaryIdx && nSecondaryIdx == id.nSecondaryIdx;
+	return pComponentType == id.pComponentType && nIdx == id.nIdx;
 }
 
 bool MComponentID::operator==(const MType* pType) const
@@ -103,12 +103,10 @@ bool MComponentID::operator<(const MComponentID& id) const
 	else if (pComponentType > id.pComponentType)
 		return false;
 
-	if (nPrimaryIdx < id.nPrimaryIdx)
+	if (nIdx < id.nIdx)
 		return true;
-	else if (nPrimaryIdx > id.nPrimaryIdx)
-		return false;
 
-	return nSecondaryIdx < id.nSecondaryIdx;
+	return false;
 }
 
 bool MComponentID::operator<(const MType* pType) const

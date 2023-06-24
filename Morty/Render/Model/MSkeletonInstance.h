@@ -38,26 +38,17 @@ public:
 	const MBone* FindBoneTemplateByName(const MString& strName);
 	const MBone* GetBoneTemplateByIndex(const uint32_t& unIndex);
 
-	std::vector<MBone>& GetAllBones() { return m_vAllBones; }
+	std::vector<MBone>& GetAllBones();
+	void ResetPose();
 
-	void ResetOriginPose();
-
-	std::shared_ptr<MShaderPropertyBlock> GetShaderParamSet();
-
-	void SetDirty();
-
-	void OnCreated() override;
-	void OnDelete() override;
+	MSkeletonPose& GetCurrentPose() { return m_currentPose; }
 
 private:
 	MResourceRef m_skeletonResource;
 	const MSkeleton* m_pSkeletonTemplate = nullptr;
 	std::vector<MBone> m_vAllBones;
 
-	bool m_bShaderParamSetDirty = true;
-
-	std::shared_ptr<MShaderPropertyBlock> m_pShaderPropertyBlock = nullptr;
-	MVariantArray* m_pShaderBonesArray = nullptr;
+	MSkeletonPose m_currentPose;
 };
 
 #endif

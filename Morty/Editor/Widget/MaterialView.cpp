@@ -17,7 +17,7 @@
 
 #include "Component/MSceneComponent.h"
 #include "Component/MModelComponent.h"
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 
 #include "Resource/MSkeletonResource.h"
@@ -29,13 +29,12 @@
 
 MaterialView::MaterialView()
 	: IBaseView()
-	, m_Resource()
 	, m_pMaterial(nullptr)
 	, m_bShowPreview(true)
 	, m_pStaticSphereMeshNode(nullptr)
 	, m_pSkeletonSphereMeshNode(nullptr)
 {
-
+	m_strViewName = "Material";
 }
 
 MaterialView::~MaterialView()
@@ -71,11 +70,11 @@ void MaterialView::SetMaterial(std::shared_ptr<MMaterialResource> pMaterial)
 		pSceneSystem->SetVisible(m_pSkeletonSphereMeshNode, true);
 	}
 
-	if (MRenderableMeshComponent* pMeshComponent = m_pStaticSphereMeshNode->GetComponent<MRenderableMeshComponent>())
+	if (MRenderMeshComponent* pMeshComponent = m_pStaticSphereMeshNode->GetComponent<MRenderMeshComponent>())
 	{
 		pMeshComponent->SetMaterial(pMaterial);
 	}
-	if (MRenderableMeshComponent* pMeshComponent = m_pSkeletonSphereMeshNode->GetComponent<MRenderableMeshComponent>())
+	if (MRenderMeshComponent* pMeshComponent = m_pSkeletonSphereMeshNode->GetComponent<MRenderMeshComponent>())
 	{
 		pMeshComponent->SetMaterial(pMaterial);
 	}
@@ -142,7 +141,7 @@ void MaterialView::Initialize(MEngine* pEngine)
 
 	}
 
-	if (MRenderableMeshComponent* pMeshComponent = m_pStaticSphereMeshNode->RegisterComponent<MRenderableMeshComponent>())
+	if (MRenderMeshComponent* pMeshComponent = m_pStaticSphereMeshNode->RegisterComponent<MRenderMeshComponent>())
 	{
 		std::shared_ptr<MMeshResource> pMeshResource = pResourceSystem->CreateResource<MMeshResource>();
 		pMeshResource->Load(MMeshResourceUtil::CreateSphere());
@@ -166,7 +165,7 @@ void MaterialView::Initialize(MEngine* pEngine)
 		pModelComponent->SetSkeletonResource(pSkeleton);
 	}
 
-	if (MRenderableMeshComponent* pMeshComponent = m_pSkeletonSphereMeshNode->RegisterComponent<MRenderableMeshComponent>())
+	if (MRenderMeshComponent* pMeshComponent = m_pSkeletonSphereMeshNode->RegisterComponent<MRenderMeshComponent>())
 	{
 		std::shared_ptr<MMeshResource> pMeshResource = pResourceSystem->CreateResource<MMeshResource>();
 		pMeshResource->Load(MMeshResourceUtil::CreateSphere(MEMeshVertexType::Skeleton));

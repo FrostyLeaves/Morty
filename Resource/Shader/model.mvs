@@ -30,21 +30,22 @@ VS_OUT VS_MAIN(VS_IN input, uint INSTANCE_ID : SV_InstanceID)
     float fWeight = 1.0f;
     for (int i = 0; i < MBONES_PER_VERTEX; ++i)
     {
-        matBoneTransform += u_vBonesMatrix[input.bonesID[i]] * input.bonesWeight[i];
+        matBoneTransform += u_vBonesMatrix[input.bonesID[i] + u_vBonesOffset[MESH_SKELETAL_IDX]] * input.bonesWeight[i];
         fWeight = fWeight - input.bonesWeight[i];
     }
     matBoneTransform += float4x4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1) * fWeight;
 
-    float4 posFromBones = mul(float4(input.pos, 1.0f), matBoneTransform);
-    output.pos = mul(posFromBones, mul(MESH_WORLD_MATRIX, u_matCamProj));
+    float4 vertexPos = mul(float4(input.pos, 1.0f), matBoneTransform);
 
-    output.worldPos = mul(  mul(input.pos, (float3x3)(matBoneTransform)),   (float3x3)(MESH_WORLD_MATRIX));
 #else
-    
-    output.worldPos = mul(float4(input.pos, 1.0f), MESH_WORLD_MATRIX).xyz;
-    output.pos = mul(float4(input.pos, 1.0f), mul(MESH_WORLD_MATRIX, u_matCamProj));
 
+    float4 vertexPos = float4(input.pos, 1.0f);
+    
 #endif
+
+    output.worldPos = mul(vertexPos, MESH_WORLD_MATRIX).xyz;
+    output.pos = mul(vertexPos, mul(MESH_WORLD_MATRIX, u_matCamProj));
+
 
 #if MCALC_NORMAL_IN_VS
 

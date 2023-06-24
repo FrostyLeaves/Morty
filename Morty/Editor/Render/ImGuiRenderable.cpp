@@ -3,7 +3,7 @@
 #include "Engine/MEngine.h"
 #include "Basic/MTexture.h"
 #include "Material/MMaterial.h"
-#include "Material/MShaderParamSet.h"
+#include "Material/MShaderPropertyBlock.h"
 #include "Render/MRenderCommand.h"
 
 #include "Resource/MTextureResource.h"
@@ -133,7 +133,7 @@ void ImGuiRenderable::Tick(const float& fDelta)
 
 		if (count > 30)
 		{
-			iter->second->pParamSet->DestroyBuffer(pRenderSystem->GetDevice());
+			iter->second->pPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
 			iter = m_tImGuiDrawTexture.erase(iter);
 		}
 		else
@@ -181,7 +181,7 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
 
 	pCommand->SetViewport(MViewportInfo(0.0f, fb_height, fb_width, -fb_height));
 	m_pMaterial->SetMaterialType(MEMaterialType::EImGui);
-	m_pMaterial->SetRasterizerType(MERasterizerType::ECullNone);
+	m_pMaterial->SetCullMode(MECullMode::ECullNone);
 
 	Vector2 scale;
 	scale.x = 2.0f / draw_data->DisplaySize.x;
@@ -191,7 +191,7 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
 	translate.y = -1.0f - draw_data->DisplayPos.y * scale.y;
 
 
-	if (const std::shared_ptr<MShaderConstantParam>& pParam = m_pMaterial->GetMaterialParamSet()->m_vParams[0])
+	if (const std::shared_ptr<MShaderConstantParam>& pParam = m_pMaterial->GetMaterialPropertyBlock()->m_vParams[0])
 	{
 		MVariantStruct& imguiUniform = pParam->var.GetValue<MVariantStruct>();
 		{
@@ -223,10 +223,10 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
 			{
 				using_texture = pcmd->TextureId;
 				std::shared_ptr<MTexture> pTexture = using_texture.pTexture;
-				if (auto dest = GetTexturParamSet(using_texture))
+				if (auto dest = GetTexturPropertyBlock(using_texture))
 				{
 					dest->nDestroyCount = 0;
-					pCommand->SetShaderParamSet(dest->pParamSet);
+					pCommand->SetShaderPropertyBlock(dest->pPropertyBlock);
 				}
 				else
 				{
@@ -261,7 +261,7 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
 	}
 }
 
-ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturParamSet(ImGuiTexture key)
+ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturPropertyBlock(ImGuiTexture key)
 {
 	auto findResult = m_tImGuiDrawTexture.find(key);
 
@@ -271,21 +271,21 @@ ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturParamSet(ImGuiText
 
 		pDest->pTexture = key.pTexture;
 		pDest->nDestroyCount = 0;
-		pDest->pParamSet = m_pMaterial->GetMeshParamSet()->Clone();
+		pDest->pPropertyBlock = m_pMaterial->GetMeshPropertyBlock()->Clone();
 
 		if (key.pTexture->GetTextureType() == METextureType::ETexture2D)
 		{
-			pDest->pParamSet->m_vTextures[0]->pTexture = key.pTexture;
-			pDest->pParamSet->m_vTextures[0]->SetDirty();
+			pDest->pPropertyBlock->m_vTextures[0]->pTexture = key.pTexture;
+			pDest->pPropertyBlock->m_vTextures[0]->SetDirty();
 		}
 		else if (key.pTexture->GetTextureType() == METextureType::ETexture2DArray)
 		{
-			pDest->pParamSet->m_vTextures[1]->pTexture = key.pTexture;
-			pDest->pParamSet->m_vTextures[1]->SetDirty();
+			pDest->pPropertyBlock->m_vTextures[1]->pTexture = key.pTexture;
+			pDest->pPropertyBlock->m_vTextures[1]->SetDirty();
 		}
 
 		
-		MVariantStruct& imguiUniform = pDest->pParamSet->m_vParams[0]->var.GetValue<MVariantStruct>();
+		MVariantStruct& imguiUniform = pDest->pPropertyBlock->m_vParams[0]->var.GetValue<MVariantStruct>();
 		{
 			switch (key.pTexture->GetTextureLayout())
 			{
@@ -310,7 +310,7 @@ ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturParamSet(ImGuiText
 				imguiUniform.SetVariant("u_nImageIndex", static_cast<int>(key.nArrayIdx));
 			}
 
-			pDest->pParamSet->m_vParams[0]->SetDirty();
+			pDest->pPropertyBlock->m_vParams[0]->SetDirty();
 		}
 
 

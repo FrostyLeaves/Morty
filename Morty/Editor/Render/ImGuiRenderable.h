@@ -48,10 +48,10 @@ protected:
 	{
 		int nDestroyCount;
 		std::shared_ptr<MTexture> pTexture;
-		std::shared_ptr<MShaderPropertyBlock> pParamSet;
+		std::shared_ptr<MShaderPropertyBlock> pPropertyBlock;
 	};
 
-	MImGuiTextureDest* GetTexturParamSet(ImGuiTexture tex);
+	MImGuiTextureDest* GetTexturPropertyBlock(ImGuiTexture tex);
 
 private:
 

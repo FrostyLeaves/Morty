@@ -4,7 +4,7 @@
 #include "Scene/MEntity.h"
 #include "Engine/MEngine.h"
 #include "Basic/MViewport.h"
-#include "Shadow/MShadowMapManager.h"
+#include "Shadow/MShadowMeshManager.h"
 #include "Resource/MMaterialResource.h"
 
 #include "Material/MMaterial.h"
@@ -27,7 +27,7 @@ void MShadowMapShaderPropertyBlock::Initialize(MEngine* pEngine)
 	std::shared_ptr<MResource> vs = pResourceSystem->LoadResource("Shader/Shadow/shadowmap.mvs");
 	std::shared_ptr<MResource> ps = pResourceSystem->LoadResource("Shader/Shadow/shadowmap.mps");
 	m_pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-	m_pMaterial->SetRasterizerType(MERasterizerType::ECullNone);
+	m_pMaterial->SetCullMode(MECullMode::ECullNone);
 	m_pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, "true");
 	m_pMaterial->LoadVertexShader(vs);
 	m_pMaterial->LoadPixelShader(ps);
@@ -46,7 +46,7 @@ void MShadowMapShaderPropertyBlock::Release(MEngine* pEngine)
 
 void MShadowMapShaderPropertyBlock::BindMaterial(const std::shared_ptr<MMaterial>& pMaterial)
 {
-	MORTY_ASSERT(m_pShaderPropertyBlock = pMaterial->GetFrameParamSet()->Clone());
+	MORTY_ASSERT(m_pShaderPropertyBlock = pMaterial->GetFramePropertyBlock()->Clone());
 	MORTY_ASSERT(m_pWorldMatrixParam = m_pShaderPropertyBlock->FindConstantParam("cbSceneMatrix"));
 }
 
@@ -61,7 +61,7 @@ void MShadowMapShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& info)
 
 	MScene* pScene = pViewport->GetScene();
 	const MRenderSystem* pRenderSystem = pScene->GetEngine()->FindSystem<MRenderSystem>();
-	auto* pShadowMapManager = pScene->GetManager<MShadowMapManager>();
+	auto* pShadowMapManager = pScene->GetManager<MShadowMeshManager>();
 	MORTY_ASSERT(pShadowMapManager);
 
 	if (m_pWorldMatrixParam)
@@ -81,9 +81,7 @@ void MShadowMapShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& info)
 
 }
 
-std::vector<std::shared_ptr<MShaderPropertyBlock>> MShadowMapShaderPropertyBlock::GetPropertyBlock() const
+std::shared_ptr<MShaderPropertyBlock> MShadowMapShaderPropertyBlock::GetPropertyBlock() const
 {
-	return {
-		m_pShaderPropertyBlock,
-	};
+	return m_pShaderPropertyBlock;
 }

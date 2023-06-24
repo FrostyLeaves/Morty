@@ -8,7 +8,7 @@
 
 #include "Component/MSceneComponent.h"
 #include "Component/MCameraComponent.h"
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 
 std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> MShadowMapUtil::CascadedSplitCameraFrustum(MViewport* pViewport)
@@ -42,7 +42,7 @@ std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> MSh
 		MORTY_ASSERT(pCameraSceneComponent);
 		return {};
 	}
-	MComponentGroup<MRenderableMeshComponent>* pMeshComponentGroup = pScene->FindComponents<MRenderableMeshComponent>();
+	MComponentGroup<MRenderMeshComponent>* pMeshComponentGroup = pScene->FindComponents<MRenderMeshComponent>();
 	if (!pMeshComponentGroup)
 	{
 		MORTY_ASSERT(pMeshComponentGroup);

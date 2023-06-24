@@ -6,12 +6,12 @@
 #include "System/MResourceSystem.h"
 
 #include "Component/MSceneComponent.h"
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 
 #include "Resource/MMeshResource.h"
 #include "Resource/MMaterialResource.h"
 
-void CREATE_FLOOR(MEngine* pEngine, MScene* pScene)
+void CREATE_FLOOR_GRID(MEngine* pEngine, MScene* pScene)
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
 	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
@@ -20,11 +20,11 @@ void CREATE_FLOOR(MEngine* pEngine, MScene* pScene)
 	pCubeResource->Load(MMeshResourceUtil::CreatePlane());
 
 	MEntity* pFloorEntity = pScene->CreateEntity();
-	pFloorEntity->SetName("Floor");
+	pFloorEntity->SetName("Floor Grid");
 
 	MSceneComponent* pSceneComponent = pFloorEntity->RegisterComponent<MSceneComponent>();
 
-	if (MRenderableMeshComponent* pMeshComponent = pFloorEntity->RegisterComponent<MRenderableMeshComponent>())
+	if (MRenderMeshComponent* pMeshComponent = pFloorEntity->RegisterComponent<MRenderMeshComponent>())
 	{
 		pMeshComponent->SetSceneCullEnable(false);
 
@@ -32,7 +32,7 @@ void CREATE_FLOOR(MEngine* pEngine, MScene* pScene)
 
 		pMaterial->LoadVertexShader("Shader/Floor/floor.mvs");
 		pMaterial->LoadPixelShader("Shader/Floor/floor.mps");
-		pMaterial->SetRasterizerType(MERasterizerType::ECullNone);
+		pMaterial->SetCullMode(MECullMode::ECullNone);
 		pMaterial->SetMaterialType(MEMaterialType::ECustom);
 		pMeshComponent->Load(pCubeResource);
 		pMeshComponent->SetMaterial(pMaterial);

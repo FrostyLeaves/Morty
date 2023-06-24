@@ -1,26 +1,26 @@
 /**
- * @File         MNotifySystem
+ * @File         MNotifyManager
  * 
  * @Created      2021-08-06 13:58:11
  *
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MNOTIFYSYSTEM_H_
-#define _M_MNOTIFYSYSTEM_H_
+#ifndef _M_MNOTIFY_MANAGER_H_
+#define _M_MNOTIFY_MANAGER_H_
 #include "Utility/MGlobal.h"
-#include "Engine/MSystem.h"
+#include "Scene/MManager.h"
 #include "Component/MComponent.h"
 
 typedef std::function<void(MComponent* pComponent)> MNotifyFunction;
 
-class MORTY_API MNotifySystem : public MISystem
+class MORTY_API MNotifyManager : public IManager
 {
-    MORTY_CLASS(MNotifySystem)
+    MORTY_CLASS(MNotifyManager)
 
 public:
-    MNotifySystem();
-    virtual ~MNotifySystem();
+    MNotifyManager();
+    virtual ~MNotifyManager();
 
 public:
 

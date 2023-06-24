@@ -55,8 +55,8 @@ public:
 	virtual bool CompileShader(MShader* pShader) = 0;
 	virtual void CleanShader(MShader* pShader) = 0;
 
-	virtual bool GenerateShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet) = 0;
-	virtual void DestroyShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet) = 0;
+	virtual bool GenerateShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) = 0;
+	virtual void DestroyShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) = 0;
 
 	virtual bool GenerateShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam) = 0;
 	virtual void DestroyShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam) = 0;

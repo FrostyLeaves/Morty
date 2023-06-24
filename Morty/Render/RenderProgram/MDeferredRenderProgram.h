@@ -24,13 +24,6 @@
 #include "MForwardRenderShaderPropertyBlock.h"
 #include "Culling/MCascadedShadowCulling.h"
 #include "Culling/MInstanceCulling.h"
-#include "RenderWork/MDebugRenderWork.h"
-#include "RenderWork/MDeferredLightingRenderWork.h"
-#include "RenderWork/MForwardRenderWork.h"
-#include "RenderWork/MGBufferRenderWork.h"
-#include "RenderWork/MPostProcessRenderWork.h"
-#include "RenderWork/MShadowMapRenderWork.h"
-#include "RenderWork/MTransparentRenderWork.h"
 
 class MSceneCulling;
 class MSceneGPUCulling;
@@ -41,7 +34,7 @@ class MViewport;
 class MMaterial;
 class MIRenderCommand;
 class MComputeDispatcher;
-class MRenderableMeshComponent;
+class MRenderMeshComponent;
 class MORTY_API MDeferredRenderProgram : public MIRenderProgram
 {
 public:
@@ -52,7 +45,7 @@ public:
 
 public:
 
-	virtual void Render(MIRenderCommand* pPrimaryCommand) override;
+	void Render(MIRenderCommand* pPrimaryCommand) override;
 
 	void RenderReady(MTaskNode* pTaskNode);
 	
@@ -71,12 +64,12 @@ public:
 	void RenderDebug(MTaskNode* pTaskNode);
 
 
-	virtual std::shared_ptr<MTexture> GetOutputTexture() override;
-	virtual std::vector<std::shared_ptr<MTexture>> GetOutputTextures() override;
+	std::shared_ptr<MTexture> GetOutputTexture() override;
+	std::vector<std::shared_ptr<MTexture>> GetOutputTextures() override;
 
 public:
-	virtual void OnCreated() override;
-	virtual void OnDelete() override;
+	void OnCreated() override;
+	void OnDelete() override;
 
 	void InitializeRenderTarget();
 	void ReleaseRenderTarget();
@@ -92,7 +85,6 @@ public:
 protected:
 
 	void UpdateFrameParams(MRenderInfo& info);
-
 
 
 	template<typename TYPE>
@@ -127,13 +119,9 @@ protected:
 	MTaskGraph* m_pRenderGraph = nullptr;
 	MIRenderCommand* m_pPrimaryCommand = nullptr;
 
-
-
 	std::vector<std::shared_ptr<MTexture>> m_vRenderTargets;
 	std::shared_ptr<MTexture> m_pFinalOutputTexture = nullptr;
-
-protected:
-
+	
 	ITextureInputAdapter* m_pShadowMapAdapter = nullptr;
 	std::unique_ptr<IGBufferAdapter> m_pGBufferAdapter = nullptr;
 

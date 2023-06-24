@@ -35,7 +35,7 @@
 #include "Component/MCameraComponent.h"
 #include "Component/MSpotLightComponent.h"
 #include "Component/MPointLightComponent.h"
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 
 #include "System/MEntitySystem.h"
@@ -72,6 +72,17 @@ void CopyMatrix4(Matrix4* matdest, aiMatrix4x4* matsour)
 		for (uint32_t c = 0; c < 4; ++c)
 		{
 			matdest->m[r][c] = (*matsour)[c][r];
+		}
+	}
+}
+
+void CopyMatrix4Transposed(Matrix4* matdest, aiMatrix4x4* matsour)
+{
+	for (uint32_t r = 0; r < 4; ++r)
+	{
+		for (uint32_t c = 0; c < 4; ++c)
+		{
+			matdest->m[r][c] = (*matsour)[r][c];
 		}
 	}
 }
@@ -208,8 +219,7 @@ bool MModelConverter::Load(const MString& strResourcePath)
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
 	std::vector<MString> vSearchPath = pResourceSystem->GetSearchPath();
-
-
+	
 	Assimp::Importer importer;
 	const aiScene* scene = nullptr;
 	for (MString strSearchPath : vSearchPath)
@@ -308,7 +318,7 @@ void MModelConverter::ProcessNode(aiNode* pNode, const aiScene *pScene)
 		pChildEntity->SetName(pChildMesh->mName.C_Str());
 		
 		MComponent* pSceneComponent = m_pScene->AddComponent<MSceneComponent>(pChildEntity);
-		MRenderableMeshComponent* pMeshComponent = m_pScene->AddComponent<MRenderableMeshComponent>(pChildEntity);
+		MRenderMeshComponent* pMeshComponent = m_pScene->AddComponent<MRenderMeshComponent>(pChildEntity);
 		pMeshComponent->Load(pChildMeshResource);
 		pMeshComponent->SetMaterial(GetMaterial(pScene, pChildMesh->mMaterialIndex));
 
@@ -483,7 +493,7 @@ void MModelConverter::RecordBones(MSkeleton* pSkeleton, aiNode* pNode, const aiS
 					if (nullptr == pMBone)
 					{
 						pMBone = pSkeleton->AppendBone(strBoneName);
-						CopyMatrix4(&pMBone->m_matOffsetMatrix, &pBone->mOffsetMatrix);
+						CopyMatrix4Transposed(&pMBone->m_matOffsetMatrix, &pBone->mOffsetMatrix);
 					}
 				}
 			}
@@ -677,7 +687,7 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 					for (unsigned keyIndex = 0; keyIndex < pNodeAnim->mNumRotationKeys; ++keyIndex)
 					{
 						const aiQuatKey& skey = pNodeAnim->mRotationKeys[keyIndex];
-						mAnimNode.m_vRotationTrack.push_back({ static_cast<float>(skey.mTime), mfbs::Quaternion(skey.mValue.x, skey.mValue.y,skey.mValue.z,skey.mValue.w) });
+						mAnimNode.m_vRotationTrack.push_back({ static_cast<float>(skey.mTime), mfbs::Quaternion(skey.mValue.w, skey.mValue.x, skey.mValue.y,skey.mValue.z) });
 					}
 				}
 				if (pNodeAnim->mNumScalingKeys > 0)
@@ -737,9 +747,9 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 
 		pMaterial->SetMaterialType(MEMaterialType::EDeferred);
 
-		pMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
-		pMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);
-		pMaterial->GetMaterialParamSet()->SetValue("f4Albedo", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+		pMaterial->GetMaterialPropertyBlock()->SetValue("fMetallic", 1.0f);
+		pMaterial->GetMaterialPropertyBlock()->SetValue("fRoughness", 1.0f);
+		pMaterial->GetMaterialPropertyBlock()->SetValue("f4Albedo", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 		pMaterial->SetTexture(MaterialKey::Albedo, pResourceSystem->LoadResource(MRenderModule::DefaultWhite));
 		pMaterial->SetTexture(MaterialKey::Normal, pResourceSystem->LoadResource(MRenderModule::DefaultNormal));
 		pMaterial->SetTexture(MaterialKey::Metallic, pResourceSystem->LoadResource(MRenderModule::Default_R8_One));
@@ -805,12 +815,12 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		if (0.0f == fShininess)
 			fShininess = 32.0f;
 
-		pMaterial->GetMaterialParamSet()->SetValue("f3Ambient", v3Ambient);
-		pMaterial->GetMaterialParamSet()->SetValue("f3Diffuse", v3Diffuse);
-		pMaterial->GetMaterialParamSet()->SetValue("f3Specular", v3Specular);
-		pMaterial->GetMaterialParamSet()->SetValue("fShininess", fShininess);
-		pMaterial->GetMaterialParamSet()->SetValue("bUseNormalTex", 0);
-		pMaterial->GetMaterialParamSet()->SetValue("fAlphaFactor", 1.0f);
+		pMaterial->GetMaterialPropertyBlock()->SetValue("f3Ambient", v3Ambient);
+		pMaterial->GetMaterialPropertyBlock()->SetValue("f3Diffuse", v3Diffuse);
+		pMaterial->GetMaterialPropertyBlock()->SetValue("f3Specular", v3Specular);
+		pMaterial->GetMaterialPropertyBlock()->SetValue("fShininess", fShininess);
+		pMaterial->GetMaterialPropertyBlock()->SetValue("bUseNormalTex", 0);
+		pMaterial->GetMaterialPropertyBlock()->SetValue("fAlphaFactor", 1.0f);
 
 	}
 

@@ -15,7 +15,7 @@
 
 #include "Component/MSceneComponent.h"
 #include "Component/MCameraComponent.h"
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 #include "Render/MVertex.h"
 
@@ -126,9 +126,9 @@ void MAnimatedMeshRender::DrawAnimatedMesh(MIRenderCommand* pCommand, const MAni
 	const auto& vMeshComponent = renderable.vMeshComponents;
 
 	pCommand->SetUseMaterial(pMaterial);
-	pCommand->SetShaderParamSet(pFramePropertyBlock);
+	pCommand->SetShaderPropertyBlock(pFramePropertyBlock);
 
-	for (MRenderableMeshComponent* pMeshComponent : vMeshComponent)
+	for (MRenderMeshComponent* pMeshComponent : vMeshComponent)
 	{
 		std::shared_ptr<MSkeletonInstance> pSkeletonIns = pMeshComponent->GetSkeletonInstance();
 		if (!pSkeletonIns)
@@ -136,8 +136,8 @@ void MAnimatedMeshRender::DrawAnimatedMesh(MIRenderCommand* pCommand, const MAni
 			MORTY_ASSERT(pSkeletonIns);
 			continue;
 		}
-		pCommand->SetShaderParamSet(pSkeletonIns->GetShaderParamSet());
-		pCommand->SetShaderParamSet(pMeshComponent->GetShaderMeshParamSet());
+		pCommand->SetShaderPropertyBlock(pSkeletonIns->GetShaderPropertyBlock());
+		pCommand->SetShaderPropertyBlock(pMeshComponent->GetShaderMeshPropertyBlock());
 
 		const MMeshManager::MMeshData& meshData = pMeshManager->FindMesh(pMeshComponent->GetMesh());
 

@@ -6,7 +6,7 @@
 #include "System/MResourceSystem.h"
 
 #include "Component/MSceneComponent.h"
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 
 #include "Resource/MMeshResource.h"
 #include "Resource/MMaterialResource.h"
@@ -42,9 +42,9 @@ void GPU_DRIVEN_CULLING_TEST(MEngine* pEngine, MScene* pScene)
 	pMaterial->SetTexture(MaterialKey::AmbientOcc, ao);
 	pMaterial->SetTexture(MaterialKey::Height, height);
 
-	pMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
-	pMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);
-	pMaterial->GetMaterialParamSet()->SetValue("f4Albedo", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+	pMaterial->GetMaterialPropertyBlock()->SetValue("fMetallic", 1.0f);
+	pMaterial->GetMaterialPropertyBlock()->SetValue("fRoughness", 1.0f);
+	pMaterial->GetMaterialPropertyBlock()->SetValue("f4Albedo", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 	pMaterial->SetBatchInstanceEnable(true);
 
 
@@ -66,7 +66,7 @@ void GPU_DRIVEN_CULLING_TEST(MEngine* pEngine, MScene* pScene)
 					pSceneComponent->SetScale(Vector3(4.0f, 4.0f, 4.0f));
 					pSceneComponent->SetParent(pFolderSceneComponent);
 				}
-				if (MRenderableMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderableMeshComponent>())
+				if (MRenderMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderMeshComponent>())
 				{
 					pMeshComponent->Load(pMeshResource);
 					pMeshComponent->SetMaterial(pMaterial);

@@ -15,7 +15,7 @@
 
 #include "MShaderMacro.h"
 #include "MShaderBuffer.h"
-#include "Material/MShaderParamSet.h"
+#include "Material/MShaderPropertyBlock.h"
 
 #include <vector>
 
@@ -79,8 +79,8 @@ public:
 	std::vector<MShaderSampleParam*>* GetSampleParams();
 	std::vector<MShaderTextureParam*>* GetTextureParams();
 
-	const std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParamSets() const { return m_vShaderSets; }
-	std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParamSets() { return m_vShaderSets; }
+	const std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderPropertyBlocks() const { return m_vShaderSets; }
+	std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderPropertyBlocks() { return m_vShaderSets; }
 
 	EUsage GetUsage() const { return m_eUsage; }
 
@@ -98,13 +98,13 @@ public:
 	
 	static void CopyShaderParams(MEngine* pEngine, const std::shared_ptr<MShaderPropertyBlock>& target, const std::shared_ptr<const MShaderPropertyBlock>& source);
 
-	std::shared_ptr<MShaderPropertyBlock> AllocShaderParamSet(size_t nSetIdx);
-	void ReleaseShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pShaderParamSet);
+	std::shared_ptr<MShaderPropertyBlock> AllocShaderPropertyBlock(size_t nSetIdx);
+	void ReleaseShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock);
 
 protected:
 
     std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM> m_vShaderSets;
-	std::set<std::shared_ptr<MShaderPropertyBlock>> m_tShaderParamSetInstance;
+	std::set<std::shared_ptr<MShaderPropertyBlock>> m_tShaderPropertyBlockInstance;
 
 	std::weak_ptr<MShaderProgram> m_pSelfPointer;
 	

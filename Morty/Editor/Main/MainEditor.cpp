@@ -38,12 +38,13 @@
 #include "Render/ImGuiRenderable.h"
 
 #include "Component/MCameraComponent.h"
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 
 #include "System/MInputSystem.h"
 #include "System/MRenderSystem.h"
 
 #include "RenderProgram/MDeferredRenderProgram.h"
+#include "Utility/SelectionEntityManager.h"
 
 
 MString MainEditor::m_sRenderProgramName = MDeferredRenderProgram::GetClassTypeName();
@@ -62,7 +63,6 @@ MainEditor::MainEditor()
 	, m_pModelConvertView(nullptr)
 	, m_pMessageView(nullptr)
 	, m_pImGuiRenderable(nullptr)
-	, m_unTriangleCount(0)
 	, m_bRenderToWindow(true)
 	, m_bShowRenderView(false)
 	, m_bShowDebugView(false)
@@ -123,8 +123,8 @@ bool MainEditor::Initialize(MEngine* pEngine, const char* svWindowName)
 
 	m_pNodeTreeView->SetScene(m_SceneTexture.GetScene());
 
-	m_pNodeTreeView->m_bVisiable = true;
-	m_pPropertyView->m_bVisiable = true;
+	m_pNodeTreeView->SetVisible(true);
+	m_pPropertyView->SetVisible(true);
 
 
 	MTaskGraph* pMainGraph = GetEngine()->GetMainGraph();
@@ -380,13 +380,14 @@ void MainEditor::ShowMenu()
 		{
 			if (ImGui::MenuItem("Render", "", &m_bShowRenderView)) {}
 			if (ImGui::MenuItem("DebugTexture", "", &m_bShowDebugView)) {}
-			if (ImGui::MenuItem("NodeTree", "", &m_pNodeTreeView->m_bVisiable)) {}
-			if (ImGui::MenuItem("Property", "", &m_pPropertyView->m_bVisiable)) {}
-			if (ImGui::MenuItem("Material", "", &m_pMaterialView->m_bVisiable)) {}
-			if (ImGui::MenuItem("Resource", "", &m_pResourceView->m_bVisiable)) {}
-			if (ImGui::MenuItem("Message", "", &m_pMessageView->m_bVisiable)) {}
-			if (ImGui::MenuItem("ModelConvert", "", &m_pModelConvertView->m_bVisiable)) {}
-		
+
+			for (IBaseView* pView : m_vChildView)
+			{
+				bool bVisible = pView->GetVisible();
+				if (ImGui::MenuItem(pView->GetName().c_str(), "", &bVisible)) {}
+				pView->SetVisible(bVisible);
+			}
+
 			if (ImGui::MenuItem("Render to Window", "", &m_bRenderToWindow)) {}
 
 			ImGui::EndMenu();
@@ -411,7 +412,13 @@ void MainEditor::ShowMenu()
 		{
 			if (ImGui::MenuItem("Snip shot"))
 			{
-				m_SceneTexture.Snapshot("./test.png");
+				auto t = std::time(nullptr);
+				auto tm = *std::localtime(&t);
+				std::ostringstream oss;
+				oss << std::put_time(&tm, "%d-%m-%Y %H-%M-%S");
+			    auto str = oss.str();
+
+			    m_SceneTexture.Snapshot("./Snipshot-" + str + ".png");
 			}
 
 			ImGui::EndMenu();
@@ -494,81 +501,24 @@ void MainEditor::ShowShadowMapView(const size_t& nImageCount)
 	ImGui::End();
 }
 
-void MainEditor::ShowNodeTree()
+void MainEditor::ShowView(IBaseView* pView)
 {
-	if (!m_pNodeTreeView->m_bVisiable)
+	bool bVisible = pView->GetVisible();
+
+	if (!bVisible)
 		return;
 
-	if (ImGui::Begin("Scene", &m_pNodeTreeView->m_bVisiable))
+	if (ImGui::Begin(pView->GetName().c_str(), &bVisible))
 	{
-		m_pNodeTreeView->Render();
+		pView->Render();
 	}
+
+	pView->SetVisible(bVisible);
 	ImGui::End();
 }
 
-void MainEditor::ShowProperty()
+void MainEditor::ShowGuizmo()
 {
-	if (!m_pPropertyView->m_bVisiable)
-		return;
-
-	if (ImGui::Begin("Property", &m_pPropertyView->m_bVisiable))
-	{
-		MEntity* pNode = nullptr;
-		if (pNode = dynamic_cast<MEntity*>(m_pNodeTreeView->GetSelectionNode()))
-		{
-			ImGui::Text(pNode->GetName().c_str());
-		}
-		m_pPropertyView->SetEditorNode(pNode);
-		m_pPropertyView->Render();
-	}
-	ImGui::End();
-}
-
-void MainEditor::ShowMaterial(const size_t& nImageCount)
-{
-	if (!m_pMaterialView->m_bVisiable)
-		return;
-
-	if (ImGui::Begin("Material", &m_pMaterialView->m_bVisiable))
-	{
-		m_pMaterialView->Render();
-	}
-
-	ImGui::End();
-}
-
-void MainEditor::ShowMessage()
-{
-	if (!m_pMessageView->m_bVisiable)
-		return;
-
-	m_pMessageView->Render();
-}
-
-void MainEditor::ShowResource()
-{
-	if (!m_pResourceView->m_bVisiable)
-		return;
-
-	if (ImGui::Begin("Resource", &m_pResourceView->m_bVisiable))
-	{
-		m_pResourceView->Render();
-	}
-
-	ImGui::End();
-}
-
-void MainEditor::ShowModelConvert()
-{
-	if (!m_pModelConvertView->m_bVisiable)
-		return;
-
-	if (ImGui::Begin("ModelConvert", &m_pModelConvertView->m_bVisiable))
-	{
-		m_pModelConvertView->Render();
-	}
-
-	ImGui::End();
 }
 
 void MainEditor::ShowDialog()
@@ -578,9 +528,7 @@ void MainEditor::ShowDialog()
 		if (ImGuiFileDialog::Instance()->IsOk() == true)
 		{
 			std::map<std::string, std::string>&& files = ImGuiFileDialog::Instance()->GetSelection();
-
-			int a = 0;
-			++a;
+			
 		}
 		ImGuiFileDialog::Instance()->Close();
 	}
@@ -647,11 +595,6 @@ void MainEditor::Render(MTaskNode* pNode)
 
 	pRenderCommand->RenderCommandBegin();
 
-	
-#if MORTY_RENDER_DATA_STATISTICS
-	MRenderStatistics::GetInstance()->unTriangleCount = 0;
-#endif
-
 	Vector2 pos, size;
 	if (m_bRenderToWindow)
 	{
@@ -678,14 +621,15 @@ void MainEditor::Render(MTaskNode* pNode)
 
 	ImGui::NewFrame();
 
-
 	std::vector<MTexture*> vRenderTextures;
-	if (m_pMaterialView && m_pMaterialView->m_bVisiable)
+	if (m_pMaterialView && m_pMaterialView->GetVisible())
 	{
-		if (MEntity* pEntity = m_pNodeTreeView->GetSelectionNode())
+		if (MEntity* pEntity = SelectionEntityManager::GetInstance()->GetSelectedEntity())
 		{
-			if (MRenderableMeshComponent* pMeshComponent = pEntity->GetComponent<MRenderableMeshComponent>())
+			if (MRenderMeshComponent* pMeshComponent = pEntity->GetComponent<MRenderMeshComponent>())
+			{
 				m_pMaterialView->SetMaterial(pMeshComponent->GetMaterialResource());
+			}
 		}
 
 		SceneTexture& sceneTexture = m_pMaterialView->GetSceneTexture();
@@ -721,7 +665,7 @@ void MainEditor::Render(MTaskNode* pNode)
 				ImGui::SetNextWindowBgAlpha(0);
 				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 				ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
-				ImGui::Begin("����", NULL, ImGuiWindowFlags_NoMove |
+				ImGui::Begin("MainView", NULL, ImGuiWindowFlags_NoMove |
 					ImGuiWindowFlags_NoTitleBar |
 					ImGuiWindowFlags_NoBringToFrontOnFocus |
 					ImGuiWindowFlags_NoInputs |
@@ -737,15 +681,14 @@ void MainEditor::Render(MTaskNode* pNode)
 	}
 
 	ShowMenu();
-	ShowMaterial(pRenderTarget->unImageIndex);
 	ShowRenderView(pRenderTarget->unImageIndex);
 	ShowShadowMapView(pRenderTarget->unImageIndex);
-	ShowNodeTree();
-	ShowProperty();
-	ShowMessage();
-	ShowResource();
-	ShowModelConvert();
-	
+
+	for (IBaseView* pBaseView : m_vChildView)
+	{
+		ShowView(pBaseView);
+	}
+
 	ShowDialog();
 
 	// Rendering
@@ -770,6 +713,3 @@ void MainEditor::Render(MTaskNode* pNode)
 	
 }
 
-void MainEditor::SceneRender(MTaskNode* pNode)
-{
-}

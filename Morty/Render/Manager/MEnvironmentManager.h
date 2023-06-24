@@ -14,7 +14,7 @@ class MMaterial;
 class MComponent;
 class MShaderConstantParam;
 class MShaderPropertyBlock;
-class MRenderableMeshComponent;
+class MRenderMeshComponent;
 
 class MSkyBoxComponent;
 class MORTY_API MEnvironmentManager : public IManager

@@ -1,5 +1,7 @@
 #include "Component/MModelComponent.h"
 
+#include "MRenderNotify.h"
+
 MORTY_CLASS_IMPLEMENT(MModelComponent, MComponent)
 
 #include "Scene/MEntity.h"
@@ -9,7 +11,7 @@ MORTY_CLASS_IMPLEMENT(MModelComponent, MComponent)
 #include "Model/MSkeletonInstance.h"
 
 #include "Component/MSceneComponent.h"
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 #include "System/MObjectSystem.h"
 #include "System/MResourceSystem.h"
 
@@ -52,8 +54,9 @@ void MModelComponent::SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSk
 		m_pSkeleton->SetSkeletonResource(pSkeletonRsource);
 	}
 
-
 	m_SkeletonResource = pSkeletonRsource;
+
+	SendComponentNotify(MRenderNotify::NOTIFY_ANIMATION_POSE_CHANGED);
 }
 
 void MModelComponent::SetSkeletonResourcePath(const MString& strSkeletonPath)
@@ -111,34 +114,6 @@ void MModelComponent::RemoveAnimation()
 MSkeletalAnimController* MModelComponent::GetSkeletalAnimationController()
 {
 	return m_pCurrentAnimationController;
-}
-
-MBoundsAABB MModelComponent::GetBoundsAABB()
-{
-	MBoundsAABB aabb;
-
-	MEntity* pEntity = GetEntity();
-	if (!pEntity)
-		return aabb;
-
-	Vector3 min_pos(FLT_MAX, FLT_MAX, FLT_MAX), max_pos(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-
-	MSceneComponent::CallRecursivelyFunction(pEntity, [&](MEntity* pEntity){
-
-		MBoundsAABB* p2 = &aabb;
-
-		if (MRenderableMeshComponent* pMeshComponent = pEntity->GetComponent<MRenderableMeshComponent>())
-		{
-			if (MBoundsAABB* pBounds = pMeshComponent->GetBoundsAABB())
-			{
-				pBounds->UnionMinMax(min_pos, max_pos);
-			}
-		}
-
-	});
-
-	aabb.SetMinMax(min_pos, max_pos);
-	return aabb;
 }
 
 flatbuffers::Offset<void> MModelComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)

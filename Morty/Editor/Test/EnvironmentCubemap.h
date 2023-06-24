@@ -32,12 +32,12 @@ void ENVIRONMENT_CUBEMAP_TEST(MEngine* pEngine, MScene* pScene)
     */
 
 	auto resourceData = MTextureResourceUtil::ImportCubeMap({
-		"Texture/Sky/Circus_Backstage/px.hdr",
-		"Texture/Sky/Circus_Backstage/nx.hdr",
-		"Texture/Sky/Circus_Backstage/py.hdr",
-		"Texture/Sky/Circus_Backstage/ny.hdr",
-		"Texture/Sky/Circus_Backstage/pz.hdr",
-		"Texture/Sky/Circus_Backstage/nz.hdr"
+		pResourceSystem->GetFullPath("Texture/Sky/Circus_Backstage/px.hdr"),
+		pResourceSystem->GetFullPath("Texture/Sky/Circus_Backstage/nx.hdr"),
+		pResourceSystem->GetFullPath("Texture/Sky/Circus_Backstage/py.hdr"),
+		pResourceSystem->GetFullPath("Texture/Sky/Circus_Backstage/ny.hdr"),
+		pResourceSystem->GetFullPath("Texture/Sky/Circus_Backstage/pz.hdr"),
+		pResourceSystem->GetFullPath("Texture/Sky/Circus_Backstage/nz.hdr")
 		}, { MTexturePixelFormat::Float32 });
 
 	pCubeTexture->Load(resourceData);

@@ -7,7 +7,7 @@ MessageView::MessageView()
 	: IBaseView()
 	, m_pEngine(nullptr)
 {
-
+	m_strViewName = "Message";
 }
 
 MessageView::~MessageView()

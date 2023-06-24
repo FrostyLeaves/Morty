@@ -17,7 +17,7 @@
 
 #include "Component/MSceneComponent.h"
 #include "Component/MSkyBoxComponent.h"
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 
 #include "System/MObjectSystem.h"
 #include "System/MRenderSystem.h"
@@ -33,7 +33,7 @@
 #include "RenderWork/MEnvironmentMapRenderWork.h"
 #include "Component/MCameraComponent.h"
 #include "Component/MDirectionalLightComponent.h"
-#include "Shadow/MShadowMapManager.h"
+#include "Shadow/MShadowMeshManager.h"
 #include "Render/MVertex.h"
 
 #include "Resource/MTextureResource.h"
@@ -41,19 +41,18 @@
 
 #include "Mesh/MMeshManager.h"
 
-#include "MeshRender/MSkyBoxRender.h"
-#include "MeshRender/MMaterialGroupRenderable.h"
-#include "MergeInstancing/MRenderableMeshManager.h"
-#include "MeshRender/MIndexdIndirectRenderable.h"
+#include "MeshRender/MSkyBoxRenderable.h"
+#include "Batch/MMeshInstanceManager.h"
+#include "MeshRender/MIndexedIndirectRenderable.h"
 
 #include "Culling/MSceneCulling.h"
 #include "Culling/MSceneGPUCulling.h"
+#include "Manager/MAnimationManager.h"
 
 MORTY_CLASS_IMPLEMENT(MDeferredRenderProgram, MIRenderProgram)
 
 
 #define GPU_CULLING_ENABLE false
-
 
 void MDeferredRenderProgram::Render(MIRenderCommand* pPrimaryCommand)
 {
@@ -89,16 +88,16 @@ void MDeferredRenderProgram::RenderReady(MTaskNode* pTaskNode)
 	m_pCameraFrustumCulling->UpdateCameraFrustum(m_renderInfo.m4CameraInverseProjection);
 
 	//Shadow map Culling.
-	auto* pShadowMapManager = pViewport->GetScene()->GetManager<MShadowMapManager>();
-	MRenderableMaterialGroup* pShadowMaterialGroup = pShadowMapManager->GetStaticShadowGroup();
+	auto* pShadowMapManager = pViewport->GetScene()->GetManager<MShadowMeshManager>();
+	auto vShadowMaterialGroup = pShadowMapManager->GetAllShadowGroup();
 	m_pShadowCulling->SetViewport(pViewport);
 	m_pShadowCulling->SetCamera(pCameraEntity);
 	m_pShadowCulling->SetDirectionalLight(pMainDirectionalLight);
-	m_pShadowCulling->Culling({  pShadowMaterialGroup });
+	m_pShadowCulling->Culling(vShadowMaterialGroup);
 
 	//CPU Culling.
-	auto* pRenderableMeshManager = pScene->GetManager<MRenderableMeshManager>();
-	const std::vector<MRenderableMaterialGroup*> vMaterialGroup = pRenderableMeshManager->GetAllMaterialGroup();
+	auto* pRenderableMeshManager = pScene->GetManager<MMeshInstanceManager>();
+	const std::vector<MMaterialBatchGroup*> vMaterialGroup = pRenderableMeshManager->GetAllMaterialGroup();
 
 #if GPU_CULLING_ENABLE
 	//GPU Culling.
@@ -383,10 +382,17 @@ void MDeferredRenderProgram::RenderGBuffer(MTaskNode* pTaskNode)
 	MScene* pScene = pViewport->GetScene();
 	//Camera frustum culling.
 
+	auto pAnimationManager = pScene->GetManager<MAnimationManager>();
+	auto pAniamtionPropertyAdapter = pAnimationManager->CreateAnimationPropertyAdapter();
+
 	//Render static mesh.
-	MIndexdIndirectRenderable indirectMesh;
+	MIndexedIndirectRenderable indirectMesh;
 	indirectMesh.SetScene(pScene);
-	indirectMesh.SetFramePropertyBlockAdapter(m_pFramePropertyAdapter);
+	indirectMesh.SetPropertyBlockAdapter({
+	    m_pFramePropertyAdapter,
+	    pAniamtionPropertyAdapter
+	});
+
 	indirectMesh.SetMaterialFilter(std::make_shared<MMaterialTypeFilter>(MEMaterialType::EDeferred));
 
 #if GPU_CULLING_ENABLE
@@ -399,6 +405,7 @@ void MDeferredRenderProgram::RenderGBuffer(MTaskNode* pTaskNode)
 		&indirectMesh,
 	});
 }
+
 void MDeferredRenderProgram::RenderLightning(MTaskNode* pTaskNode)
 {
 	MORTY_ASSERT(GetRenderWork<MDeferredLightingRenderWork>());
@@ -417,11 +424,16 @@ void MDeferredRenderProgram::RenderShadow(MTaskNode* pTaskNode)
 	//Current viewport.
 	MViewport* pViewport = m_renderInfo.pViewport;
 	MScene* pScene = pViewport->GetScene();
-	auto* pShadowMapManager = pScene->GetManager<MShadowMapManager>();
 
-	MIndexdIndirectRenderable indirectMesh;
+	auto pAnimationManager = pScene->GetManager<MAnimationManager>();
+	auto pAniamtionPropertyAdapter = pAnimationManager->CreateAnimationPropertyAdapter();
+
+	MIndexedIndirectRenderable indirectMesh;
 	indirectMesh.SetScene(pScene);
-	indirectMesh.SetFramePropertyBlockAdapter(m_pShadowPropertyAdapter);
+	indirectMesh.SetPropertyBlockAdapter({
+		m_pShadowPropertyAdapter,
+		pAniamtionPropertyAdapter
+	});
 	indirectMesh.SetInstanceCulling(m_pShadowCulling);
 
     GetRenderWork<MShadowMapRenderWork>()->Render(m_renderInfo, {
@@ -441,12 +453,17 @@ void MDeferredRenderProgram::RenderForward(MTaskNode* pTaskNode)
 	//Current viewport.
 	MViewport* pViewport = m_renderInfo.pViewport;
 	MScene* pScene = pViewport->GetScene();
-	auto* pRenderableMeshManager = pScene->GetManager<MRenderableMeshManager>();
-    
+
+	auto pAnimationManager = pScene->GetManager<MAnimationManager>();
+	auto pAniamtionPropertyAdapter = pAnimationManager->CreateAnimationPropertyAdapter();
+
 	//Render static mesh.
-	MIndexdIndirectRenderable indirectMesh;
+	MIndexedIndirectRenderable indirectMesh;
 	indirectMesh.SetScene(pScene);
-	indirectMesh.SetFramePropertyBlockAdapter(m_pFramePropertyAdapter);
+	indirectMesh.SetPropertyBlockAdapter({
+		m_pFramePropertyAdapter,
+		pAniamtionPropertyAdapter
+	});
 	indirectMesh.SetMaterialFilter(std::make_shared<MMaterialTypeFilter>(MEMaterialType::EDefault));
 #if GPU_CULLING_ENABLE
 	indirectMesh.SetInstanceCulling(m_pGpuCulling);
@@ -455,7 +472,7 @@ void MDeferredRenderProgram::RenderForward(MTaskNode* pTaskNode)
 #endif
 
 
-	MSkyBoxRender skyBox;
+	MSkyBoxRenderable skyBox;
 	skyBox.SetScene(pScene);
 	skyBox.SetFramePropertyBlockAdapter(m_pFramePropertyAdapter);
 
@@ -489,9 +506,9 @@ void MDeferredRenderProgram::RenderDebug(MTaskNode* pTaskNode)
 	MScene* pScene = pViewport->GetScene();
 
 	//Render static mesh.
-	MIndexdIndirectRenderable indirectMesh;
+	MIndexedIndirectRenderable indirectMesh;
 	indirectMesh.SetScene(pScene);
-	indirectMesh.SetFramePropertyBlockAdapter(m_pFramePropertyAdapter);
+	indirectMesh.SetPropertyBlockAdapter({ m_pFramePropertyAdapter });
 	indirectMesh.SetMaterialFilter(std::make_shared<MMaterialTypeFilter>(MEMaterialType::ECustom));
 #if GPU_CULLING_ENABLE
 	indirectMesh.SetInstanceCulling(m_pGpuCulling);

@@ -98,10 +98,10 @@ public:
     void GenerateShaderProgram(MShaderProgram* pShaderProgram);
     void DestroyShaderProgram(MShaderProgram* pShaderProgram);
 
-    void AllocateShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet, const std::shared_ptr<MPipeline>& pPipeline);
-    void DestroyShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet);
+    void AllocateShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock, const std::shared_ptr<MPipeline>& pPipeline);
+    void DestroyShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock);
 
-    void DestroyShaderParamSetImpl(const std::shared_ptr<MShaderPropertyBlock>& pParamSet) const;
+    void DestroyShaderPropertyBlockImpl(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) const;
 
 public:
 

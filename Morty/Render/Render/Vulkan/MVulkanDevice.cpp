@@ -931,19 +931,19 @@ void MVulkanDevice::CleanShader(MShader* pShader)
 	pShader->SetBuffer(nullptr);
 }
 
-bool MVulkanDevice::GenerateShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet)
+bool MVulkanDevice::GenerateShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock)
 {
-	if (!pParamSet)
+	if (!pPropertyBlock)
 		return false;
 	
 	return true;
 }
 
-void MVulkanDevice::DestroyShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet)
+void MVulkanDevice::DestroyShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock)
 {
-	if (pParamSet)
+	if (pPropertyBlock)
 	{
-		m_PipelineManager.DestroyShaderParamSet(pParamSet);
+		m_PipelineManager.DestroyShaderPropertyBlock(pPropertyBlock);
 	}
 }
 

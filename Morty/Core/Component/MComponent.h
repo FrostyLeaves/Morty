@@ -25,8 +25,8 @@ class MComponent;
 class MORTY_API MComponentID
 {
 public:
-    MComponentID() : pComponentType(nullptr), nPrimaryIdx(0), nSecondaryIdx(0) {}
-    MComponentID(const MType* type, const size_t& pid, const size_t& sid) : pComponentType(type), nPrimaryIdx(pid), nSecondaryIdx(sid) {}
+    MComponentID() : pComponentType(nullptr), nIdx(0) {}
+    MComponentID(const MType* type, size_t id) : pComponentType(type), nIdx(id) {}
 
     bool IsValid() const;
 
@@ -38,8 +38,7 @@ public:
 
 public:
     const MType* pComponentType;
-	size_t nPrimaryIdx;
-    size_t nSecondaryIdx;
+	size_t nIdx;
 };
 
 class MORTY_API MComponent : public MTypeClass
@@ -64,7 +63,7 @@ public:
     virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb);
     virtual void Deserialize(flatbuffers::FlatBufferBuilder& fbb);
 	virtual void Deserialize(const void* pBufferPointer);
-	virtual void PostDeserialize();
+	virtual void PostDeserialize(const std::map<MGuid, MGuid>& tRedirectGuid);
 
 public:
 
@@ -96,10 +95,10 @@ public:
 	virtual void RemoveComponent(const MComponentID& id) = 0;
 	virtual void RemoveAllComponents() = 0;
 
-	virtual MComponent* FindComponent(const size_t& pid, const size_t& sid) = 0;
+	virtual MComponent* FindComponent(size_t id) = 0;
 
 	MComponent* FindComponent(const MComponentID& id) {
-		return FindComponent(id.nPrimaryIdx, id.nSecondaryIdx);
+		return FindComponent(id.nIdx);
 	}
 
 public:
@@ -114,7 +113,7 @@ public:
 	virtual MComponentID AddComponent(MEntity* entity) override;
 	virtual void RemoveComponent(const MComponentID& id) override;
 	virtual void RemoveAllComponents() override;
-	virtual MComponent* FindComponent(const size_t& pid, const size_t& sid) override;;
+	virtual MComponent* FindComponent(size_t id) override;
 
 public:
 	MBlockVector<TYPE, 64> m_vComponents;
@@ -145,7 +144,7 @@ MComponentID MComponentGroup<TYPE>::AddComponent(MEntity* entity)
 		TYPE& component = m_vComponents.push_back(TYPE());
 		auto iter = m_vComponents.end() - 1;
 
-		MComponentID id = MComponentID(TYPE::GetClassType(), iter.pid(), iter.sid());
+		MComponentID id = MComponentID(TYPE::GetClassType(), iter.id());
 
 		component.SetComponentID(id);
 		component.MComponent::Initialize(m_pScene, entity->GetID());
@@ -155,7 +154,7 @@ MComponentID MComponentGroup<TYPE>::AddComponent(MEntity* entity)
 	MComponentID nResult = m_vFreeComponent.back();
 	m_vFreeComponent.pop_back();
 	
-	MComponent* pComponent = FindComponent(nResult.nPrimaryIdx, nResult.nSecondaryIdx);
+	MComponent* pComponent = FindComponent(nResult.nIdx);
 	MORTY_ASSERT(pComponent && !pComponent->IsValid());
 
 	pComponent->SetComponentID(nResult);
@@ -166,7 +165,7 @@ MComponentID MComponentGroup<TYPE>::AddComponent(MEntity* entity)
 template<typename TYPE>
 void MComponentGroup<TYPE>::RemoveComponent(const MComponentID& id)
 {
-	MComponent* pComponent = FindComponent(id.nPrimaryIdx, id.nSecondaryIdx);
+	MComponent* pComponent = FindComponent(id.nIdx);
 	if (!pComponent)
 		return;
 
@@ -192,9 +191,9 @@ void MComponentGroup<TYPE>::RemoveAllComponents()
 }
 
 template<typename TYPE>
-MComponent* MComponentGroup<TYPE>::FindComponent(const size_t& pid, const size_t& sid)
+MComponent* MComponentGroup<TYPE>::FindComponent(size_t id)
 {
-	return m_vComponents.get(pid, sid);
+	return m_vComponents.get(id);
 }
 
 #endif

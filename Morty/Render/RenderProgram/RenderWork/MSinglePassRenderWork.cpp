@@ -15,7 +15,7 @@
 
 #include "Component/MSceneComponent.h"
 #include "Component/MCameraComponent.h"
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 #include "Render/MVertex.h"
 

@@ -6,15 +6,14 @@
 #include "Flatbuffer/MSkeleton_generated.h"
 #include "Utility/MFileHelper.h"
 #include "System/MRenderSystem.h"
-#include "Material/MShaderParamSet.h"
-#include "MergeInstancing/InstanceBatch/MInstanceBatchGroup.h"
+#include "Material/MShaderPropertyBlock.h"
+#include "Batch/BatchGroup/MInstanceBatchGroup.h"
 
 MORTY_CLASS_IMPLEMENT(MSkeleton, MTypeClass)
 
 MBone::MBone()
 	: m_matTransform(Matrix4::IdentityMatrix)
 	, m_matOffsetMatrix(Matrix4::IdentityMatrix)
-	, m_matWorldTransform(Matrix4::IdentityMatrix)
 {
 
 }
@@ -153,9 +152,14 @@ void MSkeleton::RebuildBonesMap()
 
 flatbuffers::Offset<void> MSkeleton::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	std::vector<flatbuffers::Offset<mfbs::MBone>> vBoneOffset;
+	std::vector<flatbuffers::Offset<MBone>> vBonesOffset(m_vAllBones.size());
 
-	auto fbBones = fbb.CreateVector(vBoneOffset);
+	for (size_t nIdx = 0; nIdx < m_vAllBones.size(); ++nIdx)
+	{
+		vBonesOffset[nIdx] = m_vAllBones[nIdx].Serialize(fbb).o;
+	}
+
+	auto fbBones = fbb.CreateVector(vBonesOffset).o;
 
 	mfbs::MSkeletonBuilder builder(fbb);
 

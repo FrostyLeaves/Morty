@@ -40,7 +40,6 @@ VS_OUTPUT VS_MAIN(VS_IN input, uint nVertexIdx: SV_VertexID)
 
     float4 world_pos = mul(float4(f3WorldPosition, 1.0f), u_matCamProj);
 
-    output.pos = pos;
-    output.pos.z = world_pos.z / world_pos.w;
+    output.pos = float4(pos.x, pos.y, world_pos.z / world_pos.w, 1.0f);
     return output;
 }

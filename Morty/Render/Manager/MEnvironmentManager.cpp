@@ -4,8 +4,9 @@
 #include "MRenderNotify.h"
 #include "Utility/MFunction.h"
 
+#include "Scene/MScene.h"
 #include "System/MObjectSystem.h"
-#include "System/MNotifySystem.h"
+#include "System/MNotifyManager.h"
 #include "System/MResourceSystem.h"
 #include "Component/MSceneComponent.h"
 #include "Component/MSkyBoxComponent.h"
@@ -18,7 +19,7 @@ void MEnvironmentManager::Initialize()
 	Super::Initialize();
 	InitializeMaterial();
 
-	if (MNotifySystem* pNotifySystem = GetEngine()->FindSystem<MNotifySystem>())
+	if (MNotifyManager* pNotifySystem = GetScene()->GetManager<MNotifyManager>())
 	{
 		pNotifySystem->RegisterNotify(MRenderNotify::NOTIFY_SKYBOX_TEX_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MEnvironmentManager::OnSkyBoxTextureChanged, this));
 		pNotifySystem->RegisterNotify(MRenderNotify::NOTIFY_DIFFUSE_ENV_TEX_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MEnvironmentManager::OnDiffuseEnvTextureChanged, this));
@@ -28,11 +29,11 @@ void MEnvironmentManager::Initialize()
 
 void MEnvironmentManager::Release()
 {
-	if (MNotifySystem* pNotifySystem = GetEngine()->FindSystem<MNotifySystem>())
+	if (MNotifyManager* pNotifySystem = GetScene()->GetManager<MNotifyManager>())
 	{
 		pNotifySystem->UnregisterNotify(MRenderNotify::NOTIFY_SKYBOX_TEX_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MEnvironmentManager::OnSkyBoxTextureChanged, this));
-		pNotifySystem->RegisterNotify(MRenderNotify::NOTIFY_DIFFUSE_ENV_TEX_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MEnvironmentManager::OnDiffuseEnvTextureChanged, this));
-		pNotifySystem->RegisterNotify(MRenderNotify::NOTIFY_SPECULAR_ENV_TEX_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MEnvironmentManager::OnSpecularEnvTextureChanged, this));
+		pNotifySystem->UnregisterNotify(MRenderNotify::NOTIFY_DIFFUSE_ENV_TEX_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MEnvironmentManager::OnDiffuseEnvTextureChanged, this));
+		pNotifySystem->UnregisterNotify(MRenderNotify::NOTIFY_SPECULAR_ENV_TEX_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MEnvironmentManager::OnSpecularEnvTextureChanged, this));
 	}
 
 	ReleaseMaterial();
@@ -153,7 +154,7 @@ void MEnvironmentManager::InitializeMaterial()
 	std::shared_ptr<MResource> skyboxVS = pResourceSystem->LoadResource("Shader/skybox.mvs");
 	std::shared_ptr<MResource> skyboxPS = pResourceSystem->LoadResource("Shader/skybox.mps");
 	m_pSkyBoxMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-	m_pSkyBoxMaterial->SetRasterizerType(MERasterizerType::ECullNone);
+	m_pSkyBoxMaterial->SetCullMode(MECullMode::ECullNone);
 	m_pSkyBoxMaterial->LoadVertexShader(skyboxVS);
 	m_pSkyBoxMaterial->LoadPixelShader(skyboxPS);
 

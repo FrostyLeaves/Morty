@@ -13,7 +13,7 @@ bool MMaterialResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 	auto pMaterialData = std::make_unique<MMaterialResourceData>();
 
 	pMaterialData->eMaterialType = GetMaterialType();
-	pMaterialData->eRasterizerType = GetRasterizerType();
+	pMaterialData->eCullMode = GetCullMode();
 	pMaterialData->shaderMacro = GetShaderMacro();
 	if (const auto pVertexResource = GetVertexShaderResource())
 	{
@@ -24,7 +24,7 @@ bool MMaterialResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 		pMaterialData->pixelShader = pPixelResource->GetResourcePath();
 	}
 
-	if (const auto pMaterialProperty = GetMaterialParamSet())
+	if (const auto pMaterialProperty = GetMaterialPropertyBlock())
 	{
 		for (auto param : pMaterialProperty->m_vParams)
 		{
@@ -62,7 +62,7 @@ bool MMaterialResource::Load(std::unique_ptr<MResourceData>& pResourceData)
 	auto pMaterialData = static_cast<MMaterialResourceData*>(pResourceData.get());
 
 	SetMaterialType(pMaterialData->eMaterialType);
-	SetRasterizerType(pMaterialData->eRasterizerType);
+	SetCullMode(pMaterialData->eCullMode);
 
 	SetShaderMacro(pMaterialData->shaderMacro);
 	LoadVertexShader(pMaterialData->vertexShader);
@@ -74,7 +74,7 @@ bool MMaterialResource::Load(std::unique_ptr<MResourceData>& pResourceData)
 		const auto fbProperty = pMaterialData->vProperty[nIdx];
 		const MString& strPropertyName = fbProperty.name;
 
-		if (std::shared_ptr<MShaderConstantParam> pConstantParam = GetMaterialParamSet()->FindConstantParam(strPropertyName))
+		if (std::shared_ptr<MShaderConstantParam> pConstantParam = GetMaterialPropertyBlock()->FindConstantParam(strPropertyName))
 		{
 			pConstantParam->var = MVariant::Clone(fbProperty.value);
 			pConstantParam->SetDirty();

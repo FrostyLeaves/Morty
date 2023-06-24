@@ -19,11 +19,7 @@ class PropertyView : public IBaseView
 public:
 	PropertyView();
 	virtual ~PropertyView();
-
-
-public:
-	void SetEditorNode(MEntity* pNode);
-
+	
 	virtual void Render() override;
 
 	virtual void Initialize(MEngine* pEngine) override;
@@ -38,7 +34,6 @@ protected:
 	void CreatePropertyList(MEntity* pNode);
 
 private:
-	MEntity* m_pEditorNode;
 	std::deque<PropertyBase*> m_vPropertyList;
 	
 	std::map<MString, std::function<PropertyBase*()>> m_tCreatePropertyFactory;

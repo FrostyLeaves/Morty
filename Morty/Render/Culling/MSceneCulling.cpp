@@ -6,7 +6,7 @@
 #include "Scene/MEntity.h"
 #include "Shadow/MShadowMapUtil.h"
 #include "System/MRenderSystem.h"
-#include "MergeInstancing/MRenderableMaterialGroup.h"
+#include "Batch/MMaterialBatchGroup.h"
 
 
 void MSceneCulling::Initialize(MEngine* pEngine)
@@ -32,7 +32,7 @@ void MSceneCulling::AddFilter(std::shared_ptr<IMeshInstanceFilter> pFilter)
 	m_vFilter.push_back(pFilter);
 }
 
-void MSceneCulling::Culling(const std::vector<MRenderableMaterialGroup*>& vInstanceGroup)
+void MSceneCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup)
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
@@ -54,7 +54,7 @@ void MSceneCulling::Culling(const std::vector<MRenderableMaterialGroup*>& vInsta
 
 	const MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
 
-	for (MRenderableMaterialGroup* pMaterialGroup : vInstanceGroup)
+	for (MMaterialBatchGroup* pMaterialGroup : vInstanceGroup)
 	{
 		if (pMaterialGroup->GetMaterial() == nullptr)
 		{

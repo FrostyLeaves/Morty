@@ -7,7 +7,7 @@
 #include "Render/Vulkan/MVulkanDevice.h"
 #include "Render/Vulkan/MVulkanRenderCommand.h"
 
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 
 #include "Basic/MViewport.h"
 #include "Component/MSceneComponent.h"

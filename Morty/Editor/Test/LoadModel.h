@@ -6,48 +6,51 @@
 #include "System/MResourceSystem.h"
 
 #include "Component/MSceneComponent.h"
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 
 #include "Resource/MMeshResource.h"
 #include "Resource/MMaterialResource.h"
 #include "Widget/ModelConvertView.h"
 
 
-void LOAD_MODEL_TEST(MEngine* pEngine, MScene* pScene)
+void LOAD_MODEL_ANIMATION_TEST(MEngine* pEngine, MScene* pScene)
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
 	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
 
-	std::shared_ptr<MResource> pModelResource = pResourceSystem->LoadResource("./LilacSoup/LilacSoup/LilacSoup.entity");
+	std::shared_ptr<MResource> pModelResource = pResourceSystem->LoadResource("./pigeon/pigeon/pigeon.entity");
 	if (!pModelResource)
 	{
 		MModelConverter convert(pEngine);
 
 		MModelConvertInfo info;
 		info.eMaterialType = MModelConvertMaterialType::E_Default_Forward;
-		info.strOutputDir = "./LilacSoup";
-		info.strOutputName = "LilacSoup";
-		info.strResourcePath = "./Model/LilacSoup/LilacPOSE.obj";
+		info.strOutputDir = "./pigeon";
+		info.strOutputName = "pigeon";
+		info.strResourcePath = "./Model/pigeon/source/Pigeon_Animations.fbx";
 
 		convert.Convert(info);
 
-		pModelResource = pResourceSystem->LoadResource("./LilacSoup/LilacSoup/LilacSoup.entity");
+		pModelResource = pResourceSystem->LoadResource("./pigeon/pigeon/pigeon.entity");
 	}
 
 	std::vector<MComponentID> vMeshComponents;
-	for (size_t i = 0; i < 1; ++i)
+	for (size_t i = 0; i < 100; ++i)
 	{
 		auto vEntity = pEntitySystem->LoadEntity(pScene, pModelResource);
 
 		for (MEntity* pEntity : vEntity)
 		{
-			pEntitySystem->FindAllComponentRecursively(pEntity, MRenderableMeshComponent::GetClassType(), vMeshComponents);
+			pEntity->GetComponent<MSceneComponent>()->SetScale(Vector3(1, 1, 1));
+			pEntitySystem->FindAllComponentRecursively(pEntity, MRenderMeshComponent::GetClassType(), vMeshComponents);
 		}
+
+		vEntity[0]->GetComponent<MSceneComponent>()->SetPosition(Vector3(i / 10, 0, i % 10) * 5);
 	}
 
 	for (MComponentID& componentID : vMeshComponents)
 	{
-		if (MRenderableMeshComponent* pMeshComponent = pScene->GetComponent(componentID)->DynamicCast<MRenderableMeshComponent>())
+		if (MRenderMeshComponent* pMeshComponent = pScene->GetComponent(componentID)->DynamicCast<MRenderMeshComponent>())
 		{
 			pMeshComponent->SetGenerateDirLightShadow(true);
 		}

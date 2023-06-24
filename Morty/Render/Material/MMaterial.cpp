@@ -20,7 +20,7 @@ MORTY_INTERFACE_IMPLEMENT(MMaterial, MResource)
 MMaterial::MMaterial()
 	: MResource()
 	, m_pShaderProgram(MShaderProgram::MakeShared(MShaderProgram::EUsage::EGraphics))
-	, m_eRasterizerType(MERasterizerType::ECullBack)
+	, m_eCullMode(MECullMode::ECullBack)
 	, m_eMaterialType(MEMaterialType::EDefault)
 {
 }
@@ -31,24 +31,24 @@ MMaterial::~MMaterial()
 
 std::vector<std::shared_ptr<MShaderConstantParam>>& MMaterial::GetShaderParams()
 {
-	return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]->m_vParams;
+	return m_pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]->m_vParams;
 }
 
 std::vector<std::shared_ptr<MShaderSampleParam>>& MMaterial::GetSampleParams()
 {
-	return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]->m_vSamples;
+	return m_pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]->m_vSamples;
 }
 
 std::vector<std::shared_ptr<MShaderTextureParam>>& MMaterial::GetTextureParams()
 {
-	return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]->m_vTextures;
+	return m_pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]->m_vTextures;
 }
 
 void MMaterial::SetTexture(const MString& strName, std::shared_ptr<MResource> pResource)
 {
-	for (int i = 0; i < GetMaterialParamSet()->m_vTextures.size(); ++i)
+	for (int i = 0; i < GetMaterialPropertyBlock()->m_vTextures.size(); ++i)
 	{
-		const std::shared_ptr<MTextureResourceParam>& pParam = std::dynamic_pointer_cast<MTextureResourceParam>(GetMaterialParamSet()->m_vTextures[i]);
+		const std::shared_ptr<MTextureResourceParam>& pParam = std::dynamic_pointer_cast<MTextureResourceParam>(GetMaterialPropertyBlock()->m_vTextures[i]);
 		if (strName == pParam->strName)
 		{
 			if (std::shared_ptr<MTextureResource> pTexResource = MTypeClass::DynamicCast<MTextureResource>(pResource))
@@ -71,7 +71,7 @@ void MMaterial::SetTexture(const MString& strName, std::shared_ptr<MResource> pR
 
 std::shared_ptr<MShaderConstantParam> MMaterial::FindShaderParam(const MString& strName)
 {
-	for (const std::shared_ptr<MShaderConstantParam>& pParam : GetMaterialParamSet()->m_vParams)
+	for (const std::shared_ptr<MShaderConstantParam>& pParam : GetMaterialPropertyBlock()->m_vParams)
 	{
 		if (pParam->strName == strName)
 			return pParam;
@@ -82,7 +82,7 @@ std::shared_ptr<MShaderConstantParam> MMaterial::FindShaderParam(const MString& 
 
 std::shared_ptr<MShaderSampleParam> MMaterial::FindSample(const MString& strName)
 {
-	for (const std::shared_ptr<MShaderSampleParam>& pParam : GetMaterialParamSet()->m_vSamples)
+	for (const std::shared_ptr<MShaderSampleParam>& pParam : GetMaterialPropertyBlock()->m_vSamples)
 	{
 		if (pParam->strName == strName)
 			return pParam;
@@ -91,19 +91,19 @@ std::shared_ptr<MShaderSampleParam> MMaterial::FindSample(const MString& strName
 
 std::shared_ptr<MShaderTextureParam> MMaterial::FindTexture(const MString& strName)
 {
-	for (const std::shared_ptr<MShaderTextureParam>& pParam : GetMaterialParamSet()->m_vTextures)
+	for (const std::shared_ptr<MShaderTextureParam>& pParam : GetMaterialPropertyBlock()->m_vTextures)
 	{
 		if (pParam->strName == strName)
 			return pParam;
 	}
 }
 
-void MMaterial::SetRasterizerType(const MERasterizerType& eType)
+void MMaterial::SetCullMode(const MECullMode& eType)
 {
-	if (m_eRasterizerType == eType)
+	if (m_eCullMode == eType)
 		return;
 
-	m_eRasterizerType = eType;
+	m_eCullMode = eType;
 }
 
 void MMaterial::SetMaterialType(const MEMaterialType& eType)

@@ -9,7 +9,7 @@
 #include "Material/MComputeDispatcher.h"
 #include "System/MObjectSystem.h"
 #include "Render/MRenderCommand.h"
-#include "MergeInstancing/MRenderableMaterialGroup.h"
+#include "Batch/MMaterialBatchGroup.h"
 
 void MSceneGPUCulling::Initialize(MEngine* pEngine)
 {
@@ -43,7 +43,7 @@ void MSceneGPUCulling::Initialize(MEngine* pEngine)
 	m_pCullingComputeDispatcher->LoadComputeShader("Shader/cull.mcs");
 
 
-	const std::shared_ptr<MShaderPropertyBlock>& params = m_pCullingComputeDispatcher->GetShaderParamSets()[0];
+	const std::shared_ptr<MShaderPropertyBlock>& params = m_pCullingComputeDispatcher->GetShaderPropertyBlocks()[0];
 
 	if (std::shared_ptr<MShaderStorageParam> pStorageParam = params->FindStorageParam("instances"))
 	{
@@ -82,7 +82,7 @@ void MSceneGPUCulling::AddFilter(std::shared_ptr<IMeshInstanceFilter> pFilter)
 
 void MSceneGPUCulling::UpdateCullingCamera()
 {
-	const std::shared_ptr<MShaderPropertyBlock>& params = m_pCullingComputeDispatcher->GetShaderParamSets()[0];
+	const std::shared_ptr<MShaderPropertyBlock>& params = m_pCullingComputeDispatcher->GetShaderPropertyBlocks()[0];
 
 	std::shared_ptr<MShaderConstantParam> pConstantParam = params->FindConstantParam("ubo");
 	if(!pConstantParam)
@@ -105,7 +105,7 @@ void MSceneGPUCulling::UpdateCullingCamera()
 	pConstantParam->SetDirty();
 }
 
-void MSceneGPUCulling::Culling(const std::vector<MRenderableMaterialGroup*>& vInstanceGroup)
+void MSceneGPUCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup)
 {
 	if (!m_pCommand)
 	{
@@ -136,7 +136,7 @@ void MSceneGPUCulling::Culling(const std::vector<MRenderableMaterialGroup*>& vIn
 
 	const MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
 
-	for (MRenderableMaterialGroup* pMaterialGroup : vInstanceGroup)
+	for (MMaterialBatchGroup* pMaterialGroup : vInstanceGroup)
 	{
 		if (pMaterialGroup->GetMaterial() == nullptr)
 		{

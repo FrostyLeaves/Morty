@@ -58,7 +58,7 @@ public:
 	float GetTicksDuration() const { return m_fTicksDuration; }
 	float GetTicksPerSecond() const { return m_fTicksPerSecond; }
 
-	void Update(const float& fTime, MSkeletonInstance* pSkeletonIns, const MSkeletonAnimMap& skelAnimMap) const;
+	void Update(MSkeletonPose& outputPose, const float& fTime, MSkeletonInstance* pSkeletonIns, const MSkeletonAnimMap& skelAnimMap) const;
 
 	void SetSkeletonTemplate(MSkeleton* pSkeleton);
 	MSkeleton* GetSkeletonTemplate() const { return m_pSkeleton; }

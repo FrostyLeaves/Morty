@@ -27,7 +27,6 @@ public:
 
 	void RegisterNotify(const MString& strNotifyName, void* pRegister, const NotifyFunction& func);
 
-
 	void UnRegisterAll();
 
 private:

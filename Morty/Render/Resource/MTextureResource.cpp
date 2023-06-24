@@ -58,7 +58,8 @@ bool MTextureResource::Load(std::unique_ptr<MResourceData>& pResourceData)
 	auto pTextureData = static_cast<MTextureResourceData*>(pResourceData.get());
 	m_pTexture->SetName(pTextureData->strTextureName);
 	m_pTexture->SetSize(Vector2(pTextureData->nWidth, pTextureData->nHeight));
-	m_pTexture->SetTextureType(METextureType::ETexture2D);
+	m_pTexture->SetImageLayerNum(pTextureData->nImageLayerNum);
+	m_pTexture->SetTextureType(pTextureData->eTextureType);
 	m_pTexture->SetTextureLayout(GetTextureLayout(pTextureData->nChannel, pTextureData->ePixelFormat));
 	m_pTexture->GenerateBuffer(pRenderSystem->GetDevice(), pTextureData->aByteData.data());
 

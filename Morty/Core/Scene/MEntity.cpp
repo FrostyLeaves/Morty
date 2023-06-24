@@ -162,13 +162,13 @@ void MEntity::Deserialize(const void* pBufferPointer)
 	}
 }
 
-void MEntity::PostDeserialize()
+void MEntity::PostDeserialize(const std::map<MGuid, MGuid>& tRedirectGuid)
 {
 	for (auto& pr : m_tComponents)
 	{
 		if (MComponent* pComponent = pr.second)
 		{
-			pComponent->PostDeserialize();
+			pComponent->PostDeserialize(tRedirectGuid);
 		}
 	}
 }

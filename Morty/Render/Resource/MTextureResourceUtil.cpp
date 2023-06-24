@@ -255,8 +255,11 @@ std::unique_ptr<MResourceData> MTextureResourceUtil::ImportCubeMap(const std::ar
 
 	textureData->nWidth = unCubeMapWidth;
 	textureData->nHeight = unCubeMapHeight;
+	textureData->nImageLayerNum = 6;
 	textureData->nChannel = unCubeMapChannel;
 	textureData->ePixelFormat = importInfo.ePixelFormat;
+	textureData->strTextureName = vResourcePath[0];
+	textureData->eTextureType = METextureType::ETextureCube;
 	
 #if	FREE_MEMORY_AFTER_UPLOAD
 	std::swap(m_aByteData, std::vector<MByte>());

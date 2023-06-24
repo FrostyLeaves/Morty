@@ -10,7 +10,7 @@
 #define _M_MFORWARD_RENDER_SHADER_PARAM_SET_H_
 #include "Utility/MGlobal.h"
 #include "MRenderInfo.h"
-#include "Material/MShaderParamSet.h"
+#include "Material/MShaderPropertyBlock.h"
 #include "RenderWork/MRenderWork.h"
 
 class MEngine;
@@ -28,7 +28,7 @@ public:
 
 	virtual void BindMaterial(const std::shared_ptr<MMaterial>& pMaterial);
 
-	std::vector<std::shared_ptr<MShaderPropertyBlock>> GetPropertyBlock() const override { return { m_pShaderPropertyBlock }; }
+	std::shared_ptr<MShaderPropertyBlock> GetPropertyBlock() const override;
 
 	void UpdateShaderSharedParams(MRenderInfo& info);
 

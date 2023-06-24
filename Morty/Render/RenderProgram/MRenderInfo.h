@@ -6,7 +6,7 @@
 #include "Math/Vector.h"
 #include "Utility/MBounds.h"
 #include "Component/MComponent.h"
-#include "Material/MShaderParamSet.h"
+#include "Material/MShaderPropertyBlock.h"
 
 class MIMesh;
 class MTexture;
@@ -14,7 +14,7 @@ class MMaterial;
 class MIRenderCommand;
 class MSkeletonInstance;
 class MDebugMeshComponent;
-class MRenderableMeshComponent;
+class MRenderMeshComponent;
 
 struct MMaterialCullingGroup
 {
@@ -71,7 +71,7 @@ struct MRenderInfo
 
 	/************************** mesh **************************/
 	// transparent
-	std::map<std::shared_ptr<MMaterial>, std::vector<MRenderableMeshComponent*>> m_tTransparentGroupMesh;
+	std::map<std::shared_ptr<MMaterial>, std::vector<MRenderMeshComponent*>> m_tTransparentGroupMesh;
 
 	//debug
 	std::vector<MDebugMeshComponent*> m_vDebugMeshComponent;

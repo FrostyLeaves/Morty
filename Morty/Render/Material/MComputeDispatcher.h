@@ -17,7 +17,7 @@
 #include "MShaderMacro.h"
 #include "MShaderProgram.h"
 #include "MShaderBuffer.h"
-#include "Material/MShaderParamSet.h"
+#include "Material/MShaderPropertyBlock.h"
 
 #include <vector>
 
@@ -36,7 +36,7 @@ public:
 public:
 
 	std::shared_ptr<MResource> GetComputeShaderResource() { return m_pShaderProgram->GetComputeShaderResource(); }
-	std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParamSets() { return  m_pShaderProgram->GetShaderParamSets(); }
+	std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderPropertyBlocks() { return  m_pShaderProgram->GetShaderPropertyBlocks(); }
 	MShader* GetComputeShader();
 
 	MShaderMacro& GetShaderMacro() { return m_pShaderProgram->GetShaderMacro(); }

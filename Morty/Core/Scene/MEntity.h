@@ -62,7 +62,7 @@ public:
 public:
 	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& builder);
 	void Deserialize(const void* pBufferPointer);
-	void PostDeserialize();
+	void PostDeserialize(const std::map<MGuid, MGuid>& tRedirectGuid);
 
 protected:
 	MScene* m_pScene;

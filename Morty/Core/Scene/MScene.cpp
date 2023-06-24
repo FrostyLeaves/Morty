@@ -70,12 +70,11 @@ void MScene::OnCreated()
 
 void MScene::OnDelete()
 {
-	for (auto pr : m_tManager)
+	while(!m_tManager.empty())
 	{
-		(pr.second)->Release();
-		delete pr.second;
+		(m_tManager.begin()->second)->Release();
+		m_tManager.erase(m_tManager.begin());
 	}
-	m_tManager.clear();
 
 	for (auto pr : m_tComponents)
 	{
@@ -238,9 +237,6 @@ void MScene::RemoveComponent(MEntity* entity, const MType* pComponentType)
 	if (!pComponents)
 		return;
 	
-
-	MComponentID id(pComponentType, 0, 0);
-
 	auto findResult = entity->m_tComponents.find(pComponentType);
 	if (findResult == entity->m_tComponents.end())
 	{

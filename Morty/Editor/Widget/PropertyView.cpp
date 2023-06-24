@@ -10,23 +10,25 @@
 #include "Property/PropertyMPointLight.h"
 #include "Property/PropertyMDirectionalLightComponent.h"
 #include "Property/PropertyMModelComponent.h"
-#include "Property/PropertyMRenderableMeshComponent.h"
+#include "Property/PropertyMRenderMeshComponent.h"
+#include "Utility/SelectionEntityManager.h"
 
 #define REGISTER_PROPERTY( CLASS_NAME ) \
 	m_tCreatePropertyFactory[#CLASS_NAME] = []() {return new Property##CLASS_NAME(); };
 
 PropertyView::PropertyView()
 	: IBaseView()
-	, m_pEditorNode(nullptr)
 	, m_vPropertyList()
 {
+	m_strViewName = "Property";
+
 	REGISTER_PROPERTY(MSceneComponent);
 	REGISTER_PROPERTY(MCameraComponent);
 	REGISTER_PROPERTY(MSpotLightComponent);
 	REGISTER_PROPERTY(MPointLightComponent);
 	REGISTER_PROPERTY(MDirectionalLightComponent);
 	REGISTER_PROPERTY(MModelComponent);
-	REGISTER_PROPERTY(MRenderableMeshComponent);
+	REGISTER_PROPERTY(MRenderMeshComponent);
 }
 
 PropertyView::~PropertyView()
@@ -40,20 +42,10 @@ PropertyView::~PropertyView()
 	m_vPropertyList.clear();
 }
 
-void PropertyView::SetEditorNode(MEntity* pNode)
-{
-	if (m_pEditorNode == pNode)
-		return;
-
-	if (m_pEditorNode = pNode)
-	{
-		CreatePropertyList(pNode);
-	}
-}
-
 void PropertyView::Render()
 {
-	if (nullptr == m_pEditorNode)
+	MEntity* pEntity = SelectionEntityManager::GetInstance()->GetSelectedEntity();
+	if (nullptr == pEntity)
 		return;
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
@@ -62,7 +54,7 @@ void PropertyView::Render()
 	
 	unsigned int unID = 0;
 
-	EditEntity(m_pEditorNode);
+	EditEntity(pEntity);
 
 	ImGui::Columns(1);
 	ImGui::Separator();

@@ -1,9 +1,10 @@
 #include "Module/MCoreModule.h"
 #include "Engine/MEngine.h"
 #include "Scene/MEntity.h"
+#include "Scene/MScene.h"
 
 #include "System/MInputSystem.h"
-#include "System/MNotifySystem.h"
+#include "System/MNotifyManager.h"
 #include "System/MObjectSystem.h"
 #include "System/MEntitySystem.h"
 #include "System/MResourceSystem.h"
@@ -21,9 +22,14 @@ bool MCoreModule::Register(MEngine* pEngine)
 		return false;
 	
 	pEngine->RegisterSystem<MInputSystem>();
-	pEngine->RegisterSystem<MNotifySystem>();
-	pEngine->RegisterSystem<MObjectSystem>();
+	;
 	pEngine->RegisterSystem<MEntitySystem>();
+
+
+	if (MObjectSystem* pObjectSystem = pEngine->RegisterSystem<MObjectSystem>())
+	{
+		pObjectSystem->RegisterPostCreateObject(MCoreModule::OnObjectPostCreate);
+	}
 
 	if (MResourceSystem* pResourceSystem = pEngine->RegisterSystem<MResourceSystem>())
 	{
@@ -41,4 +47,20 @@ bool MCoreModule::Register(MEngine* pEngine)
 	}
 
 	return true;
+}
+
+void MCoreModule::OnObjectPostCreate(MObject* pObject)
+{
+	if (!pObject)
+	{
+		return;
+	}
+
+	if (pObject->GetType() == MScene::GetClassType())
+	{
+		if (MScene* pScene = pObject->DynamicCast<MScene>())
+		{
+			pScene->RegisterManager<MNotifyManager>();
+		}
+	}
 }

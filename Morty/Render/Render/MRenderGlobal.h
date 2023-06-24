@@ -59,4 +59,8 @@ public:
 
 };
 
+typedef int32_t MMeshInstanceKey;
+typedef int32_t MSkeletonInstanceKey;
+
+
 #endif

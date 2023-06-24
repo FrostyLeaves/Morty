@@ -46,7 +46,6 @@ public:
 	bool MainLoop(MTaskNode* pNode);
 
 	void Render(MTaskNode* pNode);
-	void SceneRender(MTaskNode* pNode);
 
 public:
 
@@ -64,12 +63,8 @@ public:
 
 	void ShowRenderView(const size_t& nImageCount);
 	void ShowShadowMapView(const size_t& nImageCount);
-	void ShowNodeTree();
-	void ShowProperty();
-	void ShowMaterial(const size_t& nImageCount);
-	void ShowMessage();
-	void ShowResource();
-	void ShowModelConvert();
+	void ShowView(IBaseView* pView);
+	void ShowGuizmo();
 
 	void ShowDialog();
 
@@ -95,9 +90,7 @@ protected:
     
 	Vector2 m_v2RenderViewPos;
 	Vector2 m_v2RenderViewSize;
-
-	unsigned int m_unTriangleCount;
-
+	
 	bool m_bRenderToWindow;
 	bool m_bShowRenderView;
 	bool m_bShowDebugView;

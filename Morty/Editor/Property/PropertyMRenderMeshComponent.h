@@ -2,7 +2,7 @@
 #define _PROPERTY_RENDERABLE_MESH_COMPONENT_H_
 
 #include "Property/PropertyBase.h"
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 
 #include "imgui.h"
 #include "Scene/MEntity.h"
@@ -14,13 +14,13 @@
 #include "Resource/MMaterialResource.h"
 #include "Resource/MMaterialResourceData.h"
 
-class PropertyMRenderableMeshComponent : public PropertyBase
+class PropertyMRenderMeshComponent : public PropertyBase
 {
 public:
 	virtual void EditEntity(MEntity* pEntity) override
 	{
 
-		if (MRenderableMeshComponent* pMeshComponent = pEntity->GetComponent<MRenderableMeshComponent>())
+		if (MRenderMeshComponent* pMeshComponent = pEntity->GetComponent<MRenderMeshComponent>())
 		{
 			if (ShowNodeBegin("MeshComponent"))
 			{
@@ -66,11 +66,11 @@ public:
 				if (ShowNodeBegin("Render"))
 				{
 					ShowValueBegin("ShadowType");
-					MRenderableMeshComponent::MEShadowType eType = pMeshComponent->GetShadowType();
+					MRenderMeshComponent::MEShadowType eType = pMeshComponent->GetShadowType();
 					int unSelected = (int)eType;
 					if (EditEnum({ "None", "OnlyDirection", "AllLights" }, unSelected))
 					{
-						pMeshComponent->SetShadowType((MRenderableMeshComponent::MEShadowType)unSelected);
+						pMeshComponent->SetShadowType((MRenderMeshComponent::MEShadowType)unSelected);
 					}
 					ShowValueEnd();
 

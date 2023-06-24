@@ -19,6 +19,7 @@
         "sdl2-binding"
       ]
     },
+    "imguizmo",
     "stb"
   ]
 }

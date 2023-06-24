@@ -54,7 +54,7 @@ void MPostProcessRenderWork::Render(MRenderInfo& info)
 	pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
 	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
 
-	m_pMaterial->GetMaterialParamSet()->SetTexture("u_texScreenTexture", pInputTexture);
+	m_pMaterial->GetMaterialPropertyBlock()->SetTexture("u_texScreenTexture", pInputTexture);
 	if (pCommand->SetUseMaterial(m_pMaterial))
 	{
 		pCommand->DrawMesh(pMeshManager->GetScreenRect());
@@ -82,10 +82,10 @@ void MPostProcessRenderWork::InitializeMaterial()
 #endif
 	m_pMaterial->LoadVertexShader(pVertexShader);
 	m_pMaterial->LoadPixelShader(pPixelShader);
-	m_pMaterial->SetRasterizerType(MERasterizerType::ECullNone);
+	m_pMaterial->SetCullMode(MECullMode::ECullNone);
 
 #if ACES_ENABLE
-	if (auto pPropertyBlock = m_pMaterial->GetMaterialParamSet())
+	if (auto pPropertyBlock = m_pMaterial->GetMaterialPropertyBlock())
 	{
 		pPropertyBlock->SetValue<float>("FilmSlope", 0.88f);
 		pPropertyBlock->SetValue<float>("FilmToe", 0.55f);

@@ -20,7 +20,7 @@ public:
 
     void AddFilter(std::shared_ptr<IMeshInstanceFilter> pFilter);
 
-    void Culling(const std::vector<MRenderableMaterialGroup*>& vInstanceGroup) override;
+    void Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup) override;
     const MBuffer* GetDrawIndirectBuffer() override { return &m_drawIndirectBuffer; }
     const std::vector<MMaterialCullingGroup>& GetCullingInstanceGroup() const override { return m_vCullingInstanceGroup; }
 private:

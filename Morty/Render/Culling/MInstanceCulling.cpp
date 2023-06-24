@@ -1,5 +1,5 @@
 #include "MInstanceCulling.h"
-#include "MergeInstancing/InstanceBatch/MInstanceBatchGroup.h"
+#include "Batch/BatchGroup/MInstanceBatchGroup.h"
 
 void CameraFrustumCulling::UpdateCameraFrustum(Matrix4 cameraInvProj)
 {

@@ -34,6 +34,8 @@ struct MORTY_API MTextureResourceData : public MFbResourceData
 public:
 	size_t nWidth = 0;
 	size_t nHeight = 0;
+	size_t nImageLayerNum = 1;
+	METextureType eTextureType = METextureType::ETexture2D;
 	MTexturePixelFormat ePixelFormat = MTexturePixelFormat::Unknow;
 	std::vector<MByte> aByteData{};
 	size_t nChannel = 0;

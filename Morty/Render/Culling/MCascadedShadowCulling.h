@@ -20,7 +20,7 @@ public:
     void SetViewport(MViewport* pViewport);
     void SetCamera(MEntity* pCameraEntity);
     void SetDirectionalLight(MEntity* pDirectionalLight);
-    void Culling(const std::vector<MRenderableMaterialGroup*>& vInstanceGroup) override;
+    void Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup) override;
     const MBuffer* GetDrawIndirectBuffer() override { return &m_drawIndirectBuffer; }
     const std::vector<MMaterialCullingGroup>& GetCullingInstanceGroup() const override { return m_vCullingInstanceGroup; }
     std::array<MCascadedShadowRenderData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> GetCascadedRenderData() const { return m_vCascadedRenderData; }

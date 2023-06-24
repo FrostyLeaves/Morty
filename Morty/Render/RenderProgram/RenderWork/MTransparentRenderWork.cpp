@@ -12,7 +12,7 @@
 #include "Resource/MTextureResource.h"
 #include "Resource/MMaterialResource.h"
 
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 
 #include "Mesh/MMeshManager.h"
 #include "Resource/MTextureResourceUtil.h"
@@ -168,19 +168,10 @@ void MTransparentRenderWork::RenderDepthPeel(MRenderInfo& info)
 			if (!pCommand->SetUseMaterial(pMaterial))
 				continue;
 
-			auto vPropertyBlock = m_aFramePropertyBlock[i % 2].GetPropertyBlock();
-			for (const auto& property : vPropertyBlock)
+			auto pPropertyBlock = m_aFramePropertyBlock[i % 2].GetPropertyBlock();
+			pCommand->SetShaderPropertyBlock(pPropertyBlock);
+			for (MRenderMeshComponent* pMeshComponent : pr.second)
 			{
-				pCommand->SetShaderParamSet(property);
-			}
-			for (MRenderableMeshComponent* pMeshComponent : pr.second)
-			{
-				if (MSkeletonInstance* pSkeletonIns = pMeshComponent->GetSkeletonInstance())
-				{
-					pCommand->SetShaderParamSet(pSkeletonIns->GetShaderParamSet());
-				}
-				//TODO pCommand->SetShaderParamSet(pMeshComponent->GetShaderMeshParamSet());
-				
 				const MMeshManager::MMeshData& meshData = pMeshManager->FindMesh(pMeshComponent->GetMesh());
 
 				pCommand->DrawMesh(
@@ -412,7 +403,7 @@ void MTransparentRenderWork::InitializeFrameShaderParams()
 	std::shared_ptr<MResource> forwardVS = pResourceSystem->LoadResource("Shader/model.mvs");
 	std::shared_ptr<MResource> forwardPS = pResourceSystem->LoadResource("Shader/model.mps");
 	m_pForwardMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-	m_pForwardMaterial->SetRasterizerType(MERasterizerType::ECullBack);
+	m_pForwardMaterial->SetCullMode(MECullMode::ECullBack);
 	m_pForwardMaterial->SetMaterialType(MEMaterialType::EDepthPeel);
 	m_pForwardMaterial->LoadVertexShader(forwardVS);
 	m_pForwardMaterial->LoadPixelShader(forwardPS);

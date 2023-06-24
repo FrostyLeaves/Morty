@@ -217,9 +217,9 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 	m_DiffuseMaterial->LoadVertexShader(vs);
 	m_DiffuseMaterial->LoadPixelShader(diffuseps);
 
-	m_DiffuseMaterial->SetRasterizerType(MERasterizerType::ECullFront);
+	m_DiffuseMaterial->SetCullMode(MECullMode::ECullFront);
 
-	if (const std::shared_ptr<MShaderPropertyBlock>& pParams = m_DiffuseMaterial->GetMaterialParamSet())
+	if (const std::shared_ptr<MShaderPropertyBlock>& pParams = m_DiffuseMaterial->GetMaterialPropertyBlock())
 	{
 		MVariantStruct& matrix = pParams->m_vParams[0]->var.GetValue<MVariantStruct>();
 		{
@@ -241,9 +241,9 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 		m_vSpecularMaterial[nMipmap] = pResourceSystem->CreateResource<MMaterial>(MString("Specular CubeMap Material_") + MStringHelper::ToString(nMipmap));
 		m_vSpecularMaterial[nMipmap]->LoadVertexShader(vs);
 		m_vSpecularMaterial[nMipmap]->LoadPixelShader(specularps);
-		m_vSpecularMaterial[nMipmap]->SetRasterizerType(MERasterizerType::ECullFront);
+		m_vSpecularMaterial[nMipmap]->SetCullMode(MECullMode::ECullFront);
 
-		if (const std::shared_ptr<MShaderPropertyBlock>& pParams = m_vSpecularMaterial[nMipmap]->GetMaterialParamSet())
+		if (const std::shared_ptr<MShaderPropertyBlock>& pParams = m_vSpecularMaterial[nMipmap]->GetMaterialPropertyBlock())
 		{
 			{
 				MVariantStruct& matrix = pParams->m_vParams[0]->var.GetValue<MVariantStruct>();

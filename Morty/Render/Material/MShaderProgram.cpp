@@ -319,17 +319,17 @@ void MShaderProgram::CopyShaderParams(MEngine* pEngine, const std::shared_ptr<MS
 	}
 }
 
-std::shared_ptr<MShaderPropertyBlock> MShaderProgram::AllocShaderParamSet(size_t nSetIdx)
+std::shared_ptr<MShaderPropertyBlock> MShaderProgram::AllocShaderPropertyBlock(size_t nSetIdx)
 {
-	std::shared_ptr<MShaderPropertyBlock> pShaderParamSet = m_vShaderSets[nSetIdx]->Clone();
-	m_tShaderParamSetInstance.insert(pShaderParamSet);
+	std::shared_ptr<MShaderPropertyBlock> pShaderPropertyBlock = m_vShaderSets[nSetIdx]->Clone();
+	m_tShaderPropertyBlockInstance.insert(pShaderPropertyBlock);
 
-	return pShaderParamSet;
+	return pShaderPropertyBlock;
 }
 
-void MShaderProgram::ReleaseShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pShaderParamSet)
+void MShaderProgram::ReleaseShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock)
 {
-	m_tShaderParamSetInstance.erase(pShaderParamSet);
+	m_tShaderPropertyBlockInstance.erase(pShaderPropertyBlock);
 }
 
 void MShaderProgram::GenerateProgram(MIDevice* pDevice)

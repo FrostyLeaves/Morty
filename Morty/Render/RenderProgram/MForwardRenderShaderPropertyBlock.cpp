@@ -25,7 +25,7 @@ void MForwardRenderShaderPropertyBlock::Initialize(MEngine* pEngine)
 	std::shared_ptr<MResource> forwardVS = pResourceSystem->LoadResource("Shader/model_gbuffer.mvs");
 	std::shared_ptr<MResource> forwardPS = pResourceSystem->LoadResource("Shader/model_gbuffer.mps");
 	m_pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-	m_pMaterial->SetRasterizerType(MERasterizerType::ECullBack);
+	m_pMaterial->SetCullMode(MECullMode::ECullBack);
 	m_pMaterial->LoadVertexShader(forwardVS);
 	m_pMaterial->LoadPixelShader(forwardPS);
 
@@ -51,7 +51,7 @@ void MForwardRenderShaderPropertyBlock::Release(MEngine* pEngine)
 
 void MForwardRenderShaderPropertyBlock::BindMaterial(const std::shared_ptr<MMaterial>& pMaterial)
 {
-	m_pShaderPropertyBlock = pMaterial->GetFrameParamSet()->Clone();
+	m_pShaderPropertyBlock = pMaterial->GetFramePropertyBlock()->Clone();
 
 	MORTY_ASSERT(m_pWorldMatrixParam = m_pShaderPropertyBlock->FindConstantParam("cbSceneMatrix"));
 	MORTY_ASSERT(m_pWorldInfoParam = m_pShaderPropertyBlock->FindConstantParam("cbSceneInformation"));
@@ -62,6 +62,11 @@ void MForwardRenderShaderPropertyBlock::BindMaterial(const std::shared_ptr<MMate
 	MORTY_ASSERT(m_pDiffuseMapTextureParam = m_pShaderPropertyBlock->FindTextureParam("u_texIrradianceMap"));
 	MORTY_ASSERT(m_pSpecularMapTextureParam = m_pShaderPropertyBlock->FindTextureParam("u_texPrefilterMap"));
 	MORTY_ASSERT(m_pBrdfMapTextureParam = m_pShaderPropertyBlock->FindTextureParam("u_texBrdfLUT"));
+}
+
+std::shared_ptr<MShaderPropertyBlock> MForwardRenderShaderPropertyBlock::GetPropertyBlock() const
+{
+	return { m_pShaderPropertyBlock };
 }
 
 void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& info)
@@ -228,7 +233,7 @@ void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& in
 				if (!pSceneComponent)
 					break;
 				
-				MVariantStruct& cPointLight = vPointLights.GetVariant<MVariantStruct>(nValidPointLights);
+				MVariantStruct cPointLight = vPointLights.GetVariant<MVariantStruct>(nValidPointLights);
 				cPointLight.SetVariant("f3WorldPosition", pSceneComponent->GetWorldPosition());
 				cPointLight.SetVariant("f3Intensity", pPointLightComponent->GetColor().ToVector3()* pPointLightComponent->GetLightIntensity());
 

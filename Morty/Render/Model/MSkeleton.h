@@ -36,8 +36,11 @@ public:
 	//Bones World
 	Matrix4 m_matTransform;
 	Matrix4 m_matOffsetMatrix;
+};
 
-	Matrix4 m_matWorldTransform;
+struct MORTY_API MSkeletonPose
+{
+	std::vector<Matrix4> vBoneMatrix;
 };
 
 class MORTY_API MSkeleton : public MTypeClass

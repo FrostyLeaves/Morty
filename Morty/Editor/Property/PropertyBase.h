@@ -10,6 +10,7 @@
 #include "System/MResourceSystem.h"
 
 #include <map>
+#include <any>
 #include <functional>
 
 class MEntity;
@@ -57,27 +58,20 @@ public:
 	//auto call ShowValue/ShowNode
 	bool EditMVariant(const MString& strVariantName, MVariant& value);
 
-
 	unsigned int GetID(const MString& strItemName);
 
-	template<class T>
-	T& GetTempValue(const MString& strValueName, const T& defaultValue)
-	{
-		const unsigned int unRotateID = GetID(strValueName);
-		if (m_tTempValue[unRotateID].GetType() == MEVariantType::ENone)
-			m_tTempValue[unRotateID] = MVariant(defaultValue);
+	template<typename TYPE>
+	TYPE GetTemporaryValue(const MString& strValueName, const TYPE& defaultValue);
+	template<typename TYPE>
+	void SetTemporaryValue(const MString& strValueName, const TYPE& valuealue);
 
-		T& result = m_tTempValue[unRotateID].GetValue<T>();
-
-		return result;
-	}
 
 private:
 
 	static unsigned int m_unItemIDPool;
 	static std::map<MString, unsigned int> m_tItemID;
 
-	std::map<unsigned int, MVariant> m_tTempValue;
+	std::map<MString, std::any> m_tTemporaryValue;
 };
 
 #define PROPERTY_NODE_EDIT(  NODE, KEY_NAME, TYPE, GET_FUNC, SET_FUNC) \
@@ -105,6 +99,34 @@ if (ShowNodeBegin(KEY_NAME))	{ \
 		NODE->SET_FUNC(value);	\
 	} \
 	ShowValueEnd();	\
+}
+
+template<typename TYPE>
+TYPE PropertyBase::GetTemporaryValue(const MString& strValueName, const TYPE& defaultValue)
+{
+	if (m_tTemporaryValue.find(strValueName) == m_tTemporaryValue.end())
+	{
+	    m_tTemporaryValue[strValueName] = defaultValue;
+		return defaultValue;
+	}
+
+	try
+	{
+		TYPE result = std::any_cast<TYPE>(m_tTemporaryValue[strValueName]);
+		return result;
+	}
+	catch (const std::bad_any_cast& e)
+	{
+		return defaultValue;
+	}
+
+	return defaultValue;
+}
+
+template<typename TYPE>
+void PropertyBase::SetTemporaryValue(const MString& strValueName, const TYPE& valuealue)
+{
+	m_tTemporaryValue[strValueName] = valuealue;
 }
 
 #endif

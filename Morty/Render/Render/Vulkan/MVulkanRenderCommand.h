@@ -41,7 +41,7 @@ public:
 
 
 	virtual bool SetUseMaterial(std::shared_ptr<MMaterial> pMaterial) override;
-	virtual void SetShaderParamSet(const std::shared_ptr<MShaderPropertyBlock>& pParamSet) override;
+	virtual void SetShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) override;
 
 	virtual bool DispatchComputeJob(MComputeDispatcher* pComputeDispatcher, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ) override;
 

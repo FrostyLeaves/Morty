@@ -191,7 +191,7 @@ private:
 public:
 
 	template<typename TYPE>
-	TYPE& GetVariant(const size_t& nIdx);
+	const TYPE& GetVariant(const size_t& nIdx) const;
 
 	template<typename TYPE>
 	void SetVariant(const size_t& nIdx, const TYPE& value);
@@ -617,7 +617,7 @@ inline void MVariantArray::AppendContainer(const TYPE& value)
 }
 
 template<typename TYPE>
-inline TYPE& MVariantArray::GetVariant(const size_t& nIdx)
+inline const TYPE& MVariantArray::GetVariant(const size_t& nIdx) const
 {
 	MORTY_ASSERT(m_bLocked);
 	if (nIdx >= m_tMember.size())
@@ -627,7 +627,7 @@ inline TYPE& MVariantArray::GetVariant(const size_t& nIdx)
 		return InvalidValue;
 	}
 
-	MVariant& member = m_tMember[nIdx];
+	const MVariant& member = m_tMember[nIdx];
 	return member.GetValue<TYPE>();
 }
 

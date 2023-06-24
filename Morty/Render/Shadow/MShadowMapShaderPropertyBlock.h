@@ -11,7 +11,7 @@
 #include "Utility/MGlobal.h"
 #include "Render/MBuffer.h"
 #include "RenderProgram/MRenderInfo.h"
-#include "Material/MShaderParamSet.h"
+#include "Material/MShaderPropertyBlock.h"
 #include "RenderProgram/RenderWork/MRenderWork.h"
 
 
@@ -26,7 +26,7 @@ public:
 	void Release(MEngine* pEngine);
 	void BindMaterial(const std::shared_ptr<MMaterial>& pMaterial);
 
-	std::vector<std::shared_ptr<MShaderPropertyBlock>> GetPropertyBlock() const override;
+	std::shared_ptr<MShaderPropertyBlock> GetPropertyBlock() const override;
 	void UpdateShaderSharedParams(MRenderInfo& info) ;
 
 

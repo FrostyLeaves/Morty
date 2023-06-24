@@ -94,6 +94,11 @@ void MSceneComponent::SetTransform(const MTransform& trans)
 
 void MSceneComponent::SetParentComponent(const MComponentID& parent)
 {
+	if (m_attachParent == parent)
+	{
+		return;
+	}
+
 	if (MComponent* pParent = GetScene()->GetComponent(m_attachParent))
 	{
 		if (MSceneComponent* pParentScene = pParent->DynamicCast<MSceneComponent>())
@@ -131,6 +136,8 @@ void MSceneComponent::SetParentComponent(const MComponentID& parent)
 	{
 		SetVisibleRecursively(GetVisible());
 	}
+
+	SendComponentNotify(MCoreNotify::NOTIFY_PARENT_CHANGED);
 }
 
 void MSceneComponent::SetVisible(const bool& bVisible)
@@ -360,15 +367,17 @@ void MSceneComponent::Deserialize(const void* pBufferPointer)
 
 }
 
-void MSceneComponent::PostDeserialize()
+void MSceneComponent::PostDeserialize(const std::map<MGuid, MGuid>& tRedirectGuid)
 {
-	if (MEntity* pEntity = GetScene()->GetEntity(m_parentGuid))
+	MGuid redirectGuid = tRedirectGuid.at(m_parentGuid);
+
+	if (MEntity* pEntity = GetScene()->GetEntity(redirectGuid))
 	{
 		SetParent(pEntity->GetComponent<MSceneComponent>());
 	}
 	else
 	{
-		MORTY_ASSERT(pEntity || m_parentGuid == MGuid::invalid);
+		MORTY_ASSERT(pEntity || redirectGuid == MGuid::invalid);
 	}
 }
 

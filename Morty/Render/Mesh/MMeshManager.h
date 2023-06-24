@@ -13,7 +13,7 @@ class MScene;
 class MEngine;
 class MMaterial;
 class MComponent;
-class MRenderableMeshComponent;
+class MRenderMeshComponent;
 
 class MMeshManager : public MObject
 {

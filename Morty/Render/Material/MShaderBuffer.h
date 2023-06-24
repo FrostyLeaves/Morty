@@ -9,7 +9,7 @@
 #ifndef _M_MSHADERBUFFER_H_
 #define _M_MSHADERBUFFER_H_
 #include "Render/MRenderGlobal.h"
-#include "Material/MShaderParamSet.h"
+#include "Material/MShaderPropertyBlock.h"
 
 class MORTY_API MShaderBuffer
 {

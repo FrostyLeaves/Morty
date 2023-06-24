@@ -4,7 +4,7 @@ include "Material/MShaderMacro.fbs";
 
 namespace mfbs;
 
-enum MERasterizerType: byte
+enum MECullMode: byte
 {
 	EWireframe = 0,
 	ECullNone = 1,
@@ -39,7 +39,7 @@ table MMaterial
     vertex_resource: string;
     pixel_resource: string;
 
-    rasterizer_type: MERasterizerType;
+    rasterizer_type: MECullMode;
     material_type: MEMaterialType;
     
 	material_macro: MShaderMacro;

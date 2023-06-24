@@ -23,42 +23,44 @@ MSkeletalAnimation::~MSkeletalAnimation()
 
 }
 
-void MSkeletalAnimation::Update(const float& fTime, MSkeletonInstance* pSkeletonIns, const MSkeletonAnimMap& skelAnimMap) const
+void MSkeletalAnimation::Update(MSkeletonPose& outputPose, const float& fTime, MSkeletonInstance* pSkeletonIns, const MSkeletonAnimMap& skelAnimMap) const
 {
-	std::vector<MBone>& bones = pSkeletonIns->GetAllBones();
+	const std::vector<MBone>& bones = pSkeletonIns->GetAllBones();
 
-	uint32_t unBonesSize = bones.size();
+	const size_t nBonesSize = bones.size();
+	outputPose.vBoneMatrix.resize(nBonesSize);
 
-	for (uint32_t i = 0; i < unBonesSize; ++i)
+	for (size_t i = 0; i < nBonesSize; ++i)
 	{
-		MBone& bone = bones[i];
+		const MBone& bone = bones[i];
 
-		int nAnimNodeIndex = skelAnimMap.m_vSkelToAnim[bone.unIndex];
-		if(MGlobal::M_INVALID_INDEX == nAnimNodeIndex)
+		const int nAnimNodeIndex = skelAnimMap.m_vSkelToAnim[bone.unIndex];
+		if (MGlobal::M_INVALID_INDEX == nAnimNodeIndex)
+		{
 			continue;
+		}
 
 		const MSkeletalAnimNode& animNode = m_vSkeletalAnimNodes[nAnimNodeIndex];
-		Matrix4 matParentTrans = bone.unParentIndex == MGlobal::M_INVALID_INDEX ? Matrix4::IdentityMatrix : bones[bone.unParentIndex].m_matWorldTransform;
+		Matrix4 matParentTrans = bone.unParentIndex == MGlobal::M_INVALID_INDEX ? Matrix4::IdentityMatrix : outputPose.vBoneMatrix[bone.unParentIndex];
 
 		MTransform trans;
 		if (FindTransform(fTime, animNode, trans))
 		{
 			//Use animation transform
-			bone.m_matWorldTransform = matParentTrans * trans.GetMatrix();
+			outputPose.vBoneMatrix[i] = matParentTrans * trans.GetMatrix();
 		}
 		else
 		{
 			//Use default transform
-			bone.m_matWorldTransform = matParentTrans * pSkeletonIns->GetBoneTemplateByIndex(i)->m_matTransform;
+			outputPose.vBoneMatrix[i] = matParentTrans * pSkeletonIns->GetBoneTemplateByIndex(i)->m_matTransform;
 		}
 	}
 
-	for (MBone& bone : bones)
+	for (size_t i = 0; i < nBonesSize; ++i)
 	{
-		bone.m_matWorldTransform = bone.m_matWorldTransform * bone.m_matOffsetMatrix;
+		const MBone& bone = bones[i];
+		outputPose.vBoneMatrix[i] = outputPose.vBoneMatrix[i] * bone.m_matOffsetMatrix;
 	}
-
-	pSkeletonIns->SetDirty();
 }
 
 void MSkeletalAnimation::SetSkeletonTemplate(MSkeleton* pSkeleton)
@@ -68,11 +70,15 @@ void MSkeletalAnimation::SetSkeletonTemplate(MSkeleton* pSkeleton)
 
 flatbuffers::Offset<void> MSkeletalAnimNode::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
+	auto fbPositionTrack = fbb.CreateVectorOfStructs(m_vPositionTrack);
+	auto fbRotationTrack = fbb.CreateVectorOfStructs(m_vRotationTrack);
+	auto fbScaleTrack = fbb.CreateVectorOfStructs(m_vScaleTrack);
+
 	mfbs::MSkeletalAnimNodeBuilder builder(fbb);
 
-	builder.add_position_track(fbb.CreateVectorOfStructs(m_vPositionTrack));
-	builder.add_rotation_track(fbb.CreateVectorOfStructs(m_vRotationTrack));
-	builder.add_scale_track(fbb.CreateVectorOfStructs(m_vScaleTrack));
+	builder.add_position_track(fbPositionTrack);
+	builder.add_rotation_track(fbRotationTrack);
+	builder.add_scale_track(fbScaleTrack);
 
 	return builder.Finish().Union();
 }
@@ -113,11 +119,14 @@ flatbuffers::Offset<void> MSkeletalAnimation::Serialize(flatbuffers::FlatBufferB
 	{
 		fbAnimNode.push_back(node.Serialize(fbb).o);
 	}
-	auto fbAnimNodeOffset = fbb.CreateVector(fbAnimNode);
+
+	auto fbName = fbb.CreateString(m_strName);
+    auto fbAnimNodeOffset = fbb.CreateVector(fbAnimNode);
+
 
 	mfbs::MSkeletalAnimationBuilder builder(fbb);
 
-	builder.add_name(fbb.CreateString(m_strName));
+	builder.add_name(fbName);
 	builder.add_duration(m_fTicksDuration);
 	builder.add_speed(m_fTicksPerSecond);
 	builder.add_animation_node(fbAnimNodeOffset);
@@ -322,20 +331,20 @@ void MSkeletalAnimController::Update(const float& fDelta, const bool& bAnimStep)
 		{
 			m_fTicks = fmodf(m_fTicks, m_pAnimation->GetTicksDuration());
 			if (bAnimStep)
-				m_pAnimation->Update(fmodf(m_fTicks, m_pAnimation->GetTicksDuration()), m_pSkeletonIns, m_SkeletonAnimMap);
+				m_pAnimation->Update(m_pSkeletonIns->GetCurrentPose(), fmodf(m_fTicks, m_pAnimation->GetTicksDuration()), m_pSkeletonIns, m_SkeletonAnimMap);
 		}
 		else
 		{
 			m_fTicks = m_pAnimation->GetTicksDuration();
 			if (bAnimStep)
-				m_pAnimation->Update(fmodf(m_fTicks, m_pAnimation->GetTicksDuration()), m_pSkeletonIns, m_SkeletonAnimMap);
+				m_pAnimation->Update(m_pSkeletonIns->GetCurrentPose(), fmodf(m_fTicks, m_pAnimation->GetTicksDuration()), m_pSkeletonIns, m_SkeletonAnimMap);
 			this->Stop();
 		}
 	}
 	else
 	{
 		if (bAnimStep)
-			m_pAnimation->Update(m_fTicks, m_pSkeletonIns, m_SkeletonAnimMap);
+			m_pAnimation->Update(m_pSkeletonIns->GetCurrentPose(), m_fTicks, m_pSkeletonIns, m_SkeletonAnimMap);
 	}
 }
 
@@ -367,6 +376,11 @@ std::shared_ptr<MSkeletalAnimationResource> MSkeletalAnimController::GetAnimatio
 
 void MSkeletalAnimController::BindMapping()
 {
+	if (!m_pSkeletonIns)
+	{
+		return;
+	}
+
 	m_SkeletonAnimMap.m_vAnimToSkel.resize(m_pAnimation->GetSkeletonTemplate()->GetAllBones().size(), MGlobal::M_INVALID_INDEX);
 	m_SkeletonAnimMap.m_vSkelToAnim.resize(m_pSkeletonIns->GetAllBones().size(), MGlobal::M_INVALID_INDEX);
 

@@ -6,7 +6,7 @@
 #include "System/MResourceSystem.h"
 
 #include "Component/MSceneComponent.h"
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 
 #include "Resource/MMeshResource.h"
@@ -41,11 +41,11 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 		pForwardMaterial->LoadPixelShader("Shader/model.mps");
 		pForwardMaterial->SetMaterialType(MEMaterialType::EDefault);
 
-		pForwardMaterial->GetMaterialParamSet()->SetValue("f3Ambient", Vector3(1.0f, 1.0f, 1.0f));
-		pForwardMaterial->GetMaterialParamSet()->SetValue("f3Diffuse", Vector3(1.0f, 1.0f, 1.0f));
-		pForwardMaterial->GetMaterialParamSet()->SetValue("f3Specular", Vector3(1.0f, 1.0f, 1.0f));
-		pForwardMaterial->GetMaterialParamSet()->SetValue("fAlphaFactor", 1.0f);
-		pForwardMaterial->GetMaterialParamSet()->SetValue("fShininess", 32.0f);
+		pForwardMaterial->GetMaterialPropertyBlock()->SetValue("f3Ambient", Vector3(1.0f, 1.0f, 1.0f));
+		pForwardMaterial->GetMaterialPropertyBlock()->SetValue("f3Diffuse", Vector3(1.0f, 1.0f, 1.0f));
+		pForwardMaterial->GetMaterialPropertyBlock()->SetValue("f3Specular", Vector3(1.0f, 1.0f, 1.0f));
+		pForwardMaterial->GetMaterialPropertyBlock()->SetValue("fAlphaFactor", 1.0f);
+		pForwardMaterial->GetMaterialPropertyBlock()->SetValue("fShininess", 32.0f);
 
 		std::shared_ptr<MResource> diffuse = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
 		std::shared_ptr<MResource> normal = pResourceSystem->LoadResource(MRenderModule::DefaultNormal);
@@ -74,9 +74,9 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 		pDeferredMaterial->SetTexture(MaterialKey::AmbientOcc, ao);
 		pDeferredMaterial->SetTexture(MaterialKey::Height, height);
 
-		pDeferredMaterial->GetMaterialParamSet()->SetValue("fMetallic", 1.0f);
-		pDeferredMaterial->GetMaterialParamSet()->SetValue("fRoughness", 1.0f);
-		pDeferredMaterial->GetMaterialParamSet()->SetValue("f4Albedo", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+		pDeferredMaterial->GetMaterialPropertyBlock()->SetValue("fMetallic", 1.0f);
+		pDeferredMaterial->GetMaterialPropertyBlock()->SetValue("fRoughness", 1.0f);
+		pDeferredMaterial->GetMaterialPropertyBlock()->SetValue("f4Albedo", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 	}
 
 	MEntity* pFloorEntity = pScene->CreateEntity();
@@ -86,7 +86,7 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 		pSceneComponent->SetPosition(Vector3(0, 0, 0));
 		pSceneComponent->SetScale(Vector3(100.0f, 1.0f, 100.0f));
 	}
-	if (MRenderableMeshComponent* pMeshComponent = pFloorEntity->RegisterComponent<MRenderableMeshComponent>())
+	if (MRenderMeshComponent* pMeshComponent = pFloorEntity->RegisterComponent<MRenderMeshComponent>())
 	{
 		std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
@@ -94,11 +94,11 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 		pMaterial->LoadPixelShader("Shader/model.mps");
 		pMaterial->SetMaterialType(MEMaterialType::EDefault);
 
-		pMaterial->GetMaterialParamSet()->SetValue("f3Ambient", Vector3(0.5f, 0.5f, 0.5f));
-		pMaterial->GetMaterialParamSet()->SetValue("f3Diffuse", Vector3(0.5f, 0.5f, 0.5f));
-		pMaterial->GetMaterialParamSet()->SetValue("f3Specular", Vector3(1.0f, 1.0f, 1.0f));
-		pMaterial->GetMaterialParamSet()->SetValue("fAlphaFactor", 1.0f);
-		pMaterial->GetMaterialParamSet()->SetValue("fShininess", 32.0f);
+		pMaterial->GetMaterialPropertyBlock()->SetValue("f3Ambient", Vector3(0.5f, 0.5f, 0.5f));
+		pMaterial->GetMaterialPropertyBlock()->SetValue("f3Diffuse", Vector3(0.5f, 0.5f, 0.5f));
+		pMaterial->GetMaterialPropertyBlock()->SetValue("f3Specular", Vector3(1.0f, 1.0f, 1.0f));
+		pMaterial->GetMaterialPropertyBlock()->SetValue("fAlphaFactor", 1.0f);
+		pMaterial->GetMaterialPropertyBlock()->SetValue("fShininess", 32.0f);
 
 		std::shared_ptr<MResource> diffuse = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
 		std::shared_ptr<MResource> normal = pResourceSystem->LoadResource(MRenderModule::DefaultNormal);
@@ -129,10 +129,10 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 				pSceneComponent->SetScale(Vector3(1.0f, 1.0f, 1.0f) * (y + 1)); 
 				pSceneComponent->SetParentComponent(pCubeFolderComponent->GetComponentID());
 			}
-			if (MRenderableMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderableMeshComponent>())
+			if (MRenderMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderMeshComponent>())
 			{
 				pMeshComponent->SetGenerateDirLightShadow(true);
-				pMeshComponent->SetShadowType(MRenderableMeshComponent::MEShadowType::EOnlyDirectional);
+				pMeshComponent->SetShadowType(MRenderMeshComponent::MEShadowType::EOnlyDirectional);
 				pMeshComponent->Load(pCubeResource);
 
 				if (x % 2 == 0)
@@ -154,13 +154,13 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 		if (MSceneComponent* pSceneComponent = pSphereEntity->RegisterComponent<MSceneComponent>())
 		{
 			pSceneComponent->SetPosition(Vector3(-5 + 20, 5, 40));
-			pSceneComponent->SetScale(Vector3(20.0f, 200.0f, 2.0f));
+			pSceneComponent->SetScale(Vector3(20.0f, 20.0f, 2.0f));
 			pSceneComponent->SetParentComponent(pCubeFolderComponent->GetComponentID());
 		}
-		if (MRenderableMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderableMeshComponent>())
+		if (MRenderMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderMeshComponent>())
 		{
 			pMeshComponent->SetGenerateDirLightShadow(true);
-			pMeshComponent->SetShadowType(MRenderableMeshComponent::MEShadowType::EOnlyDirectional);
+			pMeshComponent->SetShadowType(MRenderMeshComponent::MEShadowType::EOnlyDirectional);
 
 			std::shared_ptr<MMeshResource> pCubeResource = pResourceSystem->CreateResource<MMeshResource>();
 			pCubeResource->Load(MMeshResourceUtil::CreateCube(MEMeshVertexType::Normal));

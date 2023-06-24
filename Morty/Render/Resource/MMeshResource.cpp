@@ -94,7 +94,6 @@ flatbuffers::Offset<void> MMeshResourceData::Serialize(flatbuffers::FlatBufferBu
 	builder.add_bounds_obb(fbObb.o);
 	builder.add_bounds_sphere(fbSphere.o);
 	builder.add_vertex_type(static_cast<mfbs::MEMeshVertexType>(eVertexType));
-	builder.add_vertex_type(static_cast<mfbs::MEMeshVertexType>(eVertexType));
 	builder.add_vertex(fbVertex.o);
 	builder.add_index(fbIndex.o);
 

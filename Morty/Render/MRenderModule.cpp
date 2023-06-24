@@ -4,7 +4,7 @@
 #include "Utility/MFunction.h"
 
 #include "System/MModelSystem.h"
-#include "System/MNotifySystem.h"
+#include "System/MNotifyManager.h"
 #include "System/MRenderSystem.h"
 #include "System/MSkyBoxSystem.h"
 #include "System/MResourceSystem.h"
@@ -22,14 +22,15 @@
 #include "Component/MCameraComponent.h"
 #include "Component/MSpotLightComponent.h"
 #include "Component/MPointLightComponent.h"
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 #include "Component/MDebugRenderComponent.h"
 
-#include "Shadow/MShadowMapManager.h"
+#include "Shadow/MShadowMeshManager.h"
 #include "Manager/MEnvironmentManager.h"
 
-#include "MergeInstancing/MRenderableMeshManager.h"
+#include "Batch/MMeshInstanceManager.h"
+#include "Manager/MAnimationManager.h"
 #include "Scene/MScene.h"
 #include "System/MObjectSystem.h"
 
@@ -45,13 +46,14 @@ const MString MRenderModule::DefaultWhite = "Default_White";
 const MString MRenderModule::DefaultNormal = "Default_Normal";
 const MString MRenderModule::Default_R8_One = "Default_R8_One";
 const MString MRenderModule::Default_R8_Zero = "Default_R8_Zero";
+const MString MRenderModule::DefaultAnimationMaterial = "Default_Animation_Material";
 
 bool MRenderModule::Register(MEngine* pEngine)
 {
 	if (!pEngine)
 		return false;
 
-	MNotifySystem* pNotifySystem = pEngine->FindSystem<MNotifySystem>();
+	MNotifyManager* pNotifySystem = pEngine->FindSystem<MNotifyManager>();
 	MTaskGraph* pTaskGraph = pEngine->GetMainGraph();
 
 	pEngine->RegisterSystem<MModelSystem>();
@@ -105,7 +107,7 @@ bool MRenderModule::Register(MEngine* pEngine)
 		pComponentSystem->RegisterComponent<MCameraComponent>();
 		pComponentSystem->RegisterComponent<MSpotLightComponent>();
 		pComponentSystem->RegisterComponent<MPointLightComponent>();
-		pComponentSystem->RegisterComponent<MRenderableMeshComponent>();
+		pComponentSystem->RegisterComponent<MRenderMeshComponent>();
 		pComponentSystem->RegisterComponent<MDirectionalLightComponent>();
 		pComponentSystem->RegisterComponent<MDebugRenderComponent>();
 	}
@@ -119,6 +121,11 @@ bool MRenderModule::Register(MEngine* pEngine)
 	MTaskNode* pRenderUpdateTask = pTaskGraph->AddNode<MTaskNode>("Render_Update");
 	pRenderUpdateTask->SetThreadType(METhreadType::ERenderThread);
 	pRenderUpdateTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MRenderSystem::Update, pRenderSystem));
+
+
+
+	
+
 
 	return true;
 }
@@ -134,9 +141,10 @@ void MRenderModule::OnObjectPostCreate(MObject* pObject)
 	{
 		if (MScene* pScene = pObject->DynamicCast<MScene>())
 		{
-			pScene->RegisterManager<MRenderableMeshManager>();
+			pScene->RegisterManager<MMeshInstanceManager>();
 			pScene->RegisterManager<MEnvironmentManager>();
-			pScene->RegisterManager<MShadowMapManager>();
+			pScene->RegisterManager<MShadowMeshManager>();
+			pScene->RegisterManager<MAnimationManager>();
 		}
 	}
 }

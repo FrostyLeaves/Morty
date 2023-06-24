@@ -10,7 +10,7 @@ ResourceView::ResourceView()
 	: IBaseView()
 	, m_pEngine(nullptr)
 {
-
+	m_strViewName = "Resource";
 }
 
 ResourceView::~ResourceView()

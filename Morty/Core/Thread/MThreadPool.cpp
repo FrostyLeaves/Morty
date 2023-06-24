@@ -11,7 +11,7 @@ MORTY_CLASS_IMPLEMENT(MThreadPool, MTypeClass)
 
 std::map<std::thread::id, METhreadType> MThreadPool::s_tThreadType = {};
 
-constexpr bool bSingleThreadMode = false;
+constexpr bool bSingleThreadMode = true;
 
 MThreadPool::MThreadPool()
 	: m_bInitialized(false)

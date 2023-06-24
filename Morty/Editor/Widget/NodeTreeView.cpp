@@ -9,14 +9,14 @@
 #include "Component/MSceneComponent.h"
 
 #include "imgui.h"
+#include "Utility/SelectionEntityManager.h"
 
 
 NodeTreeView::NodeTreeView()
 	: IBaseView()
 	, m_pScene(nullptr)
-	, m_nSelectedEntityID(MGuid::invalid)
 {
-
+	m_strViewName = "Node Tree";
 }
 
 NodeTreeView::~NodeTreeView()
@@ -64,14 +64,6 @@ void NodeTreeView::Input(MInputEvent* pEvent)
 
 }
 
-MEntity* NodeTreeView::GetSelectionNode()
-{
-	if(!m_pScene)
-		return nullptr;
-
-	return m_pScene->GetEntity(m_nSelectedEntityID);
-}
-
 void NodeTreeView::RenderNode(MEntity* pNode)
 {
 	if (!pNode) return;
@@ -87,7 +79,7 @@ void NodeTreeView::RenderNode(MEntity* pNode)
 // 	else if (pNode->GetID() == m_unRootNodeID)
 // 		node_flags |= ImGuiTreeNodeFlags_DefaultOpen;
 
-	if (m_nSelectedEntityID == pNode->GetID())
+	if (SelectionEntityManager::GetInstance()->GetSelectedEntity() == pNode)
 		node_flags |= ImGuiTreeNodeFlags_Selected;
 
 
@@ -103,7 +95,7 @@ void NodeTreeView::RenderNode(MEntity* pNode)
 
 	if (ImGui::IsItemClicked())
 	{
-		m_nSelectedEntityID = pNode->GetID();
+		SelectionEntityManager::GetInstance()->SetSelectedEntity(m_pScene, pNode);
 	}
 	if (bOpened)
 	{

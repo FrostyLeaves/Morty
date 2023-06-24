@@ -1,0 +1,18 @@
+include "Component/MComponent.fbs";
+include "Math/Vector.fbs";
+include "Resource/MResourceRef.fbs";
+namespace mfbs;
+
+table MRenderMeshComponent
+{
+	super: MComponent;
+	gen_dir_shadow: bool;
+	draw_bounding: bool;
+	lod: int;
+	material: MResourceRef;
+	mesh: MResourceRef;
+}
+
+root_type MRenderMeshComponent;
+
+file_identifier "MFBS";

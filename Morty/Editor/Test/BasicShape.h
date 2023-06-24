@@ -6,7 +6,7 @@
 #include "System/MResourceSystem.h"
 
 #include "Component/MSceneComponent.h"
-#include "Component/MRenderableMeshComponent.h"
+#include "Component/MRenderMeshComponent.h"
 
 #include "Resource/MMeshResource.h"
 #include "Resource/MMaterialResource.h"
@@ -25,7 +25,7 @@ void SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 	{
 		pSceneComponent->SetScale(Vector3(10.0f, 10.0f, 10.0f));
 	}
-	if (MRenderableMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderableMeshComponent>())
+	if (MRenderMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderMeshComponent>())
 	{
 		std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
@@ -33,11 +33,11 @@ void SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 		pMaterial->LoadVertexShader("Shader/model.mvs");
 		pMaterial->LoadPixelShader("Shader/model.mps");
 
-		pMaterial->GetMaterialParamSet()->SetValue("f3Ambient", Vector3(1.0f, 1.0f, 1.0f));
-		pMaterial->GetMaterialParamSet()->SetValue("f3Diffuse", Vector3(1.0f, 1.0f, 1.0f));
-		pMaterial->GetMaterialParamSet()->SetValue("f3Specular", Vector3(1.0f, 1.0f, 1.0f));
-		pMaterial->GetMaterialParamSet()->SetValue("fAlphaFactor", 1.0f);
-		pMaterial->GetMaterialParamSet()->SetValue("fShininess", 32.0f);
+		pMaterial->GetMaterialPropertyBlock()->SetValue("f3Ambient", Vector3(1.0f, 1.0f, 1.0f));
+		pMaterial->GetMaterialPropertyBlock()->SetValue("f3Diffuse", Vector3(1.0f, 1.0f, 1.0f));
+		pMaterial->GetMaterialPropertyBlock()->SetValue("f3Specular", Vector3(1.0f, 1.0f, 1.0f));
+		pMaterial->GetMaterialPropertyBlock()->SetValue("fAlphaFactor", 1.0f);
+		pMaterial->GetMaterialPropertyBlock()->SetValue("fShininess", 32.0f);
 
 
 		std::shared_ptr<MResource> diffuse = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_albedo.png");
@@ -47,7 +47,7 @@ void SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 
 		if (normal)
 		{
-			pMaterial->GetMaterialParamSet()->SetValue("bUseNormalTex", 1);
+			pMaterial->GetMaterialPropertyBlock()->SetValue("bUseNormalTex", 1);
 		}
 
 		pMeshComponent->Load(pCubeResource);

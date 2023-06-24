@@ -70,19 +70,17 @@ public:
 
 	template<typename TYPE>
 	TYPE* RegisterSystem();
-	MISystem* FindSystem(const MType* type);
-
 	template<typename TYPE>
 	TYPE* FindSystem();
-
+	MISystem* FindSystem(const MType* type);
 	std::vector<MISystem*>& GetAllSystem() { return m_vSystem; }
 
 
 	template<typename TYPE>
 	TYPE* RegisterGlobalObject();
-	MObject* FindGlobalObject(const MType* type);
 	template<typename TYPE>
-    TYPE* FindGlobalObject();
+	TYPE* FindGlobalObject();
+	MObject* FindGlobalObject(const MType* type);
 
 protected:
 

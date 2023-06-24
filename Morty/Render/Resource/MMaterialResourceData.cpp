@@ -42,7 +42,7 @@ flatbuffers::Offset<void> MMaterialResourceData::Serialize(flatbuffers::FlatBuff
 	builder.add_pixel_resource(fbPixelShader.o);
 	builder.add_material_macro(fbMacro.o);
 	builder.add_material_type(static_cast<mfbs::MEMaterialType>(eMaterialType));
-	builder.add_rasterizer_type(static_cast<mfbs::MERasterizerType>(eRasterizerType));
+	builder.add_rasterizer_type(static_cast<mfbs::MECullMode>(eCullMode));
 	builder.add_material_textures(fbTextures);
 	builder.add_material_property(fbProperty);
 
@@ -54,7 +54,7 @@ void MMaterialResourceData::Deserialize(const void* pBufferPointer)
 	const mfbs::MMaterial* fbData = mfbs::GetMMaterial(pBufferPointer);
 
 	eMaterialType = static_cast<MEMaterialType>(fbData->material_type());
-	eRasterizerType = static_cast<MERasterizerType>(fbData->rasterizer_type());
+	eCullMode = static_cast<MECullMode>(fbData->rasterizer_type());
 
 	shaderMacro.Deserialize(fbData->material_macro());
 	if (fbData->vertex_resource())

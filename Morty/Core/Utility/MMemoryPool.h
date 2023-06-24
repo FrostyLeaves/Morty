@@ -24,9 +24,6 @@ struct MORTY_API MemoryInfo
 
 class MORTY_API MMemoryPool
 {
-public:
-
-    
 
 public:
     MMemoryPool(const size_t& nPoolSize);
@@ -38,6 +35,7 @@ public:
 
     void FreeMemory(MemoryInfo& info);
 
+    void ResizeMemory(const size_t& nPoolSize);
     size_t GetMaxMemorySize() const { return m_nMaxMemorySize; }
 
 private:

@@ -6,7 +6,7 @@
 #include "Scene/MEntity.h"
 #include "Shadow/MShadowMapUtil.h"
 #include "System/MRenderSystem.h"
-#include "MergeInstancing/MRenderableMaterialGroup.h"
+#include "Batch/MMaterialBatchGroup.h"
 
 
 void MCascadedShadowCulling::Initialize(MEngine* pEngine)
@@ -42,7 +42,7 @@ void MCascadedShadowCulling::SetDirectionalLight(MEntity* pDirectionalLight)
 	m_pDirectionalLight = pDirectionalLight;
 }
 
-void MCascadedShadowCulling::Culling(const std::vector<MRenderableMaterialGroup*>& vInstanceGroup)
+void MCascadedShadowCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup)
 {
 	auto pLightSceneComponent = m_pDirectionalLight->GetComponent<MSceneComponent>();
 	if (!pLightSceneComponent)
@@ -82,7 +82,7 @@ void MCascadedShadowCulling::Culling(const std::vector<MRenderableMaterialGroup*
 	vShadowBoundsMin.fill(Vector3(+FLT_MAX, +FLT_MAX, +FLT_MAX));
 	vShadowBoundsMax.fill(Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX));
 
-	for (MRenderableMaterialGroup* pMaterialGroup : vInstanceGroup)
+	for (MMaterialBatchGroup* pMaterialGroup : vInstanceGroup)
 	{
 		if (!pMaterialGroup)
 		{

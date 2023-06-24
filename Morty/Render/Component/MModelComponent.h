@@ -44,8 +44,6 @@ public:
 
 public:
 
-	MBoundsAABB GetBoundsAABB();
-
 	bool GetBoundingBoxVisiable() const { return m_bBoundingBoxVisiable; }
 	void SetBoundingBoxVisiable(const bool& bVisiable) { m_bBoundingBoxVisiable = bVisiable; }
 

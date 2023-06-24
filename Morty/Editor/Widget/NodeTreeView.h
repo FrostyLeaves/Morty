@@ -25,17 +25,12 @@ public:
 
 	virtual void Input(MInputEvent* pEvent) override;
 
-
-	MEntity* GetSelectionNode();
-
 protected:
 
 	void RenderNode(MEntity* pNode);
 
 private:
 	MScene* m_pScene;
-
-	MGuid m_nSelectedEntityID;
 
 	MEngine* m_pEngine;
 };

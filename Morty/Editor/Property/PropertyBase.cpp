@@ -141,10 +141,12 @@ bool PropertyBase::EditMTransform(MTransform& trans)
 	ShowValueEnd();
 
 	ShowValueBegin("Rotate");
-	Vector3& rotate = GetTempValue<Vector3>("Rotate", trans.GetRotation().GetEulerAngle());
+	Vector3 rotate = GetTemporaryValue<Vector3>("Transform_Rotate", trans.GetRotation().GetEulerAngle());
 
 	if (EditVector3(rotate, 1.0f, -360.0f, 360.0f))
 	{
+		SetTemporaryValue("Transform_Rotate", rotate);
+
 		Quaternion quat;
 		quat.SetEulerAngle(rotate);
 		quat.Normalize();
@@ -304,10 +306,10 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 		{
 			ShowValueBegin("Cull");
-			int nCullType = (int)pMaterial->GetRasterizerType();
+			int nCullType = (int)pMaterial->GetCullMode();
 			if (EditEnum({ "Wireframe", "CullNone", "CullBack", "ECullFront" }, nCullType))
 			{
-				pMaterial->SetRasterizerType(MERasterizerType(nCullType));
+				pMaterial->SetCullMode(MECullMode(nCullType));
 			}
 			ShowValueEnd();
 		}

@@ -119,3 +119,36 @@ void MMemoryPool::FreeMemory(MemoryInfo& info)
 		}
 	}
 }
+
+void MMemoryPool::ResizeMemory(const size_t& nPoolSize)
+{
+    if (nPoolSize <= m_nMaxMemorySize)
+    {
+		MORTY_ASSERT(nPoolSize > m_nMaxMemorySize);
+		return;
+    }
+
+	if (m_vFreeMemory.empty())
+	{
+		MORTY_ASSERT(!m_vFreeMemory.empty());
+		m_nMaxMemorySize = nPoolSize;
+		return;
+	}
+
+	const size_t nAllowSize = nPoolSize - m_nMaxMemorySize;
+
+	MemoryInfo& back = m_vFreeMemory.back();
+	if (back.begin + back.size == m_nMaxMemorySize)
+	{
+		back.size += nAllowSize;
+	}
+	else
+	{
+		MemoryInfo back;
+		back.begin = m_nMaxMemorySize;
+		back.size = nAllowSize;
+		m_vFreeMemory.push_back(back);
+	}
+
+	m_nMaxMemorySize = nPoolSize;
+}

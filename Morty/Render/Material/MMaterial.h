@@ -15,12 +15,12 @@
 #include "MShaderMacro.h"
 #include "MShaderProgram.h"
 #include "MShaderBuffer.h"
-#include "Material/MShaderParamSet.h"
+#include "Material/MShaderPropertyBlock.h"
 
 #include <vector>
 
 
-enum class MERasterizerType
+enum class MECullMode
 {
 	EWireframe = 0,
 	ECullNone,
@@ -73,11 +73,11 @@ public:
 	std::vector<std::shared_ptr<MShaderSampleParam>>& GetSampleParams();
 	std::vector<std::shared_ptr<MShaderTextureParam>>& GetTextureParams();
 
-	std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParamSets() { return m_pShaderProgram->GetShaderParamSets(); }
-	const std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParamSets() const { return m_pShaderProgram->GetShaderParamSets(); }
-	std::shared_ptr<MShaderPropertyBlock> GetMaterialParamSet() const { return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]; }
-	std::shared_ptr<MShaderPropertyBlock> GetFrameParamSet() const { return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_FRAME]; }
-	std::shared_ptr<MShaderPropertyBlock> GetMeshParamSet() const { return m_pShaderProgram->GetShaderParamSets()[MRenderGlobal::SHADER_PARAM_SET_MESH]; }
+	std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderPropertyBlocks() { return m_pShaderProgram->GetShaderPropertyBlocks(); }
+	const std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderPropertyBlocks() const { return m_pShaderProgram->GetShaderPropertyBlocks(); }
+	std::shared_ptr<MShaderPropertyBlock> GetMaterialPropertyBlock() const { return m_pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]; }
+	std::shared_ptr<MShaderPropertyBlock> GetFramePropertyBlock() const { return m_pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_FRAME]; }
+	std::shared_ptr<MShaderPropertyBlock> GetMeshPropertyBlock() const { return m_pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MESH]; }
 
 	void SetTexture(const MString& strName, std::shared_ptr<MResource> pTexResource);
 
@@ -85,8 +85,8 @@ public:
 	std::shared_ptr<MShaderSampleParam> FindSample(const MString& strName);
 	std::shared_ptr<MShaderTextureParam> FindTexture(const MString& strName);
 
-	void SetRasterizerType(const MERasterizerType& eType);
-	MERasterizerType GetRasterizerType() const { return m_eRasterizerType; }
+	void SetCullMode(const MECullMode& eType);
+	MECullMode GetCullMode() const { return m_eCullMode; }
 
 	void SetMaterialType(const MEMaterialType& eType);
 	MEMaterialType GetMaterialType() const { return m_eMaterialType; }
@@ -121,7 +121,7 @@ private:
 	std::shared_ptr<MShaderProgram> m_pShaderProgram;
 
 	MEMaterialType m_eMaterialType;
-	MERasterizerType m_eRasterizerType;
+	MECullMode m_eCullMode;
 
 	bool m_bBatchInstanceEnable = false;
 };

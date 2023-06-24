@@ -46,7 +46,7 @@ private:
 };
 
 class MInstanceBatchGroup;
-class MRenderableMaterialGroup;
+class MMaterialBatchGroup;
 class MORTY_API MInstanceCulling
 {
 public:
@@ -54,7 +54,7 @@ public:
     virtual void Initialize(MEngine* pEngine) {}
     virtual void Release() {}
 
-    virtual void Culling(const std::vector<MRenderableMaterialGroup*>& vInstanceGroup) = 0;
+    virtual void Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup) = 0;
     virtual const MBuffer* GetDrawIndirectBuffer() = 0;
     virtual const std::vector<MMaterialCullingGroup>& GetCullingInstanceGroup() const = 0;
 
