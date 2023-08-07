@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MOBJECT_SYSTEM_H_
-#define _M_MOBJECT_SYSTEM_H_
+#pragma once
 #include "Utility/MGlobal.h"
 
 #include "Type/MType.h"
@@ -70,5 +69,3 @@ private:
 
 	std::vector<PostCreateObjectFunction> m_vPostCreateObjectFunction;
 };
-
-#endif

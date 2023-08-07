@@ -1,5 +1,4 @@
-﻿#ifndef _MATRIX_H_
-#define _MATRIX_H_
+﻿#pragma once
 
 #include "Utility/MGlobal.h"
 
@@ -102,13 +101,10 @@ public:
 
 	bool operator == (const Matrix4& mat) const;
 
-// 	void SetTranslation(const float& x, const float& y, const float& z);
  	Vector3 GetTranslation() const;
 // 
-// 	void SetRotation(const Quaternion& quat);
  	Quaternion GetRotation() const;
 // 
-// 	Matrix4 GetTransPart();
  	Matrix4 GetRotatePart() const;
  	Matrix4 GetScalePart() const;
 
@@ -128,9 +124,3 @@ private:
 	
 	float AlgebraicCofactor(const int& i, const int& j) const;
 };
-
-
-
-
-
-#endif

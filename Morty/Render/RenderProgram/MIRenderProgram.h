@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MIRENDERPROGRAM_H_
-#define _M_MIRENDERPROGRAM_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
 
@@ -42,5 +42,3 @@ private:
     MViewport* m_pViewport;
 
 };
-
-#endif

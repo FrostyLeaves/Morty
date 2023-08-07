@@ -11,7 +11,7 @@ void MVulkanRenderCommand::SetViewport(const MViewportInfo& viewport)
 	VkViewport vkViewport = {};
 	vkViewport.x = viewport.x;
 	vkViewport.y = viewport.y + viewport.height;
-	vkViewport.width = viewport.width;
+	vkViewport.width = std::max(viewport.width, 1.0f);
 	vkViewport.height = -viewport.height;
 	vkViewport.minDepth = viewport.minz;
 	vkViewport.maxDepth = viewport.maxz;
@@ -21,7 +21,10 @@ void MVulkanRenderCommand::SetViewport(const MViewportInfo& viewport)
 
 void MVulkanRenderCommand::SetScissor(const MScissorInfo& scissor)
 {
-	VkRect2D scissorRect = { int32_t(scissor.x), int32_t(scissor.y), uint32_t(scissor.width), uint32_t(scissor.height) };
+	float width = std::max(scissor.width, 1.0f);
+	float height = std::max(scissor.height, 1.0f);
+
+	VkRect2D scissorRect = { int32_t(scissor.x), int32_t(scissor.y), uint32_t(width), uint32_t(height) };
 	vkCmdSetScissor(m_VkCommandBuffer, 0, 1, &scissorRect);
 }
 
@@ -195,8 +198,19 @@ void MVulkanRenderCommand::DrawIndexedIndirect(const MBuffer* pVertexBuffer, con
 		pUsingIndex = pIndexBuffer;
 	}
 
-	vkCmdDrawIndexedIndirect(m_VkCommandBuffer, pCommandsBuffer->m_VkBuffer, offset, count, sizeof(VkDrawIndexedIndirectCommand));
-
+	if (m_pDevice->MultiDrawIndirectSupport())
+	{
+		vkCmdDrawIndexedIndirect(m_VkCommandBuffer, pCommandsBuffer->m_VkBuffer, offset, count,
+								 sizeof(VkDrawIndexedIndirectCommand));
+	}
+    else
+    {
+		for (size_t nDrawIdx = 0; nDrawIdx < count; ++nDrawIdx)
+		{
+			vkCmdDrawIndexedIndirect(m_VkCommandBuffer, pCommandsBuffer->m_VkBuffer, offset + sizeof(VkDrawIndexedIndirectCommand) * nDrawIdx, 1,
+				sizeof(VkDrawIndexedIndirectCommand));
+		}
+    }
 	++m_nDrawCallCount;
 }
 
@@ -503,22 +517,11 @@ void MVulkanRenderCommand::SetTextureLayout(const std::vector<MTexture*>& vTextu
 			continue;
 
 		VkImageSubresourceRange subresourceRange;
-		if (vTextures[i]->GetRenderUsage() == METextureRenderUsage::ERenderDepth)
-		{
-			subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-			subresourceRange.baseMipLevel = 0;
-			subresourceRange.levelCount = vTextures[i]->m_unMipmapLevel;
-			subresourceRange.baseArrayLayer = 0;
-			subresourceRange.layerCount = vTextures[i]->GetImageLayerNum();
-		}
-		else
-		{
-			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			subresourceRange.baseMipLevel = 0;
-			subresourceRange.levelCount = vTextures[i]->m_unMipmapLevel;
-			subresourceRange.baseArrayLayer = 0;
-			subresourceRange.layerCount = vTextures[i]->GetImageLayerNum();
-		}
+		subresourceRange.aspectMask = m_pDevice->GetAspectFlags(vTextures[i]->m_VkTextureFormat);
+		subresourceRange.baseMipLevel = 0;
+		subresourceRange.levelCount = vTextures[i]->m_unMipmapLevel;
+		subresourceRange.baseArrayLayer = 0;
+		subresourceRange.layerCount = vTextures[i]->GetImageLayerNum();
 
 		vImageBarrier.push_back(VkImageMemoryBarrier());
 		VkImageMemoryBarrier& imageMemoryBarrier = vImageBarrier.back();
@@ -681,11 +684,16 @@ void MVulkanRenderCommand::UpdateShaderParam(std::shared_ptr<MShaderConstantPara
 		memcpy(param->m_pMemoryMapping + param->m_unMemoryOffset, param->var.GetData(), param->var.GetSize());
 
 #ifndef MORTY_WIN
- 		VkMappedMemoryRange memoryRange = {};
+		size_t nFlushMinSize = m_pDevice->m_VkPhysicalDeviceProperties.limits.nonCoherentAtomSize;
+		size_t nOffset = (param->m_unMemoryOffset / nFlushMinSize) * nFlushMinSize;
+		size_t nSize = ((param->m_unMemoryOffset + param->m_unVkMemorySize) - nOffset);
+		nSize = nSize % nFlushMinSize == 0 ? nSize : (nSize / nFlushMinSize + 1) * nFlushMinSize;
+
+		VkMappedMemoryRange memoryRange = {};
  		memoryRange.sType = VkStructureType::VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
  		memoryRange.memory = param->m_VkBufferMemory;
- 		memoryRange.offset = param->m_unMemoryOffset;
- 		memoryRange.size = param->m_unVkMemorySize;
+ 		memoryRange.offset = nOffset;
+ 		memoryRange.size = nSize;
  		vkFlushMappedMemoryRanges(m_pDevice->m_VkDevice, 1, &memoryRange);
 #endif
 	}

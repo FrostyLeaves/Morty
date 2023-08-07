@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MRENDER_INCLUDE_H_
-#define _M_MRENDER_INCLUDE_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -23,22 +23,22 @@ public:
 
 	static const char* MATERIAL_MACRO_SKELETON_ENABLE;
 
-	static const int SHADER_PARAM_SET_MATERIAL = 0;
-	static const int SHADER_PARAM_SET_FRAME = 1;
-	static const int SHADER_PARAM_SET_MESH = 2;
-	static const int SHADER_PARAM_SET_SKELETON = 3;
-	static const int SHADER_PARAM_SET_NUM = 4;
+	static constexpr int SHADER_PARAM_SET_MATERIAL = 0;
+	static constexpr int SHADER_PARAM_SET_FRAME = 1;
+	static constexpr int SHADER_PARAM_SET_MESH = 2;
+	static constexpr int SHADER_PARAM_SET_SKELETON = 3;
+	static constexpr int SHADER_PARAM_SET_NUM = 4;
 
-	static const int BONES_PER_VERTEX = 4;
-	static const int BONES_MAX_NUMBER = 128;
+	static constexpr int BONES_PER_VERTEX = 4;
+	static constexpr int BONES_MAX_NUMBER = 128;
 	static const int SHADOW_TEXTURE_SIZE;
 
-	static const int POINT_LIGHT_MAX_NUMBER = 8;
-	static const int POINT_LIGHT_PIXEL_NUMBER = 8;
-	static const int SPOT_LIGHT_MAX_NUMBER = 8;
-	static const int SPOT_LIGHT_PIXEL_NUMBER = 8;
+	static constexpr int POINT_LIGHT_MAX_NUMBER = 8;
+	static constexpr int POINT_LIGHT_PIXEL_NUMBER = 8;
+	static constexpr int SPOT_LIGHT_MAX_NUMBER = 8;
+	static constexpr int SPOT_LIGHT_PIXEL_NUMBER = 8;
 
-	static const int MESH_LOD_LEVEL_RANGE = 3;
+	static constexpr int MESH_LOD_LEVEL_RANGE = 3;
 
 	static const bool VERTEX_NORMAL = false;
 
@@ -61,6 +61,3 @@ public:
 
 typedef int32_t MMeshInstanceKey;
 typedef int32_t MSkeletonInstanceKey;
-
-
-#endif

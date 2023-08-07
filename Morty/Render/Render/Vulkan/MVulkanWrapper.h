@@ -1,5 +1,4 @@
-#ifndef _M_VULKAN_WRAPPER_H_
-#define _M_VULKAN_WRAPPER_H_
+#pragma once
 
 #include "Utility/MGlobal.h"
 
@@ -10,7 +9,8 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
 #endif
-#ifdef MORTY_ANDROID
+//#ifdef MORTY_ANDROID
+#if false
 #define VK_USE_PLATFORM_ANDROID_KHR
 #define VK_NO_PROTOTYPES 1
 #include <vulkan/vulkan.h>
@@ -216,7 +216,5 @@ extern PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT;
 extern PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT;
 extern PFN_vkDebugReportMessageEXT vkDebugReportMessageEXT;
 
-
-#endif
 
 #endif

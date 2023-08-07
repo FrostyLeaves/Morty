@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MTASKNODEOUTPUT_H_
-#define _M_MTASKNODEOUTPUT_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Type/MType.h"
 #include "Variant/MVariant.h"
@@ -33,17 +33,7 @@ public:
 
 
 	void SetName(const MString& strName) { m_strName = strName; }
-	MString GetName() const { return m_strName; }
-
-	template<typename TYPE>
-	TYPE* GetValue(const MString& strName);
-
-	template<typename TYPE>
-	void SetValue(const MString& strName, const TYPE& value);
-
-public:
-
-	MStruct m_outputValue;
+	const MString& GetName() const { return m_strName; }
 
 private:
 
@@ -56,17 +46,3 @@ private:
 
 	std::vector<MTaskNodeInput*> vLinkedInput;
 };
-
-template<typename TYPE>
-TYPE* MTaskNodeOutput::GetValue(const MString& strName)
-{
-	return m_outputValue.FindMember<TYPE>(strName);
-}
-
-template<typename TYPE>
-void MTaskNodeOutput::SetValue(const MString& strName, const TYPE& value)
-{
-	m_outputValue.AppendValue(strName, value);
-}
-
-#endif

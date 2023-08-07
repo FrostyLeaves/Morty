@@ -287,7 +287,7 @@ void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& in
 
 void MForwardRenderShaderPropertyBlock::SetShadowMapTexture(std::shared_ptr<MTexture> pTexture)
 {
-	if (m_pShadowTextureParam->GetTexture() != pTexture)
+	if (m_pShadowTextureParam && m_pShadowTextureParam->GetTexture() != pTexture)
 	{
 		m_pShadowTextureParam->SetTexture(pTexture);
 	}
@@ -295,7 +295,7 @@ void MForwardRenderShaderPropertyBlock::SetShadowMapTexture(std::shared_ptr<MTex
 
 void MForwardRenderShaderPropertyBlock::SetBrdfMapTexture(std::shared_ptr<MTexture> pTexture)
 {
-	if (m_pBrdfMapTextureParam->GetTexture() != pTexture)
+	if (m_pBrdfMapTextureParam && m_pBrdfMapTextureParam->GetTexture() != pTexture)
 	{
 		m_pBrdfMapTextureParam->SetTexture(pTexture);
 	}

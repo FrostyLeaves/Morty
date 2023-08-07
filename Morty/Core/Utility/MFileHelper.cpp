@@ -123,6 +123,7 @@ bool MFileHelper::WriteData(const MString& strFilePath, const std::vector<MByte>
 	file.write(reinterpret_cast<const char*>(vData.data()), vData.size() * sizeof(MByte));
 
 	file.close();
+	return true;
 }
 
 bool MFileHelper::ReadData(const MString& strFilePath, std::vector<MByte>& vData)
@@ -145,6 +146,7 @@ bool MFileHelper::ReadData(const MString& strFilePath, std::vector<MByte>& vData
  	memcpy(vData.data(), value.data(), sizeof(MByte) * len);
 
 	file.close();
+	return true;
 }
 
 bool MFileHelper::WriteFormatFile(const MString& strFilePath, const MMortyFileFormat& format)
@@ -220,7 +222,7 @@ bool MFileHelper::ReadFormatFile(const MString& strFilePath, MMortyFileFormat& f
 void MFileHelper::GetValidFileName(MString& strFileName)
 {
 	char ch[] = {
-	0x5C, //    \ 
+	0x5C, //    \\
 	0x2F, //    /
 	0x3A, //    : 
 	0x2A, //    * 

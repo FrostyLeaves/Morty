@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSHADER_H_
-#define _M_MSHADER_H_
+#pragma once
+
 #include "Render/MRenderGlobal.h"
 
 #include "MShaderMacro.h"
@@ -49,6 +49,3 @@ private:
 	MShaderBuffer* m_pShaderBuffer;
 
 };
-
-
-#endif

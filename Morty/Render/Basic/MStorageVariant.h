@@ -8,8 +8,8 @@
  * Only For Shader.
 **/
 
-#ifndef _M_STORAGE_VARIANT_H_
-#define _M_STORAGE_VARIANT_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Utility/MString.h"
 #include "Math/Vector.h"
@@ -30,6 +30,3 @@ public:
 	std::vector<MByte> data;
 	MBuffer buffer;
 };
-
-
-#endif

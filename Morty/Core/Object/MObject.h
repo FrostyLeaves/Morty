@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MOBJECT_H_
-#define _M_MOBJECT_H_
+#pragma once
 #include "Utility/MGlobal.h"
 
 #include "Type/MType.h"
@@ -52,6 +51,3 @@ protected:
 private:
 	bool		m_bDeleteMark;
 };
-
-
-#endif

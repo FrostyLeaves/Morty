@@ -1,12 +1,8 @@
-#ifndef _SCENE_TEXTURE_H_
-#define _SCENE_TEXTURE_H_
+#pragma once
 
 #include "Utility/MGlobal.h"
 #include "Math/Vector.h"
 #include "Utility/MColor.h"
-
-
-#include <array>
 
 class MTaskNode;
 class MScene;
@@ -18,17 +14,17 @@ class MIRenderProgram;
 class MRenderTexture;
 class MIRenderTexture;
 class MForwardRenderProgram;
+
 class SceneTexture
 {
 public:
 	SceneTexture();
 	virtual ~SceneTexture();
 
-	void Initialize(MEngine* pEngine, const MString& strRenderProgram, const size_t& nImageCount);
+	void Initialize(MScene* pScene, const MString& strRenderProgram);
 	void Release();
 
-	void SetSize(const Vector2& v2Size);
-	Vector2 GetSize() const { return m_v2Size; }
+	void SetRect(Vector2 pos, Vector2 size);
 
 	std::shared_ptr<MTexture> GetTexture(const size_t& nImageIndex);
 	std::vector<std::shared_ptr<MTexture>> GetAllOutputTexture(const size_t& nImageIndex);
@@ -37,31 +33,20 @@ public:
 	MScene* GetScene() const { return m_pScene; }
 	MViewport* GetViewport() const { return m_pRenderViewport; }
 
-	void SetBackColor(const MColor& cColor);
-
 	void Snapshot(const MString& strSnapshotPath);
 
-	MTaskNode* GetUpdateTask() const { return m_pUpdateTask; }
+	MTaskNode* GetRenderTask() const { return m_pUpdateTask; }
 
 protected:
 
-	Vector2 m_v2Size;
-
-	MScene* m_pScene;
-	MEngine* m_pEngine;
+	MScene* m_pScene = nullptr;
 
 	MViewport* m_pRenderViewport;
 
 	std::vector<MIRenderProgram*> m_vRenderProgram;
-
-	size_t m_nImageCount;
 
 	bool m_bSnapshot;
 	MString m_strSnapshotPath;
 
 	MTaskNode* m_pUpdateTask = nullptr;
 };
-
-
-#endif
-

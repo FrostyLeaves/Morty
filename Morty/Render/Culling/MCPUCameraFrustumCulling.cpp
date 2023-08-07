@@ -1,4 +1,4 @@
-#include "MSceneCulling.h"
+#include "MCPUCameraFrustumCulling.h"
 
 #include "Component/MSceneComponent.h"
 #include "Engine/MEngine.h"
@@ -9,7 +9,7 @@
 #include "Batch/MMaterialBatchGroup.h"
 
 
-void MSceneCulling::Initialize(MEngine* pEngine)
+void MCPUCameraFrustumCulling::Initialize(MEngine* pEngine)
 {
 	m_pEngine = pEngine;
 
@@ -21,18 +21,18 @@ void MSceneCulling::Initialize(MEngine* pEngine)
 #endif
 }
 
-void MSceneCulling::Release()
+void MCPUCameraFrustumCulling::Release()
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 	m_drawIndirectBuffer.DestroyBuffer(pRenderSystem->GetDevice());
 }
 
-void MSceneCulling::AddFilter(std::shared_ptr<IMeshInstanceFilter> pFilter)
+void MCPUCameraFrustumCulling::AddFilter(std::shared_ptr<IMeshInstanceFilter> pFilter)
 {
 	m_vFilter.push_back(pFilter);
 }
 
-void MSceneCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup)
+void MCPUCameraFrustumCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup)
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
@@ -68,13 +68,11 @@ void MSceneCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGr
 
 			pInstanceGroup->InstanceExecute([&](const MMeshInstanceRenderProxy& instance, size_t nIdx)
 			{
-				for(const auto& pFilter : m_vFilter)
-				{
-				    if (!pFilter->Filter(&instance))
-				    {
-						return;
-				    }
-				}
+				const MBoundsAABB& bounds = instance.boundsWithTransform;
+			    if (instance.bCullEnable && MCameraFrustum::EOUTSIDE == m_cameraFrustum.ContainTest(bounds))
+			    {
+				    return;
+			    }
 	
 				const MMeshManager::MMeshData& data = pMeshManager->FindMesh(instance.pMesh);
 				const MDrawIndexedIndirectData indirectData = {

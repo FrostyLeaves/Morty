@@ -50,7 +50,7 @@ void LOAD_MODEL_ANIMATION_TEST(MEngine* pEngine, MScene* pScene)
 
 	for (MComponentID& componentID : vMeshComponents)
 	{
-		if (MRenderMeshComponent* pMeshComponent = pScene->GetComponent(componentID)->DynamicCast<MRenderMeshComponent>())
+		if (MRenderMeshComponent* pMeshComponent = pScene->GetComponent(componentID)->template DynamicCast<MRenderMeshComponent>())
 		{
 			pMeshComponent->SetGenerateDirLightShadow(true);
 		}

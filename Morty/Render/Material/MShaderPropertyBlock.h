@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSHADER_PROPERTY_BLOCK_H_
-#define _M_MSHADER_PROPERTY_BLOCK_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Material/MShaderParam.h"
 
@@ -200,5 +200,3 @@ std::vector<std::shared_ptr<ParamType>> MShaderPropertyBlock::RemoveShaderParam(
 
 	return vResult;
 }
-
-#endif

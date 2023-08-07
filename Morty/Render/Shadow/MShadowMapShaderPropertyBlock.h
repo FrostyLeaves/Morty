@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_SHADOW_MAP_SHADER_PROPERTY_BLOCK_H_
-#define _M_SHADOW_MAP_SHADER_PROPERTY_BLOCK_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Render/MBuffer.h"
 #include "RenderProgram/MRenderInfo.h"
@@ -39,5 +39,3 @@ protected:
 
 	size_t m_nInstanceNum = 0;
 };
-
-#endif

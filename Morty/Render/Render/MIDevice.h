@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MIDEVICE_H_
-#define _M_MIDEVICE_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 
 #include "Material/MShader.h"
@@ -86,5 +86,3 @@ private:
 
 	MEngine* m_pEngine;
 };
-
-#endif

@@ -119,6 +119,23 @@ MCameraFrustum MRenderSystem::GetCameraFrustum(MViewport* pViewport, MCameraComp
 	return cameraFrustum;
 }
 
+Matrix4 MRenderSystem::GetCameraViewMatrix(MSceneComponent* pSceneComponent)
+{
+	return pSceneComponent->GetWorldTransform().Inverse();
+}
+
+Matrix4 MRenderSystem::GetCameraProjectionMatrix(const MViewport* pViewport, const MCameraComponent* pCameraComponent)
+{
+	float fZNear = pCameraComponent->GetZNear();
+    float fZFar = pCameraComponent->GetZFar();
+
+	const Matrix4 m4Projection = pCameraComponent->GetCameraType() == MCameraComponent::MECameraType::EPerspective
+		? MRenderSystem::MatrixPerspectiveFovLH(pCameraComponent->GetFov() * 0.5f, pViewport->GetSize().x / pViewport->GetSize().y, fZNear, fZFar)
+		: MRenderSystem::MatrixOrthoOffCenterLH(-pCameraComponent->GetWidth() * 0.5f, pCameraComponent->GetWidth() * 0.5f, pCameraComponent->GetHeight() * 0.5f, -pCameraComponent->GetHeight() * 0.5f, fZNear, fZFar);
+
+	return m4Projection;
+}
+
 Matrix4 MRenderSystem::GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent)
 {
 	return GetCameraInverseProjection(pViewport, pCameraComponent, pSceneComponent, pCameraComponent->GetZNear(), pCameraComponent->GetZFar());

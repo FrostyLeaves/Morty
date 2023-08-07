@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MTIMER_H_
-#define _M_MTIMER_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 
 
@@ -24,6 +24,3 @@ public:
 private:
 
 };
-
-
-#endif

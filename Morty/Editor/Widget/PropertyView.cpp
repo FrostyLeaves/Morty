@@ -17,7 +17,7 @@
 	m_tCreatePropertyFactory[#CLASS_NAME] = []() {return new Property##CLASS_NAME(); };
 
 PropertyView::PropertyView()
-	: IBaseView()
+	: BaseWidget()
 	, m_vPropertyList()
 {
 	m_strViewName = "Property";
@@ -62,9 +62,9 @@ void PropertyView::Render()
 
 }
 
-void PropertyView::Initialize(MEngine* pEngine)
+void PropertyView::Initialize(MainEditor* pMainEditor)
 {
-
+	BaseWidget::Initialize(pMainEditor);
 }
 
 void PropertyView::Release()
@@ -77,21 +77,27 @@ void PropertyView::Input(MInputEvent* pEvent)
 
 }
 
-void PropertyView::EditEntity(MEntity* pNode)
+void PropertyView::EditEntity(MEntity* pEntity)
 {
-	if (pNode)
+	if (m_pEntity != pEntity)
+	{
+		m_pEntity = pEntity;
+		UpdatePropertyList(pEntity);
+	}
+
+	if (m_pEntity)
 	{
 		for (PropertyBase* pPropertyBase : m_vPropertyList)
 		{
 			if (pPropertyBase)
 			{
-				pPropertyBase->EditEntity(pNode);
+				pPropertyBase->EditEntity(m_pEntity);
 			}
 		}
 	}
 }
 
-void PropertyView::CreatePropertyList(MEntity* pNode)
+void PropertyView::UpdatePropertyList(MEntity* pEntity)
 {
 	for (PropertyBase* pPropertyBase : m_vPropertyList)
 	{
@@ -100,10 +106,7 @@ void PropertyView::CreatePropertyList(MEntity* pNode)
 	}
 	m_vPropertyList.clear();
 
-	MString name = pNode->GetTypeName();
-
-
-	auto& vComponents = pNode->GetComponents();
+	auto vComponents = pEntity->GetComponents();
 	for(MComponent* pComponent : vComponents)
 	{
 		if (auto func = m_tCreatePropertyFactory[pComponent->GetType()->m_strName])

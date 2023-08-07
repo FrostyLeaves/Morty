@@ -7,15 +7,9 @@
 #include "System/MResourceSystem.h"
 
 ResourceView::ResourceView()
-	: IBaseView()
-	, m_pEngine(nullptr)
+	: BaseWidget()
 {
 	m_strViewName = "Resource";
-}
-
-ResourceView::~ResourceView()
-{
-
 }
 
 void ResourceView::Render()
@@ -34,7 +28,7 @@ void ResourceView::Render()
 
 	ImGui::Columns(4);
 
-	MResourceSystem* pResourceSystem = m_pEngine->FindSystem<MResourceSystem>();
+	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
 	std::map<MResourceID, std::shared_ptr<MResource>>& resources = *pResourceSystem->GetAllResources();
 	int ITEMS_COUNT = resources.size();
@@ -53,9 +47,9 @@ void ResourceView::Render()
 			std::shared_ptr<MResource> pResource = iter->second;
 			ImGui::Text("%lu", pResource->GetResourceID());
 			ImGui::NextColumn();
-			ImGui::Text(pResource->GetTypeName().c_str());
+			ImGui::Text("%s", pResource->GetTypeName().c_str());
 			ImGui::NextColumn();
-			ImGui::Text(pResource->GetResourcePath().c_str());
+			ImGui::Text("%s", pResource->GetResourcePath().c_str());
 			ImGui::NextColumn();
 			ImGui::Text("%u", pResource.use_count());
 			ImGui::NextColumn();
@@ -66,9 +60,9 @@ void ResourceView::Render()
 	ImGui::Columns(1);
 }
 
-void ResourceView::Initialize(MEngine* pEngine)
+void ResourceView::Initialize(MainEditor* pMainEditor)
 {
-	m_pEngine = pEngine;
+	BaseWidget::Initialize(pMainEditor);
 }
 
 void ResourceView::Release()

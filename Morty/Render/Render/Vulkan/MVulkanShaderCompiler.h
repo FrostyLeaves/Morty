@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_VULKANMSHADERCOMPILER_H_
-#define _M_VULKANMSHADERCOMPILER_H_
+#pragma once
+
 #include "Render/MRenderGlobal.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -22,8 +22,8 @@
 #undef min
 #endif
 
-#include "spirv_cross.hpp"
-#include "spirv_parser.hpp"
+#include "spirv_cross/spirv_cross.hpp"
+#include "spirv_cross/spirv_parser.hpp"
 
 class MShaderBuffer;
 class MVulkanDevice;
@@ -39,7 +39,6 @@ public:
 	const std::vector<std::string>& GetProcesses() { return m_vProcesses; }
 
 	void AddDef(const MString& strName, const MString& strValue);
-	void AddDef2(const MString& strName, const MString& strValue);
 
 	void AddUndef(std::string undef);
 
@@ -55,42 +54,16 @@ public:
     MVulkanShaderCompiler(MVulkanDevice* pDevice);
 	~MVulkanShaderCompiler();
 
-public:
-
-    bool Initialize();
-
     bool CompileShader(const MString& strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv);
 
-	void GetVertexInputState(const spirv_cross::Compiler& compiler, MVertexShaderBuffer* pShaderBuffer);
-
-	void GetComputeInputState(const spirv_cross::Compiler& compiler, MComputeShaderBuffer* pShaderBuffer);
-
-public:
-
-	void GetShaderParam(const spirv_cross::Compiler& compiler, MShaderBuffer* pShaderBuffer);
-
 	void ConvertMacro(const MShaderMacro& macro, MPreamble& preamble);
-
-	void ConvertMacroDXC(const MShaderMacro& macro, MPreamble& preamble);
-
-	void ConvertVariant(const spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, MVariant& variant);
-
-	bool ResetVariantType(const spirv_cross::SPIRType& type, MVariant& variant);
-
-	void ReadShaderPath(const MString& strShaderPath);
-
-
+	
 private:
 
-	bool CompileGlslShader(const MString& strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv);
 	bool CompileHlslShader(const MString& strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv);
 
-private:
 	MVulkanDevice* m_pDevice;
 };
-
-
-#endif
 
 
 #endif

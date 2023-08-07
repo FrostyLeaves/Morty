@@ -1,7 +1,6 @@
-#ifndef _PROPERTY_VIEW_H_
-#define _PROPERTY_VIEW_H_
+#pragma once
 
-#include "Main/IBaseView.h"
+#include "Main/BaseWidget.h"
 
 #include "Math/Vector.h"
 #include "Utility/MColor.h"
@@ -14,30 +13,28 @@
 
 class MEntity;
 class PropertyBase;
-class PropertyView : public IBaseView
+class PropertyView : public BaseWidget
 {
 public:
 	PropertyView();
-	virtual ~PropertyView();
+    ~PropertyView() override;
 	
-	virtual void Render() override;
+	void Render() override;
 
-	virtual void Initialize(MEngine* pEngine) override;
-	virtual void Release() override;
+	void Initialize(MainEditor* pMainEditor) override;
+	void Release() override;
 
-	virtual void Input(MInputEvent* pEvent) override;
-
-
+	void Input(MInputEvent* pEvent) override;
+    
 protected:
 
-	void EditEntity(MEntity* pNode);
-	void CreatePropertyList(MEntity* pNode);
+	void EditEntity(MEntity* pEntity);
+	void UpdatePropertyList(MEntity* pEntity);
 
 private:
+
+	MEntity* m_pEntity = nullptr;
 	std::deque<PropertyBase*> m_vPropertyList;
 	
 	std::map<MString, std::function<PropertyBase*()>> m_tCreatePropertyFactory;
 };
-
-
-#endif

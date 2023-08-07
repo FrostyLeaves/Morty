@@ -1,5 +1,4 @@
-#ifndef M_RENDER_INFO_H_
-#define M_RENDER_INFO_H_
+#pragma once
 
 #include "Basic/MCameraFrustum.h"
 #include "Utility/MGlobal.h"
@@ -79,7 +78,3 @@ struct MRenderInfo
 public:
 
 };
-
-
-
-#endif

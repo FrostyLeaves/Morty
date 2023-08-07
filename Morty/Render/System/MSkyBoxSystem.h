@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSKYBOXSYSTEM_H_
-#define _M_MSKYBOXSYSTEM_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Engine/MSystem.h"
 
@@ -25,14 +25,9 @@ public:
 
 public:
 
-public:
-
     void GenerateEnvironmentTexture(MSkyBoxComponent* pComponent);
 
 private:
 
     void GenerateEnvironmentWork(MSkyBoxComponent* pComponent);
 };
-
-
-#endif

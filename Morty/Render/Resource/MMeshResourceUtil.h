@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MESH_RESOURCE_UTIL_H_
-#define _M_MESH_RESOURCE_UTIL_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "MMeshResource.h"
 
@@ -21,5 +21,3 @@ public:
 	static std::unique_ptr<MResourceData> CreateCube(MEMeshVertexType eVertexType = MEMeshVertexType::Normal);
 	static std::unique_ptr<MResourceData> CreateSphere(MEMeshVertexType eVertexType = MEMeshVertexType::Normal);
 };
-
-#endif

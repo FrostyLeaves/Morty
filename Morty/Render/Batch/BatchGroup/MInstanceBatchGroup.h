@@ -1,5 +1,4 @@
-#ifndef _M_INSTANCE_BATCH_GROUP_H_
-#define _M_INSTANCE_BATCH_GROUP_H_
+#pragma once
 
 #include "Component/MRenderMeshComponent.h"
 #include "Object/MObject.h"
@@ -33,6 +32,7 @@ struct MORTY_API MMeshInstanceRenderProxy
 class MORTY_API MInstanceBatchGroup
 {
 public:
+	virtual ~MInstanceBatchGroup() = default;
 	virtual void Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pMaterial) = 0;
 	virtual void Release(MEngine* pEngine) = 0;
 	virtual bool CanAddMeshInstance() const = 0;
@@ -44,5 +44,3 @@ public:
 	virtual void InstanceExecute(std::function<void(const MMeshInstanceRenderProxy&, size_t nIdx)> func) = 0;
 	void UpdateVisible(MMeshInstanceKey key, bool bVisible);
 };
-
-#endif

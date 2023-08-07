@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MTYPECLASS_H_
-#define _M_MTYPECLASS_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Utility/MString.h"
 
@@ -15,7 +15,7 @@
 public: \
 static const MType* GetClassType(); \
 static MString GetClassTypeName(){ return Class::GetClassType()->m_strName;}\
-virtual const MType* GetType() const { return Class::GetClassType(); }; \
+const MType* GetType() const override { return Class::GetClassType(); }; \
 
 
 #define M_TYPE_IMPLEMENT(CurrClass, BaseClass) \
@@ -94,12 +94,20 @@ public:
 			return GetType()->m_strName;
 	}
 
-	MORTY_CLASS(MTypeClass)
+	static const MType* GetClassType();
+	static MString GetClassTypeName() { return MTypeClass::GetClassType()->m_strName; }
+	virtual const MType* GetType() const { return MTypeClass::GetClassType(); };
+
+	template<class T>
+	static bool CheckNull(T* ptr)
+	{
+		return ptr == nullptr;
+	}
 
 	template <class T>
 	T* DynamicCast() const
 	{
-		if (nullptr == this) return nullptr;
+		if (CheckNull(this)) return nullptr;
 		const MType* pTypeIdent = GetType();
 		const MType* pClassIdent = T::GetClassType();
 		for (int i = pTypeIdent->m_unDeep - pClassIdent->m_unDeep; i > 0; --i)
@@ -114,7 +122,7 @@ public:
 	static std::shared_ptr<Target> DynamicCast(std::shared_ptr<Source> pointer)
 	{
 		if (nullptr == pointer) return nullptr;
-		if (Target* ptr = (pointer.get())->DynamicCast<Target>())
+		if (Target* ptr = (pointer.get())->template DynamicCast<Target>())
 		{
 			return std::shared_ptr<Target>(std::move(pointer), ptr);
 		}
@@ -144,17 +152,21 @@ public:
 	template<typename T>
 	static void RegisterTypedClass() {
 		const MString& strName = T::GetClassType()->m_strName;
-		MDynamicTypeInfo& info = GetFactory()[strName];
+		MDynamicTypeInfo info;
 		info.m_funcNew = &T::New;
 		info.m_pType = T::GetClassType();
+		GetNameTable()[strName] = info;
+		GetTypeTable()[T::GetClassType()] = info;
 	}
 
 	static MTypeClass* New(const MString& strTypeName);
+	static MTypeClass* New(const MType* type);
 	static const MType* GetType(const MString& strTypeName);
 
 public:
 
-	static std::map<MString, MDynamicTypeInfo>& GetFactory();
+	static std::map<const MType*, MDynamicTypeInfo>& GetTypeTable();
+	static std::map<MString, MDynamicTypeInfo>& GetNameTable();
 };
 
 template <typename T>
@@ -162,5 +174,3 @@ MTypeCreator<T>::MTypeCreator()
 {
 	MTypeClass::RegisterTypedClass<T>();
 }
-
-#endif

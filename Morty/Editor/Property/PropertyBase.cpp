@@ -404,8 +404,9 @@ void PropertyBase::EditMResource(const MString& strDlgID, const MString& strReso
 	}
 
 	bool bButtonDown = ImGui::Button(strButtonLabel.c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0));
-	if (ImGui::IsItemHovered() && !strResourcePathName.empty())
-		ImGui::SetTooltip(strResourcePathName.c_str());
+	if (ImGui::IsItemHovered() && !strResourcePathName.empty()) {
+		ImGui::SetTooltip("%s", strResourcePathName.c_str());
+	}
 
 	if (bButtonDown)
 	{
@@ -447,13 +448,14 @@ void PropertyBase::EditSaveMResource(const MString& stringID, const MString& str
 		float fWidth = ImGui::GetContentRegionAvail().x;
 
 		bool bButtonDown = ImGui::Button("Save To", ImVec2(fWidth * 0.5f, 0));
-		if (ImGui::IsItemHovered() && !strResourcePathName.empty())
-			ImGui::SetTooltip(strResourcePathName.c_str());
+		if (ImGui::IsItemHovered() && !strResourcePathName.empty()) {
+			ImGui::SetTooltip("%s", strResourcePathName.c_str());
+		}
 
 		ImGui::SameLine();
 
 		char btn_name[64];
-		sprintf(btn_name, "Save##_%d", ImGui::GetID(pResource.get()));
+		sprintf(btn_name, "Save##_%u", ImGui::GetID(pResource.get()));
 
 		if (ImGui::Button(btn_name, ImVec2(fWidth * 0.5f, 0)))
 		{
@@ -489,7 +491,7 @@ void PropertyBase::ShowTexture(std::shared_ptr<MTexture> pTexture, const Vector2
 {
 	if (pTexture)
 	{
-		ImGui::Image({ pTexture, 0 }, ImVec2(v2Size.x, v2Size.y));
+		ImGui::Image({ pTexture, intptr_t(pTexture.get()), 0 }, ImVec2(v2Size.x, v2Size.y));
 	}
 }
 

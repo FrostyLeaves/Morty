@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MWINDOWSRENDERVIEW_H_
-#define _M_MWINDOWSRENDERVIEW_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 
 
@@ -22,6 +22,3 @@ public:
 private:
 
 };
-
-
-#endif

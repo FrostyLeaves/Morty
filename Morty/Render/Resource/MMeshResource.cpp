@@ -119,7 +119,7 @@ void MMeshResourceData::Deserialize(const void* pBufferPointer)
 	boundsSphere.Deserialize(fbData->bounds_sphere());
 }
 
-bool MMeshResource::Load(std::unique_ptr<MResourceData>& pResourceData)
+bool MMeshResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 {
 	auto pMeshData = static_cast<MMeshResourceData*>(pResourceData.get());
 	

@@ -8,8 +8,8 @@
  * https://old.cescg.org/CESCG-2002/DSykoraJJelinek/
 **/
 
-#ifndef _M_MCAMERAFRUSTUM_H_
-#define _M_MCAMERAFRUSTUM_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Utility/MBounds.h"
 #include "Basic/MPlane.h"
@@ -49,6 +49,3 @@ protected:
 
 	MPlane m_vPlanes[6];
 };
-
-
-#endif

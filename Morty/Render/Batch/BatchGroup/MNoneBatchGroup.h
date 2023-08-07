@@ -1,5 +1,4 @@
-#ifndef _M_NONE_BATCH_GROUP_H_
-#define _M_NONE_BATCH_GROUP_H_
+#pragma once
 
 #include "Object/MObject.h"
 #include "Utility/MGlobal.h"
@@ -47,5 +46,3 @@ private:
 	MVariant m_normalMatrix;
 	MVariant m_instanceIdx;
 };
-
-#endif

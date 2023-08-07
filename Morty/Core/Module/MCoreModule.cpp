@@ -33,8 +33,9 @@ bool MCoreModule::Register(MEngine* pEngine)
 
 	if (MResourceSystem* pResourceSystem = pEngine->RegisterSystem<MResourceSystem>())
 	{
+#ifdef MORTY_RESOURCE_PATH
 		pResourceSystem->SetSearchPath({ MORTY_RESOURCE_PATH });
-
+#endif
 		pResourceSystem->RegisterResourceLoader<MEntityResourceLoader>();
 	}
 
@@ -58,7 +59,7 @@ void MCoreModule::OnObjectPostCreate(MObject* pObject)
 
 	if (pObject->GetType() == MScene::GetClassType())
 	{
-		if (MScene* pScene = pObject->DynamicCast<MScene>())
+		if (MScene* pScene = pObject->template DynamicCast<MScene>())
 		{
 			pScene->RegisterManager<MNotifyManager>();
 		}

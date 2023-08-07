@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MRESOURCELOADER_H_
-#define _M_MRESOURCELOADER_H_
+#pragma once
 #include "Utility/MGlobal.h"
 #include "Utility/MString.h"
 #include "Resource/MResource.h"
@@ -21,10 +20,7 @@ public:
 	MResourceLoader() = default;
 	virtual ~MResourceLoader() = default;
 
-public:
-
-	virtual std::shared_ptr<MResource> Create(MResourceSystem* pManager) = 0;
-
+	virtual const MType* ResourceType() const = 0;
 	virtual std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath, const MString& svPath) = 0;
 
 	MString strResourcePath;
@@ -38,9 +34,10 @@ template<typename RESOURCE_TYPE, typename RESOURCE_DATA_TYPE>
 class MORTY_API MResourceLoaderTemplate : public MResourceLoader
 {
 public:
-	std::shared_ptr<MResource> Create(MResourceSystem* pManager) override
+
+	const MType* ResourceType() const override
 	{
-		return pManager->CreateResource<RESOURCE_TYPE>();
+		return RESOURCE_TYPE::GetClassType();
 	}
 
 	std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath, const MString& svPath) override
@@ -55,5 +52,3 @@ public:
 	}
 
 };
-
-#endif

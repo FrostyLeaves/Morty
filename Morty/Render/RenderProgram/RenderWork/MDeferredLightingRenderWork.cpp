@@ -116,7 +116,7 @@ void MDeferredLightingRenderWork::SetGBuffer(const std::shared_ptr<IGBufferAdapt
 {
 	MORTY_ASSERT(m_pGBufferAdapter = pAdapter);
 
-	if (std::shared_ptr<MShaderPropertyBlock>& pParams = m_pLightningMaterial->GetMaterialPropertyBlock())
+	if (std::shared_ptr<MShaderPropertyBlock> pParams = m_pLightningMaterial->GetMaterialPropertyBlock())
 	{
 		const auto& vTextures = pAdapter->GetBackTextures();
 		pParams->SetTexture("u_mat_f3Albedo_fMetallic", vTextures[0]);

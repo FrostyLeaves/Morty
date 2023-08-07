@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MMATERIAL_H_
-#define _M_MMATERIAL_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
 #include "Resource/MTextureResource.h"
@@ -60,7 +60,7 @@ class MShaderResource;
 class MORTY_API MMaterial : public MResource
 {
 public:
-	MORTY_INTERFACE(MMaterial)
+	MORTY_CLASS(MMaterial)
     MMaterial();
     virtual ~MMaterial();
 
@@ -111,8 +111,8 @@ public:
 	
 public:
 
-	virtual void OnCreated();
-	virtual void OnDelete();
+	void OnCreated() override;
+	void OnDelete() override;
 
 	void Unload();
 
@@ -125,5 +125,3 @@ private:
 
 	bool m_bBatchInstanceEnable = false;
 };
-
-#endif

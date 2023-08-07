@@ -1,5 +1,4 @@
-#ifndef _M_UNIFORM_BATCH_GROUP_H_
-#define _M_UNIFORM_BATCH_GROUP_H_
+#pragma once
 
 #include "Object/MObject.h"
 #include "Utility/MGlobal.h"
@@ -53,6 +52,3 @@ private:
 	size_t m_nCurrentInstanceNum = 0;
 	size_t m_nMaxInstanceNum = 0;
 };
-
-
-#endif

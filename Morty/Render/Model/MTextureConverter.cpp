@@ -58,6 +58,7 @@ std::shared_ptr<MTextureResource> MTextureConverter::ConvertSingleChannel(std::s
     MString strNewResourcePath = MFileHelper::ReplaceFileName(strResourcePath, strFileName);
 
     auto pResult = pResourceSystem->CreateResource<MTextureResource>(strNewResourcePath);
+
     pResult->Load(MTextureResourceUtil::LoadFromMemory(strNewResourcePath, convertData.data(), nWidth, nHeight, 1, ePixelFormat));
 
     return pResult;

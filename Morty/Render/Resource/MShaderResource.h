@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSHADERRESOURCE_H_
-#define _M_MSHADERRESOURCE_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 
 #include <map>
@@ -43,7 +43,7 @@ public:
 
 	MEShaderType GetShaderType() const;
 
-	bool Load(std::unique_ptr<MResourceData>& pResourceData) override;
+	bool Load(std::unique_ptr<MResourceData>&& pResourceData) override;
 	bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
 
 	virtual void OnDelete() override;
@@ -62,8 +62,6 @@ public:
 	static MString GetResourceTypeName() { return "Shader"; }
 	static std::vector<MString> GetSuffixList() { return { "mvs", "mps", "mcs" }; }
 
-	std::shared_ptr<MResource> Create(MResourceSystem* pManager) override;
+	const MType* ResourceType() const override;
 	std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath, const MString& svPath) override;
 };
-
-#endif

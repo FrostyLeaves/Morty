@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MFUNCTION_H_
-#define _M_MFUNCTION_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include <map>
 #include <functional>
@@ -128,5 +128,3 @@ size_t FIND_ORDER_VECTOR(std::vector<T>& vector, const VT& value, const std::fun
 
 	return iter - vector.begin();
 }
-
-#endif

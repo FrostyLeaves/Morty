@@ -1,5 +1,4 @@
-#ifndef _M_ENVIRONMENT_MANAGER_H_
-#define _M_ENVIRONMENT_MANAGER_H_
+#pragma once
 
 #include "Utility/MGlobal.h"
 #include "Render/MBuffer.h"
@@ -52,7 +51,5 @@ private:
 
 	std::set<MSkyBoxComponent*> m_tAllSkyBoxComponent;
 	std::shared_ptr<MMaterial> m_pSkyBoxMaterial = nullptr;
-	MResourceRef m_pMaterialResource = nullptr;
+	MResourceRef m_pMaterialResource;
 };
-
-#endif

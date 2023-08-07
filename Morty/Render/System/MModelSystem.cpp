@@ -42,7 +42,8 @@ void MModelSystem::UpdateAnimation(MScene* pScene, const float& fDelta)
 					bVisible = false;
 				}
 
-				if (pController = modelComponent.GetSkeletalAnimationController())
+				pController = modelComponent.GetSkeletalAnimationController();
+				if (pController)
 				{
 					if (pController->GetState() == MIAnimController::EPlay)
 					{

@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MREFCOUNTER_H_
-#define _M_MREFCOUNTER_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 
 #include <functional>
@@ -39,6 +39,3 @@ protected:
 private:
 	uint32_t m_unReferenceNumber;
 };
-
-
-#endif

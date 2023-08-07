@@ -16,19 +16,13 @@ MTaskGraphWalker::MTaskGraphWalker()
 
 void MTaskGraphWalker::operator()(MTaskGraph* pTaskGraph)
 {
-	MEngine* pEngine = pTaskGraph->GetEngine();
+	MThreadPool* pThreadPool = pTaskGraph->GetThreadPool();
 
-	if (!pEngine)
-		return;
-
-	if (!pTaskGraph->IsValid())
+	if (!pThreadPool)
 		return;
 
 	if (pTaskGraph->NeedCompile() && !pTaskGraph->Compile())
 		return;
-
-
-	MThreadPool* pThreadPool = pEngine->GetThreadPool();
 
 	const std::vector<MTaskNode*>& vNodes = pTaskGraph->GetStartNodes();
 

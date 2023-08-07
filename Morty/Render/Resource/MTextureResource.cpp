@@ -51,7 +51,7 @@ void MTextureResource::OnDelete()
 	m_pTexture->DestroyBuffer(pRenderSystem->GetDevice());
 }
 
-bool MTextureResource::Load(std::unique_ptr<MResourceData>& pResourceData)
+bool MTextureResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
@@ -214,9 +214,9 @@ MTextureImportInfo::MTextureImportInfo(MTexturePixelFormat pixelFormat)
 {
 }
 
-std::shared_ptr<MResource> MTextureResourceLoader::Create(MResourceSystem* pManager)
+const MType* MTextureResourceLoader::ResourceType() const
 {
-	return pManager->CreateResource<MTextureResource>();
+	return MTextureResource::GetClassType();
 }
 
 std::unique_ptr<MResourceData> MTextureResourceLoader::LoadResource(const MString& svFullPath, const MString& svPath)

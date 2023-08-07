@@ -24,6 +24,29 @@ MResourceSystem::~MResourceSystem()
 {
 }
 
+std::shared_ptr<MResource> MResourceSystem::CreateResource(const MType* type)
+{
+	if (!MTypeClass::IsType(type, MResource::GetClassType()))
+	{
+		return nullptr;
+	}
+
+	std::shared_ptr<MResource> pResource = std::shared_ptr<MResource>(static_cast<MResource*>(MTypeClass::New(type)));
+	if (!pResource)
+	{
+		MORTY_ASSERT(pResource);
+		return nullptr;
+	}
+
+	pResource->m_self = pResource;
+	pResource->m_unResourceID = m_ResourceDB.GetNewID();
+	pResource->m_pEngine = GetEngine();
+	m_tResources[pResource->m_unResourceID] = pResource;
+
+	pResource->OnCreated();
+	return pResource;
+}
+
 void MResourceSystem::SetSearchPath(const std::vector<MString>& vSearchPath)
 {
 	m_vSearchPath = { "" }; //empty for absolute path.
@@ -79,10 +102,10 @@ std::shared_ptr<MResource> MResourceSystem::LoadResource(const MString& strResou
 		return nullptr;
 	}
 
-	std::shared_ptr<MResource> pResource = pLoader->Create(this);
+	std::shared_ptr<MResource> pResource = CreateResource(pLoader->ResourceType());
 	if (!pResource)
 	{
-		GetEngine()->GetLogger()->Error("Create Resource failed: [path: %s]", strResourcePath.c_str());
+		GetEngine()->GetLogger()->Error("Create Resource failed: [path: {}]", strResourcePath.c_str());
 		return nullptr;
 	}
 
@@ -99,10 +122,9 @@ std::shared_ptr<MResource> MResourceSystem::LoadResource(const MString& strResou
 	}
 	else
 	{
-		auto pResourceData = pLoader->LoadResource(strFullPath, strResourcePath);
-		if (!pResource->Load(pResourceData))
+		if (!pResource->Load(pLoader->LoadResource(strFullPath, strResourcePath)))
 		{
-			GetEngine()->GetLogger()->Error("Load Resource failed: [path: %s]", pLoader->strResourcePath.c_str());
+			GetEngine()->GetLogger()->Error("Load Resource failed: [path: {}]", pLoader->strResourcePath.c_str());
 		}
 	}
 
@@ -176,7 +198,7 @@ void MResourceSystem::Reload(const MString& strResourcePath)
 		{
 			if (auto pResourceData = pLoader->LoadResource(strFullPath, strResourcePath))
 			{
-				iter->second->Load(pResourceData);
+				iter->second->Load(std::move(pResourceData));
 				iter->second->OnReload();
 			}
 		}

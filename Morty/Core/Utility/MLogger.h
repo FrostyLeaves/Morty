@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MLOGGER_H_
-#define _M_MLOGGER_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Utility/MString.h"
 
@@ -16,10 +16,18 @@
 #endif
 
 #include <cstdio>
-#include <cstdarg>
-#include <cstdlib>
-#include <cstring>
 #include <functional>
+
+#include "fmt/format.h"
+
+
+enum class MLogType
+{
+    EDefault = 0,
+	EInfo,
+	EWarn,
+	EError,
+};
 
 class MORTY_API MLogger
 {
@@ -27,35 +35,36 @@ public:
 	MLogger();
 	virtual ~MLogger() {};
 
+
 public:
 
-	typedef std::function<void(const char*)> MLogFunction;
+	typedef std::function<void(MLogType eType, const char*)> MLogFunction;
 	void SetPrintFunction(MLogFunction func) { m_printFunction = func; }
 
 	template<typename ...ARGS_T>
-	void Print(const char* svMessage, ARGS_T ...Args)
+	void Print(MLogType eType, const char* svMessage, ARGS_T&& ...Args)
 	{
+		auto logData = fmt::vformat(svMessage, fmt::make_format_args(Args...));
+
 		if (m_printFunction) {
-			snprintf(svLogData, 4096, svMessage, Args...);
-			m_printFunction(svLogData);
+			m_printFunction(eType, logData.c_str());
 		}
 		else
 		{
-			printf(svMessage, Args...);
-			printf("\n");
+			printf("%s\n", logData.c_str());
 		}
 
 	}
 
 	template<typename ...ARGS_T>
-	void Error(const char* svMessage, ARGS_T ...Args)
+	void Error(const char* svMessage, ARGS_T&& ...Args)
 	{
 #ifdef MORTY_WIN
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY |
 			FOREGROUND_RED);
 #endif
 
-		Print(svMessage, Args...);
+		Print(MLogType::EError, svMessage, Args...);
 
 #ifdef MORTY_WIN
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY |
@@ -64,7 +73,7 @@ public:
 	}
 
 	template<typename ...ARGS_T>
-	void Information(const char* svMessage, ARGS_T... Args)
+	void Information(const char* svMessage, ARGS_T&&... Args)
 	{
 #ifdef MORTY_WIN
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY |
@@ -72,7 +81,7 @@ public:
 
 #endif
 
-		Print(svMessage, Args...);
+		Print(MLogType::EInfo, svMessage, Args...);
 
 #ifdef MORTY_WIN
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY |
@@ -81,25 +90,25 @@ public:
 	}
 
 	template<typename ...ARGS_T>
-	void Log(const char* svMessage, ARGS_T... Args)
+	void Log(const char* svMessage, ARGS_T&&... Args)
 	{
 #ifdef MORTY_WIN
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY |
 			FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 #endif
 
-		Print(svMessage, Args...);
+		Print(MLogType::EDefault, svMessage, Args...);
 	}
 
 	template<typename ...ARGS_T>
-	void Warning(const char* svMessage, ARGS_T... Args)
+	void Warning(const char* svMessage, ARGS_T&&... Args)
 	{
 #ifdef MORTY_WIN
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY |
 			FOREGROUND_RED | FOREGROUND_GREEN);
 #endif
 
-		Print(svMessage, Args...);
+		Print(MLogType::EWarn, svMessage, Args...);
 
 #ifdef MORTY_WIN
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY |
@@ -110,6 +119,3 @@ private:
 	MLogFunction m_printFunction;
 	char svLogData[4096];
 };
-
-
-#endif

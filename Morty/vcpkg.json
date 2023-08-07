@@ -2,15 +2,38 @@
   "version": "0.0.1",
   "description": "",
   "dependencies": [
-    "assimp",
-    "crossguid",
-    "directx-dxc",
-    "eigen3",
-    "flatbuffers",
     {
-      "name": "sdl2",
+      "name": "assimp",
+      "default-features": false
+    },
+    {
+      "name": "crossguid",
+      "default-features": false
+    },
+    {
+      "name": "directx-dxc",
       "default-features": false,
-      "features": [ "vulkan" ]
+      "platform": "windows"
+    },
+    {
+      "name": "doctest",
+      "default-features": false
+    },
+    {
+      "name": "eigen3",
+      "default-features": false
+    },
+    {
+      "name": "flatbuffers",
+      "default-features": false
+    },
+    {
+      "name": "fmt",
+      "default-features": false
+    },
+    {
+      "name": "glslang",
+      "default-features": false
     },
     {
       "name": "imgui",
@@ -19,7 +42,26 @@
         "sdl2-binding"
       ]
     },
-    "imguizmo",
-    "stb"
+    {
+      "name": "imguizmo",
+      "default-features": false
+    },
+    {
+      "name": "sdl2",
+      "default-features": false,
+      "features": [ "vulkan" ]
+    },
+    {
+      "name": "spirv-cross",
+      "default-features": false
+    },
+    {
+      "name": "stb",
+      "default-features": false
+    },
+    {
+      "name": "vulkan",
+      "default-features": false
+    }
   ]
 }

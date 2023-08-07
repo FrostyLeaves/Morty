@@ -1,5 +1,4 @@
-#ifndef _M_MESH_INSTANCE_MANAGER_H_
-#define _M_MESH_INSTANCE_MANAGER_H_
+#pragma once
 
 #include "Utility/MGlobal.h"
 #include "Render/MBuffer.h"
@@ -68,5 +67,3 @@ private:
 
 	MTaskNode* m_pUpdateTask = nullptr;
 };
-
-#endif

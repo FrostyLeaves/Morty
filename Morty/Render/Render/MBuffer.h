@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MBUFFER_H_
-#define _M_MBUFFER_H_
+#pragma once
+
 #include "Render/MRenderGlobal.h"
 
 
@@ -82,6 +82,3 @@ public:
     uint32_t m_eUsageType = 0;
     MStageType m_eStageType = MStageType::EUnknow;
 };
-
-
-#endif

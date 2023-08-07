@@ -1,5 +1,4 @@
-#ifndef _M_MATERIAL_BATCH_GROUP_H_
-#define _M_MATERIAL_BATCH_GROUP_H_
+#pragma once
 
 #include "BatchGroup/MInstanceBatchGroup.h"
 #include "Object/MObject.h"
@@ -43,6 +42,3 @@ public:
 
 	MEngine* m_pEngine = nullptr;
 };
-
-
-#endif

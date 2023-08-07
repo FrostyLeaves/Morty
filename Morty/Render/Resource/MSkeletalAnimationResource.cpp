@@ -54,7 +54,7 @@ void MSkeletalAnimationResource::SetSkeletonResource(std::shared_ptr<MSkeletonRe
     m_skeletonAnimation.SetSkeletonTemplate(pSkeletonResource->GetSkeleton());
 }
 
-bool MSkeletalAnimationResource::Load(std::unique_ptr<MResourceData>& pResourceData)
+bool MSkeletalAnimationResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 {
     auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 

@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSHADER_MACRO_H_
-#define _M_MSHADER_MACRO_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Variant/MVariant.h"
 
@@ -41,5 +41,3 @@ public:
 
     static std::vector<std::pair<MString, MString> > s_vGlobalMacroParams;
 };
-
-#endif

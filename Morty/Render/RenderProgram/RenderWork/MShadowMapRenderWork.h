@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSHADOWMAPRENDERWORK_H_
-#define _M_MSHADOWMAPRENDERWORK_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "MSinglePassRenderWork.h"
 
@@ -30,6 +30,3 @@ public:
 
 	std::shared_ptr<ITextureInputAdapter> GetShadowMap() const;
 };
-
-
-#endif

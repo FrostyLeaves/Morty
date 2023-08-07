@@ -1,6 +1,6 @@
 #include "Render/Vulkan/MVulkanWrapper.h"
 
-#ifdef MORTY_ANDROID
+#ifdef false
 
 #include <dlfcn.h>
 

@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MMEMORY_POOL_H_
-#define _M_MMEMORY_POOL_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 
 #include <map>
@@ -43,6 +43,3 @@ private:
 
     std::vector<MemoryInfo> m_vFreeMemory;
 };
-
-
-#endif

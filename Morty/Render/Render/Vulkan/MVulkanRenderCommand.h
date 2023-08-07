@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MVULKANRENDERCOMMAND_H_
-#define _M_MVULKANRENDERCOMMAND_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -110,7 +110,5 @@ public:
 
 //TODO objectDestructor.FrameFinished;
 //TODO RenderFinishedCallback;
-
-#endif
 
 #endif

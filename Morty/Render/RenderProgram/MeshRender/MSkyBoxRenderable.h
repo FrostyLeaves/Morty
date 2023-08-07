@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_SKY_BOX_RENDERABLE_H_
-#define _M_SKY_BOX_RENDERABLE_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
 
@@ -31,6 +31,3 @@ private:
 	MScene* m_pScene= nullptr;
 	std::shared_ptr<IPropertyBlockAdapter> m_pFramePropertyAdapter = nullptr;
 };
-
-
-#endif

@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MCOREMODULE_H_
-#define _M_MCOREMODULE_H_
+#pragma once
 #include "Utility/MGlobal.h"
 
 class MObject;
@@ -19,5 +18,3 @@ public:
 	static bool Register(MEngine* pEngine);
 	static void OnObjectPostCreate(MObject* pObject);
 };
-
-#endif

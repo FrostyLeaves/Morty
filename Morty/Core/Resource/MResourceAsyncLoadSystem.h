@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MRESOURCE_ASYNC_LOAD_SYSTEM_H_
-#define _M_MRESOURCE_ASYNC_LOAD_SYSTEM_H_
+#pragma once
 #include "Utility/MGlobal.h"
 #include "Engine/MSystem.h"
 #include "Thread/MThreadWork.h"
@@ -36,6 +35,3 @@ private:
 
     std::optional<MThreadWork> m_loadWork;
 };
-
-
-#endif

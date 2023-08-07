@@ -46,7 +46,7 @@ MEShaderType MShaderResource::GetShaderType() const
 	return MEShaderType::ENone;
 }
 
-bool MShaderResource::Load(std::unique_ptr<MResourceData>& pResourceData)
+bool MShaderResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 {
 	auto pShaderData = static_cast<MShaderResourceData*>(pResourceData.get());
 
@@ -88,9 +88,9 @@ void MShaderResource::OnDelete()
 	MResource::OnDelete();
 }
 
-std::shared_ptr<MResource> MShaderResourceLoader::Create(MResourceSystem* pManager)
+const MType* MShaderResourceLoader::ResourceType() const
 {
-	return pManager->CreateResource<MShaderResource>();
+	return MShaderResource::GetClassType();
 }
 
 std::unique_ptr<MResourceData> MShaderResourceLoader::LoadResource(const MString& svFullPath, const MString& svPath)

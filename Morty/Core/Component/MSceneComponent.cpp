@@ -69,6 +69,13 @@ Quaternion MSceneComponent::GetWorldRotation()
 	return GetWorldTransform().GetRotation();
 }
 
+void MSceneComponent::SetWorldScale(const Vector3 scale)
+{
+	Vector3 localScale = GetWorldToLocalTransform().GetScale();
+
+	SetScale(Vector3(scale.x / localScale.x, scale.y / localScale.y, scale.z / localScale.z));
+}
+
 Vector3 MSceneComponent::GetWorldScale()
 {
 	return GetWorldTransform().GetScale();
@@ -101,7 +108,7 @@ void MSceneComponent::SetParentComponent(const MComponentID& parent)
 
 	if (MComponent* pParent = GetScene()->GetComponent(m_attachParent))
 	{
-		if (MSceneComponent* pParentScene = pParent->DynamicCast<MSceneComponent>())
+		if (MSceneComponent* pParentScene = pParent->template DynamicCast<MSceneComponent>())
 		{
 			pParentScene->RemoveChild(this);
 		}
@@ -113,7 +120,7 @@ void MSceneComponent::SetParentComponent(const MComponentID& parent)
 
 	if(MComponent* pParent = GetScene()->GetComponent(m_attachParent))
 	{
-		if (MSceneComponent* pParentScene = pParent->DynamicCast<MSceneComponent>())
+		if (MSceneComponent* pParentScene = pParent->template DynamicCast<MSceneComponent>())
 		{
 			pParentScene->AddChild(this);
 			SetVisibleRecursively(pParentScene->GetVisibleRecursively() & GetVisible());
@@ -144,7 +151,7 @@ void MSceneComponent::SetVisible(const bool& bVisible)
 {
 	m_bVisible = bVisible;
 
-	MSceneComponent* pParentComponent = GetScene()->GetComponent(GetParentComponent())->DynamicCast<MSceneComponent>();
+	MSceneComponent* pParentComponent = GetScene()->GetComponent(GetParentComponent())->template DynamicCast<MSceneComponent>();
 	if (pParentComponent)
 	{
 		SetVisibleRecursively(pParentComponent->GetVisibleRecursively() & m_bVisible);
@@ -168,7 +175,7 @@ void MSceneComponent::SetVisibleRecursively(const bool& bVisible)
 
 	for (auto& child : m_vAttachChildren)
 	{
-		if (MSceneComponent* pChildComponent = GetScene()->GetComponent(child)->DynamicCast<MSceneComponent>())
+		if (MSceneComponent* pChildComponent = GetScene()->GetComponent(child)->template DynamicCast<MSceneComponent>())
 		{
 			pChildComponent->SetVisibleRecursively(m_bVisibleRecursively & pChildComponent->GetVisible());
 		}
@@ -193,7 +200,7 @@ MSceneComponent* MSceneComponent::GetParent()
 	{
 		if (MComponent* pComponent = pScene->GetComponent(GetParentComponent()))
 		{
-			return pComponent->DynamicCast<MSceneComponent>();
+			return pComponent->template DynamicCast<MSceneComponent>();
 		}
 	}
 
@@ -224,7 +231,7 @@ Matrix4 MSceneComponent::GetParentWorldTransform()
 	if (!pParent)
 		return Matrix4::IdentityMatrix;
 
-	MSceneComponent* pParentScene = pParent->DynamicCast<MSceneComponent>();
+	MSceneComponent* pParentScene = pParent->template DynamicCast<MSceneComponent>();
 	if (!pParentScene)
 		return Matrix4::IdentityMatrix;
 
@@ -299,7 +306,7 @@ void MSceneComponent::CallRecursivelyFunction(MEntity* pEntity, std::function<vo
 	const auto& children = pComponent->GetChildrenComponent();
 	for (const auto& child : children)
 	{
-		if (MSceneComponent* pSceneComponent = pScene->GetComponent(child)->DynamicCast<MSceneComponent>())
+		if (MSceneComponent* pSceneComponent = pScene->GetComponent(child)->template DynamicCast<MSceneComponent>())
 		{
 			CallRecursivelyFunction(pSceneComponent->GetEntity(), func);
 		}
@@ -409,7 +416,7 @@ void MSceneComponent::WorldTransformDirtyRecursively()
 	{
 		if (MComponent* pComponent = GetScene()->GetComponent(id))
 		{
-			if (MSceneComponent* pSceneComponent = pComponent->DynamicCast<MSceneComponent>())
+			if (MSceneComponent* pSceneComponent = pComponent->template DynamicCast<MSceneComponent>())
 			{
 				pSceneComponent->WorldTransformDirty();
 				pSceneComponent->WorldTransformDirtyRecursively();

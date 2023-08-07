@@ -140,7 +140,7 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 
 	time = MTimer::GetCurTime() - time;
 
-	GetEngine()->GetLogger()->Log("Load Model Time: %lld", time);
+	GetEngine()->GetLogger()->Log("Load Model Time: {}", time);
 
 	MString strPath = convertInfo.strOutputDir + "/" + convertInfo.strOutputName + "/";
 
@@ -233,7 +233,7 @@ bool MModelConverter::Load(const MString& strResourcePath)
 	
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
 		{
-			GetEngine()->GetLogger()->Error("ERROR::ASSIMP:: %s", importer.GetErrorString());
+			GetEngine()->GetLogger()->Error("ERROR::ASSIMP:: {}", importer.GetErrorString());
 			return false;
 		}
 		break;
@@ -307,7 +307,7 @@ void MModelConverter::ProcessNode(aiNode* pNode, const aiScene *pScene)
 		}
 
 		std::shared_ptr<MMeshResource> pChildMeshResource = pResourceSystem->CreateResource<MMeshResource>();
-		pChildMeshResource->Load(pResourceData);
+		pChildMeshResource->Load(std::move(pResourceData));
 
 		MString strMeshName = pChildMesh->mName.C_Str();
 		pChildMeshResource->ResetBounds();
@@ -350,7 +350,8 @@ void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, 
 			vertex.normal.z = pMesh->mNormals[i].z;
 
 		}
-		if (pMesh->mTextureCoords)
+
+		//if (pMesh->mTextureCoords)
 		{
 			if (pMesh->mTextureCoords[0])
 			{
@@ -392,7 +393,8 @@ void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, 
 			vertex.normal.z = pMesh->mNormals[i].z;
 
 		}
-		if (pMesh->mTextureCoords)
+
+		//if (pMesh->mTextureCoords)
 		{
 			vertex.texCoords.x = pMesh->mTextureCoords[0][i].x;
 			vertex.texCoords.y = pMesh->mTextureCoords[0][i].y;
@@ -524,13 +526,13 @@ void MModelConverter::ProcessBones(const aiScene* pScene)
 	m_pSkeletonResource = pResourceSystem->CreateResource<MSkeletonResource>();
 
 	pSkeletonData->skeleton.SortByDeep();
-	m_pSkeletonResource->Load(pResourceData);
+	m_pSkeletonResource->Load(std::move(pResourceData));
 }
 
 void MModelConverter::BindBones(MSkeleton* pSkeleton, aiNode* pNode, const aiScene* pScene, MBone* pParent/* = nullptr*/)
 {
-	MBone* pMBone = nullptr;
-	if (pMBone = pSkeleton->FindBoneByName(pNode->mName.data))
+	MBone* pMBone = pSkeleton->FindBoneByName(pNode->mName.data);
+	if (pMBone)
 	{
 		if (pParent)
 		{
@@ -709,7 +711,7 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 		{
 			pAnimationResourceData->skeletonAnimation = animationData;
 		}
-		pAnimationResource->Load(resourceData);
+		pAnimationResource->Load(std::move(resourceData));
 		pAnimationResource->SetSkeletonResource(m_pSkeletonResource);
 
 		m_vSkeletalAnimation.push_back(pAnimationResource);
@@ -739,7 +741,7 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		else
 		{
 			std::shared_ptr<MMaterialResource> pStaticMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
-			pStaticMeshMaterialRes->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, "true");
+			pStaticMeshMaterialRes->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, "1");
 			pStaticMeshMaterialRes->LoadVertexShader(pMeshVSResource);
 			pStaticMeshMaterialRes->LoadPixelShader(pMeshPSResource);
 			pMaterial = pStaticMeshMaterialRes;

@@ -34,7 +34,7 @@ MObject* MObjectSystem::CreateObject(const MString& strTypeName)
 {
 	if (MTypeClass* pTypedIns = MTypeClass::New(strTypeName))
 	{
-		if (MObject* pObject = pTypedIns->DynamicCast<MObject>())
+		if (MObject* pObject = pTypedIns->template DynamicCast<MObject>())
 		{
 			InitObject(pObject);
 			return pObject;

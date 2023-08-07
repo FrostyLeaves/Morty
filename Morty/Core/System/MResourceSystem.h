@@ -6,19 +6,18 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MRESOURCE_SYSTEM_H_
-#define _M_MRESOURCE_SYSTEM_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 
 #include "Utility/MIDPool.h"
 #include "Engine/MSystem.h"
+#include "Engine/MEngine.h"
 #include "Resource/MResourceLoader.h"
 
 #include <vector>
 #include <map>
 
-class MEngine;
-class MIRenderer;
 class MResource;
 class MResourceLoader;
 
@@ -35,6 +34,8 @@ public:
 
 	template<typename TYPE>
 	std::shared_ptr<TYPE> CreateResource();
+
+    std::shared_ptr<MResource> CreateResource(const MType* type);
 
 	template<typename TYPE>
 	std::shared_ptr<TYPE> CreateResource(const MString& strResourcePath);
@@ -83,7 +84,7 @@ bool MResourceSystem::RegisterResourceLoader()
 	{
 		if (m_tResourceLoader.find(suffix) != m_tResourceLoader.end())
 		{
-			GetEngine()->GetLogger()->Error("file suffix is already registed. suffix: %s", suffix);
+			GetEngine()->GetLogger()->Error("file suffix is already registed. suffix: {}", suffix.c_str());
 			continue;
 		}
 		m_tResourceLoader[suffix] = []() { return std::make_unique<TYPE>(); };
@@ -96,19 +97,8 @@ bool MResourceSystem::RegisterResourceLoader()
 template<typename TYPE>
 std::shared_ptr<TYPE> MResourceSystem::CreateResource()
 {
-	if (!MTypeClass::IsType<TYPE, MResource>())
-		return nullptr;
-
-	std::shared_ptr<TYPE> pResource = std::make_shared<TYPE>();
-	pResource->m_self = pResource;
-	pResource->m_unResourceID = m_ResourceDB.GetNewID();
-	pResource->m_pEngine = GetEngine();
-	m_tResources[pResource->m_unResourceID] = pResource;
-
-	pResource->OnCreated();
-	return pResource;
+	return std::static_pointer_cast<TYPE>(CreateResource(TYPE::GetClassType()));
 }
-
 
 template<typename TYPE>
 std::shared_ptr<TYPE> MResourceSystem::CreateResource(const MString& strResourcePath)
@@ -122,5 +112,3 @@ std::shared_ptr<TYPE> MResourceSystem::CreateResource(const MString& strResource
 
 	return pResource;
 }
-
-#endif

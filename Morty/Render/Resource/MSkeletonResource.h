@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSKELETON_RESOURCE_H_
-#define _M_MSKELETON_RESOURCE_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Model/MSkeleton.h"
 #include "Resource/MResourceLoader.h"
@@ -31,7 +31,7 @@ public:
 
 	MSkeleton* GetSkeleton() const;
 
-	bool Load(std::unique_ptr<MResourceData>& pResourceData) override;
+	bool Load(std::unique_ptr<MResourceData>&& pResourceData) override;
 	bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
 
 private:
@@ -47,7 +47,3 @@ public:
 	static MString GetResourceTypeName() { return "Skeleton"; };
 	static std::vector<MString> GetSuffixList() { return { "ske" }; };
 };
-
-
-
-#endif

@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSKELETALANIMATION_H_
-#define _M_MSKELETALANIMATION_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Math/Vector.h"
 #include "Model/MSkeleton.h"
@@ -129,5 +129,3 @@ private:
 
 	MSkeletonAnimMap m_SkeletonAnimMap;
 };
-
-#endif

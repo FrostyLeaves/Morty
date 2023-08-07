@@ -47,7 +47,7 @@ std::set<const MType*> MEnvironmentManager::RegisterComponentType() const
 
 void MEnvironmentManager::RegisterComponent(MComponent* pComponent)
 {
-	MSkyBoxComponent* pSkyBoxComponent = pComponent->DynamicCast<MSkyBoxComponent>();
+	MSkyBoxComponent* pSkyBoxComponent = pComponent->template DynamicCast<MSkyBoxComponent>();
 	if (!pSkyBoxComponent)
 	{
 		return;
@@ -66,7 +66,7 @@ void MEnvironmentManager::RegisterComponent(MComponent* pComponent)
 
 void MEnvironmentManager::UnregisterComponent(MComponent* pComponent)
 {
-	MSkyBoxComponent* pSkyBoxComponent = pComponent->DynamicCast<MSkyBoxComponent>();
+	MSkyBoxComponent* pSkyBoxComponent = pComponent->template DynamicCast<MSkyBoxComponent>();
 	if (!pSkyBoxComponent)
 	{
 		return;
@@ -102,7 +102,7 @@ void MEnvironmentManager::OnDiffuseEnvTextureChanged(MComponent* pComponent)
 		return;
 	}
 
-	auto pSkyboxComponent = pComponent->DynamicCast<MSkyBoxComponent>();
+	auto pSkyboxComponent = pComponent->template DynamicCast<MSkyBoxComponent>();
 	if (!pSkyboxComponent)
 	{
 		return;
@@ -117,7 +117,7 @@ void MEnvironmentManager::OnSpecularEnvTextureChanged(MComponent* pComponent)
 		return;
 	}
 
-	auto pSkyboxComponent = pComponent->DynamicCast<MSkyBoxComponent>();
+	auto pSkyboxComponent = pComponent->template DynamicCast<MSkyBoxComponent>();
 	if (!pSkyboxComponent)
 	{
 		return;

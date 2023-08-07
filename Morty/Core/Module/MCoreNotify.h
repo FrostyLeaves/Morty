@@ -6,16 +6,13 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MCORE_NOTIFY_H_
-#define _M_MCORE_NOTIFY_H_
+#pragma once
 #include "Utility/MGlobal.h"
 
 class MORTY_API MCoreNotify
 {
 public:
-    static constexpr char* NOTIFY_VISIBLE_CHANGED = "Visible Changed";
-    static constexpr char* NOTIFY_TRANSFORM_CHANGED = "Transform Changed";
-    static constexpr char* NOTIFY_PARENT_CHANGED = "Parent Changed";
+    static inline const char* NOTIFY_VISIBLE_CHANGED = "Visible Changed";
+    static inline const char* NOTIFY_TRANSFORM_CHANGED = "Transform Changed";
+    static inline const char* NOTIFY_PARENT_CHANGED = "Parent Changed";
 };
-
-#endif

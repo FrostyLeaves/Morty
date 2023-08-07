@@ -6,12 +6,13 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSKELETALANIMATIONRESOURCE_H_
-#define _M_MSKELETALANIMATIONRESOURCE_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Resource/MResource.h"
 #include "Model/MSkeletalAnimation.h"
 #include "Resource/MResourceLoader.h"
+#include "Resource/MSkeletonResource.h"
 
 struct MORTY_API MSkeletalAnimationResourceData : public MFbResourceData
 {
@@ -37,13 +38,13 @@ public:
 
 	void SetSkeletonResource(std::shared_ptr<MSkeletonResource> pResource);
 
-	bool Load(std::unique_ptr<MResourceData>& pResourceData) override;
+	bool Load(std::unique_ptr<MResourceData>&& pResourceData) override;
 	bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
 
 private:
 
 	MSkeletalAnimation m_skeletonAnimation;
-	MResourceRef m_pSkeletonResource = nullptr;
+	MResourceRef m_pSkeletonResource;
 };
 
 class MORTY_API MSkeletalAnimationLoader : public MResourceLoaderTemplate<MSkeletalAnimationResource, MSkeletalAnimationResourceData>
@@ -53,5 +54,3 @@ public:
 	static MString GetResourceTypeName() { return "Animation"; };
 	static std::vector<MString> GetSuffixList() { return { "anim" }; };
 };
-
-#endif

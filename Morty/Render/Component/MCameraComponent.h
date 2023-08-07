@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MCAMERACOMPONENT_H_
-#define _M_MCAMERACOMPONENT_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Component/MComponent.h"
 #include "Basic/MCameraFrustum.h"
@@ -72,6 +72,3 @@ private:
 	float m_fWidth;
 	float m_fHeight;
 };
-
-
-#endif

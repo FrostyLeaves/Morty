@@ -32,7 +32,9 @@
 #endif
 
 const std::vector<const char*> ValidationLayers = {
+
 	"VK_LAYER_KHRONOS_validation"
+
 };
 const std::vector<const char*> DeviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME,
@@ -40,9 +42,18 @@ const std::vector<const char*> DeviceExtensions = {
 	VK_KHR_MULTIVIEW_EXTENSION_NAME,
 //	VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_EXTENSION_NAME,
 //	VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME
-#ifdef MORTY_DEBUG
+#if defined(MORTY_WIN) && defined(MORTY_DEBUG)
 	VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME,
 #endif
+};
+
+const std::set<VkFormat> DepthOnlyTextureFormat = {
+	VK_FORMAT_D32_SFLOAT,
+};
+
+const std::set<VkFormat> DepthStencilTextureFormat = {
+	VK_FORMAT_D32_SFLOAT_S8_UINT,
+	VK_FORMAT_D24_UNORM_S8_UINT,
 };
 
 
@@ -89,6 +100,7 @@ MVulkanDevice::MVulkanDevice()
 	, m_pRecycleBin(nullptr)
 	, m_PipelineManager(this)
 	, m_ShaderCompiler(this)
+    , m_ShaderReflector(this)
 	, m_BufferPool(this)
 	, m_VkDepthTextureFormat(VK_FORMAT_D32_SFLOAT_S8_UINT)
 	, m_VkLinearSampler(VK_NULL_HANDLE)
@@ -107,11 +119,6 @@ MVulkanDevice::~MVulkanDevice()
 
 bool MVulkanDevice::Initialize()
 {
-#ifdef MORTY_ANDROID
-	if (!InitVulkan())
-		return false;
-#endif
-
 	if (!InitVulkanInstance())
 		return false;
 
@@ -141,15 +148,21 @@ bool MVulkanDevice::Initialize()
 
 	InitSampler();
 
-	m_ShaderCompiler.Initialize();
-
+	m_ShaderReflector.Initialize();
 
 
 //log
+	GetEngine()->GetLogger()->Information("Vulkan Validation Extensions:  ");
+	for (const char* svExtensionName : ValidationLayers)
+	{
+		GetEngine()->GetLogger()->Information("   {}", svExtensionName);
+	}
+	GetEngine()->GetLogger()->Information("\n");
+
 	GetEngine()->GetLogger()->Information("Vulkan Device Extensions:  ");
 	for (const char* svExtensionName : DeviceExtensions)
 	{
-		GetEngine()->GetLogger()->Information("    %s", svExtensionName);
+		GetEngine()->GetLogger()->Information("   {}", svExtensionName);
 	}
 	GetEngine()->GetLogger()->Information("\n");
 
@@ -157,7 +170,7 @@ bool MVulkanDevice::Initialize()
 	GetEngine()->GetLogger()->Information("Vulkan Instance Extensions:  ");
 	for (const char* svExtensionName : InstanceExtensions)
 	{
-		GetEngine()->GetLogger()->Information("    %s", svExtensionName);
+		GetEngine()->GetLogger()->Information("    {}", svExtensionName);
 	}
 	GetEngine()->GetLogger()->Information("\n");
 
@@ -191,8 +204,10 @@ void MVulkanDevice::Release()
 	delete m_pDefaultRecycleBin;
 	m_pDefaultRecycleBin = nullptr;
 
+#if MORTY_DEBUG
 	PFN_vkDestroyDebugUtilsMessengerEXT pvkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_VkInstance, "vkDestroyDebugUtilsMessengerEXT");
 	pvkDestroyDebugUtilsMessengerEXT(m_VkInstance, m_VkDebugUtilsMessenger, nullptr);
+#endif
 
 	vkDestroySampler(m_VkDevice, m_VkLinearSampler, nullptr);
 	vkDestroySampler(m_VkDevice, m_VkNearestSampler, nullptr);
@@ -218,24 +233,23 @@ int MVulkanDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags pro
 	return MGlobal::M_INVALID_INDEX;
 }
 
-int MVulkanDevice::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+VkFormat MVulkanDevice::FindSupportedFormat(const std::set<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const
 {
-	for (int i = 0; i < candidates.size(); ++i)
+	for (VkFormat format : candidates)
 	{
-		const VkFormat& format = candidates[i];
-
 		VkFormatProperties props;
 		vkGetPhysicalDeviceFormatProperties(m_VkPhysicalDevice, format, &props);
 
 		if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
-			return i;
+			return format;
 		}
-		else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
-			return i;
+
+	    if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+			return format;
 		}
 	}
 
-	return MGlobal::M_INVALID_INDEX;
+	return VK_FORMAT_UNDEFINED;
 }
 
 VkBool32 MVulkanDevice::FormatIsFilterable(VkFormat format, VkImageTiling tiling)
@@ -341,7 +355,24 @@ VkImageUsageFlags MVulkanDevice::GetUsageFlags(MTexture* pTexture)
 VkImageAspectFlags MVulkanDevice::GetAspectFlags(MTexture* pTexture)
 {
 	if (pTexture->GetRenderUsage() == METextureRenderUsage::ERenderDepth)
+	{
 		return VK_IMAGE_ASPECT_DEPTH_BIT;
+	}
+
+	return VK_IMAGE_ASPECT_COLOR_BIT;
+}
+
+VkImageAspectFlags MVulkanDevice::GetAspectFlags(VkFormat format)
+{
+	if (DepthStencilTextureFormat.find(format) != DepthStencilTextureFormat.end())
+	{
+		return VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+	}
+
+	if (DepthOnlyTextureFormat.find(format) != DepthOnlyTextureFormat.end())
+	{
+		return VK_IMAGE_ASPECT_DEPTH_BIT;
+	}
 
 	return VK_IMAGE_ASPECT_COLOR_BIT;
 }
@@ -352,8 +383,13 @@ VkImageLayout MVulkanDevice::GetImageLayout(MTexture* pTexture)
 		return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 	if (pTexture->GetRenderUsage() == METextureRenderUsage::ERenderDepth)
-		return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
-
+	{
+		if (CheckVersion(1, 2, 0))
+		{
+			return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+		}
+		return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	}
 	if (pTexture->GetRenderUsage() == METextureRenderUsage::ERenderBack)
 		return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
@@ -434,6 +470,20 @@ void MVulkanDevice::SetDebugName(uint64_t object, const VkObjectType& type, cons
 #endif
 }
 
+bool MVulkanDevice::CheckVersion(int major, int minor, int patch)
+{
+    if (major == m_nVulkanVersionMajor)
+    {
+        if (minor == m_nVulkanVersionMinor)
+        {
+            return patch <= m_nVulkanVersionPatch;
+        }
+        return minor < m_nVulkanVersionMinor;
+    }
+
+    return major < m_nVulkanVersionMajor;
+}
+
 VkBool32 VKAPI_PTR OutputDebugUtilsMessenger(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
 	if (VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT == messageSeverity)
@@ -447,15 +497,24 @@ VkBool32 VKAPI_PTR OutputDebugUtilsMessenger(VkDebugUtilsMessageSeverityFlagBits
 
 bool MVulkanDevice::InitDepthFormat()
 {
-	std::vector<VkFormat> formats = { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT };
+	constexpr VkFormatFeatureFlags features = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
-	int index = FindSupportedFormat(formats, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+	VkFormat format = FindSupportedFormat(DepthStencilTextureFormat, VK_IMAGE_TILING_OPTIMAL, features);
 
-	if (index == MGlobal::M_INVALID_INDEX)
-		return false;
+	if (format != VK_FORMAT_UNDEFINED)
+	{
+		m_VkDepthTextureFormat = format;
+		return true;
+	}
 
-	m_VkDepthTextureFormat = formats[index];
-	return true;
+	format = FindSupportedFormat(DepthOnlyTextureFormat, VK_IMAGE_TILING_OPTIMAL, features);
+	if (format != VK_FORMAT_UNDEFINED)
+    {
+		m_VkDepthTextureFormat = format;
+		return true;
+	}
+
+	return false;
 }
 
 bool MVulkanDevice::InitSampler()
@@ -595,7 +654,9 @@ void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, c
 		MORTY_ASSERT(false);
 	}
 
+#ifdef MORTY_DEBUG
 	SetDebugName(reinterpret_cast<uint64_t>(vkBuffer), VkObjectType::VK_OBJECT_TYPE_BUFFER, pBuffer->m_strDebugBufferName.c_str());
+#endif
 
 	pBuffer->m_VkBuffer = vkBuffer;
 	pBuffer->m_VkDeviceMemory = vkDeviceMemory;
@@ -667,9 +728,9 @@ void MVulkanDevice::UploadBuffer(MBuffer* pBuffer, const size_t& unBeginOffset, 
 
 void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MByte* pData)
 {
-	uint32_t width = pTexture->GetSize().x;
-	uint32_t height = pTexture->GetSize().y;
-	VkFormat format = GetFormat(pTexture->GetTextureLayout());
+	uint32_t width = std::max(static_cast<int>(pTexture->GetSize().x), 1);
+	uint32_t height = std::max(static_cast<int>(pTexture->GetSize().y), 1);
+    VkFormat format = GetFormat(pTexture->GetTextureLayout());
 
 	VkImageUsageFlags usageFlags = GetUsageFlags(pTexture);
 	VkMemoryPropertyFlags memoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
@@ -746,7 +807,7 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MByte* pData)
 		else
 		{
 			VkImageSubresourceRange vkSubresourceRange = {};
-			vkSubresourceRange.aspectMask = aspectFlgas;
+			vkSubresourceRange.aspectMask = GetAspectFlags(format);
 			vkSubresourceRange.baseMipLevel = 0;
 			vkSubresourceRange.levelCount = unMipmap;
 			vkSubresourceRange.layerCount = unLayerCount;
@@ -892,7 +953,7 @@ bool MVulkanDevice::CompileShader(MShader* pShader)
 	if (MEShaderType::EVertex == pShader->GetType())
 	{
 		MVertexShaderBuffer* pBuffer = new MVertexShaderBuffer();
-		m_ShaderCompiler.GetVertexInputState(compiler, pBuffer);
+		m_ShaderReflector.GetVertexInputState(compiler, pBuffer);
 		pShaderBuffer = pBuffer;
 	}
 	else if (MEShaderType::EPixel == pShader->GetType())
@@ -903,14 +964,14 @@ bool MVulkanDevice::CompileShader(MShader* pShader)
 	else if (MEShaderType::ECompute == pShader->GetType())
 	{
 		MComputeShaderBuffer* pBuffer = new MComputeShaderBuffer();
-		m_ShaderCompiler.GetComputeInputState(compiler, pBuffer);
+		m_ShaderReflector.GetComputeInputState(compiler, pBuffer);
 		pShaderBuffer = pBuffer;
 	}
 
 
 	pShaderBuffer->m_VkShaderModule = shaderModule;
 	pShaderBuffer->m_VkShaderStageInfo = shaderStageInfo;
-	m_ShaderCompiler.GetShaderParam(compiler, pShaderBuffer);
+	m_ShaderReflector.GetShaderParam(compiler, pShaderBuffer);
 
 	pShader->SetBuffer(pShaderBuffer);
 	return true;
@@ -1046,7 +1107,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 		else
 			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 
-		colorAttachment.format = m_VkDepthTextureFormat;
+		colorAttachment.format = pDepthTexture->m_VkTextureFormat;
 		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -1201,14 +1262,16 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 	renderPassInfo.dependencyCount = vSubpassDependencies.size();
 	renderPassInfo.pDependencies = vSubpassDependencies.data();
 
+
+	VkRenderPassMultiviewCreateInfo renderPassMultiviewInfo{};//Beware of the lifecycle of variables
 	if (pRenderPass->GetViewportNum() > 1)
 	{
-		VkRenderPassMultiviewCreateInfo renderPassMultiviewInfo{};
 		renderPassMultiviewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
 		renderPassMultiviewInfo.subpassCount = vSubpass.size();
 		renderPassMultiviewInfo.pViewMasks = vViewMask.data();
 		renderPassMultiviewInfo.correlationMaskCount = vSubpass.size();
 		renderPassMultiviewInfo.pCorrelationMasks = vCorrelationMask.data();
+		renderPassMultiviewInfo.pNext = nullptr;
 
 		renderPassInfo.pNext = &renderPassMultiviewInfo;
 	}
@@ -1239,7 +1302,7 @@ void MVulkanDevice::DestroyRenderPass(MRenderPass* pRenderPass)
 
 bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 {
-	Vector2 v2FrameBufferSize = Vector2(0.0, 0.0);
+	int fFrameBufferWidth = 0, fFrameBufferHeight = 0;
 
 	pRenderPass->m_VkFrameBuffer;
 	std::vector<VkImageView> vAttachmentViews;
@@ -1254,12 +1317,13 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 			return false;
 		}
 
-		Vector2 v2Size = Vector2();
+		int nWidth = 0, nHeight = 0;
 		VkImageView imageView = VK_NULL_HANDLE;
 
 		if (!backTexture.pTexture->GetMipmapsEnable())
 		{
-			v2Size = backTexture.pTexture->GetSize();
+			nWidth = backTexture.pTexture->GetSize().x;
+			nHeight = backTexture.pTexture->GetSize().y;
 			imageView = backTexture.pTexture->m_VkImageView;
 		}
 		else
@@ -1268,15 +1332,19 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 			{
 				std::shared_ptr<MTexture> pTexture = backTexture.pTexture;
 				backTexture.m_VkImageView = CreateImageView(pTexture->m_VkTextureImage, pTexture->m_VkTextureFormat, GetAspectFlags(pTexture.get()), backTexture.desc.nMipmapLevel, 1, GetLayerCount(pTexture.get()), GetImageViewType(pTexture.get()));
-				v2Size = pTexture->GetMipmapSize(backTexture.desc.nMipmapLevel);
+				nWidth = pTexture->GetMipmapSize(backTexture.desc.nMipmapLevel).x;
+				nHeight = pTexture->GetMipmapSize(backTexture.desc.nMipmapLevel).y;
 			}
 			imageView = backTexture.m_VkImageView;
 		}
 
-		if (v2FrameBufferSize != v2Size)
+		if (nWidth != fFrameBufferWidth || nHeight != fFrameBufferHeight)
 		{
-			if (v2FrameBufferSize.Length() < 1e-6)
-				v2FrameBufferSize = v2Size;
+			if (fFrameBufferWidth == 0 && fFrameBufferHeight == 0)
+			{
+				fFrameBufferWidth = nWidth;
+				fFrameBufferHeight = nHeight;
+			}
 			else
 			{
 				GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateFrameBuffer error: different size");
@@ -1291,10 +1359,13 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 
 	if (pDepthTexture)
 	{
-		if (v2FrameBufferSize != pDepthTexture->GetSize())
+		if (pDepthTexture->GetSize().x != fFrameBufferWidth || pDepthTexture->GetSize().y != fFrameBufferHeight)
 		{
-			if (v2FrameBufferSize.Length() < 1e-6)
-				v2FrameBufferSize = pDepthTexture->GetSize();
+			if (fFrameBufferWidth == 0 && fFrameBufferHeight == 0)
+			{
+				fFrameBufferWidth = pDepthTexture->GetSize().x;
+				fFrameBufferHeight = pDepthTexture->GetSize().y;
+			}
 			else
 			{
 				GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateFrameBuffer error: different size");
@@ -1310,6 +1381,9 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 		vAttachmentViews.push_back(pDepthTexture->m_VkImageView);
 	}
 
+	fFrameBufferWidth = std::max(fFrameBufferWidth, 1);
+	fFrameBufferHeight = std::max(fFrameBufferHeight, 1);
+
 
 	VkFramebufferCreateInfo framebufferInfo{};
 	framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -1318,17 +1392,18 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 
 	framebufferInfo.attachmentCount = vAttachmentViews.size();
 	framebufferInfo.pAttachments = vAttachmentViews.data();
-	framebufferInfo.width = v2FrameBufferSize.x;
-	framebufferInfo.height = v2FrameBufferSize.y;
+	framebufferInfo.width = fFrameBufferWidth;
+	framebufferInfo.height = fFrameBufferHeight;
 	framebufferInfo.layers = 1;
 
 
-	pRenderPass->m_vkExtent2D.width = v2FrameBufferSize.x;
-	pRenderPass->m_vkExtent2D.height = v2FrameBufferSize.y;
+	pRenderPass->m_vkExtent2D.width = fFrameBufferWidth;
+	pRenderPass->m_vkExtent2D.height = fFrameBufferHeight;
+
 	VkResult result = vkCreateFramebuffer(m_VkDevice, &framebufferInfo, nullptr, &pRenderPass->m_VkFrameBuffer);
 	if (VK_SUCCESS != result)
 	{
-		GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateFrameBuffer error: vulkan result: %s", std::to_string(result).c_str());
+		GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateFrameBuffer error: vulkan result: {}", std::to_string(result).c_str());
 	}
 
 	return true;
@@ -1928,7 +2003,7 @@ bool MVulkanDevice::GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
 
 	if (vkCreateBuffer(m_VkDevice, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
 	{
-		GetEngine()->GetLogger()->Error("vkCreateBuffer failed. file: %s, line: %d", __FILE__, __LINE__);
+		GetEngine()->GetLogger()->Error("vkCreateBuffer failed. file: {}, line: {}", __FILE__, __LINE__);
 		return false;
 	}
 
@@ -1942,14 +2017,14 @@ bool MVulkanDevice::GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
 
 	if (MGlobal::M_INVALID_INDEX == allocInfo.memoryTypeIndex)
 	{
-		GetEngine()->GetLogger()->Error("memoryTypeIndex invalid. file: %s, line: %d", __FILE__, __LINE__);
+		GetEngine()->GetLogger()->Error("memoryTypeIndex invalid. file: {}, line: {}", __FILE__, __LINE__);
 		vkDestroyBuffer(m_VkDevice, buffer, nullptr);
 		return false;
 	}
 
 	if (vkAllocateMemory(m_VkDevice, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
 	{
-		GetEngine()->GetLogger()->Error("vkAllocateMemory failed. file: %s, line: %d", __FILE__, __LINE__);
+		GetEngine()->GetLogger()->Error("vkAllocateMemory failed. file: {}, line: {}", __FILE__, __LINE__);
 		vkDestroyBuffer(m_VkDevice, buffer, nullptr);
 		return false;
 	}
@@ -2009,7 +2084,7 @@ void MVulkanDevice::CheckFrameFinish()
 				pRecycleBin = nullptr;
 			}
 
-//			GetEngine()->GetLogger()->Information("the Frame Finished: %d", iter->first);
+//			GetEngine()->GetLogger()->Information("the Frame Finished: {}", iter->first);
 			iter = m_tFrameData.erase(iter);
 		}
 		else
@@ -2080,12 +2155,8 @@ bool MVulkanDevice::InitVulkanInstance()
 	createInfo.flags = 0;
 	createInfo.pApplicationInfo = &appInfo;
 	
-#if MORTY_DEBUG
 	createInfo.enabledLayerCount = static_cast<uint32_t>(ValidationLayers.size());
 	createInfo.ppEnabledLayerNames = ValidationLayers.data();
-#else
-	createInfo.enabledLayerCount = 0;
-#endif
 
 
 	createInfo.enabledExtensionCount = InstanceExtensions.size();
@@ -2102,16 +2173,14 @@ bool MVulkanDevice::InitVulkanInstance()
 	}
 	else if (result != VK_SUCCESS) {
 		GetEngine()->GetLogger()->Error(
-			"The call to vkCreateInstance failed. Please make sure "
-			"you have a Vulkan installable client driver (ICD) before "
-			"continuing.");
+			"The call to vkCreateInstance failed. error code: {}", int(result));
 		return false;
 	}
 
 	vkCmdPushDescriptorSet = reinterpret_cast<PFN_vkCmdPushDescriptorSetKHR>(vkGetInstanceProcAddr(m_VkInstance, "vkCmdPushDescriptorSetKHR"));
 	vkSetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(vkGetInstanceProcAddr(m_VkInstance, "vkSetDebugUtilsObjectNameEXT"));
 
-#ifdef MORTY_DEBUG
+#if MORTY_DEBUG
 	// load kCreateDebugUtilsMessengerEXT
 	PFN_vkCreateDebugUtilsMessengerEXT pvkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_VkInstance, "vkCreateDebugUtilsMessengerEXT");
 	if (pvkCreateDebugUtilsMessengerEXT == NULL)
@@ -2163,10 +2232,6 @@ bool MVulkanDevice::InitPhysicalDevice()
 	for (uint32_t i = 0; i < nDeviceCount; i++)
 	{
 		vkGetPhysicalDeviceProperties(vPhysicalDevices[i], &m_VkPhysicalDeviceProperties);
-		GetEngine()->GetLogger()->Information("Vulkan API Version:    %d.%d.%d\n",
-			VK_VERSION_MAJOR(m_VkPhysicalDeviceProperties.apiVersion),
-			VK_VERSION_MINOR(m_VkPhysicalDeviceProperties.apiVersion),
-			VK_VERSION_PATCH(m_VkPhysicalDeviceProperties.apiVersion));
 
 		if (IsDeviceSuitable(vPhysicalDevices[i]))
 		{
@@ -2181,10 +2246,19 @@ bool MVulkanDevice::InitPhysicalDevice()
 		return false;
 	}
 
+	m_nVulkanVersionMajor = VK_VERSION_MAJOR(m_VkPhysicalDeviceProperties.apiVersion);
+	m_nVulkanVersionMinor = VK_VERSION_MINOR(m_VkPhysicalDeviceProperties.apiVersion);
+	m_nVulkanVersionPatch = VK_VERSION_PATCH(m_VkPhysicalDeviceProperties.apiVersion);
+
+	GetEngine()->GetLogger()->Information("Vulkan API Version:    {}.{}.{}\n",
+										  m_nVulkanVersionMajor,
+										  m_nVulkanVersionMinor,
+										  m_nVulkanVersionPatch);
+
 	m_nGraphicsFamilyIndex = FindQueueGraphicsFamilies(m_VkPhysicalDevice);
 	m_nComputeFamilyIndex = FindQueueComputeFamilies(m_VkPhysicalDevice);
 
-	return true;
+    return true;
 }
 
 bool MVulkanDevice::InitLogicalDevice()
@@ -2212,9 +2286,7 @@ bool MVulkanDevice::InitLogicalDevice()
 		queueCreateInfos.push_back(queueInfo);
 	}
 
-
-	VkPhysicalDeviceFeatures deviceFeatures = {};
-	vkGetPhysicalDeviceFeatures(m_VkPhysicalDevice, &deviceFeatures);
+	vkGetPhysicalDeviceFeatures(m_VkPhysicalDevice, &m_VkPhysicalDeviceFeatures);
 
 	VkPhysicalDeviceVulkan11Features device11Features = {};
 	device11Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
@@ -2227,7 +2299,7 @@ bool MVulkanDevice::InitLogicalDevice()
 	deviceInfo.pQueueCreateInfos = queueCreateInfos.data();
 	deviceInfo.enabledExtensionCount = DeviceExtensions.size();
 	deviceInfo.ppEnabledExtensionNames = DeviceExtensions.data();
-	deviceInfo.pEnabledFeatures = &deviceFeatures;
+	deviceInfo.pEnabledFeatures = &m_VkPhysicalDeviceFeatures;
 	deviceInfo.pNext = &device11Features;
 
 
@@ -2412,6 +2484,11 @@ int MVulkanDevice::FindQueueComputeFamilies(VkPhysicalDevice device)
 	return graphicsFamily;
 }
 
+bool MVulkanDevice::MultiDrawIndirectSupport() const
+{
+    return m_VkPhysicalDeviceFeatures.multiDrawIndirect;
+}
+
 bool MVulkanDevice::CheckDeviceExtensionSupport(VkPhysicalDevice device)
 {
 	uint32_t extensionCount;
@@ -2424,6 +2501,11 @@ bool MVulkanDevice::CheckDeviceExtensionSupport(VkPhysicalDevice device)
 
 	for (const auto& extension : availableExtensions) {
 		requiredExtensions.erase(extension.extensionName);
+	}
+
+	for (auto extensionName : requiredExtensions)
+	{
+		GetEngine()->GetLogger()->Error("Not support extension: {}.", extensionName.c_str());
 	}
 
 	return requiredExtensions.empty();

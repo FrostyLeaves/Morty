@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MRENDERVIEW_H_
-#define _M_MRENDERVIEW_H_
+#pragma once
+
 #include "Render/MRenderGlobal.h"
 
 #include "Engine/MEngine.h"
@@ -103,6 +103,3 @@ private:
 	uint32_t m_unWidht;
 	uint32_t m_unHeight;
 };
-
-
-#endif

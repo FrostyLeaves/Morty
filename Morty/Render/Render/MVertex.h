@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MVERTEX_H_
-#define _M_MVERTEX_H_
+#pragma once
+
 #include "Render/MRenderGlobal.h"
 #include "Math/Vector.h"
 #include "Utility/MString.h"
@@ -84,7 +84,3 @@ struct MShadowGpuDrivenOutput
 	uint32_t drawCount;
 	uint32_t lodCount[MRenderGlobal::MESH_LOD_LEVEL_RANGE];
 };
-
-
-
-#endif

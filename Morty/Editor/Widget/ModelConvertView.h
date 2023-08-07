@@ -1,5 +1,4 @@
-#ifndef _MODEL_CONVERT_VIEW_H_
-#define _MODEL_CONVERT_VIEW_H_
+#pragma once
 
 #include <map>
 #include <queue>
@@ -9,25 +8,23 @@
 #include "Model/MModelConverter.h"
 
 
-#include "Main/IBaseView.h"
+#include "Main/BaseWidget.h"
 
-class IBaseView;
-class ModelConvertView : public IBaseView
+class BaseWidget;
+class ModelConvertView : public BaseWidget
 {
 public:
 	ModelConvertView();
-	virtual ~ModelConvertView();
+    ~ModelConvertView() = default;
 
 public:
 	
-	virtual void Render() override;
+	void Render() override;
 
-	virtual void Initialize(MEngine* pEngine) override;
-	virtual void Release() override;
-	virtual void Input(MInputEvent* pEvent) override;
-
-public:
-
+	void Initialize(MainEditor* pMainEditor) override;
+	void Release() override;
+	void Input(MInputEvent* pEvent) override;
+	
 	void Convert(std::queue<MModelConvertInfo> queue);
 
 private:
@@ -37,11 +34,6 @@ private:
 	std::string m_strSourcePath;
 	std::string m_strOutputDir;
 	std::string m_strOutputName;
-	int m_nMaterialTypeEnum;
-
-
-	MEngine* m_pEngine;
+	int m_nMaterialTypeEnum = 0;
 };
 
-
-#endif

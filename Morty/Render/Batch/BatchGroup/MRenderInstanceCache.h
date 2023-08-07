@@ -1,5 +1,4 @@
-#ifndef _M_RENDER_INSTANCE_CACHE_H_
-#define _M_RENDER_INSTANCE_CACHE_H_
+#pragma once
 
 #include "Utility/MGlobal.h"
 #include "Utility/MBounds.h"
@@ -105,6 +104,3 @@ inline VALUE_TYPE* MRenderInstanceCache<KEY_TYPE, VALUE_TYPE>::FindItem(const KE
 	auto& item = m_vItem[nIdx];
 	return &item.value;
 }
-
-
-#endif

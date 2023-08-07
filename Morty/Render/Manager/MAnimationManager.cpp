@@ -33,7 +33,8 @@ void MAnimationManager::Initialize()
 		pNotifySystem->RegisterNotify(MRenderNotify::NOTIFY_ANIMATION_POSE_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MAnimationManager::OnPoseChanged, this));
 	}
 
-	if (m_pUpdateTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>("RenderMeshManagerUpdate"))
+	m_pUpdateTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>("AnimationManagerUpdate");
+	if (m_pUpdateTask)
 	{
 		m_pUpdateTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MAnimationManager::RenderUpdate, this));
 		m_pUpdateTask->SetThreadType(METhreadType::ERenderThread);
@@ -45,6 +46,12 @@ void MAnimationManager::Initialize()
 
 void MAnimationManager::Release()
 {
+	if (m_pUpdateTask)
+	{
+		GetEngine()->GetMainGraph()->DestroyNode(m_pUpdateTask);
+		m_pUpdateTask = nullptr;
+	}
+
 	m_pAnimationRenderGroup->Release(GetEngine());
 	m_pAnimationRenderGroup = nullptr;
 
@@ -69,7 +76,7 @@ void MAnimationManager::RegisterComponent(MComponent* pComponent)
 
 void MAnimationManager::UnregisterComponent(MComponent* pComponent)
 {
-	if (MModelComponent* pModelComponent = pComponent->DynamicCast<MModelComponent>())
+	if (MModelComponent* pModelComponent = pComponent->template DynamicCast<MModelComponent>())
 	{
 		RemoveComponent(pModelComponent);
 	}
@@ -77,7 +84,7 @@ void MAnimationManager::UnregisterComponent(MComponent* pComponent)
 
 void MAnimationManager::OnSceneParentChanged(MComponent* pComponent)
 {
-	auto pSceneComponent = pComponent->DynamicCast<MSceneComponent>();
+	auto pSceneComponent = pComponent->template DynamicCast<MSceneComponent>();
 	if (!pSceneComponent)
 	{
 		MORTY_ASSERT(pSceneComponent);
@@ -98,7 +105,7 @@ void MAnimationManager::OnSceneParentChanged(MComponent* pComponent)
 
 void MAnimationManager::OnPoseChanged(MComponent* pComponent)
 {
-	auto pModelComponent = pComponent->DynamicCast<MModelComponent>();
+	auto pModelComponent = pComponent->template DynamicCast<MModelComponent>();
 	if (!pModelComponent)
 	{
 		MORTY_ASSERT(pModelComponent);
@@ -156,7 +163,7 @@ MModelComponent* MAnimationManager::FindAttachedModelComponent(MSceneComponent* 
 			return pModelComponent;
 		}
 
-		pSceneComponent = GetScene()->GetComponent(pSceneComponent->GetParentComponent())->DynamicCast<MSceneComponent>();
+		pSceneComponent = GetScene()->GetComponent(pSceneComponent->GetParentComponent())->template DynamicCast<MSceneComponent>();
 	}
 
 	return nullptr;

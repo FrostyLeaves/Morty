@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSHADERBUFFER_H_
-#define _M_MSHADERBUFFER_H_
+#pragma once
+
 #include "Render/MRenderGlobal.h"
 #include "Material/MShaderPropertyBlock.h"
 
@@ -59,5 +59,3 @@ public:
 #if RENDER_GRAPHICS == MORTY_VULKAN
 #endif
 };
-
-#endif

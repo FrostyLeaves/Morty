@@ -1,9 +1,9 @@
-#ifndef _M_MESH_MANAGER_H_
-#define _M_MESH_MANAGER_H_
+#pragma once
 
 #include "Object/MObject.h"
-#include "Utility/MGlobal.h"
+#include "Render/MMesh.h"
 #include "Render/MBuffer.h"
+#include "Utility/MGlobal.h"
 #include "Utility/MBounds.h"
 #include "Utility/MMemoryPool.h"
 
@@ -86,6 +86,3 @@ private:
 	std::mutex m_uploadMutex;
 	std::vector<MIMesh*> m_vUploadQueue;
 };
-
-
-#endif

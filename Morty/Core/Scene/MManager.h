@@ -1,5 +1,4 @@
-#ifndef _M_MANAGER_H_
-#define _M_MANAGER_H_
+#pragma once
 
 #include "Utility/MGlobal.h"
 #include "Type/MType.h"
@@ -33,5 +32,3 @@ public:
 private:
 	MScene* m_pScene;
 };
-
-#endif

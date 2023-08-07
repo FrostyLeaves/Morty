@@ -8,15 +8,12 @@
  * Only For Shader.
 **/
 
-#ifndef _M_VARIANT_MEMORY_H_
-#define _M_VARIANT_MEMORY_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Utility/MString.h"
 #include "Math/Vector.h"
 #include "Math/Matrix.h"
-#include <vector>
-#include <map>
-#include <unordered_map>  
 
 
 class MORTY_API MVariantMemory
@@ -97,7 +94,3 @@ inline size_t MVariantMemory::AppendVariant<Matrix4>(const Matrix4& value)
 {
 	return AllocMemory(sizeof(float) * 16);
 }
-
-
-
-#endif

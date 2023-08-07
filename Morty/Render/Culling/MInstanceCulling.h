@@ -1,6 +1,4 @@
-#ifndef _M_INSTANCE_CULLING_H_
-#define _M_INSTANCE_CULLING_H_
-
+#pragma once
 
 #include "Material/MMaterial.h"
 #include "Render/MBuffer.h"
@@ -21,18 +19,6 @@ public:
 
     virtual ~IMaterialFilter() = default;
     virtual bool Filter(const std::shared_ptr<MMaterial>& material) const = 0;
-};
-
-class CameraFrustumCulling : public IMeshInstanceFilter
-{
-public:
-    void UpdateCameraFrustum(Matrix4 cameraInvProj);
-
-    bool Filter(const MMeshInstanceRenderProxy* instance) const override;
-
-private:
-
-	MCameraFrustum m_cameraFrustum;
 };
 
 class MMaterialTypeFilter : public IMaterialFilter
@@ -60,6 +46,15 @@ public:
 
 };
 
+class MORTY_API MCameraFrustumCulling : public MInstanceCulling
+{
+public:
+    void SetCommand(MIRenderCommand* pCommand) { m_pCommand = pCommand; }
+    void SetCameraFrustum(MCameraFrustum cameraFrustum) { m_cameraFrustum = cameraFrustum; }
+    void SetCameraPosition(Vector3 v3CameraPosition) { m_v3CameraPosition = v3CameraPosition; }
 
-
-#endif
+protected:
+    Vector3 m_v3CameraPosition;
+    MCameraFrustum m_cameraFrustum;
+    MIRenderCommand* m_pCommand = nullptr;
+};

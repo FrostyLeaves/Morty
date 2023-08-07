@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSCENE_H_
-#define _M_MSCENE_H_
+#pragma once
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
 
@@ -16,10 +15,12 @@
 #include "Scene/MManager.h"
 #include "Engine/MEngine.h"
 #include "Component/MComponent.h"
+#include "Component/MComponentGroup.h"
 
 #include <vector>
 #include <functional>
 
+class MTaskNode;
 class MResource;
 class MORTY_API MScene : public MObject
 {
@@ -71,10 +72,10 @@ protected:
 
 public:
 
-	virtual void Tick(const float& fDelta);
+	void Tick(const float& fDelta);
 
-	virtual void OnCreated() override;
-	virtual void OnDelete() override;
+	void OnCreated() override;
+	void OnDelete() override;
 
 protected:
 
@@ -154,5 +155,3 @@ TYPE* MScene::AddComponent(MEntity* entity)
 
 	return nullptr;
 }
-
-#endif

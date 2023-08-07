@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MMOVECONTROLLERSYSTEM_H_
-#define _M_MMOVECONTROLLERSYSTEM_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Engine/MSystem.h"
 
@@ -29,6 +29,3 @@ public:
 
     void UpdateTransform(MMoveControllerComponent* pComponent, const float& fDelta, const Vector2& v2MouseAddi);
 };
-
-
-#endif

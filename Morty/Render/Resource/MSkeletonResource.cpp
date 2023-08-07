@@ -15,7 +15,7 @@ MSkeleton* MSkeletonResource::GetSkeleton() const
     return nullptr;
 }
 
-bool MSkeletonResource::Load(std::unique_ptr<MResourceData>& pResourceData)
+bool MSkeletonResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 {
     m_pResourceData = std::move(pResourceData);
 

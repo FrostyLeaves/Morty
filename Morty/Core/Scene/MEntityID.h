@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_GUID_H_
-#define _M_GUID_H_
+#pragma once
 #include "crossguid/guid.hpp"
 
 #include "Utility/MGlobal.h"
@@ -32,6 +31,3 @@ public:
 
 	xg::Guid m_id;
 };
-
-
-#endif

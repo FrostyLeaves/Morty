@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MRESOURCE_H_
-#define _M_MRESOURCE_H_
+#pragma once
 #include "Utility/MGlobal.h"
 #include "Type/MType.h"
 
@@ -71,7 +70,7 @@ public:
 	virtual void OnCreated() {}
 	virtual void OnDelete() {}
 
-	virtual bool Load(std::unique_ptr<MResourceData>& pResourceData) { return false; };
+	virtual bool Load(std::unique_ptr<MResourceData>&& pResourceData) { return false; };
 	virtual bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) { return false; }
 
 	void ReplaceFrom(std::shared_ptr<MResource> pResource);
@@ -134,5 +133,3 @@ private:
 
 	std::shared_ptr<MResource> m_pResource;
 };
-
-#endif

@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MBOUNDS_H_
-#define _M_MBOUNDS_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Math/Vector.h"
 #include "Utility/MSerializer.h"
@@ -116,5 +116,3 @@ public:
 	Vector3 m_v3CenterPoint;
 	float m_fRadius;
 };
-
-#endif

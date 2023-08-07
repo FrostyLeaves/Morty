@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSKYBOXCOMPONENT_H_
-#define _M_MSKYBOXCOMPONENT_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Component/MComponent.h"
 
@@ -47,6 +47,3 @@ private:
     
     std::shared_ptr<MMaterial> m_pMaterial;
 };
-
-
-#endif

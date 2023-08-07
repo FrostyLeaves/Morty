@@ -51,7 +51,9 @@ const MString MRenderModule::DefaultAnimationMaterial = "Default_Animation_Mater
 bool MRenderModule::Register(MEngine* pEngine)
 {
 	if (!pEngine)
+	{
 		return false;
+	}
 
 	MNotifyManager* pNotifySystem = pEngine->FindSystem<MNotifyManager>();
 	MTaskGraph* pTaskGraph = pEngine->GetMainGraph();
@@ -139,7 +141,7 @@ void MRenderModule::OnObjectPostCreate(MObject* pObject)
 
 	if(pObject->GetType() == MScene::GetClassType())
 	{
-		if (MScene* pScene = pObject->DynamicCast<MScene>())
+		if (MScene* pScene = pObject->template DynamicCast<MScene>())
 		{
 			pScene->RegisterManager<MMeshInstanceManager>();
 			pScene->RegisterManager<MEnvironmentManager>();

@@ -44,6 +44,11 @@ void MCascadedShadowCulling::SetDirectionalLight(MEntity* pDirectionalLight)
 
 void MCascadedShadowCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup)
 {
+	if (!m_pDirectionalLight)
+	{
+		return;
+	}
+
 	auto pLightSceneComponent = m_pDirectionalLight->GetComponent<MSceneComponent>();
 	if (!pLightSceneComponent)
 	{

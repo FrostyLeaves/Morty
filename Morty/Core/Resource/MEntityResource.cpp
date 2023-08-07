@@ -35,7 +35,7 @@ size_t MEntityResource::GetSize() const
 	return 0;
 }
 
-bool MEntityResource::Load(std::unique_ptr<MResourceData>& pResourceData)
+bool MEntityResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 {
 	m_pResourceData = std::move(pResourceData);
 	return true;
@@ -47,9 +47,9 @@ bool MEntityResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 	return true;
 }
 
-std::shared_ptr<MResource> MEntityResourceLoader::Create(MResourceSystem* pManager)
+const MType* MEntityResourceLoader::ResourceType() const
 {
-	return pManager->CreateResource<MEntityResource>();
+	return MEntityResource::GetClassType();
 }
 
 std::unique_ptr<MResourceData> MEntityResourceLoader::LoadResource(const MString& svFullPath, const MString& svPath)

@@ -461,7 +461,9 @@ flatbuffers::Offset<void> MVariantStruct::Serialize(flatbuffers::FlatBufferBuild
 
 void MVariantStruct::Deserialize(const void* pBufferPointer, std::shared_ptr<MVariantMemory> pMemory, size_t nOffset)
 {
-	MORTY_ASSERT(m_pMemory = pMemory);
+	MORTY_ASSERT(pMemory);
+
+	m_pMemory = pMemory;
 	m_nOffset = nOffset;
 
 	const mfbs::MVariantStruct* fbData = reinterpret_cast<const mfbs::MVariantStruct*>(pBufferPointer);
@@ -509,7 +511,9 @@ flatbuffers::Offset<void> MVariantArray::Serialize(flatbuffers::FlatBufferBuilde
 
 void MVariantArray::Deserialize(const void* pBufferPointer, std::shared_ptr<MVariantMemory> pMemory, size_t nOffset)
 {
-	MORTY_ASSERT(m_pMemory = pMemory);
+	MORTY_ASSERT(pMemory);
+
+	m_pMemory = pMemory;
 	m_nOffset = nOffset;
 
 	const mfbs::MVariantArray* fbData = reinterpret_cast<const mfbs::MVariantArray*>(pBufferPointer);

@@ -22,6 +22,8 @@ public:
 	Quaternion(const Vector3& vAxis, const float& fAngle);
 	Quaternion(const mfbs::Quaternion& value);
 
+	static Quaternion FromEuler(const Vector3& eulerVec3);
+
 public:
 	const mfbs::Quaternion* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
 	void Deserialize(const void* pBufferPointer);

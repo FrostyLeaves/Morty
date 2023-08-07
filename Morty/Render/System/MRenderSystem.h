@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MRENDERSYSTEM_H_
-#define _M_MRENDERSYSTEM_H_
+#pragma once
+
 #include "Render/MRenderGlobal.h"
 #include "Engine/MSystem.h"
 #include "Component/MComponent.h"
@@ -39,8 +39,8 @@ public:
 
 public:
 
-    virtual void Initialize();
-    virtual void Release();
+    void Initialize() override;
+    void Release() override;
 
 
 public:
@@ -50,6 +50,8 @@ public:
 
     static MCameraFrustum GetCameraFrustum(MViewport* pViewport, MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent);
 
+    static Matrix4 GetCameraViewMatrix(MSceneComponent* pSceneComponent);
+    static Matrix4 GetCameraProjectionMatrix(const MViewport* pViewport, const MCameraComponent* pCameraComponent);
     static Matrix4 GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent);
     static Matrix4 GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent, float fZNear, float fZFar);
     
@@ -78,6 +80,3 @@ private:
 
 	MIDevice* m_pDevice = nullptr;
 };
-
-
-#endif

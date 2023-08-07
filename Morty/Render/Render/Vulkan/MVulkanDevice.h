@@ -6,8 +6,9 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MVULKANDEVICE_H_
-#define _M_MVULKANDEVICE_H_
+#pragma once
+
+#include "MVulkanShaderReflector.h"
 #include "Utility/MGlobal.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -118,15 +119,17 @@ public:
 	int FindQueueGraphicsFamilies(VkPhysicalDevice device);
 	int FindQueuePresentFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
 	int FindQueueComputeFamilies(VkPhysicalDevice device);
+	bool MultiDrawIndirectSupport() const;
 
 	int FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-	int FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+	VkFormat FindSupportedFormat(const std::set<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
 
 	VkBool32 FormatIsFilterable(VkFormat format, VkImageTiling tiling);
 
 	VkFormat GetFormat(const METextureLayout& layout);
 	VkImageUsageFlags GetUsageFlags(MTexture* pTexture);
 	VkImageAspectFlags GetAspectFlags(MTexture* pTexture);
+	VkImageAspectFlags GetAspectFlags(VkFormat format);
 	VkImageLayout GetImageLayout(MTexture* pTexture);
 	VkImageViewType GetImageViewType(MTexture* pTexture);
 	VkImageCreateFlags GetImageCreateFlags(MTexture* pTexture);
@@ -137,6 +140,8 @@ public:
 	MVulkanObjectRecycleBin* GetRecycleBin();
 
 	void SetDebugName(uint64_t object, const VkObjectType& type, const char* svDebugName);
+
+	bool CheckVersion(int major, int minor, int patch);
 
 protected:
 	bool InitVulkanInstance();
@@ -156,6 +161,7 @@ protected:
 public:
 	VkInstance m_VkInstance;
 	VkPhysicalDevice m_VkPhysicalDevice;
+	VkPhysicalDeviceFeatures m_VkPhysicalDeviceFeatures;
 	VkPhysicalDeviceProperties m_VkPhysicalDeviceProperties;
 	VkDevice m_VkDevice;
 	VkQueue m_VkGraphicsQueue;
@@ -163,10 +169,14 @@ public:
 	int m_nGraphicsFamilyIndex = 0;
 	int m_nComputeFamilyIndex = 0;
 
+	int m_nVulkanVersionMajor = 0;
+	int m_nVulkanVersionMinor = 0;
+	int m_nVulkanVersionPatch = 0;
 
 	VkCommandPool m_VkGraphCommandPool;
 
 	MVulkanShaderCompiler m_ShaderCompiler;
+	MVulkanShaderReflector m_ShaderReflector;
 	MVulkanPipelineManager m_PipelineManager;
 	MVulkanBufferPool m_BufferPool;
 
@@ -182,7 +192,7 @@ public:
 	VkDescriptorPool m_VkDescriptorPool;
 
 
-#ifdef MORTY_DEBUG
+#if MORTY_DEBUG
 	VkDebugUtilsMessengerEXT m_VkDebugUtilsMessenger;
 #endif
 public:
@@ -205,9 +215,6 @@ public:
 	PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSet;
 	PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT;
 };
-
-
-#endif
 
 
 #endif

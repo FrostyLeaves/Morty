@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSKELETON_INSTANCE_H_
-#define _M_MSKELETON_INSTANCE_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Math/Matrix.h"
 #include "Object/MObject.h"
@@ -50,5 +50,3 @@ private:
 
 	MSkeletonPose m_currentPose;
 };
-
-#endif

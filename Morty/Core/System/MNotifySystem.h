@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MNOTIFY_MANAGER_H_
-#define _M_MNOTIFY_MANAGER_H_
+#pragma once
 #include "Utility/MGlobal.h"
 #include "Scene/MManager.h"
 #include "Component/MComponent.h"
@@ -34,6 +33,3 @@ private:
     std::map<const char*, std::vector<MNotifyFunction>> m_tNotifyTable;
 
 };
-
-
-#endif

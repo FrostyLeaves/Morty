@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MIDPOOL_H_
-#define _M_MIDPOOL_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include <queue>
 
@@ -53,6 +53,3 @@ private:
 	IDTYPE m_IDPool;
     std::queue<IDTYPE> m_vIDPool;
 };
-
-
-#endif

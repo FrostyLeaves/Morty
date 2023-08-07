@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MMATERIAL_RESOURCE_DATA_H_
-#define _M_MMATERIAL_RESOURCE_DATA_H_
+#pragma once
 
 #include "MMaterialResource.h"
 
@@ -47,6 +46,3 @@ public:
 	static MString GetResourceTypeName() { return "Material"; }
 	static std::vector<MString> GetSuffixList() { return { "mat" }; }
 };
-
-
-#endif

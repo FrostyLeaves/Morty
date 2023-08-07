@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MTEXTURERESOURCE_H_
-#define _M_MTEXTURERESOURCE_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Resource/MResource.h"
 
@@ -70,7 +70,7 @@ public:
 
 	virtual void OnDelete() override;
 
-	bool Load(std::unique_ptr<MResourceData>& pResourceData) override;
+	bool Load(std::unique_ptr<MResourceData>&& pResourceData) override;
 	virtual bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
 
 protected:
@@ -90,8 +90,6 @@ public:
 	static MString GetResourceTypeName() { return "Texture"; }
 	static std::vector<MString> GetSuffixList() { return { "png", "jpg", "tga", "hdr", "tif", "mtex" }; }
 
-	std::shared_ptr<MResource> Create(MResourceSystem* pManager) override;
+	const MType* ResourceType() const override;
 	std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath, const MString& svPath) override;
 };
-
-#endif

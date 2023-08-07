@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MIRenderCommand_H_
-#define _M_MIRenderCommand_H_
+#pragma once
+
 #include "Render/MRenderGlobal.h"
 
 #include "Math/Vector.h"
@@ -109,5 +109,3 @@ public:
 	size_t m_nDrawCallCount = 0;
 
 };
-
-#endif

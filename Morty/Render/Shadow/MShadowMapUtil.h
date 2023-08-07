@@ -1,5 +1,4 @@
-#ifndef _M_CASCADED_SHADOW_MAP_H_
-#define _M_CASCADED_SHADOW_MAP_H_
+#pragma once
 
 #include "Utility/MGlobal.h"
 #include "Variant/MVariant.h"
@@ -30,5 +29,3 @@ public:
 		const std::array<MBoundsAABB, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>& vCascadedPscBounds);
 
 };
-
-#endif

@@ -1,5 +1,4 @@
 ﻿#include "Math/Quaternion.h"
-#include <cmath>
 #include <cassert>
 
 #include "Quaternion_generated.h"
@@ -48,6 +47,13 @@ Quaternion::Quaternion(const mfbs::Quaternion& value)
 	, z(value.z())
 {
 	
+}
+
+Quaternion Quaternion::FromEuler(const Vector3& eulerVec3)
+{
+	Quaternion quat;
+	quat.SetEulerAngle(eulerVec3);
+	return quat;
 }
 
 const mfbs::Quaternion* Quaternion::Serialize(flatbuffers::FlatBufferBuilder& fbb) const

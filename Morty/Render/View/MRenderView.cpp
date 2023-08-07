@@ -164,15 +164,18 @@ bool MRenderView::InitializeSwapchain()
 
 	if (swapchainExtent.width <= 0 || swapchainExtent.height <= 0)
 	{
-		GetEngine()->GetLogger()->Warning("Create VulkanRenderTarget Error : swapchain size: (%d, %d)", swapchainExtent.width, swapchainExtent.height);
+		GetEngine()->GetLogger()->Warning("Create VulkanRenderTarget Error : swapchain size: ({}, {})", swapchainExtent.width, swapchainExtent.height);
 		return false;
 	}
+
+	m_unWidht = std::min(m_unWidht, swapchainExtent.width);
+	m_unHeight = std::min(m_unHeight, swapchainExtent.height);
 
 	uint32_t unPresentModeCount = 0;
 	result = vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_VkSurface, &unPresentModeCount, NULL);
 	if (result != VK_SUCCESS || unPresentModeCount < 1)
 	{
-		GetEngine()->GetLogger()->Error("Create VulkanRenderTarget Error : vkGetPhysicalDeviceSurfacePresentModesKHR count < 1");
+		GetEngine()->GetLogger()->Error("Create VulkanRenderTarget Error : result: {}, vkGetPhysicalDeviceSurfacePresentModesKHR count {}", (int)result, unPresentModeCount);
 		return false;
 	}
 
@@ -219,6 +222,35 @@ bool MRenderView::InitializeSwapchain()
 		return false;
 	}
 
+
+	VkSurfaceCapabilitiesKHR vkSurfaceCapabilities;
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_VkSurface, &vkSurfaceCapabilities);
+
+	std::vector<VkCompositeAlphaFlagBitsKHR> vDefaultCompositeAlphaFlags = {
+		VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+	    VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR,
+	    VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR,
+	    VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR
+	};
+
+	VkCompositeAlphaFlagBitsKHR vkCompositeAlphaFlag = VK_COMPOSITE_ALPHA_FLAG_BITS_MAX_ENUM_KHR;
+
+	for (auto flag : vDefaultCompositeAlphaFlags)
+	{
+        auto support = flag & vkSurfaceCapabilities.supportedCompositeAlpha;
+		if (support != 0)
+		{
+			vkCompositeAlphaFlag = static_cast<VkCompositeAlphaFlagBitsKHR>(flag);
+			break;
+		}
+	}
+
+	if (vkCompositeAlphaFlag == VK_COMPOSITE_ALPHA_FLAG_BITS_MAX_ENUM_KHR)
+	{
+		MORTY_ASSERT(vkCompositeAlphaFlag != VK_COMPOSITE_ALPHA_FLAG_BITS_MAX_ENUM_KHR);
+		return false;
+	}
+
 	VkFormat colorFormat;
 	VkColorSpaceKHR colorSpace;
 
@@ -241,7 +273,7 @@ bool MRenderView::InitializeSwapchain()
 	swapchainCreateInfo.queueFamilyIndexCount = 1;
 	swapchainCreateInfo.pQueueFamilyIndices = { 0 };
 	swapchainCreateInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
-	swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+	swapchainCreateInfo.compositeAlpha = vkCompositeAlphaFlag;
 	swapchainCreateInfo.presentMode = presentMode;
 
 
@@ -314,10 +346,8 @@ bool MRenderView::BindRenderPass()
 		pTexture->GenerateBuffer(m_pDevice);
 		m_vRenderTarget[i].renderPass.AddBackTexture(pTexture, { true, MColor::Black_T });
 
-		std::shared_ptr<MTexture> pDepthTexture = std::make_shared<MTexture>();
+		std::shared_ptr<MTexture> pDepthTexture = MTexture::CreateShadowMap();
 		pDepthTexture->SetName("Editor Depth View");
-		pDepthTexture->SetTextureLayout(METextureLayout::EDepth);
-		pDepthTexture->SetRenderUsage(METextureRenderUsage::ERenderDepth);
 		pDepthTexture->SetSize(size);
 		pDepthTexture->GenerateBuffer(m_pDevice);
 		m_vRenderTarget[i].renderPass.SetDepthTexture(pDepthTexture, { true, MColor::White });
@@ -389,7 +419,7 @@ MViewRenderTarget* MRenderView::GetNextRenderTarget()
 
 	m_vRenderTarget[unImageIndex].vkImageReadySemaphore = vkImageReadySemaphore;
 
-//	GetEngine()->GetLogger()->Information("the Image View: %d", unImageIndex);
+//	GetEngine()->GetLogger()->Information("the Image View: {}", unImageIndex);
 
 	//now, framebuffer is ready, commandbuffer is ready.
 	return &m_vRenderTarget[unImageIndex];

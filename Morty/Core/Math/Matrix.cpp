@@ -1,5 +1,4 @@
 ﻿#include "Math/Matrix.h"
-#include <cmath>
 
 #include "Matrix_generated.h"
 
@@ -397,16 +396,13 @@ bool Matrix4::IsOrthogonal() const
 
 Matrix4 Matrix4::GetScalePart() const
 {
-	float vrowLength[3];
-	vrowLength[0] = Vector3(m[0][0], m[0][1], m[0][2]).Length();
-	vrowLength[1] = Vector3(m[1][0], m[1][1], m[1][2]).Length();
-	vrowLength[2] = Vector3(m[2][0], m[2][1], m[2][2]).Length();
+	const Vector3 scale = GetScale();
 
 	Matrix4 mat = IdentityMatrix;
 
-	mat.m[0][0] = vrowLength[0];
-	mat.m[1][1] = vrowLength[1];
-	mat.m[2][2] = vrowLength[2];
+	mat.m[0][0] = scale.x;
+	mat.m[1][1] = scale.y;
+	mat.m[2][2] = scale.z;
 
 	return mat;
 }
@@ -414,9 +410,15 @@ Matrix4 Matrix4::GetScalePart() const
 Vector3 Matrix4::GetScale() const
 {
 	Vector3 v3Scale;
+#if COL_MAJOR == MATRIX_MAJOR
+	v3Scale.x = Vector3(m[0][0], m[1][0], m[2][0]).Length();
+	v3Scale.y = Vector3(m[0][1], m[1][1], m[2][1]).Length();
+	v3Scale.z = Vector3(m[0][2], m[1][2], m[2][2]).Length();
+#else
 	v3Scale.x = Vector3(m[0][0], m[0][1], m[0][2]).Length();
 	v3Scale.y = Vector3(m[1][0], m[1][1], m[1][2]).Length();
 	v3Scale.z = Vector3(m[2][0], m[2][1], m[2][2]).Length();
+#endif
 
 	return v3Scale;
 }
@@ -434,27 +436,12 @@ void Matrix4::Deserialize(const void* pBufferPointer)
 
 Vector3 Matrix4::GetTranslation() const
 {
+#if MATRIX_MAJOR == COL_MAJOR
+	return Vector3(m[0][3], m[1][3], m[2][3]);
+#else
 	return Vector3(m[3][0], m[3][1], m[3][2]);
+#endif
 }
-// 
-// void Matrix4::SetRotation(const Quaternion& quat)
-// {
-// 	Matrix4 mat = quat.GetMatrix();
-// 
-// 	float vrowLength[3];
-// 	vrowLength[0] = Vector3(m[0][0], m[0][1], m[0][2]).Length();
-// 	vrowLength[1] = Vector3(m[1][0], m[1][1], m[1][2]).Length();
-// 	vrowLength[2] = Vector3(m[2][0], m[2][1], m[2][2]).Length();
-// 
-// 	for (int row = 0; row < 3; ++row)
-// 	{
-// 		for (int col = 0; col < 3; ++col)
-// 		{
-// 			m[row][col] = mat.m[row][col] * vrowLength[row];
-// 		}
-// 	}
-// 	
-// }
 
  Quaternion Matrix4::GetRotation() const
  {
@@ -471,48 +458,46 @@ Vector3 Matrix4::GetTranslation() const
  	float fBiggestValue = vWXYZLength[0];
  	for (int i = 1; i < 4; ++i)
  	{
- 		if ((fBiggestValue) < (vWXYZLength[i]))
+ 		if (fBiggestValue < vWXYZLength[i])
  		{
  			nBiggestIndex = i;
  			fBiggestValue = vWXYZLength[i];
  		}
  	}
  
- 	fBiggestValue = sqrt(fBiggestValue + 1.0f)*0.5f;
+ 	fBiggestValue = sqrt(fBiggestValue + 1.0f) * 0.5f;
  	float mult = 0.25f / fBiggestValue;
-
-
-
+	
 #if ROW_MAJOR == MATRIX_MAJOR
 	switch (nBiggestIndex)
 	{
 	case 0:
-		result = Quaternion(fBiggestValue, (m[1][2] - m[2][1]) * mult, (m[2][0] - m[0][2]) * mult, (m[0][1] - m[1][0]) * mult);
+		result = Quaternion(fBiggestValue, (mat.m[1][2] - mat.m[2][1]) * mult, (mat.m[2][0] - mat.m[0][2]) * mult, (mat.m[0][1] - mat.m[1][0]) * mult);
 		break;
 	case 1:
-		result = Quaternion((m[1][2] - m[2][1]) * mult, fBiggestValue, (m[0][1] + m[1][0]) * mult, (m[2][0] + m[0][2]) * mult);
+		result = Quaternion((mat.m[1][2] - mat.m[2][1]) * mult, fBiggestValue, (mat.m[0][1] + mat.m[1][0]) * mult, (mat.m[2][0] + mat.m[0][2]) * mult);
 		break;
 	case 2:
-		result = Quaternion((m[2][0] - m[0][2]) * mult, (m[0][1] + m[1][0]) * mult, fBiggestValue, (m[1][2] + m[2][1]) * mult);
+		result = Quaternion((mat.m[2][0] - mat.m[0][2]) * mult, (mat.m[0][1] + mat.m[1][0]) * mult, fBiggestValue, (mat.m[1][2] + mat.m[2][1]) * mult);
 		break;
 	case 3:
-		result = Quaternion((m[0][1] - m[1][0]) * mult, (m[2][0] + m[0][2]) * mult, (m[1][2] + m[2][1]) * mult, fBiggestValue);
+		result = Quaternion((mat.m[0][1] - mat.m[1][0]) * mult, (mat.m[2][0] + mat.m[0][2]) * mult, (mat.m[1][2] + mat.m[2][1]) * mult, fBiggestValue);
 		break;
 	}
 #else
 	switch (nBiggestIndex)
 	{
 	case 0:
-		result = Quaternion(fBiggestValue, (m[2][1] - m[1][2]) * mult, (m[0][2] - m[2][0]) * mult, (m[1][0] - m[0][1]) * mult);
+		result = Quaternion(fBiggestValue, (mat.m[2][1] - mat.m[1][2]) * mult, (mat.m[0][2] - mat.m[2][0]) * mult, (mat.m[1][0] - mat.m[0][1]) * mult);
 		break;
 	case 1:
-		result = Quaternion((m[2][1] - m[1][2]) * mult, fBiggestValue, (m[0][1] + m[1][0]) * mult, (m[2][0] + m[0][2]) * mult);
+		result = Quaternion((mat.m[2][1] - mat.m[1][2]) * mult, fBiggestValue, (mat.m[1][0] + mat.m[0][1]) * mult, (mat.m[0][2] + mat.m[2][0]) * mult);
 		break;
 	case 2:
-		result = Quaternion((m[0][2] - m[2][0]) * mult, (m[0][1] + m[1][0]) * mult, fBiggestValue, (m[1][2] + m[2][1]) * mult);
+		result = Quaternion((mat.m[0][2] - mat.m[2][0]) * mult, (mat.m[1][0] + mat.m[0][1]) * mult, fBiggestValue, (mat.m[2][1] + mat.m[1][2]) * mult);
 		break;
 	case 3:
-		result = Quaternion((m[1][0] - m[0][1]) * mult, (m[2][0] + m[0][2]) * mult, (m[1][2] + m[2][1]) * mult, fBiggestValue);
+		result = Quaternion((mat.m[1][0] - mat.m[0][1]) * mult, (mat.m[0][2] + mat.m[2][0]) * mult, (mat.m[2][1] + mat.m[1][2]) * mult, fBiggestValue);
 		break;
 	}
 #endif

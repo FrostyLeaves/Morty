@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MCOMPUTER_DISPATCHER_H_
-#define _M_MCOMPUTER_DISPATCHER_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Resource/MResource.h"
 #include "Resource/MResource.h"
@@ -70,5 +70,3 @@ public:
 
 #endif
 };
-
-#endif

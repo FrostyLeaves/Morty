@@ -8,8 +8,8 @@
  * Only For Shader.
 **/
 
-#ifndef _M_VARIANT_H_
-#define _M_VARIANT_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Utility/MString.h"
 #include "Math/Vector.h"
@@ -499,7 +499,7 @@ template<>
 inline MVariant& MVariantStruct::GetVariant<MVariant>(const MString& strName)
 {
 	MORTY_ASSERT(m_bLocked);
-	auto& findResult = m_tMember.find(strName);
+	auto findResult = m_tMember.find(strName);
 	if (findResult == m_tMember.end())
 	{
 		static MVariant InvalidValue;
@@ -514,7 +514,7 @@ template<typename TYPE>
 inline void MVariantStruct::SetVariant(const MString& strName, const TYPE& value)
 {
 	MORTY_ASSERT(m_bLocked);
-	auto& findResult = m_tMember.find(strName);
+	auto findResult = m_tMember.find(strName);
 	if (findResult == m_tMember.end())
 	{
 		return;
@@ -532,7 +532,7 @@ inline void MVariantStruct::SetVariant<MVariant>(const MString& strName, const M
 	MORTY_ASSERT(value.GetType() != MEVariantType::EArray);
 	MORTY_ASSERT(value.GetType() != MEVariantType::EStruct);
 
-	auto& findResult = m_tMember.find(strName);
+	auto findResult = m_tMember.find(strName);
 	if (findResult == m_tMember.end())
 	{
 		return;
@@ -606,7 +606,7 @@ inline void MVariantArray::AppendContainer(const TYPE& value)
 
 	TYPE innerValue = value;
 	innerValue.ResetMemory(m_pMemory, nOffset);
-	MVariant& member = MVariant(innerValue);
+	MVariant member = MVariant(innerValue);
 
 	memcpy(m_pMemory->Data() + nOffset, value.Data(), nSize);
 
@@ -644,6 +644,3 @@ inline void MVariantArray::SetVariant(const size_t& nIdx, const TYPE& value)
 	MVariant& member = m_tMember[nIdx];
 	return member.SetValue(value);
 }
-
-
-#endif

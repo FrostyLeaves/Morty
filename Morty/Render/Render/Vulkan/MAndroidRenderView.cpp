@@ -1,6 +1,7 @@
 ﻿#include "MAndroidRenderView.h"
 
-#ifdef MORTY_ANDROID
+//#ifdef MORTY_ANDROID
+#if false
 
 #include <functional>
 #include <string>
@@ -9,7 +10,7 @@
 #include "Render/Vulkan/MVulkanRenderTarget.h"
 
 MAndroidRenderView::MAndroidRenderView()
-	: MIRenderView()
+	: MRenderView()
 	, m_nWidth(640)
 	, m_nHeight(480)
 	, m_pNativeWindow(nullptr)
@@ -24,7 +25,7 @@ MAndroidRenderView::~MAndroidRenderView()
 
 bool MAndroidRenderView::Initialize(MEngine* pEngine, const char* svWindowName)
 {
-	MIRenderView::Initialize(pEngine, svWindowName);
+	MRenderView::Initialize(pEngine, svWindowName);
 
 	m_pEngine = pEngine;
 
@@ -45,7 +46,7 @@ void MAndroidRenderView::OnResize(const int& nWidth, const int& nHeight)
 
 void MAndroidRenderView::SetRenderTarget(MIRenderTarget* pRenderTarget)
 {
-	MIRenderView::SetRenderTarget(pRenderTarget);
+	MRenderView::SetRenderTarget(pRenderTarget);
 }
 
 bool MAndroidRenderView::MainLoop(const float& fDelta)
@@ -71,7 +72,7 @@ void MAndroidRenderView::Release()
 		m_pRenderTarget = nullptr;
 	}
 
-	MIRenderView::Release();
+	MRenderView::Release();
 }
 
 void MAndroidRenderView::SetSize(const Vector2& v2Size)

@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MMATH_H_
-#define _M_MMATH_H_
+#pragma once
 #include "Utility/MGlobal.h"
 #include "Math/Matrix.h"
 
@@ -55,6 +54,3 @@ private:
 	static std::default_random_engine s_randomEngine;
 
 };
-
-
-#endif

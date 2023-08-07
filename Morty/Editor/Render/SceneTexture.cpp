@@ -17,20 +17,20 @@
 #include "Component/MMoveControllerComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 
-#include "RenderProgram/MIRenderProgram.h""
+#include "RenderProgram/MIRenderProgram.h"
 
 #include "stb_image_write.h"
 #include "Batch/MMeshInstanceManager.h"
+#include "Main/MainEditor.h"
 #include "Shadow/MShadowMeshManager.h"
+#include "Manager/MAnimationManager.h"
 
 #define MUTIL_RENDER_PROGRAM false
 
 SceneTexture::SceneTexture()
-	: m_pEngine(nullptr)
-	, m_pScene(nullptr)
+	: m_pScene(nullptr)
 	, m_pRenderViewport(nullptr)
 	, m_vRenderProgram()
-	, m_nImageCount(3)
 	, m_bSnapshot(false)
 	, m_strSnapshotPath("")
 {
@@ -42,13 +42,12 @@ SceneTexture::~SceneTexture()
 
 }
 
-void SceneTexture::Initialize(MEngine* pEngine, const MString& strRenderProgram, const size_t& nImageCount)
+void SceneTexture::Initialize(MScene* pScene, const MString& strRenderProgram)
 {
- 	m_pEngine = pEngine;
-	m_nImageCount = nImageCount;
- 
- 	MObjectSystem* pObjectSystem = m_pEngine->FindSystem<MObjectSystem>();
-	m_pScene = pObjectSystem->CreateObject<MScene>();
+	m_pScene = pScene;
+
+	MEngine* pEngine = pScene->GetEngine();
+ 	MObjectSystem* pObjectSystem = pEngine->FindSystem<MObjectSystem>();
 	
 	m_pRenderViewport = pObjectSystem->CreateObject<MViewport>();
 	m_pRenderViewport->SetScene(m_pScene);
@@ -59,7 +58,8 @@ void SceneTexture::Initialize(MEngine* pEngine, const MString& strRenderProgram,
 	pDefaultCamera->SetName("Camera");
 	if (MSceneComponent* pSceneComponent = pDefaultCamera->RegisterComponent<MSceneComponent>())
 	{
-		pSceneComponent->SetPosition(Vector3(0, 0, -50));
+		pSceneComponent->SetPosition(Vector3(25, 50, -40));
+		pSceneComponent->SetRotation(Quaternion(Vector3(1, 0, 0), 45.0f));
 	}
 	pDefaultCamera->RegisterComponent<MCameraComponent>();
 	pDefaultCamera->RegisterComponent<MMoveControllerComponent>();
@@ -67,34 +67,43 @@ void SceneTexture::Initialize(MEngine* pEngine, const MString& strRenderProgram,
 	m_pRenderViewport->SetCamera(pDefaultCamera);
 
 
-
+	const size_t nImageCount = 1;
 #if MUTIL_RENDER_PROGRAM
 	m_vRenderProgram.resize(nImageCount);
 	for (size_t i = 0; i < nImageCount; ++i)
 	{
 		MObject* pRenderProgram = pObjectSystem->CreateObject(strRenderProgram);
-		m_vRenderProgram[i] = pRenderProgram->DynamicCast<MIRenderProgram>();
+		m_vRenderProgram[i] = pRenderProgram->template DynamicCast<MIRenderProgram>();
 		m_vRenderProgram[i]->SetViewport(m_pRenderViewport);
 	}
 #else
 	MObject* pRenderProgramObject = pObjectSystem->CreateObject(strRenderProgram);
-	MIRenderProgram* pRenderProgram = pRenderProgramObject->DynamicCast<MIRenderProgram>();
+	MIRenderProgram* pRenderProgram = pRenderProgramObject->template DynamicCast<MIRenderProgram>();
 	pRenderProgram->SetViewport(m_pRenderViewport);
 	m_vRenderProgram.resize(nImageCount, pRenderProgram);
 #endif
 
-
-	if (m_pUpdateTask = m_pEngine->GetMainGraph()->AddNode<MTaskNode>("SceneTextureUpdate"))
+	m_pUpdateTask = pEngine->GetMainGraph()->AddNode<MTaskNode>("SceneTextureUpdate");
+	if (m_pUpdateTask)
 	{
 		m_pUpdateTask->SetThreadType(METhreadType::ERenderThread);
 
-		GetScene()->GetManager<MMeshInstanceManager>()->GetUpdateTask()->AppendOutput()->LinkTo(m_pUpdateTask->AppendInput());
-		GetScene()->GetManager<MShadowMeshManager>()->GetUpdateTask()->AppendOutput()->LinkTo(m_pUpdateTask->AppendInput());
+		GetScene()->GetManager<MMeshInstanceManager>()->GetUpdateTask()->ConnectTo(m_pUpdateTask);
+		GetScene()->GetManager<MShadowMeshManager>()->GetUpdateTask()->ConnectTo(m_pUpdateTask);
+		GetScene()->GetManager<MAnimationManager>()->GetUpdateTask()->ConnectTo(m_pUpdateTask);
 	}
 }
 
 void SceneTexture::Release()
 {
+	MEngine* pEngine = m_pScene->GetEngine();
+
+	if (m_pUpdateTask)
+	{
+		pEngine->GetMainGraph()->DestroyNode(m_pUpdateTask);
+		m_pUpdateTask = nullptr;
+	}
+
 	if (m_pScene)
 	{
 		m_pScene->DeleteLater();
@@ -115,23 +124,10 @@ void SceneTexture::Release()
 	m_vRenderProgram.clear();
 }
 
-void SceneTexture::SetSize(const Vector2& v2Size)
+void SceneTexture::SetRect(Vector2 pos, Vector2 size)
 {
-	if (m_v2Size == v2Size)
-		return;
-
-	m_v2Size = v2Size;
-
-	if (m_v2Size.x < 1.0f)
-		m_v2Size.x = 1.0f;
-
-	if (m_v2Size.y < 1.0f)
-		m_v2Size.y = 1.0f;
-
-	if (m_pRenderViewport)
-	{
-		m_pRenderViewport->SetSize(m_v2Size);
-	}
+	m_pRenderViewport->SetScreenPosition(pos);
+	m_pRenderViewport->SetSize(size);
 }
 
 std::shared_ptr<MTexture> SceneTexture::GetTexture(const size_t& nImageIndex)
@@ -152,10 +148,6 @@ std::vector<std::shared_ptr<MTexture>> SceneTexture::GetAllOutputTexture(const s
 	}
 
 	return {};
-}
-
-void SceneTexture::SetBackColor(const MColor& cColor)
-{
 }
 
 void SceneTexture::Snapshot(const MString& strSnapshotPath)

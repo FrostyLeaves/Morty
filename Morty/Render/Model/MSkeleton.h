@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSKELETON_H_
-#define _M_MSKELETON_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Math/Matrix.h"
 #include "Utility/MString.h"
@@ -74,5 +74,3 @@ private:
 	std::map<MString, uint32_t> m_tBonesMap;
 	std::vector<MBone> m_vAllBones;
 };
-
-#endif

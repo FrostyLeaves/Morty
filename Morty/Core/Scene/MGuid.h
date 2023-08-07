@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_GUID_H_
-#define _M_GUID_H_
+#pragma once
 
 #include "Utility/MGlobal.h"
 
@@ -33,6 +32,3 @@ public:
 
 	std::array<uint32_t, 4> data;
 };
-
-
-#endif

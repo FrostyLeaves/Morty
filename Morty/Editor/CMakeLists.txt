@@ -11,7 +11,7 @@ file(GLOB_RECURSE EDITOR_All_FILES *.h *.cpp)
 file(GLOB EDITOR_IMGUI_FILE_DIALOG_FILES ${THIRD_PARTY_PATH}/ImGuiFileDialog/*.h ${THIRD_PARTY_PATH}/ImGuiFileDialog/*.cpp )
 source_group("ImGUI\\FileDialog" FILES ${EDITOR_IMGUI_FILE_DIALOG_FILES})
 
-add_executable(Editor 
+add_library(Editor OBJECT
         ${EDITOR_All_FILES}
 
         ${EDITOR_IMGUI_FILES}
@@ -46,7 +46,6 @@ target_include_directories(Editor
         ${EDITOR_CODE_DIRECTORIES}
 )
 
-
 find_package(SDL2 CONFIG REQUIRED)
 if(SDL2_FOUND)
     target_link_libraries(Editor PUBLIC SDL2::SDL2)
@@ -62,6 +61,13 @@ if(imgui_FOUND)
     )
 else()
     message(FATAL_ERROR "imgui not found.")
+endif()
+
+find_package(imguizmo CONFIG REQUIRED)
+if(imguizmo_FOUND)
+    target_link_libraries(Editor PUBLIC imguizmo::imguizmo)
+else()
+    message(FATAL_ERROR "imguizmo not found.")
 endif()
 
 find_package(Stb REQUIRED)

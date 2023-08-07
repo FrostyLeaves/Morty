@@ -75,7 +75,7 @@ void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
 
 	time = MTimer::GetCurTime() - time;
 
-	pEngine->GetLogger()->Log("Load sponza scene time: %lld", time);
+	pEngine->GetLogger()->Log("Load sponza scene time: {}", time);
 
     if (!pModelResource)
 	{
@@ -110,7 +110,7 @@ void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
 
 	for (MComponentID& componentID : vMeshComponents)
 	{
-		if (MRenderMeshComponent* pMeshComponent = pScene->GetComponent(componentID)->DynamicCast<MRenderMeshComponent>())
+		if (MRenderMeshComponent* pMeshComponent = pScene->GetComponent(componentID)->template DynamicCast<MRenderMeshComponent>())
 		{
 			if (auto pMaterial = pMeshComponent->GetMaterial())
 			{

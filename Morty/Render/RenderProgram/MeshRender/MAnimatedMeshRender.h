@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_ANIMATED_MESH_RENDER_H_
-#define _M_ANIMATED_MESH_RENDER_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
 
@@ -45,6 +45,3 @@ private:
 	std::shared_ptr<IRenderPassAdapter> m_pRenderPassAdapter = nullptr;
 	std::shared_ptr<IPropertyBlockAdapter> m_pFramePropertyAdapter = nullptr;
 };
-
-
-#endif

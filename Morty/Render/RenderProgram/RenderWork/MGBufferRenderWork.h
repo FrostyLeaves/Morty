@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_G_BUFFER_RENDER_WORK_H_
-#define _M_G_BUFFER_RENDER_WORK_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "MSinglePassRenderWork.h"
 
@@ -28,6 +28,3 @@ public:
 
 	std::shared_ptr<IGBufferAdapter> CreateGBuffer();
 };
-
-
-#endif

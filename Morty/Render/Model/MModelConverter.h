@@ -8,8 +8,8 @@
  * MModelResource -> MModelConverter 2020-06-14 00:17:49
 **/
 
-#ifndef _M_MODELCONVERTER_H_
-#define _M_MODELCONVERTER_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Resource/MResource.h"
 #include "Utility/MString.h"
@@ -137,5 +137,3 @@ private:
 	std::shared_ptr<MITextureDelegate> m_pTextureDelegate;
 
 };
-
-#endif

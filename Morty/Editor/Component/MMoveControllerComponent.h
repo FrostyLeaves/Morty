@@ -1,5 +1,4 @@
-#ifndef _MMOVE_CONTROLLER_COMPONENT_H_
-#define _MMOVE_CONTROLLER_COMPONENT_H_
+#pragma once
 
 #include "Component/MComponent.h"
 
@@ -22,5 +21,3 @@ private:
 	float m_fMaxSpeed;
 	Vector3 m_v3MoveSpeed;
 };
-
-#endif

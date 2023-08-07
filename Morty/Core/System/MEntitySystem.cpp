@@ -91,8 +91,7 @@ std::shared_ptr<MResource> MEntitySystem::PackEntity(MScene* pScene, const std::
 	std::unique_ptr<MEntityResourceData> pEntityResourceData = std::make_unique<MEntityResourceData>();
 	pEntityResourceData->aEntityData.resize(fbb.GetSize());
 	memcpy(pEntityResourceData->aEntityData.data(), (MByte*)fbb.GetBufferPointer(), fbb.GetSize() * sizeof(MByte));
-	std::unique_ptr<MResourceData> pResourceData = std::move(pEntityResourceData);
-	pResource->Load(pResourceData);
+	pResource->Load(std::move(pEntityResourceData));
 
 	return pResource;
 }
@@ -101,7 +100,7 @@ std::vector<MEntity*> MEntitySystem::LoadEntity(MScene* pScene, std::shared_ptr<
 {
 	std::vector<MEntity*> vResult;
 
-	MEntityResource* pEntityResource = pResource->DynamicCast<MEntityResource>();
+	MEntityResource* pEntityResource = pResource->template DynamicCast<MEntityResource>();
 	if (!pEntityResource)
 		return vResult;
 

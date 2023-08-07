@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MRENDERMODULE_H_
-#define _M_MRENDERMODULE_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 
 class MEngine;
@@ -27,6 +27,3 @@ public:
 
 	static const MString DefaultAnimationMaterial;
 };
-
-
-#endif

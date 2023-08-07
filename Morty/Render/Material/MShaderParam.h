@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSHADER_PARAM_H_
-#define _M_MSHADER_PARAM_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Variant/MVariant.h"
 #include "Basic/MTexture.h"
@@ -123,5 +123,3 @@ struct MShaderSampleParam : public MShaderParam
 	
 
 };
-
-#endif

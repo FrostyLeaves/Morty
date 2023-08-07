@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MMODELCOMPONENT_H_
-#define _M_MMODELCOMPONENT_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Component/MComponent.h"
 
@@ -51,9 +51,9 @@ public:
 public:
 
 
-	virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb);
-	virtual void Deserialize(flatbuffers::FlatBufferBuilder& fbb) override;
-	virtual void Deserialize(const void* pBufferPointer);
+	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
+	void Deserialize(flatbuffers::FlatBufferBuilder& fbb) override;
+	void Deserialize(const void* pBufferPointer) override;
 
 private:
 
@@ -64,6 +64,3 @@ private:
 
 	bool m_bBoundingBoxVisiable;
 };
-
-
-#endif

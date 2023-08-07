@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MTHREADPOOL_H_
-#define _M_MTHREADPOOL_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Type/MType.h"
 
@@ -55,6 +55,3 @@ private:
 	bool m_bClose;
 	int m_nCloseThreadCount;
 };
-
-
-#endif

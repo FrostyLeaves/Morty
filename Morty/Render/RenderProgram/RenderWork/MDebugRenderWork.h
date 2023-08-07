@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_DEBUG_RENDER_WORK_H_
-#define _M_DEBUG_RENDER_WORK_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "MSinglePassRenderWork.h"
 
@@ -24,6 +24,3 @@ public:
 	void Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
 
 };
-
-
-#endif

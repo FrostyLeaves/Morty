@@ -6,10 +6,10 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MENGINE_H_
-#define _M_MENGINE_H_
+#pragma once
 #include "Utility/MGlobal.h"
 #include "Utility/MLogger.h"
+#include "Engine/MSystem.h"
 #include "Thread/MThreadPool.h"
 
 #include <vector>
@@ -101,7 +101,7 @@ private:
 
 	std::map<const MType*, MObject*> m_tGlobalObject;
 
-	MTaskGraph* m_pMainTaskGraph;
+	MTaskGraph* m_pMainTaskGraph = nullptr;
 
 	MLogger m_logger;
 
@@ -115,7 +115,7 @@ TYPE* MEngine::FindSystem()
 	auto pSystem = FindSystem(TYPE::GetClassType());
 	if (pSystem)
 	{
-		return pSystem->DynamicCast<TYPE>();
+		return pSystem->template DynamicCast<TYPE>();
 	}
 	
 	return nullptr;
@@ -124,7 +124,7 @@ TYPE* MEngine::FindSystem()
 template<typename TYPE>
 TYPE* MEngine::FindGlobalObject()
 {
-	return FindGlobalObject(TYPE::GetClassType())->DynamicCast<TYPE>();
+	return FindGlobalObject(TYPE::GetClassType())->template DynamicCast<TYPE>();
 }
 
 template<typename TYPE>
@@ -148,9 +148,8 @@ TYPE* MEngine::RegisterGlobalObject()
 	if (MTypeClass::IsType<TYPE, MObject>())
 	{
 		RegisterGlobalObject(TYPE::GetClassType());
-		return FindGlobalObject(TYPE::GetClassType())->DynamicCast<TYPE>();
+		return FindGlobalObject(TYPE::GetClassType())->template DynamicCast<TYPE>();
 	}
+
+	return nullptr;
 }
-
-
-#endif

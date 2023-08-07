@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_INDEXED_INDIRECT_RENDERABLE_H_
-#define _M_INDEXED_INDIRECT_RENDERABLE_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
 
@@ -36,5 +36,3 @@ private:
 	std::shared_ptr<MInstanceCulling> m_pCullingAdapter = nullptr;
 	std::shared_ptr<IMaterialFilter> pMaterialFilter = nullptr;
 };
-
-#endif

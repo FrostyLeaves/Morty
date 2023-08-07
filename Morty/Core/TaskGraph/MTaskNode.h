@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MTASKNODE_H_
-#define _M_MTASKNODE_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 
 #include "Type/MType.h"
@@ -42,8 +42,11 @@ public:
 	MTaskNodeInput* GetInput(const size_t& nInputIdx);
 	MTaskNodeOutput* GetOutput(const size_t& nOutputIdx);
 
+	void ConnectTo(MTaskNode* pNextNode);
+	void DisconnectTo(MTaskNode* pNextNode);
+	void DisconnectAll();
+
 	MTaskGraph* GetGraph() { return m_pGraph; }
-	MEngine* GetEngine();
 
 	bool IsStartNode();
 	bool IsFinalNode();
@@ -89,5 +92,3 @@ TYPE* MTaskNode::AppendOutput()
 	AppendOutput(pOutput);
 	return pOutput;
 }
-
-#endif

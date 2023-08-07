@@ -1,6 +1,5 @@
+#pragma once
 
-#ifndef _M_MPOST_PROCESS_RENDERWORK_H_
-#define _M_MPOST_PROCESS_RENDERWORK_H_
 #include "Utility/MGlobal.h"
 #include "MSinglePassRenderWork.h"
 
@@ -34,6 +33,3 @@ private:
 	std::shared_ptr<MMaterial> m_pMaterial = nullptr;
 	std::shared_ptr<ITextureInputAdapter> m_pInputAdapter = nullptr;
 };
-
-
-#endif

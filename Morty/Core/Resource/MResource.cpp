@@ -95,7 +95,7 @@ MResourceSystem* MResource::GetResourceSystem()
 
 	if (MISystem* pSystem = m_pEngine->FindSystem(MResourceSystem::GetClassType()))
 	{
-		return pSystem->DynamicCast<MResourceSystem>();
+		return pSystem->template DynamicCast<MResourceSystem>();
 	}
 
 	return nullptr;
@@ -174,8 +174,9 @@ void MResourceRef::SetResource(std::shared_ptr<MResource> pResource)
 			m_pResource->m_vKeeper.erase(iter);
 		}
 	}
-	
-	if (m_pResource = pResource)
+
+	m_pResource = pResource;
+	if (m_pResource)
 	{
 		m_pResource->m_vKeeper.push_back(this);
 	}

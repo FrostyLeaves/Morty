@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MDEBUGRENDERCOMPONENT_H_
-#define _M_MDEBUGRENDERCOMPONENT_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
 #include "Math/Vector.h"
@@ -50,5 +50,3 @@ private:
     MMesh<MDebugDrawLineVertex> m_cDrawLineMesh;
 
 };
-
-#endif

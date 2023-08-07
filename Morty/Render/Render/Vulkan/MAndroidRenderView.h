@@ -6,17 +6,18 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_ANDROID_RENDERVIEW_H_
-#define _M_ANDROID_RENDERVIEW_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 
-#ifdef MORTY_ANDROID
+//#ifdef MORTY_ANDROID
+#if false
 
-#include "MIRenderView.h"
+#include "MRenderView.h"
 #include "Utility/MString.h"
 
 
-class MORTY_API MAndroidRenderView : public MIRenderView
+class MORTY_API MAndroidRenderView : public MRenderView
 {
 public:
 	MAndroidRenderView();
@@ -49,9 +50,6 @@ protected:
 
 	class ANativeWindow* m_pNativeWindow;
 };
-
-
-#endif
 
 
 #endif

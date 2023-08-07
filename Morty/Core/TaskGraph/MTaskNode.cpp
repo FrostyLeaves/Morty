@@ -15,7 +15,17 @@ MTaskNode::MTaskNode()
 
 MTaskNode::~MTaskNode()
 {
+	for (MTaskNodeInput* pInput : m_vInput)
+	{
+		delete pInput;
+	}
+	m_vInput.clear();
 
+	for (MTaskNodeOutput* pOutput : m_vOutput)
+	{
+		delete pOutput;
+	}
+	m_vOutput.clear();
 }
 
 MTaskNodeInput* MTaskNode::AppendInput()
@@ -52,12 +62,55 @@ MTaskNodeOutput* MTaskNode::GetOutput(const size_t& nOutputIdx)
 	return nullptr;
 }
 
-MEngine* MTaskNode::GetEngine()
+void MTaskNode::ConnectTo(MTaskNode* pNextNode)
 {
-	if (!m_pGraph)
-		return nullptr;
+	MTaskNodeOutput* pOutput = GetOutputSize() ? GetOutput(0) : AppendOutput();
+	MTaskNodeInput* pInput = pNextNode->AppendInput();
 
-	return m_pGraph->GetEngine();
+	pOutput->LinkTo(pInput);
+}
+
+void MTaskNode::DisconnectTo(MTaskNode* pNextNode)
+{
+    for (auto iter = m_vOutput.begin(); iter != m_vOutput.end(); ++iter)
+    {
+		MTaskNodeOutput* pOutput = *iter;
+		auto inputs = pOutput->GetLinkedInputs();
+		for (MTaskNodeInput* pInput : inputs)
+		{
+		    if (pInput->GetTaskNode() == pNextNode)
+		    {
+				pOutput->UnLink(pInput);
+		    }
+		}
+    }
+}
+
+
+void MTaskNode::DisconnectAll()
+{
+    for (MTaskNodeInput* pInput : m_vInput)
+    {
+        if (auto pPrevNode = pInput->GetLinkedNode())
+        {
+			pPrevNode->DisconnectTo(this);
+        }
+
+		delete pInput;
+    }
+	m_vInput.clear();
+
+	for (MTaskNodeOutput* pOutput : m_vOutput)
+	{
+		auto inputs = pOutput->GetLinkedInputs();
+		for (MTaskNodeInput* pInput : inputs)
+		{
+			pOutput->UnLink(pInput);
+		}
+
+		delete pOutput;
+	}
+	m_vOutput.clear();
 }
 
 bool MTaskNode::IsStartNode()

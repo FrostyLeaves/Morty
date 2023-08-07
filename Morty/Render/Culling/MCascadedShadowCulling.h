@@ -1,5 +1,4 @@
-#ifndef _M_CASCADED_SHADOW_CULLING_H_
-#define _M_CASCADED_SHADOW_CULLING_H_
+#pragma once
 
 #include "MInstanceCulling.h"
 
@@ -38,7 +37,3 @@ private:
     std::vector<MMaterialCullingGroup> m_vCullingInstanceGroup;
 
 };
-
-
-
-#endif

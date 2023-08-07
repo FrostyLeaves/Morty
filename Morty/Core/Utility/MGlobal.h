@@ -1,8 +1,8 @@
-#ifndef _M_GLOBAL_H_
-#define _M_GLOBAL_H_
+#pragma once
+
+
 
 #include <stdint.h>
-
 
 //define MORTY_WIN
 //define MORTY_MACOS
@@ -19,8 +19,12 @@
     #define MORTY_API
 #endif
 
-#if _DEBUG
-#define MORTY_DEBUG true
+#ifdef MORTY_ANDROID
+    #ifndef NDEBUG
+        #define MORTY_DEBUG true
+    #endif
+#elif _DEBUG
+    #define MORTY_DEBUG true
 #endif
 
 
@@ -48,31 +52,32 @@ typedef unsigned char MByte;
 #include <array>
 #include <mutex>
 #include <vector>
+#include <list>
 #include <thread>
-#include <format>
 #include <fstream>
 #include <assert.h>
 #include <algorithm>
 #include <functional>
+#include <unordered_map>
 
 #include <flatbuffers/buffer.h>
 #include <flatbuffers/flatbuffer_builder.h>
 
+#include "doctest/doctest.h"
 #include "Utility/MString.h"
 
-
+#if MORTY_DEBUG
 #define MORTY_ASSERT assert
-
+#else
+#define MORTY_ASSERT
+#endif
 
 class MORTY_API MGlobal
 {
 public:
-    static const int M_INVALID_INDEX = -1;
+    static constexpr int M_INVALID_INDEX = -1;
+    static constexpr float M_FLOAT_BIAS = 1e-6;
 
 };
 
-
-
 class MEngine;
-
-#endif

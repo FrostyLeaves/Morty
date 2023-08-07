@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MRENDERWORK_H_
-#define _M_MRENDERWORK_H_
+#pragma once
+
 #include "Math/Vector.h"
 #include "Utility/MGlobal.h"
 
@@ -109,5 +109,3 @@ public:
 
 
 };
-
-#endif

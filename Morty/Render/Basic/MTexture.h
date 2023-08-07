@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MTEXTURE_H_
-#define _M_MTEXTURE_H_
+#pragma once
+
 #include "Render/MRenderGlobal.h"
 
 #include "Math/Vector.h"
@@ -65,8 +65,6 @@ class MORTY_API MTexture
 public:
 	MTexture();
 	virtual ~MTexture();
-
-public:
 
 public:
 
@@ -159,10 +157,3 @@ public:
 #endif
 
 };
-
-
-
-
-
-
-#endif

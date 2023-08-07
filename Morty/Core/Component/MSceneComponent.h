@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSCENECOMPONENT_H_
-#define _M_MSCENECOMPONENT_H_
+#pragma once
 #include "Utility/MGlobal.h"
 #include "Component/MComponent.h"
 
@@ -47,6 +46,7 @@ public:
 	void SetWorldRotation(const Quaternion& quat);
 	Quaternion GetWorldRotation();
 
+	void SetWorldScale(const Vector3 scale);
 	Vector3 GetWorldScale();
 
 	void SetRotation(const Quaternion& quat);
@@ -114,6 +114,3 @@ private:
 	MComponentID m_attachParent;
 	std::vector<MComponentID> m_vAttachChildren;
 };
-
-
-#endif

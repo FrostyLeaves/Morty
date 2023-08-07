@@ -1,33 +1,20 @@
-#ifndef _RESOURCE_VIEW_H_
-#define _RESOURCE_VIEW_H_
+#pragma once
+
+#include "Main/BaseWidget.h"
 
 
-#include "Main/IBaseView.h"
-
-
-class ResourceView : public IBaseView
+class ResourceView : public BaseWidget
 {
 public:
 	ResourceView();
-	virtual ~ResourceView();
+    ~ResourceView() = default;
 
-	virtual void Render() override;
+	void Render() override;
 		;
+	void Initialize(MainEditor* pMainEditor) override;
+	void Release() override;
 
-	virtual void Initialize(MEngine* pEngine) override;
-	virtual void Release() override;
-
-	virtual void Input(MInputEvent* pEvent) override;
-
-
-
-
-private:
-	MEngine* m_pEngine;
+	void Input(MInputEvent* pEvent) override;
+	
 };
 
-
-
-
-
-#endif

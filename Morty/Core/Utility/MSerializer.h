@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSERIALIZER_H_
-#define _M_MSERIALIZER_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Type/MType.h"
 #include "Variant/MVariant.h"
@@ -32,5 +32,3 @@ private:
 
 	uint32_t m_unReferenceIdx;
 };
-
-#endif

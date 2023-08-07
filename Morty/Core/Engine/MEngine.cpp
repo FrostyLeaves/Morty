@@ -11,9 +11,8 @@ MORTY_CLASS_IMPLEMENT(MEngine, MTypeClass)
 
 MEngine::MEngine()
 	: MTypeClass()
-	, m_time(60)
+	, m_time(500)
 	, m_eStage(EngineStage::DEFAULT)
-	, m_pMainTaskGraph(nullptr)
 {
 
 }
@@ -25,10 +24,7 @@ MEngine::~MEngine()
 bool MEngine::Initialize()
 {
 	m_threadPool.Initialize();
-
-	MCoreModule::Register(this);
-
-	m_pMainTaskGraph = FindSystem<MObjectSystem>()->CreateObject<MTaskGraph>();
+	m_pMainTaskGraph = new MTaskGraph(GetThreadPool());
 
 	m_eStage = EngineStage::READY;
 	return true;
@@ -36,10 +32,6 @@ bool MEngine::Initialize()
 
 void MEngine::Release()
 {
-	m_pMainTaskGraph->DeleteLater();
-	m_pMainTaskGraph = nullptr;
-
-	m_threadPool.Release();
 
 	for (auto& pSystem : m_vSystem)
 	{
@@ -50,6 +42,10 @@ void MEngine::Release()
 
 	m_tSystem.clear();
 	m_vSystem.clear();
+
+	delete m_pMainTaskGraph;
+	m_pMainTaskGraph = nullptr;
+	m_threadPool.Release();
 }
 
 void MEngine::Start()
@@ -84,7 +80,6 @@ void MEngine::Update()
 		Tick(fTimeDelta);
 		m_time.lPrevTickTime = currentTime;
 	}
-
 }
 
 void MEngine::Tick(const float& fDelta)

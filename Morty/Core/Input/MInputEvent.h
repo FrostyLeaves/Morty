@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MINPUT_EVENT_H_
-#define _M_MINPUT_EVENT_H_
+#pragma once
 #include "Utility/MGlobal.h"
 #include "Math/Vector.h"
 
@@ -95,5 +94,3 @@ protected:
 	uint32_t m_unKeyIndex;
 	MEKeyState m_eInputType;
 };
-
-#endif

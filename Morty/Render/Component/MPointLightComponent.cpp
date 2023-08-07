@@ -26,7 +26,8 @@ flatbuffers::Offset<void> MPointLightComponent::Serialize(flatbuffers::FlatBuffe
 
 	mfbs::MPointLightComponentBuilder builder(fbb);
 
-	builder.add_color(reinterpret_cast<mfbs::Vector4*>(&GetColorVector()));
+	Vector4 color = GetColorVector();
+	builder.add_color(reinterpret_cast<mfbs::Vector4*>(&color));
 	builder.add_light_intensity(GetLightIntensity());
 	builder.add_constant(GetConstant());
 	builder.add_linear(GetLinear());

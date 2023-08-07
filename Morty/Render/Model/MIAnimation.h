@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MIANIMATION_H_
-#define _M_MIANIMATION_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 
 class MEngine;
@@ -39,5 +39,3 @@ public:
 	virtual void Update(const float& fDelta, const bool& bAnimStep) = 0;
 
 };
-
-#endif

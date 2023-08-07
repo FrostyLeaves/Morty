@@ -1,3 +1,4 @@
+#include <Resource/MMeshResourceUtil.h>
 #include "MRenderModule.h"
 #include "Scene/MScene.h"
 #include "Engine/MEngine.h"

@@ -1,5 +1,4 @@
-#ifndef _M_STORAGE_BATCH_GROUP_H_
-#define _M_STORAGE_BATCH_GROUP_H_
+#pragma once
 
 #include "Object/MObject.h"
 #include "Utility/MGlobal.h"
@@ -48,6 +47,3 @@ private:
 	MRenderInstanceCache<MMeshInstanceKey, MMeshInstanceRenderProxy> m_tInstanceCache;
 	MStorageVariant m_transformBuffer;
 };
-
-
-#endif

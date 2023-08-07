@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MTASKGRAPHWALKER_H_
-#define _M_MTASKGRAPHWALKER_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Thread/MThreadWork.h"
 
@@ -48,6 +48,3 @@ private:
 
     std::mutex m_taskStatehMutex;
 };
-
-
-#endif

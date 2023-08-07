@@ -9,7 +9,7 @@
 
 #define NOTIFY_FUNC(PTR, CLASS_FUNC) (std::bind(&CLASS_FUNC, PTR, std::placeholders::_1))
 
-class IBaseView;
+class BaseWidget;
 class NotifyManager
 {
 public:

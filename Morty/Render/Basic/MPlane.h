@@ -8,8 +8,8 @@
  * http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
 **/
 
-#ifndef _M_MPLANE_H_
-#define _M_MPLANE_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Math/Vector.h"
 
@@ -35,6 +35,3 @@ public:
 	
 	
 };
-
-
-#endif

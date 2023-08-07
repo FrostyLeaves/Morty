@@ -41,7 +41,8 @@ flatbuffers::Offset<void> MDirectionalLightComponent::Serialize(flatbuffers::Fla
 
 	mfbs::MDirectionalLightComponentBuilder builder(fbb);
 
-	builder.add_color(reinterpret_cast<mfbs::Vector4*>(&GetColorVector()));
+	Vector4 color = GetColorVector();
+	builder.add_color(reinterpret_cast<mfbs::Vector4*>(&color));
 	builder.add_light_intensity(GetLightIntensity());
 
 	builder.add_super(fbSuper);

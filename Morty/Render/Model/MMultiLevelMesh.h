@@ -8,8 +8,8 @@
  * https://github.com/melax/sandbox
 **/
 
-#ifndef _M_MMULTILEVELMESH_H_
-#define _M_MMULTILEVELMESH_H_
+#pragma once
+
 #include "Render/MMesh.h"
 #include "Resource/MResource.h"
 #include <vector>
@@ -73,5 +73,3 @@ public:
 
 	std::vector<MIMesh*> m_vMeshesCache;
 };
-
-#endif

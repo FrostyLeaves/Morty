@@ -13,15 +13,16 @@ class MTexture;
 struct ImGuiTexture
 {
     std::shared_ptr<MTexture> pTexture = nullptr;
+    intptr_t nTextureIdx = 0;
     size_t nArrayIdx = 0;
 
-    ImGuiTexture() : pTexture(nullptr), nArrayIdx(0) {}
+    ImGuiTexture() {}
 
-    operator intptr_t() const { return (intptr_t)pTexture.get(); }
+    operator intptr_t() const { return nTextureIdx; }
 
-    ImGuiTexture(void* tex) : pTexture((MTexture*)tex), nArrayIdx(0) {}
+    ImGuiTexture(void* tex) : nTextureIdx(intptr_t(tex)) {}
     
-    ImGuiTexture(std::shared_ptr<MTexture> tex, size_t arrIdx) : pTexture(tex), nArrayIdx(arrIdx) {}
+    ImGuiTexture(std::shared_ptr<MTexture> tex, intptr_t nTextureIdx, size_t arrIdx) : pTexture(tex), nTextureIdx(nTextureIdx), nArrayIdx(arrIdx) {}
 
     bool operator==(const ImGuiTexture& other)
     {

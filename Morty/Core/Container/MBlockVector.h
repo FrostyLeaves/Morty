@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MBLOCKVECTOR_H_
-#define _M_MBLOCKVECTOR_H_
+#pragma once
 #include "Utility/MGlobal.h"
 
 #include <iterator>
@@ -236,7 +235,7 @@ void MBlockVector<TYPE, SIZE>::pop_back()
 	}
 	else
 	{
-		asset(false);
+		MORTY_ASSERT(false);
 	}
 }
 
@@ -270,5 +269,3 @@ TYPE* MBlockVectorIter<TYPE, SIZE>::operator->()
 {
 	return &(vArray.vPrimaryArray[nPrimaryIdx]->vSecondaryArray[nSecondaryIdx]);
 }
-
-#endif

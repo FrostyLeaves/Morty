@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MPIPELINE_H_
-#define _M_MPIPELINE_H_
+#pragma once
+
 #include "Render/MRenderGlobal.h"
 
 
@@ -60,6 +60,3 @@ public:
     VkPipeline m_vkPipeline = VK_NULL_HANDLE;
 #endif
 };
-
-
-#endif

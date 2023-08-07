@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MANIMATION_RENDER_PROXY_H_
-#define _M_MANIMATION_RENDER_PROXY_H_
+#pragma once
+
 #include "Basic/MStorageVariant.h"
 #include "Batch/BatchGroup/MRenderInstanceCache.h"
 #include "Component/MComponent.h"
@@ -62,5 +62,3 @@ private:
 
 	std::shared_ptr<MShaderPropertyBlock> m_pShaderPropertyBlock = nullptr;
 };
-
-#endif

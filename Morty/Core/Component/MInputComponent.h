@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MINPUTCOMPONENT_H_
-#define _M_MINPUTCOMPONENT_H_
+#pragma once
 #include "Utility/MGlobal.h"
 #include "Component/MComponent.h"
 
@@ -34,6 +33,3 @@ private:
 
 	MInputCallback m_funcInputCallback;
 };
-
-
-#endif

@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MEDITORMODULE_H_
-#define _M_MEDITORMODULE_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 
 class MEngine;
@@ -18,6 +18,3 @@ public:
 	static bool Register(MEngine* pEngine);
 
 };
-
-
-#endif

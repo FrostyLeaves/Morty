@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MNODE_H_
-#define _M_MNODE_H_
+#pragma once
 #include "Utility/MGlobal.h"
 #include "Utility/MString.h"
 #include "Scene/MGuid.h"
@@ -38,6 +37,7 @@ public:
 
 	template <class T>
 	T* RegisterComponent();
+	MComponent* RegisterComponent(const MType* pComponentType);
 
 	template <class T>
 	void UnregisterComponent();
@@ -76,13 +76,7 @@ protected:
 template <class T>
 T* MEntity::RegisterComponent()
 {
-	if (!m_pScene)
-		return nullptr;
-
-	if (!m_pScene->AddComponent<T>(this))
-		return nullptr;
-
-	return GetComponent<T>();
+	return static_cast<T*>(RegisterComponent(T::GetClassType()));
 }
 
 template <class T>
@@ -102,5 +96,3 @@ T* MEntity::GetComponent()
 {
 	return static_cast<T*>(GetComponent(T::GetClassType()));
 }
-
-#endif

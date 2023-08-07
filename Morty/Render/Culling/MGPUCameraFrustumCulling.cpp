@@ -1,4 +1,4 @@
-#include "MSceneGPUCulling.h"
+#include "MGPUCameraFrustumCulling.h"
 
 #include "Component/MSceneComponent.h"
 #include "Engine/MEngine.h"
@@ -11,7 +11,7 @@
 #include "Render/MRenderCommand.h"
 #include "Batch/MMaterialBatchGroup.h"
 
-void MSceneGPUCulling::Initialize(MEngine* pEngine)
+void MGPUCameraFrustumCulling::Initialize(MEngine* pEngine)
 {
 	m_pEngine = pEngine;
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
@@ -64,7 +64,7 @@ void MSceneGPUCulling::Initialize(MEngine* pEngine)
 	}
 }
 
-void MSceneGPUCulling::Release()
+void MGPUCameraFrustumCulling::Release()
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 	m_cullingInputBuffer.DestroyBuffer(pRenderSystem->GetDevice());
@@ -75,12 +75,12 @@ void MSceneGPUCulling::Release()
 	m_pCullingComputeDispatcher = nullptr;
 }
 
-void MSceneGPUCulling::AddFilter(std::shared_ptr<IMeshInstanceFilter> pFilter)
+void MGPUCameraFrustumCulling::AddFilter(std::shared_ptr<IMeshInstanceFilter> pFilter)
 {
 	m_vFilter.push_back(pFilter);
 }
 
-void MSceneGPUCulling::UpdateCullingCamera()
+void MGPUCameraFrustumCulling::UpdateCullingCamera()
 {
 	const std::shared_ptr<MShaderPropertyBlock>& params = m_pCullingComputeDispatcher->GetShaderPropertyBlocks()[0];
 
@@ -105,7 +105,7 @@ void MSceneGPUCulling::UpdateCullingCamera()
 	pConstantParam->SetDirty();
 }
 
-void MSceneGPUCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup)
+void MGPUCameraFrustumCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup)
 {
 	if (!m_pCommand)
 	{

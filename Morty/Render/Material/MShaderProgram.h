@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSHADER_PROGRAM_H_
-#define _M_MSHADER_PROGRAM_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Resource/MResource.h"
 #include "Resource/MResource.h"
@@ -108,9 +108,9 @@ protected:
 
 	std::weak_ptr<MShaderProgram> m_pSelfPointer;
 	
-	MResourceRef m_VertexResource = nullptr;
-	MResourceRef m_PixelResource = nullptr;
-	MResourceRef m_ComputeResource = nullptr;
+	MResourceRef m_VertexResource = MResourceRef();
+	MResourceRef m_PixelResource = MResourceRef();
+	MResourceRef m_ComputeResource = MResourceRef();
 
 	MShader* m_pVertexShader = nullptr;
 	MShader* m_pPixelShader = nullptr;
@@ -124,5 +124,3 @@ protected:
 	EUsage m_eUsage = EUsage::EUnknow;
 
 };
-
-#endif

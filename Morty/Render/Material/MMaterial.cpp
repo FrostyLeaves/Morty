@@ -15,7 +15,7 @@
 #include "Variant/MVariant.h"
 
 
-MORTY_INTERFACE_IMPLEMENT(MMaterial, MResource)
+MORTY_CLASS_IMPLEMENT(MMaterial, MResource)
 
 MMaterial::MMaterial()
 	: MResource()
@@ -87,6 +87,8 @@ std::shared_ptr<MShaderSampleParam> MMaterial::FindSample(const MString& strName
 		if (pParam->strName == strName)
 			return pParam;
 	}
+
+	return nullptr;
 }
 
 std::shared_ptr<MShaderTextureParam> MMaterial::FindTexture(const MString& strName)
@@ -96,6 +98,8 @@ std::shared_ptr<MShaderTextureParam> MMaterial::FindTexture(const MString& strNa
 		if (pParam->strName == strName)
 			return pParam;
 	}
+
+	return nullptr;
 }
 
 void MMaterial::SetCullMode(const MECullMode& eType)

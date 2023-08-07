@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MCOLOR_H_
-#define _M_MCOLOR_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Math/Vector.h"
 
@@ -46,6 +46,3 @@ public:
 	static MColor White_T;
 	static MColor Red;
 };
-
-
-#endif

@@ -38,12 +38,21 @@ Matrix4 MTransform::GetMatrix() const
 	return matmove * matrota * matscal;
 }
 
-Matrix4 MTransform::GetMatrixScale()
+TEST_CASE("core transform test")
 {
-	Matrix4 matscal = Matrix4::IdentityMatrix;
-	matscal.m[0][0] = m_v3Scale.x;
-	matscal.m[1][1] = m_v3Scale.y;
-	matscal.m[2][2] = m_v3Scale.z;
+	MTransform transform;
+	transform.SetPosition(Vector3(10, 0, 0));
+	transform.SetRotation(Quaternion(Vector3(0, 1, 0), 45.0f));
+	transform.SetScale(Vector3(1, 2, 3));
 
-	return matscal;
+	MTransform other = transform.GetMatrix();
+
+	Vector3 v3TestPosition = other.GetPosition() - transform.GetPosition();
+	CHECK(v3TestPosition.Length() < MGlobal::M_FLOAT_BIAS);
+
+	Vector3 v3TestQuaternion = other.GetRotation().GetEulerAngle() - transform.GetRotation().GetEulerAngle();
+	CHECK(v3TestQuaternion.Length() < MGlobal::M_FLOAT_BIAS);
+
+	Vector3 v3TestScale = other.GetScale() - transform.GetScale();
+	CHECK(v3TestScale.Length() < MGlobal::M_FLOAT_BIAS);
 }

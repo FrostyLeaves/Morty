@@ -1,5 +1,4 @@
-#ifndef _M_ANIMATION_MANAGER_H_
-#define _M_ANIMATION_MANAGER_H_
+#pragma once
 
 #include "Batch/BatchGroup/MInstanceBatchGroup.h"
 #include "Utility/MGlobal.h"
@@ -42,6 +41,7 @@ public:
 	void RemoveComponent(MModelComponent* pComponent);
 
 	void RenderUpdate(MTaskNode* pNode);
+	MTaskNode* GetUpdateTask() const { return m_pUpdateTask; }
 
 	std::shared_ptr<IPropertyBlockAdapter> CreateAnimationPropertyAdapter();
 
@@ -59,5 +59,3 @@ private:
 	std::shared_ptr<MAnimationRenderGroup> m_pAnimationRenderGroup = nullptr;
 	MTaskNode* m_pUpdateTask = nullptr;
 };
-
-#endif

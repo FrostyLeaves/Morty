@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MRENDERABLE_MESH_COMPONENT_H_
-#define _M_MRENDERABLE_MESH_COMPONENT_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Component/MComponent.h"
 
@@ -98,6 +98,3 @@ protected:
 	bool m_bDrawBoundingSphere;
 	bool m_bGenerateDirLightShadow = false;
 };
-
-
-#endif

@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MENTITYSYSTEM_H_
-#define _M_MENTITYSYSTEM_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Engine/MSystem.h"
 #include "Component/MComponent.h"
@@ -36,6 +36,3 @@ public:
 private:
 
 };
-
-
-#endif

@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MMATERIALRESOURCE_H_
-#define _M_MMATERIALRESOURCE_H_
+#pragma once
 
 #include "Material/MMaterial.h"
 
@@ -18,7 +17,7 @@ public:
 
 	std::shared_ptr<MMaterial> GetMaterial() const;
 
-	bool Load(std::unique_ptr<MResourceData>& pResourceData) override;
+	bool Load(std::unique_ptr<MResourceData>&& pResourceData) override;
 	virtual bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
 
 private:
@@ -26,5 +25,3 @@ private:
 	std::unique_ptr<MResourceData> m_pResourceData = nullptr;
 
 };
-
-#endif

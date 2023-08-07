@@ -13,7 +13,7 @@ file(GLOB_RECURSE CORE_All_FILES *.h *.cpp)
 ############################################################
 # add library
 ############################################################
-add_library(Core STATIC 
+add_library(Core OBJECT
     ${CORE_All_FILES}
 )
 
@@ -50,6 +50,13 @@ if(MORTY_BUILD_TARGET STREQUAL "IOS")
 #    message(FATAL_ERROR IOS)
 endif()
 
+if(MORTY_BUILD_TARGET STREQUAL "ANDROID")
+    target_compile_definitions(Core
+            PUBLIC MORTY_ANDROID
+            PUBLIC MORTY_RESOURCE_PATH="./assets/Resource"
+            )
+    #    message(FATAL_ERROR MACOS)
+endif()
 
 ############################################################
 # ThirdParty
@@ -74,6 +81,13 @@ if(flatbuffers_FOUND)
     target_link_libraries(Core PUBLIC flatbuffers::flatbuffers)
 else()
     message(FATAL_ERROR "flatbuffers not found.")
+endif()
+
+find_package(fmt CONFIG REQUIRED)
+if(flatbuffers_FOUND)
+    target_link_libraries(Core PUBLIC fmt::fmt)
+else()
+    message(FATAL_ERROR "fmt not found.")
 endif()
 
 set( CORE_CODE_DIRECTORIES

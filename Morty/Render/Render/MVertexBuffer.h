@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MVERTEXBUFFER_H_
-#define _M_MVERTEXBUFFER_H_
+#pragma once
+
 #include "Render/MRenderGlobal.h"
 
 
@@ -24,6 +24,3 @@ public:
 	VkDeviceMemory m_VkIndexBufferMemory;
 #endif
 };
-
-
-#endif

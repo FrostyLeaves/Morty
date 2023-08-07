@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MVIEWPORT_H_
-#define _M_MVIEWPORT_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
 #include "Math/Vector.h"
@@ -93,6 +93,3 @@ private:
 	Vector2 m_v2ScreenPosition;
 	Vector2 m_v2ScreenScale;
 };
-
-
-#endif

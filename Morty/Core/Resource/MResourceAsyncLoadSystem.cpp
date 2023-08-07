@@ -1,6 +1,6 @@
 ﻿#include "MResourceAsyncLoadSystem.h"
 
-#include "Engine/Mengine.h"
+#include "Engine/MEngine.h"
 #include "TaskGraph/MTaskGraph.h"
 #include "Thread/MThreadWork.h"
 #include "Utility/MFunction.h"
@@ -65,7 +65,7 @@ void MResourceAsyncLoadSystem::AnyThreadLoad(const std::list<std::shared_ptr<MRe
 		pLoader->pResourceData = pLoader->LoadResource(pLoader->strResourceFullPath, pLoader->strResourcePath);
 		if (!pLoader->pResourceData)
 		{
-			GetEngine()->GetLogger()->Error("Load Resource try to find: [path: %s]", pLoader->strResourcePath.c_str());
+			GetEngine()->GetLogger()->Error("Load Resource try to find: [path: {}]", pLoader->strResourcePath.c_str());
 		}
 	}
 
@@ -80,9 +80,9 @@ void MResourceAsyncLoadSystem::MainThreadLoad(const std::list<std::shared_ptr<MR
 {
 	for (auto& pLoader : vLoader)
 	{
-		if (!pLoader->pResource->Load(pLoader->pResourceData))
+		if (!pLoader->pResource->Load(std::move(pLoader->pResourceData)))
 		{
-			GetEngine()->GetLogger()->Error("Load Resource failed: [path: %s]", pLoader->strResourcePath.c_str());
+			GetEngine()->GetLogger()->Error("Load Resource failed: [path: {}]", pLoader->strResourcePath.c_str());
 		}
 		else
 		{

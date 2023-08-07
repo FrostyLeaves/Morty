@@ -7,8 +7,8 @@
  *
 **/
 
-#ifndef _M_TEXTURE_CONVERTER_H_
-#define _M_TEXTURE_CONVERTER_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Resource/MTextureResource.h"
 
@@ -24,5 +24,3 @@ public:
     static std::shared_ptr<MTextureResource> ConvertSingleChannel(std::shared_ptr<MTextureResource> pTexture, size_t nChannel);
 
 };
-
-#endif

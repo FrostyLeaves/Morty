@@ -1,5 +1,4 @@
 #include "Math/Vector.h"
-#include <cmath>
 #include <cassert>
 
 #include "Vector_generated.h"
@@ -123,17 +122,20 @@ Vector3 Vector3::operator* (const float& value) const
 
 const Vector3& Vector3::operator/=(const float& value)
 {
-	return *this = *this / value;
+	*this = *this / value;
+	return *this;
 }
 
 const Vector3& Vector3::operator+=(const Vector3& value)
 {
-	return *this = *this + value;
+	*this = *this + value;
+	return *this;
 }
 
 const Vector3& Vector3::operator-=(const Vector3& value)
 {
-	return *this = *this - value;
+	*this = *this - value;
+	return *this;
 }
 
 Vector3 Vector3::CrossProduct(const Vector3& value) const
@@ -375,12 +377,14 @@ Vector2 Vector2::operator/(const float& value) const
 
 const Vector2& Vector2::operator/=(const float& value)
 {
-	return *this = *this / value;
+	*this = *this / value;
+	return *this;
 }
 
 const Vector2& Vector2::operator*=(const float& value)
 {
-	return *this = *this * value;
+	*this = *this * value;
+	return *this;
 }
 
 bool Vector2::operator==(const Vector2& value) const

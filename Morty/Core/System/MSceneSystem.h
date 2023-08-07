@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSCENESYSTEM_H_
-#define _M_MSCENESYSTEM_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Engine/MSystem.h"
 
@@ -26,6 +26,3 @@ public:
 private:
 
 };
-
-
-#endif

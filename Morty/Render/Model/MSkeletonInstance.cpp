@@ -18,7 +18,8 @@ void MSkeletonInstance::SetSkeletonResource(std::shared_ptr<MSkeletonResource> p
 
 	if (auto pResource = m_skeletonResource.GetResource<MSkeletonResource>())
 	{
-		if (m_pSkeletonTemplate = pResource->GetSkeleton())
+		m_pSkeletonTemplate = pResource->GetSkeleton();
+		if (m_pSkeletonTemplate)
 		{
 			m_vAllBones = m_pSkeletonTemplate->GetAllBones();
 			ResetPose();

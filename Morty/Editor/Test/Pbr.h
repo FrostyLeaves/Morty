@@ -465,7 +465,7 @@ std::map<size_t, Vector3> LightMap = {
 #define IlluminantE     0.33333333, 0.33333333  /* CIE equal-energy illuminant */
 
 struct colourSystem {
-	char* name;                     /* Colour system name */
+	const char* name;                     /* Colour system name */
 	float xRed, yRed,              /* Red x, y */
 		xGreen, yGreen,          /* Green x, y */
 		xBlue, yBlue,            /* Blue x, y */

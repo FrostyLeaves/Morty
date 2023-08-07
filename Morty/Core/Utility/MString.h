@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MSTRING_H_
-#define _M_MSTRING_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -72,5 +71,3 @@ public:
 	}
 #endif
 };
-
-#endif

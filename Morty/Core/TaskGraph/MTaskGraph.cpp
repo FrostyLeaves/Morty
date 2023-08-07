@@ -1,35 +1,71 @@
 #include "TaskGraph/MTaskGraph.h"
 
 #include "MTaskGraphWalker.h"
+#include "Scene/MGuid.h"
 
-MORTY_CLASS_IMPLEMENT(MTaskGraph, MObject)
+MORTY_CLASS_IMPLEMENT(MTaskGraph, MTypeClass)
 
 MTaskGraph::MTaskGraph()
-	: MObject()
+	: MTypeClass()
 	, m_bRequireCompile(true)
-	, m_bValid(true)
 {
 
+}
+
+MTaskGraph::MTaskGraph(MThreadPool* pThreadPool)
+{
+	m_pThreadPool = pThreadPool;
 }
 
 MTaskGraph::~MTaskGraph()
 {
+	for (MTaskNode* pTaskNode : m_tTaskNode)
+	{
+		pTaskNode->OnDelete();
+		delete pTaskNode;
+		pTaskNode = nullptr;
+	}
 
+	m_vStartTaskNode.clear();
+	m_vFinalTaskNode.clear();
+	m_tTaskNode.clear();
 }
 
 bool MTaskGraph::AddNode(const MString& strNodeName, MTaskNode* pNode)
 {
-	if (!pNode)
-		return false;
+	MORTY_ASSERT(!m_bLock);
 
+	if (!pNode)
+	{
+		return false;
+	}
 	pNode->m_strNodeName = strNodeName;
 	pNode->m_pGraph = this;
 
+
+
 	m_tTaskNode.insert(pNode);
-	m_vTaskNode.push_back(pNode);
 
 	pNode->OnCreated();
+	RequireCompile();
 	return true;
+}
+
+void MTaskGraph::DestroyNode(MTaskNode* pTaskNode)
+{
+	if (!pTaskNode)
+	{
+		MORTY_ASSERT(pTaskNode);
+		return;
+	}
+
+	MORTY_ASSERT(!m_bLock);
+	pTaskNode->DisconnectAll();
+
+	m_tTaskNode.erase(pTaskNode);
+	RequireCompile();
+
+	delete pTaskNode;
 }
 
 bool MTaskGraph::Compile()
@@ -88,28 +124,13 @@ bool MTaskGraph::Compile()
 	}
 
 	m_bRequireCompile = false;
-	m_bValid = true;
 
 	return true;
 }
 
 void MTaskGraph::Run()
 {
+	m_bLock = true;
 	MTaskGraphWalker()(this);
-}
-
-void MTaskGraph::OnDelete()
-{
-	for (MTaskNode* pTaskNode : m_vTaskNode)
-	{
-		pTaskNode->OnDelete();
-		delete pTaskNode;
-		pTaskNode = nullptr;
-	}
-
-	m_vStartTaskNode.clear();
-	m_vFinalTaskNode.clear();
-	m_tTaskNode.clear();
-
-	m_bValid = false;
+	m_bLock = false;
 }

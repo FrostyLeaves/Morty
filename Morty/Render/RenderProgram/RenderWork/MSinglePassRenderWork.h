@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_G_SINGLE_PASS_RENDER_WORK_H_
-#define _M_G_SINGLE_PASS_RENDER_WORK_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
 
@@ -41,6 +41,3 @@ protected:
 	MEngine* m_pEngine = nullptr;
 	MRenderPass m_renderPass;
 };
-
-
-#endif

@@ -3,8 +3,6 @@
 #include "Scene/MScene.h"
 #include "Scene/MEntity.h"
 #include "Engine/MEngine.h"
-#include "Object/MObject.h"
-#include "Scene/MEntity.h"
 #include "System/MObjectSystem.h"
 #include "Component/MSceneComponent.h"
 
@@ -13,30 +11,19 @@
 
 
 NodeTreeView::NodeTreeView()
-	: IBaseView()
-	, m_pScene(nullptr)
+	: BaseWidget()
 {
 	m_strViewName = "Node Tree";
 }
 
-NodeTreeView::~NodeTreeView()
-{
-
-}
-
-void NodeTreeView::SetScene(MScene* pScene)
-{
-	m_pScene = pScene;
-}
-
 void NodeTreeView::Render()
 {
-	if (!m_pScene)
+	if (!GetScene())
 		return;
 
-	MObjectSystem* pObjectSystem = m_pEngine->FindSystem<MObjectSystem>();
+	MObjectSystem* pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
 
-	auto vEntity = m_pScene->GetAllEntity();
+	auto vEntity = GetScene()->GetAllEntity();
 	for(MEntity* pEntity : vEntity)
 	{
 		MSceneComponent* pSceneComponent = pEntity->GetComponent<MSceneComponent>();
@@ -49,9 +36,9 @@ void NodeTreeView::Render()
 	}
 }
 
-void NodeTreeView::Initialize(MEngine* pEngine)
+void NodeTreeView::Initialize(MainEditor* pMainEditor)
 {
-	m_pEngine = pEngine;
+	BaseWidget::Initialize(pMainEditor);
 }
 
 void NodeTreeView::Release()
@@ -83,7 +70,7 @@ void NodeTreeView::RenderNode(MEntity* pNode)
 		node_flags |= ImGuiTreeNodeFlags_Selected;
 
 
-	bool bOpened = ImGui::TreeNodeEx(pNode, node_flags, pNode->GetName().c_str());
+	bool bOpened = ImGui::TreeNodeEx(pNode, node_flags, "%s", pNode->GetName().c_str());
 	if (ImGui::BeginPopupContextItem())
 	{
 		if (ImGui::Selectable("Delete"))
@@ -95,7 +82,7 @@ void NodeTreeView::RenderNode(MEntity* pNode)
 
 	if (ImGui::IsItemClicked())
 	{
-		SelectionEntityManager::GetInstance()->SetSelectedEntity(m_pScene, pNode);
+		SelectionEntityManager::GetInstance()->SetSelectedEntity(GetScene(), pNode);
 	}
 	if (bOpened)
 	{

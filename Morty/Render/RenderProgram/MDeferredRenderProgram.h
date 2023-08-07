@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MDEFERRED_RENDERPROGRAM_H_
-#define _M_MDEFERRED_RENDERPROGRAM_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 
 #include "Type/MType.h"
@@ -25,8 +25,8 @@
 #include "Culling/MCascadedShadowCulling.h"
 #include "Culling/MInstanceCulling.h"
 
-class MSceneCulling;
-class MSceneGPUCulling;
+class MCPUCameraFrustumCulling;
+class MGPUCameraFrustumCulling;
 class IGBufferAdapter;
 class IPropertyBlockAdapter;
 class ITextureInputAdapter;
@@ -41,27 +41,27 @@ public:
 	MORTY_CLASS(MDeferredRenderProgram);
 
 	MDeferredRenderProgram() = default;
-    virtual ~MDeferredRenderProgram() = default;
+    ~MDeferredRenderProgram() override = default;
 
 public:
 
 	void Render(MIRenderCommand* pPrimaryCommand) override;
 
-	void RenderReady(MTaskNode* pTaskNode);
+	void RenderReady(MIRenderCommand* pPrimaryCommand);
 	
-	void RenderGBuffer(MTaskNode* pTaskNode);
+	void RenderGBuffer(MIRenderCommand* pPrimaryCommand);
 
-	void RenderLightning(MTaskNode* pTaskNode);
+	void RenderLightning(MIRenderCommand* pPrimaryCommand);
 
-	void RenderShadow(MTaskNode* pTaskNode);
+	void RenderShadow(MIRenderCommand* pPrimaryCommand);
 
-	void RenderForward(MTaskNode* pTaskNode);
+	void RenderForward(MIRenderCommand* pPrimaryCommand);
 
-	void RenderTransparent(MTaskNode* pTaskNode);
+	void RenderTransparent(MIRenderCommand* pPrimaryCommand);
 
-	void RenderPostProcess(MTaskNode* pTaskNode);
+	void RenderPostProcess(MIRenderCommand* pPrimaryCommand);
 
-	void RenderDebug(MTaskNode* pTaskNode);
+	void RenderDebug(MIRenderCommand* pPrimaryCommand);
 
 
 	std::shared_ptr<MTexture> GetOutputTexture() override;
@@ -79,9 +79,7 @@ public:
 
 	void InitializeRenderWork();
 	void ReleaseRenderWork();
-
-	void InitializeRenderGraph();
-
+	
 protected:
 
 	void UpdateFrameParams(MRenderInfo& info);
@@ -116,28 +114,16 @@ protected:
 
 	MRenderInfo m_renderInfo;
 
-	MTaskGraph* m_pRenderGraph = nullptr;
-	MIRenderCommand* m_pPrimaryCommand = nullptr;
-
 	std::vector<std::shared_ptr<MTexture>> m_vRenderTargets;
 	std::shared_ptr<MTexture> m_pFinalOutputTexture = nullptr;
 	
-	ITextureInputAdapter* m_pShadowMapAdapter = nullptr;
-	std::unique_ptr<IGBufferAdapter> m_pGBufferAdapter = nullptr;
-
 	std::shared_ptr<MShadowMapShaderPropertyBlock> m_pShadowPropertyAdapter = nullptr;
 	std::shared_ptr<MForwardRenderShaderPropertyBlock> m_pFramePropertyAdapter = nullptr;
 
-	std::shared_ptr<CameraFrustumCulling> m_pCameraFrustumCulling = nullptr;
 	std::shared_ptr<MCascadedShadowCulling> m_pShadowCulling = nullptr;
-	std::shared_ptr<MSceneCulling> m_pCpuCulling = nullptr;
-	std::shared_ptr<MSceneGPUCulling> m_pGpuCulling = nullptr;
+	std::shared_ptr<MCameraFrustumCulling> m_pCameraFrustumCulling = nullptr;
 
 	std::unordered_map<const MType*, std::unique_ptr<IRenderWork>> m_tRenderWork;
 
-	bool m_bGPUCullingUpdate = true;
-
 	size_t m_nFrameIndex = 0;
 };
-
-#endif

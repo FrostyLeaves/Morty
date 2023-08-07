@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_DEFERRED_LIGHTING_RENDER_WORK_H_
-#define _M_DEFERRED_LIGHTING_RENDER_WORK_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "MSinglePassRenderWork.h"
 
@@ -35,6 +35,3 @@ private:
 
 	std::shared_ptr<MMaterial> m_pLightningMaterial = nullptr;
 };
-
-
-#endif

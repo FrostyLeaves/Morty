@@ -196,6 +196,11 @@ void MVulkanBufferPool::FreeDynamicUniformMemory(MemoryInfo& info)
 	m_DynamicUniformMemoryPool.FreeMemory(info);
 }
 
+size_t MVulkanBufferPool::GetDynamicUniformMemorySize() const
+{
+    return m_DynamicUniformMemoryPool.GetMaxMemorySize();
+}
+
 void MVulkanBufferPool::FreeUniformBufferMemory(const std::shared_ptr<MShaderConstantParam>& pParam)
 {
 	vkUnmapMemory(m_pDevice->m_VkDevice, pParam->m_VkBufferMemory);

@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MTRANSFORM_H_
-#define _M_MTRANSFORM_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Math/Vector.h"
 #include "Math/Matrix.h"
@@ -33,8 +33,6 @@ public:
 
 	Matrix4 GetMatrix() const;
 
-	Matrix4 GetMatrixScale();
-
 	Vector3 GetUp() const { return Matrix4(m_qtRotation) * Vector3(0, 1, 0); }
 	Vector3 GetForward() const { return Matrix4(m_qtRotation) * Vector3(0, 0, 1); }
 	Vector3 GetRight() const { return Matrix4(m_qtRotation) * Vector3(1, 0, 0); }
@@ -46,6 +44,3 @@ private:
 	Quaternion m_qtRotation;
 
 };
-
-
-#endif

@@ -39,7 +39,8 @@ void PropertyMModelComponent::EditAnimation(MModelComponent* pModelComponent)
 
 	ShowValueEnd();
 
-	if (pController = pModelComponent->GetSkeletalAnimationController())
+	pController = pModelComponent->GetSkeletalAnimationController();
+	if (pController)
 	{
 		ShowValueBegin("Loop");
 		bool bLoop = pController->GetLoop();

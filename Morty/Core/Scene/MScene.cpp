@@ -5,6 +5,9 @@
 
 #include "System/MComponentSystem.h"
 
+#include "TaskGraph/MTaskNode.h"
+#include "TaskGraph/MTaskGraph.h"
+
 MORTY_CLASS_IMPLEMENT(MScene, MObject)
 
 static auto ComponentIDLessFunction = [](const MComponentID& a, const MComponentID& b) {

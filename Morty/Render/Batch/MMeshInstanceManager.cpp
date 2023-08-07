@@ -34,7 +34,8 @@ void MMeshInstanceManager::Initialize()
 		pNotifySystem->RegisterNotify(MRenderNotify::NOTIFY_MESH_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MMeshInstanceManager::OnMeshChanged, this));
 	}
 
-	if (m_pUpdateTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>("RenderMeshManagerUpdate"))
+	m_pUpdateTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>("RenderMeshManagerUpdate");
+	if (m_pUpdateTask)
 	{
 		m_pUpdateTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MMeshInstanceManager::RenderUpdate, this));
 		m_pUpdateTask->SetThreadType(METhreadType::ERenderThread);
@@ -43,6 +44,12 @@ void MMeshInstanceManager::Initialize()
 
 void MMeshInstanceManager::Release()
 {
+	if (m_pUpdateTask)
+	{
+		GetEngine()->GetMainGraph()->DestroyNode(m_pUpdateTask);
+		m_pUpdateTask = nullptr;
+	}
+
 	if (MNotifyManager* pNotifySystem = GetScene()->GetManager<MNotifyManager>())
 	{
 		pNotifySystem->UnregisterNotify(MCoreNotify::NOTIFY_VISIBLE_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MMeshInstanceManager::OnSceneComponentChanged, this));
@@ -91,7 +98,7 @@ void MMeshInstanceManager::RenderUpdate(MTaskNode* pNode)
 
 void MMeshInstanceManager::OnMaterialChanged(MComponent* pComponent)
 {
-	MRenderMeshComponent* pMeshComponent = pComponent->DynamicCast<MRenderMeshComponent>();
+	MRenderMeshComponent* pMeshComponent = pComponent->template DynamicCast<MRenderMeshComponent>();
 	if (!pMeshComponent)
 	{
 		return;
@@ -115,7 +122,7 @@ void MMeshInstanceManager::OnMaterialChanged(MComponent* pComponent)
 
 void MMeshInstanceManager::OnMeshChanged(MComponent* pComponent)
 {
-	if (MRenderMeshComponent* pMeshComponent = pComponent->DynamicCast<MRenderMeshComponent>())
+	if (MRenderMeshComponent* pMeshComponent = pComponent->template DynamicCast<MRenderMeshComponent>())
 	{
 		//TODO remove it.
 		GetEngine()->FindGlobalObject<MMeshManager>()->RegisterMesh(pMeshComponent->GetMesh());
@@ -126,7 +133,7 @@ void MMeshInstanceManager::OnMeshChanged(MComponent* pComponent)
 
 void MMeshInstanceManager::OnRenderMeshChanged(MComponent* pComponent)
 {
-	if (auto pMeshComponent = pComponent->DynamicCast<MRenderMeshComponent>())
+	if (auto pMeshComponent = pComponent->template DynamicCast<MRenderMeshComponent>())
 	{
 		UpdateMeshInstance(pMeshComponent, MMaterialBatchGroup::CreateProxyFromComponent(pMeshComponent));
 	}

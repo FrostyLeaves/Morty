@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MTASKNODEINPUT_H_
-#define _M_MTASKNODEINPUT_H_
+#pragma once
 #include "Utility/MGlobal.h"
 
 class MTaskNode;
@@ -28,7 +27,7 @@ public:
 	MString GetStringID() const;
 
 	void SetName(const MString& strName) { m_strName = strName; }
-	MString GetName() const { return m_strName; }
+	const MString& GetName() const { return m_strName; }
 
 	MTaskNode* GetTaskNode() const { return pGraphNode; }
 	MTaskNode* GetLinkedNode() const;
@@ -44,7 +43,3 @@ private:
 	MTaskNode* pGraphNode;
 	MTaskNodeOutput* pLinkedOutput;
 };
-
-
-
-#endif

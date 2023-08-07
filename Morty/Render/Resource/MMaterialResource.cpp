@@ -55,7 +55,7 @@ bool MMaterialResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 	return true;
 }
 
-bool MMaterialResource::Load(std::unique_ptr<MResourceData>& pResourceData)
+bool MMaterialResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 {
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 

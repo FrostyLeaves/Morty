@@ -13,7 +13,7 @@ file(GLOB_RECURSE RENDER_All_FILES *.h *.cpp)
 ############################################################
 # add library
 ############################################################
-add_library(Render STATIC
+add_library(Render OBJECT
     ${RENDER_All_FILES}
 
     ${SPOT_FILES}
@@ -44,25 +44,44 @@ set_target_properties(Render PROPERTIES
          LINK_FLAGS "/ignore:4099"
 )
 
-
-if(MORTY_BUILD_TARGET STREQUAL "WIN")
-    include(${CMAKE_SCRIPT_PATH}/add_spirv.cmake)
-endif()
-
-if(MORTY_BUILD_TARGET STREQUAL "MACOS")
-    include(${CMAKE_SCRIPT_PATH}/add_spirv.cmake)
-endif()
-
-if(MORTY_BUILD_TARGET STREQUAL "IOS")
-    include(${CMAKE_SCRIPT_PATH}/add_spirv_ios.cmake)
-endif()
-
 find_package(Vulkan REQUIRED)
 if(Vulkan_FOUND)
     target_link_libraries(Render PUBLIC Vulkan::Vulkan)
 else()
     message(FATAL_ERROR "Vulkan not found.")
 endif()
+
+
+find_package(spirv_cross_core CONFIG REQUIRED)
+find_package(spirv_cross_glsl CONFIG REQUIRED)
+find_package(spirv_cross_hlsl CONFIG REQUIRED)
+find_package(spirv_cross_msl CONFIG REQUIRED)
+find_package(spirv_cross_cpp CONFIG REQUIRED)
+find_package(spirv_cross_reflect CONFIG REQUIRED)
+find_package(spirv_cross_util CONFIG REQUIRED)
+
+if(NOT spirv_cross_glsl_FOUND)
+    message(FATAL_ERROR "spirv_cross_glsl not found.")
+elseif(NOT spirv_cross_hlsl_FOUND)
+    message(FATAL_ERROR "spirv_cross_hlsl not found.")
+elseif(NOT spirv_cross_msl_FOUND)
+    message(FATAL_ERROR "spirv_cross_msl not found.")
+elseif(NOT spirv_cross_cpp_FOUND)
+    message(FATAL_ERROR "spirv_cross_cpp not found.")
+elseif(NOT spirv_cross_reflect_FOUND)
+    message(FATAL_ERROR "spirv_cross_reflect not found.")
+elseif(NOT spirv_cross_util_FOUND)
+    message(FATAL_ERROR "spirv_cross_util not found.")
+else()
+    target_link_libraries(Render PRIVATE spirv-cross-core)
+    target_link_libraries(Render PRIVATE spirv-cross-glsl)
+    target_link_libraries(Render PRIVATE spirv-cross-hlsl)
+    target_link_libraries(Render PRIVATE spirv-cross-msl)
+    target_link_libraries(Render PRIVATE spirv-cross-cpp)
+    target_link_libraries(Render PRIVATE spirv-cross-reflect)
+    target_link_libraries(Render PRIVATE spirv-cross-util)
+endif()
+
 
 find_package(assimp CONFIG REQUIRED)
 if(assimp_FOUND)
@@ -71,17 +90,21 @@ else()
     message(FATAL_ERROR "Assimp not found.")
 endif()
 
-if(SPIRV_CROSS_FOUND)
-    target_link_libraries(Render PUBLIC SPIRV::ALL)
-else()
-    message(FATAL_ERROR "SPIRV_CROSS not found.")
+if(MORTY_BUILD_TARGET STREQUAL "WIN")
+
+    find_package(directx-dxc CONFIG REQUIRED)
+    if(directx-dxc_FOUND)
+        target_link_libraries(Render PRIVATE Microsoft::DirectXShaderCompiler)
+    else()
+        message(FATAL_ERROR "directx-dxc not found.")
+    endif()
 endif()
 
-find_package(directx-dxc CONFIG REQUIRED)
-if(directx-dxc_FOUND)
-    target_link_libraries(Render PRIVATE Microsoft::DirectXShaderCompiler)
+find_package(glslang CONFIG REQUIRED)
+if(glslang_FOUND)
+    target_link_libraries(Render PRIVATE glslang::OSDependent glslang::glslang glslang::MachineIndependent glslang::GenericCodeGen glslang::OGLCompiler glslang::SPVRemapper glslang::SPIRV glslang::HLSL)
 else()
-    message(FATAL_ERROR "directx-dxc not found.")
+    message(FATAL_ERROR "glslang not found.")
 endif()
 
 find_package(Stb REQUIRED)

@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MVULKAN_BUFFERPOOL_H_
-#define _M_MVULKAN_BUFFERPOOL_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Utility/MMemoryPool.h"
 #include "Render/MBuffer.h"
@@ -44,6 +44,8 @@ public:
 
     void FreeDynamicUniformMemory(MemoryInfo& info);
 
+	size_t GetDynamicUniformMemorySize() const;
+
     MByte* GetReadBackMemory() { return m_pReadBackMemoryMapping; }
     VkBuffer GetReadBackBuffer() { return m_VkReadBackBuffer; }
 protected:
@@ -79,9 +81,6 @@ private:
 
     MByte* m_pReadBackMemoryMapping;
 };
-
-
-#endif
 
 
 #endif

@@ -60,7 +60,8 @@ void MTransparentRenderWork::Resize(Vector2 size)
 
 void MTransparentRenderWork::SetRenderTarget(std::shared_ptr<MTexture> pOutputTexture, std::shared_ptr<MTexture> pDepthTexture)
 {
-	if (m_pOutputTexture = pOutputTexture)
+	m_pOutputTexture = pOutputTexture;
+	if (m_pOutputTexture)
 	{
 		Resize(m_pOutputTexture->GetSize());
 	}
@@ -229,7 +230,7 @@ void MTransparentRenderWork::InitializeTexture()
 	static MByte black[4] = { 0, 0 ,0 ,0 };
 	static MByte white[4] = { 255, 255 ,255 ,255 };
 
-	m_pBlackTexture->Load(MTextureResourceUtil::LoadFromMemory("Transparent_Black", black, 1, 1, 4));
+    m_pBlackTexture->Load(MTextureResourceUtil::LoadFromMemory("Transparent_Black", black, 1, 1, 4));
 	m_pWhiteTexture->Load(MTextureResourceUtil::LoadFromMemory("Transparent_White", white, 1, 1, 4));
 
 

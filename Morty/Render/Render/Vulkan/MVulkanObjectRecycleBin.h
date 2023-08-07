@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MVULKANOBJECTDESTRUCTOR_H_
-#define _M_MVULKANOBJECTDESTRUCTOR_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Utility/MMemoryPool.h"
 
@@ -68,9 +68,6 @@ public:
     MVulkanDevice* m_pDevice;
 
 };
-
-
-#endif
 
 
 #endif

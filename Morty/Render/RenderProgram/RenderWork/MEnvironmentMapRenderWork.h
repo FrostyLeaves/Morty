@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MENVIRONMENTMAPRENDERWORK_H_
-#define _M_MENVIRONMENTMAPRENDERWORK_H_
+#pragma once
+
 #include "Material/MMaterial.h"
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
@@ -71,5 +71,3 @@ private:
 	MRenderPass m_DiffuseRenderPass;
 	std::vector<MRenderPass> m_vSpecularRenderPass;
 };
-
-#endif

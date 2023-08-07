@@ -1,21 +1,16 @@
-#include "MessageView.h"
+#include "MessageWidget.h"
 
 #include "ImGui.h"
 #include "Engine/MEngine.h"
+#include "Utility/RenderMessageManager.h"
 
-MessageView::MessageView()
-	: IBaseView()
-	, m_pEngine(nullptr)
+MessageWidget::MessageWidget()
+	: BaseWidget()
 {
 	m_strViewName = "Message";
 }
 
-MessageView::~MessageView()
-{
-
-}
-
-void MessageView::Render()
+void MessageWidget::Render()
 {
 	const float DISTANCE = 10.0f;
 	static int corner = -1;
@@ -30,10 +25,10 @@ void MessageView::Render()
 	ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
 	if (ImGui::Begin("Message", &m_bVisiable, (corner != -1 ? ImGuiWindowFlags_NoMove : 0) | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
 	{
-		int nCurrentFps = (int)round(m_pEngine->GetFPS() / 5) * 5;
+		int nCurrentFps = (int)round(GetEngine()->GetFPS() / 5) * 5;
 		ImGui::Text("FPS: %d", nCurrentFps);
 
-		ImGui::Text("Draw Call Count: %u", m_nDrawCallCount);
+		ImGui::Text("Draw Call Count: %u", RenderMessageManager::GetInstance()->nDrawCallCount);
 
 
 		if (ImGui::BeginPopupContextWindow())
@@ -50,17 +45,17 @@ void MessageView::Render()
 	ImGui::End();
 }
 
-void MessageView::Initialize(MEngine* pEngine)
+void MessageWidget::Initialize(MainEditor* pMainEditor)
 {
-	m_pEngine = pEngine;
+	BaseWidget::Initialize(pMainEditor);
 }
 
-void MessageView::Release()
+void MessageWidget::Release()
 {
 
 }
 
-void MessageView::Input(MInputEvent* pEvent)
+void MessageWidget::Input(MInputEvent* pEvent)
 {
 
 }

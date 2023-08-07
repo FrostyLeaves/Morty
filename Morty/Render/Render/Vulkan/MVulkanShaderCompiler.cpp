@@ -7,8 +7,6 @@
 #include <locale>
 #include <codecvt>
 
-#include "dxcapi.h"
-
 #include "Resource/MResource.h"
 #include "Utility/MFileHelper.h"
 
@@ -16,6 +14,21 @@
 #include "Utility/MLogger.h"
 #include "Render/Vulkan/MVulkanDevice.h"
 
+
+//#define MORTY_SHADER_COMPILER_DXC
+
+#ifdef MORTY_SHADER_COMPILER_DXC
+#include "dxcapi.h"
+#else
+
+#include "glslang/SPIRV/SpvTools.h"
+#include "glslang/SPIRV/GlslangToSpv.h"
+#include "glslang/Public/ShaderLang.h"
+
+#endif
+
+
+#ifdef MORTY_SHADER_COMPILER_DXC
 struct MVulkanIncludeHandler : public IDxcIncludeHandler
 {
 	MVulkanIncludeHandler(IDxcUtils* pUtils, IDxcIncludeHandler* pDefaultIncludeHandler)
@@ -55,19 +68,68 @@ private:
 	std::vector<std::wstring> m_vSearchPath;
 };
 
+#else
+class MVulkanIncluder : public glslang::TShader::Includer
+{
+public:
+
+	MVulkanIncluder() :m_strLocalFolder("") {}
+
+	void SetLocalFolder(const MString& strLocalFolder) { m_strLocalFolder = strLocalFolder + "/"; }
+	
+	IncludeResult* includeSystem(const char* headerName, const char* includerName, size_t inclusionDepth) override
+	{
+		MString* pCode = new MString();
+		if (!MFileHelper::ReadString(headerName, *pCode))
+			return nullptr;
+
+		glslang::TShader::Includer::IncludeResult* pResult = new glslang::TShader::Includer::IncludeResult(headerName, pCode->data(), pCode->length(), pCode);
+
+		return pResult;
+	}
+
+	IncludeResult* includeLocal(const char* headerName, const char* includerName, size_t inclusionDepth) override
+	{
+		MString* pCode = new MString();
+		if (!MFileHelper::ReadString(m_strLocalFolder + headerName, *pCode))
+			return nullptr;
+
+		glslang::TShader::Includer::IncludeResult* pResult = new glslang::TShader::Includer::IncludeResult(headerName, pCode->data(), pCode->length(), pCode);
+
+		return pResult;
+	}
+
+	void releaseInclude(IncludeResult* pResult) override
+	{
+		if (pResult)
+		{
+			MString* pCode = (MString*)pResult->userData;
+			delete pCode;
+		}
+	}
+
+private:
+
+	MString m_strLocalFolder;
+};
+
+#endif
+
 MVulkanShaderCompiler::MVulkanShaderCompiler(MVulkanDevice* pDevice)
 	: m_pDevice(pDevice)
 {
-
+#ifdef MORTY_SHADER_COMPILER_DXC
+#else
+	glslang::InitializeProcess();
+#endif
 }
 
 MVulkanShaderCompiler::~MVulkanShaderCompiler()
 {
-}
-
-bool MVulkanShaderCompiler::Initialize()
-{
-	return true;
+#ifdef MORTY_SHADER_COMPILER_DXC
+#else
+	glslang::FinalizeProcess();    // also test reference counting of users
+#endif
 }
 
 bool MVulkanShaderCompiler::CompileShader(const MString& strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv)
@@ -75,6 +137,7 @@ bool MVulkanShaderCompiler::CompileShader(const MString& strShaderPath, const ME
 	return CompileHlslShader(strShaderPath, eShaderType, macro, vSpirv);
 }
 
+#ifdef MORTY_SHADER_COMPILER_DXC
 bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv)
 {
 	MString strShaderPath = MFileHelper::FormatPath(_strShaderPath);
@@ -103,7 +166,7 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 	
 	//Macro
 	MPreamble UserPreamble;
-	ConvertMacroDXC(macro, UserPreamble);
+	ConvertMacro(macro, UserPreamble);
 	if (UserPreamble.IsValid())
 	{
 		for (const std::pair<MString, MString>& m : macro.s_vGlobalMacroParams)
@@ -147,7 +210,9 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 		vCompArgs.push_back(L"-T cs_6_1");
 	}
 	else
+	{
 		MORTY_ASSERT(false);
+	}
 
 	//vCompArgs.push_back(L"-enable-templates");
 
@@ -157,7 +222,7 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 	vCompArgs.push_back(L"-fspv-extension=SPV_KHR_shader_draw_parameters");
 	vCompArgs.push_back(L"-fspv-extension=SPV_EXT_descriptor_indexing");
 
-#ifdef MORTY_DEBUG
+#if MORTY_DEBUG
 	vCompArgs.push_back(L"-Od");
 	vCompArgs.push_back(L"-Zi");
 	//vCompArgs.push_back(L"-Qembed_debug");
@@ -167,6 +232,22 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 	//vCompArgs.push_back(L"-fspv-debug=rich-with-source");
 #else
 	vCompArgs.push_back(L"-Zs");
+	vCompArgs.push_back(L"-Oconfig="
+		"--ccp,"
+		"--cfg-cleanup,"
+		"--convert-local-access-chains,"
+		"--copy-propagate-arrays,"
+		"--eliminate-dead-branches,"
+//		"--eliminate-dead-code-aggressive,"		//it will remove unused (binding,set)
+		"--eliminate-dead-functions,"
+		"--eliminate-local-multi-store,"
+		"--eliminate-local-single-block,"
+		"--eliminate-local-single-store,"
+		"--flatten-decorations,"
+		"--if-conversion,"
+		"--inline-entry-points-exhaustive,"
+		"--local-redundancy-elimination,"
+    );
 #endif
 
 
@@ -198,7 +279,7 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 	if (pErrors != nullptr && pErrors->GetStringLength() != 0)
 	{
 		MORTY_ASSERT(pErrors);
-		m_pDevice->GetEngine()->GetLogger()->Information("hlsl compile output: \n%s", pErrors->GetStringPointer());
+		m_pDevice->GetEngine()->GetLogger()->Information("hlsl compile output: \n{}", pErrors->GetStringPointer());
 	}
 
 	HRESULT hrStatus;
@@ -224,6 +305,239 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 	return true;
 
 }
+#else
+TBuiltInResource* GlslangDefaultResources()
+{
+	static TBuiltInResource Resources;
+
+	Resources.maxLights = 32;
+	Resources.maxClipPlanes = 6;
+	Resources.maxTextureUnits = 32;
+	Resources.maxTextureCoords = 32;
+	Resources.maxVertexAttribs = 64;
+	Resources.maxVertexUniformComponents = 4096;
+	Resources.maxVaryingFloats = 64;
+	Resources.maxVertexTextureImageUnits = 32;
+	Resources.maxCombinedTextureImageUnits = 80;
+	Resources.maxTextureImageUnits = 32;
+	Resources.maxFragmentUniformComponents = 4096;
+	Resources.maxDrawBuffers = 32;
+	Resources.maxVertexUniformVectors = 128;
+	Resources.maxVaryingVectors = 8;
+	Resources.maxFragmentUniformVectors = 16;
+	Resources.maxVertexOutputVectors = 16;
+	Resources.maxFragmentInputVectors = 15;
+	Resources.minProgramTexelOffset = -8;
+	Resources.maxProgramTexelOffset = 7;
+	Resources.maxClipDistances = 8;
+	Resources.maxComputeWorkGroupCountX = 65535;
+	Resources.maxComputeWorkGroupCountY = 65535;
+	Resources.maxComputeWorkGroupCountZ = 65535;
+	Resources.maxComputeWorkGroupSizeX = 1024;
+	Resources.maxComputeWorkGroupSizeY = 1024;
+	Resources.maxComputeWorkGroupSizeZ = 64;
+	Resources.maxComputeUniformComponents = 1024;
+	Resources.maxComputeTextureImageUnits = 16;
+	Resources.maxComputeImageUniforms = 8;
+	Resources.maxComputeAtomicCounters = 8;
+	Resources.maxComputeAtomicCounterBuffers = 1;
+	Resources.maxVaryingComponents = 60;
+	Resources.maxVertexOutputComponents = 64;
+	Resources.maxGeometryInputComponents = 64;
+	Resources.maxGeometryOutputComponents = 128;
+	Resources.maxFragmentInputComponents = 128;
+	Resources.maxImageUnits = 8;
+	Resources.maxCombinedImageUnitsAndFragmentOutputs = 8;
+	Resources.maxCombinedShaderOutputResources = 8;
+	Resources.maxImageSamples = 0;
+	Resources.maxVertexImageUniforms = 0;
+	Resources.maxTessControlImageUniforms = 0;
+	Resources.maxTessEvaluationImageUniforms = 0;
+	Resources.maxGeometryImageUniforms = 0;
+	Resources.maxFragmentImageUniforms = 8;
+	Resources.maxCombinedImageUniforms = 8;
+	Resources.maxGeometryTextureImageUnits = 16;
+	Resources.maxGeometryOutputVertices = 256;
+	Resources.maxGeometryTotalOutputComponents = 1024;
+	Resources.maxGeometryUniformComponents = 1024;
+	Resources.maxGeometryVaryingComponents = 64;
+	Resources.maxTessControlInputComponents = 128;
+	Resources.maxTessControlOutputComponents = 128;
+	Resources.maxTessControlTextureImageUnits = 16;
+	Resources.maxTessControlUniformComponents = 1024;
+	Resources.maxTessControlTotalOutputComponents = 4096;
+	Resources.maxTessEvaluationInputComponents = 128;
+	Resources.maxTessEvaluationOutputComponents = 128;
+	Resources.maxTessEvaluationTextureImageUnits = 16;
+	Resources.maxTessEvaluationUniformComponents = 1024;
+	Resources.maxTessPatchComponents = 120;
+	Resources.maxPatchVertices = 32;
+	Resources.maxTessGenLevel = 64;
+	Resources.maxViewports = 16;
+	Resources.maxVertexAtomicCounters = 0;
+	Resources.maxTessControlAtomicCounters = 0;
+	Resources.maxTessEvaluationAtomicCounters = 0;
+	Resources.maxGeometryAtomicCounters = 0;
+	Resources.maxFragmentAtomicCounters = 8;
+	Resources.maxCombinedAtomicCounters = 8;
+	Resources.maxAtomicCounterBindings = 1;
+	Resources.maxVertexAtomicCounterBuffers = 0;
+	Resources.maxTessControlAtomicCounterBuffers = 0;
+	Resources.maxTessEvaluationAtomicCounterBuffers = 0;
+	Resources.maxGeometryAtomicCounterBuffers = 0;
+	Resources.maxFragmentAtomicCounterBuffers = 1;
+	Resources.maxCombinedAtomicCounterBuffers = 1;
+	Resources.maxAtomicCounterBufferSize = 16384;
+	Resources.maxTransformFeedbackBuffers = 4;
+	Resources.maxTransformFeedbackInterleavedComponents = 64;
+	Resources.maxCullDistances = 8;
+	Resources.maxCombinedClipAndCullDistances = 8;
+	Resources.maxSamples = 4;
+	Resources.maxMeshOutputVerticesNV = 256;
+	Resources.maxMeshOutputPrimitivesNV = 512;
+	Resources.maxMeshWorkGroupSizeX_NV = 32;
+	Resources.maxMeshWorkGroupSizeY_NV = 1;
+	Resources.maxMeshWorkGroupSizeZ_NV = 1;
+	Resources.maxTaskWorkGroupSizeX_NV = 32;
+	Resources.maxTaskWorkGroupSizeY_NV = 1;
+	Resources.maxTaskWorkGroupSizeZ_NV = 1;
+	Resources.maxMeshViewCountNV = 4;
+
+	Resources.limits.nonInductiveForLoops = 1;
+	Resources.limits.whileLoops = 1;
+	Resources.limits.doWhileLoops = 1;
+	Resources.limits.generalUniformIndexing = 1;
+	Resources.limits.generalAttributeMatrixVectorIndexing = 1;
+	Resources.limits.generalVaryingIndexing = 1;
+	Resources.limits.generalSamplerIndexing = 1;
+	Resources.limits.generalVariableIndexing = 1;
+	Resources.limits.generalConstantMatrixVectorIndexing = 1;
+
+	return &Resources;
+}
+
+bool MVulkanShaderCompiler::CompileHlslShader(const MString& strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv)
+{
+	glslang::TProgram program;
+
+	EShLanguage eLanguageType;
+	MString strSuffix = MResource::GetSuffix(strShaderPath);
+	if (strSuffix == "mvs")
+	{
+		eLanguageType = EShLangVertex;
+	}
+	else if (strSuffix == "mps")
+	{
+		eLanguageType = EShLangFragment;
+	}
+	else if (strSuffix == "mcs")
+	{
+		eLanguageType = EShLangCompute;
+	}
+	else
+	{
+		MORTY_ASSERT(false);
+		return false;
+	}
+
+	glslang::TShader shader(eLanguageType);
+
+	MString strShaderCode;
+	MFileHelper::ReadString(strShaderPath, strShaderCode);
+
+
+	const char* svShaderCode = strShaderCode.c_str();
+	const char* svShaderPath = strShaderPath.c_str();
+	shader.setStringsWithLengthsAndNames(&svShaderCode, NULL, &svShaderPath, 1);
+
+	if (EShLangVertex == eLanguageType)
+	{
+		shader.setEntryPoint("VS_MAIN");
+	}
+	else if (EShLangFragment == eLanguageType)
+	{
+		shader.setEntryPoint("PS_MAIN");
+	}
+	else if (EShLangCompute == eLanguageType)
+	{
+		shader.setEntryPoint("CS_MAIN");
+	}
+	else
+	{
+		MORTY_ASSERT(false);
+	}
+
+	MPreamble UserPreamble;
+	ConvertMacro(macro, UserPreamble);
+
+	if (UserPreamble.IsValid())
+	{
+		shader.setPreamble(UserPreamble.GetText());
+	}
+	shader.addProcesses(UserPreamble.GetProcesses());
+
+	shader.setNanMinMaxClamp(false);
+
+	// 	shader.setFlattenUniformArrays((Options & EOptionFlattenUniformArrays) != 0);
+	// 	if (Options & EOptionHlslIoMapping)
+	// 		shader.setHlslIoMapping(true);
+
+
+	int ClientInputSemanticsVersion = 120;
+	EShMessages messages = EShMsgDefault;
+	
+	shader.setEnvInput(glslang::EShSourceHlsl, eLanguageType, glslang::EShClientVulkan, ClientInputSemanticsVersion);
+	messages = EShMessages(messages | EShMsgReadHlsl);
+
+	shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_2);
+	shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_2);
+
+	MVulkanIncluder includer;
+
+	std::string strShaderDirectory;
+	const size_t last_slash_idx = strShaderPath.rfind('/');
+	if (std::string::npos != last_slash_idx)
+	{
+		strShaderDirectory = strShaderPath.substr(0, last_slash_idx);
+	}
+	includer.SetLocalFolder(strShaderDirectory);
+	
+	if (!shader.parse(GlslangDefaultResources(), 120, false, messages, includer))
+	{
+		const char* a = shader.getInfoLog();
+		const char* b = shader.getInfoDebugLog();
+		m_pDevice->GetEngine()->GetLogger()->Error("{}\n\n\n{}", MString(shader.getInfoLog()).c_str(), MString(shader.getInfoDebugLog()).c_str());
+		return false;
+	}
+	program.addShader(&shader);
+
+	if (!program.link(messages))
+	{
+		return false;
+	}
+
+	if (program.getIntermediate(eLanguageType))
+	{
+		spv::SpvBuildLogger logger;
+		glslang::SpvOptions spvOptions;
+#ifdef MORTY_DEBUG
+		// crash
+		//		 		spvOptions.generateDebugInfo = true;
+		//		 		spvOptions.stripDebugInfo = true;
+#endif
+		glslang::GlslangToSpv(*program.getIntermediate(eLanguageType), vSpirv, &logger, &spvOptions);
+
+		if (!logger.getAllMessages().empty())
+		{
+			m_pDevice->GetEngine()->GetLogger()->Information("{}", logger.getAllMessages().c_str());
+		}
+
+		return true;
+	}
+
+	return false;
+}
+#endif
 
 void MVulkanShaderCompiler::ConvertMacro(const MShaderMacro& macro, MPreamble& preamble)
 {
@@ -235,370 +549,6 @@ void MVulkanShaderCompiler::ConvertMacro(const MShaderMacro& macro, MPreamble& p
 
 	for (const std::pair<MString, MString>& m : macro.m_vMacroParams)
 		preamble.AddDef(m.first, m.second);
-}
-
-void MVulkanShaderCompiler::ConvertMacroDXC(const MShaderMacro& macro, MPreamble& preamble)
-{
-	for (const std::pair<MString, MString>& m : macro.s_vGlobalMacroParams)
-		preamble.AddDef2(m.first, m.second);
-
-	for (const std::pair<MString, MString>& m : macro.m_vMortyMacroParams)
-		preamble.AddDef2(m.first, m.second);
-
-	for (const std::pair<MString, MString>& m : macro.m_vMacroParams)
-		preamble.AddDef2(m.first, m.second);
-}
-
-void MVulkanShaderCompiler::GetVertexInputState(const spirv_cross::Compiler& compiler, MVertexShaderBuffer* pShaderBuffer)
-{
-	spirv_cross::ShaderResources shaderResources = compiler.get_shader_resources();
-
-	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
-
-	//Vertex Input
-	uint32_t unOffset = 0;
-	for (const spirv_cross::Resource& res : shaderResources.stage_inputs)
-	{
-		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
-
-		uint32_t unLocation = compiler.get_decoration(res.id, spv::Decoration::DecorationLocation);
-
-		uint32_t unArraySize = type.array.empty() ? 1 : type.array[0];
-
-		for (uint32_t nArrayIdx = 0; nArrayIdx < unArraySize; ++nArrayIdx)
-		{
-			VkVertexInputAttributeDescription attribute = {};
-			attribute.binding = 0; // ����Ӧ����vertexBindingDescriptionCount������Ŀǰֻ��һ�������ֵд������0
-			attribute.location = unLocation;
-			attribute.offset = unOffset;
-
-			//	TODO fill attribute
-			if (spirv_cross::SPIRType::BaseType::Float == type.basetype)
-			{
-				if (1 == type.vecsize)
-					attribute.format = VK_FORMAT_R32_SFLOAT;
-				else if (2 == type.vecsize)
-					attribute.format = VK_FORMAT_R32G32_SFLOAT;
-				else if (3 == type.vecsize)
-					attribute.format = VK_FORMAT_R32G32B32_SFLOAT;
-				else if (4 == type.vecsize)
-					attribute.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-				else
-					m_pDevice->GetEngine()->GetLogger()->Error("Error: vertex input find floatN ?");
-
-				unOffset += sizeof(float) * type.vecsize;
-			}
-			else if (spirv_cross::SPIRType::BaseType::Int == type.basetype)
-			{
-				if (1 == type.vecsize)
-					attribute.format = VK_FORMAT_R32_SINT;
-				else if (2 == type.vecsize)
-					attribute.format = VK_FORMAT_R32G32_SINT;
-				else if (3 == type.vecsize)
-					attribute.format = VK_FORMAT_R32G32B32_SINT;
-				else if (4 == type.vecsize)
-					attribute.format = VK_FORMAT_R32G32B32A32_SINT;
-				else
-					m_pDevice->GetEngine()->GetLogger()->Error("Error: vertex input find intN ?");
-
-				unOffset += sizeof(int) * type.vecsize;
-			}
-			else if (spirv_cross::SPIRType::BaseType::UInt == type.basetype)
-			{
-				if (1 == type.vecsize)
-					attribute.format = VK_FORMAT_R32_UINT;
-				else if (2 == type.vecsize)
-					attribute.format = VK_FORMAT_R32G32_UINT;
-				else if (3 == type.vecsize)
-					attribute.format = VK_FORMAT_R32G32B32_UINT;
-				else if (4 == type.vecsize)
-					attribute.format = VK_FORMAT_R32G32B32A32_UINT;
-				else
-					m_pDevice->GetEngine()->GetLogger()->Error("Error: vertex input find intN ?");
-
-				unOffset += sizeof(int) * type.vecsize;
-			}
-			else
-			{
-				MORTY_ASSERT(false);
-			}
-
-			attributeDescriptions.push_back(attribute);
-
-			++unLocation;
-		}
-	}
-
-	VkVertexInputBindingDescription bindingDescription{};
-	bindingDescription.binding = 0;
-	bindingDescription.stride = unOffset;
-	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-	pShaderBuffer->m_vAttributeDescs = std::move(attributeDescriptions);
-	pShaderBuffer->m_vBindingDescs = { bindingDescription };
-}
-
-
-void MVulkanShaderCompiler::GetComputeInputState(const spirv_cross::Compiler& compiler, MComputeShaderBuffer* pShaderBuffer)
-{
-	spirv_cross::ShaderResources shaderResources = compiler.get_shader_resources();
-}
-
-void MVulkanShaderCompiler::GetShaderParam(const spirv_cross::Compiler& compiler, MShaderBuffer* pShaderBuffer)
-{
-	spirv_cross::ShaderResources shaderResources = compiler.get_shader_resources();
-
-	for (const spirv_cross::Resource& res : shaderResources.storage_buffers)
-	{
-		const spirv_cross::SPIRType& type = compiler.get_type(res.type_id);
-
-		std::shared_ptr<MShaderStorageParam> pParam = std::make_shared<MShaderStorageParam>();
-		pParam->unSet = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
-		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
-
-		const std::string& uav_name = compiler.get_name(res.id);
-		pParam->strName = uav_name;
-
-		spirv_cross::Bitset buffer_flags = compiler.get_buffer_block_flags(res.id);
-		pParam->bWritable = !buffer_flags.get(spv::DecorationNonWritable);
-
-
-		pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-
-		pShaderBuffer->m_vShaderSets[pParam->unSet]->m_vStorages.push_back(pParam);
-	}
-
-	for (const spirv_cross::Resource& res : shaderResources.uniform_buffers)
-	{
-		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
-
-		std::shared_ptr<MShaderConstantParam> pParam = std::make_shared<MShaderConstantParam>();
-		pParam->unSet = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
-		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
-//		MStringHelper::Replace(pParam->strName, "type.", "");
-
-		const std::string& uav_name = compiler.get_name(res.id);
-		pParam->strName = uav_name;
-
-		pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-		
-		ConvertVariant(compiler, type, pParam->var);
-
-		pShaderBuffer->m_vShaderSets[pParam->unSet]->m_vParams.push_back(pParam);
-	}
-
-	for (const spirv_cross::Resource& res : shaderResources.separate_images)
-	{
-		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
-
-		std::shared_ptr<MShaderTextureParam> pParam = std::make_shared<MShaderTextureParam>();
-		pParam->unSet = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
-		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
-		pParam->strName = res.name;
-
-		if (type.image.dim == spv::Dim::DimCube)
-		{
-			pParam->eType = METextureType::ETextureCube;
-		}
-
-		else if (type.image.arrayed)
-		{
-			pParam->eType = METextureType::ETexture2DArray;
-		}
-
-		pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-
-		pShaderBuffer->m_vShaderSets[pParam->unSet]->m_vTextures.push_back(pParam);
-	}
-
-	for (const spirv_cross::Resource& res : shaderResources.separate_samplers)
-	{
-		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
-
-		std::shared_ptr<MShaderSampleParam> pParam = std::make_shared<MShaderSampleParam>();
-		pParam->unSet = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
-		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
-		pParam->strName = res.name;
-
-		if (!pParam->strName.empty())
-		{
-			if ('L' == pParam->strName[0])
-				pParam->eSamplerType = MESamplerType::ELinear;
-			else
-				pParam->eSamplerType = MESamplerType::ENearest;
-		}
-
-		pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-
-		pShaderBuffer->m_vShaderSets[pParam->unSet]->m_vSamples.push_back(pParam);
-	}
-
-	for (const spirv_cross::Resource& res : shaderResources.subpass_inputs)
-	{
-		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
-
-		std::shared_ptr<MShaderSubpasssInputParam> pParam = std::make_shared<MShaderSubpasssInputParam>();
-		pParam->unSet = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
-		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
-		pParam->strName = res.name;
-
-		pParam->m_VkDescriptorType =  VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-
-		pShaderBuffer->m_vShaderSets[pParam->unSet]->m_vTextures.push_back(pParam);
-	}
-}
-
-void MVulkanShaderCompiler::ConvertVariant(const spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, MVariant& variant)
-{
-	MVariant tempVariant;
-
-	switch (type.basetype)
-	{
-	case spirv_cross::SPIRType::BaseType::Struct:
-	{
-		MVariantStruct srt;
-		MVariantStructBuilder builder(srt);
-		for (uint32_t i = 0; i < type.member_types.size(); ++i)
-		{
-			const spirv_cross::TypeID& id = type.member_types[i];
-			spirv_cross::SPIRType childType = compiler.get_type(id);
-
-			spirv_cross::TypeID base_id = compiler.get_type(type.self).self;
-			std::string strName = compiler.get_member_name(base_id, i);
-
-			MVariant child;
-			ConvertVariant(compiler, childType, child);
-			builder.AppendVariant(strName, child);
-		}
-		builder.Finish();
-		tempVariant = std::move(MVariant(srt));
-		break;
-	}
-	default:
-		ResetVariantType(type, tempVariant);
-		break;
-	}
-
-	if (type.array.empty())
-	{
-		variant = std::move(tempVariant);
-	}
-	else
-	{
-		uint32_t unArraySize = type.array[0];
-
-		MVariantArray varArray;
-		MVariantArrayBuilder builder(varArray);
-
-		for (uint32_t i = 0; i < unArraySize; ++i)
-		{
-			builder.AppendVariant(tempVariant);
-		}
-		builder.Finish();
-		variant = std::move(MVariant(varArray));
-	}
-
-}
-
-bool MVulkanShaderCompiler::ResetVariantType(const spirv_cross::SPIRType& type, MVariant& variant)
-{
-	//todo support intN, boolN and matrixNxM
-
-	switch (type.basetype)
-	{
-	case spirv_cross::SPIRType::BaseType::Struct:
-		MORTY_ASSERT(false);
-		return true;
-
-	case spirv_cross::SPIRType::BaseType::Boolean:
-		variant = MVariant(bool());
-		return true;
-
-	case spirv_cross::SPIRType::BaseType::Int:
-		variant = MVariant(int());
-		return true;
-
-	case spirv_cross::SPIRType::BaseType::UInt:
-		variant = MVariant(bool());		// TODO  spirv���boolת��UInt���Ժ���취����ɡ���
-		return true;
-
-	case spirv_cross::SPIRType::BaseType::Float:
-	{
-		switch (type.columns)
-		{
-		case 1:
-		{
-			switch (type.vecsize)
-			{
-			case 1:
-				variant = MVariant(float());
-				return true;
-			case 2:
-				variant = MVariant(Vector2());
-				return true;
-			case 3:
-				variant = MVariant(Vector3());
-				return true;
-			case 4:
-				variant = MVariant(Vector4());
-				return true;
-			default:
-				break;
-			}
-			break;
-		}
-		case 3:
-		{
-			if (3 == type.vecsize)
-			{
-				variant = MVariant(Matrix3());
-				return true;
-			}
-			break;
-		}
-		case 4:
-		{
-			if (4 == type.vecsize)
-			{
-				variant = MVariant(Matrix4());
-				return true;
-			}
-			break;
-		}
-
-		default:
-			break;
-		}
-		break;
-	}
-	}
-
-	m_pDevice->GetEngine()->GetLogger()->Error("Can`t convert MVariant from spirv_cross::SPIRType. Unknow type");
-
-	return false;
-}
-
-void MVulkanShaderCompiler::ReadShaderPath(const MString& strShaderPath)
-{
-	MString strShaderCode;
-	MFileHelper::ReadString(strShaderPath, strShaderCode);
-
-	std::regex r("\\s*#include\\s*\"(.*)\"");
-
-	std::sregex_iterator pos(strShaderCode.cbegin(), strShaderCode.cend(), r);
-	std::sregex_iterator end;
-
-	for (; pos != end; ++pos)
-	{
-		m_pDevice->GetEngine()->GetLogger()->Information("include :%s", pos->str(1).c_str());
-	}
-
-	MString strFolder = MFileHelper::GetFileFolder(strShaderPath);
-
-	MString strShaderFolder;
-
-
-
 }
 
 MPreamble::MPreamble()
@@ -618,6 +568,17 @@ bool MPreamble::IsValid() const
 
 void MPreamble::AddDef(const MString& strName, const MString& strValue)
 {
+#ifdef MORTY_SHADER_COMPILER_DXC
+	if (strValue.empty())
+	{
+		m_strText.append(strName);
+		m_strText.append(" ");
+	}
+	else
+	{
+		m_strText.append(strName + "=" + strValue + " ");
+	}
+#else
 	m_strText.append("#define ");
 
 	m_vProcesses.push_back("define-macro ");
@@ -632,19 +593,7 @@ void MPreamble::AddDef(const MString& strName, const MString& strValue)
 		m_vProcesses.back().append(strName + "=" + strValue);
 		m_strText.append(strName + " " + strValue + "\n");
 	}
-}
-
-void MPreamble::AddDef2(const MString& strName, const MString& strValue)
-{
-	if (strValue.empty())
-	{
-		m_strText.append(strName);
-		m_strText.append(" ");
-	}
-	else
-	{
-		m_strText.append(strName + "=" + strValue + " ");
-	}
+#endif
 }
 
 void MPreamble::AddUndef(std::string undef)

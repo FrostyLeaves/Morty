@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MMESH_H_
-#define _M_MMESH_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Math/Vector.h"
 #include <vector>
@@ -130,5 +130,3 @@ public:
 		return reinterpret_cast<VERTEX_TYPE*>(m_vVertexData.data());
 	}
 };
-
-#endif

@@ -24,7 +24,7 @@ class MObjectSystem* MObject::GetObjectSystem()
 
 	if (MISystem* pSystem = m_pEngine->FindSystem(MObjectSystem::GetClassType()))
 	{
-		return pSystem->DynamicCast<MObjectSystem>();
+		return pSystem->template DynamicCast<MObjectSystem>();
 	}
 
 	return nullptr;

@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_TRANSPARENT_RENDER_WORK_H_
-#define _M_TRANSPARENT_RENDER_WORK_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
 
@@ -83,5 +83,3 @@ private:
 	MRenderPass m_fillRenderPass;
 	std::array<MForwardRenderTransparentShaderPropertyBlock, 2> m_aFramePropertyBlock;
 };
-
-#endif

@@ -15,7 +15,7 @@ MGuid::MGuid(const uint32_t& data0, const uint32_t& data1, const uint32_t& data2
 
 MGuid MGuid::generate()
 {
-	xg::Guid&& guid = xg::newGuid();
+	xg::Guid guid = xg::newGuid();
 
 	MGuid mguid;
 	memcpy(mguid.data.data(), guid.bytes().data(), sizeof(uint32_t) * 4);

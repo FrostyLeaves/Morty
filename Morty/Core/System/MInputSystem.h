@@ -6,8 +6,7 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MINPUTSYSTEM_H_
-#define _M_MINPUTSYSTEM_H_
+#pragma once
 #include "Utility/MGlobal.h"
 #include "Engine/MSystem.h"
 
@@ -39,6 +38,3 @@ private:
 
     Vector2 m_v2MouseAddition;
 };
-
-
-#endif

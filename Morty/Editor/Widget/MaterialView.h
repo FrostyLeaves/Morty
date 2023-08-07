@@ -1,7 +1,6 @@
-#ifndef _MATERIAL_VIEW_H_
-#define _MATERIAL_VIEW_H_
+#pragma once
 
-#include "Main/IBaseView.h"
+#include "Main/BaseWidget.h"
 #include "Render/SceneTexture.h"
 
 #include "Resource/MResource.h"
@@ -12,38 +11,31 @@ class MEntity;
 class MEngine;
 class MMaterialResource;
 class MInputEvent;
-class MaterialView : public IBaseView
+class MaterialView : public BaseWidget
 {
 public:
 	MaterialView();
-	virtual ~MaterialView();
+	~MaterialView() = default;
 
 public:
 	void SetMaterial(std::shared_ptr<MMaterialResource> pMaterial);
 
-	SceneTexture& GetSceneTexture() { return m_SceneTexture; }
+	void Initialize(MainEditor* pMainEditor) override;
+	void Release() override;
 
-	virtual void Render() override;
+	void Input(MInputEvent* pEvent) override;
+	void Render() override;
 
-	virtual void Initialize(MEngine* pEngine) override;
-	virtual void Release() override;
-
-	virtual void Input(MInputEvent* pEvent) override;
-
-protected:
-
+	
 private:
-	MResourceRef m_Resource;
-	std::shared_ptr<MMaterialResource> m_pMaterial;
+	std::shared_ptr<MMaterialResource> m_pMaterial = nullptr;
 	PropertyBase m_propertyBase;
-
-	MEngine* m_pEngine;
+	
+	MScene* m_pScene = nullptr;
 
 	MEntity* m_pStaticSphereMeshNode;
 	MEntity* m_pSkeletonSphereMeshNode;
 
 	bool m_bShowPreview;
-	SceneTexture m_SceneTexture;
+	std::shared_ptr<SceneTexture> m_pSceneTexture = nullptr;
 };
-
-#endif

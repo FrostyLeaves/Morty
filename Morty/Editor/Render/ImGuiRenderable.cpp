@@ -82,7 +82,7 @@ void ImGuiRenderable::InitializeFont()
 	m_FontTexture.SetResource(pFontTexture);
 
 	// Store our identifier
-	io.Fonts->TexID = { pFontTexture->GetTextureTemplate(), 0 };
+	io.Fonts->TexID = { pFontTexture->GetTextureTemplate(), intptr_t(pFontTexture->GetTextureTemplate().get()), 0 };
 
 }
 
@@ -211,7 +211,7 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
 	// (Because we merged all buffers into a single one, we maintain our own offset into them)
 	int global_vtx_offset = 0;
 	int global_idx_offset = 0;
-	ImGuiTexture using_texture = {nullptr, 0};
+	ImGuiTexture using_texture = {nullptr, intptr_t(), 0};
 	for (int n = 0; n < draw_data->CmdListsCount; n++)
 	{
 		const ImDrawList* cmd_list = draw_data->CmdLists[n];

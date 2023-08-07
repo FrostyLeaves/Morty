@@ -6,11 +6,11 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MCOMPONENTSYSTEM_H_
-#define _M_MCOMPONENTSYSTEM_H_
+#pragma once
 #include "Utility/MGlobal.h"
 #include "Engine/MSystem.h"
 #include "Component/MComponent.h"
+#include "Component/MComponentGroup.h"
 
 class MORTY_API MComponentSystem : public MISystem
 {
@@ -41,5 +41,3 @@ void MComponentSystem::RegisterComponent()
 
     m_tComponentGroupFactory[TYPE::GetClassType()] = []() { return new MComponentGroup<TYPE>(); };
 }
-
-#endif

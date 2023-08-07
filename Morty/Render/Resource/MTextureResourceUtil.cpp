@@ -194,7 +194,7 @@ std::unique_ptr<MResourceData> MTextureResourceUtil::ImportCubeMap(const std::ar
 			}
 		}
 
-		return false;
+		return nullptr;
 	}
 
 	if (unCubeMapChannel == 1 || unCubeMapChannel == 4)

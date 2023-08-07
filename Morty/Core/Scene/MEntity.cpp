@@ -36,6 +36,16 @@ MEntity::~MEntity()
 
 }
 
+MComponent* MEntity::RegisterComponent(const MType* pComponentType)
+{
+	if (!m_pScene)
+	{
+		return nullptr;
+	}
+
+	return m_pScene->AddComponent(this, pComponentType);
+}
+
 void MEntity::UnregisterComponent(const MType* pComponentType)
 {
 	if (!m_pScene)
@@ -147,7 +157,7 @@ void MEntity::Deserialize(const void* pBufferPointer)
 
 	const flatbuffers::Vector<flatbuffers::Offset<mfbs::AnyComponent>>& vfbcomponents = *fbEntity->components();
 
-	for (int i = 0; i < vfbcomponents.Length(); ++i)
+	for (int i = 0; i < vfbcomponents.size(); ++i)
 	{
 		auto fbcomponent = vfbcomponents.Get(i);
 

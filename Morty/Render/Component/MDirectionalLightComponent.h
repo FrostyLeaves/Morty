@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MDIRECTIONALLIGHTCOMPONENT_H_
-#define _M_MDIRECTIONALLIGHTCOMPONENT_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Component/MComponent.h"
 
@@ -60,6 +60,3 @@ private:
 	bool m_bEnable = true;
 
 };
-
-
-#endif

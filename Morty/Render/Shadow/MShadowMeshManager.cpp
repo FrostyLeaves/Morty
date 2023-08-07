@@ -36,7 +36,8 @@ void MShadowMeshManager::Initialize()
 		pNotifySystem->RegisterNotify(MRenderNotify::NOTIFY_GENERATE_SHADOW_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MShadowMeshManager::OnGenerateShadowChanged, this));
 	}
 
-	if (m_pUpdateTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>("RenderMeshManagerUpdate"))
+	m_pUpdateTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>("ShadowMeshManagerUpdate");
+	if (m_pUpdateTask)
 	{
 		m_pUpdateTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MShadowMeshManager::RenderUpdate, this));
 		m_pUpdateTask->SetThreadType(METhreadType::ERenderThread);
@@ -45,6 +46,12 @@ void MShadowMeshManager::Initialize()
 
 void MShadowMeshManager::Release()
 {
+	if (m_pUpdateTask)
+	{
+		GetEngine()->GetMainGraph()->DestroyNode(m_pUpdateTask);
+		m_pUpdateTask = nullptr;
+	}
+
 	if (MNotifyManager* pNotifySystem = GetScene()->GetManager<MNotifyManager>())
 	{
 		pNotifySystem->UnregisterNotify(MCoreNotify::NOTIFY_TRANSFORM_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MShadowMeshManager::OnTransformChanged, this));
@@ -73,7 +80,7 @@ void MShadowMeshManager::UnregisterComponent(MComponent* pComponent)
 		return;
 	}
 
-	const auto pMeshComponent = pComponent->DynamicCast<MRenderMeshComponent>();
+	const auto pMeshComponent = pComponent->template DynamicCast<MRenderMeshComponent>();
 	if (!pMeshComponent)
 	{
 		return;
@@ -119,7 +126,7 @@ void MShadowMeshManager::OnTransformChanged(MComponent* pComponent)
 
 void MShadowMeshManager::OnMeshChanged(MComponent* pComponent)
 {
-	if (auto pMeshComponent = pComponent->DynamicCast<MRenderMeshComponent>())
+	if (auto pMeshComponent = pComponent->template DynamicCast<MRenderMeshComponent>())
 	{
 		if (pMeshComponent->GetGenerateDirLightShadow())
 		{
@@ -130,7 +137,7 @@ void MShadowMeshManager::OnMeshChanged(MComponent* pComponent)
 
 void MShadowMeshManager::OnGenerateShadowChanged(MComponent* pComponent)
 {
-	if (auto pMeshComponent = pComponent->DynamicCast<MRenderMeshComponent>())
+	if (auto pMeshComponent = pComponent->template DynamicCast<MRenderMeshComponent>())
 	{
 		if (pMeshComponent->GetGenerateDirLightShadow())
 		{
@@ -198,7 +205,7 @@ void MShadowMeshManager::InitializeMaterial()
 	std::shared_ptr<MResource> ps = pResourceSystem->LoadResource("Shader/Shadow/shadowmap.mps");
 	auto pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	pMaterial->SetCullMode(MECullMode::ECullNone);
-	pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, "true");
+	pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, "1");
 	pMaterial->LoadVertexShader(vs);
 	pMaterial->LoadPixelShader(ps);
 	m_staticMaterial.SetResource(pMaterial);
@@ -207,7 +214,7 @@ void MShadowMeshManager::InitializeMaterial()
 
 	pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	pMaterial->SetCullMode(MECullMode::ECullNone);
-	pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, "true");
+	pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, "1");
 	pMaterial->GetShaderMacro().SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, "1");
 	pMaterial->LoadVertexShader(vs);
 	pMaterial->LoadPixelShader(ps);

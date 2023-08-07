@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MTEXTURE_RESOURCE_UTIL_H_
-#define _M_MTEXTURE_RESOURCE_UTIL_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "MTextureResource.h"
 
@@ -27,5 +27,3 @@ public:
 
 	static METextureLayout GetTextureLayout(const uint32_t& nChannel, const MTexturePixelFormat& format);
 };
-
-#endif

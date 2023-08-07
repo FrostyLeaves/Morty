@@ -456,6 +456,13 @@ void GetDepthStencilStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRe
 		depthStencilInfo = {};
 		depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	}
+	else if (MEMaterialType::ECustom == eType)
+	{
+		depthStencilInfo.depthTestEnable = VK_TRUE;
+		depthStencilInfo.depthWriteEnable = VK_TRUE;
+		depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+		depthStencilInfo.stencilTestEnable = VK_FALSE;
+	}
     else
     {
 		depthStencilInfo.depthTestEnable = VK_TRUE;
@@ -490,13 +497,20 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<
 	MShader* pPixelShader = pMaterial->GetPixelShader();
 
 	if (nullptr == pVertexShader || nullptr == pPixelShader)
+	{
+		MORTY_ASSERT(false);
 		return VK_NULL_HANDLE;
-
+	}
 	if (nullptr == pVertexShader->GetBuffer())
+	{
+		MORTY_ASSERT(false);
 		return VK_NULL_HANDLE;
+	}
 	if (nullptr == pPixelShader->GetBuffer())
+	{
+		MORTY_ASSERT(false);
 		return VK_NULL_HANDLE;
-
+	}
 
 	std::vector<VkDynamicState> dynamicStates = {
 	VK_DYNAMIC_STATE_VIEWPORT,
@@ -622,8 +636,10 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
 	VkPipeline graphicsPipeline = VK_NULL_HANDLE;
-	if (vkCreateGraphicsPipelines(m_pDevice->m_VkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
+	VkResult result = vkCreateGraphicsPipelines(m_pDevice->m_VkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline);
+	if (result != VK_SUCCESS)
 	{
+		MORTY_ASSERT(result == VK_SUCCESS);
 		return VK_NULL_HANDLE;
 	}
 

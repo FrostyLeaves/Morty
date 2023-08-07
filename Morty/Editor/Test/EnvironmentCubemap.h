@@ -40,7 +40,7 @@ void ENVIRONMENT_CUBEMAP_TEST(MEngine* pEngine, MScene* pScene)
 		pResourceSystem->GetFullPath("Texture/Sky/Circus_Backstage/nz.hdr")
 		}, { MTexturePixelFormat::Float32 });
 
-	pCubeTexture->Load(resourceData);
+	pCubeTexture->Load(std::move(resourceData));
 
 
 	MEntity* pSkyBoxEntity = pScene->CreateEntity();

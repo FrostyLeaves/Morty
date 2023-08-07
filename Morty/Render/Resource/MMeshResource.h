@@ -9,8 +9,8 @@
  * 
 **/
 
-#ifndef _M_MESHRESOURCE_H_
-#define _M_MESHRESOURCE_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Utility/MString.h"
 #include "Render/MMesh.h"
@@ -63,7 +63,7 @@ public:
 
 public:
 
-	bool Load(std::unique_ptr<MResourceData>& pResourceData) override;
+	bool Load(std::unique_ptr<MResourceData>&& pResourceData) override;
 	virtual bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
 
 	virtual void OnDelete() override;
@@ -96,4 +96,3 @@ public:
 	static MString GetResourceTypeName() { return "Mesh"; }
 	static std::vector<MString> GetSuffixList() { return { "mesh" }; }
 };
-#endif

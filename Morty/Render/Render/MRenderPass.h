@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MRENDERPASS_H_
-#define _M_MRENDERPASS_H_
+#pragma once
+
 #include "Render/MRenderGlobal.h"
 
 #include "Utility/MColor.h"
@@ -124,5 +124,3 @@ public:
     VkRenderPass m_VkRenderPass;
 #endif
 };
-
-#endif

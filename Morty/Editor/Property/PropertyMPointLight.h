@@ -1,5 +1,5 @@
 #ifndef _PROPERTY_MPOINT_LIGHT_COMPONENT_H_
-#define _PROPERTY_MPOINTLIGHT_H_
+#define _PROPERTY_MPOINT_LIGHT_COMPONENT_H_
 
 #include "Property/PropertyBase.h"
 #include "Component/MPointLightComponent.h"

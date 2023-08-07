@@ -16,20 +16,9 @@ const char* svImportModelID = "Import Model File";
 const char* svOutputFolderID = "Output Model Entity Dir";
 
 ModelConvertView::ModelConvertView()
-	: IBaseView()
-	, m_convertQueue()
-	, m_strSourcePath()
-	, m_strOutputDir()
-	, m_strOutputName()
-	, m_nMaterialTypeEnum(0)
-	, m_pEngine(nullptr)
+	: BaseWidget()
 {
 	m_strViewName = "ModelConvert";
-}
-
-ModelConvertView::~ModelConvertView()
-{
-
 }
 
 void ModelConvertView::Render()
@@ -119,13 +108,13 @@ void ModelConvertView::Render()
 		work.eThreadType = METhreadType::ECurrentThread;
 		work.funcWorkFunction = std::bind(&ModelConvertView::Convert, this, convertQueue);
 
-		m_pEngine->GetThreadPool()->AddWork(work);
+		GetEngine()->GetThreadPool()->AddWork(work);
 	}
 }
 
-void ModelConvertView::Initialize(MEngine* pEngine)
+void ModelConvertView::Initialize(MainEditor* pMainEditor)
 {
-	m_pEngine = pEngine;
+	BaseWidget::Initialize(pMainEditor);
 }
 
 void ModelConvertView::Release()
@@ -142,7 +131,7 @@ void ModelConvertView::Convert(std::queue<MModelConvertInfo> convertQueue)
 {
 	while (!convertQueue.empty())
 	{
-		MModelConverter converter(m_pEngine);
+		MModelConverter converter(GetEngine());
 		converter.Convert(convertQueue.front());
 		convertQueue.pop();
 	}

@@ -6,8 +6,8 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MFORWARD_RENDER_SHADER_PARAM_SET_H_
-#define _M_MFORWARD_RENDER_SHADER_PARAM_SET_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "MRenderInfo.h"
 #include "Material/MShaderPropertyBlock.h"
@@ -19,7 +19,7 @@ class MORTY_API MForwardRenderShaderPropertyBlock : public IPropertyBlockAdapter
 public:
 
 	MForwardRenderShaderPropertyBlock() = default;
-	virtual ~MForwardRenderShaderPropertyBlock() = default;
+    ~MForwardRenderShaderPropertyBlock() override = default;
 
 public:
 
@@ -70,6 +70,3 @@ public:
 	std::shared_ptr<MShaderTextureParam> m_pTransparentFrontTextureParam = nullptr;
 	std::shared_ptr<MShaderTextureParam> m_pTransparentBackTextureParam = nullptr;
 };
-
-
-#endif

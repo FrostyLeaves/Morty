@@ -6,31 +6,30 @@
  * @Author       DoubleYe
 **/
 
-#ifndef _M_MTASKGRAPH_H_
-#define _M_MTASKGRAPH_H_
+#pragma once
+
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
 
 #include "TaskGraph/MTaskNode.h"
 #include "TaskGraph/MTaskNodeInput.h"
 #include "TaskGraph/MTaskNodeOutput.h"
+#include "Thread/MThreadPool.h"
 
 class MTaskNode;
-class MORTY_API MTaskGraph : public MObject
+class MORTY_API MTaskGraph : MTypeClass
 {
     MORTY_CLASS(MTaskGraph)
 
 public:
     MTaskGraph();
+	MTaskGraph(MThreadPool* pThreadPool);
     virtual ~MTaskGraph();
-
-public:
-
 
     template<typename TYPE>
     TYPE* AddNode(const MString& strNodeName);
 
-	bool IsValid() const { return m_bValid; }
+	void DestroyNode(MTaskNode* pTaskNode);
 
     bool Compile();
 
@@ -39,29 +38,23 @@ public:
 
 	void Run();
 
-public:
-
-	virtual void OnDelete() override;
-
-public:
-
 	const std::vector<MTaskNode*>& GetStartNodes() { return m_vStartTaskNode; }
 	const std::vector<MTaskNode*>& GetFinalNodes() { return m_vFinalTaskNode; }
-	const std::vector<MTaskNode*>& GetAllNodes() { return m_vTaskNode; }
+
+	MThreadPool* GetThreadPool() const { return m_pThreadPool; }
+
 protected:
 
 	bool AddNode(const MString& strNodeName, MTaskNode* pGraphNode);
 
-protected:
-
+	MThreadPool* m_pThreadPool = nullptr;
 	std::set<MTaskNode*> m_tTaskNode;
-	std::vector<MTaskNode*> m_vTaskNode;
 
 	std::vector<MTaskNode*> m_vStartTaskNode;
 	std::vector<MTaskNode*> m_vFinalTaskNode;
 
 	bool m_bRequireCompile;
-	bool m_bValid;
+	bool m_bLock = false;
 };
 
 template<typename TYPE>
@@ -81,6 +74,3 @@ TYPE* MTaskGraph::AddNode(const MString& strNodeName)
 
 	return pNode;
 }
-
-
-#endif

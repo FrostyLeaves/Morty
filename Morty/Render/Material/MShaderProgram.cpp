@@ -62,7 +62,7 @@ bool MShaderProgram::LoadVertexShader(MEngine* pEngine, std::shared_ptr<MResourc
 		if (MEShaderType::EVertex == pShaderResource->GetShaderType())
 		{
 			auto LoadFunc = [this, pEngine]() {
-				MShaderResource* pShaderResource = m_VertexResource.GetResource()->DynamicCast<MShaderResource>();
+				MShaderResource* pShaderResource = m_VertexResource.GetResource()->template DynamicCast<MShaderResource>();
 				if (nullptr == pShaderResource)
 					return false;
 
@@ -103,7 +103,7 @@ bool MShaderProgram::LoadPixelShader(MEngine* pEngine, std::shared_ptr<MResource
 		if (MEShaderType::EPixel == pShaderResource->GetShaderType())
 		{
 			auto LoadFunc = [this, pEngine]() {
-				MShaderResource* pShaderResource = m_PixelResource.GetResource()->DynamicCast<MShaderResource>();
+				MShaderResource* pShaderResource = m_PixelResource.GetResource()->template DynamicCast<MShaderResource>();
 				if (nullptr == pShaderResource)
 					return false;
 
@@ -142,7 +142,7 @@ bool MShaderProgram::LoadComputeShader(MEngine* pEngine, std::shared_ptr<MResour
 		if (MEShaderType::ECompute == pShaderResource->GetShaderType())
 		{
 			auto LoadFunc = [this, pEngine]() {
-				MShaderResource* pShaderResource = m_ComputeResource.GetResource()->DynamicCast<MShaderResource>();
+				MShaderResource* pShaderResource = m_ComputeResource.GetResource()->template DynamicCast<MShaderResource>();
 				if (nullptr == pShaderResource)
 					return false;
 
