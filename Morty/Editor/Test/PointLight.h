@@ -22,8 +22,8 @@ void ADD_POINT_LIGHT(MEngine* pEngine, MScene* pScene)
 
 	std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
-	pMaterial->LoadVertexShader("Shader/debug_model.mvs");
-	pMaterial->LoadPixelShader("Shader/debug_model.mps");
+	pMaterial->LoadVertexShader("Shader/Debug/debug_model.mvs");
+	pMaterial->LoadPixelShader("Shader/Debug/debug_model.mps");
 
 	pMaterial->SetTexture("u_texDiffuse", pIconTexture);
 

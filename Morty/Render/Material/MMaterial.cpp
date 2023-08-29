@@ -25,10 +25,6 @@ MMaterial::MMaterial()
 {
 }
 
-MMaterial::~MMaterial()
-{
-}
-
 std::vector<std::shared_ptr<MShaderConstantParam>>& MMaterial::GetShaderParams()
 {
 	return m_pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]->m_vParams;

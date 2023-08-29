@@ -37,8 +37,8 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 
 	std::shared_ptr<MMaterialResource> pForwardMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	{
-		pForwardMaterial->LoadVertexShader("Shader/model.mvs");
-		pForwardMaterial->LoadPixelShader("Shader/model.mps");
+		pForwardMaterial->LoadVertexShader("Shader/Forward/model.mvs");
+		pForwardMaterial->LoadPixelShader("Shader/Forward/model.mps");
 		pForwardMaterial->SetMaterialType(MEMaterialType::EDefault);
 
 		pForwardMaterial->GetMaterialPropertyBlock()->SetValue("f3Ambient", Vector3(1.0f, 1.0f, 1.0f));
@@ -56,8 +56,8 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 
 	std::shared_ptr<MMaterialResource> pDeferredMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	{
-		pDeferredMaterial->LoadVertexShader("Shader/model_gbuffer.mvs");
-		pDeferredMaterial->LoadPixelShader("Shader/model_gbuffer.mps");
+		pDeferredMaterial->LoadVertexShader("Shader/Deferred/model_gbuffer.mvs");
+		pDeferredMaterial->LoadPixelShader("Shader/Deferred/model_gbuffer.mps");
 		pDeferredMaterial->SetMaterialType(MEMaterialType::EDeferred);
 
 		std::shared_ptr<MResource> albedo = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
@@ -90,8 +90,8 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 	{
 		std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
-		pMaterial->LoadVertexShader("Shader/model.mvs");
-		pMaterial->LoadPixelShader("Shader/model.mps");
+		pMaterial->LoadVertexShader("Shader/Forward/model.mvs");
+		pMaterial->LoadPixelShader("Shader/Forward/model.mps");
 		pMaterial->SetMaterialType(MEMaterialType::EDefault);
 
 		pMaterial->GetMaterialPropertyBlock()->SetValue("f3Ambient", Vector3(0.5f, 0.5f, 0.5f));

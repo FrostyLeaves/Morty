@@ -40,7 +40,7 @@ void MGPUCameraFrustumCulling::Initialize(MEngine* pEngine)
 
 	MObjectSystem* pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
 	m_pCullingComputeDispatcher = pObjectSystem->CreateObject<MComputeDispatcher>();
-	m_pCullingComputeDispatcher->LoadComputeShader("Shader/cull.mcs");
+	m_pCullingComputeDispatcher->LoadComputeShader("Shader/Culling/cull.mcs");
 
 
 	const std::shared_ptr<MShaderPropertyBlock>& params = m_pCullingComputeDispatcher->GetShaderPropertyBlocks()[0];

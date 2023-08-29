@@ -30,8 +30,8 @@ void SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 		std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
 
-		pMaterial->LoadVertexShader("Shader/model.mvs");
-		pMaterial->LoadPixelShader("Shader/model.mps");
+		pMaterial->LoadVertexShader("Shader/Forward/model.mvs");
+		pMaterial->LoadPixelShader("Shader/Forward/model.mps");
 
 		pMaterial->GetMaterialPropertyBlock()->SetValue("f3Ambient", Vector3(1.0f, 1.0f, 1.0f));
 		pMaterial->GetMaterialPropertyBlock()->SetValue("f3Diffuse", Vector3(1.0f, 1.0f, 1.0f));

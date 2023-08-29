@@ -24,12 +24,12 @@ class MORTY_API MEnvironmentMapRenderWork : public MObject
 	MORTY_CLASS(MEnvironmentMapRenderWork)
 public:
     MEnvironmentMapRenderWork();
-    virtual ~MEnvironmentMapRenderWork();
+    ~MEnvironmentMapRenderWork() override = default;
 
 public:
 
-	virtual void OnCreated() override;
-	virtual void OnDelete() override;
+	void OnCreated() override;
+	void OnDelete() override;
 
 public:
 
@@ -37,7 +37,7 @@ public:
 
 	void RenderEnvironment(MIRenderCommand* pRenderCommand, MSkyBoxComponent* pSkyBoxComponent);
 
-	std::shared_ptr<MResource> GetDiffuseOutputTexture();
+	std::shared_ptr<MResource> GetDiffuseOutputTexture() const;
 
 protected:
 

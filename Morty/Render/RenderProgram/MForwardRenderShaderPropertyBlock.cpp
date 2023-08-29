@@ -22,8 +22,8 @@ void MForwardRenderShaderPropertyBlock::Initialize(MEngine* pEngine)
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
 
-	std::shared_ptr<MResource> forwardVS = pResourceSystem->LoadResource("Shader/model_gbuffer.mvs");
-	std::shared_ptr<MResource> forwardPS = pResourceSystem->LoadResource("Shader/model_gbuffer.mps");
+	std::shared_ptr<MResource> forwardVS = pResourceSystem->LoadResource("Shader/Deferred/model_gbuffer.mvs");
+	std::shared_ptr<MResource> forwardPS = pResourceSystem->LoadResource("Shader/Deferred/model_gbuffer.mps");
 	m_pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pMaterial->SetCullMode(MECullMode::ECullBack);
 	m_pMaterial->LoadVertexShader(forwardVS);
@@ -135,13 +135,7 @@ void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& in
 	if (m_pWorldInfoParam)
 	{
 		MVariantStruct& cWorldInfo = m_pWorldInfoParam->var.GetValue<MVariantStruct>();
-		if (info.pDirectionalLightEntity)
-		{
-			if (MSceneComponent* pSceneComponent = info.pDirectionalLightEntity->GetComponent<MSceneComponent>())
-			{
-				cWorldInfo.SetVariant("u_f3DirectionLight",pSceneComponent->GetForward());
-			}
-		}
+		
 
 		if (info.pCameraEntity)
 		{
@@ -197,6 +191,10 @@ void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& in
 			{
 				MVariantStruct& cDirectionLightStruct = cLightStruct.GetVariant<MVariantStruct>("u_xDirectionalLight");
 				{
+					if (MSceneComponent* pSceneComponent = info.pDirectionalLightEntity->GetComponent<MSceneComponent>())
+					{
+						cDirectionLightStruct.SetVariant("f3LightDir", pSceneComponent->GetForward());
+					}
 					if (MDirectionalLightComponent* pLightComponent = info.pDirectionalLightEntity->GetComponent<MDirectionalLightComponent>())
 					{
 						cDirectionLightStruct.SetVariant("f3Intensity",pLightComponent->GetColor().ToVector3() * pLightComponent->GetLightIntensity());

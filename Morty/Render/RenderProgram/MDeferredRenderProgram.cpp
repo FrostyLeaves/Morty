@@ -97,7 +97,7 @@ void MDeferredRenderProgram::RenderReady(MIRenderCommand* pPrimaryCommand)
 	m_pShadowCulling->SetDirectionalLight(pMainDirectionalLight);
 	m_pShadowCulling->Culling(vShadowMaterialGroup);
 
-	//Culling.
+	//Scene Culling.
 	auto* pMeshInstanceMeshManager = pScene->GetManager<MMeshInstanceManager>();
 	const std::vector<MMaterialBatchGroup*> vMaterialGroup = pMeshInstanceMeshManager->GetAllMaterialGroup();
 
@@ -117,10 +117,10 @@ void MDeferredRenderProgram::RenderReady(MIRenderCommand* pPrimaryCommand)
 	UpdateFrameParams(m_renderInfo);
 
 	//Resize FrameBuffer.
-	const Vector2 v2Size = pViewport->GetSize();
+	const Vector2 v2ViewportSize = pViewport->GetSize();
 	for (const auto& pr : m_tRenderWork)
 	{
-		pr.second->Resize(v2Size);
+		pr.second->Resize(v2ViewportSize);
 	}
 }
 

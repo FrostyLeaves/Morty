@@ -33,11 +33,6 @@ MEnvironmentMapRenderWork::MEnvironmentMapRenderWork()
 
 }
 
-MEnvironmentMapRenderWork::~MEnvironmentMapRenderWork()
-{
-
-}
-
 void MEnvironmentMapRenderWork::OnCreated()
 {
 	Super::OnCreated();
@@ -77,7 +72,7 @@ void MEnvironmentMapRenderWork::RenderEnvironment(MIRenderCommand* pCommand, MSk
 	m_bUpdateNextFrame = false;
 }
 
-std::shared_ptr<MResource> MEnvironmentMapRenderWork::GetDiffuseOutputTexture()
+std::shared_ptr<MResource> MEnvironmentMapRenderWork::GetDiffuseOutputTexture() const
 {
 	return m_DiffuseEnvironmentMap.GetResource();
 }
@@ -96,8 +91,8 @@ void MEnvironmentMapRenderWork::RenderDiffuse(MIRenderCommand* pCommand, MSkyBox
 
 	pCommand->BeginRenderPass(&m_DiffuseRenderPass);
 
-	Vector2 v2LeftTop = Vector2(0.0f, 0.0f);
-	Vector2 v2Size = Vector2(EnvironmentTextureSize, EnvironmentTextureSize);
+	const Vector2 v2LeftTop = Vector2(0.0f, 0.0f);
+	const Vector2 v2Size = Vector2(EnvironmentTextureSize, EnvironmentTextureSize);
 	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
 	pCommand->SetScissor(MScissorInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
 
@@ -213,8 +208,8 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 	}
 
 	m_DiffuseMaterial = pResourceSystem->CreateResource<MMaterial>("Diffuse CubeMap Material");
-	std::shared_ptr<MResource> vs = pResourceSystem->LoadResource("Shader/ibl_map.mvs");
-	std::shared_ptr<MResource> diffuseps = pResourceSystem->LoadResource("Shader/diffuse_map.mps");
+	std::shared_ptr<MResource> vs = pResourceSystem->LoadResource("Shader/Lighting/ibl_map.mvs");
+	std::shared_ptr<MResource> diffuseps = pResourceSystem->LoadResource("Shader/Lighting/diffuse_map.mps");
 	m_DiffuseMaterial->LoadVertexShader(vs);
 	m_DiffuseMaterial->LoadPixelShader(diffuseps);
 
@@ -235,7 +230,7 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 	}
 
 
-	std::shared_ptr<MResource> specularps = pResourceSystem->LoadResource("Shader/specular_map.mps");
+	std::shared_ptr<MResource> specularps = pResourceSystem->LoadResource("Shader/Lighting/specular_map.mps");
 	m_vSpecularMaterial.resize(SpecularMipmapCount);
 	for (uint32_t nMipmap = 0; nMipmap < SpecularMipmapCount; ++nMipmap)
 	{

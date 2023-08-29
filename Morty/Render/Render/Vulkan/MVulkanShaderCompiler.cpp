@@ -15,8 +15,6 @@
 #include "Render/Vulkan/MVulkanDevice.h"
 
 
-//#define MORTY_SHADER_COMPILER_DXC
-
 #ifdef MORTY_SHADER_COMPILER_DXC
 #include "dxcapi.h"
 #else
@@ -34,23 +32,27 @@ struct MVulkanIncludeHandler : public IDxcIncludeHandler
 	MVulkanIncludeHandler(IDxcUtils* pUtils, IDxcIncludeHandler* pDefaultIncludeHandler)
 		: m_pUtils(pUtils)
 		, m_pIncludeHandler(pDefaultIncludeHandler)
-		, m_vSearchPath()
 	{
-		
+
+	}
+
+	void SetSystemSearchPath (const std::vector<std::wstring>& paths)
+	{
+		m_vSearchPath = paths;
 	}
 
 	HRESULT STDMETHODCALLTYPE LoadSource(_In_ LPCWSTR pFilename, _COM_Outptr_result_maybenull_ IDxcBlob** ppIncludeSource) override
 	{
 		IDxcBlobEncoding* pEncoding = nullptr;
+
 		HRESULT hr = m_pUtils->LoadFile(pFilename, nullptr, &pEncoding);
 		if (SUCCEEDED(hr))
 		{
 			*ppIncludeSource = pEncoding;
+			return hr;
 		}
-		else
-		{
-			*ppIncludeSource = nullptr;
-		}
+
+		*ppIncludeSource = nullptr;
 		return hr;
 	}
 
@@ -64,19 +66,19 @@ struct MVulkanIncludeHandler : public IDxcIncludeHandler
 private:
 	IDxcUtils* m_pUtils;
 	IDxcIncludeHandler* m_pIncludeHandler;
-
 	std::vector<std::wstring> m_vSearchPath;
 };
 
 #else
-class MVulkanIncluder : public glslang::TShader::Includer
+class MVulkanIncludeHandler : public glslang::TShader::Includer
 {
-public:
+	MVulkanIncludeHandler() = default;
 
-	MVulkanIncluder() :m_strLocalFolder("") {}
+	void SetSystemSearchPath(const std::vector<std::string>& paths)
+	{
+		m_vSearchPath = paths;
+	}
 
-	void SetLocalFolder(const MString& strLocalFolder) { m_strLocalFolder = strLocalFolder + "/"; }
-	
 	IncludeResult* includeSystem(const char* headerName, const char* includerName, size_t inclusionDepth) override
 	{
 		MString* pCode = new MString();
@@ -110,7 +112,7 @@ public:
 
 private:
 
-	MString m_strLocalFolder;
+	std::vector<std::string> m_vSearchPath;
 };
 
 #endif
@@ -155,9 +157,14 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 	IDxcIncludeHandler* pDefaultIncludeHandler = nullptr;
 	pUtils->CreateDefaultIncludeHandler(&pDefaultIncludeHandler);
 
-	std::shared_ptr<MVulkanIncludeHandler> pIncludeHandler = std::make_shared<MVulkanIncludeHandler>(pUtils, pDefaultIncludeHandler);
 
 	std::wstring_convert<std::codecvt_utf8<wchar_t>> stow;
+
+	std::shared_ptr<MVulkanIncludeHandler> pIncludeHandler = std::make_shared<MVulkanIncludeHandler>(pUtils, pDefaultIncludeHandler);
+	pIncludeHandler->SetSystemSearchPath({
+		stow.from_bytes(MORTY_RESOURCE_PATH ) + L"/Shader"
+	});
+
 
 	std::wstring wstrShaderPath = stow.from_bytes(strShaderPath);
 
@@ -217,16 +224,20 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 	//vCompArgs.push_back(L"-enable-templates");
 
 	vCompArgs.push_back(L"-spirv");
+	vCompArgs.push_back(L"-fspv-target-env=vulkan1.2");
 	vCompArgs.push_back(L"-fspv-extension=SPV_NV_ray_tracing");
 	vCompArgs.push_back(L"-fspv-extension=SPV_KHR_multiview");
 	vCompArgs.push_back(L"-fspv-extension=SPV_KHR_shader_draw_parameters");
 	vCompArgs.push_back(L"-fspv-extension=SPV_EXT_descriptor_indexing");
 
+
+//	vCompArgs.push_back(L"-fspv-reflect");
+//	vCompArgs.push_back(L"-fspv-extension=SPV_GOOGLE_user_type");
+//	vCompArgs.push_back(L"-fspv-extension=SPV_GOOGLE_hlsl_functionality1");
+
 #if MORTY_DEBUG
 	vCompArgs.push_back(L"-Od");
 	vCompArgs.push_back(L"-Zi");
-	//vCompArgs.push_back(L"-Qembed_debug");
-	//vCompArgs.push_back(L"-fspv-target-env=vulkan1.2");
 	vCompArgs.push_back(L"-fspv-extension=SPV_KHR_non_semantic_info");
 	vCompArgs.push_back(L"-fspv-debug=vulkan-with-source");
 	//vCompArgs.push_back(L"-fspv-debug=rich-with-source");
@@ -492,7 +503,9 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& strShaderPath, cons
 	shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_2);
 	shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_2);
 
-	MVulkanIncluder includer;
+	//shader.setEnvTargetHlslFunctionality1();
+
+	MVulkanIncludeHandler includer;
 
 	std::string strShaderDirectory;
 	const size_t last_slash_idx = strShaderPath.rfind('/');
@@ -500,7 +513,11 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& strShaderPath, cons
 	{
 		strShaderDirectory = strShaderPath.substr(0, last_slash_idx);
 	}
-	includer.SetLocalFolder(strShaderDirectory);
+
+	includer.SetLocalFolder({
+		MORTY_RESOURCE_PATH "/Shader",
+		strShaderDirectory
+	});
 	
 	if (!shader.parse(GlslangDefaultResources(), 120, false, messages, includer))
 	{

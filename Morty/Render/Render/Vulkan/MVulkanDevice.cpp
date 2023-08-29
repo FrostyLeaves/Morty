@@ -40,11 +40,13 @@ const std::vector<const char*> DeviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 	VK_KHR_MAINTENANCE1_EXTENSION_NAME,
 	VK_KHR_MULTIVIEW_EXTENSION_NAME,
+//	VK_GOOGLE_HLSL_FUNCTIONALITY_1_EXTENSION_NAME,
 //	VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_EXTENSION_NAME,
 //	VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME
 #if defined(MORTY_WIN) && defined(MORTY_DEBUG)
 	VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME,
 #endif
+
 };
 
 const std::set<VkFormat> DepthOnlyTextureFormat = {
@@ -77,14 +79,13 @@ std::vector<const char*> InstanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME,
 #endif
 
 #ifdef MORTY_WIN
-		"VK_KHR_surface",
+		VK_KHR_SURFACE_EXTENSION_NAME,
 		VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
 #endif
 
 #ifdef MORTY_ANDROID
 		VK_KHR_ANDROID_SURFACE_EXTENSION_NAME,
 #endif
-
 
 	VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME
 };
@@ -964,7 +965,6 @@ bool MVulkanDevice::CompileShader(MShader* pShader)
 	else if (MEShaderType::ECompute == pShader->GetType())
 	{
 		MComputeShaderBuffer* pBuffer = new MComputeShaderBuffer();
-		m_ShaderReflector.GetComputeInputState(compiler, pBuffer);
 		pShaderBuffer = pBuffer;
 	}
 
@@ -2242,6 +2242,7 @@ bool MVulkanDevice::InitPhysicalDevice()
 
 	if (m_VkPhysicalDevice == VK_NULL_HANDLE)
 	{
+		MORTY_ASSERT(m_VkPhysicalDevice);
 		GetEngine()->GetLogger()->Error("Initialize Vulkan Error : m_nPhysicalDeviceIndex == -1");
 		return false;
 	}
@@ -2491,6 +2492,7 @@ bool MVulkanDevice::MultiDrawIndirectSupport() const
 
 bool MVulkanDevice::CheckDeviceExtensionSupport(VkPhysicalDevice device)
 {
+
 	uint32_t extensionCount;
 	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
@@ -2500,6 +2502,9 @@ bool MVulkanDevice::CheckDeviceExtensionSupport(VkPhysicalDevice device)
 	std::set<std::string> requiredExtensions(DeviceExtensions.begin(), DeviceExtensions.end());
 
 	for (const auto& extension : availableExtensions) {
+
+		// GetEngine()->GetLogger()->Information("Support extension: {}.", extension.extensionName);
+
 		requiredExtensions.erase(extension.extensionName);
 	}
 

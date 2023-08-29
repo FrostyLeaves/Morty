@@ -53,6 +53,7 @@ typedef unsigned char MByte;
 #include <mutex>
 #include <vector>
 #include <list>
+#include <tuple>
 #include <thread>
 #include <fstream>
 #include <assert.h>

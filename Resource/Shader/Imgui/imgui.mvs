@@ -1,16 +1,17 @@
+#include "../Internal/internal_functional.hlsl"
 
 struct VS_INPUT
 {
     float2 pos : POSITION;
     float2 uv : TEXCOORD;
-    float4 color : COLOR;
+    float4 u32Color : u32COLOR;
 };
 
 struct VS_OUTPUT
 {
     float4 pos : SV_POSITION;
     float2 uv : TEXCOORD;
-    float4 color : COLOR;
+    float4 u32Color : u32COLOR;
 };
 
 [[vk::binding(0,0)]] cbuffer u_IMGUI : register(b1)
@@ -25,6 +26,6 @@ VS_OUTPUT VS_MAIN( VS_INPUT input)
 
     output.pos = float4(input.pos * u_f2Scale + u_f2Translate, 0.0f, 1.0f);
     output.uv = input.uv;
-    output.color = input.color;
+    output.u32Color = input.u32Color;
     return output;
 }

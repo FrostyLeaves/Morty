@@ -192,9 +192,9 @@ void MTransparentRenderWork::InitializeMaterial()
 {
 	MResourceSystem* pResourceSystem = m_pEngine->FindSystem<MResourceSystem>();
 
-	std::shared_ptr<MResource> pDPVSResource = pResourceSystem->LoadResource("Shader/depth_peel_blend.mvs");
-	std::shared_ptr<MResource> pDPBPSResource = pResourceSystem->LoadResource("Shader/depth_peel_blend.mps");
-	std::shared_ptr<MResource> pDPFPSResource = pResourceSystem->LoadResource("Shader/depth_peel_fill.mps");
+	std::shared_ptr<MResource> pDPVSResource = pResourceSystem->LoadResource("Shader/Forward/depth_peel_blend.mvs");
+	std::shared_ptr<MResource> pDPBPSResource = pResourceSystem->LoadResource("Shader/Forward/depth_peel_blend.mps");
+	std::shared_ptr<MResource> pDPFPSResource = pResourceSystem->LoadResource("Shader/Forward/depth_peel_fill.mps");
 
 	m_pDrawPeelMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pDrawPeelMaterial->SetMaterialType(MEMaterialType::EDepthPeel);
@@ -401,8 +401,8 @@ void MTransparentRenderWork::InitializeFrameShaderParams()
 {
 	MResourceSystem* pResourceSystem = m_pEngine->FindSystem<MResourceSystem>();
 
-	std::shared_ptr<MResource> forwardVS = pResourceSystem->LoadResource("Shader/model.mvs");
-	std::shared_ptr<MResource> forwardPS = pResourceSystem->LoadResource("Shader/model.mps");
+	std::shared_ptr<MResource> forwardVS = pResourceSystem->LoadResource("Shader/Forward/model.mvs");
+	std::shared_ptr<MResource> forwardPS = pResourceSystem->LoadResource("Shader/Forward/model.mps");
 	m_pForwardMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pForwardMaterial->SetCullMode(MECullMode::ECullBack);
 	m_pForwardMaterial->SetMaterialType(MEMaterialType::EDepthPeel);

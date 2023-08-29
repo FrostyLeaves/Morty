@@ -1,4 +1,4 @@
-﻿#include "light_forward.hlsl"
+#include "light_forward.hlsl"
 
 struct VS_IN
 {
@@ -57,7 +57,7 @@ VS_OUT VS_MAIN(VS_IN input, uint INSTANCE_ID : SV_InstanceID)
     float3x3 TBN = float3x3(T,B,N);
     TBN = transpose(TBN);//正交矩阵的转置矩阵==逆矩阵
 
-    output.dirLightDirTangentSpace = normalize(mul(u_f3DirectionLight , TBN));
+    output.dirLightDirTangentSpace = normalize(mul(u_xDirectionalLight.f3LightDir , TBN));
     output.toCameraDirTangentSpace = normalize(mul(f3ToCameraDir, TBN));
 
     for(int pointIdx = 0; pointIdx < MPOINT_LIGHT_MAX_NUMBER; ++pointIdx)

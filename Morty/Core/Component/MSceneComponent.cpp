@@ -376,7 +376,7 @@ void MSceneComponent::Deserialize(const void* pBufferPointer)
 
 void MSceneComponent::PostDeserialize(const std::map<MGuid, MGuid>& tRedirectGuid)
 {
-	MGuid redirectGuid = tRedirectGuid.at(m_parentGuid);
+	const MGuid redirectGuid = tRedirectGuid.at(m_parentGuid);
 
 	if (MEntity* pEntity = GetScene()->GetEntity(redirectGuid))
 	{

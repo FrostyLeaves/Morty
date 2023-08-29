@@ -41,7 +41,6 @@ public:
 	MPassTargetDescription(const bool bClear, const bool bAlready, const MColor& cClearColor);
 	MPassTargetDescription(const bool bClear, const bool bAlready, const MColor& cClearColor, const uint32_t& nMipmap);
 
-public:
 	bool bClearWhenRender;
     bool bAlreadyRender;
 	MColor cClearColor;

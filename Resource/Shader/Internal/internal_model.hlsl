@@ -64,10 +64,3 @@
 
 
 ////////////////////////////////////////////////////////////////
-
-struct LightBasicInfo
-{
-    float3 f3Normal;
-    float3 f3CameraDir;
-    float3 f3DirLightDir;
-};

@@ -1,7 +1,7 @@
-#include "inner_constant.hlsl"
-#include "inner_functional.hlsl"
-#include "model_struct.hlsl"
-#include "Shadow/shadow.hlsl"
+#include "../Internal/internal_constant.hlsl"
+#include "../Internal/internal_functional.hlsl"
+#include "../Internal/internal_model.hlsl"
+#include "../Shadow/shadow.hlsl"
 
 struct VS_OUT
 {
@@ -57,11 +57,12 @@ struct Material
 // point light
 float3 AdditionPointLight(PointLight pointLight, float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3WorldPixelPosition, float3 f3DiffColor, float3 f3SpecColor)
 {
+    LightPointData pointData;
 
     float fDiff = max(dot(f3Normal, f3LightDir), 0.0f);
 
     float3 fReflectDir = reflect(-f3LightDir, f3Normal);
-    float fSpec = pow(max(dot(f3CameraDir, fReflectDir), 0.0f), u_xMaterial.fShininess);
+    float fSpec = pow(max(dot(pointData.f3CameraDir, fReflectDir), 0.0f), u_xMaterial.fShininess);
 
     float fDistance = length(pointLight.f3WorldPosition - f3WorldPixelPosition);
     float fAttenuation = 1.0f / (1.0f + pointLight.fLinear * fDistance + pointLight.fQuadratic * fDistance * fDistance);
@@ -114,6 +115,13 @@ float3 AdditionDirectionLight(float3 f3CameraDir, float3 f3LightDir, float3 f3No
     }
 }
 
+struct LightBasicInfo
+{
+    float3 f3Normal;
+    float3 f3CameraDir;
+    float3 f3DirLightDir;
+};
+
 LightBasicInfo GetLightBasicInfo(VS_OUT input)
 {
     LightBasicInfo result;
@@ -142,14 +150,14 @@ LightBasicInfo GetLightBasicInfo(VS_OUT input)
 
         result.f3Normal = mul(result.f3Normal, TBN);
         result.f3CameraDir = normalize(u_f3CameraPosition - input.worldPos);
-        result.f3DirLightDir = u_f3DirectionLight;
+        result.f3DirLightDir = u_xDirectionalLight.f3LightDir;
 #endif
     }
     else
     {
         result.f3Normal = input.normal;
         result.f3CameraDir = normalize(u_f3CameraPosition - input.worldPos);
-        result.f3DirLightDir = u_f3DirectionLight;
+        result.f3DirLightDir = u_xDirectionalLight.f3LightDir;
     }
 
     return result;

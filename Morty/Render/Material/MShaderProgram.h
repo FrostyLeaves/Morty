@@ -53,9 +53,9 @@ public:
 public:
 	explicit MShaderProgram() = default;
 	explicit MShaderProgram(EUsage usage);
+	~MShaderProgram() override;
 
 public:
-    virtual ~MShaderProgram();
 	static std::shared_ptr<MShaderProgram> MakeShared(EUsage usage);
 	void InitializeShaderPropertyBlock();
 public:
@@ -64,20 +64,18 @@ public:
 	bool LoadPixelShader(MEngine* pEngine, std::shared_ptr<MResource> pResource);
 	bool LoadComputeShader(MEngine* pEngine, std::shared_ptr<MResource> pResource);
 
+	bool LoadShaderResource(MEngine* pEngine, std::shared_ptr<MResource> pResource);
+
 	std::shared_ptr<MResource> GetVertexShaderResource() const { return m_VertexResource.GetResource(); }
 	std::shared_ptr<MResource> GetPixelShaderResource() const { return m_PixelResource.GetResource(); }
 	std::shared_ptr<MResource> GetComputeShaderResource() const { return m_ComputeResource.GetResource(); }
 
-	MShader* GetVertexShader(){ return m_pVertexShader; }
-	MShader* GetPixelShader() { return m_pPixelShader; }
-	MShader* GetComputeShader() { return m_pComputeShader; }
+	MShader* GetVertexShader() const { return m_pVertexShader; }
+	MShader* GetPixelShader() const { return m_pPixelShader; }
+	MShader* GetComputeShader() const { return m_pComputeShader; }
 
 	void SetShaderMacro(const MShaderMacro& macro) { m_ShaderMacro = macro; }
 	MShaderMacro& GetShaderMacro() { return m_ShaderMacro; }
-
-	std::vector<MShaderConstantParam*>* GetShaderParams();
-	std::vector<MShaderSampleParam*>* GetSampleParams();
-	std::vector<MShaderTextureParam*>* GetTextureParams();
 
 	const std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderPropertyBlocks() const { return m_vShaderSets; }
 	std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderPropertyBlocks() { return m_vShaderSets; }

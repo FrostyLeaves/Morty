@@ -11,7 +11,8 @@
         "VCPKG_HOST_TRIPLET": "x64-windows",
         "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/../ThirdParty/vcpkg/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_OVERLAY_PORTS": "${sourceDir}/../ThirdParty/overlay_ports",
-        "MORTY_BUILD_TARGET": "WIN"
+        "MORTY_BUILD_TARGET": "WIN",
+        "MORTY_SHADER_COMPILER": "dxc"
       }
     },
     {
@@ -31,7 +32,8 @@
         "ANDROID_ARM_NEON": "ON",
         "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "$env{ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake",
         "VCPKG_OVERLAY_PORTS": "${sourceDir}/../ThirdParty/overlay_ports",
-        "MORTY_BUILD_TARGET": "ANDROID"
+        "MORTY_BUILD_TARGET": "ANDROID",
+        "MORTY_SHADER_COMPILER": "glslang"
       }
     }
   ],

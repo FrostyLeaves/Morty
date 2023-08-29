@@ -2,7 +2,7 @@ struct VS_OUTPUT
 {
     float4 pos : SV_POSITION;
     float2 uv : TEXCOORD;
-    float4 color : COLOR;
+    float4 u32Color : u32COLOR;
 };
 
 [[vk::binding(0,2)]]Texture2D image;
@@ -23,43 +23,43 @@ float4 PS_MAIN( VS_OUTPUT input) : SV_Target
     if (u_nImageArray == 0)
     {
         if (u_nImageType == 0)
-            return input.color * image.Sample(LinearSampler, input.uv);
+            return input.u32Color * image.Sample(LinearSampler, input.uv);
         
         else if(u_nImageType == 1)
         {
-            return input.color * float(image.Sample(LinearSampler, input.uv).r);
+            return input.u32Color * float(image.Sample(LinearSampler, input.uv).r);
         }
 
         else if(u_nImageType == 2)
         {
-            return float4(input.color.rgb * image.Sample(LinearSampler, input.uv).rgb, 1.0f);
+            return float4(input.u32Color.rgb * image.Sample(LinearSampler, input.uv).rgb, 1.0f);
         }
 
         else if(u_nImageType == 3)
         {
-            return input.color * float(image.Sample(LinearSampler, input.uv).w);
+            return input.u32Color * float(image.Sample(LinearSampler, input.uv).w);
         }
     }
     else
     {
         if (u_nImageType == 0)
-            return input.color * arrayImage.Sample(LinearSampler, float3(input.uv, u_nImageIndex));
+            return input.u32Color * arrayImage.Sample(LinearSampler, float3(input.uv, u_nImageIndex));
         
         else if(u_nImageType == 1)
         {
-            return input.color * float(arrayImage.Sample(LinearSampler, float3(input.uv, u_nImageIndex)).r);
+            return input.u32Color * float(arrayImage.Sample(LinearSampler, float3(input.uv, u_nImageIndex)).r);
         }
 
         else if(u_nImageType == 2)
         {
-            return float4(input.color.rgb * arrayImage.Sample(LinearSampler, float3(input.uv, u_nImageIndex)).rgb, 1.0f);
+            return float4(input.u32Color.rgb * arrayImage.Sample(LinearSampler, float3(input.uv, u_nImageIndex)).rgb, 1.0f);
         }
 
         else if(u_nImageType == 3)
         {
-            return input.color * float(arrayImage.Sample(LinearSampler, float3(input.uv, u_nImageIndex)).w);
+            return input.u32Color * float(arrayImage.Sample(LinearSampler, float3(input.uv, u_nImageIndex)).w);
         }
     }
 
-    return input.color;
+    return input.u32Color;
 }

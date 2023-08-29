@@ -17,7 +17,6 @@ add_library(Render OBJECT
     ${RENDER_All_FILES}
 
     ${SPOT_FILES}
-    ${STB_FILES}
 )
 
 
@@ -100,8 +99,15 @@ if(MORTY_BUILD_TARGET STREQUAL "WIN")
     endif()
 endif()
 
+if(MORTY_SHADER_COMPILER STREQUAL "dxc")
+
+    add_definitions(-DMORTY_SHADER_COMPILER_DXC)
+
+endif()
+
 find_package(glslang CONFIG REQUIRED)
 if(glslang_FOUND)
+    add_definitions(-DENABLE_HLSL)
     target_link_libraries(Render PRIVATE glslang::OSDependent glslang::glslang glslang::MachineIndependent glslang::GenericCodeGen glslang::OGLCompiler glslang::SPVRemapper glslang::SPIRV glslang::HLSL)
 else()
     message(FATAL_ERROR "glslang not found.")

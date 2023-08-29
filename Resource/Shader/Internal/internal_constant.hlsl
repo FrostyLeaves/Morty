@@ -1,5 +1,5 @@
-#ifndef _M_INNER_CONSTANT_HLSL_
-#define _M_INNER_CONSTANT_HLSL_
+#ifndef _M_INTERNAL_CONSTANT_HLSL_
+#define _M_INTERNAL_CONSTANT_HLSL_
 
 
 #ifndef NUM_PI
@@ -16,6 +16,7 @@
 struct DirectionLight
 {
     float3 f3Intensity;
+    float3 f3LightDir;
     float fLightSize;
 };
 
@@ -40,6 +41,16 @@ struct SpotLight
 };
 
 
+struct LightPointData
+{
+    float3 f3CameraDir;
+    float3 f3Normal;
+    float3 f3WorldPosition;
+    float3 f3BaseColor;
+    float3 f3Albedo;
+    float fRoughness;
+    float fMetallic;
+};
 
 //VS    per render
 [[vk::binding(0,1)]]cbuffer cbSceneMatrix : register(b1)
@@ -52,7 +63,6 @@ struct SpotLight
 //VS & PS    per render
 [[vk::binding(1,1)]]cbuffer cbSceneInformation : register(b2)
 {
-    float3 u_f3DirectionLight;
     float3 u_f3CameraPosition;
     float3 u_f3CameraDirection;
 
@@ -62,7 +72,7 @@ struct SpotLight
     float u_fGameTime;
 };
 
-//PS    per render
+//[VS] PS    per render
 [[vk::binding(2,1)]]cbuffer cbLightInformation : register(b3)
 {
     DirectionLight u_xDirectionalLight;

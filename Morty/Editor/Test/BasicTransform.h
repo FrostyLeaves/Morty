@@ -19,8 +19,8 @@ void TRANSFORM_SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 
 	std::shared_ptr<MMaterialResource> pForwardMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	{
-		pForwardMaterial->LoadVertexShader("Shader/model.mvs");
-		pForwardMaterial->LoadPixelShader("Shader/model.mps");
+		pForwardMaterial->LoadVertexShader("Shader/Forward/model.mvs");
+		pForwardMaterial->LoadPixelShader("Shader/Forward/model.mps");
 		pForwardMaterial->SetMaterialType(MEMaterialType::EDefault);
 
 		pForwardMaterial->GetMaterialPropertyBlock()->SetValue("f3Ambient", Vector3(1.0f, 1.0f, 1.0f));

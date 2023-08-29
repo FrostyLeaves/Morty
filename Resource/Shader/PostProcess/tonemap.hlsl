@@ -1,5 +1,5 @@
 #include "ACES.hlsl"
-#include "../common.hlsl"
+#include "common.hlsl"
 
 [[vk::binding(0,0)]]cbuffer cbFile
 {

@@ -72,8 +72,8 @@ void ImGuiRenderable::InitializeFont()
 
 	ImGuiIO& io = ImGui::GetIO();
 
-	unsigned char* pixels;
-	int width, height; // width height
+	unsigned char* pixels = nullptr;
+	int width = 0, height = 0; // width height
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 	size_t upload_size = width * height * 4 * sizeof(char);
 
@@ -105,8 +105,8 @@ void ImGuiRenderable::InitializeMaterial()
 
 	m_pMaterial = pResourceSystem->CreateResource<MMaterial>();
 
-	m_pMaterial->LoadVertexShader("Shader/imgui.mvs");
-	m_pMaterial->LoadPixelShader("Shader/imgui.mps");
+	m_pMaterial->LoadVertexShader("Shader/Imgui/imgui.mvs");
+	m_pMaterial->LoadPixelShader("Shader/Imgui/imgui.mps");
 }
 
 void ImGuiRenderable::ReleaseMaterial()

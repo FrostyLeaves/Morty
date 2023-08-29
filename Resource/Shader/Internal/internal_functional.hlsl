@@ -1,4 +1,5 @@
-
+#ifndef _M_INTERNAL_FUNCTIONAL_HLSL_
+#define _M_INTERNAL_FUNCTIONAL_HLSL_
 
 float4 FloatToFloat4(float depth)
 {
@@ -68,3 +69,8 @@ float DecodeExpV4( float4 pack )
     value        = value * (2.0*256.0*256.0*256.0) / (256.0*256.0*256.0 - 1.0) - 1.0;
     return value * exp2( float(exponent) );
 }
+
+
+
+
+#endif

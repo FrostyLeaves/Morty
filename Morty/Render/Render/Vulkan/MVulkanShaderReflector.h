@@ -36,16 +36,17 @@ public:
 	~MVulkanShaderReflector();
 
     bool Initialize();
-	
-	void GetVertexInputState(const spirv_cross::Compiler& compiler, MVertexShaderBuffer* pShaderBuffer);
 
-	void GetComputeInputState(const spirv_cross::Compiler& compiler, MComputeShaderBuffer* pShaderBuffer);
-	
+
+	std::tuple<VkFormat, uint32_t> GetVertexInputDescription(const spirv_cross::Compiler& compiler, const std::string& name, spirv_cross::SPIRType type) const;
+
+	void GetVertexInputState(const spirv_cross::Compiler& compiler, MVertexShaderBuffer* pShaderBuffer) const;
+
 	void GetShaderParam(const spirv_cross::Compiler& compiler, MShaderBuffer* pShaderBuffer);
 	
-	void ConvertVariant(const spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, MVariant& variant);
+	void BuildVariant(const spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, MVariant& variant);
 
-	bool ResetVariantType(const spirv_cross::SPIRType& type, MVariant& variant);
+	bool BuildBasicVariant(const spirv_cross::SPIRType& type, MVariant& variant) const;
 
 private:
 	MVulkanDevice* m_pDevice;

@@ -653,8 +653,8 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 			{
 				std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
-				pMaterial->LoadVertexShader("Shader/model_gbuffer.mvs");
-				pMaterial->LoadPixelShader("Shader/model_gbuffer.mps");
+				pMaterial->LoadVertexShader("Shader/Deferred/model_gbuffer.mvs");
+				pMaterial->LoadPixelShader("Shader/Deferred/model_gbuffer.mps");
 				pMaterial->SetMaterialType(MEMaterialType::EDeferred);
 
 #if false

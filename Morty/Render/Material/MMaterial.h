@@ -62,12 +62,10 @@ class MORTY_API MMaterial : public MResource
 public:
 	MORTY_CLASS(MMaterial)
     MMaterial();
-    virtual ~MMaterial();
-
-public:
-
-	MShader* GetVertexShader(){ return m_pShaderProgram->GetVertexShader(); }
-	MShader* GetPixelShader() { return m_pShaderProgram->GetPixelShader(); }
+    ~MMaterial() override = default;
+	
+	MShader* GetVertexShader() const { return m_pShaderProgram->GetVertexShader(); }
+	MShader* GetPixelShader() const { return m_pShaderProgram->GetPixelShader(); }
 
 	std::vector<std::shared_ptr<MShaderConstantParam>>& GetShaderParams();
 	std::vector<std::shared_ptr<MShaderSampleParam>>& GetSampleParams();

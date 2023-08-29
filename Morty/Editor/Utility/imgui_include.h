@@ -5,8 +5,8 @@
 
 #define ImDrawIdx uint32_t
 
-#define IMGUI_OVERRIDE_DRAWVERT_STRUCT_LAYOUT \
-struct ImDrawVert{ImVec2 pos;ImVec2 uv;ImColor col;};
+//#define IMGUI_OVERRIDE_DRAWVERT_STRUCT_LAYOUT \
+//struct ImDrawVert{ImVec2 pos;ImVec2 uv;ImColor col;};
 
 
 class MTexture;
@@ -16,7 +16,7 @@ struct ImGuiTexture
     intptr_t nTextureIdx = 0;
     size_t nArrayIdx = 0;
 
-    ImGuiTexture() {}
+    ImGuiTexture() = default;
 
     operator intptr_t() const { return nTextureIdx; }
 
@@ -24,7 +24,7 @@ struct ImGuiTexture
     
     ImGuiTexture(std::shared_ptr<MTexture> tex, intptr_t nTextureIdx, size_t arrIdx) : pTexture(tex), nTextureIdx(nTextureIdx), nArrayIdx(arrIdx) {}
 
-    bool operator==(const ImGuiTexture& other)
+    bool operator==(const ImGuiTexture& other) const
     {
         return pTexture == other.pTexture
             && nArrayIdx == other.nArrayIdx;
