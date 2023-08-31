@@ -1,5 +1,5 @@
-#ifndef _PROPERTY_RENDERABLE_MESH_COMPONENT_H_
-#define _PROPERTY_RENDERABLE_MESH_COMPONENT_H_
+#ifndef _PROPERTY_RENDER_MESH_COMPONENT_H_
+#define _PROPERTY_RENDER_MESH_COMPONENT_H_
 
 #include "Property/PropertyBase.h"
 #include "Component/MRenderMeshComponent.h"

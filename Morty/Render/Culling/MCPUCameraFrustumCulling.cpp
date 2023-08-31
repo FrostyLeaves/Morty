@@ -9,101 +9,52 @@
 #include "Batch/MMaterialBatchGroup.h"
 
 
+
+
+
 void MCPUCameraFrustumCulling::Initialize(MEngine* pEngine)
 {
-	m_pEngine = pEngine;
+	MCameraFrustumCulling::Initialize(pEngine);
 
-	m_drawIndirectBuffer.m_eMemoryType = MBuffer::MMemoryType::EHostVisible;
-	m_drawIndirectBuffer.m_eUsageType = MBuffer::MUsageType::EIndirect;
+	m_pFrustumFilter = std::make_shared<MCameraFrustumFilter>();
+	m_pBoundingCulling = std::make_unique<MBoundingCulling>();
+	m_pBoundingCulling->Initialize(pEngine);
 
-#if MORTY_DEBUG
-	m_drawIndirectBuffer.m_strDebugBufferName = "Camera Culling Draw Instance Buffer";
-#endif
+	m_pBoundingCulling->AddFilter(m_pFrustumFilter);
 }
 
 void MCPUCameraFrustumCulling::Release()
 {
-	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-	m_drawIndirectBuffer.DestroyBuffer(pRenderSystem->GetDevice());
-}
+	m_pBoundingCulling->Release();
+	m_pBoundingCulling = nullptr;
 
-void MCPUCameraFrustumCulling::AddFilter(std::shared_ptr<IMeshInstanceFilter> pFilter)
-{
-	m_vFilter.push_back(pFilter);
+	MCameraFrustumCulling::Release();
 }
 
 void MCPUCameraFrustumCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup)
 {
-	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+	m_pFrustumFilter->m_cameraFrustum = m_cameraFrustum;
 
-	std::vector<MDrawIndexedIndirectData> vDrawIndirectData;
-	m_vCullingInstanceGroup.clear();
+	m_pBoundingCulling->Culling(vInstanceGroup);
+}
 
-	auto createNewGroupFunc = [&](const std::shared_ptr<MMaterial>& pMaterial, MInstanceBatchGroup* pInstanceBatchGroup)
+const MBuffer* MCPUCameraFrustumCulling::GetDrawIndirectBuffer()
+{
+	return m_pBoundingCulling->GetDrawIndirectBuffer();
+}
+
+const std::vector<MMaterialCullingGroup>& MCPUCameraFrustumCulling::GetCullingInstanceGroup() const
+{
+	return m_pBoundingCulling->GetCullingInstanceGroup();
+}
+
+bool MCameraFrustumFilter::Filter(const MMeshInstanceRenderProxy* instance) const
+{
+	const MBoundsAABB& bounds = instance->boundsWithTransform;
+	if (instance->bCullEnable && MCameraFrustum::EOUTSIDE == m_cameraFrustum.ContainTest(bounds))
 	{
-		int nIndirectBeginIdx = vDrawIndirectData.size();
-		const auto pMeshProperty = pInstanceBatchGroup->GetMeshProperty();
-		pMeshProperty->SetValue("u_meshInstanceBeginIndex", 0);
-
-		m_vCullingInstanceGroup.push_back({});
-		MMaterialCullingGroup* pMaterialCullingGroup = &m_vCullingInstanceGroup.back();
-		pMaterialCullingGroup->pMaterial = pMaterial;
-		pMaterialCullingGroup->nIndirectBeginIdx = vDrawIndirectData.size();
-		pMaterialCullingGroup->pMeshTransformProperty = pMeshProperty;
-	};
-
-	const MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
-
-	for (MMaterialBatchGroup* pMaterialGroup : vInstanceGroup)
-	{
-		if (pMaterialGroup->GetMaterial() == nullptr)
-		{
-			MORTY_ASSERT(pMaterialGroup->GetMaterial());
-			continue;
-		}
-
-		for (MInstanceBatchGroup* pInstanceGroup : pMaterialGroup->GetInstanceBatchGroup())
-		{
-			createNewGroupFunc(pMaterialGroup->GetMaterial(), pInstanceGroup);
-
-			pInstanceGroup->InstanceExecute([&](const MMeshInstanceRenderProxy& instance, size_t nIdx)
-			{
-				const MBoundsAABB& bounds = instance.boundsWithTransform;
-			    if (instance.bCullEnable && MCameraFrustum::EOUTSIDE == m_cameraFrustum.ContainTest(bounds))
-			    {
-				    return;
-			    }
-	
-				const MMeshManager::MMeshData& data = pMeshManager->FindMesh(instance.pMesh);
-				const MDrawIndexedIndirectData indirectData = {
-				data.indexInfo.size,
-						1,
-						data.indexInfo.begin,
-						0,
-						static_cast<uint32_t>(nIdx)
-				};
-				vDrawIndirectData.push_back(indirectData);
-			});
-
-			if (!m_vCullingInstanceGroup.empty())
-			{
-				m_vCullingInstanceGroup.back().nIndirectCount = vDrawIndirectData.size() - m_vCullingInstanceGroup.back().nIndirectBeginIdx;
-			}
-		}
-
+		return false;
 	}
 
-
-	const size_t nDrawIndirectBufferSize = vDrawIndirectData.size() * sizeof(MDrawIndexedIndirectData);
-	if (m_drawIndirectBuffer.GetSize() < nDrawIndirectBufferSize)
-	{
-		m_drawIndirectBuffer.ReallocMemory(nDrawIndirectBufferSize);
-		m_drawIndirectBuffer.DestroyBuffer(pRenderSystem->GetDevice());
-		m_drawIndirectBuffer.GenerateBuffer(pRenderSystem->GetDevice(), reinterpret_cast<MByte*>(vDrawIndirectData.data()), nDrawIndirectBufferSize);
-	}
-	else if (nDrawIndirectBufferSize > 0)
-	{
-		m_drawIndirectBuffer.UploadBuffer(pRenderSystem->GetDevice(), reinterpret_cast<MByte*>(vDrawIndirectData.data()), nDrawIndirectBufferSize);
-	}
-
+	return true;
 }

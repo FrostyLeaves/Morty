@@ -1,3 +1,19 @@
+struct VS_IN
+{
+    float3 pos : POSITION;
+    float3 normal : NORMAL;
+    float3 tangent : TANGENT;
+    float3 bitangent : BITANGENT;
+    float2 uv : TEXCOORDS;
+    
+#if SKELETON_ENABLE == 1
+    int bonesID[MBONES_PER_VERTEX] : BONES_ID;
+    float bonesWeight[MBONES_PER_VERTEX] : BONES_WEIGHT;
+#endif
+
+};
+
+
 #if DRAW_MESH_INSTANCING_UNIFORM
 
     struct MeshMatrix
@@ -63,4 +79,30 @@
 [[vk::binding(1,3)]] StructuredBuffer<int> u_vBonesOffset;
 
 
+
+float4 getModelVertexPosition(VS_IN input, uint INSTANCE_ID)
+{
+    
+#if SKELETON_ENABLE == 1
+
+    float4x4 matBoneTransform = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    float fWeight = 1.0f;
+    for (int i = 0; i < MBONES_PER_VERTEX; ++i)
+    {
+        matBoneTransform += u_vBonesMatrix[input.bonesID[i] + u_vBonesOffset[MESH_SKELETAL_IDX]] * input.bonesWeight[i];
+        fWeight = fWeight - input.bonesWeight[i];
+    }
+    matBoneTransform += float4x4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1) * fWeight;
+
+    float4 vertexPos = mul(float4(input.pos, 1.0f), matBoneTransform);
+
+#else
+
+    float4 vertexPos = float4(input.pos, 1.0f);
+
+#endif
+
+    return vertexPos;
+    
+}
 ////////////////////////////////////////////////////////////////

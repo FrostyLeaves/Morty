@@ -30,16 +30,10 @@
 #include "RenderWork/MDebugRenderWork.h"
 #include "RenderWork/MTransparentRenderWork.h"
 #include "RenderWork/MPostProcessRenderWork.h"
-#include "RenderWork/MEnvironmentMapRenderWork.h"
+#include "RenderWork/MVoxelizerRenderWork.h"
 #include "Component/MCameraComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 #include "Shadow/MShadowMeshManager.h"
-#include "Render/MVertex.h"
-
-#include "Resource/MTextureResource.h"
-#include "Resource/MMaterialResource.h"
-
-#include "Mesh/MMeshManager.h"
 
 #include "MeshRender/MSkyBoxRenderable.h"
 #include "Batch/MMeshInstanceManager.h"
@@ -59,7 +53,7 @@ void MDeferredRenderProgram::Render(MIRenderCommand* pPrimaryCommand)
 	if (!GetViewport())
 		return;
 
-	RenderReady(pPrimaryCommand);
+	RenderSetup(pPrimaryCommand);
 	RenderShadow(pPrimaryCommand);
 	RenderGBuffer(pPrimaryCommand);
 	RenderLightning(pPrimaryCommand);
@@ -69,7 +63,7 @@ void MDeferredRenderProgram::Render(MIRenderCommand* pPrimaryCommand)
 	RenderDebug(pPrimaryCommand);
 }
 
-void MDeferredRenderProgram::RenderReady(MIRenderCommand* pPrimaryCommand)
+void MDeferredRenderProgram::RenderSetup(MIRenderCommand* pPrimaryCommand)
 {
 	MEngine* pEngine = GetEngine();
 	MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
@@ -161,6 +155,7 @@ void MDeferredRenderProgram::InitializeRenderWork()
 	RegisterRenderWork<MDebugRenderWork>();
 	//RegisterRenderWork<MTransparentRenderWork>();
 	RegisterRenderWork<MPostProcessRenderWork>();
+	//RegisterRenderWork<MVoxelizerRenderWork>();
 
 	for (const auto& pr : m_tRenderWork)
 	{
@@ -384,7 +379,7 @@ void MDeferredRenderProgram::RenderForward(MIRenderCommand* pPrimaryCommand)
 	MViewport* pViewport = m_renderInfo.pViewport;
 	MScene* pScene = pViewport->GetScene();
 
-	auto pAnimationManager = pScene->GetManager<MAnimationManager>();
+	const auto pAnimationManager = pScene->GetManager<MAnimationManager>();
 	auto pAniamtionPropertyAdapter = pAnimationManager->CreateAnimationPropertyAdapter();
 
 	//Render static mesh.

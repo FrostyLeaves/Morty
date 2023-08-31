@@ -38,7 +38,7 @@ class MRenderMeshComponent;
 class MORTY_API MDeferredRenderProgram : public MIRenderProgram
 {
 public:
-	MORTY_CLASS(MDeferredRenderProgram);
+	MORTY_CLASS(MDeferredRenderProgram)
 
 	MDeferredRenderProgram() = default;
     ~MDeferredRenderProgram() override = default;
@@ -47,7 +47,7 @@ public:
 
 	void Render(MIRenderCommand* pPrimaryCommand) override;
 
-	void RenderReady(MIRenderCommand* pPrimaryCommand);
+	void RenderSetup(MIRenderCommand* pPrimaryCommand);
 	
 	void RenderGBuffer(MIRenderCommand* pPrimaryCommand);
 

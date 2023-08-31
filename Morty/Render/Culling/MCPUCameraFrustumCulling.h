@@ -1,11 +1,19 @@
 #pragma once
 
+#include "MBoundingCulling.h"
 #include "MInstanceCulling.h"
 
-#include "Render/MBuffer.h"
-#include "Render/MVertex.h"
-
 class MInstanceBatchGroup;
+
+class MORTY_API MCameraFrustumFilter : public IMeshInstanceFilter
+{
+public:
+
+    bool Filter(const MMeshInstanceRenderProxy* instance) const override;
+
+	MCameraFrustum m_cameraFrustum;
+};
+
 
 class MORTY_API MCPUCameraFrustumCulling
     : public MCameraFrustumCulling
@@ -15,18 +23,12 @@ public:
     void Initialize(MEngine* pEngine) override;
     void Release() override;
 
-    MEngine* GetEngine() const { return m_pEngine; }
-
-    void AddFilter(std::shared_ptr<IMeshInstanceFilter> pFilter);
 
     void Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup) override;
-    const MBuffer* GetDrawIndirectBuffer() override { return &m_drawIndirectBuffer; }
-    const std::vector<MMaterialCullingGroup>& GetCullingInstanceGroup() const override { return m_vCullingInstanceGroup; }
+    const MBuffer* GetDrawIndirectBuffer() override;
+    const std::vector<MMaterialCullingGroup>& GetCullingInstanceGroup() const override;
+
 private:
-
-    MEngine* m_pEngine = nullptr;
-    MBuffer m_drawIndirectBuffer;
-    std::vector<MMaterialCullingGroup> m_vCullingInstanceGroup;
-    std::vector<std::shared_ptr<IMeshInstanceFilter>> m_vFilter;
-
+    std::shared_ptr<MCameraFrustumFilter> m_pFrustumFilter = nullptr;
+    std::unique_ptr<MBoundingCulling> m_pBoundingCulling = nullptr;
 };

@@ -75,11 +75,6 @@ void MGPUCameraFrustumCulling::Release()
 	m_pCullingComputeDispatcher = nullptr;
 }
 
-void MGPUCameraFrustumCulling::AddFilter(std::shared_ptr<IMeshInstanceFilter> pFilter)
-{
-	m_vFilter.push_back(pFilter);
-}
-
 void MGPUCameraFrustumCulling::UpdateCullingCamera()
 {
 	const std::shared_ptr<MShaderPropertyBlock>& params = m_pCullingComputeDispatcher->GetShaderPropertyBlocks()[0];
@@ -150,14 +145,6 @@ void MGPUCameraFrustumCulling::Culling(const std::vector<MMaterialBatchGroup*>& 
 
 			pInstanceGroup->InstanceExecute([&](const MMeshInstanceRenderProxy& instance, size_t nIdx)
 			{
-				for(const auto& pFilter : m_vFilter)
-				{
-				    if (!pFilter->Filter(&instance))
-				    {
-						return;
-				    }
-				}
-	
 				const MMeshManager::MMeshData& data = pMeshManager->FindMesh(instance.pMesh);
 
 				MMergeInstanceCullData cullData;

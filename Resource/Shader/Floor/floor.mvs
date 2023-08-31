@@ -2,21 +2,6 @@
 #include "../Internal/internal_model.hlsl"
 
 
-struct VS_IN
-{
-    float3 pos : POSITION;
-
-#if SKELETON_ENABLE == 1
-    int bonesID[MBONES_PER_VERTEX] : BONES_ID;
-    float bonesWeight[MBONES_PER_VERTEX] : BONES_WEIGHT;
-#endif
-
-    float3 normal : NORMAL;
-    float3 tangent : TANGENT;
-    float3 bitangent : BITANGENT;
-    float2 uv : TEXCOORDS;
-};
-
 struct VS_OUTPUT
 {
     float4 pos : SV_POSITION;
