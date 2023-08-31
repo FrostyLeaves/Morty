@@ -51,6 +51,7 @@ typedef unsigned char MByte;
 #include <queue>
 #include <array>
 #include <mutex>
+#include <memory>
 #include <vector>
 #include <list>
 #include <tuple>
@@ -60,6 +61,7 @@ typedef unsigned char MByte;
 #include <algorithm>
 #include <functional>
 #include <unordered_map>
+#include <cfloat>
 
 #include <flatbuffers/buffer.h>
 #include <flatbuffers/flatbuffer_builder.h>

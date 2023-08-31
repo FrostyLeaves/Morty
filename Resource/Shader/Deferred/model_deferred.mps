@@ -1,4 +1,4 @@
-#include "light_deferred.hlsl"
+#include "../Deferred/light_deferred.hlsl"
 
 struct PS_OUT
 {

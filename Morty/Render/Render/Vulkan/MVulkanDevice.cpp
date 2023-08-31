@@ -46,7 +46,11 @@ const std::vector<const char*> DeviceExtensions = {
 #if defined(MORTY_WIN) && defined(MORTY_DEBUG)
 	VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME,
 #endif
-
+    
+#ifdef MORTY_MACOS
+    "VK_KHR_portability_subset",
+#endif
+    
 };
 
 const std::set<VkFormat> DepthOnlyTextureFormat = {
@@ -66,8 +70,9 @@ std::vector<const char*> InstanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME,
 #ifdef MORTY_DEBUG
 		VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
 #endif
-
+    
 #ifdef MORTY_MACOS
+    VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
 		"VK_EXT_metal_surface",
 		"VK_MVK_macos_surface",
 #endif
@@ -385,11 +390,18 @@ VkImageLayout MVulkanDevice::GetImageLayout(MTexture* pTexture)
 
 	if (pTexture->GetRenderUsage() == METextureRenderUsage::ERenderDepth)
 	{
-		if (CheckVersion(1, 2, 0))
-		{
-			return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
-		}
-		return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        //VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL support after vulkan 1.2.0
+        if (!CheckVersion(1, 2, 0))
+        {
+            return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        }
+        
+        if (m_VkDepthAspectFlags & VK_IMAGE_ASPECT_STENCIL_BIT)
+        {
+            return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        }
+		
+        return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
 	}
 	if (pTexture->GetRenderUsage() == METextureRenderUsage::ERenderBack)
 		return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -505,6 +517,7 @@ bool MVulkanDevice::InitDepthFormat()
 	if (format != VK_FORMAT_UNDEFINED)
 	{
 		m_VkDepthTextureFormat = format;
+        m_VkDepthAspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
 		return true;
 	}
 
@@ -512,6 +525,7 @@ bool MVulkanDevice::InitDepthFormat()
 	if (format != VK_FORMAT_UNDEFINED)
     {
 		m_VkDepthTextureFormat = format;
+        m_VkDepthAspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
 		return true;
 	}
 
@@ -2153,6 +2167,9 @@ bool MVulkanDevice::InitVulkanInstance()
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pNext = nullptr;
 	createInfo.flags = 0;
+#ifdef MORTY_MACOS
+    createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+#endif
 	createInfo.pApplicationInfo = &appInfo;
 	
 	createInfo.enabledLayerCount = static_cast<uint32_t>(ValidationLayers.size());

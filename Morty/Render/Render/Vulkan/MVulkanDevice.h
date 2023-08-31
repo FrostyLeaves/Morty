@@ -181,6 +181,7 @@ public:
 	MVulkanBufferPool m_BufferPool;
 
 	VkFormat m_VkDepthTextureFormat;
+    VkImageAspectFlags m_VkDepthAspectFlags;
 
 	std::shared_ptr<MTexture> m_ShaderDefaultTexture;
 	std::shared_ptr<MTexture> m_ShaderDefaultTextureCube;

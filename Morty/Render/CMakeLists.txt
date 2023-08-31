@@ -105,6 +105,8 @@ if(MORTY_SHADER_COMPILER STREQUAL "dxc")
 
 endif()
 
+# fix for macos :https://github.com/microsoft/vcpkg/issues/27121
+find_package(Threads)
 find_package(glslang CONFIG REQUIRED)
 if(glslang_FOUND)
     add_definitions(-DENABLE_HLSL)

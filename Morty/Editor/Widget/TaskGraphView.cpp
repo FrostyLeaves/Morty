@@ -94,7 +94,7 @@ void TaskGraphView::Render()
 
 	for (auto& pNode : vAllNodes)
 	{
-		const int imNodeId = reinterpret_cast<int>(pNode);
+		const int imNodeId = reinterpret_cast<long>(pNode);
 		(ImNodes::BeginNode(imNodeId));
 		{
 			//first initialize position.
@@ -118,7 +118,7 @@ void TaskGraphView::Render()
 			for (size_t nIdx = 0; nIdx < pNode->GetInputSize(); ++nIdx)
 			{
 				auto pNodeInput = pNode->GetInput(nIdx);
-				ImNodes::BeginInputAttribute( reinterpret_cast<int>(pNodeInput));
+				ImNodes::BeginInputAttribute( reinterpret_cast<long>(pNodeInput));
 				ImGui::Text(pNodeInput->GetName().c_str());
 				ImNodes::EndInputAttribute();
 			}
@@ -127,7 +127,7 @@ void TaskGraphView::Render()
 			for (size_t nIdx = 0; nIdx < pNode->GetOutputSize(); ++nIdx)
 			{
 				auto pNodeOutput = pNode->GetOutput(nIdx);
-				ImNodes::BeginOutputAttribute(reinterpret_cast<int>(pNodeOutput));
+				ImNodes::BeginOutputAttribute(reinterpret_cast<long>(pNodeOutput));
 				ImGui::Text(pNodeOutput->GetName().c_str());
 				ImNodes::EndOutputAttribute();
 			}
@@ -147,8 +147,8 @@ void TaskGraphView::Render()
 				continue;
 			}
 
-			const int inputId = reinterpret_cast<int>(pInput);
-			const int outputId = reinterpret_cast<int>(pOutput);
+			const int inputId = reinterpret_cast<long>(pInput);
+			const int outputId = reinterpret_cast<long>(pOutput);
 
 			ImNodes::Link(inputId + outputId, outputId, inputId);
 		}
