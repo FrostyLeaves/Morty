@@ -1,4 +1,4 @@
-#include "light_forward.hlsl"
+#include "../Forward/light_forward.hlsl"
 
 #ifdef MTRANSPARENT_DEPTH_PEELING
 

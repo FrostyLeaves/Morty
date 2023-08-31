@@ -39,6 +39,7 @@ endif()
 if(MORTY_BUILD_TARGET STREQUAL "MACOS")
     target_compile_definitions(Core
         PUBLIC MORTY_MACOS
+        PUBLIC MORTY_RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../Resource"
     )
 #    message(FATAL_ERROR MACOS)
 endif()

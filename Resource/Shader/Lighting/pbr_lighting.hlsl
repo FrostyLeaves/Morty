@@ -1,6 +1,6 @@
 #include "../Internal/internal_constant.hlsl"
 #include "../Internal/internal_functional.hlsl"
-#include "brdf_functional.hlsl"
+#include "../Lighting/brdf_functional.hlsl"
 
 // spot light
 float3 AdditionSpotLight(SpotLight spotLight, LightPointData pointData)

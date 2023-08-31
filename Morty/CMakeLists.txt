@@ -25,6 +25,11 @@ else()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 endif(MSVC)
 
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF) #Set this to ON if you want to use GNU++
+set(CMAKE_CXX_STANDARD 17)
+
+
 
 option(MORTY_BUILD_WITH_PHYSICS "Build With Physics" False)
 
@@ -41,6 +46,9 @@ add_subdirectory("Render")
 add_subdirectory("Editor")
 
 if(MORTY_BUILD_TARGET STREQUAL "WIN")
+	add_subdirectory("Test")
+	add_subdirectory("Demo")
+elseif(MORTY_BUILD_TARGET STREQUAL "MACOS")
 	add_subdirectory("Test")
 	add_subdirectory("Demo")
 elseif(MORTY_BUILD_TARGET STREQUAL "ANDROID")
