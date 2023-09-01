@@ -26,22 +26,16 @@ MORTY_CLASS_IMPLEMENT(MVoxelizerRenderWork, ISinglePassRenderWork)
 
 void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
-	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-	MIDevice* pRenderDevice = pRenderSystem->GetDevice();
-
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
-
 
 	pCommand->BeginRenderPass(&m_renderPass);
 	pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, VoxelTableSize, VoxelTableSize));
 	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, VoxelTableSize, VoxelTableSize));
 
-
 	for (IRenderable* pRenderable : vRenderable)
 	{
 		pRenderable->Render(pCommand);
 	}
-
 
 	pCommand->EndRenderPass();
 }

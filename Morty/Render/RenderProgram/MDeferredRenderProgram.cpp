@@ -54,6 +54,7 @@ void MDeferredRenderProgram::Render(MIRenderCommand* pPrimaryCommand)
 		return;
 
 	RenderSetup(pPrimaryCommand);
+	RenderVoxel(pPrimaryCommand);
 	RenderShadow(pPrimaryCommand);
 	RenderGBuffer(pPrimaryCommand);
 	RenderLightning(pPrimaryCommand);
@@ -155,7 +156,7 @@ void MDeferredRenderProgram::InitializeRenderWork()
 	RegisterRenderWork<MDebugRenderWork>();
 	//RegisterRenderWork<MTransparentRenderWork>();
 	RegisterRenderWork<MPostProcessRenderWork>();
-	//RegisterRenderWork<MVoxelizerRenderWork>();
+	RegisterRenderWork<MVoxelizerRenderWork>();
 
 	for (const auto& pr : m_tRenderWork)
 	{
@@ -340,6 +341,30 @@ void MDeferredRenderProgram::RenderLightning(MIRenderCommand* pPrimaryCommand)
 	GetRenderWork<MDeferredLightingRenderWork>()->SetFrameProperty(m_pFramePropertyAdapter);
 
 	GetRenderWork<MDeferredLightingRenderWork>()->Render(m_renderInfo);
+}
+
+void MDeferredRenderProgram::RenderVoxel(MIRenderCommand* pPrimaryCommand)
+{
+	MORTY_ASSERT(GetRenderWork<MVoxelizerRenderWork>());
+	
+	//Current viewport.
+	MViewport* pViewport = m_renderInfo.pViewport;
+	MScene* pScene = pViewport->GetScene();
+
+	auto pAnimationManager = pScene->GetManager<MAnimationManager>();
+	auto pAniamtionPropertyAdapter = pAnimationManager->CreateAnimationPropertyAdapter();
+
+	MIndexedIndirectRenderable indirectMesh;
+	indirectMesh.SetScene(pScene);
+	indirectMesh.SetPropertyBlockAdapter({
+		m_pFramePropertyAdapter,
+		pAniamtionPropertyAdapter
+	});
+	indirectMesh.SetInstanceCulling(m_pShadowCulling);
+
+    GetRenderWork<MVoxelizerRenderWork>()->Render(m_renderInfo, {
+		&indirectMesh,
+	});
 }
 
 void MDeferredRenderProgram::RenderShadow(MIRenderCommand* pPrimaryCommand)

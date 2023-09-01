@@ -24,6 +24,7 @@
 #include "MForwardRenderShaderPropertyBlock.h"
 #include "Culling/MCascadedShadowCulling.h"
 #include "Culling/MInstanceCulling.h"
+#include <memory>
 
 class MCPUCameraFrustumCulling;
 class MGPUCameraFrustumCulling;
@@ -52,6 +53,8 @@ public:
 	void RenderGBuffer(MIRenderCommand* pPrimaryCommand);
 
 	void RenderLightning(MIRenderCommand* pPrimaryCommand);
+
+	void RenderVoxel(MIRenderCommand* pPrimaryCommand);
 
 	void RenderShadow(MIRenderCommand* pPrimaryCommand);
 
@@ -117,6 +120,7 @@ protected:
 	std::vector<std::shared_ptr<MTexture>> m_vRenderTargets;
 	std::shared_ptr<MTexture> m_pFinalOutputTexture = nullptr;
 	
+	std::shared_ptr<MVoxelizerShaderPropertyBlock> m_pVoxelizerPropertyAdapter = nullptr;
 	std::shared_ptr<MShadowMapShaderPropertyBlock> m_pShadowPropertyAdapter = nullptr;
 	std::shared_ptr<MForwardRenderShaderPropertyBlock> m_pFramePropertyAdapter = nullptr;
 
