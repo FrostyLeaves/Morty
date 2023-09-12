@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "Culling/MBoundingBoxCulling.h"
 #include "Utility/MGlobal.h"
 
 #include "Type/MType.h"
@@ -20,6 +21,7 @@
 #include "MRenderInfo.h"
 #include "RenderProgram/MIRenderProgram.h"
 
+#include "MVoxelizerShaderPropertyBlock.h"
 #include "Shadow/MShadowMapShaderPropertyBlock.h"
 #include "MForwardRenderShaderPropertyBlock.h"
 #include "Culling/MCascadedShadowCulling.h"
@@ -54,7 +56,7 @@ public:
 
 	void RenderLightning(MIRenderCommand* pPrimaryCommand);
 
-	void RenderVoxel(MIRenderCommand* pPrimaryCommand);
+	void RenderVoxelizer(MIRenderCommand* pPrimaryCommand);
 
 	void RenderShadow(MIRenderCommand* pPrimaryCommand);
 
@@ -126,6 +128,7 @@ protected:
 
 	std::shared_ptr<MCascadedShadowCulling> m_pShadowCulling = nullptr;
 	std::shared_ptr<MCameraFrustumCulling> m_pCameraFrustumCulling = nullptr;
+	std::shared_ptr<MBoundingBoxCulling> m_pVoxelizerCulling = nullptr;
 
 	std::unordered_map<const MType*, std::unique_ptr<IRenderWork>> m_tRenderWork;
 

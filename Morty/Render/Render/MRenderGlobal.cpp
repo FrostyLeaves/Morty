@@ -8,7 +8,9 @@ const char* MRenderGlobal::SUFFIX_PIXEL_SHADER = "mps";
 
 const bool MRenderGlobal::GBUFFER_UNIFIED_FORMAT = false;
 
-const int MRenderGlobal::SHADOW_TEXTURE_SIZE = 4096;
+const int MRenderGlobal::SHADOW_TEXTURE_SIZE = 2048;
+
+const int MRenderGlobal::VOXEL_TABLE_SIZE = 64;
 
 const char* MRenderGlobal::DRAW_MESH_INSTANCING_UNIFORM = "DRAW_MESH_INSTANCING_UNIFORM";
 const char* MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE = "DRAW_MESH_INSTANCING_STORAGE";

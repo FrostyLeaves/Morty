@@ -29,6 +29,9 @@ public:
 	void SetInstanceCulling(const std::shared_ptr<MInstanceCulling>& pCulling);
 	void Render(MIRenderCommand* pCommand) override;
 
+	//override to use other material.
+	virtual const std::shared_ptr<MMaterial>& GetMaterial(const MMaterialCullingGroup& group) const;
+
 private:
 
 	MScene* m_pScene= nullptr;

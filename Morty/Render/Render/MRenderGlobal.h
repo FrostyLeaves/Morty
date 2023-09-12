@@ -32,6 +32,7 @@ public:
 	static constexpr int BONES_PER_VERTEX = 4;
 	static constexpr int BONES_MAX_NUMBER = 128;
 	static const int SHADOW_TEXTURE_SIZE;
+    static const int VOXEL_TABLE_SIZE;
 
 	static constexpr int POINT_LIGHT_MAX_NUMBER = 8;
 	static constexpr int POINT_LIGHT_PIXEL_NUMBER = 8;

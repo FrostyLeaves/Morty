@@ -14,29 +14,24 @@
 #include "Utility/MGlobal.h"
 #include "Utility/MString.h"
 #include "Render/MMesh.h"
+#include "Mesh/MMeshUtil.h"
 #include "Resource/MResource.h"
 #include "Utility/MBounds.h"
 #include "Resource/MResourceLoader.h"
 
 #include <map>
+#include <memory>
 
 class MIMesh;
 class MSkeleton;
 class MMultiLevelMesh;
-
-
-enum class MEMeshVertexType
-{
-	Normal = 0,
-	Skeleton,
-};
 
 struct MORTY_API MMeshResourceData : public MFbResourceData
 {
 public:
 	//RawData
 	MEMeshVertexType eVertexType = MEMeshVertexType::Normal;
-	MIMesh* pMesh = nullptr;
+	std::shared_ptr<MIMesh> pMesh = nullptr;
 	MBoundsOBB boundsOBB;
 	MBoundsSphere boundsSphere;
 	
@@ -55,7 +50,7 @@ public:
     virtual ~MMeshResource();
 
 	MEMeshVertexType GetMeshVertexType() const;
-	MIMesh* GetMesh() { return m_pMesh; }
+	MIMesh* GetMesh() const;
 	MIMesh* GetLevelMesh(const uint32_t unLevel);
 	const MBoundsOBB* GetMeshesDefaultOBB() const;
 	const MBoundsSphere* GetMeshesDefaultSphere() const;
@@ -70,8 +65,6 @@ public:
 
 public:
 
-	static MIMesh* CreateMeshFromType(const MEMeshVertexType& eType);
-
 
 protected:
 
@@ -84,7 +77,6 @@ private:
 	friend class MEngine;
 	friend class MModelConverter;
 
-	MIMesh* m_pMesh = nullptr;
 	std::unique_ptr<MResourceData> m_pResourceData = nullptr;
 
 	MMultiLevelMesh* m_pMeshDetailMap = nullptr;

@@ -20,6 +20,7 @@ enum METextureType
 	ETexture2D = 1,
 	ETextureCube = 2,
 	ETexture2DArray = 3,
+	ETexture3D = 4,
 };
 
 enum class METextureLayout

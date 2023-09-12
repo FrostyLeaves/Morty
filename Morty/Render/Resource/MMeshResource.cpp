@@ -4,6 +4,7 @@
 #include "Model/MMultiLevelMesh.h"
 
 #include "Math/MMath.h"
+#include "Render/MMesh.h"
 #include "Render/MVertex.h"
 #include "Utility/MFileHelper.h"
 
@@ -16,8 +17,7 @@ MORTY_CLASS_IMPLEMENT(MMeshResource, MResource)
 
 
 MMeshResource::MMeshResource()
-	: m_pMesh(nullptr)
-	, m_pResourceData(nullptr)
+	: m_pResourceData(nullptr)
 	, m_pMeshDetailMap(nullptr)
 {
 }
@@ -33,17 +33,27 @@ MMeshResource::~MMeshResource()
 	Clean();
 }
 
+MIMesh* MMeshResource::GetMesh() const
+{
+	if (m_pResourceData == nullptr)
+	{
+		return nullptr;
+	}
+
+	return static_cast<MMeshResourceData*>(m_pResourceData.get())->pMesh.get();
+}
+
 MIMesh* MMeshResource::GetLevelMesh(const uint32_t unLevel)
 {
 	if (MRenderGlobal::MESH_LOD_LEVEL_RANGE <= unLevel)
-		return m_pMesh;
+		return GetMesh();
 
-	if (m_pMesh)
+	if (MIMesh* pMesh = GetMesh())
 	{
 		if (nullptr == m_pMeshDetailMap)
 		{
 			m_pMeshDetailMap = new MMultiLevelMesh();
-			m_pMeshDetailMap->BindMesh(m_pMesh);
+			m_pMeshDetailMap->BindMesh(pMesh);
 		}
 
 		return m_pMeshDetailMap->GetLevel(unLevel);
@@ -105,7 +115,7 @@ void MMeshResourceData::Deserialize(const void* pBufferPointer)
 	const mfbs::MMeshResource* fbData = mfbs::GetMMeshResource(pBufferPointer);
 
 	eVertexType = static_cast<MEMeshVertexType>(fbData->vertex_type());
-	pMesh = MMeshResource::CreateMeshFromType(eVertexType);
+	pMesh = MMeshUtil::CreateMeshFromType(eVertexType);
 
 	const size_t nVertexNum = fbData->vertex()->size() / pMesh->GetVertexStructSize();
 	pMesh->ResizeVertices(nVertexNum);
@@ -121,10 +131,6 @@ void MMeshResourceData::Deserialize(const void* pBufferPointer)
 
 bool MMeshResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 {
-	auto pMeshData = static_cast<MMeshResourceData*>(pResourceData.get());
-	
-	m_pMesh = pMeshData->pMesh;
-
 	m_pResourceData = std::move(pResourceData);
 
 	return true;
@@ -132,7 +138,8 @@ bool MMeshResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 
 bool MMeshResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 {
-	pResourceData = std::make_unique<MMeshResourceData>(*static_cast<MMeshResourceData*>(m_pResourceData.get()));
+	auto data = std::make_unique<MMeshResourceData>(*static_cast<MMeshResourceData*>(m_pResourceData.get()));
+	pResourceData = std::move(data);
 	return true;
 }
 
@@ -144,40 +151,18 @@ void MMeshResource::OnDelete()
 void MMeshResource::Clean()
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-	if (m_pMesh)
+	if (MIMesh* pMesh = GetMesh())
 	{
-		m_pMesh->DestroyBuffer(pRenderSystem->GetDevice());
-
-		delete m_pMesh;
-		m_pMesh = nullptr;
+		pMesh->DestroyBuffer(pRenderSystem->GetDevice());
 	}
 }
 
 void MMeshResource::ResetBounds()
 {
-	if (m_pMesh && m_pResourceData)
+	if (MIMesh* pMesh = GetMesh())
 	{
 		auto pMeshData = static_cast<MMeshResourceData*>(m_pResourceData.get());
-		pMeshData->boundsOBB.SetPoints((const MByte*)m_pMesh->GetVertices(), m_pMesh->GetVerticesNum(), 0, m_pMesh->GetVertexStructSize());
-		pMeshData->boundsSphere.SetPoints((const MByte*)m_pMesh->GetVertices(), m_pMesh->GetVerticesNum(), 0, m_pMesh->GetVertexStructSize());
+		pMeshData->boundsOBB.SetPoints((const MByte*)pMesh->GetVertices(), pMesh->GetVerticesNum(), 0, pMesh->GetVertexStructSize());
+		pMeshData->boundsSphere.SetPoints((const MByte*)pMesh->GetVertices(), pMesh->GetVerticesNum(), 0, pMesh->GetVertexStructSize());
 	}
-}
-
-MIMesh* MMeshResource::CreateMeshFromType(const MEMeshVertexType& eType)
-{
-	switch (eType)
-	{
-	case MEMeshVertexType::Normal:
-		return new MMesh<MVertex>();
-		break;
-
-	case MEMeshVertexType::Skeleton:
-		return new MMesh<MVertexWithBones>();
-		break;
-
-	default:
-		break;
-	}
-
-	return nullptr;
 }

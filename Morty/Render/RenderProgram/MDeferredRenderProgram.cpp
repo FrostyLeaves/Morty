@@ -1,10 +1,14 @@
 #include "MDeferredRenderProgram.h"
 
+#include "Culling/MBoundingBoxCulling.h"
+#include "Render/MRenderGlobal.h"
+#include "RenderProgram/MForwardRenderShaderPropertyBlock.h"
 #include "Scene/MScene.h"
 #include "Engine/MEngine.h"
 #include "Render/MIDevice.h"
 #include "Basic/MTexture.h"
 #include "Basic/MViewport.h"
+#include "Utility/MBounds.h"
 #include "Utility/MFunction.h"
 #include "Model/MSkeleton.h"
 #include "TaskGraph/MTaskNode.h"
@@ -38,10 +42,15 @@
 #include "MeshRender/MSkyBoxRenderable.h"
 #include "Batch/MMeshInstanceManager.h"
 #include "MeshRender/MIndexedIndirectRenderable.h"
+#include "MeshRender/MSpecificMaterialIndirectRenderable.h"
 
 #include "Culling/MCPUCameraFrustumCulling.h"
 #include "Culling/MGPUCameraFrustumCulling.h"
 #include "Manager/MAnimationManager.h"
+
+#include "MVoxelizerShaderPropertyBlock.h"
+
+#include "Culling/MBoundingBoxCulling.h"
 
 MORTY_CLASS_IMPLEMENT(MDeferredRenderProgram, MIRenderProgram)
 
@@ -54,7 +63,7 @@ void MDeferredRenderProgram::Render(MIRenderCommand* pPrimaryCommand)
 		return;
 
 	RenderSetup(pPrimaryCommand);
-	RenderVoxel(pPrimaryCommand);
+	RenderVoxelizer(pPrimaryCommand);
 	RenderShadow(pPrimaryCommand);
 	RenderGBuffer(pPrimaryCommand);
 	RenderLightning(pPrimaryCommand);
@@ -100,6 +109,10 @@ void MDeferredRenderProgram::RenderSetup(MIRenderCommand* pPrimaryCommand)
 		, pCameraEntity->GetComponent<MCameraComponent>()
 		, pCameraSceneComponent
 	);
+
+	//Voxelizer Culling.
+	m_pVoxelizerCulling->SetBounds(MBoundsAABB({0, 0, 0}, {32, 32, 32}));
+	m_pVoxelizerCulling->Culling(vMaterialGroup);
 
 	m_pCameraFrustumCulling->SetCommand(pPrimaryCommand);
 	m_pCameraFrustumCulling->SetCameraFrustum(cameraFrustum);
@@ -227,6 +240,7 @@ void MDeferredRenderProgram::InitializeRenderTarget()
 	GetRenderWork<MShadowMapRenderWork>()->SetRenderTarget({}, { pShadowTexture, { true, false, MColor::White }});
 	m_pFramePropertyAdapter->SetShadowMapTexture(pShadowTexture);
 
+	GetRenderWork<MVoxelizerRenderWork>()->SetRenderTarget({}, {});
 	
 	GetRenderWork<MGBufferRenderWork>()->SetRenderTarget(vBackTextures, { pDepthTexture, {true, false, MColor::Black_T} });
 	GetRenderWork<MDeferredLightingRenderWork>()->SetRenderTarget({{pLightningRenderTarget, {true, false, MColor::Black_T }} });
@@ -266,8 +280,14 @@ void MDeferredRenderProgram::InitializeFrameShaderParams()
 	m_pShadowPropertyAdapter = std::make_shared<MShadowMapShaderPropertyBlock>();
 	m_pShadowPropertyAdapter->Initialize(GetEngine());
 
+	m_pVoxelizerPropertyAdapter = std::make_shared<MVoxelizerShaderPropertyBlock>();
+	m_pVoxelizerPropertyAdapter->Initialize(GetEngine());
+
 	m_pShadowCulling = std::make_shared<MCascadedShadowCulling>();
 	m_pShadowCulling->Initialize(GetEngine());
+
+	m_pVoxelizerCulling = std::make_shared<MBoundingBoxCulling>();
+	m_pVoxelizerCulling->Initialize(GetEngine());
 
 #if GPU_CULLING_ENABLE
 	m_pCameraFrustumCulling = std::make_shared<MGPUCameraFrustumCulling>();
@@ -287,8 +307,14 @@ void MDeferredRenderProgram::ReleaseFrameShaderParams()
 	m_pShadowPropertyAdapter->Release(GetEngine());
 	m_pShadowPropertyAdapter = nullptr;
 
+	m_pVoxelizerPropertyAdapter->Release(GetEngine());
+	m_pVoxelizerPropertyAdapter = nullptr;
+
 	m_pShadowCulling->Release();
 	m_pShadowCulling = nullptr;
+
+	m_pVoxelizerCulling->Release();
+	m_pVoxelizerCulling = nullptr;
 
 	m_pCameraFrustumCulling->Release();
 	m_pCameraFrustumCulling = nullptr;
@@ -298,6 +324,13 @@ void MDeferredRenderProgram::UpdateFrameParams(MRenderInfo& info)
 {
 	m_pFramePropertyAdapter->UpdateShaderSharedParams(info);
 	m_pShadowPropertyAdapter->UpdateShaderSharedParams(info);
+	m_pVoxelizerPropertyAdapter->UpdateShaderSharedParams(info);
+
+	m_pVoxelizerPropertyAdapter->SetVoxelMapSetting({
+		Vector3(0, 0, 0),
+		float(MRenderGlobal::VOXEL_TABLE_SIZE),
+		1.0f
+	});
 }
 
 void MDeferredRenderProgram::RenderGBuffer(MIRenderCommand* pPrimaryCommand)
@@ -343,7 +376,7 @@ void MDeferredRenderProgram::RenderLightning(MIRenderCommand* pPrimaryCommand)
 	GetRenderWork<MDeferredLightingRenderWork>()->Render(m_renderInfo);
 }
 
-void MDeferredRenderProgram::RenderVoxel(MIRenderCommand* pPrimaryCommand)
+void MDeferredRenderProgram::RenderVoxelizer(MIRenderCommand* pPrimaryCommand)
 {
 	MORTY_ASSERT(GetRenderWork<MVoxelizerRenderWork>());
 	
@@ -354,13 +387,14 @@ void MDeferredRenderProgram::RenderVoxel(MIRenderCommand* pPrimaryCommand)
 	auto pAnimationManager = pScene->GetManager<MAnimationManager>();
 	auto pAniamtionPropertyAdapter = pAnimationManager->CreateAnimationPropertyAdapter();
 
-	MIndexedIndirectRenderable indirectMesh;
+	MSpecificMaterialIndirectRenderable indirectMesh;
 	indirectMesh.SetScene(pScene);
 	indirectMesh.SetPropertyBlockAdapter({
-		m_pFramePropertyAdapter,
+		m_pVoxelizerPropertyAdapter,
 		pAniamtionPropertyAdapter
 	});
-	indirectMesh.SetInstanceCulling(m_pShadowCulling);
+	indirectMesh.SetInstanceCulling(m_pVoxelizerCulling);
+	indirectMesh.SetMaterial(m_pVoxelizerPropertyAdapter->GetMaterial());
 
     GetRenderWork<MVoxelizerRenderWork>()->Render(m_renderInfo, {
 		&indirectMesh,

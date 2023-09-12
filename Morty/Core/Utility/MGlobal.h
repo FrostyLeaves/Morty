@@ -38,8 +38,8 @@
 //#define MATRIX_MAJOR ROW_MAJOR
 #define MATRIX_MAJOR COL_MAJOR
 
-#pragma warning( disable: 4251 )
-#pragma warning( disable: 4275 )
+//#pragma warning( disable: 4251 )
+//#pragma warning( disable: 4275 )
 
 typedef unsigned long MObjectID;
 typedef unsigned long MResourceID;

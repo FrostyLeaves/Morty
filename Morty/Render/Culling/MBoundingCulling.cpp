@@ -41,7 +41,6 @@ void MBoundingCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanc
 
 	auto createNewGroupFunc = [&](const std::shared_ptr<MMaterial>& pMaterial, MInstanceBatchGroup* pInstanceBatchGroup)
 	{
-		int nIndirectBeginIdx = vDrawIndirectData.size();
 		const auto pMeshProperty = pInstanceBatchGroup->GetMeshProperty();
 		pMeshProperty->SetValue("u_meshInstanceBeginIndex", 0);
 
@@ -76,15 +75,15 @@ void MBoundingCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanc
 						}
 					}
 
-			const MMeshManager::MMeshData& data = pMeshManager->FindMesh(instance.pMesh);
-			const MDrawIndexedIndirectData indirectData = {
-			data.indexInfo.size,
-					1,
-					data.indexInfo.begin,
-					0,
-					static_cast<uint32_t>(nIdx)
-			};
-			vDrawIndirectData.push_back(indirectData);
+					const MMeshManager::MMeshData& data = pMeshManager->FindMesh(instance.pMesh);
+					const MDrawIndexedIndirectData indirectData = {
+						data.indexInfo.size,
+						1,
+						data.indexInfo.begin,
+						0,
+						static_cast<uint32_t>(nIdx)
+					};
+					vDrawIndirectData.push_back(indirectData);
 				});
 
 			if (!m_vCullingInstanceGroup.empty())

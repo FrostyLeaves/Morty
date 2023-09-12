@@ -1,0 +1,28 @@
+#include "../Internal/internal_constant.hlsl"
+#include "../Internal/internal_functional.hlsl"
+#include "../Internal/internal_model.hlsl"
+#include "../Voxel/voxel_struct_define.hlsl"
+
+
+
+VS_OUT VS_MAIN(VS_IN input, uint INSTANCE_ID : SV_InstanceID)
+{
+    VS_OUT output;
+
+    uint3 voxelUVW = InstanceIdToVoxelUVW(voxelMapSetting, INSTANCE_ID);
+
+    float3 voxelWorldPosition = VoxelUVWToWorldPosition(voxelMapSetting, voxelUVW);
+    voxelWorldPosition = voxelWorldPosition + float3(voxelMapSetting.fVoxelStep);
+
+    float4 worldPos = float4(voxelWorldPosition + input.pos, 1.0f);
+
+    output.worldPos = worldPos.xyz;
+    output.pos = mul(worldPos, u_matCamProj);
+    output.depth = output.pos.z;
+    output.normal = input.normal;
+    output.tangent = input.tangent;
+    output.bitangent = normalize(cross(output.tangent, output.normal));
+    output.uv = input.uv;
+
+    return output;
+}

@@ -8,6 +8,7 @@
 #include "Material/MShaderParam.h"
 #include "Render/MVertexBuffer.h"
 #include "Render/Vulkan/MVulkanRenderCommand.h"
+#include "vulkan/vulkan_core.h"
 
 #ifdef max
 #undef max
@@ -419,6 +420,8 @@ VkImageViewType MVulkanDevice::GetImageViewType(MTexture* pTexture)
 		return VK_IMAGE_VIEW_TYPE_CUBE;
 	else if (METextureType::ETexture2DArray == pTexture->GetTextureType())
 		return VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+	else if (METextureType::ETexture3D == pTexture->GetTextureType())
+		return VK_IMAGE_VIEW_TYPE_3D;
 
 	return VK_IMAGE_VIEW_TYPE_2D;
 }
@@ -439,6 +442,8 @@ VkImageType MVulkanDevice::GetImageType(MTexture* pTexture)
 		return VK_IMAGE_TYPE_2D;
 	else if (pTexture->GetTextureType() == METextureType::ETexture2DArray)
 		return VK_IMAGE_TYPE_2D;
+	else if (pTexture->GetTextureType() == METextureType::ETexture3D)
+		return VK_IMAGE_TYPE_3D;
 
 	return VK_IMAGE_TYPE_2D;
 }

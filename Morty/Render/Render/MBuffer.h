@@ -46,10 +46,12 @@ public:
     ~MBuffer();
 
 
-    static MBuffer CreateVertexBuffer();
-    static MBuffer CreateHostVisibleVertexBuffer();
-    static MBuffer CreateIndexBuffer();
-    static MBuffer CreateHostVisibleIndexBuffer();
+    static MBuffer CreateVertexBuffer(const char* debugName = nullptr);
+    static MBuffer CreateHostVisibleVertexBuffer(const char* debugName = nullptr);
+    static MBuffer CreateIndexBuffer(const char* debugName = nullptr);
+    static MBuffer CreateHostVisibleIndexBuffer(const char* debugName = nullptr);
+    static MBuffer CreateIndirectDrawBuffer(const char* debugName = nullptr);
+    static MBuffer CreateStorageBuffer(const char* debugName = nullptr);
 
 
 public:
@@ -66,6 +68,7 @@ public:
     void UploadBuffer(MIDevice* pDevice, size_t nBeginOffset, const MByte* data, const size_t& size);
     void DestroyBuffer(MIDevice* pDevice);
     void DownloadBuffer(MIDevice* pDevice, MByte* data, const size_t& size);
+
 
 public:
 #if RENDER_GRAPHICS == MORTY_VULKAN

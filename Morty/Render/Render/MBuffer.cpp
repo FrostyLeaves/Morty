@@ -14,48 +14,74 @@ MBuffer::~MBuffer()
 }
 
 
-MBuffer MBuffer::CreateVertexBuffer()
+MBuffer MBuffer::CreateVertexBuffer(const char* debugName)
 {
 	MBuffer buffer;
 	buffer.m_eUsageType = MUsageType::EVertex;
 	buffer.m_eMemoryType = MMemoryType::EDeviceLocal;
-
+#if MORTY_DEBUG
+	buffer.m_strDebugBufferName = debugName;
+#endif
 	return buffer;
 }
 
-MBuffer MBuffer::CreateHostVisibleVertexBuffer()
+MBuffer MBuffer::CreateHostVisibleVertexBuffer(const char* debugName)
 {
 	MBuffer buffer;
 	buffer.m_eUsageType = MUsageType::EVertex;
 	buffer.m_eMemoryType = MMemoryType::EHostVisible;
-
+#if MORTY_DEBUG
+	buffer.m_strDebugBufferName = debugName;
+#endif
 	return buffer;
 }
 
-MBuffer MBuffer::CreateIndexBuffer()
+MBuffer MBuffer::CreateIndexBuffer(const char* debugName)
 {
 	MBuffer buffer;
 	buffer.m_eUsageType = MUsageType::EIndex;
 	buffer.m_eMemoryType = MMemoryType::EDeviceLocal;
-
+#if MORTY_DEBUG
+	buffer.m_strDebugBufferName = debugName;
+#endif
 	return buffer;
 }
 
-MBuffer MBuffer::CreateHostVisibleIndexBuffer()
+MBuffer MBuffer::CreateHostVisibleIndexBuffer(const char* debugName)
 {
 	MBuffer buffer;
 	buffer.m_eUsageType = MUsageType::EIndex;
 	buffer.m_eMemoryType = MMemoryType::EHostVisible;
+#if MORTY_DEBUG
+	buffer.m_strDebugBufferName = debugName;
+#endif
+	return buffer;
+}
 
+MBuffer MBuffer::CreateIndirectDrawBuffer(const char* debugName)
+{
+	MBuffer buffer;
+	buffer.m_eUsageType = MBuffer::MUsageType::EStorage | MBuffer::MUsageType::EIndirect;
+	buffer.m_eMemoryType = MBuffer::MMemoryType::EDeviceLocal;
+#if MORTY_DEBUG
+	buffer.m_strDebugBufferName = debugName;
+#endif
+	return buffer;
+}
+
+MBuffer MBuffer::CreateStorageBuffer(const char* debugName)
+{
+	MBuffer buffer;
+	buffer.m_eUsageType = MBuffer::MUsageType::EStorage;
+	buffer.m_eMemoryType = MBuffer::MMemoryType::EHostVisible;
+#if MORTY_DEBUG
+	buffer.m_strDebugBufferName = debugName;
+#endif
 	return buffer;
 }
 
 const MBuffer& MBuffer::operator=(const MBuffer& other)
-{
-#if MORTY_DEBUG
-	m_strDebugBufferName = other.m_strDebugBufferName;
-#endif
-	
+{	
 	m_eMemoryType = other.m_eMemoryType;
 	m_eUsageType = other.m_eUsageType;
 

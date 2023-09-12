@@ -369,7 +369,8 @@ void MTransparentRenderWork::InitializePeelRenderPass()
 		}
 	}
 
-
+	m_peelRenderPass.SetDepthTestEnable(true);
+	m_peelRenderPass.SetDepthWriteEnable(false);
 	m_peelRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
 }
 
@@ -384,7 +385,8 @@ void MTransparentRenderWork::InitializeFillRenderPass()
 {
 	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
 
-
+	m_fillRenderPass.SetDepthTestEnable(false);
+	m_fillRenderPass.SetDepthWriteEnable(false);
 	m_fillRenderPass.AddBackTexture(m_pOutputTexture, { false, true, MColor::Black_T });
 
 	m_fillRenderPass.GenerateBuffer(pRenderSystem->GetDevice());

@@ -193,6 +193,14 @@ MBoundsAABB::MBoundsAABB(const std::vector<Vector3>& vPoints, const Matrix4& mat
 	SetPoints(vPoints);
 }
 
+MBoundsAABB::MBoundsAABB(const Vector3& center, const Vector3& halfLength)
+{
+	m_v3CenterPoint = center;
+	m_v3HalfLength = halfLength;
+	m_v3MinPoint = center - halfLength;
+	m_v3MaxPoint = center + halfLength;
+}
+
 void MBoundsAABB::SetMinMax(const Vector3& v3Min, const Vector3& v3Max)
 {
 	m_v3MinPoint = v3Min;

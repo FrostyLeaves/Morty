@@ -15,6 +15,19 @@
 class MIDevice;
 class MTexture;
 
+
+enum class MDepthCompareType
+{
+    Never = 0,
+    Less = 1,
+    Equal = 2,
+    Less_Or_Equal = 3,
+    Greater = 4,
+    Not_Equal = 5,
+    Greater_Or_Equal = 6,
+    Always = 7,
+};
+
 class MORTY_API MSubpass
 {
 public:
@@ -80,6 +93,11 @@ public:
 
 public:
 
+    void SetDepthTestEnable(bool bEnable) { m_bDepthTestEnable = bEnable; }
+    void SetDepthWriteEnable(bool bEnable) { m_bDepthWriteEnable = bEnable; }
+    void SetDepthCompareType(MDepthCompareType eType) { m_eDepthCompareOp = eType; }
+    void SetStencilTestEnable(bool bEnable) { m_bStencilTestEnable = bEnable; }
+
     void AddBackTexture(const MRenderTarget& backTexture);
     void SetDepthTexture(const MRenderTarget& backTexture);
     void AddBackTexture(std::shared_ptr<MTexture> pBackTexture, const MPassTargetDescription& desc);
@@ -122,4 +140,10 @@ public:
     //vulkan render pass
     VkRenderPass m_VkRenderPass;
 #endif
+
+    bool m_bDepthTestEnable = true;
+	bool m_bDepthWriteEnable = true;
+	bool m_bStencilTestEnable = VK_FALSE;
+	MDepthCompareType m_eDepthCompareOp = MDepthCompareType::Less_Or_Equal;
+
 };

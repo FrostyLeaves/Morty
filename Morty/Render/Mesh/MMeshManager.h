@@ -51,6 +51,8 @@ public:
 
 	MIMesh* GetScreenRect() const;
 	MIMesh* GetSkyBox() const;
+	
+	const MMeshData& GetCubeMesh() const;
 
 public:
 	const MBuffer* GetVertexBuffer() const { return &m_vertexBuffer; }
@@ -62,6 +64,8 @@ private:
 	void ReleaseScreenRect();
 	void InitializeSkyBox();
 	void ReleaseSkyBox();
+	void InitializeCube();
+	void ReleaseCube();
 
 	size_t RoundIndexSize(size_t nIndexSize);
 	void UploadBuffer(MIMesh* pMesh);
@@ -80,6 +84,7 @@ private:
 	
 	std::unique_ptr<MIMesh> m_pScreenRect = nullptr;
 	std::unique_ptr<MIMesh> m_pSkyBox = nullptr;
+	std::unique_ptr<MIMesh> m_pCubeMesh = nullptr;
 
 
 // render thread.

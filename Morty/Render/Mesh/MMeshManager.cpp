@@ -1,9 +1,12 @@
 #include "MMeshManager.h"
 
 #include "Engine/MEngine.h"
+#include "Mesh/MMeshUtil.h"
 #include "Render/MIDevice.h"
 #include "Render/MMesh.h"
 #include "Render/MVertex.h"
+#include "Resource/MMeshResource.h"
+#include "Resource/MMeshResourceUtil.h"
 #include "System/MRenderSystem.h"
 #include "TaskGraph/MTaskGraph.h"
 #include "Utility/MFunction.h"
@@ -39,6 +42,7 @@ void MMeshManager::OnCreated()
 
 	InitializeScreenRect();
 	InitializeSkyBox();
+	InitializeCube();
 
 	MTaskNode* pUploadBufferTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>("Upload Mesh Buffer");
 	pUploadBufferTask->SetThreadType(METhreadType::ERenderThread);
@@ -49,6 +53,7 @@ void MMeshManager::OnDelete()
 {
 	ReleaseSkyBox();
 	ReleaseScreenRect();
+	ReleaseCube();
 
 	const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
@@ -126,6 +131,17 @@ void MMeshManager::ReleaseSkyBox()
 	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
 	m_pSkyBox->DestroyBuffer(pRenderSystem->GetDevice());
 	m_pSkyBox = nullptr;
+}
+
+void MMeshManager::InitializeCube()
+{
+	m_pCubeMesh = MMeshUtil::CreateCube(MEMeshVertexType::Normal);
+	RegisterMesh(m_pCubeMesh.get());
+}
+
+void MMeshManager::ReleaseCube()
+{
+	//UnregisterMesh(m_pCubeMesh);
 }
 
 size_t MMeshManager::RoundIndexSize(size_t unIndexNum)
@@ -333,4 +349,9 @@ MIMesh* MMeshManager::GetScreenRect() const
 MIMesh* MMeshManager::GetSkyBox() const
 {
 	return m_pSkyBox.get();
+}
+
+const MMeshManager::MMeshData& MMeshManager::GetCubeMesh() const
+{
+	return FindMesh(m_pCubeMesh.get());
 }

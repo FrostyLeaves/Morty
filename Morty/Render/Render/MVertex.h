@@ -20,7 +20,6 @@
 struct MVertex
 {
 	Vector3 position;
-
 	Vector3 normal;
 	Vector3 tangent;
 	Vector3 bitangent;
@@ -83,4 +82,10 @@ struct MShadowGpuDrivenOutput
 {
 	uint32_t drawCount;
 	uint32_t lodCount[MRenderGlobal::MESH_LOD_LEVEL_RANGE];
+};
+
+
+struct VoxelizerOutput
+{
+    uint nVoxelCount;
 };

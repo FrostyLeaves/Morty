@@ -294,7 +294,7 @@ void MModelConverter::ProcessNode(aiNode* pNode, const aiScene *pScene)
 			ProcessMeshVertices(pChildMesh, pScene, pMBonesMesh);
 			ProcessMeshIndices(pChildMesh, pScene, pMBonesMesh);
 			BindVertexAndBones(pSkeleton, pChildMesh, pScene, pMBonesMesh);
-			pMeshResourceData->pMesh = pMBonesMesh;
+			pMeshResourceData->pMesh.reset(pMBonesMesh);
 			pMeshResourceData->eVertexType = MEMeshVertexType::Skeleton;
 		}
 		else
@@ -302,7 +302,7 @@ void MModelConverter::ProcessNode(aiNode* pNode, const aiScene *pScene)
 			MMesh<MVertex>* pMStaticMesh = new MMesh<MVertex>();
 			ProcessMeshVertices(pChildMesh, pScene, pMStaticMesh);
 			ProcessMeshIndices(pChildMesh, pScene, pMStaticMesh);
-			pMeshResourceData->pMesh = pMStaticMesh;
+			pMeshResourceData->pMesh.reset(pMStaticMesh);
 			pMeshResourceData->eVertexType = MEMeshVertexType::Normal;
 		}
 

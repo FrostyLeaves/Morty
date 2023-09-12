@@ -22,13 +22,7 @@ void MForwardRenderShaderPropertyBlock::Initialize(MEngine* pEngine)
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
 
-	std::shared_ptr<MResource> forwardVS = pResourceSystem->LoadResource("Shader/Deferred/model_gbuffer.mvs");
-	std::shared_ptr<MResource> forwardPS = pResourceSystem->LoadResource("Shader/Deferred/model_gbuffer.mps");
-	m_pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-	m_pMaterial->SetCullMode(MECullMode::ECullBack);
-	m_pMaterial->LoadVertexShader(forwardVS);
-	m_pMaterial->LoadPixelShader(forwardPS);
-
+	m_pMaterial = LoadMaterial(pEngine);
 	BindMaterial(m_pMaterial);
 
 	std::shared_ptr<MResource> pBrdfTexture = pResourceSystem->LoadResource("Texture/ibl_brdf_lut.png");
@@ -47,6 +41,21 @@ void MForwardRenderShaderPropertyBlock::Release(MEngine* pEngine)
 	m_pShaderPropertyBlock = nullptr;
 
 	m_pMaterial = nullptr;
+}
+
+
+std::shared_ptr<MMaterial> MForwardRenderShaderPropertyBlock::LoadMaterial(MEngine* pEngine) const
+{
+	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
+
+	std::shared_ptr<MResource> forwardVS = pResourceSystem->LoadResource("Shader/Deferred/model_gbuffer.mvs");
+	std::shared_ptr<MResource> forwardPS = pResourceSystem->LoadResource("Shader/Deferred/model_gbuffer.mps");
+	auto pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
+	pMaterial->SetCullMode(MECullMode::ECullBack);
+	pMaterial->LoadVertexShader(forwardVS);
+	pMaterial->LoadPixelShader(forwardPS);
+
+	return pMaterial;
 }
 
 void MForwardRenderShaderPropertyBlock::BindMaterial(const std::shared_ptr<MMaterial>& pMaterial)

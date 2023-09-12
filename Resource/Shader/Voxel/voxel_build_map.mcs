@@ -1,0 +1,43 @@
+#include "../Voxel/voxel_struct_define.hlsl"
+#include "../Internal/internal_indirect_define.h"
+
+
+[[vk::binding(0,0)]] StructuredBuffer<VoxelizerOutput> rVoxelTable;
+
+[[vk::binding(1,0)]] cbuffer cbVoxelMap
+{
+    VoxelMapSetting voxelMapSetting;
+};
+
+[[vk::binding(2,0)]] RWStructuredBuffer<IndexedIndirectCommand> indirectDraws;
+
+[[vk::binding(3,0)]] cbuffer cbVoxelMeshData
+{
+    uint cubeMeshIndex;
+    uint cubeMeshCount;
+};
+
+
+[numthreads(8, 8, 8)]
+void CS_MAIN(uint3 GlobalInvocationID : SV_DispatchThreadID )
+{
+    uint3 voxelPosition = GlobalInvocationID;
+
+    int voxelTableIdx = VoxelUVWToInstanceId(voxelMapSetting, voxelPosition);
+
+    VoxelizerOutput voxelizerData = rVoxelTable[voxelTableIdx];
+
+    //TODO 
+    if (voxelizerData.nVoxelCount == 0)
+    {
+        indirectDraws[voxelTableIdx].instanceCount = 0;
+    }
+    else
+    {
+        indirectDraws[voxelTableIdx].instanceCount = 1;
+        indirectDraws[voxelTableIdx].vertexOffset = 0;
+        indirectDraws[voxelTableIdx].firstInstance = voxelTableIdx;
+        indirectDraws[voxelTableIdx].firstIndex = cubeMeshIndex;
+        indirectDraws[voxelTableIdx].indexCount = cubeMeshCount;
+    }
+}

@@ -1,6 +1,9 @@
 ﻿#include "Render/Vulkan/MVulkanPipelineManager.h"
 
 #include "Render/MBuffer.h"
+#include "Render/MRenderPass.h"
+#include "Utility/MGlobal.h"
+#include "vulkan/vulkan_core.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
@@ -422,54 +425,46 @@ void GetBlendStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPas
 
 }
 
-void GetDepthStencilStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, VkPipelineDepthStencilStateCreateInfo& depthStencilInfo)
+
+VkCompareOp GetCompareOp(MDepthCompareType type)
+{
+	switch(type)
+	{
+		case MDepthCompareType::Never:
+			return VkCompareOp::VK_COMPARE_OP_NEVER;
+		case MDepthCompareType::Less:
+			return VkCompareOp::VK_COMPARE_OP_LESS;
+		case MDepthCompareType::Equal:
+			return VkCompareOp::VK_COMPARE_OP_EQUAL;
+		case MDepthCompareType::Less_Or_Equal:
+			return VkCompareOp::VK_COMPARE_OP_LESS_OR_EQUAL;
+		case MDepthCompareType::Greater:
+			return VkCompareOp::VK_COMPARE_OP_GREATER;
+		case MDepthCompareType::Not_Equal:
+			return VkCompareOp::VK_COMPARE_OP_NOT_EQUAL;
+		case MDepthCompareType::Greater_Or_Equal:
+			return VkCompareOp::VK_COMPARE_OP_GREATER_OR_EQUAL;
+		case MDepthCompareType::Always:
+			return VkCompareOp::VK_COMPARE_OP_ALWAYS;
+		default:
+			MORTY_ASSERT(false);
+	}
+
+	return VkCompareOp::VK_COMPARE_OP_NEVER;
+};
+
+void GetDepthStencilStage(MRenderPass* pRenderPass, VkPipelineDepthStencilStateCreateInfo& depthStencilInfo)
 {
 	depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	depthStencilInfo.pNext = NULL;
 	depthStencilInfo.flags = 0;
-	depthStencilInfo.depthTestEnable = VK_TRUE;
-	depthStencilInfo.depthWriteEnable = VK_TRUE;
-	depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-	depthStencilInfo.depthBoundsTestEnable = VK_FALSE;
 	depthStencilInfo.minDepthBounds = 0;
 	depthStencilInfo.maxDepthBounds = 0;
-	depthStencilInfo.stencilTestEnable = VK_FALSE;
-
-	MEMaterialType eType = pMaterial->GetMaterialType();
-
-	if (MEMaterialType::EDepthPeel == eType)
-	{
-		depthStencilInfo.depthTestEnable = VK_TRUE;
-		depthStencilInfo.depthWriteEnable = VK_FALSE;
-		depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-		depthStencilInfo.stencilTestEnable = VK_FALSE;
-	}
-	else if (MEMaterialType::ETransparentBlend == eType)
-	{
-		depthStencilInfo.depthTestEnable = VK_FALSE;
-		depthStencilInfo.depthWriteEnable = VK_FALSE;
-		depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-		depthStencilInfo.stencilTestEnable = VK_FALSE;
-	}
-	else if (MEMaterialType::EImGui == eType)
-	{
-		depthStencilInfo = {};
-		depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	}
-	else if (MEMaterialType::ECustom == eType)
-	{
-		depthStencilInfo.depthTestEnable = VK_TRUE;
-		depthStencilInfo.depthWriteEnable = VK_TRUE;
-		depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-		depthStencilInfo.stencilTestEnable = VK_FALSE;
-	}
-    else
-    {
-		depthStencilInfo.depthTestEnable = VK_TRUE;
-		depthStencilInfo.depthWriteEnable = VK_TRUE;
-		depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-		depthStencilInfo.stencilTestEnable = VK_FALSE;
-    }
+	depthStencilInfo.depthTestEnable = pRenderPass->m_bDepthTestEnable;
+	depthStencilInfo.depthWriteEnable = pRenderPass->m_bDepthWriteEnable;
+	depthStencilInfo.depthCompareOp = GetCompareOp(pRenderPass->m_eDepthCompareOp);
+	depthStencilInfo.depthBoundsTestEnable = VK_FALSE;
+	depthStencilInfo.stencilTestEnable = pRenderPass->m_bStencilTestEnable;
 }
 
 VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<MPipeline>& pPipeline, std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx)
@@ -602,7 +597,7 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<
 	std::vector<VkPipelineColorBlendAttachmentState> vBlendAttach;
 	GetBlendStage(pMaterial, pRenderPass, vBlendAttach, blendInfo);
 
-	GetDepthStencilStage(pMaterial, pRenderPass, depthStencilInfo);
+	GetDepthStencilStage(pRenderPass, depthStencilInfo);
 	
 	VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
 	inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

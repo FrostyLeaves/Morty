@@ -44,6 +44,13 @@ void MIndexedIndirectRenderable::SetInstanceCulling(const std::shared_ptr<MInsta
 	m_pCullingAdapter = pCullingAdapter;
 }
 
+
+const std::shared_ptr<MMaterial>& MIndexedIndirectRenderable::GetMaterial(const MMaterialCullingGroup& group) const
+{
+	const auto& pMaterial = group.pMaterial;
+	return pMaterial;
+}
+
 void MIndexedIndirectRenderable::Render(MIRenderCommand* pCommand)
 {
 	if (!m_pScene)
@@ -71,7 +78,7 @@ void MIndexedIndirectRenderable::Render(MIRenderCommand* pCommand)
 			continue;
 		}
 
-		const auto& pMaterial = group.pMaterial;
+		const auto& pMaterial = GetMaterial(group);
 		if (pMaterial == nullptr)
 		{
 			MORTY_ASSERT(pMaterial);

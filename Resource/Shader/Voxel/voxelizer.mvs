@@ -1,4 +1,4 @@
-#include "voxelizer_struct.hlsl"
+#include "voxelizer_header.hlsl"
 
 VS_OUT VS_MAIN(VS_IN input, uint INSTANCE_ID : SV_InstanceID)
 {

@@ -8,14 +8,16 @@
 
 #pragma once
 
-#include "Utility/MGlobal.h"
+#include "Material/MMaterial.h"
+#include "Render/MRenderGlobal.h"
 #include "MSinglePassRenderWork.h"
 
 #include "RenderProgram/MRenderInfo.h"
 #include "MRenderWork.h"
 #include "Render/MRenderPass.h"
 #include "Basic/MCameraFrustum.h"
-
+#include "Render/MBuffer.h"
+#include <memory>
 
 
 class MORTY_API MVoxelizerRenderWork : public ISinglePassRenderWork
@@ -24,8 +26,20 @@ class MORTY_API MVoxelizerRenderWork : public ISinglePassRenderWork
 
 public:
 
+    void Initialize(MEngine* pEngine) override;
+	void Release(MEngine* pEngine) override;
+
     void Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
 
+protected:
 
-    static constexpr size_t VoxelTableSize = 2048;
+    void InitializeDispatcher();
+    void ReleaseDispatcher();
+
+    void DrawVoxelizerMap(MIRenderCommand* pCommand);
+
+    MComputeDispatcher* m_pVoxelMapGenerator = nullptr;
+    std::shared_ptr<MMaterial> m_pVoxelDebugMaterial = nullptr;
+    MBuffer m_drawIndirectBuffer;
+    bool m_bDebugMode = false;
 };

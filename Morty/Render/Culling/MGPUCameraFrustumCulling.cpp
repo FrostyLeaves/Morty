@@ -16,26 +16,15 @@ void MGPUCameraFrustumCulling::Initialize(MEngine* pEngine)
 	m_pEngine = pEngine;
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
-	m_cullingInputBuffer.m_eMemoryType = MBuffer::MMemoryType::EHostVisible;
-	m_cullingInputBuffer.m_eUsageType = MBuffer::MUsageType::EStorage;
-
-	m_drawIndirectBuffer.m_eMemoryType = MBuffer::MMemoryType::EDeviceLocal;
-	m_drawIndirectBuffer.m_eUsageType = MBuffer::MUsageType::EStorage | MBuffer::MUsageType::EIndirect;
-
-	m_cullingOutputBuffer.m_eMemoryType = MBuffer::MMemoryType::EHostVisible;
-	m_cullingOutputBuffer.m_eUsageType = MBuffer::MUsageType::EStorage;
+	m_cullingInputBuffer = MBuffer::CreateStorageBuffer("Culling Input Buffer");
+	m_drawIndirectBuffer = MBuffer::CreateIndirectDrawBuffer("GPU Culling Draw Instance Buffer");
+	m_cullingOutputBuffer = MBuffer::CreateStorageBuffer("Culling Output Buffer");
 
 	constexpr size_t nOutputDataSize = sizeof(MMergeInstanceDrawCallOutput);
 	m_cullingOutputBuffer.ReallocMemory(nOutputDataSize);
 	m_cullingOutputBuffer.GenerateBuffer(pRenderSystem->GetDevice(), nullptr, nOutputDataSize);
 
 
-
-#if MORTY_DEBUG
-	m_cullingInputBuffer.m_strDebugBufferName = "Culling Input Buffer";
-	m_drawIndirectBuffer.m_strDebugBufferName = "GPU Culling Draw Instance Buffer";
-	m_cullingOutputBuffer.m_strDebugBufferName = "Culling Output Buffer";
-#endif
 
 
 	MObjectSystem* pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();

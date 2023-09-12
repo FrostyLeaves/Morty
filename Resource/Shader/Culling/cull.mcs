@@ -1,3 +1,5 @@
+#include "../Internal/internal_indirect_define.h"
+
 
 struct LOD
 {
@@ -19,16 +21,6 @@ struct UBOOut
 {
 	uint drawCount;
 	uint lodCount[MESH_LOD_LEVEL_RANGE];
-};
-
-// Same layout as VkDrawIndexedIndirectCommand
-struct IndexedIndirectCommand
-{
-	uint indexCount;
-	uint instanceCount;
-	uint firstIndex;
-	uint vertexOffset;
-	uint firstInstance;
 };
 
 [[vk::binding(0,0)]] StructuredBuffer<InstanceData> instances;

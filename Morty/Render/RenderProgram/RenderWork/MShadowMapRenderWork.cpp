@@ -43,9 +43,6 @@ void MShadowMapRenderWork::Initialize(MEngine* pEngine)
 
 void MShadowMapRenderWork::Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
-	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-	MIDevice* pRenderDevice = pRenderSystem->GetDevice();
-
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
 	if (!pCommand)
 		return;

@@ -479,7 +479,7 @@ inline void MVariantStruct::AppendContainer(const MString& strName, const TYPE& 
 	TYPE innerValue = value;
 	innerValue.ResetMemory(m_pMemory, nOffset);
 
-	member = std::move(MVariant(innerValue));
+	member = MVariant(innerValue);
 
 	memcpy(m_pMemory->Data() + nOffset, value.Data(), nSize);
 
