@@ -141,7 +141,7 @@ void MMeshManager::InitializeCube()
 
 void MMeshManager::ReleaseCube()
 {
-	//UnregisterMesh(m_pCubeMesh);
+	UnregisterMesh(m_pCubeMesh.get());
 }
 
 size_t MMeshManager::RoundIndexSize(size_t unIndexNum)

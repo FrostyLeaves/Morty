@@ -22,7 +22,7 @@ class MVariantArray;
 enum class MEVariantType
 {
 	ENone,
-	EBool,
+	EUInt,
 	EInt,
 	EFloat,
 	EVector2,
@@ -356,7 +356,13 @@ inline MEVariantType MVariant::Type()
 template<>
 inline MEVariantType MVariant::Type<bool>()
 {
-	return MEVariantType::EBool;
+	return MEVariantType::EUInt;
+}
+
+template<>
+inline MEVariantType MVariant::Type<uint32_t>()
+{
+	return MEVariantType::EUInt;
 }
 
 template<>
@@ -424,7 +430,7 @@ void MVariantStruct::AppendVariant(const MString& strName, const TYPE& value)
 	m_nSize = nOffset + nSize - m_nOffset;
 
 	MVariant& member = m_tMember[strName];
-	member = std::move(MVariant(m_pMemory, nOffset, nSize, MVariant::Type<TYPE>()));
+	member = MVariant(m_pMemory, nOffset, nSize, MVariant::Type<TYPE>());
 
 	memcpy(m_pMemory->Data() + nOffset, &value, member.GetSize());
 }

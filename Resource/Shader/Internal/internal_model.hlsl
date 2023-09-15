@@ -1,3 +1,6 @@
+#ifndef _M_INTERNAL_MODEL_DEFINE_HLSL_
+#define _M_INTERNAL_MODEL_DEFINE_HLSL_
+
 struct VS_IN
 {
     float3 pos : POSITION;
@@ -106,3 +109,7 @@ float4 getModelVertexPosition(VS_IN input, uint INSTANCE_ID)
     
 }
 ////////////////////////////////////////////////////////////////
+
+
+
+#endif

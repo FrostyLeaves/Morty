@@ -159,6 +159,8 @@ std::unique_ptr<MIMesh> MMeshUtil::CreatePlane(MEMeshVertexType eVertexType)
 
 	pMesh->ResizeIndices(2, 3);
 	memcpy(pMesh->GetIndices(), indices, sizeof(indices));
+
+	return pMesh;
 }
 
 
@@ -279,8 +281,11 @@ std::unique_ptr<MIMesh> MMeshUtil::CreateCube(MEMeshVertexType eVertexType)
 	}
 
 	pMesh->ResizeIndices(12, 3);
-	memcpy(pMesh->GetIndices(), indices, sizeof(indices));
 
+	uint32_t* vIndices = pMesh->GetIndices();
+	memcpy(vIndices, indices, sizeof(indices));
+
+	return pMesh;
 }
 
 
@@ -361,4 +366,6 @@ std::unique_ptr<MIMesh> MMeshUtil::CreateSphere(MEMeshVertexType eVertexType)
 	pMesh->ResizeIndices(vIndices.size(), 1);
 	memcpy(pMesh->GetIndices(), vIndices.data(), sizeof(uint32_t) * vIndices.size());
 
+
+	return pMesh;
 }

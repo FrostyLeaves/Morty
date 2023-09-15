@@ -1,8 +1,14 @@
-#include "../Internal/internal_constant.hlsl"
-#include "../Internal/internal_functional.hlsl"
-#include "../Internal/internal_model.hlsl"
-#include "../Voxel/voxel_struct_define.hlsl"
+#include "Internal/internal_constant.hlsl"
+#include "Internal/internal_functional.hlsl"
+#include "Internal/internal_model.hlsl"
+#include "Voxel/voxelizer_header.hlsl"
 
+
+struct VS_OUT
+{    
+    float4 pos : SV_POSITION;
+    float4 color : u32COLOR;
+};
 
 
 PS_OUT PS_MAIN(VS_OUT input)

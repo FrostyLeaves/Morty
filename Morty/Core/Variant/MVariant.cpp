@@ -1,6 +1,7 @@
 ﻿#include "MVariant.h"
 
 #include "MVariant_generated.h"
+#include <_types/_uint32_t.h>
 
 const MVariant& MVariant::operator=(const MVariant& other)
 {
@@ -49,7 +50,7 @@ void MVariant::ResetMemory(const std::shared_ptr<MVariantMemory>& pMemory, size_
 mfbs::MVariantData EnumVariantToFb(MEVariantType eType)
 {
 	const static std::map<MEVariantType, mfbs::MVariantData> Table = {
-		{MEVariantType::EBool, mfbs::MVariantData_Bool},
+		{MEVariantType::EUInt, mfbs::MVariantData_UInt},
 		{MEVariantType::EFloat, mfbs::MVariantData_Float},
 		{MEVariantType::EInt, mfbs::MVariantData_Int},
 		{MEVariantType::EMatrix3, mfbs::MVariantData_Matrix3},
@@ -68,7 +69,7 @@ mfbs::MVariantData EnumVariantToFb(MEVariantType eType)
 MEVariantType EnumVariantToFb(mfbs::MVariantData eType)
 {
 	const static std::map<mfbs::MVariantData, MEVariantType> Table = {
-		{mfbs::MVariantData_Bool,MEVariantType::EBool},
+		{mfbs::MVariantData_UInt,MEVariantType::EUInt},
 		{mfbs::MVariantData_Float, MEVariantType::EFloat},
 		{mfbs::MVariantData_Int, MEVariantType::EInt},
 		{mfbs::MVariantData_Matrix3, MEVariantType::EMatrix3},
@@ -90,9 +91,9 @@ flatbuffers::Offset<void> MVariant::Serialize(flatbuffers::FlatBufferBuilder& fb
 	const mfbs::MVariantData fbVariantType = EnumVariantToFb(GetType());
 	MORTY_ASSERT(fbVariantType != mfbs::MVariantData_NONE);
 
-	if (GetType() == MEVariantType::EBool)
+	if (GetType() == MEVariantType::EUInt)
 	{
-		fbVariantData = fbb.CreateStruct(mfbs::Bool(GetValue<bool>())).Union();
+		fbVariantData = fbb.CreateStruct(mfbs::UInt(GetValue<uint32_t>())).Union();
 	}
 	else if(GetType() == MEVariantType::EFloat)
 	{
@@ -171,9 +172,9 @@ void MVariant::Deserialize(const void* pBufferPointer, std::shared_ptr<MVariantM
 
 	m_pMemory = pMemory;
 
-	if (GetType() == MEVariantType::EBool)
+	if (GetType() == MEVariantType::EUInt)
 	{
-		SetValue(fbData->data_as_Bool()->value());
+		SetValue(fbData->data_as_UInt()->value());
 	}
 	else if (GetType() == MEVariantType::EFloat)
 	{
@@ -228,7 +229,7 @@ size_t MVariant::TypeSize(MEVariantType eType)
 
 	static std::map<MEVariantType, size_t> VariantTypeSize = {
 		{MEVariantType::ENone, 0},
-		{MEVariantType::EBool, sizeof(int)},
+		{MEVariantType::EUInt, sizeof(int)},
 		{MEVariantType::EInt, sizeof(int)},
 		{MEVariantType::EFloat, sizeof(float)},
 		{MEVariantType::EVector2, sizeof(Vector2)},

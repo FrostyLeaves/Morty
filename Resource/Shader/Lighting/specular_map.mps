@@ -1,4 +1,4 @@
-#include "../Lighting/brdf_functional.hlsl"
+#include "Lighting/brdf_functional.hlsl"
 
 [[vk::binding(1,0)]]TextureCube u_texSkyBox;
 [[vk::binding(2,0)]]sampler LinearSampler;

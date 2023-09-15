@@ -11,7 +11,8 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "externalConsole": true,
+            "externalConsole": false,
+            "preLaunchTask": "CMake: build",
             "MIMode": "gdb",
             "setupCommands": [
                 {
@@ -21,8 +22,7 @@
                 }
             ],
             "osx": {
-                "MIMode": "lldb",
-                "program": "${command:cmake.launchTargetPath}"
+                "MIMode": "lldb"
             },
         }
     ]

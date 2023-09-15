@@ -59,6 +59,10 @@ if(MORTY_BUILD_TARGET STREQUAL "ANDROID")
     #    message(FATAL_ERROR MACOS)
 endif()
 
+target_compile_definitions(Core
+            PUBLIC $<$<CONFIG:Debug>:MORTY_DEBUG>
+            )
+
 ############################################################
 # ThirdParty
 ############################################################

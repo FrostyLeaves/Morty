@@ -1,4 +1,5 @@
 #include "MVulkanShaderReflector.h"
+#include <_types/_uint32_t.h>
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
@@ -366,7 +367,7 @@ bool MVulkanShaderReflector::BuildBasicVariant(const spirv_cross::SPIRType& type
 	switch (type.basetype)
 	{
 	case spirv_cross::SPIRType::BaseType::Boolean:
-		variant = MVariant(bool());
+		variant = MVariant(uint32_t());
 		return true;
 
 	case spirv_cross::SPIRType::BaseType::Int:
@@ -374,7 +375,7 @@ bool MVulkanShaderReflector::BuildBasicVariant(const spirv_cross::SPIRType& type
 		return true;
 
 	case spirv_cross::SPIRType::BaseType::UInt:
-		variant = MVariant(bool());
+		variant = MVariant(uint32_t());
 		return true;
 
 	case spirv_cross::SPIRType::BaseType::Float:

@@ -1,4 +1,4 @@
-#include "../Internal/internal_constant.hlsl"
+#include "Internal/internal_constant.hlsl"
 
 struct VS_IN
 {

@@ -1,7 +1,7 @@
-#include "../Internal/internal_constant.hlsl"
-#include "../Internal/internal_functional.hlsl"
-#include "../Lighting/pbr_lighting.hlsl"
-#include "../Shadow/shadow.hlsl"
+#include "Internal/internal_constant.hlsl"
+#include "Internal/internal_functional.hlsl"
+#include "Lighting/pbr_lighting.hlsl"
+#include "Shadow/shadow.hlsl"
 
 struct VS_OUT
 {

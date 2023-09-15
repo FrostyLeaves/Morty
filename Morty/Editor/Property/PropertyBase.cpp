@@ -11,6 +11,7 @@
 #include "ImGuiFileDialog.h"
 #include "Engine/MEngine.h"
 #include "Resource/MMaterialResourceData.h"
+#include <_types/_uint32_t.h>
 
 unsigned int PropertyBase::m_unItemIDPool = 0;
 std::map<MString, unsigned int> PropertyBase::m_tItemID = std::map<MString, unsigned int>();
@@ -193,15 +194,23 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
 
 	switch (value.GetType())
 	{
-	case MEVariantType::EBool:
+	case MEVariantType::EUInt:
 		ShowValueBegin(strVariantName);
-		bModified |= Editbool(value.GetValue<bool>());
+		{
+			float val = value.GetValue<uint32_t>();
+			bModified |= Editfloat(val, 1.0f, 0.0f);
+			value.SetValue<uint32_t>(val);
+		}
 		ShowValueEnd();
 		break;
 
 	case MEVariantType::EInt:
 		ShowValueBegin(strVariantName);
-		bModified |= Editbool(value.GetValue<int>());
+		{
+			float val = static_cast<float>(value.GetValue<int>());
+			bModified |= Editfloat(val, 1.0f);
+			value.SetValue<int>(val);
+		}
 		ShowValueEnd();
 		break;
 

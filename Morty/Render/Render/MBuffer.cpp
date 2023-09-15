@@ -20,7 +20,10 @@ MBuffer MBuffer::CreateVertexBuffer(const char* debugName)
 	buffer.m_eUsageType = MUsageType::EVertex;
 	buffer.m_eMemoryType = MMemoryType::EDeviceLocal;
 #if MORTY_DEBUG
-	buffer.m_strDebugBufferName = debugName;
+	if (debugName)
+	{
+		buffer.m_strDebugBufferName = debugName;
+	}
 #endif
 	return buffer;
 }
@@ -42,7 +45,10 @@ MBuffer MBuffer::CreateIndexBuffer(const char* debugName)
 	buffer.m_eUsageType = MUsageType::EIndex;
 	buffer.m_eMemoryType = MMemoryType::EDeviceLocal;
 #if MORTY_DEBUG
-	buffer.m_strDebugBufferName = debugName;
+	if (debugName)
+	{
+		buffer.m_strDebugBufferName = debugName;
+	}
 #endif
 	return buffer;
 }

@@ -34,12 +34,16 @@ void MVoxelizerRenderWork::Initialize(MEngine* pEngine)
 {
 	Super::Initialize(pEngine);
 
+	InitializeDispatcher();
+
 	m_renderPass.SetDepthTestEnable(false);
 	m_renderPass.SetDepthWriteEnable(false);
 }
 
 void MVoxelizerRenderWork::Release(MEngine* pEngine)
 {
+	ReleaseDispatcher();
+
 	Super::Release(pEngine);
 }
 
@@ -95,13 +99,14 @@ void MVoxelizerRenderWork::InitializeDispatcher()
 
 	const std::shared_ptr<MShaderPropertyBlock>& params = m_pVoxelMapGenerator->GetShaderPropertyBlocks()[0];
 
-	if (auto setting = params->FindConstantParam("voxelMapSetting"))
+	if (auto m_pVoxelMapSetting = params->FindConstantParam("cbVoxelMap"))
 	{
-		auto& voxelMapSetting = setting->var.GetValue<MVariantStruct>();
-		voxelMapSetting.SetVariant("f3VoxelOrigin", Vector3(0, 0, 0));
-		voxelMapSetting.SetVariant("fResolution", float(MRenderGlobal::VOXEL_TABLE_SIZE));
-		voxelMapSetting.SetVariant("fVoxelStep", 1.0f);
-		setting->SetDirty();
+		auto& settingStruct = m_pVoxelMapSetting->var.GetValue<MVariantStruct>().GetVariant<MVariantStruct>("voxelMapSetting");
+
+		settingStruct.SetVariant("f3VoxelOrigin", Vector3(0, 0, 0));
+		settingStruct.SetVariant("fResolution", float(MRenderGlobal::VOXEL_TABLE_SIZE));
+		settingStruct.SetVariant("fVoxelStep", 1.0f);
+		m_pVoxelMapSetting->SetDirty();
 	}
 
 	auto pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
@@ -124,6 +129,12 @@ void MVoxelizerRenderWork::InitializeDispatcher()
 		pIndirectDraws->SetDirty();
 	}
 
+	if (auto pVoxelTable = params->FindStorageParam("rVoxelTable"))
+	{
+		pVoxelTable->pBuffer = &m_drawIndirectBuffer;
+		pVoxelTable->SetDirty();
+	}
+
 	std::shared_ptr<MResource> voxelDebugVS = pResourceSystem->LoadResource("Shader/Voxel/voxel_debug_view.mvs");
 	std::shared_ptr<MResource> voxelDebugPS = pResourceSystem->LoadResource("Shader/Voxel/voxel_debug_view.mps");
 	m_pVoxelDebugMaterial = pResourceSystem->CreateResource<MMaterialResource>();
@@ -131,6 +142,20 @@ void MVoxelizerRenderWork::InitializeDispatcher()
 	m_pVoxelDebugMaterial->SetMaterialType(MEMaterialType::ECustom);
 	m_pVoxelDebugMaterial->LoadVertexShader(voxelDebugVS);
 	m_pVoxelDebugMaterial->LoadPixelShader(voxelDebugPS);
+
+	{
+		const std::shared_ptr<MShaderPropertyBlock>& params = m_pVoxelDebugMaterial->GetShaderPropertyBlocks()[0];
+
+		if (auto m_pVoxelMapSetting = params->FindConstantParam("cbVoxelMap"))
+		{
+			auto& settingStruct = m_pVoxelMapSetting->var.GetValue<MVariantStruct>().GetVariant<MVariantStruct>("voxelMapSetting");
+
+			settingStruct.SetVariant("f3VoxelOrigin", Vector3(0, 0, 0));
+			settingStruct.SetVariant("fResolution", float(MRenderGlobal::VOXEL_TABLE_SIZE));
+			settingStruct.SetVariant("fVoxelStep", 1.0f);
+			m_pVoxelMapSetting->SetDirty();
+		}
+	}
 
 }
 

@@ -97,8 +97,10 @@ public:
         
         for (auto strLocalFolder : m_vSearchPath)
         {
-            if (!MFileHelper::ReadString(strLocalFolder + headerName, *pCode))
-                continue;
+            if (MFileHelper::ReadString(strLocalFolder + headerName, *pCode))
+			{
+                break;
+			}
         }
         
         if (pCode->size() == 0)

@@ -258,12 +258,13 @@ bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 bool MVulkanRenderCommand::DispatchComputeJob(MComputeDispatcher* pComputeDispatcher, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ)
 {
-	MORTY_ASSERT(pComputeDispatcher->GetComputeShader());
-
 	if (nullptr == pComputeDispatcher)
 	{
+		MORTY_ASSERT(pComputeDispatcher);
 		return true;
 	}
+
+	MORTY_ASSERT(pComputeDispatcher->GetComputeShader());
 
 	std::shared_ptr<MPipeline> pPipeline = m_pDevice->m_PipelineManager.FindOrCreateComputePipeline(pComputeDispatcher);
 	MORTY_ASSERT(pUsingPipeline = pPipeline);

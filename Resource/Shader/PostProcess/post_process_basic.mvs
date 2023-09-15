@@ -1,5 +1,5 @@
-#include "../Internal/internal_constant.hlsl"
-#include "../Internal/internal_functional.hlsl"
+#include "Internal/internal_constant.hlsl"
+#include "Internal/internal_functional.hlsl"
 
 struct VS_IN_POST
 {

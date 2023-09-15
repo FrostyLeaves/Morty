@@ -1,4 +1,4 @@
-#include "../Internal/internal_indirect_define.h"
+#include "Internal/internal_indirect_define.h"
 
 
 struct LOD
