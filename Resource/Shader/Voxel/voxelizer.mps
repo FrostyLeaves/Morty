@@ -1,6 +1,10 @@
 #include "voxelizer_header.hlsl"
 
-
+struct VS_OUT
+{
+    float4 pos : SV_POSITION;
+	float3 normal : NORMAL;
+};
 
 void PS_MAIN(VS_OUT input)
 {

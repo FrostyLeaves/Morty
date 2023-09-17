@@ -1,4 +1,4 @@
-#include "../Internal/internal_model.hlsl"
+#include "Internal/internal_model.hlsl"
 
 
 //VS    per render

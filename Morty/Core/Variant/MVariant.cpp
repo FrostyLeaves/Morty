@@ -1,6 +1,7 @@
 ﻿#include "MVariant.h"
 
 #include "MVariant_generated.h"
+#include <_types/_uint32_t.h>
 
 
 const MVariant& MVariant::operator=(const MVariant& other)

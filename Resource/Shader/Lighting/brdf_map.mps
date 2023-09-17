@@ -1,4 +1,4 @@
-#include "../Lighting/brdf_functional.hlsl"
+#include "Lighting/brdf_functional.hlsl"
 
 struct VS_OUT
 {

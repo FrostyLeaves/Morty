@@ -1,5 +1,5 @@
-#include "../Internal/internal_constant.hlsl"
-#include "../Internal/internal_model.hlsl"
+#include "Internal/internal_constant.hlsl"
+#include "Internal/internal_model.hlsl"
 
 
 struct VS_OUTPUT

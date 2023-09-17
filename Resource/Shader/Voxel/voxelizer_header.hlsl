@@ -1,26 +1,14 @@
 #ifndef _M_VOXELIER_STRUCT_HLSL_
 #define _M_VOXELIER_STRUCT_HLSL_
 
-#include "../Internal/internal_constant.hlsl"
-#include "../Internal/internal_model.hlsl"
-#include "../Deferred/pbr_material.hlsl"
-#include "../Voxel/voxel_struct_define.hlsl"
-
-struct VS_OUT
-{
-    float4 pos : SV_POSITION;
-	float3 normal : NORMAL;
-};
-
+#include "Internal/internal_constant.hlsl"
+#include "Internal/internal_model.hlsl"
+#include "Deferred/pbr_material.hlsl"
+#include "Voxel/voxel_struct_define.hlsl"
 
 struct PS_OUT
 {
-    float4 f4Color: SV_Target0;
-};
-
-struct VoxelizerOutput
-{
-    uint nVoxelCount;
+    float4 f4Color: SV_Target;
 };
 
 

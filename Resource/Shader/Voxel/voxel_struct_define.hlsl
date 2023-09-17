@@ -43,7 +43,7 @@ uint3 InstanceIdToVoxelUVW(VoxelMapSetting setting,int instanceId)
 
 uint3 WorldPositionToVoxelUVW(VoxelMapSetting setting, float3 position)
 {
-    uint3 uvw = uint3( (position - setting.f3VoxelOrigin) / fVoxelStep );
+    uint3 uvw = uint3( (position - setting.f3VoxelOrigin) / setting.fVoxelStep );
 
     return uvw;
 }
