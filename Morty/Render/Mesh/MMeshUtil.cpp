@@ -71,7 +71,7 @@ void MSphereFactory::operator()(int nLevel/* = 0*/)
 	{
 		std::vector<uint32_t> newIndices(m_vIndices.size() * 4);
 
-		for (int indexIdx = 0; indexIdx < m_vIndices.size(); indexIdx += 3)
+		for (size_t indexIdx = 0; indexIdx < m_vIndices.size(); indexIdx += 3)
 		{
 			uint32_t& v1 = m_vIndices[indexIdx + 0];
 			uint32_t& v2 = m_vIndices[indexIdx + 1];
@@ -159,6 +159,8 @@ std::unique_ptr<MIMesh> MMeshUtil::CreatePlane(MEMeshVertexType eVertexType)
 
 	pMesh->ResizeIndices(2, 3);
 	memcpy(pMesh->GetIndices(), indices, sizeof(indices));
+
+	return pMesh;
 }
 
 
@@ -279,8 +281,11 @@ std::unique_ptr<MIMesh> MMeshUtil::CreateCube(MEMeshVertexType eVertexType)
 	}
 
 	pMesh->ResizeIndices(12, 3);
-	memcpy(pMesh->GetIndices(), indices, sizeof(indices));
 
+	uint32_t* vIndices = pMesh->GetIndices();
+	memcpy(vIndices, indices, sizeof(indices));
+
+	return pMesh;
 }
 
 
@@ -299,7 +304,7 @@ std::unique_ptr<MIMesh> MMeshUtil::CreateSphere(MEMeshVertexType eVertexType)
 
 	if (eVertexType == MEMeshVertexType::Normal)
 	{
-		for (int i = 0; i < vPoints.size(); ++i)
+		for (size_t i = 0; i < vPoints.size(); ++i)
 		{
 
 			MVertex& vertex = ((MVertex*)pMesh->GetVertices())[i];
@@ -337,7 +342,7 @@ std::unique_ptr<MIMesh> MMeshUtil::CreateSphere(MEMeshVertexType eVertexType)
 	}
 	else if (eVertexType == MEMeshVertexType::Skeleton)
 	{
-		for (int i = 0; i < vPoints.size(); ++i)
+		for (size_t i = 0; i < vPoints.size(); ++i)
 		{
 
 			MVertexWithBones& vertex = ((MVertexWithBones*)pMesh->GetVertices())[i];
@@ -361,4 +366,6 @@ std::unique_ptr<MIMesh> MMeshUtil::CreateSphere(MEMeshVertexType eVertexType)
 	pMesh->ResizeIndices(vIndices.size(), 1);
 	memcpy(pMesh->GetIndices(), vIndices.data(), sizeof(uint32_t) * vIndices.size());
 
+
+	return pMesh;
 }

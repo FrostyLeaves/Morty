@@ -54,7 +54,7 @@ public:
 	virtual void Initialize(MEngine* pEngine);
 	virtual void Release();
 
-	virtual void Render(MTaskNode* pTaskNode) {}
+	virtual void Render(MTaskNode* pTaskNode) = 0;
 
 	MViewRenderTarget* GetNextRenderTarget();
 	void Present(MViewRenderTarget* pRenderTarget);
@@ -98,8 +98,8 @@ protected:
 
 private:
 
-	MEngine* m_pEngine;
+	MEngine* m_pEngine = nullptr;
 
-	uint32_t m_unWidht;
-	uint32_t m_unHeight;
+	uint32_t m_unWidht = 800;
+	uint32_t m_unHeight = 600;
 };

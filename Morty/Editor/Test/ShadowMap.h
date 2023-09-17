@@ -12,9 +12,12 @@
 #include "Resource/MMeshResource.h"
 #include "Resource/MMaterialResource.h"
 #include "Resource/MMeshResourceUtil.h"
+#include "Utility/MGlobal.h"
 
 void ADD_DIRECTIONAL_LIGHT(MEngine* pEngine, MScene* pScene)
 {
+	MORTY_UNUSED(pEngine);
+	
 	MEntity* pDirLight = pScene->CreateEntity();
 	pDirLight->SetName("DirectionalLight");
 	if (MSceneComponent* pSceneComponent = pDirLight->RegisterComponent<MSceneComponent>())
@@ -30,7 +33,6 @@ void ADD_DIRECTIONAL_LIGHT(MEngine* pEngine, MScene* pScene)
 void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
-	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
 
 	std::shared_ptr<MMeshResource> pCubeResource = pResourceSystem->CreateResource<MMeshResource>();
 	pCubeResource->Load(MMeshResourceUtil::CreateSphere());

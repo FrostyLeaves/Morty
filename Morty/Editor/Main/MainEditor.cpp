@@ -1,5 +1,6 @@
 #include "MainEditor.h"
 
+#include "Utility/MGlobal.h"
 #include "imgui.h"
 #include "ImGuizmo.h"
 #include "imgui_impl_sdl.h"
@@ -112,6 +113,7 @@ void MainEditor::SetScene(MScene* pScene)
 
 void MainEditor::OnResize(Vector2 size)
 {
+	MORTY_UNUSED(size);
 }
 
 void MainEditor::OnInput(MInputEvent* pEvent)
@@ -217,9 +219,10 @@ void MainEditor::ShowMenu()
 			if (ImGui::MenuItem("Snip shot"))
 			{
 				auto t = std::time(nullptr);
-				auto tm = *std::localtime(&t);
+				tm outtm;
+				MORTY_ASSERT(0 == localtime_s(&outtm, &t));
 				std::ostringstream oss;
-				oss << std::put_time(&tm, "%d-%m-%Y %H-%M-%S");
+				oss << std::put_time(&outtm, "%d-%m-%Y %H-%M-%S");
 			    auto str = oss.str();
 
 				if (m_pSceneTexture)

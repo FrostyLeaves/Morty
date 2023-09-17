@@ -10,6 +10,7 @@
 #include "System/MObjectSystem.h"
 #include "Render/MRenderCommand.h"
 #include "Batch/MMaterialBatchGroup.h"
+#include "Utility/MGlobal.h"
 
 void MGPUCameraFrustumCulling::Initialize(MEngine* pEngine)
 {
@@ -134,6 +135,8 @@ void MGPUCameraFrustumCulling::Culling(const std::vector<MMaterialBatchGroup*>& 
 
 			pInstanceGroup->InstanceExecute([&](const MMeshInstanceRenderProxy& instance, size_t nIdx)
 			{
+				MORTY_UNUSED(nIdx);
+				
 				const MMeshManager::MMeshData& data = pMeshManager->FindMesh(instance.pMesh);
 
 				MMergeInstanceCullData cullData;

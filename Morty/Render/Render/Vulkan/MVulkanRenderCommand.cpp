@@ -5,6 +5,7 @@
 
 #include "Material/MMaterial.h"
 #include "Material/MComputeDispatcher.h"
+#include <stdint.h>
 
 void MVulkanRenderCommand::SetViewport(const MViewportInfo& viewport)
 {
@@ -24,7 +25,9 @@ void MVulkanRenderCommand::SetScissor(const MScissorInfo& scissor)
 	float width = std::max(scissor.width, 1.0f);
 	float height = std::max(scissor.height, 1.0f);
 
-	VkRect2D scissorRect = { int32_t(scissor.x), int32_t(scissor.y), uint32_t(width), uint32_t(height) };
+	VkRect2D scissorRect = { VkOffset2D{int32_t(scissor.x), int32_t(scissor.y)},
+							 VkExtent2D{uint32_t(width), uint32_t(height)} };
+							 
 	vkCmdSetScissor(m_VkCommandBuffer, 0, 1, &scissorRect);
 }
 
@@ -81,7 +84,8 @@ void MVulkanRenderCommand::BeginRenderPass(MRenderPass* pRenderPass)
 	for (uint32_t i = 0; i < unBackNum; ++i)
 	{
 		MColor color = pRenderPass->m_vBackTextures[i].desc.cClearColor;
-		vClearValues[i].color = { color.r, color.g, color.b, color.a };
+		//-Wmissing-braces
+		vClearValues[i].color = {{ color.r, color.g, color.b, color.a }};
 	}
 
 	if (std::shared_ptr<MTexture> pTexture = pRenderPass->GetDepthTexture())
@@ -258,12 +262,13 @@ bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 bool MVulkanRenderCommand::DispatchComputeJob(MComputeDispatcher* pComputeDispatcher, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ)
 {
-	MORTY_ASSERT(pComputeDispatcher->GetComputeShader());
-
 	if (nullptr == pComputeDispatcher)
 	{
+		MORTY_ASSERT(pComputeDispatcher);
 		return true;
 	}
+
+	MORTY_ASSERT(pComputeDispatcher->GetComputeShader());
 
 	std::shared_ptr<MPipeline> pPipeline = m_pDevice->m_PipelineManager.FindOrCreateComputePipeline(pComputeDispatcher);
 	MORTY_ASSERT(pUsingPipeline = pPipeline);
@@ -550,11 +555,16 @@ void MVulkanRenderCommand::SetTextureLayout(const std::vector<MTexture*>& vTextu
 bool MVulkanRenderCommand::DownloadTexture(MTexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback)
 {
 	if (!pTexture)
+	{
 		return false;
+	}
 
 	uint32_t unValidMipIdx = unMipIdx;
 	if (unValidMipIdx >= pTexture->m_unMipmapLevel)
+	{
+		MORTY_ASSERT(pTexture->m_unMipmapLevel > 0);
 		unValidMipIdx = pTexture->m_unMipmapLevel - 1;
+	}
 
 	Vector2 size = pTexture->GetSize();
 	VkImage textureImage = pTexture->m_VkTextureImage;
@@ -562,7 +572,7 @@ bool MVulkanRenderCommand::DownloadTexture(MTexture* pTexture, const uint32_t& u
 	uint64_t unBufferWidth = size.x;
 	uint64_t unBufferHeight = size.y;
 
-	for (int i = 0; i < unValidMipIdx; ++i)
+	for (uint32_t i = 0; i < unValidMipIdx; ++i)
 	{
 		if (unBufferWidth > 1)
 			unBufferWidth /= 2;

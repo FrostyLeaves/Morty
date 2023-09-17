@@ -17,9 +17,9 @@ class MScene;
 class MEngine;
 class MMaterial;
 class MComponent;
-class MShaderConstantParam;
 class MShaderPropertyBlock;
 class MRenderMeshComponent;
+struct MShaderConstantParam;
 
 class MORTY_API MAnimationManager : public IManager
 {
@@ -33,7 +33,6 @@ public:
 
 	std::set<const MType*> RegisterComponentType() const override;
 
-	void RegisterComponent(MComponent* pComponent) override;
 	void UnregisterComponent(MComponent* pComponent) override;
 
 	void OnSceneParentChanged(MComponent* pComponent);

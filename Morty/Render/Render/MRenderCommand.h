@@ -91,7 +91,11 @@ public:
 
 
 	virtual MIRenderCommand* CreateChildCommand() { return nullptr; }
-	virtual MIRenderCommand* GetChildCommand(const size_t& nIndex) { return nullptr; }
+	virtual MIRenderCommand* GetChildCommand(const size_t& nIndex) { 
+		MORTY_UNUSED(nIndex);
+		return nullptr;
+	}
+
 	virtual void ExecuteChildCommand() {}
 
 

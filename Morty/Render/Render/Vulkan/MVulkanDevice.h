@@ -36,7 +36,7 @@ class MVulkanSecondaryRenderCommand;
 class MORTY_API MVulkanDevice : public MIDevice
 {
 public:
-    MVulkanDevice();
+    explicit MVulkanDevice();
     virtual ~MVulkanDevice();
 
 public:
@@ -66,9 +66,6 @@ public:
 
 	virtual bool GenerateFrameBuffer(MRenderPass* pRenderPass) override;
 	virtual void DestroyFrameBuffer(MRenderPass* pRenderPass) override;
-
-	virtual bool GenerateShaderProgram(MShaderProgram* pShaderProgram) override;
-	virtual void DestroyShaderProgram(MShaderProgram* pShaderProgram) override;
 
 	virtual bool RegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher) override;
 	virtual bool UnRegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher) override;
@@ -117,7 +114,7 @@ public:
 	void EndCommands(VkCommandBuffer commandBuffer);
 
 	int FindQueueGraphicsFamilies(VkPhysicalDevice device);
-	int FindQueuePresentFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
+	int FindQueuePresentFamilies(VkSurfaceKHR surface);
 	int FindQueueComputeFamilies(VkPhysicalDevice device);
 	bool MultiDrawIndirectSupport() const;
 
@@ -159,12 +156,12 @@ protected:
 	bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
 
 public:
-	VkInstance m_VkInstance;
-	VkPhysicalDevice m_VkPhysicalDevice;
+	VkInstance m_VkInstance = VK_NULL_HANDLE;
+	VkPhysicalDevice m_VkPhysicalDevice = VK_NULL_HANDLE;
 	VkPhysicalDeviceFeatures m_VkPhysicalDeviceFeatures;
-	VkPhysicalDeviceProperties m_VkPhysicalDeviceProperties;
-	VkDevice m_VkDevice;
-	VkQueue m_VkGraphicsQueue;
+	VkPhysicalDeviceProperties m_VkPhysicalDeviceProperties = {};
+	VkDevice m_VkDevice = VK_NULL_HANDLE;
+	VkQueue m_VkGraphicsQueue = VK_NULL_HANDLE;
 
 	int m_nGraphicsFamilyIndex = 0;
 	int m_nComputeFamilyIndex = 0;
@@ -180,17 +177,17 @@ public:
 	MVulkanPipelineManager m_PipelineManager;
 	MVulkanBufferPool m_BufferPool;
 
-	VkFormat m_VkDepthTextureFormat;
-    VkImageAspectFlags m_VkDepthAspectFlags;
+	VkFormat m_VkDepthTextureFormat = VK_FORMAT_UNDEFINED;
+    VkImageAspectFlags m_VkDepthAspectFlags = VK_IMAGE_LAYOUT_UNDEFINED;
 
 	std::shared_ptr<MTexture> m_ShaderDefaultTexture;
 	std::shared_ptr<MTexture> m_ShaderDefaultTextureCube;
 	std::shared_ptr<MTexture> m_ShaderDefaultTextureArray;
 
-	VkSampler m_VkLinearSampler;
-	VkSampler m_VkNearestSampler;
+	VkSampler m_VkLinearSampler = VK_NULL_HANDLE;
+	VkSampler m_VkNearestSampler = VK_NULL_HANDLE;
 
-	VkDescriptorPool m_VkDescriptorPool;
+	VkDescriptorPool m_VkDescriptorPool = VK_NULL_HANDLE;
 
 
 #if MORTY_DEBUG
@@ -204,17 +201,17 @@ public:
 		std::vector<MVulkanRenderCommand*> vCommand;
 	};
 
-	MVulkanObjectRecycleBin* m_pRecycleBin;
+	MVulkanObjectRecycleBin* m_pRecycleBin = nullptr;
 
-	MVulkanObjectRecycleBin* m_pDefaultRecycleBin;
+	MVulkanObjectRecycleBin* m_pDefaultRecycleBin = nullptr;
 	std::map<uint32_t, MVkFrameData> m_tFrameData;
 
-	uint32_t m_unFrameCount;
+	uint32_t m_unFrameCount = 0;
 
 public:
 
-	PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSet;
-	PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT;
+	PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSet = VK_NULL_HANDLE;
+	PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT = VK_NULL_HANDLE;
 };
 
 

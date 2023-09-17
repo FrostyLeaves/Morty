@@ -3,6 +3,7 @@
 #include "Object/MObject.h"
 #include "Utility/MGlobal.h"
 #include "Render/MBuffer.h"
+#include "Variant/MVariant.h"
 #include "MRenderInstanceCache.h"
 #include "Utility/MBounds.h"
 #include "Utility/MMemoryPool.h"
@@ -31,7 +32,7 @@ public:
 	void UpdateMeshInstance(const MMeshInstanceRenderProxy& proxy) override;
 
 	std::shared_ptr<MShaderPropertyBlock> GetMeshProperty() const override { return m_pShaderPropertyBlock; }
-	MMeshInstanceRenderProxy* FindMeshInstance(MMeshInstanceKey key) override { return &m_instance; }
+	MMeshInstanceRenderProxy* FindMeshInstance(MMeshInstanceKey key) override { MORTY_UNUSED(key); return &m_instance; }
 	void InstanceExecute(std::function<void(const MMeshInstanceRenderProxy&, size_t nIdx)> func) override;
 
 private:

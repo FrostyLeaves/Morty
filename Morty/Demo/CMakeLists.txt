@@ -56,3 +56,9 @@ if(MORTY_BUILD_TARGET STREQUAL "IOS")
     set_source_files_properties(${DEMO_RESOURCE_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
 endif()
+
+ADD_CUSTOM_COMMAND(TARGET Demo POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+    "${CMAKE_BINARY_DIR}/compile_commands.json"
+    "${CMAKE_SOURCE_DIR}/compile_commands.json"
+    COMMENT "Copying 'compile_commands.json'")

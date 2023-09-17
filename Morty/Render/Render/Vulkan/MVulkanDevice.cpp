@@ -8,6 +8,7 @@
 #include "Material/MShaderParam.h"
 #include "Render/MVertexBuffer.h"
 #include "Render/Vulkan/MVulkanRenderCommand.h"
+#include "Utility/MGlobal.h"
 #include "vulkan/vulkan_core.h"
 
 #ifdef max
@@ -98,24 +99,10 @@ std::vector<const char*> InstanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME,
 
 MVulkanDevice::MVulkanDevice()
 	: MIDevice()
-	, m_VkInstance(VK_NULL_HANDLE)
-	, m_VkPhysicalDevice(VK_NULL_HANDLE)
-	, m_VkPhysicalDeviceProperties({})
-	, m_VkDevice(VK_NULL_HANDLE)
-	, m_VkGraphicsQueue(VK_NULL_HANDLE)
-	, m_VkGraphCommandPool(VK_NULL_HANDLE)
-	, m_pRecycleBin(nullptr)
-	, m_PipelineManager(this)
 	, m_ShaderCompiler(this)
     , m_ShaderReflector(this)
+	, m_PipelineManager(this)
 	, m_BufferPool(this)
-	, m_VkDepthTextureFormat(VK_FORMAT_D32_SFLOAT_S8_UINT)
-    , m_VkDepthAspectFlags(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-	, m_VkLinearSampler(VK_NULL_HANDLE)
-	, m_VkNearestSampler(VK_NULL_HANDLE)
-	, m_VkDescriptorPool(VK_NULL_HANDLE)
-	, m_unFrameCount(0)
-	, vkSetDebugUtilsObjectNameEXT()
 {
 
 }
@@ -232,7 +219,7 @@ int MVulkanDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags pro
 	VkPhysicalDeviceMemoryProperties memProperties;
 	vkGetPhysicalDeviceMemoryProperties(m_VkPhysicalDevice, &memProperties);
 
-	for (int i = 0; i < memProperties.memoryTypeCount; i++) {
+	for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
 		if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
 			return i;
 		}
@@ -505,6 +492,8 @@ bool MVulkanDevice::CheckVersion(int major, int minor, int patch)
 
 VkBool32 VKAPI_PTR OutputDebugUtilsMessenger(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
+	MORTY_UNUSED(messageType);
+	
 	if (VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT == messageSeverity)
 	{
 		MVulkanDevice* pDevice = static_cast<MVulkanDevice*>(pUserData);
@@ -633,8 +622,8 @@ void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, c
 	VkDeviceSize unBufferSize = static_cast<uint64_t>(pBuffer->GetSize());
 
 	void* pMapMemory = nullptr;
-	VkBuffer vkBuffer;
-	VkDeviceMemory vkDeviceMemory;
+	VkBuffer vkBuffer = VK_NULL_HANDLE;
+	VkDeviceMemory vkDeviceMemory = VK_NULL_HANDLE;
 
 	VkBufferUsageFlags vkBufferUsageFlags = GetBufferUsageFlags(pBuffer);
 	VkMemoryPropertyFlags vkMemoryFlags = GetMemoryFlags(pBuffer);
@@ -836,7 +825,7 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MByte* pData)
 		}
 
 		pTexture->m_VkTextureImage = textureImage;
-		pTexture->m_unMipmapLevel = unMipmap;
+		pTexture->m_unMipmapLevel = static_cast<uint32_t>(unMipmap);
 		pTexture->m_VkTextureImageMemory = textureImageMemory;
 		pTexture->m_VkTextureFormat = format;
 		pTexture->m_VkImageLayout = GetImageLayout(pTexture);
@@ -1255,9 +1244,9 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 	}
 
 	std::vector<VkSubpassDependency> vSubpassDependencies;
-	for (uint32_t nSubpassIdx = 1; nSubpassIdx < vSubpass.size(); ++nSubpassIdx)
+	for (size_t nSubpassIdx = 1; nSubpassIdx < vSubpass.size(); ++nSubpassIdx)
 	{
-		for (int nDependantIdx = 0; nDependantIdx < nSubpassIdx; ++nDependantIdx)
+		for (size_t nDependantIdx = 0; nDependantIdx < nSubpassIdx; ++nDependantIdx)
 		{
 			vSubpassDependencies.push_back({});
 			VkSubpassDependency& depend = vSubpassDependencies.back();
@@ -1324,7 +1313,6 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 {
 	int fFrameBufferWidth = 0, fFrameBufferHeight = 0;
 
-	pRenderPass->m_VkFrameBuffer;
 	std::vector<VkImageView> vAttachmentViews;
 
 	uint32_t unBackNum = pRenderPass->m_vBackTextures.size();
@@ -1448,18 +1436,6 @@ void MVulkanDevice::DestroyFrameBuffer(MRenderPass* pRenderPass)
 			backTexture.m_VkImageView = VK_NULL_HANDLE;
 		}
 	}
-}
-
-
-bool MVulkanDevice::GenerateShaderProgram(MShaderProgram* pShaderProgram)
-{
-	m_PipelineManager.GenerateShaderProgram(pShaderProgram);
-	return true;
-}
-
-void MVulkanDevice::DestroyShaderProgram(MShaderProgram* pShaderProgram)
-{
-	m_PipelineManager.DestroyShaderProgram(pShaderProgram);
 }
 
 bool MVulkanDevice::RegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher)
@@ -1949,7 +1925,7 @@ void MVulkanDevice::CreateImage(const uint32_t& unWidth, const uint32_t& unHeigh
 	allocInfo.allocationSize = memRequirements.size;
 	allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
-	if (MGlobal::M_INVALID_INDEX == allocInfo.memoryTypeIndex)
+	if (MGlobal::M_INVALID_UINDEX == allocInfo.memoryTypeIndex)
 	{
 		MORTY_ASSERT(false);
 	}
@@ -2035,7 +2011,7 @@ bool MVulkanDevice::GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
 	allocInfo.allocationSize = memRequirements.size;
 	allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
-	if (MGlobal::M_INVALID_INDEX == allocInfo.memoryTypeIndex)
+	if (MGlobal::M_INVALID_UINDEX == allocInfo.memoryTypeIndex)
 	{
 		GetEngine()->GetLogger()->Error("memoryTypeIndex invalid. file: {}, line: {}", __FILE__, __LINE__);
 		vkDestroyBuffer(m_VkDevice, buffer, nullptr);
@@ -2062,6 +2038,8 @@ void MVulkanDevice::DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory
 
 MVulkanSecondaryRenderCommand* MVulkanDevice::CreateChildCommand(MVulkanPrimaryRenderCommand* pParentCommand)
 {
+	MORTY_UNUSED(pParentCommand);
+
 	MVulkanSecondaryRenderCommand* pSecondaryCommand = new MVulkanSecondaryRenderCommand();
 	pSecondaryCommand->m_pDevice = this;
 
@@ -2153,7 +2131,8 @@ void MVulkanDevice::EndCommands(VkCommandBuffer commandBuffer)
 
 	vkQueueSubmit(m_VkGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 
-	VkResult result = vkQueueWaitIdle(m_VkGraphicsQueue);	//��ͣӦ�ó���ֱ������ύ�������е����й���
+	VkResult result = vkQueueWaitIdle(m_VkGraphicsQueue);
+	MORTY_ASSERT(result == VkResult::VK_SUCCESS);
 
 	vkFreeCommandBuffers(m_VkDevice, m_VkGraphCommandPool, 1, &commandBuffer);
 }
@@ -2447,7 +2426,7 @@ int MVulkanDevice::FindQueueGraphicsFamilies(VkPhysicalDevice device)
 	std::vector<VkQueueFamilyProperties> vQueueProperties(unQueueFamilyCount);
 	vkGetPhysicalDeviceQueueFamilyProperties(device, &unQueueFamilyCount, vQueueProperties.data());
 
-	for (int i = 0; i < unQueueFamilyCount; ++i)
+	for (size_t i = 0; i < unQueueFamilyCount; ++i)
 	{
 		if (vQueueProperties[i].queueCount > 0 && vQueueProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 			graphicsFamily = i;
@@ -2459,8 +2438,9 @@ int MVulkanDevice::FindQueueGraphicsFamilies(VkPhysicalDevice device)
 	return graphicsFamily;
 }
 
-int MVulkanDevice::FindQueuePresentFamilies(VkPhysicalDevice device, VkSurfaceKHR surface)
+int MVulkanDevice::FindQueuePresentFamilies(VkSurfaceKHR surface)
 {
+
 	int nPresentFamily = -1;
 
 	uint32_t unQueueFamilyCount = 0;
@@ -2496,7 +2476,7 @@ int MVulkanDevice::FindQueueComputeFamilies(VkPhysicalDevice device)
 	std::vector<VkQueueFamilyProperties> vQueueProperties(unQueueFamilyCount);
 	vkGetPhysicalDeviceQueueFamilyProperties(device, &unQueueFamilyCount, vQueueProperties.data());
 
-	for (int i = 0; i < unQueueFamilyCount; ++i)
+	for (size_t i = 0; i < unQueueFamilyCount; ++i)
 	{
 		if (vQueueProperties[i].queueCount > 0 && vQueueProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
 			graphicsFamily = i;

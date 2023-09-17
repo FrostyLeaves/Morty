@@ -39,7 +39,7 @@ MShaderPropertyBlock::MShaderPropertyBlock(const MShaderPropertyBlock& other)
 	m_vStorages.resize(m_vStorages.size());
 
 	for (uint32_t i = 0; i < m_vParams.size(); ++i)
-		m_vParams[i] = std::make_shared<MShaderConstantParam>(*m_vParams[i], 0);
+		m_vParams[i] = std::make_shared<MShaderConstantParam>(*m_vParams[i]);
 
 	for (uint32_t i = 0; i < m_vTextures.size(); ++i)
 		m_vTextures[i] = std::make_shared<MShaderTextureParam>(*m_vTextures[i]);
@@ -146,7 +146,7 @@ std::shared_ptr<MShaderPropertyBlock> MShaderPropertyBlock::Clone() const
 	pPropertyBlock->m_vStorages.resize(m_vStorages.size());
 
 	for (uint32_t i = 0; i < m_vParams.size(); ++i)
-		pPropertyBlock->m_vParams[i] = std::make_shared<MShaderConstantParam>(*m_vParams[i], 0);
+		pPropertyBlock->m_vParams[i] = std::make_shared<MShaderConstantParam>(*m_vParams[i]);
 
 	for (uint32_t i = 0; i < m_vTextures.size(); ++i)
 		pPropertyBlock->m_vTextures[i] = std::make_shared<MShaderTextureParam>(*m_vTextures[i]);

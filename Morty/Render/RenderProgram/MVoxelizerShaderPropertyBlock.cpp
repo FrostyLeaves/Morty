@@ -18,6 +18,7 @@
 
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
+#include "Variant/MVariant.h"
 
 
 void MVoxelizerShaderPropertyBlock::Initialize(MEngine* pEngine)
@@ -69,7 +70,7 @@ void MVoxelizerShaderPropertyBlock::BindMaterial(const std::shared_ptr<MMaterial
 	MForwardRenderShaderPropertyBlock::BindMaterial(pMaterial);
 
 	MORTY_ASSERT(m_pRWVoxelTableParam = m_pShaderPropertyBlock->FindStorageParam("rwVoxelTable"));
-	MORTY_ASSERT(m_pVoxelMapSetting = m_pShaderPropertyBlock->FindConstantParam("voxelMapSetting"));
+	MORTY_ASSERT(m_pVoxelMapSetting = m_pShaderPropertyBlock->FindConstantParam("cbVoxelMap"));
 
 	m_pRWVoxelTableParam->pBuffer = &m_rwVoxelTableBuffer;
 	m_pRWVoxelTableParam->SetDirty();
@@ -83,7 +84,7 @@ void MVoxelizerShaderPropertyBlock::SetVoxelMapSetting(const MVoxelMapSetting se
 		return;
 	}
 
-	auto& settingStruct = m_pVoxelMapSetting->var.GetValue<MVariantStruct>();
+	auto& settingStruct = m_pVoxelMapSetting->var.GetValue<MVariantStruct>().GetVariant<MVariantStruct>("voxelMapSetting");
 
 	settingStruct.SetVariant("f3VoxelOrigin", setting.f3VoxelOrigin);
 	settingStruct.SetVariant("fResolution", setting.fResolution);

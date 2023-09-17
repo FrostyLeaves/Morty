@@ -36,8 +36,8 @@ public:
 	};
 
 public:
-	MMultiLevelMesh();
-	virtual ~MMultiLevelMesh() {}
+	MMultiLevelMesh() = default;
+	~MMultiLevelMesh() = default;
 
 	void BindMesh(const MIMesh* pMesh);
 	MIMesh* GetLevel(uint32_t unLevel);
@@ -67,9 +67,9 @@ public:
 	std::vector<uint32_t> m_vIndexToMap;
 	std::vector<int> m_vMap;
 
-	MByte* m_pSortVertices;
+	MByte* m_pSortVertices = nullptr;
 
-	const MIMesh* m_pMesh;
+	const MIMesh* m_pMesh = nullptr;
 
-	std::vector<MIMesh*> m_vMeshesCache;
+	std::array<MIMesh*, MRenderGlobal::MESH_LOD_LEVEL_RANGE> m_vMeshesCache;
 };

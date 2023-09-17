@@ -31,7 +31,6 @@ void MForwardRenderWork::Render(MRenderInfo& info, const std::vector<IRenderable
 {
 	MViewport* pViewport = info.pViewport;
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
-	MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
 
 	pCommand->BeginRenderPass(&m_renderPass);
 

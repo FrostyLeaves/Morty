@@ -19,8 +19,8 @@ public:
 	virtual void Release() {};
 
 
-	virtual void EngineTick(const float& fDelta) {}
-	virtual void SceneTick(MScene* pScene, const float& fDelta) {}
+	virtual void EngineTick(const float& fDelta) { MORTY_UNUSED (fDelta); }
+	virtual void SceneTick(MScene* pScene, const float& fDelta) {  MORTY_UNUSED(pScene, fDelta); }
 
 
 	void SetEngine(MEngine* pEngine);

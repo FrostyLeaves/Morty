@@ -157,7 +157,7 @@ void MEntity::Deserialize(const void* pBufferPointer)
 
 	const flatbuffers::Vector<flatbuffers::Offset<mfbs::AnyComponent>>& vfbcomponents = *fbEntity->components();
 
-	for (int i = 0; i < vfbcomponents.size(); ++i)
+	for (size_t i = 0; i < vfbcomponents.size(); ++i)
 	{
 		auto fbcomponent = vfbcomponents.Get(i);
 

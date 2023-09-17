@@ -14,7 +14,7 @@ class MEngine;
 class MTaskNode;
 class MMaterial;
 class MComponent;
-class MShaderConstantParam;
+struct MShaderConstantParam;
 class MRenderMeshComponent;
 
 

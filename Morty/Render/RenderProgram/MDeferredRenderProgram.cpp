@@ -51,6 +51,7 @@
 #include "MVoxelizerShaderPropertyBlock.h"
 
 #include "Culling/MBoundingBoxCulling.h"
+#include "Utility/MGlobal.h"
 
 MORTY_CLASS_IMPLEMENT(MDeferredRenderProgram, MIRenderProgram)
 
@@ -63,14 +64,14 @@ void MDeferredRenderProgram::Render(MIRenderCommand* pPrimaryCommand)
 		return;
 
 	RenderSetup(pPrimaryCommand);
-	RenderVoxelizer(pPrimaryCommand);
-	RenderShadow(pPrimaryCommand);
-	RenderGBuffer(pPrimaryCommand);
-	RenderLightning(pPrimaryCommand);
-	RenderForward(pPrimaryCommand);
-	RenderTransparent(pPrimaryCommand);
-	RenderPostProcess(pPrimaryCommand);
-	RenderDebug(pPrimaryCommand);
+	RenderVoxelizer();
+	RenderShadow();
+	RenderGBuffer();
+	RenderLightning();
+	RenderForward();
+	RenderTransparent();
+	RenderPostProcess();
+	RenderDebug();
 }
 
 void MDeferredRenderProgram::RenderSetup(MIRenderCommand* pPrimaryCommand)
@@ -333,7 +334,7 @@ void MDeferredRenderProgram::UpdateFrameParams(MRenderInfo& info)
 	});
 }
 
-void MDeferredRenderProgram::RenderGBuffer(MIRenderCommand* pPrimaryCommand)
+void MDeferredRenderProgram::RenderGBuffer()
 {
 	if (!GetRenderWork<MGBufferRenderWork>())
 	{
@@ -365,7 +366,7 @@ void MDeferredRenderProgram::RenderGBuffer(MIRenderCommand* pPrimaryCommand)
 	});
 }
 
-void MDeferredRenderProgram::RenderLightning(MIRenderCommand* pPrimaryCommand)
+void MDeferredRenderProgram::RenderLightning()
 {
 	MORTY_ASSERT(GetRenderWork<MDeferredLightingRenderWork>());
 
@@ -376,7 +377,7 @@ void MDeferredRenderProgram::RenderLightning(MIRenderCommand* pPrimaryCommand)
 	GetRenderWork<MDeferredLightingRenderWork>()->Render(m_renderInfo);
 }
 
-void MDeferredRenderProgram::RenderVoxelizer(MIRenderCommand* pPrimaryCommand)
+void MDeferredRenderProgram::RenderVoxelizer()
 {
 	MORTY_ASSERT(GetRenderWork<MVoxelizerRenderWork>());
 	
@@ -401,7 +402,7 @@ void MDeferredRenderProgram::RenderVoxelizer(MIRenderCommand* pPrimaryCommand)
 	});
 }
 
-void MDeferredRenderProgram::RenderShadow(MIRenderCommand* pPrimaryCommand)
+void MDeferredRenderProgram::RenderShadow()
 {
 	MORTY_ASSERT(GetRenderWork<MShadowMapRenderWork>());
 	
@@ -426,7 +427,7 @@ void MDeferredRenderProgram::RenderShadow(MIRenderCommand* pPrimaryCommand)
 
 }
 
-void MDeferredRenderProgram::RenderForward(MIRenderCommand* pPrimaryCommand)
+void MDeferredRenderProgram::RenderForward()
 {
 	if (!GetRenderWork<MForwardRenderWork>())
 	{
@@ -463,7 +464,7 @@ void MDeferredRenderProgram::RenderForward(MIRenderCommand* pPrimaryCommand)
 		});
 }
 
-void MDeferredRenderProgram::RenderTransparent(MIRenderCommand* pPrimaryCommand)
+void MDeferredRenderProgram::RenderTransparent()
 {
 	if (GetRenderWork<MTransparentRenderWork>())
 	{
@@ -471,13 +472,13 @@ void MDeferredRenderProgram::RenderTransparent(MIRenderCommand* pPrimaryCommand)
 	}
 }
 
-void MDeferredRenderProgram::RenderPostProcess(MIRenderCommand* pPrimaryCommand)
+void MDeferredRenderProgram::RenderPostProcess()
 {
 	MORTY_ASSERT(GetRenderWork<MPostProcessRenderWork>());
     GetRenderWork<MPostProcessRenderWork>()->Render(m_renderInfo);
 }
 
-void MDeferredRenderProgram::RenderDebug(MIRenderCommand* pPrimaryCommand)
+void MDeferredRenderProgram::RenderDebug()
 {
 	MORTY_ASSERT(GetRenderWork<MDebugRenderWork>());
 

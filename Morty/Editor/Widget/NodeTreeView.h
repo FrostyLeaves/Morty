@@ -18,8 +18,6 @@ public:
 	void Initialize(MainEditor* pMainEditor) override;
 	void Release() override;
 
-	void Input(MInputEvent* pEvent) override;
-
 protected:
 
 	void RenderNode(MEntity* pNode);

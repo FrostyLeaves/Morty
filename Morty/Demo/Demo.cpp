@@ -44,7 +44,7 @@ int main()
 
 	//create window.
 	SDLRenderView renderView;
-	renderView.Initialize(&engine, "Morty");
+	renderView.Initialize(&engine);
 
 	//attach to window surface.
 	renderView.BindSDLWindow();

@@ -219,6 +219,8 @@ Matrix3 Matrix3::operator/(const float& value) const
 
 const mfbs::Matrix3* Matrix3::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
+	MORTY_UNUSED(fbb);
+
 	return reinterpret_cast<const mfbs::Matrix3*>(this);
 }
 
@@ -425,6 +427,8 @@ Vector3 Matrix4::GetScale() const
 
 const mfbs::Matrix4* Matrix4::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
+	MORTY_UNUSED(fbb);
+	
 	return reinterpret_cast<const mfbs::Matrix4*>(this);
 }
 

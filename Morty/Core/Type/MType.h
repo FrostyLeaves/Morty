@@ -29,7 +29,7 @@ typedef CurrClass Class;\
 
 #define M_TYPE_CREATE_DECL(Class) \
 public: \
-	static MTypeClass* New() { return new Class(); } \
+	static MTypeClass* New() { return static_cast<MTypeClass*>(new Class()); } \
 	static MTypeCreator<Class> s_##Class##Creator; \
 
 

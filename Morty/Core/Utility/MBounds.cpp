@@ -428,9 +428,6 @@ void MBoundsSphere::SetPoints(const MByte* vPoints, const uint32_t& unArrayLengt
 	else
 		m_fRadius = v3Length.z * 0.5f;
 
-	float fLength = 0.0f;
-	Vector3 direct;
-
 	vPointer = vPoints;
 	for (uint32_t i = 0; i < unArrayLength; ++i, vPointer += unDataSize)
 	{

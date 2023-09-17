@@ -47,7 +47,7 @@ void MStorageBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterial>
 
 void MStorageBatchGroup::Release(MEngine* pEngine)
 {
-	const MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
+	const MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
 	m_pShaderPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
 	m_pShaderPropertyBlock = nullptr;
 	m_pTransformParam = nullptr;

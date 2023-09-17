@@ -173,20 +173,20 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 		}
 	}
 
-	for (int i = 0; i < m_vMaterials.size(); ++i)
+	for (size_t i = 0; i < m_vMaterials.size(); ++i)
 	{
 		if (m_vMaterials[i])
 		{
-			MString strMaterialFileName = strPath + "material_" + MStringHelper::ToString(i);
+			MString strMaterialFileName = strPath + "material_" + MStringUtil::ToString(i);
 			pResourceSystem->MoveTo(m_vMaterials[i], strMaterialFileName + ".mat");
 			pResourceSystem->SaveResource(m_vMaterials[i]);
 		}
 	}
 
-	for (int i = 0; i < m_vMeshes.size(); ++i)
+	for (size_t i = 0; i < m_vMeshes.size(); ++i)
 	{
 		std::shared_ptr<MMeshResource> pMeshResource = m_vMeshes[i].second;
-		MString strMeshFileName = strPath + m_vMeshes[i].first + "_" + MStringHelper::ToString(i);
+		MString strMeshFileName = strPath + m_vMeshes[i].first + "_" + MStringUtil::ToString(i);
 
 		pResourceSystem->MoveTo(pMeshResource, strMeshFileName + ".mesh");
 		pResourceSystem->SaveResource(pMeshResource);
@@ -203,7 +203,7 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 
 
 	auto vAllEntity = m_pScene->GetAllEntity();
-	std::shared_ptr<MResource> pNodeResource = pEntitySystem->PackEntity(m_pScene, vAllEntity);
+	std::shared_ptr<MResource> pNodeResource = pEntitySystem->PackEntity(vAllEntity);
 
 	pResourceSystem->MoveTo(pNodeResource, strPath + convertInfo.strOutputName + ".entity");
 	pResourceSystem->SaveResource(pNodeResource);
@@ -215,7 +215,6 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 
 bool MModelConverter::Load(const MString& strResourcePath)
 {
-	MObjectSystem* pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
 	std::vector<MString> vSearchPath = pResourceSystem->GetSearchPath();
@@ -277,7 +276,6 @@ bool MModelConverter::Load(const MString& strResourcePath)
 void MModelConverter::ProcessNode(aiNode* pNode, const aiScene *pScene)
 {
 	MEntitySystem* pEntitySystem = GetEngine()->FindSystem<MEntitySystem>();
-	MObjectSystem* pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
 	for (uint32_t i = 0; i < pNode->mNumMeshes; ++i)
@@ -291,17 +289,17 @@ void MModelConverter::ProcessNode(aiNode* pNode, const aiScene *pScene)
 		{
 			MSkeleton* pSkeleton = m_pSkeletonResource->GetSkeleton();
 			MMesh<MVertexWithBones>* pMBonesMesh = new MMesh<MVertexWithBones>();
-			ProcessMeshVertices(pChildMesh, pScene, pMBonesMesh);
-			ProcessMeshIndices(pChildMesh, pScene, pMBonesMesh);
-			BindVertexAndBones(pSkeleton, pChildMesh, pScene, pMBonesMesh);
+			ProcessMeshVertices(pChildMesh, pMBonesMesh);
+			ProcessMeshIndices(pChildMesh, pMBonesMesh);
+			BindVertexAndBones(pSkeleton, pChildMesh, pMBonesMesh);
 			pMeshResourceData->pMesh.reset(pMBonesMesh);
 			pMeshResourceData->eVertexType = MEMeshVertexType::Skeleton;
 		}
 		else
 		{
 			MMesh<MVertex>* pMStaticMesh = new MMesh<MVertex>();
-			ProcessMeshVertices(pChildMesh, pScene, pMStaticMesh);
-			ProcessMeshIndices(pChildMesh, pScene, pMStaticMesh);
+			ProcessMeshVertices(pChildMesh, pMStaticMesh);
+			ProcessMeshIndices(pChildMesh, pMStaticMesh);
 			pMeshResourceData->pMesh.reset(pMStaticMesh);
 			pMeshResourceData->eVertexType = MEMeshVertexType::Normal;
 		}
@@ -317,7 +315,6 @@ void MModelConverter::ProcessNode(aiNode* pNode, const aiScene *pScene)
 		MEntity* pChildEntity = m_pScene->CreateEntity();
 		pChildEntity->SetName(pChildMesh->mName.C_Str());
 		
-		MComponent* pSceneComponent = m_pScene->AddComponent<MSceneComponent>(pChildEntity);
 		MRenderMeshComponent* pMeshComponent = m_pScene->AddComponent<MRenderMeshComponent>(pChildEntity);
 		pMeshComponent->Load(pChildMeshResource);
 		pMeshComponent->SetMaterial(GetMaterial(pScene, pChildMesh->mMaterialIndex));
@@ -332,7 +329,7 @@ void MModelConverter::ProcessNode(aiNode* pNode, const aiScene *pScene)
 	}
 }
 
-void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertex>* pMMesh)
+void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, MMesh<MVertex>* pMMesh)
 {
 	pMMesh->CreateVertices(pMesh->mNumVertices);
 	for (uint32_t i = 0; i < pMesh->mNumVertices; ++i)
@@ -376,7 +373,7 @@ void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, 
 	}
 }
 
-void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh)
+void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, MMesh<MVertexWithBones>* pMMesh)
 {
 	pMMesh->CreateVertices(pMesh->mNumVertices);
 	for (uint32_t i = 0; i < pMesh->mNumVertices; ++i)
@@ -417,7 +414,7 @@ void MModelConverter::ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, 
 	}
 }
 
-void MModelConverter::ProcessMeshIndices(aiMesh* pMesh, const aiScene* pScene, MIMesh* pMMesh)
+void MModelConverter::ProcessMeshIndices(aiMesh* pMesh, MIMesh* pMMesh)
 {
 	// TODO 写死3不安全，多个顶点组成一个面的模型会有危险。
 	pMMesh->CreateIndices(pMesh->mNumFaces, 3);
@@ -433,7 +430,7 @@ void MModelConverter::ProcessMeshIndices(aiMesh* pMesh, const aiScene* pScene, M
 	}
 }
 
-void MModelConverter::BindVertexAndBones(MSkeleton* pSkeleton, aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh)
+void MModelConverter::BindVertexAndBones(MSkeleton* pSkeleton, aiMesh* pMesh, MMesh<MVertexWithBones>* pMMesh)
 {
 
 	for (uint32_t i = 0; i < pMesh->mNumBones; ++i)
@@ -555,8 +552,6 @@ void MModelConverter::BindBones(MSkeleton* pSkeleton, aiNode* pNode, const aiSce
 
 void MModelConverter::ProcessLights(const aiScene* pScene)
 {
-	MObjectSystem* pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
-
 	for (uint32_t i = 0; i < pScene->mNumLights; ++i)
 	{
 		aiLight* pLight = pScene->mLights[i];
@@ -801,7 +796,7 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		float fShininess = 32.0f;
 
 		static const aiString strAmbient("$clr.ambient"), strDiffuse("$clr.diffuse"), strSpecular("$clr.specular"), strShininess("$mat.shininess");
-		for (int n = 0; n < pAiMaterial->mNumProperties; ++n)
+		for (size_t n = 0; n < pAiMaterial->mNumProperties; ++n)
 		{
 			aiMaterialProperty* prop = pAiMaterial->mProperties[n];
 			if (prop->mKey == strAmbient)

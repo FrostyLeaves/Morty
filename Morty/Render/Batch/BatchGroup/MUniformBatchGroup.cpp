@@ -9,6 +9,7 @@
 #include "Component/MSceneComponent.h"
 #include "Component/MRenderMeshComponent.h"
 #include "Render/MVertex.h"
+#include "Utility/MGlobal.h"
 
 
 void MUniformBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pMaterial)
@@ -52,7 +53,7 @@ void MUniformBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterial>
 
 void MUniformBatchGroup::Release(MEngine* pEngine)
 {
-	const MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
+	const MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
 	m_pShaderPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
 	m_pShaderPropertyBlock = nullptr;
 	m_pTransformParam = nullptr;
@@ -96,7 +97,7 @@ void MUniformBatchGroup::AddMeshInstance(const MMeshInstanceRenderProxy& proxy)
 		return;
 	}
 
-	const size_t nCurrentIdx = m_tInstanceCache.AddItem(key, {});
+	m_tInstanceCache.AddItem(key, {});
 	++m_nCurrentInstanceNum;
 	
 

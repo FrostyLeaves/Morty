@@ -15,7 +15,6 @@
 #include "Math/Quaternion.h"
 #include "Utility/MTransform.h"
 #include "MIAnimation.h"
-#include "Utility/MSerializer.h"
 
 #include <vector>
 

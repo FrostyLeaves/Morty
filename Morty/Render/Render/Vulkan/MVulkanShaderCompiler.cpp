@@ -1,4 +1,5 @@
 #include "Render/Vulkan/MVulkanShaderCompiler.h"
+#include "Utility/MString.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
@@ -35,6 +36,8 @@ struct MVulkanIncludeHandler : public IDxcIncludeHandler
 	{
 
 	}
+
+	virtual ~MVulkanIncludeHandler() = default;
 
 	void SetSystemSearchPath (const std::vector<std::wstring>& paths)
 	{
@@ -97,8 +100,10 @@ public:
         
         for (auto strLocalFolder : m_vSearchPath)
         {
-            if (!MFileHelper::ReadString(strLocalFolder + headerName, *pCode))
-                continue;
+            if (MFileHelper::ReadString(strLocalFolder + headerName, *pCode))
+			{
+                break;
+			}
         }
         
         if (pCode->size() == 0)
@@ -153,7 +158,7 @@ bool MVulkanShaderCompiler::CompileShader(const MString& strShaderPath, const ME
 bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv)
 {
 	MString strShaderPath = MFileHelper::FormatPath(_strShaderPath);
-	//MStringHelper::Replace(strShaderPath, "/", "\\");
+	//MStringUtil::Replace(strShaderPath, "/", "\\");
 
 	IDxcUtils* pUtils = nullptr;
 	DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&pUtils));
@@ -168,15 +173,13 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 	pUtils->CreateDefaultIncludeHandler(&pDefaultIncludeHandler);
 
 
-	std::wstring_convert<std::codecvt_utf8<wchar_t>> stow;
-
 	std::shared_ptr<MVulkanIncludeHandler> pIncludeHandler = std::make_shared<MVulkanIncludeHandler>(pUtils, pDefaultIncludeHandler);
 	pIncludeHandler->SetSystemSearchPath({
-		stow.from_bytes(MORTY_RESOURCE_PATH ) + L"/Shader/"
+		MStringUtil::ConvertToWString( MORTY_RESOURCE_PATH ) + L"/Shader/"
 	});
 
 
-	std::wstring wstrShaderPath = stow.from_bytes(strShaderPath);
+	std::wstring wstrShaderPath = MStringUtil::ConvertToWString(strShaderPath);
 
 	std::vector<std::wstring> vCompArgs;
 	vCompArgs.push_back(wstrShaderPath);
@@ -189,25 +192,25 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 		for (const std::pair<MString, MString>& m : macro.s_vGlobalMacroParams)
 		{
 			if(m.second.empty())
-				vCompArgs.push_back(std::wstring(L"-D ") + stow.from_bytes(m.first));
+				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first));
 			else
-				vCompArgs.push_back(std::wstring(L"-D ") + stow.from_bytes(m.first + "=" + m.second));
+				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first + "=" + m.second));
 		}
 
 		for (const std::pair<MString, MString>& m : macro.m_vMortyMacroParams)
 		{
 			if (m.second.empty())
-				vCompArgs.push_back(std::wstring(L"-D ") + stow.from_bytes(m.first));
+				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first));
 			else
-				vCompArgs.push_back(std::wstring(L"-D ") + stow.from_bytes(m.first + "=" + m.second));
+				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first + "=" + m.second));
 		}
 
 		for (const std::pair<MString, MString>& m : macro.m_vMacroParams)
 		{
 			if (m.second.empty())
-				vCompArgs.push_back(std::wstring(L"-D ") + stow.from_bytes(m.first));
+				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first));
 			else
-				vCompArgs.push_back(std::wstring(L"-D ") + stow.from_bytes(m.first + "=" + m.second));
+				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first + "=" + m.second));
 		}
 	}
 

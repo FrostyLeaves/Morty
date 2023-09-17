@@ -38,7 +38,7 @@ public:
     bool Initialize();
 
 
-	std::tuple<VkFormat, uint32_t> GetVertexInputDescription(const spirv_cross::Compiler& compiler, const std::string& name, spirv_cross::SPIRType type) const;
+	std::tuple<VkFormat, uint32_t> GetVertexInputDescription(const std::string& name, spirv_cross::SPIRType type) const;
 
 	void GetVertexInputState(const spirv_cross::Compiler& compiler, MVertexShaderBuffer* pShaderBuffer) const;
 

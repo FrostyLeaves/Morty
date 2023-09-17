@@ -20,7 +20,7 @@ MString MTaskNodeOutput::GetStringID() const
 	if (!GetTaskNode())
 		return "";
 
-	return GetTaskNode()->GetNodeName() + "_Output_" + MStringHelper::ToString(m_unIndex);
+	return GetTaskNode()->GetNodeName() + "_Output_" + MStringUtil::ToString(m_unIndex);
 }
 
 void MTaskNodeOutput::LinkTo(MTaskNodeInput* pInput)

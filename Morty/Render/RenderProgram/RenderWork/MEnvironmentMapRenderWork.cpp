@@ -79,8 +79,6 @@ std::shared_ptr<MResource> MEnvironmentMapRenderWork::GetDiffuseOutputTexture() 
 
 void MEnvironmentMapRenderWork::RenderDiffuse(MIRenderCommand* pCommand, MSkyBoxComponent* pSkyBoxComponent)
 {
-	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-	MIDevice* pRenderDevice = pRenderSystem->GetDevice();
 
 	std::shared_ptr<MResource> pSkyBoxTexture = pSkyBoxComponent->GetSkyBoxResource();
 	if (m_DiffuseMaterial)
@@ -115,9 +113,6 @@ void MEnvironmentMapRenderWork::RenderDiffuse(MIRenderCommand* pCommand, MSkyBox
 
 void MEnvironmentMapRenderWork::RenderSpecular(MIRenderCommand* pCommand, MSkyBoxComponent* pSkyBoxComponent)
 {
-	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-	MIDevice* pRenderDevice = pRenderSystem->GetDevice();
-
 	std::shared_ptr<MResource> pSkyBoxTexture = pSkyBoxComponent->GetSkyBoxResource();
 
 	std::shared_ptr<MTexture> pSpecularTexture = m_SpecularEnvironmentMap.GetResource<MTextureResource>()->GetTextureTemplate();
@@ -188,7 +183,6 @@ void MEnvironmentMapRenderWork::ReleaseResource()
 
 void MEnvironmentMapRenderWork::InitializeMaterial()
 {
-	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
 	Matrix4 m4Projection = MRenderSystem::MatrixPerspectiveFovLH(45.0f, 1.0f, 0.1f, 100.0f);
@@ -234,7 +228,7 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 	m_vSpecularMaterial.resize(SpecularMipmapCount);
 	for (uint32_t nMipmap = 0; nMipmap < SpecularMipmapCount; ++nMipmap)
 	{
-		m_vSpecularMaterial[nMipmap] = pResourceSystem->CreateResource<MMaterial>(MString("Specular CubeMap Material_") + MStringHelper::ToString(nMipmap));
+		m_vSpecularMaterial[nMipmap] = pResourceSystem->CreateResource<MMaterial>(MString("Specular CubeMap Material_") + MStringUtil::ToString(nMipmap));
 		m_vSpecularMaterial[nMipmap]->LoadVertexShader(vs);
 		m_vSpecularMaterial[nMipmap]->LoadPixelShader(specularps);
 		m_vSpecularMaterial[nMipmap]->SetCullMode(MECullMode::ECullFront);

@@ -69,11 +69,6 @@ std::set<const MType*> MAnimationManager::RegisterComponentType() const
 	return { MModelComponent::GetClassType() };
 }
 
-void MAnimationManager::RegisterComponent(MComponent* pComponent)
-{
-
-}
-
 void MAnimationManager::UnregisterComponent(MComponent* pComponent)
 {
 	if (MModelComponent* pModelComponent = pComponent->template DynamicCast<MModelComponent>())
@@ -135,6 +130,8 @@ void MAnimationManager::RemoveComponent(MModelComponent* pModelComponent)
 
 void MAnimationManager::RenderUpdate(MTaskNode* pNode)
 {
+	MORTY_UNUSED(pNode);
+	
 	for (auto& nProxyIdx : m_tWaitRemoveComponent)
 	{
 		m_pAnimationRenderGroup->RemoveSkeletonRenderInstance(nProxyIdx);

@@ -13,6 +13,7 @@
 #include "Component/MSceneComponent.h"
 #include "Component/MCameraComponent.h"
 #include "System/MObjectSystem.h"
+#include "Utility/MGlobal.h"
 
 MORTY_CLASS_IMPLEMENT(MRenderSystem, MISystem)
 
@@ -30,8 +31,9 @@ MRenderSystem::~MRenderSystem()
 
 void MRenderSystem::Update(MTaskNode* pNode)
 {
+	MORTY_UNUSED(pNode);
+	
 	m_pDevice->Update();
-
 }
 
 MIDevice* MRenderSystem::GetDevice() const

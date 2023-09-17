@@ -2,6 +2,7 @@
 
 #include "MVariant_generated.h"
 
+
 const MVariant& MVariant::operator=(const MVariant& other)
 {
 	m_pMemory = other.m_pMemory;
@@ -49,7 +50,7 @@ void MVariant::ResetMemory(const std::shared_ptr<MVariantMemory>& pMemory, size_
 mfbs::MVariantData EnumVariantToFb(MEVariantType eType)
 {
 	const static std::map<MEVariantType, mfbs::MVariantData> Table = {
-		{MEVariantType::EBool, mfbs::MVariantData_Bool},
+		{MEVariantType::EUInt, mfbs::MVariantData_UInt},
 		{MEVariantType::EFloat, mfbs::MVariantData_Float},
 		{MEVariantType::EInt, mfbs::MVariantData_Int},
 		{MEVariantType::EMatrix3, mfbs::MVariantData_Matrix3},
@@ -68,7 +69,7 @@ mfbs::MVariantData EnumVariantToFb(MEVariantType eType)
 MEVariantType EnumVariantToFb(mfbs::MVariantData eType)
 {
 	const static std::map<mfbs::MVariantData, MEVariantType> Table = {
-		{mfbs::MVariantData_Bool,MEVariantType::EBool},
+		{mfbs::MVariantData_UInt,MEVariantType::EUInt},
 		{mfbs::MVariantData_Float, MEVariantType::EFloat},
 		{mfbs::MVariantData_Int, MEVariantType::EInt},
 		{mfbs::MVariantData_Matrix3, MEVariantType::EMatrix3},
@@ -90,9 +91,9 @@ flatbuffers::Offset<void> MVariant::Serialize(flatbuffers::FlatBufferBuilder& fb
 	const mfbs::MVariantData fbVariantType = EnumVariantToFb(GetType());
 	MORTY_ASSERT(fbVariantType != mfbs::MVariantData_NONE);
 
-	if (GetType() == MEVariantType::EBool)
+	if (GetType() == MEVariantType::EUInt)
 	{
-		fbVariantData = fbb.CreateStruct(mfbs::Bool(GetValue<bool>())).Union();
+		fbVariantData = fbb.CreateStruct(mfbs::UInt(GetValue<uint32_t>())).Union();
 	}
 	else if(GetType() == MEVariantType::EFloat)
 	{
@@ -171,9 +172,9 @@ void MVariant::Deserialize(const void* pBufferPointer, std::shared_ptr<MVariantM
 
 	m_pMemory = pMemory;
 
-	if (GetType() == MEVariantType::EBool)
+	if (GetType() == MEVariantType::EUInt)
 	{
-		SetValue(fbData->data_as_Bool()->value());
+		SetValue(fbData->data_as_UInt()->value());
 	}
 	else if (GetType() == MEVariantType::EFloat)
 	{
@@ -228,7 +229,7 @@ size_t MVariant::TypeSize(MEVariantType eType)
 
 	static std::map<MEVariantType, size_t> VariantTypeSize = {
 		{MEVariantType::ENone, 0},
-		{MEVariantType::EBool, sizeof(int)},
+		{MEVariantType::EUInt, sizeof(int)},
 		{MEVariantType::EInt, sizeof(int)},
 		{MEVariantType::EFloat, sizeof(float)},
 		{MEVariantType::EVector2, sizeof(Vector2)},
@@ -282,10 +283,10 @@ MByte* MVariant::GetData() const
 }
 
 MVariant::MVariant(const std::shared_ptr<MVariantMemory>& pMemory, size_t nOffset, size_t nSize, MEVariantType eType)
-	: m_pMemory(pMemory)
-	, m_nOffset(nOffset)
+	: m_nOffset(nOffset)
 	, m_nSize(nSize)
 	, m_eType(eType)
+	, m_pMemory(pMemory)
 {
 }
 
@@ -394,7 +395,7 @@ MVariant MVariant::Clone(const MVariant& source, std::shared_ptr<MVariantMemory>
 	}
 	else
 	{
-		target = std::move(MVariant(pMemory, nOffset, source.m_nSize, source.GetType()));
+		target = MVariant(pMemory, nOffset, source.m_nSize, source.GetType());
 	}
 
 	return target;
@@ -473,7 +474,7 @@ void MVariantStruct::Deserialize(const void* pBufferPointer, std::shared_ptr<MVa
 	{
 	    for(const auto& fbMember : *fbData->member())
 	    {
-			const auto fbVariant = reinterpret_cast<const mfbs::MVariant*>(fbMember->value());
+			//const auto fbVariant = reinterpret_cast<const mfbs::MVariant*>(fbMember->value());
 
 			const size_t nOffset = fbMember->relative_offset() + m_nOffset;
 			const MString strName = fbMember->name()->c_str();
@@ -523,7 +524,7 @@ void MVariantArray::Deserialize(const void* pBufferPointer, std::shared_ptr<MVar
 	{
 		for (const auto& fbMember : *fbData->member())
 		{
-			const auto fbVariant = reinterpret_cast<const mfbs::MVariant*>(fbMember->value());
+			//const auto fbVariant = reinterpret_cast<const mfbs::MVariant*>(fbMember->value());
 
 			const size_t nOffset = fbMember->relative_offset() + m_nOffset;
 

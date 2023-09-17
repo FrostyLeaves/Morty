@@ -3,8 +3,7 @@
 #include <algorithm>
 
 MMemoryPool::MMemoryPool(const size_t& unPoolSize)
-	: m_vFreeMemory()
-    , m_nMaxMemorySize(unPoolSize)
+	: m_nMaxMemorySize(unPoolSize)
 {
 
 	MemoryInfo info;

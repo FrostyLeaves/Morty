@@ -170,6 +170,8 @@ std::shared_ptr<ParamType> MShaderPropertyBlock::FindShaderParam(std::vector<std
 template <typename ParamType>
 void MShaderPropertyBlock::AppendShaderParam(std::vector<std::shared_ptr<ParamType>>& vVector, std::shared_ptr<ParamType> pParam, const uint32_t& eShaderType)
 {
+	MORTY_UNUSED(eShaderType);
+	
 	vVector.push_back(pParam);
 }
 

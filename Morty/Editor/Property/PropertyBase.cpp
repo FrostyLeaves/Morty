@@ -12,6 +12,7 @@
 #include "Engine/MEngine.h"
 #include "Resource/MMaterialResourceData.h"
 
+
 unsigned int PropertyBase::m_unItemIDPool = 0;
 std::map<MString, unsigned int> PropertyBase::m_tItemID = std::map<MString, unsigned int>();
 
@@ -159,15 +160,17 @@ bool PropertyBase::EditMTransform(MTransform& trans)
 	return bModify;
 }
 
-bool PropertyBase::EditEnum(const std::vector<MString>& select, int& index)
+bool PropertyBase::EditEnum(const std::vector<MString>& select, uint32_t& index)
 {
 	if (index >= select.size())
+	{
 		return false;
+	}
 
-	unsigned int unNewIndex = index;
+	uint32_t unNewIndex = index;
 	if (ImGui::BeginCombo("", select[index].c_str())) {
 
-		for (int i = 0; i < select.size(); ++i)
+		for (size_t i = 0; i < select.size(); ++i)
 		{
 			if (ImGui::Selectable(select[i].c_str(), (index == i)))\
 			{
@@ -193,15 +196,23 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
 
 	switch (value.GetType())
 	{
-	case MEVariantType::EBool:
+	case MEVariantType::EUInt:
 		ShowValueBegin(strVariantName);
-		bModified |= Editbool(value.GetValue<bool>());
+		{
+			float val = value.GetValue<uint32_t>();
+			bModified |= Editfloat(val, 1.0f, 0.0f);
+			value.SetValue<uint32_t>(val);
+		}
 		ShowValueEnd();
 		break;
 
 	case MEVariantType::EInt:
 		ShowValueBegin(strVariantName);
-		bModified |= Editbool(value.GetValue<int>());
+		{
+			float val = static_cast<float>(value.GetValue<int>());
+			bModified |= Editfloat(val, 1.0f);
+			value.SetValue<int>(val);
+		}
 		ShowValueEnd();
 		break;
 
@@ -225,7 +236,7 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
 		size_t nCount = 0;
 		for (auto& iter : sut.GetMember())
 		{
-			bModified |= EditMVariant(iter.first.empty() ? MStringHelper::ToString(nCount) : iter.first, sut.GetVariant<MVariant>(iter.first));
+			bModified |= EditMVariant(iter.first.empty() ? MStringUtil::ToString(nCount) : iter.first, sut.GetVariant<MVariant>(iter.first));
 			nCount++;
 		}
 
@@ -306,7 +317,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 		{
 			ShowValueBegin("Cull");
-			int nCullType = (int)pMaterial->GetCullMode();
+			uint32_t nCullType = (uint32_t)pMaterial->GetCullMode();
 			if (EditEnum({ "Wireframe", "CullNone", "CullBack", "ECullFront" }, nCullType))
 			{
 				pMaterial->SetCullMode(MECullMode(nCullType));
@@ -316,7 +327,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 		{
 			ShowValueBegin("Type");
-			int nMaterialType = (int)pMaterial->GetMaterialType();
+			uint32_t nMaterialType = (uint32_t)pMaterial->GetMaterialType();
 			if (EditEnum({ "Default", "Transparent"}, nMaterialType))
 			{
 				pMaterial->SetMaterialType((MEMaterialType)nMaterialType);
@@ -343,7 +354,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 				if (const std::shared_ptr<MTextureResourceParam>& param = std::dynamic_pointer_cast<MTextureResourceParam>(vParams[i]))
 				{
 
-					MString strDlgName = "file_dlg_tex_" + MStringHelper::ToString(i);
+					MString strDlgName = "file_dlg_tex_" + MStringUtil::ToString(i);
 
 					ShowValueBegin(param->strName);
 					std::shared_ptr<MTextureResource> pResource = param->GetTextureResource();

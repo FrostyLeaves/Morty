@@ -29,8 +29,8 @@ public:
 	SDLRenderView() = default;
 	virtual ~SDLRenderView() = default;
 
-	bool Initialize(MEngine* pEngine, const char* svWindowName);
-	void Release();
+	void Initialize(MEngine* pEngine) override;
+	void Release() override;
 	void BindSDLWindow();
 	void UnbindSDLWindow();
 
@@ -41,7 +41,7 @@ public:
 
 	void Input(MInputEvent* pEvent);
 	bool MainLoop(MTaskNode* pNode);
-	void Render(MTaskNode* pNode);
+	void Render(MTaskNode* pNode) override;
 	void Resize(const int& nWidth, const int& nHeight);
 
 	void AppendContent(RenderViewContent* pContent);

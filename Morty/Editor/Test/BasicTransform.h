@@ -14,7 +14,6 @@
 void TRANSFORM_SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
-	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
 
 
 	std::shared_ptr<MMaterialResource> pForwardMaterial = pResourceSystem->CreateResource<MMaterialResource>();

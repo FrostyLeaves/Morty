@@ -19,6 +19,7 @@
 #include "Component/MSceneComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 #include "Resource/MMaterialResource.h"
+#include "Utility/MGlobal.h"
 
 
 MORTY_CLASS_IMPLEMENT(MShadowMeshManager, IManager)
@@ -68,11 +69,6 @@ std::set<const MType*> MShadowMeshManager::RegisterComponentType() const
 	return { MRenderMeshComponent::GetClassType() };
 }
 
-void MShadowMeshManager::RegisterComponent(MComponent* pComponent)
-{
-	
-}
-
 void MShadowMeshManager::UnregisterComponent(MComponent* pComponent)
 {
 	if(!pComponent)
@@ -91,6 +87,8 @@ void MShadowMeshManager::UnregisterComponent(MComponent* pComponent)
 
 void MShadowMeshManager::RenderUpdate(MTaskNode* pNode)
 {
+	MORTY_UNUSED(pNode);
+	
 	for (auto& [type, group] : m_tBatchMaterialGroup)
 	{
 		if (!group->tWaitRemoveComponent.empty())

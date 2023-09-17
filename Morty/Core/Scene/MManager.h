@@ -21,9 +21,9 @@ public:
 
 	virtual std::set<const MType*> RegisterComponentType() const { return {}; }
 
-	virtual void SceneTick(MScene* pScene, const float& fDelta) {}
-	virtual void RegisterComponent(MComponent* pComponent) {}
-	virtual void UnregisterComponent(MComponent* pComponent) {}
+	virtual void SceneTick(MScene* pScene, const float& fDelta) {MORTY_UNUSED(pScene, fDelta);}
+	virtual void RegisterComponent(MComponent* pComponent) {MORTY_UNUSED(pComponent);}
+	virtual void UnregisterComponent(MComponent* pComponent) {MORTY_UNUSED(pComponent);}
 
 	void SetScene(MScene* pScene);
 	MScene* GetScene();

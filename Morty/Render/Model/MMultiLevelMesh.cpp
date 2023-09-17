@@ -9,14 +9,6 @@
 #define MIN(a, b) ((a) < (b) ? (a) : (b) )
 #define MAX(a, b) ((a) > (b) ? (a) : (b) )
 
-MMultiLevelMesh::MMultiLevelMesh()
-	: m_pMesh(nullptr)
-	, m_pSortVertices(nullptr)
-	, m_vMeshesCache(MRenderGlobal::MESH_LOD_LEVEL_RANGE)
-{
-	
-}
-
 void MMultiLevelMesh::BindMesh(const MIMesh* pMesh)
 {
 	m_pMesh = pMesh;

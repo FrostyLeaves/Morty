@@ -107,11 +107,13 @@ void MVulkanPipelineManager::RegisterRenderPass(MRenderPass* pRenderPass)
 
 bool MVulkanPipelineManager::RegisterComputeDispatcher(MComputeDispatcher* pDispatcher)
 {
+	MORTY_UNUSED(pDispatcher);
 	return true;
 }
 
 bool MVulkanPipelineManager::UnRegisterComputeDispatcher(MComputeDispatcher* pDispatcher)
 {
+	MORTY_UNUSED(pDispatcher);
 	return true;
 }
 
@@ -132,7 +134,7 @@ void MVulkanPipelineManager::UnRegisterRenderPass(MRenderPass* pRenderPass)
 
 	uint32_t id = pRenderPass->GetRenderPassID();
 
-	if (id != MGlobal::M_INVALID_INDEX)
+	if (id != MGlobal::M_INVALID_UINDEX)
 	{
 		m_RenderPassIDPool.RecoveryID(id);
 	}
@@ -686,16 +688,6 @@ VkPipeline MVulkanPipelineManager::CreateComputePipeline(const std::shared_ptr<M
 	}
 
 	return computePipeline;
-}
-
-void MVulkanPipelineManager::GenerateShaderProgram(MShaderProgram* pShaderProgram)
-{
-	
-}
-
-void MVulkanPipelineManager::DestroyShaderProgram(MShaderProgram* pShaderProgram)
-{
-	
 }
 
 void MVulkanPipelineManager::AllocateShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock, const std::shared_ptr<MPipeline>& pPipeline)

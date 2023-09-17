@@ -19,7 +19,9 @@
         "VCPKG_TARGET_TRIPLET": "x64-windows",
         "VCPKG_HOST_TRIPLET": "x64-windows",
         "MORTY_BUILD_TARGET": "WIN",
-        "MORTY_SHADER_COMPILER": "dxc"
+        "MORTY_SHADER_COMPILER": "dxc",
+        "CMAKE_C_COMPILER": "clang.exe",
+        "CMAKE_CXX_COMPILER": "clang++.exe"
       }
     },
     {

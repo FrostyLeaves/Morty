@@ -25,11 +25,6 @@ MSubpass::MSubpass(const std::vector<uint32_t>& inputs, const std::vector<uint32
 }
 
 MRenderPass::MRenderPass()
-	: m_vSubpass()
-	, m_unRenderPassID(MGlobal::M_INVALID_INDEX)
-	, m_vBackTextures()
-	, m_DepthTexture()
-	, m_unViewNum(1)
 {
 
 #if RENDER_GRAPHICS == MORTY_VULKAN

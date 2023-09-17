@@ -54,6 +54,8 @@ const MType* MEntityResourceLoader::ResourceType() const
 
 std::unique_ptr<MResourceData> MEntityResourceLoader::LoadResource(const MString& svFullPath, const MString& svPath)
 {
+	MORTY_UNUSED(svPath);
+	
 	auto pResourceData = std::make_unique<MEntityResourceData>();
 
 	if (!MFileHelper::ReadData(svFullPath, pResourceData->aEntityData))

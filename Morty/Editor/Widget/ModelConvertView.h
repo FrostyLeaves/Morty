@@ -3,6 +3,7 @@
 #include <map>
 #include <queue>
 #include <functional>
+#include <stdint.h>
 
 #include "Utility/MString.h"
 #include "Model/MModelConverter.h"
@@ -23,7 +24,6 @@ public:
 
 	void Initialize(MainEditor* pMainEditor) override;
 	void Release() override;
-	void Input(MInputEvent* pEvent) override;
 	
 	void Convert(std::queue<MModelConvertInfo> queue);
 
@@ -34,6 +34,6 @@ private:
 	std::string m_strSourcePath;
 	std::string m_strOutputDir;
 	std::string m_strOutputName;
-	int m_nMaterialTypeEnum = 0;
+	uint32_t m_nMaterialTypeEnum = 0;
 };
 

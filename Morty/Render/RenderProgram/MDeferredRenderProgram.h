@@ -52,21 +52,21 @@ public:
 
 	void RenderSetup(MIRenderCommand* pPrimaryCommand);
 	
-	void RenderGBuffer(MIRenderCommand* pPrimaryCommand);
+	void RenderGBuffer();
 
-	void RenderLightning(MIRenderCommand* pPrimaryCommand);
+	void RenderLightning();
 
-	void RenderVoxelizer(MIRenderCommand* pPrimaryCommand);
+	void RenderVoxelizer();
 
-	void RenderShadow(MIRenderCommand* pPrimaryCommand);
+	void RenderShadow();
 
-	void RenderForward(MIRenderCommand* pPrimaryCommand);
+	void RenderForward();
 
-	void RenderTransparent(MIRenderCommand* pPrimaryCommand);
+	void RenderTransparent();
 
-	void RenderPostProcess(MIRenderCommand* pPrimaryCommand);
+	void RenderPostProcess();
 
-	void RenderDebug(MIRenderCommand* pPrimaryCommand);
+	void RenderDebug();
 
 
 	std::shared_ptr<MTexture> GetOutputTexture() override;

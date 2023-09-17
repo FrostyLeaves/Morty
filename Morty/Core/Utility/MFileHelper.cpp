@@ -59,7 +59,7 @@ bool MFileHelper::MakeDir(MString strDirPath)
 	{
 		if (strDirPath[nChIdx] == '\\' || strDirPath[nChIdx] == '/')
 		{
-			strncpy(svPath + nCopyIdx, strDirPath.c_str() + nCopyIdx, nChIdx - nCopyIdx);
+			strncpy_s(svPath + nCopyIdx, nChIdx - nCopyIdx, strDirPath.c_str() + nCopyIdx, nChIdx - nCopyIdx);
 			nCopyIdx = nChIdx;
 
 			if (_access(svPath, 0) == -1)
@@ -222,7 +222,7 @@ bool MFileHelper::ReadFormatFile(const MString& strFilePath, MMortyFileFormat& f
 void MFileHelper::GetValidFileName(MString& strFileName)
 {
 	char ch[] = {
-	0x5C, //    \\
+	0x5C, //    backslash
 	0x2F, //    /
 	0x3A, //    : 
 	0x2A, //    * 
@@ -239,7 +239,7 @@ void MFileHelper::GetValidFileName(MString& strFileName)
 
 	while ((++n, ++m) < nSize)
 	{
-		for (int i = 0; i < sizeof(ch); ++i)
+		for (size_t i = 0; i < sizeof(ch); ++i)
 		{
 			if (ch[i] == strFileName[n])
 			{
@@ -259,9 +259,9 @@ void MFileHelper::GetValidFileName(MString& strFileName)
 
 MString MFileHelper::FormatPath(MString strFilePath)
 {
-	MStringHelper::Replace(strFilePath, "\\", "/");
+	MStringUtil::Replace(strFilePath, "\\", "/");
 
-	std::vector<MString> vPaths = MStringHelper::Slip(strFilePath, "/");
+	std::vector<MString> vPaths = MStringUtil::Slip(strFilePath, "/");
 
 	std::vector<MString> vClearPaths;
 	for (MString& path : vPaths)

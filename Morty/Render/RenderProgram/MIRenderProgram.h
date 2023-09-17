@@ -15,10 +15,10 @@ class MScene;
 class MTexture;
 class MViewport;
 class MIRenderer;
-class MRenderInfo;
 class MRenderGraph;
 class MIMeshInstance;
 class MIRenderCommand;
+struct MRenderInfo;
 struct MShaderConstantParam;
 class MORTY_API MIRenderProgram : public MObject
 {

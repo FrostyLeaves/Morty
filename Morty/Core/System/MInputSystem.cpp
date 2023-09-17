@@ -1,6 +1,7 @@
 #include "System/MInputSystem.h"
 
 #include "Input/MInputEvent.h"
+#include "Utility/MGlobal.h"
 
 MORTY_CLASS_IMPLEMENT(MInputSystem, MISystem)
 
@@ -36,6 +37,8 @@ bool MInputSystem::IsMouseButtonDown(const MMouseInputEvent::MEMouseDownButton& 
 
 void MInputSystem::EngineTick(const float& fDelta)
 {
+	MORTY_UNUSED(fDelta);
+	
 	m_v2MouseAddition.x = 0.0f;
 	m_v2MouseAddition.y = 0.0f;
 }

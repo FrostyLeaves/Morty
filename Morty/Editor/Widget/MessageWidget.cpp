@@ -28,7 +28,7 @@ void MessageWidget::Render()
 		int nCurrentFps = (int)round(GetEngine()->GetFPS() / 5) * 5;
 		ImGui::Text("FPS: %d", nCurrentFps);
 
-		ImGui::Text("Draw Call Count: %u", RenderMessageManager::GetInstance()->nDrawCallCount);
+		ImGui::Text("Draw Call Count: %zu", RenderMessageManager::GetInstance()->nDrawCallCount);
 
 
 		if (ImGui::BeginPopupContextWindow())
@@ -51,11 +51,6 @@ void MessageWidget::Initialize(MainEditor* pMainEditor)
 }
 
 void MessageWidget::Release()
-{
-
-}
-
-void MessageWidget::Input(MInputEvent* pEvent)
 {
 
 }

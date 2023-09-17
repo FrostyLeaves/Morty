@@ -46,16 +46,19 @@ flatbuffers::Offset<void> MComponent::Serialize(flatbuffers::FlatBufferBuilder& 
 
 void MComponent::Deserialize(const void* pBufferPointer)
 {
-	const mfbs::MComponent* fbcomponent = reinterpret_cast<const mfbs::MComponent*>(pBufferPointer);
+	MORTY_UNUSED(pBufferPointer);
+	//const mfbs::MComponent* fbcomponent = reinterpret_cast<const mfbs::MComponent*>(pBufferPointer);
 }
 
 void MComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	const mfbs::MComponent* fbcomponent = mfbs::GetMComponent(fbb.GetCurrentBufferPointer());
+	MORTY_UNUSED(fbb);
+	//const mfbs::MComponent* fbcomponent = mfbs::GetMComponent(fbb.GetCurrentBufferPointer());
 }
 
 void MComponent::PostDeserialize(const std::map<MGuid, MGuid>& tRedirectGuid)
 {
+	MORTY_UNUSED(tRedirectGuid);
 }
 
 void MComponent::SendComponentNotify(const char* notify)

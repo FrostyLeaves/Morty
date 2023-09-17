@@ -53,7 +53,7 @@ std::shared_ptr<MTextureResource> MTextureConverter::ConvertSingleChannel(std::s
     MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
 
     MString strResourcePath = pTexture->GetResourcePath();
-    MString strFileName = MFileHelper::GetFileName(strResourcePath) + MStringHelper::ToString(nChannel);
+    MString strFileName = MFileHelper::GetFileName(strResourcePath) + MStringUtil::ToString(nChannel);
 
     MString strNewResourcePath = MFileHelper::ReplaceFileName(strResourcePath, strFileName);
 

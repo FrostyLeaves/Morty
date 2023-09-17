@@ -52,8 +52,6 @@ void PropertyView::Render()
 	ImGui::Columns(2);
 	ImGui::Separator();
 	
-	unsigned int unID = 0;
-
 	EditEntity(pEntity);
 
 	ImGui::Columns(1);
@@ -68,11 +66,6 @@ void PropertyView::Initialize(MainEditor* pMainEditor)
 }
 
 void PropertyView::Release()
-{
-
-}
-
-void PropertyView::Input(MInputEvent* pEvent)
 {
 
 }

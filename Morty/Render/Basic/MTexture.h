@@ -140,7 +140,7 @@ public:
 	//generate mipmap
 	bool m_bMipmapsEnable;
 
-	int m_unMipmapLevel;
+	uint32_t m_unMipmapLevel = 1;
 
 private:
 

@@ -30,10 +30,6 @@
 
 MaterialView::MaterialView()
 	: BaseWidget()
-	, m_pMaterial(nullptr)
-	, m_bShowPreview(true)
-	, m_pStaticSphereMeshNode(nullptr)
-	, m_pSkeletonSphereMeshNode(nullptr)
 {
 	m_strViewName = "Material";
 }
@@ -119,8 +115,6 @@ void MaterialView::Initialize(MainEditor* pMainEditor)
 
 	m_pSceneTexture = GetMainEditor()->CreateSceneViewer(m_pScene);
 	m_pSceneTexture->SetRect(Vector2(0, 0), Vector2(512, 512));
-
-	MEntity* pRootNode = m_pScene->CreateEntity();
 
 	if (MEntity* pCameraNode = m_pSceneTexture->GetViewport()->GetCamera())
 	{

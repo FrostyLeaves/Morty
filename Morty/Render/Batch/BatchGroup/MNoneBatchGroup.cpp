@@ -9,6 +9,7 @@
 #include "Component/MSceneComponent.h"
 #include "Component/MRenderMeshComponent.h"
 #include "Render/MVertex.h"
+#include "Utility/MGlobal.h"
 
 
 void MNoneBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pMaterial)
@@ -40,7 +41,7 @@ void MNoneBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pM
 
 void MNoneBatchGroup::Release(MEngine* pEngine)
 {
-	const MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
+	const MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
 	m_pShaderPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
 	m_pShaderPropertyBlock = nullptr;
 	m_pTransformParam = nullptr;
@@ -80,6 +81,7 @@ void MNoneBatchGroup::AddMeshInstance(const MMeshInstanceRenderProxy& proxy)
 
 void MNoneBatchGroup::RemoveMeshInstance(MMeshInstanceKey key)
 {
+	MORTY_UNUSED(key);
 	m_bInstanceValid = false;
 }
 

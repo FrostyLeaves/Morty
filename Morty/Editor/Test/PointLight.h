@@ -29,7 +29,7 @@ void ADD_POINT_LIGHT(MEngine* pEngine, MScene* pScene)
 
 	for (int i = 0; i < 9; ++i)
 	{
-		MString strEntityName = "PointLight_" + MStringHelper::ToString(i);
+		MString strEntityName = "PointLight_" + MStringUtil::ToString(i);
 
 		MEntity* pPointLight = pScene->CreateEntity();
 		pPointLight->SetName(strEntityName);

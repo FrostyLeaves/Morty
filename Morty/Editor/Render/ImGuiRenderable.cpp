@@ -11,6 +11,7 @@
 
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
+#include "Utility/MGlobal.h"
 
 ImGuiRenderable::ImGuiRenderable(MEngine* pEngine)
 	: m_pEngine(pEngine)
@@ -67,7 +68,6 @@ void ImGuiRenderable::Initialize()
 
 void ImGuiRenderable::InitializeFont()
 {
-	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
 	MResourceSystem* pResourceSystem = m_pEngine->FindSystem<MResourceSystem>();
 
 	ImGuiIO& io = ImGui::GetIO();
@@ -75,7 +75,6 @@ void ImGuiRenderable::InitializeFont()
 	unsigned char* pixels = nullptr;
 	int width = 0, height = 0; // width height
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-	size_t upload_size = width * height * 4 * sizeof(char);
 
 	std::shared_ptr<MTextureResource> pFontTexture = pResourceSystem->CreateResource<MTextureResource>("ImGUI_Font");
 	pFontTexture->Load(MTextureResourceUtil::LoadFromMemory("ImGUI_Font", pixels, width, height, 4));
@@ -125,6 +124,8 @@ void ImGuiRenderable::ReleaseMesh()
 
 void ImGuiRenderable::Tick(const float& fDelta)
 {
+	MORTY_UNUSED(fDelta);
+	
 	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
 	for (auto iter = m_tImGuiDrawTexture.begin(); iter != m_tImGuiDrawTexture.end(); )
 	{
@@ -230,8 +231,7 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
 				}
 				else
 				{
-					int a = 0;
-					++a;
+					MORTY_ASSERT(false);
 				}
 			}
 

@@ -1,5 +1,6 @@
 #include "SDLRenderView.h"
 
+#include "Utility/MGlobal.h"
 #include "imgui.h"
 #include "ImGuizmo.h"
 #include "SDL.h"
@@ -22,14 +23,14 @@
 
 #include "Render/ImGuiRenderable.h"
 #include "Component/MRenderMeshComponent.h"
-#include "Render/ImGui/ImNodes.h"
+#include "Render/ImGui/imnodes.h"
 
 #include "System/MInputSystem.h"
 #include "System/MRenderSystem.h"
 
 #include "Utility/RenderMessageManager.h"
 
-bool SDLRenderView::Initialize(MEngine* pEngine, const char* svWindowName)
+void SDLRenderView::Initialize(MEngine* pEngine)
 {
 	MRenderView::Initialize(pEngine);
 
@@ -59,9 +60,6 @@ bool SDLRenderView::Initialize(MEngine* pEngine, const char* svWindowName)
 	m_pRenderTask->SetThreadType(METhreadType::ERenderThread);
 	m_pRenderTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(SDLRenderView::Render, this));
 
-
-
-	return true;
 }
 
 void SDLRenderView::Release()
@@ -77,6 +75,8 @@ void SDLRenderView::Release()
 	ImGui::DestroyContext();
 
 	UnbindSDLWindow();
+
+	MRenderView::Release();
 }
 
 void SDLRenderView::Resize(const int& nWidth, const int& nHeight)
@@ -134,6 +134,8 @@ void SDLRenderView::Input(MInputEvent* pEvent)
 
 bool SDLRenderView::MainLoop(MTaskNode* pNode)
 {
+	MORTY_UNUSED(pNode);
+
 	SDL_Event event;
 	bool bClosed = false;
 	while (SDL_PollEvent(&event))
@@ -306,6 +308,8 @@ void SDLRenderView::UnbindSDLWindow()
 
 void SDLRenderView::Render(MTaskNode* pNode)
 {
+	MORTY_UNUSED(pNode);
+	
 	if (GetMinimized())
 	{
 		return;

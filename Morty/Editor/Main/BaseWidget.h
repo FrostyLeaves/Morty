@@ -18,7 +18,7 @@ public:
 	virtual void Initialize(MainEditor* pMainEditor);
 	virtual void Release() = 0;
 
-	virtual void Input(MInputEvent* pEvent) = 0;
+	virtual void Input(MInputEvent* pEvent) { MORTY_UNUSED(pEvent); }
 
 	MEngine* GetEngine() const;
 	MScene* GetScene() const;

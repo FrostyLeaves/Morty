@@ -55,7 +55,7 @@ struct MORTY_API MShaderConstantParam : public MShaderParam
 {
 	MShaderConstantParam();
 
-	MShaderConstantParam(const MShaderConstantParam& param, const int& unNone);
+	MShaderConstantParam(const MShaderConstantParam& param);
 
 	MVariant var;
 

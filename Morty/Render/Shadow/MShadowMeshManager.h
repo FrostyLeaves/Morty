@@ -20,9 +20,9 @@ class MMaterial;
 class MTaskNode;
 class MComponent;
 class MComputeDispatcher;
-class MShaderConstantParam;
 class MShaderPropertyBlock;
 class MRenderMeshComponent;
+struct MShaderConstantParam;
 
 
 class MORTY_API MShadowMeshManager : public IManager
@@ -45,7 +45,6 @@ public:
 	void Release() override;
 
 	std::set<const MType*> RegisterComponentType() const override;
-	void RegisterComponent(MComponent* pComponent) override;
 	void UnregisterComponent(MComponent* pComponent) override;
 
 	void RenderUpdate(MTaskNode* pNode);

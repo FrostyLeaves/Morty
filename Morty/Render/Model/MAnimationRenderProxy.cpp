@@ -153,7 +153,7 @@ void MAnimationRenderGroup::Initialize(MEngine* pEngine)
 void MAnimationRenderGroup::Release(MEngine* pEngine)
 {
 	m_tPoseRenderInstance = {};
-	const MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
+	const MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
 	m_bonesStorageBuffer.buffer.DestroyBuffer(pRenderSystem->GetDevice());
 	m_bonesOffsetBuffer.buffer.DestroyBuffer(pRenderSystem->GetDevice());
 }

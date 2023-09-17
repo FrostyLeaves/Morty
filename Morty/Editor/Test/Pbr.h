@@ -602,7 +602,6 @@ void spectrum_to_xyz(float (*spec_intens)(float wavelength),
 void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
-	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
 
 	std::shared_ptr<MResource> pCubeMeshResource = nullptr;
 

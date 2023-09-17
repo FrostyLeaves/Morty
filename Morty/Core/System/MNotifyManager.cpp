@@ -34,10 +34,14 @@ void MNotifyManager::RegisterNotify(const char* strNotifyName, MNotifyFunction f
 		if (a.target_type() != b.target_type())
 			return false;
 
-		if (*a.target<void(MComponent*)>() != *b.target<void(MComponent*)>())
+		if (a.target<MNotifyFunction>() != b.target<MNotifyFunction>())
+		{
 			return false;
+		}
+		//if (*a.target<void(MComponent*)>() != *b.target<void(MComponent*)>())
+		//	return false;
 
-		return false;
+		return true;
 		});
 }
 

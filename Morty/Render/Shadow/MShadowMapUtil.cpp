@@ -48,8 +48,7 @@ std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> MSh
 		MORTY_ASSERT(pMeshComponentGroup);
 		return {};
 	}
-	const Vector3 v3LightDir = pLightSceneComponent->GetForward();
-
+	
 	std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadedData;
 
 	const float fCascadeSplitLambda = 0.95f;

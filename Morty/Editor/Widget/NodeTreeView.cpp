@@ -19,9 +19,9 @@ NodeTreeView::NodeTreeView()
 void NodeTreeView::Render()
 {
 	if (!GetScene())
+	{
 		return;
-
-	MObjectSystem* pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
+	}
 
 	auto vEntity = GetScene()->GetAllEntity();
 	for(MEntity* pEntity : vEntity)
@@ -42,11 +42,6 @@ void NodeTreeView::Initialize(MainEditor* pMainEditor)
 }
 
 void NodeTreeView::Release()
-{
-
-}
-
-void NodeTreeView::Input(MInputEvent* pEvent)
 {
 
 }
@@ -82,7 +77,7 @@ void NodeTreeView::RenderNode(MEntity* pNode)
 
 	if (ImGui::IsItemClicked())
 	{
-		SelectionEntityManager::GetInstance()->SetSelectedEntity(GetScene(), pNode);
+		SelectionEntityManager::GetInstance()->SetSelectedEntity(pNode);
 	}
 	if (bOpened)
 	{

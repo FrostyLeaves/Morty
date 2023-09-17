@@ -6,18 +6,18 @@
 
 #include "Render/MRenderGlobal.h"
 
-const MString strBonesPerVertex = MStringHelper::ToString(MRenderGlobal::BONES_PER_VERTEX);
-const MString strBonesMaxNumber = MStringHelper::ToString(MRenderGlobal::BONES_MAX_NUMBER);
-const MString strShadowTextureSize = MStringHelper::ToString(MRenderGlobal::SHADOW_TEXTURE_SIZE);
-const MString strPointLightMaxNumber = MStringHelper::ToString(MRenderGlobal::POINT_LIGHT_MAX_NUMBER);
-const MString strPointLightPixelNumber = MStringHelper::ToString(MRenderGlobal::POINT_LIGHT_PIXEL_NUMBER);
-const MString strSpotLightMaxNumber = MStringHelper::ToString(MRenderGlobal::SPOT_LIGHT_MAX_NUMBER);
-const MString strSpotLightPixelNumber = MStringHelper::ToString(MRenderGlobal::SPOT_LIGHT_PIXEL_NUMBER);
-const MString strCascadedShadowMapNumber = MStringHelper::ToString(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
-const MString strMeshLODLevelRangeNumber = MStringHelper::ToString(MRenderGlobal::MESH_LOD_LEVEL_RANGE);
-const MString strMergeInstancingMaxNumber = MStringHelper::ToString(MRenderGlobal::MERGE_INSTANCING_MAX_NUM);
-const MString strTransformInUniformMaxNumber = MStringHelper::ToString(MRenderGlobal::MESH_TRANSFORM_IN_UNIFORM_MAX_NUM);
-const MString strMergeInstancingClusterMaxNumber = MStringHelper::ToString(MRenderGlobal::MERGE_INSTANCING_CLUSTER_MAX_NUM);
+const MString strBonesPerVertex = MStringUtil::ToString(MRenderGlobal::BONES_PER_VERTEX);
+const MString strBonesMaxNumber = MStringUtil::ToString(MRenderGlobal::BONES_MAX_NUMBER);
+const MString strShadowTextureSize = MStringUtil::ToString(MRenderGlobal::SHADOW_TEXTURE_SIZE);
+const MString strPointLightMaxNumber = MStringUtil::ToString(MRenderGlobal::POINT_LIGHT_MAX_NUMBER);
+const MString strPointLightPixelNumber = MStringUtil::ToString(MRenderGlobal::POINT_LIGHT_PIXEL_NUMBER);
+const MString strSpotLightMaxNumber = MStringUtil::ToString(MRenderGlobal::SPOT_LIGHT_MAX_NUMBER);
+const MString strSpotLightPixelNumber = MStringUtil::ToString(MRenderGlobal::SPOT_LIGHT_PIXEL_NUMBER);
+const MString strCascadedShadowMapNumber = MStringUtil::ToString(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
+const MString strMeshLODLevelRangeNumber = MStringUtil::ToString(MRenderGlobal::MESH_LOD_LEVEL_RANGE);
+const MString strMergeInstancingMaxNumber = MStringUtil::ToString(MRenderGlobal::MERGE_INSTANCING_MAX_NUM);
+const MString strTransformInUniformMaxNumber = MStringUtil::ToString(MRenderGlobal::MESH_TRANSFORM_IN_UNIFORM_MAX_NUM);
+const MString strMergeInstancingClusterMaxNumber = MStringUtil::ToString(MRenderGlobal::MERGE_INSTANCING_CLUSTER_MAX_NUM);
 
 
 
@@ -27,7 +27,7 @@ enum class METransparentPolicy
 	EDualDepthPeeling = 1,
 };
 
-const MString strTransparentPolicy = MStringHelper::ToString((int)METransparentPolicy::EDualDepthPeeling);
+const MString strTransparentPolicy = MStringUtil::ToString((int)METransparentPolicy::EDualDepthPeeling);
 
 std::vector<std::pair<MString, MString>> MShaderMacro::s_vGlobalMacroParams = {
 	{"MBONES_PER_VERTEX", strBonesPerVertex},

@@ -23,6 +23,7 @@
 #include "Mesh/MMeshManager.h"
 
 #include "Shadow/MShadowMapUtil.h"
+#include "Utility/MGlobal.h"
 
 
 MORTY_CLASS_IMPLEMENT(MShadowMapRenderWork, ISinglePassRenderWork)
@@ -66,6 +67,7 @@ void MShadowMapRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 
 void MShadowMapRenderWork::Resize(Vector2 size)
 {
+	MORTY_UNUSED(size);
     //Shadow map can`t resize.
 }
 

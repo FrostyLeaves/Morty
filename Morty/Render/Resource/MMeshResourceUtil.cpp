@@ -31,7 +31,7 @@ std::unique_ptr<MResourceData> MMeshResourceUtil::CreateCube(MEMeshVertexType eV
 	pMeshData->boundsOBB.m_v3MinPoint = -Vector3::One;
 	pMeshData->boundsOBB.m_v3MaxPoint = Vector3::One;
 
-	pMeshData->boundsSphere.m_fRadius = std::sqrtf(3.0f);
+	pMeshData->boundsSphere.m_fRadius = sqrtf(3.0f);
 
 	return pMeshData;
 }
@@ -47,7 +47,7 @@ std::unique_ptr<MResourceData> MMeshResourceUtil::CreateSphere(MEMeshVertexType 
 	pMeshData->boundsOBB.m_v3MinPoint = Vector3(-1.0f, -1.0f, -1.0f);
 	pMeshData->boundsOBB.m_v3MaxPoint = Vector3(1.0f, 1.0f, 1.0f);
 
-	pMeshData->boundsSphere.m_fRadius = std::sqrtf(1.0f);
+	pMeshData->boundsSphere.m_fRadius = sqrtf(1.0f);
 
 	return pMeshData;
 }

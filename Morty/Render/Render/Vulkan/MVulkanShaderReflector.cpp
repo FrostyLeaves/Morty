@@ -1,5 +1,6 @@
 #include "MVulkanShaderReflector.h"
 
+
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 #include <regex>
@@ -51,7 +52,7 @@ ShaderReflectorType GetReflectorTypeFromName(const std::string& name)
 	return ShaderReflectorType::Undefine;
 }
 
-std::tuple<VkFormat, uint32_t> MVulkanShaderReflector::GetVertexInputDescription(const spirv_cross::Compiler& compiler, const std::string& name, spirv_cross::SPIRType type) const
+std::tuple<VkFormat, uint32_t> MVulkanShaderReflector::GetVertexInputDescription( const std::string& name, spirv_cross::SPIRType type) const
 {
 	if (spirv_cross::SPIRType::BaseType::Float == type.basetype)
 	{
@@ -132,7 +133,7 @@ void MVulkanShaderReflector::GetVertexInputState(const spirv_cross::Compiler& co
 		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
 		const std::string& name = compiler.get_name(res.id);
 
-		const auto [ format, nInputTypeSize] = GetVertexInputDescription(compiler, name, type);
+		const auto [ format, nInputTypeSize] = GetVertexInputDescription(name, type);
 
 		const uint32_t unLocation = compiler.get_decoration(res.id, spv::Decoration::DecorationLocation);
 		const uint32_t unArraySize = type.array.empty() ? 1 : type.array[0];
@@ -165,7 +166,7 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
 
 	for (const spirv_cross::Resource& res : shaderResources.storage_buffers)
 	{
-		const spirv_cross::SPIRType& type = compiler.get_type(res.type_id);
+		//const spirv_cross::SPIRType& type = compiler.get_type(res.type_id);
 
 		std::shared_ptr<MShaderStorageParam> pParam = std::make_shared<MShaderStorageParam>();
 		pParam->unSet = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
@@ -284,7 +285,7 @@ void MVulkanShaderReflector::BuildVariant(const spirv_cross::Compiler& compiler,
 			builder.AppendVariant(strMemberName, memberVariant);
 		}
 		builder.Finish();
-		tempVariant = std::move(MVariant(srt));
+		tempVariant = MVariant(srt);
 		
 	}
 	else
@@ -308,7 +309,7 @@ void MVulkanShaderReflector::BuildVariant(const spirv_cross::Compiler& compiler,
 			builder.AppendVariant(tempVariant);
 		}
 		builder.Finish();
-		variant = std::move(MVariant(varArray));
+		variant = MVariant(varArray);
 	}
 
 }
@@ -366,7 +367,7 @@ bool MVulkanShaderReflector::BuildBasicVariant(const spirv_cross::SPIRType& type
 	switch (type.basetype)
 	{
 	case spirv_cross::SPIRType::BaseType::Boolean:
-		variant = MVariant(bool());
+		variant = MVariant(uint32_t());
 		return true;
 
 	case spirv_cross::SPIRType::BaseType::Int:
@@ -374,7 +375,7 @@ bool MVulkanShaderReflector::BuildBasicVariant(const spirv_cross::SPIRType& type
 		return true;
 
 	case spirv_cross::SPIRType::BaseType::UInt:
-		variant = MVariant(bool());
+		variant = MVariant(uint32_t());
 		return true;
 
 	case spirv_cross::SPIRType::BaseType::Float:

@@ -16,6 +16,7 @@
 
 #include "Mesh/MMeshManager.h"
 #include "Resource/MTextureResourceUtil.h"
+#include "Utility/MGlobal.h"
 
 MORTY_CLASS_IMPLEMENT(MTransparentRenderWork, MObject)
 
@@ -34,6 +35,8 @@ void MTransparentRenderWork::Initialize(MEngine* pEngine)
 
 void MTransparentRenderWork::Release(MEngine* pEngine)
 {
+	MORTY_UNUSED(pEngine);
+	
 	ReleaseFillRenderPass();
 	ReleasePeelRenderPass();
 

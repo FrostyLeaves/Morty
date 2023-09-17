@@ -14,18 +14,6 @@ ResourceView::ResourceView()
 
 void ResourceView::Render()
 {
-	static const char* vResourceType[] = {
-		"Default",
-		"Shader",
-		"Material",
-		"Texture",
-		"Node",
-		"Mesh",
-		"Skeleton",
-		"SkelAnim"
-	};
-
-
 	ImGui::Columns(4);
 
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
@@ -51,7 +39,7 @@ void ResourceView::Render()
 			ImGui::NextColumn();
 			ImGui::Text("%s", pResource->GetResourcePath().c_str());
 			ImGui::NextColumn();
-			ImGui::Text("%u", pResource.use_count());
+			ImGui::Text("%ld", pResource.use_count());
 			ImGui::NextColumn();
 
 			++iter;
@@ -69,9 +57,3 @@ void ResourceView::Release()
 {
 
 }
-
-void ResourceView::Input(MInputEvent* pEvent)
-{
-
-}
-

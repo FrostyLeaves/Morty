@@ -120,11 +120,11 @@ public:
 
 	std::vector<MSubpass> m_vSubpass;
 
-    uint32_t m_unRenderPassID;
+    uint32_t m_unRenderPassID = MGlobal::M_INVALID_INDEX;
 
 public:
 
-    uint32_t m_unViewNum;
+    uint32_t m_unViewNum = 1;
 
     //render back to texture
 	std::vector<MRenderTarget> m_vBackTextures;
@@ -134,11 +134,9 @@ public:
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
     //vulkan frame buffer.
-    VkFramebuffer m_VkFrameBuffer;
-	VkExtent2D m_vkExtent2D;
-
-    //vulkan render pass
-    VkRenderPass m_VkRenderPass;
+	VkExtent2D m_vkExtent2D = VkExtent2D();
+    VkRenderPass m_VkRenderPass = VK_NULL_HANDLE;
+    VkFramebuffer m_VkFrameBuffer = VK_NULL_HANDLE;
 #endif
 
     bool m_bDepthTestEnable = true;

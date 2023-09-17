@@ -33,9 +33,9 @@ private:
 	
 	MScene* m_pScene = nullptr;
 
-	MEntity* m_pStaticSphereMeshNode;
-	MEntity* m_pSkeletonSphereMeshNode;
+	MEntity* m_pStaticSphereMeshNode = nullptr;
+	MEntity* m_pSkeletonSphereMeshNode = nullptr;
 
-	bool m_bShowPreview;
+	bool m_bShowPreview = true;
 	std::shared_ptr<SceneTexture> m_pSceneTexture = nullptr;
 };

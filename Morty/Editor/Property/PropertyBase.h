@@ -2,6 +2,7 @@
 #define _PROPERTY_BASE_H_
 
 #include "Scene/MEntity.h"
+#include "Utility/MGlobal.h"
 #include "Utility/MString.h"
 #include "Math/Vector.h"
 #include "Variant/MVariant.h"
@@ -12,6 +13,7 @@
 #include <map>
 #include <any>
 #include <functional>
+#include <stdint.h>
 
 class MEntity;
 class MObject;
@@ -26,7 +28,7 @@ public:
 	PropertyBase() {}
 	virtual ~PropertyBase() {};
 
-	virtual void EditEntity(MEntity* pObject) {};
+	virtual void EditEntity(MEntity* pObject) { MORTY_UNUSED(pObject); };
 
 	bool ShowNodeBegin(const MString& strNodeName);
 	bool ShowNodeBeginWithEx(const MString& strNodeName);
@@ -45,7 +47,7 @@ public:
 	bool EditVector3(Vector3& value, const float& fSpeed = 1.0f, const float& fMin = 0.0f, const float& fMax = 0.0f);
 	bool EditVector3(float* pValue, const float& fSpeed = 1.0f, const float& fMin = 0.0f, const float& fMax = 0.0f);
 	bool EditMTransform(MTransform& trans);
-	bool EditEnum(const std::vector<MString>& select, int& index);
+	bool EditEnum(const std::vector<MString>& select, uint32_t& index);
 	bool EditMColor(MColor& value);
 	bool EditMString(MString& value);
 

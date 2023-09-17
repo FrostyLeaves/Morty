@@ -19,10 +19,8 @@ MORTY_CLASS_IMPLEMENT(MMaterial, MResource)
 
 MMaterial::MMaterial()
 	: MResource()
-	, m_pShaderProgram(MShaderProgram::MakeShared(MShaderProgram::EUsage::EGraphics))
-	, m_eCullMode(MECullMode::ECullBack)
-	, m_eMaterialType(MEMaterialType::EDefault)
 {
+	m_pShaderProgram = MShaderProgram::MakeShared(MShaderProgram::EUsage::EGraphics);
 }
 
 std::vector<std::shared_ptr<MShaderConstantParam>>& MMaterial::GetShaderParams()
@@ -42,7 +40,7 @@ std::vector<std::shared_ptr<MShaderTextureParam>>& MMaterial::GetTextureParams()
 
 void MMaterial::SetTexture(const MString& strName, std::shared_ptr<MResource> pResource)
 {
-	for (int i = 0; i < GetMaterialPropertyBlock()->m_vTextures.size(); ++i)
+	for (size_t i = 0; i < GetMaterialPropertyBlock()->m_vTextures.size(); ++i)
 	{
 		const std::shared_ptr<MTextureResourceParam>& pParam = std::dynamic_pointer_cast<MTextureResourceParam>(GetMaterialPropertyBlock()->m_vTextures[i]);
 		if (strName == pParam->strName)

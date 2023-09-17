@@ -48,6 +48,7 @@ public:
 
 	enum MEMouseInputType
 	{
+		None = 0,
 		ButtonDown = 1,
 		ButtonUp = 2,
 		MouseMove = 3,
@@ -66,13 +67,13 @@ public:
 
 protected:
 
-	MEMouseDownButton m_eEventButton;
-	Vector2 m_v2MousePositionAddition;
+	MEMouseDownButton m_eEventButton = MEMouseDownButton::NoneButton;
+	Vector2 m_v2MousePositionAddition = {};
 
 	static uint32_t s_unMouseDownButton;
 	static Vector2 s_v2MousePosition;
 
-	MEMouseInputType m_eInputType;
+	MEMouseInputType m_eInputType = MEMouseInputType::None;
 
 };
 

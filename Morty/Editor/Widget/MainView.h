@@ -20,8 +20,6 @@ public:
 
 	void Initialize(MainEditor* pMainEditor) override;
 	void Release() override;
-
-	void Input(MInputEvent* pEvent) override;
 	void Render() override;
 
 private:

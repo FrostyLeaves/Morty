@@ -24,6 +24,7 @@ public:
 	//override to use other material.
 	const std::shared_ptr<MMaterial>& GetMaterial(const MMaterialCullingGroup& group) const override
     {
+        MORTY_UNUSED(group);
         return m_pMaterial;
     }
 

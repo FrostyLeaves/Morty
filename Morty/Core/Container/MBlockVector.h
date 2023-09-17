@@ -14,7 +14,7 @@
 template<typename TYPE, size_t SIZE> class MBlockVector;
 
 template<typename TYPE, size_t SIZE>
-class MBlockVectorIter : public std::iterator<std::forward_iterator_tag, TYPE>
+class MBlockVectorIter
 {
 public:
 

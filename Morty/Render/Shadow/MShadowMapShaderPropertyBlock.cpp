@@ -21,7 +21,6 @@
 void MShadowMapShaderPropertyBlock::Initialize(MEngine* pEngine)
 {
 	m_pEngine = pEngine;
-	MObjectSystem* pObjectSystem = pEngine->FindSystem<MObjectSystem>();
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
 
 	std::shared_ptr<MResource> vs = pResourceSystem->LoadResource("Shader/Shadow/shadowmap.mvs");
@@ -60,7 +59,6 @@ void MShadowMapShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& info)
 	MORTY_ASSERT(pDirectionalEntity);
 
 	MScene* pScene = pViewport->GetScene();
-	const MRenderSystem* pRenderSystem = pScene->GetEngine()->FindSystem<MRenderSystem>();
 	auto* pShadowMapManager = pScene->GetManager<MShadowMeshManager>();
 	MORTY_ASSERT(pShadowMapManager);
 

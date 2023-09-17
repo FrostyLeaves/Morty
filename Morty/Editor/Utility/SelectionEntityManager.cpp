@@ -3,7 +3,7 @@
 #include "Scene/MScene.h"
 #include "Scene/MEntity.h"
 
-void SelectionEntityManager::SetSelectedEntity(MScene* pScene, MEntity* pEntity)
+void SelectionEntityManager::SetSelectedEntity(MEntity* pEntity)
 {
     if (pEntity)
     {

@@ -30,7 +30,6 @@ void MDebugRenderWork::Render(MRenderInfo& info, const std::vector<IRenderable*>
 {
 	MViewport* pViewport = info.pViewport;
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
-	MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
 
 	pCommand->AddRenderToTextureBarrier({ CreateOutput()->GetTexture().get() });
 

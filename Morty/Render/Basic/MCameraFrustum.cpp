@@ -145,8 +145,6 @@ std::vector<MCameraFrustum> MCameraFrustum::CutFrustum(const std::vector<float>&
 
 	std::vector<MCameraFrustum> vResult(nSize);
 
-	Vector3 dir = m_vPlanes[4].m_v4Plane;
-
 	float fNearPercent = 0.0f;
 	float fFarPercent = 1.0f;
 	float fNearFarDistance = fabs(m_vPlanes[5].m_v4Plane.w - m_vPlanes[4].m_v4Plane.w);

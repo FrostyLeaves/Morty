@@ -13,6 +13,7 @@
 #include "System/MResourceSystem.h"
 #include "Resource/MMaterialResource.h"
 #include "Resource/MMaterialResourceData.h"
+#include <stdint.h>
 
 class PropertyMRenderMeshComponent : public PropertyBase
 {
@@ -67,7 +68,7 @@ public:
 				{
 					ShowValueBegin("ShadowType");
 					MRenderMeshComponent::MEShadowType eType = pMeshComponent->GetShadowType();
-					int unSelected = (int)eType;
+					uint32_t unSelected = (uint32_t)eType;
 					if (EditEnum({ "None", "OnlyDirection", "AllLights" }, unSelected))
 					{
 						pMeshComponent->SetShadowType((MRenderMeshComponent::MEShadowType)unSelected);

@@ -8,16 +8,3 @@
 #include "Component/MSceneComponent.h"
 #include "Component/MRenderMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
-
-MRenderInfo::MRenderInfo()
-	: nFrameIndex(0)
-	, fDelta(0.0f)
-	, fGameTime(0.0f)
-	, pViewport(nullptr)
-	, pCameraEntity(nullptr)
-	, pDirectionalLightEntity(nullptr)
-	, pSkyBoxEntity(nullptr)
-	, pPrimaryRenderCommand(nullptr)
-{
-
-}

@@ -19,15 +19,6 @@
     #define MORTY_API
 #endif
 
-#ifdef MORTY_ANDROID
-    #ifndef NDEBUG
-        #define MORTY_DEBUG true
-    #endif
-#elif _DEBUG
-    #define MORTY_DEBUG true
-#endif
-
-
 #ifndef M_PI 
 #define M_PI (3.14159265358979323846)
 #endif
@@ -45,6 +36,9 @@ typedef unsigned long MObjectID;
 typedef unsigned long MResourceID;
 typedef unsigned char MByte;
 
+#include <cmath>
+#include <cfloat>
+
 #include <map>
 #include <set>
 #include <stack>
@@ -61,7 +55,7 @@ typedef unsigned char MByte;
 #include <algorithm>
 #include <functional>
 #include <unordered_map>
-#include <cfloat>
+#include <condition_variable>
 
 #include <flatbuffers/buffer.h>
 #include <flatbuffers/flatbuffer_builder.h>
@@ -75,10 +69,13 @@ typedef unsigned char MByte;
 #define MORTY_ASSERT
 #endif
 
+template<class... T> void MORTY_UNUSED(T&&...) {}
+
 class MORTY_API MGlobal
 {
 public:
     static constexpr int M_INVALID_INDEX = -1;
+    static constexpr uint32_t M_INVALID_UINDEX = static_cast<uint32_t>(M_INVALID_INDEX);
     static constexpr float M_FLOAT_BIAS = 1e-6;
 
 };

@@ -23,7 +23,7 @@ public:
 
 public:
 
-    virtual void SceneTick(MScene* pScene, const float& fDelta);
+    void SceneTick(MScene* pScene, const float& fDelta) override;
 
 public:
 

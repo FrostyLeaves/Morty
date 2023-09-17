@@ -3,6 +3,7 @@
 #include "Material/MMaterial.h"
 #include "Render/MBuffer.h"
 #include "RenderProgram/MRenderInfo.h"
+#include "Utility/MGlobal.h"
 
 
 struct MMeshInstanceRenderProxy;
@@ -37,7 +38,9 @@ class MORTY_API MInstanceCulling
 {
 public:
 
-    virtual void Initialize(MEngine* pEngine) {}
+    virtual ~MInstanceCulling() = default;
+
+    virtual void Initialize(MEngine* pEngine) {MORTY_UNUSED(pEngine); }
     virtual void Release() {}
 
     virtual void Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup) = 0;

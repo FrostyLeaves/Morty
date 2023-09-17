@@ -95,9 +95,6 @@ public:
     VkPipeline CreateGraphicsPipeline(const std::shared_ptr<MPipeline>& pPipeline, std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx);
     VkPipeline CreateComputePipeline(const std::shared_ptr<MPipeline>& pPipeline, MComputeDispatcher* pComputeDispatcher);
 
-    void GenerateShaderProgram(MShaderProgram* pShaderProgram);
-    void DestroyShaderProgram(MShaderProgram* pShaderProgram);
-
     void AllocateShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock, const std::shared_ptr<MPipeline>& pPipeline);
     void DestroyShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock);
 

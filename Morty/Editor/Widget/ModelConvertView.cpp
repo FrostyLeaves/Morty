@@ -1,5 +1,6 @@
 #include "ModelConvertView.h"
 
+#include "Utility/MGlobal.h"
 #include "imgui.h"
 #include "imgui_stdlib.h"
 #include "ImGuiFileDialog.h"
@@ -120,11 +121,6 @@ void ModelConvertView::Initialize(MainEditor* pMainEditor)
 void ModelConvertView::Release()
 {
 
-}
-
-void ModelConvertView::Input(MInputEvent* pEvent)
-{
-	
 }
 
 void ModelConvertView::Convert(std::queue<MModelConvertInfo> convertQueue)

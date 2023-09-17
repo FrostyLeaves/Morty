@@ -21,7 +21,7 @@ class MORTY_API MTaskNode : public MTypeClass
 {
     MORTY_CLASS(MTaskNode)
 public:
-    MTaskNode();
+    MTaskNode() = default;
     virtual ~MTaskNode();
 
 public:
@@ -74,12 +74,12 @@ protected:
     MString m_strNodeName;
     MTaskGraph* m_pGraph;
 	int m_nPriorityLevel;
-	METhreadType m_eThreadType;
+	METhreadType m_eThreadType = METhreadType::EAny;
 
 	std::vector<MTaskNodeInput*> m_vInput;
 	std::vector<MTaskNodeOutput*> m_vOutput;
 
-	std::function<void(MTaskNode*)> m_funcTaskFunction;
+	std::function<void(MTaskNode*)> m_funcTaskFunction = nullptr;
 };
 
 template<typename TYPE /*= MTaskNodeOutput*/>

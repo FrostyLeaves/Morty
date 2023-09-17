@@ -13,6 +13,12 @@ MGuid::MGuid(const uint32_t& data0, const uint32_t& data1, const uint32_t& data2
 {
 }
 
+MGuid::MGuid(const MGuid& other)
+	: data(other.data)
+{
+
+}
+
 MGuid MGuid::generate()
 {
 	xg::Guid guid = xg::newGuid();

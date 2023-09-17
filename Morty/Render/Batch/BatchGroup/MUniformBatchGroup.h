@@ -2,6 +2,7 @@
 
 #include "Object/MObject.h"
 #include "Utility/MGlobal.h"
+#include "Variant/MVariant.h"
 #include "Render/MBuffer.h"
 #include "MRenderInstanceCache.h"
 #include "Utility/MBounds.h"

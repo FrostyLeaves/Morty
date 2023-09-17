@@ -67,6 +67,7 @@ bool MShaderResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 
 bool MShaderResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 {
+	MORTY_UNUSED(pResourceData);
 	return false;
 }
 
@@ -95,6 +96,8 @@ const MType* MShaderResourceLoader::ResourceType() const
 
 std::unique_ptr<MResourceData> MShaderResourceLoader::LoadResource(const MString& svFullPath, const MString& svPath)
 {
+	MORTY_UNUSED(svPath);
+
 	std::unique_ptr<MShaderResourceData> pResourceData = std::make_unique<MShaderResourceData>();
 
 	const MString strPathSuffix = MResource::GetSuffix(svFullPath);
@@ -112,13 +115,15 @@ std::unique_ptr<MResourceData> MShaderResourceLoader::LoadResource(const MString
 		pResourceData->eShaderType = MEShaderType::ECompute;
 	}
 
+	//TODO load as buffer.
 	pResourceData->strShaderPath = svFullPath;
 	return pResourceData;
 }
 
 void MShaderResourceData::LoadBuffer(const std::vector<MByte>& buffer)
 {
-	
+	MORTY_UNUSED(buffer);
+	MORTY_ASSERT(false);
 }
 
 std::vector<MByte> MShaderResourceData::SaveBuffer() const

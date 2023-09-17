@@ -36,7 +36,6 @@ public:
 
 private:
 
-	MSkeleton* m_pSkeleton = nullptr;
 	std::unique_ptr<MResourceData> m_pResourceData = nullptr;
 };
 

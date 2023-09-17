@@ -27,7 +27,7 @@ public:
 
     void AddChild(MEntity* pParent, MEntity* pChild);
 
-    std::shared_ptr<MResource> PackEntity(MScene* pScene, const std::vector<MEntity*>& vEntity);
+    std::shared_ptr<MResource> PackEntity(const std::vector<MEntity*>& vEntity);
 
     std::vector<MEntity*> LoadEntity(MScene* pScene, std::shared_ptr<MResource> pResource);
 

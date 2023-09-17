@@ -118,8 +118,8 @@ private:
 
 	std::shared_ptr<MShaderProgram> m_pShaderProgram;
 
-	MEMaterialType m_eMaterialType;
-	MECullMode m_eCullMode;
+	MEMaterialType m_eMaterialType = MEMaterialType::EDefault;
+	MECullMode m_eCullMode = MECullMode::ECullBack;
 
 	bool m_bBatchInstanceEnable = false;
 };

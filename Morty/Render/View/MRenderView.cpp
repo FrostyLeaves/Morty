@@ -1,4 +1,5 @@
 ﻿#include "View/MRenderView.h"
+#include "Utility/MGlobal.h"
 #if RENDER_GRAPHICS == MORTY_VULKAN
 #include "Render/Vulkan/MVulkanRenderCommand.h"
 #endif
@@ -6,10 +7,6 @@
 #include "System/MRenderSystem.h"
 
 MRenderView::MRenderView()
-	: m_pEngine(nullptr)
-	, m_unWidht(800)
-	, m_unHeight(600)
-	, m_vRenderTarget()
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	m_VkSurface = VK_NULL_HANDLE;
@@ -134,7 +131,7 @@ bool MRenderView::InitializeSwapchain()
 	VkPhysicalDevice physicalDevice = m_pDevice->GetPhysicalDevice();
 
 	//CreateSpawnchain֮
-	int nPresentQueueIndex = m_pDevice->FindQueuePresentFamilies(physicalDevice, m_VkSurface);
+	int nPresentQueueIndex = m_pDevice->FindQueuePresentFamilies(m_VkSurface);
 	if (nPresentQueueIndex == -1)
 	{
 		GetEngine()->GetLogger()->Error("Create VulkanRenderTarget Error : nPresentQueueIndex == -1");
@@ -154,7 +151,7 @@ bool MRenderView::InitializeSwapchain()
 
 	VkExtent2D swapchainExtent = {};
 
-	if (caps.currentExtent.width == -1 || caps.currentExtent.height == -1) {
+	if (caps.currentExtent.width == MGlobal::M_INVALID_UINDEX || caps.currentExtent.height == MGlobal::M_INVALID_UINDEX) {
 		swapchainExtent.width = GetWidth();
 		swapchainExtent.height = GetHeight();
 	}

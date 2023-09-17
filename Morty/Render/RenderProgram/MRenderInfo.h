@@ -44,21 +44,19 @@ struct MORTY_API MCascadedShadowRenderData
 
 struct MRenderInfo
 {
-	MRenderInfo();
-
-	uint32_t nFrameIndex;
+	uint32_t nFrameIndex = 0;
 
 	/************************** basic **************************/
-	float fDelta;
-	float fGameTime;
-	class MViewport* pViewport;
+	float fDelta = 0.0f;
+	float fGameTime = 0.0f;
+	class MViewport* pViewport = nullptr;
 
 	/************************** render **************************/
-	MIRenderCommand* pPrimaryRenderCommand;
+	MIRenderCommand* pPrimaryRenderCommand = nullptr;
 
 	/************************** camera **************************/
-	MEntity* pCameraEntity;
-	MEntity* pDirectionalLightEntity;
+	MEntity* pCameraEntity = nullptr;
+	MEntity* pDirectionalLightEntity = nullptr;
 	Matrix4 m4CameraInverseProjection;
 	MCameraFrustum cameraFrustum;
 
@@ -66,7 +64,7 @@ struct MRenderInfo
 	std::array<MCascadedShadowRenderData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> shadowRenderInfo;
 
 	/************************** skybox **************************/
-	MEntity* pSkyBoxEntity;
+	MEntity* pSkyBoxEntity = nullptr;
 
 	/************************** mesh **************************/
 	// transparent

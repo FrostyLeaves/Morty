@@ -3,27 +3,13 @@
     "configurations": [
         {
             "name": "Launch Debug",
-            "type": "cppdbg",
+            "type": "lldb",
             "request": "launch",
             // Resolved by CMake Tools:
             "program": "${command:cmake.launchTargetPath}",
             "args": [],
-            "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": true,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-            "osx": {
-                "MIMode": "lldb",
-                "program": "${command:cmake.launchTargetPath}"
-            },
+            "preLaunchTask": "CMake: build",
         }
     ]
 }

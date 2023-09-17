@@ -41,7 +41,7 @@ void MSkeletalAnimation::Update(MSkeletonPose& outputPose, const float& fTime, M
 		}
 
 		const MSkeletalAnimNode& animNode = m_vSkeletalAnimNodes[nAnimNodeIndex];
-		Matrix4 matParentTrans = bone.unParentIndex == MGlobal::M_INVALID_INDEX ? Matrix4::IdentityMatrix : outputPose.vBoneMatrix[bone.unParentIndex];
+		Matrix4 matParentTrans = bone.unParentIndex == MGlobal::M_INVALID_UINDEX ? Matrix4::IdentityMatrix : outputPose.vBoneMatrix[bone.unParentIndex];
 
 		MTransform trans;
 		if (FindTransform(fTime, animNode, trans))
@@ -164,8 +164,10 @@ bool MSkeletalAnimation::FindTransform(const float& fTime, const MSkeletalAnimNo
 	Vector3 v3Position, v3Scale;
 	Quaternion quatRotation;
 
-	for (int i = animNode.m_vPositionTrack.size() - 1; i >= 0; --i)
+	for (size_t nIdx = 0; nIdx < animNode.m_vPositionTrack.size(); ++nIdx)
 	{
+		size_t i = animNode.m_vPositionTrack.size() - nIdx - 1;
+
 		const auto& curkey = animNode.m_vPositionTrack[i];
 		if (fTime >= curkey.time())
 		{
@@ -192,9 +194,11 @@ bool MSkeletalAnimation::FindTransform(const float& fTime, const MSkeletalAnimNo
 			break;
 		}
 	}
-
-	for (int i = animNode.m_vRotationTrack.size() - 1; i >= 0; --i)
+	
+	for (size_t nIdx = 0; nIdx < animNode.m_vRotationTrack.size(); ++nIdx)
 	{
+		size_t i = animNode.m_vRotationTrack.size() - nIdx - 1;
+
 		const auto& curkey = animNode.m_vRotationTrack[i];
 		if (fTime >= curkey.time())
 		{
@@ -222,8 +226,10 @@ bool MSkeletalAnimation::FindTransform(const float& fTime, const MSkeletalAnimNo
 		}
 	}
 
-	for (int i = animNode.m_vScaleTrack.size() - 1; i >= 0; --i)
+	for (size_t nIdx = 0; nIdx < animNode.m_vScaleTrack.size(); ++nIdx)
 	{
+		size_t i = animNode.m_vScaleTrack.size() - nIdx - 1;
+
 		const auto& curkey = animNode.m_vScaleTrack[i];
 		if (fTime >= curkey.time())
 		{

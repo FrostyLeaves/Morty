@@ -6,13 +6,6 @@
 MORTY_CLASS_IMPLEMENT(MTaskNode, MTypeClass)
 
 
-MTaskNode::MTaskNode()
-	: m_funcTaskFunction(nullptr)
-	, m_eThreadType(METhreadType::EAny)
-{
-
-}
-
 MTaskNode::~MTaskNode()
 {
 	for (MTaskNodeInput* pInput : m_vInput)

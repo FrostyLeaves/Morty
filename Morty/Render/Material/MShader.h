@@ -27,13 +27,13 @@ class MShaderBuffer;
 class MORTY_API MShader
 {
 public:
-    MShader();
-    virtual ~MShader();
+    MShader() = default;
+    virtual ~MShader() = default;
 
 	bool CompileShader(MIDevice* pDevice);
 	void CleanShader(MIDevice* pDevice);
 
-	const MEShaderType GetType() const { return m_eShaderType; }
+	MEShaderType GetType() const { return m_eShaderType; }
 	const MShaderMacro& GetMacro() { return m_ShaderMacro; }
 	const MString& GetShaderPath() { return m_strShaderPath; }
 
@@ -45,7 +45,7 @@ private:
 	friend class MShaderResource;
 	MShaderMacro m_ShaderMacro;
 	MString m_strShaderPath;
-	MEShaderType m_eShaderType;
-	MShaderBuffer* m_pShaderBuffer;
+	MEShaderType m_eShaderType = MEShaderType::ENone;
+	MShaderBuffer* m_pShaderBuffer = nullptr;
 
 };

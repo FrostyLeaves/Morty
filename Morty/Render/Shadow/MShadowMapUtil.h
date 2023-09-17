@@ -11,9 +11,9 @@ class MScene;
 class MEngine;
 class MMaterial;
 class MComponent;
-class MShaderConstantParam;
 class MShaderPropertyBlock;
 class MRenderMeshComponent;
+struct MShaderConstantParam;
 
 
 

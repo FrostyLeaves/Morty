@@ -18,6 +18,8 @@ void MResourceAsyncLoadSystem::AddLoader(std::shared_ptr<MResourceLoader>& pLoad
 
 void MResourceAsyncLoadSystem::EngineTick(const float& fDelta)
 {
+	MORTY_UNUSED(fDelta);
+
 	if (m_loadWork.has_value())
 	{
 		return;

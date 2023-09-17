@@ -10,6 +10,7 @@
 #include "System/MRenderSystem.h"
 #include "TaskGraph/MTaskGraph.h"
 #include "Utility/MFunction.h"
+#include "Utility/MGlobal.h"
 
 MORTY_CLASS_IMPLEMENT(MMeshManager, MObject)
 
@@ -141,7 +142,7 @@ void MMeshManager::InitializeCube()
 
 void MMeshManager::ReleaseCube()
 {
-	//UnregisterMesh(m_pCubeMesh);
+	UnregisterMesh(m_pCubeMesh.get());
 }
 
 size_t MMeshManager::RoundIndexSize(size_t unIndexNum)
@@ -231,6 +232,8 @@ void MMeshManager::UploadBuffer(MIMesh* pMesh)
 
 void MMeshManager::UploadBufferTask(MTaskNode* pNode)
 {
+	MORTY_UNUSED(pNode);
+	
 	if (m_vUploadQueue.empty())
 	{
 		return;

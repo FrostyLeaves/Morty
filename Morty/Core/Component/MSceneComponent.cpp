@@ -123,7 +123,7 @@ void MSceneComponent::SetParentComponent(const MComponentID& parent)
 		if (MSceneComponent* pParentScene = pParent->template DynamicCast<MSceneComponent>())
 		{
 			pParentScene->AddChild(this);
-			SetVisibleRecursively(pParentScene->GetVisibleRecursively() & GetVisible());
+			SetVisibleRecursively(pParentScene->GetVisibleRecursively() && GetVisible());
 
 			WorldTransformDirty();
 			WorldTransformDirtyRecursively();

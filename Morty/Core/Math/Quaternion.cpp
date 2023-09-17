@@ -58,6 +58,8 @@ Quaternion Quaternion::FromEuler(const Vector3& eulerVec3)
 
 const mfbs::Quaternion* Quaternion::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
+	MORTY_UNUSED(fbb);
+
 	return reinterpret_cast<const mfbs::Quaternion*>(this);
 }
 

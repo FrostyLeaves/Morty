@@ -11,7 +11,6 @@
 #include "Type/MType.h"
 
 #include "Scene/MGuid.h"
-#include "Utility/MSerializer.h"
 #include "flatbuffers/flatbuffer_builder.h"
 
 class MScene;

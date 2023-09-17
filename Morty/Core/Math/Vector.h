@@ -16,6 +16,7 @@ class MORTY_API Vector2
 public:
 	Vector2();
 	Vector2(const float& _x, const float& _y);
+	Vector2(const Vector2& vec2) = default;
 	Vector2(const Vector3& vec3);
 
 	float Length() const;
@@ -29,7 +30,7 @@ public:
 	Vector2 operator * (const float& value) const;
 	Vector2 operator / (const float& value) const;
 
-	Vector2 operator = (const Vector2& value);
+	Vector2& operator = (const Vector2& value) = default;
 	Vector3 operator = (const Vector3& value);
 	Vector4 operator = (const Vector4& value);
 
@@ -52,8 +53,8 @@ public:
 	{
 		struct
 		{
-			float x;
-			float y;
+			float x = 0.0f;
+			float y = 0.0f;
 		};
 		float m[2];
 	};

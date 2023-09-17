@@ -16,7 +16,6 @@ void GPU_DRIVEN_CULLING_TEST(MEngine* pEngine, MScene* pScene)
 {
 
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
-	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
 
 	std::shared_ptr<MMeshResource> pMeshResource = pResourceSystem->CreateResource<MMeshResource>();
 	pMeshResource->Load(MMeshResourceUtil::CreateSphere());
@@ -59,7 +58,7 @@ void GPU_DRIVEN_CULLING_TEST(MEngine* pEngine, MScene* pScene)
 			for (int z = 0; z < 40; ++z)
 			{
 				MEntity* pSphereEntity = pScene->CreateEntity();
-				pSphereEntity->SetName("Sphere_Instancing_" + MStringHelper::ToString(x * 1000 + y * 1000 + z));
+				pSphereEntity->SetName("Sphere_Instancing_" + MStringUtil::ToString(x * 1000 + y * 1000 + z));
 				if (MSceneComponent* pSceneComponent = pSphereEntity->RegisterComponent<MSceneComponent>())
 				{
 					pSceneComponent->SetPosition(Vector3(x * 10, y * 10, z * 10));

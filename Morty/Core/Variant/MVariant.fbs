@@ -6,7 +6,7 @@ namespace mfbs;
 enum MEVariantType : byte
 {
 	ENone = 0,
-	EBool = 1,
+	EUInt = 1,
 	EInt = 2,
 	EFloat = 3,
 	EVector2 = 4,
@@ -21,9 +21,9 @@ enum MEVariantType : byte
 	EUser = 13,
 }
 
-struct Bool
+struct UInt
 {
-	value:bool;
+	value:uint;
 }
 
 struct Int
@@ -63,7 +63,7 @@ table MVariantArray
 
 union MVariantData
 {
-	Bool,
+	UInt,
 	Int,
 	Float,
 	Vector2,

@@ -10,11 +10,6 @@
 
 MORTY_CLASS_IMPLEMENT(MScene, MObject)
 
-static auto ComponentIDLessFunction = [](const MComponentID& a, const MComponentID& b) {
-	return a.pComponentType < b.pComponentType;
-};
-
-
 MScene::MScene()
 	: MObject()
 	, m_tComponents()

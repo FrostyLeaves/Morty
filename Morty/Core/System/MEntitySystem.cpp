@@ -56,7 +56,7 @@ size_t GetSceneDepthFunction(MSceneComponent* pSceneComponent, std::map<MSceneCo
 	return tDepthCache[pSceneComponent] = GetSceneDepthFunction(pSceneComponent->GetParent(), tDepthCache) + 1;
 }
 
-std::shared_ptr<MResource> MEntitySystem::PackEntity(MScene* pScene, const std::vector<MEntity*>& vEntity)
+std::shared_ptr<MResource> MEntitySystem::PackEntity(const std::vector<MEntity*>& vEntity)
 {
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
@@ -119,7 +119,7 @@ std::vector<MEntity*> MEntitySystem::LoadEntity(MScene* pScene, std::shared_ptr<
 
 	std::map<MGuid, MGuid> tRedirectGuid;
 	tRedirectGuid[MGuid::invalid] = MGuid::invalid;
-	for (int i = 0; i < vEntity.size(); ++i)
+	for (size_t i = 0; i < vEntity.size(); ++i)
 	{
 		const mfbs::MEntity* fb_entity = vEntity.Get(i);
 		if (fb_entity->id())
@@ -129,7 +129,7 @@ std::vector<MEntity*> MEntitySystem::LoadEntity(MScene* pScene, std::shared_ptr<
 		}
 	}
 
-	for (int i = 0; i < vEntity.size(); ++i)
+	for (size_t i = 0; i < vEntity.size(); ++i)
 	{
 		const mfbs::MEntity* fb_entity = vEntity.Get(i);
 		if (!fb_entity->id())
@@ -147,7 +147,7 @@ std::vector<MEntity*> MEntitySystem::LoadEntity(MScene* pScene, std::shared_ptr<
 		vResult.push_back(pEntity);
 	}
 
-	for (int i = 0; i < vResult.size(); ++i)
+	for (size_t i = 0; i < vResult.size(); ++i)
 	{
 		vResult[i]->PostDeserialize(tRedirectGuid);
 	}

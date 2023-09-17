@@ -33,7 +33,6 @@ void GuizmoWidget::Render()
 		return;
 	}
 
-	MScene* pScene = GetScene();
 	MViewport* pViewport = GetViewport();
 
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
@@ -73,9 +72,3 @@ void GuizmoWidget::Release()
 {
 
 }
-
-void GuizmoWidget::Input(MInputEvent* pEvent)
-{
-
-}
-

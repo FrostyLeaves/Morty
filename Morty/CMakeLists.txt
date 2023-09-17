@@ -9,6 +9,14 @@ if(MORTY_BUILD_TARGET STREQUAL "ANDROID")
 	string(REPLACE "\\" "/" CMAKE_ANDROID_NDK ${CMAKE_ANDROID_NDK})
 endif()
 
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -target x86_64-w64-mingw32")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -target x86_64-w64-mingw32")
+
+endif()
+
 project ("Morty" CXX)
 
 set(MORTY_BUILD_TARGET_RANGE "WIN" "MACOS" "IOS" "ANDROID")
@@ -28,14 +36,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF) #Set this to ON if you want to use GNU++
 set(CMAKE_CXX_STANDARD 17)
 
-SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} $ENV{CXXFLAGS} -O0 -Wall -g2 -ggdb")
-SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} $ENV{CXXFLAGS} -O3 -Wall")
-
-file(CREATE_LINK
-  "${CMAKE_BINARY_DIR}/compile_commands.json"
-  "${CMAKE_SOURCE_DIR}/compile_commands.json"
-  SYMBOLIC
-)
+SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} $ENV{CXXFLAGS} -O0  -Werror -Wall -Wextra -g2 -ggdb")
+SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} $ENV{CXXFLAGS} -O3  -Werror -Wall -Wextra")
 
 option(MORTY_BUILD_WITH_PHYSICS "Build With Physics" False)
 

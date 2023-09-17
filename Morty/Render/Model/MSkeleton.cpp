@@ -61,7 +61,7 @@ void MSkeleton::CopyAllBones(std::vector<MBone*>& allBones)
 
 	allBones.resize(m_vAllBones.size());
 
-	for (int i = 0; i < m_vAllBones.size(); ++i)
+	for (size_t i = 0; i < m_vAllBones.size(); ++i)
 	{
 		allBones[i] = new MBone();
 		(*allBones[i]) = (m_vAllBones[i]);
@@ -110,7 +110,7 @@ void MSkeleton::SortByDeep()
 	{
 		int deep = 0;
 		uint32_t unParentIdx = bone.unIndex;
-		while (unParentIdx != MGlobal::M_INVALID_INDEX)
+		while (unParentIdx != MGlobal::M_INVALID_UINDEX)
 		{
 			unParentIdx = m_vAllBones[unParentIdx].unParentIndex;
 			++deep;
@@ -130,7 +130,7 @@ void MSkeleton::SortByDeep()
 	{
 		MBone& bone = vBones[i];
 		bone.unIndex = map[bone.unIndex];
-		if (MGlobal::M_INVALID_INDEX != bone.unParentIndex)
+		if (MGlobal::M_INVALID_UINDEX != bone.unParentIndex)
 			bone.unParentIndex = map[bone.unParentIndex];
 		for (uint32_t& index : bone.vChildrenIndices)
 			index = map[index];

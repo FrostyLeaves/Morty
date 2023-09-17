@@ -9,7 +9,7 @@ class SelectionEntityManager : public SingletonInstance<SelectionEntityManager>
 {
 public:
 
-    void SetSelectedEntity(MScene* pScene, MEntity* pEntity);
+    void SetSelectedEntity( MEntity* pEntity);
     MEntity* GetSelectedEntity() const;
 
 private:

@@ -55,13 +55,11 @@ bool MRenderModule::Register(MEngine* pEngine)
 		return false;
 	}
 
-	MNotifyManager* pNotifySystem = pEngine->FindSystem<MNotifyManager>();
 	MTaskGraph* pTaskGraph = pEngine->GetMainGraph();
 
 	pEngine->RegisterSystem<MModelSystem>();
 
 	MRenderSystem* pRenderSystem = pEngine->RegisterSystem<MRenderSystem>();
-	MSkyBoxSystem* pSkyBoxSystem = pEngine->RegisterSystem<MSkyBoxSystem>();
 
 	if (MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>())
 	{

@@ -10,11 +10,8 @@ public:
     ~ResourceView() = default;
 
 	void Render() override;
-		;
 	void Initialize(MainEditor* pMainEditor) override;
 	void Release() override;
-
-	void Input(MInputEvent* pEvent) override;
 	
 };
 

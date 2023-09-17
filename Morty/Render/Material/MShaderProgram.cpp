@@ -191,7 +191,7 @@ void MShaderProgram::BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderPara
 			}
 			else
 			{
-				std::shared_ptr<MShaderConstantParam> pParam = std::make_shared<MShaderConstantParam>(*pBufferParam, 0);
+				std::shared_ptr<MShaderConstantParam> pParam = std::make_shared<MShaderConstantParam>(*pBufferParam);
 				pParam->eShaderType = eType;
 				pProgramProperty->AppendConstantParam(pParam, eType);
 			}
@@ -292,7 +292,7 @@ void MShaderProgram::CopyShaderParams(MEngine* pEngine, const std::shared_ptr<MS
 	target->m_vParams.resize(source->m_vParams.size());
 	for (uint32_t i = 0; i < source->m_vParams.size(); ++i)
 	{
-		target->m_vParams[i] = std::make_shared<MShaderConstantParam>(*source->m_vParams[i], 0);
+		target->m_vParams[i] = std::make_shared<MShaderConstantParam>(*source->m_vParams[i]);
 	}
 
 	target->m_vTextures.resize(source->m_vTextures.size());
@@ -330,16 +330,6 @@ std::shared_ptr<MShaderPropertyBlock> MShaderProgram::AllocShaderPropertyBlock(s
 void MShaderProgram::ReleaseShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock)
 {
 	m_tShaderPropertyBlockInstance.erase(pShaderPropertyBlock);
-}
-
-void MShaderProgram::GenerateProgram(MIDevice* pDevice)
-{
-	pDevice->GenerateShaderProgram(this);
-}
-
-void MShaderProgram::DestroyProgram(MIDevice* pDevice)
-{
-	pDevice->DestroyShaderProgram(this);
 }
 
 std::shared_ptr<MShaderProgram> MShaderProgram::GetShared() const

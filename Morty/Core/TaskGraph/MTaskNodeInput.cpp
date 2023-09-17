@@ -31,7 +31,7 @@ MString MTaskNodeInput::GetStringID() const
 	if (!GetTaskNode())
 		return "";
 
-	return GetTaskNode()->GetNodeName() + "_Input_" + MStringHelper::ToString(m_unIndex);
+	return GetTaskNode()->GetNodeName() + "_Input_" + MStringUtil::ToString(m_unIndex);
 }
 
 MTaskNode* MTaskNodeInput::GetLinkedNode() const

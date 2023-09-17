@@ -10,11 +10,10 @@
 
 #include "Utility/MGlobal.h"
 #include "Math/Vector.h"
-#include "Utility/MSerializer.h"
 
 #include <vector>
 
-class MORTY_API MIBounds : public MSerializer
+class MORTY_API MIBounds
 {
 public:
 	MIBounds() {}
@@ -40,7 +39,6 @@ public:
 
 	void GetPoints(std::vector<Vector3>& vPoints) const;
 
-	//����v3min��v3max������v3min-v3max�ķ�Χ������Bounds����ȡ����
 	void UnionMinMax(Vector3& v3min, Vector3& v3max) const;
 
 	MBoundsAABB IntersectAABB(const MBoundsAABB& aabb) const;

@@ -44,7 +44,7 @@ void MThreadPool::Initialize()
 
 	for (size_t i = size_t(METhreadType::ENameThreadNum); i < m_aThread.size(); ++i)
 	{
-		MString strThreadName = MString("Thread ") + MStringHelper::ToString(i);
+		MString strThreadName = MString("Thread ") + MStringUtil::ToString(i);
 		m_aThread[i] = std::thread(&MThreadPool::ThreadRun, this, METhreadType::EAny, strThreadName);
 		s_tThreadType[m_aThread[i].get_id()] = METhreadType::EAny;
 		m_aThread[i].detach();
@@ -108,9 +108,12 @@ bool MThreadPool::AddWork(const MThreadWork& work)
 void MThreadPool::ThreadRun(METhreadType eType, MString strThreadName)
 {
 #ifdef MORTY_WIN
-	std::wstring wstrThreadName;
-	MStringHelper::ConvertToWString(strThreadName, wstrThreadName);
-	SetThreadDescription(GetCurrentThread(), wstrThreadName.c_str());
+	MORTY_UNUSED(strThreadName);
+	//std::wstring wstrThreadName;
+	//MStringUtil::ConvertToWString(strThreadName, wstrThreadName);
+	//SetThreadDescription(GetCurrentThread(), wstrThreadName.c_str());
+#else
+	MORTY_UNUSED(strThreadName);
 #endif
 
 	std::queue<MThreadWork>* vWorkQueue = nullptr;

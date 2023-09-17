@@ -25,8 +25,6 @@ public:
 	MObjectSystem();
 	virtual ~MObjectSystem();
 
-	virtual void Tick(const float& fDelta) {}
-
 	void InitObject(MObject* pObject);
 
 	template<typename OBJECT_TYPE>

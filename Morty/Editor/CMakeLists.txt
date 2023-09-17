@@ -56,9 +56,9 @@ endif()
 find_package(imgui CONFIG REQUIRED)
 if(imgui_FOUND)
     target_link_libraries(Editor PUBLIC imgui::imgui)
-    target_compile_definitions(Editor
-        PUBLIC IMGUI_USER_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/Utility/imgui_include.h"
-    )
+    #target_compile_definitions(Editor
+    #    PUBLIC IMGUI_USER_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/Utility/imgui_include.h"
+    #)
 else()
     message(FATAL_ERROR "imgui not found.")
 endif()

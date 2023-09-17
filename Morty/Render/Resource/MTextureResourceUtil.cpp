@@ -16,14 +16,14 @@ void FillChannelNum(const MByte* aByteData, T* aTargetData, const uint32_t& nSou
 
 	int nTargetIdx = 0;
 
-	for (int nSourceIdx = 0; nSourceIdx < nSourceSize; nSourceIdx += nSourceChannel)
+	for (uint32_t nSourceIdx = 0; nSourceIdx < nSourceSize; nSourceIdx += nSourceChannel)
 	{
-		for (int nOffset = 0; nOffset < nSourceChannel; ++nOffset)
+		for (uint32_t nOffset = 0; nOffset < nSourceChannel; ++nOffset)
 		{
 			aTargetData[nTargetIdx++] = aSource[nSourceIdx + nOffset];
 		}
 
-		for (int nOffset = nSourceChannel; nOffset < nTargetChannel; ++nOffset)
+		for (uint32_t nOffset = nSourceChannel; nOffset < nTargetChannel; ++nOffset)
 		{
 			aTargetData[nTargetIdx++] = aDefaultColor[nOffset];
 		}

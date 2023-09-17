@@ -15,7 +15,7 @@ class MORTY_API MGuid
 public:
 	MGuid();
 	MGuid(const uint32_t& data0, const uint32_t& data1, const uint32_t& data2, const uint32_t& data3);
-
+	MGuid(const MGuid& other);
 	static MGuid generate();
 
 

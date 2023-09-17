@@ -3,6 +3,7 @@
 
 #include "Property/PropertyBase.h"
 #include "Component/MCameraComponent.h"
+#include <stdint.h>
 
 class PropertyMCameraComponent : public PropertyBase
 {
@@ -15,7 +16,7 @@ public:
 			{
 				ShowValueBegin("Type");
 				MCameraComponent::MECameraType eType = pCameraComponent->GetCameraType();
-				int unSelected = eType == MCameraComponent::MECameraType::EPerspective ? 0 : 1;
+				uint32_t unSelected = eType == MCameraComponent::MECameraType::EPerspective ? 0 : 1;
 				if (EditEnum({ "Perspective", "Orthographic" }, unSelected))
 				{
 					pCameraComponent->SetCameraType(unSelected == 0 ? MCameraComponent::MECameraType::EPerspective : MCameraComponent::MECameraType::EOrthographic);

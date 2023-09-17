@@ -102,8 +102,3 @@ void MainView::Release()
 	m_pGuizmoWidget = nullptr;
 
 }
-
-void MainView::Input(MInputEvent* pEvent)
-{
-
-}

@@ -82,9 +82,6 @@ public:
 
 	EUsage GetUsage() const { return m_eUsage; }
 
-	void GenerateProgram(MIDevice* pDevice);
-	void DestroyProgram(MIDevice* pDevice);
-
 public:
 
 	std::shared_ptr<MShaderProgram> GetShared() const;

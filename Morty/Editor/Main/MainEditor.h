@@ -62,7 +62,6 @@ private:
 
 	MEngine* m_pEngine = nullptr;
 	MScene* m_pScene = nullptr;
-	MainView* m_pRenderView = nullptr;
     std::vector<BaseWidget*> m_vChildView;
 	std::set<std::shared_ptr<SceneTexture>> m_vSceneViewer;
 

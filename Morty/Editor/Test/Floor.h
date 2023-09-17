@@ -15,15 +15,12 @@
 void CREATE_FLOOR_GRID(MEngine* pEngine, MScene* pScene)
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
-	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
 
 	std::shared_ptr<MMeshResource> pCubeResource = pResourceSystem->CreateResource<MMeshResource>();
 	pCubeResource->Load(MMeshResourceUtil::CreatePlane());
 
 	MEntity* pFloorEntity = pScene->CreateEntity();
 	pFloorEntity->SetName("Floor Grid");
-
-	MSceneComponent* pSceneComponent = pFloorEntity->RegisterComponent<MSceneComponent>();
 
 	if (MRenderMeshComponent* pMeshComponent = pFloorEntity->RegisterComponent<MRenderMeshComponent>())
 	{

@@ -11,7 +11,6 @@ MTexture::MTexture()
 	, m_eTextureType(METextureType::ETexture2D)
 	, m_bReadable(false)
 	, m_bMipmapsEnable(false)
-	, m_unMipmapLevel(0)
 	, m_unImageLayerNum(1)
 {
 

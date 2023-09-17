@@ -18,6 +18,7 @@
 
 #include "Mesh/MMeshManager.h"
 #include "TaskGraph/MTaskGraph.h"
+#include "Utility/MGlobal.h"
 
 MORTY_INTERFACE_IMPLEMENT(MMeshInstanceManager, IManager)
 
@@ -66,6 +67,8 @@ void MMeshInstanceManager::Release()
 
 void MMeshInstanceManager::RenderUpdate(MTaskNode* pNode)
 {
+	MORTY_UNUSED(pNode);
+	
 	for (auto& [material, group] : m_tRenderableMaterialGroup)
 	{
 		if (!group->tWaitRemoveComponent.empty())

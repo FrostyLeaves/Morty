@@ -70,8 +70,15 @@ public:
 	virtual void OnCreated() {}
 	virtual void OnDelete() {}
 
-	virtual bool Load(std::unique_ptr<MResourceData>&& pResourceData) { return false; };
-	virtual bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) { return false; }
+	virtual bool Load(std::unique_ptr<MResourceData>&& pResourceData) { 
+		MORTY_UNUSED(pResourceData);
+		return false; 
+	};
+
+	virtual bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) {
+		MORTY_UNUSED(pResourceData);
+		return false;
+		}
 
 	void ReplaceFrom(std::shared_ptr<MResource> pResource);
 

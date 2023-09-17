@@ -67,11 +67,15 @@ public:
 	virtual bool GenerateFrameBuffer(MRenderPass* pRenderPass) = 0;
 	virtual void DestroyFrameBuffer(MRenderPass* pRenderPass) = 0;
 
-	virtual bool GenerateShaderProgram(MShaderProgram* pShaderProgram) = 0;
-	virtual void DestroyShaderProgram(MShaderProgram* pShaderProgram) = 0;
+	virtual bool RegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher) { 
+		MORTY_UNUSED(pComputeDispatcher); 
+		return true; 
+	};
 
-	virtual bool RegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher) { return true; };
-	virtual bool UnRegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher) { return true; };
+	virtual bool UnRegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher) {
+		MORTY_UNUSED(pComputeDispatcher); 
+		return true;
+	};
 
 	virtual MIRenderCommand* CreateRenderCommand(const MString& strCommandName) = 0;
 	virtual void RecoveryRenderCommand(MIRenderCommand* pCommand) = 0;

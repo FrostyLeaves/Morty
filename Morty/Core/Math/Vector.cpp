@@ -298,8 +298,8 @@ Vector3& Vector4::GetVector3() const
 }
 
 Vector2::Vector2()
-	: x(0)
-	, y(0)
+	: x(0.0f)
+	, y(0.0f)
 {
 
 }
@@ -352,13 +352,6 @@ Vector4 Vector2::operator=(const Vector4& value)
 }
 
 Vector3 Vector2::operator=(const Vector3& value)
-{
-	x = value.x;
-	y = value.y;
-	return value;
-}
-
-Vector2 Vector2::operator=(const Vector2& value)
 {
 	x = value.x;
 	y = value.y;
@@ -419,6 +412,8 @@ Vector2 Vector2::operator-(void) const
 
 const mfbs::Vector2* Vector2::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
+	MORTY_UNUSED(fbb);
+	
 	return reinterpret_cast<const mfbs::Vector2*>(this);
 }
 
@@ -429,6 +424,8 @@ void Vector2::Deserialize(const void* pBufferPointer)
 
 const mfbs::Vector3* Vector3::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
+	MORTY_UNUSED(fbb);
+
 	return reinterpret_cast<const mfbs::Vector3*>(this);
 }
 
@@ -439,6 +436,8 @@ void Vector3::Deserialize(const void* pBufferPointer)
 
 const mfbs::Vector4* Vector4::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
+	MORTY_UNUSED(fbb);
+
 	return reinterpret_cast<const mfbs::Vector4*>(this);
 }
 

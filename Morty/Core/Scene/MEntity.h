@@ -11,7 +11,6 @@
 #include "Utility/MString.h"
 #include "Scene/MGuid.h"
 #include "Component/MComponent.h"
-#include "Utility/MSerializer.h"
 #include "crossguid/guid.hpp"
 
 #include <vector>

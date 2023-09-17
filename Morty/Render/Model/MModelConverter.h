@@ -54,6 +54,8 @@ enum class MEModelTextureUsage
 class MORTY_API MITextureDelegate
 {
 public:
+	virtual ~MITextureDelegate() = default;
+	
 	virtual std::shared_ptr<MTextureResource> GetTexture(const MString& strFullPath, MEModelTextureUsage eUsage) = 0;
 };
 
@@ -83,11 +85,11 @@ protected:
 	bool Load(const MString& strResourcePath);
 
 	void ProcessNode(aiNode* pNode, const aiScene* pScene);
-	void ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertex>* pMMesh);
-	void ProcessMeshVertices(aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh);
-	void ProcessMeshIndices(aiMesh* pMesh, const aiScene* pScene, MIMesh* pMMesh);
+	void ProcessMeshVertices(aiMesh* pMesh, MMesh<MVertex>* pMMesh);
+	void ProcessMeshVertices(aiMesh* pMesh, MMesh<MVertexWithBones>* pMMesh);
+	void ProcessMeshIndices(aiMesh* pMesh, MIMesh* pMMesh);
 
-	void BindVertexAndBones(MSkeleton* pSkeleton, aiMesh* pMesh, const aiScene* pScene, MMesh<MVertexWithBones>* pMMesh);
+	void BindVertexAndBones(MSkeleton* pSkeleton, aiMesh* pMesh, MMesh<MVertexWithBones>* pMMesh);
 
 	void ProcessBones(const aiScene* pScene);
 	void RecordBones(MSkeleton* pSkeleton, aiNode* pNode, const aiScene* pScene);
