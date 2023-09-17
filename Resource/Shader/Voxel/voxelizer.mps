@@ -9,7 +9,7 @@ struct VS_OUT
 void PS_MAIN(VS_OUT input)
 {
     
-    int3 voxelPosition = getVoxelMapUVW(input.pos);
+    int3 voxelPosition = getVoxelMapUVW(input.pos.xyz);
 
 	int voxelTableIdx = int(voxelPosition.z * (voxelMapSetting.fResolution * voxelMapSetting.fResolution) +
                     voxelPosition.y * voxelMapSetting.fResolution +

@@ -36,14 +36,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF) #Set this to ON if you want to use GNU++
 set(CMAKE_CXX_STANDARD 17)
 
-SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} $ENV{CXXFLAGS} -O0  -Werror -Wall -Wextra -g2 -ggdb")
+SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} $ENV{CXXFLAGS} -O0 -Werror -Wall -Wextra -g2 -ggdb -fno-limit-debug-info")
 SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} $ENV{CXXFLAGS} -O3  -Werror -Wall -Wextra")
-
-file(CREATE_LINK
-	${CMAKE_SOURCE_DIR}/../Resource/Shader
-	${CMAKE_SOURCE_DIR}/Shader
-	SYMBOLIC
-)
 
 option(MORTY_BUILD_WITH_PHYSICS "Build With Physics" False)
 

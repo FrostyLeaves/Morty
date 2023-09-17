@@ -22,7 +22,7 @@ VS_OUT VS_MAIN(VS_IN input, uint INSTANCE_ID : SV_InstanceID)
     uint3 voxelUVW = InstanceIdToVoxelUVW(voxelMapSetting, INSTANCE_ID);
 
     float3 voxelWorldPosition = VoxelUVWToWorldPosition(voxelMapSetting, voxelUVW);
-    voxelWorldPosition = voxelWorldPosition + float3(voxelMapSetting.fVoxelStep);
+    voxelWorldPosition = voxelWorldPosition + float3(voxelMapSetting.fVoxelStep, voxelMapSetting.fVoxelStep, voxelMapSetting.fVoxelStep);
 
     float4 worldPos = float4(voxelWorldPosition + input.pos, 1.0f);
 

@@ -1,4 +1,5 @@
 #include "Render/Vulkan/MVulkanShaderCompiler.h"
+#include "Utility/MGlobal.h"
 #include "Utility/MString.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -39,6 +40,11 @@ struct MVulkanIncludeHandler : public IDxcIncludeHandler
 
 	virtual ~MVulkanIncludeHandler() = default;
 
+	void SetLocalPath(const std::wstring& strShaderDir)
+	{
+		m_strShaderDir = strShaderDir;
+	}
+
 	void SetSystemSearchPath (const std::vector<std::wstring>& paths)
 	{
 		m_vSearchPath = paths;
@@ -48,11 +54,18 @@ struct MVulkanIncludeHandler : public IDxcIncludeHandler
 	{
 		IDxcBlobEncoding* pEncoding = nullptr;
 
-		HRESULT hr = m_pUtils->LoadFile(pFilename, nullptr, &pEncoding);
-		if (SUCCEEDED(hr))
+		auto pRelativeFileName = pFilename + m_strShaderDir.size();
+
+		HRESULT hr = MGlobal::M_INVALID_UINDEX;
+		for (const auto& searchPath : m_vSearchPath )
 		{
-			*ppIncludeSource = pEncoding;
-			return hr;
+			auto fullPath = searchPath + pRelativeFileName;
+			hr = m_pUtils->LoadFile(fullPath.c_str(), nullptr, &pEncoding);
+			if (SUCCEEDED(hr))
+			{
+				*ppIncludeSource = pEncoding;
+				return hr;
+			}
 		}
 
 		*ppIncludeSource = nullptr;
@@ -70,6 +83,7 @@ private:
 	IDxcUtils* m_pUtils;
 	IDxcIncludeHandler* m_pIncludeHandler;
 	std::vector<std::wstring> m_vSearchPath;
+	std::wstring m_strShaderDir;
 };
 
 #else
@@ -158,7 +172,7 @@ bool MVulkanShaderCompiler::CompileShader(const MString& strShaderPath, const ME
 bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv)
 {
 	MString strShaderPath = MFileHelper::FormatPath(_strShaderPath);
-	//MStringUtil::Replace(strShaderPath, "/", "\\");
+	auto strShaderLocalDir = MStringUtil::ConvertToWString(MFileHelper::GetFileFolder(strShaderPath) + "/");
 
 	IDxcUtils* pUtils = nullptr;
 	DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&pUtils));
@@ -175,8 +189,10 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 
 	std::shared_ptr<MVulkanIncludeHandler> pIncludeHandler = std::make_shared<MVulkanIncludeHandler>(pUtils, pDefaultIncludeHandler);
 	pIncludeHandler->SetSystemSearchPath({
+		strShaderLocalDir,
 		MStringUtil::ConvertToWString( MORTY_RESOURCE_PATH ) + L"/Shader/"
 	});
+	pIncludeHandler->SetLocalPath(strShaderLocalDir);
 
 
 	std::wstring wstrShaderPath = MStringUtil::ConvertToWString(strShaderPath);

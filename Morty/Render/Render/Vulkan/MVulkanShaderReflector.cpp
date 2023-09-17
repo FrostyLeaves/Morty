@@ -1,5 +1,4 @@
 #include "MVulkanShaderReflector.h"
-#include <_types/_uint32_t.h>
 
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
