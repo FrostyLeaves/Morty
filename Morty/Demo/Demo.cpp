@@ -59,15 +59,15 @@ int main()
 	editor->SetScene(pScene);
 
 	ADD_DIRECTIONAL_LIGHT(&engine, pScene);
-	//CREATE_FLOOR_GRID(&engine, pScene);
+	CREATE_FLOOR_GRID(&engine, pScene);
 	// 	ENVIRONMENT_CUBEMAP_TEST(&engine, pScene);
-	//SHADOW_MAP_TEST(&engine, pScene);
+		SHADOW_MAP_TEST(&engine, pScene);
 	//	PBR_SHPERE(&engine, pScene);
 	//	LOAD_MODEL_ANIMATION_TEST(&engine, pScene);
 	//	LOAD_MODEL_TRANSLATION_TEST(&engine, pScene);
 	//	LOAD_MODEL_SPONZA_TEST(&engine, pScene);
 	//	GPU_DRIVEN_CULLING_TEST(&engine, pScene);
-	TRANSFORM_SPHERE_GENERATE(&engine, pScene);
+	//	TRANSFORM_SPHERE_GENERATE(&engine, pScene);
 
 	//start run
 	engine.Start();

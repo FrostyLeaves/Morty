@@ -42,13 +42,13 @@ float3 AdditionPointLight(PointLight pointLight, LightPointData pointData)
 // direction light
 float3 AdditionDirectionLight(DirectionLight dirLight, LightPointData pointData)
 {
-    float fNdotL = dot(pointData.f3Normal, dirLight.f3LightDir);
+    float fNdotL = dot(pointData.f3Normal, -dirLight.f3LightDir);
 
     if (fNdotL >= 0)
     {
         float3 f3LightColor = dirLight.f3Intensity;
 
-        return BRDF(f3LightColor, pointData.f3CameraDir, -dirLight.f3LightDir, pointData.f3Normal, pointData.f3BaseColor, pointData.f3Albedo, pointData.fRoughness, pointData.fMetallic);
+        return BRDF(f3LightColor, pointData.f3CameraDir, dirLight.f3LightDir, pointData.f3Normal, pointData.f3BaseColor, pointData.f3Albedo, pointData.fRoughness, pointData.fMetallic);
     }
 
     return float3(0, 0, 0);

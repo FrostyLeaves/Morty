@@ -172,10 +172,6 @@ void MDeferredRenderProgram::InitializeRenderWork()
 	RegisterRenderWork<MPostProcessRenderWork>();
 	RegisterRenderWork<MVoxelizerRenderWork>();
 
-	for (const auto& pr : m_tRenderWork)
-	{
-		pr.second->Initialize(GetEngine());
-	}
 }
 
 void MDeferredRenderProgram::ReleaseRenderWork()

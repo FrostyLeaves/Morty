@@ -33,11 +33,11 @@ void MMeshManager::OnCreated()
 
 	const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
-	m_vertexBuffer = MBuffer::CreateVertexBuffer();
+	m_vertexBuffer = MBuffer::CreateVertexBuffer("MeshManager VertexBuffer");
 	m_vertexBuffer.ReallocMemory(m_vertexMemoryPool.GetMaxMemorySize());
 	m_vertexBuffer.GenerateBuffer(pRenderSystem->GetDevice(), nullptr, 0);
 
-	m_indexBuffer = MBuffer::CreateIndexBuffer();
+	m_indexBuffer = MBuffer::CreateIndexBuffer("MeshManager VertexBuffer");
 	m_indexBuffer.ReallocMemory(m_indexMemoryPool.GetMaxMemorySize());
 	m_indexBuffer.GenerateBuffer(pRenderSystem->GetDevice(), nullptr, 0);
 

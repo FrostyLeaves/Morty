@@ -68,8 +68,10 @@ void MMeshInstanceManager::Release()
 void MMeshInstanceManager::RenderUpdate(MTaskNode* pNode)
 {
 	MORTY_UNUSED(pNode);
+
+	std::vector<std::shared_ptr<MMaterial>> vDeleteMaterials;
 	
-	for (auto& [material, group] : m_tRenderableMaterialGroup)
+	for (auto [material, group] : m_tRenderableMaterialGroup)
 	{
 		if (!group->tWaitRemoveComponent.empty())
 		{
@@ -91,10 +93,16 @@ void MMeshInstanceManager::RenderUpdate(MTaskNode* pNode)
 
 		if (group->materialGroup.IsEmpty())
 		{
-			m_tRenderableMaterialGroup.erase(group->materialGroup.GetMaterial());
 			group->materialGroup.Release(GetEngine());
-			delete group;
+
+		    MORTY_SAFE_DELETE(group);
+			vDeleteMaterials.push_back(material);
 		}
+	}
+
+	for (auto& material : vDeleteMaterials)
+	{
+		m_tRenderableMaterialGroup.erase(material);
 	}
 
 }

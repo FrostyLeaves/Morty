@@ -86,9 +86,9 @@ float3 AdditionAllLights(VS_OUT input)
 
     if (u_bDirectionLightEnabled > 0)
     {
-        float3 f3LightDir = -u_xDirectionalLight.f3LightDir;
+        float3 f3LightInverseDirection = -u_xDirectionalLight.f3LightDir;
         
-        float shadow = GetDirectionShadow(u_texShadowMap, f3WorldPosition, f3Normal, f3LightDir);
+        float shadow = GetDirectionShadow(u_texShadowMap, f3WorldPosition, f3Normal, f3LightInverseDirection);
 
         f3Color += shadow * AdditionDirectionLight(u_xDirectionalLight, pointData);
     }

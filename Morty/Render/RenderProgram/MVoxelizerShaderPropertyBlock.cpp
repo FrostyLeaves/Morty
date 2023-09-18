@@ -1,5 +1,6 @@
 #include "MVoxelizerShaderPropertyBlock.h"
 
+#include "Render/MBuffer.h"
 #include "Scene/MScene.h"
 #include "Scene/MEntity.h"
 #include "Engine/MEngine.h"
@@ -27,12 +28,7 @@ void MVoxelizerShaderPropertyBlock::Initialize(MEngine* pEngine)
 
 	MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
 	
-	m_rwVoxelTableBuffer.m_eMemoryType = MBuffer::MMemoryType::EDeviceLocal;
-	m_rwVoxelTableBuffer.m_eUsageType = MBuffer::MUsageType::EStorage | MBuffer::MUsageType::EIndirect;
-
-#if MORTY_DEBUG
-	m_rwVoxelTableBuffer.m_strDebugBufferName = "Voxelizer Voxel Table Buffer";
-#endif
+	m_rwVoxelTableBuffer = MBuffer::CreateBuffer(MBuffer::MMemoryType::EDeviceLocal, MBuffer::MUsageType::EStorage | MBuffer::MUsageType::EIndirect, "Voxelizer Voxel Table Buffer");
 
 	const int nVoxelTableSize = MRenderGlobal::VOXEL_TABLE_SIZE;
 	const int nVoxelTableMemorySize = sizeof(VoxelizerOutput) * nVoxelTableSize * nVoxelTableSize * nVoxelTableSize;

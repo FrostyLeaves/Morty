@@ -13,12 +13,7 @@ void MCascadedShadowCulling::Initialize(MEngine* pEngine)
 {
 	m_pEngine = pEngine;
 
-	m_drawIndirectBuffer.m_eMemoryType = MBuffer::MMemoryType::EHostVisible;
-	m_drawIndirectBuffer.m_eUsageType = MBuffer::MUsageType::EIndirect;
-
-#if MORTY_DEBUG
-	m_drawIndirectBuffer.m_strDebugBufferName = "Camera Culling Draw Instance Buffer";
-#endif
+	m_drawIndirectBuffer = MBuffer::CreateHostVisibleIndirectBuffer("Camera Culling Draw Instance Buffer");
 }
 
 void MCascadedShadowCulling::Release()

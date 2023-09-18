@@ -11,22 +11,15 @@ MIMesh::MIMesh(const bool& bDynamicMesh/* = false*/)
 {
     if (bDynamicMesh)
     {
-		m_vertexBuffer.m_eMemoryType = MBuffer::MMemoryType::EHostVisible;
-		m_indexBuffer.m_eMemoryType = MBuffer::MMemoryType::EHostVisible;
+		m_vertexBuffer = MBuffer::CreateHostVisibleVertexBuffer("Mesh VertexBuffer");
+		m_indexBuffer = MBuffer::CreateHostVisibleIndexBuffer("Mesh IndexBuffer");
     }
     else
     {
-		m_vertexBuffer.m_eMemoryType = MBuffer::MMemoryType::EDeviceLocal;
-		m_indexBuffer.m_eMemoryType = MBuffer::MMemoryType::EDeviceLocal;
+		m_vertexBuffer = MBuffer::CreateVertexBuffer("Mesh VertexBuffer");
+		m_indexBuffer = MBuffer::CreateIndexBuffer("Mesh IndexBuffer");
     }
 
-	m_vertexBuffer.m_eUsageType |= MBuffer::MUsageType::EVertex;
-	m_indexBuffer.m_eUsageType |= MBuffer::MUsageType::EIndex;
-
-#if MORTY_DEBUG
-	m_vertexBuffer.m_strDebugBufferName = "VertexBuffer";
-	m_indexBuffer.m_strDebugBufferName = "IndexBuffer";
-#endif
 }
 
 MIMesh::~MIMesh()

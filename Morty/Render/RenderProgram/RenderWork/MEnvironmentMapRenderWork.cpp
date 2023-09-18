@@ -30,7 +30,7 @@ MEnvironmentMapRenderWork::MEnvironmentMapRenderWork()
 	, m_vSpecularMaterial()
 	, m_pCubeMesh(nullptr)
 {
-
+	
 }
 
 void MEnvironmentMapRenderWork::OnCreated()

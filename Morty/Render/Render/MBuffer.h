@@ -45,11 +45,12 @@ public:
     MBuffer();
     ~MBuffer();
 
-
+    static MBuffer CreateBuffer(MMemoryType memory, uint32_t usage, const char* debugName = nullptr);
     static MBuffer CreateVertexBuffer(const char* debugName = nullptr);
     static MBuffer CreateHostVisibleVertexBuffer(const char* debugName = nullptr);
     static MBuffer CreateIndexBuffer(const char* debugName = nullptr);
     static MBuffer CreateHostVisibleIndexBuffer(const char* debugName = nullptr);
+    static MBuffer CreateHostVisibleIndirectBuffer(const char* debugName = nullptr);
     static MBuffer CreateIndirectDrawBuffer(const char* debugName = nullptr);
     static MBuffer CreateStorageBuffer(const char* debugName = nullptr);
 

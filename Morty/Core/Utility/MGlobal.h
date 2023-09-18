@@ -71,6 +71,15 @@ typedef unsigned char MByte;
 
 template<class... T> void MORTY_UNUSED(T&&...) {}
 
+template<class T> void MORTY_SAFE_DELETE(T& pointer)
+{
+    if (pointer)
+    {
+        delete pointer;
+        pointer = nullptr;
+    }
+}
+
 class MORTY_API MGlobal
 {
 public:

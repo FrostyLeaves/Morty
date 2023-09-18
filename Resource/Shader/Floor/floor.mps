@@ -74,5 +74,8 @@ float4 PS_MAIN(VS_OUTPUT input) : SV_Target
     float fFading = max(0, (1.0 - fLinearDepth));
     color.a = color.a * fFading / (t * t);
 
+    // intensity
+    color.rgb *= 0.5;
+
     return color;
 }

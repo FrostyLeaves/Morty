@@ -646,7 +646,7 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 			pSphereEntity->SetName("Sphere_PBR");
 			if (MSceneComponent* pSceneComponent = pSphereEntity->RegisterComponent<MSceneComponent>())
 			{
-				pSceneComponent->SetPosition(Vector3(2.0f * nMetallicIdx, 2.0f * nRoughnessIdx, 2.0f));
+				pSceneComponent->SetPosition(Vector3(3.0f * nMetallicIdx, 3.0f * nRoughnessIdx, 3.0f));
 			}
 			if (MRenderMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderMeshComponent>())
 			{
