@@ -1,4 +1,4 @@
-﻿cmake_minimum_required (VERSION 3.10)
+﻿cmake_minimum_required (VERSION 3.20)
 
 ############################################################
 # Render
@@ -6,10 +6,10 @@
 file(GLOB_RECURSE EDITOR_All_FILES *.h *.cpp)
 
 ############################################################
-# ImGUI
+# ThirdParty ImGuiFileDialog
 ############################################################
-file(GLOB EDITOR_IMGUI_FILE_DIALOG_FILES ${THIRD_PARTY_PATH}/ImGuiFileDialog/*.h ${THIRD_PARTY_PATH}/ImGuiFileDialog/*.cpp )
-source_group("ImGUI\\FileDialog" FILES ${EDITOR_IMGUI_FILE_DIALOG_FILES})
+file(GLOB EDITOR_IMGUI_FILE_DIALOG_FILES ${THIRD_PARTY_PATH}/ImGuiFileDialog/ImGuiFileDialog/*.h ${THIRD_PARTY_PATH}/ImGuiFileDialog/ImGuiFileDialog/*.cpp )
+set_property(SOURCE ${EDITOR_IMGUI_FILE_DIALOG_FILES} APPEND PROPERTY COMPILE_OPTIONS "-Wno-everything")
 
 add_library(Editor OBJECT
         ${EDITOR_All_FILES}
