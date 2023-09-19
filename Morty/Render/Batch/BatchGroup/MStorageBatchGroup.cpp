@@ -39,7 +39,7 @@ void MStorageBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterial>
 	m_transformBuffer.buffer.m_eMemoryType = MBuffer::MMemoryType::EHostVisible;
 	m_transformBuffer.buffer.m_eUsageType = MBuffer::MUsageType::EStorage;
 #if MORTY_DEBUG
-	m_transformBuffer.buffer.m_strDebugBufferName = "Storage Batch Instance Transform Buffer";
+	m_transformBuffer.buffer.m_strDebugName = "Storage Batch Instance Transform Buffer";
 #endif
 
 	m_pTransformParam->pBuffer = &m_transformBuffer.buffer;

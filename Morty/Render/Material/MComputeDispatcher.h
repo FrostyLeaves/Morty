@@ -69,4 +69,9 @@ public:
 	VkPipeline m_VkPipeline;
 
 #endif
+
+#if MORTY_DEBUG
+	const char* GetDebugName() const { return m_strDebugName.c_str(); }
+	MString m_strDebugName;
+#endif
 };

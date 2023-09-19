@@ -35,9 +35,6 @@ void MVoxelizerRenderWork::Initialize(MEngine* pEngine)
 	Super::Initialize(pEngine);
 
 	InitializeDispatcher();
-
-	m_renderPass.SetDepthTestEnable(false);
-	m_renderPass.SetDepthWriteEnable(false);
 }
 
 void MVoxelizerRenderWork::Release(MEngine* pEngine)

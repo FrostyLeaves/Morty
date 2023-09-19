@@ -183,6 +183,13 @@ void MMaterial::Unload()
 	m_pShaderProgram->ClearShader(GetEngine());
 }
 
+#if MORTY_DEBUG
+const char* MMaterial::GetDebugName() const
+{
+	return GetResourcePath().c_str();
+}
+#endif
+
 const MString MaterialKey::Albedo = "u_mat_texAlbedo";
 const MString MaterialKey::Normal = "u_texNormal";
 const MString MaterialKey::Metallic = "u_mat_texMetallic";

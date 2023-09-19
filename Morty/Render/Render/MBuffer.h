@@ -77,7 +77,8 @@ public:
     VkDeviceMemory m_VkDeviceMemory = VK_NULL_HANDLE;
 #endif
 #if MORTY_DEBUG
-    MString m_strDebugBufferName = "";
+    const char* GetDebugName() const { return m_strDebugName.c_str(); }
+    MString m_strDebugName;
 #endif
 
     size_t m_unDataSize = 0;

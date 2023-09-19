@@ -23,7 +23,7 @@ MBuffer MBuffer::CreateBuffer(MMemoryType memory, uint32_t usage, const char* de
 #if MORTY_DEBUG
 	if (debugName)
 	{
-		buffer.m_strDebugBufferName = debugName;
+		buffer.m_strDebugName = debugName;
 	}
 #endif
 

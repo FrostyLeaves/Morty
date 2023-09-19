@@ -114,8 +114,8 @@ void MAnimationRenderGroup::Initialize(MEngine* pEngine)
 	m_bonesOffsetBuffer.buffer.m_eUsageType = MBuffer::MUsageType::EStorage;
 
 #if MORTY_DEBUG
-	m_bonesStorageBuffer.buffer.m_strDebugBufferName = "Storage Batch Skeletal Animation Buffer";
-	m_bonesOffsetBuffer.buffer.m_strDebugBufferName = "Storage Batch Skeletal Offset Buffer";
+	m_bonesStorageBuffer.buffer.m_strDebugName = "Storage Batch Skeletal Animation Buffer";
+	m_bonesOffsetBuffer.buffer.m_strDebugName = "Storage Batch Skeletal Offset Buffer";
 #endif
 
 	const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();

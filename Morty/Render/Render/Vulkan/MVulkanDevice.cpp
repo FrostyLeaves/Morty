@@ -665,7 +665,7 @@ void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, c
 	}
 
 #ifdef MORTY_DEBUG
-	SetDebugName(reinterpret_cast<uint64_t>(vkBuffer), VkObjectType::VK_OBJECT_TYPE_BUFFER, pBuffer->m_strDebugBufferName.c_str());
+	SetDebugName(reinterpret_cast<uint64_t>(vkBuffer), VkObjectType::VK_OBJECT_TYPE_BUFFER, pBuffer->GetDebugName());
 #endif
 
 	pBuffer->m_VkBuffer = vkBuffer;

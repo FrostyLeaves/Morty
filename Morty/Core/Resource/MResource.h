@@ -54,14 +54,9 @@ public:
 	static MString GetFileName(const MString& strPath);
 
 	MEngine* GetEngine() const { return m_pEngine; }
-
-	MResourceID GetResourceID() const { return m_unResourceID; }
-
-	MEngine* GetEngine() { return m_pEngine; }
-
 	MResourceSystem* GetResourceSystem();
-
-	MString GetResourcePath() { return m_strResourcePath; }
+	MResourceID GetResourceID() const { return m_unResourceID; }
+	const MString& GetResourcePath() const { return m_strResourcePath; }
 
 	std::shared_ptr<MResource> GetShared() const;
 

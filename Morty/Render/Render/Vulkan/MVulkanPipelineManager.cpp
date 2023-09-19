@@ -640,6 +640,10 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<
 		return VK_NULL_HANDLE;
 	}
 
+#if MORTY_DEBUG
+	m_pDevice->SetDebugName(reinterpret_cast<uint64_t>(graphicsPipeline), VkObjectType::VK_OBJECT_TYPE_PIPELINE, pMaterial->GetDebugName());
+#endif
+
 	return graphicsPipeline;
 }
 
@@ -686,6 +690,10 @@ VkPipeline MVulkanPipelineManager::CreateComputePipeline(const std::shared_ptr<M
 	{
 		return VK_NULL_HANDLE;
 	}
+
+#if MORTY_DEBUG
+	m_pDevice->SetDebugName(reinterpret_cast<uint64_t>(computePipeline), VkObjectType::VK_OBJECT_TYPE_PIPELINE, pComputeDispatcher->GetDebugName());
+#endif
 
 	return computePipeline;
 }

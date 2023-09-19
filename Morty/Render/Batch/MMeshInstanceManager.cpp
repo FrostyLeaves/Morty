@@ -71,7 +71,7 @@ void MMeshInstanceManager::RenderUpdate(MTaskNode* pNode)
 
 	std::vector<std::shared_ptr<MMaterial>> vDeleteMaterials;
 	
-	for (auto [material, group] : m_tRenderableMaterialGroup)
+	for (auto& [material, group] : m_tRenderableMaterialGroup)
 	{
 		if (!group->tWaitRemoveComponent.empty())
 		{

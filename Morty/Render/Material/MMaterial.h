@@ -114,6 +114,10 @@ public:
 
 	void Unload();
 
+#if MORTY_DEBUG
+	const char* GetDebugName() const;
+#endif
+
 private:
 
 	std::shared_ptr<MShaderProgram> m_pShaderProgram;
