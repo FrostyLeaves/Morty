@@ -216,8 +216,17 @@ void MVoxelizerRenderWork::InitializeRenderPass()
 	m_voxelizerRenderPass.m_strDebugName = "Voxelizer";
 #endif
 
-	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+	const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
+
+	m_pVoxelizerRenderTarget = MTexture::CreateRenderTarget(METextureLayout::ERGBA_UNORM_8);
+	m_pVoxelizerRenderTarget->SetName("Voxelizer Render Target");
+	m_pVoxelizerRenderTarget->SetSize({ float(MRenderGlobal::VOXEL_TABLE_SIZE), float(MRenderGlobal::VOXEL_TABLE_SIZE) });
+	m_pVoxelizerRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
+
+	m_voxelizerRenderPass.AddBackTexture(m_pVoxelizerRenderTarget, { true, false, MColor::Black_T });
+	m_voxelizerRenderPass.SetDepthTestEnable(false);
+	m_voxelizerRenderPass.SetDepthWriteEnable(false);
 	m_voxelizerRenderPass.SetViewportNum(1);
 	m_voxelizerRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
 
@@ -225,7 +234,10 @@ void MVoxelizerRenderWork::InitializeRenderPass()
 
 void MVoxelizerRenderWork::ReleaseRenderPass()
 {
-	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+	const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
 	m_voxelizerRenderPass.DestroyBuffer(pRenderSystem->GetDevice());
+
+	m_pVoxelizerRenderTarget->DestroyBuffer(pRenderSystem->GetDevice());
+	m_pVoxelizerRenderTarget = nullptr;
 }

@@ -52,5 +52,6 @@ protected:
     MBuffer m_drawIndirectBuffer;
     bool m_bDebugMode = false;
 
+    std::shared_ptr<MTexture> m_pVoxelizerRenderTarget = nullptr;
     MRenderPass m_voxelizerRenderPass;
 };
