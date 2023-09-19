@@ -245,6 +245,10 @@ void MDeferredRenderProgram::InitializeRenderTarget()
 		{ {pLightningRenderTarget, {false, true, MColor::Black_T }} },
 		{ pDepthTexture, {false, true, MColor::Black_T} });
 
+	GetRenderWork<MVoxelizerRenderWork>()->SetRenderTarget(
+		{ {pLightningRenderTarget, {false, true, MColor::Black_T }} },
+		{ pDepthTexture, {false, true, MColor::Black_T} });
+
 	GetRenderWork<MPostProcessRenderWork>()->SetRenderTarget(
 		{ {pPostProcessOutput, {true, false, MColor::Black_T }} });
 
@@ -323,10 +327,14 @@ void MDeferredRenderProgram::UpdateFrameParams(MRenderInfo& info)
 	m_pShadowPropertyAdapter->UpdateShaderSharedParams(info);
 	m_pVoxelizerPropertyAdapter->UpdateShaderSharedParams(info);
 
+	auto pVoxelTableBuffer = GetRenderWork<MVoxelizerRenderWork>()->GetVoxelTableBuffer();
+	MORTY_ASSERT(pVoxelTableBuffer);
+
 	m_pVoxelizerPropertyAdapter->SetVoxelMapSetting({
 		Vector3(0, 0, 0),
 		float(MRenderGlobal::VOXEL_TABLE_SIZE),
-		1.0f
+		1.0f,
+		pVoxelTableBuffer
 	});
 }
 

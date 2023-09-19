@@ -323,6 +323,10 @@ void MTransparentRenderWork::ReleaseTexture()
 
 void MTransparentRenderWork::InitializePeelRenderPass()
 {
+#if MORTY_DEBUG
+	m_peelRenderPass.m_strDebugName = "Transparent Peel";
+#endif
+
 	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
 
 	m_peelRenderPass.AddBackTexture(m_pFrontTexture, { true, MColor::Black_T });
@@ -386,6 +390,10 @@ void MTransparentRenderWork::ReleasePeelRenderPass()
 
 void MTransparentRenderWork::InitializeFillRenderPass()
 {
+#if MORTY_DEBUG
+	m_peelRenderPass.m_strDebugName = "Transparent Fill";
+#endif
+
 	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
 
 	m_fillRenderPass.SetDepthTestEnable(false);

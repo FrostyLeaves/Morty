@@ -17,9 +17,11 @@
 
 struct MVoxelMapSetting
 {
-    Vector3 f3VoxelOrigin;
-    float fResolution;
-    float fVoxelStep;
+	Vector3 f3VoxelOrigin = {};
+    float fResolution = 0.0f;
+    float fVoxelStep = 0.0f;
+
+	const MBuffer* pVoxelTableBuffer = nullptr;
 };
 
 
@@ -43,5 +45,4 @@ protected:
 	std::shared_ptr<MShaderStorageParam> m_pRWVoxelTableParam = nullptr;
 	std::shared_ptr<MShaderConstantParam> m_pVoxelMapSetting = nullptr;
 
-	MBuffer m_rwVoxelTableBuffer;
 };

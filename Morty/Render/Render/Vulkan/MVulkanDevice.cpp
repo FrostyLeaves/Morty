@@ -1292,6 +1292,10 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 
 	m_PipelineManager.RegisterRenderPass(pRenderPass);
 
+#ifdef MORTY_DEBUG
+	SetDebugName(reinterpret_cast<uint64_t>(pRenderPass->m_VkRenderPass), VkObjectType::VK_OBJECT_TYPE_RENDER_PASS, pRenderPass->m_strDebugName.c_str());
+#endif
+
 	return true;
 }
 

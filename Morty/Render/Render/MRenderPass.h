@@ -139,6 +139,10 @@ public:
     VkFramebuffer m_VkFrameBuffer = VK_NULL_HANDLE;
 #endif
 
+#if MORTY_DEBUG
+    MString m_strDebugName = "";
+#endif
+
     bool m_bDepthTestEnable = true;
 	bool m_bDepthWriteEnable = true;
 	bool m_bStencilTestEnable = VK_FALSE;

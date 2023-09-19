@@ -273,6 +273,10 @@ void MEnvironmentMapRenderWork::ReleaseMaterial()
 
 void MEnvironmentMapRenderWork::InitializeRenderPass()
 {
+#if MORTY_DEBUG
+	m_DiffuseRenderPass.m_strDebugName = "EnvironmentMap Diffuse";
+#endif
+
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
 	std::shared_ptr<MTextureResource> pDiffuseTexture = m_DiffuseEnvironmentMap.GetResource<MTextureResource>();

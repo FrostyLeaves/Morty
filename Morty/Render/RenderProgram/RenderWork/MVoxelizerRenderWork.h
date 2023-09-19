@@ -31,15 +31,26 @@ public:
 
     void Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
 
+    const MBuffer* GetVoxelTableBuffer() const;
+
 protected:
+
+    void InitializeBuffer();
+    void ReleaseBuffer();
 
     void InitializeDispatcher();
     void ReleaseDispatcher();
+
+    void InitializeRenderPass();
+    void ReleaseRenderPass();
 
     void DrawVoxelizerMap(MIRenderCommand* pCommand);
 
     MComputeDispatcher* m_pVoxelMapGenerator = nullptr;
     std::shared_ptr<MMaterial> m_pVoxelDebugMaterial = nullptr;
+    MBuffer m_voxelizerBuffer;
     MBuffer m_drawIndirectBuffer;
     bool m_bDebugMode = false;
+
+    MRenderPass m_voxelizerRenderPass;
 };

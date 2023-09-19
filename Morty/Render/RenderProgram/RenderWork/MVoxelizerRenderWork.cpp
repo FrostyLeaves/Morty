@@ -34,6 +34,8 @@ void MVoxelizerRenderWork::Initialize(MEngine* pEngine)
 {
 	Super::Initialize(pEngine);
 
+	InitializeBuffer();
+	InitializeRenderPass();
 	InitializeDispatcher();
 
 	m_renderPass.SetDepthTestEnable(false);
@@ -43,15 +45,22 @@ void MVoxelizerRenderWork::Initialize(MEngine* pEngine)
 void MVoxelizerRenderWork::Release(MEngine* pEngine)
 {
 	ReleaseDispatcher();
+	ReleaseRenderPass();
+	ReleaseBuffer();
 
 	Super::Release(pEngine);
+}
+
+const MBuffer* MVoxelizerRenderWork::GetVoxelTableBuffer() const
+{
+	return &m_voxelizerBuffer;
 }
 
 void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
 
-	pCommand->BeginRenderPass(&m_renderPass);
+	pCommand->BeginRenderPass(&m_voxelizerRenderPass);
 	pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, MRenderGlobal::VOXEL_TABLE_SIZE, MRenderGlobal::VOXEL_TABLE_SIZE));
 	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, MRenderGlobal::VOXEL_TABLE_SIZE, MRenderGlobal::VOXEL_TABLE_SIZE));
 
@@ -62,6 +71,9 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 
 	pCommand->EndRenderPass();
 
+	pCommand->AddGraphToComputeBarrier({
+		&m_voxelizerBuffer
+	});
 
 	pCommand->DispatchComputeJob(m_pVoxelMapGenerator
 		, MRenderGlobal::VOXEL_TABLE_SIZE / 8
@@ -86,10 +98,37 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 
 }
 
+void MVoxelizerRenderWork::InitializeBuffer()
+{
+	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+	const int nVoxelCubeMapSize = MRenderGlobal::VOXEL_TABLE_SIZE * MRenderGlobal::VOXEL_TABLE_SIZE * MRenderGlobal::VOXEL_TABLE_SIZE;
+
+
+	const int nVoxelTableMemorySize = sizeof(VoxelizerOutput) * nVoxelCubeMapSize;
+	m_voxelizerBuffer = MBuffer::CreateBuffer(MBuffer::MMemoryType::EDeviceLocal
+		, MBuffer::MUsageType::EStorage | MBuffer::MUsageType::EIndirect
+		, "Voxelizer Voxel Table Buffer");
+	m_voxelizerBuffer.ReallocMemory(nVoxelTableMemorySize);
+	m_voxelizerBuffer.DestroyBuffer(pRenderSystem->GetDevice());
+	m_voxelizerBuffer.GenerateBuffer(pRenderSystem->GetDevice(), nullptr, nVoxelTableMemorySize);
+
+
+	const size_t nDrawIndirectBufferSize = sizeof(MDrawIndexedIndirectData) * nVoxelCubeMapSize;
+	m_drawIndirectBuffer = MBuffer::CreateIndirectDrawBuffer("Voxel Draw Indirect Buffer");
+	m_drawIndirectBuffer.ReallocMemory(nDrawIndirectBufferSize);
+	m_drawIndirectBuffer.GenerateBuffer(pRenderSystem->GetDevice(), nullptr, nDrawIndirectBufferSize);
+}
+
+void MVoxelizerRenderWork::ReleaseBuffer()
+{
+	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+
+	m_drawIndirectBuffer.DestroyBuffer(pRenderSystem->GetDevice());
+	m_voxelizerBuffer.DestroyBuffer(pRenderSystem->GetDevice());
+}
 
 void MVoxelizerRenderWork::InitializeDispatcher()
 {
-	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 	MObjectSystem* pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
@@ -116,15 +155,6 @@ void MVoxelizerRenderWork::InitializeDispatcher()
 
 	if (auto pIndirectDraws = params->FindStorageParam("indirectDraws"))
 	{
-		const size_t nDrawIndirectBufferSize = sizeof(MDrawIndexedIndirectData)
-			* MRenderGlobal::VOXEL_TABLE_SIZE
-			* MRenderGlobal::VOXEL_TABLE_SIZE
-			* MRenderGlobal::VOXEL_TABLE_SIZE;
-		
-		m_drawIndirectBuffer = MBuffer::CreateIndirectDrawBuffer("Voxel Draw Indirect Buffer");
-		m_drawIndirectBuffer.ReallocMemory(nDrawIndirectBufferSize);
-		m_drawIndirectBuffer.GenerateBuffer(pRenderSystem->GetDevice(), nullptr, nDrawIndirectBufferSize);
-
 		pIndirectDraws->pBuffer = &m_drawIndirectBuffer;
 		pIndirectDraws->SetDirty();
 	}
@@ -161,10 +191,6 @@ void MVoxelizerRenderWork::InitializeDispatcher()
 
 void MVoxelizerRenderWork::ReleaseDispatcher()
 {
-	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-
-	m_drawIndirectBuffer.DestroyBuffer(pRenderSystem->GetDevice());
-
 	m_pVoxelMapGenerator->DeleteLater();
 	m_pVoxelMapGenerator = nullptr;
 
@@ -185,4 +211,24 @@ void MVoxelizerRenderWork::DrawVoxelizerMap(MIRenderCommand* pCommand)
 		0,
 		m_drawIndirectBuffer.GetSize() / sizeof(MDrawIndexedIndirectData)
 	);
+}
+
+void MVoxelizerRenderWork::InitializeRenderPass()
+{
+#if MORTY_DEBUG
+	m_voxelizerRenderPass.m_strDebugName = "Voxelizer";
+#endif
+
+	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+
+	m_voxelizerRenderPass.SetViewportNum(1);
+	m_voxelizerRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
+
+}
+
+void MVoxelizerRenderWork::ReleaseRenderPass()
+{
+	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+
+	m_voxelizerRenderPass.DestroyBuffer(pRenderSystem->GetDevice());
 }

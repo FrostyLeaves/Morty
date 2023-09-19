@@ -27,6 +27,10 @@ MORTY_INTERFACE_IMPLEMENT(ISinglePassRenderWork, MTypeClass)
 void ISinglePassRenderWork::Initialize(MEngine* pEngine)
 {
 	m_pEngine = pEngine;
+
+#if MORTY_DEBUG
+	m_renderPass.m_strDebugName = GetTypeName();
+#endif
 }
 
 void ISinglePassRenderWork::Release(MEngine* pEngine)

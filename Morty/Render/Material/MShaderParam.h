@@ -96,7 +96,7 @@ struct MShaderStorageParam : public MShaderParam
 
 
 public:
-	MBuffer* pBuffer;
+	const MBuffer* pBuffer;
 	bool bWritable;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
