@@ -25,25 +25,10 @@
 void MVoxelizerShaderPropertyBlock::Initialize(MEngine* pEngine)
 {
 	MForwardRenderShaderPropertyBlock::Initialize(pEngine);
-
-	MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
-	
-	m_rwVoxelTableBuffer = MBuffer::CreateBuffer(MBuffer::MMemoryType::EDeviceLocal, MBuffer::MUsageType::EStorage | MBuffer::MUsageType::EIndirect, "Voxelizer Voxel Table Buffer");
-
-	const int nVoxelTableSize = MRenderGlobal::VOXEL_TABLE_SIZE;
-	const int nVoxelTableMemorySize = sizeof(VoxelizerOutput) * nVoxelTableSize * nVoxelTableSize * nVoxelTableSize;
-	m_rwVoxelTableBuffer.ReallocMemory(nVoxelTableMemorySize);
-	m_rwVoxelTableBuffer.DestroyBuffer(pRenderSystem->GetDevice());
-	m_rwVoxelTableBuffer.GenerateBuffer(pRenderSystem->GetDevice(), nullptr, nVoxelTableMemorySize);
-	
 }
 
 void MVoxelizerShaderPropertyBlock::Release(MEngine* pEngine)
 {
-	MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
-
-	m_rwVoxelTableBuffer.DestroyBuffer(pRenderSystem->GetDevice());
-
 	MForwardRenderShaderPropertyBlock::Release(pEngine);
 }
 
@@ -67,9 +52,6 @@ void MVoxelizerShaderPropertyBlock::BindMaterial(const std::shared_ptr<MMaterial
 
 	MORTY_ASSERT(m_pRWVoxelTableParam = m_pShaderPropertyBlock->FindStorageParam("rwVoxelTable"));
 	MORTY_ASSERT(m_pVoxelMapSetting = m_pShaderPropertyBlock->FindConstantParam("cbVoxelMap"));
-
-	m_pRWVoxelTableParam->pBuffer = &m_rwVoxelTableBuffer;
-	m_pRWVoxelTableParam->SetDirty();
 }
 
 
@@ -86,4 +68,8 @@ void MVoxelizerShaderPropertyBlock::SetVoxelMapSetting(const MVoxelMapSetting se
 	settingStruct.SetVariant("fResolution", setting.fResolution);
 	settingStruct.SetVariant("fVoxelStep", setting.fVoxelStep);
 	m_pVoxelMapSetting->SetDirty();
+
+
+	m_pRWVoxelTableParam->pBuffer = setting.pVoxelTableBuffer;
+	m_pRWVoxelTableParam->SetDirty();
 }
