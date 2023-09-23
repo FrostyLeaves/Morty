@@ -21,9 +21,8 @@
 #include "MRenderInfo.h"
 #include "RenderProgram/MIRenderProgram.h"
 
-#include "MVoxelizerShaderPropertyBlock.h"
 #include "Shadow/MShadowMapShaderPropertyBlock.h"
-#include "MForwardRenderShaderPropertyBlock.h"
+#include "MFrameShaderPropertyBlock.h"
 #include "Culling/MCascadedShadowCulling.h"
 #include "Culling/MInstanceCulling.h"
 #include <memory>
@@ -122,9 +121,8 @@ protected:
 	std::vector<std::shared_ptr<MTexture>> m_vRenderTargets;
 	std::shared_ptr<MTexture> m_pFinalOutputTexture = nullptr;
 	
-	std::shared_ptr<MVoxelizerShaderPropertyBlock> m_pVoxelizerPropertyAdapter = nullptr;
 	std::shared_ptr<MShadowMapShaderPropertyBlock> m_pShadowPropertyAdapter = nullptr;
-	std::shared_ptr<MForwardRenderShaderPropertyBlock> m_pFramePropertyAdapter = nullptr;
+	std::shared_ptr<MFrameShaderPropertyBlock> m_pFramePropertyAdapter = nullptr;
 
 	std::shared_ptr<MCascadedShadowCulling> m_pShadowCulling = nullptr;
 	std::shared_ptr<MCameraFrustumCulling> m_pCameraFrustumCulling = nullptr;

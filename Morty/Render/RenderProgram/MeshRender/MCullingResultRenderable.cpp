@@ -1,4 +1,4 @@
-#include "MIndexedIndirectRenderable.h"
+#include "MCullingResultRenderable.h"
 
 #include "Scene/MScene.h"
 #include "Engine/MEngine.h"
@@ -24,49 +24,42 @@
 #include "Mesh/MMeshManager.h"
 #include "Batch/MMaterialBatchGroup.h"
 
-void MIndexedIndirectRenderable::SetScene(MScene* pScene)
-{
-	m_pScene = pScene;
-}
-
-void MIndexedIndirectRenderable::SetMaterialFilter(std::shared_ptr<IMaterialFilter> pFilter)
+void MCullingResultRenderable::SetMaterialFilter(std::shared_ptr<IMaterialFilter> pFilter)
 {
 	pMaterialFilter = pFilter;
 }
 
-void MIndexedIndirectRenderable::SetPropertyBlockAdapter(const std::vector<std::shared_ptr<IPropertyBlockAdapter>>& vAdapter)
+void MCullingResultRenderable::SetPropertyBlockAdapter(const std::vector<std::shared_ptr<IPropertyBlockAdapter>>& vAdapter)
 {
 	m_vFramePropertyAdapter = vAdapter;
 }
 
-void MIndexedIndirectRenderable::SetInstanceCulling(const std::shared_ptr<MInstanceCulling>& pCullingAdapter)
+void MCullingResultRenderable::SetInstanceCulling(const std::shared_ptr<MInstanceCulling>& pCullingAdapter)
 {
 	m_pCullingAdapter = pCullingAdapter;
 }
 
 
-const std::shared_ptr<MMaterial>& MIndexedIndirectRenderable::GetMaterial(const MMaterialCullingGroup& group) const
+const std::shared_ptr<MMaterial>& MCullingResultRenderable::GetMaterial(const MMaterialCullingGroup& group) const
 {
 	const auto& pMaterial = group.pMaterial;
 	return pMaterial;
 }
 
-void MIndexedIndirectRenderable::Render(MIRenderCommand* pCommand)
+void MCullingResultRenderable::Render(MIRenderCommand* pCommand)
 {
-	if (!m_pScene)
+	if (!m_pMeshBuffer)
 	{
-		MORTY_ASSERT(m_pScene);
+		MORTY_ASSERT(m_pMeshBuffer);
 		return;
 	}
 	
-
-	MScene* pScene = m_pScene;
-	const MMeshManager* pMeshManager = pScene->GetEngine()->FindGlobalObject<MMeshManager>();
-
-	const MBuffer* drawIndirectBuffer = m_pCullingAdapter->GetDrawIndirectBuffer();
+	const MBuffer* pVertexBuffer = m_pMeshBuffer->GetVertexBuffer();
+	const MBuffer* pIndexBuffer = m_pMeshBuffer->GetIndexBuffer();
+	const MBuffer* pIndirectBuffer = m_pCullingAdapter->GetDrawIndirectBuffer();
 	const std::vector<MMaterialCullingGroup>& vCullingResult = m_pCullingAdapter->GetCullingInstanceGroup();
 
-	if (!drawIndirectBuffer || drawIndirectBuffer->m_VkBuffer == VK_NULL_HANDLE)
+	if (!pIndirectBuffer || pIndirectBuffer->m_VkBuffer == VK_NULL_HANDLE)
 	{
 		return;
 	}
@@ -100,9 +93,9 @@ void MIndexedIndirectRenderable::Render(MIRenderCommand* pCommand)
 		pCommand->SetShaderPropertyBlock(group.pMeshTransformProperty);
 
 		pCommand->DrawIndexedIndirect(
-			pMeshManager->GetVertexBuffer(),
-			pMeshManager->GetIndexBuffer(),
-			drawIndirectBuffer,
+			pVertexBuffer,
+			pIndexBuffer,
+			pIndirectBuffer,
 			group.nIndirectBeginIdx * sizeof(MDrawIndexedIndirectData),
 			group.nIndirectCount
 		);

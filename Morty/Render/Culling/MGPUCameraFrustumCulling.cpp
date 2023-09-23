@@ -33,7 +33,7 @@ void MGPUCameraFrustumCulling::Initialize(MEngine* pEngine)
 	m_pCullingComputeDispatcher->LoadComputeShader("Shader/Culling/cull.mcs");
 
 
-	const std::shared_ptr<MShaderPropertyBlock>& params = m_pCullingComputeDispatcher->GetShaderPropertyBlocks()[0];
+	const std::shared_ptr<MShaderPropertyBlock>& params = m_pCullingComputeDispatcher->GetShaderPropertyBlock(0);
 
 	if (std::shared_ptr<MShaderStorageParam> pStorageParam = params->FindStorageParam("instances"))
 	{
@@ -67,7 +67,7 @@ void MGPUCameraFrustumCulling::Release()
 
 void MGPUCameraFrustumCulling::UpdateCullingCamera()
 {
-	const std::shared_ptr<MShaderPropertyBlock>& params = m_pCullingComputeDispatcher->GetShaderPropertyBlocks()[0];
+	const std::shared_ptr<MShaderPropertyBlock>& params = m_pCullingComputeDispatcher->GetShaderPropertyBlock(0);
 
 	std::shared_ptr<MShaderConstantParam> pConstantParam = params->FindConstantParam("ubo");
 	if(!pConstantParam)

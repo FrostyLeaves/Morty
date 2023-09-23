@@ -17,7 +17,6 @@
     uint cubeMeshCount;
 };
 
-
 [numthreads(8, 8, 8)]
 void CS_MAIN(uint3 GlobalInvocationID : SV_DispatchThreadID )
 {

@@ -45,8 +45,8 @@ void MShadowMapShaderPropertyBlock::Release(MEngine* pEngine)
 
 void MShadowMapShaderPropertyBlock::BindMaterial(const std::shared_ptr<MMaterial>& pMaterial)
 {
-	MORTY_ASSERT(m_pShaderPropertyBlock = pMaterial->GetFramePropertyBlock()->Clone());
-	MORTY_ASSERT(m_pWorldMatrixParam = m_pShaderPropertyBlock->FindConstantParam("cbSceneMatrix"));
+	MORTY_ASSERT(m_pShaderPropertyBlock = pMaterial->GetMaterialPropertyBlock()->Clone());
+	MORTY_ASSERT(m_pWorldMatrixParam = m_pShaderPropertyBlock->FindConstantParam("cbShadowMatrix"));
 }
 
 void MShadowMapShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& info) 
@@ -66,8 +66,7 @@ void MShadowMapShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& info)
 	{
 		MVariantStruct& cStruct = m_pWorldMatrixParam->var.GetValue<MVariantStruct>();
 
-		MVariantArray& cCamProjArray = cStruct.GetVariant<MVariantArray>("u_matCamProj");
-
+		MVariantArray& cCamProjArray = cStruct.GetVariant<MVariantArray>("u_matLightSpaceProj");
 
 		for (size_t nCascadedIdx = 0; nCascadedIdx < info.shadowRenderInfo.size(); ++nCascadedIdx)
 		{

@@ -37,6 +37,7 @@ public:
 
 	std::shared_ptr<MResource> GetComputeShaderResource() { return m_pShaderProgram->GetComputeShaderResource(); }
 	std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderPropertyBlocks() { return  m_pShaderProgram->GetShaderPropertyBlocks(); }
+	std::shared_ptr<MShaderPropertyBlock> GetShaderPropertyBlock(size_t nSetIdx) { return GetShaderPropertyBlocks()[nSetIdx]; }
 	MShader* GetComputeShader();
 
 	MShaderMacro& GetShaderMacro() { return m_pShaderProgram->GetShaderMacro(); }

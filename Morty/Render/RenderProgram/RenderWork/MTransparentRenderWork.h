@@ -17,7 +17,7 @@
 
 #include <array>
 
-#include "RenderProgram/MForwardRenderShaderPropertyBlock.h"
+#include "RenderProgram/MFrameShaderPropertyBlock.h"
 
 
 class MTexture;

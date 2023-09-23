@@ -2,7 +2,8 @@
 
 #include "Culling/MBoundingBoxCulling.h"
 #include "Render/MRenderGlobal.h"
-#include "RenderProgram/MForwardRenderShaderPropertyBlock.h"
+#include "RenderProgram/MFrameShaderPropertyBlock.h"
+#include "Mesh/MMeshManager.h"
 #include "Scene/MScene.h"
 #include "Engine/MEngine.h"
 #include "Render/MIDevice.h"
@@ -41,14 +42,13 @@
 
 #include "MeshRender/MSkyBoxRenderable.h"
 #include "Batch/MMeshInstanceManager.h"
-#include "MeshRender/MIndexedIndirectRenderable.h"
-#include "MeshRender/MSpecificMaterialIndirectRenderable.h"
+#include "MeshRender/MCullingResultRenderable.h"
+#include "MeshRender/MIndirectIndexRenderable.h"
+#include "MeshRender/MCullingResultSpecificMaterialRenderable.h"
 
 #include "Culling/MCPUCameraFrustumCulling.h"
 #include "Culling/MGPUCameraFrustumCulling.h"
 #include "Manager/MAnimationManager.h"
-
-#include "MVoxelizerShaderPropertyBlock.h"
 
 #include "Culling/MBoundingBoxCulling.h"
 #include "Utility/MGlobal.h"
@@ -64,11 +64,11 @@ void MDeferredRenderProgram::Render(MIRenderCommand* pPrimaryCommand)
 		return;
 
 	RenderSetup(pPrimaryCommand);
-	RenderVoxelizer();
 	RenderShadow();
 	RenderGBuffer();
 	RenderLightning();
 	RenderForward();
+	RenderVoxelizer();
 	RenderTransparent();
 	RenderPostProcess();
 	RenderDebug();
@@ -102,6 +102,8 @@ void MDeferredRenderProgram::RenderSetup(MIRenderCommand* pPrimaryCommand)
 	m_pShadowCulling->SetDirectionalLight(pMainDirectionalLight);
 	m_pShadowCulling->Culling(vShadowMaterialGroup);
 
+	m_renderInfo.shadowRenderInfo = m_pShadowCulling->GetCascadedRenderData();
+
 	//Scene Culling.
 	auto* pMeshInstanceMeshManager = pScene->GetManager<MMeshInstanceManager>();
 	const std::vector<MMaterialBatchGroup*> vMaterialGroup = pMeshInstanceMeshManager->GetAllMaterialGroup();
@@ -111,16 +113,28 @@ void MDeferredRenderProgram::RenderSetup(MIRenderCommand* pPrimaryCommand)
 		, pCameraSceneComponent
 	);
 
-	//Voxelizer Culling.
-	m_pVoxelizerCulling->SetBounds(MBoundsAABB({0, 0, 0}, {32, 32, 32}));
-	m_pVoxelizerCulling->Culling(vMaterialGroup);
-
 	m_pCameraFrustumCulling->SetCommand(pPrimaryCommand);
 	m_pCameraFrustumCulling->SetCameraFrustum(cameraFrustum);
 	m_pCameraFrustumCulling->SetCameraPosition(pCameraSceneComponent->GetWorldPosition());
 	m_pCameraFrustumCulling->Culling(vMaterialGroup);
 
-	m_renderInfo.shadowRenderInfo = m_pShadowCulling->GetCascadedRenderData();
+	//Voxelizer Setting.
+	auto pVoxelTableBuffer = GetRenderWork<MVoxelizerRenderWork>()->GetVoxelTableBuffer();
+	MORTY_ASSERT(pVoxelTableBuffer);
+
+	//TODO: remove test code.
+	const float fVoxelTableSize = MRenderGlobal::VOXEL_TABLE_SIZE;
+
+	const MVoxelMapSetting voxelSetting = {
+		Vector3(0, 0, 0), fVoxelTableSize,
+		1.0f, pVoxelTableBuffer
+	};
+
+	m_renderInfo.voxelSetting = voxelSetting;
+
+	//Voxelizer Culling.
+	m_pVoxelizerCulling->SetBounds(MBoundsAABB(voxelSetting.f3VoxelOrigin, voxelSetting.f3VoxelOrigin + fVoxelTableSize));
+	m_pVoxelizerCulling->Culling(vMaterialGroup);
 
 	//Update Shader Params.
 	UpdateFrameParams(m_renderInfo);
@@ -275,14 +289,11 @@ void MDeferredRenderProgram::ReleaseRenderTarget()
 
 void MDeferredRenderProgram::InitializeFrameShaderParams()
 {
-	m_pFramePropertyAdapter = std::make_shared<MForwardRenderShaderPropertyBlock>();
+	m_pFramePropertyAdapter = std::make_shared<MFrameShaderPropertyBlock>();
 	m_pFramePropertyAdapter->Initialize(GetEngine());
 
 	m_pShadowPropertyAdapter = std::make_shared<MShadowMapShaderPropertyBlock>();
 	m_pShadowPropertyAdapter->Initialize(GetEngine());
-
-	m_pVoxelizerPropertyAdapter = std::make_shared<MVoxelizerShaderPropertyBlock>();
-	m_pVoxelizerPropertyAdapter->Initialize(GetEngine());
 
 	m_pShadowCulling = std::make_shared<MCascadedShadowCulling>();
 	m_pShadowCulling->Initialize(GetEngine());
@@ -308,9 +319,6 @@ void MDeferredRenderProgram::ReleaseFrameShaderParams()
 	m_pShadowPropertyAdapter->Release(GetEngine());
 	m_pShadowPropertyAdapter = nullptr;
 
-	m_pVoxelizerPropertyAdapter->Release(GetEngine());
-	m_pVoxelizerPropertyAdapter = nullptr;
-
 	m_pShadowCulling->Release();
 	m_pShadowCulling = nullptr;
 
@@ -325,17 +333,6 @@ void MDeferredRenderProgram::UpdateFrameParams(MRenderInfo& info)
 {
 	m_pFramePropertyAdapter->UpdateShaderSharedParams(info);
 	m_pShadowPropertyAdapter->UpdateShaderSharedParams(info);
-	m_pVoxelizerPropertyAdapter->UpdateShaderSharedParams(info);
-
-	auto pVoxelTableBuffer = GetRenderWork<MVoxelizerRenderWork>()->GetVoxelTableBuffer();
-	MORTY_ASSERT(pVoxelTableBuffer);
-
-	m_pVoxelizerPropertyAdapter->SetVoxelMapSetting({
-		Vector3(0, 0, 0),
-		float(MRenderGlobal::VOXEL_TABLE_SIZE),
-		1.0f,
-		pVoxelTableBuffer
-	});
 }
 
 void MDeferredRenderProgram::RenderGBuffer()
@@ -346,20 +343,14 @@ void MDeferredRenderProgram::RenderGBuffer()
 		return;
 	}
 
-	//Current viewport.
-	MViewport* pViewport = m_renderInfo.pViewport;
-	MScene* pScene = pViewport->GetScene();
+	const MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
 	//Camera frustum culling.
 
-	auto pAnimationManager = pScene->GetManager<MAnimationManager>();
-	auto pAniamtionPropertyAdapter = pAnimationManager->CreateAnimationPropertyAdapter();
-
 	//Render static mesh.
-	MIndexedIndirectRenderable indirectMesh;
-	indirectMesh.SetScene(pScene);
+	MCullingResultRenderable indirectMesh;
+	indirectMesh.SetMeshBuffer(pMeshManager->GetMeshBuffer());
 	indirectMesh.SetPropertyBlockAdapter({
 	    m_pFramePropertyAdapter,
-	    pAniamtionPropertyAdapter
 	});
 
 	indirectMesh.SetMaterialFilter(std::make_shared<MMaterialTypeFilter>(MEMaterialType::EDeferred));
@@ -385,24 +376,33 @@ void MDeferredRenderProgram::RenderVoxelizer()
 {
 	MORTY_ASSERT(GetRenderWork<MVoxelizerRenderWork>());
 	
-	//Current viewport.
-	MViewport* pViewport = m_renderInfo.pViewport;
-	MScene* pScene = pViewport->GetScene();
+	auto pVoxelizerWork = GetRenderWork<MVoxelizerRenderWork>();
 
-	auto pAnimationManager = pScene->GetManager<MAnimationManager>();
-	auto pAniamtionPropertyAdapter = pAnimationManager->CreateAnimationPropertyAdapter();
+	const MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
 
-	MSpecificMaterialIndirectRenderable indirectMesh;
-	indirectMesh.SetScene(pScene);
+	MCullingResultSpecificMaterialRenderable indirectMesh;
+	indirectMesh.SetMeshBuffer(pMeshManager->GetMeshBuffer());
 	indirectMesh.SetPropertyBlockAdapter({
-		m_pVoxelizerPropertyAdapter,
-		pAniamtionPropertyAdapter
+		m_pFramePropertyAdapter,
 	});
 	indirectMesh.SetInstanceCulling(m_pVoxelizerCulling);
-	indirectMesh.SetMaterial(m_pVoxelizerPropertyAdapter->GetMaterial());
+	indirectMesh.SetMaterial(pVoxelizerWork->GetVoxelizerMaterial());
 
-    GetRenderWork<MVoxelizerRenderWork>()->Render(m_renderInfo, {
+	pVoxelizerWork->Render(m_renderInfo, {
 		&indirectMesh,
+	});
+
+
+	MIndirectIndexRenderable debugRender;
+	debugRender.SetMaterial(pVoxelizerWork->GetVoxelDebugMaterial());
+	debugRender.SetPropertyBlockAdapter({
+		m_pFramePropertyAdapter
+	});
+	debugRender.SetIndirectIndexBuffer(pVoxelizerWork->GetVoxelDebugBuffer());
+	debugRender.SetMeshBuffer(pMeshManager->GetMeshBuffer());
+
+	pVoxelizerWork->RenderDebugVoxel(m_renderInfo, {
+	   &debugRender,
 	});
 }
 
@@ -410,18 +410,12 @@ void MDeferredRenderProgram::RenderShadow()
 {
 	MORTY_ASSERT(GetRenderWork<MShadowMapRenderWork>());
 	
-	//Current viewport.
-	MViewport* pViewport = m_renderInfo.pViewport;
-	MScene* pScene = pViewport->GetScene();
+	const MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
 
-	auto pAnimationManager = pScene->GetManager<MAnimationManager>();
-	auto pAniamtionPropertyAdapter = pAnimationManager->CreateAnimationPropertyAdapter();
-
-	MIndexedIndirectRenderable indirectMesh;
-	indirectMesh.SetScene(pScene);
+	MCullingResultRenderable indirectMesh;
+	indirectMesh.SetMeshBuffer(pMeshManager->GetMeshBuffer());
 	indirectMesh.SetPropertyBlockAdapter({
 		m_pShadowPropertyAdapter,
-		pAniamtionPropertyAdapter
 	});
 	indirectMesh.SetInstanceCulling(m_pShadowCulling);
 
@@ -442,16 +436,13 @@ void MDeferredRenderProgram::RenderForward()
 	//Current viewport.
 	MViewport* pViewport = m_renderInfo.pViewport;
 	MScene* pScene = pViewport->GetScene();
-
-	const auto pAnimationManager = pScene->GetManager<MAnimationManager>();
-	auto pAniamtionPropertyAdapter = pAnimationManager->CreateAnimationPropertyAdapter();
+	const MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
 
 	//Render static mesh.
-	MIndexedIndirectRenderable indirectMesh;
-	indirectMesh.SetScene(pScene);
+	MCullingResultRenderable indirectMesh;
+	indirectMesh.SetMeshBuffer(pMeshManager->GetMeshBuffer());
 	indirectMesh.SetPropertyBlockAdapter({
 		m_pFramePropertyAdapter,
-		pAniamtionPropertyAdapter
 	});
 	indirectMesh.SetMaterialFilter(std::make_shared<MMaterialTypeFilter>(MEMaterialType::EDefault));
 	indirectMesh.SetInstanceCulling(m_pCameraFrustumCulling);
@@ -487,12 +478,12 @@ void MDeferredRenderProgram::RenderDebug()
 	MORTY_ASSERT(GetRenderWork<MDebugRenderWork>());
 
 	//Current viewport.
-	MViewport* pViewport = m_renderInfo.pViewport;
-	MScene* pScene = pViewport->GetScene();
+	const MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
+
 
 	//Render static mesh.
-	MIndexedIndirectRenderable indirectMesh;
-	indirectMesh.SetScene(pScene);
+	MCullingResultRenderable indirectMesh;
+	indirectMesh.SetMeshBuffer(pMeshManager->GetMeshBuffer());
 	indirectMesh.SetPropertyBlockAdapter({ m_pFramePropertyAdapter });
 	indirectMesh.SetMaterialFilter(std::make_shared<MMaterialTypeFilter>(MEMaterialType::ECustom));
 	indirectMesh.SetInstanceCulling(m_pCameraFrustumCulling);

@@ -66,6 +66,7 @@ class MORTY_API Vector3
 {
 public:
 	Vector3();
+	Vector3(const float& value);
 	Vector3(const Vector2& vec2);
 	Vector3(const Vector2& vec2, const float& z);
 	Vector3(const Vector3& vec3);

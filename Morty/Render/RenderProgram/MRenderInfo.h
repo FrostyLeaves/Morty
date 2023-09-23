@@ -42,6 +42,15 @@ struct MORTY_API MCascadedShadowRenderData
 	MBoundsSphere boundsSphere;
 };
 
+struct MORTY_API MVoxelMapSetting
+{
+	Vector3 f3VoxelOrigin = {};
+	float fResolution = 0.0f;
+	float fVoxelStep = 0.0f;
+
+	const MBuffer* pVoxelTableBuffer = nullptr;
+};
+
 struct MRenderInfo
 {
 	uint32_t nFrameIndex = 0;
@@ -72,6 +81,9 @@ struct MRenderInfo
 
 	//debug
 	std::vector<MDebugMeshComponent*> m_vDebugMeshComponent;
+
+	//voxelizer
+	MVoxelMapSetting voxelSetting;
 
 public:
 

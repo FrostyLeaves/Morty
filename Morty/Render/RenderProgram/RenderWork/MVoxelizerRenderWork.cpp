@@ -53,6 +53,11 @@ const MBuffer* MVoxelizerRenderWork::GetVoxelTableBuffer() const
 	return &m_voxelizerBuffer;
 }
 
+const MBuffer* MVoxelizerRenderWork::GetVoxelDebugBuffer() const
+{
+	return &m_drawIndirectBuffer;
+}
+
 void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
@@ -72,27 +77,44 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 		&m_voxelizerBuffer
 	});
 
+	if (m_pVoxelMapSetting)
+	{
+		auto& settingStruct = m_pVoxelMapSetting->var.GetValue<MVariantStruct>().GetVariant<MVariantStruct>("voxelMapSetting");
+		settingStruct.SetVariant("f3VoxelOrigin", info.voxelSetting.f3VoxelOrigin);
+		settingStruct.SetVariant("fResolution", info.voxelSetting.fResolution);
+		settingStruct.SetVariant("fVoxelStep", info.voxelSetting.fVoxelStep);
+		m_pVoxelMapSetting->SetDirty();
+	}
+
 	pCommand->DispatchComputeJob(m_pVoxelMapGenerator
 		, MRenderGlobal::VOXEL_TABLE_SIZE / 8
 		, MRenderGlobal::VOXEL_TABLE_SIZE / 8
 		, MRenderGlobal::VOXEL_TABLE_SIZE / 8);
 
-	
-	if (m_bDebugMode)
+}
+
+void MVoxelizerRenderWork::RenderDebugVoxel(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
+{
+	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
+
+	pCommand->AddComputeToGraphBarrier({
+		&m_drawIndirectBuffer
+		});
+
+	MViewport* pViewport = info.pViewport;
+	Vector2 v2LeftTop = pViewport->GetLeftTop();
+	Vector2 v2Size = pViewport->GetSize();
+
+	pCommand->BeginRenderPass(&m_renderPass);
+	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
+	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
+
+	for (IRenderable* pRenderable : vRenderable)
 	{
-		MViewport* pViewport = info.pViewport;
-		Vector2 v2LeftTop = pViewport->GetLeftTop();
-		Vector2 v2Size = pViewport->GetSize();
-
-		pCommand->BeginRenderPass(&m_renderPass);
-		pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
-		pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
-		
-		DrawVoxelizerMap(pCommand);
-
-		pCommand->EndRenderPass();
+		pRenderable->Render(pCommand);
 	}
 
+	pCommand->EndRenderPass();
 }
 
 void MVoxelizerRenderWork::InitializeBuffer()
@@ -133,22 +155,13 @@ void MVoxelizerRenderWork::InitializeDispatcher()
 	m_pVoxelMapGenerator = pObjectSystem->CreateObject<MComputeDispatcher>();
 	m_pVoxelMapGenerator->LoadComputeShader("Shader/Voxel/voxel_build_map.mcs");
 
-	const std::shared_ptr<MShaderPropertyBlock>& params = m_pVoxelMapGenerator->GetShaderPropertyBlocks()[0];
-
-	if (auto m_pVoxelMapSetting = params->FindConstantParam("cbVoxelMap"))
-	{
-		auto& settingStruct = m_pVoxelMapSetting->var.GetValue<MVariantStruct>().GetVariant<MVariantStruct>("voxelMapSetting");
-
-		settingStruct.SetVariant("f3VoxelOrigin", Vector3(0, 0, 0));
-		settingStruct.SetVariant("fResolution", float(MRenderGlobal::VOXEL_TABLE_SIZE));
-		settingStruct.SetVariant("fVoxelStep", 1.0f);
-		m_pVoxelMapSetting->SetDirty();
-	}
+	const std::shared_ptr<MShaderPropertyBlock>& params = m_pVoxelMapGenerator->GetShaderPropertyBlock(0);
+	MORTY_ASSERT(m_pVoxelMapSetting = params->FindConstantParam("cbVoxelMap"));
 
 	auto pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
 	auto cubeMesh = pMeshManager->GetCubeMesh();
-	params->SetValue("cubeMeshIndex", cubeMesh.indexInfo.begin);
-	params->SetValue("cubeMeshCount", cubeMesh.indexInfo.size);
+	params->SetValue("cubeMeshIndex", static_cast<uint32_t>(cubeMesh.indexMemoryInfo.begin / sizeof(uint32_t)));
+	params->SetValue("cubeMeshCount", static_cast<uint32_t>(cubeMesh.indexMemoryInfo.size / sizeof(uint32_t)));
 
 	if (auto pIndirectDraws = params->FindStorageParam("indirectDraws"))
 	{
@@ -158,9 +171,17 @@ void MVoxelizerRenderWork::InitializeDispatcher()
 
 	if (auto pVoxelTable = params->FindStorageParam("rVoxelTable"))
 	{
-		pVoxelTable->pBuffer = &m_drawIndirectBuffer;
+		pVoxelTable->pBuffer = &m_voxelizerBuffer;
 		pVoxelTable->SetDirty();
 	}
+
+	std::shared_ptr<MResource> voxelizerVS = pResourceSystem->LoadResource("Shader/Voxel/voxelizer.mvs");
+	std::shared_ptr<MResource> voxelizerPS = pResourceSystem->LoadResource("Shader/Voxel/voxelizer.mps");
+	m_pVoxelizerMaterial = pResourceSystem->CreateResource<MMaterialResource>();
+	m_pVoxelizerMaterial->SetCullMode(MECullMode::ECullNone);
+	m_pVoxelizerMaterial->LoadVertexShader(voxelizerVS);
+	m_pVoxelizerMaterial->LoadPixelShader(voxelizerPS);
+
 
 	std::shared_ptr<MResource> voxelDebugVS = pResourceSystem->LoadResource("Shader/Voxel/voxel_debug_view.mvs");
 	std::shared_ptr<MResource> voxelDebugPS = pResourceSystem->LoadResource("Shader/Voxel/voxel_debug_view.mps");
@@ -169,21 +190,6 @@ void MVoxelizerRenderWork::InitializeDispatcher()
 	m_pVoxelDebugMaterial->SetMaterialType(MEMaterialType::ECustom);
 	m_pVoxelDebugMaterial->LoadVertexShader(voxelDebugVS);
 	m_pVoxelDebugMaterial->LoadPixelShader(voxelDebugPS);
-
-	{
-		const std::shared_ptr<MShaderPropertyBlock>& params = m_pVoxelDebugMaterial->GetShaderPropertyBlocks()[0];
-
-		if (auto m_pVoxelMapSetting = params->FindConstantParam("cbVoxelMap"))
-		{
-			auto& settingStruct = m_pVoxelMapSetting->var.GetValue<MVariantStruct>().GetVariant<MVariantStruct>("voxelMapSetting");
-
-			settingStruct.SetVariant("f3VoxelOrigin", Vector3(0, 0, 0));
-			settingStruct.SetVariant("fResolution", float(MRenderGlobal::VOXEL_TABLE_SIZE));
-			settingStruct.SetVariant("fVoxelStep", 1.0f);
-			m_pVoxelMapSetting->SetDirty();
-		}
-	}
-
 }
 
 void MVoxelizerRenderWork::ReleaseDispatcher()
@@ -191,23 +197,8 @@ void MVoxelizerRenderWork::ReleaseDispatcher()
 	m_pVoxelMapGenerator->DeleteLater();
 	m_pVoxelMapGenerator = nullptr;
 
+	m_pVoxelizerMaterial = nullptr;
 	m_pVoxelDebugMaterial = nullptr;
-}
-
-void MVoxelizerRenderWork::DrawVoxelizerMap(MIRenderCommand* pCommand)
-{
-	//TODO set fream data.
-	pCommand->SetUseMaterial(m_pVoxelDebugMaterial);
-
-	auto pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
-
-	pCommand->DrawIndexedIndirect(
-		pMeshManager->GetVertexBuffer(),
-		pMeshManager->GetIndexBuffer(),
-		&m_drawIndirectBuffer,
-		0,
-		m_drawIndirectBuffer.GetSize() / sizeof(MDrawIndexedIndirectData)
-	);
 }
 
 void MVoxelizerRenderWork::InitializeRenderPass()
@@ -229,6 +220,8 @@ void MVoxelizerRenderWork::InitializeRenderPass()
 	m_voxelizerRenderPass.SetDepthWriteEnable(false);
 	m_voxelizerRenderPass.SetViewportNum(1);
 	m_voxelizerRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
+
+	m_renderPass.SetDepthTestEnable(false);
 
 }
 

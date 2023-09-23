@@ -1,5 +1,5 @@
 /**
- * @File         MSpecificMaterialIndirectRenderable
+ * @File         MCullingResultSpecificMaterialRenderable
  * 
  * @Created      2023-09-01 22:50:05
  *
@@ -9,10 +9,10 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "MIndexedIndirectRenderable.h"
+#include "MCullingResultRenderable.h"
 
 
-class MORTY_API MSpecificMaterialIndirectRenderable : public MIndexedIndirectRenderable
+class MORTY_API MCullingResultSpecificMaterialRenderable : public MCullingResultRenderable
 {
 public:
 

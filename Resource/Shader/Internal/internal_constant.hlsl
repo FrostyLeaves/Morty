@@ -1,6 +1,7 @@
 #ifndef _M_INTERNAL_CONSTANT_HLSL_
 #define _M_INTERNAL_CONSTANT_HLSL_
 
+#include "Voxel/voxel_struct_define.hlsl"
 
 #ifndef NUM_PI
     #define NUM_PI (3.1415926535898)
@@ -94,14 +95,37 @@ struct LightPointData
     float4 u_vCascadeSplits[CASCADED_SHADOW_MAP_NUM];   
 };
 
+//Sampler
 [[vk::binding(4,1)]]sampler LinearSampler;
 [[vk::binding(5,1)]]sampler NearestSampler;
 
 //Shadowmap
 [[vk::binding(6,1)]]Texture2DArray u_texShadowMap;
+
+//Environment
 [[vk::binding(7,1)]]TextureCube u_texIrradianceMap;
 [[vk::binding(8,1)]]TextureCube u_texPrefilterMap;
 [[vk::binding(9,1)]]Texture2D u_texBrdfLUT;
+
+//Animation
+[[vk::binding(10,1)]] StructuredBuffer<float4x4> u_vBonesMatrix;
+[[vk::binding(11,1)]] StructuredBuffer<int> u_vBonesOffset;
+
+//Transparent
+#ifdef MTRANSPARENT_DEPTH_PEELING
+[[vk::input_attachment_index(0)]] [[vk::binding(12, 1)]] SubpassInput u_texSubpassInput0;
+[[vk::input_attachment_index(1)]] [[vk::binding(13, 1)]] SubpassInput u_texSubpassInput1;
+#endif
+
+
+//Voxelizer
+[[vk::binding(14,1)]] cbuffer cbVoxelMap
+{
+    VoxelMapSetting voxelMapSetting;
+};
+
+[[vk::binding(15,1)]] RWStructuredBuffer<VoxelizerOutput> u_rwVoxelTable;
+
 
 
 #endif

@@ -4,18 +4,17 @@ struct VS_OUT
 {
     float4 pos : SV_POSITION;
 	float3 normal : NORMAL;
+    float3 worldPos : WORLD_POSITION;
 };
 
 void PS_MAIN(VS_OUT input)
 {
     
-    int3 voxelPosition = getVoxelMapUVW(input.pos.xyz);
+    uint3 voxelUVW = WorldPositionToVoxelUVW(voxelMapSetting, input.worldPos.xyz);
 
-	int voxelTableIdx = int(voxelPosition.z * (voxelMapSetting.fResolution * voxelMapSetting.fResolution) +
-                    voxelPosition.y * voxelMapSetting.fResolution +
-                    voxelPosition.x);
+	int voxelTableIdx = VoxelUVWToInstanceId(voxelMapSetting, voxelUVW);
     
     uint temp = 0;
-    InterlockedAdd(rwVoxelTable[voxelTableIdx].nVoxelCount, 1, temp);
+    InterlockedAdd(u_rwVoxelTable[voxelTableIdx].nVoxelCount, 1, temp);
     
 }

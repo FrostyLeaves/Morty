@@ -1,21 +1,8 @@
 #ifndef _M_INTERNAL_MODEL_DEFINE_HLSL_
 #define _M_INTERNAL_MODEL_DEFINE_HLSL_
 
-struct VS_IN
-{
-    float3 pos : POSITION;
-    float3 normal : NORMAL;
-    float3 tangent : TANGENT;
-    float3 bitangent : BITANGENT;
-    float2 uv : TEXCOORDS;
-    
-#if SKELETON_ENABLE == 1
-    int bonesID[MBONES_PER_VERTEX] : BONES_ID;
-    float bonesWeight[MBONES_PER_VERTEX] : BONES_WEIGHT;
-#endif
-
-};
-
+#include "Internal/internal_constant.hlsl"
+#include "Internal/internal_mesh.hlsl"
 
 #if DRAW_MESH_INSTANCING_UNIFORM
 
@@ -76,12 +63,6 @@ struct VS_IN
     #define MESH_SKELETAL_IDX u_meshIdx.y
 
 #endif
-
-//VS bones
-[[vk::binding(0,3)]] StructuredBuffer<float4x4> u_vBonesMatrix;
-[[vk::binding(1,3)]] StructuredBuffer<int> u_vBonesOffset;
-
-
 
 float4 getModelVertexPosition(VS_IN input, uint INSTANCE_ID)
 {

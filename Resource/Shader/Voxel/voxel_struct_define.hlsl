@@ -12,7 +12,7 @@ struct VoxelMapSetting
 {
     float3 f3VoxelOrigin;       //voxel map origin position in world space.
     float fResolution;          //voxel table resolution.
-    float fVoxelStep;           //how much distance does a voxel.
+    float fVoxelStep;           //how much width does a voxel.
 };
 
 
@@ -48,9 +48,10 @@ uint3 WorldPositionToVoxelUVW(VoxelMapSetting setting, float3 position)
     return uvw;
 }
 
+// return world position of the voxel center point.
 float3 VoxelUVWToWorldPosition(VoxelMapSetting setting, uint3 uvw)
 {
-    float3 position = float3(uvw) * setting.fVoxelStep + setting.f3VoxelOrigin;
+    float3 position = (float3(uvw) + float3(0.5f, 0.5f, 0.5f) ) * setting.fVoxelStep + setting.f3VoxelOrigin;
 
     return position;
 }

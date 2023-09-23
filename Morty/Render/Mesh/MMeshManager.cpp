@@ -11,6 +11,7 @@
 #include "TaskGraph/MTaskGraph.h"
 #include "Utility/MFunction.h"
 #include "Utility/MGlobal.h"
+#include "RenderProgram/RenderWork/MRenderWork.h"
 
 MORTY_CLASS_IMPLEMENT(MMeshManager, MObject)
 
@@ -20,11 +21,30 @@ constexpr size_t ClusterSize = 64u * 3u;
 
 constexpr size_t VertexAllocByteAlignment = 32;
 
+class MeshManagerBuffer : public MMeshBufferAdapter
+{
+public:
+	explicit MeshManagerBuffer(const MMeshManager* pMeshManager) : pOwner(pMeshManager) { MORTY_ASSERT(pOwner); }
+
+	const MBuffer* GetVertexBuffer() const override {
+		return pOwner->GetVertexBuffer();
+	}
+
+	const MBuffer* GetIndexBuffer() const override {
+		return pOwner->GetIndexBuffer();
+	}
+
+private:
+
+	const MMeshManager* pOwner = nullptr;
+};
+
 MMeshManager::MMeshManager()
 	: MeshVertexStructSize(sizeof(MVertex))
 	, m_vertexMemoryPool(VertexMemoryMaxSize * MeshVertexStructSize)
 	, m_indexMemoryPool(IndexMemoryMaxSize * sizeof(uint32_t))
 {
+	m_pMeshBufferAdapter = std::make_shared<MeshManagerBuffer>(this);
 }
 
 void MMeshManager::OnCreated()
@@ -357,4 +377,9 @@ MIMesh* MMeshManager::GetSkyBox() const
 const MMeshManager::MMeshData& MMeshManager::GetCubeMesh() const
 {
 	return FindMesh(m_pCubeMesh.get());
+}
+
+std::shared_ptr<MMeshBufferAdapter> MMeshManager::GetMeshBuffer() const
+{
+	return m_pMeshBufferAdapter;
 }

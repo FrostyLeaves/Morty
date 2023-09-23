@@ -13,6 +13,7 @@ class MScene;
 class MEngine;
 class MMaterial;
 class MComponent;
+class MMeshBufferAdapter;
 class MRenderMeshComponent;
 
 class MMeshManager : public MObject
@@ -58,6 +59,8 @@ public:
 	const MBuffer* GetVertexBuffer() const { return &m_vertexBuffer; }
 	const MBuffer* GetIndexBuffer() const { return &m_indexBuffer; }
 
+	std::shared_ptr<MMeshBufferAdapter> GetMeshBuffer() const;
+
 private:
 
 	void InitializeScreenRect();
@@ -90,4 +93,5 @@ private:
 // render thread.
 	std::mutex m_uploadMutex;
 	std::vector<MIMesh*> m_vUploadQueue;
+	std::shared_ptr<MMeshBufferAdapter> m_pMeshBufferAdapter = nullptr;
 };

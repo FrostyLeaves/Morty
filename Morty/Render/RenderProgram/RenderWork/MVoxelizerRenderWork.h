@@ -30,8 +30,13 @@ public:
 	void Release(MEngine* pEngine) override;
 
     void Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
+    void RenderDebugVoxel(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
 
+    std::shared_ptr<MMaterial> GetVoxelizerMaterial() const { return m_pVoxelizerMaterial; }
+    std::shared_ptr<MMaterial> GetVoxelDebugMaterial() const { return m_pVoxelDebugMaterial; }
     const MBuffer* GetVoxelTableBuffer() const;
+    const MBuffer* GetVoxelDebugBuffer() const;
+
 
 protected:
 
@@ -44,13 +49,12 @@ protected:
     void InitializeRenderPass();
     void ReleaseRenderPass();
 
-    void DrawVoxelizerMap(MIRenderCommand* pCommand);
-
     MComputeDispatcher* m_pVoxelMapGenerator = nullptr;
+    std::shared_ptr<MShaderConstantParam> m_pVoxelMapSetting = nullptr;
+    std::shared_ptr<MMaterial> m_pVoxelizerMaterial = nullptr;
     std::shared_ptr<MMaterial> m_pVoxelDebugMaterial = nullptr;
     MBuffer m_voxelizerBuffer;
     MBuffer m_drawIndirectBuffer;
-    bool m_bDebugMode = false;
 
     std::shared_ptr<MTexture> m_pVoxelizerRenderTarget = nullptr;
     MRenderPass m_voxelizerRenderPass;

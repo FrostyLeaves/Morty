@@ -27,6 +27,12 @@ struct MORTY_API MPoseRenderInstance
 	MemoryInfo bonesMemoryInfo;
 };
 
+struct MORTY_API MAnimationBufferData
+{
+	const MBuffer* pBonesBuffer = nullptr;
+	const MBuffer* pOffsetBuffer = nullptr;
+};
+
 struct MORTY_API MPoseRenderProxy
 {
     std::vector<Matrix4> vBoneMatrix;
@@ -43,6 +49,7 @@ public:
 	void UpdateSkeletonRenderInstance(MSkeletonInstanceKey nProxyId, const MPoseRenderProxy& poseProxy);
 	void UpdateOrCreateMeshInstance(MSkeletonInstanceKey nProxyId, const MPoseRenderProxy& poseProxy);
 
+	MAnimationBufferData GetAnimationBuffer() const;
 	std::shared_ptr<MShaderPropertyBlock> GetAnimationProperty() const { return m_pShaderPropertyBlock; }
 	std::shared_ptr<MShaderPropertyBlock> GetPropertyBlock() const override { return GetAnimationProperty(); }
 

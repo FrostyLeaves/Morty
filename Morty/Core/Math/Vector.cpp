@@ -36,6 +36,14 @@ Vector3::Vector3(const Vector2& vec2)
 
 }
 
+Vector3::Vector3(const float& value)
+	: x(value)
+	, y(value)
+	, z(value)
+{
+
+}
+
 Vector3::Vector3(const Vector2& vec2, const float& z)
 	: x(vec2.x)
 	, y(vec2.y)

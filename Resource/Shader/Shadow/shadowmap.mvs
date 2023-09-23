@@ -2,9 +2,9 @@
 
 
 //VS    per render
-[[vk::binding(0,1)]]cbuffer cbSceneMatrix : register(b1)
+[[vk::binding(0,0)]]cbuffer cbShadowMatrix : register(b1)
 {
-    float4x4 u_matCamProj[CASCADED_SHADOW_MAP_NUM]; // world to proj
+    float4x4 u_matLightSpaceProj[CASCADED_SHADOW_MAP_NUM]; // world to proj
 };
 
 struct VS_OUT_EMPTY
@@ -19,7 +19,7 @@ VS_OUT_EMPTY VS_MAIN(VS_IN input, uint ViewIndex : SV_ViewID, uint INSTANCE_ID :
     float4 vertexPos = getModelVertexPosition(input, INSTANCE_ID);
     float4 worldPos = mul(vertexPos, MESH_WORLD_MATRIX);
     
-    output.pos = mul(worldPos, u_matCamProj[ViewIndex]);
+    output.pos = mul(worldPos, u_matLightSpaceProj[ViewIndex]);
 
     return output;
 }

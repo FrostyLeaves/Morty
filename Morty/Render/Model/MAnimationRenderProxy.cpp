@@ -103,6 +103,14 @@ void MAnimationRenderGroup::UpdateOrCreateMeshInstance(MSkeletonInstanceKey nPro
     }
 }
 
+MAnimationBufferData MAnimationRenderGroup::GetAnimationBuffer() const
+{
+	return {
+		&m_bonesStorageBuffer.buffer,
+		&m_bonesOffsetBuffer.buffer
+	};
+}
+
 void MAnimationRenderGroup::Initialize(MEngine* pEngine)
 {
 	m_pEngine = pEngine;
@@ -133,7 +141,7 @@ void MAnimationRenderGroup::Initialize(MEngine* pEngine)
 	pMaterial->LoadVertexShader(pMeshVSResource);
 	pMaterial->LoadPixelShader(pMeshPSResource);
 
-	if (std::shared_ptr<MShaderPropertyBlock> pTemplatePropertyBlock = pMaterial->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_SKELETON])
+	if (std::shared_ptr<MShaderPropertyBlock> pTemplatePropertyBlock = pMaterial->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MESH])
 	{
 		m_pShaderPropertyBlock = pTemplatePropertyBlock->Clone();
 		if (auto pBoneProperty = m_pShaderPropertyBlock->FindStorageParam("u_vBonesMatrix"))

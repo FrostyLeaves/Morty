@@ -145,6 +145,11 @@ void MAnimationManager::RenderUpdate(MTaskNode* pNode)
 	m_tWaitUpdateComponent.clear();
 }
 
+MAnimationBufferData MAnimationManager::GetAnimationBuffer() const
+{
+	return m_pAnimationRenderGroup->GetAnimationBuffer();
+}
+
 std::shared_ptr<IPropertyBlockAdapter> MAnimationManager::CreateAnimationPropertyAdapter()
 {
 	return m_pAnimationRenderGroup;

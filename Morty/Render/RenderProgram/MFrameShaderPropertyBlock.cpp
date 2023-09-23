@@ -1,4 +1,4 @@
-#include "MForwardRenderShaderPropertyBlock.h"
+#include "MFrameShaderPropertyBlock.h"
 
 #include "Scene/MScene.h"
 #include "Scene/MEntity.h"
@@ -15,10 +15,12 @@
 #include "Material/MMaterial.h"
 #include "Resource/MMaterialResource.h"
 
+#include "Manager/MAnimationManager.h"
+
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
 
-void MForwardRenderShaderPropertyBlock::Initialize(MEngine* pEngine)
+void MFrameShaderPropertyBlock::Initialize(MEngine* pEngine)
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
 
@@ -33,7 +35,7 @@ void MForwardRenderShaderPropertyBlock::Initialize(MEngine* pEngine)
 	}
 }
 
-void MForwardRenderShaderPropertyBlock::Release(MEngine* pEngine)
+void MFrameShaderPropertyBlock::Release(MEngine* pEngine)
 {
 	MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
 
@@ -44,7 +46,7 @@ void MForwardRenderShaderPropertyBlock::Release(MEngine* pEngine)
 }
 
 
-std::shared_ptr<MMaterial> MForwardRenderShaderPropertyBlock::LoadMaterial(MEngine* pEngine) const
+std::shared_ptr<MMaterial> MFrameShaderPropertyBlock::LoadMaterial(MEngine* pEngine) const
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
 
@@ -58,7 +60,7 @@ std::shared_ptr<MMaterial> MForwardRenderShaderPropertyBlock::LoadMaterial(MEngi
 	return pMaterial;
 }
 
-void MForwardRenderShaderPropertyBlock::BindMaterial(const std::shared_ptr<MMaterial>& pMaterial)
+void MFrameShaderPropertyBlock::BindMaterial(const std::shared_ptr<MMaterial>& pMaterial)
 {
 	m_pShaderPropertyBlock = pMaterial->GetFramePropertyBlock()->Clone();
 
@@ -71,14 +73,20 @@ void MForwardRenderShaderPropertyBlock::BindMaterial(const std::shared_ptr<MMate
 	MORTY_ASSERT(m_pDiffuseMapTextureParam = m_pShaderPropertyBlock->FindTextureParam("u_texIrradianceMap"));
 	MORTY_ASSERT(m_pSpecularMapTextureParam = m_pShaderPropertyBlock->FindTextureParam("u_texPrefilterMap"));
 	MORTY_ASSERT(m_pBrdfMapTextureParam = m_pShaderPropertyBlock->FindTextureParam("u_texBrdfLUT"));
+
+	MORTY_ASSERT(m_pAnimationBonesParam = m_pShaderPropertyBlock->FindStorageParam("u_vBonesMatrix"));
+	MORTY_ASSERT(m_pAnimationOffsetParam = m_pShaderPropertyBlock->FindStorageParam("u_vBonesOffset"));
+
+	MORTY_ASSERT(m_pRWVoxelTableParam = m_pShaderPropertyBlock->FindStorageParam("u_rwVoxelTable"));
+	MORTY_ASSERT(m_pVoxelMapSetting = m_pShaderPropertyBlock->FindConstantParam("cbVoxelMap"));
 }
 
-std::shared_ptr<MShaderPropertyBlock> MForwardRenderShaderPropertyBlock::GetPropertyBlock() const
+std::shared_ptr<MShaderPropertyBlock> MFrameShaderPropertyBlock::GetPropertyBlock() const
 {
 	return { m_pShaderPropertyBlock };
 }
 
-void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& info)
+void MFrameShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& info)
 {
 	MViewport* pViewport = info.pViewport;
 	if (!pViewport) return;
@@ -290,9 +298,31 @@ void MForwardRenderShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& in
 		pLightParam->SetDirty();
 	}
 
+	if (auto pAnimationManager = pScene->GetManager<MAnimationManager>())
+	{
+		auto bufferData = pAnimationManager->GetAnimationBuffer();
+		m_pAnimationBonesParam->pBuffer = bufferData.pBonesBuffer;
+		m_pAnimationOffsetParam->pBuffer = bufferData.pOffsetBuffer;
+
+		m_pAnimationBonesParam->SetDirty();
+		m_pAnimationOffsetParam->SetDirty();
+	}
+
+
+	auto& settingStruct = m_pVoxelMapSetting->var.GetValue<MVariantStruct>().GetVariant<MVariantStruct>("voxelMapSetting");
+
+	settingStruct.SetVariant("f3VoxelOrigin", info.voxelSetting.f3VoxelOrigin);
+	settingStruct.SetVariant("fResolution", info.voxelSetting.fResolution);
+	settingStruct.SetVariant("fVoxelStep", info.voxelSetting.fVoxelStep);
+	m_pVoxelMapSetting->SetDirty();
+
+
+	m_pRWVoxelTableParam->pBuffer = info.voxelSetting.pVoxelTableBuffer;
+	m_pRWVoxelTableParam->SetDirty();
+
 }
 
-void MForwardRenderShaderPropertyBlock::SetShadowMapTexture(std::shared_ptr<MTexture> pTexture)
+void MFrameShaderPropertyBlock::SetShadowMapTexture(std::shared_ptr<MTexture> pTexture)
 {
 	if (m_pShadowTextureParam && m_pShadowTextureParam->GetTexture() != pTexture)
 	{
@@ -300,7 +330,7 @@ void MForwardRenderShaderPropertyBlock::SetShadowMapTexture(std::shared_ptr<MTex
 	}
 }
 
-void MForwardRenderShaderPropertyBlock::SetBrdfMapTexture(std::shared_ptr<MTexture> pTexture)
+void MFrameShaderPropertyBlock::SetBrdfMapTexture(std::shared_ptr<MTexture> pTexture)
 {
 	if (m_pBrdfMapTextureParam && m_pBrdfMapTextureParam->GetTexture() != pTexture)
 	{
@@ -310,7 +340,7 @@ void MForwardRenderShaderPropertyBlock::SetBrdfMapTexture(std::shared_ptr<MTextu
 
 void MForwardRenderTransparentShaderPropertyBlock::BindMaterial(const std::shared_ptr<MMaterial>& pMaterial)
 {
-	MForwardRenderShaderPropertyBlock::BindMaterial(pMaterial);
+	MFrameShaderPropertyBlock::BindMaterial(pMaterial);
 
 	MORTY_ASSERT(m_pTransparentFrontTextureParam = m_pShaderPropertyBlock->FindTextureParam("u_texSubpassInput0"));
 	MORTY_ASSERT(m_pTransparentBackTextureParam = m_pShaderPropertyBlock->FindTextureParam("u_texSubpassInput1"));

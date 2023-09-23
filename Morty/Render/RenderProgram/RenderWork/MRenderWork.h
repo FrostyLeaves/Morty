@@ -37,6 +37,14 @@ public:
     virtual std::shared_ptr<MShaderPropertyBlock> GetPropertyBlock() const = 0;
 };
 
+class MORTY_API MMeshBufferAdapter
+{
+public:
+    virtual ~MMeshBufferAdapter() = default;
+    virtual const MBuffer* GetVertexBuffer() const = 0;
+    virtual const MBuffer* GetIndexBuffer() const = 0;
+};
+
 class MORTY_API IRenderPassAdapter
 {
 public:

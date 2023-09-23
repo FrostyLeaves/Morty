@@ -1,5 +1,5 @@
 /**
- * @File         MForwardRenderShaderPropertyBlock
+ * @File         MFrameShaderPropertyBlock
  * 
  * @Created      2020-07-2 11:45:49
  *
@@ -17,12 +17,12 @@
 #include <memory>
 
 class MEngine;
-class MORTY_API MForwardRenderShaderPropertyBlock : public IPropertyBlockAdapter
+class MORTY_API MFrameShaderPropertyBlock : public IPropertyBlockAdapter
 {
 public:
 
-	MForwardRenderShaderPropertyBlock() = default;
-    ~MForwardRenderShaderPropertyBlock() override = default;
+	MFrameShaderPropertyBlock() = default;
+    ~MFrameShaderPropertyBlock() override = default;
 
 public:
 
@@ -52,10 +52,22 @@ public:
 	/*cbShadowInformation*/
 	std::shared_ptr<MShaderConstantParam> m_pShadowInfoParam = nullptr;
 
+	/*u_texShadowMap*/
 	std::shared_ptr<MShaderTextureParam> m_pShadowTextureParam = nullptr;
+	/*u_texIrradianceMap*/
 	std::shared_ptr<MShaderTextureParam> m_pDiffuseMapTextureParam = nullptr;
+	/*u_texPrefilterMap*/
 	std::shared_ptr<MShaderTextureParam> m_pSpecularMapTextureParam = nullptr;
+	/*u_texBrdfLUT*/
 	std::shared_ptr<MShaderTextureParam> m_pBrdfMapTextureParam = nullptr;
+
+	/*u_vBonesMatrix*/
+	std::shared_ptr<MShaderStorageParam> m_pAnimationBonesParam = nullptr;
+	/*u_vBonesOffset*/
+	std::shared_ptr<MShaderStorageParam> m_pAnimationOffsetParam = nullptr;
+
+	std::shared_ptr<MShaderStorageParam> m_pRWVoxelTableParam = nullptr;
+	std::shared_ptr<MShaderConstantParam> m_pVoxelMapSetting = nullptr;
 
 protected:
 	std::shared_ptr<MMaterial> m_pMaterial = nullptr;
@@ -63,7 +75,7 @@ protected:
 };
 
 
-class MORTY_API MForwardRenderTransparentShaderPropertyBlock : public MForwardRenderShaderPropertyBlock
+class MORTY_API MForwardRenderTransparentShaderPropertyBlock : public MFrameShaderPropertyBlock
 {
 public:
 

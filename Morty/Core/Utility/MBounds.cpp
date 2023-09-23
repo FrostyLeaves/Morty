@@ -193,12 +193,9 @@ MBoundsAABB::MBoundsAABB(const std::vector<Vector3>& vPoints, const Matrix4& mat
 	SetPoints(vPoints);
 }
 
-MBoundsAABB::MBoundsAABB(const Vector3& center, const Vector3& halfLength)
+MBoundsAABB::MBoundsAABB(const Vector3& min, const Vector3& max)
 {
-	m_v3CenterPoint = center;
-	m_v3HalfLength = halfLength;
-	m_v3MinPoint = center - halfLength;
-	m_v3MaxPoint = center + halfLength;
+	SetMinMax(min, max);
 }
 
 void MBoundsAABB::SetMinMax(const Vector3& v3Min, const Vector3& v3Max)

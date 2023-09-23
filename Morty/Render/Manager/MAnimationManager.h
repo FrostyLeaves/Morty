@@ -42,6 +42,7 @@ public:
 	void RenderUpdate(MTaskNode* pNode);
 	MTaskNode* GetUpdateTask() const { return m_pUpdateTask; }
 
+	MAnimationBufferData GetAnimationBuffer() const;
 	std::shared_ptr<IPropertyBlockAdapter> CreateAnimationPropertyAdapter();
 
 protected:

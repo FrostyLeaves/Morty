@@ -31,7 +31,7 @@ public:
 	MBoundsAABB(const std::vector<Vector3>& vPoints);
 	MBoundsAABB(const MBoundsAABB& aabb, const Matrix4& matWorld);
 	MBoundsAABB(const std::vector<Vector3>& vPoints, const Matrix4& matWorld);
-	MBoundsAABB(const Vector3& center, const Vector3& halfLength);
+	MBoundsAABB(const Vector3& min, const Vector3& max);
 
 	void SetMinMax(const Vector3& v3Min, const Vector3& v3Max);
 	void SetPoints(const std::vector<Vector3>& vPoints);
