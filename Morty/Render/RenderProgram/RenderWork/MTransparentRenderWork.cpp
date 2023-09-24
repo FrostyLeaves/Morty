@@ -163,7 +163,7 @@ void MTransparentRenderWork::RenderDepthPeel(MRenderInfo& info)
 
 	for (uint32_t i = 1; i < m_peelRenderPass.m_vSubpass.size(); ++i)
 	{
-		pCommand->NextSubpass();
+		pCommand->NextSubPass();
 
 		for (auto& pr : info.m_tTransparentGroupMesh)
 		{

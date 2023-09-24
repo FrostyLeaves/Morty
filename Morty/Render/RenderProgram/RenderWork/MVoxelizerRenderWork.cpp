@@ -62,6 +62,8 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 {
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
 
+	pCommand->ResetBuffer(&m_voxelizerBuffer);
+
 	pCommand->BeginRenderPass(&m_voxelizerRenderPass);
 	pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, MRenderGlobal::VOXEL_TABLE_SIZE, MRenderGlobal::VOXEL_TABLE_SIZE));
 	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, MRenderGlobal::VOXEL_TABLE_SIZE, MRenderGlobal::VOXEL_TABLE_SIZE));

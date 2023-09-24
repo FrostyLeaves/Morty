@@ -20,39 +20,40 @@ class MORTY_API MVulkanRenderCommand : public MIRenderCommand
 {
 public:
     explicit MVulkanRenderCommand() = default;
-    virtual ~MVulkanRenderCommand() = default;
+    ~MVulkanRenderCommand() override = default;
 
 public:
 
-	virtual void SetViewport(const MViewportInfo& viewport) override;
-	virtual void SetScissor(const MScissorInfo& scissor) override;
+    void SetViewport(const MViewportInfo& viewport) override;
+    void SetScissor(const MScissorInfo& scissor) override;
 
-	virtual void RenderCommandBegin() override;
-	virtual void RenderCommandEnd() override;
+	void RenderCommandBegin() override;
+	void RenderCommandEnd() override;
 
-	virtual void BeginRenderPass(MRenderPass* pRenderPass) override;
-	virtual void NextSubpass() override;
-	virtual void EndRenderPass() override;
+	void BeginRenderPass(MRenderPass* pRenderPass) override;
+	void NextSubPass() override;
+	void EndRenderPass() override;
 
-	virtual void DrawMesh(MIMesh* pMesh) override;
-	virtual void DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, const uint32_t& nIdxCount, const uint32_t& nVrtOffset) override;
-	virtual void DrawMesh(const MBuffer* pVertexBuffer, const MBuffer* pIndexBuffer, const size_t nVertexOffset, const size_t nIndexOffset, const size_t nIndexCount) override;
-    virtual void DrawIndexedIndirect(const MBuffer* pVertexBuffer, const MBuffer* pIndexBuffer, const MBuffer* pCommandsBuffer, const size_t& offset, const size_t& count) override;
+	void DrawMesh(MIMesh* pMesh) override;
+	void DrawMesh(MIMesh* pMesh, const uint32_t& nIdxOffset, const uint32_t& nIdxCount, const uint32_t& nVrtOffset) override;
+	void DrawMesh(const MBuffer* pVertexBuffer, const MBuffer* pIndexBuffer, const size_t nVertexOffset, const size_t nIndexOffset, const size_t nIndexCount) override;
+    void DrawIndexedIndirect(const MBuffer* pVertexBuffer, const MBuffer* pIndexBuffer, const MBuffer* pCommandsBuffer, const size_t& offset, const size_t& count) override;
 
 
-	virtual bool SetUseMaterial(std::shared_ptr<MMaterial> pMaterial) override;
-	virtual void SetShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) override;
+	bool SetUseMaterial(std::shared_ptr<MMaterial> pMaterial) override;
+	void SetShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) override;
 
-	virtual bool DispatchComputeJob(MComputeDispatcher* pComputeDispatcher, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ) override;
+	bool DispatchComputeJob(MComputeDispatcher* pComputeDispatcher, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ) override;
 
-	virtual bool AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures) override;
-	virtual bool AddComputeToGraphBarrier(const std::vector<const MBuffer*> vBuffers) override;
-	virtual bool AddGraphToComputeBarrier(const std::vector<const MBuffer*> vBuffers) override;
-	virtual bool DownloadTexture(MTexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback) override;
-	virtual bool CopyImageBuffer(MTexture* pSource, MTexture* pDest) override;
-	virtual void UpdateMipmaps(MTexture* pBuffer) override;
+	bool AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures) override;
+	bool AddComputeToGraphBarrier(const std::vector<const MBuffer*> vBuffers) override;
+	bool AddGraphToComputeBarrier(const std::vector<const MBuffer*> vBuffers) override;
+	bool DownloadTexture(MTexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback) override;
+	bool CopyImageBuffer(MTexture* pSource, MTexture* pDest) override;
+	void UpdateMipmaps(MTexture* pBuffer) override;
+	void ResetBuffer(const MBuffer* pBuffer) override;
 
-	virtual void addFinishedCallback(std::function<void()> func) override;
+	void addFinishedCallback(std::function<void()> func) override;
 
 	void UpdateBuffer(MBuffer* pBuffer, const MByte* data, const size_t& size);
 
@@ -80,7 +81,6 @@ public:
 
 class MORTY_API MVulkanSecondaryRenderCommand : public MVulkanRenderCommand
 {
-public:
 
 };
 
@@ -89,12 +89,12 @@ class MORTY_API MVulkanPrimaryRenderCommand : public MVulkanRenderCommand
 public:
 	MVulkanPrimaryRenderCommand();
 
-	virtual bool IsFinished() override { return m_bFinished; }
-	virtual void CheckFinished() override;
+	bool IsFinished() override { return m_bFinished; }
+	void CheckFinished() override;
 
-	virtual MIRenderCommand* CreateChildCommand() override;
-	virtual MIRenderCommand* GetChildCommand(const size_t& nIndex) override;
-	virtual void ExecuteChildCommand() override;
+	MIRenderCommand* CreateChildCommand() override;
+	MIRenderCommand* GetChildCommand(const size_t& nIndex) override;
+	void ExecuteChildCommand() override;
 
 public:
 

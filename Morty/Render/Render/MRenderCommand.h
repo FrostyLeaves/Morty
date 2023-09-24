@@ -69,7 +69,7 @@ public:
 	virtual void RenderCommandEnd() = 0;
 
 	virtual void BeginRenderPass(MRenderPass* pRenderPass) = 0;
-	virtual void NextSubpass() = 0;
+	virtual void NextSubPass() = 0;
 	virtual void EndRenderPass() = 0;
 
 	virtual void DrawMesh(MIMesh* pMesh) = 0;
@@ -88,6 +88,7 @@ public:
 	virtual bool DownloadTexture(MTexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback) = 0;
 	virtual bool CopyImageBuffer(MTexture* pSource, MTexture* pDest) = 0;
 	virtual void UpdateMipmaps(MTexture* pBuffer) = 0;
+	virtual void ResetBuffer(const MBuffer* pBuffer) = 0;
 
 
 	virtual MIRenderCommand* CreateChildCommand() { return nullptr; }

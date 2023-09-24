@@ -103,7 +103,7 @@ void MVulkanRenderCommand::BeginRenderPass(MRenderPass* pRenderPass)
 	m_vRenderPassStages.push(MRenderPassStage(pRenderPass, 0));
 }
 
-void MVulkanRenderCommand::NextSubpass()
+void MVulkanRenderCommand::NextSubPass()
 {
 	if (m_vRenderPassStages.empty())
 		return;
@@ -657,6 +657,11 @@ void MVulkanRenderCommand::UpdateMipmaps(MTexture* pTexture)
 		return;
 
 	m_pDevice->GenerateMipmaps(pTexture, pTexture->m_unMipmapLevel, m_VkCommandBuffer);
+}
+
+void MVulkanRenderCommand::ResetBuffer(const MBuffer* pBuffer)
+{
+	vkCmdFillBuffer(m_VkCommandBuffer, pBuffer->m_VkBuffer, 0, pBuffer->GetSize(), 0);
 }
 
 void MVulkanRenderCommand::addFinishedCallback(std::function<void()> func)
