@@ -25,6 +25,7 @@
 #include "Component/MRenderMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 #include "Component/MDebugRenderComponent.h"
+#include "Component/MSkyBoxComponent.h"
 
 #include "Shadow/MShadowMeshManager.h"
 #include "Manager/MEnvironmentManager.h"
@@ -58,6 +59,7 @@ bool MRenderModule::Register(MEngine* pEngine)
 	MTaskGraph* pTaskGraph = pEngine->GetMainGraph();
 
 	pEngine->RegisterSystem<MModelSystem>();
+	pEngine->RegisterSystem<MSkyBoxSystem>();
 
 	MRenderSystem* pRenderSystem = pEngine->RegisterSystem<MRenderSystem>();
 
@@ -110,6 +112,7 @@ bool MRenderModule::Register(MEngine* pEngine)
 		pComponentSystem->RegisterComponent<MRenderMeshComponent>();
 		pComponentSystem->RegisterComponent<MDirectionalLightComponent>();
 		pComponentSystem->RegisterComponent<MDebugRenderComponent>();
+		pComponentSystem->RegisterComponent<MSkyBoxComponent>();
 	}
 
 

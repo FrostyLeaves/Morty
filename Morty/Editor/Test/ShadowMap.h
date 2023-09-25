@@ -22,7 +22,7 @@ void ADD_DIRECTIONAL_LIGHT(MEngine* pEngine, MScene* pScene)
 	pDirLight->SetName("DirectionalLight");
 	if (MSceneComponent* pSceneComponent = pDirLight->RegisterComponent<MSceneComponent>())
 	{
-		pSceneComponent->SetRotation(Quaternion(Vector3(1.0, 0.0, 0.0), 0.0f));
+		pSceneComponent->SetRotation(Quaternion(Vector3(1.0, 0.0, 0.0), 45.0f));
 	}
 	if (MDirectionalLightComponent* pLightComponent = pDirLight->RegisterComponent<MDirectionalLightComponent>())
 	{

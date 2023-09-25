@@ -68,7 +68,7 @@ void MDeferredRenderProgram::Render(MIRenderCommand* pPrimaryCommand)
 	RenderGBuffer();
 	RenderLightning();
 	RenderForward();
-	RenderVoxelizer();
+	//RenderVoxelizer();
 	RenderTransparent();
 	RenderPostProcess();
 	RenderDebug();
