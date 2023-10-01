@@ -54,8 +54,8 @@ std::shared_ptr<MMaterial> MFrameShaderPropertyBlock::LoadMaterial(MEngine* pEng
 	std::shared_ptr<MResource> forwardPS = pResourceSystem->LoadResource("Shader/Deferred/model_gbuffer.mps");
 	auto pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	pMaterial->SetCullMode(MECullMode::ECullBack);
-	pMaterial->LoadVertexShader(forwardVS);
-	pMaterial->LoadPixelShader(forwardPS);
+	pMaterial->LoadShader(forwardVS);
+	pMaterial->LoadShader(forwardPS);
 
 	return pMaterial;
 }

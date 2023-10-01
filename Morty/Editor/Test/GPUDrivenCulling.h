@@ -23,8 +23,8 @@ void GPU_DRIVEN_CULLING_TEST(MEngine* pEngine, MScene* pScene)
 	std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
 	pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_UNIFORM, "1");
-	pMaterial->LoadVertexShader("Shader/Deferred/model_gbuffer.mvs");
-	pMaterial->LoadPixelShader("Shader/Deferred/model_gbuffer.mps");
+	pMaterial->LoadShader("Shader/Deferred/model_gbuffer.mvs");
+	pMaterial->LoadShader("Shader/Deferred/model_gbuffer.mps");
 	pMaterial->SetMaterialType(MEMaterialType::EDeferred);
 
 	std::shared_ptr<MResource> albedo = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_albedo.png");
@@ -44,7 +44,6 @@ void GPU_DRIVEN_CULLING_TEST(MEngine* pEngine, MScene* pScene)
 	pMaterial->GetMaterialPropertyBlock()->SetValue("fMetallic", 1.0f);
 	pMaterial->GetMaterialPropertyBlock()->SetValue("fRoughness", 1.0f);
 	pMaterial->GetMaterialPropertyBlock()->SetValue("f4Albedo", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-	pMaterial->SetBatchInstanceEnable(true);
 
 
 

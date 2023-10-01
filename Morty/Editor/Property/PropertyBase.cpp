@@ -306,10 +306,10 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 			ShowValueBegin("Shader");
 			if (ImGui::Button("Reload Shader", ImVec2(ImGui::GetContentRegionAvail().x, 0)))
 			{
-				MString strResPathVS = pResource->GetVertexShaderResource()->GetResourcePath();
+				MString strResPathVS = pResource->GetShader(MEShaderType::EVertex)->GetResourcePath();
 				pResource->GetResourceSystem()->Reload(strResPathVS);
 
-				MString strResPathPS = pResource->GetPixelShaderResource()->GetResourcePath();
+				MString strResPathPS = pResource->GetShader(MEShaderType::EPixel)->GetResourcePath();
 				pResource->GetResourceSystem()->Reload(strResPathPS);
 			}
 			ShowValueEnd();

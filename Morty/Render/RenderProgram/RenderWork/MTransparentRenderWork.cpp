@@ -201,14 +201,14 @@ void MTransparentRenderWork::InitializeMaterial()
 
 	m_pDrawPeelMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pDrawPeelMaterial->SetMaterialType(MEMaterialType::EDepthPeel);
-	m_pDrawPeelMaterial->LoadVertexShader(pDPVSResource);
-	m_pDrawPeelMaterial->LoadPixelShader(pDPFPSResource);
+	m_pDrawPeelMaterial->LoadShader(pDPVSResource);
+	m_pDrawPeelMaterial->LoadShader(pDPFPSResource);
 
 
 	m_pDrawFillMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pDrawFillMaterial->SetMaterialType(MEMaterialType::ETransparentBlend);
-	m_pDrawFillMaterial->LoadVertexShader(pDPVSResource);
-	m_pDrawFillMaterial->LoadPixelShader(pDPBPSResource);
+	m_pDrawFillMaterial->LoadShader(pDPVSResource);
+	m_pDrawFillMaterial->LoadShader(pDPBPSResource);
 
 	std::vector<std::shared_ptr<MShaderTextureParam>>& params = m_pDrawFillMaterial->GetTextureParams();
 	params[0]->SetTexture(m_pFrontTexture);
@@ -419,8 +419,8 @@ void MTransparentRenderWork::InitializeFrameShaderParams()
 	m_pForwardMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pForwardMaterial->SetCullMode(MECullMode::ECullBack);
 	m_pForwardMaterial->SetMaterialType(MEMaterialType::EDepthPeel);
-	m_pForwardMaterial->LoadVertexShader(forwardVS);
-	m_pForwardMaterial->LoadPixelShader(forwardPS);
+	m_pForwardMaterial->LoadShader(forwardVS);
+	m_pForwardMaterial->LoadShader(forwardPS);
 
 	m_aFramePropertyBlock[0].BindMaterial(m_pForwardMaterial);
 	m_aFramePropertyBlock[0].m_pTransparentFrontTextureParam->SetTexture(m_pFrontDepthForPassB);

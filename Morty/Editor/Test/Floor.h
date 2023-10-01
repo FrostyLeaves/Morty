@@ -28,8 +28,8 @@ void CREATE_FLOOR_GRID(MEngine* pEngine, MScene* pScene)
 
 		std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
-		pMaterial->LoadVertexShader("Shader/Floor/floor.mvs");
-		pMaterial->LoadPixelShader("Shader/Floor/floor.mps");
+		pMaterial->LoadShader("Shader/Floor/floor.mvs");
+		pMaterial->LoadShader("Shader/Floor/floor.mps");
 		pMaterial->SetCullMode(MECullMode::ECullNone);
 		pMaterial->SetMaterialType(MEMaterialType::ECustom);
 		pMeshComponent->Load(pCubeResource);

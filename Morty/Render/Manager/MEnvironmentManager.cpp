@@ -155,8 +155,8 @@ void MEnvironmentManager::InitializeMaterial()
 	std::shared_ptr<MResource> skyboxPS = pResourceSystem->LoadResource("Shader/Environment/skybox.mps");
 	m_pSkyBoxMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pSkyBoxMaterial->SetCullMode(MECullMode::ECullNone);
-	m_pSkyBoxMaterial->LoadVertexShader(skyboxVS);
-	m_pSkyBoxMaterial->LoadPixelShader(skyboxPS);
+	m_pSkyBoxMaterial->LoadShader(skyboxVS);
+	m_pSkyBoxMaterial->LoadShader(skyboxPS);
 
 }
 

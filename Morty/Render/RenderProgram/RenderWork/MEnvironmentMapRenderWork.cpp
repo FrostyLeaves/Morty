@@ -204,8 +204,8 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 	m_DiffuseMaterial = pResourceSystem->CreateResource<MMaterial>("Diffuse CubeMap Material");
 	std::shared_ptr<MResource> vs = pResourceSystem->LoadResource("Shader/Lighting/ibl_map.mvs");
 	std::shared_ptr<MResource> diffuseps = pResourceSystem->LoadResource("Shader/Lighting/diffuse_map.mps");
-	m_DiffuseMaterial->LoadVertexShader(vs);
-	m_DiffuseMaterial->LoadPixelShader(diffuseps);
+	m_DiffuseMaterial->LoadShader(vs);
+	m_DiffuseMaterial->LoadShader(diffuseps);
 
 	m_DiffuseMaterial->SetCullMode(MECullMode::ECullFront);
 
@@ -229,8 +229,8 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 	for (uint32_t nMipmap = 0; nMipmap < SpecularMipmapCount; ++nMipmap)
 	{
 		m_vSpecularMaterial[nMipmap] = pResourceSystem->CreateResource<MMaterial>(MString("Specular CubeMap Material_") + MStringUtil::ToString(nMipmap));
-		m_vSpecularMaterial[nMipmap]->LoadVertexShader(vs);
-		m_vSpecularMaterial[nMipmap]->LoadPixelShader(specularps);
+		m_vSpecularMaterial[nMipmap]->LoadShader(vs);
+		m_vSpecularMaterial[nMipmap]->LoadShader(specularps);
 		m_vSpecularMaterial[nMipmap]->SetCullMode(MECullMode::ECullFront);
 
 		if (const std::shared_ptr<MShaderPropertyBlock>& pParams = m_vSpecularMaterial[nMipmap]->GetMaterialPropertyBlock())

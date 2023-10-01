@@ -100,8 +100,8 @@ void MDeferredLightingRenderWork::Initialize(MEngine* pEngine)
 
 
 	m_pLightningMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-	m_pLightningMaterial->LoadVertexShader(vs);
-	m_pLightningMaterial->LoadPixelShader(ps);
+	m_pLightningMaterial->LoadShader(vs);
+	m_pLightningMaterial->LoadShader(ps);
 
 }
 

@@ -16,14 +16,6 @@
 #include "Render/Vulkan/MVulkanWrapper.h"
 #endif
 
-
-enum MEShaderParamType
-{
-	EVertex = 1,
-	EPixel = 2,
-	ECompute = 4,
-};
-
 enum class MESamplerType
 {
 	ENearest,

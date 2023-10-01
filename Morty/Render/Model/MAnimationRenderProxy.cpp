@@ -138,8 +138,8 @@ void MAnimationRenderGroup::Initialize(MEngine* pEngine)
 	
 	std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	pMaterial->GetShaderMacro().SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, "1");
-	pMaterial->LoadVertexShader(pMeshVSResource);
-	pMaterial->LoadPixelShader(pMeshPSResource);
+	pMaterial->LoadShader(pMeshVSResource);
+	pMaterial->LoadShader(pMeshPSResource);
 
 	if (std::shared_ptr<MShaderPropertyBlock> pTemplatePropertyBlock = pMaterial->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MESH])
 	{

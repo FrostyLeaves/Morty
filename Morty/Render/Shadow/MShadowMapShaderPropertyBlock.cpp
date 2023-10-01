@@ -28,8 +28,8 @@ void MShadowMapShaderPropertyBlock::Initialize(MEngine* pEngine)
 	m_pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pMaterial->SetCullMode(MECullMode::ECullNone);
 	m_pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, "1");
-	m_pMaterial->LoadVertexShader(vs);
-	m_pMaterial->LoadPixelShader(ps);
+	m_pMaterial->LoadShader(vs);
+	m_pMaterial->LoadShader(ps);
 
 	BindMaterial(m_pMaterial);
 }

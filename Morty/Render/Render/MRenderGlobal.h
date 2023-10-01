@@ -46,6 +46,8 @@ public:
 
 	static const char* SUFFIX_VERTEX_SHADER;
 	static const char* SUFFIX_PIXEL_SHADER;
+	static const char* SUFFIX_COMPUTE_SHADER;
+	static const char* SUFFIX_GEOMETRY_SHADER;
 
 	static const bool GBUFFER_UNIFIED_FORMAT;
 

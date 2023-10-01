@@ -25,8 +25,8 @@ class MORTY_API MComputeDispatcher : public MObject
 {
 public:
 	MORTY_CLASS(MComputeDispatcher)
-		MComputeDispatcher();
-    virtual ~MComputeDispatcher();
+		MComputeDispatcher() = default;
+	virtual ~MComputeDispatcher() = default;
 	
 public:
 
@@ -35,7 +35,7 @@ public:
 
 public:
 
-	std::shared_ptr<MResource> GetComputeShaderResource() { return m_pShaderProgram->GetComputeShaderResource(); }
+	std::shared_ptr<MResource> GetComputeShaderResource() { return m_pShaderProgram->GetShaderResource(MEShaderType::ECompute); }
 	std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderPropertyBlocks() { return  m_pShaderProgram->GetShaderPropertyBlocks(); }
 	std::shared_ptr<MShaderPropertyBlock> GetShaderPropertyBlock(size_t nSetIdx) { return GetShaderPropertyBlocks()[nSetIdx]; }
 	MShader* GetComputeShader();
@@ -54,9 +54,8 @@ public:
 
 private:
 
-	std::shared_ptr<MShaderProgram> m_pShaderProgram;
-
-	uint32_t m_unDispatcherID;
+	std::shared_ptr<MShaderProgram> m_pShaderProgram = nullptr;
+	uint32_t m_unDispatcherID = 0;
 
 public:
 

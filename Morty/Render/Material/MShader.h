@@ -15,10 +15,13 @@
 
 enum class MEShaderType
 {
-	ENone = 0,
-	EVertex = 1,
-	EPixel = 2,
-	ECompute = 3,
+	EVertex = 0,
+	EPixel,
+	ECompute,
+	EGeometry,
+
+	TOTAL_NUM,
+	ENone = 0xffff,
 };
 
 

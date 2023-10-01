@@ -15,13 +15,13 @@ bool MMaterialResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 	pMaterialData->eMaterialType = GetMaterialType();
 	pMaterialData->eCullMode = GetCullMode();
 	pMaterialData->shaderMacro = GetShaderMacro();
-	if (const auto pVertexResource = GetVertexShaderResource())
+
+	for (size_t nIdx = 0; nIdx < size_t(MEShaderType::TOTAL_NUM); ++nIdx)
 	{
-		pMaterialData->vertexShader = pVertexResource->GetResourcePath();
-	}
-	if (const auto pPixelResource = GetPixelShaderResource())
-	{
-		pMaterialData->pixelShader = pPixelResource->GetResourcePath();
+		if (const auto pResource = GetShaderProgram()->GetShaderResource(MEShaderType(nIdx)))
+		{
+			pMaterialData->vShaders[nIdx] = pResource->GetResourcePath();
+		}
 	}
 
 	if (const auto pMaterialProperty = GetMaterialPropertyBlock())
@@ -65,8 +65,14 @@ bool MMaterialResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 	SetCullMode(pMaterialData->eCullMode);
 
 	SetShaderMacro(pMaterialData->shaderMacro);
-	LoadVertexShader(pMaterialData->vertexShader);
-	LoadPixelShader(pMaterialData->pixelShader);
+
+	for (size_t nIdx = 0; nIdx < size_t(MEShaderType::TOTAL_NUM); ++nIdx)
+	{
+		if (!pMaterialData->vShaders[nIdx].empty())
+		{
+			LoadShader(pMaterialData->vShaders[nIdx]);
+		}
+	}
 	
 	const size_t nPropertyNum = pMaterialData->vProperty.size();
 	for (size_t nIdx = 0; nIdx < nPropertyNum; ++nIdx)

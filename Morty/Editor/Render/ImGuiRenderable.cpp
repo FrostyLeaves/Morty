@@ -104,8 +104,8 @@ void ImGuiRenderable::InitializeMaterial()
 
 	m_pMaterial = pResourceSystem->CreateResource<MMaterial>();
 
-	m_pMaterial->LoadVertexShader("Shader/Imgui/imgui.mvs");
-	m_pMaterial->LoadPixelShader("Shader/Imgui/imgui.mps");
+	m_pMaterial->LoadShader("Shader/Imgui/imgui.mvs");
+	m_pMaterial->LoadShader("Shader/Imgui/imgui.mps");
 }
 
 void ImGuiRenderable::ReleaseMaterial()

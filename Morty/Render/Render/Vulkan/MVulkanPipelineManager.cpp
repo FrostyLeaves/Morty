@@ -490,20 +490,9 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<
 		return VK_NULL_HANDLE;
 	}
 
-	MShader* pVertexShader = pMaterial->GetVertexShader();
-	MShader* pPixelShader = pMaterial->GetPixelShader();
-
-	if (nullptr == pVertexShader || nullptr == pPixelShader)
-	{
-		MORTY_ASSERT(false);
-		return VK_NULL_HANDLE;
-	}
-	if (nullptr == pVertexShader->GetBuffer())
-	{
-		MORTY_ASSERT(false);
-		return VK_NULL_HANDLE;
-	}
-	if (nullptr == pPixelShader->GetBuffer())
+	MShader* pVertexShader = pMaterial->GetShaderProgram()->GetShader(MEShaderType::EVertex);
+	
+	if (nullptr == pVertexShader)
 	{
 		MORTY_ASSERT(false);
 		return VK_NULL_HANDLE;
@@ -541,10 +530,20 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<
 	viewportState.scissorCount = 1;
 	viewportState.pScissors = &scissor;
 
-	VkPipelineShaderStageCreateInfo vShaderStageInfo[] = {
-		pVertexShader->GetBuffer()->m_VkShaderStageInfo,
-		pPixelShader->GetBuffer()->m_VkShaderStageInfo,
-	};
+
+	std::vector<VkPipelineShaderStageCreateInfo> vShaderStageCreateInfos;
+	for (size_t nIdx = 0; nIdx < size_t(MEShaderType::TOTAL_NUM); ++nIdx)
+	{
+		if (MShader* pShader = pMaterial->GetShaderProgram()->GetShader(MEShaderType(nIdx)))
+		{
+			if (nullptr == pShader->GetBuffer())
+			{
+				MORTY_ASSERT(false);
+				return VK_NULL_HANDLE;
+			}
+			vShaderStageCreateInfos.push_back(pShader->GetBuffer()->m_VkShaderStageInfo);
+		}
+	}
 
 	MVertexShaderBuffer* pVertexShaderBuffer = static_cast<MVertexShaderBuffer*>(pVertexShader->GetBuffer());
 
@@ -619,7 +618,7 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipelineInfo.stageCount = 2;
 	pipelineInfo.pDynamicState = &dynamicState;
-	pipelineInfo.pStages = vShaderStageInfo;
+	pipelineInfo.pStages = vShaderStageCreateInfos.data();
 	pipelineInfo.pVertexInputState = &inputStateInfo;
 	pipelineInfo.pInputAssemblyState = &inputAssemblyState;
 	pipelineInfo.pViewportState = &viewportState;

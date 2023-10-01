@@ -458,28 +458,35 @@ TBuiltInResource* GlslangDefaultResources()
 
 bool MVulkanShaderCompiler::CompileHlslShader(const MString& strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv)
 {
-	glslang::TProgram program;
 
-	EShLanguage eLanguageType;
-	MString strSuffix = MResource::GetSuffix(strShaderPath);
-	if (strSuffix == "mvs")
-	{
-		eLanguageType = EShLangVertex;
-	}
-	else if (strSuffix == "mps")
-	{
-		eLanguageType = EShLangFragment;
-	}
-	else if (strSuffix == "mcs")
-	{
-		eLanguageType = EShLangCompute;
-	}
-	else
+	static std::map<MEShaderType, EShLanguage> ShaderTypeTable = {
+		{ MEShaderType::EVertex, EShLangVertex},
+		{ MEShaderType::EPixel, EShLangFragment},
+		{ MEShaderType::ECompute, EShLangCompute},
+	};
+
+	static std::map<MEShaderType, MString> ShaderEntryTable = {
+		{ MEShaderType::EVertex, "VS_MAIN"},
+		{ MEShaderType::EPixel, "PS_MAIN"},
+		{ MEShaderType::ECompute, "CS_MAIN"},
+	};
+
+	if (ShaderTypeTable.find(eShaderType) == ShaderTypeTable.end())
 	{
 		MORTY_ASSERT(false);
 		return false;
 	}
 
+	if (ShaderEntryTable.find(eShaderType) == ShaderEntryTable.end())
+	{
+		MORTY_ASSERT(false);
+		return false;
+	}
+
+
+	glslang::TProgram program;
+
+	EShLanguage eLanguageType = ShaderTypeTable[eShaderType];
 	glslang::TShader shader(eLanguageType);
 
 	MString strShaderCode;
@@ -489,23 +496,7 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& strShaderPath, cons
 	const char* svShaderCode = strShaderCode.c_str();
 	const char* svShaderPath = strShaderPath.c_str();
 	shader.setStringsWithLengthsAndNames(&svShaderCode, NULL, &svShaderPath, 1);
-
-	if (EShLangVertex == eLanguageType)
-	{
-		shader.setEntryPoint("VS_MAIN");
-	}
-	else if (EShLangFragment == eLanguageType)
-	{
-		shader.setEntryPoint("PS_MAIN");
-	}
-	else if (EShLangCompute == eLanguageType)
-	{
-		shader.setEntryPoint("CS_MAIN");
-	}
-	else
-	{
-		MORTY_ASSERT(false);
-	}
+	shader.setEntryPoint(ShaderEntryTable[eShaderType]);
 
 	MPreamble UserPreamble;
 	ConvertMacro(macro, UserPreamble);

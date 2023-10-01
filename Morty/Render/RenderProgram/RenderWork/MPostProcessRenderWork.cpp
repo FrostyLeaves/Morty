@@ -80,8 +80,8 @@ void MPostProcessRenderWork::InitializeMaterial()
 #else
 	std::shared_ptr<MResource> pPixelShader = pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mps");
 #endif
-	m_pMaterial->LoadVertexShader(pVertexShader);
-	m_pMaterial->LoadPixelShader(pPixelShader);
+	m_pMaterial->LoadShader(pVertexShader);
+	m_pMaterial->LoadShader(pPixelShader);
 	m_pMaterial->SetCullMode(MECullMode::ECullNone);
 
 #if ACES_ENABLE

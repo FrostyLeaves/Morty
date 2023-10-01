@@ -729,16 +729,16 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		{
 			std::shared_ptr<MMaterialResource> pSkinnedMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
 			pSkinnedMeshMaterialRes->GetShaderMacro().SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, "1");
-			pSkinnedMeshMaterialRes->LoadVertexShader(pMeshVSResource);
-			pSkinnedMeshMaterialRes->LoadPixelShader(pMeshPSResource);
+			pSkinnedMeshMaterialRes->LoadShader(pMeshVSResource);
+			pSkinnedMeshMaterialRes->LoadShader(pMeshPSResource);
 			pMaterial = pSkinnedMeshMaterialRes;
 		}
 		else
 		{
 			std::shared_ptr<MMaterialResource> pStaticMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
 			pStaticMeshMaterialRes->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, "1");
-			pStaticMeshMaterialRes->LoadVertexShader(pMeshVSResource);
-			pStaticMeshMaterialRes->LoadPixelShader(pMeshPSResource);
+			pStaticMeshMaterialRes->LoadShader(pMeshVSResource);
+			pStaticMeshMaterialRes->LoadShader(pMeshPSResource);
 			pMaterial = pStaticMeshMaterialRes;
 		}
 
@@ -763,15 +763,15 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		{
 			std::shared_ptr<MMaterialResource> pSkinnedMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
 			pSkinnedMeshMaterialRes->GetShaderMacro().SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, "1");
-			pSkinnedMeshMaterialRes->LoadVertexShader(pMeshVSResource);
-			pSkinnedMeshMaterialRes->LoadPixelShader(pMeshPSResource);
+			pSkinnedMeshMaterialRes->LoadShader(pMeshVSResource);
+			pSkinnedMeshMaterialRes->LoadShader(pMeshPSResource);
 			pMaterial = pSkinnedMeshMaterialRes;
 		}
 		else
 		{
 			std::shared_ptr<MMaterialResource> pStaticMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
-			pStaticMeshMaterialRes->LoadVertexShader(pMeshVSResource);
-			pStaticMeshMaterialRes->LoadPixelShader(pMeshPSResource);
+			pStaticMeshMaterialRes->LoadShader(pMeshVSResource);
+			pStaticMeshMaterialRes->LoadShader(pMeshPSResource);
 			pMaterial = pStaticMeshMaterialRes;
 		}
 

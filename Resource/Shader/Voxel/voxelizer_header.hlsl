@@ -3,6 +3,7 @@
 
 #include "Internal/internal_constant.hlsl"
 #include "Internal/internal_model.hlsl"
+#include "Internal/internal_functional.hlsl"
 #include "Deferred/pbr_material.hlsl"
 
 struct PS_OUT

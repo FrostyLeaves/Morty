@@ -220,8 +220,6 @@ void MVulkanRenderCommand::DrawIndexedIndirect(const MBuffer* pVertexBuffer, con
 
 bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 {
-	MORTY_ASSERT(pMaterial->GetVertexShader() && pMaterial->GetPixelShader());
-
 	//must begin renderpass
 	if (m_vRenderPassStages.empty())
 	{

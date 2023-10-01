@@ -181,17 +181,16 @@ void MVoxelizerRenderWork::InitializeDispatcher()
 	std::shared_ptr<MResource> voxelizerPS = pResourceSystem->LoadResource("Shader/Voxel/voxelizer.mps");
 	m_pVoxelizerMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pVoxelizerMaterial->SetCullMode(MECullMode::ECullNone);
-	m_pVoxelizerMaterial->LoadVertexShader(voxelizerVS);
-	m_pVoxelizerMaterial->LoadPixelShader(voxelizerPS);
-
+	m_pVoxelizerMaterial->LoadShader(voxelizerVS);
+	m_pVoxelizerMaterial->LoadShader(voxelizerPS);
 
 	std::shared_ptr<MResource> voxelDebugVS = pResourceSystem->LoadResource("Shader/Voxel/voxel_debug_view.mvs");
 	std::shared_ptr<MResource> voxelDebugPS = pResourceSystem->LoadResource("Shader/Voxel/voxel_debug_view.mps");
 	m_pVoxelDebugMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pVoxelDebugMaterial->SetCullMode(MECullMode::ECullBack);
 	m_pVoxelDebugMaterial->SetMaterialType(MEMaterialType::ECustom);
-	m_pVoxelDebugMaterial->LoadVertexShader(voxelDebugVS);
-	m_pVoxelDebugMaterial->LoadPixelShader(voxelDebugPS);
+	m_pVoxelDebugMaterial->LoadShader(voxelDebugVS);
+	m_pVoxelDebugMaterial->LoadShader(voxelDebugPS);
 }
 
 void MVoxelizerRenderWork::ReleaseDispatcher()

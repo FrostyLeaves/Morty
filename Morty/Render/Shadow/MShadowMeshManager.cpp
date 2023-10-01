@@ -204,8 +204,8 @@ void MShadowMeshManager::InitializeMaterial()
 	auto pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	pMaterial->SetCullMode(MECullMode::ECullNone);
 	pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, "1");
-	pMaterial->LoadVertexShader(vs);
-	pMaterial->LoadPixelShader(ps);
+	pMaterial->LoadShader(vs);
+	pMaterial->LoadShader(ps);
 	m_staticMaterial.SetResource(pMaterial);
 	m_tBatchMaterialGroup[MEMeshVertexType::Normal] = new MaterialGroup();
 	m_tBatchMaterialGroup[MEMeshVertexType::Normal]->materialGroup.Initialize(GetEngine(), pMaterial);
@@ -214,8 +214,8 @@ void MShadowMeshManager::InitializeMaterial()
 	pMaterial->SetCullMode(MECullMode::ECullNone);
 	pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, "1");
 	pMaterial->GetShaderMacro().SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, "1");
-	pMaterial->LoadVertexShader(vs);
-	pMaterial->LoadPixelShader(ps);
+	pMaterial->LoadShader(vs);
+	pMaterial->LoadShader(ps);
 	m_animatedMaterial.SetResource(pMaterial);
 	m_tBatchMaterialGroup[MEMeshVertexType::Skeleton] = new MaterialGroup();
 	m_tBatchMaterialGroup[MEMeshVertexType::Skeleton]->materialGroup.Initialize(GetEngine(), pMaterial);

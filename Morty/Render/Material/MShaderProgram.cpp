@@ -17,18 +17,10 @@
 
 MORTY_CLASS_IMPLEMENT(MShaderProgram, MTypeClass)
 
-MShaderProgram::MShaderProgram(EUsage usage)
+MShaderProgram::MShaderProgram(MEngine* pEngine, EUsage usage)
 	: MTypeClass()
-	, m_VertexResource(nullptr)
-	, m_PixelResource(nullptr)
-	, m_ComputeResource(nullptr)
-	, m_pVertexShader(nullptr)
-	, m_pPixelShader(nullptr)
-	, m_pComputeShader(nullptr)
-	, m_nVertexShaderIndex(0)
-	, m_nPixelShaderIndex(0)
-	, m_nComputeShaderIndex(0)
 	, m_ShaderMacro()
+	, m_pEngine(pEngine)
 	, m_eUsage(usage)
 {
 }
@@ -41,9 +33,9 @@ void MShaderProgram::InitializeShaderPropertyBlock()
 	m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_SKELETON] = MShaderPropertyBlock::MakeShared(GetShared(), MRenderGlobal::SHADER_PARAM_SET_SKELETON);
 }
 
-std::shared_ptr<MShaderProgram> MShaderProgram::MakeShared(EUsage usage)
+std::shared_ptr<MShaderProgram> MShaderProgram::MakeShared(MEngine* pEngine, EUsage usage)
 {
-	std::shared_ptr<MShaderProgram> pResult = std::make_shared<MShaderProgram>(usage);
+	std::shared_ptr<MShaderProgram> pResult = std::make_shared<MShaderProgram>(pEngine, usage);
 	pResult->m_pSelfPointer = pResult;
 	pResult->InitializeShaderPropertyBlock();
 	return pResult;
@@ -55,127 +47,64 @@ MShaderProgram::~MShaderProgram()
 
 }
 
-bool MShaderProgram::LoadVertexShader(MEngine* pEngine, std::shared_ptr<MResource> pResource)
+bool MShaderProgram::LoadShader(std::shared_ptr<MResource> pResource)
 {
 	if (std::shared_ptr<MShaderResource> pShaderResource = MTypeClass::DynamicCast<MShaderResource>(pResource))
 	{
-		if (MEShaderType::EVertex == pShaderResource->GetShaderType())
-		{
-			auto LoadFunc = [this, pEngine]() {
-				MShaderResource* pShaderResource = m_VertexResource.GetResource()->template DynamicCast<MShaderResource>();
-				if (nullptr == pShaderResource)
-					return false;
+		auto eShaderType = pShaderResource->GetShaderType();
+		auto LoadFunc = [this, eShaderType]() {
 
-				m_nVertexShaderIndex = pShaderResource->FindShaderByMacroParam(m_ShaderMacro);
-				m_pVertexShader = pShaderResource->GetShaderByIndex(m_nVertexShaderIndex);
-				if (m_pVertexShader && nullptr == m_pVertexShader->GetBuffer())
+			MShaderDesc& desc = m_shaders[static_cast<size_t>(eShaderType)];
+			MShaderResource* pShaderResource = desc.resource.GetResource()->template DynamicCast<MShaderResource>();
+			if (nullptr == pShaderResource)
+			{
+				return false;
+			}
+
+			desc.nShaderIdx = pShaderResource->FindShaderByMacroParam(m_ShaderMacro);
+			desc.pShader = pShaderResource->GetShaderByIndex(desc.nShaderIdx);
+			if (desc.pShader && nullptr == desc.pShader->GetBuffer())
+			{
+				MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+				if (!desc.pShader->CompileShader(pRenderSystem->GetDevice()))
 				{
-					MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
-					if (!m_pVertexShader->CompileShader(pRenderSystem->GetDevice()))
-					{
-						MORTY_ASSERT(false);
-						m_pVertexShader = nullptr;
-						return false;
-					}
+					MORTY_ASSERT(false);
+					desc.pShader = nullptr;
+					return false;
 				}
-				UnbindShaderBuffer(pEngine, MEShaderParamType::EVertex);
-				BindShaderBuffer(m_pVertexShader->GetBuffer(), MEShaderParamType::EVertex);
-				return true;
-			};
-
-
-
-			m_VertexResource.SetResource(pResource);
-			m_VertexResource.SetResChangedCallback(LoadFunc);
-
-			LoadFunc();
+			}
+			UnbindShaderBuffer(eShaderType);
+			BindShaderBuffer(desc.pShader->GetBuffer(), eShaderType);
 			return true;
-		}
+		};
+
+		MShaderDesc& desc = m_shaders[static_cast<size_t>(eShaderType)];
+		desc.resource.SetResource(pResource);
+		desc.resource.SetResChangedCallback(LoadFunc);
+
+		LoadFunc();
+		return true;
 	}
 
 	return false;
 }
 
-bool MShaderProgram::LoadPixelShader(MEngine* pEngine, std::shared_ptr<MResource> pResource)
+void MShaderProgram::SetShaderMacro(const MShaderMacro& macro)
 {
-	if (std::shared_ptr<MShaderResource> pShaderResource = MTypeClass::DynamicCast<MShaderResource>(pResource))
+	m_ShaderMacro = macro;
+
+	for (size_t nIdx = 0; nIdx < size_t(MEShaderType::TOTAL_NUM); ++nIdx)
 	{
-		if (MEShaderType::EPixel == pShaderResource->GetShaderType())
+		if (auto pResource = GetShaderResource(MEShaderType(nIdx)))
 		{
-			auto LoadFunc = [this, pEngine]() {
-				MShaderResource* pShaderResource = m_PixelResource.GetResource()->template DynamicCast<MShaderResource>();
-				if (nullptr == pShaderResource)
-					return false;
-
-				m_nPixelShaderIndex = pShaderResource->FindShaderByMacroParam(m_ShaderMacro);
-				m_pPixelShader = pShaderResource->GetShaderByIndex(m_nPixelShaderIndex);
-				if (m_pPixelShader && nullptr == m_pPixelShader->GetBuffer())
-				{
-					MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
-					if (!m_pPixelShader->CompileShader(pRenderSystem->GetDevice()))
-					{
-						m_pPixelShader = nullptr;
-						return false;
-					}
-				}
-
-				UnbindShaderBuffer(pEngine, MEShaderParamType::EPixel);
-				BindShaderBuffer(m_pPixelShader->GetBuffer(), MEShaderParamType::EPixel);
-				return true;
-			};
-
-			m_PixelResource.SetResource(pResource);
-			m_PixelResource.SetResChangedCallback(LoadFunc);
-
-			LoadFunc();
-			return true;
+			LoadShader(pResource);
 		}
 	}
-
-	return false;
 }
 
-bool MShaderProgram::LoadComputeShader(MEngine* pEngine, std::shared_ptr<MResource> pResource)
+void MShaderProgram::BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderType& eType)
 {
-	if (std::shared_ptr<MShaderResource> pShaderResource = MTypeClass::DynamicCast<MShaderResource>(pResource))
-	{
-		if (MEShaderType::ECompute == pShaderResource->GetShaderType())
-		{
-			auto LoadFunc = [this, pEngine]() {
-				MShaderResource* pShaderResource = m_ComputeResource.GetResource()->template DynamicCast<MShaderResource>();
-				if (nullptr == pShaderResource)
-					return false;
-
-				m_nComputeShaderIndex = pShaderResource->FindShaderByMacroParam(m_ShaderMacro);
-				m_pComputeShader = pShaderResource->GetShaderByIndex(m_nComputeShaderIndex);
-				if (m_pComputeShader && nullptr == m_pComputeShader->GetBuffer())
-				{
-					MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
-					if (!m_pComputeShader->CompileShader(pRenderSystem->GetDevice()))
-					{
-						m_pComputeShader = nullptr;
-						return false;
-					}
-				}
-
-				UnbindShaderBuffer(pEngine, MEShaderParamType::ECompute);
-				BindShaderBuffer(m_pComputeShader->GetBuffer(), MEShaderParamType::ECompute);
-				return true;
-			};
-
-			m_ComputeResource.SetResource(pResource);
-			m_ComputeResource.SetResChangedCallback(LoadFunc);
-
-			LoadFunc();
-			return true;
-		}
-	}
-
-	return false;
-}
-
-void MShaderProgram::BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderParamType& eType)
-{
+	uint32_t bitType = 1 << static_cast<size_t>(eType);
 	for (uint32_t i = 0; i < MRenderGlobal::SHADER_PARAM_SET_NUM; ++i)
 	{
 		std::shared_ptr<MShaderPropertyBlock>& pPropertyTemplate = pBuffer->m_vShaderSets[i];
@@ -185,15 +114,15 @@ void MShaderProgram::BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderPara
 		{
 			if (std::shared_ptr<MShaderConstantParam> pSelfParam = pProgramProperty->FindConstantParam(pBufferParam))
 			{
-				pSelfParam->eShaderType |= eType;
+				pSelfParam->eShaderType |= bitType;
 				pSelfParam->var = MVariant::Clone(pBufferParam->var);
 				pSelfParam->SetDirty();
 			}
 			else
 			{
 				std::shared_ptr<MShaderConstantParam> pParam = std::make_shared<MShaderConstantParam>(*pBufferParam);
-				pParam->eShaderType = eType;
-				pProgramProperty->AppendConstantParam(pParam, eType);
+				pParam->eShaderType = bitType;
+				pProgramProperty->AppendConstantParam(pParam, bitType);
 			}
 		}
 
@@ -201,13 +130,13 @@ void MShaderProgram::BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderPara
 		{
 			if (std::shared_ptr<MShaderTextureParam> pSelfParam = pProgramProperty->FindTextureParam(pBufferParam))
 			{
-				pSelfParam->eShaderType |= eType;
+				pSelfParam->eShaderType |= bitType;
 			}
 			else
 			{
 				std::shared_ptr<MShaderTextureParam> pParam = std::make_shared<MTextureResourceParam>(*pBufferParam);
-				pParam->eShaderType = eType;
-				pProgramProperty->AppendTextureParam(pParam, eType);
+				pParam->eShaderType = bitType;
+				pProgramProperty->AppendTextureParam(pParam, bitType);
 			}
 		}
 
@@ -215,13 +144,13 @@ void MShaderProgram::BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderPara
 		{
 			if (std::shared_ptr<MShaderSampleParam> pSelfParam = pProgramProperty->FindSampleParam(pBufferParam))
 			{
-				pSelfParam->eShaderType |= eType;
+				pSelfParam->eShaderType |= bitType;
 			}
 			else
 			{
 				std::shared_ptr<MShaderSampleParam> pParam = std::make_shared<MShaderSampleParam>(*pBufferParam);
-				pParam->eShaderType = eType;
-				pProgramProperty->AppendSampleParam(pParam, eType);
+				pParam->eShaderType = bitType;
+				pProgramProperty->AppendSampleParam(pParam, bitType);
 			}
 		}
 
@@ -229,29 +158,30 @@ void MShaderProgram::BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderPara
 		{
 			if (std::shared_ptr<MShaderStorageParam> pSelfParam = pProgramProperty->FindStorageParam(pBufferParam))
 			{
-				pSelfParam->eShaderType |= eType;
+				pSelfParam->eShaderType |= bitType;
 			}
 			else
 			{
 				std::shared_ptr<MShaderStorageParam> pParam = std::make_shared<MShaderStorageParam>(*pBufferParam);
-				pParam->eShaderType = eType;
-				pProgramProperty->AppendStorageParam(pParam, eType);
+				pParam->eShaderType = bitType;
+				pProgramProperty->AppendStorageParam(pParam, bitType);
 			}
 		}
 	}
 }
 
-void MShaderProgram::UnbindShaderBuffer(MEngine* pEngine, const MEShaderParamType& eType)
+void MShaderProgram::UnbindShaderBuffer(const MEShaderType& eType)
 {
-	MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
+	uint32_t bitType = 1 << static_cast<size_t>(eType);
+	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 	for (uint32_t i = 0; i < MRenderGlobal::SHADER_PARAM_SET_NUM; ++i)
 	{
 		if (std::shared_ptr<MShaderPropertyBlock> pProgramProperty = m_vShaderSets[i])
 		{
-			std::vector<std::shared_ptr<MShaderConstantParam>>&& vConstantParams = pProgramProperty->RemoveConstantParam(eType);
-			pProgramProperty->RemoveTextureParam(eType);
-			pProgramProperty->RemoveSampleParam(eType);
-			pProgramProperty->RemoveStorageParam(eType);
+			std::vector<std::shared_ptr<MShaderConstantParam>>&& vConstantParams = pProgramProperty->RemoveConstantParam(bitType);
+			pProgramProperty->RemoveTextureParam(bitType);
+			pProgramProperty->RemoveSampleParam(bitType);
+			pProgramProperty->RemoveStorageParam(bitType);
 
 			for (std::shared_ptr<MShaderConstantParam>& pParam : vConstantParams)
 			{
@@ -261,26 +191,21 @@ void MShaderProgram::UnbindShaderBuffer(MEngine* pEngine, const MEShaderParamTyp
 	}
 }
 
-void MShaderProgram::ClearShader(MEngine* pEngine)
+void MShaderProgram::ClearShader()
 {
-	MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
-	for (uint32_t i = 0; i < MRenderGlobal::SHADER_PARAM_SET_NUM; ++i)
+	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+	for (size_t i = 0; i < MRenderGlobal::SHADER_PARAM_SET_NUM; ++i)
 	{
 		m_vShaderSets[i]->DestroyBuffer(pRenderSystem->GetDevice());
 		m_vShaderSets[i] = nullptr;
 	}
 
-	m_VertexResource.SetResource(nullptr);
-	m_PixelResource.SetResource(nullptr);;
-	m_ComputeResource.SetResource(nullptr);;
-
-	m_pVertexShader = nullptr;
-	m_pPixelShader = nullptr;
-	m_pComputeShader = nullptr;
-
-	m_nVertexShaderIndex = 0;
-	m_nPixelShaderIndex = 0;
-	m_nComputeShaderIndex = 0;
+	for (size_t nIdx = 0; nIdx < size_t(MEShaderType::TOTAL_NUM); ++nIdx)
+	{
+		m_shaders[nIdx].resource.SetResource(nullptr);
+		m_shaders[nIdx].pShader = nullptr;
+		m_shaders[nIdx].nShaderIdx = 0;
+	}
 }
 
 void MShaderProgram::CopyShaderParams(MEngine* pEngine, const std::shared_ptr<MShaderPropertyBlock>& target, const std::shared_ptr<const MShaderPropertyBlock>& source)

@@ -60,7 +60,12 @@ class MORTY_API MShaderResourceLoader : public MResourceLoader
 public:
 
 	static MString GetResourceTypeName() { return "Shader"; }
-	static std::vector<MString> GetSuffixList() { return { "mvs", "mps", "mcs" }; }
+	static std::vector<MString> GetSuffixList() { return {
+		MRenderGlobal::SUFFIX_VERTEX_SHADER,
+		MRenderGlobal::SUFFIX_PIXEL_SHADER,
+		MRenderGlobal::SUFFIX_COMPUTE_SHADER,
+		MRenderGlobal::SUFFIX_GEOMETRY_SHADER,
+	}; }
 
 	const MType* ResourceType() const override;
 	std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath, const MString& svPath) override;

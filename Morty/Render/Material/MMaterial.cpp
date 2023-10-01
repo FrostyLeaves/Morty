@@ -17,12 +17,6 @@
 
 MORTY_CLASS_IMPLEMENT(MMaterial, MResource)
 
-MMaterial::MMaterial()
-	: MResource()
-{
-	m_pShaderProgram = MShaderProgram::MakeShared(MShaderProgram::EUsage::EGraphics);
-}
-
 std::vector<std::shared_ptr<MShaderConstantParam>>& MMaterial::GetShaderParams()
 {
 	return m_pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]->m_vParams;
@@ -115,48 +109,32 @@ void MMaterial::SetMaterialType(const MEMaterialType& eType)
 	{
 	case MEMaterialType::EDepthPeel:
 	{
-		GetShaderMacro().SetInnerMacro("MEN_TRANSPARENT", "1");
-		LoadVertexShader(GetVertexShaderResource());
-		LoadPixelShader(GetPixelShaderResource());
+		auto shaderMacro = GetShaderMacro();
+		shaderMacro.SetInnerMacro("MEN_TRANSPARENT", "1");
+		SetShaderMacro(shaderMacro);
 		break;
 	}
 
 	default:
-		GetShaderMacro().SetInnerMacro("MEN_TRANSPARENT", "0");
-		LoadVertexShader(GetVertexShaderResource());
-		LoadPixelShader(GetPixelShaderResource());
+		auto shaderMacro = GetShaderMacro();
+		shaderMacro.SetInnerMacro("MEN_TRANSPARENT", "0");
+		SetShaderMacro(shaderMacro);
 		break;
 	}
 }
 
-bool MMaterial::LoadVertexShader(std::shared_ptr<MResource> pResource)
+bool MMaterial::LoadShader(std::shared_ptr<MResource> pResource)
 {
-	bool bResult = m_pShaderProgram->LoadVertexShader(GetEngine(), pResource);
+	bool bResult = m_pShaderProgram->LoadShader(pResource);
 
 	return bResult;
 }
 
-bool MMaterial::LoadVertexShader(const MString& strResource)
+bool MMaterial::LoadShader(const MString& strResource)
 {
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 	if (std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(strResource))
-		return LoadVertexShader(pResource);
-
-	return false;
-}
-
-bool MMaterial::LoadPixelShader(std::shared_ptr<MResource> pResource)
-{
-	bool bResult = m_pShaderProgram->LoadPixelShader(GetEngine(), pResource);
-
-	return bResult;
-}
-
-bool MMaterial::LoadPixelShader(const MString& strResource)
-{
-	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-	if (std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(strResource))
-		return LoadPixelShader(pResource);
+		return LoadShader(pResource);
 
 	return false;
 }
@@ -169,18 +147,21 @@ void MMaterial::SetShaderMacro(const MShaderMacro& macro)
 void MMaterial::OnCreated()
 {
 	Super::OnCreated();
+
+	m_pShaderProgram = MShaderProgram::MakeShared(GetEngine(), MShaderProgram::EUsage::EGraphics);
 }
 
 void MMaterial::OnDelete()
 {
-	m_pShaderProgram->ClearShader(GetEngine());
+	m_pShaderProgram->ClearShader();
+	m_pShaderProgram = nullptr;
 		
 	Super::OnDelete();
 }
 
 void MMaterial::Unload()
 {
-	m_pShaderProgram->ClearShader(GetEngine());
+	m_pShaderProgram->ClearShader();
 }
 
 #if MORTY_DEBUG
