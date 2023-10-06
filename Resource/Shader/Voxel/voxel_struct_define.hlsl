@@ -4,6 +4,9 @@
 
 struct VoxelizerOutput
 {
+    uint nBaseColor_R;
+    uint nBaseColor_G;
+    uint nBaseColor_B;
     uint nVoxelCount;
 };
 

@@ -314,6 +314,13 @@ void MFrameShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& info)
 	settingStruct.SetVariant("f3VoxelOrigin", info.voxelSetting.f3VoxelOrigin);
 	settingStruct.SetVariant("fResolution", info.voxelSetting.fResolution);
 	settingStruct.SetVariant("fVoxelStep", info.voxelSetting.fVoxelStep);
+
+	auto& m4CameraProj = m_pVoxelMapSetting->var.GetValue<MVariantStruct>().GetVariant<Matrix4>("u_m4VoxelizerCamProj");
+	m4CameraProj = MRenderSystem::MatrixOrthoOffCenterLH(0.0f, MRenderGlobal::VOXEL_TABLE_SIZE
+		, MRenderGlobal::VOXEL_TABLE_SIZE, 0.0f
+		, 0.0f, MRenderGlobal::VOXEL_TABLE_SIZE
+	);
+
 	m_pVoxelMapSetting->SetDirty();
 
 

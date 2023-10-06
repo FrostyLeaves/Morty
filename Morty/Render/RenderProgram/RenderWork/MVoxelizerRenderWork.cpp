@@ -76,7 +76,8 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 	pCommand->EndRenderPass();
 
 	pCommand->AddGraphToComputeBarrier({
-		&m_voxelizerBuffer
+		&m_voxelizerBuffer,
+		&m_drawIndirectBuffer
 	});
 
 	if (m_pVoxelMapSetting)
@@ -85,6 +86,7 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 		settingStruct.SetVariant("f3VoxelOrigin", info.voxelSetting.f3VoxelOrigin);
 		settingStruct.SetVariant("fResolution", info.voxelSetting.fResolution);
 		settingStruct.SetVariant("fVoxelStep", info.voxelSetting.fVoxelStep);
+
 		m_pVoxelMapSetting->SetDirty();
 	}
 
@@ -179,10 +181,12 @@ void MVoxelizerRenderWork::InitializeDispatcher()
 
 	std::shared_ptr<MResource> voxelizerVS = pResourceSystem->LoadResource("Shader/Voxel/voxelizer.mvs");
 	std::shared_ptr<MResource> voxelizerPS = pResourceSystem->LoadResource("Shader/Voxel/voxelizer.mps");
+	std::shared_ptr<MResource> voxelizerGS = pResourceSystem->LoadResource("Shader/Voxel/voxelizer.mgs");
 	m_pVoxelizerMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pVoxelizerMaterial->SetCullMode(MECullMode::ECullNone);
 	m_pVoxelizerMaterial->LoadShader(voxelizerVS);
 	m_pVoxelizerMaterial->LoadShader(voxelizerPS);
+	//m_pVoxelizerMaterial->LoadShader(voxelizerGS);
 
 	std::shared_ptr<MResource> voxelDebugVS = pResourceSystem->LoadResource("Shader/Voxel/voxel_debug_view.mvs");
 	std::shared_ptr<MResource> voxelDebugPS = pResourceSystem->LoadResource("Shader/Voxel/voxel_debug_view.mps");
@@ -214,6 +218,7 @@ void MVoxelizerRenderWork::InitializeRenderPass()
 	m_pVoxelizerRenderTarget = MTexture::CreateRenderTarget(METextureLayout::ERGBA_UNORM_8);
 	m_pVoxelizerRenderTarget->SetName("Voxelizer Render Target");
 	m_pVoxelizerRenderTarget->SetSize({ float(MRenderGlobal::VOXEL_TABLE_SIZE), float(MRenderGlobal::VOXEL_TABLE_SIZE) });
+	//m_pVoxelizerRenderTarget->SetSize({ 512.0f, 512.0f });
 	m_pVoxelizerRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
 
 	m_voxelizerRenderPass.AddBackTexture(m_pVoxelizerRenderTarget, { true, false, MColor::Black_T });
@@ -222,7 +227,8 @@ void MVoxelizerRenderWork::InitializeRenderPass()
 	m_voxelizerRenderPass.SetViewportNum(1);
 	m_voxelizerRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
 
-	m_renderPass.SetDepthTestEnable(false);
+	//m_renderPass.SetDepthTestEnable(false);
+	//m_renderPass.SetDepthWriteEnable(false);
 
 }
 

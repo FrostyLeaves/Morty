@@ -122,6 +122,8 @@ struct LightPointData
 [[vk::binding(14,1)]] cbuffer cbVoxelMap
 {
     VoxelMapSetting voxelMapSetting;
+
+    float4x4 u_m4VoxelizerCamProj;
 };
 
 [[vk::binding(15,1)]] RWStructuredBuffer<VoxelizerOutput> u_rwVoxelTable;

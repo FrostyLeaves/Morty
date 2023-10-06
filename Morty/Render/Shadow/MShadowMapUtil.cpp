@@ -79,7 +79,11 @@ std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> MSh
 		vCascadedData[nCascadedIdx].fOverFarZ = fNearZ + fRange * (fSplit + fTransitionRange);
 		fLastSplit = fSplit;
 
-		Matrix4 m4CameraInvProj = MRenderSystem::GetCameraInverseProjection(pViewport, pCameraComponent, pCameraSceneComponent, vCascadedData[nCascadedIdx].fNearZ, vCascadedData[nCascadedIdx].fOverFarZ);
+		Matrix4 m4CameraInvProj = MRenderSystem::GetCameraInverseProjection(pCameraComponent
+			, pCameraSceneComponent
+			, pViewport->GetSize().x, pViewport->GetSize().y
+			, vCascadedData[nCascadedIdx].fNearZ, vCascadedData[nCascadedIdx].fOverFarZ
+		);
 		vCascadedData[nCascadedIdx].cCameraFrustum.UpdateFromCameraInvProj(m4CameraInvProj);
 	}
 

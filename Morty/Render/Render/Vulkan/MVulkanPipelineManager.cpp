@@ -616,9 +616,9 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<
 
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	pipelineInfo.stageCount = 2;
-	pipelineInfo.pDynamicState = &dynamicState;
+	pipelineInfo.stageCount = vShaderStageCreateInfos.size();
 	pipelineInfo.pStages = vShaderStageCreateInfos.data();
+	pipelineInfo.pDynamicState = &dynamicState;
 	pipelineInfo.pVertexInputState = &inputStateInfo;
 	pipelineInfo.pInputAssemblyState = &inputAssemblyState;
 	pipelineInfo.pViewportState = &viewportState;

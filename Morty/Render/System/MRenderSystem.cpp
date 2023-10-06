@@ -140,15 +140,24 @@ Matrix4 MRenderSystem::GetCameraProjectionMatrix(const MViewport* pViewport, con
 
 Matrix4 MRenderSystem::GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent)
 {
-	return GetCameraInverseProjection(pViewport, pCameraComponent, pSceneComponent, pCameraComponent->GetZNear(), pCameraComponent->GetZFar());
-
+	return GetCameraInverseProjection(pCameraComponent
+		, pSceneComponent
+		, pViewport->GetSize().x
+		, pViewport->GetSize().y
+		, pCameraComponent->GetZNear()
+		, pCameraComponent->GetZFar()
+	);
 }
 
-Matrix4 MRenderSystem::GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent, float fZNear, float fZFar)
+Matrix4 MRenderSystem::GetCameraInverseProjection(const MCameraComponent* pCameraComponent
+	, MSceneComponent* pSceneComponent
+	, float fViewWidth, float fViewHeight
+	, float fZNear, float fZFar
+	)
 {
 	//Update Camera and Projection Matrix.
 	Matrix4 m4Projection = pCameraComponent->GetCameraType() == MCameraComponent::MECameraType::EPerspective
-		? MRenderSystem::MatrixPerspectiveFovLH(pCameraComponent->GetFov() * 0.5f, pViewport->GetSize().x / pViewport->GetSize().y, fZNear, fZFar)
+		? MRenderSystem::MatrixPerspectiveFovLH(pCameraComponent->GetFov() * 0.5f, fViewWidth / fViewHeight, fZNear, fZFar)
 		: MRenderSystem::MatrixOrthoOffCenterLH(-pCameraComponent->GetWidth() * 0.5f, pCameraComponent->GetWidth() * 0.5f, pCameraComponent->GetHeight() * 0.5f, -pCameraComponent->GetHeight() * 0.5f, fZNear, fZFar);
 
 	m4Projection = m4Projection * pSceneComponent->GetWorldTransform().Inverse();

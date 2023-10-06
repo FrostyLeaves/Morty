@@ -30,6 +30,10 @@ void CS_MAIN(uint3 GlobalInvocationID : SV_DispatchThreadID )
     if (voxelizerData.nVoxelCount == 0)
     {
         indirectDraws[voxelTableIdx].instanceCount = 0;
+        indirectDraws[voxelTableIdx].vertexOffset = 0;
+        indirectDraws[voxelTableIdx].firstInstance = 0;
+        indirectDraws[voxelTableIdx].firstIndex = 0;
+        indirectDraws[voxelTableIdx].indexCount = 0;
     }
     else
     {

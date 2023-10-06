@@ -29,7 +29,7 @@ void PropertyMModelComponent::EditAnimation(MModelComponent* pModelComponent)
 		{
 			pController->SetLoop(bLoop);
 			pController->SetPercent(fPercent);
-			pController->Update(0.0f);
+			pController->NextStep(0.0f);
 			if (MIAnimController::EPlay == state)
 				pController->Play();
 		}
@@ -61,7 +61,7 @@ void PropertyMModelComponent::EditAnimation(MModelComponent* pModelComponent)
 		if (ImGui::SliderFloat("", &fPercent, 0.0f, 100.0f))
 		{
 			pController->SetPercent(fPercent);
-			pController->Update(0.0f);
+			pController->NextStep(0.0f);
 			pController->Pause();
 		}
 

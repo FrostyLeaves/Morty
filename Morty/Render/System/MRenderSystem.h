@@ -53,7 +53,12 @@ public:
     static Matrix4 GetCameraViewMatrix(MSceneComponent* pSceneComponent);
     static Matrix4 GetCameraProjectionMatrix(const MViewport* pViewport, const MCameraComponent* pCameraComponent);
     static Matrix4 GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent);
-    static Matrix4 GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent, float fZNear, float fZFar);
+    static Matrix4 GetCameraInverseProjection(
+        const MCameraComponent* pCameraComponent
+        , MSceneComponent* pSceneComponent
+        , float fViewWidth, float fViewHeight
+        , float fZNear, float fZFar
+    );
     
 public:
 

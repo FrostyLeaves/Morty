@@ -1,11 +1,9 @@
 #include "voxelizer_header.hlsl"
 
-struct VS_OUT
+uint FloatToUint(float value)
 {
-    float4 pos : SV_POSITION;
-	float3 normal : NORMAL;
-    float3 worldPos : WORLD_POSITION;
-};
+    return uint(value * 100);
+}
 
 void PS_MAIN(VS_OUT input)
 {
@@ -14,7 +12,12 @@ void PS_MAIN(VS_OUT input)
 
 	int voxelTableIdx = VoxelUVWToInstanceId(voxelMapSetting, voxelUVW);
     
+    float3 color;
+
     uint temp = 0;
     InterlockedAdd(u_rwVoxelTable[voxelTableIdx].nVoxelCount, 1, temp);
+    InterlockedAdd(u_rwVoxelTable[voxelTableIdx].nBaseColor_R, FloatToUint(color.r), temp);
+    InterlockedAdd(u_rwVoxelTable[voxelTableIdx].nBaseColor_G, FloatToUint(color.g), temp);
+    InterlockedAdd(u_rwVoxelTable[voxelTableIdx].nBaseColor_B, FloatToUint(color.b), temp);
     
 }

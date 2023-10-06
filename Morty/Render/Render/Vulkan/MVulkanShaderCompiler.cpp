@@ -99,6 +99,9 @@ public:
 
 	IncludeResult* includeSystem(const char* headerName, const char* includerName, size_t inclusionDepth) override
 	{
+		MORTY_UNUSED(includerName);
+		MORTY_UNUSED(inclusionDepth);
+
 		MString* pCode = new MString();
 		if (!MFileHelper::ReadString(headerName, *pCode))
 			return nullptr;
@@ -110,8 +113,10 @@ public:
 
 	IncludeResult* includeLocal(const char* headerName, const char* includerName, size_t inclusionDepth) override
 	{
+		MORTY_UNUSED(includerName);
+		MORTY_UNUSED(inclusionDepth);
+
 		MString* pCode = new MString();
-        
         for (auto strLocalFolder : m_vSearchPath)
         {
             if (MFileHelper::ReadString(strLocalFolder + headerName, *pCode))
@@ -463,12 +468,14 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& strShaderPath, cons
 		{ MEShaderType::EVertex, EShLangVertex},
 		{ MEShaderType::EPixel, EShLangFragment},
 		{ MEShaderType::ECompute, EShLangCompute},
+		{ MEShaderType::EGeometry, EShLangGeometry},
 	};
 
 	static std::map<MEShaderType, MString> ShaderEntryTable = {
 		{ MEShaderType::EVertex, "VS_MAIN"},
 		{ MEShaderType::EPixel, "PS_MAIN"},
 		{ MEShaderType::ECompute, "CS_MAIN"},
+		{ MEShaderType::EGeometry, "GS_MAIN"},
 	};
 
 	if (ShaderTypeTable.find(eShaderType) == ShaderTypeTable.end())
@@ -496,7 +503,7 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& strShaderPath, cons
 	const char* svShaderCode = strShaderCode.c_str();
 	const char* svShaderPath = strShaderPath.c_str();
 	shader.setStringsWithLengthsAndNames(&svShaderCode, NULL, &svShaderPath, 1);
-	shader.setEntryPoint(ShaderEntryTable[eShaderType]);
+	shader.setEntryPoint(ShaderEntryTable[eShaderType].c_str());
 
 	MPreamble UserPreamble;
 	ConvertMacro(macro, UserPreamble);
@@ -541,8 +548,6 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& strShaderPath, cons
 	
 	if (!shader.parse(GlslangDefaultResources(), 120, false, messages, includer))
 	{
-		const char* a = shader.getInfoLog();
-		const char* b = shader.getInfoDebugLog();
 		m_pDevice->GetEngine()->GetLogger()->Error("{}\n\n\n{}", MString(shader.getInfoLog()).c_str(), MString(shader.getInfoDebugLog()).c_str());
 		return false;
 	}

@@ -949,10 +949,19 @@ bool MVulkanDevice::CompileShader(MShader* pShader)
 		shaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 		shaderStageInfo.pName = "PS_MAIN";
 	}
-	else
+	else if (pShader->GetType() == MEShaderType::ECompute)
 	{
 		shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
 		shaderStageInfo.pName = "CS_MAIN";
+	}
+	else if (pShader->GetType() == MEShaderType::EGeometry)
+	{
+		shaderStageInfo.stage = VK_SHADER_STAGE_GEOMETRY_BIT;
+		shaderStageInfo.pName = "GS_MAIN";
+	}
+	else
+	{
+		MORTY_ASSERT(false);
 	}
 
 
@@ -975,6 +984,15 @@ bool MVulkanDevice::CompileShader(MShader* pShader)
 	{
 		MComputeShaderBuffer* pBuffer = new MComputeShaderBuffer();
 		pShaderBuffer = pBuffer;
+	}
+	else if (MEShaderType::EGeometry == pShader->GetType())
+	{
+		MGeometryShaderBuffer* pBuffer = new MGeometryShaderBuffer();
+		pShaderBuffer = pBuffer;
+	}
+	else
+	{
+		MORTY_ASSERT(false);
 	}
 
 

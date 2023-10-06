@@ -52,20 +52,21 @@ void MaterialView::SetMaterial(std::shared_ptr<MMaterialResource> pMaterial)
 	{
 		pSceneSystem->SetVisible(m_pStaticSphereMeshNode, true);
 		pSceneSystem->SetVisible(m_pSkeletonSphereMeshNode, false);
+
+		if (MRenderMeshComponent* pMeshComponent = m_pStaticSphereMeshNode->GetComponent<MRenderMeshComponent>())
+		{
+			pMeshComponent->SetMaterial(pMaterial);
+		}
 	}
 	else
 	{
 		pSceneSystem->SetVisible(m_pStaticSphereMeshNode, false);
 		pSceneSystem->SetVisible(m_pSkeletonSphereMeshNode, true);
-	}
 
-	if (MRenderMeshComponent* pMeshComponent = m_pStaticSphereMeshNode->GetComponent<MRenderMeshComponent>())
-	{
-		pMeshComponent->SetMaterial(pMaterial);
-	}
-	if (MRenderMeshComponent* pMeshComponent = m_pSkeletonSphereMeshNode->GetComponent<MRenderMeshComponent>())
-	{
-		pMeshComponent->SetMaterial(pMaterial);
+		if (MRenderMeshComponent* pMeshComponent = m_pSkeletonSphereMeshNode->GetComponent<MRenderMeshComponent>())
+		{
+			pMeshComponent->SetMaterial(pMaterial);
+		}
 	}
 }
 
@@ -178,7 +179,7 @@ void MaterialView::Initialize(MainEditor* pMainEditor)
 
 	if (MDirectionalLightComponent* pDirLightComponent = pDirLight->RegisterComponent<MDirectionalLightComponent>())
 	{
-		pDirLightComponent->SetLightIntensity(1.0f);
+		pDirLightComponent->SetLightIntensity(10.0f);
 	}
 	
 }
