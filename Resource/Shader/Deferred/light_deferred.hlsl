@@ -1,7 +1,6 @@
 #include "Internal/internal_constant.hlsl"
 #include "Internal/internal_functional.hlsl"
 #include "Lighting/pbr_lighting.hlsl"
-#include "Shadow/shadow.hlsl"
 
 struct VS_OUT
 {
@@ -71,7 +70,7 @@ float3 AdditionAllLights(VS_OUT input)
         f3Ambient = float3(0.1, 0.1, 0.1) * f3Albedo * fAmbientOcc;
     }
 
-    LightPointData pointData;
+    SurfaceData pointData;
     pointData.f3CameraDir = f3CameraDir;
     pointData.f3Normal = f3Normal;
     pointData.f3WorldPosition = f3WorldPosition;
@@ -80,7 +79,7 @@ float3 AdditionAllLights(VS_OUT input)
     pointData.fRoughness = fRoughness;
     pointData.fMetallic = fMetallic;
 
-    float3 f3LightColor = PbrLighting();
+    float3 f3LightColor = PbrLighting(pointData);
 
     float3 f3Color = f3LightColor + f3Ambient;
 

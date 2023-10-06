@@ -57,7 +57,7 @@ struct Material
 // point light
 float3 AdditionPointLight(PointLight pointLight, float3 f3CameraDir, float3 f3LightDir, float3 f3Normal, float3 f3WorldPixelPosition, float3 f3DiffColor, float3 f3SpecColor)
 {
-    LightPointData pointData;
+    SurfaceData pointData;
 
     float fDiff = max(dot(f3Normal, f3LightDir), 0.0f);
 

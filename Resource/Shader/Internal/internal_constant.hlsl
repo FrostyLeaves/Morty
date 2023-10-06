@@ -42,7 +42,7 @@ struct SpotLight
 };
 
 
-struct LightPointData
+struct SurfaceData
 {
     float3 f3CameraDir;
     float3 f3Normal;

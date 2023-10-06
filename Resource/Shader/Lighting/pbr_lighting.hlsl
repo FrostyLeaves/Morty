@@ -1,9 +1,10 @@
 #include "Internal/internal_constant.hlsl"
 #include "Internal/internal_functional.hlsl"
 #include "Lighting/brdf_functional.hlsl"
+#include "Shadow/shadow.hlsl"
 
 // spot light
-float3 AdditionSpotLight(SpotLight spotLight, LightPointData pointData)
+float3 AdditionSpotLight(SpotLight spotLight, SurfaceData pointData)
 {
     float3 f3LightDir = normalize(spotLight.f3WorldPosition - pointData.f3WorldPosition);
 
@@ -27,7 +28,7 @@ float3 AdditionSpotLight(SpotLight spotLight, LightPointData pointData)
 }
 
 // point light
-float3 AdditionPointLight(PointLight pointLight, LightPointData pointData)
+float3 AdditionPointLight(PointLight pointLight, SurfaceData pointData)
 {
     float3 f3LightDir = normalize(pointLight.f3WorldPosition - pointData.f3WorldPosition);
 
@@ -40,7 +41,7 @@ float3 AdditionPointLight(PointLight pointLight, LightPointData pointData)
 }
 
 // direction light
-float3 AdditionDirectionLight(DirectionLight dirLight, LightPointData pointData)
+float3 AdditionDirectionLight(DirectionLight dirLight, SurfaceData pointData)
 {
     float fNdotL = dot(pointData.f3Normal, -dirLight.f3LightDir);
 
@@ -55,14 +56,15 @@ float3 AdditionDirectionLight(DirectionLight dirLight, LightPointData pointData)
 }
 
 
-float3 PbrLighting()
+float3 PbrLighting(SurfaceData pointData)
 {
+    float3 f3Color = float3(0.0f, 0.0f, 0.0f);
     
     if (u_bDirectionLightEnabled > 0)
     {
         float3 f3LightInverseDirection = -u_xDirectionalLight.f3LightDir;
         
-        float shadow = GetDirectionShadow(u_texShadowMap, f3WorldPosition, f3Normal, f3LightInverseDirection);
+        float shadow = GetDirectionShadow(u_texShadowMap, pointData.f3WorldPosition, pointData.f3Normal, f3LightInverseDirection);
 
         f3Color += shadow * AdditionDirectionLight(u_xDirectionalLight, pointData);
     }
@@ -78,14 +80,6 @@ float3 PbrLighting()
     {
         f3Color += AdditionSpotLight(u_vSpotLights[nSpotLightIdx], pointData);
     }
-
-
-    f3Color = f3Color + f3Ambient;
-
-    // HDR tonemapping
-    //f3Color = f3Color / (f3Color + float3(1.0, 1.0, 1.0));
-    // gamma correct
-    //f3Color = pow(f3Color, float3(1.0/2.2, 1.0/2.2, 1.0/2.2)); 
 
     return f3Color;
 }

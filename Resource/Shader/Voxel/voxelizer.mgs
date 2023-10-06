@@ -1,0 +1,29 @@
+#include "voxelizer_header.hlsl"
+
+[maxvertexcount(3)]
+void GS_MAIN(triangle VS_OUT input[3], inout TriangleStream<VS_OUT> triangleStream)
+{
+	float3 f3FaceNormal = abs(input[0].normal + input[1].normal + input[2].normal);
+	uint nMaxNormalIdx = f3FaceNormal[1] > f3FaceNormal[0] ? 1 : 0;
+	nMaxNormalIdx = f3FaceNormal[2] > f3FaceNormal[nMaxNormalIdx] ? 2 : nMaxNormalIdx;
+
+	float3 f3MinPosition = min(input[0].pos.xyz, min(input[1].pos.xyz, input[2].pos.xyz));
+	float3 f3MaxPosition = max(input[0].pos.xyz, max(input[1].pos.xyz, input[2].pos.xyz));
+
+	VS_OUT output[3] = input;
+
+	for (uint i = 0; i < 3; ++i)
+	{
+		[flatten]
+		if (nMaxNormalIdx == 0)
+		{
+			output[i].pos.xyz = output[i].pos.zyx;
+		}
+		else if (nMaxNormalIdx == 1)
+		{
+			output[i].pos.xyz = output[i].pos.xzy;
+		}
+
+		triangleStream.Append(output[i]);
+	}
+}

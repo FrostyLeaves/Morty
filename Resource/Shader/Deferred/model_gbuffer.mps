@@ -1,7 +1,7 @@
 #include "Internal/internal_constant.hlsl"
 #include "Internal/internal_functional.hlsl"
 #include "Internal/internal_model.hlsl"
-#include "Deferred/pbr_material.hlsl"
+#include "Lighting/pbr_material.hlsl"
 
 struct VS_OUT
 {
