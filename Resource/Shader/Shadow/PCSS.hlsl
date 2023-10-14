@@ -1,4 +1,4 @@
-#include "Internal/internal_constant.hlsl"
+#include "../Internal/internal_uniform_global.hlsl"
 
 #define NUM_SAMPLES 50
 #define NUM_RINGS 10

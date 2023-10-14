@@ -41,13 +41,15 @@ public:
 
 
 	bool SetUseMaterial(std::shared_ptr<MMaterial> pMaterial) override;
+	bool SetGraphPipeline(std::shared_ptr<MMaterial> pMaterial) override;
 	void SetShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) override;
 
 	bool DispatchComputeJob(MComputeDispatcher* pComputeDispatcher, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ) override;
 
 	bool AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures) override;
-	bool AddComputeToGraphBarrier(const std::vector<const MBuffer*> vBuffers) override;
-	bool AddGraphToComputeBarrier(const std::vector<const MBuffer*> vBuffers) override;
+
+	bool AddBufferMemoryBarrier(const std::vector<const MBuffer*> vBuffers, MEBufferBarrierStage srcStage, MEBufferBarrierStage dstStage) override;
+
 	bool DownloadTexture(MTexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback) override;
 	bool CopyImageBuffer(MTexture* pSource, MTexture* pDest) override;
 	void UpdateMipmaps(MTexture* pBuffer) override;
@@ -59,8 +61,12 @@ public:
 
 	void UpdateShaderParam(std::shared_ptr<MShaderConstantParam> param);
 
-	
 	void SetTextureLayout(const std::vector<MTexture*>& vTextures, VkImageLayout newLayout);
+
+protected:
+	VkAccessFlags GetBufferBarrierAccessFlag(MEBufferBarrierStage stage) const;
+	uint32_t GetBufferBarrierQueueFamily(MEBufferBarrierStage stage) const;
+	VkPipelineStageFlags GetBufferBarrierPipelineStage(MEBufferBarrierStage stage) const;
 
 public:
 

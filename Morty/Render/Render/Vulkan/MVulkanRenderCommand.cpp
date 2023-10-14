@@ -220,6 +220,24 @@ void MVulkanRenderCommand::DrawIndexedIndirect(const MBuffer* pVertexBuffer, con
 
 bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 {
+	if (!SetGraphPipeline(pMaterial))
+	{
+		return false;
+	}
+
+	if (!pMaterial)
+	{
+		return false;
+	}
+
+	std::shared_ptr<MShaderPropertyBlock> pPropertyBlock = pMaterial->GetMaterialPropertyBlock();
+	SetShaderPropertyBlock(pPropertyBlock);
+
+	return true;
+}
+
+bool MVulkanRenderCommand::SetGraphPipeline(std::shared_ptr<MMaterial> pMaterial)
+{
 	//must begin renderpass
 	if (m_vRenderPassStages.empty())
 	{
@@ -231,7 +249,7 @@ bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 	{
 		MORTY_ASSERT(nullptr != pMaterial);
 		pUsingPipeline = nullptr;
-		return true;
+		return false;
 	}
 
 	pUsingVertex = nullptr;
@@ -247,10 +265,6 @@ bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 		MORTY_ASSERT(vkPipeline != VK_NULL_HANDLE);
 
 		vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
-
-		std::shared_ptr<MShaderPropertyBlock> pPropertyBlock = pMaterial->GetMaterialPropertyBlock();
-
-		SetShaderPropertyBlock(pPropertyBlock);
 
 		return true;
 	}
@@ -386,64 +400,37 @@ bool MVulkanRenderCommand::AddRenderToTextureBarrier(const std::vector<MTexture*
 	return true;
 }
 
-bool MVulkanRenderCommand::AddComputeToGraphBarrier(const std::vector<const MBuffer*> vBuffers)
+bool MVulkanRenderCommand::AddBufferMemoryBarrier(const std::vector<const MBuffer*> vBuffers, MEBufferBarrierStage srcStage, MEBufferBarrierStage dstStage)
 {
+	const auto srcAccessMask = GetBufferBarrierAccessFlag(srcStage);
+	const auto dstAccessMask = GetBufferBarrierAccessFlag(dstStage);
+	const uint32_t srcQueueFamilyIndex = GetBufferBarrierQueueFamily(srcStage);
+	const uint32_t dstQueueFamilyIndex = GetBufferBarrierQueueFamily(dstStage);
+	const auto srcPipelineStage = GetBufferBarrierPipelineStage(srcStage);
+	const auto dstPipelineStage = GetBufferBarrierPipelineStage(dstStage);
 
-	std::vector<VkBufferMemoryBarrier> bufferBarriers;
-	for(const MBuffer* pBuffer : vBuffers)
-	{
-		VkBufferMemoryBarrier bufferBarrier;
-		bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-		bufferBarrier.pNext = nullptr;
-		bufferBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-		bufferBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
-		bufferBarrier.srcQueueFamilyIndex = m_pDevice->m_nComputeFamilyIndex;
-		bufferBarrier.dstQueueFamilyIndex = m_pDevice->m_nGraphicsFamilyIndex;
-		bufferBarrier.buffer = pBuffer->m_VkBuffer;
-		bufferBarrier.offset = 0;
-		bufferBarrier.size = VK_WHOLE_SIZE;
-		bufferBarriers.push_back(bufferBarrier);
-	}
-
-	vkCmdPipelineBarrier(
-		m_VkCommandBuffer,
-		VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-		VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
-		0,
-		0, nullptr,
-		static_cast<uint32_t>(bufferBarriers.size()), bufferBarriers.data(),
-		0, nullptr);
-
-
-	return true;
-}
-
-bool MVulkanRenderCommand::AddGraphToComputeBarrier(const std::vector<const MBuffer*> vBuffers)
-{
 	std::vector<VkBufferMemoryBarrier> bufferBarriers;
 	for (const MBuffer* pBuffer : vBuffers)
 	{
 		VkBufferMemoryBarrier bufferBarrier;
 		bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
 		bufferBarrier.pNext = nullptr;
-		bufferBarrier.srcAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
-		bufferBarrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-		bufferBarrier.srcQueueFamilyIndex = m_pDevice->m_nGraphicsFamilyIndex;
-		bufferBarrier.dstQueueFamilyIndex = m_pDevice->m_nComputeFamilyIndex;
+		bufferBarrier.srcAccessMask = srcAccessMask;
+		bufferBarrier.dstAccessMask = dstAccessMask;
+		bufferBarrier.srcQueueFamilyIndex = srcQueueFamilyIndex;
+		bufferBarrier.dstQueueFamilyIndex = dstQueueFamilyIndex;
 		bufferBarrier.buffer = pBuffer->m_VkBuffer;
 		bufferBarrier.offset = 0;
 		bufferBarrier.size = VK_WHOLE_SIZE;
 		bufferBarriers.push_back(bufferBarrier);
 	}
 
-	vkCmdPipelineBarrier(
-		m_VkCommandBuffer,
-		VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
-		VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-		0,
-		0, nullptr,
+	vkCmdPipelineBarrier(m_VkCommandBuffer,
+		srcPipelineStage, dstPipelineStage,
+		0, 0, nullptr,
 		static_cast<uint32_t>(bufferBarriers.size()), bufferBarriers.data(),
-		0, nullptr);
+		0, nullptr
+	);
 
 
 	return true;
@@ -762,4 +749,55 @@ void MVulkanPrimaryRenderCommand::ExecuteChildCommand()
 		buffers.push_back(pChildCommand->m_VkCommandBuffer);
 
 	vkCmdExecuteCommands(m_VkCommandBuffer, buffers.size(), buffers.data());
+}
+
+VkAccessFlags MVulkanRenderCommand::GetBufferBarrierAccessFlag(MEBufferBarrierStage stage) const
+{
+	static const std::unordered_map<MEBufferBarrierStage, VkAccessFlags> AccessFlagTable = {
+		{ MEBufferBarrierStage::EComputeShaderWrite, VK_ACCESS_SHADER_WRITE_BIT },
+		{ MEBufferBarrierStage::EComputeShaderRead, VK_ACCESS_SHADER_READ_BIT },
+		{ MEBufferBarrierStage::EPixelShaderWrite, VK_ACCESS_SHADER_WRITE_BIT },
+		{ MEBufferBarrierStage::EPixelShaderRead, VK_ACCESS_SHADER_READ_BIT },
+		{ MEBufferBarrierStage::EDrawIndirectRead, VK_ACCESS_INDIRECT_COMMAND_READ_BIT },
+	};
+
+	const auto accessMask = AccessFlagTable.find(stage);
+	MORTY_ASSERT(accessMask != AccessFlagTable.end());
+
+	return accessMask->second;
+}
+
+uint32_t MVulkanRenderCommand::GetBufferBarrierQueueFamily(MEBufferBarrierStage stage) const
+{
+	switch (stage)
+	{
+	case MEBufferBarrierStage::EComputeShaderWrite: return m_pDevice->m_nComputeFamilyIndex;
+	case MEBufferBarrierStage::EComputeShaderRead: return m_pDevice->m_nComputeFamilyIndex;
+	case MEBufferBarrierStage::EPixelShaderWrite: return m_pDevice->m_nGraphicsFamilyIndex;
+	case MEBufferBarrierStage::EPixelShaderRead: return m_pDevice->m_nGraphicsFamilyIndex;
+	case MEBufferBarrierStage::EDrawIndirectRead: return m_pDevice->m_nGraphicsFamilyIndex;
+	case MEBufferBarrierStage::EUnknow:
+		MORTY_ASSERT(stage != MEBufferBarrierStage::EUnknow);
+		break;
+	default:
+		MORTY_ASSERT(false);
+		break;
+	}
+	return 0;
+}
+
+VkPipelineStageFlags MVulkanRenderCommand::GetBufferBarrierPipelineStage(MEBufferBarrierStage stage) const
+{
+	static const std::unordered_map<MEBufferBarrierStage, VkPipelineStageFlags> PipelineStageTable = {
+		{ MEBufferBarrierStage::EComputeShaderWrite, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT },
+		{ MEBufferBarrierStage::EComputeShaderRead, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT },
+		{ MEBufferBarrierStage::EPixelShaderWrite, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT },
+		{ MEBufferBarrierStage::EPixelShaderRead, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT },
+		{ MEBufferBarrierStage::EDrawIndirectRead, VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT },
+	};
+
+	const auto pipelineStage = PipelineStageTable.find(stage);
+	MORTY_ASSERT(pipelineStage != PipelineStageTable.end());
+
+	return pipelineStage->second;
 }

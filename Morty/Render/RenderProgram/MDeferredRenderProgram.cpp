@@ -56,7 +56,7 @@
 MORTY_CLASS_IMPLEMENT(MDeferredRenderProgram, MIRenderProgram)
 
 
-#define GPU_CULLING_ENABLE false
+#define GPU_CULLING_ENABLE true
 
 void MDeferredRenderProgram::Render(MIRenderCommand* pPrimaryCommand)
 {

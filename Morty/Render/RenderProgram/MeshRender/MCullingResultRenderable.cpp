@@ -83,7 +83,7 @@ void MCullingResultRenderable::Render(MIRenderCommand* pCommand)
 			continue;
 		}
 
-		pCommand->SetUseMaterial(pMaterial);
+		pCommand->SetGraphPipeline(pMaterial);
 
 		for (auto& vPropertyBlock : m_vFramePropertyAdapter)
 		{
@@ -91,6 +91,7 @@ void MCullingResultRenderable::Render(MIRenderCommand* pCommand)
 		}
 
 		pCommand->SetShaderPropertyBlock(group.pMeshTransformProperty);
+		pCommand->SetShaderPropertyBlock(group.pMaterial->GetMaterialPropertyBlock());
 
 		pCommand->DrawIndexedIndirect(
 			pVertexBuffer,

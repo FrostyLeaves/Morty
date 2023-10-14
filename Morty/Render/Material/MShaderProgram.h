@@ -25,8 +25,8 @@ public:
 	MTextureResourceParam();
 	MTextureResourceParam(const MShaderTextureParam& param);
 
-	virtual void SetTexture(std::shared_ptr<MTexture> pTexture) override;
-	virtual std::shared_ptr<MTexture> GetTexture() override;
+	void SetTexture(std::shared_ptr<MTexture> pTexture) override;
+	std::shared_ptr<MTexture> GetTexture() override;
 
 	void SetTexture(const std::shared_ptr<MTextureResource>& pTextureResource);
 	std::shared_ptr<MTextureResource> GetTextureResource() const { return m_TextureRef.GetResource<MTextureResource>(); }

@@ -1,4 +1,4 @@
-#include "Forward/light_forward.hlsl"
+#include "../Forward/light_forward.hlsl"
 
 VS_OUT VS_MAIN(VS_IN input, uint INSTANCE_ID : SV_InstanceID)
 {

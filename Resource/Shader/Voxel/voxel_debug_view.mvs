@@ -1,11 +1,13 @@
-#include "Internal/internal_constant.hlsl"
-#include "Internal/internal_functional.hlsl"
-#include "Internal/internal_mesh.hlsl"
+#include "../Internal/internal_uniform_global.hlsl"
+#include "../Internal/internal_functional.hlsl"
+#include "../Internal/internal_mesh.hlsl"
+#include "../Voxel/voxel_function.hlsl"
 
 struct VS_OUT
 {    
     float4 pos : SV_POSITION;
     float4 color : u32COLOR;
+    uint voxelIdx : VOXEL_IDX;
 };
 
 VS_OUT VS_MAIN(VS_IN input, uint INSTANCE_ID : SV_InstanceID)
@@ -20,6 +22,7 @@ VS_OUT VS_MAIN(VS_IN input, uint INSTANCE_ID : SV_InstanceID)
 
     output.pos = mul(worldPos, u_matCamProj);
     output.color = float4(1.0f, 0.0f, 0.0f, 1.0f);
+    output.voxelIdx = INSTANCE_ID;
 
     return output;
 }

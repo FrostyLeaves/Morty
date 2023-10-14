@@ -1,7 +1,7 @@
-#include "Internal/internal_constant.hlsl"
-#include "Internal/internal_functional.hlsl"
-#include "Lighting/brdf_functional.hlsl"
-#include "Shadow/shadow.hlsl"
+#include "../Internal/internal_uniform_global.hlsl"
+#include "../Internal/internal_functional.hlsl"
+#include "../Lighting/brdf_functional.hlsl"
+#include "../Shadow/shadow.hlsl"
 
 // spot light
 float3 AdditionSpotLight(SpotLight spotLight, SurfaceData pointData)

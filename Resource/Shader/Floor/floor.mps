@@ -1,13 +1,13 @@
-#include "Internal/internal_constant.hlsl"
+#include "../Internal/internal_uniform_global.hlsl"
 
-struct VS_OUTPUT
+struct VS_OUT
 {
     float4 pos : SV_POSITION;
     float3 near_pos : NEAR_POS;
     float3 far_pos : FAR_POS;
 };
 
-float GetGridLine(VS_OUTPUT input, float3 position, float fCurrentGridLevel)
+float GetGridLine(VS_OUT input, float3 position, float fCurrentGridLevel)
 {
     float fCurrentGridDistance = pow(2, fCurrentGridLevel);
     float2 f2CurrentCoord = position.xz / fCurrentGridDistance;
@@ -18,7 +18,7 @@ float GetGridLine(VS_OUTPUT input, float3 position, float fCurrentGridLevel)
     return fCurrentGridLine;
 }
 
-float4 PS_MAIN(VS_OUTPUT input) : SV_Target
+float4 PS_MAIN(VS_OUT input) : SV_Target
 {
     float t = -input.near_pos.y / (input.far_pos.y - input.near_pos.y);
     float3 position = input.near_pos + t * (input.far_pos - input.near_pos);

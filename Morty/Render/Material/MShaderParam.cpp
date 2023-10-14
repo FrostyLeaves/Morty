@@ -1,29 +1,11 @@
 #include "Material/MShaderParam.h"
 #include "Basic/MTexture.h"
 
-MShaderParam::MShaderParam()
-	: strName()
-	, eShaderType(0)
-#if RENDER_GRAPHICS == MORTY_VULKAN
-	, unSet(0)
-	, unBinding(0)
-#endif
-{
-	SetDirty();
-}
-
 MShaderConstantParam::MShaderConstantParam()
 	: MShaderParam()
-	, var()
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	m_VkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-
-	m_VkBuffer = VK_NULL_HANDLE;
-	m_VkBufferMemory = VK_NULL_HANDLE;
-	m_unMemoryOffset = 0;
-	m_pMemoryMapping = 0;
-	m_unVkMemorySize = 0;
 #endif
 }
 
@@ -54,10 +36,6 @@ MShaderConstantParam::MShaderConstantParam(const MShaderConstantParam& param)
 
 MShaderTextureParam::MShaderTextureParam()
 	: MShaderParam()
-	, pTexture(nullptr)
-	, pImageIdent(nullptr)
-	, eType(METextureType::ETexture2D)
-
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	m_VkDescriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -80,12 +58,9 @@ MShaderSampleParam::MShaderSampleParam()
 
 MShaderStorageParam::MShaderStorageParam()
 	: MShaderParam()
-	, pBuffer(nullptr)
-	, bWritable(false)
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	m_VkDescriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-	m_VkBufferInfo = { VK_NULL_HANDLE, 0, 0 };
 #endif
 }
 

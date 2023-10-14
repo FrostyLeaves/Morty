@@ -1,3 +1,4 @@
+#include "../Internal/internal_constant.hlsl"
 
 struct LOD
 {

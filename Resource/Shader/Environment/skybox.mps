@@ -1,6 +1,6 @@
-#include "Internal/internal_constant.hlsl"
+#include "../Internal/internal_uniform_global.hlsl"
 
-struct VS_OUTPUT
+struct VS_OUT
 {
     float4 pos : SV_POSITION;
     float3 uvw : UVW;
@@ -8,7 +8,7 @@ struct VS_OUTPUT
 
 [[vk::binding(7,0)]]TextureCube SkyTexCube;
 
-float4 PS_MAIN(VS_OUTPUT input) : SV_Target
+float4 PS_MAIN(VS_OUT input) : SV_Target
 {
     float4 color = SkyTexCube.Sample(LinearSampler, input.uvw);
     

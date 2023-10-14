@@ -185,11 +185,9 @@ void MGPUCameraFrustumCulling::Culling(const std::vector<MMaterialBatchGroup*>& 
 		m_drawIndirectBuffer.GenerateBuffer(pRenderSystem->GetDevice(), nullptr, nDrawIndirectBufferSize);
 	}
 
-	
-
-	m_pCommand->AddGraphToComputeBarrier({ &m_drawIndirectBuffer });
+	m_pCommand->AddBufferMemoryBarrier({ &m_drawIndirectBuffer }, MEBufferBarrierStage::EDrawIndirectRead, MEBufferBarrierStage::EComputeShaderWrite);
 
 	m_pCommand->DispatchComputeJob(m_pCullingComputeDispatcher, vInstanceCullingData.size() / 16 + (vInstanceCullingData.size() % 16 ? 1 : 0), 1, 1);
 
-	m_pCommand->AddComputeToGraphBarrier({ &m_drawIndirectBuffer });
+	m_pCommand->AddBufferMemoryBarrier({ &m_drawIndirectBuffer }, MEBufferBarrierStage::EComputeShaderWrite, MEBufferBarrierStage::EDrawIndirectRead);
 }

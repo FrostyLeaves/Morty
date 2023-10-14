@@ -96,7 +96,7 @@ void MDeferredLightingRenderWork::Initialize(MEngine* pEngine)
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
 	std::shared_ptr<MResource> vs = pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mvs");
-	std::shared_ptr<MResource> ps = pResourceSystem->LoadResource("Shader/Deferred/model_deferred.mps");
+	std::shared_ptr<MResource> ps = pResourceSystem->LoadResource("Shader/Deferred/deferred_lighting.mps");
 
 
 	m_pLightningMaterial = pResourceSystem->CreateResource<MMaterialResource>();

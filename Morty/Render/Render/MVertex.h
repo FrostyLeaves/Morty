@@ -87,6 +87,8 @@ struct MShadowGpuDrivenOutput
 
 struct VoxelizerOutput
 {
-	Vector3 f3BaseColor;
+	uint32_t nBaseColor_R;
+	uint32_t nBaseColor_G;
+	uint32_t nBaseColor_B;
 	uint32_t nVoxelCount;
 };

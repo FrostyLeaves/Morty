@@ -64,6 +64,12 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 
 	pCommand->ResetBuffer(&m_voxelizerBuffer);
 
+	pCommand->AddBufferMemoryBarrier(
+		{ &m_voxelizerBuffer },
+		MEBufferBarrierStage::EPixelShaderRead,
+		MEBufferBarrierStage::EPixelShaderWrite
+	);
+
 	pCommand->BeginRenderPass(&m_voxelizerRenderPass);
 	pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, MRenderGlobal::VOXEL_TABLE_SIZE, MRenderGlobal::VOXEL_TABLE_SIZE));
 	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, MRenderGlobal::VOXEL_TABLE_SIZE, MRenderGlobal::VOXEL_TABLE_SIZE));
@@ -75,11 +81,6 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 
 	pCommand->EndRenderPass();
 
-	pCommand->AddGraphToComputeBarrier({
-		&m_voxelizerBuffer,
-		&m_drawIndirectBuffer
-	});
-
 	if (m_pVoxelMapSetting)
 	{
 		auto& settingStruct = m_pVoxelMapSetting->var.GetValue<MVariantStruct>().GetVariant<MVariantStruct>("voxelMapSetting");
@@ -90,20 +91,40 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 		m_pVoxelMapSetting->SetDirty();
 	}
 
+	pCommand->AddBufferMemoryBarrier(
+		{ &m_voxelizerBuffer },
+		MEBufferBarrierStage::EPixelShaderWrite,
+		MEBufferBarrierStage::EComputeShaderRead
+	);
+
+	pCommand->AddBufferMemoryBarrier(
+		{ &m_drawIndirectBuffer },
+		MEBufferBarrierStage::EDrawIndirectRead,
+		MEBufferBarrierStage::EComputeShaderWrite
+	);
+
 	pCommand->DispatchComputeJob(m_pVoxelMapGenerator
 		, MRenderGlobal::VOXEL_TABLE_SIZE / 8
 		, MRenderGlobal::VOXEL_TABLE_SIZE / 8
 		, MRenderGlobal::VOXEL_TABLE_SIZE / 8);
 
+
+	pCommand->AddBufferMemoryBarrier(
+		{ &m_drawIndirectBuffer },
+		MEBufferBarrierStage::EComputeShaderWrite,
+		MEBufferBarrierStage::EDrawIndirectRead
+	);
+
+	pCommand->AddBufferMemoryBarrier(
+		{ &m_voxelizerBuffer },
+		MEBufferBarrierStage::EComputeShaderRead,
+		MEBufferBarrierStage::EPixelShaderRead
+	);
 }
 
 void MVoxelizerRenderWork::RenderDebugVoxel(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
-
-	pCommand->AddComputeToGraphBarrier({
-		&m_drawIndirectBuffer
-		});
 
 	MViewport* pViewport = info.pViewport;
 	Vector2 v2LeftTop = pViewport->GetLeftTop();
@@ -186,7 +207,7 @@ void MVoxelizerRenderWork::InitializeDispatcher()
 	m_pVoxelizerMaterial->SetCullMode(MECullMode::ECullNone);
 	m_pVoxelizerMaterial->LoadShader(voxelizerVS);
 	m_pVoxelizerMaterial->LoadShader(voxelizerPS);
-	//m_pVoxelizerMaterial->LoadShader(voxelizerGS);
+	m_pVoxelizerMaterial->LoadShader(voxelizerGS);
 
 	std::shared_ptr<MResource> voxelDebugVS = pResourceSystem->LoadResource("Shader/Voxel/voxel_debug_view.mvs");
 	std::shared_ptr<MResource> voxelDebugPS = pResourceSystem->LoadResource("Shader/Voxel/voxel_debug_view.mps");

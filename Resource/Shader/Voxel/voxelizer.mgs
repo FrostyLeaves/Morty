@@ -1,4 +1,5 @@
 #include "voxelizer_header.hlsl"
+#include "../Deferred/deferred_vsout.hlsl"
 
 [maxvertexcount(3)]
 void GS_MAIN(triangle VS_OUT input[3], inout TriangleStream<VS_OUT> triangleStream)
