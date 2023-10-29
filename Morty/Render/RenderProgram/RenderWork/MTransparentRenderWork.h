@@ -31,7 +31,7 @@ public:
 
     void Initialize(MEngine* pEngine) override;
 	void Release(MEngine* pEngine) override;
-	void Resize(Vector2 size) override;
+	void Resize(Vector2i size) override;
 
     MEngine* GetEngine() const { return m_pEngine; }
 

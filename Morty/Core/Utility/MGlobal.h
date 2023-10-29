@@ -32,10 +32,6 @@
 //#pragma warning( disable: 4251 )
 //#pragma warning( disable: 4275 )
 
-typedef unsigned long MObjectID;
-typedef unsigned long MResourceID;
-typedef unsigned char MByte;
-
 #include <cmath>
 #include <cfloat>
 
@@ -63,6 +59,10 @@ typedef unsigned char MByte;
 #include "doctest/doctest.h"
 #include "Utility/MString.h"
 
+using MObjectID = unsigned long;
+using MResourceID = unsigned long;
+using MByte = unsigned char;
+
 #if MORTY_DEBUG
 #define MORTY_ASSERT assert
 #else
@@ -86,6 +86,8 @@ public:
     static constexpr int M_INVALID_INDEX = -1;
     static constexpr uint32_t M_INVALID_UINDEX = static_cast<uint32_t>(M_INVALID_INDEX);
     static constexpr float M_FLOAT_BIAS = 1e-6;
+    static constexpr size_t M_MAX_THREAD_NUM = 10;
+
 
 };
 

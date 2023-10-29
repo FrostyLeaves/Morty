@@ -55,10 +55,12 @@ enum class METextureRenderUsage
 	ERenderPresent,
 };
 
-enum class METextureShaderUsage
+class METextureShaderUsage
 {
-	EUnknow = 0,
-	ESampler
+public:
+	static constexpr uint32_t EUnknow = 0;
+	static constexpr uint32_t ESampler = 1;
+	static constexpr uint32_t EStorage = 2;
 };
 
 class MORTY_API MTexture
@@ -72,8 +74,10 @@ public:
 	void SetName(const MString& strName) { m_strTextureName = strName; }
 	MString GetName() const { return m_strTextureName; }
 
-	void SetSize(const Vector2& v2Size) { m_v2Size = v2Size; }
-	Vector2 GetSize() { return m_v2Size; }
+	void SetSize(const Vector2i& n2Size) { m_n3Size = Vector3i(n2Size.x, n2Size.y, 1); }
+	void SetSize(const Vector3i& n3Size) { m_n3Size = n3Size; }
+	Vector3i GetSize() const { return m_n3Size; }
+	Vector2i GetSize2D() const { return Vector2i(m_n3Size.x, m_n3Size.y); }
 
 	void SetTextureLayout(const METextureLayout& eLayout) { m_eRenderType = eLayout; }
 	METextureLayout GetTextureLayout() { return m_eRenderType; }
@@ -90,8 +94,8 @@ public:
 	void SetRenderUsage(const METextureRenderUsage& usage) { m_eRenderUsage = usage; }
 	METextureRenderUsage GetRenderUsage() const { return m_eRenderUsage; }
 
-	void SetShaderUsage(const METextureShaderUsage& usage) { m_eShaderUsage = usage; }
-	METextureShaderUsage GetShaderUsage() const { return m_eShaderUsage; }
+	void SetShaderUsage(const uint32_t& usage) { m_eShaderUsage = usage; }
+	uint32_t GetShaderUsage() const { return m_eShaderUsage; }
 
 	void SetTextureType(const METextureType& eType) { m_eTextureType = eType; }
 	METextureType GetTextureType() const { return m_eTextureType; }
@@ -115,6 +119,7 @@ public:
 	static std::shared_ptr<MTexture> CreateRenderTargetFloat32();
 
 	static std::shared_ptr<MTexture> CreateCubeMap();
+	static std::shared_ptr<MTexture> CreateVXGIMap();
 
 public:
 
@@ -122,7 +127,7 @@ public:
 	MString m_strTextureName;
 
 	//texture size.
-	Vector2 m_v2Size;
+	Vector3i m_n3Size;
 
 	//rgba8
 	METextureLayout m_eRenderType;
@@ -130,7 +135,7 @@ public:
 	//render target
 	METextureRenderUsage m_eRenderUsage;
 
-	METextureShaderUsage m_eShaderUsage;
+	uint32_t m_eShaderUsage;
 
 	METextureType m_eTextureType;
 

@@ -43,14 +43,9 @@ public:
 	void SetBrdfMapTexture(std::shared_ptr<MTexture> pTexture);
 
 public:
-	/*cbSceneMatrix*/
-	std::shared_ptr<MShaderConstantParam> m_pWorldMatrixParam = nullptr;
-	/*cbSceneInformation*/
-	std::shared_ptr<MShaderConstantParam> m_pWorldInfoParam = nullptr;
-	/*cbLightInformation*/
-	std::shared_ptr<MShaderConstantParam> m_pLightInfoParam = nullptr;
-	/*cbShadowInformation*/
-	std::shared_ptr<MShaderConstantParam> m_pShadowInfoParam = nullptr;
+
+	std::shared_ptr<MShaderConstantParam> m_pFrameParam = nullptr;
+	std::shared_ptr<MShaderConstantParam> m_pLightParam = nullptr;
 
 	/*u_texShadowMap*/
 	std::shared_ptr<MShaderTextureParam> m_pShadowTextureParam = nullptr;
@@ -67,7 +62,7 @@ public:
 	std::shared_ptr<MShaderStorageParam> m_pAnimationOffsetParam = nullptr;
 
 	std::shared_ptr<MShaderStorageParam> m_pRWVoxelTableParam = nullptr;
-	std::shared_ptr<MShaderConstantParam> m_pVoxelMapSetting = nullptr;
+	std::shared_ptr<MShaderTextureParam> m_pVoxelGITextureParam = nullptr;
 
 protected:
 	std::shared_ptr<MMaterial> m_pMaterial = nullptr;

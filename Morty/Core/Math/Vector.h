@@ -7,6 +7,7 @@
 
 class Vector3;
 class Vector4;
+class Vector2i;
 
 class Matrix3;
 class Matrix4;
@@ -18,6 +19,7 @@ public:
 	Vector2(const float& _x, const float& _y);
 	Vector2(const Vector2& vec2) = default;
 	Vector2(const Vector3& vec3);
+	explicit Vector2(const Vector2i& vec2);
 
 	float Length() const;
 	void Normalize();
@@ -53,8 +55,8 @@ public:
 	{
 		struct
 		{
-			float x = 0.0f;
-			float y = 0.0f;
+			float x;
+			float y;
 		};
 		float m[2];
 	};
@@ -136,10 +138,47 @@ public:
 
 };
 
+class MORTY_API Vector2i
+{
+public:
+	Vector2i() = default;
+	Vector2i(int x, int y);
+public:
+	union
+	{
+		struct
+		{
+			int x;
+			int y;
+		};
+		int m[2];
+	};
+
+	bool operator!=(const Vector2i& other) const;
+	bool operator==(const Vector2i& other) const;
+};
+
+class MORTY_API Vector3i
+{
+public:
+	Vector3i(int x, int y, int z);
+
+	Vector3i operator* (const int& value) const;
+
+public:
+	union
+	{
+		struct
+		{
+			int x;
+			int y;
+			int z;
+		};
+		int m[3];
+	};
+};
+
 Vector3 operator* (const float& value, const Vector3& vector);
-
-typedef Vector3 ColorRGB;
-
 
 
 class MORTY_API Vector4

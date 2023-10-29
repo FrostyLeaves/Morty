@@ -236,7 +236,7 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
 		size_t nCount = 0;
 		for (auto& iter : sut.GetMember())
 		{
-			bModified |= EditMVariant(iter.first.empty() ? MStringUtil::ToString(nCount) : iter.first, sut.GetVariant<MVariant>(iter.first));
+			bModified |= EditMVariant(iter.first.ToString().empty() ? MStringUtil::ToString(nCount) : iter.first.ToString(), sut.GetVariant<MVariant>(iter.first));
 			nCount++;
 		}
 
@@ -277,7 +277,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 				ImGui::SameLine();
 				if (ImGui::Button("+", ImVec2(fWidth * 0.3f, 0)))
 				{
-					shaderMacro.AddUnionMacro(addKey);
+					shaderMacro.AddUnionMacro(MStringId(addKey.c_str()));
 					addKey = "";
 				}
 
@@ -287,7 +287,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 				{
 					auto& pair = *iter;
 
-					ShowValueBegin(pair.first);
+					ShowValueBegin(pair.first.ToString());
 					ImGui::SetNextItemWidth(fWidth * 0.7f);
 					EditMString(pair.second);
 					ImGui::SameLine();
@@ -306,10 +306,10 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 			ShowValueBegin("Shader");
 			if (ImGui::Button("Reload Shader", ImVec2(ImGui::GetContentRegionAvail().x, 0)))
 			{
-				MString strResPathVS = pResource->GetVertexShaderResource()->GetResourcePath();
+				MString strResPathVS = pResource->GetShader(MEShaderType::EVertex)->GetResourcePath();
 				pResource->GetResourceSystem()->Reload(strResPathVS);
 
-				MString strResPathPS = pResource->GetPixelShaderResource()->GetResourcePath();
+				MString strResPathPS = pResource->GetShader(MEShaderType::EPixel)->GetResourcePath();
 				pResource->GetResourceSystem()->Reload(strResPathPS);
 			}
 			ShowValueEnd();
@@ -339,7 +339,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 			const std::vector<std::shared_ptr<MShaderConstantParam>>& vParams = pMaterial->GetShaderParams();
 			for (const std::shared_ptr<MShaderConstantParam>& param : vParams)
 			{
-				if (EditMVariant(param->strName, param->var))
+				if (EditMVariant(param->strName.ToString(), param->var))
 				{
 					param->SetDirty();
 					bModified = true;
@@ -356,7 +356,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 					MString strDlgName = "file_dlg_tex_" + MStringUtil::ToString(i);
 
-					ShowValueBegin(param->strName);
+					ShowValueBegin(param->strName.ToString());
 					std::shared_ptr<MTextureResource> pResource = param->GetTextureResource();
 
 					if (auto pPreviewTexture = param->GetTexture())

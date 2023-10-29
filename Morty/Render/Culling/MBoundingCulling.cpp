@@ -37,7 +37,7 @@ void MBoundingCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanc
 	auto createNewGroupFunc = [&](const std::shared_ptr<MMaterial>& pMaterial, MInstanceBatchGroup* pInstanceBatchGroup)
 	{
 		const auto pMeshProperty = pInstanceBatchGroup->GetMeshProperty();
-		pMeshProperty->SetValue("u_meshInstanceBeginIndex", 0);
+		pMeshProperty->SetValue(MShaderPropertyName::MESH_INSTANCE_BEGIN_INDEX, 0);
 
 		m_vCullingInstanceGroup.push_back({});
 		MMaterialCullingGroup* pMaterialCullingGroup = &m_vCullingInstanceGroup.back();

@@ -70,6 +70,14 @@ float DecodeExpV4( float4 pack )
     return value * exp2( float(exponent) );
 }
 
+float4x4 MatrixOrthoOffCenterLH(float fLeft, float fRight, float fTop, float fBottom, float fNear, float fFar)
+{
+	return float4x4(2 / (fRight - fLeft), 0, 0, (fLeft + fRight) / (fLeft - fRight),
+		0, 2 / (fTop - fBottom), 0, (fTop + fBottom) / (fBottom - fTop),
+		0, 0, 1 / (fFar - fNear), fNear / (fNear - fFar),
+		0, 0, 0, 1
+	);
+}
 
 
 

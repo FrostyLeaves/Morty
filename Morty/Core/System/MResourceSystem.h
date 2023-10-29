@@ -46,8 +46,10 @@ public:
 	MString GetFullPath(const MString& strRelativePath);
 
 	std::shared_ptr<MResource> LoadResource(const MString& strResourcePath, bool bAsyncLoad = false);
-	void UnloadResource(std::shared_ptr<MResource> pResource);
+	std::unique_ptr<MResourceData> LoadResourceData(const MString& strResourcePath);
+    void UnloadResource(std::shared_ptr<MResource> pResource);
 	void SaveResource(std::shared_ptr<MResource> pResource);
+	void SaveResource(const std::unique_ptr<MResourceData>& pResourceData, const MString& strOutputPath);
 
 	void Reload(const MString& strResourcePath);
 	std::shared_ptr<MResourceLoader> CreateLoader(const MString& strResourcePath);

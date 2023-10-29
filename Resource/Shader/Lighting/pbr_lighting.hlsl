@@ -1,9 +1,10 @@
-#include "Internal/internal_constant.hlsl"
-#include "Internal/internal_functional.hlsl"
-#include "Lighting/brdf_functional.hlsl"
+#include "../Internal/internal_uniform_global.hlsl"
+#include "../Internal/internal_functional.hlsl"
+#include "../Lighting/brdf_functional.hlsl"
+#include "../Shadow/shadow.hlsl"
 
 // spot light
-float3 AdditionSpotLight(SpotLight spotLight, LightPointData pointData)
+float3 AdditionSpotLight(SpotLight spotLight, SurfaceData pointData)
 {
     float3 f3LightDir = normalize(spotLight.f3WorldPosition - pointData.f3WorldPosition);
 
@@ -27,7 +28,7 @@ float3 AdditionSpotLight(SpotLight spotLight, LightPointData pointData)
 }
 
 // point light
-float3 AdditionPointLight(PointLight pointLight, LightPointData pointData)
+float3 AdditionPointLight(PointLight pointLight, SurfaceData pointData)
 {
     float3 f3LightDir = normalize(pointLight.f3WorldPosition - pointData.f3WorldPosition);
 
@@ -40,7 +41,7 @@ float3 AdditionPointLight(PointLight pointLight, LightPointData pointData)
 }
 
 // direction light
-float3 AdditionDirectionLight(DirectionLight dirLight, LightPointData pointData)
+float3 AdditionDirectionLight(DirectionLight dirLight, SurfaceData pointData)
 {
     float fNdotL = dot(pointData.f3Normal, -dirLight.f3LightDir);
 
@@ -52,4 +53,33 @@ float3 AdditionDirectionLight(DirectionLight dirLight, LightPointData pointData)
     }
 
     return float3(0, 0, 0);
+}
+
+
+float3 PbrLighting(SurfaceData pointData)
+{
+    float3 f3Color = float3(0.0f, 0.0f, 0.0f);
+    
+    if (u_bDirectionLightEnabled > 0)
+    {
+        float3 f3LightInverseDirection = -u_xDirectionalLight.f3LightDir;
+        
+        float shadow = GetDirectionShadow(u_texShadowMap, pointData.f3WorldPosition, pointData.f3Normal, f3LightInverseDirection);
+
+        f3Color += AdditionDirectionLight(u_xDirectionalLight, pointData);
+    }
+
+
+    for(int nPointLightIdx = 0; nPointLightIdx < min(MPOINT_LIGHT_PIXEL_NUMBER, u_nValidPointLightsNumber); ++nPointLightIdx)
+    {
+        f3Color += AdditionPointLight(u_vPointLights[nPointLightIdx], pointData);
+    }
+
+
+    for(int nSpotLightIdx = 0; nSpotLightIdx < min(MSPOT_LIGHT_PIXEL_NUMBER, u_nValidSpotLightsNumber); ++nSpotLightIdx)
+    {
+        f3Color += AdditionSpotLight(u_vSpotLights[nSpotLightIdx], pointData);
+    }
+
+    return f3Color;
 }

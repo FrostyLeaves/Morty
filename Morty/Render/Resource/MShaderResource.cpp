@@ -94,26 +94,22 @@ const MType* MShaderResourceLoader::ResourceType() const
 	return MShaderResource::GetClassType();
 }
 
-std::unique_ptr<MResourceData> MShaderResourceLoader::LoadResource(const MString& svFullPath, const MString& svPath)
+std::unique_ptr<MResourceData> MShaderResourceLoader::LoadResource(const MString& svFullPath)
 {
-	MORTY_UNUSED(svPath);
-
 	std::unique_ptr<MShaderResourceData> pResourceData = std::make_unique<MShaderResourceData>();
 
 	const MString strPathSuffix = MResource::GetSuffix(svFullPath);
 
-	if (strPathSuffix == MRenderGlobal::SUFFIX_VERTEX_SHADER)
-	{
-		pResourceData->eShaderType = MEShaderType::EVertex;
-	}
-	else if (strPathSuffix == MRenderGlobal::SUFFIX_PIXEL_SHADER)
-	{
-		pResourceData->eShaderType = MEShaderType::EPixel;
-	}
-	else
-	{
-		pResourceData->eShaderType = MEShaderType::ECompute;
-	}
+	static std::map<MString, MEShaderType> ShaderSuffixTable = {
+		{MRenderGlobal::SUFFIX_VERTEX_SHADER, MEShaderType::EVertex},
+		{MRenderGlobal::SUFFIX_PIXEL_SHADER, MEShaderType::EPixel},
+		{MRenderGlobal::SUFFIX_COMPUTE_SHADER, MEShaderType::ECompute},
+		{MRenderGlobal::SUFFIX_GEOMETRY_SHADER, MEShaderType::EGeometry},
+	};
+
+	MORTY_ASSERT(ShaderSuffixTable.find(strPathSuffix) != ShaderSuffixTable.end());
+
+	pResourceData->eShaderType = ShaderSuffixTable[strPathSuffix];
 
 	//TODO load as buffer.
 	pResourceData->strShaderPath = svFullPath;

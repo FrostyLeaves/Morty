@@ -1,5 +1,5 @@
-#include "Internal/internal_constant.hlsl"
-#include "Shadow/PCSS.hlsl"
+#include "../Internal/internal_uniform_global.hlsl"
+#include "../Shadow/PCSS.hlsl"
 
 
 #define PCF_ENABLE false

@@ -15,12 +15,12 @@ class MORTY_API MShaderBuffer
 {
 public:
     MShaderBuffer();
-	virtual ~MShaderBuffer() {}
+	virtual ~MShaderBuffer() = default;
 
     std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM> m_vShaderSets;
 	
 #if RENDER_GRAPHICS == MORTY_VULKAN
-	VkShaderModule m_VkShaderModule;
+	VkShaderModule m_VkShaderModule = VK_NULL_HANDLE;
 	VkPipelineShaderStageCreateInfo m_VkShaderStageInfo;
 #endif
 };
@@ -28,11 +28,8 @@ public:
 
 class MVertexShaderBuffer : public MShaderBuffer
 {
-public:
-	MVertexShaderBuffer();
-	virtual ~MVertexShaderBuffer() {}
-
 #if RENDER_GRAPHICS == MORTY_VULKAN
+public:
 	std::vector<VkVertexInputAttributeDescription> m_vAttributeDescs;
 	std::vector< VkVertexInputBindingDescription> m_vBindingDescs;
 #endif
@@ -41,21 +38,15 @@ public:
 
 class MPixelShaderBuffer : public MShaderBuffer
 {
-public:
-	MPixelShaderBuffer();
-	virtual ~MPixelShaderBuffer() {}
-
-#if RENDER_GRAPHICS == MORTY_VULKAN
-#endif
 
 };
 
 class MComputeShaderBuffer : public MShaderBuffer
 {
-public:
-	MComputeShaderBuffer();
-	virtual ~MComputeShaderBuffer() {}
 
-#if RENDER_GRAPHICS == MORTY_VULKAN
-#endif
+};
+
+class MGeometryShaderBuffer : public MShaderBuffer
+{
+
 };

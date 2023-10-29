@@ -32,6 +32,16 @@ private:
     MEMaterialType m_eMaterialType;
 };
 
+class MMaterialMacroDefineFilter : public IMaterialFilter
+{
+public:
+    MMaterialMacroDefineFilter(const std::unordered_map<MStringId, bool>& definedMacro) : m_definedMacro(definedMacro) {}
+    bool Filter(const std::shared_ptr<MMaterial>& material) const override;
+
+private:
+    std::unordered_map<MStringId, bool> m_definedMacro;
+};
+
 class MInstanceBatchGroup;
 class MMaterialBatchGroup;
 class MORTY_API MInstanceCulling

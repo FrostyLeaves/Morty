@@ -17,6 +17,7 @@
 #include "Component/MRenderMeshComponent.h"
 #include "Model/MAnimationRenderProxy.h"
 #include "Module/MCoreNotify.h"
+#include "Model/MSkeletalAnimation.h"
 
 #include "TaskGraph/MTaskGraph.h"
 #include "RenderProgram/RenderWork/MRenderWork.h"
@@ -126,6 +127,44 @@ void MAnimationManager::RemoveComponent(MModelComponent* pModelComponent)
 
 	m_tWaitUpdateComponent.erase(nSkeletonInstanceIdx);
 	m_tWaitRemoveComponent.insert(nSkeletonInstanceIdx);
+}
+
+void MAnimationManager::SceneTick(MScene* pScene, const float& fDelta)
+{
+	MComponentGroup<MModelComponent>* pModelComponents = pScene->FindComponents<MModelComponent>();
+	if (!pModelComponents)
+	{
+		return;
+	}
+	
+	for (MModelComponent& modelComponent : pModelComponents->m_vComponents)
+	{
+		if (!modelComponent.IsValid())
+		{
+			continue;
+		}
+
+		auto pController = modelComponent.GetSkeletalAnimationController();
+		if (!pController)
+		{
+			continue;
+		}
+
+		if (pController->GetState() != MIAnimController::EPlay)
+		{
+			continue;
+		}
+
+		bool bVisible = false;
+		if (MSceneComponent* pSceneComponent = modelComponent.GetEntity()->GetComponent<MSceneComponent>())
+		{
+			bVisible = pSceneComponent->GetVisibleRecursively();
+		}
+
+		pController->NextStep(fDelta, bVisible);
+		modelComponent.SendComponentNotify(MRenderNotify::NOTIFY_ANIMATION_POSE_CHANGED);
+	}
+	
 }
 
 void MAnimationManager::RenderUpdate(MTaskNode* pNode)

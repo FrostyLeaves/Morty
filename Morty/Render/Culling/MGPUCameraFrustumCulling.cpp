@@ -35,19 +35,19 @@ void MGPUCameraFrustumCulling::Initialize(MEngine* pEngine)
 
 	const std::shared_ptr<MShaderPropertyBlock>& params = m_pCullingComputeDispatcher->GetShaderPropertyBlock(0);
 
-	if (std::shared_ptr<MShaderStorageParam> pStorageParam = params->FindStorageParam("instances"))
+	if (std::shared_ptr<MShaderStorageParam> pStorageParam = params->FindStorageParam(MShaderPropertyName::CULLING_INSTANCE_DATA))
 	{
 		pStorageParam->pBuffer = &m_cullingInputBuffer;
 		pStorageParam->SetDirty();
 	}
 
-	if (std::shared_ptr<MShaderStorageParam> pStorageParam = params->FindStorageParam("indirectDraws"))
+	if (std::shared_ptr<MShaderStorageParam> pStorageParam = params->FindStorageParam(MShaderPropertyName::CULLING_OUTPUT_DRAW_DATA))
 	{
 		pStorageParam->pBuffer = &m_drawIndirectBuffer;
 		pStorageParam->SetDirty();
 	}
 
-	if (std::shared_ptr<MShaderStorageParam>&& pStorageParam = params->FindStorageParam("uboOut"))
+	if (std::shared_ptr<MShaderStorageParam>&& pStorageParam = params->FindStorageParam(MShaderPropertyName::CULLING_OUTPUT_DRAW_COUNT))
 	{
 		pStorageParam->pBuffer = &m_cullingOutputBuffer;
 		pStorageParam->SetDirty();
@@ -69,7 +69,7 @@ void MGPUCameraFrustumCulling::UpdateCullingCamera()
 {
 	const std::shared_ptr<MShaderPropertyBlock>& params = m_pCullingComputeDispatcher->GetShaderPropertyBlock(0);
 
-	std::shared_ptr<MShaderConstantParam> pConstantParam = params->FindConstantParam("ubo");
+	std::shared_ptr<MShaderConstantParam> pConstantParam = params->FindConstantParam(MShaderPropertyName::CULLING_CBUFFER_FRAME_DATA);
 	if(!pConstantParam)
 	{
 		MORTY_ASSERT(pConstantParam);
@@ -77,8 +77,8 @@ void MGPUCameraFrustumCulling::UpdateCullingCamera()
 	}
 	
 	MVariantStruct& sut = pConstantParam->var.GetValue<MVariantStruct>();
-	sut.SetVariant("cameraPos", Vector4(m_v3CameraPosition, 1.0f));
-	MVariantArray& cFrustumArray = sut.GetVariant<MVariantArray>("frustumPlanes");
+	sut.SetVariant(MShaderPropertyName::CULLING_CAMERA_POSITION, Vector4(m_v3CameraPosition, 1.0f));
+	MVariantArray& cFrustumArray = sut.GetVariant<MVariantArray>(MShaderPropertyName::CULLING_FRUSTUM_PLANES);
 	{
 		for (size_t planeIdx = 0; planeIdx < 6; ++planeIdx)
 		{
@@ -110,7 +110,7 @@ void MGPUCameraFrustumCulling::Culling(const std::vector<MMaterialBatchGroup*>& 
 	{
 		int nIndirectBeginIdx = vInstanceCullingData.size();
 		const auto pMeshProperty = pInstanceBatchGroup->GetMeshProperty();
-		pMeshProperty->SetValue("u_meshInstanceBeginIndex", nIndirectBeginIdx);
+		pMeshProperty->SetValue(MShaderPropertyName::MESH_INSTANCE_BEGIN_INDEX, nIndirectBeginIdx);
 
 		m_vCullingInstanceGroup.push_back({});
 		MMaterialCullingGroup* pMaterialCullingGroup = &m_vCullingInstanceGroup.back();
@@ -185,11 +185,9 @@ void MGPUCameraFrustumCulling::Culling(const std::vector<MMaterialBatchGroup*>& 
 		m_drawIndirectBuffer.GenerateBuffer(pRenderSystem->GetDevice(), nullptr, nDrawIndirectBufferSize);
 	}
 
-	
-
-	m_pCommand->AddGraphToComputeBarrier({ &m_drawIndirectBuffer });
+	m_pCommand->AddBufferMemoryBarrier({ &m_drawIndirectBuffer }, MEBufferBarrierStage::EDrawIndirectRead, MEBufferBarrierStage::EComputeShaderWrite);
 
 	m_pCommand->DispatchComputeJob(m_pCullingComputeDispatcher, vInstanceCullingData.size() / 16 + (vInstanceCullingData.size() % 16 ? 1 : 0), 1, 1);
 
-	m_pCommand->AddComputeToGraphBarrier({ &m_drawIndirectBuffer });
+	m_pCommand->AddBufferMemoryBarrier({ &m_drawIndirectBuffer }, MEBufferBarrierStage::EComputeShaderWrite, MEBufferBarrierStage::EDrawIndirectRead);
 }

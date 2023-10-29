@@ -24,7 +24,7 @@ public:
 	void Initialize(MScene* pScene, const MString& strRenderProgram);
 	void Release();
 
-	void SetRect(Vector2 pos, Vector2 size);
+	void SetRect(Vector2i pos, Vector2i size);
 
 	std::shared_ptr<MTexture> GetTexture(const size_t& nImageIndex);
 	std::vector<std::shared_ptr<MTexture>> GetAllOutputTexture(const size_t& nImageIndex);

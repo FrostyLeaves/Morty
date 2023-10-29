@@ -1,7 +1,34 @@
 #ifndef _M_INTERNAL_CONSTANT_HLSL_
 #define _M_INTERNAL_CONSTANT_HLSL_
 
-#include "Voxel/voxel_struct_define.hlsl"
+
+#ifndef MPOINT_LIGHT_PIXEL_NUMBER
+    #define MPOINT_LIGHT_PIXEL_NUMBER 1
+#endif
+
+#ifndef MSPOT_LIGHT_PIXEL_NUMBER
+    #define MSPOT_LIGHT_PIXEL_NUMBER 1
+#endif
+
+#ifndef MPOINT_LIGHT_MAX_NUMBER
+    #define MPOINT_LIGHT_MAX_NUMBER 1
+#endif
+
+#ifndef MSPOT_LIGHT_MAX_NUMBER
+    #define MSPOT_LIGHT_MAX_NUMBER 1
+#endif
+
+#ifndef CASCADED_SHADOW_MAP_NUM
+    #define CASCADED_SHADOW_MAP_NUM 1
+#endif
+
+#ifndef VOXEL_GI_CLIP_MAP_NUM
+    #define VOXEL_GI_CLIP_MAP_NUM 1
+#endif
+
+#ifndef MESH_LOD_LEVEL_RANGE
+    #define MESH_LOD_LEVEL_RANGE 1
+#endif
 
 #ifndef NUM_PI
     #define NUM_PI (3.1415926535898)
@@ -10,8 +37,8 @@
 
 #define NUM_BIAS (0.000001f)
 
-#if MTRANSPARENT_POLICY == 1 && MEN_TRANSPARENT == 1
-#define MTRANSPARENT_DEPTH_PEELING
+#if MTRANSPARENT_POLICY && MEN_TRANSPARENT
+    #define MTRANSPARENT_DEPTH_PEELING
 #endif
 
 struct DirectionLight
@@ -42,7 +69,7 @@ struct SpotLight
 };
 
 
-struct LightPointData
+struct SurfaceData
 {
     float3 f3CameraDir;
     float3 f3Normal;
@@ -53,79 +80,25 @@ struct LightPointData
     float fMetallic;
 };
 
-//VS    per render
-[[vk::binding(0,1)]]cbuffer cbSceneMatrix : register(b1)
+struct VoxelizerOutput
 {
-    float4x4 u_matView; // world to view
-    float4x4 u_matCamProj; // world to proj
-    float4x4 u_matCamProjInv; // proj to world
+    uint nBaseColor[4 * 6];
+    uint nVoxelCount[6];
 };
 
-//VS & PS    per render
-[[vk::binding(1,1)]]cbuffer cbSceneInformation : register(b2)
-{
-    float3 u_f3CameraPosition;
-    float3 u_f3CameraDirection;
 
-    float2 u_f2ViewportSize;
-    float2 u_matZNearFar;
-    float u_fDelta;
-    float u_fGameTime;
+struct VoxelClipmap
+{
+    float3 f3VoxelOrigin;       //voxel map origin position in world space.
+    float fVoxelSize;           //how much width does a voxel.
 };
 
-//[VS] PS    per render
-[[vk::binding(2,1)]]cbuffer cbLightInformation : register(b3)
+struct VoxelMapSetting
 {
-    DirectionLight u_xDirectionalLight;
-    PointLight u_vPointLights[MPOINT_LIGHT_MAX_NUMBER];
-    SpotLight u_vSpotLights[MSPOT_LIGHT_MAX_NUMBER];
-    int u_bDirectionLightEnabled;
-    int u_nValidPointLightsNumber;
-    int u_nValidSpotLightsNumber;
-    int u_bEnvironmentMapEnabled;
+    VoxelClipmap vClipmap[VOXEL_GI_CLIP_MAP_NUM];
+    uint nResolution;          //voxel table resolution.
+    uint nClipmapIdx;
 };
-
-[[vk::binding(3,1)]]cbuffer cbShadowInformation : register(b4)
-{
-    float4x4 u_vLightProjectionMatrix[CASCADED_SHADOW_MAP_NUM];
-    //x: cascade split max range
-    //y: x * 1.25f
-    //z: cascade ortho matrix width
-    //w: light position z in projection space.
-    float4 u_vCascadeSplits[CASCADED_SHADOW_MAP_NUM];   
-};
-
-//Sampler
-[[vk::binding(4,1)]]sampler LinearSampler;
-[[vk::binding(5,1)]]sampler NearestSampler;
-
-//Shadowmap
-[[vk::binding(6,1)]]Texture2DArray u_texShadowMap;
-
-//Environment
-[[vk::binding(7,1)]]TextureCube u_texIrradianceMap;
-[[vk::binding(8,1)]]TextureCube u_texPrefilterMap;
-[[vk::binding(9,1)]]Texture2D u_texBrdfLUT;
-
-//Animation
-[[vk::binding(10,1)]] StructuredBuffer<float4x4> u_vBonesMatrix;
-[[vk::binding(11,1)]] StructuredBuffer<int> u_vBonesOffset;
-
-//Transparent
-#ifdef MTRANSPARENT_DEPTH_PEELING
-[[vk::input_attachment_index(0)]] [[vk::binding(12, 1)]] SubpassInput u_texSubpassInput0;
-[[vk::input_attachment_index(1)]] [[vk::binding(13, 1)]] SubpassInput u_texSubpassInput1;
-#endif
-
-
-//Voxelizer
-[[vk::binding(14,1)]] cbuffer cbVoxelMap
-{
-    VoxelMapSetting voxelMapSetting;
-};
-
-[[vk::binding(15,1)]] RWStructuredBuffer<VoxelizerOutput> u_rwVoxelTable;
-
 
 
 #endif

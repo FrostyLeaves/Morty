@@ -10,11 +10,11 @@
 
 #include "Utility/MGlobal.h"
 #include "Resource/MResource.h"
-#include "Resource/MResource.h"
 #include "Resource/MTextureResource.h"
 
 #include "MShaderMacro.h"
 #include "MShaderBuffer.h"
+#include "Material/MShader.h"
 #include "Material/MShaderPropertyBlock.h"
 
 #include <vector>
@@ -25,8 +25,8 @@ public:
 	MTextureResourceParam();
 	MTextureResourceParam(const MShaderTextureParam& param);
 
-	virtual void SetTexture(std::shared_ptr<MTexture> pTexture) override;
-	virtual std::shared_ptr<MTexture> GetTexture() override;
+	void SetTexture(std::shared_ptr<MTexture> pTexture) override;
+	std::shared_ptr<MTexture> GetTexture() override;
 
 	void SetTexture(const std::shared_ptr<MTextureResource>& pTextureResource);
 	std::shared_ptr<MTextureResource> GetTextureResource() const { return m_TextureRef.GetResource<MTextureResource>(); }
@@ -52,29 +52,20 @@ public:
 
 public:
 	explicit MShaderProgram() = default;
-	explicit MShaderProgram(EUsage usage);
+	explicit MShaderProgram(MEngine* pEngine, EUsage usage);
 	~MShaderProgram() override;
 
 public:
-	static std::shared_ptr<MShaderProgram> MakeShared(EUsage usage);
+	static std::shared_ptr<MShaderProgram> MakeShared(MEngine* pEngine, EUsage usage);
 	void InitializeShaderPropertyBlock();
 public:
 
-	bool LoadVertexShader(MEngine* pEngine, std::shared_ptr<MResource> pResource);
-	bool LoadPixelShader(MEngine* pEngine, std::shared_ptr<MResource> pResource);
-	bool LoadComputeShader(MEngine* pEngine, std::shared_ptr<MResource> pResource);
+	bool LoadShader(std::shared_ptr<MResource> pResource);
 
-	bool LoadShaderResource(MEngine* pEngine, std::shared_ptr<MResource> pResource);
+	std::shared_ptr<MResource> GetShaderResource(MEShaderType eType) const { return m_shaders[size_t(eType)].resource.GetResource(); }
+	MShader* GetShader(MEShaderType eType) const { return m_shaders[size_t(eType)].pShader; }
 
-	std::shared_ptr<MResource> GetVertexShaderResource() const { return m_VertexResource.GetResource(); }
-	std::shared_ptr<MResource> GetPixelShaderResource() const { return m_PixelResource.GetResource(); }
-	std::shared_ptr<MResource> GetComputeShaderResource() const { return m_ComputeResource.GetResource(); }
-
-	MShader* GetVertexShader() const { return m_pVertexShader; }
-	MShader* GetPixelShader() const { return m_pPixelShader; }
-	MShader* GetComputeShader() const { return m_pComputeShader; }
-
-	void SetShaderMacro(const MShaderMacro& macro) { m_ShaderMacro = macro; }
+	void SetShaderMacro(const MShaderMacro& macro);
 	MShaderMacro& GetShaderMacro() { return m_ShaderMacro; }
 
 	const std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderPropertyBlocks() const { return m_vShaderSets; }
@@ -86,10 +77,10 @@ public:
 
 	std::shared_ptr<MShaderProgram> GetShared() const;
 
-	void BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderParamType& eType);
-	void UnbindShaderBuffer(MEngine* pEngine, const MEShaderParamType& eType);
+	void BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderType& eType);
+	void UnbindShaderBuffer(const MEShaderType& eType);
 
-	void ClearShader(MEngine* pEngine);
+	void ClearShader();
 	
 	static void CopyShaderParams(MEngine* pEngine, const std::shared_ptr<MShaderPropertyBlock>& target, const std::shared_ptr<const MShaderPropertyBlock>& source);
 
@@ -98,24 +89,25 @@ public:
 
 protected:
 
+	MEngine* GetEngine() const { return m_pEngine; }
+
     std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM> m_vShaderSets;
 	std::set<std::shared_ptr<MShaderPropertyBlock>> m_tShaderPropertyBlockInstance;
 
 	std::weak_ptr<MShaderProgram> m_pSelfPointer;
+
+
+	struct MShaderDesc
+	{
+		MResourceRef resource = {};
+		MShader* pShader = nullptr;
+		int nShaderIdx = 0;
+	};
+
+	std::array<MShaderDesc, size_t(MEShaderType::TOTAL_NUM)> m_shaders;
 	
-	MResourceRef m_VertexResource = MResourceRef();
-	MResourceRef m_PixelResource = MResourceRef();
-	MResourceRef m_ComputeResource = MResourceRef();
-
-	MShader* m_pVertexShader = nullptr;
-	MShader* m_pPixelShader = nullptr;
-	MShader* m_pComputeShader = nullptr;
-
-	int m_nVertexShaderIndex = 0;
-	int m_nPixelShaderIndex = 0;
-	int m_nComputeShaderIndex = 0;
-
 	MShaderMacro m_ShaderMacro;
+	MEngine* m_pEngine = nullptr;
 	EUsage m_eUsage = EUsage::EUnknow;
 
 };

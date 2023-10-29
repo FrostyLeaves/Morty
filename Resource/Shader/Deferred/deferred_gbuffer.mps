@@ -1,21 +1,9 @@
-#include "Internal/internal_constant.hlsl"
-#include "Internal/internal_functional.hlsl"
-#include "Internal/internal_model.hlsl"
-#include "Deferred/pbr_material.hlsl"
+#include "../Internal/internal_uniform_global.hlsl"
+#include "../Internal/internal_functional.hlsl"
+#include "../Internal/internal_uniform_model.hlsl"
+#include "../Lighting/pbr_uniform_material.hlsl"
+#include "../Model/universal_vsout.hlsl"
 
-struct VS_OUT
-{
-    float4 pos : SV_POSITION;
-    float2 uv : TEXCOORD;
-
-    float depth : DEPTH;
-    
-    float3 normal : NORMAL;
-    float3 tangent : Tangent;
-    float3 bitangent : BITANGENT;
-
-    float3 worldPos : WORLD_POS;
-};
 
 struct PS_OUT
 {

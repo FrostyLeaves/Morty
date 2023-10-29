@@ -21,6 +21,15 @@ class MShaderPropertyBlock;
 class MComputeDispatcher;
 class MMaterialPipelineLayoutData;
 
+enum class MEBufferBarrierStage
+{
+	EUnknow = 0,
+	EComputeShaderWrite,
+	EComputeShaderRead,
+	EPixelShaderWrite,
+	EPixelShaderRead,
+	EDrawIndirectRead,
+};
 
 struct MORTY_API MViewportInfo
 {
@@ -78,13 +87,14 @@ public:
 	virtual void DrawIndexedIndirect(const MBuffer* pVertexBuffer, const MBuffer* pIndexBuffer, const MBuffer* pCommandsBuffer, const size_t& offset, const size_t& count) = 0;
 
 	virtual bool SetUseMaterial(std::shared_ptr<MMaterial> pMaterial) = 0;
+	virtual bool SetGraphPipeline(std::shared_ptr<MMaterial> pMaterial) = 0;
 	virtual void SetShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) = 0;
 
 	virtual bool DispatchComputeJob(MComputeDispatcher* pMaterial, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ) = 0;
 
 	virtual bool AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures) = 0;
-	virtual bool AddComputeToGraphBarrier(const std::vector<const MBuffer*> vBuffers) = 0;
-	virtual bool AddGraphToComputeBarrier(const std::vector<const MBuffer*> vBuffers) = 0;
+	virtual bool AddBufferMemoryBarrier(const std::vector<const MBuffer*> vBuffers, MEBufferBarrierStage srcStage, MEBufferBarrierStage dstStage) = 0;
+
 	virtual bool DownloadTexture(MTexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback) = 0;
 	virtual bool CopyImageBuffer(MTexture* pSource, MTexture* pDest) = 0;
 	virtual void UpdateMipmaps(MTexture* pBuffer) = 0;

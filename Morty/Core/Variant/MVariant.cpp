@@ -31,20 +31,18 @@ void MVariant::ResetMemory(const std::shared_ptr<MVariantMemory>& pMemory, size_
 {
 	if (MEVariantType::EStruct == GetType())
 	{
-		if (m_pStruct)
-		{
-			m_pStruct->ResetMemory(pMemory, nOffset);
-		}
+		MORTY_ASSERT(m_pStruct);
+		m_pStruct->ResetMemory(pMemory, nOffset);
 	}
 	else if (MEVariantType::EArray == GetType())
 	{
+		MORTY_ASSERT(m_pArray);
 		m_pArray->ResetMemory(pMemory, nOffset);
 	}
-	else
-	{
-		m_pMemory = pMemory;
-		m_nOffset = nOffset;
-	}
+
+
+	m_pMemory = pMemory;
+	m_nOffset = nOffset;
 }
 
 mfbs::MVariantData EnumVariantToFb(MEVariantType eType)
@@ -299,13 +297,13 @@ MVariantStruct::MVariantStruct()
 
 }
 
-bool MVariantStruct::HasVariant(const MString& strName)
+bool MVariantStruct::HasVariant(const MStringId& strName)
 {
 	MORTY_ASSERT(m_bLocked);
 	return m_tMember.find(strName) != m_tMember.end();
 }
 
-MVariant& MVariantStruct::FindVariant(const MString& strName)
+MVariant& MVariantStruct::FindVariant(const MStringId& strName)
 {
 	MORTY_ASSERT(m_bLocked);
 	auto findResult = m_tMember.find(strName);
@@ -326,6 +324,7 @@ void MVariantStruct::ResetMemory(const std::shared_ptr<MVariantMemory>& pMemory,
 		MVariant& member = pr.second;
 		member.ResetMemory(pMemory, member.GetOffset() - m_nOffset + nOffset);
 	}
+	m_pMemory = pMemory;
 	m_nOffset = nOffset;
 }
 
@@ -358,6 +357,7 @@ void MVariantArray::ResetMemory(const std::shared_ptr<MVariantMemory>& pMemory, 
 	{
 		member.ResetMemory(pMemory, member.GetOffset() - m_nOffset + nOffset);
 	}
+	m_pMemory = pMemory;
 	m_nOffset = nOffset;
 }
 
@@ -443,7 +443,7 @@ flatbuffers::Offset<void> MVariantStruct::Serialize(flatbuffers::FlatBufferBuild
 
 	for(auto& pr : m_tMember)
 	{
-		const auto fbName = fbb.CreateString(pr.first);
+		const auto fbName = fbb.CreateString(pr.first.ToString());
 		const auto fbVariant = pr.second.Serialize(fbb);
 
 		mfbs::MStructMemberBuilder builder(fbb);
@@ -477,7 +477,7 @@ void MVariantStruct::Deserialize(const void* pBufferPointer, std::shared_ptr<MVa
 			//const auto fbVariant = reinterpret_cast<const mfbs::MVariant*>(fbMember->value());
 
 			const size_t nOffset = fbMember->relative_offset() + m_nOffset;
-			const MString strName = fbMember->name()->c_str();
+			const MStringId strName = MStringId(fbMember->name()->c_str());
 
 			MVariant variant(m_pMemory, nOffset, 0, MEVariantType::ENone);
 			variant.Deserialize(fbMember->value(), pMemory, nOffset);
@@ -536,4 +536,125 @@ void MVariantArray::Deserialize(const void* pBufferPointer, std::shared_ptr<MVar
 	}
 
 	m_bLocked = true;
+}
+
+
+
+TEST_CASE("variant complex struct test")
+{
+	/* root(struct)								offset: 0
+	    --node_1(struct)						offset: 0
+	        --add_offset(float)					offset: 0
+	        --node_2(array)						offset: 16
+	            --node_3_1(struct)				offset: 16
+	                --node_4_1(float)			offset: 16
+	                --node_4_2(vector2)			offset: 20
+	                --node_4_3(vector3)			offset: 32
+	            --node_3_2(struct)				offset: 48
+	                --node_4_1(float)			offset: 48
+	                --node_4_2(vector2)			offset: 52
+	                --node_4_3(vector3)			offset: 64
+	*/
+
+	MStringId name_node_1("node_1");
+	MStringId name_node_2("node_2");
+	MStringId name_node_4_1("node_4_1");
+	MStringId name_node_4_2("node_4_2");
+	MStringId name_node_4_3("node_4_3");
+
+	MVariantStruct node_3;
+	MVariantStructBuilder node_3_builder(node_3);
+	node_3_builder.AppendVariant(name_node_4_1, 1.0f);
+	node_3_builder.AppendVariant(name_node_4_2, Vector2(2.0f, 3.0f));
+	node_3_builder.AppendVariant(name_node_4_3, Vector3(4.0f, 5.0f, 6.0f));
+	node_3_builder.Finish();
+
+	MVariantArray node_2;
+	MVariantArrayBuilder node_2_builder(node_2);
+	node_2_builder.AppendVariant(node_3);
+	node_2_builder.AppendVariant(node_3);
+	node_2_builder.Finish();
+
+	MVariantStruct node_1;
+	MVariantStructBuilder node_1_builder(node_1);
+	node_1_builder.AppendVariant(name_node_2, node_2);
+	node_1_builder.Finish();
+
+	MVariantStruct root;
+	MVariantStructBuilder root_builder(root);
+	root_builder.AppendVariant(MStringId("add_offset"), 7.0f);
+	root_builder.AppendVariant(name_node_1, node_1);
+	root_builder.Finish();
+
+	MVariant rootVariant(root);
+
+	std::vector<MVariant> vTestGroup = {
+		rootVariant,
+		MVariant::Clone(rootVariant)
+	};
+
+	for (size_t nIdx = 0; nIdx < vTestGroup.size(); ++nIdx)
+	{
+		MVariant root = vTestGroup[nIdx];
+		auto& rootStruct = root.GetValue<MVariantStruct>();
+
+		MByte* rootData = root.GetData();
+
+		CHECK(rootStruct.Offset() == 0);
+		CHECK(rootStruct.Size() == 80);
+		CHECK(rootStruct.Data() - rootStruct.Offset() == rootData);
+
+		auto& get_node_1 = rootStruct.FindVariant(name_node_1).GetValue<MVariantStruct>();
+		CHECK(get_node_1.Offset() == 16);
+		CHECK(get_node_1.Size() == 64);
+		CHECK(get_node_1.Data() - get_node_1.Offset() == rootData);
+
+		auto& get_node_2 = get_node_1.FindVariant(name_node_2).GetValue<MVariantArray>();
+		CHECK(get_node_2.Offset() == 16);
+		CHECK(get_node_2.Size() == 64);
+		CHECK(get_node_2.Data() - get_node_2.Offset() == rootData);
+
+		auto& get_node_3_1 = get_node_2[0].GetValue<MVariantStruct>();
+		CHECK(get_node_3_1.Offset() == 16);
+		CHECK(get_node_3_1.Size() == 28);
+		CHECK(get_node_3_1.Data() - get_node_3_1.Offset() == rootData);
+
+		auto& get_node_3_1_4_1 = get_node_3_1.FindVariant(name_node_4_1);
+		CHECK(get_node_3_1_4_1.GetOffset() == 16);
+		CHECK(get_node_3_1_4_1.GetSize() == 4);
+		CHECK(get_node_3_1_4_1.GetData() - get_node_3_1_4_1.GetOffset() == rootData);
+
+
+		auto& get_node_3_1_4_2 = get_node_3_1.FindVariant(name_node_4_2);
+		CHECK(get_node_3_1_4_2.GetOffset() == 20);
+		CHECK(get_node_3_1_4_2.GetSize() == 8);
+		CHECK(get_node_3_1_4_2.GetData() - get_node_3_1_4_2.GetOffset() == rootData);
+
+		auto& get_node_3_1_4_3 = get_node_3_1.FindVariant(name_node_4_3);
+		CHECK(get_node_3_1_4_3.GetOffset() == 32);
+		CHECK(get_node_3_1_4_3.GetSize() == 12);
+		CHECK(get_node_3_1_4_3.GetData() - get_node_3_1_4_3.GetOffset() == rootData);
+
+
+		auto& get_node_3_2 = get_node_2[1].GetValue<MVariantStruct>();
+		CHECK(get_node_3_2.Offset() == 48);
+		CHECK(get_node_3_2.Size() == 28);
+		CHECK(get_node_3_2.Data() - get_node_3_2.Offset() == rootData);
+
+		auto& get_node_3_2_4_1 = get_node_3_2.FindVariant(name_node_4_1);
+		CHECK(get_node_3_2_4_1.GetOffset() == 48);
+		CHECK(get_node_3_2_4_1.GetSize() == 4);
+		CHECK(get_node_3_2_4_1.GetData() - get_node_3_2_4_1.GetOffset() == rootData);
+
+
+		auto& get_node_3_2_4_2 = get_node_3_2.FindVariant(name_node_4_2);
+		CHECK(get_node_3_2_4_2.GetOffset() == 52);
+		CHECK(get_node_3_2_4_2.GetSize() == 8);
+		CHECK(get_node_3_2_4_2.GetData() - get_node_3_2_4_2.GetOffset() == rootData);
+
+		auto& get_node_3_2_4_3 = get_node_3_2.FindVariant(name_node_4_3);
+		CHECK(get_node_3_2_4_3.GetOffset() == 64);
+		CHECK(get_node_3_2_4_3.GetSize() == 12);
+		CHECK(get_node_3_2_4_3.GetData() - get_node_3_2_4_3.GetOffset() == rootData);
+	}
 }

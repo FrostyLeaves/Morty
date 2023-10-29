@@ -1,16 +1,16 @@
-#include "Internal/internal_constant.hlsl"
+#include "../Internal/internal_uniform_global.hlsl"
 
-struct VS_OUTPUT
+struct VS_OUT
 {
     float4 pos : SV_POSITION;
     float3 uvw : UVW;
 };
 
-[[vk::binding(7,0)]]TextureCube SkyTexCube;
+[[vk::binding(7,0)]]TextureCube u_texSkyBox;
 
-float4 PS_MAIN(VS_OUTPUT input) : SV_Target
+float4 PS_MAIN(VS_OUT input) : SV_Target
 {
-    float4 color = SkyTexCube.Sample(LinearSampler, input.uvw);
+    float4 color = u_texSkyBox.Sample(LinearSampler, input.uvw);
     
     // HDR -> LDR
     //color.rgb = color.rgb / (color.rgb + float3(1.0, 1.0, 1.0));

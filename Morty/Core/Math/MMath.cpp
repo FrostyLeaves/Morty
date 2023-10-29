@@ -80,3 +80,14 @@ Vector3 MMath::ConvertFormSphericalCoord(const Vector3& pos)
 	fLength * cos(theta),
 	fLength * sin(theta) * sin(phi));
 }
+
+Vector3i MMath::Round(const Vector3 vec)
+{
+	return Vector3i(std::round(vec.x), std::round(vec.y), std::round(vec.z));
+}
+
+
+Vector3i MMath::Floor(const Vector3 vec)
+{
+	return Vector3i(std::floor(vec.x), std::floor(vec.y), std::floor(vec.z));
+}

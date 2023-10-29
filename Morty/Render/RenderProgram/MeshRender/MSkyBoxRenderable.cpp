@@ -13,9 +13,14 @@
 #include "Mesh/MMeshManager.h"
 #include "Manager/MEnvironmentManager.h"
 
-void MSkyBoxRenderable::SetScene(MScene* pScene)
+void MSkyBoxRenderable::SetMesh(MIMesh* pMesh)
 {
-	m_pScene = pScene;
+	m_pMesh = pMesh;
+}
+
+void MSkyBoxRenderable::SetMaterial(const std::shared_ptr<MMaterial>& pMaterial)
+{
+	m_pMaterial = pMaterial;
 }
 
 void MSkyBoxRenderable::SetFramePropertyBlockAdapter(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter)
@@ -25,32 +30,23 @@ void MSkyBoxRenderable::SetFramePropertyBlockAdapter(const std::shared_ptr<IProp
 
 void MSkyBoxRenderable::Render(MIRenderCommand* pCommand)
 {
-	if (!m_pScene)
+	if (!m_pMesh)
 	{
-		MORTY_ASSERT(m_pScene);
+		MORTY_ASSERT(m_pMesh);
 		return;
 	}
 
-	const MMeshManager* pMeshManager = m_pScene->GetEngine()->FindGlobalObject<MMeshManager>();
-	const MEnvironmentManager* pEnvironment = m_pScene->GetManager<MEnvironmentManager>();
-
-	if (!pEnvironment->HasEnvironmentComponent())
+	if (!m_pMaterial)
 	{
+		MORTY_ASSERT(m_pMaterial);
 		return;
 	}
 
-	const auto pMaterial = pEnvironment->GetMaterial();
-	if (!pMaterial)
-	{
-		MORTY_ASSERT(pMaterial);
-		return;
-	}
-
-	pCommand->SetUseMaterial(pMaterial);
+	pCommand->SetUseMaterial(m_pMaterial);
 
 	const auto property = m_pFramePropertyAdapter->GetPropertyBlock();
 	
 	pCommand->SetShaderPropertyBlock(property);
-	pCommand->DrawMesh(pMeshManager->GetSkyBox());
+	pCommand->DrawMesh(m_pMesh);
 
 }

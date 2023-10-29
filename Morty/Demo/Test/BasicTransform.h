@@ -18,20 +18,20 @@ void TRANSFORM_SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 
 	std::shared_ptr<MMaterialResource> pForwardMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	{
-		pForwardMaterial->LoadVertexShader("Shader/Forward/model.mvs");
-		pForwardMaterial->LoadPixelShader("Shader/Forward/model.mps");
+		pForwardMaterial->LoadShader("Shader/Model/universal_model.mvs");
+		pForwardMaterial->LoadShader("Shader/Forward/basic_lighting.mps");
 		pForwardMaterial->SetMaterialType(MEMaterialType::EDefault);
 
-		pForwardMaterial->GetMaterialPropertyBlock()->SetValue("f3Ambient", Vector3(1.0f, 1.0f, 1.0f));
-		pForwardMaterial->GetMaterialPropertyBlock()->SetValue("f3Diffuse", Vector3(1.0f, 1.0f, 1.0f));
-		pForwardMaterial->GetMaterialPropertyBlock()->SetValue("f3Specular", Vector3(1.0f, 1.0f, 1.0f));
-		pForwardMaterial->GetMaterialPropertyBlock()->SetValue("fAlphaFactor", 1.0f);
-		pForwardMaterial->GetMaterialPropertyBlock()->SetValue("fShininess", 32.0f);
+		pForwardMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_AMBIENT, Vector3(1.0f, 1.0f, 1.0f));
+		pForwardMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_DIFFUSE, Vector3(1.0f, 1.0f, 1.0f));
+		pForwardMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_SPECULAR, Vector3(1.0f, 1.0f, 1.0f));
+		pForwardMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ALPHA_FACTOR, 1.0f);
+		pForwardMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_SHININESS, 32.0f);
 
 		std::shared_ptr<MResource> diffuse = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
 		std::shared_ptr<MResource> normal = pResourceSystem->LoadResource(MRenderModule::DefaultNormal);
-		pForwardMaterial->SetTexture("u_texDiffuse", diffuse);
-		pForwardMaterial->SetTexture("u_texNormal", normal);
+		pForwardMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_DIFFUSE, diffuse);
+		pForwardMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_NORMAL, normal);
 	}
 
 	std::shared_ptr<MMeshResource> pCubeResource = pResourceSystem->CreateResource<MMeshResource>();

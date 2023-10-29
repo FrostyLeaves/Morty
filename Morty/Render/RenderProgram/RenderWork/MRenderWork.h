@@ -113,7 +113,7 @@ public:
 
     virtual void Initialize(MEngine* pEngine) = 0;
     virtual void Release(MEngine* pEngine) = 0;
-    virtual void Resize(Vector2 size) = 0;
+    virtual void Resize(Vector2i size) = 0;
 
 
 };

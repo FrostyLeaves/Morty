@@ -4,8 +4,8 @@
 
 flatbuffers::Offset<void> MMaterialResourceData::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	const auto fbVertexShader = fbb.CreateString(vertexShader);
-	const auto fbPixelShader = fbb.CreateString(pixelShader);
+	const auto fbVertexShader = fbb.CreateString(vShaders[size_t(MEShaderType::EVertex)]);
+	const auto fbPixelShader = fbb.CreateString(vShaders[size_t(MEShaderType::EPixel)]);
 	const auto fbMacro = shaderMacro.Serialize(fbb);
 
 
@@ -57,13 +57,14 @@ void MMaterialResourceData::Deserialize(const void* pBufferPointer)
 	eCullMode = static_cast<MECullMode>(fbData->rasterizer_type());
 
 	shaderMacro.Deserialize(fbData->material_macro());
+
 	if (fbData->vertex_resource())
 	{
-		vertexShader = fbData->vertex_resource()->str();
+		vShaders[size_t(MEShaderType::EVertex)] = fbData->vertex_resource()->str();
 	}
 	if (fbData->pixel_resource())
 	{
-		pixelShader = fbData->pixel_resource()->str();
+		vShaders[size_t(MEShaderType::EPixel)] = fbData->pixel_resource()->str();
 	}
 
 	if (fbData->material_property())

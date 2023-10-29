@@ -47,32 +47,41 @@ void MTextureResource::OnDelete()
 
 	m_pResourceData = nullptr;
 
-	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+	const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 	m_pTexture->DestroyBuffer(pRenderSystem->GetDevice());
 }
 
 bool MTextureResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 {
-	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+	const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
 	auto pTextureData = static_cast<MTextureResourceData*>(pResourceData.get());
 	m_pTexture->SetName(pTextureData->strTextureName);
-	m_pTexture->SetSize(Vector2(pTextureData->nWidth, pTextureData->nHeight));
+	m_pTexture->SetSize(Vector2i(pTextureData->nWidth, pTextureData->nHeight));
 	m_pTexture->SetImageLayerNum(pTextureData->nImageLayerNum);
 	m_pTexture->SetTextureType(pTextureData->eTextureType);
 	m_pTexture->SetTextureLayout(GetTextureLayout(pTextureData->nChannel, pTextureData->ePixelFormat));
 	m_pTexture->GenerateBuffer(pRenderSystem->GetDevice(), pTextureData->aByteData.data());
 
-	m_pResourceData = std::move(pResourceData);
+	if (m_bReadable)
+	{
+		m_pResourceData = std::move(pResourceData);
+	}
 
 	return true;
 }
 
 bool MTextureResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 {
-	pResourceData = std::make_unique<MTextureResourceData>(*static_cast<MTextureResourceData*>(m_pResourceData.get()));
+	MORTY_ASSERT(m_pResourceData);
 
-	return true;
+	if (m_pResourceData)
+	{
+	    pResourceData = std::make_unique<MTextureResourceData>(*static_cast<MTextureResourceData*>(m_pResourceData.get()));
+		return true;
+	}
+
+	return false;
 }
 
 void MTextureResource::CreateCubeMapRenderTarget(const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, const METextureLayout& eLayout, const bool& bMipmapEnable)
@@ -85,7 +94,7 @@ void MTextureResource::CreateCubeMapRenderTarget(const uint32_t& nWidth, const u
 	m_pTexture->SetName("CubeMapRenderTarget");
 	m_pTexture->SetReadable(true);
 	m_pTexture->SetTextureLayout(eLayout);
-	m_pTexture->SetSize(Vector2(nWidth, nHeight));
+	m_pTexture->SetSize(Vector2i(nWidth, nHeight));
 	m_pTexture->SetRenderUsage(METextureRenderUsage::ERenderBack);
 	m_pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
 	m_pTexture->SetTextureType(METextureType::ETextureCube);
@@ -136,8 +145,14 @@ size_t MTextureResource::GetHeight() const
 
 const MByte* MTextureResource::GetRawData() const
 {
-	auto ptr = static_cast<MTextureResourceData*>(m_pResourceData.get());
-	return ptr->aByteData.data();
+	MORTY_ASSERT(m_pResourceData);
+
+	if (auto ptr = static_cast<MTextureResourceData*>(m_pResourceData.get()))
+	{
+		return ptr->aByteData.data();
+	}
+
+	return nullptr;
 }
 
 METextureLayout MTextureResource::GetTextureLayout(const uint32_t& nChannel, const MTexturePixelFormat& format)
@@ -202,6 +217,7 @@ void MTextureResourceData::Deserialize(const void* pBufferPointer)
     auto pData = fbData->data();
 	aByteData.resize(pData->size());
 	memcpy(aByteData.data(), pData->data(), pData->size());
+
 }
 
 MTextureImportInfo::MTextureImportInfo()
@@ -219,10 +235,10 @@ const MType* MTextureResourceLoader::ResourceType() const
 	return MTextureResource::GetClassType();
 }
 
-std::unique_ptr<MResourceData> MTextureResourceLoader::LoadResource(const MString& svFullPath, const MString& svPath)
+std::unique_ptr<MResourceData> MTextureResourceLoader::LoadResource(const MString& svFullPath)
 {
 	//m_strResourcePath = strResourcePath;
-	if ("mtex" == MResource::GetSuffix(svPath))
+	if ("mtex" == MResource::GetSuffix(svFullPath))
 	{
 		std::unique_ptr<MTextureResourceData> pResourceData = std::make_unique<MTextureResourceData>();
 		std::vector<MByte> data;
@@ -232,7 +248,7 @@ std::unique_ptr<MResourceData> MTextureResourceLoader::LoadResource(const MStrin
 		fbb.PushBytes((const uint8_t*)data.data(), data.size());
 
 		pResourceData->Deserialize(fbb.GetCurrentBufferPointer());
-		pResourceData->strTextureName = svPath;
+		pResourceData->strTextureName = svFullPath;
 		return pResourceData;
 	}
 	else

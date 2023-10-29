@@ -64,7 +64,7 @@ void MCascadedShadowCulling::Culling(const std::vector<MMaterialBatchGroup*>& vI
 	{
 		//int nIndirectBeginIdx = vDrawIndirectData.size();
 		const auto pMeshProperty = pInstanceBatchGroup->GetMeshProperty();
-		pMeshProperty->SetValue("u_meshInstanceBeginIndex", 0);
+		pMeshProperty->SetValue(MShaderPropertyName::MESH_INSTANCE_BEGIN_INDEX, 0);
 
 		m_vCullingInstanceGroup.push_back({});
 		MMaterialCullingGroup* pMaterialCullingGroup = &m_vCullingInstanceGroup.back();

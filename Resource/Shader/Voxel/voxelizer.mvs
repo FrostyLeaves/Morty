@@ -1,13 +1,5 @@
 #include "voxelizer_header.hlsl"
-
-
-struct VS_OUT
-{
-    float4 pos : SV_POSITION;
-	float3 normal : NORMAL;
-    float3 worldPos : WORLD_POSITION;
-};
-
+#include "../Model/universal_vsout.hlsl"
 
 VS_OUT VS_MAIN(VS_IN input, uint INSTANCE_ID : SV_InstanceID)
 {
@@ -15,9 +7,13 @@ VS_OUT VS_MAIN(VS_IN input, uint INSTANCE_ID : SV_InstanceID)
 
 	float4 vertexPos = getModelVertexPosition(input, INSTANCE_ID);
     float4 worldPos = mul(vertexPos, MESH_WORLD_MATRIX);
-    
-    output.pos = mul(worldPos, u_matCamProj);
+
+    output.pos = mul(worldPos, u_m4VoxelizerCamProj);
+    output.uv = input.uv;
+    output.depth = output.pos.z;
 	output.normal = normalize(mul(input.normal, MESH_NORMAL_MATRIX));
+    output.tangent = normalize(mul(input.tangent, MESH_NORMAL_MATRIX));
+    output.bitangent = normalize(cross(output.tangent, output.normal));
     output.worldPos = worldPos.xyz;
 
 	return output;

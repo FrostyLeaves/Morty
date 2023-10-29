@@ -61,13 +61,13 @@ void MRenderSystem::Release()
 	}
 }
 
-void MRenderSystem::ResizeFrameBuffer(MRenderPass& renderpass, const Vector2& v2Size)
+void MRenderSystem::ResizeFrameBuffer(MRenderPass& renderpass, const Vector2i& n2Size)
 {
 	for (MRenderTarget& tex : renderpass.m_vBackTextures)
 	{
-		if (tex.pTexture->GetSize() != v2Size)
+		if (tex.pTexture->GetSize2D() != n2Size)
 		{
-			tex.pTexture->SetSize(v2Size);
+			tex.pTexture->SetSize(n2Size);
 			tex.pTexture->DestroyBuffer(GetDevice());
 			tex.pTexture->GenerateBuffer(GetDevice());
 		}
@@ -75,15 +75,15 @@ void MRenderSystem::ResizeFrameBuffer(MRenderPass& renderpass, const Vector2& v2
 
 	if (std::shared_ptr<MTexture> pDepthTexture = renderpass.GetDepthTexture())
 	{
-		if (pDepthTexture->GetSize() != v2Size)
+		if (pDepthTexture->GetSize2D() != n2Size)
 		{
-			pDepthTexture->SetSize(v2Size);
+			pDepthTexture->SetSize(n2Size);
 			pDepthTexture->DestroyBuffer(GetDevice());
 			pDepthTexture->GenerateBuffer(GetDevice());
 		}
 	}
 
-	if (renderpass.GetFrameBufferSize() != v2Size)
+	if (renderpass.GetFrameBufferSize() != n2Size)
 	{
 		renderpass.Resize(GetDevice());
 	}
@@ -140,15 +140,24 @@ Matrix4 MRenderSystem::GetCameraProjectionMatrix(const MViewport* pViewport, con
 
 Matrix4 MRenderSystem::GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent)
 {
-	return GetCameraInverseProjection(pViewport, pCameraComponent, pSceneComponent, pCameraComponent->GetZNear(), pCameraComponent->GetZFar());
-
+	return GetCameraInverseProjection(pCameraComponent
+		, pSceneComponent
+		, pViewport->GetSize().x
+		, pViewport->GetSize().y
+		, pCameraComponent->GetZNear()
+		, pCameraComponent->GetZFar()
+	);
 }
 
-Matrix4 MRenderSystem::GetCameraInverseProjection(const MViewport* pViewport, const MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent, float fZNear, float fZFar)
+Matrix4 MRenderSystem::GetCameraInverseProjection(const MCameraComponent* pCameraComponent
+	, MSceneComponent* pSceneComponent
+	, float fViewWidth, float fViewHeight
+	, float fZNear, float fZFar
+	)
 {
 	//Update Camera and Projection Matrix.
 	Matrix4 m4Projection = pCameraComponent->GetCameraType() == MCameraComponent::MECameraType::EPerspective
-		? MRenderSystem::MatrixPerspectiveFovLH(pCameraComponent->GetFov() * 0.5f, pViewport->GetSize().x / pViewport->GetSize().y, fZNear, fZFar)
+		? MRenderSystem::MatrixPerspectiveFovLH(pCameraComponent->GetFov() * 0.5f, fViewWidth / fViewHeight, fZNear, fZFar)
 		: MRenderSystem::MatrixOrthoOffCenterLH(-pCameraComponent->GetWidth() * 0.5f, pCameraComponent->GetWidth() * 0.5f, pCameraComponent->GetHeight() * 0.5f, -pCameraComponent->GetHeight() * 0.5f, fZNear, fZFar);
 
 	m4Projection = m4Projection * pSceneComponent->GetWorldTransform().Inverse();
@@ -157,13 +166,13 @@ Matrix4 MRenderSystem::GetCameraInverseProjection(const MViewport* pViewport, co
 
 }
 
-void MRenderSystem::GetCameraFrustumPoints(MEntity* pCamera, const Vector2& v2ViewportSize, const float& fZNear, const float& fZFar, std::vector<Vector3>& vPoints)
+void MRenderSystem::GetCameraFrustumPoints(MEntity* pCamera, const Vector2i& v2ViewportSize, const float& fZNear, const float& fZFar, std::vector<Vector3>& vPoints)
 {
 	GetCameraFrustumPoints(pCamera, v2ViewportSize, fZNear, fZFar, vPoints[0], vPoints[1], vPoints[2], vPoints[3], vPoints[4], vPoints[5], vPoints[6], vPoints[7]);
 }
 
 void MRenderSystem::GetCameraFrustumPoints(MEntity* pCamera
-	, const Vector2& v2ViewportSize
+	, const Vector2i& v2ViewportSize
 	, const float& fZNear, const float& fZFar
 	, Vector3& v3NearTopLeft, Vector3& v3NearTopRight
 	, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft
@@ -181,9 +190,9 @@ void MRenderSystem::GetCameraFrustumPoints(MEntity* pCamera
 
 	if (MCameraComponent::MECameraType::EPerspective == pCameraComponent->GetCameraType())
 	{
-		float fAspect = v2ViewportSize.x / v2ViewportSize.y;
-		float fHalfHeightDivideZ = (pCameraComponent->GetFov() * 0.5f * M_PI / 180.0f);
-		float fHalfWidthDivideZ = fHalfHeightDivideZ * fAspect;
+		const float fAspect = float(v2ViewportSize.x) / float(v2ViewportSize.y);
+		const float fHalfHeightDivideZ = (pCameraComponent->GetFov() * 0.5f * M_PI / 180.0f);
+		const float fHalfWidthDivideZ = fHalfHeightDivideZ * fAspect;
 
 		Matrix4 localToWorld = pSceneComponent->GetWorldTransform();
 

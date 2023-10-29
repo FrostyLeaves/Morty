@@ -51,7 +51,7 @@ void SceneTexture::Initialize(MScene* pScene, const MString& strRenderProgram)
 	
 	m_pRenderViewport = pObjectSystem->CreateObject<MViewport>();
 	m_pRenderViewport->SetScene(m_pScene);
-	m_pRenderViewport->SetSize(Vector2(256, 256));
+	m_pRenderViewport->SetSize(Vector2i(256, 256));
 
 	MEntity* pDefaultCamera = m_pScene->CreateEntity();
 
@@ -124,7 +124,7 @@ void SceneTexture::Release()
 	m_vRenderProgram.clear();
 }
 
-void SceneTexture::SetRect(Vector2 pos, Vector2 size)
+void SceneTexture::SetRect(Vector2i pos, Vector2i size)
 {
 	m_pRenderViewport->SetScreenPosition(pos);
 	m_pRenderViewport->SetSize(size);

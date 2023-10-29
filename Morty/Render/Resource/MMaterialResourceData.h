@@ -25,8 +25,8 @@ struct MORTY_API MMaterialResourceData : public MFbResourceData
 	};
 
 	//RawData
-	MPath vertexShader;
-	MPath pixelShader;
+	std::array<MPath, size_t(MEShaderType::TOTAL_NUM)> vShaders;
+
 	MShaderMacro shaderMacro;
 	MEMaterialType eMaterialType;
 	MECullMode eCullMode;

@@ -57,13 +57,13 @@ void MRenderPass::Resize(MIDevice* pDevice)
 	pDevice->GenerateFrameBuffer(this);
 }
 
-Vector2 MRenderPass::GetFrameBufferSize()
+Vector2i MRenderPass::GetFrameBufferSize() const
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
-	return Vector2(m_vkExtent2D.width, m_vkExtent2D.height);
+	return Vector2i(m_vkExtent2D.width, m_vkExtent2D.height);
 #endif
 
-	return Vector2();
+	return Vector2i();
 }
 
 void MRenderPass::AddBackTexture(const MRenderTarget& backTexture)

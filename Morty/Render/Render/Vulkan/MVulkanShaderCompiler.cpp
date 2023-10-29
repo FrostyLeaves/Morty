@@ -99,6 +99,9 @@ public:
 
 	IncludeResult* includeSystem(const char* headerName, const char* includerName, size_t inclusionDepth) override
 	{
+		MORTY_UNUSED(includerName);
+		MORTY_UNUSED(inclusionDepth);
+
 		MString* pCode = new MString();
 		if (!MFileHelper::ReadString(headerName, *pCode))
 			return nullptr;
@@ -110,8 +113,10 @@ public:
 
 	IncludeResult* includeLocal(const char* headerName, const char* includerName, size_t inclusionDepth) override
 	{
+		MORTY_UNUSED(includerName);
+		MORTY_UNUSED(inclusionDepth);
+
 		MString* pCode = new MString();
-        
         for (auto strLocalFolder : m_vSearchPath)
         {
             if (MFileHelper::ReadString(strLocalFolder + headerName, *pCode))
@@ -205,28 +210,28 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 	ConvertMacro(macro, UserPreamble);
 	if (UserPreamble.IsValid())
 	{
-		for (const std::pair<MString, MString>& m : macro.s_vGlobalMacroParams)
+		for (const auto& m : macro.s_vGlobalMacroParams)
 		{
 			if(m.second.empty())
-				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first));
+				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first.ToString()));
 			else
-				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first + "=" + m.second));
+				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first.ToString() + "=" + m.second));
 		}
 
-		for (const std::pair<MString, MString>& m : macro.m_vMortyMacroParams)
+		for (const auto& m : macro.m_vMortyMacroParams)
 		{
 			if (m.second.empty())
-				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first));
+				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first.ToString()));
 			else
-				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first + "=" + m.second));
+				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first.ToString() + "=" + m.second));
 		}
 
-		for (const std::pair<MString, MString>& m : macro.m_vMacroParams)
+		for (const auto& m : macro.m_vMacroParams)
 		{
 			if (m.second.empty())
-				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first));
+				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first.ToString()));
 			else
-				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first + "=" + m.second));
+				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first.ToString() + "=" + m.second));
 		}
 	}
 
@@ -458,28 +463,37 @@ TBuiltInResource* GlslangDefaultResources()
 
 bool MVulkanShaderCompiler::CompileHlslShader(const MString& strShaderPath, const MEShaderType& eShaderType, const MShaderMacro& macro, std::vector<uint32_t>& vSpirv)
 {
-	glslang::TProgram program;
 
-	EShLanguage eLanguageType;
-	MString strSuffix = MResource::GetSuffix(strShaderPath);
-	if (strSuffix == "mvs")
-	{
-		eLanguageType = EShLangVertex;
-	}
-	else if (strSuffix == "mps")
-	{
-		eLanguageType = EShLangFragment;
-	}
-	else if (strSuffix == "mcs")
-	{
-		eLanguageType = EShLangCompute;
-	}
-	else
+	static std::map<MEShaderType, EShLanguage> ShaderTypeTable = {
+		{ MEShaderType::EVertex, EShLangVertex},
+		{ MEShaderType::EPixel, EShLangFragment},
+		{ MEShaderType::ECompute, EShLangCompute},
+		{ MEShaderType::EGeometry, EShLangGeometry},
+	};
+
+	static std::map<MEShaderType, MString> ShaderEntryTable = {
+		{ MEShaderType::EVertex, "VS_MAIN"},
+		{ MEShaderType::EPixel, "PS_MAIN"},
+		{ MEShaderType::ECompute, "CS_MAIN"},
+		{ MEShaderType::EGeometry, "GS_MAIN"},
+	};
+
+	if (ShaderTypeTable.find(eShaderType) == ShaderTypeTable.end())
 	{
 		MORTY_ASSERT(false);
 		return false;
 	}
 
+	if (ShaderEntryTable.find(eShaderType) == ShaderEntryTable.end())
+	{
+		MORTY_ASSERT(false);
+		return false;
+	}
+
+
+	glslang::TProgram program;
+
+	EShLanguage eLanguageType = ShaderTypeTable[eShaderType];
 	glslang::TShader shader(eLanguageType);
 
 	MString strShaderCode;
@@ -489,23 +503,7 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& strShaderPath, cons
 	const char* svShaderCode = strShaderCode.c_str();
 	const char* svShaderPath = strShaderPath.c_str();
 	shader.setStringsWithLengthsAndNames(&svShaderCode, NULL, &svShaderPath, 1);
-
-	if (EShLangVertex == eLanguageType)
-	{
-		shader.setEntryPoint("VS_MAIN");
-	}
-	else if (EShLangFragment == eLanguageType)
-	{
-		shader.setEntryPoint("PS_MAIN");
-	}
-	else if (EShLangCompute == eLanguageType)
-	{
-		shader.setEntryPoint("CS_MAIN");
-	}
-	else
-	{
-		MORTY_ASSERT(false);
-	}
+	shader.setEntryPoint(ShaderEntryTable[eShaderType].c_str());
 
 	MPreamble UserPreamble;
 	ConvertMacro(macro, UserPreamble);
@@ -550,8 +548,6 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& strShaderPath, cons
 	
 	if (!shader.parse(GlslangDefaultResources(), 120, false, messages, includer))
 	{
-		const char* a = shader.getInfoLog();
-		const char* b = shader.getInfoDebugLog();
 		m_pDevice->GetEngine()->GetLogger()->Error("{}\n\n\n{}", MString(shader.getInfoLog()).c_str(), MString(shader.getInfoDebugLog()).c_str());
 		return false;
 	}
@@ -587,14 +583,14 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& strShaderPath, cons
 
 void MVulkanShaderCompiler::ConvertMacro(const MShaderMacro& macro, MPreamble& preamble)
 {
-	for (const std::pair<MString, MString>& m : macro.s_vGlobalMacroParams)
-		preamble.AddDef(m.first, m.second);
+	for (const auto& m : macro.s_vGlobalMacroParams)
+		preamble.AddDef(m.first.ToString(), m.second);
 	
-	for (const std::pair<MString, MString>& m : macro.m_vMortyMacroParams)
-		preamble.AddDef(m.first, m.second);
+	for (const auto& m : macro.m_vMortyMacroParams)
+		preamble.AddDef(m.first.ToString(), m.second);
 
-	for (const std::pair<MString, MString>& m : macro.m_vMacroParams)
-		preamble.AddDef(m.first, m.second);
+	for (const auto& m : macro.m_vMacroParams)
+		preamble.AddDef(m.first.ToString(), m.second);
 }
 
 MPreamble::MPreamble()

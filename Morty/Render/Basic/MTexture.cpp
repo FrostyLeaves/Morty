@@ -4,7 +4,7 @@
 
 MTexture::MTexture()
 	: m_strTextureName("Texture_Default")
-	, m_v2Size(1.0, 1.0)
+	, m_n3Size(1, 1, 1)
 	, m_eRenderType(METextureLayout::ERGBA_UNORM_8)
 	, m_eRenderUsage(METextureRenderUsage::EUnknow)
 	, m_eShaderUsage(METextureShaderUsage::EUnknow)
@@ -170,6 +170,21 @@ std::shared_ptr<MTexture> MTexture::CreateCubeMap()
 	pTexture->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
 	pTexture->SetTextureType(METextureType::ETextureCube);
 	pTexture->SetImageLayerNum(6);
+
+	return pTexture;
+}
+
+std::shared_ptr<MTexture> MTexture::CreateVXGIMap()
+{
+	std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
+	pTexture->SetName("VXGI Texture");
+	pTexture->SetMipmapsEnable(false);
+	pTexture->SetReadable(false);
+	pTexture->SetRenderUsage(METextureRenderUsage::EUnknow);
+	pTexture->SetShaderUsage(METextureShaderUsage::ESampler | METextureShaderUsage::EStorage);
+	pTexture->SetTextureLayout(METextureLayout::ERGBA_FLOAT_32);
+	pTexture->SetTextureType(METextureType::ETexture3D);
+	pTexture->SetImageLayerNum(1);
 
 	return pTexture;
 }

@@ -133,23 +133,23 @@ void MAnimationRenderGroup::Initialize(MEngine* pEngine)
 
 	auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
   
-	std::shared_ptr<MResource> pMeshVSResource = pResourceSystem->LoadResource("Shader/Deferred/model_gbuffer.mvs");
-	std::shared_ptr<MResource> pMeshPSResource = pResourceSystem->LoadResource("Shader/Deferred/model_gbuffer.mps");
+	std::shared_ptr<MResource> pMeshVSResource = pResourceSystem->LoadResource("Shader/Model/universal_model.mvs");
+	std::shared_ptr<MResource> pMeshPSResource = pResourceSystem->LoadResource("Shader/Deferred/deferred_gbuffer.mps");
 	
 	std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-	pMaterial->GetShaderMacro().SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, "1");
-	pMaterial->LoadVertexShader(pMeshVSResource);
-	pMaterial->LoadPixelShader(pMeshPSResource);
+	pMaterial->GetShaderMacro().SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+	pMaterial->LoadShader(pMeshVSResource);
+	pMaterial->LoadShader(pMeshPSResource);
 
 	if (std::shared_ptr<MShaderPropertyBlock> pTemplatePropertyBlock = pMaterial->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MESH])
 	{
 		m_pShaderPropertyBlock = pTemplatePropertyBlock->Clone();
-		if (auto pBoneProperty = m_pShaderPropertyBlock->FindStorageParam("u_vBonesMatrix"))
+		if (auto pBoneProperty = m_pShaderPropertyBlock->FindStorageParam(MShaderPropertyName::STORAGE_BONES_MATRIX))
 		{
 			pBoneProperty->pBuffer = &m_bonesStorageBuffer.buffer;
 		}
 
-		if (auto pBoneOffset = m_pShaderPropertyBlock->FindStorageParam("u_vBonesOffset"))
+		if (auto pBoneOffset = m_pShaderPropertyBlock->FindStorageParam(MShaderPropertyName::STORAGE_BONES_OFFSET))
 		{
 			pBoneOffset->pBuffer = &m_bonesOffsetBuffer.buffer;
 		}

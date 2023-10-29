@@ -1,4 +1,4 @@
-#include "Internal/internal_functional.hlsl"
+#include "../Internal/internal_functional.hlsl"
 
 struct VS_INPUT
 {
@@ -7,7 +7,7 @@ struct VS_INPUT
     float4 u32Color : u32COLOR;
 };
 
-struct VS_OUTPUT
+struct VS_OUT
 {
     float4 pos : SV_POSITION;
     float2 uv : TEXCOORD;
@@ -20,9 +20,9 @@ struct VS_OUTPUT
     float2 u_f2Translate;
 };
 
-VS_OUTPUT VS_MAIN( VS_INPUT input)
+VS_OUT VS_MAIN( VS_INPUT input)
 {
-    VS_OUTPUT output;
+    VS_OUT output;
 
     output.pos = float4(input.pos * u_f2Scale + u_f2Translate, 0.0f, 1.0f);
     output.uv = input.uv;

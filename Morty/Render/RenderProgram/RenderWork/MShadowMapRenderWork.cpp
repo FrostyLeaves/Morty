@@ -52,8 +52,8 @@ void MShadowMapRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 
 	pCommand->BeginRenderPass(&m_renderPass);
 
-	Vector2 v2LeftTop = Vector2(0.0f, 0.0f);
-	Vector2 v2Size = pShadowmap->GetSize();
+	const Vector2i v2LeftTop = Vector2i(0, 0);
+	const Vector2i v2Size = pShadowmap->GetSize2D();
 	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
 	pCommand->SetScissor(MScissorInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
 
@@ -65,7 +65,7 @@ void MShadowMapRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 	pCommand->EndRenderPass();
 }
 
-void MShadowMapRenderWork::Resize(Vector2 size)
+void MShadowMapRenderWork::Resize(Vector2i size)
 {
 	MORTY_UNUSED(size);
     //Shadow map can`t resize.

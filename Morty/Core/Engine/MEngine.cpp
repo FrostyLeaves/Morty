@@ -32,6 +32,8 @@ bool MEngine::Initialize()
 
 void MEngine::Release()
 {
+	//wait for all thread task finished.
+	m_threadPool.Release();
 
 	for (auto& pSystem : m_vSystem)
 	{
@@ -45,7 +47,6 @@ void MEngine::Release()
 
 	delete m_pMainTaskGraph;
 	m_pMainTaskGraph = nullptr;
-	m_threadPool.Release();
 }
 
 void MEngine::Start()

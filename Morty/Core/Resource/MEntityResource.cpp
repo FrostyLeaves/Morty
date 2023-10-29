@@ -52,10 +52,8 @@ const MType* MEntityResourceLoader::ResourceType() const
 	return MEntityResource::GetClassType();
 }
 
-std::unique_ptr<MResourceData> MEntityResourceLoader::LoadResource(const MString& svFullPath, const MString& svPath)
+std::unique_ptr<MResourceData> MEntityResourceLoader::LoadResource(const MString& svFullPath)
 {
-	MORTY_UNUSED(svPath);
-	
 	auto pResourceData = std::make_unique<MEntityResourceData>();
 
 	if (!MFileHelper::ReadData(svFullPath, pResourceData->aEntityData))

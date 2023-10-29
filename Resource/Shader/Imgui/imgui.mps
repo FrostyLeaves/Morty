@@ -1,4 +1,4 @@
-struct VS_OUTPUT
+struct VS_OUT
 {
     float4 pos : SV_POSITION;
     float2 uv : TEXCOORD;
@@ -17,7 +17,7 @@ struct VS_OUTPUT
 
 
 
-float4 PS_MAIN( VS_OUTPUT input) : SV_Target
+float4 PS_MAIN( VS_OUT input) : SV_Target
 {
 
     if (u_nImageArray == 0)

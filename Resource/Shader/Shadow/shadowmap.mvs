@@ -1,4 +1,4 @@
-#include "Internal/internal_model.hlsl"
+#include "../Internal/internal_uniform_model.hlsl"
 
 
 //VS    per render
@@ -7,14 +7,14 @@
     float4x4 u_matLightSpaceProj[CASCADED_SHADOW_MAP_NUM]; // world to proj
 };
 
-struct VS_OUT_EMPTY
+struct VS_OUT
 {
     float4 pos : SV_POSITION;
 };
 
-VS_OUT_EMPTY VS_MAIN(VS_IN input, uint ViewIndex : SV_ViewID, uint INSTANCE_ID : SV_InstanceID)
+VS_OUT VS_MAIN(VS_IN input, uint ViewIndex : SV_ViewID, uint INSTANCE_ID : SV_InstanceID)
 {
-    VS_OUT_EMPTY output;
+    VS_OUT output;
 
     float4 vertexPos = getModelVertexPosition(input, INSTANCE_ID);
     float4 worldPos = mul(vertexPos, MESH_WORLD_MATRIX);

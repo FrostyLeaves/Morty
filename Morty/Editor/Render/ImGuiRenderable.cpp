@@ -104,8 +104,8 @@ void ImGuiRenderable::InitializeMaterial()
 
 	m_pMaterial = pResourceSystem->CreateResource<MMaterial>();
 
-	m_pMaterial->LoadVertexShader("Shader/Imgui/imgui.mvs");
-	m_pMaterial->LoadPixelShader("Shader/Imgui/imgui.mps");
+	m_pMaterial->LoadShader("Shader/Imgui/imgui.mvs");
+	m_pMaterial->LoadShader("Shader/Imgui/imgui.mps");
 }
 
 void ImGuiRenderable::ReleaseMaterial()
@@ -196,8 +196,8 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
 	{
 		MVariantStruct& imguiUniform = pParam->var.GetValue<MVariantStruct>();
 		{
-			imguiUniform.SetVariant("u_f2Scale", scale);
-			imguiUniform.SetVariant("u_f2Translate", translate);
+			imguiUniform.SetVariant(MShaderPropertyName::IMGUI_SCALE, scale);
+			imguiUniform.SetVariant(MShaderPropertyName::IMGUI_TRANSLATE, translate);
 			pParam->SetDirty();
 		}
 	}
@@ -292,22 +292,22 @@ ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturPropertyBlock(ImGu
 			case METextureLayout::EDepth:
 			case METextureLayout::ER_UNORM_8:
 			case METextureLayout::ER_FLOAT_32:
-				imguiUniform.SetVariant("u_nImageType", 1);
+				imguiUniform.SetVariant(MShaderPropertyName::IMGUI_IMAGE_TYPE, 1);
 				break;
 
 			default:
-				imguiUniform.SetVariant("u_nImageType", 0);
+				imguiUniform.SetVariant(MShaderPropertyName::IMGUI_IMAGE_TYPE, 0);
 				break;
 			}
 
 			if (key.pTexture->GetTextureType() == METextureType::ETexture2D)
 			{
-				imguiUniform.SetVariant("u_nImageArray", 0);
+				imguiUniform.SetVariant(MShaderPropertyName::IMGUI_IMAGE_ARRAY, 0);
 			}
 			else if (key.pTexture->GetTextureType() == METextureType::ETexture2DArray)
 			{
-				imguiUniform.SetVariant("u_nImageArray", 1);
-				imguiUniform.SetVariant("u_nImageIndex", static_cast<int>(key.nArrayIdx));
+				imguiUniform.SetVariant(MShaderPropertyName::IMGUI_IMAGE_ARRAY, 1);
+				imguiUniform.SetVariant(MShaderPropertyName::IMGUI_IMAGE_INDEX, static_cast<int>(key.nArrayIdx));
 			}
 
 			pDest->pPropertyBlock->m_vParams[0]->SetDirty();

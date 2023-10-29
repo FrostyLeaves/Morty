@@ -21,7 +21,7 @@ public:
 	virtual ~MResourceLoader() = default;
 
 	virtual const MType* ResourceType() const = 0;
-	virtual std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath, const MString& svPath) = 0;
+	virtual std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath) = 0;
 
 	MString strResourcePath;
 	MString strResourceFullPath;
@@ -40,7 +40,7 @@ public:
 		return RESOURCE_TYPE::GetClassType();
 	}
 
-	std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath, const MString& svPath) override
+	std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath) override
 	{
 		std::unique_ptr<RESOURCE_DATA_TYPE> pResourceData = std::make_unique<RESOURCE_DATA_TYPE>();
 

@@ -1,8 +1,8 @@
-#ifndef _M_INTERNAL_MODEL_DEFINE_HLSL_
-#define _M_INTERNAL_MODEL_DEFINE_HLSL_
+#ifndef _M_INTERNAL_UNIFORM_MODEL_HLSL_
+#define _M_INTERNAL_UNIFORM_MODEL_HLSL_
 
-#include "Internal/internal_constant.hlsl"
-#include "Internal/internal_mesh.hlsl"
+#include "../Internal/internal_uniform_global.hlsl"
+#include "../Internal/internal_mesh.hlsl"
 
 #if DRAW_MESH_INSTANCING_UNIFORM
 
@@ -67,7 +67,7 @@
 float4 getModelVertexPosition(VS_IN input, uint INSTANCE_ID)
 {
     
-#if SKELETON_ENABLE == 1
+#if SKELETON_ENABLE
 
     float4x4 matBoneTransform = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     float fWeight = 1.0f;

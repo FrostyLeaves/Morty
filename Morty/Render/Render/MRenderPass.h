@@ -89,7 +89,7 @@ public:
 
     void Resize(MIDevice* pDevice);
 
-    Vector2 GetFrameBufferSize();
+    Vector2i GetFrameBufferSize() const;
 
 public:
 

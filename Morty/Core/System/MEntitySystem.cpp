@@ -29,14 +29,22 @@ MEntitySystem::~MEntitySystem()
 
 void MEntitySystem::AddChild(MEntity* pParent, MEntity* pChild)
 {
+	MORTY_ASSERT(pParent && pChild);
+
 	if (!pParent || !pChild)
+	{
 		return;
+	}
 
 	MSceneComponent* pParentComp = pParent->GetComponent<MSceneComponent>();
 	MSceneComponent* pChildComp = pChild->GetComponent<MSceneComponent>();
 
+	MORTY_ASSERT(pParentComp && pChildComp);
+
 	if (!pChildComp || !pParentComp)
+	{
 		return;
+	}
 
 	pChildComp->SetParentComponent(pParentComp->GetComponentID());
 }

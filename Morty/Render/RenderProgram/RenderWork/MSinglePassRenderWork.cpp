@@ -66,7 +66,7 @@ std::shared_ptr<ITextureInputAdapter> ISinglePassRenderWork::CreateOutput() cons
 	return pOutput;
 }
 
-void ISinglePassRenderWork::Resize(Vector2 size)
+void ISinglePassRenderWork::Resize(Vector2i size)
 {
 	if (m_renderPass.GetFrameBufferSize() != size)
 	{

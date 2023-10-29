@@ -16,19 +16,15 @@ class MORTY_API MCullingResultSpecificMaterialRenderable : public MCullingResult
 {
 public:
 
-    void SetMaterial(std::shared_ptr<MMaterial> pMaterial)
+    void SetMaterial(std::unordered_map<MStringId, std::shared_ptr<MMaterial>> tMaterials)
     {
-        m_pMaterial = pMaterial;
+        m_tMaterials = tMaterials;
     }
 
 	//override to use other material.
-	const std::shared_ptr<MMaterial>& GetMaterial(const MMaterialCullingGroup& group) const override
-    {
-        MORTY_UNUSED(group);
-        return m_pMaterial;
-    }
-
+    std::shared_ptr<MMaterial> GetMaterial(const MMaterialCullingGroup& group) const override;
 
 private:
-    std::shared_ptr<MMaterial> m_pMaterial = nullptr;
+
+    std::unordered_map<MStringId, std::shared_ptr<MMaterial>> m_tMaterials;
 };

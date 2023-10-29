@@ -52,20 +52,21 @@ void MaterialView::SetMaterial(std::shared_ptr<MMaterialResource> pMaterial)
 	{
 		pSceneSystem->SetVisible(m_pStaticSphereMeshNode, true);
 		pSceneSystem->SetVisible(m_pSkeletonSphereMeshNode, false);
+
+		if (MRenderMeshComponent* pMeshComponent = m_pStaticSphereMeshNode->GetComponent<MRenderMeshComponent>())
+		{
+			pMeshComponent->SetMaterial(pMaterial);
+		}
 	}
 	else
 	{
 		pSceneSystem->SetVisible(m_pStaticSphereMeshNode, false);
 		pSceneSystem->SetVisible(m_pSkeletonSphereMeshNode, true);
-	}
 
-	if (MRenderMeshComponent* pMeshComponent = m_pStaticSphereMeshNode->GetComponent<MRenderMeshComponent>())
-	{
-		pMeshComponent->SetMaterial(pMaterial);
-	}
-	if (MRenderMeshComponent* pMeshComponent = m_pSkeletonSphereMeshNode->GetComponent<MRenderMeshComponent>())
-	{
-		pMeshComponent->SetMaterial(pMaterial);
+		if (MRenderMeshComponent* pMeshComponent = m_pSkeletonSphereMeshNode->GetComponent<MRenderMeshComponent>())
+		{
+			pMeshComponent->SetMaterial(pMaterial);
+		}
 	}
 }
 
@@ -114,7 +115,7 @@ void MaterialView::Initialize(MainEditor* pMainEditor)
 	m_pScene = pObjectSystem->CreateObject<MScene>();
 
 	m_pSceneTexture = GetMainEditor()->CreateSceneViewer(m_pScene);
-	m_pSceneTexture->SetRect(Vector2(0, 0), Vector2(512, 512));
+	m_pSceneTexture->SetRect(Vector2i(0, 0), Vector2i(512, 512));
 
 	if (MEntity* pCameraNode = m_pSceneTexture->GetViewport()->GetCamera())
 	{
@@ -178,7 +179,7 @@ void MaterialView::Initialize(MainEditor* pMainEditor)
 
 	if (MDirectionalLightComponent* pDirLightComponent = pDirLight->RegisterComponent<MDirectionalLightComponent>())
 	{
-		pDirLightComponent->SetLightIntensity(1.0f);
+		pDirLightComponent->SetLightIntensity(10.0f);
 	}
 	
 }

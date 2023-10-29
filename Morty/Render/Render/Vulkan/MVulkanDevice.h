@@ -97,7 +97,7 @@ public:
 	VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, const uint32_t& unMipmap, const uint32_t& unLayerCount, const VkImageViewType& eViewType);
 	VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, const uint32_t& unBaseMipmap, const uint32_t& unMipmapCount, const uint32_t& unLayerCount, const VkImageViewType& eViewType);
 
-	void CreateImage(const uint32_t& unWidth, const uint32_t& unHeight, const uint32_t& unMipmap, const uint32_t& unLayerCount, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageLayout defaultLayout, VkImage& image, VkDeviceMemory& imageMemory, VkImageCreateFlags createFlag, VkImageType imageType);
+	void CreateImage(uint32_t nWidth, uint32_t nHeight, uint32_t nDepth, const uint32_t& unMipmap, const uint32_t& unLayerCount, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageLayout defaultLayout, VkImage& image, VkDeviceMemory& imageMemory, VkImageCreateFlags createFlag, VkImageType imageType);
 
 	VkBufferUsageFlags GetBufferUsageFlags(MBuffer* pBuffer) const;
 	VkMemoryPropertyFlags GetMemoryFlags(MBuffer* pBuffer) const;
@@ -183,6 +183,7 @@ public:
 	std::shared_ptr<MTexture> m_ShaderDefaultTexture;
 	std::shared_ptr<MTexture> m_ShaderDefaultTextureCube;
 	std::shared_ptr<MTexture> m_ShaderDefaultTextureArray;
+	std::shared_ptr<MTexture> m_ShaderDefaultTexture3D;
 
 	VkSampler m_VkLinearSampler = VK_NULL_HANDLE;
 	VkSampler m_VkNearestSampler = VK_NULL_HANDLE;

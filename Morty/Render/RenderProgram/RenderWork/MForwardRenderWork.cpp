@@ -29,13 +29,12 @@ MORTY_CLASS_IMPLEMENT(MForwardRenderWork, ISinglePassRenderWork)
 
 void MForwardRenderWork::Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
-	MViewport* pViewport = info.pViewport;
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
 
 	pCommand->BeginRenderPass(&m_renderPass);
 
-	Vector2 v2LeftTop = pViewport->GetLeftTop();
-	Vector2 v2Size = pViewport->GetSize();
+	const Vector2i v2LeftTop = info.f2ViewportLeftTop;
+	const Vector2i v2Size = info.f2ViewportSize;
 	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
 	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
 

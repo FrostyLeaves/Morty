@@ -134,7 +134,7 @@ void MEnvironmentManager::UpdateSkyBoxMaterial(MSkyBoxComponent* pComponent)
 		return;
 	}
 
-	m_pSkyBoxMaterial->SetTexture("SkyTexCube", pComponent->GetSkyBoxResource());
+	m_pSkyBoxMaterial->SetTexture(MShaderPropertyName::ENVIRONMENT_TEXTURE_SKYBOX, pComponent->GetSkyBoxResource());
 }
 
 bool MEnvironmentManager::HasEnvironmentComponent() const
@@ -155,8 +155,8 @@ void MEnvironmentManager::InitializeMaterial()
 	std::shared_ptr<MResource> skyboxPS = pResourceSystem->LoadResource("Shader/Environment/skybox.mps");
 	m_pSkyBoxMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pSkyBoxMaterial->SetCullMode(MECullMode::ECullNone);
-	m_pSkyBoxMaterial->LoadVertexShader(skyboxVS);
-	m_pSkyBoxMaterial->LoadPixelShader(skyboxPS);
+	m_pSkyBoxMaterial->LoadShader(skyboxVS);
+	m_pSkyBoxMaterial->LoadShader(skyboxPS);
 
 }
 

@@ -33,7 +33,7 @@ void MStorageBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterial>
 	if (std::shared_ptr<MShaderPropertyBlock> pTemplatePropertyBlock = pMaterial->GetMeshPropertyBlock())
 	{
 		m_pShaderPropertyBlock = pTemplatePropertyBlock->Clone();
-		m_pTransformParam = m_pShaderPropertyBlock->FindStorageParam("u_meshMatrix");
+		m_pTransformParam = m_pShaderPropertyBlock->FindStorageParam(MShaderPropertyName::CBUFFER_MESH_MATRIX);
 	}
 
 	m_transformBuffer.buffer.m_eMemoryType = MBuffer::MMemoryType::EHostVisible;

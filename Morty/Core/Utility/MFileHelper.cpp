@@ -49,32 +49,8 @@ MFileHelper::~MFileHelper()
 
 bool MFileHelper::MakeDir(MString strDirPath)
 {
-    
-#ifdef MORTY_WIN
-	uint32_t nChIdx = 0;
-	uint32_t nCopyIdx = 0;
-	char svPath[MAX_PATH] = { 0 };
-	
-	for (nChIdx = 0; nChIdx < strDirPath.size(); ++nChIdx)
-	{
-		if (strDirPath[nChIdx] == '\\' || strDirPath[nChIdx] == '/')
-		{
-			strncpy_s(svPath + nCopyIdx, nChIdx - nCopyIdx, strDirPath.c_str() + nCopyIdx, nChIdx - nCopyIdx);
-			nCopyIdx = nChIdx;
-
-			if (_access(svPath, 0) == -1)
-			{
-				if (0 != _mkdir(svPath))
-					return false;
-			}
-		}
-	}
-
-	if (nCopyIdx != strDirPath.size())
-	{
-		return 0 == _mkdir(strDirPath.c_str());
-	}
-#endif
+	std::filesystem::path path{ strDirPath };
+	std::filesystem::create_directories(path);
 
 	return true;
 }

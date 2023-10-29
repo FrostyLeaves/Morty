@@ -16,14 +16,6 @@
 #include "Render/Vulkan/MVulkanWrapper.h"
 #endif
 
-
-enum MEShaderParamType
-{
-	EVertex = 1,
-	EPixel = 2,
-	ECompute = 4,
-};
-
 enum class MESamplerType
 {
 	ENearest,
@@ -35,30 +27,26 @@ class MBuffer;
 struct MORTY_API MShaderParam
 {
 public:
-	MShaderParam();
-	virtual ~MShaderParam() {}
+	MShaderParam() = default;
+	virtual ~MShaderParam() = default;
 
-	MString strName;
-	uint32_t  eShaderType;
+	MStringId strName;
+	uint32_t  eShaderType = 0;
 
-	bool bDirty;
+	bool bDirty = true;
 	void SetDirty() { bDirty = true; }
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	VkDescriptorType m_VkDescriptorType;
-	uint32_t unSet;
-	uint32_t unBinding;
+	uint32_t unSet = 0;
+	uint32_t unBinding = 0;
 #endif
 };
 
 struct MORTY_API MShaderConstantParam : public MShaderParam
 {
 	MShaderConstantParam();
-
 	MShaderConstantParam(const MShaderConstantParam& param);
-
-	MVariant var;
-
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	VkBuffer m_VkBuffer = VK_NULL_HANDLE;
@@ -68,6 +56,8 @@ struct MORTY_API MShaderConstantParam : public MShaderParam
 	MByte* m_pMemoryMapping = 0;
 	uint32_t m_unVkMemorySize = 0;
 #endif
+
+	MVariant var;
 };
 
 
@@ -80,13 +70,12 @@ public:
 	virtual std::shared_ptr<MTexture> GetTexture() { return pTexture; }
 
 public:
-	std::shared_ptr<MTexture> pTexture;
-	void* pImageIdent;
-	METextureType eType;
+	std::shared_ptr<MTexture> pTexture = nullptr;
+	void* pImageIdent = nullptr;
+	METextureType eType = METextureType::ETexture2D;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	VkDescriptorImageInfo m_VkImageInfo;
-
 #endif
 };
 
@@ -94,13 +83,12 @@ struct MShaderStorageParam : public MShaderParam
 {
 	MShaderStorageParam();
 
-
 public:
-	const MBuffer* pBuffer;
-	bool bWritable;
+	const MBuffer* pBuffer = nullptr;
+	bool bWritable = false;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
-	VkDescriptorBufferInfo m_VkBufferInfo;
+	VkDescriptorBufferInfo m_VkBufferInfo = { VK_NULL_HANDLE, 0, 0 };
 #endif
 
 };
@@ -114,12 +102,10 @@ struct MShaderSampleParam : public MShaderParam
 {
 	MShaderSampleParam();
 
-	MESamplerType eSamplerType;
-
+	MESamplerType eSamplerType = MESamplerType::ELinear;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
-	VkSampler m_VkSampler;
+	VkSampler m_VkSampler = VK_NULL_HANDLE;
 #endif
 	
-
 };

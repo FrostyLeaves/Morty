@@ -50,12 +50,12 @@ std::shared_ptr<MMaterial> MFrameShaderPropertyBlock::LoadMaterial(MEngine* pEng
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
 
-	std::shared_ptr<MResource> forwardVS = pResourceSystem->LoadResource("Shader/Deferred/model_gbuffer.mvs");
-	std::shared_ptr<MResource> forwardPS = pResourceSystem->LoadResource("Shader/Deferred/model_gbuffer.mps");
+	std::shared_ptr<MResource> forwardVS = pResourceSystem->LoadResource("Shader/Model/universal_model.mvs");
+	std::shared_ptr<MResource> forwardPS = pResourceSystem->LoadResource("Shader/Deferred/deferred_gbuffer.mps");
 	auto pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	pMaterial->SetCullMode(MECullMode::ECullBack);
-	pMaterial->LoadVertexShader(forwardVS);
-	pMaterial->LoadPixelShader(forwardPS);
+	pMaterial->LoadShader(forwardVS);
+	pMaterial->LoadShader(forwardPS);
 
 	return pMaterial;
 }
@@ -64,21 +64,19 @@ void MFrameShaderPropertyBlock::BindMaterial(const std::shared_ptr<MMaterial>& p
 {
 	m_pShaderPropertyBlock = pMaterial->GetFramePropertyBlock()->Clone();
 
-	MORTY_ASSERT(m_pWorldMatrixParam = m_pShaderPropertyBlock->FindConstantParam("cbSceneMatrix"));
-	MORTY_ASSERT(m_pWorldInfoParam = m_pShaderPropertyBlock->FindConstantParam("cbSceneInformation"));
-	MORTY_ASSERT(m_pLightInfoParam = m_pShaderPropertyBlock->FindConstantParam("cbLightInformation"));
-	MORTY_ASSERT(m_pShadowInfoParam = m_pShaderPropertyBlock->FindConstantParam("cbShadowInformation"));
+	MORTY_ASSERT(m_pFrameParam = m_pShaderPropertyBlock->FindConstantParam(MShaderPropertyName::CBUFFER_FRAME_DATA));
+	MORTY_ASSERT(m_pLightParam = m_pShaderPropertyBlock->FindConstantParam(MShaderPropertyName::CBUFFER_LIGHT_DATA));
+	
+	MORTY_ASSERT(m_pShadowTextureParam = m_pShaderPropertyBlock->FindTextureParam(MShaderPropertyName::TEXTURE_SHADOW_MAP));
+	MORTY_ASSERT(m_pDiffuseMapTextureParam = m_pShaderPropertyBlock->FindTextureParam(MShaderPropertyName::TEXTURE_IRRADIANCE_MAP));
+	MORTY_ASSERT(m_pSpecularMapTextureParam = m_pShaderPropertyBlock->FindTextureParam(MShaderPropertyName::TEXTURE_PREFILTER_MAP));
+	MORTY_ASSERT(m_pBrdfMapTextureParam = m_pShaderPropertyBlock->FindTextureParam(MShaderPropertyName::TEXTURE_BRDF_LUT));
 
-	MORTY_ASSERT(m_pShadowTextureParam = m_pShaderPropertyBlock->FindTextureParam("u_texShadowMap"));
-	MORTY_ASSERT(m_pDiffuseMapTextureParam = m_pShaderPropertyBlock->FindTextureParam("u_texIrradianceMap"));
-	MORTY_ASSERT(m_pSpecularMapTextureParam = m_pShaderPropertyBlock->FindTextureParam("u_texPrefilterMap"));
-	MORTY_ASSERT(m_pBrdfMapTextureParam = m_pShaderPropertyBlock->FindTextureParam("u_texBrdfLUT"));
+	MORTY_ASSERT(m_pAnimationBonesParam = m_pShaderPropertyBlock->FindStorageParam(MShaderPropertyName::STORAGE_BONES_MATRIX));
+	MORTY_ASSERT(m_pAnimationOffsetParam = m_pShaderPropertyBlock->FindStorageParam(MShaderPropertyName::STORAGE_BONES_OFFSET));
 
-	MORTY_ASSERT(m_pAnimationBonesParam = m_pShaderPropertyBlock->FindStorageParam("u_vBonesMatrix"));
-	MORTY_ASSERT(m_pAnimationOffsetParam = m_pShaderPropertyBlock->FindStorageParam("u_vBonesOffset"));
-
-	MORTY_ASSERT(m_pRWVoxelTableParam = m_pShaderPropertyBlock->FindStorageParam("u_rwVoxelTable"));
-	MORTY_ASSERT(m_pVoxelMapSetting = m_pShaderPropertyBlock->FindConstantParam("cbVoxelMap"));
+	MORTY_ASSERT(m_pRWVoxelTableParam = m_pShaderPropertyBlock->FindStorageParam(MShaderPropertyName::STORAGE_VOXEL_TABLE));
+	MORTY_ASSERT(m_pVoxelGITextureParam = m_pShaderPropertyBlock->FindTextureParam(MShaderPropertyName::VOXELIZER_VOXEL_TEXTURE_NAME));
 }
 
 std::shared_ptr<MShaderPropertyBlock> MFrameShaderPropertyBlock::GetPropertyBlock() const
@@ -88,181 +86,71 @@ std::shared_ptr<MShaderPropertyBlock> MFrameShaderPropertyBlock::GetPropertyBloc
 
 void MFrameShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& info)
 {
-	MViewport* pViewport = info.pViewport;
-	if (!pViewport) return;
-
-	MScene* pScene = pViewport->GetScene();
+	const MScene* pScene = info.pScene;
 	if (!pScene) return;
 
-	info.pCameraEntity = pScene->FindFirstEntityByComponent<MCameraComponent>();
 
-	if (!info.pDirectionalLightEntity)
+	if (m_pFrameParam)
 	{
-		info.pDirectionalLightEntity = pScene->FindFirstEntityByComponent<MDirectionalLightComponent>();
+		MVariantStruct& cFrameStruct = m_pFrameParam->var.GetValue<MVariantStruct>();
+
+		cFrameStruct.SetVariant(MShaderPropertyName::FRAME_VIEW_MATRIX, info.m4CameraTransform.Inverse());
+		cFrameStruct.SetVariant(MShaderPropertyName::FRAME_CAMERA_PROJ_MATRIX, info.m4CameraInverseProjection);
+		cFrameStruct.SetVariant(MShaderPropertyName::FRAME_INV_CAMERA_PROJ_MATRIX, info.m4CameraInverseProjection.Inverse());
+
+		cFrameStruct.SetVariant(MShaderPropertyName::FRAME_CAMERA_POSITION, info.m4CameraTransform.GetTranslation());
+		//FIXME no uniform scale.
+		cFrameStruct.SetVariant(MShaderPropertyName::FRAME_CAMERA_DIRECTION, info.m4CameraTransform * Vector3(0, 0, 1));
+
+
+		cFrameStruct.SetVariant(MShaderPropertyName::FRAME_VIEWPORT_SIZE, Vector2(info.f2ViewportSize));
+		cFrameStruct.SetVariant(MShaderPropertyName::FRAME_Z_NEAR_FAR, info.f2CameraNearFar);
+
+		cFrameStruct.SetVariant(MShaderPropertyName::FRAME_TIME_DELTA, info.fDelta);
+		cFrameStruct.SetVariant(MShaderPropertyName::FRAME_GAME_TIME, info.fGameTime);
+
+		m_pFrameParam->SetDirty();
 	}
 
-	if (info.pDirectionalLightEntity)
+
+	if (m_pLightParam)
 	{
-		if (const auto pLightComponent = info.pDirectionalLightEntity->GetComponent<MDirectionalLightComponent>())
+		MVariantStruct& cLightStruct = m_pLightParam->var.GetValue<MVariantStruct>();
+
+		if (info.pEnvDiffuseTexture && info.pEnvSpecularTexture)
 		{
-			if (!pLightComponent->GetLightEnable())
-			{
-				info.pDirectionalLightEntity = nullptr;
-			}
+			m_pDiffuseMapTextureParam->SetTexture(info.pEnvDiffuseTexture);
+			m_pDiffuseMapTextureParam->SetDirty();
+			m_pSpecularMapTextureParam->SetTexture(info.pEnvSpecularTexture);
+			m_pSpecularMapTextureParam->SetDirty();
+
+			cLightStruct.SetVariant(MShaderPropertyName::LIGHT_ENVIRONMENT_MAP_ENABLE, 1);
 		}
-	}
+        else
+        {
+			cLightStruct.SetVariant(MShaderPropertyName::LIGHT_ENVIRONMENT_MAP_ENABLE, 0);
+        }
 
- 	if (!info.pSkyBoxEntity)
- 	{
- 		info.pSkyBoxEntity = pScene->FindFirstEntityByComponent<MSkyBoxComponent>();
- 	}
-
-	if (m_pWorldMatrixParam)
-	{
-		MVariantStruct& cStruct = m_pWorldMatrixParam->var.GetValue<MVariantStruct>();
-		cStruct.SetVariant("u_matView",info.pCameraEntity->GetComponent<MSceneComponent>()->GetWorldTransform().Inverse());
-		cStruct.SetVariant("u_matCamProj", info.m4CameraInverseProjection);
- 		cStruct.SetVariant("u_matCamProjInv", info.m4CameraInverseProjection.Inverse());
-
-		m_pWorldMatrixParam->SetDirty();
-	}
-
-	if (m_pShadowInfoParam)
-	{
-		MVariantStruct& cStruct = m_pShadowInfoParam->var.GetValue<MVariantStruct>();
-		MVariantArray& cDirLightInvProjArray = cStruct.GetVariant<MVariantArray>("u_vLightProjectionMatrix");
+		cLightStruct.SetVariant(MShaderPropertyName::LIGHT_DIRECTION_LIGHT_ENABLE, 1);
+		auto& cDirectionLightStruct = cLightStruct.GetVariant<MVariantStruct>(MShaderPropertyName::LIGHT_DIRECTION_STRUCT_NAME);
 		{
-			for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
-			{
-				cDirLightInvProjArray.SetVariant(nCascadedIdx, info.shadowRenderInfo[nCascadedIdx].m4DirLightInvProj);
-			}
+			cDirectionLightStruct.SetVariant(MShaderPropertyName::LIGHT_DIRECTION_LIGHT_DIR, info.directionLight.f3LightDirection);
+			cDirectionLightStruct.SetVariant(MShaderPropertyName::LIGHT_INTENSITY, info.directionLight.f3LightIntensity);
+			cDirectionLightStruct.SetVariant(MShaderPropertyName::LIGHT_DIRECTION_LIGHT_SIZE, info.directionLight.fLightSize);
 		}
 
-		MVariantArray& cSplitDepthArray = cStruct.GetVariant<MVariantArray>("u_vCascadeSplits");
-		{
-			for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
-			{
-				cSplitDepthArray.SetVariant(nCascadedIdx, info.shadowRenderInfo[nCascadedIdx].fSplitRange);
-			}
-		}
-
-		m_pShadowInfoParam->SetDirty();
-	}
-
-	if (m_pWorldInfoParam)
-	{
-		MVariantStruct& cWorldInfo = m_pWorldInfoParam->var.GetValue<MVariantStruct>();
-		
-
-		if (info.pCameraEntity)
-		{
-			if (MSceneComponent* pSceneComponent = info.pCameraEntity->GetComponent<MSceneComponent>())
-			{
-				cWorldInfo.SetVariant("u_f3CameraPosition", pSceneComponent->GetWorldPosition());
-				cWorldInfo.SetVariant("u_f3CameraDirection", pSceneComponent->GetWorldForward());
-			}
-		}
-
-		cWorldInfo.SetVariant("u_f2ViewportSize", info.pViewport->GetSize());
-
-		if (info.pCameraEntity)
-		{
-			if (MCameraComponent* pCameraComponent = info.pCameraEntity->GetComponent<MCameraComponent>())
-			{
-				cWorldInfo.SetVariant("u_matZNearFar", pCameraComponent->GetZNearFar());
-			}
-		}
-
-		cWorldInfo.SetVariant("u_fDelta", info.fDelta);
-
-		cWorldInfo.SetVariant("u_fGameTime", info.fGameTime);
-
-		m_pWorldInfoParam->SetDirty();
-	}
-
-	if (const std::shared_ptr<MShaderConstantParam>& pLightParam = m_pLightInfoParam)
-	{
-		MVariantStruct& cLightStruct = pLightParam->var.GetValue<MVariantStruct>();
-
-		if (info.pSkyBoxEntity)
-		{
-			if (MSkyBoxComponent* pSkyBoxComponent = info.pSkyBoxEntity->GetComponent<MSkyBoxComponent>())
-			{
-				if (std::shared_ptr<MTexture> pEnvTexture = pSkyBoxComponent->GetDiffuseTexture())
-				{
-					cLightStruct.SetVariant("u_bEnvironmentMapEnabled", 1);
-					m_pDiffuseMapTextureParam->SetTexture(pEnvTexture);
-					m_pDiffuseMapTextureParam->SetDirty();
-				}
-				if (std::shared_ptr<MTexture> pEnvTexture = pSkyBoxComponent->GetSpecularTexture())
-				{
-					m_pSpecularMapTextureParam->SetTexture(pEnvTexture);
-					m_pSpecularMapTextureParam->SetDirty();
-				}
-			}
-		}
-
-		if (info.pDirectionalLightEntity)
-		{
-			cLightStruct.SetVariant("u_bDirectionLightEnabled", 1);
-			{
-				MVariantStruct& cDirectionLightStruct = cLightStruct.GetVariant<MVariantStruct>("u_xDirectionalLight");
-				{
-					if (MSceneComponent* pSceneComponent = info.pDirectionalLightEntity->GetComponent<MSceneComponent>())
-					{
-						cDirectionLightStruct.SetVariant("f3LightDir", pSceneComponent->GetForward());
-					}
-					if (MDirectionalLightComponent* pLightComponent = info.pDirectionalLightEntity->GetComponent<MDirectionalLightComponent>())
-					{
-						cDirectionLightStruct.SetVariant("f3Intensity",pLightComponent->GetColor().ToVector3() * pLightComponent->GetLightIntensity());
-						cDirectionLightStruct.SetVariant("fLightSize", pLightComponent->GetLightSize());
-					}
-				}
-			}
-		}
-		else
-		{
-			cLightStruct.SetVariant("u_bDirectionLightEnabled", 0);
-		}
-
+		size_t nPointLightNum = std::min(size_t(MRenderGlobal::POINT_LIGHT_MAX_NUMBER), info.vPointLight.size());
+		cLightStruct.SetVariant(MShaderPropertyName::LIGHT_POINT_COUNT, int(nPointLightNum));
+		MVariantArray& vPointLights = cLightStruct.GetVariant<MVariantArray>(MShaderPropertyName::LIGHT_POINT_ARRAY_NAME);
+   		for (size_t nPointIdx = 0; nPointIdx < nPointLightNum; ++nPointIdx)
    		{
-			MComponentGroup<MPointLightComponent>* pComponentGroup = pScene->FindComponents<MPointLightComponent>();
-			auto& vActivePointLights = pComponentGroup->m_vComponents;
-			
-   			//info.pScene->FindActivePointLights(info.pCameraSceneComponent->GetWorldPosition(), vActivePointLights);
-			int nValidPointLights = 0;
- 
-   			MVariantArray& vPointLights = cLightStruct.GetVariant<MVariantArray>("u_vPointLights");
-   			for (MPointLightComponent& lightComponent : vActivePointLights)
-   			{
-				if (!lightComponent.IsValid())
-					break;
+			MVariantStruct cPointLight = vPointLights.GetVariant<MVariantStruct>(nPointIdx);
+			cPointLight.SetVariant(MShaderPropertyName::LIGHT_POINT_POSITION, info.vPointLight[nPointIdx].f3LightPosition);
+			cPointLight.SetVariant(MShaderPropertyName::LIGHT_INTENSITY, info.vPointLight[nPointIdx].f3LightIntensity);
 
-				MPointLightComponent* pPointLightComponent = &lightComponent;
-
-				MEntity* pEntity = pPointLightComponent->GetEntity();
-				if (!pEntity)
-					break;
-
-				MSceneComponent* pSceneComponent = pEntity->GetComponent<MSceneComponent>();
-				if (!pSceneComponent)
-					break;
-				
-				MVariantStruct cPointLight = vPointLights.GetVariant<MVariantStruct>(nValidPointLights);
-				cPointLight.SetVariant("f3WorldPosition", pSceneComponent->GetWorldPosition());
-				cPointLight.SetVariant("f3Intensity", pPointLightComponent->GetColor().ToVector3()* pPointLightComponent->GetLightIntensity());
-
-				cPointLight.SetVariant("fConstant",pPointLightComponent->GetConstant());
-				cPointLight.SetVariant("fLinear", pPointLightComponent->GetLinear());
-				cPointLight.SetVariant("fQuadratic",pPointLightComponent->GetQuadratic());
-
-				++nValidPointLights;
-
-				if (nValidPointLights >= MRenderGlobal::POINT_LIGHT_MAX_NUMBER)
-					break;
-   			}
-
-			cLightStruct.SetVariant("u_nValidPointLightsNumber", nValidPointLights);
+			cPointLight.SetVariant(MShaderPropertyName::LIGHT_POINT_CONSTANT, info.vPointLight[nPointIdx].fConstant);
+			cPointLight.SetVariant(MShaderPropertyName::LIGHT_POINT_LINEAR, info.vPointLight[nPointIdx].fLinear);
+			cPointLight.SetVariant(MShaderPropertyName::LIGHT_POINT_QUADRATIC, info.vPointLight[nPointIdx].fQuadratic);
    		}
 /*
    		MVariant& varSpotLights = (*pLightParam->var.GetStruct())[2];
@@ -295,12 +183,47 @@ void MFrameShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& info)
    			}
    		}
 */
-		pLightParam->SetDirty();
+
+		MVariantArray& cDirLightInvProjArray = cLightStruct.GetVariant<MVariantArray>(MShaderPropertyName::SHADOW_LIGHT_PROJ_MATRIX);
+		{
+			for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
+			{
+				cDirLightInvProjArray.SetVariant(nCascadedIdx, info.shadowRenderInfo[nCascadedIdx].m4DirLightInvProj);
+			}
+		}
+
+		MVariantArray& cSplitDepthArray = cLightStruct.GetVariant<MVariantArray>(MShaderPropertyName::SHADOW_LIGHT_CASCADE_SPLIT);
+		{
+			for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
+			{
+				cSplitDepthArray.SetVariant(nCascadedIdx, info.shadowRenderInfo[nCascadedIdx].fSplitRange);
+			}
+		}
+
+		auto& settingStruct = cLightStruct.GetVariant<MVariantStruct>(MShaderPropertyName::VOXEL_MAP_SETTING);
+		MRenderInfo::FillVoxelMapSetting(info.voxelSetting, settingStruct);
+
+		const MVoxelClipmap& clipmap = info.voxelSetting.vClipmap[info.voxelSetting.nClipmapIdx];
+
+		const float fVoxelTableSize = static_cast<float>(info.voxelSetting.nResolution) * clipmap.fVoxelSize;
+		const auto m4CameraProj = MRenderSystem::MatrixOrthoOffCenterLH(
+			clipmap.f3VoxelOrigin.x,
+			clipmap.f3VoxelOrigin.x + fVoxelTableSize,
+			clipmap.f3VoxelOrigin.y + fVoxelTableSize,
+			clipmap.f3VoxelOrigin.y,
+			clipmap.f3VoxelOrigin.z,
+			clipmap.f3VoxelOrigin.z + fVoxelTableSize
+		);
+		
+
+		cLightStruct.SetVariant<Matrix4>(MShaderPropertyName::VOXELIZER_CAMERA_PROJ_MATRIX, m4CameraProj);
+
+		m_pLightParam->SetDirty();
 	}
 
-	if (auto pAnimationManager = pScene->GetManager<MAnimationManager>())
+	if (const auto pAnimationManager = pScene->GetManager<MAnimationManager>())
 	{
-		auto bufferData = pAnimationManager->GetAnimationBuffer();
+		const auto bufferData = pAnimationManager->GetAnimationBuffer();
 		m_pAnimationBonesParam->pBuffer = bufferData.pBonesBuffer;
 		m_pAnimationOffsetParam->pBuffer = bufferData.pOffsetBuffer;
 
@@ -309,17 +232,17 @@ void MFrameShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& info)
 	}
 
 
-	auto& settingStruct = m_pVoxelMapSetting->var.GetValue<MVariantStruct>().GetVariant<MVariantStruct>("voxelMapSetting");
+	//if (m_pRWVoxelTableParam->pBuffer != info.pVoxelTableBuffer)
+	{
+		m_pRWVoxelTableParam->pBuffer = info.pVoxelTableBuffer;
+		m_pRWVoxelTableParam->SetDirty();
+	}
 
-	settingStruct.SetVariant("f3VoxelOrigin", info.voxelSetting.f3VoxelOrigin);
-	settingStruct.SetVariant("fResolution", info.voxelSetting.fResolution);
-	settingStruct.SetVariant("fVoxelStep", info.voxelSetting.fVoxelStep);
-	m_pVoxelMapSetting->SetDirty();
-
-
-	m_pRWVoxelTableParam->pBuffer = info.voxelSetting.pVoxelTableBuffer;
-	m_pRWVoxelTableParam->SetDirty();
-
+	//if (m_pVoxelGITextureParam->pTexture != info.pVoxelGITexture)
+	{
+		m_pVoxelGITextureParam->pTexture = info.pVoxelGITexture;
+		m_pVoxelGITextureParam->SetDirty();
+	}
 }
 
 void MFrameShaderPropertyBlock::SetShadowMapTexture(std::shared_ptr<MTexture> pTexture)
@@ -342,6 +265,6 @@ void MForwardRenderTransparentShaderPropertyBlock::BindMaterial(const std::share
 {
 	MFrameShaderPropertyBlock::BindMaterial(pMaterial);
 
-	MORTY_ASSERT(m_pTransparentFrontTextureParam = m_pShaderPropertyBlock->FindTextureParam("u_texSubpassInput0"));
-	MORTY_ASSERT(m_pTransparentBackTextureParam = m_pShaderPropertyBlock->FindTextureParam("u_texSubpassInput1"));
+	MORTY_ASSERT(m_pTransparentFrontTextureParam = m_pShaderPropertyBlock->FindTextureParam(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_0));
+	MORTY_ASSERT(m_pTransparentBackTextureParam = m_pShaderPropertyBlock->FindTextureParam(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_1));
 }

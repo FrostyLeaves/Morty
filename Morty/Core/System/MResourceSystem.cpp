@@ -122,13 +122,30 @@ std::shared_ptr<MResource> MResourceSystem::LoadResource(const MString& strResou
 	}
 	else
 	{
-		if (!pResource->Load(pLoader->LoadResource(strFullPath, strResourcePath)))
+		if (!pResource->Load(pLoader->LoadResource(strFullPath)))
 		{
 			GetEngine()->GetLogger()->Error("Load Resource failed: [path: {}]", pLoader->strResourcePath.c_str());
 		}
 	}
 
 	return pResource;
+}
+
+std::unique_ptr<MResourceData> MResourceSystem::LoadResourceData(const MString& strResourcePath)
+{
+	const MString strFullPath = GetFullPath(strResourcePath);
+	if (strFullPath.empty())
+	{
+		return nullptr;
+	}
+
+	auto pLoader = CreateLoader(strResourcePath);
+	if (!pLoader)
+	{
+		return nullptr;
+	}
+
+	return pLoader->LoadResource(strFullPath);
 }
 
 void MResourceSystem::UnloadResource(std::shared_ptr<MResource> pResource)
@@ -170,8 +187,13 @@ void MResourceSystem::SaveResource(std::shared_ptr<MResource> pResource)
 		return;
 	}
 
+	SaveResource(pResourceData, strResourcePath);
+}
+
+void MResourceSystem::SaveResource(const std::unique_ptr<MResourceData>& pResourceData, const MString& strOutputPath)
+{
 	std::vector<MByte> data = pResourceData->SaveBuffer();
-	MFileHelper::WriteData(strResourcePath, data);
+	MFileHelper::WriteData(strOutputPath, data);
 }
 
 std::shared_ptr<MResourceLoader> MResourceSystem::CreateLoader(const MString& strResourcePath)
@@ -196,7 +218,7 @@ void MResourceSystem::Reload(const MString& strResourcePath)
 
 		if (auto pLoader = CreateLoader(strResourcePath))
 		{
-			if (auto pResourceData = pLoader->LoadResource(strFullPath, strResourcePath))
+			if (auto pResourceData = pLoader->LoadResource(strFullPath))
 			{
 				iter->second->Load(std::move(pResourceData));
 				iter->second->OnReload();

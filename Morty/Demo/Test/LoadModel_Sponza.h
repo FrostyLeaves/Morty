@@ -32,13 +32,16 @@ public:
 
 		MResourceSystem* pResourceSystem = m_pEngine->FindSystem<MResourceSystem>();
 
-		auto pResource = pResourceSystem->LoadResource(strFullPath);
+		auto pResource = pResourceSystem->CreateResource<MReadableTextureResource>(strFullPath);
 		if (!pResource)
 		{
 			MORTY_ASSERT(pResource);
 			return nullptr;
 		}
 
+		auto pTextureData = pResourceSystem->LoadResourceData(strFullPath);
+		pResource->Load(std::move(pTextureData));
+		
 		std::shared_ptr<MTextureResource> pTexture = MTypeClass::DynamicCast<MTextureResource>(pResource);
 
 		if (eUsage == MEModelTextureUsage::Metallic)
@@ -103,6 +106,7 @@ void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
 		for (MEntity* pEntity : vEntity)
 		{
 			pEntitySystem->FindAllComponentRecursively(pEntity, MRenderMeshComponent::GetClassType(), vMeshComponents);
+			
 		}
 	}
 

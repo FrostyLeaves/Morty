@@ -323,7 +323,7 @@ bool MRenderView::BindRenderPass()
 
 	//index range is swapchain num
 
-	Vector2 size(GetWidth(), GetHeight());
+	Vector2i size(GetWidth(), GetHeight());
 	m_vRenderTarget.resize(vSwapchainImages.size());
 	for (size_t i = 0; i < vSwapchainImages.size(); ++i)
 	{

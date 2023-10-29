@@ -11,10 +11,9 @@
 #include <string>
 #include <vector>
 
-typedef std::string MString;
-typedef std::string_view MStringView;
-
-typedef std::string MPath;
+using MString = std::string;
+using MStringView = std::string_view;
+using MPath = std::string;
 
 class MStringUtil
 {

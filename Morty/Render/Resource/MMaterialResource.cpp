@@ -15,13 +15,13 @@ bool MMaterialResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 	pMaterialData->eMaterialType = GetMaterialType();
 	pMaterialData->eCullMode = GetCullMode();
 	pMaterialData->shaderMacro = GetShaderMacro();
-	if (const auto pVertexResource = GetVertexShaderResource())
+
+	for (size_t nIdx = 0; nIdx < size_t(MEShaderType::TOTAL_NUM); ++nIdx)
 	{
-		pMaterialData->vertexShader = pVertexResource->GetResourcePath();
-	}
-	if (const auto pPixelResource = GetPixelShaderResource())
-	{
-		pMaterialData->pixelShader = pPixelResource->GetResourcePath();
+		if (const auto pResource = GetShaderProgram()->GetShaderResource(MEShaderType(nIdx)))
+		{
+			pMaterialData->vShaders[nIdx] = pResource->GetResourcePath();
+		}
 	}
 
 	if (const auto pMaterialProperty = GetMaterialPropertyBlock())
@@ -29,7 +29,7 @@ bool MMaterialResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 		for (auto param : pMaterialProperty->m_vParams)
 		{
 			MMaterialResourceData::Property prop;
-			prop.name = param->strName;
+			prop.name = param->strName.ToString();
 			prop.value = MVariant::Clone(param->var);
 			pMaterialData->vProperty.push_back(prop);
 		}
@@ -41,7 +41,7 @@ bool MMaterialResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 				if (auto pResource = pTextureResourceParam->GetTextureResource())
 				{
 					MMaterialResourceData::Texture tex;
-					tex.name = texture->strName;
+					tex.name = texture->strName.ToString();
 					tex.value = pResource->GetResourcePath();
 					pMaterialData->vTextures.push_back(tex);
 				}
@@ -63,16 +63,23 @@ bool MMaterialResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 
 	SetMaterialType(pMaterialData->eMaterialType);
 	SetCullMode(pMaterialData->eCullMode);
+	SetCullMode(MECullMode::ECullNone);
 
 	SetShaderMacro(pMaterialData->shaderMacro);
-	LoadVertexShader(pMaterialData->vertexShader);
-	LoadPixelShader(pMaterialData->pixelShader);
+
+	for (size_t nIdx = 0; nIdx < size_t(MEShaderType::TOTAL_NUM); ++nIdx)
+	{
+		if (!pMaterialData->vShaders[nIdx].empty())
+		{
+			LoadShader(pMaterialData->vShaders[nIdx]);
+		}
+	}
 	
 	const size_t nPropertyNum = pMaterialData->vProperty.size();
 	for (size_t nIdx = 0; nIdx < nPropertyNum; ++nIdx)
 	{
 		const auto fbProperty = pMaterialData->vProperty[nIdx];
-		const MString& strPropertyName = fbProperty.name;
+		const MStringId strPropertyName(fbProperty.name.c_str());
 
 		if (std::shared_ptr<MShaderConstantParam> pConstantParam = GetMaterialPropertyBlock()->FindConstantParam(strPropertyName))
 		{
@@ -86,7 +93,7 @@ bool MMaterialResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 	{
 		const auto fbTexture = pMaterialData->vTextures[nIdx];
 		const auto pTextureResource = pResourceSystem->LoadResource(fbTexture.value, true);
-		SetTexture(fbTexture.name, pTextureResource);
+		SetTexture(MStringId(fbTexture.name.c_str()), pTextureResource);
 	}
 
 	m_pResourceData = std::move(pResourceData);

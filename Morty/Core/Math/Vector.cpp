@@ -326,6 +326,13 @@ Vector2::Vector2(const Vector3& vec3)
 
 }
 
+Vector2::Vector2(const Vector2i& vec2)
+    : x(vec2.x)
+    , y(vec2.y)
+{
+    
+}
+
 float Vector2::Length() const
 {
 	return sqrtf(x * x + y * y);
@@ -452,4 +459,32 @@ const mfbs::Vector4* Vector4::Serialize(flatbuffers::FlatBufferBuilder& fbb) con
 void Vector4::Deserialize(const void* pBufferPointer)
 {
 	memcpy(this, pBufferPointer, sizeof(Vector4));
+}
+
+Vector2i::Vector2i(int x, int y)
+    :x(x)
+    ,y(y)
+{
+}
+
+bool Vector2i::operator!=(const Vector2i& other) const
+{
+	return !operator==(other);
+}
+
+bool Vector2i::operator==(const Vector2i& other) const
+{
+	return x == other.x && y == other.y;
+}
+
+Vector3i::Vector3i(int x, int y, int z)
+	: x(x)
+	, y(y)
+	, z(z)
+{
+}
+
+Vector3i Vector3i::operator*(const int& value) const
+{
+	return Vector3i(x * value, y * value, z * value);
 }

@@ -1,12 +1,17 @@
-#include "Internal/internal_constant.hlsl"
-#include "Internal/internal_functional.hlsl"
-#include "Lighting/pbr_lighting.hlsl"
-#include "Shadow/shadow.hlsl"
+#include "../Internal/internal_uniform_global.hlsl"
+#include "../Internal/internal_functional.hlsl"
+#include "../Lighting/pbr_lighting.hlsl"
+#include "../Voxel/vxgi_lighting.hlsl"
 
 struct VS_OUT
 {
     float4 pos : SV_POSITION;
     float2 uv : TEXCOORD;
+};
+
+struct PS_OUT
+{
+    float4 target0: SV_Target;
 };
 
 //Textures
@@ -32,8 +37,6 @@ float3 GetWorldPosition(VS_OUT input, float fDepth)
 
 float3 AdditionAllLights(VS_OUT input)
 {
-    float3 f3Color = float3(0.0f, 0.0f, 0.0f);
-
     float4 f3Albedo_fMetallic = u_mat_f3Albedo_fMetallic.Sample(NearestSampler, input.uv);
     float4 f3Normal_fRoughness = u_mat_f3Normal_fRoughness.Sample(NearestSampler, input.uv);
     float4 f3Position_fAmbientOcc = u_mat_f3Position_fAmbientOcc.Sample(NearestSampler, input.uv);
@@ -73,8 +76,7 @@ float3 AdditionAllLights(VS_OUT input)
         f3Ambient = float3(0.1, 0.1, 0.1) * f3Albedo * fAmbientOcc;
     }
 
-
-    LightPointData pointData;
+    SurfaceData pointData;
     pointData.f3CameraDir = f3CameraDir;
     pointData.f3Normal = f3Normal;
     pointData.f3WorldPosition = f3WorldPosition;
@@ -83,35 +85,27 @@ float3 AdditionAllLights(VS_OUT input)
     pointData.fRoughness = fRoughness;
     pointData.fMetallic = fMetallic;
 
-
-    if (u_bDirectionLightEnabled > 0)
-    {
-        float3 f3LightInverseDirection = -u_xDirectionalLight.f3LightDir;
-        
-        float shadow = GetDirectionShadow(u_texShadowMap, f3WorldPosition, f3Normal, f3LightInverseDirection);
-
-        f3Color += shadow * AdditionDirectionLight(u_xDirectionalLight, pointData);
-    }
+    float3 f3LightColor = PbrLighting(pointData);
 
 
-    for(int nPointLightIdx = 0; nPointLightIdx < min(MPOINT_LIGHT_PIXEL_NUMBER, u_nValidPointLightsNumber); ++nPointLightIdx)
-    {
-        f3Color += AdditionPointLight(u_vPointLights[nPointLightIdx], pointData);
-    }
-
-
-    for(int nSpotLightIdx = 0; nSpotLightIdx < min(MSPOT_LIGHT_PIXEL_NUMBER, u_nValidSpotLightsNumber); ++nSpotLightIdx)
-    {
-        f3Color += AdditionSpotLight(u_vSpotLights[nSpotLightIdx], pointData);
-    }
-
-
-    f3Color = f3Color + f3Ambient;
-
-    // HDR tonemapping
-    //f3Color = f3Color / (f3Color + float3(1.0, 1.0, 1.0));
-    // gamma correct
-    //f3Color = pow(f3Color, float3(1.0/2.2, 1.0/2.2, 1.0/2.2)); 
+    float4 f4VXGIColor = VoxelDiffuseTracing(u_texVoxelMap, voxelMapSetting, f3WorldPosition,  f3Normal);
+    
+    float3 f3Color = f3LightColor + f4VXGIColor.rgb + f3Ambient;
 
     return f3Color;
+}
+
+float3 GetPixelColor(VS_OUT input)
+{
+    return AdditionAllLights(input);
+}
+
+PS_OUT PS_MAIN(VS_OUT input)
+{
+    PS_OUT output;
+    
+    output.target0 = float4(GetPixelColor(input), 1.0f);
+    
+
+    return output;
 }

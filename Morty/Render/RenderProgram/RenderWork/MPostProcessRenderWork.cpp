@@ -18,7 +18,7 @@
 #include "System/MResourceSystem.h"
 
 
-#define ACES_ENABLE true
+#define ACES_ENABLE false
 
 MORTY_CLASS_IMPLEMENT(MPostProcessRenderWork, ISinglePassRenderWork)
 
@@ -49,12 +49,12 @@ void MPostProcessRenderWork::Render(MRenderInfo& info)
 
 	pCommand->BeginRenderPass(&m_renderPass);
 
-	Vector2 v2Size = m_renderPass.GetFrameBufferSize();
+	const Vector2i n2Size = m_renderPass.GetFrameBufferSize();
 
-	pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
-	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
+	pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, n2Size.x, n2Size.y));
+	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, n2Size.x, n2Size.y));
 
-	m_pMaterial->GetMaterialPropertyBlock()->SetTexture("u_texScreenTexture", pInputTexture);
+	m_pMaterial->GetMaterialPropertyBlock()->SetTexture(MShaderPropertyName::POSTPROCESS_SCREEN_TEXTURE, pInputTexture);
 	if (pCommand->SetUseMaterial(m_pMaterial))
 	{
 		pCommand->DrawMesh(pMeshManager->GetScreenRect());
@@ -80,8 +80,8 @@ void MPostProcessRenderWork::InitializeMaterial()
 #else
 	std::shared_ptr<MResource> pPixelShader = pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mps");
 #endif
-	m_pMaterial->LoadVertexShader(pVertexShader);
-	m_pMaterial->LoadPixelShader(pPixelShader);
+	m_pMaterial->LoadShader(pVertexShader);
+	m_pMaterial->LoadShader(pPixelShader);
 	m_pMaterial->SetCullMode(MECullMode::ECullNone);
 
 #if ACES_ENABLE

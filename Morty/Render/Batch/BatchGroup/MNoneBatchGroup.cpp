@@ -30,11 +30,11 @@ void MNoneBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pM
 		if (std::shared_ptr<MShaderPropertyBlock> pTemplatePropertyBlock = pMaterial->GetMeshPropertyBlock())
 		{
 			m_pShaderPropertyBlock = pTemplatePropertyBlock->Clone();
-			m_pTransformParam = m_pShaderPropertyBlock->FindConstantParam("u_meshMatrix");
+			m_pTransformParam = m_pShaderPropertyBlock->FindConstantParam(MShaderPropertyName::CBUFFER_MESH_MATRIX);
 			MVariantStruct& srt = m_pTransformParam->var.GetValue<MVariantStruct>();
-			m_worldMatrix = srt.FindVariant("u_matWorld");
-			m_normalMatrix = srt.FindVariant("u_matNormal");
-			m_instanceIdx = srt.FindVariant("u_meshIdx");
+			m_worldMatrix = srt.FindVariant(MShaderPropertyName::MESH_WORLD_MATRIX);
+			m_normalMatrix = srt.FindVariant(MShaderPropertyName::MESH_NORMAL_MATRIX);
+			m_instanceIdx = srt.FindVariant(MShaderPropertyName::MESH_INSTANCE_INDEX);
 		}
 	}
 }

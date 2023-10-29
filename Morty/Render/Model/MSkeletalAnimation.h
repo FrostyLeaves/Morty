@@ -57,7 +57,7 @@ public:
 	float GetTicksDuration() const { return m_fTicksDuration; }
 	float GetTicksPerSecond() const { return m_fTicksPerSecond; }
 
-	void Update(MSkeletonPose& outputPose, const float& fTime, MSkeletonInstance* pSkeletonIns, const MSkeletonAnimMap& skelAnimMap) const;
+	void SamplePose(MSkeletonPose& outputPose, const float& fTime, MSkeletonInstance* pSkeletonIns, const MSkeletonAnimMap& skelAnimMap) const;
 
 	void SetSkeletonTemplate(MSkeleton* pSkeleton);
 	MSkeleton* GetSkeletonTemplate() const { return m_pSkeleton; }
@@ -100,7 +100,7 @@ public:
 	virtual void Stop() override;
 	virtual void SetLoop(const bool& bLoop) override;
 	virtual bool GetLoop() override { return m_bLoop; }
-	virtual void Update(const float& fDelta, const bool& bAnimStep = true) override;
+	virtual void NextStep(const float& fDelta, const bool& bAnimStep = true) override;
 
 	//range 0.0f ~ 100.0f
 	virtual void SetPercent(const float& fPercent);

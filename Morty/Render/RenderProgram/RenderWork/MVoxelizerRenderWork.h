@@ -32,11 +32,11 @@ public:
     void Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
     void RenderDebugVoxel(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
 
-    std::shared_ptr<MMaterial> GetVoxelizerMaterial() const { return m_pVoxelizerMaterial; }
+    const std::unordered_map<MStringId, std::shared_ptr<MMaterial>>& GetVoxelizerMaterial() const { return m_tVoxelizerMaterial; }
     std::shared_ptr<MMaterial> GetVoxelDebugMaterial() const { return m_pVoxelDebugMaterial; }
     const MBuffer* GetVoxelTableBuffer() const;
     const MBuffer* GetVoxelDebugBuffer() const;
-
+    std::shared_ptr<MTexture> GetVoxelGITexture() const;
 
 protected:
 
@@ -46,16 +46,22 @@ protected:
     void InitializeDispatcher();
     void ReleaseDispatcher();
 
+    void InitializeVoxelTextureDispatcher();
+    void ReleaseVoxelTextureDispatcher();
+
     void InitializeRenderPass();
     void ReleaseRenderPass();
 
-    MComputeDispatcher* m_pVoxelMapGenerator = nullptr;
-    std::shared_ptr<MShaderConstantParam> m_pVoxelMapSetting = nullptr;
-    std::shared_ptr<MMaterial> m_pVoxelizerMaterial = nullptr;
+    MComputeDispatcher* m_pVoxelDebugIndirectGenerator = nullptr;
+    MComputeDispatcher* m_pVoxelTextureGenerator = nullptr;
+    std::shared_ptr<MShaderConstantParam> m_pDebugVoxelMapSetting = nullptr;
+    std::shared_ptr<MShaderConstantParam> m_pVoxelizerVoxelMapSetting = nullptr;
+    std::unordered_map<MStringId, std::shared_ptr<MMaterial>> m_tVoxelizerMaterial = {};
     std::shared_ptr<MMaterial> m_pVoxelDebugMaterial = nullptr;
     MBuffer m_voxelizerBuffer;
     MBuffer m_drawIndirectBuffer;
 
+    std::shared_ptr<MTexture> m_voxelGITexture = nullptr;
     std::shared_ptr<MTexture> m_pVoxelizerRenderTarget = nullptr;
     MRenderPass m_voxelizerRenderPass;
 };

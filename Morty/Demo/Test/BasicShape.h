@@ -30,20 +30,20 @@ void SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 		std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
 
-		pMaterial->LoadVertexShader("Shader/Forward/model.mvs");
-		pMaterial->LoadPixelShader("Shader/Forward/model.mps");
+		pMaterial->LoadShader("Shader/Model/universal_model.mvs");
+		pMaterial->LoadShader("Shader/Forward/basic_lighting.mps");
 
-		pMaterial->GetMaterialPropertyBlock()->SetValue("f3Ambient", Vector3(1.0f, 1.0f, 1.0f));
-		pMaterial->GetMaterialPropertyBlock()->SetValue("f3Diffuse", Vector3(1.0f, 1.0f, 1.0f));
-		pMaterial->GetMaterialPropertyBlock()->SetValue("f3Specular", Vector3(1.0f, 1.0f, 1.0f));
-		pMaterial->GetMaterialPropertyBlock()->SetValue("fAlphaFactor", 1.0f);
-		pMaterial->GetMaterialPropertyBlock()->SetValue("fShininess", 32.0f);
+		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_AMBIENT, Vector3(1.0f, 1.0f, 1.0f));
+		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_DIFFUSE, Vector3(1.0f, 1.0f, 1.0f));
+		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_SPECULAR, Vector3(1.0f, 1.0f, 1.0f));
+		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ALPHA_FACTOR, 1.0f);
+		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_SHININESS, 32.0f);
 
 
 		std::shared_ptr<MResource> diffuse = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_albedo.png");
 		std::shared_ptr<MResource> normal = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_normal.png");
-		pMaterial->SetTexture("u_texDiffuse", diffuse);
-		pMaterial->SetTexture("u_texNormal", normal);
+		pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_DIFFUSE, diffuse);
+		pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_NORMAL, normal);
 
 		if (normal)
 		{

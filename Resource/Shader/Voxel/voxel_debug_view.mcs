@@ -1,5 +1,6 @@
-#include "Voxel/voxel_struct_define.hlsl"
-#include "Internal/internal_indirect_define.hlsl"
+#include "../Internal/internal_constant.hlsl"
+#include "../Voxel/voxel_function.hlsl"
+#include "../Internal/internal_indirect_define.hlsl"
 
 
 [[vk::binding(0,0)]] StructuredBuffer<VoxelizerOutput> rVoxelTable;
@@ -20,16 +21,27 @@
 [numthreads(8, 8, 8)]
 void CS_MAIN(uint3 GlobalInvocationID : SV_DispatchThreadID )
 {
-    uint3 voxelPosition = GlobalInvocationID;
+    uint3 voxelTableUVW = GlobalInvocationID;
 
-    int voxelTableIdx = VoxelUVWToInstanceId(voxelMapSetting, voxelPosition);
+    int voxelTableIdx = VoxelCoordToInstanceId(voxelMapSetting, voxelTableUVW);
 
     VoxelizerOutput voxelizerData = rVoxelTable[voxelTableIdx];
 
+    int nVoxelCount = voxelizerData.nVoxelCount[0]
+        + voxelizerData.nVoxelCount[1]
+        + voxelizerData.nVoxelCount[2]
+        + voxelizerData.nVoxelCount[3]
+        + voxelizerData.nVoxelCount[4]
+        + voxelizerData.nVoxelCount[5];
+
     //TODO 
-    if (voxelizerData.nVoxelCount == 0)
+    if (nVoxelCount == 0)
     {
         indirectDraws[voxelTableIdx].instanceCount = 0;
+        indirectDraws[voxelTableIdx].vertexOffset = 0;
+        indirectDraws[voxelTableIdx].firstInstance = 0;
+        indirectDraws[voxelTableIdx].firstIndex = 0;
+        indirectDraws[voxelTableIdx].indexCount = 0;
     }
     else
     {

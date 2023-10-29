@@ -29,7 +29,7 @@ public:
 	void Render(MIRenderCommand* pCommand) override;
 
 	//override to use other material.
-	virtual const std::shared_ptr<MMaterial>& GetMaterial(const MMaterialCullingGroup& group) const;
+	virtual std::shared_ptr<MMaterial> GetMaterial(const MMaterialCullingGroup& group) const;
 
 private:
 

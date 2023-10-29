@@ -42,49 +42,83 @@ struct MORTY_API MCascadedShadowRenderData
 	MBoundsSphere boundsSphere;
 };
 
-struct MORTY_API MVoxelMapSetting
+struct MORTY_API MVoxelClipmap
 {
 	Vector3 f3VoxelOrigin = {};
-	float fResolution = 0.0f;
-	float fVoxelStep = 0.0f;
+	float fVoxelSize = 0.0f;
+};
 
-	const MBuffer* pVoxelTableBuffer = nullptr;
+struct MORTY_API MVoxelMapSetting
+{
+	MVoxelClipmap vClipmap[MRenderGlobal::VOXEL_GI_CLIP_MAP_NUM];
+	uint32_t nResolution = 1;
+	uint32_t nClipmapIdx = 0;
+};
+
+struct MORTY_API MDirectionLightData
+{
+	Vector3 f3LightDirection;
+	Vector3 f3LightIntensity;
+	float fLightSize;
+};
+
+struct MORTY_API MPointLightData
+{
+	Vector3 f3LightPosition;
+	Vector3 f3LightIntensity;
+
+	float fConstant;
+	float fLinear;
+	float fQuadratic;
 };
 
 struct MRenderInfo
 {
-	uint32_t nFrameIndex = 0;
-
-	/************************** basic **************************/
-	float fDelta = 0.0f;
-	float fGameTime = 0.0f;
-	class MViewport* pViewport = nullptr;
+	//TODO remove scene pointer.
+	const MScene* pScene = nullptr;
 
 	/************************** render **************************/
 	MIRenderCommand* pPrimaryRenderCommand = nullptr;
 
+	/************************** basic **************************/
+	uint32_t nFrameIndex = 0;
+	float fDelta = 0.0f;
+	float fGameTime = 0.0f;
+
+	Vector2i f2ViewportLeftTop;
+	Vector2i f2ViewportSize;
+
 	/************************** camera **************************/
-	MEntity* pCameraEntity = nullptr;
-	MEntity* pDirectionalLightEntity = nullptr;
+	Vector2 f2CameraNearFar;
+	Matrix4 m4CameraTransform;
 	Matrix4 m4CameraInverseProjection;
 	MCameraFrustum cameraFrustum;
+
+	/************************** environment **************************/
+	std::shared_ptr<MTexture> pEnvDiffuseTexture = nullptr;
+	std::shared_ptr<MTexture> pEnvSpecularTexture = nullptr;
+
+	/************************** light **************************/
+	MDirectionLightData directionLight;
+	std::vector<MPointLightData> vPointLight;
+
+	/************************** voxelizer **************************/
+	MVoxelMapSetting voxelSetting;
+
+	const MBuffer* pVoxelTableBuffer = nullptr;
+	std::shared_ptr<MTexture> pVoxelGITexture = nullptr;
 
 	/************************** shadow **************************/
 	std::array<MCascadedShadowRenderData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> shadowRenderInfo;
 
-	/************************** skybox **************************/
-	MEntity* pSkyBoxEntity = nullptr;
-
 	/************************** mesh **************************/
-	// transparent
+	//TODO: remove this shit
 	std::map<std::shared_ptr<MMaterial>, std::vector<MRenderMeshComponent*>> m_tTransparentGroupMesh;
 
-	//debug
-	std::vector<MDebugMeshComponent*> m_vDebugMeshComponent;
-
-	//voxelizer
-	MVoxelMapSetting voxelSetting;
 
 public:
 
+	static MRenderInfo CreateFromViewport(MViewport* pViewport);
+
+	static void FillVoxelMapSetting(const MVoxelMapSetting& setting, MVariantStruct& output);
 };

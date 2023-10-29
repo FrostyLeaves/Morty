@@ -34,20 +34,20 @@ void MUniformBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterial>
     if (std::shared_ptr<MShaderPropertyBlock> pTemplatePropertyBlock = pMaterial->GetMeshPropertyBlock())
 	{
 		m_pShaderPropertyBlock = pTemplatePropertyBlock->Clone();
-		m_pTransformParam = m_pShaderPropertyBlock->FindConstantParam("u_meshMatrix");
+		m_pTransformParam = m_pShaderPropertyBlock->FindConstantParam(MShaderPropertyName::CBUFFER_MESH_MATRIX);
 	}
 
 	MStruct& meshMatrixCbuffer = m_pTransformParam->var.GetValue<MStruct>();
-	MVariantArray& arr = meshMatrixCbuffer.GetVariant<MVariantArray>("u_meshMatrix");
+	MVariantArray& arr = meshMatrixCbuffer.GetVariant<MVariantArray>(MShaderPropertyName::MESH_LOCAL_MATRIX);
 	m_nMaxInstanceNum = arr.MemberNum();
 
 	m_vTransformArray.resize(m_nMaxInstanceNum);
 	for (size_t nIdx = 0; nIdx < m_nMaxInstanceNum; ++nIdx)
 	{
 		MVariantStruct& srt = arr[nIdx].GetValue<MVariantStruct>();
-		m_vTransformArray[nIdx].worldMatrix =srt.FindVariant("u_matWorld");
-		m_vTransformArray[nIdx].normalMatrix = srt.FindVariant("u_matNormal");
-		m_vTransformArray[nIdx].instanceIndex = srt.FindVariant("u_meshIdx");
+		m_vTransformArray[nIdx].worldMatrix =srt.FindVariant(MShaderPropertyName::MESH_WORLD_MATRIX);
+		m_vTransformArray[nIdx].normalMatrix = srt.FindVariant(MShaderPropertyName::MESH_NORMAL_MATRIX);
+		m_vTransformArray[nIdx].instanceIndex = srt.FindVariant(MShaderPropertyName::MESH_INSTANCE_INDEX);
 	}
 }
 

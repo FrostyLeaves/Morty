@@ -26,7 +26,7 @@ public:
 
 	void Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
 
-	void Resize(Vector2 size) override;
+	void Resize(Vector2i size) override;
 
 	std::shared_ptr<ITextureInputAdapter> GetShadowMap() const;
 };

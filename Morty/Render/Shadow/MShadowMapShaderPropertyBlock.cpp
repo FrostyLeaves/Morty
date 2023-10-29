@@ -27,9 +27,9 @@ void MShadowMapShaderPropertyBlock::Initialize(MEngine* pEngine)
 	std::shared_ptr<MResource> ps = pResourceSystem->LoadResource("Shader/Shadow/shadowmap.mps");
 	m_pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pMaterial->SetCullMode(MECullMode::ECullNone);
-	m_pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, "1");
-	m_pMaterial->LoadVertexShader(vs);
-	m_pMaterial->LoadPixelShader(ps);
+	m_pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+	m_pMaterial->LoadShader(vs);
+	m_pMaterial->LoadShader(ps);
 
 	BindMaterial(m_pMaterial);
 }
@@ -46,27 +46,16 @@ void MShadowMapShaderPropertyBlock::Release(MEngine* pEngine)
 void MShadowMapShaderPropertyBlock::BindMaterial(const std::shared_ptr<MMaterial>& pMaterial)
 {
 	MORTY_ASSERT(m_pShaderPropertyBlock = pMaterial->GetMaterialPropertyBlock()->Clone());
-	MORTY_ASSERT(m_pWorldMatrixParam = m_pShaderPropertyBlock->FindConstantParam("cbShadowMatrix"));
+	MORTY_ASSERT(m_pWorldMatrixParam = m_pShaderPropertyBlock->FindConstantParam(MShaderPropertyName::SHADOW_GENERATE_CBUFFER_MATRIX_NAME));
 }
 
 void MShadowMapShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& info) 
 {
-	MViewport* pViewport = info.pViewport;
-	MORTY_ASSERT(pViewport);
-	MEntity* pCameraEntity = info.pCameraEntity;
-	MORTY_ASSERT(pCameraEntity);
-	MEntity* pDirectionalEntity = info.pDirectionalLightEntity;
-	MORTY_ASSERT(pDirectionalEntity);
-
-	MScene* pScene = pViewport->GetScene();
-	auto* pShadowMapManager = pScene->GetManager<MShadowMeshManager>();
-	MORTY_ASSERT(pShadowMapManager);
-
 	if (m_pWorldMatrixParam)
 	{
 		MVariantStruct& cStruct = m_pWorldMatrixParam->var.GetValue<MVariantStruct>();
 
-		MVariantArray& cCamProjArray = cStruct.GetVariant<MVariantArray>("u_matLightSpaceProj");
+		MVariantArray& cCamProjArray = cStruct.GetVariant<MVariantArray>(MShaderPropertyName::SHADOW_GENERATE_LIGHT_PROJ_MATRIX);
 
 		for (size_t nCascadedIdx = 0; nCascadedIdx < info.shadowRenderInfo.size(); ++nCascadedIdx)
 		{

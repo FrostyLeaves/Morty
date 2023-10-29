@@ -9,6 +9,7 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
+#include "Utility/MStringId.h"
 #include "Variant/MVariant.h"
 
 #include <vector>
@@ -17,15 +18,15 @@ class MORTY_API MShaderMacro
 {
 public:
 
-	void SetMacro(const MString& strKey, const MString& strValue);
-    void AddUnionMacro(const MString& strKey, const MString& strValue = "");
-    void RemoveMacro(const MString& strKey);
-	bool HasMacro(const MString& strKey);
+	void SetMacro(const MStringId& strKey, const MString& strValue);
+    void AddUnionMacro(const MStringId& strKey, const MString& strValue = "");
+    void RemoveMacro(const MStringId& strKey);
+	bool HasMacro(const MStringId& strKey);
 
 	bool Compare(const MShaderMacro& macro);
 
-	void SetInnerMacro(const MString& strKey, const MString& strValue);
-	MString GetInnerMacro(const MString& strKey);
+	void SetInnerMacro(const MStringId& strKey, const MString& strValue);
+	MString GetInnerMacro(const MStringId& strKey);
 
 	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
 	void Deserialize(const void* pBufferPointer);
@@ -33,11 +34,11 @@ public:
 protected:
 
 	friend class MMaterial;
-	void SetMacro(const MString& strKey, const MString& strValue, std::vector<std::pair<MString, MString> >& vector);
+	void SetMacro(const MStringId& strKey, const MString& strValue, std::unordered_map<MStringId, MString>& table);
 
 public:
-	std::vector<std::pair<MString, MString> > m_vMacroParams;
-	std::vector<std::pair<MString, MString> > m_vMortyMacroParams;
+	std::unordered_map<MStringId, MString> m_vMacroParams;
+	std::unordered_map<MStringId, MString> m_vMortyMacroParams;
 
-    static std::vector<std::pair<MString, MString> > s_vGlobalMacroParams;
+    static std::unordered_map<MStringId, MString> s_vGlobalMacroParams;
 };

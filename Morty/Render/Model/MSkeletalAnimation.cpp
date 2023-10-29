@@ -23,7 +23,7 @@ MSkeletalAnimation::~MSkeletalAnimation()
 
 }
 
-void MSkeletalAnimation::Update(MSkeletonPose& outputPose, const float& fTime, MSkeletonInstance* pSkeletonIns, const MSkeletonAnimMap& skelAnimMap) const
+void MSkeletalAnimation::SamplePose(MSkeletonPose& outputPose, const float& fTime, MSkeletonInstance* pSkeletonIns, const MSkeletonAnimMap& skelAnimMap) const
 {
 	const std::vector<MBone>& bones = pSkeletonIns->GetAllBones();
 
@@ -326,9 +326,12 @@ void MSkeletalAnimController::SetLoop(const bool& bLoop)
 	m_bLoop = bLoop;
 }
 
-void MSkeletalAnimController::Update(const float& fDelta, const bool& bAnimStep)
+void MSkeletalAnimController::NextStep(const float& fDelta, const bool& bAnimStep)
 {
-	if (!m_bInitialized) return;
+	if (!m_bInitialized)
+	{
+		return;
+	}
 
 	m_fTicks += m_pAnimation->GetTicksPerSecond() * fDelta;
 	if (m_fTicks >= m_pAnimation->GetTicksDuration())
@@ -336,21 +339,17 @@ void MSkeletalAnimController::Update(const float& fDelta, const bool& bAnimStep)
 		if (m_bLoop)
 		{
 			m_fTicks = fmodf(m_fTicks, m_pAnimation->GetTicksDuration());
-			if (bAnimStep)
-				m_pAnimation->Update(m_pSkeletonIns->GetCurrentPose(), fmodf(m_fTicks, m_pAnimation->GetTicksDuration()), m_pSkeletonIns, m_SkeletonAnimMap);
 		}
 		else
 		{
 			m_fTicks = m_pAnimation->GetTicksDuration();
-			if (bAnimStep)
-				m_pAnimation->Update(m_pSkeletonIns->GetCurrentPose(), fmodf(m_fTicks, m_pAnimation->GetTicksDuration()), m_pSkeletonIns, m_SkeletonAnimMap);
 			this->Stop();
 		}
 	}
-	else
+
+	if (bAnimStep)
 	{
-		if (bAnimStep)
-			m_pAnimation->Update(m_pSkeletonIns->GetCurrentPose(), m_fTicks, m_pSkeletonIns, m_SkeletonAnimMap);
+		m_pAnimation->SamplePose(m_pSkeletonIns->GetCurrentPose(), m_fTicks, m_pSkeletonIns, m_SkeletonAnimMap);
 	}
 }
 

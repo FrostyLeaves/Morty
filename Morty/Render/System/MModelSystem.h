@@ -15,16 +15,4 @@ class MScene;
 class MORTY_API MModelSystem : public MISystem
 {
     MORTY_CLASS(MModelSystem)
-public:
-    MModelSystem();
-    virtual ~MModelSystem();
-
-public:
-
-    virtual void SceneTick(MScene* pScene, const float& fDelta) override;
-
-    void UpdateAnimation(MScene* pScene, const float& fDelta);
-
-private:
-
 };

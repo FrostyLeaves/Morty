@@ -652,8 +652,9 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 			{
 				std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 
-				pMaterial->LoadVertexShader("Shader/Deferred/model_gbuffer.mvs");
-				pMaterial->LoadPixelShader("Shader/Deferred/model_gbuffer.mps");
+				pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_UNIFORM, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+				pMaterial->LoadShader("Shader/Model/universal_model.mvs");
+				pMaterial->LoadShader("Shader/Deferred/deferred_gbuffer.mps");
 				pMaterial->SetMaterialType(MEMaterialType::EDeferred);
 
 #if false
@@ -672,26 +673,26 @@ void PBR_SHPERE(MEngine* pEngine, MScene* pScene)
 				std::shared_ptr<MResource> height = pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero);
 #endif
 
-				pMaterial->SetTexture(MaterialKey::Albedo, albedo);
-				pMaterial->SetTexture(MaterialKey::Normal, normal);
-				pMaterial->SetTexture(MaterialKey::Metallic, metal);
-				pMaterial->SetTexture(MaterialKey::Roughness, roughness);
-				pMaterial->SetTexture(MaterialKey::AmbientOcc, ao);
-				pMaterial->SetTexture(MaterialKey::Height, height);
+				pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_ALBEDO, albedo);
+				pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_NORMAL, normal);
+				pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_METALLIC, metal);
+				pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_ROUGHNESS, roughness);
+				pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_AMBIENTOCC, ao);
+				pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_HEIGHT, height);
 
-				auto material = pMaterial->GetMaterialPropertyBlock()->FindConstantParam("cbMaterial");
+				auto material = pMaterial->GetMaterialPropertyBlock()->FindConstantParam(MShaderPropertyName::MATERIAL_CBUFFER_NAME);
 
 				MStruct materialSut = material->var.GetValue<MStruct>();
-				MStruct uxMaterial = materialSut.GetVariant<MStruct>("u_xMaterial");
+				MStruct uxMaterial = materialSut.GetVariant<MStruct>(MShaderPropertyName::MATERIAL_STRUCT_NAME);
 
 				Vector3 xyz;
 				spectrum_to_xyz(bb_spectrum, &xyz.x, &xyz.y, &xyz.z);
 
 				Vector3 color = RgbCalculator().Calc(lightWave);
 				
-				uxMaterial.SetVariant("fMetallic", float(nMetallicIdx) / MetallicCount);
-				uxMaterial.SetVariant("fRoughness", float(nRoughnessIdx) / RoughnessCount);
-				uxMaterial.SetVariant("f4Albedo", Vector4(color, 1.0f));
+				uxMaterial.SetVariant(MShaderPropertyName::MATERIAL_METALLIC, float(nMetallicIdx) / MetallicCount);
+				uxMaterial.SetVariant(MShaderPropertyName::MATERIAL_ROUGHNESS, float(nRoughnessIdx) / RoughnessCount);
+				uxMaterial.SetVariant(MShaderPropertyName::MATERIAL_ALBEDO, Vector4(color, 1.0f));
 
 				pMeshComponent->Load(pCubeMeshResource);
 				pMeshComponent->SetMaterial(pMaterial);

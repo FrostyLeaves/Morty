@@ -39,8 +39,7 @@ void MCullingResultRenderable::SetInstanceCulling(const std::shared_ptr<MInstanc
 	m_pCullingAdapter = pCullingAdapter;
 }
 
-
-const std::shared_ptr<MMaterial>& MCullingResultRenderable::GetMaterial(const MMaterialCullingGroup& group) const
+std::shared_ptr<MMaterial> MCullingResultRenderable::GetMaterial(const MMaterialCullingGroup& group) const
 {
 	const auto& pMaterial = group.pMaterial;
 	return pMaterial;
@@ -71,19 +70,18 @@ void MCullingResultRenderable::Render(MIRenderCommand* pCommand)
 			continue;
 		}
 
+		if (pMaterialFilter && !pMaterialFilter->Filter(group.pMaterial))
+		{
+			continue;
+		}
+
 		const auto& pMaterial = GetMaterial(group);
 		if (pMaterial == nullptr)
 		{
-			MORTY_ASSERT(pMaterial);
 			continue;
 		}
 
-		if (pMaterialFilter && !pMaterialFilter->Filter(pMaterial))
-		{
-			continue;
-		}
-
-		pCommand->SetUseMaterial(pMaterial);
+		pCommand->SetGraphPipeline(pMaterial);
 
 		for (auto& vPropertyBlock : m_vFramePropertyAdapter)
 		{
@@ -91,6 +89,7 @@ void MCullingResultRenderable::Render(MIRenderCommand* pCommand)
 		}
 
 		pCommand->SetShaderPropertyBlock(group.pMeshTransformProperty);
+		pCommand->SetShaderPropertyBlock(group.pMaterial->GetMaterialPropertyBlock());
 
 		pCommand->DrawIndexedIndirect(
 			pVertexBuffer,

@@ -57,6 +57,6 @@ public:
 
     const MType* ResourceType() const override;
 
-    std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath, const MString& svPath) override;
+    std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath) override;
 
 };

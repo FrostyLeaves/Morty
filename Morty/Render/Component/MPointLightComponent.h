@@ -25,7 +25,7 @@ public:
 public:
 
 	void SetColor(const MColor& color) { m_f3Color = color; }
-	MColor GetColor() { return m_f3Color; }
+	MColor GetColor() const { return m_f3Color; }
 
 	void SetColorVector(const Vector4& color) { m_f3Color = color; }
 	Vector4 GetColorVector() const { return m_f3Color.ToVector4(); }

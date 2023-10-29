@@ -73,18 +73,14 @@ public:
 	Vector3 GetWorldForward();
 	Vector3 GetWorldRight();
 
-public:
-
 	const std::vector<MComponentID>& GetChildrenComponent() const { return m_vAttachChildren; }
 
 	static void CallRecursivelyFunction(MEntity* pEntity, std::function<void(MEntity*)> func);
 
-public:
-
-	virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
-	virtual void Deserialize(flatbuffers::FlatBufferBuilder& fbb) override;
-	virtual void Deserialize(const void* pBufferPointer) override;
-	virtual void PostDeserialize(const std::map<MGuid, MGuid>& tRedirectGuid) override;
+	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
+	void Deserialize(flatbuffers::FlatBufferBuilder& fbb) override;
+	void Deserialize(const void* pBufferPointer) override;
+	void PostDeserialize(const std::map<MGuid, MGuid>& tRedirectGuid) override;
 
 protected:
 

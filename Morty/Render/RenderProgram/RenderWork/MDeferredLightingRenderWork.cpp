@@ -71,10 +71,10 @@ void MDeferredLightingRenderWork::Render(MRenderInfo& info)
 
 	pCommand->BeginRenderPass(&m_renderPass);
 
-	Vector2 v2Size = m_renderPass.GetFrameBufferSize();
+	Vector2i n2Size = m_renderPass.GetFrameBufferSize();
 
-	pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
-	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
+	pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, n2Size.x, n2Size.y));
+	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, n2Size.x, n2Size.y));
 
 
 	if (pCommand->SetUseMaterial(m_pLightningMaterial))
@@ -96,12 +96,12 @@ void MDeferredLightingRenderWork::Initialize(MEngine* pEngine)
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
 	std::shared_ptr<MResource> vs = pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mvs");
-	std::shared_ptr<MResource> ps = pResourceSystem->LoadResource("Shader/Deferred/model_deferred.mps");
+	std::shared_ptr<MResource> ps = pResourceSystem->LoadResource("Shader/Deferred/deferred_lighting.mps");
 
 
 	m_pLightningMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-	m_pLightningMaterial->LoadVertexShader(vs);
-	m_pLightningMaterial->LoadPixelShader(ps);
+	m_pLightningMaterial->LoadShader(vs);
+	m_pLightningMaterial->LoadShader(ps);
 
 }
 
@@ -119,10 +119,10 @@ void MDeferredLightingRenderWork::SetGBuffer(const std::shared_ptr<IGBufferAdapt
 	if (std::shared_ptr<MShaderPropertyBlock> pParams = m_pLightningMaterial->GetMaterialPropertyBlock())
 	{
 		const auto& vTextures = pAdapter->GetBackTextures();
-		pParams->SetTexture("u_mat_f3Albedo_fMetallic", vTextures[0]);
-		pParams->SetTexture("u_mat_f3Normal_fRoughness", vTextures[1]);
-		pParams->SetTexture("u_mat_f3Position_fAmbientOcc", vTextures[2]);
-		pParams->SetTexture("u_mat_DepthMap", pAdapter->GetDepthTexture());
+		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_ALBEDO_METALLIC, vTextures[0]);
+		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_NORMAL_ROUGHNESS, vTextures[1]);
+		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_POSITION_AMBIENTOCC, vTextures[2]);
+		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_DEPTH_MAP, pAdapter->GetDepthTexture());
 	}
 }
 

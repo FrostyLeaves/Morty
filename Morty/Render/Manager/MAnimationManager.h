@@ -39,6 +39,7 @@ public:
 	void OnPoseChanged(MComponent* pComponent);
 	void RemoveComponent(MModelComponent* pComponent);
 
+	void SceneTick(MScene* pScene, const float& fDelta) override;
 	void RenderUpdate(MTaskNode* pNode);
 	MTaskNode* GetUpdateTask() const { return m_pUpdateTask; }
 

@@ -49,6 +49,9 @@ public:
 	static Vector3 ConvertToSphericalCoord(const Vector3& pos);
 	static Vector3 ConvertFormSphericalCoord(const Vector3& pos);
 
+	static Vector3i Floor(const Vector3 vec);
+	static Vector3i Round(const Vector3 vec);
+
 private:
 
 	static std::default_random_engine s_randomEngine;
