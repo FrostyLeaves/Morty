@@ -16,6 +16,7 @@ void CS_MAIN(uint3 GlobalInvocationID : SV_DispatchThreadID )
 {
     uint3 n3Coord = GlobalInvocationID;
 
+	uint nClipmap = voxelMapSetting.nClipmapIdx;
     int voxelTableIdx = VoxelCoordToInstanceId(voxelMapSetting, n3Coord);
 
     VoxelizerOutput voxelizerData = rVoxelTable[voxelTableIdx];
@@ -55,7 +56,7 @@ void CS_MAIN(uint3 GlobalInvocationID : SV_DispatchThreadID )
 							+ f4FaceColor[n3FaceIdx.z] * f3DirectionWeight.z;
 		
 		//TODO: 64 is VoxelMapSize
-		uint3 n3VoxelUVW = GetVoxelTexturePixelIdx(voxelMapSetting, n3Coord, nConeIdx);
+		uint3 n3VoxelUVW = GetVoxelTexturePixelIdx(voxelMapSetting, n3Coord, nClipmap, nConeIdx);
 		u_texVoxelMap[n3VoxelUVW] = f4ConeColor;
 	}
 }

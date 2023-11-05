@@ -44,7 +44,7 @@ float4 VoxelConeTrace(Texture3D<float4> texVoxelMap, VoxelMapSetting setting, fl
 		uint nSampleClipLevel = floor(fClipLevel);
 
         float3 f3Coord = WorldPositionToVoxelCoord(setting, nSampleClipLevel, f3TracePosition);
-        float3 f3VoxelUVW = GetVoxelTextureUVW(voxelMapSetting, f3Coord, nConeIdx);
+        float3 f3VoxelUVW = GetVoxelTextureUVW(voxelMapSetting, f3Coord, nSampleClipLevel, nConeIdx);
 
         float4 f4VoxelSampleValue = SampleVoxelMap(texVoxelMap, f3VoxelUVW);
 

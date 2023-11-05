@@ -117,7 +117,7 @@ void MDeferredRenderProgram::RenderSetup(MIRenderCommand* pPrimaryCommand)
 	MORTY_ASSERT(pVoxelTableBuffer);
 	m_renderInfo.pVoxelTableBuffer = pVoxelTableBuffer;
 	m_renderInfo.pVoxelGITexture = pVoxelTexture;
-	m_renderInfo.voxelSetting.nClipmapIdx = 3;// m_renderInfo.nFrameIndex% MRenderGlobal::VOXEL_GI_CLIP_MAP_NUM;
+	m_renderInfo.voxelSetting.nClipmapIdx =  m_renderInfo.nFrameIndex% MRenderGlobal::VOXEL_GI_CLIP_MAP_NUM;
 
 
 	//Voxelizer Culling.

@@ -135,28 +135,23 @@ float3 VoxelCoordToWorldPosition(VoxelMapSetting setting, uint3 n3Coord)
     return position;
 }
 
-uint3 GetVoxelTexturePixelIdx(VoxelMapSetting setting, uint3 n3Coord, uint nConeIdx)
+// get voxel texture3D uvw for sample.
+float3 GetVoxelTextureUVW(VoxelMapSetting setting, float3 f3Coord, uint nClipmapIdx, uint nConeIdx)
 {
-    uint3 n3PixelIdx = n3Coord + uint3(setting.nResolution * nConeIdx, 0, 0);
+    float3 f3PixelIdx = f3Coord + float3(setting.nResolution * nConeIdx, setting.nResolution * nClipmapIdx, 0);
 
-    return n3PixelIdx;
-}
-
-float3 GetVoxelTextureUVW(VoxelMapSetting setting, float3 f3Coord, uint nConeIdx)
-{
-    float3 f3PixelIdx = f3Coord + float3(setting.nResolution * nConeIdx, 0, 0);
-
-    float3 f3VoxelUVW = f3PixelIdx / float3(setting.nResolution * VOXEL_DIFFUSE_CONE_COUNT, setting.nResolution, setting.nResolution);
+    float3 f3VoxelUVW = f3PixelIdx / float3(setting.nResolution * VOXEL_DIFFUSE_CONE_COUNT, setting.nResolution  * VOXEL_GI_CLIP_MAP_NUM, setting.nResolution);
 
     return f3VoxelUVW;
 }
 
-float3 GetVoxelSize(VoxelMapSetting setting)
+// get voxel texture3D uvw for write.
+uint3 GetVoxelTexturePixelIdx(VoxelMapSetting setting, uint3 n3Coord, uint nClipmapIdx, uint nConeIdx)
 {
-    float fVoxelSize = setting.vClipmap[setting.nClipmapIdx].fVoxelSize;
-    return float3(fVoxelSize, fVoxelSize, fVoxelSize);
-}
+    uint3 n3PixelIdx = n3Coord + uint3(setting.nResolution * nConeIdx, setting.nResolution * nClipmapIdx, 0);
 
+    return n3PixelIdx;
+}
 
 
 #endif
