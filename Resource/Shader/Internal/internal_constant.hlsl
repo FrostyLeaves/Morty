@@ -30,6 +30,10 @@
     #define MESH_LOD_LEVEL_RANGE 1
 #endif
 
+#ifndef VOXEL_DIFFUSE_CONE_COUNT
+    #define VOXEL_DIFFUSE_CONE_COUNT 1
+#endif
+
 #ifndef NUM_PI
     #define NUM_PI (3.1415926535898)
     #define NUM_PI2 (6.283185307179586)
@@ -96,8 +100,9 @@ struct VoxelClipmap
 struct VoxelMapSetting
 {
     VoxelClipmap vClipmap[VOXEL_GI_CLIP_MAP_NUM];
-    uint nResolution;          //voxel table resolution.
-    uint nClipmapIdx;
+    uint nResolution;           //voxel table resolution. default 64
+    uint nViewportSize;         //voxelizer viewport size.
+    uint nClipmapIdx;           //update clipmap index current frame.
 };
 
 

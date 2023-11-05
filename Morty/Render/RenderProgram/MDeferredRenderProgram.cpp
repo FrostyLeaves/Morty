@@ -66,10 +66,11 @@ void MDeferredRenderProgram::Render(MIRenderCommand* pPrimaryCommand)
 
 	RenderSetup(pPrimaryCommand);
 	RenderShadow();
+	RenderVoxelizer();
 	RenderGBuffer();
 	RenderLightning();
 	RenderForward();
-	RenderVoxelizer();
+	RenderVoxelizerDebug();
 	RenderTransparent();
 	RenderPostProcess();
 	RenderDebug();
@@ -116,7 +117,7 @@ void MDeferredRenderProgram::RenderSetup(MIRenderCommand* pPrimaryCommand)
 	MORTY_ASSERT(pVoxelTableBuffer);
 	m_renderInfo.pVoxelTableBuffer = pVoxelTableBuffer;
 	m_renderInfo.pVoxelGITexture = pVoxelTexture;
-	m_renderInfo.voxelSetting.nClipmapIdx = m_nFrameIndex % MRenderGlobal::VOXEL_GI_CLIP_MAP_NUM;
+	m_renderInfo.voxelSetting.nClipmapIdx = 4;
 
 
 	//Voxelizer Culling.
@@ -391,17 +392,6 @@ void MDeferredRenderProgram::RenderVoxelizer()
 	});
 
 
-	MIndirectIndexRenderable debugRender;
-	debugRender.SetMaterial(pVoxelizerWork->GetVoxelDebugMaterial());
-	debugRender.SetPropertyBlockAdapter({
-		m_pFramePropertyAdapter
-	});
-	debugRender.SetIndirectIndexBuffer(pVoxelizerWork->GetVoxelDebugBuffer());
-	debugRender.SetMeshBuffer(pMeshManager->GetMeshBuffer());
-
-	pVoxelizerWork->RenderDebugVoxel(m_renderInfo, {
-	   &debugRender,
-	});
 }
 
 void MDeferredRenderProgram::RenderShadow()
@@ -438,7 +428,7 @@ void MDeferredRenderProgram::RenderForward()
 	indirectMesh.SetMeshBuffer(pMeshManager->GetMeshBuffer());
 	indirectMesh.SetPropertyBlockAdapter({
 		m_pFramePropertyAdapter,
-	});
+		});
 	indirectMesh.SetMaterialFilter(std::make_shared<MMaterialTypeFilter>(MEMaterialType::EDefault));
 	indirectMesh.SetInstanceCulling(m_pCameraFrustumCulling);
 
@@ -455,6 +445,26 @@ void MDeferredRenderProgram::RenderForward()
 		&skyBox,
 		});
 
+}
+
+
+void MDeferredRenderProgram::RenderVoxelizerDebug()
+{
+	auto pVoxelizerWork = GetRenderWork<MVoxelizerRenderWork>();
+
+	const MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
+
+	MIndirectIndexRenderable debugRender;
+	debugRender.SetMaterial(pVoxelizerWork->GetVoxelDebugMaterial());
+	debugRender.SetPropertyBlockAdapter({
+		m_pFramePropertyAdapter
+		});
+	debugRender.SetIndirectIndexBuffer(pVoxelizerWork->GetVoxelDebugBuffer());
+	debugRender.SetMeshBuffer(pMeshManager->GetMeshBuffer());
+
+	pVoxelizerWork->RenderDebugVoxel(m_renderInfo, {
+	   &debugRender,
+    });
 }
 
 void MDeferredRenderProgram::RenderTransparent()
@@ -489,4 +499,6 @@ void MDeferredRenderProgram::RenderDebug()
 	GetRenderWork<MDebugRenderWork>()->Render(m_renderInfo, {
 		&indirectMesh
 		});
+
+
 }

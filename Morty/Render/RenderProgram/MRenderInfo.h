@@ -52,6 +52,7 @@ struct MORTY_API MVoxelMapSetting
 {
 	MVoxelClipmap vClipmap[MRenderGlobal::VOXEL_GI_CLIP_MAP_NUM];
 	uint32_t nResolution = 1;
+	uint32_t nViewportSize = 1;
 	uint32_t nClipmapIdx = 0;
 };
 

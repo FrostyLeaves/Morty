@@ -29,7 +29,6 @@
 
 MORTY_CLASS_IMPLEMENT(MVoxelizerRenderWork, ISinglePassRenderWork)
 
-const int nVoxeilizerViewportScale = 2;
 
 void MVoxelizerRenderWork::Initialize(MEngine* pEngine)
 {
@@ -78,9 +77,7 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 		MEBufferBarrierStage::EPixelShaderWrite
 	);
 
-
-	const MVoxelClipmap& clipmap = info.voxelSetting.vClipmap[info.voxelSetting.nClipmapIdx];
-	const uint32_t fViewportSize = info.voxelSetting.nResolution * clipmap.fVoxelSize * nVoxeilizerViewportScale;
+	constexpr uint32_t fViewportSize = MRenderGlobal::VOXEL_VIEWPORT_SIZE;
 
 	pCommand->BeginRenderPass(&m_voxelizerRenderPass);
 	pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, fViewportSize, fViewportSize));
@@ -127,12 +124,16 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 		, MRenderGlobal::VOXEL_TABLE_SIZE / 8
 		, MRenderGlobal::VOXEL_TABLE_SIZE / 8);
 
-	pCommand->DispatchComputeJob(m_pVoxelTextureGenerator
-		, MRenderGlobal::VOXEL_TABLE_SIZE / 8
-		, MRenderGlobal::VOXEL_TABLE_SIZE / 8
-		, MRenderGlobal::VOXEL_TABLE_SIZE / 8);
+	{
+		pCommand->AddRenderToTextureBarrier({ m_voxelGITexture.get() }, METextureBarrierStage::EComputeShaderWrite);
 
-	pCommand->AddRenderToTextureBarrier({ m_voxelGITexture.get() });
+		pCommand->DispatchComputeJob(m_pVoxelTextureGenerator
+			, MRenderGlobal::VOXEL_TABLE_SIZE / 8
+			, MRenderGlobal::VOXEL_TABLE_SIZE / 8
+			, MRenderGlobal::VOXEL_TABLE_SIZE / 8);
+			
+		pCommand->AddRenderToTextureBarrier({ m_voxelGITexture.get() }, METextureBarrierStage::EPixelShaderSample);
+	}
 
 	pCommand->AddBufferMemoryBarrier(
 		{ &m_drawIndirectBuffer },
@@ -238,11 +239,11 @@ void MVoxelizerRenderWork::InitializeDispatcher()
 	{
 		auto pVoxelizerMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 		pVoxelizerMaterial->SetCullMode(MECullMode::ECullNone);
-		//TODO: only support storage batch materials.
 		pVoxelizerMaterial->GetShaderMacro().AddUnionMacro(key, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+		//pVoxelizerMaterial->SetConservativeRasterizationEnable(true);
 		pVoxelizerMaterial->LoadShader(voxelizerVS);
-		pVoxelizerMaterial->LoadShader(voxelizerPS);
-		pVoxelizerMaterial->LoadShader(voxelizerGS);
+		pVoxelizerMaterial->LoadShader(voxelizerPS);   
+		//pVoxelizerMaterial->LoadShader(voxelizerGS);
 
 		m_tVoxelizerMaterial[key] = pVoxelizerMaterial;
 	}
@@ -279,6 +280,11 @@ void MVoxelizerRenderWork::InitializeVoxelTextureDispatcher()
 	const std::shared_ptr<MShaderPropertyBlock>& params = m_pVoxelTextureGenerator->GetShaderPropertyBlock(0);
 	MORTY_ASSERT(m_pVoxelizerVoxelMapSetting = params->FindConstantParam(MShaderPropertyName::VOXELIZER_CBUFFER_VOXEL_MAP_NAME));
 
+	m_voxelGITexture = MTexture::CreateVXGIMap();
+	m_voxelGITexture->SetSize(Vector3i(MRenderGlobal::VOXEL_TABLE_SIZE * MRenderGlobal::VOXEL_DIFFUSE_CONE_COUNT
+		, MRenderGlobal::VOXEL_TABLE_SIZE, MRenderGlobal::VOXEL_TABLE_SIZE));
+	m_voxelGITexture->GenerateBuffer(pRenderSystem->GetDevice());
+
 	if (auto pVoxelTexture = params->FindTextureParam(MShaderPropertyName::VOXELIZER_VOXEL_TEXTURE_NAME))
 	{
 		pVoxelTexture->pTexture = m_voxelGITexture;
@@ -291,9 +297,6 @@ void MVoxelizerRenderWork::InitializeVoxelTextureDispatcher()
 		pVoxelTable->SetDirty();
 	}
 
-	m_voxelGITexture = MTexture::CreateVXGIMap();
-	m_voxelGITexture->SetSize(Vector3i(MRenderGlobal::VOXEL_TABLE_SIZE * 16, MRenderGlobal::VOXEL_TABLE_SIZE, MRenderGlobal::VOXEL_TABLE_SIZE));
-	m_voxelGITexture->GenerateBuffer(pRenderSystem->GetDevice());
 }
 
 void MVoxelizerRenderWork::ReleaseVoxelTextureDispatcher()
@@ -316,11 +319,9 @@ void MVoxelizerRenderWork::InitializeRenderPass()
 
 	const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
-	const uint32_t fVoxelTableSize = MRenderGlobal::VOXEL_TABLE_SIZE * nVoxeilizerViewportScale;
-
 	m_pVoxelizerRenderTarget = MTexture::CreateRenderTarget(METextureLayout::ERGBA_UNORM_8);
 	m_pVoxelizerRenderTarget->SetName("Voxelizer Render Target");
-	m_pVoxelizerRenderTarget->SetSize({ fVoxelTableSize, fVoxelTableSize });
+	m_pVoxelizerRenderTarget->SetSize({ MRenderGlobal::VOXEL_VIEWPORT_SIZE, MRenderGlobal::VOXEL_VIEWPORT_SIZE });
 	m_pVoxelizerRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
 
 	m_voxelizerRenderPass.AddBackTexture(m_pVoxelizerRenderTarget, { true, false, MColor::Black_T });
@@ -328,9 +329,6 @@ void MVoxelizerRenderWork::InitializeRenderPass()
 	m_voxelizerRenderPass.SetDepthWriteEnable(false);
 	m_voxelizerRenderPass.SetViewportNum(1);
 	m_voxelizerRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
-
-	//m_renderPass.SetDepthTestEnable(false);
-	//m_renderPass.SetDepthWriteEnable(false);
 
 }
 

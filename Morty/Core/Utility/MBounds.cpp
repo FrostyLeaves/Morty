@@ -6,9 +6,9 @@
 
 #include <float.h>
 
-#include "MBoundsAABB_generated.h"
-#include "MBoundsOBB_generated.h"
-#include "MBoundsSphere_generated.h"
+#include "Flatbuffer/MBoundsAABB_generated.h"
+#include "Flatbuffer/MBoundsOBB_generated.h"
+#include "Flatbuffer/MBoundsSphere_generated.h"
 
 MBoundsOBB::MBoundsOBB(const Vector3* vPoints, const uint32_t& unArrayLength)
 {

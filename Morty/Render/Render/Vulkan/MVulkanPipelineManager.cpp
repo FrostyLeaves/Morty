@@ -566,6 +566,22 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<
 	rasterizationState.depthBiasClamp = 0.0f; // Optional
 	rasterizationState.depthBiasSlopeFactor = 0.0f; // Optional
 
+	VkPipelineRasterizationConservativeStateCreateInfoEXT conservativeRasterStateCI{};
+	conservativeRasterStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_CONSERVATIVE_STATE_CREATE_INFO_EXT;
+	conservativeRasterStateCI.conservativeRasterizationMode = VK_CONSERVATIVE_RASTERIZATION_MODE_DISABLED_EXT;
+	conservativeRasterStateCI.extraPrimitiveOverestimationSize = 0.0f;
+
+	if (pMaterial->GetConservativeRasterizationEnable())
+	{
+		if (m_pDevice->GetDeviceFeatureSupport(MEDeviceFeature::EConservativeRasterization))
+		{
+			const float fOverestSize = m_pDevice->m_VkConservativeRasterProps.extraPrimitiveOverestimationSizeGranularity;
+			conservativeRasterStateCI.conservativeRasterizationMode = VK_CONSERVATIVE_RASTERIZATION_MODE_OVERESTIMATE_EXT;
+			conservativeRasterStateCI.extraPrimitiveOverestimationSize = fOverestSize;
+			rasterizationState.pNext = &conservativeRasterStateCI;
+		}
+	}
+
 	switch (pMaterial->GetCullMode())
 	{
 	case MECullMode::ECullNone:
@@ -797,7 +813,15 @@ void MVulkanPipelineManager::BindTextureParam(const std::shared_ptr<MShaderTextu
 	{
 		VkDescriptorImageInfo& imageInfo = pParam->m_VkImageInfo;
 		imageInfo.imageView = pTexture->m_VkImageView;
-		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		MORTY_ASSERT(pTexture->m_VkImageLayout != VK_IMAGE_LAYOUT_UNDEFINED);
+		if (VK_DESCRIPTOR_TYPE_STORAGE_IMAGE == pParam->m_VkDescriptorType)
+		{
+			imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+		}
+        else
+        {
+			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        }
 		imageInfo.sampler = pTexture->m_VkSampler;
 
 		if (VK_NULL_HANDLE == imageInfo.sampler)

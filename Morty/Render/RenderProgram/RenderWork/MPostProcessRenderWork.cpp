@@ -45,7 +45,7 @@ void MPostProcessRenderWork::Render(MRenderInfo& info)
 
 	MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
 
-	pCommand->AddRenderToTextureBarrier({ pInputTexture.get() });
+	pCommand->AddRenderToTextureBarrier({ pInputTexture.get() }, METextureBarrierStage::EPixelShaderSample);
 
 	pCommand->BeginRenderPass(&m_renderPass);
 

@@ -156,7 +156,7 @@ void MainEditor::UpdateSceneViewer(MIRenderCommand* pRenderCommand)
 		}
 	}
 
-	pRenderCommand->AddRenderToTextureBarrier(vRenderTextures);
+	pRenderCommand->AddRenderToTextureBarrier(vRenderTextures, METextureBarrierStage::EPixelShaderSample);
 }
 
 void MainEditor::ShowMenu()

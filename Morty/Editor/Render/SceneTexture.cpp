@@ -58,7 +58,7 @@ void SceneTexture::Initialize(MScene* pScene, const MString& strRenderProgram)
 	pDefaultCamera->SetName("Camera");
 	if (MSceneComponent* pSceneComponent = pDefaultCamera->RegisterComponent<MSceneComponent>())
 	{
-		pSceneComponent->SetPosition(Vector3(25, 50, -40));
+		pSceneComponent->SetPosition(Vector3(0, 20, 0));
 		pSceneComponent->SetRotation(Quaternion(Vector3(1, 0, 0), 45.0f));
 	}
 	pDefaultCamera->RegisterComponent<MCameraComponent>();

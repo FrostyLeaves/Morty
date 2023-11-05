@@ -28,6 +28,11 @@ class MMaterial;
 class MComputeDispatcher;
 class MIRenderCommand;
 
+enum class MEDeviceFeature
+{
+	EConservativeRasterization,
+};
+
 class MORTY_API MIDevice
 {;
 public:
@@ -85,6 +90,8 @@ public:
 	virtual void SubmitCommand(MIRenderCommand* pCommand) = 0;
 
 	virtual void Update() {}
+
+	virtual bool GetDeviceFeatureSupport(MEDeviceFeature feature) const = 0;
 
 private:
 

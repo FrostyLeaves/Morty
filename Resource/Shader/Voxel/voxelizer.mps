@@ -8,12 +8,18 @@
 
 float4 PS_MAIN(VS_OUT input) : SV_Target
 {
-    if (!ValidVoxelWorldPosition(voxelMapSetting, input.worldPos.xyz))
-    {
-        discard;
-    }
-    
+    //if (!ValidVoxelWorldPosition(voxelMapSetting, input.worldPos.xyz))
+    //{
+    //    discard;
+    //}
+
+    float fVoxelizerScaleInv = float(voxelMapSetting.nResolution) / float(voxelMapSetting.nViewportSize);
+
+    //uint3 n3Coord = uint3(input.pos.x * fVoxelizerScaleInv, voxelMapSetting.nResolution - (input.pos.y * fVoxelizerScaleInv) - 1, input.pos.z * voxelMapSetting.nResolution);
     uint3 n3Coord = uint3(WorldPositionToVoxelCoord(voxelMapSetting, input.worldPos.xyz));
+    //n3Coord.x = input.pos.x * fVoxelizerScaleInv;
+    //n3Coord.y = voxelMapSetting.nResolution - (input.pos.y * fVoxelizerScaleInv) - 1;
+    //n3Coord.z = input.pos.z * voxelMapSetting.nResolution;
 
 	int voxelTableIdx = VoxelCoordToInstanceId(voxelMapSetting, n3Coord);
     
@@ -39,7 +45,7 @@ float4 PS_MAIN(VS_OUT input) : SV_Target
     pointData.fRoughness = fRoughness;
     pointData.fMetallic = fMetallic;
 
-    float3 f3LightingColor = PbrLighting(pointData);
+    float3 f3LightingColor = f3Albedo; //PbrLighting(pointData);
 
 
     float3 f3AnisoDirection = f3Normal;

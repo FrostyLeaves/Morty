@@ -11,6 +11,7 @@
 #include "Render/MRenderGlobal.h"
 
 #include "Math/Vector.h"
+#include "Utility/MColor.h"
 
 class MIMesh;
 class MBuffer;
@@ -20,6 +21,14 @@ class MRenderPass;
 class MShaderPropertyBlock;
 class MComputeDispatcher;
 class MMaterialPipelineLayoutData;
+
+enum class METextureBarrierStage
+{
+    EUnknow = 0,
+	EPixelShaderSample,
+	EPixelShaderWrite,
+	EComputeShaderWrite
+};
 
 enum class MEBufferBarrierStage
 {
@@ -92,13 +101,14 @@ public:
 
 	virtual bool DispatchComputeJob(MComputeDispatcher* pMaterial, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ) = 0;
 
-	virtual bool AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures) = 0;
+	virtual bool AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures, METextureBarrierStage dstStage) = 0;
 	virtual bool AddBufferMemoryBarrier(const std::vector<const MBuffer*> vBuffers, MEBufferBarrierStage srcStage, MEBufferBarrierStage dstStage) = 0;
 
 	virtual bool DownloadTexture(MTexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback) = 0;
 	virtual bool CopyImageBuffer(MTexture* pSource, MTexture* pDest) = 0;
 	virtual void UpdateMipmaps(MTexture* pBuffer) = 0;
 	virtual void ResetBuffer(const MBuffer* pBuffer) = 0;
+	virtual void FillTexture(MTexture* pBuffer, MColor color) = 0;
 
 
 	virtual MIRenderCommand* CreateChildCommand() { return nullptr; }

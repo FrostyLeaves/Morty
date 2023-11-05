@@ -10,6 +10,7 @@ MShaderConstantParam::MShaderConstantParam()
 }
 
 MShaderConstantParam::MShaderConstantParam(const MShaderConstantParam& param)
+    : MShaderParam(param)
 {
 	strName = param.strName;
 	var = MVariant::Clone(param.var);

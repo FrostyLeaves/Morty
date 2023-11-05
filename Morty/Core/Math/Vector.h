@@ -1,7 +1,7 @@
 #ifndef _VECTOR_H_
 #define _VECTOR_H_
 
-#include "Vector_generated.h"
+#include "Flatbuffer/Vector_generated.h"
 #include "Utility/MGlobal.h"
 #include "Math/Matrix.h"
 

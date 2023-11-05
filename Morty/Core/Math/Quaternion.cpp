@@ -1,7 +1,7 @@
 ﻿#include "Math/Quaternion.h"
 #include <cassert>
 
-#include "Quaternion_generated.h"
+#include "Flatbuffer/Quaternion_generated.h"
 
 Quaternion::Quaternion()
 	: w(1)

@@ -62,12 +62,7 @@ void MDeferredLightingRenderWork::Render(MRenderInfo& info)
 	}
 	vTextures.push_back(m_pGBufferAdapter->GetDepthTexture().get());
 
-	if (const auto& pTexture = m_pShadowMapAdapter->GetTexture())
-	{
-		vTextures.push_back(pTexture.get());
-	}
-
-	pCommand->AddRenderToTextureBarrier(vTextures);
+	pCommand->AddRenderToTextureBarrier(vTextures, METextureBarrierStage::EPixelShaderSample);
 
 	pCommand->BeginRenderPass(&m_renderPass);
 

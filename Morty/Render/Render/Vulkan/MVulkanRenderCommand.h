@@ -46,7 +46,7 @@ public:
 
 	bool DispatchComputeJob(MComputeDispatcher* pComputeDispatcher, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ) override;
 
-	bool AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures) override;
+	bool AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures, METextureBarrierStage dstStage) override;
 
 	bool AddBufferMemoryBarrier(const std::vector<const MBuffer*> vBuffers, MEBufferBarrierStage srcStage, MEBufferBarrierStage dstStage) override;
 
@@ -54,6 +54,7 @@ public:
 	bool CopyImageBuffer(MTexture* pSource, MTexture* pDest) override;
 	void UpdateMipmaps(MTexture* pBuffer) override;
 	void ResetBuffer(const MBuffer* pBuffer) override;
+	void FillTexture(MTexture* pBuffer, MColor color) override;
 
 	void addFinishedCallback(std::function<void()> func) override;
 
@@ -64,10 +65,11 @@ public:
 	void SetTextureLayout(const std::vector<MTexture*>& vTextures, VkImageLayout newLayout);
 
 protected:
+	VkImageLayout GetTextureBarrierLayout(METextureBarrierStage stage) const;
 	VkAccessFlags GetBufferBarrierAccessFlag(MEBufferBarrierStage stage) const;
 	uint32_t GetBufferBarrierQueueFamily(MEBufferBarrierStage stage) const;
 	VkPipelineStageFlags GetBufferBarrierPipelineStage(MEBufferBarrierStage stage) const;
-
+	VkPipelineStageFlags GetTextureBarrierPipelineStage(METextureBarrierStage stage) const;
 public:
 
 	MVulkanDevice* m_pDevice = nullptr;

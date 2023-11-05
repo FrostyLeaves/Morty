@@ -394,9 +394,10 @@ void MVulkanRenderCommand::SetShaderPropertyBlock(const std::shared_ptr<MShaderP
 	vkCmdBindDescriptorSets(m_VkCommandBuffer, vkPipelineBindPoint, pUsingPipeline->m_pipelineLayout.vkPipelineLayout, pPropertyBlock->m_unKey, 1, &pPropertyBlock->m_VkDescriptorSet, vDynamicOffsets.size(), vDynamicOffsets.data());
 }
 
-bool MVulkanRenderCommand::AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures)
+bool MVulkanRenderCommand::AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures, METextureBarrierStage dstStage)
 {
-	SetTextureLayout(vTextures, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	const VkImageLayout dstLayout = GetTextureBarrierLayout(dstStage);
+	SetTextureLayout(vTextures, dstLayout);
 	return true;
 }
 
@@ -440,6 +441,8 @@ VkPipelineStageFlags GetSrcPipelineStageFlags(VkImageLayout imageLayout)
 {
 	switch (imageLayout)
 	{
+	case VK_IMAGE_LAYOUT_GENERAL:
+		return VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 	case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
 	case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
 		return VK_PIPELINE_STAGE_TRANSFER_BIT;
@@ -468,6 +471,8 @@ VkPipelineStageFlags GetDstPipelineStageFlags(VkImageLayout imageLayout)
 {
 	switch (imageLayout)
 	{
+	case VK_IMAGE_LAYOUT_GENERAL:
+		return VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 	case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
 	case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
 		return VK_PIPELINE_STAGE_TRANSFER_BIT;
@@ -496,10 +501,12 @@ void MVulkanRenderCommand::SetTextureLayout(const std::vector<MTexture*>& vTextu
 	VkPipelineStageFlags srcPipelineStage = VK_PIPELINE_STAGE_NONE_KHR;
 	VkPipelineStageFlags dstPipelineStage = VK_PIPELINE_STAGE_NONE_KHR;
 
-	for (uint32_t i = 0; i < vTextures.size(); ++i)
+	for (size_t nTexIdx = 0; nTexIdx < vTextures.size(); ++nTexIdx)
 	{
+		MTexture* pTexture = vTextures[nTexIdx];
+
 		VkImageLayout oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		auto findResult = m_tTextureLayout.find(vTextures[i]);
+		auto findResult = m_tTextureLayout.find(pTexture);
 		if (findResult != m_tTextureLayout.end())
 			oldLayout = findResult->second;
 		
@@ -507,18 +514,19 @@ void MVulkanRenderCommand::SetTextureLayout(const std::vector<MTexture*>& vTextu
 			continue;
 
 		VkImageSubresourceRange subresourceRange;
-		subresourceRange.aspectMask = m_pDevice->GetAspectFlags(vTextures[i]->m_VkTextureFormat);
+		subresourceRange.aspectMask = m_pDevice->GetAspectFlags(pTexture->m_VkTextureFormat);
 		subresourceRange.baseMipLevel = 0;
-		subresourceRange.levelCount = vTextures[i]->m_unMipmapLevel;
+		subresourceRange.levelCount = pTexture->m_unMipmapLevel;
 		subresourceRange.baseArrayLayer = 0;
-		subresourceRange.layerCount = vTextures[i]->GetImageLayerNum();
+		subresourceRange.layerCount = pTexture->GetImageLayerNum();
 
 		vImageBarrier.push_back(VkImageMemoryBarrier());
 		VkImageMemoryBarrier& imageMemoryBarrier = vImageBarrier.back();
 
-		m_pDevice->TransitionImageLayout(imageMemoryBarrier, vTextures[i]->m_VkTextureImage, oldLayout, newLayout, subresourceRange);
+		m_pDevice->TransitionImageLayout(imageMemoryBarrier, pTexture->m_VkTextureImage, oldLayout, newLayout, subresourceRange);
+		pTexture->m_VkImageLayout = newLayout;
 
-		m_tTextureLayout[vTextures[i]] = newLayout;
+		m_tTextureLayout[pTexture] = newLayout;
 
 		srcPipelineStage |= GetSrcPipelineStageFlags(oldLayout);
 		dstPipelineStage |= GetDstPipelineStageFlags(newLayout);
@@ -650,6 +658,25 @@ void MVulkanRenderCommand::ResetBuffer(const MBuffer* pBuffer)
 	vkCmdFillBuffer(m_VkCommandBuffer, pBuffer->m_VkBuffer, 0, pBuffer->GetSize(), 0);
 }
 
+void MVulkanRenderCommand::FillTexture(MTexture* pTexture, MColor color)
+{
+	MORTY_UNUSED(color);
+
+	const VkImageLayout vkClearLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	SetTextureLayout({ pTexture }, vkClearLayout);
+
+	VkClearColorValue vkColor = { .int32 = {0, 0, 0, 0} };
+
+	VkImageSubresourceRange subresourceRange;
+	subresourceRange.aspectMask = m_pDevice->GetAspectFlags(pTexture->m_VkTextureFormat);
+	subresourceRange.baseMipLevel = 0;
+	subresourceRange.levelCount = pTexture->m_unMipmapLevel;
+	subresourceRange.baseArrayLayer = 0;
+	subresourceRange.layerCount = pTexture->GetImageLayerNum();
+	vkCmdClearColorImage(m_VkCommandBuffer, pTexture->m_VkTextureImage, vkClearLayout, &vkColor, 1, &subresourceRange);
+
+}
+
 void MVulkanRenderCommand::addFinishedCallback(std::function<void()> func)
 {
 	m_aRenderFinishedCallback.push_back(func);
@@ -752,6 +779,20 @@ void MVulkanPrimaryRenderCommand::ExecuteChildCommand()
 	vkCmdExecuteCommands(m_VkCommandBuffer, buffers.size(), buffers.data());
 }
 
+VkImageLayout MVulkanRenderCommand::GetTextureBarrierLayout(METextureBarrierStage stage) const
+{
+	static const std::unordered_map<METextureBarrierStage, VkImageLayout> ImageLayoutTable = {
+	{ METextureBarrierStage::EPixelShaderSample, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL },
+	{ METextureBarrierStage::EPixelShaderWrite, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL },
+	{ METextureBarrierStage::EComputeShaderWrite, VK_IMAGE_LAYOUT_GENERAL },
+	};
+
+	const auto layout = ImageLayoutTable.find(stage);
+	MORTY_ASSERT(layout != ImageLayoutTable.end());
+
+	return layout->second;
+}
+
 VkAccessFlags MVulkanRenderCommand::GetBufferBarrierAccessFlag(MEBufferBarrierStage stage) const
 {
 	static const std::unordered_map<MEBufferBarrierStage, VkAccessFlags> AccessFlagTable = {
@@ -795,6 +836,20 @@ VkPipelineStageFlags MVulkanRenderCommand::GetBufferBarrierPipelineStage(MEBuffe
 		{ MEBufferBarrierStage::EPixelShaderWrite, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT },
 		{ MEBufferBarrierStage::EPixelShaderRead, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT },
 		{ MEBufferBarrierStage::EDrawIndirectRead, VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT },
+	};
+
+	const auto pipelineStage = PipelineStageTable.find(stage);
+	MORTY_ASSERT(pipelineStage != PipelineStageTable.end());
+
+	return pipelineStage->second;
+}
+
+VkPipelineStageFlags MVulkanRenderCommand::GetTextureBarrierPipelineStage(METextureBarrierStage stage) const
+{
+	static const std::unordered_map<METextureBarrierStage, VkPipelineStageFlags> PipelineStageTable = {
+	{ METextureBarrierStage::EPixelShaderSample, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT },
+	{ METextureBarrierStage::EPixelShaderWrite, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT },
+	{ METextureBarrierStage::EComputeShaderWrite, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT },
 	};
 
 	const auto pipelineStage = PipelineStageTable.find(stage);

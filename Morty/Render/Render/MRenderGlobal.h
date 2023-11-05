@@ -30,6 +30,7 @@ public:
 	static constexpr int BONES_MAX_NUMBER = 128;
 	static constexpr int SHADOW_TEXTURE_SIZE = 2048;
     static constexpr uint32_t VOXEL_TABLE_SIZE = 64;
+	static constexpr uint32_t VOXEL_VIEWPORT_SIZE = VOXEL_TABLE_SIZE * 1;
 
 	static constexpr int POINT_LIGHT_MAX_NUMBER = 8;
 	static constexpr int POINT_LIGHT_PIXEL_NUMBER = 8;
@@ -44,7 +45,8 @@ public:
 	static const char* SUFFIX_GEOMETRY_SHADER;
 
 	static constexpr int CASCADED_SHADOW_MAP_NUM = 4;
-	static constexpr int VOXEL_GI_CLIP_MAP_NUM = 1;
+	static constexpr int VOXEL_GI_CLIP_MAP_NUM = 6;
+	static constexpr int VOXEL_DIFFUSE_CONE_COUNT = 16;
 
 	static MStringId SHADER_SKELETON_ENABLE;
 	static MStringId DRAW_MESH_INSTANCING_NONE;
@@ -109,6 +111,7 @@ struct MORTY_API MShaderPropertyName
 	static MStringId VOXEL_MAP_SETTING;
 	static MStringId VOXEL_MAP_ORIGIN;
 	static MStringId VOXEL_MAP_RESOLUTION;
+	static MStringId VOXEL_MAP_VIEWPORT_SIZE;
 	static MStringId VOXEL_MAP_STEP_SIZE;
 	static MStringId VOXEL_MAP_CLIPMAP_ARRAY;
 	static MStringId VOXEL_MAP_CLIPMAP_INDEX;

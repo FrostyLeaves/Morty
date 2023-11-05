@@ -166,7 +166,7 @@ void ImGuiRenderable::WaitTextureReady(MIRenderCommand* pCommand)
 	{
 		if (std::shared_ptr<MTexture> pTexture = texid.pTexture)
 		{
-			pCommand->AddRenderToTextureBarrier({ pTexture.get() });
+			pCommand->AddRenderToTextureBarrier({ pTexture.get() }, METextureBarrierStage::EPixelShaderSample);
 		}
 	}
 }

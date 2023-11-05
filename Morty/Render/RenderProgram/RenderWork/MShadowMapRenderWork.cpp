@@ -63,6 +63,8 @@ void MShadowMapRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 	}
 
 	pCommand->EndRenderPass();
+
+	pCommand->AddRenderToTextureBarrier({ m_renderPass.GetDepthTexture().get() }, METextureBarrierStage::EPixelShaderSample);
 }
 
 void MShadowMapRenderWork::Resize(Vector2i size)

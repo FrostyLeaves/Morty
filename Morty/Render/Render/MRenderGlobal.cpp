@@ -59,6 +59,7 @@ MStringId MShaderPropertyName::SHADOW_GENERATE_LIGHT_PROJ_MATRIX = MStringId("u_
 MStringId MShaderPropertyName::VOXEL_MAP_SETTING = MStringId("voxelMapSetting");
 MStringId MShaderPropertyName::VOXEL_MAP_ORIGIN = MStringId("f3VoxelOrigin");
 MStringId MShaderPropertyName::VOXEL_MAP_RESOLUTION = MStringId("nResolution");
+MStringId MShaderPropertyName::VOXEL_MAP_VIEWPORT_SIZE = MStringId("nViewportSize");
 MStringId MShaderPropertyName::VOXEL_MAP_STEP_SIZE = MStringId("fVoxelSize");
 MStringId MShaderPropertyName::VOXEL_MAP_CLIPMAP_ARRAY = MStringId("vClipmap");
 MStringId MShaderPropertyName::VOXEL_MAP_CLIPMAP_INDEX = MStringId("nClipmapIdx");

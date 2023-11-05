@@ -61,6 +61,8 @@ public:
 
 	void RenderForward();
 
+	void RenderVoxelizerDebug();
+
 	void RenderTransparent();
 
 	void RenderPostProcess();

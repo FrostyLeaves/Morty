@@ -21,9 +21,9 @@
 [numthreads(8, 8, 8)]
 void CS_MAIN(uint3 GlobalInvocationID : SV_DispatchThreadID )
 {
-    uint3 voxelTableUVW = GlobalInvocationID;
+    uint3 voxelCoord = GlobalInvocationID;
 
-    int voxelTableIdx = VoxelCoordToInstanceId(voxelMapSetting, voxelTableUVW);
+    int voxelTableIdx = VoxelCoordToInstanceId(voxelMapSetting, voxelCoord);
 
     VoxelizerOutput voxelizerData = rVoxelTable[voxelTableIdx];
 

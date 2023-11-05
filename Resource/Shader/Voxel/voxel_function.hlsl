@@ -3,10 +3,9 @@
 
 #include "../Internal/internal_constant.hlsl"
 
-static const uint VOXEL_DIFFUSE_CONE_COUNT = 16;
 static const float VOXEL_DIFFUSE_CONE_APERTURE = 0.872665f;
 
-static const float3 VOXEL_DIFFUSE_CONE_DIRECTIONS[16] = {
+static const float3 VOXEL_DIFFUSE_CONE_DIRECTIONS[VOXEL_DIFFUSE_CONE_COUNT] = {
 	float3(0.57735f, 0.57735f, 0.57735f),
 	float3(0.57735f, -0.57735f, -0.57735f),
 	float3(-0.57735f, 0.57735f, -0.57735f),
@@ -27,17 +26,16 @@ static const float3 VOXEL_DIFFUSE_CONE_DIRECTIONS[16] = {
 
 uint VoxelFloatToUint(float value)
 {
-    return uint(value * 100.0f);
+    return uint(value * 1000.0f);
 }
 
 float VoxelUintToFloat(uint value)
 {
-    return float(value) / 100.0f;
+    return float(value) / 1000.0f;
 }
 
 uint VoxelCoordToInstanceId(VoxelMapSetting setting, uint3 n3Coord)
 {
-    VoxelClipmap clipmap = setting.vClipmap[setting.nClipmapIdx];
     uint nResolution = setting.nResolution;
 
     uint instanceId = uint(n3Coord.z * (nResolution * nResolution) +
@@ -137,9 +135,18 @@ float3 VoxelCoordToWorldPosition(VoxelMapSetting setting, uint3 n3Coord)
     return position;
 }
 
+uint3 GetVoxelTexturePixelIdx(VoxelMapSetting setting, uint3 n3Coord, uint nConeIdx)
+{
+    uint3 n3PixelIdx = n3Coord + uint3(setting.nResolution * nConeIdx, 0, 0);
+
+    return n3PixelIdx;
+}
+
 float3 GetVoxelTextureUVW(VoxelMapSetting setting, float3 f3Coord, uint nConeIdx)
 {
-    float3 f3VoxelUVW = f3Coord + float3(setting.nResolution * float(nConeIdx), 0, 0);
+    float3 f3PixelIdx = f3Coord + float3(setting.nResolution * nConeIdx, 0, 0);
+
+    float3 f3VoxelUVW = f3PixelIdx / float3(setting.nResolution * VOXEL_DIFFUSE_CONE_COUNT, setting.nResolution, setting.nResolution);
 
     return f3VoxelUVW;
 }

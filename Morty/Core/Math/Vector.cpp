@@ -1,7 +1,7 @@
 #include "Math/Vector.h"
 #include <cassert>
 
-#include "Vector_generated.h"
+#include "Flatbuffer/Vector_generated.h"
 
 
 Vector3::Vector3(const float& _x, const float& _y, const float& _z)

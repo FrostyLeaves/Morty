@@ -72,6 +72,9 @@ public:
 	void SetMaterialType(const MEMaterialType& eType);
 	MEMaterialType GetMaterialType() const { return m_eMaterialType; }
 
+	bool GetConservativeRasterizationEnable() const { return m_bConservativeRasterizationEnable; }
+	void SetConservativeRasterizationEnable(bool bEnable) { m_bConservativeRasterizationEnable = bEnable; }
+
 	void SetTexture(const MStringId& strName, std::shared_ptr<MResource> pTexResource);
 
 	bool LoadShader(std::shared_ptr<MResource> pResource);
@@ -100,4 +103,5 @@ private:
 
 	MEMaterialType m_eMaterialType = MEMaterialType::EDefault;
 	MECullMode m_eCullMode = MECullMode::ECullBack;
+	bool m_bConservativeRasterizationEnable = false;
 };

@@ -87,7 +87,6 @@ float3 AdditionAllLights(VS_OUT input)
 
     float3 f3LightColor = PbrLighting(pointData);
 
-
     float4 f4VXGIColor = VoxelDiffuseTracing(u_texVoxelMap, voxelMapSetting, f3WorldPosition,  f3Normal);
     
     float3 f3Color = f3LightColor + f4VXGIColor.rgb + f3Ambient;

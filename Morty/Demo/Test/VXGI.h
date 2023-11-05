@@ -33,6 +33,7 @@ void VXGI_TEST(MEngine* pEngine, MScene* pScene)
 		if (MSceneComponent* pSceneComponent = pSphereEntity->RegisterComponent<MSceneComponent>())
 		{
 			pSceneComponent->SetPosition(position);
+			pSceneComponent->SetScale(Vector3(3.0f));
 		}
 		if (MRenderMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderMeshComponent>())
 		{
@@ -71,9 +72,9 @@ void VXGI_TEST(MEngine* pEngine, MScene* pScene)
 
 
 
-	CreateCubeFunction("left", Vector3(-5, 0, 0), Vector3(1, 0, 0), 1.0f, 1.0f);
-	CreateCubeFunction("right", Vector3(+5, 0, 0), Vector3(0, 1, 0), 1.0f, 1.0f);
-	CreateCubeFunction("forward", Vector3(0, 0, 5), Vector3(0, 0, 1), 1.0f, 1.0f);
+	CreateCubeFunction("left", Vector3(-10, 0, 0), Vector3(1, 0, 0), 1.0f, 1.0f);
+	CreateCubeFunction("right", Vector3(+10, 0, 0), Vector3(0, 1, 0), 1.0f, 1.0f);
+	CreateCubeFunction("forward", Vector3(0, 0, 10), Vector3(0, 0, 1), 1.0f, 1.0f);
 
 
 	CreateCubeFunction("center", Vector3(0, 0, 0), Vector3(1, 1, 1), 1.0f, 1.0f);

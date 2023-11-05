@@ -30,7 +30,7 @@ void MDebugRenderWork::Render(MRenderInfo& info, const std::vector<IRenderable*>
 {
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
 
-	pCommand->AddRenderToTextureBarrier({ CreateOutput()->GetTexture().get() });
+	pCommand->AddRenderToTextureBarrier({ CreateOutput()->GetTexture().get() }, METextureBarrierStage::EPixelShaderSample);
 
 	pCommand->BeginRenderPass(&m_renderPass);
 

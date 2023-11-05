@@ -95,7 +95,7 @@ void MTransparentRenderWork::Render(MRenderInfo& info)
 		return;
 	}
 
-	pCommand->AddRenderToTextureBarrier({ m_pFrontTexture.get(), m_pBackTexture.get() });
+	pCommand->AddRenderToTextureBarrier({ m_pFrontTexture.get(), m_pBackTexture.get() }, METextureBarrierStage::EPixelShaderSample);
 
 	pCommand->BeginRenderPass(&m_fillRenderPass);
 
@@ -134,7 +134,7 @@ void MTransparentRenderWork::RenderDepthPeel(MRenderInfo& info)
 	m_aFramePropertyBlock[1].UpdateShaderSharedParams(info);
 
 
-	pCommand->AddRenderToTextureBarrier({ m_pDepthTexture.get() });
+	pCommand->AddRenderToTextureBarrier({ m_pDepthTexture.get() }, METextureBarrierStage::EPixelShaderSample);
 
 	pCommand->BeginRenderPass(&m_peelRenderPass);
 

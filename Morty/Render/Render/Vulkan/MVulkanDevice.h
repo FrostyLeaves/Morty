@@ -33,6 +33,7 @@ class MBuffer;
 class MVulkanRenderCommand;
 class MVulkanPrimaryRenderCommand;
 class MVulkanSecondaryRenderCommand;
+
 class MORTY_API MVulkanDevice : public MIDevice
 {
 public:
@@ -79,6 +80,8 @@ public:
 
 	virtual void Update() override;
 
+	bool GetDeviceFeatureSupport(MEDeviceFeature feature) const override;
+
 public:
 
 	VkPhysicalDevice GetPhysicalDevice() { return m_VkPhysicalDevice; }
@@ -104,7 +107,6 @@ public:
 	bool GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 
-
 	MVulkanSecondaryRenderCommand* CreateChildCommand(MVulkanPrimaryRenderCommand* pParentCommand);
 
 	void CheckFrameFinish();
@@ -127,6 +129,7 @@ public:
 	VkImageUsageFlags GetUsageFlags(MTexture* pTexture);
 	VkImageAspectFlags GetAspectFlags(MTexture* pTexture);
 	VkImageAspectFlags GetAspectFlags(VkFormat format);
+	VkImageAspectFlags GetAspectFlags(VkImageLayout layout);
 	VkImageLayout GetImageLayout(MTexture* pTexture);
 	VkImageViewType GetImageViewType(MTexture* pTexture);
 	VkImageCreateFlags GetImageCreateFlags(MTexture* pTexture);
@@ -137,7 +140,6 @@ public:
 	MVulkanObjectRecycleBin* GetRecycleBin();
 
 	void SetDebugName(uint64_t object, const VkObjectType& type, const char* svDebugName);
-
 	bool CheckVersion(int major, int minor, int patch);
 
 protected:
@@ -150,10 +152,11 @@ protected:
 	bool InitSampler();
 	bool InitializeRecycleBin();
 	bool InitDescriptorPool();
-
+	void InitOptionalFeature();
 
 	bool IsDeviceSuitable(VkPhysicalDevice device);
-	bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
+	std::set<MString> GetDeviceOptionFeatureNotSupport(VkPhysicalDevice device);
+	std::set<MString> GetNotSupportDeviceExtension(VkPhysicalDevice device, const std::set<MString>& tRequiredExtensions) const;
 
 public:
 	VkInstance m_VkInstance = VK_NULL_HANDLE;
@@ -162,6 +165,7 @@ public:
 	VkPhysicalDeviceProperties m_VkPhysicalDeviceProperties = {};
 	VkDevice m_VkDevice = VK_NULL_HANDLE;
 	VkQueue m_VkGraphicsQueue = VK_NULL_HANDLE;
+	std::vector<const char*> m_vEnableDeviceExtensions;
 
 	int m_nGraphicsFamilyIndex = 0;
 	int m_nComputeFamilyIndex = 0;
@@ -190,7 +194,9 @@ public:
 
 	VkDescriptorPool m_VkDescriptorPool = VK_NULL_HANDLE;
 
-
+	//optional extensions
+	VkPhysicalDeviceConservativeRasterizationPropertiesEXT m_VkConservativeRasterProps{};
+	
 #if MORTY_DEBUG
 	VkDebugUtilsMessengerEXT m_VkDebugUtilsMessenger;
 #endif
@@ -209,10 +215,13 @@ public:
 
 	uint32_t m_unFrameCount = 0;
 
+	std::set<MEDeviceFeature> m_tDisableFeature;
+
 public:
 
 	PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSet = VK_NULL_HANDLE;
 	PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT = VK_NULL_HANDLE;
+	PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2 = VK_NULL_HANDLE;
 };
 
 
