@@ -11,7 +11,7 @@ MORTY_CLASS_IMPLEMENT(MEngine, MTypeClass)
 
 MEngine::MEngine()
 	: MTypeClass()
-	, m_time(500)
+	, m_time(60)
 	, m_eStage(EngineStage::DEFAULT)
 {
 

@@ -240,11 +240,12 @@ void MVoxelizerRenderWork::InitializeDispatcher()
 		auto pVoxelizerMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 		pVoxelizerMaterial->SetCullMode(MECullMode::ECullNone);
 		pVoxelizerMaterial->GetShaderMacro().AddUnionMacro(key, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-		//pVoxelizerMaterial->SetConservativeRasterizationEnable(true);
+		pVoxelizerMaterial->GetShaderMacro().AddUnionMacro(MStringId("VOXELIZER_CONSERVATIVE_RASTERIZATION"), MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+		pVoxelizerMaterial->SetConservativeRasterizationEnable(true);
 		pVoxelizerMaterial->LoadShader(voxelizerVS);
 		pVoxelizerMaterial->LoadShader(voxelizerPS);   
-		//pVoxelizerMaterial->LoadShader(voxelizerGS);
-
+		pVoxelizerMaterial->LoadShader(voxelizerGS);
+		
 		m_tVoxelizerMaterial[key] = pVoxelizerMaterial;
 	}
 

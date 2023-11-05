@@ -6,20 +6,42 @@
 #include "../Voxel/voxel_function.hlsl"
 #include "../Model/universal_vsout.hlsl"
 
+
+bool IntersectAABB(float3 aabb_min, float3 aabb_max, float3 pos)
+{   
+    if (pos.x < aabb_min.x || pos.y < aabb_min.y || pos.z < aabb_min.z)
+    {
+        return false;
+    }
+    if (pos.x > aabb_max.x || pos.y > aabb_max.y || pos.z > aabb_max.z)
+    {
+        return false;
+    }
+    
+    return true;
+}
+
 float4 PS_MAIN(VS_OUT input) : SV_Target
 {
-    //if (!ValidVoxelWorldPosition(voxelMapSetting, input.worldPos.xyz))
-    //{
-    //    discard;
-    //}
+    if (!ValidVoxelWorldPosition(voxelMapSetting, input.worldPos.xyz))
+    {
+        discard;
+    }
 
     float fVoxelizerScaleInv = float(voxelMapSetting.nResolution) / float(voxelMapSetting.nViewportSize);
 
     //uint3 n3Coord = uint3(input.pos.x * fVoxelizerScaleInv, voxelMapSetting.nResolution - (input.pos.y * fVoxelizerScaleInv) - 1, input.pos.z * voxelMapSetting.nResolution);
     uint3 n3Coord = uint3(WorldPositionToVoxelCoord(voxelMapSetting, input.worldPos.xyz));
-    //n3Coord.x = input.pos.x * fVoxelizerScaleInv;
-    //n3Coord.y = voxelMapSetting.nResolution - (input.pos.y * fVoxelizerScaleInv) - 1;
-    //n3Coord.z = input.pos.z * voxelMapSetting.nResolution;
+
+
+#ifdef VOXELIZER_CONSERVATIVE_RASTERIZATION
+
+	if (!IntersectAABB(input.aabbMin, input.aabbMax, input.worldPos))
+    {
+		return float4(0, 0, 0, 0);
+    }
+
+#endif
 
 	int voxelTableIdx = VoxelCoordToInstanceId(voxelMapSetting, n3Coord);
     
@@ -45,7 +67,7 @@ float4 PS_MAIN(VS_OUT input) : SV_Target
     pointData.fRoughness = fRoughness;
     pointData.fMetallic = fMetallic;
 
-    float3 f3LightingColor = f3Albedo; //PbrLighting(pointData);
+    float3 f3LightingColor = PbrLighting(pointData);
 
 
     float3 f3AnisoDirection = f3Normal;

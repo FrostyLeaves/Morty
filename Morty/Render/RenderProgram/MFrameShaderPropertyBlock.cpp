@@ -232,13 +232,13 @@ void MFrameShaderPropertyBlock::UpdateShaderSharedParams(MRenderInfo& info)
 	}
 
 
-	//if (m_pRWVoxelTableParam->pBuffer != info.pVoxelTableBuffer)
+	if (m_pRWVoxelTableParam->pBuffer != info.pVoxelTableBuffer)
 	{
 		m_pRWVoxelTableParam->pBuffer = info.pVoxelTableBuffer;
 		m_pRWVoxelTableParam->SetDirty();
 	}
 
-	//if (m_pVoxelGITextureParam->pTexture != info.pVoxelGITexture)
+	if (m_pVoxelGITextureParam->pTexture != info.pVoxelGITexture)
 	{
 		m_pVoxelGITextureParam->pTexture = info.pVoxelGITexture;
 		m_pVoxelGITextureParam->SetDirty();

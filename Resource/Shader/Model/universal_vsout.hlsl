@@ -12,6 +12,11 @@ struct VS_OUT
     float3 normal : NORMAL;
     float3 tangent : Tangent;
     float3 bitangent : BITANGENT;
+
+#ifdef VOXELIZER_CONSERVATIVE_RASTERIZATION
+    float3 aabbMin : AABB_MIN;
+    float3 aabbMax : AABB_MAX;
+#endif
 };
 
 #endif

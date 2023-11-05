@@ -167,9 +167,32 @@ void MVulkanPipelineManager::DestroyPipeline(const std::shared_ptr<MPipeline>& p
 	pipeline->m_tShaderPropertyBlocks.clear();
 }
 
+VkShaderStageFlags GetShaderStageFlags(MShaderProgram* program)
+{
+	VkShaderStageFlags result = 0;
+
+	static const std::array<VkShaderStageFlagBits, static_cast<size_t>(MEShaderType::TOTAL_NUM)> ShaderStageTable = {
+	    VK_SHADER_STAGE_VERTEX_BIT,
+		VK_SHADER_STAGE_FRAGMENT_BIT,
+		VK_SHADER_STAGE_COMPUTE_BIT,
+		VK_SHADER_STAGE_GEOMETRY_BIT,
+	};
+
+	for (size_t nIdx = 0; nIdx < static_cast<size_t>(MEShaderType::TOTAL_NUM); ++nIdx)
+	{
+		if (program->GetShader(static_cast<MEShaderType>(nIdx)))
+		{
+			result |= ShaderStageTable[nIdx];
+		}
+	}
+
+	return result;
+}
+
 void MVulkanPipelineManager::GeneratePipelineLayout(const std::shared_ptr<MPipeline>& pPipeline, const std::shared_ptr<MShaderProgram>& pShaderProgram)
 {
-	VkShaderStageFlags vkShaderStageFlags = pShaderProgram->GetUsage() == MShaderProgram::EUsage::ECompute ? VK_SHADER_STAGE_COMPUTE_BIT : VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+	//const VkShaderStageFlags vkShaderStageFlags = GetShaderStageFlags(pShaderProgram.get());
+	VkShaderStageFlags vkShaderStageFlags = pShaderProgram->GetShader(MEShaderType::ECompute) ? (VK_SHADER_STAGE_COMPUTE_BIT) : (VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_GEOMETRY_BIT);
 
 	std::vector<VkDescriptorSetLayout> vSetLayouts;
 	std::vector<VkDescriptorSetLayoutBinding> vParamBinding[MRenderGlobal::SHADER_PARAM_SET_NUM];
