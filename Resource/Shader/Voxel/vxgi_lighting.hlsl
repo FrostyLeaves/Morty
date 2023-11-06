@@ -13,13 +13,13 @@ float4 SampleVoxelMap(Texture3D<float4> texVoxelMap, float3 f3VoxelUVW)
 
 float4 VoxelConeTrace(Texture3D<float4> texVoxelMap, VoxelMapSetting setting, float3 f3StartPosition, float3 f3Normal, in float coneAperture, uint nConeIdx)
 {
-    float4 f4Result = float4(0.0f, 0.0f, 0.0f, 1.0f);
+    float4 f4Result = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
     uint nClipLevel = 0;
     float fAlpha = 0.0f;
     float fTraceDist = 0.0f;
 
-    // cone width = ConeWidthCoefficient * TraceDistance
+    // cone diameter = ConeWidthCoefficient * TraceDistance
 	const float fConeWidthCoefficient = 2 * tan(coneAperture * 0.5);
 	
     //offset for avoid sampling self in voxel.
@@ -27,20 +27,24 @@ float4 VoxelConeTrace(Texture3D<float4> texVoxelMap, VoxelMapSetting setting, fl
 
     float3 f3ConeDirection = VOXEL_DIFFUSE_CONE_DIRECTIONS[nConeIdx];
 
+    const float fVoxelSizeLevel0 = setting.vClipmap[0].fVoxelSize;
+    const float fVoxelSizeLevel0Rcp = rcp(fVoxelSizeLevel0);
+
     while(fAlpha < 1.0f && nClipLevel < VOXEL_GI_CLIP_MAP_NUM)
     {
         float3 f3TracePosition = f3StartPosition + f3ConeDirection * fTraceDist;
-       
+        
         if (!ValidVoxelWorldPosition(setting, nClipLevel, f3TracePosition))
         {
             ++nClipLevel;
             continue;
         }
 
-        const float fVoxelSize = setting.vClipmap[nClipLevel].fVoxelSize;
-	    const float fVoxelSizeRcp = rcp(fVoxelSize);
-        float fDiameter = max(fVoxelSize, fConeWidthCoefficient * fTraceDist);
-		float fClipLevel = clamp(log2(fDiameter * fVoxelSizeRcp), 0, VOXEL_GI_CLIP_MAP_NUM - 1);
+        //cone diameter = ConeWidthCoefficient * TraceDistance
+        float fConeDiameter = max(fVoxelSizeLevel0, fConeWidthCoefficient * fTraceDist);
+
+        //The difference between each level of clipmap is multiplied by 2. use log2 to get clip level.
+		float fClipLevel = clamp(log2(fConeDiameter * fVoxelSizeLevel0Rcp), nClipLevel, VOXEL_GI_CLIP_MAP_NUM - 1);
 		uint nSampleClipLevel = floor(fClipLevel);
 
         float3 f3Coord = WorldPositionToVoxelCoord(setting, nSampleClipLevel, f3TracePosition);
@@ -48,9 +52,12 @@ float4 VoxelConeTrace(Texture3D<float4> texVoxelMap, VoxelMapSetting setting, fl
 
         float4 f4VoxelSampleValue = SampleVoxelMap(texVoxelMap, f3VoxelUVW);
 
-        fTraceDist += fDiameter;
-        f4Result.rgb += (1.0f - fAlpha) * f4VoxelSampleValue.rgb;
-        fAlpha += (1.0f - fAlpha) * f4VoxelSampleValue.a;
+        //step next
+        fTraceDist += fConeDiameter;
+        
+        //alpha blend
+        f4Result += (1.0f - fAlpha) * f4VoxelSampleValue;
+        fAlpha = f4Result.a;
     }
 
 

@@ -51,13 +51,13 @@ int main()
 	renderView.BindSDLWindow();
 
 	//create editor
-	MainEditor* editor = new MainEditor();
-	editor->Initialize(&engine);
-	renderView.AppendContent(editor);
+	MainEditor editor;
+	editor.Initialize(&engine);
+	renderView.AppendContent(&editor);
 
 	//create a scene.
 	MScene* pScene = engine.FindSystem<MObjectSystem>()->CreateObject<MScene>();
-	editor->SetScene(pScene);
+	editor.SetScene(pScene);
 
 	ADD_DIRECTIONAL_LIGHT(&engine, pScene);
 	//CREATE_FLOOR_GRID(&engine, pScene);
@@ -84,9 +84,7 @@ int main()
 	engine.Stop();
 
 	//destroy editor
-	editor->Release();
-	delete editor;
-	editor = nullptr;
+	editor.Release();
 
 	//destroy window
 	renderView.UnbindSDLWindow();
