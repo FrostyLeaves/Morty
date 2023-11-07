@@ -38,6 +38,11 @@ public:
     const MBuffer* GetVoxelDebugBuffer() const;
     std::shared_ptr<MTexture> GetVoxelGITexture() const;
 
+
+    void SetupVoxelSetting(const Vector3& f3CameraPosition, const uint32_t nClipmapIdx);
+
+    MVoxelMapSetting GetVoxelSetting() const { return m_voxelSetting; }
+
 protected:
 
     void InitializeBuffer();
@@ -51,6 +56,8 @@ protected:
 
     void InitializeRenderPass();
     void ReleaseRenderPass();
+
+    MVoxelMapSetting m_voxelSetting;
 
     MComputeDispatcher* m_pVoxelDebugIndirectGenerator = nullptr;
     MComputeDispatcher* m_pVoxelTextureGenerator = nullptr;

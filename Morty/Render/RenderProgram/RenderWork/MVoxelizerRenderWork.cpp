@@ -65,6 +65,28 @@ std::shared_ptr<MTexture> MVoxelizerRenderWork::GetVoxelGITexture() const
 	return m_voxelGITexture;
 }
 
+void MVoxelizerRenderWork::SetupVoxelSetting(const Vector3& f3CameraPosition, const uint32_t nClipmapIdx)
+{
+	const uint32_t nVoxelTableSize = MRenderGlobal::VOXEL_TABLE_SIZE;
+	const float fBasicVoxelSize = 0.125f;
+
+	MVoxelMapSetting& voxelSetting = m_voxelSetting;
+	voxelSetting.nResolution = nVoxelTableSize;
+	voxelSetting.nClipmapIdx = nClipmapIdx;
+	voxelSetting.nViewportSize = MRenderGlobal::VOXEL_VIEWPORT_SIZE;
+
+	const float fVoxelSize = fBasicVoxelSize * std::powf(2.0f, nClipmapIdx);
+	Vector3 f3Origin = f3CameraPosition - nVoxelTableSize * fVoxelSize * 0.5f;
+	const Vector3i n3FloorPosition = MMath::Floor(f3Origin / fVoxelSize);
+	f3Origin = Vector3(n3FloorPosition.x, n3FloorPosition.y, n3FloorPosition.z) * fVoxelSize;
+
+	voxelSetting.vClipmap[nClipmapIdx] =
+	{
+		f3Origin,
+		fVoxelSize
+	};
+}
+
 void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;

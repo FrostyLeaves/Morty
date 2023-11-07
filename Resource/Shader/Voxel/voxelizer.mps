@@ -46,8 +46,9 @@ float4 PS_MAIN(VS_OUT input) : SV_Target
 	int voxelTableIdx = VoxelCoordToInstanceId(voxelMapSetting, n3Coord);
     
     float3 f3WorldPosition = input.worldPos.xyz;
-    float3 f3CameraDir = normalize(u_f3CameraPosition - f3WorldPosition);
+
     float3 f3Normal = input.normal;
+    float3 f3CameraDir = f3Normal;
     
     float2 uv = input.uv;
     float3 f3Albedo   = u_mat_texAlbedo.Sample(LinearSampler, uv).rgb * u_xMaterial.f4Albedo.rgb;
@@ -55,7 +56,7 @@ float4 PS_MAIN(VS_OUT input) : SV_Target
     float fRoughness  = u_mat_texRoughness.Sample(LinearSampler, uv).r * u_xMaterial.fRoughness;
     float fAmbientOcc = u_mat_texAmbientOcc.Sample(LinearSampler, uv).r;
 
-    float3 f3BaseColor = float3(0.04, 0.04, 0.04);
+    float3 f3BaseColor = float3(0.04f, 0.04f, 0.04f);
     f3BaseColor = lerp(f3BaseColor, f3Albedo, fMetallic);
 
     SurfaceData pointData;

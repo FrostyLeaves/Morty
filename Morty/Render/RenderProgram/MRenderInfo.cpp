@@ -92,31 +92,6 @@ MRenderInfo MRenderInfo::CreateFromViewport(MViewport* pViewport)
     }
 
 
-    //TODO: remove test code.
-    const uint32_t nVoxelTableSize = MRenderGlobal::VOXEL_TABLE_SIZE;
-    const float fBasicVoxelSize = 0.125f;
-
-    MVoxelMapSetting voxelSetting;
-    voxelSetting.nResolution = nVoxelTableSize;
-    voxelSetting.nViewportSize = MRenderGlobal::VOXEL_VIEWPORT_SIZE;
-
-    for (size_t nClipIdx = 0; nClipIdx < MRenderGlobal::VOXEL_GI_CLIP_MAP_NUM; ++nClipIdx)
-    {
-        const float fVoxelSize = fBasicVoxelSize * std::powf(2.0f, nClipIdx);
-        Vector3 f3Origin = info.m4CameraTransform.GetTranslation() - nVoxelTableSize * fVoxelSize * 0.5f;
-        const Vector3i n3FloorPosition = MMath::Floor(f3Origin / fVoxelSize);
-        f3Origin = Vector3(n3FloorPosition.x, n3FloorPosition.y, n3FloorPosition.z) * fVoxelSize;
-
-        voxelSetting.vClipmap[nClipIdx] =
-        {
-            f3Origin,
-            fVoxelSize
-        };
-    }
-
-    info.voxelSetting = voxelSetting;
-
-
 
     return info;
 }

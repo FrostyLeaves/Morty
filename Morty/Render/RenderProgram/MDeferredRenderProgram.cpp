@@ -88,6 +88,7 @@ void MDeferredRenderProgram::RenderSetup(MIRenderCommand* pPrimaryCommand)
 	m_renderInfo.nFrameIndex = m_nFrameIndex++;
 	m_renderInfo.pPrimaryRenderCommand = pPrimaryCommand;
 
+
 	//Shadow map Culling.
 	auto* pShadowMapManager = pViewport->GetScene()->GetManager<MShadowMeshManager>();
 	auto vShadowMaterialGroup = pShadowMapManager->GetAllShadowGroup();
@@ -111,13 +112,16 @@ void MDeferredRenderProgram::RenderSetup(MIRenderCommand* pPrimaryCommand)
 	m_pCameraFrustumCulling->SetCameraPosition(pCameraSceneComponent->GetWorldPosition());
 	m_pCameraFrustumCulling->Culling(vMaterialGroup);
 
+	uint32_t nClipmapIdx = m_renderInfo.nFrameIndex % MRenderGlobal::VOXEL_GI_CLIP_MAP_NUM;
+	GetRenderWork<MVoxelizerRenderWork>()->SetupVoxelSetting(m_renderInfo.m4CameraTransform.GetTranslation(), nClipmapIdx);
+	m_renderInfo.voxelSetting = GetRenderWork<MVoxelizerRenderWork>()->GetVoxelSetting();
+
 	//Voxelizer Setting.
 	auto pVoxelTableBuffer = GetRenderWork<MVoxelizerRenderWork>()->GetVoxelTableBuffer();
 	auto pVoxelTexture = GetRenderWork<MVoxelizerRenderWork>()->GetVoxelGITexture();
 	MORTY_ASSERT(pVoxelTableBuffer);
 	m_renderInfo.pVoxelTableBuffer = pVoxelTableBuffer;
 	m_renderInfo.pVoxelGITexture = pVoxelTexture;
-	m_renderInfo.voxelSetting.nClipmapIdx =  m_renderInfo.nFrameIndex% MRenderGlobal::VOXEL_GI_CLIP_MAP_NUM;
 
 
 	//Voxelizer Culling.
