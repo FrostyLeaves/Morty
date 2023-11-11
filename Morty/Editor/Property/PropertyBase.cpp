@@ -120,6 +120,19 @@ bool PropertyBase::EditVector3(float* pValue, const float& fSpeed /*= 1.0f*/, co
 	return ImGui::DragFloat3("", pValue, fSpeed, fMin, fMax);
 }
 
+bool PropertyBase::EditVector4(Vector4& value, const float& fSpeed, const float& fMin, const float& fMax)
+{
+	return EditVector4(value.m, fSpeed, fMin, fMax);
+}
+
+bool PropertyBase::EditVector4(float* pValue, const float& fSpeed, const float& fMin, const float& fMax)
+{
+	if (pValue[0] == -0.0f) pValue[0] = 0.0f;
+	if (pValue[1] == -0.0f) pValue[1] = 0.0f;
+	if (pValue[2] == -0.0f) pValue[2] = 0.0f;
+	return ImGui::DragFloat4("", pValue, fSpeed, fMin, fMax);
+}
+
 bool PropertyBase::EditMTransform(MTransform& trans)
 {
 	bool bModify = false;
@@ -225,6 +238,12 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
 	case MEVariantType::EVector3:
 		ShowValueBegin(strVariantName);
 		bModified |= EditVector3(value.GetValue<Vector3>());
+		ShowValueEnd();
+		break;
+
+	case MEVariantType::EVector4:
+		ShowValueBegin(strVariantName);
+		bModified |= EditVector4(value.GetValue<Vector4>());
 		ShowValueEnd();
 		break;
 

@@ -44,6 +44,8 @@
 
 #include <fstream>
 
+#include "Resource/MReadableTextureResource.h"
+
 static const std::map<aiTextureType, MEModelTextureUsage> TextureUsageMapping = {
 			{aiTextureType_DIFFUSE, MEModelTextureUsage::BaseColor},
 			{aiTextureType_NORMALS, MEModelTextureUsage::Normal},

@@ -32,7 +32,7 @@ public:
 
 public:
 
-	const MPlane& GetPlane(const size_t& idx) const;
+	MPlane GetPlane(const size_t& idx) const;
 
 	void UpdateFromCameraInvProj(const Matrix4& m4CameraInvProj);
 

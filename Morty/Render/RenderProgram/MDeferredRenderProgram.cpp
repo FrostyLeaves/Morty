@@ -114,23 +114,10 @@ void MDeferredRenderProgram::RenderSetup(MIRenderCommand* pPrimaryCommand)
 
 	uint32_t nClipmapIdx = m_renderInfo.nFrameIndex % MRenderGlobal::VOXEL_GI_CLIP_MAP_NUM;
 	GetRenderWork<MVoxelizerRenderWork>()->SetupVoxelSetting(m_renderInfo.m4CameraTransform.GetTranslation(), nClipmapIdx);
-	m_renderInfo.voxelSetting = GetRenderWork<MVoxelizerRenderWork>()->GetVoxelSetting();
-
-	//Voxelizer Setting.
-	auto pVoxelTableBuffer = GetRenderWork<MVoxelizerRenderWork>()->GetVoxelTableBuffer();
-	auto pVoxelTexture = GetRenderWork<MVoxelizerRenderWork>()->GetVoxelGITexture();
-	MORTY_ASSERT(pVoxelTableBuffer);
-	m_renderInfo.pVoxelTableBuffer = pVoxelTableBuffer;
-	m_renderInfo.pVoxelGITexture = pVoxelTexture;
-
+	auto voxelizerBounds = GetRenderWork<MVoxelizerRenderWork>()->GetVoxelizerBoundsAABB(nClipmapIdx);
 
 	//Voxelizer Culling.
-	m_pVoxelizerCulling->SetBounds(MBoundsAABB(
-		m_renderInfo.voxelSetting.vClipmap[m_renderInfo.voxelSetting.nClipmapIdx].f3VoxelOrigin,
-		m_renderInfo.voxelSetting.vClipmap[m_renderInfo.voxelSetting.nClipmapIdx].f3VoxelOrigin + 
-		    m_renderInfo.voxelSetting.nResolution * 
-		    m_renderInfo.voxelSetting.vClipmap[m_renderInfo.voxelSetting.nClipmapIdx].fVoxelSize
-	));
+	m_pVoxelizerCulling->SetBounds(voxelizerBounds);
 	m_pVoxelizerCulling->Culling(vMaterialGroup);
 
 	//Update Shader Params.
@@ -158,8 +145,8 @@ void MDeferredRenderProgram::OnCreated()
 {
 	Super::OnCreated();
 
-	InitializeRenderWork();
 	InitializeFrameShaderParams();
+	InitializeRenderWork();
 	InitializeRenderTarget();
 }
 
@@ -167,9 +154,9 @@ void MDeferredRenderProgram::OnDelete()
 {
 	Super::OnDelete();
 
+	ReleaseFrameShaderParams();
 	ReleaseRenderWork();
 	ReleaseRenderTarget();
-	ReleaseFrameShaderParams();
 }
 
 void MDeferredRenderProgram::InitializeRenderWork()
@@ -246,7 +233,6 @@ void MDeferredRenderProgram::InitializeRenderTarget()
 
 
 	GetRenderWork<MShadowMapRenderWork>()->SetRenderTarget({}, { pShadowTexture, { true, false, MColor::White }});
-	m_pFramePropertyAdapter->SetShadowMapTexture(pShadowTexture);
 
 	GetRenderWork<MVoxelizerRenderWork>()->SetRenderTarget({}, {});
 	
@@ -288,9 +274,9 @@ void MDeferredRenderProgram::InitializeFrameShaderParams()
 {
 	m_pFramePropertyAdapter = std::make_shared<MFrameShaderPropertyBlock>();
 	m_pFramePropertyAdapter->Initialize(GetEngine());
-
-	m_pShadowPropertyAdapter = std::make_shared<MShadowMapShaderPropertyBlock>();
-	m_pShadowPropertyAdapter->Initialize(GetEngine());
+	m_pFramePropertyAdapter->RegisterPropertyDecorator(std::make_shared<MFramePropertyDecorator>());
+	m_pFramePropertyAdapter->RegisterPropertyDecorator(std::make_shared<MLightPropertyDecorator>());
+	m_pFramePropertyAdapter->RegisterPropertyDecorator(std::make_shared<MAnimationPropertyDecorator>());
 
 	m_pShadowCulling = std::make_shared<MCascadedShadowCulling>();
 	m_pShadowCulling->Initialize(GetEngine());
@@ -313,9 +299,6 @@ void MDeferredRenderProgram::ReleaseFrameShaderParams()
 	m_pFramePropertyAdapter->Release(GetEngine());
 	m_pFramePropertyAdapter = nullptr;
 
-	m_pShadowPropertyAdapter->Release(GetEngine());
-	m_pShadowPropertyAdapter = nullptr;
-
 	m_pShadowCulling->Release();
 	m_pShadowCulling = nullptr;
 
@@ -329,7 +312,6 @@ void MDeferredRenderProgram::ReleaseFrameShaderParams()
 void MDeferredRenderProgram::UpdateFrameParams(MRenderInfo& info)
 {
 	m_pFramePropertyAdapter->UpdateShaderSharedParams(info);
-	m_pShadowPropertyAdapter->UpdateShaderSharedParams(info);
 }
 
 void MDeferredRenderProgram::RenderGBuffer()
@@ -407,7 +389,7 @@ void MDeferredRenderProgram::RenderShadow()
 	MCullingResultRenderable indirectMesh;
 	indirectMesh.SetMeshBuffer(pMeshManager->GetMeshBuffer());
 	indirectMesh.SetPropertyBlockAdapter({
-		m_pShadowPropertyAdapter,
+		m_pFramePropertyAdapter,
 	});
 	indirectMesh.SetInstanceCulling(m_pShadowCulling);
 
@@ -442,7 +424,7 @@ void MDeferredRenderProgram::RenderForward()
 	MSkyBoxRenderable skyBox;
 	skyBox.SetMesh(pMeshManager->GetSkyBox());
 	skyBox.SetMaterial(pMaterial);
-	skyBox.SetFramePropertyBlockAdapter(m_pFramePropertyAdapter);
+	skyBox.SetPropertyBlockAdapter({ m_pFramePropertyAdapter });
 
 	GetRenderWork<MForwardRenderWork>()->Render(m_renderInfo, {
 		&indirectMesh,
@@ -473,10 +455,23 @@ void MDeferredRenderProgram::RenderVoxelizerDebug()
 
 void MDeferredRenderProgram::RenderTransparent()
 {
-	if (GetRenderWork<MTransparentRenderWork>())
+	if (!GetRenderWork<MTransparentRenderWork>())
 	{
-		GetRenderWork<MTransparentRenderWork>()->Render(m_renderInfo);
+		return;
 	}
+
+	const MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
+
+	//Render static mesh.
+	MCullingResultRenderable indirectMesh;
+	indirectMesh.SetMeshBuffer(pMeshManager->GetMeshBuffer());
+	indirectMesh.SetPropertyBlockAdapter({
+		m_pFramePropertyAdapter,
+		});
+	indirectMesh.SetMaterialFilter(std::make_shared<MMaterialTypeFilter>(MEMaterialType::EDepthPeel));
+	indirectMesh.SetInstanceCulling(m_pCameraFrustumCulling);
+
+	GetRenderWork<MTransparentRenderWork>()->Render(m_renderInfo, { &indirectMesh });
 }
 
 void MDeferredRenderProgram::RenderPostProcess()

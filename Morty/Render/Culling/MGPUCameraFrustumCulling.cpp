@@ -82,7 +82,7 @@ void MGPUCameraFrustumCulling::UpdateCullingCamera()
 	{
 		for (size_t planeIdx = 0; planeIdx < 6; ++planeIdx)
 		{
-			const Vector4& plane = m_cameraFrustum.GetPlane(planeIdx).m_v4Plane;
+			const Vector4 plane = m_cameraFrustum.GetPlane(planeIdx).m_v4Plane;
 			cFrustumArray[planeIdx].SetValue(plane / Vector3(plane.x, plane.y, plane.z).Length());
 		}
 	}

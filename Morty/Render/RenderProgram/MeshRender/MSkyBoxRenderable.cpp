@@ -23,9 +23,9 @@ void MSkyBoxRenderable::SetMaterial(const std::shared_ptr<MMaterial>& pMaterial)
 	m_pMaterial = pMaterial;
 }
 
-void MSkyBoxRenderable::SetFramePropertyBlockAdapter(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter)
+void MSkyBoxRenderable::SetPropertyBlockAdapter(const std::vector<std::shared_ptr<IPropertyBlockAdapter>>& vAdapter)
 {
-	m_pFramePropertyAdapter = pAdapter;
+	m_vFramePropertyAdapter = vAdapter;
 }
 
 void MSkyBoxRenderable::Render(MIRenderCommand* pCommand)
@@ -44,9 +44,10 @@ void MSkyBoxRenderable::Render(MIRenderCommand* pCommand)
 
 	pCommand->SetUseMaterial(m_pMaterial);
 
-	const auto property = m_pFramePropertyAdapter->GetPropertyBlock();
-	
-	pCommand->SetShaderPropertyBlock(property);
-	pCommand->DrawMesh(m_pMesh);
+	for (const auto& pAdapter : m_vFramePropertyAdapter)
+	{
+		pCommand->SetShaderPropertyBlock(pAdapter->GetPropertyBlock());
+	}
 
+	pCommand->DrawMesh(m_pMesh);
 }

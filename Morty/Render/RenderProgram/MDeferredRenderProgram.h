@@ -21,7 +21,6 @@
 #include "MRenderInfo.h"
 #include "RenderProgram/MIRenderProgram.h"
 
-#include "Shadow/MShadowMapShaderPropertyBlock.h"
 #include "MFrameShaderPropertyBlock.h"
 #include "Culling/MCascadedShadowCulling.h"
 #include "Culling/MInstanceCulling.h"
@@ -98,8 +97,13 @@ protected:
 		{
 			return m_tRenderWork[TYPE::GetClassType()].get();
 		}
-		m_tRenderWork[TYPE::GetClassType()] = std::make_unique<TYPE>();
-		m_tRenderWork[TYPE::GetClassType()]->Initialize(GetEngine());
+		auto pRenderWork = std::make_unique<TYPE>();
+		pRenderWork->Initialize(GetEngine());
+		if (auto pFramePropertyDecorator = pRenderWork->GetFramePropertyDecorator())
+		{
+			m_pFramePropertyAdapter->RegisterPropertyDecorator(pFramePropertyDecorator);
+		}
+		m_tRenderWork[TYPE::GetClassType()] = std::move(pRenderWork);
 		return m_tRenderWork[TYPE::GetClassType()].get();
 	}
 
@@ -123,7 +127,6 @@ protected:
 	std::vector<std::shared_ptr<MTexture>> m_vRenderTargets;
 	std::shared_ptr<MTexture> m_pFinalOutputTexture = nullptr;
 	
-	std::shared_ptr<MShadowMapShaderPropertyBlock> m_pShadowPropertyAdapter = nullptr;
 	std::shared_ptr<MFrameShaderPropertyBlock> m_pFramePropertyAdapter = nullptr;
 
 	std::shared_ptr<MCascadedShadowCulling> m_pShadowCulling = nullptr;

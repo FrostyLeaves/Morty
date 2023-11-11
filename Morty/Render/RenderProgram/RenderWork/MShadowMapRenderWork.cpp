@@ -80,3 +80,35 @@ std::shared_ptr<ITextureInputAdapter> MShadowMapRenderWork::GetShadowMap() const
 
 	return pShadowMap;
 }
+
+class MORTY_API MShadowPropertyDecorator : public IShaderPropertyUpdateDecorator
+{
+public:
+
+	explicit MShadowPropertyDecorator(MShadowMapRenderWork* pOwner) : m_pOwner(pOwner) {}
+
+	void BindMaterial(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock) override
+	{
+		MORTY_ASSERT(m_pShadowTextureParam = pShaderPropertyBlock->FindTextureParam(MShaderPropertyName::TEXTURE_SHADOW_MAP));
+	}
+
+	void Update(const MRenderInfo& info) override
+	{
+		MORTY_UNUSED(info);
+
+		const auto pTexture = m_pOwner->GetShadowMap()->GetTexture();
+		if (m_pShadowTextureParam && m_pShadowTextureParam->GetTexture() != pTexture)
+		{
+			m_pShadowTextureParam->SetTexture(pTexture);
+		}
+	}
+
+	std::shared_ptr<MShaderTextureParam> m_pShadowTextureParam = nullptr;
+
+	MShadowMapRenderWork* m_pOwner = nullptr;
+};
+
+std::shared_ptr<IShaderPropertyUpdateDecorator> MShadowMapRenderWork::GetFramePropertyDecorator()
+{
+	return std::make_shared<MShadowPropertyDecorator>(this);
+}

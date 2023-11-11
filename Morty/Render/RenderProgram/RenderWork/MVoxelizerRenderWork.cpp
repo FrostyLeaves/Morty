@@ -25,9 +25,73 @@
 
 #include "Utility/MBounds.h"
 #include "Mesh/MMeshManager.h"
+#include "RenderProgram/MFrameShaderPropertyBlock.h"
 #include "Variant/MVariant.h"
 
 MORTY_CLASS_IMPLEMENT(MVoxelizerRenderWork, ISinglePassRenderWork)
+
+
+class MVoxelMapPropertyDecorator : public IShaderPropertyUpdateDecorator
+{
+public:
+	explicit MVoxelMapPropertyDecorator(MVoxelizerRenderWork* pOwner):m_pOwner(pOwner){}
+
+	void BindMaterial(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock) override
+	{
+		MORTY_ASSERT(m_pVoxelParam = pShaderPropertyBlock->FindConstantParam(MShaderPropertyName::CBUFFER_VOXEL_MAP_DATA));
+		MORTY_ASSERT(m_pRWVoxelTableParam = pShaderPropertyBlock->FindStorageParam(MShaderPropertyName::STORAGE_VOXEL_TABLE));
+		MORTY_ASSERT(m_pVoxelGITextureParam = pShaderPropertyBlock->FindTextureParam(MShaderPropertyName::VOXELIZER_VOXEL_TEXTURE_NAME));
+	}
+	void Update(const MRenderInfo& info) override
+	{
+		MORTY_UNUSED(info);
+
+		if (m_pVoxelParam)
+		{
+			auto& voxelMapInformation = m_pVoxelParam->var.GetValue<MVariantStruct>();
+
+			MVoxelMapSetting setting = m_pOwner->GetVoxelSetting();
+			auto& settingStruct = voxelMapInformation.GetVariant<MVariantStruct>(MShaderPropertyName::VOXEL_MAP_SETTING);
+			MRenderInfo::FillVoxelMapSetting(setting, settingStruct);
+
+			const MVoxelClipmap& clipmap = setting.vClipmap[setting.nClipmapIdx];
+
+			const float fVoxelTableSize = static_cast<float>(setting.nResolution) * clipmap.fVoxelSize;
+			const auto m4CameraProj = MRenderSystem::MatrixOrthoOffCenterLH(
+				clipmap.f3VoxelOrigin.x,
+				clipmap.f3VoxelOrigin.x + fVoxelTableSize,
+				clipmap.f3VoxelOrigin.y + fVoxelTableSize,
+				clipmap.f3VoxelOrigin.y,
+				clipmap.f3VoxelOrigin.z,
+				clipmap.f3VoxelOrigin.z + fVoxelTableSize
+			);
+
+			voxelMapInformation.SetVariant<Matrix4>(MShaderPropertyName::VOXELIZER_CAMERA_PROJ_MATRIX, m4CameraProj);
+
+			m_pVoxelParam->SetDirty();
+
+		}
+
+
+		if (m_pRWVoxelTableParam->pBuffer != m_pOwner->GetVoxelTableBuffer())
+		{
+			m_pRWVoxelTableParam->pBuffer = m_pOwner->GetVoxelTableBuffer();
+			m_pRWVoxelTableParam->SetDirty();
+		}
+
+		if (m_pVoxelGITextureParam->pTexture != m_pOwner->GetVoxelGITexture())
+		{
+			m_pVoxelGITextureParam->pTexture = m_pOwner->GetVoxelGITexture();
+			m_pVoxelGITextureParam->SetDirty();
+		}
+	}
+
+	std::shared_ptr<MShaderConstantParam> m_pVoxelParam = nullptr;
+	std::shared_ptr<MShaderStorageParam> m_pRWVoxelTableParam = nullptr;
+	std::shared_ptr<MShaderTextureParam> m_pVoxelGITextureParam = nullptr;
+
+	MVoxelizerRenderWork* m_pOwner = nullptr;
+};
 
 
 void MVoxelizerRenderWork::Initialize(MEngine* pEngine)
@@ -38,6 +102,8 @@ void MVoxelizerRenderWork::Initialize(MEngine* pEngine)
 	InitializeRenderPass();
 	InitializeDispatcher();
 	InitializeVoxelTextureDispatcher();
+
+	m_pFramePropertyUpdateDecorator = std::make_shared<MVoxelMapPropertyDecorator>(this);
 }
 
 void MVoxelizerRenderWork::Release(MEngine* pEngine)
@@ -48,6 +114,11 @@ void MVoxelizerRenderWork::Release(MEngine* pEngine)
 	ReleaseVoxelTextureDispatcher();
 
 	Super::Release(pEngine);
+}
+
+std::shared_ptr<IShaderPropertyUpdateDecorator> MVoxelizerRenderWork::GetFramePropertyDecorator()
+{
+	return m_pFramePropertyUpdateDecorator;
 }
 
 const MBuffer* MVoxelizerRenderWork::GetVoxelTableBuffer() const
@@ -65,10 +136,20 @@ std::shared_ptr<MTexture> MVoxelizerRenderWork::GetVoxelGITexture() const
 	return m_voxelGITexture;
 }
 
+MBoundsAABB MVoxelizerRenderWork::GetVoxelizerBoundsAABB(uint32_t nClipmapIdx) const
+{
+	return MBoundsAABB(
+		m_voxelSetting.vClipmap[nClipmapIdx].f3VoxelOrigin,
+		m_voxelSetting.vClipmap[nClipmapIdx].f3VoxelOrigin +
+		m_voxelSetting.nResolution *
+		m_voxelSetting.vClipmap[nClipmapIdx].fVoxelSize
+	);
+}
+
 void MVoxelizerRenderWork::SetupVoxelSetting(const Vector3& f3CameraPosition, const uint32_t nClipmapIdx)
 {
 	const uint32_t nVoxelTableSize = MRenderGlobal::VOXEL_TABLE_SIZE;
-	const float fBasicVoxelSize = 0.125f;
+	const float fBasicVoxelSize = 1.0f;
 
 	MVoxelMapSetting& voxelSetting = m_voxelSetting;
 	voxelSetting.nResolution = nVoxelTableSize;
@@ -115,7 +196,7 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 	if (m_pDebugVoxelMapSetting)
 	{
 		auto& settingStruct = m_pDebugVoxelMapSetting->var.GetValue<MVariantStruct>().GetVariant<MVariantStruct>(MShaderPropertyName::VOXEL_MAP_SETTING);
-		MRenderInfo::FillVoxelMapSetting(info.voxelSetting, settingStruct);
+		MRenderInfo::FillVoxelMapSetting(m_voxelSetting, settingStruct);
 
 		m_pDebugVoxelMapSetting->SetDirty();
 	}
@@ -123,7 +204,7 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 	if (m_pVoxelizerVoxelMapSetting)
 	{
 		auto& settingStruct = m_pVoxelizerVoxelMapSetting->var.GetValue<MVariantStruct>().GetVariant<MVariantStruct>(MShaderPropertyName::VOXEL_MAP_SETTING);
-		MRenderInfo::FillVoxelMapSetting(info.voxelSetting, settingStruct);
+		MRenderInfo::FillVoxelMapSetting(m_voxelSetting, settingStruct);
 
 		m_pVoxelizerVoxelMapSetting->SetDirty();
 	}

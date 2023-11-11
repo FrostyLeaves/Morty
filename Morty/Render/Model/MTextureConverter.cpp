@@ -26,40 +26,29 @@ std::vector<MByte> ConvertSingleChannelData(const MByte* vData, size_t nWidth, s
 }
 
 
-std::shared_ptr<MTextureResource> MTextureConverter::ConvertSingleChannel(std::shared_ptr<MTextureResource> pTexture, size_t nChannel)
+void MTextureConverter::ConvertSingleChannel(MTextureResourceData* pTextureData, size_t nChannel)
 {
-    const auto& rawData = pTexture->GetRawData();
-    auto ePixelFormat = pTexture->GetPixelFormat();
-    const size_t nWidth = pTexture->GetWidth();
-    const size_t nHeight = pTexture->GetHeight();
+    const auto& rawData = pTextureData->aByteData;
+    auto ePixelFormat = pTextureData->ePixelFormat;
+    const size_t nWidth = pTextureData->nWidth;
+    const size_t nHeight = pTextureData->nHeight;
 
     std::vector<MByte> convertData;
     
     if (MTexturePixelFormat::Byte8 == ePixelFormat)
     {
-        convertData = ConvertSingleChannelData<MByte>(rawData, nWidth, nHeight, nChannel);
+        convertData = ConvertSingleChannelData<MByte>(rawData.data(), nWidth, nHeight, nChannel);
     }
     else if (MTexturePixelFormat::Float32 == ePixelFormat)
     {
-        convertData = ConvertSingleChannelData<float>(rawData, nWidth, nHeight, nChannel);
+        convertData = ConvertSingleChannelData<float>(rawData.data(), nWidth, nHeight, nChannel);
     }
     else
     {
         MORTY_ASSERT(false);
-        return nullptr;
+        return;
     }
 
-    MEngine* pEngine = pTexture->GetEngine();
-    MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
-
-    MString strResourcePath = pTexture->GetResourcePath();
-    MString strFileName = MFileHelper::GetFileName(strResourcePath) + MStringUtil::ToString(nChannel);
-
-    MString strNewResourcePath = MFileHelper::ReplaceFileName(strResourcePath, strFileName);
-
-    auto pResult = pResourceSystem->CreateResource<MTextureResource>(strNewResourcePath);
-
-    pResult->Load(MTextureResourceUtil::LoadFromMemory(strNewResourcePath, convertData.data(), nWidth, nHeight, 1, ePixelFormat));
-
-    return pResult;
+    pTextureData->aByteData = convertData;
+    pTextureData->nChannel = 1;
 }

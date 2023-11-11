@@ -99,6 +99,9 @@ public:
 	virtual bool SetGraphPipeline(std::shared_ptr<MMaterial> pMaterial) = 0;
 	virtual void SetShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) = 0;
 
+	virtual void PushShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) = 0;
+	virtual void PopShaderPropertyBlock() = 0;
+
 	virtual bool DispatchComputeJob(MComputeDispatcher* pMaterial, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ) = 0;
 
 	virtual bool AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures, METextureBarrierStage dstStage) = 0;

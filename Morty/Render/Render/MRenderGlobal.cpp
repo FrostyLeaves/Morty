@@ -19,6 +19,7 @@ MString MRenderGlobal::SHADER_DEFINE_DISABLE_FLAG = "0";
 
 MStringId MShaderPropertyName::CBUFFER_FRAME_DATA = MStringId("cbFrameInformation");
 MStringId MShaderPropertyName::CBUFFER_LIGHT_DATA = MStringId("cbLightInformation");
+MStringId MShaderPropertyName::CBUFFER_VOXEL_MAP_DATA = MStringId("cbVoxelMapInformation");
 MStringId MShaderPropertyName::TEXTURE_SHADOW_MAP = MStringId("u_texShadowMap");
 MStringId MShaderPropertyName::TEXTURE_IRRADIANCE_MAP = MStringId("u_texIrradianceMap");
 MStringId MShaderPropertyName::TEXTURE_PREFILTER_MAP = MStringId("u_texPrefilterMap");
@@ -54,7 +55,6 @@ MStringId MShaderPropertyName::LIGHT_POINT_COUNT = MStringId("u_nValidPointLight
 MStringId MShaderPropertyName::SHADOW_LIGHT_PROJ_MATRIX = MStringId("u_vLightProjectionMatrix");
 MStringId MShaderPropertyName::SHADOW_LIGHT_CASCADE_SPLIT = MStringId("u_vCascadeSplits");
 MStringId MShaderPropertyName::SHADOW_GENERATE_CBUFFER_MATRIX_NAME = MStringId("cbShadowMatrix");
-MStringId MShaderPropertyName::SHADOW_GENERATE_LIGHT_PROJ_MATRIX = MStringId("u_matLightSpaceProj");
 
 MStringId MShaderPropertyName::VOXEL_MAP_SETTING = MStringId("voxelMapSetting");
 MStringId MShaderPropertyName::VOXEL_MAP_ORIGIN = MStringId("f3VoxelOrigin");

@@ -55,10 +55,11 @@ float3 AdditionAllLights(VS_OUT input)
     
     float3 f3Ambient = float3(0.0, 0.0, 0.0);
 
+    float3 kS = FresnelSchlickRoughness(max(dot(f3Normal, f3CameraDir), 0.0), f3BaseColor, fRoughness);
+    float3 kD = (1.0f - kS) * (1.0f - fMetallic);
+
     if(u_bEnvironmentMapEnabled)
     {
-        float3 kS = FresnelSchlickRoughness(max(dot(f3Normal, f3CameraDir), 0.0), f3BaseColor, fRoughness);
-        float3 kD = (1.0f - kS) * (1.0f - fMetallic);
 
         float3 f3Irradiance = u_texIrradianceMap.SampleLevel(LinearSampler, f3Normal, 0).rgb;
         float3 f3Diffuse = f3Irradiance * f3Albedo;
@@ -87,7 +88,9 @@ float3 AdditionAllLights(VS_OUT input)
 
     float3 f3LightColor = PbrLighting(pointData);
 
+    //float4 f4VXGIColor = float4(0,0,0,0);
     float4 f4VXGIColor = VoxelDiffuseTracing(u_texVoxelMap, voxelMapSetting, f3WorldPosition,  f3Normal);
+    //f4VXGIColor.rgb = (kD * f4VXGIColor.rgb) * fAmbientOcc;
     
     float3 f3Color = f3LightColor + f4VXGIColor.rgb + f3Ambient;
 

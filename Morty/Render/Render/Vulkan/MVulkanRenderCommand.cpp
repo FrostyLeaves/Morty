@@ -233,6 +233,11 @@ bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 	std::shared_ptr<MShaderPropertyBlock> pPropertyBlock = pMaterial->GetMaterialPropertyBlock();
 	SetShaderPropertyBlock(pPropertyBlock);
 
+	for (const auto& pPushedProperty : m_vPropertyBlockStack)
+	{
+		SetShaderPropertyBlock(pPushedProperty);
+	}
+
 	return true;
 }
 
@@ -392,6 +397,16 @@ void MVulkanRenderCommand::SetShaderPropertyBlock(const std::shared_ptr<MShaderP
 
 	VkPipelineBindPoint vkPipelineBindPoint = pUsingPipeline->m_vkPipelineBindPoint;
 	vkCmdBindDescriptorSets(m_VkCommandBuffer, vkPipelineBindPoint, pUsingPipeline->m_pipelineLayout.vkPipelineLayout, pPropertyBlock->m_unKey, 1, &pPropertyBlock->m_VkDescriptorSet, vDynamicOffsets.size(), vDynamicOffsets.data());
+}
+
+void MVulkanRenderCommand::PushShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock)
+{
+	m_vPropertyBlockStack.push_back(pPropertyBlock);
+}
+
+void MVulkanRenderCommand::PopShaderPropertyBlock()
+{
+	m_vPropertyBlockStack.pop_back();
 }
 
 bool MVulkanRenderCommand::AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures, METextureBarrierStage dstStage)

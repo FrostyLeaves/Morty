@@ -286,5 +286,5 @@ MString MFileHelper::GetFileName(MStringView strFullPath)
 MString MFileHelper::ReplaceFileName(MStringView strFullPath, MStringView strNewFileName)
 {
 	std::filesystem::path path{ strFullPath };
-	return path.replace_filename(strNewFileName).string();
+	return path.replace_filename(strNewFileName).string() + path.extension().string();
 }

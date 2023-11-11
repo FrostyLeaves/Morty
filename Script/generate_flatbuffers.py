@@ -25,15 +25,6 @@ def find_executable(name, path=None):
 
     return None
 
-
-
-
-def headerDocument(className):
-    return headerTemaplateString.format(className.upper(), className, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), "Pobrecito" )
-
-def scourceDocument(className):
-    return sourceTemaplateString.format(className)
-
 def gen_all_fbs(path, include_path, output_path, flat_exec):
     files_list = os.listdir(path)
 

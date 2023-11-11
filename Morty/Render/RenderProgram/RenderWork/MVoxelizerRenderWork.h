@@ -20,6 +20,8 @@
 #include <memory>
 
 
+class IShaderPropertyUpdateDecorator;
+
 class MORTY_API MVoxelizerRenderWork : public ISinglePassRenderWork
 {
 	MORTY_CLASS(MVoxelizerRenderWork)
@@ -28,6 +30,7 @@ public:
 
     void Initialize(MEngine* pEngine) override;
 	void Release(MEngine* pEngine) override;
+    std::shared_ptr<IShaderPropertyUpdateDecorator> GetFramePropertyDecorator() override;
 
     void Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
     void RenderDebugVoxel(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
@@ -37,7 +40,7 @@ public:
     const MBuffer* GetVoxelTableBuffer() const;
     const MBuffer* GetVoxelDebugBuffer() const;
     std::shared_ptr<MTexture> GetVoxelGITexture() const;
-
+    MBoundsAABB GetVoxelizerBoundsAABB(uint32_t nClipmapIdx) const;
 
     void SetupVoxelSetting(const Vector3& f3CameraPosition, const uint32_t nClipmapIdx);
 
@@ -58,6 +61,7 @@ protected:
     void ReleaseRenderPass();
 
     MVoxelMapSetting m_voxelSetting;
+    std::shared_ptr<IShaderPropertyUpdateDecorator> m_pFramePropertyUpdateDecorator = nullptr;
 
     MComputeDispatcher* m_pVoxelDebugIndirectGenerator = nullptr;
     MComputeDispatcher* m_pVoxelTextureGenerator = nullptr;

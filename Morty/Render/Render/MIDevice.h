@@ -31,6 +31,7 @@ class MIRenderCommand;
 enum class MEDeviceFeature
 {
 	EConservativeRasterization,
+	EHLSLFunctionality
 };
 
 class MORTY_API MIDevice

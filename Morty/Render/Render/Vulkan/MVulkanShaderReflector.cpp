@@ -34,6 +34,16 @@ enum class ShaderReflectorType
     U32,
 };
 
+bool CheckIgnoreVertexInput(const MString name)
+{
+	MORTY_UNUSED(name);
+    //if (name == "ViewIndex")
+    //{
+	//	return true;
+    //}
+
+	return false;
+}
 
 ShaderReflectorType GetReflectorTypeFromName(const std::string& name)
 {
@@ -130,9 +140,14 @@ void MVulkanShaderReflector::GetVertexInputState(const spirv_cross::Compiler& co
     
 	for (const spirv_cross::Resource& res : shaderResources.stage_inputs)
 	{
-		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
-		const std::string& name = compiler.get_name(res.id);
+		const MString& name = compiler.get_name(res.id);
 
+		if (CheckIgnoreVertexInput(name))
+		{
+			continue;
+		}
+
+		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
 		const auto [ format, nInputTypeSize] = GetVertexInputDescription(name, type);
 
 		const uint32_t unLocation = compiler.get_decoration(res.id, spv::Decoration::DecorationLocation);

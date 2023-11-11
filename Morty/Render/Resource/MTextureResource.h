@@ -81,13 +81,6 @@ protected:
 	std::unique_ptr<MResourceData> m_pResourceData = nullptr;
 };
 
-
-class MORTY_API MReadableTextureResource : public MTextureResource
-{
-public:
-	MReadableTextureResource() { m_bReadable = true; }
-};
-
 class MORTY_API MTextureResourceLoader : public MResourceLoader
 {
 public:

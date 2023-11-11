@@ -44,6 +44,9 @@ public:
 	bool SetGraphPipeline(std::shared_ptr<MMaterial> pMaterial) override;
 	void SetShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) override;
 
+	void PushShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) override;
+	void PopShaderPropertyBlock() override;
+
 	bool DispatchComputeJob(MComputeDispatcher* pComputeDispatcher, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ) override;
 
 	bool AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures, METextureBarrierStage dstStage) override;
@@ -84,7 +87,8 @@ public:
 	std::map<MTexture*, VkImageLayout> m_tTextureLayout;
 
 	std::vector<std::function<void()>> m_aRenderFinishedCallback = {};
-	
+
+	std::vector<std::shared_ptr<MShaderPropertyBlock>> m_vPropertyBlockStack;
 };
 
 class MORTY_API MVulkanSecondaryRenderCommand : public MVulkanRenderCommand

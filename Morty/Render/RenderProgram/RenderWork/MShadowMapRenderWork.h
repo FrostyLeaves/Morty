@@ -29,4 +29,6 @@ public:
 	void Resize(Vector2i size) override;
 
 	std::shared_ptr<ITextureInputAdapter> GetShadowMap() const;
+
+	std::shared_ptr<IShaderPropertyUpdateDecorator> GetFramePropertyDecorator() override;
 };

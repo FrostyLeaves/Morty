@@ -66,7 +66,7 @@ float3 PbrLighting(SurfaceData pointData)
         
         float shadow = GetDirectionShadow(u_texShadowMap, pointData.f3WorldPosition, pointData.f3Normal, f3LightInverseDirection);
 
-        f3Color += AdditionDirectionLight(u_xDirectionalLight, pointData);
+        f3Color += shadow * AdditionDirectionLight(u_xDirectionalLight, pointData);
     }
 
 

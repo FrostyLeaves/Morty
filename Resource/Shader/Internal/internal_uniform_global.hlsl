@@ -44,17 +44,18 @@
     //y: x * 1.25f
     //z: cascade ortho matrix width
     //w: light position z in projection space.
-    float4 u_vCascadeSplits[CASCADED_SHADOW_MAP_NUM];   
-
-    //cbVoxelMap
-    VoxelMapSetting voxelMapSetting;
-    float4x4 u_m4VoxelizerCamProj;
-
-    uint u_nVoxelClipMapIdx;
+    float4 u_vCascadeSplits[CASCADED_SHADOW_MAP_NUM];
 };
 
 //Shadowmap
 [[vk::binding(6,1)]]Texture2DArray u_texShadowMap;
+
+[[vk::binding(2,1)]]cbuffer cbVoxelMapInformation
+{
+    //cbVoxelMap
+    VoxelMapSetting voxelMapSetting;
+    float4x4 u_m4VoxelizerCamProj;
+}
 
 //Environment
 [[vk::binding(7,1)]]TextureCube u_texIrradianceMap;
@@ -65,13 +66,7 @@
 [[vk::binding(10,1)]] StructuredBuffer<float4x4> u_vBonesMatrix;
 [[vk::binding(11,1)]] StructuredBuffer<int> u_vBonesOffset;
 
-//Transparent
-#ifdef MTRANSPARENT_DEPTH_PEELING
-[[vk::input_attachment_index(0)]] [[vk::binding(12, 1)]] SubpassInput u_texSubpassInput0;
-[[vk::input_attachment_index(1)]] [[vk::binding(13, 1)]] SubpassInput u_texSubpassInput1;
-#endif
-
-[[vk::binding(15,1)]] StructuredBuffer<VoxelizerOutput> u_rwVoxelTable;
+[[vk::binding(15,1)]] RWStructuredBuffer<VoxelizerOutput> u_rwVoxelTable;
 [[vk::binding(16,1)]] Texture3D<float4> u_texVoxelMap;
 
 

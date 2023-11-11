@@ -12,6 +12,7 @@
 #include "Resource/MMaterialResource.h"
 #include "Widget/ModelConvertView.h"
 #include "Model/MTextureConverter.h"
+#include "Resource/MReadableTextureResource.h"
 #include "Utility/MTimer.h"
 
 
@@ -23,16 +24,16 @@ public:
 
 	std::shared_ptr<MTextureResource> GetTexture(const MString& strFullPath, MEModelTextureUsage eUsage) override
 	{
-		std::pair<MString, MEModelTextureUsage> key(strFullPath, eUsage);
+		MString strResourcePath = MFileHelper::ReplaceFileName(strFullPath, MFileHelper::GetFileName(strFullPath) + "_usage_" + MStringUtil::ToString(static_cast<int>(eUsage)));
 
-		if (m_tTextures.find(key) != m_tTextures.end())
+		if (m_tTextures.find(strResourcePath) != m_tTextures.end())
 		{
-			return m_tTextures[key];
+			return m_tTextures[strResourcePath];
 		}
 
 		MResourceSystem* pResourceSystem = m_pEngine->FindSystem<MResourceSystem>();
 
-		auto pResource = pResourceSystem->CreateResource<MReadableTextureResource>(strFullPath);
+		auto pResource = pResourceSystem->CreateResource<MReadableTextureResource>(strResourcePath);
 		if (!pResource)
 		{
 			MORTY_ASSERT(pResource);
@@ -40,20 +41,21 @@ public:
 		}
 
 		auto pTextureData = pResourceSystem->LoadResourceData(strFullPath);
-		pResource->Load(std::move(pTextureData));
 		
-		std::shared_ptr<MTextureResource> pTexture = MTypeClass::DynamicCast<MTextureResource>(pResource);
 
 		if (eUsage == MEModelTextureUsage::Metallic)
 		{
-			pTexture = MTextureConverter::ConvertSingleChannel(pTexture, 2);
+			MTextureConverter::ConvertSingleChannel(static_cast<MTextureResourceData*>(pTextureData.get()), 2);
 		}
 		else if (eUsage == MEModelTextureUsage::Roughness)
 		{	
-			pTexture = MTextureConverter::ConvertSingleChannel(pTexture, 1);
+			MTextureConverter::ConvertSingleChannel(static_cast<MTextureResourceData*>(pTextureData.get()), 1);
 		}
 
-		m_tTextures[key] = pTexture;
+		pResource->Load(std::move(pTextureData));
+		std::shared_ptr<MTextureResource> pTexture = MTypeClass::DynamicCast<MTextureResource>(pResource);
+
+		m_tTextures[strResourcePath] = pTexture;
 
 		return pTexture;
 	}
@@ -61,7 +63,7 @@ public:
 
 private:
 
-	std::map<std::pair<MString, MEModelTextureUsage>, std::shared_ptr<MTextureResource> > m_tTextures;
+	std::map<MString, std::shared_ptr<MTextureResource> > m_tTextures;
 
 	MEngine* m_pEngine = nullptr;
 };

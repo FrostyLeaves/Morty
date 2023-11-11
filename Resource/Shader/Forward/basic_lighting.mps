@@ -2,6 +2,11 @@
 
 #ifdef MTRANSPARENT_DEPTH_PEELING
 
+//Transparent
+[[vk::input_attachment_index(0)]] [[vk::binding(0, 3)]] SubpassInput u_texSubpassInput0;
+[[vk::input_attachment_index(1)]] [[vk::binding(1, 3)]] SubpassInput u_texSubpassInput1;
+
+
 struct PS_OUT
 {
     float4 f4FrontColor: SV_Target0;

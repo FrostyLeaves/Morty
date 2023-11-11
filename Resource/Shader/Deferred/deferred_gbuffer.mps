@@ -55,7 +55,6 @@ PS_OUT PS_MAIN(VS_OUT input)
 
     float2 uv = input.uv;
 
-    //使用法线贴图，法向量在view space，CameraDir也在view space
     float3 T = normalize(input.tangent);
     float3 B = normalize(input.bitangent);
     float3 N = normalize(input.normal);
@@ -66,7 +65,6 @@ PS_OUT PS_MAIN(VS_OUT input)
     {
         float3 f3ViewDir = mul(u_f3CameraPosition, TBN) - mul(input.worldPos, TBN);
         f3ViewDir = normalize(f3ViewDir);
-//        float3 f3ViewDir = mul(u_f3CameraDirection, TBN);
         uv = ParallaxMapping(uv, f3ViewDir, u_xMaterial.bUseHeightMap);
         uv = saturate(uv);
     }

@@ -23,7 +23,7 @@ public:
 	static constexpr int SHADER_PARAM_SET_MATERIAL = 0;
 	static constexpr int SHADER_PARAM_SET_FRAME = 1;
 	static constexpr int SHADER_PARAM_SET_MESH = 2;
-	static constexpr int SHADER_PARAM_SET_SKELETON = 3;
+	static constexpr int SHADER_PARAM_SET_OTHER = 3;
 	static constexpr int SHADER_PARAM_SET_NUM = 4;
 
 	static constexpr int BONES_PER_VERTEX = 4;
@@ -67,6 +67,7 @@ struct MORTY_API MShaderPropertyName
 	//Frame
 	static MStringId CBUFFER_FRAME_DATA;
 	static MStringId CBUFFER_LIGHT_DATA;
+	static MStringId CBUFFER_VOXEL_MAP_DATA;
 	static MStringId TEXTURE_SHADOW_MAP;
 	static MStringId TEXTURE_IRRADIANCE_MAP;
 	static MStringId TEXTURE_PREFILTER_MAP;
@@ -105,7 +106,6 @@ struct MORTY_API MShaderPropertyName
 	static MStringId SHADOW_LIGHT_PROJ_MATRIX;
 	static MStringId SHADOW_LIGHT_CASCADE_SPLIT;
 	static MStringId SHADOW_GENERATE_CBUFFER_MATRIX_NAME;
-	static MStringId SHADOW_GENERATE_LIGHT_PROJ_MATRIX;
 
 	//Voxel
 	static MStringId VOXEL_MAP_SETTING;

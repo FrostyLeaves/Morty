@@ -42,7 +42,6 @@ const std::vector<const char*> DeviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 	VK_KHR_MAINTENANCE1_EXTENSION_NAME,
 	VK_KHR_MULTIVIEW_EXTENSION_NAME,
-//	VK_GOOGLE_HLSL_FUNCTIONALITY_1_EXTENSION_NAME,
 //	VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_EXTENSION_NAME,
 //	VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME
 #if defined(MORTY_WIN) && defined(MORTY_DEBUG)
@@ -57,6 +56,7 @@ const std::vector<const char*> DeviceExtensions = {
 
 const std::map<MString, MEDeviceFeature> OptionalDeviceExtensions = {
 	{VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME, MEDeviceFeature::EConservativeRasterization},
+	{VK_GOOGLE_HLSL_FUNCTIONALITY_1_EXTENSION_NAME, MEDeviceFeature::EHLSLFunctionality},
 };
 
 const std::set<VkFormat> DepthOnlyTextureFormat = {

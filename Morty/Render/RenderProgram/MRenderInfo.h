@@ -103,18 +103,9 @@ struct MRenderInfo
 	MDirectionLightData directionLight;
 	std::vector<MPointLightData> vPointLight;
 
-	/************************** voxelizer **************************/
-	MVoxelMapSetting voxelSetting;
-
-	const MBuffer* pVoxelTableBuffer = nullptr;
-	std::shared_ptr<MTexture> pVoxelGITexture = nullptr;
-
 	/************************** shadow **************************/
 	std::array<MCascadedShadowRenderData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> shadowRenderInfo;
 
-	/************************** mesh **************************/
-	//TODO: remove this shit
-	std::map<std::shared_ptr<MMaterial>, std::vector<MRenderMeshComponent*>> m_tTransparentGroupMesh;
 
 
 public:

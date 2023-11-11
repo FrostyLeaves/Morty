@@ -104,23 +104,6 @@ void MMaterial::SetMaterialType(const MEMaterialType& eType)
 		return;
 
 	m_eMaterialType = eType;
-
-	switch (m_eMaterialType)
-	{
-	case MEMaterialType::EDepthPeel:
-	{
-		auto shaderMacro = GetShaderMacro();
-		shaderMacro.SetInnerMacro(MRenderGlobal::MEN_TRANSPARENT, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-		SetShaderMacro(shaderMacro);
-		break;
-	}
-
-	default:
-		auto shaderMacro = GetShaderMacro();
-		shaderMacro.SetInnerMacro(MRenderGlobal::MEN_TRANSPARENT, MRenderGlobal::SHADER_DEFINE_DISABLE_FLAG);
-		SetShaderMacro(shaderMacro);
-		break;
-	}
 }
 
 bool MMaterial::LoadShader(std::shared_ptr<MResource> pResource)

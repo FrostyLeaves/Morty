@@ -23,7 +23,7 @@ public:
 
 	void SetMesh(MIMesh* pMesh);
 	void SetMaterial(const std::shared_ptr<MMaterial>& pMaterial);
-	void SetFramePropertyBlockAdapter(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter);
+	void SetPropertyBlockAdapter(const std::vector<std::shared_ptr<IPropertyBlockAdapter>>& vAdapter);
 
 	void Render(MIRenderCommand* pCommand) override;
 
@@ -31,5 +31,5 @@ private:
 
 	MIMesh* m_pMesh = nullptr;
 	std::shared_ptr<MMaterial> m_pMaterial = nullptr;
-	std::shared_ptr<IPropertyBlockAdapter> m_pFramePropertyAdapter = nullptr;
+	std::vector<std::shared_ptr<IPropertyBlockAdapter>> m_vFramePropertyAdapter;
 };
