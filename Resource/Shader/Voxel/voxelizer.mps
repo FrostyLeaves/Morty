@@ -38,7 +38,7 @@ float4 PS_MAIN(VS_OUT input) : SV_Target
 
 	if (!IntersectAABB(input.aabbMin, input.aabbMax, input.worldPos))
     {
-		return float4(0, 0, 0, 0);
+		discard;
     }
 
 #endif
@@ -56,7 +56,7 @@ float4 PS_MAIN(VS_OUT input) : SV_Target
     float fRoughness  = u_mat_texRoughness.Sample(LinearSampler, uv).r * u_xMaterial.fRoughness;
     float fAmbientOcc = u_mat_texAmbientOcc.Sample(LinearSampler, uv).r;
 
-    float3 f3BaseColor = float3(0.04f, 0.04f, 0.04f);
+    float3 f3BaseColor = float3(0.0f, 0.0f, 0.0f);
     f3BaseColor = lerp(f3BaseColor, f3Albedo, fMetallic);
 
     SurfaceData pointData;

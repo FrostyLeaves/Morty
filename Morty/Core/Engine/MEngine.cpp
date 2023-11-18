@@ -6,6 +6,7 @@
 #include "System/MObjectSystem.h"
 
 #include "Module/MCoreModule.h"
+#include "TaskGraph/MMultiThreadTaskGraphWalker.h"
 
 MORTY_CLASS_IMPLEMENT(MEngine, MTypeClass)
 
@@ -24,7 +25,7 @@ MEngine::~MEngine()
 bool MEngine::Initialize()
 {
 	m_threadPool.Initialize();
-	m_pMainTaskGraph = new MTaskGraph(GetThreadPool());
+	m_pMainTaskGraph = new MTaskGraph();
 
 	m_eStage = EngineStage::READY;
 	return true;
@@ -92,7 +93,8 @@ void MEngine::Tick(const float& fDelta)
 
 	if (m_pMainTaskGraph)
 	{
-		m_pMainTaskGraph->Run();
+		MMultiThreadTaskGraphWalker walker(&m_threadPool);
+		m_pMainTaskGraph->Run(&walker);
 	}
 }
 

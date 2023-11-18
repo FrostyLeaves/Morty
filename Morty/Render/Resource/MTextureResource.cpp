@@ -31,8 +31,8 @@ MTextureResource::MTextureResource()
 	m_pTexture->SetMipmapsEnable(true);
 	m_pTexture->SetReadable(false);
 	m_pTexture->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
-	m_pTexture->SetRenderUsage(METextureRenderUsage::EUnknow);
-	m_pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
+	m_pTexture->SetRenderUsage(METextureWriteUsage::EUnknow);
+	m_pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
 }
 
 MTextureResource::~MTextureResource()
@@ -95,8 +95,8 @@ void MTextureResource::CreateCubeMapRenderTarget(const uint32_t& nWidth, const u
 	m_pTexture->SetReadable(true);
 	m_pTexture->SetTextureLayout(eLayout);
 	m_pTexture->SetSize(Vector2i(nWidth, nHeight));
-	m_pTexture->SetRenderUsage(METextureRenderUsage::ERenderBack);
-	m_pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
+	m_pTexture->SetRenderUsage(METextureWriteUsage::ERenderBack);
+	m_pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
 	m_pTexture->SetTextureType(METextureType::ETextureCube);
 	m_pTexture->SetImageLayerNum(6);
 	m_pTexture->SetMipmapsEnable(bMipmapEnable);

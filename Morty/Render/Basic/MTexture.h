@@ -47,20 +47,21 @@ enum class METextureLayout
 	E_NUM,
 };
 
-enum class METextureRenderUsage
+enum class METextureWriteUsage
 {
 	EUnknow = 0,
 	ERenderBack,
 	ERenderDepth,
 	ERenderPresent,
+	EStorageWrite,
 };
 
-class METextureShaderUsage
+class METextureReadUsage
 {
 public:
 	static constexpr uint32_t EUnknow = 0;
-	static constexpr uint32_t ESampler = 1;
-	static constexpr uint32_t EStorage = 2;
+	static constexpr uint32_t EPixelSampler = 1;
+	static constexpr uint32_t EStorageRead = 2;
 };
 
 class MORTY_API MTexture
@@ -91,8 +92,8 @@ public:
 	void SetMipmapsEnable(const bool& bEnable) { m_bMipmapsEnable = bEnable; }
 	bool GetMipmapsEnable() { return m_bMipmapsEnable; }
 
-	void SetRenderUsage(const METextureRenderUsage& usage) { m_eRenderUsage = usage; }
-	METextureRenderUsage GetRenderUsage() const { return m_eRenderUsage; }
+	void SetRenderUsage(const METextureWriteUsage& usage) { m_eRenderUsage = usage; }
+	METextureWriteUsage GetRenderUsage() const { return m_eRenderUsage; }
 
 	void SetShaderUsage(const uint32_t& usage) { m_eShaderUsage = usage; }
 	uint32_t GetShaderUsage() const { return m_eShaderUsage; }
@@ -133,7 +134,7 @@ public:
 	METextureLayout m_eRenderType;
 
 	//render target
-	METextureRenderUsage m_eRenderUsage;
+	METextureWriteUsage m_eRenderUsage;
 
 	uint32_t m_eShaderUsage;
 

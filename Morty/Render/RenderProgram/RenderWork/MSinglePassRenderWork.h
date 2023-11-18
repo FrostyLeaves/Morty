@@ -34,7 +34,7 @@ public:
 	std::vector<std::shared_ptr<MTexture>> GetBackTextures() const;
 	std::shared_ptr<MTexture> GetDepthTexture() const;
 
-	std::shared_ptr<ITextureInputAdapter> CreateOutput() const;
+	std::shared_ptr<IGetTextureAdapter> CreateOutput() const;
 
 protected:
 

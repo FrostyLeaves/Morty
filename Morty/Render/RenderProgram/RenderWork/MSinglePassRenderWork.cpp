@@ -49,7 +49,7 @@ std::shared_ptr<MTexture> ISinglePassRenderWork::GetDepthTexture() const
 	return m_renderPass.GetDepthTexture();
 }
 
-class MSingleRenderWorkOutput : public ITextureInputAdapter
+class MSingleRenderWorkOutput : public IGetTextureAdapter
 {
 public:
 
@@ -58,7 +58,7 @@ public:
 	std::shared_ptr<MTexture> pTexture = nullptr;
 };
 
-std::shared_ptr<ITextureInputAdapter> ISinglePassRenderWork::CreateOutput() const
+std::shared_ptr<IGetTextureAdapter> ISinglePassRenderWork::CreateOutput() const
 {
 	auto pOutput = std::make_shared<MSingleRenderWorkOutput>();
 	pOutput->pTexture = m_renderPass.m_vBackTextures[0].pTexture;

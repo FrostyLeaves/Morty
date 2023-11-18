@@ -56,9 +56,6 @@ void VXGI_TEST(MEngine* pEngine, MScene* pScene)
 			MStruct materialSut = material->var.GetValue<MStruct>();
 			MStruct uxMaterial = materialSut.GetVariant<MStruct>(MShaderPropertyName::MATERIAL_STRUCT_NAME);
 
-			Vector3 xyz;
-			spectrum_to_xyz(bb_spectrum, &xyz.x, &xyz.y, &xyz.z);
-
 			uxMaterial.SetVariant(MShaderPropertyName::MATERIAL_METALLIC, fMetallic);
 			uxMaterial.SetVariant(MShaderPropertyName::MATERIAL_ROUGHNESS, fRoughness);
 			uxMaterial.SetVariant(MShaderPropertyName::MATERIAL_ALBEDO, Vector4(color, 1.0f));

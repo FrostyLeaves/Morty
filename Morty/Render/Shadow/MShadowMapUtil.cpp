@@ -154,7 +154,7 @@ MShadowMapUtil::CalculateRenderData(MViewport* pViewport, MEntity* pCameraEntity
 	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
 	{
 		float fLastSplitDist = nCascadedIdx ? vCascadedData[nCascadedIdx - 1].fCascadeSplit : 0.0f;
-		float fCurrSplitDist = vCascadedData[nCascadedIdx].fCascadeSplit;
+		float fCurrSplitDist = (vCascadedData[nCascadedIdx].fCascadeSplit + vCascadedData[nCascadedIdx].fTransitionRange);
 
 		float fCascadedNearZ = fNearZ + (fFarZ - fNearZ) * fLastSplitDist;
 		float fCascadedFarZ = fNearZ + (fFarZ - fNearZ) * fCurrSplitDist;
@@ -211,13 +211,6 @@ MShadowMapUtil::CalculateRenderData(MViewport* pViewport, MEntity* pCameraEntity
 				cameraFrustumLength.x / MRenderGlobal::SHADOW_TEXTURE_SIZE,
 				cameraFrustumLength.y / MRenderGlobal::SHADOW_TEXTURE_SIZE,
 			};
-
-			/*
-			Vector2 worldUnitsPerTexel = {
-				16,
-				16,
-			};
-			*/
 
 			Vector3 min = lightFrustumInLightSpace.m_v3MinPoint;
 			Vector3 max = lightFrustumInLightSpace.m_v3MaxPoint;

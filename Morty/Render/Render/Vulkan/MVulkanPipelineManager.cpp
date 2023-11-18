@@ -837,7 +837,9 @@ void MVulkanPipelineManager::BindTextureParam(const std::shared_ptr<MShaderTextu
 		VkDescriptorImageInfo& imageInfo = pParam->m_VkImageInfo;
 		imageInfo.imageView = pTexture->m_VkImageView;
 		MORTY_ASSERT(pTexture->m_VkImageLayout != VK_IMAGE_LAYOUT_UNDEFINED);
-		if (VK_DESCRIPTOR_TYPE_STORAGE_IMAGE == pParam->m_VkDescriptorType)
+
+		//TODO: Do not set image layout from a constants value.
+		if (pTexture->GetRenderUsage() == METextureWriteUsage::EStorageWrite)
 		{
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 		}

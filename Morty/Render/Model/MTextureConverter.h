@@ -17,9 +17,6 @@
 class MORTY_API MTextureConverter
 {
 public:
-	MTextureConverter(MEngine* pEngine);
-    ~MTextureConverter();
-
 
     static void ConvertSingleChannel(MTextureResourceData* pTexture, size_t nChannel);
 

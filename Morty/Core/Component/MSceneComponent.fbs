@@ -1,5 +1,4 @@
-include "Math/Vector.fbs";
-include "Math/Quaternion.fbs";
+include "Utility/MTransform.fbs";
 include "Component/MComponent.fbs";
 include "Scene/MGuid.fbs";
 
@@ -8,9 +7,7 @@ namespace mfbs;
 table MSceneComponent
 {
 	super: MComponent;
-    position: Vector3;
-    scale: Vector3;
-    rotation: Quaternion;
+    transform: MTransform;
 
 	parent: MGuid;
 }

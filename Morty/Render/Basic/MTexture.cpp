@@ -6,8 +6,8 @@ MTexture::MTexture()
 	: m_strTextureName("Texture_Default")
 	, m_n3Size(1, 1, 1)
 	, m_eRenderType(METextureLayout::ERGBA_UNORM_8)
-	, m_eRenderUsage(METextureRenderUsage::EUnknow)
-	, m_eShaderUsage(METextureShaderUsage::EUnknow)
+	, m_eRenderUsage(METextureWriteUsage::EUnknow)
+	, m_eShaderUsage(METextureReadUsage::EUnknow)
 	, m_eTextureType(METextureType::ETexture2D)
 	, m_bReadable(false)
 	, m_bMipmapsEnable(false)
@@ -98,8 +98,8 @@ std::shared_ptr<MTexture> MTexture::CreateShadowMap()
 	pTexture->SetName("Shadow Map Texture");
 	pTexture->SetMipmapsEnable(false);
 	pTexture->SetReadable(false);
-	pTexture->SetRenderUsage(METextureRenderUsage::ERenderDepth);
-	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
+	pTexture->SetRenderUsage(METextureWriteUsage::ERenderDepth);
+	pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
 	pTexture->SetTextureLayout(METextureLayout::EDepth);
 
 	return pTexture;
@@ -111,8 +111,8 @@ std::shared_ptr<MTexture> MTexture::CreateShadowMapArray(const size_t& nArraySiz
 	pTexture->SetName("Shadow Map Texture Array");
 	pTexture->SetMipmapsEnable(false);
 	pTexture->SetReadable(false);
-	pTexture->SetRenderUsage(METextureRenderUsage::ERenderDepth);
-	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
+	pTexture->SetRenderUsage(METextureWriteUsage::ERenderDepth);
+	pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
 	pTexture->SetTextureLayout(METextureLayout::EDepth);
 	pTexture->SetTextureType(METextureType::ETexture2DArray);
 	pTexture->SetImageLayerNum(nArraySize);
@@ -126,8 +126,8 @@ std::shared_ptr<MTexture> MTexture::CreateRenderTarget(METextureLayout eLayout/*
 	pTexture->SetName("Render Target Texture");
 	pTexture->SetMipmapsEnable(false);
 	pTexture->SetReadable(false);
-	pTexture->SetRenderUsage(METextureRenderUsage::ERenderBack);
-	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
+	pTexture->SetRenderUsage(METextureWriteUsage::ERenderBack);
+	pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
 	pTexture->SetTextureLayout(eLayout);
 
 	return pTexture;
@@ -139,8 +139,8 @@ std::shared_ptr<MTexture> MTexture::CreateRenderTargetGBuffer()
 	pTexture->SetName("GBuffer Texture");
 	pTexture->SetMipmapsEnable(false);
 	pTexture->SetReadable(false);
-	pTexture->SetRenderUsage(METextureRenderUsage::ERenderBack);
-	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
+	pTexture->SetRenderUsage(METextureWriteUsage::ERenderBack);
+	pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
 	pTexture->SetTextureLayout(METextureLayout::ERGBA_FLOAT_16);
 
 	return pTexture;
@@ -152,8 +152,8 @@ std::shared_ptr<MTexture> MTexture::CreateRenderTargetFloat32()
 	pTexture->SetName("Render Target Float32 Texture");
 	pTexture->SetMipmapsEnable(false);
 	pTexture->SetReadable(false);
-	pTexture->SetRenderUsage(METextureRenderUsage::ERenderBack);
-	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
+	pTexture->SetRenderUsage(METextureWriteUsage::ERenderBack);
+	pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
 	pTexture->SetTextureLayout(METextureLayout::ER_FLOAT_32);
 
 	return pTexture;
@@ -165,8 +165,8 @@ std::shared_ptr<MTexture> MTexture::CreateCubeMap()
 	pTexture->SetName("CubeMap Texture");
 	pTexture->SetMipmapsEnable(false);
 	pTexture->SetReadable(false);
-	pTexture->SetRenderUsage(METextureRenderUsage::EUnknow);
-	pTexture->SetShaderUsage(METextureShaderUsage::ESampler);
+	pTexture->SetRenderUsage(METextureWriteUsage::EUnknow);
+	pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
 	pTexture->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
 	pTexture->SetTextureType(METextureType::ETextureCube);
 	pTexture->SetImageLayerNum(6);
@@ -180,8 +180,8 @@ std::shared_ptr<MTexture> MTexture::CreateVXGIMap()
 	pTexture->SetName("VXGI Texture");
 	pTexture->SetMipmapsEnable(false);
 	pTexture->SetReadable(false);
-	pTexture->SetRenderUsage(METextureRenderUsage::EUnknow);
-	pTexture->SetShaderUsage(METextureShaderUsage::ESampler | METextureShaderUsage::EStorage);
+	pTexture->SetRenderUsage(METextureWriteUsage::EStorageWrite);
+	pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler | METextureReadUsage::EStorageRead);
 	pTexture->SetTextureLayout(METextureLayout::ERGBA_FLOAT_32);
 	pTexture->SetTextureType(METextureType::ETexture3D);
 	pTexture->SetImageLayerNum(1);

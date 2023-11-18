@@ -24,10 +24,10 @@ class MShaderPropertyBlock;
 struct MMeshInstanceRenderProxy;
 class IShaderPropertyUpdateDecorator;
 
-class MORTY_API ITextureInputAdapter
+class MORTY_API IGetTextureAdapter
 {
 public:
-	virtual ~ITextureInputAdapter() = default;
+	virtual ~IGetTextureAdapter() = default;
 	virtual std::shared_ptr<MTexture> GetTexture() = 0;
 };
 

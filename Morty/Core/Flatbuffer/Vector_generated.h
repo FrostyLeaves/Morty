@@ -21,12 +21,21 @@ struct Vector3;
 
 struct Vector4;
 
+inline const ::flatbuffers::TypeTable *Vector2TypeTable();
+
+inline const ::flatbuffers::TypeTable *Vector3TypeTable();
+
+inline const ::flatbuffers::TypeTable *Vector4TypeTable();
+
 FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) Vector2 FLATBUFFERS_FINAL_CLASS {
  private:
   float x_;
   float y_;
 
  public:
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
+    return Vector2TypeTable();
+  }
   Vector2()
       : x_(0),
         y_(0) {
@@ -51,6 +60,9 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) Vector3 FLATBUFFERS_FINAL_CLASS {
   float z_;
 
  public:
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
+    return Vector3TypeTable();
+  }
   Vector3()
       : x_(0),
         y_(0),
@@ -81,6 +93,9 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) Vector4 FLATBUFFERS_FINAL_CLASS {
   float w_;
 
  public:
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
+    return Vector4TypeTable();
+  }
   Vector4()
       : x_(0),
         y_(0),
@@ -107,6 +122,60 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) Vector4 FLATBUFFERS_FINAL_CLASS {
   }
 };
 FLATBUFFERS_STRUCT_END(Vector4, 16);
+
+inline const ::flatbuffers::TypeTable *Vector2TypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_FLOAT, 0, -1 },
+    { ::flatbuffers::ET_FLOAT, 0, -1 }
+  };
+  static const int64_t values[] = { 0, 4, 8 };
+  static const char * const names[] = {
+    "x",
+    "y"
+  };
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_STRUCT, 2, type_codes, nullptr, nullptr, values, names
+  };
+  return &tt;
+}
+
+inline const ::flatbuffers::TypeTable *Vector3TypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_FLOAT, 0, -1 },
+    { ::flatbuffers::ET_FLOAT, 0, -1 },
+    { ::flatbuffers::ET_FLOAT, 0, -1 }
+  };
+  static const int64_t values[] = { 0, 4, 8, 12 };
+  static const char * const names[] = {
+    "x",
+    "y",
+    "z"
+  };
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_STRUCT, 3, type_codes, nullptr, nullptr, values, names
+  };
+  return &tt;
+}
+
+inline const ::flatbuffers::TypeTable *Vector4TypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_FLOAT, 0, -1 },
+    { ::flatbuffers::ET_FLOAT, 0, -1 },
+    { ::flatbuffers::ET_FLOAT, 0, -1 },
+    { ::flatbuffers::ET_FLOAT, 0, -1 }
+  };
+  static const int64_t values[] = { 0, 4, 8, 12, 16 };
+  static const char * const names[] = {
+    "x",
+    "y",
+    "z",
+    "w"
+  };
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_STRUCT, 4, type_codes, nullptr, nullptr, values, names
+  };
+  return &tt;
+}
 
 }  // namespace mfbs
 

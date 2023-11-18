@@ -247,7 +247,7 @@ void MDeferredRenderProgram::InitializeRenderTarget()
 		{ pDepthTexture, {false, true, MColor::Black_T} });
 
 	GetRenderWork<MPostProcessRenderWork>()->SetRenderTarget(
-		{ {pPostProcessOutput, {true, false, MColor::Black_T }} });
+	{pPostProcessOutput, {true, false, MColor::Black_T }});
 
 	GetRenderWork<MDebugRenderWork>()->SetRenderTarget(
 		{ {pPostProcessOutput, {false, true, MColor::Black_T }} },

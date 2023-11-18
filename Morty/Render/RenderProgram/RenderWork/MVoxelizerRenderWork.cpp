@@ -149,7 +149,7 @@ MBoundsAABB MVoxelizerRenderWork::GetVoxelizerBoundsAABB(uint32_t nClipmapIdx) c
 void MVoxelizerRenderWork::SetupVoxelSetting(const Vector3& f3CameraPosition, const uint32_t nClipmapIdx)
 {
 	const uint32_t nVoxelTableSize = MRenderGlobal::VOXEL_TABLE_SIZE;
-	const float fBasicVoxelSize = 1.0f;
+	const float fBasicVoxelSize = MRenderGlobal::VOXEL_BASIC_VOXEL_SIZE;
 
 	MVoxelMapSetting& voxelSetting = m_voxelSetting;
 	voxelSetting.nResolution = nVoxelTableSize;
@@ -228,14 +228,10 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 		, MRenderGlobal::VOXEL_TABLE_SIZE / 8);
 
 	{
-		pCommand->AddRenderToTextureBarrier({ m_voxelGITexture.get() }, METextureBarrierStage::EComputeShaderWrite);
-
 		pCommand->DispatchComputeJob(m_pVoxelTextureGenerator
 			, MRenderGlobal::VOXEL_TABLE_SIZE / 8
 			, MRenderGlobal::VOXEL_TABLE_SIZE / 8
 			, MRenderGlobal::VOXEL_TABLE_SIZE / 8);
-			
-		pCommand->AddRenderToTextureBarrier({ m_voxelGITexture.get() }, METextureBarrierStage::EPixelShaderSample);
 	}
 
 	pCommand->AddBufferMemoryBarrier(
@@ -343,7 +339,7 @@ void MVoxelizerRenderWork::InitializeDispatcher()
 		auto pVoxelizerMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 		pVoxelizerMaterial->SetCullMode(MECullMode::ECullNone);
 		pVoxelizerMaterial->GetShaderMacro().AddUnionMacro(key, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-		pVoxelizerMaterial->GetShaderMacro().AddUnionMacro(MStringId("VOXELIZER_CONSERVATIVE_RASTERIZATION"), MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+		pVoxelizerMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::VOXELIZER_CONSERVATIVE_RASTERIZATION, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
 		pVoxelizerMaterial->SetConservativeRasterizationEnable(true);
 		pVoxelizerMaterial->LoadShader(voxelizerVS);
 		pVoxelizerMaterial->LoadShader(voxelizerPS);   

@@ -121,7 +121,7 @@ void MDeferredLightingRenderWork::SetGBuffer(const std::shared_ptr<IGBufferAdapt
 	}
 }
 
-void MDeferredLightingRenderWork::SetShadowMap(const std::shared_ptr<ITextureInputAdapter>& pAdapter)
+void MDeferredLightingRenderWork::SetShadowMap(const std::shared_ptr<IGetTextureAdapter>& pAdapter)
 {
 	m_pShadowMapAdapter = pAdapter;
 }

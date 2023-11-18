@@ -46,12 +46,14 @@ public:
 
 	static constexpr int CASCADED_SHADOW_MAP_NUM = 4;
 	static constexpr int VOXEL_GI_CLIP_MAP_NUM = 6;
+	static constexpr float VOXEL_BASIC_VOXEL_SIZE = 1.0f;
 	static constexpr int VOXEL_DIFFUSE_CONE_COUNT = 16;
 
 	static MStringId SHADER_SKELETON_ENABLE;
 	static MStringId DRAW_MESH_INSTANCING_NONE;
 	static MStringId DRAW_MESH_INSTANCING_UNIFORM;
 	static MStringId DRAW_MESH_INSTANCING_STORAGE;
+	static MStringId VOXELIZER_CONSERVATIVE_RASTERIZATION;
 	static MStringId MEN_TRANSPARENT;
 	static MString SHADER_DEFINE_ENABLE_FLAG;
 	static MString SHADER_DEFINE_DISABLE_FLAG;

@@ -334,7 +334,7 @@ bool MRenderView::BindRenderPass()
 		std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
 		pTexture->SetName("Editor Render View");
 		pTexture->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
-		pTexture->SetRenderUsage(METextureRenderUsage::ERenderPresent);
+		pTexture->SetRenderUsage(METextureWriteUsage::ERenderPresent);
 		pTexture->SetSize(size);
 		pTexture->m_VkTextureImage = vSwapchainImages[i];
 		pTexture->m_VkTextureImageMemory = VK_NULL_HANDLE;

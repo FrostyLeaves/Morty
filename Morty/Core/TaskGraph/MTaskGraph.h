@@ -17,13 +17,13 @@
 #include "Thread/MThreadPool.h"
 
 class MTaskNode;
+class ITaskGraphWalker;
 class MORTY_API MTaskGraph : MTypeClass
 {
     MORTY_CLASS(MTaskGraph)
 
 public:
     MTaskGraph();
-	MTaskGraph(MThreadPool* pThreadPool);
     virtual ~MTaskGraph();
 
     template<typename TYPE>
@@ -36,18 +36,16 @@ public:
 	void RequireCompile() { m_bRequireCompile = true; }
 	bool NeedCompile() const { return m_bRequireCompile; }
 
-	void Run();
+	void Run(ITaskGraphWalker* pWalker);
 
 	const std::vector<MTaskNode*>& GetStartNodes() { return m_vStartTaskNode; }
 	const std::vector<MTaskNode*>& GetFinalNodes() { return m_vFinalTaskNode; }
-
-	MThreadPool* GetThreadPool() const { return m_pThreadPool; }
+	std::vector<MTaskNode*> GetOrderedNodes();
 
 protected:
 
 	bool AddNode(const MString& strNodeName, MTaskNode* pGraphNode);
 
-	MThreadPool* m_pThreadPool = nullptr;
 	std::set<MTaskNode*> m_tTaskNode;
 
 	std::vector<MTaskNode*> m_vStartTaskNode;

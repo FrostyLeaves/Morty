@@ -46,7 +46,7 @@ public:
 	void DisconnectTo(MTaskNode* pNextNode);
 	void DisconnectAll();
 
-	MTaskGraph* GetGraph() { return m_pGraph; }
+	MTaskGraph* GetGraph() const { return m_pGraph; }
 
 	bool IsStartNode();
 	bool IsFinalNode();
@@ -72,8 +72,8 @@ protected:
     friend class MTaskGraph;
 
     MString m_strNodeName;
-    MTaskGraph* m_pGraph;
-	int m_nPriorityLevel;
+    MTaskGraph* m_pGraph = nullptr;
+	int m_nPriorityLevel = 0;
 	METhreadType m_eThreadType = METhreadType::EAny;
 
 	std::vector<MTaskNodeInput*> m_vInput;

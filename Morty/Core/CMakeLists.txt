@@ -121,10 +121,10 @@ function(generate_flatbuffers_header LIBRARY_NAME)
 
     #list(REMOVE_DUPLICATES ${FLATBUFFERS_INCLUDE_DIR})
 
-    message("[flatbuffers] ${FLATBUFFERS_FLATC_EXECUTABLE} --cpp ${FLATBUFFERS_INCLUDE_DIR} -o ${CMAKE_CURRENT_SOURCE_DIR}/Flatbuffer/ ${SRC_FBS} --gen-object-api")
+    message("[flatbuffers] ${FLATBUFFERS_FLATC_EXECUTABLE} --cpp ${FLATBUFFERS_INCLUDE_DIR} -o ${CMAKE_CURRENT_SOURCE_DIR}/Flatbuffer/ ${SRC_FBS} --gen-object-api ")
     foreach(SRC_FBS ${ALL_FBS_PATH})
         execute_process(
-            COMMAND ${FLATBUFFERS_FLATC_EXECUTABLE} --cpp ${FLATBUFFERS_INCLUDE_DIR} -o ${CMAKE_CURRENT_SOURCE_DIR}/Flatbuffer/ ${SRC_FBS} --gen-object-api
+            COMMAND ${FLATBUFFERS_FLATC_EXECUTABLE} --cpp ${FLATBUFFERS_INCLUDE_DIR} -o ${CMAKE_CURRENT_SOURCE_DIR}/Flatbuffer/ ${SRC_FBS} --gen-object-api --reflect-types --reflect-names
         )
     endforeach()
 endfunction()

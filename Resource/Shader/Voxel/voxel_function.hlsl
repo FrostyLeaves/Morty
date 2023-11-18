@@ -95,7 +95,7 @@ uint ValidVoxelWorldPosition(VoxelMapSetting setting, uint nClipmapIdx, float3 p
 {
     VoxelClipmap clipmap = setting.vClipmap[nClipmapIdx];
 
-    float3 f3VoxelSize = float(setting.nResolution) * clipmap.fVoxelSize;
+    float3 f3VoxelSize = float(setting.nResolution - 1) * clipmap.fVoxelSize;
     if (all(position == clamp(position, clipmap.f3VoxelOrigin, clipmap.f3VoxelOrigin + f3VoxelSize)))
     {
         return 1;

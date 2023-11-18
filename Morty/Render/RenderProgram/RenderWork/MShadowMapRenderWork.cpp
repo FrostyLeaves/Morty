@@ -28,7 +28,7 @@
 
 MORTY_CLASS_IMPLEMENT(MShadowMapRenderWork, ISinglePassRenderWork)
 
-class ShadowMapTexture : public ITextureInputAdapter
+class ShadowMapTexture : public IGetTextureAdapter
 {
 public:
 	virtual std::shared_ptr<MTexture> GetTexture() { return pTexture; }
@@ -73,7 +73,7 @@ void MShadowMapRenderWork::Resize(Vector2i size)
     //Shadow map can`t resize.
 }
 
-std::shared_ptr<ITextureInputAdapter> MShadowMapRenderWork::GetShadowMap() const
+std::shared_ptr<IGetTextureAdapter> MShadowMapRenderWork::GetShadowMap() const
 {
 	auto pShadowMap = std::make_shared<ShadowMapTexture>();
 	pShadowMap->pTexture = m_renderPass.GetDepthTexture();

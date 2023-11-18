@@ -93,4 +93,5 @@ int main()
 	//release engine
 	engine.Release();
 
+	return 0;
 }

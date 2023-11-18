@@ -1,4 +1,5 @@
 #include "Utility/MTransform.h"
+#include "Flatbuffer/MTransform_generated.h"
 
 MTransform::MTransform()
 	: m_v3Position(0, 0, 0)
@@ -36,6 +37,26 @@ Matrix4 MTransform::GetMatrix() const
 	matscal.m[2][2] = m_v3Scale.z;
 
 	return matmove * matrota * matscal;
+}
+
+flatbuffers::Offset<void> MTransform::Serialize(flatbuffers::FlatBufferBuilder& fbb)
+{
+	mfbs::MTransformBuilder fbBuilder(fbb);
+
+	fbBuilder.add_position(m_v3Position.Serialize(fbb));
+	fbBuilder.add_scale(m_v3Scale.Serialize(fbb));
+	fbBuilder.add_rotation(m_qtRotation.Serialize(fbb));
+
+	return fbBuilder.Finish().Union();
+}
+
+void MTransform::Deserialize(const void* pBufferPointer)
+{
+	const mfbs::MTransform* fbTransform = reinterpret_cast<const mfbs::MTransform*>(pBufferPointer);
+
+	m_v3Position.Deserialize(fbTransform->position());
+	m_qtRotation.Deserialize(fbTransform->rotation());
+	m_v3Scale.Deserialize(fbTransform->scale());
 }
 
 TEST_CASE("core transform test")
