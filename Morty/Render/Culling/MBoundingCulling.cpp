@@ -72,9 +72,9 @@ void MBoundingCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanc
 
 					const MMeshManager::MMeshData& data = pMeshManager->FindMesh(instance.pMesh);
 					const MDrawIndexedIndirectData indirectData = {
-						data.indexInfo.size,
+						static_cast<uint32_t>(data.indexInfo.size),
 						1,
-						data.indexInfo.begin,
+                        static_cast<uint32_t>(data.indexInfo.begin),
 						0,
 						static_cast<uint32_t>(nIdx)
 					};

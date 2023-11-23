@@ -34,6 +34,6 @@ private:
 	std::string m_strSourcePath;
 	std::string m_strOutputDir;
 	std::string m_strOutputName;
-	uint32_t m_nMaterialTypeEnum = 0;
+	size_t m_nMaterialTypeEnum = 0;
 };
 

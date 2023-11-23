@@ -108,7 +108,7 @@ void MGPUCameraFrustumCulling::Culling(const std::vector<MMaterialBatchGroup*>& 
 
 	auto createNewGroupFunc = [&](const std::shared_ptr<MMaterial>& pMaterial, MInstanceBatchGroup* pInstanceBatchGroup)
 	{
-		int nIndirectBeginIdx = vInstanceCullingData.size();
+		size_t nIndirectBeginIdx = vInstanceCullingData.size();
 		const auto pMeshProperty = pInstanceBatchGroup->GetMeshProperty();
 		pMeshProperty->SetValue(MShaderPropertyName::MESH_INSTANCE_BEGIN_INDEX, nIndirectBeginIdx);
 
@@ -187,7 +187,7 @@ void MGPUCameraFrustumCulling::Culling(const std::vector<MMaterialBatchGroup*>& 
 
 	m_pCommand->AddBufferMemoryBarrier({ &m_drawIndirectBuffer }, MEBufferBarrierStage::EDrawIndirectRead, MEBufferBarrierStage::EComputeShaderWrite);
 
-	m_pCommand->DispatchComputeJob(m_pCullingComputeDispatcher, vInstanceCullingData.size() / 16 + (vInstanceCullingData.size() % 16 ? 1 : 0), 1, 1);
+	m_pCommand->DispatchComputeJob(m_pCullingComputeDispatcher, static_cast<uint32_t>(vInstanceCullingData.size()) / 16 + (static_cast<uint32_t>(vInstanceCullingData.size()) % 16 ? 1 : 0), 1, 1);
 
 	m_pCommand->AddBufferMemoryBarrier({ &m_drawIndirectBuffer }, MEBufferBarrierStage::EComputeShaderWrite, MEBufferBarrierStage::EDrawIndirectRead);
 }

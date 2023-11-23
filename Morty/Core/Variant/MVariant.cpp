@@ -1,4 +1,4 @@
-﻿#include "MVariant.h"
+#include "MVariant.h"
 
 #include "MVariant_generated.h"
 
@@ -449,14 +449,14 @@ flatbuffers::Offset<void> MVariantStruct::Serialize(flatbuffers::FlatBufferBuild
 		mfbs::MStructMemberBuilder builder(fbb);
 		builder.add_name(fbName);
 		builder.add_value(fbVariant.o);
-		builder.add_relative_offset(pr.second.GetOffset() - m_nOffset);
+		builder.add_relative_offset(static_cast<uint32_t>(pr.second.GetOffset() - m_nOffset));
 		vMembers.push_back(builder.Finish());
 	}
 
 	const auto fbMembers = fbb.CreateVector(vMembers);
 	mfbs::MVariantStructBuilder builder(fbb);
 	builder.add_member(fbMembers);
-	builder.add_size(Size());
+	builder.add_size(static_cast<uint32_t>(Size()));
 	return builder.Finish().Union();
 }
 
@@ -499,14 +499,14 @@ flatbuffers::Offset<void> MVariantArray::Serialize(flatbuffers::FlatBufferBuilde
 
 		mfbs::MArrayMemberBuilder builder(fbb);
 		builder.add_value(fbVariant.o);
-		builder.add_relative_offset(value.GetOffset() - m_nOffset);
+		builder.add_relative_offset(static_cast<uint32_t>(value.GetOffset() - m_nOffset));
 		vMembers.push_back(builder.Finish());
 	}
 
 	const auto fbMembers = fbb.CreateVector(vMembers);
 	mfbs::MVariantArrayBuilder builder(fbb);
 	builder.add_member(fbMembers);
-	builder.add_size(Size());
+	builder.add_size(static_cast<uint32_t>(Size()));
 	return builder.Finish().Union();
 }
 

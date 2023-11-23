@@ -232,7 +232,7 @@ void MMeshInstanceManager::RemoveComponentFromGroup(MRenderMeshComponent* pCompo
 
 	auto group = findResult->second;
 
-	auto nProxyId = pComponent->GetComponentID().nIdx;
+	auto nProxyId = static_cast<uint32_t>(pComponent->GetComponentID().nIdx);
 	group->tWaitUpdateComponent.erase(nProxyId);
 	group->tWaitRemoveComponent.insert(nProxyId);
 	m_tComponentTable.erase(findResult);

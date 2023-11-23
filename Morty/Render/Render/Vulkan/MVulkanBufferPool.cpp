@@ -35,7 +35,7 @@ MVulkanBufferPool::~MVulkanBufferPool()
 
 bool MVulkanBufferPool::Initialize()
 {
-	m_unMinUboAlignment = m_pDevice->m_VkPhysicalDeviceProperties.limits.minUniformBufferOffsetAlignment;
+	m_unMinUboAlignment = static_cast<uint32_t>(m_pDevice->m_VkPhysicalDeviceProperties.limits.minUniformBufferOffsetAlignment);
 
 	m_pDevice->GenerateBuffer(m_unDynamicUniformBufferMemorySize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_VkDynamicUniformBuffer, m_VkDynamicUniformMemory);
@@ -80,7 +80,7 @@ bool MVulkanBufferPool::AllowBufferMemory(const std::shared_ptr<MShaderConstantP
 
 bool MVulkanBufferPool::AllowUniformBufferMemory(const std::shared_ptr<MShaderConstantParam>& pParam)
 {
-	uint32_t unSize = pParam->var.GetSize();
+	uint32_t unSize = static_cast<uint32_t>(pParam->var.GetSize());
 
 
 	VkBuffer buffer = VK_NULL_HANDLE;
@@ -121,7 +121,7 @@ bool MVulkanBufferPool::AllowDynamicUniformBufferMemory(const std::shared_ptr<MS
 		MORTY_ASSERT(VK_NULL_HANDLE == pParam->m_VkBuffer);
 		return false;
 	}
-	uint32_t unVariantSize = pParam->var.GetSize();
+	uint32_t unVariantSize = static_cast<uint32_t>(pParam->var.GetSize());
 
 	if (unVariantSize > 0) {
 		unVariantSize = (unVariantSize + m_unMinUboAlignment - 1) & ~(m_unMinUboAlignment - 1);
@@ -141,7 +141,7 @@ bool MVulkanBufferPool::AllowDynamicUniformBufferMemory(const std::shared_ptr<MS
 
 	pParam->m_VkBuffer = m_VkDynamicUniformBuffer;
 	pParam->m_VkBufferMemory = m_VkDynamicUniformMemory;
-	pParam->m_unMemoryOffset = allowInfo.begin;
+	pParam->m_unMemoryOffset = static_cast<uint32_t>(allowInfo.begin);
 	pParam->m_pMemoryMapping = m_pDynamicUniformMemoryMapping;
 	pParam->m_unVkMemorySize = unVariantSize;
 

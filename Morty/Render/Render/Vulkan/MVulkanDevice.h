@@ -134,8 +134,8 @@ public:
 	VkImageViewType GetImageViewType(MTexture* pTexture);
 	VkImageCreateFlags GetImageCreateFlags(MTexture* pTexture);
 	VkImageType GetImageType(MTexture* pTexture);
-	int GetMipmapCount(MTexture* pTexture);
-	int GetLayerCount(MTexture* pTexture);
+    uint32_t GetMipmapCount(MTexture* pTexture);
+    uint32_t GetLayerCount(MTexture* pTexture);
 
 	MVulkanObjectRecycleBin* GetRecycleBin();
 

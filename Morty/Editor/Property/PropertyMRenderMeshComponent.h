@@ -53,8 +53,9 @@ public:
 					{
 						int nResID = MGlobal::M_INVALID_INDEX;
 						if (pMeshComponent->GetMaterial())
-							nResID = pMeshComponent->GetMaterial()->GetResourceID();
-
+                        {
+                            nResID = static_cast<int>(pMeshComponent->GetMaterial()->GetResourceID());
+                        }
 						NotifyManager::GetInstance()->SendNotify("Edit Material", MVariant(nResID));
 					}
 					ShowValueEnd();
@@ -68,10 +69,10 @@ public:
 				{
 					ShowValueBegin("ShadowType");
 					MRenderMeshComponent::MEShadowType eType = pMeshComponent->GetShadowType();
-					uint32_t unSelected = (uint32_t)eType;
-					if (EditEnum({ "None", "OnlyDirection", "AllLights" }, unSelected))
+					size_t nSelected = (size_t)eType;
+					if (EditEnum({ "None", "OnlyDirection", "AllLights" }, nSelected))
 					{
-						pMeshComponent->SetShadowType((MRenderMeshComponent::MEShadowType)unSelected);
+						pMeshComponent->SetShadowType((MRenderMeshComponent::MEShadowType)nSelected);
 					}
 					ShowValueEnd();
 

@@ -11,6 +11,7 @@
 #include "ImGuiFileDialog.h"
 #include "Engine/MEngine.h"
 #include "Resource/MMaterialResourceData.h"
+#include <_types/_uint32_t.h>
 
 
 unsigned int PropertyBase::m_unItemIDPool = 0;
@@ -173,30 +174,30 @@ bool PropertyBase::EditMTransform(MTransform& trans)
 	return bModify;
 }
 
-bool PropertyBase::EditEnum(const std::vector<MString>& select, uint32_t& index)
+bool PropertyBase::EditEnum(const std::vector<MString>& select, size_t& index)
 {
 	if (index >= select.size())
 	{
 		return false;
 	}
 
-	uint32_t unNewIndex = index;
+	size_t nNewIndex = index;
 	if (ImGui::BeginCombo("", select[index].c_str())) {
 
 		for (size_t i = 0; i < select.size(); ++i)
 		{
 			if (ImGui::Selectable(select[i].c_str(), (index == i)))\
 			{
-				unNewIndex = i;
+                nNewIndex = i;
 			}
 		}
 
 		ImGui::EndCombo();
 	}
 
-	if (unNewIndex != index)
+	if (nNewIndex != index)
 	{
-		index = unNewIndex;
+		index = nNewIndex;
 		return true;
 	}
 
@@ -336,7 +337,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 		{
 			ShowValueBegin("Cull");
-			uint32_t nCullType = (uint32_t)pMaterial->GetCullMode();
+			size_t nCullType = static_cast<size_t>(pMaterial->GetCullMode());
 			if (EditEnum({ "Wireframe", "CullNone", "CullBack", "ECullFront" }, nCullType))
 			{
 				pMaterial->SetCullMode(MECullMode(nCullType));
@@ -346,7 +347,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 		{
 			ShowValueBegin("Type");
-			uint32_t nMaterialType = (uint32_t)pMaterial->GetMaterialType();
+			size_t nMaterialType = static_cast<size_t>(pMaterial->GetMaterialType());
 			if (EditEnum({ "Default", "Transparent"}, nMaterialType))
 			{
 				pMaterial->SetMaterialType((MEMaterialType)nMaterialType);
@@ -484,10 +485,9 @@ void PropertyBase::EditSaveMResource(const MString& stringID, const MString& str
 
 		ImGui::SameLine();
 
-		char btn_name[64];
-		sprintf(btn_name, "Save##_%u", ImGui::GetID(pResource.get()));
+		MString btn_name = fmt::format("Save##_{}", reinterpret_cast<uint32_t>(ImGui::GetID(pResource.get())));
 
-		if (ImGui::Button(btn_name, ImVec2(fWidth * 0.5f, 0)))
+		if (ImGui::Button(btn_name.c_str(), ImVec2(fWidth * 0.5f, 0)))
 		{
 			auto pResourceSystem = pResource->GetEngine()->FindSystem<MResourceSystem>();
 			pResourceSystem->SaveResource(pResource);

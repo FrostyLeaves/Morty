@@ -66,9 +66,9 @@ bool MStorageBatchGroup::CanAddMeshInstance() const
 void MStorageBatchGroup::AddMeshInstance(const MMeshInstanceRenderProxy& proxy)
 {
 	auto key = proxy.nProxyId;
-	if(key == MGlobal::M_INVALID_INDEX)
+	if(key == MGlobal::M_INVALID_UINDEX)
 	{
-		MORTY_ASSERT(key != MGlobal::M_INVALID_INDEX);
+		MORTY_ASSERT(key != MGlobal::M_INVALID_UINDEX);
 		return;
 	}
 

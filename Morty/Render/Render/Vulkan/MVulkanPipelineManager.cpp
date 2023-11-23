@@ -1,4 +1,4 @@
-﻿#include "Render/Vulkan/MVulkanPipelineManager.h"
+#include "Render/Vulkan/MVulkanPipelineManager.h"
 
 #include "Render/MBuffer.h"
 #include "Render/MRenderPass.h"
@@ -68,7 +68,7 @@ std::shared_ptr<MGraphicsPipeline> MVulkanPipelineManager::FindOrCreateGraphicsP
 
 	for (size_t nSubPassIdx = 0; nSubPassIdx < pRenderPass->m_vSubpass.size(); ++nSubPassIdx)
 	{
-		pPipeline->m_vSubpassPipeline.push_back(CreateGraphicsPipeline(pPipeline, pMaterial, pRenderPass, nSubPassIdx));
+		pPipeline->m_vSubpassPipeline.push_back(CreateGraphicsPipeline(pPipeline, pMaterial, pRenderPass, static_cast<uint32_t>(nSubPassIdx)));
 	}
 
 	return pPipeline;
@@ -258,7 +258,7 @@ void MVulkanPipelineManager::GeneratePipelineLayout(const std::shared_ptr<MPipel
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 
-		layoutInfo.bindingCount = vParamBinding[unSetIdx].size();
+		layoutInfo.bindingCount = static_cast<uint32_t>(vParamBinding[unSetIdx].size());
 		layoutInfo.pBindings = vParamBinding[unSetIdx].data();
 
 		vSetLayouts.push_back(VkDescriptorSetLayout());
@@ -270,7 +270,7 @@ void MVulkanPipelineManager::GeneratePipelineLayout(const std::shared_ptr<MPipel
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = vSetLayouts.size();
+	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(vSetLayouts.size());
 	pipelineLayoutInfo.pSetLayouts = vSetLayouts.data();
 
 	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
@@ -441,7 +441,7 @@ void GetBlendStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPas
 		}
     }
 
-	blendInfo.attachmentCount = vBlendAttach.size();
+	blendInfo.attachmentCount = static_cast<uint32_t>(vBlendAttach.size());
 	blendInfo.pAttachments = vBlendAttach.data();
 	blendInfo.blendConstants[0] = 0.0f;
 	blendInfo.blendConstants[1] = 0.0f;
@@ -528,7 +528,7 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<
 	};
 	VkPipelineDynamicStateCreateInfo dynamicState{};
 	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-	dynamicState.dynamicStateCount = dynamicStates.size();
+	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 	dynamicState.pDynamicStates = dynamicStates.data();
 
 
@@ -573,9 +573,9 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<
 	VkPipelineVertexInputStateCreateInfo inputStateInfo = {};
 	inputStateInfo = VkPipelineVertexInputStateCreateInfo{};
 	inputStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	inputStateInfo.vertexBindingDescriptionCount = pVertexShaderBuffer->m_vBindingDescs.size();
+	inputStateInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(pVertexShaderBuffer->m_vBindingDescs.size());
 	inputStateInfo.pVertexBindingDescriptions = pVertexShaderBuffer->m_vBindingDescs.data();
-	inputStateInfo.vertexAttributeDescriptionCount = pVertexShaderBuffer->m_vAttributeDescs.size();
+	inputStateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(pVertexShaderBuffer->m_vAttributeDescs.size());
 	inputStateInfo.pVertexAttributeDescriptions = pVertexShaderBuffer->m_vAttributeDescs.data();
 
 	//Rasterization
@@ -655,7 +655,7 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<
 
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	pipelineInfo.stageCount = vShaderStageCreateInfos.size();
+	pipelineInfo.stageCount = static_cast<uint32_t>(vShaderStageCreateInfos.size());
 	pipelineInfo.pStages = vShaderStageCreateInfos.data();
 	pipelineInfo.pDynamicState = &dynamicState;
 	pipelineInfo.pVertexInputState = &inputStateInfo;

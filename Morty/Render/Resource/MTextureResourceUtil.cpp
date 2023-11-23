@@ -1,4 +1,4 @@
-﻿#include "Resource/MTextureResourceUtil.h"
+#include "Resource/MTextureResourceUtil.h"
 
 #include "MTextureResource.h"
 #include "Engine/MEngine.h"
@@ -10,20 +10,20 @@
 #include "stb_image.h"
 
 template <typename T>
-void FillChannelNum(const MByte* aByteData, T* aTargetData, const uint32_t& nSourceSize, const uint32_t& nSourceChannel, const uint32_t& nTargetChannel, const std::array<T, 4>& aDefaultColor)
+void FillChannelNum(const MByte* aByteData, T* aTargetData, const size_t& nSourceSize, const size_t& nSourceChannel, const size_t& nTargetChannel, const std::array<T, 4>& aDefaultColor)
 {
 	const T* aSource = (const T*)aByteData;
 
-	int nTargetIdx = 0;
+	size_t nTargetIdx = 0;
 
-	for (uint32_t nSourceIdx = 0; nSourceIdx < nSourceSize; nSourceIdx += nSourceChannel)
+	for (size_t nSourceIdx = 0; nSourceIdx < nSourceSize; nSourceIdx += nSourceChannel)
 	{
-		for (uint32_t nOffset = 0; nOffset < nSourceChannel; ++nOffset)
+		for (size_t nOffset = 0; nOffset < nSourceChannel; ++nOffset)
 		{
 			aTargetData[nTargetIdx++] = aSource[nSourceIdx + nOffset];
 		}
 
-		for (uint32_t nOffset = nSourceChannel; nOffset < nTargetChannel; ++nOffset)
+		for (size_t nOffset = nSourceChannel; nOffset < nTargetChannel; ++nOffset)
 		{
 			aTargetData[nTargetIdx++] = aDefaultColor[nOffset];
 		}
@@ -31,10 +31,10 @@ void FillChannelNum(const MByte* aByteData, T* aTargetData, const uint32_t& nSou
 }
 
 template <typename T>
-std::vector<MByte> FillChannelNum(const MByte* aByteData, const uint32_t& nSourceSize, const uint32_t& nSourceChannel, const uint32_t& nTargetChannel, const std::array<T, 4>& aDefaultColor)
+std::vector<MByte> FillChannelNum(const MByte* aByteData, const size_t& nSourceSize, const size_t& nSourceChannel, const size_t& nTargetChannel, const std::array<T, 4>& aDefaultColor)
 {
 
-	uint32_t nNewSize = nSourceSize / nSourceChannel * nTargetChannel;
+    size_t nNewSize = nSourceSize / nSourceChannel * nTargetChannel;
 	std::vector<MByte> aTargetData(nNewSize);
 
 	FillChannelNum(aByteData, reinterpret_cast<T*>(aTargetData.data()), nSourceSize, nSourceChannel, nTargetChannel, aDefaultColor);
@@ -86,14 +86,14 @@ std::unique_ptr<MResourceData> MTextureResourceUtil::ImportTextureFromMemory(cha
 
 	if (importInfo.ePixelFormat == MTexturePixelFormat::Byte8)
 	{
-		stbi_uc* data = stbi_load_from_memory((const stbi_uc*)buffer, nSize, &unWidth, &unHeight, &comp, reqComp);
+		stbi_uc* data = stbi_load_from_memory((const stbi_uc*)buffer, static_cast<uint32_t>(nSize), &unWidth, &unHeight, &comp, reqComp);
 		pTextureData = LoadFromMemory("ImportFromMemoryTexture", (MByte*)data, unWidth, unHeight, reqComp, importInfo.ePixelFormat);
 		stbi_image_free(data);
 		data = nullptr;
 	}
 	else if (importInfo.ePixelFormat == MTexturePixelFormat::Float32)
 	{
-		float* data = stbi_loadf_from_memory((const stbi_uc*)buffer, nSize, &unWidth, &unHeight, &comp, reqComp);
+		float* data = stbi_loadf_from_memory((const stbi_uc*)buffer, static_cast<uint32_t>(nSize), &unWidth, &unHeight, &comp, reqComp);
 		pTextureData = LoadFromMemory("ImportFromMemoryTexture", (MByte*)data, unWidth, unHeight, reqComp, importInfo.ePixelFormat);
 		stbi_image_free(data);
 		data = nullptr;
@@ -156,12 +156,12 @@ std::unique_ptr<MResourceData> MTextureResourceUtil::ImportCubeMap(const std::ar
 		std::vector<char> buffer((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
 		if (importInfo.ePixelFormat == MTexturePixelFormat::Byte8)
 		{
-			stbi_uc* data = stbi_load_from_memory((const stbi_uc*)buffer.data(), buffer.size(), &unWidth, &unHeight, &unChannel, 0);
+			stbi_uc* data = stbi_load_from_memory((const stbi_uc*)buffer.data(), static_cast<uint32_t>(buffer.size()), &unWidth, &unHeight, &unChannel, 0);
 			vImageData[fileIdx] = (MByte*)data;
 		}
 		else if (importInfo.ePixelFormat == MTexturePixelFormat::Float32)
 		{
-			float* data = stbi_loadf_from_memory((const stbi_uc*)buffer.data(), buffer.size(), &unWidth, &unHeight, &unChannel, 0);
+			float* data = stbi_loadf_from_memory((const stbi_uc*)buffer.data(), static_cast<uint32_t>(buffer.size()), &unWidth, &unHeight, &unChannel, 0);
 			vImageData[fileIdx] = (MByte*)data;
 		}
 		else

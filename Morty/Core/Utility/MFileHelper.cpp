@@ -24,11 +24,11 @@ MMortyFileFormat::~MMortyFileFormat()
 	m_vBody.clear();
 }
 
-void MMortyFileFormat::PushBackBody(void* pData, const uint32_t& unSize, const bool& bExternalMemory /*= true*/)
+void MMortyFileFormat::PushBackBody(void* pData, const size_t& nSize, const bool& bExternalMemory /*= true*/)
 {
 	MFormatBody body;
 	body.pData = (char*)pData;
-	body.unSize = unSize;
+	body.nSize = nSize;
 	body.bExternalMemory = bExternalMemory;
 
 	m_vBody.push_back(body);
@@ -110,7 +110,7 @@ bool MFileHelper::ReadData(const MString& strFilePath, std::vector<MByte>& vData
 		return false;
 
 	file.seekg(0, std::ios::end);
-	int len = file.tellg();
+	auto len = file.tellg();
 	file.seekg(0, std::ios::beg);
 
 	vData.resize(len);
@@ -134,7 +134,7 @@ bool MFileHelper::WriteFormatFile(const MString& strFilePath, const MMortyFileFo
 
 	const int nClipSize = MMortyFileFormat::s_nClipSize;
 
-	const int nHeadSize = format.m_strHead.size();
+	const size_t nHeadSize = format.m_strHead.size();
 
 	file.write((const char*)(&nHeadSize), nClipSize);
 
@@ -142,7 +142,7 @@ bool MFileHelper::WriteFormatFile(const MString& strFilePath, const MMortyFileFo
 
 	for (uint32_t i = 0; i < format.m_vBody.size(); ++i)
 	{
-		file.write(format.m_vBody[i].pData, format.m_vBody[i].unSize);
+		file.write(format.m_vBody[i].pData, format.m_vBody[i].nSize);
 	}
 	file.close();
 
@@ -157,23 +157,23 @@ bool MFileHelper::ReadFormatFile(const MString& strFilePath, MMortyFileFormat& f
 		return false;
 
 	file.seekg(0, std::ios::end);
-	int nFileLength = file.tellg();
+	size_t nFileLength = static_cast<size_t>(file.tellg());
 	file.seekg(0, std::ios::beg);
 
-	const int nClipSize = MMortyFileFormat::s_nClipSize;
+	const size_t nClipSize = MMortyFileFormat::s_nClipSize;
 
 	if (nFileLength < nClipSize)
 		return false;
 
 
-	int nHeadSize = 0;
+	size_t nHeadSize = 0;
 	file.read((char*)&nHeadSize, nClipSize);
 
 
 	if (nFileLength < nClipSize + nHeadSize)
 		return false;
 
-	int nBodySize = nFileLength - nClipSize - nHeadSize;
+	size_t nBodySize = nFileLength - nClipSize - nHeadSize;
 
 
 	//SignClip : 0 ~ nClipSize
@@ -209,9 +209,9 @@ void MFileHelper::GetValidFileName(MString& strFileName)
 	0x7C, //    |
 	};
 
-	int nSize = strFileName.size();
-	int n = 0;
-	int m = 0; // \0
+	const size_t nSize = strFileName.size();
+    size_t n = 0;
+    size_t m = 0; // \0
 
 	while ((++n, ++m) < nSize)
 	{

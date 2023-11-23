@@ -56,7 +56,7 @@ bool MNoneBatchGroup::CanAddMeshInstance() const
 void MNoneBatchGroup::AddMeshInstance(const MMeshInstanceRenderProxy& proxy)
 {
 	auto key = proxy.nProxyId;
-	if(key == MGlobal::M_INVALID_INDEX)
+	if(key == MGlobal::M_INVALID_UINDEX)
 	{
 		MORTY_ASSERT(key);
 		return;

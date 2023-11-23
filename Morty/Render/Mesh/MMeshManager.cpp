@@ -219,7 +219,7 @@ void MMeshManager::UploadBuffer(MIMesh* pMesh)
 		for (uint32_t nIndexInCluster = 0; nIndexInCluster < ClusterSize; ++nIndexInCluster)
 		{
 			const uint32_t originIndex = vIndexData[(std::min)(nCurrentIndex + nIndexInCluster, unIndexNum - 1)];
-			const uint32_t globalIndex = nNewVertexIndexBegin + originIndex;
+			const uint32_t globalIndex = static_cast<uint32_t>(nNewVertexIndexBegin + originIndex);
 			vRedirectIndex[nCurrentIndex + nIndexInCluster] = globalIndex;
 			boundsVertex[nIndexInCluster] = vVertex[originIndex].position;
 		}

@@ -1,4 +1,4 @@
-﻿#include "Resource/MShaderResource.h"
+#include "Resource/MShaderResource.h"
 #include "Math/MMath.h"
 #include "Engine/MEngine.h"
 #include "Render/MIDevice.h"
@@ -12,7 +12,7 @@ MORTY_CLASS_IMPLEMENT(MShaderResource, MResource)
 
 MShader* MShaderResource::GetShaderByIndex(const int& nIndex)
 {
-	int nSize = m_vShaders.size() - 1;
+	int nSize = static_cast<int>(m_vShaders.size()) - 1;
 	return m_vShaders[MMath::Clamp(nIndex, 0, nSize)];
 }
 
@@ -20,7 +20,7 @@ int MShaderResource::FindShaderByMacroParam(const MShaderMacro& macro)
 {
 	auto pShaderData = static_cast<MShaderResourceData*>(m_pResourceData.get());
 
-	int nSize = m_vShaders.size();
+	int nSize = static_cast<int>(m_vShaders.size());
 	for (int i = 0 ; i < nSize; ++i)
 	{
 		if (m_vShaders[i]->m_ShaderMacro.Compare(macro))
@@ -33,7 +33,7 @@ int MShaderResource::FindShaderByMacroParam(const MShaderMacro& macro)
 	pNewShader->m_ShaderMacro = macro;
 	m_vShaders.push_back(pNewShader);
 
-	return m_vShaders.size() - 1;
+	return static_cast<int>(m_vShaders.size()) - 1;
 }
 
 MEShaderType MShaderResource::GetShaderType() const

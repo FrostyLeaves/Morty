@@ -159,7 +159,7 @@ void MEntity::Deserialize(const void* pBufferPointer)
 
 	for (size_t i = 0; i < vfbcomponents.size(); ++i)
 	{
-		auto fbcomponent = vfbcomponents.Get(i);
+		auto fbcomponent = vfbcomponents.Get(static_cast<flatbuffers::uoffset_t>(i));
 
 		MString type = fbcomponent->type()->c_str();
 

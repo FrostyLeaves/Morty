@@ -467,6 +467,27 @@ Vector2i::Vector2i(int x, int y)
 {
 }
 
+Vector2i::Vector2i(uint32_t x, uint32_t y)
+	:x(static_cast<int>(x))
+    ,y(static_cast<int>(y))
+{
+
+}
+
+Vector2i::Vector2i(size_t x, size_t y)
+	:x(static_cast<int>(x))
+    ,y(static_cast<int>(y))
+{
+
+}
+
+Vector2i::Vector2i(float x, float y)
+	:x(static_cast<int>(x))
+    ,y(static_cast<int>(y))
+{
+
+}
+
 bool Vector2i::operator!=(const Vector2i& other) const
 {
 	return !operator==(other);

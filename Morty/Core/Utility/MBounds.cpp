@@ -390,7 +390,7 @@ void MBoundsSphere::SetPoints(const std::vector<Vector3>& vPoints)
 	SetPoints(vPoints.data(), vPoints.size(), 0, sizeof(Vector3));
 }
 
-void MBoundsSphere::SetPoints(const MByte* vPoints, const uint32_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize)
+void MBoundsSphere::SetPoints(const MByte* vPoints, const size_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize)
 {
 	
 	Vector3 v3Min(FLT_MAX, FLT_MAX, FLT_MAX);
@@ -472,13 +472,13 @@ void MBoundsSphere::Deserialize(const void* pBufferPointer)
 
 void MPointsSphere::RandomSwap()
 {
-	uint32_t unSize = m_vPoints.size();
+	size_t nSize = m_vPoints.size();
 	
-	uint32_t unIndex = 0;
+	size_t unIndex = 0;
 	Vector3 v3Temp;
-	for (uint32_t i = 0; i < unSize; ++i)
+	for (size_t i = 0; i < nSize; ++i)
 	{
-		unIndex = MMath::RandInt(0, unSize - 1);
+		unIndex = MMath::RandInt(0, static_cast<int>(nSize) - 1);
 
 		v3Temp = m_vPoints[i];
 		m_vPoints[i] = m_vPoints[unIndex];

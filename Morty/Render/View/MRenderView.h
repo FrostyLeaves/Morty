@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @File         MRenderView
  * 
  * @Created      2021-07-19 13:17:36
@@ -27,8 +27,8 @@ public:
 	void BindPrimaryCommand(MIRenderCommand* pCommand) { pPrimaryCommand = pCommand; }
 
 	MRenderPass renderPass;
-	uint32_t unImageIndex;
-	MIRenderCommand* pPrimaryCommand;
+	uint32_t unImageIndex = 0;
+	MIRenderCommand* pPrimaryCommand = nullptr;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	VkSemaphore vkImageReadySemaphore;

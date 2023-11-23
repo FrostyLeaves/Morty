@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @File         MString
  * 
  * @Created      2019-05-20 00:20:18
@@ -18,7 +18,8 @@ using MPath = std::string;
 class MStringUtil
 {
 public:
-	static MString ToString(const int& value) { return std::to_string(value); }
+    template<typename TYPE>
+	static MString ToString(const TYPE& value) { return std::to_string(value); }
 
 	static void Replace(MString& str, const MString& source, const MString& target);
 

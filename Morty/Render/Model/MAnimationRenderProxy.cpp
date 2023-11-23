@@ -40,7 +40,7 @@ void MAnimationRenderGroup::AddSkeletonRenderInstance(MSkeletonInstanceKey nProx
 		MORTY_ASSERT(m_bonesStorageMemoryPool.AllowMemory(nTransformBufferSize, memory));
 	}
 
-	const int32_t nMatrixOffset = memory.begin / sizeof(Matrix4);
+	const size_t nMatrixOffset = memory.begin / sizeof(Matrix4);
 	const size_t nOffsetBufferBegin = (nProxyId) * sizeof(int32_t);
 	const size_t nOffsetBufferSize = (nProxyId + 1) * sizeof(int32_t);
 	if (m_bonesOffsetBuffer.GetSize() < nOffsetBufferSize)
@@ -171,7 +171,7 @@ MPoseRenderProxy MAnimationRenderGroup::CreatePoseProxy(MSkeletonInstance* pSkel
 	MPoseRenderProxy resultPose;
 
 	const MSkeletonPose& pose = pSkeletonInstance->GetCurrentPose();
-	uint32_t size = pose.vBoneMatrix.size();
+	size_t size = pose.vBoneMatrix.size();
 	if (size > MRenderGlobal::BONES_MAX_NUMBER)
 	{
 		size = MRenderGlobal::BONES_MAX_NUMBER;

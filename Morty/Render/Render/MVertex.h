@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @File         MVertex
  * 
  * @Created      2019-08-25 15:08:54
@@ -59,10 +59,10 @@ struct MMergeInstanceCullData
 
 	struct LOD
 	{
-		uint32_t firstIndex;
-		uint32_t indexCount;
-		float distance;
-		float _pad0;
+		size_t firstIndex = 0;
+        size_t indexCount = 0;
+		float distance = 0.0f;
+		float _pad0 = 0.0f;
 	} lods[MRenderGlobal::MESH_LOD_LEVEL_RANGE];
 };
 

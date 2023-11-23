@@ -16,10 +16,10 @@ public:
 			{
 				ShowValueBegin("Type");
 				MCameraComponent::MECameraType eType = pCameraComponent->GetCameraType();
-				uint32_t unSelected = eType == MCameraComponent::MECameraType::EPerspective ? 0 : 1;
-				if (EditEnum({ "Perspective", "Orthographic" }, unSelected))
+				size_t nSelected = eType == MCameraComponent::MECameraType::EPerspective ? 0 : 1;
+				if (EditEnum({ "Perspective", "Orthographic" }, nSelected))
 				{
-					pCameraComponent->SetCameraType(unSelected == 0 ? MCameraComponent::MECameraType::EPerspective : MCameraComponent::MECameraType::EOrthographic);
+					pCameraComponent->SetCameraType(nSelected == 0 ? MCameraComponent::MECameraType::EPerspective : MCameraComponent::MECameraType::EOrthographic);
 				}
 				ShowValueEnd();
 

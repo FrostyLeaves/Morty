@@ -92,12 +92,12 @@ public:
 	MBoundsSphere();
 	MBoundsSphere(const Vector3& v3CenterPoint, const float& fRadius);
 
-	void SetPoints(const void* vPoints, const uint32_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize)
+	void SetPoints(const void* vPoints, const size_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize)
 	{
 		SetPoints((const MByte*)vPoints, unArrayLength, unOffset, unDataSize);
 	}
 
-	void SetPoints(const MByte* vPoints, const uint32_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize);
+	void SetPoints(const MByte* vPoints, const size_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize);
 
 	void SetPoints(const std::vector<Vector3>& vPoints);
 

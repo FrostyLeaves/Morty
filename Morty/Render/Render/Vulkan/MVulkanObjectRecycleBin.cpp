@@ -39,7 +39,7 @@ void MVulkanObjectRecycleBin::EmptyTrash()
 	m_vFence.clear();
 
 	if (!m_vDescriptorSet.empty())
-		vkFreeDescriptorSets(device, m_pDevice->m_VkDescriptorPool, m_vDescriptorSet.size(), m_vDescriptorSet.data());
+		vkFreeDescriptorSets(device, m_pDevice->m_VkDescriptorPool, static_cast<uint32_t>(m_vDescriptorSet.size()), m_vDescriptorSet.data());
 	m_vDescriptorSet.clear();
 
 	for (VkCommandBuffer commandBuffer : m_vCommandBuffer)

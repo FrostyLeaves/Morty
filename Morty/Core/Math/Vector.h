@@ -143,6 +143,10 @@ class MORTY_API Vector2i
 public:
 	Vector2i() = default;
 	Vector2i(int x, int y);
+    explicit Vector2i(uint32_t x, uint32_t y);
+	explicit Vector2i(size_t x, size_t y);
+	explicit Vector2i(float x, float y);
+
 public:
 	union
 	{

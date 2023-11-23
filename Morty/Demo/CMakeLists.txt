@@ -57,8 +57,10 @@ if(MORTY_BUILD_TARGET STREQUAL "IOS")
 
 endif()
 
-ADD_CUSTOM_COMMAND(TARGET Demo POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-    "${CMAKE_BINARY_DIR}/compile_commands.json"
-    "${CMAKE_BINARY_DIR}/../compile_commands.json"
-    COMMENT "Copying 'compile_commands.json'")
+if(GENERATOR_FOR_CLANGD STREQUAL "ON")
+    ADD_CUSTOM_COMMAND(TARGET Demo POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        "${CMAKE_BINARY_DIR}/compile_commands.json"
+        "${CMAKE_BINARY_DIR}/../compile_commands.json"
+        COMMENT "Copying 'compile_commands.json'")
+endif()

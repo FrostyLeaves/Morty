@@ -501,9 +501,9 @@ VkImageType MVulkanDevice::GetImageType(MTexture* pTexture)
 	return VK_IMAGE_TYPE_2D;
 }
 
-int MVulkanDevice::GetMipmapCount(MTexture* pTexture)
+uint32_t MVulkanDevice::GetMipmapCount(MTexture* pTexture)
 {
-	uint32_t unMipmap = 1;
+    uint32_t unMipmap = 1;
 
 	if (pTexture->GetMipmapsEnable())
 	{
@@ -513,12 +513,12 @@ int MVulkanDevice::GetMipmapCount(MTexture* pTexture)
 	return unMipmap;
 }
 
-int MVulkanDevice::GetLayerCount(MTexture* pTexture)
+uint32_t MVulkanDevice::GetLayerCount(MTexture* pTexture)
 {
 	if (!pTexture)
 		return 0;
 
-	return pTexture->GetImageLayerNum();
+	return static_cast<uint32_t>(pTexture->GetImageLayerNum());
 }
 
 MVulkanObjectRecycleBin* MVulkanDevice::GetRecycleBin()
@@ -539,6 +539,10 @@ void MVulkanDevice::SetDebugName(uint64_t object, const VkObjectType& type, cons
 	vkObjectName.objectHandle = object;
 	vkObjectName.pObjectName = svDebugName;
 	vkSetDebugUtilsObjectNameEXT(m_VkDevice, &vkObjectName);
+#else
+	MORTY_UNUSED(object);
+	MORTY_UNUSED(type);
+	MORTY_UNUSED(svDebugName);
 #endif
 }
 
@@ -674,7 +678,7 @@ bool MVulkanDevice::InitDescriptorPool()
 	VkDescriptorPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-	poolInfo.poolSizeCount = vPoolSize.size();
+	poolInfo.poolSizeCount = static_cast<uint32_t>(vPoolSize.size());
 	poolInfo.pPoolSizes = vPoolSize.data();
 
 	poolInfo.maxSets = unSwapChainNum;
@@ -835,18 +839,18 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MByte* pData)
 	VkDeviceMemory textureImageMemory = VK_NULL_HANDLE;
 	VkImageCreateFlags createFlags = GetImageCreateFlags(pTexture);
 	VkImageType imageType = GetImageType(pTexture);
-	int unMipmap = GetMipmapCount(pTexture);
-	uint32_t unLayerCount = GetLayerCount(pTexture);
+	auto nMipmapCount = static_cast<uint32_t>(GetMipmapCount(pTexture));
+	auto nLayerCount = static_cast<uint32_t>(GetLayerCount(pTexture));
 
-	VkDeviceSize imageSize = static_cast<uint64_t>(MTexture::GetImageMemorySize(pTexture->GetTextureLayout())) * width * height * unLayerCount;
+	VkDeviceSize imageSize = static_cast<uint64_t>(MTexture::GetImageMemorySize(pTexture->GetTextureLayout())) * width * height * nLayerCount;
 
 	if (pTexture->GetRenderUsage() == METextureWriteUsage::ERenderPresent)
 	{
 		VkImageSubresourceRange vkSubresourceRange = {};
 		vkSubresourceRange.aspectMask = aspectFlgas;
 		vkSubresourceRange.baseMipLevel = 0;
-		vkSubresourceRange.levelCount = unMipmap;
-		vkSubresourceRange.layerCount = unLayerCount;
+		vkSubresourceRange.levelCount = nMipmapCount;
+		vkSubresourceRange.layerCount = nLayerCount;
 		TransitionImageLayout(pTexture->m_VkTextureImage, UndefinedImageLayout, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, vkSubresourceRange);
 
 
@@ -859,7 +863,7 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MByte* pData)
 			MORTY_ASSERT(false);
 		}
 
-		CreateImage(width, height, depth, unMipmap, unLayerCount, format, VK_IMAGE_TILING_OPTIMAL, usageFlags, memoryFlags, defaultLayout, textureImage, textureImageMemory, createFlags, imageType);
+		CreateImage(width, height, depth, nMipmapCount, nLayerCount, format, VK_IMAGE_TILING_OPTIMAL, usageFlags, memoryFlags, defaultLayout, textureImage, textureImageMemory, createFlags, imageType);
 
 		if (pData)
 		{
@@ -875,8 +879,8 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MByte* pData)
 			VkImageSubresourceRange vkSubresourceRange = {};
 			vkSubresourceRange.aspectMask = aspectFlgas;
 			vkSubresourceRange.baseMipLevel = 0;
-			vkSubresourceRange.levelCount = unMipmap;
-			vkSubresourceRange.layerCount = unLayerCount;
+			vkSubresourceRange.levelCount = nMipmapCount;
+			vkSubresourceRange.layerCount = nLayerCount;
 
 			VkCommandBuffer commandBuffer = BeginCommands();
 			TransitionImageLayout(commandBuffer, textureImage, UndefinedImageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vkSubresourceRange);
@@ -888,7 +892,7 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MByte* pData)
 			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			region.imageSubresource.mipLevel = 0;
 			region.imageSubresource.baseArrayLayer = 0;
-			region.imageSubresource.layerCount = unLayerCount;
+			region.imageSubresource.layerCount = nLayerCount;
 			region.imageOffset = { 0, 0, 0 };
 			region.imageExtent = { width, height, 1 };
 
@@ -902,26 +906,26 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MByte* pData)
 		VkImageSubresourceRange vkSubresourceRange = {};
 		vkSubresourceRange.aspectMask = GetAspectFlags(format);
 		vkSubresourceRange.baseMipLevel = 0;
-		vkSubresourceRange.levelCount = unMipmap;
-		vkSubresourceRange.layerCount = unLayerCount;
+		vkSubresourceRange.levelCount = nMipmapCount;
+		vkSubresourceRange.layerCount = nLayerCount;
 		TransitionImageLayout(textureImage, defaultLayout, GetImageLayout(pTexture), vkSubresourceRange);
 	
 		
 
 		pTexture->m_VkTextureImage = textureImage;
-		pTexture->m_unMipmapLevel = static_cast<uint32_t>(unMipmap);
+		pTexture->m_unMipmapLevel = nMipmapCount;
 		pTexture->m_VkTextureImageMemory = textureImageMemory;
 		pTexture->m_VkTextureFormat = format;
 		pTexture->m_VkImageLayout = GetImageLayout(pTexture);
 	}
 
 
-	pTexture->m_VkImageView = CreateImageView(pTexture->m_VkTextureImage, pTexture->m_VkTextureFormat, aspectFlgas, unMipmap, unLayerCount, GetImageViewType(pTexture));
+	pTexture->m_VkImageView = CreateImageView(pTexture->m_VkTextureImage, pTexture->m_VkTextureFormat, aspectFlgas, nMipmapCount, nLayerCount, GetImageViewType(pTexture));
 	
 
-	if (unMipmap > 1)
+	if (nMipmapCount > 1)
 	{
-		GenerateMipmaps(pTexture, unMipmap);
+		GenerateMipmaps(pTexture, nMipmapCount);
 	}
 
 // 	if (pTexture->GetRenderUsage() == METextureWriteUsage::ERenderBack)
@@ -1150,7 +1154,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 		DestroyRenderPass(pRenderPass);
 	}
 
-	uint32_t unBackNum = pRenderPass->m_vBackTextures.size();
+    uint32_t unBackNum = static_cast<uint32_t>(pRenderPass->m_vBackTextures.size());
 
 	std::vector<VkAttachmentDescription> vAttachmentDesc;
 
@@ -1276,7 +1280,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 	}
 	else  //
 	{
-		uint32_t unSubpassNum = pRenderPass->m_vSubpass.size();
+		uint32_t unSubpassNum = static_cast<uint32_t>(pRenderPass->m_vSubpass.size());
 		vOutAttachmentRef.resize(unSubpassNum);
 		vOutDepthAttachmentRef.resize(unSubpassNum);
 		vInAttachmentRef.resize(unSubpassNum);
@@ -1316,7 +1320,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 				vkSubpass.pDepthStencilAttachment = vOutDepthAttachmentRef[nSubpassIdx].data();
 			}
 
-			vkSubpass.colorAttachmentCount = vOutAttachmentRef[nSubpassIdx].size();
+			vkSubpass.colorAttachmentCount = static_cast<uint32_t>(vOutAttachmentRef[nSubpassIdx].size());
 			vkSubpass.pColorAttachments = vOutAttachmentRef[nSubpassIdx].data();
 
 			for (uint32_t i = 0; i < subpass.m_vInputIndex.size(); ++i)
@@ -1332,7 +1336,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 				vUsedAttachIndex.insert(nBackIdx);
 			}
 
-			vkSubpass.inputAttachmentCount = vInAttachmentRef[nSubpassIdx].size();
+			vkSubpass.inputAttachmentCount = static_cast<uint32_t>(vInAttachmentRef[nSubpassIdx].size());
 			vkSubpass.pInputAttachments = vInAttachmentRef[nSubpassIdx].data();
 
 			for (uint32_t i = 0; i < unBackNum; ++i)
@@ -1343,7 +1347,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 				}
 			}
 
-			vkSubpass.preserveAttachmentCount = vUnusedAttachmentRef[nSubpassIdx].size();
+			vkSubpass.preserveAttachmentCount = static_cast<uint32_t>(vUnusedAttachmentRef[nSubpassIdx].size());
 			vkSubpass.pPreserveAttachments = vUnusedAttachmentRef[nSubpassIdx].data();
 
 		}
@@ -1356,8 +1360,8 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 		{
 			vSubpassDependencies.push_back({});
 			VkSubpassDependency& depend = vSubpassDependencies.back();
-			depend.srcSubpass = nDependantIdx;
-			depend.dstSubpass = nSubpassIdx;
+			depend.srcSubpass = static_cast<uint32_t>(nDependantIdx);
+			depend.dstSubpass = static_cast<uint32_t>(nSubpassIdx);
 			//          depend.dstSubpass = (subpass<subpassCount) ? subpass : VK_SUBPASS_EXTERNAL;
 			depend.srcStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
 			depend.dstStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
@@ -1370,11 +1374,11 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 
 	VkRenderPassCreateInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.attachmentCount = vAttachmentDesc.size();
+	renderPassInfo.attachmentCount = static_cast<uint32_t>(vAttachmentDesc.size());
 	renderPassInfo.pAttachments = vAttachmentDesc.data();
-	renderPassInfo.subpassCount = vSubpass.size();
+	renderPassInfo.subpassCount = static_cast<uint32_t>(vSubpass.size());
 	renderPassInfo.pSubpasses = vSubpass.data();
-	renderPassInfo.dependencyCount = vSubpassDependencies.size();
+	renderPassInfo.dependencyCount = static_cast<uint32_t>(vSubpassDependencies.size());
 	renderPassInfo.pDependencies = vSubpassDependencies.data();
 
 
@@ -1382,9 +1386,9 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 	if (pRenderPass->GetViewportNum() > 1)
 	{
 		renderPassMultiviewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
-		renderPassMultiviewInfo.subpassCount = vSubpass.size();
+		renderPassMultiviewInfo.subpassCount = static_cast<uint32_t>(vSubpass.size());
 		renderPassMultiviewInfo.pViewMasks = vViewMask.data();
-		renderPassMultiviewInfo.correlationMaskCount = vSubpass.size();
+		renderPassMultiviewInfo.correlationMaskCount = static_cast<uint32_t>(vSubpass.size());
 		renderPassMultiviewInfo.pCorrelationMasks = vCorrelationMask.data();
 		renderPassMultiviewInfo.pNext = nullptr;
 
@@ -1425,7 +1429,7 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 
 	std::vector<VkImageView> vAttachmentViews;
 
-	uint32_t unBackNum = pRenderPass->m_vBackTextures.size();
+	uint32_t unBackNum = static_cast<uint32_t>(pRenderPass->m_vBackTextures.size());
 	for (uint32_t backIdx = 0; backIdx < unBackNum; ++backIdx)
 	{
 		MRenderTarget& backTexture = pRenderPass->m_vBackTextures[backIdx];
@@ -1508,7 +1512,7 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 	//This renderpass only used to match format.
 	framebufferInfo.renderPass = pRenderPass->m_VkRenderPass;
 
-	framebufferInfo.attachmentCount = vAttachmentViews.size();
+	framebufferInfo.attachmentCount = static_cast<uint32_t>(vAttachmentViews.size());
 	framebufferInfo.pAttachments = vAttachmentViews.data();
 	framebufferInfo.width = fFrameBufferWidth;
 	framebufferInfo.height = fFrameBufferHeight;
@@ -1658,7 +1662,7 @@ void MVulkanDevice::SubmitCommand(MIRenderCommand* pCommand)
 		std::vector<VkSemaphore>& vWaitSemaphoreBeforeSubmit = pRenderCommand->m_vRenderWaitSemaphore;
 
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-		submitInfo.waitSemaphoreCount = vWaitSemaphoreBeforeSubmit.size();
+		submitInfo.waitSemaphoreCount = static_cast<uint32_t>(vWaitSemaphoreBeforeSubmit.size());
 		submitInfo.pWaitSemaphores = vWaitSemaphoreBeforeSubmit.data();
 		submitInfo.pWaitDstStageMask = waitStages;
 
@@ -2211,7 +2215,7 @@ bool MVulkanDevice::InitVulkanInstance()
 	createInfo.ppEnabledLayerNames = ValidationLayers.data();
 
 
-	createInfo.enabledExtensionCount = InstanceExtensions.size();
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(InstanceExtensions.size());
 	createInfo.ppEnabledExtensionNames = InstanceExtensions.data();
 
 	VkResult result = vkCreateInstance(&createInfo, nullptr, &m_VkInstance);
@@ -2369,9 +2373,9 @@ bool MVulkanDevice::InitLogicalDevice()
 	VkDeviceCreateInfo deviceInfo{};
 	deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	deviceInfo.flags = 0;
-	deviceInfo.queueCreateInfoCount = queueCreateInfos.size();
+	deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 	deviceInfo.pQueueCreateInfos = queueCreateInfos.data();
-	deviceInfo.enabledExtensionCount = m_vEnableDeviceExtensions.size();
+	deviceInfo.enabledExtensionCount = static_cast<uint32_t>(m_vEnableDeviceExtensions.size());
 	deviceInfo.ppEnabledExtensionNames = m_vEnableDeviceExtensions.data();
 	deviceInfo.pEnabledFeatures = &m_VkPhysicalDeviceFeatures;
 	deviceInfo.pNext = &device11Features;
@@ -2536,7 +2540,7 @@ int MVulkanDevice::FindQueueGraphicsFamilies(VkPhysicalDevice device)
 	for (size_t i = 0; i < unQueueFamilyCount; ++i)
 	{
 		if (vQueueProperties[i].queueCount > 0 && vQueueProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
-			graphicsFamily = i;
+			graphicsFamily = static_cast<uint32_t>(i);
 
 		if (graphicsFamily >= 0)
 			break;
@@ -2586,7 +2590,7 @@ int MVulkanDevice::FindQueueComputeFamilies(VkPhysicalDevice device)
 	for (size_t i = 0; i < unQueueFamilyCount; ++i)
 	{
 		if (vQueueProperties[i].queueCount > 0 && vQueueProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
-			graphicsFamily = i;
+			graphicsFamily = static_cast<uint32_t>(i);
 
 		if (graphicsFamily >= 0)
 			break;

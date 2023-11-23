@@ -1,4 +1,4 @@
-﻿#include "View/MRenderView.h"
+#include "View/MRenderView.h"
 #include "Utility/MGlobal.h"
 #if RENDER_GRAPHICS == MORTY_VULKAN
 #include "Render/Vulkan/MVulkanRenderCommand.h"
@@ -72,7 +72,7 @@ void MRenderView::Present(MViewRenderTarget* pRenderTarget)
 		std::vector<VkSemaphore> vWaitSemaphoreBeforeSubmit = { pRenderTarget->vkImageReadySemaphore };
 
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-		submitInfo.waitSemaphoreCount = vWaitSemaphoreBeforeSubmit.size();
+		submitInfo.waitSemaphoreCount = static_cast<uint32_t>(vWaitSemaphoreBeforeSubmit.size());
 		submitInfo.pWaitSemaphores = vWaitSemaphoreBeforeSubmit.data();
 		submitInfo.pWaitDstStageMask = waitStages;
 
@@ -101,7 +101,7 @@ void MRenderView::Present(MViewRenderTarget* pRenderTarget)
 
 		std::vector<VkSemaphore> vSignalSemaphores = { pRenderCommand-> m_VkRenderFinishedSemaphore };
 
-		presentInfo.waitSemaphoreCount = vSignalSemaphores.size();
+		presentInfo.waitSemaphoreCount = static_cast<uint32_t>(vSignalSemaphores.size());
 		presentInfo.pWaitSemaphores = vSignalSemaphores.data();
 		VkSwapchainKHR swapChains[] = { m_VkSwapchain };
 		presentInfo.swapchainCount = 1;
@@ -327,7 +327,7 @@ bool MRenderView::BindRenderPass()
 	m_vRenderTarget.resize(vSwapchainImages.size());
 	for (size_t i = 0; i < vSwapchainImages.size(); ++i)
 	{
-		m_vRenderTarget[i].unImageIndex = i;
+		m_vRenderTarget[i].unImageIndex = static_cast<uint32_t>(i);
 		m_vRenderTarget[i].pPrimaryCommand = nullptr;
 		m_vRenderTarget[i].vkImageReadySemaphore = VK_NULL_HANDLE;
 

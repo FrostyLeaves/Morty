@@ -19,8 +19,8 @@ void ResourceView::Render()
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
 	std::map<MResourceID, std::shared_ptr<MResource>>& resources = *pResourceSystem->GetAllResources();
-	int ITEMS_COUNT = resources.size();
-	ImGuiListClipper clipper(ITEMS_COUNT);  // Also demonstrate using the clipper for large list
+	size_t ITEMS_COUNT = resources.size();
+	ImGuiListClipper clipper(static_cast<int>(ITEMS_COUNT));  // Also demonstrate using the clipper for large list
 	
 	while (clipper.Step())
 	{

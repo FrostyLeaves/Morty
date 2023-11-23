@@ -1,4 +1,4 @@
-﻿#include "Model/MModelConverter.h"
+#include "Model/MModelConverter.h"
 #include "MRenderModule.h"
 
 #include "Render/MMesh.h"
@@ -24,7 +24,7 @@
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
-#include "assimp/pbrmaterial.h"
+#include "assimp/material.h"
 
 #include "Utility/MFileHelper.h"
 
@@ -137,7 +137,7 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 
 	MString strPath = convertInfo.strOutputDir + "/" + convertInfo.strOutputName + "/";
 
-	MFileHelper::MakeDir(convertInfo.strOutputDir + "/" + convertInfo.strOutputName);
+	MFileHelper::MakeDir(convertInfo.strOutputDir);
 
 	if (m_pSkeletonResource)
 	{
@@ -926,7 +926,7 @@ void MModelConverter::ProcessTexture(const aiScene* pScene)
 					buffer[i + 3] = temp;
 				}
 
-				pTextureResource->Load(MTextureResourceUtil::LoadFromMemory("RawTexture", buffer, nWidth, nHeight, 4, MTexturePixelFormat::Byte8));
+				pTextureResource->Load(MTextureResourceUtil::LoadFromMemory("RawTexture", buffer, static_cast<uint32_t>(nWidth), static_cast<uint32_t>(nHeight), 4, MTexturePixelFormat::Byte8));
 				delete[] buffer;
 				buffer = nullptr;
 

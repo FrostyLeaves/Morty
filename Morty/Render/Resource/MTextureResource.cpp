@@ -1,4 +1,4 @@
-﻿#include "Resource/MTextureResource.h"
+#include "Resource/MTextureResource.h"
 
 #include "MTextureResourceUtil.h"
 #include "Engine/MEngine.h"
@@ -60,7 +60,7 @@ bool MTextureResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 	m_pTexture->SetSize(Vector2i(pTextureData->nWidth, pTextureData->nHeight));
 	m_pTexture->SetImageLayerNum(pTextureData->nImageLayerNum);
 	m_pTexture->SetTextureType(pTextureData->eTextureType);
-	m_pTexture->SetTextureLayout(GetTextureLayout(pTextureData->nChannel, pTextureData->ePixelFormat));
+	m_pTexture->SetTextureLayout(GetTextureLayout(static_cast<uint32_t>(pTextureData->nChannel), pTextureData->ePixelFormat));
 	m_pTexture->GenerateBuffer(pRenderSystem->GetDevice(), pTextureData->aByteData.data());
 
 	if (m_bReadable)
@@ -198,9 +198,9 @@ flatbuffers::Offset<void> MTextureResourceData::Serialize(flatbuffers::FlatBuffe
 
 	mfbs::MTextureResourceBuilder builder(fbb);
 
-	builder.add_width(nWidth);
-	builder.add_height(nHeight);
-	builder.add_channel(nChannel);
+	builder.add_width(static_cast<uint32_t>(nWidth));
+	builder.add_height(static_cast<uint32_t>(nHeight));
+	builder.add_channel(static_cast<uint32_t>(nChannel));
 	builder.add_pixel_format(static_cast<mfbs::MTexturePixelFormat>(ePixelFormat));
 	builder.add_data(fbTextureData);
 

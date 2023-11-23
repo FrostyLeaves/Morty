@@ -220,7 +220,7 @@ void MainEditor::ShowMenu()
 			{
 				auto t = std::time(nullptr);
 				tm outtm;
-				MORTY_ASSERT(0 == localtime_s(&outtm, &t));
+				MORTY_ASSERT(0 == localtime_r(&t, &outtm));
 				std::ostringstream oss;
 				oss << std::put_time(&outtm, "%d-%m-%Y %H-%M-%S");
 			    auto str = oss.str();
@@ -264,7 +264,7 @@ void MainEditor::ShowShadowMapView()
 
 			Vector2 v2Size = Vector2((v4Rect.z) / nRowCount, (v4Rect.w) / nRowCount);
 
-			ImGui::Columns(nRowCount);
+			ImGui::Columns(static_cast<int>(nRowCount));
 			for (size_t nTexIdx = 0; nTexIdx < vTexture.size(); ++nTexIdx)
 			{
 				for (size_t nLayerIdx = 0; nLayerIdx < vTexture[nTexIdx]->GetImageLayerNum(); ++nLayerIdx)

@@ -63,13 +63,13 @@ using MObjectID = unsigned long;
 using MResourceID = unsigned long;
 using MByte = unsigned char;
 
+template<class... T> void MORTY_UNUSED(T&&...) {}
+
 #if MORTY_DEBUG
 #define MORTY_ASSERT assert
 #else
-#define MORTY_ASSERT
+#define MORTY_ASSERT MORTY_UNUSED
 #endif
-
-template<class... T> void MORTY_UNUSED(T&&...) {}
 
 template<class T> void MORTY_SAFE_DELETE(T& pointer)
 {

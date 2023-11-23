@@ -10,6 +10,10 @@
             "args": [],
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "CMake: build",
+            "osx": {
+                "type": "cppdbg",
+                "MIMode": "lldb",
+            }
         }
     ]
 }

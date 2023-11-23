@@ -1,4 +1,4 @@
-﻿#include "Resource/MMeshResource.h"
+#include "Resource/MMeshResource.h"
 #include "Engine/MEngine.h"
 #include "Flatbuffer/MMeshResource_generated.h"
 #include "Model/MMultiLevelMesh.h"
@@ -117,11 +117,11 @@ void MMeshResourceData::Deserialize(const void* pBufferPointer)
 	eVertexType = static_cast<MEMeshVertexType>(fbData->vertex_type());
 	pMesh = MMeshUtil::CreateMeshFromType(eVertexType);
 
-	const size_t nVertexNum = fbData->vertex()->size() / pMesh->GetVertexStructSize();
+	const uint32_t nVertexNum = static_cast<uint32_t>(fbData->vertex()->size() / pMesh->GetVertexStructSize());
 	pMesh->ResizeVertices(nVertexNum);
 	memcpy(pMesh->GetVertices(), fbData->vertex()->data(), nVertexNum * pMesh->GetVertexStructSize());
 
-	const size_t nIndexNum = fbData->index()->size() / sizeof(uint32_t);
+	const uint32_t nIndexNum = static_cast<uint32_t>(fbData->index()->size() / sizeof(uint32_t));
 	pMesh->ResizeIndices(nIndexNum, 1);
 	memcpy(pMesh->GetIndices(), fbData->index()->data(), nIndexNum * sizeof(uint32_t));
 

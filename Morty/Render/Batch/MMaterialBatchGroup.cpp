@@ -51,8 +51,8 @@ MMeshInstanceRenderProxy MMaterialBatchGroup::CreateProxyFromComponent(MRenderMe
 	MMeshInstanceRenderProxy proxy;
 	proxy.bVisible = true;
 	proxy.bCullEnable = pComponent->GetSceneCullEnable();
-	proxy.nProxyId = pComponent->GetComponentID().nIdx;
-	proxy.nSkeletonId = pComponent->GetAttachedModelComponentID().nIdx;
+	proxy.nProxyId = static_cast<uint32_t>(pComponent->GetComponentID().nIdx);
+	proxy.nSkeletonId = static_cast<uint32_t>(pComponent->GetAttachedModelComponentID().nIdx);
 	if (MSceneComponent* pSceneComponent = pComponent->GetEntity()->GetComponent<MSceneComponent>())
 	{
 		proxy.worldTransform = pSceneComponent->GetWorldTransform();
@@ -141,7 +141,7 @@ void MMaterialBatchGroup::UpdateMeshInstance(const MMeshInstanceRenderProxy& pro
 		return;
 	}
 
-	if (proxy.nProxyId == MGlobal::M_INVALID_INDEX)
+	if (proxy.nProxyId == MGlobal::M_INVALID_UINDEX)
 	{
 		MORTY_ASSERT(false);
 		return;

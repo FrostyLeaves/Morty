@@ -63,7 +63,7 @@ void MMultiLevelMesh::BindMesh(const MIMesh* pMesh)
 	while (!vVertices.empty())
 	{
 		Vertex* pVertex = GetMinCollapseCostVertex(vVertices);
-		m_vIndexToMap[pVertex->unVertexIndex] = vVertices.size() - 1;
+		m_vIndexToMap[pVertex->unVertexIndex] = static_cast<uint32_t>(vVertices.size() - 1);
 		m_vMap[vVertices.size() - 1] = (pVertex->pCollapseVertex) ? pVertex->pCollapseVertex->unVertexIndex : -1;
 		if (pVertex->pCollapseVertex)
 			Collapse(pVertex, pVertex->pCollapseVertex);
@@ -280,7 +280,7 @@ void MMultiLevelMesh::Collapse(Vertex* pFrom, Vertex* pTo)
 {
 	std::vector<Vertex*> tmp = pFrom->vNeighbor;
 
-	for (int i = pFrom->vFaces.size() -1; i >=0; --i)
+	for (int i = static_cast<int>(pFrom->vFaces.size()) -1; i >=0; --i)
 	{
 		Face* pFace = pFrom->vFaces[i];
 		if (HasVertex(pFace, pTo))
@@ -290,7 +290,7 @@ void MMultiLevelMesh::Collapse(Vertex* pFrom, Vertex* pTo)
 		}
 	}
 
-	for (int i = pFrom->vFaces.size() - 1; i >= 0; --i)
+	for (int i = static_cast<int>(pFrom->vFaces.size()) - 1; i >= 0; --i)
 	{
 		Face* pFace = pFrom->vFaces[i];
 		ReplaceVertex(pFace, pFrom, pTo);

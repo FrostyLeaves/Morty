@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @File         MIDevice
  * 
  * @Created      2021-7-7 14:20:55
@@ -190,5 +190,5 @@ struct MORTY_API MShaderPropertyName
 
 };
 
-using MMeshInstanceKey = int32_t;
-using MSkeletonInstanceKey = int32_t;
+using MMeshInstanceKey = size_t;
+using MSkeletonInstanceKey = size_t;

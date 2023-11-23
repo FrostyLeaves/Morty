@@ -135,5 +135,5 @@ protected:
 
 	std::unordered_map<const MType*, std::unique_ptr<IRenderWork>> m_tRenderWork;
 
-	size_t m_nFrameIndex = 0;
+	uint32_t m_nFrameIndex = 0;
 };

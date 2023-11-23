@@ -339,11 +339,15 @@ void MVoxelizerRenderWork::InitializeDispatcher()
 		auto pVoxelizerMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 		pVoxelizerMaterial->SetCullMode(MECullMode::ECullNone);
 		pVoxelizerMaterial->GetShaderMacro().AddUnionMacro(key, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-		pVoxelizerMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::VOXELIZER_CONSERVATIVE_RASTERIZATION, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+		
+#ifdef MORTY_WIN
 		pVoxelizerMaterial->SetConservativeRasterizationEnable(true);
+		pVoxelizerMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::VOXELIZER_CONSERVATIVE_RASTERIZATION, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+		pVoxelizerMaterial->LoadShader(voxelizerGS);
+#endif
+
 		pVoxelizerMaterial->LoadShader(voxelizerVS);
 		pVoxelizerMaterial->LoadShader(voxelizerPS);   
-		pVoxelizerMaterial->LoadShader(voxelizerGS);
 		
 		m_tVoxelizerMaterial[key] = pVoxelizerMaterial;
 	}
@@ -422,7 +426,8 @@ void MVoxelizerRenderWork::InitializeRenderPass()
 
 	m_pVoxelizerRenderTarget = MTexture::CreateRenderTarget(METextureLayout::ERGBA_UNORM_8);
 	m_pVoxelizerRenderTarget->SetName("Voxelizer Render Target");
-	m_pVoxelizerRenderTarget->SetSize({ MRenderGlobal::VOXEL_VIEWPORT_SIZE, MRenderGlobal::VOXEL_VIEWPORT_SIZE });
+    int nRenderTargetSize = static_cast<int>(MRenderGlobal::VOXEL_VIEWPORT_SIZE);
+	m_pVoxelizerRenderTarget->SetSize({ nRenderTargetSize, nRenderTargetSize});
 	m_pVoxelizerRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
 
 	m_voxelizerRenderPass.AddBackTexture(m_pVoxelizerRenderTarget, { true, false, MColor::Black_T });
