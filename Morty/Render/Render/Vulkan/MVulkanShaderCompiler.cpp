@@ -21,7 +21,6 @@
 #include "dxcapi.h"
 #else
 
-#include "glslang/SPIRV/SpvTools.h"
 #include "glslang/SPIRV/GlslangToSpv.h"
 #include "glslang/Public/ShaderLang.h"
 

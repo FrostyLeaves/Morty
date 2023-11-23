@@ -57,6 +57,12 @@
         "MORTY_BUILD_TARGET": "MACOS",
         "MORTY_SHADER_COMPILER": "glslang"
       }
+    },
+    {
+      "name": "Windows-VS",
+      "inherits": "Windows",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/../Build/windows-vs"
     }
   ],
   "buildPresets": [

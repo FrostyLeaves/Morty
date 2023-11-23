@@ -680,7 +680,8 @@ void MVulkanRenderCommand::FillTexture(MTexture* pTexture, MColor color)
 	const VkImageLayout vkClearLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 	SetTextureLayout({ pTexture }, vkClearLayout);
 
-	VkClearColorValue vkColor = { .int32 = {0, 0, 0, 0} };
+	VkClearColorValue vkColor;
+	memset(&vkColor, 0, sizeof(vkColor));
 
 	VkImageSubresourceRange subresourceRange;
 	subresourceRange.aspectMask = m_pDevice->GetAspectFlags(pTexture->m_VkTextureFormat);
