@@ -9,7 +9,9 @@ file(GLOB_RECURSE EDITOR_All_FILES *.h *.cpp)
 # ThirdParty ImGuiFileDialog
 ############################################################
 file(GLOB EDITOR_IMGUI_FILE_DIALOG_FILES ${THIRD_PARTY_PATH}/ImGuiFileDialog/*.h ${THIRD_PARTY_PATH}/ImGuiFileDialog/*.cpp )
-set_property(SOURCE ${EDITOR_IMGUI_FILE_DIALOG_FILES} APPEND PROPERTY COMPILE_OPTIONS "-Wno-everything")
+if (NOT MSVC)
+    set_property(SOURCE ${EDITOR_IMGUI_FILE_DIALOG_FILES} APPEND PROPERTY COMPILE_OPTIONS "-Wno-everything")
+endif()
 
 add_library(Editor OBJECT
         ${EDITOR_All_FILES}
