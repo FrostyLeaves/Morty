@@ -430,7 +430,7 @@ void MVoxelizerRenderWork::InitializeRenderPass()
 	m_pVoxelizerRenderTarget->SetSize({ nRenderTargetSize, nRenderTargetSize});
 	m_pVoxelizerRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
 
-	m_voxelizerRenderPass.AddBackTexture(m_pVoxelizerRenderTarget, { true, false, MColor::Black_T });
+	m_voxelizerRenderPass.AddBackTexture(m_pVoxelizerRenderTarget, { true, MColor::Black_T });
 	m_voxelizerRenderPass.SetDepthTestEnable(false);
 	m_voxelizerRenderPass.SetDepthWriteEnable(false);
 	m_voxelizerRenderPass.SetViewportNum(1);

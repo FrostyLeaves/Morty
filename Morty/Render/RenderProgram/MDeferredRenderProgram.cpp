@@ -202,7 +202,7 @@ void MDeferredRenderProgram::InitializeRenderTarget()
 		pBackTexture->SetSize(n2Size);
 		pBackTexture->GenerateBuffer(pRenderSystem->GetDevice());
 
-		vBackTextures.push_back({ pBackTexture, {true, false, MColor::Black_T} });
+		vBackTextures.push_back({ pBackTexture, {true, MColor::Black_T} });
 		m_vRenderTargets.push_back(pBackTexture);
 	}
 
@@ -232,26 +232,26 @@ void MDeferredRenderProgram::InitializeRenderTarget()
 	m_vRenderTargets.push_back(pPostProcessOutput);
 
 
-	GetRenderWork<MShadowMapRenderWork>()->SetRenderTarget({}, { pShadowTexture, { true, false, MColor::White }});
+	GetRenderWork<MShadowMapRenderWork>()->SetRenderTarget({}, { pShadowTexture, { true, MColor::White }});
 
 	GetRenderWork<MVoxelizerRenderWork>()->SetRenderTarget({}, {});
 	
-	GetRenderWork<MGBufferRenderWork>()->SetRenderTarget(vBackTextures, { pDepthTexture, {true, false, MColor::Black_T} });
-	GetRenderWork<MDeferredLightingRenderWork>()->SetRenderTarget({{pLightningRenderTarget, {true, false, MColor::Black_T }} });
+	GetRenderWork<MGBufferRenderWork>()->SetRenderTarget(vBackTextures, { pDepthTexture, {true, MColor::Black_T} });
+	GetRenderWork<MDeferredLightingRenderWork>()->SetRenderTarget({{pLightningRenderTarget, {true, MColor::Black_T }} });
 	GetRenderWork<MForwardRenderWork>()->SetRenderTarget(
-		{ {pLightningRenderTarget, {false, true, MColor::Black_T }} },
-		{ pDepthTexture, {false, true, MColor::Black_T} });
+		{ {pLightningRenderTarget, {false, MColor::Black_T }} },
+		{ pDepthTexture, {false, MColor::Black_T} });
 
 	GetRenderWork<MVoxelizerRenderWork>()->SetRenderTarget(
-		{ {pLightningRenderTarget, {false, true, MColor::Black_T }} },
-		{ pDepthTexture, {false, true, MColor::Black_T} });
+		{ {pLightningRenderTarget, {false, MColor::Black_T }} },
+		{ pDepthTexture, {false, MColor::Black_T} });
 
 	GetRenderWork<MPostProcessRenderWork>()->SetRenderTarget(
-	{pPostProcessOutput, {true, false, MColor::Black_T }});
+	{pPostProcessOutput, {true, MColor::Black_T }});
 
 	GetRenderWork<MDebugRenderWork>()->SetRenderTarget(
-		{ {pPostProcessOutput, {false, true, MColor::Black_T }} },
-		{ pDepthTexture, {false, true, MColor::Black_T} });
+		{ {pPostProcessOutput, {false, MColor::Black_T }} },
+		{ pDepthTexture, {false, MColor::Black_T} });
 
 	m_pFinalOutputTexture = pPostProcessOutput;
 

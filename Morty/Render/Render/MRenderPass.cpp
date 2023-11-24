@@ -108,34 +108,8 @@ std::shared_ptr<MTexture> MRenderPass::GetDepthTexture() const
 	return m_DepthTexture.pTexture;
 }
 
-MPassTargetDescription::MPassTargetDescription(const bool bClear, const MColor& cColor)
+MPassTargetDescription::MPassTargetDescription(const bool bClear, const MColor& cColor, const uint32_t& nMipmap)
 	: bClearWhenRender(bClear)
-	, bAlreadyRender(false)
-	, cClearColor(cColor)
-	, nMipmapLevel(0)
-{
-}
-
-MPassTargetDescription::MPassTargetDescription()
-	: bClearWhenRender(true)
-	, bAlreadyRender(false)
-	, cClearColor(MColor::Black)
-	, nMipmapLevel(0)
-{
-}
-
-MPassTargetDescription::MPassTargetDescription(const bool bClear, const bool bAlready, const MColor& cColor)
-	: bClearWhenRender(bClear)
-	, bAlreadyRender(bAlready)
-	, cClearColor(cColor)
-	, nMipmapLevel(0)
-{
-
-}
-
-MPassTargetDescription::MPassTargetDescription(const bool bClear, const bool bAlready, const MColor& cColor, const uint32_t& nMipmap)
-	: bClearWhenRender(bClear)
-	, bAlreadyRender(bAlready)
 	, cClearColor(cColor)
 	, nMipmapLevel(nMipmap)
 {

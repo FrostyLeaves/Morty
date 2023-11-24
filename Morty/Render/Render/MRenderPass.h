@@ -49,15 +49,12 @@ class MORTY_API MPassTargetDescription
 {
 public:
 
-	MPassTargetDescription();
-	MPassTargetDescription(const bool bClear, const MColor& cClearColor);
-	MPassTargetDescription(const bool bClear, const bool bAlready, const MColor& cClearColor);
-	MPassTargetDescription(const bool bClear, const bool bAlready, const MColor& cClearColor, const uint32_t& nMipmap);
+	MPassTargetDescription() = default;
+	MPassTargetDescription(const bool bClear , const MColor& cClearColor, const uint32_t& nMipmap = 0);
 
-	bool bClearWhenRender;
-    bool bAlreadyRender;
-	MColor cClearColor;
-    uint32_t nMipmapLevel;
+	bool bClearWhenRender = true;
+	MColor cClearColor = MColor::Black_T;
+    uint32_t nMipmapLevel = 0;
 };
 
 struct MORTY_API MRenderTarget

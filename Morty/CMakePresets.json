@@ -75,7 +75,9 @@
       "inherits": "Windows",
       "generator": "Visual Studio 17 2022",
       "binaryDir": "${sourceDir}/../Build/windows-vs",
-      "MORTY_GENERATOR_FOR_CLANGD": "OFF"
+      "cacheVariables": {
+        "MORTY_GENERATOR_FOR_CLANGD": "OFF"
+      }
     }
   ],
   "buildPresets": [

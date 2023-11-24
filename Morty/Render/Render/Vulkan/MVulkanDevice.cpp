@@ -1172,8 +1172,6 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 			backTexture.pTexture->GenerateBuffer(this);
 		}
 		
-		MORTY_ASSERT(backTexture.desc.bClearWhenRender || backTexture.desc.bAlreadyRender);
-
 		vAttachmentDesc.push_back({});
 		VkAttachmentDescription& colorAttachment = vAttachmentDesc.back();
 
@@ -1199,11 +1197,14 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		}
 
-		if (backTexture.desc.bAlreadyRender)
-			colorAttachment.initialLayout = colorAttachment.finalLayout;
+		if (backTexture.desc.bClearWhenRender)
+        {
+            colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        }
 		else
-			colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
+        {
+            colorAttachment.initialLayout = colorAttachment.finalLayout;
+        }
 	}
 
 	std::shared_ptr<MTexture> pDepthTexture = pRenderPass->GetDepthTexture();
@@ -1237,10 +1238,14 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 		{
 			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 		}
-		if (pRenderPass->m_DepthTexture.desc.bAlreadyRender)
-			colorAttachment.initialLayout = colorAttachment.finalLayout;
+		if (pRenderPass->m_DepthTexture.desc.bClearWhenRender)
+        {
+            colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        }
 		else
-			colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        {
+            colorAttachment.initialLayout = colorAttachment.finalLayout;
+        }
 	}
 
 

@@ -288,7 +288,7 @@ void MEnvironmentMapRenderWork::InitializeRenderPass()
 	for (uint32_t nMipmap = 0; nMipmap < SpecularMipmapCount; ++nMipmap)
 	{
 		m_vSpecularRenderPass[nMipmap].SetViewportNum(6);
-		m_vSpecularRenderPass[nMipmap].AddBackTexture(pSpecularTexture->GetTextureTemplate(), {true, false, MColor::Black_T, nMipmap});
+		m_vSpecularRenderPass[nMipmap].AddBackTexture(pSpecularTexture->GetTextureTemplate(), {true, MColor::Black_T, nMipmap});
 		m_vSpecularRenderPass[nMipmap].GenerateBuffer(pRenderSystem->GetDevice());
 	}
 
