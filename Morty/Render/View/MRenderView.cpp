@@ -30,6 +30,7 @@ MRenderView::~MRenderView()
 
 void MRenderView::Resize(const Vector2& v2Size)
 {
+	//TODO call vk api in render thread.
 	vkDeviceWaitIdle(m_pDevice->m_VkDevice);
 
 	m_unWidht = v2Size.x;

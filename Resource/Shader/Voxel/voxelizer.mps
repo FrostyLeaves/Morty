@@ -67,6 +67,7 @@ float4 PS_MAIN(VS_OUT input) : SV_Target
     pointData.f3Albedo = f3Albedo;
     pointData.fRoughness = fRoughness;
     pointData.fMetallic = fMetallic;
+    pointData.bReceiveShadow = true;
 
     float3 f3LightingColor = PbrLighting(pointData);
 

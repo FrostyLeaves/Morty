@@ -21,6 +21,8 @@ public:
 
 	static long long GetCurTime();
 
+    static int LocalTime(time_t& time, tm& tmsut);
+
 private:
 
 };

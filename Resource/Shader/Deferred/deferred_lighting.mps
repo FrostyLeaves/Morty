@@ -85,11 +85,12 @@ float3 AdditionAllLights(VS_OUT input)
     pointData.f3Albedo = f3Albedo;
     pointData.fRoughness = fRoughness;
     pointData.fMetallic = fMetallic;
+    pointData.bReceiveShadow = true;
 
     float3 f3LightColor = PbrLighting(pointData);
 
-    //float4 f4VXGIColor = float4(0,0,0,0);
-    float4 f4VXGIColor = VoxelDiffuseTracing(u_texVoxelMap, voxelMapSetting, f3WorldPosition,  f3Normal);
+    float4 f4VXGIColor = float4(0,0,0,0);
+    f4VXGIColor = VoxelDiffuseTracing(u_texVoxelMap, voxelMapSetting, f3WorldPosition,  f3Normal);
     //f4VXGIColor.rgb = (kD * f4VXGIColor.rgb) * fAmbientOcc;
     
     float3 f3Color = f3LightColor + f4VXGIColor.rgb + f3Ambient;

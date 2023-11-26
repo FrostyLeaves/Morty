@@ -23,7 +23,7 @@ struct MMaterialCullingGroup
 	size_t nIndirectCount = 0;
 };
 
-struct MORTY_API MCascadedShadowSceneData
+struct MORTY_API MCascadedSplitData
 {
 	//range: 0.0 - 1.0f
 	float fCascadeSplit = 0.0f;
@@ -32,14 +32,13 @@ struct MORTY_API MCascadedShadowSceneData
 	float fFarZ = 0.0f;
 	float fOverFarZ = 0.0f;
 
-	MCameraFrustum cCameraFrustum;
+	//MCameraFrustum cCameraFrustum;
 };
 
 struct MORTY_API MCascadedShadowRenderData
 {
 	Matrix4 m4DirLightInvProj;
 	Vector4 fSplitRange;//far, far + 0.1
-	MBoundsSphere boundsSphere;
 };
 
 struct MORTY_API MVoxelClipmap

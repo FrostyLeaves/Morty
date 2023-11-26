@@ -11,7 +11,6 @@
 #include "ImGuiFileDialog.h"
 #include "Engine/MEngine.h"
 #include "Resource/MMaterialResourceData.h"
-#include <_types/_uint32_t.h>
 
 
 unsigned int PropertyBase::m_unItemIDPool = 0;

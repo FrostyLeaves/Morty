@@ -39,6 +39,7 @@
 #include "Component/MRenderMeshComponent.h"
 
 #include "RenderProgram/MDeferredRenderProgram.h"
+#include "Utility/MTimer.h"
 #include "Widget/GuizmoWidget.h"
 #include "Widget/MainView.h"
 #include "Widget/TaskGraphView.h"
@@ -55,7 +56,7 @@ bool MainEditor::Initialize(MEngine* pEngine)
 
 	m_vChildView.push_back(new NodeTreeView());
 	m_vChildView.push_back(new PropertyView());
-	m_vChildView.push_back(new MaterialView());
+//	m_vChildView.push_back(new MaterialView());
 	m_vChildView.push_back(new ResourceView());
 	m_vChildView.push_back(new ModelConvertView());
 	m_vChildView.push_back(new MessageWidget());
@@ -220,7 +221,7 @@ void MainEditor::ShowMenu()
 			{
 				auto t = std::time(nullptr);
 				tm outtm;
-				MORTY_ASSERT(0 == localtime_r(&t, &outtm));
+				MORTY_ASSERT(0 == MTimer::LocalTime(t, outtm));
 				std::ostringstream oss;
 				oss << std::put_time(&outtm, "%d-%m-%Y %H-%M-%S");
 			    auto str = oss.str();

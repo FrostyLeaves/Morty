@@ -110,6 +110,11 @@ void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
 			pEntitySystem->FindAllComponentRecursively(pEntity, MRenderMeshComponent::GetClassType(), vMeshComponents);
 			
 		}
+
+		if (vEntity.size() > 0)
+		{
+			vEntity[0]->GetComponent<MSceneComponent>()->SetScale({ 10.0,10.0, 10.0 });
+		}
 	}
 
 	std::set<std::shared_ptr<MMaterial>> tMaterials;

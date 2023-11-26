@@ -92,11 +92,11 @@ void MDeferredRenderProgram::RenderSetup(MIRenderCommand* pPrimaryCommand)
 	//Shadow map Culling.
 	auto* pShadowMapManager = pViewport->GetScene()->GetManager<MShadowMeshManager>();
 	auto vShadowMaterialGroup = pShadowMapManager->GetAllShadowGroup();
-	m_pShadowCulling->SetViewport(pViewport);
 	m_pShadowCulling->SetCamera(pCameraEntity);
+	m_pShadowCulling->SetViewport(pViewport);
 	m_pShadowCulling->SetDirectionalLight(pMainDirectionalLight);
 	m_pShadowCulling->Culling(vShadowMaterialGroup);
-	m_renderInfo.shadowRenderInfo = m_pShadowCulling->GetCascadedRenderData();
+	m_renderInfo.shadowRenderInfo = m_pShadowCulling->GetCascadedRenderInfo();
 
 	//Scene Culling.
 	auto* pMeshInstanceMeshManager = pScene->GetManager<MMeshInstanceManager>();

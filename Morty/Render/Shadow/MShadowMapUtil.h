@@ -16,16 +16,29 @@ class MRenderMeshComponent;
 struct MShaderConstantParam;
 
 
+template<typename TYPE>
+using MCascadedArray = std::array<TYPE, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>;
 
 class MORTY_API MShadowMapUtil
 {
 public:
 
-	static std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> CascadedSplitCameraFrustum(MViewport* pViewport);
+	static MCascadedArray<MCascadedSplitData> CascadedSplitCameraFrustum(MViewport* pViewport);
 
-	static std::array<MCascadedShadowRenderData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> CalculateRenderData(
+	static MCascadedArray<MCascadedShadowRenderData> CalculateRenderData(
 		MViewport* pViewport, MEntity* pCameraEntity,
-		const std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>& vCascadedData,
-		const std::array<MBoundsAABB, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>& vCascadedPscBounds);
+		const MCascadedArray<MCascadedSplitData>& vCascadedData,
+		const MCascadedArray<MBoundsSphere>& vCascadedPsrBounds,
+		const MCascadedArray<MBoundsAABB>& vCascadedPscBounds);
 
+
+	static MCascadedArray<MBoundsSphere> GetCameraFrustumBounds(MViewport* pViewport,
+		const MCascadedArray<MCascadedSplitData>& vCascadedSplitData);
+
+	static MCascadedArray<std::unique_ptr<class IRenderableFilter>> GetCameraFrustumCullingFilter(MViewport* pViewport,
+		const MCascadedArray<MCascadedSplitData>& vCascadedSplitData);
+
+	static MCascadedArray<MBoundsSphere> GetVoxelMapBounds(MViewport* pViewport, const MCascadedArray<MCascadedSplitData>& vCascadedSplitData);
+
+	static MCascadedArray<std::unique_ptr<class IRenderableFilter>> GetBoundsCullingFilter(MViewport* pViewport, const MCascadedArray<MBoundsSphere>& vBoundsSphere);
 };

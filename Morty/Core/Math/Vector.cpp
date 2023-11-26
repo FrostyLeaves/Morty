@@ -161,7 +161,17 @@ Vector3 Vector3::Projection(const Vector3& value) const
 	Vector3 dir = (*this);
 	dir.Normalize();
 
-	return dir * (*this)* value / fLength;
+	return dir * ((*this) * value / fLength);
+}
+
+TEST_CASE("Vector3::Projection test")
+{
+	Vector3 vec(3, 4, 0);
+	Vector3 dir(2, 0, 0);
+
+	Vector3 result = dir.Projection(vec);
+
+	CHECK(result == Vector3(3, 0, 0));
 }
 
 const Vector3 Vector3::Zero = Vector3(0.0f, 0.0f, 0.0f);

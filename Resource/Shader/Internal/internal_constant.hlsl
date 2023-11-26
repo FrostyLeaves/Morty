@@ -82,6 +82,7 @@ struct SurfaceData
     float3 f3Albedo;
     float fRoughness;
     float fMetallic;
+    bool bReceiveShadow;
 };
 
 struct VoxelizerOutput

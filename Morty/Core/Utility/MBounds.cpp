@@ -207,6 +207,15 @@ void MBoundsAABB::SetMinMax(const Vector3& v3Min, const Vector3& v3Max)
 	m_v3HalfLength = (m_v3MaxPoint - m_v3MinPoint) * 0.5f;
 }
 
+void MBoundsAABB::SethalfLength(const Vector3& f3HalfLength)
+{
+	m_v3HalfLength = f3HalfLength;
+
+	m_v3MinPoint = m_v3CenterPoint - m_v3HalfLength;
+	m_v3MaxPoint = m_v3CenterPoint + m_v3HalfLength;
+
+}
+
 void MBoundsAABB::SetPoints(const std::vector<Vector3>& vPoints)
 {
 	m_v3MaxPoint = Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
@@ -330,6 +339,11 @@ bool MBoundsAABB::IsIntersect(const MBoundsAABB& aabb) const
 	return bXIntersect && bYIntersect && bZIntersect;
 }
 
+MBoundsSphere MBoundsAABB::ToSphere() const
+{
+	return MBoundsSphere(m_v3CenterPoint, m_v3HalfLength.Length());
+}
+
 flatbuffers::Offset<void> MBoundsAABB::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
 	mfbs::MBoundsAABBBuilder builder(fbb);
@@ -450,6 +464,11 @@ void MBoundsSphere::AddPoint(const Vector3& pos)
 bool MBoundsSphere::IsContain(const Vector3& pos)
 {
 	return (pos - m_v3CenterPoint).Length() <= m_fRadius;
+}
+
+bool MBoundsSphere::IsIntersect(const MBoundsSphere& other) const
+{
+	return (m_v3CenterPoint - other.m_v3CenterPoint).Length() < (m_fRadius + other.m_fRadius);
 }
 
 flatbuffers::Offset<void> MBoundsSphere::Serialize(flatbuffers::FlatBufferBuilder& fbb) const

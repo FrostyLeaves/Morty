@@ -27,6 +27,7 @@
 #include "Mesh/MMeshManager.h"
 #include "RenderProgram/MFrameShaderPropertyBlock.h"
 #include "Variant/MVariant.h"
+#include "VXGI/MVoxelMapUtil.h"
 
 MORTY_CLASS_IMPLEMENT(MVoxelizerRenderWork, ISinglePassRenderWork)
 
@@ -138,34 +139,19 @@ std::shared_ptr<MTexture> MVoxelizerRenderWork::GetVoxelGITexture() const
 
 MBoundsAABB MVoxelizerRenderWork::GetVoxelizerBoundsAABB(uint32_t nClipmapIdx) const
 {
-	return MBoundsAABB(
-		m_voxelSetting.vClipmap[nClipmapIdx].f3VoxelOrigin,
-		m_voxelSetting.vClipmap[nClipmapIdx].f3VoxelOrigin +
-		m_voxelSetting.nResolution *
-		m_voxelSetting.vClipmap[nClipmapIdx].fVoxelSize
-	);
+	return MVoxelMapUtil::GetClipMapBounding(m_voxelSetting.vClipmap[nClipmapIdx]);
 }
 
 void MVoxelizerRenderWork::SetupVoxelSetting(const Vector3& f3CameraPosition, const uint32_t nClipmapIdx)
 {
 	const uint32_t nVoxelTableSize = MRenderGlobal::VOXEL_TABLE_SIZE;
-	const float fBasicVoxelSize = MRenderGlobal::VOXEL_BASIC_VOXEL_SIZE;
 
 	MVoxelMapSetting& voxelSetting = m_voxelSetting;
 	voxelSetting.nResolution = nVoxelTableSize;
 	voxelSetting.nClipmapIdx = nClipmapIdx;
 	voxelSetting.nViewportSize = MRenderGlobal::VOXEL_VIEWPORT_SIZE;
 
-	const float fVoxelSize = fBasicVoxelSize * std::powf(2.0f, nClipmapIdx);
-	Vector3 f3Origin = f3CameraPosition - nVoxelTableSize * fVoxelSize * 0.5f;
-	const Vector3i n3FloorPosition = MMath::Floor(f3Origin / fVoxelSize);
-	f3Origin = Vector3(n3FloorPosition.x, n3FloorPosition.y, n3FloorPosition.z) * fVoxelSize;
-
-	voxelSetting.vClipmap[nClipmapIdx] =
-	{
-		f3Origin,
-		fVoxelSize
-	};
+	voxelSetting.vClipmap[nClipmapIdx] = MVoxelMapUtil::GetClipMap(f3CameraPosition, nClipmapIdx);
 }
 
 void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
@@ -245,6 +231,9 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 		MEBufferBarrierStage::EComputeShaderRead,
 		MEBufferBarrierStage::EPixelShaderRead
 	);
+
+
+	// pCommand->AddRenderToTextureBarrier({m_voxelGITexture.get()}, METextureBarrierStage::EPixelShaderSample);
 }
 
 void MVoxelizerRenderWork::RenderDebugVoxel(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
