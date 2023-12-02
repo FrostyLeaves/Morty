@@ -5,6 +5,7 @@
 
 #include "Material/MMaterial.h"
 #include "Material/MComputeDispatcher.h"
+#include "MVulkanPhysicalDevice.h"
 #include <stdint.h>
 
 void MVulkanRenderCommand::SetViewport(const MViewportInfo& viewport)
@@ -420,8 +421,8 @@ bool MVulkanRenderCommand::AddBufferMemoryBarrier(const std::vector<const MBuffe
 {
 	const auto srcAccessMask = GetBufferBarrierAccessFlag(srcStage);
 	const auto dstAccessMask = GetBufferBarrierAccessFlag(dstStage);
-	const uint32_t srcQueueFamilyIndex = GetBufferBarrierQueueFamily(srcStage);
-	const uint32_t dstQueueFamilyIndex = GetBufferBarrierQueueFamily(dstStage);
+	const uint32_t srcQueueFamilyIndex = m_pDevice->GetBufferBarrierQueueFamily(srcStage);
+	const uint32_t dstQueueFamilyIndex = m_pDevice->GetBufferBarrierQueueFamily(dstStage);
 	const auto srcPipelineStage = GetBufferBarrierPipelineStage(srcStage);
 	const auto dstPipelineStage = GetBufferBarrierPipelineStage(dstStage);
 
@@ -538,7 +539,7 @@ void MVulkanRenderCommand::SetTextureLayout(const std::vector<MTexture*>& vTextu
 		vImageBarrier.push_back(VkImageMemoryBarrier());
 		VkImageMemoryBarrier& imageMemoryBarrier = vImageBarrier.back();
 
-		m_pDevice->TransitionImageLayout(imageMemoryBarrier, pTexture->m_VkTextureImage, oldLayout, newLayout, subresourceRange);
+		m_pDevice->TransitionLayoutBarrier(imageMemoryBarrier, pTexture->m_VkTextureImage, oldLayout, newLayout, subresourceRange);
 		pTexture->m_VkImageLayout = newLayout;
 
 		m_tTextureLayout[pTexture] = newLayout;
@@ -699,6 +700,17 @@ void MVulkanRenderCommand::addFinishedCallback(std::function<void()> func)
 	m_aRenderFinishedCallback.push_back(func);
 }
 
+void MVulkanRenderCommand::SetShadingRate(Vector2i i2ShadingSize, std::array<MEShadingRateCombinerOp, 2> combineOp)
+{
+	const VkExtent2D vkShadingSize = { static_cast<uint32_t>(i2ShadingSize.x), static_cast<uint32_t>(i2ShadingSize.y) };
+	const VkFragmentShadingRateCombinerOpKHR vkCombinerOp[2] = {
+		m_pDevice->GetShadingRateCombinerOp(combineOp[0]),
+		m_pDevice->GetShadingRateCombinerOp(combineOp[1])
+	};
+	
+	m_pDevice->GetPhysicalDevice()->vkCmdSetFragmentShadingRateKHR(m_VkCommandBuffer, &vkShadingSize, vkCombinerOp);
+}
+
 void MVulkanRenderCommand::UpdateBuffer(MBuffer* pBuffer, const MByte* data, const size_t& size)
 {
 	if (!pBuffer)
@@ -824,25 +836,6 @@ VkAccessFlags MVulkanRenderCommand::GetBufferBarrierAccessFlag(MEBufferBarrierSt
 	MORTY_ASSERT(accessMask != AccessFlagTable.end());
 
 	return accessMask->second;
-}
-
-uint32_t MVulkanRenderCommand::GetBufferBarrierQueueFamily(MEBufferBarrierStage stage) const
-{
-	switch (stage)
-	{
-	case MEBufferBarrierStage::EComputeShaderWrite: return m_pDevice->m_nComputeFamilyIndex;
-	case MEBufferBarrierStage::EComputeShaderRead: return m_pDevice->m_nComputeFamilyIndex;
-	case MEBufferBarrierStage::EPixelShaderWrite: return m_pDevice->m_nGraphicsFamilyIndex;
-	case MEBufferBarrierStage::EPixelShaderRead: return m_pDevice->m_nGraphicsFamilyIndex;
-	case MEBufferBarrierStage::EDrawIndirectRead: return m_pDevice->m_nGraphicsFamilyIndex;
-	case MEBufferBarrierStage::EUnknow:
-		MORTY_ASSERT(stage != MEBufferBarrierStage::EUnknow);
-		break;
-	default:
-		MORTY_ASSERT(false);
-		break;
-	}
-	return 0;
 }
 
 VkPipelineStageFlags MVulkanRenderCommand::GetBufferBarrierPipelineStage(MEBufferBarrierStage stage) const

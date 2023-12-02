@@ -31,7 +31,27 @@ class MIRenderCommand;
 enum class MEDeviceFeature
 {
 	EConservativeRasterization,
-	EHLSLFunctionality
+	EHLSLFunctionality,
+	EVariableRateShading,
+};
+
+enum class MEBufferBarrierStage
+{
+	EUnknow = 0,
+	EComputeShaderWrite,
+	EComputeShaderRead,
+	EPixelShaderWrite,
+	EPixelShaderRead,
+	EDrawIndirectRead,
+};
+
+enum class MEShadingRateCombinerOp
+{
+	Keep = 0,
+	Replace,
+	Min,
+	Max,
+	Mul,
 };
 
 class MORTY_API MIDevice

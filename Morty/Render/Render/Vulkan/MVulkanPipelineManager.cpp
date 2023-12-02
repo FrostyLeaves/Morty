@@ -1,5 +1,6 @@
 #include "Render/Vulkan/MVulkanPipelineManager.h"
 
+#include "MVulkanPhysicalDevice.h"
 #include "Render/MBuffer.h"
 #include "Render/MRenderPass.h"
 #include "Utility/MGlobal.h"
@@ -526,6 +527,16 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<
 	VK_DYNAMIC_STATE_SCISSOR,
 	VK_DYNAMIC_STATE_LINE_WIDTH
 	};
+
+	//variable rate shading
+	if (m_pDevice->GetDeviceFeatureSupport(MEDeviceFeature::EVariableRateShading))
+	{
+		if (m_pDevice->GetPhysicalDevice()->m_VkShadingRateImageFeatures.pipelineFragmentShadingRate)
+		{
+			dynamicStates.push_back(VK_DYNAMIC_STATE_FRAGMENT_SHADING_RATE_KHR);
+		}
+	}
+
 	VkPipelineDynamicStateCreateInfo dynamicState{};
 	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
@@ -598,7 +609,7 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<
 	{
 		if (m_pDevice->GetDeviceFeatureSupport(MEDeviceFeature::EConservativeRasterization))
 		{
-			const float fOverestSize = m_pDevice->m_VkConservativeRasterProps.extraPrimitiveOverestimationSizeGranularity;
+			const float fOverestSize = m_pDevice->GetPhysicalDevice()->m_VkConservativeRasterProps.extraPrimitiveOverestimationSizeGranularity;
 			conservativeRasterStateCI.conservativeRasterizationMode = VK_CONSERVATIVE_RASTERIZATION_MODE_OVERESTIMATE_EXT;
 			conservativeRasterStateCI.extraPrimitiveOverestimationSize = fOverestSize;
 			rasterizationState.pNext = &conservativeRasterStateCI;

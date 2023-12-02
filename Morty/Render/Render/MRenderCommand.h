@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "MIDevice.h"
 #include "Render/MRenderGlobal.h"
 
 #include "Math/Vector.h"
@@ -28,16 +29,6 @@ enum class METextureBarrierStage
 	EPixelShaderSample,
 	EPixelShaderWrite,
 	EComputeShaderWrite
-};
-
-enum class MEBufferBarrierStage
-{
-	EUnknow = 0,
-	EComputeShaderWrite,
-	EComputeShaderRead,
-	EPixelShaderWrite,
-	EPixelShaderRead,
-	EDrawIndirectRead,
 };
 
 struct MORTY_API MViewportInfo
@@ -113,6 +104,7 @@ public:
 	virtual void ResetBuffer(const MBuffer* pBuffer) = 0;
 	virtual void FillTexture(MTexture* pBuffer, MColor color) = 0;
 
+	virtual void SetShadingRate(Vector2i i2ShadingSize, std::array<MEShadingRateCombinerOp, 2> combineOp) = 0;
 
 	virtual MIRenderCommand* CreateChildCommand() { return nullptr; }
 	virtual MIRenderCommand* GetChildCommand(const size_t& nIndex) { 

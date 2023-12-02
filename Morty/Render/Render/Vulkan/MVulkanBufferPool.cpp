@@ -35,7 +35,7 @@ MVulkanBufferPool::~MVulkanBufferPool()
 
 bool MVulkanBufferPool::Initialize()
 {
-	m_unMinUboAlignment = static_cast<uint32_t>(m_pDevice->m_VkPhysicalDeviceProperties.limits.minUniformBufferOffsetAlignment);
+	m_unMinUboAlignment = static_cast<uint32_t>(m_pDevice->GetPhysicalDeviceProperties().limits.minUniformBufferOffsetAlignment);
 
 	m_pDevice->GenerateBuffer(m_unDynamicUniformBufferMemorySize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_VkDynamicUniformBuffer, m_VkDynamicUniformMemory);

@@ -4,6 +4,7 @@
 #include "Render/Vulkan/MVulkanRenderCommand.h"
 #endif
 
+#include "Render/Vulkan/MVulkanPhysicalDevice.h"
 #include "System/MRenderSystem.h"
 
 MRenderView::MRenderView()
@@ -54,7 +55,7 @@ void MRenderView::Release()
 
 	if (m_VkSurface)
 	{
-		vkDestroySurfaceKHR(m_pDevice->m_VkInstance, m_VkSurface, nullptr);
+		vkDestroySurfaceKHR(m_pDevice->GetVkInstance(), m_VkSurface, nullptr);
 		m_VkSurface = VK_NULL_HANDLE;
 	}
 }
@@ -129,7 +130,7 @@ void MRenderView::InitializeForVulkan(MIDevice* pDevice, VkSurfaceKHR surface)
 
 bool MRenderView::InitializeSwapchain()
 {
-	VkPhysicalDevice physicalDevice = m_pDevice->GetPhysicalDevice();
+	VkPhysicalDevice physicalDevice = m_pDevice->GetPhysicalDevice()->m_VkPhysicalDevice;
 
 	//CreateSpawnchain֮
 	int nPresentQueueIndex = m_pDevice->FindQueuePresentFamilies(m_VkSurface);
@@ -183,7 +184,7 @@ bool MRenderView::InitializeSwapchain()
 	if (result != VK_SUCCESS)
 	{
 		GetEngine()->GetLogger()->Error("Create VulkanRenderTarget Error : vkGetPhysicalDeviceSurfacePresentModesKHR error");
-		vkDestroySurfaceKHR(m_pDevice->m_VkInstance, m_VkSurface, nullptr);
+		vkDestroySurfaceKHR(m_pDevice->GetVkInstance(), m_VkSurface, nullptr);
 		return false;
 	}
 

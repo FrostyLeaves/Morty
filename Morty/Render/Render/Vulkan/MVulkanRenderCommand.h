@@ -61,6 +61,8 @@ public:
 
 	void addFinishedCallback(std::function<void()> func) override;
 
+	void SetShadingRate(Vector2i i2ShadingSize, std::array<MEShadingRateCombinerOp, 2> combineOp) override;
+
 	void UpdateBuffer(MBuffer* pBuffer, const MByte* data, const size_t& size);
 
 	void UpdateShaderParam(std::shared_ptr<MShaderConstantParam> param);
@@ -70,7 +72,6 @@ public:
 protected:
 	VkImageLayout GetTextureBarrierLayout(METextureBarrierStage stage) const;
 	VkAccessFlags GetBufferBarrierAccessFlag(MEBufferBarrierStage stage) const;
-	uint32_t GetBufferBarrierQueueFamily(MEBufferBarrierStage stage) const;
 	VkPipelineStageFlags GetBufferBarrierPipelineStage(MEBufferBarrierStage stage) const;
 	VkPipelineStageFlags GetTextureBarrierPipelineStage(METextureBarrierStage stage) const;
 public:

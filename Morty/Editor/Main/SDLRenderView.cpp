@@ -275,7 +275,7 @@ void SDLRenderView::BindSDLWindow()
 
 	// Create Window Surface
 	VkSurfaceKHR surface;
-	if (SDL_Vulkan_CreateSurface(m_pSDLWindow, pDevice->m_VkInstance, &surface) == 0)
+	if (SDL_Vulkan_CreateSurface(m_pSDLWindow, pDevice->GetVkInstance(), &surface) == 0)
 	{
 		GetEngine()->GetLogger()->Error("Failed to create Vulkan surface. {}", SDL_GetError());
 		return;

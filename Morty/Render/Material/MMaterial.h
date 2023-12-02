@@ -80,8 +80,6 @@ public:
 	bool LoadShader(std::shared_ptr<MResource> pResource);
 	bool LoadShader(const MString& strResource);
 
-	std::shared_ptr<MResource> GetShader(MEShaderType eType) const { return GetShaderProgram()->GetShaderResource(eType); }
-
 	void SetShaderMacro(const MShaderMacro& macro);
 	MShaderMacro& GetShaderMacro() const { return m_pShaderProgram->GetShaderMacro(); }
 	const std::shared_ptr<MShaderProgram>& GetShaderProgram() const { return m_pShaderProgram; }

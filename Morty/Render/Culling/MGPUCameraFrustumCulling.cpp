@@ -10,6 +10,7 @@
 #include "System/MObjectSystem.h"
 #include "Render/MRenderCommand.h"
 #include "Batch/MMaterialBatchGroup.h"
+#include "Render/MIDevice.h"
 #include "Utility/MGlobal.h"
 
 void MGPUCameraFrustumCulling::Initialize(MEngine* pEngine)
