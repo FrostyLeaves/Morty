@@ -100,8 +100,11 @@ public:
     void AddBackTexture(std::shared_ptr<MTexture> pBackTexture, const MPassTargetDescription& desc);
     void SetDepthTexture(std::shared_ptr<MTexture> pDepthTexture, const MPassTargetDescription& desc);
 
+    void SetShadingRateTexture(std::shared_ptr<MTexture>& pTexture);
+
     std::vector<std::shared_ptr<MTexture>> GetBackTextures() const;
     std::shared_ptr<MTexture> GetDepthTexture() const;
+    std::shared_ptr<MTexture> GetShadingRateTexture() const;
 
     void SetRenderPassID(const uint32_t& unID) { m_unRenderPassID = unID; }
     uint32_t GetRenderPassID() const { return m_unRenderPassID; }
@@ -128,6 +131,8 @@ public:
 
     //render depth to texture
     MRenderTarget m_DepthTexture;
+
+    MRenderTarget m_ShadingRateTexture;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
     //vulkan frame buffer.

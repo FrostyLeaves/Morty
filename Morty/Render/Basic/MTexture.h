@@ -62,6 +62,7 @@ public:
 	static constexpr uint32_t EUnknow = 0;
 	static constexpr uint32_t EPixelSampler = 1;
 	static constexpr uint32_t EStorageRead = 2;
+	static constexpr uint32_t EShadingRateMask = 4;
 };
 
 class MORTY_API MTexture

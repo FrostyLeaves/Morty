@@ -965,6 +965,74 @@ void MVulkanDevice::DestroyShaderParamBuffer(const std::shared_ptr<MShaderConsta
 	m_BufferPool.FreeBufferMemory(pParam);
 }
 
+VkAttachmentDescription2 CreateAttachmentDescriptionFromTexture(const MRenderTarget& renderTarget)
+{
+	MORTY_ASSERT(renderTarget.pTexture);
+
+	MORTY_ASSERT(renderTarget.pTexture->m_VkTextureImage);
+
+	VkAttachmentDescription2 colorAttachment = {};
+	colorAttachment.sType = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2;
+
+	if (renderTarget.desc.bClearWhenRender)
+	{
+		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	}
+	else
+	{
+		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+	}
+
+	colorAttachment.format = renderTarget.pTexture->m_VkTextureFormat;
+
+	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+
+	if (renderTarget.pTexture->GetRenderUsage() == METextureWriteUsage::ERenderPresent)
+	{
+		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	}
+	else if (renderTarget.pTexture->GetRenderUsage() == METextureWriteUsage::ERenderBack)
+	{
+		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	}
+	else if (renderTarget.pTexture->GetRenderUsage() == METextureWriteUsage::ERenderDepth)
+	{
+		if (renderTarget.pTexture->GetShaderUsage() & METextureReadUsage::EPixelSampler)
+		{
+			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		}
+		else
+		{
+			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+		}
+	}
+	else if (renderTarget.pTexture->GetShaderUsage() == METextureReadUsage::EShadingRateMask)
+	{
+		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
+	}
+    else
+    {
+	    MORTY_ASSERT(false);
+    }
+
+	if (renderTarget.desc.bClearWhenRender)
+	{
+		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	}
+	else
+	{
+		colorAttachment.initialLayout = colorAttachment.finalLayout;
+	}
+
+
+
+
+	return colorAttachment;
+}
+
 bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 {
 	if (!pRenderPass)
@@ -977,106 +1045,29 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 
     uint32_t unBackNum = static_cast<uint32_t>(pRenderPass->m_vBackTextures.size());
 
-	std::vector<VkAttachmentDescription> vAttachmentDesc;
+	std::vector<VkAttachmentDescription2> vAttachmentDesc;
 
 	for (uint32_t i = 0; i < unBackNum; ++i)
 	{
 		MRenderTarget& backTexture = pRenderPass->m_vBackTextures[i];
-		if (!backTexture.pTexture)
-		{
-			GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateRenderPass error: bt == nullptr");
-			return false;
-		}
-
-		if (backTexture.pTexture->m_VkTextureImage == VK_NULL_HANDLE)
-		{
-			backTexture.pTexture->GenerateBuffer(this);
-		}
-		
-		vAttachmentDesc.push_back({});
-		VkAttachmentDescription& colorAttachment = vAttachmentDesc.back();
-
-
-		if (backTexture.desc.bClearWhenRender)
-			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		else
-			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-
-		colorAttachment.format = backTexture.pTexture->m_VkTextureFormat;
-
-		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-
-		if (backTexture.pTexture->GetRenderUsage() == METextureWriteUsage::ERenderPresent)
-		{
-			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-		}
-		else
-		{
-			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		}
-
-		if (backTexture.desc.bClearWhenRender)
-        {
-            colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        }
-		else
-        {
-            colorAttachment.initialLayout = colorAttachment.finalLayout;
-        }
+		auto attachment = CreateAttachmentDescriptionFromTexture(backTexture);
+		vAttachmentDesc.push_back(attachment);
 	}
-
-	std::shared_ptr<MTexture> pDepthTexture = pRenderPass->GetDepthTexture();
-	if (pDepthTexture)
+	
+	if (std::shared_ptr<MTexture> pDepthTexture = pRenderPass->GetDepthTexture())
 	{
-		if (pDepthTexture->m_VkTextureImage == VK_NULL_HANDLE)
-		{
-			pDepthTexture->GenerateBuffer(this);
-		}
-
-		vAttachmentDesc.push_back({});
-		VkAttachmentDescription& colorAttachment = vAttachmentDesc.back();
-
-		if (pRenderPass->m_DepthTexture.desc.bClearWhenRender)
-			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		else
-			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-
-		colorAttachment.format = pDepthTexture->m_VkTextureFormat;
-		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-
-		if (pDepthTexture->GetShaderUsage() & METextureReadUsage::EPixelSampler)
-		{
-			//for shader sampler.
-			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-		}
-		else
-		{
-			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-		}
-		if (pRenderPass->m_DepthTexture.desc.bClearWhenRender)
-        {
-            colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        }
-		else
-        {
-            colorAttachment.initialLayout = colorAttachment.finalLayout;
-        }
+		auto attachment = CreateAttachmentDescriptionFromTexture(pRenderPass->m_DepthTexture);
+		vAttachmentDesc.push_back(attachment);
 	}
 
+	
 
-	std::vector<VkSubpassDescription> vSubpass;
+	std::vector<VkSubpassDescription2> vSubpass;
 
-	std::vector<std::vector<VkAttachmentReference>> vOutAttachmentRef;
-	std::vector<std::vector<VkAttachmentReference>> vOutDepthAttachmentRef;
-	std::vector<std::vector<VkAttachmentReference>> vInAttachmentRef;
+	std::vector<std::vector<VkAttachmentReference2>> vOutAttachmentRef;
+	std::vector<std::vector<VkAttachmentReference2>> vOutDepthAttachmentRef;
+	std::vector<std::vector<VkAttachmentReference2>> vInAttachmentRef;
 	std::vector<std::vector<uint32_t>> vUnusedAttachmentRef;
-	std::vector<uint32_t> vViewMask;
 	std::vector<uint32_t> vCorrelationMask;
 
 	// m_ShaderDefaultTexture subpass
@@ -1084,25 +1075,28 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 	{
 		vOutAttachmentRef.resize(1);
 		vOutDepthAttachmentRef.resize(1);
-		vViewMask.push_back((1 << pRenderPass->GetViewportNum()) - 1);
 		vCorrelationMask.push_back((1 << pRenderPass->GetViewportNum()) - 1);
 
-		vSubpass.push_back(VkSubpassDescription());
-		VkSubpassDescription& vkSubpass = vSubpass.back();
+		vSubpass.push_back({});
+		auto& vkSubpass = vSubpass.back();
+		vkSubpass.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2;
 		vkSubpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
 		for (uint32_t i = 0; i < unBackNum; ++i)
-			vOutAttachmentRef[0].push_back({ uint32_t(vOutAttachmentRef[0].size()), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
+		{
+			vOutAttachmentRef[0].push_back({ VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr, uint32_t(vOutAttachmentRef[0].size()), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT });
+		}
 
 		vkSubpass.colorAttachmentCount = unBackNum;
 
-		if (pDepthTexture)
+		if (pRenderPass->GetDepthTexture())
 		{
-			vOutDepthAttachmentRef[0] = { { uint32_t(vOutAttachmentRef[0].size()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL } };
+			vOutDepthAttachmentRef[0] = { { VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr, uint32_t(vOutAttachmentRef[0].size()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT } };
 			vkSubpass.pDepthStencilAttachment = vOutDepthAttachmentRef[0].data();
 		}
 
 		vkSubpass.pColorAttachments = vOutAttachmentRef[0].data();
+		vkSubpass.viewMask = (1 << pRenderPass->GetViewportNum()) - 1;
 	}
 	else  //
 	{
@@ -1111,18 +1105,18 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 		vOutDepthAttachmentRef.resize(unSubpassNum);
 		vInAttachmentRef.resize(unSubpassNum);
 		vUnusedAttachmentRef.resize(unSubpassNum);
-		vViewMask.resize(unSubpassNum);
 		vCorrelationMask.resize(unSubpassNum);
 
 		for (uint32_t nSubpassIdx = 0; nSubpassIdx < unSubpassNum; ++nSubpassIdx)
 		{
 			MSubpass& subpass = pRenderPass->m_vSubpass[nSubpassIdx];
 
-			vSubpass.push_back(VkSubpassDescription());
-			VkSubpassDescription& vkSubpass = vSubpass.back();
+			vSubpass.push_back({});
+			auto& vkSubpass = vSubpass.back();
+			vkSubpass.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2;
 			vkSubpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+			vkSubpass.viewMask = subpass.m_unViewMask;
 
-			vViewMask[nSubpassIdx] = subpass.m_unViewMask;
 			vCorrelationMask[nSubpassIdx] = subpass.m_unCorrelationMask;
 
 			std::set<uint32_t> vUsedAttachIndex;
@@ -1131,18 +1125,14 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 			{
 				uint32_t nBackIdx = subpass.m_vOutputIndex[i];
 
-				vOutAttachmentRef[nSubpassIdx].push_back({});
-				VkAttachmentReference& vkAttachRef = vOutAttachmentRef[nSubpassIdx].back();
-
-				vkAttachRef.attachment = nBackIdx;
-				vkAttachRef.layout = VK_IMAGE_LAYOUT_GENERAL;
+				vOutAttachmentRef[nSubpassIdx].push_back({ VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr, nBackIdx, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_ASPECT_COLOR_BIT });
 
 				vUsedAttachIndex.insert(nBackIdx);
 			}
 
-			if (pDepthTexture)
+			if (pRenderPass->GetDepthTexture())
 			{
-				vOutDepthAttachmentRef[nSubpassIdx] = { { uint32_t(vOutAttachmentRef[nSubpassIdx].size()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL } };
+				vOutDepthAttachmentRef[nSubpassIdx] = { { VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr,uint32_t(vOutAttachmentRef[nSubpassIdx].size()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT } };
 				vkSubpass.pDepthStencilAttachment = vOutDepthAttachmentRef[nSubpassIdx].data();
 			}
 
@@ -1153,11 +1143,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 			{
 				uint32_t nBackIdx = subpass.m_vInputIndex[i];
 
-				vInAttachmentRef[nSubpassIdx].push_back({});
-				VkAttachmentReference& vkAttachRef = vInAttachmentRef[nSubpassIdx].back();
-
-				vkAttachRef.attachment = nBackIdx;
-				vkAttachRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				vInAttachmentRef[nSubpassIdx].push_back({ VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr,nBackIdx, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT });
 
 				vUsedAttachIndex.insert(nBackIdx);
 			}
@@ -1175,17 +1161,17 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 
 			vkSubpass.preserveAttachmentCount = static_cast<uint32_t>(vUnusedAttachmentRef[nSubpassIdx].size());
 			vkSubpass.pPreserveAttachments = vUnusedAttachmentRef[nSubpassIdx].data();
-
 		}
 	}
 
-	std::vector<VkSubpassDependency> vSubpassDependencies;
+	std::vector<VkSubpassDependency2> vSubpassDependencies;
 	for (size_t nSubpassIdx = 1; nSubpassIdx < vSubpass.size(); ++nSubpassIdx)
 	{
 		for (size_t nDependantIdx = 0; nDependantIdx < nSubpassIdx; ++nDependantIdx)
 		{
 			vSubpassDependencies.push_back({});
-			VkSubpassDependency& depend = vSubpassDependencies.back();
+			VkSubpassDependency2& depend = vSubpassDependencies.back();
+			depend.sType = VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2;
 			depend.srcSubpass = static_cast<uint32_t>(nDependantIdx);
 			depend.dstSubpass = static_cast<uint32_t>(nSubpassIdx);
 			//          depend.dstSubpass = (subpass<subpassCount) ? subpass : VK_SUBPASS_EXTERNAL;
@@ -1198,30 +1184,44 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 	}
 
 
-	VkRenderPassCreateInfo renderPassInfo{};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	VkRenderPassCreateInfo2 renderPassInfo{};
+
+	VkAttachmentReference2 vkFragShadingRateReference = {};
+	VkFragmentShadingRateAttachmentInfoKHR vkShadingRateAttachmentInfo = {};
+
+	if (GetDeviceFeatureSupport(MEDeviceFeature::EVariableRateShading))
+	{
+		if (pRenderPass->GetShadingRateTexture())
+		{
+			vAttachmentDesc.push_back(CreateAttachmentDescriptionFromTexture(pRenderPass->m_ShadingRateTexture));
+
+			vkFragShadingRateReference.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2;
+			vkFragShadingRateReference.attachment = vAttachmentDesc.size() - 1;
+			vkFragShadingRateReference.layout = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
+
+			vkShadingRateAttachmentInfo.sType = VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR;
+			vkShadingRateAttachmentInfo.pFragmentShadingRateAttachment = &vkFragShadingRateReference;
+			vkShadingRateAttachmentInfo.shadingRateAttachmentTexelSize = GetPhysicalDevice()->m_VkFragmentShadingRateProperties.maxFragmentShadingRateAttachmentTexelSize;
+
+			for (size_t nSubPassIdx = 0; nSubPassIdx < vSubpass.size(); ++nSubPassIdx)
+			{
+				vSubpass[nSubPassIdx].pNext = &vkShadingRateAttachmentInfo;
+			}
+		}
+	}
+
+
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2;
 	renderPassInfo.attachmentCount = static_cast<uint32_t>(vAttachmentDesc.size());
 	renderPassInfo.pAttachments = vAttachmentDesc.data();
 	renderPassInfo.subpassCount = static_cast<uint32_t>(vSubpass.size());
 	renderPassInfo.pSubpasses = vSubpass.data();
 	renderPassInfo.dependencyCount = static_cast<uint32_t>(vSubpassDependencies.size());
 	renderPassInfo.pDependencies = vSubpassDependencies.data();
+	renderPassInfo.correlatedViewMaskCount = vCorrelationMask.size();
+	renderPassInfo.pCorrelatedViewMasks = vCorrelationMask.data();
 
-
-	VkRenderPassMultiviewCreateInfo renderPassMultiviewInfo{};//Beware of the lifecycle of variables
-	if (pRenderPass->GetViewportNum() > 1)
-	{
-		renderPassMultiviewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
-		renderPassMultiviewInfo.subpassCount = static_cast<uint32_t>(vSubpass.size());
-		renderPassMultiviewInfo.pViewMasks = vViewMask.data();
-		renderPassMultiviewInfo.correlationMaskCount = static_cast<uint32_t>(vSubpass.size());
-		renderPassMultiviewInfo.pCorrelationMasks = vCorrelationMask.data();
-		renderPassMultiviewInfo.pNext = nullptr;
-
-		renderPassInfo.pNext = &renderPassMultiviewInfo;
-	}
-
-	if (vkCreateRenderPass(m_VkDevice, &renderPassInfo, nullptr, &pRenderPass->m_VkRenderPass) != VK_SUCCESS)
+	if (vkCreateRenderPass2(m_VkDevice, &renderPassInfo, nullptr, &pRenderPass->m_VkRenderPass) != VK_SUCCESS)
 	{
 		return false;
 	}

@@ -93,6 +93,7 @@ public:
 	VkPhysicalDeviceVulkan11Features m_VkVulkan11Features{};
 	VkPhysicalDeviceConservativeRasterizationPropertiesEXT m_VkConservativeRasterProps{};
 	VkPhysicalDeviceFragmentShadingRateFeaturesKHR m_VkShadingRateImageFeatures{};
+	VkPhysicalDeviceFragmentShadingRatePropertiesKHR m_VkFragmentShadingRateProperties{};
 	
 #if MORTY_DEBUG
 	VkDebugUtilsMessengerEXT m_VkDebugUtilsMessenger;

@@ -93,6 +93,11 @@ void MRenderPass::SetDepthTexture(std::shared_ptr<MTexture> pDepthTexture, const
 	m_DepthTexture.desc = desc;
 }
 
+void MRenderPass::SetShadingRateTexture(std::shared_ptr<MTexture>& pTexture)
+{
+	m_ShadingRateTexture.pTexture = pTexture;
+}
+
 std::vector<std::shared_ptr<MTexture>> MRenderPass::GetBackTextures() const
 {
 	std::vector<std::shared_ptr<MTexture>> vTextures;
@@ -101,6 +106,11 @@ std::vector<std::shared_ptr<MTexture>> MRenderPass::GetBackTextures() const
 		vTextures.push_back(tex.pTexture);
 
 	return vTextures;
+}
+
+std::shared_ptr<MTexture> MRenderPass::GetShadingRateTexture() const
+{
+	return m_ShadingRateTexture.pTexture;
 }
 
 std::shared_ptr<MTexture> MRenderPass::GetDepthTexture() const

@@ -347,14 +347,24 @@ void MVulkanPhysicalDevice::InitDeviceFeature()
 
 	if (GetDeviceFeatureSupport(MEDeviceFeature::EVariableRateShading))
 	{
-		VkPhysicalDeviceFeatures2KHR deviceProps2{};
-		deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR;
-		deviceProps2.pNext = &m_VkShadingRateImageFeatures;
+		VkPhysicalDeviceFeatures2KHR deviceFeats2{};
+		deviceFeats2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR;
+		deviceFeats2.pNext = &m_VkShadingRateImageFeatures;
 
 		m_VkShadingRateImageFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
-		vkGetPhysicalDeviceFeatures2KHR(m_VkPhysicalDevice, &deviceProps2);
+
+		vkGetPhysicalDeviceFeatures2KHR(m_VkPhysicalDevice, &deviceFeats2);
 
 		RegisterExtensionFeatures(m_pVkExtensionFeaturesList, m_VkShadingRateImageFeatures);
+
+
+		VkPhysicalDeviceProperties2KHR deviceProps2{};
+		deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+		deviceProps2.pNext = &m_VkFragmentShadingRateProperties;
+
+		m_VkFragmentShadingRateProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
+
+		vkGetPhysicalDeviceProperties2(m_VkPhysicalDevice, &deviceProps2);
 
 		GetEngine()->GetLogger()->Information("\nVulkan ShadingRate pipeline fragment enable: {}.", m_VkShadingRateImageFeatures.pipelineFragmentShadingRate);
 		GetEngine()->GetLogger()->Information("Vulkan ShadingRate primitive fragment enable: {}.", m_VkShadingRateImageFeatures.primitiveFragmentShadingRate);
