@@ -30,7 +30,7 @@ public:
 	MShaderParam() = default;
 	virtual ~MShaderParam() = default;
 
-	MString strName = "";
+	MStringId strName;
 	uint32_t  eShaderType = 0;
 
 	bool bDirty = true;
@@ -86,7 +86,9 @@ struct MShaderStorageParam : public MShaderParam
 public:
 	const MBuffer* pBuffer = nullptr;
 	bool bWritable = false;
+	void* pImageIdent = nullptr;
 
+	void SetBuffer(const MBuffer* buf) { pBuffer = buf; }
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	VkDescriptorBufferInfo m_VkBufferInfo = { VK_NULL_HANDLE, 0, 0 };
 #endif

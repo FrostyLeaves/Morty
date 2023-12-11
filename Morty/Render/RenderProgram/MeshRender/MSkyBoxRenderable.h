@@ -21,13 +21,15 @@ class MORTY_API MSkyBoxRenderable : public IRenderable
 {
 public:
 
-	void SetScene(MScene* pScene);
-	void SetFramePropertyBlockAdapter(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter);
+	void SetMesh(MIMesh* pMesh);
+	void SetMaterial(const std::shared_ptr<MMaterial>& pMaterial);
+	void SetPropertyBlockAdapter(const std::vector<std::shared_ptr<IPropertyBlockAdapter>>& vAdapter);
 
 	void Render(MIRenderCommand* pCommand) override;
 
 private:
 
-	MScene* m_pScene= nullptr;
-	std::shared_ptr<IPropertyBlockAdapter> m_pFramePropertyAdapter = nullptr;
+	MIMesh* m_pMesh = nullptr;
+	std::shared_ptr<MMaterial> m_pMaterial = nullptr;
+	std::vector<std::shared_ptr<IPropertyBlockAdapter>> m_vFramePropertyAdapter;
 };

@@ -22,10 +22,10 @@ MMesh<MDebugDrawLineVertex>& MDebugRenderComponent::GetDrawLineMesh()
 {
     if (m_bDrawLineDirty)
     {
-        m_cDrawLineMesh.CreateVertices(m_vDrawLine.size() * 2);
-        m_cDrawLineMesh.CreateIndices(m_vDrawLine.size() * 2, 1);
+        m_cDrawLineMesh.CreateVertices(static_cast<uint32_t>(m_vDrawLine.size()) * 2);
+        m_cDrawLineMesh.CreateIndices(static_cast<uint32_t>(m_vDrawLine.size()) * 2, 1);
 
-        for (size_t nLineIdx = 0; nLineIdx < m_vDrawLine.size(); ++nLineIdx)
+        for (uint32_t nLineIdx = 0; nLineIdx < static_cast<uint32_t>(m_vDrawLine.size()); ++nLineIdx)
         {
             m_cDrawLineMesh.GetVertices()[nLineIdx * 2 + 0].v3Position = m_vDrawLine[nLineIdx].m_v3StartPosition;
             m_cDrawLineMesh.GetVertices()[nLineIdx * 2 + 1].v3Position = m_vDrawLine[nLineIdx].m_v3EndPosition;

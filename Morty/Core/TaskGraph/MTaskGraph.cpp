@@ -12,11 +12,6 @@ MTaskGraph::MTaskGraph()
 
 }
 
-MTaskGraph::MTaskGraph(MThreadPool* pThreadPool)
-{
-	m_pThreadPool = pThreadPool;
-}
-
 MTaskGraph::~MTaskGraph()
 {
 	for (MTaskNode* pTaskNode : m_tTaskNode)
@@ -31,7 +26,7 @@ MTaskGraph::~MTaskGraph()
 	m_tTaskNode.clear();
 }
 
-bool MTaskGraph::AddNode(const MString& strNodeName, MTaskNode* pNode)
+bool MTaskGraph::AddNode(const MStringId& strNodeName, MTaskNode* pNode)
 {
 	MORTY_ASSERT(!m_bLock);
 
@@ -126,9 +121,18 @@ bool MTaskGraph::Compile()
 	return true;
 }
 
-void MTaskGraph::Run()
+void MTaskGraph::Run(ITaskGraphWalker* pWalker)
 {
 	m_bLock = true;
-	MTaskGraphWalker()(this);
+	(*pWalker)(this);
 	m_bLock = false;
+}
+
+std::vector<MTaskNode*> MTaskGraph::GetOrderedNodes()
+{
+	std::vector<MTaskNode*> vNodes(m_tTaskNode.size());
+	std::transform(m_tTaskNode.begin(), m_tTaskNode.end(), vNodes.begin(), [](auto node) {return node; });
+	std::sort(vNodes.begin(), vNodes.end(), [](MTaskNode* a, MTaskNode* b) {return a->m_nPriorityLevel > b->m_nPriorityLevel; });
+
+	return vNodes;
 }

@@ -22,8 +22,16 @@
     #define CASCADED_SHADOW_MAP_NUM 1
 #endif
 
+#ifndef VOXEL_GI_CLIP_MAP_NUM
+    #define VOXEL_GI_CLIP_MAP_NUM 1
+#endif
+
 #ifndef MESH_LOD_LEVEL_RANGE
     #define MESH_LOD_LEVEL_RANGE 1
+#endif
+
+#ifndef VOXEL_DIFFUSE_CONE_COUNT
+    #define VOXEL_DIFFUSE_CONE_COUNT 1
 #endif
 
 #ifndef NUM_PI
@@ -33,7 +41,7 @@
 
 #define NUM_BIAS (0.000001f)
 
-#if MTRANSPARENT_POLICY == 1 && MEN_TRANSPARENT == 1
+#if MTRANSPARENT_POLICY && MEN_TRANSPARENT
     #define MTRANSPARENT_DEPTH_PEELING
 #endif
 
@@ -74,22 +82,28 @@ struct SurfaceData
     float3 f3Albedo;
     float fRoughness;
     float fMetallic;
+    bool bReceiveShadow;
 };
 
 struct VoxelizerOutput
 {
-    uint nBaseColor_R;
-    uint nBaseColor_G;
-    uint nBaseColor_B;
-    uint nVoxelCount;
+    uint nBaseColor[4 * 6];
+    uint nVoxelCount[6];
 };
 
 
-struct VoxelMapSetting
+struct VoxelClipmap
 {
     float3 f3VoxelOrigin;       //voxel map origin position in world space.
-    float fResolution;          //voxel table resolution.
-    float fVoxelStep;           //how much width does a voxel.
+    float fVoxelSize;           //how much width does a voxel.
+};
+
+struct VoxelMapSetting
+{
+    VoxelClipmap vClipmap[VOXEL_GI_CLIP_MAP_NUM];
+    uint nResolution;           //voxel table resolution. default 64
+    uint nViewportSize;         //voxelizer viewport size.
+    uint nClipmapIdx;           //update clipmap index current frame.
 };
 
 

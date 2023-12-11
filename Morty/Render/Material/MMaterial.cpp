@@ -32,7 +32,12 @@ std::vector<std::shared_ptr<MShaderTextureParam>>& MMaterial::GetTextureParams()
 	return m_pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]->m_vTextures;
 }
 
-void MMaterial::SetTexture(const MString& strName, std::shared_ptr<MResource> pResource)
+std::shared_ptr<MShaderPropertyBlock> MMaterial::GetMaterialPropertyBlock() const
+{
+	return m_pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL];
+}
+
+void MMaterial::SetTexture(const MStringId& strName, std::shared_ptr<MResource> pResource)
 {
 	for (size_t i = 0; i < GetMaterialPropertyBlock()->m_vTextures.size(); ++i)
 	{
@@ -57,7 +62,7 @@ void MMaterial::SetTexture(const MString& strName, std::shared_ptr<MResource> pR
 	} 
 }
 
-std::shared_ptr<MShaderConstantParam> MMaterial::FindShaderParam(const MString& strName)
+std::shared_ptr<MShaderConstantParam> MMaterial::FindShaderParam(const MStringId& strName)
 {
 	for (const std::shared_ptr<MShaderConstantParam>& pParam : GetMaterialPropertyBlock()->m_vParams)
 	{
@@ -68,7 +73,7 @@ std::shared_ptr<MShaderConstantParam> MMaterial::FindShaderParam(const MString& 
 	return nullptr;
 }
 
-std::shared_ptr<MShaderSampleParam> MMaterial::FindSample(const MString& strName)
+std::shared_ptr<MShaderSampleParam> MMaterial::FindSample(const MStringId& strName)
 {
 	for (const std::shared_ptr<MShaderSampleParam>& pParam : GetMaterialPropertyBlock()->m_vSamples)
 	{
@@ -79,7 +84,7 @@ std::shared_ptr<MShaderSampleParam> MMaterial::FindSample(const MString& strName
 	return nullptr;
 }
 
-std::shared_ptr<MShaderTextureParam> MMaterial::FindTexture(const MString& strName)
+std::shared_ptr<MShaderTextureParam> MMaterial::FindTexture(const MStringId& strName)
 {
 	for (const std::shared_ptr<MShaderTextureParam>& pParam : GetMaterialPropertyBlock()->m_vTextures)
 	{
@@ -104,23 +109,6 @@ void MMaterial::SetMaterialType(const MEMaterialType& eType)
 		return;
 
 	m_eMaterialType = eType;
-
-	switch (m_eMaterialType)
-	{
-	case MEMaterialType::EDepthPeel:
-	{
-		auto shaderMacro = GetShaderMacro();
-		shaderMacro.SetInnerMacro("MEN_TRANSPARENT", "1");
-		SetShaderMacro(shaderMacro);
-		break;
-	}
-
-	default:
-		auto shaderMacro = GetShaderMacro();
-		shaderMacro.SetInnerMacro("MEN_TRANSPARENT", "0");
-		SetShaderMacro(shaderMacro);
-		break;
-	}
 }
 
 bool MMaterial::LoadShader(std::shared_ptr<MResource> pResource)
@@ -142,6 +130,11 @@ bool MMaterial::LoadShader(const MString& strResource)
 void MMaterial::SetShaderMacro(const MShaderMacro& macro)
 {
 	m_pShaderProgram->SetShaderMacro(macro);
+}
+
+void MMaterial::SetShadingRate(const Vector2i n2ShadingRate)
+{
+	m_n2ShadingRate = n2ShadingRate;
 }
 
 void MMaterial::OnCreated()
@@ -169,12 +162,12 @@ const char* MMaterial::GetDebugName() const
 {
 	return GetResourcePath().c_str();
 }
+std::shared_ptr<MShaderPropertyBlock> MMaterial::CreateFramePropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram)
+{
+	return pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_FRAME]->Clone();
+}
+std::shared_ptr<MShaderPropertyBlock> MMaterial::CreateMeshPropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram)
+{
+	return pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MESH]->Clone();
+}
 #endif
-
-const MString MaterialKey::Albedo = "u_mat_texAlbedo";
-const MString MaterialKey::Normal = "u_texNormal";
-const MString MaterialKey::Metallic = "u_mat_texMetallic";
-const MString MaterialKey::Roughness = "u_mat_texRoughness";
-const MString MaterialKey::AmbientOcc = "u_mat_texAmbientOcc";
-const MString MaterialKey::Height = "u_mat_texHeight";
-const MString MaterialKey::Emission = "u_mat_texEmission";

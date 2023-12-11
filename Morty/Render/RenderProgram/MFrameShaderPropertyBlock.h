@@ -16,7 +16,38 @@
 #include "RenderWork/MRenderWork.h"
 #include <memory>
 
-class MEngine;
+
+class MORTY_API MFramePropertyDecorator : public IShaderPropertyUpdateDecorator
+{
+public:
+	void BindMaterial(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock) override;
+	void Update(const MRenderInfo& info) override;
+
+	std::shared_ptr<MShaderConstantParam> m_pFrameParam = nullptr;
+};
+
+class MORTY_API MLightPropertyDecorator : public IShaderPropertyUpdateDecorator
+{
+public:
+	void BindMaterial(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock) override;
+	void Update(const MRenderInfo& info) override;
+
+	std::shared_ptr<MShaderConstantParam> m_pLightParam = nullptr;
+	std::shared_ptr<MShaderTextureParam> m_pDiffuseMapTextureParam = nullptr;
+	std::shared_ptr<MShaderTextureParam> m_pSpecularMapTextureParam = nullptr;
+};
+
+class MORTY_API MAnimationPropertyDecorator : public IShaderPropertyUpdateDecorator
+{
+public:
+	void BindMaterial(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock) override;
+	void Update(const MRenderInfo& info) override;
+
+	std::shared_ptr<MShaderStorageParam> m_pAnimationBonesParam = nullptr;
+	std::shared_ptr<MShaderStorageParam> m_pAnimationOffsetParam = nullptr;
+
+};
+
 class MORTY_API MFrameShaderPropertyBlock : public IPropertyBlockAdapter
 {
 public:
@@ -39,48 +70,18 @@ public:
 
 	void UpdateShaderSharedParams(MRenderInfo& info);
 
-	void SetShadowMapTexture(std::shared_ptr<MTexture> pTexture);
+	void RegisterPropertyDecorator(const std::shared_ptr<IShaderPropertyUpdateDecorator>& pDecorator);
+
 	void SetBrdfMapTexture(std::shared_ptr<MTexture> pTexture);
 
 public:
-	/*cbSceneMatrix*/
-	std::shared_ptr<MShaderConstantParam> m_pWorldMatrixParam = nullptr;
-	/*cbSceneInformation*/
-	std::shared_ptr<MShaderConstantParam> m_pWorldInfoParam = nullptr;
-	/*cbLightInformation*/
-	std::shared_ptr<MShaderConstantParam> m_pLightInfoParam = nullptr;
-	/*cbShadowInformation*/
-	std::shared_ptr<MShaderConstantParam> m_pShadowInfoParam = nullptr;
 
-	/*u_texShadowMap*/
-	std::shared_ptr<MShaderTextureParam> m_pShadowTextureParam = nullptr;
-	/*u_texIrradianceMap*/
-	std::shared_ptr<MShaderTextureParam> m_pDiffuseMapTextureParam = nullptr;
-	/*u_texPrefilterMap*/
-	std::shared_ptr<MShaderTextureParam> m_pSpecularMapTextureParam = nullptr;
 	/*u_texBrdfLUT*/
 	std::shared_ptr<MShaderTextureParam> m_pBrdfMapTextureParam = nullptr;
-
-	/*u_vBonesMatrix*/
-	std::shared_ptr<MShaderStorageParam> m_pAnimationBonesParam = nullptr;
-	/*u_vBonesOffset*/
-	std::shared_ptr<MShaderStorageParam> m_pAnimationOffsetParam = nullptr;
-
-	std::shared_ptr<MShaderStorageParam> m_pRWVoxelTableParam = nullptr;
-	std::shared_ptr<MShaderConstantParam> m_pVoxelMapSetting = nullptr;
 
 protected:
 	std::shared_ptr<MMaterial> m_pMaterial = nullptr;
 	std::shared_ptr<MShaderPropertyBlock> m_pShaderPropertyBlock = nullptr;
-};
 
-
-class MORTY_API MForwardRenderTransparentShaderPropertyBlock : public MFrameShaderPropertyBlock
-{
-public:
-
-	void BindMaterial(const std::shared_ptr<MMaterial>& pMaterial) override;
-
-	std::shared_ptr<MShaderTextureParam> m_pTransparentFrontTextureParam = nullptr;
-	std::shared_ptr<MShaderTextureParam> m_pTransparentBackTextureParam = nullptr;
+	std::vector<std::shared_ptr<IShaderPropertyUpdateDecorator>> m_vPropertyUpdateDecorator;
 };

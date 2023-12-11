@@ -24,17 +24,16 @@ public:
     void Initialize(MEngine* pEngine) override;
 	void Release(MEngine* pEngine) override;
 
-	void Resize(Vector2 size) override;
+	void Resize(Vector2i size) override;
 
 	MEngine* GetEngine() const { return m_pEngine; }
 
-	void SetRenderTarget(const std::vector<MRenderTarget>& vBackTexture);
-	void SetRenderTarget(const std::vector<MRenderTarget>& vBackTexture, const MRenderTarget& depthTexture);
+	void SetRenderTarget(const MRenderTargetGroup& renderTarget);
 
 	std::vector<std::shared_ptr<MTexture>> GetBackTextures() const;
 	std::shared_ptr<MTexture> GetDepthTexture() const;
 
-	std::shared_ptr<ITextureInputAdapter> CreateOutput() const;
+	std::shared_ptr<IGetTextureAdapter> CreateOutput() const;
 
 protected:
 

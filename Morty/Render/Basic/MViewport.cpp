@@ -35,10 +35,10 @@ MViewport::MViewport()
 	: MObject()
 	, m_pScene(nullptr)
 	, m_pUserCamera(nullptr)
-	, m_v2LeftTop(0,0)
-	, m_v2Size(0, 0)
-	, m_v2ScreenPosition(0, 0)
-	, m_v2ScreenScale(1, 1)
+	, m_n2LeftTop(0,0)
+	, m_n2Size(0, 0)
+	, m_n2ScreenPosition(0, 0)
+	, m_f2ScreenScale(1, 1)
 {
 
 }
@@ -180,10 +180,10 @@ bool MViewport::ConvertWorldPointToNormalizedDevice(const Vector3& v3Pos, Vector
 
 bool MViewport::ConvertScreenPointToViewport(const Vector2& v2Point, Vector2& v2Result)
 {
-	v2Result.x = (v2Point.x - m_v2ScreenPosition.x) * m_v2ScreenScale.x;
-	v2Result.y = m_v2Size.y - (v2Point.y - m_v2ScreenPosition.y)* m_v2ScreenScale.y;
+	v2Result.x = (v2Point.x - m_n2ScreenPosition.x) * m_f2ScreenScale.x;
+	v2Result.y = m_n2Size.y - (v2Point.y - m_n2ScreenPosition.y)* m_f2ScreenScale.y;
 
-	return v2Result.x >= 0.0f && v2Result.y >= 0.0f && v2Result.x <= m_v2Size.x && v2Result.y <= m_v2Size.y;
+	return v2Result.x >= 0.0f && v2Result.y >= 0.0f && v2Result.x <= m_n2Size.x && v2Result.y <= m_n2Size.y;
 }
 
 void MViewport::OnCreated()
@@ -201,9 +201,9 @@ void MViewport::OnDelete()
 	Super::OnDelete();
 }
 
-void MViewport::SetSize(const Vector2& v2Size)
+void MViewport::SetSize(const Vector2i& n2Size)
 {
-	m_v2Size = v2Size;
+	m_n2Size = n2Size;
 }
 
 void MViewport::Input(MInputEvent* pEvent)

@@ -61,13 +61,13 @@ void MRenderSystem::Release()
 	}
 }
 
-void MRenderSystem::ResizeFrameBuffer(MRenderPass& renderpass, const Vector2& v2Size)
+void MRenderSystem::ResizeFrameBuffer(MRenderPass& renderpass, const Vector2i& n2Size)
 {
-	for (MRenderTarget& tex : renderpass.m_vBackTextures)
+	for (MRenderTarget& tex : renderpass.m_renderTarget.backTargets)
 	{
-		if (tex.pTexture->GetSize() != v2Size)
+		if (tex.pTexture->GetSize2D() != n2Size)
 		{
-			tex.pTexture->SetSize(v2Size);
+			tex.pTexture->SetSize(n2Size);
 			tex.pTexture->DestroyBuffer(GetDevice());
 			tex.pTexture->GenerateBuffer(GetDevice());
 		}
@@ -75,15 +75,30 @@ void MRenderSystem::ResizeFrameBuffer(MRenderPass& renderpass, const Vector2& v2
 
 	if (std::shared_ptr<MTexture> pDepthTexture = renderpass.GetDepthTexture())
 	{
-		if (pDepthTexture->GetSize() != v2Size)
+		if (pDepthTexture->GetSize2D() != n2Size)
 		{
-			pDepthTexture->SetSize(v2Size);
+			pDepthTexture->SetSize(n2Size);
 			pDepthTexture->DestroyBuffer(GetDevice());
 			pDepthTexture->GenerateBuffer(GetDevice());
 		}
 	}
 
-	if (renderpass.GetFrameBufferSize() != v2Size)
+	if (auto pShadingRate = renderpass.GetShadingRateTexture())
+	{
+		Vector2i n2TexelSize = m_pDevice->GetShadingRateTextureTexelSize();
+		Vector2i n2ShadingRateSize = {};
+		n2ShadingRateSize.x = n2Size.x / n2TexelSize.x + ((n2Size.x % n2TexelSize.x) != 0);
+		n2ShadingRateSize.y = n2Size.y / n2TexelSize.y + ((n2Size.y % n2TexelSize.y) != 0);
+
+		if (pShadingRate->GetSize2D() != n2ShadingRateSize)
+		{
+			pShadingRate->SetSize(n2ShadingRateSize);
+			pShadingRate->DestroyBuffer(GetDevice());
+			pShadingRate->GenerateBuffer(GetDevice());
+		}
+	}
+
+	if (renderpass.GetFrameBufferSize() != n2Size)
 	{
 		renderpass.Resize(GetDevice());
 	}
@@ -93,7 +108,7 @@ void MRenderSystem::ReleaseRenderpass(MRenderPass& renderpass, bool bClearTextur
 {
 	if (bClearTexture)
 	{
-		for (MRenderTarget& tex : renderpass.m_vBackTextures)
+		for (MRenderTarget& tex : renderpass.m_renderTarget.backTargets)
 		{
 			tex.pTexture->DestroyBuffer(GetDevice());
 			tex.pTexture = nullptr;
@@ -106,7 +121,7 @@ void MRenderSystem::ReleaseRenderpass(MRenderPass& renderpass, bool bClearTextur
 		}
 	}
 	
-	renderpass.m_vBackTextures.clear();
+	renderpass.m_renderTarget.backTargets.clear();
 	renderpass.SetDepthTexture(nullptr, {});
 
 	renderpass.DestroyBuffer(GetDevice());
@@ -166,13 +181,13 @@ Matrix4 MRenderSystem::GetCameraInverseProjection(const MCameraComponent* pCamer
 
 }
 
-void MRenderSystem::GetCameraFrustumPoints(MEntity* pCamera, const Vector2& v2ViewportSize, const float& fZNear, const float& fZFar, std::vector<Vector3>& vPoints)
+void MRenderSystem::GetCameraFrustumPoints(MEntity* pCamera, const Vector2i& v2ViewportSize, const float& fZNear, const float& fZFar, std::vector<Vector3>& vPoints)
 {
 	GetCameraFrustumPoints(pCamera, v2ViewportSize, fZNear, fZFar, vPoints[0], vPoints[1], vPoints[2], vPoints[3], vPoints[4], vPoints[5], vPoints[6], vPoints[7]);
 }
 
 void MRenderSystem::GetCameraFrustumPoints(MEntity* pCamera
-	, const Vector2& v2ViewportSize
+	, const Vector2i& v2ViewportSize
 	, const float& fZNear, const float& fZFar
 	, Vector3& v3NearTopLeft, Vector3& v3NearTopRight
 	, Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft
@@ -190,9 +205,9 @@ void MRenderSystem::GetCameraFrustumPoints(MEntity* pCamera
 
 	if (MCameraComponent::MECameraType::EPerspective == pCameraComponent->GetCameraType())
 	{
-		float fAspect = v2ViewportSize.x / v2ViewportSize.y;
-		float fHalfHeightDivideZ = (pCameraComponent->GetFov() * 0.5f * M_PI / 180.0f);
-		float fHalfWidthDivideZ = fHalfHeightDivideZ * fAspect;
+		const float fAspect = float(v2ViewportSize.x) / float(v2ViewportSize.y);
+		const float fHalfHeightDivideZ = (pCameraComponent->GetFov() * 0.5f * M_PI / 180.0f);
+		const float fHalfWidthDivideZ = fHalfHeightDivideZ * fAspect;
 
 		Matrix4 localToWorld = pSceneComponent->GetWorldTransform();
 

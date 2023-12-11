@@ -6,7 +6,7 @@
 struct VS_OUT
 {    
     float4 pos : SV_POSITION;
-    float4 color : u32COLOR;
+    float3 normal : NORMAL;
     uint voxelIdx : VOXEL_IDX;
 };
 
@@ -21,17 +21,28 @@ PS_OUT PS_MAIN(VS_OUT input)
 
 	int voxelTableIdx = input.voxelIdx;
 
-    uint nVoxelColorNum = u_rwVoxelTable[voxelTableIdx].nVoxelCount; 
+    float3 f3Normal = input.normal;
+
+    uint nVoxelFaceIdx = GetVoxelSimilarFaceIndex(f3Normal);
 
     float4 f4VoxelColor = float4(
-        VoxelUintToFloat(u_rwVoxelTable[voxelTableIdx].nBaseColor_R),
-        VoxelUintToFloat(u_rwVoxelTable[voxelTableIdx].nBaseColor_G),
-        VoxelUintToFloat(u_rwVoxelTable[voxelTableIdx].nBaseColor_B),
-        1.0f);
+        VoxelUintToFloat(u_rwVoxelTable[voxelTableIdx].nBaseColor[nVoxelFaceIdx * 4 + 0]),
+        VoxelUintToFloat(u_rwVoxelTable[voxelTableIdx].nBaseColor[nVoxelFaceIdx * 4 + 1]),
+        VoxelUintToFloat(u_rwVoxelTable[voxelTableIdx].nBaseColor[nVoxelFaceIdx * 4 + 2]),
+        VoxelUintToFloat(u_rwVoxelTable[voxelTableIdx].nBaseColor[nVoxelFaceIdx * 4 + 3])
+    );
     
-    f4VoxelColor.rgb = f4VoxelColor.rgb / nVoxelColorNum;
+    uint nVoxelColorNum = u_rwVoxelTable[voxelTableIdx].nVoxelCount[nVoxelFaceIdx]; 
 
-    output.f4Color = f4VoxelColor;
+    if (nVoxelColorNum > 0)
+    {
+        output.f4Color = f4VoxelColor / nVoxelColorNum;
+        output.f4Color.a = 1.0f;
+    }
+    else
+    {
+        output.f4Color = float4(0.0f, 0.0f, 0.0f, 1.0f);
+    }
 
     return output;
 

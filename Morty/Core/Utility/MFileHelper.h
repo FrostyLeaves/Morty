@@ -18,16 +18,16 @@ class MORTY_API MMortyFileFormat
 public:
     struct MFormatBody
     {
-        char* pData;
-        uint32_t unSize;
-        bool bExternalMemory;
+        char* pData = nullptr;
+        size_t nSize = 0;
+        bool bExternalMemory = true;
     };
 public:
 
     MMortyFileFormat() {}
     ~MMortyFileFormat();
 
-    void PushBackBody(void* pData, const uint32_t& unSize, const bool& bExternalMemory = true);
+    void PushBackBody(void* pData, const size_t& unSize, const bool& bExternalMemory = true);
 
     MString m_strHead;
 	std::vector<MFormatBody> m_vBody;

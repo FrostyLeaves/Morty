@@ -12,10 +12,10 @@
 #include "Utility/MGlobal.h"
 
 
-void MNoneBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pMaterial)
+void MNoneBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram)
 {
 	m_pEngine = pEngine;
-	m_pMaterial = pMaterial;
+	m_pShaderProgram = pShaderProgram;
 
 	if (m_pShaderPropertyBlock)
 	{
@@ -25,16 +25,16 @@ void MNoneBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pM
 		m_pTransformParam = nullptr;
 	}
 
-	if (pMaterial)
+	if (pShaderProgram)
 	{
-		if (std::shared_ptr<MShaderPropertyBlock> pTemplatePropertyBlock = pMaterial->GetMeshPropertyBlock())
+		m_pShaderPropertyBlock = MMaterial::CreateMeshPropertyBlock(pShaderProgram);
+		if (m_pShaderPropertyBlock)
 		{
-			m_pShaderPropertyBlock = pTemplatePropertyBlock->Clone();
-			m_pTransformParam = m_pShaderPropertyBlock->FindConstantParam("u_meshMatrix");
+			m_pTransformParam = m_pShaderPropertyBlock->FindConstantParam(MShaderPropertyName::CBUFFER_MESH_MATRIX);
 			MVariantStruct& srt = m_pTransformParam->var.GetValue<MVariantStruct>();
-			m_worldMatrix = srt.FindVariant("u_matWorld");
-			m_normalMatrix = srt.FindVariant("u_matNormal");
-			m_instanceIdx = srt.FindVariant("u_meshIdx");
+			m_worldMatrix = srt.FindVariant(MShaderPropertyName::MESH_WORLD_MATRIX);
+			m_normalMatrix = srt.FindVariant(MShaderPropertyName::MESH_NORMAL_MATRIX);
+			m_instanceIdx = srt.FindVariant(MShaderPropertyName::MESH_INSTANCE_INDEX);
 		}
 	}
 }
@@ -45,7 +45,7 @@ void MNoneBatchGroup::Release(MEngine* pEngine)
 	m_pShaderPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
 	m_pShaderPropertyBlock = nullptr;
 	m_pTransformParam = nullptr;
-	m_pMaterial = nullptr;
+	m_pShaderProgram = nullptr;
 }
 
 bool MNoneBatchGroup::CanAddMeshInstance() const
@@ -56,7 +56,7 @@ bool MNoneBatchGroup::CanAddMeshInstance() const
 void MNoneBatchGroup::AddMeshInstance(const MMeshInstanceRenderProxy& proxy)
 {
 	auto key = proxy.nProxyId;
-	if(key == MGlobal::M_INVALID_INDEX)
+	if(key == MGlobal::M_INVALID_UINDEX)
 	{
 		MORTY_ASSERT(key);
 		return;

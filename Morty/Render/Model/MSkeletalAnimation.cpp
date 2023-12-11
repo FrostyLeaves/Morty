@@ -27,10 +27,10 @@ void MSkeletalAnimation::SamplePose(MSkeletonPose& outputPose, const float& fTim
 {
 	const std::vector<MBone>& bones = pSkeletonIns->GetAllBones();
 
-	const size_t nBonesSize = bones.size();
+	const uint32_t nBonesSize = static_cast<uint32_t>(bones.size());
 	outputPose.vBoneMatrix.resize(nBonesSize);
 
-	for (size_t i = 0; i < nBonesSize; ++i)
+	for (uint32_t i = 0; i < nBonesSize; ++i)
 	{
 		const MBone& bone = bones[i];
 
@@ -96,19 +96,19 @@ void MSkeletalAnimNode::Deserialize(const void* pBufferPointer)
 	m_vPositionTrack.resize(fbData->position_track()->size());
 	for (size_t nIdx = 0; nIdx < fbData->position_track()->size(); ++nIdx)
 	{
-		m_vPositionTrack[nIdx] = *fbData->position_track()->Get(nIdx);
+		m_vPositionTrack[nIdx] = *fbData->position_track()->Get(static_cast<uint32_t>(nIdx));
 	}
 
 	m_vRotationTrack.resize(fbData->rotation_track()->size());
 	for (size_t nIdx = 0; nIdx < fbData->rotation_track()->size(); ++nIdx)
 	{
-		m_vRotationTrack[nIdx] = *fbData->rotation_track()->Get(nIdx);
+		m_vRotationTrack[nIdx] = *fbData->rotation_track()->Get(static_cast<uint32_t>(nIdx));
 	}
 
 	m_vScaleTrack.resize(fbData->scale_track()->size());
 	for (size_t nIdx = 0; nIdx < fbData->scale_track()->size(); ++nIdx)
 	{
-		m_vScaleTrack[nIdx] = *fbData->scale_track()->Get(nIdx);
+		m_vScaleTrack[nIdx] = *fbData->scale_track()->Get(static_cast<uint32_t>(nIdx));
 	}
 }
 
@@ -147,7 +147,7 @@ void MSkeletalAnimation::Deserialize(const void* pBufferPointer)
 		m_vSkeletalAnimNodes.resize(fbData->animation_node()->size());
 		for (size_t nIdx = 0; nIdx < fbData->animation_node()->size(); ++nIdx)
 		{
-			m_vSkeletalAnimNodes[nIdx].Deserialize(fbData->animation_node()->Get(nIdx));
+			m_vSkeletalAnimNodes[nIdx].Deserialize(fbData->animation_node()->Get(static_cast<uint32_t>(nIdx)));
 		}
 	}
 	else

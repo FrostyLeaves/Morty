@@ -1,0 +1,49 @@
+#ifndef MORTY_SHADING_RATE_TEXEL_SIZE
+#define MORTY_SHADING_RATE_TEXEL_SIZE 16
+#endif
+
+[[vk::binding(0, 0)]] Texture2D<float4> u_texEdgeDetection;
+
+[[vk::binding(1, 0)]] RWTexture2D<uint> u_texVRSImage;
+
+[[vk::binding(2, 0)]] cbuffer cbVRSSetting
+{
+    float2 u_n2TextureSize;
+    float2 u_n2TexelSize;
+    float2 u_f2EdgeThreshold;
+}
+
+[numthreads(1, 1, 1)]
+void CS_MAIN(uint3 GlobalInvocationID : SV_DispatchThreadID/* , uint3 GroupID : SV_GroupID*/)
+{
+    uint2 n2OutputUV = GlobalInvocationID.xy;
+    uint2 n2EdgeUV = GlobalInvocationID.xy * u_n2TexelSize;
+
+    float fEdgeValue = 0.0f;
+
+    for (uint u = n2EdgeUV.x; u < min(u_n2TextureSize.x, n2EdgeUV.x + u_n2TexelSize.x); ++u)
+    {
+        for (uint v = n2EdgeUV.y; v < min(u_n2TextureSize.y, n2EdgeUV.y + u_n2TexelSize.y); ++v)
+        {
+            float4 pixel = u_texEdgeDetection[uint2(u, v)];
+
+            fEdgeValue += (pixel.r + pixel.g + pixel.b);
+        }
+    }
+
+    fEdgeValue = fEdgeValue / 3;
+    
+    if (fEdgeValue > u_f2EdgeThreshold.y)
+    {
+        u_texVRSImage[n2OutputUV] = 0;
+    }
+    else if (fEdgeValue > u_f2EdgeThreshold.x)
+    {
+        u_texVRSImage[n2OutputUV] = 5;
+    }
+    else
+    {
+        u_texVRSImage[n2OutputUV] = 10;
+    }
+    
+}

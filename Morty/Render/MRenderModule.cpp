@@ -121,7 +121,7 @@ bool MRenderModule::Register(MEngine* pEngine)
 		pObjectSystem->RegisterPostCreateObject(MRenderModule::OnObjectPostCreate);
 	}
 
-	MTaskNode* pRenderUpdateTask = pTaskGraph->AddNode<MTaskNode>("Render_Update");
+	MTaskNode* pRenderUpdateTask = pTaskGraph->AddNode<MTaskNode>(MRenderGlobal::TASK_RENDER_MODULE_UPDATE);
 	pRenderUpdateTask->SetThreadType(METhreadType::ERenderThread);
 	pRenderUpdateTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MRenderSystem::Update, pRenderSystem));
 

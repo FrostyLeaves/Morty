@@ -96,9 +96,11 @@ float3 BRDF(float3 f3LightColor, float3 f3CameraDir, float3 _f3LightDir, float3 
 
     float3 f3HalfDir = normalize(f3CameraDir + f3LightInverseDir);
 
+    float3 F0 = lerp(f3BaseColor, f3Albedo, fMetallic);
+
     float NDF = DistributionGGX(f3Normal, f3HalfDir, fRoughness);
     float G   = GeometrySmith(f3Normal, f3CameraDir, f3LightInverseDir, fRoughness);
-    float3 F  = FresnelSchlick(max(dot(f3HalfDir, f3CameraDir), 0.0), f3BaseColor);
+    float3 F  = FresnelSchlick(max(dot(f3HalfDir, f3CameraDir), 0.0), F0);
         
     float3 nominator    = NDF * G * F; 
     float denominator = 4 * max(dot(f3Normal, f3CameraDir), 0.0) * max(dot(f3Normal, f3LightInverseDir), 0.0); // 0.001 to prevent divide by zero.

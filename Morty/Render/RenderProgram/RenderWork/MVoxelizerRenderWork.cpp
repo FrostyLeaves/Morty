@@ -25,9 +25,64 @@
 
 #include "Utility/MBounds.h"
 #include "Mesh/MMeshManager.h"
+#include "RenderProgram/MFrameShaderPropertyBlock.h"
 #include "Variant/MVariant.h"
+#include "VXGI/MVoxelMapUtil.h"
 
 MORTY_CLASS_IMPLEMENT(MVoxelizerRenderWork, ISinglePassRenderWork)
+
+
+class MVoxelMapPropertyDecorator : public IShaderPropertyUpdateDecorator
+{
+public:
+	explicit MVoxelMapPropertyDecorator(MVoxelizerRenderWork* pOwner):m_pOwner(pOwner){}
+
+	void BindMaterial(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock) override
+	{
+		MORTY_ASSERT(m_pVoxelParam = pShaderPropertyBlock->FindConstantParam(MShaderPropertyName::CBUFFER_VOXEL_MAP_DATA));
+		MORTY_ASSERT(m_pRWVoxelTableParam = pShaderPropertyBlock->FindStorageParam(MShaderPropertyName::STORAGE_VOXEL_TABLE));
+		MORTY_ASSERT(m_pVoxelGITextureParam = pShaderPropertyBlock->FindTextureParam(MShaderPropertyName::VOXELIZER_VOXEL_TEXTURE_NAME));
+	}
+	void Update(const MRenderInfo& info) override
+	{
+		MORTY_UNUSED(info);
+
+		if (m_pVoxelParam)
+		{
+			auto& voxelMapInformation = m_pVoxelParam->var.GetValue<MVariantStruct>();
+
+			MVoxelMapSetting setting = m_pOwner->GetVoxelSetting();
+			auto& settingStruct = voxelMapInformation.GetVariant<MVariantStruct>(MShaderPropertyName::VOXEL_MAP_SETTING);
+			MRenderInfo::FillVoxelMapSetting(setting, settingStruct);
+
+			const MVoxelClipmap& clipmap = setting.vClipmap[setting.nClipmapIdx];
+
+			const float fVoxelTableSize = static_cast<float>(setting.nResolution) * clipmap.fVoxelSize;
+			const auto m4CameraProj = MRenderSystem::MatrixOrthoOffCenterLH(
+				clipmap.f3VoxelOrigin.x,
+				clipmap.f3VoxelOrigin.x + fVoxelTableSize,
+				clipmap.f3VoxelOrigin.y + fVoxelTableSize,
+				clipmap.f3VoxelOrigin.y,
+				clipmap.f3VoxelOrigin.z,
+				clipmap.f3VoxelOrigin.z + fVoxelTableSize
+			);
+
+			voxelMapInformation.SetVariant<Matrix4>(MShaderPropertyName::VOXELIZER_CAMERA_PROJ_MATRIX, m4CameraProj);
+
+			m_pVoxelParam->SetDirty();
+
+		}
+
+		m_pRWVoxelTableParam->SetBuffer(m_pOwner->GetVoxelTableBuffer());
+		m_pVoxelGITextureParam->SetTexture(m_pOwner->GetVoxelGITexture());
+	}
+
+	std::shared_ptr<MShaderConstantParam> m_pVoxelParam = nullptr;
+	std::shared_ptr<MShaderStorageParam> m_pRWVoxelTableParam = nullptr;
+	std::shared_ptr<MShaderTextureParam> m_pVoxelGITextureParam = nullptr;
+
+	MVoxelizerRenderWork* m_pOwner = nullptr;
+};
 
 
 void MVoxelizerRenderWork::Initialize(MEngine* pEngine)
@@ -37,6 +92,11 @@ void MVoxelizerRenderWork::Initialize(MEngine* pEngine)
 	InitializeBuffer();
 	InitializeRenderPass();
 	InitializeDispatcher();
+	InitializeVoxelTextureDispatcher();
+
+#if MORTY_VXGI_ENABLE
+	m_pFramePropertyUpdateDecorator = std::make_shared<MVoxelMapPropertyDecorator>(this);
+#endif
 }
 
 void MVoxelizerRenderWork::Release(MEngine* pEngine)
@@ -44,8 +104,14 @@ void MVoxelizerRenderWork::Release(MEngine* pEngine)
 	ReleaseDispatcher();
 	ReleaseRenderPass();
 	ReleaseBuffer();
+	ReleaseVoxelTextureDispatcher();
 
 	Super::Release(pEngine);
+}
+
+std::shared_ptr<IShaderPropertyUpdateDecorator> MVoxelizerRenderWork::GetFramePropertyDecorator()
+{
+	return m_pFramePropertyUpdateDecorator;
 }
 
 const MBuffer* MVoxelizerRenderWork::GetVoxelTableBuffer() const
@@ -56,6 +122,28 @@ const MBuffer* MVoxelizerRenderWork::GetVoxelTableBuffer() const
 const MBuffer* MVoxelizerRenderWork::GetVoxelDebugBuffer() const
 {
 	return &m_drawIndirectBuffer;
+}
+
+std::shared_ptr<MTexture> MVoxelizerRenderWork::GetVoxelGITexture() const
+{
+	return m_voxelGITexture;
+}
+
+MBoundsAABB MVoxelizerRenderWork::GetVoxelizerBoundsAABB(uint32_t nClipmapIdx) const
+{
+	return MVoxelMapUtil::GetClipMapBounding(m_voxelSetting.vClipmap[nClipmapIdx]);
+}
+
+void MVoxelizerRenderWork::SetupVoxelSetting(const Vector3& f3CameraPosition, const uint32_t nClipmapIdx)
+{
+	const uint32_t nVoxelTableSize = MRenderGlobal::VOXEL_TABLE_SIZE;
+
+	MVoxelMapSetting& voxelSetting = m_voxelSetting;
+	voxelSetting.nResolution = nVoxelTableSize;
+	voxelSetting.nClipmapIdx = nClipmapIdx;
+	voxelSetting.nViewportSize = MRenderGlobal::VOXEL_VIEWPORT_SIZE;
+
+	voxelSetting.vClipmap[nClipmapIdx] = MVoxelMapUtil::GetClipMap(f3CameraPosition, nClipmapIdx);
 }
 
 void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
@@ -70,9 +158,11 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 		MEBufferBarrierStage::EPixelShaderWrite
 	);
 
+	constexpr uint32_t fViewportSize = MRenderGlobal::VOXEL_VIEWPORT_SIZE;
+
 	pCommand->BeginRenderPass(&m_voxelizerRenderPass);
-	pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, MRenderGlobal::VOXEL_TABLE_SIZE, MRenderGlobal::VOXEL_TABLE_SIZE));
-	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, MRenderGlobal::VOXEL_TABLE_SIZE, MRenderGlobal::VOXEL_TABLE_SIZE));
+	pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, fViewportSize, fViewportSize));
+	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, fViewportSize, fViewportSize));
 
 	for (IRenderable* pRenderable : vRenderable)
 	{
@@ -81,14 +171,20 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 
 	pCommand->EndRenderPass();
 
-	if (m_pVoxelMapSetting)
+	if (m_pDebugVoxelMapSetting)
 	{
-		auto& settingStruct = m_pVoxelMapSetting->var.GetValue<MVariantStruct>().GetVariant<MVariantStruct>("voxelMapSetting");
-		settingStruct.SetVariant("f3VoxelOrigin", info.voxelSetting.f3VoxelOrigin);
-		settingStruct.SetVariant("fResolution", info.voxelSetting.fResolution);
-		settingStruct.SetVariant("fVoxelStep", info.voxelSetting.fVoxelStep);
+		auto& settingStruct = m_pDebugVoxelMapSetting->var.GetValue<MVariantStruct>().GetVariant<MVariantStruct>(MShaderPropertyName::VOXEL_MAP_SETTING);
+		MRenderInfo::FillVoxelMapSetting(m_voxelSetting, settingStruct);
 
-		m_pVoxelMapSetting->SetDirty();
+		m_pDebugVoxelMapSetting->SetDirty();
+	}
+
+	if (m_pVoxelizerVoxelMapSetting)
+	{
+		auto& settingStruct = m_pVoxelizerVoxelMapSetting->var.GetValue<MVariantStruct>().GetVariant<MVariantStruct>(MShaderPropertyName::VOXEL_MAP_SETTING);
+		MRenderInfo::FillVoxelMapSetting(m_voxelSetting, settingStruct);
+
+		m_pVoxelizerVoxelMapSetting->SetDirty();
 	}
 
 	pCommand->AddBufferMemoryBarrier(
@@ -103,11 +199,18 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 		MEBufferBarrierStage::EComputeShaderWrite
 	);
 
-	pCommand->DispatchComputeJob(m_pVoxelMapGenerator
+	//
+	pCommand->DispatchComputeJob(m_pVoxelDebugIndirectGenerator
 		, MRenderGlobal::VOXEL_TABLE_SIZE / 8
 		, MRenderGlobal::VOXEL_TABLE_SIZE / 8
 		, MRenderGlobal::VOXEL_TABLE_SIZE / 8);
 
+	{
+		pCommand->DispatchComputeJob(m_pVoxelTextureGenerator
+			, MRenderGlobal::VOXEL_TABLE_SIZE / 8
+			, MRenderGlobal::VOXEL_TABLE_SIZE / 8
+			, MRenderGlobal::VOXEL_TABLE_SIZE / 8);
+	}
 
 	pCommand->AddBufferMemoryBarrier(
 		{ &m_drawIndirectBuffer },
@@ -120,15 +223,17 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 		MEBufferBarrierStage::EComputeShaderRead,
 		MEBufferBarrierStage::EPixelShaderRead
 	);
+
+
+	// pCommand->AddRenderToTextureBarrier({m_voxelGITexture.get()}, METextureBarrierStage::EPixelShaderSample);
 }
 
 void MVoxelizerRenderWork::RenderDebugVoxel(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
 
-	MViewport* pViewport = info.pViewport;
-	Vector2 v2LeftTop = pViewport->GetLeftTop();
-	Vector2 v2Size = pViewport->GetSize();
+	const Vector2i v2LeftTop = info.f2ViewportLeftTop;
+	const Vector2i v2Size = info.f2ViewportSize;
 
 	pCommand->BeginRenderPass(&m_renderPass);
 	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
@@ -177,37 +282,57 @@ void MVoxelizerRenderWork::InitializeDispatcher()
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
 
-	m_pVoxelMapGenerator = pObjectSystem->CreateObject<MComputeDispatcher>();
-	m_pVoxelMapGenerator->LoadComputeShader("Shader/Voxel/voxel_build_map.mcs");
+	m_pVoxelDebugIndirectGenerator = pObjectSystem->CreateObject<MComputeDispatcher>();
+	m_pVoxelDebugIndirectGenerator->LoadComputeShader("Shader/Voxel/voxel_debug_view.mcs");
 
-	const std::shared_ptr<MShaderPropertyBlock>& params = m_pVoxelMapGenerator->GetShaderPropertyBlock(0);
-	MORTY_ASSERT(m_pVoxelMapSetting = params->FindConstantParam("cbVoxelMap"));
+	const std::shared_ptr<MShaderPropertyBlock>& params = m_pVoxelDebugIndirectGenerator->GetShaderPropertyBlock(0);
+	MORTY_ASSERT(m_pDebugVoxelMapSetting = params->FindConstantParam(MShaderPropertyName::VOXELIZER_CBUFFER_VOXEL_MAP_NAME));
 
 	auto pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
 	auto cubeMesh = pMeshManager->GetCubeMesh();
-	params->SetValue("cubeMeshIndex", static_cast<uint32_t>(cubeMesh.indexMemoryInfo.begin / sizeof(uint32_t)));
-	params->SetValue("cubeMeshCount", static_cast<uint32_t>(cubeMesh.indexMemoryInfo.size / sizeof(uint32_t)));
+	params->SetValue(MShaderPropertyName::VOXELIZER_CUBE_MESH_INDEX, static_cast<uint32_t>(cubeMesh.indexMemoryInfo.begin / sizeof(uint32_t)));
+	params->SetValue(MShaderPropertyName::VOXELIZER_CUBE_MESH_COUNT, static_cast<uint32_t>(cubeMesh.indexMemoryInfo.size / sizeof(uint32_t)));
 
-	if (auto pIndirectDraws = params->FindStorageParam("indirectDraws"))
+	if (auto pIndirectDraws = params->FindStorageParam(MShaderPropertyName::CULLING_OUTPUT_DRAW_DATA))
 	{
-		pIndirectDraws->pBuffer = &m_drawIndirectBuffer;
-		pIndirectDraws->SetDirty();
+		pIndirectDraws->SetBuffer(&m_drawIndirectBuffer);
 	}
 
-	if (auto pVoxelTable = params->FindStorageParam("rVoxelTable"))
+	if (auto pVoxelTable = params->FindStorageParam(MShaderPropertyName::VOXELIZER_VOXEL_TABLE_NAME))
 	{
-		pVoxelTable->pBuffer = &m_voxelizerBuffer;
-		pVoxelTable->SetDirty();
+		pVoxelTable->SetBuffer(&m_voxelizerBuffer);
 	}
 
 	std::shared_ptr<MResource> voxelizerVS = pResourceSystem->LoadResource("Shader/Voxel/voxelizer.mvs");
 	std::shared_ptr<MResource> voxelizerPS = pResourceSystem->LoadResource("Shader/Voxel/voxelizer.mps");
 	std::shared_ptr<MResource> voxelizerGS = pResourceSystem->LoadResource("Shader/Voxel/voxelizer.mgs");
-	m_pVoxelizerMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-	m_pVoxelizerMaterial->SetCullMode(MECullMode::ECullNone);
-	m_pVoxelizerMaterial->LoadShader(voxelizerVS);
-	m_pVoxelizerMaterial->LoadShader(voxelizerPS);
-	m_pVoxelizerMaterial->LoadShader(voxelizerGS);
+
+	const std::vector<MStringId> defines = {
+		MRenderGlobal::DRAW_MESH_INSTANCING_NONE,
+		MRenderGlobal::DRAW_MESH_INSTANCING_UNIFORM,
+		MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE,
+	};
+
+	for (const MStringId& key : defines)
+	{
+		auto pVoxelizerMaterial = pResourceSystem->CreateResource<MMaterialResource>();
+		pVoxelizerMaterial->SetCullMode(MECullMode::ECullNone);
+		pVoxelizerMaterial->GetShaderMacro().AddUnionMacro(key, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+		
+#ifdef MORTY_WIN
+		pVoxelizerMaterial->SetConservativeRasterizationEnable(true);
+		pVoxelizerMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::VOXELIZER_CONSERVATIVE_RASTERIZATION, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+		pVoxelizerMaterial->LoadShader(voxelizerGS);
+#endif
+
+		pVoxelizerMaterial->LoadShader(voxelizerVS);
+		pVoxelizerMaterial->LoadShader(voxelizerPS);   
+		
+		m_tVoxelizerMaterial[key] = pVoxelizerMaterial;
+	}
+
+	
+
 
 	std::shared_ptr<MResource> voxelDebugVS = pResourceSystem->LoadResource("Shader/Voxel/voxel_debug_view.mvs");
 	std::shared_ptr<MResource> voxelDebugPS = pResourceSystem->LoadResource("Shader/Voxel/voxel_debug_view.mps");
@@ -220,12 +345,53 @@ void MVoxelizerRenderWork::InitializeDispatcher()
 
 void MVoxelizerRenderWork::ReleaseDispatcher()
 {
-	m_pVoxelMapGenerator->DeleteLater();
-	m_pVoxelMapGenerator = nullptr;
+	m_pVoxelDebugIndirectGenerator->DeleteLater();
+	m_pVoxelDebugIndirectGenerator = nullptr;
 
-	m_pVoxelizerMaterial = nullptr;
+	m_tVoxelizerMaterial.clear();
 	m_pVoxelDebugMaterial = nullptr;
 }
+
+void MVoxelizerRenderWork::InitializeVoxelTextureDispatcher()
+{
+	const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+	MObjectSystem* pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
+
+	m_pVoxelTextureGenerator = pObjectSystem->CreateObject<MComputeDispatcher>();
+	m_pVoxelTextureGenerator->LoadComputeShader("Shader/Voxel/voxelizer.mcs");
+
+	const std::shared_ptr<MShaderPropertyBlock>& params = m_pVoxelTextureGenerator->GetShaderPropertyBlock(0);
+	MORTY_ASSERT(m_pVoxelizerVoxelMapSetting = params->FindConstantParam(MShaderPropertyName::VOXELIZER_CBUFFER_VOXEL_MAP_NAME));
+
+	m_voxelGITexture = MTexture::CreateVXGIMap();
+	m_voxelGITexture->SetSize(Vector3i(	  MRenderGlobal::VOXEL_TABLE_SIZE * MRenderGlobal::VOXEL_DIFFUSE_CONE_COUNT
+		                                , MRenderGlobal::VOXEL_TABLE_SIZE * MRenderGlobal::VOXEL_GI_CLIP_MAP_NUM
+		                                , MRenderGlobal::VOXEL_TABLE_SIZE));
+	m_voxelGITexture->GenerateBuffer(pRenderSystem->GetDevice());
+
+	if (auto pVoxelTexture = params->FindTextureParam(MShaderPropertyName::VOXELIZER_VOXEL_TEXTURE_NAME))
+	{
+		pVoxelTexture->SetTexture(m_voxelGITexture);
+	}
+
+	if (auto pVoxelTable = params->FindStorageParam(MShaderPropertyName::VOXELIZER_VOXEL_TABLE_NAME))
+	{
+		pVoxelTable->SetBuffer(&m_voxelizerBuffer);
+	}
+
+}
+
+void MVoxelizerRenderWork::ReleaseVoxelTextureDispatcher()
+{
+	const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+
+	m_pVoxelTextureGenerator->DeleteLater();
+	m_pVoxelTextureGenerator = nullptr;
+
+	m_voxelGITexture->DestroyBuffer(pRenderSystem->GetDevice());
+	m_voxelGITexture = nullptr;
+}
+
 
 void MVoxelizerRenderWork::InitializeRenderPass()
 {
@@ -235,21 +401,17 @@ void MVoxelizerRenderWork::InitializeRenderPass()
 
 	const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
-
 	m_pVoxelizerRenderTarget = MTexture::CreateRenderTarget(METextureLayout::ERGBA_UNORM_8);
 	m_pVoxelizerRenderTarget->SetName("Voxelizer Render Target");
-	m_pVoxelizerRenderTarget->SetSize({ float(MRenderGlobal::VOXEL_TABLE_SIZE), float(MRenderGlobal::VOXEL_TABLE_SIZE) });
-	//m_pVoxelizerRenderTarget->SetSize({ 512.0f, 512.0f });
+    int nRenderTargetSize = static_cast<int>(MRenderGlobal::VOXEL_VIEWPORT_SIZE);
+	m_pVoxelizerRenderTarget->SetSize({ nRenderTargetSize, nRenderTargetSize});
 	m_pVoxelizerRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
 
-	m_voxelizerRenderPass.AddBackTexture(m_pVoxelizerRenderTarget, { true, false, MColor::Black_T });
+	m_voxelizerRenderPass.AddBackTexture(m_pVoxelizerRenderTarget, { true, MColor::Black_T });
 	m_voxelizerRenderPass.SetDepthTestEnable(false);
 	m_voxelizerRenderPass.SetDepthWriteEnable(false);
 	m_voxelizerRenderPass.SetViewportNum(1);
 	m_voxelizerRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
-
-	//m_renderPass.SetDepthTestEnable(false);
-	//m_renderPass.SetDepthWriteEnable(false);
 
 }
 

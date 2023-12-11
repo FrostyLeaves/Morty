@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @File         MMesh
  * 
  * @Created      2019-08-06 17:29:47
@@ -25,8 +25,8 @@ struct MMeshDrawable
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	VkBuffer vertexBuffer = VK_NULL_HANDLE;
 #endif
-	size_t nBeginOffset = 0;
-	size_t nSize = 0;
+	uint32_t nBeginOffset = 0;
+	uint32_t nSize = 0;
 };
 
 class MORTY_API MIMesh
@@ -50,24 +50,24 @@ public:
 	virtual uint32_t* GetIndices() { return reinterpret_cast<uint32_t*>(m_vIndexData.data()); }
 
 	virtual uint32_t GetVertexStructSize() const = 0;
-	uint32_t GetIndexStructSize() const { return sizeof(uint32_t); }
+    uint32_t GetIndexStructSize() const { return sizeof(uint32_t); }
 
 	virtual uint32_t GetVerticesNum() const;
 	virtual uint32_t GetIndicesNum() const;
 
-	size_t GetVerticesSize() const { return m_vertexBuffer.GetSize(); }
-	size_t GetIndicesSize() const { return m_indexBuffer.GetSize(); }
+	uint32_t GetVerticesSize() const { return static_cast<uint32_t>(m_vertexBuffer.GetSize()); }
+	uint32_t GetIndicesSize() const { return static_cast<uint32_t>(m_indexBuffer.GetSize()); }
 
 	virtual MIMesh* Clone(const bool& bDynamic = false) const = 0;
 
 
 public:
 
-	virtual void CreateVertices(const uint32_t& unSize) = 0;
-	virtual void ResizeVertices(const uint32_t& unSize) = 0;
+	virtual void CreateVertices(const uint32_t& nSize) = 0;
+	virtual void ResizeVertices(const uint32_t& nSize) = 0;
 
-	virtual void CreateIndices(const uint32_t& unSize, const uint32_t& unIndexSize);
-	virtual void ResizeIndices(const uint32_t& unSize, const uint32_t& unIndexSize);
+	virtual void CreateIndices(const uint32_t& nSize, const uint32_t& nIndexSize);
+	virtual void ResizeIndices(const uint32_t& nSize, const uint32_t& nIndexSize);
 
 	virtual void Clean()
 	{
@@ -107,21 +107,21 @@ public:
 		return sizeof(VERTEX_TYPE);
 	}
 
-	virtual void CreateVertices(const uint32_t& unSize) override
+	virtual void CreateVertices(const uint32_t& nSize) override
 	{
-		if (m_vertexBuffer.GetSize() < unSize * sizeof(VERTEX_TYPE))
+		if (m_vertexBuffer.GetSize() < nSize * sizeof(VERTEX_TYPE))
 		{
-			m_vertexBuffer.ReallocMemory(unSize * sizeof(VERTEX_TYPE));
-			m_vVertexData.resize(unSize * sizeof(VERTEX_TYPE));
+			m_vertexBuffer.ReallocMemory(nSize * sizeof(VERTEX_TYPE));
+			m_vVertexData.resize(nSize * sizeof(VERTEX_TYPE));
 		}
 	}
 
-	virtual void ResizeVertices(const uint32_t& unSize) override
+	virtual void ResizeVertices(const uint32_t& nSize) override
 	{
-		if (m_vertexBuffer.GetSize() < unSize * sizeof(VERTEX_TYPE))
+		if (m_vertexBuffer.GetSize() < nSize * sizeof(VERTEX_TYPE))
 		{
-			m_vertexBuffer.ReallocMemory(unSize * sizeof(VERTEX_TYPE));
-			m_vVertexData.resize(unSize * sizeof(VERTEX_TYPE));
+			m_vertexBuffer.ReallocMemory(nSize * sizeof(VERTEX_TYPE));
+			m_vVertexData.resize(nSize * sizeof(VERTEX_TYPE));
 		}
 	}
 

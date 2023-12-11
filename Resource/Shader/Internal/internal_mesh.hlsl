@@ -10,7 +10,7 @@ struct VS_IN
     float3 bitangent : BITANGENT;
     float2 uv : TEXCOORDS;
     
-#if SKELETON_ENABLE == 1
+#if SKELETON_ENABLE
     int bonesID[MBONES_PER_VERTEX] : BONES_ID;
     float bonesWeight[MBONES_PER_VERTEX] : BONES_WEIGHT;
 #endif

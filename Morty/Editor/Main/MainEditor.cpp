@@ -39,6 +39,7 @@
 #include "Component/MRenderMeshComponent.h"
 
 #include "RenderProgram/MDeferredRenderProgram.h"
+#include "Utility/MTimer.h"
 #include "Widget/GuizmoWidget.h"
 #include "Widget/MainView.h"
 #include "Widget/TaskGraphView.h"
@@ -50,7 +51,7 @@ bool MainEditor::Initialize(MEngine* pEngine)
 	m_pEngine = pEngine;
 
 	MTaskGraph* pMainGraph = GetEngine()->GetMainGraph();
-	m_pRenderTask = pMainGraph->AddNode<MTaskNode>("Editor_Render");
+	m_pRenderTask = pMainGraph->AddNode<MTaskNode>(MStringId("Editor_Render"));
 	m_pRenderTask->SetThreadType(METhreadType::ERenderThread);
 
 	m_vChildView.push_back(new NodeTreeView());
@@ -156,7 +157,7 @@ void MainEditor::UpdateSceneViewer(MIRenderCommand* pRenderCommand)
 		}
 	}
 
-	pRenderCommand->AddRenderToTextureBarrier(vRenderTextures);
+	pRenderCommand->AddRenderToTextureBarrier(vRenderTextures, METextureBarrierStage::EPixelShaderSample);
 }
 
 void MainEditor::ShowMenu()
@@ -220,7 +221,7 @@ void MainEditor::ShowMenu()
 			{
 				auto t = std::time(nullptr);
 				tm outtm;
-				MORTY_ASSERT(0 == localtime_s(&outtm, &t));
+				MORTY_ASSERT(0 == MTimer::LocalTime(t, outtm));
 				std::ostringstream oss;
 				oss << std::put_time(&outtm, "%d-%m-%Y %H-%M-%S");
 			    auto str = oss.str();
@@ -264,12 +265,13 @@ void MainEditor::ShowShadowMapView()
 
 			Vector2 v2Size = Vector2((v4Rect.z) / nRowCount, (v4Rect.w) / nRowCount);
 
-			ImGui::Columns(nRowCount);
+			ImGui::Columns(static_cast<int>(nRowCount));
 			for (size_t nTexIdx = 0; nTexIdx < vTexture.size(); ++nTexIdx)
 			{
 				for (size_t nLayerIdx = 0; nLayerIdx < vTexture[nTexIdx]->GetImageLayerNum(); ++nLayerIdx)
 				{
 					ImGui::Image({ vTexture[nTexIdx], intptr_t(vTexture[nTexIdx].get()), nLayerIdx }, ImVec2(v2Size.x, v2Size.y));
+					ImGui::Text("%s (l:%lld)", vTexture[nTexIdx]->GetName().c_str(), nLayerIdx);
 
 					ImGui::NextColumn();
 				}

@@ -29,14 +29,22 @@ MEntitySystem::~MEntitySystem()
 
 void MEntitySystem::AddChild(MEntity* pParent, MEntity* pChild)
 {
+	MORTY_ASSERT(pParent && pChild);
+
 	if (!pParent || !pChild)
+	{
 		return;
+	}
 
 	MSceneComponent* pParentComp = pParent->GetComponent<MSceneComponent>();
 	MSceneComponent* pChildComp = pChild->GetComponent<MSceneComponent>();
 
+	MORTY_ASSERT(pParentComp && pChildComp);
+
 	if (!pChildComp || !pParentComp)
+	{
 		return;
+	}
 
 	pChildComp->SetParentComponent(pParentComp->GetComponentID());
 }
@@ -121,7 +129,7 @@ std::vector<MEntity*> MEntitySystem::LoadEntity(MScene* pScene, std::shared_ptr<
 	tRedirectGuid[MGuid::invalid] = MGuid::invalid;
 	for (size_t i = 0; i < vEntity.size(); ++i)
 	{
-		const mfbs::MEntity* fb_entity = vEntity.Get(i);
+		const mfbs::MEntity* fb_entity = vEntity.Get(static_cast<flatbuffers::uoffset_t>(i));
 		if (fb_entity->id())
 		{
 			MGuid fbGuid = MGuid(fb_entity->id()->data0(), fb_entity->id()->data1(), fb_entity->id()->data2(), fb_entity->id()->data3());
@@ -131,7 +139,7 @@ std::vector<MEntity*> MEntitySystem::LoadEntity(MScene* pScene, std::shared_ptr<
 
 	for (size_t i = 0; i < vEntity.size(); ++i)
 	{
-		const mfbs::MEntity* fb_entity = vEntity.Get(i);
+		const mfbs::MEntity* fb_entity = vEntity.Get(static_cast<flatbuffers::uoffset_t>(i));
 		if (!fb_entity->id())
 		{
 			MORTY_ASSERT(fb_entity->id());

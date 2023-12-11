@@ -1,5 +1,6 @@
 #include "Component/MSceneComponent.h"
 
+#include "MTransform_generated.h"
 #include "Math/MMath.h"
 #include "Scene/MScene.h"
 #include "Utility/MFunction.h"
@@ -315,16 +316,12 @@ void MSceneComponent::CallRecursivelyFunction(MEntity* pEntity, std::function<vo
 
 flatbuffers::Offset<void> MSceneComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	flatbuffers::Offset<void> fbsuper = Super::Serialize(fbb);
+	flatbuffers::Offset<mfbs::MComponent> fbsuper = Super::Serialize(fbb).o;
+	flatbuffers::Offset<mfbs::MTransform> fbTransform = m_transform.Serialize(fbb).o;
 
 	mfbs::MSceneComponentBuilder compBuilder(fbb);
 
-	Vector3 positon = GetPosition();
-	Vector3 scale = GetScale();
-	Quaternion rotation = GetRotation();
-	compBuilder.add_position(positon.Serialize(fbb));
-	compBuilder.add_scale(scale.Serialize(fbb));
-	compBuilder.add_rotation(rotation.Serialize(fbb));
+	compBuilder.add_transform(fbTransform);
 
 	if (MSceneComponent* pParent = GetParent())
 	{
@@ -336,7 +333,7 @@ flatbuffers::Offset<void> MSceneComponent::Serialize(flatbuffers::FlatBufferBuil
 		}
 	}
 
-	compBuilder.add_super(flatbuffers::Offset<mfbs::MComponent>(fbsuper.o));
+	compBuilder.add_super(fbsuper);
 
 	return compBuilder.Finish().Union();
 }
@@ -353,19 +350,11 @@ void MSceneComponent::Deserialize(const void* pBufferPointer)
 
 	Super::Deserialize(fbComponent->super());
 
-	Vector3 position;
-	position.Deserialize(fbComponent->position());
 
-	Vector3 scale;
-	scale.Deserialize(fbComponent->scale());
-
-	Quaternion rotation;
-	rotation.Deserialize(fbComponent->rotation());
-
-	SetPosition(position);
-	SetScale(scale);
-	SetRotation(rotation);
-
+	MTransform transform;
+	transform.Deserialize(fbComponent->transform());
+	SetTransform(transform);
+	
 	if (const mfbs::MGuid* fbguid = fbComponent->parent())
 	{
 		m_parentGuid = MGuid(fbguid->data0(), fbguid->data1(), fbguid->data2(), fbguid->data3());

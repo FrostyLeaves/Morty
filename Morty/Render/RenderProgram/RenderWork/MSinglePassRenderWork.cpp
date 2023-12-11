@@ -49,24 +49,14 @@ std::shared_ptr<MTexture> ISinglePassRenderWork::GetDepthTexture() const
 	return m_renderPass.GetDepthTexture();
 }
 
-class MSingleRenderWorkOutput : public ITextureInputAdapter
+std::shared_ptr<IGetTextureAdapter> ISinglePassRenderWork::CreateOutput() const
 {
-public:
-
-	virtual std::shared_ptr<MTexture> GetTexture() { return pTexture; }
-
-	std::shared_ptr<MTexture> pTexture = nullptr;
-};
-
-std::shared_ptr<ITextureInputAdapter> ISinglePassRenderWork::CreateOutput() const
-{
-	auto pOutput = std::make_shared<MSingleRenderWorkOutput>();
-	pOutput->pTexture = m_renderPass.m_vBackTextures[0].pTexture;
+	auto pOutput = std::make_shared<MGetTextureAdapter>(m_renderPass.GetBackTexture(0));
 
 	return pOutput;
 }
 
-void ISinglePassRenderWork::Resize(Vector2 size)
+void ISinglePassRenderWork::Resize(Vector2i size)
 {
 	if (m_renderPass.GetFrameBufferSize() != size)
 	{
@@ -75,19 +65,9 @@ void ISinglePassRenderWork::Resize(Vector2 size)
 	}
 }
 
-void ISinglePassRenderWork::SetRenderTarget(const std::vector<MRenderTarget>& vBackTexture)
+void ISinglePassRenderWork::SetRenderTarget(const MRenderTargetGroup& renderTarget)
 {
-	SetRenderTarget(vBackTexture, {});
-}
-
-void ISinglePassRenderWork::SetRenderTarget(const std::vector<MRenderTarget>& vBackTexture, const MRenderTarget& depthTexture)
-{
-	for (const auto& backTexture : vBackTexture)
-	{
-		m_renderPass.AddBackTexture(backTexture);
-	}
-
-	m_renderPass.SetDepthTexture(depthTexture);
+	m_renderPass.SetRenderTarget(renderTarget);
 
 	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
 	m_renderPass.DestroyBuffer(pRenderSystem->GetDevice());

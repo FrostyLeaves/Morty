@@ -6,9 +6,9 @@
 
 #include <float.h>
 
-#include "MBoundsAABB_generated.h"
-#include "MBoundsOBB_generated.h"
-#include "MBoundsSphere_generated.h"
+#include "Flatbuffer/MBoundsAABB_generated.h"
+#include "Flatbuffer/MBoundsOBB_generated.h"
+#include "Flatbuffer/MBoundsSphere_generated.h"
 
 MBoundsOBB::MBoundsOBB(const Vector3* vPoints, const uint32_t& unArrayLength)
 {
@@ -207,6 +207,15 @@ void MBoundsAABB::SetMinMax(const Vector3& v3Min, const Vector3& v3Max)
 	m_v3HalfLength = (m_v3MaxPoint - m_v3MinPoint) * 0.5f;
 }
 
+void MBoundsAABB::SethalfLength(const Vector3& f3HalfLength)
+{
+	m_v3HalfLength = f3HalfLength;
+
+	m_v3MinPoint = m_v3CenterPoint - m_v3HalfLength;
+	m_v3MaxPoint = m_v3CenterPoint + m_v3HalfLength;
+
+}
+
 void MBoundsAABB::SetPoints(const std::vector<Vector3>& vPoints)
 {
 	m_v3MaxPoint = Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
@@ -330,6 +339,11 @@ bool MBoundsAABB::IsIntersect(const MBoundsAABB& aabb) const
 	return bXIntersect && bYIntersect && bZIntersect;
 }
 
+MBoundsSphere MBoundsAABB::ToSphere() const
+{
+	return MBoundsSphere(m_v3CenterPoint, m_v3HalfLength.Length());
+}
+
 flatbuffers::Offset<void> MBoundsAABB::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
 	mfbs::MBoundsAABBBuilder builder(fbb);
@@ -390,7 +404,7 @@ void MBoundsSphere::SetPoints(const std::vector<Vector3>& vPoints)
 	SetPoints(vPoints.data(), vPoints.size(), 0, sizeof(Vector3));
 }
 
-void MBoundsSphere::SetPoints(const MByte* vPoints, const uint32_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize)
+void MBoundsSphere::SetPoints(const MByte* vPoints, const size_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize)
 {
 	
 	Vector3 v3Min(FLT_MAX, FLT_MAX, FLT_MAX);
@@ -452,6 +466,11 @@ bool MBoundsSphere::IsContain(const Vector3& pos)
 	return (pos - m_v3CenterPoint).Length() <= m_fRadius;
 }
 
+bool MBoundsSphere::IsIntersect(const MBoundsSphere& other) const
+{
+	return (m_v3CenterPoint - other.m_v3CenterPoint).Length() < (m_fRadius + other.m_fRadius);
+}
+
 flatbuffers::Offset<void> MBoundsSphere::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
 	mfbs::MBoundsSphereBuilder builder(fbb);
@@ -472,13 +491,13 @@ void MBoundsSphere::Deserialize(const void* pBufferPointer)
 
 void MPointsSphere::RandomSwap()
 {
-	uint32_t unSize = m_vPoints.size();
+	size_t nSize = m_vPoints.size();
 	
-	uint32_t unIndex = 0;
+	size_t unIndex = 0;
 	Vector3 v3Temp;
-	for (uint32_t i = 0; i < unSize; ++i)
+	for (size_t i = 0; i < nSize; ++i)
 	{
-		unIndex = MMath::RandInt(0, unSize - 1);
+		unIndex = MMath::RandInt(0, static_cast<int>(nSize) - 1);
 
 		v3Temp = m_vPoints[i];
 		m_vPoints[i] = m_vPoints[unIndex];

@@ -2,6 +2,7 @@
 #include "TaskGraph/MTaskGraph.h"
 #include "TaskGraph/MTaskNodeInput.h"
 #include "TaskGraph/MTaskNodeOutput.h"
+#include "Utility/MTimer.h"
 
 MORTY_CLASS_IMPLEMENT(MTaskNode, MTypeClass)
 
@@ -130,10 +131,18 @@ bool MTaskNode::IsFinalNode()
 
 void MTaskNode::Run()
 {
+#if MORTY_DEBUG
+	auto start = MTimer::GetCurTime();
+#endif
 	if (m_funcTaskFunction)
 	{
 		m_funcTaskFunction(this);
 	}
+
+#if MORTY_DEBUG
+	auto end = MTimer::GetCurTime();
+	m_nDebugTime = ((m_nDebugTime * 29) + (end - start)) / 30;
+#endif
 }
 
 void MTaskNode::OnCreated()

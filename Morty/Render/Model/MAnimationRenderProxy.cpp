@@ -40,7 +40,7 @@ void MAnimationRenderGroup::AddSkeletonRenderInstance(MSkeletonInstanceKey nProx
 		MORTY_ASSERT(m_bonesStorageMemoryPool.AllowMemory(nTransformBufferSize, memory));
 	}
 
-	const int32_t nMatrixOffset = memory.begin / sizeof(Matrix4);
+	const size_t nMatrixOffset = memory.begin / sizeof(Matrix4);
 	const size_t nOffsetBufferBegin = (nProxyId) * sizeof(int32_t);
 	const size_t nOffsetBufferSize = (nProxyId + 1) * sizeof(int32_t);
 	if (m_bonesOffsetBuffer.GetSize() < nOffsetBufferSize)
@@ -133,29 +133,29 @@ void MAnimationRenderGroup::Initialize(MEngine* pEngine)
 
 	auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
   
-	std::shared_ptr<MResource> pMeshVSResource = pResourceSystem->LoadResource("Shader/Deferred/deferred_gbuffer.mvs");
+	std::shared_ptr<MResource> pMeshVSResource = pResourceSystem->LoadResource("Shader/Model/universal_model.mvs");
 	std::shared_ptr<MResource> pMeshPSResource = pResourceSystem->LoadResource("Shader/Deferred/deferred_gbuffer.mps");
-	
-	std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-	pMaterial->GetShaderMacro().SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, "1");
-	pMaterial->LoadShader(pMeshVSResource);
-	pMaterial->LoadShader(pMeshPSResource);
 
-	if (std::shared_ptr<MShaderPropertyBlock> pTemplatePropertyBlock = pMaterial->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MESH])
+
+	auto pShaderProgram = MShaderProgram::MakeShared(GetEngine(), MShaderProgram::EUsage::EGraphics);
+	pShaderProgram->GetShaderMacro().SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+	pShaderProgram->LoadShader(pMeshVSResource);
+	pShaderProgram->LoadShader(pMeshPSResource);
+
+	m_pShaderPropertyBlock = MMaterial::CreateMeshPropertyBlock(pShaderProgram);
+	if (m_pShaderPropertyBlock)
 	{
-		m_pShaderPropertyBlock = pTemplatePropertyBlock->Clone();
-		if (auto pBoneProperty = m_pShaderPropertyBlock->FindStorageParam("u_vBonesMatrix"))
+		if (auto pBoneProperty = m_pShaderPropertyBlock->FindStorageParam(MShaderPropertyName::STORAGE_BONES_MATRIX))
 		{
 			pBoneProperty->pBuffer = &m_bonesStorageBuffer.buffer;
 		}
 
-		if (auto pBoneOffset = m_pShaderPropertyBlock->FindStorageParam("u_vBonesOffset"))
+		if (auto pBoneOffset = m_pShaderPropertyBlock->FindStorageParam(MShaderPropertyName::STORAGE_BONES_OFFSET))
 		{
 			pBoneOffset->pBuffer = &m_bonesOffsetBuffer.buffer;
 		}
 	}
 
-	pResourceSystem->UnloadResource(pMaterial);
 }
 
 void MAnimationRenderGroup::Release(MEngine* pEngine)
@@ -171,7 +171,7 @@ MPoseRenderProxy MAnimationRenderGroup::CreatePoseProxy(MSkeletonInstance* pSkel
 	MPoseRenderProxy resultPose;
 
 	const MSkeletonPose& pose = pSkeletonInstance->GetCurrentPose();
-	uint32_t size = pose.vBoneMatrix.size();
+	size_t size = pose.vBoneMatrix.size();
 	if (size > MRenderGlobal::BONES_MAX_NUMBER)
 	{
 		size = MRenderGlobal::BONES_MAX_NUMBER;

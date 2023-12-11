@@ -1,6 +1,6 @@
 ﻿#include "Resource/MResource.h"
 
-#include <MResourceRef_generated.h>
+#include <Flatbuffer/MResourceRef_generated.h>
 
 #include "Engine/MEngine.h"
 #include "System/MResourceSystem.h"

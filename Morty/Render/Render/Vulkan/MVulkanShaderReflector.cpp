@@ -34,6 +34,16 @@ enum class ShaderReflectorType
     U32,
 };
 
+bool CheckIgnoreVertexInput(const MString name)
+{
+	MORTY_UNUSED(name);
+    //if (name == "ViewIndex")
+    //{
+	//	return true;
+    //}
+
+	return false;
+}
 
 ShaderReflectorType GetReflectorTypeFromName(const std::string& name)
 {
@@ -130,9 +140,14 @@ void MVulkanShaderReflector::GetVertexInputState(const spirv_cross::Compiler& co
     
 	for (const spirv_cross::Resource& res : shaderResources.stage_inputs)
 	{
-		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
-		const std::string& name = compiler.get_name(res.id);
+		const MString& name = compiler.get_name(res.id);
 
+		if (CheckIgnoreVertexInput(name))
+		{
+			continue;
+		}
+
+		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
 		const auto [ format, nInputTypeSize] = GetVertexInputDescription(name, type);
 
 		const uint32_t unLocation = compiler.get_decoration(res.id, spv::Decoration::DecorationLocation);
@@ -173,7 +188,7 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
 		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
 
 		const std::string& uav_name = compiler.get_name(res.id);
-		pParam->strName = uav_name;
+		pParam->strName = MStringId(uav_name.c_str());
 
 		spirv_cross::Bitset buffer_flags = compiler.get_buffer_block_flags(res.id);
 		pParam->bWritable = !buffer_flags.get(spv::DecorationNonWritable);
@@ -198,7 +213,7 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
 			uav_name = res.name;
 		}
 
-		pParam->strName = uav_name;
+		pParam->strName = MStringId(uav_name.c_str());
 
 		pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 		
@@ -212,21 +227,73 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
 		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
 
 		std::shared_ptr<MShaderTextureParam> pParam = std::make_shared<MShaderTextureParam>();
-		pParam->unSet = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
-		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
-		pParam->strName = res.name;
+		uint32_t nSet = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
+		uint32_t nBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
 
-		if (type.image.dim == spv::Dim::DimCube)
+		pParam->unSet = nSet;
+		pParam->unBinding = nBinding;
+		pParam->strName = MStringId(res.name.c_str());
+
+		if (type.image.dim == spv::Dim::Dim3D)
+		{
+			pParam->eType = METextureType::ETexture3D;
+		}
+		else if (type.image.dim == spv::Dim::DimCube)
 		{
 			pParam->eType = METextureType::ETextureCube;
 		}
-
 		else if (type.image.arrayed)
 		{
 			pParam->eType = METextureType::ETexture2DArray;
 		}
+		else if (type.image.dim == spv::Dim2D)
+		{
+			pParam->eType = METextureType::ETexture2D;
+		}
+		else
+		{
+			MORTY_ASSERT(false);
+		}
 
 		pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+
+		pShaderBuffer->m_vShaderSets[pParam->unSet]->m_vTextures.push_back(pParam);
+	}
+
+	for (const spirv_cross::Resource& res : shaderResources.storage_images)
+	{
+		spirv_cross::SPIRType type = compiler.get_type(res.type_id);
+
+		std::shared_ptr<MShaderTextureParam> pParam = std::make_shared<MShaderTextureParam>();
+		uint32_t nSet = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
+		uint32_t nBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
+
+		pParam->unSet = nSet;
+		pParam->unBinding = nBinding;
+		pParam->strName = MStringId(res.name.c_str());
+
+		if (type.image.dim == spv::Dim::Dim3D)
+		{
+			pParam->eType = METextureType::ETexture3D;
+		}
+		else if (type.image.dim == spv::Dim::DimCube)
+		{
+			pParam->eType = METextureType::ETextureCube;
+		}
+		else if (type.image.arrayed)
+		{
+			pParam->eType = METextureType::ETexture2DArray;
+		}
+		else if (type.image.dim == spv::Dim2D)
+		{
+			pParam->eType = METextureType::ETexture2D;
+		}
+		else
+		{
+			MORTY_ASSERT(false);
+		}
+
+		pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 
 		pShaderBuffer->m_vShaderSets[pParam->unSet]->m_vTextures.push_back(pParam);
 	}
@@ -236,11 +303,11 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
 		std::shared_ptr<MShaderSampleParam> pParam = std::make_shared<MShaderSampleParam>();
 		pParam->unSet = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
 		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
-		pParam->strName = res.name;
+		pParam->strName = MStringId(res.name.c_str());
 
-		if (!pParam->strName.empty())
+		if (!pParam->strName.ToString().empty())
 		{
-			if ('L' == pParam->strName[0])
+			if ('L' == pParam->strName.ToString()[0])
 				pParam->eSamplerType = MESamplerType::ELinear;
 			else
 				pParam->eSamplerType = MESamplerType::ENearest;
@@ -256,7 +323,7 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
 		std::shared_ptr<MShaderSubpasssInputParam> pParam = std::make_shared<MShaderSubpasssInputParam>();
 		pParam->unSet = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
 		pParam->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
-		pParam->strName = res.name;
+		pParam->strName = MStringId(res.name.c_str());
 
 		pParam->m_VkDescriptorType =  VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
 
@@ -282,7 +349,7 @@ void MVulkanShaderReflector::BuildVariant(const spirv_cross::Compiler& compiler,
 
 			MVariant memberVariant;
 			BuildVariant(compiler, memberType, memberVariant);
-			builder.AppendVariant(strMemberName, memberVariant);
+			builder.AppendVariant(MStringId(strMemberName.c_str()), memberVariant);
 		}
 		builder.Finish();
 		tempVariant = MVariant(srt);

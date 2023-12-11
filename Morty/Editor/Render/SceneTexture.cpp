@@ -51,14 +51,14 @@ void SceneTexture::Initialize(MScene* pScene, const MString& strRenderProgram)
 	
 	m_pRenderViewport = pObjectSystem->CreateObject<MViewport>();
 	m_pRenderViewport->SetScene(m_pScene);
-	m_pRenderViewport->SetSize(Vector2(256, 256));
+	m_pRenderViewport->SetSize(Vector2i(256, 256));
 
 	MEntity* pDefaultCamera = m_pScene->CreateEntity();
 
 	pDefaultCamera->SetName("Camera");
 	if (MSceneComponent* pSceneComponent = pDefaultCamera->RegisterComponent<MSceneComponent>())
 	{
-		pSceneComponent->SetPosition(Vector3(25, 50, -40));
+		pSceneComponent->SetPosition(Vector3(0, 20, 0));
 		pSceneComponent->SetRotation(Quaternion(Vector3(1, 0, 0), 45.0f));
 	}
 	pDefaultCamera->RegisterComponent<MCameraComponent>();
@@ -83,7 +83,7 @@ void SceneTexture::Initialize(MScene* pScene, const MString& strRenderProgram)
 	m_vRenderProgram.resize(nImageCount, pRenderProgram);
 #endif
 
-	m_pUpdateTask = pEngine->GetMainGraph()->AddNode<MTaskNode>("SceneTextureUpdate");
+	m_pUpdateTask = pEngine->GetMainGraph()->AddNode<MTaskNode>(MStringId("SceneTextureUpdate"));
 	if (m_pUpdateTask)
 	{
 		m_pUpdateTask->SetThreadType(METhreadType::ERenderThread);
@@ -124,7 +124,7 @@ void SceneTexture::Release()
 	m_vRenderProgram.clear();
 }
 
-void SceneTexture::SetRect(Vector2 pos, Vector2 size)
+void SceneTexture::SetRect(Vector2i pos, Vector2i size)
 {
 	m_pRenderViewport->SetScreenPosition(pos);
 	m_pRenderViewport->SetSize(size);

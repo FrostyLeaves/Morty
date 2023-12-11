@@ -13,27 +13,27 @@
 #include "Render/MRenderPass.h"
 #include "Render/MRenderCommand.h"
 #include "Mesh/MMeshManager.h"
+#include "PostProcess/MPostProcessGraphWalker.h"
+#include "PostProcess/MPostProcessNode.h"
+#include "Mesh/MMeshManager.h"
 
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
 
-
-#define ACES_ENABLE true
-
-MORTY_CLASS_IMPLEMENT(MPostProcessRenderWork, ISinglePassRenderWork)
+MORTY_CLASS_IMPLEMENT(MPostProcessRenderWork, IRenderWork)
 
 void MPostProcessRenderWork::Initialize(MEngine* pEngine)
 {
-	Super::Initialize(pEngine);
+	m_pEngine = pEngine;
 
 	InitializeMaterial();
 }
 
 void MPostProcessRenderWork::Release(MEngine* pEngine)
 {
-	ReleaseMaterial();
+	MORTY_UNUSED(pEngine);
 
-	Super::Release(pEngine);
+	ReleaseMaterial();
 }
 
 void MPostProcessRenderWork::Render(MRenderInfo& info)
@@ -41,127 +41,103 @@ void MPostProcessRenderWork::Render(MRenderInfo& info)
 	MORTY_ASSERT(m_pInputAdapter);
 
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
+	MIMesh* pScreenMesh = GetEngine()->FindGlobalObject<MMeshManager>()->GetScreenRect();
 	auto pInputTexture = m_pInputAdapter->GetTexture();
 
-	MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
+	pCommand->AddRenderToTextureBarrier({ pInputTexture.get() }, METextureBarrierStage::EPixelShaderSample);
 
-	pCommand->AddRenderToTextureBarrier({ pInputTexture.get() });
-
-	pCommand->BeginRenderPass(&m_renderPass);
-
-	Vector2 v2Size = m_renderPass.GetFrameBufferSize();
-
-	pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
-	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
-
-	m_pMaterial->GetMaterialPropertyBlock()->SetTexture("u_texScreenTexture", pInputTexture);
-	if (pCommand->SetUseMaterial(m_pMaterial))
+	for (auto pStartNode : m_postProcessGraph.GetStartNodes())
 	{
-		pCommand->DrawMesh(pMeshManager->GetScreenRect());
+		auto pProcessNode = pStartNode->DynamicCast<MPostProcessNode>();
+
+		pProcessNode->GetMaterial()->GetMaterialPropertyBlock()->SetTexture(MShaderPropertyName::POSTPROCESS_SCREEN_TEXTURE, pInputTexture);
 	}
 
-	pCommand->EndRenderPass();
+	MPostProcessGraphWalker walker(pCommand, pScreenMesh, m_pRenderTargetBinding->GetFrameProperty());
+	m_postProcessGraph.Run(&walker);
 }
 
-void MPostProcessRenderWork::SetInputTexture(const std::shared_ptr<ITextureInputAdapter>& pAdapter)
+void MPostProcessRenderWork::Resize(Vector2i size)
+{
+	m_pRenderTargetBinding->Resize(size);
+}
+
+void MPostProcessRenderWork::SetInputTexture(const std::shared_ptr<IGetTextureAdapter>& pAdapter)
 {
 	m_pInputAdapter = pAdapter;
 }
 
-void MPostProcessRenderWork::InitializeMaterial()
+void MPostProcessRenderWork::SetRenderTarget(const MRenderTarget& backTexture)
 {
-	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-	m_pMaterial = pResourceSystem->CreateResource<MMaterial>("PostProcess Material");
-
-	std::shared_ptr<MResource> pVertexShader = pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mvs");
-
-#if ACES_ENABLE
-	std::shared_ptr<MResource> pPixelShader = pResourceSystem->LoadResource("Shader/PostProcess/post_process_aces.mps");
-#else
-	std::shared_ptr<MResource> pPixelShader = pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mps");
-#endif
-	m_pMaterial->LoadShader(pVertexShader);
-	m_pMaterial->LoadShader(pPixelShader);
-	m_pMaterial->SetCullMode(MECullMode::ECullNone);
-
-#if ACES_ENABLE
-	if (auto pPropertyBlock = m_pMaterial->GetMaterialPropertyBlock())
+	for (auto pNode : m_postProcessGraph.GetFinalNodes())
 	{
-		pPropertyBlock->SetValue<float>("FilmSlope", 0.88f);
-		pPropertyBlock->SetValue<float>("FilmToe", 0.55f);
-		pPropertyBlock->SetValue<float>("FilmShoulder", 0.26f);
-		pPropertyBlock->SetValue<float>("FilmBlackClip", 0.0f);
-		pPropertyBlock->SetValue<float>("FilmWhiteClip", 0.04f);
-
-		pPropertyBlock->SetValue<bool>("bIsTemperatureWhiteBalance", true);
-
-		pPropertyBlock->SetValue<float>("WhiteTemp", 6500.0f);
-		pPropertyBlock->SetValue<float>("WhiteTint", 0.0f);
-
-		// Color Correction controls
-		pPropertyBlock->SetValue<Vector4>("ColorSaturation", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-		pPropertyBlock->SetValue<Vector4>("ColorContrast", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-		pPropertyBlock->SetValue<Vector4>("ColorGamma", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-		pPropertyBlock->SetValue<Vector4>("ColorGain", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-		pPropertyBlock->SetValue<Vector4>("ColorOffset", Vector4(0.0f, 0.0f, 0.0f, 0.0f));
-
-		pPropertyBlock->SetValue<Vector4>("ColorSaturationShadows", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-		pPropertyBlock->SetValue<Vector4>("ColorContrastShadows", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-		pPropertyBlock->SetValue<Vector4>("ColorGammaShadows", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-		pPropertyBlock->SetValue<Vector4>("ColorGainShadows", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-		pPropertyBlock->SetValue<Vector4>("ColorOffsetShadows", Vector4(0.0f, 0.0f, 0.0f, 0.0f));
-
-		pPropertyBlock->SetValue<Vector4>("ColorSaturationMidtones", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-		pPropertyBlock->SetValue<Vector4>("ColorContrastMidtones", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-		pPropertyBlock->SetValue<Vector4>("ColorGammaMidtones", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-		pPropertyBlock->SetValue<Vector4>("ColorGainMidtones", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-		pPropertyBlock->SetValue<Vector4>("ColorOffsetMidtones", Vector4(0.f, 0.0f, 0.0f, 0.0f));
-
-		pPropertyBlock->SetValue<Vector4>("ColorSaturationHighlights", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-		pPropertyBlock->SetValue<Vector4>("ColorContrastHighlights", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-		pPropertyBlock->SetValue<Vector4>("ColorGammaHighlights", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-		pPropertyBlock->SetValue<Vector4>("ColorGainHighlights", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-		pPropertyBlock->SetValue<Vector4>("ColorOffsetHighlights", Vector4(0.0f, 0.0f, 0.0f, 0.0f));
-
-		pPropertyBlock->SetValue<float>("ColorCorrectionShadowsMax", 0.09f);
-		pPropertyBlock->SetValue<float>("ColorCorrectionHighlightsMin", 0.5f);
-		pPropertyBlock->SetValue<float>("ColorCorrectionHighlightsMax", 1.0f);
-
-		pPropertyBlock->SetValue<float>("BlueCorrection", 0.6f);
-		pPropertyBlock->SetValue<float>("ExpandGamut", 1.0f);
-		pPropertyBlock->SetValue<float>("ToneCurveAmount", 1.0);
-
-
-		float MinValue = 0.0f;
-		float MidValue = 0.5f;
-		float MaxValue = 1.0f;
-
-		// x is the input value, y the output value
-		// RGB = a, b, c where y = a * x*x + b * x + c
-		float c = MinValue;
-		float b = 4 * MidValue - 3 * MinValue - MaxValue;
-		float a = MaxValue - MinValue - b;
-
-		pPropertyBlock->SetValue<Vector3>("MappingPolynomial", Vector3(a, b, c));
-
-		pPropertyBlock->SetValue<Vector4>("ColorScale", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-		pPropertyBlock->SetValue<Vector4>("OverlayColor", Vector4(0.0f, 0.0f, 0.0f, 0.0f));
-
-		Vector3 InvDisplayGammaValue;
-		InvDisplayGammaValue.x = 1.0f / 2.2f;
-		InvDisplayGammaValue.y = 2.2f / 2.2f;
-		InvDisplayGammaValue.z = 1.0f / 2.2f;
-
-		pPropertyBlock->SetValue<Vector3>("InverseGamma", InvDisplayGammaValue);
-
+		if (pNode->GetNodeName() == MRenderGlobal::POSTPROCESS_FINAL_NODE)
+		{
+			if (auto pPostProcessNode = pNode->DynamicCast<MPostProcessNode>())
+			{
+				pPostProcessNode->SetRenderTarget(backTexture);
+			}
+		}
 	}
 
-#endif
+	//TODO: once only.
+	//generate and bind render target.
+	m_postProcessGraph.Run(m_pRenderTargetBinding.get());
+}
 
-	
+std::shared_ptr<IGetTextureAdapter> MPostProcessRenderWork::GetOutput(const MStringId& strNodeName) const
+{
+	for (auto pNode : m_postProcessGraph.GetFinalNodes())
+	{
+		if (pNode->GetNodeName() == strNodeName)
+		{
+			auto pPostProcessNode = pNode->DynamicCast<MPostProcessNode>();
+			if (MRenderPass* pRenderPass = pPostProcessNode->GetRenderPass())
+			{
+				if (!pRenderPass->GetBackTextures().empty())
+				{
+					return std::make_shared<MGetTextureAdapter>(pRenderPass->GetBackTexture(0));
+				}
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+void MPostProcessRenderWork::InitializeMaterial()
+{
+	m_pRenderTargetBinding = std::make_unique<MPostProcessRenderTargetBinding>(GetEngine());
+
+	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+
+	auto pMaterial = pResourceSystem->CreateResource<MMaterial>("PostProcess Basic");
+	std::shared_ptr<MResource> pVertexShader = pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mvs");
+	std::shared_ptr<MResource> pPixelShader = pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mps");
+	pMaterial->LoadShader(pVertexShader);
+	pMaterial->LoadShader(pPixelShader);
+	pMaterial->SetCullMode(MECullMode::ECullNone);
+
+	auto pBasicProcess = m_postProcessGraph.AddNode<MPostProcessNode>(MRenderGlobal::POSTPROCESS_FINAL_NODE);
+	pBasicProcess->SetMaterial(pMaterial);
+
+	auto pEdgeMaterial = pResourceSystem->CreateResource<MMaterial>("PostProcess Edge Detection");
+	std::shared_ptr<MResource> pEdgePixelShader = pResourceSystem->LoadResource("Shader/PostProcess/sobel_edge_detection.mps");
+	pEdgeMaterial->LoadShader(pVertexShader);
+	pEdgeMaterial->LoadShader(pEdgePixelShader);
+	pEdgeMaterial->SetCullMode(MECullMode::ECullNone);
+
+	auto pEdgeDetection = m_postProcessGraph.AddNode<MPostProcessNode>(MRenderGlobal::POSTPROCESS_EDGE_DETECTION);
+	pEdgeDetection->SetMaterial(pEdgeMaterial);
+
+
+	m_postProcessGraph.Compile();
 }
 
 void MPostProcessRenderWork::ReleaseMaterial()
 {
-	m_pMaterial = nullptr;
+	//TODO: destroy material.
+
+	m_pRenderTargetBinding->Release();
+	m_pRenderTargetBinding = nullptr;
 }

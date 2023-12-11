@@ -44,9 +44,12 @@ public:
 	bool SetGraphPipeline(std::shared_ptr<MMaterial> pMaterial) override;
 	void SetShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) override;
 
+	void PushShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) override;
+	void PopShaderPropertyBlock() override;
+
 	bool DispatchComputeJob(MComputeDispatcher* pComputeDispatcher, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ) override;
 
-	bool AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures) override;
+	bool AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures, METextureBarrierStage dstStage) override;
 
 	bool AddBufferMemoryBarrier(const std::vector<const MBuffer*> vBuffers, MEBufferBarrierStage srcStage, MEBufferBarrierStage dstStage) override;
 
@@ -54,8 +57,11 @@ public:
 	bool CopyImageBuffer(MTexture* pSource, MTexture* pDest) override;
 	void UpdateMipmaps(MTexture* pBuffer) override;
 	void ResetBuffer(const MBuffer* pBuffer) override;
+	void FillTexture(MTexture* pBuffer, MColor color) override;
 
 	void addFinishedCallback(std::function<void()> func) override;
+
+	void SetShadingRate(Vector2i i2ShadingSize, std::array<MEShadingRateCombinerOp, 2> combineOp) override;
 
 	void UpdateBuffer(MBuffer* pBuffer, const MByte* data, const size_t& size);
 
@@ -64,10 +70,10 @@ public:
 	void SetTextureLayout(const std::vector<MTexture*>& vTextures, VkImageLayout newLayout);
 
 protected:
+	VkImageLayout GetTextureBarrierLayout(METextureBarrierStage stage) const;
 	VkAccessFlags GetBufferBarrierAccessFlag(MEBufferBarrierStage stage) const;
-	uint32_t GetBufferBarrierQueueFamily(MEBufferBarrierStage stage) const;
 	VkPipelineStageFlags GetBufferBarrierPipelineStage(MEBufferBarrierStage stage) const;
-
+	VkPipelineStageFlags GetTextureBarrierPipelineStage(METextureBarrierStage stage) const;
 public:
 
 	MVulkanDevice* m_pDevice = nullptr;
@@ -82,7 +88,8 @@ public:
 	std::map<MTexture*, VkImageLayout> m_tTextureLayout;
 
 	std::vector<std::function<void()>> m_aRenderFinishedCallback = {};
-	
+
+	std::vector<std::shared_ptr<MShaderPropertyBlock>> m_vPropertyBlockStack;
 };
 
 class MORTY_API MVulkanSecondaryRenderCommand : public MVulkanRenderCommand

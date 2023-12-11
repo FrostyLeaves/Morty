@@ -1,4 +1,4 @@
-﻿#include "Render/MMesh.h"
+#include "Render/MMesh.h"
 
 #include "MBuffer.h"
 #include "MBuffer.h"
@@ -28,12 +28,12 @@ MIMesh::~MIMesh()
 
 uint32_t MIMesh::GetVerticesNum() const
 {
-	return m_vertexBuffer.GetSize() / GetVertexStructSize();
+	return static_cast<uint32_t>(m_vertexBuffer.GetSize() / GetVertexStructSize());
 }
 
 uint32_t MIMesh::GetIndicesNum() const
 {
-	return m_indexBuffer.GetSize() / sizeof(uint32_t);
+	return static_cast<uint32_t>(m_indexBuffer.GetSize() / sizeof(uint32_t));
 }
 
 void MIMesh::CreateIndices(const uint32_t& unSize, const uint32_t& unIndexSize)

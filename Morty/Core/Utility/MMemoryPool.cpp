@@ -18,7 +18,7 @@ MMemoryPool::~MMemoryPool()
 
 }
 
-bool MMemoryPool::AllowMemory(const uint32_t& unVariantSize, MemoryInfo& info)
+bool MMemoryPool::AllowMemory(const size_t& unVariantSize, MemoryInfo& info)
 {
 	auto biggestIter = m_vFreeMemory.begin();
 	auto bestIter = m_vFreeMemory.end();

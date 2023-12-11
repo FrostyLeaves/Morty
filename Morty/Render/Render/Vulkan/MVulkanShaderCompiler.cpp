@@ -21,7 +21,6 @@
 #include "dxcapi.h"
 #else
 
-#include "glslang/SPIRV/SpvTools.h"
 #include "glslang/SPIRV/GlslangToSpv.h"
 #include "glslang/Public/ShaderLang.h"
 
@@ -210,28 +209,28 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 	ConvertMacro(macro, UserPreamble);
 	if (UserPreamble.IsValid())
 	{
-		for (const std::pair<MString, MString>& m : macro.s_vGlobalMacroParams)
+		for (const auto& m : macro.s_vGlobalMacroParams)
 		{
 			if(m.second.empty())
-				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first));
+				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first.ToString()));
 			else
-				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first + "=" + m.second));
+				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first.ToString() + "=" + m.second));
 		}
 
-		for (const std::pair<MString, MString>& m : macro.m_vMortyMacroParams)
+		for (const auto& m : macro.m_vMortyMacroParams)
 		{
 			if (m.second.empty())
-				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first));
+				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first.ToString()));
 			else
-				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first + "=" + m.second));
+				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first.ToString() + "=" + m.second));
 		}
 
-		for (const std::pair<MString, MString>& m : macro.m_vMacroParams)
+		for (const auto& m : macro.m_vMacroParams)
 		{
 			if (m.second.empty())
-				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first));
+				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first.ToString()));
 			else
-				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first + "=" + m.second));
+				vCompArgs.push_back(std::wstring(L"-D ") + MStringUtil::ConvertToWString(m.first.ToString() + "=" + m.second));
 		}
 	}
 
@@ -249,6 +248,11 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 	{
 		vCompArgs.push_back(L"-E CS_MAIN");
 		vCompArgs.push_back(L"-T cs_6_1");
+	}
+	else if (MEShaderType::EGeometry == eShaderType)
+	{
+		vCompArgs.push_back(L"-E GS_MAIN");
+		vCompArgs.push_back(L"-T gs_6_1");
 	}
 	else
 	{
@@ -491,8 +495,6 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& strShaderPath, cons
 	}
 
 
-	glslang::TProgram program;
-
 	EShLanguage eLanguageType = ShaderTypeTable[eShaderType];
 	glslang::TShader shader(eLanguageType);
 
@@ -519,6 +521,7 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& strShaderPath, cons
 	// 	shader.setFlattenUniformArrays((Options & EOptionFlattenUniformArrays) != 0);
 	// 	if (Options & EOptionHlslIoMapping)
 	// 		shader.setHlslIoMapping(true);
+	//shader.setEnvTargetHlslFunctionality1();
 
 
 	int ClientInputSemanticsVersion = 120;
@@ -529,8 +532,6 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& strShaderPath, cons
 
 	shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_2);
 	shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_2);
-
-	//shader.setEnvTargetHlslFunctionality1();
 
 	MVulkanIncludeHandler includer;
 
@@ -551,6 +552,9 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& strShaderPath, cons
 		m_pDevice->GetEngine()->GetLogger()->Error("{}\n\n\n{}", MString(shader.getInfoLog()).c_str(), MString(shader.getInfoDebugLog()).c_str());
 		return false;
 	}
+
+	glslang::TProgram program;
+
 	program.addShader(&shader);
 
 	if (!program.link(messages))
@@ -583,14 +587,14 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& strShaderPath, cons
 
 void MVulkanShaderCompiler::ConvertMacro(const MShaderMacro& macro, MPreamble& preamble)
 {
-	for (const std::pair<MString, MString>& m : macro.s_vGlobalMacroParams)
-		preamble.AddDef(m.first, m.second);
+	for (const auto& m : macro.s_vGlobalMacroParams)
+		preamble.AddDef(m.first.ToString(), m.second);
 	
-	for (const std::pair<MString, MString>& m : macro.m_vMortyMacroParams)
-		preamble.AddDef(m.first, m.second);
+	for (const auto& m : macro.m_vMortyMacroParams)
+		preamble.AddDef(m.first.ToString(), m.second);
 
-	for (const std::pair<MString, MString>& m : macro.m_vMacroParams)
-		preamble.AddDef(m.first, m.second);
+	for (const auto& m : macro.m_vMacroParams)
+		preamble.AddDef(m.first.ToString(), m.second);
 }
 
 MPreamble::MPreamble()

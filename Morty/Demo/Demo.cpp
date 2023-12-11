@@ -1,4 +1,4 @@
-﻿#define DOCTEST_CONFIG_IMPLEMENT
+#define DOCTEST_CONFIG_IMPLEMENT
 
 #include "SDL.h"
 #include <fstream>
@@ -30,6 +30,7 @@
 #include "Test/Pbr.h"
 #include "Test/Floor.h"
 #include "Test/BasicTransform.h"
+#include "Test/VXGI.h"
 
 int main()
 {
@@ -50,24 +51,25 @@ int main()
 	renderView.BindSDLWindow();
 
 	//create editor
-	MainEditor* editor = new MainEditor();
-	editor->Initialize(&engine);
-	renderView.AppendContent(editor);
+	MainEditor editor;
+	editor.Initialize(&engine);
+	renderView.AppendContent(&editor);
 
 	//create a scene.
 	MScene* pScene = engine.FindSystem<MObjectSystem>()->CreateObject<MScene>();
-	editor->SetScene(pScene);
+	editor.SetScene(pScene);
 
 	ADD_DIRECTIONAL_LIGHT(&engine, pScene);
 	//CREATE_FLOOR_GRID(&engine, pScene);
 	//ENVIRONMENT_CUBEMAP_TEST(&engine, pScene);
 	//SHADOW_MAP_TEST(&engine, pScene);
-		PBR_SHPERE(&engine, pScene);
-	//	LOAD_MODEL_ANIMATION_TEST(&engine, pScene);
+	//PBR_SHPERE(&engine, pScene);
+	//LOAD_MODEL_ANIMATION_TEST(&engine, pScene);
 	//	LOAD_MODEL_TRANSLATION_TEST(&engine, pScene);
-	//	LOAD_MODEL_SPONZA_TEST(&engine, pScene);
+	LOAD_MODEL_SPONZA_TEST(&engine, pScene);
 	//	GPU_DRIVEN_CULLING_TEST(&engine, pScene);
 	//	TRANSFORM_SPHERE_GENERATE(&engine, pScene);
+	VXGI_TEST(&engine, pScene);
 
 
 	//start run
@@ -82,9 +84,7 @@ int main()
 	engine.Stop();
 
 	//destroy editor
-	editor->Release();
-	delete editor;
-	editor = nullptr;
+	editor.Release();
 
 	//destroy window
 	renderView.UnbindSDLWindow();
@@ -93,4 +93,5 @@ int main()
 	//release engine
 	engine.Release();
 
+	return 0;
 }

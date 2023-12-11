@@ -120,6 +120,19 @@ bool PropertyBase::EditVector3(float* pValue, const float& fSpeed /*= 1.0f*/, co
 	return ImGui::DragFloat3("", pValue, fSpeed, fMin, fMax);
 }
 
+bool PropertyBase::EditVector4(Vector4& value, const float& fSpeed, const float& fMin, const float& fMax)
+{
+	return EditVector4(value.m, fSpeed, fMin, fMax);
+}
+
+bool PropertyBase::EditVector4(float* pValue, const float& fSpeed, const float& fMin, const float& fMax)
+{
+	if (pValue[0] == -0.0f) pValue[0] = 0.0f;
+	if (pValue[1] == -0.0f) pValue[1] = 0.0f;
+	if (pValue[2] == -0.0f) pValue[2] = 0.0f;
+	return ImGui::DragFloat4("", pValue, fSpeed, fMin, fMax);
+}
+
 bool PropertyBase::EditMTransform(MTransform& trans)
 {
 	bool bModify = false;
@@ -160,30 +173,30 @@ bool PropertyBase::EditMTransform(MTransform& trans)
 	return bModify;
 }
 
-bool PropertyBase::EditEnum(const std::vector<MString>& select, uint32_t& index)
+bool PropertyBase::EditEnum(const std::vector<MString>& select, size_t& index)
 {
 	if (index >= select.size())
 	{
 		return false;
 	}
 
-	uint32_t unNewIndex = index;
+	size_t nNewIndex = index;
 	if (ImGui::BeginCombo("", select[index].c_str())) {
 
 		for (size_t i = 0; i < select.size(); ++i)
 		{
 			if (ImGui::Selectable(select[i].c_str(), (index == i)))\
 			{
-				unNewIndex = i;
+                nNewIndex = i;
 			}
 		}
 
 		ImGui::EndCombo();
 	}
 
-	if (unNewIndex != index)
+	if (nNewIndex != index)
 	{
-		index = unNewIndex;
+		index = nNewIndex;
 		return true;
 	}
 
@@ -228,6 +241,12 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
 		ShowValueEnd();
 		break;
 
+	case MEVariantType::EVector4:
+		ShowValueBegin(strVariantName);
+		bModified |= EditVector4(value.GetValue<Vector4>());
+		ShowValueEnd();
+		break;
+
 	case MEVariantType::EArray:
 	case MEVariantType::EStruct:
 	if(ShowNodeBegin(strVariantName))
@@ -236,7 +255,7 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
 		size_t nCount = 0;
 		for (auto& iter : sut.GetMember())
 		{
-			bModified |= EditMVariant(iter.first.empty() ? MStringUtil::ToString(nCount) : iter.first, sut.GetVariant<MVariant>(iter.first));
+			bModified |= EditMVariant(iter.first.ToString().empty() ? MStringUtil::ToString(nCount) : iter.first.ToString(), sut.GetVariant<MVariant>(iter.first));
 			nCount++;
 		}
 
@@ -277,7 +296,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 				ImGui::SameLine();
 				if (ImGui::Button("+", ImVec2(fWidth * 0.3f, 0)))
 				{
-					shaderMacro.AddUnionMacro(addKey);
+					shaderMacro.AddUnionMacro(MStringId(addKey.c_str()));
 					addKey = "";
 				}
 
@@ -287,7 +306,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 				{
 					auto& pair = *iter;
 
-					ShowValueBegin(pair.first);
+					ShowValueBegin(pair.first.ToString());
 					ImGui::SetNextItemWidth(fWidth * 0.7f);
 					EditMString(pair.second);
 					ImGui::SameLine();
@@ -306,10 +325,10 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 			ShowValueBegin("Shader");
 			if (ImGui::Button("Reload Shader", ImVec2(ImGui::GetContentRegionAvail().x, 0)))
 			{
-				MString strResPathVS = pResource->GetShader(MEShaderType::EVertex)->GetResourcePath();
+				MString strResPathVS = pResource->GetShaderProgram()->GetShaderResource(MEShaderType::EVertex)->GetResourcePath();
 				pResource->GetResourceSystem()->Reload(strResPathVS);
 
-				MString strResPathPS = pResource->GetShader(MEShaderType::EPixel)->GetResourcePath();
+				MString strResPathPS = pResource->GetShaderProgram()->GetShaderResource(MEShaderType::EPixel)->GetResourcePath();
 				pResource->GetResourceSystem()->Reload(strResPathPS);
 			}
 			ShowValueEnd();
@@ -317,7 +336,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 		{
 			ShowValueBegin("Cull");
-			uint32_t nCullType = (uint32_t)pMaterial->GetCullMode();
+			size_t nCullType = static_cast<size_t>(pMaterial->GetCullMode());
 			if (EditEnum({ "Wireframe", "CullNone", "CullBack", "ECullFront" }, nCullType))
 			{
 				pMaterial->SetCullMode(MECullMode(nCullType));
@@ -327,7 +346,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 		{
 			ShowValueBegin("Type");
-			uint32_t nMaterialType = (uint32_t)pMaterial->GetMaterialType();
+			size_t nMaterialType = static_cast<size_t>(pMaterial->GetMaterialType());
 			if (EditEnum({ "Default", "Transparent"}, nMaterialType))
 			{
 				pMaterial->SetMaterialType((MEMaterialType)nMaterialType);
@@ -339,7 +358,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 			const std::vector<std::shared_ptr<MShaderConstantParam>>& vParams = pMaterial->GetShaderParams();
 			for (const std::shared_ptr<MShaderConstantParam>& param : vParams)
 			{
-				if (EditMVariant(param->strName, param->var))
+				if (EditMVariant(param->strName.ToString(), param->var))
 				{
 					param->SetDirty();
 					bModified = true;
@@ -356,7 +375,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 					MString strDlgName = "file_dlg_tex_" + MStringUtil::ToString(i);
 
-					ShowValueBegin(param->strName);
+					ShowValueBegin(param->strName.ToString());
 					std::shared_ptr<MTextureResource> pResource = param->GetTextureResource();
 
 					if (auto pPreviewTexture = param->GetTexture())
@@ -465,10 +484,9 @@ void PropertyBase::EditSaveMResource(const MString& stringID, const MString& str
 
 		ImGui::SameLine();
 
-		char btn_name[64];
-		sprintf(btn_name, "Save##_%u", ImGui::GetID(pResource.get()));
+		MString btn_name = fmt::format("Save##_{}", reinterpret_cast<uint32_t>(ImGui::GetID(pResource.get())));
 
-		if (ImGui::Button(btn_name, ImVec2(fWidth * 0.5f, 0)))
+		if (ImGui::Button(btn_name.c_str(), ImVec2(fWidth * 0.5f, 0)))
 		{
 			auto pResourceSystem = pResource->GetEngine()->FindSystem<MResourceSystem>();
 			pResourceSystem->SaveResource(pResource);

@@ -1,0 +1,62 @@
+#include "../Voxel/voxel_function.hlsl"
+#include "../Internal/internal_indirect_define.hlsl"
+
+
+[[vk::binding(0,0)]] StructuredBuffer<VoxelizerOutput> rVoxelTable;
+
+[[vk::binding(1,0)]] cbuffer cbVoxelMap
+{
+    VoxelMapSetting voxelMapSetting;
+};
+
+[[vk::binding(2,0)]] RWTexture3D<float4> u_texVoxelMap;
+
+[numthreads(8, 8, 8)]
+void CS_MAIN(uint3 GlobalInvocationID : SV_DispatchThreadID )
+{
+    uint3 n3Coord = GlobalInvocationID;
+
+	uint nClipmap = voxelMapSetting.nClipmapIdx;
+    int voxelTableIdx = VoxelCoordToInstanceId(voxelMapSetting, n3Coord);
+
+    VoxelizerOutput voxelizerData = rVoxelTable[voxelTableIdx];
+
+	float4 f4FaceColor[6];
+	for (uint nFaceIdx = 0; nFaceIdx < 6; ++nFaceIdx)
+	{
+		uint nTotalNum = voxelizerData.nVoxelCount[nFaceIdx];
+
+		if ( nTotalNum > 0)
+		{
+			float4 f4TotalColor = float4(
+				VoxelUintToFloat(voxelizerData.nBaseColor[nFaceIdx * 4 + 0]),
+				VoxelUintToFloat(voxelizerData.nBaseColor[nFaceIdx * 4 + 1]),
+				VoxelUintToFloat(voxelizerData.nBaseColor[nFaceIdx * 4 + 2]),
+				VoxelUintToFloat(voxelizerData.nBaseColor[nFaceIdx * 4 + 3])
+			);
+
+			f4FaceColor[nFaceIdx] = f4TotalColor / float(nTotalNum);
+		}
+		else
+		{
+			f4FaceColor[nFaceIdx] = float4(0.0f, 0.0f, 0.0f, 0.0f);
+		}
+	}
+
+	for (uint nConeIdx = 0; nConeIdx < VOXEL_DIFFUSE_CONE_COUNT; ++nConeIdx)
+	{
+		float3 f3ConeDirection = VOXEL_DIFFUSE_CONE_DIRECTIONS[nConeIdx];
+		float3 f3AnisoDirection = -f3ConeDirection;
+    	float3 f3DirectionWeight = abs(f3AnisoDirection);
+
+		uint3 n3FaceIdx = GetVoxelFaceIndex(f3AnisoDirection);
+
+		float4 f4ConeColor =  f4FaceColor[n3FaceIdx.x] * f3DirectionWeight.x
+							+ f4FaceColor[n3FaceIdx.y] * f3DirectionWeight.y
+							+ f4FaceColor[n3FaceIdx.z] * f3DirectionWeight.z;
+		
+		//TODO: 64 is VoxelMapSize
+		uint3 n3VoxelUVW = GetVoxelTexturePixelIdx(voxelMapSetting, n3Coord, nClipmap, nConeIdx);
+		u_texVoxelMap[n3VoxelUVW] = f4ConeColor;
+	}
+}

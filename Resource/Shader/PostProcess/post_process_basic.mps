@@ -1,7 +1,4 @@
-
-
-[[vk::binding(1,0)]]Texture2D u_texScreenTexture;
-[[vk::binding(2,0)]]sampler LinearSampler;
+#include "../PostProcess/post_process_header.hlsl"
 
 struct VS_OUT_POST
 {
@@ -12,7 +9,7 @@ struct VS_OUT_POST
 float4 PS_MAIN(VS_OUT_POST input) : SV_Target
 {
 
-    float4 color = u_texScreenTexture.Sample(LinearSampler, input.uv);
+    float4 color = u_texInputTexture.Sample(LinearSampler, input.uv);
     // HDR -> LDR
     color.rgb = color.rgb / (color.rgb + float3(1.0, 1.0, 1.0));
     // Gamma

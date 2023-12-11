@@ -15,6 +15,7 @@ struct VS_OUT
 
 float4 PS_MAIN(VS_OUT input) : SV_Target
 {
+
     float3 f3Normal = normalize(input.uvw);
 
     float3 f3Irradiance = 0.0;
@@ -23,7 +24,7 @@ float4 PS_MAIN(VS_OUT input) : SV_Target
     float3 f3RightDirection = normalize(cross(f3Normal, f3UpDirection));
     f3UpDirection = normalize(cross(f3RightDirection, f3Normal));
        
-    float fSampleDelta = 0.025;
+    float fSampleDelta = 0.05;
     float fNrSamples = 0.0;
 
     for(float phi = 0.0; phi < 2.0 * NUM_PI; phi += fSampleDelta)

@@ -32,9 +32,8 @@ enum class MLogType
 class MORTY_API MLogger
 {
 public:
-	MLogger();
-	virtual ~MLogger() {};
-
+	MLogger() = default;
+	~MLogger() = default;
 
 public:
 
@@ -116,6 +115,5 @@ public:
 #endif
 	}
 private:
-	MLogFunction m_printFunction;
-	char svLogData[4096];
+	MLogFunction m_printFunction = nullptr;
 };

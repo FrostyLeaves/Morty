@@ -64,7 +64,7 @@ public:
 	TYPE* RegisterManager();
 
 	template <class TYPE>
-	TYPE* GetManager();
+	TYPE* GetManager() const;
 
 protected:
 
@@ -131,7 +131,7 @@ inline TYPE* MScene::RegisterManager()
 }
 
 template<class TYPE>
-inline TYPE* MScene::GetManager()
+inline TYPE* MScene::GetManager() const
 {
 	auto findResult = m_tManager.find(TYPE::GetClassType());
 	if (findResult != m_tManager.end())

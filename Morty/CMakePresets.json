@@ -5,10 +5,11 @@
       "name": "Default",
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
-        "CMAKE_CONFIGURATION_TYPES": "Debug;RelWithDebInfo;Profile",
+        "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;Profile",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/../ThirdParty/vcpkg/scripts/buildsystems/vcpkg.cmake",
-        "VCPKG_OVERLAY_PORTS": "${sourceDir}/../ThirdParty/overlay_ports"
+        "VCPKG_OVERLAY_PORTS": "${sourceDir}/../ThirdParty/overlay_ports",
+        "GENERATOR_FOR_CLANGD": "ON"
       }
     },
     {
@@ -57,6 +58,26 @@
         "MORTY_BUILD_TARGET": "MACOS",
         "MORTY_SHADER_COMPILER": "glslang"
       }
+    },
+    {
+      "name": "Macos-Xcode",
+      "inherits": "Macos",
+      "generator": "Xcode",
+      "binaryDir": "${sourceDir}/../Build/macos_xcode",
+      "cacheVariables": {
+        "MORTY_BUILD_TARGET": "MACOS",
+        "MORTY_SHADER_COMPILER": "glslang",
+        "MORTY_GENERATOR_FOR_CLANGD": "OFF"
+      }
+    },
+    {
+      "name": "Windows-VS",
+      "inherits": "Windows",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/../Build/windows-vs",
+      "cacheVariables": {
+        "MORTY_GENERATOR_FOR_CLANGD": "OFF"
+      }
     }
   ],
   "buildPresets": [
@@ -79,6 +100,11 @@
       "name": "Macos-Debug",
       "configurePreset": "Macos",
       "configuration": "Debug"
+    },
+    {
+      "name": "Macos-Release",
+      "configurePreset": "Macos",
+      "configuration": "Release"
     }
   ]
 }

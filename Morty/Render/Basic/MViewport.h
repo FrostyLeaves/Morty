@@ -43,16 +43,16 @@ public:
 
 	bool IsUseDefaultCamera() { return nullptr == m_pUserCamera; }
 
-	void SetLeftTop(const Vector2& v2LeftTop) { m_v2LeftTop = v2LeftTop; }
-	Vector2 GetLeftTop() { return m_v2LeftTop; }
+	void SetLeftTop(const Vector2i& n2LeftTop) { m_n2LeftTop = n2LeftTop; }
+	Vector2i GetLeftTop() const { return m_n2LeftTop; }
 
-	void SetSize(const Vector2& v2Size);
-	Vector2 GetSize() const { return m_v2Size; }
+	void SetSize(const Vector2i& n2Size);
+	Vector2i GetSize() const { return m_n2Size; }
 
-	float GetLeft() { return m_v2LeftTop.x; }
-	float GetTop() { return m_v2LeftTop.y; }
-	float GetWidth() { return m_v2Size.x; }
-	float GetHeight() { return m_v2Size.y; }
+	float GetLeft() const { return m_n2LeftTop.x; }
+	float GetTop() const { return m_n2LeftTop.y; }
+	float GetWidth() const { return m_n2Size.x; }
+	float GetHeight() const { return m_n2Size.y; }
 
 	bool ConvertWorldPointToViewport(const Vector3& v3WorldPos, Vector3& v3Result);
 
@@ -70,8 +70,8 @@ public:
 
 	virtual void Input(MInputEvent* pEvent);
 
-	void SetScreenPosition(const Vector2& v2Position) { m_v2ScreenPosition = v2Position; }
-	void SetScreenScale(const Vector2& v2Scale) { m_v2ScreenScale = v2Scale; }
+	void SetScreenPosition(const Vector2i& v2Position) { m_n2ScreenPosition = v2Position; }
+	void SetScreenScale(const Vector2& v2Scale) { m_f2ScreenScale = v2Scale; }
 
 public:
 
@@ -87,9 +87,9 @@ private:
 	
 	MEntity* m_pUserCamera;
 
-	Vector2 m_v2LeftTop;
-	Vector2 m_v2Size;
+	Vector2i m_n2LeftTop;
+	Vector2i m_n2Size;
 
-	Vector2 m_v2ScreenPosition;
-	Vector2 m_v2ScreenScale;
+	Vector2i m_n2ScreenPosition;
+	Vector2 m_f2ScreenScale;
 };

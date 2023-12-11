@@ -17,10 +17,7 @@
 class MORTY_API MTextureConverter
 {
 public:
-	MTextureConverter(MEngine* pEngine);
-    ~MTextureConverter();
 
-
-    static std::shared_ptr<MTextureResource> ConvertSingleChannel(std::shared_ptr<MTextureResource> pTexture, size_t nChannel);
+    static void ConvertSingleChannel(MTextureResourceData* pTexture, size_t nChannel);
 
 };

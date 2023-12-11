@@ -8,9 +8,11 @@
 
 #pragma once
 
+#include "MIDevice.h"
 #include "Render/MRenderGlobal.h"
 
 #include "Math/Vector.h"
+#include "Utility/MColor.h"
 
 class MIMesh;
 class MBuffer;
@@ -21,14 +23,14 @@ class MShaderPropertyBlock;
 class MComputeDispatcher;
 class MMaterialPipelineLayoutData;
 
-enum class MEBufferBarrierStage
+enum class METextureBarrierStage
 {
-	EUnknow = 0,
+    EUnknow = 0,
+	EPixelShaderSample,
+	EPixelShaderWrite,
 	EComputeShaderWrite,
 	EComputeShaderRead,
-	EPixelShaderWrite,
-	EPixelShaderRead,
-	EDrawIndirectRead,
+	EShadingRateMask,
 };
 
 struct MORTY_API MViewportInfo
@@ -90,16 +92,21 @@ public:
 	virtual bool SetGraphPipeline(std::shared_ptr<MMaterial> pMaterial) = 0;
 	virtual void SetShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) = 0;
 
+	virtual void PushShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) = 0;
+	virtual void PopShaderPropertyBlock() = 0;
+
 	virtual bool DispatchComputeJob(MComputeDispatcher* pMaterial, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ) = 0;
 
-	virtual bool AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures) = 0;
+	virtual bool AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures, METextureBarrierStage dstStage) = 0;
 	virtual bool AddBufferMemoryBarrier(const std::vector<const MBuffer*> vBuffers, MEBufferBarrierStage srcStage, MEBufferBarrierStage dstStage) = 0;
 
 	virtual bool DownloadTexture(MTexture* pTexture, const uint32_t& unMipIdx, const std::function<void(void* pImageData, const Vector2& size)>& callback) = 0;
 	virtual bool CopyImageBuffer(MTexture* pSource, MTexture* pDest) = 0;
 	virtual void UpdateMipmaps(MTexture* pBuffer) = 0;
 	virtual void ResetBuffer(const MBuffer* pBuffer) = 0;
+	virtual void FillTexture(MTexture* pBuffer, MColor color) = 0;
 
+	virtual void SetShadingRate(Vector2i i2ShadingSize, std::array<MEShadingRateCombinerOp, 2> combineOp) = 0;
 
 	virtual MIRenderCommand* CreateChildCommand() { return nullptr; }
 	virtual MIRenderCommand* GetChildCommand(const size_t& nIndex) { 

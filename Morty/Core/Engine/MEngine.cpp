@@ -6,12 +6,14 @@
 #include "System/MObjectSystem.h"
 
 #include "Module/MCoreModule.h"
+#include "TaskGraph/MMultiThreadTaskGraphWalker.h"
+#include "TaskGraph/MSingleThreadTaskGraphWalker.h"
 
 MORTY_CLASS_IMPLEMENT(MEngine, MTypeClass)
 
 MEngine::MEngine()
 	: MTypeClass()
-	, m_time(500)
+	, m_time(60)
 	, m_eStage(EngineStage::DEFAULT)
 {
 
@@ -24,7 +26,7 @@ MEngine::~MEngine()
 bool MEngine::Initialize()
 {
 	m_threadPool.Initialize();
-	m_pMainTaskGraph = new MTaskGraph(GetThreadPool());
+	m_pMainTaskGraph = new MTaskGraph();
 
 	m_eStage = EngineStage::READY;
 	return true;
@@ -32,6 +34,8 @@ bool MEngine::Initialize()
 
 void MEngine::Release()
 {
+	//wait for all thread task finished.
+	m_threadPool.Release();
 
 	for (auto& pSystem : m_vSystem)
 	{
@@ -45,7 +49,6 @@ void MEngine::Release()
 
 	delete m_pMainTaskGraph;
 	m_pMainTaskGraph = nullptr;
-	m_threadPool.Release();
 }
 
 void MEngine::Start()
@@ -91,7 +94,8 @@ void MEngine::Tick(const float& fDelta)
 
 	if (m_pMainTaskGraph)
 	{
-		m_pMainTaskGraph->Run();
+		MMultiThreadTaskGraphWalker walker(&m_threadPool);
+		m_pMainTaskGraph->Run(&walker);
 	}
 }
 

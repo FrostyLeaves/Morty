@@ -49,15 +49,12 @@ class MORTY_API MPassTargetDescription
 {
 public:
 
-	MPassTargetDescription();
-	MPassTargetDescription(const bool bClear, const MColor& cClearColor);
-	MPassTargetDescription(const bool bClear, const bool bAlready, const MColor& cClearColor);
-	MPassTargetDescription(const bool bClear, const bool bAlready, const MColor& cClearColor, const uint32_t& nMipmap);
+	MPassTargetDescription() = default;
+	MPassTargetDescription(const bool bClear , const MColor& cClearColor, const uint32_t& nMipmap = 0);
 
-	bool bClearWhenRender;
-    bool bAlreadyRender;
-	MColor cClearColor;
-    uint32_t nMipmapLevel;
+	bool bClearWhenRender = true;
+	MColor cClearColor = MColor::Black_T;
+    uint32_t nMipmapLevel = 0;
 };
 
 struct MORTY_API MRenderTarget
@@ -75,6 +72,14 @@ struct MORTY_API MRenderTarget
 #endif
 };
 
+class MORTY_API MRenderTargetGroup
+{
+public:
+    std::vector<MRenderTarget> backTargets;
+    MRenderTarget depthTarget;
+    MRenderTarget shadingRate;
+};
+
 class MORTY_API MRenderPass
 {
 public:
@@ -89,7 +94,7 @@ public:
 
     void Resize(MIDevice* pDevice);
 
-    Vector2 GetFrameBufferSize();
+    Vector2i GetFrameBufferSize() const;
 
 public:
 
@@ -103,8 +108,14 @@ public:
     void AddBackTexture(std::shared_ptr<MTexture> pBackTexture, const MPassTargetDescription& desc);
     void SetDepthTexture(std::shared_ptr<MTexture> pDepthTexture, const MPassTargetDescription& desc);
 
+    void SetShadingRateTexture(std::shared_ptr<MTexture>& pTexture);
+
+    void SetRenderTarget(const MRenderTargetGroup& renderTarget);
+
+    std::shared_ptr<MTexture> GetBackTexture(size_t nIdx) const;
     std::vector<std::shared_ptr<MTexture>> GetBackTextures() const;
     std::shared_ptr<MTexture> GetDepthTexture() const;
+    std::shared_ptr<MTexture> GetShadingRateTexture() const;
 
     void SetRenderPassID(const uint32_t& unID) { m_unRenderPassID = unID; }
     uint32_t GetRenderPassID() const { return m_unRenderPassID; }
@@ -126,11 +137,7 @@ public:
 
     uint32_t m_unViewNum = 1;
 
-    //render back to texture
-	std::vector<MRenderTarget> m_vBackTextures;
-
-    //render depth to texture
-    MRenderTarget m_DepthTexture;
+    MRenderTargetGroup m_renderTarget;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
     //vulkan frame buffer.

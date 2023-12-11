@@ -13,8 +13,6 @@
 
 #include "Thread/MThreadWork.h"
 
-#define M_MAX_THREAD_NUM 10
-
 class MORTY_API MThreadPool : public MTypeClass
 {
     MORTY_CLASS(MThreadPool)
@@ -30,10 +28,11 @@ public:
 
 	bool AddWork(const MThreadWork& work);
 
-	void ThreadRun(METhreadType eType, MString strThreadName);
+	void ThreadRun(METhreadType eType, size_t nThreadIndex, MString strThreadName);
 
 	static std::thread::id GetCurrentThreadID();
 
+	static size_t GetCurrentThreadIndex();
 	static METhreadType GetCurrentThreadType();
 
 private:
@@ -41,17 +40,15 @@ private:
 
 	std::condition_variable m_ConditionVariable;
 
-	std::array<std::thread, M_MAX_THREAD_NUM> m_aThread;
+	std::array<std::thread, MGlobal::M_MAX_THREAD_NUM> m_aThread;
 
-	static std::map<std::thread::id, METhreadType> s_tThreadType;
+	static std::unordered_map<size_t, METhreadType> s_tThreadType;
 
 	std::queue<MThreadWork> m_vWaitingWork;
 
 	std::queue<MThreadWork> m_vWaitingWorkForRender;
 
-	bool m_bInitialized;
-
-
-	bool m_bClose;
-	int m_nCloseThreadCount;
+	bool m_bInitialized = false;
+	bool m_bClose = false;
+	size_t m_nCloseThreadCount = 0;
 };

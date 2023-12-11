@@ -3,8 +3,9 @@
 #include "MInstanceCulling.h"
 
 #include "Render/MBuffer.h"
-#include "Render/MVertex.h"
+#include "Shadow/MShadowMapUtil.h"
 
+class IRenderableFilter;
 class MInstanceBatchGroup;
 class MORTY_API MCascadedShadowCulling
     : public MInstanceCulling
@@ -16,13 +17,18 @@ public:
 
     MEngine* GetEngine() const { return m_pEngine; }
 
-    void SetViewport(MViewport* pViewport);
     void SetCamera(MEntity* pCameraEntity);
+    void SetViewport(MViewport* pViewport) { m_pViewport = pViewport; }
     void SetDirectionalLight(MEntity* pDirectionalLight);
     void Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup) override;
     const MBuffer* GetDrawIndirectBuffer() override { return &m_drawIndirectBuffer; }
     const std::vector<MMaterialCullingGroup>& GetCullingInstanceGroup() const override { return m_vCullingInstanceGroup; }
-    std::array<MCascadedShadowRenderData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> GetCascadedRenderData() const { return m_vCascadedRenderData; }
+    const MCascadedArray<MCascadedShadowRenderData> GetCascadedRenderInfo() const { return m_vCascadedRenderData; }
+
+protected:
+
+    void CullingForDrawInstancing(const std::vector<MMaterialBatchGroup*>& vInstanceGroup, const MCascadedArray<std::unique_ptr<IRenderableFilter>>& vCascadedFilter);
+
 private:
 
     MEngine* m_pEngine = nullptr;
@@ -30,10 +36,10 @@ private:
     MEntity* m_pCameraEntity = nullptr;
     MEntity* m_pDirectionalLight = nullptr;
     MBuffer m_drawIndirectBuffer;
-
-    //Potential Shadow Caster
-    std::array<MBoundsAABB, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> m_vCascadedPscBounds;
-    std::array<MCascadedShadowRenderData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> m_vCascadedRenderData;
+    
+    //Shadow caster draw instancing.
     std::vector<MMaterialCullingGroup> m_vCullingInstanceGroup;
-
+    //Potential Shadow Caster
+    MCascadedArray<MBoundsAABB> m_vCascadedPscBounds;
+    MCascadedArray<MCascadedShadowRenderData> m_vCascadedRenderData;
 };

@@ -50,7 +50,7 @@ void MBone::Deserialize(const void* pBufferPointer)
 	vChildrenIndices.resize(fbData->children()->size());
 	for (size_t idx = 0; idx < fbData->children()->size(); ++idx)
 	{
-		vChildrenIndices[idx] = fbData->children()->Get(idx);
+		vChildrenIndices[idx] = fbData->children()->Get(static_cast<uint32_t>(idx));
 	}
 }
 
@@ -95,7 +95,7 @@ MBone* MSkeleton::AppendBone(const MString& strName)
 	m_vAllBones.push_back(MBone());
 	MBone& bone = m_vAllBones.back();
 	bone.strName = strName;
-	bone.unIndex = m_vAllBones.size() - 1;
+	bone.unIndex = static_cast<uint32_t>(m_vAllBones.size()) - 1;
 	bone.unParentIndex = MGlobal::M_INVALID_INDEX;
 	m_tBonesMap[strName] = bone.unIndex;
 	return &m_vAllBones.back();
@@ -175,6 +175,6 @@ void MSkeleton::Deserialize(const void* pBufferPointer)
 	m_vAllBones.resize(fbData->bones()->size());
 	for (size_t idx = 0; idx < fbData->bones()->size(); ++idx)
 	{
-		m_vAllBones[idx].Deserialize(fbData->bones()->Get(idx));
+		m_vAllBones[idx].Deserialize(fbData->bones()->Get(static_cast<uint32_t>(idx)));
 	}
 }

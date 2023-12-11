@@ -1,4 +1,4 @@
-﻿#include "MMaterialResourceData.h"
+#include "MMaterialResourceData.h"
 #include "MMaterialResource.h"
 #include "Flatbuffer/MMaterial_generated.h"
 
@@ -73,7 +73,7 @@ void MMaterialResourceData::Deserialize(const void* pBufferPointer)
 		vProperty.resize(nPropertyNum);
 		for (size_t nIdx = 0; nIdx < nPropertyNum; ++nIdx)
 		{
-			const auto fbProperty = fbData->material_property()->Get(nIdx);
+			const auto fbProperty = fbData->material_property()->Get(static_cast<uint32_t>(nIdx));
 			vProperty[nIdx].name = fbProperty->name()->c_str();
 			vProperty[nIdx].value.Deserialize(fbProperty->property());
 		}
@@ -85,7 +85,7 @@ void MMaterialResourceData::Deserialize(const void* pBufferPointer)
 		vTextures.resize(nTextureNum);
 		for (size_t nIdx = 0; nIdx < nTextureNum; ++nIdx)
 		{
-			const auto fbTexture = fbData->material_textures()->Get(nIdx);
+			const auto fbTexture = fbData->material_textures()->Get(static_cast<uint32_t>(nIdx));
 			vTextures[nIdx].name = fbTexture->name()->c_str();
 			vTextures[nIdx].value = fbTexture->texture()->str();
 		}

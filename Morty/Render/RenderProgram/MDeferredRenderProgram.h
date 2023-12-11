@@ -21,7 +21,6 @@
 #include "MRenderInfo.h"
 #include "RenderProgram/MIRenderProgram.h"
 
-#include "Shadow/MShadowMapShaderPropertyBlock.h"
 #include "MFrameShaderPropertyBlock.h"
 #include "Culling/MCascadedShadowCulling.h"
 #include "Culling/MInstanceCulling.h"
@@ -37,6 +36,7 @@ class MMaterial;
 class MIRenderCommand;
 class MComputeDispatcher;
 class MRenderMeshComponent;
+
 class MORTY_API MDeferredRenderProgram : public MIRenderProgram
 {
 public:
@@ -61,12 +61,15 @@ public:
 
 	void RenderForward();
 
+	void RenderVoxelizerDebug();
+
 	void RenderTransparent();
 
 	void RenderPostProcess();
 
 	void RenderDebug();
 
+	void RenderVRS();
 
 	std::shared_ptr<MTexture> GetOutputTexture() override;
 	std::vector<std::shared_ptr<MTexture>> GetOutputTextures() override;
@@ -83,6 +86,9 @@ public:
 
 	void InitializeRenderWork();
 	void ReleaseRenderWork();
+
+	void InitializeTaskGraph();
+	void ReleaseTaskGraph();
 	
 protected:
 
@@ -96,8 +102,13 @@ protected:
 		{
 			return m_tRenderWork[TYPE::GetClassType()].get();
 		}
-		m_tRenderWork[TYPE::GetClassType()] = std::make_unique<TYPE>();
-		m_tRenderWork[TYPE::GetClassType()]->Initialize(GetEngine());
+		auto pRenderWork = std::make_unique<TYPE>();
+		pRenderWork->Initialize(GetEngine());
+		if (auto pFramePropertyDecorator = pRenderWork->GetFramePropertyDecorator())
+		{
+			m_pFramePropertyAdapter->RegisterPropertyDecorator(pFramePropertyDecorator);
+		}
+		m_tRenderWork[TYPE::GetClassType()] = std::move(pRenderWork);
 		return m_tRenderWork[TYPE::GetClassType()].get();
 	}
 
@@ -121,14 +132,22 @@ protected:
 	std::vector<std::shared_ptr<MTexture>> m_vRenderTargets;
 	std::shared_ptr<MTexture> m_pFinalOutputTexture = nullptr;
 	
-	std::shared_ptr<MShadowMapShaderPropertyBlock> m_pShadowPropertyAdapter = nullptr;
 	std::shared_ptr<MFrameShaderPropertyBlock> m_pFramePropertyAdapter = nullptr;
 
-	std::shared_ptr<MCascadedShadowCulling> m_pShadowCulling = nullptr;
-	std::shared_ptr<MCameraFrustumCulling> m_pCameraFrustumCulling = nullptr;
-	std::shared_ptr<MBoundingBoxCulling> m_pVoxelizerCulling = nullptr;
+	MCullingTaskNode<MCascadedShadowCulling>* m_pShadowCulling = nullptr;
+
+#if GPU_CULLING_ENABLE
+	MCullingTaskNode<MGPUCameraFrustumCulling>* m_pCameraFrustumCulling = nullptr;
+#else
+	MCullingTaskNode<MCPUCameraFrustumCulling>* m_pCameraFrustumCulling = nullptr;
+#endif
+
+	MCullingTaskNode<MBoundingBoxCulling>* m_pVoxelizerCulling = nullptr;
 
 	std::unordered_map<const MType*, std::unique_ptr<IRenderWork>> m_tRenderWork;
 
-	size_t m_nFrameIndex = 0;
+	uint32_t m_nFrameIndex = 0;
+
+
+	std::unique_ptr<MTaskGraph> m_pCullingTask;
 };

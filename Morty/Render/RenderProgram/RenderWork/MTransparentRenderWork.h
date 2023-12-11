@@ -17,12 +17,25 @@
 
 #include <array>
 
+#include "MSinglePassRenderWork.h"
 #include "RenderProgram/MFrameShaderPropertyBlock.h"
 
 
+class MCullingResultRenderable;
 class MTexture;
 class MTextureResource;
-class MORTY_API MTransparentRenderWork : public IRenderWork
+
+
+//FIXME: delete it.
+class MORTY_API MForwardRenderTransparentShaderPropertyBlock : public MFrameShaderPropertyBlock
+{
+public:
+
+	void BindMaterial(const std::shared_ptr<MMaterial>& pMaterial) override { MORTY_UNUSED(pMaterial); }
+
+};
+
+class MORTY_API MTransparentRenderWork : public ISinglePassRenderWork
 {
 public:
     MORTY_CLASS(MTransparentRenderWork);
@@ -31,17 +44,14 @@ public:
 
     void Initialize(MEngine* pEngine) override;
 	void Release(MEngine* pEngine) override;
-	void Resize(Vector2 size) override;
+	void Resize(Vector2i size) override;
 
-    MEngine* GetEngine() const { return m_pEngine; }
-
-	void SetRenderTarget(std::shared_ptr<MTexture> pOutputTexture, std::shared_ptr<MTexture> pDepthTexture);
-
-    void Render(MRenderInfo& info);
-
-	void RenderDepthPeel(MRenderInfo& info);
+	void Render(MRenderInfo& info, const std::vector<MCullingResultRenderable*>& vRenderable);
 
 protected:
+
+	void RenderDepthPeel(MRenderInfo& info, const std::vector<MCullingResultRenderable*>& vRenderable);
+	void RenderScreenFill(MRenderInfo& info);
 
     void InitializeMaterial();
     void ReleaseMaterial();
@@ -59,18 +69,12 @@ protected:
 	void ReleaseFrameShaderParams();
 private:
 
-	MEngine* m_pEngine = nullptr;
-
 	std::shared_ptr<MTextureResource> m_pWhiteTexture;
 	std::shared_ptr<MTextureResource> m_pBlackTexture;
 
 	std::shared_ptr<MMaterial> m_pDrawFillMaterial;
 	std::shared_ptr<MMaterial> m_pDrawPeelMaterial;
 	std::shared_ptr<MMaterial> m_pForwardMaterial;
-
-	std::shared_ptr<MTexture> m_pOutputTexture;
-	std::shared_ptr<MTexture> m_pDepthTexture;
-	std::shared_ptr<MTexture> m_pDefaultOutputTexture;
 
 	std::shared_ptr<MTexture> m_pFrontTexture;
 	std::shared_ptr<MTexture> m_pBackTexture;
@@ -80,6 +84,5 @@ private:
 	std::shared_ptr<MTexture> m_pBackDepthForPassB;
 
 	MRenderPass m_peelRenderPass;
-	MRenderPass m_fillRenderPass;
-	std::array<MForwardRenderTransparentShaderPropertyBlock, 2> m_aFramePropertyBlock;
+	std::array<std::shared_ptr<MShaderPropertyBlock>, 2> m_aFramePropertyBlock;
 };

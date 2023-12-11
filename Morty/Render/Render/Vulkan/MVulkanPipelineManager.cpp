@@ -1,5 +1,6 @@
-﻿#include "Render/Vulkan/MVulkanPipelineManager.h"
+#include "Render/Vulkan/MVulkanPipelineManager.h"
 
+#include "MVulkanPhysicalDevice.h"
 #include "Render/MBuffer.h"
 #include "Render/MRenderPass.h"
 #include "Utility/MGlobal.h"
@@ -68,7 +69,7 @@ std::shared_ptr<MGraphicsPipeline> MVulkanPipelineManager::FindOrCreateGraphicsP
 
 	for (size_t nSubPassIdx = 0; nSubPassIdx < pRenderPass->m_vSubpass.size(); ++nSubPassIdx)
 	{
-		pPipeline->m_vSubpassPipeline.push_back(CreateGraphicsPipeline(pPipeline, pMaterial, pRenderPass, nSubPassIdx));
+		pPipeline->m_vSubpassPipeline.push_back(CreateGraphicsPipeline(pPipeline, pMaterial, pRenderPass, static_cast<uint32_t>(nSubPassIdx)));
 	}
 
 	return pPipeline;
@@ -167,9 +168,32 @@ void MVulkanPipelineManager::DestroyPipeline(const std::shared_ptr<MPipeline>& p
 	pipeline->m_tShaderPropertyBlocks.clear();
 }
 
+VkShaderStageFlags GetShaderStageFlags(MShaderProgram* program)
+{
+	VkShaderStageFlags result = 0;
+
+	static const std::array<VkShaderStageFlagBits, static_cast<size_t>(MEShaderType::TOTAL_NUM)> ShaderStageTable = {
+	    VK_SHADER_STAGE_VERTEX_BIT,
+		VK_SHADER_STAGE_FRAGMENT_BIT,
+		VK_SHADER_STAGE_COMPUTE_BIT,
+		VK_SHADER_STAGE_GEOMETRY_BIT,
+	};
+
+	for (size_t nIdx = 0; nIdx < static_cast<size_t>(MEShaderType::TOTAL_NUM); ++nIdx)
+	{
+		if (program->GetShader(static_cast<MEShaderType>(nIdx)))
+		{
+			result |= ShaderStageTable[nIdx];
+		}
+	}
+
+	return result;
+}
+
 void MVulkanPipelineManager::GeneratePipelineLayout(const std::shared_ptr<MPipeline>& pPipeline, const std::shared_ptr<MShaderProgram>& pShaderProgram)
 {
-	VkShaderStageFlags vkShaderStageFlags = pShaderProgram->GetUsage() == MShaderProgram::EUsage::ECompute ? VK_SHADER_STAGE_COMPUTE_BIT : VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+	//const VkShaderStageFlags vkShaderStageFlags = GetShaderStageFlags(pShaderProgram.get());
+	VkShaderStageFlags vkShaderStageFlags = pShaderProgram->GetShader(MEShaderType::ECompute) ? (VK_SHADER_STAGE_COMPUTE_BIT) : (VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_GEOMETRY_BIT);
 
 	std::vector<VkDescriptorSetLayout> vSetLayouts;
 	std::vector<VkDescriptorSetLayoutBinding> vParamBinding[MRenderGlobal::SHADER_PARAM_SET_NUM];
@@ -235,7 +259,7 @@ void MVulkanPipelineManager::GeneratePipelineLayout(const std::shared_ptr<MPipel
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 
-		layoutInfo.bindingCount = vParamBinding[unSetIdx].size();
+		layoutInfo.bindingCount = static_cast<uint32_t>(vParamBinding[unSetIdx].size());
 		layoutInfo.pBindings = vParamBinding[unSetIdx].data();
 
 		vSetLayouts.push_back(VkDescriptorSetLayout());
@@ -247,7 +271,7 @@ void MVulkanPipelineManager::GeneratePipelineLayout(const std::shared_ptr<MPipel
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = vSetLayouts.size();
+	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(vSetLayouts.size());
 	pipelineLayoutInfo.pSetLayouts = vSetLayouts.data();
 
 	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
@@ -305,7 +329,7 @@ void GetBlendStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPas
 
 	if (MEMaterialType::EDepthPeel == eType)
 	{
-		if (pRenderPass->m_vBackTextures.size() < 4)
+		if (pRenderPass->m_renderTarget.backTargets.size() < 4)
 			return;
 
 		vBlendAttach.resize(4);
@@ -354,7 +378,7 @@ void GetBlendStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPas
 	}
 	else if (MEMaterialType::ETransparentBlend == eType)
 	{
-		for (uint32_t i = 0; i < pRenderPass->m_vBackTextures.size(); ++i)
+		for (uint32_t i = 0; i < pRenderPass->m_renderTarget.backTargets.size(); ++i)
 		{
 			vBlendAttach.push_back({});
 			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
@@ -370,7 +394,7 @@ void GetBlendStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPas
 	}
 	else if (MEMaterialType::EImGui == eType)
 	{
-		for (uint32_t i = 0; i < pRenderPass->m_vBackTextures.size(); ++i)
+		for (uint32_t i = 0; i < pRenderPass->m_renderTarget.backTargets.size(); ++i)
 		{
 			vBlendAttach.push_back({});
 			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
@@ -387,7 +411,7 @@ void GetBlendStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPas
 	}
 	else if(MEMaterialType::ECustom == eType)
 	{
-		for (uint32_t i = 0; i < pRenderPass->m_vBackTextures.size(); ++i)
+		for (uint32_t i = 0; i < pRenderPass->m_renderTarget.backTargets.size(); ++i)
 		{
 			vBlendAttach.push_back({});
 			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
@@ -403,7 +427,7 @@ void GetBlendStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPas
 	}
     else
     {
-		for (uint32_t i = 0; i < pRenderPass->m_vBackTextures.size(); ++i)
+		for (uint32_t i = 0; i < pRenderPass->m_renderTarget.backTargets.size(); ++i)
 		{
 			vBlendAttach.push_back({});
 			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
@@ -418,7 +442,7 @@ void GetBlendStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPas
 		}
     }
 
-	blendInfo.attachmentCount = vBlendAttach.size();
+	blendInfo.attachmentCount = static_cast<uint32_t>(vBlendAttach.size());
 	blendInfo.pAttachments = vBlendAttach.data();
 	blendInfo.blendConstants[0] = 0.0f;
 	blendInfo.blendConstants[1] = 0.0f;
@@ -503,9 +527,19 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<
 	VK_DYNAMIC_STATE_SCISSOR,
 	VK_DYNAMIC_STATE_LINE_WIDTH
 	};
+
+	//variable rate shading
+	if (m_pDevice->GetDeviceFeatureSupport(MEDeviceFeature::EVariableRateShading))
+	{
+		if (m_pDevice->GetPhysicalDevice()->m_VkShadingRateImageFeatures.pipelineFragmentShadingRate)
+		{
+			dynamicStates.push_back(VK_DYNAMIC_STATE_FRAGMENT_SHADING_RATE_KHR);
+		}
+	}
+
 	VkPipelineDynamicStateCreateInfo dynamicState{};
 	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-	dynamicState.dynamicStateCount = dynamicStates.size();
+	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 	dynamicState.pDynamicStates = dynamicStates.data();
 
 
@@ -550,9 +584,9 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<
 	VkPipelineVertexInputStateCreateInfo inputStateInfo = {};
 	inputStateInfo = VkPipelineVertexInputStateCreateInfo{};
 	inputStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	inputStateInfo.vertexBindingDescriptionCount = pVertexShaderBuffer->m_vBindingDescs.size();
+	inputStateInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(pVertexShaderBuffer->m_vBindingDescs.size());
 	inputStateInfo.pVertexBindingDescriptions = pVertexShaderBuffer->m_vBindingDescs.data();
-	inputStateInfo.vertexAttributeDescriptionCount = pVertexShaderBuffer->m_vAttributeDescs.size();
+	inputStateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(pVertexShaderBuffer->m_vAttributeDescs.size());
 	inputStateInfo.pVertexAttributeDescriptions = pVertexShaderBuffer->m_vAttributeDescs.data();
 
 	//Rasterization
@@ -565,6 +599,22 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<
 	rasterizationState.depthBiasConstantFactor = 0.0f; // Optional
 	rasterizationState.depthBiasClamp = 0.0f; // Optional
 	rasterizationState.depthBiasSlopeFactor = 0.0f; // Optional
+
+	VkPipelineRasterizationConservativeStateCreateInfoEXT conservativeRasterStateCI{};
+	conservativeRasterStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_CONSERVATIVE_STATE_CREATE_INFO_EXT;
+	conservativeRasterStateCI.conservativeRasterizationMode = VK_CONSERVATIVE_RASTERIZATION_MODE_DISABLED_EXT;
+	conservativeRasterStateCI.extraPrimitiveOverestimationSize = 0.0f;
+
+	if (pMaterial->GetConservativeRasterizationEnable())
+	{
+		if (m_pDevice->GetDeviceFeatureSupport(MEDeviceFeature::EConservativeRasterization))
+		{
+			const float fOverestSize = m_pDevice->GetPhysicalDevice()->m_VkConservativeRasterProps.extraPrimitiveOverestimationSizeGranularity;
+			conservativeRasterStateCI.conservativeRasterizationMode = VK_CONSERVATIVE_RASTERIZATION_MODE_OVERESTIMATE_EXT;
+			conservativeRasterStateCI.extraPrimitiveOverestimationSize = fOverestSize;
+			rasterizationState.pNext = &conservativeRasterStateCI;
+		}
+	}
 
 	switch (pMaterial->GetCullMode())
 	{
@@ -616,7 +666,7 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<
 
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	pipelineInfo.stageCount = vShaderStageCreateInfos.size();
+	pipelineInfo.stageCount = static_cast<uint32_t>(vShaderStageCreateInfos.size());
 	pipelineInfo.pStages = vShaderStageCreateInfos.data();
 	pipelineInfo.pDynamicState = &dynamicState;
 	pipelineInfo.pVertexInputState = &inputStateInfo;
@@ -783,6 +833,10 @@ void MVulkanPipelineManager::BindTextureParam(const std::shared_ptr<MShaderTextu
 		{
 			pTexture = m_pDevice->m_ShaderDefaultTextureArray;
 		}
+		else if (pParam->eType == METextureType::ETexture3D)
+		{
+			pTexture = m_pDevice->m_ShaderDefaultTexture3D;
+		}
 		else
 		{
 			MORTY_ASSERT(false);
@@ -793,7 +847,17 @@ void MVulkanPipelineManager::BindTextureParam(const std::shared_ptr<MShaderTextu
 	{
 		VkDescriptorImageInfo& imageInfo = pParam->m_VkImageInfo;
 		imageInfo.imageView = pTexture->m_VkImageView;
-		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		MORTY_ASSERT(pTexture->m_VkImageLayout != VK_IMAGE_LAYOUT_UNDEFINED);
+
+		//TODO: Do not set image layout from a constants value.
+		if (pTexture->GetRenderUsage() == METextureWriteUsage::EStorageWrite)
+		{
+			imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+		}
+        else
+        {
+			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        }
 		imageInfo.sampler = pTexture->m_VkSampler;
 
 		if (VK_NULL_HANDLE == imageInfo.sampler)

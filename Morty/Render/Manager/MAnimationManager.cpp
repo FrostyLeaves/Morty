@@ -34,7 +34,7 @@ void MAnimationManager::Initialize()
 		pNotifySystem->RegisterNotify(MRenderNotify::NOTIFY_ANIMATION_POSE_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MAnimationManager::OnPoseChanged, this));
 	}
 
-	m_pUpdateTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>("AnimationManagerUpdate");
+	m_pUpdateTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>(MRenderGlobal::TASK_ANIMATION_MANAGER_UPDATE);
 	if (m_pUpdateTask)
 	{
 		m_pUpdateTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MAnimationManager::RenderUpdate, this));

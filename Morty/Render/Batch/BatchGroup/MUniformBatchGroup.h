@@ -8,6 +8,7 @@
 #include "Utility/MBounds.h"
 #include "Utility/MMemoryPool.h"
 #include "MInstanceBatchGroup.h"
+#include "Material/MShaderProgram.h"
 
 struct MShaderConstantParam;
 class MShaderPropertyBlock;
@@ -16,6 +17,7 @@ class MScene;
 class MEngine;
 class MMaterial;
 class MComponent;
+class MShaderProgram;
 class MSceneComponent;
 class MRenderMeshComponent;
 
@@ -31,7 +33,7 @@ public:
 
 public:
 
-	void Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pMaterial) override;
+	void Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram) override;
 	void Release(MEngine* pEngine) override;
 	bool CanAddMeshInstance() const override;
 	void AddMeshInstance(const MMeshInstanceRenderProxy& proxy) override;
@@ -44,7 +46,7 @@ public:
 private:
 
 	MEngine* m_pEngine = nullptr;
-	std::shared_ptr<MMaterial> m_pMaterial = nullptr;
+	std::shared_ptr<MShaderProgram> m_pShaderProgram = nullptr;
 	std::shared_ptr<MShaderPropertyBlock> m_pShaderPropertyBlock = nullptr;
 	std::shared_ptr<MShaderConstantParam> m_pTransformParam = nullptr;
 	MRenderInstanceCache<MMeshInstanceKey, MMeshInstanceRenderProxy> m_tInstanceCache;

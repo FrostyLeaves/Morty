@@ -6,7 +6,7 @@
 struct VS_OUT
 {    
     float4 pos : SV_POSITION;
-    float4 color : u32COLOR;
+    float3 normal : NORMAL;
     uint voxelIdx : VOXEL_IDX;
 };
 
@@ -14,14 +14,17 @@ VS_OUT VS_MAIN(VS_IN input, uint INSTANCE_ID : SV_InstanceID)
 {
     VS_OUT output;
 
-    uint3 voxelUVW = InstanceIdToVoxelUVW(voxelMapSetting, INSTANCE_ID);
+    uint3 n3Coord = InstanceIdToVoxelCoord(voxelMapSetting, INSTANCE_ID);
 
-    float3 voxelWorldPosition = VoxelUVWToWorldPosition(voxelMapSetting, voxelUVW);
+    float3 voxelWorldPosition = VoxelCoordToWorldPosition(voxelMapSetting, n3Coord);
 
-    float4 worldPos = float4(voxelWorldPosition + input.pos, 1.0f);
+    VoxelClipmap clipmap = voxelMapSetting.vClipmap[voxelMapSetting.nClipmapIdx];
+
+    float4 worldPos = float4(voxelWorldPosition + input.pos * float3(clipmap.fVoxelSize, clipmap.fVoxelSize, clipmap.fVoxelSize), 1.0f);
+
 
     output.pos = mul(worldPos, u_matCamProj);
-    output.color = float4(1.0f, 0.0f, 0.0f, 1.0f);
+    output.normal = input.normal;
     output.voxelIdx = INSTANCE_ID;
 
     return output;

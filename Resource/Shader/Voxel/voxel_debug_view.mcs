@@ -21,14 +21,21 @@
 [numthreads(8, 8, 8)]
 void CS_MAIN(uint3 GlobalInvocationID : SV_DispatchThreadID )
 {
-    uint3 voxelPosition = GlobalInvocationID;
+    uint3 voxelCoord = GlobalInvocationID;
 
-    int voxelTableIdx = VoxelUVWToInstanceId(voxelMapSetting, voxelPosition);
+    int voxelTableIdx = VoxelCoordToInstanceId(voxelMapSetting, voxelCoord);
 
     VoxelizerOutput voxelizerData = rVoxelTable[voxelTableIdx];
 
+    int nVoxelCount = voxelizerData.nVoxelCount[0]
+        + voxelizerData.nVoxelCount[1]
+        + voxelizerData.nVoxelCount[2]
+        + voxelizerData.nVoxelCount[3]
+        + voxelizerData.nVoxelCount[4]
+        + voxelizerData.nVoxelCount[5];
+
     //TODO 
-    if (voxelizerData.nVoxelCount == 0)
+    if (nVoxelCount == 0)
     {
         indirectDraws[voxelTableIdx].instanceCount = 0;
         indirectDraws[voxelTableIdx].vertexOffset = 0;

@@ -62,19 +62,16 @@ void MDeferredLightingRenderWork::Render(MRenderInfo& info)
 	}
 	vTextures.push_back(m_pGBufferAdapter->GetDepthTexture().get());
 
-	if (const auto& pTexture = m_pShadowMapAdapter->GetTexture())
-	{
-		vTextures.push_back(pTexture.get());
-	}
-
-	pCommand->AddRenderToTextureBarrier(vTextures);
+	pCommand->AddRenderToTextureBarrier(vTextures, METextureBarrierStage::EPixelShaderSample);
 
 	pCommand->BeginRenderPass(&m_renderPass);
 
-	Vector2 v2Size = m_renderPass.GetFrameBufferSize();
+	//pCommand->SetShadingRate({ 1, 1 }, { MEShadingRateCombinerOp::Keep, MEShadingRateCombinerOp::Replace });
 
-	pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
-	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
+	const Vector2i n2Size = m_renderPass.GetFrameBufferSize();
+
+	pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, n2Size.x, n2Size.y));
+	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, n2Size.x, n2Size.y));
 
 
 	if (pCommand->SetUseMaterial(m_pLightningMaterial))
@@ -95,7 +92,7 @@ void MDeferredLightingRenderWork::Initialize(MEngine* pEngine)
 
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-	std::shared_ptr<MResource> vs = pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mvs");
+	std::shared_ptr<MResource> vs = pResourceSystem->LoadResource("Shader/Deferred/deferred_lighting.mvs");
 	std::shared_ptr<MResource> ps = pResourceSystem->LoadResource("Shader/Deferred/deferred_lighting.mps");
 
 
@@ -103,13 +100,75 @@ void MDeferredLightingRenderWork::Initialize(MEngine* pEngine)
 	m_pLightningMaterial->LoadShader(vs);
 	m_pLightningMaterial->LoadShader(ps);
 
+	/*
+	auto pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+
+	auto pShadingRateTexture = MTexture::CreateShadingRate();
+	pShadingRateTexture->SetSize(Vector2i(512/16, 512 / 16));
+	pShadingRateTexture->GenerateBuffer(pRenderSystem->GetDevice());
+	m_renderPass.SetShadingRateTexture(pShadingRateTexture);
+	*/
 }
 
 void MDeferredLightingRenderWork::Release(MEngine* pEngine)
 {
 	m_pLightningMaterial = nullptr;
 
+	auto pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+
+	if (auto pShadingRateTexture = m_renderPass.GetShadingRateTexture())
+	{
+		pShadingRateTexture->DestroyBuffer(pRenderSystem->GetDevice());
+	}
+
 	Super::Release(pEngine);
+}
+
+void MDeferredLightingRenderWork::Resize(Vector2i size)
+{
+	/*
+	auto pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+
+	if (auto pShadingRateTexture = m_renderPass.GetShadingRateTexture())
+	{
+		Vector2i n2TexelSize = pRenderSystem->GetDevice()->GetShadingRateTextureTexelSize();
+		Vector2i n2ShadingRateSize = {};
+		n2ShadingRateSize.x = size.x / n2TexelSize.x + ((size.x % n2TexelSize.x) != 0);
+		n2ShadingRateSize.y = size.y / n2TexelSize.y + ((size.y % n2TexelSize.y) != 0);
+
+		if (pShadingRateTexture->GetSize2D().x != n2ShadingRateSize.x || pShadingRateTexture->GetSize2D().y != n2ShadingRateSize.y)
+		{
+			std::vector<MByte> data(n2ShadingRateSize.x * n2ShadingRateSize.y * sizeof(MByte));
+
+			for (int h = 0; h < n2ShadingRateSize.y; ++h)
+			{
+				for (int w = 0; w < n2ShadingRateSize.x; ++w)
+				{
+					MByte pixel = 0;
+
+					if (w < n2ShadingRateSize.x / 2)
+					{
+						pixel = MShadingRateType::Rate_1x1;
+					}
+					else
+					{
+						pixel = MShadingRateType::Rate_4X4;
+					}
+
+					data[h * n2ShadingRateSize.x + w] = pixel;
+				}
+			}
+
+
+			pShadingRateTexture->SetSize(n2ShadingRateSize);
+			pShadingRateTexture->DestroyBuffer(pRenderSystem->GetDevice());
+			pShadingRateTexture->GenerateBuffer(pRenderSystem->GetDevice(), data.data());
+		}
+	}
+	*/
+
+	ISinglePassRenderWork::Resize(size);
+
 }
 
 void MDeferredLightingRenderWork::SetGBuffer(const std::shared_ptr<IGBufferAdapter>& pAdapter)
@@ -119,14 +178,14 @@ void MDeferredLightingRenderWork::SetGBuffer(const std::shared_ptr<IGBufferAdapt
 	if (std::shared_ptr<MShaderPropertyBlock> pParams = m_pLightningMaterial->GetMaterialPropertyBlock())
 	{
 		const auto& vTextures = pAdapter->GetBackTextures();
-		pParams->SetTexture("u_mat_f3Albedo_fMetallic", vTextures[0]);
-		pParams->SetTexture("u_mat_f3Normal_fRoughness", vTextures[1]);
-		pParams->SetTexture("u_mat_f3Position_fAmbientOcc", vTextures[2]);
-		pParams->SetTexture("u_mat_DepthMap", pAdapter->GetDepthTexture());
+		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_ALBEDO_METALLIC, vTextures[0]);
+		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_NORMAL_ROUGHNESS, vTextures[1]);
+		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_POSITION_AMBIENTOCC, vTextures[2]);
+		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_DEPTH_MAP, pAdapter->GetDepthTexture());
 	}
 }
 
-void MDeferredLightingRenderWork::SetShadowMap(const std::shared_ptr<ITextureInputAdapter>& pAdapter)
+void MDeferredLightingRenderWork::SetShadowMap(const std::shared_ptr<IGetTextureAdapter>& pAdapter)
 {
 	m_pShadowMapAdapter = pAdapter;
 }

@@ -27,9 +27,8 @@ MORTY_CLASS_IMPLEMENT(MGBufferRenderWork, ISinglePassRenderWork)
 void MGBufferRenderWork::Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
-	MViewport* pViewport = info.pViewport;
-	Vector2 v2LeftTop = pViewport->GetLeftTop();
-	Vector2 v2Size = pViewport->GetSize();
+	const Vector2i v2LeftTop = info.f2ViewportLeftTop;
+	const Vector2i v2Size = info.f2ViewportSize;
 
 
 	pCommand->BeginRenderPass(&m_renderPass);

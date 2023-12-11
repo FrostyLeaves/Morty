@@ -15,8 +15,8 @@
 
 struct MORTY_API MemoryInfo
 {
-	uint32_t begin;
-	uint32_t size;
+    size_t begin = 0;
+    size_t size = 0;
 
 	bool operator< (const MemoryInfo& info) { return begin < info.begin; }
 	bool operator< (const MemoryInfo& info) const { return begin < info.begin; }
@@ -31,7 +31,7 @@ public:
 
 public:
 
-    bool AllowMemory(const uint32_t& unSize, MemoryInfo& info);
+    bool AllowMemory(const size_t& unSize, MemoryInfo& info);
 
     void FreeMemory(MemoryInfo& info);
 

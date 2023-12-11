@@ -12,12 +12,11 @@
 
 enum class METhreadType
 {
-	EAny = -3,
-	EMainThread = -2,
+	EAny = -2,
 	ECurrentThread = -1,
-	ERenderThread = 0,
 
-
+	EMainThread = 0,
+	ERenderThread = 1,
 
 	ENameThreadNum
 };

@@ -30,7 +30,7 @@ void MShaderProgram::InitializeShaderPropertyBlock()
 	m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MATERIAL] = MShaderPropertyBlock::MakeShared(GetShared(), MRenderGlobal::SHADER_PARAM_SET_MATERIAL);
 	m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_FRAME] = MShaderPropertyBlock::MakeShared(GetShared(), MRenderGlobal::SHADER_PARAM_SET_FRAME);
 	m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_MESH] = MShaderPropertyBlock::MakeShared(GetShared(), MRenderGlobal::SHADER_PARAM_SET_MESH);
-	m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_SKELETON] = MShaderPropertyBlock::MakeShared(GetShared(), MRenderGlobal::SHADER_PARAM_SET_SKELETON);
+	m_vShaderSets[MRenderGlobal::SHADER_PARAM_SET_OTHER] = MShaderPropertyBlock::MakeShared(GetShared(), MRenderGlobal::SHADER_PARAM_SET_OTHER);
 }
 
 std::shared_ptr<MShaderProgram> MShaderProgram::MakeShared(MEngine* pEngine, EUsage usage)

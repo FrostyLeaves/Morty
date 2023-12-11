@@ -10,6 +10,7 @@ MShaderConstantParam::MShaderConstantParam()
 }
 
 MShaderConstantParam::MShaderConstantParam(const MShaderConstantParam& param)
+    : MShaderParam(param)
 {
 	strName = param.strName;
 	var = MVariant::Clone(param.var);
@@ -44,8 +45,11 @@ MShaderTextureParam::MShaderTextureParam()
 
 void MShaderTextureParam::SetTexture(std::shared_ptr<MTexture> pTexture)
 {
-	this->pTexture = pTexture;
-	SetDirty();
+	if (this->pTexture != pTexture)
+	{
+		this->pTexture = pTexture;
+		SetDirty();
+	}
 }
 
 MShaderSampleParam::MShaderSampleParam()

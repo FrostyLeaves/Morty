@@ -3,8 +3,6 @@
 #
 cmake_minimum_required (VERSION 3.10)
 
-set(RENDER_CODE_DIRECTORIES)
-
 ############################################################
 # Render
 ############################################################
@@ -23,18 +21,11 @@ add_library(Render OBJECT
 ############################################################
 # header search path
 ############################################################
-set(RENDER_CODE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}
-        ${RENDER_CODE_DIRECTORIES}
-)
-
-set( RENDER_CODE_DIRECTORIES
-    ${RENDER_CODE_DIRECTORIES}
-    CACHE INTERNAL "Render Source Code Directories"
-)
 
 target_include_directories(Render
     PUBLIC 
-        ${RENDER_CODE_DIRECTORIES}
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/Flatbuffer
 )
 
 set_target_properties(Render PROPERTIES
@@ -124,3 +115,5 @@ else()
 endif()
 
 target_link_libraries(Render PUBLIC Core)
+
+generate_flatbuffers_header(Render)

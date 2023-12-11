@@ -31,15 +31,15 @@ public:
 
 public:
 
-	std::shared_ptr<MShaderConstantParam> FindConstantParam(const MString& strParamName);
-	std::shared_ptr<MShaderStorageParam> FindStorageParam(const MString& strParamName);
-	std::shared_ptr<MShaderTextureParam> FindTextureParam(const MString& strParamName);
+	std::shared_ptr<MShaderConstantParam> FindConstantParam(const MStringId& strParamName);
+	std::shared_ptr<MShaderStorageParam> FindStorageParam(const MStringId& strParamName);
+	std::shared_ptr<MShaderTextureParam> FindTextureParam(const MStringId& strParamName);
 
 
 	template<typename TYPE>
-	bool SetValue(const MString& strName, const TYPE& value);
+	bool SetValue(const MStringId& strName, const TYPE& value);
 
-	bool SetTexture(const MString& strName, std::shared_ptr<MTexture> pTexture);
+	bool SetTexture(const MStringId& strName, std::shared_ptr<MTexture> pTexture);
 
 	bool HasValue(const uint32_t& unBinding, const uint32_t& unSet);
 
@@ -98,7 +98,7 @@ protected:
 };
 
 template<typename TYPE>
-inline bool SetValueRecursive(MVariant& variant, const MString& strName, const TYPE& value)
+inline bool SetValueRecursive(MVariant& variant, const MStringId& strName, const TYPE& value)
 {
 	if (variant.IsType<MVariantStruct>())
 	{
@@ -126,7 +126,7 @@ inline bool SetValueRecursive(MVariant& variant, const MString& strName, const T
 }
 
 template<typename TYPE>
-inline bool MShaderPropertyBlock::SetValue(const MString& strName, const TYPE& value)
+inline bool MShaderPropertyBlock::SetValue(const MStringId& strName, const TYPE& value)
 {
 	for (std::shared_ptr<MShaderConstantParam>& pParam : m_vParams)
 	{

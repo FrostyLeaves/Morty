@@ -6,139 +6,91 @@
 
 #include "Render/MRenderGlobal.h"
 
+enum class METransparentPolicy
+{
+	EDualDepthPeeling = 1,
+};
+
 const MString strBonesPerVertex = MStringUtil::ToString(MRenderGlobal::BONES_PER_VERTEX);
-const MString strBonesMaxNumber = MStringUtil::ToString(MRenderGlobal::BONES_MAX_NUMBER);
-const MString strShadowTextureSize = MStringUtil::ToString(MRenderGlobal::SHADOW_TEXTURE_SIZE);
 const MString strPointLightMaxNumber = MStringUtil::ToString(MRenderGlobal::POINT_LIGHT_MAX_NUMBER);
 const MString strPointLightPixelNumber = MStringUtil::ToString(MRenderGlobal::POINT_LIGHT_PIXEL_NUMBER);
 const MString strSpotLightMaxNumber = MStringUtil::ToString(MRenderGlobal::SPOT_LIGHT_MAX_NUMBER);
 const MString strSpotLightPixelNumber = MStringUtil::ToString(MRenderGlobal::SPOT_LIGHT_PIXEL_NUMBER);
 const MString strCascadedShadowMapNumber = MStringUtil::ToString(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
 const MString strMeshLODLevelRangeNumber = MStringUtil::ToString(MRenderGlobal::MESH_LOD_LEVEL_RANGE);
-const MString strMergeInstancingMaxNumber = MStringUtil::ToString(MRenderGlobal::MERGE_INSTANCING_MAX_NUM);
 const MString strTransformInUniformMaxNumber = MStringUtil::ToString(MRenderGlobal::MESH_TRANSFORM_IN_UNIFORM_MAX_NUM);
-const MString strMergeInstancingClusterMaxNumber = MStringUtil::ToString(MRenderGlobal::MERGE_INSTANCING_CLUSTER_MAX_NUM);
-
-
-
-
-enum class METransparentPolicy
-{
-	EDualDepthPeeling = 1,
-};
-
 const MString strTransparentPolicy = MStringUtil::ToString((int)METransparentPolicy::EDualDepthPeeling);
+const MString strVoxelClipMapNumber = MStringUtil::ToString(MRenderGlobal::VOXEL_GI_CLIP_MAP_NUM);
+const MString strVoxelDiffuseConeCount = MStringUtil::ToString(16);
+const MString strVXGIEnable = MStringUtil::ToString(MORTY_VXGI_ENABLE);
 
-std::vector<std::pair<MString, MString>> MShaderMacro::s_vGlobalMacroParams = {
-	{"MBONES_PER_VERTEX", strBonesPerVertex},
-	{"MBONES_MAX_NUMBER", strBonesMaxNumber},
-	{"MSHADOW_TEXTURE_SIZE", strShadowTextureSize},
-	{"MCALC_NORMAL_IN_VS", MRenderGlobal::VERTEX_NORMAL ? "1" : "0"},
-	{"MPOINT_LIGHT_MAX_NUMBER", strPointLightMaxNumber},
-	{"MPOINT_LIGHT_PIXEL_NUMBER", strPointLightPixelNumber},
-	{"MSPOT_LIGHT_MAX_NUMBER", strSpotLightMaxNumber},
-	{"MSPOT_LIGHT_PIXEL_NUMBER", strSpotLightPixelNumber},
-	{"MTRANSPARENT_POLICY", strTransparentPolicy},
-	{"GBUFFER_UNIFIED_FORMAT", MRenderGlobal::GBUFFER_UNIFIED_FORMAT ? "1" : "0"},
-	{"CASCADED_SHADOW_MAP_NUM", strCascadedShadowMapNumber},
-	{"MESH_LOD_LEVEL_RANGE", strMeshLODLevelRangeNumber},
-	{"MERGE_INSTANCING_MAX_NUM", strMergeInstancingMaxNumber},
-	{"MERGE_INSTANCING_CLUSTER_MAX_NUM", strMergeInstancingClusterMaxNumber},
-	{"MESH_TRANSFORM_IN_UNIFORM_MAX_NUM", strTransformInUniformMaxNumber},
+std::unordered_map<MStringId, MString> MShaderMacro::s_vGlobalMacroParams = {
+	{MStringId("MBONES_PER_VERTEX"), strBonesPerVertex},
+	{MStringId("MPOINT_LIGHT_MAX_NUMBER"), strPointLightMaxNumber},
+	{MStringId("MPOINT_LIGHT_PIXEL_NUMBER"), strPointLightPixelNumber},
+	{MStringId("MSPOT_LIGHT_MAX_NUMBER"), strSpotLightMaxNumber},
+	{MStringId("MSPOT_LIGHT_PIXEL_NUMBER"), strSpotLightPixelNumber},
+	{MStringId("MTRANSPARENT_POLICY"), strTransparentPolicy},
+	{MStringId("CASCADED_SHADOW_MAP_NUM"), strCascadedShadowMapNumber},
+	{MStringId("MESH_LOD_LEVEL_RANGE"), strMeshLODLevelRangeNumber},
+	{MStringId("MESH_TRANSFORM_IN_UNIFORM_MAX_NUM"), strTransformInUniformMaxNumber},
+	{MStringId("VOXEL_GI_CLIP_MAP_NUM"), strVoxelClipMapNumber},
+	{MStringId("VOXEL_DIFFUSE_CONE_COUNT"), strVoxelDiffuseConeCount},
+	{MStringId("MORTY_VXGI_ENABLE"), strVXGIEnable},
 };
 
-void MShaderMacro::SetInnerMacro(const MString& strKey, const MString& strValue)
+void MShaderMacro::SetInnerMacro(const MStringId& strKey, const MString& strValue)
 {
 	SetMacro(strKey, strValue, m_vMortyMacroParams);
 }
 
-MString MShaderMacro::GetInnerMacro(const MString& strKey)
+MString MShaderMacro::GetInnerMacro(const MStringId& strKey)
 {
-	for (auto pairs : m_vMortyMacroParams)
+	auto findResult = m_vMortyMacroParams.find(strKey);
+	if (findResult == m_vMortyMacroParams.end())
 	{
-		if (strKey == pairs.first)
-			return pairs.second;
+		return {};
 	}
 
-	return MString();
+	return findResult->second;
 }
 
-void MShaderMacro::SetMacro(const MString& strKey, const MString& strValue)
+void MShaderMacro::SetMacro(const MStringId& strKey, const MString& strValue)
 {
 	SetMacro(strKey, strValue, m_vMacroParams);
 }
 
-void MShaderMacro::SetMacro(const MString& strKey, const MString& strValue, std::vector<std::pair<MString, MString>>& vector)
+void MShaderMacro::SetMacro(const MStringId& strKey, const MString& strValue, std::unordered_map<MStringId, MString>& table)
 {
-	std::vector<std::pair<MString, MString>>::iterator iter = std::lower_bound(vector.begin(), vector.end(), strKey, [](const std::pair<MString, MString>& a, const MString& b) {
-		return a.first < b;
-		});
-
-	if (iter == vector.end())
-	{
-		vector.push_back(std::pair<MString, MString>(strKey, strValue));
-	}
-	else if (iter->first == strKey)
-	{
-		iter->second = strValue;
-	}
-	else
-	{
-		vector.insert(iter, std::pair<MString, MString>(strKey, strValue));
-	}
+	table[strKey] = strValue;
 }
 
-void MShaderMacro::AddUnionMacro(const MString& strKey, const MString& strValue /*= ""*/)
+void MShaderMacro::AddUnionMacro(const MStringId& strKey, const MString& strValue /*= ""*/)
 {
-	std::pair<MString, MString> pair(strKey, strValue);
-
-	UNION_ORDER_PUSH_BACK_VECTOR<std::pair<MString, MString>>(m_vMacroParams, pair
-		, [](const std::pair<MString, MString>& a, const std::pair<MString, MString>& b) { return a.first < b.first; }
-	, [](const std::pair<MString, MString>& a, const std::pair<MString, MString>& b) { return a.first == b.first; }
-	);
+	MORTY_ASSERT(m_vMacroParams.find(strKey) == m_vMacroParams.end());
+	m_vMacroParams[strKey] = strValue;
 }
 
-void MShaderMacro::RemoveMacro(const MString& strKey)
+void MShaderMacro::RemoveMacro(const MStringId& strKey)
 {
-	std::pair<MString, MString> pair(strKey, "");
-	ERASE_UNION_ORDER_VECTOR<std::pair<MString, MString>>(m_vMacroParams, pair
-		, [](const std::pair<MString, MString>& a, const std::pair<MString, MString>& b) { return a.first < b.first; }
-	, [](const std::pair<MString, MString>& a, const std::pair<MString, MString>& b) { return a.first == b.first; }
-	);
+	m_vMacroParams.erase(strKey);
 }
 
-bool MShaderMacro::HasMacro(const MString& strKey)
+bool MShaderMacro::HasMacro(const MStringId& strKey)
 {
-	return FIND_ORDER_VECTOR<std::pair<MString, MString>, MString>(m_vMacroParams, strKey, [](const std::pair<MString, MString>& a, const MString& b) {
-		return a.first < b;
-	}) < m_vMacroParams.size();
+	return m_vMacroParams.find(strKey) != m_vMacroParams.end();
 }
 
 bool MShaderMacro::Compare(const MShaderMacro& macro)
 {
-	uint32_t unSize = m_vMacroParams.size();
-	uint32_t unMortySize = m_vMortyMacroParams.size();
-	if (unSize != macro.m_vMacroParams.size())
-		return false;
-	if (unMortySize != macro.m_vMortyMacroParams.size())
-		return false;
-
-	for (uint32_t i = 0; i < unSize; ++i)
+	if (m_vMacroParams != macro.m_vMacroParams)
 	{
-		const std::pair<MString, MString>& a = m_vMacroParams[i];
-		const std::pair<MString, MString>& b = macro.m_vMacroParams[i];
-
-		if (a.first != b.first || a.second != b.second)
-			return false;
+		return false;
 	}
 
-	for (uint32_t i = 0; i < unMortySize; ++i)
+	if (m_vMortyMacroParams != macro.m_vMortyMacroParams)
 	{
-		const std::pair<MString, MString>& a = m_vMortyMacroParams[i];
-		const std::pair<MString, MString>& b = macro.m_vMortyMacroParams[i];
-
-		if (a.first != b.first || a.second != b.second)
-			return false;
+		return false;
 	}
 
 	return true;
@@ -149,7 +101,7 @@ flatbuffers::Offset<void> MShaderMacro::Serialize(flatbuffers::FlatBufferBuilder
 	std::vector<flatbuffers::Offset<mfbs::MShaderMacroPair>> vMaterialMacroPairs;
 	for (auto pairs : m_vMacroParams)
 	{
-		auto fbKey = fbb.CreateString(pairs.first);
+		auto fbKey = fbb.CreateString(pairs.first.ToString());
 		auto fbValue = fbb.CreateString(pairs.second);
 		mfbs::MShaderMacroPairBuilder builder(fbb);
 		builder.add_key(fbKey);
@@ -160,7 +112,7 @@ flatbuffers::Offset<void> MShaderMacro::Serialize(flatbuffers::FlatBufferBuilder
 	std::vector<flatbuffers::Offset<mfbs::MShaderMacroPair>> vInnerMacroPairs;
 	for (auto pairs : m_vMortyMacroParams)
 	{
-		auto fbKey = fbb.CreateString(pairs.first);
+		auto fbKey = fbb.CreateString(pairs.first.ToString());
 		auto fbValue = fbb.CreateString(pairs.second);
 		mfbs::MShaderMacroPairBuilder builder(fbb);
 		builder.add_key(fbKey);
@@ -194,7 +146,7 @@ void MShaderMacro::Deserialize(const void* pBufferPointer)
 	{
 		for (auto pair : *fbData->material_macro())
 		{
-			m_vMacroParams.push_back({ pair->key()->c_str(), pair->value()->c_str() });
+			m_vMacroParams[MStringId(pair->key()->c_str())] = pair->value()->c_str();
 		}
 	}
 
@@ -202,7 +154,7 @@ void MShaderMacro::Deserialize(const void* pBufferPointer)
 	{
 		for (auto pair : *fbData->inner_macro())
 		{
-			m_vMortyMacroParams.push_back({ pair->key()->c_str(), pair->value()->c_str() });
+			m_vMortyMacroParams[MStringId(pair->key()->c_str())] = pair->value()->c_str();
 		}
 	}
 }

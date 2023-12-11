@@ -37,6 +37,8 @@ public:
 	Vector3 GetForward() const { return Matrix4(m_qtRotation) * Vector3(0, 0, 1); }
 	Vector3 GetRight() const { return Matrix4(m_qtRotation) * Vector3(1, 0, 0); }
 
+	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb);
+	void Deserialize(const void* pBufferPointer);
 private:
 
 	Vector3 m_v3Position;

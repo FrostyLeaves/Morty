@@ -134,7 +134,7 @@ void MEnvironmentManager::UpdateSkyBoxMaterial(MSkyBoxComponent* pComponent)
 		return;
 	}
 
-	m_pSkyBoxMaterial->SetTexture("SkyTexCube", pComponent->GetSkyBoxResource());
+	m_pSkyBoxMaterial->SetTexture(MShaderPropertyName::ENVIRONMENT_TEXTURE_SKYBOX, pComponent->GetSkyBoxResource());
 }
 
 bool MEnvironmentManager::HasEnvironmentComponent() const

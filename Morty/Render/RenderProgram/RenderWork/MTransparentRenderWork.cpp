@@ -15,14 +15,35 @@
 #include "Component/MRenderMeshComponent.h"
 
 #include "Mesh/MMeshManager.h"
+#include "RenderProgram/MeshRender/MCullingResultRenderable.h"
 #include "Resource/MTextureResourceUtil.h"
 #include "Utility/MGlobal.h"
 
-MORTY_CLASS_IMPLEMENT(MTransparentRenderWork, MObject)
+MORTY_CLASS_IMPLEMENT(MTransparentRenderWork, ISinglePassRenderWork)
+
+
+
+class MORTY_API MTransparentPropertyDecorator : public IShaderPropertyUpdateDecorator
+{
+public:
+	void BindMaterial(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock) override
+	{
+		MORTY_ASSERT(m_pTransparentFrontTextureParam = pShaderPropertyBlock->FindTextureParam(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_0));
+		MORTY_ASSERT(m_pTransparentBackTextureParam = pShaderPropertyBlock->FindTextureParam(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_1));
+	}
+
+	void Update(const MRenderInfo& info) override
+	{
+		MORTY_UNUSED(info);
+	}
+
+	std::shared_ptr<MShaderTextureParam> m_pTransparentFrontTextureParam = nullptr;
+	std::shared_ptr<MShaderTextureParam> m_pTransparentBackTextureParam = nullptr;
+};
 
 void MTransparentRenderWork::Initialize(MEngine* pEngine)
 {
-	m_pEngine = pEngine;
+	Super::Initialize(pEngine);
 
 	InitializeTexture();
 	InitializeMaterial();
@@ -44,83 +65,32 @@ void MTransparentRenderWork::Release(MEngine* pEngine)
 	ReleaseMaterial();
 	ReleaseTexture();
 
+	Super::Release(pEngine);
 }
 
-void MTransparentRenderWork::Resize(Vector2 size)
+void MTransparentRenderWork::Resize(Vector2i size)
 {
-	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
+	Super::Resize(size);
+
+	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
 	if (m_peelRenderPass.GetFrameBufferSize() != size)
 	{
 		pRenderSystem->ResizeFrameBuffer(m_peelRenderPass, size);
 	}
 
-	if (m_fillRenderPass.GetFrameBufferSize() != size)
-	{
-		pRenderSystem->ResizeFrameBuffer(m_fillRenderPass, size);
-	}
 }
 
-void MTransparentRenderWork::SetRenderTarget(std::shared_ptr<MTexture> pOutputTexture, std::shared_ptr<MTexture> pDepthTexture)
+void MTransparentRenderWork::Render(MRenderInfo& info, const std::vector<MCullingResultRenderable*>& vRenderable)
 {
-	m_pOutputTexture = pOutputTexture;
-	if (m_pOutputTexture)
-	{
-		Resize(m_pOutputTexture->GetSize());
-	}
 
-	m_pDepthTexture = pDepthTexture;
-}
-
-void MTransparentRenderWork::Render(MRenderInfo& info)
-{
-	if (info.m_tTransparentGroupMesh.empty())
-	{
-		return;
-	}
-
-	RenderDepthPeel(info);
+	RenderDepthPeel(info, vRenderable);
+	RenderScreenFill(info);
 	
-	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
-	if (!pCommand)
-	{
-		MORTY_ASSERT(pCommand);
-		return;
-	}
-
-	MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
-	if (!pMeshManager)
-	{
-		MORTY_ASSERT(pMeshManager);
-		return;
-	}
-
-	pCommand->AddRenderToTextureBarrier({ m_pFrontTexture.get(), m_pBackTexture.get() });
-
-	pCommand->BeginRenderPass(&m_fillRenderPass);
-
-	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
-	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight()));
-	pCommand->SetScissor(MScissorInfo(v2LeftTop.x, v2LeftTop.y, info.pViewport->GetWidth(), info.pViewport->GetHeight()));
-
-	pCommand->SetUseMaterial(m_pDrawFillMaterial);
-
-	pCommand->DrawMesh(pMeshManager->GetScreenRect());
-
-	pCommand->EndRenderPass();
 }
 
-void MTransparentRenderWork::RenderDepthPeel(MRenderInfo& info)
+void MTransparentRenderWork::RenderDepthPeel(MRenderInfo& info, const std::vector<MCullingResultRenderable*>& vRenderable)
 {
-	if (info.m_tTransparentGroupMesh.empty())
-		return;
-
-	if (nullptr == info.pViewport)
-	{
-		MORTY_ASSERT(info.pViewport);
-		return;
-	}
-
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
 	if (!pCommand)
 	{
@@ -135,24 +105,22 @@ void MTransparentRenderWork::RenderDepthPeel(MRenderInfo& info)
 		return;
 	}
 
-	m_aFramePropertyBlock[0].UpdateShaderSharedParams(info);
-	m_aFramePropertyBlock[1].UpdateShaderSharedParams(info);
+	const auto pDepthTexture = GetDepthTexture();
 
-
-	pCommand->AddRenderToTextureBarrier({ m_pDepthTexture.get() });
+	pCommand->AddRenderToTextureBarrier({ pDepthTexture.get() }, METextureBarrierStage::EPixelShaderSample);
 
 	pCommand->BeginRenderPass(&m_peelRenderPass);
 
 
-	Vector2 v2LeftTop = info.pViewport->GetLeftTop();
-	Vector2 v2Size = info.pViewport->GetSize();
-	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
-	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
+	const Vector2i f2LeftTop = info.f2ViewportLeftTop;
+	const Vector2i f2Size = info.f2ViewportSize;
+	pCommand->SetViewport(MViewportInfo(f2LeftTop.x, f2LeftTop.y, f2Size.x, f2Size.y));
+	pCommand->SetScissor(MScissorInfo(f2LeftTop.x, f2LeftTop.y, f2Size.x, f2Size.y));
 
 
-	if (m_pDrawPeelMaterial->GetTextureParams()[0]->GetTexture() != m_pDepthTexture)
+	if (m_pDrawPeelMaterial->GetTextureParams()[0]->GetTexture() != pDepthTexture)
 	{
-		m_pDrawPeelMaterial->GetTextureParams()[0]->SetTexture(m_pDepthTexture);
+		m_pDrawPeelMaterial->GetTextureParams()[0]->SetTexture(pDepthTexture);
 	}
 	
 
@@ -161,39 +129,58 @@ void MTransparentRenderWork::RenderDepthPeel(MRenderInfo& info)
 		pCommand->DrawMesh(pMeshManager->GetScreenRect());
 	}
 
-	for (uint32_t i = 1; i < m_peelRenderPass.m_vSubpass.size(); ++i)
+	for (size_t nSubpassIdx = 1; nSubpassIdx < m_peelRenderPass.m_vSubpass.size(); ++nSubpassIdx)
 	{
 		pCommand->NextSubPass();
 
-		for (auto& pr : info.m_tTransparentGroupMesh)
+		pCommand->PushShaderPropertyBlock(m_aFramePropertyBlock[nSubpassIdx % 2]);
+
+		for (MCullingResultRenderable* pRenderable : vRenderable)
 		{
-			std::shared_ptr<MMaterial> pMaterial = pr.first;
-			//ʹ�ò���
-			if (!pCommand->SetUseMaterial(pMaterial))
-				continue;
-
-			auto pPropertyBlock = m_aFramePropertyBlock[i % 2].GetPropertyBlock();
-			pCommand->SetShaderPropertyBlock(pPropertyBlock);
-			for (MRenderMeshComponent* pMeshComponent : pr.second)
-			{
-				const MMeshManager::MMeshData& meshData = pMeshManager->FindMesh(pMeshComponent->GetMesh());
-
-				pCommand->DrawMesh(
-					pMeshManager->GetVertexBuffer(),
-					pMeshManager->GetIndexBuffer(),
-					meshData.vertexMemoryInfo.begin,
-					meshData.indexMemoryInfo.begin,
-					meshData.indexMemoryInfo.size);
-			}
+			pRenderable->Render(pCommand);
 		}
+
+		pCommand->PopShaderPropertyBlock();
 	}
+
+	pCommand->EndRenderPass();
+}
+
+void MTransparentRenderWork::RenderScreenFill(MRenderInfo& info)
+{
+	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
+	if (!pCommand)
+	{
+		MORTY_ASSERT(pCommand);
+		return;
+	}
+
+	MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
+	if (!pMeshManager)
+	{
+		MORTY_ASSERT(pMeshManager);
+		return;
+	}
+
+	pCommand->AddRenderToTextureBarrier({ m_pFrontTexture.get(), m_pBackTexture.get() }, METextureBarrierStage::EPixelShaderSample);
+
+	pCommand->BeginRenderPass(&m_renderPass);
+
+	const Vector2i f2LeftTop = info.f2ViewportLeftTop;
+	const Vector2i f2Size = info.f2ViewportSize;
+	pCommand->SetViewport(MViewportInfo(f2LeftTop.x, f2LeftTop.y, f2Size.x, f2Size.y));
+	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, f2Size.x, f2Size.y));
+
+	pCommand->SetUseMaterial(m_pDrawFillMaterial);
+
+	pCommand->DrawMesh(pMeshManager->GetScreenRect());
 
 	pCommand->EndRenderPass();
 }
 
 void MTransparentRenderWork::InitializeMaterial()
 {
-	MResourceSystem* pResourceSystem = m_pEngine->FindSystem<MResourceSystem>();
+	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
 	std::shared_ptr<MResource> pDPVSResource = pResourceSystem->LoadResource("Shader/Forward/depth_peel_blend.mvs");
 	std::shared_ptr<MResource> pDPBPSResource = pResourceSystem->LoadResource("Shader/Forward/depth_peel_blend.mps");
@@ -201,6 +188,7 @@ void MTransparentRenderWork::InitializeMaterial()
 
 	m_pDrawPeelMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pDrawPeelMaterial->SetMaterialType(MEMaterialType::EDepthPeel);
+	m_pDrawPeelMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::MEN_TRANSPARENT, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
 	m_pDrawPeelMaterial->LoadShader(pDPVSResource);
 	m_pDrawPeelMaterial->LoadShader(pDPFPSResource);
 
@@ -224,8 +212,8 @@ void MTransparentRenderWork::ReleaseMaterial()
 
 void MTransparentRenderWork::InitializeTexture()
 {
-	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
-	MResourceSystem* pResourceSystem = m_pEngine->FindSystem<MResourceSystem>();
+	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
 	m_pBlackTexture = pResourceSystem->CreateResource<MTextureResource>("Transparent_Black");
 	m_pWhiteTexture = pResourceSystem->CreateResource<MTextureResource>("Transparent_White");
@@ -237,7 +225,7 @@ void MTransparentRenderWork::InitializeTexture()
 	m_pWhiteTexture->Load(MTextureResourceUtil::LoadFromMemory("Transparent_White", white, 1, 1, 4));
 
 
-	Vector2 size(512, 512);
+	Vector2i size(512, 512);
 
 
 	m_pFrontTexture = MTexture::CreateRenderTarget();
@@ -262,15 +250,11 @@ void MTransparentRenderWork::InitializeTexture()
 	m_pBackDepthForPassB->SetSize(size);
 	m_pBackDepthForPassB->GenerateBuffer(pRenderSystem->GetDevice());
 
-	m_pDefaultOutputTexture = MTexture::CreateRenderTarget();
-	m_pDefaultOutputTexture->SetSize(size);
-	m_pDefaultOutputTexture->GenerateBuffer(pRenderSystem->GetDevice());
-	m_pOutputTexture = m_pDefaultOutputTexture;
 }
 
 void MTransparentRenderWork::ReleaseTexture()
 {
-	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
+	const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
 	m_pBlackTexture->GetTextureTemplate()->DestroyBuffer(pRenderSystem->GetDevice());
 	m_pWhiteTexture->GetTextureTemplate()->DestroyBuffer(pRenderSystem->GetDevice());
@@ -313,12 +297,6 @@ void MTransparentRenderWork::ReleaseTexture()
 		m_pBackDepthForPassB->DestroyBuffer(pRenderSystem->GetDevice());
 		m_pBackDepthForPassB = nullptr;
 	}
-
-	if (m_pDefaultOutputTexture)
-	{
-		m_pDefaultOutputTexture->DestroyBuffer(pRenderSystem->GetDevice());
-		m_pDefaultOutputTexture = nullptr;
-	}
 }
 
 void MTransparentRenderWork::InitializePeelRenderPass()
@@ -326,8 +304,6 @@ void MTransparentRenderWork::InitializePeelRenderPass()
 #if MORTY_DEBUG
 	m_peelRenderPass.m_strDebugName = "Transparent Peel";
 #endif
-
-	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
 
 	m_peelRenderPass.AddBackTexture(m_pFrontTexture, { true, MColor::Black_T });
 	
@@ -342,7 +318,7 @@ void MTransparentRenderWork::InitializePeelRenderPass()
 	m_peelRenderPass.AddBackTexture(m_pBackDepthForPassB, { true, MColor::Black_T });
 
 
-	static const uint32_t SUB_PASS_NUM = 6;
+	static constexpr uint32_t SUB_PASS_NUM = 6;
 
 	m_peelRenderPass.m_vSubpass.push_back(MSubpass());
 	MSubpass& subpass = m_peelRenderPass.m_vSubpass.back();
@@ -378,12 +354,11 @@ void MTransparentRenderWork::InitializePeelRenderPass()
 
 	m_peelRenderPass.SetDepthTestEnable(true);
 	m_peelRenderPass.SetDepthWriteEnable(false);
-	m_peelRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
 }
 
 void MTransparentRenderWork::ReleasePeelRenderPass()
 {
-	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
+	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
 	m_peelRenderPass.DestroyBuffer(pRenderSystem->GetDevice());
 }
@@ -391,50 +366,47 @@ void MTransparentRenderWork::ReleasePeelRenderPass()
 void MTransparentRenderWork::InitializeFillRenderPass()
 {
 #if MORTY_DEBUG
-	m_peelRenderPass.m_strDebugName = "Transparent Fill";
+	m_renderPass.m_strDebugName = "Transparent Fill";
 #endif
 
-	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
-
-	m_fillRenderPass.SetDepthTestEnable(false);
-	m_fillRenderPass.SetDepthWriteEnable(false);
-	m_fillRenderPass.AddBackTexture(m_pOutputTexture, { false, true, MColor::Black_T });
-
-	m_fillRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
+	m_renderPass.SetDepthTestEnable(false);
+	m_renderPass.SetDepthWriteEnable(false);
 }
 
 void MTransparentRenderWork::ReleaseFillRenderPass()
 {
-	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
+	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
-	m_fillRenderPass.DestroyBuffer(pRenderSystem->GetDevice());
+	m_renderPass.DestroyBuffer(pRenderSystem->GetDevice());
 }
 
 void MTransparentRenderWork::InitializeFrameShaderParams()
 {
-	MResourceSystem* pResourceSystem = m_pEngine->FindSystem<MResourceSystem>();
+	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-	std::shared_ptr<MResource> forwardVS = pResourceSystem->LoadResource("Shader/Forward/model.mvs");
-	std::shared_ptr<MResource> forwardPS = pResourceSystem->LoadResource("Shader/Forward/model.mps");
+	std::shared_ptr<MResource> forwardVS = pResourceSystem->LoadResource("Shader/Model/universal_model.mvs");
+	std::shared_ptr<MResource> forwardPS = pResourceSystem->LoadResource("Shader/Forward/basic_lighting.mps");
 	m_pForwardMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	m_pForwardMaterial->SetCullMode(MECullMode::ECullBack);
 	m_pForwardMaterial->SetMaterialType(MEMaterialType::EDepthPeel);
+	m_pForwardMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::MEN_TRANSPARENT, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
 	m_pForwardMaterial->LoadShader(forwardVS);
 	m_pForwardMaterial->LoadShader(forwardPS);
 
-	m_aFramePropertyBlock[0].BindMaterial(m_pForwardMaterial);
-	m_aFramePropertyBlock[0].m_pTransparentFrontTextureParam->SetTexture(m_pFrontDepthForPassB);
-	m_aFramePropertyBlock[0].m_pTransparentBackTextureParam->SetTexture(m_pBackDepthForPassB);
-
-	m_aFramePropertyBlock[1].BindMaterial(m_pForwardMaterial);
-	m_aFramePropertyBlock[1].m_pTransparentFrontTextureParam->SetTexture(m_pFrontDepthForPassA);
-	m_aFramePropertyBlock[1].m_pTransparentBackTextureParam->SetTexture(m_pBackDepthForPassA);
+	m_aFramePropertyBlock[0] = m_pForwardMaterial->GetShaderProgram()->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_OTHER]->Clone();
+	m_aFramePropertyBlock[1] = m_pForwardMaterial->GetShaderProgram()->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_OTHER]->Clone();
+	m_aFramePropertyBlock[0]->SetTexture(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_0, m_pFrontDepthForPassB);
+	m_aFramePropertyBlock[0]->SetTexture(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_1, m_pBackDepthForPassB);
+	m_aFramePropertyBlock[1]->SetTexture(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_0, m_pFrontDepthForPassA);
+	m_aFramePropertyBlock[1]->SetTexture(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_1, m_pBackDepthForPassA);
 }
 
 void MTransparentRenderWork::ReleaseFrameShaderParams()
 {
-	m_aFramePropertyBlock[0].Release(GetEngine());
-	m_aFramePropertyBlock[1].Release(GetEngine());
+	const auto pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+
+	m_aFramePropertyBlock[0]->DestroyBuffer(pRenderSystem->GetDevice());
+	m_aFramePropertyBlock[1]->DestroyBuffer(pRenderSystem->GetDevice());
 
 	m_pForwardMaterial = nullptr;
 }

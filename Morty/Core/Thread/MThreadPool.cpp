@@ -9,14 +9,13 @@
 
 MORTY_CLASS_IMPLEMENT(MThreadPool, MTypeClass)
 
-std::map<std::thread::id, METhreadType> MThreadPool::s_tThreadType = {};
+std::unordered_map<size_t, METhreadType> MThreadPool::s_tThreadType = {};
 
-constexpr bool bSingleThreadMode = true;
+thread_local static size_t ThreadIndex = 0;
+
+constexpr bool bSingleThreadMode = false;
 
 MThreadPool::MThreadPool()
-	: m_bInitialized(false)
-	, m_bClose(false)
-	, m_nCloseThreadCount(0)
 {
 
 }
@@ -28,7 +27,8 @@ MThreadPool::~MThreadPool()
 
 void MThreadPool::Initialize()
 {
-	s_tThreadType[std::this_thread::get_id()] = METhreadType::EMainThread;
+	ThreadIndex = 0;
+	s_tThreadType[ThreadIndex] = METhreadType::EMainThread;
 
 	if (bSingleThreadMode)
 	{
@@ -37,17 +37,17 @@ void MThreadPool::Initialize()
 	}
 
 	// Render Thread
-	size_t nRenderThreadIndex = size_t(METhreadType::ERenderThread);
-	m_aThread[nRenderThreadIndex] = std::thread(&MThreadPool::ThreadRun, this, METhreadType::ERenderThread, "Thread Render");
-	s_tThreadType[m_aThread[nRenderThreadIndex].get_id()] = METhreadType::ERenderThread;
+	const size_t nRenderThreadIndex = size_t(METhreadType::ERenderThread);
+	m_aThread[nRenderThreadIndex] = std::thread(&MThreadPool::ThreadRun, this, METhreadType::ERenderThread, nRenderThreadIndex, "Thread Render");
+	s_tThreadType[nRenderThreadIndex] = METhreadType::ERenderThread;
 	m_aThread[nRenderThreadIndex].detach();
 
-	for (size_t i = size_t(METhreadType::ENameThreadNum); i < m_aThread.size(); ++i)
+	for (size_t nThreadIdx = size_t(METhreadType::ENameThreadNum); nThreadIdx < m_aThread.size(); ++nThreadIdx)
 	{
-		MString strThreadName = MString("Thread ") + MStringUtil::ToString(i);
-		m_aThread[i] = std::thread(&MThreadPool::ThreadRun, this, METhreadType::EAny, strThreadName);
-		s_tThreadType[m_aThread[i].get_id()] = METhreadType::EAny;
-		m_aThread[i].detach();
+		MString strThreadName = MString("Thread ") + MStringUtil::ToString(nThreadIdx);
+		m_aThread[nThreadIdx] = std::thread(&MThreadPool::ThreadRun, this, METhreadType::EAny, nThreadIdx, strThreadName);
+		s_tThreadType[nThreadIdx] = METhreadType::EAny;
+		m_aThread[nThreadIdx].detach();
 	}
 
 	m_bInitialized = true;
@@ -64,7 +64,8 @@ void MThreadPool::Release()
 
 	m_ConditionVariable.notify_all();
 	
-	while (m_nCloseThreadCount != m_aThread.size());
+	//zero is MainThread.
+	while (m_nCloseThreadCount != m_aThread.size() - 1);
 }
 
 bool MThreadPool::AddWork(const MThreadWork& work)
@@ -105,8 +106,10 @@ bool MThreadPool::AddWork(const MThreadWork& work)
 	return true;
 }
 
-void MThreadPool::ThreadRun(METhreadType eType, MString strThreadName)
+void MThreadPool::ThreadRun(METhreadType eType, size_t nThreadIndex, MString strThreadName)
 {
+	ThreadIndex = nThreadIndex;
+
 #ifdef MORTY_WIN
 	MORTY_UNUSED(strThreadName);
 	//std::wstring wstrThreadName;
@@ -154,6 +157,7 @@ void MThreadPool::ThreadRun(METhreadType eType, MString strThreadName)
 		}
 
 		work.funcWorkFunction();
+		work = {};
 	}
 }
 
@@ -162,10 +166,16 @@ std::thread::id MThreadPool::GetCurrentThreadID()
 	return std::this_thread::get_id();
 }
 
+size_t MThreadPool::GetCurrentThreadIndex()
+{
+	return ThreadIndex;
+}
+
 METhreadType MThreadPool::GetCurrentThreadType()
 {
-	auto id = GetCurrentThreadID();
+	auto id = GetCurrentThreadIndex();
 	MORTY_ASSERT(s_tThreadType.find(id) != s_tThreadType.end());
 	return s_tThreadType[id];
 }
+
 

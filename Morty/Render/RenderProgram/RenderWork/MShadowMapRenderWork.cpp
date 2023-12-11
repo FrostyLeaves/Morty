@@ -28,7 +28,7 @@
 
 MORTY_CLASS_IMPLEMENT(MShadowMapRenderWork, ISinglePassRenderWork)
 
-class ShadowMapTexture : public ITextureInputAdapter
+class ShadowMapTexture : public IGetTextureAdapter
 {
 public:
 	virtual std::shared_ptr<MTexture> GetTexture() { return pTexture; }
@@ -52,8 +52,8 @@ void MShadowMapRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 
 	pCommand->BeginRenderPass(&m_renderPass);
 
-	Vector2 v2LeftTop = Vector2(0.0f, 0.0f);
-	Vector2 v2Size = pShadowmap->GetSize();
+	const Vector2i v2LeftTop = Vector2i(0, 0);
+	const Vector2i v2Size = pShadowmap->GetSize2D();
 	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
 	pCommand->SetScissor(MScissorInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
 
@@ -63,18 +63,52 @@ void MShadowMapRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 	}
 
 	pCommand->EndRenderPass();
+
+	pCommand->AddRenderToTextureBarrier({ m_renderPass.GetDepthTexture().get() }, METextureBarrierStage::EPixelShaderSample);
 }
 
-void MShadowMapRenderWork::Resize(Vector2 size)
+void MShadowMapRenderWork::Resize(Vector2i size)
 {
 	MORTY_UNUSED(size);
     //Shadow map can`t resize.
 }
 
-std::shared_ptr<ITextureInputAdapter> MShadowMapRenderWork::GetShadowMap() const
+std::shared_ptr<IGetTextureAdapter> MShadowMapRenderWork::GetShadowMap() const
 {
 	auto pShadowMap = std::make_shared<ShadowMapTexture>();
 	pShadowMap->pTexture = m_renderPass.GetDepthTexture();
 
 	return pShadowMap;
+}
+
+class MORTY_API MShadowPropertyDecorator : public IShaderPropertyUpdateDecorator
+{
+public:
+
+	explicit MShadowPropertyDecorator(MShadowMapRenderWork* pOwner) : m_pOwner(pOwner) {}
+
+	void BindMaterial(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock) override
+	{
+		MORTY_ASSERT(m_pShadowTextureParam = pShaderPropertyBlock->FindTextureParam(MShaderPropertyName::TEXTURE_SHADOW_MAP));
+	}
+
+	void Update(const MRenderInfo& info) override
+	{
+		MORTY_UNUSED(info);
+
+		const auto pTexture = m_pOwner->GetShadowMap()->GetTexture();
+		if (m_pShadowTextureParam && m_pShadowTextureParam->GetTexture() != pTexture)
+		{
+			m_pShadowTextureParam->SetTexture(pTexture);
+		}
+	}
+
+	std::shared_ptr<MShaderTextureParam> m_pShadowTextureParam = nullptr;
+
+	MShadowMapRenderWork* m_pOwner = nullptr;
+};
+
+std::shared_ptr<IShaderPropertyUpdateDecorator> MShadowMapRenderWork::GetFramePropertyDecorator()
+{
+	return std::make_shared<MShadowPropertyDecorator>(this);
 }

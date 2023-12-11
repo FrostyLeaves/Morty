@@ -45,7 +45,7 @@ public:
 
 public:
 
-    void ResizeFrameBuffer(MRenderPass& renderpass, const Vector2& v2Size);
+    void ResizeFrameBuffer(MRenderPass& renderpass, const Vector2i& v2Size);
     void ReleaseRenderpass(MRenderPass& renderpass, bool bClearTexture);
 
     static MCameraFrustum GetCameraFrustum(MViewport* pViewport, MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent);
@@ -63,13 +63,13 @@ public:
 public:
 
     static void GetCameraFrustumPoints(MEntity* pCamera
-        , const Vector2& v2ViewportSize
+        , const Vector2i& v2ViewportSize
         , const float& fZNear, const float& fZFar
         , std::vector<Vector3>& vPoints
     );
 
     static void GetCameraFrustumPoints(MEntity* pCamera
-        , const Vector2& v2ViewportSize
+        , const Vector2i& v2ViewportSize
         , const float& fZNear, const float& fZFar
         , Vector3& v3NearTopLeft, Vector3& v3NearTopRight
         , Vector3& v3NearBottomRight, Vector3& v3NearBottomLeft

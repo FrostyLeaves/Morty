@@ -12,6 +12,7 @@
 
 #include "Utility/MGlobal.h"
 #include "Utility/MString.h"
+#include "Utility/MStringId.h"
 #include "Math/Vector.h"
 #include "Math/Matrix.h"
 #include "MVariantMemory.h"
@@ -106,22 +107,22 @@ public:
 private:
 
 	template<typename TYPE>
-	void AppendVariant(const MString& strName, const TYPE& value);
+	void AppendVariant(const MStringId& strName, const TYPE& value);
 
 	template<typename TYPE>
-	void AppendContainer(const MString& strName, const TYPE& value);
+	void AppendContainer(const MStringId& strName, const TYPE& value);
 
 public:
 
-	bool HasVariant(const MString& strName);
+	bool HasVariant(const MStringId& strName);
 
 	template<typename TYPE>
-	TYPE& GetVariant(const MString& strName);
+	TYPE& GetVariant(const MStringId& strName);
 
 	template<typename TYPE>
-	void SetVariant(const MString& strName, const TYPE& value);
+	void SetVariant(const MStringId& strName, const TYPE& value);
 
-	MVariant& FindVariant(const MString& strName);
+	MVariant& FindVariant(const MStringId& strName);
 
 	MByte* Data() const { return m_pMemory->Data() + m_nOffset; }
 	size_t Size() const { return m_nSize; }
@@ -131,7 +132,7 @@ public:
 
 	static std::shared_ptr<MVariantStruct> Clone(const std::shared_ptr<MVariantStruct>& source, std::shared_ptr<MVariantMemory> pMemory = nullptr, size_t nOffset = 0);
 
-	const std::map<MString, MVariant>& GetMember() { return m_tMember; }
+	const std::unordered_map<MStringId, MVariant>& GetMember() { return m_tMember; }
 
 public:
 
@@ -143,7 +144,7 @@ private:
 	std::shared_ptr<MVariantMemory> m_pMemory = nullptr;
 	size_t m_nOffset = 0;
 	size_t m_nSize = 0;
-	std::map<MString, MVariant> m_tMember;
+	std::unordered_map<MStringId, MVariant> m_tMember;
 	bool m_bLocked = false;
 };
 
@@ -157,7 +158,7 @@ public:
 	}
 
 	template<typename TYPE>
-	void AppendVariant(const MString& strName, const TYPE& value)
+	void AppendVariant(const MStringId& strName, const TYPE& value)
 	{
 		MORTY_ASSERT(!m_struct.m_bLocked);
 		m_struct.AppendVariant(strName, value);
@@ -423,7 +424,7 @@ inline MEVariantType MVariant::Type<MVariantArray>()
 
 
 template<typename TYPE>
-void MVariantStruct::AppendVariant(const MString& strName, const TYPE& value)
+void MVariantStruct::AppendVariant(const MStringId& strName, const TYPE& value)
 {
 	MORTY_ASSERT(!m_bLocked);
 	const size_t nSize = MVariant::TypeSize<TYPE>();
@@ -438,7 +439,7 @@ void MVariantStruct::AppendVariant(const MString& strName, const TYPE& value)
 }
 
 template<>
-inline void MVariantStruct::AppendVariant<MVariant>(const MString& strName, const MVariant& value)
+inline void MVariantStruct::AppendVariant<MVariant>(const MStringId& strName, const MVariant& value)
 {
 	MORTY_ASSERT(!m_bLocked);
 	if(value.IsType<MVariantStruct>())
@@ -462,21 +463,21 @@ inline void MVariantStruct::AppendVariant<MVariant>(const MString& strName, cons
 }
 
 template<>
-inline void MVariantStruct::AppendVariant<MVariantStruct>(const MString& strName, const MVariantStruct& value)
+inline void MVariantStruct::AppendVariant<MVariantStruct>(const MStringId& strName, const MVariantStruct& value)
 {
 	MORTY_ASSERT(!m_bLocked);
 	return AppendContainer(strName, value);
 }
 
 template<>
-inline void MVariantStruct::AppendVariant<MVariantArray>(const MString& strName, const MVariantArray& value)
+inline void MVariantStruct::AppendVariant<MVariantArray>(const MStringId& strName, const MVariantArray& value)
 {
 	MORTY_ASSERT(!m_bLocked);
 	return AppendContainer(strName, value);
 }
 
 template<typename TYPE>
-inline void MVariantStruct::AppendContainer(const MString& strName, const TYPE& value)
+inline void MVariantStruct::AppendContainer(const MStringId& strName, const TYPE& value)
 {
 	MORTY_ASSERT(!m_bLocked);
 	const size_t nSize = value.Size();
@@ -495,7 +496,7 @@ inline void MVariantStruct::AppendContainer(const MString& strName, const TYPE& 
 }
 
 template<typename TYPE>
-inline TYPE& MVariantStruct::GetVariant(const MString& strName)
+inline TYPE& MVariantStruct::GetVariant(const MStringId& strName)
 {
 	MORTY_ASSERT(m_bLocked);
 	MVariant& member = FindVariant(strName);
@@ -504,7 +505,7 @@ inline TYPE& MVariantStruct::GetVariant(const MString& strName)
 
 
 template<>
-inline MVariant& MVariantStruct::GetVariant<MVariant>(const MString& strName)
+inline MVariant& MVariantStruct::GetVariant<MVariant>(const MStringId& strName)
 {
 	MORTY_ASSERT(m_bLocked);
 	auto findResult = m_tMember.find(strName);
@@ -519,7 +520,7 @@ inline MVariant& MVariantStruct::GetVariant<MVariant>(const MString& strName)
 }
 
 template<typename TYPE>
-inline void MVariantStruct::SetVariant(const MString& strName, const TYPE& value)
+inline void MVariantStruct::SetVariant(const MStringId& strName, const TYPE& value)
 {
 	MORTY_ASSERT(m_bLocked);
 	auto findResult = m_tMember.find(strName);
@@ -533,7 +534,7 @@ inline void MVariantStruct::SetVariant(const MString& strName, const TYPE& value
 }
 
 template<>
-inline void MVariantStruct::SetVariant<MVariant>(const MString& strName, const MVariant& value)
+inline void MVariantStruct::SetVariant<MVariant>(const MStringId& strName, const MVariant& value)
 {
 	MORTY_ASSERT(m_bLocked);
 	MORTY_ASSERT(value.GetType() != MEVariantType::ENone);

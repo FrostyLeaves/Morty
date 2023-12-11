@@ -1,0 +1,15 @@
+include "Math/Vector.fbs";
+include "Math/Quaternion.fbs";
+
+namespace mfbs;
+
+table MTransform
+{
+    position: Vector3;
+    scale: Vector3;
+    rotation: Quaternion;
+}
+
+root_type MTransform;
+
+file_identifier "MFBS";

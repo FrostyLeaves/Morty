@@ -12,7 +12,7 @@ MCameraFrustum::~MCameraFrustum()
 {
 }
 
-const MPlane& MCameraFrustum::GetPlane(const size_t& idx) const
+MPlane MCameraFrustum::GetPlane(const size_t& idx) const
 {
 	return m_vPlanes[(std::min)(idx, static_cast<size_t>(6))];
 }

@@ -37,7 +37,7 @@ void MShadowMeshManager::Initialize()
 		pNotifySystem->RegisterNotify(MRenderNotify::NOTIFY_GENERATE_SHADOW_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MShadowMeshManager::OnGenerateShadowChanged, this));
 	}
 
-	m_pUpdateTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>("ShadowMeshManagerUpdate");
+	m_pUpdateTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>(MRenderGlobal::TASK_SHADOWMAP_MANAGER_UPDATE);
 	if (m_pUpdateTask)
 	{
 		m_pUpdateTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MShadowMeshManager::RenderUpdate, this));
@@ -203,7 +203,7 @@ void MShadowMeshManager::InitializeMaterial()
 	std::shared_ptr<MResource> ps = pResourceSystem->LoadResource("Shader/Shadow/shadowmap.mps");
 	auto pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	pMaterial->SetCullMode(MECullMode::ECullNone);
-	pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, "1");
+	pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
 	pMaterial->LoadShader(vs);
 	pMaterial->LoadShader(ps);
 	m_staticMaterial.SetResource(pMaterial);
@@ -212,8 +212,8 @@ void MShadowMeshManager::InitializeMaterial()
 
 	pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	pMaterial->SetCullMode(MECullMode::ECullNone);
-	pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, "1");
-	pMaterial->GetShaderMacro().SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, "1");
+	pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+	pMaterial->GetShaderMacro().SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
 	pMaterial->LoadShader(vs);
 	pMaterial->LoadShader(ps);
 	m_animatedMaterial.SetResource(pMaterial);

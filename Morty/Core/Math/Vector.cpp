@@ -1,7 +1,7 @@
 #include "Math/Vector.h"
 #include <cassert>
 
-#include "Vector_generated.h"
+#include "Flatbuffer/Vector_generated.h"
 
 
 Vector3::Vector3(const float& _x, const float& _y, const float& _z)
@@ -161,7 +161,17 @@ Vector3 Vector3::Projection(const Vector3& value) const
 	Vector3 dir = (*this);
 	dir.Normalize();
 
-	return dir * (*this)* value / fLength;
+	return dir * ((*this) * value / fLength);
+}
+
+TEST_CASE("Vector3::Projection test")
+{
+	Vector3 vec(3, 4, 0);
+	Vector3 dir(2, 0, 0);
+
+	Vector3 result = dir.Projection(vec);
+
+	CHECK(result == Vector3(3, 0, 0));
 }
 
 const Vector3 Vector3::Zero = Vector3(0.0f, 0.0f, 0.0f);
@@ -326,6 +336,13 @@ Vector2::Vector2(const Vector3& vec3)
 
 }
 
+Vector2::Vector2(const Vector2i& vec2)
+    : x(vec2.x)
+    , y(vec2.y)
+{
+    
+}
+
 float Vector2::Length() const
 {
 	return sqrtf(x * x + y * y);
@@ -452,4 +469,53 @@ const mfbs::Vector4* Vector4::Serialize(flatbuffers::FlatBufferBuilder& fbb) con
 void Vector4::Deserialize(const void* pBufferPointer)
 {
 	memcpy(this, pBufferPointer, sizeof(Vector4));
+}
+
+Vector2i::Vector2i(int x, int y)
+    :x(x)
+    ,y(y)
+{
+}
+
+Vector2i::Vector2i(uint32_t x, uint32_t y)
+	:x(static_cast<int>(x))
+    ,y(static_cast<int>(y))
+{
+
+}
+
+Vector2i::Vector2i(size_t x, size_t y)
+	:x(static_cast<int>(x))
+    ,y(static_cast<int>(y))
+{
+
+}
+
+Vector2i::Vector2i(float x, float y)
+	:x(static_cast<int>(x))
+    ,y(static_cast<int>(y))
+{
+
+}
+
+bool Vector2i::operator!=(const Vector2i& other) const
+{
+	return !operator==(other);
+}
+
+bool Vector2i::operator==(const Vector2i& other) const
+{
+	return x == other.x && y == other.y;
+}
+
+Vector3i::Vector3i(int x, int y, int z)
+	: x(x)
+	, y(y)
+	, z(z)
+{
+}
+
+Vector3i Vector3i::operator*(const int& value) const
+{
+	return Vector3i(x * value, y * value, z * value);
 }

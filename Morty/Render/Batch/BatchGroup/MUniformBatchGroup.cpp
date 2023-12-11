@@ -12,10 +12,10 @@
 #include "Utility/MGlobal.h"
 
 
-void MUniformBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pMaterial)
+void MUniformBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram)
 {
 	m_pEngine = pEngine;
-	m_pMaterial = pMaterial;
+	m_pShaderProgram = pShaderProgram;
 
 	if (m_pShaderPropertyBlock)
 	{
@@ -25,29 +25,29 @@ void MUniformBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterial>
 		m_pTransformParam = nullptr;
 	}
 
-	if (!pMaterial)
+	if (!pShaderProgram)
 	{
-		MORTY_ASSERT(pMaterial);
+		MORTY_ASSERT(pShaderProgram);
 		return;
 	}
 
-    if (std::shared_ptr<MShaderPropertyBlock> pTemplatePropertyBlock = pMaterial->GetMeshPropertyBlock())
+	m_pShaderPropertyBlock = MMaterial::CreateMeshPropertyBlock(pShaderProgram);
+    if (m_pShaderPropertyBlock)
 	{
-		m_pShaderPropertyBlock = pTemplatePropertyBlock->Clone();
-		m_pTransformParam = m_pShaderPropertyBlock->FindConstantParam("u_meshMatrix");
+		m_pTransformParam = m_pShaderPropertyBlock->FindConstantParam(MShaderPropertyName::CBUFFER_MESH_MATRIX);
 	}
 
 	MStruct& meshMatrixCbuffer = m_pTransformParam->var.GetValue<MStruct>();
-	MVariantArray& arr = meshMatrixCbuffer.GetVariant<MVariantArray>("u_meshMatrix");
+	MVariantArray& arr = meshMatrixCbuffer.GetVariant<MVariantArray>(MShaderPropertyName::MESH_LOCAL_MATRIX);
 	m_nMaxInstanceNum = arr.MemberNum();
 
 	m_vTransformArray.resize(m_nMaxInstanceNum);
 	for (size_t nIdx = 0; nIdx < m_nMaxInstanceNum; ++nIdx)
 	{
 		MVariantStruct& srt = arr[nIdx].GetValue<MVariantStruct>();
-		m_vTransformArray[nIdx].worldMatrix =srt.FindVariant("u_matWorld");
-		m_vTransformArray[nIdx].normalMatrix = srt.FindVariant("u_matNormal");
-		m_vTransformArray[nIdx].instanceIndex = srt.FindVariant("u_meshIdx");
+		m_vTransformArray[nIdx].worldMatrix =srt.FindVariant(MShaderPropertyName::MESH_WORLD_MATRIX);
+		m_vTransformArray[nIdx].normalMatrix = srt.FindVariant(MShaderPropertyName::MESH_NORMAL_MATRIX);
+		m_vTransformArray[nIdx].instanceIndex = srt.FindVariant(MShaderPropertyName::MESH_INSTANCE_INDEX);
 	}
 }
 
@@ -57,7 +57,7 @@ void MUniformBatchGroup::Release(MEngine* pEngine)
 	m_pShaderPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
 	m_pShaderPropertyBlock = nullptr;
 	m_pTransformParam = nullptr;
-	m_pMaterial = nullptr;
+	m_pShaderProgram = nullptr;
     m_nCurrentInstanceNum = 0;
     m_nMaxInstanceNum = 1;
 	
@@ -73,7 +73,7 @@ void MUniformBatchGroup::AddMeshInstance(const MMeshInstanceRenderProxy& proxy)
 {
 	auto key = proxy.nProxyId;
 
-	if(key == MGlobal::M_INVALID_INDEX)
+	if(key == MGlobal::M_INVALID_UINDEX)
 	{
 		MORTY_ASSERT(key);
 		return;

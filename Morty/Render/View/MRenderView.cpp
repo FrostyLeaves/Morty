@@ -1,9 +1,10 @@
-﻿#include "View/MRenderView.h"
+#include "View/MRenderView.h"
 #include "Utility/MGlobal.h"
 #if RENDER_GRAPHICS == MORTY_VULKAN
 #include "Render/Vulkan/MVulkanRenderCommand.h"
 #endif
 
+#include "Render/Vulkan/MVulkanPhysicalDevice.h"
 #include "System/MRenderSystem.h"
 
 MRenderView::MRenderView()
@@ -30,6 +31,7 @@ MRenderView::~MRenderView()
 
 void MRenderView::Resize(const Vector2& v2Size)
 {
+	//TODO call vk api in render thread.
 	vkDeviceWaitIdle(m_pDevice->m_VkDevice);
 
 	m_unWidht = v2Size.x;
@@ -53,7 +55,7 @@ void MRenderView::Release()
 
 	if (m_VkSurface)
 	{
-		vkDestroySurfaceKHR(m_pDevice->m_VkInstance, m_VkSurface, nullptr);
+		vkDestroySurfaceKHR(m_pDevice->GetVkInstance(), m_VkSurface, nullptr);
 		m_VkSurface = VK_NULL_HANDLE;
 	}
 }
@@ -72,7 +74,7 @@ void MRenderView::Present(MViewRenderTarget* pRenderTarget)
 		std::vector<VkSemaphore> vWaitSemaphoreBeforeSubmit = { pRenderTarget->vkImageReadySemaphore };
 
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-		submitInfo.waitSemaphoreCount = vWaitSemaphoreBeforeSubmit.size();
+		submitInfo.waitSemaphoreCount = static_cast<uint32_t>(vWaitSemaphoreBeforeSubmit.size());
 		submitInfo.pWaitSemaphores = vWaitSemaphoreBeforeSubmit.data();
 		submitInfo.pWaitDstStageMask = waitStages;
 
@@ -101,7 +103,7 @@ void MRenderView::Present(MViewRenderTarget* pRenderTarget)
 
 		std::vector<VkSemaphore> vSignalSemaphores = { pRenderCommand-> m_VkRenderFinishedSemaphore };
 
-		presentInfo.waitSemaphoreCount = vSignalSemaphores.size();
+		presentInfo.waitSemaphoreCount = static_cast<uint32_t>(vSignalSemaphores.size());
 		presentInfo.pWaitSemaphores = vSignalSemaphores.data();
 		VkSwapchainKHR swapChains[] = { m_VkSwapchain };
 		presentInfo.swapchainCount = 1;
@@ -128,7 +130,7 @@ void MRenderView::InitializeForVulkan(MIDevice* pDevice, VkSurfaceKHR surface)
 
 bool MRenderView::InitializeSwapchain()
 {
-	VkPhysicalDevice physicalDevice = m_pDevice->GetPhysicalDevice();
+	VkPhysicalDevice physicalDevice = m_pDevice->GetPhysicalDevice()->m_VkPhysicalDevice;
 
 	//CreateSpawnchain֮
 	int nPresentQueueIndex = m_pDevice->FindQueuePresentFamilies(m_VkSurface);
@@ -182,7 +184,7 @@ bool MRenderView::InitializeSwapchain()
 	if (result != VK_SUCCESS)
 	{
 		GetEngine()->GetLogger()->Error("Create VulkanRenderTarget Error : vkGetPhysicalDeviceSurfacePresentModesKHR error");
-		vkDestroySurfaceKHR(m_pDevice->m_VkInstance, m_VkSurface, nullptr);
+		vkDestroySurfaceKHR(m_pDevice->GetVkInstance(), m_VkSurface, nullptr);
 		return false;
 	}
 
@@ -323,18 +325,18 @@ bool MRenderView::BindRenderPass()
 
 	//index range is swapchain num
 
-	Vector2 size(GetWidth(), GetHeight());
+	Vector2i size(GetWidth(), GetHeight());
 	m_vRenderTarget.resize(vSwapchainImages.size());
 	for (size_t i = 0; i < vSwapchainImages.size(); ++i)
 	{
-		m_vRenderTarget[i].unImageIndex = i;
+		m_vRenderTarget[i].unImageIndex = static_cast<uint32_t>(i);
 		m_vRenderTarget[i].pPrimaryCommand = nullptr;
 		m_vRenderTarget[i].vkImageReadySemaphore = VK_NULL_HANDLE;
 
 		std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
 		pTexture->SetName("Editor Render View");
 		pTexture->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
-		pTexture->SetRenderUsage(METextureRenderUsage::ERenderPresent);
+		pTexture->SetRenderUsage(METextureWriteUsage::ERenderPresent);
 		pTexture->SetSize(size);
 		pTexture->m_VkTextureImage = vSwapchainImages[i];
 		pTexture->m_VkTextureImageMemory = VK_NULL_HANDLE;
@@ -367,13 +369,13 @@ void MRenderView::DestroyRenderPass()
 			rendertarget.vkImageReadySemaphore = VK_NULL_HANDLE;
 		}
 
-		for (MRenderTarget& tex : rendertarget.renderPass.m_vBackTextures)
+		for (MRenderTarget& tex : rendertarget.renderPass.m_renderTarget.backTargets)
 		{
 			tex.pTexture->DestroyBuffer(m_pDevice);
 			tex.pTexture = nullptr;
 		}
 
-		rendertarget.renderPass.m_vBackTextures.clear();
+		rendertarget.renderPass.m_renderTarget.backTargets.clear();
 
 		if (std::shared_ptr<MTexture> pDepthTexture = rendertarget.renderPass.GetDepthTexture())
 		{

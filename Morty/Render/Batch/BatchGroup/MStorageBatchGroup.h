@@ -10,6 +10,7 @@
 #include "Basic/MStorageVariant.h"
 #include "Material/MShaderParam.h"
 
+class MShaderProgram;
 struct MShaderConstantParam;
 class MShaderPropertyBlock;
 class MIMesh;
@@ -17,6 +18,7 @@ class MScene;
 class MEngine;
 class MMaterial;
 class MComponent;
+class MShaderProgram;
 class MSceneComponent;
 class MRenderMeshComponent;
 
@@ -25,7 +27,7 @@ class MORTY_API MStorageBatchGroup : public MInstanceBatchGroup
 {
 public:
 
-	void Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pMaterial) override;
+	void Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram) override;
 	void Release(MEngine* pEngine) override;
 
 	bool CanAddMeshInstance() const override;
@@ -39,7 +41,7 @@ public:
 
 private:
 	MEngine* m_pEngine = nullptr;
-	std::shared_ptr<MMaterial> m_pMaterial = nullptr;
+	std::shared_ptr<MShaderProgram> m_pShaderProgram = nullptr;
 	std::shared_ptr<MShaderPropertyBlock> m_pShaderPropertyBlock = nullptr;
 	std::shared_ptr<MShaderStorageParam> m_pTransformParam = nullptr;
 

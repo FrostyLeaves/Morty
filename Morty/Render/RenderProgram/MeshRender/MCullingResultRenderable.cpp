@@ -39,8 +39,7 @@ void MCullingResultRenderable::SetInstanceCulling(const std::shared_ptr<MInstanc
 	m_pCullingAdapter = pCullingAdapter;
 }
 
-
-const std::shared_ptr<MMaterial>& MCullingResultRenderable::GetMaterial(const MMaterialCullingGroup& group) const
+std::shared_ptr<MMaterial> MCullingResultRenderable::GetMaterial(const MMaterialCullingGroup& group) const
 {
 	const auto& pMaterial = group.pMaterial;
 	return pMaterial;
@@ -71,14 +70,13 @@ void MCullingResultRenderable::Render(MIRenderCommand* pCommand)
 			continue;
 		}
 
-		const auto& pMaterial = GetMaterial(group);
-		if (pMaterial == nullptr)
+		if (pMaterialFilter && !pMaterialFilter->Filter(group.pMaterial))
 		{
-			MORTY_ASSERT(pMaterial);
 			continue;
 		}
 
-		if (pMaterialFilter && !pMaterialFilter->Filter(pMaterial))
+		const auto& pMaterial = GetMaterial(group);
+		if (pMaterial == nullptr)
 		{
 			continue;
 		}

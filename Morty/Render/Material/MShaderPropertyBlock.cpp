@@ -51,7 +51,7 @@ MShaderPropertyBlock::MShaderPropertyBlock(const MShaderPropertyBlock& other)
 		m_vStorages[i] = std::make_shared<MShaderStorageParam>(*m_vStorages[i]);
 }
 
-std::shared_ptr<MShaderConstantParam> MShaderPropertyBlock::FindConstantParam(const MString& strParamName)
+std::shared_ptr<MShaderConstantParam> MShaderPropertyBlock::FindConstantParam(const MStringId& strParamName)
 {
 	for (std::shared_ptr<MShaderConstantParam>& pParam : m_vParams)
 	{
@@ -62,7 +62,7 @@ std::shared_ptr<MShaderConstantParam> MShaderPropertyBlock::FindConstantParam(co
 	return nullptr;
 }
 
-std::shared_ptr<MShaderStorageParam> MShaderPropertyBlock::FindStorageParam(const MString& strParamName)
+std::shared_ptr<MShaderStorageParam> MShaderPropertyBlock::FindStorageParam(const MStringId& strParamName)
 {
 	for (std::shared_ptr<MShaderStorageParam>& pParam : m_vStorages)
 	{
@@ -73,7 +73,7 @@ std::shared_ptr<MShaderStorageParam> MShaderPropertyBlock::FindStorageParam(cons
 	return nullptr;
 }
 
-std::shared_ptr<MShaderTextureParam> MShaderPropertyBlock::FindTextureParam(const MString& strParamName)
+std::shared_ptr<MShaderTextureParam> MShaderPropertyBlock::FindTextureParam(const MStringId& strParamName)
 {
 	for (std::shared_ptr<MShaderTextureParam>& pParam : m_vTextures)
 	{
@@ -84,7 +84,7 @@ std::shared_ptr<MShaderTextureParam> MShaderPropertyBlock::FindTextureParam(cons
 	return nullptr;
 }
 
-bool MShaderPropertyBlock::SetTexture(const MString& strName, std::shared_ptr<MTexture> pTexture)
+bool MShaderPropertyBlock::SetTexture(const MStringId& strName, std::shared_ptr<MTexture> pTexture)
 {
 	for (std::shared_ptr<MShaderTextureParam>& pParam : m_vTextures)
 	{

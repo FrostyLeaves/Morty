@@ -11,7 +11,55 @@
 #include "Component/MRenderMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 
-std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> MShadowMapUtil::CascadedSplitCameraFrustum(MViewport* pViewport)
+#include "Batch/BatchGroup/MInstanceBatchGroup.h"
+#include "RenderProgram/RenderWork/MRenderWork.h"
+#include "VXGI/MVoxelMapUtil.h"
+
+#define SHADOW_VIEW_FROM_PCS
+
+class MFilterFromCameraFrustum : public IRenderableFilter
+{
+public:
+
+	MFilterFromCameraFrustum(const MCameraFrustum& frustum, const Vector3& f3Direction) : m_frustum(frustum), m_f3Direction(f3Direction) {}
+
+	bool Filter(const MMeshInstanceRenderProxy* instance) const override
+	{
+		const MBoundsAABB& bounds = instance->boundsWithTransform;
+		if (MCameraFrustum::EOUTSIDE == m_frustum.ContainTest(bounds, m_f3Direction))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+
+	MCameraFrustum m_frustum;
+	Vector3 m_f3Direction;
+};
+
+class MFilterFromSphere : public IRenderableFilter
+{
+public:
+
+	MFilterFromSphere(const MBoundsSphere& sphere, const Vector3& f3Direction) : m_sphere(sphere), m_f3Direction(f3Direction) {}
+
+	bool Filter(const MMeshInstanceRenderProxy* instance) const override
+	{
+		const MBoundsSphere& bounds = instance->boundsWithTransform.ToSphere();
+
+		const Vector3 proj = m_f3Direction.Projection(m_sphere.m_v3CenterPoint - bounds.m_v3CenterPoint) + bounds.m_v3CenterPoint;
+
+		return (proj - m_sphere.m_v3CenterPoint).Length() < (m_sphere.m_fRadius + bounds.m_fRadius);
+	}
+
+
+	MBoundsSphere m_sphere;
+	Vector3 m_f3Direction;
+};
+
+MCascadedArray<MCascadedSplitData> MShadowMapUtil::CascadedSplitCameraFrustum(MViewport* pViewport)
 {
 	MScene* pScene = pViewport->GetScene();
 	MEntity* pCameraEntity = pViewport->GetCamera();
@@ -36,12 +84,6 @@ std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> MSh
 		MORTY_ASSERT(pCameraComponent);
 		return {};
 	}
-	MSceneComponent* pCameraSceneComponent = pCameraEntity->GetComponent<MSceneComponent>();
-	if (!pCameraSceneComponent)
-	{
-		MORTY_ASSERT(pCameraSceneComponent);
-		return {};
-	}
 	MComponentGroup<MRenderMeshComponent>* pMeshComponentGroup = pScene->FindComponents<MRenderMeshComponent>();
 	if (!pMeshComponentGroup)
 	{
@@ -49,7 +91,7 @@ std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> MSh
 		return {};
 	}
 	
-	std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadedData;
+	std::array<MCascadedSplitData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadedData;
 
 	const float fCascadeSplitLambda = 0.95f;
 
@@ -79,12 +121,6 @@ std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> MSh
 		vCascadedData[nCascadedIdx].fOverFarZ = fNearZ + fRange * (fSplit + fTransitionRange);
 		fLastSplit = fSplit;
 
-		Matrix4 m4CameraInvProj = MRenderSystem::GetCameraInverseProjection(pCameraComponent
-			, pCameraSceneComponent
-			, pViewport->GetSize().x, pViewport->GetSize().y
-			, vCascadedData[nCascadedIdx].fNearZ, vCascadedData[nCascadedIdx].fOverFarZ
-		);
-		vCascadedData[nCascadedIdx].cCameraFrustum.UpdateFromCameraInvProj(m4CameraInvProj);
 	}
 
 	return vCascadedData;
@@ -115,10 +151,11 @@ MBoundsAABB ConvertAABB(const MBoundsAABB& aabb, Matrix4 mat)
 	return result;
 }
 
-std::array<MCascadedShadowRenderData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>
+MCascadedArray<MCascadedShadowRenderData>
 MShadowMapUtil::CalculateRenderData(MViewport* pViewport, MEntity* pCameraEntity,
-	const std::array<MCascadedShadowSceneData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>& vCascadedData,
-	const std::array<MBoundsAABB, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>& vCascadedPscBounds)
+	const MCascadedArray<MCascadedSplitData>& vCascadedData,
+	const MCascadedArray<MBoundsSphere>& vCascadedPsrBounds,
+	const MCascadedArray<MBoundsAABB>& vCascadedPscBounds)
 {
 
 	MScene* pScene = pViewport->GetScene();
@@ -150,21 +187,12 @@ MShadowMapUtil::CalculateRenderData(MViewport* pViewport, MEntity* pCameraEntity
 
 	std::array<Matrix4, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadeProjectionMatrix;
 	std::array<float, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vCascadeFrustumWidth;
-	std::array<float, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vPscBoundsInLightSpaceMinZ;
+	std::array<float, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> vRenderBoundsInLightSpaceMinZ;
 	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
 	{
-		float fLastSplitDist = nCascadedIdx ? vCascadedData[nCascadedIdx - 1].fCascadeSplit : 0.0f;
-		float fCurrSplitDist = vCascadedData[nCascadedIdx].fCascadeSplit;
+		const auto& cCascadedPsrBoundsInWorldSpace = vCascadedPsrBounds[nCascadedIdx];
 
-		float fCascadedNearZ = fNearZ + (fFarZ - fNearZ) * fLastSplitDist;
-		float fCascadedFarZ = fNearZ + (fFarZ - fNearZ) * fCurrSplitDist;
-
-		std::vector<Vector3> vCascadedFrustumPointsInWorldSpace(8);
-		MRenderSystem::GetCameraFrustumPoints(pCameraEntity, pViewport->GetSize(), fCascadedNearZ, fCascadedFarZ, vCascadedFrustumPointsInWorldSpace);
-		MBoundsSphere cCascadedFrustumSphereInWorldSpace;
-		cCascadedFrustumSphereInWorldSpace.SetPoints(vCascadedFrustumPointsInWorldSpace);
-
-		MBoundsSphere cascadedFrustumSphereInLightSpace = cCascadedFrustumSphereInWorldSpace;
+		MBoundsSphere cascadedFrustumSphereInLightSpace = cCascadedPsrBoundsInWorldSpace;
 		cascadedFrustumSphereInLightSpace.m_v3CenterPoint = matLightInv * cascadedFrustumSphereInLightSpace.m_v3CenterPoint;
 
 		MBoundsAABB cascadedAABBBoundsInLightSpace;
@@ -175,7 +203,7 @@ MShadowMapUtil::CalculateRenderData(MViewport* pViewport, MEntity* pCameraEntity
 
 		MBoundsAABB lightFrustumInLightSpace = cascadedAABBBoundsInLightSpace;
 
-		if (true)
+#ifdef SHADOW_VIEW_FROM_PCS
 		{
 			if (vCascadedPscBounds[nCascadedIdx].m_v3HalfLength.Length() > 1e-3)
 			{
@@ -201,23 +229,19 @@ MShadowMapUtil::CalculateRenderData(MViewport* pViewport, MEntity* pCameraEntity
 				);
 			}
 		}
+#else
+		MORTY_UNUSED(vCascadedPscBounds);
+#endif
 
 		if (true)
 		{	//https://learn.microsoft.com/en-us/windows/win32/dxtecharts/common-techniques-to-improve-shadow-depth-maps#moving-the-light-in-texel-sized-increments
 
-			float fCascadedFrustumSphereLength = cCascadedFrustumSphereInWorldSpace.m_fRadius * 2.0f;
+			float fCascadedFrustumSphereLength = cCascadedPsrBoundsInWorldSpace.m_fRadius * 2.0f;
 			Vector3 cameraFrustumLength = Vector3::Fill(fCascadedFrustumSphereLength);
 			Vector2 worldUnitsPerTexel = {
 				cameraFrustumLength.x / MRenderGlobal::SHADOW_TEXTURE_SIZE,
 				cameraFrustumLength.y / MRenderGlobal::SHADOW_TEXTURE_SIZE,
 			};
-
-			/*
-			Vector2 worldUnitsPerTexel = {
-				16,
-				16,
-			};
-			*/
 
 			Vector3 min = lightFrustumInLightSpace.m_v3MinPoint;
 			Vector3 max = lightFrustumInLightSpace.m_v3MaxPoint;
@@ -249,15 +273,15 @@ MShadowMapUtil::CalculateRenderData(MViewport* pViewport, MEntity* pCameraEntity
 		);
 
 		vCascadeFrustumWidth[nCascadedIdx] = fLightProjectionRight - fLightProjectionLeft;
-		vPscBoundsInLightSpaceMinZ[nCascadedIdx] = fLightProjectionBack;
+		vRenderBoundsInLightSpaceMinZ[nCascadedIdx] = fLightProjectionBack;
 	}
 
 	float fMinLightSpaceZValue = FLT_MAX;
 	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
 	{
-		if (fMinLightSpaceZValue > vPscBoundsInLightSpaceMinZ[nCascadedIdx])
+		if (fMinLightSpaceZValue > vRenderBoundsInLightSpaceMinZ[nCascadedIdx])
 		{
-			fMinLightSpaceZValue = vPscBoundsInLightSpaceMinZ[nCascadedIdx];
+			fMinLightSpaceZValue = vRenderBoundsInLightSpaceMinZ[nCascadedIdx];
 		}
 	}
 
@@ -274,4 +298,157 @@ MShadowMapUtil::CalculateRenderData(MViewport* pViewport, MEntity* pCameraEntity
 	}
 
 	return cRenderData;
+}
+
+MCascadedArray<MBoundsSphere> MShadowMapUtil::GetCameraFrustumBounds(
+	MViewport* pViewport,
+	const MCascadedArray<MCascadedSplitData>& vCascadedSplitData)
+{
+	MScene* pScene = pViewport->GetScene();
+	MEntity* pCameraEntity = pViewport->GetCamera();
+
+	MEntity* pDirectionalLightEntity = pScene->FindFirstEntityByComponent<MDirectionalLightComponent>();
+	if (!pDirectionalLightEntity)
+	{
+		return {};
+	}
+
+	MSceneComponent* pLightSceneComponent = pDirectionalLightEntity->GetComponent<MSceneComponent>();
+	if (!pLightSceneComponent)
+	{
+		MORTY_ASSERT(pLightSceneComponent);
+		return {};
+	}
+
+	MCameraComponent* pCameraComponent = pCameraEntity->GetComponent<MCameraComponent>();
+	if (!pCameraComponent)
+	{
+		return {};
+	}
+
+	const float fNearZ = pCameraComponent->GetZNear();
+	const float fFarZ = pCameraComponent->GetZFar();
+
+	MCascadedArray<MBoundsSphere> vResult;
+
+	for (size_t nCascadedIdx = 0; nCascadedIdx < vCascadedSplitData.size(); ++nCascadedIdx)
+	{
+		float fLastSplitDist = nCascadedIdx ? vCascadedSplitData[nCascadedIdx - 1].fCascadeSplit : 0.0f;
+		float fCurrSplitDist = (vCascadedSplitData[nCascadedIdx].fCascadeSplit + vCascadedSplitData[nCascadedIdx].fTransitionRange);
+
+		float fCascadedNearZ = fNearZ + (fFarZ - fNearZ) * fLastSplitDist;
+		float fCascadedFarZ = fNearZ + (fFarZ - fNearZ) * fCurrSplitDist;
+
+		std::vector<Vector3> vCascadedFrustumPointsInWorldSpace(8);
+		MRenderSystem::GetCameraFrustumPoints(pCameraEntity, pViewport->GetSize(), fCascadedNearZ, fCascadedFarZ, vCascadedFrustumPointsInWorldSpace);
+		MBoundsSphere cCascadedFrustumSphereInWorldSpace;
+		cCascadedFrustumSphereInWorldSpace.SetPoints(vCascadedFrustumPointsInWorldSpace);
+
+		vResult[nCascadedIdx] = cCascadedFrustumSphereInWorldSpace;
+	}
+
+	return vResult;
+}
+
+MCascadedArray<std::unique_ptr<class IRenderableFilter>> MShadowMapUtil::GetCameraFrustumCullingFilter(MViewport* pViewport, const MCascadedArray<MCascadedSplitData>& vCascadedSplitData)
+{
+	MScene* pScene = pViewport->GetScene();
+	MEntity* pCameraEntity = pViewport->GetCamera();
+
+	MEntity* pDirectionalLightEntity = pScene->FindFirstEntityByComponent<MDirectionalLightComponent>();
+	const MCameraComponent* pCameraComponent = pCameraEntity->GetComponent<MCameraComponent>();
+	if (!pCameraComponent)
+	{
+		MORTY_ASSERT(pCameraComponent);
+		return {};
+	}
+	MSceneComponent* pCameraSceneComponent = pCameraEntity->GetComponent<MSceneComponent>();
+	if (!pCameraSceneComponent)
+	{
+		MORTY_ASSERT(pCameraSceneComponent);
+		return {};
+	}
+
+	auto pLightSceneComponent = pDirectionalLightEntity->GetComponent<MSceneComponent>();
+	if (!pLightSceneComponent)
+	{
+		MORTY_ASSERT(pLightSceneComponent);
+		return {};
+	}
+
+	Vector3 v3LightDirection = pLightSceneComponent->GetForward();
+
+	MCascadedArray<std::unique_ptr<IRenderableFilter>> vCascadedFilter;
+
+	std::transform(vCascadedSplitData.begin(), vCascadedSplitData.end(), vCascadedFilter.begin(), [&](const MCascadedSplitData& ele) {
+
+		MCameraFrustum cCameraFrustum;
+
+	    Matrix4 m4CameraInvProj = MRenderSystem::GetCameraInverseProjection(pCameraComponent
+		    , pCameraSceneComponent
+		    , pViewport->GetSize().x, pViewport->GetSize().y
+		    , ele.fNearZ, ele.fOverFarZ
+	    );
+	    cCameraFrustum.UpdateFromCameraInvProj(m4CameraInvProj);
+
+	    return std::make_unique<MFilterFromCameraFrustum>(cCameraFrustum, v3LightDirection);
+	});
+
+	return vCascadedFilter;
+}
+
+MCascadedArray<MBoundsSphere> MShadowMapUtil::GetVoxelMapBounds(MViewport* pViewport, const MCascadedArray<MCascadedSplitData>& vCascadedSplitData)
+{
+	MEntity* pCameraEntity = pViewport->GetCamera();
+	MSceneComponent* pCameraSceneComponent = pCameraEntity->GetComponent<MSceneComponent>();
+	if (!pCameraSceneComponent)
+	{
+		MORTY_ASSERT(pCameraSceneComponent);
+		return {};
+	}
+
+	const Vector3 f3CameraPosition = pCameraSceneComponent->GetWorldPosition();
+	const size_t nCascadedNum = vCascadedSplitData.size();
+
+	MCascadedArray<MBoundsSphere> vResult;
+
+	const auto clipmap = MVoxelMapUtil::GetClipMap(f3CameraPosition, MRenderGlobal::VOXEL_GI_CLIP_MAP_NUM - 1);
+	const auto clipmapBounding = MVoxelMapUtil::GetClipMapBounding(clipmap);
+	
+	for (size_t nCascadedIdx = 0; nCascadedIdx < nCascadedNum; ++nCascadedIdx)
+	{
+		float fCurrSplitDist = (vCascadedSplitData[nCascadedIdx].fCascadeSplit + vCascadedSplitData[nCascadedIdx].fTransitionRange);
+
+		auto cascadedBounding = clipmapBounding;
+		cascadedBounding.SethalfLength(cascadedBounding.m_v3HalfLength * fCurrSplitDist);
+
+		vResult[nCascadedIdx] = cascadedBounding.ToSphere();
+	}
+
+
+	return vResult;
+}
+
+MCascadedArray<std::unique_ptr<class IRenderableFilter>> MShadowMapUtil::GetBoundsCullingFilter(MViewport* pViewport, const MCascadedArray<MBoundsSphere>& vBoundsSphere)
+{
+	MScene* pScene = pViewport->GetScene();
+	MEntity* pDirectionalLightEntity = pScene->FindFirstEntityByComponent<MDirectionalLightComponent>();
+
+	const auto pLightSceneComponent = pDirectionalLightEntity->GetComponent<MSceneComponent>();
+	if (!pLightSceneComponent)
+	{
+		MORTY_ASSERT(pLightSceneComponent);
+		return {};
+	}
+
+	const Vector3 v3LightDirection = pLightSceneComponent->GetForward();
+
+	MCascadedArray<std::unique_ptr<IRenderableFilter>> vCascadedFilter;
+
+	std::transform(vBoundsSphere.begin(), vBoundsSphere.end(), vCascadedFilter.begin(), [&](const MBoundsSphere& sphere) {
+		
+	    return std::make_unique<MFilterFromSphere>(sphere, v3LightDirection);
+	});
+
+	return vCascadedFilter;
 }

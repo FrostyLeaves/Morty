@@ -115,7 +115,7 @@ void MaterialView::Initialize(MainEditor* pMainEditor)
 	m_pScene = pObjectSystem->CreateObject<MScene>();
 
 	m_pSceneTexture = GetMainEditor()->CreateSceneViewer(m_pScene);
-	m_pSceneTexture->SetRect(Vector2(0, 0), Vector2(512, 512));
+	m_pSceneTexture->SetRect(Vector2i(0, 0), Vector2i(512, 512));
 
 	if (MEntity* pCameraNode = m_pSceneTexture->GetViewport()->GetCamera())
 	{

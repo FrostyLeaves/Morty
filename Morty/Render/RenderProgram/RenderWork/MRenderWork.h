@@ -12,21 +12,23 @@
 #include "Utility/MGlobal.h"
 
 #include "Object/MObject.h"
+#include "Render/MRenderPass.h"
 #include "RenderProgram/MRenderInfo.h"
 
-class MComputeDispatcher;
-class MIRenderCommand;
 class MBuffer;
 class MTexture;
 class MMaterial;
 class MRenderPass;
+class MIRenderCommand;
+class MComputeDispatcher;
 class MShaderPropertyBlock;
 struct MMeshInstanceRenderProxy;
+class IShaderPropertyUpdateDecorator;
 
-class MORTY_API ITextureInputAdapter
+class MORTY_API IGetTextureAdapter
 {
 public:
-	virtual ~ITextureInputAdapter() = default;
+	virtual ~IGetTextureAdapter() = default;
 	virtual std::shared_ptr<MTexture> GetTexture() = 0;
 };
 
@@ -113,7 +115,26 @@ public:
 
     virtual void Initialize(MEngine* pEngine) = 0;
     virtual void Release(MEngine* pEngine) = 0;
-    virtual void Resize(Vector2 size) = 0;
+    virtual void Resize(Vector2i size) = 0;
+    virtual std::shared_ptr<IShaderPropertyUpdateDecorator> GetFramePropertyDecorator() { return nullptr; }
 
+};
 
+class MORTY_API IShaderPropertyUpdateDecorator
+{
+public:
+    virtual ~IShaderPropertyUpdateDecorator() = default;
+    virtual void BindMaterial(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock) = 0;
+    virtual void Update(const MRenderInfo& info) = 0;
+};
+
+class MGetTextureAdapter : public IGetTextureAdapter
+{
+public:
+
+    MGetTextureAdapter(const std::shared_ptr<MTexture>& tex):pTexture(tex){}
+
+    virtual std::shared_ptr<MTexture> GetTexture() { return pTexture; }
+
+    std::shared_ptr<MTexture> pTexture = nullptr;
 };

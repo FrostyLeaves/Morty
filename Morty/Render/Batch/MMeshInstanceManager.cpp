@@ -35,7 +35,7 @@ void MMeshInstanceManager::Initialize()
 		pNotifySystem->RegisterNotify(MRenderNotify::NOTIFY_MESH_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MMeshInstanceManager::OnMeshChanged, this));
 	}
 
-	m_pUpdateTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>("RenderMeshManagerUpdate");
+	m_pUpdateTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>(MRenderGlobal::TASK_RENDER_MESH_MANAGER_UPDATE);
 	if (m_pUpdateTask)
 	{
 		m_pUpdateTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MMeshInstanceManager::RenderUpdate, this));
@@ -232,7 +232,7 @@ void MMeshInstanceManager::RemoveComponentFromGroup(MRenderMeshComponent* pCompo
 
 	auto group = findResult->second;
 
-	auto nProxyId = pComponent->GetComponentID().nIdx;
+	auto nProxyId = static_cast<uint32_t>(pComponent->GetComponentID().nIdx);
 	group->tWaitUpdateComponent.erase(nProxyId);
 	group->tWaitRemoveComponent.insert(nProxyId);
 	m_tComponentTable.erase(findResult);

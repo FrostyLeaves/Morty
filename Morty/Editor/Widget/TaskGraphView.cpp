@@ -85,7 +85,7 @@ void TaskGraphView::Render()
 			vAllNodes.push_back(pNode);
 		}
 
-		for (int nInputIdx = pNode->GetInputSize() - 1; nInputIdx >= 0; --nInputIdx)
+		for (int nInputIdx = static_cast<int>(pNode->GetInputSize()) - 1; nInputIdx >= 0; --nInputIdx)
 		{
 			MTaskNode* pPrevNode = pNode->GetInput(nInputIdx)->GetLinkedNode();
 		    vNodes.push_back(pPrevNode);
@@ -94,7 +94,7 @@ void TaskGraphView::Render()
 
 	for (auto& pNode : vAllNodes)
 	{
-		const int imNodeId = reinterpret_cast<std::intptr_t>(pNode);
+		const int imNodeId = static_cast<int>(reinterpret_cast<std::intptr_t>(pNode));
 		(ImNodes::BeginNode(imNodeId));
 		{
 			//first initialize position.
@@ -111,23 +111,26 @@ void TaskGraphView::Render()
 
 			//title
 			ImNodes::BeginNodeTitleBar();
-			ImGui::TextUnformatted(pNode->GetNodeName().c_str());
+			ImGui::TextUnformatted(pNode->GetNodeName().ToString().c_str());
 			ImNodes::EndNodeTitleBar();
 
 			//input
 			for (size_t nIdx = 0; nIdx < pNode->GetInputSize(); ++nIdx)
 			{
 				auto pNodeInput = pNode->GetInput(nIdx);
-				ImNodes::BeginInputAttribute( reinterpret_cast<std::intptr_t>(pNodeInput));
+				ImNodes::BeginInputAttribute( static_cast<int>(reinterpret_cast<std::intptr_t>(pNodeInput)));
 				ImGui::Text("%s", pNodeInput->GetName().c_str());
 				ImNodes::EndInputAttribute();
 			}
+
+			//Context
+			ImGui::Text("avg time: %f", (pNode->m_nDebugTime / 1000.0f));
 
 			//output
 			for (size_t nIdx = 0; nIdx < pNode->GetOutputSize(); ++nIdx)
 			{
 				auto pNodeOutput = pNode->GetOutput(nIdx);
-				ImNodes::BeginOutputAttribute(reinterpret_cast<std::intptr_t>(pNodeOutput));
+				ImNodes::BeginOutputAttribute(static_cast<int>(reinterpret_cast<std::intptr_t>(pNodeOutput)));
 				ImGui::Text("%s", pNodeOutput->GetName().c_str());
 				ImNodes::EndOutputAttribute();
 			}
@@ -147,8 +150,8 @@ void TaskGraphView::Render()
 				continue;
 			}
 
-			const int inputId = reinterpret_cast<std::intptr_t>(pInput);
-			const int outputId = reinterpret_cast<std::intptr_t>(pOutput);
+			const int inputId = static_cast<int>(reinterpret_cast<std::intptr_t>(pInput));
+			const int outputId = static_cast<int>(reinterpret_cast<std::intptr_t>(pOutput));
 
 			ImNodes::Link(inputId + outputId, outputId, inputId);
 		}

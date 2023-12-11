@@ -24,6 +24,7 @@ public:
 };
 
 class MBoundsOBB;
+class MBoundsSphere;
 class MORTY_API MBoundsAABB : public MIBounds
 {
 public:
@@ -34,6 +35,7 @@ public:
 	MBoundsAABB(const Vector3& min, const Vector3& max);
 
 	void SetMinMax(const Vector3& v3Min, const Vector3& v3Max);
+	void SethalfLength(const Vector3& f3HalfLength);
 	void SetPoints(const std::vector<Vector3>& vPoints);
 	void SetBoundsOBB(const Vector3& v3Origin, const Matrix4& matWorld, const MBoundsOBB& obb);
 
@@ -43,6 +45,8 @@ public:
 
 	MBoundsAABB IntersectAABB(const MBoundsAABB& aabb) const;
 	bool IsIntersect(const MBoundsAABB& aabb) const;
+
+	MBoundsSphere ToSphere() const;
 
 public:
 
@@ -92,18 +96,20 @@ public:
 	MBoundsSphere();
 	MBoundsSphere(const Vector3& v3CenterPoint, const float& fRadius);
 
-	void SetPoints(const void* vPoints, const uint32_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize)
+	void SetPoints(const void* vPoints, const size_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize)
 	{
 		SetPoints((const MByte*)vPoints, unArrayLength, unOffset, unDataSize);
 	}
 
-	void SetPoints(const MByte* vPoints, const uint32_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize);
+	void SetPoints(const MByte* vPoints, const size_t& unArrayLength, const uint32_t& unOffset, const uint32_t& unDataSize);
 
 	void SetPoints(const std::vector<Vector3>& vPoints);
 
 	void AddPoint(const Vector3& pos);
 
 	bool IsContain(const Vector3& pos);
+
+	bool IsIntersect(const MBoundsSphere& other) const;
 
 public:
 

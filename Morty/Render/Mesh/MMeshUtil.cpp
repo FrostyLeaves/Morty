@@ -1,4 +1,4 @@
-﻿#include "MMeshUtil.h"
+#include "MMeshUtil.h"
 #include "Math/MMath.h"
 #include "Render/MMesh.h"
 #include "Render/MVertex.h"
@@ -32,8 +32,8 @@ uint32_t MSphereFactory::addMidVertex(uint32_t v1, uint32_t v2)
 
 	m_vVertex.push_back((m_vVertex[v1] + m_vVertex[v2]) * 0.5f);
 
-	m_tMidIndexCache[key] = m_vVertex.size() - 1;
-	return m_vVertex.size() - 1;
+	m_tMidIndexCache[key] = static_cast<uint32_t>(m_vVertex.size()) - 1;
+	return static_cast<uint32_t>(m_vVertex.size()) - 1;
 }
 
 void MSphereFactory::operator()(int nLevel/* = 0*/)
@@ -81,7 +81,7 @@ void MSphereFactory::operator()(int nLevel/* = 0*/)
 			uint32_t b = addMidVertex(v2, v3);
 			uint32_t c = addMidVertex(v3, v1);
 
-			int idx = indexIdx * 4;
+			size_t idx = indexIdx * 4;
 			newIndices[idx + 0] = v1; newIndices[idx + 1] = a; newIndices[idx + 2] = c;
 			newIndices[idx + 3] = v2; newIndices[idx + 4] = b; newIndices[idx + 5] = a;
 			newIndices[idx + 6] = v3; newIndices[idx + 7] = c; newIndices[idx + 8] = b;
@@ -300,7 +300,7 @@ std::unique_ptr<MIMesh> MMeshUtil::CreateSphere(MEMeshVertexType eVertexType)
 
 	auto& vIndices = sphereFactory.m_vIndices;
 
-	pMesh->ResizeVertices(vPoints.size());
+	pMesh->ResizeVertices(static_cast<uint32_t>(vPoints.size()));
 
 	if (eVertexType == MEMeshVertexType::Normal)
 	{
@@ -363,7 +363,7 @@ std::unique_ptr<MIMesh> MMeshUtil::CreateSphere(MEMeshVertexType eVertexType)
 		}
 	}
 
-	pMesh->ResizeIndices(vIndices.size(), 1);
+	pMesh->ResizeIndices(static_cast<uint32_t>(vIndices.size()), 1);
 	memcpy(pMesh->GetIndices(), vIndices.data(), sizeof(uint32_t) * vIndices.size());
 
 

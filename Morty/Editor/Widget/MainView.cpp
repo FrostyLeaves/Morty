@@ -83,7 +83,7 @@ void MainView::Render()
 		m_pGuizmoWidget->Render();
 	}
 
-	GetMainEditor()->GetSceneTexture()->SetRect(Vector2(m_v4RenderViewSize.x, m_v4RenderViewSize.y), Vector2(m_v4RenderViewSize.z, m_v4RenderViewSize.w));
+	GetMainEditor()->GetSceneTexture()->SetRect(Vector2i(m_v4RenderViewSize.x, m_v4RenderViewSize.y), Vector2i(m_v4RenderViewSize.z, m_v4RenderViewSize.w));
 }
 
 void MainView::Initialize(MainEditor* pMainEditor)

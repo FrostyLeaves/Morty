@@ -1,6 +1,6 @@
 ﻿#include "Math/Matrix.h"
 
-#include "Matrix_generated.h"
+#include "Flatbuffer/Matrix_generated.h"
 
 const Matrix4 Matrix4::IdentityMatrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
 

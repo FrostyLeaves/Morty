@@ -25,6 +25,8 @@ MBuffer MBuffer::CreateBuffer(MMemoryType memory, uint32_t usage, const char* de
 	{
 		buffer.m_strDebugName = debugName;
 	}
+#else
+	MORTY_UNUSED(debugName);
 #endif
 
 	return buffer;

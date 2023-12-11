@@ -64,7 +64,7 @@ void MResourceAsyncLoadSystem::AnyThreadLoad(const std::list<std::shared_ptr<MRe
 {
 	for (auto& pLoader : vLoader)
 	{
-		pLoader->pResourceData = pLoader->LoadResource(pLoader->strResourceFullPath, pLoader->strResourcePath);
+		pLoader->pResourceData = pLoader->LoadResource(pLoader->strResourceFullPath);
 		if (!pLoader->pResourceData)
 		{
 			GetEngine()->GetLogger()->Error("Load Resource try to find: [path: {}]", pLoader->strResourcePath.c_str());

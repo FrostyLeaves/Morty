@@ -20,18 +20,19 @@ class MORTY_API MDeferredLightingRenderWork : public ISinglePassRenderWork
 
 	void Initialize(MEngine* pEngine) override;
 	void Release(MEngine* pEngine) override;
+	void Resize(Vector2i size) override;
 
 	void Render(MRenderInfo& info);
 
 	void SetGBuffer(const std::shared_ptr<IGBufferAdapter>& pAdapter);
-	void SetShadowMap(const std::shared_ptr<ITextureInputAdapter>& pAdapter);
+	void SetShadowMap(const std::shared_ptr<IGetTextureAdapter>& pAdapter);
 	void SetFrameProperty(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter);
 
 private:
 
 	std::shared_ptr<IPropertyBlockAdapter> m_pFramePropertyAdapter = nullptr;
 	std::shared_ptr<IGBufferAdapter> m_pGBufferAdapter = nullptr;
-	std::shared_ptr<ITextureInputAdapter> m_pShadowMapAdapter = nullptr;
+	std::shared_ptr<IGetTextureAdapter> m_pShadowMapAdapter = nullptr;
 
 	std::shared_ptr<MMaterial> m_pLightningMaterial = nullptr;
 };
