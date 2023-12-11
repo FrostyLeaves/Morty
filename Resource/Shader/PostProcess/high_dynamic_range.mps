@@ -1,7 +1,6 @@
+#include "../PostProcess/post_process_header.hlsl"
 
-[[vk::binding(1,0)]]Texture2D u_texScreenTexture;
-[[vk::binding(2,0)]]sampler LinearSampler;
-[[vk::binding(3,0)]]float u_HDR_AverageLum;
+[[vk::binding(0,1)]]float u_HDR_AverageLum;
 
 struct VS_OUT
 {
@@ -38,7 +37,7 @@ PS_OUT PS_MAIN(VS_OUT input) : SV_Target
 {
     PS_OUT output;
 
-    float4 f4Color = u_texScreenTexture.Sample(LinearSampler, input.uv);
+    float4 f4Color = u_texInputTexture.Sample(LinearSampler, input.uv);
     f4Color.xyz = ACESToneMapping(f4Color.xyz, u_HDR_AverageLum);
     
     output.color0 = f4Color;

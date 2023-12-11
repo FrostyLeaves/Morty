@@ -56,11 +56,7 @@ public:
 	std::vector<std::shared_ptr<MShaderSampleParam>>& GetSampleParams();
 	std::vector<std::shared_ptr<MShaderTextureParam>>& GetTextureParams();
 
-	auto& GetShaderPropertyBlocks() { return m_pShaderProgram->GetShaderPropertyBlocks(); }
-	const auto& GetShaderPropertyBlocks() const { return m_pShaderProgram->GetShaderPropertyBlocks(); }
-	std::shared_ptr<MShaderPropertyBlock> GetMaterialPropertyBlock() const { return m_pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]; }
-	std::shared_ptr<MShaderPropertyBlock> GetFramePropertyBlock() const { return m_pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_FRAME]; }
-	std::shared_ptr<MShaderPropertyBlock> GetMeshPropertyBlock() const { return m_pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MESH]; }
+	std::shared_ptr<MShaderPropertyBlock> GetMaterialPropertyBlock() const;
 
 	std::shared_ptr<MShaderConstantParam> FindShaderParam(const MStringId& strName);
 	std::shared_ptr<MShaderSampleParam> FindSample(const MStringId& strName);
@@ -72,9 +68,6 @@ public:
 	void SetMaterialType(const MEMaterialType& eType);
 	MEMaterialType GetMaterialType() const { return m_eMaterialType; }
 
-	bool GetConservativeRasterizationEnable() const { return m_bConservativeRasterizationEnable; }
-	void SetConservativeRasterizationEnable(bool bEnable) { m_bConservativeRasterizationEnable = bEnable; }
-
 	void SetTexture(const MStringId& strName, std::shared_ptr<MResource> pTexResource);
 
 	bool LoadShader(std::shared_ptr<MResource> pResource);
@@ -83,7 +76,13 @@ public:
 	void SetShaderMacro(const MShaderMacro& macro);
 	MShaderMacro& GetShaderMacro() const { return m_pShaderProgram->GetShaderMacro(); }
 	const std::shared_ptr<MShaderProgram>& GetShaderProgram() const { return m_pShaderProgram; }
-	
+
+	bool GetConservativeRasterizationEnable() const { return m_bConservativeRasterizationEnable; }
+	void SetConservativeRasterizationEnable(bool bEnable) { m_bConservativeRasterizationEnable = bEnable; }
+
+	void SetShadingRate(const Vector2i n2ShadingRate);
+	Vector2i GetShadingRate() const { return m_n2ShadingRate; }
+
 public:
 
 	void OnCreated() override;
@@ -95,6 +94,9 @@ public:
 	const char* GetDebugName() const;
 #endif
 
+	static std::shared_ptr<MShaderPropertyBlock> CreateFramePropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram);
+	static std::shared_ptr<MShaderPropertyBlock> CreateMeshPropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram);
+
 private:
 
 	std::shared_ptr<MShaderProgram> m_pShaderProgram = nullptr;
@@ -102,4 +104,5 @@ private:
 	MEMaterialType m_eMaterialType = MEMaterialType::EDefault;
 	MECullMode m_eCullMode = MECullMode::ECullBack;
 	bool m_bConservativeRasterizationEnable = false;
+	Vector2i m_n2ShadingRate = {1, 1};
 };

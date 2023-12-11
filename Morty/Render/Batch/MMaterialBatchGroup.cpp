@@ -96,7 +96,7 @@ void MMaterialBatchGroup::AddMeshInstance(const MMeshInstanceRenderProxy& proxy)
 	if (pMeshGroup == nullptr)
 	{
 		pMeshGroup = MMaterialBatchUtil::CreateBatchGroup(m_pMaterial.get());
-		pMeshGroup->Initialize(m_pEngine, m_pMaterial);
+		pMeshGroup->Initialize(m_pEngine, m_pMaterial->GetShaderProgram());
 		m_vBatchGroup.push_back(pMeshGroup);
 		nMeshGroupIdx = m_vBatchGroup.size() - 1;
 	}

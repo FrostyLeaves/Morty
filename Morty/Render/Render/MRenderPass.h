@@ -72,6 +72,14 @@ struct MORTY_API MRenderTarget
 #endif
 };
 
+class MORTY_API MRenderTargetGroup
+{
+public:
+    std::vector<MRenderTarget> backTargets;
+    MRenderTarget depthTarget;
+    MRenderTarget shadingRate;
+};
+
 class MORTY_API MRenderPass
 {
 public:
@@ -102,6 +110,9 @@ public:
 
     void SetShadingRateTexture(std::shared_ptr<MTexture>& pTexture);
 
+    void SetRenderTarget(const MRenderTargetGroup& renderTarget);
+
+    std::shared_ptr<MTexture> GetBackTexture(size_t nIdx) const;
     std::vector<std::shared_ptr<MTexture>> GetBackTextures() const;
     std::shared_ptr<MTexture> GetDepthTexture() const;
     std::shared_ptr<MTexture> GetShadingRateTexture() const;
@@ -126,13 +137,7 @@ public:
 
     uint32_t m_unViewNum = 1;
 
-    //render back to texture
-	std::vector<MRenderTarget> m_vBackTextures;
-
-    //render depth to texture
-    MRenderTarget m_DepthTexture;
-
-    MRenderTarget m_ShadingRateTexture;
+    MRenderTargetGroup m_renderTarget;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
     //vulkan frame buffer.

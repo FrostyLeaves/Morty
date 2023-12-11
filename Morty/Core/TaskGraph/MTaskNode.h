@@ -12,6 +12,7 @@
 
 #include "Type/MType.h"
 #include "Thread/MThreadWork.h"
+#include "Utility/MStringId.h"
 
 class MTaskGraph;
 class MTaskNodeInput;
@@ -26,7 +27,7 @@ public:
 
 public:
 
-    MString GetNodeName() const { return m_strNodeName; }
+	MStringId GetNodeName() const { return m_strNodeName; }
 
 	MTaskNodeInput* AppendInput();
 
@@ -71,7 +72,7 @@ private:
 protected:
     friend class MTaskGraph;
 
-    MString m_strNodeName;
+	MStringId m_strNodeName;
     MTaskGraph* m_pGraph = nullptr;
 	int m_nPriorityLevel = 0;
 	METhreadType m_eThreadType = METhreadType::EAny;
@@ -80,6 +81,11 @@ protected:
 	std::vector<MTaskNodeOutput*> m_vOutput;
 
 	std::function<void(MTaskNode*)> m_funcTaskFunction = nullptr;
+
+#if MORTY_DEBUG
+public:
+	long long m_nDebugTime;
+#endif
 };
 
 template<typename TYPE /*= MTaskNodeOutput*/>

@@ -434,14 +434,14 @@ MCascadedArray<std::unique_ptr<class IRenderableFilter>> MShadowMapUtil::GetBoun
 	MScene* pScene = pViewport->GetScene();
 	MEntity* pDirectionalLightEntity = pScene->FindFirstEntityByComponent<MDirectionalLightComponent>();
 
-	auto pLightSceneComponent = pDirectionalLightEntity->GetComponent<MSceneComponent>();
+	const auto pLightSceneComponent = pDirectionalLightEntity->GetComponent<MSceneComponent>();
 	if (!pLightSceneComponent)
 	{
 		MORTY_ASSERT(pLightSceneComponent);
 		return {};
 	}
 
-	Vector3 v3LightDirection = pLightSceneComponent->GetForward();
+	const Vector3 v3LightDirection = pLightSceneComponent->GetForward();
 
 	MCascadedArray<std::unique_ptr<IRenderableFilter>> vCascadedFilter;
 

@@ -43,6 +43,7 @@ enum class MEBufferBarrierStage
 	EPixelShaderWrite,
 	EPixelShaderRead,
 	EDrawIndirectRead,
+	EShadingRateRead,
 };
 
 enum class MEShadingRateCombinerOp
@@ -52,6 +53,16 @@ enum class MEShadingRateCombinerOp
 	Min,
 	Max,
 	Mul,
+};
+
+struct MShadingRateType {
+	static constexpr MByte Rate_1x1 = 0;
+	static constexpr MByte Rate_1X2 = 1;
+	static constexpr MByte Rate_2X1 = 4;
+	static constexpr MByte Rate_2X2 = 5;
+	static constexpr MByte Rate_2X4 = 6;
+	static constexpr MByte Rate_4X2 = 9;
+	static constexpr MByte Rate_4X4 = 10;
 };
 
 class MORTY_API MIDevice
@@ -113,6 +124,8 @@ public:
 	virtual void Update() {}
 
 	virtual bool GetDeviceFeatureSupport(MEDeviceFeature feature) const = 0;
+
+	virtual Vector2i GetShadingRateTextureTexelSize() const = 0;
 
 private:
 

@@ -128,6 +128,7 @@ struct MORTY_API MShaderPropertyName
 
 	//PostProcess
 	static MStringId POSTPROCESS_SCREEN_TEXTURE;
+	static MStringId POSTPROCESS_SCREEN_SIZE;
 
 	//ImGUI
 	static MStringId IMGUI_SCALE;
@@ -135,6 +136,14 @@ struct MORTY_API MShaderPropertyName
 	static MStringId IMGUI_IMAGE_TYPE;
 	static MStringId IMGUI_IMAGE_ARRAY;
 	static MStringId IMGUI_IMAGE_INDEX;
+
+	//VRS
+	static MStringId VRS_CBUFFER_SETTING_NAME;
+	static MStringId VRS_EDGE_TEXTURE_NAME;
+	static MStringId VRS_OUTPUT_VRS_TEXTURE_NAME;
+	static MStringId VRS_EDGE_TEXTURE_SIZE_NAME;
+	static MStringId VRS_TEXEL_SIZE_NAME;
+	static MStringId VRS_EDGE_THRESHOLD_NAME;
 
 };
 

@@ -28,6 +28,8 @@ public:
 
 	MEngine* GetEngine() const { return m_pEngine; }
 
+	std::shared_ptr<IGetTextureAdapter> GetOutput(const MStringId& strNodeName) const;
+
 	void InitializeMaterial();
 
 	void ReleaseMaterial();

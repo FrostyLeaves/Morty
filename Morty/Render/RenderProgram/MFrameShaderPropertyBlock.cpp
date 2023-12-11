@@ -62,7 +62,7 @@ std::shared_ptr<MMaterial> MFrameShaderPropertyBlock::LoadMaterial(MEngine* pEng
 
 void MFrameShaderPropertyBlock::BindMaterial(const std::shared_ptr<MMaterial>& pMaterial)
 {
-	m_pShaderPropertyBlock = pMaterial->GetFramePropertyBlock()->Clone();
+	m_pShaderPropertyBlock = MMaterial::CreateFramePropertyBlock(pMaterial->GetShaderProgram());
 
 	for (const auto& pDecorator : m_vPropertyUpdateDecorator)
 	{
@@ -156,9 +156,7 @@ void MLightPropertyDecorator::Update(const MRenderInfo& info)
 	if (info.pEnvDiffuseTexture && info.pEnvSpecularTexture)
 	{
 		m_pDiffuseMapTextureParam->SetTexture(info.pEnvDiffuseTexture);
-		m_pDiffuseMapTextureParam->SetDirty();
 		m_pSpecularMapTextureParam->SetTexture(info.pEnvSpecularTexture);
-		m_pSpecularMapTextureParam->SetDirty();
 
 		cLightStruct.SetVariant(MShaderPropertyName::LIGHT_ENVIRONMENT_MAP_ENABLE, 1);
 	}

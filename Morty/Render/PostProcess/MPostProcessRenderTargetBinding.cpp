@@ -4,6 +4,7 @@
 #include "Render/MRenderCommand.h"
 #include "Render/MRenderPass.h"
 #include "Material/MMaterial.h"
+#include "RenderProgram/RenderWork/MRenderWork.h"
 #include "System/MRenderSystem.h"
 #include "TaskGraph/MTaskGraph.h"
 
@@ -22,10 +23,18 @@ void MPostProcessRenderTargetBinding::operator ()(MTaskGraph* pTaskGraph)
 
 	std::vector<MTaskNode*> vNodeStack = pTaskGraph->GetStartNodes();
 
+
 	while (!vNodeStack.empty())
 	{
 		MTaskNode* pCurrentNode = vNodeStack.back();
 		vNodeStack.pop_back();
+
+		if (!m_pFrameProperty)
+		{
+			auto pPostProcessNode = pCurrentNode->DynamicCast<MPostProcessNode>();
+			auto pMaterial = pPostProcessNode->GetMaterial();
+			m_pFrameProperty = MMaterial::CreateFramePropertyBlock(pMaterial->GetShaderProgram());
+		}
 
 		AllocRenderTarget(pCurrentNode->DynamicCast<MPostProcessNode>());
 
@@ -73,11 +82,23 @@ void MPostProcessRenderTargetBinding::operator ()(MTaskGraph* pTaskGraph)
 
 void MPostProcessRenderTargetBinding::Resize(const Vector2i size)
 {
+	if (m_n2ScreenSize == size)
+	{
+		return;
+	}
+
     MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
 
 	for (auto pRenderPass : m_vAllRenderPass)
 	{
 		pRenderSystem->ResizeFrameBuffer(*pRenderPass, size);
+	}
+
+	m_n2ScreenSize = size;
+
+	if (m_pFrameProperty)
+	{
+		m_pFrameProperty->SetValue(MShaderPropertyName::POSTPROCESS_SCREEN_SIZE, Vector2(size.x, size.y));
 	}
 }
 
@@ -96,8 +117,27 @@ void MPostProcessRenderTargetBinding::Release()
 	}
 }
 
+std::shared_ptr<IPropertyBlockAdapter> MPostProcessRenderTargetBinding::GetFrameProperty() const
+{
+	class PropertyAdapter : public IPropertyBlockAdapter
+	{
+	public:
+		explicit PropertyAdapter(const std::shared_ptr<MShaderPropertyBlock>& pFrameProperty): m_pFrameProperty(pFrameProperty){}
+		std::shared_ptr<MShaderPropertyBlock> GetPropertyBlock() const override
+	    {
+			return m_pFrameProperty;
+	    }
+
+		std::shared_ptr<MShaderPropertyBlock> m_pFrameProperty = nullptr;
+	};
+
+	return std::make_shared<PropertyAdapter>(m_pFrameProperty);
+}
+
 void MPostProcessRenderTargetBinding::AllocRenderTarget(MPostProcessNode* pNode)
 {
+	const MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
+
 	if (m_tAllocedNode.find(pNode) != m_tAllocedNode.end())
 	{
 		return;
@@ -109,19 +149,20 @@ void MPostProcessRenderTargetBinding::AllocRenderTarget(MPostProcessNode* pNode)
 	pNode->SetRenderPass(pRenderPass);
 	m_vAllRenderPass.push_back(pRenderPass);
 
-
-	if (pNode->IsFinalNode())
+	if (pNode->GetRenderTarget().pTexture)
 	{
-		return;
+		pRenderPass->AddBackTexture(pNode->GetRenderTarget());
 	}
-
-	for (size_t nOutputIdx = 0; nOutputIdx < pNode->GetOutputSize(); ++nOutputIdx)
+	else
 	{
 		if (m_vTextures.empty())
 		{
 			auto pTexture = MTexture::CreateRenderTarget();
 			m_vTextures.push(pTexture);
 			m_vAllTextures.push_back(pTexture);
+
+			pTexture->SetSize(Vector2i(256, 256));
+			pTexture->GenerateBuffer(pRenderSystem->GetDevice());
 		}
 
 		auto pTexture = m_vTextures.front();
@@ -129,8 +170,6 @@ void MPostProcessRenderTargetBinding::AllocRenderTarget(MPostProcessNode* pNode)
 
 		pRenderPass->AddBackTexture({ pTexture , {true, MColor::Black_T } });
 	}
-
-	const MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
 
 	pRenderPass->GenerateBuffer(pRenderSystem->GetDevice());
 
@@ -140,6 +179,12 @@ void MPostProcessRenderTargetBinding::FreeRenderTarget(MPostProcessNode* pNode)
 {
 	auto findResult = m_tAllocedNode.find(pNode);
 	if (findResult == m_tAllocedNode.end())
+	{
+		return;
+	}
+
+
+	if (pNode->GetRenderTarget().pTexture)
 	{
 		return;
 	}
@@ -162,7 +207,7 @@ bool MPostProcessRenderTargetBinding::IsAllPrevNodeHasAlloced(MPostProcessNode* 
 	for (size_t nInputIdx = 0; nInputIdx < pNode->GetInputSize(); ++nInputIdx)
 	{
 		auto pInput = pNode->GetInput(nInputIdx);
-		auto pPrevNode = pInput->GetTaskNode();
+		auto pPrevNode = pInput->GetLinkedNode();
 		if (m_tAllocedNode.find(pPrevNode) == m_tAllocedNode.end())
 		{
 			return false;

@@ -5,6 +5,7 @@
 #include "Utility/MBounds.h"
 #include "Render/MRenderGlobal.h"
 
+class MShaderProgram;
 struct MShaderConstantParam;
 class MShaderPropertyBlock;
 class MIMesh;
@@ -33,7 +34,7 @@ class MORTY_API MInstanceBatchGroup
 {
 public:
 	virtual ~MInstanceBatchGroup() = default;
-	virtual void Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pMaterial) = 0;
+	virtual void Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram) = 0;
 	virtual void Release(MEngine* pEngine) = 0;
 	virtual bool CanAddMeshInstance() const = 0;
 	virtual void AddMeshInstance(const MMeshInstanceRenderProxy& proxy) = 0;

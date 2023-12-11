@@ -27,7 +27,7 @@ public:
     virtual ~MTaskGraph();
 
     template<typename TYPE>
-    TYPE* AddNode(const MString& strNodeName);
+    TYPE* AddNode(const MStringId& strNodeName);
 
 	void DestroyNode(MTaskNode* pTaskNode);
 
@@ -38,13 +38,13 @@ public:
 
 	void Run(ITaskGraphWalker* pWalker);
 
-	const std::vector<MTaskNode*>& GetStartNodes() { return m_vStartTaskNode; }
-	const std::vector<MTaskNode*>& GetFinalNodes() { return m_vFinalTaskNode; }
+	const std::vector<MTaskNode*>& GetStartNodes() const { return m_vStartTaskNode; }
+	const std::vector<MTaskNode*>& GetFinalNodes() const { return m_vFinalTaskNode; }
 	std::vector<MTaskNode*> GetOrderedNodes();
 
 protected:
 
-	bool AddNode(const MString& strNodeName, MTaskNode* pGraphNode);
+	bool AddNode(const MStringId& strNodeName, MTaskNode* pGraphNode);
 
 	std::set<MTaskNode*> m_tTaskNode;
 
@@ -56,7 +56,7 @@ protected:
 };
 
 template<typename TYPE>
-TYPE* MTaskGraph::AddNode(const MString& strNodeName)
+TYPE* MTaskGraph::AddNode(const MStringId& strNodeName)
 {
 	if (!MTypeClass::IsType<TYPE, MTaskNode>())
 	{

@@ -51,6 +51,8 @@ void VXGI_TEST(MEngine* pEngine, MScene* pScene)
 			pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_AMBIENTOCC, ao);
 			pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_HEIGHT, height);
 
+			pMaterial->SetShadingRate({ 4, 4 });
+
 			auto material = pMaterial->GetMaterialPropertyBlock()->FindConstantParam(MShaderPropertyName::MATERIAL_CBUFFER_NAME);
 
 			MStruct materialSut = material->var.GetValue<MStruct>();

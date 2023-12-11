@@ -1,3 +1,5 @@
+#include "../Internal/internal_uniform_global.hlsl"
+#include "../Internal/internal_functional.hlsl"
 
 struct VS_IN_POST
 {

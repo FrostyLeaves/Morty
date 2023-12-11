@@ -63,7 +63,7 @@ void MRenderSystem::Release()
 
 void MRenderSystem::ResizeFrameBuffer(MRenderPass& renderpass, const Vector2i& n2Size)
 {
-	for (MRenderTarget& tex : renderpass.m_vBackTextures)
+	for (MRenderTarget& tex : renderpass.m_renderTarget.backTargets)
 	{
 		if (tex.pTexture->GetSize2D() != n2Size)
 		{
@@ -83,6 +83,21 @@ void MRenderSystem::ResizeFrameBuffer(MRenderPass& renderpass, const Vector2i& n
 		}
 	}
 
+	if (auto pShadingRate = renderpass.GetShadingRateTexture())
+	{
+		Vector2i n2TexelSize = m_pDevice->GetShadingRateTextureTexelSize();
+		Vector2i n2ShadingRateSize = {};
+		n2ShadingRateSize.x = n2Size.x / n2TexelSize.x + ((n2Size.x % n2TexelSize.x) != 0);
+		n2ShadingRateSize.y = n2Size.y / n2TexelSize.y + ((n2Size.y % n2TexelSize.y) != 0);
+
+		if (pShadingRate->GetSize2D() != n2ShadingRateSize)
+		{
+			pShadingRate->SetSize(n2ShadingRateSize);
+			pShadingRate->DestroyBuffer(GetDevice());
+			pShadingRate->GenerateBuffer(GetDevice());
+		}
+	}
+
 	if (renderpass.GetFrameBufferSize() != n2Size)
 	{
 		renderpass.Resize(GetDevice());
@@ -93,7 +108,7 @@ void MRenderSystem::ReleaseRenderpass(MRenderPass& renderpass, bool bClearTextur
 {
 	if (bClearTexture)
 	{
-		for (MRenderTarget& tex : renderpass.m_vBackTextures)
+		for (MRenderTarget& tex : renderpass.m_renderTarget.backTargets)
 		{
 			tex.pTexture->DestroyBuffer(GetDevice());
 			tex.pTexture = nullptr;
@@ -106,7 +121,7 @@ void MRenderSystem::ReleaseRenderpass(MRenderPass& renderpass, bool bClearTextur
 		}
 	}
 	
-	renderpass.m_vBackTextures.clear();
+	renderpass.m_renderTarget.backTargets.clear();
 	renderpass.SetDepthTexture(nullptr, {});
 
 	renderpass.DestroyBuffer(GetDevice());

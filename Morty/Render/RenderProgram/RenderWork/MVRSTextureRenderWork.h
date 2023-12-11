@@ -1,5 +1,5 @@
 /**
- * @File         MSinglePassRenderWork
+ * @File         MVRSTextureRenderWork
  * 
  * @Created      2021-08-16 10:37:01
  *
@@ -16,9 +16,9 @@
 #include "Render/MRenderPass.h"
 #include "Basic/MCameraFrustum.h"
 
-class MORTY_API ISinglePassRenderWork : public IRenderWork
+class MORTY_API MVRSTextureRenderWork : public IRenderWork
 {
-	MORTY_INTERFACE(ISinglePassRenderWork)
+	MORTY_INTERFACE(MVRSTextureRenderWork)
 public:
 
     void Initialize(MEngine* pEngine) override;
@@ -26,17 +26,19 @@ public:
 
 	void Resize(Vector2i size) override;
 
+	void Render(MRenderInfo& info, const std::shared_ptr<IGetTextureAdapter>& pEdgeTexture);
+
 	MEngine* GetEngine() const { return m_pEngine; }
 
-	void SetRenderTarget(const MRenderTargetGroup& renderTarget);
-
-	std::vector<std::shared_ptr<MTexture>> GetBackTextures() const;
-	std::shared_ptr<MTexture> GetDepthTexture() const;
-
-	std::shared_ptr<IGetTextureAdapter> CreateOutput() const;
+	std::shared_ptr<MTexture> GetVRSTexture() const;
 
 protected:
 
 	MEngine* m_pEngine = nullptr;
-	MRenderPass m_renderPass;
+
+	std::shared_ptr<MTexture> m_pVRSTexture = nullptr;
+
+	MComputeDispatcher* m_pVRSGenerator = nullptr;
+
+	Vector2i m_n2TexelSize = { 8, 8 };
 };

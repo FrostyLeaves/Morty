@@ -12,6 +12,8 @@
 #include "Math/Vector.h"
 #include "TaskGraph/MTaskGraphWalker.h"
 
+class IPropertyBlockAdapter;
+class MShaderPropertyBlock;
 class MRenderPass;
 class MPostProcessNode;
 class MTexture;
@@ -33,6 +35,8 @@ public:
 
     void Release();
 
+    std::shared_ptr<IPropertyBlockAdapter> GetFrameProperty() const;
+
 private:
 
     void AllocRenderTarget(MPostProcessNode* pNode);
@@ -48,5 +52,9 @@ private:
     std::vector<std::shared_ptr<MTexture>> m_vAllTextures;
     std::vector<MRenderPass*> m_vAllRenderPass;
 
+    std::shared_ptr<MShaderPropertyBlock> m_pFrameProperty = nullptr;
+
     MEngine* m_pEngine = nullptr;
+
+    Vector2i m_n2ScreenSize = {1, 1};
 };

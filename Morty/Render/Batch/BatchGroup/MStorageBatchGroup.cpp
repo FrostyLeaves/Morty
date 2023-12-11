@@ -12,10 +12,10 @@
 
 constexpr size_t TransformStructSize = sizeof(MMeshInstanceTransform);
 
-void MStorageBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pMaterial)
+void MStorageBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram)
 {
 	m_pEngine = pEngine;
-	m_pMaterial = pMaterial;
+	m_pShaderProgram = pShaderProgram;
 	if (m_pShaderPropertyBlock)
 	{
 		const MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
@@ -24,15 +24,15 @@ void MStorageBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterial>
 		m_pTransformParam = nullptr;
 	}
 
-	if (!pMaterial)
+	if (!pShaderProgram)
 	{
-		MORTY_ASSERT(pMaterial);
+		MORTY_ASSERT(pShaderProgram);
 		return;
 	}
 
-	if (std::shared_ptr<MShaderPropertyBlock> pTemplatePropertyBlock = pMaterial->GetMeshPropertyBlock())
+	m_pShaderPropertyBlock = MMaterial::CreateMeshPropertyBlock(pShaderProgram);
+	if (m_pShaderPropertyBlock)
 	{
-		m_pShaderPropertyBlock = pTemplatePropertyBlock->Clone();
 		m_pTransformParam = m_pShaderPropertyBlock->FindStorageParam(MShaderPropertyName::CBUFFER_MESH_MATRIX);
 	}
 
@@ -51,7 +51,7 @@ void MStorageBatchGroup::Release(MEngine* pEngine)
 	m_pShaderPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
 	m_pShaderPropertyBlock = nullptr;
 	m_pTransformParam = nullptr;
-	m_pMaterial = nullptr;
+	m_pShaderProgram = nullptr;
 	m_tInstanceCache = {};
 
 

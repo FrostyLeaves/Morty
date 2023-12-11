@@ -105,8 +105,6 @@ struct MRenderInfo
 	/************************** shadow **************************/
 	std::array<MCascadedShadowRenderData, MRenderGlobal::CASCADED_SHADOW_MAP_NUM> shadowRenderInfo;
 
-
-
 public:
 
 	static MRenderInfo CreateFromViewport(MViewport* pViewport);

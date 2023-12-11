@@ -60,6 +60,7 @@ uint32_t MTexture::GetImageMemorySize(const METextureLayout& layout)
 	case METextureLayout::E_UNKNOW:
 
 	case METextureLayout::ER_UNORM_8:
+	case METextureLayout::ER_UINT_8:
 		return 1;
 	case METextureLayout::ERG_UNORM_8:
 		return 2;
@@ -155,6 +156,23 @@ std::shared_ptr<MTexture> MTexture::CreateRenderTargetFloat32()
 	pTexture->SetRenderUsage(METextureWriteUsage::ERenderBack);
 	pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
 	pTexture->SetTextureLayout(METextureLayout::ER_FLOAT_32);
+
+	return pTexture;
+}
+
+std::shared_ptr<MTexture> MTexture::CreateShadingRate()
+{
+	std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
+	pTexture->SetName("Shading Rate Texture");
+	pTexture->SetMipmapsEnable(false);
+	pTexture->SetReadable(false);
+	pTexture->SetRenderUsage(METextureWriteUsage::EStorageWrite);
+#if MORTY_DEBUG
+	pTexture->SetShaderUsage(METextureReadUsage::EShadingRateMask | METextureReadUsage::EPixelSampler);
+#else
+	pTexture->SetShaderUsage(METextureReadUsage::EShadingRateMask);
+#endif
+	pTexture->SetTextureLayout(METextureLayout::ER_UINT_8);
 
 	return pTexture;
 }

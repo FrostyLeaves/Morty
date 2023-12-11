@@ -12,6 +12,7 @@
 #include "Utility/MGlobal.h"
 
 #include "Object/MObject.h"
+#include "Render/MRenderPass.h"
 #include "RenderProgram/MRenderInfo.h"
 
 class MBuffer;
@@ -125,4 +126,15 @@ public:
     virtual ~IShaderPropertyUpdateDecorator() = default;
     virtual void BindMaterial(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock) = 0;
     virtual void Update(const MRenderInfo& info) = 0;
+};
+
+class MGetTextureAdapter : public IGetTextureAdapter
+{
+public:
+
+    MGetTextureAdapter(const std::shared_ptr<MTexture>& tex):pTexture(tex){}
+
+    virtual std::shared_ptr<MTexture> GetTexture() { return pTexture; }
+
+    std::shared_ptr<MTexture> pTexture = nullptr;
 };

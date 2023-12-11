@@ -11,6 +11,10 @@ MMultiThreadTaskGraphWalker::MMultiThreadTaskGraphWalker(MThreadPool* pThreadPoo
 
 }
 
+MMultiThreadTaskGraphWalker::~MMultiThreadTaskGraphWalker()
+{
+}
+
 void MMultiThreadTaskGraphWalker::operator()(MTaskGraph* pTaskGraph)
 {
 	MORTY_ASSERT(m_pThreadPool);
@@ -32,29 +36,32 @@ void MMultiThreadTaskGraphWalker::operator()(MTaskGraph* pTaskGraph)
 		m_vWaitTask.push(pNode);
 	}
 
-	MTaskNode* pTaskNode = nullptr;
 	while (true)
 	{
-		{
-			std::unique_lock<std::mutex> lck(m_taskStatehMutex);
 
-			if (m_vWaitTask.empty() && m_vActiveTask.empty())
+		{
+
+			std::queue<MTaskNode*> vWaitTask;
+			{
+				std::lock_guard<std::mutex> lck(m_taskStatehMutex);
+				std::swap(vWaitTask, m_vWaitTask);
+
+				m_nActiveTaskNum += vWaitTask.size();
+			}
+
+			if (vWaitTask.empty() && m_nActiveTaskNum == 0)
 				break;
 
-			if (m_vWaitTask.empty())
-				continue;
+			while(!vWaitTask.empty())
+			{
+				auto pTaskNode = vWaitTask.front();
+				vWaitTask.pop();
 
-			pTaskNode = m_vWaitTask.front();
-			m_vWaitTask.pop();
-
-			if (!pTaskNode)
-				continue;
-
-			UNION_PUSH_BACK_VECTOR(m_vActiveTask, pTaskNode);
+				m_tNodeState[pTaskNode] = METaskState::Active;
+				m_pThreadPool->AddWork(CreateThreadWork(pTaskNode));
+			}
 		}
 
-		m_tNodeState[pTaskNode] = METaskState::Active;
-		m_pThreadPool->AddWork(CreateThreadWork(pTaskNode));
 	}
 }
 
@@ -85,19 +92,22 @@ MThreadWork MMultiThreadTaskGraphWalker::CreateThreadWork(MTaskNode* pTaskNode)
 {
 	MThreadWork work;
 	work.eThreadType = pTaskNode->GetThreadType();
-	work.funcWorkFunction = [=]() {
-		pTaskNode->Run();
-		OnTaskFinishedCallback(pTaskNode);
-	};
+	work.funcWorkFunction = M_CLASS_FUNCTION_BIND_1_0(MMultiThreadTaskGraphWalker::ExecuteTaskNode, this, pTaskNode);
 
 	return work;
 }
 
+void MMultiThreadTaskGraphWalker::ExecuteTaskNode(MTaskNode* pTaskNode)
+{
+	pTaskNode->Run();
+	OnTaskFinishedCallback(pTaskNode);
+}
+
 void MMultiThreadTaskGraphWalker::OnTaskFinishedCallback(MTaskNode* pTaskNode)
 {
-	std::unique_lock<std::mutex> lck(m_taskStatehMutex);
-
 	m_tNodeState[pTaskNode] = METaskState::Finish;
+
+	std::vector<MTaskNode*> vNextWaitTask;
 
 	for (size_t i = 0; i < pTaskNode->GetOutputSize(); ++i)
 	{
@@ -110,10 +120,18 @@ void MMultiThreadTaskGraphWalker::OnTaskFinishedCallback(MTaskNode* pTaskNode)
 			if (CheckNodeActive(pNextNode))
 			{
 				m_tNodeState[pNextNode] = METaskState::Active;
-				m_vWaitTask.push(pNextNode);
+				vNextWaitTask.push_back(pNextNode);
 			}
 		}
 	}
 
-	ERASE_FIRST_VECTOR(m_vActiveTask, pTaskNode);
+	{
+		std::lock_guard<std::mutex> lck(m_taskStatehMutex);
+		for (auto pNextNode : vNextWaitTask)
+		{
+			m_vWaitTask.push(pNextNode);
+		}
+
+		--m_nActiveTaskNum;
+	}
 }

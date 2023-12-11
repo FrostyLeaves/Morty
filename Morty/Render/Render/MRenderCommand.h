@@ -28,7 +28,9 @@ enum class METextureBarrierStage
     EUnknow = 0,
 	EPixelShaderSample,
 	EPixelShaderWrite,
-	EComputeShaderWrite
+	EComputeShaderWrite,
+	EComputeShaderRead,
+	EShadingRateMask,
 };
 
 struct MORTY_API MViewportInfo

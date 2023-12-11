@@ -20,6 +20,7 @@ class MORTY_API MDeferredLightingRenderWork : public ISinglePassRenderWork
 
 	void Initialize(MEngine* pEngine) override;
 	void Release(MEngine* pEngine) override;
+	void Resize(Vector2i size) override;
 
 	void Render(MRenderInfo& info);
 

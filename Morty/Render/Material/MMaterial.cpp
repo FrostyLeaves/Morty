@@ -32,6 +32,11 @@ std::vector<std::shared_ptr<MShaderTextureParam>>& MMaterial::GetTextureParams()
 	return m_pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]->m_vTextures;
 }
 
+std::shared_ptr<MShaderPropertyBlock> MMaterial::GetMaterialPropertyBlock() const
+{
+	return m_pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL];
+}
+
 void MMaterial::SetTexture(const MStringId& strName, std::shared_ptr<MResource> pResource)
 {
 	for (size_t i = 0; i < GetMaterialPropertyBlock()->m_vTextures.size(); ++i)
@@ -127,6 +132,11 @@ void MMaterial::SetShaderMacro(const MShaderMacro& macro)
 	m_pShaderProgram->SetShaderMacro(macro);
 }
 
+void MMaterial::SetShadingRate(const Vector2i n2ShadingRate)
+{
+	m_n2ShadingRate = n2ShadingRate;
+}
+
 void MMaterial::OnCreated()
 {
 	Super::OnCreated();
@@ -151,5 +161,13 @@ void MMaterial::Unload()
 const char* MMaterial::GetDebugName() const
 {
 	return GetResourcePath().c_str();
+}
+std::shared_ptr<MShaderPropertyBlock> MMaterial::CreateFramePropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram)
+{
+	return pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_FRAME]->Clone();
+}
+std::shared_ptr<MShaderPropertyBlock> MMaterial::CreateMeshPropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram)
+{
+	return pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MESH]->Clone();
 }
 #endif

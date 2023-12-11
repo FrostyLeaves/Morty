@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "Render/MRenderPass.h"
 #include "Utility/MGlobal.h"
 
 #include "RenderProgram/MRenderInfo.h"
@@ -25,9 +26,14 @@ public:
 	void SetRenderPass(MRenderPass* pRenderPass) { m_pRenderPass = pRenderPass; }
 	MRenderPass* GetRenderPass() const { return m_pRenderPass; }
 
+	void SetRenderTarget(const MRenderTarget& pSpecificTarget) { m_specificTarget = pSpecificTarget; }
+	const MRenderTarget& GetRenderTarget() const { return m_specificTarget; }
+
 private:
 
 	std::shared_ptr<MMaterial> m_pMaterial = nullptr;
 
 	MRenderPass* m_pRenderPass = nullptr;
+
+	MRenderTarget m_specificTarget;
 };

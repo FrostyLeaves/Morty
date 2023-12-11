@@ -11,6 +11,7 @@
 #include "Utility/MGlobal.h"
 #include "TaskGraph/MTaskGraphWalker.h"
 
+class IPropertyBlockAdapter;
 class MIMesh;
 class MIRenderCommand;
 class MTaskNode;
@@ -20,7 +21,7 @@ class MORTY_API MPostProcessGraphWalker: public ITaskGraphWalker
 {
 public:
 
-    explicit MPostProcessGraphWalker(MIRenderCommand* pRenderCommand, MIMesh* pScreenMesh);
+    explicit MPostProcessGraphWalker(MIRenderCommand* pRenderCommand, MIMesh* pScreenMesh, std::shared_ptr<IPropertyBlockAdapter> pFrameProperty);
 
     void operator ()(MTaskGraph* pTaskGraph) override;
 
@@ -31,4 +32,5 @@ private:
 
     MIRenderCommand* m_pRenderCommand = nullptr;
     MIMesh* m_pScreenMesh = nullptr;
+    std::shared_ptr<IPropertyBlockAdapter> m_pFrameProperty = nullptr;
 };

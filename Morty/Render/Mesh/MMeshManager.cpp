@@ -65,7 +65,7 @@ void MMeshManager::OnCreated()
 	InitializeSkyBox();
 	InitializeCube();
 
-	MTaskNode* pUploadBufferTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>("Upload Mesh Buffer");
+	MTaskNode* pUploadBufferTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>(MRenderGlobal::TASK_UPLOAD_MESH_UPDATE);
 	pUploadBufferTask->SetThreadType(METhreadType::ERenderThread);
 	pUploadBufferTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MMeshManager::UploadBufferTask, this));
 }

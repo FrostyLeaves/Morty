@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Material/MMaterial.h"
-#include "Render/MBuffer.h"
 #include "RenderProgram/MRenderInfo.h"
 #include "Utility/MGlobal.h"
+#include "Utility/MFunction.h"
+#include "TaskGraph/MTaskNode.h"
 
 
 struct MMeshInstanceRenderProxy;
@@ -70,4 +71,43 @@ protected:
     Vector3 m_v3CameraPosition;
     MCameraFrustum m_cameraFrustum;
     MIRenderCommand* m_pCommand = nullptr;
+};
+
+template<typename TYPE>
+class MORTY_API MCullingTaskNode : public MTaskNode
+{
+public:
+
+    void OnCreated() override
+    {
+        BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MCullingTaskNode<TYPE>::Culling, this));
+    }
+
+    void Initialize(MEngine* pEngine)
+    {
+        m_pCulling = std::make_shared<TYPE>();
+        m_pCulling->Initialize(pEngine);
+    }
+
+    void Release()
+    {
+        m_pCulling->Release();
+        m_pCulling = nullptr;
+    }
+
+    void SetInput(const std::vector<MMaterialBatchGroup*>& vInstanceGroup) { m_vInstanceGroup = vInstanceGroup; }
+
+    const std::shared_ptr<TYPE>& Get() const { return m_pCulling; }
+
+    void Culling(MTaskNode* pNode)
+    {
+        MORTY_UNUSED(pNode);
+        m_pCulling->Culling(m_vInstanceGroup);
+    }
+
+private:
+
+    std::vector<MMaterialBatchGroup*> m_vInstanceGroup;
+
+    std::shared_ptr<TYPE> m_pCulling;
 };

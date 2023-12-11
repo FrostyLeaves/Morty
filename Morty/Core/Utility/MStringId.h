@@ -15,21 +15,21 @@ class MStringId
 public:
 
     explicit MStringId() = default; 
-    explicit MStringId(const char* str);
+    explicit MStringId(std::string_view strview);
 
     bool operator ==(const MStringId& other) const;
     bool operator <(const MStringId& other) const;
 
     size_t Hash() const { return m_hash; }
 
-    const std::string& ToString() const { return m_string; }
+    const std::string& ToString() const { return *m_string; }
 
     size_t GetClashIndex() const;
 
 private:
 
     //read only
-    std::string m_string;
+    std::shared_ptr<std::string> m_string;
     size_t m_hash = 0;
     std::shared_ptr<std::array<size_t, MGlobal::M_MAX_THREAD_NUM>> m_clashIndex;
 };

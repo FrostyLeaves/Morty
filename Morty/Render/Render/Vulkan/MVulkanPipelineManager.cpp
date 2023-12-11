@@ -329,7 +329,7 @@ void GetBlendStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPas
 
 	if (MEMaterialType::EDepthPeel == eType)
 	{
-		if (pRenderPass->m_vBackTextures.size() < 4)
+		if (pRenderPass->m_renderTarget.backTargets.size() < 4)
 			return;
 
 		vBlendAttach.resize(4);
@@ -378,7 +378,7 @@ void GetBlendStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPas
 	}
 	else if (MEMaterialType::ETransparentBlend == eType)
 	{
-		for (uint32_t i = 0; i < pRenderPass->m_vBackTextures.size(); ++i)
+		for (uint32_t i = 0; i < pRenderPass->m_renderTarget.backTargets.size(); ++i)
 		{
 			vBlendAttach.push_back({});
 			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
@@ -394,7 +394,7 @@ void GetBlendStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPas
 	}
 	else if (MEMaterialType::EImGui == eType)
 	{
-		for (uint32_t i = 0; i < pRenderPass->m_vBackTextures.size(); ++i)
+		for (uint32_t i = 0; i < pRenderPass->m_renderTarget.backTargets.size(); ++i)
 		{
 			vBlendAttach.push_back({});
 			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
@@ -411,7 +411,7 @@ void GetBlendStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPas
 	}
 	else if(MEMaterialType::ECustom == eType)
 	{
-		for (uint32_t i = 0; i < pRenderPass->m_vBackTextures.size(); ++i)
+		for (uint32_t i = 0; i < pRenderPass->m_renderTarget.backTargets.size(); ++i)
 		{
 			vBlendAttach.push_back({});
 			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
@@ -427,7 +427,7 @@ void GetBlendStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPas
 	}
     else
     {
-		for (uint32_t i = 0; i < pRenderPass->m_vBackTextures.size(); ++i)
+		for (uint32_t i = 0; i < pRenderPass->m_renderTarget.backTargets.size(); ++i)
 		{
 			vBlendAttach.push_back({});
 			VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();

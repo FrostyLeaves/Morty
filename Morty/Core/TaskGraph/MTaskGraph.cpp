@@ -26,7 +26,7 @@ MTaskGraph::~MTaskGraph()
 	m_tTaskNode.clear();
 }
 
-bool MTaskGraph::AddNode(const MString& strNodeName, MTaskNode* pNode)
+bool MTaskGraph::AddNode(const MStringId& strNodeName, MTaskNode* pNode)
 {
 	MORTY_ASSERT(!m_bLock);
 

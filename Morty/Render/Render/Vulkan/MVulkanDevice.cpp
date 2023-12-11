@@ -153,6 +153,7 @@ VkFormat MVulkanDevice::GetFormat(const METextureLayout& layout) const
 		{METextureLayout::ERG_UNORM_8, VK_FORMAT_R8G8_UNORM},
 		{METextureLayout::ERGB_UNORM_8, VK_FORMAT_R8G8B8_UNORM},
 		{METextureLayout::ERGBA_UNORM_8, VK_FORMAT_R8G8B8A8_UNORM},
+		{METextureLayout::ER_UINT_8, VK_FORMAT_R8_UINT},
 		{METextureLayout::ER_FLOAT_16, VK_FORMAT_R16_SFLOAT},
 		{METextureLayout::ERG_FLOAT_16, VK_FORMAT_R16G16_SFLOAT},
 		{METextureLayout::ERGB_FLOAT_16, VK_FORMAT_R16G16B16_SFLOAT},
@@ -188,6 +189,10 @@ VkImageUsageFlags MVulkanDevice::GetUsageFlags(MTexture* pTexture) const
 	if (pTexture->GetShaderUsage() & METextureReadUsage::EStorageRead)
 	{
 		usageFlags |= VK_IMAGE_USAGE_STORAGE_BIT;
+	}
+	if (pTexture->GetShaderUsage() & METextureReadUsage::EShadingRateMask)
+	{
+		usageFlags |= VK_IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
 	}
 
 	if (pTexture->GetRenderUsage() == METextureWriteUsage::EStorageWrite)
@@ -265,7 +270,8 @@ VkImageAspectFlags MVulkanDevice::GetAspectFlags(VkImageLayout layout) const
 		{VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_ACCESS_TRANSFER_WRITE_BIT},
 		{VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_ACCESS_SHADER_READ_BIT},
 		{VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT},
-		{VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT}
+		{VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT},
+		{VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR, VK_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT_KHR}
 
 	};
 
@@ -1009,7 +1015,7 @@ VkAttachmentDescription2 CreateAttachmentDescriptionFromTexture(const MRenderTar
 			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 		}
 	}
-	else if (renderTarget.pTexture->GetShaderUsage() == METextureReadUsage::EShadingRateMask)
+	else if (renderTarget.pTexture->GetShaderUsage() & METextureReadUsage::EShadingRateMask)
 	{
 		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
 	}
@@ -1043,20 +1049,20 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 		DestroyRenderPass(pRenderPass);
 	}
 
-    uint32_t unBackNum = static_cast<uint32_t>(pRenderPass->m_vBackTextures.size());
+    uint32_t unBackNum = static_cast<uint32_t>(pRenderPass->m_renderTarget.backTargets.size());
 
 	std::vector<VkAttachmentDescription2> vAttachmentDesc;
 
 	for (uint32_t i = 0; i < unBackNum; ++i)
 	{
-		MRenderTarget& backTexture = pRenderPass->m_vBackTextures[i];
+		MRenderTarget& backTexture = pRenderPass->m_renderTarget.backTargets[i];
 		auto attachment = CreateAttachmentDescriptionFromTexture(backTexture);
 		vAttachmentDesc.push_back(attachment);
 	}
 	
 	if (std::shared_ptr<MTexture> pDepthTexture = pRenderPass->GetDepthTexture())
 	{
-		auto attachment = CreateAttachmentDescriptionFromTexture(pRenderPass->m_DepthTexture);
+		auto attachment = CreateAttachmentDescriptionFromTexture(pRenderPass->m_renderTarget.depthTarget);
 		vAttachmentDesc.push_back(attachment);
 	}
 
@@ -1193,7 +1199,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 	{
 		if (pRenderPass->GetShadingRateTexture())
 		{
-			vAttachmentDesc.push_back(CreateAttachmentDescriptionFromTexture(pRenderPass->m_ShadingRateTexture));
+			vAttachmentDesc.push_back(CreateAttachmentDescriptionFromTexture(pRenderPass->m_renderTarget.shadingRate));
 
 			vkFragShadingRateReference.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2;
 			vkFragShadingRateReference.attachment = vAttachmentDesc.size() - 1;
@@ -1249,88 +1255,89 @@ void MVulkanDevice::DestroyRenderPass(MRenderPass* pRenderPass)
 	}
 }
 
+std::tuple<VkImageView, Vector2i> MVulkanDevice::CreateFrameBufferViewFromRenderTarget(MRenderTarget& renderTarget)
+{
+	Vector2i i2Size = {0, 0};
+	VkImageView imageView = VK_NULL_HANDLE;
+
+	if (!renderTarget.pTexture->GetMipmapsEnable())
+	{
+		i2Size.x = renderTarget.pTexture->GetSize().x;
+		i2Size.y = renderTarget.pTexture->GetSize().y;
+		imageView = renderTarget.pTexture->m_VkImageView;
+	}
+	else
+	{
+		if (renderTarget.m_VkImageView == VK_NULL_HANDLE)
+		{
+			std::shared_ptr<MTexture> pTexture = renderTarget.pTexture;
+			renderTarget.m_VkImageView = CreateImageView(pTexture->m_VkTextureImage, pTexture->m_VkTextureFormat, GetAspectFlags(pTexture->GetRenderUsage()), renderTarget.desc.nMipmapLevel, 1, GetLayerCount(pTexture.get()), GetImageViewType(pTexture.get()));
+			i2Size.x = pTexture->GetMipmapSize(renderTarget.desc.nMipmapLevel).x;
+			i2Size.y = pTexture->GetMipmapSize(renderTarget.desc.nMipmapLevel).y;
+		}
+		imageView = renderTarget.m_VkImageView;
+	}
+
+
+	return { imageView, i2Size };
+}
+
 bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 {
-	int fFrameBufferWidth = 0, fFrameBufferHeight = 0;
+	std::vector<std::tuple<VkImageView, Vector2i>> vAttachmentViewAndSize;
 
-	std::vector<VkImageView> vAttachmentViews;
-
-	uint32_t unBackNum = static_cast<uint32_t>(pRenderPass->m_vBackTextures.size());
+	const uint32_t unBackNum = static_cast<uint32_t>(pRenderPass->m_renderTarget.backTargets.size());
 	for (uint32_t backIdx = 0; backIdx < unBackNum; ++backIdx)
 	{
-		MRenderTarget& backTexture = pRenderPass->m_vBackTextures[backIdx];
+		MRenderTarget& backTexture = pRenderPass->m_renderTarget.backTargets[backIdx];
 		if (!backTexture.pTexture)
 		{
 			GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateFrameBuffer error: bt == nullptr");
 			return false;
 		}
 
-		int nWidth = 0, nHeight = 0;
-		VkImageView imageView = VK_NULL_HANDLE;
-
-		if (!backTexture.pTexture->GetMipmapsEnable())
-		{
-			nWidth = backTexture.pTexture->GetSize().x;
-			nHeight = backTexture.pTexture->GetSize().y;
-			imageView = backTexture.pTexture->m_VkImageView;
-		}
-		else
-		{
-			if (backTexture.m_VkImageView == VK_NULL_HANDLE)
-			{
-				std::shared_ptr<MTexture> pTexture = backTexture.pTexture;
-				backTexture.m_VkImageView = CreateImageView(pTexture->m_VkTextureImage, pTexture->m_VkTextureFormat, GetAspectFlags(pTexture->GetRenderUsage()), backTexture.desc.nMipmapLevel, 1, GetLayerCount(pTexture.get()), GetImageViewType(pTexture.get()));
-				nWidth = pTexture->GetMipmapSize(backTexture.desc.nMipmapLevel).x;
-				nHeight = pTexture->GetMipmapSize(backTexture.desc.nMipmapLevel).y;
-			}
-			imageView = backTexture.m_VkImageView;
-		}
-
-		if (nWidth != fFrameBufferWidth || nHeight != fFrameBufferHeight)
-		{
-			if (fFrameBufferWidth == 0 && fFrameBufferHeight == 0)
-			{
-				fFrameBufferWidth = nWidth;
-				fFrameBufferHeight = nHeight;
-			}
-			else
-			{
-				GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateFrameBuffer error: different size");
-				return false;
-			}
-		}
-
-		vAttachmentViews.push_back(imageView);
+		vAttachmentViewAndSize.push_back(CreateFrameBufferViewFromRenderTarget(backTexture));
 	}
 
-	std::shared_ptr<MTexture> pDepthTexture = pRenderPass->GetDepthTexture();
-
-	if (pDepthTexture)
+	if (pRenderPass->GetDepthTexture())
 	{
-		if (pDepthTexture->GetSize().x != fFrameBufferWidth || pDepthTexture->GetSize().y != fFrameBufferHeight)
-		{
-			if (fFrameBufferWidth == 0 && fFrameBufferHeight == 0)
-			{
-				fFrameBufferWidth = pDepthTexture->GetSize().x;
-				fFrameBufferHeight = pDepthTexture->GetSize().y;
-			}
-			else
-			{
-				GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateFrameBuffer error: different size");
-				return false;
-			}
-		}
-
-		if (!pDepthTexture->m_VkImageView)
-		{
-			pDepthTexture->GenerateBuffer(this);
-		}
-
-		vAttachmentViews.push_back(pDepthTexture->m_VkImageView);
+		vAttachmentViewAndSize.push_back(CreateFrameBufferViewFromRenderTarget(pRenderPass->m_renderTarget.depthTarget));
 	}
 
-	fFrameBufferWidth = std::max(fFrameBufferWidth, 1);
-	fFrameBufferHeight = std::max(fFrameBufferHeight, 1);
+	const Vector2i nFrameBufferSize = vAttachmentViewAndSize.empty() ? Vector2i(0, 0) : std::get<1>(vAttachmentViewAndSize[0]);
+
+	for (size_t nIdx = 1; nIdx < vAttachmentViewAndSize.size(); ++nIdx)
+	{
+		if (nFrameBufferSize != std::get<1>(vAttachmentViewAndSize[nIdx]))
+		{
+			GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateFrameBuffer error: different size");
+			return false;
+		}
+	}
+	
+	std::vector<VkImageView> vAttachmentViews(vAttachmentViewAndSize.size());
+	std::transform(vAttachmentViewAndSize.begin(), vAttachmentViewAndSize.end(), vAttachmentViews.begin(), [](const auto& tuple)
+		{
+			return std::get<0>(tuple);
+		});
+
+	if (pRenderPass->GetShadingRateTexture())
+	{
+		const auto viewAndSize = CreateFrameBufferViewFromRenderTarget(pRenderPass->m_renderTarget.shadingRate);
+		const Vector2i n2Size = std::get<1>(viewAndSize);
+		const Vector2i vkTexelSize = GetShadingRateTextureTexelSize();
+		const Vector2i n2CompareSize = { n2Size.x * vkTexelSize.x, n2Size.y * vkTexelSize.y };
+
+/*		if(n2CompareSize.x < nFrameBufferSize.x || n2CompareSize.y < nFrameBufferSize.y)
+		{
+			GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateFrameBuffer error: shading rate texture size not match: ({}, {}), attachment texel size is ({}, {}), frame buffer size is ({}, {})"
+				, n2Size.x, n2Size.y, vkTexelSize.x, vkTexelSize.y, nFrameBufferSize.x, nFrameBufferSize.y);
+
+			return false;
+		}
+*/
+		vAttachmentViews.push_back(std::get<0>(viewAndSize));
+	}
 
 
 	VkFramebufferCreateInfo framebufferInfo{};
@@ -1340,13 +1347,12 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 
 	framebufferInfo.attachmentCount = static_cast<uint32_t>(vAttachmentViews.size());
 	framebufferInfo.pAttachments = vAttachmentViews.data();
-	framebufferInfo.width = fFrameBufferWidth;
-	framebufferInfo.height = fFrameBufferHeight;
+	framebufferInfo.width = std::max(nFrameBufferSize.x, 1);
+	framebufferInfo.height = std::max(nFrameBufferSize.y, 1);
 	framebufferInfo.layers = 1;
 
-
-	pRenderPass->m_vkExtent2D.width = fFrameBufferWidth;
-	pRenderPass->m_vkExtent2D.height = fFrameBufferHeight;
+	pRenderPass->m_vkExtent2D.width = framebufferInfo.width;
+	pRenderPass->m_vkExtent2D.height = framebufferInfo.height;
 
 	VkResult result = vkCreateFramebuffer(m_VkDevice, &framebufferInfo, nullptr, &pRenderPass->m_VkFrameBuffer);
 	if (VK_SUCCESS != result)
@@ -1368,7 +1374,7 @@ void MVulkanDevice::DestroyFrameBuffer(MRenderPass* pRenderPass)
 		pRenderPass->m_VkFrameBuffer = VK_NULL_HANDLE;
 	}
 
-	for (MRenderTarget& backTexture : pRenderPass->m_vBackTextures)
+	for (MRenderTarget& backTexture : pRenderPass->m_renderTarget.backTargets)
 	{
 		if (backTexture.m_VkImageView)
 		{
@@ -2156,6 +2162,12 @@ int MVulkanDevice::FindQueuePresentFamilies(VkSurfaceKHR surface) const
 VkPhysicalDeviceProperties MVulkanDevice::GetPhysicalDeviceProperties() const
 {
 	return m_pPhysicalDevice->m_VkPhysicalDeviceProperties;
+}
+
+Vector2i MVulkanDevice::GetShadingRateTextureTexelSize() const
+{
+	const auto vkSize = GetPhysicalDevice()->m_VkFragmentShadingRateProperties.maxFragmentShadingRateAttachmentTexelSize;
+	return Vector2i(vkSize.width, vkSize.height);
 }
 
 #endif

@@ -157,6 +157,7 @@ void MThreadPool::ThreadRun(METhreadType eType, size_t nThreadIndex, MString str
 		}
 
 		work.funcWorkFunction();
+		work = {};
 	}
 }
 

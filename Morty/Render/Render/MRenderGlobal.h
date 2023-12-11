@@ -16,10 +16,14 @@
 #include "Render/Vulkan/MVulkanWrapper.h"
 #endif
 
+#define GPU_CULLING_ENABLE (false)
+#define MORTY_VXGI_ENABLE (false)
+#define VRS_OPTIMIZE_ENABLE  (false)
 
 class MORTY_API MRenderGlobal
 {
 public:
+
 
 	static constexpr int SHADER_PARAM_SET_MATERIAL = 0;
 	static constexpr int SHADER_PARAM_SET_FRAME = 1;
@@ -63,6 +67,14 @@ public:
 	
 	static constexpr size_t MESH_TRANSFORM_IN_UNIFORM_MAX_NUM = 128;
 
+	static MStringId TASK_RENDER_MESH_MANAGER_UPDATE;
+	static MStringId TASK_ANIMATION_MANAGER_UPDATE;
+	static MStringId TASK_SHADOWMAP_MANAGER_UPDATE;
+	static MStringId TASK_UPLOAD_MESH_UPDATE;
+	static MStringId TASK_RENDER_MODULE_UPDATE;
+
+	static MStringId POSTPROCESS_FINAL_NODE;
+	static MStringId POSTPROCESS_EDGE_DETECTION;
 };
 
 using MMeshInstanceKey = size_t;

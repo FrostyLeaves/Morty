@@ -111,7 +111,7 @@ void TaskGraphView::Render()
 
 			//title
 			ImNodes::BeginNodeTitleBar();
-			ImGui::TextUnformatted(pNode->GetNodeName().c_str());
+			ImGui::TextUnformatted(pNode->GetNodeName().ToString().c_str());
 			ImNodes::EndNodeTitleBar();
 
 			//input
@@ -122,6 +122,9 @@ void TaskGraphView::Render()
 				ImGui::Text("%s", pNodeInput->GetName().c_str());
 				ImNodes::EndInputAttribute();
 			}
+
+			//Context
+			ImGui::Text("avg time: %f", (pNode->m_nDebugTime / 1000.0f));
 
 			//output
 			for (size_t nIdx = 0; nIdx < pNode->GetOutputSize(); ++nIdx)

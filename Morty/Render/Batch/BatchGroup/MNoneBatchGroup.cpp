@@ -12,10 +12,10 @@
 #include "Utility/MGlobal.h"
 
 
-void MNoneBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pMaterial)
+void MNoneBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram)
 {
 	m_pEngine = pEngine;
-	m_pMaterial = pMaterial;
+	m_pShaderProgram = pShaderProgram;
 
 	if (m_pShaderPropertyBlock)
 	{
@@ -25,11 +25,11 @@ void MNoneBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pM
 		m_pTransformParam = nullptr;
 	}
 
-	if (pMaterial)
+	if (pShaderProgram)
 	{
-		if (std::shared_ptr<MShaderPropertyBlock> pTemplatePropertyBlock = pMaterial->GetMeshPropertyBlock())
+		m_pShaderPropertyBlock = MMaterial::CreateMeshPropertyBlock(pShaderProgram);
+		if (m_pShaderPropertyBlock)
 		{
-			m_pShaderPropertyBlock = pTemplatePropertyBlock->Clone();
 			m_pTransformParam = m_pShaderPropertyBlock->FindConstantParam(MShaderPropertyName::CBUFFER_MESH_MATRIX);
 			MVariantStruct& srt = m_pTransformParam->var.GetValue<MVariantStruct>();
 			m_worldMatrix = srt.FindVariant(MShaderPropertyName::MESH_WORLD_MATRIX);
@@ -45,7 +45,7 @@ void MNoneBatchGroup::Release(MEngine* pEngine)
 	m_pShaderPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
 	m_pShaderPropertyBlock = nullptr;
 	m_pTransformParam = nullptr;
-	m_pMaterial = nullptr;
+	m_pShaderProgram = nullptr;
 }
 
 bool MNoneBatchGroup::CanAddMeshInstance() const

@@ -3,7 +3,6 @@
 #include "MInstanceCulling.h"
 
 #include "Render/MBuffer.h"
-#include "Render/MVertex.h"
 #include "Shadow/MShadowMapUtil.h"
 
 class IRenderableFilter;

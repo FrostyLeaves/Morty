@@ -10,6 +10,7 @@
 #include "Batch/MMaterialBatchGroup.h"
 
 #include "Batch/BatchGroup/MInstanceBatchGroup.h"
+#include "Render/MVertex.h"
 #include "RenderProgram/RenderWork/MRenderWork.h"
 
 void MCascadedShadowCulling::Initialize(MEngine* pEngine)
@@ -40,11 +41,14 @@ void MCascadedShadowCulling::Culling(const std::vector<MMaterialBatchGroup*>& vI
 {
 	auto vCascadedSplitData = MShadowMapUtil::CascadedSplitCameraFrustum(m_pViewport);
 
-	//const auto vCascadedPsrBounds = MShadowMapUtil::GetCameraFrustumBounds(m_pViewport, vCascadedSplitData);
-	//const auto vCascadedFilter = MShadowMapUtil::GetCameraFrustumCullingFilter(m_pViewport, vCascadedSplitData);
-
+#if MORTY_VXGI_ENABLE
+	// shadow map must contain the GI region.
 	const auto vCascadedPsrBounds = MShadowMapUtil::GetVoxelMapBounds(m_pViewport, vCascadedSplitData);
 	const auto vCascadedFilter = MShadowMapUtil::GetBoundsCullingFilter(m_pViewport, vCascadedPsrBounds);
+#else
+	const auto vCascadedPsrBounds = MShadowMapUtil::GetCameraFrustumBounds(m_pViewport, vCascadedSplitData);
+	const auto vCascadedFilter = MShadowMapUtil::GetCameraFrustumCullingFilter(m_pViewport, vCascadedSplitData);
+#endif
 
 	CullingForDrawInstancing(vInstanceGroup, vCascadedFilter);
 	m_vCascadedRenderData = MShadowMapUtil::CalculateRenderData(m_pViewport, m_pCameraEntity, vCascadedSplitData, vCascadedPsrBounds, m_vCascadedPscBounds);

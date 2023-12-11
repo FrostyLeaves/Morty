@@ -52,11 +52,11 @@ void SDLRenderView::Initialize(MEngine* pEngine)
 	m_pImGuiRender->Initialize();
 
 	MTaskGraph* pMainGraph = GetEngine()->GetMainGraph();
-	MTaskNode* pEditorTask = pMainGraph->AddNode<MTaskNode>("Window_Update");
+	MTaskNode* pEditorTask = pMainGraph->AddNode<MTaskNode>(MStringId("Window_Update"));
 	pEditorTask->SetThreadType(METhreadType::ECurrentThread);
 	pEditorTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(SDLRenderView::MainLoop, this));
 
-	m_pRenderTask = pMainGraph->AddNode<MTaskNode>("Window_Render");
+	m_pRenderTask = pMainGraph->AddNode<MTaskNode>(MStringId("Window_Render"));
 	m_pRenderTask->SetThreadType(METhreadType::ERenderThread);
 	m_pRenderTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(SDLRenderView::Render, this));
 

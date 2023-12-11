@@ -7,6 +7,7 @@
 
 #include "Module/MCoreModule.h"
 #include "TaskGraph/MMultiThreadTaskGraphWalker.h"
+#include "TaskGraph/MSingleThreadTaskGraphWalker.h"
 
 MORTY_CLASS_IMPLEMENT(MEngine, MTypeClass)
 

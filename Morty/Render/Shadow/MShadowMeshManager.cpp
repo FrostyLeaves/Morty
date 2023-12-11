@@ -37,7 +37,7 @@ void MShadowMeshManager::Initialize()
 		pNotifySystem->RegisterNotify(MRenderNotify::NOTIFY_GENERATE_SHADOW_CHANGED, M_CLASS_FUNCTION_BIND_0_1(MShadowMeshManager::OnGenerateShadowChanged, this));
 	}
 
-	m_pUpdateTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>("ShadowMeshManagerUpdate");
+	m_pUpdateTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>(MRenderGlobal::TASK_SHADOWMAP_MANAGER_UPDATE);
 	if (m_pUpdateTask)
 	{
 		m_pUpdateTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MShadowMeshManager::RenderUpdate, this));

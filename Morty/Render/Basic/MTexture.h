@@ -32,6 +32,8 @@ enum class METextureLayout
 	ERGB_UNORM_8,
 	ERGBA_UNORM_8,
 
+	ER_UINT_8,
+
 	ER_FLOAT_16,
 	ERG_FLOAT_16,
 	ERGB_FLOAT_16,
@@ -119,6 +121,7 @@ public:
 	static std::shared_ptr<MTexture> CreateRenderTarget(METextureLayout eLayout = METextureLayout::ERGBA_UNORM_8);
 	static std::shared_ptr<MTexture> CreateRenderTargetGBuffer();
 	static std::shared_ptr<MTexture> CreateRenderTargetFloat32();
+	static std::shared_ptr<MTexture> CreateShadingRate();
 
 	static std::shared_ptr<MTexture> CreateCubeMap();
 	static std::shared_ptr<MTexture> CreateVXGIMap();

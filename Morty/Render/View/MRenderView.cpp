@@ -369,13 +369,13 @@ void MRenderView::DestroyRenderPass()
 			rendertarget.vkImageReadySemaphore = VK_NULL_HANDLE;
 		}
 
-		for (MRenderTarget& tex : rendertarget.renderPass.m_vBackTextures)
+		for (MRenderTarget& tex : rendertarget.renderPass.m_renderTarget.backTargets)
 		{
 			tex.pTexture->DestroyBuffer(m_pDevice);
 			tex.pTexture = nullptr;
 		}
 
-		rendertarget.renderPass.m_vBackTextures.clear();
+		rendertarget.renderPass.m_renderTarget.backTargets.clear();
 
 		if (std::shared_ptr<MTexture> pDepthTexture = rendertarget.renderPass.GetDepthTexture())
 		{

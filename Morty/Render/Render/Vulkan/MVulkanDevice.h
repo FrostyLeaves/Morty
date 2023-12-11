@@ -86,6 +86,7 @@ public:
 	bool MultiDrawIndirectSupport() const;
 	int FindQueuePresentFamilies(VkSurfaceKHR surface) const;
 	VkPhysicalDeviceProperties GetPhysicalDeviceProperties() const;
+	Vector2i GetShadingRateTextureTexelSize() const override;
 
 	void SetDebugName(uint64_t object, const VkObjectType& type, const char* svDebugName) const;
 	void TransitionLayoutBarrier(VkImageMemoryBarrier& imageMemoryBarrier, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange subresourceRange) const;
@@ -112,6 +113,8 @@ public:
 	void DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	MVulkanSecondaryRenderCommand* CreateChildCommand(MVulkanPrimaryRenderCommand* pParentCommand);
 
+
+	std::tuple<VkImageView, Vector2i> CreateFrameBufferViewFromRenderTarget(MRenderTarget& renderTarget);
 
 protected:
 	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkBufferCopy region);

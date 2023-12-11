@@ -52,12 +52,12 @@
 
 #include "Culling/MBoundingBoxCulling.h"
 #include "Manager/MEnvironmentManager.h"
+#include "RenderWork/MVRSTextureRenderWork.h"
+#include "TaskGraph/MMultiThreadTaskGraphWalker.h"
 #include "Utility/MGlobal.h"
 
 MORTY_CLASS_IMPLEMENT(MDeferredRenderProgram, MIRenderProgram)
 
-
-#define GPU_CULLING_ENABLE false
 
 void MDeferredRenderProgram::Render(MIRenderCommand* pPrimaryCommand)
 {
@@ -73,6 +73,7 @@ void MDeferredRenderProgram::Render(MIRenderCommand* pPrimaryCommand)
 	//RenderVoxelizerDebug();
 	RenderTransparent();
 	RenderPostProcess();
+	RenderVRS();
 	RenderDebug();
 }
 
@@ -92,11 +93,11 @@ void MDeferredRenderProgram::RenderSetup(MIRenderCommand* pPrimaryCommand)
 	//Shadow map Culling.
 	auto* pShadowMapManager = pViewport->GetScene()->GetManager<MShadowMeshManager>();
 	auto vShadowMaterialGroup = pShadowMapManager->GetAllShadowGroup();
-	m_pShadowCulling->SetCamera(pCameraEntity);
-	m_pShadowCulling->SetViewport(pViewport);
-	m_pShadowCulling->SetDirectionalLight(pMainDirectionalLight);
-	m_pShadowCulling->Culling(vShadowMaterialGroup);
-	m_renderInfo.shadowRenderInfo = m_pShadowCulling->GetCascadedRenderInfo();
+	m_pShadowCulling->Get()->SetCamera(pCameraEntity);
+	m_pShadowCulling->Get()->SetViewport(pViewport);
+	m_pShadowCulling->Get()->SetDirectionalLight(pMainDirectionalLight);
+	m_pShadowCulling->SetInput(vShadowMaterialGroup);
+
 
 	//Scene Culling.
 	auto* pMeshInstanceMeshManager = pScene->GetManager<MMeshInstanceManager>();
@@ -107,18 +108,24 @@ void MDeferredRenderProgram::RenderSetup(MIRenderCommand* pPrimaryCommand)
 		, pCameraSceneComponent
 	);
 
-	m_pCameraFrustumCulling->SetCommand(pPrimaryCommand);
-	m_pCameraFrustumCulling->SetCameraFrustum(cameraFrustum);
-	m_pCameraFrustumCulling->SetCameraPosition(pCameraSceneComponent->GetWorldPosition());
-	m_pCameraFrustumCulling->Culling(vMaterialGroup);
+	m_pCameraFrustumCulling->Get()->SetCommand(pPrimaryCommand);
+	m_pCameraFrustumCulling->Get()->SetCameraFrustum(cameraFrustum);
+	m_pCameraFrustumCulling->Get()->SetCameraPosition(pCameraSceneComponent->GetWorldPosition());
+	m_pCameraFrustumCulling->SetInput(vMaterialGroup);
 
+#if MORTY_VXGI_ENABLE
 	uint32_t nClipmapIdx = m_renderInfo.nFrameIndex % MRenderGlobal::VOXEL_GI_CLIP_MAP_NUM;
 	GetRenderWork<MVoxelizerRenderWork>()->SetupVoxelSetting(m_renderInfo.m4CameraTransform.GetTranslation(), nClipmapIdx);
 	auto voxelizerBounds = GetRenderWork<MVoxelizerRenderWork>()->GetVoxelizerBoundsAABB(nClipmapIdx);
 
 	//Voxelizer Culling.
-	m_pVoxelizerCulling->SetBounds(voxelizerBounds);
-	m_pVoxelizerCulling->Culling(vMaterialGroup);
+	m_pVoxelizerCulling->Get()->SetBounds(voxelizerBounds);
+#endif
+
+	MMultiThreadTaskGraphWalker walker(GetEngine()->GetThreadPool());
+	walker(m_pCullingTask.get());
+
+	m_renderInfo.shadowRenderInfo = m_pShadowCulling->Get()->GetCascadedRenderInfo();
 
 	//Update Shader Params.
 	UpdateFrameParams(m_renderInfo);
@@ -145,6 +152,7 @@ void MDeferredRenderProgram::OnCreated()
 {
 	Super::OnCreated();
 
+	InitializeTaskGraph();
 	InitializeFrameShaderParams();
 	InitializeRenderWork();
 	InitializeRenderTarget();
@@ -154,6 +162,7 @@ void MDeferredRenderProgram::OnDelete()
 {
 	Super::OnDelete();
 
+	ReleaseTaskGraph();
 	ReleaseFrameShaderParams();
 	ReleaseRenderWork();
 	ReleaseRenderTarget();
@@ -161,6 +170,7 @@ void MDeferredRenderProgram::OnDelete()
 
 void MDeferredRenderProgram::InitializeRenderWork()
 {
+
 	RegisterRenderWork<MGBufferRenderWork>();
 	RegisterRenderWork<MDeferredLightingRenderWork>();
 	RegisterRenderWork<MShadowMapRenderWork>();
@@ -168,8 +178,19 @@ void MDeferredRenderProgram::InitializeRenderWork()
 	RegisterRenderWork<MDebugRenderWork>();
 	//RegisterRenderWork<MTransparentRenderWork>();
 	RegisterRenderWork<MPostProcessRenderWork>();
-	RegisterRenderWork<MVoxelizerRenderWork>();
 
+#if MORTY_VXGI_ENABLE
+	RegisterRenderWork<MVoxelizerRenderWork>();
+#endif
+
+
+#if VRS_OPTIMIZE_ENABLE
+	auto pDevice = GetEngine()->FindSystem<MRenderSystem>()->GetDevice();
+	if (pDevice->GetDeviceFeatureSupport(MEDeviceFeature::EVariableRateShading))
+	{
+		RegisterRenderWork<MVRSTextureRenderWork>();
+	}
+#endif
 }
 
 void MDeferredRenderProgram::ReleaseRenderWork()
@@ -179,6 +200,43 @@ void MDeferredRenderProgram::ReleaseRenderWork()
 		pr.second->Release(GetEngine());
 	}
 	m_tRenderWork.clear();
+}
+
+void MDeferredRenderProgram::InitializeTaskGraph()
+{
+	m_pCullingTask = std::make_unique<MTaskGraph>();
+
+	m_pShadowCulling = m_pCullingTask->AddNode<MCullingTaskNode<MCascadedShadowCulling>>(MStringId("Shadow Culling"));
+	m_pShadowCulling->Initialize(GetEngine());
+
+#if MORTY_VXGI_ENABLE
+	m_pVoxelizerCulling = m_pCullingTask->AddNode<MCullingTaskNode<MBoundingBoxCulling>>(MStringId("Voxelizer Culling"));
+	m_pVoxelizerCulling->Initialize(GetEngine());
+#endif
+
+#if GPU_CULLING_ENABLE
+	m_pCameraFrustumCulling = m_pCullingTask->AddNode<MCullingTaskNode<MGPUCameraFrustumCulling>>(MStringId("Gpu Camera Culling"));
+	m_pCameraFrustumCulling->Initialize(GetEngine());
+#else
+	m_pCameraFrustumCulling = m_pCullingTask->AddNode<MCullingTaskNode<MCPUCameraFrustumCulling>>(MStringId("Cpu Camera Culling"));
+	m_pCameraFrustumCulling->Initialize(GetEngine());
+#endif
+}
+
+void MDeferredRenderProgram::ReleaseTaskGraph()
+{
+	m_pShadowCulling->Release();
+	m_pShadowCulling = nullptr;
+
+#if MORTY_VXGI_ENABLE
+	m_pVoxelizerCulling->Release();
+	m_pVoxelizerCulling = nullptr;
+#endif
+
+	m_pCameraFrustumCulling->Release();
+	m_pCameraFrustumCulling = nullptr;
+
+	m_pCullingTask = nullptr;
 }
 
 void MDeferredRenderProgram::InitializeRenderTarget()
@@ -193,6 +251,15 @@ void MDeferredRenderProgram::InitializeRenderTarget()
 		{"u_mat_f3Position_fAmbientOcc", {true, MColor::Black_T} }
 	};
 
+	MRenderTarget shadingRate;
+
+	if (auto pVRSRenderWork = GetRenderWork<MVRSTextureRenderWork>())
+	{
+		shadingRate.pTexture = pVRSRenderWork->GetVRSTexture();
+#if MORTY_DEBUG
+		m_vRenderTargets.push_back(shadingRate.pTexture);
+#endif
+	}
 
 	std::vector<MRenderTarget> vBackTextures;
 	for (auto desc : vTextureDesc)
@@ -232,26 +299,46 @@ void MDeferredRenderProgram::InitializeRenderTarget()
 	m_vRenderTargets.push_back(pPostProcessOutput);
 
 
-	GetRenderWork<MShadowMapRenderWork>()->SetRenderTarget({}, { pShadowTexture, { true, MColor::White }});
+	GetRenderWork<MShadowMapRenderWork>()->SetRenderTarget({
+	    {},
+		{ pShadowTexture, { true, MColor::White }},
+		{}
+	});
 
-	GetRenderWork<MVoxelizerRenderWork>()->SetRenderTarget({}, {});
-	
-	GetRenderWork<MGBufferRenderWork>()->SetRenderTarget(vBackTextures, { pDepthTexture, {true, MColor::Black_T} });
-	GetRenderWork<MDeferredLightingRenderWork>()->SetRenderTarget({{pLightningRenderTarget, {true, MColor::Black_T }} });
-	GetRenderWork<MForwardRenderWork>()->SetRenderTarget(
+	GetRenderWork<MGBufferRenderWork>()->SetRenderTarget(
+	{
+	    vBackTextures,
+	    { pDepthTexture,{true, MColor::Black_T} },
+		shadingRate
+	});
+	GetRenderWork<MDeferredLightingRenderWork>()->SetRenderTarget({
+	    {{pLightningRenderTarget, {true, MColor::Black_T }} },
+	    {},
+		shadingRate
+	});
+	GetRenderWork<MForwardRenderWork>()->SetRenderTarget({
 		{ {pLightningRenderTarget, {false, MColor::Black_T }} },
-		{ pDepthTexture, {false, MColor::Black_T} });
+		{ pDepthTexture, {false, MColor::Black_T} },
+		shadingRate
+	});
 
-	GetRenderWork<MVoxelizerRenderWork>()->SetRenderTarget(
+#if MORTY_VXGI_ENABLE
+	GetRenderWork<MVoxelizerRenderWork>()->SetRenderTarget({
 		{ {pLightningRenderTarget, {false, MColor::Black_T }} },
-		{ pDepthTexture, {false, MColor::Black_T} });
+		{ pDepthTexture, {false, MColor::Black_T} },
+	    {}
+	});
+#endif
 
 	GetRenderWork<MPostProcessRenderWork>()->SetRenderTarget(
-	{pPostProcessOutput, {true, MColor::Black_T }});
+	    { pPostProcessOutput, {true, MColor::Black_T } }
+	);
 
-	GetRenderWork<MDebugRenderWork>()->SetRenderTarget(
+	GetRenderWork<MDebugRenderWork>()->SetRenderTarget({
 		{ {pPostProcessOutput, {false, MColor::Black_T }} },
-		{ pDepthTexture, {false, MColor::Black_T} });
+		{ pDepthTexture, {false, MColor::Black_T} },
+		{}
+	});
 
 	m_pFinalOutputTexture = pPostProcessOutput;
 
@@ -278,19 +365,6 @@ void MDeferredRenderProgram::InitializeFrameShaderParams()
 	m_pFramePropertyAdapter->RegisterPropertyDecorator(std::make_shared<MLightPropertyDecorator>());
 	m_pFramePropertyAdapter->RegisterPropertyDecorator(std::make_shared<MAnimationPropertyDecorator>());
 
-	m_pShadowCulling = std::make_shared<MCascadedShadowCulling>();
-	m_pShadowCulling->Initialize(GetEngine());
-
-	m_pVoxelizerCulling = std::make_shared<MBoundingBoxCulling>();
-	m_pVoxelizerCulling->Initialize(GetEngine());
-
-#if GPU_CULLING_ENABLE
-	m_pCameraFrustumCulling = std::make_shared<MGPUCameraFrustumCulling>();
-	m_pCameraFrustumCulling->Initialize(GetEngine());
-#else
-	m_pCameraFrustumCulling = std::make_shared<MCPUCameraFrustumCulling>();
-	m_pCameraFrustumCulling->Initialize(GetEngine());
-#endif
 
 }
 
@@ -299,14 +373,6 @@ void MDeferredRenderProgram::ReleaseFrameShaderParams()
 	m_pFramePropertyAdapter->Release(GetEngine());
 	m_pFramePropertyAdapter = nullptr;
 
-	m_pShadowCulling->Release();
-	m_pShadowCulling = nullptr;
-
-	m_pVoxelizerCulling->Release();
-	m_pVoxelizerCulling = nullptr;
-
-	m_pCameraFrustumCulling->Release();
-	m_pCameraFrustumCulling = nullptr;
 }
 
 void MDeferredRenderProgram::UpdateFrameParams(MRenderInfo& info)
@@ -333,7 +399,7 @@ void MDeferredRenderProgram::RenderGBuffer()
 	});
 
 	indirectMesh.SetMaterialFilter(std::make_shared<MMaterialTypeFilter>(MEMaterialType::EDeferred));
-	indirectMesh.SetInstanceCulling(m_pCameraFrustumCulling);
+	indirectMesh.SetInstanceCulling(m_pCameraFrustumCulling->Get());
 
 	GetRenderWork<MGBufferRenderWork>()->Render(m_renderInfo, {
 		&indirectMesh,
@@ -353,7 +419,10 @@ void MDeferredRenderProgram::RenderLightning()
 
 void MDeferredRenderProgram::RenderVoxelizer()
 {
-	MORTY_ASSERT(GetRenderWork<MVoxelizerRenderWork>());
+	if (!GetRenderWork<MVoxelizerRenderWork>())
+	{
+		return;
+	}
 	
 	auto pVoxelizerWork = GetRenderWork<MVoxelizerRenderWork>();
 
@@ -364,7 +433,7 @@ void MDeferredRenderProgram::RenderVoxelizer()
 	indirectMesh.SetPropertyBlockAdapter({
 		m_pFramePropertyAdapter,
 	});
-	indirectMesh.SetInstanceCulling(m_pVoxelizerCulling);
+	indirectMesh.SetInstanceCulling(m_pVoxelizerCulling->Get());
 	indirectMesh.SetMaterial(pVoxelizerWork->GetVoxelizerMaterial());
 
 	std::unordered_map<MStringId, bool> tVoxelizerDefined = {
@@ -391,7 +460,7 @@ void MDeferredRenderProgram::RenderShadow()
 	indirectMesh.SetPropertyBlockAdapter({
 		m_pFramePropertyAdapter,
 	});
-	indirectMesh.SetInstanceCulling(m_pShadowCulling);
+	indirectMesh.SetInstanceCulling(m_pShadowCulling->Get());
 
     GetRenderWork<MShadowMapRenderWork>()->Render(m_renderInfo, {
 		&indirectMesh,
@@ -416,7 +485,7 @@ void MDeferredRenderProgram::RenderForward()
 		m_pFramePropertyAdapter,
 		});
 	indirectMesh.SetMaterialFilter(std::make_shared<MMaterialTypeFilter>(MEMaterialType::EDefault));
-	indirectMesh.SetInstanceCulling(m_pCameraFrustumCulling);
+	indirectMesh.SetInstanceCulling(m_pCameraFrustumCulling->Get());
 
 	const MEnvironmentManager* pEnvironmentManager = m_renderInfo.pScene->GetManager<MEnvironmentManager>();
 	const auto pMaterial = pEnvironmentManager->GetMaterial();
@@ -437,6 +506,10 @@ void MDeferredRenderProgram::RenderForward()
 void MDeferredRenderProgram::RenderVoxelizerDebug()
 {
 	auto pVoxelizerWork = GetRenderWork<MVoxelizerRenderWork>();
+	if (!pVoxelizerWork)
+	{
+		return;
+	}
 
 	const MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
 
@@ -469,7 +542,7 @@ void MDeferredRenderProgram::RenderTransparent()
 		m_pFramePropertyAdapter,
 		});
 	indirectMesh.SetMaterialFilter(std::make_shared<MMaterialTypeFilter>(MEMaterialType::EDepthPeel));
-	indirectMesh.SetInstanceCulling(m_pCameraFrustumCulling);
+	indirectMesh.SetInstanceCulling(m_pCameraFrustumCulling->Get());
 
 	GetRenderWork<MTransparentRenderWork>()->Render(m_renderInfo, { &indirectMesh });
 }
@@ -493,11 +566,23 @@ void MDeferredRenderProgram::RenderDebug()
 	indirectMesh.SetMeshBuffer(pMeshManager->GetMeshBuffer());
 	indirectMesh.SetPropertyBlockAdapter({ m_pFramePropertyAdapter });
 	indirectMesh.SetMaterialFilter(std::make_shared<MMaterialTypeFilter>(MEMaterialType::ECustom));
-	indirectMesh.SetInstanceCulling(m_pCameraFrustumCulling);
+	indirectMesh.SetInstanceCulling(m_pCameraFrustumCulling->Get());
 
 	GetRenderWork<MDebugRenderWork>()->Render(m_renderInfo, {
 		&indirectMesh
 		});
 
 
+}
+
+void MDeferredRenderProgram::RenderVRS()
+{
+	if (!GetRenderWork<MVRSTextureRenderWork>() || !GetRenderWork<MPostProcessRenderWork>())
+	{
+		return;
+	}
+
+	const auto pEdgeTexture = GetRenderWork<MPostProcessRenderWork>()->GetOutput(MRenderGlobal::POSTPROCESS_EDGE_DETECTION);
+
+	GetRenderWork<MVRSTextureRenderWork>()->Render(m_renderInfo, pEdgeTexture);
 }

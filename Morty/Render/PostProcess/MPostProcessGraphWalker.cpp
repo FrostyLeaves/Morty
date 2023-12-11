@@ -4,11 +4,13 @@
 #include "Render/MRenderCommand.h"
 #include "Render/MRenderPass.h"
 #include "Material/MMaterial.h"
+#include "RenderProgram/RenderWork/MRenderWork.h"
 #include "TaskGraph/MTaskGraph.h"
 
-MPostProcessGraphWalker::MPostProcessGraphWalker(MIRenderCommand* pRenderCommand, MIMesh* pScreenMesh)
+MPostProcessGraphWalker::MPostProcessGraphWalker(MIRenderCommand* pRenderCommand, MIMesh* pScreenMesh, std::shared_ptr<IPropertyBlockAdapter> pFrameProperty)
     : m_pRenderCommand(pRenderCommand)
     , m_pScreenMesh(pScreenMesh)
+    , m_pFrameProperty(pFrameProperty)
 {
 }
 
@@ -51,6 +53,11 @@ void MPostProcessGraphWalker::RecordCommand(MPostProcessNode* pNode)
 
 	if (pCommand->SetUseMaterial(pMaterial))
 	{
+		if (m_pFrameProperty)
+		{
+			pCommand->SetShaderPropertyBlock(m_pFrameProperty->GetPropertyBlock());
+		}
+
 		pCommand->DrawMesh(m_pScreenMesh);
 	}
 

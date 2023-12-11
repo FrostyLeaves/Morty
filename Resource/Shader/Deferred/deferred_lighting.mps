@@ -1,7 +1,10 @@
 #include "../Internal/internal_uniform_global.hlsl"
 #include "../Internal/internal_functional.hlsl"
 #include "../Lighting/pbr_lighting.hlsl"
+
+#if MORTY_VXGI_ENABLE
 #include "../Voxel/vxgi_lighting.hlsl"
+#endif
 
 struct VS_OUT
 {
@@ -90,9 +93,12 @@ float3 AdditionAllLights(VS_OUT input)
     float3 f3LightColor = PbrLighting(pointData);
 
     float4 f4VXGIColor = float4(0,0,0,0);
+
+#if MORTY_VXGI_ENABLE
     f4VXGIColor = VoxelDiffuseTracing(u_texVoxelMap, voxelMapSetting, f3WorldPosition,  f3Normal);
     //f4VXGIColor.rgb = (kD * f4VXGIColor.rgb) * fAmbientOcc;
-    
+#endif
+
     float3 f3Color = f3LightColor + f4VXGIColor.rgb + f3Ambient;
 
     return f3Color;

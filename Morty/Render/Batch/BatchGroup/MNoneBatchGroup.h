@@ -9,6 +9,7 @@
 #include "Utility/MMemoryPool.h"
 #include "MInstanceBatchGroup.h"
 
+class MShaderProgram;
 struct MShaderConstantParam;
 class MShaderPropertyBlock;
 class MIMesh;
@@ -23,7 +24,7 @@ class MORTY_API MNoneBatchGroup : public MInstanceBatchGroup
 {
 public:
 
-	void Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pMaterial) override;
+	void Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram) override;
 	void Release(MEngine* pEngine) override;
 
 	bool CanAddMeshInstance() const override;
@@ -37,7 +38,7 @@ public:
 
 private:
 	MEngine* m_pEngine = nullptr;
-	std::shared_ptr<MMaterial> m_pMaterial = nullptr;
+	std::shared_ptr<MShaderProgram> m_pShaderProgram = nullptr;
 	std::shared_ptr<MShaderPropertyBlock> m_pShaderPropertyBlock = nullptr;
 	std::shared_ptr<MShaderConstantParam> m_pTransformParam = nullptr;
 

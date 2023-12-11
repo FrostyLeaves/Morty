@@ -51,12 +51,12 @@ bool MainEditor::Initialize(MEngine* pEngine)
 	m_pEngine = pEngine;
 
 	MTaskGraph* pMainGraph = GetEngine()->GetMainGraph();
-	m_pRenderTask = pMainGraph->AddNode<MTaskNode>("Editor_Render");
+	m_pRenderTask = pMainGraph->AddNode<MTaskNode>(MStringId("Editor_Render"));
 	m_pRenderTask->SetThreadType(METhreadType::ERenderThread);
 
 	m_vChildView.push_back(new NodeTreeView());
 	m_vChildView.push_back(new PropertyView());
-//	m_vChildView.push_back(new MaterialView());
+	m_vChildView.push_back(new MaterialView());
 	m_vChildView.push_back(new ResourceView());
 	m_vChildView.push_back(new ModelConvertView());
 	m_vChildView.push_back(new MessageWidget());
@@ -271,6 +271,7 @@ void MainEditor::ShowShadowMapView()
 				for (size_t nLayerIdx = 0; nLayerIdx < vTexture[nTexIdx]->GetImageLayerNum(); ++nLayerIdx)
 				{
 					ImGui::Image({ vTexture[nTexIdx], intptr_t(vTexture[nTexIdx].get()), nLayerIdx }, ImVec2(v2Size.x, v2Size.y));
+					ImGui::Text("%s (l:%lld)", vTexture[nTexIdx]->GetName().c_str(), nLayerIdx);
 
 					ImGui::NextColumn();
 				}

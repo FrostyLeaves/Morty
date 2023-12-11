@@ -393,8 +393,8 @@ void MTransparentRenderWork::InitializeFrameShaderParams()
 	m_pForwardMaterial->LoadShader(forwardVS);
 	m_pForwardMaterial->LoadShader(forwardPS);
 
-	m_aFramePropertyBlock[0] = m_pForwardMaterial->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_OTHER]->Clone();
-	m_aFramePropertyBlock[1] = m_pForwardMaterial->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_OTHER]->Clone();
+	m_aFramePropertyBlock[0] = m_pForwardMaterial->GetShaderProgram()->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_OTHER]->Clone();
+	m_aFramePropertyBlock[1] = m_pForwardMaterial->GetShaderProgram()->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_OTHER]->Clone();
 	m_aFramePropertyBlock[0]->SetTexture(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_0, m_pFrontDepthForPassB);
 	m_aFramePropertyBlock[0]->SetTexture(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_1, m_pBackDepthForPassB);
 	m_aFramePropertyBlock[1]->SetTexture(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_0, m_pFrontDepthForPassA);

@@ -83,7 +83,7 @@ void SceneTexture::Initialize(MScene* pScene, const MString& strRenderProgram)
 	m_vRenderProgram.resize(nImageCount, pRenderProgram);
 #endif
 
-	m_pUpdateTask = pEngine->GetMainGraph()->AddNode<MTaskNode>("SceneTextureUpdate");
+	m_pUpdateTask = pEngine->GetMainGraph()->AddNode<MTaskNode>(MStringId("SceneTextureUpdate"));
 	if (m_pUpdateTask)
 	{
 		m_pUpdateTask->SetThreadType(METhreadType::ERenderThread);

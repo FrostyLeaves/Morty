@@ -73,18 +73,8 @@ public:
 
 		}
 
-
-		if (m_pRWVoxelTableParam->pBuffer != m_pOwner->GetVoxelTableBuffer())
-		{
-			m_pRWVoxelTableParam->pBuffer = m_pOwner->GetVoxelTableBuffer();
-			m_pRWVoxelTableParam->SetDirty();
-		}
-
-		if (m_pVoxelGITextureParam->pTexture != m_pOwner->GetVoxelGITexture())
-		{
-			m_pVoxelGITextureParam->pTexture = m_pOwner->GetVoxelGITexture();
-			m_pVoxelGITextureParam->SetDirty();
-		}
+		m_pRWVoxelTableParam->SetBuffer(m_pOwner->GetVoxelTableBuffer());
+		m_pVoxelGITextureParam->SetTexture(m_pOwner->GetVoxelGITexture());
 	}
 
 	std::shared_ptr<MShaderConstantParam> m_pVoxelParam = nullptr;
@@ -104,7 +94,9 @@ void MVoxelizerRenderWork::Initialize(MEngine* pEngine)
 	InitializeDispatcher();
 	InitializeVoxelTextureDispatcher();
 
+#if MORTY_VXGI_ENABLE
 	m_pFramePropertyUpdateDecorator = std::make_shared<MVoxelMapPropertyDecorator>(this);
+#endif
 }
 
 void MVoxelizerRenderWork::Release(MEngine* pEngine)
@@ -303,14 +295,12 @@ void MVoxelizerRenderWork::InitializeDispatcher()
 
 	if (auto pIndirectDraws = params->FindStorageParam(MShaderPropertyName::CULLING_OUTPUT_DRAW_DATA))
 	{
-		pIndirectDraws->pBuffer = &m_drawIndirectBuffer;
-		pIndirectDraws->SetDirty();
+		pIndirectDraws->SetBuffer(&m_drawIndirectBuffer);
 	}
 
 	if (auto pVoxelTable = params->FindStorageParam(MShaderPropertyName::VOXELIZER_VOXEL_TABLE_NAME))
 	{
-		pVoxelTable->pBuffer = &m_voxelizerBuffer;
-		pVoxelTable->SetDirty();
+		pVoxelTable->SetBuffer(&m_voxelizerBuffer);
 	}
 
 	std::shared_ptr<MResource> voxelizerVS = pResourceSystem->LoadResource("Shader/Voxel/voxelizer.mvs");
@@ -381,14 +371,12 @@ void MVoxelizerRenderWork::InitializeVoxelTextureDispatcher()
 
 	if (auto pVoxelTexture = params->FindTextureParam(MShaderPropertyName::VOXELIZER_VOXEL_TEXTURE_NAME))
 	{
-		pVoxelTexture->pTexture = m_voxelGITexture;
-		pVoxelTexture->SetDirty();
+		pVoxelTexture->SetTexture(m_voxelGITexture);
 	}
 
 	if (auto pVoxelTable = params->FindStorageParam(MShaderPropertyName::VOXELIZER_VOXEL_TABLE_NAME))
 	{
-		pVoxelTable->pBuffer = &m_voxelizerBuffer;
-		pVoxelTable->SetDirty();
+		pVoxelTable->SetBuffer(&m_voxelizerBuffer);
 	}
 
 }

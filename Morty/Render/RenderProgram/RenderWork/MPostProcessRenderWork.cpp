@@ -53,7 +53,7 @@ void MPostProcessRenderWork::Render(MRenderInfo& info)
 		pProcessNode->GetMaterial()->GetMaterialPropertyBlock()->SetTexture(MShaderPropertyName::POSTPROCESS_SCREEN_TEXTURE, pInputTexture);
 	}
 
-	MPostProcessGraphWalker walker(pCommand, pScreenMesh);
+	MPostProcessGraphWalker walker(pCommand, pScreenMesh, m_pRenderTargetBinding->GetFrameProperty());
 	m_postProcessGraph.Run(&walker);
 }
 
@@ -69,19 +69,40 @@ void MPostProcessRenderWork::SetInputTexture(const std::shared_ptr<IGetTextureAd
 
 void MPostProcessRenderWork::SetRenderTarget(const MRenderTarget& backTexture)
 {
-	MORTY_ASSERT(m_postProcessGraph.GetFinalNodes().size() == 1);
-	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
-
 	for (auto pNode : m_postProcessGraph.GetFinalNodes())
 	{
-		auto pPostProcessNode = pNode->DynamicCast<MPostProcessNode>();
-		MRenderPass* pRenderPass = pPostProcessNode->GetRenderPass();
-
-		pRenderPass->m_vBackTextures.clear();
-		pRenderPass->AddBackTexture(backTexture.pTexture, backTexture.desc);
-		pRenderPass->DestroyBuffer(pRenderSystem->GetDevice());
-		pRenderPass->GenerateBuffer(pRenderSystem->GetDevice());
+		if (pNode->GetNodeName() == MRenderGlobal::POSTPROCESS_FINAL_NODE)
+		{
+			if (auto pPostProcessNode = pNode->DynamicCast<MPostProcessNode>())
+			{
+				pPostProcessNode->SetRenderTarget(backTexture);
+			}
+		}
 	}
+
+	//TODO: once only.
+	//generate and bind render target.
+	m_postProcessGraph.Run(m_pRenderTargetBinding.get());
+}
+
+std::shared_ptr<IGetTextureAdapter> MPostProcessRenderWork::GetOutput(const MStringId& strNodeName) const
+{
+	for (auto pNode : m_postProcessGraph.GetFinalNodes())
+	{
+		if (pNode->GetNodeName() == strNodeName)
+		{
+			auto pPostProcessNode = pNode->DynamicCast<MPostProcessNode>();
+			if (MRenderPass* pRenderPass = pPostProcessNode->GetRenderPass())
+			{
+				if (!pRenderPass->GetBackTextures().empty())
+				{
+					return std::make_shared<MGetTextureAdapter>(pRenderPass->GetBackTexture(0));
+				}
+			}
+		}
+	}
+
+	return nullptr;
 }
 
 void MPostProcessRenderWork::InitializeMaterial()
@@ -90,21 +111,27 @@ void MPostProcessRenderWork::InitializeMaterial()
 
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-	auto pMaterial = pResourceSystem->CreateResource<MMaterial>("PostProcess Material");
-
+	auto pMaterial = pResourceSystem->CreateResource<MMaterial>("PostProcess Basic");
 	std::shared_ptr<MResource> pVertexShader = pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mvs");
 	std::shared_ptr<MResource> pPixelShader = pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mps");
 	pMaterial->LoadShader(pVertexShader);
 	pMaterial->LoadShader(pPixelShader);
 	pMaterial->SetCullMode(MECullMode::ECullNone);
 
-	auto pBasicProcess = m_postProcessGraph.AddNode<MPostProcessNode>("basic_process");
+	auto pBasicProcess = m_postProcessGraph.AddNode<MPostProcessNode>(MRenderGlobal::POSTPROCESS_FINAL_NODE);
 	pBasicProcess->SetMaterial(pMaterial);
 
+	auto pEdgeMaterial = pResourceSystem->CreateResource<MMaterial>("PostProcess Edge Detection");
+	std::shared_ptr<MResource> pEdgePixelShader = pResourceSystem->LoadResource("Shader/PostProcess/sobel_edge_detection.mps");
+	pEdgeMaterial->LoadShader(pVertexShader);
+	pEdgeMaterial->LoadShader(pEdgePixelShader);
+	pEdgeMaterial->SetCullMode(MECullMode::ECullNone);
 
-	//generate and bind render target.
-	m_postProcessGraph.Run(m_pRenderTargetBinding.get());
+	auto pEdgeDetection = m_postProcessGraph.AddNode<MPostProcessNode>(MRenderGlobal::POSTPROCESS_EDGE_DETECTION);
+	pEdgeDetection->SetMaterial(pEdgeMaterial);
 
+
+	m_postProcessGraph.Compile();
 }
 
 void MPostProcessRenderWork::ReleaseMaterial()

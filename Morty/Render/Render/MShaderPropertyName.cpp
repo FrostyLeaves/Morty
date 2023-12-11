@@ -100,7 +100,8 @@ MStringId MShaderPropertyName::ENVIRONMENT_TEXTURE_SKYBOX = MStringId("u_texSkyB
 MStringId MShaderPropertyName::ENVIRONMENT_IBL_MVP_MATRIX = MStringId("u_ModelViewProj");
 MStringId MShaderPropertyName::ENVIRONMENT_IBL_ROUGHNESS = MStringId("u_roughness");
 
-MStringId MShaderPropertyName::POSTPROCESS_SCREEN_TEXTURE = MStringId("u_texScreenTexture");
+MStringId MShaderPropertyName::POSTPROCESS_SCREEN_TEXTURE = MStringId("u_texInputTexture");
+MStringId MShaderPropertyName::POSTPROCESS_SCREEN_SIZE = MStringId("u_f2ScreenSize");
 
 MStringId MShaderPropertyName::IMGUI_SCALE = MStringId("u_f2Scale");
 MStringId MShaderPropertyName::IMGUI_TRANSLATE = MStringId("u_f2Translate");
@@ -108,3 +109,10 @@ MStringId MShaderPropertyName::IMGUI_IMAGE_TYPE = MStringId("u_nImageType");
 MStringId MShaderPropertyName::IMGUI_IMAGE_ARRAY = MStringId("u_nImageArray");
 MStringId MShaderPropertyName::IMGUI_IMAGE_INDEX = MStringId("u_nImageIndex");
 
+
+MStringId MShaderPropertyName::VRS_CBUFFER_SETTING_NAME = MStringId("cbVRSSetting");
+MStringId MShaderPropertyName::VRS_EDGE_TEXTURE_NAME = MStringId("u_texEdgeDetection");
+MStringId MShaderPropertyName::VRS_OUTPUT_VRS_TEXTURE_NAME = MStringId("u_texVRSImage");
+MStringId MShaderPropertyName::VRS_EDGE_TEXTURE_SIZE_NAME = MStringId("u_n2TextureSize");
+MStringId MShaderPropertyName::VRS_TEXEL_SIZE_NAME = MStringId("u_n2TexelSize");
+MStringId MShaderPropertyName::VRS_EDGE_THRESHOLD_NAME = MStringId("u_f2EdgeThreshold");

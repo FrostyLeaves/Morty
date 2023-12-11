@@ -22,6 +22,7 @@ const MString strTransformInUniformMaxNumber = MStringUtil::ToString(MRenderGlob
 const MString strTransparentPolicy = MStringUtil::ToString((int)METransparentPolicy::EDualDepthPeeling);
 const MString strVoxelClipMapNumber = MStringUtil::ToString(MRenderGlobal::VOXEL_GI_CLIP_MAP_NUM);
 const MString strVoxelDiffuseConeCount = MStringUtil::ToString(16);
+const MString strVXGIEnable = MStringUtil::ToString(MORTY_VXGI_ENABLE);
 
 std::unordered_map<MStringId, MString> MShaderMacro::s_vGlobalMacroParams = {
 	{MStringId("MBONES_PER_VERTEX"), strBonesPerVertex},
@@ -35,6 +36,7 @@ std::unordered_map<MStringId, MString> MShaderMacro::s_vGlobalMacroParams = {
 	{MStringId("MESH_TRANSFORM_IN_UNIFORM_MAX_NUM"), strTransformInUniformMaxNumber},
 	{MStringId("VOXEL_GI_CLIP_MAP_NUM"), strVoxelClipMapNumber},
 	{MStringId("VOXEL_DIFFUSE_CONE_COUNT"), strVoxelDiffuseConeCount},
+	{MStringId("MORTY_VXGI_ENABLE"), strVXGIEnable},
 };
 
 void MShaderMacro::SetInnerMacro(const MStringId& strKey, const MString& strValue)

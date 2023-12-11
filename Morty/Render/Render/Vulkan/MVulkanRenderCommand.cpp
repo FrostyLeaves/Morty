@@ -58,6 +58,10 @@ void MVulkanRenderCommand::RenderCommandEnd()
 void MVulkanRenderCommand::BeginRenderPass(MRenderPass* pRenderPass)
 {
 	//TODO check renderpass valid.
+	if (VK_NULL_HANDLE == pRenderPass->m_VkFrameBuffer)
+	{
+		m_pDevice->GenerateFrameBuffer(pRenderPass);
+	}
 
 	std::vector<MTexture*> vTextures;
 	for (auto pTexture : pRenderPass->GetBackTextures())
@@ -79,12 +83,12 @@ void MVulkanRenderCommand::BeginRenderPass(MRenderPass* pRenderPass)
 	renderPassInfo.renderArea.offset = { 0, 0 };
 	renderPassInfo.renderArea.extent = pRenderPass->m_vkExtent2D;
 
-	size_t unBackNum = pRenderPass->m_vBackTextures.size();
+	size_t unBackNum = pRenderPass->m_renderTarget.backTargets.size();
 
 	std::vector<VkClearValue> vClearValues(unBackNum);
 	for (uint32_t i = 0; i < unBackNum; ++i)
 	{
-		MColor color = pRenderPass->m_vBackTextures[i].desc.cClearColor;
+		const MColor color = pRenderPass->m_renderTarget.backTargets[i].desc.cClearColor;
 		//-Wmissing-braces
 		vClearValues[i].color = {{ color.r, color.g, color.b, color.a }};
 	}
@@ -93,6 +97,15 @@ void MVulkanRenderCommand::BeginRenderPass(MRenderPass* pRenderPass)
 	{
 		vClearValues.push_back({});
 		vClearValues.back().depthStencil = { 1.0f, 0 };
+	}
+
+	if (auto pShadingRateTex = pRenderPass->GetShadingRateTexture())
+	{
+		const MColor color = pRenderPass->m_renderTarget.shadingRate.desc.cClearColor;
+		vClearValues.push_back({});
+		vClearValues.back().color = { { color.r, color.g, color.b, color.a } };
+
+		AddRenderToTextureBarrier({ pShadingRateTex.get() }, METextureBarrierStage::EShadingRateMask);
 	}
 
 	renderPassInfo.clearValueCount = static_cast<uint32_t>(vClearValues.size());
@@ -265,17 +278,20 @@ bool MVulkanRenderCommand::SetGraphPipeline(std::shared_ptr<MMaterial> pMaterial
 	std::shared_ptr<MPipeline> pPipeline = m_pDevice->m_PipelineManager.FindOrCreateGraphicsPipeline(pMaterial, stage.pRenderPass);
 	MORTY_ASSERT(pUsingPipeline = pPipeline);
 
-	if (std::shared_ptr<MGraphicsPipeline> pGraphicsPipeline = std::dynamic_pointer_cast<MGraphicsPipeline>(pPipeline))
+	std::shared_ptr<MGraphicsPipeline> pGraphicsPipeline = std::dynamic_pointer_cast<MGraphicsPipeline>(pPipeline);
+	if (!pGraphicsPipeline)
 	{
-		VkPipeline vkPipeline = pGraphicsPipeline->GetSubpassPipeline(stage.nSubpassIdx);
-		MORTY_ASSERT(vkPipeline != VK_NULL_HANDLE);
-
-		vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
-
-		return true;
+		return false;
 	}
 
-	return false;
+	VkPipeline vkPipeline = pGraphicsPipeline->GetSubpassPipeline(stage.nSubpassIdx);
+	MORTY_ASSERT(vkPipeline != VK_NULL_HANDLE);
+
+	vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
+
+	SetShadingRate(pMaterial->GetShadingRate(), { MEShadingRateCombinerOp::Max, MEShadingRateCombinerOp::Max });
+
+	return true;
 }
 
 bool MVulkanRenderCommand::DispatchComputeJob(MComputeDispatcher* pComputeDispatcher, const uint32_t& nGroupX, const uint32_t& nGroupY, const uint32_t& nGroupZ)
@@ -313,44 +329,54 @@ bool MVulkanRenderCommand::DispatchComputeJob(MComputeDispatcher* pComputeDispat
 
 void MVulkanRenderCommand::SetShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock)
 {
-	bool bDirty = false;
-	for (std::shared_ptr<MShaderConstantParam> pParam : pPropertyBlock->m_vParams)
+	bool bNeedAllocDescriptorSet = false;
+	for (const auto& pParam : pPropertyBlock->m_vParams)
 	{
 		if (pParam->bDirty)
 		{
-			bDirty = true;
-			// generate buffer and fill data.
+		//	bNeedAllocDescriptorSet = true;
+
 			UpdateShaderParam(pParam);
 			pParam->bDirty = false;
 		}
 
 	}
 
-	for (std::shared_ptr<MShaderTextureParam> pParam : pPropertyBlock->m_vTextures)
+	for (const auto& pParam : pPropertyBlock->m_vTextures)
 	{
-		auto pImageIdent = pParam->GetTexture() ? pParam->GetTexture()->m_VkImageView : nullptr;
+		const auto pImageIdent = pParam->GetTexture() ? pParam->GetTexture()->m_VkImageView : nullptr;
 		if (pParam->bDirty || pParam->pImageIdent != pImageIdent)
 		{
-			bDirty = true;
+			bNeedAllocDescriptorSet = true;
 			pParam->bDirty = false;
 			pParam->pImageIdent = pImageIdent;
 		}
 	}
 
-	for (std::shared_ptr<MShaderStorageParam> pParam : pPropertyBlock->m_vStorages)
+	for (const auto& pParam : pPropertyBlock->m_vStorages)
 	{
-		bDirty |= pParam->bDirty;
-		pParam->bDirty = false;
+		const auto pStoreIdent = pParam->pBuffer->m_VkBuffer;
+		if (pParam->pImageIdent != pStoreIdent)
+		{
+			bNeedAllocDescriptorSet = true;
+			pParam->bDirty = false;
+			pParam->pImageIdent = pStoreIdent;
+		}
 	}
 
-	if (bDirty)
+	if (VK_NULL_HANDLE == pPropertyBlock->m_VkDescriptorSet)
+	{
+		bNeedAllocDescriptorSet = true;
+	}
+
+	if (bNeedAllocDescriptorSet)
 	{
 		//alloc a new descriptor set.
 		m_pDevice->m_PipelineManager.AllocateShaderPropertyBlock(pPropertyBlock, pUsingPipeline);
 
 		std::vector<VkWriteDescriptorSet> vWriteDescriptorSet;
 
-		for (std::shared_ptr<MShaderConstantParam> pParam : pPropertyBlock->m_vParams)
+		for (const auto& pParam : pPropertyBlock->m_vParams)
 		{
 			// bind buffer to descriptor set.
 			vWriteDescriptorSet.push_back({});
@@ -359,7 +385,7 @@ void MVulkanRenderCommand::SetShaderPropertyBlock(const std::shared_ptr<MShaderP
 			writeDescriptorSet.dstSet = pPropertyBlock->m_VkDescriptorSet;
 		}
 
-		for (std::shared_ptr<MShaderTextureParam> pParam : pPropertyBlock->m_vTextures)
+		for (const auto& pParam : pPropertyBlock->m_vTextures)
 		{
 			vWriteDescriptorSet.push_back({});
 			VkWriteDescriptorSet& writeDescriptorSet = vWriteDescriptorSet.back();
@@ -367,7 +393,7 @@ void MVulkanRenderCommand::SetShaderPropertyBlock(const std::shared_ptr<MShaderP
 			writeDescriptorSet.dstSet = pPropertyBlock->m_VkDescriptorSet;
 		}
 
-		for (std::shared_ptr<MShaderStorageParam> pParam : pPropertyBlock->m_vStorages)
+		for (const auto& pParam : pPropertyBlock->m_vStorages)
 		{
 			vWriteDescriptorSet.push_back({});
 			VkWriteDescriptorSet& writeDescriptorSet = vWriteDescriptorSet.back();
@@ -377,18 +403,12 @@ void MVulkanRenderCommand::SetShaderPropertyBlock(const std::shared_ptr<MShaderP
 
 		vkUpdateDescriptorSets(m_pDevice->m_VkDevice, static_cast<uint32_t>(vWriteDescriptorSet.size()), vWriteDescriptorSet.data(), 0, nullptr);
 	}
-	else if (VK_NULL_HANDLE == pPropertyBlock->m_VkDescriptorSet)
-	{
-		//alloc a new descriptor set.
-		m_pDevice->m_PipelineManager.AllocateShaderPropertyBlock(pPropertyBlock, pUsingPipeline);
-
-	}
 
 	MORTY_ASSERT(VK_NULL_HANDLE != pUsingPipeline->m_pipelineLayout.vkPipelineLayout);
 	MORTY_ASSERT(VK_NULL_HANDLE != pPropertyBlock->m_VkDescriptorSet);
 
 	std::vector<uint32_t> vDynamicOffsets;
-	for (std::shared_ptr<MShaderConstantParam> pParam : pPropertyBlock->m_vParams)
+	for (const auto& pParam : pPropertyBlock->m_vParams)
 	{
 		if (pParam->m_VkDescriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
 		{
@@ -476,6 +496,9 @@ VkPipelineStageFlags GetSrcPipelineStageFlags(VkImageLayout imageLayout)
 	case VK_IMAGE_LAYOUT_UNDEFINED:
 		return VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 
+	case VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
+		return VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
+
 	default:
 		return VK_PIPELINE_STAGE_NONE_KHR;
 	}
@@ -502,6 +525,9 @@ VkPipelineStageFlags GetDstPipelineStageFlags(VkImageLayout imageLayout)
 
 	case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
 		return VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+
+	case VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
+		return VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
 
 	default:
 		return VK_PIPELINE_STAGE_NONE_KHR;
@@ -731,8 +757,14 @@ void MVulkanRenderCommand::UpdateBuffer(MBuffer* pBuffer, const MByte* data, con
 
 void MVulkanRenderCommand::UpdateShaderParam(std::shared_ptr<MShaderConstantParam> param)
 {
-	m_pDevice->DestroyShaderParamBuffer(param);
-	m_pDevice->GenerateShaderParamBuffer(param);
+	if (VK_NULL_HANDLE == param->m_VkBuffer)
+	{
+		//m_pDevice->DestroyShaderParamBuffer(param);
+		m_pDevice->GenerateShaderParamBuffer(param);
+	}
+
+	//m_pDevice->DestroyShaderParamBuffer(param);
+	//m_pDevice->GenerateShaderParamBuffer(param);
 
 	MORTY_ASSERT(param->m_pMemoryMapping);
 
@@ -814,6 +846,8 @@ VkImageLayout MVulkanRenderCommand::GetTextureBarrierLayout(METextureBarrierStag
 	{ METextureBarrierStage::EPixelShaderSample, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL },
 	{ METextureBarrierStage::EPixelShaderWrite, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL },
 	{ METextureBarrierStage::EComputeShaderWrite, VK_IMAGE_LAYOUT_GENERAL },
+    { METextureBarrierStage::EShadingRateMask, VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR },
+		{ METextureBarrierStage::EComputeShaderRead, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL },
 	};
 
 	const auto layout = ImageLayoutTable.find(stage);
@@ -846,6 +880,7 @@ VkPipelineStageFlags MVulkanRenderCommand::GetBufferBarrierPipelineStage(MEBuffe
 		{ MEBufferBarrierStage::EPixelShaderWrite, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT },
 		{ MEBufferBarrierStage::EPixelShaderRead, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT },
 		{ MEBufferBarrierStage::EDrawIndirectRead, VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT },
+		{MEBufferBarrierStage::EShadingRateRead, VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR},
 	};
 
 	const auto pipelineStage = PipelineStageTable.find(stage);
@@ -860,6 +895,7 @@ VkPipelineStageFlags MVulkanRenderCommand::GetTextureBarrierPipelineStage(METext
 	{ METextureBarrierStage::EPixelShaderSample, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT },
 	{ METextureBarrierStage::EPixelShaderWrite, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT },
 	{ METextureBarrierStage::EComputeShaderWrite, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT },
+	{ METextureBarrierStage::EComputeShaderRead, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT },
 	};
 
 	const auto pipelineStage = PipelineStageTable.find(stage);

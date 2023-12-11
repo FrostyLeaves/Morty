@@ -1,5 +1,5 @@
 /**
- * @File         MMultiThreadTaskGraphWalker
+ * @File         MSingleThreadTaskGraphWalker
  * 
  * @Created      2021-07-08 14:46:43
  *
@@ -13,7 +13,7 @@
 #include "Thread/MThreadWork.h"
 
 class MThreadPool;
-class MORTY_API MMultiThreadTaskGraphWalker : public ITaskGraphWalker
+class MORTY_API MSingleThreadTaskGraphWalker : public ITaskGraphWalker
 {
 public:
     enum class METaskState
@@ -24,8 +24,7 @@ public:
     };
 
 public:
-    MMultiThreadTaskGraphWalker(MThreadPool* pThreadPool);
-    ~MMultiThreadTaskGraphWalker();
+    MSingleThreadTaskGraphWalker(MThreadPool* pThreadPool);
 
     void operator ()(MTaskGraph* pTaskGraph) override;
 
@@ -37,16 +36,12 @@ private:
 
     void OnTaskFinishedCallback(MTaskNode* pNode);
 
-    void ExecuteTaskNode(MTaskNode* pNode);
-
 private:
 
     MThreadPool* m_pThreadPool = nullptr;
 
 	std::queue<MTaskNode*> m_vWaitTask;
+    std::vector<MTaskNode*> m_vActiveTask;
     std::map<MTaskNode*, METaskState> m_tNodeState;
 
-    std::atomic_int m_nActiveTaskNum = 0;
-
-    std::mutex m_taskStatehMutex;
 };
