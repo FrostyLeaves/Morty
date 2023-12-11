@@ -83,8 +83,13 @@
   "buildPresets": [
     {
       "name": "Windows-Debug",
-      "configurePreset": "Default",
+      "configurePreset": "Windows",
       "configuration": "Debug"
+    },
+    {
+      "name": "Windows-Release",
+      "configurePreset": "Windows",
+      "configuration": "Release"
     },
     {
       "name": "Android-Debug",
