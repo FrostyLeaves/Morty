@@ -280,7 +280,7 @@ METextureLayout MTextureResourceUtil::GetTextureLayout(const uint32_t& nChannel,
 			METextureLayout::ERGBA_UNORM_8,
 		};
 
-		if (0 <= nChannel && nChannel <= 4)
+		if (nChannel <= 4)
 		{
 			eResult = sTextureLayout[nChannel - 1];
 		}
@@ -294,7 +294,7 @@ METextureLayout MTextureResourceUtil::GetTextureLayout(const uint32_t& nChannel,
 			METextureLayout::ERGBA_FLOAT_32,
 		};
 
-		if (0 <= nChannel && nChannel <= 4)
+		if (nChannel <= 4)
 		{
 			eResult = sTextureLayout[nChannel - 1];
 		}

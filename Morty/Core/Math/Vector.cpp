@@ -456,7 +456,7 @@ const mfbs::Vector3* Vector3::Serialize(flatbuffers::FlatBufferBuilder& fbb) con
 
 void Vector3::Deserialize(const void* pBufferPointer)
 {
-	memcpy(this, pBufferPointer, sizeof(Vector3));
+	memcpy(reinterpret_cast<void*>(this), pBufferPointer, sizeof(Vector3));
 }
 
 const mfbs::Vector4* Vector4::Serialize(flatbuffers::FlatBufferBuilder& fbb) const

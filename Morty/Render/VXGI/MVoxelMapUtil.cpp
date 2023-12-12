@@ -7,7 +7,7 @@ MVoxelClipmap MVoxelMapUtil::GetClipMap(const Vector3& f3CameraPosition, const u
 	const uint32_t nVoxelTableSize = MRenderGlobal::VOXEL_TABLE_SIZE;
 	const float fBasicVoxelSize = MRenderGlobal::VOXEL_BASIC_VOXEL_SIZE;
 
-	const float fVoxelSize = fBasicVoxelSize * std::powf(2.0f, nClipmapIdx);
+	const float fVoxelSize = fBasicVoxelSize * std::pow(2.0f, nClipmapIdx);
 	Vector3 f3Origin = f3CameraPosition - nVoxelTableSize * fVoxelSize * 0.5f;
 	const Vector3i n3FloorPosition = MMath::Floor(f3Origin / fVoxelSize);
 	f3Origin = Vector3(n3FloorPosition.x, n3FloorPosition.y, n3FloorPosition.z) * fVoxelSize;

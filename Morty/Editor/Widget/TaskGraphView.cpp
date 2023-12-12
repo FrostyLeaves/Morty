@@ -123,9 +123,10 @@ void TaskGraphView::Render()
 				ImNodes::EndInputAttribute();
 			}
 
+#if MORTY_DEBUG
 			//Context
-			ImGui::Text("avg time: %f", (pNode->m_nDebugTime / 1000.0f));
-
+			ImGui::Text("avg time: %f", (static_cast<float>(pNode->m_nDebugTime) / 1000.0f));
+#endif
 			//output
 			for (size_t nIdx = 0; nIdx < pNode->GetOutputSize(); ++nIdx)
 			{

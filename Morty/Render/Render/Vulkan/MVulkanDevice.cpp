@@ -1328,14 +1328,14 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 		const Vector2i vkTexelSize = GetShadingRateTextureTexelSize();
 		const Vector2i n2CompareSize = { n2Size.x * vkTexelSize.x, n2Size.y * vkTexelSize.y };
 
-/*		if(n2CompareSize.x < nFrameBufferSize.x || n2CompareSize.y < nFrameBufferSize.y)
+		if(n2CompareSize.x < nFrameBufferSize.x || n2CompareSize.y < nFrameBufferSize.y)
 		{
 			GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateFrameBuffer error: shading rate texture size not match: ({}, {}), attachment texel size is ({}, {}), frame buffer size is ({}, {})"
 				, n2Size.x, n2Size.y, vkTexelSize.x, vkTexelSize.y, nFrameBufferSize.x, nFrameBufferSize.y);
 
 			return false;
 		}
-*/
+
 		vAttachmentViews.push_back(std::get<0>(viewAndSize));
 	}
 
@@ -1762,7 +1762,7 @@ VkImageView MVulkanDevice::CreateImageView(VkImage image, VkFormat format, VkIma
 	VkImageView imageView;
 	if (vkCreateImageView(m_VkDevice, &viewInfo, nullptr, &imageView) != VK_SUCCESS)
 	{
-		VK_NULL_HANDLE;
+		return VK_NULL_HANDLE;
 	}
 
 	return imageView;

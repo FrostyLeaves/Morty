@@ -23,20 +23,18 @@ jobs:
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
-        os: [windows]
+        os: [ubuntu-latest]
         build_type: [Release]
         include:
-          - os: windows
-            preset_name: Windows
-            build_name: Windows-Release
-            test_name: Windows
+          - os: ubuntu-latest
+            preset_name: Linux
+            build_name: Linux-Release
+            test_name: Linux
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set reusable strings
-      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
-      id: strings
+    - name: cd folder
       shell: bash
       run: |
         cd ${{ github.workspace }}/Morty

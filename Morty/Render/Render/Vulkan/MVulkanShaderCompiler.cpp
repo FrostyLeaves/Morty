@@ -496,7 +496,7 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& strShaderPath, cons
 
 
 	EShLanguage eLanguageType = ShaderTypeTable[eShaderType];
-	glslang::TShader shader(eLanguageType);
+	glslang::TShader shader = glslang::TShader(eLanguageType);
 
 	MString strShaderCode;
 	MFileHelper::ReadString(strShaderPath, strShaderCode);

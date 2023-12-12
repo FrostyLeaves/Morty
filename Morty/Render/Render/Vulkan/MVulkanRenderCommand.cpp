@@ -773,7 +773,7 @@ void MVulkanRenderCommand::UpdateShaderParam(std::shared_ptr<MShaderConstantPara
 		memcpy(param->m_pMemoryMapping + param->m_unMemoryOffset, param->var.GetData(), param->var.GetSize());
 
 #ifndef MORTY_WIN
-		size_t nFlushMinSize = m_pDevice->m_VkPhysicalDeviceProperties.limits.nonCoherentAtomSize;
+		size_t nFlushMinSize = m_pDevice->GetPhysicalDeviceProperties().limits.nonCoherentAtomSize;
 		size_t nOffset = (param->m_unMemoryOffset / nFlushMinSize) * nFlushMinSize;
 		size_t nSize = ((param->m_unMemoryOffset + param->m_unVkMemorySize) - nOffset);
 		nSize = nSize % nFlushMinSize == 0 ? nSize : (nSize / nFlushMinSize + 1) * nFlushMinSize;
