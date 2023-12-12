@@ -162,6 +162,8 @@ const char* MMaterial::GetDebugName() const
 {
 	return GetResourcePath().c_str();
 }
+#endif
+
 std::shared_ptr<MShaderPropertyBlock> MMaterial::CreateFramePropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram)
 {
 	return pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_FRAME]->Clone();
@@ -170,4 +172,3 @@ std::shared_ptr<MShaderPropertyBlock> MMaterial::CreateMeshPropertyBlock(const s
 {
 	return pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MESH]->Clone();
 }
-#endif

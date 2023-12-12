@@ -10,7 +10,12 @@ file(GLOB_RECURSE EDITOR_All_FILES *.h *.cpp)
 ############################################################
 file(GLOB EDITOR_IMGUI_FILE_DIALOG_FILES ${THIRD_PARTY_PATH}/ImGuiFileDialog/*.h ${THIRD_PARTY_PATH}/ImGuiFileDialog/*.cpp )
 if (NOT MSVC)
-    set_property(SOURCE ${EDITOR_IMGUI_FILE_DIALOG_FILES} APPEND PROPERTY COMPILE_OPTIONS "-Wno-everything" "-Wno-unused-parameter" "-Wno-format-zero-length")
+    set_property(SOURCE ${EDITOR_IMGUI_FILE_DIALOG_FILES} APPEND PROPERTY COMPILE_OPTIONS
+        "-Wno-everything"
+        "-Wno-unused-parameter"
+        "-Wno-format-zero-length"
+        "-Wno-delete-non-virtual-dtor"
+    )
 endif()
 
 add_library(Editor OBJECT

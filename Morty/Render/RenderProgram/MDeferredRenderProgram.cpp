@@ -36,6 +36,7 @@
 #include "RenderWork/MTransparentRenderWork.h"
 #include "RenderWork/MPostProcessRenderWork.h"
 #include "RenderWork/MVoxelizerRenderWork.h"
+#include "RenderWork/MVoxelDebugRenderWork.h"
 #include "Component/MCameraComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 #include "Shadow/MShadowMeshManager.h"
@@ -70,7 +71,7 @@ void MDeferredRenderProgram::Render(MIRenderCommand* pPrimaryCommand)
 	RenderGBuffer();
 	RenderLightning();
 	RenderForward();
-	//RenderVoxelizerDebug();
+	RenderVoxelizerDebug();
 	RenderTransparent();
 	RenderPostProcess();
 	RenderVRS();
@@ -117,7 +118,7 @@ void MDeferredRenderProgram::RenderSetup(MIRenderCommand* pPrimaryCommand)
 	uint32_t nClipmapIdx = m_renderInfo.nFrameIndex % MRenderGlobal::VOXEL_GI_CLIP_MAP_NUM;
 	GetRenderWork<MVoxelizerRenderWork>()->SetupVoxelSetting(m_renderInfo.m4CameraTransform.GetTranslation(), nClipmapIdx);
 	auto voxelizerBounds = GetRenderWork<MVoxelizerRenderWork>()->GetVoxelizerBoundsAABB(nClipmapIdx);
-
+	m_pVoxelizerCulling->SetInput(vMaterialGroup);
 	//Voxelizer Culling.
 	m_pVoxelizerCulling->Get()->SetBounds(voxelizerBounds);
 #endif
@@ -181,6 +182,7 @@ void MDeferredRenderProgram::InitializeRenderWork()
 
 #if MORTY_VXGI_ENABLE
 	RegisterRenderWork<MVoxelizerRenderWork>();
+	RegisterRenderWork<MVoxelDebugRenderWork>();
 #endif
 
 
@@ -324,8 +326,14 @@ void MDeferredRenderProgram::InitializeRenderTarget()
 	});
 
 #if MORTY_VXGI_ENABLE
-	GetRenderWork<MVoxelizerRenderWork>()->SetRenderTarget({
-		{ {pLightningRenderTarget, {false, MColor::Black_T }} },
+	std::shared_ptr<MTexture> pVoxelDebugTexture = MTexture::CreateRenderTarget(METextureLayout::ERGBA_UNORM_8);
+	pVoxelDebugTexture->SetName("Voxel Debug Texture");
+	pVoxelDebugTexture->SetSize(n2Size);
+	pVoxelDebugTexture->GenerateBuffer(pRenderSystem->GetDevice());
+	m_vRenderTargets.push_back(pVoxelDebugTexture);
+
+	GetRenderWork<MVoxelDebugRenderWork>()->SetRenderTarget({
+		{ {pVoxelDebugTexture, {true, MColor::Black_T }} },
 		{ pDepthTexture, {false, MColor::Black_T} },
 	    {}
 	});
@@ -507,6 +515,7 @@ void MDeferredRenderProgram::RenderForward()
 void MDeferredRenderProgram::RenderVoxelizerDebug()
 {
 	auto pVoxelizerWork = GetRenderWork<MVoxelizerRenderWork>();
+	auto pVoxelDebugWork = GetRenderWork<MVoxelDebugRenderWork>();
 	if (!pVoxelizerWork)
 	{
 		return;
@@ -515,14 +524,14 @@ void MDeferredRenderProgram::RenderVoxelizerDebug()
 	const MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
 
 	MIndirectIndexRenderable debugRender;
-	debugRender.SetMaterial(pVoxelizerWork->GetVoxelDebugMaterial());
+	debugRender.SetMaterial(pVoxelDebugWork->GetVoxelDebugMaterial());
 	debugRender.SetPropertyBlockAdapter({
 		m_pFramePropertyAdapter
 		});
-	debugRender.SetIndirectIndexBuffer(pVoxelizerWork->GetVoxelDebugBuffer());
+	debugRender.SetIndirectIndexBuffer(pVoxelDebugWork->GetVoxelDebugBuffer());
 	debugRender.SetMeshBuffer(pMeshManager->GetMeshBuffer());
 
-	pVoxelizerWork->RenderDebugVoxel(m_renderInfo, {
+	pVoxelDebugWork->Render(m_renderInfo, pVoxelizerWork->GetVoxelSetting(), pVoxelizerWork->GetVoxelTableBuffer(), {
 	   &debugRender,
     });
 }

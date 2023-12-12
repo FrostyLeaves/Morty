@@ -34,14 +34,17 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: cd folder
-      shell: bash
+    - name: Configure
       run: |
         cd ${{ github.workspace }}/Morty
-    - name: Configure
-      run: cmake --preset ${{ matrix.preset_name }}
+        cmake --preset ${{ matrix.preset_name }}
       
     - name: Build
-      # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      run: cmake --build --preset ${{ matrix.build_name }}
-
+      run: |
+        cd ${{ github.workspace }}/Morty
+        cmake --build --preset ${{ matrix.build_name }}
+      
+    - name: Test
+      run: |
+          cd ${{ github.workspace }}/Morty
+          ctest --preset ${{ matrix.test_name }} -C Release

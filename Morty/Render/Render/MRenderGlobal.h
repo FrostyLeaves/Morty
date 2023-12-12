@@ -17,7 +17,7 @@
 #endif
 
 #define GPU_CULLING_ENABLE (false)
-#define MORTY_VXGI_ENABLE (false)
+#define MORTY_VXGI_ENABLE (true)
 #define VRS_OPTIMIZE_ENABLE  (false)
 
 class MORTY_API MRenderGlobal

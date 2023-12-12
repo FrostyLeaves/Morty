@@ -119,11 +119,6 @@ const MBuffer* MVoxelizerRenderWork::GetVoxelTableBuffer() const
 	return &m_voxelizerBuffer;
 }
 
-const MBuffer* MVoxelizerRenderWork::GetVoxelDebugBuffer() const
-{
-	return &m_drawIndirectBuffer;
-}
-
 std::shared_ptr<MTexture> MVoxelizerRenderWork::GetVoxelGITexture() const
 {
 	return m_voxelGITexture;
@@ -152,15 +147,9 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 
 	pCommand->ResetBuffer(&m_voxelizerBuffer);
 
-	pCommand->AddBufferMemoryBarrier(
-		{ &m_voxelizerBuffer },
-		MEBufferBarrierStage::EPixelShaderRead,
-		MEBufferBarrierStage::EPixelShaderWrite
-	);
-
 	constexpr uint32_t fViewportSize = MRenderGlobal::VOXEL_VIEWPORT_SIZE;
 
-	pCommand->BeginRenderPass(&m_voxelizerRenderPass);
+	pCommand->BeginRenderPass(&m_renderPass);
 	pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, fViewportSize, fViewportSize));
 	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, fViewportSize, fViewportSize));
 
@@ -170,14 +159,6 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 	}
 
 	pCommand->EndRenderPass();
-
-	if (m_pDebugVoxelMapSetting)
-	{
-		auto& settingStruct = m_pDebugVoxelMapSetting->var.GetValue<MVariantStruct>().GetVariant<MVariantStruct>(MShaderPropertyName::VOXEL_MAP_SETTING);
-		MRenderInfo::FillVoxelMapSetting(m_voxelSetting, settingStruct);
-
-		m_pDebugVoxelMapSetting->SetDirty();
-	}
 
 	if (m_pVoxelizerVoxelMapSetting)
 	{
@@ -193,58 +174,11 @@ void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 		MEBufferBarrierStage::EComputeShaderRead
 	);
 
-	pCommand->AddBufferMemoryBarrier(
-		{ &m_drawIndirectBuffer },
-		MEBufferBarrierStage::EDrawIndirectRead,
-		MEBufferBarrierStage::EComputeShaderWrite
-	);
-
-	//
-	pCommand->DispatchComputeJob(m_pVoxelDebugIndirectGenerator
+	pCommand->DispatchComputeJob(m_pVoxelTextureGenerator
 		, MRenderGlobal::VOXEL_TABLE_SIZE / 8
 		, MRenderGlobal::VOXEL_TABLE_SIZE / 8
 		, MRenderGlobal::VOXEL_TABLE_SIZE / 8);
 
-	{
-		pCommand->DispatchComputeJob(m_pVoxelTextureGenerator
-			, MRenderGlobal::VOXEL_TABLE_SIZE / 8
-			, MRenderGlobal::VOXEL_TABLE_SIZE / 8
-			, MRenderGlobal::VOXEL_TABLE_SIZE / 8);
-	}
-
-	pCommand->AddBufferMemoryBarrier(
-		{ &m_drawIndirectBuffer },
-		MEBufferBarrierStage::EComputeShaderWrite,
-		MEBufferBarrierStage::EDrawIndirectRead
-	);
-
-	pCommand->AddBufferMemoryBarrier(
-		{ &m_voxelizerBuffer },
-		MEBufferBarrierStage::EComputeShaderRead,
-		MEBufferBarrierStage::EPixelShaderRead
-	);
-
-
-	// pCommand->AddRenderToTextureBarrier({m_voxelGITexture.get()}, METextureBarrierStage::EPixelShaderSample);
-}
-
-void MVoxelizerRenderWork::RenderDebugVoxel(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
-{
-	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
-
-	const Vector2i v2LeftTop = info.f2ViewportLeftTop;
-	const Vector2i v2Size = info.f2ViewportSize;
-
-	pCommand->BeginRenderPass(&m_renderPass);
-	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
-	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
-
-	for (IRenderable* pRenderable : vRenderable)
-	{
-		pRenderable->Render(pCommand);
-	}
-
-	pCommand->EndRenderPass();
 }
 
 void MVoxelizerRenderWork::InitializeBuffer()
@@ -260,48 +194,18 @@ void MVoxelizerRenderWork::InitializeBuffer()
 	m_voxelizerBuffer.ReallocMemory(nVoxelTableMemorySize);
 	m_voxelizerBuffer.DestroyBuffer(pRenderSystem->GetDevice());
 	m_voxelizerBuffer.GenerateBuffer(pRenderSystem->GetDevice(), nullptr, nVoxelTableMemorySize);
-
-
-	const size_t nDrawIndirectBufferSize = sizeof(MDrawIndexedIndirectData) * nVoxelCubeMapSize;
-	m_drawIndirectBuffer = MBuffer::CreateIndirectDrawBuffer("Voxel Draw Indirect Buffer");
-	m_drawIndirectBuffer.ReallocMemory(nDrawIndirectBufferSize);
-	m_drawIndirectBuffer.GenerateBuffer(pRenderSystem->GetDevice(), nullptr, nDrawIndirectBufferSize);
 }
 
 void MVoxelizerRenderWork::ReleaseBuffer()
 {
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-
-	m_drawIndirectBuffer.DestroyBuffer(pRenderSystem->GetDevice());
+;
 	m_voxelizerBuffer.DestroyBuffer(pRenderSystem->GetDevice());
 }
 
 void MVoxelizerRenderWork::InitializeDispatcher()
 {
-	MObjectSystem* pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-
-
-	m_pVoxelDebugIndirectGenerator = pObjectSystem->CreateObject<MComputeDispatcher>();
-	m_pVoxelDebugIndirectGenerator->LoadComputeShader("Shader/Voxel/voxel_debug_view.mcs");
-
-	const std::shared_ptr<MShaderPropertyBlock>& params = m_pVoxelDebugIndirectGenerator->GetShaderPropertyBlock(0);
-	MORTY_ASSERT(m_pDebugVoxelMapSetting = params->FindConstantParam(MShaderPropertyName::VOXELIZER_CBUFFER_VOXEL_MAP_NAME));
-
-	auto pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
-	auto cubeMesh = pMeshManager->GetCubeMesh();
-	params->SetValue(MShaderPropertyName::VOXELIZER_CUBE_MESH_INDEX, static_cast<uint32_t>(cubeMesh.indexMemoryInfo.begin / sizeof(uint32_t)));
-	params->SetValue(MShaderPropertyName::VOXELIZER_CUBE_MESH_COUNT, static_cast<uint32_t>(cubeMesh.indexMemoryInfo.size / sizeof(uint32_t)));
-
-	if (auto pIndirectDraws = params->FindStorageParam(MShaderPropertyName::CULLING_OUTPUT_DRAW_DATA))
-	{
-		pIndirectDraws->SetBuffer(&m_drawIndirectBuffer);
-	}
-
-	if (auto pVoxelTable = params->FindStorageParam(MShaderPropertyName::VOXELIZER_VOXEL_TABLE_NAME))
-	{
-		pVoxelTable->SetBuffer(&m_voxelizerBuffer);
-	}
 
 	std::shared_ptr<MResource> voxelizerVS = pResourceSystem->LoadResource("Shader/Voxel/voxelizer.mvs");
 	std::shared_ptr<MResource> voxelizerPS = pResourceSystem->LoadResource("Shader/Voxel/voxelizer.mps");
@@ -330,26 +234,11 @@ void MVoxelizerRenderWork::InitializeDispatcher()
 		
 		m_tVoxelizerMaterial[key] = pVoxelizerMaterial;
 	}
-
-	
-
-
-	std::shared_ptr<MResource> voxelDebugVS = pResourceSystem->LoadResource("Shader/Voxel/voxel_debug_view.mvs");
-	std::shared_ptr<MResource> voxelDebugPS = pResourceSystem->LoadResource("Shader/Voxel/voxel_debug_view.mps");
-	m_pVoxelDebugMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-	m_pVoxelDebugMaterial->SetCullMode(MECullMode::ECullBack);
-	m_pVoxelDebugMaterial->SetMaterialType(MEMaterialType::ECustom);
-	m_pVoxelDebugMaterial->LoadShader(voxelDebugVS);
-	m_pVoxelDebugMaterial->LoadShader(voxelDebugPS);
 }
 
 void MVoxelizerRenderWork::ReleaseDispatcher()
 {
-	m_pVoxelDebugIndirectGenerator->DeleteLater();
-	m_pVoxelDebugIndirectGenerator = nullptr;
-
 	m_tVoxelizerMaterial.clear();
-	m_pVoxelDebugMaterial = nullptr;
 }
 
 void MVoxelizerRenderWork::InitializeVoxelTextureDispatcher()
@@ -396,22 +285,25 @@ void MVoxelizerRenderWork::ReleaseVoxelTextureDispatcher()
 void MVoxelizerRenderWork::InitializeRenderPass()
 {
 #if MORTY_DEBUG
-	m_voxelizerRenderPass.m_strDebugName = "Voxelizer";
+	m_renderPass.m_strDebugName = "Voxelizer";
 #endif
 
 	const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
 	m_pVoxelizerRenderTarget = MTexture::CreateRenderTarget(METextureLayout::ERGBA_UNORM_8);
 	m_pVoxelizerRenderTarget->SetName("Voxelizer Render Target");
-    int nRenderTargetSize = static_cast<int>(MRenderGlobal::VOXEL_VIEWPORT_SIZE);
-	m_pVoxelizerRenderTarget->SetSize({ nRenderTargetSize, nRenderTargetSize});
+	int nRenderTargetSize = static_cast<int>(MRenderGlobal::VOXEL_VIEWPORT_SIZE);
+	m_pVoxelizerRenderTarget->SetSize({ nRenderTargetSize, nRenderTargetSize });
 	m_pVoxelizerRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
+	SetRenderTarget({
+		{ {m_pVoxelizerRenderTarget, {true, MColor::Black_T}} },
+		{},
+		{}
+		});
 
-	m_voxelizerRenderPass.AddBackTexture(m_pVoxelizerRenderTarget, { true, MColor::Black_T });
-	m_voxelizerRenderPass.SetDepthTestEnable(false);
-	m_voxelizerRenderPass.SetDepthWriteEnable(false);
-	m_voxelizerRenderPass.SetViewportNum(1);
-	m_voxelizerRenderPass.GenerateBuffer(pRenderSystem->GetDevice());
+	m_renderPass.SetDepthTestEnable(false);
+	m_renderPass.SetDepthWriteEnable(false);
+	m_renderPass.SetViewportNum(1);
 
 }
 
@@ -419,8 +311,7 @@ void MVoxelizerRenderWork::ReleaseRenderPass()
 {
 	const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
-	m_voxelizerRenderPass.DestroyBuffer(pRenderSystem->GetDevice());
-
 	m_pVoxelizerRenderTarget->DestroyBuffer(pRenderSystem->GetDevice());
+
 	m_pVoxelizerRenderTarget = nullptr;
 }
