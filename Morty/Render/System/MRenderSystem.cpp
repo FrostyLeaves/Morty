@@ -245,7 +245,7 @@ Matrix4 MRenderSystem::MatrixPerspectiveFovLH(const float& fFovYZAngle, const fl
 
 	Matrix4 mProjMatrix;
 	//���Ϊ0
-	memset(&mProjMatrix, 0, sizeof(mProjMatrix));
+	memset(reinterpret_cast<void*>(&mProjMatrix), 0, sizeof(mProjMatrix));
 
 
 	//����ת��Ϊ����

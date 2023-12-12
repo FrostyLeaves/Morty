@@ -146,7 +146,7 @@ std::unique_ptr<MIMesh> MMeshUtil::CreatePlane(MEMeshVertexType eVertexType)
 		for (int i = 0; i < 4; ++i)
 		{
 			MVertexWithBones* vVertex = (MVertexWithBones*)pMesh->GetVertices();
-			memcpy(&vVertex[i], &plane[i], sizeof(MVertexWithBones));
+			memcpy(reinterpret_cast<void*>(&vVertex[i]), reinterpret_cast<const void*>(&plane[i]), sizeof(MVertexWithBones));
 
 			vVertex[i].position.x *= 1.0f;
 			vVertex[i].position.y *= 1.0f;
@@ -276,7 +276,7 @@ std::unique_ptr<MIMesh> MMeshUtil::CreateCube(MEMeshVertexType eVertexType)
 		for (int i = 0; i < 24; ++i)
 		{
 			MVertexWithBones* vVertex = (MVertexWithBones*)pMesh->GetVertices();
-			memcpy(&vVertex[i], &cube[i], sizeof(MVertexWithBones));
+			memcpy(reinterpret_cast<void*>(&vVertex[i]), reinterpret_cast<const void*>(&cube[i]), sizeof(MVertexWithBones));
 		}
 	}
 

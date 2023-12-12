@@ -9,3 +9,6 @@ target_link_libraries(Test Render)
 if(MORTY_BUILD_WITH_PHYSICS)
 target_link_libraries(Test Physics)
 endif()
+
+
+add_test(NAME Test COMMAND Test)

@@ -14,6 +14,7 @@
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 #include "Render/MIDevice.h"
+#include "MVulkanPhysicalDevice.h"
 
 #include <vector>
 #include "Render/Vulkan/MVulkanWrapper.h"
@@ -29,7 +30,6 @@
 
 #include "Basic/MTexture.h"
 
-class MVulkanPhysicalDevice;
 class MBuffer;
 class MVulkanRenderCommand;
 class MVulkanPrimaryRenderCommand;

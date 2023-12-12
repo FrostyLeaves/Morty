@@ -21,7 +21,7 @@ public:
 
 	static long long GetCurTime();
 
-    static int LocalTime(time_t& time, tm& tmsut);
+    static int LocalTime(time_t& time, struct tm& tmsut);
 
 private:
 

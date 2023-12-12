@@ -20,9 +20,25 @@
         "VCPKG_TARGET_TRIPLET": "x64-windows",
         "VCPKG_HOST_TRIPLET": "x64-windows",
         "MORTY_BUILD_TARGET": "WIN",
-        "MORTY_SHADER_COMPILER": "glslang",
+        "MORTY_SHADER_COMPILER": "dxc",
         "CMAKE_C_COMPILER": "clang.exe",
         "CMAKE_CXX_COMPILER": "clang++.exe"
+      }
+    },
+    {
+      "name": "Linux",
+      "inherits": "Default",
+      "binaryDir": "${sourceDir}/../Build/linux",
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-linux",
+        "VCPKG_HOST_TRIPLET": "x64-linux",
+        "MORTY_BUILD_TARGET": "LINUX",
+        "MORTY_SHADER_COMPILER": "glslang",
+        "CMAKE_C_COMPILER": "/usr/bin/gcc",
+        "CMAKE_CXX_COMPILER": "/usr/bin/g++",
+        "CMAKE_THREAD_LIBS_INIT": "-lpthread",
+        "CMAKE_USE_PTHREADS_INIT": "1",
+        "THREADS_PREFER_PTHREAD_FLAG": "ON"
       }
     },
     {
@@ -110,6 +126,35 @@
       "name": "Macos-Release",
       "configurePreset": "Macos",
       "configuration": "Release"
+    },
+    {
+      "name": "Linux-Release",
+      "configurePreset": "Linux",
+      "configuration": "Release"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "Windows",
+      "configurePreset": "Windows",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    },
+    {
+      "name": "Linux",
+      "configurePreset": "Linux",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
     }
   ]
 }

@@ -38,6 +38,16 @@ if(MORTY_BUILD_TARGET STREQUAL "IOS")
 #    message(FATAL_ERROR IOS)
 endif()
 
+if(MORTY_BUILD_TARGET STREQUAL "LINUX")
+    target_compile_definitions(Core 
+        PUBLIC MORTY_LINUX
+        PUBLIC MORTY_RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../Resource"
+    )
+#    message(FATAL_ERROR LINUX)
+endif()
+
+
+
 if(MORTY_BUILD_TARGET STREQUAL "ANDROID")
     target_compile_definitions(Core 
             PUBLIC MORTY_ANDROID

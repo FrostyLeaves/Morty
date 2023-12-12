@@ -41,6 +41,9 @@
 #include <queue>
 #include <array>
 #include <mutex>
+#include <atomic>
+#include <chrono>
+#include <climits>
 #include <memory>
 #include <vector>
 #include <list>

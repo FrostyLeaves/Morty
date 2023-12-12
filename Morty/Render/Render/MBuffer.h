@@ -56,7 +56,7 @@ public:
 
 
 public:
-
+    MBuffer(const MBuffer& other) = default;
     const MBuffer& operator=(const MBuffer& other);
 
 public:
