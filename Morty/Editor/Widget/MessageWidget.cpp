@@ -1,6 +1,6 @@
 #include "MessageWidget.h"
 
-#include "ImGui.h"
+#include "imgui.h"
 #include "Engine/MEngine.h"
 #include "Utility/RenderMessageManager.h"
 
