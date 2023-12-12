@@ -35,6 +35,13 @@ jobs:
     steps:
     
     - uses: actions/checkout@v3
+      with:
+        submodules: true
+    
+    - name: Submodule update
+      run: |
+        git submodule update --init --recursive
+      
     - name: Setup anew (or from cache) vcpkg
       uses: lukka/run-vcpkg@v11
       with:
