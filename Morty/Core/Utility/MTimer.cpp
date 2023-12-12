@@ -20,8 +20,7 @@ int MTimer::LocalTime(time_t& time, struct tm& tmsut)
 #if defined(MORTY_WIN)
 	return localtime_s(&tmsut, &time);
 #elif defined(MORTY_LINUX)
-	tmsut = *std::localtime(&time);
-	return 0;
+	
 #else
 	return localtime_r(&time, &tmsut);
 #endif

@@ -31,7 +31,7 @@ bool PropertyBase::ShowNodeBeginWithEx(const MString& strNodeName)
 {
 	ImGui::PushID(GetID(strNodeName));
 	ImGui::AlignTextToFramePadding();
-	if (bool node_open = ImGui::TreeNodeEx("Object", ImGuiTreeNodeFlags_DefaultOpen, "%s", strNodeName.c_str()))
+	if (ImGui::TreeNodeEx("Object", ImGuiTreeNodeFlags_DefaultOpen, "%s", strNodeName.c_str()))
 	{
 		ImGui::NextColumn();
 		ImGui::AlignTextToFramePadding();
