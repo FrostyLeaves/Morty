@@ -57,11 +57,6 @@ jobs:
           core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
     
-    - name: Run vcpkg
-      uses: lukka/run-vcpkg@v10.2
-      with:
-        vcpkgDirectory: '${{ github.workspace }}/ThirdParty/vcpkg'
-
     - name: Configure
       run: |
         cd ${{ github.workspace }}/Morty
