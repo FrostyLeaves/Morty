@@ -15,7 +15,11 @@ A cross platform game engine based on Vulkan. Only for personal study and resear
 ```
     git clone https://github.com/FrostyLeaves/Morty.git
 
-    cd ./Morty/Morty
+    cd ./Morty
+
+    git submodule update --init --recursive
+
+    cd ./Morty
 
     cmake --preset [Windows | Linux | Macos-Xcode]
 
