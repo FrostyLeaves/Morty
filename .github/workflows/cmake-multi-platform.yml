@@ -10,6 +10,7 @@ on:
 
 jobs:
   build:
+  
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -32,19 +33,38 @@ jobs:
             test_name: Linux
 
     steps:
-    - uses: actions/checkout@v3
 
-    - name: Configure
-      run: |
-        cd ${{ github.workspace }}/Morty
-        cmake --preset ${{ matrix.preset_name }}
-      
-    - name: Build
-      run: |
-        cd ${{ github.workspace }}/Morty
-        cmake --build --preset ${{ matrix.build_name }}
-      
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    
+    - name: Get latest CMake and Ninja
+      uses: lukka/get-cmake@latest
+      with:
+        cmakeVersion: 3.28.0
+        ninjaVersion: 1.11.1
+    
+    - name: Prepare Vulkan SDK
+      uses: humbletim/setup-vulkan-sdk@v1.2.0
+      with:
+        vulkan-query-version: 1.3.204.0
+        vulkan-components: Vulkan-Headers, Vulkan-Loader
+        vulkan-use-cache: true
+
+    - name: Run vcpkg
+      uses: lukka/run-vcpkg@v10
+      with:
+        vcpkgDirectory: '${{ github.workspace }}/ThirdParty/vcpkg'
+
+    - name: Run CMake Build
+      uses: lukka/run-cmake@v10
+      with:
+        cmakeListsTxtPath: '${{ github.workspace }}/Morty/CMakeLists.txt'
+        configurePreset: ${{ matrix.preset_name }}
+        buildPreset: ${{ matrix.build_name }}
+
     - name: Test
       run: |
           cd ${{ github.workspace }}/Morty
           ctest --preset ${{ matrix.test_name }} -C Release
+    
