@@ -37,8 +37,8 @@ jobs:
     - name: Get latest CMake and Ninja
       uses: lukka/get-cmake@latest
       with:
-        cmakeVersion: latestrc
-        ninjaVersion: latest
+        cmakeVersion: 3.28.0
+        ninjaVersion: 1.11.1
     
     - uses: actions/checkout@v3
       with:
