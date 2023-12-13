@@ -35,7 +35,7 @@ public:
 	static constexpr int BONES_MAX_NUMBER = 128;
 	static constexpr int SHADOW_TEXTURE_SIZE = 2048;
     static constexpr uint32_t VOXEL_TABLE_SIZE = 64;
-	static constexpr uint32_t VOXEL_VIEWPORT_SIZE = VOXEL_TABLE_SIZE * 1;
+	static constexpr uint32_t VOXEL_VIEWPORT_SIZE = VOXEL_TABLE_SIZE * 2;
 
 	static constexpr int POINT_LIGHT_MAX_NUMBER = 8;
 	static constexpr int POINT_LIGHT_PIXEL_NUMBER = 8;

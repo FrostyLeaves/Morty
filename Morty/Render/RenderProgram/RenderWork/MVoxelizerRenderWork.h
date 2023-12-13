@@ -31,6 +31,7 @@ public:
     void Initialize(MEngine* pEngine) override;
 	void Release(MEngine* pEngine) override;
     std::shared_ptr<IShaderPropertyUpdateDecorator> GetFramePropertyDecorator() override;
+    void Resize(Vector2i size) override;
 
     void Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
 

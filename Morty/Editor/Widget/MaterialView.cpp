@@ -80,7 +80,7 @@ void MaterialView::Render()
 		}
 	}
 	
- 	if (m_pMaterial && m_bShowPreview)
+ 	if (m_pMaterial)
  	{
  		if (std::shared_ptr<MTexture> pTexture = m_pSceneTexture->GetTexture(0))
  		{
@@ -88,20 +88,23 @@ void MaterialView::Render()
  			ImGui::SameLine(fImageSize * 0.25f);
  			ImGui::Image({ pTexture, intptr_t(pTexture.get()), 0 }, ImVec2(fImageSize * 0.5f, fImageSize * 0.5f));
  		}
- 	}
-	if (m_pMaterial)
-	{
 
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
 		ImGui::Columns(2);
 		ImGui::Separator();
 
-		m_propertyBase.EditMMaterial(m_pMaterial);
+		const bool bModify = m_propertyBase.EditMMaterial(m_pMaterial);
+		m_pSceneTexture->SetPauseUpdate(!bModify);
+		
 
 		ImGui::Columns(1);
 		ImGui::Separator();
 		ImGui::PopStyleVar();
 	}
+    else
+    {
+		m_pSceneTexture->SetPauseUpdate(true);
+    }
 }
 
 void MaterialView::Initialize(MainEditor* pMainEditor)

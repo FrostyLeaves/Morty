@@ -67,10 +67,11 @@ float4 PS_MAIN(VS_OUT input) : SV_Target
     pointData.f3Albedo = f3Albedo;
     pointData.fRoughness = fRoughness;
     pointData.fMetallic = fMetallic;
-    pointData.bReceiveShadow = true;
+    pointData.bReceiveShadow = false;
 
-    float3 f3LightingColor = PbrLighting(pointData);
-
+    //float3 f3LightingColor = PbrLighting(pointData);
+    float shadow = GetDirectionShadow(u_texShadowMap, pointData.f3WorldPosition, pointData.f3Normal, -u_xDirectionalLight.f3LightDir);
+    float3 f3LightingColor = u_xDirectionalLight.f3Intensity * f3BaseColor * dot(f3Normal, - u_xDirectionalLight.f3LightDir) * shadow;
 
     float3 f3AnisoDirection = f3Normal;
     float3 f3DirectionWeight = abs(f3Normal);

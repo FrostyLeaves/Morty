@@ -332,9 +332,16 @@ void MDeferredRenderProgram::InitializeRenderTarget()
 	pVoxelDebugTexture->GenerateBuffer(pRenderSystem->GetDevice());
 	m_vRenderTargets.push_back(pVoxelDebugTexture);
 
+
+	std::shared_ptr<MTexture> pVoxelDebugDepth = MTexture::CreateShadowMap();
+	pVoxelDebugDepth->SetName("Voxel Depth Texture");
+	pVoxelDebugDepth->SetSize(n2Size);
+	pVoxelDebugDepth->GenerateBuffer(pRenderSystem->GetDevice());
+	m_vRenderTargets.push_back(pVoxelDebugDepth);
+
 	GetRenderWork<MVoxelDebugRenderWork>()->SetRenderTarget({
 		{ {pVoxelDebugTexture, {true, MColor::Black_T }} },
-		{ pDepthTexture, {false, MColor::Black_T} },
+		{ pVoxelDebugDepth, {true, MColor::Black_T} },
 	    {}
 	});
 #endif
