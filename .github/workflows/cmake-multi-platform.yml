@@ -33,6 +33,11 @@ jobs:
             test_name: Linux
 
     steps:
+
+    - name: Setup Ninja
+      uses: ashutoshvarma/setup-ninja@master
+      with:
+        version: 1.10.0
     
     - uses: actions/checkout@v3
       with:
