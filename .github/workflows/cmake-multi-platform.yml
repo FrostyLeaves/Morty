@@ -55,6 +55,8 @@ jobs:
       uses: lukka/run-vcpkg@v10
       with:
         vcpkgDirectory: '${{ github.workspace }}/ThirdParty/vcpkg'
+        runVcpkgInstall: true
+        vcpkgGitCommitId: d5bc0e71e06dfe6594ffb8fb2430919f1b435f94
 
     - name: Run CMake Build
       uses: lukka/run-cmake@v10
