@@ -23,20 +23,20 @@ PS_OUT PS_MAIN(VS_OUT input)
 
     float3 f3Normal = input.normal;
 
-    uint nVoxelFaceIdx = GetVoxelSimilarFaceIndex(f3Normal);
+    uint nAnisoIdx = GetVoxelSimilarFaceIndex(f3Normal);
 
     float4 f4VoxelColor = float4(
-        VoxelUintToFloat(u_rwVoxelTable[voxelTableIdx].nBaseColor[nVoxelFaceIdx * 4 + 0]),
-        VoxelUintToFloat(u_rwVoxelTable[voxelTableIdx].nBaseColor[nVoxelFaceIdx * 4 + 1]),
-        VoxelUintToFloat(u_rwVoxelTable[voxelTableIdx].nBaseColor[nVoxelFaceIdx * 4 + 2]),
-        VoxelUintToFloat(u_rwVoxelTable[voxelTableIdx].nBaseColor[nVoxelFaceIdx * 4 + 3])
+        VoxelUintToFloat(u_rwVoxelTable[voxelTableIdx].nBaseColor[nAnisoIdx * 4 + 0]),
+        VoxelUintToFloat(u_rwVoxelTable[voxelTableIdx].nBaseColor[nAnisoIdx * 4 + 1]),
+        VoxelUintToFloat(u_rwVoxelTable[voxelTableIdx].nBaseColor[nAnisoIdx * 4 + 2]),
+        VoxelUintToFloat(u_rwVoxelTable[voxelTableIdx].nBaseColor[nAnisoIdx * 4 + 3])
     );
     
-    uint nVoxelColorNum = u_rwVoxelTable[voxelTableIdx].nVoxelCount[nVoxelFaceIdx]; 
+    uint nVoxelColorNum = u_rwVoxelTable[voxelTableIdx].nVoxelCount[nAnisoIdx]; 
 
     if (nVoxelColorNum > 0)
     {
-        output.f4Color = f4VoxelColor / nVoxelColorNum;
+        output.f4Color = f4VoxelColor;
         output.f4Color.a = 1.0f;
     }
     else

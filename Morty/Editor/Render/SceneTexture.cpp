@@ -158,6 +158,11 @@ void SceneTexture::Snapshot(const MString& strSnapshotPath)
 
 void SceneTexture::UpdateTexture(const size_t& nImageIndex, MIRenderCommand* pRenderCommand)
 {
+	if (m_bPauseUpdate)
+	{
+		return;
+	}
+
 	if (nImageIndex < m_vRenderProgram.size())
 	{
 		m_vRenderProgram[nImageIndex]->Render(pRenderCommand);

@@ -37,6 +37,8 @@ public:
 
 	MTaskNode* GetRenderTask() const { return m_pUpdateTask; }
 
+	void SetPauseUpdate(bool bPause) { m_bPauseUpdate = bPause; }
+
 protected:
 
 	MScene* m_pScene = nullptr;
@@ -45,6 +47,7 @@ protected:
 
 	std::vector<MIRenderProgram*> m_vRenderProgram;
 
+	bool m_bPauseUpdate = false;
 	bool m_bSnapshot;
 	MString m_strSnapshotPath;
 

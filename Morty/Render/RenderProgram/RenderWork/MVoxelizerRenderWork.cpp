@@ -114,6 +114,11 @@ std::shared_ptr<IShaderPropertyUpdateDecorator> MVoxelizerRenderWork::GetFramePr
 	return m_pFramePropertyUpdateDecorator;
 }
 
+void MVoxelizerRenderWork::Resize(Vector2i size)
+{
+	MORTY_UNUSED(size);
+}
+
 const MBuffer* MVoxelizerRenderWork::GetVoxelTableBuffer() const
 {
 	return &m_voxelizerBuffer;
@@ -304,7 +309,6 @@ void MVoxelizerRenderWork::InitializeRenderPass()
 	m_renderPass.SetDepthTestEnable(false);
 	m_renderPass.SetDepthWriteEnable(false);
 	m_renderPass.SetViewportNum(1);
-
 }
 
 void MVoxelizerRenderWork::ReleaseRenderPass()

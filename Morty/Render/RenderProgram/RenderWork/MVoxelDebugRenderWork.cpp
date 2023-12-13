@@ -42,8 +42,8 @@ void MVoxelDebugRenderWork::Initialize(MEngine* pEngine)
 	InitializeDispatcher();
 
 
-	m_renderPass.SetDepthTestEnable(false);
-	m_renderPass.SetDepthWriteEnable(false);
+	m_renderPass.SetDepthTestEnable(true);
+	m_renderPass.SetDepthWriteEnable(true);
 }
 
 void MVoxelDebugRenderWork::Release(MEngine* pEngine)

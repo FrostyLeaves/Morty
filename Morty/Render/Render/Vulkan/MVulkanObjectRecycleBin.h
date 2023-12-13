@@ -39,7 +39,9 @@ public:
 #define M_VULKAN_DESTROY_LATER_FUNC(VK_TYPE) \
 	std::vector<Vk##VK_TYPE> m_v##VK_TYPE;\
 	void Destroy##VK_TYPE##Later(Vk##VK_TYPE buffer){\
+	    if (VK_NULL_HANDLE != buffer) { \
 			m_v##VK_TYPE.push_back(buffer); \
+		} \
 	}\
 
 	M_VULKAN_DESTROY_LATER_FUNC(Buffer);
