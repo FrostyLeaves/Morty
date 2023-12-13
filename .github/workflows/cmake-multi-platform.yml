@@ -52,7 +52,7 @@ jobs:
         vulkan-use-cache: true
     
     - name: Run vcpkg
-      uses: lukka/run-vcpkg@v10
+      uses: lukka/run-vcpkg@v11
       with:
         vcpkgDirectory: '${{ github.workspace }}/ThirdParty/vcpkg'
 
