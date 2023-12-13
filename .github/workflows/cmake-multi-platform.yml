@@ -52,16 +52,19 @@ jobs:
         vulkan-use-cache: true
 
     - name: Run vcpkg
-      uses: lukka/run-vcpkg@v10
+      uses: lukka/run-vcpkg@v11
       with:
         vcpkgDirectory: '${{ github.workspace }}/ThirdParty/vcpkg'
 
-    - name: Run CMake
+    - name: Run CMake Build
       uses: lukka/run-cmake@v10
       with:
         cmakeListsTxtPath: '${{ github.workspace }}/Morty/CMakeLists.txt'
         configurePreset: ${{ matrix.preset_name }}
         buildPreset: ${{ matrix.build_name }}
-        testPreset: ${{ matrix.test_name }}
-        testPresetAdditionalArgs: "['-C Release']"
+
+    - name: Test
+      run: |
+          cd ${{ github.workspace }}/Morty
+          ctest --preset ${{ matrix.test_name }} -C Release
     
