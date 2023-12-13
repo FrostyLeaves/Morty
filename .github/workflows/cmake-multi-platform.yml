@@ -34,10 +34,11 @@ jobs:
 
     steps:
 
-    - name: Setup Ninja
-      uses: ashutoshvarma/setup-ninja@master
+    - name: Get latest CMake and Ninja
+      uses: lukka/get-cmake@latest
       with:
-        version: 1.10.0
+        cmakeVersion: latestrc
+        ninjaVersion: latest
     
     - uses: actions/checkout@v3
       with:
