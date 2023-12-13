@@ -16,6 +16,9 @@
       "platform": "windows"
     },
     {
+      "name": "draco"
+    },
+    {
       "name": "doctest",
       "default-features": false
     },
@@ -47,6 +50,21 @@
       "default-features": false
     },
     {
+      "name": "kubazip"
+    },
+    {
+      "name": "minizip"
+    },
+    {
+      "name": "poly2tri"
+    },
+    {
+      "name": "pugixml"
+    },
+    {
+      "name": "rapidjson"
+    },
+    {
       "name": "sdl2",
       "default-features": false,
       "features": [ "vulkan" ]
@@ -56,12 +74,27 @@
       "default-features": false
     },
     {
+      "name": "spirv-headers"
+    },
+    {
       "name": "stb",
       "default-features": false
     },
     {
+      "name": "utfcpp"
+    },
+    {
+      "name": "vcpkg-cmake"
+    },
+    {
+      "name": "vcpkg-cmake-config"
+    },
+    {
       "name": "vulkan",
       "default-features": false
+    },
+    {
+      "name": "zlib"
     }
   ]
 }
