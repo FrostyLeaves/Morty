@@ -34,7 +34,6 @@
         "VCPKG_HOST_TRIPLET": "x64-linux",
         "MORTY_BUILD_TARGET": "LINUX",
         "MORTY_SHADER_COMPILER": "glslang",
-        "CMAKE_MAKE_PROGRAM": "/usr/bin/ninja",
         "CMAKE_C_COMPILER": "/usr/bin/gcc",
         "CMAKE_CXX_COMPILER": "/usr/bin/g++",
         "CMAKE_THREAD_LIBS_INIT": "-lpthread",
