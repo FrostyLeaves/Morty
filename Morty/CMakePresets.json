@@ -32,7 +32,7 @@
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "x64-linux",
         "VCPKG_HOST_TRIPLET": "x64-linux",
-        "VCPKG_BINARY_SOURCES": "x-gha,readwrite",
+        "VCPKG_BINARY_SOURCES": "clear;x-gha,readwrite",
         "MORTY_BUILD_TARGET": "LINUX",
         "MORTY_SHADER_COMPILER": "glslang",
         "CMAKE_C_COMPILER": "/usr/bin/gcc",
