@@ -45,6 +45,10 @@
     #define MTRANSPARENT_DEPTH_PEELING
 #endif
 
+#ifndef MORTY_VXGI_ENABLE
+    #define MORTY_VXGI_ENABLE 1
+#endif
+
 struct DirectionLight
 {
     float3 f3Intensity;
