@@ -28,8 +28,9 @@ jobs:
         build_type: [Release]
         include:
           - os: ubuntu-latest
-            preset_name: Linux
-            build_name: Linux-Release
+            preset_name: Linux-Test
+            build_name: Linux-Test
+            build_path: '${{ github.workspace }}/Build/linux_test'
             test_name: Linux
 
     steps:
@@ -67,4 +68,13 @@ jobs:
       run: |
           cd ${{ github.workspace }}/Morty
           ctest --preset ${{ matrix.test_name }} -C Release
+    
+    - name: Generate Test Coverage
+      uses: threeal/gcovr-action@v1.0.0
+      with: 
+        root: ${{ matrix.build_path }}
+        excludes: vcpkg_installed/*
+        coveralls-send: true
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        
     
