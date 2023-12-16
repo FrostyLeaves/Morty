@@ -67,12 +67,12 @@ jobs:
     
     - name: Generate Test Coverage
       run: | 
-        gcovr --root ${{ github.workspace }}/Build/${{ matrix.build_path }} --filter Core/ --coveralls ${{ github.workspace }}/Build/${{ matrix.build_path }}/coveralls.json
+        gcovr --keep --root ${{ github.workspace }}/Build/${{ matrix.build_path }} --filter Core/ --coveralls ${{ github.workspace }}/Build/${{ matrix.build_path }}/coveralls.json
     
     - name: Send to Coveralls
       uses: coverallsapp/github-action@v2
       with:
         flag-name: run-${{ join(matrix.*, '-') }}
-        file: ${{ github.workspace }}/Build/${{ matrix.build_path }}/coveralls.json
+        base-path: ${{ github.workspace }}/Build/${{ matrix.build_path }}/Core
         parallel: true
         github-token: ${{ secrets.GITHUB_TOKEN }}
