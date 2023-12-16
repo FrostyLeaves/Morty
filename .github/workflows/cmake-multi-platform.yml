@@ -62,16 +62,11 @@ jobs:
 
     - name: Test
       run: |
-          cd ${{ github.workspace }}/Morty
-          ctest --preset ${{ matrix.test_name }} -C Release
+        cd ${{ github.workspace }}/Morty
+        ctest --preset ${{ matrix.test_name }} -C Release
     
     - name: Generate Test Coverage
-      run: | 
-        gcovr --keep --root ${{ github.workspace }}/Build/${{ matrix.build_path }} --filter Core/ --coveralls ${{ github.workspace }}/Build/${{ matrix.build_path }}/coveralls.json
-    
-    - name: Send to Coveralls
-      uses: coverallsapp/github-action@v2
+      uses: threeal/gcovr-action@v1.0.0
       with:
-        flag-name: run-${{ join(matrix.*, '-') }}
-        parallel: true
+        coveralls-send: true
         github-token: ${{ secrets.GITHUB_TOKEN }}
