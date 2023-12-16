@@ -68,5 +68,6 @@ jobs:
     - name: Generate Test Coverage
       uses: threeal/gcovr-action@v1.0.0
       with:
+        excludes: '${{ github.workspace }}/Build/${{ build_path }}/vcpkg_installed/*'
         coveralls-send: true
         github-token: ${{ secrets.GITHUB_TOKEN }}
