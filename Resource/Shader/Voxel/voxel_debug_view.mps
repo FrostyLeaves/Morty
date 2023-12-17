@@ -36,7 +36,7 @@ PS_OUT PS_MAIN(VS_OUT input)
 
     if (nVoxelColorNum > 0)
     {
-        output.f4Color = f4VoxelColor;
+        output.f4Color = f4VoxelColor / nVoxelColorNum;
         output.f4Color.a = 1.0f;
     }
     else

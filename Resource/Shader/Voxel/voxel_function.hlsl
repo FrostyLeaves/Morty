@@ -91,24 +91,6 @@ uint3 InstanceIdToVoxelCoord(VoxelMapSetting setting, uint instanceId)
     return n3Coord;
 }
 
-uint ValidVoxelWorldPosition(VoxelMapSetting setting, uint nClipmapIdx, float3 position)
-{
-    VoxelClipmap clipmap = setting.vClipmap[nClipmapIdx];
-
-    float3 f3VoxelSize = float(setting.nResolution - 1) * clipmap.fVoxelSize;
-    if (all(position == clamp(position, clipmap.f3VoxelOrigin, clipmap.f3VoxelOrigin + f3VoxelSize)))
-    {
-        return 1;
-    }
-
-    return 0;
-}
-
-uint ValidVoxelWorldPosition(VoxelMapSetting setting, float3 position)
-{
-    return ValidVoxelWorldPosition(setting, setting.nClipmapIdx, position);
-}
-
 float3 WorldPositionToVoxelCoord(VoxelMapSetting setting, uint nClipmapIdx, float3 position)
 {
     VoxelClipmap clipmap = setting.vClipmap[nClipmapIdx];
@@ -122,6 +104,24 @@ float3 WorldPositionToVoxelCoord(VoxelMapSetting setting, uint nClipmapIdx, floa
 float3 WorldPositionToVoxelCoord(VoxelMapSetting setting, float3 position)
 {
     return WorldPositionToVoxelCoord(setting, setting.nClipmapIdx, position);
+}
+
+uint ValidVoxelWorldPosition(VoxelMapSetting setting, uint nClipmapIdx, float3 position)
+{
+    float3 f3Coord = WorldPositionToVoxelCoord(setting, nClipmapIdx, position);
+    f3Coord = floor(f3Coord);
+
+    if (all(f3Coord == clamp(f3Coord, 0, setting.nResolution - 1)))
+    {
+        return 1;
+    }
+
+    return 0;
+}
+
+uint ValidVoxelWorldPosition(VoxelMapSetting setting, float3 position)
+{
+    return ValidVoxelWorldPosition(setting, setting.nClipmapIdx, position);
 }
 
 // return world position of the voxel center point.
