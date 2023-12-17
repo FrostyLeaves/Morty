@@ -48,6 +48,7 @@ void CS_MAIN(uint3 GlobalInvocationID : SV_DispatchThreadID )
 		float3 f3ConeDirection = VOXEL_DIFFUSE_CONE_DIRECTIONS[nConeIdx];
 		float3 f3AnisoDirection = -f3ConeDirection;
     	float3 f3DirectionWeight = abs(f3AnisoDirection);
+		f3DirectionWeight = normalize(f3DirectionWeight);
 
 		uint3 n3FaceIdx = GetVoxelFaceIndex(f3AnisoDirection);
 
