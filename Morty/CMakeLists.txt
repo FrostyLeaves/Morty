@@ -3,6 +3,8 @@
 #
 cmake_minimum_required (VERSION 3.20)
 
+project ("Morty" CXX)
+
 
 if(MORTY_BUILD_TARGET STREQUAL "ANDROID")
 # There are backslashes instead of forward slashes in the path of the Android NDK.
@@ -10,14 +12,33 @@ if(MORTY_BUILD_TARGET STREQUAL "ANDROID")
 endif()
 
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g2 -ggdb -fno-limit-debug-info")
 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -target x86_64-w64-mingw32")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -target x86_64-w64-mingw32")
-
 endif()
 
-project ("Morty" CXX)
+
+if(MSVC)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
+else()
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+endif(MSVC)
+
+if (MORTY_TEST_COVERAGE)
+	include(CTest)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fprofile-arcs -ftest-coverage -fprofile-generate")
+	set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -g -fprofile-arcs -ftest-coverage -fprofile-generate")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs -ftest-coverage -fprofile-generate")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} $ENV{CXXFLAGS} -O0")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} $ENV{CXXFLAGS} -O0")
+else()
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} $ENV{CXXFLAGS} -O3")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} $ENV{CXXFLAGS} -O0")
+endif(MORTY_TEST_COVERAGE)
+
 
 set(MORTY_BUILD_TARGET_RANGE "WIN" "LINUX" "MACOS" "IOS" "ANDROID")
 set(MORTY_BUILD_TARGET "WIN" CACHE STRING "param for platform")
@@ -27,15 +48,6 @@ set_property(CACHE MORTY_BUILD_TARGET PROPERTY STRINGS ${MORTY_BUILD_TARGET_RANG
 set(CMAKE_SCRIPT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../Cmake")
 set(THIRD_PARTY_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty")
 
-if(MSVC)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
-else()
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
-	
-	SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} $ENV{CXXFLAGS} -O0 -Werror -Wall -Wextra -g2 -ggdb -fno-limit-debug-info")
-	SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} $ENV{CXXFLAGS} -O3  -Werror -Wall -Wextra")
-
-endif(MSVC)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF) #Set this to ON if you want to use GNU++
@@ -57,7 +69,6 @@ add_subdirectory("Render")
 add_subdirectory("Editor")
 
 if(NOT MORTY_BUILD_TARGET IN_LIST MORTY_BUILD_LIB_ONLY_PLATFORM)
-	enable_testing()
 	add_subdirectory("Test")
 	add_subdirectory("Demo")
 endif()

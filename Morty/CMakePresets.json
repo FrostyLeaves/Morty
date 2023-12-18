@@ -26,6 +26,14 @@
       }
     },
     {
+      "name": "Windows-Test",
+      "inherits": "Windows",
+      "binaryDir": "${sourceDir}/../Build/windows_test",
+      "cacheVariables": {
+        "MORTY_TEST_COVERAGE": "ON"
+      }
+    },
+    {
       "name": "Linux",
       "inherits": "Default",
       "binaryDir": "${sourceDir}/../Build/linux",
@@ -39,6 +47,14 @@
         "CMAKE_THREAD_LIBS_INIT": "-lpthread",
         "CMAKE_USE_PTHREADS_INIT": "1",
         "THREADS_PREFER_PTHREAD_FLAG": "ON"
+      }
+    },
+    {
+      "name": "Linux-Test",
+      "inherits": "Linux",
+      "binaryDir": "${sourceDir}/../Build/linux_test",
+      "cacheVariables": {
+        "MORTY_TEST_COVERAGE": "ON"
       }
     },
     {
@@ -108,6 +124,11 @@
       "configuration": "Release"
     },
     {
+      "name": "Windows-Test",
+      "configurePreset": "Windows-Test",
+      "configuration": "Release"
+    },
+    {
       "name": "Android-Debug",
       "configurePreset": "Android",
       "configuration": "Debug"
@@ -131,12 +152,17 @@
       "name": "Linux-Release",
       "configurePreset": "Linux",
       "configuration": "Release"
+    },
+    {
+      "name": "Linux-Test",
+      "configurePreset": "Linux-Test",
+      "configuration": "Release"
     }
   ],
   "testPresets": [
     {
       "name": "Windows",
-      "configurePreset": "Windows",
+      "configurePreset": "Windows-Test",
       "output": {
         "outputOnFailure": true
       },
@@ -147,7 +173,7 @@
     },
     {
       "name": "Linux",
-      "configurePreset": "Linux",
+      "configurePreset": "Linux-Test",
       "output": {
         "outputOnFailure": true
       },
