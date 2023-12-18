@@ -15,15 +15,15 @@ public:
 			if (ShowNodeBegin("CameraComponent"))
 			{
 				ShowValueBegin("Type");
-				MCameraComponent::MECameraType eType = pCameraComponent->GetCameraType();
-				size_t nSelected = eType == MCameraComponent::MECameraType::EPerspective ? 0 : 1;
+				MECameraType eType = pCameraComponent->GetCameraType();
+				size_t nSelected = eType == MECameraType::EPerspective ? 0 : 1;
 				if (EditEnum({ "Perspective", "Orthographic" }, nSelected))
 				{
-					pCameraComponent->SetCameraType(nSelected == 0 ? MCameraComponent::MECameraType::EPerspective : MCameraComponent::MECameraType::EOrthographic);
+					pCameraComponent->SetCameraType(nSelected == 0 ? MECameraType::EPerspective : MECameraType::EOrthographic);
 				}
 				ShowValueEnd();
 
-				if (MCameraComponent::MECameraType::EPerspective == eType)
+				if (MECameraType::EPerspective == eType)
 				{
 					PROPERTY_VALUE_EDIT(pCameraComponent, "Fov", float, GetFov, SetFov);
 					PROPERTY_VALUE_EDIT(pCameraComponent, "Near-Far", Vector2, GetZNearFar, SetZNearFar);

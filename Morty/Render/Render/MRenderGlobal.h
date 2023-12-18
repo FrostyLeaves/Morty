@@ -79,3 +79,11 @@ public:
 
 using MMeshInstanceKey = size_t;
 using MSkeletonInstanceKey = size_t;
+
+
+
+enum class MECameraType
+{
+	EPerspective = 1,
+	EOrthographic = 2,
+};

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Utility/MGlobal.h"
+#include "Render/MRenderGlobal.h"
 #include "Component/MComponent.h"
 #include "Basic/MCameraFrustum.h"
 
@@ -18,13 +18,7 @@ class MORTY_API MCameraComponent : public MComponent
 {
 public:
     MORTY_CLASS(MCameraComponent)
-
-public:
-	enum class MECameraType {
-		EPerspective = 1,
-		EOrthographic = 2,
-	};
-
+		
 public:
     MCameraComponent();
     virtual ~MCameraComponent();
