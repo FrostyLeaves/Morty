@@ -613,7 +613,7 @@ void MModelConverter::ProcessCameras(const aiScene* pScene)
 		MSceneComponent* pSceneComponent = m_pScene->AddComponent<MSceneComponent>(pCameraEntity);
 		MCameraComponent* pCameraComponent = m_pScene->AddComponent<MCameraComponent>(pCameraEntity);
 
-		pCameraComponent->SetCameraType(MCameraComponent::MECameraType::EPerspective);
+		pCameraComponent->SetCameraType(MECameraType::EPerspective);
 		pCameraComponent->SetZNear(pCamera->mClipPlaneNear);
 		pCameraComponent->SetZFar(pCamera->mClipPlaneFar);
 		pCameraComponent->SetFov(pCamera->mHorizontalFOV);
