@@ -3,7 +3,6 @@
 #include "Scene/MEntity.h"
 #include "Engine/MEngine.h"
 #include "Material/MMaterial.h"
-#include "Material/MShaderPropertyBlock.h"
 #include "System/MRenderSystem.h"
 
 #include "Component/MSceneComponent.h"

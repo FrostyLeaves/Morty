@@ -35,8 +35,8 @@ public:
 
 	MBone* FindBoneByName(const MString& strName);
 
-	const MBone* FindBoneTemplateByName(const MString& strName);
-	const MBone* GetBoneTemplateByIndex(const uint32_t& unIndex);
+	const MBone* FindBoneTemplateByName(const MString& strName) const;
+	const MBone* GetBoneTemplateByIndex(const uint32_t& unIndex) const;
 
 	std::vector<MBone>& GetAllBones();
 	void ResetPose();

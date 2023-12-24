@@ -3,7 +3,7 @@
 #include "Scene/MEntity.h"
 #include "Engine/MEngine.h"
 #include "Material/MMaterial.h"
-#include "Material/MShaderPropertyBlock.h"
+#include "Shader/MShaderPropertyBlock.h"
 #include "System/MRenderSystem.h"
 
 #include "Component/MSceneComponent.h"
@@ -24,17 +24,13 @@ void MStorageBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MShaderPro
 		m_pTransformParam = nullptr;
 	}
 
-	if (!pShaderProgram)
-	{
-		MORTY_ASSERT(pShaderProgram);
-		return;
-	}
+	MORTY_ASSERT(pShaderProgram);
 
-	m_pShaderPropertyBlock = MMaterial::CreateMeshPropertyBlock(pShaderProgram);
-	if (m_pShaderPropertyBlock)
-	{
-		m_pTransformParam = m_pShaderPropertyBlock->FindStorageParam(MShaderPropertyName::CBUFFER_MESH_MATRIX);
-	}
+	m_pShaderPropertyBlock = MMaterialTemplate::CreateMeshPropertyBlock(pShaderProgram);
+	MORTY_ASSERT(m_pShaderPropertyBlock);
+
+	m_pTransformParam = m_pShaderPropertyBlock->FindStorageParam(MShaderPropertyName::CBUFFER_MESH_MATRIX);
+	MORTY_ASSERT(m_pTransformParam);
 
 	m_transformBuffer.buffer.m_eMemoryType = MBuffer::MMemoryType::EHostVisible;
 	m_transformBuffer.buffer.m_eUsageType = MBuffer::MUsageType::EStorage;

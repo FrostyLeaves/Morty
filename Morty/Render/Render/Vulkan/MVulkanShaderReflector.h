@@ -12,7 +12,7 @@
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
-#include "Material/MShader.h"
+#include "Shader/MShader.h"
 
 #ifdef max
 #undef max

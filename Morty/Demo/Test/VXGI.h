@@ -18,6 +18,12 @@ void VXGI_TEST(MEngine* pEngine, MScene* pScene)
 
 	std::shared_ptr<MMeshResource> pCubeMeshResource = pResourceSystem->CreateResource<MMeshResource>();
 	pCubeMeshResource->Load(MMeshResourceUtil::CreateSphere());
+
+	const auto pTemplate = pResourceSystem->CreateResource<MMaterialTemplate>();
+	pTemplate->AddDefine(MRenderGlobal::DRAW_MESH_INSTANCING_UNIFORM, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+	pTemplate->LoadShader("Shader/Model/universal_model.mvs");
+	pTemplate->LoadShader("Shader/Deferred/deferred_gbuffer.mps");
+	pTemplate->SetMaterialType(MEMaterialType::EDeferred);
 	
 	std::shared_ptr<MResource> albedo = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
 	std::shared_ptr<MResource> normal = pResourceSystem->LoadResource(MRenderModule::DefaultNormal);
@@ -37,12 +43,7 @@ void VXGI_TEST(MEngine* pEngine, MScene* pScene)
 		}
 		if (MRenderMeshComponent* pMeshComponent = pSphereEntity->RegisterComponent<MRenderMeshComponent>())
 		{
-			std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-
-			pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_UNIFORM, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-			pMaterial->LoadShader("Shader/Model/universal_model.mvs");
-			pMaterial->LoadShader("Shader/Deferred/deferred_gbuffer.mps");
-			pMaterial->SetMaterialType(MEMaterialType::EDeferred);
+			const auto pMaterial = MMaterialResource::CreateMaterial(pTemplate);
 
 			pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_ALBEDO, albedo);
 			pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_NORMAL, normal);
@@ -50,8 +51,6 @@ void VXGI_TEST(MEngine* pEngine, MScene* pScene)
 			pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_ROUGHNESS, roughness);
 			pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_AMBIENTOCC, ao);
 			pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_HEIGHT, height);
-
-			pMaterial->SetShadingRate({ 4, 4 });
 
 			auto material = pMaterial->GetMaterialPropertyBlock()->FindConstantParam(MShaderPropertyName::MATERIAL_CBUFFER_NAME);
 

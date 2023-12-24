@@ -1,13 +1,7 @@
 #include "Material/MMaterial.h"
-#include "Material/MShader.h"
-#include "MShaderBuffer.h"
 #include "Resource/MShaderResource.h"
 #include "Resource/MTextureResource.h"
-#include "Resource/MMaterialResource.h"
 #include "Engine/MEngine.h"
-#include "Flatbuffer/MMaterial_generated.h"
-#include "Render/MIDevice.h"
-#include "Utility/MFileHelper.h"
 
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
@@ -16,26 +10,6 @@
 
 
 MORTY_CLASS_IMPLEMENT(MMaterial, MResource)
-
-std::vector<std::shared_ptr<MShaderConstantParam>>& MMaterial::GetShaderParams()
-{
-	return m_pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]->m_vParams;
-}
-
-std::vector<std::shared_ptr<MShaderSampleParam>>& MMaterial::GetSampleParams()
-{
-	return m_pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]->m_vSamples;
-}
-
-std::vector<std::shared_ptr<MShaderTextureParam>>& MMaterial::GetTextureParams()
-{
-	return m_pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]->m_vTextures;
-}
-
-std::shared_ptr<MShaderPropertyBlock> MMaterial::GetMaterialPropertyBlock() const
-{
-	return m_pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL];
-}
 
 void MMaterial::SetTexture(const MStringId& strName, std::shared_ptr<MResource> pResource)
 {
@@ -62,99 +36,44 @@ void MMaterial::SetTexture(const MStringId& strName, std::shared_ptr<MResource> 
 	} 
 }
 
-std::shared_ptr<MShaderConstantParam> MMaterial::FindShaderParam(const MStringId& strName)
+const std::shared_ptr<MShaderProgram>& MMaterial::GetShaderProgram() const
 {
-	for (const std::shared_ptr<MShaderConstantParam>& pParam : GetMaterialPropertyBlock()->m_vParams)
+	return m_pMaterialTemplate->GetShaderProgram();
+}
+
+const std::shared_ptr<MShaderPropertyBlock>& MMaterial::GetMaterialPropertyBlock() const
+{
+	return m_pShaderProperty;
+}
+
+const std::shared_ptr<MMaterialTemplate>& MMaterial::GetMaterialTemplate() const
+{
+	return m_pMaterialTemplate;
+}
+
+std::shared_ptr<MMaterial> MMaterial::CreateMaterial(const std::shared_ptr<MResource>& pMaterialTemplate)
+{
+	if (const auto pTemplate = MTypeClass::DynamicCast<MMaterialTemplate>(pMaterialTemplate))
 	{
-		if (pParam->strName == strName)
-			return pParam;
+		auto pMaterial = std::make_shared<MMaterial>();
+		pMaterial->BindTemplate(pTemplate);
+
+		return pMaterial;
 	}
 
 	return nullptr;
-}
-
-std::shared_ptr<MShaderSampleParam> MMaterial::FindSample(const MStringId& strName)
-{
-	for (const std::shared_ptr<MShaderSampleParam>& pParam : GetMaterialPropertyBlock()->m_vSamples)
-	{
-		if (pParam->strName == strName)
-			return pParam;
-	}
-
-	return nullptr;
-}
-
-std::shared_ptr<MShaderTextureParam> MMaterial::FindTexture(const MStringId& strName)
-{
-	for (const std::shared_ptr<MShaderTextureParam>& pParam : GetMaterialPropertyBlock()->m_vTextures)
-	{
-		if (pParam->strName == strName)
-			return pParam;
-	}
-
-	return nullptr;
-}
-
-void MMaterial::SetCullMode(const MECullMode& eType)
-{
-	if (m_eCullMode == eType)
-		return;
-
-	m_eCullMode = eType;
-}
-
-void MMaterial::SetMaterialType(const MEMaterialType& eType)
-{
-	if (m_eMaterialType == eType)
-		return;
-
-	m_eMaterialType = eType;
-}
-
-bool MMaterial::LoadShader(std::shared_ptr<MResource> pResource)
-{
-	bool bResult = m_pShaderProgram->LoadShader(pResource);
-
-	return bResult;
-}
-
-bool MMaterial::LoadShader(const MString& strResource)
-{
-	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-	if (std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(strResource))
-		return LoadShader(pResource);
-
-	return false;
-}
-
-void MMaterial::SetShaderMacro(const MShaderMacro& macro)
-{
-	m_pShaderProgram->SetShaderMacro(macro);
-}
-
-void MMaterial::SetShadingRate(const Vector2i n2ShadingRate)
-{
-	m_n2ShadingRate = n2ShadingRate;
 }
 
 void MMaterial::OnCreated()
 {
 	Super::OnCreated();
-
-	m_pShaderProgram = MShaderProgram::MakeShared(GetEngine(), MShaderProgram::EUsage::EGraphics);
 }
 
 void MMaterial::OnDelete()
 {
-	m_pShaderProgram->ClearShader();
-	m_pShaderProgram = nullptr;
+	m_pShaderProperty = nullptr;
 		
 	Super::OnDelete();
-}
-
-void MMaterial::Unload()
-{
-	m_pShaderProgram->ClearShader();
 }
 
 #if MORTY_DEBUG
@@ -164,11 +83,11 @@ const char* MMaterial::GetDebugName() const
 }
 #endif
 
-std::shared_ptr<MShaderPropertyBlock> MMaterial::CreateFramePropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram)
+void MMaterial::BindTemplate(const std::shared_ptr<MMaterialTemplate>& pTemplate)
 {
-	return pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_FRAME]->Clone();
-}
-std::shared_ptr<MShaderPropertyBlock> MMaterial::CreateMeshPropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram)
-{
-	return pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MESH]->Clone();
+	m_pMaterialTemplate = pTemplate;
+
+	const auto pProperty = MMaterialTemplate::CreateMaterialPropertyBlock(pTemplate->GetShaderProgram());
+
+	m_pShaderProperty = pProperty;
 }

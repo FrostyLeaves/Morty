@@ -66,9 +66,6 @@ public:
 	void SetDetailLevel(const uint32_t& unLevel) { m_unDetailLevel = unLevel; }
 	uint32_t GetDetailLevel() { return m_unDetailLevel; }
 
-	void SetDrawBoundingSphere(const bool& bDrawable) { m_bDrawBoundingSphere = bDrawable; }
-	bool GetDrawBoundingSphere() { return m_bDrawBoundingSphere; }
-
 	void SetGenerateDirLightShadow(const bool& bGenerate);
 	bool GetGenerateDirLightShadow() const { return m_bGenerateDirLightShadow; }
 
@@ -95,6 +92,5 @@ protected:
 	MComponentID m_modelComponent;
 
 	bool m_bSceneCullEnable = true;
-	bool m_bDrawBoundingSphere;
-	bool m_bGenerateDirLightShadow = false;
+	bool m_bGenerateDirLightShadow = true;
 };

@@ -68,7 +68,7 @@ private:
 	MEngine* m_pEngine = nullptr;
 };
 
-void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
+void LoadSponzaEntity(const std::string& sourcePath, const std::string& name, MEngine* pEngine, MScene* pScene)
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
 	MEntitySystem* pEntitySystem = pEngine->FindSystem<MEntitySystem>();
@@ -76,21 +76,26 @@ void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
 
 	auto time = MTimer::GetCurTime();
 
-	std::shared_ptr<MResource> pModelResource = pResourceSystem->LoadResource("./Sponza/Sponza/Sponza.entity");
+	const auto outputDir = "./";
+	const auto outputName = name;
+
+	const auto resourcePath = outputDir + outputName + "/" + name + ".entity";
+
+	std::shared_ptr<MResource> pModelResource = pResourceSystem->LoadResource(resourcePath);
 
 	time = MTimer::GetCurTime() - time;
 
 	pEngine->GetLogger()->Log("Load sponza scene time: {}", time);
 
-    if (!pModelResource)
+	if (!pModelResource)
 	{
 		MModelConverter convert(pEngine);
 
 		MModelConvertInfo info;
 		info.eMaterialType = MModelConvertMaterialType::E_PBR_Deferred;
-		info.strOutputDir = "./Sponza";
-		info.strOutputName = "Sponza";
-		info.strResourcePath = "./Model/Sponza/NewSponza_Main_glTF_002.gltf";
+		info.strOutputDir = outputDir;
+		info.strOutputName = outputName;
+		info.strResourcePath = sourcePath;
 		info.bImportCamera = false;
 		info.bImportLights = false;
 		info.pTextureDelegate = std::make_shared<MSponzaTextureDelegate>(pEngine);
@@ -108,7 +113,7 @@ void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
 		for (MEntity* pEntity : vEntity)
 		{
 			pEntitySystem->FindAllComponentRecursively(pEntity, MRenderMeshComponent::GetClassType(), vMeshComponents);
-			
+
 		}
 
 		if (vEntity.size() > 0)
@@ -116,21 +121,10 @@ void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
 			vEntity[0]->GetComponent<MSceneComponent>()->SetScale({ 10.0,10.0, 10.0 });
 		}
 	}
+}
 
-	std::set<std::shared_ptr<MMaterial>> tMaterials;
-
-	for (MComponentID& componentID : vMeshComponents)
-	{
-		if (MRenderMeshComponent* pMeshComponent = pScene->GetComponent(componentID)->template DynamicCast<MRenderMeshComponent>())
-		{
-			if (auto pMaterial = pMeshComponent->GetMaterial())
-			{
-				tMaterials.insert(pMaterial);
-			}
-
-			pMeshComponent->SetGenerateDirLightShadow(true);
-		}
-
-	}
-	
+void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
+{
+	LoadSponzaEntity("./Model/Sponza/NewSponza_Main_glTF_002.gltf", "Sponza", pEngine, pScene);
+	LoadSponzaEntity("./Model/PKG_A_Curtains/NewSponza_Curtains_glTF.gltf", "Curtains", pEngine, pScene);
 }

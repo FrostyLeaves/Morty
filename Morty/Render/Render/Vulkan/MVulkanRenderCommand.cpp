@@ -257,7 +257,6 @@ bool MVulkanRenderCommand::SetUseMaterial(std::shared_ptr<MMaterial> pMaterial)
 
 bool MVulkanRenderCommand::SetGraphPipeline(std::shared_ptr<MMaterial> pMaterial)
 {
-	//must begin renderpass
 	if (m_vRenderPassStages.empty())
 	{
 		MORTY_ASSERT(!m_vRenderPassStages.empty());
@@ -271,21 +270,24 @@ bool MVulkanRenderCommand::SetGraphPipeline(std::shared_ptr<MMaterial> pMaterial
 		return false;
 	}
 
+	MRenderPassStage stage = m_vRenderPassStages.top();
+	std::shared_ptr<MPipeline> pPipeline = m_pDevice->m_PipelineManager.FindOrCreateGraphicsPipeline(pMaterial, stage.pRenderPass);
+
+	MORTY_ASSERT(nullptr != pPipeline);
+
+	if (pUsingPipeline == pPipeline)
+	{
+		return true;
+	}
+
+	pUsingPipeline = pPipeline;
 	pUsingVertex = nullptr;
 	pUsingIndex = nullptr;
 
-	MRenderPassStage stage = m_vRenderPassStages.top();
-	std::shared_ptr<MPipeline> pPipeline = m_pDevice->m_PipelineManager.FindOrCreateGraphicsPipeline(pMaterial, stage.pRenderPass);
-	MORTY_ASSERT(pUsingPipeline = pPipeline);
-
-	std::shared_ptr<MGraphicsPipeline> pGraphicsPipeline = std::dynamic_pointer_cast<MGraphicsPipeline>(pPipeline);
-	if (!pGraphicsPipeline)
-	{
-		return false;
-	}
+	const std::shared_ptr<MGraphicsPipeline> pGraphicsPipeline = std::dynamic_pointer_cast<MGraphicsPipeline>(pPipeline);
 
 	VkPipeline vkPipeline = pGraphicsPipeline->GetSubpassPipeline(stage.nSubpassIdx);
-	MORTY_ASSERT(vkPipeline != VK_NULL_HANDLE);
+	MORTY_ASSERT(vkPipeline);
 
 	vkCmdBindPipeline(m_VkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
 
@@ -305,7 +307,14 @@ bool MVulkanRenderCommand::DispatchComputeJob(MComputeDispatcher* pComputeDispat
 	MORTY_ASSERT(pComputeDispatcher->GetComputeShader());
 
 	std::shared_ptr<MPipeline> pPipeline = m_pDevice->m_PipelineManager.FindOrCreateComputePipeline(pComputeDispatcher);
-	MORTY_ASSERT(pUsingPipeline = pPipeline);
+	MORTY_ASSERT(pPipeline);
+
+	if (pUsingPipeline == pPipeline)
+	{
+		return true;
+	}
+
+	pUsingPipeline = pPipeline;
 
 	if (std::shared_ptr<MComputePipeline> pComputePipeline = std::dynamic_pointer_cast<MComputePipeline>(pPipeline))
 	{

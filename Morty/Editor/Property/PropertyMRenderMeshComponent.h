@@ -27,7 +27,6 @@ public:
 			{
 				if (ShowNodeBegin("Model Mesh"))
 				{
-					PROPERTY_VALUE_EDIT(pMeshComponent, "Draw Bounding", bool, GetDrawBoundingSphere, SetDrawBoundingSphere);
 					PROPERTY_VALUE_EDIT(pMeshComponent, "DirShadow", bool, GetGenerateDirLightShadow, SetGenerateDirLightShadow);
 
 					ShowNodeEnd();

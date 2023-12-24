@@ -285,7 +285,8 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 		}
 
 		{
-			MShaderMacro& shaderMacro = pMaterial->GetShaderMacro();
+			bool bModify = false;
+			MShaderMacro shaderMacro = pMaterial->GetShaderMacro();
 			float fWidth = ImGui::GetContentRegionAvail().x;
 			if (ShowNodeBeginWithEx("Macro"))
 			{
@@ -298,6 +299,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 				{
 					shaderMacro.AddUnionMacro(MStringId(addKey.c_str()));
 					addKey = "";
+					bModify = true;
 				}
 
 				ShowNodeExEnd();
@@ -313,11 +315,17 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 					if (ImGui::Button("Delete", ImVec2(fWidth * 0.3f, 0)))
 					{
 						iter = shaderMacro.m_vMacroParams.erase(iter);
+						bModify = true;
 					}
 					ShowValueEnd();
 				}
 
 				ShowNodeEnd();
+
+				if (bModify)
+				{
+					pMaterial->GetMaterialTemplate()->SetShaderMacro(shaderMacro);
+				}
 			}
 		}
 
@@ -339,7 +347,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 			size_t nCullType = static_cast<size_t>(pMaterial->GetCullMode());
 			if (EditEnum({ "Wireframe", "CullNone", "CullBack", "ECullFront" }, nCullType))
 			{
-				pMaterial->SetCullMode(MECullMode(nCullType));
+				pMaterial->GetMaterialTemplate()->SetCullMode(MECullMode(nCullType));
 			}
 			ShowValueEnd();
 		}
@@ -349,13 +357,13 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 			size_t nMaterialType = static_cast<size_t>(pMaterial->GetMaterialType());
 			if (EditEnum({ "Default", "Transparent"}, nMaterialType))
 			{
-				pMaterial->SetMaterialType((MEMaterialType)nMaterialType);
+				pMaterial->GetMaterialTemplate()->SetMaterialType((MEMaterialType)nMaterialType);
 			}
 			ShowValueEnd();
 		}
 
 		{
-			const std::vector<std::shared_ptr<MShaderConstantParam>>& vParams = pMaterial->GetShaderParams();
+			const std::vector<std::shared_ptr<MShaderConstantParam>>& vParams = pMaterial->GetMaterialPropertyBlock()->m_vParams;
 			for (const std::shared_ptr<MShaderConstantParam>& param : vParams)
 			{
 				if (EditMVariant(param->strName.ToString(), param->var))
@@ -367,7 +375,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 		}
 
 		{
-			std::vector< std::shared_ptr<MShaderTextureParam>>& vParams = pMaterial->GetTextureParams();
+			std::vector< std::shared_ptr<MShaderTextureParam>>& vParams = pMaterial->GetMaterialPropertyBlock()->m_vTextures;
 			for (unsigned int i = 0; i < vParams.size(); ++i)
 			{
 				if (const std::shared_ptr<MTextureResourceParam>& param = std::dynamic_pointer_cast<MTextureResourceParam>(vParams[i]))

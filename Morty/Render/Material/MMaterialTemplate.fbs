@@ -1,0 +1,38 @@
+include "Resource/MResourceRef.fbs";
+include "Variant/MVariant.fbs";
+include "Shader/MShaderMacro.fbs";
+
+namespace mfbs;
+
+enum MECullMode: byte
+{
+	EWireframe = 0,
+	ECullNone = 1,
+	ECullBack = 2,
+	ECullFront = 3,
+}
+
+enum MEMaterialType: byte
+{
+	EDefault = 0,
+	EDepthPeel = 1,
+	ETransparentBlend = 2,
+	EOutline = 3,
+	EImGui = 4,
+	EDeferred = 5,
+}
+
+table MMaterialTemplate
+{
+    vertex_resource: string;
+    pixel_resource: string;
+
+    rasterizer_type: MECullMode;
+    material_type: MEMaterialType;
+    
+	material_macro: MShaderMacro;
+}
+
+root_type MMaterialTemplate;
+
+file_identifier "MFBS";

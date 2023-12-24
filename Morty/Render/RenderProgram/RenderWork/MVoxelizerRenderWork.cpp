@@ -224,20 +224,20 @@ void MVoxelizerRenderWork::InitializeDispatcher()
 
 	for (const MStringId& key : defines)
 	{
-		auto pVoxelizerMaterial = pResourceSystem->CreateResource<MMaterialResource>();
+		auto pVoxelizerMaterial = pResourceSystem->CreateResource<MMaterialTemplate>();
 		pVoxelizerMaterial->SetCullMode(MECullMode::ECullNone);
-		pVoxelizerMaterial->GetShaderMacro().AddUnionMacro(key, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+		pVoxelizerMaterial->AddDefine(key, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
 		
 #ifdef MORTY_WIN
 		pVoxelizerMaterial->SetConservativeRasterizationEnable(true);
-		pVoxelizerMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::VOXELIZER_CONSERVATIVE_RASTERIZATION, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+		pVoxelizerMaterial->AddDefine(MRenderGlobal::VOXELIZER_CONSERVATIVE_RASTERIZATION, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
 		pVoxelizerMaterial->LoadShader(voxelizerGS);
 #endif
 
 		pVoxelizerMaterial->LoadShader(voxelizerVS);
 		pVoxelizerMaterial->LoadShader(voxelizerPS);   
 		
-		m_tVoxelizerMaterial[key] = pVoxelizerMaterial;
+		m_tVoxelizerMaterial[key] = MMaterial::CreateMaterial(pVoxelizerMaterial);
 	}
 }
 

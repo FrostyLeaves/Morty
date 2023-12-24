@@ -5,7 +5,7 @@
 #include "Math/Vector.h"
 #include "Utility/MBounds.h"
 #include "Component/MComponent.h"
-#include "Material/MShaderPropertyBlock.h"
+#include "Shader/MShaderPropertyBlock.h"
 
 class MIMesh;
 class MTexture;

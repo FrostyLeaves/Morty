@@ -4,9 +4,8 @@
 #include "Engine/MEngine.h"
 #include "MSkeletonInstance.h"
 #include "Material/MMaterial.h"
-#include "Material/MShaderParam.h"
-#include "Material/MShaderPropertyBlock.h"
-#include "Resource/MMaterialResource.h"
+#include "Shader/MShaderParam.h"
+#include "Shader/MShaderPropertyBlock.h"
 #include "System/MRenderSystem.h"
 
 void MAnimationRenderGroup::AddSkeletonRenderInstance(MSkeletonInstanceKey nProxyId, const MPoseRenderProxy& poseProxy)
@@ -136,13 +135,12 @@ void MAnimationRenderGroup::Initialize(MEngine* pEngine)
 	std::shared_ptr<MResource> pMeshVSResource = pResourceSystem->LoadResource("Shader/Model/universal_model.mvs");
 	std::shared_ptr<MResource> pMeshPSResource = pResourceSystem->LoadResource("Shader/Deferred/deferred_gbuffer.mps");
 
-
 	auto pShaderProgram = MShaderProgram::MakeShared(GetEngine(), MShaderProgram::EUsage::EGraphics);
-	pShaderProgram->GetShaderMacro().SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+	pShaderProgram->GetShaderMacro().AddUnionMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
 	pShaderProgram->LoadShader(pMeshVSResource);
 	pShaderProgram->LoadShader(pMeshPSResource);
 
-	m_pShaderPropertyBlock = MMaterial::CreateMeshPropertyBlock(pShaderProgram);
+	m_pShaderPropertyBlock = MMaterialTemplate::CreateMeshPropertyBlock(pShaderProgram);
 	if (m_pShaderPropertyBlock)
 	{
 		if (auto pBoneProperty = m_pShaderPropertyBlock->FindStorageParam(MShaderPropertyName::STORAGE_BONES_MATRIX))

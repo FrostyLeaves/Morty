@@ -66,7 +66,7 @@ int main()
 	//PBR_SHPERE(&engine, pScene);
 	//LOAD_MODEL_ANIMATION_TEST(&engine, pScene);
 	//	LOAD_MODEL_TRANSLATION_TEST(&engine, pScene);
-	//LOAD_MODEL_SPONZA_TEST(&engine, pScene);
+	LOAD_MODEL_SPONZA_TEST(&engine, pScene);
 	//	GPU_DRIVEN_CULLING_TEST(&engine, pScene);
 	//	TRANSFORM_SPHERE_GENERATE(&engine, pScene);
 	VXGI_TEST(&engine, pScene);

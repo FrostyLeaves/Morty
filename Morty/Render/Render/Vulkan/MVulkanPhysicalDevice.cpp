@@ -654,6 +654,11 @@ bool MVulkanPhysicalDevice::MultiDrawIndirectSupport() const
     return m_VkPhysicalDeviceFeatures.multiDrawIndirect;
 }
 
+bool MVulkanPhysicalDevice::SparseTextureSupport() const
+{
+	return m_VkPhysicalDeviceFeatures.sparseBinding;
+}
+
 std::set<MString> MVulkanPhysicalDevice::GetNotSupportDeviceExtension(VkPhysicalDevice device, const std::set<MString>& tRequiredExtensions) const
 {
 	std::set<MString> tNotSupportExtensions = tRequiredExtensions;

@@ -624,6 +624,17 @@ void PBR_SHPERE(MEngine *pEngine, MScene *pScene) {
 
   std::shared_ptr<MResource> pCubeMeshResource = nullptr;
 
+
+  const auto pMaterialTemplate =
+      pResourceSystem->CreateResource<MMaterialTemplate>();
+
+  pMaterialTemplate->AddDefine(
+      MRenderGlobal::DRAW_MESH_INSTANCING_UNIFORM,
+      MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+  pMaterialTemplate->LoadShader("Shader/Model/universal_model.mvs");
+  pMaterialTemplate->LoadShader("Shader/Deferred/deferred_gbuffer.mps");
+  pMaterialTemplate->SetMaterialType(MEMaterialType::EDeferred);
+
   if (true) {
     std::shared_ptr<MMeshResource> pMeshResource =
         pResourceSystem->CreateResource<MMeshResource>();
@@ -670,15 +681,8 @@ void PBR_SHPERE(MEngine *pEngine, MScene *pScene) {
       }
       if (MRenderMeshComponent *pMeshComponent =
               pSphereEntity->RegisterComponent<MRenderMeshComponent>()) {
-        std::shared_ptr<MMaterialResource> pMaterial =
-            pResourceSystem->CreateResource<MMaterialResource>();
-
-        pMaterial->GetShaderMacro().AddUnionMacro(
-            MRenderGlobal::DRAW_MESH_INSTANCING_UNIFORM,
-            MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-        pMaterial->LoadShader("Shader/Model/universal_model.mvs");
-        pMaterial->LoadShader("Shader/Deferred/deferred_gbuffer.mps");
-        pMaterial->SetMaterialType(MEMaterialType::EDeferred);
+        
+          const auto pMaterial = MMaterialResource::CreateMaterial(pMaterialTemplate);
 
 #if false
 				std::shared_ptr<MResource> albedo = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_albedo.png");

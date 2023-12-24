@@ -44,6 +44,7 @@
 
 #include <fstream>
 
+#include "Render/MMaterialName.h"
 #include "Resource/MReadableTextureResource.h"
 
 static const std::map<aiTextureType, MEModelTextureUsage> TextureUsageMapping = {
@@ -266,7 +267,7 @@ bool MModelConverter::Load(const MString& strResourcePath)
 	return true;
 }
 
-void MModelConverter::ProcessNode(aiNode* pNode, const aiScene *pScene)
+void MModelConverter::ProcessNode(aiNode* pNode, const aiScene* pScene)
 {
 	MEntitySystem* pEntitySystem = GetEngine()->FindSystem<MEntitySystem>();
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
@@ -431,7 +432,7 @@ void MModelConverter::BindVertexAndBones(MSkeleton* pSkeleton, aiMesh* pMesh, MM
 	{
 		if (aiBone* pBone = pMesh->mBones[i])
 		{
-			MString strBoneName(pBone->mName.data); 
+			MString strBoneName(pBone->mName.data);
 			if (const MBone* pMBone = pSkeleton->FindBoneByName(strBoneName))
 			{
 				for (uint32_t wgtIndex = 0; wgtIndex < pBone->mNumWeights; ++wgtIndex)
@@ -654,7 +655,7 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 		animationData.m_unIndex = i;
 		animationData.m_strName = pAnimation->mName.C_Str();
 		animationData.m_fTicksDuration = pAnimation->mDuration;
-		if(pAnimation->mTicksPerSecond > 0.0f)
+		if (pAnimation->mTicksPerSecond > 0.0f)
 			animationData.m_fTicksPerSecond = pAnimation->mTicksPerSecond;
 
 		for (uint32_t chanIndex = 0; chanIndex < pAnimation->mNumChannels; ++chanIndex)
@@ -686,7 +687,7 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 					for (unsigned keyIndex = 0; keyIndex < pNodeAnim->mNumScalingKeys; ++keyIndex)
 					{
 						const aiVectorKey& skey = pNodeAnim->mScalingKeys[keyIndex];
-						mAnimNode.m_vScaleTrack.push_back({static_cast<float>(skey.mTime), mfbs::Vector3(skey.mValue.x, skey.mValue.y, skey.mValue.z) });
+						mAnimNode.m_vScaleTrack.push_back({ static_cast<float>(skey.mTime), mfbs::Vector3(skey.mValue.x, skey.mValue.y, skey.mValue.z) });
 					}
 				}
 			}
@@ -721,23 +722,14 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 
 		if (m_pSkeletonResource)
 		{
-			std::shared_ptr<MMaterialResource> pSkinnedMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
-			pSkinnedMeshMaterialRes->GetShaderMacro().SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-			pSkinnedMeshMaterialRes->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-			pSkinnedMeshMaterialRes->LoadShader(pMeshVSResource);
-			pSkinnedMeshMaterialRes->LoadShader(pMeshPSResource);
-			pMaterial = pSkinnedMeshMaterialRes;
+			const auto pTemplate = pResourceSystem->LoadResource(MMaterialName::DEFERRED_GBUFFER_SKELETON);
+			pMaterial = MMaterialResource::CreateMaterial(pTemplate);
 		}
 		else
 		{
-			std::shared_ptr<MMaterialResource> pStaticMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
-			pStaticMeshMaterialRes->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-			pStaticMeshMaterialRes->LoadShader(pMeshVSResource);
-			pStaticMeshMaterialRes->LoadShader(pMeshPSResource);
-			pMaterial = pStaticMeshMaterialRes;
+			const auto pTemplate = pResourceSystem->LoadResource(MMaterialName::DEFERRED_GBUFFER);
+			pMaterial = MMaterialResource::CreateMaterial(pTemplate);
 		}
-
-		pMaterial->SetMaterialType(MEMaterialType::EDeferred);
 
 		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_METALLIC, 1.0f);
 		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS, 1.0f);
@@ -756,31 +748,24 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 
 		if (m_pSkeletonResource)
 		{
-			std::shared_ptr<MMaterialResource> pSkinnedMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
-			pSkinnedMeshMaterialRes->GetShaderMacro().SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-			pSkinnedMeshMaterialRes->LoadShader(pMeshVSResource);
-			pSkinnedMeshMaterialRes->LoadShader(pMeshPSResource);
-			pMaterial = pSkinnedMeshMaterialRes;
+			const auto pTemplate = pResourceSystem->LoadResource(MMaterialName::BASIC_LIGHTING_SKELETON);
+			pMaterial = MMaterialResource::CreateMaterial(pTemplate);
 		}
 		else
 		{
-			std::shared_ptr<MMaterialResource> pStaticMeshMaterialRes = pResourceSystem->CreateResource<MMaterialResource>();
-			pStaticMeshMaterialRes->LoadShader(pMeshVSResource);
-			pStaticMeshMaterialRes->LoadShader(pMeshPSResource);
-			pMaterial = pStaticMeshMaterialRes;
+			const auto pTemplate = pResourceSystem->LoadResource(MMaterialName::BASIC_LIGHTING);
+			pMaterial = MMaterialResource::CreateMaterial(pTemplate);
 		}
 
-		pMaterial->SetMaterialType(MEMaterialType::EDefault);
-
 		std::shared_ptr<MResource> pDefaultTexture = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
-		for (size_t i = 0; i < pMaterial->GetTextureParams().size(); ++i)
+		for (size_t i = 0; i < pMaterial->GetMaterialPropertyBlock()->m_vTextures.size(); ++i)
 		{
-			pMaterial->SetTexture(pMaterial->GetTextureParams()[i]->strName, pDefaultTexture);
+			pMaterial->SetTexture(pMaterial->GetMaterialPropertyBlock()->m_vTextures[i]->strName, pDefaultTexture);
 		}
 
 	}
 
-	if(nMaterialIdx >= pScene->mNumMaterials)
+	if (nMaterialIdx >= pScene->mNumMaterials)
 		return;
 
 	aiMaterial* pAiMaterial = pScene->mMaterials[nMaterialIdx];
@@ -846,10 +831,10 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 
 		pTextureMapping = &PbrTextureMapping;
 	}
-    else
-    {
+	else
+	{
 		MORTY_ASSERT(false);
-    }
+	}
 
 	for (auto pr : *pTextureMapping)
 	{
@@ -880,7 +865,7 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 			else
 			{
 				auto pTextureData = pResourceSystem->LoadResourceData(strFullPath);
-			    pTexture = pResourceSystem->CreateResource<MReadableTextureResource>(strFullPath);
+				pTexture = pResourceSystem->CreateResource<MReadableTextureResource>(strFullPath);
 				pTexture->Load(std::move(pTextureData));
 			}
 

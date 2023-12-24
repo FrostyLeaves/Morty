@@ -69,13 +69,15 @@ public:
 	virtual void SetTexture(std::shared_ptr<MTexture> pTexture);
 	virtual std::shared_ptr<MTexture> GetTexture() { return pTexture; }
 
+	virtual std::shared_ptr<MShaderTextureParam> Clone() const;
+
 public:
 	std::shared_ptr<MTexture> pTexture = nullptr;
 	void* pImageIdent = nullptr;
 	METextureType eType = METextureType::ETexture2D;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
-	VkDescriptorImageInfo m_VkImageInfo;
+	VkDescriptorImageInfo m_VkImageInfo = {};
 #endif
 };
 

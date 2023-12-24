@@ -9,10 +9,10 @@
 #pragma once
 
 #include "Material/MMaterial.h"
-#include "Material/MShaderParam.h"
+#include "Shader/MShaderParam.h"
 #include "Utility/MGlobal.h"
 #include "MRenderInfo.h"
-#include "Material/MShaderPropertyBlock.h"
+#include "Shader/MShaderPropertyBlock.h"
 #include "RenderWork/MRenderWork.h"
 #include <memory>
 

@@ -7,7 +7,6 @@ table MRenderMeshComponent
 {
 	super: MComponent;
 	gen_dir_shadow: bool;
-	draw_bounding: bool;
 	lod: int;
 	material: MResourceRef;
 	mesh: MResourceRef;

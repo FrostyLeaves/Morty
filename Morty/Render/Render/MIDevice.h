@@ -10,7 +10,7 @@
 
 #include "Utility/MGlobal.h"
 
-#include "Material/MShader.h"
+#include "Shader/MShader.h"
 #include "Render/MRenderPass.h"
 
 class MVertexBuffer;

@@ -24,15 +24,10 @@ struct MORTY_API MMaterialResourceData : public MFbResourceData
 		MPath value;
 	};
 
-	//RawData
-	std::array<MPath, size_t(MEShaderType::TOTAL_NUM)> vShaders;
-
-	MShaderMacro shaderMacro;
-	MEMaterialType eMaterialType;
-	MECullMode eCullMode;
-
 	std::vector<Property> vProperty;
 	std::vector<Texture> vTextures;
+
+	MString strTemplateResource;
 
 	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
 	void Deserialize(const void* pBufferPointer) override;

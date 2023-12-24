@@ -6,7 +6,7 @@
 #include "Flatbuffer/MSkeleton_generated.h"
 #include "Utility/MFileHelper.h"
 #include "System/MRenderSystem.h"
-#include "Material/MShaderPropertyBlock.h"
+#include "Shader/MShaderPropertyBlock.h"
 #include "Batch/BatchGroup/MInstanceBatchGroup.h"
 
 MORTY_CLASS_IMPLEMENT(MSkeleton, MTypeClass)
