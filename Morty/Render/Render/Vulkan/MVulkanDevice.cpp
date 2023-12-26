@@ -1231,8 +1231,6 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 		return false;
 	}
 
-	m_PipelineManager.RegisterRenderPass(pRenderPass);
-
 #ifdef MORTY_DEBUG
 	SetDebugName(reinterpret_cast<uint64_t>(pRenderPass->m_VkRenderPass), VkObjectType::VK_OBJECT_TYPE_RENDER_PASS, pRenderPass->m_strDebugName.c_str());
 #endif
@@ -1249,8 +1247,6 @@ void MVulkanDevice::DestroyRenderPass(MRenderPass* pRenderPass)
 			GetRecycleBin()->DestroyRenderPassLater(pRenderPass->m_VkRenderPass);
 			pRenderPass->m_VkRenderPass = VK_NULL_HANDLE;
 		}
-
-		m_PipelineManager.UnRegisterRenderPass(pRenderPass);
 	}
 }
 
@@ -1381,16 +1377,6 @@ void MVulkanDevice::DestroyFrameBuffer(MRenderPass* pRenderPass)
 			backTexture.m_VkImageView = VK_NULL_HANDLE;
 		}
 	}
-}
-
-bool MVulkanDevice::RegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher)
-{
-	return m_PipelineManager.RegisterComputeDispatcher(pComputeDispatcher);
-}
-
-bool MVulkanDevice::UnRegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher)
-{
-	return m_PipelineManager.UnRegisterComputeDispatcher(pComputeDispatcher);
 }
 
 MIRenderCommand* MVulkanDevice::CreateRenderCommand(const MString& strCommandName)

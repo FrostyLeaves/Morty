@@ -60,6 +60,10 @@ public:
 
 	std::shared_ptr<MResource> GetShared() const;
 
+#if MORTY_DEBUG
+	const char* GetDebugName() const;
+#endif
+
 public:
 
 	virtual void OnCreated() {}

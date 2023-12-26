@@ -16,8 +16,8 @@
 #include "Render/MRenderPass.h"
 #include "Render/MPipeline.h"
 
+class MMaterialTemplate;
 class MShaderProgram;
-class MMaterial;
 class MVulkanDevice;
 class MShaderPropertyBlock;
 class MComputeDispatcher;
@@ -75,24 +75,18 @@ public:
 
 public:
 
-    std::shared_ptr<MGraphicsPipeline> FindOrCreateGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass);
+    std::shared_ptr<MGraphicsPipeline> FindOrCreateGraphicsPipeline(const MMaterialTemplate* pMaterial, const MRenderPass* pRenderPass);
     std::shared_ptr<MComputePipeline> FindOrCreateComputePipeline(MComputeDispatcher* pComputeDispatcher);
 
 public:
-    bool RegisterComputeDispatcher(MComputeDispatcher* pDispatcher);
-    bool UnRegisterComputeDispatcher(MComputeDispatcher* pDispatcher);
 
-    void RegisterRenderPass(MRenderPass* pRenderPass);
-    void UnRegisterRenderPass(MRenderPass* pRenderPass);
-
-public:
-
+    void DestroyRenderPass(MRenderPass* pRenderPass);
     void DestroyPipeline(const std::shared_ptr<MPipeline>& pPipeline);
     void DestroyPipelineLayout(const std::shared_ptr<MPipeline>& pPipeline);
     void DestroyGraphicsPipeline(const std::shared_ptr<MGraphicsPipeline>& pGraphicsPipeline);
     void DestroyComputePipeline(const std::shared_ptr<MComputePipeline>& pComputePipeline);
 
-    VkPipeline CreateGraphicsPipeline(const std::shared_ptr<MPipeline>& pPipeline, std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx);
+    VkPipeline CreateGraphicsPipeline(const std::shared_ptr<MPipeline>& pPipeline, const MMaterialTemplate* pMaterial, const MRenderPass* pRenderPass, const uint32_t& nSubpassIdx);
     VkPipeline CreateComputePipeline(const std::shared_ptr<MPipeline>& pPipeline, MComputeDispatcher* pComputeDispatcher);
 
     void AllocateShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock, const std::shared_ptr<MPipeline>& pPipeline);
@@ -111,10 +105,6 @@ public:
 
 
 private:
-
-	MRepeatIDPool<uint32_t> m_MaterialIDPool;
-    MRepeatIDPool<uint32_t> m_RenderPassIDPool;
-    MRepeatIDPool<uint32_t> m_ComputeDispatcherIDPool;
 
     std::map<MPipelineKey, std::shared_ptr<MPipeline>> m_tPipelineTable;
 

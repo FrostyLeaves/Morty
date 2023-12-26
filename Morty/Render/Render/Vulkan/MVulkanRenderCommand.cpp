@@ -270,8 +270,8 @@ bool MVulkanRenderCommand::SetGraphPipeline(std::shared_ptr<MMaterial> pMaterial
 		return false;
 	}
 
-	MRenderPassStage stage = m_vRenderPassStages.top();
-	std::shared_ptr<MPipeline> pPipeline = m_pDevice->m_PipelineManager.FindOrCreateGraphicsPipeline(pMaterial, stage.pRenderPass);
+	const MRenderPassStage stage = m_vRenderPassStages.top();
+	const auto pPipeline = m_pDevice->m_PipelineManager.FindOrCreateGraphicsPipeline(pMaterial->GetMaterialTemplate().get(), stage.pRenderPass);
 
 	MORTY_ASSERT(nullptr != pPipeline);
 
@@ -284,7 +284,7 @@ bool MVulkanRenderCommand::SetGraphPipeline(std::shared_ptr<MMaterial> pMaterial
 	pUsingVertex = nullptr;
 	pUsingIndex = nullptr;
 
-	const std::shared_ptr<MGraphicsPipeline> pGraphicsPipeline = std::dynamic_pointer_cast<MGraphicsPipeline>(pPipeline);
+	const auto pGraphicsPipeline = std::dynamic_pointer_cast<MGraphicsPipeline>(pPipeline);
 
 	VkPipeline vkPipeline = pGraphicsPipeline->GetSubpassPipeline(stage.nSubpassIdx);
 	MORTY_ASSERT(vkPipeline);

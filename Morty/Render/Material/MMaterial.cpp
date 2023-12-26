@@ -76,13 +76,6 @@ void MMaterial::OnDelete()
 	Super::OnDelete();
 }
 
-#if MORTY_DEBUG
-const char* MMaterial::GetDebugName() const
-{
-	return GetResourcePath().c_str();
-}
-#endif
-
 void MMaterial::BindTemplate(const std::shared_ptr<MMaterialTemplate>& pTemplate)
 {
 	m_pMaterialTemplate = pTemplate;

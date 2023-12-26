@@ -66,9 +66,6 @@ public:
 	bool GenerateFrameBuffer(MRenderPass* pRenderPass) override;
 	void DestroyFrameBuffer(MRenderPass* pRenderPass) override;
 
-	bool RegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher) override;
-	bool UnRegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher) override;
-
 	MIRenderCommand* CreateRenderCommand(const MString& strCommandName) override;
 	void RecoveryRenderCommand(MIRenderCommand* pCommand) override;
 
