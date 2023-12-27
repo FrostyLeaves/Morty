@@ -808,21 +808,19 @@ MVulkanPrimaryRenderCommand::MVulkanPrimaryRenderCommand()
 	m_bFinished = false;
 }
 
-void MVulkanPrimaryRenderCommand::CheckFinished()
+void MVulkanPrimaryRenderCommand::MarkFinished()
 {
-	if (m_bFinished) return;
+	m_bFinished = true;
+}
 
-	if (m_pDevice->IsFinishedCommand(this))
+void MVulkanPrimaryRenderCommand::OnCommandFinished()
+{
+	for (auto& callback : m_aRenderFinishedCallback)
 	{
-		m_bFinished = true;
-
-		for (auto& callback : m_aRenderFinishedCallback)
-		{
-			callback();
-		}
-
-		m_aRenderFinishedCallback.clear();
+		callback();
 	}
+
+	m_aRenderFinishedCallback.clear();
 }
 
 MIRenderCommand* MVulkanPrimaryRenderCommand::CreateChildCommand()

@@ -6,6 +6,13 @@
 
 #include "Render/Vulkan/MVulkanPhysicalDevice.h"
 #include "System/MRenderSystem.h"
+#include "Utility/MFunction.h"
+
+void MViewRenderTarget::BindPrimaryCommand(MIRenderCommand* pCommand)
+{
+	pPrimaryCommand = dynamic_cast<MVulkanPrimaryRenderCommand*>(pCommand);
+	pPrimaryCommand->m_vRenderWaitSemaphore.push_back(vkImageReadySemaphore);
+}
 
 MRenderView::MRenderView()
 {
@@ -60,48 +67,19 @@ void MRenderView::Release()
 	}
 }
 
-void MRenderView::Present(MViewRenderTarget* pRenderTarget)
+void MRenderView::SubmitWork(MViewRenderTarget* pRenderTarget)
 {
 	MVulkanPrimaryRenderCommand* pRenderCommand = dynamic_cast<MVulkanPrimaryRenderCommand*>(pRenderTarget->pPrimaryCommand);
-	if (!pRenderCommand)
-		return;
+	MORTY_ASSERT(pRenderCommand);
 
-	//submit command
-	{
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-		std::vector<VkSemaphore> vWaitSemaphoreBeforeSubmit = { pRenderTarget->vkImageReadySemaphore };
-
-		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-		submitInfo.waitSemaphoreCount = static_cast<uint32_t>(vWaitSemaphoreBeforeSubmit.size());
-		submitInfo.pWaitSemaphores = vWaitSemaphoreBeforeSubmit.data();
-		submitInfo.pWaitDstStageMask = waitStages;
-
-		submitInfo.commandBufferCount = 1;
-		VkCommandBuffer commandBuffers[] = { pRenderCommand->m_VkCommandBuffer };
-		//TODO maybe mutil command buffers for every frame
-		submitInfo.pCommandBuffers = commandBuffers;
-
-		VkSemaphore signalSemaphores[] = { pRenderCommand->m_VkRenderFinishedSemaphore };
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = signalSemaphores;
-
-		VkFence vkInFightFence = pRenderCommand->m_VkRenderFinishedFence;
-		//m_VkInFlightFences = unsigned
-		vkResetFences(m_pDevice->m_VkDevice, 1, &vkInFightFence);
-		VkResult success = vkQueueSubmit(m_pDevice->m_VkGraphicsQueue, 1, &submitInfo, vkInFightFence);
-		if (success != VK_SUCCESS) {
-			throw std::runtime_error("failed to submit draw command buffer!");
-		}
-	}
+	m_pDevice->SubmitCommand(pRenderCommand);
 
 	// present 
 	{
 		VkPresentInfoKHR presentInfo{};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-		std::vector<VkSemaphore> vSignalSemaphores = { pRenderCommand-> m_VkRenderFinishedSemaphore };
+		std::vector<VkSemaphore> vSignalSemaphores = { pRenderCommand->m_VkRenderFinishedSemaphore };
 
 		presentInfo.waitSemaphoreCount = static_cast<uint32_t>(vSignalSemaphores.size());
 		presentInfo.pWaitSemaphores = vSignalSemaphores.data();
@@ -114,6 +92,24 @@ void MRenderView::Present(MViewRenderTarget* pRenderTarget)
 
 		vkDeviceWaitIdle(m_pDevice->m_VkDevice);
 	}
+
+	m_bSubmitFinished = true;
+}
+
+void MRenderView::Present(MViewRenderTarget* pRenderTarget)
+{
+
+	//wait for prev submit finished. 
+	while (!m_bSubmitFinished) {}
+
+	m_bSubmitFinished = false;
+
+	MThreadWork submitWork;
+	submitWork.funcWorkFunction = M_CLASS_FUNCTION_BIND_1_0(MRenderView::SubmitWork, this, pRenderTarget);
+	submitWork.eThreadType = METhreadType::ECurrentThread;
+
+	GetEngine()->GetThreadPool()->AddWork(submitWork);
+	
 }
 
 #if RENDER_GRAPHICS == MORTY_VULKAN

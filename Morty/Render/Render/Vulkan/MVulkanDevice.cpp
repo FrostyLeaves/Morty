@@ -1499,6 +1499,8 @@ void MVulkanDevice::SubmitCommand(MIRenderCommand* pCommand)
 			throw std::runtime_error("failed to submit draw command buffer!");
 		}
 	}
+
+	pRenderCommand->MarkFinished();
 }
 
 void MVulkanDevice::Update()
@@ -1950,8 +1952,13 @@ void MVulkanDevice::CheckFrameFinish()
 		bool bFinished = true;
 		for (MVulkanRenderCommand* pCommand : vCommand)
 		{
-			pCommand->CheckFinished();
-			bFinished &= pCommand->IsFinished();
+			const bool bCommandFinished = pCommand->IsFinished();
+			if (bCommandFinished)
+			{
+				pCommand->OnCommandFinished();
+			}
+
+			bFinished &= bCommandFinished;
 		}
 
 		if(bFinished)

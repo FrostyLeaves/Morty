@@ -103,7 +103,8 @@ public:
 	MVulkanPrimaryRenderCommand();
 
 	bool IsFinished() override { return m_bFinished; }
-	void CheckFinished() override;
+	void MarkFinished();
+	void OnCommandFinished() override;
 
 	MIRenderCommand* CreateChildCommand() override;
 	MIRenderCommand* GetChildCommand(const size_t& nIndex) override;
