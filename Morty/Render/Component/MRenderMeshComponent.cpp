@@ -55,12 +55,7 @@ std::shared_ptr<MMaterialResource> MRenderMeshComponent::GetMaterialResource() c
 
 std::shared_ptr<MMaterial> MRenderMeshComponent::GetMaterial()
 {
-	if (auto pMaterialResource = m_Material.GetResource<MMaterialResource>())
-	{
-		return pMaterialResource->GetMaterial();
-	}
-
-	return nullptr;
+	return m_Material.GetResource<MMaterial>();
 }
 
 bool MRenderMeshComponent::SetMaterialPath(const MString& strPath)
