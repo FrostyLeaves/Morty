@@ -75,6 +75,8 @@ public:
 
 	static MStringId POSTPROCESS_FINAL_NODE;
 	static MStringId POSTPROCESS_EDGE_DETECTION;
+
+	static constexpr int THREAD_ID_SUBMIT = 3;
 };
 
 using MMeshInstanceKey = size_t;

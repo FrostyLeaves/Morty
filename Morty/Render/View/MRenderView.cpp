@@ -1,4 +1,4 @@
-#include "View/MRenderView.h"
+﻿#include "View/MRenderView.h"
 #include "Utility/MGlobal.h"
 #if RENDER_GRAPHICS == MORTY_VULKAN
 #include "Render/Vulkan/MVulkanRenderCommand.h"
@@ -20,8 +20,6 @@ MRenderView::MRenderView()
 	m_VkSurface = VK_NULL_HANDLE;
 	m_VkSwapchain = VK_NULL_HANDLE;
 
-	m_VkPresentQueue = VK_NULL_HANDLE;
-
 	m_unMinImageCount = 0;
 
 	m_VkColorFormat = VK_FORMAT_R8G8B8A8_SRGB;
@@ -38,9 +36,8 @@ MRenderView::~MRenderView()
 
 void MRenderView::Resize(const Vector2& v2Size)
 {
-	//TODO call vk api in render thread.
 	vkDeviceWaitIdle(m_pDevice->m_VkDevice);
-
+	
 	m_unWidht = v2Size.x;
 	m_unHeight = v2Size.y;
 
@@ -56,6 +53,9 @@ void MRenderView::Initialize(MEngine* pEngine)
 
 void MRenderView::Release()
 {
+	//wait for prev submit finished. 
+	while (!m_bSubmitFinished) {}
+
 	DestroyRenderPass();
 	ReleaseSwapchain();
 
@@ -67,12 +67,10 @@ void MRenderView::Release()
 	}
 }
 
-void MRenderView::SubmitWork(MViewRenderTarget* pRenderTarget)
+void MRenderView::PresetWork(MViewRenderTarget* pRenderTarget)
 {
 	MVulkanPrimaryRenderCommand* pRenderCommand = dynamic_cast<MVulkanPrimaryRenderCommand*>(pRenderTarget->pPrimaryCommand);
 	MORTY_ASSERT(pRenderCommand);
-
-	m_pDevice->SubmitCommand(pRenderCommand);
 
 	// present 
 	{
@@ -88,9 +86,10 @@ void MRenderView::SubmitWork(MViewRenderTarget* pRenderTarget)
 		presentInfo.pSwapchains = swapChains;
 		presentInfo.pImageIndices = &pRenderTarget->unImageIndex;
 		presentInfo.pResults = nullptr; // Optional
-		vkQueuePresentKHR(m_VkPresentQueue, &presentInfo);
+		vkQueuePresentKHR(m_pDevice->m_VkPresetQueue, &presentInfo);
 
-		vkDeviceWaitIdle(m_pDevice->m_VkDevice);
+		const VkResult result = vkQueueWaitIdle(m_pDevice->m_VkPresetQueue);
+		MORTY_ASSERT(result == VK_SUCCESS);
 	}
 
 	m_bSubmitFinished = true;
@@ -104,11 +103,18 @@ void MRenderView::Present(MViewRenderTarget* pRenderTarget)
 
 	m_bSubmitFinished = false;
 
-	MThreadWork submitWork;
-	submitWork.funcWorkFunction = M_CLASS_FUNCTION_BIND_1_0(MRenderView::SubmitWork, this, pRenderTarget);
-	submitWork.eThreadType = METhreadType::ECurrentThread;
 
-	GetEngine()->GetThreadPool()->AddWork(submitWork);
+	// submit
+	MVulkanPrimaryRenderCommand* pRenderCommand = dynamic_cast<MVulkanPrimaryRenderCommand*>(pRenderTarget->pPrimaryCommand);
+	MORTY_ASSERT(pRenderCommand);
+	m_pDevice->SubmitCommand(pRenderCommand);
+
+	// preset
+	MThreadWork presetWork;
+	presetWork.funcWorkFunction = M_CLASS_FUNCTION_BIND_1_0(MRenderView::PresetWork, this, pRenderTarget);
+	presetWork.eThreadType = MRenderGlobal::THREAD_ID_SUBMIT;
+
+	GetEngine()->GetThreadPool()->AddWork(presetWork);
 	
 }
 
@@ -284,7 +290,6 @@ bool MRenderView::InitializeSwapchain()
 	m_VkSwapchain = swapchain;
 	m_VkColorFormat = colorFormat;
 	m_VkExtend = swapchainExtent;
-	m_VkPresentQueue = presentQueue;
 
 	BindRenderPass();
 	return true;
@@ -356,7 +361,6 @@ bool MRenderView::BindRenderPass()
 
 void MRenderView::DestroyRenderPass()
 {
-
 	for (MViewRenderTarget rendertarget : m_vRenderTarget)
 	{
 		if (rendertarget.vkImageReadySemaphore)

@@ -91,7 +91,7 @@ bool MMultiThreadTaskGraphWalker::CheckNodeActive(MTaskNode* pNode) const
 MThreadWork MMultiThreadTaskGraphWalker::CreateThreadWork(MTaskNode* pTaskNode)
 {
 	MThreadWork work;
-	work.eThreadType = pTaskNode->GetThreadType();
+	work.eThreadType = static_cast<int>(pTaskNode->GetThreadType());
 	work.funcWorkFunction = M_CLASS_FUNCTION_BIND_1_0(MMultiThreadTaskGraphWalker::ExecuteTaskNode, this, pTaskNode);
 
 	return work;

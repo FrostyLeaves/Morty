@@ -18,7 +18,8 @@
 
 
 #ifdef MORTY_SHADER_COMPILER_DXC
-#include "dxcapi.h"
+#include <windows.h>
+#include <dxcapi.h>
 #else
 
 #include "glslang/SPIRV/GlslangToSpv.h"

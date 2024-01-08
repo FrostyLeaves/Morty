@@ -42,10 +42,6 @@ void MVulkanObjectRecycleBin::EmptyTrash()
 		vkFreeDescriptorSets(device, m_pDevice->m_VkDescriptorPool, static_cast<uint32_t>(m_vDescriptorSet.size()), m_vDescriptorSet.data());
 	m_vDescriptorSet.clear();
 
-	for (VkCommandBuffer commandBuffer : m_vCommandBuffer)
-		vkFreeCommandBuffers(device, m_pDevice->m_VkGraphCommandPool, 1, &commandBuffer);
-	m_vCommandBuffer.clear();
-
 	for (MemoryInfo& info : m_vDynamicUniformMemory)
 		m_pDevice->m_BufferPool.FreeDynamicUniformMemory(info);
 	m_vDynamicUniformMemory.clear();

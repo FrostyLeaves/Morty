@@ -140,8 +140,10 @@ protected:
 	void CreateRecycleBin();
 public:
 	VkDevice m_VkDevice = VK_NULL_HANDLE;
-	VkQueue m_VkGraphicsQueue = VK_NULL_HANDLE;
-	VkCommandPool m_VkGraphCommandPool = VK_NULL_HANDLE;
+	VkQueue m_VkTemporaryQueue = VK_NULL_HANDLE;
+	VkQueue m_VkPresetQueue = VK_NULL_HANDLE;
+	VkCommandPool m_VkPresetCommandPool = VK_NULL_HANDLE;
+	VkCommandPool m_VkTemporaryCommandPool = VK_NULL_HANDLE;
 	VkDescriptorPool m_VkDescriptorPool = VK_NULL_HANDLE;
 
 	std::shared_ptr<MTexture> m_ShaderDefaultTexture = nullptr;

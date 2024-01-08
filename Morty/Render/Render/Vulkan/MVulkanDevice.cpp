@@ -138,7 +138,8 @@ void MVulkanDevice::Release()
 	vkDestroySampler(m_VkDevice, m_VkLinearSampler, nullptr);
 	vkDestroySampler(m_VkDevice, m_VkNearestSampler, nullptr);
 	vkDestroyDescriptorPool(m_VkDevice, m_VkDescriptorPool, nullptr);
-	vkDestroyCommandPool(m_VkDevice, m_VkGraphCommandPool, nullptr);
+	vkDestroyCommandPool(m_VkDevice, m_VkPresetCommandPool, nullptr);
+	vkDestroyCommandPool(m_VkDevice, m_VkTemporaryCommandPool, nullptr);
 	vkDestroyDevice(m_VkDevice, nullptr);
 
 	m_pPhysicalDevice->Release();
@@ -1388,7 +1389,7 @@ MIRenderCommand* MVulkanDevice::CreateRenderCommand(const MString& strCommandNam
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandPool = m_VkGraphCommandPool;
+	allocInfo.commandPool = m_VkPresetCommandPool;
 	allocInfo.commandBufferCount = 1;
 	vkAllocateCommandBuffers(m_VkDevice, &allocInfo, &pCommand->m_VkCommandBuffer);
 
@@ -1423,7 +1424,7 @@ void MVulkanDevice::RecoveryRenderCommand(MIRenderCommand* pRenderCommand)
 	{
 		//GetRecycleBin()->DestroyCommandBufferLater(pCommand->m_VkCommandBuffer);
 		
-		vkFreeCommandBuffers(m_VkDevice, m_VkGraphCommandPool, 1, &pCommand->m_VkCommandBuffer);
+		vkFreeCommandBuffers(m_VkDevice, m_VkPresetCommandPool, 1, &pCommand->m_VkCommandBuffer);
 		pCommand->m_VkCommandBuffer = VK_NULL_HANDLE;
 	}
 
@@ -1445,7 +1446,7 @@ void MVulkanDevice::RecoveryRenderCommand(MIRenderCommand* pRenderCommand)
 
 	for (MVulkanSecondaryRenderCommand* pSecondaryCommand : pCommand->m_vSecondaryCommand)
 	{
-		vkFreeCommandBuffers(m_VkDevice, m_VkGraphCommandPool, 1, &pSecondaryCommand->m_VkCommandBuffer);
+		vkFreeCommandBuffers(m_VkDevice, m_VkPresetCommandPool, 1, &pSecondaryCommand->m_VkCommandBuffer);
 		pSecondaryCommand->m_VkCommandBuffer = VK_NULL_HANDLE;
 	}
 
@@ -1472,7 +1473,7 @@ void MVulkanDevice::SubmitCommand(MIRenderCommand* pCommand)
 		return;
 
 	//submit command
-	{
+	auto funcSubmitWork = [=]() {
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -1495,12 +1496,18 @@ void MVulkanDevice::SubmitCommand(MIRenderCommand* pCommand)
 		VkFence vkInFightFence = pRenderCommand->m_VkRenderFinishedFence;
 		//m_VkInFlightFences = unsigned
 		vkResetFences(m_VkDevice, 1, &vkInFightFence);
-		if (vkQueueSubmit(m_VkGraphicsQueue, 1, &submitInfo, vkInFightFence) != VK_SUCCESS) {
+		if (vkQueueSubmit(m_VkPresetQueue, 1, &submitInfo, vkInFightFence) != VK_SUCCESS) {
 			throw std::runtime_error("failed to submit draw command buffer!");
 		}
-	}
 
-	pRenderCommand->MarkFinished();
+		pRenderCommand->MarkFinished();
+	};
+
+
+	MThreadWork submitWork;
+	submitWork.funcWorkFunction = funcSubmitWork;
+	submitWork.eThreadType = MRenderGlobal::THREAD_ID_SUBMIT;
+	GetEngine()->GetThreadPool()->AddWork(submitWork);
 }
 
 void MVulkanDevice::Update()
@@ -1937,7 +1944,7 @@ MVulkanSecondaryRenderCommand* MVulkanDevice::CreateChildCommand(MVulkanPrimaryR
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-	allocInfo.commandPool = m_VkGraphCommandPool;
+	allocInfo.commandPool = m_VkPresetCommandPool;
 	allocInfo.commandBufferCount = 1;
 	vkAllocateCommandBuffers(m_VkDevice, &allocInfo, &pSecondaryCommand->m_VkCommandBuffer);
 
@@ -2003,7 +2010,7 @@ VkCommandBuffer MVulkanDevice::BeginCommands()
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandPool = m_VkGraphCommandPool;
+	allocInfo.commandPool = m_VkTemporaryCommandPool;
 	allocInfo.commandBufferCount = 1;
 
 	VkCommandBuffer commandBuffer;
@@ -2027,12 +2034,12 @@ void MVulkanDevice::EndCommands(VkCommandBuffer commandBuffer)
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffer;
 
-	vkQueueSubmit(m_VkGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueSubmit(m_VkTemporaryQueue, 1, &submitInfo, VK_NULL_HANDLE);
 
-	VkResult result = vkQueueWaitIdle(m_VkGraphicsQueue);
+	const VkResult result = vkQueueWaitIdle(m_VkTemporaryQueue);
 	MORTY_ASSERT(result == VkResult::VK_SUCCESS);
 
-	vkFreeCommandBuffers(m_VkDevice, m_VkGraphCommandPool, 1, &commandBuffer);
+	vkFreeCommandBuffers(m_VkDevice, m_VkTemporaryCommandPool, 1, &commandBuffer);
 }
 
 bool MVulkanDevice::InitLogicalDevice()
@@ -2043,7 +2050,8 @@ bool MVulkanDevice::InitLogicalDevice()
 		return false;
 	}
 
-	vkGetDeviceQueue(m_VkDevice, m_pPhysicalDevice->m_nGraphicsFamilyIndex, 0, &m_VkGraphicsQueue);
+	vkGetDeviceQueue(m_VkDevice, m_pPhysicalDevice->m_nGraphicsFamilyIndex, 0, &m_VkPresetQueue);
+	vkGetDeviceQueue(m_VkDevice, m_pPhysicalDevice->m_nGraphicsFamilyIndex, 1, &m_VkTemporaryQueue);
 
 	return true;
 }
@@ -2056,9 +2064,9 @@ bool MVulkanDevice::InitCommandPool()
 	poolInfo.queueFamilyIndex = m_pPhysicalDevice->m_nGraphicsFamilyIndex;
 	poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Optional
 
-	if (vkCreateCommandPool(m_VkDevice, &poolInfo, nullptr, &m_VkGraphCommandPool) != VK_SUCCESS)
-		return false;
-
+	MORTY_ASSERT(vkCreateCommandPool(m_VkDevice, &poolInfo, nullptr, &m_VkPresetCommandPool) == VK_SUCCESS);
+		
+	MORTY_ASSERT(vkCreateCommandPool(m_VkDevice, &poolInfo, nullptr, &m_VkTemporaryCommandPool) == VK_SUCCESS);
 
 	return true;
 }

@@ -76,14 +76,12 @@ public:
 protected:
 
 
-	void SubmitWork(MViewRenderTarget* pRenderTarget);
+	void PresetWork(MViewRenderTarget* pRenderTarget);
 
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	VkSurfaceKHR m_VkSurface;
 	VkSwapchainKHR m_VkSwapchain;
-
-	VkQueue m_VkPresentQueue;
 
 	uint32_t m_unMinImageCount;
 
