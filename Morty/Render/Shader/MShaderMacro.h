@@ -21,12 +21,10 @@ public:
 	void SetMacro(const MStringId& strKey, const MString& strValue);
     void AddUnionMacro(const MStringId& strKey, const MString& strValue = "");
     void RemoveMacro(const MStringId& strKey);
-	bool HasMacro(const MStringId& strKey);
+	bool HasMacro(const MStringId& strKey) const;
+	MString GetMacro(const MStringId& strKey) const;
 
 	bool Compare(const MShaderMacro& macro);
-
-	void SetInnerMacro(const MStringId& strKey, const MString& strValue);
-	MString GetInnerMacro(const MStringId& strKey);
 
 	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
 	void Deserialize(const void* pBufferPointer);

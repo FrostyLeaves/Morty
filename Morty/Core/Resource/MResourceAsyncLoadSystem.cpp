@@ -54,9 +54,8 @@ void MResourceAsyncLoadSystem::EngineTick(const float& fDelta)
 
 	MThreadPool* pThreadPool = GetEngine()->GetThreadPool();
 
-	m_loadWork = MThreadWork();
+	m_loadWork = MThreadWork(METhreadType::EAny);
 	m_loadWork.value().funcWorkFunction = M_CLASS_FUNCTION_BIND_1_0(MResourceAsyncLoadSystem::AnyThreadLoad, this, vLoader);
-	m_loadWork.value().eThreadType = METhreadType::EAny;
 	pThreadPool->AddWork(m_loadWork.value());
 }
 

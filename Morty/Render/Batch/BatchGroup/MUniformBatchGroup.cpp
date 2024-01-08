@@ -3,7 +3,7 @@
 #include "Scene/MEntity.h"
 #include "Engine/MEngine.h"
 #include "Material/MMaterial.h"
-#include "Material/MShaderPropertyBlock.h"
+#include "Shader/MShaderPropertyBlock.h"
 #include "System/MRenderSystem.h"
 
 #include "Component/MSceneComponent.h"
@@ -25,17 +25,15 @@ void MUniformBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MShaderPro
 		m_pTransformParam = nullptr;
 	}
 
-	if (!pShaderProgram)
-	{
-		MORTY_ASSERT(pShaderProgram);
-		return;
-	}
+	MORTY_ASSERT(pShaderProgram);
 
-	m_pShaderPropertyBlock = MMaterial::CreateMeshPropertyBlock(pShaderProgram);
+	m_pShaderPropertyBlock = MMaterialTemplate::CreateMeshPropertyBlock(pShaderProgram);
     if (m_pShaderPropertyBlock)
 	{
 		m_pTransformParam = m_pShaderPropertyBlock->FindConstantParam(MShaderPropertyName::CBUFFER_MESH_MATRIX);
 	}
+
+	MORTY_ASSERT(m_pTransformParam);
 
 	MStruct& meshMatrixCbuffer = m_pTransformParam->var.GetValue<MStruct>();
 	MVariantArray& arr = meshMatrixCbuffer.GetVariant<MVariantArray>(MShaderPropertyName::MESH_LOCAL_MATRIX);

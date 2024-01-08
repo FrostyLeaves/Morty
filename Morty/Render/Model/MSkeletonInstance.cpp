@@ -1,13 +1,7 @@
 #include "Model/MSkeletonInstance.h"
-#include <algorithm>
 
 #include "Engine/MEngine.h"
-#include "Flatbuffer/MBone_generated.h"
-#include "Flatbuffer/MSkeleton_generated.h"
-#include "Utility/MFileHelper.h"
-#include "System/MRenderSystem.h"
-#include "Material/MShaderPropertyBlock.h"
-
+#include "Shader/MShaderPropertyBlock.h"
 #include "Resource/MSkeletonResource.h"
 
 MORTY_CLASS_IMPLEMENT(MSkeletonInstance, MObject)
@@ -36,12 +30,12 @@ MBone* MSkeletonInstance::FindBoneByName(const MString& strName)
 	return &m_vAllBones[pBoneTemp->unIndex];
 }
  
-const MBone* MSkeletonInstance::FindBoneTemplateByName(const MString& strName)
+const MBone* MSkeletonInstance::FindBoneTemplateByName(const MString& strName) const
 {
 	return m_pSkeletonTemplate->FindBoneByName(strName);
 }
 
-const MBone* MSkeletonInstance::GetBoneTemplateByIndex(const uint32_t& unIndex)
+const MBone* MSkeletonInstance::GetBoneTemplateByIndex(const uint32_t& unIndex) const
 {
 	return &m_pSkeletonTemplate->GetAllBones()[unIndex];
 }

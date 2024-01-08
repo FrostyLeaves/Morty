@@ -1,5 +1,6 @@
 ﻿#include "MMaterialResource.h"
 #include "MMaterialResourceData.h"
+#include "MMaterialTemplate_generated.h"
 #include "Utility/MFileHelper.h"
 
 #include "Engine/MEngine.h"
@@ -11,18 +12,6 @@ MORTY_CLASS_IMPLEMENT(MMaterialResource, MMaterial)
 bool MMaterialResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 {
 	auto pMaterialData = std::make_unique<MMaterialResourceData>();
-
-	pMaterialData->eMaterialType = GetMaterialType();
-	pMaterialData->eCullMode = GetCullMode();
-	pMaterialData->shaderMacro = GetShaderMacro();
-
-	for (size_t nIdx = 0; nIdx < size_t(MEShaderType::TOTAL_NUM); ++nIdx)
-	{
-		if (const auto pResource = GetShaderProgram()->GetShaderResource(MEShaderType(nIdx)))
-		{
-			pMaterialData->vShaders[nIdx] = pResource->GetResourcePath();
-		}
-	}
 
 	if (const auto pMaterialProperty = GetMaterialPropertyBlock())
 	{
@@ -49,7 +38,7 @@ bool MMaterialResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 		}
 	}
 
-
+	pMaterialData->strTemplateResource = GetMaterialTemplate()->GetResourcePath();
 
 	pResourceData = std::move(pMaterialData);
 	return true;
@@ -61,19 +50,8 @@ bool MMaterialResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 
 	auto pMaterialData = static_cast<MMaterialResourceData*>(pResourceData.get());
 
-	SetMaterialType(pMaterialData->eMaterialType);
-	SetCullMode(pMaterialData->eCullMode);
-	SetCullMode(MECullMode::ECullNone);
-
-	SetShaderMacro(pMaterialData->shaderMacro);
-
-	for (size_t nIdx = 0; nIdx < size_t(MEShaderType::TOTAL_NUM); ++nIdx)
-	{
-		if (!pMaterialData->vShaders[nIdx].empty())
-		{
-			LoadShader(pMaterialData->vShaders[nIdx]);
-		}
-	}
+	const auto pMaterialTemplate = pResourceSystem->LoadResource(pMaterialData->strTemplateResource);
+	BindTemplate(MTypeClass::DynamicCast<MMaterialTemplate>(pMaterialTemplate));
 	
 	const size_t nPropertyNum = pMaterialData->vProperty.size();
 	for (size_t nIdx = 0; nIdx < nPropertyNum; ++nIdx)
@@ -103,4 +81,17 @@ bool MMaterialResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 std::shared_ptr<MMaterial> MMaterialResource::GetMaterial() const
 {
 	return DynamicCast<MMaterial>(GetShared());
+}
+
+std::shared_ptr<MMaterialResource> MMaterialResource::CreateMaterial(const std::shared_ptr<MResource>& pMaterialTemplate)
+{
+	if (const auto pTemplate = MTypeClass::DynamicCast<MMaterialTemplate>(pMaterialTemplate))
+	{
+		auto pMaterial = std::make_shared<MMaterialResource>();
+		pMaterial->BindTemplate(pTemplate);
+
+		return pMaterial;
+	}
+
+	return nullptr;
 }

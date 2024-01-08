@@ -1,26 +1,8 @@
 include "Resource/MResourceRef.fbs";
 include "Variant/MVariant.fbs";
-include "Material/MShaderMacro.fbs";
+include "Material/MMaterialTemplate.fbs";
 
 namespace mfbs;
-
-enum MECullMode: byte
-{
-	EWireframe = 0,
-	ECullNone = 1,
-	ECullBack = 2,
-	ECullFront = 3,
-}
-
-enum MEMaterialType: byte
-{
-	EDefault = 0,
-	EDepthPeel = 1,
-	ETransparentBlend = 2,
-	EOutline = 3,
-	EImGui = 4,
-	EDeferred = 5,
-}
 
 table MMaterialProperty
 {
@@ -36,15 +18,9 @@ table MMaterialTexture
 
 table MMaterial
 {
-    vertex_resource: string;
-    pixel_resource: string;
-
-    rasterizer_type: MECullMode;
-    material_type: MEMaterialType;
-    
-	material_macro: MShaderMacro;
     material_property: [MMaterialProperty];
 	material_textures: [MMaterialTexture];
+	material_template: string;
 }
 
 root_type MMaterial;

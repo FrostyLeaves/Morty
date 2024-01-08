@@ -9,6 +9,7 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
+#include "Utility/MStringId.h"
 
 class MEngine;
 class MObject;
@@ -20,10 +21,11 @@ public:
 
 	static void OnObjectPostCreate(MObject* pObject);
 
+	static void RegisterMaterial(MEngine* pEngine);
+
 	static const MString DefaultWhite;
 	static const MString DefaultNormal;
 	static const MString Default_R8_One;
 	static const MString Default_R8_Zero;
-
 	static const MString DefaultAnimationMaterial;
 };

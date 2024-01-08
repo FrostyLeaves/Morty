@@ -9,21 +9,11 @@
 
 MORTY_CLASS_IMPLEMENT(MThreadPool, MTypeClass)
 
-std::unordered_map<size_t, METhreadType> MThreadPool::s_tThreadType = {};
+std::array<METhreadType, MGlobal::M_MAX_THREAD_NUM> MThreadPool::s_tThreadType = {};
 
-thread_local static size_t ThreadIndex = 0;
+thread_local static size_t ThreadIndex = MGlobal::M_MAX_THREAD_NUM;
 
 constexpr bool bSingleThreadMode = false;
-
-MThreadPool::MThreadPool()
-{
-
-}
-
-MThreadPool::~MThreadPool()
-{
-
-}
 
 void MThreadPool::Initialize()
 {
@@ -36,17 +26,11 @@ void MThreadPool::Initialize()
 		return;
 	}
 
-	// Render Thread
-	const size_t nRenderThreadIndex = size_t(METhreadType::ERenderThread);
-	m_aThread[nRenderThreadIndex] = std::thread(&MThreadPool::ThreadRun, this, METhreadType::ERenderThread, nRenderThreadIndex, "Thread Render");
-	s_tThreadType[nRenderThreadIndex] = METhreadType::ERenderThread;
-	m_aThread[nRenderThreadIndex].detach();
-
-	for (size_t nThreadIdx = size_t(METhreadType::ENameThreadNum); nThreadIdx < m_aThread.size(); ++nThreadIdx)
+	for (size_t nThreadIdx = 1; nThreadIdx < m_aThread.size(); ++nThreadIdx)
 	{
 		MString strThreadName = MString("Thread ") + MStringUtil::ToString(nThreadIdx);
-		m_aThread[nThreadIdx] = std::thread(&MThreadPool::ThreadRun, this, METhreadType::EAny, nThreadIdx, strThreadName);
-		s_tThreadType[nThreadIdx] = METhreadType::EAny;
+		m_aThread[nThreadIdx] = std::thread(&MThreadPool::ThreadRun, this, nThreadIdx, strThreadName);
+		s_tThreadType[nThreadIdx] = nThreadIdx < static_cast<int>(METhreadType::ENameThreadNum) ? static_cast<METhreadType>(nThreadIdx) : METhreadType::EAny;
 		m_aThread[nThreadIdx].detach();
 	}
 
@@ -82,18 +66,18 @@ bool MThreadPool::AddWork(const MThreadWork& work)
 		return true;
 	}
 	
-	if (work.eThreadType == METhreadType::ECurrentThread)
+	if (work.eThreadType == static_cast<int>(METhreadType::ECurrentThread))
 	{
 		work.funcWorkFunction();
 	}
-	else if (work.eThreadType != METhreadType::EAny && work.eThreadType == GetCurrentThreadType())
+	else if (work.eThreadType == static_cast<int>(GetCurrentThreadType()))
 	{
 		work.funcWorkFunction();
 	}
-	else if (work.eThreadType == METhreadType::ERenderThread)
+	else if (work.eThreadType != static_cast<int>(METhreadType::EAny))
 	{
 		std::unique_lock<std::mutex> lck(m_ConditionMutex);
-		m_vWaitingWorkForRender.push(work);
+		m_vSpecificWaitingWork[work.eThreadType].push(work);
 		m_ConditionVariable.notify_all();
 	}
 	else
@@ -106,7 +90,7 @@ bool MThreadPool::AddWork(const MThreadWork& work)
 	return true;
 }
 
-void MThreadPool::ThreadRun(METhreadType eType, size_t nThreadIndex, MString strThreadName)
+void MThreadPool::ThreadRun(size_t nThreadIndex, MString strThreadName)
 {
 	ThreadIndex = nThreadIndex;
 
@@ -119,28 +103,18 @@ void MThreadPool::ThreadRun(METhreadType eType, size_t nThreadIndex, MString str
 	MORTY_UNUSED(strThreadName);
 #endif
 
-	std::queue<MThreadWork>* vWorkQueue = nullptr;
-	if (eType == METhreadType::ERenderThread)
-	{
-		vWorkQueue = &m_vWaitingWorkForRender;
-	}
-	else
-	{
-		vWorkQueue = &m_vWaitingWork;
-	}
 
 	while (true)
 	{
 		MThreadWork work;
 
 		{
-			std::unique_lock<std::mutex> lock(m_ConditionMutex);
-
+			std::unique_lock lock(m_ConditionMutex);
 			m_ConditionVariable.wait(lock, [=] {
 				if (m_bClose)
 					return true;
 
-				if (vWorkQueue->empty())
+				if (m_vSpecificWaitingWork[nThreadIndex].empty() && m_vWaitingWork.empty())
 					return false;
 
 				return true;
@@ -152,12 +126,23 @@ void MThreadPool::ThreadRun(METhreadType eType, size_t nThreadIndex, MString str
 				return;
 			}
 
-			work = vWorkQueue->front();
-			vWorkQueue->pop();
+			if (!m_vSpecificWaitingWork[nThreadIndex].empty())
+			{
+				work = m_vSpecificWaitingWork[nThreadIndex].front();
+				m_vSpecificWaitingWork[nThreadIndex].pop();
+			}
+            else if (!m_vWaitingWork.empty())
+            {
+				work = m_vWaitingWork.front();
+				m_vWaitingWork.pop();
+            }
 		}
 
-		work.funcWorkFunction();
-		work = {};
+		if (work.funcWorkFunction)
+		{
+			work.funcWorkFunction();
+			work = {};
+		}
 	}
 }
 
@@ -173,8 +158,8 @@ size_t MThreadPool::GetCurrentThreadIndex()
 
 METhreadType MThreadPool::GetCurrentThreadType()
 {
-	auto id = GetCurrentThreadIndex();
-	MORTY_ASSERT(s_tThreadType.find(id) != s_tThreadType.end());
+	const auto id = GetCurrentThreadIndex();
+	MORTY_ASSERT(id < s_tThreadType.size());
 	return s_tThreadType[id];
 }
 

@@ -1,5 +1,5 @@
 ﻿/**
- * @File         MMaterialResource
+ * @File         MMaterialTemplateResource
  * 
  * @Created      2019-09-01 15:25:21
  *
@@ -8,18 +8,14 @@
 
 #pragma once
 
-#include "Material/MMaterial.h"
+#include "Material/MMaterialTemplate.h"
 
-class MORTY_API MMaterialResource : public MMaterial
+class MORTY_API MMaterialTemplateResource : public MMaterialTemplate
 {
 public:
-	MORTY_CLASS(MMaterialResource);
+	MORTY_CLASS(MMaterialTemplateResource);
 
-	std::shared_ptr<MMaterial> GetMaterial() const;
-
-
-	static std::shared_ptr<MMaterialResource> CreateMaterial(const std::shared_ptr<MResource>& pMaterialTemplate);
-
+	std::shared_ptr<MMaterialTemplate> GetMaterial() const;
 
 	bool Load(std::unique_ptr<MResourceData>&& pResourceData) override;
 	bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;

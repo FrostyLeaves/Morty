@@ -39,22 +39,6 @@ std::unordered_map<MStringId, MString> MShaderMacro::s_vGlobalMacroParams = {
 	{MStringId("MORTY_VXGI_ENABLE"), strVXGIEnable},
 };
 
-void MShaderMacro::SetInnerMacro(const MStringId& strKey, const MString& strValue)
-{
-	SetMacro(strKey, strValue, m_vMortyMacroParams);
-}
-
-MString MShaderMacro::GetInnerMacro(const MStringId& strKey)
-{
-	auto findResult = m_vMortyMacroParams.find(strKey);
-	if (findResult == m_vMortyMacroParams.end())
-	{
-		return {};
-	}
-
-	return findResult->second;
-}
-
 void MShaderMacro::SetMacro(const MStringId& strKey, const MString& strValue)
 {
 	SetMacro(strKey, strValue, m_vMacroParams);
@@ -76,19 +60,25 @@ void MShaderMacro::RemoveMacro(const MStringId& strKey)
 	m_vMacroParams.erase(strKey);
 }
 
-bool MShaderMacro::HasMacro(const MStringId& strKey)
+bool MShaderMacro::HasMacro(const MStringId& strKey) const
 {
 	return m_vMacroParams.find(strKey) != m_vMacroParams.end();
+}
+
+MString MShaderMacro::GetMacro(const MStringId& strKey) const
+{
+	const auto findResult = m_vMacroParams.find(strKey);
+	if (findResult == m_vMacroParams.end())
+	{
+		return MString();
+	}
+
+	return findResult->second;
 }
 
 bool MShaderMacro::Compare(const MShaderMacro& macro)
 {
 	if (m_vMacroParams != macro.m_vMacroParams)
-	{
-		return false;
-	}
-
-	if (m_vMortyMacroParams != macro.m_vMortyMacroParams)
 	{
 		return false;
 	}
@@ -109,23 +99,10 @@ flatbuffers::Offset<void> MShaderMacro::Serialize(flatbuffers::FlatBufferBuilder
 		vMaterialMacroPairs.push_back(builder.Finish().o);
 	}
 
-	std::vector<flatbuffers::Offset<mfbs::MShaderMacroPair>> vInnerMacroPairs;
-	for (auto pairs : m_vMortyMacroParams)
-	{
-		auto fbKey = fbb.CreateString(pairs.first.ToString());
-		auto fbValue = fbb.CreateString(pairs.second);
-		mfbs::MShaderMacroPairBuilder builder(fbb);
-		builder.add_key(fbKey);
-		builder.add_value(fbValue);
-		vInnerMacroPairs.push_back(builder.Finish().o);
-	}
-
 	const auto fbMaterialMacro = fbb.CreateVector(vMaterialMacroPairs);
-	const auto fbInnerMacro = fbb.CreateVector(vInnerMacroPairs);
 	mfbs::MShaderMacroBuilder builder(fbb);
 
 	builder.add_material_macro(fbMaterialMacro);
-	builder.add_inner_macro(fbInnerMacro);
 
 	return builder.Finish().Union();
 }
@@ -135,7 +112,6 @@ void MShaderMacro::Deserialize(const void* pBufferPointer)
 	const mfbs::MShaderMacro* fbData = reinterpret_cast<const mfbs::MShaderMacro*>(pBufferPointer);
 
 	m_vMacroParams.clear();
-	m_vMortyMacroParams.clear();
 
 	if (!pBufferPointer)
 	{
@@ -147,14 +123,6 @@ void MShaderMacro::Deserialize(const void* pBufferPointer)
 		for (auto pair : *fbData->material_macro())
 		{
 			m_vMacroParams[MStringId(pair->key()->c_str())] = pair->value()->c_str();
-		}
-	}
-
-	if (fbData->inner_macro())
-	{
-		for (auto pair : *fbData->inner_macro())
-		{
-			m_vMortyMacroParams[MStringId(pair->key()->c_str())] = pair->value()->c_str();
 		}
 	}
 }

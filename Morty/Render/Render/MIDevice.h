@@ -10,7 +10,7 @@
 
 #include "Utility/MGlobal.h"
 
-#include "Material/MShader.h"
+#include "Shader/MShader.h"
 #include "Render/MRenderPass.h"
 
 class MVertexBuffer;
@@ -72,7 +72,7 @@ public:
 	virtual ~MIDevice() {}
 
 	void SetEngine(MEngine* pEngine) { m_pEngine = pEngine; }
-	MEngine* GetEngine() { return m_pEngine; }
+	MEngine* GetEngine() const { return m_pEngine; }
 
 public:
 	virtual bool Initialize() = 0;
@@ -104,16 +104,6 @@ public:
 	virtual bool GenerateFrameBuffer(MRenderPass* pRenderPass) = 0;
 	virtual void DestroyFrameBuffer(MRenderPass* pRenderPass) = 0;
 
-	virtual bool RegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher) { 
-		MORTY_UNUSED(pComputeDispatcher); 
-		return true; 
-	};
-
-	virtual bool UnRegisterComputeDispatcher(MComputeDispatcher* pComputeDispatcher) {
-		MORTY_UNUSED(pComputeDispatcher); 
-		return true;
-	};
-
 	virtual MIRenderCommand* CreateRenderCommand(const MString& strCommandName) = 0;
 	virtual void RecoveryRenderCommand(MIRenderCommand* pCommand) = 0;
 
@@ -129,5 +119,5 @@ public:
 
 private:
 
-	MEngine* m_pEngine;
+	MEngine* m_pEngine = nullptr;
 };

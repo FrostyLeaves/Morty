@@ -117,10 +117,6 @@ public:
     std::shared_ptr<MTexture> GetDepthTexture() const;
     std::shared_ptr<MTexture> GetShadingRateTexture() const;
 
-    void SetRenderPassID(const uint32_t& unID) { m_unRenderPassID = unID; }
-    uint32_t GetRenderPassID() const { return m_unRenderPassID; }
-
-
     /* Multi Viewport.
     * 
     * @param unNum: size of viewport.
@@ -130,8 +126,6 @@ public:
     uint32_t GetViewportNum() const { return m_unViewNum; }
 
 	std::vector<MSubpass> m_vSubpass;
-
-    uint32_t m_unRenderPassID = MGlobal::M_INVALID_INDEX;
 
 public:
 

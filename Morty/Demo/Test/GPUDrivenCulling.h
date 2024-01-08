@@ -20,12 +20,14 @@ void GPU_DRIVEN_CULLING_TEST(MEngine* pEngine, MScene* pScene)
 	std::shared_ptr<MMeshResource> pMeshResource = pResourceSystem->CreateResource<MMeshResource>();
 	pMeshResource->Load(MMeshResourceUtil::CreateSphere());
 
-	std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
+	const auto pTemplate = pResourceSystem->CreateResource<MMaterialTemplate>();
 
-	pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_UNIFORM, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-	pMaterial->LoadShader("Shader/Model/universal_model.mvs");
-	pMaterial->LoadShader("Shader/Deferred/deferred_gbuffer.mps");
-	pMaterial->SetMaterialType(MEMaterialType::EDeferred);
+	pTemplate->AddDefine(MRenderGlobal::DRAW_MESH_INSTANCING_UNIFORM, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+	pTemplate->LoadShader("Shader/Model/universal_model.mvs");
+	pTemplate->LoadShader("Shader/Deferred/deferred_gbuffer.mps");
+	pTemplate->SetMaterialType(MEMaterialType::EDeferred);
+
+	const auto pMaterial = MMaterialResource::CreateMaterial(pTemplate);
 
 	std::shared_ptr<MResource> albedo = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_albedo.png");
 	std::shared_ptr<MResource> normal = pResourceSystem->LoadResource("Texture/Pbr/Brick/TexturesCom_Brick_Rustic2_1K_normal.png");

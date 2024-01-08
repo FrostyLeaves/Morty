@@ -118,7 +118,7 @@ public:
 
 
 	virtual bool IsFinished() { return false; }
-	virtual void CheckFinished() {}
+	virtual void OnCommandFinished() {}
 
 	virtual void addFinishedCallback(std::function<void()> func) = 0;
 

@@ -40,7 +40,7 @@ void MVulkanPipelineManager::Release()
 	m_tPipelineTable.clear();
 }
 
-std::shared_ptr<MGraphicsPipeline> MVulkanPipelineManager::FindOrCreateGraphicsPipeline(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass)
+std::shared_ptr<MGraphicsPipeline> MVulkanPipelineManager::FindOrCreateGraphicsPipeline(const MMaterialTemplate* pMaterial, const MRenderPass* pRenderPass)
 {
 	MPipelineKey key(pMaterial->GetShaderProgram(), pRenderPass);
 
@@ -101,24 +101,7 @@ std::shared_ptr<MComputePipeline> MVulkanPipelineManager::FindOrCreateComputePip
 	return pPipeline;
 }
 
-void MVulkanPipelineManager::RegisterRenderPass(MRenderPass* pRenderPass)
-{
-	pRenderPass->SetRenderPassID(m_RenderPassIDPool.GetNewID());
-}
-
-bool MVulkanPipelineManager::RegisterComputeDispatcher(MComputeDispatcher* pDispatcher)
-{
-	MORTY_UNUSED(pDispatcher);
-	return true;
-}
-
-bool MVulkanPipelineManager::UnRegisterComputeDispatcher(MComputeDispatcher* pDispatcher)
-{
-	MORTY_UNUSED(pDispatcher);
-	return true;
-}
-
-void MVulkanPipelineManager::UnRegisterRenderPass(MRenderPass* pRenderPass)
+void MVulkanPipelineManager::DestroyRenderPass(MRenderPass* pRenderPass)
 {
 	for (auto iter = m_tPipelineTable.begin(); iter != m_tPipelineTable.end(); )
 	{
@@ -132,14 +115,6 @@ void MVulkanPipelineManager::UnRegisterRenderPass(MRenderPass* pRenderPass)
 			++iter;
 		}
 	}
-
-	uint32_t id = pRenderPass->GetRenderPassID();
-
-	if (id != MGlobal::M_INVALID_UINDEX)
-	{
-		m_RenderPassIDPool.RecoveryID(id);
-	}
-	pRenderPass->SetRenderPassID(MGlobal::M_INVALID_INDEX);
 }
 
 void MVulkanPipelineManager::DestroyPipeline(const std::shared_ptr<MPipeline>& pipeline)
@@ -318,7 +293,7 @@ void MVulkanPipelineManager::DestroyComputePipeline(const std::shared_ptr<MCompu
 	pComputePipeline->m_vkPipeline = nullptr;
 }
 
-void GetBlendStage(std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, std::vector<VkPipelineColorBlendAttachmentState>& vBlendAttach, VkPipelineColorBlendStateCreateInfo& blendInfo)
+void GetBlendStage(const MMaterialTemplate* pMaterial, const MRenderPass* pRenderPass, std::vector<VkPipelineColorBlendAttachmentState>& vBlendAttach, VkPipelineColorBlendStateCreateInfo& blendInfo)
 {
 	blendInfo = {};
 	blendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -479,7 +454,7 @@ VkCompareOp GetCompareOp(MDepthCompareType type)
 	return VkCompareOp::VK_COMPARE_OP_NEVER;
 };
 
-void GetDepthStencilStage(MRenderPass* pRenderPass, VkPipelineDepthStencilStateCreateInfo& depthStencilInfo)
+void GetDepthStencilStage(const MRenderPass* pRenderPass, VkPipelineDepthStencilStateCreateInfo& depthStencilInfo)
 {
 	depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	depthStencilInfo.pNext = NULL;
@@ -493,7 +468,7 @@ void GetDepthStencilStage(MRenderPass* pRenderPass, VkPipelineDepthStencilStateC
 	depthStencilInfo.stencilTestEnable = pRenderPass->m_bStencilTestEnable;
 }
 
-VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<MPipeline>& pPipeline, std::shared_ptr<MMaterial> pMaterial, MRenderPass* pRenderPass, const uint32_t& nSubpassIdx)
+VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(const std::shared_ptr<MPipeline>& pPipeline, const MMaterialTemplate* pMaterial, const MRenderPass* pRenderPass, const uint32_t& nSubpassIdx)
 {
 	if (!pMaterial)
 	{

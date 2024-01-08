@@ -1,4 +1,4 @@
-#include "View/MRenderView.h"
+﻿#include "View/MRenderView.h"
 #include "Utility/MGlobal.h"
 #if RENDER_GRAPHICS == MORTY_VULKAN
 #include "Render/Vulkan/MVulkanRenderCommand.h"
@@ -6,14 +6,19 @@
 
 #include "Render/Vulkan/MVulkanPhysicalDevice.h"
 #include "System/MRenderSystem.h"
+#include "Utility/MFunction.h"
+
+void MViewRenderTarget::BindPrimaryCommand(MIRenderCommand* pCommand)
+{
+	pPrimaryCommand = dynamic_cast<MVulkanPrimaryRenderCommand*>(pCommand);
+	pPrimaryCommand->m_vRenderWaitSemaphore.push_back(vkImageReadySemaphore);
+}
 
 MRenderView::MRenderView()
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	m_VkSurface = VK_NULL_HANDLE;
 	m_VkSwapchain = VK_NULL_HANDLE;
-
-	m_VkPresentQueue = VK_NULL_HANDLE;
 
 	m_unMinImageCount = 0;
 
@@ -31,9 +36,8 @@ MRenderView::~MRenderView()
 
 void MRenderView::Resize(const Vector2& v2Size)
 {
-	//TODO call vk api in render thread.
 	vkDeviceWaitIdle(m_pDevice->m_VkDevice);
-
+	
 	m_unWidht = v2Size.x;
 	m_unHeight = v2Size.y;
 
@@ -49,6 +53,9 @@ void MRenderView::Initialize(MEngine* pEngine)
 
 void MRenderView::Release()
 {
+	//wait for prev submit finished. 
+	while (!m_bSubmitFinished) {}
+
 	DestroyRenderPass();
 	ReleaseSwapchain();
 
@@ -60,48 +67,17 @@ void MRenderView::Release()
 	}
 }
 
-void MRenderView::Present(MViewRenderTarget* pRenderTarget)
+void MRenderView::PresetWork(MViewRenderTarget* pRenderTarget)
 {
 	MVulkanPrimaryRenderCommand* pRenderCommand = dynamic_cast<MVulkanPrimaryRenderCommand*>(pRenderTarget->pPrimaryCommand);
-	if (!pRenderCommand)
-		return;
-
-	//submit command
-	{
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-		std::vector<VkSemaphore> vWaitSemaphoreBeforeSubmit = { pRenderTarget->vkImageReadySemaphore };
-
-		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-		submitInfo.waitSemaphoreCount = static_cast<uint32_t>(vWaitSemaphoreBeforeSubmit.size());
-		submitInfo.pWaitSemaphores = vWaitSemaphoreBeforeSubmit.data();
-		submitInfo.pWaitDstStageMask = waitStages;
-
-		submitInfo.commandBufferCount = 1;
-		VkCommandBuffer commandBuffers[] = { pRenderCommand->m_VkCommandBuffer };
-		//TODO maybe mutil command buffers for every frame
-		submitInfo.pCommandBuffers = commandBuffers;
-
-		VkSemaphore signalSemaphores[] = { pRenderCommand->m_VkRenderFinishedSemaphore };
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = signalSemaphores;
-
-		VkFence vkInFightFence = pRenderCommand->m_VkRenderFinishedFence;
-		//m_VkInFlightFences = unsigned
-		vkResetFences(m_pDevice->m_VkDevice, 1, &vkInFightFence);
-		VkResult success = vkQueueSubmit(m_pDevice->m_VkGraphicsQueue, 1, &submitInfo, vkInFightFence);
-		if (success != VK_SUCCESS) {
-			throw std::runtime_error("failed to submit draw command buffer!");
-		}
-	}
+	MORTY_ASSERT(pRenderCommand);
 
 	// present 
 	{
 		VkPresentInfoKHR presentInfo{};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-		std::vector<VkSemaphore> vSignalSemaphores = { pRenderCommand-> m_VkRenderFinishedSemaphore };
+		std::vector<VkSemaphore> vSignalSemaphores = { pRenderCommand->m_VkRenderFinishedSemaphore };
 
 		presentInfo.waitSemaphoreCount = static_cast<uint32_t>(vSignalSemaphores.size());
 		presentInfo.pWaitSemaphores = vSignalSemaphores.data();
@@ -110,10 +86,36 @@ void MRenderView::Present(MViewRenderTarget* pRenderTarget)
 		presentInfo.pSwapchains = swapChains;
 		presentInfo.pImageIndices = &pRenderTarget->unImageIndex;
 		presentInfo.pResults = nullptr; // Optional
-		vkQueuePresentKHR(m_VkPresentQueue, &presentInfo);
+		vkQueuePresentKHR(m_pDevice->m_VkPresetQueue, &presentInfo);
 
-		vkDeviceWaitIdle(m_pDevice->m_VkDevice);
+		const VkResult result = vkQueueWaitIdle(m_pDevice->m_VkPresetQueue);
+		MORTY_ASSERT(result == VK_SUCCESS);
 	}
+
+	m_bSubmitFinished = true;
+}
+
+void MRenderView::Present(MViewRenderTarget* pRenderTarget)
+{
+
+	//wait for prev submit finished. 
+	while (!m_bSubmitFinished) {}
+
+	m_bSubmitFinished = false;
+
+
+	// submit
+	MVulkanPrimaryRenderCommand* pRenderCommand = dynamic_cast<MVulkanPrimaryRenderCommand*>(pRenderTarget->pPrimaryCommand);
+	MORTY_ASSERT(pRenderCommand);
+	m_pDevice->SubmitCommand(pRenderCommand);
+
+	// preset
+	MThreadWork presetWork;
+	presetWork.funcWorkFunction = M_CLASS_FUNCTION_BIND_1_0(MRenderView::PresetWork, this, pRenderTarget);
+	presetWork.eThreadType = MRenderGlobal::THREAD_ID_SUBMIT;
+
+	GetEngine()->GetThreadPool()->AddWork(presetWork);
+	
 }
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -288,7 +290,6 @@ bool MRenderView::InitializeSwapchain()
 	m_VkSwapchain = swapchain;
 	m_VkColorFormat = colorFormat;
 	m_VkExtend = swapchainExtent;
-	m_VkPresentQueue = presentQueue;
 
 	BindRenderPass();
 	return true;
@@ -360,7 +361,6 @@ bool MRenderView::BindRenderPass()
 
 void MRenderView::DestroyRenderPass()
 {
-
 	for (MViewRenderTarget rendertarget : m_vRenderTarget)
 	{
 		if (rendertarget.vkImageReadySemaphore)

@@ -33,7 +33,7 @@ void MPostProcessRenderTargetBinding::operator ()(MTaskGraph* pTaskGraph)
 		{
 			auto pPostProcessNode = pCurrentNode->DynamicCast<MPostProcessNode>();
 			auto pMaterial = pPostProcessNode->GetMaterial();
-			m_pFrameProperty = MMaterial::CreateFramePropertyBlock(pMaterial->GetShaderProgram());
+			m_pFrameProperty = MMaterialTemplate::CreateFramePropertyBlock(pMaterial->GetShaderProgram());
 		}
 
 		AllocRenderTarget(pCurrentNode->DynamicCast<MPostProcessNode>());

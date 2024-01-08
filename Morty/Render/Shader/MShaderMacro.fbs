@@ -10,7 +10,6 @@ table MShaderMacroPair
 table MShaderMacro
 {
 	material_macro: [MShaderMacroPair];
-    inner_macro: [MShaderMacroPair];
 }
 
 root_type MShaderMacro;

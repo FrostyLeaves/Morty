@@ -201,13 +201,14 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 		vCmaeraView[i] = m4Projection * vCmaeraView[i];
 	}
 
-	m_DiffuseMaterial = pResourceSystem->CreateResource<MMaterial>("Diffuse CubeMap Material");
+	auto pDiffuseTemplate = pResourceSystem->CreateResource<MMaterialTemplate>("Diffuse CubeMap Material");
 	std::shared_ptr<MResource> vs = pResourceSystem->LoadResource("Shader/Lighting/ibl_map.mvs");
 	std::shared_ptr<MResource> diffuseps = pResourceSystem->LoadResource("Shader/Lighting/diffuse_map.mps");
-	m_DiffuseMaterial->LoadShader(vs);
-	m_DiffuseMaterial->LoadShader(diffuseps);
+	pDiffuseTemplate->LoadShader(vs);
+	pDiffuseTemplate->LoadShader(diffuseps);
+	pDiffuseTemplate->SetCullMode(MECullMode::ECullFront);
 
-	m_DiffuseMaterial->SetCullMode(MECullMode::ECullFront);
+	m_DiffuseMaterial = MMaterial::CreateMaterial(pDiffuseTemplate);
 
 	if (const std::shared_ptr<MShaderPropertyBlock>& pParams = m_DiffuseMaterial->GetMaterialPropertyBlock())
 	{
@@ -225,13 +226,15 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 
 
 	std::shared_ptr<MResource> specularps = pResourceSystem->LoadResource("Shader/Lighting/specular_map.mps");
+	auto pSpecularTemplate = pResourceSystem->CreateResource<MMaterialTemplate>(MString("Specular CubeMap Material"));
+	pSpecularTemplate->LoadShader(vs);
+	pSpecularTemplate->LoadShader(specularps);
+	pSpecularTemplate->SetCullMode(MECullMode::ECullFront);
+
 	m_vSpecularMaterial.resize(SpecularMipmapCount);
 	for (uint32_t nMipmap = 0; nMipmap < SpecularMipmapCount; ++nMipmap)
 	{
-		m_vSpecularMaterial[nMipmap] = pResourceSystem->CreateResource<MMaterial>(MString("Specular CubeMap Material_") + MStringUtil::ToString(nMipmap));
-		m_vSpecularMaterial[nMipmap]->LoadShader(vs);
-		m_vSpecularMaterial[nMipmap]->LoadShader(specularps);
-		m_vSpecularMaterial[nMipmap]->SetCullMode(MECullMode::ECullFront);
+		m_vSpecularMaterial[nMipmap] = MMaterial::CreateMaterial(pSpecularTemplate);
 
 		if (const std::shared_ptr<MShaderPropertyBlock>& pParams = m_vSpecularMaterial[nMipmap]->GetMaterialPropertyBlock())
 		{

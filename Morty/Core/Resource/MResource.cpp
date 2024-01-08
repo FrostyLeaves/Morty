@@ -128,6 +128,13 @@ void MResource::ReplaceFrom(std::shared_ptr<MResource> pResource)
 	}
 }
 
+#if MORTY_DEBUG
+const char* MResource::GetDebugName() const
+{
+	return GetResourcePath().c_str();
+}
+#endif
+
 void MResource::OnReload()
 {
 	for (MResourceRef* pKeeper : m_vKeeper)

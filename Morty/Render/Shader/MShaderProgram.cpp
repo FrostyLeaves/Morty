@@ -1,6 +1,6 @@
 #include "MShaderProgram.h"
 
-#include "Material/MShader.h"
+#include "Shader/MShader.h"
 #include "MShaderBuffer.h"
 #include "Resource/MShaderResource.h"
 #include "Resource/MTextureResource.h"
@@ -309,3 +309,9 @@ std::shared_ptr<MTexture> MTextureResourceParam::GetTexture()
 
 	return MShaderTextureParam::GetTexture();
 }
+
+std::shared_ptr<MShaderTextureParam> MTextureResourceParam::Clone() const
+{
+	return std::make_shared<MTextureResourceParam>(*this);
+}
+

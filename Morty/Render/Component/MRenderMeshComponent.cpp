@@ -25,7 +25,6 @@ MRenderMeshComponent::MRenderMeshComponent()
 	: MComponent()
 	, m_eShadowType(MEShadowType::ENone)
 	, m_unDetailLevel(MRenderGlobal::MESH_LOD_LEVEL_RANGE)
-	, m_bDrawBoundingSphere(false)
 {
 
 }
@@ -56,12 +55,7 @@ std::shared_ptr<MMaterialResource> MRenderMeshComponent::GetMaterialResource() c
 
 std::shared_ptr<MMaterial> MRenderMeshComponent::GetMaterial()
 {
-	if (auto pMaterialResource = m_Material.GetResource<MMaterialResource>())
-	{
-		return pMaterialResource->GetMaterial();
-	}
-
-	return nullptr;
+	return m_Material.GetResource<MMaterial>();
 }
 
 bool MRenderMeshComponent::SetMaterialPath(const MString& strPath)
@@ -140,7 +134,6 @@ flatbuffers::Offset<void> MRenderMeshComponent::Serialize(flatbuffers::FlatBuffe
 	mfbs::MRenderMeshComponentBuilder builder(fbb);
 
 	builder.add_gen_dir_shadow(GetGenerateDirLightShadow());
-	builder.add_draw_bounding(GetDrawBoundingSphere());
 	builder.add_lod((int)GetDetailLevel());
 	builder.add_material(fb_material);
 	builder.add_mesh(fb_mesh);
@@ -165,7 +158,6 @@ void MRenderMeshComponent::Deserialize(const void* pBufferPointer)
 	Super::Deserialize(pComponent->super());
 
 	SetGenerateDirLightShadow(pComponent->gen_dir_shadow());
-	SetDrawBoundingSphere(pComponent->draw_bounding());
 	SetDetailLevel(pComponent->lod());
 
 	MResourceRef material;

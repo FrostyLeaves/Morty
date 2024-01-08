@@ -21,6 +21,7 @@
 
 #include "Utility/MBounds.h"
 #include "Mesh/MMeshManager.h"
+#include "Render/MMaterialName.h"
 #include "Resource/MMaterialResource.h"
 
 
@@ -89,25 +90,10 @@ void MDeferredLightingRenderWork::Initialize(MEngine* pEngine)
 {
 	Super::Initialize(pEngine);
 
-
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+	const auto pTemplate = pResourceSystem->LoadResource(MMaterialName::DEFERRED_LIGHTING);
+	m_pLightningMaterial = MMaterial::CreateMaterial(pTemplate);
 
-	std::shared_ptr<MResource> vs = pResourceSystem->LoadResource("Shader/Deferred/deferred_lighting.mvs");
-	std::shared_ptr<MResource> ps = pResourceSystem->LoadResource("Shader/Deferred/deferred_lighting.mps");
-
-
-	m_pLightningMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-	m_pLightningMaterial->LoadShader(vs);
-	m_pLightningMaterial->LoadShader(ps);
-
-	/*
-	auto pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-
-	auto pShadingRateTexture = MTexture::CreateShadingRate();
-	pShadingRateTexture->SetSize(Vector2i(512/16, 512 / 16));
-	pShadingRateTexture->GenerateBuffer(pRenderSystem->GetDevice());
-	m_renderPass.SetShadingRateTexture(pShadingRateTexture);
-	*/
 }
 
 void MDeferredLightingRenderWork::Release(MEngine* pEngine)

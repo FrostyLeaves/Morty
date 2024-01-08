@@ -118,9 +118,9 @@ void MTransparentRenderWork::RenderDepthPeel(MRenderInfo& info, const std::vecto
 	pCommand->SetScissor(MScissorInfo(f2LeftTop.x, f2LeftTop.y, f2Size.x, f2Size.y));
 
 
-	if (m_pDrawPeelMaterial->GetTextureParams()[0]->GetTexture() != pDepthTexture)
+	if (m_pDrawPeelMaterial->GetMaterialPropertyBlock()->m_vTextures[0]->GetTexture() != pDepthTexture)
 	{
-		m_pDrawPeelMaterial->GetTextureParams()[0]->SetTexture(pDepthTexture);
+		m_pDrawPeelMaterial->GetMaterialPropertyBlock()->m_vTextures[0]->SetTexture(pDepthTexture);
 	}
 	
 
@@ -186,19 +186,21 @@ void MTransparentRenderWork::InitializeMaterial()
 	std::shared_ptr<MResource> pDPBPSResource = pResourceSystem->LoadResource("Shader/Forward/depth_peel_blend.mps");
 	std::shared_ptr<MResource> pDPFPSResource = pResourceSystem->LoadResource("Shader/Forward/depth_peel_fill.mps");
 
-	m_pDrawPeelMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-	m_pDrawPeelMaterial->SetMaterialType(MEMaterialType::EDepthPeel);
-	m_pDrawPeelMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::MEN_TRANSPARENT, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-	m_pDrawPeelMaterial->LoadShader(pDPVSResource);
-	m_pDrawPeelMaterial->LoadShader(pDPFPSResource);
+	const auto pPeelTemplate = pResourceSystem->CreateResource<MMaterialTemplate>();
+	pPeelTemplate->SetMaterialType(MEMaterialType::EDepthPeel);
+	pPeelTemplate->AddDefine(MRenderGlobal::MEN_TRANSPARENT, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+	pPeelTemplate->LoadShader(pDPVSResource);
+	pPeelTemplate->LoadShader(pDPFPSResource);
+	m_pDrawPeelMaterial = MMaterial::CreateMaterial(pPeelTemplate);
 
 
-	m_pDrawFillMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-	m_pDrawFillMaterial->SetMaterialType(MEMaterialType::ETransparentBlend);
-	m_pDrawFillMaterial->LoadShader(pDPVSResource);
-	m_pDrawFillMaterial->LoadShader(pDPBPSResource);
+	const auto pFillTemplate = pResourceSystem->CreateResource<MMaterialTemplate>();
+	pFillTemplate->SetMaterialType(MEMaterialType::ETransparentBlend);
+	pFillTemplate->LoadShader(pDPVSResource);
+	pFillTemplate->LoadShader(pDPBPSResource);
+	m_pDrawFillMaterial = MMaterial::CreateMaterial(pFillTemplate);
 
-	std::vector<std::shared_ptr<MShaderTextureParam>>& params = m_pDrawFillMaterial->GetTextureParams();
+	std::vector<std::shared_ptr<MShaderTextureParam>>& params = m_pDrawFillMaterial->GetMaterialPropertyBlock()->m_vTextures;
 	params[0]->SetTexture(m_pFrontTexture);
 	params[1]->SetTexture(m_pBackTexture);
 }
@@ -386,12 +388,14 @@ void MTransparentRenderWork::InitializeFrameShaderParams()
 
 	std::shared_ptr<MResource> forwardVS = pResourceSystem->LoadResource("Shader/Model/universal_model.mvs");
 	std::shared_ptr<MResource> forwardPS = pResourceSystem->LoadResource("Shader/Forward/basic_lighting.mps");
-	m_pForwardMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-	m_pForwardMaterial->SetCullMode(MECullMode::ECullBack);
-	m_pForwardMaterial->SetMaterialType(MEMaterialType::EDepthPeel);
-	m_pForwardMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::MEN_TRANSPARENT, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-	m_pForwardMaterial->LoadShader(forwardVS);
-	m_pForwardMaterial->LoadShader(forwardPS);
+	auto pTemplate = pResourceSystem->CreateResource<MMaterialTemplate>();
+	pTemplate->SetCullMode(MECullMode::ECullBack);
+	pTemplate->SetMaterialType(MEMaterialType::EDepthPeel);
+	pTemplate->AddDefine(MRenderGlobal::MEN_TRANSPARENT, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+	pTemplate->LoadShader(forwardVS);
+	pTemplate->LoadShader(forwardPS);
+
+	m_pForwardMaterial = MMaterial::CreateMaterial(pTemplate);
 
 	m_aFramePropertyBlock[0] = m_pForwardMaterial->GetShaderProgram()->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_OTHER]->Clone();
 	m_aFramePropertyBlock[1] = m_pForwardMaterial->GetShaderProgram()->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_OTHER]->Clone();

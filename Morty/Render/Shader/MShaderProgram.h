@@ -14,10 +14,8 @@
 
 #include "MShaderMacro.h"
 #include "MShaderBuffer.h"
-#include "Material/MShader.h"
-#include "Material/MShaderPropertyBlock.h"
-
-#include <vector>
+#include "Shader/MShader.h"
+#include "Shader/MShaderParam.h"
 
 struct MORTY_API MTextureResourceParam : public MShaderTextureParam
 {
@@ -27,6 +25,7 @@ public:
 
 	void SetTexture(std::shared_ptr<MTexture> pTexture) override;
 	std::shared_ptr<MTexture> GetTexture() override;
+	std::shared_ptr<MShaderTextureParam> Clone() const override;
 
 	void SetTexture(const std::shared_ptr<MTextureResource>& pTextureResource);
 	std::shared_ptr<MTextureResource> GetTextureResource() const { return m_TextureRef.GetResource<MTextureResource>(); }

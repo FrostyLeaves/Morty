@@ -14,10 +14,10 @@
 #include "Resource/MTextureResource.h"
 #include "Object/MObject.h"
 
-#include "MShaderMacro.h"
-#include "MShaderProgram.h"
-#include "MShaderBuffer.h"
-#include "Material/MShaderPropertyBlock.h"
+#include "Shader/MShaderMacro.h"
+#include "Shader/MShaderProgram.h"
+#include "Shader/MShaderBuffer.h"
+#include "Shader/MShaderPropertyBlock.h"
 
 #include <vector>
 

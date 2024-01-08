@@ -3,7 +3,7 @@
 #include "Scene/MEntity.h"
 #include "Engine/MEngine.h"
 #include "Material/MMaterial.h"
-#include "Material/MShaderPropertyBlock.h"
+#include "Shader/MShaderPropertyBlock.h"
 #include "System/MRenderSystem.h"
 
 #include "Component/MSceneComponent.h"
@@ -16,6 +16,7 @@ void MNoneBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgra
 {
 	m_pEngine = pEngine;
 	m_pShaderProgram = pShaderProgram;
+	MORTY_ASSERT(m_pShaderProgram);
 
 	if (m_pShaderPropertyBlock)
 	{
@@ -25,18 +26,17 @@ void MNoneBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgra
 		m_pTransformParam = nullptr;
 	}
 
-	if (pShaderProgram)
+	m_pShaderPropertyBlock = MMaterialTemplate::CreateMeshPropertyBlock(pShaderProgram);
+	if (m_pShaderPropertyBlock)
 	{
-		m_pShaderPropertyBlock = MMaterial::CreateMeshPropertyBlock(pShaderProgram);
-		if (m_pShaderPropertyBlock)
-		{
-			m_pTransformParam = m_pShaderPropertyBlock->FindConstantParam(MShaderPropertyName::CBUFFER_MESH_MATRIX);
-			MVariantStruct& srt = m_pTransformParam->var.GetValue<MVariantStruct>();
-			m_worldMatrix = srt.FindVariant(MShaderPropertyName::MESH_WORLD_MATRIX);
-			m_normalMatrix = srt.FindVariant(MShaderPropertyName::MESH_NORMAL_MATRIX);
-			m_instanceIdx = srt.FindVariant(MShaderPropertyName::MESH_INSTANCE_INDEX);
-		}
+		m_pTransformParam = m_pShaderPropertyBlock->FindConstantParam(MShaderPropertyName::CBUFFER_MESH_MATRIX);
+		MVariantStruct& srt = m_pTransformParam->var.GetValue<MVariantStruct>();
+		m_worldMatrix = srt.FindVariant(MShaderPropertyName::MESH_WORLD_MATRIX);
+		m_normalMatrix = srt.FindVariant(MShaderPropertyName::MESH_NORMAL_MATRIX);
+		m_instanceIdx = srt.FindVariant(MShaderPropertyName::MESH_INSTANCE_INDEX);
 	}
+
+	MORTY_ASSERT(m_pTransformParam);
 }
 
 void MNoneBatchGroup::Release(MEngine* pEngine)

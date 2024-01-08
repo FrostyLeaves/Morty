@@ -1,4 +1,4 @@
-#include "Material/MShaderParam.h"
+#include "MShaderParam.h"
 #include "Basic/MTexture.h"
 
 MShaderConstantParam::MShaderConstantParam()
@@ -50,6 +50,11 @@ void MShaderTextureParam::SetTexture(std::shared_ptr<MTexture> pTexture)
 		this->pTexture = pTexture;
 		SetDirty();
 	}
+}
+
+std::shared_ptr<MShaderTextureParam> MShaderTextureParam::Clone() const
+{
+	return std::make_shared<MShaderTextureParam>(*this);
 }
 
 MShaderSampleParam::MShaderSampleParam()

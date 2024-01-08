@@ -105,8 +105,7 @@ void ModelConvertView::Render()
 		std::queue<MModelConvertInfo> convertQueue = m_convertQueue;
 		m_convertQueue = {};
 
-		MThreadWork work;
-		work.eThreadType = METhreadType::ECurrentThread;
+		MThreadWork work(METhreadType::ECurrentThread);
 		work.funcWorkFunction = std::bind(&ModelConvertView::Convert, this, convertQueue);
 
 		GetEngine()->GetThreadPool()->AddWork(work);

@@ -103,14 +103,15 @@ VkDevice MVulkanPhysicalDevice::CreateLogicalDevice()
 {
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos{};
 
-	const float priorities[] = { 1.0f };	//range 0~1
+	const float graphics_priorities[] = { 0.0f, 1.0f };	//range 0~1
+	const float compute_priorities[] = { 1.0f };	//range 0~1
 	VkDeviceQueueCreateInfo queueInfo{};
 	queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 	queueInfo.pNext = NULL;
 	queueInfo.flags = 0;
 	queueInfo.queueFamilyIndex = m_nGraphicsFamilyIndex;
-	queueInfo.queueCount = 1;
-	queueInfo.pQueuePriorities = priorities;
+	queueInfo.queueCount = 2;
+	queueInfo.pQueuePriorities = graphics_priorities;
 	queueCreateInfos.push_back(queueInfo);
 
 	if (m_nComputeFamilyIndex != m_nGraphicsFamilyIndex)
@@ -119,7 +120,7 @@ VkDevice MVulkanPhysicalDevice::CreateLogicalDevice()
 		queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 		queueInfo.queueFamilyIndex = m_nComputeFamilyIndex;
 		queueInfo.queueCount = 1;
-		queueInfo.pQueuePriorities = priorities;
+		queueInfo.pQueuePriorities = compute_priorities;
 		queueCreateInfos.push_back(queueInfo);
 	}
 
@@ -652,6 +653,11 @@ int MVulkanPhysicalDevice::FindQueueComputeFamilies(VkPhysicalDevice device) con
 bool MVulkanPhysicalDevice::MultiDrawIndirectSupport() const
 {
     return m_VkPhysicalDeviceFeatures.multiDrawIndirect;
+}
+
+bool MVulkanPhysicalDevice::SparseTextureSupport() const
+{
+	return m_VkPhysicalDeviceFeatures.sparseBinding;
 }
 
 std::set<MString> MVulkanPhysicalDevice::GetNotSupportDeviceExtension(VkPhysicalDevice device, const std::set<MString>& tRequiredExtensions) const

@@ -16,12 +16,9 @@ void TRANSFORM_SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
 
 
-	std::shared_ptr<MMaterialResource> pForwardMaterial = pResourceSystem->CreateResource<MMaterialResource>();
+	const auto pTemplate = pResourceSystem->LoadResource(MMaterialName::BASIC_LIGHTING);
+	const auto pForwardMaterial = MMaterialResource::CreateMaterial(pTemplate);
 	{
-		pForwardMaterial->LoadShader("Shader/Model/universal_model.mvs");
-		pForwardMaterial->LoadShader("Shader/Forward/basic_lighting.mps");
-		pForwardMaterial->SetMaterialType(MEMaterialType::EDefault);
-
 		pForwardMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_AMBIENT, Vector3(1.0f, 1.0f, 1.0f));
 		pForwardMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_DIFFUSE, Vector3(1.0f, 1.0f, 1.0f));
 		pForwardMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_SPECULAR, Vector3(1.0f, 1.0f, 1.0f));

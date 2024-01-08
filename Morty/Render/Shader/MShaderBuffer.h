@@ -9,7 +9,7 @@
 #pragma once
 
 #include "Render/MRenderGlobal.h"
-#include "Material/MShaderPropertyBlock.h"
+#include "Shader/MShaderPropertyBlock.h"
 
 class MORTY_API MShaderBuffer
 {

@@ -36,7 +36,9 @@ public:
 	int FindQueueGraphicsFamilies(VkPhysicalDevice device) const;
 	int FindQueuePresentFamilies(VkSurfaceKHR surface) const;
 	int FindQueueComputeFamilies(VkPhysicalDevice device) const;
+
 	bool MultiDrawIndirectSupport() const;
+	bool SparseTextureSupport() const;
 
 	int FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
 	VkFormat FindSupportedFormat(const std::set<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;

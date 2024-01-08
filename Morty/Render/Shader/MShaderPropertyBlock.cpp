@@ -1,4 +1,4 @@
-#include "Material/MShaderPropertyBlock.h"
+#include "MShaderPropertyBlock.h"
 #include "Render/MIDevice.h"
 #if RENDER_GRAPHICS == MORTY_VULKAN
 #include "Render/Vulkan/MVulkanDevice.h"
@@ -149,7 +149,7 @@ std::shared_ptr<MShaderPropertyBlock> MShaderPropertyBlock::Clone() const
 		pPropertyBlock->m_vParams[i] = std::make_shared<MShaderConstantParam>(*m_vParams[i]);
 
 	for (uint32_t i = 0; i < m_vTextures.size(); ++i)
-		pPropertyBlock->m_vTextures[i] = std::make_shared<MShaderTextureParam>(*m_vTextures[i]);
+		pPropertyBlock->m_vTextures[i] = m_vTextures[i]->Clone();
 
 	for (uint32_t i = 0; i < m_vSamples.size(); ++i)
 		pPropertyBlock->m_vSamples[i] = std::make_shared<MShaderSampleParam>(*m_vSamples[i]);

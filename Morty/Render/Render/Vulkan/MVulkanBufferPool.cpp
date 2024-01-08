@@ -1,7 +1,7 @@
 #include "Render/Vulkan/MVulkanBufferPool.h"
 
 #include "Render/Vulkan/MVulkanDevice.h"
-#include "Material/MShaderParam.h"
+#include "Shader/MShaderParam.h"
 
 const uint32_t UinformMemorySize = 32 * 1024 * 1024;
 const uint32_t ReadBackMemorySize = 32 * 1024 * 1024;

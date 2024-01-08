@@ -66,8 +66,7 @@ void MSkyBoxSystem::GenerateEnvironmentTexture(MSkyBoxComponent* pComponent)
 {
 	MThreadPool* pThreadPool = GetEngine()->GetThreadPool();
 
-	MThreadWork work;
-	work.eThreadType = METhreadType::ERenderThread;
+	MThreadWork work(METhreadType::ERenderThread);
 	work.funcWorkFunction = M_CLASS_FUNCTION_BIND_1_0(MSkyBoxSystem::GenerateEnvironmentWork, this, pComponent);
 	pThreadPool->AddWork(work);
 }

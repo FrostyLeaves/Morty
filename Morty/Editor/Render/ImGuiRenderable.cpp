@@ -3,7 +3,7 @@
 #include "Engine/MEngine.h"
 #include "Basic/MTexture.h"
 #include "Material/MMaterial.h"
-#include "Material/MShaderPropertyBlock.h"
+#include "Shader/MShaderPropertyBlock.h"
 #include "Render/MRenderCommand.h"
 
 #include "Resource/MTextureResource.h"
@@ -102,10 +102,13 @@ void ImGuiRenderable::InitializeMaterial()
 {
 	MResourceSystem* pResourceSystem = m_pEngine->FindSystem<MResourceSystem>();
 
-	m_pMaterial = pResourceSystem->CreateResource<MMaterial>();
+	auto pTemplate = pResourceSystem->CreateResource<MMaterialTemplate>();
+	pTemplate->LoadShader("Shader/Imgui/imgui.mvs");
+	pTemplate->LoadShader("Shader/Imgui/imgui.mps");
+	pTemplate->SetMaterialType(MEMaterialType::EImGui);
+	pTemplate->SetCullMode(MECullMode::ECullNone);
 
-	m_pMaterial->LoadShader("Shader/Imgui/imgui.mvs");
-	m_pMaterial->LoadShader("Shader/Imgui/imgui.mps");
+	m_pMaterial = MMaterial::CreateMaterial(pTemplate);
 }
 
 void ImGuiRenderable::ReleaseMaterial()
@@ -181,8 +184,6 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
 		return;
 
 	pCommand->SetViewport(MViewportInfo(0.0f, fb_height, fb_width, -fb_height));
-	m_pMaterial->SetMaterialType(MEMaterialType::EImGui);
-	m_pMaterial->SetCullMode(MECullMode::ECullNone);
 
 	Vector2 scale;
 	scale.x = 2.0f / draw_data->DisplaySize.x;
@@ -271,7 +272,7 @@ ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturPropertyBlock(ImGu
 
 		pDest->pTexture = key.pTexture;
 		pDest->nDestroyCount = 0;
-		pDest->pPropertyBlock = MMaterial::CreateMeshPropertyBlock(m_pMaterial->GetShaderProgram());
+		pDest->pPropertyBlock = MMaterialTemplate::CreateMeshPropertyBlock(m_pMaterial->GetShaderProgram());
 
 		if (key.pTexture->GetTextureType() == METextureType::ETexture2D)
 		{

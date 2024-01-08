@@ -8,7 +8,7 @@
 #include "Utility/MMemoryPool.h"
 #include "MInstanceBatchGroup.h"
 #include "Basic/MStorageVariant.h"
-#include "Material/MShaderParam.h"
+#include "Shader/MShaderParam.h"
 
 class MShaderProgram;
 struct MShaderConstantParam;

@@ -9,7 +9,7 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "Material/MShaderParam.h"
+#include "Shader/MShaderParam.h"
 
 #include <vector>
 

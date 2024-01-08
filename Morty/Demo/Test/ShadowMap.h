@@ -8,6 +8,7 @@
 #include "Component/MSceneComponent.h"
 #include "Component/MRenderMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
+#include "Render/MMaterialName.h"
 
 #include "Resource/MMeshResource.h"
 #include "Resource/MMaterialResource.h"
@@ -39,9 +40,8 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 
 	std::shared_ptr<MMaterialResource> pForwardMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	{
-		pForwardMaterial->LoadShader("Shader/Model/universal_model.mvs");
-		pForwardMaterial->LoadShader("Shader/Forward/basic_lighting.mps");
-		pForwardMaterial->SetMaterialType(MEMaterialType::EDefault);
+		const auto pTemplate = pResourceSystem->LoadResource(MMaterialName::BASIC_LIGHTING);
+		pForwardMaterial = MMaterialResource::CreateMaterial(pTemplate);
 
 		pForwardMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_AMBIENT, Vector3(1.0f, 1.0f, 1.0f));
 		pForwardMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_DIFFUSE, Vector3(1.0f, 1.0f, 1.0f));
@@ -58,9 +58,8 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 
 	std::shared_ptr<MMaterialResource> pDeferredMaterial = pResourceSystem->CreateResource<MMaterialResource>();
 	{
-		pDeferredMaterial->LoadShader("Shader/Model/universal_model.mvs");
-		pDeferredMaterial->LoadShader("Shader/Deferred/deferred_gbuffer.mps");
-		pDeferredMaterial->SetMaterialType(MEMaterialType::EDeferred);
+		const auto pTemplate = pResourceSystem->LoadResource(MMaterialName::DEFERRED_GBUFFER);
+		pDeferredMaterial = MMaterialResource::CreateMaterial(pTemplate);
 
 		std::shared_ptr<MResource> albedo = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
 		std::shared_ptr<MResource> normal = pResourceSystem->LoadResource(MRenderModule::DefaultNormal);
@@ -90,11 +89,8 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 	}
 	if (MRenderMeshComponent* pMeshComponent = pFloorEntity->RegisterComponent<MRenderMeshComponent>())
 	{
-		std::shared_ptr<MMaterialResource> pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-
-		pMaterial->LoadShader("Shader/Model/universal_model.mvs");
-		pMaterial->LoadShader("Shader/Forward/basic_lighting.mps");
-		pMaterial->SetMaterialType(MEMaterialType::EDefault);
+		const auto pTemplate = pResourceSystem->LoadResource(MMaterialName::BASIC_LIGHTING);
+		const auto pMaterial = MMaterialResource::CreateMaterial(pTemplate);
 
 		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_AMBIENT, Vector3(0.5f, 0.5f, 0.5f));
 		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_DIFFUSE, Vector3(0.5f, 0.5f, 0.5f));

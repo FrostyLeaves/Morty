@@ -18,17 +18,13 @@ class MORTY_API MThreadPool : public MTypeClass
     MORTY_CLASS(MThreadPool)
 
 public:
-    MThreadPool();
-    virtual ~MThreadPool();
-
-public:
 
 	void Initialize();
 	void Release();
 
 	bool AddWork(const MThreadWork& work);
 
-	void ThreadRun(METhreadType eType, size_t nThreadIndex, MString strThreadName);
+	void ThreadRun(size_t nThreadIndex, MString strThreadName);
 
 	static std::thread::id GetCurrentThreadID();
 
@@ -42,11 +38,11 @@ private:
 
 	std::array<std::thread, MGlobal::M_MAX_THREAD_NUM> m_aThread;
 
-	static std::unordered_map<size_t, METhreadType> s_tThreadType;
+	static std::array<METhreadType, MGlobal::M_MAX_THREAD_NUM> s_tThreadType;
 
 	std::queue<MThreadWork> m_vWaitingWork;
 
-	std::queue<MThreadWork> m_vWaitingWorkForRender;
+	std::array<std::queue<MThreadWork>, MGlobal::M_MAX_THREAD_NUM> m_vSpecificWaitingWork;
 
 	bool m_bInitialized = false;
 	bool m_bClose = false;

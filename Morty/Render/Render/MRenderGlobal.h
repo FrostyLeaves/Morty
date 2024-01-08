@@ -17,7 +17,7 @@
 #endif
 
 #define GPU_CULLING_ENABLE (false)
-#define MORTY_VXGI_ENABLE (true)
+#define MORTY_VXGI_ENABLE (false)
 #define VRS_OPTIMIZE_ENABLE  (false)
 
 class MORTY_API MRenderGlobal
@@ -75,6 +75,8 @@ public:
 
 	static MStringId POSTPROCESS_FINAL_NODE;
 	static MStringId POSTPROCESS_EDGE_DETECTION;
+
+	static constexpr int THREAD_ID_SUBMIT = 3;
 };
 
 using MMeshInstanceKey = size_t;

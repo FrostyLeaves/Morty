@@ -3,7 +3,7 @@
 #include "Scene/MScene.h"
 #include "Scene/MEntity.h"
 #include "Engine/MEngine.h"
-#include "Material/MShader.h"
+#include "Shader/MShader.h"
 #include "Basic/MViewport.h"
 
 #include "Component/MSceneComponent.h"
@@ -16,6 +16,8 @@
 #include "Resource/MMaterialResource.h"
 
 #include "Manager/MAnimationManager.h"
+#include "Render/MMaterialName.h"
+#include "Resource/MMaterialTemplateResource.h"
 
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
@@ -50,19 +52,13 @@ std::shared_ptr<MMaterial> MFrameShaderPropertyBlock::LoadMaterial(MEngine* pEng
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
 
-	std::shared_ptr<MResource> forwardVS = pResourceSystem->LoadResource("Shader/Model/universal_model.mvs");
-	std::shared_ptr<MResource> forwardPS = pResourceSystem->LoadResource("Shader/Deferred/deferred_gbuffer.mps");
-	auto pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-	pMaterial->SetCullMode(MECullMode::ECullBack);
-	pMaterial->LoadShader(forwardVS);
-	pMaterial->LoadShader(forwardPS);
-
-	return pMaterial;
+	const auto pMaterialTemplate = pResourceSystem->LoadResource(MMaterialName::FRAME_DEFAULT);
+	return MMaterial::CreateMaterial(pMaterialTemplate);
 }
 
 void MFrameShaderPropertyBlock::BindMaterial(const std::shared_ptr<MMaterial>& pMaterial)
 {
-	m_pShaderPropertyBlock = MMaterial::CreateFramePropertyBlock(pMaterial->GetShaderProgram());
+	m_pShaderPropertyBlock = MMaterialTemplate::CreateFramePropertyBlock(pMaterial->GetShaderProgram());
 
 	for (const auto& pDecorator : m_vPropertyUpdateDecorator)
 	{

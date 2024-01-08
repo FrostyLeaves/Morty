@@ -111,7 +111,7 @@ void MPostProcessRenderWork::InitializeMaterial()
 
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-	auto pMaterial = pResourceSystem->CreateResource<MMaterial>("PostProcess Basic");
+	auto pMaterial = pResourceSystem->CreateResource<MMaterialTemplate>("PostProcess Basic");
 	std::shared_ptr<MResource> pVertexShader = pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mvs");
 	std::shared_ptr<MResource> pPixelShader = pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mps");
 	pMaterial->LoadShader(pVertexShader);
@@ -119,16 +119,16 @@ void MPostProcessRenderWork::InitializeMaterial()
 	pMaterial->SetCullMode(MECullMode::ECullNone);
 
 	auto pBasicProcess = m_postProcessGraph.AddNode<MPostProcessNode>(MRenderGlobal::POSTPROCESS_FINAL_NODE);
-	pBasicProcess->SetMaterial(pMaterial);
+	pBasicProcess->SetMaterial(MMaterial::CreateMaterial(pMaterial));
 
-	auto pEdgeMaterial = pResourceSystem->CreateResource<MMaterial>("PostProcess Edge Detection");
+	auto pEdgeMaterial = pResourceSystem->CreateResource<MMaterialTemplate>("PostProcess Edge Detection");
 	std::shared_ptr<MResource> pEdgePixelShader = pResourceSystem->LoadResource("Shader/PostProcess/sobel_edge_detection.mps");
 	pEdgeMaterial->LoadShader(pVertexShader);
 	pEdgeMaterial->LoadShader(pEdgePixelShader);
 	pEdgeMaterial->SetCullMode(MECullMode::ECullNone);
 
 	auto pEdgeDetection = m_postProcessGraph.AddNode<MPostProcessNode>(MRenderGlobal::POSTPROCESS_EDGE_DETECTION);
-	pEdgeDetection->SetMaterial(pEdgeMaterial);
+	pEdgeDetection->SetMaterial(MMaterial::CreateMaterial(pEdgeMaterial));
 
 
 	m_postProcessGraph.Compile();

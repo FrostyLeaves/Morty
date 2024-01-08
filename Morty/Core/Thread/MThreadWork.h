@@ -10,7 +10,7 @@
 
 #include "Utility/MGlobal.h"
 
-enum class METhreadType
+enum class METhreadType : int
 {
 	EAny = -2,
 	ECurrentThread = -1,
@@ -23,10 +23,10 @@ enum class METhreadType
 
 struct MORTY_API MThreadWork
 {
-public:
-	MThreadWork();
+	MThreadWork() = default;
+	MThreadWork(METhreadType type) : eThreadType(static_cast<int>(type)){}
 
-	std::function<void(void)> funcWorkFunction;
+	std::function<void(void)> funcWorkFunction = nullptr;
 
-	METhreadType eThreadType;
+	int eThreadType = static_cast<int>(METhreadType::EAny);
 };

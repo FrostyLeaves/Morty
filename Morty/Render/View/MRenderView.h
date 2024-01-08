@@ -24,11 +24,11 @@ class MORTY_API MViewRenderTarget
 {
 public:
 
-	void BindPrimaryCommand(MIRenderCommand* pCommand) { pPrimaryCommand = pCommand; }
+	void BindPrimaryCommand(MIRenderCommand* pCommand);
 
 	MRenderPass renderPass;
 	uint32_t unImageIndex = 0;
-	MIRenderCommand* pPrimaryCommand = nullptr;
+	MVulkanPrimaryRenderCommand* pPrimaryCommand = nullptr;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	VkSemaphore vkImageReadySemaphore;
@@ -47,9 +47,6 @@ public:
 	uint32_t GetHeight() { return m_unHeight; }
 
 	void Resize(const Vector2& v2Size);
-
-
-public:
 
 	virtual void Initialize(MEngine* pEngine);
 	virtual void Release();
@@ -72,19 +69,19 @@ public:
 	
 #endif
 
-public:
-
 	MEngine* GetEngine() { return m_pEngine; }
 
 	size_t GetImageCount() { return m_vRenderTarget.size(); }
 
 protected:
 
+
+	void PresetWork(MViewRenderTarget* pRenderTarget);
+
+
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	VkSurfaceKHR m_VkSurface;
 	VkSwapchainKHR m_VkSwapchain;
-
-	VkQueue m_VkPresentQueue;
 
 	uint32_t m_unMinImageCount;
 
@@ -92,11 +89,14 @@ protected:
 	VkExtent2D m_VkExtend;
 
 	MVulkanDevice* m_pDevice;
+
 #endif
 
 	std::vector<MViewRenderTarget> m_vRenderTarget;
 
 private:
+
+	std::atomic<bool> m_bSubmitFinished = true;
 
 	MEngine* m_pEngine = nullptr;
 

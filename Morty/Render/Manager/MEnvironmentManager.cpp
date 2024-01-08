@@ -10,6 +10,7 @@
 #include "System/MResourceSystem.h"
 #include "Component/MSceneComponent.h"
 #include "Component/MSkyBoxComponent.h"
+#include "Render/MMaterialName.h"
 #include "Resource/MMaterialResource.h"
 
 MORTY_CLASS_IMPLEMENT(MEnvironmentManager, IManager)
@@ -151,13 +152,8 @@ void MEnvironmentManager::InitializeMaterial()
 {
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-	std::shared_ptr<MResource> skyboxVS = pResourceSystem->LoadResource("Shader/Environment/skybox.mvs");
-	std::shared_ptr<MResource> skyboxPS = pResourceSystem->LoadResource("Shader/Environment/skybox.mps");
-	m_pSkyBoxMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-	m_pSkyBoxMaterial->SetCullMode(MECullMode::ECullNone);
-	m_pSkyBoxMaterial->LoadShader(skyboxVS);
-	m_pSkyBoxMaterial->LoadShader(skyboxPS);
-
+    const auto pTemplate = pResourceSystem->LoadResource(MMaterialName::SKY_BOX);
+	m_pSkyBoxMaterial = MMaterial::CreateMaterial(pTemplate);
 }
 
 void MEnvironmentManager::ReleaseMaterial()

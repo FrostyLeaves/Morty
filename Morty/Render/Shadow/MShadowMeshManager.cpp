@@ -7,17 +7,14 @@
 #include "Utility/MFunction.h"
 #include "Module/MCoreNotify.h"
 #include "TaskGraph/MTaskGraph.h"
-#include "Mesh/MMeshManager.h"
 #include "Material/MComputeDispatcher.h"
 
 
 #include "System/MObjectSystem.h"
-#include "System/MRenderSystem.h"
 #include "System/MNotifyManager.h"
 #include "System/MResourceSystem.h"
 
-#include "Component/MSceneComponent.h"
-#include "Component/MDirectionalLightComponent.h"
+#include "Render/MMaterialName.h"
 #include "Resource/MMaterialResource.h"
 #include "Utility/MGlobal.h"
 
@@ -199,23 +196,14 @@ void MShadowMeshManager::AddToDeleteQueue(MRenderMeshComponent* pComponent)
 void MShadowMeshManager::InitializeMaterial()
 {
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-	std::shared_ptr<MResource> vs = pResourceSystem->LoadResource("Shader/Shadow/shadowmap.mvs");
-	std::shared_ptr<MResource> ps = pResourceSystem->LoadResource("Shader/Shadow/shadowmap.mps");
-	auto pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-	pMaterial->SetCullMode(MECullMode::ECullNone);
-	pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-	pMaterial->LoadShader(vs);
-	pMaterial->LoadShader(ps);
+	auto pTemplate = pResourceSystem->LoadResource(MMaterialName::SHADOW_MAP);
+	auto pMaterial = MMaterial::CreateMaterial(pTemplate);
 	m_staticMaterial.SetResource(pMaterial);
 	m_tBatchMaterialGroup[MEMeshVertexType::Normal] = new MaterialGroup();
 	m_tBatchMaterialGroup[MEMeshVertexType::Normal]->materialGroup.Initialize(GetEngine(), pMaterial);
 
-	pMaterial = pResourceSystem->CreateResource<MMaterialResource>();
-	pMaterial->SetCullMode(MECullMode::ECullNone);
-	pMaterial->GetShaderMacro().AddUnionMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-	pMaterial->GetShaderMacro().SetInnerMacro(MRenderGlobal::SHADER_SKELETON_ENABLE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-	pMaterial->LoadShader(vs);
-	pMaterial->LoadShader(ps);
+	pTemplate = pResourceSystem->LoadResource(MMaterialName::SHADOW_MAP_SKELETON);
+	pMaterial = MMaterial::CreateMaterial(pTemplate);
 	m_animatedMaterial.SetResource(pMaterial);
 	m_tBatchMaterialGroup[MEMeshVertexType::Skeleton] = new MaterialGroup();
 	m_tBatchMaterialGroup[MEMeshVertexType::Skeleton]->materialGroup.Initialize(GetEngine(), pMaterial);
