@@ -42,7 +42,7 @@ void MainView::Render()
 {
 	Vector4 m_v4RenderViewSize = GetMainEditor()->GetCurrentWidgetSize();
 
-	auto pTexture = GetMainEditor()->GetSceneTexture()->GetTexture(0);
+	auto pTexture = GetMainEditor()->GetSceneTexture()->GetTexture();
 
 
 

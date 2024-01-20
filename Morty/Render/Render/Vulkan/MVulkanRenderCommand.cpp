@@ -441,6 +441,11 @@ void MVulkanRenderCommand::PopShaderPropertyBlock()
 
 bool MVulkanRenderCommand::AddRenderToTextureBarrier(const std::vector<MTexture*> vTextures, METextureBarrierStage dstStage)
 {
+	if(vTextures.empty())
+	{
+		return false;
+	}
+
 	const VkImageLayout dstLayout = GetTextureBarrierLayout(dstStage);
 	SetTextureLayout(vTextures, dstLayout);
 	return true;
@@ -569,7 +574,7 @@ void MVulkanRenderCommand::SetTextureLayout(const std::vector<MTexture*>& vTextu
 		subresourceRange.baseMipLevel = 0;
 		subresourceRange.levelCount = pTexture->m_unMipmapLevel;
 		subresourceRange.baseArrayLayer = 0;
-		subresourceRange.layerCount = static_cast<uint32_t>(pTexture->GetImageLayerNum());
+		subresourceRange.layerCount = m_pDevice->GetLayerCount(pTexture);
 
 		vImageBarrier.push_back(VkImageMemoryBarrier());
 		VkImageMemoryBarrier& imageMemoryBarrier = vImageBarrier.back();
@@ -644,7 +649,7 @@ bool MVulkanRenderCommand::DownloadTexture(MTexture* pTexture, const uint32_t& u
 	region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	region.imageSubresource.mipLevel = unValidMipIdx;
 	region.imageSubresource.baseArrayLayer = 0;
-	region.imageSubresource.layerCount = static_cast<uint32_t>(pTexture->GetImageLayerNum());
+	region.imageSubresource.layerCount = m_pDevice->GetLayerCount(pTexture);
 	region.imageOffset.x = 0;
 	region.imageOffset.y = 0;
 	region.imageOffset.z = 0;
@@ -683,13 +688,13 @@ bool MVulkanRenderCommand::CopyImageBuffer(MTexture* pSource, MTexture* pDest)
 	blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	blit.srcSubresource.mipLevel = 0;
 	blit.srcSubresource.baseArrayLayer = 0;
-	blit.srcSubresource.layerCount = static_cast<uint32_t>(pSource->GetImageLayerNum());
+	blit.srcSubresource.layerCount = m_pDevice->GetLayerCount(pSource);
 	blit.dstOffsets[0] = { 0, 0, 0 };
 	blit.dstOffsets[1] = { static_cast<int32_t>(pDest->GetSize().x), static_cast<int32_t>(pDest->GetSize().y), 1 };
 	blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	blit.dstSubresource.mipLevel = 0;
 	blit.dstSubresource.baseArrayLayer = 0;
-	blit.dstSubresource.layerCount = static_cast<uint32_t>(pDest->GetImageLayerNum());
+	blit.dstSubresource.layerCount = m_pDevice->GetLayerCount(pDest);
 
 	vkCmdBlitImage(m_VkCommandBuffer, pSource->m_VkTextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pDest->m_VkTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
 
@@ -725,7 +730,7 @@ void MVulkanRenderCommand::FillTexture(MTexture* pTexture, MColor color)
 	subresourceRange.baseMipLevel = 0;
 	subresourceRange.levelCount = pTexture->m_unMipmapLevel;
 	subresourceRange.baseArrayLayer = 0;
-	subresourceRange.layerCount = static_cast<uint32_t>(pTexture->GetImageLayerNum());
+	subresourceRange.layerCount = m_pDevice->GetLayerCount(pTexture);
 	vkCmdClearColorImage(m_VkCommandBuffer, pTexture->m_VkTextureImage, vkClearLayout, &vkColor, 1, &subresourceRange);
 
 }

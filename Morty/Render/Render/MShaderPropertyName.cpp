@@ -55,6 +55,7 @@ MStringId MShaderPropertyName::VOXELIZER_VOXEL_TABLE_NAME = MStringId("rVoxelTab
 
 MStringId MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_0 = MStringId("u_texSubpassInput0");
 MStringId MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_1 = MStringId("u_texSubpassInput1");
+MStringId MShaderPropertyName::TRANSPARENT_TEXTURE_BACK_TEXTURE = MStringId("BackTexture");
 
 MStringId MShaderPropertyName::CBUFFER_MESH_MATRIX = MStringId("u_meshMatrix");
 MStringId MShaderPropertyName::MESH_LOCAL_MATRIX = MStringId("u_meshMatrix");
@@ -100,14 +101,24 @@ MStringId MShaderPropertyName::ENVIRONMENT_TEXTURE_SKYBOX = MStringId("u_texSkyB
 MStringId MShaderPropertyName::ENVIRONMENT_IBL_MVP_MATRIX = MStringId("u_ModelViewProj");
 MStringId MShaderPropertyName::ENVIRONMENT_IBL_ROUGHNESS = MStringId("u_roughness");
 
-MStringId MShaderPropertyName::POSTPROCESS_SCREEN_TEXTURE = MStringId("u_texInputTexture");
+MStringId MShaderPropertyName::POSTPROCESS_SCREEN_TEXTURE[8] = {
+    MStringId("u_texInputTexture"),
+    MStringId("u_texInputTexture1"),
+    MStringId("u_texInputTexture2"),
+    MStringId("u_texInputTexture3"),
+    MStringId("u_texInputTexture4"),
+    MStringId("u_texInputTexture5"),
+    MStringId("u_texInputTexture6"),
+    MStringId("u_texInputTexture7"),
+};
 MStringId MShaderPropertyName::POSTPROCESS_SCREEN_SIZE = MStringId("u_f2ScreenSize");
 
 MStringId MShaderPropertyName::IMGUI_SCALE = MStringId("u_f2Scale");
 MStringId MShaderPropertyName::IMGUI_TRANSLATE = MStringId("u_f2Translate");
 MStringId MShaderPropertyName::IMGUI_IMAGE_TYPE = MStringId("u_nImageType");
-MStringId MShaderPropertyName::IMGUI_IMAGE_ARRAY = MStringId("u_nImageArray");
+MStringId MShaderPropertyName::IMGUI_SINGLE_CHANNEL_FLAG = MStringId("u_nSingleChannelFlag");
 MStringId MShaderPropertyName::IMGUI_IMAGE_INDEX = MStringId("u_nImageIndex");
+MStringId MShaderPropertyName::IMGUI_IMAGE_SIZE = MStringId("u_nImageSize");
 
 
 MStringId MShaderPropertyName::VRS_CBUFFER_SETTING_NAME = MStringId("cbVRSSetting");

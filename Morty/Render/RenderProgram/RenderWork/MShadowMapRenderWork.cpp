@@ -21,12 +21,15 @@
 
 #include "Utility/MBounds.h"
 #include "Mesh/MMeshManager.h"
+#include "RenderProgram/MeshRender/MCullingResultRenderable.h"
+#include "RenderProgram/RenderGraph/MRenderGraph.h"
 
 #include "Shadow/MShadowMapUtil.h"
 #include "Utility/MGlobal.h"
 
 
 MORTY_CLASS_IMPLEMENT(MShadowMapRenderWork, ISinglePassRenderWork)
+const MStringId MShadowMapRenderWork::ShadowMapBufferOutput = MStringId("Shadow Map Buffer Output");
 
 class ShadowMapTexture : public IGetTextureAdapter
 {
@@ -42,11 +45,13 @@ void MShadowMapRenderWork::Initialize(MEngine* pEngine)
 	m_renderPass.SetViewportNum(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
 }
 
-void MShadowMapRenderWork::Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
+void MShadowMapRenderWork::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
 	if (!pCommand)
 		return;
+
+	pCommand->AddRenderToTextureBarrier(m_vBarrierTexture, METextureBarrierStage::EPixelShaderSample);
 
 	const auto& pShadowmap = m_renderPass.GetDepthTexture();
 
@@ -64,13 +69,23 @@ void MShadowMapRenderWork::Render(MRenderInfo& info, const std::vector<IRenderab
 
 	pCommand->EndRenderPass();
 
-	pCommand->AddRenderToTextureBarrier({ m_renderPass.GetDepthTexture().get() }, METextureBarrierStage::EPixelShaderSample);
+	//pCommand->AddRenderToTextureBarrier({ m_renderPass.GetDepthTexture().get() }, METextureBarrierStage::EPixelShaderSample);
 }
 
-void MShadowMapRenderWork::Resize(Vector2i size)
+void MShadowMapRenderWork::Render(const MRenderInfo& info)
 {
-	MORTY_UNUSED(size);
-    //Shadow map can`t resize.
+	const MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
+
+	MCullingResultRenderable indirectMesh;
+	indirectMesh.SetMeshBuffer(pMeshManager->GetMeshBuffer());
+	indirectMesh.SetPropertyBlockAdapter({
+		GetRenderGraph()->GetFrameProperty(),
+	});
+	indirectMesh.SetInstanceCulling(GetRenderGraph()->GetShadowCullingResult());
+
+	Render(info, {
+		&indirectMesh,
+		});
 }
 
 std::shared_ptr<IGetTextureAdapter> MShadowMapRenderWork::GetShadowMap() const
@@ -111,4 +126,22 @@ public:
 std::shared_ptr<IShaderPropertyUpdateDecorator> MShadowMapRenderWork::GetFramePropertyDecorator()
 {
 	return std::make_shared<MShadowPropertyDecorator>(this);
+}
+
+void MShadowMapRenderWork::OnCreated()
+{
+	Super::OnCreated();
+}
+
+void MShadowMapRenderWork::BindTarget()
+{
+	AutoBindBarrierTexture();
+	SetRenderTarget(AutoBindTarget());
+}
+
+std::vector<MRenderTaskOutputDesc> MShadowMapRenderWork::GetOutputName()
+{
+    return {
+        { ShadowMapBufferOutput, { true, MColor::White } },
+    };
 }

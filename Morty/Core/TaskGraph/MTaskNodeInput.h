@@ -8,12 +8,14 @@
 
 #pragma once
 #include "Utility/MGlobal.h"
+#include "Type/MType.h"
 
 class MTaskNode;
 class MTaskNodeOutput;
 
-class MORTY_API MTaskNodeInput
+class MORTY_API MTaskNodeInput : public MTypeClass
 {
+	MORTY_CLASS(MTaskNodeInput)
 public:
 
 	MTaskNodeInput();

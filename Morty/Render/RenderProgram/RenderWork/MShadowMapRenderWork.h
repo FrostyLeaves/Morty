@@ -20,15 +20,22 @@ class MIRenderCommand;
 class MORTY_API MShadowMapRenderWork : public ISinglePassRenderWork
 {
 	MORTY_CLASS(MShadowMapRenderWork)
+	static const MStringId ShadowMapBufferOutput;
 
 public:
 	void Initialize(MEngine* pEngine) override;
 
-	void Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
-
-	void Resize(Vector2i size) override;
+	void Render(const MRenderInfo& info) override;
+	void Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
 
 	std::shared_ptr<IGetTextureAdapter> GetShadowMap() const;
 
 	std::shared_ptr<IShaderPropertyUpdateDecorator> GetFramePropertyDecorator() override;
+
+protected:
+
+	void OnCreated() override;
+	void BindTarget() override;
+
+	std::vector<MRenderTaskOutputDesc> GetOutputName() override;
 };

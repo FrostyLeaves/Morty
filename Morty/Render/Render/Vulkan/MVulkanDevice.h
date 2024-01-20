@@ -134,7 +134,6 @@ protected:
 
 	bool InitLogicalDevice();
 	bool InitCommandPool();
-	bool InitDefaultTexture();
 	bool InitSampler();
 	bool InitDescriptorPool();
 	void CreateRecycleBin();
@@ -145,11 +144,6 @@ public:
 	VkCommandPool m_VkPresetCommandPool = VK_NULL_HANDLE;
 	VkCommandPool m_VkTemporaryCommandPool = VK_NULL_HANDLE;
 	VkDescriptorPool m_VkDescriptorPool = VK_NULL_HANDLE;
-
-	std::shared_ptr<MTexture> m_ShaderDefaultTexture = nullptr;
-	std::shared_ptr<MTexture> m_ShaderDefaultTextureCube = nullptr;
-	std::shared_ptr<MTexture> m_ShaderDefaultTextureArray = nullptr;
-	std::shared_ptr<MTexture> m_ShaderDefaultTexture3D = nullptr;
 
 	VkSampler m_VkLinearSampler = VK_NULL_HANDLE;
 	VkSampler m_VkNearestSampler = VK_NULL_HANDLE;

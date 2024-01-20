@@ -40,6 +40,9 @@ public:
 	template<typename TYPE>
 	std::shared_ptr<TYPE> CreateResource(const MString& strResourcePath);
 
+	template<typename TYPE>
+	std::shared_ptr<TYPE> FindResource(const MString& strResourcePath);
+
 	void SetSearchPath(const std::vector<MString>& vSearchPath);
 	std::vector<MString> GetSearchPath() const { return m_vSearchPath; }
 
@@ -62,7 +65,7 @@ public:
 
 	void SaveTo(std::shared_ptr<MResource> pResource, const MString& strTargetPath);
 
-	virtual void Release() override;
+	void Release() override;
 
 private:
 	
@@ -113,4 +116,15 @@ std::shared_ptr<TYPE> MResourceSystem::CreateResource(const MString& strResource
 	m_tPathResources[strResourcePath] = pResource;
 
 	return pResource;
+}
+
+template<typename TYPE>
+std::shared_ptr<TYPE> MResourceSystem::FindResource(const MString& strResourcePath)
+{
+	if (std::shared_ptr<MResource> pResource = m_tPathResources[strResourcePath])
+	{
+		return std::dynamic_pointer_cast<TYPE>(pResource);
+	}
+
+	return nullptr;
 }

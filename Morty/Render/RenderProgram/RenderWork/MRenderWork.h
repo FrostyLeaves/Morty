@@ -9,6 +9,7 @@
 #pragma once
 
 #include "Math/Vector.h"
+#include "RenderProgram/RenderGraph/MRenderTaskNode.h"
 #include "Utility/MGlobal.h"
 
 #include "Object/MObject.h"
@@ -105,19 +106,6 @@ public:
     virtual MComputeDispatcher* GetComputeDispatcher() const = 0;
     virtual std::array<size_t, 3> GetComputeGroup() const = 0;
     virtual std::vector<const MBuffer*> GetBarrierBuffer() const = 0;
-};
-
-
-class MORTY_API IRenderWork : public MTypeClass
-{
-    MORTY_INTERFACE(IRenderWork)
-public:
-
-    virtual void Initialize(MEngine* pEngine) = 0;
-    virtual void Release(MEngine* pEngine) = 0;
-    virtual void Resize(Vector2i size) = 0;
-    virtual std::shared_ptr<IShaderPropertyUpdateDecorator> GetFramePropertyDecorator() { return nullptr; }
-
 };
 
 class MORTY_API IShaderPropertyUpdateDecorator

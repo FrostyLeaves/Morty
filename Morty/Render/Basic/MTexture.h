@@ -67,6 +67,30 @@ public:
 	static constexpr uint32_t EShadingRateMask = 4;
 };
 
+struct MORTY_API MTextureDesc
+{
+	MString strTextureName = "Default";
+	Vector3i n3Size = Vector3i(1, 1, 1);
+	METextureType eTextureType = METextureType::ETexture2D;
+	METextureLayout eTextureLayout = METextureLayout::ERGBA_UNORM_8;
+	METextureWriteUsage eWriteUsage = METextureWriteUsage::EUnknow;
+	uint32_t nShaderUsage = METextureReadUsage::EUnknow;
+	size_t nImageLayerNum = 1;
+	bool bReadable = false;
+	bool bMipmapEnable = false;
+
+	MTextureDesc& InitName(const MString& name)
+	{
+		strTextureName = name;
+		return *this;
+	}
+	MTextureDesc& InitSize(const Vector2i& n2Size)
+	{
+		n3Size = Vector3i(n2Size.x, n2Size.y, 1);
+		return *this;
+	}
+};
+
 class MORTY_API MTexture
 {
 public:
@@ -116,12 +140,14 @@ public:
 
 public:
 
-	static std::shared_ptr<MTexture> CreateShadowMap();
-	static std::shared_ptr<MTexture> CreateShadowMapArray(const size_t& nArraySize);
-	static std::shared_ptr<MTexture> CreateRenderTarget(METextureLayout eLayout = METextureLayout::ERGBA_UNORM_8);
-	static std::shared_ptr<MTexture> CreateRenderTargetGBuffer();
+	static std::shared_ptr<MTexture> CreateTexture(const MTextureDesc& desc);
+
+	static MTextureDesc CreateDepthBuffer();
+	static MTextureDesc CreateShadowMapArray(const int& nSize, const size_t& nArraySize);
+	static MTextureDesc CreateRenderTarget(METextureLayout eLayout = METextureLayout::ERGBA_UNORM_8);
+	static MTextureDesc CreateRenderTargetGBuffer();
 	static std::shared_ptr<MTexture> CreateRenderTargetFloat32();
-	static std::shared_ptr<MTexture> CreateShadingRate();
+	static MTextureDesc CreateShadingRate();
 
 	static std::shared_ptr<MTexture> CreateCubeMap();
 	static std::shared_ptr<MTexture> CreateVXGIMap();
@@ -154,7 +180,7 @@ public:
 
 private:
 
-	size_t m_unImageLayerNum;
+	size_t m_unImageLayerNum = 1;
 
 public:
 

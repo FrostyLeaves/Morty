@@ -1,5 +1,6 @@
 #include "MVoxelDebugRenderWork.h"
 
+#include "MVoxelizerRenderWork.h"
 #include "Render/MRenderGlobal.h"
 #include "Resource/MMaterialResource.h"
 #include "Scene/MScene.h"
@@ -26,11 +27,16 @@
 #include "Utility/MBounds.h"
 #include "Mesh/MMeshManager.h"
 #include "RenderProgram/MFrameShaderPropertyBlock.h"
+#include "RenderProgram/MeshRender/MIndirectIndexRenderable.h"
+#include "RenderProgram/RenderGraph/MRenderGraph.h"
 #include "Variant/MVariant.h"
 #include "VXGI/MVoxelMapUtil.h"
 
 MORTY_CLASS_IMPLEMENT(MVoxelDebugRenderWork, ISinglePassRenderWork)
 
+
+const MStringId MVoxelDebugRenderWork::BackBufferOutput = MStringId("Voxel Debug Back Buffer Output");
+const MStringId MVoxelDebugRenderWork::DepthBufferOutput = MStringId("Voxel Debug Depth Buffer Output");
 
 
 
@@ -46,12 +52,12 @@ void MVoxelDebugRenderWork::Initialize(MEngine* pEngine)
 	m_renderPass.SetDepthWriteEnable(true);
 }
 
-void MVoxelDebugRenderWork::Release(MEngine* pEngine)
+void MVoxelDebugRenderWork::Release()
 {
 	ReleaseDispatcher();
 	ReleaseBuffer();
 
-	Super::Release(pEngine);
+	Super::Release();
 }
 
 std::shared_ptr<IShaderPropertyUpdateDecorator> MVoxelDebugRenderWork::GetFramePropertyDecorator()
@@ -64,7 +70,26 @@ const MBuffer* MVoxelDebugRenderWork::GetVoxelDebugBuffer() const
 	return &m_drawIndirectBuffer;
 }
 
-void MVoxelDebugRenderWork::Render(MRenderInfo& info, const MVoxelMapSetting& voxelSetting, const MBuffer* pVoxelizerBuffer, const std::vector<IRenderable*>& vRenderable)
+void MVoxelDebugRenderWork::Render(const MRenderInfo& info)
+{
+	const MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
+
+	auto pVoxelizerWork = GetInput(0)->GetLinkedNode()->DynamicCast<MVoxelizerRenderWork>();
+
+	MIndirectIndexRenderable debugRender;
+	debugRender.SetMaterial(GetVoxelDebugMaterial());
+	debugRender.SetPropertyBlockAdapter({
+		GetRenderGraph()->GetFrameProperty()
+		});
+	debugRender.SetIndirectIndexBuffer(GetVoxelDebugBuffer());
+	debugRender.SetMeshBuffer(pMeshManager->GetMeshBuffer());
+
+	Render(info, pVoxelizerWork->GetVoxelSetting(), pVoxelizerWork->GetVoxelTableBuffer(), {
+	   &debugRender,
+	});
+}
+
+void MVoxelDebugRenderWork::Render(const MRenderInfo& info, const MVoxelMapSetting& voxelSetting, const MBuffer* pVoxelizerBuffer, const std::vector<IRenderable*>& vRenderable)
 {
 	const int nDebugClipmapIdx = 2;
 
@@ -186,4 +211,25 @@ void MVoxelDebugRenderWork::ReleaseDispatcher()
 	m_pVoxelDebugIndirectGenerator = nullptr;
 
 	m_pVoxelDebugMaterial = nullptr;
+}
+
+void MVoxelDebugRenderWork::BindTarget()
+{
+	AutoBindBarrierTexture();
+	SetRenderTarget(AutoBindTarget());
+}
+
+std::vector<MStringId> MVoxelDebugRenderWork::GetInputName()
+{
+	return {
+		MVoxelizerRenderWork::VoxelizerBufferOutput,
+	};
+}
+
+std::vector<MRenderTaskOutputDesc> MVoxelDebugRenderWork::GetOutputName()
+{
+	return {
+		{ BackBufferOutput, {true, MColor::Black_T }},
+		{ DepthBufferOutput, {true, MColor::Black_T }}
+	};
 }

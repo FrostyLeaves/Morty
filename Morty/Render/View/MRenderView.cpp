@@ -36,7 +36,7 @@ MRenderView::~MRenderView()
 
 void MRenderView::Resize(const Vector2& v2Size)
 {
-	vkDeviceWaitIdle(m_pDevice->m_VkDevice);
+	//vkDeviceWaitIdle(m_pDevice->m_VkDevice);
 	
 	m_unWidht = v2Size.x;
 	m_unHeight = v2Size.y;
@@ -346,9 +346,12 @@ bool MRenderView::BindRenderPass()
 		pTexture->GenerateBuffer(m_pDevice);
 		m_vRenderTarget[i].renderPass.AddBackTexture(pTexture, { true, MColor::Black_T });
 
-		std::shared_ptr<MTexture> pDepthTexture = MTexture::CreateShadowMap();
-		pDepthTexture->SetName("Editor Depth View");
-		pDepthTexture->SetSize(size);
+		std::shared_ptr<MTexture> pDepthTexture = MTexture::CreateTexture(
+			MTexture::CreateDepthBuffer()
+			.InitName("Editor Depth View")
+			.InitSize(size)
+		);
+
 		pDepthTexture->GenerateBuffer(m_pDevice);
 		m_vRenderTarget[i].renderPass.SetDepthTexture(pDepthTexture, { true, MColor::White });
 		m_vRenderTarget[i].renderPass.m_vkExtent2D = m_VkExtend;

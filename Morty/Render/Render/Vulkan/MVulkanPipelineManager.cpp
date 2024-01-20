@@ -38,6 +38,16 @@ void MVulkanPipelineManager::Release()
 	}
 
 	m_tPipelineTable.clear();
+
+	for (auto& pr : m_tDefaultTexture)
+	{
+		if (pr.second)
+		{
+			pr.second->DestroyBuffer(m_pDevice);
+		}
+	}
+
+	m_tDefaultTexture.clear();
 }
 
 std::shared_ptr<MGraphicsPipeline> MVulkanPipelineManager::FindOrCreateGraphicsPipeline(const MMaterialTemplate* pMaterial, const MRenderPass* pRenderPass)
@@ -796,26 +806,7 @@ void MVulkanPipelineManager::BindTextureParam(const std::shared_ptr<MShaderTextu
 	std::shared_ptr<MTexture> pTexture = pParam->GetTexture();
 	if (!pTexture || pTexture->m_VkImageView == VK_NULL_HANDLE)
 	{
-		if (pParam->eType == METextureType::ETexture2D)
-		{
-			pTexture = m_pDevice->m_ShaderDefaultTexture;
-		}
-		else if (pParam->eType == METextureType::ETextureCube)
-		{
-			pTexture = m_pDevice->m_ShaderDefaultTextureCube;
-		}
-		else if (pParam->eType == METextureType::ETexture2DArray)
-		{
-			pTexture = m_pDevice->m_ShaderDefaultTextureArray;
-		}
-		else if (pParam->eType == METextureType::ETexture3D)
-		{
-			pTexture = m_pDevice->m_ShaderDefaultTexture3D;
-		}
-		else
-		{
-			MORTY_ASSERT(false);
-		}
+		pTexture = GetDefaultTexture(pParam.get());
 	}
 
 	if (pTexture)
@@ -837,7 +828,7 @@ void MVulkanPipelineManager::BindTextureParam(const std::shared_ptr<MShaderTextu
 
 		if (VK_NULL_HANDLE == imageInfo.sampler)
 		{
-			imageInfo.sampler = m_pDevice->m_VkLinearSampler;
+			imageInfo.sampler = m_pDevice->m_VkNearestSampler;
 		}
 
 		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -881,6 +872,41 @@ void MVulkanPipelineManager::BindStorageParam(const std::shared_ptr<MShaderStora
 	descriptorWrite.pImageInfo = nullptr; // Optional
 	descriptorWrite.pTexelBufferView = nullptr; // Optional
 
+}
+
+std::shared_ptr<MTexture> MVulkanPipelineManager::GetDefaultTexture(MShaderTextureParam* pParam)
+{
+	const auto findResult = m_tDefaultTexture.find({pParam->eFormat, pParam->eType});
+	if (findResult != m_tDefaultTexture.end())
+	{
+		return findResult->second;
+	}
+
+	static const std::unordered_map<MESamplerFormat, METextureLayout> TypeMapping = {
+		{MESamplerFormat::EFloat, METextureLayout::ERGBA_UNORM_8},
+		{MESamplerFormat::EInt, METextureLayout::ER_UINT_8},
+	};
+
+	MORTY_ASSERT(TypeMapping.find(pParam->eFormat) != TypeMapping.end());
+
+	MByte cubeBytes[32];
+	memset(cubeBytes, 255, sizeof(MByte) * 32);
+
+	auto pTexture = std::make_shared<MTexture>();
+	pTexture->SetName("Shader Default Texture");
+	pTexture->SetMipmapsEnable(false);
+	pTexture->SetReadable(false);
+	pTexture->SetRenderUsage(METextureWriteUsage::EUnknow);
+	pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
+	pTexture->SetSize(Vector2i(1, 1));
+	pTexture->SetTextureLayout(TypeMapping.at(pParam->eFormat));
+	pTexture->SetTextureType(pParam->eType);
+	pTexture->GenerateBuffer(m_pDevice, cubeBytes);
+
+	MORTY_ASSERT(pTexture);
+
+	m_tDefaultTexture[{ pParam->eFormat, pParam->eType }] = pTexture;
+	return pTexture;
 }
 
 
