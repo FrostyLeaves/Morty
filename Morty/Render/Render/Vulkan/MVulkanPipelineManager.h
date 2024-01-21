@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "Shader/MShaderParam.h"
 #include "Utility/MGlobal.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -102,7 +103,7 @@ public:
     void BindTextureParam(const std::shared_ptr<MShaderTextureParam> pParam, VkWriteDescriptorSet& writeDescriptorSet);
     void BindStorageParam(const std::shared_ptr<MShaderStorageParam> pParam, VkWriteDescriptorSet& writeDescriptorSet);
 
-
+    std::shared_ptr<MTexture> GetDefaultTexture(MShaderTextureParam* pParam);
 
 private:
 
@@ -110,6 +111,8 @@ private:
 
     MVulkanDevice* m_pDevice;
 
+
+    std::map<std::pair<MESamplerFormat, METextureType>, std::shared_ptr<MTexture>> m_tDefaultTexture;
 };
 
 

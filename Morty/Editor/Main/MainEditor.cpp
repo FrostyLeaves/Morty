@@ -61,7 +61,14 @@ bool MainEditor::Initialize(MEngine* pEngine)
 	m_vChildView.push_back(new ModelConvertView());
 	m_vChildView.push_back(new MessageWidget());
 	m_vChildView.push_back(new MainView());
-	m_vChildView.push_back(new TaskGraphView());
+
+	auto pTaskGraphView = new TaskGraphView("Task Graph");
+	pTaskGraphView->SetTaskGraph(GetEngine()->GetMainGraph());
+	m_vChildView.push_back(pTaskGraphView);
+
+
+	m_pRenderGraphView = new TaskGraphView("Render Graph");
+	m_vChildView.push_back(m_pRenderGraphView);
 
 
 	for (BaseWidget* pChild : m_vChildView)
@@ -110,6 +117,8 @@ void MainEditor::SetScene(MScene* pScene)
 	}
 
 	m_pSceneTexture = CreateSceneViewer(m_pScene);
+
+	m_pRenderGraphView->SetTaskGraph(m_pSceneTexture->GetRenderProgram()->GetRenderGraph());
 }
 
 void MainEditor::OnResize(Vector2 size)
@@ -149,9 +158,9 @@ void MainEditor::UpdateSceneViewer(MIRenderCommand* pRenderCommand)
 	std::vector<MTexture*> vRenderTextures;
 	for (auto pSceneViewer : m_vSceneViewer)
 	{
-		pSceneViewer->UpdateTexture(0, pRenderCommand);
+		pSceneViewer->UpdateTexture(pRenderCommand);
 
-		if (std::shared_ptr<MTexture> pRenderTexture = pSceneViewer->GetTexture(0))
+		if (std::shared_ptr<MTexture> pRenderTexture = pSceneViewer->GetTexture())
 		{
 			vRenderTextures.push_back(pRenderTexture.get());
 		}
@@ -246,7 +255,7 @@ void MainEditor::ShowShadowMapView()
 
 	if (ImGui::Begin("DebugView", &m_bShowDebugView))
 	{
-		std::vector<std::shared_ptr<MTexture>> vTexture = m_pSceneTexture->GetAllOutputTexture(0);
+		std::vector<std::shared_ptr<MTexture>> vTexture = m_pSceneTexture->GetAllOutputTexture();
 		if(!vTexture.empty())
 		{
 			size_t nImageSize = 0;

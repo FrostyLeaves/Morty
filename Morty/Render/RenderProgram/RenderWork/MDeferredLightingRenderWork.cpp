@@ -1,5 +1,7 @@
 #include "MDeferredLightingRenderWork.h"
 
+#include "MVoxelizerRenderWork.h"
+#include "MVRSTextureRenderWork.h"
 #include "Scene/MScene.h"
 #include "Engine/MEngine.h"
 #include "Render/MIDevice.h"
@@ -22,31 +24,17 @@
 #include "Utility/MBounds.h"
 #include "Mesh/MMeshManager.h"
 #include "Render/MMaterialName.h"
+#include "RenderProgram/RenderGraph/MRenderGraph.h"
 #include "Resource/MMaterialResource.h"
 
 
 MORTY_CLASS_IMPLEMENT(MDeferredLightingRenderWork, ISinglePassRenderWork)
 
-void MDeferredLightingRenderWork::Render(MRenderInfo& info)
+const MStringId MDeferredLightingRenderWork::DeferredLightingOutput = MStringId("Deferred Lighting Output");
+
+
+void MDeferredLightingRenderWork::Render(const MRenderInfo& info)
 {
-	if (!m_pFramePropertyAdapter)
-	{
-		MORTY_ASSERT(m_pFramePropertyAdapter);
-		return;
-	}
-
-	if (!m_pGBufferAdapter)
-	{
-		MORTY_ASSERT(m_pGBufferAdapter);
-		return;
-	}
-
-	if (!m_pShadowMapAdapter)
-	{
-		MORTY_ASSERT(m_pShadowMapAdapter);
-		return;
-	}
-
 	MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
 	if (!pMeshManager)
 	{
@@ -55,15 +43,8 @@ void MDeferredLightingRenderWork::Render(MRenderInfo& info)
 	}
 
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
-
-	std::vector<MTexture*> vTextures;
-	for (auto pTexture : m_pGBufferAdapter->GetBackTextures())
-	{
-		vTextures.push_back(pTexture.get());
-	}
-	vTextures.push_back(m_pGBufferAdapter->GetDepthTexture().get());
-
-	pCommand->AddRenderToTextureBarrier(vTextures, METextureBarrierStage::EPixelShaderSample);
+	
+	pCommand->AddRenderToTextureBarrier(m_vBarrierTexture, METextureBarrierStage::EPixelShaderSample);
 
 	pCommand->BeginRenderPass(&m_renderPass);
 
@@ -77,7 +58,7 @@ void MDeferredLightingRenderWork::Render(MRenderInfo& info)
 
 	if (pCommand->SetUseMaterial(m_pLightningMaterial))
 	{
-		auto pPropertyBlock = m_pFramePropertyAdapter->GetPropertyBlock();
+		auto pPropertyBlock = GetRenderGraph()->GetFrameProperty()->GetPropertyBlock();
 		pCommand->SetShaderPropertyBlock(pPropertyBlock);
 		
 		pCommand->DrawMesh(pMeshManager->GetScreenRect());
@@ -96,7 +77,7 @@ void MDeferredLightingRenderWork::Initialize(MEngine* pEngine)
 
 }
 
-void MDeferredLightingRenderWork::Release(MEngine* pEngine)
+void MDeferredLightingRenderWork::Release()
 {
 	m_pLightningMaterial = nullptr;
 
@@ -107,76 +88,47 @@ void MDeferredLightingRenderWork::Release(MEngine* pEngine)
 		pShadingRateTexture->DestroyBuffer(pRenderSystem->GetDevice());
 	}
 
-	Super::Release(pEngine);
+	Super::Release();
 }
 
-void MDeferredLightingRenderWork::Resize(Vector2i size)
+void MDeferredLightingRenderWork::BindTarget()
 {
-	/*
-	auto pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-
-	if (auto pShadingRateTexture = m_renderPass.GetShadingRateTexture())
-	{
-		Vector2i n2TexelSize = pRenderSystem->GetDevice()->GetShadingRateTextureTexelSize();
-		Vector2i n2ShadingRateSize = {};
-		n2ShadingRateSize.x = size.x / n2TexelSize.x + ((size.x % n2TexelSize.x) != 0);
-		n2ShadingRateSize.y = size.y / n2TexelSize.y + ((size.y % n2TexelSize.y) != 0);
-
-		if (pShadingRateTexture->GetSize2D().x != n2ShadingRateSize.x || pShadingRateTexture->GetSize2D().y != n2ShadingRateSize.y)
-		{
-			std::vector<MByte> data(n2ShadingRateSize.x * n2ShadingRateSize.y * sizeof(MByte));
-
-			for (int h = 0; h < n2ShadingRateSize.y; ++h)
-			{
-				for (int w = 0; w < n2ShadingRateSize.x; ++w)
-				{
-					MByte pixel = 0;
-
-					if (w < n2ShadingRateSize.x / 2)
-					{
-						pixel = MShadingRateType::Rate_1x1;
-					}
-					else
-					{
-						pixel = MShadingRateType::Rate_4X4;
-					}
-
-					data[h * n2ShadingRateSize.x + w] = pixel;
-				}
-			}
-
-
-			pShadingRateTexture->SetSize(n2ShadingRateSize);
-			pShadingRateTexture->DestroyBuffer(pRenderSystem->GetDevice());
-			pShadingRateTexture->GenerateBuffer(pRenderSystem->GetDevice(), data.data());
-		}
-	}
-	*/
-
-	ISinglePassRenderWork::Resize(size);
-
-}
-
-void MDeferredLightingRenderWork::SetGBuffer(const std::shared_ptr<IGBufferAdapter>& pAdapter)
-{
-	MORTY_ASSERT(m_pGBufferAdapter = pAdapter);
-
 	if (std::shared_ptr<MShaderPropertyBlock> pParams = m_pLightningMaterial->GetMaterialPropertyBlock())
 	{
-		const auto& vTextures = pAdapter->GetBackTextures();
-		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_ALBEDO_METALLIC, vTextures[0]);
-		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_NORMAL_ROUGHNESS, vTextures[1]);
-		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_POSITION_AMBIENTOCC, vTextures[2]);
-		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_DEPTH_MAP, pAdapter->GetDepthTexture());
+		m_vInputTexture = {
+			GetInputTexture(0).get(),
+			GetInputTexture(1).get(),
+			GetInputTexture(2).get(),
+			GetInputTexture(3).get(),
+		};
+
+		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_ALBEDO_METALLIC, GetInputTexture(0));
+		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_NORMAL_ROUGHNESS, GetInputTexture(1));
+		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_POSITION_AMBIENTOCC, GetInputTexture(2));
+		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_DEPTH_MAP, GetInputTexture(3));
 	}
+
+	AutoBindBarrierTexture();
+	SetRenderTarget(AutoBindTargetWithVRS());
 }
 
-void MDeferredLightingRenderWork::SetShadowMap(const std::shared_ptr<IGetTextureAdapter>& pAdapter)
+std::vector<MStringId> MDeferredLightingRenderWork::GetInputName()
 {
-	m_pShadowMapAdapter = pAdapter;
+	return {
+		MGBufferRenderWork::GBufferAlbedoMetallic,
+		MGBufferRenderWork::GBufferNormalRoughness,
+		MGBufferRenderWork::GBufferPositionAmbientOcc,
+		MGBufferRenderWork::GBufferDepthBufferOutput,
+		MShadowMapRenderWork::ShadowMapBufferOutput,
+#if MORTY_VXGI_ENABLE
+		//TODO: this input texture is not be used.
+		MVoxelizerRenderWork::VoxelizerBufferOutput
+#endif
+	};
 }
 
-void MDeferredLightingRenderWork::SetFrameProperty(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter)
-{
-	m_pFramePropertyAdapter = pAdapter;
+std::vector<MRenderTaskOutputDesc> MDeferredLightingRenderWork::GetOutputName() {
+	return {
+		{ DeferredLightingOutput, {true, MColor::Black_T }},
+	};
 }

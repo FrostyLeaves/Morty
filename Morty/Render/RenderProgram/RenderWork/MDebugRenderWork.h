@@ -19,8 +19,19 @@
 class MORTY_API MDebugRenderWork : public ISinglePassRenderWork
 {
 	MORTY_CLASS(MDebugRenderWork)
+
+    static const MStringId BackBufferOutput;
+	static const MStringId DepthBufferOutput;
 public:
 
-	void Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
+	void Render(const MRenderInfo& info) override;
+	void Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
 
+protected:
+
+	void BindTarget() override;
+
+	std::vector<MStringId> GetInputName() override;
+
+	std::vector<MRenderTaskOutputDesc> GetOutputName() override;
 };

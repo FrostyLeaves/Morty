@@ -93,58 +93,87 @@ uint32_t MTexture::GetImageMemorySize(const METextureLayout& layout)
 	return 0;
 }
 
-std::shared_ptr<MTexture> MTexture::CreateShadowMap()
+std::shared_ptr<MTexture> MTexture::CreateTexture(const MTextureDesc& desc)
 {
 	std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
-	pTexture->SetName("Shadow Map Texture");
-	pTexture->SetMipmapsEnable(false);
-	pTexture->SetReadable(false);
-	pTexture->SetRenderUsage(METextureWriteUsage::ERenderDepth);
-	pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
-	pTexture->SetTextureLayout(METextureLayout::EDepth);
+	pTexture->SetName(desc.strTextureName);
+	pTexture->SetSize(desc.n3Size);
+	pTexture->SetTextureType(desc.eTextureType);
+	pTexture->SetTextureLayout(desc.eTextureLayout);
+	pTexture->SetRenderUsage(desc.eWriteUsage);
+	pTexture->SetShaderUsage(desc.nShaderUsage);
+	pTexture->SetImageLayerNum(desc.nImageLayerNum);
+	pTexture->SetReadable(desc.bReadable);
+	pTexture->SetMipmapsEnable(desc.bMipmapEnable);
 
 	return pTexture;
 }
 
-std::shared_ptr<MTexture> MTexture::CreateShadowMapArray(const size_t& nArraySize)
+MTextureDesc MTexture::CreateDepthBuffer()
 {
-	std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
-	pTexture->SetName("Shadow Map Texture Array");
-	pTexture->SetMipmapsEnable(false);
-	pTexture->SetReadable(false);
-	pTexture->SetRenderUsage(METextureWriteUsage::ERenderDepth);
-	pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
-	pTexture->SetTextureLayout(METextureLayout::EDepth);
-	pTexture->SetTextureType(METextureType::ETexture2DArray);
-	pTexture->SetImageLayerNum(nArraySize);
+	MTextureDesc texture = {
+		.strTextureName = "Depth Buffer Texture",
+		.eTextureType = METextureType::ETexture2D,
+		.eTextureLayout = METextureLayout::EDepth,
+		.eWriteUsage = METextureWriteUsage::ERenderDepth,
+		.nShaderUsage = METextureReadUsage::EPixelSampler,
+		.nImageLayerNum = 1,
+		.bReadable = false,
+		.bMipmapEnable = false,
+	};
 
-	return pTexture;
+	return texture;
 }
 
-std::shared_ptr<MTexture> MTexture::CreateRenderTarget(METextureLayout eLayout/*= METextureLayout::ERGBA_UNORM_8*/)
+MTextureDesc MTexture::CreateShadowMapArray(const int& nSize, const size_t& nArraySize)
 {
-	std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
-	pTexture->SetName("Render Target Texture");
-	pTexture->SetMipmapsEnable(false);
-	pTexture->SetReadable(false);
-	pTexture->SetRenderUsage(METextureWriteUsage::ERenderBack);
-	pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
-	pTexture->SetTextureLayout(eLayout);
+	MTextureDesc texture = {
+		.strTextureName = "Shadow Map Texture Array",
+		.n3Size = Vector3i(nSize, nSize, 1),
+		.eTextureType = METextureType::ETexture2DArray,
+		.eTextureLayout = METextureLayout::EDepth,
+		.eWriteUsage = METextureWriteUsage::ERenderDepth,
+		.nShaderUsage = METextureReadUsage::EPixelSampler,
+		.nImageLayerNum = nArraySize,
+		.bReadable = false,
+	    .bMipmapEnable = false,
+	};
 
-	return pTexture;
+	return texture;
 }
 
-std::shared_ptr<MTexture> MTexture::CreateRenderTargetGBuffer()
+MTextureDesc MTexture::CreateRenderTarget(METextureLayout eLayout/*= METextureLayout::ERGBA_UNORM_8*/)
 {
-	std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
-	pTexture->SetName("GBuffer Texture");
-	pTexture->SetMipmapsEnable(false);
-	pTexture->SetReadable(false);
-	pTexture->SetRenderUsage(METextureWriteUsage::ERenderBack);
-	pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
-	pTexture->SetTextureLayout(METextureLayout::ERGBA_FLOAT_16);
+	MTextureDesc texture = {
+		.strTextureName = "Render Target Texture",
+		.n3Size = Vector3i(1, 1, 1),
+		.eTextureType = METextureType::ETexture2D,
+		.eTextureLayout = eLayout,
+		.eWriteUsage = METextureWriteUsage::ERenderBack,
+		.nShaderUsage = METextureReadUsage::EPixelSampler,
+		.nImageLayerNum = 1,
+		.bReadable = false,
+		.bMipmapEnable = false,
+	};
 
-	return pTexture;
+	return texture;
+}
+
+MTextureDesc MTexture::CreateRenderTargetGBuffer()
+{
+	MTextureDesc texture = {
+		.strTextureName = "GBuffer Texture",
+		.n3Size = Vector3i(1, 1, 1),
+		.eTextureType = METextureType::ETexture2D,
+		.eTextureLayout = METextureLayout::ERGBA_FLOAT_16,
+		.eWriteUsage = METextureWriteUsage::ERenderBack,
+		.nShaderUsage = METextureReadUsage::EPixelSampler,
+		.nImageLayerNum = 1,
+		.bReadable = false,
+		.bMipmapEnable = false,
+	};
+
+	return texture;
 }
 
 std::shared_ptr<MTexture> MTexture::CreateRenderTargetFloat32()
@@ -160,21 +189,25 @@ std::shared_ptr<MTexture> MTexture::CreateRenderTargetFloat32()
 	return pTexture;
 }
 
-std::shared_ptr<MTexture> MTexture::CreateShadingRate()
+MTextureDesc MTexture::CreateShadingRate()
 {
-	std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
-	pTexture->SetName("Shading Rate Texture");
-	pTexture->SetMipmapsEnable(false);
-	pTexture->SetReadable(false);
-	pTexture->SetRenderUsage(METextureWriteUsage::EStorageWrite);
+	MTextureDesc texture = {
+		.strTextureName = "Shading Rate Texture",
+		.n3Size = Vector3i(1, 1, 1),
+		.eTextureType = METextureType::ETexture2D,
+		.eTextureLayout = METextureLayout::ER_UINT_8,
+		.eWriteUsage = METextureWriteUsage::EStorageWrite,
 #if MORTY_DEBUG
-	pTexture->SetShaderUsage(METextureReadUsage::EShadingRateMask | METextureReadUsage::EPixelSampler);
+		.nShaderUsage = (METextureReadUsage::EShadingRateMask | METextureReadUsage::EPixelSampler),
 #else
-	pTexture->SetShaderUsage(METextureReadUsage::EShadingRateMask);
+		.nShaderUsage = METextureReadUsage::EShadingRateMask,
 #endif
-	pTexture->SetTextureLayout(METextureLayout::ER_UINT_8);
+		.nImageLayerNum = 1,
+		.bReadable = false,
+		.bMipmapEnable = false,
+	};
 
-	return pTexture;
+	return texture;
 }
 
 std::shared_ptr<MTexture> MTexture::CreateCubeMap()

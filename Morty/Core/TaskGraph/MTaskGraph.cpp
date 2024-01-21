@@ -136,3 +136,11 @@ std::vector<MTaskNode*> MTaskGraph::GetOrderedNodes()
 
 	return vNodes;
 }
+
+std::vector<MTaskNode*> MTaskGraph::GetAllNodes()
+{
+	std::vector<MTaskNode*> vNodes(m_tTaskNode.size());
+	std::transform(m_tTaskNode.begin(), m_tTaskNode.end(), vNodes.begin(), [](auto node) {return node; });
+
+	return vNodes;
+}

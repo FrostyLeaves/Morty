@@ -11,6 +11,7 @@
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
 
+class MTaskGraph;
 class MScene;
 class MTexture;
 class MViewport;
@@ -30,11 +31,11 @@ public:
     void SetViewport(MViewport* pViewport) { m_pViewport = pViewport; }
     MViewport* GetViewport() { return m_pViewport; }
 
-
 	virtual void Render(MIRenderCommand* pPrimaryCommand) = 0;
 
     virtual std::shared_ptr<MTexture> GetOutputTexture() = 0;
     virtual std::vector<std::shared_ptr<MTexture>> GetOutputTextures();
+    virtual MTaskGraph* GetRenderGraph() = 0;
 
 private:
 

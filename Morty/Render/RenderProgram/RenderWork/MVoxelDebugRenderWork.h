@@ -26,11 +26,15 @@ class MORTY_API MVoxelDebugRenderWork : public ISinglePassRenderWork
 {
 	MORTY_CLASS(MVoxelDebugRenderWork)
 
+    static const MStringId BackBufferOutput;
+    static const MStringId DepthBufferOutput;
+
     void Initialize(MEngine* pEngine) override;
-	void Release(MEngine* pEngine) override;
+	void Release() override;
     std::shared_ptr<IShaderPropertyUpdateDecorator> GetFramePropertyDecorator() override;
 
-    void Render(MRenderInfo& info, const MVoxelMapSetting& voxelSetting, const MBuffer* pVoxelizerBuffer, const std::vector<IRenderable*>& vRenderable);
+    void Render(const MRenderInfo& info) override;
+    void Render(const MRenderInfo& info, const MVoxelMapSetting& voxelSetting, const MBuffer* pVoxelizerBuffer, const std::vector<IRenderable*>& vRenderable);
 
     std::shared_ptr<MMaterial> GetVoxelDebugMaterial() const { return m_pVoxelDebugMaterial; }
     const MBuffer* GetVoxelDebugBuffer() const;
@@ -43,6 +47,12 @@ protected:
 
     void InitializeDispatcher();
     void ReleaseDispatcher();
+
+    void BindTarget() override;
+
+    std::vector<MStringId> GetInputName() override;
+
+    std::vector<MRenderTaskOutputDesc> GetOutputName() override;
 
     std::shared_ptr<IShaderPropertyUpdateDecorator> m_pFramePropertyUpdateDecorator = nullptr;
 

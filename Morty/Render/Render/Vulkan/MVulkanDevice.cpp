@@ -96,9 +96,6 @@ bool MVulkanDevice::Initialize()
 	if (!m_BufferPool.Initialize())
 		return false;
 
-	if (!InitDefaultTexture())
-		return false;
-
 	InitSampler();
 
 	m_ShaderReflector.Initialize();
@@ -116,14 +113,6 @@ void MVulkanDevice::Release()
 
 	m_PipelineManager.Release();
 	m_BufferPool.Release();
-	m_ShaderDefaultTexture->DestroyBuffer(this);
-	m_ShaderDefaultTexture = nullptr;
-	m_ShaderDefaultTextureCube->DestroyBuffer(this);
-	m_ShaderDefaultTextureCube = nullptr;
-	m_ShaderDefaultTextureArray->DestroyBuffer(this);
-	m_ShaderDefaultTextureArray = nullptr;
-	m_ShaderDefaultTexture3D->DestroyBuffer(this);
-	m_ShaderDefaultTexture3D = nullptr;
 
 	for (auto pr : m_tFrameData)
 	{
@@ -390,9 +379,15 @@ uint32_t MVulkanDevice::GetMipmapCount(MTexture* pTexture) const
 uint32_t MVulkanDevice::GetLayerCount(MTexture* pTexture) const
 {
 	if (!pTexture)
+	{
 		return 0;
+	}
+	if (pTexture->GetTextureType() == METextureType::ETextureCube)
+	{
+		return 6;
+	}
 
-	return static_cast<uint32_t>(pTexture->GetImageLayerNum());
+	return pTexture->GetImageLayerNum();
 }
 
 uint32_t MVulkanDevice::GetBufferBarrierQueueFamily(MEBufferBarrierStage stage) const
@@ -459,6 +454,7 @@ bool MVulkanDevice::InitSampler()
 		throw std::runtime_error("failed to create texture sampler!");
 	}
 
+	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
 	samplerInfo.magFilter = VK_FILTER_NEAREST;
 	samplerInfo.minFilter = VK_FILTER_NEAREST;
 	if (vkCreateSampler(m_VkDevice, &samplerInfo, nullptr, &m_VkNearestSampler) != VK_SUCCESS) {
@@ -655,6 +651,7 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MByte* pData)
 	uint32_t width = std::max(static_cast<int>(pTexture->GetSize().x), 1);
 	uint32_t height = std::max(static_cast<int>(pTexture->GetSize().y), 1);
 	uint32_t depth = std::max(static_cast<int>(pTexture->GetSize().z), 1);
+	
     VkFormat format = GetFormat(pTexture->GetTextureLayout());
 
 	VkImageUsageFlags usageFlags = GetUsageFlags(pTexture);
@@ -669,7 +666,7 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MByte* pData)
 	auto nMipmapCount = static_cast<uint32_t>(GetMipmapCount(pTexture));
 	auto nLayerCount = static_cast<uint32_t>(GetLayerCount(pTexture));
 
-	VkDeviceSize imageSize = static_cast<uint64_t>(MTexture::GetImageMemorySize(pTexture->GetTextureLayout())) * width * height * nLayerCount;
+	VkDeviceSize imageSize = static_cast<uint64_t>(MTexture::GetImageMemorySize(pTexture->GetTextureLayout())) * width * height * depth * nLayerCount;
 
 	if (pTexture->GetRenderUsage() == METextureWriteUsage::ERenderPresent)
 	{
@@ -755,15 +752,6 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MByte* pData)
 		GenerateMipmaps(pTexture, nMipmapCount);
 	}
 
-// 	if (pTexture->GetRenderUsage() == METextureWriteUsage::ERenderBack)
-// 	{
-// 		VkImageSubresourceRange vkSubresourceRange = {};
-// 		vkSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-// 		vkSubresourceRange.baseMipLevel = 0;
-// 		vkSubresourceRange.levelCount = unMipmap;
-// 		vkSubresourceRange.layerCount = 1;
-// 		TransitionImageLayout(pTexture->m_VkTextureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, vkSubresourceRange);
-// 	}
 	if (pTexture->GetRenderUsage() == METextureWriteUsage::ERenderDepth)
 	{
 		VkFilter vkShadowMapFilter = m_pPhysicalDevice->FormatIsFilterable(format, VK_IMAGE_TILING_OPTIMAL) ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
@@ -1074,14 +1062,19 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 	std::vector<std::vector<VkAttachmentReference2>> vOutDepthAttachmentRef;
 	std::vector<std::vector<VkAttachmentReference2>> vInAttachmentRef;
 	std::vector<std::vector<uint32_t>> vUnusedAttachmentRef;
+
+	// correlationMask 
+	// describe which views have similar ability.
+	// TODO: assume all views here have the same functionality
 	std::vector<uint32_t> vCorrelationMask;
+	//vCorrelationMask.push_back((1 << (pRenderPass->GetViewportNum()) - 1);
+
 
 	// m_ShaderDefaultTexture subpass
 	if (pRenderPass->m_vSubpass.empty())
 	{
 		vOutAttachmentRef.resize(1);
 		vOutDepthAttachmentRef.resize(1);
-		vCorrelationMask.push_back((1 << pRenderPass->GetViewportNum()) - 1);
 
 		vSubpass.push_back({});
 		auto& vkSubpass = vSubpass.back();
@@ -1111,7 +1104,6 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 		vOutDepthAttachmentRef.resize(unSubpassNum);
 		vInAttachmentRef.resize(unSubpassNum);
 		vUnusedAttachmentRef.resize(unSubpassNum);
-		vCorrelationMask.resize(unSubpassNum);
 
 		for (uint32_t nSubpassIdx = 0; nSubpassIdx < unSubpassNum; ++nSubpassIdx)
 		{
@@ -1121,9 +1113,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 			auto& vkSubpass = vSubpass.back();
 			vkSubpass.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2;
 			vkSubpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-			vkSubpass.viewMask = subpass.m_unViewMask;
-
-			vCorrelationMask[nSubpassIdx] = subpass.m_unCorrelationMask;
+			vkSubpass.viewMask = 0;
 
 			std::set<uint32_t> vUsedAttachIndex;
 
@@ -2067,89 +2057,6 @@ bool MVulkanDevice::InitCommandPool()
 	MORTY_ASSERT(vkCreateCommandPool(m_VkDevice, &poolInfo, nullptr, &m_VkPresetCommandPool) == VK_SUCCESS);
 		
 	MORTY_ASSERT(vkCreateCommandPool(m_VkDevice, &poolInfo, nullptr, &m_VkTemporaryCommandPool) == VK_SUCCESS);
-
-	return true;
-}
-
-bool MVulkanDevice::InitDefaultTexture()
-{
-	m_ShaderDefaultTexture = std::make_shared<MTexture>();
-
-	m_ShaderDefaultTexture->SetName("Shader Default Texture");
-	m_ShaderDefaultTexture->SetMipmapsEnable(false);
-	m_ShaderDefaultTexture->SetReadable(false);
-	m_ShaderDefaultTexture->SetRenderUsage(METextureWriteUsage::EUnknow);
-	m_ShaderDefaultTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
-	m_ShaderDefaultTexture->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
-	m_ShaderDefaultTexture->SetSize(Vector2i(1, 1));
-
-	MByte bytes[4];
-	for (size_t i = 0; i < 4; i += 4)
-	{
-		bytes[i + 0] = 255;
-		bytes[i + 1] = 255;
-		bytes[i + 2] = 255;
-		bytes[i + 3] = 255;
-	}
-	m_ShaderDefaultTexture->GenerateBuffer(this, bytes);
-
-	m_ShaderDefaultTextureCube = std::make_shared<MTexture>();
-
-	m_ShaderDefaultTextureCube->SetName("Shader Default Texture Cube");
-	m_ShaderDefaultTextureCube->SetMipmapsEnable(false);
-	m_ShaderDefaultTextureCube->SetReadable(false);
-	m_ShaderDefaultTextureCube->SetRenderUsage(METextureWriteUsage::EUnknow);
-	m_ShaderDefaultTextureCube->SetShaderUsage(METextureReadUsage::EPixelSampler);
-	m_ShaderDefaultTextureCube->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
-	m_ShaderDefaultTextureCube->SetTextureType(METextureType::ETextureCube);
-	m_ShaderDefaultTextureCube->SetImageLayerNum(6);
-	m_ShaderDefaultTextureCube->SetSize(Vector2i(1, 1));
-
-	MByte cubeBytes[24];
-	for (size_t i = 0; i < 24; i += 4)
-	{
-		cubeBytes[i + 0] = 255;
-		cubeBytes[i + 1] = 255;
-		cubeBytes[i + 2] = 255;
-		cubeBytes[i + 3] = 255;
-	}
-	m_ShaderDefaultTextureCube->GenerateBuffer(this, cubeBytes);
-
-	m_ShaderDefaultTextureArray = std::make_shared<MTexture>();
-
-	m_ShaderDefaultTextureArray->SetName("Shader Default Texture Array");
-	m_ShaderDefaultTextureArray->SetMipmapsEnable(false);
-	m_ShaderDefaultTextureArray->SetReadable(false);
-	m_ShaderDefaultTextureArray->SetRenderUsage(METextureWriteUsage::EUnknow);
-	m_ShaderDefaultTextureArray->SetShaderUsage(METextureReadUsage::EPixelSampler);
-	m_ShaderDefaultTextureArray->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
-	m_ShaderDefaultTextureArray->SetTextureType(METextureType::ETexture2DArray);
-	m_ShaderDefaultTextureArray->SetImageLayerNum(1);
-	m_ShaderDefaultTextureArray->SetSize(Vector2i(1, 1));
-
-	MByte arrayBytes[4];
-	for (size_t i = 0; i < 4; i += 4)
-	{
-		arrayBytes[i + 0] = 255;
-		arrayBytes[i + 1] = 255;
-		arrayBytes[i + 2] = 255;
-		arrayBytes[i + 3] = 255;
-	}
-	m_ShaderDefaultTextureArray->GenerateBuffer(this, arrayBytes);
-
-	m_ShaderDefaultTexture3D = std::make_shared<MTexture>();
-
-	m_ShaderDefaultTexture3D->SetName("Shader Default Texture 3D");
-	m_ShaderDefaultTexture3D->SetMipmapsEnable(false);
-	m_ShaderDefaultTexture3D->SetReadable(false);
-	m_ShaderDefaultTexture3D->SetRenderUsage(METextureWriteUsage::EUnknow);
-	m_ShaderDefaultTexture3D->SetShaderUsage(METextureReadUsage::EPixelSampler | METextureReadUsage::EStorageRead);
-	m_ShaderDefaultTexture3D->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
-	m_ShaderDefaultTexture3D->SetTextureType(METextureType::ETexture3D);
-	m_ShaderDefaultTexture3D->SetImageLayerNum(1);
-	m_ShaderDefaultTexture3D->SetSize(Vector3i(1, 1, 1));
-
-	m_ShaderDefaultTexture3D->GenerateBuffer(this, arrayBytes);
 
 	return true;
 }

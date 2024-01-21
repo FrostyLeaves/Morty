@@ -75,6 +75,7 @@ struct MORTY_API MShaderPropertyName
 	//Transparent
 	static MStringId TRANSPARENT_TEXTURE_INPUT_0;
 	static MStringId TRANSPARENT_TEXTURE_INPUT_1;
+	static MStringId TRANSPARENT_TEXTURE_BACK_TEXTURE;
 
 	//Mesh Matrix
 	static MStringId CBUFFER_MESH_MATRIX;
@@ -127,15 +128,16 @@ struct MORTY_API MShaderPropertyName
 	static MStringId ENVIRONMENT_IBL_ROUGHNESS;
 
 	//PostProcess
-	static MStringId POSTPROCESS_SCREEN_TEXTURE;
+	static MStringId POSTPROCESS_SCREEN_TEXTURE[8];
 	static MStringId POSTPROCESS_SCREEN_SIZE;
 
 	//ImGUI
 	static MStringId IMGUI_SCALE;
 	static MStringId IMGUI_TRANSLATE;
 	static MStringId IMGUI_IMAGE_TYPE;
-	static MStringId IMGUI_IMAGE_ARRAY;
+	static MStringId IMGUI_SINGLE_CHANNEL_FLAG;
 	static MStringId IMGUI_IMAGE_INDEX;
+	static MStringId IMGUI_IMAGE_SIZE;
 
 	//VRS
 	static MStringId VRS_CBUFFER_SETTING_NAME;

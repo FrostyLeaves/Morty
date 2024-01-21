@@ -16,13 +16,13 @@
 #include "Render/MRenderPass.h"
 #include "Basic/MCameraFrustum.h"
 
-class MORTY_API ISinglePassRenderWork : public IRenderWork
+class MORTY_API ISinglePassRenderWork : public MRenderTaskNode
 {
 	MORTY_INTERFACE(ISinglePassRenderWork)
 public:
 
     void Initialize(MEngine* pEngine) override;
-	void Release(MEngine* pEngine) override;
+	void Release() override;
 
 	void Resize(Vector2i size) override;
 
@@ -37,6 +37,11 @@ public:
 
 protected:
 
+	MRenderTargetGroup AutoBindTarget();
+	MRenderTargetGroup AutoBindTargetWithVRS();
+	void AutoBindBarrierTexture();
+
 	MEngine* m_pEngine = nullptr;
 	MRenderPass m_renderPass;
+	std::vector<MTexture*> m_vBarrierTexture;
 };

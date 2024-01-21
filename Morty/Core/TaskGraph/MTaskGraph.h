@@ -18,7 +18,7 @@
 
 class MTaskNode;
 class ITaskGraphWalker;
-class MORTY_API MTaskGraph : MTypeClass
+class MORTY_API MTaskGraph : public MTypeClass
 {
     MORTY_CLASS(MTaskGraph)
 
@@ -41,6 +41,7 @@ public:
 	const std::vector<MTaskNode*>& GetStartNodes() const { return m_vStartTaskNode; }
 	const std::vector<MTaskNode*>& GetFinalNodes() const { return m_vFinalTaskNode; }
 	std::vector<MTaskNode*> GetOrderedNodes();
+	std::vector<MTaskNode*> GetAllNodes();
 
 protected:
 

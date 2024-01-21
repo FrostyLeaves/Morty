@@ -8,10 +8,10 @@
 
 #include "Render/ImGui/imnodes.h"
 
-TaskGraphView::TaskGraphView()
+TaskGraphView::TaskGraphView(const MString& viewName)
 	: BaseWidget()
 {
-	m_strViewName = "TaskGraph";
+	m_strViewName = viewName;
 }
 
 int GetDepthTable(MTaskGraph* pTaskGraph, std::map<MTaskNode*, int>& output)
@@ -62,35 +62,18 @@ struct DrawNode
 
 void TaskGraphView::Render()
 {
-	m_pTaskGraph = GetEngine()->GetMainGraph();
+	if (!m_pTaskGraph)
+	{
+		return;
+	}
 
 	std::map<MTaskNode*, int> tDepthTable;
 	const int nMaxDepth = GetDepthTable(m_pTaskGraph, tDepthTable);
 	std::vector<int> vTaskColumn(nMaxDepth + 1, 0);
 
-	auto vNodes = m_pTaskGraph->GetFinalNodes();
-	std::map<MTaskNode*, DrawNode> tDrawMapping;
+	auto vAllNodes = m_pTaskGraph->GetAllNodes();
 
 	ImNodes::BeginNodeEditor();
-
-	std::vector<MTaskNode*> vAllNodes;
-	
-	while (!vNodes.empty())
-	{
-		MTaskNode* pNode = vNodes.back();
-		vNodes.pop_back();
-
-		if (tDrawMapping.find(pNode) == tDrawMapping.end())
-		{
-			vAllNodes.push_back(pNode);
-		}
-
-		for (int nInputIdx = static_cast<int>(pNode->GetInputSize()) - 1; nInputIdx >= 0; --nInputIdx)
-		{
-			MTaskNode* pPrevNode = pNode->GetInput(nInputIdx)->GetLinkedNode();
-		    vNodes.push_back(pPrevNode);
-		}
-	}
 
 	for (auto& pNode : vAllNodes)
 	{
