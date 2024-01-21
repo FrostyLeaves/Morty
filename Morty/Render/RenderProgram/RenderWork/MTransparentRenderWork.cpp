@@ -109,8 +109,8 @@ void MTransparentRenderWork::InitializeFillRenderPass()
 void MTransparentRenderWork::BindTarget()
 {
 	std::vector<std::shared_ptr<MShaderTextureParam>>& params = m_pDrawFillMaterial->GetMaterialPropertyBlock()->m_vTextures;
-	params[0]->SetTexture(GetInputTexture(0));
-	params[1]->SetTexture(GetInputTexture(1));
+	params[0]->SetTexture(GetInputTexture(1));
+	params[1]->SetTexture(GetInputTexture(2));
 
 	AutoBindBarrierTexture();
 	SetRenderTarget(AutoBindTarget());
@@ -119,8 +119,9 @@ void MTransparentRenderWork::BindTarget()
 std::vector<MStringId> MTransparentRenderWork::GetInputName()
 {
 	return {
-		   MDeepPeelRenderWork::FrontTextureOutput,
-		   MDeepPeelRenderWork::BackTextureOutput,
+		MForwardRenderWork::BackBufferOutput,
+	   MDeepPeelRenderWork::FrontTextureOutput,
+	   MDeepPeelRenderWork::BackTextureOutput,
 	};
 }
 

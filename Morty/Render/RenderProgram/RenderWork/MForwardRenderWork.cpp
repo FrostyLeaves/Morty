@@ -42,6 +42,8 @@ void MForwardRenderWork::Render(const MRenderInfo& info, const std::vector<IRend
 {
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
 
+	pCommand->AddRenderToTextureBarrier(m_vBarrierTexture, METextureBarrierStage::EPixelShaderSample);
+
 	pCommand->BeginRenderPass(&m_renderPass);
 
 	const Vector2i v2LeftTop = info.f2ViewportLeftTop;

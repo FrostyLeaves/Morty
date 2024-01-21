@@ -43,8 +43,7 @@ void MDeferredLightingRenderWork::Render(const MRenderInfo& info)
 	}
 
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
-
-	//pCommand->AddRenderToTextureBarrier(m_vInputTexture, METextureBarrierStage::EPixelShaderSample);
+	
 	pCommand->AddRenderToTextureBarrier(m_vBarrierTexture, METextureBarrierStage::EPixelShaderSample);
 
 	pCommand->BeginRenderPass(&m_renderPass);

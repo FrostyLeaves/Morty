@@ -120,10 +120,14 @@ void ISinglePassRenderWork::AutoBindBarrierTexture()
 
 void ISinglePassRenderWork::Resize(Vector2i size)
 {
+	MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
+
 	if (m_renderPass.GetFrameBufferSize() != size)
 	{
-		MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
-		pRenderSystem->ResizeFrameBuffer(m_renderPass, size);
+		m_renderPass.Resize(pRenderSystem->GetDevice());
+
+		//MRenderSystem* pRenderSystem = m_pEngine->FindSystem<MRenderSystem>();
+		//pRenderSystem->ResizeFrameBuffer(m_renderPass, size);
 	}
 }
 
