@@ -147,6 +147,14 @@ struct MORTY_API MShaderPropertyName
 	static MStringId VRS_TEXEL_SIZE_NAME;
 	static MStringId VRS_EDGE_THRESHOLD_NAME;
 
+	//HBAO
+	static MStringId HBAO_NEAREST_AO_SCALE;
+	static MStringId HBAO_OTHER_AO_SCALE;
+	static MStringId HBAO_NDOTV_BIAS;
+	static MStringId HBAO_RADIUS_PIXEL;
+	static MStringId HBAO_RADIUS_UV_SQUARE_NEG_INV;
+	static MStringId HBAO_UV_TO_VIEW;
+
 };
 
 using MMeshInstanceKey = size_t;

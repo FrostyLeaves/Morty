@@ -51,7 +51,7 @@ void MShadowMapRenderWork::Render(const MRenderInfo& info, const std::vector<IRe
 	if (!pCommand)
 		return;
 
-	pCommand->AddRenderToTextureBarrier(m_vBarrierTexture, METextureBarrierStage::EPixelShaderSample);
+	AutoSetTextureBarrier(pCommand);
 
 	const auto& pShadowmap = m_renderPass.GetDepthTexture();
 

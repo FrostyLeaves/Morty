@@ -127,3 +127,12 @@ MStringId MShaderPropertyName::VRS_OUTPUT_VRS_TEXTURE_NAME = MStringId("u_texVRS
 MStringId MShaderPropertyName::VRS_EDGE_TEXTURE_SIZE_NAME = MStringId("u_n2TextureSize");
 MStringId MShaderPropertyName::VRS_TEXEL_SIZE_NAME = MStringId("u_n2TexelSize");
 MStringId MShaderPropertyName::VRS_EDGE_THRESHOLD_NAME = MStringId("u_f2EdgeThreshold");
+
+
+//HBAO
+MStringId MShaderPropertyName::HBAO_NEAREST_AO_SCALE = MStringId("u_fNearestAoScale");
+MStringId MShaderPropertyName::HBAO_OTHER_AO_SCALE = MStringId("u_fOtherAoScale");
+MStringId MShaderPropertyName::HBAO_NDOTV_BIAS = MStringId("u_fNDotVBias");
+MStringId MShaderPropertyName::HBAO_RADIUS_PIXEL = MStringId("u_fRadiusPixel");
+MStringId MShaderPropertyName::HBAO_RADIUS_UV_SQUARE_NEG_INV = MStringId("u_fRadiusSquareNegInv");
+MStringId MShaderPropertyName::HBAO_UV_TO_VIEW = MStringId("u_f4UVToView");

@@ -1,5 +1,7 @@
 #include "../PostProcess/post_process_header.hlsl"
 
+[[vk::binding(1,0)]]Texture2D u_texInputTexture;
+
 [[vk::binding(0,1)]]float u_HDR_AverageLum;
 
 struct VS_OUT

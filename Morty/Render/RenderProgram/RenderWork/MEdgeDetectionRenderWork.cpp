@@ -29,10 +29,10 @@ std::shared_ptr<MMaterial> MEdgeDetectionRenderWork::CreateMaterial()
 	return MMaterial::CreateMaterial(pEdgeMaterial);
 }
 
-std::vector<MStringId> MEdgeDetectionRenderWork::GetInputName()
+std::vector<MRenderTaskInputDesc> MEdgeDetectionRenderWork::GetInputName()
 {
 	return {
-		MForwardRenderWork::BackBufferOutput
+		{ MForwardRenderWork::BackBufferOutput, METextureBarrierStage::EPixelShaderSample },
 	};
 }
 

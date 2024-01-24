@@ -86,7 +86,7 @@ public:
     );
 
 
-    static Matrix4 MatrixPerspectiveFovLH(const float& fFovYZAngle, const float& fScreenAspect, const float& fScreenNear, const float& fScreenFar);
+    static Matrix4 MatrixPerspectiveFovLH(const float& fFov, const float& fScreenAspect, const float& fScreenNear, const float& fScreenFar);
     static Matrix4 MatrixOrthoOffCenterLH(const float& fLeft, const float& fRight, const float& fTop, const float& fBottom, const float& fNear, const float& fFar);
 
 private:

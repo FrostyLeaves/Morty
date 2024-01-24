@@ -57,8 +57,8 @@ void MDebugRenderWork::Render(const MRenderInfo& info)
 void MDebugRenderWork::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
-	
-	pCommand->AddRenderToTextureBarrier(m_vBarrierTexture, METextureBarrierStage::EPixelShaderSample);
+
+	AutoSetTextureBarrier(pCommand);
 
 	pCommand->BeginRenderPass(&m_renderPass);
 
@@ -83,11 +83,11 @@ void MDebugRenderWork::BindTarget()
 	SetRenderTarget(AutoBindTarget());
 }
 
-std::vector<MStringId> MDebugRenderWork::GetInputName()
+std::vector<MRenderTaskInputDesc> MDebugRenderWork::GetInputName()
 {
 	return {
-		MToneMappingRenderWork::ToneMappingResult,
-		MForwardRenderWork::DepthBufferOutput,
+		{ MToneMappingRenderWork::ToneMappingResult, METextureBarrierStage::EPixelShaderSample },
+		{ MForwardRenderWork::DepthBufferOutput, METextureBarrierStage::EPixelShaderWrite }
 	};
 }
 

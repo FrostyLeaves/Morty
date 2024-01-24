@@ -57,7 +57,7 @@ protected:
 
 	void BindTarget() override;
 
-	std::vector<MStringId> GetInputName() override;
+	std::vector<MRenderTaskInputDesc> GetInputName() override;
 
 	std::vector<MRenderTaskOutputDesc> GetOutputName() override;
 

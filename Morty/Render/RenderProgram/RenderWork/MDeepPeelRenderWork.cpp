@@ -88,7 +88,7 @@ void MDeepPeelRenderWork::Render(const MRenderInfo& info, const std::vector<MCul
 		return;
 	}
 
-	pCommand->AddRenderToTextureBarrier(m_vBarrierTexture, METextureBarrierStage::EPixelShaderSample);
+	AutoSetTextureBarrier(pCommand);
 
 	pCommand->BeginRenderPass(&m_renderPass);
 
@@ -264,11 +264,11 @@ void MDeepPeelRenderWork::BindTarget()
 	SetRenderTarget(AutoBindTarget());
 }
 
-std::vector<MStringId> MDeepPeelRenderWork::GetInputName()
+std::vector<MRenderTaskInputDesc> MDeepPeelRenderWork::GetInputName()
 {
 	return {
-		   MForwardRenderWork::BackBufferOutput,
-		   MForwardRenderWork::DepthBufferOutput,
+		{ MForwardRenderWork::BackBufferOutput, METextureBarrierStage::EPixelShaderSample },
+		{ MForwardRenderWork::DepthBufferOutput, METextureBarrierStage::EPixelShaderSample },
 	};
 }
 

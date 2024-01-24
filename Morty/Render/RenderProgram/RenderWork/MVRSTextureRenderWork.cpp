@@ -100,10 +100,10 @@ void MVRSTextureRenderWork::BindTarget()
 	}
 }
 
-std::vector<MStringId> MVRSTextureRenderWork::GetInputName()
+std::vector<MRenderTaskInputDesc> MVRSTextureRenderWork::GetInputName()
 {
 	return {
-		MEdgeDetectionRenderWork::EdgeDetectionResult,
+		{ MEdgeDetectionRenderWork::EdgeDetectionResult, METextureBarrierStage::EPixelShaderSample },
 	};
 }
 

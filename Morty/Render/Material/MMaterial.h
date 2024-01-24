@@ -26,6 +26,9 @@ public:
 
 
 
+	template<typename TYPE>
+	void SetValue(const MStringId& strName, const TYPE& value);
+
 	void SetTexture(const MStringId& strName, std::shared_ptr<MResource> pTexResource);
 
 
@@ -61,3 +64,12 @@ private:
 
 	std::shared_ptr<MShaderPropertyBlock> m_pShaderProperty;
 };
+
+template <typename TYPE>
+void MMaterial::SetValue(const MStringId& strName, const TYPE& value)
+{
+	if (const auto pProperty = GetMaterialPropertyBlock())
+	{
+		pProperty->SetValue(strName, value);
+	}
+}

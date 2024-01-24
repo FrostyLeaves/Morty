@@ -1,5 +1,7 @@
 #include "../PostProcess/post_process_header.hlsl"
 
+[[vk::binding(1,0)]]Texture2D u_texInputTexture;
+
 struct VS_OUT_POST
 {
     float4 pos : SV_POSITION;

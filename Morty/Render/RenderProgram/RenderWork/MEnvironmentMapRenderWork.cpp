@@ -185,7 +185,7 @@ void MEnvironmentMapRenderWork::InitializeMaterial()
 {
 	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-	Matrix4 m4Projection = MRenderSystem::MatrixPerspectiveFovLH(45.0f, 1.0f, 0.1f, 100.0f);
+	Matrix4 m4Projection = MRenderSystem::MatrixPerspectiveFovLH(90.0f, 1.0f, 0.1f, 100.0f);
 
 	Matrix4 vCmaeraView[6] = {
 		MMath::LookAt(Vector3(-1.0f,  0.0f,  0.0f), Vector3(0.0f, 1.0f,  0.0f)),

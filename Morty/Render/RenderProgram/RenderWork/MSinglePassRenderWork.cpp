@@ -98,24 +98,23 @@ MRenderTargetGroup ISinglePassRenderWork::AutoBindTargetWithVRS()
 
 void ISinglePassRenderWork::AutoBindBarrierTexture()
 {
-	std::set<MTexture*> tInputTextures;
+	m_vBarrierTexture.clear();
+	auto vInputs = GetInputName();
 	for (size_t nInputIdx = 0; nInputIdx < GetInputSize(); ++nInputIdx)
 	{
-		if (auto pInputTexture = GetInputTexture(nInputIdx))
-		{
-			tInputTextures.insert(pInputTexture.get());
-		}
+		m_vBarrierTexture[vInputs[nInputIdx].barrier].push_back(GetInputTexture(nInputIdx).get());
 	}
+}
 
-	for (size_t nOutputIdx = 0; nOutputIdx < GetOutputSize(); ++nOutputIdx)
+void ISinglePassRenderWork::AutoSetTextureBarrier(MIRenderCommand* pCommand)
+{
+	for (const auto& [barrier, textures] : m_vBarrierTexture)
 	{
-		if (auto pOutputTexture = GetRenderOutput(nOutputIdx)->GetTexture())
+		if (barrier != METextureBarrierStage::EUnknow && barrier != METextureBarrierStage::EPixelShaderWrite)
 		{
-			tInputTextures.erase(pOutputTexture.get());
+			pCommand->AddRenderToTextureBarrier(textures, barrier);
 		}
 	}
-
-	m_vBarrierTexture = { tInputTextures.begin(), tInputTextures.end() };
 }
 
 void ISinglePassRenderWork::Resize(Vector2i size)

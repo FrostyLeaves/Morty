@@ -28,8 +28,8 @@ void MBasicPostProcessRenderWork::Render(const MRenderInfo& info)
 {
 	auto pCommand = info.pPrimaryRenderCommand;
 	MIMesh* pScreenMesh = GetEngine()->FindGlobalObject<MMeshManager>()->GetScreenRect();
-	
-	pCommand->AddRenderToTextureBarrier(m_vBarrierTexture, METextureBarrierStage::EPixelShaderSample);
+
+	AutoSetTextureBarrier(pCommand);
 
 	pCommand->BeginRenderPass(&m_renderPass);
 

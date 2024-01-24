@@ -64,6 +64,7 @@
 #include "RenderGraph/MRenderTargetManager.h"
 #include "RenderWork/MDeepPeelRenderWork.h"
 #include "RenderWork/MEdgeDetectionRenderWork.h"
+#include "RenderWork/MHBAORenderWork.h"
 #include "RenderWork/MToneMappingRenderWork.h"
 
 MORTY_CLASS_IMPLEMENT(MDeferredRenderProgram, MIRenderProgram)
@@ -144,6 +145,10 @@ void MDeferredRenderProgram::RenderSetup(MIRenderCommand* pPrimaryCommand)
 	//Resize FrameBuffer.
 	const Vector2i v2ViewportSize = pViewport->GetSize();
 	m_pRenderGraph->Resize(v2ViewportSize);
+
+
+	MRenderGraphSetupWalker setupWalker(m_renderInfo);
+	setupWalker(m_pRenderGraph.get());
 }
 
 std::shared_ptr<MTexture> MDeferredRenderProgram::GetOutputTexture()
@@ -321,6 +326,13 @@ void MDeferredRenderProgram::InitializeRenderTarget()
 		pLightingOutputTarget
 	);
 
+	auto pHBAONode = RegisterRenderWork<MHBAORenderWork>();
+	pHBAONode->GetRenderOutput(0)->SetRenderTarget(
+		m_pRenderGraph->GetRenderTargetManager()->CreateRenderTarget(MHBAORenderWork::HBAOOutput)
+		->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Shared)
+		->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Scale, 1.0f)
+		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::ER_FLOAT_32).InitName("HBAO Buffer"))
+	);
 
 #if MORTY_VXGI_ENABLE
 

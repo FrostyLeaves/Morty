@@ -30,13 +30,12 @@ protected:
 
 	void BindTarget() override;
 
-	std::vector<MStringId> GetInputName() override;
+	std::vector<MRenderTaskInputDesc> GetInputName() override;
 
 	std::vector<MRenderTaskOutputDesc> GetOutputName() override;
 
 
 private:
 
-	std::vector<MTexture*> m_vInputTexture;
 	std::shared_ptr<MMaterial> m_pLightningMaterial = nullptr;
 };

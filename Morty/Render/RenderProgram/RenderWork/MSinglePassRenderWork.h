@@ -40,8 +40,9 @@ protected:
 	MRenderTargetGroup AutoBindTarget();
 	MRenderTargetGroup AutoBindTargetWithVRS();
 	void AutoBindBarrierTexture();
+	void AutoSetTextureBarrier(MIRenderCommand* pCommand);
 
 	MEngine* m_pEngine = nullptr;
 	MRenderPass m_renderPass;
-	std::vector<MTexture*> m_vBarrierTexture;
+	std::unordered_map<METextureBarrierStage, std::vector<MTexture*>> m_vBarrierTexture;
 };

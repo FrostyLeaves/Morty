@@ -31,7 +31,5 @@ protected:
 
 	void BindTarget() override;
 
-private:
-
 	std::shared_ptr<MMaterial> m_pMaterial = nullptr;
 };

@@ -1,5 +1,6 @@
 #include "MDeferredLightingRenderWork.h"
 
+#include "MHBAORenderWork.h"
 #include "MVoxelizerRenderWork.h"
 #include "MVRSTextureRenderWork.h"
 #include "Scene/MScene.h"
@@ -43,8 +44,8 @@ void MDeferredLightingRenderWork::Render(const MRenderInfo& info)
 	}
 
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
-	
-	pCommand->AddRenderToTextureBarrier(m_vBarrierTexture, METextureBarrierStage::EPixelShaderSample);
+
+	AutoSetTextureBarrier(pCommand);
 
 	pCommand->BeginRenderPass(&m_renderPass);
 
@@ -95,34 +96,27 @@ void MDeferredLightingRenderWork::BindTarget()
 {
 	if (std::shared_ptr<MShaderPropertyBlock> pParams = m_pLightningMaterial->GetMaterialPropertyBlock())
 	{
-		m_vInputTexture = {
-			GetInputTexture(0).get(),
-			GetInputTexture(1).get(),
-			GetInputTexture(2).get(),
-			GetInputTexture(3).get(),
-		};
-
-		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_ALBEDO_METALLIC, GetInputTexture(0));
-		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_NORMAL_ROUGHNESS, GetInputTexture(1));
-		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_POSITION_AMBIENTOCC, GetInputTexture(2));
-		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_DEPTH_MAP, GetInputTexture(3));
+		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_ALBEDO_METALLIC, GetInputTexture(MGBufferRenderWork::GBufferAlbedoMetallic));
+		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_NORMAL_ROUGHNESS, GetInputTexture(MGBufferRenderWork::GBufferNormalRoughness));
+		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_POSITION_AMBIENTOCC, GetInputTexture(MGBufferRenderWork::GBufferPositionAmbientOcc));
+		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_DEPTH_MAP, GetInputTexture(MGBufferRenderWork::GBufferDepthBufferOutput));
 	}
 
 	AutoBindBarrierTexture();
 	SetRenderTarget(AutoBindTargetWithVRS());
 }
 
-std::vector<MStringId> MDeferredLightingRenderWork::GetInputName()
+std::vector<MRenderTaskInputDesc> MDeferredLightingRenderWork::GetInputName()
 {
 	return {
-		MGBufferRenderWork::GBufferAlbedoMetallic,
-		MGBufferRenderWork::GBufferNormalRoughness,
-		MGBufferRenderWork::GBufferPositionAmbientOcc,
-		MGBufferRenderWork::GBufferDepthBufferOutput,
-		MShadowMapRenderWork::ShadowMapBufferOutput,
+		{ MGBufferRenderWork::GBufferAlbedoMetallic, METextureBarrierStage::EPixelShaderSample },
+		{ MGBufferRenderWork::GBufferNormalRoughness, METextureBarrierStage::EPixelShaderSample },
+		{ MGBufferRenderWork::GBufferPositionAmbientOcc, METextureBarrierStage::EPixelShaderSample },
+		{ MGBufferRenderWork::GBufferDepthBufferOutput, METextureBarrierStage::EPixelShaderSample },
+		{ MShadowMapRenderWork::ShadowMapBufferOutput, METextureBarrierStage::EPixelShaderSample },
+		{ MHBAORenderWork::HBAOOutput, METextureBarrierStage::EPixelShaderSample },
 #if MORTY_VXGI_ENABLE
-		//TODO: this input texture is not be used.
-		MVoxelizerRenderWork::VoxelizerBufferOutput
+		{ MVoxelizerRenderWork::VoxelizerBufferOutput, METextureBarrierStage::EUnknow },
 #endif
 	};
 }

@@ -309,6 +309,7 @@ ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturPropertyBlock(ImGu
 			if (imguiUniform.GetVariant<int>(MShaderPropertyName::IMGUI_IMAGE_TYPE) != nImageType
 				|| imguiUniform.GetVariant<int>(MShaderPropertyName::IMGUI_SINGLE_CHANNEL_FLAG) != nSingleChannelFlag
 				|| imguiUniform.GetVariant<int>(MShaderPropertyName::IMGUI_IMAGE_INDEX) != nImageIndex
+				|| imguiUniform.GetVariant<Vector2>(MShaderPropertyName::IMGUI_IMAGE_SIZE) != f2ImageSize
 				)
 			{
 				imguiUniform.SetVariant(MShaderPropertyName::IMGUI_IMAGE_TYPE, nImageType);
@@ -318,24 +319,11 @@ ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturPropertyBlock(ImGu
 				pDest->pPropertyBlock->m_vParams[0]->SetDirty();
 			}
 
-
-			if (key.pTexture->GetTextureType() == METextureType::ETexture2D)
+			if (pDest->pPropertyBlock->m_vTextures[nImageType]->pTexture != key.pTexture)
 			{
-				if (pDest->pPropertyBlock->m_vTextures[0]->pTexture != key.pTexture)
-				{
-					pDest->pPropertyBlock->m_vTextures[0]->pTexture = key.pTexture;
-					pDest->pPropertyBlock->m_vTextures[0]->SetDirty();
-				}
+				pDest->pPropertyBlock->m_vTextures[nImageType]->pTexture = key.pTexture;
+				pDest->pPropertyBlock->m_vTextures[nImageType]->SetDirty();
 			}
-			else if (key.pTexture->GetTextureType() == METextureType::ETexture2DArray)
-			{
-				if (pDest->pPropertyBlock->m_vTextures[1]->pTexture != key.pTexture)
-				{
-					pDest->pPropertyBlock->m_vTextures[1]->pTexture = key.pTexture;
-					pDest->pPropertyBlock->m_vTextures[1]->SetDirty();
-				}
-			}
-
 		}
 
 

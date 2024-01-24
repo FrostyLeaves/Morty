@@ -17,8 +17,10 @@
 #include "TaskGraph/MTaskNode.h"
 #include "Utility/MStringId.h"
 #include "MRenderTaskNodeOutput.h"
+#include "Render/MRenderCommand.h"
 #include "RenderProgram/RenderGraph/MRenderTargetManager.h"
 
+class MRenderTaskNodeInput;
 class IShaderPropertyUpdateDecorator;
 class MRenderTargetManager;
 class MRenderGraph;
@@ -65,6 +67,12 @@ private:
 	size_t m_nTexelSize = 1;
 };
 
+struct MRenderTaskInputDesc
+{
+	MStringId name;
+	METextureBarrierStage barrier = METextureBarrierStage::EPixelShaderSample;
+};
+
 struct MRenderTaskOutputDesc
 {
 	MStringId name;
@@ -79,11 +87,12 @@ public:
 	virtual void Initialize(MEngine* pEngine) { MORTY_UNUSED(pEngine); }
 	virtual void Release() {}
 	virtual void Render(const MRenderInfo& info) { MORTY_UNUSED(info); }
+	virtual void RenderSetup(const MRenderInfo& info) { MORTY_UNUSED(info); }
 	virtual void BindTarget() {}
 	virtual void Resize(Vector2i size) { MORTY_UNUSED(size); }
 	virtual std::shared_ptr<IShaderPropertyUpdateDecorator> GetFramePropertyDecorator() { return nullptr; }
 
-	virtual std::vector<MStringId> GetInputName() { return {}; }
+	virtual std::vector<MRenderTaskInputDesc> GetInputName() { return {}; }
 	virtual std::vector<MRenderTaskOutputDesc> GetOutputName() { return {}; }
 
 	void OnCreated() override;
@@ -95,5 +104,12 @@ public:
 
 	std::shared_ptr<MTexture> GetInputTexture(const size_t& nIdx);
 	std::shared_ptr<MTexture> GetOutputTexture(const size_t& nIdx);
+	std::shared_ptr<MTexture> GetInputTexture(const MStringId& nIdx);
+	std::shared_ptr<MTexture> GetOutputTexture(const MStringId& nIdx);
+
+
 	MRenderTaskNodeOutput* GetRenderOutput(const size_t& nIdx);
+
+	std::unordered_map<MStringId, MRenderTaskNodeInput*> m_tInput;
+	std::unordered_map<MStringId, MRenderTaskNodeOutput*> m_tOutput;
 };
