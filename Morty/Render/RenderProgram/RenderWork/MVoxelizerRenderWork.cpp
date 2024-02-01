@@ -335,14 +335,14 @@ void MVoxelizerRenderWork::BindTarget()
 	SetRenderTarget(AutoBindTarget());
 }
 
-std::vector<MRenderTaskInputDesc> MVoxelizerRenderWork::GetInputName()
+std::vector<MRenderTaskInputDesc> MVoxelizerRenderWork::InitInputDesc()
 {
 	return {
 		{ MShadowMapRenderWork::ShadowMapBufferOutput, METextureBarrierStage::EPixelShaderSample },
 	};
 }
 
-std::vector<MRenderTaskOutputDesc> MVoxelizerRenderWork::GetOutputName()
+std::vector<MRenderTaskOutputDesc> MVoxelizerRenderWork::InitOutputDesc()
 {
 	return {
 		{ VoxelizerBufferOutput, {true, MColor::Black_T }},

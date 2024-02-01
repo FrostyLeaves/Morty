@@ -100,14 +100,14 @@ void MVRSTextureRenderWork::BindTarget()
 	}
 }
 
-std::vector<MRenderTaskInputDesc> MVRSTextureRenderWork::GetInputName()
+std::vector<MRenderTaskInputDesc> MVRSTextureRenderWork::InitInputDesc()
 {
 	return {
 		{ MEdgeDetectionRenderWork::EdgeDetectionResult, METextureBarrierStage::EPixelShaderSample },
 	};
 }
 
-std::vector<MRenderTaskOutputDesc> MVRSTextureRenderWork::GetOutputName()
+std::vector<MRenderTaskOutputDesc> MVRSTextureRenderWork::InitOutputDesc()
 {
     return {
 		{ VRS_TEXTURE, {false, MColor::Black_T }},

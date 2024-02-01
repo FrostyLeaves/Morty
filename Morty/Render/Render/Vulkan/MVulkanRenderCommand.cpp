@@ -6,7 +6,6 @@
 #include "Material/MMaterial.h"
 #include "Material/MComputeDispatcher.h"
 #include "MVulkanPhysicalDevice.h"
-#include <stdint.h>
 
 void MVulkanRenderCommand::SetViewport(const MViewportInfo& viewport)
 {
@@ -63,17 +62,18 @@ void MVulkanRenderCommand::BeginRenderPass(MRenderPass* pRenderPass)
 		m_pDevice->GenerateFrameBuffer(pRenderPass);
 	}
 
-	std::vector<MTexture*> vTextures;
-	for (auto pTexture : pRenderPass->GetBackTextures())
+	std::vector<MTexture*> vTextures(pRenderPass->GetBackTextures().size());
+	for (size_t nIdx = 0; nIdx < pRenderPass->GetBackTextures().size(); ++nIdx)
 	{
-		vTextures.push_back(pTexture.get());
+		vTextures[nIdx] = pRenderPass->GetBackTexture(nIdx).get();
 	}
+	std::vector<VkImageLayout> vLayouts(pRenderPass->GetBackTextures().size(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-	SetTextureLayout(vTextures, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	SetTextureLayout(vTextures, vLayouts);
 	
 	if (std::shared_ptr<MTexture> pDepthTexture = pRenderPass->GetDepthTexture())
 	{
-		SetTextureLayout({ pDepthTexture.get() }, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		SetTextureLayout({ pDepthTexture.get() }, { m_pDevice->m_pPhysicalDevice->m_VkDepthImageLayout });
 	}
 
 	VkRenderPassBeginInfo renderPassInfo{};
@@ -446,8 +446,14 @@ bool MVulkanRenderCommand::AddRenderToTextureBarrier(const std::vector<MTexture*
 		return false;
 	}
 
-	const VkImageLayout dstLayout = GetTextureBarrierLayout(dstStage);
-	SetTextureLayout(vTextures, dstLayout);
+	std::vector<VkImageLayout> layouts(vTextures.size());
+	std::transform(vTextures.begin(), vTextures.end(), layouts.begin(), [this, dstStage](auto pTexture)
+	{
+		return GetTextureBarrierLayout(pTexture, dstStage);
+	});
+
+
+	SetTextureLayout(vTextures, layouts);
 	return true;
 }
 
@@ -550,7 +556,7 @@ VkPipelineStageFlags GetDstPipelineStageFlags(VkImageLayout imageLayout)
 	return VK_PIPELINE_STAGE_NONE_KHR;
 }
 
-void MVulkanRenderCommand::SetTextureLayout(const std::vector<MTexture*>& vTextures, VkImageLayout newLayout)
+void MVulkanRenderCommand::SetTextureLayout(const std::vector<MTexture*>& vTextures, const std::vector<VkImageLayout>& newLayouts)
 {
 	std::vector<VkImageMemoryBarrier> vImageBarrier;
 
@@ -566,7 +572,7 @@ void MVulkanRenderCommand::SetTextureLayout(const std::vector<MTexture*>& vTextu
 		if (findResult != m_tTextureLayout.end())
 			oldLayout = findResult->second;
 		
-		if(oldLayout == newLayout)
+		if(oldLayout == newLayouts[nTexIdx])
 			continue;
 
 		VkImageSubresourceRange subresourceRange;
@@ -579,13 +585,13 @@ void MVulkanRenderCommand::SetTextureLayout(const std::vector<MTexture*>& vTextu
 		vImageBarrier.push_back(VkImageMemoryBarrier());
 		VkImageMemoryBarrier& imageMemoryBarrier = vImageBarrier.back();
 
-		m_pDevice->TransitionLayoutBarrier(imageMemoryBarrier, pTexture->m_VkTextureImage, oldLayout, newLayout, subresourceRange);
-		pTexture->m_VkImageLayout = newLayout;
+		m_pDevice->TransitionLayoutBarrier(imageMemoryBarrier, pTexture->m_VkTextureImage, oldLayout, newLayouts[nTexIdx], subresourceRange);
+		pTexture->m_VkImageLayout = newLayouts[nTexIdx];
 
-		m_tTextureLayout[pTexture] = newLayout;
+		m_tTextureLayout[pTexture] = newLayouts[nTexIdx];
 
 		srcPipelineStage |= GetSrcPipelineStageFlags(oldLayout);
-		dstPipelineStage |= GetDstPipelineStageFlags(newLayout);
+		dstPipelineStage |= GetDstPipelineStageFlags(newLayouts[nTexIdx]);
 	}
 
 	if (vImageBarrier.empty())
@@ -659,7 +665,7 @@ bool MVulkanRenderCommand::DownloadTexture(MTexture* pTexture, const uint32_t& u
 
 
 
-	SetTextureLayout({ pTexture }, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+	SetTextureLayout({ pTexture }, { VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL  });
 
 	vkCmdCopyImageToBuffer(m_VkCommandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, readBackBuffer, 1, &region);
 
@@ -679,8 +685,8 @@ bool MVulkanRenderCommand::CopyImageBuffer(MTexture* pSource, MTexture* pDest)
 	if (!pSource || !pDest)
 		return false;
 
-	SetTextureLayout({ pSource }, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-	SetTextureLayout({ pDest }, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	SetTextureLayout({ pSource }, { VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL });
+	SetTextureLayout({ pDest }, { VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL });
 
 	VkImageBlit blit{};
 	blit.srcOffsets[0] = { 0, 0, 0 };
@@ -720,7 +726,7 @@ void MVulkanRenderCommand::FillTexture(MTexture* pTexture, MColor color)
 	MORTY_UNUSED(color);
 
 	const VkImageLayout vkClearLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-	SetTextureLayout({ pTexture }, vkClearLayout);
+	SetTextureLayout({ pTexture }, { vkClearLayout });
 
 	VkClearColorValue vkColor;
 	memset(&vkColor, 0, sizeof(vkColor));
@@ -852,15 +858,19 @@ void MVulkanPrimaryRenderCommand::ExecuteChildCommand()
 	vkCmdExecuteCommands(m_VkCommandBuffer, static_cast<uint32_t>(buffers.size()), buffers.data());
 }
 
-VkImageLayout MVulkanRenderCommand::GetTextureBarrierLayout(METextureBarrierStage stage) const
+VkImageLayout MVulkanRenderCommand::GetTextureBarrierLayout(MTexture* pTexture, METextureBarrierStage stage) const
 {
 	static const std::unordered_map<METextureBarrierStage, VkImageLayout> ImageLayoutTable = {
 	{ METextureBarrierStage::EPixelShaderSample, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL },
-	{ METextureBarrierStage::EPixelShaderWrite, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL },
 	{ METextureBarrierStage::EComputeShaderWrite, VK_IMAGE_LAYOUT_GENERAL },
     { METextureBarrierStage::EShadingRateMask, VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR },
 		{ METextureBarrierStage::EComputeShaderRead, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL },
 	};
+
+	if (stage == METextureBarrierStage::EPixelShaderWrite)
+	{
+		return m_pDevice->GetImageLayout(pTexture);
+	}
 
 	const auto layout = ImageLayoutTable.find(stage);
 	MORTY_ASSERT(layout != ImageLayoutTable.end());

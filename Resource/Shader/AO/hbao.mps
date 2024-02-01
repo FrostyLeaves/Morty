@@ -2,9 +2,6 @@
 
 //reference: https://zenn.dev/mebiusbox/articles/c7ea4871698ada
 
-[[vk::binding(1,0)]]Texture2D u_texInputTexture;  //gbuffer normal
-[[vk::binding(2,0)]]Texture2D u_texInputTexture1; //gbuffer depth
-
 #define HBAO_DIRECTION_NUM (4)
 #define HBAO_STEP_NUM (4)
 
@@ -13,9 +10,16 @@
     float u_fNearestAoScale;
     float u_fOtherAoScale;
     float u_fNDotVBias;
-    float u_fRadiusPixel;
     float u_fRadiusSquareNegInv;
+}
+
+[[vk::binding(1,0)]]Texture2D u_texInputTexture;  //gbuffer normal
+[[vk::binding(2,0)]]Texture2D u_texInputTexture1; //gbuffer depth
+
+[[vk::binding(3, 0)]]cbuffer cbHbaoFrameData
+{
     float4 u_f4UVToView;
+    float u_fRadiusPixel;
 };
 
 struct VS_OUT_POST
@@ -78,35 +82,37 @@ float3 GetViewNormalFromScreenUV(float2 uv)
 
 float GetViewDepthFromScreenUV(float2 uv)
 {
-    float fDepth = u_texInputTexture1.SampleLevel(NearestSampler, uv, 0);
+    float fDepth = u_texInputTexture1.SampleLevel(NearestSampler, uv, 0).r;
 
     return PerspectiveDepthToViewDepth(fDepth, u_matZNearFar.x, u_matZNearFar.y);
 }
 
 float3 GetViewPositionFromScreenUV(float2 uv, float fViewDepth)
 {
-    //https://zenn.dev/mebiusbox/articles/c7ea4871698ada
     float3 f3ViewPosition = float3((u_f4UVToView.xy * uv + u_f4UVToView.zw) * fViewDepth, fViewDepth);
 
     return f3ViewPosition;
 }
 
-float3 GetViewPositionFromScreenUV(float2 uv)
+float4 GetRandomNoise(HbaoPixelData data)
 {
-    float fViewDepth = GetViewDepthFromScreenUV(uv);
-
-    return GetViewPositionFromScreenUV(uv, fViewDepth);
+    float2 f2NoiseUV = data.f2ScreenUV * data.fViewDepth / u_matZNearFar.y;
+    
+    const float4 f4Rand = u_texNoiseTexture.Sample(NearestSampler, f2NoiseUV);
+    
+    return f4Rand;
 }
 
 float ComputeAO(HbaoPixelData data, float fRandomStepOffsetPixel, float2 f2Direction)
 {
     float2 f2OffsetPixel = (fRandomStepOffsetPixel * f2Direction);
-    float2 f2OffsetUV = f2OffsetPixel / u_f2ViewportSize;
+    float2 f2OffsetUV = f2OffsetPixel * u_f2ViewportSizeInv;
 
     //TODO: half resolution scale.
     float2 f2SampleUV = data.f2ScreenUV + f2OffsetUV;
 
-    float3 f3SamplePosition = GetViewPositionFromScreenUV(f2SampleUV);
+    float fSampleViewDepth = GetViewDepthFromScreenUV(f2SampleUV);
+    float3 f3SamplePosition = GetViewPositionFromScreenUV(f2SampleUV, fSampleViewDepth);
 
     return ComputeHorizonOcclusion(data, f3SamplePosition);
 }
@@ -115,11 +121,9 @@ float HBAO(HbaoPixelData data)
 {
     const float fCircleSlice = 2.0f * NUM_PI / HBAO_DIRECTION_NUM;
 
-    // random for rotation direction.
-    // TODO: sample from noise.
-    const float4 f4Rand = float4(1,0,1,1);
+    const float4 f4Rand = GetRandomNoise(data);
+    float2 f2RandDirection = normalize(max(f4Rand.xy, 0.02f));
 
-    //TODO: attenuated by radius.
     const float fStepLengthPixel = data.fRadiusPixel / (HBAO_STEP_NUM + 1);
 
     float fNearestAoValue = 0.0f;
@@ -129,7 +133,7 @@ float HBAO(HbaoPixelData data)
     {
         const float fOriginAngle = fCircleSlice * nDirectionIdx;
 
-        float2 f2RandomDirection = RotateDirection(float2(cos(fOriginAngle), sin(fOriginAngle)), f4Rand.xy);
+        float2 f2RandomDirection = RotateDirection(f2RandDirection, float2(cos(fOriginAngle), sin(fOriginAngle)));
 
         float fRandomStepOffsetPixel = 1.0f + f4Rand.z * fStepLengthPixel;
 

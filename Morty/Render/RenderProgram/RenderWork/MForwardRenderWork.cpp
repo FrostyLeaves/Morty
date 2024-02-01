@@ -95,7 +95,7 @@ void MForwardRenderWork::BindTarget()
 	SetRenderTarget(AutoBindTargetWithVRS());
 }
 
-std::vector<MRenderTaskInputDesc> MForwardRenderWork::GetInputName()
+std::vector<MRenderTaskInputDesc> MForwardRenderWork::InitInputDesc()
 {
 	return {
 		{ MDeferredLightingRenderWork::DeferredLightingOutput, METextureBarrierStage::EPixelShaderWrite },
@@ -104,7 +104,7 @@ std::vector<MRenderTaskInputDesc> MForwardRenderWork::GetInputName()
 	};
 }
 
-std::vector<MRenderTaskOutputDesc> MForwardRenderWork::GetOutputName()
+std::vector<MRenderTaskOutputDesc> MForwardRenderWork::InitOutputDesc()
 {
 	return {
 		{ BackBufferOutput, {false, MColor::Black_T } },

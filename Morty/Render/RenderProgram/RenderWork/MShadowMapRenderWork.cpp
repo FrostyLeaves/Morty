@@ -139,7 +139,7 @@ void MShadowMapRenderWork::BindTarget()
 	SetRenderTarget(AutoBindTarget());
 }
 
-std::vector<MRenderTaskOutputDesc> MShadowMapRenderWork::GetOutputName()
+std::vector<MRenderTaskOutputDesc> MShadowMapRenderWork::InitOutputDesc()
 {
     return {
         { ShadowMapBufferOutput, { true, MColor::White } },

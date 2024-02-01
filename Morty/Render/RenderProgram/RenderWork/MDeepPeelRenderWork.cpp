@@ -252,7 +252,7 @@ void MDeepPeelRenderWork::ReleaseFrameShaderParams()
 
 void MDeepPeelRenderWork::BindTarget()
 {
-	const auto pDepthTexture = GetInputTexture(1);
+	const auto pDepthTexture = GetInputTexture(MForwardRenderWork::DepthBufferOutput);
 	m_pDrawPeelMaterial->GetMaterialPropertyBlock()->SetTexture(MShaderPropertyName::TRANSPARENT_TEXTURE_BACK_TEXTURE, pDepthTexture);
 
 	m_aFramePropertyBlock[0]->SetTexture(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_0, GetOutputTexture(4));
@@ -264,15 +264,14 @@ void MDeepPeelRenderWork::BindTarget()
 	SetRenderTarget(AutoBindTarget());
 }
 
-std::vector<MRenderTaskInputDesc> MDeepPeelRenderWork::GetInputName()
+std::vector<MRenderTaskInputDesc> MDeepPeelRenderWork::InitInputDesc()
 {
 	return {
-		{ MForwardRenderWork::BackBufferOutput, METextureBarrierStage::EPixelShaderSample },
 		{ MForwardRenderWork::DepthBufferOutput, METextureBarrierStage::EPixelShaderSample },
 	};
 }
 
-std::vector<MRenderTaskOutputDesc> MDeepPeelRenderWork::GetOutputName()
+std::vector<MRenderTaskOutputDesc> MDeepPeelRenderWork::InitOutputDesc()
 {
 	return {
 		{ FrontTextureOutput, {true, MColor::Black_T } },

@@ -53,6 +53,7 @@
 #include <assert.h>
 #include <algorithm>
 #include <functional>
+#include <unordered_set>
 #include <unordered_map>
 #include <condition_variable>
 

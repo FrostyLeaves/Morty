@@ -87,7 +87,7 @@ void MGBufferRenderWork::BindTarget()
 	SetRenderTarget(AutoBindTargetWithVRS());
 }
 
-std::vector<MRenderTaskOutputDesc> MGBufferRenderWork::GetOutputName()
+std::vector<MRenderTaskOutputDesc> MGBufferRenderWork::InitOutputDesc()
 {
     return {
         { GBufferAlbedoMetallic, {true, MColor::Black_T} },

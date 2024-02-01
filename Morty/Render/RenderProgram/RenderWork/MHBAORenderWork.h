@@ -1,5 +1,5 @@
 /**
- * @File         MDebugRenderWork
+ * @File         MHBAORenderWork
  * 
  * @Created      2021-08-16 10:37:01
  *
@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "MBasicPostProcessRenderWork.h"
 #include "Utility/MGlobal.h"
 #include "MSinglePassRenderWork.h"
 
@@ -16,22 +17,24 @@
 #include "Render/MRenderPass.h"
 #include "Basic/MCameraFrustum.h"
 
-class MORTY_API MDebugRenderWork : public ISinglePassRenderWork
+class MORTY_API MHBAORenderWork : public MBasicPostProcessRenderWork
 {
-	MORTY_CLASS(MDebugRenderWork)
+	MORTY_CLASS(MHBAORenderWork)
 
-    static const MStringId BackBufferOutput;
-	static const MStringId DepthBufferOutput;
-public:
+    static const MStringId HBAOOutput;
 
-	void Render(const MRenderInfo& info) override;
-	void Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
+	void Release() override;
+
+	std::shared_ptr<MMaterial> CreateMaterial() override;
+
+	void RenderSetup(const MRenderInfo& info) override;
+
+	void RegisterSetting() override;
 
 protected:
-
-	void BindTarget() override;
 
 	std::vector<MRenderTaskInputDesc> InitInputDesc() override;
 
 	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
+
 };

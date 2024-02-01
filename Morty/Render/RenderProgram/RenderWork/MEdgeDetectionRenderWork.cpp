@@ -29,14 +29,14 @@ std::shared_ptr<MMaterial> MEdgeDetectionRenderWork::CreateMaterial()
 	return MMaterial::CreateMaterial(pEdgeMaterial);
 }
 
-std::vector<MRenderTaskInputDesc> MEdgeDetectionRenderWork::GetInputName()
+std::vector<MRenderTaskInputDesc> MEdgeDetectionRenderWork::InitInputDesc()
 {
 	return {
 		{ MForwardRenderWork::BackBufferOutput, METextureBarrierStage::EPixelShaderSample },
 	};
 }
 
-std::vector<MRenderTaskOutputDesc> MEdgeDetectionRenderWork::GetOutputName()
+std::vector<MRenderTaskOutputDesc> MEdgeDetectionRenderWork::InitOutputDesc()
 {
 	return {
 		{ EdgeDetectionResult, {true, MColor::Black_T }},

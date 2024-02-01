@@ -221,14 +221,14 @@ void MVoxelDebugRenderWork::BindTarget()
 	SetRenderTarget(AutoBindTarget());
 }
 
-std::vector<MRenderTaskInputDesc> MVoxelDebugRenderWork::GetInputName()
+std::vector<MRenderTaskInputDesc> MVoxelDebugRenderWork::InitInputDesc()
 {
 	return {
 		{ MVoxelizerRenderWork::VoxelizerBufferOutput, METextureBarrierStage::EUnknow },
 	};
 }
 
-std::vector<MRenderTaskOutputDesc> MVoxelDebugRenderWork::GetOutputName()
+std::vector<MRenderTaskOutputDesc> MVoxelDebugRenderWork::InitOutputDesc()
 {
 	return {
 		{ BackBufferOutput, {true, MColor::Black_T }},

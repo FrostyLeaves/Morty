@@ -39,7 +39,6 @@ void MDebugRenderWork::Render(const MRenderInfo& info)
 	//Current viewport.
 	const MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
 
-
 	//Render static mesh.
 	MCullingResultRenderable indirectMesh;
 	indirectMesh.SetMeshBuffer(pMeshManager->GetMeshBuffer());
@@ -65,7 +64,7 @@ void MDebugRenderWork::Render(const MRenderInfo& info, const std::vector<IRender
 	const Vector2i v2LeftTop = info.f2ViewportLeftTop;
 	const Vector2i v2Size = info.f2ViewportSize;
 	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
-	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
+	pCommand->SetScissor(MScissorInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
 
 
 	for (IRenderable* pRenderable : vRenderable)
@@ -83,15 +82,15 @@ void MDebugRenderWork::BindTarget()
 	SetRenderTarget(AutoBindTarget());
 }
 
-std::vector<MRenderTaskInputDesc> MDebugRenderWork::GetInputName()
+std::vector<MRenderTaskInputDesc> MDebugRenderWork::InitInputDesc()
 {
 	return {
-		{ MToneMappingRenderWork::ToneMappingResult, METextureBarrierStage::EPixelShaderSample },
+		{ MToneMappingRenderWork::ToneMappingResult, METextureBarrierStage::EPixelShaderWrite },
 		{ MForwardRenderWork::DepthBufferOutput, METextureBarrierStage::EPixelShaderWrite }
 	};
 }
 
-std::vector<MRenderTaskOutputDesc> MDebugRenderWork::GetOutputName()
+std::vector<MRenderTaskOutputDesc> MDebugRenderWork::InitOutputDesc()
 {
 	return {
 		{ BackBufferOutput, {false, MColor::Black_T }},

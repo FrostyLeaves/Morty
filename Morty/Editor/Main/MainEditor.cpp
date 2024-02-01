@@ -42,6 +42,7 @@
 #include "Utility/MTimer.h"
 #include "Widget/GuizmoWidget.h"
 #include "Widget/MainView.h"
+#include "Widget/RenderSettingView.h"
 #include "Widget/TaskGraphView.h"
 
 MString MainEditor::m_sRenderProgramName = MDeferredRenderProgram::GetClassTypeName();
@@ -69,6 +70,9 @@ bool MainEditor::Initialize(MEngine* pEngine)
 
 	m_pRenderGraphView = new TaskGraphView("Render Graph");
 	m_vChildView.push_back(m_pRenderGraphView);
+
+	m_pRenderSettingView = new RenderSettingView();
+	m_vChildView.push_back(m_pRenderSettingView);
 
 
 	for (BaseWidget* pChild : m_vChildView)
@@ -119,6 +123,7 @@ void MainEditor::SetScene(MScene* pScene)
 	m_pSceneTexture = CreateSceneViewer(m_pScene);
 
 	m_pRenderGraphView->SetTaskGraph(m_pSceneTexture->GetRenderProgram()->GetRenderGraph());
+	m_pRenderSettingView->SetRenderGraph(m_pSceneTexture->GetRenderProgram()->GetRenderGraph()->DynamicCast<MRenderGraph>()->GetRenderGraphSetting());
 }
 
 void MainEditor::OnResize(Vector2 size)

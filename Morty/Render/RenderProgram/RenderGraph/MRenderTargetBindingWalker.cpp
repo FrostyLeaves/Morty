@@ -149,7 +149,12 @@ void MRenderTargetBindingWalker::operator ()(MTaskGraph* pTaskGraph)
 
 	for (MTaskNode* pNode : pTaskGraph->GetAllNodes())
 	{
-		pNode->DynamicCast<MRenderTaskNode>()->BindTarget();
+		auto pRenderNode = pNode->DynamicCast<MRenderTaskNode>();
+		if (pRenderNode)
+		{
+			pRenderNode->BindTarget();
+			pRenderNode->RegisterSetting();
+		}
 	}
 }
 
@@ -225,16 +230,21 @@ void MRenderTargetBindingWalker::FreeRenderTarget(MRenderTaskTarget* pRenderTarg
 {
 	if (pRenderTarget->GetSharedPolicy() == MRenderTaskTarget::SharedPolicy::Shared)
 	{
-		if (m_tTargetAllocCount[pRenderTarget] <= 1)
+		auto findCount = m_tTargetAllocCount.find(pRenderTarget);
+		if (findCount == m_tTargetAllocCount.end())
+		{
+			return;
+		}
+		if (findCount->second <= 1)
 		{
 		    auto pTexture = pRenderTarget->GetTexture();
 			m_pCacheQueue->RecoveryTexture(pRenderTarget->GetTextureDesc(), pRenderTarget->GetResizePolicy(), pTexture);
 
-			m_tTargetAllocCount.erase(pRenderTarget);
+			m_tTargetAllocCount.erase(findCount);
 		}
 		else
 		{
-			m_tTargetAllocCount[pRenderTarget]--;
+			findCount->second--;
 		}
 	}
 }

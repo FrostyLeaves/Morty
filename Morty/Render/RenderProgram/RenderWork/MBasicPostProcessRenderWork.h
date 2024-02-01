@@ -10,11 +10,7 @@
 
 #include "Utility/MGlobal.h"
 #include "MSinglePassRenderWork.h"
-
 #include "RenderProgram/MRenderInfo.h"
-#include "MRenderWork.h"
-#include "Render/MRenderPass.h"
-#include "Basic/MCameraFrustum.h"
 
 class MORTY_API MBasicPostProcessRenderWork : public ISinglePassRenderWork
 {

@@ -22,6 +22,7 @@ struct MORTY_API MShaderPropertyName
 	static MStringId TEXTURE_IRRADIANCE_MAP;
 	static MStringId TEXTURE_PREFILTER_MAP;
 	static MStringId TEXTURE_BRDF_LUT;
+	static MStringId TEXTURE_NOISE_TEX;
 	static MStringId STORAGE_BONES_MATRIX;
 	static MStringId STORAGE_BONES_OFFSET;
 	static MStringId STORAGE_VOXEL_TABLE;
@@ -33,6 +34,7 @@ struct MORTY_API MShaderPropertyName
 	static MStringId FRAME_CAMERA_POSITION;
 	static MStringId FRAME_CAMERA_DIRECTION;
 	static MStringId FRAME_VIEWPORT_SIZE;
+	static MStringId FRAME_VIEWPORT_SIZE_INV;
 	static MStringId FRAME_Z_NEAR_FAR;
 	static MStringId FRAME_TIME_DELTA;
 	static MStringId FRAME_GAME_TIME;
@@ -113,6 +115,7 @@ struct MORTY_API MShaderPropertyName
 	static MStringId GBUFFER_TEXTURE_NORMAL_ROUGHNESS;
 	static MStringId GBUFFER_TEXTURE_POSITION_AMBIENTOCC;
 	static MStringId GBUFFER_TEXTURE_DEPTH_MAP;
+	static MStringId GBUFFER_TEXTURE_SSAO;
 
 	//GPU Culling
 	static MStringId CULLING_INSTANCE_DATA;
@@ -130,6 +133,8 @@ struct MORTY_API MShaderPropertyName
 	//PostProcess
 	static MStringId POSTPROCESS_SCREEN_TEXTURE[8];
 	static MStringId POSTPROCESS_SCREEN_SIZE;
+
+	static MStringId POSTPROCESS_BLUR_OFFSET;
 
 	//ImGUI
 	static MStringId IMGUI_SCALE;

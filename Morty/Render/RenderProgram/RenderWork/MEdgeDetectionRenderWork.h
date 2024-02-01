@@ -27,8 +27,8 @@ class MORTY_API MEdgeDetectionRenderWork : public MBasicPostProcessRenderWork
 
 protected:
 
-	std::vector<MRenderTaskInputDesc> GetInputName() override;
+	std::vector<MRenderTaskInputDesc> InitInputDesc() override;
 
-	std::vector<MRenderTaskOutputDesc> GetOutputName() override;
+	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 
 };

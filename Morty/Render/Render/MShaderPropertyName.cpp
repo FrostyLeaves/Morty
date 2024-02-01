@@ -7,6 +7,7 @@ MStringId MShaderPropertyName::TEXTURE_SHADOW_MAP = MStringId("u_texShadowMap");
 MStringId MShaderPropertyName::TEXTURE_IRRADIANCE_MAP = MStringId("u_texIrradianceMap");
 MStringId MShaderPropertyName::TEXTURE_PREFILTER_MAP = MStringId("u_texPrefilterMap");
 MStringId MShaderPropertyName::TEXTURE_BRDF_LUT = MStringId("u_texBrdfLUT");
+MStringId MShaderPropertyName::TEXTURE_NOISE_TEX = MStringId("u_texNoiseTexture");
 MStringId MShaderPropertyName::STORAGE_BONES_MATRIX = MStringId("u_vBonesMatrix");
 MStringId MShaderPropertyName::STORAGE_BONES_OFFSET = MStringId("u_vBonesOffset");
 MStringId MShaderPropertyName::STORAGE_VOXEL_TABLE = MStringId("u_rwVoxelTable");
@@ -17,6 +18,7 @@ MStringId MShaderPropertyName::FRAME_INV_CAMERA_PROJ_MATRIX = MStringId("u_matCa
 MStringId MShaderPropertyName::FRAME_CAMERA_POSITION = MStringId("u_f3CameraPosition");
 MStringId MShaderPropertyName::FRAME_CAMERA_DIRECTION = MStringId("u_f3CameraDirection");
 MStringId MShaderPropertyName::FRAME_VIEWPORT_SIZE = MStringId("u_f2ViewportSize");
+MStringId MShaderPropertyName::FRAME_VIEWPORT_SIZE_INV = MStringId("u_f2ViewportSizeInv");
 MStringId MShaderPropertyName::FRAME_Z_NEAR_FAR = MStringId("u_matZNearFar");
 MStringId MShaderPropertyName::FRAME_TIME_DELTA = MStringId("u_fDelta");
 MStringId MShaderPropertyName::FRAME_GAME_TIME = MStringId("u_fGameTime");
@@ -89,6 +91,7 @@ MStringId MShaderPropertyName::GBUFFER_TEXTURE_ALBEDO_METALLIC = MStringId("u_ma
 MStringId MShaderPropertyName::GBUFFER_TEXTURE_NORMAL_ROUGHNESS = MStringId("u_mat_f3Normal_fRoughness");
 MStringId MShaderPropertyName::GBUFFER_TEXTURE_POSITION_AMBIENTOCC = MStringId("u_mat_f3Position_fAmbientOcc");
 MStringId MShaderPropertyName::GBUFFER_TEXTURE_DEPTH_MAP = MStringId("u_mat_DepthMap");
+MStringId MShaderPropertyName::GBUFFER_TEXTURE_SSAO = MStringId("u_mat_SSAO");
 
 MStringId MShaderPropertyName::CULLING_INSTANCE_DATA = MStringId("instances");
 MStringId MShaderPropertyName::CULLING_OUTPUT_DRAW_DATA = MStringId("indirectDraws");
@@ -112,6 +115,9 @@ MStringId MShaderPropertyName::POSTPROCESS_SCREEN_TEXTURE[8] = {
     MStringId("u_texInputTexture7"),
 };
 MStringId MShaderPropertyName::POSTPROCESS_SCREEN_SIZE = MStringId("u_f2ScreenSize");
+
+MStringId MShaderPropertyName::POSTPROCESS_BLUR_OFFSET = MStringId("u_f2GaussianBlurOffset");
+
 
 MStringId MShaderPropertyName::IMGUI_SCALE = MStringId("u_f2Scale");
 MStringId MShaderPropertyName::IMGUI_TRANSLATE = MStringId("u_f2Translate");

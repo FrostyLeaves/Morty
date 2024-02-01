@@ -24,12 +24,12 @@ bool MStringId::operator ==(const MStringId& other) const
 
 bool MStringId::operator <(const MStringId& other) const
 {
-    if (m_hash >= other.m_hash)
+    if (m_hash == other.m_hash)
     {
-        return false;
+        return GetClashIndex() < other.GetClashIndex();
     }
 
-    return GetClashIndex() < other.GetClashIndex();
+    return m_hash < other.m_hash;
 }
 
 size_t MStringId::GetClashIndex() const

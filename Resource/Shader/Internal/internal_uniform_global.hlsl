@@ -17,6 +17,7 @@
     float3 u_f3CameraDirection;
 
     float2 u_f2ViewportSize;
+    float2 u_f2ViewportSizeInv;
     float2 u_matZNearFar;
     float u_fDelta;
     float u_fGameTime;
@@ -73,5 +74,6 @@
 #endif
 
 
+[[vk::binding(13,1)]] Texture2D u_texNoiseTexture;
 
 #endif

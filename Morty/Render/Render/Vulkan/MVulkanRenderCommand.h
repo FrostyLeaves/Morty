@@ -67,10 +67,10 @@ public:
 
 	void UpdateShaderParam(std::shared_ptr<MShaderConstantParam> param);
 
-	void SetTextureLayout(const std::vector<MTexture*>& vTextures, VkImageLayout newLayout);
+	void SetTextureLayout(const std::vector<MTexture*>& vTextures, const std::vector<VkImageLayout>& newLayouts);
 
 protected:
-	VkImageLayout GetTextureBarrierLayout(METextureBarrierStage stage) const;
+	VkImageLayout GetTextureBarrierLayout(MTexture* pTexture, METextureBarrierStage stage) const;
 	VkAccessFlags GetBufferBarrierAccessFlag(MEBufferBarrierStage stage) const;
 	VkPipelineStageFlags GetBufferBarrierPipelineStage(MEBufferBarrierStage stage) const;
 	VkPipelineStageFlags GetTextureBarrierPipelineStage(METextureBarrierStage stage) const;

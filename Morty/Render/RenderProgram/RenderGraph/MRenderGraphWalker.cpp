@@ -1,5 +1,7 @@
 #include "MRenderGraphWalker.h"
 
+#include "MRenderGraph.h"
+#include "MRenderGraphSetting.h"
 #include "Material/MMaterial.h"
 #include "RenderProgram/MRenderInfo.h"
 #include "RenderProgram/RenderWork/MRenderWork.h"
@@ -44,4 +46,6 @@ void MRenderGraphSetupWalker::operator()(MTaskGraph* pTaskGraph)
 	{
 		pCurrentNode->DynamicCast<MRenderTaskNode>()->RenderSetup(m_renderInfo);
 	}
+
+	pTaskGraph->DynamicCast<MRenderGraph>()->GetRenderGraphSetting()->FlushDirty();
 }

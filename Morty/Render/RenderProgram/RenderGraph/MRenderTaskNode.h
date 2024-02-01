@@ -89,11 +89,12 @@ public:
 	virtual void Render(const MRenderInfo& info) { MORTY_UNUSED(info); }
 	virtual void RenderSetup(const MRenderInfo& info) { MORTY_UNUSED(info); }
 	virtual void BindTarget() {}
+	virtual void RegisterSetting() {}
 	virtual void Resize(Vector2i size) { MORTY_UNUSED(size); }
 	virtual std::shared_ptr<IShaderPropertyUpdateDecorator> GetFramePropertyDecorator() { return nullptr; }
 
-	virtual std::vector<MRenderTaskInputDesc> GetInputName() { return {}; }
-	virtual std::vector<MRenderTaskOutputDesc> GetOutputName() { return {}; }
+	virtual std::vector<MRenderTaskInputDesc> InitInputDesc() { return {}; }
+	virtual std::vector<MRenderTaskOutputDesc> InitOutputDesc() { return {}; }
 
 	void OnCreated() override;
 	void OnDelete() override;

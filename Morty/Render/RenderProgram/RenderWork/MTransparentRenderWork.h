@@ -48,9 +48,9 @@ protected:
 
 	void BindTarget() override;
 
-	std::vector<MRenderTaskInputDesc> GetInputName() override;
+	std::vector<MRenderTaskInputDesc> InitInputDesc() override;
 
-	std::vector<MRenderTaskOutputDesc> GetOutputName() override;
+	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 
 
 private:

@@ -1,5 +1,6 @@
 #include "MDeferredLightingRenderWork.h"
 
+#include "MHBAOBlurRenderWork.h"
 #include "MHBAORenderWork.h"
 #include "MVoxelizerRenderWork.h"
 #include "MVRSTextureRenderWork.h"
@@ -100,28 +101,28 @@ void MDeferredLightingRenderWork::BindTarget()
 		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_NORMAL_ROUGHNESS, GetInputTexture(MGBufferRenderWork::GBufferNormalRoughness));
 		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_POSITION_AMBIENTOCC, GetInputTexture(MGBufferRenderWork::GBufferPositionAmbientOcc));
 		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_DEPTH_MAP, GetInputTexture(MGBufferRenderWork::GBufferDepthBufferOutput));
+		pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_SSAO, GetInputTexture(MHBAOBlurRenderWorkH::BlurOutput));
 	}
 
 	AutoBindBarrierTexture();
 	SetRenderTarget(AutoBindTargetWithVRS());
 }
 
-std::vector<MRenderTaskInputDesc> MDeferredLightingRenderWork::GetInputName()
+std::vector<MRenderTaskInputDesc> MDeferredLightingRenderWork::InitInputDesc()
 {
 	return {
 		{ MGBufferRenderWork::GBufferAlbedoMetallic, METextureBarrierStage::EPixelShaderSample },
 		{ MGBufferRenderWork::GBufferNormalRoughness, METextureBarrierStage::EPixelShaderSample },
 		{ MGBufferRenderWork::GBufferPositionAmbientOcc, METextureBarrierStage::EPixelShaderSample },
-		{ MGBufferRenderWork::GBufferDepthBufferOutput, METextureBarrierStage::EPixelShaderSample },
 		{ MShadowMapRenderWork::ShadowMapBufferOutput, METextureBarrierStage::EPixelShaderSample },
-		{ MHBAORenderWork::HBAOOutput, METextureBarrierStage::EPixelShaderSample },
+		{ MHBAOBlurRenderWorkH::BlurOutput, METextureBarrierStage::EPixelShaderSample },
 #if MORTY_VXGI_ENABLE
 		{ MVoxelizerRenderWork::VoxelizerBufferOutput, METextureBarrierStage::EUnknow },
 #endif
 	};
 }
 
-std::vector<MRenderTaskOutputDesc> MDeferredLightingRenderWork::GetOutputName() {
+std::vector<MRenderTaskOutputDesc> MDeferredLightingRenderWork::InitOutputDesc() {
 	return {
 		{ DeferredLightingOutput, {true, MColor::Black_T }},
 	};

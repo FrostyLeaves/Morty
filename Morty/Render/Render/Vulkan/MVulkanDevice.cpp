@@ -1431,7 +1431,7 @@ void MVulkanDevice::RecoveryRenderCommand(MIRenderCommand* pRenderCommand)
 		//GetRecycleBin()->DestroySemaphoreLater(pCommand->m_VkRenderFinishedSemaphore);
 		
 		vkDestroySemaphore(m_VkDevice, pCommand->m_VkRenderFinishedSemaphore, nullptr);
-		pCommand->m_VkRenderFinishedSemaphore = VK_NULL_HANDLE;
+ 		pCommand->m_VkRenderFinishedSemaphore = VK_NULL_HANDLE;
 	}
 
 	for (MVulkanSecondaryRenderCommand* pSecondaryCommand : pCommand->m_vSecondaryCommand)
@@ -1950,7 +1950,7 @@ void MVulkanDevice::CheckFrameFinish()
 		for (MVulkanRenderCommand* pCommand : vCommand)
 		{
 			const bool bCommandFinished = pCommand->IsFinished();
-			if (bCommandFinished)
+			if (bCommandFinished && IsFinishedCommand(pCommand))
 			{
 				pCommand->OnCommandFinished();
 			}

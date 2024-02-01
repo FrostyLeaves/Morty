@@ -116,7 +116,7 @@ void MTransparentRenderWork::BindTarget()
 	SetRenderTarget(AutoBindTarget());
 }
 
-std::vector<MRenderTaskInputDesc> MTransparentRenderWork::GetInputName()
+std::vector<MRenderTaskInputDesc> MTransparentRenderWork::InitInputDesc()
 {
 	return {
 	    { MForwardRenderWork::BackBufferOutput, METextureBarrierStage::EPixelShaderWrite },
@@ -125,7 +125,7 @@ std::vector<MRenderTaskInputDesc> MTransparentRenderWork::GetInputName()
 	};
 }
 
-std::vector<MRenderTaskOutputDesc> MTransparentRenderWork::GetOutputName()
+std::vector<MRenderTaskOutputDesc> MTransparentRenderWork::InitOutputDesc()
 {
 	return {
 		{ BackBufferOutput, {false, MColor::Black_T } }

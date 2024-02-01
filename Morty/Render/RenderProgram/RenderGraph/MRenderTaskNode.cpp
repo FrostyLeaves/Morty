@@ -8,14 +8,14 @@ MORTY_CLASS_IMPLEMENT(MRenderTaskNode, MTaskNode)
 
 void MRenderTaskNode::OnCreated()
 {
-    for (const auto& input : GetInputName())
+    for (const auto& input : InitInputDesc())
     {
         auto pInput = AppendInput<MRenderTaskNodeInput>();
         pInput->SetName(input.name);
         m_tInput[input.name] = pInput;
     }
 
-    for (const auto& output : GetOutputName())
+    for (const auto& output : InitOutputDesc())
     {
         auto pOutput = AppendOutput<MRenderTaskNodeOutput>();
         pOutput->SetName(output.name);

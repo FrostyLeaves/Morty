@@ -60,8 +60,8 @@ public:
 	void OnCreated() override;
 	void OnDelete() override;
 
-	void InitializeRenderTarget();
-	void ReleaseRenderTarget();
+	void InitializeRenderGraph();
+	void ReleaseRenderGraph();
 
 	void InitializeFrameShaderParams();
 	void ReleaseFrameShaderParams();
@@ -76,15 +76,15 @@ protected:
 
 
 	template<typename TYPE>
-	MRenderTaskNode* RegisterRenderWork()
+	TYPE* RegisterRenderWork(const MStringId strTaskNodeName)
 	{
-		MRenderTaskNode* pRenderWork = m_pRenderGraph->FindTaskNode<TYPE>();
+		MRenderTaskNode* pRenderWork = m_pRenderGraph->FindTaskNode<TYPE>(strTaskNodeName);
 		if(pRenderWork != nullptr)
 		{
-			return pRenderWork;
+			return static_cast<TYPE*>(pRenderWork);
 		}
 
-		pRenderWork = m_pRenderGraph->RegisterTaskNode<TYPE>();
+		pRenderWork = m_pRenderGraph->RegisterTaskNode<TYPE>(strTaskNodeName);
 		if (pRenderWork)
 		{
 			pRenderWork->Initialize(GetEngine());
@@ -93,13 +93,25 @@ protected:
 				m_pFramePropertyAdapter->RegisterPropertyDecorator(pFramePropertyDecorator);
 			}
 		}
-		return pRenderWork;
+		return static_cast<TYPE*>(pRenderWork);
+	}
+
+	template<typename TYPE>
+	TYPE* GetRenderWork(const MStringId& strTaskNodeName) const
+	{
+		return m_pRenderGraph->FindTaskNode<TYPE>(strTaskNodeName);
+	}
+
+	template<typename TYPE>
+	TYPE* RegisterRenderWork()
+	{
+		return RegisterRenderWork<TYPE>(MStringId(TYPE::GetClassTypeName()));
 	}
 
 	template<typename TYPE>
 	TYPE* GetRenderWork() const
 	{
-		return m_pRenderGraph->FindTaskNode<TYPE>();
+		return GetRenderWork<TYPE>(MStringId(TYPE::GetClassTypeName()));
 	}
 	
 

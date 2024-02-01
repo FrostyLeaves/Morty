@@ -3,6 +3,8 @@
 #include "MRenderTargetManager.h"
 #include "Engine/MEngine.h"
 #include "System/MObjectSystem.h"
+#include "Utility/MFunction.h"
+#include "MRenderGraphSetting.h"
 
 
 MORTY_CLASS_IMPLEMENT(MRenderGraph, MTaskGraph)
@@ -15,12 +17,15 @@ MRenderGraph::MRenderGraph(MEngine* pEngine)
     auto pObjectSystem = m_pEngine->FindSystem<MObjectSystem>();
 
     m_pRenderTargetManager = pObjectSystem->CreateObject<MRenderTargetManager>();
+
+    m_pRenderGraphSetting = std::make_shared<MRenderGraphSetting>();
 }
 
 MRenderGraph::~MRenderGraph()
 {
     m_pRenderTargetManager->DeleteLater();
     m_pRenderTargetManager = nullptr;
+    m_pRenderGraphSetting = nullptr;
 }
 
 MRenderTaskTarget* MRenderGraph::FindRenderTaskTarget(const MStringId& name)

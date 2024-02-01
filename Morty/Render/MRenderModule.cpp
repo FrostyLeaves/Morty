@@ -50,6 +50,7 @@ const MString MRenderModule::DefaultNormal = MString("Default_Normal");
 const MString MRenderModule::Default_R8_One = MString("Default_R8_One");
 const MString MRenderModule::Default_R8_Zero = MString("Default_R8_Zero");
 const MString MRenderModule::DefaultAnimationMaterial = MString("Default_Animation_Material");
+const MString MRenderModule::NoiseTexture = MString("Noise Texture");
 
 bool MRenderModule::Register(MEngine* pEngine)
 {
@@ -101,6 +102,19 @@ bool MRenderModule::Register(MEngine* pEngine)
 			MByte byte = 0;
 			pTexture->Load(MTextureResourceUtil::LoadFromMemory("R8_Zero", & byte, 1, 1, 1));
 		}
+
+		if (std::shared_ptr<MTextureResource> pTexture = pResourceSystem->CreateResource<MTextureResource>(NoiseTexture))
+		{
+			constexpr size_t nSize = 8;
+			MByte byte[nSize * 4];
+			for (size_t nIdx = 0; nIdx < nSize * 4; ++nIdx)
+			{
+				byte[nIdx] = MMath::RandInt(0, 255);
+			}
+			pTexture->Load(MTextureResourceUtil::LoadFromMemory(NoiseTexture, byte, nSize, nSize, 4));
+		}
+
+
 	}
 
 	pEngine->RegisterGlobalObject<MMeshManager>();

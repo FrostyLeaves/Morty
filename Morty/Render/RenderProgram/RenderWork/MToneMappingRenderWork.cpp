@@ -30,14 +30,14 @@ std::shared_ptr<MMaterial> MToneMappingRenderWork::CreateMaterial()
 	return MMaterial::CreateMaterial(pEdgeMaterial);
 }
 
-std::vector<MRenderTaskInputDesc> MToneMappingRenderWork::GetInputName()
+std::vector<MRenderTaskInputDesc> MToneMappingRenderWork::InitInputDesc()
 {
 	return {
 		{ MTransparentRenderWork::BackBufferOutput, METextureBarrierStage::EPixelShaderSample },
 	};
 }
 
-std::vector<MRenderTaskOutputDesc> MToneMappingRenderWork::GetOutputName()
+std::vector<MRenderTaskOutputDesc> MToneMappingRenderWork::InitOutputDesc()
 {
 	return {
 		{ ToneMappingResult, {true, MColor::Black_T }},

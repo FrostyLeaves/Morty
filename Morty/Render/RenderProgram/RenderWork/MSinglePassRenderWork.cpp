@@ -61,7 +61,7 @@ MRenderTargetGroup ISinglePassRenderWork::AutoBindTarget()
 {
 	MRenderTargetGroup group;
 
-	auto vOutputDesc = GetOutputName();
+	auto vOutputDesc = InitOutputDesc();
 	MORTY_ASSERT(vOutputDesc.size() == GetOutputSize());
 
 	for (size_t nIdx = 0; nIdx < GetOutputSize(); ++nIdx)
@@ -99,7 +99,7 @@ MRenderTargetGroup ISinglePassRenderWork::AutoBindTargetWithVRS()
 void ISinglePassRenderWork::AutoBindBarrierTexture()
 {
 	m_vBarrierTexture.clear();
-	auto vInputs = GetInputName();
+	auto vInputs = InitInputDesc();
 	for (size_t nInputIdx = 0; nInputIdx < GetInputSize(); ++nInputIdx)
 	{
 		m_vBarrierTexture[vInputs[nInputIdx].barrier].push_back(GetInputTexture(nInputIdx).get());
@@ -110,7 +110,7 @@ void ISinglePassRenderWork::AutoSetTextureBarrier(MIRenderCommand* pCommand)
 {
 	for (const auto& [barrier, textures] : m_vBarrierTexture)
 	{
-		if (barrier != METextureBarrierStage::EUnknow && barrier != METextureBarrierStage::EPixelShaderWrite)
+		if (barrier != METextureBarrierStage::EUnknow)
 		{
 			pCommand->AddRenderToTextureBarrier(textures, barrier);
 		}
