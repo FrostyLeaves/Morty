@@ -39,6 +39,7 @@ public:
 
 	bool MultiDrawIndirectSupport() const;
 	bool SparseTextureSupport() const;
+	bool ASTCTextureSupport() const;
 
 	int FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
 	VkFormat FindSupportedFormat(const std::set<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;

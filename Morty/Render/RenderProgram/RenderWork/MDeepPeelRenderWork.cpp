@@ -153,14 +153,14 @@ void MDeepPeelRenderWork::InitializeTexture()
 	if (m_pBlackTexture == nullptr)
 	{
 		m_pBlackTexture = pResourceSystem->CreateResource<MTextureResource>("Transparent_Black");
-		m_pBlackTexture->Load(MTextureResourceUtil::LoadFromMemory("Transparent_Black", black, 1, 1, 4));
+		m_pBlackTexture->Load(MTextureResourceUtil::LoadFromMemory("Transparent_Black", black, 1, 1, 4, MTexturePixelType::Byte8));
 	}
 
 	m_pWhiteTexture = pResourceSystem->FindResource<MTextureResource>("Transparent_White");
 	if (m_pWhiteTexture == nullptr)
 	{
 		m_pWhiteTexture = pResourceSystem->CreateResource<MTextureResource>("Transparent_White");
-		m_pWhiteTexture->Load(MTextureResourceUtil::LoadFromMemory("Transparent_White", white, 1, 1, 4));
+		m_pWhiteTexture->Load(MTextureResourceUtil::LoadFromMemory("Transparent_White", white, 1, 1, 4, MTexturePixelType::Byte8));
 	}
 
 }

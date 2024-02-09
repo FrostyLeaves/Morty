@@ -890,18 +890,18 @@ void MModelConverter::ProcessTexture(const aiScene* pScene)
 			//embedded texture
 			if (aiTexture->mHeight == 0)
 			{
-				pTextureResource->Load(MTextureResourceUtil::ImportTextureFromMemory(reinterpret_cast<char*>(aiTexture->pcData), aiTexture->mWidth, MTextureImportInfo(MTexturePixelFormat::Byte8)));
+				pTextureResource->Load(MTextureResourceUtil::ImportTextureFromMemory(MSpan<MByte>{ reinterpret_cast<MByte*>(aiTexture->pcData), aiTexture->mWidth }, MTextureImportInfo(MTexturePixelType::Byte8)));
 			}
 			else
 			{
 				const size_t nWidth = aiTexture->mWidth;
 				const size_t nHeight = aiTexture->mHeight;
 				const size_t nSize = nWidth * nHeight * 4;
-				unsigned char* buffer = new unsigned char[nSize];
+				std::vector<MByte> buffer(nSize);
 
-				memcpy(buffer, aiTexture->pcData, nSize);
+				memcpy(buffer.data(), aiTexture->pcData, nSize);
 
-				char temp = 0;
+				MByte temp = 0;
 				for (size_t i = 0; i < nSize; i += 4)
 				{
 					temp = buffer[i];
@@ -911,10 +911,7 @@ void MModelConverter::ProcessTexture(const aiScene* pScene)
 					buffer[i + 3] = temp;
 				}
 
-				pTextureResource->Load(MTextureResourceUtil::LoadFromMemory("RawTexture", buffer, static_cast<uint32_t>(nWidth), static_cast<uint32_t>(nHeight), 4, MTexturePixelFormat::Byte8));
-				delete[] buffer;
-				buffer = nullptr;
-
+				pTextureResource->Load(MTextureResourceUtil::LoadFromMemory("RawTexture", buffer, static_cast<uint32_t>(nWidth), static_cast<uint32_t>(nHeight), 4, MTexturePixelType::Byte8));
 			}
 
 			m_tRawTextures[aiTexture->mFilename.C_Str()] = pTextureResource;

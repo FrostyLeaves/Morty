@@ -721,6 +721,22 @@ void MVulkanRenderCommand::ResetBuffer(const MBuffer* pBuffer)
 	vkCmdFillBuffer(m_VkCommandBuffer, pBuffer->m_VkBuffer, 0, pBuffer->GetSize(), 0);
 }
 
+void MVulkanRenderCommand::UploadBuffer(MBuffer* pBuffer, const MByte* pData, const size_t nSize)
+{
+	MORTY_ASSERT(pBuffer);
+
+	if (pBuffer->GetSize() < nSize)
+	{
+		pBuffer->ReallocMemory(nSize);
+		m_pDevice->DestroyBuffer(pBuffer);
+		m_pDevice->GenerateBuffer(pBuffer, pData, nSize);
+	}
+	else if (nSize > 0)
+	{
+		m_pDevice->UploadBuffer(pBuffer, 0, pData, nSize);
+	}
+}
+
 void MVulkanRenderCommand::FillTexture(MTexture* pTexture, MColor color)
 {
 	MORTY_UNUSED(color);

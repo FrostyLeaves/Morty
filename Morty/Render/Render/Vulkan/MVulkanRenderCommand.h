@@ -57,6 +57,7 @@ public:
 	bool CopyImageBuffer(MTexture* pSource, MTexture* pDest) override;
 	void UpdateMipmaps(MTexture* pBuffer) override;
 	void ResetBuffer(const MBuffer* pBuffer) override;
+	void UploadBuffer(MBuffer* pBuffer, const MByte* pData, const size_t nSize) override;
 	void FillTexture(MTexture* pBuffer, MColor color) override;
 
 	void addFinishedCallback(std::function<void()> func) override;

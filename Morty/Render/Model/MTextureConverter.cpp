@@ -29,19 +29,21 @@ std::vector<MByte> ConvertSingleChannelData(const MByte* vData, size_t nWidth, s
 void MTextureConverter::ConvertSingleChannel(MTextureResourceData* pTextureData, size_t nChannel)
 {
     const auto& rawData = pTextureData->aByteData;
-    auto ePixelFormat = pTextureData->ePixelFormat;
+    auto eFormat = pTextureData->eFormat;
     const size_t nWidth = pTextureData->nWidth;
     const size_t nHeight = pTextureData->nHeight;
 
     std::vector<MByte> convertData;
     
-    if (MTexturePixelFormat::Byte8 == ePixelFormat)
+    if (MTextureResourceFormat::RawRGBA8 == eFormat)
     {
         convertData = ConvertSingleChannelData<MByte>(rawData.data(), nWidth, nHeight, nChannel);
+        pTextureData->eFormat = MTextureResourceFormat::RawSingle8;
     }
-    else if (MTexturePixelFormat::Float32 == ePixelFormat)
+    else if (MTextureResourceFormat::RawRGBA32 == eFormat)
     {
         convertData = ConvertSingleChannelData<float>(rawData.data(), nWidth, nHeight, nChannel);
+        pTextureData->eFormat = MTextureResourceFormat::RawSingle32;
     }
     else
     {
@@ -50,5 +52,4 @@ void MTextureConverter::ConvertSingleChannel(MTextureResourceData* pTextureData,
     }
 
     pTextureData->aByteData = convertData;
-    pTextureData->nChannel = 1;
 }

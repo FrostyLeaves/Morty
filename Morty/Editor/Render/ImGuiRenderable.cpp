@@ -77,7 +77,7 @@ void ImGuiRenderable::InitializeFont()
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
 	std::shared_ptr<MTextureResource> pFontTexture = pResourceSystem->CreateResource<MTextureResource>("ImGUI_Font");
-	pFontTexture->Load(MTextureResourceUtil::LoadFromMemory("ImGUI_Font", pixels, width, height, 4));
+	pFontTexture->Load(MTextureResourceUtil::LoadFromMemory("ImGUI_Font", MSpan<MByte>(pixels, width * height * 4), width, height, 4, MTexturePixelType::Byte8));
 	m_FontTexture.SetResource(pFontTexture);
 
 	// Store our identifier

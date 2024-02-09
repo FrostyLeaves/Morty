@@ -141,6 +141,14 @@ void MDeferredRenderProgram::RenderSetup(MIRenderCommand* pPrimaryCommand)
 	walker(m_pCullingTask.get());
 	m_renderInfo.shadowRenderInfo = m_pShadowCulling->Get()->GetCascadedRenderInfo();
 
+	//TODO: uploadBuffer use render command.
+	m_pShadowCulling->Get()->UploadBuffer(pPrimaryCommand);
+	m_pCameraFrustumCulling->Get()->UploadBuffer(pPrimaryCommand);
+
+#if MORTY_VXGI_ENABLE
+	m_pVoxelizerCulling->Get()->UploadBuffer(pPrimaryCommand);
+#endif
+
 	//Update Shader Params.
 	m_pFramePropertyAdapter->UpdateShaderSharedParams(m_renderInfo);
 

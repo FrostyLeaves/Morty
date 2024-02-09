@@ -14,19 +14,34 @@
 #include "Basic/MTexture.h"
 #include "Resource/MResourceLoader.h"
 
-enum class MTexturePixelFormat
+enum class MTextureResourceFormat
 {
 	Unknow,
+
+	RawRGBA8,
+	RawRGBA32,
+
+	RawSingle8,
+	RawSingle32,
+
+	ASTC4x4,
+	ASTC8x8,
+};
+
+enum class MTexturePixelType
+{
+	Unknow,
+
 	Byte8,
 	Float32,
 };
 
 struct MTextureImportInfo
 {
-	MTextureImportInfo();
-	MTextureImportInfo(MTexturePixelFormat pixelFormat);
+	MTextureImportInfo() = default;
+	MTextureImportInfo(const MTexturePixelType nPixelSize);
 
-	MTexturePixelFormat ePixelFormat;
+	MTexturePixelType ePixelType = MTexturePixelType::Byte8; //	8 or 32
 };
 
 struct MORTY_API MTextureResourceData : public MFbResourceData
@@ -34,11 +49,10 @@ struct MORTY_API MTextureResourceData : public MFbResourceData
 public:
 	size_t nWidth = 0;
 	size_t nHeight = 0;
-	size_t nImageLayerNum = 1;
+	size_t nDepth = 1;
 	METextureType eTextureType = METextureType::ETexture2D;
-	MTexturePixelFormat ePixelFormat = MTexturePixelFormat::Unknow;
+	MTextureResourceFormat eFormat = MTextureResourceFormat::Unknow;
 	std::vector<MByte> aByteData{};
-	size_t nChannel = 0;
 	MString strTextureName = "";
 
 	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
@@ -57,8 +71,7 @@ public:
 public:
 
 	METextureLayout GetTextureLayout() const;
-	MTexturePixelFormat GetPixelFormat() const;
-	size_t GetChannel() const;
+	MTextureResourceFormat GetFormat() const;
 	size_t GetWidth() const;
 	size_t GetHeight() const;
 	const MByte* GetRawData() const;
@@ -73,8 +86,6 @@ public:
 	bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
 
 protected:
-
-	METextureLayout GetTextureLayout(const uint32_t& nChannel, const MTexturePixelFormat& format);
 
 	bool m_bReadable = false;
 	std::shared_ptr<MTexture> m_pTexture = nullptr;

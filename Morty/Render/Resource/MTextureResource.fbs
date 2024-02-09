@@ -2,21 +2,22 @@ include "Resource/MResourceRef.fbs";
 
 namespace mfbs;
 
-enum MTexturePixelFormat:byte
+enum MTextureResourceFormat:byte
 {
     unknow = 0,
-    byte8 = 1,
-    float32 = 2,
+	RawRGBA8 = 1,
+	RawRGBA32 = 2,
+
+	RawSingle8 = 3,
+	RawSingle32 = 4,
 }
 
 table MTextureResource
 {
     width: uint;
     height: uint;
-    pixel_format: MTexturePixelFormat;
+    format: MTextureResourceFormat;
     data: [byte];
-    channel: uint;
-
 }
 
 root_type MTextureResource;

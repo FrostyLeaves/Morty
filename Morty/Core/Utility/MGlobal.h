@@ -62,6 +62,7 @@
 
 #include "doctest/doctest.h"
 #include "Utility/MString.h"
+#include "Utility/MSpan.h"
 
 using MObjectID = unsigned long;
 using MResourceID = unsigned long;

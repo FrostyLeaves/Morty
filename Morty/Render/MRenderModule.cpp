@@ -78,40 +78,42 @@ bool MRenderModule::Register(MEngine* pEngine)
 
 		if (std::shared_ptr<MTextureResource> pTexture = pResourceSystem->CreateResource<MTextureResource>(DefaultWhite))
 		{
-			MByte byte[4];
+			std::vector<MByte> byte(4);
 			byte[0] = byte[1] = byte[2] = byte[3] = 255;
- 			pTexture->Load(MTextureResourceUtil::LoadFromMemory("Default_White", byte, 1, 1, 4));
+ 			pTexture->Load(MTextureResourceUtil::LoadFromMemory("Default_White", byte, 1, 1, 4, MTexturePixelType::Byte8));
 		}
 
 		if (std::shared_ptr<MTextureResource> pTexture = pResourceSystem->CreateResource<MTextureResource>(DefaultNormal))
 		{
-			MByte byte[3];
+			std::vector<MByte> byte(3);
 			byte[0] = byte[1] = 127;
 			byte[2] = 255;
-			pTexture->Load(MTextureResourceUtil::LoadFromMemory("Default_Normal", byte, 1, 1, 3));
+			pTexture->Load(MTextureResourceUtil::LoadFromMemory("Default_Normal", byte, 1, 1, 3, MTexturePixelType::Byte8));
 		}
 
 		if (std::shared_ptr<MTextureResource> pTexture = pResourceSystem->CreateResource<MTextureResource>(Default_R8_One))
 		{
-			MByte byte = 255;
-			pTexture->Load(MTextureResourceUtil::LoadFromMemory("R8_One", & byte, 1, 1, 1));
+			std::vector<MByte> byte(1);
+			byte[0] = 255;
+			pTexture->Load(MTextureResourceUtil::LoadFromMemory("R8_One", byte, 1, 1, 1, MTexturePixelType::Byte8));
 		}
 
 		if (std::shared_ptr<MTextureResource> pTexture = pResourceSystem->CreateResource<MTextureResource>(Default_R8_Zero))
 		{
-			MByte byte = 0;
-			pTexture->Load(MTextureResourceUtil::LoadFromMemory("R8_Zero", & byte, 1, 1, 1));
+			std::vector<MByte> byte(1);
+			byte[0] = 0;
+			pTexture->Load(MTextureResourceUtil::LoadFromMemory("R8_Zero", byte, 1, 1, 1, MTexturePixelType::Byte8));
 		}
 
 		if (std::shared_ptr<MTextureResource> pTexture = pResourceSystem->CreateResource<MTextureResource>(NoiseTexture))
 		{
 			constexpr size_t nSize = 8;
-			MByte byte[nSize * 4];
+			std::vector<MByte> byte(nSize * nSize * 4);
 			for (size_t nIdx = 0; nIdx < nSize * 4; ++nIdx)
 			{
 				byte[nIdx] = MMath::RandInt(0, 255);
 			}
-			pTexture->Load(MTextureResourceUtil::LoadFromMemory(NoiseTexture, byte, nSize, nSize, 4));
+			pTexture->Load(MTextureResourceUtil::LoadFromMemory(NoiseTexture, byte, nSize, nSize, 4, MTexturePixelType::Byte8));
 		}
 
 
