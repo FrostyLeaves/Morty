@@ -36,6 +36,6 @@ flatbuffers::Offset<void> MSkeletonResourceData::Serialize(flatbuffers::FlatBuff
 
 void MSkeletonResourceData::Deserialize(const void* pBufferPointer)
 {
-    const auto fbResourceData = mfbs::GetMSkeleton(pBufferPointer);
+    const auto fbResourceData =morty::GetMSkeleton(pBufferPointer);
     skeleton.Deserialize(fbResourceData);
 }

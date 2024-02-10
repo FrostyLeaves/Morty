@@ -48,7 +48,7 @@ public:
 	void UploadBuffer(MBuffer* pBuffer, const size_t& unBeginOffset, const MByte* data, const size_t& unDataSize) override;
 	void DownloadBuffer(MBuffer* pBuffer, MByte* outputData, const size_t& nSize) override;
 
-	void GenerateTexture(MTexture* pTexture, const MByte* pData = nullptr) override;
+	void GenerateTexture(MTexture* pTexture, const MSpan<MByte>& buffer) override;
 	void DestroyTexture(MTexture* pTexture) override;
 
 	bool CompileShader(MShader* pShader) override;

@@ -121,7 +121,7 @@ flatbuffers::Offset<void> MModelComponent::Serialize(flatbuffers::FlatBufferBuil
 	auto fb_ske_resource = fbb.CreateString(GetSkeletonResourcePath());
 	auto fb_super = Super::Serialize(fbb).o;
 
-	mfbs::MModelComponentBuilder builder(fbb);
+	morty::MModelComponentBuilder builder(fbb);
 
 	builder.add_skeleton_resource_path(fb_ske_resource);
 	builder.add_super(fb_super);
@@ -131,13 +131,13 @@ flatbuffers::Offset<void> MModelComponent::Serialize(flatbuffers::FlatBufferBuil
 
 void MModelComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	const mfbs::MModelComponent* fbcomponent = mfbs::GetMModelComponent(fbb.GetCurrentBufferPointer());
+	const morty::MModelComponent* fbcomponent =morty::GetMModelComponent(fbb.GetCurrentBufferPointer());
 	Deserialize(fbcomponent);
 }
 
 void MModelComponent::Deserialize(const void* pBufferPointer)
 {
-	const mfbs::MModelComponent* pComponent = reinterpret_cast<const mfbs::MModelComponent*>(pBufferPointer);
+	const morty::MModelComponent* pComponent = reinterpret_cast<const morty::MModelComponent*>(pBufferPointer);
 
 	Super::Deserialize(pComponent->super());
 

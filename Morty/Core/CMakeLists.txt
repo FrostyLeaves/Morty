@@ -128,10 +128,10 @@ function(generate_flatbuffers_header LIBRARY_NAME)
         endif()
     endforeach()
 
-    message("[flatbuffers] ${FLATBUFFERS_FLATC_EXECUTABLE} ${FLATBUFFERS_INCLUDE_DIR} --cpp -o ${CMAKE_CURRENT_SOURCE_DIR}/Flatbuffer/ ${SRC_FBS} --reflect-types --reflect-names ")
+    message("[flatbuffers] ${FLATBUFFERS_FLATC_EXECUTABLE} ${FLATBUFFERS_INCLUDE_DIR} --cpp -o ${CMAKE_CURRENT_SOURCE_DIR}/Flatbuffer/ ${SRC_FBS} --reflect-types --reflect-names --scoped-enums")
     foreach(SRC_FBS ${ALL_FBS_PATH})
         execute_process(
-            COMMAND ${FLATBUFFERS_FLATC_EXECUTABLE} ${FLATBUFFERS_INCLUDE_DIR} --cpp -o ${CMAKE_CURRENT_SOURCE_DIR}/Flatbuffer/ ${SRC_FBS} --reflect-types --reflect-names
+            COMMAND ${FLATBUFFERS_FLATC_EXECUTABLE} ${FLATBUFFERS_INCLUDE_DIR} --cpp -o ${CMAKE_CURRENT_SOURCE_DIR}/Flatbuffer/ ${SRC_FBS} --reflect-types --reflect-names --scoped-enums
         )
     endforeach()
 endfunction()

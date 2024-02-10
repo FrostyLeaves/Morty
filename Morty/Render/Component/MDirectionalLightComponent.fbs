@@ -1,6 +1,6 @@
 include "Component/MComponent.fbs";
 include "Math/Vector.fbs";
-namespace mfbs;
+namespace morty;
 
 table MDirectionalLightComponent
 {

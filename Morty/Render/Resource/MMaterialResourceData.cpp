@@ -4,25 +4,25 @@
 
 flatbuffers::Offset<void> MMaterialResourceData::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	std::vector<flatbuffers::Offset<mfbs::MMaterialTexture>> fbTextureOffsets;
+	std::vector<flatbuffers::Offset<morty::MMaterialTexture>> fbTextureOffsets;
 	for (const auto& texture : vTextures)
 	{
 		const auto fbName = fbb.CreateString(texture.name);
 		const auto fbTexture = fbb.CreateString(texture.value);
 
-		mfbs::MMaterialTextureBuilder builder(fbb);
+		morty::MMaterialTextureBuilder builder(fbb);
 		builder.add_name(fbName);
 		builder.add_texture(fbTexture.o);
 		fbTextureOffsets.push_back(builder.Finish());
 	}
 
-	std::vector<flatbuffers::Offset<mfbs::MMaterialProperty>> fbPropertyOffsets;
+	std::vector<flatbuffers::Offset<morty::MMaterialProperty>> fbPropertyOffsets;
 	for (const auto& param : vProperty)
 	{
 		const auto fbName = fbb.CreateString(param.name);
 		const auto fbProperty = param.value.Serialize(fbb);
 
-		mfbs::MMaterialPropertyBuilder builder(fbb);
+		morty::MMaterialPropertyBuilder builder(fbb);
 		builder.add_name(fbName);
 		builder.add_property(fbProperty.o);
 		fbPropertyOffsets.push_back(builder.Finish());
@@ -32,7 +32,7 @@ flatbuffers::Offset<void> MMaterialResourceData::Serialize(flatbuffers::FlatBuff
 	const auto fbProperty = fbb.CreateVector(fbPropertyOffsets);
 	const auto fbTemplate = fbb.CreateString(strTemplateResource);
 
-	mfbs::MMaterialBuilder builder(fbb);
+	morty::MMaterialBuilder builder(fbb);
 
 	builder.add_material_textures(fbTextures);
 	builder.add_material_property(fbProperty);
@@ -43,7 +43,7 @@ flatbuffers::Offset<void> MMaterialResourceData::Serialize(flatbuffers::FlatBuff
 
 void MMaterialResourceData::Deserialize(const void* pBufferPointer)
 {
-	const mfbs::MMaterial* fbData = mfbs::GetMMaterial(pBufferPointer);
+	const morty::MMaterial* fbData =morty::GetMMaterial(pBufferPointer);
 
 	if (fbData->material_template())
 	{

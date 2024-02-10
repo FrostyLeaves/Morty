@@ -160,14 +160,14 @@ void MEnvironmentMapRenderWork::InitializeResource()
 
 	if (std::shared_ptr<MTextureResource> pDiffuseCubeMapResource = pResourceSystem->CreateResource<MTextureResource>())
 	{
-		pDiffuseCubeMapResource->CreateCubeMapRenderTarget(EnvironmentTextureSize, EnvironmentTextureSize, 4, METextureLayout::ERGBA_FLOAT_16, false);
+		pDiffuseCubeMapResource->CreateCubeMapRenderTarget(EnvironmentTextureSize, EnvironmentTextureSize, 4, METextureLayout::Float_RGBA16, false);
 
 		m_DiffuseEnvironmentMap.SetResource(pDiffuseCubeMapResource);
 	}
 
 	if (std::shared_ptr<MTextureResource> pSpecularCubeMapResource = pResourceSystem->CreateResource<MTextureResource>())
 	{
-		pSpecularCubeMapResource->CreateCubeMapRenderTarget(EnvironmentTextureSize, EnvironmentTextureSize, 4, METextureLayout::ERGBA_FLOAT_16, true);
+		pSpecularCubeMapResource->CreateCubeMapRenderTarget(EnvironmentTextureSize, EnvironmentTextureSize, 4, METextureLayout::Float_RGBA16, true);
 
 		m_SpecularEnvironmentMap.SetResource(pSpecularCubeMapResource);
 	}

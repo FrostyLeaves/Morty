@@ -131,7 +131,7 @@ flatbuffers::Offset<void> MRenderMeshComponent::Serialize(flatbuffers::FlatBuffe
 	auto fb_super = Super::Serialize(fbb).o;
 	auto fb_material = m_Material.Serialize(fbb).o;
 	auto fb_mesh = m_Mesh.Serialize(fbb).o;
-	mfbs::MRenderMeshComponentBuilder builder(fbb);
+	morty::MRenderMeshComponentBuilder builder(fbb);
 
 	builder.add_gen_dir_shadow(GetGenerateDirLightShadow());
 	builder.add_lod((int)GetDetailLevel());
@@ -145,7 +145,7 @@ flatbuffers::Offset<void> MRenderMeshComponent::Serialize(flatbuffers::FlatBuffe
 
 void MRenderMeshComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	const mfbs::MRenderMeshComponent* fbcomponent = mfbs::GetMRenderMeshComponent(fbb.GetCurrentBufferPointer());
+	const morty::MRenderMeshComponent* fbcomponent =morty::GetMRenderMeshComponent(fbb.GetCurrentBufferPointer());
 	Deserialize(fbcomponent);
 }
 
@@ -153,7 +153,7 @@ void MRenderMeshComponent::Deserialize(const void* pBufferPointer)
 {
 	auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-	const mfbs::MRenderMeshComponent* pComponent = reinterpret_cast<const mfbs::MRenderMeshComponent*>(pBufferPointer);
+	const morty::MRenderMeshComponent* pComponent = reinterpret_cast<const morty::MRenderMeshComponent*>(pBufferPointer);
 
 	Super::Deserialize(pComponent->super());
 

@@ -5,7 +5,7 @@
 MTexture::MTexture()
 	: m_strTextureName("Texture_Default")
 	, m_n3Size(1, 1, 1)
-	, m_eRenderType(METextureLayout::ERGBA_UNORM_8)
+	, m_eRenderType(METextureLayout::UNorm_RGBA8)
 	, m_eRenderUsage(METextureWriteUsage::EUnknow)
 	, m_eShaderUsage(METextureReadUsage::EUnknow)
 	, m_eTextureType(METextureType::ETexture2D)
@@ -42,9 +42,14 @@ Vector2 MTexture::GetMipmapSize(const uint32_t& nMipmapLevel)
 	return Vector2(w, h);
 }
 
-void MTexture::GenerateBuffer(MIDevice* pDevice, const MByte* aImageData /*= nullptr*/)
+void MTexture::GenerateBuffer(MIDevice* pDevice)
 {
-	pDevice->GenerateTexture(this, aImageData);
+	pDevice->GenerateTexture(this, {});
+}
+
+void MTexture::GenerateBuffer(MIDevice* pDevice, const MSpan<MByte>& buffer)
+{
+	pDevice->GenerateTexture(this, buffer);
 }
 
 void MTexture::DestroyBuffer(MIDevice* pDevice)
@@ -56,34 +61,34 @@ uint32_t MTexture::GetImageMemorySize(const METextureLayout& layout)
 {
 	switch (layout)
 	{
-	case METextureLayout::E_UNKNOW:
+	case METextureLayout::Unknow:
 
-	case METextureLayout::ER_UNORM_8:
-	case METextureLayout::ER_UINT_8:
+	case METextureLayout::UNorm_R8:
+	case METextureLayout::UInt_R8:
 		return 1;
-	case METextureLayout::ERG_UNORM_8:
+	case METextureLayout::UNorm_RG8:
 		return 2;
-	case METextureLayout::ERGB_UNORM_8:
+	case METextureLayout::UNorm_RGB8:
 		return 3;
-	case METextureLayout::ERGBA_UNORM_8:
+	case METextureLayout::UNorm_RGBA8:
 		return 4;
-	case METextureLayout::ER_FLOAT_16:
+	case METextureLayout::Float_R16:
 		return 2;
-	case METextureLayout::ERG_FLOAT_16:
+	case METextureLayout::Float_RG16:
 		return 4;
-	case METextureLayout::ERGB_FLOAT_16:
+	case METextureLayout::Float_RGB16:
 		return 6;
-	case METextureLayout::ERGBA_FLOAT_16:
+	case METextureLayout::Float_RGBA16:
 		return 8;
-	case METextureLayout::ER_FLOAT_32:
+	case METextureLayout::Float_R32:
 		return 4;
-	case METextureLayout::ERG_FLOAT_32:
+	case METextureLayout::Float_RG32:
 		return 8;
-	case METextureLayout::ERGB_FLOAT_32:
+	case METextureLayout::Float_RGB32:
 		return 12;
-	case METextureLayout::ERGBA_FLOAT_32:
+	case METextureLayout::Float_RGBA32:
 		return 16;
-	case METextureLayout::EDepth:
+	case METextureLayout::Depth:
 		return 4;
 	default:
 		MORTY_ASSERT(false);
@@ -113,7 +118,7 @@ MTextureDesc MTexture::CreateDepthBuffer()
 	MTextureDesc texture = {
 		.strTextureName = "Depth Buffer Texture",
 		.eTextureType = METextureType::ETexture2D,
-		.eTextureLayout = METextureLayout::EDepth,
+		.eTextureLayout = METextureLayout::Depth,
 		.eWriteUsage = METextureWriteUsage::ERenderDepth,
 		.nShaderUsage = METextureReadUsage::EPixelSampler,
 		.bReadable = false,
@@ -130,7 +135,7 @@ MTextureDesc MTexture::CreateShadowMapArray(const int& nSize, const uint32_t& nA
 		.n3Size = Vector3i(nSize, nSize, 1),
 		.nLayer = nArraySize,
 		.eTextureType = METextureType::ETexture2DArray,
-		.eTextureLayout = METextureLayout::EDepth,
+		.eTextureLayout = METextureLayout::Depth,
 		.eWriteUsage = METextureWriteUsage::ERenderDepth,
 		.nShaderUsage = METextureReadUsage::EPixelSampler,
 		.bReadable = false,
@@ -140,7 +145,7 @@ MTextureDesc MTexture::CreateShadowMapArray(const int& nSize, const uint32_t& nA
 	return texture;
 }
 
-MTextureDesc MTexture::CreateRenderTarget(METextureLayout eLayout/*= METextureLayout::ERGBA_UNORM_8*/)
+MTextureDesc MTexture::CreateRenderTarget(METextureLayout eLayout/*= METextureLayout::UNorm_RGBA8*/)
 {
 	MTextureDesc texture = {
 		.strTextureName = "Render Target Texture",
@@ -162,7 +167,7 @@ MTextureDesc MTexture::CreateRenderTargetGBuffer()
 		.strTextureName = "GBuffer Texture",
 		.n3Size = Vector3i(1, 1, 1),
 		.eTextureType = METextureType::ETexture2D,
-		.eTextureLayout = METextureLayout::ERGBA_FLOAT_16,
+		.eTextureLayout = METextureLayout::Float_RGBA16,
 		.eWriteUsage = METextureWriteUsage::ERenderBack,
 		.nShaderUsage = METextureReadUsage::EPixelSampler,
 		.bReadable = false,
@@ -180,7 +185,7 @@ std::shared_ptr<MTexture> MTexture::CreateRenderTargetFloat32()
 	pTexture->SetReadable(false);
 	pTexture->SetRenderUsage(METextureWriteUsage::ERenderBack);
 	pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
-	pTexture->SetTextureLayout(METextureLayout::ER_FLOAT_32);
+	pTexture->SetTextureLayout(METextureLayout::Float_R32);
 
 	return pTexture;
 }
@@ -191,7 +196,7 @@ MTextureDesc MTexture::CreateShadingRate()
 		.strTextureName = "Shading Rate Texture",
 		.n3Size = Vector3i(1, 1, 1),
 		.eTextureType = METextureType::ETexture2D,
-		.eTextureLayout = METextureLayout::ER_UINT_8,
+		.eTextureLayout = METextureLayout::UInt_R8,
 		.eWriteUsage = METextureWriteUsage::EStorageWrite,
 #if MORTY_DEBUG
 		.nShaderUsage = (METextureReadUsage::EShadingRateMask | METextureReadUsage::EPixelSampler),
@@ -213,7 +218,7 @@ std::shared_ptr<MTexture> MTexture::CreateVXGIMap()
 	pTexture->SetReadable(false);
 	pTexture->SetRenderUsage(METextureWriteUsage::EStorageWrite);
 	pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler | METextureReadUsage::EStorageRead);
-	pTexture->SetTextureLayout(METextureLayout::ERGBA_FLOAT_32);
+	pTexture->SetTextureLayout(METextureLayout::Float_RGBA32);
 	pTexture->SetTextureType(METextureType::ETexture3D);
 
 	return pTexture;

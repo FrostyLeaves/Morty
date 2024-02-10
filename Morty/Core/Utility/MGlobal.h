@@ -97,3 +97,6 @@ public:
 };
 
 class MEngine;
+
+#define MORTY_SPACE_BEGIN namespace morty {
+#define MORTY_SPACE_END }

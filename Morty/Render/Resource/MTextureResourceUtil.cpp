@@ -267,36 +267,17 @@ std::unique_ptr<MResourceData> MTextureResourceUtil::ImportCubeMap(const std::ar
 	return textureData;
 }
 
-METextureLayout MTextureResourceUtil::GetTextureLayout(const MTextureResourceFormat& format)
-{
-	static const std::unordered_map<MTextureResourceFormat, METextureLayout> FormatTable = {
-		{ MTextureResourceFormat::RawRGBA8, METextureLayout::ERGBA_UNORM_8 },
-		{ MTextureResourceFormat::RawRGBA32, METextureLayout::ERGBA_FLOAT_32 },
-		{ MTextureResourceFormat::RawSingle8, METextureLayout::ER_UNORM_8 },
-		{ MTextureResourceFormat::RawSingle32, METextureLayout::ER_FLOAT_32 },
-	};
-
-	const auto findResult = FormatTable.find(format);
-	if (findResult == FormatTable.end())
-	{
-		MORTY_ASSERT(false);
-		return METextureLayout::E_UNKNOW;
-	}
-
-	return findResult->second;
-}
-
-MTextureResourceFormat MTextureResourceUtil::GetTextureFormat(const MTexturePixelType nPixelSize, const size_t nChannelNum)
+morty::METextureLayout MTextureResourceUtil::GetTextureFormat(const MTexturePixelType nPixelSize, const size_t nChannelNum)
 {
 	if (nPixelSize == MTexturePixelType::Byte8)
 	{
 	    if (nChannelNum == 1)
 	    {
-			return MTextureResourceFormat::RawSingle8;
+			return morty::METextureLayout::UNorm_R8;
 	    }
 		if (nChannelNum == 4)
 		{
-			return MTextureResourceFormat::RawRGBA8;
+			return morty::METextureLayout::UNorm_RGBA8;
 		}
 	}
 
@@ -304,15 +285,15 @@ MTextureResourceFormat MTextureResourceUtil::GetTextureFormat(const MTexturePixe
 	{
 	    if (nChannelNum == 1)
 	    {
-			return MTextureResourceFormat::RawSingle32;
+			return morty::METextureLayout::Float_R32;
 	    }
 		if (nChannelNum == 4)
 		{
-			return MTextureResourceFormat::RawRGBA32;
+			return morty::METextureLayout::Float_RGBA32;
 		}
 	}
 
 
 	MORTY_ASSERT(false);
-	return MTextureResourceFormat::Unknow;
+	return morty::METextureLayout::Unknow;
 }

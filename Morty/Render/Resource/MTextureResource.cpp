@@ -1,6 +1,7 @@
 #include "Resource/MTextureResource.h"
 
 #include "MAstcTextureUtil.h"
+#include "MDdsTextureUtil.h"
 #include "MTextureResourceUtil.h"
 #include "Engine/MEngine.h"
 #include "Render/MIDevice.h"
@@ -29,7 +30,7 @@ MTextureResource::MTextureResource()
 {
 	m_pTexture->SetMipmapsEnable(true);
 	m_pTexture->SetReadable(false);
-	m_pTexture->SetTextureLayout(METextureLayout::ERGBA_UNORM_8);
+	m_pTexture->SetTextureLayout(METextureLayout::UNorm_RGBA8);
 	m_pTexture->SetRenderUsage(METextureWriteUsage::EUnknow);
 	m_pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
 }
@@ -58,8 +59,9 @@ bool MTextureResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 	m_pTexture->SetName(pTextureData->strTextureName);
 	m_pTexture->SetSize(Vector3i(pTextureData->nWidth, pTextureData->nHeight, pTextureData->nDepth));
 	m_pTexture->SetTextureType(pTextureData->eTextureType);
-	m_pTexture->SetTextureLayout(MTextureResourceUtil::GetTextureLayout(pTextureData->eFormat));
-	m_pTexture->GenerateBuffer(pRenderSystem->GetDevice(), pTextureData->aByteData.data());
+	m_pTexture->SetMipmapsEnable(pTextureData->bMipmap);
+	m_pTexture->SetTextureLayout(static_cast<METextureLayout>(pTextureData->eFormat));
+	m_pTexture->GenerateBuffer(pRenderSystem->GetDevice(), pTextureData->aByteData);
 
 	if (m_bReadable)
 	{
@@ -108,13 +110,8 @@ METextureLayout MTextureResource::GetTextureLayout() const
 		return m_pTexture->GetTextureLayout();
 	}
 
-	return METextureLayout::E_UNKNOW;
-}
-
-MTextureResourceFormat MTextureResource::GetFormat() const
-{
 	auto ptr = static_cast<MTextureResourceData*>(m_pResourceData.get());
-    return ptr->eFormat;
+	return static_cast<METextureLayout>(ptr->eFormat);
 }
 
 size_t MTextureResource::GetWidth() const
@@ -153,11 +150,12 @@ flatbuffers::Offset<void> MTextureResourceData::Serialize(flatbuffers::FlatBuffe
 {
 	auto fbTextureData = fbb.CreateVector<int8_t>(reinterpret_cast<const int8_t*>(aByteData.data()), aByteData.size());
 
-	mfbs::MTextureResourceBuilder builder(fbb);
+	morty::MTextureResourceBuilder builder(fbb);
 
 	builder.add_width(static_cast<uint32_t>(nWidth));
 	builder.add_height(static_cast<uint32_t>(nHeight));
-	builder.add_format(static_cast<mfbs::MTextureResourceFormat>(eFormat));
+	builder.add_format(static_cast<morty::METextureLayout>(eFormat));
+	builder.add_mipmap(bMipmap);
 	builder.add_data(fbTextureData);
 
 	return builder.Finish().Union();
@@ -165,10 +163,11 @@ flatbuffers::Offset<void> MTextureResourceData::Serialize(flatbuffers::FlatBuffe
 
 void MTextureResourceData::Deserialize(const void* pBufferPointer)
 {
-	const mfbs::MTextureResource* fbData = mfbs::GetMTextureResource(pBufferPointer);
+	const morty::MTextureResource* fbData =morty::GetMTextureResource(pBufferPointer);
     nWidth = fbData->width();
     nHeight = fbData->height();
-	eFormat = static_cast<MTextureResourceFormat>(fbData->format());
+	eFormat = static_cast<morty::METextureLayout>(fbData->format());
+	bMipmap = fbData->mipmap();
     const auto pData = fbData->data();
 	aByteData.resize(pData->size());
 	memcpy(aByteData.data(), pData->data(), pData->size());
@@ -187,7 +186,6 @@ const MType* MTextureResourceLoader::ResourceType() const
 
 std::unique_ptr<MResourceData> MTextureResourceLoader::LoadResource(const MString& svFullPath)
 {
-	//m_strResourcePath = strResourcePath;
 	if ("mtex" == MResource::GetSuffix(svFullPath))
 	{
 		std::unique_ptr<MTextureResourceData> pResourceData = std::make_unique<MTextureResourceData>();
@@ -201,14 +199,16 @@ std::unique_ptr<MResourceData> MTextureResourceLoader::LoadResource(const MStrin
 		pResourceData->strTextureName = svFullPath;
 		return pResourceData;
 	}
-	else if ("astc" == MResource::GetSuffix(svFullPath))
+
+    if ("astc" == MResource::GetSuffix(svFullPath))
 	{
 		return MAstcTextureUtil::ImportAstcTexture(svFullPath);
 	}
-	else
-	{
-		return MTextureResourceUtil::ImportTexture(svFullPath, MTexturePixelType::Byte8);
-	}
 
-	return nullptr;
+	if ("dds" == MResource::GetSuffix(svFullPath))
+	{
+		return MDdsTextureUtil::ImportBc7Texture(svFullPath);
+	}
+	
+    return MTextureResourceUtil::ImportTexture(svFullPath, MTexturePixelType::Byte8);
 }

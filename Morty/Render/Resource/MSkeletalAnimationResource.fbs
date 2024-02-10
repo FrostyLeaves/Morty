@@ -1,7 +1,7 @@
 include "Resource/MResourceRef.fbs";
 include "Model/MSkeletalAnimation.fbs";
 
-namespace mfbs;
+namespace morty;
 
 table MSkeletalAnimationResource
 {

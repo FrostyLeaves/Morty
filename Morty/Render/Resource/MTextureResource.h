@@ -8,25 +8,12 @@
 
 #pragma once
 
+#include "MTexture_generated.h"
 #include "Utility/MGlobal.h"
 #include "Resource/MResource.h"
 
 #include "Basic/MTexture.h"
 #include "Resource/MResourceLoader.h"
-
-enum class MTextureResourceFormat
-{
-	Unknow,
-
-	RawRGBA8,
-	RawRGBA32,
-
-	RawSingle8,
-	RawSingle32,
-
-	ASTC4x4,
-	ASTC8x8,
-};
 
 enum class MTexturePixelType
 {
@@ -51,8 +38,9 @@ public:
 	size_t nHeight = 0;
 	size_t nDepth = 1;
 	METextureType eTextureType = METextureType::ETexture2D;
-	MTextureResourceFormat eFormat = MTextureResourceFormat::Unknow;
+	morty::METextureLayout eFormat = morty::METextureLayout::Unknow;
 	std::vector<MByte> aByteData{};
+	bool bMipmap = true;
 	MString strTextureName = "";
 
 	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
@@ -71,7 +59,6 @@ public:
 public:
 
 	METextureLayout GetTextureLayout() const;
-	MTextureResourceFormat GetFormat() const;
 	size_t GetWidth() const;
 	size_t GetHeight() const;
 	const MByte* GetRawData() const;
@@ -97,7 +84,7 @@ class MORTY_API MTextureResourceLoader : public MResourceLoader
 public:
 
 	static MString GetResourceTypeName() { return "Texture"; }
-	static std::vector<MString> GetSuffixList() { return { "png", "jpg", "tga", "hdr", "tif", "mtex" }; }
+	static std::vector<MString> GetSuffixList() { return { "png", "jpg", "tga", "hdr", "tif", "astc", "dds", "mtex" }; }
 
 	const MType* ResourceType() const override;
 	std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath) override;

@@ -40,7 +40,7 @@ Quaternion::Quaternion(const Vector3& vAxis, const float& fAngle)
 	RotateAxis(vAxis, fAngle);
 }
 
-Quaternion::Quaternion(const mfbs::Quaternion& value)
+Quaternion::Quaternion(const morty::Quaternion& value)
 	: w(value.w())
 	, x(value.x())
 	, y(value.y())
@@ -56,11 +56,11 @@ Quaternion Quaternion::FromEuler(const Vector3& eulerVec3)
 	return quat;
 }
 
-const mfbs::Quaternion* Quaternion::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
+const morty::Quaternion* Quaternion::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
 	MORTY_UNUSED(fbb);
 
-	return reinterpret_cast<const mfbs::Quaternion*>(this);
+	return reinterpret_cast<const morty::Quaternion*>(this);
 }
 
 void Quaternion::Deserialize(const void* pBufferPointer)

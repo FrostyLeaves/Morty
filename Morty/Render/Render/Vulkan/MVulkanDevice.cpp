@@ -138,23 +138,36 @@ void MVulkanDevice::Release()
 VkFormat MVulkanDevice::GetFormat(const METextureLayout& layout) const
 {
 	static const std::unordered_map<METextureLayout, VkFormat> FormatTable = {
-		{METextureLayout::ER_UNORM_8, VK_FORMAT_R8_UNORM},
-		{METextureLayout::ERG_UNORM_8, VK_FORMAT_R8G8_UNORM},
-		{METextureLayout::ERGB_UNORM_8, VK_FORMAT_R8G8B8_UNORM},
-		{METextureLayout::ERGBA_UNORM_8, VK_FORMAT_R8G8B8A8_UNORM},
-		{METextureLayout::ER_UINT_8, VK_FORMAT_R8_UINT},
-		{METextureLayout::ER_FLOAT_16, VK_FORMAT_R16_SFLOAT},
-		{METextureLayout::ERG_FLOAT_16, VK_FORMAT_R16G16_SFLOAT},
-		{METextureLayout::ERGB_FLOAT_16, VK_FORMAT_R16G16B16_SFLOAT},
-		{METextureLayout::ERGBA_FLOAT_16, VK_FORMAT_R16G16B16A16_SFLOAT},
-		{METextureLayout::ER_FLOAT_32, VK_FORMAT_R32_SFLOAT},
-		{METextureLayout::ERG_FLOAT_32, VK_FORMAT_R32G32_SFLOAT},
-		{METextureLayout::ERGB_FLOAT_32, VK_FORMAT_R32G32B32_SFLOAT},
-		{METextureLayout::ERGBA_FLOAT_32, VK_FORMAT_R32G32B32A32_SFLOAT},
+		{METextureLayout::UNorm_R8, VK_FORMAT_R8_UNORM},
+		{METextureLayout::UNorm_RG8, VK_FORMAT_R8G8_UNORM},
+		{METextureLayout::UNorm_RGB8, VK_FORMAT_R8G8B8_UNORM},
+		{METextureLayout::UNorm_RGBA8, VK_FORMAT_R8G8B8A8_UNORM},
+		{METextureLayout::UNorm_RGBA8_BC7, VK_FORMAT_BC7_UNORM_BLOCK},
+		{METextureLayout::UInt_R8, VK_FORMAT_R8_UINT},
+		{METextureLayout::Float_R16, VK_FORMAT_R16_SFLOAT},
+		{METextureLayout::Float_RG16, VK_FORMAT_R16G16_SFLOAT},
+		{METextureLayout::Float_RGB16, VK_FORMAT_R16G16B16_SFLOAT},
+		{METextureLayout::Float_RGBA16, VK_FORMAT_R16G16B16A16_SFLOAT},
+		{METextureLayout::Float_R32, VK_FORMAT_R32_SFLOAT},
+		{METextureLayout::Float_RG32, VK_FORMAT_R32G32_SFLOAT},
+		{METextureLayout::Float_RGB32, VK_FORMAT_R32G32B32_SFLOAT},
+		{METextureLayout::Float_RGBA32, VK_FORMAT_R32G32B32A32_SFLOAT},
 
+		{METextureLayout::UNorm_RGBA8_ASTC4x4, VK_FORMAT_ASTC_4x4_UNORM_BLOCK},
+		{METextureLayout::UNorm_RGBA8_ASTC8x8, VK_FORMAT_ASTC_8x8_UNORM_BLOCK},
+
+		{METextureLayout::UNorm_RGBA8_BC1, VK_FORMAT_BC1_RGBA_UNORM_BLOCK},
+		{METextureLayout::UNorm_RGBA8_BC2, VK_FORMAT_BC2_UNORM_BLOCK},
+		{METextureLayout::UNorm_RGBA8_BC3, VK_FORMAT_BC3_UNORM_BLOCK},
+		{METextureLayout::UNorm_RGBA8_BC4, VK_FORMAT_BC4_UNORM_BLOCK},
+		{METextureLayout::UNorm_RGBA8_BC5, VK_FORMAT_BC5_UNORM_BLOCK},
+		{METextureLayout::UNorm_RGBA8_BC7, VK_FORMAT_BC7_UNORM_BLOCK},
+
+		{METextureLayout::SNorm_RGBA8_BC4, VK_FORMAT_BC4_SNORM_BLOCK},
+		{METextureLayout::SNorm_RGBA8_BC5, VK_FORMAT_BC5_SNORM_BLOCK},
 	};
 
-	if (METextureLayout::EDepth == layout)
+	if (METextureLayout::Depth == layout)
 	{
 		return m_pPhysicalDevice->m_VkDepthTextureFormat;
 	}
@@ -165,7 +178,8 @@ VkFormat MVulkanDevice::GetFormat(const METextureLayout& layout) const
 		return findResult->second;
 	}
 
-	return VK_FORMAT_R8G8B8A8_SRGB;
+	MORTY_ASSERT(false);
+	return VK_FORMAT_UNDEFINED;
 }
 
 VkImageUsageFlags MVulkanDevice::GetUsageFlags(MTexture* pTexture) const
@@ -564,7 +578,7 @@ void MVulkanDevice::UploadBuffer(MBuffer* pBuffer, const size_t& unBeginOffset, 
 	UploadBuffer(VK_NULL_HANDLE, pBuffer, unBeginOffset, data, unDataSize);
 }
 
-void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MByte* pData)
+void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MSpan<MByte>& buffer)
 {
 	uint32_t width = std::max(static_cast<int>(pTexture->GetSize().x), 1);
 	uint32_t height = std::max(static_cast<int>(pTexture->GetSize().y), 1);
@@ -583,8 +597,6 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MByte* pData)
 	VkImageType imageType = GetImageType(pTexture);
 	auto nMipmapCount = static_cast<uint32_t>(GetMipmapCount(pTexture));
 	auto nLayerCount = static_cast<uint32_t>(GetLayerCount(pTexture));
-
-	VkDeviceSize imageSize = static_cast<uint64_t>(MTexture::GetImageMemorySize(pTexture->GetTextureLayout())) * width * height * depth * nLayerCount;
 
 	if (pTexture->GetRenderUsage() == METextureWriteUsage::ERenderPresent)
 	{
@@ -607,15 +619,17 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MByte* pData)
 
 		CreateImage(width, height, depth, nMipmapCount, nLayerCount, format, VK_IMAGE_TILING_OPTIMAL, usageFlags, memoryFlags, defaultLayout, textureImage, textureImageMemory, createFlags, imageType);
 
-		if (pData)
+		if (!buffer.empty())
 		{
+			VkDeviceSize imageSize = buffer.size();
+
 			VkBuffer stagingBuffer;
 			VkDeviceMemory stagingBufferMemory;
 			GenerateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 			MByte* data;
 			vkMapMemory(m_VkDevice, stagingBufferMemory, 0, imageSize, 0, (void**)&data);
-			memcpy(data, pData, static_cast<size_t>(imageSize));
+			memcpy(data, buffer.data(), static_cast<size_t>(imageSize));
 			vkUnmapMemory(m_VkDevice, stagingBufferMemory);
 
 			VkImageSubresourceRange vkSubresourceRange = {};

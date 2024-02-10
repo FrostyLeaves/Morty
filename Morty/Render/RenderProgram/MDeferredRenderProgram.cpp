@@ -289,7 +289,7 @@ void MDeferredRenderProgram::InitializeRenderGraph()
 		m_pRenderGraph->GetRenderTargetManager()->CreateRenderTarget(MHBAORenderWork::HBAOOutput)
 		->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Shared)
 		->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Scale, 1.0f)
-		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::ER_UNORM_8).InitName("HBAO Buffer"))
+		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::UNorm_R8).InitName("HBAO Buffer"))
 	);
 
 	auto pHbaoBlurNodeV = RegisterRenderWork<MHBAOBlurRenderWorkV>(MStringId("HBAO Blur V"));
@@ -297,7 +297,7 @@ void MDeferredRenderProgram::InitializeRenderGraph()
 		m_pRenderGraph->GetRenderTargetManager()->CreateRenderTarget(MHBAOBlurRenderWorkV::BlurOutput)
 		->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Shared)
 		->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Scale, 1.0f)
-		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::ER_UNORM_8).InitName("HBAO Blur Buffer V"))
+		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::UNorm_R8).InitName("HBAO Blur Buffer V"))
 	);
 	pHbaoBlurNodeV->InitDirection(true);
 
@@ -306,13 +306,13 @@ void MDeferredRenderProgram::InitializeRenderGraph()
 		m_pRenderGraph->GetRenderTargetManager()->CreateRenderTarget(MHBAOBlurRenderWorkH::BlurOutput)
 		->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Shared)
 		->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Scale, 1.0f)
-		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::ER_UNORM_8).InitName("HBAO Blur Buffer H"))
+		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::UNorm_R8).InitName("HBAO Blur Buffer H"))
 	);
 
 	auto pLightingOutputTarget = m_pRenderGraph->GetRenderTargetManager()->CreateRenderTarget(MDeferredLightingRenderWork::DeferredLightingOutput)
 		->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Shared)
 		->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Scale, 1.0f)
-		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::ERGBA_FLOAT_16).InitName("Deferred Lighting Output"));
+		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::Float_RGBA16).InitName("Deferred Lighting Output"));
 
 	auto pDeferredLightingNode = RegisterRenderWork<MDeferredLightingRenderWork>();
 	pDeferredLightingNode->GetRenderOutput(0)->SetRenderTarget(
@@ -334,14 +334,14 @@ void MDeferredRenderProgram::InitializeRenderGraph()
 		m_pRenderGraph->GetRenderTargetManager()->CreateRenderTarget(MDeepPeelRenderWork::FrontTextureOutput)
 		->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Shared)
 		->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Scale, 1.0f)
-		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::ERGBA_UNORM_8).InitName("Deep Peel Front Output"))
+		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::UNorm_RGBA8).InitName("Deep Peel Front Output"))
 	);
 
 	pDeepPeelNode->GetRenderOutput(1)->SetRenderTarget(
 		m_pRenderGraph->GetRenderTargetManager()->CreateRenderTarget(MDeepPeelRenderWork::BackTextureOutput)
 		->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Shared)
 		->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Scale, 1.0f)
-		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::ERGBA_UNORM_8).InitName("Deep Peel Back Output"))
+		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::UNorm_RGBA8).InitName("Deep Peel Back Output"))
 	);
 
 	for (size_t nIdx = 0; nIdx < 4; ++nIdx)
@@ -350,7 +350,7 @@ void MDeferredRenderProgram::InitializeRenderGraph()
 			m_pRenderGraph->GetRenderTargetManager()->CreateRenderTarget(MDeepPeelRenderWork::DepthOutput[nIdx])
 			->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Shared)
 			->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Scale, 1.0f)
-			->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::ER_FLOAT_32).InitName(fmt::format("Deep Peel Depth {}", nIdx)))
+			->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::Float_R32).InitName(fmt::format("Deep Peel Depth {}", nIdx)))
 		);
 	}
 
@@ -365,7 +365,7 @@ void MDeferredRenderProgram::InitializeRenderGraph()
 	pVoxelizerNode->GetRenderOutput(0)->SetRenderTarget(m_pRenderGraph->GetRenderTargetManager()->CreateRenderTarget(MVoxelizerRenderWork::VoxelizerBufferOutput)
 		->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Exclusive)
 		->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Fixed)
-		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::ERGBA_UNORM_8)
+		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::UNorm_RGBA8)
 			.InitName("Voxelizer Back Texture")
 			.InitSize(Vector2i(MRenderGlobal::VOXEL_VIEWPORT_SIZE, MRenderGlobal::VOXEL_VIEWPORT_SIZE)))
 	);
@@ -374,7 +374,7 @@ void MDeferredRenderProgram::InitializeRenderGraph()
 	pVoxelDebugTaskNode->GetRenderOutput(0)->SetRenderTarget(m_pRenderGraph->GetRenderTargetManager()->CreateRenderTarget(MVoxelDebugRenderWork::BackBufferOutput)
 		->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Exclusive)
 		->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Fixed)
-		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::ERGBA_UNORM_8).InitName("Voxel Debug Back Texture")));
+		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::UNorm_RGBA8).InitName("Voxel Debug Back Texture")));
 
 	pVoxelDebugTaskNode->GetRenderOutput(1)->SetRenderTarget(m_pRenderGraph->GetRenderTargetManager()->CreateRenderTarget(MVoxelDebugRenderWork::DepthBufferOutput)
 		->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Exclusive)
@@ -387,12 +387,12 @@ void MDeferredRenderProgram::InitializeRenderGraph()
 	pEdgeDetectionNode->GetRenderOutput(0)->SetRenderTarget(m_pRenderGraph->GetRenderTargetManager()->CreateRenderTarget(MEdgeDetectionRenderWork::EdgeDetectionResult)
 		->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Shared)
 		->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Scale, 1.0f)
-		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::ERGBA_UNORM_8).InitName("Edge Detection Buffer")));
+		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::UNorm_RGBA8).InitName("Edge Detection Buffer")));
 
 	auto pFinalBackBuffer = m_pRenderGraph->GetRenderTargetManager()->CreateRenderTarget(FinalBackBuffer)
 		->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Shared)
 		->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Scale, 1.0f)
-		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::ERGBA_UNORM_8).InitName("Final Output"));
+		->InitTextureDesc(MTexture::CreateRenderTarget(METextureLayout::UNorm_RGBA8).InitName("Final Output"));
 
 	auto pToneMappingNode = RegisterRenderWork<MToneMappingRenderWork>();
 	pToneMappingNode->GetRenderOutput(0)->SetRenderTarget(pFinalBackBuffer);

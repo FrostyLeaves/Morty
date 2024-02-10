@@ -883,8 +883,8 @@ std::shared_ptr<MTexture> MVulkanPipelineManager::GetDefaultTexture(MShaderTextu
 	}
 
 	static const std::unordered_map<MESamplerFormat, METextureLayout> TypeMapping = {
-		{MESamplerFormat::EFloat, METextureLayout::ERGBA_UNORM_8},
-		{MESamplerFormat::EInt, METextureLayout::ER_UINT_8},
+		{MESamplerFormat::EFloat, METextureLayout::UNorm_RGBA8},
+		{MESamplerFormat::EInt, METextureLayout::UInt_R8},
 	};
 
 	MORTY_ASSERT(TypeMapping.find(pParam->eFormat) != TypeMapping.end());

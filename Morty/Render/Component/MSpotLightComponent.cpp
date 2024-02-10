@@ -58,10 +58,10 @@ flatbuffers::Offset<void> MSpotLightComponent::Serialize(flatbuffers::FlatBuffer
 {
 	auto fbSuper = Super::Serialize(fbb).o;
 
-	mfbs::MSpotLightComponentBuilder builder(fbb);
+	morty::MSpotLightComponentBuilder builder(fbb);
 
 	Vector4 color = GetColorVector();
-	builder.add_color(reinterpret_cast<mfbs::Vector4*>(&color));
+	builder.add_color(reinterpret_cast<morty::Vector4*>(&color));
 	builder.add_light_intensity(GetLightIntensity());
 	builder.add_inner_cut_off_angle(GetInnerCutOff());
 	builder.add_outer_cut_off_angle(GetOuterCutOff());
@@ -73,13 +73,13 @@ flatbuffers::Offset<void> MSpotLightComponent::Serialize(flatbuffers::FlatBuffer
 
 void MSpotLightComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	const mfbs::MSpotLightComponent* fbcomponent = mfbs::GetMSpotLightComponent(fbb.GetCurrentBufferPointer());
+	const morty::MSpotLightComponent* fbcomponent =morty::GetMSpotLightComponent(fbb.GetCurrentBufferPointer());
 	Deserialize(fbcomponent);
 }
 
 void MSpotLightComponent::Deserialize(const void* pBufferPointer)
 {
-	const mfbs::MSpotLightComponent* pComponent = reinterpret_cast<const mfbs::MSpotLightComponent*>(pBufferPointer);
+	const morty::MSpotLightComponent* pComponent = reinterpret_cast<const morty::MSpotLightComponent*>(pBufferPointer);
 
 	SetColorVector(*reinterpret_cast<const Vector4*>(pComponent->color()));
 	SetLightIntensity(pComponent->light_intensity());

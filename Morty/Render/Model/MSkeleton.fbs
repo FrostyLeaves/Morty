@@ -3,7 +3,7 @@ include "Math/Quaternion.fbs";
 include "Math/Matrix.fbs";
 include "MBone.fbs";
 
-namespace mfbs;
+namespace morty;
 
 table MSkeleton
 {

@@ -92,6 +92,8 @@ struct MORTY_API MShaderPropertyName
 	static MStringId MATERIAL_STRUCT_NAME;
 	static MStringId MATERIAL_METALLIC;
 	static MStringId MATERIAL_ROUGHNESS;
+	static MStringId MATERIAL_METALLIC_CHANNEL;
+	static MStringId MATERIAL_ROUGHNESS_CHANNEL;
 	static MStringId MATERIAL_ALBEDO;
 	static MStringId MATERIAL_AMBIENT;
 	static MStringId MATERIAL_DIFFUSE;

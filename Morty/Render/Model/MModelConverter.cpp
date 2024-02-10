@@ -127,6 +127,7 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 	bImportLights = convertInfo.bImportLights;
 	eMaterialType = convertInfo.eMaterialType;
 	m_pTextureDelegate = convertInfo.pTextureDelegate;
+	m_pMaterialDelegate = convertInfo.pMaterialDelegate;
 
 	auto time = MTimer::GetCurTime();
 	if (!Load(convertInfo.strResourcePath))
@@ -671,7 +672,7 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 					for (unsigned keyIndex = 0; keyIndex < pNodeAnim->mNumPositionKeys; ++keyIndex)
 					{
 						const aiVectorKey& skey = pNodeAnim->mPositionKeys[keyIndex];
-						mAnimNode.m_vPositionTrack.push_back({ static_cast<float>(skey.mTime), mfbs::Vector3(skey.mValue.x, skey.mValue.y, skey.mValue.z) });
+						mAnimNode.m_vPositionTrack.push_back({ static_cast<float>(skey.mTime),morty::Vector3(skey.mValue.x, skey.mValue.y, skey.mValue.z) });
 					}
 				}
 				if (pNodeAnim->mNumRotationKeys > 0)
@@ -679,7 +680,7 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 					for (unsigned keyIndex = 0; keyIndex < pNodeAnim->mNumRotationKeys; ++keyIndex)
 					{
 						const aiQuatKey& skey = pNodeAnim->mRotationKeys[keyIndex];
-						mAnimNode.m_vRotationTrack.push_back({ static_cast<float>(skey.mTime), mfbs::Quaternion(skey.mValue.w, skey.mValue.x, skey.mValue.y,skey.mValue.z) });
+						mAnimNode.m_vRotationTrack.push_back({ static_cast<float>(skey.mTime),morty::Quaternion(skey.mValue.w, skey.mValue.x, skey.mValue.y,skey.mValue.z) });
 					}
 				}
 				if (pNodeAnim->mNumScalingKeys > 0)
@@ -687,7 +688,7 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 					for (unsigned keyIndex = 0; keyIndex < pNodeAnim->mNumScalingKeys; ++keyIndex)
 					{
 						const aiVectorKey& skey = pNodeAnim->mScalingKeys[keyIndex];
-						mAnimNode.m_vScaleTrack.push_back({ static_cast<float>(skey.mTime), mfbs::Vector3(skey.mValue.x, skey.mValue.y, skey.mValue.z) });
+						mAnimNode.m_vScaleTrack.push_back({ static_cast<float>(skey.mTime),morty::Vector3(skey.mValue.x, skey.mValue.y, skey.mValue.z) });
 					}
 				}
 			}
@@ -733,6 +734,8 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 
 		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_METALLIC, 1.0f);
 		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS, 1.0f);
+		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_METALLIC_CHANNEL, 0);
+		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS_CHANNEL, 0);
 		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ALBEDO, Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 		pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_ALBEDO, pResourceSystem->LoadResource(MRenderModule::DefaultWhite));
 		pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_NORMAL, pResourceSystem->LoadResource(MRenderModule::DefaultNormal));
@@ -872,6 +875,11 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 			pMaterial->SetTexture(pr.second, pTexture);
 			m_tFileTextures.insert(pTexture);
 		}
+	}
+
+	if (m_pMaterialDelegate)
+	{
+		m_pMaterialDelegate->PostProcess(pMaterial.get());
 	}
 
 	m_vMaterials[nMaterialIdx] = pMaterial;

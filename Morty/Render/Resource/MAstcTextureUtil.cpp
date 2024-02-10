@@ -61,25 +61,26 @@ std::unique_ptr<MResourceData> MAstcTextureUtil::ImportAstcTexture(const MString
 	textureData->nDepth = extent.z;
 	textureData->eFormat = eFormat;
 	textureData->strTextureName = strResourcePath;
+	textureData->bMipmap = false;
 
 	return textureData;
 }
 
-MTextureResourceFormat MAstcTextureUtil::GetTextureFormat(const Vector3i& n3BlockDim)
+morty::METextureLayout MAstcTextureUtil::GetTextureFormat(const Vector3i& n3BlockDim)
 {
 	MORTY_ASSERT(n3BlockDim.x == n3BlockDim.y == n3BlockDim.z);
 
 
 	if (n3BlockDim.x == 4)
 	{
-		return MTextureResourceFormat::ASTC4x4;
+		return morty::METextureLayout::UNorm_RGBA8_ASTC4x4;
 	}
 
     if (n3BlockDim.x == 8)
 	{
-		return MTextureResourceFormat::ASTC8x8;
+		return morty::METextureLayout::UNorm_RGBA8_ASTC8x8;
 	}
 
 	MORTY_ASSERT(false);
-	return MTextureResourceFormat::Unknow;
+	return morty::METextureLayout::Unknow;
 }

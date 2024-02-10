@@ -1,5 +1,5 @@
 
-namespace mfbs;
+namespace morty;
 
 table MShaderMacroPair
 {

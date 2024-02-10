@@ -24,10 +24,10 @@ flatbuffers::Offset<void> MPointLightComponent::Serialize(flatbuffers::FlatBuffe
 {
 	auto super = Super::Serialize(fbb).o;
 
-	mfbs::MPointLightComponentBuilder builder(fbb);
+	morty::MPointLightComponentBuilder builder(fbb);
 
 	Vector4 color = GetColorVector();
-	builder.add_color(reinterpret_cast<mfbs::Vector4*>(&color));
+	builder.add_color(reinterpret_cast<morty::Vector4*>(&color));
 	builder.add_light_intensity(GetLightIntensity());
 	builder.add_constant(GetConstant());
 	builder.add_linear(GetLinear());
@@ -40,13 +40,13 @@ flatbuffers::Offset<void> MPointLightComponent::Serialize(flatbuffers::FlatBuffe
 
 void MPointLightComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	const mfbs::MPointLightComponent* fbcomponent = mfbs::GetMPointLightComponent(fbb.GetCurrentBufferPointer());
+	const morty::MPointLightComponent* fbcomponent =morty::GetMPointLightComponent(fbb.GetCurrentBufferPointer());
 	Deserialize(fbcomponent);
 }
 
 void MPointLightComponent::Deserialize(const void* pBufferPointer)
 {
-	const mfbs::MPointLightComponent* pComponent = reinterpret_cast<const mfbs::MPointLightComponent*>(pBufferPointer);
+	const morty::MPointLightComponent* pComponent = reinterpret_cast<const morty::MPointLightComponent*>(pBufferPointer);
 
 	SetColorVector(*reinterpret_cast<const Vector4*>(pComponent->color()));
 	SetLightIntensity(pComponent->light_intensity());

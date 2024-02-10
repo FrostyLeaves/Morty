@@ -282,7 +282,7 @@ void MainEditor::ShowShadowMapView()
 			ImGui::Columns(static_cast<int>(nRowCount));
 			for (size_t nTexIdx = 0; nTexIdx < vTexture.size(); ++nTexIdx)
 			{
-				for (size_t nLayerIdx = 0; nLayerIdx < static_cast<size_t>(vTexture[nTexIdx]->GetSize().z); ++nLayerIdx)
+				for (size_t nLayerIdx = 0; nLayerIdx < static_cast<size_t>(vTexture[nTexIdx]->GetLayer()); ++nLayerIdx)
 				{
 					ImGui::Image({ vTexture[nTexIdx], intptr_t(vTexture[nTexIdx].get()), nLayerIdx }, ImVec2(v2Size.x, v2Size.y));
 					ImGui::Text("%s (%d)", vTexture[nTexIdx]->GetName().c_str(), static_cast<int>(nLayerIdx));

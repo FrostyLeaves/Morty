@@ -129,7 +129,7 @@ void MBoundsOBB::SetPoints(const MByte* vPoints, const uint32_t& unArrayLength, 
 
 flatbuffers::Offset<void> MBoundsOBB::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	mfbs::MBoundsOBBBuilder builder(fbb);
+	morty::MBoundsOBBBuilder builder(fbb);
 
 	builder.add_matrix(m_matEigVectors.Serialize(fbb));
 	builder.add_min(m_v3MinPoint.Serialize(fbb));
@@ -140,7 +140,7 @@ flatbuffers::Offset<void> MBoundsOBB::Serialize(flatbuffers::FlatBufferBuilder& 
 
 void MBoundsOBB::Deserialize(const void* pBufferPointer)
 {
-	const mfbs::MBoundsOBB* fbData = reinterpret_cast<const mfbs::MBoundsOBB*>(pBufferPointer);
+	const morty::MBoundsOBB* fbData = reinterpret_cast<const morty::MBoundsOBB*>(pBufferPointer);
 
 	m_matEigVectors.Deserialize(fbData->matrix());
 	m_v3MinPoint.Deserialize(fbData->min());
@@ -346,7 +346,7 @@ MBoundsSphere MBoundsAABB::ToSphere() const
 
 flatbuffers::Offset<void> MBoundsAABB::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	mfbs::MBoundsAABBBuilder builder(fbb);
+	morty::MBoundsAABBBuilder builder(fbb);
 
 	builder.add_min(m_v3MinPoint.Serialize(fbb));
 	builder.add_max(m_v3MaxPoint.Serialize(fbb));
@@ -356,7 +356,7 @@ flatbuffers::Offset<void> MBoundsAABB::Serialize(flatbuffers::FlatBufferBuilder&
 
 void MBoundsAABB::Deserialize(const void* pBufferPointer)
 {
-	const mfbs::MBoundsAABB* fbData = reinterpret_cast<const mfbs::MBoundsAABB*>(pBufferPointer);
+	const morty::MBoundsAABB* fbData = reinterpret_cast<const morty::MBoundsAABB*>(pBufferPointer);
 
 	m_v3MinPoint.Deserialize(fbData->min());
 	m_v3MaxPoint.Deserialize(fbData->max());
@@ -473,7 +473,7 @@ bool MBoundsSphere::IsIntersect(const MBoundsSphere& other) const
 
 flatbuffers::Offset<void> MBoundsSphere::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	mfbs::MBoundsSphereBuilder builder(fbb);
+	morty::MBoundsSphereBuilder builder(fbb);
 
 	builder.add_center(m_v3CenterPoint.Serialize(fbb));
 	builder.add_radius(m_fRadius);
@@ -483,7 +483,7 @@ flatbuffers::Offset<void> MBoundsSphere::Serialize(flatbuffers::FlatBufferBuilde
 
 void MBoundsSphere::Deserialize(const void* pBufferPointer)
 {
-	const mfbs::MBoundsSphere* fbData = reinterpret_cast<const mfbs::MBoundsSphere*>(pBufferPointer);
+	const morty::MBoundsSphere* fbData = reinterpret_cast<const morty::MBoundsSphere*>(pBufferPointer);
 
 	m_v3CenterPoint.Deserialize(fbData->center());
 	m_fRadius = fbData->radius();

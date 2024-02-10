@@ -1,5 +1,6 @@
 ﻿#include "MTextureConverter.h"
 
+#include "MTexture_generated.h"
 #include "Engine/MEngine.h"
 #include "Resource/MTextureResourceUtil.h"
 #include "Utility/MFileHelper.h"
@@ -35,15 +36,13 @@ void MTextureConverter::ConvertSingleChannel(MTextureResourceData* pTextureData,
 
     std::vector<MByte> convertData;
     
-    if (MTextureResourceFormat::RawRGBA8 == eFormat)
+    if (morty::METextureLayout::UNorm_RGBA8 == eFormat)
     {
         convertData = ConvertSingleChannelData<MByte>(rawData.data(), nWidth, nHeight, nChannel);
-        pTextureData->eFormat = MTextureResourceFormat::RawSingle8;
     }
-    else if (MTextureResourceFormat::RawRGBA32 == eFormat)
+    else if (morty::METextureLayout::Float_RGBA32 == eFormat)
     {
         convertData = ConvertSingleChannelData<float>(rawData.data(), nWidth, nHeight, nChannel);
-        pTextureData->eFormat = MTextureResourceFormat::RawSingle32;
     }
     else
     {
@@ -52,4 +51,5 @@ void MTextureConverter::ConvertSingleChannel(MTextureResourceData* pTextureData,
     }
 
     pTextureData->aByteData = convertData;
+    pTextureData->eFormat = eFormat;
 }

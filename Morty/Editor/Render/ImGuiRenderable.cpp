@@ -283,14 +283,14 @@ ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturPropertyBlock(ImGu
 			Vector2 f2ImageSize;
 			switch (key.pTexture->GetTextureLayout())
 			{
-			case METextureLayout::EDepth:
-			case METextureLayout::ER_UNORM_8:
-			case METextureLayout::ER_FLOAT_32:
+			case METextureLayout::Depth:
+			case METextureLayout::UNorm_R8:
+			case METextureLayout::Float_R32:
 				nImageType = 0;
 				nSingleChannelFlag = 1;
 				break;
 
-			case METextureLayout::ER_UINT_8:
+			case METextureLayout::UInt_R8:
 				nImageType = 2;
 				f2ImageSize = Vector2(key.pTexture->GetSize2D().x, key.pTexture->GetSize2D().y);
 				break;

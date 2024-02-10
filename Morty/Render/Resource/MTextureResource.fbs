@@ -1,23 +1,15 @@
 include "Resource/MResourceRef.fbs";
+include "Basic/MTexture.fbs";
 
-namespace mfbs;
-
-enum MTextureResourceFormat:byte
-{
-    unknow = 0,
-	RawRGBA8 = 1,
-	RawRGBA32 = 2,
-
-	RawSingle8 = 3,
-	RawSingle32 = 4,
-}
+namespace morty;
 
 table MTextureResource
 {
     width: uint;
     height: uint;
-    format: MTextureResourceFormat;
+    format: METextureLayout;
     data: [byte];
+    mipmap: bool;
 }
 
 root_type MTextureResource;
