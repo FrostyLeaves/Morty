@@ -68,7 +68,7 @@ std::unique_ptr<MResourceData> MAstcTextureUtil::ImportAstcTexture(const MString
 
 morty::METextureLayout MAstcTextureUtil::GetTextureFormat(const Vector3i& n3BlockDim)
 {
-	MORTY_ASSERT(n3BlockDim.x == n3BlockDim.y == n3BlockDim.z);
+	MORTY_ASSERT(n3BlockDim.x == n3BlockDim.y && n3BlockDim.x == n3BlockDim.z);
 
 
 	if (n3BlockDim.x == 4)
