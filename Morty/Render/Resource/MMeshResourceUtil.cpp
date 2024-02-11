@@ -5,6 +5,8 @@
 #include "Render/MVertex.h"
 #include "Resource/MMeshResource.h"
 
+using namespace morty;
+
 std::unique_ptr<MResourceData> MMeshResourceUtil::CreatePlane(MEMeshVertexType eVertexType)
 {
 	auto pMeshData = std::make_unique<MMeshResourceData>();

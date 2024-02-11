@@ -15,8 +15,7 @@
 #include "Engine/MEngine.h"
 #include "Resource/MResourceLoader.h"
 
-#include <vector>
-#include <map>
+MORTY_SPACE_BEGIN
 
 class MResource;
 class MResourceLoader;
@@ -128,3 +127,5 @@ std::shared_ptr<TYPE> MResourceSystem::FindResource(const MString& strResourcePa
 
 	return nullptr;
 }
+
+MORTY_SPACE_END

@@ -9,13 +9,11 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-
-#include <map>
-
 #include "Shader/MShader.h"
 #include "Resource/MResource.h"
 #include "Resource/MResourceLoader.h"
 
+MORTY_SPACE_BEGIN
 
 class MORTY_API MShaderResourceData : public MResourceData
 {
@@ -70,3 +68,5 @@ public:
 	const MType* ResourceType() const override;
 	std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath) override;
 };
+
+MORTY_SPACE_END

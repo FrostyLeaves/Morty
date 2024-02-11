@@ -16,6 +16,8 @@
 #include "Render/MRenderPass.h"
 #include "Basic/MCameraFrustum.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MVRSTextureRenderWork : public MRenderTaskNode
 {
 	MORTY_CLASS(MVRSTextureRenderWork)
@@ -46,3 +48,5 @@ protected:
 
 	Vector2i m_n2TexelSize = { 8, 8 };
 };
+
+MORTY_SPACE_END

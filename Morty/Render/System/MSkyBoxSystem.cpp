@@ -12,6 +12,8 @@
 #include "TaskGraph/MTaskGraph.h"
 #include "Utility/MFunction.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MSkyBoxSystem, MISystem)
 
 

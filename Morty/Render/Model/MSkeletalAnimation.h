@@ -16,9 +16,9 @@
 #include "Utility/MTransform.h"
 #include "MIAnimation.h"
 
-#include <vector>
-
 #include "Flatbuffer/MSkeletalAnimation_generated.h"
+
+MORTY_SPACE_BEGIN
 
 class MSkeletonInstance;
 class MORTY_API MSkeletalAnimNode
@@ -31,9 +31,9 @@ public:
 
 public:
 
-	std::vector<morty::MSkeletalPositionKey> m_vPositionTrack;
-	std::vector<morty::MSkeletalRotationKey> m_vRotationTrack;
-	std::vector<morty::MSkeletalScaleKey> m_vScaleTrack;
+	std::vector<fbs::MSkeletalPositionKey> m_vPositionTrack;
+	std::vector<fbs::MSkeletalRotationKey> m_vRotationTrack;
+	std::vector<fbs::MSkeletalScaleKey> m_vScaleTrack;
 };
 
 class MORTY_API MSkeletonAnimMap
@@ -128,3 +128,5 @@ private:
 
 	MSkeletonAnimMap m_SkeletonAnimMap;
 };
+
+MORTY_SPACE_END

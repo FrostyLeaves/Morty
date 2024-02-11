@@ -12,6 +12,8 @@
 #include "Resource/MResource.h"
 #include "Render/Vulkan/MVulkanDevice.h"
 
+using namespace morty;
+
 MVulkanShaderReflector::MVulkanShaderReflector(MVulkanDevice* pDevice)
 	: m_pDevice(pDevice)
 {

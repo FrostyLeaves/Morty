@@ -17,6 +17,8 @@
 #include "Shader/MShaderPropertyBlock.h"
 #include "Material/MMaterialTemplate.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MMaterial : public MResource
 {
 public:
@@ -73,3 +75,5 @@ void MMaterial::SetValue(const MStringId& strName, const TYPE& value)
 		pProperty->SetValue(strName, value);
 	}
 }
+
+MORTY_SPACE_END

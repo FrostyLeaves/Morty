@@ -10,6 +10,8 @@
 
 #include "MGlobal.h"
 
+MORTY_SPACE_BEGIN
+
 class MStringId
 {
 public:
@@ -34,10 +36,12 @@ private:
     std::shared_ptr<std::array<size_t, MGlobal::M_MAX_THREAD_NUM>> m_clashIndex;
 };
 
+MORTY_SPACE_END
+
 template <>
-struct std::hash<MStringId>
+struct std::hash<morty::MStringId>
 {
-    std::size_t operator()(const MStringId& strid) const
+    std::size_t operator()(const morty::MStringId& strid) const
     {
         return strid.Hash();
     }

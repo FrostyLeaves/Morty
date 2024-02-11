@@ -22,6 +22,8 @@
 #include "TaskGraph/MTaskGraph.h"
 #include "RenderProgram/RenderWork/MRenderWork.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MAnimationManager, IManager)
 
 void MAnimationManager::Initialize()

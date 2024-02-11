@@ -12,6 +12,8 @@
 #include "Resource/MResourceAsyncLoadSystem.h"
 #include "Utility/MFileHelper.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MResourceSystem, MISystem)
 
 MResourceSystem::MResourceSystem()

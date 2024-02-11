@@ -1,6 +1,8 @@
 #include "Scene/MGuid.h"
 #include "crossguid/guid.hpp"
 
+using namespace morty;
+
 MGuid MGuid::invalid = MGuid(0, 0, 0, 0);
 
 MGuid::MGuid()

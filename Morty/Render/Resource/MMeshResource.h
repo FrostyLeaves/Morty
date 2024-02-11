@@ -19,8 +19,7 @@
 #include "Utility/MBounds.h"
 #include "Resource/MResourceLoader.h"
 
-#include <map>
-#include <memory>
+MORTY_SPACE_BEGIN
 
 class MIMesh;
 class MSkeleton;
@@ -88,3 +87,5 @@ public:
 	static MString GetResourceTypeName() { return "Mesh"; }
 	static std::vector<MString> GetSuffixList() { return { "mesh" }; }
 };
+
+MORTY_SPACE_END

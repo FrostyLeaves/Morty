@@ -27,6 +27,7 @@
 
 #endif
 
+using namespace morty;
 
 #ifdef MORTY_SHADER_COMPILER_DXC
 struct MVulkanIncludeHandler : public IDxcIncludeHandler

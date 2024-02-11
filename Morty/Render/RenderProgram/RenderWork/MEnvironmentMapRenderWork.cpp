@@ -17,6 +17,7 @@
 #include "Component/MSkyBoxComponent.h"
 #include "Resource/MMeshResourceUtil.h"
 
+using namespace morty;
 
 const int SpecularMipmapCount = 7;
 const float EnvironmentTextureSize = 128.0f;

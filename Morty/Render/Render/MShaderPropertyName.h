@@ -11,6 +11,7 @@
 #include "Utility/MGlobal.h"
 #include "Utility/MStringId.h"
 
+MORTY_SPACE_BEGIN
 
 struct MORTY_API MShaderPropertyName
 {
@@ -166,3 +167,5 @@ struct MORTY_API MShaderPropertyName
 
 using MMeshInstanceKey = size_t;
 using MSkeletonInstanceKey = size_t;
+
+MORTY_SPACE_END

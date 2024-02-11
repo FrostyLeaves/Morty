@@ -14,6 +14,8 @@
 #include "Resource/MResourceLoader.h"
 #include "Resource/MSkeletonResource.h"
 
+MORTY_SPACE_BEGIN
+
 struct MORTY_API MSkeletalAnimationResourceData : public MFbResourceData
 {
 public:
@@ -54,3 +56,5 @@ public:
 	static MString GetResourceTypeName() { return "Animation"; };
 	static std::vector<MString> GetSuffixList() { return { "anim" }; };
 };
+
+MORTY_SPACE_END

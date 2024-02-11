@@ -13,6 +13,8 @@
 
 #include "Thread/MThreadWork.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MThreadPool : public MTypeClass
 {
     MORTY_CLASS(MThreadPool)
@@ -48,3 +50,5 @@ private:
 	bool m_bClose = false;
 	size_t m_nCloseThreadCount = 0;
 };
+
+MORTY_SPACE_END

@@ -10,8 +10,7 @@
 #include "Utility/MGlobal.h"
 #include "Math/Vector.h"
 
-#include <vector>
-#include <functional>
+MORTY_SPACE_BEGIN
 
 enum class MEKeyState
 {
@@ -95,3 +94,5 @@ protected:
 	uint32_t m_unKeyIndex;
 	MEKeyState m_eInputType;
 };
+
+MORTY_SPACE_END

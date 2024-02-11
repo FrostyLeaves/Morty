@@ -1,6 +1,7 @@
 #pragma once
 #include "Main/BaseWidget.h"
 
+MORTY_SPACE_BEGIN
 
 class MessageWidget : public BaseWidget
 {
@@ -15,3 +16,5 @@ public:
 	void Release() override;
 
 };
+
+MORTY_SPACE_END

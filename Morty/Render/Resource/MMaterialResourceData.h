@@ -10,6 +10,8 @@
 
 #include "MMaterialResource.h"
 
+MORTY_SPACE_BEGIN
+
 struct MORTY_API MMaterialResourceData : public MFbResourceData
 {
 	struct Property
@@ -41,3 +43,5 @@ public:
 	static MString GetResourceTypeName() { return "Material"; }
 	static std::vector<MString> GetSuffixList() { return { "mat" }; }
 };
+
+MORTY_SPACE_END

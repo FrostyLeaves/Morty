@@ -14,6 +14,8 @@
 #include "Thread/MThreadWork.h"
 #include "Utility/MStringId.h"
 
+MORTY_SPACE_BEGIN
+
 class MTaskGraph;
 class MTaskNodeInput;
 class MTaskNodeOutput;
@@ -111,3 +113,5 @@ TYPE* MTaskNode::AppendOutput()
 	AppendOutput(pOutput);
 	return pOutput;
 }
+
+MORTY_SPACE_END

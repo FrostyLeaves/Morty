@@ -12,6 +12,8 @@
 #include "Resource/MMeshResource.h"
 #include "Resource/MMaterialResource.h"
 
+using namespace morty;
+
 void ADD_POINT_LIGHT(MEngine* pEngine, MScene* pScene)
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();

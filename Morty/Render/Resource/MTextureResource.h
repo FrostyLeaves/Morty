@@ -15,6 +15,8 @@
 #include "Basic/MTexture.h"
 #include "Resource/MResourceLoader.h"
 
+MORTY_SPACE_BEGIN
+
 enum class MTexturePixelType
 {
 	Unknow,
@@ -89,3 +91,5 @@ public:
 	const MType* ResourceType() const override;
 	std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath) override;
 };
+
+MORTY_SPACE_END

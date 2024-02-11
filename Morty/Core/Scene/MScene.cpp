@@ -8,6 +8,8 @@
 #include "TaskGraph/MTaskNode.h"
 #include "TaskGraph/MTaskGraph.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MScene, MObject)
 
 MScene::MScene()

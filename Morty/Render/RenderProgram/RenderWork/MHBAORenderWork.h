@@ -17,6 +17,8 @@
 #include "Render/MRenderPass.h"
 #include "Basic/MCameraFrustum.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MHBAORenderWork : public MBasicPostProcessRenderWork
 {
 	MORTY_CLASS(MHBAORenderWork)
@@ -38,3 +40,5 @@ protected:
 	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 
 };
+
+MORTY_SPACE_END

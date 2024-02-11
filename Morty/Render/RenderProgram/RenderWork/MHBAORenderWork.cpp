@@ -12,6 +12,7 @@
 #include "RenderProgram/RenderGraph/MRenderGraph.h"
 #include "RenderProgram/RenderGraph/MRenderGraphSetting.h"
 
+using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MHBAORenderWork, MBasicPostProcessRenderWork)
 

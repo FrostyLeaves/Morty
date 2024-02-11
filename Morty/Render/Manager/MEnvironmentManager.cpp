@@ -13,6 +13,8 @@
 #include "Render/MMaterialName.h"
 #include "Resource/MMaterialResource.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MEnvironmentManager, IManager)
 
 void MEnvironmentManager::Initialize()

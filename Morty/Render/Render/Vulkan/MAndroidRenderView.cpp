@@ -9,6 +9,8 @@
 #include "Engine/MEngine.h"
 #include "Render/Vulkan/MVulkanRenderTarget.h"
 
+using namespace morty;
+
 MAndroidRenderView::MAndroidRenderView()
 	: MRenderView()
 	, m_nWidth(640)

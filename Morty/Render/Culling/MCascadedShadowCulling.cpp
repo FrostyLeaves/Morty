@@ -13,6 +13,8 @@
 #include "Render/MVertex.h"
 #include "RenderProgram/RenderWork/MRenderWork.h"
 
+using namespace morty;
+
 void MCascadedShadowCulling::Initialize(MEngine* pEngine)
 {
 	m_pEngine = pEngine;

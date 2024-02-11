@@ -6,6 +6,8 @@
 
 #include "RenderProgram/RenderGraph/MRenderGraph.h"
 
+using namespace morty;
+
 MStringId MHBAOBlurRenderWorkV::BlurOutput = MStringId("Hbao Blur Output V");
 
 std::vector<MRenderTaskInputDesc> MHBAOBlurRenderWorkV::InitInputDesc()

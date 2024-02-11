@@ -5,6 +5,8 @@
 #include "Render/MBuffer.h"
 #include "Render/MVertex.h"
 
+MORTY_SPACE_BEGIN
+
 class MComputeDispatcher;
 class MInstanceBatchGroup;
 class MORTY_API MGPUCameraFrustumCulling
@@ -31,3 +33,5 @@ private:
     std::vector<MMaterialCullingGroup> m_vCullingInstanceGroup;
 
 };
+
+MORTY_SPACE_END

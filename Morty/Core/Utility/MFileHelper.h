@@ -11,7 +11,7 @@
 #include "Utility/MGlobal.h"
 #include "Utility/MString.h"
 
-#include <vector>
+MORTY_SPACE_BEGIN
 
 class MORTY_API MMortyFileFormat
 {
@@ -70,3 +70,5 @@ public:
 private:
 
 };
+
+MORTY_SPACE_END

@@ -1,6 +1,7 @@
 ﻿#include "Basic/MTexture.h"
-
 #include "Render/MIDevice.h"
+
+using namespace morty;
 
 MTexture::MTexture()
 	: m_strTextureName("Texture_Default")

@@ -11,6 +11,7 @@
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
 
+using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MMeshResource, MResource)
 
@@ -99,11 +100,11 @@ flatbuffers::Offset<void> MMeshResourceData::Serialize(flatbuffers::FlatBufferBu
 	const auto fbVertex = fbb.CreateVector(pMesh->GetVerticesVector());
 	const auto fbIndex = fbb.CreateVector(pMesh->GetIndicesVector());
 
-	morty::MMeshResourceBuilder builder(fbb);
+	fbs::MMeshResourceBuilder builder(fbb);
 
 	builder.add_bounds_obb(fbObb.o);
 	builder.add_bounds_sphere(fbSphere.o);
-	builder.add_vertex_type(static_cast<morty::MEMeshVertexType>(eVertexType));
+	builder.add_vertex_type(static_cast<fbs::MEMeshVertexType>(eVertexType));
 	builder.add_vertex(fbVertex.o);
 	builder.add_index(fbIndex.o);
 
@@ -112,7 +113,7 @@ flatbuffers::Offset<void> MMeshResourceData::Serialize(flatbuffers::FlatBufferBu
 
 void MMeshResourceData::Deserialize(const void* pBufferPointer)
 {
-	const morty::MMeshResource* fbData =morty::GetMMeshResource(pBufferPointer);
+	const fbs::MMeshResource* fbData = fbs::GetMMeshResource(pBufferPointer);
 
 	eVertexType = static_cast<MEMeshVertexType>(fbData->vertex_type());
 	pMesh = MMeshUtil::CreateMeshFromType(eVertexType);

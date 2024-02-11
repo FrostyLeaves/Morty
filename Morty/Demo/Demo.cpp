@@ -32,6 +32,8 @@
 #include "Test/BasicTransform.h"
 #include "Test/VXGI.h"
 
+using namespace morty;
+
 int main()
 {
 	//initialize

@@ -7,6 +7,8 @@
 #include "Material/MComputeDispatcher.h"
 #include "MVulkanPhysicalDevice.h"
 
+using namespace morty;
+
 void MVulkanRenderCommand::SetViewport(const MViewportInfo& viewport)
 {
 	VkViewport vkViewport = {};

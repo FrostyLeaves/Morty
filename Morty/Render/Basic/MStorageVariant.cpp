@@ -1,5 +1,7 @@
 #include "MStorageVariant.h"
 
+using namespace morty;
+
 void MStorageVariant::ResizeMemory(MIDevice* pDevice, size_t nSize)
 {
     if (buffer.GetSize() == nSize)

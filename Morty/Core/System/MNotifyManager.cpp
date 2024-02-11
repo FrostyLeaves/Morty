@@ -3,6 +3,8 @@
 #include "Scene/MScene.h"
 #include "Utility/MFunction.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MNotifyManager, IManager)
 
 MNotifyManager::MNotifyManager()

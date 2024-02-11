@@ -14,6 +14,8 @@
 #include "Render/MRenderPass.h"
 #include "Basic/MCameraFrustum.h"
 
+MORTY_SPACE_BEGIN
+
 class MBuffer;
 class MIDevice;
 class MTaskNode;
@@ -93,3 +95,5 @@ private:
 
 	MIDevice* m_pDevice = nullptr;
 };
+
+MORTY_SPACE_END

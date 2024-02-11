@@ -1,4 +1,4 @@
-﻿namespace morty;
+﻿namespace morty.fbs;
 
 struct MGuid
 {

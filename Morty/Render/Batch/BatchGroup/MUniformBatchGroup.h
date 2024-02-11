@@ -7,6 +7,8 @@
 #include "MInstanceBatchGroup.h"
 #include "Shader/MShaderProgram.h"
 
+MORTY_SPACE_BEGIN
+
 struct MShaderConstantParam;
 class MShaderPropertyBlock;
 class MIMesh;
@@ -52,3 +54,5 @@ private:
 	size_t m_nCurrentInstanceNum = 0;
 	size_t m_nMaxInstanceNum = 0;
 };
+
+MORTY_SPACE_END

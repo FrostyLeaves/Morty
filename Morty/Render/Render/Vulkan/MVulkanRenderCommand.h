@@ -15,6 +15,8 @@
 #include "Render/Vulkan/MVulkanDevice.h"
 #include "Render/MRenderCommand.h"
 
+MORTY_SPACE_BEGIN
+
 class MTexture;
 class MORTY_API MVulkanRenderCommand : public MIRenderCommand
 {
@@ -125,5 +127,7 @@ public:
 
 //TODO objectDestructor.FrameFinished;
 //TODO RenderFinishedCallback;
+
+MORTY_SPACE_END
 
 #endif

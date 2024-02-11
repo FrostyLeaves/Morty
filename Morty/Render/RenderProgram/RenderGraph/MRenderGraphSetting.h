@@ -20,6 +20,8 @@
 #include "RenderProgram/RenderGraph/MRenderTargetManager.h"
 #include "Utility/MStringId.h"
 
+MORTY_SPACE_BEGIN
+
 class IPropertyBlockAdapter;
 class MRenderTaskTarget;
 class MRenderTargetManager;
@@ -59,3 +61,5 @@ inline TYPE MRenderGraphSetting::GetValue(const MStringId& name) const
 {
     return GetPropertyVariant(name).GetValue<TYPE>();
 }
+
+MORTY_SPACE_END

@@ -14,6 +14,8 @@
 #include "RenderProgram/MRenderInfo.h"
 #include "RenderProgram/RenderWork/MRenderWork.h"
 
+MORTY_SPACE_BEGIN
+
 class MScene;
 class MSkyBoxComponent;
 class MMaterialBatchGroup;
@@ -33,3 +35,5 @@ private:
 	std::shared_ptr<MMaterial> m_pMaterial = nullptr;
 	std::vector<std::shared_ptr<IPropertyBlockAdapter>> m_vFramePropertyAdapter;
 };
+
+MORTY_SPACE_END

@@ -14,6 +14,8 @@
 #include "RenderProgram/RenderGraph/MRenderGraph.h"
 #include "TaskGraph/MTaskGraph.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MGBufferRenderWork, ISinglePassRenderWork)
 
 const MStringId MGBufferRenderWork::GBufferAlbedoMetallic = MStringId("GBuffer Albedo Metallic Buffer");

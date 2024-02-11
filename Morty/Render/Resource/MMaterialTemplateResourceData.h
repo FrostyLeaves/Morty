@@ -10,6 +10,8 @@
 
 #include "Material/MMaterialTemplate.h"
 
+MORTY_SPACE_BEGIN
+
 struct MORTY_API MMaterialTemplateResourceData : public MFbResourceData
 {
 	//RawData
@@ -31,3 +33,5 @@ public:
 	static MString GetResourceTypeName() { return "MaterialTemplate"; }
 	static std::vector<MString> GetSuffixList() { return { "mat_temp" }; }
 };
+
+MORTY_SPACE_END

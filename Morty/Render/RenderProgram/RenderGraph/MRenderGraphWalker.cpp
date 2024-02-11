@@ -7,6 +7,8 @@
 #include "RenderProgram/RenderWork/MRenderWork.h"
 #include "TaskGraph/MTaskGraph.h"
 
+using namespace morty;
+
 MRenderGraphWalker::MRenderGraphWalker(const MRenderInfo& info)
     : m_renderInfo(info)
 {

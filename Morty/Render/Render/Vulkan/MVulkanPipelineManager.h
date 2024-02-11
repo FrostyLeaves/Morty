@@ -17,6 +17,8 @@
 #include "Render/MRenderPass.h"
 #include "Render/MPipeline.h"
 
+MORTY_SPACE_BEGIN
+
 class MMaterialTemplate;
 class MShaderProgram;
 class MVulkanDevice;
@@ -115,5 +117,6 @@ private:
     std::map<std::pair<MESamplerFormat, METextureType>, std::shared_ptr<MTexture>> m_tDefaultTexture;
 };
 
+MORTY_SPACE_END
 
 #endif

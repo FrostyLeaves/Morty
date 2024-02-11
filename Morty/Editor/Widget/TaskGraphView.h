@@ -2,6 +2,8 @@
 
 #include "Main/BaseWidget.h"
 
+MORTY_SPACE_BEGIN
+
 class MTaskGraph;
 class TaskGraphView : public BaseWidget
 {
@@ -18,3 +20,4 @@ public:
 	MTaskGraph* m_pTaskGraph = nullptr;
 };
 
+MORTY_SPACE_END

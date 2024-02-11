@@ -1,5 +1,7 @@
 #include "Utility/NotifyManager.h"
 
+using namespace morty;
+
 NotifyManager::NotifyManager()
 {
 

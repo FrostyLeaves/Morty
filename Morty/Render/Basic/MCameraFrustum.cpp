@@ -3,6 +3,8 @@
 #include "Math/Vector.h"
 #include "Basic/MViewport.h"
 
+using namespace morty;
+
 MCameraFrustum::MCameraFrustum()
 	: m_vPlanes()
 {

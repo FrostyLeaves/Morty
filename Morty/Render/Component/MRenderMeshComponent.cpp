@@ -1,7 +1,5 @@
 #include "Component/MRenderMeshComponent.h"
 
-MORTY_CLASS_IMPLEMENT(MRenderMeshComponent, MComponent)
-
 #include "MRenderNotify.h"
 #include "Scene/MScene.h"
 #include "Scene/MEntity.h"
@@ -20,6 +18,10 @@ MORTY_CLASS_IMPLEMENT(MRenderMeshComponent, MComponent)
 #include "System/MResourceSystem.h"
 
 #include "Flatbuffer/MRenderMeshComponent_generated.h"
+
+using namespace morty;
+
+MORTY_CLASS_IMPLEMENT(MRenderMeshComponent, MComponent)
 
 MRenderMeshComponent::MRenderMeshComponent()
 	: MComponent()
@@ -131,7 +133,7 @@ flatbuffers::Offset<void> MRenderMeshComponent::Serialize(flatbuffers::FlatBuffe
 	auto fb_super = Super::Serialize(fbb).o;
 	auto fb_material = m_Material.Serialize(fbb).o;
 	auto fb_mesh = m_Mesh.Serialize(fbb).o;
-	morty::MRenderMeshComponentBuilder builder(fbb);
+	fbs::MRenderMeshComponentBuilder builder(fbb);
 
 	builder.add_gen_dir_shadow(GetGenerateDirLightShadow());
 	builder.add_lod((int)GetDetailLevel());
@@ -145,7 +147,7 @@ flatbuffers::Offset<void> MRenderMeshComponent::Serialize(flatbuffers::FlatBuffe
 
 void MRenderMeshComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	const morty::MRenderMeshComponent* fbcomponent =morty::GetMRenderMeshComponent(fbb.GetCurrentBufferPointer());
+	const fbs::MRenderMeshComponent* fbcomponent = fbs::GetMRenderMeshComponent(fbb.GetCurrentBufferPointer());
 	Deserialize(fbcomponent);
 }
 
@@ -153,7 +155,7 @@ void MRenderMeshComponent::Deserialize(const void* pBufferPointer)
 {
 	auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-	const morty::MRenderMeshComponent* pComponent = reinterpret_cast<const morty::MRenderMeshComponent*>(pBufferPointer);
+	const fbs::MRenderMeshComponent* pComponent = reinterpret_cast<const fbs::MRenderMeshComponent*>(pBufferPointer);
 
 	Super::Deserialize(pComponent->super());
 

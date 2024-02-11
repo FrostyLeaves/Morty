@@ -13,6 +13,8 @@
 #include "Component/MCameraComponent.h"
 #include "Utility/SelectionEntityManager.h"
 
+using namespace morty;
+
 GuizmoWidget::GuizmoWidget()
 	: BaseWidget()
 {

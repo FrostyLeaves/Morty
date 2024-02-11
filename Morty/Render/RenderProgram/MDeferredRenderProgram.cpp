@@ -68,6 +68,8 @@
 #include "RenderWork/MHBAORenderWork.h"
 #include "RenderWork/MToneMappingRenderWork.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MDeferredRenderProgram, MIRenderProgram)
 
 const MStringId FinalBackBuffer = MStringId("Final Back Buffer");

@@ -16,6 +16,8 @@
 
 #include "Resource/MResource.h"
 
+MORTY_SPACE_BEGIN
+
 class MMeshResource;
 class MIRenderCommand;
 class MSkyBoxComponent;
@@ -71,3 +73,5 @@ private:
 	MRenderPass m_DiffuseRenderPass;
 	std::vector<MRenderPass> m_vSpecularRenderPass;
 };
+
+MORTY_SPACE_END

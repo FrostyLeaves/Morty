@@ -1,5 +1,4 @@
-#ifndef _PROPERTY_MODEL_COMPONENT_H_
-#define _PROPERTY_MODEL_COMPONENT_H_
+#pragma once
 
 #include "Property/PropertyBase.h"
 #include "Component/MModelComponent.h"
@@ -7,6 +6,8 @@
 #include "Engine/MEngine.h"
 
 #include "Utility/NotifyManager.h"
+
+MORTY_SPACE_BEGIN
 
 class PropertyMModelComponent : public PropertyBase
 {
@@ -32,4 +33,4 @@ public:
 };
 
 
-#endif
+MORTY_SPACE_END

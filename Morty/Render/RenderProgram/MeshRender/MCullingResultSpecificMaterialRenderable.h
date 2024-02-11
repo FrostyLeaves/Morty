@@ -11,6 +11,7 @@
 #include "Utility/MGlobal.h"
 #include "MCullingResultRenderable.h"
 
+MORTY_SPACE_BEGIN
 
 class MORTY_API MCullingResultSpecificMaterialRenderable : public MCullingResultRenderable
 {
@@ -28,3 +29,5 @@ private:
 
     std::unordered_map<MStringId, std::shared_ptr<MMaterial>> m_tMaterials;
 };
+
+MORTY_SPACE_END

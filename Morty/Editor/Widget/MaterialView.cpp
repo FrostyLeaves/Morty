@@ -28,6 +28,8 @@
 #include "Resource/MMeshResourceUtil.h"
 #include "Utility/SelectionEntityManager.h"
 
+using namespace morty;
+
 MaterialView::MaterialView()
 	: BaseWidget()
 {

@@ -13,6 +13,8 @@
 #include "MShaderMacro.h"
 #include "MShaderBuffer.h"
 
+MORTY_SPACE_BEGIN
+
 enum class MEShaderType
 {
 	EVertex = 0,
@@ -52,3 +54,5 @@ private:
 	MShaderBuffer* m_pShaderBuffer = nullptr;
 
 };
+
+MORTY_SPACE_END

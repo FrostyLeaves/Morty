@@ -17,6 +17,8 @@
 
 #define SHADOW_VIEW_FROM_PCS
 
+using namespace morty;
+
 class MFilterFromCameraFrustum : public IRenderableFilter
 {
 public:

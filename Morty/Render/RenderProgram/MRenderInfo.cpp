@@ -13,6 +13,8 @@
 #include "Component/MSkyBoxComponent.h"
 #include "System/MRenderSystem.h"
 
+using namespace morty;
+
 MRenderInfo MRenderInfo::CreateFromViewport(MViewport* pViewport)
 {
     MScene* pScene = pViewport->GetScene();

@@ -6,6 +6,8 @@
 #include "Basic/MCameraFrustum.h"
 #include "RenderProgram/MRenderInfo.h"
 
+MORTY_SPACE_BEGIN
+
 class MIMesh;
 class MScene;
 class MEngine;
@@ -24,3 +26,5 @@ public:
 
 	static MBoundsAABB GetClipMapBounding(const MVoxelClipmap& clipmap);
 };
+
+MORTY_SPACE_END

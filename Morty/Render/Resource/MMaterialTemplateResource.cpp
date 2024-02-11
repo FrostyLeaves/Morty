@@ -6,6 +6,8 @@
 #include "Engine/MEngine.h"
 #include "System/MResourceSystem.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MMaterialTemplateResource, MMaterialTemplate)
 
 

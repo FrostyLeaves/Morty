@@ -29,6 +29,7 @@
 #include "RenderProgram/RenderGraph/MRenderGraph.h"
 #include "Resource/MMaterialResource.h"
 
+using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MDeferredLightingRenderWork, ISinglePassRenderWork)
 

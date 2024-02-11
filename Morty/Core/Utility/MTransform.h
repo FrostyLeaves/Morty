@@ -13,6 +13,8 @@
 #include "Math/Matrix.h"
 #include "Math/Quaternion.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MTransform
 {
 public:
@@ -46,3 +48,5 @@ private:
 	Quaternion m_qtRotation;
 
 };
+
+MORTY_SPACE_END

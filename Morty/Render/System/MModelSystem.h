@@ -11,8 +11,12 @@
 #include "Utility/MGlobal.h"
 #include "Engine/MSystem.h"
 
+MORTY_SPACE_BEGIN
+
 class MScene;
 class MORTY_API MModelSystem : public MISystem
 {
     MORTY_CLASS(MModelSystem)
 };
+
+MORTY_SPACE_END

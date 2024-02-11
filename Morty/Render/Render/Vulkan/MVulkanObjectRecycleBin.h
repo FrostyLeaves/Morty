@@ -14,7 +14,7 @@
 #if RENDER_GRAPHICS == MORTY_VULKAN
 #include "Render/Vulkan/MVulkanWrapper.h"
 
-#include <vector>
+MORTY_SPACE_BEGIN
 
 class MVulkanDevice;
 class MORTY_API MVulkanObjectRecycleBin
@@ -70,5 +70,6 @@ public:
 
 };
 
+MORTY_SPACE_END
 
 #endif

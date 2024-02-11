@@ -10,6 +10,8 @@
 
 #include "Utility/MGlobal.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MRenderNotify
 {
 public:
@@ -23,3 +25,5 @@ public:
 	static inline const char* NOTIFY_ANIMATION_POSE_CHANGED = "Animation Pose Changed";
 	static inline const char* NOTIFY_ATTACHED_SKELETON_CHANGED = "Attached Skeleton Changed";
 };
+
+MORTY_SPACE_END

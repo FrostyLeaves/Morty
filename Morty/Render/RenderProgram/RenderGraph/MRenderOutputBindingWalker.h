@@ -14,6 +14,8 @@
 #include "Utility/MGlobal.h"
 #include "TaskGraph/MTaskGraphWalker.h"
 
+MORTY_SPACE_BEGIN
+
 class IPropertyBlockAdapter;
 class MIMesh;
 class MIRenderCommand;
@@ -32,3 +34,5 @@ private:
 
     std::unordered_map<MStringId, MRenderTaskNodeOutput*> m_tOutputs;
 };
+
+MORTY_SPACE_END

@@ -12,6 +12,8 @@
 #include "BatchGroup/MStorageBatchGroup.h"
 #include "Render/MVertex.h"
 
+using namespace morty;
+
 class MORTY_API MMaterialBatchUtil
 {
 public:

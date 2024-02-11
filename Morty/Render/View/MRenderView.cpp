@@ -8,6 +8,8 @@
 #include "System/MRenderSystem.h"
 #include "Utility/MFunction.h"
 
+using namespace morty;
+
 void MViewRenderTarget::BindPrimaryCommand(MIRenderCommand* pCommand)
 {
 	pPrimaryCommand = dynamic_cast<MVulkanPrimaryRenderCommand*>(pCommand);

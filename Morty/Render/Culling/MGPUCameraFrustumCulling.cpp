@@ -13,6 +13,8 @@
 #include "Render/MIDevice.h"
 #include "Utility/MGlobal.h"
 
+using namespace morty;
+
 void MGPUCameraFrustumCulling::Initialize(MEngine* pEngine)
 {
 	m_pEngine = pEngine;

@@ -4,6 +4,8 @@
 #include "Object/MObject.h"
 #include "Utility/MGlobal.h"
 
+MORTY_SPACE_BEGIN
+
 class MIMesh;
 class MScene;
 class MEngine;
@@ -42,3 +44,5 @@ public:
 
 	MEngine* m_pEngine = nullptr;
 };
+
+MORTY_SPACE_END

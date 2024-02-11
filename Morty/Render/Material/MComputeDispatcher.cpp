@@ -8,6 +8,7 @@
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
 
+using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MComputeDispatcher, MObject)
 

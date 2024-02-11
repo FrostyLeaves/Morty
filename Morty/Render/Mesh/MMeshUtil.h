@@ -10,8 +10,8 @@
 
 #include "Utility/MGlobal.h"
 #include "Math/Vector.h"
-#include <memory>
-#include <vector>
+
+MORTY_SPACE_BEGIN
 
 class MIDevice;
 class MBuffer;
@@ -38,3 +38,5 @@ public:
 
 
 };
+
+MORTY_SPACE_END

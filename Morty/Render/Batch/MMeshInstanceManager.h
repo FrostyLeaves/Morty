@@ -7,6 +7,8 @@
 #include "Material/MMaterial.h"
 #include "MMaterialBatchGroup.h"
 
+MORTY_SPACE_BEGIN
+
 class MShaderPropertyBlock;
 class MIMesh;
 class MScene;
@@ -67,3 +69,5 @@ private:
 
 	MTaskNode* m_pUpdateTask = nullptr;
 };
+
+MORTY_SPACE_END

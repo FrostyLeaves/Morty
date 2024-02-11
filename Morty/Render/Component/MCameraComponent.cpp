@@ -4,6 +4,8 @@
 
 #include "Flatbuffer/MCameraComponent_generated.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MCameraComponent, MComponent)
 
 MCameraComponent::MCameraComponent()
@@ -50,7 +52,7 @@ flatbuffers::Offset<void> MCameraComponent::Serialize(flatbuffers::FlatBufferBui
 {
 	auto fbSuper = Super::Serialize(fbb).o;
 
-	morty::MCameraComponentBuilder builder(fbb);
+	fbs::MCameraComponentBuilder builder(fbb);
 
 	builder.add_camera_type((int)GetCameraType());
 	builder.add_fov(GetFov());
@@ -66,13 +68,13 @@ flatbuffers::Offset<void> MCameraComponent::Serialize(flatbuffers::FlatBufferBui
 
 void MCameraComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	const morty::MCameraComponent* fbcomponent =morty::GetMCameraComponent(fbb.GetCurrentBufferPointer());
+	const fbs::MCameraComponent* fbcomponent = fbs::GetMCameraComponent(fbb.GetCurrentBufferPointer());
 	Deserialize(fbcomponent);
 }
 
 void MCameraComponent::Deserialize(const void* pBufferPointer)
 {
-	const morty::MCameraComponent* pComponent = reinterpret_cast<const morty::MCameraComponent*>(pBufferPointer);
+	const fbs::MCameraComponent* pComponent = reinterpret_cast<const fbs::MCameraComponent*>(pBufferPointer);
 
 	Super::Deserialize(pComponent->super());
 

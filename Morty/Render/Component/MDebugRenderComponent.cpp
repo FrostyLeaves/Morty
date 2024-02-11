@@ -1,5 +1,7 @@
 #include "Component/MDebugRenderComponent.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MDebugRenderComponent, MComponent)
 
 MDebugRenderComponent::MDebugRenderComponent()

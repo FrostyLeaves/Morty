@@ -15,8 +15,6 @@
 
 #include "Render/MIDevice.h"
 #include "MVulkanPhysicalDevice.h"
-
-#include <vector>
 #include "Render/Vulkan/MVulkanWrapper.h"
 
 #ifdef MORTY_WIN
@@ -29,6 +27,8 @@
 #include "Render/Vulkan/MVulkanBufferPool.h"
 
 #include "Basic/MTexture.h"
+
+MORTY_SPACE_BEGIN
 
 class MBuffer;
 class MVulkanRenderCommand;
@@ -175,5 +175,6 @@ public:
 	std::unique_ptr<MVulkanPhysicalDevice> m_pPhysicalDevice = nullptr;
 };
 
+MORTY_SPACE_END
 
 #endif

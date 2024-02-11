@@ -1,5 +1,7 @@
 ﻿#include "Utility/MColor.h"
 
+using namespace morty;
+
 MColor::MColor()
 	: r(0.0f)
 	, g(0.0f)

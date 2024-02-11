@@ -6,6 +6,8 @@
 #include "Resource/MResource.h"
 #include "System/MResourceSystem.h"
 
+using namespace morty;
+
 ResourceView::ResourceView()
 	: BaseWidget()
 {

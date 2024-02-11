@@ -11,6 +11,8 @@
 #define MAX_PATH 260
 #endif
 
+using namespace morty;
+
 MMortyFileFormat::~MMortyFileFormat()
 {
 	for (MFormatBody& body : m_vBody)

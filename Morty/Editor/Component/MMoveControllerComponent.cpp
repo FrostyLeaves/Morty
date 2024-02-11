@@ -8,4 +8,6 @@
 #include "Component/MInputComponent.h"
 #include "Component/MSceneComponent.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MMoveControllerComponent, MComponent)

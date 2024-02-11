@@ -14,6 +14,8 @@
 
 #include "Math/Vector.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MCameraComponent : public MComponent
 {
 public:
@@ -66,3 +68,5 @@ private:
 	float m_fWidth;
 	float m_fHeight;
 };
+
+MORTY_SPACE_END

@@ -8,9 +8,7 @@
 #include "System/MRenderSystem.h"
 #include "Batch/MMaterialBatchGroup.h"
 
-
-
-
+using namespace morty;
 
 void MCPUCameraFrustumCulling::Initialize(MEngine* pEngine)
 {

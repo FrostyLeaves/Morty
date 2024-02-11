@@ -14,6 +14,8 @@
 
 #include "MBuffer.h"
 
+MORTY_SPACE_BEGIN
+
 class MIDevice;
 class MBuffer;
 struct MVertex;
@@ -130,3 +132,5 @@ public:
 		return reinterpret_cast<VERTEX_TYPE*>(m_vVertexData.data());
 	}
 };
+
+MORTY_SPACE_END

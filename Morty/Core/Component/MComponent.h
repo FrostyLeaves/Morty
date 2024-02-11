@@ -13,6 +13,8 @@
 #include "Scene/MGuid.h"
 #include "flatbuffers/flatbuffer_builder.h"
 
+MORTY_SPACE_BEGIN
+
 class MScene;
 class MEntity;
 class MEngine;
@@ -80,3 +82,5 @@ private:
 
     bool m_bValid;
 };
+
+MORTY_SPACE_END

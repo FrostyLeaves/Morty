@@ -14,6 +14,8 @@
 #include "Math/Vector.h"
 #include "Utility/MColor.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MPointLightComponent : public MComponent
 {
 public:
@@ -57,3 +59,5 @@ private:
 	float m_fLinear;
 	float m_fQuadratic;
 };
+
+MORTY_SPACE_END

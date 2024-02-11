@@ -10,6 +10,7 @@
 #include "Render/MRenderCommand.h"
 #include "RenderProgram/RenderGraph/MRenderGraph.h"
 
+using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MEdgeDetectionRenderWork, MBasicPostProcessRenderWork)
 

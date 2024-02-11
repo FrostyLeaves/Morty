@@ -14,6 +14,7 @@
 
 #include "Variant/MVariant.h"
 
+using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MShaderProgram, MTypeClass)
 

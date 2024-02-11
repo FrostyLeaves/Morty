@@ -11,6 +11,7 @@
 #include "Resource/MMeshResource.h"
 #include "Resource/MMaterialResource.h"
 
+using namespace morty;
 
 void GPU_DRIVEN_CULLING_TEST(MEngine* pEngine, MScene* pScene)
 {

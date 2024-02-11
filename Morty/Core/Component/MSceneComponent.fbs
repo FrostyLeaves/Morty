@@ -2,7 +2,7 @@ include "Utility/MTransform.fbs";
 include "Component/MComponent.fbs";
 include "Scene/MGuid.fbs";
 
-namespace morty;
+namespace morty.fbs;
 
 table MSceneComponent
 {

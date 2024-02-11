@@ -14,6 +14,7 @@
 #include "Engine/MEngine.h"
 #include "Utility/MLogger.h"
 
+using namespace morty;
 
 const std::vector<const char*> ValidationLayers = {
 

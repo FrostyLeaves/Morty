@@ -18,6 +18,8 @@
 #include "Utility/MStringId.h"
 #include "RenderProgram/RenderGraph/MRenderTargetManager.h"
 
+MORTY_SPACE_BEGIN
+
 class MRenderTargetManager;
 class MRenderGraph;
 class MRenderPass;
@@ -35,3 +37,5 @@ private:
 
 	MStringId m_strOutputName;
 };
+
+MORTY_SPACE_END

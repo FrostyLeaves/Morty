@@ -15,6 +15,7 @@
 #include "Material/MMaterial.h"
 #include "Material/MComputeDispatcher.h"
 
+using namespace morty;
 
 MVulkanPipelineManager::MVulkanPipelineManager(MVulkanDevice* pDevice)
 	: m_pDevice(pDevice)

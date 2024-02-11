@@ -10,6 +10,8 @@
 #include "Basic/MStorageVariant.h"
 #include "Shader/MShaderParam.h"
 
+MORTY_SPACE_BEGIN
+
 class MShaderProgram;
 struct MShaderConstantParam;
 class MShaderPropertyBlock;
@@ -49,3 +51,5 @@ private:
 	MRenderInstanceCache<MMeshInstanceKey, MMeshInstanceRenderProxy> m_tInstanceCache;
 	MStorageVariant m_transformBuffer;
 };
+
+MORTY_SPACE_END

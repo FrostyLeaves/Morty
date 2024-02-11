@@ -3,6 +3,8 @@
 #include "Engine/MEngine.h"
 #include "System/MRenderSystem.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MRenderTargetManager, MObject)
 
 

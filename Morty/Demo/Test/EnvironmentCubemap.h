@@ -10,6 +10,8 @@
 #include "Component/MSkyBoxComponent.h"
 #include "Resource/MTextureResourceUtil.h"
 
+using namespace morty;
+
 //https://matheowis.github.io/HDRI-to-CubeMap/
 
 void ENVIRONMENT_CUBEMAP_TEST(MEngine* pEngine, MScene* pScene)

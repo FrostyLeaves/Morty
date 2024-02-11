@@ -15,6 +15,8 @@
 #include "Resource/MResource.h"
 #include "Resource/MSkeletonResource.h"
 
+MORTY_SPACE_BEGIN
+
 class MSkeletonInstance;
 class MSkeletalAnimController;
 class MORTY_API MModelComponent : public MComponent
@@ -64,3 +66,5 @@ private:
 
 	bool m_bBoundingBoxVisiable;
 };
+
+MORTY_SPACE_END

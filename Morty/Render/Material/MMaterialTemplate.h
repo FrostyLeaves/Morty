@@ -16,6 +16,7 @@
 #include "Shader/MShaderProgram.h"
 #include "Shader/MShaderPropertyBlock.h"
 
+MORTY_SPACE_BEGIN
 
 enum class MECullMode
 {
@@ -90,3 +91,5 @@ private:
 	bool m_bConservativeRasterizationEnable = false;
 	Vector2i m_n2ShadingRate = {1, 1};
 };
+
+MORTY_SPACE_END

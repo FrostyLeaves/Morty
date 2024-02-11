@@ -6,6 +6,8 @@
 #include "Resource/MResource.h"
 #include "Property/PropertyBase.h"
 
+MORTY_SPACE_BEGIN
+
 class MScene;
 class MEntity;
 class MEngine;
@@ -38,3 +40,5 @@ private:
 
 	std::shared_ptr<SceneTexture> m_pSceneTexture = nullptr;
 };
+
+MORTY_SPACE_END

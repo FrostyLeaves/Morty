@@ -14,6 +14,8 @@
 #include "RenderProgram/MRenderInfo.h"
 #include "RenderProgram/RenderWork/MRenderWork.h"
 
+MORTY_SPACE_BEGIN
+
 class IMaterialFilter;
 class MScene;
 class MInstanceCulling;
@@ -40,3 +42,5 @@ private:
 	std::shared_ptr<MMaterial> m_pMaterial = nullptr;
 	const MBuffer* m_pBuffer = nullptr;
 };
+
+MORTY_SPACE_END

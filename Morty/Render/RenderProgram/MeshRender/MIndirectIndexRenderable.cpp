@@ -24,6 +24,7 @@
 #include "Mesh/MMeshManager.h"
 #include "Batch/MMaterialBatchGroup.h"
 
+using namespace morty;
 
 void MIndirectIndexRenderable::Render(MIRenderCommand* pCommand)
 {

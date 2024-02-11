@@ -27,6 +27,7 @@
 #include "Shadow/MShadowMapUtil.h"
 #include "Utility/MGlobal.h"
 
+using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MShadowMapRenderWork, ISinglePassRenderWork)
 const MStringId MShadowMapRenderWork::ShadowMapBufferOutput = MStringId("Shadow Map Buffer Output");

@@ -6,4 +6,6 @@
 #include "Component/MModelComponent.h"
 #include "Component/MSceneComponent.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MModelSystem, MISystem)

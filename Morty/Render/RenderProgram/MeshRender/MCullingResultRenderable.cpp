@@ -24,6 +24,8 @@
 #include "Mesh/MMeshManager.h"
 #include "Batch/MMaterialBatchGroup.h"
 
+using namespace morty;
+
 void MCullingResultRenderable::SetMaterialFilter(std::shared_ptr<IMaterialFilter> pFilter)
 {
 	pMaterialFilter = pFilter;

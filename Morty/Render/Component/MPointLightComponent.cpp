@@ -2,6 +2,8 @@
 
 #include "Flatbuffer/MPointLightComponent_generated.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MPointLightComponent, MComponent)
 
 MPointLightComponent::MPointLightComponent()
@@ -24,10 +26,10 @@ flatbuffers::Offset<void> MPointLightComponent::Serialize(flatbuffers::FlatBuffe
 {
 	auto super = Super::Serialize(fbb).o;
 
-	morty::MPointLightComponentBuilder builder(fbb);
+	fbs::MPointLightComponentBuilder builder(fbb);
 
 	Vector4 color = GetColorVector();
-	builder.add_color(reinterpret_cast<morty::Vector4*>(&color));
+	builder.add_color(reinterpret_cast<fbs::Vector4*>(&color));
 	builder.add_light_intensity(GetLightIntensity());
 	builder.add_constant(GetConstant());
 	builder.add_linear(GetLinear());
@@ -40,13 +42,13 @@ flatbuffers::Offset<void> MPointLightComponent::Serialize(flatbuffers::FlatBuffe
 
 void MPointLightComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	const morty::MPointLightComponent* fbcomponent =morty::GetMPointLightComponent(fbb.GetCurrentBufferPointer());
+	const fbs::MPointLightComponent* fbcomponent = fbs::GetMPointLightComponent(fbb.GetCurrentBufferPointer());
 	Deserialize(fbcomponent);
 }
 
 void MPointLightComponent::Deserialize(const void* pBufferPointer)
 {
-	const morty::MPointLightComponent* pComponent = reinterpret_cast<const morty::MPointLightComponent*>(pBufferPointer);
+	const fbs::MPointLightComponent* pComponent = reinterpret_cast<const fbs::MPointLightComponent*>(pBufferPointer);
 
 	SetColorVector(*reinterpret_cast<const Vector4*>(pComponent->color()));
 	SetLightIntensity(pComponent->light_intensity());

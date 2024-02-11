@@ -2,7 +2,7 @@ include "Resource/MResourceRef.fbs";
 include "Variant/MVariant.fbs";
 include "Shader/MShaderMacro.fbs";
 
-namespace morty;
+namespace morty.fbs;
 
 enum MECullMode: byte
 {

@@ -12,6 +12,8 @@
 #include <deque>
 #include <functional>
 
+MORTY_SPACE_BEGIN
+
 class MRenderGraphSetting;
 class RenderSettingView : public BaseWidget
 {
@@ -32,3 +34,5 @@ private:
 	std::shared_ptr<MRenderGraphSetting> m_pSettings = nullptr;
 	std::vector<MStringId> m_vOrderedNames;
 };
+
+MORTY_SPACE_END

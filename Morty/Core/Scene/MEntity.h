@@ -13,8 +13,7 @@
 #include "Component/MComponent.h"
 #include "crossguid/guid.hpp"
 
-#include <vector>
-#include <functional>
+MORTY_SPACE_BEGIN
 
 class MScene;
 class MORTY_API MEntity : public MTypeClass
@@ -95,3 +94,5 @@ T* MEntity::GetComponent()
 {
 	return static_cast<T*>(GetComponent(T::GetClassType()));
 }
+
+MORTY_SPACE_END

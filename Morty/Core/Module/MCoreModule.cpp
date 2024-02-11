@@ -16,6 +16,8 @@
 #include "Resource/MEntityResource.h"
 #include "Resource/MResourceAsyncLoadSystem.h"
 
+using namespace morty;
+
 bool MCoreModule::Register(MEngine* pEngine)
 {
 	if (!pEngine)

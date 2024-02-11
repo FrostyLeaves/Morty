@@ -1,6 +1,5 @@
 #pragma  once
 
-
 template<typename CLASS>
 class SingletonInstance
 {

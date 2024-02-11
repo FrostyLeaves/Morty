@@ -1,6 +1,8 @@
 #include "BaseWidget.h"
 #include "MainEditor.h"
 
+using namespace morty;
+
 void BaseWidget::Initialize(MainEditor* pMainEditor)
 {
     m_pMainEditor = pMainEditor;

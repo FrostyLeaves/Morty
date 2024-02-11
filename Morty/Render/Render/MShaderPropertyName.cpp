@@ -1,5 +1,7 @@
 ﻿#include "Render/MShaderPropertyName.h"
 
+using namespace morty;
+
 MStringId MShaderPropertyName::CBUFFER_FRAME_DATA = MStringId("cbFrameInformation");
 MStringId MShaderPropertyName::CBUFFER_LIGHT_DATA = MStringId("cbLightInformation");
 MStringId MShaderPropertyName::CBUFFER_VOXEL_MAP_DATA = MStringId("cbVoxelMapInformation");

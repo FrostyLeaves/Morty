@@ -15,6 +15,8 @@
 #include "Resource/MResource.h"
 #include "Resource/MMeshResource.h"
 
+MORTY_SPACE_BEGIN
+
 class MMaterialResource;
 class MBoundsAABB;
 class MBoundsSphere;
@@ -94,3 +96,5 @@ protected:
 	bool m_bSceneCullEnable = true;
 	bool m_bGenerateDirLightShadow = true;
 };
+
+MORTY_SPACE_END

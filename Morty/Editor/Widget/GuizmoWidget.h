@@ -5,6 +5,8 @@
 #include "imgui.h"
 #include "ImGuizmo.h"
 
+MORTY_SPACE_BEGIN
+
 class GuizmoWidget : public BaseWidget
 {
 public:
@@ -22,3 +24,4 @@ private:
 	ImGuizmo::MODE m_eGizmoMode = ImGuizmo::WORLD;
 };
 
+MORTY_SPACE_END

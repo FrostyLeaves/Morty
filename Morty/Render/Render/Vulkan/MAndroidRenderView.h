@@ -16,6 +16,7 @@
 #include "MRenderView.h"
 #include "Utility/MString.h"
 
+MORTY_SPACE_BEGIN
 
 class MORTY_API MAndroidRenderView : public MRenderView
 {
@@ -51,5 +52,6 @@ protected:
 	class ANativeWindow* m_pNativeWindow;
 };
 
+MORTY_SPACE_END
 
 #endif

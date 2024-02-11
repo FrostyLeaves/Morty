@@ -6,6 +6,8 @@
 #include "Variant/MVariant.h"
 #include "Material/MMaterial.h"
 
+MORTY_SPACE_BEGIN
+
 class MIMesh;
 class MScene;
 class MEngine;
@@ -53,3 +55,5 @@ private:
 	std::shared_ptr<MMaterial> m_pSkyBoxMaterial = nullptr;
 	MResourceRef m_pMaterialResource;
 };
+
+MORTY_SPACE_END

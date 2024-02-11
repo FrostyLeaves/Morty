@@ -20,6 +20,7 @@
 
 #include "fmt/format.h"
 
+MORTY_SPACE_BEGIN
 
 enum class MLogType
 {
@@ -117,3 +118,5 @@ public:
 private:
 	MLogFunction m_printFunction = nullptr;
 };
+
+MORTY_SPACE_END

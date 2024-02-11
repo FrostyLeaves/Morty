@@ -6,7 +6,7 @@ include "Utility/MBoundsSphere.fbs";
 include "Model/MSkeleton.fbs";
 include "Resource/MResourceRef.fbs";
 
-namespace morty;
+namespace morty.fbs;
 
 enum MEMeshVertexType:byte
 {

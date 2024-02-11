@@ -1,5 +1,7 @@
 #include "Render/MRenderCommand.h"
 
+using namespace morty;
+
 MViewportInfo::MViewportInfo()
 	: x(0)
 	, y(0)

@@ -7,6 +7,8 @@
 #include "Utility/MBounds.h"
 #include "Utility/MMemoryPool.h"
 
+MORTY_SPACE_BEGIN
+
 class MTaskNode;
 class MIMesh;
 class MScene;
@@ -95,3 +97,5 @@ private:
 	std::vector<MIMesh*> m_vUploadQueue;
 	std::shared_ptr<MMeshBufferAdapter> m_pMeshBufferAdapter = nullptr;
 };
+
+MORTY_SPACE_END

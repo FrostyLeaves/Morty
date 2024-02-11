@@ -20,6 +20,8 @@
 #include "TaskGraph/MTaskGraph.h"
 #include "Utility/MGlobal.h"
 
+using namespace morty;
+
 MORTY_INTERFACE_IMPLEMENT(MMeshInstanceManager, IManager)
 
 void MMeshInstanceManager::Initialize()

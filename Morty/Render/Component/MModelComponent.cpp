@@ -2,8 +2,6 @@
 
 #include "MRenderNotify.h"
 
-MORTY_CLASS_IMPLEMENT(MModelComponent, MComponent)
-
 #include "Scene/MEntity.h"
 #include "Engine/MEngine.h"
 #include "Resource/MSkeletonResource.h"
@@ -16,6 +14,10 @@ MORTY_CLASS_IMPLEMENT(MModelComponent, MComponent)
 #include "System/MResourceSystem.h"
 
 #include "Flatbuffer/MModelComponent_generated.h"
+
+using namespace morty;
+
+MORTY_CLASS_IMPLEMENT(MModelComponent, MComponent)
 
 MModelComponent::MModelComponent()
 	: MComponent()
@@ -121,7 +123,7 @@ flatbuffers::Offset<void> MModelComponent::Serialize(flatbuffers::FlatBufferBuil
 	auto fb_ske_resource = fbb.CreateString(GetSkeletonResourcePath());
 	auto fb_super = Super::Serialize(fbb).o;
 
-	morty::MModelComponentBuilder builder(fbb);
+	fbs::MModelComponentBuilder builder(fbb);
 
 	builder.add_skeleton_resource_path(fb_ske_resource);
 	builder.add_super(fb_super);
@@ -131,13 +133,13 @@ flatbuffers::Offset<void> MModelComponent::Serialize(flatbuffers::FlatBufferBuil
 
 void MModelComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	const morty::MModelComponent* fbcomponent =morty::GetMModelComponent(fbb.GetCurrentBufferPointer());
+	const fbs::MModelComponent* fbcomponent = fbs::GetMModelComponent(fbb.GetCurrentBufferPointer());
 	Deserialize(fbcomponent);
 }
 
 void MModelComponent::Deserialize(const void* pBufferPointer)
 {
-	const morty::MModelComponent* pComponent = reinterpret_cast<const morty::MModelComponent*>(pBufferPointer);
+	const fbs::MModelComponent* pComponent = reinterpret_cast<const fbs::MModelComponent*>(pBufferPointer);
 
 	Super::Deserialize(pComponent->super());
 

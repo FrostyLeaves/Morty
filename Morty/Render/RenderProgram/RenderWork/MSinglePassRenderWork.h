@@ -16,6 +16,8 @@
 #include "Render/MRenderPass.h"
 #include "Basic/MCameraFrustum.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API ISinglePassRenderWork : public MRenderTaskNode
 {
 	MORTY_INTERFACE(ISinglePassRenderWork)
@@ -46,3 +48,5 @@ protected:
 	MRenderPass m_renderPass;
 	std::unordered_map<METextureBarrierStage, std::vector<MTexture*>> m_vBarrierTexture;
 };
+
+MORTY_SPACE_END

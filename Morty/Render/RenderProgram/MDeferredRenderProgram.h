@@ -26,7 +26,8 @@
 #include "MFrameShaderPropertyBlock.h"
 #include "Culling/MCascadedShadowCulling.h"
 #include "Culling/MInstanceCulling.h"
-#include <memory>
+
+MORTY_SPACE_BEGIN
 
 class MRenderTargetManager;
 class MCPUCameraFrustumCulling;
@@ -139,3 +140,5 @@ protected:
 
 	std::unique_ptr<MRenderTargetBindingWalker> m_pRenderTargetBinding = nullptr;
 };
+
+MORTY_SPACE_END

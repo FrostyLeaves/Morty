@@ -11,6 +11,8 @@
 #include "Utility/MGlobal.h"
 #include "MTextureResource.h"
 
+MORTY_SPACE_BEGIN
+
 struct MTextureResourceData;
 
 class MORTY_API MTextureResourceUtil
@@ -26,3 +28,5 @@ public:
 
 	static morty::METextureLayout GetTextureFormat(const MTexturePixelType nPixelSize, const size_t nChannelNum);
 };
+
+MORTY_SPACE_END

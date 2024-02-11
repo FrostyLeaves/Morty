@@ -2,6 +2,7 @@
 
 #include "Utility/MFunction.h"
 
+using namespace morty;
 
 void MRenderGraphSetting::MarkDirty(const MStringId& name)
 {

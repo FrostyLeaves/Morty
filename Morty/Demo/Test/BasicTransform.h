@@ -11,6 +11,8 @@
 #include "Resource/MMeshResource.h"
 #include "Resource/MMaterialResource.h"
 
+using namespace morty;
+
 void TRANSFORM_SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();

@@ -12,6 +12,8 @@
 #include "MTaskGraphWalker.h"
 #include "Thread/MThreadWork.h"
 
+MORTY_SPACE_BEGIN
+
 class MThreadPool;
 class MORTY_API MMultiThreadTaskGraphWalker : public ITaskGraphWalker
 {
@@ -50,3 +52,5 @@ private:
 
     std::mutex m_taskStatehMutex;
 };
+
+MORTY_SPACE_END

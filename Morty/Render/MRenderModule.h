@@ -11,6 +11,8 @@
 #include "Utility/MGlobal.h"
 #include "Utility/MStringId.h"
 
+MORTY_SPACE_BEGIN
+
 class MEngine;
 class MObject;
 class MORTY_API MRenderModule
@@ -30,3 +32,5 @@ public:
 	static const MString DefaultAnimationMaterial;
 	static const MString NoiseTexture;
 };
+
+MORTY_SPACE_END

@@ -6,6 +6,8 @@
 #include "SDLRenderView.h"
 #include "Widget/RenderSettingView.h"
 
+MORTY_SPACE_BEGIN
+
 class TaskGraphView;
 class MainView;
 class GuizmoWidget;
@@ -38,18 +40,18 @@ public:
 	MViewport* GetViewport() const;
 	std::shared_ptr<SceneTexture> GetSceneTexture() const { return m_pSceneTexture; }
 
-	void OnResize(Vector2 size) override;
+	void OnResize(morty::Vector2 size) override;
 	void OnRender(MIRenderCommand* pRenderCommand) override;
 	void OnInput(MInputEvent* pEvent) override;
 	void OnTick(float fDelta) override;
 
-	static MString GetRenderProgramName() { return m_sRenderProgramName; }
+	static morty::MString GetRenderProgramName() { return m_sRenderProgramName; }
 	MTaskNode* GetRenderTask() override { return m_pRenderTask; }
 
 	std::shared_ptr<SceneTexture> CreateSceneViewer(MScene* pScene);
 	void DestroySceneViewer(std::shared_ptr<SceneTexture> pViewer);
 
-	Vector4 GetCurrentWidgetSize() const;
+	morty::Vector4 GetCurrentWidgetSize() const;
 
 protected:
 
@@ -79,3 +81,5 @@ private:
 
 	static MString m_sRenderProgramName;
 };
+
+MORTY_SPACE_END

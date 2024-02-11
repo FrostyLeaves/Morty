@@ -11,6 +11,8 @@
 
 #include "Utility/MGlobal.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MGuid
 {
 public:
@@ -31,3 +33,5 @@ public:
 
 	xg::Guid m_id;
 };
+
+MORTY_SPACE_END

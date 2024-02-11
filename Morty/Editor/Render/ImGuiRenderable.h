@@ -1,5 +1,5 @@
-#ifndef _IMGUI_MESH_INSTANCE_H_
-#define _IMGUI_MESH_INSTANCE_H_
+#pragma once
+
 
 #include "imgui.h"
 
@@ -7,6 +7,8 @@
 #include "Resource/MResource.h"
 
 #include <map>
+
+MORTY_SPACE_BEGIN
 
 class MEngine;
 class MTexture;
@@ -64,10 +66,4 @@ private:
 	std::map<ImGuiTexture, MImGuiTextureDest*> m_tImGuiDrawTexture;
 };
 
-
-
-
-
-
-
-#endif
+MORTY_SPACE_END

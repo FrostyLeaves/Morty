@@ -11,6 +11,8 @@
 #include "Utility/MGlobal.h"
 #include "MTextureResource.h"
 
+MORTY_SPACE_BEGIN
+
 struct MTextureResourceData;
 
 class MORTY_API MDdsTextureUtil
@@ -19,3 +21,5 @@ public:
 
 	static std::unique_ptr<MResourceData> ImportBc7Texture(const MString& strResourcePath);
 };
+
+MORTY_SPACE_END

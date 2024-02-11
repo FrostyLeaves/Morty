@@ -9,6 +9,8 @@
 #include "Utility/MMemoryPool.h"
 #include "MInstanceBatchGroup.h"
 
+MORTY_SPACE_BEGIN
+
 class MShaderProgram;
 struct MShaderConstantParam;
 class MShaderPropertyBlock;
@@ -48,3 +50,5 @@ private:
 	MVariant m_normalMatrix;
 	MVariant m_instanceIdx;
 };
+
+MORTY_SPACE_END

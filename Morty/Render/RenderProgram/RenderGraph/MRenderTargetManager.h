@@ -19,6 +19,8 @@
 #include "Utility/MStringId.h"
 #include "MRenderTaskNode.h"
 
+MORTY_SPACE_BEGIN
+
 class MRenderTaskTarget;
 class MRenderPass;
 
@@ -41,3 +43,5 @@ public:
 private:
 	std::unordered_map<MStringId, std::unique_ptr<MRenderTaskTarget>> m_tRenderTaskTable;
 };
+
+MORTY_SPACE_END

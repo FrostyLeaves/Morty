@@ -5,6 +5,7 @@
 #include "Utility/MGlobal.h"
 #include <memory>
 
+using namespace morty;
 
 class MSphereFactory
 {

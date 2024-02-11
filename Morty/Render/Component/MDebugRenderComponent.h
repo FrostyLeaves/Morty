@@ -15,6 +15,8 @@
 
 #include "Component/MComponent.h"
 
+MORTY_SPACE_BEGIN
+
 struct MORTY_API MDebugDrawLine
 {
 public:
@@ -50,3 +52,5 @@ private:
     MMesh<MDebugDrawLineVertex> m_cDrawLineMesh;
 
 };
+
+MORTY_SPACE_END

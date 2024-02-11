@@ -11,6 +11,8 @@
 
 #include "Property/PropertyBase.h"
 
+using namespace morty;
+
 static const char* svModelFilter = ".fbx,.obj,.blend\0\0";
 
 const char* svImportModelID = "Import Model File";

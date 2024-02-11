@@ -1,6 +1,8 @@
 #include "MShaderParam.h"
 #include "Basic/MTexture.h"
 
+using namespace morty;
+
 MShaderConstantParam::MShaderConstantParam()
 	: MShaderParam()
 {

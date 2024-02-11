@@ -11,6 +11,8 @@
 
 #include "Main/BaseWidget.h"
 
+MORTY_SPACE_BEGIN
+
 class BaseWidget;
 class ModelConvertView : public BaseWidget
 {
@@ -37,3 +39,4 @@ private:
 	size_t m_nMaterialTypeEnum = 0;
 };
 
+MORTY_SPACE_END

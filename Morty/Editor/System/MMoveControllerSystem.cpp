@@ -8,6 +8,8 @@
 
 #include "System/MInputSystem.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MMoveControllerSystem, MISystem)
 
 MMoveControllerSystem::MMoveControllerSystem()

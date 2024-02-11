@@ -10,19 +10,16 @@
 
 #include "Utility/MGlobal.h"
 
+MORTY_SPACE_BEGIN
 
 class MORTY_API MTimer
 {
 public:
     MTimer();
     virtual ~MTimer();
-
-public:
-
+    
 	static long long GetCurTime();
-
     static int LocalTime(time_t& time, struct tm& tmsut);
-
-private:
-
 };
+
+MORTY_SPACE_END

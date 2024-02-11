@@ -9,9 +9,8 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include <map>
-#include <functional>
 
+MORTY_SPACE_BEGIN
 
 #define M_RETURN_OVER_RANGE(I, MIN, MAX, ...)\
 	if (I < MIN || I >= MAX) return ##__VA_ARGS__;
@@ -128,3 +127,5 @@ size_t FIND_ORDER_VECTOR(std::vector<T>& vector, const VT& value, const std::fun
 
 	return iter - vector.begin();
 }
+
+MORTY_SPACE_END

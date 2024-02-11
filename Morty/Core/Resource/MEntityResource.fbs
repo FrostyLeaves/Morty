@@ -1,5 +1,5 @@
 ﻿include "Scene/MEntity.fbs";
-namespace morty;
+namespace morty.fbs;
 
 table MEntityResource
 {

@@ -16,6 +16,8 @@
 #include "Render/Vulkan/MVulkanWrapper.h"
 #endif
 
+MORTY_SPACE_BEGIN
+
 enum class MESamplerType
 {
 	ENearest,
@@ -120,3 +122,5 @@ struct MShaderSampleParam : public MShaderParam
 #endif
 	
 };
+
+MORTY_SPACE_END

@@ -14,6 +14,8 @@
 #include "Math/Vector.h"
 #include "Utility/MColor.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MSpotLightComponent : public MComponent
 {
 public:
@@ -58,3 +60,5 @@ private:
 	float m_fOuterCutOffAngle;
 	float m_fOuterCutOffRadius;
 };
+
+MORTY_SPACE_END

@@ -12,6 +12,7 @@
 #include "Resource/MMaterialResource.h"
 #include "Widget/ModelConvertView.h"
 
+using namespace morty;
 
 void BONE_ANIMATION_TEST(MEngine* pEngine, MScene* pScene)
 {

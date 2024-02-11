@@ -1,5 +1,7 @@
 ﻿#include "MVariantMemory.h"
 
+using namespace morty;
+
 const size_t PackageSize = 16;
 
 size_t MVariantMemory::AllocMemory(size_t nAllocSize)

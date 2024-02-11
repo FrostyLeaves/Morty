@@ -3,6 +3,8 @@
 #include "SingletonInstance.h"
 #include "Scene/MGuid.h"
 
+MORTY_SPACE_BEGIN
+
 class MScene;
 class MEntity;
 class SelectionEntityManager : public SingletonInstance<SelectionEntityManager>
@@ -16,3 +18,5 @@ private:
     MScene* m_pScene = nullptr;
     MGuid m_selectedGuid;
 };
+
+MORTY_SPACE_END

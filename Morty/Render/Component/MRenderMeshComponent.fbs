@@ -1,7 +1,7 @@
 include "Component/MComponent.fbs";
 include "Math/Vector.fbs";
 include "Resource/MResourceRef.fbs";
-namespace morty;
+namespace morty.fbs;
 
 table MRenderMeshComponent
 {

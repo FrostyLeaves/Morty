@@ -12,6 +12,8 @@
 #include "MSinglePassRenderWork.h"
 #include "RenderProgram/MRenderInfo.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MBasicPostProcessRenderWork : public ISinglePassRenderWork
 {
 	MORTY_INTERFACE(MBasicPostProcessRenderWork)
@@ -29,3 +31,5 @@ protected:
 
 	std::shared_ptr<MMaterial> m_pMaterial = nullptr;
 };
+
+MORTY_SPACE_END

@@ -13,6 +13,8 @@
 #include "Mesh/MMeshManager.h"
 #include "Manager/MEnvironmentManager.h"
 
+using namespace morty;
+
 void MSkyBoxRenderable::SetMesh(MIMesh* pMesh)
 {
 	m_pMesh = pMesh;

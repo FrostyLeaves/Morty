@@ -1,8 +1,9 @@
-#ifndef _PROPERTY_MPOINT_LIGHT_COMPONENT_H_
-#define _PROPERTY_MPOINT_LIGHT_COMPONENT_H_
+#pragma once
 
 #include "Property/PropertyBase.h"
 #include "Component/MPointLightComponent.h"
+
+MORTY_SPACE_BEGIN
 
 class PropertyMPointLightComponent : public PropertyBase
 {
@@ -21,5 +22,4 @@ public:
 	}
 };
 
-
-#endif
+MORTY_SPACE_END

@@ -6,6 +6,8 @@
 #include "RenderProgram/RenderGraph/MRenderGraphSetting.h"
 #include "Utility/MFunction.h"
 
+using namespace morty;
+
 RenderSettingView::RenderSettingView()
 	: BaseWidget()
 {

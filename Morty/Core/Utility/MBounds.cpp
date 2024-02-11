@@ -10,6 +10,8 @@
 #include "Flatbuffer/MBoundsOBB_generated.h"
 #include "Flatbuffer/MBoundsSphere_generated.h"
 
+using namespace morty;
+
 MBoundsOBB::MBoundsOBB(const Vector3* vPoints, const uint32_t& unArrayLength)
 {
 	SetPoints((MByte*)vPoints, unArrayLength, 0, sizeof(Vector3));
@@ -129,7 +131,7 @@ void MBoundsOBB::SetPoints(const MByte* vPoints, const uint32_t& unArrayLength, 
 
 flatbuffers::Offset<void> MBoundsOBB::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	morty::MBoundsOBBBuilder builder(fbb);
+	fbs::MBoundsOBBBuilder builder(fbb);
 
 	builder.add_matrix(m_matEigVectors.Serialize(fbb));
 	builder.add_min(m_v3MinPoint.Serialize(fbb));
@@ -140,7 +142,7 @@ flatbuffers::Offset<void> MBoundsOBB::Serialize(flatbuffers::FlatBufferBuilder& 
 
 void MBoundsOBB::Deserialize(const void* pBufferPointer)
 {
-	const morty::MBoundsOBB* fbData = reinterpret_cast<const morty::MBoundsOBB*>(pBufferPointer);
+	const fbs::MBoundsOBB* fbData = reinterpret_cast<const fbs::MBoundsOBB*>(pBufferPointer);
 
 	m_matEigVectors.Deserialize(fbData->matrix());
 	m_v3MinPoint.Deserialize(fbData->min());
@@ -346,7 +348,7 @@ MBoundsSphere MBoundsAABB::ToSphere() const
 
 flatbuffers::Offset<void> MBoundsAABB::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	morty::MBoundsAABBBuilder builder(fbb);
+	fbs::MBoundsAABBBuilder builder(fbb);
 
 	builder.add_min(m_v3MinPoint.Serialize(fbb));
 	builder.add_max(m_v3MaxPoint.Serialize(fbb));
@@ -356,7 +358,7 @@ flatbuffers::Offset<void> MBoundsAABB::Serialize(flatbuffers::FlatBufferBuilder&
 
 void MBoundsAABB::Deserialize(const void* pBufferPointer)
 {
-	const morty::MBoundsAABB* fbData = reinterpret_cast<const morty::MBoundsAABB*>(pBufferPointer);
+	const fbs::MBoundsAABB* fbData = reinterpret_cast<const fbs::MBoundsAABB*>(pBufferPointer);
 
 	m_v3MinPoint.Deserialize(fbData->min());
 	m_v3MaxPoint.Deserialize(fbData->max());
@@ -473,7 +475,7 @@ bool MBoundsSphere::IsIntersect(const MBoundsSphere& other) const
 
 flatbuffers::Offset<void> MBoundsSphere::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	morty::MBoundsSphereBuilder builder(fbb);
+	fbs::MBoundsSphereBuilder builder(fbb);
 
 	builder.add_center(m_v3CenterPoint.Serialize(fbb));
 	builder.add_radius(m_fRadius);
@@ -483,7 +485,7 @@ flatbuffers::Offset<void> MBoundsSphere::Serialize(flatbuffers::FlatBufferBuilde
 
 void MBoundsSphere::Deserialize(const void* pBufferPointer)
 {
-	const morty::MBoundsSphere* fbData = reinterpret_cast<const morty::MBoundsSphere*>(pBufferPointer);
+	const fbs::MBoundsSphere* fbData = reinterpret_cast<const fbs::MBoundsSphere*>(pBufferPointer);
 
 	m_v3CenterPoint.Deserialize(fbData->center());
 	m_fRadius = fbData->radius();

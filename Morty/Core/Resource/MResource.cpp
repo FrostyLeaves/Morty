@@ -6,8 +6,9 @@
 #include "System/MResourceSystem.h"
 #include "Utility/MFileHelper.h"
 
-MORTY_INTERFACE_IMPLEMENT(MResource, MTypeClass)
+using namespace morty;
 
+MORTY_INTERFACE_IMPLEMENT(MResource, MTypeClass)
 
 void MFbResourceData::LoadBuffer(const std::vector<MByte>& buffer)
 {
@@ -214,7 +215,7 @@ flatbuffers::Offset<void> MResourceRef::Serialize(flatbuffers::FlatBufferBuilder
 
 	auto fbPath = fbb.CreateString(m_pResource->GetResourcePath());
 
-	morty::MResourceRefBuilder builder(fbb);
+	fbs::MResourceRefBuilder builder(fbb);
 	
 	builder.add_path(fbPath);
 
@@ -223,7 +224,7 @@ flatbuffers::Offset<void> MResourceRef::Serialize(flatbuffers::FlatBufferBuilder
 
 void MResourceRef::Deserialize(MResourceSystem* pResourceSystem, const void* pBufferPointer)
 {
-	const morty::MResourceRef* fbData = reinterpret_cast<const morty::MResourceRef*>(pBufferPointer);
+	const fbs::MResourceRef* fbData = reinterpret_cast<const fbs::MResourceRef*>(pBufferPointer);
 	if(!fbData)
 	{
 		return;

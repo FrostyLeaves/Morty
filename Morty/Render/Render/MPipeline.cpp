@@ -1,5 +1,7 @@
 #include "MPipeline.h"
 
+using namespace morty;
+
 VkPipeline MGraphicsPipeline::GetSubpassPipeline(size_t nSubPassIdx)
 {
     if (nSubPassIdx < m_vSubpassPipeline.size())

@@ -7,6 +7,8 @@
 #include "Utility/MBounds.h"
 #include "Utility/MMemoryPool.h"
 
+MORTY_SPACE_BEGIN
+
 class MShaderProgram;
 class MTaskNode;
 class MIMesh;
@@ -38,3 +40,5 @@ public:
 
 	std::map<MShaderProgramKey, std::shared_ptr<MShaderProgram>> m_tShaderProgramTable;
 };
+
+MORTY_SPACE_END

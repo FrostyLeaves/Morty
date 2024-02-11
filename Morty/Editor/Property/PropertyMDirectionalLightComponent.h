@@ -1,10 +1,9 @@
-#ifndef _PROPERTY_MDIRECTIONALLIGHT_H_
-#define _PROPERTY_MDIRECTIONALLIGHT_H_
+#pragma once
 
 #include "Property/PropertyBase.h"
 #include "Component/MDirectionalLightComponent.h"
 
-
+MORTY_SPACE_BEGIN
 
 class PropertyMDirectionalLightComponent : public PropertyBase
 {
@@ -27,4 +26,4 @@ public:
 };
 
 
-#endif
+MORTY_SPACE_END

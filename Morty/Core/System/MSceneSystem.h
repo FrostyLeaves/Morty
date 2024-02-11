@@ -11,6 +11,8 @@
 #include "Utility/MGlobal.h"
 #include "Engine/MSystem.h"
 
+MORTY_SPACE_BEGIN
+
 class MEntity;
 class MORTY_API MSceneSystem : public MISystem
 {
@@ -26,3 +28,5 @@ public:
 private:
 
 };
+
+MORTY_SPACE_END

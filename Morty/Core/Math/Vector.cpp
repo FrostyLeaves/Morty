@@ -3,6 +3,7 @@
 
 #include "Flatbuffer/Vector_generated.h"
 
+using namespace morty;
 
 Vector3::Vector3(const float& _x, const float& _y, const float& _z)
 	: x(_x)
@@ -60,7 +61,7 @@ Vector3::Vector3(const Vector4& vec4)
 
 }
 
-Vector3::Vector3(const morty::Vector3& value)
+Vector3::Vector3(const fbs::Vector3& value)
 	: x(value.x())
 	, y(value.y())
 	, z(value.z())
@@ -435,11 +436,11 @@ Vector2 Vector2::operator-(void) const
 	return Vector2(-x, -y);
 }
 
-const morty::Vector2* Vector2::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
+const fbs::Vector2* Vector2::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
 	MORTY_UNUSED(fbb);
 	
-	return reinterpret_cast<const morty::Vector2*>(this);
+	return reinterpret_cast<const fbs::Vector2*>(this);
 }
 
 void Vector2::Deserialize(const void* pBufferPointer)
@@ -447,11 +448,11 @@ void Vector2::Deserialize(const void* pBufferPointer)
 	memcpy(this, pBufferPointer, sizeof(Vector2));
 }
 
-const morty::Vector3* Vector3::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
+const fbs::Vector3* Vector3::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
 	MORTY_UNUSED(fbb);
 
-	return reinterpret_cast<const morty::Vector3*>(this);
+	return reinterpret_cast<const fbs::Vector3*>(this);
 }
 
 void Vector3::Deserialize(const void* pBufferPointer)
@@ -459,11 +460,11 @@ void Vector3::Deserialize(const void* pBufferPointer)
 	memcpy(reinterpret_cast<void*>(this), pBufferPointer, sizeof(Vector3));
 }
 
-const morty::Vector4* Vector4::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
+const fbs::Vector4* Vector4::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
 	MORTY_UNUSED(fbb);
 
-	return reinterpret_cast<const morty::Vector4*>(this);
+	return reinterpret_cast<const fbs::Vector4*>(this);
 }
 
 void Vector4::Deserialize(const void* pBufferPointer)

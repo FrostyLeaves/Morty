@@ -15,6 +15,7 @@
 #include "Math/Vector.h"
 #include "Math/Matrix.h"
 
+MORTY_SPACE_BEGIN
 
 class MORTY_API MVariantMemory
 {
@@ -36,3 +37,5 @@ public:
 	std::vector<MByte> m_vMemory;
 	size_t m_nMemorySize = 0;
 };
+
+MORTY_SPACE_END

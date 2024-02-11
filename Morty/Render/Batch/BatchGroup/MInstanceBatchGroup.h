@@ -5,6 +5,8 @@
 #include "Utility/MBounds.h"
 #include "Render/MRenderGlobal.h"
 
+MORTY_SPACE_BEGIN
+
 class MShaderProgram;
 struct MShaderConstantParam;
 class MShaderPropertyBlock;
@@ -45,3 +47,5 @@ public:
 	virtual void InstanceExecute(std::function<void(const MMeshInstanceRenderProxy&, size_t nIdx)> func) = 0;
 	void UpdateVisible(MMeshInstanceKey key, bool bVisible);
 };
+
+MORTY_SPACE_END

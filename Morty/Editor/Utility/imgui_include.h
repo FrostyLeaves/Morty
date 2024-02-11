@@ -8,11 +8,14 @@
 //#define IMGUI_OVERRIDE_DRAWVERT_STRUCT_LAYOUT \
 //struct ImDrawVert{ImVec2 pos;ImVec2 uv;ImColor col;};
 
+namespace morty
+{
+    class MTexture;
+}
 
-class MTexture;
 struct ImGuiTexture
 {
-    std::shared_ptr<MTexture> pTexture = nullptr;
+    std::shared_ptr<morty::MTexture> pTexture = nullptr;
     intptr_t nTextureIdx = 0;
     size_t nArrayIdx = 0;
 
@@ -22,7 +25,7 @@ struct ImGuiTexture
 
     ImGuiTexture(void* tex) : nTextureIdx(intptr_t(tex)) {}
     
-    ImGuiTexture(std::shared_ptr<MTexture> tex, intptr_t nTextureIdx, size_t arrIdx) : pTexture(tex), nTextureIdx(nTextureIdx), nArrayIdx(arrIdx) {}
+    ImGuiTexture(std::shared_ptr<morty::MTexture> tex, intptr_t nTextureIdx, size_t arrIdx) : pTexture(tex), nTextureIdx(nTextureIdx), nArrayIdx(arrIdx) {}
 
     bool operator==(const ImGuiTexture& other) const
     {

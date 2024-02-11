@@ -47,6 +47,8 @@
 #include "Render/MMaterialName.h"
 #include "Resource/MReadableTextureResource.h"
 
+using namespace morty;
+
 static const std::map<aiTextureType, MEModelTextureUsage> TextureUsageMapping = {
 			{aiTextureType_DIFFUSE, MEModelTextureUsage::BaseColor},
 			{aiTextureType_NORMALS, MEModelTextureUsage::Normal},
@@ -672,7 +674,7 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 					for (unsigned keyIndex = 0; keyIndex < pNodeAnim->mNumPositionKeys; ++keyIndex)
 					{
 						const aiVectorKey& skey = pNodeAnim->mPositionKeys[keyIndex];
-						mAnimNode.m_vPositionTrack.push_back({ static_cast<float>(skey.mTime),morty::Vector3(skey.mValue.x, skey.mValue.y, skey.mValue.z) });
+						mAnimNode.m_vPositionTrack.push_back({ static_cast<float>(skey.mTime), fbs::Vector3(skey.mValue.x, skey.mValue.y, skey.mValue.z) });
 					}
 				}
 				if (pNodeAnim->mNumRotationKeys > 0)
@@ -680,7 +682,7 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 					for (unsigned keyIndex = 0; keyIndex < pNodeAnim->mNumRotationKeys; ++keyIndex)
 					{
 						const aiQuatKey& skey = pNodeAnim->mRotationKeys[keyIndex];
-						mAnimNode.m_vRotationTrack.push_back({ static_cast<float>(skey.mTime),morty::Quaternion(skey.mValue.w, skey.mValue.x, skey.mValue.y,skey.mValue.z) });
+						mAnimNode.m_vRotationTrack.push_back({ static_cast<float>(skey.mTime), fbs::Quaternion(skey.mValue.w, skey.mValue.x, skey.mValue.y,skey.mValue.z) });
 					}
 				}
 				if (pNodeAnim->mNumScalingKeys > 0)
@@ -688,7 +690,7 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 					for (unsigned keyIndex = 0; keyIndex < pNodeAnim->mNumScalingKeys; ++keyIndex)
 					{
 						const aiVectorKey& skey = pNodeAnim->mScalingKeys[keyIndex];
-						mAnimNode.m_vScaleTrack.push_back({ static_cast<float>(skey.mTime),morty::Vector3(skey.mValue.x, skey.mValue.y, skey.mValue.z) });
+						mAnimNode.m_vScaleTrack.push_back({ static_cast<float>(skey.mTime), fbs::Vector3(skey.mValue.x, skey.mValue.y, skey.mValue.z) });
 					}
 				}
 			}

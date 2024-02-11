@@ -2,6 +2,8 @@
 
 #include "Flatbuffer/Matrix_generated.h"
 
+using namespace morty;
+
 const Matrix4 Matrix4::IdentityMatrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
 
 Matrix4::Matrix4()
@@ -217,11 +219,11 @@ Matrix3 Matrix3::operator/(const float& value) const
 	return *this * (1.0f / value);
 }
 
-const morty::Matrix3* Matrix3::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
+const fbs::Matrix3* Matrix3::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
 	MORTY_UNUSED(fbb);
 
-	return reinterpret_cast<const morty::Matrix3*>(this);
+	return reinterpret_cast<const fbs::Matrix3*>(this);
 }
 
 void Matrix3::Deserialize(const void* pBufferPointer)
@@ -425,11 +427,11 @@ Vector3 Matrix4::GetScale() const
 	return v3Scale;
 }
 
-const morty::Matrix4* Matrix4::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
+const fbs::Matrix4* Matrix4::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
 	MORTY_UNUSED(fbb);
 	
-	return reinterpret_cast<const morty::Matrix4*>(this);
+	return reinterpret_cast<const fbs::Matrix4*>(this);
 }
 
 void Matrix4::Deserialize(const void* pBufferPointer)

@@ -1,6 +1,8 @@
 #include "Math/MMath.h"
 #include "Utility/MTimer.h"
 
+using namespace morty;
+
 std::default_random_engine MMath::s_randomEngine(static_cast<uint32_t>(MTimer::GetCurTime()));
 
 Matrix4 MMath::GetScaleAndRotation(const Matrix4& mat)

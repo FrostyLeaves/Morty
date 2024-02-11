@@ -11,7 +11,7 @@
 #include "Utility/MGlobal.h"
 #include "Math/Vector.h"
 
-#include <vector>
+MORTY_SPACE_BEGIN
 
 class MORTY_API MIBounds
 {
@@ -121,3 +121,5 @@ public:
 	Vector3 m_v3CenterPoint;
 	float m_fRadius;
 };
+
+MORTY_SPACE_END

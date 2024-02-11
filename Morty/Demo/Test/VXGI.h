@@ -12,6 +12,8 @@
 #include "Resource/MMaterialResource.h"
 #include "Widget/ModelConvertView.h"
 
+using namespace morty;
+
 void VXGI_TEST(MEngine* pEngine, MScene* pScene)
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();

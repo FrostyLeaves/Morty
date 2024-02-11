@@ -15,8 +15,8 @@
 #include "Variant/MVariant.h"
 #include "Resource/MResource.h"
 #include "MSkeleton.h"
-#include <vector>
-#include <map>
+
+MORTY_SPACE_BEGIN
 
 class MBoundsOBB;
 class MSkeletonResource;
@@ -50,3 +50,5 @@ private:
 
 	MSkeletonPose m_currentPose;
 };
+
+MORTY_SPACE_END
