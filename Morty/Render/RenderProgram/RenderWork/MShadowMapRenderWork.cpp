@@ -51,7 +51,7 @@ void MShadowMapRenderWork::Render(const MRenderInfo& info, const std::vector<IRe
 	if (!pCommand)
 		return;
 
-	pCommand->AddRenderToTextureBarrier(m_vBarrierTexture, METextureBarrierStage::EPixelShaderSample);
+	AutoSetTextureBarrier(pCommand);
 
 	const auto& pShadowmap = m_renderPass.GetDepthTexture();
 
@@ -139,7 +139,7 @@ void MShadowMapRenderWork::BindTarget()
 	SetRenderTarget(AutoBindTarget());
 }
 
-std::vector<MRenderTaskOutputDesc> MShadowMapRenderWork::GetOutputName()
+std::vector<MRenderTaskOutputDesc> MShadowMapRenderWork::InitOutputDesc()
 {
     return {
         { ShadowMapBufferOutput, { true, MColor::White } },

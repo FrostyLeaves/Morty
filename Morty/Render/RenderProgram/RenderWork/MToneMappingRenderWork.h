@@ -27,8 +27,8 @@ class MORTY_API MToneMappingRenderWork : public MBasicPostProcessRenderWork
 
 protected:
 
-	std::vector<MStringId> GetInputName() override;
+	std::vector<MRenderTaskInputDesc> InitInputDesc() override;
 
-	std::vector<MRenderTaskOutputDesc> GetOutputName() override;
+	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 
 };

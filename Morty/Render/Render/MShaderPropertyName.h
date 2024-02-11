@@ -22,6 +22,7 @@ struct MORTY_API MShaderPropertyName
 	static MStringId TEXTURE_IRRADIANCE_MAP;
 	static MStringId TEXTURE_PREFILTER_MAP;
 	static MStringId TEXTURE_BRDF_LUT;
+	static MStringId TEXTURE_NOISE_TEX;
 	static MStringId STORAGE_BONES_MATRIX;
 	static MStringId STORAGE_BONES_OFFSET;
 	static MStringId STORAGE_VOXEL_TABLE;
@@ -33,6 +34,7 @@ struct MORTY_API MShaderPropertyName
 	static MStringId FRAME_CAMERA_POSITION;
 	static MStringId FRAME_CAMERA_DIRECTION;
 	static MStringId FRAME_VIEWPORT_SIZE;
+	static MStringId FRAME_VIEWPORT_SIZE_INV;
 	static MStringId FRAME_Z_NEAR_FAR;
 	static MStringId FRAME_TIME_DELTA;
 	static MStringId FRAME_GAME_TIME;
@@ -90,6 +92,8 @@ struct MORTY_API MShaderPropertyName
 	static MStringId MATERIAL_STRUCT_NAME;
 	static MStringId MATERIAL_METALLIC;
 	static MStringId MATERIAL_ROUGHNESS;
+	static MStringId MATERIAL_METALLIC_CHANNEL;
+	static MStringId MATERIAL_ROUGHNESS_CHANNEL;
 	static MStringId MATERIAL_ALBEDO;
 	static MStringId MATERIAL_AMBIENT;
 	static MStringId MATERIAL_DIFFUSE;
@@ -113,6 +117,7 @@ struct MORTY_API MShaderPropertyName
 	static MStringId GBUFFER_TEXTURE_NORMAL_ROUGHNESS;
 	static MStringId GBUFFER_TEXTURE_POSITION_AMBIENTOCC;
 	static MStringId GBUFFER_TEXTURE_DEPTH_MAP;
+	static MStringId GBUFFER_TEXTURE_SSAO;
 
 	//GPU Culling
 	static MStringId CULLING_INSTANCE_DATA;
@@ -131,6 +136,8 @@ struct MORTY_API MShaderPropertyName
 	static MStringId POSTPROCESS_SCREEN_TEXTURE[8];
 	static MStringId POSTPROCESS_SCREEN_SIZE;
 
+	static MStringId POSTPROCESS_BLUR_OFFSET;
+
 	//ImGUI
 	static MStringId IMGUI_SCALE;
 	static MStringId IMGUI_TRANSLATE;
@@ -146,6 +153,14 @@ struct MORTY_API MShaderPropertyName
 	static MStringId VRS_EDGE_TEXTURE_SIZE_NAME;
 	static MStringId VRS_TEXEL_SIZE_NAME;
 	static MStringId VRS_EDGE_THRESHOLD_NAME;
+
+	//HBAO
+	static MStringId HBAO_NEAREST_AO_SCALE;
+	static MStringId HBAO_OTHER_AO_SCALE;
+	static MStringId HBAO_NDOTV_BIAS;
+	static MStringId HBAO_RADIUS_PIXEL;
+	static MStringId HBAO_RADIUS_UV_SQUARE_NEG_INV;
+	static MStringId HBAO_UV_TO_VIEW;
 
 };
 

@@ -143,7 +143,7 @@ Matrix4 MRenderSystem::GetCameraViewMatrix(MSceneComponent* pSceneComponent)
 
 Matrix4 MRenderSystem::GetPerspectiveProjectionMatrix(const float fViewportWidth, const float fViewportHeight, const float fNear, const float fRar, const float fFov)
 {
-	const Matrix4 m4Projection = MRenderSystem::MatrixPerspectiveFovLH(fFov * 0.5f, fViewportWidth / fViewportHeight, fNear, fRar);
+	const Matrix4 m4Projection = MRenderSystem::MatrixPerspectiveFovLH(fFov, fViewportWidth / fViewportHeight, fNear, fRar);
 
 	return m4Projection;
 }
@@ -183,7 +183,7 @@ Matrix4 MRenderSystem::GetCameraInverseProjection(const MCameraComponent* pCamer
 	)
 {
 	//Update Camera and Projection Matrix.
-	Matrix4 m4Projection = GetCameraProjectionMatrix(pCameraComponent, fViewWidth, fViewHeight, fZNear, fZFar);
+	const Matrix4 m4Projection = GetCameraProjectionMatrix(pCameraComponent, fViewWidth, fViewHeight, fZNear, fZFar);
 
 	return m4Projection * pSceneComponent->GetWorldTransform().Inverse();
 }
@@ -247,22 +247,15 @@ void MRenderSystem::GetCameraFrustumPoints(MEntity* pCamera
 	}
 }
 
-Matrix4 MRenderSystem::MatrixPerspectiveFovLH(const float& fFovYZAngle, const float& fScreenAspect, const float& fScreenNear, const float& fScreenFar)
+Matrix4 MRenderSystem::MatrixPerspectiveFovLH(const float& fFov, const float& fScreenAspect, const float& fScreenNear, const float& fScreenFar)
 {
-
 	Matrix4 mProjMatrix;
-	//���Ϊ0
-	memset(reinterpret_cast<void*>(&mProjMatrix), 0, sizeof(mProjMatrix));
 
-
-	//����ת��Ϊ����
-	float angle = fFovYZAngle * M_PI / 180.0f;
-
-	//����������
-	float s1 = 1 / (fScreenAspect * (float)tan(angle));
-	float s2 = 1 / tan(angle);
-	float a = fScreenFar / (fScreenFar - fScreenNear);
-	float b = -(fScreenNear * fScreenFar) / (fScreenFar - fScreenNear);
+	const float angle = (fFov * 0.5f) * M_PI / 180.0f;
+	const float s1 = 1 / ((float)tan(angle) * fScreenAspect);
+	const float s2 = 1 / tan(angle);
+	const float a = fScreenFar / (fScreenFar - fScreenNear);
+	const float b = -(fScreenNear * fScreenFar) / (fScreenFar - fScreenNear);
 
 	mProjMatrix.m[0][0] = s1;
 	mProjMatrix.m[1][1] = s2;

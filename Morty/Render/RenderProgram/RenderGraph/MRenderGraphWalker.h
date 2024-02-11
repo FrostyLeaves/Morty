@@ -34,3 +34,17 @@ private:
 
     const MRenderInfo& m_renderInfo;
 };
+
+
+class MORTY_API MRenderGraphSetupWalker: public ITaskGraphWalker
+{
+public:
+
+    explicit MRenderGraphSetupWalker(const MRenderInfo& info);
+
+    void operator ()(MTaskGraph* pTaskGraph) override;
+
+private:
+
+    const MRenderInfo& m_renderInfo;
+};

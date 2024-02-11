@@ -18,12 +18,11 @@ class MORTY_API MTextureResourceUtil
 public:
 
 	static std::unique_ptr<MResourceData> ImportTexture(const MString&  strResourcePath, const MTextureImportInfo& importInfo);
-	static std::unique_ptr<MResourceData> ImportTextureFromMemory(char* buffer, size_t nSize, const MTextureImportInfo& importInfo);
+	static std::unique_ptr<MResourceData> ImportTextureFromMemory(const MSpan<MByte>& buffer, const MTextureImportInfo& importInfo);
 
 	static std::unique_ptr<MResourceData> ImportCubeMap(const std::array<MString, 6>& vResourcePath, const MTextureImportInfo& importInfo);
 	
-	static std::unique_ptr<MResourceData> LoadFromMemory(const MString& strTextureName, const MByte* aByteData, const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, MTexturePixelFormat ePixelFormat = MTexturePixelFormat::Byte8);
+	static std::unique_ptr<MResourceData> LoadFromMemory(const MString& strTextureName, const MSpan<MByte>& buffer, const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, MTexturePixelType ePixelType);
 
-
-	static METextureLayout GetTextureLayout(const uint32_t& nChannel, const MTexturePixelFormat& format);
+	static morty::METextureLayout GetTextureFormat(const MTexturePixelType nPixelSize, const size_t nChannelNum);
 };

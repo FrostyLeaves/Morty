@@ -214,7 +214,7 @@ flatbuffers::Offset<void> MResourceRef::Serialize(flatbuffers::FlatBufferBuilder
 
 	auto fbPath = fbb.CreateString(m_pResource->GetResourcePath());
 
-	mfbs::MResourceRefBuilder builder(fbb);
+	morty::MResourceRefBuilder builder(fbb);
 	
 	builder.add_path(fbPath);
 
@@ -223,7 +223,7 @@ flatbuffers::Offset<void> MResourceRef::Serialize(flatbuffers::FlatBufferBuilder
 
 void MResourceRef::Deserialize(MResourceSystem* pResourceSystem, const void* pBufferPointer)
 {
-	const mfbs::MResourceRef* fbData = reinterpret_cast<const mfbs::MResourceRef*>(pBufferPointer);
+	const morty::MResourceRef* fbData = reinterpret_cast<const morty::MResourceRef*>(pBufferPointer);
 	if(!fbData)
 	{
 		return;

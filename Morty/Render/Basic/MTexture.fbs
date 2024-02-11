@@ -1,0 +1,39 @@
+namespace morty;
+
+enum METextureLayout:byte
+{
+    Unknow = 0,
+    Depth,
+
+    UNorm_R8,
+    UNorm_RG8,
+    UNorm_RGB8,
+    UNorm_RGBA8,
+
+    UInt_R8,
+
+    Float_R16,
+    Float_RG16,
+    Float_RGB16,
+    Float_RGBA16,
+
+    Float_R32,
+    Float_RG32,
+    Float_RGB32,
+    Float_RGBA32,
+
+    UNorm_RGBA8_ASTC4x4,
+    UNorm_RGBA8_ASTC8x8,
+
+    UNorm_RGBA8_BC1,
+    UNorm_RGBA8_BC2,
+    UNorm_RGBA8_BC3,
+    UNorm_RGBA8_BC4,
+    UNorm_RGBA8_BC5,
+    UNorm_RGBA8_BC7,
+
+    SNorm_RGBA8_BC4,
+    SNorm_RGBA8_BC5,
+}
+
+file_identifier "MFBS";

@@ -23,11 +23,11 @@ void ADD_DIRECTIONAL_LIGHT(MEngine* pEngine, MScene* pScene)
 	pDirLight->SetName("DirectionalLight");
 	if (MSceneComponent* pSceneComponent = pDirLight->RegisterComponent<MSceneComponent>())
 	{
-		pSceneComponent->SetRotation(Quaternion(Vector3(1.0, 0.0, 0.0), 45.0f));
+		pSceneComponent->SetRotation(Quaternion(Vector3(1.0, 0.0, 0.0), 80.0f));
 	}
 	if (MDirectionalLightComponent* pLightComponent = pDirLight->RegisterComponent<MDirectionalLightComponent>())
 	{
-		pLightComponent->SetLightIntensity(1.0f);
+		pLightComponent->SetLightIntensity(10.0f);
 	}
 }
 
@@ -89,24 +89,10 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 	}
 	if (MRenderMeshComponent* pMeshComponent = pFloorEntity->RegisterComponent<MRenderMeshComponent>())
 	{
-		const auto pTemplate = pResourceSystem->LoadResource(MMaterialName::BASIC_LIGHTING);
-		const auto pMaterial = MMaterialResource::CreateMaterial(pTemplate);
-
-		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_AMBIENT, Vector3(0.5f, 0.5f, 0.5f));
-		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_DIFFUSE, Vector3(0.5f, 0.5f, 0.5f));
-		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_SPECULAR, Vector3(1.0f, 1.0f, 1.0f));
-		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ALPHA_FACTOR, 1.0f);
-		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_SHININESS, 32.0f);
-
-		std::shared_ptr<MResource> diffuse = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
-		std::shared_ptr<MResource> normal = pResourceSystem->LoadResource(MRenderModule::DefaultNormal);
-		pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_DIFFUSE, diffuse);
-		pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_NORMAL, normal);
-
 		std::shared_ptr<MMeshResource> pCubeResource = pResourceSystem->CreateResource<MMeshResource>();
 		pCubeResource->Load(MMeshResourceUtil::CreateCube(MEMeshVertexType::Normal));
 		pMeshComponent->Load(pCubeResource);
-		pMeshComponent->SetMaterial(pMaterial);
+		pMeshComponent->SetMaterial(pDeferredMaterial);
 	}
 
 	MEntity* pCubeFolder = pScene->CreateEntity();
@@ -164,7 +150,7 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
 			pCubeResource->Load(MMeshResourceUtil::CreateCube(MEMeshVertexType::Normal));
 			pMeshComponent->Load(pCubeResource);
 			
-			pMeshComponent->SetMaterial(pForwardMaterial);
+			pMeshComponent->SetMaterial(pDeferredMaterial);
 		}
 	}
 

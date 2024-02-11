@@ -127,6 +127,7 @@ bool MModelConverter::Convert(const MModelConvertInfo& convertInfo)
 	bImportLights = convertInfo.bImportLights;
 	eMaterialType = convertInfo.eMaterialType;
 	m_pTextureDelegate = convertInfo.pTextureDelegate;
+	m_pMaterialDelegate = convertInfo.pMaterialDelegate;
 
 	auto time = MTimer::GetCurTime();
 	if (!Load(convertInfo.strResourcePath))
@@ -671,7 +672,7 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 					for (unsigned keyIndex = 0; keyIndex < pNodeAnim->mNumPositionKeys; ++keyIndex)
 					{
 						const aiVectorKey& skey = pNodeAnim->mPositionKeys[keyIndex];
-						mAnimNode.m_vPositionTrack.push_back({ static_cast<float>(skey.mTime), mfbs::Vector3(skey.mValue.x, skey.mValue.y, skey.mValue.z) });
+						mAnimNode.m_vPositionTrack.push_back({ static_cast<float>(skey.mTime),morty::Vector3(skey.mValue.x, skey.mValue.y, skey.mValue.z) });
 					}
 				}
 				if (pNodeAnim->mNumRotationKeys > 0)
@@ -679,7 +680,7 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 					for (unsigned keyIndex = 0; keyIndex < pNodeAnim->mNumRotationKeys; ++keyIndex)
 					{
 						const aiQuatKey& skey = pNodeAnim->mRotationKeys[keyIndex];
-						mAnimNode.m_vRotationTrack.push_back({ static_cast<float>(skey.mTime), mfbs::Quaternion(skey.mValue.w, skey.mValue.x, skey.mValue.y,skey.mValue.z) });
+						mAnimNode.m_vRotationTrack.push_back({ static_cast<float>(skey.mTime),morty::Quaternion(skey.mValue.w, skey.mValue.x, skey.mValue.y,skey.mValue.z) });
 					}
 				}
 				if (pNodeAnim->mNumScalingKeys > 0)
@@ -687,7 +688,7 @@ void MModelConverter::ProcessAnimation(const aiScene* pScene)
 					for (unsigned keyIndex = 0; keyIndex < pNodeAnim->mNumScalingKeys; ++keyIndex)
 					{
 						const aiVectorKey& skey = pNodeAnim->mScalingKeys[keyIndex];
-						mAnimNode.m_vScaleTrack.push_back({ static_cast<float>(skey.mTime), mfbs::Vector3(skey.mValue.x, skey.mValue.y, skey.mValue.z) });
+						mAnimNode.m_vScaleTrack.push_back({ static_cast<float>(skey.mTime),morty::Vector3(skey.mValue.x, skey.mValue.y, skey.mValue.z) });
 					}
 				}
 			}
@@ -733,6 +734,8 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 
 		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_METALLIC, 1.0f);
 		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS, 1.0f);
+		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_METALLIC_CHANNEL, 0);
+		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS_CHANNEL, 0);
 		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ALBEDO, Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 		pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_ALBEDO, pResourceSystem->LoadResource(MRenderModule::DefaultWhite));
 		pMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_NORMAL, pResourceSystem->LoadResource(MRenderModule::DefaultNormal));
@@ -874,6 +877,11 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 		}
 	}
 
+	if (m_pMaterialDelegate)
+	{
+		m_pMaterialDelegate->PostProcess(pMaterial.get());
+	}
+
 	m_vMaterials[nMaterialIdx] = pMaterial;
 }
 
@@ -890,18 +898,18 @@ void MModelConverter::ProcessTexture(const aiScene* pScene)
 			//embedded texture
 			if (aiTexture->mHeight == 0)
 			{
-				pTextureResource->Load(MTextureResourceUtil::ImportTextureFromMemory(reinterpret_cast<char*>(aiTexture->pcData), aiTexture->mWidth, MTextureImportInfo(MTexturePixelFormat::Byte8)));
+				pTextureResource->Load(MTextureResourceUtil::ImportTextureFromMemory(MSpan<MByte>{ reinterpret_cast<MByte*>(aiTexture->pcData), aiTexture->mWidth }, MTextureImportInfo(MTexturePixelType::Byte8)));
 			}
 			else
 			{
 				const size_t nWidth = aiTexture->mWidth;
 				const size_t nHeight = aiTexture->mHeight;
 				const size_t nSize = nWidth * nHeight * 4;
-				unsigned char* buffer = new unsigned char[nSize];
+				std::vector<MByte> buffer(nSize);
 
-				memcpy(buffer, aiTexture->pcData, nSize);
+				memcpy(buffer.data(), aiTexture->pcData, nSize);
 
-				char temp = 0;
+				MByte temp = 0;
 				for (size_t i = 0; i < nSize; i += 4)
 				{
 					temp = buffer[i];
@@ -911,10 +919,7 @@ void MModelConverter::ProcessTexture(const aiScene* pScene)
 					buffer[i + 3] = temp;
 				}
 
-				pTextureResource->Load(MTextureResourceUtil::LoadFromMemory("RawTexture", buffer, static_cast<uint32_t>(nWidth), static_cast<uint32_t>(nHeight), 4, MTexturePixelFormat::Byte8));
-				delete[] buffer;
-				buffer = nullptr;
-
+				pTextureResource->Load(MTextureResourceUtil::LoadFromMemory("RawTexture", buffer, static_cast<uint32_t>(nWidth), static_cast<uint32_t>(nHeight), 4, MTexturePixelType::Byte8));
 			}
 
 			m_tRawTextures[aiTexture->mFilename.C_Str()] = pTextureResource;

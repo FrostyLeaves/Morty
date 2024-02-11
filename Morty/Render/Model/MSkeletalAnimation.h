@@ -31,9 +31,9 @@ public:
 
 public:
 
-	std::vector<mfbs::MSkeletalPositionKey> m_vPositionTrack;
-	std::vector<mfbs::MSkeletalRotationKey> m_vRotationTrack;
-	std::vector<mfbs::MSkeletalScaleKey> m_vScaleTrack;
+	std::vector<morty::MSkeletalPositionKey> m_vPositionTrack;
+	std::vector<morty::MSkeletalRotationKey> m_vRotationTrack;
+	std::vector<morty::MSkeletalScaleKey> m_vScaleTrack;
 };
 
 class MORTY_API MSkeletonAnimMap

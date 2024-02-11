@@ -47,7 +47,7 @@ float4 PS_MAIN( VS_OUT input) : SV_Target
 
     if(u_nSingleChannelFlag == 1)
     {
-        sampleResult.rgba = sampleResult.r;
+        sampleResult.gba = float3(sampleResult.r, sampleResult.r, 1.0f);
     }
 
     return input.u32Color * sampleResult;

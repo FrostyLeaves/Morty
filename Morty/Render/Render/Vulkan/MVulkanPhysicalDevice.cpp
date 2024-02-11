@@ -660,6 +660,20 @@ bool MVulkanPhysicalDevice::SparseTextureSupport() const
 	return m_VkPhysicalDeviceFeatures.sparseBinding;
 }
 
+bool MVulkanPhysicalDevice::ASTCTextureSupport() const
+{
+	static const auto formatProperties = GetFormatProperties(VK_FORMAT_ASTC_4x4_UNORM_BLOCK);
+
+	return (formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
+}
+
+bool MVulkanPhysicalDevice::BCTextureSupport() const
+{
+	static const auto formatProperties = GetFormatProperties(VK_FORMAT_BC7_UNORM_BLOCK);
+
+	return (formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
+}
+
 std::set<MString> MVulkanPhysicalDevice::GetNotSupportDeviceExtension(VkPhysicalDevice device, const std::set<MString>& tRequiredExtensions) const
 {
 	std::set<MString> tNotSupportExtensions = tRequiredExtensions;

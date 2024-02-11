@@ -28,4 +28,5 @@ public:
 	static const MString Default_R8_One;
 	static const MString Default_R8_Zero;
 	static const MString DefaultAnimationMaterial;
+	static const MString NoiseTexture;
 };

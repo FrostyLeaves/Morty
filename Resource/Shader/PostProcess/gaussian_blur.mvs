@@ -1,5 +1,9 @@
+#include "../PostProcess/post_process_header.hlsl"
 
-[[vk::binding(3,0)]]float2 GaussianBlurOffset;
+[[vk::binding(3, 0)]]cbuffer cbGaussianSetting
+{
+    float2 u_f2GaussianBlurOffset;
+};
 
 struct VS_IN
 {
@@ -25,9 +29,9 @@ VS_OUT VS_MAIN(VS_IN input)
     output.uv.x = output.pos.x * 0.5f + 0.5f;
     output.uv.y = 0.5f - output.pos.y * 0.5f;
 
-    output.uv01 = saturate(output.uv.xyxy + GaussianBlurOffset.xyxy * float4(1, 1, -1, -1));
-    output.uv23 = saturate(output.uv.xyxy + GaussianBlurOffset.xyxy * float4(1, 1, -1, -1) * 2.0);
-    output.uv45 = saturate(output.uv.xyxy + GaussianBlurOffset.xyxy * float4(1, 1, -1, -1) * 6.0);
+    output.uv01 = (output.uv.xyxy + u_f2GaussianBlurOffset.xyxy * float4(1, 1, -1, -1));
+    output.uv23 = (output.uv.xyxy + u_f2GaussianBlurOffset.xyxy * float4(1, 1, -1, -1) * 2.0);
+    output.uv45 = (output.uv.xyxy + u_f2GaussianBlurOffset.xyxy * float4(1, 1, -1, -1) * 6.0);
 
     return output;
 }

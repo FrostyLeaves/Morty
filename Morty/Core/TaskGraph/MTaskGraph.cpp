@@ -65,6 +65,8 @@ void MTaskGraph::DestroyNode(MTaskNode* pTaskNode)
 
 bool MTaskGraph::Compile()
 {
+	const size_t nTaskNodeNum = m_tTaskNode.size();
+
 	std::queue<MTaskNode*> queue;
 	m_vStartTaskNode.clear();
 	m_vFinalTaskNode.clear();
@@ -107,6 +109,7 @@ bool MTaskGraph::Compile()
 					if (pLinkedNode->m_nPriorityLevel < pNode->m_nPriorityLevel + 1)
 					{
 						pLinkedNode->m_nPriorityLevel = pNode->m_nPriorityLevel + 1;
+						MORTY_ASSERT(pLinkedNode->m_nPriorityLevel < nTaskNodeNum);
 					}
 
 					queue.push(pLinkedNode);

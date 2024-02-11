@@ -39,10 +39,10 @@ flatbuffers::Offset<void> MDirectionalLightComponent::Serialize(flatbuffers::Fla
 {
 	auto fbSuper = Super::Serialize(fbb).o;
 
-	mfbs::MDirectionalLightComponentBuilder builder(fbb);
+	morty::MDirectionalLightComponentBuilder builder(fbb);
 
 	Vector4 color = GetColorVector();
-	builder.add_color(reinterpret_cast<mfbs::Vector4*>(&color));
+	builder.add_color(reinterpret_cast<morty::Vector4*>(&color));
 	builder.add_light_intensity(GetLightIntensity());
 
 	builder.add_super(fbSuper);
@@ -52,13 +52,13 @@ flatbuffers::Offset<void> MDirectionalLightComponent::Serialize(flatbuffers::Fla
 
 void MDirectionalLightComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	const mfbs::MDirectionalLightComponent* fbcomponent = mfbs::GetMDirectionalLightComponent(fbb.GetCurrentBufferPointer());
+	const morty::MDirectionalLightComponent* fbcomponent =morty::GetMDirectionalLightComponent(fbb.GetCurrentBufferPointer());
 	Deserialize(fbcomponent);
 }
 
 void MDirectionalLightComponent::Deserialize(const void* pBufferPointer)
 {
-	const mfbs::MDirectionalLightComponent* pComponent = reinterpret_cast<const mfbs::MDirectionalLightComponent*>(pBufferPointer);
+	const morty::MDirectionalLightComponent* pComponent = reinterpret_cast<const morty::MDirectionalLightComponent*>(pBufferPointer);
 
 	SetColorVector(*reinterpret_cast<const Vector4*>(pComponent->color()));
 	SetLightIntensity(pComponent->light_intensity());

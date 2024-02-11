@@ -59,7 +59,7 @@ void MTransparentRenderWork::Render(const MRenderInfo& info)
 		return;
 	}
 
-	pCommand->AddRenderToTextureBarrier(m_vBarrierTexture, METextureBarrierStage::EPixelShaderSample);
+	AutoSetTextureBarrier(pCommand);
 
 	pCommand->BeginRenderPass(&m_renderPass);
 
@@ -109,23 +109,23 @@ void MTransparentRenderWork::InitializeFillRenderPass()
 void MTransparentRenderWork::BindTarget()
 {
 	std::vector<std::shared_ptr<MShaderTextureParam>>& params = m_pDrawFillMaterial->GetMaterialPropertyBlock()->m_vTextures;
-	params[0]->SetTexture(GetInputTexture(1));
-	params[1]->SetTexture(GetInputTexture(2));
+	params[0]->SetTexture(GetInputTexture(MDeepPeelRenderWork::FrontTextureOutput));
+	params[1]->SetTexture(GetInputTexture(MDeepPeelRenderWork::BackTextureOutput));
 
 	AutoBindBarrierTexture();
 	SetRenderTarget(AutoBindTarget());
 }
 
-std::vector<MStringId> MTransparentRenderWork::GetInputName()
+std::vector<MRenderTaskInputDesc> MTransparentRenderWork::InitInputDesc()
 {
 	return {
-		MForwardRenderWork::BackBufferOutput,
-	   MDeepPeelRenderWork::FrontTextureOutput,
-	   MDeepPeelRenderWork::BackTextureOutput,
+	    { MForwardRenderWork::BackBufferOutput, METextureBarrierStage::EPixelShaderWrite },
+	    { MDeepPeelRenderWork::FrontTextureOutput, METextureBarrierStage::EPixelShaderSample },
+	    { MDeepPeelRenderWork::BackTextureOutput, METextureBarrierStage::EPixelShaderSample },
 	};
 }
 
-std::vector<MRenderTaskOutputDesc> MTransparentRenderWork::GetOutputName()
+std::vector<MRenderTaskOutputDesc> MTransparentRenderWork::InitOutputDesc()
 {
 	return {
 		{ BackBufferOutput, {false, MColor::Black_T } }

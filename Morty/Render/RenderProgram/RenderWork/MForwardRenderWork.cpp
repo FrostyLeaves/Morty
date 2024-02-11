@@ -42,7 +42,7 @@ void MForwardRenderWork::Render(const MRenderInfo& info, const std::vector<IRend
 {
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
 
-	pCommand->AddRenderToTextureBarrier(m_vBarrierTexture, METextureBarrierStage::EPixelShaderSample);
+	AutoSetTextureBarrier(pCommand);
 
 	pCommand->BeginRenderPass(&m_renderPass);
 
@@ -95,16 +95,16 @@ void MForwardRenderWork::BindTarget()
 	SetRenderTarget(AutoBindTargetWithVRS());
 }
 
-std::vector<MStringId> MForwardRenderWork::GetInputName()
+std::vector<MRenderTaskInputDesc> MForwardRenderWork::InitInputDesc()
 {
 	return {
-		MDeferredLightingRenderWork::DeferredLightingOutput,
-		MGBufferRenderWork::GBufferDepthBufferOutput,
-		MShadowMapRenderWork::ShadowMapBufferOutput,
+		{ MDeferredLightingRenderWork::DeferredLightingOutput, METextureBarrierStage::EPixelShaderWrite },
+		{ MGBufferRenderWork::GBufferDepthBufferOutput, METextureBarrierStage::EPixelShaderWrite },
+		{ MShadowMapRenderWork::ShadowMapBufferOutput, METextureBarrierStage::EPixelShaderSample },
 	};
 }
 
-std::vector<MRenderTaskOutputDesc> MForwardRenderWork::GetOutputName()
+std::vector<MRenderTaskOutputDesc> MForwardRenderWork::InitOutputDesc()
 {
 	return {
 		{ BackBufferOutput, {false, MColor::Black_T } },

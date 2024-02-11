@@ -1,5 +1,6 @@
 #include "MFrameShaderPropertyBlock.h"
 
+#include "MRenderModule.h"
 #include "Scene/MScene.h"
 #include "Scene/MEntity.h"
 #include "Engine/MEngine.h"
@@ -34,6 +35,15 @@ void MFrameShaderPropertyBlock::Initialize(MEngine* pEngine)
 	if (std::shared_ptr<MTextureResource> pTexture = MTypeClass::DynamicCast<MTextureResource>(pBrdfTexture))
 	{
 		SetBrdfMapTexture(pTexture->GetTextureTemplate());
+	}
+
+	if (auto pNoiseResource = pResourceSystem->LoadResource(MRenderModule::NoiseTexture))
+	{
+		auto pNoiseTexture = pNoiseResource->DynamicCast<MTextureResource>();
+		if (pNoiseTexture)
+		{
+			m_pShaderPropertyBlock->SetTexture(MShaderPropertyName::TEXTURE_NOISE_TEX, pNoiseTexture->GetTextureTemplate());
+		}
 	}
 }
 
@@ -126,6 +136,7 @@ void MFramePropertyDecorator::Update(const MRenderInfo& info)
 
 
 	cFrameStruct.SetVariant(MShaderPropertyName::FRAME_VIEWPORT_SIZE, Vector2(info.f2ViewportSize));
+	cFrameStruct.SetVariant(MShaderPropertyName::FRAME_VIEWPORT_SIZE_INV, Vector2(1.0f / info.f2ViewportSize.x, 1.0f / info.f2ViewportSize.y));
 	cFrameStruct.SetVariant(MShaderPropertyName::FRAME_Z_NEAR_FAR, info.f2CameraNearFar);
 
 	cFrameStruct.SetVariant(MShaderPropertyName::FRAME_TIME_DELTA, info.fDelta);

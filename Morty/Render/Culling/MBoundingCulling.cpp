@@ -7,6 +7,7 @@
 #include "Shadow/MShadowMapUtil.h"
 #include "System/MRenderSystem.h"
 #include "Batch/MMaterialBatchGroup.h"
+#include "Render/MRenderCommand.h"
 
 
 void MBoundingCulling::Initialize(MEngine* pEngine)
@@ -27,11 +28,17 @@ void MBoundingCulling::AddFilter(std::shared_ptr<IMeshInstanceFilter> pFilter)
 	m_vFilter.push_back(pFilter);
 }
 
+void MBoundingCulling::UploadBuffer(MIRenderCommand* pCommand)
+{
+	const size_t nDrawIndirectBufferSize = m_vDrawIndirectData.size() * sizeof(MDrawIndexedIndirectData);
+	pCommand->UploadBuffer(&m_drawIndirectBuffer, reinterpret_cast<MByte*>(m_vDrawIndirectData.data()), nDrawIndirectBufferSize);
+}
+
 void MBoundingCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup)
 {
-	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+	std::vector<MDrawIndexedIndirectData>& vDrawIndirectData = m_vDrawIndirectData;
 
-	std::vector<MDrawIndexedIndirectData> vDrawIndirectData;
+	vDrawIndirectData.clear();
 	m_vCullingInstanceGroup.clear();
 
 	auto createNewGroupFunc = [&](const std::shared_ptr<MMaterial>& pMaterial, MInstanceBatchGroup* pInstanceBatchGroup)
@@ -88,18 +95,4 @@ void MBoundingCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanc
 		}
 
 	}
-
-
-	const size_t nDrawIndirectBufferSize = vDrawIndirectData.size() * sizeof(MDrawIndexedIndirectData);
-	if (m_drawIndirectBuffer.GetSize() < nDrawIndirectBufferSize)
-	{
-		m_drawIndirectBuffer.ReallocMemory(nDrawIndirectBufferSize);
-		m_drawIndirectBuffer.DestroyBuffer(pRenderSystem->GetDevice());
-		m_drawIndirectBuffer.GenerateBuffer(pRenderSystem->GetDevice(), reinterpret_cast<MByte*>(vDrawIndirectData.data()), nDrawIndirectBufferSize);
-	}
-	else if (nDrawIndirectBufferSize > 0)
-	{
-		m_drawIndirectBuffer.UploadBuffer(pRenderSystem->GetDevice(), reinterpret_cast<MByte*>(vDrawIndirectData.data()), nDrawIndirectBufferSize);
-	}
-
 }

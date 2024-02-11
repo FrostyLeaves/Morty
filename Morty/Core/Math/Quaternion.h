@@ -6,7 +6,7 @@
 #include "Math/Vector.h"
 #include "Math/Matrix.h"
 
-namespace mfbs
+namespace morty
 {
 	struct Quaternion;
 }
@@ -20,12 +20,12 @@ public:
 	Quaternion(const float& w, const float& x, const float& y, const float& z);
 	Quaternion(const float& w, const Vector3& v);
 	Quaternion(const Vector3& vAxis, const float& fAngle);
-	Quaternion(const mfbs::Quaternion& value);
+	Quaternion(const morty::Quaternion& value);
 
 	static Quaternion FromEuler(const Vector3& eulerVec3);
 
 public:
-	const mfbs::Quaternion* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	const morty::Quaternion* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
 	void Deserialize(const void* pBufferPointer);
 
 public:

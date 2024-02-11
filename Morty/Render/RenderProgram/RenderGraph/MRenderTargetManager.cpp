@@ -10,6 +10,7 @@ MRenderTaskTarget* MRenderTargetManager::CreateRenderTarget(const MStringId& nam
 {
     if (auto pResult = FindRenderTarget(name))
     {
+        MORTY_ASSERT(false);
         return pResult;
     }
 
@@ -67,7 +68,10 @@ std::vector<std::shared_ptr<MTexture>> MRenderTargetManager::GetOutputTextures()
 
     for (const auto& pr : m_tRenderTaskTable)
     {
-        output.push_back(pr.second->GetTexture());
+        if (pr.second->GetSharedPolicy() == MRenderTaskTarget::SharedPolicy::Exclusive)
+        {
+            output.push_back(pr.second->GetTexture());
+        }
     }
 
     return output;

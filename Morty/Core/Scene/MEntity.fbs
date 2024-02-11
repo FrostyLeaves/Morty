@@ -1,5 +1,5 @@
 ﻿include "Scene/MGuid.fbs";
-namespace mfbs;
+namespace morty;
 
 table AnyComponent
 {

@@ -1,22 +1,15 @@
 include "Resource/MResourceRef.fbs";
+include "Basic/MTexture.fbs";
 
-namespace mfbs;
-
-enum MTexturePixelFormat:byte
-{
-    unknow = 0,
-    byte8 = 1,
-    float32 = 2,
-}
+namespace morty;
 
 table MTextureResource
 {
     width: uint;
     height: uint;
-    pixel_format: MTexturePixelFormat;
+    format: METextureLayout;
     data: [byte];
-    channel: uint;
-
+    mipmap: bool;
 }
 
 root_type MTextureResource;

@@ -139,7 +139,7 @@ void MVoxelDebugRenderWork::Render(const MRenderInfo& info, const MVoxelMapSetti
 	const Vector2i v2LeftTop = info.f2ViewportLeftTop;
 	const Vector2i v2Size = info.f2ViewportSize;
 
-	pCommand->AddRenderToTextureBarrier(m_vBarrierTexture, METextureBarrierStage::EPixelShaderSample);
+	AutoSetTextureBarrier(pCommand);
 
 	pCommand->BeginRenderPass(&m_renderPass);
 	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
@@ -221,14 +221,14 @@ void MVoxelDebugRenderWork::BindTarget()
 	SetRenderTarget(AutoBindTarget());
 }
 
-std::vector<MStringId> MVoxelDebugRenderWork::GetInputName()
+std::vector<MRenderTaskInputDesc> MVoxelDebugRenderWork::InitInputDesc()
 {
 	return {
-		MVoxelizerRenderWork::VoxelizerBufferOutput,
+		{ MVoxelizerRenderWork::VoxelizerBufferOutput, METextureBarrierStage::EUnknow },
 	};
 }
 
-std::vector<MRenderTaskOutputDesc> MVoxelDebugRenderWork::GetOutputName()
+std::vector<MRenderTaskOutputDesc> MVoxelDebugRenderWork::InitOutputDesc()
 {
 	return {
 		{ BackBufferOutput, {true, MColor::Black_T }},

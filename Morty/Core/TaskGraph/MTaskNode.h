@@ -76,7 +76,7 @@ protected:
 
 	MStringId m_strNodeName;
     MTaskGraph* m_pGraph = nullptr;
-	int m_nPriorityLevel = 0;
+	size_t m_nPriorityLevel = 0;
 	METhreadType m_eThreadType = METhreadType::EAny;
 
 	std::vector<MTaskNodeInput*> m_vInput;

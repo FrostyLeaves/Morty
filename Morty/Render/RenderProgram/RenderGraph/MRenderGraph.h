@@ -19,6 +19,7 @@
 #include "RenderProgram/RenderGraph/MRenderTargetManager.h"
 #include "Utility/MStringId.h"
 
+class MRenderGraphSetting;
 class IPropertyBlockAdapter;
 class MRenderTaskTarget;
 class MRenderTargetManager;
@@ -33,12 +34,13 @@ public:
     ~MRenderGraph() override;
 
     template<typename TYPE>
-    MRenderTaskNode* RegisterTaskNode();
+    MRenderTaskNode* RegisterTaskNode(const MStringId& strTaskNodeName);
 
     template<typename TYPE>
-    TYPE* FindTaskNode() const;
+    TYPE* FindTaskNode(const MStringId& strTaskNodeName) const;
 
     MRenderTargetManager* GetRenderTargetManager() const { return m_pRenderTargetManager; }
+    std::shared_ptr<MRenderGraphSetting> GetRenderGraphSetting() const { return m_pRenderGraphSetting; }
     MRenderTaskTarget* FindRenderTaskTarget(const MStringId& name);
 
     void SetFrameProperty(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter) { m_pFramePropertyAdapter = pAdapter; }
@@ -61,40 +63,40 @@ private:
 
     MEngine* m_pEngine = nullptr;
     MRenderTargetManager* m_pRenderTargetManager = nullptr;
+    std::shared_ptr<MRenderGraphSetting> m_pRenderGraphSetting = nullptr;
 
     std::shared_ptr<IPropertyBlockAdapter> m_pFramePropertyAdapter = nullptr;
     std::shared_ptr<MInstanceCulling> m_pCameraCullingResult = nullptr;
     std::shared_ptr<MInstanceCulling> m_pShadowCullingResult = nullptr;
     std::shared_ptr<MInstanceCulling> m_pVoxelizerCullingResult = nullptr;
 
+    std::map<const MStringId, MRenderTaskNode*> m_tTaskNodeTable;
 
-    std::map<const MType*, MRenderTaskNode*> m_tTaskNodeTable;
 };
 
 template <typename TYPE>
-MRenderTaskNode* MRenderGraph::RegisterTaskNode()
+MRenderTaskNode* MRenderGraph::RegisterTaskNode(const MStringId& strTaskNodeName)
 {
-    const auto findResult = m_tTaskNodeTable.find(TYPE::GetClassType());
+    const auto findResult = m_tTaskNodeTable.find(strTaskNodeName);
     if (findResult != m_tTaskNodeTable.end())
     {
         return findResult->second;
     }
 
-    auto typeName = MStringId(TYPE::GetClassTypeName());
-    auto pRenderWork = AddNode<TYPE>(typeName);
+    auto pRenderWork = AddNode<TYPE>(strTaskNodeName);
 
-    m_tTaskNodeTable[TYPE::GetClassType()] = pRenderWork;
+    m_tTaskNodeTable[strTaskNodeName] = pRenderWork;
 
     return pRenderWork;
 }
 
 template <typename TYPE>
-TYPE* MRenderGraph::FindTaskNode() const
+TYPE* MRenderGraph::FindTaskNode(const MStringId& strTaskNodeName) const
 {
-    const auto findResult = m_tTaskNodeTable.find(TYPE::GetClassType());
+    const auto findResult = m_tTaskNodeTable.find(strTaskNodeName);
     if (findResult != m_tTaskNodeTable.end())
     {
-        return static_cast<TYPE*>(findResult->second);
+        return findResult->second->DynamicCast<TYPE>();
     }
 
     return nullptr;

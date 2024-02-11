@@ -1,5 +1,6 @@
 ﻿#include "MTextureConverter.h"
 
+#include "MTexture_generated.h"
 #include "Engine/MEngine.h"
 #include "Resource/MTextureResourceUtil.h"
 #include "Utility/MFileHelper.h"
@@ -29,17 +30,17 @@ std::vector<MByte> ConvertSingleChannelData(const MByte* vData, size_t nWidth, s
 void MTextureConverter::ConvertSingleChannel(MTextureResourceData* pTextureData, size_t nChannel)
 {
     const auto& rawData = pTextureData->aByteData;
-    auto ePixelFormat = pTextureData->ePixelFormat;
+    auto eFormat = pTextureData->eFormat;
     const size_t nWidth = pTextureData->nWidth;
     const size_t nHeight = pTextureData->nHeight;
 
     std::vector<MByte> convertData;
     
-    if (MTexturePixelFormat::Byte8 == ePixelFormat)
+    if (morty::METextureLayout::UNorm_RGBA8 == eFormat)
     {
         convertData = ConvertSingleChannelData<MByte>(rawData.data(), nWidth, nHeight, nChannel);
     }
-    else if (MTexturePixelFormat::Float32 == ePixelFormat)
+    else if (morty::METextureLayout::Float_RGBA32 == eFormat)
     {
         convertData = ConvertSingleChannelData<float>(rawData.data(), nWidth, nHeight, nChannel);
     }
@@ -50,5 +51,5 @@ void MTextureConverter::ConvertSingleChannel(MTextureResourceData* pTextureData,
     }
 
     pTextureData->aByteData = convertData;
-    pTextureData->nChannel = 1;
+    pTextureData->eFormat = eFormat;
 }

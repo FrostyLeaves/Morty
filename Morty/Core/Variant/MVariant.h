@@ -158,10 +158,11 @@ public:
 	}
 
 	template<typename TYPE>
-	void AppendVariant(const MStringId& strName, const TYPE& value)
+	MVariantStructBuilder& AppendVariant(const MStringId& strName, const TYPE& value)
 	{
 		MORTY_ASSERT(!m_struct.m_bLocked);
 		m_struct.AppendVariant(strName, value);
+		return *this;
 	}
 
 	void Finish() const

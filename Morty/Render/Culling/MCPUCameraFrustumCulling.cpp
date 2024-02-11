@@ -38,6 +38,11 @@ void MCPUCameraFrustumCulling::Culling(const std::vector<MMaterialBatchGroup*>& 
 	m_pBoundingCulling->Culling(vInstanceGroup);
 }
 
+void MCPUCameraFrustumCulling::UploadBuffer(MIRenderCommand* pCommand)
+{
+	m_pBoundingCulling->UploadBuffer(pCommand);
+}
+
 const MBuffer* MCPUCameraFrustumCulling::GetDrawIndirectBuffer()
 {
 	return m_pBoundingCulling->GetDrawIndirectBuffer();

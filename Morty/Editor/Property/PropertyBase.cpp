@@ -234,6 +234,11 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
 		bModified |= Editfloat(value.GetValue<float>());
 		ShowValueEnd();
 		break;
+	case MEVariantType::EVector2:
+		ShowValueBegin(strVariantName);
+		bModified |= EditVector2(value.GetValue<Vector2>());
+		ShowValueEnd();
+		break;
 
 	case MEVariantType::EVector3:
 		ShowValueBegin(strVariantName);
@@ -362,17 +367,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 			ShowValueEnd();
 		}
 
-		{
-			const std::vector<std::shared_ptr<MShaderConstantParam>>& vParams = pMaterial->GetMaterialPropertyBlock()->m_vParams;
-			for (const std::shared_ptr<MShaderConstantParam>& param : vParams)
-			{
-				if (EditMVariant(param->strName.ToString(), param->var))
-				{
-					param->SetDirty();
-					bModified = true;
-				}
-			}
-		}
+		bModified |= EditShaderProperty(pMaterial->GetMaterialPropertyBlock());
 
 		{
 			std::vector< std::shared_ptr<MShaderTextureParam>>& vParams = pMaterial->GetMaterialPropertyBlock()->m_vTextures;
@@ -417,6 +412,22 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 	
 
 	return bModified;
+}
+
+bool PropertyBase::EditShaderProperty(const std::shared_ptr<MShaderPropertyBlock>& pProperty)
+{
+	bool bModified = false;
+	for (const auto& param : pProperty->m_vParams)
+	{
+		if (EditMVariant(param->strName.ToString(), param->var))
+		{
+			param->SetDirty();
+			bModified = true;
+		}
+	}
+
+	return bModified;
+
 }
 
 void PropertyBase::EditMResource(const MString& strDlgID, const MString& strResourceType, const std::vector<MString>& vSuffixList, std::shared_ptr<MResource> pResource, const std::function<void(const MString & strNewFilePath)>& funcLoadResource)

@@ -5,7 +5,7 @@
 #include "Math/Vector.h"
 #include "Math/Quaternion.h"
 
-namespace mfbs
+namespace morty
 {
 	struct Matrix3;
 	struct Matrix4;
@@ -54,7 +54,7 @@ public:
 
 public:
 
-	const mfbs::Matrix3* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	const morty::Matrix3* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
 	void Deserialize(const void* pBufferPointer);
 
 public:
@@ -113,7 +113,7 @@ public:
 
 public:
 
-	const mfbs::Matrix4* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	const morty::Matrix4* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
 	void Deserialize(const void* pBufferPointer);
 
 public:

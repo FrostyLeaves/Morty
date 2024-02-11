@@ -1,5 +1,7 @@
 #include "../PostProcess/post_process_header.hlsl"
 
+[[vk::binding(1,0)]]Texture2D u_texInputTexture;
+
 [[vk::binding(0,0)]]cbuffer blurSetting
 {
     float2 u_BlurOffset;

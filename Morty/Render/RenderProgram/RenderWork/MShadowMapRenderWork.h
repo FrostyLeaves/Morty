@@ -37,5 +37,5 @@ protected:
 	void OnCreated() override;
 	void BindTarget() override;
 
-	std::vector<MRenderTaskOutputDesc> GetOutputName() override;
+	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 };

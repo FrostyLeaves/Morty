@@ -27,7 +27,7 @@ void MGBufferRenderWork::Render(const MRenderInfo& info, const std::vector<IRend
 	const Vector2i v2LeftTop = info.f2ViewportLeftTop;
 	const Vector2i v2Size = info.f2ViewportSize;
 
-	pCommand->AddRenderToTextureBarrier(m_vBarrierTexture, METextureBarrierStage::EPixelShaderSample);
+	AutoSetTextureBarrier(pCommand);
 
 	pCommand->BeginRenderPass(&m_renderPass);
 	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
@@ -87,7 +87,7 @@ void MGBufferRenderWork::BindTarget()
 	SetRenderTarget(AutoBindTargetWithVRS());
 }
 
-std::vector<MRenderTaskOutputDesc> MGBufferRenderWork::GetOutputName()
+std::vector<MRenderTaskOutputDesc> MGBufferRenderWork::InitOutputDesc()
 {
     return {
         { GBufferAlbedoMetallic, {true, MColor::Black_T} },

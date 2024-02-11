@@ -53,6 +53,7 @@
 #include <assert.h>
 #include <algorithm>
 #include <functional>
+#include <unordered_set>
 #include <unordered_map>
 #include <condition_variable>
 
@@ -61,6 +62,7 @@
 
 #include "doctest/doctest.h"
 #include "Utility/MString.h"
+#include "Utility/MSpan.h"
 
 using MObjectID = unsigned long;
 using MResourceID = unsigned long;
@@ -95,3 +97,6 @@ public:
 };
 
 class MEngine;
+
+#define MORTY_SPACE_BEGIN namespace morty {
+#define MORTY_SPACE_END }

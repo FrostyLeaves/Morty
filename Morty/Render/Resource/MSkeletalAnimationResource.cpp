@@ -13,7 +13,7 @@ flatbuffers::Offset<void> MSkeletalAnimationResourceData::Serialize(flatbuffers:
     auto fbAnimation = skeletonAnimation.Serialize(fbb).o;
     auto fbSkeleton = fbb.CreateString(skeletonResource).o;
 
-    mfbs::MSkeletalAnimationResourceBuilder builder(fbb);
+   morty::MSkeletalAnimationResourceBuilder builder(fbb);
 
     builder.add_animation(fbAnimation);
     builder.add_skeleton(fbSkeleton);
@@ -23,7 +23,7 @@ flatbuffers::Offset<void> MSkeletalAnimationResourceData::Serialize(flatbuffers:
 
 void MSkeletalAnimationResourceData::Deserialize(const void* pBufferPointer)
 {
-    auto fbResourceData = mfbs::GetMSkeletalAnimationResource(pBufferPointer);
+    auto fbResourceData =morty::GetMSkeletalAnimationResource(pBufferPointer);
     skeletonAnimation.Deserialize(fbResourceData->animation());
     skeletonResource = fbResourceData->skeleton()->str();
 }

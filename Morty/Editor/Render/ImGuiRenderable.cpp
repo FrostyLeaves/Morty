@@ -77,7 +77,7 @@ void ImGuiRenderable::InitializeFont()
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
 	std::shared_ptr<MTextureResource> pFontTexture = pResourceSystem->CreateResource<MTextureResource>("ImGUI_Font");
-	pFontTexture->Load(MTextureResourceUtil::LoadFromMemory("ImGUI_Font", pixels, width, height, 4));
+	pFontTexture->Load(MTextureResourceUtil::LoadFromMemory("ImGUI_Font", MSpan<MByte>(pixels, width * height * 4), width, height, 4, MTexturePixelType::Byte8));
 	m_FontTexture.SetResource(pFontTexture);
 
 	// Store our identifier
@@ -283,14 +283,14 @@ ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturPropertyBlock(ImGu
 			Vector2 f2ImageSize;
 			switch (key.pTexture->GetTextureLayout())
 			{
-			case METextureLayout::EDepth:
-			case METextureLayout::ER_UNORM_8:
-			case METextureLayout::ER_FLOAT_32:
+			case METextureLayout::Depth:
+			case METextureLayout::UNorm_R8:
+			case METextureLayout::Float_R32:
 				nImageType = 0;
 				nSingleChannelFlag = 1;
 				break;
 
-			case METextureLayout::ER_UINT_8:
+			case METextureLayout::UInt_R8:
 				nImageType = 2;
 				f2ImageSize = Vector2(key.pTexture->GetSize2D().x, key.pTexture->GetSize2D().y);
 				break;
@@ -309,6 +309,7 @@ ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturPropertyBlock(ImGu
 			if (imguiUniform.GetVariant<int>(MShaderPropertyName::IMGUI_IMAGE_TYPE) != nImageType
 				|| imguiUniform.GetVariant<int>(MShaderPropertyName::IMGUI_SINGLE_CHANNEL_FLAG) != nSingleChannelFlag
 				|| imguiUniform.GetVariant<int>(MShaderPropertyName::IMGUI_IMAGE_INDEX) != nImageIndex
+				|| imguiUniform.GetVariant<Vector2>(MShaderPropertyName::IMGUI_IMAGE_SIZE) != f2ImageSize
 				)
 			{
 				imguiUniform.SetVariant(MShaderPropertyName::IMGUI_IMAGE_TYPE, nImageType);
@@ -318,24 +319,11 @@ ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturPropertyBlock(ImGu
 				pDest->pPropertyBlock->m_vParams[0]->SetDirty();
 			}
 
-
-			if (key.pTexture->GetTextureType() == METextureType::ETexture2D)
+			if (pDest->pPropertyBlock->m_vTextures[nImageType]->pTexture != key.pTexture)
 			{
-				if (pDest->pPropertyBlock->m_vTextures[0]->pTexture != key.pTexture)
-				{
-					pDest->pPropertyBlock->m_vTextures[0]->pTexture = key.pTexture;
-					pDest->pPropertyBlock->m_vTextures[0]->SetDirty();
-				}
+				pDest->pPropertyBlock->m_vTextures[nImageType]->pTexture = key.pTexture;
+				pDest->pPropertyBlock->m_vTextures[nImageType]->SetDirty();
 			}
-			else if (key.pTexture->GetTextureType() == METextureType::ETexture2DArray)
-			{
-				if (pDest->pPropertyBlock->m_vTextures[1]->pTexture != key.pTexture)
-				{
-					pDest->pPropertyBlock->m_vTextures[1]->pTexture = key.pTexture;
-					pDest->pPropertyBlock->m_vTextures[1]->SetDirty();
-				}
-			}
-
 		}
 
 

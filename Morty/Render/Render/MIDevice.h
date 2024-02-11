@@ -86,7 +86,7 @@ public:
 	virtual void UploadBuffer(MBuffer* pBuffer, const size_t& unBeginOffset, const MByte* data, const size_t& unDataSize) = 0;
 	virtual void DownloadBuffer(MBuffer* pBuffer, MByte* outputData, const size_t& nSize) = 0;
 
-	virtual void GenerateTexture(MTexture* pTexture, const MByte* pData = nullptr) = 0;
+	virtual void GenerateTexture(MTexture* pTexture, const MSpan<MByte>& buffer) = 0;
 	virtual void DestroyTexture(MTexture* pTexture) = 0;
 
 	virtual bool CompileShader(MShader* pShader) = 0;

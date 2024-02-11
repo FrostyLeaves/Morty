@@ -183,7 +183,7 @@ void MVoxelizerRenderWork::Render(const MRenderInfo& info, const std::vector<IRe
 
 	constexpr uint32_t fViewportSize = MRenderGlobal::VOXEL_VIEWPORT_SIZE;
 
-	pCommand->AddRenderToTextureBarrier(m_vBarrierTexture, METextureBarrierStage::EPixelShaderSample);
+	AutoSetTextureBarrier(pCommand);
 
 	pCommand->BeginRenderPass(&m_renderPass);
 	pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, fViewportSize, fViewportSize));
@@ -335,14 +335,14 @@ void MVoxelizerRenderWork::BindTarget()
 	SetRenderTarget(AutoBindTarget());
 }
 
-std::vector<MStringId> MVoxelizerRenderWork::GetInputName()
+std::vector<MRenderTaskInputDesc> MVoxelizerRenderWork::InitInputDesc()
 {
 	return {
-		MShadowMapRenderWork::ShadowMapBufferOutput,
+		{ MShadowMapRenderWork::ShadowMapBufferOutput, METextureBarrierStage::EPixelShaderSample },
 	};
 }
 
-std::vector<MRenderTaskOutputDesc> MVoxelizerRenderWork::GetOutputName()
+std::vector<MRenderTaskOutputDesc> MVoxelizerRenderWork::InitOutputDesc()
 {
 	return {
 		{ VoxelizerBufferOutput, {true, MColor::Black_T }},
