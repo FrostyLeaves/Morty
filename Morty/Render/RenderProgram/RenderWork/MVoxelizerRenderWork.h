@@ -17,8 +17,8 @@
 #include "Render/MRenderPass.h"
 #include "Basic/MCameraFrustum.h"
 #include "Render/MBuffer.h"
-#include <memory>
 
+MORTY_SPACE_BEGIN
 
 class IShaderPropertyUpdateDecorator;
 
@@ -79,3 +79,5 @@ protected:
 
     std::shared_ptr<MTexture> m_voxelGITexture = nullptr;
 };
+
+MORTY_SPACE_END

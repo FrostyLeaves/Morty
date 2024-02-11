@@ -6,6 +6,8 @@
 
 #include "Render/MRenderGlobal.h"
 
+using namespace morty;
+
 enum class METransparentPolicy
 {
 	EDualDepthPeeling = 1,
@@ -88,19 +90,19 @@ bool MShaderMacro::Compare(const MShaderMacro& macro)
 
 flatbuffers::Offset<void> MShaderMacro::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	std::vector<flatbuffers::Offset<morty::MShaderMacroPair>> vMaterialMacroPairs;
+	std::vector<flatbuffers::Offset<fbs::MShaderMacroPair>> vMaterialMacroPairs;
 	for (auto pairs : m_vMacroParams)
 	{
 		auto fbKey = fbb.CreateString(pairs.first.ToString());
 		auto fbValue = fbb.CreateString(pairs.second);
-		morty::MShaderMacroPairBuilder builder(fbb);
+		fbs::MShaderMacroPairBuilder builder(fbb);
 		builder.add_key(fbKey);
 		builder.add_value(fbValue);
 		vMaterialMacroPairs.push_back(builder.Finish().o);
 	}
 
 	const auto fbMaterialMacro = fbb.CreateVector(vMaterialMacroPairs);
-	morty::MShaderMacroBuilder builder(fbb);
+	fbs::MShaderMacroBuilder builder(fbb);
 
 	builder.add_material_macro(fbMaterialMacro);
 
@@ -109,7 +111,7 @@ flatbuffers::Offset<void> MShaderMacro::Serialize(flatbuffers::FlatBufferBuilder
 
 void MShaderMacro::Deserialize(const void* pBufferPointer)
 {
-	const morty::MShaderMacro* fbData = reinterpret_cast<const morty::MShaderMacro*>(pBufferPointer);
+	const fbs::MShaderMacro* fbData = reinterpret_cast<const fbs::MShaderMacro*>(pBufferPointer);
 
 	m_vMacroParams.clear();
 

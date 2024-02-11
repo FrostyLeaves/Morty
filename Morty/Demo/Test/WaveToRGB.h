@@ -1,5 +1,7 @@
 #include "Math/Vector.h"
 
+using namespace morty;
+
 class RgbCalculator {
 
     const int LEN_MIN = 380;

@@ -20,6 +20,8 @@
 #include "vulkan/vulkan_core.h"
 #endif
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MVulkanPhysicalDevice
 {
 public:
@@ -113,5 +115,6 @@ public:
 	MEngine* m_pEngine = nullptr;
 };
 
+MORTY_SPACE_END
 
 #endif

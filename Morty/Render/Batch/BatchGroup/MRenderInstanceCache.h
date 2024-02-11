@@ -5,6 +5,7 @@
 #include "Utility/MIDPool.h"
 #include "Utility/MMemoryPool.h"
 
+MORTY_SPACE_BEGIN
 
 template<typename KEY_TYPE, typename VALUE_TYPE>
 class MORTY_API MRenderInstanceCache
@@ -104,3 +105,5 @@ inline VALUE_TYPE* MRenderInstanceCache<KEY_TYPE, VALUE_TYPE>::FindItem(const KE
 	auto& item = m_vItem[nIdx];
 	return &item.value;
 }
+
+MORTY_SPACE_END

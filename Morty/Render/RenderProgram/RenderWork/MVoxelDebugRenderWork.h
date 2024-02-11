@@ -17,8 +17,8 @@
 #include "Render/MRenderPass.h"
 #include "Basic/MCameraFrustum.h"
 #include "Render/MBuffer.h"
-#include <memory>
 
+MORTY_SPACE_BEGIN
 
 class IShaderPropertyUpdateDecorator;
 
@@ -63,6 +63,6 @@ protected:
 
     std::shared_ptr<MShaderConstantParam> m_pDebugVoxelMapSetting = nullptr;
     std::shared_ptr<MShaderStorageParam> m_pVoxelStorageBuffer = nullptr;
-
-
 };
+
+MORTY_SPACE_END

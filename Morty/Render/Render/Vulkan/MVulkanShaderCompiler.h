@@ -25,6 +25,8 @@
 #include "spirv_cross/spirv_cross.hpp"
 #include "spirv_cross/spirv_parser.hpp"
 
+MORTY_SPACE_BEGIN
+
 class MShaderBuffer;
 class MVulkanDevice;
 class MVertexShaderBuffer;
@@ -65,5 +67,6 @@ private:
 	MVulkanDevice* m_pDevice;
 };
 
+MORTY_SPACE_END
 
 #endif

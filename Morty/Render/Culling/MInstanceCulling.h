@@ -6,6 +6,7 @@
 #include "Utility/MFunction.h"
 #include "TaskGraph/MTaskNode.h"
 
+MORTY_SPACE_BEGIN
 
 struct MMeshInstanceRenderProxy;
 class MORTY_API IMeshInstanceFilter
@@ -112,3 +113,5 @@ private:
 
     std::shared_ptr<TYPE> m_pCulling;
 };
+
+MORTY_SPACE_END

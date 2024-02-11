@@ -15,6 +15,8 @@
 #include "System/MObjectSystem.h"
 #include "Utility/MGlobal.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MRenderSystem, MISystem)
 
 MRenderSystem::MRenderSystem()

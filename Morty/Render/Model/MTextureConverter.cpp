@@ -6,6 +6,8 @@
 #include "Utility/MFileHelper.h"
 #include "System/MResourceSystem.h"
 
+using namespace morty;
+
 template <typename TYPE>
 std::vector<MByte> ConvertSingleChannelData(const MByte* vData, size_t nWidth, size_t nHeight, size_t nChannel)
 {

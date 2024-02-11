@@ -11,6 +11,7 @@
 #include "Utility/MGlobal.h"
 #include "Utility/MStringId.h"
 
+MORTY_SPACE_BEGIN
 
 struct MORTY_API MMaterialName
 {
@@ -33,3 +34,5 @@ struct MORTY_API MMaterialName
 	static MString SHADOW_MAP_SKELETON;
 
 };
+
+MORTY_SPACE_END

@@ -9,7 +9,8 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include <queue>
+
+MORTY_SPACE_BEGIN
 
 template<typename IDTYPE>
 class MORTY_API MIDPool
@@ -53,3 +54,5 @@ private:
 	IDTYPE m_IDPool;
     std::queue<IDTYPE> m_vIDPool;
 };
+
+MORTY_SPACE_END

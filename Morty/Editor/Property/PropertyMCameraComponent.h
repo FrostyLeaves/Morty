@@ -1,9 +1,10 @@
-#ifndef _PROPERTY_CAMERA_COMPONENT_H_
-#define _PROPERTY_CAMERA_COMPONENT_H_
+#pragma once
 
 #include "Property/PropertyBase.h"
 #include "Component/MCameraComponent.h"
 #include <stdint.h>
+
+MORTY_SPACE_BEGIN
 
 class PropertyMCameraComponent : public PropertyBase
 {
@@ -41,4 +42,4 @@ public:
 };
 
 
-#endif
+MORTY_SPACE_END

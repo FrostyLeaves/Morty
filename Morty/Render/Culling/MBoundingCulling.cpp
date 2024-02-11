@@ -9,6 +9,7 @@
 #include "Batch/MMaterialBatchGroup.h"
 #include "Render/MRenderCommand.h"
 
+using namespace morty;
 
 void MBoundingCulling::Initialize(MEngine* pEngine)
 {

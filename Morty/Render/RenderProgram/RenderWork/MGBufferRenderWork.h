@@ -16,7 +16,7 @@
 #include "Render/MRenderPass.h"
 #include "Basic/MCameraFrustum.h"
 
-
+MORTY_SPACE_BEGIN
 
 class MORTY_API MGBufferRenderWork : public ISinglePassRenderWork
 {
@@ -41,3 +41,5 @@ protected:
 
 	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 };
+
+MORTY_SPACE_END

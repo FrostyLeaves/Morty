@@ -1,5 +1,6 @@
 #include "Engine/MSystem.h"
 
+using namespace morty;
 
 MORTY_INTERFACE_IMPLEMENT(MISystem, MTypeClass)
 

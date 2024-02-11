@@ -4,6 +4,8 @@
 #include "Engine/MEngine.h"
 #include "Utility/RenderMessageManager.h"
 
+using namespace morty;
+
 MessageWidget::MessageWidget()
 	: BaseWidget()
 {

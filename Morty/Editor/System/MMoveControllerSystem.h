@@ -13,6 +13,8 @@
 
 #include "Math/Vector.h"
 
+MORTY_SPACE_BEGIN
+
 class MMoveControllerComponent;
 class MORTY_API MMoveControllerSystem : public MISystem
 {
@@ -29,3 +31,5 @@ public:
 
     void UpdateTransform(MMoveControllerComponent* pComponent, const float& fDelta, const Vector2& v2MouseAddi);
 };
+
+MORTY_SPACE_END

@@ -15,11 +15,10 @@
 #include "RenderProgram/MRenderInfo.h"
 #include "Render/MRenderPass.h"
 
-#include <array>
-
 #include "MSinglePassRenderWork.h"
 #include "RenderProgram/MFrameShaderPropertyBlock.h"
 
+MORTY_SPACE_BEGIN
 
 class MCullingResultRenderable;
 class MTexture;
@@ -72,3 +71,5 @@ private:
 
 	std::array<std::shared_ptr<MShaderPropertyBlock>, 2> m_aFramePropertyBlock;
 };
+
+MORTY_SPACE_END

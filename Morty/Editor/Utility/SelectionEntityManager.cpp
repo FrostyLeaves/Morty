@@ -3,6 +3,8 @@
 #include "Scene/MScene.h"
 #include "Scene/MEntity.h"
 
+using namespace morty;
+
 void SelectionEntityManager::SetSelectedEntity(MEntity* pEntity)
 {
     if (pEntity)

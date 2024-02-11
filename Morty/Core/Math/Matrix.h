@@ -5,7 +5,9 @@
 #include "Math/Vector.h"
 #include "Math/Quaternion.h"
 
-namespace morty
+MORTY_SPACE_BEGIN
+
+namespace fbs
 {
 	struct Matrix3;
 	struct Matrix4;
@@ -54,7 +56,7 @@ public:
 
 public:
 
-	const morty::Matrix3* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	const fbs::Matrix3* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
 	void Deserialize(const void* pBufferPointer);
 
 public:
@@ -113,7 +115,7 @@ public:
 
 public:
 
-	const morty::Matrix4* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	const fbs::Matrix4* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
 	void Deserialize(const void* pBufferPointer);
 
 public:
@@ -124,3 +126,5 @@ private:
 	
 	float AlgebraicCofactor(const int& i, const int& j) const;
 };
+
+MORTY_SPACE_END

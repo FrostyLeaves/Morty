@@ -15,6 +15,8 @@
 #include "Basic/MCameraFrustum.h"
 #include "RenderProgram/MRenderInfo.h"
 
+MORTY_SPACE_BEGIN
+
 class MTaskNode;
 class MIRenderCommand;
 class MORTY_API MShadowMapRenderWork : public ISinglePassRenderWork
@@ -39,3 +41,5 @@ protected:
 
 	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 };
+
+MORTY_SPACE_END

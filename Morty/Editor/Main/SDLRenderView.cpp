@@ -30,6 +30,8 @@
 
 #include "Utility/RenderMessageManager.h"
 
+using namespace morty;
+
 void SDLRenderView::Initialize(MEngine* pEngine)
 {
 	MRenderView::Initialize(pEngine);

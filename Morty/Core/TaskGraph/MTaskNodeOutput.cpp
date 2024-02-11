@@ -4,6 +4,8 @@
 #include "TaskGraph/MTaskNode.h"
 #include "Utility/MFunction.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MTaskNodeOutput, MTypeClass)
 
 MTaskNodeOutput::MTaskNodeOutput()

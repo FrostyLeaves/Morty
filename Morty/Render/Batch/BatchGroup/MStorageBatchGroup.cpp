@@ -10,6 +10,8 @@
 #include "Component/MRenderMeshComponent.h"
 #include "Render/MVertex.h"
 
+using namespace morty;
+
 constexpr size_t TransformStructSize = sizeof(MMeshInstanceTransform);
 
 void MStorageBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram)

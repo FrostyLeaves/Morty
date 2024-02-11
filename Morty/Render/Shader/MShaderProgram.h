@@ -17,6 +17,8 @@
 #include "Shader/MShader.h"
 #include "Shader/MShaderParam.h"
 
+MORTY_SPACE_BEGIN
+
 struct MORTY_API MTextureResourceParam : public MShaderTextureParam
 {
 public:
@@ -110,3 +112,5 @@ protected:
 	EUsage m_eUsage = EUsage::EUnknow;
 
 };
+
+MORTY_SPACE_END

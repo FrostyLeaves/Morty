@@ -7,6 +7,8 @@
 
 #include "Component/MMoveControllerComponent.h"
 
+using namespace morty;
+
 bool MEditorModule::Register(MEngine* pEngine)
 {
 	if (!pEngine)

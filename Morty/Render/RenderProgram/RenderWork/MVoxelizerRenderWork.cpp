@@ -34,6 +34,8 @@
 #include "Variant/MVariant.h"
 #include "VXGI/MVoxelMapUtil.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MVoxelizerRenderWork, ISinglePassRenderWork)
 
 const MStringId MVoxelizerRenderWork::VoxelizerBufferOutput = MStringId("Voxelizer Buffer Output");

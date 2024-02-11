@@ -10,6 +10,7 @@
 
 #include "Render/MRenderGlobal.h"
 
+MORTY_SPACE_BEGIN
 
 class MMaterial;
 class MRenderPass;
@@ -60,3 +61,5 @@ public:
     VkPipeline m_vkPipeline = VK_NULL_HANDLE;
 #endif
 };
+
+MORTY_SPACE_END

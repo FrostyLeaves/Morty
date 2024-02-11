@@ -1,5 +1,5 @@
 include "Math/Vector.fbs";
-namespace morty;
+namespace morty.fbs;
 
 table MComponent
 {

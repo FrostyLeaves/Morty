@@ -13,8 +13,8 @@
 #include "Utility/MString.h"
 #include "Variant/MVariant.h"
 #include "Resource/MResource.h"
-#include <vector>
-#include <map>
+
+MORTY_SPACE_BEGIN
 
 class MBoundsOBB;
 class MShaderPropertyBlock;
@@ -74,3 +74,5 @@ private:
 	std::map<MString, uint32_t> m_tBonesMap;
 	std::vector<MBone> m_vAllBones;
 };
+
+MORTY_SPACE_END

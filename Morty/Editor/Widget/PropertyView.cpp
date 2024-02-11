@@ -13,6 +13,8 @@
 #include "Property/PropertyMRenderMeshComponent.h"
 #include "Utility/SelectionEntityManager.h"
 
+using namespace morty;
+
 #define REGISTER_PROPERTY( CLASS_NAME ) \
 	m_tCreatePropertyFactory[#CLASS_NAME] = []() {return new Property##CLASS_NAME(); };
 

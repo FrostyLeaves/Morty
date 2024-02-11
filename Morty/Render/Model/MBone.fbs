@@ -2,7 +2,7 @@ include "Math/Vector.fbs";
 include "Math/Quaternion.fbs";
 include "Math/Matrix.fbs";
 
-namespace morty;
+namespace morty.fbs;
 
 table MBone
 {

@@ -3,6 +3,8 @@
 #include "System/MResourceSystem.h"
 #include "Utility/MFileHelper.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MEntityResource, MResource)
 
 MEntityResource::MEntityResource()

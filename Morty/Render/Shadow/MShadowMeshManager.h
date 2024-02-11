@@ -12,6 +12,7 @@
 #include "Component/MRenderMeshComponent.h"
 #include "Batch/MMaterialBatchGroup.h"
 
+MORTY_SPACE_BEGIN
 
 class MIMesh;
 class MScene;
@@ -81,3 +82,5 @@ private:
 
 	MTaskNode* m_pUpdateTask = nullptr;
 };
+
+MORTY_SPACE_END

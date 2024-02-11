@@ -8,6 +8,8 @@
 #include "Material/MMaterial.h"
 #include "Model/MAnimationRenderProxy.h"
 
+MORTY_SPACE_BEGIN
+
 class IPropertyBlockAdapter;
 class MTaskNode;
 class MSkeletonInstance;
@@ -60,3 +62,5 @@ private:
 	std::shared_ptr<MAnimationRenderGroup> m_pAnimationRenderGroup = nullptr;
 	MTaskNode* m_pUpdateTask = nullptr;
 };
+
+MORTY_SPACE_END

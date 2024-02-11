@@ -11,6 +11,8 @@
 #include "Utility/MGlobal.h"
 #include "MBlurRenderWork.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MHBAOBlurRenderWorkV : public MBlurRenderWork
 {
 public:
@@ -32,3 +34,5 @@ public:
 	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 
 };
+
+MORTY_SPACE_END

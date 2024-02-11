@@ -11,6 +11,8 @@
 #include "Utility/MGlobal.h"
 #include "MBasicPostProcessRenderWork.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MBlurRenderWork : public MBasicPostProcessRenderWork
 {
 	MORTY_CLASS(MBlurRenderWork)
@@ -31,3 +33,5 @@ protected:
 
 	bool m_bVertical = false;
 };
+
+MORTY_SPACE_END

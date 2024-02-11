@@ -13,6 +13,8 @@
 #include "System/MResourceSystem.h"
 #include "Utility/MGlobal.h"
 
+using namespace morty;
+
 ImGuiRenderable::ImGuiRenderable(MEngine* pEngine)
 	: m_pEngine(pEngine)
 	, m_Mesh(true)

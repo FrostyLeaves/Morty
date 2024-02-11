@@ -11,6 +11,8 @@
 #include "Render/MRenderGlobal.h"
 #include "Shader/MShaderPropertyBlock.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MShaderBuffer
 {
 public:
@@ -50,3 +52,5 @@ class MGeometryShaderBuffer : public MShaderBuffer
 {
 
 };
+
+MORTY_SPACE_END

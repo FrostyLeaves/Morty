@@ -11,6 +11,8 @@
 #include "Engine/MSystem.h"
 #include "Thread/MThreadWork.h"
 
+MORTY_SPACE_BEGIN
+
 class MTaskNode;
 class MResourceLoader;
 class MResourceSystem;
@@ -35,3 +37,5 @@ private:
 
     std::optional<MThreadWork> m_loadWork;
 };
+
+MORTY_SPACE_END

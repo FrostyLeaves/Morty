@@ -12,6 +12,7 @@
 #include "MComponent.h"
 #include "Container/MBlockVector.h"
 
+MORTY_SPACE_BEGIN
 
 class MScene;
 class MEntity;
@@ -126,3 +127,5 @@ MComponent* MComponentGroup<TYPE>::FindComponent(size_t id)
 {
 	return m_vComponents.get(id);
 }
+
+MORTY_SPACE_END

@@ -3,6 +3,8 @@
 
 #include "TaskGraph/MTaskNode.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MTaskNodeInput, MTypeClass)
 
 MTaskNodeInput::MTaskNodeInput()

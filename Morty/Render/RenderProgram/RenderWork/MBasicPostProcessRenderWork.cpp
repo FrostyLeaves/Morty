@@ -10,6 +10,8 @@
 #include "Render/MRenderCommand.h"
 #include "RenderProgram/RenderGraph/MRenderGraph.h"
 
+using namespace morty;
+
 MORTY_INTERFACE_IMPLEMENT(MBasicPostProcessRenderWork, ISinglePassRenderWork)
 
 void MBasicPostProcessRenderWork::Initialize(MEngine* pEngine)

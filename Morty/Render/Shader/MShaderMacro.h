@@ -12,7 +12,7 @@
 #include "Utility/MStringId.h"
 #include "Variant/MVariant.h"
 
-#include <vector>
+MORTY_SPACE_BEGIN
 
 class MORTY_API MShaderMacro
 {
@@ -40,3 +40,5 @@ public:
 
     static std::unordered_map<MStringId, MString> s_vGlobalMacroParams;
 };
+
+MORTY_SPACE_END

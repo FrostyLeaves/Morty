@@ -11,6 +11,8 @@
 #include "Utility/MGlobal.h"
 #include "Math/Vector.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MColor
 {
 public:
@@ -46,3 +48,5 @@ public:
 	static MColor White_T;
 	static MColor Red;
 };
+
+MORTY_SPACE_END

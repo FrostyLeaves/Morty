@@ -9,6 +9,8 @@
 #include "TaskGraph/MMultiThreadTaskGraphWalker.h"
 #include "TaskGraph/MSingleThreadTaskGraphWalker.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MEngine, MTypeClass)
 
 MEngine::MEngine()

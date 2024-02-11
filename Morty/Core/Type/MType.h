@@ -11,6 +11,8 @@
 #include "Utility/MGlobal.h"
 #include "Utility/MString.h"
 
+MORTY_SPACE_BEGIN
+
 #define M_TYPE_DECL(Class) \
 public: \
 static const MType* GetClassType(); \
@@ -174,3 +176,5 @@ MTypeCreator<T>::MTypeCreator()
 {
 	MTypeClass::RegisterTypedClass<T>();
 }
+
+MORTY_SPACE_END

@@ -13,25 +13,22 @@
 #include "Utility/MGlobal.h"
 #include "Math/Vector.h"
 
+MORTY_SPACE_BEGIN
+
 class MPlane
 {
 public:
 	MPlane();
 	~MPlane();
-
-public:
-
+	
 	bool IsOnFront(const Vector3& position) const;
-
 	float GetDistance(const Vector3& position) const;
-
 	void MoveInNormal(const float& distance);
 
 public:
 	
 	//ax + by + cz + d = 0
-	
     Vector4 m_v4Plane;
-	
-	
 };
+
+MORTY_SPACE_END

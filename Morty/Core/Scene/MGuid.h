@@ -9,8 +9,9 @@
 #pragma once
 
 #include "MGuid_generated.h"
-#include "../../Render/Flatbuffer/MBone_generated.h"
 #include "Utility/MGlobal.h"
+
+MORTY_SPACE_BEGIN
 
 class MORTY_API MGuid
 {
@@ -34,3 +35,5 @@ public:
 
 	std::array<uint32_t, 4> data;
 };
+
+MORTY_SPACE_END

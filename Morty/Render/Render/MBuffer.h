@@ -10,6 +10,7 @@
 
 #include "Render/MRenderGlobal.h"
 
+MORTY_SPACE_BEGIN
 
 class MIDevice;
 class MORTY_API MBuffer
@@ -87,3 +88,5 @@ public:
     uint32_t m_eUsageType = 0;
     MStageType m_eStageType = MStageType::EUnknow;
 };
+
+MORTY_SPACE_END

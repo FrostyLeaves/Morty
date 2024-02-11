@@ -45,6 +45,8 @@
 #include "Widget/RenderSettingView.h"
 #include "Widget/TaskGraphView.h"
 
+using namespace morty;
+
 MString MainEditor::m_sRenderProgramName = MDeferredRenderProgram::GetClassTypeName();
 
 bool MainEditor::Initialize(MEngine* pEngine)

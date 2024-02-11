@@ -45,6 +45,8 @@
 #include "Resource/MMaterialTemplateResource.h"
 #include "Resource/MTextureResourceUtil.h"
 
+using namespace morty;
+
 const MString MRenderModule::DefaultWhite = MString("Default_White");
 const MString MRenderModule::DefaultNormal = MString("Default_Normal");
 const MString MRenderModule::Default_R8_One = MString("Default_R8_One");

@@ -10,6 +10,8 @@
 
 #include "Utility/MGlobal.h"
 
+MORTY_SPACE_BEGIN
+
 enum class METhreadType : int
 {
 	EAny = -2,
@@ -30,3 +32,5 @@ struct MORTY_API MThreadWork
 
 	int eThreadType = static_cast<int>(METhreadType::EAny);
 };
+
+MORTY_SPACE_END

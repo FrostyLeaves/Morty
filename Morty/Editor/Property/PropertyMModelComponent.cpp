@@ -4,6 +4,8 @@
 
 #include "imgui.h"
 
+using namespace morty;
+
 void PropertyMModelComponent::EditAnimation(MModelComponent* pModelComponent)
 {
 	

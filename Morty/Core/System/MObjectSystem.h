@@ -15,6 +15,7 @@
 #include "Object/MObject.h"
 #include "Engine/MSystem.h"
 
+MORTY_SPACE_BEGIN
 
 class MEngine;
 class MORTY_API MObjectSystem : public MISystem
@@ -67,3 +68,5 @@ private:
 
 	std::vector<PostCreateObjectFunction> m_vPostCreateObjectFunction;
 };
+
+MORTY_SPACE_END

@@ -12,6 +12,8 @@
 #include "Resource/MMeshResource.h"
 #include "Resource/MMaterialResource.h"
 
+using namespace morty;
+
 void CREATE_FLOOR_GRID(MEngine* pEngine, MScene* pScene)
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();

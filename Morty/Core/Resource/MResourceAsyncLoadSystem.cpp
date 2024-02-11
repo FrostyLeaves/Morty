@@ -6,6 +6,8 @@
 #include "Utility/MFunction.h"
 #include "Resource/MResourceLoader.h"
 
+using namespace morty;
+
 void MResourceAsyncLoadSystem::Initialize()
 {
 

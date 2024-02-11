@@ -26,6 +26,8 @@
 
 #include "Material/MComputeDispatcher.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MVRSTextureRenderWork, MRenderTaskNode)
 
 const MStringId MVRSTextureRenderWork::VRS_TEXTURE = MStringId("VRS Screen Texture");

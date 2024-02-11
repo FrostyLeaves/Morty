@@ -12,6 +12,8 @@
 
 #include "Flatbuffer/MEntity_generated.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MEntity, MTypeClass)
 
 MEntity::MEntity()
@@ -119,10 +121,10 @@ void MEntity::DeleteSelf()
 flatbuffers::Offset<void> MEntity::Serialize(flatbuffers::FlatBufferBuilder& builder)
 {
 	MGuid id = GetID();
-	morty::MGuid fbguid(id.data[0], id.data[1], id.data[2], id.data[3]);
+	fbs::MGuid fbguid(id.data[0], id.data[1], id.data[2], id.data[3]);
 	auto fbname = builder.CreateString(GetName());
 
-	std::vector<flatbuffers::Offset<morty::AnyComponent >> vFbComponents;
+	std::vector<flatbuffers::Offset<fbs::AnyComponent >> vFbComponents;
 	std::vector<MComponent*>&& vComponents = GetComponents();
 	for (MComponent* pComponent : vComponents)
 	{
@@ -131,14 +133,14 @@ flatbuffers::Offset<void> MEntity::Serialize(flatbuffers::FlatBufferBuilder& bui
 		compBuilder.Finish(componentRoot);
 
 		flatbuffers::Offset<flatbuffers::Vector<uint8_t>>&& fbdata = builder.CreateVector(compBuilder.GetBufferPointer(), compBuilder.GetSize());
-		flatbuffers::Offset<morty::AnyComponent>&& fbcomponent =morty::CreateAnyComponent(builder, builder.CreateString(pComponent->GetTypeName()), fbdata);
+		flatbuffers::Offset<fbs::AnyComponent>&& fbcomponent = fbs::CreateAnyComponent(builder, builder.CreateString(pComponent->GetTypeName()), fbdata);
 
 		vFbComponents.push_back(fbcomponent);
 	}
 
 	auto fb_components = builder.CreateVector(vFbComponents);
 
-	morty::MEntityBuilder entityBuilder(builder);
+	fbs::MEntityBuilder entityBuilder(builder);
 
 	entityBuilder.add_id(&fbguid);
 	entityBuilder.add_name(fbname);
@@ -149,13 +151,13 @@ flatbuffers::Offset<void> MEntity::Serialize(flatbuffers::FlatBufferBuilder& bui
 
 void MEntity::Deserialize(const void* pBufferPointer)
 {
-	const morty::MEntity* fbEntity = reinterpret_cast<const morty::MEntity *>(pBufferPointer);
+	const fbs::MEntity* fbEntity = reinterpret_cast<const fbs::MEntity *>(pBufferPointer);
 
-	//const morty::MGuid * fbguid = fbEntity->id();
+	//const fbs::MGuid * fbguid = fbEntity->id();
 	//m_id = MGuid(fbguid->data0(), fbguid->data1(), fbguid->data2(), fbguid->data3());
 	m_strName = fbEntity->name()->c_str();
 
-	const flatbuffers::Vector<flatbuffers::Offset<morty::AnyComponent>>& vfbcomponents = *fbEntity->components();
+	const flatbuffers::Vector<flatbuffers::Offset<fbs::AnyComponent>>& vfbcomponents = *fbEntity->components();
 
 	for (size_t i = 0; i < vfbcomponents.size(); ++i)
 	{

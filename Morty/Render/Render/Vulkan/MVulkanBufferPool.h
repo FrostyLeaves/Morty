@@ -15,8 +15,8 @@
 #if RENDER_GRAPHICS == MORTY_VULKAN
 #include "Render/Vulkan/MVulkanWrapper.h"
 #include "Utility/MIDPool.h"
-#include <vector>
-#include <map>
+
+MORTY_SPACE_BEGIN
 
 class MVulkanDevice;
 struct MShaderConstantParam;
@@ -82,5 +82,6 @@ private:
     MByte* m_pReadBackMemoryMapping;
 };
 
+MORTY_SPACE_END
 
 #endif

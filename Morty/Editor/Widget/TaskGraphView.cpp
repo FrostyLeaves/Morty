@@ -8,6 +8,8 @@
 
 #include "Render/ImGui/imnodes.h"
 
+using namespace morty;
+
 TaskGraphView::TaskGraphView(const MString& viewName)
 	: BaseWidget()
 {

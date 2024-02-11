@@ -2,7 +2,7 @@
 #include "Render/MIDevice.h"
 #include <stdint.h>
 
-
+using namespace morty;
 
 MBuffer::MBuffer()
 {

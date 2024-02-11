@@ -7,6 +7,8 @@
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
 
+using namespace morty;
+
 #define FOUR_CHAR_CODE(char1, char2, char3, char4) (static_cast<uint32_t>(char1) | (static_cast<uint32_t>(char2) << 8) | (static_cast<uint32_t>(char3) << 16) | (static_cast<uint32_t>(char4) << 24))
 
 struct DdsPixelFormatType

@@ -6,6 +6,8 @@
 #include "Render/MIDevice.h"
 #include "Render/MVertex.h"
 
+MORTY_SPACE_BEGIN
+
 class MInstanceBatchGroup;
 
 class MORTY_API MBoundingCulling
@@ -34,3 +36,5 @@ private:
     std::vector<std::shared_ptr<IMeshInstanceFilter>> m_vFilter;
 
 };
+
+MORTY_SPACE_END

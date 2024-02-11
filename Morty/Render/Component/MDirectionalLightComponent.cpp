@@ -2,10 +2,12 @@
 
 #include "Flatbuffer/MDirectionalLightComponent_generated.h"
 
-MORTY_CLASS_IMPLEMENT(MDirectionalLightComponent, MComponent)
-
 #include "Scene/MScene.h"
 #include "Component/MSceneComponent.h"
+
+using namespace morty;
+
+MORTY_CLASS_IMPLEMENT(MDirectionalLightComponent, MComponent)
 
 MDirectionalLightComponent::MDirectionalLightComponent()
 	: MComponent()
@@ -39,10 +41,10 @@ flatbuffers::Offset<void> MDirectionalLightComponent::Serialize(flatbuffers::Fla
 {
 	auto fbSuper = Super::Serialize(fbb).o;
 
-	morty::MDirectionalLightComponentBuilder builder(fbb);
+	fbs::MDirectionalLightComponentBuilder builder(fbb);
 
 	Vector4 color = GetColorVector();
-	builder.add_color(reinterpret_cast<morty::Vector4*>(&color));
+	builder.add_color(reinterpret_cast<fbs::Vector4*>(&color));
 	builder.add_light_intensity(GetLightIntensity());
 
 	builder.add_super(fbSuper);
@@ -52,13 +54,13 @@ flatbuffers::Offset<void> MDirectionalLightComponent::Serialize(flatbuffers::Fla
 
 void MDirectionalLightComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	const morty::MDirectionalLightComponent* fbcomponent =morty::GetMDirectionalLightComponent(fbb.GetCurrentBufferPointer());
+	const fbs::MDirectionalLightComponent* fbcomponent = fbs::GetMDirectionalLightComponent(fbb.GetCurrentBufferPointer());
 	Deserialize(fbcomponent);
 }
 
 void MDirectionalLightComponent::Deserialize(const void* pBufferPointer)
 {
-	const morty::MDirectionalLightComponent* pComponent = reinterpret_cast<const morty::MDirectionalLightComponent*>(pBufferPointer);
+	const fbs::MDirectionalLightComponent* pComponent = reinterpret_cast<const fbs::MDirectionalLightComponent*>(pBufferPointer);
 
 	SetColorVector(*reinterpret_cast<const Vector4*>(pComponent->color()));
 	SetLightIntensity(pComponent->light_intensity());

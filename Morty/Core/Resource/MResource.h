@@ -10,8 +10,7 @@
 #include "Utility/MGlobal.h"
 #include "Type/MType.h"
 
-#include <vector>
-#include <functional>
+MORTY_SPACE_BEGIN
 
 class MResourceLoader;
 class MResourceSystem;
@@ -139,3 +138,5 @@ private:
 
 	std::shared_ptr<MResource> m_pResource;
 };
+
+MORTY_SPACE_END

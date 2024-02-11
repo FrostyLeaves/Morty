@@ -16,6 +16,8 @@
 #include "Render/Vulkan/MVulkanWrapper.h"
 #endif
 
+MORTY_SPACE_BEGIN
+
 //顶点
 struct MVertex
 {
@@ -90,3 +92,5 @@ struct VoxelizerOutput
 	uint32_t nBaseColor[4 * 6];
 	uint32_t nVoxelCount[6];
 };
+
+MORTY_SPACE_END

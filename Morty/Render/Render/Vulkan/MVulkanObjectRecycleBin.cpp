@@ -1,6 +1,8 @@
 #include "Render/Vulkan/MVulkanObjectRecycleBin.h"
 #include "Render/Vulkan/MVulkanDevice.h"
 
+using namespace morty;
+
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 

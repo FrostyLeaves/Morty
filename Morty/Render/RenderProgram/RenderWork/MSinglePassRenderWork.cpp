@@ -23,6 +23,8 @@
 #include "Utility/MBounds.h"
 #include "Mesh/MMeshManager.h"
 
+using namespace morty;
+
 MORTY_INTERFACE_IMPLEMENT(ISinglePassRenderWork, MRenderTaskNode)
 
 void ISinglePassRenderWork::Initialize(MEngine* pEngine)

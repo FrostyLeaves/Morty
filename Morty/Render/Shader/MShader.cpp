@@ -2,7 +2,7 @@
 #include "Render/MIDevice.h"
 #include "Render/MVertex.h"
 
-#include <vector>
+using namespace morty;
 
 bool MShader::CompileShader(MIDevice* pDevice)
 {

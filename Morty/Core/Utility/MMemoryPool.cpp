@@ -1,6 +1,6 @@
 #include "MMemoryPool.h"
 
-#include <algorithm>
+using namespace morty;
 
 MMemoryPool::MMemoryPool(const size_t& unPoolSize)
 	: m_nMaxMemorySize(unPoolSize)

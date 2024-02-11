@@ -9,9 +9,9 @@
 #pragma once
 
 #include "Render/MRenderGlobal.h"
-
 #include "Math/Vector.h"
-#include <array>
+
+MORTY_SPACE_BEGIN
 
 class MIDevice;
 
@@ -199,3 +199,5 @@ public:
 #endif
 
 };
+
+MORTY_SPACE_END

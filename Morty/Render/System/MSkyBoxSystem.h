@@ -13,6 +13,8 @@
 
 #include "Component/MComponent.h"
 
+MORTY_SPACE_BEGIN
+
 class MIRenderCommand;
 class MSkyBoxComponent;
 class MORTY_API MSkyBoxSystem : public MISystem
@@ -31,3 +33,5 @@ private:
 
     void GenerateEnvironmentWork(MSkyBoxComponent* pComponent);
 };
+
+MORTY_SPACE_END

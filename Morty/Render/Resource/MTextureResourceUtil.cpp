@@ -9,6 +9,8 @@
 
 #include "stb_image.h"
 
+using namespace morty;
+
 template <typename T>
 void FillChannelNum(const MByte* aByteData, T* aTargetData, const size_t& nSourceSize, const size_t& nSourceChannel, const size_t& nTargetChannel, const std::array<T, 4>& aDefaultColor)
 {

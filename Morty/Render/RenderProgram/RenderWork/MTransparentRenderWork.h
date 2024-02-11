@@ -20,6 +20,8 @@
 #include "MSinglePassRenderWork.h"
 #include "RenderProgram/MFrameShaderPropertyBlock.h"
 
+MORTY_SPACE_BEGIN
+
 
 class MCullingResultRenderable;
 class MTexture;
@@ -57,3 +59,5 @@ private:
 
 	std::shared_ptr<MMaterial> m_pDrawFillMaterial = nullptr;
 };
+
+MORTY_SPACE_END

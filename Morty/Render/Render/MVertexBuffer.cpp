@@ -1,5 +1,7 @@
 #include "Render/MVertexBuffer.h"
 
+using namespace morty;
+
 MVertexBuffer::MVertexBuffer()
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN

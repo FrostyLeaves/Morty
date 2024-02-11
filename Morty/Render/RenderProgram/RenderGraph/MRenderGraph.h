@@ -19,6 +19,8 @@
 #include "RenderProgram/RenderGraph/MRenderTargetManager.h"
 #include "Utility/MStringId.h"
 
+MORTY_SPACE_BEGIN
+
 class MRenderGraphSetting;
 class IPropertyBlockAdapter;
 class MRenderTaskTarget;
@@ -101,3 +103,5 @@ TYPE* MRenderGraph::FindTaskNode(const MStringId& strTaskNodeName) const
 
     return nullptr;
 }
+
+MORTY_SPACE_END

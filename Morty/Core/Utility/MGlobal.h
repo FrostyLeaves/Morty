@@ -29,6 +29,9 @@
 //#define MATRIX_MAJOR ROW_MAJOR
 #define MATRIX_MAJOR COL_MAJOR
 
+#define MORTY_SPACE_BEGIN namespace morty {
+#define MORTY_SPACE_END }
+
 //#pragma warning( disable: 4251 )
 //#pragma warning( disable: 4275 )
 
@@ -85,6 +88,8 @@ template<class T> void MORTY_SAFE_DELETE(T& pointer)
     }
 }
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MGlobal
 {
 public:
@@ -98,5 +103,4 @@ public:
 
 class MEngine;
 
-#define MORTY_SPACE_BEGIN namespace morty {
-#define MORTY_SPACE_END }
+MORTY_SPACE_END

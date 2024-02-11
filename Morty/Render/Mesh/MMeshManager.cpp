@@ -13,6 +13,8 @@
 #include "Utility/MGlobal.h"
 #include "RenderProgram/RenderWork/MRenderWork.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MMeshManager, MObject)
 
 constexpr size_t VertexMemoryMaxSize = 1024 * 1024 * 20;

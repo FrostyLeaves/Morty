@@ -10,6 +10,7 @@
 
 #include "Render/MRenderGlobal.h"
 
+MORTY_SPACE_BEGIN
 
 class MORTY_API MVertexBuffer
 {
@@ -24,3 +25,5 @@ public:
 	VkDeviceMemory m_VkIndexBufferMemory;
 #endif
 };
+
+MORTY_SPACE_END

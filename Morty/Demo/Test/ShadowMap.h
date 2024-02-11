@@ -15,6 +15,8 @@
 #include "Resource/MMeshResourceUtil.h"
 #include "Utility/MGlobal.h"
 
+using namespace morty;
+
 void ADD_DIRECTIONAL_LIGHT(MEngine* pEngine, MScene* pScene)
 {
 	MORTY_UNUSED(pEngine);

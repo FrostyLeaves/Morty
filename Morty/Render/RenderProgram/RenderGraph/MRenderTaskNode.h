@@ -20,6 +20,8 @@
 #include "Render/MRenderCommand.h"
 #include "RenderProgram/RenderGraph/MRenderTargetManager.h"
 
+MORTY_SPACE_BEGIN
+
 class MRenderTaskNodeInput;
 class IShaderPropertyUpdateDecorator;
 class MRenderTargetManager;
@@ -114,3 +116,5 @@ public:
 	std::unordered_map<MStringId, MRenderTaskNodeInput*> m_tInput;
 	std::unordered_map<MStringId, MRenderTaskNodeOutput*> m_tOutput;
 };
+
+MORTY_SPACE_END

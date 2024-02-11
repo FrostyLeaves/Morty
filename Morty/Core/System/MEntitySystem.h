@@ -12,6 +12,8 @@
 #include "Engine/MSystem.h"
 #include "Component/MComponent.h"
 
+MORTY_SPACE_BEGIN
+
 class MScene;
 class MEntity;
 class MResource;
@@ -22,9 +24,7 @@ class MORTY_API MEntitySystem : public MISystem
 public:
     MEntitySystem();
     virtual ~MEntitySystem();
-
-public:
-
+    
     void AddChild(MEntity* pParent, MEntity* pChild);
 
     std::shared_ptr<MResource> PackEntity(const std::vector<MEntity*>& vEntity);
@@ -32,7 +32,7 @@ public:
     std::vector<MEntity*> LoadEntity(MScene* pScene, std::shared_ptr<MResource> pResource);
 
     void FindAllComponentRecursively(MEntity* pEntity, const MType* pComponentType, std::vector<MComponentID>& vResult);
-
-private:
-
+    
 };
+
+MORTY_SPACE_END

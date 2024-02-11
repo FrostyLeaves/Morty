@@ -9,6 +9,8 @@
 
 #include "Flatbuffer/MSceneComponent_generated.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MSceneComponent, MComponent)
 
 MSceneComponent::MSceneComponent()
@@ -316,10 +318,10 @@ void MSceneComponent::CallRecursivelyFunction(MEntity* pEntity, std::function<vo
 
 flatbuffers::Offset<void> MSceneComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	flatbuffers::Offset<morty::MComponent> fbsuper = Super::Serialize(fbb).o;
-	flatbuffers::Offset<morty::MTransform> fbTransform = m_transform.Serialize(fbb).o;
+	flatbuffers::Offset<fbs::MComponent> fbsuper = Super::Serialize(fbb).o;
+	flatbuffers::Offset<fbs::MTransform> fbTransform = m_transform.Serialize(fbb).o;
 
-	morty::MSceneComponentBuilder compBuilder(fbb);
+	fbs::MSceneComponentBuilder compBuilder(fbb);
 
 	compBuilder.add_transform(fbTransform);
 
@@ -328,7 +330,7 @@ flatbuffers::Offset<void> MSceneComponent::Serialize(flatbuffers::FlatBufferBuil
 		if (MEntity* pParentEntity = pParent->GetEntity())
 		{
 			MGuid id = pParentEntity->GetID();
-			morty::MGuid fbguid(id.data[0], id.data[1], id.data[2], id.data[3]);
+			fbs::MGuid fbguid(id.data[0], id.data[1], id.data[2], id.data[3]);
 			compBuilder.add_parent(&fbguid);
 		}
 	}
@@ -340,13 +342,13 @@ flatbuffers::Offset<void> MSceneComponent::Serialize(flatbuffers::FlatBufferBuil
 
 void MSceneComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	const morty::MSceneComponent* fbcomponent =morty::GetMSceneComponent(fbb.GetCurrentBufferPointer());
+	const fbs::MSceneComponent* fbcomponent = fbs::GetMSceneComponent(fbb.GetCurrentBufferPointer());
 	Deserialize(fbcomponent);
 }
 
 void MSceneComponent::Deserialize(const void* pBufferPointer)
 {
-	const morty::MSceneComponent* fbComponent = reinterpret_cast<const morty::MSceneComponent*>(pBufferPointer);
+	const fbs::MSceneComponent* fbComponent = reinterpret_cast<const fbs::MSceneComponent*>(pBufferPointer);
 
 	Super::Deserialize(fbComponent->super());
 
@@ -355,7 +357,7 @@ void MSceneComponent::Deserialize(const void* pBufferPointer)
 	transform.Deserialize(fbComponent->transform());
 	SetTransform(transform);
 	
-	if (const morty::MGuid* fbguid = fbComponent->parent())
+	if (const fbs::MGuid* fbguid = fbComponent->parent())
 	{
 		m_parentGuid = MGuid(fbguid->data0(), fbguid->data1(), fbguid->data2(), fbguid->data3());
 	}

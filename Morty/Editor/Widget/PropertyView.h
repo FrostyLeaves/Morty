@@ -11,6 +11,8 @@
 #include <deque>
 #include <functional>
 
+MORTY_SPACE_BEGIN
+
 class MEntity;
 class PropertyBase;
 class PropertyView : public BaseWidget
@@ -36,3 +38,5 @@ private:
 	
 	std::map<MString, std::function<PropertyBase*()>> m_tCreatePropertyFactory;
 };
+
+MORTY_SPACE_END

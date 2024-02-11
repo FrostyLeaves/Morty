@@ -3,6 +3,10 @@
 #include "Render/SceneTexture.h"
 #include "View/MRenderView.h"
 
+struct SDL_Window;
+
+MORTY_SPACE_BEGIN
+
 class ImGuiRenderable;
 class MNode;
 class MScene;
@@ -58,9 +62,11 @@ private:
     bool m_bWindowMinimized = false;
 	bool m_bWindowResized = false;
 	bool m_bWindowClosed = false;
-	struct SDL_Window* m_pSDLWindow = nullptr;
+	SDL_Window* m_pSDLWindow = nullptr;
 	MTaskNode* m_pRenderTask = nullptr;
 	ImGuiRenderable* m_pImGuiRender = nullptr;
 
 	std::vector<RenderViewContent*> m_vContent;
 };
+
+MORTY_SPACE_END

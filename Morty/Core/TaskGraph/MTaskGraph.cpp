@@ -3,6 +3,8 @@
 #include "MTaskGraphWalker.h"
 #include "Scene/MGuid.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MTaskGraph, MTypeClass)
 
 MTaskGraph::MTaskGraph()

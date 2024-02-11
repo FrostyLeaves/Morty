@@ -16,6 +16,8 @@
 #include "Render/MRenderPass.h"
 #include "RenderProgram/MRenderInfo.h"
 
+MORTY_SPACE_BEGIN
+
 class MBuffer;
 class MTexture;
 class MMaterial;
@@ -126,3 +128,5 @@ public:
 
     std::shared_ptr<MTexture> pTexture = nullptr;
 };
+
+MORTY_SPACE_END

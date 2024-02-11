@@ -1,6 +1,8 @@
 #include "Utility/MTransform.h"
 #include "Flatbuffer/MTransform_generated.h"
 
+using namespace morty;
+
 MTransform::MTransform()
 	: m_v3Position(0, 0, 0)
 	, m_v3Scale(1, 1, 1)
@@ -41,7 +43,7 @@ Matrix4 MTransform::GetMatrix() const
 
 flatbuffers::Offset<void> MTransform::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	morty::MTransformBuilder fbBuilder(fbb);
+	fbs::MTransformBuilder fbBuilder(fbb);
 
 	fbBuilder.add_position(m_v3Position.Serialize(fbb));
 	fbBuilder.add_scale(m_v3Scale.Serialize(fbb));
@@ -52,7 +54,7 @@ flatbuffers::Offset<void> MTransform::Serialize(flatbuffers::FlatBufferBuilder& 
 
 void MTransform::Deserialize(const void* pBufferPointer)
 {
-	const morty::MTransform* fbTransform = reinterpret_cast<const morty::MTransform*>(pBufferPointer);
+	const fbs::MTransform* fbTransform = reinterpret_cast<const fbs::MTransform*>(pBufferPointer);
 
 	m_v3Position.Deserialize(fbTransform->position());
 	m_qtRotation.Deserialize(fbTransform->rotation());

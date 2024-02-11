@@ -8,6 +8,8 @@
 #include "Shader/MShaderPropertyBlock.h"
 #include "System/MRenderSystem.h"
 
+using namespace morty;
+
 void MAnimationRenderGroup::AddSkeletonRenderInstance(MSkeletonInstanceKey nProxyId, const MPoseRenderProxy& poseProxy)
 {
 	if (m_tPoseRenderInstance.HasItem(nProxyId))

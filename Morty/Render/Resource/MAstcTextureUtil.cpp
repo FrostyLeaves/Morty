@@ -7,6 +7,8 @@
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
 
+using namespace morty;
+
 struct AstcHeader
 {
 	uint8_t magic[4];

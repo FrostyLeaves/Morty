@@ -17,6 +17,8 @@
 #include "Render/Vulkan/MVulkanDevice.h"
 #endif
 
+MORTY_SPACE_BEGIN
+
 class MTaskNode;
 class MIRenderCommand;
 
@@ -103,3 +105,5 @@ private:
 	uint32_t m_unWidht = 800;
 	uint32_t m_unHeight = 600;
 };
+
+MORTY_SPACE_END

@@ -34,6 +34,8 @@
 #include "vulkan/vulkan_android.h"
 #endif
 
+using namespace morty;
+
 const std::vector<const char*> ValidationLayers = {
 
 	"VK_LAYER_KHRONOS_validation"

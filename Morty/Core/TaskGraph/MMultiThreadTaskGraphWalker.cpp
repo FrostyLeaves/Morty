@@ -5,6 +5,8 @@
 #include "TaskGraph/MTaskGraph.h"
 #include "Thread/MThreadPool.h"
 
+using namespace morty;
+
 MMultiThreadTaskGraphWalker::MMultiThreadTaskGraphWalker(MThreadPool* pThreadPool)
 	: m_pThreadPool(pThreadPool)
 {

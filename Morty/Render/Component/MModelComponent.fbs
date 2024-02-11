@@ -1,5 +1,5 @@
 include "Component/MComponent.fbs";
-namespace morty;
+namespace morty.fbs;
 
 table MModelComponent
 {

@@ -1,12 +1,13 @@
-#ifndef _QUATERNION_H_
-#define _QUATERNION_H_
+#pragma once
 
 #include "Utility/MGlobal.h"
 
 #include "Math/Vector.h"
 #include "Math/Matrix.h"
 
-namespace morty
+MORTY_SPACE_BEGIN
+
+namespace fbs
 {
 	struct Quaternion;
 }
@@ -20,12 +21,12 @@ public:
 	Quaternion(const float& w, const float& x, const float& y, const float& z);
 	Quaternion(const float& w, const Vector3& v);
 	Quaternion(const Vector3& vAxis, const float& fAngle);
-	Quaternion(const morty::Quaternion& value);
+	Quaternion(const fbs::Quaternion& value);
 
 	static Quaternion FromEuler(const Vector3& eulerVec3);
 
 public:
-	const morty::Quaternion* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	const fbs::Quaternion* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
 	void Deserialize(const void* pBufferPointer);
 
 public:
@@ -73,4 +74,4 @@ public:
 
 const Quaternion UnitQuaternion(1, 0, 0, 0);
 
-#endif
+MORTY_SPACE_END

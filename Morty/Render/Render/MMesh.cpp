@@ -5,6 +5,8 @@
 #include "Render/MIDevice.h"
 #include "Render/MVertex.h"
 
+using namespace morty;
+
 MIMesh::MIMesh(const bool& bDynamicMesh/* = false*/)
 	: m_vertexBuffer()
 	, m_indexBuffer()

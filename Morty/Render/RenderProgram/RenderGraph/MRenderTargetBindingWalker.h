@@ -14,6 +14,8 @@
 #include "Utility/MGlobal.h"
 #include "TaskGraph/MTaskGraphWalker.h"
 
+MORTY_SPACE_BEGIN
+
 class IPropertyBlockAdapter;
 class MIMesh;
 class MIRenderCommand;
@@ -51,3 +53,5 @@ private:
 
     std::vector<std::shared_ptr<MTexture>> m_vExclusiveTextures;
 };
+
+MORTY_SPACE_END

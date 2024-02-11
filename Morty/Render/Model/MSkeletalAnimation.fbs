@@ -2,7 +2,7 @@ include "Math/Vector.fbs";
 include "Math/Quaternion.fbs";
 include "Model/MSkeletalAnimNode.fbs";
 
-namespace morty;
+namespace morty.fbs;
 
 table MSkeletalAnimation
 {

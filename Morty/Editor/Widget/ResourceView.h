@@ -2,6 +2,7 @@
 
 #include "Main/BaseWidget.h"
 
+MORTY_SPACE_BEGIN
 
 class ResourceView : public BaseWidget
 {
@@ -15,3 +16,4 @@ public:
 	
 };
 
+MORTY_SPACE_END

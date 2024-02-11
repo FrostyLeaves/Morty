@@ -6,6 +6,8 @@
 #include "Basic/MCameraFrustum.h"
 #include "RenderProgram/MRenderInfo.h"
 
+MORTY_SPACE_BEGIN
+
 class MIMesh;
 class MScene;
 class MEngine;
@@ -42,3 +44,5 @@ public:
 
 	static MCascadedArray<std::unique_ptr<class IRenderableFilter>> GetBoundsCullingFilter(MViewport* pViewport, const MCascadedArray<MBoundsSphere>& vBoundsSphere);
 };
+
+MORTY_SPACE_END

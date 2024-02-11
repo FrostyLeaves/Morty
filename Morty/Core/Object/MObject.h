@@ -10,11 +10,9 @@
 #include "Utility/MGlobal.h"
 
 #include "Type/MType.h"
-#include "Utility/MIDPool.h"
 #include "Utility/MString.h"
 
-#include <vector>
-#include <map>
+MORTY_SPACE_BEGIN
 
 class MEngine;
 class MAutoPtr;
@@ -51,3 +49,5 @@ protected:
 private:
 	bool		m_bDeleteMark;
 };
+
+MORTY_SPACE_END

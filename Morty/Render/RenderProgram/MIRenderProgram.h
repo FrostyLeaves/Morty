@@ -11,6 +11,8 @@
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
 
+MORTY_SPACE_BEGIN
+
 class MTaskGraph;
 class MScene;
 class MTexture;
@@ -43,3 +45,5 @@ private:
     MViewport* m_pViewport;
 
 };
+
+MORTY_SPACE_END

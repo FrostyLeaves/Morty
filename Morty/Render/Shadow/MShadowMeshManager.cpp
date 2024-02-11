@@ -18,6 +18,7 @@
 #include "Resource/MMaterialResource.h"
 #include "Utility/MGlobal.h"
 
+using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MShadowMeshManager, IManager)
 

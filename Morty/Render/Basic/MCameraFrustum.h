@@ -14,6 +14,8 @@
 #include "Utility/MBounds.h"
 #include "Basic/MPlane.h"
 
+MORTY_SPACE_BEGIN
+
 class MViewport;
 class MORTY_API MCameraFrustum
 {
@@ -49,3 +51,5 @@ protected:
 
 	MPlane m_vPlanes[6];
 };
+
+MORTY_SPACE_END

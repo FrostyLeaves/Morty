@@ -20,6 +20,8 @@
 #define MORTY_VXGI_ENABLE (false)
 #define VRS_OPTIMIZE_ENABLE  (false)
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MRenderGlobal
 {
 public:
@@ -89,3 +91,5 @@ enum class MECameraType
 	EPerspective = 1,
 	EOrthographic = 2,
 };
+
+MORTY_SPACE_END

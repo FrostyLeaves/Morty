@@ -6,6 +6,7 @@
 
 #endif
 
+using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MThreadPool, MTypeClass)
 

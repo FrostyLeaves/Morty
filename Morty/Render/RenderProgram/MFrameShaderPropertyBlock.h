@@ -14,8 +14,8 @@
 #include "MRenderInfo.h"
 #include "Shader/MShaderPropertyBlock.h"
 #include "RenderWork/MRenderWork.h"
-#include <memory>
 
+MORTY_SPACE_BEGIN
 
 class MORTY_API MFramePropertyDecorator : public IShaderPropertyUpdateDecorator
 {
@@ -85,3 +85,5 @@ protected:
 
 	std::vector<std::shared_ptr<IShaderPropertyUpdateDecorator>> m_vPropertyUpdateDecorator;
 };
+
+MORTY_SPACE_END

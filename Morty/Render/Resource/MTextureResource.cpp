@@ -13,6 +13,8 @@
 
 #include "Flatbuffer/MTextureResource_generated.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MTextureResource, MResource)
 
 
@@ -150,11 +152,11 @@ flatbuffers::Offset<void> MTextureResourceData::Serialize(flatbuffers::FlatBuffe
 {
 	auto fbTextureData = fbb.CreateVector<int8_t>(reinterpret_cast<const int8_t*>(aByteData.data()), aByteData.size());
 
-	morty::MTextureResourceBuilder builder(fbb);
+	fbs::MTextureResourceBuilder builder(fbb);
 
 	builder.add_width(static_cast<uint32_t>(nWidth));
 	builder.add_height(static_cast<uint32_t>(nHeight));
-	builder.add_format(static_cast<morty::METextureLayout>(eFormat));
+	builder.add_format(static_cast<fbs::METextureLayout>(eFormat));
 	builder.add_mipmap(bMipmap);
 	builder.add_data(fbTextureData);
 
@@ -163,7 +165,7 @@ flatbuffers::Offset<void> MTextureResourceData::Serialize(flatbuffers::FlatBuffe
 
 void MTextureResourceData::Deserialize(const void* pBufferPointer)
 {
-	const morty::MTextureResource* fbData =morty::GetMTextureResource(pBufferPointer);
+	const fbs::MTextureResource* fbData = fbs::GetMTextureResource(pBufferPointer);
     nWidth = fbData->width();
     nHeight = fbData->height();
 	eFormat = static_cast<morty::METextureLayout>(fbData->format());

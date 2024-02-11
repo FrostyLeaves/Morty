@@ -6,6 +6,8 @@
 #include "Resource/MSkeletonResource.h"
 #include "Flatbuffer/MSkeletalAnimationResource_generated.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MSkeletalAnimationResource, MResource);
 
 flatbuffers::Offset<void> MSkeletalAnimationResourceData::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
@@ -13,7 +15,7 @@ flatbuffers::Offset<void> MSkeletalAnimationResourceData::Serialize(flatbuffers:
     auto fbAnimation = skeletonAnimation.Serialize(fbb).o;
     auto fbSkeleton = fbb.CreateString(skeletonResource).o;
 
-   morty::MSkeletalAnimationResourceBuilder builder(fbb);
+   fbs::MSkeletalAnimationResourceBuilder builder(fbb);
 
     builder.add_animation(fbAnimation);
     builder.add_skeleton(fbSkeleton);
@@ -23,7 +25,7 @@ flatbuffers::Offset<void> MSkeletalAnimationResourceData::Serialize(flatbuffers:
 
 void MSkeletalAnimationResourceData::Deserialize(const void* pBufferPointer)
 {
-    auto fbResourceData =morty::GetMSkeletalAnimationResource(pBufferPointer);
+    auto fbResourceData = fbs::GetMSkeletalAnimationResource(pBufferPointer);
     skeletonAnimation.Deserialize(fbResourceData->animation());
     skeletonResource = fbResourceData->skeleton()->str();
 }

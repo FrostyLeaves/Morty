@@ -13,6 +13,8 @@
 #include "Math/Vector.h"
 #include "Input/MInputEvent.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MInputSystem : public MISystem
 {
     MORTY_CLASS(MInputSystem)
@@ -38,3 +40,5 @@ private:
 
     Vector2 m_v2MouseAddition;
 };
+
+MORTY_SPACE_END

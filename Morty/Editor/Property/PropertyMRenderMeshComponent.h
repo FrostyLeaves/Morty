@@ -1,5 +1,4 @@
-#ifndef _PROPERTY_RENDER_MESH_COMPONENT_H_
-#define _PROPERTY_RENDER_MESH_COMPONENT_H_
+#pragma once
 
 #include "Property/PropertyBase.h"
 #include "Component/MRenderMeshComponent.h"
@@ -14,6 +13,8 @@
 #include "Resource/MMaterialResource.h"
 #include "Resource/MMaterialResourceData.h"
 #include <stdint.h>
+
+MORTY_SPACE_BEGIN
 
 class PropertyMRenderMeshComponent : public PropertyBase
 {
@@ -90,4 +91,4 @@ public:
 };
 
 
-#endif
+MORTY_SPACE_END

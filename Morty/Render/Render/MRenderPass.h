@@ -12,9 +12,10 @@
 
 #include "Utility/MColor.h"
 
+MORTY_SPACE_BEGIN
+
 class MIDevice;
 class MTexture;
-
 
 enum class MDepthCompareType
 {
@@ -150,3 +151,5 @@ public:
 	MDepthCompareType m_eDepthCompareOp = MDepthCompareType::Less_Or_Equal;
 
 };
+
+MORTY_SPACE_END

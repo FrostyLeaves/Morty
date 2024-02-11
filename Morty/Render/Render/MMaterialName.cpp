@@ -1,5 +1,7 @@
 ﻿#include "Render/MMaterialName.h"
 
+using namespace morty;
+
 MString MMaterialName::FRAME_DEFAULT = MString("Frame Default Material");
 
 MString MMaterialName::SKY_BOX = MString("Sky Box Material");

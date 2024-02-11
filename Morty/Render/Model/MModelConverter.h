@@ -16,15 +16,15 @@
 #include "Render/MVertex.h"
 #include "Render/MMesh.h"
 #include "Resource/MSkeletonResource.h"
-
-#include <map>
-
 #include "Resource/MMaterialResource.h"
 
-class MSkeletalAnimationResource;
 struct aiNode;
 struct aiScene;
 struct aiMesh;
+
+MORTY_SPACE_BEGIN
+
+class MSkeletalAnimationResource;
 class MBone;
 class MScene;
 class MEntity;
@@ -147,3 +147,5 @@ private:
 	std::shared_ptr<MIMaterialDelegate> m_pMaterialDelegate = nullptr;
 
 };
+
+MORTY_SPACE_END

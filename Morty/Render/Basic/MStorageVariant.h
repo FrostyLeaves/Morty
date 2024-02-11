@@ -16,7 +16,7 @@
 #include "Math/Matrix.h"
 #include "Render/MBuffer.h"
 
-
+MORTY_SPACE_BEGIN
 
 struct MORTY_API MStorageVariant
 {
@@ -30,3 +30,5 @@ public:
 	std::vector<MByte> data;
 	MBuffer buffer;
 };
+
+MORTY_SPACE_END

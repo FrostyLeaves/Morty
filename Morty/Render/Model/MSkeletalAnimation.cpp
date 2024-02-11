@@ -8,6 +8,8 @@
 #include "Resource/MSkeletalAnimationResource.h"
 #include "Model/MSkeletonInstance.h"
 
+using namespace morty;
+
 MSkeletalAnimation::MSkeletalAnimation()
 	: MIAnimation()
 	, m_unIndex(0)
@@ -74,7 +76,7 @@ flatbuffers::Offset<void> MSkeletalAnimNode::Serialize(flatbuffers::FlatBufferBu
 	auto fbRotationTrack = fbb.CreateVectorOfStructs(m_vRotationTrack);
 	auto fbScaleTrack = fbb.CreateVectorOfStructs(m_vScaleTrack);
 
-	morty::MSkeletalAnimNodeBuilder builder(fbb);
+	fbs::MSkeletalAnimNodeBuilder builder(fbb);
 
 	builder.add_position_track(fbPositionTrack);
 	builder.add_rotation_track(fbRotationTrack);
@@ -85,13 +87,13 @@ flatbuffers::Offset<void> MSkeletalAnimNode::Serialize(flatbuffers::FlatBufferBu
 
 void MSkeletalAnimNode::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	const morty::MSkeletalAnimNode* fbcomponent =morty::GetMSkeletalAnimNode(fbb.GetCurrentBufferPointer());
+	const fbs::MSkeletalAnimNode* fbcomponent = fbs::GetMSkeletalAnimNode(fbb.GetCurrentBufferPointer());
 	Deserialize(fbcomponent);
 }
 
 void MSkeletalAnimNode::Deserialize(const void* pBufferPointer)
 {
-	const morty::MSkeletalAnimNode* fbData = reinterpret_cast<const morty::MSkeletalAnimNode*>(pBufferPointer);
+	const fbs::MSkeletalAnimNode* fbData = reinterpret_cast<const fbs::MSkeletalAnimNode*>(pBufferPointer);
 
 	m_vPositionTrack.resize(fbData->position_track()->size());
 	for (size_t nIdx = 0; nIdx < fbData->position_track()->size(); ++nIdx)
@@ -114,7 +116,7 @@ void MSkeletalAnimNode::Deserialize(const void* pBufferPointer)
 
 flatbuffers::Offset<void> MSkeletalAnimation::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	std::vector<flatbuffers::Offset<morty::MSkeletalAnimNode>> fbAnimNode;
+	std::vector<flatbuffers::Offset<fbs::MSkeletalAnimNode>> fbAnimNode;
 	for (const MSkeletalAnimNode& node : m_vSkeletalAnimNodes)
 	{
 		fbAnimNode.push_back(node.Serialize(fbb).o);
@@ -124,7 +126,7 @@ flatbuffers::Offset<void> MSkeletalAnimation::Serialize(flatbuffers::FlatBufferB
     auto fbAnimNodeOffset = fbb.CreateVector(fbAnimNode);
 
 
-	morty::MSkeletalAnimationBuilder builder(fbb);
+	fbs::MSkeletalAnimationBuilder builder(fbb);
 
 	builder.add_name(fbName);
 	builder.add_duration(m_fTicksDuration);
@@ -136,7 +138,7 @@ flatbuffers::Offset<void> MSkeletalAnimation::Serialize(flatbuffers::FlatBufferB
 
 void MSkeletalAnimation::Deserialize(const void* pBufferPointer)
 {
-	const morty::MSkeletalAnimation* fbData = reinterpret_cast<const morty::MSkeletalAnimation*>(pBufferPointer);
+	const fbs::MSkeletalAnimation* fbData = reinterpret_cast<const fbs::MSkeletalAnimation*>(pBufferPointer);
 
 	m_strName = fbData->name()->str();
 	m_fTicksDuration = fbData->duration();

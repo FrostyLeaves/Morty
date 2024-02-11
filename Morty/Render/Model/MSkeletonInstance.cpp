@@ -4,6 +4,8 @@
 #include "Shader/MShaderPropertyBlock.h"
 #include "Resource/MSkeletonResource.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MSkeletonInstance, MObject)
 
 void MSkeletonInstance::SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeletonRsource)

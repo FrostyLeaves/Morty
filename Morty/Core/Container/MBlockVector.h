@@ -11,6 +11,8 @@
 
 #include <iterator>
 
+MORTY_SPACE_BEGIN
+
 template<typename TYPE, size_t SIZE> class MBlockVector;
 
 template<typename TYPE, size_t SIZE>
@@ -269,3 +271,5 @@ TYPE* MBlockVectorIter<TYPE, SIZE>::operator->()
 {
 	return &(vArray.vPrimaryArray[nPrimaryIdx]->vSecondaryArray[nSecondaryIdx]);
 }
+
+MORTY_SPACE_END

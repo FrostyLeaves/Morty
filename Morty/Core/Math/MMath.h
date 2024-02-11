@@ -12,6 +12,8 @@
 
 #include <random>
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MMath
 {
 public:
@@ -57,3 +59,5 @@ private:
 	static std::default_random_engine s_randomEngine;
 
 };
+
+MORTY_SPACE_END

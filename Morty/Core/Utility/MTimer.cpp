@@ -1,5 +1,7 @@
 ﻿#include "Utility/MTimer.h"
 
+using namespace morty;
+
 MTimer::MTimer()
 {
 

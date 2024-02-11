@@ -12,6 +12,7 @@
 #include "Resource/MMaterialResource.h"
 #include "Widget/ModelConvertView.h"
 
+using namespace morty;
 
 void LOAD_MODEL_ANIMATION_TEST(MEngine* pEngine, MScene* pScene)
 {

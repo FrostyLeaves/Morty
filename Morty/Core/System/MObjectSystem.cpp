@@ -2,6 +2,8 @@
 #include "Engine/MEngine.h"
 #include "MObjectSystem.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MObjectSystem, MISystem)
 
 MObjectSystem::MObjectSystem()

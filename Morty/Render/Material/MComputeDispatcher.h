@@ -19,7 +19,7 @@
 #include "Shader/MShaderBuffer.h"
 #include "Shader/MShaderPropertyBlock.h"
 
-#include <vector>
+MORTY_SPACE_BEGIN
 
 class MORTY_API MComputeDispatcher : public MObject
 {
@@ -75,3 +75,5 @@ public:
 	MString m_strDebugName;
 #endif
 };
+
+MORTY_SPACE_END

@@ -3,6 +3,8 @@
 #include "Input/MInputEvent.h"
 #include "Utility/MGlobal.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MInputSystem, MISystem)
 
 MInputSystem::MInputSystem()

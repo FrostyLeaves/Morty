@@ -1,5 +1,6 @@
 #include "MShaderBuffer.h"
 
+using namespace morty;
 
 MShaderBuffer::MShaderBuffer()
 {

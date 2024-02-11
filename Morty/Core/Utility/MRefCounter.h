@@ -10,7 +10,7 @@
 
 #include "Utility/MGlobal.h"
 
-#include <functional>
+MORTY_SPACE_BEGIN
 
 class MORTY_API MRefCounter
 {
@@ -39,3 +39,5 @@ protected:
 private:
 	uint32_t m_unReferenceNumber;
 };
+
+MORTY_SPACE_END

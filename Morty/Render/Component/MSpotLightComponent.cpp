@@ -1,11 +1,13 @@
 #include "Component/MSpotLightComponent.h"
 
-MORTY_CLASS_IMPLEMENT(MSpotLightComponent, MComponent)
-
 #include "Scene/MEntity.h"
 #include "Component/MSceneComponent.h"
 
 #include "Flatbuffer/MSpotLightComponent_generated.h"
+
+using namespace morty;
+
+MORTY_CLASS_IMPLEMENT(MSpotLightComponent, MComponent)
 
 MSpotLightComponent::MSpotLightComponent()
 	: MComponent()
@@ -58,10 +60,10 @@ flatbuffers::Offset<void> MSpotLightComponent::Serialize(flatbuffers::FlatBuffer
 {
 	auto fbSuper = Super::Serialize(fbb).o;
 
-	morty::MSpotLightComponentBuilder builder(fbb);
+	fbs::MSpotLightComponentBuilder builder(fbb);
 
 	Vector4 color = GetColorVector();
-	builder.add_color(reinterpret_cast<morty::Vector4*>(&color));
+	builder.add_color(reinterpret_cast<fbs::Vector4*>(&color));
 	builder.add_light_intensity(GetLightIntensity());
 	builder.add_inner_cut_off_angle(GetInnerCutOff());
 	builder.add_outer_cut_off_angle(GetOuterCutOff());
@@ -73,13 +75,13 @@ flatbuffers::Offset<void> MSpotLightComponent::Serialize(flatbuffers::FlatBuffer
 
 void MSpotLightComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	const morty::MSpotLightComponent* fbcomponent =morty::GetMSpotLightComponent(fbb.GetCurrentBufferPointer());
+	const fbs::MSpotLightComponent* fbcomponent = fbs::GetMSpotLightComponent(fbb.GetCurrentBufferPointer());
 	Deserialize(fbcomponent);
 }
 
 void MSpotLightComponent::Deserialize(const void* pBufferPointer)
 {
-	const morty::MSpotLightComponent* pComponent = reinterpret_cast<const morty::MSpotLightComponent*>(pBufferPointer);
+	const fbs::MSpotLightComponent* pComponent = reinterpret_cast<const fbs::MSpotLightComponent*>(pBufferPointer);
 
 	SetColorVector(*reinterpret_cast<const Vector4*>(pComponent->color()));
 	SetLightIntensity(pComponent->light_intensity());

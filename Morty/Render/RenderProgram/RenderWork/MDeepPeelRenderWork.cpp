@@ -22,6 +22,8 @@
 #include "Resource/MTextureResourceUtil.h"
 #include "Utility/MGlobal.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MDeepPeelRenderWork, ISinglePassRenderWork)
 
 const MStringId MDeepPeelRenderWork::FrontTextureOutput = MStringId("Deep Peel Front Buffer Output");

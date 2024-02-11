@@ -12,6 +12,7 @@
 
 #include "Utility/MTransform.h"
 
+MORTY_SPACE_BEGIN
 
 class MORTY_API MSceneComponent : public MComponent
 {
@@ -110,3 +111,5 @@ private:
 	MComponentID m_attachParent;
 	std::vector<MComponentID> m_vAttachChildren;
 };
+
+MORTY_SPACE_END

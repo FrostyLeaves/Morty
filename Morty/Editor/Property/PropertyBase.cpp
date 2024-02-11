@@ -12,6 +12,7 @@
 #include "Engine/MEngine.h"
 #include "Resource/MMaterialResourceData.h"
 
+using namespace morty;
 
 unsigned int PropertyBase::m_unItemIDPool = 0;
 std::map<MString, unsigned int> PropertyBase::m_tItemID = std::map<MString, unsigned int>();

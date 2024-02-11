@@ -1,5 +1,7 @@
 #include "System/MComponentSystem.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MComponentSystem, MISystem)
 
 MComponentSystem::MComponentSystem()

@@ -12,6 +12,8 @@
 #include "Type/MType.h"
 #include "Variant/MVariant.h"
 
+MORTY_SPACE_BEGIN
+
 class MTaskNode;
 class MTaskNodeInput;
 
@@ -46,3 +48,5 @@ private:
 
 	std::vector<MTaskNodeInput*> vLinkedInput;
 };
+
+MORTY_SPACE_END

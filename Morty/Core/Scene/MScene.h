@@ -17,8 +17,7 @@
 #include "Component/MComponent.h"
 #include "Component/MComponentGroup.h"
 
-#include <vector>
-#include <functional>
+MORTY_SPACE_BEGIN
 
 class MTaskNode;
 class MResource;
@@ -155,3 +154,5 @@ TYPE* MScene::AddComponent(MEntity* entity)
 
 	return nullptr;
 }
+
+MORTY_SPACE_END

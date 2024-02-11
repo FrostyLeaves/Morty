@@ -1,5 +1,7 @@
 #include "Type/MType.h"
 
+using namespace morty;
+
 const MType* MTypeClass::GetClassType()
 {
 	static const MType type("MTypeClass", nullptr);

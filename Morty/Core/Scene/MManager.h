@@ -3,6 +3,8 @@
 #include "Utility/MGlobal.h"
 #include "Type/MType.h"
 
+MORTY_SPACE_BEGIN
+
 class MScene;
 class MEngine;
 class MComponent;
@@ -32,3 +34,5 @@ public:
 private:
 	MScene* m_pScene;
 };
+
+MORTY_SPACE_END

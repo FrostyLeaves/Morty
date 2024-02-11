@@ -3,6 +3,8 @@
 
 #include "Flatbuffer/Quaternion_generated.h"
 
+using namespace morty;
+
 Quaternion::Quaternion()
 	: w(1)
 	, x(0)
@@ -40,7 +42,7 @@ Quaternion::Quaternion(const Vector3& vAxis, const float& fAngle)
 	RotateAxis(vAxis, fAngle);
 }
 
-Quaternion::Quaternion(const morty::Quaternion& value)
+Quaternion::Quaternion(const fbs::Quaternion& value)
 	: w(value.w())
 	, x(value.x())
 	, y(value.y())
@@ -56,11 +58,11 @@ Quaternion Quaternion::FromEuler(const Vector3& eulerVec3)
 	return quat;
 }
 
-const morty::Quaternion* Quaternion::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
+const fbs::Quaternion* Quaternion::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
 	MORTY_UNUSED(fbb);
 
-	return reinterpret_cast<const morty::Quaternion*>(this);
+	return reinterpret_cast<const fbs::Quaternion*>(this);
 }
 
 void Quaternion::Deserialize(const void* pBufferPointer)

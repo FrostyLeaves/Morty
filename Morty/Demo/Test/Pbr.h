@@ -14,6 +14,8 @@
 
 #include "WaveToRGB.h"
 
+using namespace morty;
+
 std::map<size_t, Vector3> LightMap = {
     {390, Vector3(3.769647E-03, 4.146161E-04, 1.847260E-02)},
     {391, Vector3(4.532416E-03, 5.028333E-04, 2.221101E-02)},

@@ -13,6 +13,8 @@
 
 #include "Resource/MResource.h"
 
+MORTY_SPACE_BEGIN
+
 class MTexture;
 class MMaterial;
 class MORTY_API MSkyBoxComponent : public MComponent
@@ -47,3 +49,5 @@ private:
     
     std::shared_ptr<MMaterial> m_pMaterial;
 };
+
+MORTY_SPACE_END

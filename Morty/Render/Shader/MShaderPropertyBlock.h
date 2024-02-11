@@ -11,7 +11,7 @@
 #include "Utility/MGlobal.h"
 #include "Shader/MShaderParam.h"
 
-#include <vector>
+MORTY_SPACE_BEGIN
 
 class MIDevice;
 class MShaderProgram;
@@ -202,3 +202,5 @@ std::vector<std::shared_ptr<ParamType>> MShaderPropertyBlock::RemoveShaderParam(
 
 	return vResult;
 }
+
+MORTY_SPACE_END

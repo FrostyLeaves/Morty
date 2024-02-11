@@ -2,6 +2,8 @@
 
 #include "Utility/MGlobal.h"
 
+MORTY_SPACE_BEGIN
+
 class MViewport;
 class MScene;
 class MEngine;
@@ -24,7 +26,7 @@ public:
 	MScene* GetScene() const;
 	MViewport* GetViewport() const;
 	MainEditor* GetMainEditor() const { return m_pMainEditor; }
-	MString GetName() const { return m_strViewName; }
+	morty::MString GetName() const { return m_strViewName; }
 	bool GetVisible() const { return m_bVisiable; }
 	void SetVisible(bool bVisible) { m_bVisiable = bVisible; }
 	bool GetRenderInHidden() const { return m_bRenderInHidden; }
@@ -33,9 +35,11 @@ public:
 
 protected:
 	MainEditor* m_pMainEditor = nullptr;
-	MString m_strViewName = "";
+	morty::MString m_strViewName = "";
 	bool m_bVisiable = false;
 	bool m_bRenderInHidden = false;
 
 	std::vector<BaseWidget*> m_vChildren;
 };
+
+MORTY_SPACE_END

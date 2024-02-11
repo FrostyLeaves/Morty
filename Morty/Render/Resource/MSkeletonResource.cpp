@@ -3,6 +3,8 @@
 #include "Flatbuffer/MSkeleton_generated.h"
 #include "Utility/MFileHelper.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MSkeletonResource, MResource)
 
 MSkeleton* MSkeletonResource::GetSkeleton() const
@@ -36,6 +38,6 @@ flatbuffers::Offset<void> MSkeletonResourceData::Serialize(flatbuffers::FlatBuff
 
 void MSkeletonResourceData::Deserialize(const void* pBufferPointer)
 {
-    const auto fbResourceData =morty::GetMSkeleton(pBufferPointer);
+    const auto fbResourceData = fbs::GetMSkeleton(pBufferPointer);
     skeleton.Deserialize(fbResourceData);
 }

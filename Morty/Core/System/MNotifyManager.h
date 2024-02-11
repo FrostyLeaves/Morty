@@ -11,6 +11,8 @@
 #include "Scene/MManager.h"
 #include "Component/MComponent.h"
 
+MORTY_SPACE_BEGIN
+
 typedef std::function<void(MComponent* pComponent)> MNotifyFunction;
 
 class MORTY_API MNotifyManager : public IManager
@@ -33,3 +35,5 @@ private:
     std::map<const char*, std::vector<MNotifyFunction>> m_tNotifyTable;
 
 };
+
+MORTY_SPACE_END

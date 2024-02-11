@@ -6,6 +6,8 @@
 #include "Resource/MResource.h"
 #include "Property/PropertyBase.h"
 
+MORTY_SPACE_BEGIN
+
 class GuizmoWidget;
 class MScene;
 class MEntity;
@@ -25,3 +27,5 @@ public:
 private:
 	GuizmoWidget* m_pGuizmoWidget = nullptr;
 };
+
+MORTY_SPACE_END

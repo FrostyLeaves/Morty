@@ -1,5 +1,7 @@
 ﻿#include "Input/MInputEvent.h"
 
+using namespace morty;
+
 uint32_t MMouseInputEvent::s_unMouseDownButton = 0;
 Vector2 MMouseInputEvent::s_v2MousePosition(-1, -1);
 

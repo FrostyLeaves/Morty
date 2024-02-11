@@ -1,5 +1,7 @@
 ﻿#include "Render/MRenderGlobal.h"
 
+using namespace morty;
+
 const char* MRenderGlobal::SUFFIX_VERTEX_SHADER = "mvs";
 
 const char* MRenderGlobal::SUFFIX_PIXEL_SHADER = "mps";

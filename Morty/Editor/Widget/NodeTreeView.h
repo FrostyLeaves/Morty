@@ -4,6 +4,8 @@
 
 #include "Scene/MEntity.h"
 
+MORTY_SPACE_BEGIN
+
 class MScene;
 class MObject;
 class MEntity;
@@ -23,3 +25,5 @@ protected:
 	void RenderNode(MEntity* pNode);
 	
 };
+
+MORTY_SPACE_END

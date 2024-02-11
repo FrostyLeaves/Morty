@@ -3,6 +3,8 @@
 #include "Utility/MGlobal.h"
 #include "Type/MType.h"
 
+MORTY_SPACE_BEGIN
+
 class MScene;
 class MEngine;
 class MORTY_API MISystem : public MTypeClass
@@ -30,3 +32,4 @@ private:
 	MEngine* m_pEngine;
 };
 
+MORTY_SPACE_END

@@ -13,6 +13,8 @@
 #include "Utility/MGlobal.h"
 #include "TaskGraph/MTaskGraphWalker.h"
 
+MORTY_SPACE_BEGIN
+
 class IPropertyBlockAdapter;
 class MIMesh;
 class MIRenderCommand;
@@ -48,3 +50,5 @@ private:
 
     const MRenderInfo& m_renderInfo;
 };
+
+MORTY_SPACE_END

@@ -6,6 +6,7 @@
 #include "Utility/MFunction.h"
 #include "MRenderGraphSetting.h"
 
+using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MRenderGraph, MTaskGraph)
 

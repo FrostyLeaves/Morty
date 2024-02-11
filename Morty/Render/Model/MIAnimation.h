@@ -10,6 +10,8 @@
 
 #include "Utility/MGlobal.h"
 
+MORTY_SPACE_BEGIN
+
 class MEngine;
 class MORTY_API MIAnimation
 {
@@ -39,3 +41,5 @@ public:
 	virtual void NextStep(const float& fDelta, const bool& bAnimStep) = 0;
 
 };
+
+MORTY_SPACE_END

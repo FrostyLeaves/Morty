@@ -1,11 +1,12 @@
-#ifndef _NOTIFY_MANAGER_H_
-#define _NOTIFY_MANAGER_H_
+#pragma once
 
 #include <map>
 #include <functional>
 
 #include "Utility/MString.h"
 #include "Variant/MVariant.h"
+
+MORTY_SPACE_BEGIN
 
 #define NOTIFY_FUNC(PTR, CLASS_FUNC) (std::bind(&CLASS_FUNC, PTR, std::placeholders::_1))
 
@@ -40,4 +41,4 @@ private:
 	std::map<MString, NotifyGroup*> m_tNotifyTable;
 };
 
-#endif
+MORTY_SPACE_END

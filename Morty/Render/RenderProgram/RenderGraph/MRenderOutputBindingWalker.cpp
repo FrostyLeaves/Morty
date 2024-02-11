@@ -11,6 +11,8 @@
 #include "System/MRenderSystem.h"
 #include "TaskGraph/MTaskGraph.h"
 
+using namespace morty;
+
 void MRenderOutputBindingWalker::operator ()(MTaskGraph* pTaskGraph)
 {
 	MORTY_ASSERT(pTaskGraph->NeedCompile());

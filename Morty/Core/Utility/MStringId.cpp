@@ -1,6 +1,8 @@
 ﻿#include "MStringId.h"
 #include "Thread/MThreadPool.h"
 
+using namespace morty;
+
 thread_local static std::vector<std::string> ClashStringTable;
 
 MStringId::MStringId(std::string_view strview)

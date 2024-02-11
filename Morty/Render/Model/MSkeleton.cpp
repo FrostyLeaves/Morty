@@ -9,6 +9,8 @@
 #include "Shader/MShaderPropertyBlock.h"
 #include "Batch/BatchGroup/MInstanceBatchGroup.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MSkeleton, MTypeClass)
 
 MBone::MBone()
@@ -25,7 +27,7 @@ flatbuffers::Offset<void> MBone::Serialize(flatbuffers::FlatBufferBuilder& fbb) 
 	auto fbOffset = m_matOffsetMatrix.Serialize(fbb);
 	auto fbChildren = fbb.CreateVector(vChildrenIndices);
 
-	morty::MBoneBuilder builder(fbb);
+	fbs::MBoneBuilder builder(fbb);
 
 	builder.add_name(fbName);
 	builder.add_index(unIndex);
@@ -39,7 +41,7 @@ flatbuffers::Offset<void> MBone::Serialize(flatbuffers::FlatBufferBuilder& fbb) 
 
 void MBone::Deserialize(const void* pBufferPointer)
 {
-	const morty::MBone* fbData = reinterpret_cast<const morty::MBone*>(pBufferPointer);
+	const fbs::MBone* fbData = reinterpret_cast<const fbs::MBone*>(pBufferPointer);
 
 	strName = fbData->name()->c_str();
 	unIndex = fbData->index();
@@ -161,7 +163,7 @@ flatbuffers::Offset<void> MSkeleton::Serialize(flatbuffers::FlatBufferBuilder& f
 
 	auto fbBones = fbb.CreateVector(vBonesOffset).o;
 
-	morty::MSkeletonBuilder builder(fbb);
+	fbs::MSkeletonBuilder builder(fbb);
 
 	builder.add_bones(fbBones);
 
@@ -170,7 +172,7 @@ flatbuffers::Offset<void> MSkeleton::Serialize(flatbuffers::FlatBufferBuilder& f
 
 void MSkeleton::Deserialize(const void* pBufferPointer)
 {
-	const morty::MSkeleton* fbData = reinterpret_cast<const morty::MSkeleton*>(pBufferPointer);
+	const fbs::MSkeleton* fbData = reinterpret_cast<const fbs::MSkeleton*>(pBufferPointer);
 
 	m_vAllBones.resize(fbData->bones()->size());
 	for (size_t idx = 0; idx < fbData->bones()->size(); ++idx)

@@ -11,6 +11,7 @@
 #include "Render/MVertex.h"
 #include "Utility/MGlobal.h"
 
+using namespace morty;
 
 void MNoneBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram)
 {

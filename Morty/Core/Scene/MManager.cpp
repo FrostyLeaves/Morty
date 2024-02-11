@@ -1,6 +1,8 @@
 #include "MManager.h"
 #include "Scene/MScene.h"
 
+using namespace morty;
+
 MORTY_INTERFACE_IMPLEMENT(IManager, MTypeClass)
 
 IManager::IManager()

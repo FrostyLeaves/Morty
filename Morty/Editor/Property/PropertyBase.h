@@ -1,5 +1,4 @@
-#ifndef _PROPERTY_BASE_H_
-#define _PROPERTY_BASE_H_
+#pragma once
 
 #include "Scene/MEntity.h"
 #include "Utility/MGlobal.h"
@@ -14,6 +13,8 @@
 #include <any>
 #include <functional>
 #include <stdint.h>
+
+MORTY_SPACE_BEGIN
 
 class MShaderPropertyBlock;
 class MEntity;
@@ -135,4 +136,4 @@ void PropertyBase::SetTemporaryValue(const MString& strValueName, const TYPE& va
 	m_tTemporaryValue[strValueName] = valuealue;
 }
 
-#endif
+MORTY_SPACE_END

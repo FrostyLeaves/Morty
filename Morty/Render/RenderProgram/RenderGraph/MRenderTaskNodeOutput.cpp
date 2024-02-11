@@ -1,5 +1,7 @@
 #include "MRenderTaskNodeOutput.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MRenderTaskNodeOutput, MTaskNodeOutput)
 
 void MRenderTaskNodeOutput::SetRenderTarget(MRenderTaskTarget* pRenderTarget)

@@ -4,6 +4,8 @@
 #include <windows.h>
 #endif
 
+using namespace morty;
+
 void MStringUtil::Replace(MString& str, const MString& source, const MString& target)
 {
 	std::string::size_type pos = 0;

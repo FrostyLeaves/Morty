@@ -1,9 +1,10 @@
-#ifndef _VECTOR_H_
-#define _VECTOR_H_
+#pragma once
 
 #include "Flatbuffer/Vector_generated.h"
 #include "Utility/MGlobal.h"
 #include "Math/Matrix.h"
+
+MORTY_SPACE_BEGIN
 
 class Vector3;
 class Vector4;
@@ -47,7 +48,7 @@ public:
 
 public:
 
-	const morty::Vector2* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	const fbs::Vector2* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
 	void Deserialize(const void* pBufferPointer);
 
 public:
@@ -74,7 +75,7 @@ public:
 	Vector3(const Vector3& vec3);
 	Vector3(const Vector4& vec4);
 	Vector3(const float& x, const float& y, const float& z);
-	Vector3(const morty::Vector3& value);
+	Vector3(const fbs::Vector3& value);
 
 	float Length() const;
 	void Normalize();
@@ -111,7 +112,7 @@ public:
 
 public:
 
-	const morty::Vector3* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	const fbs::Vector3* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
 	void Deserialize(const void* pBufferPointer);
 
 public:
@@ -212,7 +213,7 @@ public:
 
 public:
 
-	const morty::Vector4* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	const fbs::Vector4* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
 	void Deserialize(const void* pBufferPointer);
 
 public:
@@ -229,4 +230,4 @@ public:
 	};
 };
 
-#endif
+MORTY_SPACE_END

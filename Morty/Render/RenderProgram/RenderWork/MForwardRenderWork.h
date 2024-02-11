@@ -15,6 +15,8 @@
 #include "MRenderWork.h"
 #include "RenderProgram/MRenderInfo.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MForwardRenderWork : public ISinglePassRenderWork
 {
 	MORTY_CLASS(MForwardRenderWork)
@@ -36,3 +38,5 @@ protected:
 	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 
 };
+
+MORTY_SPACE_END

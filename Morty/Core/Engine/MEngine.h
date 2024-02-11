@@ -14,6 +14,8 @@
 
 #include <vector>
 
+MORTY_SPACE_BEGIN
+
 class MObject;
 class MISystem;
 class MTaskGraph;
@@ -153,3 +155,5 @@ TYPE* MEngine::RegisterGlobalObject()
 
 	return nullptr;
 }
+
+MORTY_SPACE_END

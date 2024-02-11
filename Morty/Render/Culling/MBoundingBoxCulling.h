@@ -3,6 +3,8 @@
 #include "MBoundingCulling.h"
 #include "MInstanceCulling.h"
 
+MORTY_SPACE_BEGIN
+
 class MInstanceBatchGroup;
 
 class MORTY_API MBoundingBoxFilter : public IMeshInstanceFilter
@@ -28,3 +30,5 @@ public:
 private:
     std::shared_ptr<MBoundingBoxFilter> m_pBoundsFilter = nullptr;
 };
+
+MORTY_SPACE_END

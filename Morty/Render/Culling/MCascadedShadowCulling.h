@@ -6,6 +6,8 @@
 #include "Render/MVertex.h"
 #include "Shadow/MShadowMapUtil.h"
 
+MORTY_SPACE_BEGIN
+
 class IRenderableFilter;
 class MInstanceBatchGroup;
 class MORTY_API MCascadedShadowCulling
@@ -47,3 +49,5 @@ private:
     MCascadedArray<MBoundsAABB> m_vCascadedPscBounds;
     MCascadedArray<MCascadedShadowRenderData> m_vCascadedRenderData;
 };
+
+MORTY_SPACE_END

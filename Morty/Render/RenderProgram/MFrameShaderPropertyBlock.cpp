@@ -23,6 +23,8 @@
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
 
+using namespace morty;
+
 void MFrameShaderPropertyBlock::Initialize(MEngine* pEngine)
 {
 	MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();

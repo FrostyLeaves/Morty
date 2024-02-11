@@ -23,6 +23,8 @@
 #include "Resource/MTextureResourceUtil.h"
 #include "Utility/MGlobal.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MTransparentRenderWork, ISinglePassRenderWork)
 
 const MStringId MTransparentRenderWork::BackBufferOutput = MStringId("Transparent Back Buffer Output");

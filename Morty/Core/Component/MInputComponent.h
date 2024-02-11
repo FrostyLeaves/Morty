@@ -10,6 +10,7 @@
 #include "Utility/MGlobal.h"
 #include "Component/MComponent.h"
 
+MORTY_SPACE_BEGIN
 
 class MViewport;
 class MInputEvent;
@@ -33,3 +34,5 @@ private:
 
 	MInputCallback m_funcInputCallback;
 };
+
+MORTY_SPACE_END

@@ -12,6 +12,7 @@
 #include "Model/MSkeleton.h"
 #include "Resource/MResourceLoader.h"
 
+MORTY_SPACE_BEGIN
 
 struct MORTY_API MSkeletonResourceData : public MFbResourceData
 {
@@ -46,3 +47,5 @@ public:
 	static MString GetResourceTypeName() { return "Skeleton"; };
 	static std::vector<MString> GetSuffixList() { return { "ske" }; };
 };
+
+MORTY_SPACE_END

@@ -12,6 +12,8 @@
 #include "Resource/MResource.h"
 #include "Resource/MResourceLoader.h"
 
+MORTY_SPACE_BEGIN
+
 struct MORTY_API MEntityResourceData : public MResourceData
 {
 public:
@@ -60,3 +62,5 @@ public:
     std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath) override;
 
 };
+
+MORTY_SPACE_END

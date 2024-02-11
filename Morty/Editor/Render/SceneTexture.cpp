@@ -25,6 +25,8 @@
 #include "Shadow/MShadowMeshManager.h"
 #include "Manager/MAnimationManager.h"
 
+using namespace morty;
+
 SceneTexture::SceneTexture()
 	: m_bSnapshot(false)
 	, m_strSnapshotPath("")

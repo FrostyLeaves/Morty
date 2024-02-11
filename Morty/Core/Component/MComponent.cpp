@@ -1,13 +1,14 @@
 #include "Component/MComponent.h"
 
-MORTY_CLASS_IMPLEMENT(MComponent, MTypeClass)
-
 #include "Scene/MScene.h"
 #include "Scene/MEntity.h"
-
 #include "System/MNotifyManager.h"
 
 #include "Flatbuffer/MComponent_generated.h"
+
+using namespace morty;
+
+MORTY_CLASS_IMPLEMENT(MComponent, MTypeClass)
 
 MComponent::MComponent()
 	: MTypeClass()
@@ -39,7 +40,7 @@ void MComponent::Release()
 
 flatbuffers::Offset<void> MComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	morty::MComponentBuilder compBuilder(fbb);
+	fbs::MComponentBuilder compBuilder(fbb);
 
 	return compBuilder.Finish().Union();
 }
@@ -47,13 +48,13 @@ flatbuffers::Offset<void> MComponent::Serialize(flatbuffers::FlatBufferBuilder& 
 void MComponent::Deserialize(const void* pBufferPointer)
 {
 	MORTY_UNUSED(pBufferPointer);
-	//const morty::MComponent* fbcomponent = reinterpret_cast<const morty::MComponent*>(pBufferPointer);
+	//const fbs::MComponent* fbcomponent = reinterpret_cast<const fbs::MComponent*>(pBufferPointer);
 }
 
 void MComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 {
 	MORTY_UNUSED(fbb);
-	//const morty::MComponent* fbcomponent =morty::GetMComponent(fbb.GetCurrentBufferPointer());
+	//const fbs::MComponent* fbcomponent = fbs::GetMComponent(fbb.GetCurrentBufferPointer());
 }
 
 void MComponent::PostDeserialize(const std::map<MGuid, MGuid>& tRedirectGuid)

@@ -7,6 +7,8 @@
 #include "Component/MComponent.h"
 #include "Shader/MShaderPropertyBlock.h"
 
+MORTY_SPACE_BEGIN
+
 class MIMesh;
 class MTexture;
 class MMaterial;
@@ -112,3 +114,5 @@ public:
 
 	static void FillVoxelMapSetting(const MVoxelMapSetting& setting, MVariantStruct& output);
 };
+
+MORTY_SPACE_END

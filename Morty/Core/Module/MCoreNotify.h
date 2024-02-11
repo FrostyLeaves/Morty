@@ -9,6 +9,8 @@
 #pragma once
 #include "Utility/MGlobal.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MCoreNotify
 {
 public:
@@ -16,3 +18,5 @@ public:
     static inline const char* NOTIFY_TRANSFORM_CHANGED = "Transform Changed";
     static inline const char* NOTIFY_PARENT_CHANGED = "Parent Changed";
 };
+
+MORTY_SPACE_END

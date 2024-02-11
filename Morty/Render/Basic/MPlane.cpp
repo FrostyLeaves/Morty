@@ -1,6 +1,8 @@
 #include "Basic/MPlane.h"
 #include "Math/MMath.h"
 
+using namespace morty;
+
 MPlane::MPlane()
 	: m_v4Plane(0.0f, 1.0f, 0.0f, 0.0f)
 {

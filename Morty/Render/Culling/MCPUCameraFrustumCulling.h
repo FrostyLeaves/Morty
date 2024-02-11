@@ -3,6 +3,8 @@
 #include "MBoundingCulling.h"
 #include "MInstanceCulling.h"
 
+MORTY_SPACE_BEGIN
+
 class MInstanceBatchGroup;
 
 class MORTY_API MCameraFrustumFilter : public IMeshInstanceFilter
@@ -33,3 +35,5 @@ private:
     std::shared_ptr<MCameraFrustumFilter> m_pFrustumFilter = nullptr;
     std::unique_ptr<MBoundingCulling> m_pBoundingCulling = nullptr;
 };
+
+MORTY_SPACE_END

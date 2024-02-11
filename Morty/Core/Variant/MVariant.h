@@ -17,6 +17,8 @@
 #include "Math/Matrix.h"
 #include "MVariantMemory.h"
 
+MORTY_SPACE_BEGIN
+
 class MVariantStruct;
 class MVariantArray;
 
@@ -654,3 +656,5 @@ inline void MVariantArray::SetVariant(const size_t& nIdx, const TYPE& value)
 	MVariant& member = m_tMember[nIdx];
 	return member.SetValue(value);
 }
+
+MORTY_SPACE_END

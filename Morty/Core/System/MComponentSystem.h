@@ -12,6 +12,8 @@
 #include "Component/MComponent.h"
 #include "Component/MComponentGroup.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MComponentSystem : public MISystem
 {
     MORTY_CLASS(MComponentSystem)
@@ -41,3 +43,5 @@ void MComponentSystem::RegisterComponent()
 
     m_tComponentGroupFactory[TYPE::GetClassType()] = []() { return new MComponentGroup<TYPE>(); };
 }
+
+MORTY_SPACE_END

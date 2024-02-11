@@ -4,6 +4,8 @@
 #include "TaskGraph/MTaskNodeOutput.h"
 #include "Utility/MTimer.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MTaskNode, MTypeClass)
 
 

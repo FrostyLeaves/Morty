@@ -14,6 +14,8 @@
 #include "Math/Vector.h"
 #include "Utility/MColor.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MDirectionalLightComponent : public MComponent
 {
 public:
@@ -60,3 +62,5 @@ private:
 	bool m_bEnable = true;
 
 };
+
+MORTY_SPACE_END

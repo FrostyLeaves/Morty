@@ -14,6 +14,8 @@
 #include "Math/Vector.h"
 #include "Utility/MColor.h"
 
+MORTY_SPACE_BEGIN
+
 class MIMesh;
 class MBuffer;
 class MTexture;
@@ -132,3 +134,5 @@ public:
 	size_t m_nDrawCallCount = 0;
 
 };
+
+MORTY_SPACE_END

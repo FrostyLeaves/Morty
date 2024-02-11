@@ -16,6 +16,8 @@
 #include "Utility/MGlobal.h"
 #include "Variant/MVariant.h"
 
+MORTY_SPACE_BEGIN
+
 class MIDevice;
 class MSkeletonInstance;
 class MEngine;
@@ -69,3 +71,5 @@ private:
 
 	std::shared_ptr<MShaderPropertyBlock> m_pShaderPropertyBlock = nullptr;
 };
+
+MORTY_SPACE_END

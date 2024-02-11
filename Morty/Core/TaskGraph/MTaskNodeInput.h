@@ -10,6 +10,8 @@
 #include "Utility/MGlobal.h"
 #include "Type/MType.h"
 
+MORTY_SPACE_BEGIN
+
 class MTaskNode;
 class MTaskNodeOutput;
 
@@ -45,3 +47,5 @@ private:
 	MTaskNode* pGraphNode;
 	MTaskNodeOutput* pLinkedOutput;
 };
+
+MORTY_SPACE_END

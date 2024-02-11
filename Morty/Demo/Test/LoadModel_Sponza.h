@@ -15,6 +15,7 @@
 #include "Resource/MReadableTextureResource.h"
 #include "Utility/MTimer.h"
 
+using namespace morty;
 
 class MSponzaTextureDelegate : public MITextureDelegate
 {

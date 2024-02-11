@@ -10,9 +10,11 @@
 
 #pragma once
 
+#include "Render/MRenderGlobal.h"
 #include "Render/MMesh.h"
 #include "Resource/MResource.h"
-#include <vector>
+
+MORTY_SPACE_BEGIN
 
 class MORTY_API MMultiLevelMesh
 {
@@ -73,3 +75,5 @@ public:
 
 	std::array<MIMesh*, MRenderGlobal::MESH_LOD_LEVEL_RANGE> m_vMeshesCache;
 };
+
+MORTY_SPACE_END

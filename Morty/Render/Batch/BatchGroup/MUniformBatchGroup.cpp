@@ -11,8 +11,9 @@
 #include "Render/MVertex.h"
 #include "Utility/MGlobal.h"
 
+using namespace morty;
 
-void MUniformBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram)
+void morty::MUniformBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram)
 {
 	m_pEngine = pEngine;
 	m_pShaderProgram = pShaderProgram;

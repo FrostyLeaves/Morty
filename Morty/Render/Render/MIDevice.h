@@ -13,6 +13,8 @@
 #include "Shader/MShader.h"
 #include "Render/MRenderPass.h"
 
+MORTY_SPACE_BEGIN
+
 class MVertexBuffer;
 class MIMesh;
 class MBuffer;
@@ -121,3 +123,5 @@ private:
 
 	MEngine* m_pEngine = nullptr;
 };
+
+MORTY_SPACE_END

@@ -10,8 +10,7 @@
 
 #include "Utility/MGlobal.h"
 
-#include <map>
-#include <vector>
+MORTY_SPACE_BEGIN
 
 struct MORTY_API MemoryInfo
 {
@@ -43,3 +42,5 @@ private:
 
     std::vector<MemoryInfo> m_vFreeMemory;
 };
+
+MORTY_SPACE_END

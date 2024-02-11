@@ -4,6 +4,8 @@
 #include "Math/Vector.h"
 #include "Utility/MColor.h"
 
+MORTY_SPACE_BEGIN
+
 class MTaskNode;
 class MScene;
 class MEngine;
@@ -55,3 +57,5 @@ protected:
 
 	MTaskNode* m_pUpdateTask = nullptr;
 };
+
+MORTY_SPACE_END

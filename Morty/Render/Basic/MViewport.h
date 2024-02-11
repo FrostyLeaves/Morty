@@ -15,7 +15,7 @@
 #include "Utility/MBounds.h"
 #include "Basic/MCameraFrustum.h"
 
-#include <vector>
+MORTY_SPACE_BEGIN
 
 class MEntity;
 class MScene;
@@ -93,3 +93,5 @@ private:
 	Vector2i m_n2ScreenPosition;
 	Vector2 m_f2ScreenScale;
 };
+
+MORTY_SPACE_END

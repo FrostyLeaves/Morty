@@ -1,6 +1,7 @@
 #include "MVoxelMapUtil.h"
 #include "Math/MMath.h"
 
+using namespace morty;
 
 MVoxelClipmap MVoxelMapUtil::GetClipMap(const Vector3& f3CameraPosition, const uint32_t nClipmapIdx)
 {

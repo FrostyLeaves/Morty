@@ -1,5 +1,7 @@
 #include "Component/MInputComponent.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MInputComponent, MComponent)
 
 MInputComponent::MInputComponent()

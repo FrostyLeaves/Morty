@@ -13,6 +13,8 @@
 #include "System/MResourceSystem.h"
 #include "Utility/MFileHelper.h"
 
+MORTY_SPACE_BEGIN
+
 class MResourceSystem;
 class MORTY_API MResourceLoader
 {
@@ -52,3 +54,5 @@ public:
 	}
 
 };
+
+MORTY_SPACE_END

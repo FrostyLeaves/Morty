@@ -11,6 +11,8 @@
 #include "Component/MCameraComponent.h"
 #include <float.h>
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MViewport, MObject)
 
 #define Vector3Intersection(a, b, p) {\

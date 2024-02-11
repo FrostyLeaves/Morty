@@ -16,6 +16,8 @@
 #include "MShadowMapRenderWork.h"
 #include "RenderProgram/MRenderInfo.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MDeferredLightingRenderWork : public ISinglePassRenderWork
 {
 	MORTY_CLASS(MDeferredLightingRenderWork)
@@ -39,3 +41,5 @@ private:
 
 	std::shared_ptr<MMaterial> m_pLightningMaterial = nullptr;
 };
+
+MORTY_SPACE_END

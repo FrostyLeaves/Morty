@@ -11,6 +11,7 @@
 #include "System/MRenderSystem.h"
 #include "TaskGraph/MTaskGraph.h"
 
+MORTY_SPACE_BEGIN
 
 class MRenderTargetCacheQueue
 {
@@ -81,6 +82,9 @@ private:
 
 };
 
+MORTY_SPACE_END
+
+using namespace morty;
 
 MRenderTargetBindingWalker::MRenderTargetBindingWalker(MEngine* pEngine)
     : m_pEngine(pEngine)

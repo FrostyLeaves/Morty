@@ -10,6 +10,8 @@
 
 #include "Material/MMaterial.h"
 
+MORTY_SPACE_BEGIN
+
 class MORTY_API MMaterialResource : public MMaterial
 {
 public:
@@ -29,3 +31,5 @@ private:
 	std::unique_ptr<MResourceData> m_pResourceData = nullptr;
 
 };
+
+MORTY_SPACE_END

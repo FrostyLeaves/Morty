@@ -4,6 +4,8 @@
 #include "Render/Vulkan/MVulkanDevice.h"
 #endif
 
+using namespace morty;
+
 MShaderPropertyBlock::MShaderPropertyBlock()
 	: m_vParams()
 	, m_vTextures()

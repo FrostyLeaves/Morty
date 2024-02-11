@@ -4,6 +4,8 @@
 #include "MRenderTaskNodeInput.h"
 #include "TaskGraph/MTaskGraph.h"
 
+using namespace morty;
+
 MORTY_CLASS_IMPLEMENT(MRenderTaskNode, MTaskNode)
 
 void MRenderTaskNode::OnCreated()

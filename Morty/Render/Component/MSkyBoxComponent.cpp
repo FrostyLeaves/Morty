@@ -1,9 +1,11 @@
 #include "Component/MSkyBoxComponent.h"
 
-MORTY_CLASS_IMPLEMENT(MSkyBoxComponent, MComponent)
-
 #include "MRenderNotify.h"
 #include "Resource/MTextureResource.h"
+
+using namespace morty;
+
+MORTY_CLASS_IMPLEMENT(MSkyBoxComponent, MComponent)
 
 MSkyBoxComponent::MSkyBoxComponent()
 	: MComponent()

@@ -16,6 +16,8 @@
 #include "TaskGraph/MTaskNodeOutput.h"
 #include "Thread/MThreadPool.h"
 
+MORTY_SPACE_BEGIN
+
 class MTaskNode;
 class ITaskGraphWalker;
 class MORTY_API MTaskGraph : public MTypeClass
@@ -73,3 +75,5 @@ TYPE* MTaskGraph::AddNode(const MStringId& strNodeName)
 
 	return pNode;
 }
+
+MORTY_SPACE_END
