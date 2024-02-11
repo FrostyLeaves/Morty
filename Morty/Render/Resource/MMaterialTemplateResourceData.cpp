@@ -8,20 +8,20 @@ flatbuffers::Offset<void> MMaterialTemplateResourceData::Serialize(flatbuffers::
 	const auto fbPixelShader = fbb.CreateString(vShaders[size_t(MEShaderType::EPixel)]);
 	const auto fbMacro = shaderMacro.Serialize(fbb);
 
-	mfbs::MMaterialTemplateBuilder builder(fbb);
+	morty::MMaterialTemplateBuilder builder(fbb);
 
 	builder.add_vertex_resource(fbVertexShader.o);
 	builder.add_pixel_resource(fbPixelShader.o);
 	builder.add_material_macro(fbMacro.o);
-	builder.add_material_type(static_cast<mfbs::MEMaterialType>(eMaterialType));
-	builder.add_rasterizer_type(static_cast<mfbs::MECullMode>(eCullMode));
+	builder.add_material_type(static_cast<morty::MEMaterialType>(eMaterialType));
+	builder.add_rasterizer_type(static_cast<morty::MECullMode>(eCullMode));
 
 	return builder.Finish().Union();
 }
 
 void MMaterialTemplateResourceData::Deserialize(const void* pBufferPointer)
 {
-	const mfbs::MMaterialTemplate* fbData = mfbs::GetMMaterialTemplate(pBufferPointer);
+	const morty::MMaterialTemplate* fbData =morty::GetMMaterialTemplate(pBufferPointer);
 
 	eMaterialType = static_cast<MEMaterialType>(fbData->material_type());
 	eCullMode = static_cast<MECullMode>(fbData->rasterizer_type());

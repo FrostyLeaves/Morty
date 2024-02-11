@@ -316,10 +316,10 @@ void MSceneComponent::CallRecursivelyFunction(MEntity* pEntity, std::function<vo
 
 flatbuffers::Offset<void> MSceneComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	flatbuffers::Offset<mfbs::MComponent> fbsuper = Super::Serialize(fbb).o;
-	flatbuffers::Offset<mfbs::MTransform> fbTransform = m_transform.Serialize(fbb).o;
+	flatbuffers::Offset<morty::MComponent> fbsuper = Super::Serialize(fbb).o;
+	flatbuffers::Offset<morty::MTransform> fbTransform = m_transform.Serialize(fbb).o;
 
-	mfbs::MSceneComponentBuilder compBuilder(fbb);
+	morty::MSceneComponentBuilder compBuilder(fbb);
 
 	compBuilder.add_transform(fbTransform);
 
@@ -328,7 +328,7 @@ flatbuffers::Offset<void> MSceneComponent::Serialize(flatbuffers::FlatBufferBuil
 		if (MEntity* pParentEntity = pParent->GetEntity())
 		{
 			MGuid id = pParentEntity->GetID();
-			mfbs::MGuid fbguid(id.data[0], id.data[1], id.data[2], id.data[3]);
+			morty::MGuid fbguid(id.data[0], id.data[1], id.data[2], id.data[3]);
 			compBuilder.add_parent(&fbguid);
 		}
 	}
@@ -340,13 +340,13 @@ flatbuffers::Offset<void> MSceneComponent::Serialize(flatbuffers::FlatBufferBuil
 
 void MSceneComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	const mfbs::MSceneComponent* fbcomponent = mfbs::GetMSceneComponent(fbb.GetCurrentBufferPointer());
+	const morty::MSceneComponent* fbcomponent =morty::GetMSceneComponent(fbb.GetCurrentBufferPointer());
 	Deserialize(fbcomponent);
 }
 
 void MSceneComponent::Deserialize(const void* pBufferPointer)
 {
-	const mfbs::MSceneComponent* fbComponent = reinterpret_cast<const mfbs::MSceneComponent*>(pBufferPointer);
+	const morty::MSceneComponent* fbComponent = reinterpret_cast<const morty::MSceneComponent*>(pBufferPointer);
 
 	Super::Deserialize(fbComponent->super());
 
@@ -355,7 +355,7 @@ void MSceneComponent::Deserialize(const void* pBufferPointer)
 	transform.Deserialize(fbComponent->transform());
 	SetTransform(transform);
 	
-	if (const mfbs::MGuid* fbguid = fbComponent->parent())
+	if (const morty::MGuid* fbguid = fbComponent->parent())
 	{
 		m_parentGuid = MGuid(fbguid->data0(), fbguid->data1(), fbguid->data2(), fbguid->data3());
 	}

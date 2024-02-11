@@ -8,25 +8,27 @@
 
 #pragma once
 
+#include "MTexture_generated.h"
 #include "Utility/MGlobal.h"
 #include "Resource/MResource.h"
 
 #include "Basic/MTexture.h"
 #include "Resource/MResourceLoader.h"
 
-enum class MTexturePixelFormat
+enum class MTexturePixelType
 {
 	Unknow,
+
 	Byte8,
 	Float32,
 };
 
 struct MTextureImportInfo
 {
-	MTextureImportInfo();
-	MTextureImportInfo(MTexturePixelFormat pixelFormat);
+	MTextureImportInfo() = default;
+	MTextureImportInfo(const MTexturePixelType nPixelSize);
 
-	MTexturePixelFormat ePixelFormat;
+	MTexturePixelType ePixelType = MTexturePixelType::Byte8; //	8 or 32
 };
 
 struct MORTY_API MTextureResourceData : public MFbResourceData
@@ -34,11 +36,11 @@ struct MORTY_API MTextureResourceData : public MFbResourceData
 public:
 	size_t nWidth = 0;
 	size_t nHeight = 0;
-	size_t nImageLayerNum = 1;
+	size_t nDepth = 1;
 	METextureType eTextureType = METextureType::ETexture2D;
-	MTexturePixelFormat ePixelFormat = MTexturePixelFormat::Unknow;
+	morty::METextureLayout eFormat = morty::METextureLayout::Unknow;
 	std::vector<MByte> aByteData{};
-	size_t nChannel = 0;
+	bool bMipmap = true;
 	MString strTextureName = "";
 
 	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
@@ -57,8 +59,6 @@ public:
 public:
 
 	METextureLayout GetTextureLayout() const;
-	MTexturePixelFormat GetPixelFormat() const;
-	size_t GetChannel() const;
 	size_t GetWidth() const;
 	size_t GetHeight() const;
 	const MByte* GetRawData() const;
@@ -74,8 +74,6 @@ public:
 
 protected:
 
-	METextureLayout GetTextureLayout(const uint32_t& nChannel, const MTexturePixelFormat& format);
-
 	bool m_bReadable = false;
 	std::shared_ptr<MTexture> m_pTexture = nullptr;
 	std::unique_ptr<MResourceData> m_pResourceData = nullptr;
@@ -86,7 +84,7 @@ class MORTY_API MTextureResourceLoader : public MResourceLoader
 public:
 
 	static MString GetResourceTypeName() { return "Texture"; }
-	static std::vector<MString> GetSuffixList() { return { "png", "jpg", "tga", "hdr", "tif", "mtex" }; }
+	static std::vector<MString> GetSuffixList() { return { "png", "jpg", "tga", "hdr", "tif", "astc", "dds", "mtex" }; }
 
 	const MType* ResourceType() const override;
 	std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath) override;

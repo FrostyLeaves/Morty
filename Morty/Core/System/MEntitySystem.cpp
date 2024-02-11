@@ -79,7 +79,7 @@ std::shared_ptr<MResource> MEntitySystem::PackEntity(const std::vector<MEntity*>
 		return GetSceneDepthFunction(a->GetComponent<MSceneComponent>(), tDepthCache) < GetSceneDepthFunction(b->GetComponent<MSceneComponent>(), tDepthCache);
 	});
 
-	std::vector<flatbuffers::Offset<mfbs::MEntity>> entityVector;
+	std::vector<flatbuffers::Offset<morty::MEntity>> entityVector;
 	for (MEntity* pEntity : vSortEntity)
 	{		
 		flatbuffers::Offset<void> entity = pEntity->Serialize(fbb);
@@ -88,11 +88,11 @@ std::shared_ptr<MResource> MEntitySystem::PackEntity(const std::vector<MEntity*>
 
 	auto fb_entity = fbb.CreateVector(entityVector);
 
-	mfbs::MEntityResourceBuilder builder(fbb);
+	morty::MEntityResourceBuilder builder(fbb);
 
 	builder.add_entity(fb_entity);
 
-	flatbuffers::Offset<mfbs::MEntityResource>&& root = builder.Finish();
+	flatbuffers::Offset<morty::MEntityResource>&& root = builder.Finish();
 
 	fbb.Finish(root);
 
@@ -121,15 +121,15 @@ std::vector<MEntity*> MEntitySystem::LoadEntity(MScene* pScene, std::shared_ptr<
 	flatbuffers::FlatBufferBuilder fbb;
 	fbb.PushBytes((const uint8_t*)pEntityResource->GetData(), pEntityResource->GetSize());
 
-	const mfbs::MEntityResource* fbResource = mfbs::GetMEntityResource(fbb.GetCurrentBufferPointer());
+	const morty::MEntityResource* fbResource =morty::GetMEntityResource(fbb.GetCurrentBufferPointer());
 
-	const flatbuffers::Vector<flatbuffers::Offset<mfbs::MEntity>>& vEntity = *fbResource->entity();
+	const flatbuffers::Vector<flatbuffers::Offset<morty::MEntity>>& vEntity = *fbResource->entity();
 
 	std::map<MGuid, MGuid> tRedirectGuid;
 	tRedirectGuid[MGuid::invalid] = MGuid::invalid;
 	for (size_t i = 0; i < vEntity.size(); ++i)
 	{
-		const mfbs::MEntity* fb_entity = vEntity.Get(static_cast<flatbuffers::uoffset_t>(i));
+		const morty::MEntity* fb_entity = vEntity.Get(static_cast<flatbuffers::uoffset_t>(i));
 		if (fb_entity->id())
 		{
 			MGuid fbGuid = MGuid(fb_entity->id()->data0(), fb_entity->id()->data1(), fb_entity->id()->data2(), fb_entity->id()->data3());
@@ -139,7 +139,7 @@ std::vector<MEntity*> MEntitySystem::LoadEntity(MScene* pScene, std::shared_ptr<
 
 	for (size_t i = 0; i < vEntity.size(); ++i)
 	{
-		const mfbs::MEntity* fb_entity = vEntity.Get(static_cast<flatbuffers::uoffset_t>(i));
+		const morty::MEntity* fb_entity = vEntity.Get(static_cast<flatbuffers::uoffset_t>(i));
 		if (!fb_entity->id())
 		{
 			MORTY_ASSERT(fb_entity->id());

@@ -21,7 +21,7 @@ struct PS_OUT
 [[vk::binding(0,0)]]Texture2D u_mat_f3Albedo_fMetallic;
 [[vk::binding(1,0)]]Texture2D u_mat_f3Normal_fRoughness;
 [[vk::binding(2,0)]]Texture2D u_mat_f3Position_fAmbientOcc;
-[[vk::binding(3,0)]]Texture2D u_mat_DepthMap;
+[[vk::binding(4,0)]]Texture2D u_mat_SSAO;
 
 
 float3 GetWorldPosition(VS_OUT input, float fDepth)
@@ -43,13 +43,13 @@ float3 AdditionAllLights(VS_OUT input)
     float4 f3Albedo_fMetallic = u_mat_f3Albedo_fMetallic.Sample(NearestSampler, input.uv);
     float4 f3Normal_fRoughness = u_mat_f3Normal_fRoughness.Sample(NearestSampler, input.uv);
     float4 f3Position_fAmbientOcc = u_mat_f3Position_fAmbientOcc.Sample(NearestSampler, input.uv);
-    float fDepth = u_mat_DepthMap.Sample(NearestSampler, input.uv).x;
+    float fSSAO = u_mat_SSAO.Sample(NearestSampler, input.uv).x;
 
     float3 f3Albedo = pow(f3Albedo_fMetallic.rgb, float3(2.2, 2.2, 2.2));
     float fMetallic = f3Albedo_fMetallic.a; 
     float3 f3Normal = f3Normal_fRoughness.rgb;
     float fRoughness = f3Normal_fRoughness.a;
-    float fAmbientOcc = f3Position_fAmbientOcc.a;
+    float fAO = f3Position_fAmbientOcc.a * fSSAO;
     float3 f3WorldPosition = f3Position_fAmbientOcc.rgb;
     float3 f3CameraDir = normalize(u_f3CameraPosition - f3WorldPosition);
 
@@ -73,11 +73,11 @@ float3 AdditionAllLights(VS_OUT input)
         float2 brdf = u_texBrdfLUT.Sample(LinearSampler, float2(max(dot(f3Normal, f3CameraDir), 0.0), fRoughness)).rg;
         float3 f3Specular = f3PrefilteredColor * (kS * brdf.x + brdf.y);
 
-        f3Ambient = (kD * f3Diffuse + f3Specular) * fAmbientOcc;
+        f3Ambient = (kD * f3Diffuse + f3Specular) * fAO;
     }
     else
     {
-        f3Ambient = float3(0.1, 0.1, 0.1) * f3Albedo * fAmbientOcc;
+        f3Ambient = float3(0.1, 0.1, 0.1) * f3Albedo * fAO;
     }
 
     SurfaceData pointData;
@@ -90,13 +90,13 @@ float3 AdditionAllLights(VS_OUT input)
     pointData.fMetallic = fMetallic;
     pointData.bReceiveShadow = true;
 
-    float3 f3LightColor = PbrLighting(pointData);
+    float3 f3LightColor = PbrLighting(pointData) * fAO;
 
     float4 f4VXGIColor = float4(0,0,0,0);
 
 #if MORTY_VXGI_ENABLE
     f4VXGIColor = VoxelDiffuseTracing(u_texVoxelMap, voxelMapSetting, f3WorldPosition,  f3Normal);
-    //f4VXGIColor.rgb = (kD * f4VXGIColor.rgb) * fAmbientOcc;
+    f4VXGIColor.rgb *= fAO;
 #endif
 
     float3 f3Color = f3LightColor + f4VXGIColor.rgb + f3Ambient;

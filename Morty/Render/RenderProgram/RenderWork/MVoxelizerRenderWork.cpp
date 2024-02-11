@@ -1,5 +1,6 @@
 #include "MVoxelizerRenderWork.h"
 
+#include "MShadowMapRenderWork.h"
 #include "Render/MRenderGlobal.h"
 #include "Resource/MMaterialResource.h"
 #include "Scene/MScene.h"
@@ -12,6 +13,7 @@
 #include "Material/MComputeDispatcher.h"
 #include "Render/MRenderPass.h"
 #include "Render/MRenderCommand.h"
+#include "RenderProgram/RenderGraph/MRenderGraph.h"
 
 #include "System/MObjectSystem.h"
 #include "System/MRenderSystem.h"
@@ -21,16 +23,20 @@
 #include "Component/MCameraComponent.h"
 #include "Component/MRenderMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
+#include "Culling/MInstanceCulling.h"
 #include "Render/MVertex.h"
 
 #include "Utility/MBounds.h"
 #include "Mesh/MMeshManager.h"
 #include "RenderProgram/MFrameShaderPropertyBlock.h"
+#include "RenderProgram/MeshRender/MCullingResultSpecificMaterialRenderable.h"
+#include "RenderProgram/RenderGraph/MRenderGraph.h"
 #include "Variant/MVariant.h"
 #include "VXGI/MVoxelMapUtil.h"
 
 MORTY_CLASS_IMPLEMENT(MVoxelizerRenderWork, ISinglePassRenderWork)
 
+const MStringId MVoxelizerRenderWork::VoxelizerBufferOutput = MStringId("Voxelizer Buffer Output");
 
 class MVoxelMapPropertyDecorator : public IShaderPropertyUpdateDecorator
 {
@@ -99,14 +105,13 @@ void MVoxelizerRenderWork::Initialize(MEngine* pEngine)
 #endif
 }
 
-void MVoxelizerRenderWork::Release(MEngine* pEngine)
+void MVoxelizerRenderWork::Release()
 {
 	ReleaseDispatcher();
-	ReleaseRenderPass();
 	ReleaseBuffer();
 	ReleaseVoxelTextureDispatcher();
 
-	Super::Release(pEngine);
+	Super::Release();
 }
 
 std::shared_ptr<IShaderPropertyUpdateDecorator> MVoxelizerRenderWork::GetFramePropertyDecorator()
@@ -146,13 +151,39 @@ void MVoxelizerRenderWork::SetupVoxelSetting(const Vector3& f3CameraPosition, co
 	voxelSetting.vClipmap[nClipmapIdx] = MVoxelMapUtil::GetClipMap(f3CameraPosition, nClipmapIdx);
 }
 
-void MVoxelizerRenderWork::Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
+void MVoxelizerRenderWork::Render(const MRenderInfo& info)
+{
+	const MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
+
+	MCullingResultSpecificMaterialRenderable indirectMesh;
+	indirectMesh.SetMeshBuffer(pMeshManager->GetMeshBuffer());
+	indirectMesh.SetPropertyBlockAdapter({
+		GetRenderGraph()->GetFrameProperty(),
+		});
+	indirectMesh.SetInstanceCulling(GetRenderGraph()->GetVoxelizerCullingResult());
+	indirectMesh.SetMaterial(GetVoxelizerMaterial());
+
+	std::unordered_map<MStringId, bool> tVoxelizerDefined = {
+		{ MRenderGlobal::SHADER_SKELETON_ENABLE, false }
+	};
+
+	indirectMesh.SetMaterialFilter(std::make_shared<MMaterialMacroDefineFilter>(tVoxelizerDefined));
+
+	Render(info, {
+		&indirectMesh,
+		});
+
+}
+
+void MVoxelizerRenderWork::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
 
 	pCommand->ResetBuffer(&m_voxelizerBuffer);
 
 	constexpr uint32_t fViewportSize = MRenderGlobal::VOXEL_VIEWPORT_SIZE;
+
+	AutoSetTextureBarrier(pCommand);
 
 	pCommand->BeginRenderPass(&m_renderPass);
 	pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, fViewportSize, fViewportSize));
@@ -293,29 +324,27 @@ void MVoxelizerRenderWork::InitializeRenderPass()
 	m_renderPass.m_strDebugName = "Voxelizer";
 #endif
 
-	const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-
-	m_pVoxelizerRenderTarget = MTexture::CreateRenderTarget(METextureLayout::ERGBA_UNORM_8);
-	m_pVoxelizerRenderTarget->SetName("Voxelizer Render Target");
-	int nRenderTargetSize = static_cast<int>(MRenderGlobal::VOXEL_VIEWPORT_SIZE);
-	m_pVoxelizerRenderTarget->SetSize({ nRenderTargetSize, nRenderTargetSize });
-	m_pVoxelizerRenderTarget->GenerateBuffer(pRenderSystem->GetDevice());
-	SetRenderTarget({
-		{ {m_pVoxelizerRenderTarget, {true, MColor::Black_T}} },
-		{},
-		{}
-		});
-
 	m_renderPass.SetDepthTestEnable(false);
 	m_renderPass.SetDepthWriteEnable(false);
 	m_renderPass.SetViewportNum(1);
 }
 
-void MVoxelizerRenderWork::ReleaseRenderPass()
+void MVoxelizerRenderWork::BindTarget()
 {
-	const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+	AutoBindBarrierTexture();
+	SetRenderTarget(AutoBindTarget());
+}
 
-	m_pVoxelizerRenderTarget->DestroyBuffer(pRenderSystem->GetDevice());
+std::vector<MRenderTaskInputDesc> MVoxelizerRenderWork::InitInputDesc()
+{
+	return {
+		{ MShadowMapRenderWork::ShadowMapBufferOutput, METextureBarrierStage::EPixelShaderSample },
+	};
+}
 
-	m_pVoxelizerRenderTarget = nullptr;
+std::vector<MRenderTaskOutputDesc> MVoxelizerRenderWork::InitOutputDesc()
+{
+	return {
+		{ VoxelizerBufferOutput, {true, MColor::Black_T }},
+	};
 }

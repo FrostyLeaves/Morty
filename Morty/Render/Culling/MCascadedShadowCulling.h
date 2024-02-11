@@ -3,6 +3,7 @@
 #include "MInstanceCulling.h"
 
 #include "Render/MBuffer.h"
+#include "Render/MVertex.h"
 #include "Shadow/MShadowMapUtil.h"
 
 class IRenderableFilter;
@@ -21,6 +22,7 @@ public:
     void SetViewport(MViewport* pViewport) { m_pViewport = pViewport; }
     void SetDirectionalLight(MEntity* pDirectionalLight);
     void Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup) override;
+    void UploadBuffer(MIRenderCommand* pCommand) override;
     const MBuffer* GetDrawIndirectBuffer() override { return &m_drawIndirectBuffer; }
     const std::vector<MMaterialCullingGroup>& GetCullingInstanceGroup() const override { return m_vCullingInstanceGroup; }
     const MCascadedArray<MCascadedShadowRenderData> GetCascadedRenderInfo() const { return m_vCascadedRenderData; }
@@ -37,6 +39,8 @@ private:
     MEntity* m_pDirectionalLight = nullptr;
     MBuffer m_drawIndirectBuffer;
     
+	std::vector<MDrawIndexedIndirectData> m_vDrawIndirectData;
+
     //Shadow caster draw instancing.
     std::vector<MMaterialCullingGroup> m_vCullingInstanceGroup;
     //Potential Shadow Caster

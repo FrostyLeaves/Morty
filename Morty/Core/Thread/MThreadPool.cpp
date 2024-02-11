@@ -13,7 +13,7 @@ std::array<METhreadType, MGlobal::M_MAX_THREAD_NUM> MThreadPool::s_tThreadType =
 
 thread_local static size_t ThreadIndex = MGlobal::M_MAX_THREAD_NUM;
 
-constexpr bool bSingleThreadMode = false;
+constexpr bool bSingleThreadMode = true;
 
 void MThreadPool::Initialize()
 {

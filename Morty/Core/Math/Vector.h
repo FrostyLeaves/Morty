@@ -47,7 +47,7 @@ public:
 
 public:
 
-	const mfbs::Vector2* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	const morty::Vector2* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
 	void Deserialize(const void* pBufferPointer);
 
 public:
@@ -74,7 +74,7 @@ public:
 	Vector3(const Vector3& vec3);
 	Vector3(const Vector4& vec4);
 	Vector3(const float& x, const float& y, const float& z);
-	Vector3(const mfbs::Vector3& value);
+	Vector3(const morty::Vector3& value);
 
 	float Length() const;
 	void Normalize();
@@ -111,7 +111,7 @@ public:
 
 public:
 
-	const mfbs::Vector3* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	const morty::Vector3* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
 	void Deserialize(const void* pBufferPointer);
 
 public:
@@ -212,7 +212,7 @@ public:
 
 public:
 
-	const mfbs::Vector4* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+	const morty::Vector4* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
 	void Deserialize(const void* pBufferPointer);
 
 public:

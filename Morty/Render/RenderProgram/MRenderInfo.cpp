@@ -37,6 +37,7 @@ MRenderInfo MRenderInfo::CreateFromViewport(MViewport* pViewport)
     info.m4CameraTransform = pCameraSceneComponent->GetWorldTransform();
     info.f2CameraNearFar = pCameraComponent->GetZNearFar();
 
+    info.m4ProjectionMatrix = MRenderSystem::GetCameraProjectionMatrix(pCameraComponent, pViewport->GetSize().x, pViewport->GetSize().y, pCameraComponent->GetZNear(), pCameraComponent->GetZFar());
     const auto m4CameraInverseProj = MRenderSystem::GetCameraInverseProjection(pViewport, pCameraComponent, pCameraSceneComponent);
     info.m4CameraInverseProjection = m4CameraInverseProj;
     info.cameraFrustum.UpdateFromCameraInvProj(m4CameraInverseProj);

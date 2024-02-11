@@ -6,7 +6,7 @@ class MTaskGraph;
 class TaskGraphView : public BaseWidget
 {
 public:
-	TaskGraphView();
+	TaskGraphView(const MString& viewName);
     ~TaskGraphView() = default;
 
 	void Render() override;

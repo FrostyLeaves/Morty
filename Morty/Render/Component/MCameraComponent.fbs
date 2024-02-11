@@ -1,5 +1,5 @@
 include "Component/MComponent.fbs";
-namespace mfbs;
+namespace morty;
 
 table MCameraComponent
 {

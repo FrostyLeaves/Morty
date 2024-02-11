@@ -1,5 +1,7 @@
 #include "../PostProcess/post_process_header.hlsl"
 
+[[vk::binding(1,0)]]Texture2D u_texInputTexture;
+
 struct VS_OUT_POST
 {
     float4 pos : SV_POSITION;
@@ -8,8 +10,8 @@ struct VS_OUT_POST
 
 void SampleForKernel(inout float4 output[9], Texture2D tex, float2 f2Coord)
 {
-	float w = 1.0 / u_f2ScreenSize.x;
-	float h = 1.0 / u_f2ScreenSize.y;
+	float w = u_f2ViewportSizeInv.x;
+	float h = u_f2ViewportSizeInv.y;
 
 	output[0] = tex.Sample(LinearSampler, f2Coord + float2( -w, -h));
 	output[1] = tex.Sample(LinearSampler, f2Coord + float2(0.0, -h));

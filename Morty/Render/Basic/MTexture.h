@@ -25,28 +25,38 @@ enum METextureType
 
 enum class METextureLayout
 {
-	E_UNKNOW = 0,
-	
-	ER_UNORM_8,
-	ERG_UNORM_8,
-	ERGB_UNORM_8,
-	ERGBA_UNORM_8,
+	Unknow = 0,
+	Depth,
 
-	ER_UINT_8,
+	UNorm_R8,
+	UNorm_RG8,
+	UNorm_RGB8,
+	UNorm_RGBA8,
 
-	ER_FLOAT_16,
-	ERG_FLOAT_16,
-	ERGB_FLOAT_16,
-	ERGBA_FLOAT_16,
+	UInt_R8,
 
-	ER_FLOAT_32,
-	ERG_FLOAT_32,
-	ERGB_FLOAT_32,
-	ERGBA_FLOAT_32,
+	Float_R16,
+	Float_RG16,
+	Float_RGB16,
+	Float_RGBA16,
 
-	EDepth,
+	Float_R32,
+	Float_RG32,
+	Float_RGB32,
+	Float_RGBA32,
 
-	E_NUM,
+	UNorm_RGBA8_ASTC4x4,
+	UNorm_RGBA8_ASTC8x8,
+
+	UNorm_RGBA8_BC1,
+	UNorm_RGBA8_BC2,
+	UNorm_RGBA8_BC3,
+	UNorm_RGBA8_BC4,
+	UNorm_RGBA8_BC5,
+	UNorm_RGBA8_BC7,
+
+	SNorm_RGBA8_BC4,
+	SNorm_RGBA8_BC5,
 };
 
 enum class METextureWriteUsage
@@ -67,6 +77,30 @@ public:
 	static constexpr uint32_t EShadingRateMask = 4;
 };
 
+struct MORTY_API MTextureDesc
+{
+	MString strTextureName = "Default";
+	Vector3i n3Size = Vector3i(1, 1, 1);
+	uint32_t nLayer = 1;
+	METextureType eTextureType = METextureType::ETexture2D;
+	METextureLayout eTextureLayout = METextureLayout::UNorm_RGBA8;
+	METextureWriteUsage eWriteUsage = METextureWriteUsage::EUnknow;
+	uint32_t nShaderUsage = METextureReadUsage::EUnknow;
+	bool bReadable = false;
+	bool bMipmapEnable = false;
+
+	MTextureDesc& InitName(const MString& name)
+	{
+		strTextureName = name;
+		return *this;
+	}
+	MTextureDesc& InitSize(const Vector2i& n2Size)
+	{
+		n3Size = Vector3i(n2Size.x, n2Size.y, 1);
+		return *this;
+	}
+};
+
 class MORTY_API MTexture
 {
 public:
@@ -83,11 +117,11 @@ public:
 	Vector3i GetSize() const { return m_n3Size; }
 	Vector2i GetSize2D() const { return Vector2i(m_n3Size.x, m_n3Size.y); }
 
+	void SetLayer(const uint32_t& nLayer) { m_nLayer = nLayer; }
+	uint32_t GetLayer() const { return m_nLayer; }
+
 	void SetTextureLayout(const METextureLayout& eLayout) { m_eRenderType = eLayout; }
 	METextureLayout GetTextureLayout() { return m_eRenderType; }
-
-	void SetImageLayerNum(const size_t& unNum) { m_unImageLayerNum = unNum; }
-	size_t GetImageLayerNum() const { return m_unImageLayerNum; }
 
 	void SetReadable(const bool& bReadable) { m_bReadable = bReadable; }
 	bool GetReadable() { return m_bReadable; }
@@ -109,21 +143,23 @@ public:
 
 public:
 
-	void GenerateBuffer(MIDevice* pDevice, const MByte* aImageData = nullptr);
+	void GenerateBuffer(MIDevice* pDevice);
+	void GenerateBuffer(MIDevice* pDevice, const MSpan<MByte>& buffer);
 	void DestroyBuffer(MIDevice* pDevice);
 
 	static uint32_t GetImageMemorySize(const METextureLayout& layout);
 
 public:
 
-	static std::shared_ptr<MTexture> CreateShadowMap();
-	static std::shared_ptr<MTexture> CreateShadowMapArray(const size_t& nArraySize);
-	static std::shared_ptr<MTexture> CreateRenderTarget(METextureLayout eLayout = METextureLayout::ERGBA_UNORM_8);
-	static std::shared_ptr<MTexture> CreateRenderTargetGBuffer();
-	static std::shared_ptr<MTexture> CreateRenderTargetFloat32();
-	static std::shared_ptr<MTexture> CreateShadingRate();
+	static std::shared_ptr<MTexture> CreateTexture(const MTextureDesc& desc);
 
-	static std::shared_ptr<MTexture> CreateCubeMap();
+	static MTextureDesc CreateDepthBuffer();
+	static MTextureDesc CreateShadowMapArray(const int& nSize, const uint32_t& nArraySize);
+	static MTextureDesc CreateRenderTarget(METextureLayout eLayout = METextureLayout::UNorm_RGBA8);
+	static MTextureDesc CreateRenderTargetGBuffer();
+	static std::shared_ptr<MTexture> CreateRenderTargetFloat32();
+	static MTextureDesc CreateShadingRate();
+
 	static std::shared_ptr<MTexture> CreateVXGIMap();
 
 public:
@@ -151,12 +187,7 @@ public:
 	bool m_bMipmapsEnable;
 
 	uint32_t m_unMipmapLevel = 1;
-
-private:
-
-	size_t m_unImageLayerNum;
-
-public:
+	uint32_t m_nLayer = 1;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	VkFormat m_VkTextureFormat;

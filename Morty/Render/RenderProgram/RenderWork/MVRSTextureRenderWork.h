@@ -16,27 +16,31 @@
 #include "Render/MRenderPass.h"
 #include "Basic/MCameraFrustum.h"
 
-class MORTY_API MVRSTextureRenderWork : public IRenderWork
+class MORTY_API MVRSTextureRenderWork : public MRenderTaskNode
 {
-	MORTY_INTERFACE(MVRSTextureRenderWork)
+	MORTY_CLASS(MVRSTextureRenderWork)
+	static const MStringId VRS_TEXTURE;
 public:
 
     void Initialize(MEngine* pEngine) override;
-	void Release(MEngine* pEngine) override;
+	void Release() override;
 
 	void Resize(Vector2i size) override;
 
-	void Render(MRenderInfo& info, const std::shared_ptr<IGetTextureAdapter>& pEdgeTexture);
+	void Render(const MRenderInfo& info) override;
 
 	MEngine* GetEngine() const { return m_pEngine; }
 
-	std::shared_ptr<MTexture> GetVRSTexture() const;
 
 protected:
 
-	MEngine* m_pEngine = nullptr;
+	void BindTarget() override;
 
-	std::shared_ptr<MTexture> m_pVRSTexture = nullptr;
+	std::vector<MRenderTaskInputDesc> InitInputDesc() override;
+
+	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
+
+	MEngine* m_pEngine = nullptr;
 
 	MComputeDispatcher* m_pVRSGenerator = nullptr;
 

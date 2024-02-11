@@ -1,7 +1,7 @@
 ﻿include "Math/Vector.fbs";
 include "Math/Matrix.fbs";
 include "Math/Quaternion.fbs";
-namespace mfbs;
+namespace morty;
 
 enum MEVariantType : byte
 {

@@ -25,6 +25,7 @@ public:
 
 
     void Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup) override;
+    void UploadBuffer(MIRenderCommand* pCommand) override;
     const MBuffer* GetDrawIndirectBuffer() override;
     const std::vector<MMaterialCullingGroup>& GetCullingInstanceGroup() const override;
 

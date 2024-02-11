@@ -88,19 +88,19 @@ bool MShaderMacro::Compare(const MShaderMacro& macro)
 
 flatbuffers::Offset<void> MShaderMacro::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	std::vector<flatbuffers::Offset<mfbs::MShaderMacroPair>> vMaterialMacroPairs;
+	std::vector<flatbuffers::Offset<morty::MShaderMacroPair>> vMaterialMacroPairs;
 	for (auto pairs : m_vMacroParams)
 	{
 		auto fbKey = fbb.CreateString(pairs.first.ToString());
 		auto fbValue = fbb.CreateString(pairs.second);
-		mfbs::MShaderMacroPairBuilder builder(fbb);
+		morty::MShaderMacroPairBuilder builder(fbb);
 		builder.add_key(fbKey);
 		builder.add_value(fbValue);
 		vMaterialMacroPairs.push_back(builder.Finish().o);
 	}
 
 	const auto fbMaterialMacro = fbb.CreateVector(vMaterialMacroPairs);
-	mfbs::MShaderMacroBuilder builder(fbb);
+	morty::MShaderMacroBuilder builder(fbb);
 
 	builder.add_material_macro(fbMaterialMacro);
 
@@ -109,7 +109,7 @@ flatbuffers::Offset<void> MShaderMacro::Serialize(flatbuffers::FlatBufferBuilder
 
 void MShaderMacro::Deserialize(const void* pBufferPointer)
 {
-	const mfbs::MShaderMacro* fbData = reinterpret_cast<const mfbs::MShaderMacro*>(pBufferPointer);
+	const morty::MShaderMacro* fbData = reinterpret_cast<const morty::MShaderMacro*>(pBufferPointer);
 
 	m_vMacroParams.clear();
 

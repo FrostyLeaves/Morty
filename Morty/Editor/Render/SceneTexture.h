@@ -26,9 +26,9 @@ public:
 
 	void SetRect(Vector2i pos, Vector2i size);
 
-	std::shared_ptr<MTexture> GetTexture(const size_t& nImageIndex);
-	std::vector<std::shared_ptr<MTexture>> GetAllOutputTexture(const size_t& nImageIndex);
-	void UpdateTexture(const size_t& nImageIndex, MIRenderCommand* pRenderCommand);
+	std::shared_ptr<MTexture> GetTexture();
+	std::vector<std::shared_ptr<MTexture>> GetAllOutputTexture();
+	void UpdateTexture(MIRenderCommand* pRenderCommand);
 
 	MScene* GetScene() const { return m_pScene; }
 	MViewport* GetViewport() const { return m_pRenderViewport; }
@@ -39,13 +39,15 @@ public:
 
 	void SetPauseUpdate(bool bPause) { m_bPauseUpdate = bPause; }
 
+	MIRenderProgram* GetRenderProgram() const { return m_pRenderProgram; }
+
 protected:
 
 	MScene* m_pScene = nullptr;
 
-	MViewport* m_pRenderViewport;
+	MViewport* m_pRenderViewport = nullptr;
 
-	std::vector<MIRenderProgram*> m_vRenderProgram;
+	MIRenderProgram* m_pRenderProgram = nullptr;
 
 	bool m_bPauseUpdate = false;
 	bool m_bSnapshot;

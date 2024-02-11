@@ -50,7 +50,7 @@ flatbuffers::Offset<void> MCameraComponent::Serialize(flatbuffers::FlatBufferBui
 {
 	auto fbSuper = Super::Serialize(fbb).o;
 
-	mfbs::MCameraComponentBuilder builder(fbb);
+	morty::MCameraComponentBuilder builder(fbb);
 
 	builder.add_camera_type((int)GetCameraType());
 	builder.add_fov(GetFov());
@@ -66,13 +66,13 @@ flatbuffers::Offset<void> MCameraComponent::Serialize(flatbuffers::FlatBufferBui
 
 void MCameraComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	const mfbs::MCameraComponent* fbcomponent = mfbs::GetMCameraComponent(fbb.GetCurrentBufferPointer());
+	const morty::MCameraComponent* fbcomponent =morty::GetMCameraComponent(fbb.GetCurrentBufferPointer());
 	Deserialize(fbcomponent);
 }
 
 void MCameraComponent::Deserialize(const void* pBufferPointer)
 {
-	const mfbs::MCameraComponent* pComponent = reinterpret_cast<const mfbs::MCameraComponent*>(pBufferPointer);
+	const morty::MCameraComponent* pComponent = reinterpret_cast<const morty::MCameraComponent*>(pBufferPointer);
 
 	Super::Deserialize(pComponent->super());
 

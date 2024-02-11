@@ -9,6 +9,7 @@
 #pragma once
 
 #include "Culling/MBoundingBoxCulling.h"
+#include "RenderProgram/RenderGraph/MRenderTargetBindingWalker.h"
 #include "Utility/MGlobal.h"
 
 #include "Type/MType.h"
@@ -17,6 +18,7 @@
 #include "Resource/MResource.h"
 #include "TaskGraph/MTaskNode.h"
 #include "TaskGraph/MTaskGraph.h"
+#include "RenderGraph/MRenderGraph.h"
 #include "Render/MRenderPass.h"
 #include "MRenderInfo.h"
 #include "RenderProgram/MIRenderProgram.h"
@@ -26,6 +28,7 @@
 #include "Culling/MInstanceCulling.h"
 #include <memory>
 
+class MRenderTargetManager;
 class MCPUCameraFrustumCulling;
 class MGPUCameraFrustumCulling;
 class IGBufferAdapter;
@@ -33,6 +36,7 @@ class IPropertyBlockAdapter;
 class ITextureInputAdapter;
 class MViewport;
 class MMaterial;
+class MRenderGraph;
 class MIRenderCommand;
 class MComputeDispatcher;
 class MRenderMeshComponent;
@@ -42,44 +46,22 @@ class MORTY_API MDeferredRenderProgram : public MIRenderProgram
 public:
 	MORTY_CLASS(MDeferredRenderProgram)
 
-	MDeferredRenderProgram() = default;
-    ~MDeferredRenderProgram() override = default;
-
 public:
 
 	void Render(MIRenderCommand* pPrimaryCommand) override;
 
 	void RenderSetup(MIRenderCommand* pPrimaryCommand);
 	
-	void RenderGBuffer();
-
-	void RenderLightning();
-
-	void RenderVoxelizer();
-
-	void RenderShadow();
-
-	void RenderForward();
-
-	void RenderVoxelizerDebug();
-
-	void RenderTransparent();
-
-	void RenderPostProcess();
-
-	void RenderDebug();
-
-	void RenderVRS();
-
 	std::shared_ptr<MTexture> GetOutputTexture() override;
 	std::vector<std::shared_ptr<MTexture>> GetOutputTextures() override;
+	MTaskGraph* GetRenderGraph() override { return m_pRenderGraph.get(); }
 
 public:
 	void OnCreated() override;
 	void OnDelete() override;
 
-	void InitializeRenderTarget();
-	void ReleaseRenderTarget();
+	void InitializeRenderGraph();
+	void ReleaseRenderGraph();
 
 	void InitializeFrameShaderParams();
 	void ReleaseFrameShaderParams();
@@ -92,46 +74,51 @@ public:
 	
 protected:
 
-	void UpdateFrameParams(MRenderInfo& info);
-
 
 	template<typename TYPE>
-	IRenderWork* RegisterRenderWork()
+	TYPE* RegisterRenderWork(const MStringId strTaskNodeName)
 	{
-		if (m_tRenderWork.find(TYPE::GetClassType()) != m_tRenderWork.end())
+		MRenderTaskNode* pRenderWork = m_pRenderGraph->FindTaskNode<TYPE>(strTaskNodeName);
+		if(pRenderWork != nullptr)
 		{
-			return m_tRenderWork[TYPE::GetClassType()].get();
+			return static_cast<TYPE*>(pRenderWork);
 		}
-		auto pRenderWork = std::make_unique<TYPE>();
-		pRenderWork->Initialize(GetEngine());
-		if (auto pFramePropertyDecorator = pRenderWork->GetFramePropertyDecorator())
+
+		pRenderWork = m_pRenderGraph->RegisterTaskNode<TYPE>(strTaskNodeName);
+		if (pRenderWork)
 		{
-			m_pFramePropertyAdapter->RegisterPropertyDecorator(pFramePropertyDecorator);
+			pRenderWork->Initialize(GetEngine());
+			if (auto pFramePropertyDecorator = pRenderWork->GetFramePropertyDecorator())
+			{
+				m_pFramePropertyAdapter->RegisterPropertyDecorator(pFramePropertyDecorator);
+			}
 		}
-		m_tRenderWork[TYPE::GetClassType()] = std::move(pRenderWork);
-		return m_tRenderWork[TYPE::GetClassType()].get();
+		return static_cast<TYPE*>(pRenderWork);
 	}
 
 	template<typename TYPE>
-	TYPE* GetRenderWork()
+	TYPE* GetRenderWork(const MStringId& strTaskNodeName) const
 	{
-		const auto& findResult = m_tRenderWork.find(TYPE::GetClassType());
-		if (findResult != m_tRenderWork.end())
-		{
-			IRenderWork* pRenderWork = findResult->second.get();
-			return reinterpret_cast<TYPE*>(pRenderWork);
-		}
-
-		return nullptr;
+		return m_pRenderGraph->FindTaskNode<TYPE>(strTaskNodeName);
 	}
+
+	template<typename TYPE>
+	TYPE* RegisterRenderWork()
+	{
+		return RegisterRenderWork<TYPE>(MStringId(TYPE::GetClassTypeName()));
+	}
+
+	template<typename TYPE>
+	TYPE* GetRenderWork() const
+	{
+		return GetRenderWork<TYPE>(MStringId(TYPE::GetClassTypeName()));
+	}
+	
 
 protected:
 
 	MRenderInfo m_renderInfo;
 
-	std::vector<std::shared_ptr<MTexture>> m_vRenderTargets;
-	std::shared_ptr<MTexture> m_pFinalOutputTexture = nullptr;
-	
 	std::shared_ptr<MFrameShaderPropertyBlock> m_pFramePropertyAdapter = nullptr;
 
 	MCullingTaskNode<MCascadedShadowCulling>* m_pShadowCulling = nullptr;
@@ -144,10 +131,11 @@ protected:
 
 	MCullingTaskNode<MBoundingBoxCulling>* m_pVoxelizerCulling = nullptr;
 
-	std::unordered_map<const MType*, std::unique_ptr<IRenderWork>> m_tRenderWork;
-
 	uint32_t m_nFrameIndex = 0;
 
 
-	std::unique_ptr<MTaskGraph> m_pCullingTask;
+	std::unique_ptr<MTaskGraph> m_pCullingTask = nullptr;
+	std::unique_ptr<MRenderGraph> m_pRenderGraph = nullptr;
+
+	std::unique_ptr<MRenderTargetBindingWalker> m_pRenderTargetBinding = nullptr;
 };

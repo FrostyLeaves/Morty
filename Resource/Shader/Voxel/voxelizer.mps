@@ -53,8 +53,8 @@ float4 PS_MAIN(VS_OUT input) : SV_Target
     
     float2 uv = input.uv;
     float3 f3Albedo   = u_mat_texAlbedo.Sample(LinearSampler, uv).rgb * u_xMaterial.f4Albedo.rgb;
-    float fMetallic   = u_mat_texMetallic.Sample(LinearSampler, uv).r * u_xMaterial.fMetallic;
-    float fRoughness  = u_mat_texRoughness.Sample(LinearSampler, uv).r * u_xMaterial.fRoughness;
+    float fMetallic   = u_mat_texMetallic.Sample(LinearSampler, uv)[u_xMaterial.nMetallicChannel] * u_xMaterial.fMetallic;
+    float fRoughness  = u_mat_texRoughness.Sample(LinearSampler, uv)[u_xMaterial.nRoughnessChannel] * u_xMaterial.fRoughness;
     float fAmbientOcc = u_mat_texAmbientOcc.Sample(LinearSampler, uv).r;
 
     float3 f3BaseColor = float3(0.0f, 0.0f, 0.0f);

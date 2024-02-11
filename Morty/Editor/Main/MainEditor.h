@@ -4,7 +4,9 @@
 #include "Render/SceneTexture.h"
 
 #include "SDLRenderView.h"
+#include "Widget/RenderSettingView.h"
 
+class TaskGraphView;
 class MainView;
 class GuizmoWidget;
 class MNode;
@@ -69,7 +71,9 @@ private:
 	bool m_bShowDebugView = false;
 
 	Vector4 m_v4RenderViewSize= Vector4(0,0,32,32);
-	
+
+	TaskGraphView* m_pRenderGraphView = nullptr;
+	RenderSettingView* m_pRenderSettingView = nullptr;
 	std::shared_ptr<SceneTexture> m_pSceneTexture = nullptr;
 	MTaskNode* m_pRenderTask = nullptr;
 

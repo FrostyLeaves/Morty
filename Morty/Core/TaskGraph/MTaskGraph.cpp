@@ -65,6 +65,8 @@ void MTaskGraph::DestroyNode(MTaskNode* pTaskNode)
 
 bool MTaskGraph::Compile()
 {
+	const size_t nTaskNodeNum = m_tTaskNode.size();
+
 	std::queue<MTaskNode*> queue;
 	m_vStartTaskNode.clear();
 	m_vFinalTaskNode.clear();
@@ -107,6 +109,7 @@ bool MTaskGraph::Compile()
 					if (pLinkedNode->m_nPriorityLevel < pNode->m_nPriorityLevel + 1)
 					{
 						pLinkedNode->m_nPriorityLevel = pNode->m_nPriorityLevel + 1;
+						MORTY_ASSERT(pLinkedNode->m_nPriorityLevel < nTaskNodeNum);
 					}
 
 					queue.push(pLinkedNode);
@@ -133,6 +136,14 @@ std::vector<MTaskNode*> MTaskGraph::GetOrderedNodes()
 	std::vector<MTaskNode*> vNodes(m_tTaskNode.size());
 	std::transform(m_tTaskNode.begin(), m_tTaskNode.end(), vNodes.begin(), [](auto node) {return node; });
 	std::sort(vNodes.begin(), vNodes.end(), [](MTaskNode* a, MTaskNode* b) {return a->m_nPriorityLevel > b->m_nPriorityLevel; });
+
+	return vNodes;
+}
+
+std::vector<MTaskNode*> MTaskGraph::GetAllNodes()
+{
+	std::vector<MTaskNode*> vNodes(m_tTaskNode.size());
+	std::transform(m_tTaskNode.begin(), m_tTaskNode.end(), vNodes.begin(), [](auto node) {return node; });
 
 	return vNodes;
 }

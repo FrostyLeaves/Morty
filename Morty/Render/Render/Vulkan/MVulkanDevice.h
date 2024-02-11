@@ -48,7 +48,7 @@ public:
 	void UploadBuffer(MBuffer* pBuffer, const size_t& unBeginOffset, const MByte* data, const size_t& unDataSize) override;
 	void DownloadBuffer(MBuffer* pBuffer, MByte* outputData, const size_t& nSize) override;
 
-	void GenerateTexture(MTexture* pTexture, const MByte* pData = nullptr) override;
+	void GenerateTexture(MTexture* pTexture, const MSpan<MByte>& buffer) override;
 	void DestroyTexture(MTexture* pTexture) override;
 
 	bool CompileShader(MShader* pShader) override;
@@ -105,16 +105,19 @@ public:
 	VkMemoryPropertyFlags GetMemoryFlags(MBuffer* pBuffer) const;
 	VkFragmentShadingRateCombinerOpKHR GetShadingRateCombinerOp(MEShadingRateCombinerOp op) const;
 
+	void GenerateBuffer(VkCommandBuffer vkCommand, MBuffer* pBuffer, const MByte* initialData, const size_t& unDataSize);
+	void UploadBuffer(VkCommandBuffer vkCommand, MBuffer* pBuffer, const size_t& unBeginOffset, const MByte* data, const size_t& unDataSize);
 	void GenerateMipmaps(MTexture* pBuffer, const uint32_t& unMipLevels, VkCommandBuffer buffer = VK_NULL_HANDLE);
 	bool GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+
 	MVulkanSecondaryRenderCommand* CreateChildCommand(MVulkanPrimaryRenderCommand* pParentCommand);
 
 
 	std::tuple<VkImageView, Vector2i> CreateFrameBufferViewFromRenderTarget(MRenderTarget& renderTarget);
 
 protected:
-	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkBufferCopy region);
+	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkBufferCopy region, VkCommandBuffer vkCommandBuffer = VK_NULL_HANDLE);
 	void CopyImageBuffer(VkBuffer srcBuffer, VkImage image, const uint32_t& width, const uint32_t& height, const uint32_t& unCount);
 	void CopyImageBuffer(MTexture* pSource, MTexture* pDestination, VkCommandBuffer buffer = VK_NULL_HANDLE);
 
@@ -134,7 +137,6 @@ protected:
 
 	bool InitLogicalDevice();
 	bool InitCommandPool();
-	bool InitDefaultTexture();
 	bool InitSampler();
 	bool InitDescriptorPool();
 	void CreateRecycleBin();
@@ -145,11 +147,6 @@ public:
 	VkCommandPool m_VkPresetCommandPool = VK_NULL_HANDLE;
 	VkCommandPool m_VkTemporaryCommandPool = VK_NULL_HANDLE;
 	VkDescriptorPool m_VkDescriptorPool = VK_NULL_HANDLE;
-
-	std::shared_ptr<MTexture> m_ShaderDefaultTexture = nullptr;
-	std::shared_ptr<MTexture> m_ShaderDefaultTextureCube = nullptr;
-	std::shared_ptr<MTexture> m_ShaderDefaultTextureArray = nullptr;
-	std::shared_ptr<MTexture> m_ShaderDefaultTexture3D = nullptr;
 
 	VkSampler m_VkLinearSampler = VK_NULL_HANDLE;
 	VkSampler m_VkNearestSampler = VK_NULL_HANDLE;

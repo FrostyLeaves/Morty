@@ -22,6 +22,12 @@ enum class MESamplerType
 	ELinear,
 };
 
+enum class MESamplerFormat
+{
+    EFloat = 0,
+	EInt = 1,
+};
+
 class MBuffer;
 
 struct MORTY_API MShaderParam
@@ -75,6 +81,7 @@ public:
 	std::shared_ptr<MTexture> pTexture = nullptr;
 	void* pImageIdent = nullptr;
 	METextureType eType = METextureType::ETexture2D;
+	MESamplerFormat eFormat = MESamplerFormat::EFloat;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	VkDescriptorImageInfo m_VkImageInfo = {};

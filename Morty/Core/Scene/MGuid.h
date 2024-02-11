@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "MGuid_generated.h"
+#include "../../Render/Flatbuffer/MBone_generated.h"
 #include "Utility/MGlobal.h"
 
 class MORTY_API MGuid

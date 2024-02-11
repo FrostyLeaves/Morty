@@ -41,7 +41,7 @@ Matrix4 MTransform::GetMatrix() const
 
 flatbuffers::Offset<void> MTransform::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	mfbs::MTransformBuilder fbBuilder(fbb);
+	morty::MTransformBuilder fbBuilder(fbb);
 
 	fbBuilder.add_position(m_v3Position.Serialize(fbb));
 	fbBuilder.add_scale(m_v3Scale.Serialize(fbb));
@@ -52,7 +52,7 @@ flatbuffers::Offset<void> MTransform::Serialize(flatbuffers::FlatBufferBuilder& 
 
 void MTransform::Deserialize(const void* pBufferPointer)
 {
-	const mfbs::MTransform* fbTransform = reinterpret_cast<const mfbs::MTransform*>(pBufferPointer);
+	const morty::MTransform* fbTransform = reinterpret_cast<const morty::MTransform*>(pBufferPointer);
 
 	m_v3Position.Deserialize(fbTransform->position());
 	m_qtRotation.Deserialize(fbTransform->rotation());

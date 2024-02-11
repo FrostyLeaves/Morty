@@ -1,5 +1,6 @@
 #include "MVRSTextureRenderWork.h"
 
+#include "MEdgeDetectionRenderWork.h"
 #include "Scene/MScene.h"
 #include "Engine/MEngine.h"
 #include "Render/MIDevice.h"
@@ -25,13 +26,13 @@
 
 #include "Material/MComputeDispatcher.h"
 
-MORTY_INTERFACE_IMPLEMENT(MVRSTextureRenderWork, MTypeClass)
+MORTY_CLASS_IMPLEMENT(MVRSTextureRenderWork, MRenderTaskNode)
+
+const MStringId MVRSTextureRenderWork::VRS_TEXTURE = MStringId("VRS Screen Texture");
 
 void MVRSTextureRenderWork::Initialize(MEngine* pEngine)
 {
 	m_pEngine = pEngine;
-
-	m_pVRSTexture = MTexture::CreateShadingRate();
 
 	auto pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
 	MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
@@ -47,53 +48,27 @@ void MVRSTextureRenderWork::Initialize(MEngine* pEngine)
 	params->SetValue(MShaderPropertyName::VRS_TEXEL_SIZE_NAME, Vector2(m_n2TexelSize.x, m_n2TexelSize.y));
 	params->SetValue(MShaderPropertyName::VRS_EDGE_THRESHOLD_NAME, Vector2(1.0f, 10.0f));
 
-	params->SetTexture(MShaderPropertyName::VRS_OUTPUT_VRS_TEXTURE_NAME, m_pVRSTexture);
-
-	m_pVRSTexture->GenerateBuffer(pRenderSystem->GetDevice());
 }
 
-void MVRSTextureRenderWork::Release(MEngine* pEngine)
+void MVRSTextureRenderWork::Release()
 {
 	m_pVRSGenerator->DeleteLater();
 	m_pVRSGenerator = nullptr;
-
-	MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
-	m_pVRSTexture->DestroyBuffer(pRenderSystem->GetDevice());
-}
-
-std::shared_ptr<MTexture> MVRSTextureRenderWork::GetVRSTexture() const
-{
-	return m_pVRSTexture;
 }
 
 void MVRSTextureRenderWork::Resize(Vector2i size)
 {
-	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-	Vector2i n2TexelSize = pRenderSystem->GetDevice()->GetShadingRateTextureTexelSize();
-	Vector2i n2ShadingRateSize = {};
-	n2ShadingRateSize.x = size.x / n2TexelSize.x + ((size.x % n2TexelSize.x) != 0);
-	n2ShadingRateSize.y = size.y / n2TexelSize.y + ((size.y % n2TexelSize.y) != 0);
+	MORTY_UNUSED(size);
 
-
-	if (m_pVRSTexture->GetSize2D() != n2ShadingRateSize)
-	{
-		m_pVRSTexture->SetSize(n2ShadingRateSize);
-		m_pVRSTexture->DestroyBuffer(pRenderSystem->GetDevice());
-		m_pVRSTexture->GenerateBuffer(pRenderSystem->GetDevice());
-	}
+	const auto pVRSTexture = GetRenderOutput(0)->GetTexture();
 
 	const std::shared_ptr<MShaderPropertyBlock>& params = m_pVRSGenerator->GetShaderPropertyBlock(0);
-	params->SetValue(MShaderPropertyName::VRS_EDGE_TEXTURE_SIZE_NAME, Vector2(size.x, size.y));
+	params->SetValue(MShaderPropertyName::VRS_EDGE_TEXTURE_SIZE_NAME, Vector2(pVRSTexture->GetSize().x, pVRSTexture->GetSize().y));
 }
 
-void MVRSTextureRenderWork::Render(MRenderInfo& info, const std::shared_ptr<IGetTextureAdapter>& pEdgeTextureAdapter)
+void MVRSTextureRenderWork::Render(const MRenderInfo& info)
 {
-	if (!pEdgeTextureAdapter)
-	{
-		return;
-	}
-
-	const auto pEdgeTexture = pEdgeTextureAdapter->GetTexture();
+	const auto pEdgeTexture = GetInputTexture(0);
 	if (!pEdgeTexture)
 	{
 		return;
@@ -106,11 +81,35 @@ void MVRSTextureRenderWork::Render(MRenderInfo& info, const std::shared_ptr<IGet
 		pEdgeTexture->GetSize2D().y / m_n2TexelSize.y + (pEdgeTexture->GetSize2D().y % m_n2TexelSize.y != 0)
 	};
 
+	auto pVRSTexture = GetRenderOutput(0)->GetTexture();
+
 	params->SetTexture(MShaderPropertyName::VRS_EDGE_TEXTURE_NAME, pEdgeTexture);
 
 	info.pPrimaryRenderCommand->AddRenderToTextureBarrier({ pEdgeTexture.get() }, METextureBarrierStage::EComputeShaderRead);
 
-	info.pPrimaryRenderCommand->AddRenderToTextureBarrier({ m_pVRSTexture.get() }, METextureBarrierStage::EComputeShaderWrite);
+	info.pPrimaryRenderCommand->AddRenderToTextureBarrier({ pVRSTexture.get() }, METextureBarrierStage::EComputeShaderWrite);
 
 	info.pPrimaryRenderCommand->DispatchComputeJob(m_pVRSGenerator, n2ThreadNum.x, n2ThreadNum.y, 1);
+}
+
+void MVRSTextureRenderWork::BindTarget()
+{
+	if (auto params = m_pVRSGenerator->GetShaderPropertyBlock(0))
+	{
+		params->SetTexture(MShaderPropertyName::VRS_OUTPUT_VRS_TEXTURE_NAME, GetRenderOutput(0)->GetTexture());
+	}
+}
+
+std::vector<MRenderTaskInputDesc> MVRSTextureRenderWork::InitInputDesc()
+{
+	return {
+		{ MEdgeDetectionRenderWork::EdgeDetectionResult, METextureBarrierStage::EPixelShaderSample },
+	};
+}
+
+std::vector<MRenderTaskOutputDesc> MVRSTextureRenderWork::InitOutputDesc()
+{
+    return {
+		{ VRS_TEXTURE, {false, MColor::Black_T }},
+	};
 }

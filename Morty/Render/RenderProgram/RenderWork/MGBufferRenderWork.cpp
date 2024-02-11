@@ -1,40 +1,37 @@
 #include "MGBufferRenderWork.h"
 
+#include "MVRSTextureRenderWork.h"
 #include "Scene/MScene.h"
 #include "Engine/MEngine.h"
-#include "Render/MIDevice.h"
 #include "Basic/MTexture.h"
 #include "Basic/MViewport.h"
-#include "Model/MSkeleton.h"
-#include "Material/MMaterial.h"
+#include "Culling/MInstanceCulling.h"
+#include "Mesh/MMeshManager.h"
 #include "Render/MRenderPass.h"
 #include "Render/MRenderCommand.h"
+#include "RenderProgram/MeshRender/MCullingResultRenderable.h"
 
-#include "System/MRenderSystem.h"
-#include "System/MResourceSystem.h"
-
-#include "Component/MSceneComponent.h"
-#include "Component/MCameraComponent.h"
-#include "Component/MRenderMeshComponent.h"
-#include "Component/MDirectionalLightComponent.h"
-#include "Render/MVertex.h"
-
-#include "Utility/MBounds.h"
-#include "Mesh/MMeshManager.h"
+#include "RenderProgram/RenderGraph/MRenderGraph.h"
+#include "TaskGraph/MTaskGraph.h"
 
 MORTY_CLASS_IMPLEMENT(MGBufferRenderWork, ISinglePassRenderWork)
 
-void MGBufferRenderWork::Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
+const MStringId MGBufferRenderWork::GBufferAlbedoMetallic = MStringId("GBuffer Albedo Metallic Buffer");
+const MStringId MGBufferRenderWork::GBufferNormalRoughness = MStringId("GBuffer Normal Roughness Buffer");
+const MStringId MGBufferRenderWork::GBufferPositionAmbientOcc = MStringId("GBuffer Position AmbientOcc Buffer");
+const MStringId MGBufferRenderWork::GBufferDepthBufferOutput = MStringId("GBuffer Depth Buffer");
+
+void MGBufferRenderWork::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
 	const Vector2i v2LeftTop = info.f2ViewportLeftTop;
 	const Vector2i v2Size = info.f2ViewportSize;
 
+	AutoSetTextureBarrier(pCommand);
 
 	pCommand->BeginRenderPass(&m_renderPass);
 	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
 	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
-
 
 	for (IRenderable* pRenderable : vRenderable)
 	{
@@ -62,4 +59,40 @@ std::shared_ptr<IGBufferAdapter> MGBufferRenderWork::CreateGBuffer()
 	pGBufferTextures->pDepthTexture = m_renderPass.GetDepthTexture();
 
 	return pGBufferTextures;
+}
+
+void MGBufferRenderWork::Render(const MRenderInfo& info)
+{
+	const MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
+	//Camera frustum culling.
+
+	//Render static mesh.
+	MCullingResultRenderable indirectMesh;
+	indirectMesh.SetMeshBuffer(pMeshManager->GetMeshBuffer());
+	indirectMesh.SetPropertyBlockAdapter({
+		GetRenderGraph()->GetFrameProperty(),
+	});
+
+	indirectMesh.SetMaterialFilter(std::make_shared<MMaterialTypeFilter>(MEMaterialType::EDeferred));
+	indirectMesh.SetInstanceCulling(GetRenderGraph()->GetCameraCullingResult());
+
+	Render(info, {
+		&indirectMesh,
+		});
+}
+
+void MGBufferRenderWork::BindTarget()
+{
+	AutoBindBarrierTexture();
+	SetRenderTarget(AutoBindTargetWithVRS());
+}
+
+std::vector<MRenderTaskOutputDesc> MGBufferRenderWork::InitOutputDesc()
+{
+    return {
+        { GBufferAlbedoMetallic, {true, MColor::Black_T} },
+        { GBufferNormalRoughness, {true, MColor::Black_T} },
+        { GBufferPositionAmbientOcc, {true, MColor::Black_T} },
+        { GBufferDepthBufferOutput, {true, MColor::Black_T} },
+    };
 }

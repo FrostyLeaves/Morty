@@ -22,14 +22,11 @@ MTaskNode::~MTaskNode()
 	m_vOutput.clear();
 }
 
-MTaskNodeInput* MTaskNode::AppendInput()
+void MTaskNode::AppendInput(MTaskNodeInput* pInput)
 {
-	MTaskNodeInput* pInput = new MTaskNodeInput();
 	pInput->pGraphNode = this;
 	pInput->m_unIndex = m_vInput.size();
 	m_vInput.push_back(pInput);
-
-	return pInput;
 }
 
 void MTaskNode::AppendOutput(MTaskNodeOutput* pOutput)

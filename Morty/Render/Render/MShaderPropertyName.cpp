@@ -7,6 +7,7 @@ MStringId MShaderPropertyName::TEXTURE_SHADOW_MAP = MStringId("u_texShadowMap");
 MStringId MShaderPropertyName::TEXTURE_IRRADIANCE_MAP = MStringId("u_texIrradianceMap");
 MStringId MShaderPropertyName::TEXTURE_PREFILTER_MAP = MStringId("u_texPrefilterMap");
 MStringId MShaderPropertyName::TEXTURE_BRDF_LUT = MStringId("u_texBrdfLUT");
+MStringId MShaderPropertyName::TEXTURE_NOISE_TEX = MStringId("u_texNoiseTexture");
 MStringId MShaderPropertyName::STORAGE_BONES_MATRIX = MStringId("u_vBonesMatrix");
 MStringId MShaderPropertyName::STORAGE_BONES_OFFSET = MStringId("u_vBonesOffset");
 MStringId MShaderPropertyName::STORAGE_VOXEL_TABLE = MStringId("u_rwVoxelTable");
@@ -17,6 +18,7 @@ MStringId MShaderPropertyName::FRAME_INV_CAMERA_PROJ_MATRIX = MStringId("u_matCa
 MStringId MShaderPropertyName::FRAME_CAMERA_POSITION = MStringId("u_f3CameraPosition");
 MStringId MShaderPropertyName::FRAME_CAMERA_DIRECTION = MStringId("u_f3CameraDirection");
 MStringId MShaderPropertyName::FRAME_VIEWPORT_SIZE = MStringId("u_f2ViewportSize");
+MStringId MShaderPropertyName::FRAME_VIEWPORT_SIZE_INV = MStringId("u_f2ViewportSizeInv");
 MStringId MShaderPropertyName::FRAME_Z_NEAR_FAR = MStringId("u_matZNearFar");
 MStringId MShaderPropertyName::FRAME_TIME_DELTA = MStringId("u_fDelta");
 MStringId MShaderPropertyName::FRAME_GAME_TIME = MStringId("u_fGameTime");
@@ -55,6 +57,7 @@ MStringId MShaderPropertyName::VOXELIZER_VOXEL_TABLE_NAME = MStringId("rVoxelTab
 
 MStringId MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_0 = MStringId("u_texSubpassInput0");
 MStringId MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_1 = MStringId("u_texSubpassInput1");
+MStringId MShaderPropertyName::TRANSPARENT_TEXTURE_BACK_TEXTURE = MStringId("BackTexture");
 
 MStringId MShaderPropertyName::CBUFFER_MESH_MATRIX = MStringId("u_meshMatrix");
 MStringId MShaderPropertyName::MESH_LOCAL_MATRIX = MStringId("u_meshMatrix");
@@ -67,6 +70,8 @@ MStringId MShaderPropertyName::MATERIAL_CBUFFER_NAME = MStringId("cbMaterial");
 MStringId MShaderPropertyName::MATERIAL_STRUCT_NAME = MStringId("u_xMaterial");
 MStringId MShaderPropertyName::MATERIAL_METALLIC = MStringId("fMetallic");
 MStringId MShaderPropertyName::MATERIAL_ROUGHNESS = MStringId("fRoughness");
+MStringId MShaderPropertyName::MATERIAL_METALLIC_CHANNEL = MStringId("nMetallicChannel");
+MStringId MShaderPropertyName::MATERIAL_ROUGHNESS_CHANNEL = MStringId("nRoughnessChannel");
 MStringId MShaderPropertyName::MATERIAL_ALBEDO = MStringId("f4Albedo");
 MStringId MShaderPropertyName::MATERIAL_AMBIENT = MStringId("f3Ambient");
 MStringId MShaderPropertyName::MATERIAL_DIFFUSE = MStringId("f3Diffuse");
@@ -88,6 +93,7 @@ MStringId MShaderPropertyName::GBUFFER_TEXTURE_ALBEDO_METALLIC = MStringId("u_ma
 MStringId MShaderPropertyName::GBUFFER_TEXTURE_NORMAL_ROUGHNESS = MStringId("u_mat_f3Normal_fRoughness");
 MStringId MShaderPropertyName::GBUFFER_TEXTURE_POSITION_AMBIENTOCC = MStringId("u_mat_f3Position_fAmbientOcc");
 MStringId MShaderPropertyName::GBUFFER_TEXTURE_DEPTH_MAP = MStringId("u_mat_DepthMap");
+MStringId MShaderPropertyName::GBUFFER_TEXTURE_SSAO = MStringId("u_mat_SSAO");
 
 MStringId MShaderPropertyName::CULLING_INSTANCE_DATA = MStringId("instances");
 MStringId MShaderPropertyName::CULLING_OUTPUT_DRAW_DATA = MStringId("indirectDraws");
@@ -100,14 +106,27 @@ MStringId MShaderPropertyName::ENVIRONMENT_TEXTURE_SKYBOX = MStringId("u_texSkyB
 MStringId MShaderPropertyName::ENVIRONMENT_IBL_MVP_MATRIX = MStringId("u_ModelViewProj");
 MStringId MShaderPropertyName::ENVIRONMENT_IBL_ROUGHNESS = MStringId("u_roughness");
 
-MStringId MShaderPropertyName::POSTPROCESS_SCREEN_TEXTURE = MStringId("u_texInputTexture");
+MStringId MShaderPropertyName::POSTPROCESS_SCREEN_TEXTURE[8] = {
+    MStringId("u_texInputTexture"),
+    MStringId("u_texInputTexture1"),
+    MStringId("u_texInputTexture2"),
+    MStringId("u_texInputTexture3"),
+    MStringId("u_texInputTexture4"),
+    MStringId("u_texInputTexture5"),
+    MStringId("u_texInputTexture6"),
+    MStringId("u_texInputTexture7"),
+};
 MStringId MShaderPropertyName::POSTPROCESS_SCREEN_SIZE = MStringId("u_f2ScreenSize");
+
+MStringId MShaderPropertyName::POSTPROCESS_BLUR_OFFSET = MStringId("u_f2GaussianBlurOffset");
+
 
 MStringId MShaderPropertyName::IMGUI_SCALE = MStringId("u_f2Scale");
 MStringId MShaderPropertyName::IMGUI_TRANSLATE = MStringId("u_f2Translate");
 MStringId MShaderPropertyName::IMGUI_IMAGE_TYPE = MStringId("u_nImageType");
-MStringId MShaderPropertyName::IMGUI_IMAGE_ARRAY = MStringId("u_nImageArray");
+MStringId MShaderPropertyName::IMGUI_SINGLE_CHANNEL_FLAG = MStringId("u_nSingleChannelFlag");
 MStringId MShaderPropertyName::IMGUI_IMAGE_INDEX = MStringId("u_nImageIndex");
+MStringId MShaderPropertyName::IMGUI_IMAGE_SIZE = MStringId("u_nImageSize");
 
 
 MStringId MShaderPropertyName::VRS_CBUFFER_SETTING_NAME = MStringId("cbVRSSetting");
@@ -116,3 +135,12 @@ MStringId MShaderPropertyName::VRS_OUTPUT_VRS_TEXTURE_NAME = MStringId("u_texVRS
 MStringId MShaderPropertyName::VRS_EDGE_TEXTURE_SIZE_NAME = MStringId("u_n2TextureSize");
 MStringId MShaderPropertyName::VRS_TEXEL_SIZE_NAME = MStringId("u_n2TexelSize");
 MStringId MShaderPropertyName::VRS_EDGE_THRESHOLD_NAME = MStringId("u_f2EdgeThreshold");
+
+
+//HBAO
+MStringId MShaderPropertyName::HBAO_NEAREST_AO_SCALE = MStringId("u_fNearestAoScale");
+MStringId MShaderPropertyName::HBAO_OTHER_AO_SCALE = MStringId("u_fOtherAoScale");
+MStringId MShaderPropertyName::HBAO_NDOTV_BIAS = MStringId("u_fNDotVBias");
+MStringId MShaderPropertyName::HBAO_RADIUS_PIXEL = MStringId("u_fRadiusPixel");
+MStringId MShaderPropertyName::HBAO_RADIUS_UV_SQUARE_NEG_INV = MStringId("u_fRadiusSquareNegInv");
+MStringId MShaderPropertyName::HBAO_UV_TO_VIEW = MStringId("u_f4UVToView");

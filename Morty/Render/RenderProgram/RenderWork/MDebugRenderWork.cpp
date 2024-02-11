@@ -1,5 +1,7 @@
 #include "MDebugRenderWork.h"
 
+#include "MForwardRenderWork.h"
+#include "MToneMappingRenderWork.h"
 #include "Scene/MScene.h"
 #include "Engine/MEngine.h"
 #include "Render/MIDevice.h"
@@ -18,26 +20,51 @@
 #include "Component/MRenderMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 #include "Component/MSkyBoxComponent.h"
+#include "Culling/MInstanceCulling.h"
 #include "Render/MVertex.h"
 
 #include "Utility/MBounds.h"
 #include "Mesh/MMeshManager.h"
+#include "RenderProgram/MeshRender/MCullingResultRenderable.h"
+#include "RenderProgram/RenderGraph/MRenderGraph.h"
 #include "Resource/MMaterialResource.h"
 
 MORTY_CLASS_IMPLEMENT(MDebugRenderWork, ISinglePassRenderWork)
 
-void MDebugRenderWork::Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
+const MStringId MDebugRenderWork::BackBufferOutput = MStringId("Debug Back Buffer Output");
+const MStringId MDebugRenderWork::DepthBufferOutput = MStringId("Debug Depth Buffer Output");
+
+void MDebugRenderWork::Render(const MRenderInfo& info)
+{
+	//Current viewport.
+	const MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
+
+	//Render static mesh.
+	MCullingResultRenderable indirectMesh;
+	indirectMesh.SetMeshBuffer(pMeshManager->GetMeshBuffer());
+	indirectMesh.SetPropertyBlockAdapter({ GetRenderGraph()->GetFrameProperty() });
+	indirectMesh.SetMaterialFilter(std::make_shared<MMaterialTypeFilter>(MEMaterialType::ECustom));
+	indirectMesh.SetInstanceCulling(GetRenderGraph()->GetCameraCullingResult());
+
+	Render(info, {
+		&indirectMesh
+		});
+
+
+}
+
+void MDebugRenderWork::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
 	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
 
-	pCommand->AddRenderToTextureBarrier({ CreateOutput()->GetTexture().get() }, METextureBarrierStage::EPixelShaderSample);
+	AutoSetTextureBarrier(pCommand);
 
 	pCommand->BeginRenderPass(&m_renderPass);
 
 	const Vector2i v2LeftTop = info.f2ViewportLeftTop;
 	const Vector2i v2Size = info.f2ViewportSize;
 	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
-	pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
+	pCommand->SetScissor(MScissorInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
 
 
 	for (IRenderable* pRenderable : vRenderable)
@@ -47,4 +74,26 @@ void MDebugRenderWork::Render(MRenderInfo& info, const std::vector<IRenderable*>
 
 
 	pCommand->EndRenderPass();
+}
+
+void MDebugRenderWork::BindTarget()
+{
+	AutoBindBarrierTexture();
+	SetRenderTarget(AutoBindTarget());
+}
+
+std::vector<MRenderTaskInputDesc> MDebugRenderWork::InitInputDesc()
+{
+	return {
+		{ MToneMappingRenderWork::ToneMappingResult, METextureBarrierStage::EPixelShaderWrite },
+		{ MForwardRenderWork::DepthBufferOutput, METextureBarrierStage::EPixelShaderWrite }
+	};
+}
+
+std::vector<MRenderTaskOutputDesc> MDebugRenderWork::InitOutputDesc()
+{
+	return {
+		{ BackBufferOutput, {false, MColor::Black_T }},
+		{ DepthBufferOutput, {false, MColor::Black_T }}
+	};
 }

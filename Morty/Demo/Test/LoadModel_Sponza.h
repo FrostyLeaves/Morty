@@ -40,18 +40,22 @@ public:
 			return nullptr;
 		}
 
-		auto pTextureData = pResourceSystem->LoadResourceData(strFullPath);
-		
-
-		if (eUsage == MEModelTextureUsage::Metallic)
+#if MORTY_WIN
+		auto strDdsFullPath = strFullPath;
+		MStringUtil::Replace(strDdsFullPath, ".png", ".dds");
+		auto pTextureData = pResourceSystem->LoadResourceData(strDdsFullPath);
+#else
+		auto strAstcFullPath = strFullPath;
+	    MStringUtil::Replace(strAstcFullPath, ".png", ".astc");
+		auto pTextureData = pResourceSystem->LoadResourceData(strAstcFullPath);
+#endif
+		if (pTextureData == nullptr)
 		{
-			MTextureConverter::ConvertSingleChannel(static_cast<MTextureResourceData*>(pTextureData.get()), 2);
-		}
-		else if (eUsage == MEModelTextureUsage::Roughness)
-		{	
-			MTextureConverter::ConvertSingleChannel(static_cast<MTextureResourceData*>(pTextureData.get()), 1);
+			pTextureData = pResourceSystem->LoadResourceData(strResourcePath);
 		}
 
+		MORTY_ASSERT(pTextureData);
+		
 		pResource->Load(std::move(pTextureData));
 		std::shared_ptr<MTextureResource> pTexture = MTypeClass::DynamicCast<MTextureResource>(pResource);
 
@@ -66,6 +70,17 @@ private:
 	std::map<MString, std::shared_ptr<MTextureResource> > m_tTextures;
 
 	MEngine* m_pEngine = nullptr;
+};
+
+
+class MSpoonzaMaterialDelegate : public MIMaterialDelegate
+{
+public:
+	void PostProcess(MMaterial* pMaterial) override
+	{
+		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_METALLIC_CHANNEL, 2);
+		pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS_CHANNEL, 1);
+	}
 };
 
 void LoadSponzaEntity(const std::string& sourcePath, const std::string& name, MEngine* pEngine, MScene* pScene)
@@ -126,5 +141,5 @@ void LoadSponzaEntity(const std::string& sourcePath, const std::string& name, ME
 void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
 {
 	LoadSponzaEntity("./Model/Sponza/NewSponza_Main_glTF_002.gltf", "Sponza", pEngine, pScene);
-	LoadSponzaEntity("./Model/PKG_A_Curtains/NewSponza_Curtains_glTF.gltf", "Curtains", pEngine, pScene);
+	//LoadSponzaEntity("./Model/PKG_A_Curtains/NewSponza_Curtains_glTF.gltf", "Curtains", pEngine, pScene);
 }

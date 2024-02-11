@@ -3,8 +3,11 @@
 
 #include "TaskGraph/MTaskNode.h"
 
+MORTY_CLASS_IMPLEMENT(MTaskNodeInput, MTypeClass)
+
 MTaskNodeInput::MTaskNodeInput()
-	: m_unIndex(0)
+	: Super()
+    , m_unIndex(0)
 	, m_strName("")
 	, pGraphNode(nullptr)
 	, pLinkedOutput(nullptr)

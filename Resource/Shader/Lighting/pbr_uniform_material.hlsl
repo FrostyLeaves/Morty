@@ -7,6 +7,8 @@ struct Material
     float4 f4Albedo;
     float fMetallic;
     float fRoughness;
+    int nMetallicChannel;
+    int nRoughnessChannel;
 };
 
 //Material

@@ -234,6 +234,8 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
 		pParam->unBinding = nBinding;
 		pParam->strName = MStringId(res.name.c_str());
 
+		auto sub_type = compiler.get_type(type.image.type);
+
 		if (type.image.dim == spv::Dim::Dim3D)
 		{
 			pParam->eType = METextureType::ETexture3D;
@@ -254,6 +256,19 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
 		{
 			MORTY_ASSERT(false);
 		}
+
+		if (sub_type.basetype == spirv_cross::SPIRType::BaseType::Float)
+		{
+			pParam->eFormat = MESamplerFormat::EFloat;
+		}
+		else if (sub_type.basetype == spirv_cross::SPIRType::BaseType::UInt)
+		{
+			pParam->eFormat = MESamplerFormat::EInt;
+		}
+        else
+        {
+			MORTY_ASSERT(false);
+        }
 
 		pParam->m_VkDescriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 

@@ -90,6 +90,7 @@ struct MRenderInfo
 
 	/************************** camera **************************/
 	Vector2 f2CameraNearFar;
+	Matrix4 m4ProjectionMatrix;
 	Matrix4 m4CameraTransform;
 	Matrix4 m4CameraInverseProjection;
 	MCameraFrustum cameraFrustum;

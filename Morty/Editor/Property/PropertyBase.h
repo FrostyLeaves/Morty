@@ -15,6 +15,7 @@
 #include <functional>
 #include <stdint.h>
 
+class MShaderPropertyBlock;
 class MEntity;
 class MObject;
 class MMaterial;
@@ -54,6 +55,7 @@ public:
 	bool EditMString(MString& value);
 
 	bool EditMMaterial(std::shared_ptr<MMaterial> pMaterial);
+	bool EditShaderProperty(const std::shared_ptr<MShaderPropertyBlock>& pProperty);
 	void EditMResource(const MString& strDlgID, const MString& strResourceType, const std::vector<MString>& vSuffixList,  std::shared_ptr<MResource> pDefaultResource, const std::function<void(const MString& strNewFilePath)>& funcLoadResource);
 	void EditSaveMResource(const MString& stringID, const MString& strResourceType, const std::vector<MString>& vSuffixList, std::shared_ptr<MResource> pResource);
 

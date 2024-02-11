@@ -42,40 +42,41 @@ std::vector<MByte> FillChannelNum(const MByte* aByteData, const size_t& nSourceS
 	return aTargetData;
 }
 
-std::unique_ptr<MResourceData> MTextureResourceUtil::LoadFromMemory(const MString& strTextureName, const MByte* aByteData, const uint32_t& unWidth, const uint32_t& unHeight, uint32_t nChannel, MTexturePixelFormat ePixelFormat/* = MTexturePixelFormat::Byte8 */)
+std::unique_ptr<MResourceData> MTextureResourceUtil::LoadFromMemory(const MString& strTextureName, const MSpan<MByte>& buffer, const uint32_t& unWidth, const uint32_t& unHeight, uint32_t nChannel, MTexturePixelType ePixelType)
 {
 	std::unique_ptr<MTextureResourceData> textureData = std::make_unique<MTextureResourceData>();
 
 	const size_t nSize = unWidth * unHeight * nChannel;
 
+	MORTY_ASSERT(ePixelType != MTexturePixelType::Unknow);
+
 	if (nChannel == 2 || nChannel == 3)
 	{
-		if (MTexturePixelFormat::Byte8 == ePixelFormat)
-			textureData->aByteData = FillChannelNum<MByte>(aByteData, nSize, nChannel, 4, { 0, 0, 0, 255 });
-		else if (MTexturePixelFormat::Float32 == ePixelFormat)
-			textureData->aByteData = FillChannelNum<float>(aByteData, nSize, nChannel, 4, { 0.0f, 0.0f, 0.0f, 1.0f });
+		if (ePixelType == MTexturePixelType::Byte8)
+			textureData->aByteData = FillChannelNum<MByte>(buffer.data(), nSize, nChannel, 4, { 0, 0, 0, 255 });
+		else if (ePixelType == MTexturePixelType::Float32)
+			textureData->aByteData = FillChannelNum<float>(buffer.data(), nSize, nChannel, 4, { 0.0f, 0.0f, 0.0f, 1.0f });
 
 		nChannel = 4;
 	}
 	else
 	{
-		if (MTexturePixelFormat::Byte8 == ePixelFormat)
+		if (ePixelType == MTexturePixelType::Byte8)
 			textureData->aByteData.resize(sizeof(MByte) * nSize);
-		else if (MTexturePixelFormat::Float32 == ePixelFormat)
+		else if (ePixelType == MTexturePixelType::Float32)
 			textureData->aByteData.resize(sizeof(float) * nSize);
-		memcpy(textureData->aByteData.data(), aByteData, nSize);
+		memcpy(textureData->aByteData.data(), buffer.data(), nSize);
 	}
 
 	textureData->nWidth = unWidth;
 	textureData->nHeight = unHeight;
-	textureData->nChannel = nChannel;
-	textureData->ePixelFormat = ePixelFormat;
+	textureData->eFormat = MTextureResourceUtil::GetTextureFormat(ePixelType, nChannel);
 	textureData->strTextureName = strTextureName;
 
 	return textureData;
 }
 
-std::unique_ptr<MResourceData> MTextureResourceUtil::ImportTextureFromMemory(char* buffer, size_t nSize, const MTextureImportInfo& importInfo)
+std::unique_ptr<MResourceData> MTextureResourceUtil::ImportTextureFromMemory(const MSpan<MByte>& buffer, const MTextureImportInfo& importInfo)
 {
 	std::unique_ptr<MResourceData> pTextureData = nullptr;
 
@@ -84,25 +85,28 @@ std::unique_ptr<MResourceData> MTextureResourceUtil::ImportTextureFromMemory(cha
 	int comp = 4;
 	int reqComp = 4;
 
-	if (importInfo.ePixelFormat == MTexturePixelFormat::Byte8)
-	{
-		stbi_uc* data = stbi_load_from_memory((const stbi_uc*)buffer, static_cast<uint32_t>(nSize), &unWidth, &unHeight, &comp, reqComp);
-		pTextureData = LoadFromMemory("ImportFromMemoryTexture", (MByte*)data, unWidth, unHeight, reqComp, importInfo.ePixelFormat);
-		stbi_image_free(data);
-		data = nullptr;
-	}
-	else if (importInfo.ePixelFormat == MTexturePixelFormat::Float32)
-	{
-		float* data = stbi_loadf_from_memory((const stbi_uc*)buffer, static_cast<uint32_t>(nSize), &unWidth, &unHeight, &comp, reqComp);
-		pTextureData = LoadFromMemory("ImportFromMemoryTexture", (MByte*)data, unWidth, unHeight, reqComp, importInfo.ePixelFormat);
-		stbi_image_free(data);
-		data = nullptr;
-	}
-	else
-	{
-		return pTextureData;
-	}
 
+
+	if (importInfo.ePixelType == MTexturePixelType::Byte8)
+	{
+		MByte* data = reinterpret_cast<MByte*>(stbi_load_from_memory((const stbi_uc*)buffer.data(), static_cast<uint32_t>(buffer.size()), &unWidth, &unHeight, &comp, reqComp));
+		const size_t nSize = unWidth * unHeight * reqComp * 1;
+		pTextureData = LoadFromMemory("ImportFromMemoryTexture", MSpan<MByte>{data, nSize}, unWidth, unHeight, reqComp, importInfo.ePixelType);
+		stbi_image_free(data);
+		data = nullptr;
+	}
+	else if (importInfo.ePixelType == MTexturePixelType::Float32)
+	{
+		MByte* data = reinterpret_cast<MByte*>(stbi_loadf_from_memory((const stbi_uc*)buffer.data(), static_cast<uint32_t>(buffer.size()), &unWidth, &unHeight, &comp, reqComp));
+		const size_t nSize = unWidth * unHeight * reqComp * 4;
+		pTextureData = LoadFromMemory("ImportFromMemoryTexture", MSpan<MByte>{data, nSize}, unWidth, unHeight, reqComp, importInfo.ePixelType);
+		stbi_image_free(data);
+		data = nullptr;
+	}
+    else
+    {
+		MORTY_ASSERT(false);
+    }
 	return pTextureData;
 }
 
@@ -114,9 +118,9 @@ std::unique_ptr<MResourceData> MTextureResourceUtil::ImportTexture(const MString
 		return nullptr;
 	}
 
-	std::vector<char> buffer((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+	std::vector<MByte> buffer((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
 
-	auto pResult = ImportTextureFromMemory(buffer.data(), buffer.size(), importInfo);
+	auto pResult = ImportTextureFromMemory(buffer, importInfo);
 	if (auto pTextureData = static_cast<MTextureResourceData*>(pResult.get()))
 	{
 		pTextureData->strTextureName = strResourcePath;
@@ -154,12 +158,12 @@ std::unique_ptr<MResourceData> MTextureResourceUtil::ImportCubeMap(const std::ar
 		int unChannel = 0;
 
 		std::vector<char> buffer((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-		if (importInfo.ePixelFormat == MTexturePixelFormat::Byte8)
+		if (importInfo.ePixelType == MTexturePixelType::Byte8)
 		{
 			stbi_uc* data = stbi_load_from_memory((const stbi_uc*)buffer.data(), static_cast<uint32_t>(buffer.size()), &unWidth, &unHeight, &unChannel, 0);
 			vImageData[fileIdx] = (MByte*)data;
 		}
-		else if (importInfo.ePixelFormat == MTexturePixelFormat::Float32)
+		else if (importInfo.ePixelType == MTexturePixelType::Float32)
 		{
 			float* data = stbi_loadf_from_memory((const stbi_uc*)buffer.data(), static_cast<uint32_t>(buffer.size()), &unWidth, &unHeight, &unChannel, 0);
 			vImageData[fileIdx] = (MByte*)data;
@@ -201,12 +205,12 @@ std::unique_ptr<MResourceData> MTextureResourceUtil::ImportCubeMap(const std::ar
 	{
 		int nTextureSize = unCubeMapWidth * unCubeMapHeight * unCubeMapChannel;
 
-		if (MTexturePixelFormat::Byte8 == importInfo.ePixelFormat)
+		if (importInfo.ePixelType == MTexturePixelType::Byte8)
 		{
 			nTextureSize *= sizeof(MByte);
 			textureData->aByteData.resize(sizeof(MByte) * (nTextureSize * 6));
 		}
-		else if (MTexturePixelFormat::Float32 == importInfo.ePixelFormat)
+		else if (importInfo.ePixelType == MTexturePixelType::Float32)
 		{
 			nTextureSize += sizeof(float);
 			textureData->aByteData.resize(sizeof(float) * (nTextureSize * 6));
@@ -222,22 +226,22 @@ std::unique_ptr<MResourceData> MTextureResourceUtil::ImportCubeMap(const std::ar
 		int nSourceSize = unCubeMapWidth * unCubeMapHeight * unCubeMapChannel;
 		int nTargetSize = unCubeMapWidth * unCubeMapHeight * 4;
 
-		if (MTexturePixelFormat::Byte8 == importInfo.ePixelFormat)
+		if (importInfo.ePixelType == MTexturePixelType::Byte8)
 		{
 			textureData->aByteData.resize(sizeof(MByte) * (nTargetSize * 6 ));
 		}
-		else if (MTexturePixelFormat::Float32 == importInfo.ePixelFormat)
+		else if (importInfo.ePixelType == MTexturePixelType::Float32)
 		{
 			textureData->aByteData.resize(sizeof(float) * (nTargetSize * 6));
 		}
 
 		for (int nTexIdx = 0; nTexIdx < 6; ++nTexIdx)
 		{
-			if (MTexturePixelFormat::Byte8 == importInfo.ePixelFormat)
+			if (importInfo.ePixelType == MTexturePixelType::Byte8)
 			{
 				FillChannelNum<MByte>(vImageData[nTexIdx], (MByte*)(textureData->aByteData.data()) + nTargetSize * nTexIdx, nSourceSize, unCubeMapChannel, 4, { 0, 0, 0, 255 });
 			}
-			else if (MTexturePixelFormat::Float32 == importInfo.ePixelFormat)
+			else if (importInfo.ePixelType == MTexturePixelType::Float32)
 			{
 				FillChannelNum<float>(vImageData[nTexIdx], (float*)(textureData->aByteData.data()) + nTargetSize * nTexIdx, nSourceSize, unCubeMapChannel, 4, { 0.0f, 0.0f, 0.0f, 1.0f});
 			}
@@ -255,52 +259,41 @@ std::unique_ptr<MResourceData> MTextureResourceUtil::ImportCubeMap(const std::ar
 
 	textureData->nWidth = unCubeMapWidth;
 	textureData->nHeight = unCubeMapHeight;
-	textureData->nImageLayerNum = 6;
-	textureData->nChannel = unCubeMapChannel;
-	textureData->ePixelFormat = importInfo.ePixelFormat;
+	textureData->nDepth = 6;
+	textureData->eFormat = MTextureResourceUtil::GetTextureFormat(importInfo.ePixelType, unCubeMapChannel);
 	textureData->strTextureName = vResourcePath[0];
 	textureData->eTextureType = METextureType::ETextureCube;
 	
-#if	FREE_MEMORY_AFTER_UPLOAD
-	std::swap(m_aByteData, std::vector<MByte>());
-#endif
-
 	return textureData;
 }
 
-METextureLayout MTextureResourceUtil::GetTextureLayout(const uint32_t& nChannel, const MTexturePixelFormat& format)
+morty::METextureLayout MTextureResourceUtil::GetTextureFormat(const MTexturePixelType nPixelSize, const size_t nChannelNum)
 {
-	METextureLayout eResult = METextureLayout::E_UNKNOW;
-	if (MTexturePixelFormat::Byte8 == format)
+	if (nPixelSize == MTexturePixelType::Byte8)
 	{
-		static const std::array<METextureLayout, 4> sTextureLayout = {
-			METextureLayout::ER_UNORM_8,
-			METextureLayout::E_UNKNOW,
-			METextureLayout::ERGB_UNORM_8,
-			METextureLayout::ERGBA_UNORM_8,
-		};
-
-		if (nChannel <= 4)
+	    if (nChannelNum == 1)
+	    {
+			return morty::METextureLayout::UNorm_R8;
+	    }
+		if (nChannelNum == 4)
 		{
-			eResult = sTextureLayout[nChannel - 1];
-		}
-	}
-	else if (MTexturePixelFormat::Float32 == format)
-	{
-		static const std::array<METextureLayout, 4> sTextureLayout = {
-			METextureLayout::ER_FLOAT_32,
-			METextureLayout::E_UNKNOW,
-			METextureLayout::E_UNKNOW,
-			METextureLayout::ERGBA_FLOAT_32,
-		};
-
-		if (nChannel <= 4)
-		{
-			eResult = sTextureLayout[nChannel - 1];
+			return morty::METextureLayout::UNorm_RGBA8;
 		}
 	}
 
-	MORTY_ASSERT(METextureLayout::E_UNKNOW != eResult);
+	if (nPixelSize == MTexturePixelType::Float32)
+	{
+	    if (nChannelNum == 1)
+	    {
+			return morty::METextureLayout::Float_R32;
+	    }
+		if (nChannelNum == 4)
+		{
+			return morty::METextureLayout::Float_RGBA32;
+		}
+	}
 
-	return eResult;
+
+	MORTY_ASSERT(false);
+	return morty::METextureLayout::Unknow;
 }

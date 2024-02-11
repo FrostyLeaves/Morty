@@ -59,6 +59,12 @@ public:
 	virtual std::shared_ptr<MTextureResource> GetTexture(const MString& strFullPath, MEModelTextureUsage eUsage) = 0;
 };
 
+class MORTY_API MIMaterialDelegate
+{
+public:
+	virtual void PostProcess(MMaterial* pMaterial) = 0;
+};
+
 struct MORTY_API MModelConvertInfo
 {
 	MString strResourcePath;
@@ -69,7 +75,8 @@ struct MORTY_API MModelConvertInfo
 	bool bImportLights = true;
 	MModelConvertMaterialType eMaterialType;
 
-	std::shared_ptr<MITextureDelegate> pTextureDelegate;
+	std::shared_ptr<MITextureDelegate> pTextureDelegate = nullptr;
+	std::shared_ptr<MIMaterialDelegate> pMaterialDelegate = nullptr;
 };
 
 class MORTY_API MModelConverter
@@ -136,6 +143,7 @@ private:
 	MModelConvertMaterialType eMaterialType;
 
 
-	std::shared_ptr<MITextureDelegate> m_pTextureDelegate;
+	std::shared_ptr<MITextureDelegate> m_pTextureDelegate = nullptr;
+	std::shared_ptr<MIMaterialDelegate> m_pMaterialDelegate = nullptr;
 
 };

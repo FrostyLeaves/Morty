@@ -8,31 +8,34 @@
 
 #pragma once
 
+#include "MGBufferRenderWork.h"
 #include "Utility/MGlobal.h"
 #include "MSinglePassRenderWork.h"
 
 #include "MRenderWork.h"
+#include "MShadowMapRenderWork.h"
 #include "RenderProgram/MRenderInfo.h"
 
 class MORTY_API MDeferredLightingRenderWork : public ISinglePassRenderWork
 {
 	MORTY_CLASS(MDeferredLightingRenderWork)
+	static const MStringId DeferredLightingOutput;
 
 	void Initialize(MEngine* pEngine) override;
-	void Release(MEngine* pEngine) override;
-	void Resize(Vector2i size) override;
+	void Release() override;
 
-	void Render(MRenderInfo& info);
+	void Render(const MRenderInfo& info) override;
 
-	void SetGBuffer(const std::shared_ptr<IGBufferAdapter>& pAdapter);
-	void SetShadowMap(const std::shared_ptr<IGetTextureAdapter>& pAdapter);
-	void SetFrameProperty(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter);
+protected:
+
+	void BindTarget() override;
+
+	std::vector<MRenderTaskInputDesc> InitInputDesc() override;
+
+	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
+
 
 private:
-
-	std::shared_ptr<IPropertyBlockAdapter> m_pFramePropertyAdapter = nullptr;
-	std::shared_ptr<IGBufferAdapter> m_pGBufferAdapter = nullptr;
-	std::shared_ptr<IGetTextureAdapter> m_pShadowMapAdapter = nullptr;
 
 	std::shared_ptr<MMaterial> m_pLightningMaterial = nullptr;
 };

@@ -24,16 +24,19 @@ class IShaderPropertyUpdateDecorator;
 
 class MORTY_API MVoxelizerRenderWork : public ISinglePassRenderWork
 {
-	MORTY_CLASS(MVoxelizerRenderWork)
+    MORTY_CLASS(MVoxelizerRenderWork)
+
+    static const MStringId VoxelizerBufferOutput;
 
 public:
 
     void Initialize(MEngine* pEngine) override;
-	void Release(MEngine* pEngine) override;
+	void Release() override;
     std::shared_ptr<IShaderPropertyUpdateDecorator> GetFramePropertyDecorator() override;
     void Resize(Vector2i size) override;
 
-    void Render(MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
+    void Render(const MRenderInfo& info) override;
+    void Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
 
     const std::unordered_map<MStringId, std::shared_ptr<MMaterial>>& GetVoxelizerMaterial() const { return m_tVoxelizerMaterial; }
     const MBuffer* GetVoxelTableBuffer() const;
@@ -57,7 +60,14 @@ protected:
     void ReleaseVoxelTextureDispatcher();
 
     void InitializeRenderPass();
-    void ReleaseRenderPass();
+
+
+    void BindTarget() override;
+
+    std::vector<MRenderTaskInputDesc> InitInputDesc() override;
+
+    std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
+
 
     MVoxelMapSetting m_voxelSetting;
     std::shared_ptr<IShaderPropertyUpdateDecorator> m_pFramePropertyUpdateDecorator = nullptr;
@@ -66,7 +76,6 @@ protected:
     std::shared_ptr<MShaderConstantParam> m_pVoxelizerVoxelMapSetting = nullptr;
     std::unordered_map<MStringId, std::shared_ptr<MMaterial>> m_tVoxelizerMaterial = {};
     MBuffer m_voxelizerBuffer;
-    std::shared_ptr<MTexture> m_pVoxelizerRenderTarget = nullptr;
 
     std::shared_ptr<MTexture> m_voxelGITexture = nullptr;
 };

@@ -29,7 +29,8 @@ public:
 
 	MStringId GetNodeName() const { return m_strNodeName; }
 
-	MTaskNodeInput* AppendInput();
+	template<typename TYPE = MTaskNodeInput>
+	TYPE* AppendInput();
 
 	template<typename TYPE = MTaskNodeOutput>
 	TYPE* AppendOutput();
@@ -67,6 +68,7 @@ public:
 
 private:
 
+	void AppendInput(MTaskNodeInput* pInput);
 	void AppendOutput(MTaskNodeOutput* pOutput);
 
 protected:
@@ -74,7 +76,7 @@ protected:
 
 	MStringId m_strNodeName;
     MTaskGraph* m_pGraph = nullptr;
-	int m_nPriorityLevel = 0;
+	size_t m_nPriorityLevel = 0;
 	METhreadType m_eThreadType = METhreadType::EAny;
 
 	std::vector<MTaskNodeInput*> m_vInput;
@@ -87,6 +89,17 @@ public:
 	long long m_nDebugTime;
 #endif
 };
+
+template<typename TYPE>
+inline TYPE* MTaskNode::AppendInput()
+{
+	if (!MTypeClass::IsType<TYPE, MTaskNodeInput>())
+		return nullptr;
+
+	TYPE* pInput = new TYPE();
+	AppendInput(pInput);
+	return pInput;
+}
 
 template<typename TYPE /*= MTaskNodeOutput*/>
 TYPE* MTaskNode::AppendOutput()

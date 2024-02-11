@@ -37,6 +37,12 @@ void MCascadedShadowCulling::SetDirectionalLight(MEntity* pDirectionalLight)
 	m_pDirectionalLight = pDirectionalLight;
 }
 
+void MCascadedShadowCulling::UploadBuffer(MIRenderCommand* pCommand)
+{
+	const size_t nDrawIndirectBufferSize = m_vDrawIndirectData.size() * sizeof(MDrawIndexedIndirectData);
+	pCommand->UploadBuffer(&m_drawIndirectBuffer, reinterpret_cast<MByte*>(m_vDrawIndirectData.data()), nDrawIndirectBufferSize);
+}
+
 void MCascadedShadowCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup)
 {
 	auto vCascadedSplitData = MShadowMapUtil::CascadedSplitCameraFrustum(m_pViewport);
@@ -61,9 +67,9 @@ void MCascadedShadowCulling::CullingForDrawInstancing(const std::vector<MMateria
 		return;
 	}
 
-	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+	std::vector<MDrawIndexedIndirectData>& vDrawIndirectData = m_vDrawIndirectData;
 
-	std::vector<MDrawIndexedIndirectData> vDrawIndirectData;
+	vDrawIndirectData.clear();
 	m_vCullingInstanceGroup.clear();
 
 	auto createNewGroupFunc = [&](const std::shared_ptr<MMaterial>& pMaterial, MInstanceBatchGroup* pInstanceBatchGroup)
@@ -143,18 +149,6 @@ void MCascadedShadowCulling::CullingForDrawInstancing(const std::vector<MMateria
 
 	}
 
-
-	const size_t nDrawIndirectBufferSize = vDrawIndirectData.size() * sizeof(MDrawIndexedIndirectData);
-	if (m_drawIndirectBuffer.GetSize() < nDrawIndirectBufferSize)
-	{
-		m_drawIndirectBuffer.ReallocMemory(nDrawIndirectBufferSize);
-		m_drawIndirectBuffer.DestroyBuffer(pRenderSystem->GetDevice());
-		m_drawIndirectBuffer.GenerateBuffer(pRenderSystem->GetDevice(), reinterpret_cast<MByte*>(vDrawIndirectData.data()), nDrawIndirectBufferSize);
-	}
-	else if (nDrawIndirectBufferSize > 0)
-	{
-		m_drawIndirectBuffer.UploadBuffer(pRenderSystem->GetDevice(), reinterpret_cast<MByte*>(vDrawIndirectData.data()), nDrawIndirectBufferSize);
-	}
 
 	for (size_t nCascadedIdx = 0; nCascadedIdx < MRenderGlobal::CASCADED_SHADOW_MAP_NUM; ++nCascadedIdx)
 	{

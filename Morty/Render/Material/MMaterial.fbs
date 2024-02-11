@@ -2,7 +2,7 @@ include "Resource/MResourceRef.fbs";
 include "Variant/MVariant.fbs";
 include "Material/MMaterialTemplate.fbs";
 
-namespace mfbs;
+namespace morty;
 
 table MMaterialProperty
 {

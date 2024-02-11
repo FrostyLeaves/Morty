@@ -104,6 +104,7 @@ public:
 	virtual bool CopyImageBuffer(MTexture* pSource, MTexture* pDest) = 0;
 	virtual void UpdateMipmaps(MTexture* pBuffer) = 0;
 	virtual void ResetBuffer(const MBuffer* pBuffer) = 0;
+	virtual void UploadBuffer(MBuffer* pBuffer, const MByte* pData, const size_t nSize) = 0;
 	virtual void FillTexture(MTexture* pBuffer, MColor color) = 0;
 
 	virtual void SetShadingRate(Vector2i i2ShadingSize, std::array<MEShadingRateCombinerOp, 2> combineOp) = 0;
