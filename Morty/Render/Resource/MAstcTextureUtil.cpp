@@ -63,8 +63,7 @@ std::unique_ptr<MResourceData> MAstcTextureUtil::ImportAstcTexture(const MString
 	textureData->nDepth = extent.z;
 	textureData->eFormat = eFormat;
 	textureData->strTextureName = strResourcePath;
-	textureData->bMipmap = false;
-
+	textureData->eMipmapDataType = MEMipmapDataType::Load;
 	return textureData;
 }
 

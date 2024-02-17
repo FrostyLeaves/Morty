@@ -8,8 +8,8 @@ table MTextureResource
     width: uint;
     height: uint;
     format: METextureLayout;
+    mipmap: MEMipmapDataType;
     data: [byte];
-    mipmap: bool;
 }
 
 root_type MTextureResource;

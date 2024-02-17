@@ -895,7 +895,7 @@ std::shared_ptr<MTexture> MVulkanPipelineManager::GetDefaultTexture(MShaderTextu
 
 	auto pTexture = std::make_shared<MTexture>();
 	pTexture->SetName("Shader Default Texture");
-	pTexture->SetMipmapsEnable(false);
+	pTexture->SetMipmapDataType(MEMipmapDataType::Disable);
 	pTexture->SetReadable(false);
 	pTexture->SetRenderUsage(METextureWriteUsage::EUnknow);
 	pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);

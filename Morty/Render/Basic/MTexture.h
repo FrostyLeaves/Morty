@@ -10,6 +10,7 @@
 
 #include "Render/MRenderGlobal.h"
 #include "Math/Vector.h"
+#include "Flatbuffer/MTexture_generated.h"
 
 MORTY_SPACE_BEGIN
 
@@ -23,41 +24,9 @@ enum METextureType
 	ETexture3D = 4,
 };
 
-enum class METextureLayout
-{
-	Unknow = 0,
-	Depth,
+using METextureLayout = morty::fbs::METextureLayout;
 
-	UNorm_R8,
-	UNorm_RG8,
-	UNorm_RGB8,
-	UNorm_RGBA8,
-
-	UInt_R8,
-
-	Float_R16,
-	Float_RG16,
-	Float_RGB16,
-	Float_RGBA16,
-
-	Float_R32,
-	Float_RG32,
-	Float_RGB32,
-	Float_RGBA32,
-
-	UNorm_RGBA8_ASTC4x4,
-	UNorm_RGBA8_ASTC8x8,
-
-	UNorm_RGBA8_BC1,
-	UNorm_RGBA8_BC2,
-	UNorm_RGBA8_BC3,
-	UNorm_RGBA8_BC4,
-	UNorm_RGBA8_BC5,
-	UNorm_RGBA8_BC7,
-
-	SNorm_RGBA8_BC4,
-	SNorm_RGBA8_BC5,
-};
+using MEMipmapDataType = morty::fbs::MEMipmapDataType;
 
 enum class METextureWriteUsage
 {
@@ -85,9 +54,9 @@ struct MORTY_API MTextureDesc
 	METextureType eTextureType = METextureType::ETexture2D;
 	METextureLayout eTextureLayout = METextureLayout::UNorm_RGBA8;
 	METextureWriteUsage eWriteUsage = METextureWriteUsage::EUnknow;
+	MEMipmapDataType eMipmapDataType = MEMipmapDataType::Disable;
 	uint32_t nShaderUsage = METextureReadUsage::EUnknow;
 	bool bReadable = false;
-	bool bMipmapEnable = false;
 
 	MTextureDesc& InitName(const MString& name)
 	{
@@ -126,8 +95,8 @@ public:
 	void SetReadable(const bool& bReadable) { m_bReadable = bReadable; }
 	bool GetReadable() { return m_bReadable; }
 
-	void SetMipmapsEnable(const bool& bEnable) { m_bMipmapsEnable = bEnable; }
-	bool GetMipmapsEnable() { return m_bMipmapsEnable; }
+	void SetMipmapDataType(const MEMipmapDataType& eMipmap) { m_eMipmapType = eMipmap; }
+	MEMipmapDataType GetMipmapDataType() const { return m_eMipmapType; }
 
 	void SetRenderUsage(const METextureWriteUsage& usage) { m_eRenderUsage = usage; }
 	METextureWriteUsage GetRenderUsage() const { return m_eRenderUsage; }
@@ -168,23 +137,23 @@ public:
 	MString m_strTextureName;
 
 	//texture size.
-	Vector3i m_n3Size;
+	Vector3i m_n3Size = Vector3i(1, 1, 1);
 
 	//rgba8
-	METextureLayout m_eRenderType;
+	METextureLayout m_eRenderType = METextureLayout::UNorm_RGBA8;
 
 	//render target
-	METextureWriteUsage m_eRenderUsage;
+	METextureWriteUsage m_eRenderUsage = METextureWriteUsage::EUnknow;
 
-	uint32_t m_eShaderUsage;
+	uint32_t m_eShaderUsage = METextureReadUsage::EUnknow;
 
-	METextureType m_eTextureType;
+	METextureType m_eTextureType = METextureType::ETexture2D;
 
 	//CPU readable
-	bool m_bReadable;
+	bool m_bReadable = false;
 
 	//generate mipmap
-	bool m_bMipmapsEnable;
+	MEMipmapDataType m_eMipmapType = MEMipmapDataType::Disable;
 
 	uint32_t m_unMipmapLevel = 1;
 	uint32_t m_nLayer = 1;

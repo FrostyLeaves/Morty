@@ -198,7 +198,7 @@ std::unique_ptr<MResourceData> MDdsTextureUtil::ImportBc7Texture(const MString& 
 	textureData->nDepth = 1;
 	textureData->eFormat = static_cast<morty::METextureLayout>(eTextureLayout);
 	textureData->strTextureName = strResourcePath;
-	textureData->bMipmap = false;
+	textureData->eMipmapDataType = MEMipmapDataType::Load;
 
 	return textureData;
 }

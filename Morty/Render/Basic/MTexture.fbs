@@ -36,4 +36,11 @@ enum METextureLayout:byte
     SNorm_RGBA8_BC5,
 }
 
+enum MEMipmapDataType: byte
+{
+    Disable = 0,
+    Generate,
+    Load,
+}
+
 file_identifier "MFBS";
