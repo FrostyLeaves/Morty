@@ -3,13 +3,18 @@ include "Basic/MTexture.fbs";
 
 namespace morty.fbs;
 
+table MTextureMipmapData
+{
+    buffer: [byte];
+}
+
 table MTextureResource
 {
     width: uint;
     height: uint;
     format: METextureLayout;
-    mipmap: MEMipmapDataType;
-    data: [byte];
+    mipmap_type: MEMipmapDataType;
+    mipmaps: [MTextureMipmapData];
 }
 
 root_type MTextureResource;

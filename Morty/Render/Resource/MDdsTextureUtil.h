@@ -19,7 +19,7 @@ class MORTY_API MDdsTextureUtil
 {
 public:
 
-	static std::unique_ptr<MResourceData> ImportBc7Texture(const MString& strResourcePath);
+	static std::unique_ptr<MResourceData> ImportDdsTexture(const MString& strResourcePath);
 };
 
 MORTY_SPACE_END

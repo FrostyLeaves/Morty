@@ -890,8 +890,8 @@ std::shared_ptr<MTexture> MVulkanPipelineManager::GetDefaultTexture(MShaderTextu
 
 	MORTY_ASSERT(TypeMapping.find(pParam->eFormat) != TypeMapping.end());
 
-	MByte cubeBytes[32];
-	memset(cubeBytes, 255, sizeof(MByte) * 32);
+	std::vector<std::vector<MByte>> cubeBytes{ std::vector<MByte>(32) };
+	memset(cubeBytes[0].data(), 255, sizeof(MByte) * 32);
 
 	auto pTexture = std::make_shared<MTexture>();
 	pTexture->SetName("Shader Default Texture");
@@ -902,7 +902,7 @@ std::shared_ptr<MTexture> MVulkanPipelineManager::GetDefaultTexture(MShaderTextu
 	pTexture->SetSize(Vector2i(1, 1));
 	pTexture->SetTextureLayout(TypeMapping.at(pParam->eFormat));
 	pTexture->SetTextureType(pParam->eType);
-	pTexture->GenerateBuffer(m_pDevice, cubeBytes);
+	pTexture->GenerateBuffer(m_pDevice, cubeBytes );
 
 	MORTY_ASSERT(pTexture);
 

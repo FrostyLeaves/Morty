@@ -57,7 +57,7 @@ std::unique_ptr<MResourceData> MAstcTextureUtil::ImportAstcTexture(const MString
 
 	std::unique_ptr<MTextureResourceData> textureData = std::make_unique<MTextureResourceData>();
 
-	textureData->aByteData = std::vector<MByte>{ buffer.begin() + sizeof(AstcHeader), buffer.end() };
+	textureData->vMipmaps.push_back({ buffer.begin() + sizeof(AstcHeader), buffer.end() });
 	textureData->nWidth = extent.x;
 	textureData->nHeight = extent.y;
 	textureData->nDepth = extent.z;

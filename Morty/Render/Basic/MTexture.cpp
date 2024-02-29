@@ -41,7 +41,7 @@ void MTexture::GenerateBuffer(MIDevice* pDevice)
 	pDevice->GenerateTexture(this, {});
 }
 
-void MTexture::GenerateBuffer(MIDevice* pDevice, const MSpan<MByte>& buffer)
+void MTexture::GenerateBuffer(MIDevice* pDevice, const std::vector<std::vector<MByte>>& buffer)
 {
 	pDevice->GenerateTexture(this, buffer);
 }

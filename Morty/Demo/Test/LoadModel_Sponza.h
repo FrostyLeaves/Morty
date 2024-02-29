@@ -118,7 +118,7 @@ void LoadSponzaEntity(const std::string& sourcePath, const std::string& name, ME
 
 		convert.Convert(info);
 
-		pModelResource = pResourceSystem->LoadResource("./Sponza/Sponza/Sponza.entity");
+		pModelResource = pResourceSystem->LoadResource(resourcePath);
 	}
 
 	std::vector<MComponentID> vMeshComponents;
@@ -141,6 +141,6 @@ void LoadSponzaEntity(const std::string& sourcePath, const std::string& name, ME
 
 void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
 {
-	LoadSponzaEntity("./Sponza/NewSponza_Main_glTF_002.gltf", "Sponza", pEngine, pScene);
+	LoadSponzaEntity("./Model/Sponza/NewSponza_Main_glTF_002.gltf", "Sponza", pEngine, pScene);
 	//LoadSponzaEntity("./Model/PKG_A_Curtains/NewSponza_Curtains_glTF.gltf", "Curtains", pEngine, pScene);
 }

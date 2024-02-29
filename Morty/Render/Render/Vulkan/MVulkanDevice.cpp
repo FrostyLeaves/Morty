@@ -579,7 +579,7 @@ void MVulkanDevice::UploadBuffer(MBuffer* pBuffer, const size_t& unBeginOffset, 
 	UploadBuffer(VK_NULL_HANDLE, pBuffer, unBeginOffset, data, unDataSize);
 }
 
-void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MSpan<MByte>& buffer)
+void MVulkanDevice::GenerateTexture(MTexture* pTexture, const std::vector<std::vector<MByte>>& buffer)
 {
 	uint32_t width = std::max(static_cast<int>(pTexture->GetSize().x), 1);
 	uint32_t height = std::max(static_cast<int>(pTexture->GetSize().y), 1);
@@ -624,16 +624,23 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MSpan<MByte>& buff
 
 		if (!buffer.empty())
 		{
-			VkDeviceSize imageSize = buffer.size();
+			const uint32_t nBufferCount = buffer.size();
+			MORTY_ASSERT(nBufferCount == nMipmapCount);
 
-			VkBuffer stagingBuffer;
-			VkDeviceMemory stagingBufferMemory;
-			GenerateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+			std::vector<VkBuffer> stagingBuffer(nBufferCount);
+			std::vector<VkDeviceMemory> stagingBufferMemory(nBufferCount);
 
-			MByte* data;
-			vkMapMemory(m_VkDevice, stagingBufferMemory, 0, imageSize, 0, (void**)&data);
-			memcpy(data, buffer.data(), static_cast<size_t>(imageSize));
-			vkUnmapMemory(m_VkDevice, stagingBufferMemory);
+			for (uint32_t nBufferIdx = 0; nBufferIdx < nBufferCount; ++nBufferIdx)
+			{
+				VkDeviceSize imageSize = buffer[nBufferIdx].size();
+
+				GenerateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer[nBufferIdx], stagingBufferMemory[nBufferIdx]);
+
+				MByte* data;
+				vkMapMemory(m_VkDevice, stagingBufferMemory[nBufferIdx], 0, imageSize, 0, (void**)&data);
+				memcpy(data, buffer[nBufferIdx].data(), static_cast<size_t>(imageSize));
+				vkUnmapMemory(m_VkDevice, stagingBufferMemory[nBufferIdx]);
+			}
 
 			VkImageSubresourceRange vkSubresourceRange = {};
 			vkSubresourceRange.aspectMask = aspectFlgas;
@@ -644,22 +651,33 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MSpan<MByte>& buff
 			VkCommandBuffer commandBuffer = BeginCommands();
 			TransitionImageLayout(commandBuffer, textureImage, UndefinedImageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vkSubresourceRange);
 
-			VkBufferImageCopy region = {};
-			region.bufferOffset = 0;
-			region.bufferRowLength = 0;
-			region.bufferImageHeight = 0;
-			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			region.imageSubresource.mipLevel = 0;
-			region.imageSubresource.baseArrayLayer = 0;
-			region.imageSubresource.layerCount = nLayerCount;
-			region.imageOffset = { 0, 0, 0 };
-			region.imageExtent = { width, height, 1 };
+			uint32_t nMipmapWidth = width, nMipmapHeight = height;
+			for (size_t nMipmapIdx = 0; nMipmapIdx < buffer.size(); ++nMipmapIdx)
+			{
+				VkBufferImageCopy region = {};
+				region.bufferOffset = 0;
+				region.bufferRowLength = 0;
+				region.bufferImageHeight = 0;
+				region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				region.imageSubresource.mipLevel = nMipmapIdx;
+				region.imageSubresource.baseArrayLayer = 0;
+				region.imageSubresource.layerCount = nLayerCount;
+				region.imageOffset = { 0, 0, 0 };
+				region.imageExtent = { nMipmapWidth, nMipmapHeight, 1 };
 
-			vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+				nMipmapWidth = std::max(nMipmapWidth / 2, 1u);
+				nMipmapHeight = std::max(nMipmapHeight / 2, 1u);
+
+				vkCmdCopyBufferToImage(commandBuffer, stagingBuffer[nMipmapIdx], textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+			}
+
 			EndCommands(commandBuffer);
 
 			defaultLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-			DestroyBuffer(stagingBuffer, stagingBufferMemory);
+			for (uint32_t nBufferIdx = 0; nBufferIdx < nBufferCount; ++nBufferIdx)
+			{
+				DestroyBuffer(stagingBuffer[nBufferIdx], stagingBufferMemory[nBufferIdx]);
+			}
 		}
 
 		VkImageSubresourceRange vkSubresourceRange = {};

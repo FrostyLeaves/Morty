@@ -113,7 +113,7 @@ public:
 public:
 
 	void GenerateBuffer(MIDevice* pDevice);
-	void GenerateBuffer(MIDevice* pDevice, const MSpan<MByte>& buffer);
+	void GenerateBuffer(MIDevice* pDevice, const std::vector<std::vector<MByte>>& buffer);
 	void DestroyBuffer(MIDevice* pDevice);
 
 	static uint32_t GetImageMemorySize(const METextureLayout& layout);

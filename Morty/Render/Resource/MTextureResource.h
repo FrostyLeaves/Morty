@@ -42,7 +42,8 @@ public:
 	METextureType eTextureType = METextureType::ETexture2D;
 	MEMipmapDataType eMipmapDataType = MEMipmapDataType::Disable;
 	morty::METextureLayout eFormat = morty::METextureLayout::Unknow;
-	std::vector<MByte> aByteData{};
+	std::vector<std::vector<MByte>> vMipmaps{};
+
 	MString strTextureName = "";
 
 	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;

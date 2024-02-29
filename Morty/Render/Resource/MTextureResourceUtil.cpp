@@ -55,19 +55,18 @@ std::unique_ptr<MResourceData> MTextureResourceUtil::LoadFromMemory(const MStrin
 	if (nChannel == 2 || nChannel == 3)
 	{
 		if (ePixelType == MTexturePixelType::Byte8)
-			textureData->aByteData = FillChannelNum<MByte>(buffer.data(), nSize, nChannel, 4, { 0, 0, 0, 255 });
+			textureData->vMipmaps.push_back(FillChannelNum<MByte>(buffer.data(), nSize, nChannel, 4, { 0, 0, 0, 255 }));
 		else if (ePixelType == MTexturePixelType::Float32)
-			textureData->aByteData = FillChannelNum<float>(buffer.data(), nSize, nChannel, 4, { 0.0f, 0.0f, 0.0f, 1.0f });
+			textureData->vMipmaps.push_back(FillChannelNum<float>(buffer.data(), nSize, nChannel, 4, { 0.0f, 0.0f, 0.0f, 1.0f }));
 
 		nChannel = 4;
 	}
 	else
 	{
 		if (ePixelType == MTexturePixelType::Byte8)
-			textureData->aByteData.resize(sizeof(MByte) * nSize);
+			textureData->vMipmaps.push_back({ buffer.begin(), buffer.begin() + sizeof(MByte) * nSize });
 		else if (ePixelType == MTexturePixelType::Float32)
-			textureData->aByteData.resize(sizeof(float) * nSize);
-		memcpy(textureData->aByteData.data(), buffer.data(), nSize);
+			textureData->vMipmaps.push_back({ buffer.begin(), buffer.begin() + sizeof(float) * nSize });
 	}
 
 	textureData->nWidth = unWidth;
@@ -203,6 +202,8 @@ std::unique_ptr<MResourceData> MTextureResourceUtil::ImportCubeMap(const std::ar
 		return nullptr;
 	}
 
+	textureData->vMipmaps.push_back({});
+
 	if (unCubeMapChannel == 1 || unCubeMapChannel == 4)
 	{
 		int nTextureSize = unCubeMapWidth * unCubeMapHeight * unCubeMapChannel;
@@ -210,17 +211,17 @@ std::unique_ptr<MResourceData> MTextureResourceUtil::ImportCubeMap(const std::ar
 		if (importInfo.ePixelType == MTexturePixelType::Byte8)
 		{
 			nTextureSize *= sizeof(MByte);
-			textureData->aByteData.resize(sizeof(MByte) * (nTextureSize * 6));
+			textureData->vMipmaps[0].resize(sizeof(MByte) * (nTextureSize * 6));
 		}
 		else if (importInfo.ePixelType == MTexturePixelType::Float32)
 		{
 			nTextureSize += sizeof(float);
-			textureData->aByteData.resize(sizeof(float) * (nTextureSize * 6));
+			textureData->vMipmaps[0].resize(sizeof(float) * (nTextureSize * 6));
 		}
 
 		for (int nTexIdx = 0; nTexIdx < 6; ++nTexIdx)
 		{
-			memcpy(textureData->aByteData.data() + nTextureSize * nTexIdx, vImageData[nTexIdx], nTextureSize);
+			memcpy(textureData->vMipmaps[0].data() + nTextureSize * nTexIdx, vImageData[nTexIdx], nTextureSize);
 		}
 	}
 	else
@@ -230,22 +231,22 @@ std::unique_ptr<MResourceData> MTextureResourceUtil::ImportCubeMap(const std::ar
 
 		if (importInfo.ePixelType == MTexturePixelType::Byte8)
 		{
-			textureData->aByteData.resize(sizeof(MByte) * (nTargetSize * 6 ));
+			textureData->vMipmaps[0].resize(sizeof(MByte) * (nTargetSize * 6 ));
 		}
 		else if (importInfo.ePixelType == MTexturePixelType::Float32)
 		{
-			textureData->aByteData.resize(sizeof(float) * (nTargetSize * 6));
+			textureData->vMipmaps[0].resize(sizeof(float) * (nTargetSize * 6));
 		}
 
 		for (int nTexIdx = 0; nTexIdx < 6; ++nTexIdx)
 		{
 			if (importInfo.ePixelType == MTexturePixelType::Byte8)
 			{
-				FillChannelNum<MByte>(vImageData[nTexIdx], (MByte*)(textureData->aByteData.data()) + nTargetSize * nTexIdx, nSourceSize, unCubeMapChannel, 4, { 0, 0, 0, 255 });
+				FillChannelNum<MByte>(vImageData[nTexIdx], (MByte*)(textureData->vMipmaps[0].data()) + nTargetSize * nTexIdx, nSourceSize, unCubeMapChannel, 4, { 0, 0, 0, 255 });
 			}
 			else if (importInfo.ePixelType == MTexturePixelType::Float32)
 			{
-				FillChannelNum<float>(vImageData[nTexIdx], (float*)(textureData->aByteData.data()) + nTargetSize * nTexIdx, nSourceSize, unCubeMapChannel, 4, { 0.0f, 0.0f, 0.0f, 1.0f});
+				FillChannelNum<float>(vImageData[nTexIdx], (float*)(textureData->vMipmaps[0].data()) + nTargetSize * nTexIdx, nSourceSize, unCubeMapChannel, 4, { 0.0f, 0.0f, 0.0f, 1.0f});
 			}
 		}
 

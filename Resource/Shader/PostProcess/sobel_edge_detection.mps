@@ -2,12 +2,6 @@
 
 [[vk::binding(1,0)]]Texture2D u_texInputTexture;
 
-struct VS_OUT_POST
-{
-    float4 pos : SV_POSITION;
-    float2 uv : TEXCOORD;
-};
-
 void SampleForKernel(inout float4 output[9], Texture2D tex, float2 f2Coord)
 {
 	float w = u_f2ViewportSizeInv.x;
