@@ -40,9 +40,10 @@ public:
 	size_t nHeight = 0;
 	size_t nDepth = 1;
 	METextureType eTextureType = METextureType::ETexture2D;
+	MEMipmapDataType eMipmapDataType = MEMipmapDataType::Disable;
 	morty::METextureLayout eFormat = morty::METextureLayout::Unknow;
-	std::vector<MByte> aByteData{};
-	bool bMipmap = true;
+	std::vector<std::vector<MByte>> vMipmaps{};
+
 	MString strTextureName = "";
 
 	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;

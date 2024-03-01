@@ -118,7 +118,7 @@ void LoadSponzaEntity(const std::string& sourcePath, const std::string& name, ME
 
 		convert.Convert(info);
 
-		pModelResource = pResourceSystem->LoadResource("./Sponza/Sponza/Sponza.entity");
+		pModelResource = pResourceSystem->LoadResource(resourcePath);
 	}
 
 	std::vector<MComponentID> vMeshComponents;

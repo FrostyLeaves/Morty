@@ -382,13 +382,12 @@ VkImageType MVulkanDevice::GetImageType(MTexture* pTexture) const
 
 uint32_t MVulkanDevice::GetMipmapCount(MTexture* pTexture) const
 {
-    uint32_t unMipmap = 1;
-
-	if (pTexture->GetMipmapsEnable())
+	if (MEMipmapDataType::Disable == pTexture->GetMipmapDataType())
 	{
-		unMipmap = static_cast<uint32_t>(std::floor(std::log2(std::max(pTexture->GetSize().x, pTexture->GetSize().y)))) + 1;
+		return 1;
 	}
 
+	const uint32_t unMipmap = static_cast<uint32_t>(std::floor(std::log2(std::max(pTexture->GetSize().x, pTexture->GetSize().y)))) + 1;
 	return unMipmap;
 }
 
@@ -580,7 +579,7 @@ void MVulkanDevice::UploadBuffer(MBuffer* pBuffer, const size_t& unBeginOffset, 
 	UploadBuffer(VK_NULL_HANDLE, pBuffer, unBeginOffset, data, unDataSize);
 }
 
-void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MSpan<MByte>& buffer)
+void MVulkanDevice::GenerateTexture(MTexture* pTexture, const std::vector<std::vector<MByte>>& buffer)
 {
 	uint32_t width = std::max(static_cast<int>(pTexture->GetSize().x), 1);
 	uint32_t height = std::max(static_cast<int>(pTexture->GetSize().y), 1);
@@ -597,11 +596,13 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MSpan<MByte>& buff
 	VkDeviceMemory textureImageMemory = VK_NULL_HANDLE;
 	VkImageCreateFlags createFlags = GetImageCreateFlags(pTexture);
 	VkImageType imageType = GetImageType(pTexture);
+
 	auto nMipmapCount = static_cast<uint32_t>(GetMipmapCount(pTexture));
 	auto nLayerCount = static_cast<uint32_t>(GetLayerCount(pTexture));
 
 	if (pTexture->GetRenderUsage() == METextureWriteUsage::ERenderPresent)
 	{
+		MORTY_ASSERT(pTexture->GetMipmapDataType() == MEMipmapDataType::Disable);
 		VkImageSubresourceRange vkSubresourceRange = {};
 		vkSubresourceRange.aspectMask = aspectFlgas;
 		vkSubresourceRange.baseMipLevel = 0;
@@ -623,16 +624,23 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MSpan<MByte>& buff
 
 		if (!buffer.empty())
 		{
-			VkDeviceSize imageSize = buffer.size();
+			const uint32_t nBufferCount = buffer.size();
+			MORTY_ASSERT(nBufferCount == nMipmapCount);
 
-			VkBuffer stagingBuffer;
-			VkDeviceMemory stagingBufferMemory;
-			GenerateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+			std::vector<VkBuffer> stagingBuffer(nBufferCount);
+			std::vector<VkDeviceMemory> stagingBufferMemory(nBufferCount);
 
-			MByte* data;
-			vkMapMemory(m_VkDevice, stagingBufferMemory, 0, imageSize, 0, (void**)&data);
-			memcpy(data, buffer.data(), static_cast<size_t>(imageSize));
-			vkUnmapMemory(m_VkDevice, stagingBufferMemory);
+			for (uint32_t nBufferIdx = 0; nBufferIdx < nBufferCount; ++nBufferIdx)
+			{
+				VkDeviceSize imageSize = buffer[nBufferIdx].size();
+
+				GenerateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer[nBufferIdx], stagingBufferMemory[nBufferIdx]);
+
+				MByte* data;
+				vkMapMemory(m_VkDevice, stagingBufferMemory[nBufferIdx], 0, imageSize, 0, (void**)&data);
+				memcpy(data, buffer[nBufferIdx].data(), static_cast<size_t>(imageSize));
+				vkUnmapMemory(m_VkDevice, stagingBufferMemory[nBufferIdx]);
+			}
 
 			VkImageSubresourceRange vkSubresourceRange = {};
 			vkSubresourceRange.aspectMask = aspectFlgas;
@@ -643,22 +651,33 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MSpan<MByte>& buff
 			VkCommandBuffer commandBuffer = BeginCommands();
 			TransitionImageLayout(commandBuffer, textureImage, UndefinedImageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vkSubresourceRange);
 
-			VkBufferImageCopy region = {};
-			region.bufferOffset = 0;
-			region.bufferRowLength = 0;
-			region.bufferImageHeight = 0;
-			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			region.imageSubresource.mipLevel = 0;
-			region.imageSubresource.baseArrayLayer = 0;
-			region.imageSubresource.layerCount = nLayerCount;
-			region.imageOffset = { 0, 0, 0 };
-			region.imageExtent = { width, height, 1 };
+			uint32_t nMipmapWidth = width, nMipmapHeight = height;
+			for (size_t nMipmapIdx = 0; nMipmapIdx < buffer.size(); ++nMipmapIdx)
+			{
+				VkBufferImageCopy region = {};
+				region.bufferOffset = 0;
+				region.bufferRowLength = 0;
+				region.bufferImageHeight = 0;
+				region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				region.imageSubresource.mipLevel = nMipmapIdx;
+				region.imageSubresource.baseArrayLayer = 0;
+				region.imageSubresource.layerCount = nLayerCount;
+				region.imageOffset = { 0, 0, 0 };
+				region.imageExtent = { nMipmapWidth, nMipmapHeight, 1 };
 
-			vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+				nMipmapWidth = std::max(nMipmapWidth / 2, 1u);
+				nMipmapHeight = std::max(nMipmapHeight / 2, 1u);
+
+				vkCmdCopyBufferToImage(commandBuffer, stagingBuffer[nMipmapIdx], textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+			}
+
 			EndCommands(commandBuffer);
 
 			defaultLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-			DestroyBuffer(stagingBuffer, stagingBufferMemory);
+			for (uint32_t nBufferIdx = 0; nBufferIdx < nBufferCount; ++nBufferIdx)
+			{
+				DestroyBuffer(stagingBuffer[nBufferIdx], stagingBufferMemory[nBufferIdx]);
+			}
 		}
 
 		VkImageSubresourceRange vkSubresourceRange = {};
@@ -680,8 +699,7 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const MSpan<MByte>& buff
 
 	pTexture->m_VkImageView = CreateImageView(pTexture->m_VkTextureImage, pTexture->m_VkTextureFormat, aspectFlgas, nMipmapCount, nLayerCount, GetImageViewType(pTexture));
 	
-
-	if (nMipmapCount > 1)
+	if (pTexture->GetMipmapDataType() == MEMipmapDataType::Generate)
 	{
 		GenerateMipmaps(pTexture, nMipmapCount);
 	}
@@ -1180,7 +1198,7 @@ std::tuple<VkImageView, Vector2i> MVulkanDevice::CreateFrameBufferViewFromRender
 	Vector2i i2Size = {0, 0};
 	VkImageView imageView = VK_NULL_HANDLE;
 
-	if (!renderTarget.pTexture->GetMipmapsEnable())
+	if (MEMipmapDataType::Disable == renderTarget.pTexture->GetMipmapDataType())
 	{
 		i2Size.x = renderTarget.pTexture->GetSize().x;
 		i2Size.y = renderTarget.pTexture->GetSize().y;
@@ -1628,12 +1646,12 @@ void MVulkanDevice::UploadBuffer(VkCommandBuffer vkCommand, MBuffer* pBuffer, co
 	}
 }
 
-void MVulkanDevice::GenerateMipmaps(MTexture* pBuffer, const uint32_t& unMipLevels, VkCommandBuffer buffer/* = VK_NULL_HANDLE*/)
+void MVulkanDevice::GenerateMipmaps(MTexture* pTexture, const uint32_t& unMipLevels, VkCommandBuffer buffer/* = VK_NULL_HANDLE*/)
 {
-	if (!pBuffer || unMipLevels <= 1)
+	if (!pTexture || unMipLevels <= 1)
 		return;
 
-	const VkFormatProperties formatProperties = m_pPhysicalDevice->GetFormatProperties(pBuffer->m_VkTextureFormat);
+	const VkFormatProperties formatProperties = m_pPhysicalDevice->GetFormatProperties(pTexture->m_VkTextureFormat);
 
 	if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
 		throw std::runtime_error("texture image format does not support linear blitting!");
@@ -1645,21 +1663,21 @@ void MVulkanDevice::GenerateMipmaps(MTexture* pBuffer, const uint32_t& unMipLeve
 		commandBuffer = BeginCommands();
 	}
 
-	int32_t mipWidth = pBuffer->GetSize().x;
-	int32_t mipHeight = pBuffer->GetSize().y;
-	uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(pBuffer->GetSize().x, pBuffer->GetSize().y)))) + 1;
-	uint32_t unLayerCount = GetLayerCount(pBuffer);
+	int32_t mipWidth = pTexture->GetSize().x;
+	int32_t mipHeight = pTexture->GetSize().y;
+	uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(pTexture->GetSize().x, pTexture->GetSize().y)))) + 1;
+	uint32_t unLayerCount = GetLayerCount(pTexture);
 
 	VkImageSubresourceRange vkSubresourceRange = {};
 	vkSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	vkSubresourceRange.baseMipLevel = 0;
 	vkSubresourceRange.levelCount = unMipLevels;
 	vkSubresourceRange.layerCount = unLayerCount;
-	TransitionImageLayout(commandBuffer, pBuffer->m_VkTextureImage, pBuffer->m_VkImageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vkSubresourceRange);
+	TransitionImageLayout(commandBuffer, pTexture->m_VkTextureImage, pTexture->m_VkImageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vkSubresourceRange);
 
 	VkImageMemoryBarrier barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	barrier.image = pBuffer->m_VkTextureImage;
+	barrier.image = pTexture->m_VkTextureImage;
 	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -1691,8 +1709,8 @@ void MVulkanDevice::GenerateMipmaps(MTexture* pBuffer, const uint32_t& unMipLeve
 		blit.dstSubresource.layerCount = unLayerCount;
 
 		vkCmdBlitImage(commandBuffer,
-			pBuffer->m_VkTextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-			pBuffer->m_VkTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			pTexture->m_VkTextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			pTexture->m_VkTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			1, &blit,
 			VK_FILTER_LINEAR);
 

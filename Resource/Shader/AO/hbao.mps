@@ -22,12 +22,6 @@
     float u_fRadiusPixel;
 };
 
-struct VS_OUT_POST
-{
-    float4 pos : SV_POSITION;
-    float2 uv : TEXCOORD;
-};
-
 struct HbaoPixelData
 {
     float3 f3ViewPosition;

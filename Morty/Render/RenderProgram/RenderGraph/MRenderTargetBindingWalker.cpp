@@ -29,7 +29,7 @@ public:
 		MUtils::HashCombine(res, desc.eWriteUsage);
 		MUtils::HashCombine(res, desc.nShaderUsage);
 		MUtils::HashCombine(res, desc.bReadable);
-		MUtils::HashCombine(res, desc.bMipmapEnable);
+		MUtils::HashCombine(res, desc.eMipmapDataType);
 		MUtils::HashCombine(res, eResizePolicy);
 
 		return res;

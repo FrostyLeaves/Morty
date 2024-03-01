@@ -138,7 +138,36 @@ METextureLayout GetFormatFromFourChar(const uint32_t& fourCC)
 	return METextureLayout::Unknow;
 }
 
-std::unique_ptr<MResourceData> MDdsTextureUtil::ImportBc7Texture(const MString& strResourcePath)
+uint32_t getBlockSize(METextureLayout layout)
+{
+	switch (layout) {
+	case METextureLayout::UNorm_RGBA8_BC1:
+	case METextureLayout::UNorm_RGBA8_BC4:
+	case METextureLayout::SNorm_RGBA8_BC4:
+		return 8;
+	case METextureLayout::UNorm_RGBA8_BC2:
+	case METextureLayout::UNorm_RGBA8_BC3:
+	case METextureLayout::UNorm_RGBA8_BC5:
+	case METextureLayout::SNorm_RGBA8_BC5:
+		return 16;
+	default:
+		MORTY_ASSERT(false);
+		return 0;
+	}
+}
+
+uint32_t ComputeMipmapSize(METextureLayout layout, uint32_t width, uint32_t height)
+{
+    if (layout == METextureLayout::UNorm_RGBA8)
+    {
+		return ((width + 1) >> 1) * 4 * height;
+    }
+
+	const uint32_t pitch = std::max(1u, (width + 3) / 4) * getBlockSize(layout);
+	return pitch * std::max(1u, (height + 3) / 4);
+}
+
+std::unique_ptr<MResourceData> MDdsTextureUtil::ImportDdsTexture(const MString& strResourcePath)
 {
 	std::ifstream ifs(strResourcePath.c_str(), std::ios::binary);
 	if (!ifs.good())
@@ -180,6 +209,7 @@ std::unique_ptr<MResourceData> MDdsTextureUtil::ImportBc7Texture(const MString& 
         {
 			eTextureLayout = GetFormatFromFourChar(header.pixelFormat.fourCC);
         }
+
 	}
 	else if ((header.pixelFormat.flags & DdsPixelFormatType::RGBA) == DdsPixelFormatType::RGBA)
 	{
@@ -192,13 +222,32 @@ std::unique_ptr<MResourceData> MDdsTextureUtil::ImportBc7Texture(const MString& 
 	
 	std::unique_ptr<MTextureResourceData> textureData = std::make_unique<MTextureResourceData>();
 
-	textureData->aByteData = std::vector<MByte>{ buffer.begin() + offset, buffer.end() };
 	textureData->nWidth = header.width;
 	textureData->nHeight = header.height;
 	textureData->nDepth = 1;
 	textureData->eFormat = static_cast<morty::METextureLayout>(eTextureLayout);
 	textureData->strTextureName = strResourcePath;
-	textureData->bMipmap = false;
+	textureData->eMipmapDataType = MEMipmapDataType::Load;
+
+	//mipmaps
+	const auto nMipmapCount = std::max(header.mipmapCount, 1u);
+	uint32_t nWidth = header.width;
+	uint32_t nHeight = header.height;
+
+	uint32_t nMipmapOffset = offset;
+	for (uint32_t mipIdx = 0; mipIdx < nMipmapCount; ++mipIdx)
+	{
+	    uint32_t mipmapDataSize = ComputeMipmapSize(eTextureLayout, nWidth, nHeight);
+		MORTY_ASSERT(mipmapDataSize);
+
+		mipmapDataSize = std::min(mipmapDataSize, static_cast<uint32_t>(buffer.size() - nMipmapOffset));
+
+		textureData->vMipmaps.push_back({ buffer.begin() + nMipmapOffset, buffer.begin() + nMipmapOffset + mipmapDataSize });
+
+		nMipmapOffset += mipmapDataSize;
+		nWidth = std::max(nWidth / 2, 1u);
+		nHeight = std::max(nHeight / 2, 1u);
+	}
 
 	return textureData;
 }

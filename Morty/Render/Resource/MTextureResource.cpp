@@ -30,7 +30,7 @@ MTextureResource::MTextureResource()
 	, m_pTexture(std::make_shared<MTexture>())
 	, m_pResourceData(std::make_unique<MTextureResourceData>())
 {
-	m_pTexture->SetMipmapsEnable(true);
+	m_pTexture->SetMipmapDataType(MEMipmapDataType::Generate);
 	m_pTexture->SetReadable(false);
 	m_pTexture->SetTextureLayout(METextureLayout::UNorm_RGBA8);
 	m_pTexture->SetRenderUsage(METextureWriteUsage::EUnknow);
@@ -61,9 +61,10 @@ bool MTextureResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 	m_pTexture->SetName(pTextureData->strTextureName);
 	m_pTexture->SetSize(Vector3i(pTextureData->nWidth, pTextureData->nHeight, pTextureData->nDepth));
 	m_pTexture->SetTextureType(pTextureData->eTextureType);
-	m_pTexture->SetMipmapsEnable(pTextureData->bMipmap);
+	m_pTexture->SetMipmapDataType(pTextureData->eMipmapDataType);
 	m_pTexture->SetTextureLayout(static_cast<METextureLayout>(pTextureData->eFormat));
-	m_pTexture->GenerateBuffer(pRenderSystem->GetDevice(), pTextureData->aByteData);
+
+	m_pTexture->GenerateBuffer(pRenderSystem->GetDevice(), pTextureData->vMipmaps);
 
 	if (m_bReadable)
 	{
@@ -100,7 +101,7 @@ void MTextureResource::CreateCubeMapRenderTarget(const uint32_t& nWidth, const u
 	m_pTexture->SetRenderUsage(METextureWriteUsage::ERenderBack);
 	m_pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
 	m_pTexture->SetTextureType(METextureType::ETextureCube);
-	m_pTexture->SetMipmapsEnable(bMipmapEnable);
+	m_pTexture->SetMipmapDataType(bMipmapEnable? MEMipmapDataType::Generate:MEMipmapDataType::Disable);
 
 	m_pTexture->GenerateBuffer(pRenderSystem->GetDevice());
 }
@@ -142,7 +143,7 @@ const MByte* MTextureResource::GetRawData() const
 
 	if (auto ptr = static_cast<MTextureResourceData*>(m_pResourceData.get()))
 	{
-		return ptr->aByteData.data();
+		return ptr->vMipmaps[0].data();
 	}
 
 	return nullptr;
@@ -150,15 +151,25 @@ const MByte* MTextureResource::GetRawData() const
 
 flatbuffers::Offset<void> MTextureResourceData::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-	auto fbTextureData = fbb.CreateVector<int8_t>(reinterpret_cast<const int8_t*>(aByteData.data()), aByteData.size());
+	std::vector<flatbuffers::Offset<morty::fbs::MTextureMipmapData>> vMipmapOffset(vMipmaps.size());
+
+	std::transform(vMipmaps.begin(), vMipmaps.end(), vMipmapOffset.begin(), [&fbb](const auto& range)
+		{
+			auto fbBuffer = fbb.CreateVector<int8_t>(reinterpret_cast<const int8_t*>(range.data()), range.size());
+			fbs::MTextureMipmapDataBuilder builder(fbb);
+	        builder.add_buffer(fbBuffer);
+			return builder.Finish();
+		});
+
+	const auto fbMipmaps = fbb.CreateVector(vMipmapOffset);
 
 	fbs::MTextureResourceBuilder builder(fbb);
 
 	builder.add_width(static_cast<uint32_t>(nWidth));
 	builder.add_height(static_cast<uint32_t>(nHeight));
-	builder.add_format(static_cast<fbs::METextureLayout>(eFormat));
-	builder.add_mipmap(bMipmap);
-	builder.add_data(fbTextureData);
+	builder.add_format(eFormat);
+	builder.add_mipmap_type(eMipmapDataType);
+	builder.add_mipmaps(fbMipmaps);
 
 	return builder.Finish().Union();
 }
@@ -168,12 +179,18 @@ void MTextureResourceData::Deserialize(const void* pBufferPointer)
 	const fbs::MTextureResource* fbData = fbs::GetMTextureResource(pBufferPointer);
     nWidth = fbData->width();
     nHeight = fbData->height();
-	eFormat = static_cast<morty::METextureLayout>(fbData->format());
-	bMipmap = fbData->mipmap();
-    const auto pData = fbData->data();
-	aByteData.resize(pData->size());
-	memcpy(aByteData.data(), pData->data(), pData->size());
+	eFormat = fbData->format();
+	eMipmapDataType = fbData->mipmap_type();
 
+	if (fbData->mipmaps())
+	{
+		vMipmaps.resize(fbData->mipmaps()->size());
+		for (size_t nIdx = 0; nIdx < fbData->mipmaps()->size(); ++nIdx)
+		{
+			const auto fbBuffer = fbData->mipmaps()->Get(nIdx)->buffer();
+			vMipmaps[nIdx] = std::vector<MByte>{ fbBuffer->begin(), fbBuffer->end() };
+		}
+	}
 }
 
 MTextureImportInfo::MTextureImportInfo(const MTexturePixelType nPixelSize)
@@ -209,7 +226,7 @@ std::unique_ptr<MResourceData> MTextureResourceLoader::LoadResource(const MStrin
 
 	if ("dds" == MResource::GetSuffix(svFullPath))
 	{
-		return MDdsTextureUtil::ImportBc7Texture(svFullPath);
+		return MDdsTextureUtil::ImportDdsTexture(svFullPath);
 	}
 	
     return MTextureResourceUtil::ImportTexture(svFullPath, MTexturePixelType::Byte8);

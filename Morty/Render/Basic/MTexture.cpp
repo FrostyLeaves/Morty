@@ -5,13 +5,6 @@ using namespace morty;
 
 MTexture::MTexture()
 	: m_strTextureName("Texture_Default")
-	, m_n3Size(1, 1, 1)
-	, m_eRenderType(METextureLayout::UNorm_RGBA8)
-	, m_eRenderUsage(METextureWriteUsage::EUnknow)
-	, m_eShaderUsage(METextureReadUsage::EUnknow)
-	, m_eTextureType(METextureType::ETexture2D)
-	, m_bReadable(false)
-	, m_bMipmapsEnable(false)
 {
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -48,7 +41,7 @@ void MTexture::GenerateBuffer(MIDevice* pDevice)
 	pDevice->GenerateTexture(this, {});
 }
 
-void MTexture::GenerateBuffer(MIDevice* pDevice, const MSpan<MByte>& buffer)
+void MTexture::GenerateBuffer(MIDevice* pDevice, const std::vector<std::vector<MByte>>& buffer)
 {
 	pDevice->GenerateTexture(this, buffer);
 }
@@ -109,7 +102,7 @@ std::shared_ptr<MTexture> MTexture::CreateTexture(const MTextureDesc& desc)
 	pTexture->SetRenderUsage(desc.eWriteUsage);
 	pTexture->SetShaderUsage(desc.nShaderUsage);
 	pTexture->SetReadable(desc.bReadable);
-	pTexture->SetMipmapsEnable(desc.bMipmapEnable);
+	pTexture->SetMipmapDataType(desc.eMipmapDataType);
 
 	return pTexture;
 }
@@ -121,9 +114,9 @@ MTextureDesc MTexture::CreateDepthBuffer()
 		.eTextureType = METextureType::ETexture2D,
 		.eTextureLayout = METextureLayout::Depth,
 		.eWriteUsage = METextureWriteUsage::ERenderDepth,
+		.eMipmapDataType = MEMipmapDataType::Disable,
 		.nShaderUsage = METextureReadUsage::EPixelSampler,
 		.bReadable = false,
-		.bMipmapEnable = false,
 	};
 
 	return texture;
@@ -138,9 +131,9 @@ MTextureDesc MTexture::CreateShadowMapArray(const int& nSize, const uint32_t& nA
 		.eTextureType = METextureType::ETexture2DArray,
 		.eTextureLayout = METextureLayout::Depth,
 		.eWriteUsage = METextureWriteUsage::ERenderDepth,
+		.eMipmapDataType = MEMipmapDataType::Disable,
 		.nShaderUsage = METextureReadUsage::EPixelSampler,
 		.bReadable = false,
-	    .bMipmapEnable = false,
 	};
 
 	return texture;
@@ -154,9 +147,9 @@ MTextureDesc MTexture::CreateRenderTarget(METextureLayout eLayout/*= METextureLa
 		.eTextureType = METextureType::ETexture2D,
 		.eTextureLayout = eLayout,
 		.eWriteUsage = METextureWriteUsage::ERenderBack,
+		.eMipmapDataType = MEMipmapDataType::Disable,
 		.nShaderUsage = METextureReadUsage::EPixelSampler,
 		.bReadable = false,
-		.bMipmapEnable = false,
 	};
 
 	return texture;
@@ -170,9 +163,9 @@ MTextureDesc MTexture::CreateRenderTargetGBuffer()
 		.eTextureType = METextureType::ETexture2D,
 		.eTextureLayout = METextureLayout::Float_RGBA16,
 		.eWriteUsage = METextureWriteUsage::ERenderBack,
+		.eMipmapDataType = MEMipmapDataType::Disable,
 		.nShaderUsage = METextureReadUsage::EPixelSampler,
 		.bReadable = false,
-		.bMipmapEnable = false,
 	};
 
 	return texture;
@@ -182,11 +175,11 @@ std::shared_ptr<MTexture> MTexture::CreateRenderTargetFloat32()
 {
 	std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
 	pTexture->SetName("Render Target Float32 Texture");
-	pTexture->SetMipmapsEnable(false);
 	pTexture->SetReadable(false);
 	pTexture->SetRenderUsage(METextureWriteUsage::ERenderBack);
 	pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
 	pTexture->SetTextureLayout(METextureLayout::Float_R32);
+	pTexture->SetMipmapDataType(MEMipmapDataType::Disable);
 
 	return pTexture;
 }
@@ -199,13 +192,13 @@ MTextureDesc MTexture::CreateShadingRate()
 		.eTextureType = METextureType::ETexture2D,
 		.eTextureLayout = METextureLayout::UInt_R8,
 		.eWriteUsage = METextureWriteUsage::EStorageWrite,
+		.eMipmapDataType = MEMipmapDataType::Disable,
 #if MORTY_DEBUG
 		.nShaderUsage = (METextureReadUsage::EShadingRateMask | METextureReadUsage::EPixelSampler),
 #else
 		.nShaderUsage = METextureReadUsage::EShadingRateMask,
 #endif
 		.bReadable = false,
-		.bMipmapEnable = false,
 	};
 
 	return texture;
@@ -215,12 +208,12 @@ std::shared_ptr<MTexture> MTexture::CreateVXGIMap()
 {
 	std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
 	pTexture->SetName("VXGI Texture");
-	pTexture->SetMipmapsEnable(false);
 	pTexture->SetReadable(false);
 	pTexture->SetRenderUsage(METextureWriteUsage::EStorageWrite);
 	pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler | METextureReadUsage::EStorageRead);
 	pTexture->SetTextureLayout(METextureLayout::Float_RGBA32);
 	pTexture->SetTextureType(METextureType::ETexture3D);
+	pTexture->SetMipmapDataType(MEMipmapDataType::Disable);
 
 	return pTexture;
 }
