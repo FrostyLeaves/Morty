@@ -23,7 +23,8 @@ float4 VoxelConeTrace(Texture3D<float4> texVoxelMap, VoxelMapSetting setting, fl
 	const float fConeWidthCoefficient = 2 * tan(coneAperture * 0.5);
 	
     //offset for avoid sampling self in voxel.
-    f3StartPosition += f3Normal * setting.vClipmap[nClipLevel].fVoxelSize;
+    //f3StartPosition += f3Normal * setting.vClipmap[nClipLevel].fVoxelSize;
+    fTraceDist = setting.vClipmap[nClipLevel].fVoxelSize;
 
     float3 f3ConeDirection = VOXEL_DIFFUSE_CONE_DIRECTIONS[nConeIdx];
 
@@ -47,14 +48,13 @@ float4 VoxelConeTrace(Texture3D<float4> texVoxelMap, VoxelMapSetting setting, fl
 		float fClipLevel = clamp(log2(fConeDiameter * fVoxelSizeLevel0Rcp), float(nClipLevel), float(VOXEL_GI_CLIP_MAP_NUM - 1));
 
 		uint nSampleClipLevel = floor(fClipLevel);
-
-        float fClipLevelLerp = fClipLevel - nSampleClipLevel;
+        float fClipLevelLerp = frac(fClipLevel);
 
         float3 f3Coord = WorldPositionToVoxelCoord(setting, nSampleClipLevel, f3TracePosition);
         float3 f3VoxelUVW = GetVoxelTextureUVW(setting, f3Coord, nSampleClipLevel, nConeIdx);
         float4 f4VoxelSampleValue = SampleVoxelMap(texVoxelMap, f3VoxelUVW);
 
-        if (fClipLevelLerp > 0.0f)
+        if (fClipLevelLerp > 0.0f && nSampleClipLevel < VOXEL_GI_CLIP_MAP_NUM - 1)
         {
             float3 f3NextLevelCoord = WorldPositionToVoxelCoord(setting, nSampleClipLevel + 1, f3TracePosition);
             float3 f3NextLevelVoxelUVW = GetVoxelTextureUVW(setting, f3NextLevelCoord, nSampleClipLevel + 1, nConeIdx);
@@ -91,12 +91,12 @@ float4 VoxelDiffuseTracing(Texture3D<float4> texVoxelMap, VoxelMapSetting settin
 
         float4 f4TraceResult = VoxelConeTrace(texVoxelMap, setting, f3StartPosition, f3Normal, VOXEL_DIFFUSE_CONE_APERTURE, nConeIdx);
 
-        f4TraceSum += f4TraceResult * fCosTheta;
+        f4TraceSum += f4TraceResult * fCosTheta/* * f4TraceResult.a */ ;
         fTraceCosTheta += fCosTheta;
     }
 
     float4 f4Result = max(0, f4TraceSum / fTraceCosTheta);
-    f4Result.a = 1.0f;
+    f4Result.a = saturate(f4Result.a);
     return f4Result;
 }
 

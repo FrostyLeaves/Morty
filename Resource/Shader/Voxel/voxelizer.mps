@@ -5,6 +5,7 @@
 #include "../Lighting/pbr_lighting.hlsl"
 #include "../Voxel/voxel_function.hlsl"
 #include "../Model/universal_vsout.hlsl"
+#include "../Voxel/vxgi_lighting.hlsl"
 
 
 bool IntersectAABB(float3 aabb_min, float3 aabb_max, float3 pos)
@@ -69,18 +70,25 @@ float4 PS_MAIN(VS_OUT input) : SV_Target
     pointData.fMetallic = fMetallic;
     pointData.bReceiveShadow = false;
 
-    //float3 f3LightingColor = PbrLighting(pointData);
+    float4 f4LightingColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
+    
+    //f4LightingColor.rgb = PbrLighting(pointData);
+    
     float shadow = GetDirectionShadow(u_texShadowMap, pointData.f3WorldPosition, pointData.f3Normal, -u_xDirectionalLight.f3LightDir);
-    float3 f3LightingColor = u_xDirectionalLight.f3Intensity * f3BaseColor * dot(f3Normal, - u_xDirectionalLight.f3LightDir) * shadow;
+    f4LightingColor.rgb = u_xDirectionalLight.f3Intensity * f3BaseColor * dot(f3Normal, - u_xDirectionalLight.f3LightDir) * shadow;
+
+    //float4 f4VXGIColor = VoxelDiffuseTracing(u_texVoxelMap, voxelMapSetting, f3WorldPosition, f3Normal);
+    //f4LightingColor.rgb = mad(f4LightingColor.rgb, 1.0f - f4VXGIColor.a, f4VXGIColor.rgb);
 
     float3 f3AnisoDirection = f3Normal;
     float3 f3DirectionWeight = abs(f3Normal);
+    f3DirectionWeight = normalize(f3DirectionWeight);
 
     uint temp = 0;
 
     if (f3DirectionWeight.x > 0)
     {
-        float4 color = float4(f3LightingColor, 1.0f) * f3DirectionWeight.x;
+        float4 color = f4LightingColor * f3DirectionWeight.x;
         uint nAnisoIdx = f3AnisoDirection.x < 0 ? 0 : 1;
 
         InterlockedAdd(u_rwVoxelTable[voxelTableIdx].nVoxelCount[nAnisoIdx], 1, temp);
@@ -92,7 +100,7 @@ float4 PS_MAIN(VS_OUT input) : SV_Target
 
     if (f3DirectionWeight.y > 0)
     {
-        float4 color = float4(f3LightingColor, 1.0f) * f3DirectionWeight.y;
+        float4 color = f4LightingColor * f3DirectionWeight.y;
         uint nAnisoIdx = f3AnisoDirection.y < 0 ? 2 : 3;
 
         InterlockedAdd(u_rwVoxelTable[voxelTableIdx].nVoxelCount[nAnisoIdx], 1, temp);
@@ -104,7 +112,7 @@ float4 PS_MAIN(VS_OUT input) : SV_Target
 
     if (f3DirectionWeight.z > 0)
     {
-        float4 color = float4(f3LightingColor, 1.0f) * f3DirectionWeight.z;
+        float4 color = f4LightingColor * f3DirectionWeight.z;
         uint nAnisoIdx = f3AnisoDirection.z < 0 ? 4 : 5;
 
         InterlockedAdd(u_rwVoxelTable[voxelTableIdx].nVoxelCount[nAnisoIdx], 1, temp);
@@ -117,5 +125,5 @@ float4 PS_MAIN(VS_OUT input) : SV_Target
 
 
 
-    return float4(f3LightingColor.r, f3LightingColor.g, f3LightingColor.b, 1.0f);
+    return f4LightingColor;
 }

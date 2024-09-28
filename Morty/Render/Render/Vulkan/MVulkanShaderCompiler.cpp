@@ -280,7 +280,7 @@ bool MVulkanShaderCompiler::CompileHlslShader(const MString& _strShaderPath, con
 	vCompArgs.push_back(L"-Zi");
 	vCompArgs.push_back(L"-fspv-extension=SPV_KHR_non_semantic_info");
 	vCompArgs.push_back(L"-fspv-debug=vulkan-with-source");
-	//vCompArgs.push_back(L"-fspv-debug=rich-with-source");
+	vCompArgs.push_back(L"-fspv-debug=rich-with-source");
 #else
 	vCompArgs.push_back(L"-Zs");
 	vCompArgs.push_back(L"-Oconfig="
