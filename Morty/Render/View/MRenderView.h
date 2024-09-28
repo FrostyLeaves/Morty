@@ -45,9 +45,10 @@ public:
 
 public:
 
-	uint32_t GetWidth() { return m_unWidht; }
-	uint32_t GetHeight() { return m_unHeight; }
+	uint32_t GetWidth() { return m_nWidht; }
+	uint32_t GetHeight() { return m_nHeight; }
 
+    void InitSize(uint32_t nWidht, uint32_t nHeight);
 	void Resize(const Vector2& v2Size);
 
 	virtual void Initialize(MEngine* pEngine);
@@ -102,8 +103,8 @@ private:
 
 	MEngine* m_pEngine = nullptr;
 
-	uint32_t m_unWidht = 800;
-	uint32_t m_unHeight = 600;
+	uint32_t m_nWidht = 800;
+	uint32_t m_nHeight = 600;
 };
 
 MORTY_SPACE_END

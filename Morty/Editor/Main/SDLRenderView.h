@@ -2,8 +2,11 @@
 
 #include "Render/SceneTexture.h"
 #include "View/MRenderView.h"
+#include "Utility/IniConfig.h"
 
 struct SDL_Window;
+
+struct ImGuiContext;
 
 MORTY_SPACE_BEGIN
 
@@ -57,6 +60,8 @@ protected:
 
 	
 private:
+
+    ImGuiContext* m_pImGUiContext = nullptr;
 	
     Vector2 m_v2DrawableSize = Vector2(80.0f, 48.0f);
     bool m_bWindowMinimized = false;
@@ -67,6 +72,11 @@ private:
 	ImGuiRenderable* m_pImGuiRender = nullptr;
 
 	std::vector<RenderViewContent*> m_vContent;
+
+    IniConfig m_IniConfig;
+
+    static MString m_sWindowSettingFileName;
+    static MString m_sImGUISettingFileName;
 };
 
 MORTY_SPACE_END

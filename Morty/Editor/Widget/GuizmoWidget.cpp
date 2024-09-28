@@ -46,7 +46,7 @@ void GuizmoWidget::Render()
 	Matrix4 cameraProjection = pRenderSystem->GetCameraProjectionMatrix(pCameraComponent, pViewport->GetWidth(), pViewport->GetHeight(), pCameraComponent->GetZNear(), pCameraComponent->GetZFar()).Transposed();
 	Matrix4 editorMatrix = pEditorSceneComponent->GetWorldTransform().Transposed();
 	
-	ImGuizmo::DrawCubes((float*)cameraView.m, (float*)cameraProjection.m, (float*)editorMatrix.m, 1);
+	//ImGuizmo::DrawCubes((float*)cameraView.m, (float*)cameraProjection.m, (float*)editorMatrix.m, 1);
 	ImGuizmo::Manipulate((float*)cameraView.m, (float*)cameraProjection.m, m_eGizmoOperation, m_eGizmoMode, (float*)editorMatrix.m);
 
 	editorMatrix = (pEditorSceneComponent->GetParentWorldTransform().Inverse() * editorMatrix.Transposed());

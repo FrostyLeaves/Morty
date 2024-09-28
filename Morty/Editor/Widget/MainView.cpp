@@ -42,50 +42,36 @@ MainView::MainView()
 
 void MainView::Render()
 {
-	Vector4 m_v4RenderViewSize = GetMainEditor()->GetCurrentWidgetSize();
+	Vector4 v4RenderViewSize = GetMainEditor()->GetCurrentWidgetSize();
 
 	auto pTexture = GetMainEditor()->GetSceneTexture()->GetTexture();
 
+    ImGui::SetNextWindowBgAlpha(0);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
+    ImGui::Begin("MainView", NULL,
+     ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoNav |
+        ImGuiWindowFlags_NoBringToFrontOnFocus |
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoScrollbar
+    );
+
+    v4RenderViewSize = Vector4(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
+
+    ImGui::Image({ pTexture, intptr_t(pTexture.get()), 0 }, ImVec2(v4RenderViewSize.z, v4RenderViewSize.w));
 
 
-	if (GetVisible())
-	{
-		ImGuizmo::SetRect(m_v4RenderViewSize.x, m_v4RenderViewSize.y, m_v4RenderViewSize.z, m_v4RenderViewSize.w);
+    ImGuizmo::SetRect(v4RenderViewSize.x, v4RenderViewSize.y, v4RenderViewSize.z, v4RenderViewSize.w);
+    ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
+    m_pGuizmoWidget->Render();
 
-		ImGui::Image({ pTexture, intptr_t(pTexture.get()), 0 }, ImVec2(m_v4RenderViewSize.z, m_v4RenderViewSize.w));
+    ImGui::End();
+    ImGui::PopStyleVar(2);
 
-		ImGuizmo::SetDrawlist();
-		ImGuizmo::SetRect(m_v4RenderViewSize.x, m_v4RenderViewSize.y, m_v4RenderViewSize.z, m_v4RenderViewSize.w);
-		m_pGuizmoWidget->Render();
-	}
-    else
-    {
-     
-		ImGuiIO& io = ImGui::GetIO();
-		ImGui::SetNextWindowPos(ImVec2(0, 0), 0, ImVec2(0, 0));
-		ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y));
-		ImGui::SetNextWindowBgAlpha(0);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
-		ImGui::Begin("MainView", NULL, ImGuiWindowFlags_NoMove |
-			ImGuiWindowFlags_NoTitleBar |
-			ImGuiWindowFlags_NoBringToFrontOnFocus |
-			ImGuiWindowFlags_NoInputs |
-			ImGuiWindowFlags_NoCollapse |
-			ImGuiWindowFlags_NoResize |
-			ImGuiWindowFlags_NoScrollbar);
-
-		m_v4RenderViewSize = Vector4(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
-
-		ImGui::Image({ pTexture, intptr_t(pTexture.get()), 0 }, ImVec2(m_v4RenderViewSize.z, m_v4RenderViewSize.w));
-		ImGui::End();
-		ImGui::PopStyleVar(2);
-
-		ImGuizmo::SetRect(m_v4RenderViewSize.x, m_v4RenderViewSize.y, m_v4RenderViewSize.z, m_v4RenderViewSize.w);
-		m_pGuizmoWidget->Render();
-	}
-
-	GetMainEditor()->GetSceneTexture()->SetRect(Vector2i(m_v4RenderViewSize.x, m_v4RenderViewSize.y), Vector2i(m_v4RenderViewSize.z, m_v4RenderViewSize.w));
+	GetMainEditor()->GetSceneTexture()->SetRect(Vector2i(v4RenderViewSize.x, v4RenderViewSize.y), Vector2i(v4RenderViewSize.z, v4RenderViewSize.w));
 }
 
 void MainView::Initialize(MainEditor* pMainEditor)

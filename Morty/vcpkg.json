@@ -42,12 +42,16 @@
       "name": "imgui",
       "default-features": false,
       "features": [
-        "sdl2-binding"
+        "sdl2-binding",
+        "docking-experimental"
       ]
     },
     {
       "name": "imguizmo",
       "default-features": false
+    },
+    {
+      "name": "inih"
     },
     {
       "name": "kubazip"

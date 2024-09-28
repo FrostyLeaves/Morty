@@ -5,6 +5,7 @@
 #include "ImGuizmo.h"
 #include "SDL.h"
 #include "imgui_impl_sdl.h"
+#include "Utility/IniConfig.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 #include "Render/MRenderGlobal.h"
@@ -32,13 +33,21 @@
 
 using namespace morty;
 
+MString SDLRenderView::m_sWindowSettingFileName = MString(MORTY_RESOURCE_PATH) + "/Editor/window.ini";
+MString SDLRenderView::m_sImGUISettingFileName = MString(MORTY_RESOURCE_PATH) + "/Editor/imgui.ini";
+
+
 void SDLRenderView::Initialize(MEngine* pEngine)
 {
-	MRenderView::Initialize(pEngine);
+    m_IniConfig.LoadFromFile(m_sWindowSettingFileName);
+    auto windowSize = m_IniConfig.GetValue<Vector2i>("Window", "Size");
+
+    MRenderView::Initialize(pEngine);
+    MRenderView::InitSize(std::max(1, windowSize.x), std::max(1, windowSize.y));
 
 	//Setup ImGui
-	ImGuiContext* imGuiContext = ImGui::CreateContext();
-	ImGuizmo::SetImGuiContext(imGuiContext);
+    m_pImGUiContext = ImGui::CreateContext();
+	ImGuizmo::SetImGuiContext(m_pImGUiContext);
 	ImNodes::CreateContext();
 
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -49,6 +58,11 @@ void SDLRenderView::Initialize(MEngine* pEngine)
 	style.WindowPadding = ImVec2(2.0f, 2.0f);
 	style.ItemSpacing.x = 2.0f;
 	io.ConfigWindowsMoveFromTitleBarOnly = true;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.WantSaveIniSettings = true;
+
+    ImGui::LoadIniSettingsFromDisk(m_sImGUISettingFileName.c_str());
+
 
 	m_pImGuiRender = new ImGuiRenderable(pEngine);
 	m_pImGuiRender->Initialize();
@@ -62,10 +76,16 @@ void SDLRenderView::Initialize(MEngine* pEngine)
 	m_pRenderTask->SetThreadType(METhreadType::ERenderThread);
 	m_pRenderTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(SDLRenderView::Render, this));
 
+
 }
 
 void SDLRenderView::Release()
 {
+    ImGui::SaveIniSettingsToDisk(m_sImGUISettingFileName.c_str());
+
+    m_IniConfig.SetValue("Window", "Size", Vector2i(GetWidth(), GetHeight()));
+    m_IniConfig.Save(m_sWindowSettingFileName);
+
 	if (m_pImGuiRender)
 	{
 		m_pImGuiRender->Release();
@@ -342,6 +362,7 @@ void SDLRenderView::Render(MTaskNode* pNode)
 
 	pRenderCommand->RenderCommandBegin();
 
+    ImGui::SetCurrentContext(m_pImGUiContext);
 	ImGui_ImplSDL2_NewFrame(m_pSDLWindow);
 	ImGui::NewFrame();
 	ImGuizmo::BeginFrame();
