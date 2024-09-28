@@ -85,3 +85,7 @@ if(Stb_FOUND)
 else()
     message(FATAL_ERROR "Stb not found.")
 endif()
+
+
+find_package(unofficial-inih CONFIG REQUIRED)
+target_link_libraries(Editor PRIVATE unofficial::inih::inih)

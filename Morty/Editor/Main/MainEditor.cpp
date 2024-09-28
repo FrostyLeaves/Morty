@@ -48,10 +48,13 @@
 using namespace morty;
 
 MString MainEditor::m_sRenderProgramName = MDeferredRenderProgram::GetClassTypeName();
+MString MainEditor::m_sEditorConfigFilePath = MString(MORTY_RESOURCE_PATH) + "/Editor/editor.ini";
 
 bool MainEditor::Initialize(MEngine* pEngine)
 {
 	m_pEngine = pEngine;
+
+    m_IniConfig.LoadFromFile(m_sEditorConfigFilePath);
 
 	MTaskGraph* pMainGraph = GetEngine()->GetMainGraph();
 	m_pRenderTask = pMainGraph->AddNode<MTaskNode>(MStringId("Editor_Render"));
@@ -80,6 +83,7 @@ bool MainEditor::Initialize(MEngine* pEngine)
 	for (BaseWidget* pChild : m_vChildView)
 	{
 		pChild->Initialize(this);
+        pChild->LoadConfig(&m_IniConfig);
 	}
 
 	return true;
@@ -87,6 +91,7 @@ bool MainEditor::Initialize(MEngine* pEngine)
 
 void MainEditor::Release()
 {
+
 	if (m_pSceneTexture)
 	{
 		DestroySceneViewer(m_pSceneTexture);
@@ -95,11 +100,14 @@ void MainEditor::Release()
 
 	for (BaseWidget* pChild : m_vChildView)
 	{
+        pChild->SaveConfig(&m_IniConfig);
 		pChild->Release();
 		delete pChild;
 	}
 
 	m_vChildView.clear();
+
+    m_IniConfig.Save(m_sEditorConfigFilePath);
 }
 
 MViewport* MainEditor::GetViewport() const
@@ -306,7 +314,7 @@ void MainEditor::ShowView(BaseWidget* pView)
 
 	if (bVisible)
 	{
-		if (ImGui::Begin(pView->GetName().c_str(), &bVisible))
+		if (ImGui::Begin(pView->GetName().c_str(), &bVisible, ImGuiWindowFlags_NoCollapse))
 		{
 			pView->Render();
 		}
@@ -355,7 +363,7 @@ Vector4 MainEditor::GetCurrentWidgetSize() const
 	ImGuiStyle& style = ImGui::GetStyle();
 
 	ImVec2 v2RenderViewPos = ImGui::GetWindowPos();
-	ImVec2 v2RenderViewSize = ImGui::GetWindowSize();
+	ImVec2 v2RenderViewSize = ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
 
 	v2RenderViewPos.x += style.WindowPadding.x;
 	v2RenderViewPos.y += ImGui::GetItemRectSize().y;
@@ -376,13 +384,17 @@ void MainEditor::OnRender(MIRenderCommand* pRenderCommand)
 	//update all scene viewer.
 	UpdateSceneViewer(pRenderCommand);
 
-	ShowMenu();
+    ShowMenu();
+
 	ShowShadowMapView();
+
+    ImGui::DockSpaceOverViewport();
 
 	for (BaseWidget* pBaseView : m_vChildView)
 	{
 		ShowView(pBaseView);
 	}
+
 
 	ShowDialog();
 }

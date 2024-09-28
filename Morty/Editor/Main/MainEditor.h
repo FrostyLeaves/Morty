@@ -79,7 +79,10 @@ private:
 	std::shared_ptr<SceneTexture> m_pSceneTexture = nullptr;
 	MTaskNode* m_pRenderTask = nullptr;
 
+    IniConfig m_IniConfig;
+
 	static MString m_sRenderProgramName;
+    static MString m_sEditorConfigFilePath;
 };
 
 MORTY_SPACE_END

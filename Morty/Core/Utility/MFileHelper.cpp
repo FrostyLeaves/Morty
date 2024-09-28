@@ -59,7 +59,7 @@ bool MFileHelper::MakeDir(MString strDirPath)
 
 bool MFileHelper::WriteString(const MString& strFilePath, const MString& strData)
 {
-	std::ofstream file(strFilePath.c_str(), std::ios::ate);
+	std::ofstream file(strFilePath.c_str(), std::ios::out);
 
 	if (!file.is_open())
 		return false;

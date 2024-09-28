@@ -9,6 +9,8 @@ class MScene;
 class MEngine;
 class MainEditor;
 class MInputEvent;
+class IniConfig;
+
 class BaseWidget
 {
 public:
@@ -19,6 +21,9 @@ public:
 
 	virtual void Initialize(MainEditor* pMainEditor);
 	virtual void Release() = 0;
+
+    virtual void SaveConfig(IniConfig* pConfig);
+    virtual void LoadConfig(IniConfig* pConfig);
 
 	virtual void Input(MInputEvent* pEvent) { MORTY_UNUSED(pEvent); }
 

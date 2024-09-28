@@ -40,8 +40,8 @@ void MRenderView::Resize(const Vector2& v2Size)
 {
 	//vkDeviceWaitIdle(m_pDevice->m_VkDevice);
 	
-	m_unWidht = v2Size.x;
-	m_unHeight = v2Size.y;
+	m_nWidht = v2Size.x;
+	m_nHeight = v2Size.y;
 
 	DestroyRenderPass();
 	ReleaseSwapchain();
@@ -51,6 +51,14 @@ void MRenderView::Resize(const Vector2& v2Size)
 void MRenderView::Initialize(MEngine* pEngine)
 {
 	m_pEngine = pEngine;
+}
+
+void MRenderView::InitSize(uint32_t nWidht, uint32_t nHeight)
+{
+    MORTY_ASSERT(m_VkSwapchain == VK_NULL_HANDLE);
+
+    m_nWidht = nWidht;
+    m_nHeight = nHeight;
 }
 
 void MRenderView::Release()
@@ -127,7 +135,7 @@ void MRenderView::InitializeForVulkan(MIDevice* pDevice, VkSurfaceKHR surface)
 
 	m_VkSurface = surface;
 
-	Resize(Vector2(m_unWidht, m_unHeight));
+	Resize(Vector2(m_nWidht, m_nHeight));
 }
 
 #endif
@@ -171,8 +179,8 @@ bool MRenderView::InitializeSwapchain()
 		return false;
 	}
 
-	m_unWidht = std::min(m_unWidht, swapchainExtent.width);
-	m_unHeight = std::min(m_unHeight, swapchainExtent.height);
+	m_nWidht = std::min(m_nWidht, swapchainExtent.width);
+	m_nHeight = std::min(m_nHeight, swapchainExtent.height);
 
 	uint32_t unPresentModeCount = 0;
 	result = vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_VkSurface, &unPresentModeCount, NULL);

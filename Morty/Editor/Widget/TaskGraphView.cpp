@@ -56,12 +56,6 @@ int GetDepthTable(MTaskGraph* pTaskGraph, std::map<MTaskNode*, int>& output)
 	return nMaxDepth;
 }
 
-struct DrawNode
-{
-	ImVec2 pos{};
-	MTaskNode* pTaskNode = nullptr;
-};
-
 void TaskGraphView::Render()
 {
 	if (!m_pTaskGraph)

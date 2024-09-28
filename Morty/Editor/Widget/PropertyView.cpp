@@ -1,3 +1,4 @@
+#include <imgui_internal.h>
 #include "PropertyView.h"
 
 #include "imgui.h"
@@ -51,6 +52,11 @@ void PropertyView::Render()
 		return;
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
+
+    ImGuiContext& g = *GImGui;
+    auto window = g.CurrentWindow;
+    MORTY_ASSERT(window);
+
 	ImGui::Columns(2);
 	ImGui::Separator();
 	

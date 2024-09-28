@@ -52,7 +52,7 @@ public:
 #endif
 		if (pTextureData == nullptr)
 		{
-			pTextureData = pResourceSystem->LoadResourceData(strResourcePath);
+			pTextureData = pResourceSystem->LoadResourceData(strFullPath);
 		}
 
 		MORTY_ASSERT(pTextureData);
