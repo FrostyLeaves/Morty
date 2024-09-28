@@ -45,8 +45,8 @@ PS_OUT PS_MAIN(VS_OUT input)
 #ifdef MTRANSPARENT_DEPTH_PEELING
 
     float fZDepth = input.pos.z;
-    float fZFront = u_texSubpassInput0.SubpassLoad();
-    float fZBack = u_texSubpassInput1.SubpassLoad();
+    float fZFront = u_texSubpassInput0.SubpassLoad().r;
+    float fZBack = u_texSubpassInput1.SubpassLoad().r;
 
     output.f4FrontColor = float4(0, 0, 0, 0);
     output.fBackColor = float4(0, 0, 0, 0);
@@ -66,7 +66,7 @@ PS_OUT PS_MAIN(VS_OUT input)
 
     if (u_xMaterial.bUseEmissiveTex > 0)
     {
-        float3 f3EmissiveColor = u_texEmissive.Sample(LinearSampler, input.uv);
+        float3 f3EmissiveColor = u_texEmissive.Sample(LinearSampler, input.uv).rgb;
         if(length(f3EmissiveColor) <= 0.0f)
         {
             f3Color = AdditionAllLights(f3Color, f3AmbiColor, input);

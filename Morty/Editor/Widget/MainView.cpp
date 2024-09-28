@@ -62,11 +62,14 @@ void MainView::Render()
     v4RenderViewSize = Vector4(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
 
     ImGui::Image({ pTexture, intptr_t(pTexture.get()), 0 }, ImVec2(v4RenderViewSize.z, v4RenderViewSize.w));
-    ImGui::End();
-    ImGui::PopStyleVar(2);
+
 
     ImGuizmo::SetRect(v4RenderViewSize.x, v4RenderViewSize.y, v4RenderViewSize.z, v4RenderViewSize.w);
+    ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
     m_pGuizmoWidget->Render();
+
+    ImGui::End();
+    ImGui::PopStyleVar(2);
 
 	GetMainEditor()->GetSceneTexture()->SetRect(Vector2i(v4RenderViewSize.x, v4RenderViewSize.y), Vector2i(v4RenderViewSize.z, v4RenderViewSize.w));
 }

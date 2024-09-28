@@ -15,14 +15,14 @@ struct PS_OUT
     float fBackDepth: SV_Target3;
 };
 
-PS_OUT PS_MAIN(VS_OUT input) : SV_Target
+PS_OUT PS_MAIN(VS_OUT input)
 {
     PS_OUT output;
 
     output.f4FrontColor = float4(0, 0, 0, 0);
     output.fBackColor = float4(0, 0, 0, 0);
     output.fFrontDepth = 0;
-    output.fBackDepth = BackTexture.Sample(LinearSampler, input.uv);
+    output.fBackDepth = BackTexture.Sample(LinearSampler, input.uv).r;
 
     return output;
 }
