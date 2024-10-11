@@ -26,7 +26,7 @@ public:
 	
 	static std::unique_ptr<MResourceData> LoadFromMemory(const MString& strTextureName, const MSpan<MByte>& buffer, const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, MTexturePixelType ePixelType);
 
-	static morty::METextureLayout GetTextureFormat(const MTexturePixelType nPixelSize, const size_t nChannelNum);
+	static morty::METextureFormat GetTextureFormat(const MTexturePixelType nPixelSize, const size_t nChannelNum);
 };
 
 MORTY_SPACE_END

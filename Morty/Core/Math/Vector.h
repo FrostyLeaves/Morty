@@ -181,6 +181,8 @@ public:
 		};
 		int m[3];
 	};
+
+    static Vector3i One;
 };
 
 Vector3 operator* (const float& value, const Vector3& vector);

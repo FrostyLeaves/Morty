@@ -18,17 +18,16 @@ class MRenderTargetCacheQueue
 
 public:
 
-	size_t Hash(const MTextureDesc& desc, const MRenderTaskTarget::ResizePolicy eResizePolicy)
+	static size_t Hash(const MTextureDesc& desc, const MRenderTaskTarget::ResizePolicy eResizePolicy)
 	{
 		std::size_t res = 0;
 		MUtils::HashCombine(res, desc.n3Size.x);
 		MUtils::HashCombine(res, desc.n3Size.y);
 		MUtils::HashCombine(res, desc.n3Size.z);
 		MUtils::HashCombine(res, desc.eTextureType);
-		MUtils::HashCombine(res, desc.eTextureLayout);
-		MUtils::HashCombine(res, desc.eWriteUsage);
-		MUtils::HashCombine(res, desc.nShaderUsage);
-		MUtils::HashCombine(res, desc.bReadable);
+		MUtils::HashCombine(res, desc.eFormat);
+		MUtils::HashCombine(res, desc.nWriteUsage);
+		MUtils::HashCombine(res, desc.nReadUsage);
 		MUtils::HashCombine(res, desc.eMipmapDataType);
 		MUtils::HashCombine(res, eResizePolicy);
 

@@ -70,11 +70,11 @@ MRenderTargetGroup ISinglePassRenderWork::AutoBindTarget()
 	{
 		auto pTexture = GetRenderOutput(nIdx)->GetTexture();
 		
-		if(pTexture->GetRenderUsage() == METextureWriteUsage::ERenderBack || pTexture->GetRenderUsage() == METextureWriteUsage::ERenderPresent)
+		if(pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderBack || pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderPresent)
 		{
 			group.backTargets.push_back({ pTexture, vOutputDesc[nIdx].renderDesc });
 		}
-		else if (pTexture->GetRenderUsage() == METextureWriteUsage::ERenderDepth)
+		else if (pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderDepth)
 		{
 			MORTY_ASSERT(group.depthTarget.pTexture == nullptr);
 			group.depthTarget = { pTexture, vOutputDesc[nIdx].renderDesc };

@@ -137,39 +137,39 @@ void MVulkanDevice::Release()
 	m_pPhysicalDevice = nullptr;
 }
 
-VkFormat MVulkanDevice::GetFormat(const METextureLayout& layout) const
+VkFormat MVulkanDevice::GetFormat(const METextureFormat& layout) const
 {
-	static const std::unordered_map<METextureLayout, VkFormat> FormatTable = {
-		{METextureLayout::UNorm_R8, VK_FORMAT_R8_UNORM},
-		{METextureLayout::UNorm_RG8, VK_FORMAT_R8G8_UNORM},
-		{METextureLayout::UNorm_RGB8, VK_FORMAT_R8G8B8_UNORM},
-		{METextureLayout::UNorm_RGBA8, VK_FORMAT_R8G8B8A8_UNORM},
-		{METextureLayout::UNorm_RGBA8_BC7, VK_FORMAT_BC7_UNORM_BLOCK},
-		{METextureLayout::UInt_R8, VK_FORMAT_R8_UINT},
-		{METextureLayout::Float_R16, VK_FORMAT_R16_SFLOAT},
-		{METextureLayout::Float_RG16, VK_FORMAT_R16G16_SFLOAT},
-		{METextureLayout::Float_RGB16, VK_FORMAT_R16G16B16_SFLOAT},
-		{METextureLayout::Float_RGBA16, VK_FORMAT_R16G16B16A16_SFLOAT},
-		{METextureLayout::Float_R32, VK_FORMAT_R32_SFLOAT},
-		{METextureLayout::Float_RG32, VK_FORMAT_R32G32_SFLOAT},
-		{METextureLayout::Float_RGB32, VK_FORMAT_R32G32B32_SFLOAT},
-		{METextureLayout::Float_RGBA32, VK_FORMAT_R32G32B32A32_SFLOAT},
+	static const std::unordered_map<METextureFormat, VkFormat> FormatTable = {
+		{METextureFormat::UNorm_R8, VK_FORMAT_R8_UNORM},
+		{METextureFormat::UNorm_RG8, VK_FORMAT_R8G8_UNORM},
+		{METextureFormat::UNorm_RGB8, VK_FORMAT_R8G8B8_UNORM},
+		{METextureFormat::UNorm_RGBA8, VK_FORMAT_R8G8B8A8_UNORM},
+		{METextureFormat::UNorm_RGBA8_BC7, VK_FORMAT_BC7_UNORM_BLOCK},
+		{METextureFormat::UInt_R8, VK_FORMAT_R8_UINT},
+		{METextureFormat::Float_R16, VK_FORMAT_R16_SFLOAT},
+		{METextureFormat::Float_RG16, VK_FORMAT_R16G16_SFLOAT},
+		{METextureFormat::Float_RGB16, VK_FORMAT_R16G16B16_SFLOAT},
+		{METextureFormat::Float_RGBA16, VK_FORMAT_R16G16B16A16_SFLOAT},
+		{METextureFormat::Float_R32, VK_FORMAT_R32_SFLOAT},
+		{METextureFormat::Float_RG32, VK_FORMAT_R32G32_SFLOAT},
+		{METextureFormat::Float_RGB32, VK_FORMAT_R32G32B32_SFLOAT},
+		{METextureFormat::Float_RGBA32, VK_FORMAT_R32G32B32A32_SFLOAT},
 
-		{METextureLayout::UNorm_RGBA8_ASTC4x4, VK_FORMAT_ASTC_4x4_UNORM_BLOCK},
-		{METextureLayout::UNorm_RGBA8_ASTC8x8, VK_FORMAT_ASTC_8x8_UNORM_BLOCK},
+		{METextureFormat::UNorm_RGBA8_ASTC4x4, VK_FORMAT_ASTC_4x4_UNORM_BLOCK},
+		{METextureFormat::UNorm_RGBA8_ASTC8x8, VK_FORMAT_ASTC_8x8_UNORM_BLOCK},
 
-		{METextureLayout::UNorm_RGBA8_BC1, VK_FORMAT_BC1_RGBA_UNORM_BLOCK},
-		{METextureLayout::UNorm_RGBA8_BC2, VK_FORMAT_BC2_UNORM_BLOCK},
-		{METextureLayout::UNorm_RGBA8_BC3, VK_FORMAT_BC3_UNORM_BLOCK},
-		{METextureLayout::UNorm_RGBA8_BC4, VK_FORMAT_BC4_UNORM_BLOCK},
-		{METextureLayout::UNorm_RGBA8_BC5, VK_FORMAT_BC5_UNORM_BLOCK},
-		{METextureLayout::UNorm_RGBA8_BC7, VK_FORMAT_BC7_UNORM_BLOCK},
+		{METextureFormat::UNorm_RGBA8_BC1, VK_FORMAT_BC1_RGBA_UNORM_BLOCK},
+		{METextureFormat::UNorm_RGBA8_BC2, VK_FORMAT_BC2_UNORM_BLOCK},
+		{METextureFormat::UNorm_RGBA8_BC3, VK_FORMAT_BC3_UNORM_BLOCK},
+		{METextureFormat::UNorm_RGBA8_BC4, VK_FORMAT_BC4_UNORM_BLOCK},
+		{METextureFormat::UNorm_RGBA8_BC5, VK_FORMAT_BC5_UNORM_BLOCK},
+		{METextureFormat::UNorm_RGBA8_BC7, VK_FORMAT_BC7_UNORM_BLOCK},
 
-		{METextureLayout::SNorm_RGBA8_BC4, VK_FORMAT_BC4_SNORM_BLOCK},
-		{METextureLayout::SNorm_RGBA8_BC5, VK_FORMAT_BC5_SNORM_BLOCK},
+		{METextureFormat::SNorm_RGBA8_BC4, VK_FORMAT_BC4_SNORM_BLOCK},
+		{METextureFormat::SNorm_RGBA8_BC5, VK_FORMAT_BC5_SNORM_BLOCK},
 	};
 
-	if (METextureLayout::Depth == layout)
+	if (METextureFormat::Depth == layout)
 	{
 		return m_pPhysicalDevice->m_VkDepthTextureFormat;
 	}
@@ -187,68 +187,63 @@ VkFormat MVulkanDevice::GetFormat(const METextureLayout& layout) const
 VkImageUsageFlags MVulkanDevice::GetUsageFlags(MTexture* pTexture) const
 {
 	VkImageUsageFlags usageFlags = 0;
-	if (pTexture->GetShaderUsage() & METextureReadUsage::EPixelSampler)
+	if (pTexture->GetReadUsage() & METextureReadUsageBit::EPixelSampler)
 	{
 		usageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 	}
-	if (pTexture->GetShaderUsage() & METextureReadUsage::EStorageRead)
+	if (pTexture->GetReadUsage() & METextureReadUsageBit::EStorageRead)
 	{
 		usageFlags |= VK_IMAGE_USAGE_STORAGE_BIT;
 	}
-	if (pTexture->GetShaderUsage() & METextureReadUsage::EShadingRateMask)
+	if (pTexture->GetReadUsage() & METextureReadUsageBit::EShadingRateMask)
 	{
 		usageFlags |= VK_IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
 	}
+    if (pTexture->GetReadUsage() & METextureReadUsageBit::ECpuReadable)
+    {
+        usageFlags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    }
 
-	if (pTexture->GetRenderUsage() == METextureWriteUsage::EStorageWrite)
+	if (pTexture->GetWriteUsage() & METextureWriteUsageBit::EStorageWrite)
 	{
 		usageFlags |= VK_IMAGE_USAGE_STORAGE_BIT;
 	}
-	else if (pTexture->GetRenderUsage() == METextureWriteUsage::ERenderBack)
+	if (pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderBack)
 	{
 		usageFlags |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
 			| VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
 			| VK_IMAGE_USAGE_TRANSFER_SRC_BIT
 			| VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	}
-	else if (pTexture->GetRenderUsage() == METextureWriteUsage::ERenderPresent)
+	if (pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderPresent)
 	{
 		usageFlags |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
 			| VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
 			| VK_IMAGE_USAGE_TRANSFER_SRC_BIT
 			| VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	}
-	else if (pTexture->GetRenderUsage() == METextureWriteUsage::ERenderDepth)
+	if (pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderDepth)
 	{
 		usageFlags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 	}
-	else if (pTexture->GetRenderUsage() == METextureWriteUsage::EUnknow)
+	if (pTexture->GetWriteUsage() & METextureWriteUsageBit::EUnknow)
 	{
 		//nothing.
-	}
-    else
-    {
-		MORTY_ASSERT(false);
-    }
-
-	if (pTexture->GetReadable())
-	{
-		usageFlags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 	}
 
 	return usageFlags;
 }
 
-VkImageAspectFlags MVulkanDevice::GetAspectFlags(METextureWriteUsage eUsage) const
+VkImageAspectFlags MVulkanDevice::GetAspectFlags(METextureWriteUsage eUsage)
 {
-	if (eUsage == METextureWriteUsage::ERenderDepth)
+	if (eUsage & METextureWriteUsageBit::ERenderDepth)
 	{
 		return VK_IMAGE_ASPECT_DEPTH_BIT;
 	}
 
 	return VK_IMAGE_ASPECT_COLOR_BIT;
 }
-VkImageAspectFlags MVulkanDevice::GetAspectFlags(VkFormat format) const
+VkImageAspectFlags MVulkanDevice::GetAspectFlags(VkFormat format)
 {
 	if (DepthStencilTextureFormat.find(format) != DepthStencilTextureFormat.end())
 	{
@@ -292,25 +287,25 @@ VkImageAspectFlags MVulkanDevice::GetAspectFlags(VkImageLayout layout) const
 
 VkImageLayout MVulkanDevice::GetImageLayout(MTexture* pTexture) const
 {
-	if (pTexture->GetRenderUsage() == METextureWriteUsage::ERenderPresent)
+	if (pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderPresent)
 	{
 		return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 	}
-	if (pTexture->GetRenderUsage() == METextureWriteUsage::EStorageWrite)
+	if (pTexture->GetWriteUsage() & METextureWriteUsageBit::EStorageWrite)
 	{
 		return VK_IMAGE_LAYOUT_GENERAL;
 	}
 
-	if (pTexture->GetRenderUsage() == METextureWriteUsage::ERenderDepth)
+	if (pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderDepth)
 	{
 		return m_pPhysicalDevice->m_VkDepthImageLayout;
 	}
-	if (pTexture->GetRenderUsage() == METextureWriteUsage::ERenderBack)
+	if (pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderBack)
 	{
 		return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	}
 
-	if (pTexture->GetShaderUsage() & METextureReadUsage::EPixelSampler)
+	if (pTexture->GetReadUsage() & METextureReadUsageBit::EPixelSampler)
 	{
 		return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	}
@@ -389,20 +384,6 @@ uint32_t MVulkanDevice::GetMipmapCount(MTexture* pTexture) const
 
 	const uint32_t unMipmap = static_cast<uint32_t>(std::floor(std::log2(std::max(pTexture->GetSize().x, pTexture->GetSize().y)))) + 1;
 	return unMipmap;
-}
-
-uint32_t MVulkanDevice::GetLayerCount(MTexture* pTexture) const
-{
-	if (!pTexture)
-	{
-		return 0;
-	}
-	if (pTexture->GetTextureType() == METextureType::ETextureCube)
-	{
-		return 6;
-	}
-
-	return pTexture->GetLayer();
 }
 
 uint32_t MVulkanDevice::GetBufferBarrierQueueFamily(MEBufferBarrierStage stage) const
@@ -585,11 +566,11 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const std::vector<std::v
 	uint32_t height = std::max(static_cast<int>(pTexture->GetSize().y), 1);
 	uint32_t depth = std::max(static_cast<int>(pTexture->GetSize().z), 1);
 	
-    VkFormat format = GetFormat(pTexture->GetTextureLayout());
+    VkFormat format = GetFormat(pTexture->GetFormat());
 
 	VkImageUsageFlags usageFlags = GetUsageFlags(pTexture);
 	VkMemoryPropertyFlags memoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-	VkImageAspectFlags aspectFlgas = GetAspectFlags(pTexture->GetRenderUsage());
+	VkImageAspectFlags aspectFlgas = GetAspectFlags(pTexture->GetWriteUsage());
 	VkImageLayout defaultLayout = UndefinedImageLayout;
 
 	VkImage textureImage = VK_NULL_HANDLE;
@@ -598,9 +579,9 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const std::vector<std::v
 	VkImageType imageType = GetImageType(pTexture);
 
 	auto nMipmapCount = static_cast<uint32_t>(GetMipmapCount(pTexture));
-	auto nLayerCount = static_cast<uint32_t>(GetLayerCount(pTexture));
+	auto nLayerCount = static_cast<uint32_t>(pTexture->GetLayer());
 
-	if (pTexture->GetRenderUsage() == METextureWriteUsage::ERenderPresent)
+	if (pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderPresent)
 	{
 		MORTY_ASSERT(pTexture->GetMipmapDataType() == MEMipmapDataType::Disable);
 		VkImageSubresourceRange vkSubresourceRange = {};
@@ -610,8 +591,7 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const std::vector<std::v
 		vkSubresourceRange.layerCount = nLayerCount;
 		TransitionImageLayout(pTexture->m_VkTextureImage, UndefinedImageLayout, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, vkSubresourceRange);
 
-
-		pTexture->m_unMipmapLevel = 1;
+		pTexture->m_nMipmapLevel = 1;
 	}
 	else
 	{
@@ -690,7 +670,7 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const std::vector<std::v
 		
 
 		pTexture->m_VkTextureImage = textureImage;
-		pTexture->m_unMipmapLevel = nMipmapCount;
+		pTexture->m_nMipmapLevel = nMipmapCount;
 		pTexture->m_VkTextureImageMemory = textureImageMemory;
 		pTexture->m_VkTextureFormat = format;
 		pTexture->m_VkImageLayout = GetImageLayout(pTexture);
@@ -704,7 +684,7 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const std::vector<std::v
 		GenerateMipmaps(pTexture, nMipmapCount);
 	}
 
-	if (pTexture->GetRenderUsage() == METextureWriteUsage::ERenderDepth)
+	if (pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderDepth)
 	{
 		VkFilter vkShadowMapFilter = m_pPhysicalDevice->FormatIsFilterable(format, VK_IMAGE_TILING_OPTIMAL) ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
 
@@ -749,7 +729,7 @@ void MVulkanDevice::DestroyTexture(MTexture* pTexture)
 		pTexture->m_VkImageView = VK_NULL_HANDLE;
 	}
 
-	if (pTexture->GetRenderUsage() != METextureWriteUsage::ERenderPresent && pTexture->m_VkTextureImage)
+	if ((pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderPresent) == 0 && pTexture->m_VkTextureImage)
 	{
 		GetRecycleBin()->DestroyImageLater(pTexture->m_VkTextureImage);
 		pTexture->m_VkTextureImage = VK_NULL_HANDLE;
@@ -936,17 +916,17 @@ VkAttachmentDescription2 CreateAttachmentDescriptionFromTexture(const MRenderTar
 	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 
-	if (renderTarget.pTexture->GetRenderUsage() == METextureWriteUsage::ERenderPresent)
+	if (renderTarget.pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderPresent)
 	{
 		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 	}
-	else if (renderTarget.pTexture->GetRenderUsage() == METextureWriteUsage::ERenderBack)
+	else if (renderTarget.pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderBack)
 	{
 		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	}
-	else if (renderTarget.pTexture->GetRenderUsage() == METextureWriteUsage::ERenderDepth)
+	else if (renderTarget.pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderDepth)
 	{
-		if (renderTarget.pTexture->GetShaderUsage() & METextureReadUsage::EPixelSampler)
+		if (renderTarget.pTexture->GetReadUsage() & METextureReadUsageBit::EPixelSampler)
 		{
 			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		}
@@ -955,7 +935,7 @@ VkAttachmentDescription2 CreateAttachmentDescriptionFromTexture(const MRenderTar
 			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 		}
 	}
-	else if (renderTarget.pTexture->GetShaderUsage() & METextureReadUsage::EShadingRateMask)
+	else if (renderTarget.pTexture->GetReadUsage() & METextureReadUsageBit::EShadingRateMask)
 	{
 		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
 	}
@@ -1209,7 +1189,7 @@ std::tuple<VkImageView, Vector2i> MVulkanDevice::CreateFrameBufferViewFromRender
 		if (renderTarget.m_VkImageView == VK_NULL_HANDLE)
 		{
 			std::shared_ptr<MTexture> pTexture = renderTarget.pTexture;
-			renderTarget.m_VkImageView = CreateImageView(pTexture->m_VkTextureImage, pTexture->m_VkTextureFormat, GetAspectFlags(pTexture->GetRenderUsage()), renderTarget.desc.nMipmapLevel, 1, GetLayerCount(pTexture.get()), GetImageViewType(pTexture.get()));
+			renderTarget.m_VkImageView = CreateImageView(pTexture->m_VkTextureImage, pTexture->m_VkTextureFormat, GetAspectFlags(pTexture->GetWriteUsage()), renderTarget.desc.nMipmapLevel, 1, pTexture->GetLayer(), GetImageViewType(pTexture.get()));
 			i2Size.x = pTexture->GetMipmapSize(renderTarget.desc.nMipmapLevel).x;
 			i2Size.y = pTexture->GetMipmapSize(renderTarget.desc.nMipmapLevel).y;
 		}
@@ -1666,7 +1646,7 @@ void MVulkanDevice::GenerateMipmaps(MTexture* pTexture, const uint32_t& unMipLev
 	int32_t mipWidth = pTexture->GetSize().x;
 	int32_t mipHeight = pTexture->GetSize().y;
 	uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(pTexture->GetSize().x, pTexture->GetSize().y)))) + 1;
-	uint32_t unLayerCount = GetLayerCount(pTexture);
+	uint32_t unLayerCount = pTexture->GetLayer();
 
 	VkImageSubresourceRange vkSubresourceRange = {};
 	vkSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;

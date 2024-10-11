@@ -24,39 +24,44 @@ enum METextureType
 	ETexture3D = 4,
 };
 
-using METextureLayout = morty::fbs::METextureLayout;
+using METextureFormat = morty::fbs::METextureFormat;
 
 using MEMipmapDataType = morty::fbs::MEMipmapDataType;
 
-enum class METextureWriteUsage
-{
-	EUnknow = 0,
-	ERenderBack,
-	ERenderDepth,
-	ERenderPresent,
-	EStorageWrite,
-};
+using METextureWriteUsage = uint32_t;
 
-class METextureReadUsage
+using METextureReadUsage = uint32_t;
+
+class METextureWriteUsageBit
 {
 public:
 	static constexpr uint32_t EUnknow = 0;
-	static constexpr uint32_t EPixelSampler = 1;
-	static constexpr uint32_t EStorageRead = 2;
-	static constexpr uint32_t EShadingRateMask = 4;
+    static constexpr uint32_t ERenderBack = 1 << 1;
+    static constexpr uint32_t ERenderDepth = 1 << 2;
+    static constexpr uint32_t ERenderPresent = 1 << 3;
+    static constexpr uint32_t EStorageWrite = 1 << 4;
+};
+
+class METextureReadUsageBit
+{
+public:
+	static constexpr uint32_t EUnknow = 0;
+    static constexpr uint32_t ECpuReadable = 1 << 1;
+	static constexpr uint32_t EPixelSampler = 1 << 2;
+	static constexpr uint32_t EStorageRead = 1 << 3;
+	static constexpr uint32_t EShadingRateMask = 1 << 4;
 };
 
 struct MORTY_API MTextureDesc
 {
 	MString strTextureName = "Default";
 	Vector3i n3Size = Vector3i(1, 1, 1);
-	uint32_t nLayer = 1;
+    uint32_t nLayer = 1;
 	METextureType eTextureType = METextureType::ETexture2D;
-	METextureLayout eTextureLayout = METextureLayout::UNorm_RGBA8;
-	METextureWriteUsage eWriteUsage = METextureWriteUsage::EUnknow;
+    METextureFormat eFormat = METextureFormat::UNorm_RGBA8;
 	MEMipmapDataType eMipmapDataType = MEMipmapDataType::Disable;
-	uint32_t nShaderUsage = METextureReadUsage::EUnknow;
-	bool bReadable = false;
+    METextureReadUsage nReadUsage = METextureReadUsageBit::EUnknow;
+    METextureWriteUsage nWriteUsage = METextureWriteUsageBit::EUnknow;
 
 	MTextureDesc& InitName(const MString& name)
 	{
@@ -78,35 +83,21 @@ public:
 
 public:
 
-	void SetName(const MString& strName) { m_strTextureName = strName; }
-	MString GetName() const { return m_strTextureName; }
+	void SetName(const MString& strName) { m_strName = strName; }
+	[[nodiscard]] MString GetName() const { return m_strName; }
 
-	void SetSize(const Vector2i& n2Size) { m_n3Size = Vector3i(n2Size.x, n2Size.y, 1); }
-	void SetSize(const Vector3i& n3Size) { m_n3Size = n3Size; }
-	Vector3i GetSize() const { return m_n3Size; }
-	Vector2i GetSize2D() const { return Vector2i(m_n3Size.x, m_n3Size.y); }
+	[[nodiscard]] Vector3i GetSize() const { return m_n3Size; }
+	[[nodiscard]] Vector2i GetSize2D() const { return {m_n3Size.x, m_n3Size.y}; }
+    [[nodiscard]] uint32_t GetLayer() const { return m_nLayer; }
 
-	void SetLayer(const uint32_t& nLayer) { m_nLayer = nLayer; }
-	uint32_t GetLayer() const { return m_nLayer; }
+	[[nodiscard]] METextureFormat GetFormat() const { return m_eFormat; }
 
-	void SetTextureLayout(const METextureLayout& eLayout) { m_eRenderType = eLayout; }
-	METextureLayout GetTextureLayout() { return m_eRenderType; }
+	[[nodiscard]] MEMipmapDataType GetMipmapDataType() const { return m_eMipmapType; }
 
-	void SetReadable(const bool& bReadable) { m_bReadable = bReadable; }
-	bool GetReadable() { return m_bReadable; }
+	[[nodiscard]] uint32_t GetWriteUsage() const { return m_eWriteUsage; }
+	[[nodiscard]] uint32_t GetReadUsage() const { return m_eReadUsage; }
 
-	void SetMipmapDataType(const MEMipmapDataType& eMipmap) { m_eMipmapType = eMipmap; }
-	MEMipmapDataType GetMipmapDataType() const { return m_eMipmapType; }
-
-	void SetRenderUsage(const METextureWriteUsage& usage) { m_eRenderUsage = usage; }
-	METextureWriteUsage GetRenderUsage() const { return m_eRenderUsage; }
-
-	void SetShaderUsage(const uint32_t& usage) { m_eShaderUsage = usage; }
-	uint32_t GetShaderUsage() const { return m_eShaderUsage; }
-
-	void SetTextureType(const METextureType& eType) { m_eTextureType = eType; }
-	METextureType GetTextureType() const { return m_eTextureType; }
-
+	[[nodiscard]] METextureType GetTextureType() const { return m_eTextureType; }
 
 	Vector2 GetMipmapSize(const uint32_t& nMipmapLevel);
 
@@ -115,8 +106,10 @@ public:
 	void GenerateBuffer(MIDevice* pDevice);
 	void GenerateBuffer(MIDevice* pDevice, const std::vector<std::vector<MByte>>& buffer);
 	void DestroyBuffer(MIDevice* pDevice);
+    void Resize(MIDevice* pDevice, const Vector2i& n2Size);
+    void Resize(MIDevice* pDevice, const Vector3i& n3Size);
 
-	static uint32_t GetImageMemorySize(const METextureLayout& layout);
+	static uint32_t GetImageMemorySize(const METextureFormat& layout);
 
 public:
 
@@ -124,39 +117,35 @@ public:
 
 	static MTextureDesc CreateDepthBuffer();
 	static MTextureDesc CreateShadowMapArray(const int& nSize, const uint32_t& nArraySize);
-	static MTextureDesc CreateRenderTarget(METextureLayout eLayout = METextureLayout::UNorm_RGBA8);
+	static MTextureDesc CreateRenderTarget(METextureFormat eLayout = METextureFormat::UNorm_RGBA8);
 	static MTextureDesc CreateRenderTargetGBuffer();
 	static std::shared_ptr<MTexture> CreateRenderTargetFloat32();
 	static MTextureDesc CreateShadingRate();
 
-	static std::shared_ptr<MTexture> CreateVXGIMap();
+	static std::shared_ptr<MTexture> CreateVXGIMap(Vector3i n3Size);
 
 public:
 
 	//name
-	MString m_strTextureName;
+	MString m_strName;
 
 	//texture size.
 	Vector3i m_n3Size = Vector3i(1, 1, 1);
+    uint32_t m_nLayer = 1;
 
 	//rgba8
-	METextureLayout m_eRenderType = METextureLayout::UNorm_RGBA8;
+	METextureFormat m_eFormat = METextureFormat::UNorm_RGBA8;
 
 	//render target
-	METextureWriteUsage m_eRenderUsage = METextureWriteUsage::EUnknow;
-
-	uint32_t m_eShaderUsage = METextureReadUsage::EUnknow;
+    uint32_t m_eWriteUsage = METextureWriteUsageBit::EUnknow;
+	uint32_t m_eReadUsage = METextureReadUsageBit::EUnknow;
 
 	METextureType m_eTextureType = METextureType::ETexture2D;
-
-	//CPU readable
-	bool m_bReadable = false;
 
 	//generate mipmap
 	MEMipmapDataType m_eMipmapType = MEMipmapDataType::Disable;
 
-	uint32_t m_unMipmapLevel = 1;
-	uint32_t m_nLayer = 1;
+	uint32_t m_nMipmapLevel = 1;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	VkFormat m_VkTextureFormat;

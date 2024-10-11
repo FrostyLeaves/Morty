@@ -41,7 +41,7 @@ public:
 	size_t nDepth = 1;
 	METextureType eTextureType = METextureType::ETexture2D;
 	MEMipmapDataType eMipmapDataType = MEMipmapDataType::Disable;
-	morty::METextureLayout eFormat = morty::METextureLayout::Unknow;
+	morty::METextureFormat eFormat = morty::METextureFormat::Unknow;
 	std::vector<std::vector<MByte>> vMipmaps{};
 
 	MString strTextureName = "";
@@ -61,14 +61,14 @@ public:
 
 public:
 
-	METextureLayout GetTextureLayout() const;
+	METextureFormat GetFormat() const;
 	size_t GetWidth() const;
 	size_t GetHeight() const;
 	const MByte* GetRawData() const;
 	bool GetReadable() const { return m_bReadable; }
 public:
 
-	void CreateCubeMapRenderTarget(const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, const METextureLayout& eLayout, const bool& bMipmapEnable);
+	void CreateCubeMapRenderTarget(const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, const METextureFormat& eLayout, const bool& bMipmapEnable);
 
 	void OnDelete() override;
 

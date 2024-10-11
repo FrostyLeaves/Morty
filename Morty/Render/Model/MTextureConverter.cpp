@@ -40,11 +40,11 @@ void MTextureConverter::ConvertSingleChannel(MTextureResourceData* pTextureData,
 
     for (size_t nMipIdx = 0; nMipIdx < rawMipmaps.size(); ++nMipIdx)
     {
-        if (morty::METextureLayout::UNorm_RGBA8 == eFormat)
+        if (morty::METextureFormat::UNorm_RGBA8 == eFormat)
         {
             convertData[nMipIdx] = ConvertSingleChannelData<MByte>(rawMipmaps[nMipIdx].data(), nWidth, nHeight, nChannel);
         }
-        else if (morty::METextureLayout::Float_RGBA32 == eFormat)
+        else if (morty::METextureFormat::Float_RGBA32 == eFormat)
         {
             convertData[nMipIdx] = ConvertSingleChannelData<float>(rawMipmaps[nMipIdx].data(), nWidth, nHeight, nChannel);
         }

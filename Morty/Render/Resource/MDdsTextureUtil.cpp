@@ -82,73 +82,73 @@ struct DdsMagicNumber {
 
 constexpr uint32_t Dds_MAGIC_CONSTANT = 0x20534444;
 
-METextureLayout GetFormatFromDxFormat(uint32_t dxFormat)
+METextureFormat GetFormatFromDxFormat(uint32_t dxFormat)
 {
-	static const std::unordered_map<uint32_t, METextureLayout> FormatTable = {
-		{0, METextureLayout::Unknow},
-		{28, METextureLayout::UNorm_RGBA8},
-		{71, METextureLayout::UNorm_RGBA8_BC1},
-		{74, METextureLayout::UNorm_RGBA8_BC2},
-		{77, METextureLayout::UNorm_RGBA8_BC3},
-		{80, METextureLayout::UNorm_RGBA8_BC4},
-		{81, METextureLayout::SNorm_RGBA8_BC4},
-		{83, METextureLayout::UNorm_RGBA8_BC5},
-		{84, METextureLayout::SNorm_RGBA8_BC5},
-		{98, METextureLayout::UNorm_RGBA8_BC7},
+	static const std::unordered_map<uint32_t, METextureFormat> FormatTable = {
+		{0, METextureFormat::Unknow},
+		{28, METextureFormat::UNorm_RGBA8},
+		{71, METextureFormat::UNorm_RGBA8_BC1},
+		{74, METextureFormat::UNorm_RGBA8_BC2},
+		{77, METextureFormat::UNorm_RGBA8_BC3},
+		{80, METextureFormat::UNorm_RGBA8_BC4},
+		{81, METextureFormat::SNorm_RGBA8_BC4},
+		{83, METextureFormat::UNorm_RGBA8_BC5},
+		{84, METextureFormat::SNorm_RGBA8_BC5},
+		{98, METextureFormat::UNorm_RGBA8_BC7},
 	};
 
 	const auto findResult = FormatTable.find(dxFormat);
 	if (findResult == FormatTable.end())
 	{
 		MORTY_ASSERT(false);
-		return METextureLayout::Unknow;
+		return METextureFormat::Unknow;
 	}
 
 	return findResult->second;
 }
 
-METextureLayout GetFormatFromFourChar(const uint32_t& fourCC)
+METextureFormat GetFormatFromFourChar(const uint32_t& fourCC)
 {
 	if (fourCC) {
 		switch (fourCC) {
 			// clang-format off
 		case DdsMagicNumber::DXT1:
-			return METextureLayout::UNorm_RGBA8_BC1;
+			return METextureFormat::UNorm_RGBA8_BC1;
 		case DdsMagicNumber::DXT2:
 		case DdsMagicNumber::DXT3:
-			return METextureLayout::UNorm_RGBA8_BC2;
+			return METextureFormat::UNorm_RGBA8_BC2;
 		case DdsMagicNumber::DXT4:
 		case DdsMagicNumber::DXT5:
-			return METextureLayout::UNorm_RGBA8_BC3;
+			return METextureFormat::UNorm_RGBA8_BC3;
 		case DdsMagicNumber::ATI1:
 		case DdsMagicNumber::BC4U:
-			return METextureLayout::UNorm_RGBA8_BC4;
+			return METextureFormat::UNorm_RGBA8_BC4;
 		case DdsMagicNumber::BC4S:
-			return METextureLayout::SNorm_RGBA8_BC4;
+			return METextureFormat::SNorm_RGBA8_BC4;
 		case DdsMagicNumber::ATI2:
 		case DdsMagicNumber::BC5U:
-			return METextureLayout::UNorm_RGBA8_BC5;
+			return METextureFormat::UNorm_RGBA8_BC5;
 		case DdsMagicNumber::BC5S:
-			return METextureLayout::SNorm_RGBA8_BC5;
+			return METextureFormat::SNorm_RGBA8_BC5;
 		default:
-			return METextureLayout::Unknow;
+			return METextureFormat::Unknow;
 		}
 	}
 
-	return METextureLayout::Unknow;
+	return METextureFormat::Unknow;
 }
 
-uint32_t getBlockSize(METextureLayout layout)
+uint32_t getBlockSize(METextureFormat layout)
 {
 	switch (layout) {
-	case METextureLayout::UNorm_RGBA8_BC1:
-	case METextureLayout::UNorm_RGBA8_BC4:
-	case METextureLayout::SNorm_RGBA8_BC4:
+	case METextureFormat::UNorm_RGBA8_BC1:
+	case METextureFormat::UNorm_RGBA8_BC4:
+	case METextureFormat::SNorm_RGBA8_BC4:
 		return 8;
-	case METextureLayout::UNorm_RGBA8_BC2:
-	case METextureLayout::UNorm_RGBA8_BC3:
-	case METextureLayout::UNorm_RGBA8_BC5:
-	case METextureLayout::SNorm_RGBA8_BC5:
+	case METextureFormat::UNorm_RGBA8_BC2:
+	case METextureFormat::UNorm_RGBA8_BC3:
+	case METextureFormat::UNorm_RGBA8_BC5:
+	case METextureFormat::SNorm_RGBA8_BC5:
 		return 16;
 	default:
 		MORTY_ASSERT(false);
@@ -156,9 +156,9 @@ uint32_t getBlockSize(METextureLayout layout)
 	}
 }
 
-uint32_t ComputeMipmapSize(METextureLayout layout, uint32_t width, uint32_t height)
+uint32_t ComputeMipmapSize(METextureFormat layout, uint32_t width, uint32_t height)
 {
-    if (layout == METextureLayout::UNorm_RGBA8)
+    if (layout == METextureFormat::UNorm_RGBA8)
     {
 		return ((width + 1) >> 1) * 4 * height;
     }
@@ -184,7 +184,7 @@ std::unique_ptr<MResourceData> MDdsTextureUtil::ImportDdsTexture(const MString& 
 
 	MORTY_ASSERT(header.magic == Dds_MAGIC_CONSTANT);
 
-	METextureLayout eTextureLayout = METextureLayout::Unknow;
+	METextureFormat eTextureLayout = METextureFormat::Unknow;
 
 	if ((header.pixelFormat.flags & DdsPixelFormatType::FOURCC) == DdsPixelFormatType::FOURCC)
 	{
@@ -213,7 +213,7 @@ std::unique_ptr<MResourceData> MDdsTextureUtil::ImportDdsTexture(const MString& 
 	}
 	else if ((header.pixelFormat.flags & DdsPixelFormatType::RGBA) == DdsPixelFormatType::RGBA)
 	{
-		eTextureLayout = METextureLayout::UNorm_RGBA8;
+		eTextureLayout = METextureFormat::UNorm_RGBA8;
 	}
     else
     {
@@ -225,7 +225,7 @@ std::unique_ptr<MResourceData> MDdsTextureUtil::ImportDdsTexture(const MString& 
 	textureData->nWidth = header.width;
 	textureData->nHeight = header.height;
 	textureData->nDepth = 1;
-	textureData->eFormat = static_cast<morty::METextureLayout>(eTextureLayout);
+	textureData->eFormat = static_cast<morty::METextureFormat>(eTextureLayout);
 	textureData->strTextureName = strResourcePath;
 	textureData->eMipmapDataType = MEMipmapDataType::Load;
 

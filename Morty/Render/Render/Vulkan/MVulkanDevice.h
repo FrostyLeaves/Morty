@@ -89,17 +89,16 @@ public:
 	void TransitionLayoutBarrier(VkImageMemoryBarrier& imageMemoryBarrier, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange subresourceRange) const;
 	MVulkanObjectRecycleBin* GetRecycleBin() const;
 
-	VkFormat GetFormat(const METextureLayout& layout) const;
+	VkFormat GetFormat(const METextureFormat& layout) const;
 	VkImageUsageFlags GetUsageFlags(MTexture* pTexture) const;
-	VkImageAspectFlags GetAspectFlags(METextureWriteUsage eUsage) const;
-	VkImageAspectFlags GetAspectFlags(VkFormat format) const;
+	static VkImageAspectFlags GetAspectFlags(METextureWriteUsage eUsage) ;
+	static VkImageAspectFlags GetAspectFlags(VkFormat format) ;
 	VkImageAspectFlags GetAspectFlags(VkImageLayout layout) const;
 	VkImageLayout GetImageLayout(MTexture* pTexture) const;
 	VkImageViewType GetImageViewType(MTexture* pTexture) const;
 	VkImageCreateFlags GetImageCreateFlags(MTexture* pTexture) const;
 	VkImageType GetImageType(MTexture* pTexture) const;
 	uint32_t GetMipmapCount(MTexture* pTexture) const;
-	uint32_t GetLayerCount(MTexture* pTexture) const;
 	uint32_t GetBufferBarrierQueueFamily(MEBufferBarrierStage stage) const;
 	VkBufferUsageFlags GetBufferUsageFlags(MBuffer* pBuffer) const;
 	VkMemoryPropertyFlags GetMemoryFlags(MBuffer* pBuffer) const;

@@ -5,6 +5,8 @@
 
 using namespace morty;
 
+Vector3i Vector3i::One = Vector3i(1, 1, 1);
+
 Vector3::Vector3(const float& _x, const float& _y, const float& _z)
 	: x(_x)
 	, y(_y)

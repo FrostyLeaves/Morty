@@ -270,17 +270,17 @@ std::unique_ptr<MResourceData> MTextureResourceUtil::ImportCubeMap(const std::ar
 	return textureData;
 }
 
-morty::METextureLayout MTextureResourceUtil::GetTextureFormat(const MTexturePixelType nPixelSize, const size_t nChannelNum)
+morty::METextureFormat MTextureResourceUtil::GetTextureFormat(const MTexturePixelType nPixelSize, const size_t nChannelNum)
 {
 	if (nPixelSize == MTexturePixelType::Byte8)
 	{
 	    if (nChannelNum == 1)
 	    {
-			return morty::METextureLayout::UNorm_R8;
+			return morty::METextureFormat::UNorm_R8;
 	    }
 		if (nChannelNum == 4)
 		{
-			return morty::METextureLayout::UNorm_RGBA8;
+			return morty::METextureFormat::UNorm_RGBA8;
 		}
 	}
 
@@ -288,15 +288,15 @@ morty::METextureLayout MTextureResourceUtil::GetTextureFormat(const MTexturePixe
 	{
 	    if (nChannelNum == 1)
 	    {
-			return morty::METextureLayout::Float_R32;
+			return morty::METextureFormat::Float_R32;
 	    }
 		if (nChannelNum == 4)
 		{
-			return morty::METextureLayout::Float_RGBA32;
+			return morty::METextureFormat::Float_RGBA32;
 		}
 	}
 
 
 	MORTY_ASSERT(false);
-	return morty::METextureLayout::Unknow;
+	return morty::METextureFormat::Unknow;
 }
