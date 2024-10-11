@@ -59,7 +59,7 @@ bool MTextureResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 	auto pTextureData = static_cast<MTextureResourceData*>(pResourceData.get());
 
     m_pTexture = MTexture::CreateTexture({
-        .strTextureName = pTextureData->strTextureName,
+        .strName = pTextureData->strTextureName,
         .n3Size = Vector3i(static_cast<int>(pTextureData->nWidth), static_cast<int>(pTextureData->nHeight), static_cast<int>(pTextureData->nDepth)),
         .eTextureType = pTextureData->eTextureType,
         .eFormat = static_cast<METextureFormat>(pTextureData->eFormat),
@@ -100,7 +100,7 @@ void MTextureResource::CreateCubeMapRenderTarget(const uint32_t& nWidth, const u
 		nChannel = 4;
 
     m_pTexture = MTexture::CreateTexture({
-        .strTextureName = "CubeMapRenderTarget",
+        .strName = "CubeMapRenderTarget",
         .n3Size = Vector3i(nWidth, nHeight, 6),
         .eTextureType = METextureType::ETextureCube,
         .eFormat = eFormat,

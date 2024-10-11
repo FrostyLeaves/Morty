@@ -590,8 +590,6 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const std::vector<std::v
 		vkSubresourceRange.levelCount = nMipmapCount;
 		vkSubresourceRange.layerCount = nLayerCount;
 		TransitionImageLayout(pTexture->m_VkTextureImage, UndefinedImageLayout, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, vkSubresourceRange);
-
-		pTexture->m_nMipmapLevel = 1;
 	}
 	else
 	{
@@ -670,7 +668,6 @@ void MVulkanDevice::GenerateTexture(MTexture* pTexture, const std::vector<std::v
 		
 
 		pTexture->m_VkTextureImage = textureImage;
-		pTexture->m_nMipmapLevel = nMipmapCount;
 		pTexture->m_VkTextureImageMemory = textureImageMemory;
 		pTexture->m_VkTextureFormat = format;
 		pTexture->m_VkImageLayout = GetImageLayout(pTexture);

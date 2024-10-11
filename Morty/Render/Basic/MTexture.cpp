@@ -4,7 +4,6 @@
 using namespace morty;
 
 MTexture::MTexture()
-	: m_strName("Texture_Default")
 {
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -94,14 +93,8 @@ uint32_t MTexture::GetImageMemorySize(const METextureFormat& layout)
 std::shared_ptr<MTexture> MTexture::CreateTexture(const MTextureDesc& desc)
 {
 	std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
-	pTexture->SetName(desc.strTextureName);
-	pTexture->m_n3Size = desc.n3Size;
-	pTexture->m_eTextureType = desc.eTextureType;
-	pTexture->m_eFormat = desc.eFormat;
-	pTexture->m_eWriteUsage = desc.nWriteUsage;
-	pTexture->m_eReadUsage = desc.nReadUsage;
-	pTexture->m_eMipmapType  = desc.eMipmapDataType;
-    pTexture->m_nLayer = desc.eTextureType == METextureType::ETextureCube ? 6 : desc.nLayer;
+    pTexture->m_desc = desc;
+    pTexture->m_desc.nLayer = desc.eTextureType == METextureType::ETextureCube ? 6 : desc.nLayer;
 
 	return pTexture;
 }
@@ -109,7 +102,7 @@ std::shared_ptr<MTexture> MTexture::CreateTexture(const MTextureDesc& desc)
 MTextureDesc MTexture::CreateDepthBuffer()
 {
 	MTextureDesc texture = {
-		.strTextureName = "Depth Buffer Texture",
+		.strName = "Depth Buffer Texture",
 		.eTextureType = METextureType::ETexture2D,
 		.eFormat = METextureFormat::Depth,
         .eMipmapDataType = MEMipmapDataType::Disable,
@@ -123,7 +116,7 @@ MTextureDesc MTexture::CreateDepthBuffer()
 MTextureDesc MTexture::CreateShadowMapArray(const int& nSize, const uint32_t& nArraySize)
 {
 	MTextureDesc texture = {
-		.strTextureName = "Shadow Map Texture Array",
+		.strName = "Shadow Map Texture Array",
 		.n3Size = Vector3i(nSize, nSize, 1),
 		.nLayer = nArraySize,
 		.eTextureType = METextureType::ETexture2DArray,
@@ -139,7 +132,7 @@ MTextureDesc MTexture::CreateShadowMapArray(const int& nSize, const uint32_t& nA
 MTextureDesc MTexture::CreateRenderTarget(METextureFormat eFormat/*= METextureFormat::UNorm_RGBA8*/)
 {
 	MTextureDesc texture = {
-		.strTextureName = "Render Target Texture",
+		.strName = "Render Target Texture",
 		.n3Size = Vector3i(1, 1, 1),
 		.eTextureType = METextureType::ETexture2D,
 		.eFormat = eFormat,
@@ -154,7 +147,7 @@ MTextureDesc MTexture::CreateRenderTarget(METextureFormat eFormat/*= METextureFo
 MTextureDesc MTexture::CreateRenderTargetGBuffer()
 {
 	MTextureDesc texture = {
-		.strTextureName = "GBuffer Texture",
+		.strName = "GBuffer Texture",
 		.n3Size = Vector3i(1, 1, 1),
 		.eTextureType = METextureType::ETexture2D,
 		.eFormat = METextureFormat::Float_RGBA16,
@@ -168,12 +161,13 @@ MTextureDesc MTexture::CreateRenderTargetGBuffer()
 
 std::shared_ptr<MTexture> MTexture::CreateRenderTargetFloat32()
 {
-	std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
-	pTexture->SetName("Render Target Float32 Texture");
-	pTexture->m_eWriteUsage = METextureWriteUsageBit::ERenderBack;
-	pTexture->m_eReadUsage = METextureReadUsageBit::EPixelSampler;
-	pTexture->m_eFormat = METextureFormat::Float_R32;
-	pTexture->m_eMipmapType = MEMipmapDataType::Disable;
+	std::shared_ptr<MTexture> pTexture = MTexture::CreateTexture({
+        .strName = "Render Target Float32 Texture",
+        .eFormat = METextureFormat::Float_R32,
+        .eMipmapDataType = MEMipmapDataType::Disable,
+        .nReadUsage = METextureReadUsageBit::EPixelSampler,
+        .nWriteUsage = METextureWriteUsageBit::ERenderBack,
+    });
 
 	return pTexture;
 }
@@ -181,7 +175,7 @@ std::shared_ptr<MTexture> MTexture::CreateRenderTargetFloat32()
 MTextureDesc MTexture::CreateShadingRate()
 {
 	MTextureDesc texture = {
-		.strTextureName = "Shading Rate Texture",
+		.strName = "Shading Rate Texture",
 		.n3Size = Vector3i(1, 1, 1),
 		.eTextureType = METextureType::ETexture2D,
 		.eFormat = METextureFormat::UInt_R8,
@@ -199,27 +193,28 @@ MTextureDesc MTexture::CreateShadingRate()
 
 std::shared_ptr<MTexture> MTexture::CreateVXGIMap(Vector3i n3Size = Vector3i::One)
 {
-	std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
-	pTexture->SetName("VXGI Texture");
-    pTexture->m_n3Size = n3Size;
-	pTexture->m_eWriteUsage = METextureWriteUsageBit::EStorageWrite;
-	pTexture->m_eReadUsage = METextureReadUsageBit::EPixelSampler | METextureReadUsageBit::EStorageRead;
-	pTexture->m_eFormat = METextureFormat::Float_RGBA32;
-	pTexture->m_eTextureType = METextureType::ETexture3D;
-	pTexture->m_eMipmapType = MEMipmapDataType::Disable;
+    std::shared_ptr<MTexture> pTexture = MTexture::CreateTexture({
+        .strName = "VXGI Texture",
+        .n3Size = n3Size,
+        .eTextureType = METextureType::ETexture3D,
+        .eFormat = METextureFormat::Float_RGBA32,
+        .eMipmapDataType = MEMipmapDataType::Disable,
+        .nReadUsage = METextureReadUsageBit::EPixelSampler | METextureReadUsageBit::EStorageRead,
+        .nWriteUsage = METextureWriteUsageBit::EStorageWrite,
+    });
 
 	return pTexture;
 }
 
 void MTexture::Resize(MIDevice *pDevice, const Vector2i &n2Size) {
     DestroyBuffer(pDevice);
-    m_n3Size.x = n2Size.x;
-    m_n3Size.y = n2Size.y;
+    m_desc.n3Size.x = n2Size.x;
+    m_desc.n3Size.y = n2Size.y;
     GenerateBuffer(pDevice);
 }
 
 void MTexture::Resize(MIDevice *pDevice, const Vector3i &n3Size) {
     DestroyBuffer(pDevice);
-    m_n3Size = n3Size;
+    m_desc.n3Size = n3Size;
     GenerateBuffer(pDevice);
 }

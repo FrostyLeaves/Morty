@@ -54,7 +54,7 @@ public:
 
 struct MORTY_API MTextureDesc
 {
-	MString strTextureName = "Default";
+	MString strName = "Default";
 	Vector3i n3Size = Vector3i(1, 1, 1);
     uint32_t nLayer = 1;
 	METextureType eTextureType = METextureType::ETexture2D;
@@ -65,7 +65,7 @@ struct MORTY_API MTextureDesc
 
 	MTextureDesc& InitName(const MString& name)
 	{
-		strTextureName = name;
+		strName = name;
 		return *this;
 	}
 	MTextureDesc& InitSize(const Vector2i& n2Size)
@@ -83,21 +83,18 @@ public:
 
 public:
 
-	void SetName(const MString& strName) { m_strName = strName; }
-	[[nodiscard]] MString GetName() const { return m_strName; }
+	[[nodiscard]] MString GetName() const { return m_desc.strName; }
+	[[nodiscard]] Vector3i GetSize() const { return m_desc.n3Size; }
+	[[nodiscard]] Vector2i GetSize2D() const { return {m_desc.n3Size.x, m_desc.n3Size.y}; }
+    [[nodiscard]] uint32_t GetLayer() const { return m_desc.nLayer; }
+	[[nodiscard]] METextureFormat GetFormat() const { return m_desc.eFormat; }
+	[[nodiscard]] uint32_t GetWriteUsage() const { return m_desc.nWriteUsage; }
+	[[nodiscard]] uint32_t GetReadUsage() const { return m_desc.nReadUsage; }
 
-	[[nodiscard]] Vector3i GetSize() const { return m_n3Size; }
-	[[nodiscard]] Vector2i GetSize2D() const { return {m_n3Size.x, m_n3Size.y}; }
-    [[nodiscard]] uint32_t GetLayer() const { return m_nLayer; }
+	[[nodiscard]] METextureType GetTextureType() const { return m_desc.eTextureType; }
 
-	[[nodiscard]] METextureFormat GetFormat() const { return m_eFormat; }
-
-	[[nodiscard]] MEMipmapDataType GetMipmapDataType() const { return m_eMipmapType; }
-
-	[[nodiscard]] uint32_t GetWriteUsage() const { return m_eWriteUsage; }
-	[[nodiscard]] uint32_t GetReadUsage() const { return m_eReadUsage; }
-
-	[[nodiscard]] METextureType GetTextureType() const { return m_eTextureType; }
+    [[nodiscard]] MEMipmapDataType GetMipmapDataType() const { return m_eMipmapType; }
+    [[nodiscard]] uint32_t GetMipmapLevel() const { return m_nMipmapLevel; }
 
 	Vector2 GetMipmapSize(const uint32_t& nMipmapLevel);
 
@@ -124,29 +121,14 @@ public:
 
 	static std::shared_ptr<MTexture> CreateVXGIMap(Vector3i n3Size);
 
+private:
+
+    MTextureDesc m_desc;
+
+    MEMipmapDataType m_eMipmapType = MEMipmapDataType::Disable;
+    uint32_t m_nMipmapLevel = 1;
+
 public:
-
-	//name
-	MString m_strName;
-
-	//texture size.
-	Vector3i m_n3Size = Vector3i(1, 1, 1);
-    uint32_t m_nLayer = 1;
-
-	//rgba8
-	METextureFormat m_eFormat = METextureFormat::UNorm_RGBA8;
-
-	//render target
-    uint32_t m_eWriteUsage = METextureWriteUsageBit::EUnknow;
-	uint32_t m_eReadUsage = METextureReadUsageBit::EUnknow;
-
-	METextureType m_eTextureType = METextureType::ETexture2D;
-
-	//generate mipmap
-	MEMipmapDataType m_eMipmapType = MEMipmapDataType::Disable;
-
-	uint32_t m_nMipmapLevel = 1;
-
 #if RENDER_GRAPHICS == MORTY_VULKAN
 	VkFormat m_VkTextureFormat;
 	VkImageLayout m_VkImageLayout;

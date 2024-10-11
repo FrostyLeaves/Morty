@@ -895,14 +895,14 @@ std::shared_ptr<MTexture> MVulkanPipelineManager::GetDefaultTexture(MShaderTextu
 
 
     auto pTexture = MTexture::CreateTexture({
-                                    .strTextureName = "Shader Default Texture",
-                                    .n3Size = Vector3i(1, 1, 1),
-                                    .eTextureType = pParam->eType,
-                                    .eFormat = TypeMapping.at(pParam->eFormat),
-                                    .eMipmapDataType = MEMipmapDataType::Disable,
-                                    .nReadUsage = METextureReadUsageBit::EPixelSampler,
-                                    .nWriteUsage = METextureWriteUsageBit::EUnknow,
-                            });
+        .strName = "Shader Default Texture",
+        .n3Size = Vector3i(1, 1, 1),
+        .eTextureType = pParam->eType,
+        .eFormat = TypeMapping.at(pParam->eFormat),
+        .eMipmapDataType = MEMipmapDataType::Disable,
+        .nReadUsage = METextureReadUsageBit::EPixelSampler,
+        .nWriteUsage = METextureWriteUsageBit::EUnknow,
+    });
 
 	pTexture->GenerateBuffer(m_pDevice, cubeBytes );
 	MORTY_ASSERT(pTexture);

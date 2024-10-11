@@ -580,7 +580,7 @@ void MVulkanRenderCommand::SetTextureLayout(const std::vector<MTexture*>& vTextu
 		VkImageSubresourceRange subresourceRange;
 		subresourceRange.aspectMask = m_pDevice->GetAspectFlags(pTexture->m_VkTextureFormat);
 		subresourceRange.baseMipLevel = 0;
-		subresourceRange.levelCount = pTexture->m_nMipmapLevel;
+		subresourceRange.levelCount = pTexture->GetMipmapLevel();
 		subresourceRange.baseArrayLayer = 0;
 		subresourceRange.layerCount = pTexture->GetLayer();
 
@@ -617,10 +617,10 @@ bool MVulkanRenderCommand::DownloadTexture(MTexture* pTexture, const uint32_t& u
 	}
 
 	uint32_t unValidMipIdx = unMipIdx;
-	if (unValidMipIdx >= pTexture->m_nMipmapLevel)
+	if (unValidMipIdx >= pTexture->GetMipmapLevel())
 	{
-		MORTY_ASSERT(pTexture->m_nMipmapLevel > 0);
-		unValidMipIdx = pTexture->m_nMipmapLevel - 1;
+		MORTY_ASSERT(pTexture->GetMipmapLevel() > 0);
+		unValidMipIdx = pTexture->GetMipmapLevel() - 1;
 	}
 
 	Vector3i size = pTexture->GetSize();
@@ -715,7 +715,7 @@ void MVulkanRenderCommand::UpdateMipmaps(MTexture* pTexture)
 	if (!pTexture)
 		return;
 
-	m_pDevice->GenerateMipmaps(pTexture, pTexture->m_nMipmapLevel, m_VkCommandBuffer);
+	m_pDevice->GenerateMipmaps(pTexture, pTexture->GetMipmapLevel(), m_VkCommandBuffer);
 }
 
 void MVulkanRenderCommand::ResetBuffer(const MBuffer* pBuffer)
@@ -752,7 +752,7 @@ void MVulkanRenderCommand::FillTexture(MTexture* pTexture, MColor color)
 	VkImageSubresourceRange subresourceRange;
 	subresourceRange.aspectMask = m_pDevice->GetAspectFlags(pTexture->m_VkTextureFormat);
 	subresourceRange.baseMipLevel = 0;
-	subresourceRange.levelCount = pTexture->m_nMipmapLevel;
+	subresourceRange.levelCount = pTexture->GetMipmapLevel();
 	subresourceRange.baseArrayLayer = 0;
 	subresourceRange.layerCount = pTexture->GetLayer();
 	vkCmdClearColorImage(m_VkCommandBuffer, pTexture->m_VkTextureImage, vkClearLayout, &vkColor, 1, &subresourceRange);

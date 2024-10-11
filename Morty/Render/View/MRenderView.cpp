@@ -345,7 +345,7 @@ bool MRenderView::BindRenderPass()
 		m_vRenderTarget[i].vkImageReadySemaphore = VK_NULL_HANDLE;
 
 		std::shared_ptr<MTexture> pTexture = MTexture::CreateTexture({
-            .strTextureName = "Editor Render View",
+            .strName = "Editor Render View",
             .n3Size = Vector3i(size.x, size.y, 1),
             .eTextureType = METextureType::ETexture2DArray,
             .eFormat = METextureFormat::UNorm_RGBA8,
