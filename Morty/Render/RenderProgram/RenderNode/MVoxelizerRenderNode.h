@@ -9,14 +9,14 @@
 #pragma once
 
 #include "Utility/MRenderGlobal.h"
-#include "MSinglePassRenderNode.h"
 #include "Material/MMaterial.h"
+#include "RenderProgram/RenderGraph/MSinglePassRenderNode.h"
 
 #include "Basic/MBuffer.h"
 #include "Basic/MCameraFrustum.h"
-#include "MRenderNode.h"
 #include "RHI/MRenderPass.h"
 #include "RenderProgram/MRenderInfo.h"
+#include "RenderProgram/RenderGraph/MRenderCommon.h"
 
 namespace morty
 {

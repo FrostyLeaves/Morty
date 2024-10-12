@@ -19,7 +19,7 @@
 #include "Scene/MEntity.h"
 #include "Scene/MScene.h"
 
-#include "RenderProgram/RenderNode/MRenderNode.h"
+#include "RenderProgram/RenderGraph/MRenderCommon.h"
 #include "TaskGraph/MTaskGraph.h"
 
 using namespace morty;

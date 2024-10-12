@@ -10,11 +10,11 @@
 
 #include "Utility/MGlobal.h"
 #include "MGBufferRenderNode.h"
-#include "MSinglePassRenderNode.h"
+#include "RenderProgram/RenderGraph/MSinglePassRenderNode.h"
 
-#include "MRenderNode.h"
 #include "MShadowMapRenderNode.h"
 #include "RenderProgram/MRenderInfo.h"
+#include "RenderProgram/RenderGraph/MRenderCommon.h"
 
 namespace morty
 {

@@ -17,8 +17,8 @@
 
 #include <array>
 
-#include "MSinglePassRenderNode.h"
 #include "RenderProgram/MFrameShaderPropertyBlock.h"
+#include "RenderProgram/RenderGraph/MSinglePassRenderNode.h"
 
 namespace morty
 {

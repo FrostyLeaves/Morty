@@ -9,7 +9,7 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "MSinglePassRenderNode.h"
+#include "RenderProgram/RenderGraph/MSinglePassRenderNode.h"
 
 #include "Basic/MCameraFrustum.h"
 #include "RHI/MRenderPass.h"

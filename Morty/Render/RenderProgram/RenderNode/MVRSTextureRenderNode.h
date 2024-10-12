@@ -12,9 +12,9 @@
 #include "Object/MObject.h"
 
 #include "Basic/MCameraFrustum.h"
-#include "MRenderNode.h"
 #include "RHI/MRenderPass.h"
 #include "RenderProgram/MRenderInfo.h"
+#include "RenderProgram/RenderGraph/MRenderCommon.h"
 
 namespace morty
 {

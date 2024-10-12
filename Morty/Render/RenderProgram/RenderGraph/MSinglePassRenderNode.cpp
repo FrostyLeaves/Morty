@@ -1,26 +1,23 @@
-#include "MSinglePassRenderNode.h"
-
+#include "RenderProgram/RenderGraph/MSinglePassRenderNode.h"
 #include "Basic/MTexture.h"
 #include "Basic/MViewport.h"
+#include "Component/MCameraComponent.h"
+#include "Component/MDirectionalLightComponent.h"
+#include "Component/MRenderMeshComponent.h"
+#include "Component/MSceneComponent.h"
 #include "Engine/MEngine.h"
+#include "MRenderCommon.h"
 #include "MVRSTextureRenderNode.h"
 #include "Material/MMaterial.h"
+#include "Mesh/MMeshManager.h"
+#include "Mesh/MVertex.h"
 #include "Model/MSkeleton.h"
 #include "RHI/Abstract/MIDevice.h"
 #include "RHI/MRenderCommand.h"
 #include "RHI/MRenderPass.h"
 #include "Scene/MScene.h"
-
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
-
-#include "Component/MCameraComponent.h"
-#include "Component/MDirectionalLightComponent.h"
-#include "Component/MRenderMeshComponent.h"
-#include "Component/MSceneComponent.h"
-#include "Mesh/MVertex.h"
-
-#include "Mesh/MMeshManager.h"
 #include "Utility/MBounds.h"
 
 using namespace morty;
@@ -113,7 +110,7 @@ void ISinglePassRenderNode::AutoSetTextureBarrier(MIRenderCommand* pCommand)
 
 void ISinglePassRenderNode::Resize(Vector2i size)
 {
-    MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
+    auto* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
 
     if (m_renderPass.GetFrameBufferSize() != size)
     {
@@ -128,7 +125,7 @@ void ISinglePassRenderNode::SetRenderTarget(const MRenderTargetGroup& renderTarg
 {
     m_renderPass.SetRenderTarget(renderTarget);
 
-    MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
+    auto* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
     m_renderPass.DestroyBuffer(pRenderSystem->GetDevice());
     m_renderPass.GenerateBuffer(pRenderSystem->GetDevice());
 }

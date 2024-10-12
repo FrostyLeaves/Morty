@@ -1,20 +1,11 @@
-/**
- * @File         MRenderNode
- * 
- * @Created      2021-08-16 11:50:15
- *
- * @Author       DoubleYe
-**/
-
 #pragma once
 
 #include "Utility/MGlobal.h"
 #include "Math/Vector.h"
-#include "RenderProgram/RenderGraph/MRenderTaskNode.h"
-
 #include "Object/MObject.h"
 #include "RHI/MRenderPass.h"
 #include "RenderProgram/MRenderInfo.h"
+#include "RenderProgram/RenderGraph/MRenderTaskNode.h"
 
 namespace morty
 {
@@ -42,7 +33,7 @@ class MORTY_API IPropertyBlockAdapter
 public:
     virtual ~IPropertyBlockAdapter() = default;
 
-    virtual std::shared_ptr<MShaderPropertyBlock> GetPropertyBlock() const = 0;
+    [[nodiscard]] virtual std::shared_ptr<MShaderPropertyBlock> GetPropertyBlock() const = 0;
 };
 
 class MORTY_API MMeshBufferAdapter
@@ -50,9 +41,8 @@ class MORTY_API MMeshBufferAdapter
 public:
     virtual ~MMeshBufferAdapter() = default;
 
-    virtual const MBuffer* GetVertexBuffer() const = 0;
-
-    virtual const MBuffer* GetIndexBuffer() const = 0;
+    [[nodiscard]] virtual const MBuffer* GetVertexBuffer() const = 0;
+    [[nodiscard]] virtual const MBuffer* GetIndexBuffer() const  = 0;
 };
 
 class MORTY_API IRenderPassAdapter
@@ -68,9 +58,8 @@ class MORTY_API IGBufferAdapter
 public:
     virtual ~IGBufferAdapter() = default;
 
-    virtual std::vector<std::shared_ptr<MTexture>> GetBackTextures() const = 0;
-
-    virtual std::shared_ptr<MTexture>              GetDepthTexture() const = 0;
+    [[nodiscard]] virtual std::vector<std::shared_ptr<MTexture>> GetBackTextures() const = 0;
+    [[nodiscard]] virtual std::shared_ptr<MTexture>              GetDepthTexture() const = 0;
 };
 
 class MORTY_API IRenderable
@@ -94,13 +83,10 @@ class MORTY_API IDrawIndirectAdapter
 public:
     virtual ~IDrawIndirectAdapter() = default;
 
-    virtual std::shared_ptr<MMaterial> GetMaterial() const = 0;
-
-    virtual const MBuffer*             GetDrawIndirectBuffer() const = 0;
-
-    virtual size_t                     GetOffset() const { return 0; }
-
-    virtual size_t                     GetCount() const = 0;
+    [[nodiscard]] virtual std::shared_ptr<MMaterial> GetMaterial() const           = 0;
+    [[nodiscard]] virtual const MBuffer*             GetDrawIndirectBuffer() const = 0;
+    [[nodiscard]] virtual size_t                     GetOffset() const { return 0; }
+    [[nodiscard]] virtual size_t                     GetCount() const = 0;
 };
 
 class MORTY_API ICullingDispatchAdapter
@@ -108,9 +94,8 @@ class MORTY_API ICullingDispatchAdapter
 public:
     virtual ~ICullingDispatchAdapter() = default;
 
-    virtual MComputeDispatcher*   GetCullingDispatcher() const = 0;
-
-    virtual std::array<size_t, 3> GetComputeGroup() const = 0;
+    [[nodiscard]] virtual MComputeDispatcher*   GetCullingDispatcher() const = 0;
+    [[nodiscard]] virtual std::array<size_t, 3> GetComputeGroup() const      = 0;
 };
 
 class MORTY_API IComputeDispatcherAdapter
@@ -118,11 +103,9 @@ class MORTY_API IComputeDispatcherAdapter
 public:
     virtual ~IComputeDispatcherAdapter() = default;
 
-    virtual MComputeDispatcher*         GetComputeDispatcher() const = 0;
-
-    virtual std::array<size_t, 3>       GetComputeGroup() const = 0;
-
-    virtual std::vector<const MBuffer*> GetBarrierBuffer() const = 0;
+    [[nodiscard]] virtual MComputeDispatcher*         GetComputeDispatcher() const = 0;
+    [[nodiscard]] virtual std::array<size_t, 3>       GetComputeGroup() const      = 0;
+    [[nodiscard]] virtual std::vector<const MBuffer*> GetBarrierBuffer() const     = 0;
 };
 
 class MORTY_API IShaderPropertyUpdateDecorator
@@ -131,19 +114,17 @@ public:
     virtual ~IShaderPropertyUpdateDecorator() = default;
 
     virtual void BindMaterial(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock) = 0;
-
-    virtual void Update(const MRenderInfo& info) = 0;
+    virtual void Update(const MRenderInfo& info)                                                 = 0;
 };
 
 class MGetTextureAdapter : public IGetTextureAdapter
 {
 public:
-    MGetTextureAdapter(const std::shared_ptr<MTexture>& tex)
+    explicit MGetTextureAdapter(const std::shared_ptr<MTexture>& tex)
         : pTexture(tex)
     {}
 
     virtual std::shared_ptr<MTexture> GetTexture() { return pTexture; }
-
     std::shared_ptr<MTexture>         pTexture = nullptr;
 };
 

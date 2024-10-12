@@ -15,8 +15,8 @@
 #include "RHI/MRenderPass.h"
 #include "RenderProgram/MRenderInfo.h"
 
-#include "MSinglePassRenderNode.h"
 #include "RenderProgram/MFrameShaderPropertyBlock.h"
+#include "RenderProgram/RenderGraph/MSinglePassRenderNode.h"
 
 namespace morty
 {

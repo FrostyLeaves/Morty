@@ -9,8 +9,8 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "MSinglePassRenderNode.h"
 #include "RenderProgram/MRenderInfo.h"
+#include "RenderProgram/RenderGraph/MSinglePassRenderNode.h"
 
 namespace morty
 {

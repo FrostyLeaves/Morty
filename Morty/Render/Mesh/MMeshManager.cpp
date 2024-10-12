@@ -6,7 +6,7 @@
 #include "Mesh/MMeshUtil.h"
 #include "Mesh/MVertex.h"
 #include "RHI/Abstract/MIDevice.h"
-#include "RenderProgram/RenderNode/MRenderNode.h"
+#include "RenderProgram/RenderGraph/MRenderCommon.h"
 #include "Resource/MMeshResource.h"
 #include "Resource/MMeshResourceUtil.h"
 #include "System/MRenderSystem.h"

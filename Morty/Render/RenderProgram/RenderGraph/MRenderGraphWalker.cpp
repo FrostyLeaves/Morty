@@ -4,7 +4,7 @@
 #include "MRenderGraphSetting.h"
 #include "Material/MMaterial.h"
 #include "RenderProgram/MRenderInfo.h"
-#include "RenderProgram/RenderNode/MRenderNode.h"
+#include "RenderProgram/RenderGraph/MRenderCommon.h"
 #include "TaskGraph/MTaskGraph.h"
 
 using namespace morty;
