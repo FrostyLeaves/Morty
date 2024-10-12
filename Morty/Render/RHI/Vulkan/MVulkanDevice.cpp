@@ -1,4 +1,5 @@
 #include "RHI/Vulkan/MVulkanDevice.h"
+#include "vulkan/vulkan_core.h"
 
 #include "Utility/MGlobal.h"
 #include "Basic/MBuffer.h"
@@ -6,11 +7,11 @@
 #include "Engine/MEngine.h"
 #include "MVulkanPhysicalDevice.h"
 #include "Mesh/MMesh.h"
+#include "RHI/Vulkan/MTextureRHIVulkan.h"
 #include "RHI/Vulkan/MVulkanRenderCommand.h"
 #include "Resource/MResource.h"
 #include "Shader/MShaderParam.h"
 #include "Utility/MFileHelper.h"
-#include "vulkan/vulkan_core.h"
 
 #ifdef max
 #undef max
@@ -26,11 +27,9 @@
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 #ifdef MORTY_WIN
-
-#include "RHI/Vulkan/MTextureRHIVulkan.h"
-#include "vulkan/vulkan_win32.h"
 #include <windows.h>
 
+#include "vulkan/vulkan_win32.h"
 #endif
 
 #ifdef MORTY_ANDROID
@@ -455,7 +454,8 @@ bool MVulkanDevice::InitDescriptorPool()
             {
                     VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
                     unSwapChainNum,
-            }};
+            }
+    };
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -993,7 +993,8 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
                      nullptr,
                      uint32_t(vOutAttachmentRef[0].size()),
                      VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                     VK_IMAGE_ASPECT_DEPTH_BIT}};
+                     VK_IMAGE_ASPECT_DEPTH_BIT}
+            };
             vkSubpass.pDepthStencilAttachment = vOutDepthAttachmentRef[0].data();
         }
 
@@ -1042,7 +1043,8 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
                          nullptr,
                          uint32_t(vOutAttachmentRef[nSubpassIdx].size()),
                          VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                         VK_IMAGE_ASPECT_DEPTH_BIT}};
+                         VK_IMAGE_ASPECT_DEPTH_BIT}
+                };
                 vkSubpass.pDepthStencilAttachment = vOutDepthAttachmentRef[nSubpassIdx].data();
             }
 
