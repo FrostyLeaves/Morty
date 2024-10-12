@@ -13,42 +13,44 @@
 
 #include "Thread/MThreadWork.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MThreadPool : public MTypeClass
 {
     MORTY_CLASS(MThreadPool)
 
 public:
+    void                   Initialize();
 
-	void Initialize();
-	void Release();
+    void                   Release();
 
-	bool AddWork(const MThreadWork& work);
+    bool                   AddWork(const MThreadWork& work);
 
-	void ThreadRun(size_t nThreadIndex, MString strThreadName);
+    void                   ThreadRun(size_t nThreadIndex, MString strThreadName);
 
-	static std::thread::id GetCurrentThreadID();
+    static std::thread::id GetCurrentThreadID();
 
-	static size_t GetCurrentThreadIndex();
-	static METhreadType GetCurrentThreadType();
+    static size_t          GetCurrentThreadIndex();
+
+    static METhreadType    GetCurrentThreadType();
 
 private:
-	std::mutex m_ConditionMutex;
+    std::mutex                                                     m_ConditionMutex;
 
-	std::condition_variable m_ConditionVariable;
+    std::condition_variable                                        m_ConditionVariable;
 
-	std::array<std::thread, MGlobal::M_MAX_THREAD_NUM> m_aThread;
+    std::array<std::thread, MGlobal::M_MAX_THREAD_NUM>             m_thread;
 
-	static std::array<METhreadType, MGlobal::M_MAX_THREAD_NUM> s_tThreadType;
+    static std::array<METhreadType, MGlobal::M_MAX_THREAD_NUM>     s_tThreadType;
 
-	std::queue<MThreadWork> m_vWaitingWork;
+    std::queue<MThreadWork>                                        m_waitingWork;
 
-	std::array<std::queue<MThreadWork>, MGlobal::M_MAX_THREAD_NUM> m_vSpecificWaitingWork;
+    std::array<std::queue<MThreadWork>, MGlobal::M_MAX_THREAD_NUM> m_specificWaitingWork;
 
-	bool m_bInitialized = false;
-	bool m_bClose = false;
-	size_t m_nCloseThreadCount = 0;
+    bool                                                           m_initialized = false;
+    bool                                                           m_close       = false;
+    size_t                                                         m_closeThreadCount = 0;
 };
 
-MORTY_SPACE_END
+}// namespace morty

@@ -14,7 +14,8 @@
 #include "Math/Vector.h"
 #include "Utility/MColor.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MSpotLightComponent : public MComponent
 {
@@ -23,42 +24,51 @@ public:
 
 public:
     MSpotLightComponent();
+
     virtual ~MSpotLightComponent();
 
-	void SetColor(const MColor& color) { m_f3Color = color; }
-	MColor GetColor() const { return m_f3Color; }
+    void    SetColor(const MColor& color) { m_color = color; }
 
-	void SetColorVector(const Vector4& color) { m_f3Color = color; }
-	Vector4 GetColorVector() const { return m_f3Color.ToVector4(); }
+    MColor  GetColor() const { return m_color; }
 
-	// For PBR Lightning
-	void SetLightIntensity(const float& fIntensity) { m_fIntensity = fIntensity; }
-	float GetLightIntensity() const { return m_fIntensity; }
+    void    SetColorVector(const Vector4& color) { m_color = color; }
 
-	void SetInnerCutOff(const float& fCutOff);
-	float GetInnerCutOff() const { return m_fInnerCutOffAngle; }
-	float GetInnerCutOffRadius() const { return m_fInnerCutOffRadius; }
+    Vector4 GetColorVector() const { return m_color.ToVector4(); }
 
-	void SetOuterCutOff(const float& fCutOff);
-	float GetOuterCutOff() const { return m_fOuterCutOffAngle; }
-	float GetOuterCutOffRadius() const { return m_fOuterCutOffRadius; }
+    // For PBR Lightning
+    void    SetLightIntensity(const float& fIntensity) { m_intensity = fIntensity; }
 
-	Vector3 GetWorldDirection();
+    float   GetLightIntensity() const { return m_intensity; }
+
+    void    SetInnerCutOff(const float& fCutOff);
+
+    float   GetInnerCutOff() const { return m_innerCutOffAngle; }
+
+    float   GetInnerCutOffRadius() const { return m_innerCutOffRadius; }
+
+    void    SetOuterCutOff(const float& fCutOff);
+
+    float   GetOuterCutOff() const { return m_outerCutOffAngle; }
+
+    float   GetOuterCutOffRadius() const { return m_outerCutOffRadius; }
+
+    Vector3 GetWorldDirection();
 
 public:
+    virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
 
-	virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
-	virtual void Deserialize(flatbuffers::FlatBufferBuilder& fbb) override;
-	virtual void Deserialize(const void* pBufferPointer) override;
+    virtual void                      Deserialize(flatbuffers::FlatBufferBuilder& fbb) override;
+
+    virtual void                      Deserialize(const void* pBufferPointer) override;
 
 private:
-	MColor m_f3Color;
+    MColor m_color;
 
-	float m_fIntensity;
-	float m_fInnerCutOffAngle;
-	float m_fInnerCutOffRadius;
-	float m_fOuterCutOffAngle;
-	float m_fOuterCutOffRadius;
+    float  m_intensity;
+    float  m_innerCutOffAngle;
+    float  m_innerCutOffRadius;
+    float  m_outerCutOffAngle;
+    float  m_outerCutOffRadius;
 };
 
-MORTY_SPACE_END
+}// namespace morty

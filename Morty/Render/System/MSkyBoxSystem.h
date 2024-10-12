@@ -13,7 +13,8 @@
 
 #include "Component/MComponent.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MIRenderCommand;
 class MSkyBoxComponent;
@@ -23,15 +24,14 @@ public:
     MORTY_CLASS(MSkyBoxSystem)
 public:
     MSkyBoxSystem();
+
     virtual ~MSkyBoxSystem();
 
 public:
-
     void GenerateEnvironmentTexture(MSkyBoxComponent* pComponent);
 
 private:
-
     void GenerateEnvironmentWork(MSkyBoxComponent* pComponent);
 };
 
-MORTY_SPACE_END
+}// namespace morty

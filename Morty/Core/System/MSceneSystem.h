@@ -11,7 +11,8 @@
 #include "Utility/MGlobal.h"
 #include "Engine/MSystem.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MEntity;
 class MORTY_API MSceneSystem : public MISystem
@@ -22,11 +23,9 @@ public:
     virtual ~MSceneSystem();
 
 public:
-
     void SetVisible(MEntity* pEntity, const bool& bVisible);
 
 private:
-
 };
 
-MORTY_SPACE_END
+}// namespace morty

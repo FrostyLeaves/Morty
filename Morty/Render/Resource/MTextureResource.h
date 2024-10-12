@@ -8,89 +8,102 @@
 
 #pragma once
 
-#include "MTexture_generated.h"
 #include "Utility/MGlobal.h"
+#include "MTexture_generated.h"
 #include "Resource/MResource.h"
 
 #include "Basic/MTexture.h"
 #include "Resource/MResourceLoader.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 enum class MTexturePixelType
 {
-	Unknow,
+    Unknow,
 
-	Byte8,
-	Float32,
+    Byte8,
+    Float32,
 };
 
-struct MTextureImportInfo
-{
-	MTextureImportInfo() = default;
-	MTextureImportInfo(const MTexturePixelType nPixelSize);
+struct MTextureImportInfo {
+    MTextureImportInfo() = default;
 
-	MTexturePixelType ePixelType = MTexturePixelType::Byte8; //	8 or 32
+    MTextureImportInfo(const MTexturePixelType nPixelSize);
+
+    MTexturePixelType ePixelType = MTexturePixelType::Byte8;//	8 or 32
 };
 
-struct MORTY_API MTextureResourceData : public MFbResourceData
-{
+struct MORTY_API MTextureResourceData : public MFbResourceData {
 public:
-	size_t nWidth = 0;
-	size_t nHeight = 0;
-	size_t nDepth = 1;
-	METextureType eTextureType = METextureType::ETexture2D;
-	MEMipmapDataType eMipmapDataType = MEMipmapDataType::Disable;
-	morty::METextureFormat eFormat = morty::METextureFormat::Unknow;
-	std::vector<std::vector<MByte>> vMipmaps{};
+    size_t                          nWidth          = 0;
+    size_t                          nHeight         = 0;
+    size_t                          nDepth          = 1;
+    METextureType                   eTextureType    = METextureType::ETexture2D;
+    MEMipmapDataType                eMipmapDataType = MEMipmapDataType::Disable;
+    morty::METextureFormat          eFormat         = morty::METextureFormat::Unknow;
+    std::vector<std::vector<MByte>> vMipmaps{};
 
-	MString strTextureName = "";
+    MString                         strTextureName = "";
 
-	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
-	void Deserialize(const void* pBufferPointer) override;
+    flatbuffers::Offset<void>       Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
+
+    void                            Deserialize(const void* pBufferPointer) override;
 };
 
 class MORTY_API MTextureResource : public MResource
 {
 public:
-	MORTY_CLASS(MTextureResource)
+    MORTY_CLASS(MTextureResource)
+
     MTextureResource();
+
     virtual ~MTextureResource();
 
-	std::shared_ptr<MTexture> GetTextureTemplate(){ return m_pTexture; }
+    std::shared_ptr<MTexture> GetTextureTemplate() { return m_texture; }
 
 public:
+    METextureFormat GetFormat() const;
 
-	METextureFormat GetFormat() const;
-	size_t GetWidth() const;
-	size_t GetHeight() const;
-	const MByte* GetRawData() const;
-	bool GetReadable() const { return m_bReadable; }
+    size_t          GetWidth() const;
+
+    size_t          GetHeight() const;
+
+    const MByte*    GetRawData() const;
+
+    bool            GetReadable() const { return m_readable; }
+
 public:
+    void CreateCubeMapRenderTarget(
+            const uint32_t&        nWidth,
+            const uint32_t&        nHeight,
+            uint32_t               nChannel,
+            const METextureFormat& eLayout,
+            const bool&            bMipmapEnable
+    );
 
-	void CreateCubeMapRenderTarget(const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, const METextureFormat& eLayout, const bool& bMipmapEnable);
+    void OnDelete() override;
 
-	void OnDelete() override;
+    bool Load(std::unique_ptr<MResourceData>&& pResourceData) override;
 
-	bool Load(std::unique_ptr<MResourceData>&& pResourceData) override;
-	bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
+    bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
 
 protected:
-
-	bool m_bReadable = false;
-	std::shared_ptr<MTexture> m_pTexture = nullptr;
-	std::unique_ptr<MResourceData> m_pResourceData = nullptr;
+    bool                           m_readable     = false;
+    std::shared_ptr<MTexture>      m_texture      = nullptr;
+    std::unique_ptr<MResourceData> m_resourceData = nullptr;
 };
 
 class MORTY_API MTextureResourceLoader : public MResourceLoader
 {
 public:
+    static MString              GetResourceTypeName() { return "Texture"; }
 
-	static MString GetResourceTypeName() { return "Texture"; }
-	static std::vector<MString> GetSuffixList() { return { "png", "jpg", "tga", "hdr", "tif", "astc", "dds", "mtex" }; }
+    static std::vector<MString> GetSuffixList() { return {"png", "jpg", "tga", "hdr", "tif", "astc", "dds", "mtex"}; }
 
-	const MType* ResourceType() const override;
-	std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath) override;
+    const MType*                ResourceType() const override;
+
+    std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath) override;
 };
 
-MORTY_SPACE_END
+}// namespace morty

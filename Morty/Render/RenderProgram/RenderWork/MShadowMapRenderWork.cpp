@@ -1,31 +1,31 @@
 #include "MShadowMapRenderWork.h"
 
-#include "Scene/MScene.h"
-#include "Engine/MEngine.h"
-#include "Render/MIDevice.h"
 #include "Basic/MTexture.h"
 #include "Basic/MViewport.h"
-#include "Model/MSkeleton.h"
+#include "Engine/MEngine.h"
 #include "Material/MMaterial.h"
-#include "Render/MRenderPass.h"
-#include "Render/MRenderCommand.h"
+#include "Model/MSkeleton.h"
+#include "RHI/Abstract/MIDevice.h"
+#include "RHI/MRenderCommand.h"
+#include "RHI/MRenderPass.h"
+#include "Scene/MScene.h"
 
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
 
-#include "Component/MSceneComponent.h"
 #include "Component/MCameraComponent.h"
-#include "Component/MRenderMeshComponent.h"
 #include "Component/MDirectionalLightComponent.h"
-#include "Render/MVertex.h"
+#include "Component/MRenderMeshComponent.h"
+#include "Component/MSceneComponent.h"
+#include "Mesh/MVertex.h"
 
-#include "Utility/MBounds.h"
 #include "Mesh/MMeshManager.h"
 #include "RenderProgram/MeshRender/MCullingResultRenderable.h"
 #include "RenderProgram/RenderGraph/MRenderGraph.h"
+#include "Utility/MBounds.h"
 
-#include "Shadow/MShadowMapUtil.h"
 #include "Utility/MGlobal.h"
+#include "Shadow/MShadowMapUtil.h"
 
 using namespace morty;
 
@@ -35,114 +35,111 @@ const MStringId MShadowMapRenderWork::ShadowMapBufferOutput = MStringId("Shadow 
 class ShadowMapTexture : public IGetTextureAdapter
 {
 public:
-	virtual std::shared_ptr<MTexture> GetTexture() { return pTexture; }
+    virtual std::shared_ptr<MTexture> GetTexture() { return pTexture; }
 
-	std::shared_ptr<MTexture> pTexture;
+    std::shared_ptr<MTexture>         pTexture;
 };
 
 void MShadowMapRenderWork::Initialize(MEngine* pEngine)
 {
-	Super::Initialize(pEngine);
-	m_renderPass.SetViewportNum(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
+    Super::Initialize(pEngine);
+    m_renderPass.SetViewportNum(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
 }
 
 void MShadowMapRenderWork::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
-	MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
-	if (!pCommand)
-		return;
+    MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
+    if (!pCommand) return;
 
-	AutoSetTextureBarrier(pCommand);
+    AutoSetTextureBarrier(pCommand);
 
-	const auto& pShadowmap = m_renderPass.GetDepthTexture();
+    const auto& pShadowmap = m_renderPass.GetDepthTexture();
 
-	pCommand->BeginRenderPass(&m_renderPass);
+    pCommand->BeginRenderPass(&m_renderPass);
 
-	const Vector2i v2LeftTop = Vector2i(0, 0);
-	const Vector2i v2Size = pShadowmap->GetSize2D();
-	pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
-	pCommand->SetScissor(MScissorInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
+    const Vector2i v2LeftTop = Vector2i(0, 0);
+    const Vector2i v2Size    = pShadowmap->GetSize2D();
+    pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
+    pCommand->SetScissor(MScissorInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
 
-	for (IRenderable* pRenderable : vRenderable)
-	{
-		pRenderable->Render(pCommand);
-	}
+    for (IRenderable* pRenderable: vRenderable) { pRenderable->Render(pCommand); }
 
-	pCommand->EndRenderPass();
+    pCommand->EndRenderPass();
 
-	//pCommand->AddRenderToTextureBarrier({ m_renderPass.GetDepthTexture().get() }, METextureBarrierStage::EPixelShaderSample);
+    //pCommand->AddRenderToTextureBarrier({ m_renderPass.GetDepthTexture().get() }, METextureBarrierStage::EPixelShaderSample);
 }
 
 void MShadowMapRenderWork::Render(const MRenderInfo& info)
 {
-	const MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
+    const MMeshManager*      pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
 
-	MCullingResultRenderable indirectMesh;
-	indirectMesh.SetMeshBuffer(pMeshManager->GetMeshBuffer());
-	indirectMesh.SetPropertyBlockAdapter({
-		GetRenderGraph()->GetFrameProperty(),
-	});
-	indirectMesh.SetInstanceCulling(GetRenderGraph()->GetShadowCullingResult());
+    MCullingResultRenderable indirectMesh;
+    indirectMesh.SetMeshBuffer(pMeshManager->GetMeshBuffer());
+    indirectMesh.SetPropertyBlockAdapter({
+            GetRenderGraph()->GetFrameProperty(),
+    });
+    indirectMesh.SetInstanceCulling(GetRenderGraph()->GetShadowCullingResult());
 
-	Render(info, {
-		&indirectMesh,
-		});
+    Render(info,
+           {
+                   &indirectMesh,
+           });
 }
 
 std::shared_ptr<IGetTextureAdapter> MShadowMapRenderWork::GetShadowMap() const
 {
-	auto pShadowMap = std::make_shared<ShadowMapTexture>();
-	pShadowMap->pTexture = m_renderPass.GetDepthTexture();
+    auto pShadowMap      = std::make_shared<ShadowMapTexture>();
+    pShadowMap->pTexture = m_renderPass.GetDepthTexture();
 
-	return pShadowMap;
+    return pShadowMap;
 }
 
 class MORTY_API MShadowPropertyDecorator : public IShaderPropertyUpdateDecorator
 {
 public:
+    explicit MShadowPropertyDecorator(MShadowMapRenderWork* pOwner)
+        : m_owner(pOwner)
+    {}
 
-	explicit MShadowPropertyDecorator(MShadowMapRenderWork* pOwner) : m_pOwner(pOwner) {}
+    void BindMaterial(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock) override
+    {
+        MORTY_ASSERT(
+                m_shadowTextureParam = pShaderPropertyBlock->FindTextureParam(MShaderPropertyName::TEXTURE_SHADOW_MAP)
+        );
+    }
 
-	void BindMaterial(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock) override
-	{
-		MORTY_ASSERT(m_pShadowTextureParam = pShaderPropertyBlock->FindTextureParam(MShaderPropertyName::TEXTURE_SHADOW_MAP));
-	}
+    void Update(const MRenderInfo& info) override
+    {
+        MORTY_UNUSED(info);
 
-	void Update(const MRenderInfo& info) override
-	{
-		MORTY_UNUSED(info);
+        const auto pTexture = m_owner->GetShadowMap()->GetTexture();
+        if (m_shadowTextureParam && m_shadowTextureParam->GetTexture() != pTexture)
+        {
+            m_shadowTextureParam->SetTexture(pTexture);
+        }
+    }
 
-		const auto pTexture = m_pOwner->GetShadowMap()->GetTexture();
-		if (m_pShadowTextureParam && m_pShadowTextureParam->GetTexture() != pTexture)
-		{
-			m_pShadowTextureParam->SetTexture(pTexture);
-		}
-	}
+    std::shared_ptr<MShaderTextureParam> m_shadowTextureParam = nullptr;
 
-	std::shared_ptr<MShaderTextureParam> m_pShadowTextureParam = nullptr;
-
-	MShadowMapRenderWork* m_pOwner = nullptr;
+    MShadowMapRenderWork*                m_owner = nullptr;
 };
 
 std::shared_ptr<IShaderPropertyUpdateDecorator> MShadowMapRenderWork::GetFramePropertyDecorator()
 {
-	return std::make_shared<MShadowPropertyDecorator>(this);
+    return std::make_shared<MShadowPropertyDecorator>(this);
 }
 
-void MShadowMapRenderWork::OnCreated()
-{
-	Super::OnCreated();
-}
+void MShadowMapRenderWork::OnCreated() { Super::OnCreated(); }
 
 void MShadowMapRenderWork::BindTarget()
 {
-	AutoBindBarrierTexture();
-	SetRenderTarget(AutoBindTarget());
+    AutoBindBarrierTexture();
+    SetRenderTarget(AutoBindTarget());
 }
 
 std::vector<MRenderTaskOutputDesc> MShadowMapRenderWork::InitOutputDesc()
 {
     return {
-        { ShadowMapBufferOutput, { true, MColor::White } },
+            {ShadowMapBufferOutput, {true, MColor::White}},
     };
 }

@@ -1,37 +1,31 @@
 #include "MBoundingBoxCulling.h"
 
+#include "Batch/MMaterialBatchGroup.h"
 #include "Component/MSceneComponent.h"
 #include "Engine/MEngine.h"
 #include "Mesh/MMeshManager.h"
 #include "Scene/MEntity.h"
 #include "Shadow/MShadowMapUtil.h"
 #include "System/MRenderSystem.h"
-#include "Batch/MMaterialBatchGroup.h"
 
 using namespace morty;
 
 void MBoundingBoxCulling::Initialize(MEngine* pEngine)
 {
-	MBoundingCulling::Initialize(pEngine);
+    MBoundingCulling::Initialize(pEngine);
 
-	m_pBoundsFilter = std::make_shared<MBoundingBoxFilter>();
+    m_boundsFilter = std::make_shared<MBoundingBoxFilter>();
 
-	AddFilter(m_pBoundsFilter);
+    AddFilter(m_boundsFilter);
 }
 
-void MBoundingBoxCulling::Release()
-{
-	MBoundingCulling::Release();
-}
+void MBoundingBoxCulling::Release() { MBoundingCulling::Release(); }
 
-void MBoundingBoxCulling::SetBounds(const MBoundsAABB& bounds)
-{
-	m_pBoundsFilter->m_bounds = bounds;
-}
+void MBoundingBoxCulling::SetBounds(const MBoundsAABB& bounds) { m_boundsFilter->m_bounds = bounds; }
 
 bool MBoundingBoxFilter::Filter(const MMeshInstanceRenderProxy* instance) const
 {
-	const MBoundsAABB& bounds = instance->boundsWithTransform;
+    const MBoundsAABB& bounds = instance->boundsWithTransform;
 
-	return m_bounds.IsIntersect(bounds);
+    return m_bounds.IsIntersect(bounds);
 }

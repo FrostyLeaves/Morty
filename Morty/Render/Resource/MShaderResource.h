@@ -9,64 +9,71 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "Shader/MShader.h"
 #include "Resource/MResource.h"
 #include "Resource/MResourceLoader.h"
+#include "Shader/MShader.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MShaderResourceData : public MResourceData
 {
 public:
-	//RawData
-	MEShaderType eShaderType;
-	MString strShaderPath;
+    //RawData
+    MEShaderType       eShaderType;
+    MString            strShaderPath;
 
 
-	void LoadBuffer(const std::vector<MByte>& buffer) override;
-	std::vector<MByte> SaveBuffer() const override;
+    void               LoadBuffer(const std::vector<MByte>& buffer) override;
+
+    std::vector<MByte> SaveBuffer() const override;
 };
 
 class MORTY_API MShaderResource : public MResource
 {
 public:
-	MORTY_CLASS(MShaderResource)
+    MORTY_CLASS(MShaderResource)
+
     MShaderResource() = default;
+
     ~MShaderResource() override = default;
 
 public:
+    MShader*     GetShaderByIndex(const int& nIndex);
 
-    MShader* GetShaderByIndex(const int& nIndex);
-    int FindShaderByMacroParam(const MShaderMacro& macro);
+    int          FindShaderByMacroParam(const MShaderMacro& macro);
 
-	MEShaderType GetShaderType() const;
+    MEShaderType GetShaderType() const;
 
-	bool Load(std::unique_ptr<MResourceData>&& pResourceData) override;
-	bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
+    bool         Load(std::unique_ptr<MResourceData>&& pResourceData) override;
 
-	virtual void OnDelete() override;
+    bool         SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
+
+    virtual void OnDelete() override;
 
 private:
-
-    std::vector<MShader*> m_vShaders;
-	std::unique_ptr<MResourceData> m_pResourceData = nullptr;
-
+    std::vector<MShader*>          m_shaders;
+    std::unique_ptr<MResourceData> m_resourceData = nullptr;
 };
 
 class MORTY_API MShaderResourceLoader : public MResourceLoader
 {
 public:
+    static MString              GetResourceTypeName() { return "Shader"; }
 
-	static MString GetResourceTypeName() { return "Shader"; }
-	static std::vector<MString> GetSuffixList() { return {
-		MRenderGlobal::SUFFIX_VERTEX_SHADER,
-		MRenderGlobal::SUFFIX_PIXEL_SHADER,
-		MRenderGlobal::SUFFIX_COMPUTE_SHADER,
-		MRenderGlobal::SUFFIX_GEOMETRY_SHADER,
-	}; }
+    static std::vector<MString> GetSuffixList()
+    {
+        return {
+                MRenderGlobal::SUFFIX_VERTEX_SHADER,
+                MRenderGlobal::SUFFIX_PIXEL_SHADER,
+                MRenderGlobal::SUFFIX_COMPUTE_SHADER,
+                MRenderGlobal::SUFFIX_GEOMETRY_SHADER,
+        };
+    }
 
-	const MType* ResourceType() const override;
-	std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath) override;
+    const MType*                   ResourceType() const override;
+
+    std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath) override;
 };
 
-MORTY_SPACE_END
+}// namespace morty

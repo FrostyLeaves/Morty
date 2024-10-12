@@ -10,28 +10,30 @@
 
 #include "Material/MMaterialTemplate.h"
 
-MORTY_SPACE_BEGIN
-
-struct MORTY_API MMaterialTemplateResourceData : public MFbResourceData
+namespace morty
 {
-	//RawData
-	std::array<MPath, size_t(MEShaderType::TOTAL_NUM)> vShaders;
 
-	MShaderMacro shaderMacro;
-	MEMaterialType eMaterialType;
-	MECullMode eCullMode;
+struct MORTY_API MMaterialTemplateResourceData : public MFbResourceData {
+    //RawData
+    std::array<MPath, size_t(MEShaderType::TOTAL_NUM)> vShaders;
 
-	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
-	void Deserialize(const void* pBufferPointer) override;
-	
+    MShaderMacro                                       shaderMacro;
+    MEMaterialType                                     eMaterialType;
+    MECullMode                                         eCullMode;
+
+    flatbuffers::Offset<void>                          Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
+
+    void                                               Deserialize(const void* pBufferPointer) override;
 };
 
 
-class MORTY_API MMaterialTemplateResourceDataLoader : public MResourceLoaderTemplate<MMaterialTemplate, MMaterialTemplateResourceData>
+class MORTY_API MMaterialTemplateResourceDataLoader
+    : public MResourceLoaderTemplate<MMaterialTemplate, MMaterialTemplateResourceData>
 {
 public:
-	static MString GetResourceTypeName() { return "MaterialTemplate"; }
-	static std::vector<MString> GetSuffixList() { return { "mat_temp" }; }
+    static MString              GetResourceTypeName() { return "MaterialTemplate"; }
+
+    static std::vector<MString> GetSuffixList() { return {"mat_temp"}; }
 };
 
-MORTY_SPACE_END
+}// namespace morty

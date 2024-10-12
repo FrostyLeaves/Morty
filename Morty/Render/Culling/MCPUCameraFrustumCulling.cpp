@@ -1,63 +1,54 @@
 #include "MCPUCameraFrustumCulling.h"
 
+#include "Batch/MMaterialBatchGroup.h"
 #include "Component/MSceneComponent.h"
 #include "Engine/MEngine.h"
 #include "Mesh/MMeshManager.h"
 #include "Scene/MEntity.h"
 #include "Shadow/MShadowMapUtil.h"
 #include "System/MRenderSystem.h"
-#include "Batch/MMaterialBatchGroup.h"
 
 using namespace morty;
 
 void MCPUCameraFrustumCulling::Initialize(MEngine* pEngine)
 {
-	MCameraFrustumCulling::Initialize(pEngine);
+    MCameraFrustumCulling::Initialize(pEngine);
 
-	m_pFrustumFilter = std::make_shared<MCameraFrustumFilter>();
-	m_pBoundingCulling = std::make_unique<MBoundingCulling>();
-	m_pBoundingCulling->Initialize(pEngine);
+    m_frustumFilter   = std::make_shared<MCameraFrustumFilter>();
+    m_boundingCulling = std::make_unique<MBoundingCulling>();
+    m_boundingCulling->Initialize(pEngine);
 
-	m_pBoundingCulling->AddFilter(m_pFrustumFilter);
+    m_boundingCulling->AddFilter(m_frustumFilter);
 }
 
 void MCPUCameraFrustumCulling::Release()
 {
-	m_pBoundingCulling->Release();
-	m_pBoundingCulling = nullptr;
+    m_boundingCulling->Release();
+    m_boundingCulling = nullptr;
 
-	MCameraFrustumCulling::Release();
+    MCameraFrustumCulling::Release();
 }
 
 void MCPUCameraFrustumCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup)
 {
-	m_pFrustumFilter->m_cameraFrustum = m_cameraFrustum;
+    m_frustumFilter->m_cameraFrustum = m_cameraFrustum;
 
-	m_pBoundingCulling->Culling(vInstanceGroup);
+    m_boundingCulling->Culling(vInstanceGroup);
 }
 
-void MCPUCameraFrustumCulling::UploadBuffer(MIRenderCommand* pCommand)
-{
-	m_pBoundingCulling->UploadBuffer(pCommand);
-}
+void MCPUCameraFrustumCulling::UploadBuffer(MIRenderCommand* pCommand) { m_boundingCulling->UploadBuffer(pCommand); }
 
-const MBuffer* MCPUCameraFrustumCulling::GetDrawIndirectBuffer()
-{
-	return m_pBoundingCulling->GetDrawIndirectBuffer();
-}
+const MBuffer* MCPUCameraFrustumCulling::GetDrawIndirectBuffer() { return m_boundingCulling->GetDrawIndirectBuffer(); }
 
 const std::vector<MMaterialCullingGroup>& MCPUCameraFrustumCulling::GetCullingInstanceGroup() const
 {
-	return m_pBoundingCulling->GetCullingInstanceGroup();
+    return m_boundingCulling->GetCullingInstanceGroup();
 }
 
 bool MCameraFrustumFilter::Filter(const MMeshInstanceRenderProxy* instance) const
 {
-	const MBoundsAABB& bounds = instance->boundsWithTransform;
-	if (instance->bCullEnable && MCameraFrustum::EOUTSIDE == m_cameraFrustum.ContainTest(bounds))
-	{
-		return false;
-	}
+    const MBoundsAABB& bounds = instance->boundsWithTransform;
+    if (instance->bCullEnable && MCameraFrustum::EOUTSIDE == m_cameraFrustum.ContainTest(bounds)) { return false; }
 
-	return true;
+    return true;
 }

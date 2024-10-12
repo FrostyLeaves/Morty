@@ -7,66 +7,67 @@
 **/
 
 #pragma once
+
 #include "Utility/MGlobal.h"
 
+#include "Engine/MSystem.h"
+#include "Object/MObject.h"
 #include "Type/MType.h"
 #include "Utility/MIDPool.h"
 #include "Utility/MString.h"
-#include "Object/MObject.h"
-#include "Engine/MSystem.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MEngine;
 class MORTY_API MObjectSystem : public MISystem
 {
 public:
-	MORTY_CLASS(MObjectSystem)
+    MORTY_CLASS(MObjectSystem)
 public:
-	MObjectSystem();
-	virtual ~MObjectSystem();
+    MObjectSystem();
 
-	void InitObject(MObject* pObject);
+    virtual ~MObjectSystem();
 
-	template<typename OBJECT_TYPE>
-	OBJECT_TYPE* CreateObject()
-	{
-		OBJECT_TYPE* pObject = new OBJECT_TYPE();
-		if (!dynamic_cast<MObject*>(pObject))
-		{
-			delete pObject;
-			return nullptr;
-		}
+    void                                        InitObject(MObject* pObject);
 
-		InitObject(pObject);
-		return pObject;
-	}
+    template<typename OBJECT_TYPE> OBJECT_TYPE* CreateObject()
+    {
+        OBJECT_TYPE* pObject = new OBJECT_TYPE();
+        if (!dynamic_cast<MObject*>(pObject))
+        {
+            delete pObject;
+            return nullptr;
+        }
 
-	MObject* CreateObject(const MString& strTypeName);
+        InitObject(pObject);
+        return pObject;
+    }
 
-	MObject* FindObject(const MObjectID& unID);
+    MObject* CreateObject(const MString& strTypeName);
 
-	void RemoveObject(const MObjectID& unID);
+    MObject* FindObject(const MObjectID& unID);
 
-	void CleanRemoveObject();
+    void     RemoveObject(const MObjectID& unID);
 
-public:
-	typedef std::function<void(MObject*)> PostCreateObjectFunction;
-
-	void RegisterPostCreateObject(const PostCreateObjectFunction& func);
+    void     CleanRemoveObject();
 
 public:
+    typedef std::function<void(MObject*)> PostCreateObjectFunction;
 
-	virtual void Release() override;
+    void                                  RegisterPostCreateObject(const PostCreateObjectFunction& func);
+
+public:
+    virtual void Release() override;
 
 private:
-	MIDPool<MObjectID>* m_pObjectDB;
+    MIDPool<MObjectID>*                   m_objectDB;
 
-	std::map<MObjectID, MObject*> m_tObjects;
+    std::map<MObjectID, MObject*>         m_objects;
 
-	std::vector<MObjectID> m_vRemoveObjects;
+    std::vector<MObjectID>                m_removeObjects;
 
-	std::vector<PostCreateObjectFunction> m_vPostCreateObjectFunction;
+    std::vector<PostCreateObjectFunction> m_postCreateObjectFunction;
 };
 
-MORTY_SPACE_END
+}// namespace morty

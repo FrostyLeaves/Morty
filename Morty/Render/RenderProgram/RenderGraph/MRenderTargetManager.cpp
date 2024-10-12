@@ -16,29 +16,23 @@ MRenderTaskTarget* MRenderTargetManager::CreateRenderTarget(const MStringId& nam
         return pResult;
     }
 
-    auto pTarget = std::make_unique<MRenderTaskTarget>();
-    m_tRenderTaskTable[name] = std::move(pTarget);
+    auto pTarget            = std::make_unique<MRenderTaskTarget>();
+    m_renderTaskTable[name] = std::move(pTarget);
 
-    return m_tRenderTaskTable[name].get();
+    return m_renderTaskTable[name].get();
 }
 
 MRenderTaskTarget* MRenderTargetManager::FindRenderTarget(const MStringId& name) const
 {
-    const auto findResult = m_tRenderTaskTable.find(name);
-    if (findResult != m_tRenderTaskTable.end())
-    {
-        return findResult->second.get();
-    }
+    const auto findResult = m_renderTaskTable.find(name);
+    if (findResult != m_renderTaskTable.end()) { return findResult->second.get(); }
 
     return nullptr;
 }
 
 std::shared_ptr<MTexture> MRenderTargetManager::FindRenderTexture(const MStringId& name) const
 {
-    if (const auto pResult = FindRenderTarget(name))
-    {
-        return pResult->GetTexture();
-    }
+    if (const auto pResult = FindRenderTarget(name)) { return pResult->GetTexture(); }
 
     return nullptr;
 }
@@ -47,15 +41,17 @@ void MRenderTargetManager::ResizeRenderTarget(const Vector2i& size)
 {
     const auto pDevice = GetEngine()->FindSystem<MRenderSystem>()->GetDevice();
 
-    for (const auto& pr : m_tRenderTaskTable)
+    for (const auto& pr: m_renderTaskTable)
     {
         if (pr.second->GetResizePolicy() == MRenderTaskTarget::ResizePolicy::Scale)
         {
-            auto pTexture = pr.second->GetTexture();
+            auto     pTexture = pr.second->GetTexture();
 
             Vector2i n2TexelFormatSize{};
-            n2TexelFormatSize.x = static_cast<float>(size.x) * pr.second->GetScale() + ((size.x % pr.second->GetTexelSize()) != 0);
-            n2TexelFormatSize.y = static_cast<float>(size.y) * pr.second->GetScale() + ((size.y % pr.second->GetTexelSize()) != 0);
+            n2TexelFormatSize.x =
+                    static_cast<float>(size.x) * pr.second->GetScale() + ((size.x % pr.second->GetTexelSize()) != 0);
+            n2TexelFormatSize.y =
+                    static_cast<float>(size.y) * pr.second->GetScale() + ((size.y % pr.second->GetTexelSize()) != 0);
 
             pTexture->Resize(pDevice, Vector3i(n2TexelFormatSize.x, n2TexelFormatSize.y, pTexture->GetSize().z));
         }
@@ -66,7 +62,7 @@ std::vector<std::shared_ptr<MTexture>> MRenderTargetManager::GetOutputTextures()
 {
     std::vector<std::shared_ptr<MTexture>> output;
 
-    for (const auto& pr : m_tRenderTaskTable)
+    for (const auto& pr: m_renderTaskTable)
     {
         if (pr.second->GetSharedPolicy() == MRenderTaskTarget::SharedPolicy::Exclusive)
         {

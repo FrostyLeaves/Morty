@@ -9,48 +9,44 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "Object/MObject.h"
 #include "Math/Vector.h"
-#include "Render/MMesh.h"
+#include "Mesh/MMesh.h"
+#include "Object/MObject.h"
 
 #include "Component/MComponent.h"
 
-MORTY_SPACE_BEGIN
-
-struct MORTY_API MDebugDrawLine
+namespace morty
 {
-public:
 
-    Vector3 m_v3StartPosition;
-    Vector3 m_v3EndPosition;
+struct MORTY_API MDebugDrawLine {
+public:
+    Vector3 m_startPosition;
+    Vector3 m_endPosition;
 };
 
-struct MDebugDrawLineVertex
-{
+struct MDebugDrawLineVertex {
     Vector3 v3Position;
 };
 
 class MORTY_API MDebugRenderComponent : public MComponent
 {
 public:
-	MORTY_CLASS(MDebugRenderComponent);
+    MORTY_CLASS(MDebugRenderComponent);
+
     MDebugRenderComponent();
+
     virtual ~MDebugRenderComponent();
 
     MMesh<MDebugDrawLineVertex>& GetDrawLineMesh();
 
 public:
-
     void AddLine(const MDebugDrawLine& drawLine);
 
 private:
+    std::vector<MDebugDrawLine> m_drawLine;
 
-
-    std::vector<MDebugDrawLine> m_vDrawLine;
-
-    bool m_bDrawLineDirty;
-    MMesh<MDebugDrawLineVertex> m_cDrawLineMesh;
-
+    bool                        m_drawLineDirty;
+    MMesh<MDebugDrawLineVertex> m_drawLineMesh;
 };
 
-MORTY_SPACE_END
+}// namespace morty

@@ -8,22 +8,23 @@
 
 #pragma once
 
-#include "Render/MRenderGlobal.h"
+#include "Utility/MRenderGlobal.h"
 
-#include "MShaderMacro.h"
 #include "MShaderBuffer.h"
+#include "MShaderMacro.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 enum class MEShaderType
 {
-	EVertex = 0,
-	EPixel = 1,
-	ECompute = 2,
-	EGeometry = 3,
+    EVertex   = 0,
+    EPixel    = 1,
+    ECompute  = 2,
+    EGeometry = 3,
 
-	TOTAL_NUM,
-	ENone = 0xffff,
+    TOTAL_NUM,
+    ENone = 0xffff,
 };
 
 
@@ -33,26 +34,30 @@ class MORTY_API MShader
 {
 public:
     MShader() = default;
+
     virtual ~MShader() = default;
 
-	bool CompileShader(MIDevice* pDevice);
-	void CleanShader(MIDevice* pDevice);
+    bool                CompileShader(MIDevice* pDevice);
 
-	MEShaderType GetType() const { return m_eShaderType; }
-	const MShaderMacro& GetMacro() { return m_ShaderMacro; }
-	const MString& GetShaderPath() { return m_strShaderPath; }
+    void                CleanShader(MIDevice* pDevice);
 
-	void SetBuffer(MShaderBuffer* pShaderBuffer) { m_pShaderBuffer = pShaderBuffer; }
-	MShaderBuffer* GetBuffer() { return m_pShaderBuffer; }
+    MEShaderType        GetType() const { return m_shaderType; }
+
+    const MShaderMacro& GetMacro() { return m_ShaderMacro; }
+
+    const MString&      GetShaderPath() { return m_strShaderPath; }
+
+    void                SetBuffer(MShaderBuffer* pShaderBuffer) { m_shaderBuffer = pShaderBuffer; }
+
+    MShaderBuffer*      GetBuffer() { return m_shaderBuffer; }
 
 private:
+    friend class MShaderResource;
 
-	friend class MShaderResource;
-	MShaderMacro m_ShaderMacro;
-	MString m_strShaderPath;
-	MEShaderType m_eShaderType = MEShaderType::ENone;
-	MShaderBuffer* m_pShaderBuffer = nullptr;
-
+    MShaderMacro   m_ShaderMacro;
+    MString        m_strShaderPath;
+    MEShaderType   m_shaderType   = MEShaderType::ENone;
+    MShaderBuffer* m_shaderBuffer = nullptr;
 };
 
-MORTY_SPACE_END
+}// namespace morty

@@ -7,36 +7,46 @@
 **/
 
 #pragma once
+
 #include "Utility/MGlobal.h"
 #include "Type/MType.h"
 
 #include "Scene/MGuid.h"
 #include "flatbuffers/flatbuffer_builder.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MScene;
 class MEntity;
 class MEngine;
 class MComponent;
-
 class MORTY_API MComponentID
 {
 public:
-    MComponentID() : pComponentType(nullptr), nIdx(0) {}
-    MComponentID(const MType* type, size_t id) : pComponentType(type), nIdx(id) {}
+    MComponentID()
+        : pComponentType(nullptr)
+        , nIdx(0)
+    {}
+
+    MComponentID(const MType* type, size_t id)
+        : pComponentType(type)
+        , nIdx(id)
+    {}
 
     bool IsValid() const;
 
-    bool operator ==(const MComponentID& id) const;
-    bool operator ==(const MType* pType) const;
+    bool operator==(const MComponentID& id) const;
 
-	bool operator < (const MComponentID& id) const;
-	bool operator < (const MType* pType) const;
+    bool operator==(const MType* pType) const;
+
+    bool operator<(const MComponentID& id) const;
+
+    bool operator<(const MType* pType) const;
 
 public:
     const MType* pComponentType;
-	size_t nIdx;
+    size_t       nIdx;
 };
 
 class MORTY_API MComponent : public MTypeClass
@@ -46,41 +56,46 @@ public:
 
 public:
     MComponent();
+
     virtual ~MComponent();
 
 public:
+    void         Initialize(MScene* pScene, const MGuid& id);
 
-    void Initialize(MScene* pScene, const MGuid& id);
     virtual void Release();
 
-    bool IsValid() const { return m_bValid; }
+    bool         IsValid() const { return m_valid; }
 
 
 public:
-
     virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb);
-    virtual void Deserialize(flatbuffers::FlatBufferBuilder& fbb);
-	virtual void Deserialize(const void* pBufferPointer);
-	virtual void PostDeserialize(const std::map<MGuid, MGuid>& tRedirectGuid);
+
+    virtual void                      Deserialize(flatbuffers::FlatBufferBuilder& fbb);
+
+    virtual void                      Deserialize(const void* pBufferPointer);
+
+    virtual void                      PostDeserialize(const std::map<MGuid, MGuid>& tRedirectGuid);
 
 public:
+    void                SendComponentNotify(const char* notify);
 
-    void SendComponentNotify(const char* notify);
+    MScene*             GetScene() const { return m_scene; }
 
-	MScene* GetScene() const { return m_pScene; }
-	MEntity* GetEntity() const;
-    MEngine* GetEngine() const;
+    MEntity*            GetEntity() const;
 
-    void SetComponentID(const MComponentID& id) { m_id = id; }
+    MEngine*            GetEngine() const;
+
+    void                SetComponentID(const MComponentID& id) { m_id = id; }
+
     const MComponentID& GetComponentID() { return m_id; }
 
 private:
-//property
-	MComponentID m_id;
-	MGuid m_entityID;
-    MScene* m_pScene;
+    //property
+    MComponentID m_id;
+    MGuid        m_entityID;
+    MScene*      m_scene;
 
-    bool m_bValid;
+    bool         m_valid;
 };
 
-MORTY_SPACE_END
+}// namespace morty

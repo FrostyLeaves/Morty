@@ -11,31 +11,32 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "Utility/MString.h"
-#include "Math/Vector.h"
 #include "Math/Matrix.h"
+#include "Math/Vector.h"
+#include "Utility/MString.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MVariantMemory
 {
 public:
-	MVariantMemory() = default;
+    MVariantMemory() = default;
 
-	size_t AllocMemory(size_t nMemorySize);
+    size_t AllocMemory(size_t nMemorySize);
 
-	void ByteAlignment();
+    void   ByteAlignment();
 
-	size_t Size() const { return m_nMemorySize; }
-	MByte* Data() { return m_vMemory.data(); }
+    size_t Size() const { return m_memorySize; }
 
-public:
-
-	MVariantMemory& operator=(const MVariantMemory& other);
+    MByte* Data() { return m_memory.data(); }
 
 public:
-	std::vector<MByte> m_vMemory;
-	size_t m_nMemorySize = 0;
+    MVariantMemory& operator=(const MVariantMemory& other);
+
+public:
+    std::vector<MByte> m_memory;
+    size_t             m_memorySize = 0;
 };
 
-MORTY_SPACE_END
+}// namespace morty

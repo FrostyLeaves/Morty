@@ -11,11 +11,12 @@
 #include "Utility/MGlobal.h"
 #include "Component/MComponent.h"
 
-#include "Utility/MBounds.h"
 #include "Resource/MResource.h"
 #include "Resource/MSkeletonResource.h"
+#include "Utility/MBounds.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MSkeletonInstance;
 class MSkeletalAnimController;
@@ -25,46 +26,49 @@ public:
     MORTY_CLASS(MModelComponent)
 public:
     MModelComponent();
+
     virtual ~MModelComponent();
 
 public:
+    void               Release() override;
 
-	void Release() override;
+    void               SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeletonRsource);
 
-	void SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeletonRsource);
-	void SetSkeletonResourcePath(const MString& strSkeletonPath);
-	MString GetSkeletonResourcePath() const;
+    void               SetSkeletonResourcePath(const MString& strSkeletonPath);
 
-	MSkeletonInstance* GetSkeleton() const { return m_pSkeleton; }
+    MString            GetSkeletonResourcePath() const;
 
-public:
-
-	bool PlayAnimation(std::shared_ptr<MResource> pAnimation);
-	bool PlayAnimation(const MString& strAnimationName);
-	void RemoveAnimation();
-	MSkeletalAnimController* GetSkeletalAnimationController();
+    MSkeletonInstance* GetSkeleton() const { return m_skeleton; }
 
 public:
+    bool                     PlayAnimation(std::shared_ptr<MResource> pAnimation);
 
-	bool GetBoundingBoxVisiable() const { return m_bBoundingBoxVisiable; }
-	void SetBoundingBoxVisiable(const bool& bVisiable) { m_bBoundingBoxVisiable = bVisiable; }
+    bool                     PlayAnimation(const MString& strAnimationName);
+
+    void                     RemoveAnimation();
+
+    MSkeletalAnimController* GetSkeletalAnimationController();
+
+public:
+    bool GetBoundingBoxVisiable() const { return m_boundingBoxVisiable; }
+
+    void SetBoundingBoxVisiable(const bool& bVisiable) { m_boundingBoxVisiable = bVisiable; }
 
 
 public:
+    flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
 
+    void                      Deserialize(flatbuffers::FlatBufferBuilder& fbb) override;
 
-	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
-	void Deserialize(flatbuffers::FlatBufferBuilder& fbb) override;
-	void Deserialize(const void* pBufferPointer) override;
+    void                      Deserialize(const void* pBufferPointer) override;
 
 private:
+    MResourceRef             m_SkeletonResource;
 
-	MResourceRef m_SkeletonResource;
+    MSkeletonInstance*       m_skeleton = nullptr;
+    MSkeletalAnimController* m_currentAnimationController;
 
-	MSkeletonInstance* m_pSkeleton = nullptr;
-	MSkeletalAnimController* m_pCurrentAnimationController;
-
-	bool m_bBoundingBoxVisiable;
+    bool                     m_boundingBoxVisiable;
 };
 
-MORTY_SPACE_END
+}// namespace morty

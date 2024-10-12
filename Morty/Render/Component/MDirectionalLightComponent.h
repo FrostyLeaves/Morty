@@ -14,53 +14,59 @@
 #include "Math/Vector.h"
 #include "Utility/MColor.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MDirectionalLightComponent : public MComponent
 {
 public:
-	MORTY_CLASS(MDirectionalLightComponent)
+    MORTY_CLASS(MDirectionalLightComponent)
 
 public:
     MDirectionalLightComponent();
+
     virtual ~MDirectionalLightComponent();
 
-	void SetDirection(const Vector3& v3Direction);
+    void    SetDirection(const Vector3& v3Direction);
 
-	Vector3 GetDirection() { return m_v3Direction; }
+    Vector3 GetDirection() { return m_direction; }
 
-	Vector3 GetWorldDirection();
+    Vector3 GetWorldDirection();
 
-	void SetColor(const MColor& color) { m_f3Color = color; }
-	MColor GetColor() const { return m_f3Color; }
+    void    SetColor(const MColor& color) { m_color = color; }
 
-	void SetColorVector(const Vector4& color) { m_f3Color = color; }
-	Vector4 GetColorVector() const { return m_f3Color.ToVector4(); }
+    MColor  GetColor() const { return m_color; }
 
-	// For PBR Lightning
-	void SetLightIntensity(const float& fIntensity) { m_fIntensity = fIntensity; }
-	float GetLightIntensity() const { return m_fIntensity; }
+    void    SetColorVector(const Vector4& color) { m_color = color; }
 
-	void SetLightSize(const float& fLightSize) { m_fLightSize = fLightSize; }
-	float GetLightSize() const { return m_fLightSize; }
+    Vector4 GetColorVector() const { return m_color.ToVector4(); }
 
-	void SetLightEnable(const bool& bLightEnable) { m_bEnable = bLightEnable; }
-	bool GetLightEnable() const { return m_bEnable; }
+    // For PBR Lightning
+    void    SetLightIntensity(const float& fIntensity) { m_intensity = fIntensity; }
+
+    float   GetLightIntensity() const { return m_intensity; }
+
+    void    SetLightSize(const float& fLightSize) { m_lightSize = fLightSize; }
+
+    float   GetLightSize() const { return m_lightSize; }
+
+    void    SetLightEnable(const bool& bLightEnable) { m_enable = bLightEnable; }
+
+    bool    GetLightEnable() const { return m_enable; }
 
 public:
+    virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
 
-	virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
-	virtual void Deserialize(flatbuffers::FlatBufferBuilder& fbb) override;
-	virtual void Deserialize(const void* pBufferPointer) override;
+    virtual void                      Deserialize(flatbuffers::FlatBufferBuilder& fbb) override;
+
+    virtual void                      Deserialize(const void* pBufferPointer) override;
 
 private:
-
-	Vector3 m_v3Direction;
-	MColor m_f3Color;
-	float m_fIntensity;
-	float m_fLightSize = 1.0f;
-	bool m_bEnable = true;
-
+    Vector3 m_direction;
+    MColor  m_color;
+    float   m_intensity;
+    float   m_lightSize = 1.0f;
+    bool    m_enable    = true;
 };
 
-MORTY_SPACE_END
+}// namespace morty

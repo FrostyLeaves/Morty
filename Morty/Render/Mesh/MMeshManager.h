@@ -1,13 +1,14 @@
 #pragma once
 
-#include "Object/MObject.h"
-#include "Render/MMesh.h"
-#include "Render/MBuffer.h"
 #include "Utility/MGlobal.h"
+#include "Basic/MBuffer.h"
+#include "Mesh/MMesh.h"
+#include "Object/MObject.h"
 #include "Utility/MBounds.h"
 #include "Utility/MMemoryPool.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MTaskNode;
 class MIMesh;
@@ -17,85 +18,90 @@ class MMaterial;
 class MComponent;
 class MMeshBufferAdapter;
 class MRenderMeshComponent;
-
 class MMeshManager : public MObject
 {
-	MORTY_CLASS(MMeshManager)
+    MORTY_CLASS(MMeshManager)
 public:
-	explicit  MMeshManager();
+    explicit MMeshManager();
 
-	virtual void OnCreated() override;
-	virtual void OnDelete() override;
+    virtual void OnCreated() override;
 
-public:
-
-	struct MClusterData
-	{
-		MemoryInfo indexInfo;
-		MBoundsSphere boundsShpere;
-	};
-
-	struct MMeshData
-	{
-		MemoryInfo vertexInfo; //vertex offset and size.
-		MemoryInfo vertexMemoryInfo; //memory allow need byte alignment.
-		MemoryInfo indexInfo; //indexInfo.offset is indexMemoryInfo.offset divide by sizeof(uint32_t)
-		MemoryInfo indexMemoryInfo;
-		std::vector<MClusterData> vClusterData;
-	};
+    virtual void OnDelete() override;
 
 public:
+    struct MClusterData {
+        MemoryInfo    indexInfo;
+        MBoundsSphere boundsShpere;
+    };
 
-	bool RegisterMesh(MIMesh* pMesh);
-	void UnregisterMesh(MIMesh* pMesh);
-
-	bool HasMesh(MIMesh* pMesh) const;
-	const MMeshData& FindMesh(MIMesh* pMesh) const;
-
-	MIMesh* GetScreenRect() const;
-	MIMesh* GetSkyBox() const;
-	
-	const MMeshData& GetCubeMesh() const;
+    struct MMeshData {
+        MemoryInfo                vertexInfo;      //vertex offset and size.
+        MemoryInfo                vertexMemoryInfo;//memory allow need byte alignment.
+        MemoryInfo                indexInfo;//indexInfo.offset is indexMemoryInfo.offset divide by sizeof(uint32_t)
+        MemoryInfo                indexMemoryInfo;
+        std::vector<MClusterData> vClusterData;
+    };
 
 public:
-	const MBuffer* GetVertexBuffer() const { return &m_vertexBuffer; }
-	const MBuffer* GetIndexBuffer() const { return &m_indexBuffer; }
+    bool             RegisterMesh(MIMesh* pMesh);
 
-	std::shared_ptr<MMeshBufferAdapter> GetMeshBuffer() const;
+    void             UnregisterMesh(MIMesh* pMesh);
+
+    bool             HasMesh(MIMesh* pMesh) const;
+
+    const MMeshData& FindMesh(MIMesh* pMesh) const;
+
+    MIMesh*          GetScreenRect() const;
+
+    MIMesh*          GetSkyBox() const;
+
+    const MMeshData& GetCubeMesh() const;
+
+public:
+    const MBuffer*                      GetVertexBuffer() const { return &m_vertexBuffer; }
+
+    const MBuffer*                      GetIndexBuffer() const { return &m_indexBuffer; }
+
+    std::shared_ptr<MMeshBufferAdapter> GetMeshBuffer() const;
 
 private:
+    void                                InitializeScreenRect();
 
-	void InitializeScreenRect();
-	void ReleaseScreenRect();
-	void InitializeSkyBox();
-	void ReleaseSkyBox();
-	void InitializeCube();
-	void ReleaseCube();
+    void                                ReleaseScreenRect();
 
-	size_t RoundIndexSize(size_t nIndexSize);
-	void UploadBuffer(MIMesh* pMesh);
+    void                                InitializeSkyBox();
 
-	void UploadBufferTask(MTaskNode* pNode);
+    void                                ReleaseSkyBox();
 
-	const size_t MeshVertexStructSize;
+    void                                InitializeCube();
 
-	MBuffer m_vertexBuffer;
-	MMemoryPool m_vertexMemoryPool;
+    void                                ReleaseCube();
 
-	MBuffer m_indexBuffer;
-	MMemoryPool m_indexMemoryPool;
+    size_t                              RoundIndexSize(size_t nIndexSize);
 
-	std::map<MIMesh*, MMeshData> m_tMeshTable;
-	
-	std::unique_ptr<MIMesh> m_pScreenRect = nullptr;
-	std::unique_ptr<MIMesh> m_pSkyBox = nullptr;
-	std::unique_ptr<MIMesh> m_pCubeMesh = nullptr;
+    void                                UploadBuffer(MIMesh* pMesh);
+
+    void                                UploadBufferTask(MTaskNode* pNode);
+
+    const size_t                        MeshVertexStructSize;
+
+    MBuffer                             m_vertexBuffer;
+    MMemoryPool                         m_vertexMemoryPool;
+
+    MBuffer                             m_indexBuffer;
+    MMemoryPool                         m_indexMemoryPool;
+
+    std::map<MIMesh*, MMeshData>        m_meshTable;
+
+    std::unique_ptr<MIMesh>             m_screenRect = nullptr;
+    std::unique_ptr<MIMesh>             m_skyBox     = nullptr;
+    std::unique_ptr<MIMesh>             m_cubeMesh   = nullptr;
 
 
-// render thread.
-	std::mutex m_uploadMutex;
-	std::vector<MIMesh*> m_vUploadQueue;
-	std::shared_ptr<MMeshBufferAdapter> m_pMeshBufferAdapter = nullptr;
+    // render thread.
+    std::mutex                          m_uploadMutex;
+    std::vector<MIMesh*>                m_uploadQueue;
+    std::shared_ptr<MMeshBufferAdapter> m_meshBufferAdapter = nullptr;
 };
 
-MORTY_SPACE_END
+}// namespace morty

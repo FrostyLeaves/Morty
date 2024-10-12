@@ -1,148 +1,159 @@
 #include "Render/SceneTexture.h"
 
-#include "Scene/MScene.h"
-#include "Scene/MEntity.h"
-#include "Engine/MEngine.h"
 #include "Basic/MTexture.h"
 #include "Basic/MViewport.h"
+#include "Engine/MEngine.h"
+#include "RHI/MRenderCommand.h"
+#include "Scene/MEntity.h"
+#include "Scene/MScene.h"
 #include "TaskGraph/MTaskGraph.h"
-#include "Render/MRenderCommand.h"
 
-#include "System/MObjectSystem.h"
 #include "System/MEntitySystem.h"
+#include "System/MObjectSystem.h"
 #include "System/MResourceSystem.h"
 
-#include "Component/MSceneComponent.h"
 #include "Component/MCameraComponent.h"
-#include "Component/MMoveControllerComponent.h"
 #include "Component/MDirectionalLightComponent.h"
+#include "Component/MMoveControllerComponent.h"
+#include "Component/MSceneComponent.h"
 
 #include "RenderProgram/MIRenderProgram.h"
 
-#include "stb_image_write.h"
 #include "Batch/MMeshInstanceManager.h"
 #include "Main/MainEditor.h"
-#include "Shadow/MShadowMeshManager.h"
 #include "Manager/MAnimationManager.h"
+#include "Shadow/MShadowMeshManager.h"
+#include "stb_image_write.h"
 
 using namespace morty;
 
 SceneTexture::SceneTexture()
-	: m_bSnapshot(false)
-	, m_strSnapshotPath("")
-{
+    : m_snapshot(false)
+    , m_strSnapshotPath("")
+{}
 
-}
-
-SceneTexture::~SceneTexture()
-{
-
-}
+SceneTexture::~SceneTexture() {}
 
 void SceneTexture::Initialize(MScene* pScene, const MString& strRenderProgram)
 {
-	m_pScene = pScene;
+    m_scene = pScene;
 
-	MEngine* pEngine = pScene->GetEngine();
- 	MObjectSystem* pObjectSystem = pEngine->FindSystem<MObjectSystem>();
-	
-	m_pRenderViewport = pObjectSystem->CreateObject<MViewport>();
-	m_pRenderViewport->SetScene(m_pScene);
-	m_pRenderViewport->SetSize(Vector2i(256, 256));
+    MEngine*       pEngine       = pScene->GetEngine();
+    MObjectSystem* pObjectSystem = pEngine->FindSystem<MObjectSystem>();
 
-	MEntity* pDefaultCamera = m_pScene->CreateEntity();
+    m_renderViewport = pObjectSystem->CreateObject<MViewport>();
+    m_renderViewport->SetScene(m_scene);
+    m_renderViewport->SetSize(Vector2i(256, 256));
 
-	pDefaultCamera->SetName("Camera");
-	if (MSceneComponent* pSceneComponent = pDefaultCamera->RegisterComponent<MSceneComponent>())
-	{
-		pSceneComponent->SetPosition(Vector3(0, 20, 0));
-		pSceneComponent->SetRotation(Quaternion(Vector3(1, 0, 0), 45.0f));
-	}
-	pDefaultCamera->RegisterComponent<MCameraComponent>();
-	pDefaultCamera->RegisterComponent<MMoveControllerComponent>();
+    MEntity* pDefaultCamera = m_scene->CreateEntity();
 
-	m_pRenderViewport->SetCamera(pDefaultCamera);
+    pDefaultCamera->SetName("Camera");
+    if (MSceneComponent* pSceneComponent =
+                pDefaultCamera->RegisterComponent<MSceneComponent>())
+    {
+        pSceneComponent->SetPosition(Vector3(0, 20, 0));
+        pSceneComponent->SetRotation(Quaternion(Vector3(1, 0, 0), 45.0f));
+    }
+    pDefaultCamera->RegisterComponent<MCameraComponent>();
+    pDefaultCamera->RegisterComponent<MMoveControllerComponent>();
+
+    m_renderViewport->SetCamera(pDefaultCamera);
 
 
-	MObject* pRenderProgramObject = pObjectSystem->CreateObject(strRenderProgram);
-	m_pRenderProgram = pRenderProgramObject->template DynamicCast<MIRenderProgram>();
-	m_pRenderProgram->SetViewport(m_pRenderViewport);
-	
+    MObject* pRenderProgramObject = pObjectSystem->CreateObject(strRenderProgram);
+    m_renderProgram = pRenderProgramObject->template DynamicCast<MIRenderProgram>();
+    m_renderProgram->SetViewport(m_renderViewport);
 
-	m_pUpdateTask = pEngine->GetMainGraph()->AddNode<MTaskNode>(MStringId("SceneTextureUpdate"));
-	if (m_pUpdateTask)
-	{
-		m_pUpdateTask->SetThreadType(METhreadType::ERenderThread);
 
-		GetScene()->GetManager<MMeshInstanceManager>()->GetUpdateTask()->ConnectTo(m_pUpdateTask);
-		GetScene()->GetManager<MShadowMeshManager>()->GetUpdateTask()->ConnectTo(m_pUpdateTask);
-		GetScene()->GetManager<MAnimationManager>()->GetUpdateTask()->ConnectTo(m_pUpdateTask);
-	}
+    m_updateTask =
+            pEngine->GetMainGraph()->AddNode<MTaskNode>(MStringId("SceneTextureUpdate"));
+    if (m_updateTask)
+    {
+        m_updateTask->SetThreadType(METhreadType::ERenderThread);
+
+        GetScene()->GetManager<MMeshInstanceManager>()->GetUpdateTask()->ConnectTo(
+                m_updateTask
+        );
+        GetScene()->GetManager<MShadowMeshManager>()->GetUpdateTask()->ConnectTo(
+                m_updateTask
+        );
+        GetScene()->GetManager<MAnimationManager>()->GetUpdateTask()->ConnectTo(
+                m_updateTask
+        );
+    }
 }
 
 void SceneTexture::Release()
 {
-	MEngine* pEngine = m_pScene->GetEngine();
+    MEngine* pEngine = m_scene->GetEngine();
 
-	if (m_pUpdateTask)
-	{
-		pEngine->GetMainGraph()->DestroyNode(m_pUpdateTask);
-		m_pUpdateTask = nullptr;
-	}
+    if (m_updateTask)
+    {
+        pEngine->GetMainGraph()->DestroyNode(m_updateTask);
+        m_updateTask = nullptr;
+    }
 
-	if (m_pScene)
-	{
-		m_pScene->DeleteLater();
-		m_pScene = nullptr;
-	}
+    if (m_scene)
+    {
+        m_scene->DeleteLater();
+        m_scene = nullptr;
+    }
 
-	if (m_pRenderViewport)
-	{
-		m_pRenderViewport->DeleteLater();
-		m_pRenderViewport = nullptr;
-	}
+    if (m_renderViewport)
+    {
+        m_renderViewport->DeleteLater();
+        m_renderViewport = nullptr;
+    }
 
-	m_pRenderProgram->DeleteLater();
-	m_pRenderProgram = nullptr;
+    m_renderProgram->DeleteLater();
+    m_renderProgram = nullptr;
 }
 
 void SceneTexture::SetRect(Vector2i pos, Vector2i size)
 {
-	m_pRenderViewport->SetScreenPosition(pos);
-	m_pRenderViewport->SetSize(size);
+    m_renderViewport->SetScreenPosition(pos);
+    m_renderViewport->SetSize(size);
 }
 
 std::shared_ptr<MTexture> SceneTexture::GetTexture()
 {
-	return m_pRenderProgram->GetOutputTexture();
+    return m_renderProgram->GetOutputTexture();
 }
 
 std::vector<std::shared_ptr<MTexture>> SceneTexture::GetAllOutputTexture()
 {
-	return m_pRenderProgram->GetOutputTextures();
+    return m_renderProgram->GetOutputTextures();
 }
 
 void SceneTexture::Snapshot(const MString& strSnapshotPath)
 {
-	m_strSnapshotPath = strSnapshotPath;
-	m_bSnapshot = true;
+    m_strSnapshotPath = strSnapshotPath;
+    m_snapshot        = true;
 }
 
 void SceneTexture::UpdateTexture(MIRenderCommand* pRenderCommand)
 {
-	if (m_bPauseUpdate)
-	{
-		return;
-	}
+    if (m_pauseUpdate) { return; }
 
-	m_pRenderProgram->Render(pRenderCommand);
+    m_renderProgram->Render(pRenderCommand);
 
-	if (m_bSnapshot)
-	{
-		pRenderCommand->DownloadTexture(GetTexture().get(), 0, [=](void* pImageData, const Vector2& v2Size) {
-			stbi_write_png(m_strSnapshotPath.c_str(), v2Size.x, v2Size.y, 4, pImageData, v2Size.x * 4);
-			});
+    if (m_snapshot)
+    {
+        pRenderCommand->DownloadTexture(
+                GetTexture().get(),
+                0,
+                [=](void* pImageData, const Vector2& v2Size) {
+                    stbi_write_png(
+                            m_strSnapshotPath.c_str(),
+                            v2Size.x,
+                            v2Size.y,
+                            4,
+                            pImageData,
+                            v2Size.x * 4
+                    );
+                }
+        );
 
-		m_bSnapshot = false;
-	}
+        m_snapshot = false;
+    }
 }

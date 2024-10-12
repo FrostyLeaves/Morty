@@ -11,150 +11,119 @@ MORTY_CLASS_IMPLEMENT(MTaskNode, MTypeClass)
 
 MTaskNode::~MTaskNode()
 {
-	for (MTaskNodeInput* pInput : m_vInput)
-	{
-		delete pInput;
-	}
-	m_vInput.clear();
+    for (MTaskNodeInput* pInput: m_input) { delete pInput; }
+    m_input.clear();
 
-	for (MTaskNodeOutput* pOutput : m_vOutput)
-	{
-		delete pOutput;
-	}
-	m_vOutput.clear();
+    for (MTaskNodeOutput* pOutput: m_output) { delete pOutput; }
+    m_output.clear();
 }
 
 void MTaskNode::AppendInput(MTaskNodeInput* pInput)
 {
-	pInput->pGraphNode = this;
-	pInput->m_unIndex = m_vInput.size();
-	m_vInput.push_back(pInput);
+    pInput->pGraphNode = this;
+    pInput->m_unIndex  = m_input.size();
+    m_input.push_back(pInput);
 }
 
 void MTaskNode::AppendOutput(MTaskNodeOutput* pOutput)
 {
-	pOutput->pGraphNode = this;
-	pOutput->m_unIndex = m_vOutput.size();
+    pOutput->pGraphNode = this;
+    pOutput->m_unIndex  = m_output.size();
 
-	m_vOutput.push_back(pOutput);
+    m_output.push_back(pOutput);
 }
 
 MTaskNodeInput* MTaskNode::GetInput(const size_t& nInputIdx)
 {
-	if (nInputIdx < m_vInput.size())
-		return m_vInput[nInputIdx];
+    if (nInputIdx < m_input.size()) return m_input[nInputIdx];
 
-	return nullptr;
+    return nullptr;
 }
 
 MTaskNodeOutput* MTaskNode::GetOutput(const size_t& nOutputIdx)
 {
-	if (nOutputIdx < m_vOutput.size())
-		return m_vOutput[nOutputIdx];
+    if (nOutputIdx < m_output.size()) return m_output[nOutputIdx];
 
-	return nullptr;
+    return nullptr;
 }
 
 void MTaskNode::ConnectTo(MTaskNode* pNextNode)
 {
-	MTaskNodeOutput* pOutput = GetOutputSize() ? GetOutput(0) : AppendOutput();
-	MTaskNodeInput* pInput = pNextNode->AppendInput();
+    MTaskNodeOutput* pOutput = GetOutputSize() ? GetOutput(0) : AppendOutput();
+    MTaskNodeInput*  pInput  = pNextNode->AppendInput();
 
-	pOutput->LinkTo(pInput);
+    pOutput->LinkTo(pInput);
 }
 
 void MTaskNode::DisconnectTo(MTaskNode* pNextNode)
 {
-    for (auto iter = m_vOutput.begin(); iter != m_vOutput.end(); ++iter)
+    for (auto iter = m_output.begin(); iter != m_output.end(); ++iter)
     {
-		MTaskNodeOutput* pOutput = *iter;
-		auto inputs = pOutput->GetLinkedInputs();
-		for (MTaskNodeInput* pInput : inputs)
-		{
-		    if (pInput->GetTaskNode() == pNextNode)
-		    {
-				pOutput->UnLink(pInput);
-		    }
-		}
+        MTaskNodeOutput* pOutput = *iter;
+        auto             inputs  = pOutput->GetLinkedInputs();
+        for (MTaskNodeInput* pInput: inputs)
+        {
+            if (pInput->GetTaskNode() == pNextNode) { pOutput->UnLink(pInput); }
+        }
     }
 }
 
 
 void MTaskNode::DisconnectAll()
 {
-    for (MTaskNodeInput* pInput : m_vInput)
+    for (MTaskNodeInput* pInput: m_input)
     {
-        if (auto pPrevNode = pInput->GetLinkedNode())
-        {
-			pPrevNode->DisconnectTo(this);
-        }
+        if (auto pPrevNode = pInput->GetLinkedNode()) { pPrevNode->DisconnectTo(this); }
 
-		delete pInput;
+        delete pInput;
     }
-	m_vInput.clear();
+    m_input.clear();
 
-	for (MTaskNodeOutput* pOutput : m_vOutput)
-	{
-		auto inputs = pOutput->GetLinkedInputs();
-		for (MTaskNodeInput* pInput : inputs)
-		{
-			pOutput->UnLink(pInput);
-		}
+    for (MTaskNodeOutput* pOutput: m_output)
+    {
+        auto inputs = pOutput->GetLinkedInputs();
+        for (MTaskNodeInput* pInput: inputs) { pOutput->UnLink(pInput); }
 
-		delete pOutput;
-	}
-	m_vOutput.clear();
+        delete pOutput;
+    }
+    m_output.clear();
 }
 
 bool MTaskNode::IsStartNode()
 {
-	for (MTaskNodeInput* pInput : m_vInput)
-	{
-		if (pInput->GetLinkedNode())
-			return false;
-	}
+    for (MTaskNodeInput* pInput: m_input)
+    {
+        if (pInput->GetLinkedNode()) return false;
+    }
 
-	return true;
+    return true;
 }
 
 bool MTaskNode::IsFinalNode()
 {
-	for (MTaskNodeOutput* pOutput : m_vOutput)
-	{
-		if (!pOutput->GetLinkedInputs().empty())
-			return false;
-	}
+    for (MTaskNodeOutput* pOutput: m_output)
+    {
+        if (!pOutput->GetLinkedInputs().empty()) return false;
+    }
 
-	return true;
+    return true;
 }
 
 void MTaskNode::Run()
 {
 #if MORTY_DEBUG
-	auto start = MTimer::GetCurTime();
+    auto start = MTimer::GetCurTime();
 #endif
-	if (m_funcTaskFunction)
-	{
-		m_funcTaskFunction(this);
-	}
+    if (m_funcTaskFunction) { m_funcTaskFunction(this); }
 
 #if MORTY_DEBUG
-	auto end = MTimer::GetCurTime();
-	m_nDebugTime = ((m_nDebugTime * 29) + (end - start)) / 30;
+    auto end    = MTimer::GetCurTime();
+    m_debugTime = ((m_debugTime * 29) + (end - start)) / 30;
 #endif
 }
 
-void MTaskNode::OnCreated()
-{
+void MTaskNode::OnCreated() {}
 
-}
+void MTaskNode::OnCompile() {}
 
-void MTaskNode::OnCompile()
-{
-
-}
-
-void MTaskNode::OnDelete()
-{
-
-}
+void MTaskNode::OnDelete() {}

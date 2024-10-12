@@ -11,35 +11,35 @@
 #include "Utility/MGlobal.h"
 #include "MSinglePassRenderWork.h"
 
-#include "Render/MRenderPass.h"
 #include "Basic/MCameraFrustum.h"
+#include "RHI/MRenderPass.h"
 #include "RenderProgram/MRenderInfo.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MTaskNode;
 class MIRenderCommand;
 class MORTY_API MShadowMapRenderWork : public ISinglePassRenderWork
 {
-	MORTY_CLASS(MShadowMapRenderWork)
-	static const MStringId ShadowMapBufferOutput;
+    MORTY_CLASS(MShadowMapRenderWork)
+    static const MStringId ShadowMapBufferOutput;
 
 public:
-	void Initialize(MEngine* pEngine) override;
+    void                                Initialize(MEngine* pEngine) override;
 
-	void Render(const MRenderInfo& info) override;
-	void Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
+    void                                Render(const MRenderInfo& info) override;
+    void                                Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
 
-	std::shared_ptr<IGetTextureAdapter> GetShadowMap() const;
+    std::shared_ptr<IGetTextureAdapter> GetShadowMap() const;
 
-	std::shared_ptr<IShaderPropertyUpdateDecorator> GetFramePropertyDecorator() override;
+    std::shared_ptr<IShaderPropertyUpdateDecorator> GetFramePropertyDecorator() override;
 
 protected:
+    void                               OnCreated() override;
+    void                               BindTarget() override;
 
-	void OnCreated() override;
-	void BindTarget() override;
-
-	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
+    std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 };
 
-MORTY_SPACE_END
+}// namespace morty

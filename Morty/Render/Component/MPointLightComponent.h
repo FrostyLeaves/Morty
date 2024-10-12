@@ -14,7 +14,8 @@
 #include "Math/Vector.h"
 #include "Utility/MColor.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MPointLightComponent : public MComponent
 {
@@ -22,42 +23,49 @@ public:
     MORTY_CLASS(MPointLightComponent)
 public:
     MPointLightComponent();
+
     virtual ~MPointLightComponent();
 
 public:
+    void    SetColor(const MColor& color) { m_color = color; }
 
-	void SetColor(const MColor& color) { m_f3Color = color; }
-	MColor GetColor() const { return m_f3Color; }
+    MColor  GetColor() const { return m_color; }
 
-	void SetColorVector(const Vector4& color) { m_f3Color = color; }
-	Vector4 GetColorVector() const { return m_f3Color.ToVector4(); }
+    void    SetColorVector(const Vector4& color) { m_color = color; }
 
-	// For PBR Lightning
-	void SetLightIntensity(const float& fIntensity) { m_fIntensity = fIntensity; }
-	float GetLightIntensity() const { return m_fIntensity; }
+    Vector4 GetColorVector() const { return m_color.ToVector4(); }
 
-	void SetConstant(const float& fValue) { m_fConstant = fValue; }
-	float GetConstant() const { return m_fConstant; }
+    // For PBR Lightning
+    void    SetLightIntensity(const float& fIntensity) { m_intensity = fIntensity; }
 
-	void SetLinear(const float& fValue) { m_fLinear = fValue; }
-	float GetLinear() const { return m_fLinear; }
+    float   GetLightIntensity() const { return m_intensity; }
 
-	void SetQuadratic(const float& fValue) { m_fQuadratic = fValue; }
-	float GetQuadratic() const { return m_fQuadratic; }
+    void    SetConstant(const float& fValue) { m_constant = fValue; }
+
+    float   GetConstant() const { return m_constant; }
+
+    void    SetLinear(const float& fValue) { m_linear = fValue; }
+
+    float   GetLinear() const { return m_linear; }
+
+    void    SetQuadratic(const float& fValue) { m_quadratic = fValue; }
+
+    float   GetQuadratic() const { return m_quadratic; }
 
 public:
+    virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
 
-	virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
-	virtual void Deserialize(flatbuffers::FlatBufferBuilder& fbb) override;
-	virtual void Deserialize(const void* pBufferPointer) override;
+    virtual void                      Deserialize(flatbuffers::FlatBufferBuilder& fbb) override;
+
+    virtual void                      Deserialize(const void* pBufferPointer) override;
 
 private:
-	MColor m_f3Color;
+    MColor m_color;
 
-	float m_fIntensity;
-	float m_fConstant;
-	float m_fLinear;
-	float m_fQuadratic;
+    float  m_intensity;
+    float  m_constant;
+    float  m_linear;
+    float  m_quadratic;
 };
 
-MORTY_SPACE_END
+}// namespace morty

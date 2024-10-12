@@ -7,33 +7,35 @@
 **/
 
 #pragma once
-#include "Utility/MGlobal.h"
-#include "Scene/MManager.h"
-#include "Component/MComponent.h"
 
-MORTY_SPACE_BEGIN
+#include "Utility/MGlobal.h"
+#include "Component/MComponent.h"
+#include "Scene/MManager.h"
+
+namespace morty
+{
 
 typedef std::function<void(MComponent* pComponent)> MNotifyFunction;
 
-class MORTY_API MNotifyManager : public IManager
+class MORTY_API                                     MNotifyManager : public IManager
 {
     MORTY_CLASS(MNotifyManager)
 
 public:
     MNotifyManager();
+
     virtual ~MNotifyManager();
 
 public:
-
-    void SendNotify(const char* strNotifyName, MScene* pScene, const MComponentID& senderID);
+    void
+    SendNotify(const char* strNotifyName, MScene* pScene, const MComponentID& senderID);
 
     void RegisterNotify(const char* strNotifyName, MNotifyFunction func);
+
     void UnregisterNotify(const char* strNotifyName, MNotifyFunction func);
 
 private:
-
-    std::map<const char*, std::vector<MNotifyFunction>> m_tNotifyTable;
-
+    std::map<const char*, std::vector<MNotifyFunction>> m_notifyTable;
 };
 
-MORTY_SPACE_END
+}// namespace morty

@@ -1,12 +1,13 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "Variant/MVariant.h"
-#include "Material/MMaterial.h"
 #include "Basic/MCameraFrustum.h"
+#include "Material/MMaterial.h"
 #include "RenderProgram/MRenderInfo.h"
+#include "Variant/MVariant.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MIMesh;
 class MScene;
@@ -21,10 +22,9 @@ struct MShaderConstantParam;
 class MORTY_API MVoxelMapUtil
 {
 public:
+    static MVoxelClipmap GetClipMap(const Vector3& f3CameraPosition, const uint32_t nClipmapIdx);
 
-	static MVoxelClipmap GetClipMap(const Vector3& f3CameraPosition, const uint32_t nClipmapIdx);
-
-	static MBoundsAABB GetClipMapBounding(const MVoxelClipmap& clipmap);
+    static MBoundsAABB   GetClipMapBounding(const MVoxelClipmap& clipmap);
 };
 
-MORTY_SPACE_END
+}// namespace morty

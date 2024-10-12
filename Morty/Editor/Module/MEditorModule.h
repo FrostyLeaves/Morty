@@ -10,15 +10,14 @@
 
 #include "Utility/MGlobal.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MEngine;
 class MORTY_API MEditorModule
 {
 public:
-
-	static bool Register(MEngine* pEngine);
-
+    static bool Register(MEngine* pEngine);
 };
 
-MORTY_SPACE_END
+}// namespace morty

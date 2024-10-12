@@ -10,69 +10,74 @@
 
 #include "Utility/MGlobal.h"
 #include "Math/Matrix.h"
+#include "Resource/MResource.h"
 #include "Utility/MString.h"
 #include "Variant/MVariant.h"
-#include "Resource/MResource.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MBoundsOBB;
 class MShaderPropertyBlock;
-
 class MORTY_API MBone
 {
 public:
-	MBone();
+    MBone();
 
-	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
-	void Deserialize(const void* pBufferPointer);
+    flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+
+    void                      Deserialize(const void* pBufferPointer);
 
 public:
-	MString strName;
-	uint32_t unIndex;
-	uint32_t unParentIndex;
-	std::vector<uint32_t> vChildrenIndices;
+    MString               strName;
+    uint32_t              unIndex;
+    uint32_t              unParentIndex;
+    std::vector<uint32_t> vChildrenIndices;
 
-	//Bones World
-	Matrix4 m_matTransform;
-	Matrix4 m_matOffsetMatrix;
+    //Bones World
+    Matrix4               m_matTransform;
+    Matrix4               m_matOffsetMatrix;
 };
 
-struct MORTY_API MSkeletonPose
-{
-	std::vector<Matrix4> vBoneMatrix;
+struct MORTY_API MSkeletonPose {
+    std::vector<Matrix4> vBoneMatrix;
 };
 
 class MORTY_API MSkeleton : public MTypeClass
 {
 public:
-	MORTY_CLASS(MSkeleton)
+    MORTY_CLASS(MSkeleton)
 public:
-	MSkeleton() = default;
-	virtual ~MSkeleton() = default;
-	
-	const std::map<MString, uint32_t>& GetBonesMap() const { return m_tBonesMap; }
+    MSkeleton() = default;
 
-	void CopyAllBones(std::vector<MBone*>& allBones);
+    virtual ~MSkeleton() = default;
 
-	MBone* FindBoneByName(const MString& strName);
-	const MBone* FindBoneByName(const MString& strName) const;
-	MBone* AppendBone(const MString& strName);
-	void SortByDeep();
+    const std::map<MString, uint32_t>& GetBonesMap() const { return m_bonesMap; }
 
-	void RebuildBonesMap();
+    void                               CopyAllBones(std::vector<MBone*>& allBones);
 
-	const std::vector<MBone>& GetAllBones() const { return m_vAllBones; }
+    MBone*                             FindBoneByName(const MString& strName);
 
-	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
-	void Deserialize(const void* pBufferPointer);
+    const MBone*                       FindBoneByName(const MString& strName) const;
+
+    MBone*                             AppendBone(const MString& strName);
+
+    void                               SortByDeep();
+
+    void                               RebuildBonesMap();
+
+    const std::vector<MBone>&          GetAllBones() const { return m_allBones; }
+
+    flatbuffers::Offset<void>          Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+
+    void                               Deserialize(const void* pBufferPointer);
 
 private:
-	friend class MSkeletonResource;
+    friend class MSkeletonResource;
 
 private:
-	std::map<MString, uint32_t> m_tBonesMap;
-	std::vector<MBone> m_vAllBones;
+    std::map<MString, uint32_t> m_bonesMap;
+    std::vector<MBone>          m_allBones;
 };
 
-MORTY_SPACE_END
+}// namespace morty

@@ -2,14 +2,14 @@
 
 #include "MRenderNotify.h"
 
-#include "Scene/MEntity.h"
 #include "Engine/MEngine.h"
-#include "Resource/MSkeletonResource.h"
-#include "Resource/MSkeletalAnimationResource.h"
 #include "Model/MSkeletonInstance.h"
+#include "Resource/MSkeletalAnimationResource.h"
+#include "Resource/MSkeletonResource.h"
+#include "Scene/MEntity.h"
 
-#include "Component/MSceneComponent.h"
 #include "Component/MRenderMeshComponent.h"
+#include "Component/MSceneComponent.h"
 #include "System/MObjectSystem.h"
 #include "System/MResourceSystem.h"
 
@@ -20,128 +20,115 @@ using namespace morty;
 MORTY_CLASS_IMPLEMENT(MModelComponent, MComponent)
 
 MModelComponent::MModelComponent()
-	: MComponent()
-	, m_SkeletonResource()
-	, m_pSkeleton(nullptr)
-	, m_pCurrentAnimationController(nullptr)
-	, m_bBoundingBoxVisiable(false)
-{
+    : MComponent()
+    , m_SkeletonResource()
+    , m_skeleton(nullptr)
+    , m_currentAnimationController(nullptr)
+    , m_boundingBoxVisiable(false)
+{}
 
-}
-
-MModelComponent::~MModelComponent()
-{
-
-}
+MModelComponent::~MModelComponent() {}
 
 void MModelComponent::Release()
 {
-	if (m_pSkeleton)
-	{
-		m_pSkeleton->DeleteLater();
-		m_pSkeleton = nullptr;
-	}
+    if (m_skeleton)
+    {
+        m_skeleton->DeleteLater();
+        m_skeleton = nullptr;
+    }
 }
 
 void MModelComponent::SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeletonRsource)
 {
-	if (!m_pSkeleton)
-	{
-		auto pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
-		m_pSkeleton = pObjectSystem->CreateObject<MSkeletonInstance>();
-	}
+    if (!m_skeleton)
+    {
+        auto pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
+        m_skeleton         = pObjectSystem->CreateObject<MSkeletonInstance>();
+    }
 
-	if (m_pSkeleton)
-	{
-		m_pSkeleton->SetSkeletonResource(pSkeletonRsource);
-	}
+    if (m_skeleton) { m_skeleton->SetSkeletonResource(pSkeletonRsource); }
 
-	m_SkeletonResource = pSkeletonRsource;
+    m_SkeletonResource = pSkeletonRsource;
 
-	SendComponentNotify(MRenderNotify::NOTIFY_ANIMATION_POSE_CHANGED);
+    SendComponentNotify(MRenderNotify::NOTIFY_ANIMATION_POSE_CHANGED);
 }
 
 void MModelComponent::SetSkeletonResourcePath(const MString& strSkeletonPath)
 {
-	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-	if (std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(strSkeletonPath))
-	{
-		SetSkeletonResource(MTypeClass::DynamicCast<MSkeletonResource>(pResource));
-	}
+    MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    if (std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(strSkeletonPath))
+    {
+        SetSkeletonResource(MTypeClass::DynamicCast<MSkeletonResource>(pResource));
+    }
 }
 
-MString MModelComponent::GetSkeletonResourcePath() const
-{
-	return m_SkeletonResource.GetResourcePath();
-}
+MString MModelComponent::GetSkeletonResourcePath() const { return m_SkeletonResource.GetResourcePath(); }
 
-bool MModelComponent::PlayAnimation(const MString& strAnimationName)
+bool    MModelComponent::PlayAnimation(const MString& strAnimationName)
 {
-	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-	if (std::shared_ptr<MResource> pAnimResource = pResourceSystem->LoadResource(strAnimationName))
-	{
-		return PlayAnimation(pAnimResource);
-	}
+    MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    if (std::shared_ptr<MResource> pAnimResource = pResourceSystem->LoadResource(strAnimationName))
+    {
+        return PlayAnimation(pAnimResource);
+    }
 
-	return false;
+    return false;
 }
 
 bool MModelComponent::PlayAnimation(std::shared_ptr<MResource> pAnimation)
 {
-	RemoveAnimation();
+    RemoveAnimation();
 
-	if (std::shared_ptr<MSkeletalAnimationResource> pAnimRes = MTypeClass::DynamicCast<MSkeletalAnimationResource>(pAnimation))
-	{
-		MSkeletalAnimController* pController = new MSkeletalAnimController();
-		if (pController->Initialize(m_pSkeleton, pAnimRes))
-		{
-			m_pCurrentAnimationController = pController;
+    if (std::shared_ptr<MSkeletalAnimationResource> pAnimRes =
+                MTypeClass::DynamicCast<MSkeletalAnimationResource>(pAnimation))
+    {
+        MSkeletalAnimController* pController = new MSkeletalAnimController();
+        if (pController->Initialize(m_skeleton, pAnimRes))
+        {
+            m_currentAnimationController = pController;
 
-			return true;
-		}
-	}
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }
 
 void MModelComponent::RemoveAnimation()
 {
-	if (m_pCurrentAnimationController)
-	{
-		delete m_pCurrentAnimationController;
-		m_pCurrentAnimationController = nullptr;
-	}
+    if (m_currentAnimationController)
+    {
+        delete m_currentAnimationController;
+        m_currentAnimationController = nullptr;
+    }
 }
 
-MSkeletalAnimController* MModelComponent::GetSkeletalAnimationController()
-{
-	return m_pCurrentAnimationController;
-}
+MSkeletalAnimController*  MModelComponent::GetSkeletalAnimationController() { return m_currentAnimationController; }
 
 flatbuffers::Offset<void> MModelComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	auto fb_ske_resource = fbb.CreateString(GetSkeletonResourcePath());
-	auto fb_super = Super::Serialize(fbb).o;
+    auto                        fb_ske_resource = fbb.CreateString(GetSkeletonResourcePath());
+    auto                        fb_super        = Super::Serialize(fbb).o;
 
-	fbs::MModelComponentBuilder builder(fbb);
+    fbs::MModelComponentBuilder builder(fbb);
 
-	builder.add_skeleton_resource_path(fb_ske_resource);
-	builder.add_super(fb_super);
+    builder.add_skeleton_resource_path(fb_ske_resource);
+    builder.add_super(fb_super);
 
-	return builder.Finish().Union();
+    return builder.Finish().Union();
 }
 
 void MModelComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	const fbs::MModelComponent* fbcomponent = fbs::GetMModelComponent(fbb.GetCurrentBufferPointer());
-	Deserialize(fbcomponent);
+    const fbs::MModelComponent* fbcomponent = fbs::GetMModelComponent(fbb.GetCurrentBufferPointer());
+    Deserialize(fbcomponent);
 }
 
 void MModelComponent::Deserialize(const void* pBufferPointer)
 {
-	const fbs::MModelComponent* pComponent = reinterpret_cast<const fbs::MModelComponent*>(pBufferPointer);
+    const fbs::MModelComponent* pComponent = reinterpret_cast<const fbs::MModelComponent*>(pBufferPointer);
 
-	Super::Deserialize(pComponent->super());
+    Super::Deserialize(pComponent->super());
 
-	SetSkeletonResourcePath(pComponent->skeleton_resource_path()->c_str());
+    SetSkeletonResourcePath(pComponent->skeleton_resource_path()->c_str());
 }

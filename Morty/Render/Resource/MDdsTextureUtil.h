@@ -11,15 +11,15 @@
 #include "Utility/MGlobal.h"
 #include "MTextureResource.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 struct MTextureResourceData;
 
 class MORTY_API MDdsTextureUtil
 {
 public:
-
-	static std::unique_ptr<MResourceData> ImportDdsTexture(const MString& strResourcePath);
+    static std::unique_ptr<MResourceData> ImportDdsTexture(const MString& strResourcePath);
 };
 
-MORTY_SPACE_END
+}// namespace morty

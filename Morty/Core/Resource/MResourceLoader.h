@@ -7,52 +7,51 @@
 **/
 
 #pragma once
+
 #include "Utility/MGlobal.h"
-#include "Utility/MString.h"
 #include "Resource/MResource.h"
 #include "System/MResourceSystem.h"
 #include "Utility/MFileHelper.h"
+#include "Utility/MString.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MResourceSystem;
 class MORTY_API MResourceLoader
 {
 public:
-	MResourceLoader() = default;
-	virtual ~MResourceLoader() = default;
+    MResourceLoader() = default;
 
-	virtual const MType* ResourceType() const = 0;
-	virtual std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath) = 0;
+    virtual ~MResourceLoader() = default;
 
-	MString strResourcePath;
-	MString strResourceFullPath;
+    virtual const MType*                   ResourceType() const = 0;
 
-	std::shared_ptr<MResource> pResource = nullptr;
-	std::unique_ptr<MResourceData> pResourceData = nullptr;
+    virtual std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath) = 0;
+
+    MString                                strResourcePath;
+    MString                                strResourceFullPath;
+
+    std::shared_ptr<MResource>             pResource     = nullptr;
+    std::unique_ptr<MResourceData>         pResourceData = nullptr;
 };
 
-template<typename RESOURCE_TYPE, typename RESOURCE_DATA_TYPE>
-class MORTY_API MResourceLoaderTemplate : public MResourceLoader
+template<typename RESOURCE_TYPE, typename RESOURCE_DATA_TYPE> class MORTY_API MResourceLoaderTemplate
+    : public MResourceLoader
 {
 public:
+    const MType*                   ResourceType() const override { return RESOURCE_TYPE::GetClassType(); }
 
-	const MType* ResourceType() const override
-	{
-		return RESOURCE_TYPE::GetClassType();
-	}
+    std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath) override
+    {
+        std::unique_ptr<RESOURCE_DATA_TYPE> pResourceData = std::make_unique<RESOURCE_DATA_TYPE>();
 
-	std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath) override
-	{
-		std::unique_ptr<RESOURCE_DATA_TYPE> pResourceData = std::make_unique<RESOURCE_DATA_TYPE>();
+        std::vector<MByte>                  data;
+        MFileHelper::ReadData(svFullPath, data);
 
-		std::vector<MByte> data;
-		MFileHelper::ReadData(svFullPath, data);
-
-		pResourceData->LoadBuffer(data);
-		return pResourceData;
-	}
-
+        pResourceData->LoadBuffer(data);
+        return pResourceData;
+    }
 };
 
-MORTY_SPACE_END
+}// namespace morty

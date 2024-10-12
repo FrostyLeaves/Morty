@@ -3,12 +3,13 @@
 
 #include "imgui.h"
 
-#include "Render/MMesh.h"
+#include "Mesh/MMesh.h"
 #include "Resource/MResource.h"
 
 #include <map>
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MEngine;
 class MTexture;
@@ -18,52 +19,53 @@ class MShaderPropertyBlock;
 class ImGuiRenderable
 {
 public:
-	ImGuiRenderable(MEngine* pEngine);
-	virtual ~ImGuiRenderable();
+    ImGuiRenderable(MEngine* pEngine);
+
+    virtual ~ImGuiRenderable();
 
 
-	void UpdateMesh();
+    void UpdateMesh();
 
 public:
+    void Initialize();
 
-	void Initialize();
-	void Release();
+    void Release();
 
-	void InitializeFont();
-	void ReleaseFont();
+    void InitializeFont();
 
-	void InitializeMaterial();
-	void ReleaseMaterial();
+    void ReleaseFont();
 
-	void ReleaseMesh();
+    void InitializeMaterial();
+
+    void ReleaseMaterial();
+
+    void ReleaseMesh();
 
 
-	void Tick(const float& fDelta);
+    void Tick(const float& fDelta);
 
-	void WaitTextureReady(MIRenderCommand* pCommand);
-	void Render(MIRenderCommand* pCommand);
-	
+    void WaitTextureReady(MIRenderCommand* pCommand);
+
+    void Render(MIRenderCommand* pCommand);
+
 
 protected:
+    struct MImGuiTextureDest {
+        int                                   nDestroyCount;
+        std::shared_ptr<MTexture>             pTexture;
+        std::shared_ptr<MShaderPropertyBlock> pPropertyBlock;
+    };
 
-	struct MImGuiTextureDest
-	{
-		int nDestroyCount;
-		std::shared_ptr<MTexture> pTexture;
-		std::shared_ptr<MShaderPropertyBlock> pPropertyBlock;
-	};
-
-	MImGuiTextureDest* GetTexturPropertyBlock(ImGuiTexture tex);
+    MImGuiTextureDest* GetTexturPropertyBlock(ImGuiTexture tex);
 
 private:
+    MEngine*                                   m_engine;
 
-	MEngine* m_pEngine;
+    MMesh<ImDrawVert>                          m_Mesh;
+    std::shared_ptr<MMaterial>                 m_material;
+    MResourceRef                               m_FontTexture;
 
-	MMesh<ImDrawVert> m_Mesh;
-	std::shared_ptr<MMaterial> m_pMaterial;
-	MResourceRef m_FontTexture;
-
-	std::map<ImGuiTexture, MImGuiTextureDest*> m_tImGuiDrawTexture;
+    std::map<ImGuiTexture, MImGuiTextureDest*> m_imGuiDrawTexture;
 };
 
-MORTY_SPACE_END
+}// namespace morty

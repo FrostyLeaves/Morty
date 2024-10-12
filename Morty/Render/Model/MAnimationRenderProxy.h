@@ -8,68 +8,71 @@
 
 #pragma once
 
+#include "Utility/MGlobal.h"
+#include "Utility/MRenderGlobal.h"
 #include "Basic/MStorageVariant.h"
 #include "Batch/BatchGroup/MRenderInstanceCache.h"
 #include "Component/MComponent.h"
-#include "Render/MRenderGlobal.h"
 #include "RenderProgram/RenderWork/MRenderWork.h"
-#include "Utility/MGlobal.h"
 #include "Variant/MVariant.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MIDevice;
 class MSkeletonInstance;
 class MEngine;
 class MShaderPropertyBlock;
-
-struct MORTY_API MPoseRenderInstance
-{
-	size_t nMatrixOffset = 0;
-	MemoryInfo bonesMemoryInfo;
+struct MORTY_API MPoseRenderInstance {
+    size_t     nMatrixOffset = 0;
+    MemoryInfo bonesMemoryInfo;
 };
 
-struct MORTY_API MAnimationBufferData
-{
-	const MBuffer* pBonesBuffer = nullptr;
-	const MBuffer* pOffsetBuffer = nullptr;
+struct MORTY_API MAnimationBufferData {
+    const MBuffer* pBonesBuffer  = nullptr;
+    const MBuffer* pOffsetBuffer = nullptr;
 };
 
-struct MORTY_API MPoseRenderProxy
-{
+struct MORTY_API MPoseRenderProxy {
     std::vector<Matrix4> vBoneMatrix;
 };
 
 class MORTY_API MAnimationRenderGroup : public IPropertyBlockAdapter
 {
 public:
-	void Initialize(MEngine* pEngine);
-	void Release(MEngine* pEngine);
+    void                 Initialize(MEngine* pEngine);
 
-	void AddSkeletonRenderInstance(MSkeletonInstanceKey nProxyId, const MPoseRenderProxy& poseProxy);
-	void RemoveSkeletonRenderInstance(MSkeletonInstanceKey nProxyId);
-	void UpdateSkeletonRenderInstance(MSkeletonInstanceKey nProxyId, const MPoseRenderProxy& poseProxy);
-	void UpdateOrCreateMeshInstance(MSkeletonInstanceKey nProxyId, const MPoseRenderProxy& poseProxy);
+    void                 Release(MEngine* pEngine);
 
-	MAnimationBufferData GetAnimationBuffer() const;
-	std::shared_ptr<MShaderPropertyBlock> GetAnimationProperty() const { return m_pShaderPropertyBlock; }
-	std::shared_ptr<MShaderPropertyBlock> GetPropertyBlock() const override { return GetAnimationProperty(); }
+    void                 AddSkeletonRenderInstance(MSkeletonInstanceKey nProxyId, const MPoseRenderProxy& poseProxy);
 
-	static MPoseRenderProxy CreatePoseProxy(MSkeletonInstance* pSkeletonInstance);
+    void                 RemoveSkeletonRenderInstance(MSkeletonInstanceKey nProxyId);
 
-	MEngine* GetEngine() const { return m_pEngine; }
+    void                 UpdateSkeletonRenderInstance(MSkeletonInstanceKey nProxyId, const MPoseRenderProxy& poseProxy);
+
+    void                 UpdateOrCreateMeshInstance(MSkeletonInstanceKey nProxyId, const MPoseRenderProxy& poseProxy);
+
+    MAnimationBufferData GetAnimationBuffer() const;
+
+    std::shared_ptr<MShaderPropertyBlock> GetAnimationProperty() const { return m_shaderPropertyBlock; }
+
+    std::shared_ptr<MShaderPropertyBlock> GetPropertyBlock() const override { return GetAnimationProperty(); }
+
+    static MPoseRenderProxy               CreatePoseProxy(MSkeletonInstance* pSkeletonInstance);
+
+    MEngine*                              GetEngine() const { return m_engine; }
+
 private:
+    MPoseRenderInstance                                             CreatePoseRenderInstance();
 
-	MPoseRenderInstance CreatePoseRenderInstance();
+    MEngine*                                                        m_engine = nullptr;
 
-	MEngine* m_pEngine = nullptr;
-	
-	MRenderInstanceCache<MSkeletonInstanceKey, MPoseRenderInstance> m_tPoseRenderInstance;
-	MStorageVariant m_bonesStorageBuffer;
-	MStorageVariant m_bonesOffsetBuffer;
-	MMemoryPool m_bonesStorageMemoryPool = MMemoryPool(0);
+    MRenderInstanceCache<MSkeletonInstanceKey, MPoseRenderInstance> m_poseRenderInstance;
+    MStorageVariant                                                 m_bonesStorageBuffer;
+    MStorageVariant                                                 m_bonesOffsetBuffer;
+    MMemoryPool                                                     m_bonesStorageMemoryPool = MMemoryPool(0);
 
-	std::shared_ptr<MShaderPropertyBlock> m_pShaderPropertyBlock = nullptr;
+    std::shared_ptr<MShaderPropertyBlock>                           m_shaderPropertyBlock = nullptr;
 };
 
-MORTY_SPACE_END
+}// namespace morty

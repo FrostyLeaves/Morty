@@ -6,32 +6,18 @@ using namespace morty;
 MORTY_INTERFACE_IMPLEMENT(IManager, MTypeClass)
 
 IManager::IManager()
-	: m_pScene(nullptr)
-{
+    : m_scene(nullptr)
+{}
 
-}
+IManager::~IManager() {}
 
-IManager::~IManager()
-{
+void     IManager::SetScene(MScene* pScene) { m_scene = pScene; }
 
-}
-
-void IManager::SetScene(MScene* pScene)
-{
-	m_pScene = pScene;
-}
-
-MScene* IManager::GetScene()
-{
-	return m_pScene;
-}
+MScene*  IManager::GetScene() { return m_scene; }
 
 MEngine* IManager::GetEngine()
 {
-	if (MScene* pScene = GetScene())
-	{
-		return pScene->GetEngine();
-	}
+    if (MScene* pScene = GetScene()) { return pScene->GetEngine(); }
 
-	return nullptr;
+    return nullptr;
 }

@@ -8,32 +8,34 @@
 
 #pragma once
 
-#include "MGuid_generated.h"
 #include "Utility/MGlobal.h"
+#include "MGuid_generated.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MGuid
 {
 public:
-	MGuid();
-	MGuid(const uint32_t& data0, const uint32_t& data1, const uint32_t& data2, const uint32_t& data3);
-	MGuid(const MGuid& other);
-	static MGuid generate();
+    MGuid();
+    MGuid(const uint32_t& data0,
+          const uint32_t& data1,
+          const uint32_t& data2,
+          const uint32_t& data3);
+    MGuid(const MGuid& other);
+    static MGuid generate();
 
 
 public:
-
-	const MGuid& operator= (const MGuid& other);
-	bool operator== (const MGuid& other) const ;
-	bool operator!= (const MGuid& other) const;
-	bool operator< (const MGuid& other) const;
+    const MGuid& operator=(const MGuid& other);
+    bool         operator==(const MGuid& other) const;
+    bool         operator!=(const MGuid& other) const;
+    bool         operator<(const MGuid& other) const;
 
 public:
-	
-	static MGuid invalid;
+    static MGuid            invalid;
 
-	std::array<uint32_t, 4> data;
+    std::array<uint32_t, 4> data;
 };
 
-MORTY_SPACE_END
+}// namespace morty

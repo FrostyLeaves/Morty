@@ -7,10 +7,12 @@
 **/
 
 #pragma once
+
 #include "Utility/MGlobal.h"
 #include "Component/MComponent.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MViewport;
 class MInputEvent;
@@ -20,19 +22,18 @@ public:
     MORTY_CLASS(MInputComponent)
 public:
     MInputComponent();
+
     virtual ~MInputComponent();
 
-	typedef std::function<bool(MInputComponent*, MInputEvent*, MViewport*)> MInputCallback;
+    typedef std::function<bool(MInputComponent*, MInputEvent*, MViewport*)> MInputCallback;
 
 public:
+    void         SetInputCallback(const MInputCallback& func) { m_funcInputCallback = func; }
 
-	void SetInputCallback(const MInputCallback& func) { m_funcInputCallback = func; }
+    virtual bool Input(MInputEvent* pEvent, MViewport* pViewport);
 
-	virtual bool Input(MInputEvent* pEvent, MViewport* pViewport);
-	
 private:
-
-	MInputCallback m_funcInputCallback;
+    MInputCallback m_funcInputCallback;
 };
 
-MORTY_SPACE_END
+}// namespace morty

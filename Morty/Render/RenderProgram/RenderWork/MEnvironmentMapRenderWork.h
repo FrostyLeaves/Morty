@@ -8,70 +8,71 @@
 
 #pragma once
 
-#include "Material/MMaterial.h"
 #include "Utility/MGlobal.h"
+#include "Material/MMaterial.h"
 #include "Object/MObject.h"
 
-#include "Render/MRenderPass.h"
+#include "RHI/MRenderPass.h"
 
 #include "Resource/MResource.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MMeshResource;
 class MIRenderCommand;
 class MSkyBoxComponent;
 class MORTY_API MEnvironmentMapRenderWork : public MObject
 {
-	MORTY_CLASS(MEnvironmentMapRenderWork)
+    MORTY_CLASS(MEnvironmentMapRenderWork)
 public:
     MEnvironmentMapRenderWork();
+
     ~MEnvironmentMapRenderWork() override = default;
 
 public:
+    void OnCreated() override;
 
-	void OnCreated() override;
-	void OnDelete() override;
+    void OnDelete() override;
 
 public:
+    void                       MarkUpdateEnvironment();
 
-	void MarkUpdateEnvironment();
+    void                       RenderEnvironment(MIRenderCommand* pRenderCommand, MSkyBoxComponent* pSkyBoxComponent);
 
-	void RenderEnvironment(MIRenderCommand* pRenderCommand, MSkyBoxComponent* pSkyBoxComponent);
-
-	std::shared_ptr<MResource> GetDiffuseOutputTexture() const;
-
-protected:
-
-	void RenderDiffuse(MIRenderCommand* pRenderCommand, MSkyBoxComponent* pSkyBoxComponent);
-
-	void RenderSpecular(MIRenderCommand* pRenderCommand, MSkyBoxComponent* pSkyBoxComponent);
+    std::shared_ptr<MResource> GetDiffuseOutputTexture() const;
 
 protected:
+    void RenderDiffuse(MIRenderCommand* pRenderCommand, MSkyBoxComponent* pSkyBoxComponent);
 
-	void InitializeResource();
-	void ReleaseResource();
+    void RenderSpecular(MIRenderCommand* pRenderCommand, MSkyBoxComponent* pSkyBoxComponent);
 
-	void InitializeMaterial();
-	void ReleaseMaterial();
+protected:
+    void InitializeResource();
 
-	void InitializeRenderPass();
-	void ReleaseRenderPass();
+    void ReleaseResource();
+
+    void InitializeMaterial();
+
+    void ReleaseMaterial();
+
+    void InitializeRenderPass();
+
+    void ReleaseRenderPass();
 
 private:
+    bool                                    m_updateNextFrame;
 
-	bool m_bUpdateNextFrame;
+    std::shared_ptr<MMaterial>              m_DiffuseMaterial;
+    std::vector<std::shared_ptr<MMaterial>> m_specularMaterial;
 
-	std::shared_ptr<MMaterial> m_DiffuseMaterial;
-	std::vector<std::shared_ptr<MMaterial>> m_vSpecularMaterial;
+    std::shared_ptr<MMeshResource>          m_cubeMesh;
 
-	std::shared_ptr<MMeshResource> m_pCubeMesh;
+    MResourceRef                            m_DiffuseEnvironmentMap;
+    MResourceRef                            m_SpecularEnvironmentMap;
 
-	MResourceRef m_DiffuseEnvironmentMap;
-	MResourceRef m_SpecularEnvironmentMap;
-
-	MRenderPass m_DiffuseRenderPass;
-	std::vector<MRenderPass> m_vSpecularRenderPass;
+    MRenderPass                             m_DiffuseRenderPass;
+    std::vector<MRenderPass>                m_specularRenderPass;
 };
 
-MORTY_SPACE_END
+}// namespace morty

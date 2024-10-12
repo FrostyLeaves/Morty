@@ -11,22 +11,33 @@
 #include "Utility/MGlobal.h"
 #include "MTextureResource.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 struct MTextureResourceData;
 
 class MORTY_API MTextureResourceUtil
 {
 public:
+    static std::unique_ptr<MResourceData>
+    ImportTexture(const MString& strResourcePath, const MTextureImportInfo& importInfo);
 
-	static std::unique_ptr<MResourceData> ImportTexture(const MString&  strResourcePath, const MTextureImportInfo& importInfo);
-	static std::unique_ptr<MResourceData> ImportTextureFromMemory(const MSpan<MByte>& buffer, const MTextureImportInfo& importInfo);
+    static std::unique_ptr<MResourceData>
+    ImportTextureFromMemory(const MSpan<MByte>& buffer, const MTextureImportInfo& importInfo);
 
-	static std::unique_ptr<MResourceData> ImportCubeMap(const std::array<MString, 6>& vResourcePath, const MTextureImportInfo& importInfo);
-	
-	static std::unique_ptr<MResourceData> LoadFromMemory(const MString& strTextureName, const MSpan<MByte>& buffer, const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, MTexturePixelType ePixelType);
+    static std::unique_ptr<MResourceData>
+    ImportCubeMap(const std::array<MString, 6>& vResourcePath, const MTextureImportInfo& importInfo);
 
-	static morty::METextureFormat GetTextureFormat(const MTexturePixelType nPixelSize, const size_t nChannelNum);
+    static std::unique_ptr<MResourceData> LoadFromMemory(
+            const MString&      strTextureName,
+            const MSpan<MByte>& buffer,
+            const uint32_t&     nWidth,
+            const uint32_t&     nHeight,
+            uint32_t            nChannel,
+            MTexturePixelType   ePixelType
+    );
+
+    static morty::METextureFormat GetTextureFormat(const MTexturePixelType nPixelSize, const size_t nChannelNum);
 };
 
-MORTY_SPACE_END
+}// namespace morty

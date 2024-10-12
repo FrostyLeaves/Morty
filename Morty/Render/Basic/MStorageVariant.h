@@ -11,24 +11,24 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "Utility/MString.h"
-#include "Math/Vector.h"
+#include "Basic/MBuffer.h"
 #include "Math/Matrix.h"
-#include "Render/MBuffer.h"
+#include "Math/Vector.h"
+#include "Utility/MString.h"
 
-MORTY_SPACE_BEGIN
-
-struct MORTY_API MStorageVariant
+namespace morty
 {
+
+struct MORTY_API MStorageVariant {
 public:
+    [[nodiscard]] size_t GetSize() const { return data.size(); }
 
-	size_t GetSize() { return data.size(); }
+    void                 ResizeMemory(MIDevice* pDevice, size_t nSize);
 
-	void ResizeMemory(MIDevice* pDevice, size_t nSize);
-	void UploadBuffer(MIDevice* pDevice, size_t nBeginOffset, const MByte* pData, const size_t& nSize);
+    void                 UploadBuffer(MIDevice* pDevice, size_t nBeginOffset, const MByte* pData, const size_t& nSize);
 
-	std::vector<MByte> data;
-	MBuffer buffer;
+    std::vector<MByte>   data;
+    MBuffer              buffer;
 };
 
-MORTY_SPACE_END
+}// namespace morty

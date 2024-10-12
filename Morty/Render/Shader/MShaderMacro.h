@@ -12,33 +12,38 @@
 #include "Utility/MStringId.h"
 #include "Variant/MVariant.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MShaderMacro
 {
 public:
+    void                      SetMacro(const MStringId& strKey, const MString& strValue);
 
-	void SetMacro(const MStringId& strKey, const MString& strValue);
-    void AddUnionMacro(const MStringId& strKey, const MString& strValue = "");
-    void RemoveMacro(const MStringId& strKey);
-	bool HasMacro(const MStringId& strKey) const;
-	MString GetMacro(const MStringId& strKey) const;
+    void                      AddUnionMacro(const MStringId& strKey, const MString& strValue = "");
 
-	bool Compare(const MShaderMacro& macro);
+    void                      RemoveMacro(const MStringId& strKey);
 
-	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
-	void Deserialize(const void* pBufferPointer);
+    bool                      HasMacro(const MStringId& strKey) const;
+
+    MString                   GetMacro(const MStringId& strKey) const;
+
+    bool                      Compare(const MShaderMacro& macro);
+
+    flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+
+    void                      Deserialize(const void* pBufferPointer);
 
 protected:
+    friend class MMaterial;
 
-	friend class MMaterial;
-	void SetMacro(const MStringId& strKey, const MString& strValue, std::unordered_map<MStringId, MString>& table);
+    void SetMacro(const MStringId& strKey, const MString& strValue, std::unordered_map<MStringId, MString>& table);
 
 public:
-	std::unordered_map<MStringId, MString> m_vMacroParams;
-	std::unordered_map<MStringId, MString> m_vMortyMacroParams;
+    std::unordered_map<MStringId, MString>        m_macroParams;
+    std::unordered_map<MStringId, MString>        m_mortyMacroParams;
 
     static std::unordered_map<MStringId, MString> s_vGlobalMacroParams;
 };
 
-MORTY_SPACE_END
+}// namespace morty

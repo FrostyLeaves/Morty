@@ -1,264 +1,224 @@
 ﻿#include "Scene/MScene.h"
-#include "Utility/MFunction.h"
-#include "Engine/MEngine.h"
 #include "Component/MComponent.h"
+#include "Engine/MEngine.h"
+#include "Utility/MFunction.h"
 
 #include "System/MComponentSystem.h"
 
-#include "TaskGraph/MTaskNode.h"
 #include "TaskGraph/MTaskGraph.h"
+#include "TaskGraph/MTaskNode.h"
 
 using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MScene, MObject)
 
 MScene::MScene()
-	: MObject()
-	, m_tComponents()
-{
-	
-}
+    : MObject()
+    , m_components()
+{}
 
-MScene::~MScene()
-{
-
-}
+MScene::~MScene() {}
 
 MEntity* MScene::CreateEntity()
 {
-	MGuid id = MGuid::generate();
-	return CreateEntity(id);
+    MGuid id = MGuid::generate();
+    return CreateEntity(id);
 }
 
 MEntity* MScene::CreateEntity(const MGuid& guid)
 {
-	MEntity* pEntity = new MEntity(this, guid);
-	m_vEntity[guid] = pEntity;
+    MEntity* pEntity = new MEntity(this, guid);
+    m_entity[guid]   = pEntity;
 
-	return pEntity;
+    return pEntity;
 }
 
 void MScene::DeleteEntity(MEntity* pEntity)
 {
-	//Delete Components.
-	if (!pEntity)
-		return;
+    //Delete Components.
+    if (!pEntity) return;
 
-	pEntity->UnregisterAllComponent();
+    pEntity->UnregisterAllComponent();
 
-	auto findResult = m_vEntity.find(pEntity->GetID());
-	if (findResult != m_vEntity.end())
-	{
-		m_vEntity.erase(findResult);
-	}
+    auto findResult = m_entity.find(pEntity->GetID());
+    if (findResult != m_entity.end()) { m_entity.erase(findResult); }
 }
 
 MEntity* MScene::GetEntity(const MGuid& id)
 {
-	auto findResult = m_vEntity.find(id);
-	if (findResult != m_vEntity.end())
-		return findResult->second;
+    auto findResult = m_entity.find(id);
+    if (findResult != m_entity.end()) return findResult->second;
 
-	return nullptr;
+    return nullptr;
 }
 
-void MScene::OnCreated()
-{
-	MObject::OnCreated();
-
-}
+void MScene::OnCreated() { MObject::OnCreated(); }
 
 void MScene::OnDelete()
 {
-	while(!m_tManager.empty())
-	{
-		(m_tManager.begin()->second)->Release();
-		m_tManager.erase(m_tManager.begin());
-	}
+    while (!m_manager.empty())
+    {
+        (m_manager.begin()->second)->Release();
+        m_manager.erase(m_manager.begin());
+    }
 
-	for (auto pr : m_tComponents)
-	{
-		pr.second->RemoveAllComponents();
-	}
-	m_tComponents.clear();
+    for (auto pr: m_components) { pr.second->RemoveAllComponents(); }
+    m_components.clear();
 
-	m_vEntity.clear();
+    m_entity.clear();
 
-	Super::OnDelete();
+    Super::OnDelete();
 }
 
 MEntity* MScene::FindFirstEntityByComponent(const MType* pComponentType)
 {
-	MIComponentGroup* pGroup = FindComponents(pComponentType);
+    MIComponentGroup* pGroup = FindComponents(pComponentType);
 
-	if (!pGroup)
-		return nullptr;
+    if (!pGroup) return nullptr;
 
-	MComponent* pComponent = pGroup->FirstComponent();
-	if (!pComponent)
-		return nullptr;
+    MComponent* pComponent = pGroup->FirstComponent();
+    if (!pComponent) return nullptr;
 
-	return pComponent->GetEntity();
+    return pComponent->GetEntity();
 }
 
 MIComponentGroup* MScene::FindComponents(const MType* pComponentType)
 {
-	auto findResult = m_tComponents.find(pComponentType);
-	if (findResult == m_tComponents.end())
-	{
-		if (MIComponentGroup* pGroup = CreateComponents(pComponentType))
-		{
-			return m_tComponents[pComponentType] = pGroup;
-		}
+    auto findResult = m_components.find(pComponentType);
+    if (findResult == m_components.end())
+    {
+        if (MIComponentGroup* pGroup = CreateComponents(pComponentType))
+        {
+            return m_components[pComponentType] = pGroup;
+        }
 
-		return nullptr;
-	}
+        return nullptr;
+    }
 
-	return findResult->second;
+    return findResult->second;
 }
 
 MComponent* MScene::FindComponent(MEntity* entity, const MType* pComponentType)
 {
-	auto findResult = entity->m_tComponents.find(pComponentType);
-	if (findResult == entity->m_tComponents.end())
-		return nullptr;
+    auto findResult = entity->m_components.find(pComponentType);
+    if (findResult == entity->m_components.end()) return nullptr;
 
-	return findResult->second;
+    return findResult->second;
 
-	return nullptr;
+    return nullptr;
 }
 
 MComponent* MScene::GetComponent(const MComponentID& id)
 {
-	if (!id.IsValid())
-		return nullptr;
+    if (!id.IsValid()) return nullptr;
 
-	if (MIComponentGroup* pComponents = FindComponents(id.pComponentType))
-	{
-		return pComponents->FindComponent(id);
-	}
+    if (MIComponentGroup* pComponents = FindComponents(id.pComponentType))
+    {
+        return pComponents->FindComponent(id);
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
 std::vector<MEntity*> MScene::GetAllEntity() const
 {
-	std::vector<MEntity*> result; 
-	for (const auto& pr : m_vEntity)
-	{
-		result.push_back(pr.second);
-	}
-	return result;
+    std::vector<MEntity*> result;
+    for (const auto& pr: m_entity) { result.push_back(pr.second); }
+    return result;
 }
 
 void MScene::RegisterManager(const MType* pManagerType, IManager* pManager)
 {
-	m_tManager[pManagerType] = pManager;
-	pManager->SetScene(this);
+    m_manager[pManagerType] = pManager;
+    pManager->SetScene(this);
 
-	for (const MType* type : pManager->RegisterComponentType())
-	{
-		m_tComponentRegister[type].push_back(pManager);
-	}
+    for (const MType* type: pManager->RegisterComponentType())
+    {
+        m_componentRegister[type].push_back(pManager);
+    }
 }
 
 void MScene::Tick(const float& fDelta)
 {
-	MEngine* pEngine = GetEngine();
-	if (!pEngine)
-		return;
+    MEngine* pEngine = GetEngine();
+    if (!pEngine) return;
 
-	auto& vSystem = pEngine->GetAllSystem();
+    auto& vSystem = pEngine->GetAllSystem();
 
-	for (MISystem* pSystem : vSystem)
-	{
-		pSystem->SceneTick(this, fDelta);
-	}
+    for (MISystem* pSystem: vSystem) { pSystem->SceneTick(this, fDelta); }
 
-	for (auto pr : m_tManager)
-	{
-		pr.second->SceneTick(this, fDelta);
-	}
+    for (auto pr: m_manager) { pr.second->SceneTick(this, fDelta); }
 }
 
 MComponent* MScene::AddComponent(MEntity* entity, MIComponentGroup* pComponents)
 {
-	if (!entity)
-		return nullptr;
+    if (!entity) return nullptr;
 
-	MComponentID compID = pComponents->AddComponent(entity);
+    MComponentID compID = pComponents->AddComponent(entity);
 
-	MComponent* pComponent = pComponents->FindComponent(compID);
-	entity->m_tComponents[compID.pComponentType] = pComponent;
+    MComponent*  pComponent                     = pComponents->FindComponent(compID);
+    entity->m_components[compID.pComponentType] = pComponent;
 
-	auto findRegister = m_tComponentRegister.find(pComponent->GetType());
-	if (findRegister != m_tComponentRegister.end())
-	{
-		for (IManager* pManager : findRegister->second)
-		{
-			pManager->RegisterComponent(pComponent);
-		}
-	}
+    auto findRegister = m_componentRegister.find(pComponent->GetType());
+    if (findRegister != m_componentRegister.end())
+    {
+        for (IManager* pManager: findRegister->second)
+        {
+            pManager->RegisterComponent(pComponent);
+        }
+    }
 
-	return pComponent;
+    return pComponent;
 }
 
 MComponent* MScene::AddComponent(MEntity* entity, const MType* pComponentType)
 {
-	if (MIComponentGroup* pComponents = FindComponents(pComponentType))
-	{
-		return AddComponent(entity, pComponents);
-	}
+    if (MIComponentGroup* pComponents = FindComponents(pComponentType))
+    {
+        return AddComponent(entity, pComponents);
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
 MIComponentGroup* MScene::CreateComponents(const MType* pComponentType)
 {
-	if (MComponentSystem* pComponentSystem = GetEngine()->FindSystem<MComponentSystem>())
-	{
-		MIComponentGroup* pGroup = pComponentSystem->CreateComponentGroup(pComponentType);
-		if (pGroup)
-		{
-			pGroup->m_pScene = this;
-		}
-		return pGroup;
-	}
+    if (MComponentSystem* pComponentSystem = GetEngine()->FindSystem<MComponentSystem>())
+    {
+        MIComponentGroup* pGroup = pComponentSystem->CreateComponentGroup(pComponentType);
+        if (pGroup) { pGroup->m_scene = this; }
+        return pGroup;
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
 void MScene::RemoveComponent(MEntity* entity, const MType* pComponentType)
 {
-	if (!entity)
-		return;
+    if (!entity) return;
 
-	MIComponentGroup* pComponents = FindComponents(pComponentType);
-	if (!pComponents)
-		return;
-	
-	auto findResult = entity->m_tComponents.find(pComponentType);
-	if (findResult == entity->m_tComponents.end())
-	{
-		return;
-	}
+    MIComponentGroup* pComponents = FindComponents(pComponentType);
+    if (!pComponents) return;
 
-	MComponent* pComponent = findResult->second;
+    auto findResult = entity->m_components.find(pComponentType);
+    if (findResult == entity->m_components.end()) { return; }
 
-	entity->m_tComponents.erase(findResult);
-	if (!pComponent)
-	{
-		MORTY_ASSERT(pComponent);
-		return;
-	}
+    MComponent* pComponent = findResult->second;
 
-	auto findRegister = m_tComponentRegister.find(pComponentType);
-	if (findRegister != m_tComponentRegister.end())
-	{
-		for (IManager* pManager : findRegister->second)
-		{
-			pManager->UnregisterComponent(pComponent);
-		}
-	}
-	pComponents->RemoveComponent(pComponent->GetComponentID());
+    entity->m_components.erase(findResult);
+    if (!pComponent)
+    {
+        MORTY_ASSERT(pComponent);
+        return;
+    }
+
+    auto findRegister = m_componentRegister.find(pComponentType);
+    if (findRegister != m_componentRegister.end())
+    {
+        for (IManager* pManager: findRegister->second)
+        {
+            pManager->UnregisterComponent(pComponent);
+        }
+    }
+    pComponents->RemoveComponent(pComponent->GetComponentID());
 }

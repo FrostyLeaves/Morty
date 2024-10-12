@@ -11,53 +11,56 @@
 #include "Utility/MGlobal.h"
 #include "Utility/MString.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MMortyFileFormat
 {
 public:
-    struct MFormatBody
-    {
-        char* pData = nullptr;
-        size_t nSize = 0;
-        bool bExternalMemory = true;
+    struct MFormatBody {
+        char*  pData           = nullptr;
+        size_t nSize           = 0;
+        bool   bExternalMemory = true;
     };
-public:
 
+public:
     MMortyFileFormat() {}
+
     ~MMortyFileFormat();
 
-    void PushBackBody(void* pData, const size_t& unSize, const bool& bExternalMemory = true);
+    void
+    PushBackBody(void* pData, const size_t& unSize, const bool& bExternalMemory = true);
 
-    MString m_strHead;
-	std::vector<MFormatBody> m_vBody;
+    MString                  m_strHead;
+    std::vector<MFormatBody> m_body;
 
-    static const int s_nClipSize;
+    static const int         s_nClipSize;
 };
 
 class MORTY_API MFileHelper
 {
 public:
     MFileHelper();
+
     virtual ~MFileHelper();
 
 public:
-
     static bool MakeDir(MString strDirPath);
 
-	static bool WriteString(const MString& strFilePath, const MString& strData);
+    static bool WriteString(const MString& strFilePath, const MString& strData);
 
-	static bool ReadString(const MString& strFilePath, MString& strData);
+    static bool ReadString(const MString& strFilePath, MString& strData);
 
     static bool WriteData(const MString& strFilePath, const std::vector<MByte>& vData);
 
     static bool ReadData(const MString& strFilePath, std::vector<MByte>& vData);
 
-    static bool WriteFormatFile(const MString& strFilePath, const MMortyFileFormat& format);
+    static bool
+    WriteFormatFile(const MString& strFilePath, const MMortyFileFormat& format);
 
-    static bool ReadFormatFile(const MString& strFilePath, MMortyFileFormat& format);
+    static bool    ReadFormatFile(const MString& strFilePath, MMortyFileFormat& format);
 
-    static void GetValidFileName(MString& strFileName);
+    static void    GetValidFileName(MString& strFileName);
 
     static MString FormatPath(MString strFilePath);
 
@@ -66,9 +69,8 @@ public:
     static MString GetFileName(MStringView strFullPath);
 
     static MString ReplaceFileName(MStringView strFullPath, MStringView strNewFileName);
-    
-private:
 
+private:
 };
 
-MORTY_SPACE_END
+}// namespace morty

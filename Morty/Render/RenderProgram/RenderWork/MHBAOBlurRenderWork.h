@@ -11,28 +11,27 @@
 #include "Utility/MGlobal.h"
 #include "MBlurRenderWork.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MHBAOBlurRenderWorkV : public MBlurRenderWork
 {
 public:
-	static MStringId BlurOutput;
+    static MStringId                   BlurOutput;
 
-	std::vector<MRenderTaskInputDesc> InitInputDesc() override;
+    std::vector<MRenderTaskInputDesc>  InitInputDesc() override;
 
-	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
-
+    std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 };
 
 class MORTY_API MHBAOBlurRenderWorkH : public MBlurRenderWork
 {
 public:
-	static MStringId BlurOutput;
+    static MStringId                   BlurOutput;
 
-	std::vector<MRenderTaskInputDesc> InitInputDesc() override;
+    std::vector<MRenderTaskInputDesc>  InitInputDesc() override;
 
-	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
-
+    std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 };
 
-MORTY_SPACE_END
+}// namespace morty

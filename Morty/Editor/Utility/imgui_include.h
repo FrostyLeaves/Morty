@@ -1,7 +1,7 @@
 #pragma once
 
-#include <stdint.h>
 #include <memory>
+#include <stdint.h>
 
 #define ImDrawIdx uint32_t
 
@@ -10,43 +10,46 @@
 
 namespace morty
 {
-    class MTexture;
+class MTexture;
 }
 
-struct ImGuiTexture
-{
-    std::shared_ptr<morty::MTexture> pTexture = nullptr;
-    intptr_t nTextureIdx = 0;
-    size_t nArrayIdx = 0;
+struct ImGuiTexture {
+    std::shared_ptr<morty::MTexture> pTexture    = nullptr;
+    intptr_t                         nTextureIdx = 0;
+    size_t                           nArrayIdx   = 0;
 
     ImGuiTexture() = default;
 
     operator intptr_t() const { return nTextureIdx; }
 
-    ImGuiTexture(void* tex) : nTextureIdx(intptr_t(tex)) {}
-    
-    ImGuiTexture(std::shared_ptr<morty::MTexture> tex, intptr_t nTextureIdx, size_t arrIdx) : pTexture(tex), nTextureIdx(nTextureIdx), nArrayIdx(arrIdx) {}
+    ImGuiTexture(void* tex)
+        : nTextureIdx(intptr_t(tex))
+    {}
+
+    ImGuiTexture(
+            std::shared_ptr<morty::MTexture> tex,
+            intptr_t                         nTextureIdx,
+            size_t                           arrIdx
+    )
+        : pTexture(tex)
+        , nTextureIdx(nTextureIdx)
+        , nArrayIdx(arrIdx)
+    {}
 
     bool operator==(const ImGuiTexture& other) const
     {
-        return pTexture == other.pTexture
-            && nArrayIdx == other.nArrayIdx;
+        return pTexture == other.pTexture && nArrayIdx == other.nArrayIdx;
     }
 
     bool operator<(const ImGuiTexture& other) const
     {
-        if (pTexture < other.pTexture)
-            return true;
-        if (pTexture > other.pTexture)
-            return false;
+        if (pTexture < other.pTexture) return true;
+        if (pTexture > other.pTexture) return false;
 
         return nArrayIdx < other.nArrayIdx;
     }
 
-    bool operator!=(const ImGuiTexture& other)
-    {
-        return !operator==(other);
-    }
+    bool operator!=(const ImGuiTexture& other) { return !operator==(other); }
 };
 
 #define ImTextureID ImGuiTexture

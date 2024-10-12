@@ -11,31 +11,31 @@
 #include "Utility/MGlobal.h"
 #include "MSinglePassRenderWork.h"
 
-#include "RenderProgram/MRenderInfo.h"
-#include "MRenderWork.h"
-#include "Render/MRenderPass.h"
 #include "Basic/MCameraFrustum.h"
+#include "MRenderWork.h"
+#include "RHI/MRenderPass.h"
+#include "RenderProgram/MRenderInfo.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MDebugRenderWork : public ISinglePassRenderWork
 {
-	MORTY_CLASS(MDebugRenderWork)
+    MORTY_CLASS(MDebugRenderWork)
 
     static const MStringId BackBufferOutput;
-	static const MStringId DepthBufferOutput;
-public:
+    static const MStringId DepthBufferOutput;
 
-	void Render(const MRenderInfo& info) override;
-	void Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
+public:
+    void Render(const MRenderInfo& info) override;
+    void Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
 
 protected:
+    void                               BindTarget() override;
 
-	void BindTarget() override;
+    std::vector<MRenderTaskInputDesc>  InitInputDesc() override;
 
-	std::vector<MRenderTaskInputDesc> InitInputDesc() override;
-
-	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
+    std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 };
 
-MORTY_SPACE_END
+}// namespace morty

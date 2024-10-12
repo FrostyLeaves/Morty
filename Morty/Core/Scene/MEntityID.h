@@ -11,27 +11,26 @@
 
 #include "Utility/MGlobal.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MGuid
 {
 public:
-	MGuid();
+    MGuid();
 
-	static MGuid generate();
+    static MGuid generate();
 
-
-public:
-
-	const MGuid& operator= (const MGuid& other);
-	bool operator== (const MGuid& other) const ;
-	bool operator< (const MGuid& other) const;
 
 public:
-	
-	static MGuid invalid;
+    const MGuid& operator=(const MGuid& other);
+    bool         operator==(const MGuid& other) const;
+    bool         operator<(const MGuid& other) const;
 
-	xg::Guid m_id;
+public:
+    static MGuid invalid;
+
+    xg::Guid     m_id;
 };
 
-MORTY_SPACE_END
+}// namespace morty

@@ -1,12 +1,13 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "Render/MBuffer.h"
+#include "Basic/MBuffer.h"
+#include "Material/MMaterial.h"
 #include "Scene/MManager.h"
 #include "Variant/MVariant.h"
-#include "Material/MMaterial.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MIMesh;
 class MScene;
@@ -21,39 +22,42 @@ class MSkyBoxComponent;
 class MORTY_API MEnvironmentManager : public IManager
 {
 public:
-	MORTY_CLASS(MEnvironmentManager)
+    MORTY_CLASS(MEnvironmentManager)
 
 public:
+    void                       Initialize() override;
 
-	void Initialize() override;
-	void Release() override;
+    void                       Release() override;
 
-	std::set<const MType*> RegisterComponentType() const override;
+    std::set<const MType*>     RegisterComponentType() const override;
 
-	void RegisterComponent(MComponent* pComponent) override;
-	void UnregisterComponent(MComponent* pComponent) override;
+    void                       RegisterComponent(MComponent* pComponent) override;
 
-	void OnSkyBoxTextureChanged(MComponent* pComponent);
-	void OnDiffuseEnvTextureChanged(MComponent* pComponent);
-	void OnSpecularEnvTextureChanged(MComponent* pComponent);
+    void                       UnregisterComponent(MComponent* pComponent) override;
 
-	void UpdateSkyBoxMaterial(MSkyBoxComponent* pComponent);
+    void                       OnSkyBoxTextureChanged(MComponent* pComponent);
 
-	bool HasEnvironmentComponent() const;
-	std::shared_ptr<MMaterial> GetMaterial() const;
+    void                       OnDiffuseEnvTextureChanged(MComponent* pComponent);
+
+    void                       OnSpecularEnvTextureChanged(MComponent* pComponent);
+
+    void                       UpdateSkyBoxMaterial(MSkyBoxComponent* pComponent);
+
+    bool                       HasEnvironmentComponent() const;
+
+    std::shared_ptr<MMaterial> GetMaterial() const;
 
 protected:
+    void InitializeMaterial();
 
-	void InitializeMaterial();
-	void ReleaseMaterial();
+    void ReleaseMaterial();
 
 private:
+    MSkyBoxComponent*           m_currentSkyBoxComponent = nullptr;
 
-	MSkyBoxComponent* m_pCurrentSkyBoxComponent = nullptr;
-
-	std::set<MSkyBoxComponent*> m_tAllSkyBoxComponent;
-	std::shared_ptr<MMaterial> m_pSkyBoxMaterial = nullptr;
-	MResourceRef m_pMaterialResource;
+    std::set<MSkyBoxComponent*> m_allSkyBoxComponent;
+    std::shared_ptr<MMaterial>  m_skyBoxMaterial = nullptr;
+    MResourceRef                m_materialResource;
 };
 
-MORTY_SPACE_END
+}// namespace morty

@@ -12,80 +12,82 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "Utility/MString.h"
-#include "Render/MMesh.h"
+#include "Mesh/MMesh.h"
 #include "Mesh/MMeshUtil.h"
 #include "Resource/MResource.h"
-#include "Utility/MBounds.h"
 #include "Resource/MResourceLoader.h"
+#include "Utility/MBounds.h"
+#include "Utility/MString.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MIMesh;
 class MSkeleton;
 class MMultiLevelMesh;
-
-struct MORTY_API MMeshResourceData : public MFbResourceData
-{
+struct MORTY_API MMeshResourceData : public MFbResourceData {
 public:
-	//RawData
-	MEMeshVertexType eVertexType = MEMeshVertexType::Normal;
-	std::shared_ptr<MIMesh> pMesh = nullptr;
-	MBoundsOBB boundsOBB;
-	MBoundsSphere boundsSphere;
-	
-	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
-	void Deserialize(const void* pBufferPointer) override;
+    //RawData
+    MEMeshVertexType          eVertexType = MEMeshVertexType::Normal;
+    std::shared_ptr<MIMesh>   pMesh       = nullptr;
+    MBoundsOBB                boundsOBB;
+    MBoundsSphere             boundsSphere;
 
+    flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
+
+    void                      Deserialize(const void* pBufferPointer) override;
 };
 
 class MORTY_API MMeshResource : public MResource
 {
 public:
-	MORTY_CLASS(MMeshResource);
+    MORTY_CLASS(MMeshResource);
 
 public:
-	MMeshResource();
+    MMeshResource();
+
     virtual ~MMeshResource();
 
-	MEMeshVertexType GetMeshVertexType() const;
-	MIMesh* GetMesh() const;
-	MIMesh* GetLevelMesh(const uint32_t unLevel);
-	const MBoundsOBB* GetMeshesDefaultOBB() const;
-	const MBoundsSphere* GetMeshesDefaultSphere() const;
+    MEMeshVertexType     GetMeshVertexType() const;
+
+    MIMesh*              GetMesh() const;
+
+    MIMesh*              GetLevelMesh(const uint32_t unLevel);
+
+    const MBoundsOBB*    GetMeshesDefaultOBB() const;
+
+    const MBoundsSphere* GetMeshesDefaultSphere() const;
 
 
 public:
+    bool         Load(std::unique_ptr<MResourceData>&& pResourceData) override;
 
-	bool Load(std::unique_ptr<MResourceData>&& pResourceData) override;
-	virtual bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
+    virtual bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
 
-	virtual void OnDelete() override;
+    virtual void OnDelete() override;
 
 public:
-
-
 protected:
+    void Clean();
 
-	void Clean();
-	
-	void ResetBounds();
+    void ResetBounds();
 
 private:
+    friend class MEngine;
 
-	friend class MEngine;
-	friend class MModelConverter;
+    friend class MModelConverter;
 
-	std::unique_ptr<MResourceData> m_pResourceData = nullptr;
+    std::unique_ptr<MResourceData> m_resourceData = nullptr;
 
-	MMultiLevelMesh* m_pMeshDetailMap = nullptr;
+    MMultiLevelMesh*               m_meshDetailMap = nullptr;
 };
 
 class MORTY_API MMeshResourceLoader : public MResourceLoaderTemplate<MMeshResource, MMeshResourceData>
 {
 public:
-	static MString GetResourceTypeName() { return "Mesh"; }
-	static std::vector<MString> GetSuffixList() { return { "mesh" }; }
+    static MString              GetResourceTypeName() { return "Mesh"; }
+
+    static std::vector<MString> GetSuffixList() { return {"mesh"}; }
 };
 
-MORTY_SPACE_END
+}// namespace morty

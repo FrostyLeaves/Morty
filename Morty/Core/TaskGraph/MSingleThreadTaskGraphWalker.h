@@ -12,7 +12,8 @@
 #include "MTaskGraphWalker.h"
 #include "Thread/MThreadWork.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MThreadPool;
 class MORTY_API MSingleThreadTaskGraphWalker : public ITaskGraphWalker
@@ -28,24 +29,21 @@ public:
 public:
     MSingleThreadTaskGraphWalker(MThreadPool* pThreadPool);
 
-    void operator ()(MTaskGraph* pTaskGraph) override;
+    void operator()(MTaskGraph* pTaskGraph) override;
 
 private:
-
-    bool CheckNodeActive(MTaskNode* pNode) const;
+    bool        CheckNodeActive(MTaskNode* pNode) const;
 
     MThreadWork CreateThreadWork(MTaskNode* pNode);
 
-    void OnTaskFinishedCallback(MTaskNode* pNode);
+    void        OnTaskFinishedCallback(MTaskNode* pNode);
 
 private:
+    MThreadPool*                      m_threadPool = nullptr;
 
-    MThreadPool* m_pThreadPool = nullptr;
-
-	std::queue<MTaskNode*> m_vWaitTask;
-    std::vector<MTaskNode*> m_vActiveTask;
-    std::map<MTaskNode*, METaskState> m_tNodeState;
-
+    std::queue<MTaskNode*>            m_waitTask;
+    std::vector<MTaskNode*>           m_activeTask;
+    std::map<MTaskNode*, METaskState> m_nodeState;
 };
 
-MORTY_SPACE_END
+}// namespace morty

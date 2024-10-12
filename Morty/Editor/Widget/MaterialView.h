@@ -3,10 +3,11 @@
 #include "Main/BaseWidget.h"
 #include "Render/SceneTexture.h"
 
-#include "Resource/MResource.h"
 #include "Property/PropertyBase.h"
+#include "Resource/MResource.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MScene;
 class MEntity;
@@ -16,29 +17,32 @@ class MInputEvent;
 class MaterialView : public BaseWidget
 {
 public:
-	MaterialView();
-	~MaterialView() = default;
+    MaterialView();
+
+    ~MaterialView() = default;
 
 public:
-	void SetMaterial(std::shared_ptr<MMaterialResource> pMaterial);
+    void SetMaterial(std::shared_ptr<MMaterialResource> pMaterial);
 
-	void Initialize(MainEditor* pMainEditor) override;
-	void Release() override;
+    void Initialize(MainEditor* pMainEditor) override;
 
-	void Input(MInputEvent* pEvent) override;
-	void Render() override;
+    void Release() override;
 
-	
+    void Input(MInputEvent* pEvent) override;
+
+    void Render() override;
+
+
 private:
-	std::shared_ptr<MMaterialResource> m_pMaterial = nullptr;
-	PropertyBase m_propertyBase;
-	
-	MScene* m_pScene = nullptr;
+    std::shared_ptr<MMaterialResource> m_material = nullptr;
+    PropertyBase                       m_propertyBase;
 
-	MEntity* m_pStaticSphereMeshNode = nullptr;
-	MEntity* m_pSkeletonSphereMeshNode = nullptr;
+    MScene*                            m_scene = nullptr;
 
-	std::shared_ptr<SceneTexture> m_pSceneTexture = nullptr;
+    MEntity*                           m_staticSphereMeshNode   = nullptr;
+    MEntity*                           m_skeletonSphereMeshNode = nullptr;
+
+    std::shared_ptr<SceneTexture>      m_sceneTexture = nullptr;
 };
 
-MORTY_SPACE_END
+}// namespace morty

@@ -9,30 +9,30 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "Engine/MSystem.h"
 #include "Component/MComponent.h"
+#include "Engine/MSystem.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MScene;
 class MEntity;
 class MResource;
-
 class MORTY_API MEntitySystem : public MISystem
 {
     MORTY_CLASS(MEntitySystem)
 public:
     MEntitySystem();
+
     virtual ~MEntitySystem();
-    
-    void AddChild(MEntity* pParent, MEntity* pChild);
+
+    void                       AddChild(MEntity* pParent, MEntity* pChild);
 
     std::shared_ptr<MResource> PackEntity(const std::vector<MEntity*>& vEntity);
 
-    std::vector<MEntity*> LoadEntity(MScene* pScene, std::shared_ptr<MResource> pResource);
+    std::vector<MEntity*>      LoadEntity(MScene* pScene, std::shared_ptr<MResource> pResource);
 
     void FindAllComponentRecursively(MEntity* pEntity, const MType* pComponentType, std::vector<MComponentID>& vResult);
-    
 };
 
-MORTY_SPACE_END
+}// namespace morty

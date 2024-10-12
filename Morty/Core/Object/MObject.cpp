@@ -7,38 +7,31 @@ using namespace morty;
 MORTY_CLASS_IMPLEMENT(MObject, MTypeClass)
 
 MObject::MObject()
-	: m_unObjectID(0)
-	, m_pEngine(nullptr)
-	, m_bDeleteMark(false)
-{
+    : m_unObjectID(0)
+    , m_engine(nullptr)
+    , m_deleteMark(false)
+{}
 
-}
-
-MObject::~MObject()
-{
-
-}
+MObject::~MObject() {}
 
 class MObjectSystem* MObject::GetObjectSystem()
 {
-	if (nullptr == m_pEngine)
-		return nullptr;
+    if (nullptr == m_engine) return nullptr;
 
-	if (MISystem* pSystem = m_pEngine->FindSystem(MObjectSystem::GetClassType()))
-	{
-		return pSystem->template DynamicCast<MObjectSystem>();
-	}
+    if (MISystem* pSystem = m_engine->FindSystem(MObjectSystem::GetClassType()))
+    {
+        return pSystem->template DynamicCast<MObjectSystem>();
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
 void MObject::DeleteLater()
 {
-	if (!m_bDeleteMark)
-	{
-		m_bDeleteMark = true;
+    if (!m_deleteMark)
+    {
+        m_deleteMark = true;
 
-		GetObjectSystem()->RemoveObject(m_unObjectID);
-	}
+        GetObjectSystem()->RemoveObject(m_unObjectID);
+    }
 }
-

@@ -5,20 +5,15 @@ using namespace morty;
 MORTY_CLASS_IMPLEMENT(MInputComponent, MComponent)
 
 MInputComponent::MInputComponent()
-	: MComponent()
-	, m_funcInputCallback(nullptr)
-{
-}
+    : MComponent()
+    , m_funcInputCallback(nullptr)
+{}
 
-MInputComponent::~MInputComponent()
-{
-
-}
+MInputComponent::~MInputComponent() {}
 
 bool MInputComponent::Input(MInputEvent* pEvent, MViewport* pViewport)
 {
-	if (m_funcInputCallback)
-		return m_funcInputCallback(this, pEvent, pViewport);
+    if (m_funcInputCallback) return m_funcInputCallback(this, pEvent, pViewport);
 
-	return false;
+    return false;
 }

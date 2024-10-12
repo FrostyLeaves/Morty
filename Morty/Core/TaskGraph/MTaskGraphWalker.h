@@ -10,15 +10,16 @@
 
 #include "Utility/MGlobal.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MTaskNode;
 class MTaskGraph;
 class MORTY_API ITaskGraphWalker
 {
 public:
-    virtual ~ITaskGraphWalker() = default;
-    virtual void operator ()(MTaskGraph* pTaskGraph) = 0;
+    virtual ~ITaskGraphWalker()                     = default;
+    virtual void operator()(MTaskGraph* pTaskGraph) = 0;
 };
 
-MORTY_SPACE_END
+}// namespace morty

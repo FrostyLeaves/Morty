@@ -13,7 +13,8 @@
 
 #include "Resource/MResource.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MTexture;
 class MMaterial;
@@ -24,30 +25,33 @@ public:
 
 public:
     MSkyBoxComponent();
+
     virtual ~MSkyBoxComponent();
 
 public:
+    void                       LoadSkyBoxResource(std::shared_ptr<MResource> pTexture);
 
-    void LoadSkyBoxResource(std::shared_ptr<MResource> pTexture);
     std::shared_ptr<MResource> GetSkyBoxResource();
 
-    void LoadDiffuseEnvResource(std::shared_ptr<MResource> pTexture);
-    void LoadSpecularEnvResource(std::shared_ptr<MResource> pTexture);
+    void                       LoadDiffuseEnvResource(std::shared_ptr<MResource> pTexture);
+
+    void                       LoadSpecularEnvResource(std::shared_ptr<MResource> pTexture);
 
     std::shared_ptr<MResource> GetDiffuseEnvResource();
-    std::shared_ptr<MTexture> GetDiffuseTexture();
+
+    std::shared_ptr<MTexture>  GetDiffuseTexture();
 
     std::shared_ptr<MResource> GetSpecularEnvResource();
-    std::shared_ptr<MTexture> GetSpecularTexture();
+
+    std::shared_ptr<MTexture>  GetSpecularTexture();
 
 
 private:
+    MResourceRef               m_Texture;
+    MResourceRef               m_DiffuseEnvTexture;
+    MResourceRef               m_SpecularEnvTexture;
 
-	MResourceRef m_Texture;
-	MResourceRef m_DiffuseEnvTexture;
-	MResourceRef m_SpecularEnvTexture;
-    
-    std::shared_ptr<MMaterial> m_pMaterial;
+    std::shared_ptr<MMaterial> m_material;
 };
 
-MORTY_SPACE_END
+}// namespace morty

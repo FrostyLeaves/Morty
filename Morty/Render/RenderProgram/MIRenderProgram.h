@@ -11,7 +11,8 @@
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MTaskGraph;
 class MScene;
@@ -23,27 +24,30 @@ class MIMeshInstance;
 class MIRenderCommand;
 struct MRenderInfo;
 struct MShaderConstantParam;
+
 class MORTY_API MIRenderProgram : public MObject
 {
 public:
-	MORTY_INTERFACE(MIRenderProgram);
+    MORTY_INTERFACE(MIRenderProgram);
+
     MIRenderProgram();
+
     virtual ~MIRenderProgram() {}
 
-    void SetViewport(MViewport* pViewport) { m_pViewport = pViewport; }
-    MViewport* GetViewport() { return m_pViewport; }
+    void                                           SetViewport(MViewport* pViewport) { m_viewport = pViewport; }
 
-	virtual void Render(MIRenderCommand* pPrimaryCommand) = 0;
+    MViewport*                                     GetViewport() { return m_viewport; }
 
-    virtual std::shared_ptr<MTexture> GetOutputTexture() = 0;
+    virtual void                                   Render(MIRenderCommand* pPrimaryCommand) = 0;
+
+    virtual std::shared_ptr<MTexture>              GetOutputTexture() = 0;
+
     virtual std::vector<std::shared_ptr<MTexture>> GetOutputTextures();
-    virtual MTaskGraph* GetRenderGraph() = 0;
+
+    virtual MTaskGraph*                            GetRenderGraph() = 0;
 
 private:
-
-
-    MViewport* m_pViewport;
-
+    MViewport* m_viewport;
 };
 
-MORTY_SPACE_END
+}// namespace morty

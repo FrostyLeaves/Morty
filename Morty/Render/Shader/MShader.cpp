@@ -1,18 +1,14 @@
 ﻿#include "MShader.h"
-#include "Render/MIDevice.h"
-#include "Render/MVertex.h"
+#include "Mesh/MVertex.h"
+#include "RHI/Abstract/MIDevice.h"
 
 using namespace morty;
 
 bool MShader::CompileShader(MIDevice* pDevice)
 {
-	if (false == pDevice->CompileShader(this))
-		return false;
+    if (false == pDevice->CompileShader(this)) return false;
 
-	return true;
+    return true;
 }
 
-void MShader::CleanShader(MIDevice* pDevice)
-{
-	pDevice->CleanShader(this);
-}
+void MShader::CleanShader(MIDevice* pDevice) { pDevice->CleanShader(this); }

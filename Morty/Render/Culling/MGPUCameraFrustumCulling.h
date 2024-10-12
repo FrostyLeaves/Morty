@@ -2,36 +2,41 @@
 
 #include "MInstanceCulling.h"
 
-#include "Render/MBuffer.h"
-#include "Render/MVertex.h"
+#include "Basic/MBuffer.h"
+#include "Mesh/MVertex.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MComputeDispatcher;
 class MInstanceBatchGroup;
-class MORTY_API MGPUCameraFrustumCulling
-    : public MCameraFrustumCulling
+class MORTY_API MGPUCameraFrustumCulling : public MCameraFrustumCulling
 {
 public:
+    void                                      Initialize(MEngine* pEngine) override;
 
-    void Initialize(MEngine* pEngine) override;
-    void Release() override;
+    void                                      Release() override;
 
-    MEngine* GetEngine() const { return m_pEngine; }
-    
-    void UpdateCullingCamera();
-    void Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup) override;
-    const MBuffer* GetDrawIndirectBuffer() override { return &m_drawIndirectBuffer; }
-    const std::vector<MMaterialCullingGroup>& GetCullingInstanceGroup() const override { return m_vCullingInstanceGroup; }
+    MEngine*                                  GetEngine() const { return m_engine; }
+
+    void                                      UpdateCullingCamera();
+
+    void                                      Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup) override;
+
+    const MBuffer*                            GetDrawIndirectBuffer() override { return &m_drawIndirectBuffer; }
+
+    const std::vector<MMaterialCullingGroup>& GetCullingInstanceGroup() const override
+    {
+        return m_cullingInstanceGroup;
+    }
+
 private:
-
-    MEngine* m_pEngine = nullptr;
-    MComputeDispatcher* m_pCullingComputeDispatcher = nullptr;
-    MBuffer m_cullingInputBuffer;
-    MBuffer m_drawIndirectBuffer;
-    MBuffer m_cullingOutputBuffer;
-    std::vector<MMaterialCullingGroup> m_vCullingInstanceGroup;
-
+    MEngine*                           m_engine                   = nullptr;
+    MComputeDispatcher*                m_cullingComputeDispatcher = nullptr;
+    MBuffer                            m_cullingInputBuffer;
+    MBuffer                            m_drawIndirectBuffer;
+    MBuffer                            m_cullingOutputBuffer;
+    std::vector<MMaterialCullingGroup> m_cullingInstanceGroup;
 };
 
-MORTY_SPACE_END
+}// namespace morty

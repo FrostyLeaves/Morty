@@ -10,42 +10,41 @@
 #include "Utility/MGlobal.h"
 #include "Type/MType.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MTaskNode;
 class MTaskNodeOutput;
-
 class MORTY_API MTaskNodeInput : public MTypeClass
 {
-	MORTY_CLASS(MTaskNodeInput)
+    MORTY_CLASS(MTaskNodeInput)
 public:
+    MTaskNodeInput();
 
-	MTaskNodeInput();
+    void             LinkTo(MTaskNodeOutput* pOutput);
 
-	void LinkTo(MTaskNodeOutput* pOutput);
-
-	void UnLink();
+    void             UnLink();
 
 
-	size_t GetIndex() const { return m_unIndex; }
-	MString GetStringID() const;
+    size_t           GetIndex() const { return m_unIndex; }
+    MString          GetStringID() const;
 
-	void SetName(const MString& strName) { m_strName = strName; }
-	const MString& GetName() const { return m_strName; }
+    void             SetName(const MString& strName) { m_strName = strName; }
+    const MString&   GetName() const { return m_strName; }
 
-	MTaskNode* GetTaskNode() const { return pGraphNode; }
-	MTaskNode* GetLinkedNode() const;
-	MTaskNodeOutput* GetLinkedOutput() const { return pLinkedOutput; }
-
-private:
-	friend class MTaskNode;
-	friend class MTaskNodeOutput;
+    MTaskNode*       GetTaskNode() const { return pGraphNode; }
+    MTaskNode*       GetLinkedNode() const;
+    MTaskNodeOutput* GetLinkedOutput() const { return pLinkedOutput; }
 
 private:
-	size_t m_unIndex;
-	MString m_strName;
-	MTaskNode* pGraphNode;
-	MTaskNodeOutput* pLinkedOutput;
+    friend class MTaskNode;
+    friend class MTaskNodeOutput;
+
+private:
+    size_t           m_unIndex;
+    MString          m_strName;
+    MTaskNode*       pGraphNode;
+    MTaskNodeOutput* pLinkedOutput;
 };
 
-MORTY_SPACE_END
+}// namespace morty

@@ -4,10 +4,7 @@ using namespace morty;
 
 void MStorageVariant::ResizeMemory(MIDevice* pDevice, size_t nSize)
 {
-    if (buffer.GetSize() == nSize)
-    {
-        return;
-    }
+    if (buffer.GetSize() == nSize) { return; }
 
     data.resize(nSize);
 

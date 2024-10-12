@@ -10,27 +10,29 @@
 
 #include "Utility/MGlobal.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 enum class METhreadType : int
 {
-	EAny = -2,
-	ECurrentThread = -1,
+    EAny           = -2,
+    ECurrentThread = -1,
 
-	EMainThread = 0,
-	ERenderThread = 1,
+    EMainThread   = 0,
+    ERenderThread = 1,
 
-	ENameThreadNum
+    ENameThreadNum
 };
 
-struct MORTY_API MThreadWork
-{
-	MThreadWork() = default;
-	MThreadWork(METhreadType type) : eThreadType(static_cast<int>(type)){}
+struct MORTY_API MThreadWork {
+    MThreadWork() = default;
+    MThreadWork(METhreadType type)
+        : eThreadType(static_cast<int>(type))
+    {}
 
-	std::function<void(void)> funcWorkFunction = nullptr;
+    std::function<void(void)> funcWorkFunction = nullptr;
 
-	int eThreadType = static_cast<int>(METhreadType::EAny);
+    int                       eThreadType = static_cast<int>(METhreadType::EAny);
 };
 
-MORTY_SPACE_END
+}// namespace morty
