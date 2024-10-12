@@ -71,45 +71,45 @@ public:
 
     void ReleaseFrameShaderParams();
 
-    void InitializeRenderWork();
+    void InitializeRenderNode();
 
-    void ReleaseRenderWork();
+    void ReleaseRenderNode();
 
     void InitializeTaskGraph();
 
     void ReleaseTaskGraph();
 
 protected:
-    template<typename TYPE> TYPE* RegisterRenderWork(const MStringId strTaskNodeName)
+    template<typename TYPE> TYPE* RegisterRenderNode(const MStringId strTaskNodeName)
     {
-        MRenderTaskNode* pRenderWork = m_renderGraph->FindTaskNode<TYPE>(strTaskNodeName);
-        if (pRenderWork != nullptr) { return static_cast<TYPE*>(pRenderWork); }
+        MRenderTaskNode* pRenderNode = m_renderGraph->FindTaskNode<TYPE>(strTaskNodeName);
+        if (pRenderNode != nullptr) { return static_cast<TYPE*>(pRenderNode); }
 
-        pRenderWork = m_renderGraph->RegisterTaskNode<TYPE>(strTaskNodeName);
-        if (pRenderWork)
+        pRenderNode = m_renderGraph->RegisterTaskNode<TYPE>(strTaskNodeName);
+        if (pRenderNode)
         {
-            pRenderWork->Initialize(GetEngine());
-            if (auto pFramePropertyDecorator = pRenderWork->GetFramePropertyDecorator())
+            pRenderNode->Initialize(GetEngine());
+            if (auto pFramePropertyDecorator = pRenderNode->GetFramePropertyDecorator())
             {
                 m_framePropertyAdapter->RegisterPropertyDecorator(pFramePropertyDecorator);
             }
         }
-        return static_cast<TYPE*>(pRenderWork);
+        return static_cast<TYPE*>(pRenderNode);
     }
 
-    template<typename TYPE> TYPE* GetRenderWork(const MStringId& strTaskNodeName) const
+    template<typename TYPE> TYPE* GetRenderNode(const MStringId& strTaskNodeName) const
     {
         return m_renderGraph->FindTaskNode<TYPE>(strTaskNodeName);
     }
 
-    template<typename TYPE> TYPE* RegisterRenderWork()
+    template<typename TYPE> TYPE* RegisterRenderNode()
     {
-        return RegisterRenderWork<TYPE>(MStringId(TYPE::GetClassTypeName()));
+        return RegisterRenderNode<TYPE>(MStringId(TYPE::GetClassTypeName()));
     }
 
-    template<typename TYPE> TYPE* GetRenderWork() const
+    template<typename TYPE> TYPE* GetRenderNode() const
     {
-        return GetRenderWork<TYPE>(MStringId(TYPE::GetClassTypeName()));
+        return GetRenderNode<TYPE>(MStringId(TYPE::GetClassTypeName()));
     }
 
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Main/BaseWidget.h"
-#include "Render/SceneTexture.h"
+#include "Render/SceneViewer.h"
 
 #include "Property/PropertyBase.h"
 #include "Resource/MResource.h"
@@ -42,7 +42,7 @@ private:
     MEntity*                           m_staticSphereMeshNode   = nullptr;
     MEntity*                           m_skeletonSphereMeshNode = nullptr;
 
-    std::shared_ptr<SceneTexture>      m_sceneTexture = nullptr;
+    std::shared_ptr<SceneViewer>       m_sceneTexture = nullptr;
 };
 
 }// namespace morty

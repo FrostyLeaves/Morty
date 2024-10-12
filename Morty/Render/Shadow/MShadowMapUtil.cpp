@@ -12,7 +12,7 @@
 #include "Component/MSceneComponent.h"
 
 #include "Batch/BatchGroup/MInstanceBatchGroup.h"
-#include "RenderProgram/RenderWork/MRenderWork.h"
+#include "RenderProgram/RenderNode/MRenderNode.h"
 #include "VXGI/MVoxelMapUtil.h"
 
 #define SHADOW_VIEW_FROM_PCS

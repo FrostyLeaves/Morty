@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Render/SceneTexture.h"
+#include "Render/SceneViewer.h"
 #include "Variant/MVariant.h"
 
 #include "SDLRenderView.h"
@@ -32,37 +32,37 @@ public:
 
     virtual ~MainEditor() = default;
 
-    bool                          Initialize(MEngine* pEngine);
+    bool                         Initialize(MEngine* pEngine);
 
-    void                          Release();
+    void                         Release();
 
-    MEngine*                      GetEngine() const { return m_engine; }
+    MEngine*                     GetEngine() const { return m_engine; }
 
-    void                          SetScene(MScene* pScene);
+    void                         SetScene(MScene* pScene);
 
-    MScene*                       GetScene() const { return m_scene; }
+    MScene*                      GetScene() const { return m_scene; }
 
-    MViewport*                    GetViewport() const;
+    MViewport*                   GetViewport() const;
 
-    std::shared_ptr<SceneTexture> GetSceneTexture() const { return m_sceneTexture; }
+    std::shared_ptr<SceneViewer> GetSceneTexture() const { return m_sceneTexture; }
 
-    void                          OnResize(morty::Vector2 size) override;
+    void                         OnResize(morty::Vector2 size) override;
 
-    void                          OnRender(MIRenderCommand* pRenderCommand) override;
+    void                         OnRender(MIRenderCommand* pRenderCommand) override;
 
-    void                          OnInput(MInputEvent* pEvent) override;
+    void                         OnInput(MInputEvent* pEvent) override;
 
-    void                          OnTick(float fDelta) override;
+    void                         OnTick(float fDelta) override;
 
-    static morty::MString         GetRenderProgramName() { return m_renderProgramName; }
+    static morty::MString        GetRenderProgramName() { return m_renderProgramName; }
 
-    MTaskNode*                    GetRenderTask() override { return m_renderTask; }
+    MTaskNode*                   GetRenderTask() override { return m_renderTask; }
 
-    std::shared_ptr<SceneTexture> CreateSceneViewer(MScene* pScene);
+    std::shared_ptr<SceneViewer> CreateSceneViewer(const MString& viewName, MScene* pScene);
 
-    void                          DestroySceneViewer(std::shared_ptr<SceneTexture> pViewer);
+    void                         DestroySceneViewer(std::shared_ptr<SceneViewer> pViewer);
 
-    morty::Vector4                GetCurrentWidgetSize() const;
+    morty::Vector4               GetCurrentWidgetSize() const;
 
 protected:
     void UpdateSceneViewer(MIRenderCommand* pRenderCommand);
@@ -76,25 +76,25 @@ protected:
     void ShowDialog();
 
 private:
-    MEngine*                                m_engine = nullptr;
-    MScene*                                 m_scene  = nullptr;
-    std::vector<BaseWidget*>                m_childView;
-    std::set<std::shared_ptr<SceneTexture>> m_sceneViewer;
+    MEngine*                               m_engine = nullptr;
+    MScene*                                m_scene  = nullptr;
+    std::vector<BaseWidget*>               m_childView;
+    std::set<std::shared_ptr<SceneViewer>> m_sceneViewer;
 
-    bool                                    m_showRenderView = false;
-    bool                                    m_showDebugView  = false;
+    bool                                   m_showRenderView = false;
+    bool                                   m_showDebugView  = false;
 
-    Vector4                                 m_renderViewSize = Vector4(0, 0, 32, 32);
+    Vector4                                m_renderViewSize = Vector4(0, 0, 32, 32);
 
-    TaskGraphView*                          m_renderGraphView   = nullptr;
-    RenderSettingView*                      m_renderSettingView = nullptr;
-    std::shared_ptr<SceneTexture>           m_sceneTexture      = nullptr;
-    MTaskNode*                              m_renderTask        = nullptr;
+    TaskGraphView*                         m_renderGraphView   = nullptr;
+    RenderSettingView*                     m_renderSettingView = nullptr;
+    std::shared_ptr<SceneViewer>           m_sceneTexture      = nullptr;
+    MTaskNode*                             m_renderTask        = nullptr;
 
-    IniConfig                               m_IniConfig;
+    IniConfig                              m_IniConfig;
 
-    static MString                          m_renderProgramName;
-    static MString                          m_editorConfigFilePath;
+    static MString                         m_renderProgramName;
+    static MString                         m_editorConfigFilePath;
 };
 
 }// namespace morty

@@ -43,26 +43,18 @@ public:
         Exclusive = 1,
     };
 
+    MRenderTaskTarget* InitResizePolicy(ResizePolicy ePolicy, float fScale = 1.0f, size_t nTexelSize = 1);
+    MRenderTaskTarget* InitSharedPolicy(SharedPolicy ePolicy);
+    MRenderTaskTarget* InitTextureDesc(const MTextureDesc& desc);
 
-    MRenderTaskTarget*               InitResizePolicy(ResizePolicy ePolicy, float fScale = 1.0f, size_t nTexelSize = 1);
+    void               SetTexture(const std::shared_ptr<MTexture>& pTexture);
 
-    MRenderTaskTarget*               InitSharedPolicy(SharedPolicy ePolicy);
-
-    MRenderTaskTarget*               InitTextureDesc(const MTextureDesc& desc);
-
-    void                             SetTexture(const std::shared_ptr<MTexture>& pTexture);
-
-    const std::shared_ptr<MTexture>& GetTexture() const { return m_texture; }
-
-    SharedPolicy                     GetSharedPolicy() const { return m_sharedPolicy; }
-
-    ResizePolicy                     GetResizePolicy() const { return m_resizePolicy; }
-
-    MTextureDesc                     GetTextureDesc() const { return m_textureDesc; }
-
-    float                            GetScale() const { return m_scale; }
-
-    size_t                           GetTexelSize() const { return m_texelSize; }
+    [[nodiscard]] const std::shared_ptr<MTexture>& GetTexture() const { return m_texture; }
+    [[nodiscard]] SharedPolicy                     GetSharedPolicy() const { return m_sharedPolicy; }
+    [[nodiscard]] ResizePolicy                     GetResizePolicy() const { return m_resizePolicy; }
+    [[nodiscard]] MTextureDesc                     GetTextureDesc() const { return m_textureDesc; }
+    [[nodiscard]] float                            GetScale() const { return m_scale; }
+    [[nodiscard]] size_t                           GetTexelSize() const { return m_texelSize; }
 
 private:
     std::shared_ptr<MTexture> m_texture      = nullptr;
@@ -88,47 +80,35 @@ class MORTY_API MRenderTaskNode : public MTaskNode
     MORTY_CLASS(MRenderTaskNode)
 public:
     virtual void                                            Initialize(MEngine* pEngine) { MORTY_UNUSED(pEngine); }
-
     virtual void                                            Release() {}
-
     virtual void                                            Render(const MRenderInfo& info) { MORTY_UNUSED(info); }
-
     virtual void                                            RenderSetup(const MRenderInfo& info) { MORTY_UNUSED(info); }
-
     virtual void                                            BindTarget() {}
-
     virtual void                                            RegisterSetting() {}
-
     virtual void                                            Resize(Vector2i size) { MORTY_UNUSED(size); }
 
     virtual std::shared_ptr<IShaderPropertyUpdateDecorator> GetFramePropertyDecorator() { return nullptr; }
 
     virtual std::vector<MRenderTaskInputDesc>               InitInputDesc() { return {}; }
-
     virtual std::vector<MRenderTaskOutputDesc>              InitOutputDesc() { return {}; }
 
     void                                                    OnCreated() override;
-
     void                                                    OnDelete() override;
 
-
-    MRenderGraph*                                           GetRenderGraph() const;
-
-    MRenderTargetManager*                                   GetRenderTargetManager() const;
+    [[nodiscard]] MRenderGraph*                             GetRenderGraph() const;
+    [[nodiscard]] MRenderTargetManager*                     GetRenderTargetManager() const;
 
     std::shared_ptr<MTexture>                               GetInputTexture(const size_t& nIdx);
-
     std::shared_ptr<MTexture>                               GetOutputTexture(const size_t& nIdx);
-
     std::shared_ptr<MTexture>                               GetInputTexture(const MStringId& nIdx);
-
     std::shared_ptr<MTexture>                               GetOutputTexture(const MStringId& nIdx);
 
 
     MRenderTaskNodeOutput*                                  GetRenderOutput(const size_t& nIdx);
 
-    std::unordered_map<MStringId, MRenderTaskNodeInput*>    m_input;
-    std::unordered_map<MStringId, MRenderTaskNodeOutput*>   m_output;
+private:
+    std::unordered_map<MStringId, MRenderTaskNodeInput*>  m_input;
+    std::unordered_map<MStringId, MRenderTaskNodeOutput*> m_output;
 };
 
 }// namespace morty

@@ -32,40 +32,52 @@ class MORTY_API MRenderGraph : public MTaskGraph
 public:
     MRenderGraph() = default;
 
-    MRenderGraph(MEngine* pEngine);
+    explicit MRenderGraph(MEngine* pEngine);
 
     ~MRenderGraph() override;
 
-    template<typename TYPE> MRenderTaskNode* RegisterTaskNode(const MStringId& strTaskNodeName);
+    template<typename TYPE> MRenderTaskNode*           RegisterTaskNode(const MStringId& strTaskNodeName);
 
-    template<typename TYPE> TYPE*            FindTaskNode(const MStringId& strTaskNodeName) const;
+    template<typename TYPE> TYPE*                      FindTaskNode(const MStringId& strTaskNodeName) const;
 
-    MRenderTargetManager*                    GetRenderTargetManager() const { return m_renderTargetManager; }
+    [[nodiscard]] MRenderTargetManager*                GetRenderTargetManager() const { return m_renderTargetManager; }
 
-    std::shared_ptr<MRenderGraphSetting>     GetRenderGraphSetting() const { return m_renderGraphSetting; }
+    [[nodiscard]] std::shared_ptr<MRenderGraphSetting> GetRenderGraphSetting() const { return m_renderGraphSetting; }
 
-    MRenderTaskTarget*                       FindRenderTaskTarget(const MStringId& name);
+    MRenderTaskTarget*                                 FindRenderTaskTarget(const MStringId& name);
 
     void SetFrameProperty(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter) { m_framePropertyAdapter = pAdapter; }
 
-    const std::shared_ptr<IPropertyBlockAdapter>& GetFrameProperty() const { return m_framePropertyAdapter; }
+    [[nodiscard]] const std::shared_ptr<IPropertyBlockAdapter>& GetFrameProperty() const
+    {
+        return m_framePropertyAdapter;
+    }
 
     void SetCameraCullingResult(const std::shared_ptr<MInstanceCulling>& pAdapter) { m_cameraCullingResult = pAdapter; }
 
-    const std::shared_ptr<MInstanceCulling>& GetCameraCullingResult() const { return m_cameraCullingResult; }
+    [[nodiscard]] const std::shared_ptr<MInstanceCulling>& GetCameraCullingResult() const
+    {
+        return m_cameraCullingResult;
+    }
 
     void SetShadowCullingResult(const std::shared_ptr<MInstanceCulling>& pAdapter) { m_shadowCullingResult = pAdapter; }
 
-    const std::shared_ptr<MInstanceCulling>& GetShadowCullingResult() const { return m_shadowCullingResult; }
+    [[nodiscard]] const std::shared_ptr<MInstanceCulling>& GetShadowCullingResult() const
+    {
+        return m_shadowCullingResult;
+    }
 
     void SetVoxelizerCullingResult(const std::shared_ptr<MInstanceCulling>& pAdapter)
     {
         m_voxelizerCullingResult = pAdapter;
     }
 
-    const std::shared_ptr<MInstanceCulling>& GetVoxelizerCullingResult() const { return m_voxelizerCullingResult; }
+    [[nodiscard]] const std::shared_ptr<MInstanceCulling>& GetVoxelizerCullingResult() const
+    {
+        return m_voxelizerCullingResult;
+    }
 
-    void                                     Resize(const Vector2i& size);
+    void Resize(const Vector2i& size);
 
 private:
     Vector2i                                    m_size = {0, 0};
@@ -87,11 +99,11 @@ template<typename TYPE> MRenderTaskNode* MRenderGraph::RegisterTaskNode(const MS
     const auto findResult = m_taskNodeTable.find(strTaskNodeName);
     if (findResult != m_taskNodeTable.end()) { return findResult->second; }
 
-    auto pRenderWork = AddNode<TYPE>(strTaskNodeName);
+    auto pRenderNode = AddNode<TYPE>(strTaskNodeName);
 
-    m_taskNodeTable[strTaskNodeName] = pRenderWork;
+    m_taskNodeTable[strTaskNodeName] = pRenderNode;
 
-    return pRenderWork;
+    return pRenderNode;
 }
 
 template<typename TYPE> TYPE* MRenderGraph::FindTaskNode(const MStringId& strTaskNodeName) const

@@ -7,7 +7,7 @@
 #include "RHI/MRenderPass.h"
 #include "RenderProgram/MRenderInfo.h"
 #include "RenderProgram/RenderGraph/MRenderTaskNode.h"
-#include "RenderProgram/RenderWork/MRenderWork.h"
+#include "RenderProgram/RenderNode/MRenderNode.h"
 #include "System/MRenderSystem.h"
 #include "TaskGraph/MTaskGraph.h"
 

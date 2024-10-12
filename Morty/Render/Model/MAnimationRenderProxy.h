@@ -13,7 +13,7 @@
 #include "Basic/MStorageVariant.h"
 #include "Batch/BatchGroup/MRenderInstanceCache.h"
 #include "Component/MComponent.h"
-#include "RenderProgram/RenderWork/MRenderWork.h"
+#include "RenderProgram/RenderNode/MRenderNode.h"
 #include "Variant/MVariant.h"
 
 namespace morty

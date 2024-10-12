@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Main/BaseWidget.h"
-#include "Render/SceneTexture.h"
+#include "Render/SceneViewer.h"
 
 #include "Property/PropertyBase.h"
 #include "Resource/MResource.h"

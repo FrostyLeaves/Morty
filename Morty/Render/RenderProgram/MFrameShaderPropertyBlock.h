@@ -11,7 +11,7 @@
 #include "Utility/MGlobal.h"
 #include "MRenderInfo.h"
 #include "Material/MMaterial.h"
-#include "RenderWork/MRenderWork.h"
+#include "RenderNode/MRenderNode.h"
 #include "Shader/MShaderParam.h"
 #include "Shader/MShaderPropertyBlock.h"
 

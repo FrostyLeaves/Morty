@@ -8,7 +8,7 @@
 #include "System/MRenderSystem.h"
 
 #include "Component/MSkyBoxComponent.h"
-#include "RenderProgram/RenderWork/MEnvironmentMapRenderWork.h"
+#include "RenderProgram/RenderNode/MEnvironmentMapRenderNode.h"
 #include "TaskGraph/MTaskGraph.h"
 #include "Utility/MFunction.h"
 
@@ -33,7 +33,7 @@ void MSkyBoxSystem::GenerateEnvironmentWork(MSkyBoxComponent* pSkyBoxComponent)
     MObjectSystem* pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
     if (!pObjectSystem) return;
 
-    MEnvironmentMapRenderWork* pRenderWork = pObjectSystem->CreateObject<MEnvironmentMapRenderWork>();
+    MEnvironmentMapRenderNode* pRenderNode = pObjectSystem->CreateObject<MEnvironmentMapRenderNode>();
 
     MIDevice*                  pDevice = pRenderSystem->GetDevice();
 
@@ -41,13 +41,13 @@ void MSkyBoxSystem::GenerateEnvironmentWork(MSkyBoxComponent* pSkyBoxComponent)
 
     pCommand->RenderCommandBegin();
 
-    pRenderWork->RenderEnvironment(pCommand, pSkyBoxComponent);
+    pRenderNode->RenderEnvironment(pCommand, pSkyBoxComponent);
 
     //TODO warning. component maybe null.
     pCommand->addFinishedCallback([=]() {
-        if (pSkyBoxComponent) { pSkyBoxComponent->LoadDiffuseEnvResource(pRenderWork->GetDiffuseOutputTexture()); }
+        if (pSkyBoxComponent) { pSkyBoxComponent->LoadDiffuseEnvResource(pRenderNode->GetDiffuseOutputTexture()); }
 
-        pRenderWork->DeleteLater();
+        pRenderNode->DeleteLater();
     });
 
     pCommand->RenderCommandEnd();

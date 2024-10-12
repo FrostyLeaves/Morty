@@ -12,7 +12,7 @@
 #include "Object/MObject.h"
 
 #include "RenderProgram/MRenderInfo.h"
-#include "RenderProgram/RenderWork/MRenderWork.h"
+#include "RenderProgram/RenderNode/MRenderNode.h"
 
 namespace morty
 {

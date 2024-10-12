@@ -32,14 +32,14 @@
 
 #include "Component/MCameraComponent.h"
 #include "Component/MDirectionalLightComponent.h"
-#include "RenderWork/MDebugRenderWork.h"
-#include "RenderWork/MDeferredLightingRenderWork.h"
-#include "RenderWork/MForwardRenderWork.h"
-#include "RenderWork/MGBufferRenderWork.h"
-#include "RenderWork/MShadowMapRenderWork.h"
-#include "RenderWork/MTransparentRenderWork.h"
-#include "RenderWork/MVoxelDebugRenderWork.h"
-#include "RenderWork/MVoxelizerRenderWork.h"
+#include "RenderNode/MDebugRenderNode.h"
+#include "RenderNode/MDeferredLightingRenderNode.h"
+#include "RenderNode/MForwardRenderNode.h"
+#include "RenderNode/MGBufferRenderNode.h"
+#include "RenderNode/MShadowMapRenderNode.h"
+#include "RenderNode/MTransparentRenderNode.h"
+#include "RenderNode/MVoxelDebugRenderNode.h"
+#include "RenderNode/MVoxelizerRenderNode.h"
 #include "Shadow/MShadowMeshManager.h"
 
 #include "Batch/MMeshInstanceManager.h"
@@ -55,18 +55,18 @@
 #include "Utility/MGlobal.h"
 #include "Culling/MBoundingBoxCulling.h"
 #include "Manager/MEnvironmentManager.h"
-#include "RenderWork/MVRSTextureRenderWork.h"
+#include "RenderNode/MVRSTextureRenderNode.h"
 #include "TaskGraph/MMultiThreadTaskGraphWalker.h"
 #include <memory>
 
 #include "RenderGraph/MRenderGraph.h"
 #include "RenderGraph/MRenderOutputBindingWalker.h"
 #include "RenderGraph/MRenderTargetManager.h"
-#include "RenderWork/MDeepPeelRenderWork.h"
-#include "RenderWork/MEdgeDetectionRenderWork.h"
-#include "RenderWork/MHBAOBlurRenderWork.h"
-#include "RenderWork/MHBAORenderWork.h"
-#include "RenderWork/MToneMappingRenderWork.h"
+#include "RenderNode/MDeepPeelRenderNode.h"
+#include "RenderNode/MEdgeDetectionRenderNode.h"
+#include "RenderNode/MHBAOBlurRenderNode.h"
+#include "RenderNode/MHBAORenderNode.h"
+#include "RenderNode/MToneMappingRenderNode.h"
 
 using namespace morty;
 
@@ -88,17 +88,18 @@ void            MDeferredRenderProgram::Render(MIRenderCommand* pPrimaryCommand)
     m_renderGraph->SetVoxelizerCullingResult(m_voxelizerCulling->Get());
 #endif
 
+    //Run Render Graph
     MRenderGraphWalker walker(m_renderInfo);
     walker(m_renderGraph.get());
 }
 
 void MDeferredRenderProgram::RenderSetup(MIRenderCommand* pPrimaryCommand)
 {
-    MViewport*       pViewport             = GetViewport();
-    MEntity*         pCameraEntity         = pViewport->GetCamera();
-    MScene*          pScene                = pViewport->GetScene();
-    MEntity*         pMainDirectionalLight = pScene->FindFirstEntityByComponent<MDirectionalLightComponent>();
-    MSceneComponent* pCameraSceneComponent = pCameraEntity->GetComponent<MSceneComponent>();
+    MViewport* pViewport             = GetViewport();
+    MEntity*   pCameraEntity         = pViewport->GetCamera();
+    MScene*    pScene                = pViewport->GetScene();
+    MEntity*   pMainDirectionalLight = pScene->FindFirstEntityByComponent<MDirectionalLightComponent>();
+    auto*      pCameraSceneComponent = pCameraEntity->GetComponent<MSceneComponent>();
 
     m_renderInfo                       = MRenderInfo::CreateFromViewport(pViewport);
     m_renderInfo.nFrameIndex           = m_frameIndex++;
@@ -131,11 +132,11 @@ void MDeferredRenderProgram::RenderSetup(MIRenderCommand* pPrimaryCommand)
 
 #if MORTY_VXGI_ENABLE
     uint32_t nClipmapIdx = m_renderInfo.nFrameIndex % MRenderGlobal::VOXEL_GI_CLIP_MAP_NUM;
-    GetRenderWork<MVoxelizerRenderWork>()->SetupVoxelSetting(
+    GetRenderNode<MVoxelizerRenderNode>()->SetupVoxelSetting(
             m_renderInfo.m4CameraTransform.GetTranslation(),
             nClipmapIdx
     );
-    auto voxelizerBounds = GetRenderWork<MVoxelizerRenderWork>()->GetVoxelizerBoundsAABB(nClipmapIdx);
+    auto voxelizerBounds = GetRenderNode<MVoxelizerRenderNode>()->GetVoxelizerBoundsAABB(nClipmapIdx);
     m_voxelizerCulling->SetInput(vMaterialGroup);
     //Voxelizer Culling.
     m_voxelizerCulling->Get()->SetBounds(voxelizerBounds);
@@ -182,7 +183,7 @@ void MDeferredRenderProgram::OnCreated()
 
     InitializeTaskGraph();
     InitializeFrameShaderParams();
-    InitializeRenderWork();
+    InitializeRenderNode();
     InitializeRenderGraph();
 }
 
@@ -192,20 +193,20 @@ void MDeferredRenderProgram::OnDelete()
 
     ReleaseTaskGraph();
     ReleaseFrameShaderParams();
-    ReleaseRenderWork();
+    ReleaseRenderNode();
     ReleaseRenderGraph();
 }
 
-void MDeferredRenderProgram::InitializeRenderWork()
+void MDeferredRenderProgram::InitializeRenderNode()
 {
 
 
 #if MORTY_VXGI_ENABLE
-    RegisterRenderWork<MVoxelizerRenderWork>();
+    RegisterRenderNode<MVoxelizerRenderNode>();
 #endif
 }
 
-void MDeferredRenderProgram::ReleaseRenderWork() {}
+void MDeferredRenderProgram::ReleaseRenderNode() {}
 
 void MDeferredRenderProgram::InitializeTaskGraph()
 {
@@ -250,10 +251,10 @@ void MDeferredRenderProgram::ReleaseTaskGraph()
 
 void MDeferredRenderProgram::InitializeRenderGraph()
 {
-    auto pShadowMapNode = RegisterRenderWork<MShadowMapRenderWork>();
+    auto pShadowMapNode = RegisterRenderNode<MShadowMapRenderNode>();
     pShadowMapNode->GetRenderOutput(0)->SetRenderTarget(
             m_renderGraph->GetRenderTargetManager()
-                    ->CreateRenderTarget(MShadowMapRenderWork::ShadowMapBufferOutput)
+                    ->CreateRenderTarget(MShadowMapRenderNode::ShadowMapBufferOutput)
                     ->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Fixed)
                     ->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Exclusive)
                     ->InitTextureDesc(MTexture::CreateShadowMapArray(
@@ -263,12 +264,12 @@ void MDeferredRenderProgram::InitializeRenderGraph()
                                               .InitName("Cascaded Shadow Map"))
     );
 
-    auto                         pGBufferNode = RegisterRenderWork<MGBufferRenderWork>();
+    auto                         pGBufferNode = RegisterRenderNode<MGBufferRenderNode>();
 
     const std::vector<MStringId> vTextureDesc = {
-            MGBufferRenderWork::GBufferAlbedoMetallic,
-            MGBufferRenderWork::GBufferNormalRoughness,
-            MGBufferRenderWork::GBufferPositionAmbientOcc,
+            MGBufferRenderNode::GBufferAlbedoMetallic,
+            MGBufferRenderNode::GBufferNormalRoughness,
+            MGBufferRenderNode::GBufferPositionAmbientOcc,
     };
 
     for (size_t nIdx = 0; nIdx < vTextureDesc.size(); ++nIdx)
@@ -292,19 +293,19 @@ void MDeferredRenderProgram::InitializeRenderGraph()
 
     pGBufferNode->GetRenderOutput(vTextureDesc.size())->SetRenderTarget(pFinalDepthBuffer);
 
-    auto pHBAONode = RegisterRenderWork<MHBAORenderWork>();
+    auto pHBAONode = RegisterRenderNode<MHBAORenderNode>();
     pHBAONode->GetRenderOutput(0)->SetRenderTarget(
             m_renderGraph->GetRenderTargetManager()
-                    ->CreateRenderTarget(MHBAORenderWork::HBAOOutput)
+                    ->CreateRenderTarget(MHBAORenderNode::HBAOOutput)
                     ->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Shared)
                     ->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Scale, 1.0f)
                     ->InitTextureDesc(MTexture::CreateRenderTarget(METextureFormat::UNorm_R8).InitName("HBAO Buffer"))
     );
 
-    auto pHbaoBlurNodeV = RegisterRenderWork<MHBAOBlurRenderWorkV>(MStringId("HBAO Blur V"));
+    auto pHbaoBlurNodeV = RegisterRenderNode<MHBAOBlurRenderNodeV>(MStringId("HBAO Blur V"));
     pHbaoBlurNodeV->GetRenderOutput(0)->SetRenderTarget(
             m_renderGraph->GetRenderTargetManager()
-                    ->CreateRenderTarget(MHBAOBlurRenderWorkV::BlurOutput)
+                    ->CreateRenderTarget(MHBAOBlurRenderNodeV::BlurOutput)
                     ->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Shared)
                     ->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Scale, 1.0f)
                     ->InitTextureDesc(
@@ -313,10 +314,10 @@ void MDeferredRenderProgram::InitializeRenderGraph()
     );
     pHbaoBlurNodeV->InitDirection(true);
 
-    auto pHbaoBlurNodeH = RegisterRenderWork<MHBAOBlurRenderWorkH>(MStringId("HBAO Blur H"));
+    auto pHbaoBlurNodeH = RegisterRenderNode<MHBAOBlurRenderNodeH>(MStringId("HBAO Blur H"));
     pHbaoBlurNodeH->GetRenderOutput(0)->SetRenderTarget(
             m_renderGraph->GetRenderTargetManager()
-                    ->CreateRenderTarget(MHBAOBlurRenderWorkH::BlurOutput)
+                    ->CreateRenderTarget(MHBAOBlurRenderNodeH::BlurOutput)
                     ->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Shared)
                     ->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Scale, 1.0f)
                     ->InitTextureDesc(
@@ -325,25 +326,25 @@ void MDeferredRenderProgram::InitializeRenderGraph()
     );
 
     auto pLightingOutputTarget = m_renderGraph->GetRenderTargetManager()
-                                         ->CreateRenderTarget(MDeferredLightingRenderWork::DeferredLightingOutput)
+                                         ->CreateRenderTarget(MDeferredLightingRenderNode::DeferredLightingOutput)
                                          ->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Shared)
                                          ->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Scale, 1.0f)
                                          ->InitTextureDesc(MTexture::CreateRenderTarget(METextureFormat::Float_RGBA16)
                                                                    .InitName("Deferred Lighting Output"));
 
-    auto pDeferredLightingNode = RegisterRenderWork<MDeferredLightingRenderWork>();
+    auto pDeferredLightingNode = RegisterRenderNode<MDeferredLightingRenderNode>();
     pDeferredLightingNode->GetRenderOutput(0)->SetRenderTarget(pLightingOutputTarget);
 
-    auto pForwardRenderNode = RegisterRenderWork<MForwardRenderWork>();
+    auto pForwardRenderNode = RegisterRenderNode<MForwardRenderNode>();
     pForwardRenderNode->GetRenderOutput(0)->SetRenderTarget(pLightingOutputTarget);
 
     pForwardRenderNode->GetRenderOutput(1)->SetRenderTarget(pFinalDepthBuffer);
 
-    auto pDeepPeelNode = RegisterRenderWork<MDeepPeelRenderWork>();
+    auto pDeepPeelNode = RegisterRenderNode<MDeepPeelRenderNode>();
 
     pDeepPeelNode->GetRenderOutput(0)->SetRenderTarget(
             m_renderGraph->GetRenderTargetManager()
-                    ->CreateRenderTarget(MDeepPeelRenderWork::FrontTextureOutput)
+                    ->CreateRenderTarget(MDeepPeelRenderNode::FrontTextureOutput)
                     ->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Shared)
                     ->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Scale, 1.0f)
                     ->InitTextureDesc(MTexture::CreateRenderTarget(METextureFormat::UNorm_RGBA8)
@@ -352,7 +353,7 @@ void MDeferredRenderProgram::InitializeRenderGraph()
 
     pDeepPeelNode->GetRenderOutput(1)->SetRenderTarget(
             m_renderGraph->GetRenderTargetManager()
-                    ->CreateRenderTarget(MDeepPeelRenderWork::BackTextureOutput)
+                    ->CreateRenderTarget(MDeepPeelRenderNode::BackTextureOutput)
                     ->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Shared)
                     ->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Scale, 1.0f)
                     ->InitTextureDesc(
@@ -364,7 +365,7 @@ void MDeferredRenderProgram::InitializeRenderGraph()
     {
         pDeepPeelNode->GetRenderOutput(nIdx + 2)->SetRenderTarget(
                 m_renderGraph->GetRenderTargetManager()
-                        ->CreateRenderTarget(MDeepPeelRenderWork::DepthOutput[nIdx])
+                        ->CreateRenderTarget(MDeepPeelRenderNode::DepthOutput[nIdx])
                         ->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Shared)
                         ->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Scale, 1.0f)
                         ->InitTextureDesc(MTexture::CreateRenderTarget(METextureFormat::Float_R32)
@@ -372,15 +373,15 @@ void MDeferredRenderProgram::InitializeRenderGraph()
         );
     }
 
-    auto pTransparentNode = RegisterRenderWork<MTransparentRenderWork>();
+    auto pTransparentNode = RegisterRenderNode<MTransparentRenderNode>();
     pTransparentNode->GetRenderOutput(0)->SetRenderTarget(pLightingOutputTarget);
 
 #if MORTY_VXGI_ENABLE
 
-    auto pVoxelizerNode = RegisterRenderWork<MVoxelizerRenderWork>();
+    auto pVoxelizerNode = RegisterRenderNode<MVoxelizerRenderNode>();
     pVoxelizerNode->GetRenderOutput(0)->SetRenderTarget(
             m_renderGraph->GetRenderTargetManager()
-                    ->CreateRenderTarget(MVoxelizerRenderWork::VoxelizerBufferOutput)
+                    ->CreateRenderTarget(MVoxelizerRenderNode::VoxelizerBufferOutput)
                     ->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Exclusive)
                     ->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Fixed)
                     ->InitTextureDesc(MTexture::CreateRenderTarget(METextureFormat::UNorm_RGBA8)
@@ -391,10 +392,10 @@ void MDeferredRenderProgram::InitializeRenderGraph()
                                               )))
     );
 
-    auto pVoxelDebugTaskNode = RegisterRenderWork<MVoxelDebugRenderWork>();
+    auto pVoxelDebugTaskNode = RegisterRenderNode<MVoxelDebugRenderNode>();
     pVoxelDebugTaskNode->GetRenderOutput(0)->SetRenderTarget(
             m_renderGraph->GetRenderTargetManager()
-                    ->CreateRenderTarget(MVoxelDebugRenderWork::BackBufferOutput)
+                    ->CreateRenderTarget(MVoxelDebugRenderNode::BackBufferOutput)
                     ->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Exclusive)
                     ->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Fixed)
                     ->InitTextureDesc(MTexture::CreateRenderTarget(METextureFormat::UNorm_RGBA8)
@@ -403,7 +404,7 @@ void MDeferredRenderProgram::InitializeRenderGraph()
 
     pVoxelDebugTaskNode->GetRenderOutput(1)->SetRenderTarget(
             m_renderGraph->GetRenderTargetManager()
-                    ->CreateRenderTarget(MVoxelDebugRenderWork::DepthBufferOutput)
+                    ->CreateRenderTarget(MVoxelDebugRenderNode::DepthBufferOutput)
                     ->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Exclusive)
                     ->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Fixed)
                     ->InitTextureDesc(MTexture::CreateShadowMapArray(1, 1).InitName("Voxel Debug Depth Texture"))
@@ -411,10 +412,10 @@ void MDeferredRenderProgram::InitializeRenderGraph()
 
 #endif
 
-    auto pEdgeDetectionNode = RegisterRenderWork<MEdgeDetectionRenderWork>();
+    auto pEdgeDetectionNode = RegisterRenderNode<MEdgeDetectionRenderNode>();
     pEdgeDetectionNode->GetRenderOutput(0)->SetRenderTarget(
             m_renderGraph->GetRenderTargetManager()
-                    ->CreateRenderTarget(MEdgeDetectionRenderWork::EdgeDetectionResult)
+                    ->CreateRenderTarget(MEdgeDetectionRenderNode::EdgeDetectionResult)
                     ->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Shared)
                     ->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Scale, 1.0f)
                     ->InitTextureDesc(
@@ -431,21 +432,21 @@ void MDeferredRenderProgram::InitializeRenderGraph()
                             MTexture::CreateRenderTarget(METextureFormat::UNorm_RGBA8).InitName("Final Output")
                     );
 
-    auto pToneMappingNode = RegisterRenderWork<MToneMappingRenderWork>();
+    auto pToneMappingNode = RegisterRenderNode<MToneMappingRenderNode>();
     pToneMappingNode->GetRenderOutput(0)->SetRenderTarget(pFinalBackBuffer);
 
-    auto pDebugNode = RegisterRenderWork<MDebugRenderWork>();
+    auto pDebugNode = RegisterRenderNode<MDebugRenderNode>();
     pDebugNode->GetRenderOutput(0)->SetRenderTarget(pFinalBackBuffer);
     pDebugNode->GetRenderOutput(1)->SetRenderTarget(pFinalDepthBuffer);
 
 
 #if VRS_OPTIMIZE_ENABLE
-    auto     pVRSTextureNode = RegisterRenderWork<MVRSTextureRenderWork>();
+    auto     pVRSTextureNode = RegisterRenderNode<MVRSTextureRenderNode>();
 
     Vector2i n2TexelSize = GetEngine()->FindSystem<MRenderSystem>()->GetDevice()->GetShadingRateTextureTexelSize();
     pVRSTextureNode->GetRenderOutput(0)->SetRenderTarget(
             m_renderGraph->GetRenderTargetManager()
-                    ->CreateRenderTarget(MVRSTextureRenderWork::VRS_TEXTURE)
+                    ->CreateRenderTarget(MVRSTextureRenderNode::VRS_TEXTURE)
                     ->InitSharedPolicy(MRenderTaskTarget::SharedPolicy::Shared)
                     ->InitResizePolicy(MRenderTaskTarget::ResizePolicy::Scale, 1.0f / n2TexelSize.x, n2TexelSize.x)
                     ->InitTextureDesc(MTexture::CreateShadingRate().InitName("VRS Buffer"))

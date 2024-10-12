@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Render/SceneTexture.h"
+#include "Render/SceneViewer.h"
 #include "Utility/IniConfig.h"
 #include "View/MRenderView.h"
 

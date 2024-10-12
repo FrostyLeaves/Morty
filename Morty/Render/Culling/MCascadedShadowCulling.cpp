@@ -11,7 +11,7 @@
 
 #include "Batch/BatchGroup/MInstanceBatchGroup.h"
 #include "Mesh/MVertex.h"
-#include "RenderProgram/RenderWork/MRenderWork.h"
+#include "RenderProgram/RenderNode/MRenderNode.h"
 
 using namespace morty;
 
@@ -137,7 +137,8 @@ void MCascadedShadowCulling::CullingForDrawInstancing(
                             1,
                             static_cast<uint32_t>(data.indexInfo.begin),
                             0,
-                            static_cast<uint32_t>(nIdx)};
+                            static_cast<uint32_t>(nIdx)
+                    };
                     vDrawIndirectData.push_back(indirectData);
                 }
             });
