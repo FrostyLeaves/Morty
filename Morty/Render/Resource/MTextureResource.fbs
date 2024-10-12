@@ -12,7 +12,7 @@ table MTextureResource
 {
     width: uint;
     height: uint;
-    format: METextureLayout;
+    format: METextureFormat;
     mipmap_type: MEMipmapDataType;
     mipmaps: [MTextureMipmapData];
 }

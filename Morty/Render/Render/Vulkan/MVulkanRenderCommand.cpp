@@ -580,9 +580,9 @@ void MVulkanRenderCommand::SetTextureLayout(const std::vector<MTexture*>& vTextu
 		VkImageSubresourceRange subresourceRange;
 		subresourceRange.aspectMask = m_pDevice->GetAspectFlags(pTexture->m_VkTextureFormat);
 		subresourceRange.baseMipLevel = 0;
-		subresourceRange.levelCount = pTexture->m_unMipmapLevel;
+		subresourceRange.levelCount = pTexture->GetMipmapLevel();
 		subresourceRange.baseArrayLayer = 0;
-		subresourceRange.layerCount = m_pDevice->GetLayerCount(pTexture);
+		subresourceRange.layerCount = pTexture->GetLayer();
 
 		vImageBarrier.push_back(VkImageMemoryBarrier());
 		VkImageMemoryBarrier& imageMemoryBarrier = vImageBarrier.back();
@@ -617,10 +617,10 @@ bool MVulkanRenderCommand::DownloadTexture(MTexture* pTexture, const uint32_t& u
 	}
 
 	uint32_t unValidMipIdx = unMipIdx;
-	if (unValidMipIdx >= pTexture->m_unMipmapLevel)
+	if (unValidMipIdx >= pTexture->GetMipmapLevel())
 	{
-		MORTY_ASSERT(pTexture->m_unMipmapLevel > 0);
-		unValidMipIdx = pTexture->m_unMipmapLevel - 1;
+		MORTY_ASSERT(pTexture->GetMipmapLevel() > 0);
+		unValidMipIdx = pTexture->GetMipmapLevel() - 1;
 	}
 
 	Vector3i size = pTexture->GetSize();
@@ -639,7 +639,7 @@ bool MVulkanRenderCommand::DownloadTexture(MTexture* pTexture, const uint32_t& u
 	}
 
 	uint32_t unBufferSize = unBufferWidth * unBufferHeight * unBufferDepth *
-        MTexture::GetImageMemorySize(pTexture->GetTextureLayout());
+        MTexture::GetImageMemorySize(pTexture->GetFormat());
 
 
 	uint32_t unMemoryID = MGlobal::M_INVALID_INDEX;
@@ -657,7 +657,7 @@ bool MVulkanRenderCommand::DownloadTexture(MTexture* pTexture, const uint32_t& u
 	region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	region.imageSubresource.mipLevel = unValidMipIdx;
 	region.imageSubresource.baseArrayLayer = 0;
-	region.imageSubresource.layerCount = m_pDevice->GetLayerCount(pTexture);
+	region.imageSubresource.layerCount = pTexture->GetLayer();
 	region.imageOffset.x = 0;
 	region.imageOffset.y = 0;
 	region.imageOffset.z = 0;
@@ -696,13 +696,13 @@ bool MVulkanRenderCommand::CopyImageBuffer(MTexture* pSource, MTexture* pDest)
 	blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	blit.srcSubresource.mipLevel = 0;
 	blit.srcSubresource.baseArrayLayer = 0;
-	blit.srcSubresource.layerCount = m_pDevice->GetLayerCount(pSource);
+	blit.srcSubresource.layerCount = pSource->GetLayer();
 	blit.dstOffsets[0] = { 0, 0, 0 };
 	blit.dstOffsets[1] = { static_cast<int32_t>(pDest->GetSize().x), static_cast<int32_t>(pDest->GetSize().y), 1 };
 	blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	blit.dstSubresource.mipLevel = 0;
 	blit.dstSubresource.baseArrayLayer = 0;
-	blit.dstSubresource.layerCount = m_pDevice->GetLayerCount(pDest);
+	blit.dstSubresource.layerCount = pDest->GetLayer();
 
 	vkCmdBlitImage(m_VkCommandBuffer, pSource->m_VkTextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pDest->m_VkTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
 
@@ -715,7 +715,7 @@ void MVulkanRenderCommand::UpdateMipmaps(MTexture* pTexture)
 	if (!pTexture)
 		return;
 
-	m_pDevice->GenerateMipmaps(pTexture, pTexture->m_unMipmapLevel, m_VkCommandBuffer);
+	m_pDevice->GenerateMipmaps(pTexture, pTexture->GetMipmapLevel(), m_VkCommandBuffer);
 }
 
 void MVulkanRenderCommand::ResetBuffer(const MBuffer* pBuffer)
@@ -752,9 +752,9 @@ void MVulkanRenderCommand::FillTexture(MTexture* pTexture, MColor color)
 	VkImageSubresourceRange subresourceRange;
 	subresourceRange.aspectMask = m_pDevice->GetAspectFlags(pTexture->m_VkTextureFormat);
 	subresourceRange.baseMipLevel = 0;
-	subresourceRange.levelCount = pTexture->m_unMipmapLevel;
+	subresourceRange.levelCount = pTexture->GetMipmapLevel();
 	subresourceRange.baseArrayLayer = 0;
-	subresourceRange.layerCount = m_pDevice->GetLayerCount(pTexture);
+	subresourceRange.layerCount = pTexture->GetLayer();
 	vkCmdClearColorImage(m_VkCommandBuffer, pTexture->m_VkTextureImage, vkClearLayout, &vkColor, 1, &subresourceRange);
 
 }

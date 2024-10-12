@@ -69,9 +69,7 @@ void MRenderSystem::ResizeFrameBuffer(MRenderPass& renderpass, const Vector2i& n
 	{
 		if (tex.pTexture->GetSize2D() != n2Size)
 		{
-			tex.pTexture->SetSize(n2Size);
-			tex.pTexture->DestroyBuffer(GetDevice());
-			tex.pTexture->GenerateBuffer(GetDevice());
+			tex.pTexture->Resize(GetDevice(), n2Size);
 		}
 	}
 
@@ -79,9 +77,7 @@ void MRenderSystem::ResizeFrameBuffer(MRenderPass& renderpass, const Vector2i& n
 	{
 		if (pDepthTexture->GetSize2D() != n2Size)
 		{
-			pDepthTexture->SetSize(n2Size);
-			pDepthTexture->DestroyBuffer(GetDevice());
-			pDepthTexture->GenerateBuffer(GetDevice());
+			pDepthTexture->Resize(GetDevice(), n2Size);
 		}
 	}
 
@@ -94,9 +90,7 @@ void MRenderSystem::ResizeFrameBuffer(MRenderPass& renderpass, const Vector2i& n
 
 		if (pShadingRate->GetSize2D() != n2ShadingRateSize)
 		{
-			pShadingRate->SetSize(n2ShadingRateSize);
-			pShadingRate->DestroyBuffer(GetDevice());
-			pShadingRate->GenerateBuffer(GetDevice());
+			pShadingRate->Resize(GetDevice(), n2ShadingRateSize);
 		}
 	}
 

@@ -817,7 +817,7 @@ void MVulkanPipelineManager::BindTextureParam(const std::shared_ptr<MShaderTextu
 		MORTY_ASSERT(pTexture->m_VkImageLayout != VK_IMAGE_LAYOUT_UNDEFINED);
 
 		//TODO: Do not set image layout from a constants value.
-		if (pTexture->GetRenderUsage() == METextureWriteUsage::EStorageWrite)
+		if (pTexture->GetWriteUsage() & METextureWriteUsageBit::EStorageWrite)
 		{
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 		}
@@ -883,9 +883,9 @@ std::shared_ptr<MTexture> MVulkanPipelineManager::GetDefaultTexture(MShaderTextu
 		return findResult->second;
 	}
 
-	static const std::unordered_map<MESamplerFormat, METextureLayout> TypeMapping = {
-		{MESamplerFormat::EFloat, METextureLayout::UNorm_RGBA8},
-		{MESamplerFormat::EInt, METextureLayout::UInt_R8},
+	static const std::unordered_map<MESamplerFormat, METextureFormat> TypeMapping = {
+		{MESamplerFormat::EFloat, METextureFormat::UNorm_RGBA8},
+		{MESamplerFormat::EInt, METextureFormat::UInt_R8},
 	};
 
 	MORTY_ASSERT(TypeMapping.find(pParam->eFormat) != TypeMapping.end());
@@ -893,17 +893,18 @@ std::shared_ptr<MTexture> MVulkanPipelineManager::GetDefaultTexture(MShaderTextu
 	std::vector<std::vector<MByte>> cubeBytes{ std::vector<MByte>(32) };
 	memset(cubeBytes[0].data(), 255, sizeof(MByte) * 32);
 
-	auto pTexture = std::make_shared<MTexture>();
-	pTexture->SetName("Shader Default Texture");
-	pTexture->SetMipmapDataType(MEMipmapDataType::Disable);
-	pTexture->SetReadable(false);
-	pTexture->SetRenderUsage(METextureWriteUsage::EUnknow);
-	pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
-	pTexture->SetSize(Vector2i(1, 1));
-	pTexture->SetTextureLayout(TypeMapping.at(pParam->eFormat));
-	pTexture->SetTextureType(pParam->eType);
-	pTexture->GenerateBuffer(m_pDevice, cubeBytes );
 
+    auto pTexture = MTexture::CreateTexture({
+        .strName = "Shader Default Texture",
+        .n3Size = Vector3i(1, 1, 1),
+        .eTextureType = pParam->eType,
+        .eFormat = TypeMapping.at(pParam->eFormat),
+        .eMipmapDataType = MEMipmapDataType::Disable,
+        .nReadUsage = METextureReadUsageBit::EPixelSampler,
+        .nWriteUsage = METextureWriteUsageBit::EUnknow,
+    });
+
+	pTexture->GenerateBuffer(m_pDevice, cubeBytes );
 	MORTY_ASSERT(pTexture);
 
 	m_tDefaultTexture[{ pParam->eFormat, pParam->eType }] = pTexture;

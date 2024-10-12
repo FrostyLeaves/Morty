@@ -27,20 +27,16 @@ MByte* Malloc(const size_t& nSize)
 
 MTextureResource::MTextureResource()
 	: MResource()
-	, m_pTexture(std::make_shared<MTexture>())
-	, m_pResourceData(std::make_unique<MTextureResourceData>())
 {
-	m_pTexture->SetMipmapDataType(MEMipmapDataType::Generate);
-	m_pTexture->SetReadable(false);
-	m_pTexture->SetTextureLayout(METextureLayout::UNorm_RGBA8);
-	m_pTexture->SetRenderUsage(METextureWriteUsage::EUnknow);
-	m_pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
 }
 
 MTextureResource::~MTextureResource()
 {
-	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-	m_pTexture->DestroyBuffer(pRenderSystem->GetDevice());
+	auto* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    if (m_pTexture)
+    {
+        m_pTexture->DestroyBuffer(pRenderSystem->GetDevice());
+    }
 }
 
 void MTextureResource::OnDelete()
@@ -51,19 +47,26 @@ void MTextureResource::OnDelete()
 
 	const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 	m_pTexture->DestroyBuffer(pRenderSystem->GetDevice());
+    m_pTexture = nullptr;
 }
 
 bool MTextureResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 {
+    MORTY_ASSERT(m_pTexture == nullptr);
+
 	const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
 	auto pTextureData = static_cast<MTextureResourceData*>(pResourceData.get());
-	m_pTexture->SetName(pTextureData->strTextureName);
-	m_pTexture->SetSize(Vector3i(pTextureData->nWidth, pTextureData->nHeight, pTextureData->nDepth));
-	m_pTexture->SetTextureType(pTextureData->eTextureType);
-	m_pTexture->SetMipmapDataType(pTextureData->eMipmapDataType);
-	m_pTexture->SetTextureLayout(static_cast<METextureLayout>(pTextureData->eFormat));
 
+    m_pTexture = MTexture::CreateTexture({
+        .strName = pTextureData->strTextureName,
+        .n3Size = Vector3i(static_cast<int>(pTextureData->nWidth), static_cast<int>(pTextureData->nHeight), static_cast<int>(pTextureData->nDepth)),
+        .eTextureType = pTextureData->eTextureType,
+        .eFormat = static_cast<METextureFormat>(pTextureData->eFormat),
+        .eMipmapDataType =  pTextureData->eMipmapDataType,
+        .nReadUsage = METextureReadUsageBit::EPixelSampler,
+        .nWriteUsage = METextureWriteUsageBit::EUnknow,
+    });
 	m_pTexture->GenerateBuffer(pRenderSystem->GetDevice(), pTextureData->vMipmaps);
 
 	if (m_bReadable)
@@ -87,34 +90,37 @@ bool MTextureResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 	return false;
 }
 
-void MTextureResource::CreateCubeMapRenderTarget(const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, const METextureLayout& eLayout, const bool& bMipmapEnable)
+void MTextureResource::CreateCubeMapRenderTarget(const uint32_t& nWidth, const uint32_t& nHeight, uint32_t nChannel, const METextureFormat& eFormat, const bool& bMipmapEnable)
 {
+    MORTY_ASSERT(m_pTexture == nullptr);
+
 	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
 	if (nChannel == 2 || nChannel == 3)
 		nChannel = 4;
 
-	m_pTexture->SetName("CubeMapRenderTarget");
-	m_pTexture->SetReadable(true);
-	m_pTexture->SetTextureLayout(eLayout);
-	m_pTexture->SetSize(Vector3i(nWidth, nHeight, 6));
-	m_pTexture->SetRenderUsage(METextureWriteUsage::ERenderBack);
-	m_pTexture->SetShaderUsage(METextureReadUsage::EPixelSampler);
-	m_pTexture->SetTextureType(METextureType::ETextureCube);
-	m_pTexture->SetMipmapDataType(bMipmapEnable? MEMipmapDataType::Generate:MEMipmapDataType::Disable);
+    m_pTexture = MTexture::CreateTexture({
+        .strName = "CubeMapRenderTarget",
+        .n3Size = Vector3i(nWidth, nHeight, 6),
+        .eTextureType = METextureType::ETextureCube,
+        .eFormat = eFormat,
+        .eMipmapDataType = bMipmapEnable? MEMipmapDataType::Generate:MEMipmapDataType::Disable,
+        .nReadUsage = METextureReadUsageBit::EPixelSampler,
+        .nWriteUsage = METextureWriteUsageBit::ERenderBack,
+    });
 
 	m_pTexture->GenerateBuffer(pRenderSystem->GetDevice());
 }
 
-METextureLayout MTextureResource::GetTextureLayout() const
+METextureFormat MTextureResource::GetFormat() const
 {
 	if (m_pTexture)
 	{
-		return m_pTexture->GetTextureLayout();
+		return m_pTexture->GetFormat();
 	}
 
 	auto ptr = static_cast<MTextureResourceData*>(m_pResourceData.get());
-	return static_cast<METextureLayout>(ptr->eFormat);
+	return static_cast<METextureFormat>(ptr->eFormat);
 }
 
 size_t MTextureResource::GetWidth() const

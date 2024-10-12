@@ -20,7 +20,7 @@ class MORTY_API MAstcTextureUtil
 public:
 
 	static std::unique_ptr<MResourceData> ImportAstcTexture(const MString& strResourcePath);
-	static morty::METextureLayout GetTextureFormat(const Vector3i& n3BlockDim);
+	static morty::METextureFormat GetTextureFormat(const Vector3i& n3BlockDim);
 };
 
 MORTY_SPACE_END

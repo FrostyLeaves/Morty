@@ -53,13 +53,11 @@ void MRenderTargetManager::ResizeRenderTarget(const Vector2i& size)
         {
             auto pTexture = pr.second->GetTexture();
 
-            Vector2i n2TexelFormatSize;
-            n2TexelFormatSize.x = size.x * pr.second->GetScale() + ((size.x % pr.second->GetTexelSize()) != 0);
-            n2TexelFormatSize.y = size.y * pr.second->GetScale() + ((size.y % pr.second->GetTexelSize()) != 0);
+            Vector2i n2TexelFormatSize{};
+            n2TexelFormatSize.x = static_cast<float>(size.x) * pr.second->GetScale() + ((size.x % pr.second->GetTexelSize()) != 0);
+            n2TexelFormatSize.y = static_cast<float>(size.y) * pr.second->GetScale() + ((size.y % pr.second->GetTexelSize()) != 0);
 
-            pTexture->DestroyBuffer(pDevice);
-            pTexture->SetSize(Vector3i(n2TexelFormatSize.x, n2TexelFormatSize.y, pTexture->GetSize().z));
-            pTexture->GenerateBuffer(pDevice);
+            pTexture->Resize(pDevice, Vector3i(n2TexelFormatSize.x, n2TexelFormatSize.y, pTexture->GetSize().z));
         }
     }
 }

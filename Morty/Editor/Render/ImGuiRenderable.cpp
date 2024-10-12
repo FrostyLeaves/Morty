@@ -283,16 +283,16 @@ ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturPropertyBlock(ImGu
 			int nSingleChannelFlag = 0;
 			int nImageIndex = 0;
 			Vector2 f2ImageSize;
-			switch (key.pTexture->GetTextureLayout())
+			switch (key.pTexture->GetFormat())
 			{
-			case METextureLayout::Depth:
-			case METextureLayout::UNorm_R8:
-			case METextureLayout::Float_R32:
+			case METextureFormat::Depth:
+			case METextureFormat::UNorm_R8:
+			case METextureFormat::Float_R32:
 				nImageType = 0;
 				nSingleChannelFlag = 1;
 				break;
 
-			case METextureLayout::UInt_R8:
+			case METextureFormat::UInt_R8:
 				nImageType = 2;
 				f2ImageSize = Vector2(key.pTexture->GetSize2D().x, key.pTexture->GetSize2D().y);
 				break;

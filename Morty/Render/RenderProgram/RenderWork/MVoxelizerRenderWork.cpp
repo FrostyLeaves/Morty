@@ -290,10 +290,10 @@ void MVoxelizerRenderWork::InitializeVoxelTextureDispatcher()
 	const std::shared_ptr<MShaderPropertyBlock>& params = m_pVoxelTextureGenerator->GetShaderPropertyBlock(0);
 	MORTY_ASSERT(m_pVoxelizerVoxelMapSetting = params->FindConstantParam(MShaderPropertyName::VOXELIZER_CBUFFER_VOXEL_MAP_NAME));
 
-	m_voxelGITexture = MTexture::CreateVXGIMap();
-	m_voxelGITexture->SetSize(Vector3i(	  MRenderGlobal::VOXEL_TABLE_SIZE * MRenderGlobal::VOXEL_DIFFUSE_CONE_COUNT
+	m_voxelGITexture = MTexture::CreateVXGIMap(Vector3i(	  MRenderGlobal::VOXEL_TABLE_SIZE * MRenderGlobal::VOXEL_DIFFUSE_CONE_COUNT
 		                                , MRenderGlobal::VOXEL_TABLE_SIZE * MRenderGlobal::VOXEL_GI_CLIP_MAP_NUM
 		                                , MRenderGlobal::VOXEL_TABLE_SIZE));
+
 	m_voxelGITexture->GenerateBuffer(pRenderSystem->GetDevice());
 
 	if (auto pVoxelTexture = params->FindTextureParam(MShaderPropertyName::VOXELIZER_VOXEL_TEXTURE_NAME))

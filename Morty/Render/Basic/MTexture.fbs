@@ -1,6 +1,6 @@
 namespace morty.fbs;
 
-enum METextureLayout:byte
+enum METextureFormat:byte
 {
     Unknow = 0,
     Depth,

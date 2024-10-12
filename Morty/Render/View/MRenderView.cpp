@@ -344,15 +344,21 @@ bool MRenderView::BindRenderPass()
 		m_vRenderTarget[i].pPrimaryCommand = nullptr;
 		m_vRenderTarget[i].vkImageReadySemaphore = VK_NULL_HANDLE;
 
-		std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
-		pTexture->SetName("Editor Render View");
-		pTexture->SetTextureLayout(METextureLayout::UNorm_RGBA8);
-		pTexture->SetRenderUsage(METextureWriteUsage::ERenderPresent);
-		pTexture->SetSize(size);
+		std::shared_ptr<MTexture> pTexture = MTexture::CreateTexture({
+            .strName = "Editor Render View",
+            .n3Size = Vector3i(size.x, size.y, 1),
+            .eTextureType = METextureType::ETexture2DArray,
+            .eFormat = METextureFormat::UNorm_RGBA8,
+            .eMipmapDataType = MEMipmapDataType::Disable,
+            .nReadUsage = METextureReadUsageBit::EPixelSampler,
+            .nWriteUsage = METextureWriteUsageBit::ERenderPresent,
+        });
+
 		pTexture->m_VkTextureImage = vSwapchainImages[i];
 		pTexture->m_VkTextureImageMemory = VK_NULL_HANDLE;
 		pTexture->m_VkImageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 		pTexture->m_VkTextureFormat = m_VkColorFormat;
+
 		pTexture->GenerateBuffer(m_pDevice);
 		m_vRenderTarget[i].renderPass.AddBackTexture(pTexture, { true, MColor::Black_T });
 
