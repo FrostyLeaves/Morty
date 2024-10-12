@@ -8,43 +8,35 @@ using namespace morty;
 MORTY_CLASS_IMPLEMENT(MTaskNodeInput, MTypeClass)
 
 MTaskNodeInput::MTaskNodeInput()
-	: Super()
+    : Super()
     , m_unIndex(0)
-	, m_strName("")
-	, pGraphNode(nullptr)
-	, pLinkedOutput(nullptr)
-{
-
-}
+    , m_strName("")
+    , pGraphNode(nullptr)
+    , pLinkedOutput(nullptr)
+{}
 
 void MTaskNodeInput::LinkTo(MTaskNodeOutput* pOutput)
 {
-	UnLink();
-	pOutput->LinkTo(this);
+    UnLink();
+    pOutput->LinkTo(this);
 }
 
 void MTaskNodeInput::UnLink()
 {
-	if (pLinkedOutput)
-	{
-		pLinkedOutput->UnLink(this);
-	}
+    if (pLinkedOutput) { pLinkedOutput->UnLink(this); }
 }
 
 MString MTaskNodeInput::GetStringID() const
 {
-	if (!GetTaskNode())
-		return "";
+    if (!GetTaskNode()) return "";
 
-	return GetTaskNode()->GetNodeName().ToString() + "_Input_" + MStringUtil::ToString(m_unIndex);
+    return GetTaskNode()->GetNodeName().ToString() + "_Input_" +
+           MStringUtil::ToString(m_unIndex);
 }
 
 MTaskNode* MTaskNodeInput::GetLinkedNode() const
 {
-	if (pLinkedOutput)
-	{
-		return pLinkedOutput->GetTaskNode();
-	}
+    if (pLinkedOutput) { return pLinkedOutput->GetTaskNode(); }
 
-	return nullptr;
+    return nullptr;
 }

@@ -1,13 +1,14 @@
 #pragma once
 
-#include "Object/MObject.h"
-#include "Render/MMesh.h"
-#include "Render/MBuffer.h"
 #include "Utility/MGlobal.h"
+#include "Basic/MBuffer.h"
+#include "Mesh/MMesh.h"
+#include "Object/MObject.h"
 #include "Utility/MBounds.h"
 #include "Utility/MMemoryPool.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MShaderProgram;
 class MTaskNode;
@@ -18,27 +19,25 @@ class MMaterial;
 class MComponent;
 class MMeshBufferAdapter;
 class MRenderMeshComponent;
-
 class MShaderProgramKey
 {
 };
 
 class MShaderManager : public MObject
 {
-	MORTY_CLASS(MShaderManager)
+    MORTY_CLASS(MShaderManager)
 public:
-	explicit  MShaderManager();
+    explicit MShaderManager();
 
-	void OnCreated() override;
-	void OnDelete() override;
+    void                            OnCreated() override;
+
+    void                            OnDelete() override;
 
 
-	std::shared_ptr<MShaderProgram> FindOrCreateShaderProgram(MShaderProgramKey key);
+    std::shared_ptr<MShaderProgram> FindOrCreateShaderProgram(MShaderProgramKey key);
 
 public:
-
-
-	std::map<MShaderProgramKey, std::shared_ptr<MShaderProgram>> m_tShaderProgramTable;
+    std::map<MShaderProgramKey, std::shared_ptr<MShaderProgram>> m_shaderProgramTable;
 };
 
-MORTY_SPACE_END
+}// namespace morty

@@ -4,7 +4,8 @@
 #include "Math/Vector.h"
 #include "Utility/MColor.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MTaskNode;
 class MScene;
@@ -16,46 +17,49 @@ class MIRenderProgram;
 class MRenderTexture;
 class MIRenderTexture;
 class MForwardRenderProgram;
-
 class SceneTexture
 {
 public:
-	SceneTexture();
-	virtual ~SceneTexture();
+    SceneTexture();
 
-	void Initialize(MScene* pScene, const MString& strRenderProgram);
-	void Release();
+    virtual ~SceneTexture();
 
-	void SetRect(Vector2i pos, Vector2i size);
+    void                                   Initialize(MScene* pScene, const MString& strRenderProgram);
 
-	std::shared_ptr<MTexture> GetTexture();
-	std::vector<std::shared_ptr<MTexture>> GetAllOutputTexture();
-	void UpdateTexture(MIRenderCommand* pRenderCommand);
+    void                                   Release();
 
-	MScene* GetScene() const { return m_pScene; }
-	MViewport* GetViewport() const { return m_pRenderViewport; }
+    void                                   SetRect(Vector2i pos, Vector2i size);
 
-	void Snapshot(const MString& strSnapshotPath);
+    std::shared_ptr<MTexture>              GetTexture();
 
-	MTaskNode* GetRenderTask() const { return m_pUpdateTask; }
+    std::vector<std::shared_ptr<MTexture>> GetAllOutputTexture();
 
-	void SetPauseUpdate(bool bPause) { m_bPauseUpdate = bPause; }
+    void                                   UpdateTexture(MIRenderCommand* pRenderCommand);
 
-	MIRenderProgram* GetRenderProgram() const { return m_pRenderProgram; }
+    MScene*                                GetScene() const { return m_scene; }
+
+    MViewport*                             GetViewport() const { return m_renderViewport; }
+
+    void                                   Snapshot(const MString& strSnapshotPath);
+
+    MTaskNode*                             GetRenderTask() const { return m_updateTask; }
+
+    void                                   SetPauseUpdate(bool bPause) { m_pauseUpdate = bPause; }
+
+    MIRenderProgram*                       GetRenderProgram() const { return m_renderProgram; }
 
 protected:
+    MScene*          m_scene = nullptr;
 
-	MScene* m_pScene = nullptr;
+    MViewport*       m_renderViewport = nullptr;
 
-	MViewport* m_pRenderViewport = nullptr;
+    MIRenderProgram* m_renderProgram = nullptr;
 
-	MIRenderProgram* m_pRenderProgram = nullptr;
+    bool             m_pauseUpdate = false;
+    bool             m_snapshot;
+    MString          m_strSnapshotPath;
 
-	bool m_bPauseUpdate = false;
-	bool m_bSnapshot;
-	MString m_strSnapshotPath;
-
-	MTaskNode* m_pUpdateTask = nullptr;
+    MTaskNode*       m_updateTask = nullptr;
 };
 
-MORTY_SPACE_END
+}// namespace morty

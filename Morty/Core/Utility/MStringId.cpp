@@ -14,22 +14,16 @@ MStringId::MStringId(std::string_view strview)
     m_clashIndex = std::make_shared<std::array<size_t, MGlobal::M_MAX_THREAD_NUM>>();
 }
 
-bool MStringId::operator ==(const MStringId& other) const
+bool MStringId::operator==(const MStringId& other) const
 {
-    if (m_hash != other.m_hash)
-    {
-        return false;
-    }
+    if (m_hash != other.m_hash) { return false; }
 
     return GetClashIndex() == other.GetClashIndex();
 }
 
-bool MStringId::operator <(const MStringId& other) const
+bool MStringId::operator<(const MStringId& other) const
 {
-    if (m_hash == other.m_hash)
-    {
-        return GetClashIndex() < other.GetClashIndex();
-    }
+    if (m_hash == other.m_hash) { return GetClashIndex() < other.GetClashIndex(); }
 
     return m_hash < other.m_hash;
 }
@@ -42,10 +36,7 @@ size_t MStringId::GetClashIndex() const
     auto& clashIndex = *m_clashIndex;
 
     //clashIndex is idx of ClashStringTable + 1, 0 is invalid value.
-    if (clashIndex[nThreadId] != 0)
-    {
-        return clashIndex[nThreadId];
-    }
+    if (clashIndex[nThreadId] != 0) { return clashIndex[nThreadId]; }
 
     for (size_t nIdx = 0; nIdx < ClashStringTable.size(); ++nIdx)
     {

@@ -9,53 +9,49 @@
 using namespace morty;
 
 ResourceView::ResourceView()
-	: BaseWidget()
+    : BaseWidget()
 {
-	m_strViewName = "Resource";
+    m_strViewName = "Resource";
 }
 
 void ResourceView::Render()
 {
-	ImGui::Columns(4);
+    ImGui::Columns(4);
 
-	MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-	std::map<MResourceID, std::shared_ptr<MResource>>& resources = *pResourceSystem->GetAllResources();
-	size_t ITEMS_COUNT = resources.size();
-	ImGuiListClipper clipper(static_cast<int>(ITEMS_COUNT));  // Also demonstrate using the clipper for large list
-	
-	while (clipper.Step())
-	{
-		auto iter = resources.begin();
-		for (int i = 0; i < clipper.DisplayStart; ++i)
-		{
-			++iter;
-		}
+    std::map<MResourceID, std::shared_ptr<MResource>>& resources =
+            *pResourceSystem->GetAllResources();
+    size_t           ITEMS_COUNT = resources.size();
+    ImGuiListClipper clipper(static_cast<int>(ITEMS_COUNT)
+    );// Also demonstrate using the clipper for large list
 
-		for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
-		{
-			std::shared_ptr<MResource> pResource = iter->second;
-			ImGui::Text("%lu", pResource->GetResourceID());
-			ImGui::NextColumn();
-			ImGui::Text("%s", pResource->GetTypeName().c_str());
-			ImGui::NextColumn();
-			ImGui::Text("%s", pResource->GetResourcePath().c_str());
-			ImGui::NextColumn();
-			ImGui::Text("%ld", pResource.use_count());
-			ImGui::NextColumn();
+    while (clipper.Step())
+    {
+        auto iter = resources.begin();
+        for (int i = 0; i < clipper.DisplayStart; ++i) { ++iter; }
 
-			++iter;
-		}
-	}
-	ImGui::Columns(1);
+        for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
+        {
+            std::shared_ptr<MResource> pResource = iter->second;
+            ImGui::Text("%lu", pResource->GetResourceID());
+            ImGui::NextColumn();
+            ImGui::Text("%s", pResource->GetTypeName().c_str());
+            ImGui::NextColumn();
+            ImGui::Text("%s", pResource->GetResourcePath().c_str());
+            ImGui::NextColumn();
+            ImGui::Text("%ld", pResource.use_count());
+            ImGui::NextColumn();
+
+            ++iter;
+        }
+    }
+    ImGui::Columns(1);
 }
 
 void ResourceView::Initialize(MainEditor* pMainEditor)
 {
-	BaseWidget::Initialize(pMainEditor);
+    BaseWidget::Initialize(pMainEditor);
 }
 
-void ResourceView::Release()
-{
-
-}
+void ResourceView::Release() {}

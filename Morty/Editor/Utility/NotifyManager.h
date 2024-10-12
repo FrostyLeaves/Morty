@@ -1,12 +1,13 @@
 #pragma once
 
-#include <map>
 #include <functional>
+#include <map>
 
 #include "Utility/MString.h"
 #include "Variant/MVariant.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 #define NOTIFY_FUNC(PTR, CLASS_FUNC) (std::bind(&CLASS_FUNC, PTR, std::placeholders::_1))
 
@@ -14,31 +15,29 @@ class BaseWidget;
 class NotifyManager
 {
 public:
-	NotifyManager();
-	~NotifyManager();
+    NotifyManager();
 
-	static NotifyManager* GetInstance();
+    ~NotifyManager();
 
-	typedef std::function<void(const MVariant&)> NotifyFunction;
+    static NotifyManager*                        GetInstance();
+
+    typedef std::function<void(const MVariant&)> NotifyFunction;
 
 
 public:
+    void SendNotify(const MString& strNotifyName, const MVariant& param = MVariant());
 
-	void SendNotify(const MString& strNotifyName, const MVariant& param = MVariant());
+    void RegisterNotify(const MString& strNotifyName, void* pRegister, const NotifyFunction& func);
 
-	void RegisterNotify(const MString& strNotifyName, void* pRegister, const NotifyFunction& func);
-
-	void UnRegisterAll();
+    void UnRegisterAll();
 
 private:
+    struct NotifyGroup {
+        std::vector<void*>          m_register;
+        std::vector<NotifyFunction> m_function;
+    };
 
-	struct NotifyGroup
-	{
-		std::vector<void*> m_vRegister;
-		std::vector<NotifyFunction> m_vFunction;
-	};
-
-	std::map<MString, NotifyGroup*> m_tNotifyTable;
+    std::map<MString, NotifyGroup*> m_notifyTable;
 };
 
-MORTY_SPACE_END
+}// namespace morty

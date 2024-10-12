@@ -4,81 +4,79 @@
 using namespace morty;
 
 MShaderConstantParam::MShaderConstantParam()
-	: MShaderParam()
+    : MShaderParam()
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
-	m_VkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    m_vkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 #endif
 }
 
 MShaderConstantParam::MShaderConstantParam(const MShaderConstantParam& param)
     : MShaderParam(param)
 {
-	strName = param.strName;
-	var = MVariant::Clone(param.var);
-	eShaderType = param.eShaderType;
+    strName     = param.strName;
+    var         = MVariant::Clone(param.var);
+    eShaderType = param.eShaderType;
 
-	SetDirty();
-	
+    SetDirty();
+
 #if RENDER_GRAPHICS == MORTY_VULKAN
-	unSet = param.unSet;
-	unBinding = param.unBinding;
-	m_VkDescriptorType = param.m_VkDescriptorType;
+    unSet              = param.unSet;
+    unBinding          = param.unBinding;
+    m_vkDescriptorType = param.m_vkDescriptorType;
 
-	m_VkBuffer = VK_NULL_HANDLE;
-	m_VkBufferInfo = { VK_NULL_HANDLE, 0, 0 };
-	m_VkBufferMemory = VK_NULL_HANDLE;
-	m_unMemoryOffset = 0;
-	m_pMemoryMapping = 0;
+    m_vkBuffer       = VK_NULL_HANDLE;
+    m_vkBufferInfo   = {VK_NULL_HANDLE, 0, 0};
+    m_vkBufferMemory = VK_NULL_HANDLE;
+    m_unMemoryOffset = 0;
+    m_memoryMapping  = 0;
 
-	m_unVkMemorySize = param.m_unVkMemorySize;
+    m_unVkMemorySize = param.m_unVkMemorySize;
 #endif
-
-
 }
 
 MShaderTextureParam::MShaderTextureParam()
-	: MShaderParam()
+    : MShaderParam()
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
-	m_VkDescriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    m_vkDescriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 #endif
 }
 
 void MShaderTextureParam::SetTexture(std::shared_ptr<MTexture> pTexture)
 {
-	if (this->pTexture != pTexture)
-	{
-		this->pTexture = pTexture;
-		SetDirty();
-	}
+    if (this->pTexture != pTexture)
+    {
+        this->pTexture = pTexture;
+        SetDirty();
+    }
 }
 
 std::shared_ptr<MShaderTextureParam> MShaderTextureParam::Clone() const
 {
-	return std::make_shared<MShaderTextureParam>(*this);
+    return std::make_shared<MShaderTextureParam>(*this);
 }
 
 MShaderSampleParam::MShaderSampleParam()
-	: MShaderParam()
+    : MShaderParam()
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
-	m_VkDescriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+    m_vkDescriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
 #endif
 }
 
 MShaderStorageParam::MShaderStorageParam()
-	: MShaderParam()
+    : MShaderParam()
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
-	m_VkDescriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    m_vkDescriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 #endif
 }
 
 MShaderSubpasssInputParam::MShaderSubpasssInputParam()
-	: MShaderTextureParam()
+    : MShaderTextureParam()
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
-	m_VkDescriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+    m_vkDescriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
 #endif
 }

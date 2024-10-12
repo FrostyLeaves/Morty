@@ -8,100 +8,98 @@
 
 #pragma once
 
-#include "Basic/MTexture.h"
-#include "Render/MRenderPass.h"
-#include "TaskGraph/MTaskNodeOutput.h"
 #include "Utility/MGlobal.h"
+#include "Basic/MTexture.h"
+#include "RHI/MRenderPass.h"
+#include "TaskGraph/MTaskNodeOutput.h"
 
 #include "RenderProgram/MRenderInfo.h"
 #include "RenderProgram/MeshRender/MIndirectIndexRenderable.h"
-#include "TaskGraph/MTaskGraph.h"
 #include "RenderProgram/RenderGraph/MRenderTargetManager.h"
+#include "TaskGraph/MTaskGraph.h"
 #include "Utility/MStringId.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MRenderGraphSetting;
 class IPropertyBlockAdapter;
 class MRenderTaskTarget;
 class MRenderTargetManager;
-
 class MORTY_API MRenderGraph : public MTaskGraph
 {
     MORTY_CLASS(MRenderGraph)
 public:
-
     MRenderGraph() = default;
+
     MRenderGraph(MEngine* pEngine);
+
     ~MRenderGraph() override;
 
-    template<typename TYPE>
-    MRenderTaskNode* RegisterTaskNode(const MStringId& strTaskNodeName);
+    template<typename TYPE> MRenderTaskNode* RegisterTaskNode(const MStringId& strTaskNodeName);
 
-    template<typename TYPE>
-    TYPE* FindTaskNode(const MStringId& strTaskNodeName) const;
+    template<typename TYPE> TYPE*            FindTaskNode(const MStringId& strTaskNodeName) const;
 
-    MRenderTargetManager* GetRenderTargetManager() const { return m_pRenderTargetManager; }
-    std::shared_ptr<MRenderGraphSetting> GetRenderGraphSetting() const { return m_pRenderGraphSetting; }
-    MRenderTaskTarget* FindRenderTaskTarget(const MStringId& name);
+    MRenderTargetManager*                    GetRenderTargetManager() const { return m_renderTargetManager; }
 
-    void SetFrameProperty(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter) { m_pFramePropertyAdapter = pAdapter; }
-    const std::shared_ptr<IPropertyBlockAdapter>& GetFrameProperty() const { return m_pFramePropertyAdapter; }
+    std::shared_ptr<MRenderGraphSetting>     GetRenderGraphSetting() const { return m_renderGraphSetting; }
 
-    void SetCameraCullingResult(const std::shared_ptr<MInstanceCulling>& pAdapter) { m_pCameraCullingResult = pAdapter; }
-    const std::shared_ptr<MInstanceCulling>& GetCameraCullingResult() const { return m_pCameraCullingResult; }
+    MRenderTaskTarget*                       FindRenderTaskTarget(const MStringId& name);
 
-    void SetShadowCullingResult(const std::shared_ptr<MInstanceCulling>& pAdapter) { m_pShadowCullingResult = pAdapter; }
-    const std::shared_ptr<MInstanceCulling>& GetShadowCullingResult() const { return m_pShadowCullingResult; }
+    void SetFrameProperty(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter) { m_framePropertyAdapter = pAdapter; }
 
-    void SetVoxelizerCullingResult(const std::shared_ptr<MInstanceCulling>& pAdapter) { m_pVoxelizerCullingResult = pAdapter; }
-    const std::shared_ptr<MInstanceCulling>& GetVoxelizerCullingResult() const { return m_pVoxelizerCullingResult; }
+    const std::shared_ptr<IPropertyBlockAdapter>& GetFrameProperty() const { return m_framePropertyAdapter; }
 
-    void Resize(const Vector2i& size);
+    void SetCameraCullingResult(const std::shared_ptr<MInstanceCulling>& pAdapter) { m_cameraCullingResult = pAdapter; }
+
+    const std::shared_ptr<MInstanceCulling>& GetCameraCullingResult() const { return m_cameraCullingResult; }
+
+    void SetShadowCullingResult(const std::shared_ptr<MInstanceCulling>& pAdapter) { m_shadowCullingResult = pAdapter; }
+
+    const std::shared_ptr<MInstanceCulling>& GetShadowCullingResult() const { return m_shadowCullingResult; }
+
+    void SetVoxelizerCullingResult(const std::shared_ptr<MInstanceCulling>& pAdapter)
+    {
+        m_voxelizerCullingResult = pAdapter;
+    }
+
+    const std::shared_ptr<MInstanceCulling>& GetVoxelizerCullingResult() const { return m_voxelizerCullingResult; }
+
+    void                                     Resize(const Vector2i& size);
 
 private:
+    Vector2i                                    m_size = {0, 0};
 
-    Vector2i m_n2Size = {0, 0};
+    MEngine*                                    m_engine              = nullptr;
+    MRenderTargetManager*                       m_renderTargetManager = nullptr;
+    std::shared_ptr<MRenderGraphSetting>        m_renderGraphSetting  = nullptr;
 
-    MEngine* m_pEngine = nullptr;
-    MRenderTargetManager* m_pRenderTargetManager = nullptr;
-    std::shared_ptr<MRenderGraphSetting> m_pRenderGraphSetting = nullptr;
+    std::shared_ptr<IPropertyBlockAdapter>      m_framePropertyAdapter   = nullptr;
+    std::shared_ptr<MInstanceCulling>           m_cameraCullingResult    = nullptr;
+    std::shared_ptr<MInstanceCulling>           m_shadowCullingResult    = nullptr;
+    std::shared_ptr<MInstanceCulling>           m_voxelizerCullingResult = nullptr;
 
-    std::shared_ptr<IPropertyBlockAdapter> m_pFramePropertyAdapter = nullptr;
-    std::shared_ptr<MInstanceCulling> m_pCameraCullingResult = nullptr;
-    std::shared_ptr<MInstanceCulling> m_pShadowCullingResult = nullptr;
-    std::shared_ptr<MInstanceCulling> m_pVoxelizerCullingResult = nullptr;
-
-    std::map<const MStringId, MRenderTaskNode*> m_tTaskNodeTable;
-
+    std::map<const MStringId, MRenderTaskNode*> m_taskNodeTable;
 };
 
-template <typename TYPE>
-MRenderTaskNode* MRenderGraph::RegisterTaskNode(const MStringId& strTaskNodeName)
+template<typename TYPE> MRenderTaskNode* MRenderGraph::RegisterTaskNode(const MStringId& strTaskNodeName)
 {
-    const auto findResult = m_tTaskNodeTable.find(strTaskNodeName);
-    if (findResult != m_tTaskNodeTable.end())
-    {
-        return findResult->second;
-    }
+    const auto findResult = m_taskNodeTable.find(strTaskNodeName);
+    if (findResult != m_taskNodeTable.end()) { return findResult->second; }
 
     auto pRenderWork = AddNode<TYPE>(strTaskNodeName);
 
-    m_tTaskNodeTable[strTaskNodeName] = pRenderWork;
+    m_taskNodeTable[strTaskNodeName] = pRenderWork;
 
     return pRenderWork;
 }
 
-template <typename TYPE>
-TYPE* MRenderGraph::FindTaskNode(const MStringId& strTaskNodeName) const
+template<typename TYPE> TYPE* MRenderGraph::FindTaskNode(const MStringId& strTaskNodeName) const
 {
-    const auto findResult = m_tTaskNodeTable.find(strTaskNodeName);
-    if (findResult != m_tTaskNodeTable.end())
-    {
-        return findResult->second->DynamicCast<TYPE>();
-    }
+    const auto findResult = m_taskNodeTable.find(strTaskNodeName);
+    if (findResult != m_taskNodeTable.end()) { return findResult->second->DynamicCast<TYPE>(); }
 
     return nullptr;
 }
 
-MORTY_SPACE_END
+}// namespace morty

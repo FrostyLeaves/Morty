@@ -3,10 +3,11 @@
 #include "Main/BaseWidget.h"
 #include "Render/SceneTexture.h"
 
-#include "Resource/MResource.h"
 #include "Property/PropertyBase.h"
+#include "Resource/MResource.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class GuizmoWidget;
 class MScene;
@@ -17,15 +18,18 @@ class MInputEvent;
 class MainView : public BaseWidget
 {
 public:
-	MainView();
-	~MainView() = default;
+    MainView();
 
-	void Initialize(MainEditor* pMainEditor) override;
-	void Release() override;
-	void Render() override;
+    ~MainView() = default;
+
+    void Initialize(MainEditor* pMainEditor) override;
+
+    void Release() override;
+
+    void Render() override;
 
 private:
-	GuizmoWidget* m_pGuizmoWidget = nullptr;
+    GuizmoWidget* m_guizmoWidget = nullptr;
 };
 
-MORTY_SPACE_END
+}// namespace morty

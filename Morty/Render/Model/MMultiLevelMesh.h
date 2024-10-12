@@ -10,70 +10,75 @@
 
 #pragma once
 
-#include "Render/MRenderGlobal.h"
-#include "Render/MMesh.h"
+#include "Utility/MRenderGlobal.h"
+#include "Mesh/MMesh.h"
 #include "Resource/MResource.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MMultiLevelMesh
 {
 public:
-	struct Face;
-	struct Vertex
-	{
-		Vector3 pos;
-		std::vector<struct Vertex*> vNeighbor;
-		std::vector<struct Face*> vFaces;
+    struct Face;
+    struct Vertex {
+        Vector3                     pos;
+        std::vector<struct Vertex*> vNeighbor;
+        std::vector<struct Face*>   vFaces;
 
-		uint32_t unVertexIndex;
-		float fObjdist;
-		Vertex* pCollapseVertex;
-	};
+        uint32_t                    unVertexIndex;
+        float                       fObjdist;
+        Vertex*                     pCollapseVertex;
+    };
 
-	struct Face
-	{
-		Vertex* vIndices[3];
-		Vector3 v3Normal;
-	};
+    struct Face {
+        Vertex* vIndices[3];
+        Vector3 v3Normal;
+    };
 
 public:
-	MMultiLevelMesh() = default;
-	~MMultiLevelMesh() = default;
+    MMultiLevelMesh() = default;
 
-	void BindMesh(const MIMesh* pMesh);
-	MIMesh* GetLevel(uint32_t unLevel);
+    ~MMultiLevelMesh() = default;
+
+    void    BindMesh(const MIMesh* pMesh);
+
+    MIMesh* GetLevel(uint32_t unLevel);
 
 protected:
+    MIMesh* CreateLevel(const uint32_t& unIndexNumber);
 
-	MIMesh* CreateLevel(const uint32_t& unIndexNumber);
+    void    Unuse(Vertex* pVertex);
 
-	void Unuse(Vertex* pVertex);
-	void Unuse(Face* pFace);
-	void Clean();
+    void    Unuse(Face* pFace);
 
-	bool HasVertex(Face* pFace, Vertex* pVertex);
-	void ReplaceVertex(Face* pFace, Vertex* pFrom, Vertex* pTo);
-	void UpdateNeighbor(Vertex* pVtx1, Vertex* pVtx2);
+    void    Clean();
 
-	void ComputeNormal(Face* pFace);
-	float GetCollapseCost(Vertex* pFrom, Vertex* pTo);
-	void UpdateCollapse(Vertex* pVertex);
+    bool    HasVertex(Face* pFace, Vertex* pVertex);
 
-	void Collapse(Vertex* u, Vertex* v);
+    void    ReplaceVertex(Face* pFace, Vertex* pFrom, Vertex* pTo);
 
-	Vertex* GetMinCollapseCostVertex(std::vector<Vertex*>& vVertices);
+    void    UpdateNeighbor(Vertex* pVtx1, Vertex* pVtx2);
+
+    void    ComputeNormal(Face* pFace);
+
+    float   GetCollapseCost(Vertex* pFrom, Vertex* pTo);
+
+    void    UpdateCollapse(Vertex* pVertex);
+
+    void    Collapse(Vertex* u, Vertex* v);
+
+    Vertex* GetMinCollapseCostVertex(std::vector<Vertex*>& vVertices);
 
 public:
+    std::vector<uint32_t>                                    m_indexToMap;
+    std::vector<int>                                         m_map;
 
-	std::vector<uint32_t> m_vIndexToMap;
-	std::vector<int> m_vMap;
+    MByte*                                                   m_sortVertices = nullptr;
 
-	MByte* m_pSortVertices = nullptr;
+    const MIMesh*                                            m_mesh = nullptr;
 
-	const MIMesh* m_pMesh = nullptr;
-
-	std::array<MIMesh*, MRenderGlobal::MESH_LOD_LEVEL_RANGE> m_vMeshesCache;
+    std::array<MIMesh*, MRenderGlobal::MESH_LOD_LEVEL_RANGE> m_meshesCache;
 };
 
-MORTY_SPACE_END
+}// namespace morty

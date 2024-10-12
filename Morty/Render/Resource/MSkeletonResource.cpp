@@ -9,24 +9,21 @@ MORTY_CLASS_IMPLEMENT(MSkeletonResource, MResource)
 
 MSkeleton* MSkeletonResource::GetSkeleton() const
 {
-    if (auto ptr = static_cast<MSkeletonResourceData*>(m_pResourceData.get()))
-    {
-        return &ptr->skeleton;
-    }
+    if (auto ptr = static_cast<MSkeletonResourceData*>(m_resourceData.get())) { return &ptr->skeleton; }
 
     return nullptr;
 }
 
 bool MSkeletonResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 {
-    m_pResourceData = std::move(pResourceData);
+    m_resourceData = std::move(pResourceData);
 
     return true;
 }
 
 bool MSkeletonResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 {
-    pResourceData = std::make_unique<MSkeletonResourceData>(*static_cast<MSkeletonResourceData*>(m_pResourceData.get()));
+    pResourceData = std::make_unique<MSkeletonResourceData>(*static_cast<MSkeletonResourceData*>(m_resourceData.get()));
 
     return true;
 }

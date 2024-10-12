@@ -7,36 +7,38 @@
 #include "Utility/MString.h"
 #include "Utility/MTransform.h"
 
-#include <map>
 #include <deque>
 #include <functional>
+#include <map>
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MEntity;
 class PropertyBase;
 class PropertyView : public BaseWidget
 {
 public:
-	PropertyView();
+    PropertyView();
+
     ~PropertyView() override;
-	
-	void Render() override;
 
-	void Initialize(MainEditor* pMainEditor) override;
-	void Release() override;
-    
+    void Render() override;
+
+    void Initialize(MainEditor* pMainEditor) override;
+
+    void Release() override;
+
 protected:
+    void EditEntity(MEntity* pEntity);
 
-	void EditEntity(MEntity* pEntity);
-	void UpdatePropertyList(MEntity* pEntity);
+    void UpdatePropertyList(MEntity* pEntity);
 
 private:
+    MEntity*                                          m_entity = nullptr;
+    std::deque<PropertyBase*>                         m_propertyList;
 
-	MEntity* m_pEntity = nullptr;
-	std::deque<PropertyBase*> m_vPropertyList;
-	
-	std::map<MString, std::function<PropertyBase*()>> m_tCreatePropertyFactory;
+    std::map<MString, std::function<PropertyBase*()>> m_createPropertyFactory;
 };
 
-MORTY_SPACE_END
+}// namespace morty

@@ -10,7 +10,8 @@
 
 #include "Utility/MGlobal.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MWindowsRenderView
 {
@@ -19,9 +20,7 @@ public:
     virtual ~MWindowsRenderView();
 
 public:
-
 private:
-
 };
 
-MORTY_SPACE_END
+}// namespace morty

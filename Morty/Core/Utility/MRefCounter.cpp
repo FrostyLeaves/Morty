@@ -2,7 +2,4 @@
 
 using namespace morty;
 
-void MRefCounter::OnReferenceZero()
-{
-	delete this;
-}
+void MRefCounter::OnReferenceZero() { delete this; }

@@ -4,7 +4,8 @@
 
 #include "Scene/MEntity.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MScene;
 class MObject;
@@ -12,18 +13,16 @@ class MEntity;
 class NodeTreeView : public BaseWidget
 {
 public:
-	NodeTreeView();
+    NodeTreeView();
     ~NodeTreeView() = default;
-	
-	void Render() override;
 
-	void Initialize(MainEditor* pMainEditor) override;
-	void Release() override;
+    void Render() override;
+
+    void Initialize(MainEditor* pMainEditor) override;
+    void Release() override;
 
 protected:
-
-	void RenderNode(MEntity* pNode);
-	
+    void RenderNode(MEntity* pNode);
 };
 
-MORTY_SPACE_END
+}// namespace morty

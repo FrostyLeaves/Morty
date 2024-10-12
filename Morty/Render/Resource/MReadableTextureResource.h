@@ -12,13 +12,14 @@
 #include "Resource/MResource.h"
 #include "Resource/MTextureResource.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MReadableTextureResource : public MTextureResource
 {
     MORTY_CLASS(MReadableTextureResource)
 public:
-    MReadableTextureResource() { m_bReadable = true; }
+    MReadableTextureResource() { m_readable = true; }
 };
 
-MORTY_SPACE_END
+}// namespace morty

@@ -9,13 +9,14 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "Object/MObject.h"
-#include "Math/Vector.h"
-#include "Math/Matrix.h"
-#include "Utility/MBounds.h"
 #include "Basic/MCameraFrustum.h"
+#include "Math/Matrix.h"
+#include "Math/Vector.h"
+#include "Object/MObject.h"
+#include "Utility/MBounds.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MEntity;
 class MScene;
@@ -28,70 +29,76 @@ class MDirectionalLight;
 class MORTY_API MViewport : public MObject
 {
 public:
-	MORTY_CLASS(MViewport);
+    MORTY_CLASS(MViewport);
 
-	MViewport();
-	virtual ~MViewport();
+    MViewport();
 
-public:
-
-	void SetScene(MScene* pScene);
-	MScene* GetScene() const { return m_pScene; }
-
-	void SetCamera(MEntity* pCamera);
-	MEntity* GetCamera() const;
-
-	bool IsUseDefaultCamera() { return nullptr == m_pUserCamera; }
-
-	void SetLeftTop(const Vector2i& n2LeftTop) { m_n2LeftTop = n2LeftTop; }
-	Vector2i GetLeftTop() const { return m_n2LeftTop; }
-
-	void SetSize(const Vector2i& n2Size);
-	Vector2i GetSize() const { return m_n2Size; }
-
-	float GetLeft() const { return m_n2LeftTop.x; }
-	float GetTop() const { return m_n2LeftTop.y; }
-	float GetWidth() const { return m_n2Size.x; }
-	float GetHeight() const { return m_n2Size.y; }
-
-	bool ConvertWorldPointToViewport(const Vector3& v3WorldPos, Vector3& v3Result);
-
-	void ConvertViewportPointToWorld(const Vector2& v2ViewportPos, const float& fDepth, Vector3& v3Result);
-
-	bool ConvertWorldLineToNormalizedDevice(const Vector3& v3Pos1, const Vector3& v3Pos2, Vector2& v3Rst1, Vector2& v3Rst2);
-
-	bool ConvertWorldPointToNormalizedDevice(const Vector3& v3Pos, Vector2& v2Rst);
-
-	bool ConvertScreenPointToViewport(const Vector2& v2Point, Vector2& v2Result);
+    ~MViewport() override;
 
 public:
-	virtual void OnCreated() override;
-	virtual void OnDelete() override;
+    void                   SetScene(MScene* pScene);
 
-	virtual void Input(MInputEvent* pEvent);
+    [[nodiscard]] MScene*  GetScene() const { return m_scene; }
 
-	void SetScreenPosition(const Vector2i& v2Position) { m_n2ScreenPosition = v2Position; }
-	void SetScreenScale(const Vector2& v2Scale) { m_f2ScreenScale = v2Scale; }
+    void                   SetCamera(MEntity* pCamera);
+
+    [[nodiscard]] MEntity* GetCamera() const;
+
+    bool                   IsUseDefaultCamera() { return nullptr == m_userCamera; }
+
+    void                   SetLeftTop(const Vector2i& n2LeftTop) { m_leftTop = n2LeftTop; }
+
+    [[nodiscard]] Vector2i GetLeftTop() const { return m_leftTop; }
+
+    void                   SetSize(const Vector2i& n2Size);
+
+    [[nodiscard]] Vector2i GetSize() const { return m_size; }
+
+    [[nodiscard]] float    GetLeft() const { return m_leftTop.x; }
+
+    [[nodiscard]] float    GetTop() const { return m_leftTop.y; }
+
+    [[nodiscard]] float    GetWidth() const { return m_size.x; }
+
+    [[nodiscard]] float    GetHeight() const { return m_size.y; }
+
+    bool                   ConvertWorldPointToViewport(const Vector3& v3WorldPos, Vector3& v3Result);
+
+    void ConvertViewportPointToWorld(const Vector2& v2ViewportPos, const float& fDepth, Vector3& v3Result);
+
+    bool
+    ConvertWorldLineToNormalizedDevice(const Vector3& v3Pos1, const Vector3& v3Pos2, Vector2& v3Rst1, Vector2& v3Rst2);
+
+    bool ConvertWorldPointToNormalizedDevice(const Vector3& v3Pos, Vector2& v2Rst);
+
+    bool ConvertScreenPointToViewport(const Vector2& v2Point, Vector2& v2Result);
 
 public:
+    void         OnCreated() override;
 
-	
+    void         OnDelete() override;
 
+    virtual void Input(MInputEvent* pEvent);
+
+    void         SetScreenPosition(const Vector2i& v2Position) { m_screenPosition = v2Position; }
+
+    void         SetScreenScale(const Vector2& v2Scale) { m_screenScale = v2Scale; }
+
+public:
 protected:
-	void SetValidCamera(MEntity* pCamera);
+    void SetValidCamera(MEntity* pCamera);
 
 
 private:
+    MScene*  m_scene;
 
-	MScene* m_pScene;
-	
-	MEntity* m_pUserCamera;
+    MEntity* m_userCamera;
 
-	Vector2i m_n2LeftTop;
-	Vector2i m_n2Size;
+    Vector2i m_leftTop;
+    Vector2i m_size;
 
-	Vector2i m_n2ScreenPosition;
-	Vector2 m_f2ScreenScale;
+    Vector2i m_screenPosition;
+    Vector2  m_screenScale;
 };
 
-MORTY_SPACE_END
+}// namespace morty

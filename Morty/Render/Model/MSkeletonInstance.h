@@ -9,46 +9,50 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
+#include "MSkeleton.h"
 #include "Math/Matrix.h"
 #include "Object/MObject.h"
+#include "Resource/MResource.h"
 #include "Utility/MString.h"
 #include "Variant/MVariant.h"
-#include "Resource/MResource.h"
-#include "MSkeleton.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MBoundsOBB;
 class MSkeletonResource;
 class MShaderPropertyBlock;
-
 class MORTY_API MSkeletonInstance : public MObject
 {
 public:
+    MORTY_CLASS(MSkeletonInstance);
 
-	MORTY_CLASS(MSkeletonInstance);
-	MSkeletonInstance() = default;
-	~MSkeletonInstance() = default;
+    MSkeletonInstance() = default;
 
-	void SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeletonRsource);
-	const MSkeleton* GetSkeletonTemplate() const { return m_pSkeletonTemplate; }
+    ~MSkeletonInstance() = default;
 
-	MBone* FindBoneByName(const MString& strName);
+    void                SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeletonRsource);
 
-	const MBone* FindBoneTemplateByName(const MString& strName) const;
-	const MBone* GetBoneTemplateByIndex(const uint32_t& unIndex) const;
+    const MSkeleton*    GetSkeletonTemplate() const { return m_skeletonTemplate; }
 
-	std::vector<MBone>& GetAllBones();
-	void ResetPose();
+    MBone*              FindBoneByName(const MString& strName);
 
-	MSkeletonPose& GetCurrentPose() { return m_currentPose; }
+    const MBone*        FindBoneTemplateByName(const MString& strName) const;
+
+    const MBone*        GetBoneTemplateByIndex(const uint32_t& unIndex) const;
+
+    std::vector<MBone>& GetAllBones();
+
+    void                ResetPose();
+
+    MSkeletonPose&      GetCurrentPose() { return m_currentPose; }
 
 private:
-	MResourceRef m_skeletonResource;
-	const MSkeleton* m_pSkeletonTemplate = nullptr;
-	std::vector<MBone> m_vAllBones;
+    MResourceRef       m_skeletonResource;
+    const MSkeleton*   m_skeletonTemplate = nullptr;
+    std::vector<MBone> m_allBones;
 
-	MSkeletonPose m_currentPose;
+    MSkeletonPose      m_currentPose;
 };
 
-MORTY_SPACE_END
+}// namespace morty

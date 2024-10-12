@@ -8,40 +8,40 @@
 
 #pragma once
 
-#include "Basic/MTexture.h"
-#include "Render/MRenderPass.h"
-#include "TaskGraph/MTaskNodeOutput.h"
 #include "Utility/MGlobal.h"
+#include "Basic/MTexture.h"
+#include "RHI/MRenderPass.h"
+#include "TaskGraph/MTaskNodeOutput.h"
 
 #include "RenderProgram/MRenderInfo.h"
+#include "RenderProgram/RenderGraph/MRenderTargetManager.h"
 #include "TaskGraph/MTaskNode.h"
 #include "Utility/MStringId.h"
-#include "RenderProgram/RenderGraph/MRenderTargetManager.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MRenderTargetManager;
 class MRenderGraph;
 class MRenderPass;
 class MRenderTaskTarget;
-
 class MORTY_API MRenderTaskNodeOutput : public MTaskNodeOutput
 {
-	MORTY_CLASS(MRenderTaskNodeOutput)
+    MORTY_CLASS(MRenderTaskNodeOutput)
 public:
+    void                      SetName(const MStringId& name) { m_strOutputName = name; }
 
-	void SetName(const MStringId& name) { m_strOutputName = name; }
-	MStringId GetName() const { return m_strOutputName; }
+    MStringId                 GetName() const { return m_strOutputName; }
 
-	void SetRenderTarget(MRenderTaskTarget* pRenderTarget);
-	MRenderTaskTarget* GetRenderTarget() const { return m_pRenderTaskTarget; }
+    void                      SetRenderTarget(MRenderTaskTarget* pRenderTarget);
 
-	std::shared_ptr<MTexture> GetTexture() const;
+    MRenderTaskTarget*        GetRenderTarget() const { return m_renderTaskTarget; }
+
+    std::shared_ptr<MTexture> GetTexture() const;
 
 private:
-
-	MStringId m_strOutputName;
-	MRenderTaskTarget* m_pRenderTaskTarget = nullptr;
+    MStringId          m_strOutputName;
+    MRenderTaskTarget* m_renderTaskTarget = nullptr;
 };
 
-MORTY_SPACE_END
+}// namespace morty

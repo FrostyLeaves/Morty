@@ -1,10 +1,11 @@
 #pragma once
 
+#include "Utility/MGlobal.h"
 #include "BatchGroup/MInstanceBatchGroup.h"
 #include "Object/MObject.h"
-#include "Utility/MGlobal.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MIMesh;
 class MScene;
@@ -14,35 +15,38 @@ class MComponent;
 class MSceneComponent;
 class MShaderPropertyBlock;
 struct MShaderConstantParam;
+
 class MRenderMeshComponent;
-
-
 class MORTY_API MMaterialBatchGroup
 {
 public:
-	void Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pMaterial);
-	void Release(MEngine* pEngine);
+    void                                     Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pMaterial);
 
-	static MMeshInstanceRenderProxy CreateProxyFromComponent(MRenderMeshComponent* pComponent);
+    void                                     Release(MEngine* pEngine);
 
-	void AddMeshInstance(const MMeshInstanceRenderProxy& proxy);
-	void UpdateMeshInstance(const MMeshInstanceRenderProxy& proxy);
-	void UpdateOrCreateMeshInstance(const MMeshInstanceRenderProxy& proxy);
-	void RemoveMeshInstance(MMeshInstanceKey nProxyId);
+    static MMeshInstanceRenderProxy          CreateProxyFromComponent(MRenderMeshComponent* pComponent);
 
-	bool IsEmpty() const;
-	std::shared_ptr<MMaterial> GetMaterial() const { return m_pMaterial; }
+    void                                     AddMeshInstance(const MMeshInstanceRenderProxy& proxy);
 
-	const std::vector<MInstanceBatchGroup*>& GetInstanceBatchGroup() const { return m_vBatchGroup; }
+    void                                     UpdateMeshInstance(const MMeshInstanceRenderProxy& proxy);
+
+    void                                     UpdateOrCreateMeshInstance(const MMeshInstanceRenderProxy& proxy);
+
+    void                                     RemoveMeshInstance(MMeshInstanceKey nProxyId);
+
+    bool                                     IsEmpty() const;
+
+    std::shared_ptr<MMaterial>               GetMaterial() const { return m_material; }
+
+    const std::vector<MInstanceBatchGroup*>& GetInstanceBatchGroup() const { return m_batchGroup; }
 
 
 public:
+    std::shared_ptr<MMaterial>         m_material = nullptr;
+    std::map<MMeshInstanceKey, size_t> m_meshInstanceTable;
+    std::vector<MInstanceBatchGroup*>  m_batchGroup;
 
-	std::shared_ptr<MMaterial> m_pMaterial = nullptr;
-	std::map<MMeshInstanceKey, size_t> m_tMeshInstanceTable;
-	std::vector<MInstanceBatchGroup*> m_vBatchGroup;
-
-	MEngine* m_pEngine = nullptr;
+    MEngine*                           m_engine = nullptr;
 };
 
-MORTY_SPACE_END
+}// namespace morty

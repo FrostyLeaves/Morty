@@ -12,40 +12,43 @@
 #include "Model/MSkeleton.h"
 #include "Resource/MResourceLoader.h"
 
-MORTY_SPACE_BEGIN
-
-struct MORTY_API MSkeletonResourceData : public MFbResourceData
+namespace morty
 {
-public:
-	MSkeleton skeleton;
 
-	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
-	void Deserialize(const void* pBufferPointer) override;
+struct MORTY_API MSkeletonResourceData : public MFbResourceData {
+public:
+    MSkeleton                 skeleton;
+
+    flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
+
+    void                      Deserialize(const void* pBufferPointer) override;
 };
 
 class MORTY_API MSkeletonResource : public MResource
 {
 public:
-	MORTY_CLASS(MSkeletonResource)
-	MSkeletonResource() = default;
-	virtual ~MSkeletonResource() = default;
+    MORTY_CLASS(MSkeletonResource)
 
-	MSkeleton* GetSkeleton() const;
+    MSkeletonResource() = default;
 
-	bool Load(std::unique_ptr<MResourceData>&& pResourceData) override;
-	bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
+    virtual ~MSkeletonResource() = default;
+
+    MSkeleton* GetSkeleton() const;
+
+    bool       Load(std::unique_ptr<MResourceData>&& pResourceData) override;
+
+    bool       SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
 
 private:
-
-	std::unique_ptr<MResourceData> m_pResourceData = nullptr;
+    std::unique_ptr<MResourceData> m_resourceData = nullptr;
 };
 
 class MORTY_API MSkeletonResourceLoader : public MResourceLoaderTemplate<MSkeletonResource, MSkeletonResourceData>
 {
 public:
+    static MString              GetResourceTypeName() { return "Skeleton"; };
 
-	static MString GetResourceTypeName() { return "Skeleton"; };
-	static std::vector<MString> GetSuffixList() { return { "ske" }; };
+    static std::vector<MString> GetSuffixList() { return {"ske"}; };
 };
 
-MORTY_SPACE_END
+}// namespace morty

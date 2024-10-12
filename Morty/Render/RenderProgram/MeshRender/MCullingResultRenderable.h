@@ -14,7 +14,8 @@
 #include "RenderProgram/MRenderInfo.h"
 #include "RenderProgram/RenderWork/MRenderWork.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class IMaterialFilter;
 class MScene;
@@ -23,22 +24,24 @@ class MMaterialBatchGroup;
 class MORTY_API MCullingResultRenderable : public IRenderable
 {
 public:
+    void SetMaterialFilter(std::shared_ptr<IMaterialFilter> pFilter);
 
-	void SetMaterialFilter(std::shared_ptr<IMaterialFilter> pFilter);
-	void SetPropertyBlockAdapter(const std::vector<std::shared_ptr<IPropertyBlockAdapter>>& vAdapter);
-	void SetMeshBuffer(const std::shared_ptr<MMeshBufferAdapter>& pMeshBuffer) { m_pMeshBuffer = pMeshBuffer; }
-	void SetInstanceCulling(const std::shared_ptr<MInstanceCulling>& pCulling);
-	void Render(MIRenderCommand* pCommand) override;
+    void SetPropertyBlockAdapter(const std::vector<std::shared_ptr<IPropertyBlockAdapter>>& vAdapter);
 
-	//override to use other material.
-	virtual std::shared_ptr<MMaterial> GetMaterial(const MMaterialCullingGroup& group) const;
+    void SetMeshBuffer(const std::shared_ptr<MMeshBufferAdapter>& pMeshBuffer) { m_meshBuffer = pMeshBuffer; }
+
+    void SetInstanceCulling(const std::shared_ptr<MInstanceCulling>& pCulling);
+
+    void Render(MIRenderCommand* pCommand) override;
+
+    //override to use other material.
+    virtual std::shared_ptr<MMaterial> GetMaterial(const MMaterialCullingGroup& group) const;
 
 private:
-
-	std::vector<std::shared_ptr<IPropertyBlockAdapter>> m_vFramePropertyAdapter;
-	std::shared_ptr<MInstanceCulling> m_pCullingAdapter = nullptr;
-	std::shared_ptr<MMeshBufferAdapter> m_pMeshBuffer = nullptr;
-	std::shared_ptr<IMaterialFilter> pMaterialFilter = nullptr;
+    std::vector<std::shared_ptr<IPropertyBlockAdapter>> m_framePropertyAdapter;
+    std::shared_ptr<MInstanceCulling>                   m_cullingAdapter = nullptr;
+    std::shared_ptr<MMeshBufferAdapter>                 m_meshBuffer     = nullptr;
+    std::shared_ptr<IMaterialFilter>                    pMaterialFilter  = nullptr;
 };
 
-MORTY_SPACE_END
+}// namespace morty

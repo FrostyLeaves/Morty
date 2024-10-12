@@ -1,28 +1,25 @@
 ﻿#include "MTextureConverter.h"
 
-#include "MTexture_generated.h"
 #include "Engine/MEngine.h"
+#include "MTexture_generated.h"
 #include "Resource/MTextureResourceUtil.h"
-#include "Utility/MFileHelper.h"
 #include "System/MResourceSystem.h"
+#include "Utility/MFileHelper.h"
 
 using namespace morty;
 
-template <typename TYPE>
+template<typename TYPE>
 std::vector<MByte> ConvertSingleChannelData(const MByte* vData, size_t nWidth, size_t nHeight, size_t nChannel)
 {
     MORTY_ASSERT(nChannel < 4);
 
     std::vector<MByte> result(nWidth * nHeight * sizeof(TYPE));
 
-    const TYPE* pData = reinterpret_cast<const TYPE*>(vData);
-    TYPE* pResult = reinterpret_cast<TYPE*>(result.data());
+    const TYPE*        pData   = reinterpret_cast<const TYPE*>(vData);
+    TYPE*              pResult = reinterpret_cast<TYPE*>(result.data());
     for (size_t w = 0; w < nWidth; ++w)
     {
-        for (size_t h = 0; h < nHeight; ++h)
-        {
-            pResult[w * nHeight + h] = pData[(w * nHeight + h) * 4 + nChannel];
-        }
+        for (size_t h = 0; h < nHeight; ++h) { pResult[w * nHeight + h] = pData[(w * nHeight + h) * 4 + nChannel]; }
     }
 
     return result;
@@ -31,10 +28,10 @@ std::vector<MByte> ConvertSingleChannelData(const MByte* vData, size_t nWidth, s
 
 void MTextureConverter::ConvertSingleChannel(MTextureResourceData* pTextureData, size_t nChannel)
 {
-    const auto& rawMipmaps = pTextureData->vMipmaps;
-    auto eFormat = pTextureData->eFormat;
-    size_t nWidth = pTextureData->nWidth;
-    size_t nHeight = pTextureData->nHeight;
+    const auto&                     rawMipmaps = pTextureData->vMipmaps;
+    auto                            eFormat    = pTextureData->eFormat;
+    size_t                          nWidth     = pTextureData->nWidth;
+    size_t                          nHeight    = pTextureData->nHeight;
 
     std::vector<std::vector<MByte>> convertData;
 
@@ -42,11 +39,13 @@ void MTextureConverter::ConvertSingleChannel(MTextureResourceData* pTextureData,
     {
         if (morty::METextureFormat::UNorm_RGBA8 == eFormat)
         {
-            convertData[nMipIdx] = ConvertSingleChannelData<MByte>(rawMipmaps[nMipIdx].data(), nWidth, nHeight, nChannel);
+            convertData[nMipIdx] =
+                    ConvertSingleChannelData<MByte>(rawMipmaps[nMipIdx].data(), nWidth, nHeight, nChannel);
         }
         else if (morty::METextureFormat::Float_RGBA32 == eFormat)
         {
-            convertData[nMipIdx] = ConvertSingleChannelData<float>(rawMipmaps[nMipIdx].data(), nWidth, nHeight, nChannel);
+            convertData[nMipIdx] =
+                    ConvertSingleChannelData<float>(rawMipmaps[nMipIdx].data(), nWidth, nHeight, nChannel);
         }
         else
         {
@@ -54,10 +53,10 @@ void MTextureConverter::ConvertSingleChannel(MTextureResourceData* pTextureData,
             return;
         }
 
-        nWidth = nWidth / 2;
+        nWidth  = nWidth / 2;
         nHeight = nHeight / 2;
     }
 
     pTextureData->vMipmaps = convertData;
-    pTextureData->eFormat = eFormat;
+    pTextureData->eFormat  = eFormat;
 }

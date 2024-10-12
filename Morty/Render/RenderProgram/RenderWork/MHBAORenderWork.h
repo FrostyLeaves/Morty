@@ -8,37 +8,36 @@
 
 #pragma once
 
-#include "MBasicPostProcessRenderWork.h"
 #include "Utility/MGlobal.h"
+#include "MBasicPostProcessRenderWork.h"
 #include "MSinglePassRenderWork.h"
 
-#include "RenderProgram/MRenderInfo.h"
-#include "MRenderWork.h"
-#include "Render/MRenderPass.h"
 #include "Basic/MCameraFrustum.h"
+#include "MRenderWork.h"
+#include "RHI/MRenderPass.h"
+#include "RenderProgram/MRenderInfo.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MHBAORenderWork : public MBasicPostProcessRenderWork
 {
-	MORTY_CLASS(MHBAORenderWork)
+    MORTY_CLASS(MHBAORenderWork)
 
-    static const MStringId HBAOOutput;
+    static const MStringId     HBAOOutput;
 
-	void Release() override;
+    void                       Release() override;
 
-	std::shared_ptr<MMaterial> CreateMaterial() override;
+    std::shared_ptr<MMaterial> CreateMaterial() override;
 
-	void RenderSetup(const MRenderInfo& info) override;
+    void                       RenderSetup(const MRenderInfo& info) override;
 
-	void RegisterSetting() override;
+    void                       RegisterSetting() override;
 
 protected:
+    std::vector<MRenderTaskInputDesc>  InitInputDesc() override;
 
-	std::vector<MRenderTaskInputDesc> InitInputDesc() override;
-
-	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
-
+    std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 };
 
-MORTY_SPACE_END
+}// namespace morty

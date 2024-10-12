@@ -11,53 +11,54 @@
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
 
-#include "Render/MMesh.h"
+#include "Mesh/MMesh.h"
+#include "RHI/MRenderPass.h"
 #include "RenderProgram/MRenderInfo.h"
-#include "Render/MRenderPass.h"
 
 #include <array>
 
 #include "MSinglePassRenderWork.h"
 #include "RenderProgram/MFrameShaderPropertyBlock.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 
 class MCullingResultRenderable;
 class MTexture;
 class MTextureResource;
-
 class MORTY_API MTransparentRenderWork : public ISinglePassRenderWork
 {
 public:
     MORTY_CLASS(MTransparentRenderWork);
 
-	static const MStringId BackBufferOutput;
+    static const MStringId BackBufferOutput;
+
 public:
-
     void Initialize(MEngine* pEngine) override;
-	void Release() override;
 
-	void Render(const MRenderInfo& info) override;
-	void Render(const MRenderInfo& info, const std::vector<MCullingResultRenderable*>& vRenderable);
+    void Release() override;
+
+    void Render(const MRenderInfo& info) override;
+
+    void Render(const MRenderInfo& info, const std::vector<MCullingResultRenderable*>& vRenderable);
 
 protected:
+    void                               InitializeMaterial();
 
-    void InitializeMaterial();
-    void ReleaseMaterial();
+    void                               ReleaseMaterial();
 
-	void InitializeFillRenderPass();
+    void                               InitializeFillRenderPass();
 
-	void BindTarget() override;
+    void                               BindTarget() override;
 
-	std::vector<MRenderTaskInputDesc> InitInputDesc() override;
+    std::vector<MRenderTaskInputDesc>  InitInputDesc() override;
 
-	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
+    std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 
 
 private:
-
-	std::shared_ptr<MMaterial> m_pDrawFillMaterial = nullptr;
+    std::shared_ptr<MMaterial> m_drawFillMaterial = nullptr;
 };
 
-MORTY_SPACE_END
+}// namespace morty

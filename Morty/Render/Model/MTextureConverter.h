@@ -12,14 +12,13 @@
 #include "Utility/MGlobal.h"
 #include "Resource/MTextureResource.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MTextureConverter
 {
 public:
-
     static void ConvertSingleChannel(MTextureResourceData* pTexture, size_t nChannel);
-
 };
 
-MORTY_SPACE_END
+}// namespace morty

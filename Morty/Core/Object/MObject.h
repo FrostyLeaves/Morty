@@ -7,12 +7,14 @@
 **/
 
 #pragma once
+
 #include "Utility/MGlobal.h"
 
 #include "Type/MType.h"
 #include "Utility/MString.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MEngine;
 class MAutoPtr;
@@ -20,34 +22,37 @@ class MObjectSystem;
 class MORTY_API MObject : public MTypeClass
 {
 public:
-	MORTY_CLASS(MObject);
+    MORTY_CLASS(MObject);
 
     MObject();
+
     virtual ~MObject();
 
 public:
+    MObjectID      GetObjectID() { return m_unObjectID; }
 
-	MObjectID GetObjectID(){ return m_unObjectID; }
-	MEngine* GetEngine() { return m_pEngine; }
-	MObjectSystem* GetObjectSystem();
+    MEngine*       GetEngine() { return m_engine; }
+
+    MObjectSystem* GetObjectSystem();
 
 
-	void DeleteLater();
-	bool GetDeleteMark() { return m_bDeleteMark; }
+    void           DeleteLater();
+
+    bool           GetDeleteMark() { return m_deleteMark; }
 
 public:
-	virtual void OnCreated() {};
-	virtual void OnDelete() {};
+    virtual void OnCreated(){};
+
+    virtual void OnDelete(){};
 
 protected:
+    friend class MObjectSystem;
 
-	friend class MObjectSystem;
+    MObjectID m_unObjectID;
+    MEngine*  m_engine;
 
-	MObjectID	m_unObjectID;
-	MEngine*	m_pEngine;
-	
 private:
-	bool		m_bDeleteMark;
+    bool m_deleteMark;
 };
 
-MORTY_SPACE_END
+}// namespace morty

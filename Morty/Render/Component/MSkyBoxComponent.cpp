@@ -8,108 +8,73 @@ using namespace morty;
 MORTY_CLASS_IMPLEMENT(MSkyBoxComponent, MComponent)
 
 MSkyBoxComponent::MSkyBoxComponent()
-	: MComponent()
-	, m_Texture()
-{
+    : MComponent()
+    , m_Texture()
+{}
 
-}
-
-MSkyBoxComponent::~MSkyBoxComponent()
-{
-
-}
+MSkyBoxComponent::~MSkyBoxComponent() {}
 
 void MSkyBoxComponent::LoadSkyBoxResource(std::shared_ptr<MResource> pTexture)
 {
-	if (!pTexture)
-		return;
+    if (!pTexture) return;
 
-	std::shared_ptr<MTextureResource> pTextureResource = MTypeClass::DynamicCast<MTextureResource>(pTexture);
-	if (!pTextureResource)
-	{
-		return;
-	}
+    std::shared_ptr<MTextureResource> pTextureResource = MTypeClass::DynamicCast<MTextureResource>(pTexture);
+    if (!pTextureResource) { return; }
 
-	if (m_Texture.GetResource() == pTexture)
-	{
-		return;
-	}
+    if (m_Texture.GetResource() == pTexture) { return; }
 
-	m_Texture.SetResource(pTexture);
-	SendComponentNotify(MRenderNotify::NOTIFY_SKYBOX_TEX_CHANGED);
+    m_Texture.SetResource(pTexture);
+    SendComponentNotify(MRenderNotify::NOTIFY_SKYBOX_TEX_CHANGED);
 }
 
-std::shared_ptr<MResource> MSkyBoxComponent::GetSkyBoxResource()
+std::shared_ptr<MResource> MSkyBoxComponent::GetSkyBoxResource() { return m_Texture.GetResource(); }
+
+void                       MSkyBoxComponent::LoadDiffuseEnvResource(std::shared_ptr<MResource> pTexture)
 {
-	return m_Texture.GetResource();
-}
+    if (!pTexture) return;
 
-void MSkyBoxComponent::LoadDiffuseEnvResource(std::shared_ptr<MResource> pTexture)
-{
-	if (!pTexture)
-		return;
+    std::shared_ptr<MTextureResource> pTextureResource = MTypeClass::DynamicCast<MTextureResource>(pTexture);
+    if (!pTextureResource) { return; }
 
-	std::shared_ptr<MTextureResource> pTextureResource = MTypeClass::DynamicCast<MTextureResource>(pTexture);
-	if (!pTextureResource)
-	{
-		return;
-	}
+    if (m_DiffuseEnvTexture.GetResource() == pTexture) { return; }
 
-    if (m_DiffuseEnvTexture.GetResource() == pTexture)
-    {
-		return;
-	}
-
-	m_DiffuseEnvTexture.SetResource(pTexture);
-	SendComponentNotify(MRenderNotify::NOTIFY_DIFFUSE_ENV_TEX_CHANGED);
+    m_DiffuseEnvTexture.SetResource(pTexture);
+    SendComponentNotify(MRenderNotify::NOTIFY_DIFFUSE_ENV_TEX_CHANGED);
 }
 
 void MSkyBoxComponent::LoadSpecularEnvResource(std::shared_ptr<MResource> pTexture)
 {
-	if (!pTexture)
-		return;
+    if (!pTexture) return;
 
-	std::shared_ptr<MTextureResource> pTextureResource = MTypeClass::DynamicCast<MTextureResource>(pTexture);
-	if (!pTextureResource)
-	{
-		return;
-	}
+    std::shared_ptr<MTextureResource> pTextureResource = MTypeClass::DynamicCast<MTextureResource>(pTexture);
+    if (!pTextureResource) { return; }
 
-	if (m_SpecularEnvTexture.GetResource() == pTexture)
-	{
-		return;
-	}
-	
+    if (m_SpecularEnvTexture.GetResource() == pTexture) { return; }
+
     m_SpecularEnvTexture.SetResource(pTexture);
-	SendComponentNotify(MRenderNotify::NOTIFY_SPECULAR_ENV_TEX_CHANGED);
+    SendComponentNotify(MRenderNotify::NOTIFY_SPECULAR_ENV_TEX_CHANGED);
 }
 
-std::shared_ptr<MResource> MSkyBoxComponent::GetDiffuseEnvResource()
+std::shared_ptr<MResource> MSkyBoxComponent::GetDiffuseEnvResource() { return m_DiffuseEnvTexture.GetResource(); }
+
+std::shared_ptr<MTexture>  MSkyBoxComponent::GetDiffuseTexture()
 {
-	return m_DiffuseEnvTexture.GetResource();
+    if (std::shared_ptr<MTextureResource> pTexture = m_DiffuseEnvTexture.GetResource<MTextureResource>())
+    {
+        return pTexture->GetTextureTemplate();
+    }
+
+    return nullptr;
 }
 
-std::shared_ptr<MTexture> MSkyBoxComponent::GetDiffuseTexture()
+std::shared_ptr<MResource> MSkyBoxComponent::GetSpecularEnvResource() { return m_SpecularEnvTexture.GetResource(); }
+
+std::shared_ptr<MTexture>  MSkyBoxComponent::GetSpecularTexture()
 {
-	if (std::shared_ptr<MTextureResource> pTexture = m_DiffuseEnvTexture.GetResource<MTextureResource>())
-	{
-		return pTexture->GetTextureTemplate();
-	}
+    if (std::shared_ptr<MTextureResource> pTexture = m_SpecularEnvTexture.GetResource<MTextureResource>())
+    {
+        return pTexture->GetTextureTemplate();
+    }
 
-	return nullptr;
-}
-
-std::shared_ptr<MResource> MSkyBoxComponent::GetSpecularEnvResource()
-{
-	return m_SpecularEnvTexture.GetResource();
-}
-
-std::shared_ptr<MTexture> MSkyBoxComponent::GetSpecularTexture()
-{
-	if (std::shared_ptr<MTextureResource> pTexture = m_SpecularEnvTexture.GetResource<MTextureResource>())
-	{
-		return pTexture->GetTextureTemplate();
-	}
-
-	return nullptr;
+    return nullptr;
 }

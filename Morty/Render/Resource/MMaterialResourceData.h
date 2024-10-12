@@ -10,38 +10,37 @@
 
 #include "MMaterialResource.h"
 
-MORTY_SPACE_BEGIN
-
-struct MORTY_API MMaterialResourceData : public MFbResourceData
+namespace morty
 {
-	struct Property
-	{
-		MString name;
-		MVariant value;
-	};
 
-	struct Texture
-	{
-		MString name;
-		MPath value;
-	};
+struct MORTY_API MMaterialResourceData : public MFbResourceData {
+    struct Property {
+        MString  name;
+        MVariant value;
+    };
 
-	std::vector<Property> vProperty;
-	std::vector<Texture> vTextures;
+    struct Texture {
+        MString name;
+        MPath   value;
+    };
 
-	MString strTemplateResource;
+    std::vector<Property>     vProperty;
+    std::vector<Texture>      vTextures;
 
-	flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
-	void Deserialize(const void* pBufferPointer) override;
-	
+    MString                   strTemplateResource;
+
+    flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
+
+    void                      Deserialize(const void* pBufferPointer) override;
 };
 
 
 class MORTY_API MMaterialResourceLoader : public MResourceLoaderTemplate<MMaterialResource, MMaterialResourceData>
 {
 public:
-	static MString GetResourceTypeName() { return "Material"; }
-	static std::vector<MString> GetSuffixList() { return { "mat" }; }
+    static MString              GetResourceTypeName() { return "Material"; }
+
+    static std::vector<MString> GetSuffixList() { return {"mat"}; }
 };
 
-MORTY_SPACE_END
+}// namespace morty

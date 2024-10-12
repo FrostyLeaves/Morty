@@ -7,20 +7,20 @@
 **/
 
 #pragma once
+
 #include "Utility/MGlobal.h"
 #include "Engine/MSystem.h"
 #include "Thread/MThreadWork.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MTaskNode;
 class MResourceLoader;
 class MResourceSystem;
-
 class MORTY_API MResourceAsyncLoadSystem : public MISystem
 {
 public:
-
     void Initialize() override;
 
     void AddLoader(std::shared_ptr<MResourceLoader>& pLoader);
@@ -28,14 +28,14 @@ public:
     void EngineTick(const float& fDelta) override;
 
     void AnyThreadLoad(const std::list<std::shared_ptr<MResourceLoader>>& vLoader);
+
     void MainThreadLoad(const std::list<std::shared_ptr<MResourceLoader>>& vLoader);
 
 private:
+    std::list<std::shared_ptr<MResourceLoader>> m_pendingLoader;
+    std::list<std::shared_ptr<MResourceLoader>> m_finishedLoader;
 
-    std::list<std::shared_ptr<MResourceLoader>> m_vPendingLoader;
-    std::list<std::shared_ptr<MResourceLoader>> m_vFinishedLoader;
-
-    std::optional<MThreadWork> m_loadWork;
+    std::optional<MThreadWork>                  m_loadWork;
 };
 
-MORTY_SPACE_END
+}// namespace morty

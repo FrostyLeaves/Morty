@@ -16,7 +16,8 @@
 #include "TaskGraph/MTaskNodeOutput.h"
 #include "Thread/MThreadPool.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MTaskNode;
 class ITaskGraphWalker;
@@ -26,54 +27,53 @@ class MORTY_API MTaskGraph : public MTypeClass
 
 public:
     MTaskGraph();
+
     virtual ~MTaskGraph();
 
-    template<typename TYPE>
-    TYPE* AddNode(const MStringId& strNodeName);
+    template<typename TYPE> TYPE*  AddNode(const MStringId& strNodeName);
 
-	void DestroyNode(MTaskNode* pTaskNode);
+    void                           DestroyNode(MTaskNode* pTaskNode);
 
-    bool Compile();
+    bool                           Compile();
 
-	void RequireCompile() { m_bRequireCompile = true; }
-	bool NeedCompile() const { return m_bRequireCompile; }
+    void                           RequireCompile() { m_requireCompile = true; }
 
-	void Run(ITaskGraphWalker* pWalker);
+    bool                           NeedCompile() const { return m_requireCompile; }
 
-	const std::vector<MTaskNode*>& GetStartNodes() const { return m_vStartTaskNode; }
-	const std::vector<MTaskNode*>& GetFinalNodes() const { return m_vFinalTaskNode; }
-	std::vector<MTaskNode*> GetOrderedNodes();
-	std::vector<MTaskNode*> GetAllNodes();
+    void                           Run(ITaskGraphWalker* pWalker);
+
+    const std::vector<MTaskNode*>& GetStartNodes() const { return m_startTaskNode; }
+
+    const std::vector<MTaskNode*>& GetFinalNodes() const { return m_finalTaskNode; }
+
+    std::vector<MTaskNode*>        GetOrderedNodes();
+
+    std::vector<MTaskNode*>        GetAllNodes();
 
 protected:
+    bool                    AddNode(const MStringId& strNodeName, MTaskNode* pGraphNode);
 
-	bool AddNode(const MStringId& strNodeName, MTaskNode* pGraphNode);
+    std::set<MTaskNode*>    m_taskNode;
 
-	std::set<MTaskNode*> m_tTaskNode;
+    std::vector<MTaskNode*> m_startTaskNode;
+    std::vector<MTaskNode*> m_finalTaskNode;
 
-	std::vector<MTaskNode*> m_vStartTaskNode;
-	std::vector<MTaskNode*> m_vFinalTaskNode;
-
-	bool m_bRequireCompile;
-	bool m_bLock = false;
+    bool                    m_requireCompile;
+    bool                    m_lock = false;
 };
 
-template<typename TYPE>
-TYPE* MTaskGraph::AddNode(const MStringId& strNodeName)
+template<typename TYPE> TYPE* MTaskGraph::AddNode(const MStringId& strNodeName)
 {
-	if (!MTypeClass::IsType<TYPE, MTaskNode>())
-	{
-		return nullptr;
-	}
+    if (!MTypeClass::IsType<TYPE, MTaskNode>()) { return nullptr; }
 
-	TYPE* pNode = new TYPE();
-	if (!AddNode(strNodeName, pNode))
-	{
-		delete pNode;
-		pNode = nullptr;
-	}
+    TYPE* pNode = new TYPE();
+    if (!AddNode(strNodeName, pNode))
+    {
+        delete pNode;
+        pNode = nullptr;
+    }
 
-	return pNode;
+    return pNode;
 }
 
-MORTY_SPACE_END
+}// namespace morty

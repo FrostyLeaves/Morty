@@ -10,22 +10,22 @@
 
 #include "Material/MMaterialTemplate.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MMaterialTemplateResource : public MMaterialTemplate
 {
 public:
-	MORTY_CLASS(MMaterialTemplateResource);
+    MORTY_CLASS(MMaterialTemplateResource);
 
-	std::shared_ptr<MMaterialTemplate> GetMaterial() const;
+    std::shared_ptr<MMaterialTemplate> GetMaterial() const;
 
-	bool Load(std::unique_ptr<MResourceData>&& pResourceData) override;
-	bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
+    bool                               Load(std::unique_ptr<MResourceData>&& pResourceData) override;
+
+    bool                               SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
 
 private:
-
-	std::unique_ptr<MResourceData> m_pResourceData = nullptr;
-
+    std::unique_ptr<MResourceData> m_resourceData = nullptr;
 };
 
-MORTY_SPACE_END
+}// namespace morty

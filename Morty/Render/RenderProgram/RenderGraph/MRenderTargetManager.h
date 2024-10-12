@@ -8,40 +8,40 @@
 
 #pragma once
 
+#include "Utility/MGlobal.h"
 #include "Basic/MTexture.h"
 #include "Object/MObject.h"
-#include "Render/MRenderPass.h"
+#include "RHI/MRenderPass.h"
 #include "TaskGraph/MTaskNodeOutput.h"
-#include "Utility/MGlobal.h"
 
+#include "MRenderTaskNode.h"
 #include "RenderProgram/MRenderInfo.h"
 #include "TaskGraph/MTaskNode.h"
 #include "Utility/MStringId.h"
-#include "MRenderTaskNode.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MRenderTaskTarget;
 class MRenderPass;
-
-
 class MORTY_API MRenderTargetManager : public MObject
 {
 public:
-	MORTY_CLASS(MRenderTargetManager);
+    MORTY_CLASS(MRenderTargetManager);
 
 
-	MRenderTaskTarget* CreateRenderTarget(const MStringId& name);
-	MRenderTaskTarget* FindRenderTarget(const MStringId& name) const;
+    MRenderTaskTarget*                     CreateRenderTarget(const MStringId& name);
 
-	std::shared_ptr<MTexture> FindRenderTexture(const MStringId& name) const;
+    MRenderTaskTarget*                     FindRenderTarget(const MStringId& name) const;
 
-	void ResizeRenderTarget(const Vector2i& size);
+    std::shared_ptr<MTexture>              FindRenderTexture(const MStringId& name) const;
 
-	std::vector<std::shared_ptr<MTexture>> GetOutputTextures() const;
+    void                                   ResizeRenderTarget(const Vector2i& size);
+
+    std::vector<std::shared_ptr<MTexture>> GetOutputTextures() const;
 
 private:
-	std::unordered_map<MStringId, std::unique_ptr<MRenderTaskTarget>> m_tRenderTaskTable;
+    std::unordered_map<MStringId, std::unique_ptr<MRenderTaskTarget>> m_renderTaskTable;
 };
 
-MORTY_SPACE_END
+}// namespace morty

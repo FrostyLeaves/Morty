@@ -8,26 +8,27 @@
 
 #pragma once
 
+#include "Utility/MGlobal.h"
 #include "Culling/MBoundingBoxCulling.h"
 #include "RenderProgram/RenderGraph/MRenderTargetBindingWalker.h"
-#include "Utility/MGlobal.h"
 
-#include "Type/MType.h"
-#include "Render/MMesh.h"
-#include "Utility/MBounds.h"
-#include "Resource/MResource.h"
-#include "TaskGraph/MTaskNode.h"
-#include "TaskGraph/MTaskGraph.h"
-#include "RenderGraph/MRenderGraph.h"
-#include "Render/MRenderPass.h"
 #include "MRenderInfo.h"
+#include "Mesh/MMesh.h"
+#include "RHI/MRenderPass.h"
+#include "RenderGraph/MRenderGraph.h"
 #include "RenderProgram/MIRenderProgram.h"
+#include "Resource/MResource.h"
+#include "TaskGraph/MTaskGraph.h"
+#include "TaskGraph/MTaskNode.h"
+#include "Type/MType.h"
+#include "Utility/MBounds.h"
 
-#include "MFrameShaderPropertyBlock.h"
 #include "Culling/MCascadedShadowCulling.h"
 #include "Culling/MInstanceCulling.h"
+#include "MFrameShaderPropertyBlock.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MRenderTargetManager;
 class MCPUCameraFrustumCulling;
@@ -41,104 +42,99 @@ class MRenderGraph;
 class MIRenderCommand;
 class MComputeDispatcher;
 class MRenderMeshComponent;
-
 class MORTY_API MDeferredRenderProgram : public MIRenderProgram
 {
 public:
-	MORTY_CLASS(MDeferredRenderProgram)
+    MORTY_CLASS(MDeferredRenderProgram)
 
 public:
+    void                                   Render(MIRenderCommand* pPrimaryCommand) override;
 
-	void Render(MIRenderCommand* pPrimaryCommand) override;
+    void                                   RenderSetup(MIRenderCommand* pPrimaryCommand);
 
-	void RenderSetup(MIRenderCommand* pPrimaryCommand);
-	
-	std::shared_ptr<MTexture> GetOutputTexture() override;
-	std::vector<std::shared_ptr<MTexture>> GetOutputTextures() override;
-	MTaskGraph* GetRenderGraph() override { return m_pRenderGraph.get(); }
+    std::shared_ptr<MTexture>              GetOutputTexture() override;
+
+    std::vector<std::shared_ptr<MTexture>> GetOutputTextures() override;
+
+    MTaskGraph*                            GetRenderGraph() override { return m_renderGraph.get(); }
 
 public:
-	void OnCreated() override;
-	void OnDelete() override;
+    void OnCreated() override;
 
-	void InitializeRenderGraph();
-	void ReleaseRenderGraph();
+    void OnDelete() override;
 
-	void InitializeFrameShaderParams();
-	void ReleaseFrameShaderParams();
+    void InitializeRenderGraph();
 
-	void InitializeRenderWork();
-	void ReleaseRenderWork();
+    void ReleaseRenderGraph();
 
-	void InitializeTaskGraph();
-	void ReleaseTaskGraph();
-	
-protected:
+    void InitializeFrameShaderParams();
 
+    void ReleaseFrameShaderParams();
 
-	template<typename TYPE>
-	TYPE* RegisterRenderWork(const MStringId strTaskNodeName)
-	{
-		MRenderTaskNode* pRenderWork = m_pRenderGraph->FindTaskNode<TYPE>(strTaskNodeName);
-		if(pRenderWork != nullptr)
-		{
-			return static_cast<TYPE*>(pRenderWork);
-		}
+    void InitializeRenderWork();
 
-		pRenderWork = m_pRenderGraph->RegisterTaskNode<TYPE>(strTaskNodeName);
-		if (pRenderWork)
-		{
-			pRenderWork->Initialize(GetEngine());
-			if (auto pFramePropertyDecorator = pRenderWork->GetFramePropertyDecorator())
-			{
-				m_pFramePropertyAdapter->RegisterPropertyDecorator(pFramePropertyDecorator);
-			}
-		}
-		return static_cast<TYPE*>(pRenderWork);
-	}
+    void ReleaseRenderWork();
 
-	template<typename TYPE>
-	TYPE* GetRenderWork(const MStringId& strTaskNodeName) const
-	{
-		return m_pRenderGraph->FindTaskNode<TYPE>(strTaskNodeName);
-	}
+    void InitializeTaskGraph();
 
-	template<typename TYPE>
-	TYPE* RegisterRenderWork()
-	{
-		return RegisterRenderWork<TYPE>(MStringId(TYPE::GetClassTypeName()));
-	}
-
-	template<typename TYPE>
-	TYPE* GetRenderWork() const
-	{
-		return GetRenderWork<TYPE>(MStringId(TYPE::GetClassTypeName()));
-	}
-	
+    void ReleaseTaskGraph();
 
 protected:
+    template<typename TYPE> TYPE* RegisterRenderWork(const MStringId strTaskNodeName)
+    {
+        MRenderTaskNode* pRenderWork = m_renderGraph->FindTaskNode<TYPE>(strTaskNodeName);
+        if (pRenderWork != nullptr) { return static_cast<TYPE*>(pRenderWork); }
 
-	MRenderInfo m_renderInfo;
+        pRenderWork = m_renderGraph->RegisterTaskNode<TYPE>(strTaskNodeName);
+        if (pRenderWork)
+        {
+            pRenderWork->Initialize(GetEngine());
+            if (auto pFramePropertyDecorator = pRenderWork->GetFramePropertyDecorator())
+            {
+                m_framePropertyAdapter->RegisterPropertyDecorator(pFramePropertyDecorator);
+            }
+        }
+        return static_cast<TYPE*>(pRenderWork);
+    }
 
-	std::shared_ptr<MFrameShaderPropertyBlock> m_pFramePropertyAdapter = nullptr;
+    template<typename TYPE> TYPE* GetRenderWork(const MStringId& strTaskNodeName) const
+    {
+        return m_renderGraph->FindTaskNode<TYPE>(strTaskNodeName);
+    }
 
-	MCullingTaskNode<MCascadedShadowCulling>* m_pShadowCulling = nullptr;
+    template<typename TYPE> TYPE* RegisterRenderWork()
+    {
+        return RegisterRenderWork<TYPE>(MStringId(TYPE::GetClassTypeName()));
+    }
+
+    template<typename TYPE> TYPE* GetRenderWork() const
+    {
+        return GetRenderWork<TYPE>(MStringId(TYPE::GetClassTypeName()));
+    }
+
+
+protected:
+    MRenderInfo                                m_renderInfo;
+
+    std::shared_ptr<MFrameShaderPropertyBlock> m_framePropertyAdapter = nullptr;
+
+    MCullingTaskNode<MCascadedShadowCulling>*  m_shadowCulling = nullptr;
 
 #if GPU_CULLING_ENABLE
-	MCullingTaskNode<MGPUCameraFrustumCulling>* m_pCameraFrustumCulling = nullptr;
+    MCullingTaskNode<MGPUCameraFrustumCulling>* m_cameraFrustumCulling = nullptr;
 #else
-	MCullingTaskNode<MCPUCameraFrustumCulling>* m_pCameraFrustumCulling = nullptr;
+    MCullingTaskNode<MCPUCameraFrustumCulling>* m_cameraFrustumCulling = nullptr;
 #endif
 
-	MCullingTaskNode<MBoundingBoxCulling>* m_pVoxelizerCulling = nullptr;
+    MCullingTaskNode<MBoundingBoxCulling>*      m_voxelizerCulling = nullptr;
 
-	uint32_t m_nFrameIndex = 0;
+    uint32_t                                    m_frameIndex = 0;
 
 
-	std::unique_ptr<MTaskGraph> m_pCullingTask = nullptr;
-	std::unique_ptr<MRenderGraph> m_pRenderGraph = nullptr;
+    std::unique_ptr<MTaskGraph>                 m_cullingTask = nullptr;
+    std::unique_ptr<MRenderGraph>               m_renderGraph = nullptr;
 
-	std::unique_ptr<MRenderTargetBindingWalker> m_pRenderTargetBinding = nullptr;
+    std::unique_ptr<MRenderTargetBindingWalker> m_renderTargetBinding = nullptr;
 };
 
-MORTY_SPACE_END
+}// namespace morty

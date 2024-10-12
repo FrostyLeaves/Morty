@@ -7,152 +7,137 @@
 **/
 
 #pragma once
+
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
 
+#include "Component/MComponent.h"
+#include "Component/MComponentGroup.h"
+#include "Engine/MEngine.h"
 #include "Math/Matrix.h"
 #include "Scene/MEntity.h"
 #include "Scene/MManager.h"
-#include "Engine/MEngine.h"
-#include "Component/MComponent.h"
-#include "Component/MComponentGroup.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MTaskNode;
 class MResource;
 class MORTY_API MScene : public MObject
 {
 public:
-	MORTY_CLASS(MScene);
+    MORTY_CLASS(MScene);
+
     MScene();
+
     virtual ~MScene();
 
 public:
+    MEntity*                         CreateEntity();
 
-	MEntity* CreateEntity();
-	MEntity* CreateEntity(const MGuid& guid);
-	void DeleteEntity(MEntity* pEntity);
+    MEntity*                         CreateEntity(const MGuid& guid);
 
-	MEntity* GetEntity(const MGuid& id);
+    void                             DeleteEntity(MEntity* pEntity);
 
-	template<typename TYPE>
-	MEntity* FindFirstEntityByComponent();
-	MEntity* FindFirstEntityByComponent(const MType* pComponentType);
+    MEntity*                         GetEntity(const MGuid& id);
 
-public:
+    template<typename TYPE> MEntity* FindFirstEntityByComponent();
 
-	template<typename TYPE>
-	TYPE* AddComponent(MEntity* entity);
-	MComponent* AddComponent(MEntity* entity, const MType* pComponentType);
-	void RemoveComponent(MEntity* entity, const MType* pComponentType);
-
-	template <class TYPE>
-	MComponentGroup<TYPE>* FindComponents();
-	MIComponentGroup* FindComponents(const MType* pComponentType);
-
-	MComponent* FindComponent(MEntity* entity, const MType* pComponentType);
-
-	MComponent* GetComponent(const MComponentID& id);
-
-	std::vector<MEntity*> GetAllEntity() const;
+    MEntity*                         FindFirstEntityByComponent(const MType* pComponentType);
 
 public:
+    template<typename TYPE> TYPE*               AddComponent(MEntity* entity);
 
-	template <class TYPE>
-	TYPE* RegisterManager();
+    MComponent*                                 AddComponent(MEntity* entity, const MType* pComponentType);
 
-	template <class TYPE>
-	TYPE* GetManager() const;
+    void                                        RemoveComponent(MEntity* entity, const MType* pComponentType);
+
+    template<class TYPE> MComponentGroup<TYPE>* FindComponents();
+
+    MIComponentGroup*                           FindComponents(const MType* pComponentType);
+
+    MComponent*                                 FindComponent(MEntity* entity, const MType* pComponentType);
+
+    MComponent*                                 GetComponent(const MComponentID& id);
+
+    std::vector<MEntity*>                       GetAllEntity() const;
+
+public:
+    template<class TYPE> TYPE* RegisterManager();
+
+    template<class TYPE> TYPE* GetManager() const;
 
 protected:
-
-	void RegisterManager(const MType* pManagerType, IManager* pManager);
+    void RegisterManager(const MType* pManagerType, IManager* pManager);
 
 public:
+    void Tick(const float& fDelta);
 
-	void Tick(const float& fDelta);
+    void OnCreated() override;
 
-	void OnCreated() override;
-	void OnDelete() override;
+    void OnDelete() override;
 
 protected:
+    MComponent*       AddComponent(MEntity* entity, MIComponentGroup* pComponents);
 
-	MComponent* AddComponent(MEntity* entity, MIComponentGroup* pComponents);
-
-	MIComponentGroup* CreateComponents(const MType* pComponentType);
+    MIComponentGroup* CreateComponents(const MType* pComponentType);
 
 private:
-
-	std::map<MGuid, MEntity*> m_vEntity;
-	std::map<const MType*, MIComponentGroup*> m_tComponents;
-	std::map<const MType*, IManager*> m_tManager;
-	std::map<const MType*, std::vector<IManager*>> m_tComponentRegister;
+    std::map<MGuid, MEntity*>                      m_entity;
+    std::map<const MType*, MIComponentGroup*>      m_components;
+    std::map<const MType*, IManager*>              m_manager;
+    std::map<const MType*, std::vector<IManager*>> m_componentRegister;
 };
 
-template<typename TYPE>
-MEntity* MScene::FindFirstEntityByComponent()
+template<typename TYPE> MEntity* MScene::FindFirstEntityByComponent()
 {
-	return FindFirstEntityByComponent(TYPE::GetClassType());
+    return FindFirstEntityByComponent(TYPE::GetClassType());
 }
 
-template <typename TYPE>
-MComponentGroup<TYPE>* MScene::FindComponents()
+template<typename TYPE> MComponentGroup<TYPE>* MScene::FindComponents()
 {
-	MIComponentGroup* pResult = FindComponents(TYPE::GetClassType());
+    MIComponentGroup* pResult = FindComponents(TYPE::GetClassType());
 
-	if (!pResult)
-	{
-		if (MTypeClass::IsType<TYPE, MComponent>())
-		{
-			MComponentGroup<TYPE>* pGroup = new MComponentGroup<TYPE>();
-			pGroup->m_pScene = this;
-			pResult = m_tComponents[TYPE::GetClassType()] = pGroup;
-		}
-	}
+    if (!pResult)
+    {
+        if (MTypeClass::IsType<TYPE, MComponent>())
+        {
+            MComponentGroup<TYPE>* pGroup = new MComponentGroup<TYPE>();
+            pGroup->m_scene               = this;
+            pResult = m_components[TYPE::GetClassType()] = pGroup;
+        }
+    }
 
-	return static_cast<MComponentGroup<TYPE>*>(pResult);
+    return static_cast<MComponentGroup<TYPE>*>(pResult);
 }
 
-template<class TYPE>
-inline TYPE* MScene::RegisterManager()
+template<class TYPE> inline TYPE* MScene::RegisterManager()
 {
-	auto findResult = m_tManager.find(TYPE::GetClassType());
-	if (findResult != m_tManager.end())
-	{
-		return static_cast<TYPE*>(findResult->second);
-	}
+    auto findResult = m_manager.find(TYPE::GetClassType());
+    if (findResult != m_manager.end()) { return static_cast<TYPE*>(findResult->second); }
 
-	TYPE* pManager = new TYPE();
-	RegisterManager(TYPE::GetClassType(), pManager);
-	pManager->Initialize();
-	return pManager;
+    TYPE* pManager = new TYPE();
+    RegisterManager(TYPE::GetClassType(), pManager);
+    pManager->Initialize();
+    return pManager;
 }
 
-template<class TYPE>
-inline TYPE* MScene::GetManager() const
+template<class TYPE> inline TYPE* MScene::GetManager() const
 {
-	auto findResult = m_tManager.find(TYPE::GetClassType());
-	if (findResult != m_tManager.end())
-	{
-		return static_cast<TYPE*>(findResult->second);
-	}
+    auto findResult = m_manager.find(TYPE::GetClassType());
+    if (findResult != m_manager.end()) { return static_cast<TYPE*>(findResult->second); }
 
-	return nullptr;
+    return nullptr;
 }
 
-template<typename TYPE>
-TYPE* MScene::AddComponent(MEntity* entity)
+template<typename TYPE> TYPE* MScene::AddComponent(MEntity* entity)
 {
-	if (MIComponentGroup* pComponents = FindComponents<TYPE>())
-	{
-		if (MComponent* pResult = AddComponent(entity, pComponents))
-		{
-			return static_cast<TYPE*>(pResult);
-		}
-	}
+    if (MIComponentGroup* pComponents = FindComponents<TYPE>())
+    {
+        if (MComponent* pResult = AddComponent(entity, pComponents)) { return static_cast<TYPE*>(pResult); }
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
-MORTY_SPACE_END
+}// namespace morty

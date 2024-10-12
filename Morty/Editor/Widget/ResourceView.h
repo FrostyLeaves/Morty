@@ -2,18 +2,21 @@
 
 #include "Main/BaseWidget.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class ResourceView : public BaseWidget
 {
 public:
-	ResourceView();
+    ResourceView();
+
     ~ResourceView() = default;
 
-	void Render() override;
-	void Initialize(MainEditor* pMainEditor) override;
-	void Release() override;
-	
+    void Render() override;
+
+    void Initialize(MainEditor* pMainEditor) override;
+
+    void Release() override;
 };
 
-MORTY_SPACE_END
+}// namespace morty

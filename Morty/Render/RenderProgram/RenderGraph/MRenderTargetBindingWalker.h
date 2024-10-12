@@ -8,13 +8,14 @@
 
 #pragma once
 
+#include "Utility/MGlobal.h"
 #include "Basic/MTexture.h"
 #include "RenderProgram/MRenderInfo.h"
 #include "RenderProgram/RenderGraph/MRenderTaskNode.h"
-#include "Utility/MGlobal.h"
 #include "TaskGraph/MTaskGraphWalker.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class IPropertyBlockAdapter;
 class MIMesh;
@@ -22,36 +23,45 @@ class MIRenderCommand;
 class MTaskNode;
 class MTaskGraph;
 class MRenderTaskNode;
-
-class MORTY_API MRenderTargetBindingWalker: public ITaskGraphWalker
+class MORTY_API MRenderTargetBindingWalker : public ITaskGraphWalker
 {
 public:
     MRenderTargetBindingWalker() = default;
+
     explicit MRenderTargetBindingWalker(MEngine* pEngine);
+
     ~MRenderTargetBindingWalker();
 
-    void operator ()(MTaskGraph* pTaskGraph) override;
+    void operator()(MTaskGraph* pTaskGraph) override;
 
 private:
+    void                           AllocRenderTarget(MRenderTaskNode* pNode);
 
-    void AllocRenderTarget(MRenderTaskNode* pNode);
-    void FreeRenderTarget(MRenderTaskNode* pNode);
-    
-    void AllocRenderTarget(MRenderTaskTarget* pRenderTarget);
-    void FreeRenderTarget(MRenderTaskTarget* pRenderTarget);
+    void                           FreeRenderTarget(MRenderTaskNode* pNode);
 
-    bool IsAllPrevNodeHasAlloced(MRenderTaskNode* pNode);
-    bool IsAllNextNodeHasAlloced(MRenderTaskNode* pNode);
-    bool IsNodeHasAlloced(MRenderTaskNode* pNode);
+    void                           AllocRenderTarget(MRenderTaskTarget* pRenderTarget);
 
-    MEngine* m_pEngine = nullptr;
-    class MRenderTargetCacheQueue* m_pCacheQueue = nullptr;
+    void                           FreeRenderTarget(MRenderTaskTarget* pRenderTarget);
 
-    enum class AllocState { Alloced = 0, Free = 1 };
-    std::map<MTaskNode*, AllocState> m_tAllocedNode;
-    std::map<MRenderTaskTarget*, size_t> m_tTargetAllocCount;
+    bool                           IsAllPrevNodeHasAlloced(MRenderTaskNode* pNode);
 
-    std::vector<std::shared_ptr<MTexture>> m_vExclusiveTextures;
+    bool                           IsAllNextNodeHasAlloced(MRenderTaskNode* pNode);
+
+    bool                           IsNodeHasAlloced(MRenderTaskNode* pNode);
+
+    MEngine*                       m_engine = nullptr;
+
+    class MRenderTargetCacheQueue* m_cacheQueue = nullptr;
+
+    enum class AllocState
+    {
+        Alloced = 0,
+        Free    = 1
+    };
+    std::map<MTaskNode*, AllocState>       m_allocedNode;
+    std::map<MRenderTaskTarget*, size_t>   m_targetAllocCount;
+
+    std::vector<std::shared_ptr<MTexture>> m_exclusiveTextures;
 };
 
-MORTY_SPACE_END
+}// namespace morty

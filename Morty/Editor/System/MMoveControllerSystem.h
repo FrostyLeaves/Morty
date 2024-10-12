@@ -13,7 +13,8 @@
 
 #include "Math/Vector.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MMoveControllerComponent;
 class MORTY_API MMoveControllerSystem : public MISystem
@@ -21,15 +22,14 @@ class MORTY_API MMoveControllerSystem : public MISystem
     MORTY_CLASS(MMoveControllerSystem)
 public:
     MMoveControllerSystem();
+
     virtual ~MMoveControllerSystem();
 
 public:
-
     void SceneTick(MScene* pScene, const float& fDelta) override;
 
 public:
-
     void UpdateTransform(MMoveControllerComponent* pComponent, const float& fDelta, const Vector2& v2MouseAddi);
 };
 
-MORTY_SPACE_END
+}// namespace morty

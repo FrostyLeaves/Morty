@@ -1,10 +1,8 @@
-#pragma  once
+#pragma once
 
-template<typename CLASS>
-class SingletonInstance
+template<typename CLASS> class SingletonInstance
 {
 public:
-
     static CLASS* GetInstance()
     {
         static CLASS instance;

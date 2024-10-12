@@ -8,61 +8,71 @@
 
 #pragma once
 
-#include "Material/MMaterial.h"
-#include "Render/MRenderGlobal.h"
+#include "Utility/MRenderGlobal.h"
 #include "MSinglePassRenderWork.h"
+#include "Material/MMaterial.h"
 
-#include "RenderProgram/MRenderInfo.h"
-#include "MRenderWork.h"
-#include "Render/MRenderPass.h"
+#include "Basic/MBuffer.h"
 #include "Basic/MCameraFrustum.h"
-#include "Render/MBuffer.h"
+#include "MRenderWork.h"
+#include "RHI/MRenderPass.h"
+#include "RenderProgram/MRenderInfo.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class IShaderPropertyUpdateDecorator;
-
 class MORTY_API MVoxelDebugRenderWork : public ISinglePassRenderWork
 {
-	MORTY_CLASS(MVoxelDebugRenderWork)
+    MORTY_CLASS(MVoxelDebugRenderWork)
 
-    static const MStringId BackBufferOutput;
-    static const MStringId DepthBufferOutput;
+    static const MStringId                          BackBufferOutput;
+    static const MStringId                          DepthBufferOutput;
 
-    void Initialize(MEngine* pEngine) override;
-	void Release() override;
+    void                                            Initialize(MEngine* pEngine) override;
+
+    void                                            Release() override;
+
     std::shared_ptr<IShaderPropertyUpdateDecorator> GetFramePropertyDecorator() override;
 
-    void Render(const MRenderInfo& info) override;
-    void Render(const MRenderInfo& info, const MVoxelMapSetting& voxelSetting, const MBuffer* pVoxelizerBuffer, const std::vector<IRenderable*>& vRenderable);
+    void                                            Render(const MRenderInfo& info) override;
 
-    std::shared_ptr<MMaterial> GetVoxelDebugMaterial() const { return m_pVoxelDebugMaterial; }
-    const MBuffer* GetVoxelDebugBuffer() const;
-    std::shared_ptr<MTexture> GetVoxelGITexture() const;
+    void
+                               Render(const MRenderInfo&               info,
+                                      const MVoxelMapSetting&          voxelSetting,
+                                      const MBuffer*                   pVoxelizerBuffer,
+                                      const std::vector<IRenderable*>& vRenderable);
+
+    std::shared_ptr<MMaterial> GetVoxelDebugMaterial() const { return m_voxelDebugMaterial; }
+
+    const MBuffer*             GetVoxelDebugBuffer() const;
+
+    std::shared_ptr<MTexture>  GetVoxelGITexture() const;
 
 protected:
+    void                                            InitializeBuffer();
 
-    void InitializeBuffer();
-    void ReleaseBuffer();
+    void                                            ReleaseBuffer();
 
-    void InitializeDispatcher();
-    void ReleaseDispatcher();
+    void                                            InitializeDispatcher();
 
-    void BindTarget() override;
+    void                                            ReleaseDispatcher();
 
-    std::vector<MRenderTaskInputDesc> InitInputDesc() override;
+    void                                            BindTarget() override;
 
-    std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
+    std::vector<MRenderTaskInputDesc>               InitInputDesc() override;
 
-    std::shared_ptr<IShaderPropertyUpdateDecorator> m_pFramePropertyUpdateDecorator = nullptr;
+    std::vector<MRenderTaskOutputDesc>              InitOutputDesc() override;
 
-    MComputeDispatcher* m_pVoxelDebugIndirectGenerator = nullptr;
-    std::shared_ptr<MMaterial> m_pVoxelDebugMaterial = nullptr;
-    MBuffer m_drawIndirectBuffer;
+    std::shared_ptr<IShaderPropertyUpdateDecorator> m_framePropertyUpdateDecorator = nullptr;
+
+    MComputeDispatcher*                             m_voxelDebugIndirectGenerator = nullptr;
+    std::shared_ptr<MMaterial>                      m_voxelDebugMaterial          = nullptr;
+    MBuffer                                         m_drawIndirectBuffer;
 
 
-    std::shared_ptr<MShaderConstantParam> m_pDebugVoxelMapSetting = nullptr;
-    std::shared_ptr<MShaderStorageParam> m_pVoxelStorageBuffer = nullptr;
+    std::shared_ptr<MShaderConstantParam>           m_debugVoxelMapSetting = nullptr;
+    std::shared_ptr<MShaderStorageParam>            m_voxelStorageBuffer   = nullptr;
 };
 
-MORTY_SPACE_END
+}// namespace morty

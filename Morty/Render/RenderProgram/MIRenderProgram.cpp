@@ -5,18 +5,13 @@ using namespace morty;
 MORTY_INTERFACE_IMPLEMENT(MIRenderProgram, MObject)
 
 MIRenderProgram::MIRenderProgram()
-	: MObject()
-	, m_pViewport(nullptr)
-{
-
-}
+    : MObject()
+    , m_viewport(nullptr)
+{}
 
 std::vector<std::shared_ptr<MTexture>> MIRenderProgram::GetOutputTextures()
 {
-	if (std::shared_ptr<MTexture> pTexture = GetOutputTexture())
-	{
-		return { pTexture };
-	}
+    if (std::shared_ptr<MTexture> pTexture = GetOutputTexture()) { return {pTexture}; }
 
-	return {};
+    return {};
 }

@@ -1,10 +1,10 @@
 #include "MRenderGraph.h"
 
-#include "MRenderTargetManager.h"
 #include "Engine/MEngine.h"
+#include "MRenderGraphSetting.h"
+#include "MRenderTargetManager.h"
 #include "System/MObjectSystem.h"
 #include "Utility/MFunction.h"
-#include "MRenderGraphSetting.h"
 
 using namespace morty;
 
@@ -13,40 +13,34 @@ MORTY_CLASS_IMPLEMENT(MRenderGraph, MTaskGraph)
 MRenderGraph::MRenderGraph(MEngine* pEngine)
     : Super()
 {
-    m_pEngine = pEngine;
+    m_engine = pEngine;
 
-    auto pObjectSystem = m_pEngine->FindSystem<MObjectSystem>();
+    auto pObjectSystem = m_engine->FindSystem<MObjectSystem>();
 
-    m_pRenderTargetManager = pObjectSystem->CreateObject<MRenderTargetManager>();
+    m_renderTargetManager = pObjectSystem->CreateObject<MRenderTargetManager>();
 
-    m_pRenderGraphSetting = std::make_shared<MRenderGraphSetting>();
+    m_renderGraphSetting = std::make_shared<MRenderGraphSetting>();
 }
 
 MRenderGraph::~MRenderGraph()
 {
-    m_pRenderTargetManager->DeleteLater();
-    m_pRenderTargetManager = nullptr;
-    m_pRenderGraphSetting = nullptr;
+    m_renderTargetManager->DeleteLater();
+    m_renderTargetManager = nullptr;
+    m_renderGraphSetting  = nullptr;
 }
 
 MRenderTaskTarget* MRenderGraph::FindRenderTaskTarget(const MStringId& name)
 {
-    return m_pRenderTargetManager->FindRenderTarget(name);
+    return m_renderTargetManager->FindRenderTarget(name);
 }
 
 void MRenderGraph::Resize(const Vector2i& size)
 {
-    if (m_n2Size == size)
-    {
-        return;
-    }
+    if (m_size == size) { return; }
 
-    m_n2Size = size;
+    m_size = size;
 
-    m_pRenderTargetManager->ResizeRenderTarget(size);
+    m_renderTargetManager->ResizeRenderTarget(size);
 
-    for (auto pTaskNode : GetOrderedNodes())
-    {
-        pTaskNode->DynamicCast<MRenderTaskNode>()->Resize(size);
-    }
+    for (auto pTaskNode: GetOrderedNodes()) { pTaskNode->DynamicCast<MRenderTaskNode>()->Resize(size); }
 }

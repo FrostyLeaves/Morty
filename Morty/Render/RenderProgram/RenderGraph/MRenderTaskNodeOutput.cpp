@@ -4,17 +4,11 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MRenderTaskNodeOutput, MTaskNodeOutput)
 
-void MRenderTaskNodeOutput::SetRenderTarget(MRenderTaskTarget* pRenderTarget)
-{
-    m_pRenderTaskTarget = pRenderTarget;
-}
+void MRenderTaskNodeOutput::SetRenderTarget(MRenderTaskTarget* pRenderTarget) { m_renderTaskTarget = pRenderTarget; }
 
 std::shared_ptr<MTexture> MRenderTaskNodeOutput::GetTexture() const
 {
-    if (m_pRenderTaskTarget)
-    {
-        return m_pRenderTaskTarget->GetTexture();
-    }
+    if (m_renderTaskTarget) { return m_renderTaskTarget->GetTexture(); }
 
     return nullptr;
 }

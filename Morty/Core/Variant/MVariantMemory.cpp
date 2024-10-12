@@ -4,51 +4,45 @@ using namespace morty;
 
 const size_t PackageSize = 16;
 
-size_t MVariantMemory::AllocMemory(size_t nAllocSize)
+size_t       MVariantMemory::AllocMemory(size_t nAllocSize)
 {
-	size_t nOffset = 0;
-	size_t unRemainder = m_nMemorySize % PackageSize;
-	if (unRemainder != 0 && (PackageSize - unRemainder) >= nAllocSize)
-	{
-		nOffset = m_nMemorySize;
-		m_nMemorySize += nAllocSize;
-	}
-	else
-	{
-		if (unRemainder != 0)
-		{
-			m_nMemorySize = (m_nMemorySize / PackageSize + 1) * PackageSize;
-		}
+    size_t nOffset     = 0;
+    size_t unRemainder = m_memorySize % PackageSize;
+    if (unRemainder != 0 && (PackageSize - unRemainder) >= nAllocSize)
+    {
+        nOffset = m_memorySize;
+        m_memorySize += nAllocSize;
+    }
+    else
+    {
+        if (unRemainder != 0)
+        {
+            m_memorySize = (m_memorySize / PackageSize + 1) * PackageSize;
+        }
 
-		nOffset = m_nMemorySize;
-		m_nMemorySize += nAllocSize;
-	}
+        nOffset = m_memorySize;
+        m_memorySize += nAllocSize;
+    }
 
-	if (m_vMemory.size() < m_nMemorySize)
-	{
-		m_vMemory.resize(m_nMemorySize);
-	}
+    if (m_memory.size() < m_memorySize) { m_memory.resize(m_memorySize); }
 
-	return nOffset;
+    return nOffset;
 }
 
 void MVariantMemory::ByteAlignment()
 {
-	if (m_nMemorySize % PackageSize != 0)
-	{
-		m_nMemorySize += (PackageSize - m_nMemorySize % PackageSize);
-	}
+    if (m_memorySize % PackageSize != 0)
+    {
+        m_memorySize += (PackageSize - m_memorySize % PackageSize);
+    }
 
-	if (m_vMemory.size() < m_nMemorySize)
-	{
-		m_vMemory.resize(m_nMemorySize);
-	}
+    if (m_memory.size() < m_memorySize) { m_memory.resize(m_memorySize); }
 }
 
 MVariantMemory& MVariantMemory::operator=(const MVariantMemory& other)
 {
-	m_nMemorySize = other.m_nMemorySize;
-	m_vMemory = other.m_vMemory;
+    m_memorySize = other.m_memorySize;
+    m_memory     = other.m_memory;
 
-	return *this;
+    return *this;
 }

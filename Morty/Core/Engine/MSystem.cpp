@@ -5,22 +5,11 @@ using namespace morty;
 MORTY_INTERFACE_IMPLEMENT(MISystem, MTypeClass)
 
 MISystem::MISystem()
-	: m_pEngine(nullptr)
-{
+    : m_engine(nullptr)
+{}
 
-}
+MISystem::~MISystem() {}
 
-MISystem::~MISystem()
-{
+void     MISystem::SetEngine(MEngine* pEngine) { m_engine = pEngine; }
 
-}
-
-void MISystem::SetEngine(MEngine* pEngine)
-{
-	m_pEngine = pEngine;
-}
-
-MEngine* MISystem::GetEngine()
-{
-	return m_pEngine;
-}
+MEngine* MISystem::GetEngine() { return m_engine; }

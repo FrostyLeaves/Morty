@@ -1,22 +1,23 @@
-#pragma  once
+#pragma once
 
-#include "SingletonInstance.h"
 #include "Scene/MGuid.h"
+#include "SingletonInstance.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MScene;
 class MEntity;
 class SelectionEntityManager : public SingletonInstance<SelectionEntityManager>
 {
 public:
+    void     SetSelectedEntity(MEntity* pEntity);
 
-    void SetSelectedEntity( MEntity* pEntity);
     MEntity* GetSelectedEntity() const;
 
 private:
-    MScene* m_pScene = nullptr;
-    MGuid m_selectedGuid;
+    MScene* m_scene = nullptr;
+    MGuid   m_selectedGuid;
 };
 
-MORTY_SPACE_END
+}// namespace morty

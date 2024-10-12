@@ -4,27 +4,16 @@
 using namespace morty;
 
 MPlane::MPlane()
-	: m_v4Plane(0.0f, 1.0f, 0.0f, 0.0f)
-{
+    : m_plane(0.0f, 1.0f, 0.0f, 0.0f)
+{}
 
-}
+MPlane::~MPlane() {}
 
-MPlane::~MPlane()
-{
-
-}
-
-bool MPlane::IsOnFront(const Vector3& position) const
-{
-	return (position * m_v4Plane.GetVector3()) + m_v4Plane.w > 0.0f;
-}
+bool  MPlane::IsOnFront(const Vector3& position) const { return (position * m_plane.GetVector3()) + m_plane.w > 0.0f; }
 
 float MPlane::GetDistance(const Vector3& position) const
 {
-	return ((position * m_v4Plane.GetVector3()) + m_v4Plane.w) / m_v4Plane.GetVector3().Length();
+    return ((position * m_plane.GetVector3()) + m_plane.w) / m_plane.GetVector3().Length();
 }
 
-void MPlane::MoveInNormal(const float& distance)
-{
-	m_v4Plane.w -= distance;
-}
+void MPlane::MoveInNormal(const float& distance) { m_plane.w -= distance; }

@@ -2,22 +2,26 @@
 
 #include "Main/BaseWidget.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MTaskGraph;
 class TaskGraphView : public BaseWidget
 {
 public:
-	TaskGraphView(const MString& viewName);
+    TaskGraphView(const MString& viewName);
+
     ~TaskGraphView() = default;
 
-	void Render() override;
-	void Initialize(MainEditor* pMainEditor) override;
-	void Release() override;
+    void        Render() override;
 
-	void SetTaskGraph(MTaskGraph* pGraph);
+    void        Initialize(MainEditor* pMainEditor) override;
 
-	MTaskGraph* m_pTaskGraph = nullptr;
+    void        Release() override;
+
+    void        SetTaskGraph(MTaskGraph* pGraph);
+
+    MTaskGraph* m_taskGraph = nullptr;
 };
 
-MORTY_SPACE_END
+}// namespace morty

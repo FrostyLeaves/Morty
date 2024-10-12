@@ -13,22 +13,22 @@
 #include "Utility/MGlobal.h"
 #include "Math/Vector.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MPlane
 {
 public:
-	MPlane();
-	~MPlane();
-	
-	bool IsOnFront(const Vector3& position) const;
-	float GetDistance(const Vector3& position) const;
-	void MoveInNormal(const float& distance);
+    MPlane();
+    ~MPlane();
+
+    bool  IsOnFront(const Vector3& position) const;
+    float GetDistance(const Vector3& position) const;
+    void  MoveInNormal(const float& distance);
 
 public:
-	
-	//ax + by + cz + d = 0
-    Vector4 m_v4Plane;
+    //ax + by + cz + d = 0
+    Vector4 m_plane;
 };
 
-MORTY_SPACE_END
+}// namespace morty

@@ -11,26 +11,26 @@
 #include "Utility/MGlobal.h"
 #include "Utility/MStringId.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MEngine;
 class MObject;
 class MORTY_API MRenderModule
 {
 public:
+    static bool          Register(MEngine* pEngine);
 
-	static bool Register(MEngine* pEngine);
+    static void          OnObjectPostCreate(MObject* pObject);
 
-	static void OnObjectPostCreate(MObject* pObject);
+    static void          RegisterMaterial(MEngine* pEngine);
 
-	static void RegisterMaterial(MEngine* pEngine);
-
-	static const MString DefaultWhite;
-	static const MString DefaultNormal;
-	static const MString Default_R8_One;
-	static const MString Default_R8_Zero;
-	static const MString DefaultAnimationMaterial;
-	static const MString NoiseTexture;
+    static const MString DefaultWhite;
+    static const MString DefaultNormal;
+    static const MString Default_R8_One;
+    static const MString Default_R8_Zero;
+    static const MString DefaultAnimationMaterial;
+    static const MString NoiseTexture;
 };
 
-MORTY_SPACE_END
+}// namespace morty

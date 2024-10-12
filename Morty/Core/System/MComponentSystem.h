@@ -7,12 +7,14 @@
 **/
 
 #pragma once
+
 #include "Utility/MGlobal.h"
-#include "Engine/MSystem.h"
 #include "Component/MComponent.h"
 #include "Component/MComponentGroup.h"
+#include "Engine/MSystem.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MComponentSystem : public MISystem
 {
@@ -20,28 +22,26 @@ class MORTY_API MComponentSystem : public MISystem
 
 public:
     MComponentSystem();
+
     virtual ~MComponentSystem();
 
 public:
-    
-    template<typename TYPE>
-    void RegisterComponent();
+    template<typename TYPE> void RegisterComponent();
 
 
-    MIComponentGroup* CreateComponentGroup(const MType* pComponentType);
+    MIComponentGroup*            CreateComponentGroup(const MType* pComponentType);
 
 private:
-
-    std::map<const MType*, std::function<MIComponentGroup*()>> m_tComponentGroupFactory;
+    std::map<const MType*, std::function<MIComponentGroup*()>> m_componentGroupFactory;
 };
 
-template<typename TYPE>
-void MComponentSystem::RegisterComponent()
+template<typename TYPE> void MComponentSystem::RegisterComponent()
 {
-    if (!MTypeClass::IsType<TYPE, MComponent>())
-        return;
+    if (!MTypeClass::IsType<TYPE, MComponent>()) return;
 
-    m_tComponentGroupFactory[TYPE::GetClassType()] = []() { return new MComponentGroup<TYPE>(); };
+    m_componentGroupFactory[TYPE::GetClassType()] = []() {
+        return new MComponentGroup<TYPE>();
+    };
 }
 
-MORTY_SPACE_END
+}// namespace morty

@@ -1,8 +1,8 @@
 #include "System/MSkyBoxSystem.h"
 
 #include "Engine/MEngine.h"
-#include "Render/MIDevice.h"
-#include "Render/MRenderCommand.h"
+#include "RHI/Abstract/MIDevice.h"
+#include "RHI/MRenderCommand.h"
 
 #include "System/MObjectSystem.h"
 #include "System/MRenderSystem.h"
@@ -18,57 +18,48 @@ MORTY_CLASS_IMPLEMENT(MSkyBoxSystem, MISystem)
 
 
 MSkyBoxSystem::MSkyBoxSystem()
-	: MISystem()
-{
-}
+    : MISystem()
+{}
 
-MSkyBoxSystem::~MSkyBoxSystem()
-{
-}
+MSkyBoxSystem::~MSkyBoxSystem() {}
 
 void MSkyBoxSystem::GenerateEnvironmentWork(MSkyBoxComponent* pSkyBoxComponent)
 {
-	if (!pSkyBoxComponent)
-		return;
+    if (!pSkyBoxComponent) return;
 
-	MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-	if (!pRenderSystem)
-		return;
+    MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    if (!pRenderSystem) return;
 
-	MObjectSystem* pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
-	if (!pObjectSystem)
-		return;
+    MObjectSystem* pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
+    if (!pObjectSystem) return;
 
-	MEnvironmentMapRenderWork* pRenderWork = pObjectSystem->CreateObject<MEnvironmentMapRenderWork>();
+    MEnvironmentMapRenderWork* pRenderWork = pObjectSystem->CreateObject<MEnvironmentMapRenderWork>();
 
-	MIDevice* pDevice = pRenderSystem->GetDevice();
+    MIDevice*                  pDevice = pRenderSystem->GetDevice();
 
-	MIRenderCommand* pCommand = pDevice->CreateRenderCommand("Render Environment");
+    MIRenderCommand*           pCommand = pDevice->CreateRenderCommand("Render Environment");
 
-	pCommand->RenderCommandBegin();
+    pCommand->RenderCommandBegin();
 
-	pRenderWork->RenderEnvironment(pCommand, pSkyBoxComponent);
+    pRenderWork->RenderEnvironment(pCommand, pSkyBoxComponent);
 
-	//TODO warning. component maybe null.
-	pCommand->addFinishedCallback([=]() {
-		if (pSkyBoxComponent)
-		{
-			pSkyBoxComponent->LoadDiffuseEnvResource(pRenderWork->GetDiffuseOutputTexture());
-		}
+    //TODO warning. component maybe null.
+    pCommand->addFinishedCallback([=]() {
+        if (pSkyBoxComponent) { pSkyBoxComponent->LoadDiffuseEnvResource(pRenderWork->GetDiffuseOutputTexture()); }
 
-    	pRenderWork->DeleteLater();
-	});
+        pRenderWork->DeleteLater();
+    });
 
-	pCommand->RenderCommandEnd();
+    pCommand->RenderCommandEnd();
 
-	pDevice->SubmitCommand(pCommand);
+    pDevice->SubmitCommand(pCommand);
 }
 
 void MSkyBoxSystem::GenerateEnvironmentTexture(MSkyBoxComponent* pComponent)
 {
-	MThreadPool* pThreadPool = GetEngine()->GetThreadPool();
+    MThreadPool* pThreadPool = GetEngine()->GetThreadPool();
 
-	MThreadWork work(METhreadType::ERenderThread);
-	work.funcWorkFunction = M_CLASS_FUNCTION_BIND_1_0(MSkyBoxSystem::GenerateEnvironmentWork, this, pComponent);
-	pThreadPool->AddWork(work);
+    MThreadWork  work(METhreadType::ERenderThread);
+    work.funcWorkFunction = M_CLASS_FUNCTION_BIND_1_0(MSkyBoxSystem::GenerateEnvironmentWork, this, pComponent);
+    pThreadPool->AddWork(work);
 }

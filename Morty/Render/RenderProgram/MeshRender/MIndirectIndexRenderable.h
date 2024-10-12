@@ -14,7 +14,8 @@
 #include "RenderProgram/MRenderInfo.h"
 #include "RenderProgram/RenderWork/MRenderWork.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class IMaterialFilter;
 class MScene;
@@ -23,24 +24,29 @@ class MMaterialBatchGroup;
 class MORTY_API MIndirectIndexRenderable : public IRenderable
 {
 public:
+    void SetMaterial(const std::shared_ptr<MMaterial>& pMaterial) { m_material = pMaterial; }
 
-	void SetMaterial(const std::shared_ptr<MMaterial>& pMaterial) { m_pMaterial = pMaterial; }
-	void SetPropertyBlockAdapter(const std::vector<std::shared_ptr<IPropertyBlockAdapter>>& vAdapter) { m_vPropertyAdapter = vAdapter; }
-	void SetIndirectIndexBuffer(const MBuffer* pBuffer) { m_pBuffer = pBuffer; }
-	void SetMeshBuffer(const std::shared_ptr<MMeshBufferAdapter>& pMeshBuffer) { m_pMeshBuffer = pMeshBuffer; }
-	
-	void Render(MIRenderCommand* pCommand) override;
+    void SetPropertyBlockAdapter(const std::vector<std::shared_ptr<IPropertyBlockAdapter>>& vAdapter)
+    {
+        m_propertyAdapter = vAdapter;
+    }
 
-	//override to use other material.
-	virtual const std::shared_ptr<MMaterial>& GetMaterial() const { return m_pMaterial; }
-	virtual const MBuffer* GetIndirectBuffer() const { return m_pBuffer; }
+    void SetIndirectIndexBuffer(const MBuffer* pBuffer) { m_buffer = pBuffer; }
+
+    void SetMeshBuffer(const std::shared_ptr<MMeshBufferAdapter>& pMeshBuffer) { m_meshBuffer = pMeshBuffer; }
+
+    void Render(MIRenderCommand* pCommand) override;
+
+    //override to use other material.
+    virtual const std::shared_ptr<MMaterial>& GetMaterial() const { return m_material; }
+
+    virtual const MBuffer*                    GetIndirectBuffer() const { return m_buffer; }
 
 private:
-
-	std::vector<std::shared_ptr<IPropertyBlockAdapter>> m_vPropertyAdapter;
-	std::shared_ptr<MMeshBufferAdapter> m_pMeshBuffer = nullptr;
-	std::shared_ptr<MMaterial> m_pMaterial = nullptr;
-	const MBuffer* m_pBuffer = nullptr;
+    std::vector<std::shared_ptr<IPropertyBlockAdapter>> m_propertyAdapter;
+    std::shared_ptr<MMeshBufferAdapter>                 m_meshBuffer = nullptr;
+    std::shared_ptr<MMaterial>                          m_material   = nullptr;
+    const MBuffer*                                      m_buffer     = nullptr;
 };
 
-MORTY_SPACE_END
+}// namespace morty

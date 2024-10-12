@@ -2,68 +2,61 @@
 
 #include "Flatbuffer/MDirectionalLightComponent_generated.h"
 
-#include "Scene/MScene.h"
 #include "Component/MSceneComponent.h"
+#include "Scene/MScene.h"
 
 using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MDirectionalLightComponent, MComponent)
 
 MDirectionalLightComponent::MDirectionalLightComponent()
-	: MComponent()
-	, m_v3Direction(0.0f, 0.0f, 1.0f)
-	, m_f3Color(1.0f, 1.0f, 1.0f)
-	, m_fIntensity(1.0f)
-{
+    : MComponent()
+    , m_direction(0.0f, 0.0f, 1.0f)
+    , m_color(1.0f, 1.0f, 1.0f)
+    , m_intensity(1.0f)
+{}
 
-}
+MDirectionalLightComponent::~MDirectionalLightComponent() {}
 
-MDirectionalLightComponent::~MDirectionalLightComponent()
-{
-
-}
-
-void MDirectionalLightComponent::SetDirection(const Vector3& v3Direction)
-{
-	m_v3Direction = v3Direction;
-}
+void    MDirectionalLightComponent::SetDirection(const Vector3& v3Direction) { m_direction = v3Direction; }
 
 Vector3 MDirectionalLightComponent::GetWorldDirection()
 {
-	MSceneComponent* pSceneComponent = GetEntity()->GetComponent<MSceneComponent>();
-	if (!pSceneComponent)
-		return Vector3(0.0f, 0.0f, 1.0f);
+    MSceneComponent* pSceneComponent = GetEntity()->GetComponent<MSceneComponent>();
+    if (!pSceneComponent) return Vector3(0.0f, 0.0f, 1.0f);
 
-	return pSceneComponent->GetWorldTransform().GetRotatePart() * m_v3Direction;
+    return pSceneComponent->GetWorldTransform().GetRotatePart() * m_direction;
 }
 
 flatbuffers::Offset<void> MDirectionalLightComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	auto fbSuper = Super::Serialize(fbb).o;
+    auto                                   fbSuper = Super::Serialize(fbb).o;
 
-	fbs::MDirectionalLightComponentBuilder builder(fbb);
+    fbs::MDirectionalLightComponentBuilder builder(fbb);
 
-	Vector4 color = GetColorVector();
-	builder.add_color(reinterpret_cast<fbs::Vector4*>(&color));
-	builder.add_light_intensity(GetLightIntensity());
+    Vector4                                color = GetColorVector();
+    builder.add_color(reinterpret_cast<fbs::Vector4*>(&color));
+    builder.add_light_intensity(GetLightIntensity());
 
-	builder.add_super(fbSuper);
+    builder.add_super(fbSuper);
 
-	return builder.Finish().Union();
+    return builder.Finish().Union();
 }
 
 void MDirectionalLightComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 {
-	const fbs::MDirectionalLightComponent* fbcomponent = fbs::GetMDirectionalLightComponent(fbb.GetCurrentBufferPointer());
-	Deserialize(fbcomponent);
+    const fbs::MDirectionalLightComponent* fbcomponent =
+            fbs::GetMDirectionalLightComponent(fbb.GetCurrentBufferPointer());
+    Deserialize(fbcomponent);
 }
 
 void MDirectionalLightComponent::Deserialize(const void* pBufferPointer)
 {
-	const fbs::MDirectionalLightComponent* pComponent = reinterpret_cast<const fbs::MDirectionalLightComponent*>(pBufferPointer);
+    const fbs::MDirectionalLightComponent* pComponent =
+            reinterpret_cast<const fbs::MDirectionalLightComponent*>(pBufferPointer);
 
-	SetColorVector(*reinterpret_cast<const Vector4*>(pComponent->color()));
-	SetLightIntensity(pComponent->light_intensity());
+    SetColorVector(*reinterpret_cast<const Vector4*>(pComponent->color()));
+    SetLightIntensity(pComponent->light_intensity());
 
-	Super::Deserialize(pComponent->super());
+    Super::Deserialize(pComponent->super());
 }

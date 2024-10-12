@@ -11,32 +11,31 @@
 #include "Utility/MGlobal.h"
 #include "Math/Vector.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MIDevice;
 class MBuffer;
 struct MVertex;
+
 class MMaterial;
-
 class MIMesh;
-
 enum class MEMeshVertexType
 {
-	Normal = 0,
-	Skeleton,
+    Normal = 0,
+    Skeleton,
 };
 
 class MMeshUtil
 {
 public:
+    static std::unique_ptr<MIMesh> CreateMeshFromType(MEMeshVertexType eType);
 
-	static std::unique_ptr<MIMesh> CreateMeshFromType(MEMeshVertexType eType);
+    static std::unique_ptr<MIMesh> CreatePlane(MEMeshVertexType eType);
 
-	static std::unique_ptr<MIMesh> CreatePlane(MEMeshVertexType eType);
-	static std::unique_ptr<MIMesh> CreateCube(MEMeshVertexType eType);
-	static std::unique_ptr<MIMesh> CreateSphere(MEMeshVertexType eType);
+    static std::unique_ptr<MIMesh> CreateCube(MEMeshVertexType eType);
 
-
+    static std::unique_ptr<MIMesh> CreateSphere(MEMeshVertexType eType);
 };
 
-MORTY_SPACE_END
+}// namespace morty

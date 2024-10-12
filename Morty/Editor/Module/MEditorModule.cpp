@@ -11,16 +11,15 @@ using namespace morty;
 
 bool MEditorModule::Register(MEngine* pEngine)
 {
-	if (!pEngine)
-		return false;
+    if (!pEngine) return false;
 
 
-	pEngine->RegisterSystem<MMoveControllerSystem>();
-	
-	if (MComponentSystem* pComponentSystem = pEngine->FindSystem<MComponentSystem>())
-	{
-		pComponentSystem->RegisterComponent<MMoveControllerComponent>();
-	}
+    pEngine->RegisterSystem<MMoveControllerSystem>();
 
-	return true;
+    if (MComponentSystem* pComponentSystem = pEngine->FindSystem<MComponentSystem>())
+    {
+        pComponentSystem->RegisterComponent<MMoveControllerComponent>();
+    }
+
+    return true;
 }

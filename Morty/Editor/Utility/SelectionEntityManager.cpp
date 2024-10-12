@@ -1,7 +1,7 @@
 #include "SelectionEntityManager.h"
 
-#include "Scene/MScene.h"
 #include "Scene/MEntity.h"
+#include "Scene/MScene.h"
 
 using namespace morty;
 
@@ -9,22 +9,19 @@ void SelectionEntityManager::SetSelectedEntity(MEntity* pEntity)
 {
     if (pEntity)
     {
-        m_pScene = pEntity->GetScene();
+        m_scene        = pEntity->GetScene();
         m_selectedGuid = pEntity->GetID();
     }
     else
     {
-        m_pScene = nullptr;
+        m_scene        = nullptr;
         m_selectedGuid = MGuid::invalid;
     }
 }
 
 MEntity* SelectionEntityManager::GetSelectedEntity() const
 {
-    if (!m_pScene)
-    {
-        return nullptr;
-    }
+    if (!m_scene) { return nullptr; }
 
-    return m_pScene->GetEntity(m_selectedGuid);
+    return m_scene->GetEntity(m_selectedGuid);
 }

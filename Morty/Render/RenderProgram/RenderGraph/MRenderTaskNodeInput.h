@@ -8,34 +8,33 @@
 
 #pragma once
 
-#include "Basic/MTexture.h"
-#include "Render/MRenderPass.h"
-#include "TaskGraph/MTaskNodeInput.h"
 #include "Utility/MGlobal.h"
+#include "Basic/MTexture.h"
+#include "RHI/MRenderPass.h"
+#include "TaskGraph/MTaskNodeInput.h"
 
 #include "RenderProgram/MRenderInfo.h"
+#include "RenderProgram/RenderGraph/MRenderTargetManager.h"
 #include "TaskGraph/MTaskNode.h"
 #include "Utility/MStringId.h"
-#include "RenderProgram/RenderGraph/MRenderTargetManager.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MRenderTargetManager;
 class MRenderGraph;
 class MRenderPass;
 class MRenderTaskTarget;
-
 class MORTY_API MRenderTaskNodeInput : public MTaskNodeInput
 {
-	MORTY_CLASS(MRenderTaskNodeInput)
+    MORTY_CLASS(MRenderTaskNodeInput)
 public:
+    void      SetName(const MStringId& name) { m_strOutputName = name; }
 
-	void SetName(const MStringId& name) { m_strOutputName = name; }
-	MStringId GetName() const { return m_strOutputName; }
+    MStringId GetName() const { return m_strOutputName; }
 
 private:
-
-	MStringId m_strOutputName;
+    MStringId m_strOutputName;
 };
 
-MORTY_SPACE_END
+}// namespace morty

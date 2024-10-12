@@ -12,28 +12,35 @@
 #include "Resource/MResource.h"
 #include "Resource/MTextureResource.h"
 
-#include "MShaderMacro.h"
 #include "MShaderBuffer.h"
+#include "MShaderMacro.h"
 #include "Shader/MShader.h"
 #include "Shader/MShaderParam.h"
 
-MORTY_SPACE_BEGIN
-
-struct MORTY_API MTextureResourceParam : public MShaderTextureParam
+namespace morty
 {
+
+struct MORTY_API MTextureResourceParam : public MShaderTextureParam {
 public:
-	MTextureResourceParam();
-	MTextureResourceParam(const MShaderTextureParam& param);
+    MTextureResourceParam();
 
-	void SetTexture(std::shared_ptr<MTexture> pTexture) override;
-	std::shared_ptr<MTexture> GetTexture() override;
-	std::shared_ptr<MShaderTextureParam> Clone() const override;
+    MTextureResourceParam(const MShaderTextureParam& param);
 
-	void SetTexture(const std::shared_ptr<MTextureResource>& pTextureResource);
-	std::shared_ptr<MTextureResource> GetTextureResource() const { return m_TextureRef.GetResource<MTextureResource>(); }
+    void                                 SetTexture(std::shared_ptr<MTexture> pTexture) override;
+
+    std::shared_ptr<MTexture>            GetTexture() override;
+
+    std::shared_ptr<MShaderTextureParam> Clone() const override;
+
+    void                                 SetTexture(const std::shared_ptr<MTextureResource>& pTextureResource);
+
+    std::shared_ptr<MTextureResource>    GetTextureResource() const
+    {
+        return m_TextureRef.GetResource<MTextureResource>();
+    }
 
 private:
-	MResourceRef m_TextureRef;
+    MResourceRef m_TextureRef;
 };
 
 class MShader;
@@ -41,76 +48,94 @@ class MShaderResource;
 class MORTY_API MShaderProgram : public MTypeClass
 {
 public:
-	enum class EUsage
-	{
-		EUnknow,
-		EGraphics,
-		ECompute,
-	};
+    enum class EUsage
+    {
+        EUnknow,
+        EGraphics,
+        ECompute,
+    };
 
 public:
-	MORTY_CLASS(MShaderProgram)
+    MORTY_CLASS(MShaderProgram)
 
 public:
-	explicit MShaderProgram() = default;
-	explicit MShaderProgram(MEngine* pEngine, EUsage usage);
-	~MShaderProgram() override;
+    explicit MShaderProgram() = default;
+
+    explicit MShaderProgram(MEngine* pEngine, EUsage usage);
+
+    ~MShaderProgram() override;
 
 public:
-	static std::shared_ptr<MShaderProgram> MakeShared(MEngine* pEngine, EUsage usage);
-	void InitializeShaderPropertyBlock();
-public:
+    static std::shared_ptr<MShaderProgram> MakeShared(MEngine* pEngine, EUsage usage);
 
-	bool LoadShader(std::shared_ptr<MResource> pResource);
-
-	std::shared_ptr<MResource> GetShaderResource(MEShaderType eType) const { return m_shaders[size_t(eType)].resource.GetResource(); }
-	MShader* GetShader(MEShaderType eType) const { return m_shaders[size_t(eType)].pShader; }
-
-	void SetShaderMacro(const MShaderMacro& macro);
-	MShaderMacro& GetShaderMacro() { return m_ShaderMacro; }
-
-	const std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderPropertyBlocks() const { return m_vShaderSets; }
-	std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderPropertyBlocks() { return m_vShaderSets; }
-
-	EUsage GetUsage() const { return m_eUsage; }
+    void                                   InitializeShaderPropertyBlock();
 
 public:
+    bool                       LoadShader(std::shared_ptr<MResource> pResource);
 
-	std::shared_ptr<MShaderProgram> GetShared() const;
+    std::shared_ptr<MResource> GetShaderResource(MEShaderType eType) const
+    {
+        return m_shaders[size_t(eType)].resource.GetResource();
+    }
 
-	void BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderType& eType);
-	void UnbindShaderBuffer(const MEShaderType& eType);
+    MShader*      GetShader(MEShaderType eType) const { return m_shaders[size_t(eType)].pShader; }
 
-	void ClearShader();
-	
-	static void CopyShaderParams(MEngine* pEngine, const std::shared_ptr<MShaderPropertyBlock>& target, const std::shared_ptr<const MShaderPropertyBlock>& source);
+    void          SetShaderMacro(const MShaderMacro& macro);
 
-	std::shared_ptr<MShaderPropertyBlock> AllocShaderPropertyBlock(size_t nSetIdx);
-	void ReleaseShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock);
+    MShaderMacro& GetShaderMacro() { return m_ShaderMacro; }
+
+    const std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>&
+    GetShaderPropertyBlocks() const
+    {
+        return m_shaderSets;
+    }
+
+    std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderPropertyBlocks()
+    {
+        return m_shaderSets;
+    }
+
+    EUsage GetUsage() const { return m_usage; }
+
+public:
+    std::shared_ptr<MShaderProgram> GetShared() const;
+
+    void                            BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderType& eType);
+
+    void                            UnbindShaderBuffer(const MEShaderType& eType);
+
+    void                            ClearShader();
+
+    static void                     CopyShaderParams(
+                                MEngine*                                           pEngine,
+                                const std::shared_ptr<MShaderPropertyBlock>&       target,
+                                const std::shared_ptr<const MShaderPropertyBlock>& source
+                        );
+
+    std::shared_ptr<MShaderPropertyBlock> AllocShaderPropertyBlock(size_t nSetIdx);
+
+    void ReleaseShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock);
 
 protected:
+    MEngine* GetEngine() const { return m_engine; }
 
-	MEngine* GetEngine() const { return m_pEngine; }
+    std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM> m_shaderSets;
+    std::set<std::shared_ptr<MShaderPropertyBlock>> m_shaderPropertyBlockInstance;
 
-    std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM> m_vShaderSets;
-	std::set<std::shared_ptr<MShaderPropertyBlock>> m_tShaderPropertyBlockInstance;
-
-	std::weak_ptr<MShaderProgram> m_pSelfPointer;
+    std::weak_ptr<MShaderProgram>                   m_selfPointer;
 
 
-	struct MShaderDesc
-	{
-		MResourceRef resource = {};
-		MShader* pShader = nullptr;
-		int nShaderIdx = 0;
-	};
+    struct MShaderDesc {
+        MResourceRef resource   = {};
+        MShader*     pShader    = nullptr;
+        int          nShaderIdx = 0;
+    };
 
-	std::array<MShaderDesc, size_t(MEShaderType::TOTAL_NUM)> m_shaders;
-	
-	MShaderMacro m_ShaderMacro;
-	MEngine* m_pEngine = nullptr;
-	EUsage m_eUsage = EUsage::EUnknow;
+    std::array<MShaderDesc, size_t(MEShaderType::TOTAL_NUM)> m_shaders;
 
+    MShaderMacro                                             m_ShaderMacro;
+    MEngine*                                                 m_engine = nullptr;
+    EUsage                                                   m_usage  = EUsage::EUnknow;
 };
 
-MORTY_SPACE_END
+}// namespace morty

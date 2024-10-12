@@ -1,4 +1,3 @@
-
 #include "IniConfig.h"
 #include "Utility/MFileHelper.h"
 
@@ -7,15 +6,13 @@
 using namespace morty;
 
 
-IniConfig::IniConfig()
-{
-}
+IniConfig::IniConfig() {}
 
-int IniConfig::Parse(void *user, const char *section, const char *name, const char *value)
+int IniConfig::Parse(void* user, const char* section, const char* name, const char* value)
 {
     auto config = static_cast<IniConfig*>(user);
 
-    config->m_tConfig[section][name] = value;
+    config->m_config[section][name] = value;
 
     return 1;
 }
@@ -23,13 +20,13 @@ int IniConfig::Parse(void *user, const char *section, const char *name, const ch
 void IniConfig::Save(const MString& filePath)
 {
     MString configData;
-    for(const auto& pair : m_tConfig)
+    for (const auto& pair: m_config)
     {
         configData += '[';
         configData += pair.first;
         configData += "]\n";
 
-        for (const auto& kv : pair.second)
+        for (const auto& kv: pair.second)
         {
             configData += kv.first;
             configData += '=';
@@ -43,9 +40,9 @@ void IniConfig::Save(const MString& filePath)
     MFileHelper::WriteString(filePath, configData);
 }
 
-void IniConfig::LoadFromFile(const MString &filePath)
+void IniConfig::LoadFromFile(const MString& filePath)
 {
-    m_tConfig.clear();
+    m_config.clear();
 
     ini_parse(filePath.c_str(), IniConfig::Parse, this);
 }

@@ -3,33 +3,37 @@
 #include "Utility/MGlobal.h"
 #include "Type/MType.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MScene;
 class MEngine;
 class MORTY_API MISystem : public MTypeClass
 {
 public:
-	MORTY_INTERFACE(MISystem)
+    MORTY_INTERFACE(MISystem)
 
 public:
+    MISystem();
 
-	MISystem();
-	virtual ~MISystem();
+    virtual ~MISystem();
 
-	virtual void Initialize() {};
-	virtual void Release() {};
+    virtual void Initialize(){};
 
-
-	virtual void EngineTick(const float& fDelta) { MORTY_UNUSED (fDelta); }
-	virtual void SceneTick(MScene* pScene, const float& fDelta) {  MORTY_UNUSED(pScene, fDelta); }
+    virtual void Release(){};
 
 
-	void SetEngine(MEngine* pEngine);
-	MEngine* GetEngine();
+    virtual void EngineTick(const float& fDelta) { MORTY_UNUSED(fDelta); }
+
+    virtual void SceneTick(MScene* pScene, const float& fDelta) { MORTY_UNUSED(pScene, fDelta); }
+
+
+    void         SetEngine(MEngine* pEngine);
+
+    MEngine*     GetEngine();
 
 private:
-	MEngine* m_pEngine;
+    MEngine* m_engine;
 };
 
-MORTY_SPACE_END
+}// namespace morty

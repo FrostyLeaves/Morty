@@ -8,65 +8,77 @@
 
 #pragma once
 
-#include "Render/MRenderGlobal.h"
-#include "Component/MComponent.h"
+#include "Utility/MRenderGlobal.h"
 #include "Basic/MCameraFrustum.h"
+#include "Component/MComponent.h"
 
 #include "Math/Vector.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MCameraComponent : public MComponent
 {
 public:
     MORTY_CLASS(MCameraComponent)
-		
+
 public:
     MCameraComponent();
+
     virtual ~MCameraComponent();
 
 
 public:
+    void         SetCameraType(const MECameraType& eType) { m_cameraType = eType; }
 
-	void SetCameraType(const MECameraType& eType) { m_eCameraType = eType; }
-	MECameraType GetCameraType() const { return m_eCameraType; }
+    MECameraType GetCameraType() const { return m_cameraType; }
 
-	void SetFov(const float& fFov);
-	float GetFov() const { return m_fFov; }
+    void         SetFov(const float& fFov);
 
-	void SetZNear(const float& fZNear);
-	float GetZNear() const { return m_fZNear; }
+    float        GetFov() const { return m_fov; }
 
-	void SetZFar(const float& fZFar);
-	float GetZFar() const { return m_fZFar; }
+    void         SetZNear(const float& fZNear);
 
-	//Orthographic
-	void SetWidth(const float& fWidth) { m_fWidth = fWidth; }
-	float GetWidth() const { return m_fWidth; }
+    float        GetZNear() const { return m_zNear; }
 
-	void SetHeight(const float& fHeight) { m_fHeight = fHeight; }
-	float GetHeight() const { return m_fHeight; }
+    void         SetZFar(const float& fZFar);
+
+    float        GetZFar() const { return m_zFar; }
+
+    //Orthographic
+    void         SetWidth(const float& fWidth) { m_width = fWidth; }
+
+    float        GetWidth() const { return m_width; }
+
+    void         SetHeight(const float& fHeight) { m_height = fHeight; }
+
+    float        GetHeight() const { return m_height; }
 
 public:
-	void SetZNearFar(const Vector2& fZNearFar) { SetZNear(fZNearFar.x); SetZFar(fZNearFar.y); }
-	Vector2 GetZNearFar() const { return Vector2(GetZNear(), GetZFar()); }
+    void SetZNearFar(const Vector2& fZNearFar)
+    {
+        SetZNear(fZNearFar.x);
+        SetZFar(fZNearFar.y);
+    }
+
+    Vector2 GetZNearFar() const { return Vector2(GetZNear(), GetZFar()); }
 
 public:
+    virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
 
-	virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
-	virtual void Deserialize(flatbuffers::FlatBufferBuilder& fbb) override;
-	virtual void Deserialize(const void* pBufferPointer) override;
+    virtual void                      Deserialize(flatbuffers::FlatBufferBuilder& fbb) override;
+
+    virtual void                      Deserialize(const void* pBufferPointer) override;
 
 private:
+    MECameraType m_cameraType;
 
-	MECameraType m_eCameraType;
+    float        m_fov;
+    float        m_zNear;
+    float        m_zFar;
 
-	float m_fFov;
-	float m_fZNear;
-	float m_fZFar;
-
-	float m_fWidth;
-	float m_fHeight;
+    float        m_width;
+    float        m_height;
 };
 
-MORTY_SPACE_END
+}// namespace morty

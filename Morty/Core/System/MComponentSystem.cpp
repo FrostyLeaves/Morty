@@ -5,23 +5,17 @@ using namespace morty;
 MORTY_CLASS_IMPLEMENT(MComponentSystem, MISystem)
 
 MComponentSystem::MComponentSystem()
-	: MISystem()
-	, m_tComponentGroupFactory()
-{
+    : MISystem()
+    , m_componentGroupFactory()
+{}
 
-}
-
-MComponentSystem::~MComponentSystem()
-{
-
-}
+MComponentSystem::~MComponentSystem() {}
 
 MIComponentGroup* MComponentSystem::CreateComponentGroup(const MType* pComponentType)
 {
-	auto findResult = m_tComponentGroupFactory.find(pComponentType);
+    auto findResult = m_componentGroupFactory.find(pComponentType);
 
-	if (findResult == m_tComponentGroupFactory.end())
-		return nullptr;
+    if (findResult == m_componentGroupFactory.end()) return nullptr;
 
-	return findResult->second();
+    return findResult->second();
 }

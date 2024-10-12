@@ -11,27 +11,27 @@
 #include "Utility/MGlobal.h"
 #include "MBasicPostProcessRenderWork.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MBlurRenderWork : public MBasicPostProcessRenderWork
 {
-	MORTY_CLASS(MBlurRenderWork)
+    MORTY_CLASS(MBlurRenderWork)
 
-	void InitDirection(bool bVertical) { m_bVertical = bVertical; }
+    void                       InitDirection(bool bVertical) { m_vertical = bVertical; }
 
-	std::shared_ptr<MMaterial> CreateMaterial() override;
+    std::shared_ptr<MMaterial> CreateMaterial() override;
 
-	void RenderSetup(const MRenderInfo& info) override;
+    void                       RenderSetup(const MRenderInfo& info) override;
 
-	void RegisterSetting() override;
+    void                       RegisterSetting() override;
 
 protected:
+    std::vector<MRenderTaskInputDesc>  InitInputDesc() override;
 
-	std::vector<MRenderTaskInputDesc> InitInputDesc() override;
+    std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 
-	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
-
-	bool m_bVertical = false;
+    bool                               m_vertical = false;
 };
 
-MORTY_SPACE_END
+}// namespace morty

@@ -11,23 +11,19 @@
 #include "Utility/MGlobal.h"
 #include "MCullingResultRenderable.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MCullingResultSpecificMaterialRenderable : public MCullingResultRenderable
 {
 public:
+    void SetMaterial(std::unordered_map<MStringId, std::shared_ptr<MMaterial>> tMaterials) { m_materials = tMaterials; }
 
-    void SetMaterial(std::unordered_map<MStringId, std::shared_ptr<MMaterial>> tMaterials)
-    {
-        m_tMaterials = tMaterials;
-    }
-
-	//override to use other material.
+    //override to use other material.
     std::shared_ptr<MMaterial> GetMaterial(const MMaterialCullingGroup& group) const override;
 
 private:
-
-    std::unordered_map<MStringId, std::shared_ptr<MMaterial>> m_tMaterials;
+    std::unordered_map<MStringId, std::shared_ptr<MMaterial>> m_materials;
 };
 
-MORTY_SPACE_END
+}// namespace morty

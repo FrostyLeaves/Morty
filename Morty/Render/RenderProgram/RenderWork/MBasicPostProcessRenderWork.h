@@ -12,24 +12,25 @@
 #include "MSinglePassRenderWork.h"
 #include "RenderProgram/MRenderInfo.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MBasicPostProcessRenderWork : public ISinglePassRenderWork
 {
-	MORTY_INTERFACE(MBasicPostProcessRenderWork)
+    MORTY_INTERFACE(MBasicPostProcessRenderWork)
 
-	void Initialize(MEngine* pEngine) override;
-	void Release() override;
+    void                               Initialize(MEngine* pEngine) override;
 
-	void Render(const MRenderInfo& info) override;
+    void                               Release() override;
 
-	virtual std::shared_ptr<MMaterial> CreateMaterial() = 0;
+    void                               Render(const MRenderInfo& info) override;
+
+    virtual std::shared_ptr<MMaterial> CreateMaterial() = 0;
 
 protected:
+    void                       BindTarget() override;
 
-	void BindTarget() override;
-
-	std::shared_ptr<MMaterial> m_pMaterial = nullptr;
+    std::shared_ptr<MMaterial> m_material = nullptr;
 };
 
-MORTY_SPACE_END
+}// namespace morty

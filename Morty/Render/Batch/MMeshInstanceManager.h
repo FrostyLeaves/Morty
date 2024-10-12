@@ -1,13 +1,14 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "Render/MBuffer.h"
+#include "Basic/MBuffer.h"
+#include "MMaterialBatchGroup.h"
+#include "Material/MMaterial.h"
 #include "Scene/MManager.h"
 #include "Variant/MVariant.h"
-#include "Material/MMaterial.h"
-#include "MMaterialBatchGroup.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MShaderPropertyBlock;
 class MIMesh;
@@ -17,57 +18,61 @@ class MTaskNode;
 class MMaterial;
 class MComponent;
 struct MShaderConstantParam;
+
 class MRenderMeshComponent;
-
-
 class MORTY_API MMeshInstanceManager : public IManager
 {
 public:
-	MORTY_INTERFACE(MMeshInstanceManager)
+    MORTY_INTERFACE(MMeshInstanceManager)
 
 public:
+    virtual void Initialize() override;
 
-	virtual void Initialize() override;
-	virtual void Release() override;
+    virtual void Release() override;
 
-    void RenderUpdate(MTaskNode* pNode);
-	MTaskNode* GetUpdateTask() const { return m_pUpdateTask; }
+    void         RenderUpdate(MTaskNode* pNode);
+
+    MTaskNode*   GetUpdateTask() const { return m_updateTask; }
+
 public:
+    void                              OnMaterialChanged(MComponent* pComponent);
 
-	void OnMaterialChanged(MComponent* pComponent);
-	void OnMeshChanged(MComponent* pComponent);
-	void OnSceneComponentChanged(MComponent* pComponent);
-	void OnRenderMeshChanged(MComponent* pComponent);
+    void                              OnMeshChanged(MComponent* pComponent);
 
-	void RemoveComponent(MRenderMeshComponent* pComponent);
+    void                              OnSceneComponentChanged(MComponent* pComponent);
 
-	std::vector<MMaterialBatchGroup*> FindGroupFromMaterialType(MEMaterialType eType) const;
-	std::vector<MMaterialBatchGroup*> GetAllMaterialGroup() const;
+    void                              OnRenderMeshChanged(MComponent* pComponent);
+
+    void                              RemoveComponent(MRenderMeshComponent* pComponent);
+
+    std::vector<MMaterialBatchGroup*> FindGroupFromMaterialType(MEMaterialType eType) const;
+
+    std::vector<MMaterialBatchGroup*> GetAllMaterialGroup() const;
 
 
 protected:
+    bool IsRenderableMeshMaterial(MEMaterialType eType) const;
 
-	bool IsRenderableMeshMaterial(MEMaterialType eType) const;
-	void AddComponentToGroup(MRenderMeshComponent* pComponent);
-	void RemoveComponentFromGroup(MRenderMeshComponent* pComponent);
-	void UpdateMeshInstance(MRenderMeshComponent* pComponent, MMeshInstanceRenderProxy proxy);
+    void AddComponentToGroup(MRenderMeshComponent* pComponent);
 
-	void Clean();
+    void RemoveComponentFromGroup(MRenderMeshComponent* pComponent);
+
+    void UpdateMeshInstance(MRenderMeshComponent* pComponent, MMeshInstanceRenderProxy proxy);
+
+    void Clean();
 
 private:
+    struct MaterialGroup {
+        MMaterialBatchGroup                                  materialGroup;
+        std::map<MMeshInstanceKey, MMeshInstanceRenderProxy> tWaitUpdateComponent;
+        std::set<MMeshInstanceKey>                           tWaitRemoveComponent;
+    };
 
-	struct MaterialGroup
-	{
-		MMaterialBatchGroup materialGroup;
-		std::map<MMeshInstanceKey, MMeshInstanceRenderProxy> tWaitUpdateComponent;
-		std::set<MMeshInstanceKey> tWaitRemoveComponent;
-	};
-
-	std::map<MRenderMeshComponent*, MaterialGroup*> m_tComponentTable;
-	std::map<std::shared_ptr<MMaterial>, MaterialGroup*> m_tRenderableMaterialGroup;
+    std::map<MRenderMeshComponent*, MaterialGroup*>      m_componentTable;
+    std::map<std::shared_ptr<MMaterial>, MaterialGroup*> m_renderableMaterialGroup;
 
 
-	MTaskNode* m_pUpdateTask = nullptr;
+    MTaskNode*                                           m_updateTask = nullptr;
 };
 
-MORTY_SPACE_END
+}// namespace morty

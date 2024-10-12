@@ -11,42 +11,43 @@
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
 
-#include "RenderProgram/MRenderInfo.h"
-#include "MRenderWork.h"
-#include "Render/MRenderPass.h"
 #include "Basic/MCameraFrustum.h"
+#include "MRenderWork.h"
+#include "RHI/MRenderPass.h"
+#include "RenderProgram/MRenderInfo.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MORTY_API MVRSTextureRenderWork : public MRenderTaskNode
 {
-	MORTY_CLASS(MVRSTextureRenderWork)
-	static const MStringId VRS_TEXTURE;
+    MORTY_CLASS(MVRSTextureRenderWork)
+    static const MStringId VRS_TEXTURE;
+
 public:
+    void     Initialize(MEngine* pEngine) override;
 
-    void Initialize(MEngine* pEngine) override;
-	void Release() override;
+    void     Release() override;
 
-	void Resize(Vector2i size) override;
+    void     Resize(Vector2i size) override;
 
-	void Render(const MRenderInfo& info) override;
+    void     Render(const MRenderInfo& info) override;
 
-	MEngine* GetEngine() const { return m_pEngine; }
+    MEngine* GetEngine() const { return m_engine; }
 
 
 protected:
+    void                               BindTarget() override;
 
-	void BindTarget() override;
+    std::vector<MRenderTaskInputDesc>  InitInputDesc() override;
 
-	std::vector<MRenderTaskInputDesc> InitInputDesc() override;
+    std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 
-	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
+    MEngine*                           m_engine = nullptr;
 
-	MEngine* m_pEngine = nullptr;
+    MComputeDispatcher*                m_vRSGenerator = nullptr;
 
-	MComputeDispatcher* m_pVRSGenerator = nullptr;
-
-	Vector2i m_n2TexelSize = { 8, 8 };
+    Vector2i                           m_texelSize = {8, 8};
 };
 
-MORTY_SPACE_END
+}// namespace morty

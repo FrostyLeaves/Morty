@@ -11,65 +11,67 @@
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
 
-#include "Render/MMesh.h"
+#include "Mesh/MMesh.h"
+#include "RHI/MRenderPass.h"
 #include "RenderProgram/MRenderInfo.h"
-#include "Render/MRenderPass.h"
 
 #include "MSinglePassRenderWork.h"
 #include "RenderProgram/MFrameShaderPropertyBlock.h"
 
-MORTY_SPACE_BEGIN
+namespace morty
+{
 
 class MCullingResultRenderable;
 class MTexture;
 class MTextureResource;
-
-
 class MORTY_API MDeepPeelRenderWork : public ISinglePassRenderWork
 {
 public:
     MORTY_CLASS(MDeepPeelRenderWork);
 
-	static const MStringId FrontTextureOutput;
-	static const MStringId BackTextureOutput;
-	static const MStringId DepthOutput[4];
+    static const MStringId FrontTextureOutput;
+    static const MStringId BackTextureOutput;
+    static const MStringId DepthOutput[4];
+
 public:
-
     void Initialize(MEngine* pEngine) override;
-	void Release() override;
 
-	void Render(const MRenderInfo& info) override;
-	void Render(const MRenderInfo& info, const std::vector<MCullingResultRenderable*>& vRenderable);
+    void Release() override;
+
+    void Render(const MRenderInfo& info) override;
+
+    void Render(const MRenderInfo& info, const std::vector<MCullingResultRenderable*>& vRenderable);
 
 protected:
+    void                               InitializeMaterial();
 
-    void InitializeMaterial();
-    void ReleaseMaterial();
+    void                               ReleaseMaterial();
 
-    void InitializeTexture();
-    void ReleaseTexture();
+    void                               InitializeTexture();
 
-	void InitializeRenderPass();
+    void                               ReleaseTexture();
 
-	void InitializeFrameShaderParams();
-	void ReleaseFrameShaderParams();
+    void                               InitializeRenderPass();
 
-	void BindTarget() override;
+    void                               InitializeFrameShaderParams();
 
-	std::vector<MRenderTaskInputDesc> InitInputDesc() override;
+    void                               ReleaseFrameShaderParams();
 
-	std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
+    void                               BindTarget() override;
+
+    std::vector<MRenderTaskInputDesc>  InitInputDesc() override;
+
+    std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 
 
 private:
+    std::shared_ptr<MTextureResource>                    m_whiteTexture;
+    std::shared_ptr<MTextureResource>                    m_blackTexture;
 
-	std::shared_ptr<MTextureResource> m_pWhiteTexture;
-	std::shared_ptr<MTextureResource> m_pBlackTexture;
+    std::shared_ptr<MMaterial>                           m_drawPeelMaterial;
+    std::shared_ptr<MMaterial>                           m_forwardMaterial;
 
-	std::shared_ptr<MMaterial> m_pDrawPeelMaterial;
-	std::shared_ptr<MMaterial> m_pForwardMaterial;
-
-	std::array<std::shared_ptr<MShaderPropertyBlock>, 2> m_aFramePropertyBlock;
+    std::array<std::shared_ptr<MShaderPropertyBlock>, 2> m_framePropertyBlock;
 };
 
-MORTY_SPACE_END
+}// namespace morty
