@@ -571,7 +571,7 @@ void MDeferredRenderProgram::SaveGraph(std::vector<MByte>& output)
     fbb.Finish(root);
 
     output.resize(fbb.GetSize());
-    memcpy_s(output.data(), output.size() * sizeof(MByte), fbb.GetBufferPointer(), fbb.GetSize() * sizeof(MByte));
+    memcpy(output.data(), fbb.GetBufferPointer(), fbb.GetSize() * sizeof(MByte));
 }
 
 MRenderTaskNode*
