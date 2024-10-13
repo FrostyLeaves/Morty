@@ -32,6 +32,8 @@ int RenderGraphView::GetDepthTable(MRenderGraph* pTaskGraph, std::map<MTaskNode*
         MTaskNode* pNode = vNodes.back();
         vNodes.pop_back();
 
+        if (!pNode) continue;
+
         for (size_t nInputIdx = 0; nInputIdx < pNode->GetInputSize(); ++nInputIdx)
         {
             MTaskNode* pPrevNode = pNode->GetInput(nInputIdx)->GetLinkedNode();
@@ -48,6 +50,14 @@ int RenderGraphView::GetDepthTable(MRenderGraph* pTaskGraph, std::map<MTaskNode*
     return nMaxDepth;
 }
 
+struct ConnInfo {
+    MRenderTaskNode* pFrom;
+    MRenderTaskNode* pTo;
+
+    size_t           fromSlot;
+    size_t           toSlot;
+};
+
 void RenderGraphView::Render()
 {
     if (!m_renderProgram) { return; }
@@ -55,13 +65,14 @@ void RenderGraphView::Render()
     DrawMenu();
     ProcessDialog();
 
-    auto                      pRenderGraph = m_renderProgram->GetRenderGraph();
-    std::map<MTaskNode*, int> tDepthTable;
-    const int                 nMaxDepth = GetDepthTable(pRenderGraph, tDepthTable);
-    std::vector<int>          vTaskColumn(nMaxDepth + 1, 0);
+    auto                                   pRenderGraph = m_renderProgram->GetRenderGraph();
+    std::map<MTaskNode*, int>              tDepthTable;
+    const int                              nMaxDepth = GetDepthTable(pRenderGraph, tDepthTable);
+    std::vector<int>                       vTaskColumn(nMaxDepth + 1, 0);
+    auto                                   vAllNodes = pRenderGraph->GetAllNodes();
+    std::unordered_map<uint32_t, ConnInfo> tConnTable;
 
-    auto                      vAllNodes = pRenderGraph->GetAllNodes();
-
+    ImNodes::PushAttributeFlag(ImNodesAttributeFlags_EnableLinkDetachWithDragClick);
     ImNodes::BeginNodeEditor();
 
     for (auto& pNode: vAllNodes)
@@ -131,11 +142,25 @@ void RenderGraphView::Render()
             const int outputId = static_cast<int>(reinterpret_cast<std::intptr_t>(pOutput));
 
             ImNodes::Link(inputId + outputId, outputId, inputId);
+            tConnTable[inputId + outputId] = ConnInfo{
+                    .pFrom    = pOutput->GetTaskNode()->DynamicCast<MRenderTaskNode>(),
+                    .pTo      = pInput->GetTaskNode()->DynamicCast<MRenderTaskNode>(),
+                    .fromSlot = pOutput->GetIndex(),
+                    .toSlot   = pInput->GetIndex(),
+            };
         }
     }
 
 
     ImNodes::EndNodeEditor();
+    ImNodes::PopAttributeFlag();
+
+    int destroyedLinkId;
+    if (ImNodes::IsLinkDestroyed(&destroyedLinkId))
+    {
+        auto connInfo = tConnTable[destroyedLinkId];
+        connInfo.pTo->GetInput(connInfo.toSlot)->UnLink();
+    }
 }
 
 void RenderGraphView::Initialize(MainEditor* pMainEditor) { BaseWidget::Initialize(pMainEditor); }
